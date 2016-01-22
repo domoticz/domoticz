@@ -72,6 +72,7 @@ matrix:
     install:
       - brew install cmake
       - brew install boost|| true
+      - brew install boost-python|| true
       - brew install libusb
       - brew install libusb-compat
       - brew install zlib || true

@@ -8,7 +8,7 @@ Every script_device_*.py script has the following variables
  * sunrise_in_minutes: integer
  * sunset_in_minutes: integer
  * user_variables: dictionary from string to value
- 
+
 For more advanced project, you may want to use modules.
 say you have a file heating.py
 You can do
@@ -23,18 +23,18 @@ domoticz.changed_device
 And you also have access to more:
  * same as in the device scripts (changed_device ... user_variables)
  * devices: dictionary from string to Device
- 
- 
+
+
 """
 try:
-	import domoticz_ # 
+	import domoticz_ #
 except:
 	pass
 import reloader
 import datetime
 import re
 
-#def _log(type, text): # 'virtual' function, will be modified to call 
+#def _log(type, text): # 'virtual' function, will be modified to call
 #	pass
 
 def log(*args):
@@ -42,7 +42,7 @@ def log(*args):
 
 def error(*args):
 	domoticz_.log(1, " ".join([str(k) for k in args]))
-	
+
 reloader.auto_reload(__name__)
 
 # this will be filled in by the c++ part
@@ -50,22 +50,17 @@ devices = {}
 device = None
 
 
-def do():
-	print "lalalal"
-
 testing = False
 commands = []
 
 event_sytem = None # will be filled in by domoticz
 def command(name, action, file):
 	if testing:
-		print "COMMAND", name, action
 		commands.append((name, action))
 	else:
 		event_system.command(name, action, file)
-		
+
 def process_commands():
-	#print "processing commands"
 	for name, action in commands:
 		device = devices[name]
 		if action == "On":
@@ -77,7 +72,7 @@ def process_commands():
 		else:
 			print "unknown command", name, action
 	del commands[:]
-	
+
 
 class Device(object):
 	def __init__(self, id, name, type, sub_type, switch_type, n_value, n_value_string, s_value, last_update):
@@ -103,34 +98,35 @@ class Device(object):
 		else:
 			self.last_update = None
 
+        def __str__(self):
+            return "Device(%s, %s, %s, %s)" % (self.id, self.name, self.n_value, self.s_value)
+        def __repr__(self):
+            return "Device(%s, %s, %s, %s)" % (self.id, self.name, self.n_value, self.s_value)
+
 	def last_update_was_ago(self, **kwargs):
 		"""Arguments can be: days[, seconds[, microseconds[, milliseconds[, minutes[, hours[, weeks]"""
-		return self.last_update + datetime.deltatime(**kwargs) < datetime.datetime.now() 
+		return self.last_update + datetime.deltatime(**kwargs) < datetime.datetime.now()
 
 	def is_on(self):
 		return self.n_value == 1
-	
+
 	def is_off(self):
 		return self.n_value == 0
-	
+
 	def on(self, after=None, reflect=False):
 		if self.is_off() or after is not None:
 			self._command("On" , after=after)
 		if reflect:
 			self.n_value = 1
-		
+
 	def off(self, after=None, reflect=False):
 		if self.is_on() or after is not None:
 			self._command("Off" , after=after)
 		if reflect:
 			self.n_value = 0
-		
+
 	def _command(self, action, after=None):
 		if after is not None:
 			command(self.name, "%s AFTER %d" % (action, after), __file__)
 		else:
 			command(self.name, action, __file__)
-
-
-
-

@@ -86,12 +86,12 @@ define(['app'], function (app) {
 					ShowNotify($.t('Please enter the API key!...'), 3500, true);
 					return;
 				}
-				var POUSERID=encodeURIComponent($("#pushovertable #pouserid").val());
+				var POUSERID = encodeURIComponent($("#pushovertable #PushoverUser").val());
 				if (POUSERID=="") {
 					ShowNotify($.t('Please enter the user id!...'), 3500, true);
 					return;
 				}
-				extraparams = "POAPI=" + POAPI + "&POUSERID=" + POUSERID;
+				extraparams = "PushoverAPI=" + POAPI + "&PushoverUser=" + POUSERID;
 				break;
 			case "pushalot":
 				var PushAlotAPI=encodeURIComponent($("#pushalottable #PushALotAPI").val());

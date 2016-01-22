@@ -97,9 +97,9 @@ private:
 	bool parseBlocklyActions(const std::string &Actions, const std::string &eventName, const unsigned long long eventID);
 	std::string ProcessVariableArgument(const std::string &Argument);
 #ifdef ENABLE_PYTHON
-	void EvaluatePython(const std::string &reason, const std::string &filename, const unsigned long long varId);
-	void EvaluatePython(const std::string &reason, const std::string &filename);
-	void EvaluatePython(const std::string &reason, const std::string &filename, const unsigned long long DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const unsigned long long varId);
+	void EvaluatePython(const std::string &reason, const std::string &filename, const std::string &PyString, const unsigned long long varId);
+	void EvaluatePython(const std::string &reason, const std::string &filename, const std::string &PyString);
+	void EvaluatePython(const std::string &reason, const std::string &filename, const std::string &PyString, const unsigned long long DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const unsigned long long varId);
 #endif
 	void EvaluateLua(const std::string &reason, const std::string &filename, const std::string &LuaString, const unsigned long long varId);
 	void EvaluateLua(const std::string &reason, const std::string &filename, const std::string &LuaString);
@@ -120,7 +120,7 @@ private:
 
 	//std::string reciprocalAction (std::string Action);
 	std::vector<_tEventItem> m_events;
-	
+
 
 	std::map<unsigned long long, _tDeviceStatus> m_devicestates;
 	std::map<unsigned long long, _tUserVariable> m_uservariables;
@@ -155,8 +155,7 @@ private:
 	bool isEventscheduled(const std::string &eventName);
 	bool iterateLuaTable(lua_State *lua_state, const int tIndex, const std::string &filename);
 	bool processLuaCommand(lua_State *lua_state, const std::string &filename);
-	void report_errors(lua_State *L, int status);
+	void report_errors(lua_State *L, int status, std::string filename);
 	unsigned char calculateDimLevel(int deviceID, int percentageLevel);
-
+	void StripQuotes(std::string &sString);
 };
-

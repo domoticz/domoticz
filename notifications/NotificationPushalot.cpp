@@ -15,6 +15,9 @@ CNotificationPushalot::~CNotificationPushalot()
 bool CNotificationPushalot::SendMessageImplementation(const std::string &Subject, const std::string &Text, const std::string &ExtraData, const int Priority, const std::string &Sound, const bool bFromNotification)
 {
 	//send message to PushAlot
+
+	std::string cSubject = (Subject == Text) ? "Domoticz" : Subject;
+
 	bool bRet;
 	std::stringstream sPostData;
 	std::string IsImportant;
@@ -39,7 +42,7 @@ bool CNotificationPushalot::SendMessageImplementation(const std::string &Subject
 		break;
 	}
 
-	sPostData << "AuthorizationToken=" << _apikey << "&IsImportant=" << IsImportant << "&IsSilent=" << IsSilent << "&Source=Domoticz&Title=" << Subject << "&Body=" << Text;
+	sPostData << "AuthorizationToken=" << _apikey << "&IsImportant=" << IsImportant << "&IsSilent=" << IsSilent << "&Source=Domoticz&Title=" << cSubject << "&Body=" << Text;
 	std::vector<std::string> ExtraHeaders;
 	bRet = HTTPClient::POST("https://pushalot.com/api/sendmessage", sPostData.str(), ExtraHeaders, sResult);
 	return bRet;

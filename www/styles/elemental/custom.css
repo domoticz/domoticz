@@ -86,7 +86,13 @@ body table#itemtabledoubleicon tr td:first-child + td{
 	white-space: nowrap;
 	color: #000000;
 }
-
+body table#itemtabledoubleicon tr td:first-child + td + td + td + td + td + td + td{
+	font-size: 90%;
+	margin-top: 0px;
+	clear: both;
+	padding: 0px 5% 2px 5%;
+	line-height: 130%;
+}
 .navbar .nav {margin: 7.5px !important;}
 
 .navbar .divider-vertical {
@@ -96,10 +102,6 @@ body table#itemtabledoubleicon tr td:first-child + td{
 .navbar .nav > li {
 	float: left;
 	height: 10px;
-}
-
-.ui-corner-all, .ui-corner-bottom, .ui-corner-right, .ui-corner-br {
-	border-radius: 0px !important;
 }
 
 #comboroom, #combofloorplan {
@@ -307,9 +309,30 @@ body table#mobileitem tr td:first-child{
 	box-shadow:         0px 5px 5px 0px rgba(50, 50, 50, 0.3);
 }
 
-/* Row Fix */
-.bannav{
-	width: 99.5% !important;
+.selectorlevels {
+	font-size: 1.1em;
+	margin-top: 8px !important;
+	text-align: center;
+}
+
+.selectorlevels .ui-button-text-only .ui-button-text {
+	padding: .2em 0.7em;
+}
+
+#dashcontent .selectorlevels {
+	font-size: 0.8em;
+	margin-top: -5px !important;
+}
+
+.selectorlevels .ui-selectmenu-button.ui-widget {
+	font-size: 1em;
+	width: 200px !important;
+	height: 22px;
+}
+
+.ui-menu .ui-menu-item,
+.ui-selectmenu-button span.ui-selectmenu-text {
+    text-align: center;
 }
 
 .dimslider {
@@ -318,14 +341,34 @@ body table#mobileitem tr td:first-child{
 	border-style: solid;
 	border-color: #333 #333 #777 #333;
 	border-radius: 25px;
-	width: 100%;
 	margin-top: 0px;
 	margin-bottom: .5em;
 	height: 13px;
+	width: calc(98% - 70px) !important;
+	position: relative;
 	background-color: #8e8d8d;
 	background: url('images/bg-track.png') repeat top left;
 	box-shadow: inset 0 1px 5px 0px rgba(0, 0, 0, .5), 
     				  0 1px 0 0px rgba(250, 250, 250, .5);
+}
+
+#dashcontent .dimslider {
+        width: calc(98% - 62px) !important;
+}
+
+#dashcontent table#itemtablesmalldoubleicon .dimslider {
+	width: calc(98% - 105px) !important;
+}
+
+table#itemtablesmalldoubleicon .dimslider,
+table#itemtabledoubleicon .dimslider {
+	width: calc(98% - 118px) !important;
+	margin-top: 12px !important;
+}
+
+body table#itemtabledoubleicon tr td:first-child + td + td + td + td + td + td{
+	font-size: 85%;
+	white-space: nowrap;
 }
 
 /* Mobile and Minimum Sizes */
@@ -335,6 +378,26 @@ body table#mobileitem tr td:first-child{
   		display: inline;
  	}
 	.navbar .nav {margin: 2px !important;}
+	#dashcontent .selectorlevels {
+		font-size: 0.8em;
+		margin-top: -25px !important;
+	}
+	.selectorlevels .ui-selectmenu-button.ui-widget {
+		font-size: 1em;
+		height: 22px;
+	}
+	.container,
+	.navbar-static-top .container,
+	.navbar-fixed-top .container,
+	.navbar-fixed-bottom .container {
+	  	width: 100% !important; 
+	}
+	[class*="span"] {
+		margin-left: 9px;
+	}
+	.span4 {
+    		width: 300px !important;
+	}
 }
 
 @media (max-width: 767px) {
@@ -343,8 +406,28 @@ body table#mobileitem tr td:first-child{
  	}
 	.navbar .nav { margin: 2px !important; }
 	#timesun { display: none; }
+	#dashcontent .selectorlevels {
+		font-size: 0.8em;
+		margin-top: -25px !important;
+	}
+	.selectorlevels .ui-selectmenu-button.ui-widget {
+		font-size: 1em;
+		height: 22px;
+	}
+	.btnstyle,
+	.btnstylerev {
+		width: 50px;
+	}
 }
+
+.mobileitem tr:hover {
+	background: 0 !important;
+}  
 
 table.mobileitem {
 	background-color: rgba(250, 250, 250, .8);
+}
+
+.mobileitem td:first-child, .mobileitem th:first-child {
+    white-space: nowrap;
 }

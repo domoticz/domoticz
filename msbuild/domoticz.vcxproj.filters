@@ -255,18 +255,994 @@
     <Filter Include="tinyxpath">
       <UniqueIdentifier>{dec41c77-32d9-454a-a9fc-a9c2de0dc4a1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="www">
+      <UniqueIdentifier>{86db03ef-13cf-48f9-8cfd-9c490e22c5d2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="www\app">
+      <UniqueIdentifier>{4add4924-dbf4-4019-9790-f5e516fd14be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="www\css">
+      <UniqueIdentifier>{1a631fae-3cdb-47eb-b94f-974acd6eb225}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="www\css\fonts">
+      <UniqueIdentifier>{36bbce18-702b-4377-bde2-a75ed6aaaf77}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="www\css\images">
+      <UniqueIdentifier>{8ba6b9d1-2817-4465-83f7-a0059229e588}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="www\css\ui-darkness">
+      <UniqueIdentifier>{e9ab47cc-b011-43e6-b7cd-fb66c019f328}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="www\css\ui-darkness\images">
+      <UniqueIdentifier>{0c42bba2-4d88-4a1d-8930-7a30eafcd3da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="www\i18n">
+      <UniqueIdentifier>{35585537-8eaf-49fb-ba77-53a12fdc0772}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="www\images">
+      <UniqueIdentifier>{b0cd330c-5946-4add-aeb7-5a3630a90506}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="www\images\evehome">
+      <UniqueIdentifier>{ace1d929-4a27-4189-a5da-dc9f55126118}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="www\images\logo">
+      <UniqueIdentifier>{b1eb8ff3-d062-42d4-b1f5-c8e83b38bbf8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="www\images\startup">
+      <UniqueIdentifier>{af164a42-2b56-4492-9d15-18c847597889}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="www\images\floorplans">
+      <UniqueIdentifier>{8ca49e6b-e8c1-4ced-9a15-7e910e113529}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="www\js">
+      <UniqueIdentifier>{24acfe60-f00f-4ffb-99f0-e6773760fca8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="www\js\ace">
+      <UniqueIdentifier>{8451afa8-f560-4cbc-b527-19a374c15629}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="www\js\modules">
+      <UniqueIdentifier>{2bbcb8e5-4dcc-48cf-90f3-aae3efe95c7a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="www\js\noty">
+      <UniqueIdentifier>{939d6c73-2d1e-4291-8797-37956c77d765}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="www\js\themes">
+      <UniqueIdentifier>{96e9ce63-4085-4d1c-b0d4-4bff94c66bbc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="www\js\ace\snippets">
+      <UniqueIdentifier>{d7c22ae8-f1f6-4950-a420-5a0bf0547e84}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="www\js\noty\themes">
+      <UniqueIdentifier>{1c67b5da-5641-414b-a1af-4ba6b019e692}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="www\js\noty\layouts">
+      <UniqueIdentifier>{286eef7c-b8e7-49d3-a4ec-8a94ebc250df}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="www\media">
+      <UniqueIdentifier>{15cf474c-b383-435d-a83d-279104a6a48c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="www\media\swf">
+      <UniqueIdentifier>{a9acb0d8-96cd-4bd1-b913-f9155d3dc02b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="www\ozwcp">
+      <UniqueIdentifier>{a1bf865b-5099-427b-9ce9-5f81372b9a2d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="www\secpanel">
+      <UniqueIdentifier>{98caa900-335e-47ad-99d3-de164664d8be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="www\secpanel\css">
+      <UniqueIdentifier>{4be708f3-9e5c-437d-9ef1-93e70ad18339}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="www\secpanel\font">
+      <UniqueIdentifier>{bdb9d0d7-143b-41b2-a7e2-666e32ca0aab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="www\secpanel\js">
+      <UniqueIdentifier>{4f97743b-f037-4ec5-bf38-96d2904d7a95}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="www\secpanel\media">
+      <UniqueIdentifier>{71830b06-5a87-4cf3-b7a6-ab7f84d1d53b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="www\styles">
+      <UniqueIdentifier>{88cfc333-a48a-4933-9205-bbd7cbac9cfe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="www\styles\default">
+      <UniqueIdentifier>{b33c9a2a-bff0-4d5c-976c-c6435fdb7d9a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="www\styles\elemental">
+      <UniqueIdentifier>{bb907c48-9ccf-426e-bcc9-4887153f6401}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="www\styles\element-dark">
+      <UniqueIdentifier>{bdb012fe-352e-4cec-96e7-00630788d43c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="www\styles\element-light">
+      <UniqueIdentifier>{5b6e0c5f-8415-4bbd-953d-b9ad8f38006d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="www\styles\simple-blue">
+      <UniqueIdentifier>{14929b1e-91c9-474e-81d0-5f50b33663cf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="www\styles\elemental\fonts">
+      <UniqueIdentifier>{710898f1-a850-4a4a-8fe2-65e8115fb077}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="www\styles\elemental\images">
+      <UniqueIdentifier>{b466424f-4109-4118-b00d-bbe5087e020f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="www\styles\element-dark\fonts">
+      <UniqueIdentifier>{1f569d11-4b0b-480b-ab99-0bde872d429b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="www\styles\element-dark\images">
+      <UniqueIdentifier>{38fb9f85-df36-43f8-951e-5f9f0faedfa2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="www\styles\element-light\fonts">
+      <UniqueIdentifier>{86bbab75-e611-4b71-a3fd-3069fa1875b8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="www\styles\element-light\images">
+      <UniqueIdentifier>{673f7ad8-f63b-4c65-9980-a291f32512fa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="www\styles\simple-gray">
+      <UniqueIdentifier>{340ba679-d398-41a5-b46e-549bf807f1d4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="www\templates">
+      <UniqueIdentifier>{272f4b0b-ae33-4cd8-abb8-b575b4d0d940}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="www\views">
+      <UniqueIdentifier>{59523cae-1093-486a-9c2b-9f939ce7e8d2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\CurrentCost">
+      <UniqueIdentifier>{44396f52-871f-4e10-831e-2ddeb202fbbd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\Panasonic">
+      <UniqueIdentifier>{6f61ac8c-0b97-4506-aac7-fdf909d0b54f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
       <Filter>crosscompile</Filter>
     </None>
-    <None Include="..\INSTALL.txt" />
-    <None Include="..\History.txt" />
     <None Include="..\getsvn.cmake">
       <Filter>crosscompile</Filter>
     </None>
     <None Include="domoticz.ico">
       <Filter>Windows</Filter>
+    </None>
+    <None Include="..\www\zwavetopology.html">
+      <Filter>www</Filter>
+    </None>
+    <None Include="..\www\eventsframe.html">
+      <Filter>www</Filter>
+    </None>
+    <None Include="..\www\html5.appcache">
+      <Filter>www</Filter>
+    </None>
+    <None Include="..\www\index.html">
+      <Filter>www</Filter>
+    </None>
+    <None Include="..\www\app\DPHttpController.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\app\EventsController.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\app\FloorplanController.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\app\FloorplanEditController.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\app\ForecastController.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\app\FrontpageController.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\app\HardwareController.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\app\HistoryController.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\app\LightsController.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\app\LogController.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\app\LoginController.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\app\LogoutController.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\app\main.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\app\NotificationController.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\app\OfflineController.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\app\RestoreDatabaseController.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\app\RFXComFirmwareController.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\app\RoomplanController.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\app\ScenesController.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\app\SetupController.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\app\TemperatureController.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\app\UpdateController.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\app\UsersController.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\app\UserVariablesController.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\app\UtilityController.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\app\WeatherController.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\app\ZWaveTopologyController.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\app\AboutController.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\app\app.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\app\CamController.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\app\CustomIconsController.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\app\DashboardController.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\app\DevicesController.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\app\DPFibaroController.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\css\style.css">
+      <Filter>www\css</Filter>
+    </None>
+    <None Include="..\www\css\bootstrap.css">
+      <Filter>www\css</Filter>
+    </None>
+    <None Include="..\www\css\bootstrap-responsive.css">
+      <Filter>www\css</Filter>
+    </None>
+    <None Include="..\www\css\colpick.css">
+      <Filter>www\css</Filter>
+    </None>
+    <None Include="..\www\css\demo_table_jui.css">
+      <Filter>www\css</Filter>
+    </None>
+    <None Include="..\www\css\jquery.dataTables.min.css">
+      <Filter>www\css</Filter>
+    </None>
+    <None Include="..\www\css\jquery.uix.multiselect.css">
+      <Filter>www\css</Filter>
+    </None>
+    <None Include="..\www\css\jquery-ui-timepicker-addon.css">
+      <Filter>www\css</Filter>
+    </None>
+    <None Include="..\www\css\remote.css">
+      <Filter>www\css</Filter>
+    </None>
+    <None Include="..\www\css\fonts\Oswald-Light.eot">
+      <Filter>www\css\fonts</Filter>
+    </None>
+    <None Include="..\www\css\fonts\Oswald-Regular.eot">
+      <Filter>www\css\fonts</Filter>
+    </None>
+    <None Include="..\www\css\fonts\Satisfy.eot">
+      <Filter>www\css\fonts</Filter>
+    </None>
+    <None Include="..\www\css\ui-darkness\jquery-ui.min.css">
+      <Filter>www\css\ui-darkness</Filter>
+    </None>
+    <None Include="..\www\i18n\domoticz-ca.json.gz">
+      <Filter>www\i18n</Filter>
+    </None>
+    <None Include="..\www\i18n\domoticz-cs.json.gz">
+      <Filter>www\i18n</Filter>
+    </None>
+    <None Include="..\www\i18n\domoticz-da.json.gz">
+      <Filter>www\i18n</Filter>
+    </None>
+    <None Include="..\www\i18n\domoticz-de.json.gz">
+      <Filter>www\i18n</Filter>
+    </None>
+    <None Include="..\www\i18n\domoticz-el.json.gz">
+      <Filter>www\i18n</Filter>
+    </None>
+    <None Include="..\www\i18n\domoticz-en.json.gz">
+      <Filter>www\i18n</Filter>
+    </None>
+    <None Include="..\www\i18n\domoticz-es.json.gz">
+      <Filter>www\i18n</Filter>
+    </None>
+    <None Include="..\www\i18n\domoticz-fi.json.gz">
+      <Filter>www\i18n</Filter>
+    </None>
+    <None Include="..\www\i18n\domoticz-fr.json.gz">
+      <Filter>www\i18n</Filter>
+    </None>
+    <None Include="..\www\i18n\domoticz-he.json.gz">
+      <Filter>www\i18n</Filter>
+    </None>
+    <None Include="..\www\i18n\domoticz-hu.json.gz">
+      <Filter>www\i18n</Filter>
+    </None>
+    <None Include="..\www\i18n\domoticz-is.json.gz">
+      <Filter>www\i18n</Filter>
+    </None>
+    <None Include="..\www\i18n\domoticz-it.json.gz">
+      <Filter>www\i18n</Filter>
+    </None>
+    <None Include="..\www\i18n\domoticz-lt.json.gz">
+      <Filter>www\i18n</Filter>
+    </None>
+    <None Include="..\www\i18n\domoticz-mk.json.gz">
+      <Filter>www\i18n</Filter>
+    </None>
+    <None Include="..\www\i18n\domoticz-nl.json.gz">
+      <Filter>www\i18n</Filter>
+    </None>
+    <None Include="..\www\i18n\domoticz-no.json.gz">
+      <Filter>www\i18n</Filter>
+    </None>
+    <None Include="..\www\i18n\domoticz-pl.json.gz">
+      <Filter>www\i18n</Filter>
+    </None>
+    <None Include="..\www\i18n\domoticz-pt.json.gz">
+      <Filter>www\i18n</Filter>
+    </None>
+    <None Include="..\www\i18n\domoticz-ru.json.gz">
+      <Filter>www\i18n</Filter>
+    </None>
+    <None Include="..\www\i18n\domoticz-sk.json.gz">
+      <Filter>www\i18n</Filter>
+    </None>
+    <None Include="..\www\i18n\domoticz-sl.json.gz">
+      <Filter>www\i18n</Filter>
+    </None>
+    <None Include="..\www\i18n\domoticz-sr.json.gz">
+      <Filter>www\i18n</Filter>
+    </None>
+    <None Include="..\www\i18n\domoticz-sv.json.gz">
+      <Filter>www\i18n</Filter>
+    </None>
+    <None Include="..\www\i18n\domoticz-th.json.gz">
+      <Filter>www\i18n</Filter>
+    </None>
+    <None Include="..\www\i18n\domoticz-tr.json.gz">
+      <Filter>www\i18n</Filter>
+    </None>
+    <None Include="..\www\i18n\domoticz-uk.json.gz">
+      <Filter>www\i18n</Filter>
+    </None>
+    <None Include="..\www\i18n\domoticz-ar.json.gz">
+      <Filter>www\i18n</Filter>
+    </None>
+    <None Include="..\www\i18n\domoticz-bg.json.gz">
+      <Filter>www\i18n</Filter>
+    </None>
+    <None Include="..\www\js\ZeroClipboard.js.gz">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\angular.min.js.gz">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\angularAMD.min.js.gz">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\angular-animate.min.js.gz">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\angular-md5-min.js.gz">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\angular-round-progress-directive.js.gz">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\angular-route.min.js.gz">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\angular-sanitize.min.js.gz">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\angular-scrollglue.js.gz">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\angular-tree-control.js.gz">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\blockly_compressed.js.gz">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\bootbox.min.js.gz">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\bootstrap.min.js.gz">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\colpick.js.gz">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\d3.min.js.gz">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\dataTables.tableTools.min.js.gz">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\date.format.js.gz">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\domoticz.js.gz">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\domoticzblocks.js.gz">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\domoticzblocks_messages_en.js.gz">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\domoticzdevices.js.gz">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\en_compressed.js.gz">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\export-csv.js.gz">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\FileSaver.js.gz">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\highcharts.js.gz">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\highcharts-more.js.gz">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\highcharts-ng.min.js.gz">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\html5shiv.js.gz">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\i18next-1.8.0.min.js.gz">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\jquery.dataTables.min.js.gz">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\jquery.ddslick.min.js.gz">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\jquery.isotope.min.js.gz">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\jquery.jeditable.mini.js.gz">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\jquery.ui.touch-punch.min.js.gz">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\jquery.uix.multiselect.min.js.gz">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\jquery-1.12.0.min.js.gz">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\jquery-migrate-1.2.1.min.js.gz">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\jquery-ui.min.js.gz">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\jquery-ui-timepicker-addon.js.gz">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\md5.js.gz">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\ngDraggable.js.gz">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\ng-grid.min.js.gz">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\ng-grid-flexible-height.js.gz">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\ngload.min.js.gz">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\require.js.gz">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\respond.min.js.gz">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\ui-bootstrap.min.js.gz">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\wow.min.js.gz">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\ace\worker-lua.js.gz">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\ace.js.gz">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\ext-beautify.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\ext-chromevox.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\ext-elastic_tabstops_lite.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\ext-emmet.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\ext-error_marker.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\ext-keybinding_menu.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\ext-language_tools.js.gz">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\ext-linking.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\ext-modelist.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\ext-old_ie.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\ext-searchbox.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\ext-settings_menu.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\ext-spellcheck.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\ext-split.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\ext-static_highlight.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\ext-statusbar.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\ext-textarea.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\ext-themelist.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\ext-whitespace.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\keybinding-emacs.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\keybinding-vim.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\LICENSE">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\mode-lua.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\mode-python.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\README.md">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\theme-ambiance.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\theme-chaos.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\theme-chrome.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\theme-clouds.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\theme-clouds_midnight.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\theme-cobalt.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\theme-crimson_editor.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\theme-dawn.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\theme-dreamweaver.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\theme-eclipse.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\theme-github.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\theme-idle_fingers.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\theme-iplastic.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\theme-katzenmilch.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\theme-kr_theme.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\theme-kuroir.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\theme-merbivore.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\theme-merbivore_soft.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\theme-mono_industrial.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\theme-monokai.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\theme-pastel_on_dark.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\theme-solarized_dark.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\theme-solarized_light.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\theme-sqlserver.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\theme-terminal.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\theme-textmate.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\theme-tomorrow.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\theme-tomorrow_night.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\theme-tomorrow_night_blue.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\theme-tomorrow_night_bright.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\theme-tomorrow_night_eighties.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\theme-twilight.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\theme-vibrant_ink.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\theme-xcode.js">
+      <Filter>www\js\ace</Filter>
+    </None>
+    <None Include="..\www\js\ace\snippets\lua.js">
+      <Filter>www\js\ace\snippets</Filter>
+    </None>
+    <None Include="..\www\js\ace\snippets\python.js">
+      <Filter>www\js\ace\snippets</Filter>
+    </None>
+    <None Include="..\www\js\ace\snippets\text.js">
+      <Filter>www\js\ace\snippets</Filter>
+    </None>
+    <None Include="..\www\js\modules\exporting.js.gz">
+      <Filter>www\js\modules</Filter>
+    </None>
+    <None Include="..\www\js\themes\grid.js.gz">
+      <Filter>www\js\themes</Filter>
+    </None>
+    <None Include="..\www\js\themes\skies.js.gz">
+      <Filter>www\js\themes</Filter>
+    </None>
+    <None Include="..\www\js\themes\dark-blue.js.gz">
+      <Filter>www\js\themes</Filter>
+    </None>
+    <None Include="..\www\js\themes\dark-green.js.gz">
+      <Filter>www\js\themes</Filter>
+    </None>
+    <None Include="..\www\js\themes\gray.js.gz">
+      <Filter>www\js\themes</Filter>
+    </None>
+    <None Include="..\www\js\noty\promise.js.gz">
+      <Filter>www\js\noty</Filter>
+    </None>
+    <None Include="..\www\js\noty\jquery.noty.js.gz">
+      <Filter>www\js\noty</Filter>
+    </None>
+    <None Include="..\www\js\noty\layouts\bottom.js.gz">
+      <Filter>www\js\noty\layouts</Filter>
+    </None>
+    <None Include="..\www\js\noty\layouts\bottomCenter.js.gz">
+      <Filter>www\js\noty\layouts</Filter>
+    </None>
+    <None Include="..\www\js\noty\layouts\bottomLeft.js.gz">
+      <Filter>www\js\noty\layouts</Filter>
+    </None>
+    <None Include="..\www\js\noty\layouts\bottomRight.js.gz">
+      <Filter>www\js\noty\layouts</Filter>
+    </None>
+    <None Include="..\www\js\noty\layouts\center.js.gz">
+      <Filter>www\js\noty\layouts</Filter>
+    </None>
+    <None Include="..\www\js\noty\layouts\centerLeft.js.gz">
+      <Filter>www\js\noty\layouts</Filter>
+    </None>
+    <None Include="..\www\js\noty\layouts\centerRight.js.gz">
+      <Filter>www\js\noty\layouts</Filter>
+    </None>
+    <None Include="..\www\js\noty\layouts\inline.js.gz">
+      <Filter>www\js\noty\layouts</Filter>
+    </None>
+    <None Include="..\www\js\noty\layouts\top.js.gz">
+      <Filter>www\js\noty\layouts</Filter>
+    </None>
+    <None Include="..\www\js\noty\layouts\topCenter.js.gz">
+      <Filter>www\js\noty\layouts</Filter>
+    </None>
+    <None Include="..\www\js\noty\layouts\topLeft.js.gz">
+      <Filter>www\js\noty\layouts</Filter>
+    </None>
+    <None Include="..\www\js\noty\layouts\topRight.js.gz">
+      <Filter>www\js\noty\layouts</Filter>
+    </None>
+    <None Include="..\www\js\noty\themes\default.js.gz">
+      <Filter>www\js\noty\themes</Filter>
+    </None>
+    <None Include="..\www\media\handclosed.cur">
+      <Filter>www\media</Filter>
+    </None>
+    <None Include="..\www\media\handopen.cur">
+      <Filter>www\media</Filter>
+    </None>
+    <None Include="..\www\media\swf\copy_csv_xls.swf">
+      <Filter>www\media\swf</Filter>
+    </None>
+    <None Include="..\www\media\swf\copy_csv_xls_pdf.swf">
+      <Filter>www\media\swf</Filter>
+    </None>
+    <None Include="..\www\ozwcp\cp.html">
+      <Filter>www\ozwcp</Filter>
+    </None>
+    <None Include="..\www\ozwcp\cp.js">
+      <Filter>www\ozwcp</Filter>
+    </None>
+    <None Include="..\www\ozwcp\ozwcp.html">
+      <Filter>www\ozwcp</Filter>
+    </None>
+    <None Include="..\www\secpanel\index.html">
+      <Filter>www\secpanel</Filter>
+    </None>
+    <None Include="..\www\secpanel\css\font.less">
+      <Filter>www\secpanel\css</Filter>
+    </None>
+    <None Include="..\www\secpanel\css\reset.less">
+      <Filter>www\secpanel\css</Filter>
+    </None>
+    <None Include="..\www\secpanel\css\style.less">
+      <Filter>www\secpanel\css</Filter>
+    </None>
+    <None Include="..\www\secpanel\font\Audiowide.eot">
+      <Filter>www\secpanel\font</Filter>
+    </None>
+    <None Include="..\www\secpanel\font\Audiowide.svg">
+      <Filter>www\secpanel\font</Filter>
+    </None>
+    <None Include="..\www\secpanel\font\Audiowide.woff">
+      <Filter>www\secpanel\font</Filter>
+    </None>
+    <None Include="..\www\secpanel\font\Digital.eot">
+      <Filter>www\secpanel\font</Filter>
+    </None>
+    <None Include="..\www\secpanel\font\Digital.svg">
+      <Filter>www\secpanel\font</Filter>
+    </None>
+    <None Include="..\www\secpanel\font\Digital.woff">
+      <Filter>www\secpanel\font</Filter>
+    </None>
+    <None Include="..\www\secpanel\js\ion.sound.min.js.gz">
+      <Filter>www\secpanel\js</Filter>
+    </None>
+    <None Include="..\www\secpanel\js\less.js.gz">
+      <Filter>www\secpanel\js</Filter>
+    </None>
+    <None Include="..\www\secpanel\media\arm.aac">
+      <Filter>www\secpanel\media</Filter>
+    </None>
+    <None Include="..\www\secpanel\media\arm.ogg">
+      <Filter>www\secpanel\media</Filter>
+    </None>
+    <None Include="..\www\secpanel\media\disarm.aac">
+      <Filter>www\secpanel\media</Filter>
+    </None>
+    <None Include="..\www\secpanel\media\disarm.ogg">
+      <Filter>www\secpanel\media</Filter>
+    </None>
+    <None Include="..\www\secpanel\media\key.aac">
+      <Filter>www\secpanel\media</Filter>
+    </None>
+    <None Include="..\www\secpanel\media\key.ogg">
+      <Filter>www\secpanel\media</Filter>
+    </None>
+    <None Include="..\www\secpanel\media\wrongcode.aac">
+      <Filter>www\secpanel\media</Filter>
+    </None>
+    <None Include="..\www\secpanel\media\wrongcode.ogg">
+      <Filter>www\secpanel\media</Filter>
+    </None>
+    <None Include="..\www\styles\default\custom.css">
+      <Filter>www\styles\default</Filter>
+    </None>
+    <None Include="..\www\styles\elemental\custom.css">
+      <Filter>www\styles\elemental</Filter>
+    </None>
+    <None Include="..\www\styles\element-dark\custom.css">
+      <Filter>www\styles\element-dark</Filter>
+    </None>
+    <None Include="..\www\styles\element-light\custom.css">
+      <Filter>www\styles\element-light</Filter>
+    </None>
+    <None Include="..\www\styles\simple-gray\custom.css">
+      <Filter>www\styles\simple-gray</Filter>
+    </None>
+    <None Include="..\www\styles\simple-blue\custom.css">
+      <Filter>www\styles\simple-blue</Filter>
+    </None>
+    <None Include="..\www\templates\custom.example">
+      <Filter>www\templates</Filter>
+    </None>
+    <None Include="..\www\views\forecast.html">
+      <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\views\frontpage.html">
+      <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\views\frontpage_example.html">
+      <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\views\hardware.html">
+      <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\views\history.html">
+      <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\views\lights.html">
+      <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\views\lights_bak.html">
+      <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\views\log.html">
+      <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\views\login.html">
+      <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\views\logout.html">
+      <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\views\notification.html">
+      <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\views\offline.html">
+      <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\views\restoredatabase.html">
+      <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\views\rfxcomfirmware.html">
+      <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\views\roomplan.html">
+      <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\views\scenes.html">
+      <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\views\setup.html">
+      <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\views\temperature.html">
+      <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\views\update.html">
+      <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\views\users.html">
+      <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\views\uservariables.html">
+      <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\views\utility.html">
+      <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\views\weather.html">
+      <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\views\about.html">
+      <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\views\cam.html">
+      <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\views\customicons.html">
+      <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\views\dashboard.html">
+      <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\views\devices.html">
+      <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\views\dpfibaro.html">
+      <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\views\dphttp.html">
+      <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\views\events.html">
+      <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\views\floorplanedit.html">
+      <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\views\floorplans.html">
+      <Filter>www\views</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -795,17 +1771,23 @@
     <ClInclude Include="..\hardware\SolarEdgeAPI.h">
       <Filter>Devices\SolarEdge</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\CurrentCostMeterBase.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\CurrentCostMeterSerial.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\CurrentCostMeterTCP.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\NefitEasy.h">
       <Filter>Devices\Nefit-Easy</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\CurrentCostMeterBase.h">
+      <Filter>Devices\CurrentCost</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\CurrentCostMeterTCP.h">
+      <Filter>Devices\CurrentCost</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\CurrentCostMeterSerial.h">
+      <Filter>Devices\CurrentCost</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\NefitEasy.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\PanasonicTV.h">
+      <Filter>Devices\Panasonic</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1277,70 +2259,1236 @@
     <ClCompile Include="..\hardware\SolarEdgeAPI.cpp">
       <Filter>Devices\SolarEdge</Filter>
     </ClCompile>
-    <ClCompile Include="..\hardware\CurrentCostMeterBase.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\CurrentCostMeterSerial.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\CurrentCostMeterTCP.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\hardware\NefitEasy.cpp">
-      <Filter>Devices\Nefit-Easy</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\tinyxpath\action_store.cpp">
-      <Filter>tinyxpath</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\tinyxpath\htmlutil.cpp">
-      <Filter>tinyxpath</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\tinyxpath\lex_util.cpp">
-      <Filter>tinyxpath</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\tinyxpath\node_set.cpp">
-      <Filter>tinyxpath</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\tinyxpath\tinystr.cpp">
-      <Filter>tinyxpath</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\tinyxpath\tinyxml.cpp">
-      <Filter>tinyxpath</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\tinyxpath\tinyxmlerror.cpp">
-      <Filter>tinyxpath</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\tinyxpath\tinyxmlparser.cpp">
-      <Filter>tinyxpath</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\tinyxpath\tokenlist.cpp">
-      <Filter>tinyxpath</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\tinyxpath\xml_util.cpp">
-      <Filter>tinyxpath</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\tinyxpath\xpath_expression.cpp">
-      <Filter>tinyxpath</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\tinyxpath\xpath_processor.cpp">
-      <Filter>tinyxpath</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\tinyxpath\xpath_stack.cpp">
-      <Filter>tinyxpath</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\tinyxpath\xpath_static.cpp">
-      <Filter>tinyxpath</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\tinyxpath\xpath_stream.cpp">
-      <Filter>tinyxpath</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\tinyxpath\xpath_syntax.cpp">
-      <Filter>tinyxpath</Filter>
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\PanasonicTV.cpp">
+      <Filter>Devices\Panasonic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\CurrentCostMeterBase.cpp">
+      <Filter>Devices\CurrentCost</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\CurrentCostMeterSerial.cpp">
+      <Filter>Devices\CurrentCost</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\CurrentCostMeterTCP.cpp">
+      <Filter>Devices\CurrentCost</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="domoticz.rc">
       <Filter>Windows</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\www\favicon.ico">
+      <Filter>www</Filter>
+    </Image>
+    <Image Include="..\www\css\images\img10.png">
+      <Filter>www\css\images</Filter>
+    </Image>
+    <Image Include="..\www\css\images\img11.jpg">
+      <Filter>www\css\images</Filter>
+    </Image>
+    <Image Include="..\www\css\images\img12.jpg">
+      <Filter>www\css\images</Filter>
+    </Image>
+    <Image Include="..\www\css\images\img12.png">
+      <Filter>www\css\images</Filter>
+    </Image>
+    <Image Include="..\www\css\images\img13.jpg">
+      <Filter>www\css\images</Filter>
+    </Image>
+    <Image Include="..\www\css\images\spacer.gif">
+      <Filter>www\css\images</Filter>
+    </Image>
+    <Image Include="..\www\css\images\bg-track.png">
+      <Filter>www\css\images</Filter>
+    </Image>
+    <Image Include="..\www\css\images\close.png">
+      <Filter>www\css\images</Filter>
+    </Image>
+    <Image Include="..\www\css\images\handle.png">
+      <Filter>www\css\images</Filter>
+    </Image>
+    <Image Include="..\www\css\images\img01.jpg">
+      <Filter>www\css\images</Filter>
+    </Image>
+    <Image Include="..\www\css\images\img01a.jpg">
+      <Filter>www\css\images</Filter>
+    </Image>
+    <Image Include="..\www\css\images\img02.jpg">
+      <Filter>www\css\images</Filter>
+    </Image>
+    <Image Include="..\www\css\images\img03.jpg">
+      <Filter>www\css\images</Filter>
+    </Image>
+    <Image Include="..\www\css\images\img03b.jpg">
+      <Filter>www\css\images</Filter>
+    </Image>
+    <Image Include="..\www\css\images\img03bd.png">
+      <Filter>www\css\images</Filter>
+    </Image>
+    <Image Include="..\www\css\images\img03bs.jpg">
+      <Filter>www\css\images</Filter>
+    </Image>
+    <Image Include="..\www\css\images\img03r.jpg">
+      <Filter>www\css\images</Filter>
+    </Image>
+    <Image Include="..\www\css\images\img03s.jpg">
+      <Filter>www\css\images</Filter>
+    </Image>
+    <Image Include="..\www\css\images\img04.png">
+      <Filter>www\css\images</Filter>
+    </Image>
+    <Image Include="..\www\css\images\img05.png">
+      <Filter>www\css\images</Filter>
+    </Image>
+    <Image Include="..\www\css\images\img06.png">
+      <Filter>www\css\images</Filter>
+    </Image>
+    <Image Include="..\www\css\images\img07.png">
+      <Filter>www\css\images</Filter>
+    </Image>
+    <Image Include="..\www\css\images\img08.jpg">
+      <Filter>www\css\images</Filter>
+    </Image>
+    <Image Include="..\www\css\images\img09.png">
+      <Filter>www\css\images</Filter>
+    </Image>
+    <Image Include="..\www\css\ui-darkness\images\animated-overlay.gif">
+      <Filter>www\css\ui-darkness\images</Filter>
+    </Image>
+    <Image Include="..\www\css\ui-darkness\images\ui-bg_flat_30_cccccc_40x100.png">
+      <Filter>www\css\ui-darkness\images</Filter>
+    </Image>
+    <Image Include="..\www\css\ui-darkness\images\ui-bg_flat_50_5c5c5c_40x100.png">
+      <Filter>www\css\ui-darkness\images</Filter>
+    </Image>
+    <Image Include="..\www\css\ui-darkness\images\ui-bg_glass_20_555555_1x400.png">
+      <Filter>www\css\ui-darkness\images</Filter>
+    </Image>
+    <Image Include="..\www\css\ui-darkness\images\ui-bg_glass_40_0078a3_1x400.png">
+      <Filter>www\css\ui-darkness\images</Filter>
+    </Image>
+    <Image Include="..\www\css\ui-darkness\images\ui-bg_glass_40_ffc73d_1x400.png">
+      <Filter>www\css\ui-darkness\images</Filter>
+    </Image>
+    <Image Include="..\www\css\ui-darkness\images\ui-bg_gloss-wave_25_333333_500x100.png">
+      <Filter>www\css\ui-darkness\images</Filter>
+    </Image>
+    <Image Include="..\www\css\ui-darkness\images\ui-bg_highlight-soft_80_eeeeee_1x100.png">
+      <Filter>www\css\ui-darkness\images</Filter>
+    </Image>
+    <Image Include="..\www\css\ui-darkness\images\ui-bg_inset-soft_25_000000_1x100.png">
+      <Filter>www\css\ui-darkness\images</Filter>
+    </Image>
+    <Image Include="..\www\css\ui-darkness\images\ui-bg_inset-soft_30_f58400_1x100.png">
+      <Filter>www\css\ui-darkness\images</Filter>
+    </Image>
+    <Image Include="..\www\css\ui-darkness\images\ui-icons_4b8e0b_256x240.png">
+      <Filter>www\css\ui-darkness\images</Filter>
+    </Image>
+    <Image Include="..\www\css\ui-darkness\images\ui-icons_222222_256x240.png">
+      <Filter>www\css\ui-darkness\images</Filter>
+    </Image>
+    <Image Include="..\www\css\ui-darkness\images\ui-icons_a83300_256x240.png">
+      <Filter>www\css\ui-darkness\images</Filter>
+    </Image>
+    <Image Include="..\www\css\ui-darkness\images\ui-icons_cccccc_256x240.png">
+      <Filter>www\css\ui-darkness\images</Filter>
+    </Image>
+    <Image Include="..\www\css\ui-darkness\images\ui-icons_ffffff_256x240.png">
+      <Filter>www\css\ui-darkness\images</Filter>
+    </Image>
+    <Image Include="..\www\images\about.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\add.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\adjust48.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\air.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\air_signal.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\air48.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Alarm.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Alarm48_Off.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Alarm48_On.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Alert.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Alert48_0.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Alert48_1.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Alert48_2.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Alert48_3.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Alert48_4.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Amplifier.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Amplifier48_Off.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Amplifier48_On.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\back_disabled.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\back_enabled.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\back_enabled_hover.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\background.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\baro48.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\battery.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\battery-low.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\battery-ok.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\bbq.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\blinds.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\blinds48.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\blinds48sel.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\blindsopen48.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\blindsopen48sel.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\blindsstop.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\button.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\camera_default.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\camera-web.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\capture.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\ChristmasTree.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\ChristmasTree48_Off.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\ChristmasTree48_On.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\clock.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\clock48.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\collection.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\collection_hover.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Computer.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Computer48_Off.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Computer48_On.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\ComputerPC.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\ComputerPC48_Off.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\ComputerPC48_On.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\contact.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\contact_open.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\contact48.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\contact48_open.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Cooling.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Cooling48_Off.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Cooling48_On.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\copy.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\copy_hover.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\counter.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Counter48.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\csv.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\csv_hover.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\current.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\current48.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\customicons.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\delete.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\demand.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\demand_mini.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\desktop.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\details.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\devices.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Dimmer48_Off.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Dimmer48_On.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\door.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\door48.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\door48open.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\doorbell.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\doorbell48.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\down.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Down48.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Down48_2.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\edit.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\empty16.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\equal.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\events.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\expand16.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\failed.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Fan.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Fan48_Off.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Fan48_On.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\favorite.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Fireplace.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Fireplace48_Off.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Fireplace48_On.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\forward_disabled.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\forward_enabled.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\forward_enabled_hover.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Gas48.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\gauge.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\gauge48.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Generic.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Generic48_Off.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Generic48_On.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\glyphicons-halflings.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\glyphicons-halflings-white.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\handle.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Harddisk.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Harddisk48_Off.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Harddisk48_On.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\hardware.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\heal.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Heating.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Heating48_Off.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Heating48_On.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\hold.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\hold_mini.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\house.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\ice.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\insert.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\iphone-icon.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\leaf.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\leaf48.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Light48_Off.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Light48_On.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\lightbulb.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\lightbulboff.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\lock_closed.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\lock_open.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\log.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\login-sprite.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\LogitechMediaServer.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\LogitechMediaServer48_Off.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\LogitechMediaServer48_On.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\logo.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\logo192.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\logout.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\lux.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\lux48.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Media.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Media48_Off.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Media48_On.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\mode.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\mode48.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\moisture.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\moisture48.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\motion.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\motion48-off.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\motion48-on.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\motionoff.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\nebula.jpg">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\next.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\nodemand.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\nodemand_mini.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\nofavorite.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\notification.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\off.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\ok.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\on.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\onoff48.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\override.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\override_mini.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\overrule.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\overrule_mini.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\pdf.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\pdf_hover.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Percentage48.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Phone.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Phone48_Off.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Phone48_On.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\print.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\print_hover.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Printer.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Printer48_Off.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Printer48_On.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\program.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\program_mini.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\proxy.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\push.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\push48.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\pushoff.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\pushoff48.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\pushon.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\pushon48.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\PV48.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\radiation.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\radiation48.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\rain.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\rain48.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\rainraining.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\remote.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\remote48.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\remove.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\rename.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\restart.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\RGB.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\RGB48_Off.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\RGB48_On.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\scale.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\scale48.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\scenes.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\security.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\security48.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\setup.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\shutdown.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\siren.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\siren-off.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\siren-on.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\sleep.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\smoke.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\smoke48off.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\smoke48on.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\smokeoff.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\sort_asc.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\sort_asc_disabled.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\sort_both.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\sort_desc.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\sort_desc_disabled.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Speaker.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Speaker48_Off.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Speaker48_On.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Stop48.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\switch.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\temp-0-5.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\temp-5-10.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\temp-10-15.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\temp-15-20.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\temp-20-25.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\temp-25-30.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\temp48.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\temperature.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\temp-gt-30.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\text.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\text48.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\TV.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\TV48_Off.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\TV48_On.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\unknown.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\up.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Up48.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Up48_2.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\users.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\utility.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\uv.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\uv48.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\uvdark.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\uvsunny.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\variables.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\visibility.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\visibility48.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\WallSocket.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\WallSocket48_Off.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\WallSocket48_On.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Water.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Water48_Off.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Water48_On.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\webcam.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\wind.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\Wind0.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\wind48.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\WindE.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\WindENE.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\WindESE.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\WindN.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\WindNE.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\WindNNE.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\WindNNW.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\WindNW.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\WindS.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\WindSE.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\WindSSE.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\WindSSW.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\WindSW.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\WindW.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\WindWNW.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\WindWSW.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\xls.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\xls_hover.png">
+      <Filter>www\images</Filter>
+    </Image>
+    <Image Include="..\www\images\evohome\Auto.png">
+      <Filter>www\images\evehome</Filter>
+    </Image>
+    <Image Include="..\www\images\evohome\AutoWithEco.png">
+      <Filter>www\images\evehome</Filter>
+    </Image>
+    <Image Include="..\www\images\evohome\AutoWithEcoInv.png">
+      <Filter>www\images\evehome</Filter>
+    </Image>
+    <Image Include="..\www\images\evohome\Away.png">
+      <Filter>www\images\evehome</Filter>
+    </Image>
+    <Image Include="..\www\images\evohome\AwayInv.png">
+      <Filter>www\images\evehome</Filter>
+    </Image>
+    <Image Include="..\www\images\evohome\Custom.png">
+      <Filter>www\images\evehome</Filter>
+    </Image>
+    <Image Include="..\www\images\evohome\CustomInv.png">
+      <Filter>www\images\evehome</Filter>
+    </Image>
+    <Image Include="..\www\images\evohome\DayOff.png">
+      <Filter>www\images\evehome</Filter>
+    </Image>
+    <Image Include="..\www\images\evohome\DayOffInv.png">
+      <Filter>www\images\evehome</Filter>
+    </Image>
+    <Image Include="..\www\images\evohome\HeatingOff.png">
+      <Filter>www\images\evehome</Filter>
+    </Image>
+    <Image Include="..\www\images\evohome\HeatingOffInv.png">
+      <Filter>www\images\evehome</Filter>
+    </Image>
+    <Image Include="..\www\images\evohome\Off.png">
+      <Filter>www\images\evehome</Filter>
+    </Image>
+    <Image Include="..\www\images\evohome\On.png">
+      <Filter>www\images\evehome</Filter>
+    </Image>
+    <Image Include="..\www\images\evohome\OpenWindow.png">
+      <Filter>www\images\evehome</Filter>
+    </Image>
+    <Image Include="..\www\images\evohome\PermanentOverride.png">
+      <Filter>www\images\evehome</Filter>
+    </Image>
+    <Image Include="..\www\images\evohome\PermanentOverrideInv.png">
+      <Filter>www\images\evehome</Filter>
+    </Image>
+    <Image Include="..\www\images\evohome\RemoteOverride.png">
+      <Filter>www\images\evehome</Filter>
+    </Image>
+    <Image Include="..\www\images\evohome\RemoteOverrideInv.png">
+      <Filter>www\images\evehome</Filter>
+    </Image>
+    <Image Include="..\www\images\evohome\TemporaryOverride.png">
+      <Filter>www\images\evehome</Filter>
+    </Image>
+    <Image Include="..\www\images\evohome\TemporaryOverrideInv.png">
+      <Filter>www\images\evehome</Filter>
+    </Image>
+    <Image Include="..\www\images\floorplans\example.jpg">
+      <Filter>www\images\floorplans</Filter>
+    </Image>
+    <Image Include="..\www\images\logo\57.png">
+      <Filter>www\images\logo</Filter>
+    </Image>
+    <Image Include="..\www\images\logo\72.png">
+      <Filter>www\images\logo</Filter>
+    </Image>
+    <Image Include="..\www\images\logo\76.png">
+      <Filter>www\images\logo</Filter>
+    </Image>
+    <Image Include="..\www\images\logo\114.png">
+      <Filter>www\images\logo</Filter>
+    </Image>
+    <Image Include="..\www\images\logo\144.png">
+      <Filter>www\images\logo</Filter>
+    </Image>
+    <Image Include="..\www\images\logo\152.png">
+      <Filter>www\images\logo</Filter>
+    </Image>
+    <Image Include="..\www\images\logo\180.png">
+      <Filter>www\images\logo</Filter>
+    </Image>
+    <Image Include="..\www\images\startup\apple-touch-startup-image-320x460.png">
+      <Filter>www\images\startup</Filter>
+    </Image>
+    <Image Include="..\www\images\startup\apple-touch-startup-image-640x920.png">
+      <Filter>www\images\startup</Filter>
+    </Image>
+    <Image Include="..\www\images\startup\apple-touch-startup-image-640x1096.png">
+      <Filter>www\images\startup</Filter>
+    </Image>
+    <Image Include="..\www\images\startup\apple-touch-startup-image-750x1294.png">
+      <Filter>www\images\startup</Filter>
+    </Image>
+    <Image Include="..\www\images\startup\apple-touch-startup-image-768x1004.png">
+      <Filter>www\images\startup</Filter>
+    </Image>
+    <Image Include="..\www\images\startup\apple-touch-startup-image-1024x748.png">
+      <Filter>www\images\startup</Filter>
+    </Image>
+    <Image Include="..\www\images\startup\apple-touch-startup-image-1242x2148.png">
+      <Filter>www\images\startup</Filter>
+    </Image>
+    <Image Include="..\www\images\startup\apple-touch-startup-image-1536x2008.png">
+      <Filter>www\images\startup</Filter>
+    </Image>
+    <Image Include="..\www\images\startup\apple-touch-startup-image-2048x1496.png">
+      <Filter>www\images\startup</Filter>
+    </Image>
+    <Image Include="..\www\images\startup\apple-touch-startup-image-2208x1182.png">
+      <Filter>www\images\startup</Filter>
+    </Image>
+    <Image Include="..\www\media\tree.png">
+      <Filter>www\media</Filter>
+    </Image>
+    <Image Include="..\www\media\1x1.gif">
+      <Filter>www\media</Filter>
+    </Image>
+    <Image Include="..\www\media\quote0.png">
+      <Filter>www\media</Filter>
+    </Image>
+    <Image Include="..\www\media\quote1.png">
+      <Filter>www\media</Filter>
+    </Image>
+    <Image Include="..\www\media\trashbody.png">
+      <Filter>www\media</Filter>
+    </Image>
+    <Image Include="..\www\media\trashlid.png">
+      <Filter>www\media</Filter>
+    </Image>
+    <Image Include="..\www\secpanel\bg.jpg">
+      <Filter>www\secpanel</Filter>
+    </Image>
+    <Image Include="..\www\styles\elemental\images\imgbg.jpg">
+      <Filter>www\styles\elemental\images</Filter>
+    </Image>
+    <Image Include="..\www\styles\element-dark\images\imgbg.jpg">
+      <Filter>www\styles\element-dark\images</Filter>
+    </Image>
+    <Image Include="..\www\styles\element-light\images\imgbg.jpg">
+      <Filter>www\styles\element-light\images</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\www\switch_icons.txt">
+      <Filter>www</Filter>
+    </Text>
+    <Text Include="..\www\templates\readme.txt">
+      <Filter>www\templates</Filter>
+    </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="..\www\css\fonts\Oswald-Light.ttf">
+      <Filter>www\css\fonts</Filter>
+    </Font>
+    <Font Include="..\www\css\fonts\Oswald-Regular.ttf">
+      <Filter>www\css\fonts</Filter>
+    </Font>
+    <Font Include="..\www\css\fonts\Satisfy.ttf">
+      <Filter>www\css\fonts</Filter>
+    </Font>
+    <Font Include="..\www\secpanel\font\Audiowide.ttf">
+      <Filter>www\secpanel\font</Filter>
+    </Font>
+    <Font Include="..\www\secpanel\font\Digital.ttf">
+      <Filter>www\secpanel\font</Filter>
+    </Font>
+    <Font Include="..\www\styles\elemental\fonts\DroidSans.ttf">
+      <Filter>www\styles\elemental\fonts</Filter>
+    </Font>
+    <Font Include="..\www\styles\elemental\fonts\OpenSans.ttf">
+      <Filter>www\styles\elemental\fonts</Filter>
+    </Font>
+    <Font Include="..\www\styles\element-dark\fonts\DroidSans.ttf">
+      <Filter>www\styles\element-dark\fonts</Filter>
+    </Font>
+    <Font Include="..\www\styles\element-dark\fonts\OpenSans.ttf">
+      <Filter>www\styles\element-dark\fonts</Filter>
+    </Font>
+    <Font Include="..\www\styles\element-light\fonts\DroidSans.ttf">
+      <Filter>www\styles\element-light\fonts</Filter>
+    </Font>
+    <Font Include="..\www\styles\element-light\fonts\OpenSans.ttf">
+      <Filter>www\styles\element-light\fonts</Filter>
+    </Font>
+  </ItemGroup>
+  <ItemGroup>
+    <Media Include="..\www\media\click.wav">
+      <Filter>www\media</Filter>
+    </Media>
+    <Media Include="..\www\media\delete.wav">
+      <Filter>www\media</Filter>
+    </Media>
+    <Media Include="..\www\secpanel\media\arm.mp3">
+      <Filter>www\secpanel\media</Filter>
+    </Media>
+    <Media Include="..\www\secpanel\media\disarm.mp3">
+      <Filter>www\secpanel\media</Filter>
+    </Media>
+    <Media Include="..\www\secpanel\media\key.mp3">
+      <Filter>www\secpanel\media</Filter>
+    </Media>
+    <Media Include="..\www\secpanel\media\wrongcode.mp3">
+      <Filter>www\secpanel\media</Filter>
+    </Media>
   </ItemGroup>
 </Project>
