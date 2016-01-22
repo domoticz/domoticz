@@ -19,7 +19,9 @@ bool CNotificationProwl::SendMessageImplementation(const std::string &Subject, c
 	bool bRet;
 	std::stringstream sPostData;
 	std::string sResult;
-	sPostData << "apikey=" << _apikey << "&application=Domoticz&event=" << Subject << "&description=" << Text << "&priority=" << Priority;
+	sPostData << "apikey=" << _apikey << "&application=Domoticz&priority=" << Priority << "&event=" << Subject;
+	if (Subject != Text)
+		sPostData << "&description=" << Text;
 	std::vector<std::string> ExtraHeaders;
 	bRet = HTTPClient::POST("https://api.prowlapp.com/publicapi/add",sPostData.str(),ExtraHeaders,sResult);
 	bool bSuccess = (sResult.find("success code=\"200\"") != std::string::npos);

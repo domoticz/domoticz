@@ -182,7 +182,6 @@ function CheckForUpdate(showdialog) {
 				userrights : urights,
 				hasupdatesupport : false
 			};
-			showdialog=false;
 			if (data.HaveUpdate == true) {
 				if (showdialog) {
 					bootbox.confirm($.t("Update Available !... Update Now?")+"<br>"+$.t('Version')+" #"+data.Revision, function(result) {
