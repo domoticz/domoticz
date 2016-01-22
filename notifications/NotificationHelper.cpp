@@ -719,7 +719,6 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 					if (llevel == iLevel) 
 					{
 						bSendNotification = true;
-
 						std::string sLevel = boost::lexical_cast<std::string>(llevel);
 						szExtraData += "Status=Level " + sLevel + "|";
 
@@ -732,10 +731,7 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 							msg += " >> " + splitresults[(llevel / 10)];
 						}
 						else
-						{
-							bSendNotification = true;
 							msg += " >> LEVEL " + sLevel;
-						}
 					}
 				}
 				else 
