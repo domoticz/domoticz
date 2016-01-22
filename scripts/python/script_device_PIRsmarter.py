@@ -3,10 +3,10 @@ import domoticz
 # similar to http://www.domoticz.com/wiki/Smart_Lua_Scripts
 # name is PIR <options> <switch controlled>
 # options can be day/night/all
-# example names: 
-# Pir day-night Slaapkamer groot  
-# PIR all Slaapkamer groot  
-# PIR night Slaapkamer groot  
+# example names:
+# Pir day-night Slaapkamer groot
+# PIR all Slaapkamer groot
+# PIR night Slaapkamer groot
 
 if 1: # to disable set to if 0:
 	parts = changed_device.name.split(" ", 2)
