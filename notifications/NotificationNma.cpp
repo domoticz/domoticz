@@ -16,13 +16,12 @@ CNotificationNma::~CNotificationNma()
 bool CNotificationNma::SendMessageImplementation(const std::string &Subject, const std::string &Text, const std::string &ExtraData, const int Priority, const std::string &Sound, const bool bFromNotification)
 {
 	//send message to NMA
-
-	std::string cSubject = (Subject == Text) ? "Domoticz" : Subject;
-
 	bool bRet;
 	std::stringstream sPostData;
 	std::string sResult;
-	sPostData << "apikey=" << _apikey << "&application=Domoticz&event=" << cSubject << "&description=" << Text << "&priority=" << Priority;
+	sPostData << "apikey=" << _apikey << "&application=Domoticz&priority=" << Priority << "&event=" << Subject;
+	if (Subject != Text)
+		sPostData << "&description=" << Text;
 	std::vector<std::string> ExtraHeaders;
 	bRet = HTTPClient::POST("https://www.notifymyandroid.com/publicapi/notify",sPostData.str(),ExtraHeaders,sResult);
 	bool bSuccess = (sResult.find("success code=\"200\"") != std::string::npos);

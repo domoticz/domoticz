@@ -157,6 +157,6 @@ private:
 	bool processLuaCommand(lua_State *lua_state, const std::string &filename);
 	void report_errors(lua_State *L, int status);
 	unsigned char calculateDimLevel(int deviceID, int percentageLevel);
-
+	void StripQuotes(std::string &sString);
 };
 

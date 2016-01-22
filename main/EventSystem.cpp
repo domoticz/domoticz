@@ -206,6 +206,20 @@ return std::string(buf.data(), buf.size());
 }
 */
 
+void CEventSystem::StripQuotes(std::string &sString)
+{
+	if (sString.size() < 2)
+		return;
+
+	if (sString.find('"') != 0)
+		return;
+	if (sString[sString.size() - 1] != '"')
+		return;
+
+	//Strip quotes
+	sString = sString.substr(1, sString.size() - 2);
+}
+
 struct _tHardwareListIntEV{
 	std::string Name;
 	bool Enabled;
@@ -1863,11 +1877,7 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 		}
 		size_t eQPos = csubstr.find_first_of("=") + 1;
 		std::string doWhat = csubstr.substr(eQPos);
-		if (doWhat.find('"') == 0)
-		{
-			//Strip quotes
-			doWhat = doWhat.substr(1, doWhat.size() - 2);
-		}
+		StripQuotes(doWhat);
 
 		size_t sPos = csubstr.find_first_of("[") + 1;
 		size_t ePos = csubstr.find_first_of("]");
@@ -1956,6 +1966,9 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 					{
 						body = aParam[1];
 					}
+
+					StripQuotes(subject);
+					StripQuotes(body);
 
 					subject = ParseBlocklyString(ProcessVariableArgument(subject));
 					body = ParseBlocklyString(ProcessVariableArgument(body));
