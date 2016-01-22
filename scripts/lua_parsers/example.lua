@@ -1,6 +1,8 @@
 -- Example of parser handling data with the following format
 -- TEMPERATURE,HUMIDITY,HUMIDITY_STATUS
 
+-- The device name is also changed to: Weather
+
 -- A test with curl would be : curl -X POST -d "28,48,2" 'http://192.168.1.17:8080/json.htm?type=command&param=udevices&script=example.lua'
 
 -- This function split a string according to a defined separator
@@ -25,5 +27,7 @@ s = request['content'];
 local values = split(s, ",");
 
 -- Update some devices (index are here for this example)
+
+domoticz_updateDeviceName(1,'Weather')
 domoticz_updateDevice(19,'',values[1])
 domoticz_updateDevice(20,values[2],values[2] .. ";" .. values[3])
