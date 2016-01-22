@@ -389,6 +389,7 @@
     </Filter>
     <Filter Include="Devices\CurrentCost">
       <UniqueIdentifier>{44396f52-871f-4e10-831e-2ddeb202fbbd}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Devices\Panasonic">
       <UniqueIdentifier>{6f61ac8c-0b97-4506-aac7-fdf909d0b54f}</UniqueIdentifier>
     </Filter>
@@ -1781,6 +1782,7 @@
     </ClInclude>
     <ClInclude Include="..\hardware\CurrentCostMeterSerial.h">
       <Filter>Devices\CurrentCost</Filter>
+    </ClInclude>
     <ClInclude Include="..\hardware\NefitEasy.h">
       <Filter>Header Files</Filter>
     </ClInclude>
