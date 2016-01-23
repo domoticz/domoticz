@@ -1,4 +1,4 @@
-Version 2.3xxx
+Version 2.4xxx
 - Implemented: Blockly, now possible to use expressions in notifications/email/SMS like "My temperature is {{temperaturedevice[1234]}} degrees" (see http://www.domoticz.com/wiki/Events)
 - Implemented: Blockly, now possible to send a notification with a user variable/device as subject/body
 - Implemented: Day display in energy/gas/water/temp report
