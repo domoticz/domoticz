@@ -38,7 +38,7 @@
 			<Item label="Disabled" value="0" />
 			<Item label="Enabled" value="1" /> 			
 		</Value>
-		<Value type="short" index="41" genre="config" label="Temperature Reporting Threshold" units="%" min="0" max="39321" value="1" size="2">
+		<Value type="short" index="41" genre="config" label="Temperature Reporting Threshold" units="%" min="0" max="39321" value="20" size="2">
 			<Help>Threshold change in temperature to induce an automatic report.  
 			Note: 
 			1. When the unit is Celsius, threshold=Value. 
@@ -46,21 +46,23 @@
 			3. The high byte is the part of integer, the low byte is the fractional part. 
 			</Help>
 		</Value>
-		<Value type="short" index="42" genre="config" label="Humidity Reporting Threshold" units="%" min="0" max="39321" value="5" size="2">
-			<Help>Threshold change in humidity to induce an automatic report. 
-			Note: 
-			The accuracy is 0.1. 
-			The high byte is the part of integer, the low byte is the fractional part. 
+		<Value type="byte" index="42" genre="config" label="Humidity Reporting Threshold" units="%" min="0" max="100" value="10" size="1">
+			<Help>Threshold change in humidity to induce an automatic report.
+			Note:
+			1. The unit is %.
+			2. The default value is 10, which means that if the current humidity gap is
+			more than 10%, it will send out a humidity report.
 			</Help>
 		</Value>
 		<Value type="short" index="43" genre="config" label="Luminance Reporting Threshold" units="LUX" min="0" max="65535" value="100" size="2">
 			<Help>Threshold change in luminance to induce an automatic report. </Help>
 		</Value>
-		<Value type="short" index="44" genre="config" label="Battery Reporting Threshold" units="%" min="0" max="39321" value="5" size="2">
-			<Help>Threshold change in battery level to induce an  automatic report. 
-			Note: 
-			The accuracy is 0.1. 
-			The high byte is the part of integer, the low byte is the fractional part.  
+		<Value type="byte" index="44" genre="config" label="Battery Reporting Threshold" units="%" min="0" max="100" value="10" size="1">
+			<Help>Threshold change in battery level to induce an automatic report.
+			Note:
+			1. The unit is %.
+			2. The default value is 10, which means that if the current battery level gap is
+			more than 10%, it will send out a battery report.   
 			</Help>
 		</Value>
         <Value type="byte" index="45" genre="config" label="UV Reporting Threshold" units="" min="0" max="255" value="2">
