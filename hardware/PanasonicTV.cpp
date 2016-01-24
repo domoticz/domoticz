@@ -411,15 +411,18 @@ void CPanasonicNode::Do_Work()
 {
 	m_Busy = true;
 	if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Panasonic Plugin: (%s) Entering work loop.", m_Name.c_str());
-	int	iPollCount = 5;
+	int	iPollCount = 9;
 
-	try
+	while (!m_stoprequested)
 	{
-		while (!m_stoprequested)
+		sleep_milliseconds(500);
+
+		iPollCount++;
+		if (iPollCount >= 10)
 		{
-			if (iPollCount >= 5)
+			iPollCount = 0;
+			try
 			{
-				iPollCount = 0;
 				std::string _volReply;
 				std::string _muteReply;
 				_volReply = handleWriteAndRead(buildXMLStringRendCtl("Get", "Volume"));
@@ -436,28 +439,14 @@ void CPanasonicNode::Do_Work()
 				//}
 				UpdateStatus();
 			}
-
-		/*	if (!iPollCount--)
+			catch (std::exception& e)
 			{
-				iPollCount = m_iPollIntSec - 1;
-							
-					if (m_iMissedPongs++ > m_iTimeoutCnt)
-					{
-						_log.Log(LOG_NORM, "Panasonic Plugin: (%s) Missed %d pings, assumed off.", m_Name.c_str(), m_iTimeoutCnt);
-						continue;
-					}
-			}*/
-			iPollCount++;
-			sleep_milliseconds(1000);
+				_log.Log(LOG_ERROR, "Panasonic Plugin: (%s) Exception: %s", m_Name.c_str(), e.what());
+			}
 		}
-	}
-	catch (std::exception& e)
-	{
-		_log.Log(LOG_ERROR, "Panasonic Plugin: (%s) Exception: %s", m_Name.c_str(), e.what());
 	}
 	_log.Log(LOG_NORM, "Panasonic Plugin: (%s) Exiting work loop.", m_Name.c_str());
 	m_Busy = false;
-	
 }
 
 void CPanasonicNode::SendCommand(const std::string command)

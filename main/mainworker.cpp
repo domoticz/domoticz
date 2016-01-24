@@ -1023,8 +1023,8 @@ bool MainWorker::IsUpdateAvailable(const bool bIsForced)
 	}
 
 #ifdef DEBUG_DOWNLOAD
-	//m_szSystemName = "linux";
-	//machine = "armv7l";
+	m_szSystemName = "linux";
+	machine = "armv7l";
 #endif
 
 	if (((m_szSystemName != "windows") && (machine != "armv6l") && (machine != "armv7l") && (machine != "x86_64")))
@@ -1066,7 +1066,7 @@ bool MainWorker::IsUpdateAvailable(const bool bIsForced)
 	stdreplace(revfile, "\r\n", "\n");
 	std::vector<std::string> strarray;
 	StringSplit(revfile, "\n", strarray);
-	if (strarray.size() != 3)
+	if (strarray.size() <1)
 		return false;
 	StringSplit(strarray[0], " ", strarray);
 	if (strarray.size() != 3)
