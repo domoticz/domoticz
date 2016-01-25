@@ -30,6 +30,7 @@ Version 2.3xxx
 - Implemented: Waterflow sensor
 - Implemented: Wind Beaufort scale
 - Implemented: Wind Graph, option to delete a short-log data point
+- Implemented: Panasonic TV support (Viera TV's after 2011 should work)
 - Changed: Alert sensor, removed level notation in user interface
 - Changed: EventSystem, don't process unused devices
 - Changed: Fritzbox, Now updating text sensor on connect/disconnect

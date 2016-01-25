@@ -164,14 +164,14 @@ CPanasonicNode::~CPanasonicNode(void)
 	if (DEBUG_LOGGING) _log.Log(LOG_STATUS, "Panasonic Plugin: (%s) Destroyed.", m_Name.c_str());
 }
 
-void CPanasonicNode::UpdateStatus()
+void CPanasonicNode::UpdateStatus(bool forceupdate)
 {
 	std::vector<std::vector<std::string> > result;
 	m_CurrentStatus.LastOK(mytime(NULL));
 
 	// 1:	Update the DeviceStatus
 	
-	if (m_CurrentStatus.UpdateRequired(m_PreviousStatus))
+	if (m_CurrentStatus.UpdateRequired(m_PreviousStatus) || forceupdate)
 	{
 		result = m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d, sValue='%q', LastUpdate='%q' WHERE (HardwareID == %d) AND (DeviceID == '%q') AND (Unit == 1) AND (SwitchType == %d)",
 			int(m_CurrentStatus.Status()), m_CurrentStatus.StatusMessage().c_str(), m_CurrentStatus.LastOK().c_str(), m_HwdID, m_szDevID, STYPE_Media);
@@ -180,7 +180,7 @@ void CPanasonicNode::UpdateStatus()
 	// 2:	Log the event if the actual status has changed
 	std::string	sLogText = m_CurrentStatus.StatusText();
 
-	if (m_CurrentStatus.LogRequired(m_PreviousStatus))
+	if (m_CurrentStatus.LogRequired(m_PreviousStatus) || forceupdate)
 	{
 		if (m_CurrentStatus.IsOn()) sLogText += " - " + m_CurrentStatus.LogMessage();
 		result = m_sql.safe_query("INSERT INTO LightingLog (DeviceRowID, nValue, sValue) VALUES (%d, %d, '%q')", m_ID, int(m_CurrentStatus.Status()), sLogText.c_str());
@@ -188,7 +188,7 @@ void CPanasonicNode::UpdateStatus()
 	}
 
 	// 3:	Trigger On/Off actions
-	if (m_CurrentStatus.OnOffRequired(m_PreviousStatus))
+	if (m_CurrentStatus.OnOffRequired(m_PreviousStatus) || forceupdate)
 	{
 		result = m_sql.safe_query("SELECT StrParam1,StrParam2 FROM DeviceStatus WHERE (HardwareID==%d) AND (ID = '%q') AND (Unit == 1)", m_HwdID, m_szDevID);
 		if (result.size() > 0)
@@ -199,7 +199,7 @@ void CPanasonicNode::UpdateStatus()
 
 	// 4:	Trigger Notifications & events on status change
 	
-	if (m_CurrentStatus.Status() != m_PreviousStatus.Status())
+	if (m_CurrentStatus.Status() != m_PreviousStatus.Status() || forceupdate)
 	{
 		m_notifications.CheckAndHandleNotification(m_ID, m_Name, m_CurrentStatus.NotificationType(), sLogText);
 		m_mainworker.m_eventsystem.ProcessDevice(m_HwdID, m_ID, 1, int(pTypeLighting2), int(sTypeAC), 12, 100, int(m_CurrentStatus.Status()), m_CurrentStatus.StatusMessage().c_str(), m_Name.c_str(), 0);
@@ -215,11 +215,10 @@ bool CPanasonicNode::handleConnect(boost::asio::ip::tcp::socket& socket, boost::
 		if (!m_stoprequested)
 		{
 			socket.connect(endpoint, ec);
-		
 			if (!ec)
 			{
 				if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Panasonic Plugin: (%s) Connected to '%s:%s'.", m_Name.c_str(), m_IP.c_str(), (m_Port[0] != '-' ? m_Port.c_str() : m_Port.substr(1).c_str()));
-				if (m_CurrentStatus.Status() == MSTAT_OFF)
+				if (m_CurrentStatus.Status() != MSTAT_ON)
 				{
 					m_CurrentStatus.Clear();
 					m_CurrentStatus.Status(MSTAT_ON);
@@ -249,6 +248,7 @@ bool CPanasonicNode::handleConnect(boost::asio::ip::tcp::socket& socket, boost::
 	return true;
 
 }
+
 
 std::string CPanasonicNode::handleWriteAndRead(std::string pMessageToSend)
 {
@@ -451,9 +451,16 @@ void CPanasonicNode::Do_Work()
 
 void CPanasonicNode::SendCommand(const std::string command)
 {
-	std::string	sPanasonicCall;
-	std::string	sPanasonicParam = "";
+	std::string	sPanasonicCall = "";
 	
+	if (m_CurrentStatus.Status() == MSTAT_OFF)
+	{
+		// no point trying to send a command if we know the device is off
+		// no network on Panasonic TV's when it's in the off state
+		_log.Log(LOG_ERROR, "Panasonic Plugin: (%s) Device is Off, cannot send command.", m_Name.c_str());
+		return;
+	}
+
 	if (command == "Home")
 		sPanasonicCall = buildXMLStringNetCtl("CANCEL-ONOFF");
 	else if (command == "Up")
@@ -490,7 +497,7 @@ void CPanasonicNode::SendCommand(const std::string command)
 		sPanasonicCall = buildXMLStringNetCtl("MENU-ONOFF");
 	else if (command == "Channels" || command == "guide")
 		sPanasonicCall = buildXMLStringNetCtl("EPG-ONOFF");
-	else if (command == "Back" || command == "return")
+	else if (command == "Back" || command == "Return")
 		sPanasonicCall = buildXMLStringNetCtl("RETURN-ONOFF");
 	else if (command == "Select")
 		sPanasonicCall = buildXMLStringNetCtl("ENTER-ONOFF");
@@ -534,10 +541,18 @@ void CPanasonicNode::SendCommand(const std::string command)
 		sPanasonicCall = buildXMLStringNetCtl("STOP-ONOFF");
 	else if (command == "pause")
 		sPanasonicCall = buildXMLStringNetCtl("PAUSE-ONOFF");
-	else if (command == "Power" || command == "power" || command == "off")
+	else if (command == "Power" || command == "power" || command == "off" || command == "Off")
 		sPanasonicCall = buildXMLStringNetCtl("POWER-ONOFF");
 	else if (command == "ShowSubtitles")
 		sPanasonicCall = buildXMLStringNetCtl("STTL-ONOFF");
+	else if (command == "On" || command == "on")
+	{
+		_log.Log(LOG_NORM, "Panasonic Plugin: (%s) Can't use command: '%s'.", m_Name.c_str(), command.c_str());
+		// Workaround to get the plugin to reset device status, otherwise the UI goes out of sync with plugin
+		m_CurrentStatus.Clear();
+		m_CurrentStatus.Status(MSTAT_UNKNOWN);
+		UpdateStatus(true);
+	}
 	else
 		_log.Log(LOG_NORM, "Panasonic Plugin: (%s) Unknown command: '%s'.", m_Name.c_str(), command.c_str());
 
@@ -721,6 +736,9 @@ bool CPanasonic::WriteToHardware(const char *pdata, const unsigned char length)
 			int iParam = pSen->LIGHTING2.level;
 			switch (pSen->LIGHTING2.cmnd)
 			{
+			case light2_sOn:
+				(*itt)->SendCommand("On");
+				return true;
 			case light2_sOff:
 				(*itt)->SendCommand("Off");
 				return true;
