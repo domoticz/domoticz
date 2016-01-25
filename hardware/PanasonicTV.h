@@ -51,7 +51,7 @@ public:
 	bool			SendShutdown();
 	void			StopRequest() { m_stoprequested = true; };
 	bool			IsBusy() { return m_Busy; };
-	bool			IsOn() { return (m_CurrentStatus.Status() != MSTAT_OFF); };
+	bool			IsOn() { return (m_CurrentStatus.Status() == MSTAT_ON); };
 
 	int				m_ID;
 	int				m_DevID;
@@ -69,7 +69,7 @@ private:
 	std::string		buildXMLStringRendCtl(std::string, std::string);
 	std::string		buildXMLStringRendCtl(std::string, std::string, std::string);
 	std::string		buildXMLStringNetCtl(std::string);
-
+	
 	int				m_HwdID;
 	char			m_szDevID[40];
 	std::string		m_IP;
@@ -77,7 +77,8 @@ private:
 
 	CPanasonicStatus		m_PreviousStatus;
 	CPanasonicStatus		m_CurrentStatus;
-	void			UpdateStatus();
+	//void			UpdateStatus();
+	void			UpdateStatus(bool force = false);
 
 	std::string		m_ExecuteCommand;
 
