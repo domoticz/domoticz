@@ -3369,7 +3369,6 @@ namespace http {
 					}
 				}
 			}
-			//todo
 			else if (cparam == "getsetpointtimerlist")
 			{
 				root["status"] = "OK";
