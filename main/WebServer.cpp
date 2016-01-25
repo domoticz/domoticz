@@ -2506,6 +2506,29 @@ namespace http {
 			return 0;
 		}
 
+		static int l_domoticz_updateDeviceName(lua_State* lua_state)
+		{
+			int nargs = lua_gettop(lua_state);
+			if (nargs == 2)
+			{
+				if (lua_isnumber(lua_state, 1) && (lua_isstring(lua_state, 2)))
+				{
+					int idx = lua_tointeger(lua_state, 1);
+					std::string sname = lua_tostring(lua_state, 2);
+					m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID == %d)", sname.c_str(), idx);
+				}
+				else
+				{
+					_log.Log(LOG_ERROR, "WebServer (updateDeviceName from LUA) : Incorrect parameters type");
+				}
+			}
+			else
+			{
+				_log.Log(LOG_ERROR, "WebServer (updateDeviceName from LUA) : Not enough parameters");
+			}
+			return 0;
+		}
+
 		static int l_domoticz_updateDevice(lua_State* lua_state)
 		{
 			int nargs = lua_gettop(lua_state);
@@ -2620,6 +2643,9 @@ namespace http {
 
 			lua_pushcfunction(lua_state, l_domoticz_updateDevice);
 			lua_setglobal(lua_state, "domoticz_updateDevice");
+
+			lua_pushcfunction(lua_state, l_domoticz_updateDeviceName);
+			lua_setglobal(lua_state, "domoticz_updateDeviceName");
 
 			lua_pushcfunction(lua_state, l_domoticz_applyJsonPath);
 			lua_setglobal(lua_state, "domoticz_applyJsonPath");
