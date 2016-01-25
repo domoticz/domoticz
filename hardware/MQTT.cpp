@@ -117,7 +117,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 	std::string topic = message->topic;
 	std::string qMessage = std::string((char*)message->payload, (char*)message->payload + message->payloadlen);
 
-	_log.Log(LOG_STATUS, "MQTT: Topic: %s, Message: %s", topic.c_str(), qMessage.c_str());
+	_log.Log(LOG_NORM, "MQTT: Topic: %s, Message: %s", topic.c_str(), qMessage.c_str());
 
 	if (qMessage.empty())
 		return;
@@ -281,6 +281,16 @@ void MQTT::on_message(const struct mosquitto_message *message)
 			goto mqttinvaliddata;
 		std::string varvalue = root["value"].asString();
 		m_sql.SetUserVariable(idx, varvalue, true);
+		return;
+	}
+	else if (szCommand == "addlogmessage")
+	{
+		if (root["message"].empty())
+			goto mqttinvaliddata;
+		if (!root["message"].isString())
+			goto mqttinvaliddata;
+		std::string msg = root["message"].asString();
+		_log.Log(LOG_STATUS, "MQTT MSG: %s", msg.c_str());
 		return;
 	}
 	else if (szCommand == "sendnotification")
