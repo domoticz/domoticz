@@ -294,10 +294,13 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 		if (level == 0)
 			lcmd.LIGHTING2.cmnd = light2_sOff;
 		else if (level > 99)
+		{
 			if (pDevice->devType==ZDTYPE_SWITCH_DIMMER)
+			{
 				level = 100;
-
+			}
 			lcmd.LIGHTING2.cmnd = light2_sOn;
+		}
 		else
 		{
 			lcmd.LIGHTING2.cmnd = light2_sSetLevel;
@@ -376,10 +379,13 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		if (level == 0)
 			lcmd.LIGHTING2.cmnd = light2_sOff;
 		else if (level > 99)
+		{
 			if (pDevice->devType==ZDTYPE_SWITCH_DIMMER)
+			{
 				level = 100;
-
+			}
 			lcmd.LIGHTING2.cmnd = light2_sOn;
+		}
 		else
 		{
 			lcmd.LIGHTING2.cmnd = light2_sSetLevel;
