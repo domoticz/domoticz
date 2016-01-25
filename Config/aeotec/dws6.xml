@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Aeon Labs Door/Window Sensor 6-->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+
+	<!-- Configuration Parameters -->
+	<CommandClass id="112">
+		<Value type="list" genre="config" instance="1" index="1" label="Invert SensorBinary/Basic Message" min="0" max="1" value="0" size="1">
+			<Help>Which value of the Sensor Binary Report or Basic Set will be
+			sent when the Magnet is triggered On/Off. 
+			1) Value=0, On=Sensor Binary Report/Basic Set 0xFF,
+			Off=Sensor Binary Report/Basic Set 0x00.
+			2) Value=1, On=Sensor Binary Report/Basic Set 0x00,
+			Off=Sensor Binary Report/Basic Set 0xFF.</Help>
+			<Item label="Open: FF, Close: 00" value="0"/>
+			<Item label="Open: 00, Close: FF" value="1"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="2" label="Enable wake up 10 minutes when the power is switched on." min="0" max="1" value="1" size="1">
+			<Help>Enable/disable wake up 10 minutes when re-power on the Sensor.</Help>
+			<Item label="Disable" value="0"/>
+			<Item label="Enable" value="1"/>
+		</Value>
+		<Value type="byte" genre="config" index="39" label="Low Battery Value" min="0" max="100" value="20">
+			<Help>Set the Low Battery Value</Help>
+		</Value>
+		<Value type="list" genre="config" index="101" label="Enable Low Battery Warning" min="0" max="100" value="20">
+			<Help> Enable Low Battery Checking</Help>
+			<Item label="Disabled" value="0"/>
+			<Item label="Enabled" value="1"/>
+		</Value>
+		<Value type="int" genre="config" index="111" label="Battery Check Interval" min="240" max="2147483647" value="86640" size="4">
+			<Help>Set the interval time of low battery checking.
+			The minimum interval is 4 minutes.</Help>
+		</Value>		
+		<Value type="int" index="121" genre="config" label="Sensor Report Message Type" value="256">
+			<Help>Defines the type of report sent for reporting group 1. 
+			1 is Battery Level. 16 is Sensor Binary Report. 256 is Basic Set.
+				Value 1 (msb) Reserved
+				Value 2 Reserved
+				Value 3 
+					bit 0 - Basic Set
+					bit 1 - 7 - Reserved
+				Value 4 (lsb) 
+					bits 7 - 3 - Reserved
+					bit 3 - Sensor Binary
+					bit 2 - 1 - Reserved
+					bit 0 - Battery
+      			</Help>
+    		</Value>
+		<Value type="button" index="255" genre="config" label="Reset configuration settings to factory defaults" write_only="true" value="0x55555555" size="4">
+			<Help>Reset to factory defaults.</Help>
+		</Value>
+	</CommandClass>
+
+	<!-- Remove Basic CommandClasss - This is a sleeping Device, so its
+	not going to work well with the Basic Class -->
+	<CommandClass id="32" action="remove"/>
+
+	<!-- Association Groups -->
+	<CommandClass id="133">		
+		<Associations num_groups="1">
+			<Group index="1" max_associations="5" label="LifeLine" />
+		</Associations>
+	</CommandClass>
+
+</Product>

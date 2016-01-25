@@ -15,6 +15,7 @@
 #include "NotificationHTTP.h"
 #include "NotificationKodi.h"
 #include "NotificationLogitechMediaServer.h"
+#include <boost/lexical_cast.hpp>
 #include <map>
 
 #if defined WIN32
@@ -650,6 +651,94 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 						msg += " >> OFF";
 						break;
 					}
+				}
+			}
+			if (bSendNotification)
+			{
+				if (!itt->CustomMessage.empty())
+					msg = itt->CustomMessage;
+				SendMessageEx(itt->ActiveSystems, msg, msg, szExtraData, itt->Priority, std::string(""), true);
+				TouchNotification(itt->ID);
+			}
+		}
+	}
+	return true;
+}
+
+bool CNotificationHelper::CheckAndHandleSwitchNotification(
+	const unsigned long long Idx,
+	const std::string &devicename,
+	const _eNotificationTypes ntype,
+	const int llevel)
+{
+	std::vector<_tNotification> notifications = GetNotifications(Idx);
+	if (notifications.size() == 0)
+		return false;
+	std::vector<std::vector<std::string> > result;
+
+	result = m_sql.safe_query("SELECT SwitchType, CustomImage, Options FROM DeviceStatus WHERE (ID=%llu)",
+		Idx);
+	if (result.size() == 0)
+		return false;
+	_eSwitchType switchtype = (_eSwitchType)atoi(result[0][0].c_str());
+	std::string szExtraData = "|Name=" + devicename + "|SwitchType=" + result[0][0] + "|CustomImage=" + result[0][1] + "|";
+	std::string sOptions = result[0][2].c_str();
+
+	std::string msg = "";
+
+	std::string ltype = Notification_Type_Desc(ntype, 1);
+
+	time_t atime = mytime(NULL);
+	atime -= m_NotificationSwitchInterval;
+
+	std::vector<_tNotification>::const_iterator itt;
+	for (itt = notifications.begin(); itt != notifications.end(); ++itt)
+	{
+		if ((atime >= itt->LastSend) || (itt->SendAlways)) //emergency always goes true
+		{
+			std::vector<std::string> splitresults;
+			StringSplit(itt->Params, ";", splitresults);
+			if (splitresults.size() < 1)
+				continue; //impossible
+			std::string atype = splitresults[0];
+
+			bool bSendNotification = false;
+
+			if (atype == ltype)
+			{
+				msg = devicename;
+				if (ntype == NTYPE_SWITCH_ON)
+				{
+					if (splitresults.size() < 3)
+						continue; //impossible
+					bool bWhenEqual = (splitresults[1] == "=");
+					int iLevel = atoi(splitresults[2].c_str());
+					if (!bWhenEqual || iLevel < 10 || iLevel > 100)
+						continue; //invalid
+
+					if (llevel == iLevel) 
+					{
+						bSendNotification = true;
+						std::string sLevel = boost::lexical_cast<std::string>(llevel);
+						szExtraData += "Status=Level " + sLevel + "|";
+
+						if (switchtype == STYPE_Selector)
+						{
+							std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sOptions);
+							std::string levelNames = options["LevelNames"];
+							std::vector<std::string> splitresults;
+							StringSplit(levelNames, "|", splitresults);
+							msg += " >> " + splitresults[(llevel / 10)];
+						}
+						else
+							msg += " >> LEVEL " + sLevel;
+					}
+				}
+				else 
+				{
+					bSendNotification = true;
+					szExtraData += "Status=Off|";
+					msg += " >> OFF";
 				}
 			}
 			if (bSendNotification)
