@@ -2999,7 +2999,10 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 			//Check for notifications
 			if (HWtype != HTYPE_LogitechMediaServer) // Skip notifications for LMS here; is handled by the LMS plug-in
 			{
-				m_notifications.CheckAndHandleSwitchNotification(ulID, devname, (bIsLightSwitchOn) ? NTYPE_SWITCH_ON : NTYPE_SWITCH_OFF);
+				if (switchtype == STYPE_Selector)
+					m_notifications.CheckAndHandleSwitchNotification(ulID, devname, (bIsLightSwitchOn) ? NTYPE_SWITCH_ON : NTYPE_SWITCH_OFF, llevel);
+				else
+					m_notifications.CheckAndHandleSwitchNotification(ulID, devname, (bIsLightSwitchOn) ? NTYPE_SWITCH_ON : NTYPE_SWITCH_OFF);
 			}
 			if (bIsLightSwitchOn)
 			{

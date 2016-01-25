@@ -5337,7 +5337,12 @@ namespace http {
 					(ntype == NTYPE_DEWPOINT)
 					)
 				{
-					strcpy(szTmp, ttype.c_str());
+					if ((ntype == NTYPE_SWITCH_ON) && (swhen == "2")) { // '='
+						unsigned char twhen = '=';
+						sprintf(szTmp, "%s;%c;%s", ttype.c_str(), twhen, svalue.c_str());
+					}
+					else
+						strcpy(szTmp, ttype.c_str());
 				}
 				else
 				{
@@ -5385,7 +5390,12 @@ namespace http {
 					(ntype == NTYPE_DEWPOINT)
 					)
 				{
-					strcpy(szTmp, ttype.c_str());
+					if ((ntype == NTYPE_SWITCH_ON) && (swhen == "2")) { // '='
+						unsigned char twhen = '=';
+						sprintf(szTmp, "%s;%c;%s", ttype.c_str(), twhen, svalue.c_str());
+					}
+					else
+						strcpy(szTmp, ttype.c_str());
 				}
 				else
 				{
