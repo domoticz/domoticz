@@ -201,6 +201,9 @@
 	<Manufacturer id="0184" name="Dragon Tech">
 		<Product type="4447" id="3034" name="In Wall Dimmer" config="dragontech/wd-100.xml" />
 	</Manufacturer>
+	<Manufacturer id="020e" name="domitech">
+		<Product type="4c42" id="3134" name="Z-wave Smart LED Light Bulb" config="domitech/z-wave_smart_led_ligth_bulb.xml" />
+	</Manufacturer>
 	<Manufacturer id="0012" name="E Housekeeper">
 		<Product type="0001" id="0001" name="Switchkeeper Plug-in Appliance Module"/>
 	</Manufacturer>
