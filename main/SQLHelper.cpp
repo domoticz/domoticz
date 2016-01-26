@@ -31,7 +31,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 94
+#define DB_VERSION 95
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -1722,6 +1722,21 @@ bool CSQLHelper::OpenDatabase()
 			szQuery.str("");
 			szQuery << "UPDATE SceneTimers SET [Type]=[Type]+2 WHERE ([Type]>" << TTYPE_FIXEDDATETIME << ")";
 			query(szQuery.str());
+		}
+		if (dbversion < 95)
+		{
+			if (!DoesColumnExistsInTable("Month", "SetpointTimers"))
+			{
+				query("ALTER TABLE SetpointTimers ADD COLUMN [Month] INTEGER DEFAULT 0");
+			}
+			if (!DoesColumnExistsInTable("MDay", "SetpointTimers"))
+			{
+				query("ALTER TABLE SetpointTimers ADD COLUMN [MDay] INTEGER DEFAULT 0");
+			}
+			if (!DoesColumnExistsInTable("Occurence", "SetpointTimers"))
+			{
+				query("ALTER TABLE SetpointTimers ADD COLUMN [Occurence] INTEGER DEFAULT 0");
+			}
 		}
 
 	}

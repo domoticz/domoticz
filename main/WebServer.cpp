@@ -360,7 +360,6 @@ namespace http {
 			m_pWebEm->RegisterIncludeCode("switchtypes", boost::bind(&CWebServer::DisplaySwitchTypesCombo, this));
 			m_pWebEm->RegisterIncludeCode("metertypes", boost::bind(&CWebServer::DisplayMeterTypesCombo, this));
 			m_pWebEm->RegisterIncludeCode("timertypes", boost::bind(&CWebServer::DisplayTimerTypesCombo, this));
-			m_pWebEm->RegisterIncludeCode("timertypesextended", boost::bind(&CWebServer::DisplayTimerTypesComboExtendend, this));
 			m_pWebEm->RegisterIncludeCode("combolanguage", boost::bind(&CWebServer::DisplayLanguageCombo, this));
 
 			m_pWebEm->RegisterPageCode("/json.htm", boost::bind(&CWebServer::GetJSonPage, this, _1, _2));
@@ -6782,18 +6781,6 @@ namespace http {
 		}
 
 		char * CWebServer::DisplayTimerTypesCombo()
-		{
-			m_retstr = "";
-			char szTmp[200];
-			for (int ii = 0; ii <= TTYPE_FIXEDDATETIME; ii++)
-			{
-				sprintf(szTmp, "<option data-i18n=\"%s\" value=\"%d\">%s</option>\n", Timer_Type_Desc(ii), ii, Timer_Type_Desc(ii));
-				m_retstr += szTmp;
-			}
-			return (char*)m_retstr.c_str();
-		}
-
-		char * CWebServer::DisplayTimerTypesComboExtendend()
 		{
 			m_retstr = "";
 			char szTmp[200];
