@@ -243,7 +243,7 @@ void CScheduler::ReloadSchedules()
 	}
 
 	//Add Setpoint Timers
-	result = m_sql.safe_query("SELECT T1.DeviceRowID, T1.Time, T1.Type, T1.Temperature, T1.Days, T2.Name, T1.[Date] FROM SetpointTimers as T1, DeviceStatus as T2 WHERE ((T1.Active == 1) AND (T1.TimerPlan == %d) AND (T2.ID == T1.DeviceRowID)) ORDER BY T1.ID",
+	result = m_sql.safe_query("SELECT T1.DeviceRowID, T1.Time, T1.Type, T1.Temperature, T1.Days, T2.Name, T1.[Date], T1.MDay, T1.Month, T1.Occurence FROM SetpointTimers as T1, DeviceStatus as T2 WHERE ((T1.Active == 1) AND (T1.TimerPlan == %d) AND (T2.ID == T1.DeviceRowID)) ORDER BY T1.ID",
 		m_sql.m_ActiveTimerPlan);
 	if (result.size() > 0)
 	{
@@ -257,6 +257,9 @@ void CScheduler::ReloadSchedules()
 			titem.bEnabled = true;
 			titem.bIsScene = false;
 			titem.bIsThermostat = true;
+			titem.MDay = 0;
+			titem.Month = 0;
+			titem.Occurence = 0;
 
 			std::stringstream s_str(sd[0]);
 			s_str >> titem.RowID;
@@ -271,6 +274,38 @@ void CScheduler::ReloadSchedules()
 				titem.startYear = (unsigned short)atoi(sdate.substr(0, 4).c_str());
 				titem.startMonth = (unsigned char)atoi(sdate.substr(5, 2).c_str());
 				titem.startDay = (unsigned char)atoi(sdate.substr(8, 2).c_str());
+			}
+			else if (timerType == TTYPE_MONTHLY)
+			{
+				std::string smday = sd[7];
+				if (smday == "0")
+					continue; //invalid
+				titem.MDay = atoi(smday.c_str());
+			}
+			else if (timerType == TTYPE_MONTHLY_WD)
+			{
+				std::string socc = sd[9];
+				if (socc == "0")
+					continue; //invalid
+				titem.Occurence = atoi(socc.c_str());
+			}
+			else if (timerType == TTYPE_YEARLY)
+			{
+				std::string smday = sd[7];
+				std::string smonth = sd[8];
+				if ((smday == "0") || (smonth == "0"))
+					continue; //invalid
+				titem.MDay = atoi(smday.c_str());
+				titem.Month = atoi(smonth.c_str());
+			}
+			else if (timerType == TTYPE_YEARLY_WD)
+			{
+				std::string smonth = sd[8];
+				std::string socc = sd[9];
+				if ((smonth == "0") || (socc == "0"))
+					continue; //invalid
+				titem.Month = atoi(smonth.c_str());
+				titem.Occurence = atoi(socc.c_str());
 			}
 
 			titem.startHour = (unsigned char)atoi(sd[1].substr(0, 2).c_str());
@@ -1234,11 +1269,11 @@ namespace http {
 			if (idx == 0)
 				return;
 			root["status"] = "OK";
-			root["title"] = "Timers";
+			root["title"] = "SetpointTimers";
 			char szTmp[50];
 
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT ID, Active, [Date], Time, Type, Temperature, Days FROM SetpointTimers WHERE (DeviceRowID=%llu) AND (TimerPlan==%d) ORDER BY ID",
+			result = m_sql.safe_query("SELECT ID, Active, [Date], Time, Type, Temperature, Days, MDay, Month, Occurence FROM SetpointTimers WHERE (DeviceRowID=%llu) AND (TimerPlan==%d) ORDER BY ID",
 				idx, m_sql.m_ActiveTimerPlan);
 			if (result.size() > 0)
 			{
@@ -1268,6 +1303,9 @@ namespace http {
 					root["result"][ii]["Type"] = iTimerType;
 					root["result"][ii]["Temperature"] = atof(sd[5].c_str());
 					root["result"][ii]["Days"] = atoi(sd[6].c_str());
+					root["result"][ii]["MDay"] = atoi(sd[7].c_str());
+					root["result"][ii]["Month"] = atoi(sd[8].c_str());
+					root["result"][ii]["Occurence"] = atoi(sd[9].c_str());
 					ii++;
 				}
 			}
@@ -1288,6 +1326,9 @@ namespace http {
 			std::string smin = request::findValue(&req, "min");
 			std::string stvalue = request::findValue(&req, "tvalue");
 			std::string sdays = request::findValue(&req, "days");
+			std::string smday = "0";
+			std::string smonth = "0";
+			std::string soccurence = "0";
 			if (
 				(idx == "") ||
 				(active == "") ||
@@ -1316,15 +1357,40 @@ namespace http {
 					Year = atoi(sdate.substr(6, 4).c_str());
 				}
 			}
+			else if (iTimerType == TTYPE_MONTHLY)
+			{
+				smday = request::findValue(&req, "mday");
+				if (smday == "") return;
+			}
+			else if (iTimerType == TTYPE_MONTHLY_WD)
+			{
+				soccurence = request::findValue(&req, "occurence");
+				if (soccurence == "") return;
+			}
+			else if (iTimerType == TTYPE_YEARLY)
+			{
+				smday = request::findValue(&req, "mday");
+				smonth = request::findValue(&req, "month");
+				if ((smday == "") || (smonth == "")) return;
+			}
+			else if (iTimerType == TTYPE_YEARLY_WD)
+			{
+				smonth = request::findValue(&req, "month");
+				soccurence = request::findValue(&req, "occurence");
+				if ((smonth == "") || (soccurence == "")) return;
+			}
 
 			unsigned char hour = atoi(shour.c_str());
 			unsigned char min = atoi(smin.c_str());
 			int days = atoi(sdays.c_str());
 			float temperature = static_cast<float>(atof(stvalue.c_str()));
+			int mday = atoi(smday.c_str());
+			int month = atoi(smonth.c_str());
+			int occurence = atoi(soccurence.c_str());
 			root["status"] = "OK";
 			root["title"] = "AddSetpointTimer";
 			m_sql.safe_query(
-				"INSERT INTO SetpointTimers (Active, DeviceRowID, [Date], Time, Type, Temperature, Days, TimerPlan) VALUES (%d,'%q','%04d-%02d-%02d','%02d:%02d',%d,%.1f,%d,%d)",
+				"INSERT INTO SetpointTimers (Active, DeviceRowID, [Date], Time, Type, Temperature, Days, MDay, Month, Occurence, TimerPlan) VALUES (%d,'%q','%04d-%02d-%02d','%02d:%02d',%d,%.1f,%d,%d,%d,%d,%d)",
 				(active == "true") ? 1 : 0,
 				idx.c_str(),
 				Year, Month, Day,
@@ -1332,6 +1398,9 @@ namespace http {
 				iTimerType,
 				temperature,
 				days,
+				mday,
+				month,
+				occurence,
 				m_sql.m_ActiveTimerPlan
 				);
 			m_mainworker.m_scheduler.ReloadSchedules();
@@ -1353,6 +1422,9 @@ namespace http {
 			std::string smin = request::findValue(&req, "min");
 			std::string stvalue = request::findValue(&req, "tvalue");
 			std::string sdays = request::findValue(&req, "days");
+			std::string smday = "0";
+			std::string smonth = "0";
+			std::string soccurence = "0";
 			if (
 				(idx == "") ||
 				(active == "") ||
@@ -1381,21 +1453,49 @@ namespace http {
 					Year = atoi(sdate.substr(6, 4).c_str());
 				}
 			}
+			else if (iTimerType == TTYPE_MONTHLY)
+			{
+				smday = request::findValue(&req, "mday");
+				if (smday == "") return;
+			}
+			else if (iTimerType == TTYPE_MONTHLY_WD)
+			{
+				soccurence = request::findValue(&req, "occurence");
+				if (soccurence == "") return;
+			}
+			else if (iTimerType == TTYPE_YEARLY)
+			{
+				smday = request::findValue(&req, "mday");
+				smonth = request::findValue(&req, "month");
+				if ((smday == "") || (smonth == "")) return;
+			}
+			else if (iTimerType == TTYPE_YEARLY_WD)
+			{
+				smonth = request::findValue(&req, "month");
+				soccurence = request::findValue(&req, "occurence");
+				if ((smonth == "") || (soccurence == "")) return;
+			}
 
 			unsigned char hour = atoi(shour.c_str());
 			unsigned char min = atoi(smin.c_str());
 			int days = atoi(sdays.c_str());
 			float tempvalue = static_cast<float>(atof(stvalue.c_str()));
+			int mday = atoi(smday.c_str());
+			int month = atoi(smonth.c_str());
+			int occurence = atoi(soccurence.c_str());
 			root["status"] = "OK";
 			root["title"] = "UpdateSetpointTimer";
 			m_sql.safe_query(
-				"UPDATE SetpointTimers SET Active=%d, [Date]='%04d-%02d-%02d', Time='%02d:%02d', Type=%d, Temperature=%.1f, Days=%d WHERE (ID == '%q')",
+				"UPDATE SetpointTimers SET Active=%d, [Date]='%04d-%02d-%02d', Time='%02d:%02d', Type=%d, Temperature=%.1f, Days=%d, MDay=%d, Month=%d, Occurence=%d WHERE (ID == '%q')",
 				(active == "true") ? 1 : 0,
 				Year, Month, Day,
 				hour, min,
 				iTimerType,
 				tempvalue,
 				days,
+				mday,
+				month,
+				occurence,
 				idx.c_str()
 				);
 			m_mainworker.m_scheduler.ReloadSchedules();

@@ -39,7 +39,6 @@ public:
 	char * DisplaySwitchTypesCombo();
 	char * DisplayMeterTypesCombo();
 	char * DisplayTimerTypesCombo();
-	char * DisplayTimerTypesComboExtendend();
 	char * DisplayLanguageCombo();
 	std::string GetJSonPage(WebEmSession & session, const request& req);
 	std::string GetAppCache(WebEmSession & session, const request& req);
