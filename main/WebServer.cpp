@@ -3369,50 +3369,6 @@ namespace http {
 					}
 				}
 			}
-			else if (cparam == "getsetpointtimerlist")
-			{
-				root["status"] = "OK";
-				root["title"] = "GetSetpointTimerList";
-				std::vector<std::vector<std::string> > result;
-				result = m_sql.safe_query("SELECT t.ID, t.Active, d.[Name], t.DeviceRowID, t.[Date], t.Time, t.Type, t.Temperature, t.Days, t.MDay, t.Month, t.Occurence FROM SetpointTimers as t, DeviceStatus as d WHERE (d.ID == t.DeviceRowID) AND (t.TimerPlan==%d) ORDER BY d.[Name], t.Time",
-					m_sql.m_ActiveTimerPlan);
-				if (result.size() > 0)
-				{
-					std::vector<std::vector<std::string> >::const_iterator itt;
-					int ii = 0;
-					for (itt = result.begin(); itt != result.end(); ++itt)
-					{
-						std::vector<std::string> sd = *itt;
-
-						int iTimerType = atoi(sd[6].c_str());
-						std::string sdate = sd[4];
-						if ((iTimerType == TTYPE_FIXEDDATETIME) && (sdate.size() == 10))
-						{
-							int Year = atoi(sdate.substr(0, 4).c_str());
-							int Month = atoi(sdate.substr(5, 2).c_str());
-							int Day = atoi(sdate.substr(8, 2).c_str());
-							sprintf(szTmp, "%02d-%02d-%04d", Month, Day, Year);
-							sdate = szTmp;
-						}
-						else
-							sdate = "";
-
-						root["result"][ii]["idx"] = sd[0];
-						root["result"][ii]["Active"] = (atoi(sd[1].c_str()) == 0) ? "false" : "true";
-						root["result"][ii]["Name"] = sd[2];
-						root["result"][ii]["DeviceRowID"] = sd[3];
-						root["result"][ii]["Date"] = sdate;
-						root["result"][ii]["Time"] = sd[5];
-						root["result"][ii]["Type"] = iTimerType;
-						root["result"][ii]["Temperature"] = sd[7];
-						root["result"][ii]["Days"] = atoi(sd[8].c_str());
-						root["result"][ii]["MDay"] = atoi(sd[9].c_str());
-						root["result"][ii]["Month"] = atoi(sd[10].c_str());
-						root["result"][ii]["Occurence"] = atoi(sd[11].c_str());
-						ii++;
-					}
-				}
-			}
 			else if (cparam == "getscenedevices")
 			{
 				std::string idx = request::findValue(&req, "idx");
