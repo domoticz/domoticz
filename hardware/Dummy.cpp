@@ -134,7 +134,7 @@ namespace http {
 					unsigned char ID3 = (unsigned char)((nid & 0x0000FF00) >> 8);
 					unsigned char ID4 = (unsigned char)((nid & 0x000000FF));
 					sprintf(ID, "%X%02X%02X%02X", ID1, ID2, ID3, ID4);
-					DeviceRowIdx=m_sql.UpdateValue(HwdID, ID, 1, pTypeLighting2, sTypeAC, 12, 255, 0, "15", devname);
+					DeviceRowIdx=m_sql.UpdateValue(HwdID, ID, 1, pTypeLighting2, sTypeDummy, 12, 255, 0, "100", devname);
 					bCreated = true;
 				}
 				break;

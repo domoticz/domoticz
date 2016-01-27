@@ -196,6 +196,9 @@
 #define sTypeZWaveUsage 0xA0
 #define sTypeZWaveSwitch 0xA1
 
+// Dummy Switch
+#define sTypeDummy 0xA2
+
 //types for evohome
 #define pTypeEvohome 0x45 
 #define sTypeEvohome 0x00 //Controller

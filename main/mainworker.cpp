@@ -4201,6 +4201,7 @@ void MainWorker::decode_Lighting2(const int HwdID, const _eHardwareTypes HwdType
 		case sTypeAC:
 		case sTypeHEU:
 		case sTypeANSLUT:
+		case sTypeDummy:
 		case sTypeZWaveSwitch:
 			switch (pResponse->LIGHTING2.subtype)
 			{
@@ -4212,6 +4213,9 @@ void MainWorker::decode_Lighting2(const int HwdID, const _eHardwareTypes HwdType
 				break;
 			case sTypeANSLUT:
 				WriteMessage("subtype       = ANSLUT");
+				break;
+			case sTypeDummy:
+				WriteMessage("subtype       = API");
 				break;
 			case sTypeZWaveSwitch:
 				WriteMessage("subtype       = ZWave");
@@ -9988,7 +9992,6 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 					}
 				}
 			}
-
 			// ZWave allows 0 (for "off"), 255 (for "on") and 0-99 (in case of dimmers). 
 			if (dSubType == sTypeZWaveSwitch)
 			{
@@ -10013,6 +10016,30 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 							level = (level > 99) ? 99 : level;
 						}
 					}
+				}
+			}
+			// Dummy Switches
+			if (dSubType == sTypeDummy)
+			{
+				if (switchtype == STYPE_OnOff)
+				{
+					level = (level == 0) ? 0 : 100;
+					lcmd.LIGHTING2.cmnd = (lcmd.LIGHTING2.cmnd == light2_sOn) ? light2_sOn : light2_sOff;
+				}
+				else
+				{
+					if (lcmd.LIGHTING2.cmnd == light2_sSetLevel)
+					{
+						// Set command based on level value
+						if (level == 0)
+							lcmd.LIGHTING2.cmnd = light2_sOff;
+						else if (level == 100)
+							lcmd.LIGHTING2.cmnd = light2_sOn;
+						else
+						{
+							level = (level < 0) ? 0 : level;
+							level = (level > 99) ? 99 : level;
+						}					}
 				}
 			}
 			else if (switchtype == STYPE_Media)
