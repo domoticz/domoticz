@@ -31,6 +31,7 @@ Version 2.4xxx
 - Implemented: Wind Beaufort scale
 - Implemented: Wind Graph, option to delete a short-log data point
 - Implemented: Panasonic TV support (Viera TV's after 2011 should work)
+- Changed: Dummy, Virtual Dimmers now have 100 steps instead of 15.
 - Changed: Alert sensor, removed level notation in user interface
 - Changed: EventSystem, don't process unused devices
 - Changed: Fritzbox, Now updating text sensor on connect/disconnect
