@@ -538,6 +538,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLighting2, sTypeHEU, "HomeEasy EU" },
 		{ pTypeLighting2, sTypeANSLUT, "Anslut" },
 		{ pTypeLighting2, sTypeZWaveSwitch, "ZWave" },
+		{ pTypeLighting2, sTypeDummy, "API" },
 
 		{ pTypeLighting3, sTypeKoppla, "Ikea Koppla" },
 
@@ -1237,7 +1238,7 @@ void GetLightStatus(
 		break;
 	case pTypeLighting2:
 		// Determine max dim level based on switch type
-		maxDimLevel=(dSubType != sTypeZWaveSwitch) ? 15 : 100;
+		maxDimLevel=((dSubType != sTypeZWaveSwitch) && (dSubType != sTypeDummy)) ? 15 : 100;
 
 		if (switchtype != STYPE_Media) {
 			// Calculate % that the light is currently on, taking the maxdimlevel into account.
@@ -1250,6 +1251,7 @@ void GetLightStatus(
 		case sTypeAC:
 		case sTypeHEU:
 		case sTypeANSLUT:
+		case sTypeDummy:
 		case sTypeKambrook:
 			bHaveDimmer=true;
 			bHaveGroupCmd=true;
