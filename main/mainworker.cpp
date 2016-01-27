@@ -9978,7 +9978,8 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 						{
 							// For dimmers we only allow level 0-99
 							level = (level > 99) ? 99 : level;
-						}					}
+						}
+					}
 				}
 			}
 			// Dummy Switches
