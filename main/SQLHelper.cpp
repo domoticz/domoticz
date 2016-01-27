@@ -580,6 +580,15 @@ const char *sqlCreateUserSessions =
 	" [LastUpdate] DATETIME DEFAULT(datetime('now', 'localtime')),"
 	" PRIMARY KEY([SessionID]));";
 
+const char *sqlCreateMobileDevices =
+"CREATE TABLE IF NOT EXISTS [MobileDevices]("
+"[ID] INTEGER PRIMARY KEY, "
+"[Active] BOOLEAN DEFAULT false, "
+"[SenderID] TEXT NOT NULL,"
+"[UUID] TEXT NOT NULL, "
+"[LastUpdate] DATETIME DEFAULT(datetime('now', 'localtime'))"
+");";
+
 extern std::string szUserDataFolder;
 
 CSQLHelper::CSQLHelper(void)
@@ -701,6 +710,7 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateMySensorsChilds);
 	query(sqlCreateToonDevices);
 	query(sqlCreateUserSessions);
+	query(sqlCreateMobileDevices);
 	//Add indexes to log tables
 	query("create index if not exists f_idx on Fan(DeviceRowID);");
 	query("create index if not exists fc_idx on Fan_Calendar(DeviceRowID);");
