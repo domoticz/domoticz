@@ -9969,13 +9969,8 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 						// Set command based on level value
 						if (level == 0)
 							lcmd.LIGHTING2.cmnd = light2_sOff;
-						else if (level == 255)
+						else if (level > 99)
 							lcmd.LIGHTING2.cmnd = light2_sOn;
-						else
-						{
-							// For dimmers we only allow level 0-99
-							level = (level > 99) ? 99 : level;
-						}
 					}
 				}
 			}
