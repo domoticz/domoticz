@@ -138,6 +138,53 @@ void CNest::SendSetPointSensor(const unsigned char Idx, const float Temp, const 
 }
 
 
+// Creates and updates switch used to log Heating and/or Colling.
+void CNest::UpdateSwitch(const unsigned char Idx, const bool bOn, const std::string &defaultname)
+{
+	bool bDeviceExits = true;
+	char szIdx[10];
+	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')",
+		m_HwdID, pTypeLighting2, sTypeAC, szIdx);
+	if (!result.empty())
+	{
+		//check if we have a change, if not do not update it
+		int nvalue = atoi(result[0][1].c_str());
+		if ((!bOn) && (nvalue == 0))
+			return;
+		if ((bOn && (nvalue != 0)))
+			return;
+	}
+
+	//Send as Lighting 2
+	tRBUF lcmd;
+	memset(&lcmd, 0, sizeof(RBUF));
+	lcmd.LIGHTING2.packetlength = sizeof(lcmd.LIGHTING2) - 1;
+	lcmd.LIGHTING2.packettype = pTypeLighting2;
+	lcmd.LIGHTING2.subtype = sTypeAC;
+	lcmd.LIGHTING2.id1 = 0;
+	lcmd.LIGHTING2.id2 = 0;
+	lcmd.LIGHTING2.id3 = 0;
+	lcmd.LIGHTING2.id4 = Idx;
+	lcmd.LIGHTING2.unitcode = 1;
+	int level = 15;
+	if (!bOn)
+	{
+		level = 0;
+		lcmd.LIGHTING2.cmnd = light2_sOff;
+	}
+	else
+	{
+		level = 15;
+		lcmd.LIGHTING2.cmnd = light2_sOn;
+	}
+	lcmd.LIGHTING2.level = level;
+	lcmd.LIGHTING2.filler = 0;
+	lcmd.LIGHTING2.rssi = 12;
+	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255);
+}
+
 bool CNest::Login()
 {
 	if (!m_AccessToken.empty())
@@ -511,6 +558,20 @@ void CNest::GetMeterDetails()
 				float currentTemp = nshared["current_temperature"].asFloat();
 				int Humidity = root["device"][Serial]["current_humidity"].asInt();
 				SendTempHumSensor((iThermostat * 3) + 2, 255, currentTemp, Humidity, Name + " TempHum");
+			}
+
+			// Check if thermostat is currently Heating
+			if (nshared["can_heat"].asBool() and !nshared["hvac_heater_state"].empty())
+			{
+				bool bIsHeating = nshared["hvac_heater_state"].asBool();
+				UpdateSwitch(113,bIsHeating,"HeatingOn");		
+			}
+
+			// Check if thermostat is currently Cooling
+			if (nshared["can_cool"].asBool() and !nshared["hvac_ac_state"].empty())
+			{
+				bool bIsCooling = nshared["hvac_ac_state"].asBool();
+				UpdateSwitch(114,bIsCooling,"CoolingOn");		
 			}
 
 			//Away
