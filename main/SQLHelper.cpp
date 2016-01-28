@@ -31,7 +31,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 95
+#define DB_VERSION 96
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -584,6 +584,7 @@ const char *sqlCreateMobileDevices =
 "CREATE TABLE IF NOT EXISTS [MobileDevices]("
 "[ID] INTEGER PRIMARY KEY, "
 "[Active] BOOLEAN DEFAULT false, "
+"[Name] VARCHAR(100) DEFAULT '',"
 "[SenderID] TEXT NOT NULL,"
 "[UUID] TEXT NOT NULL, "
 "[LastUpdate] DATETIME DEFAULT(datetime('now', 'localtime'))"
@@ -1748,7 +1749,10 @@ bool CSQLHelper::OpenDatabase()
 				query("ALTER TABLE SetpointTimers ADD COLUMN [Occurence] INTEGER DEFAULT 0");
 			}
 		}
-
+		if (dbversion < 96)
+		{
+			query("ALTER TABLE MobileDevices ADD COLUMN [Name] VARCHAR(100) DEFAULT ''");
+		}
 	}
 	else if (bNewInstall)
 	{
