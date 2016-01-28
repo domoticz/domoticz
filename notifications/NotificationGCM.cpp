@@ -5,7 +5,7 @@
 #include "../main/SQLHelper.h"
 #include "../json/json.h"
 
-#define GAPI_POST_URL "https://android.googleapis.com/gcm/send"
+#define GAPI_POST_URL "https://gcm-http.googleapis.com/gcm/send"
 #define GAPI "AIzaSyDo5VebQi1-fZSEYbxnbGY1mJA74fRDZUQ"
 
 CNotificationGCM::CNotificationGCM() : CNotificationBase(std::string("gcm"), OPTIONS_URL_SUBJECT | OPTIONS_URL_BODY | OPTIONS_URL_PARAMS)
