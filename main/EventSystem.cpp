@@ -3031,7 +3031,7 @@ void CEventSystem::UpdateDevice(const std::string &DevParams)
 				break;
 			}
 		case pTypeGeneral:
-			if ((devType == pTypeGeneral) && (subType != sTypeTextStatus) && (subType != sTypeAlert))
+			if ((devType == pTypeGeneral) && (subType != sTypeTextStatus) && (subType != sTypeAlert) && (subType != sTypeSwitch))
 			{
 				break;
 			}

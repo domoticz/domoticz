@@ -533,6 +533,9 @@ namespace http {
 			RegisterCommandCode("clearshortlog", boost::bind(&CWebServer::Cmd_ClearShortLog, this, _1, _2, _3));
 			RegisterCommandCode("vacuumdatabase", boost::bind(&CWebServer::Cmd_VacuumDatabase, this, _1, _2, _3));
 
+			RegisterCommandCode("addmobiledevice", boost::bind(&CWebServer::Cmd_AddMobileDevice, this, _1, _2, _3));
+			RegisterCommandCode("deletemobiledevice", boost::bind(&CWebServer::Cmd_DeleteMobileDevice, this, _1, _2, _3));
+
 			RegisterRType("graph", boost::bind(&CWebServer::RType_HandleGraph, this, _1, _2, _3));
 			RegisterRType("lightlog", boost::bind(&CWebServer::RType_LightLog, this, _1, _2, _3));
 			RegisterRType("textlog", boost::bind(&CWebServer::RType_TextLog, this, _1, _2, _3));
@@ -10827,7 +10830,55 @@ namespace http {
 			m_sql.VacuumDatabase();
 		}
 		
-		
+		void CWebServer::Cmd_AddMobileDevice(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			std::string suuid = request::findValue(&req, "uuid");
+			std::string ssenderid = request::findValue(&req, "senderid");
+			if (
+				(suuid.empty()) ||
+				(ssenderid.empty())
+				)
+				return;
+			root["status"] = "OK";
+			root["title"] = "AddMobileDevice";
+
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query("SELECT ID FROM MobileDevices WHERE (UUID=='%q')", suuid.c_str());
+			if (result.empty())
+			{
+				//New
+				m_sql.safe_query("INSERT INTO MobileDevices (UUID,SenderID) VALUES ('%q','%q')", suuid.c_str(), ssenderid.c_str());
+			}
+			else
+			{
+				//Update
+				time_t now = time(0);
+				struct tm ltime;
+				localtime_r(&now, &ltime);
+				m_sql.safe_query("UPDATE MobileDevices SET SenderID='%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (UUID == '%q')",
+					ssenderid.c_str(),
+					ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
+					suuid.c_str()
+					);
+			}
+		}
+
+		void CWebServer::Cmd_DeleteMobileDevice(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+				return;//Only admin user allowed
+			std::string suuid = request::findValue(&req, "uuid");
+			if (suuid.empty())
+				return;
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query("SELECT ID FROM MobileDevices WHERE (UUID=='%q')", suuid.c_str());
+			if (result.empty())
+				return;
+			m_sql.safe_query("DELETE FROM MobileDevices WHERE (UUID == '%q')", suuid.c_str());
+			root["status"] = "OK";
+			root["title"] = "DeleteMobileDevice";
+		}
+
 
 		void CWebServer::RType_GetTransfers(WebEmSession & session, const request& req, Json::Value &root)
 		{
@@ -10962,9 +11013,12 @@ namespace http {
 			std::map<std::string, CNotificationBase*>::const_iterator ittNotifiers;
 			for (ittNotifiers = m_notifications.m_notifiers.begin(); ittNotifiers != m_notifications.m_notifiers.end(); ++ittNotifiers)
 			{
-				root["notifiers"][ii]["name"] = ittNotifiers->first;
-				root["notifiers"][ii]["description"] = ittNotifiers->first;
-				ii++;
+				if (ittNotifiers->first != "gcm")
+				{
+					root["notifiers"][ii]["name"] = ittNotifiers->first;
+					root["notifiers"][ii]["description"] = ittNotifiers->first;
+					ii++;
+				}
 			}
 
 			unsigned long long idx = 0;

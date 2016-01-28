@@ -1,0 +1,82 @@
+#include "stdafx.h"
+#include "NotificationGCM.h"
+#include "../httpclient/HTTPClient.h"
+#include "../main/Logger.h"
+#include "../main/SQLHelper.h"
+#include "../json/json.h"
+
+#define GAPI_POST_URL "https://gcm-http.googleapis.com/gcm/send"
+#define GAPI "AIzaSyDo5VebQi1-fZSEYbxnbGY1mJA74fRDZUQ"
+
+CNotificationGCM::CNotificationGCM() : CNotificationBase(std::string("gcm"), OPTIONS_URL_SUBJECT | OPTIONS_URL_BODY | OPTIONS_URL_PARAMS)
+{
+	m_IsEnabled = 1;
+	//SetupConfig(std::string("GCMEnabled"), &m_IsEnabled);
+}
+
+CNotificationGCM::~CNotificationGCM()
+{
+}
+
+bool CNotificationGCM::SendMessageImplementation(const std::string &Subject, const std::string &Text, const std::string &ExtraData, const int Priority, const std::string &Sound, const bool bFromNotification)
+{
+	//send message to GCM
+
+	//Get All Devices
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT SenderID, Active FROM MobileDevices");// WHERE(Active == true)");
+	if (result.empty())
+		return true;
+
+	std::stringstream sstr, sstr2;
+	std::string sResult;
+	sstr << "{ \"registration_ids\": [";
+
+	int ii = 0;
+	std::vector<std::vector<std::string> >::const_iterator itt;
+	for (itt = result.begin(); itt != result.end(); ++itt)
+	{
+		std::vector<std::string> sd = *itt;
+		//bool Active = (sd[1] == "true");
+		//if (Active)
+		{
+			sstr << "\"" << sd[0] << "\"";
+			if (ii != 0)
+				sstr << ", ";
+			ii++;
+		}
+	}
+	sstr << "], \"data\" : { \"message\": \"" << Subject << "\" } }";
+	std::string szPostdata = sstr.str();
+
+	std::vector<std::string> ExtraHeaders;
+	ExtraHeaders.push_back("Content-Type: application/json");
+
+	sstr2 << "Authorization: key=" << GAPI;
+	ExtraHeaders.push_back(sstr2.str());
+
+	if (!HTTPClient::POST(GAPI_POST_URL, szPostdata, ExtraHeaders, sResult))
+	{
+		_log.Log(LOG_ERROR, "GCM: Could not send message, HTTP Error");
+		return false;
+	}
+
+	Json::Value root;
+
+	Json::Reader jReader;
+	bool ret = jReader.parse(sResult, root);
+	if (!ret)
+	{
+		_log.Log(LOG_ERROR, "GCM: ", sResult.c_str());
+		return false;
+	}
+	bool bSuccess = root["success"].asInt() == 1;
+	if (!bSuccess)
+		_log.Log(LOG_ERROR, "GCM: %s", root["error"].asString().c_str());
+	return bSuccess;
+}
+
+bool CNotificationGCM::IsConfigured()
+{
+	return true;
+}
