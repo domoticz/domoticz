@@ -229,7 +229,7 @@ float C1WireByOWFS::GetHumidity(const _t1WireDevice& device) const
 
 float C1WireByOWFS::GetPressure(const _t1WireDevice& device) const
 {
-   std::string readValue=readRawData(std::string(device.filename+"/B1-R1-A/pressure"));
+   std::string readValue=readRawData(std::string(device.filename+"/pressure"));
    if (readValue.empty())
 	   return -1000.0;
    return static_cast<float>(atof(readValue.c_str()));
@@ -412,8 +412,35 @@ void C1WireByOWFS::GetDevice(const std::string &inDir, const std::string &dirnam
     }
     device.devid=id;
     
-    // Filename (full path)
     device.filename=inDir;
-    device.filename+="/" + dirname;
+    if (device.family == Environmental_Monitors || device.family == smart_battery_monitor) {
+        device.filename+="/" + dirname + "/" + nameHelper(dirname);;
+    } else { 
+        device.filename+="/" + dirname;
+    }
+}
+
+std::string C1WireByOWFS::nameHelper(const std::string& dirname) const {
+	std::string name;
+	DIR *d=NULL;
+	
+	d=opendir(std::string(std::string(OWFS_Base_Dir) + "/" + dirname.c_str()).c_str());
+        if (d != NULL)
+        {
+            struct dirent *de=NULL;
+            while ((de = readdir(d)))
+            {
+            name = de->d_name;
+            if (de->d_type==DT_DIR)
+            {
+		if (name.compare(0,3, "EDS") == 0 || name.compare(0,7, "B1-R1-A") == 0) {
+		    closedir(d);
+		    return name;
+		}
+            }
+        }
+        closedir(d);
+    }
+    return "";
 }
 
