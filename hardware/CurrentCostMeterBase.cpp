@@ -1,7 +1,8 @@
 #include "stdafx.h"
 #include "CurrentCostMeterBase.h"
 
-CurrentCostMeterBase::CurrentCostMeterBase(void)
+CurrentCostMeterBase::CurrentCostMeterBase(void) :
+	m_tempuratureCounter(0)
 {
 	Init();
 }
@@ -55,17 +56,17 @@ void CurrentCostMeterBase::ExtractReadings()
 	}
 	
 	float temp;
-	float sensor;
+	float sensor(0);
 	float type;
 	float reading;
 	
-	// if we have the sensor tag then only do the whle house one
+	// if we have the sensor tag then read it
 	// earlier versions don't have this
 	if(m_buffer.find("<sensor>") != std::string::npos)
 	{
-		if(!ExtractNumberBetweenStrings("<sensor>", "</sensor>", &sensor) || sensor != 0.0)
+		if(!ExtractNumberBetweenStrings("<sensor>", "</sensor>", &sensor))
 		{
-			// not the whole house sensor, ignore
+			// no sensor corrupt
 			return;
 		}
 	}
@@ -76,9 +77,14 @@ void CurrentCostMeterBase::ExtractReadings()
 		return;
 	}
 
-	if(ExtractNumberBetweenStrings("<tmpr>", "</tmpr>", &temp))
+	// get the temp and only process if it is from the whole house sensor
+	if(ExtractNumberBetweenStrings("<tmpr>", "</tmpr>", &temp) && sensor == 0.0)
 	{
-		SendTempSensor(1, 255, temp, "Temp");
+		// only send the temp once a minute to avoid filling up the db
+		if((m_tempuratureCounter++ % 10) == 0)
+		{
+			SendTempSensor(1, 255, temp, "Temp");
+		}
 	}
 
 	float totalPower(0.0);
@@ -94,7 +100,19 @@ void CurrentCostMeterBase::ExtractReadings()
 	{
 		totalPower += reading;
 	}
-	SendWattMeter(2, 1, 255, totalPower, "CC Power");
+	if(sensor == 0.0)
+	{
+		SendWattMeter(2, 1, 255, totalPower, "CC Whole House Power");
+	}
+	else
+	{
+		// create a suitable default name
+		// there can only be 8 sensors so this
+		// method 
+		std::string sensorName("CC Sensor 0 Power");
+		sensorName[10] += static_cast<char>(sensor);
+		SendWattMeter(2 + sensor, 1, 255, totalPower, sensorName);
+	}
 }
 
 bool CurrentCostMeterBase::ExtractNumberBetweenStrings(const char *startString, const char *endString, float *pResult)
