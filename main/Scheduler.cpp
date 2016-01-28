@@ -62,7 +62,12 @@ void CScheduler::ReloadSchedules()
 	localtime_r(&atime, &ltime);
 
 	//Add Device Timers
-	result = m_sql.safe_query("SELECT T1.DeviceRowID, T1.Time, T1.Type, T1.Cmd, T1.Level, T1.Days, T2.Name, T2.Used, T1.UseRandomness, T1.Hue, T1.[Date], T1.MDay, T1.Month, T1.Occurence FROM Timers as T1, DeviceStatus as T2 WHERE ((T1.Active == 1) AND (T1.TimerPlan == %d) AND (T2.ID == T1.DeviceRowID)) ORDER BY T1.ID",
+	result = m_sql.safe_query(
+		"SELECT T1.DeviceRowID, T1.Time, T1.Type, T1.Cmd, T1.Level, T1.Days, T2.Name,"
+		" T2.Used, T1.UseRandomness, T1.Hue, T1.[Date], T1.MDay, T1.Month, T1.Occurence, T1.ID"
+		" FROM Timers as T1, DeviceStatus as T2"
+		" WHERE ((T1.Active == 1) AND (T1.TimerPlan == %d) AND (T2.ID == T1.DeviceRowID))"
+		" ORDER BY T1.ID",
 		m_sql.m_ActiveTimerPlan);
 	if (result.size() > 0)
 	{
@@ -83,8 +88,12 @@ void CScheduler::ReloadSchedules()
 
 				_eTimerType timerType = (_eTimerType)atoi(sd[2].c_str());
 
-				std::stringstream s_str(sd[0]);
-				s_str >> titem.RowID;
+				{
+					std::stringstream s_str(sd[0]);
+					s_str >> titem.RowID; }
+				{
+					std::stringstream s_str(sd[14]);
+					s_str >> titem.TimerID; }
 
 				titem.startHour = (unsigned char)atoi(sd[1].substr(0, 2).c_str());
 				titem.startMin = (unsigned char)atoi(sd[1].substr(3, 2).c_str());
@@ -159,7 +168,12 @@ void CScheduler::ReloadSchedules()
 	}
 
 	//Add Scene Timers
-	result = m_sql.safe_query("SELECT T1.SceneRowID, T1.Time, T1.Type, T1.Cmd, T1.Level, T1.Days, T2.Name, T1.UseRandomness, T1.[Date], T1.MDay, T1.Month, T1.Occurence FROM SceneTimers as T1, Scenes as T2 WHERE ((T1.Active == 1) AND (T1.TimerPlan == %d) AND (T2.ID == T1.SceneRowID)) ORDER BY T1.ID",
+	result = m_sql.safe_query(
+		"SELECT T1.SceneRowID, T1.Time, T1.Type, T1.Cmd, T1.Level, T1.Days, T2.Name,"
+		" T1.UseRandomness, T1.[Date], T1.MDay, T1.Month, T1.Occurence, T1.ID"
+		" FROM SceneTimers as T1, Scenes as T2"
+		" WHERE ((T1.Active == 1) AND (T1.TimerPlan == %d) AND (T2.ID == T1.SceneRowID))"
+		" ORDER BY T1.ID",
 		m_sql.m_ActiveTimerPlan);
 	if (result.size() > 0)
 	{
@@ -177,8 +191,12 @@ void CScheduler::ReloadSchedules()
 			titem.Month = 0;
 			titem.Occurence = 0;
 
-			std::stringstream s_str(sd[0]);
-			s_str >> titem.RowID;
+			{
+				std::stringstream s_str(sd[0]);
+				s_str >> titem.RowID; }
+			{
+				std::stringstream s_str(sd[12]);
+				s_str >> titem.TimerID; }
 
 			_eTimerType timerType = (_eTimerType)atoi(sd[2].c_str());
 
@@ -243,7 +261,12 @@ void CScheduler::ReloadSchedules()
 	}
 
 	//Add Setpoint Timers
-	result = m_sql.safe_query("SELECT T1.DeviceRowID, T1.Time, T1.Type, T1.Temperature, T1.Days, T2.Name, T1.[Date], T1.MDay, T1.Month, T1.Occurence FROM SetpointTimers as T1, DeviceStatus as T2 WHERE ((T1.Active == 1) AND (T1.TimerPlan == %d) AND (T2.ID == T1.DeviceRowID)) ORDER BY T1.ID",
+	result = m_sql.safe_query(
+		"SELECT T1.DeviceRowID, T1.Time, T1.Type, T1.Temperature, T1.Days, T2.Name,"
+		" T1.[Date], T1.MDay, T1.Month, T1.Occurence, T1.ID"
+		" FROM SetpointTimers as T1, DeviceStatus as T2"
+		" WHERE ((T1.Active == 1) AND (T1.TimerPlan == %d) AND (T2.ID == T1.DeviceRowID))"
+		" ORDER BY T1.ID",
 		m_sql.m_ActiveTimerPlan);
 	if (result.size() > 0)
 	{
@@ -261,8 +284,12 @@ void CScheduler::ReloadSchedules()
 			titem.Month = 0;
 			titem.Occurence = 0;
 
-			std::stringstream s_str(sd[0]);
-			s_str >> titem.RowID;
+			{
+				std::stringstream s_str(sd[0]);
+				s_str >> titem.RowID; }
+			{
+				std::stringstream s_str(sd[10]);
+				s_str >> titem.TimerID; }
 
 			_eTimerType timerType = (_eTimerType)atoi(sd[2].c_str());
 
@@ -864,49 +891,135 @@ namespace http {
 	namespace server {
 		void CWebServer::RType_Schedules(WebEmSession & session, const request& req, Json::Value &root)
 		{
+			std::string rfilter = request::findValue(&req, "filter");
+
 			root["status"] = "OK";
 			root["title"] = "Schedules";
 
+			std::vector<std::vector<std::string> > tot_result;
+			std::vector<std::vector<std::string> > tmp_result;
+
+			//Retrieve active schedules
 			std::vector<tScheduleItem> schedules = m_mainworker.m_scheduler.GetScheduleItems();
-			int ii = 0;
-			std::vector<tScheduleItem>::iterator itt;
-			for (itt = schedules.begin(); itt != schedules.end(); ++itt)
+
+			//Add Timers
+			if ((rfilter == "all") || (rfilter == "") || (rfilter == "device")) {
+				tmp_result = m_sql.safe_query(
+					"SELECT t.ID, t.Active, d.[Name], t.DeviceRowID AS ID, 0 AS IsScene, 0 AS IsThermostat,"
+					" t.[Date], t.Time, t.Type, t.Cmd, t.Level, t.Hue, 0 AS Temperature, t.Days,"
+					" t.UseRandomness, t.MDay, t.Month, t.Occurence"
+					" FROM Timers AS t, DeviceStatus AS d"
+					" WHERE (d.ID == t.DeviceRowID) AND (t.TimerPlan==%d)"
+					" ORDER BY d.[Name], t.Time",
+					m_sql.m_ActiveTimerPlan);
+				if (tmp_result.size() > 0)
+					tot_result.insert(tot_result.end(), tmp_result.begin(), tmp_result.end());
+			}
+
+			//Add Scene-Timers
+			if ((rfilter == "all") || (rfilter == "") || (rfilter == "scene")) {
+				tmp_result = m_sql.safe_query(
+					"SELECT t.ID, t.Active, s.[Name], t.SceneRowID AS ID, 1 AS IsScene, 0 AS IsThermostat"
+					", t.[Date], t.Time, t.Type, t.Cmd, t.Level, t.Hue, 0 AS Temperature, t.Days,"
+					" t.UseRandomness, t.MDay, t.Month, t.Occurence"
+					" FROM SceneTimers AS t, Scenes AS s"
+					" WHERE (s.ID == t.SceneRowID) AND (t.TimerPlan==%d)"
+					" ORDER BY s.[Name], t.Time",
+					m_sql.m_ActiveTimerPlan);
+				if (tmp_result.size() > 0)
+					tot_result.insert(tot_result.end(), tmp_result.begin(), tmp_result.end());
+			}
+
+			//Add Setpoint-Timers
+			if ((rfilter == "all") || (rfilter == "") || (rfilter == "thermostat")) {
+				tmp_result = m_sql.safe_query(
+					"SELECT t.ID, t.Active, d.[Name], t.DeviceRowID AS ID, 0 AS IsScene, 1 AS IsThermostat,"
+					" t.[Date], t.Time, t.Type, 0 AS Cmd, 0 AS Level, 0 AS Hue, t.Temperature, t.Days,"
+					" 0 AS UseRandomness, t.MDay, t.Month, t.Occurence"
+					" FROM SetpointTimers AS t, DeviceStatus AS d"
+					" WHERE (d.ID == t.DeviceRowID) AND (t.TimerPlan==%d)"
+					" ORDER BY d.[Name], t.Time",
+					m_sql.m_ActiveTimerPlan);
+				if (tmp_result.size() > 0)
+					tot_result.insert(tot_result.end(), tmp_result.begin(), tmp_result.end());
+			}
+
+			if (tot_result.size() > 0)
 			{
-				if (itt->startTime == 0) {
-					// This should not happen
-					_log.Log(LOG_ERROR, "Schedule start time not set, Type: %s, RowID: %llu, TimerType: %s, TimerCmd: %s",
-						(itt->bIsScene) ? "Scene" : "Device",
-						itt->RowID,
-						Timer_Type_Desc(itt->timerType),
-						Timer_Cmd_Desc(itt->timerCmd));
-					continue;
-				}
-
-				root["result"][ii]["Type"] = (itt->bIsScene) ? "Scene" : "Device";
-				root["result"][ii]["RowID"] = itt->RowID;
-				root["result"][ii]["DevName"] = itt->DeviceName;
-				root["result"][ii]["TimerTypeStr"] = Timer_Type_Desc(itt->timerType);
-				root["result"][ii]["TimerType"] = itt->timerType;
-				root["result"][ii]["TimerCmd"] = Timer_Cmd_Desc(itt->timerCmd);
-				root["result"][ii]["IsThermostat"] = (itt->bIsThermostat) ? "true" : "false";
-				if (itt->bIsThermostat == true)
+				int ii = 0;
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				for (itt = tot_result.begin(); itt != tot_result.end(); ++itt)
 				{
-					char szTemp[10];
-					sprintf(szTemp, "%.1f", itt->Temperature);
-					root["result"][ii]["Temperature"] = szTemp;
+					std::vector<std::string> sd = *itt;
+
+					int iTimerIdx = atoi(sd[0].c_str());
+					bool bActive = atoi(sd[1].c_str()) != 0;
+					bool bIsScene = atoi(sd[4].c_str()) != 0;
+					bool bIsThermostat = atoi(sd[5].c_str()) != 0;
+					int iDays = atoi(sd[13].c_str());
+					char ltimeBuf[30] = "";
+
+					if (bActive)
+					{
+						//Find Timer in active schedules and retrieve ScheduleDate
+						tScheduleItem sitem;
+						sitem.TimerID = iTimerIdx;
+						sitem.bIsScene = bIsScene;
+						sitem.bIsThermostat = bIsThermostat;
+						std::vector<tScheduleItem>::iterator it = std::find(schedules.begin(), schedules.end(), sitem);
+						if (it != schedules.end()) {
+							struct tm timeinfo;
+							localtime_r(&it->startTime, &timeinfo);
+							strftime(ltimeBuf, sizeof(ltimeBuf), "%Y-%m-%d %H:%M:%S", &timeinfo);
+						}
+					}
+
+					unsigned char iLevel = atoi(sd[10].c_str());
+					if (iLevel == 0)
+						iLevel = 100;
+
+					int iTimerType = atoi(sd[8].c_str());
+					std::string sdate = sd[6];
+					if ((iTimerType == TTYPE_FIXEDDATETIME) && (sdate.size() == 10))
+					{
+						char szTmp[30];
+						int Year = atoi(sdate.substr(0, 4).c_str());
+						int Month = atoi(sdate.substr(5, 2).c_str());
+						int Day = atoi(sdate.substr(8, 2).c_str());
+						sprintf(szTmp, "%02d-%02d-%04d", Month, Day, Year);
+						sdate = szTmp;
+					}
+					else
+						sdate = "";
+
+					root["result"][ii]["TimerID"] = iTimerIdx;
+					root["result"][ii]["Active"] = bActive ? "true" : "false";
+					root["result"][ii]["Type"] = bIsScene ? "Scene" : "Device";
+					root["result"][ii]["IsThermostat"] = bIsThermostat ? "true" : "false";
+					root["result"][ii]["DevName"] = sd[2];
+					root["result"][ii]["DeviceRowID"] = atoi(sd[3].c_str());
+					root["result"][ii]["Date"] = sdate;
+					root["result"][ii]["Time"] = sd[7];
+					root["result"][ii]["TimerType"] = iTimerType;
+					root["result"][ii]["TimerTypeStr"] = Timer_Type_Desc(iTimerType);
+					root["result"][ii]["Days"] = iDays;
+					root["result"][ii]["MDay"] = atoi(sd[15].c_str());
+					root["result"][ii]["Month"] = atoi(sd[16].c_str());
+					root["result"][ii]["Occurence"] = atoi(sd[17].c_str());
+					root["result"][ii]["ScheduleDate"] = ltimeBuf;
+					if (bIsThermostat)
+					{
+						root["result"][ii]["Temperature"] = sd[12];
+					}
+					else
+					{
+						root["result"][ii]["TimerCmd"] = atoi(sd[9].c_str());
+						root["result"][ii]["Level"] = iLevel;
+						root["result"][ii]["Hue"] = atoi(sd[11].c_str());
+						root["result"][ii]["Randomness"] = (atoi(sd[14].c_str()) != 0) ? "true" : "false";
+					}
+					ii++;
 				}
-				root["result"][ii]["Days"] = itt->Days;
-				root["result"][ii]["MDay"] = itt->MDay;
-				root["result"][ii]["Month"] = itt->Month;
-				root["result"][ii]["Occurence"] = itt->Occurence;
-
-				struct tm timeinfo;
-				localtime_r(&itt->startTime, &timeinfo);
-
-				char ltimeBuf[30];
-				strftime(ltimeBuf, sizeof(ltimeBuf), "%Y-%m-%d %H:%M:%S", &timeinfo);
-				root["result"][ii]["ScheduleDate"] = ltimeBuf;
-				ii++;
 			}
 		}
 		void CWebServer::RType_Timers(WebEmSession & session, const request& req, Json::Value &root)
