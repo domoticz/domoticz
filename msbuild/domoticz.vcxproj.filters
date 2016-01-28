@@ -1792,6 +1792,9 @@
     <ClInclude Include="..\hardware\PanasonicTV.h">
       <Filter>Devices\Panasonic</Filter>
     </ClInclude>
+    <ClInclude Include="..\notifications\NotificationGCM.h">
+      <Filter>Notifications</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2324,6 +2327,9 @@
     </ClCompile>
     <ClCompile Include="..\tinyxpath\tokenlist.cpp">
       <Filter>XML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\notifications\NotificationGCM.cpp">
+      <Filter>Notifications</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

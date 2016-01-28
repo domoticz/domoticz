@@ -278,6 +278,7 @@ hardware/ZWaveBase.cpp
 MQTT/mosquittopp.cpp
 notifications/NotificationBase.cpp
 notifications/NotificationEmail.cpp
+notifications/NotificationGCM.cpp
 notifications/NotificationHelper.cpp
 notifications/NotificationHTTP.cpp
 notifications/NotificationKodi.cpp
