@@ -561,14 +561,14 @@ void CNest::GetMeterDetails()
 			}
 
 			// Check if thermostat is currently Heating
-			if (nshared["can_heat"].asBool() and !nshared["hvac_heater_state"].empty())
+			if (nshared["can_heat"].asBool() && !nshared["hvac_heater_state"].empty())
 			{
 				bool bIsHeating = nshared["hvac_heater_state"].asBool();
 				UpdateSwitch(113,bIsHeating,"HeatingOn");		
 			}
 
 			// Check if thermostat is currently Cooling
-			if (nshared["can_cool"].asBool() and !nshared["hvac_ac_state"].empty())
+			if (nshared["can_cool"].asBool() && !nshared["hvac_ac_state"].empty())
 			{
 				bool bIsCooling = nshared["hvac_ac_state"].asBool();
 				UpdateSwitch(114,bIsCooling,"CoolingOn");		
