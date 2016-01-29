@@ -1,7 +1,11 @@
 #pragma once
 
 #include "MySensorsBase.h"
+#ifdef BUILTIN_MQTT
 #include "../MQTT/mosquittopp.h"
+#else
+#include <mosquittopp.h>
+#endif
 
 class MQTT : public MySensorsBase, mosqpp::mosquittopp
 {
