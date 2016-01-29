@@ -20,6 +20,7 @@ const std::string NEST_SET_STRUCTURE = "/v2/put/structure.";
 
 #ifdef _DEBUG
 	//#define DEBUG_NextThermostatR
+	//#define DEBUG_NextThermostatW
 #endif
 
 #ifdef DEBUG_NextThermostatW
@@ -347,7 +348,7 @@ void CNest::GetMeterDetails()
 {
 	std::string sResult;
 #ifdef DEBUG_NextThermostatR
-	sResult = ReadFile("E:\\Nest_DoubleTherm.json");
+	sResult = ReadFile("E:\\nest.json");
 #else
 	if (m_UserName.size()==0)
 		return;
@@ -373,6 +374,10 @@ void CNest::GetMeterDetails()
 		m_bDoLogin = true;
 		return;
 	}
+#endif
+
+#ifdef DEBUG_NextThermostatW
+	SaveString2Disk(sResult, "E:\\nest.json");
 #endif
 
 	Json::Value root;
@@ -533,7 +538,7 @@ void CNest::GetMeterDetails()
 		{
 			std::string Serial = itShared.key().asString();
 			members = root["structure"].getMemberNames();
-			if (iThermostat>members.size())
+			if (iThermostat>=members.size())
 				continue;
 			std::string StructureID = *(members.begin()+iThermostat);
 			if (root["structure"][StructureID].empty())
