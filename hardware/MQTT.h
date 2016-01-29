@@ -4,7 +4,10 @@
 #ifdef BUILTIN_MQTT
 #include "../MQTT/mosquittopp.h"
 #else
+#ifdef WIN32
+#else
 #include <mosquittopp.h>
+#endif
 #endif
 
 class MQTT : public MySensorsBase, mosqpp::mosquittopp
