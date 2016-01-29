@@ -5,6 +5,7 @@
 #include "../MQTT/mosquittopp.h"
 #else
 #ifdef WIN32
+#include "../MQTT/mosquittopp.h"
 #else
 #include <mosquittopp.h>
 #endif
