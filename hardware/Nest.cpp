@@ -604,7 +604,7 @@ void CNest::GetMeterDetails()
 			if (nshared["can_heat"].asBool() && !nshared["hvac_heater_state"].empty())
 			{
 				bool bIsHeating = nshared["hvac_heater_state"].asBool();
-				UpdateSwitch(113, bIsHeating, "HeatingOn");
+				UpdateSwitch(113, bIsHeating, Name + "HeatingOn");
 			}
 
 			// Check if thermostat is currently Cooling
