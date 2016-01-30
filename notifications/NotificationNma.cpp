@@ -19,7 +19,8 @@ bool CNotificationNma::SendMessageImplementation(const std::string &Subject, con
 	bool bRet;
 	std::stringstream sPostData;
 	std::string sResult;
-	sPostData << "apikey=" << _apikey << "&application=Domoticz&event=" << Subject << "&description=" << Text << "&priority=" << Priority;
+	sPostData << "apikey=" << _apikey << "&application=Domoticz&priority=" << Priority << "&event=" << Subject;
+	sPostData << "&description=" << Text;
 	std::vector<std::string> ExtraHeaders;
 	bRet = HTTPClient::POST("https://www.notifymyandroid.com/publicapi/notify",sPostData.str(),ExtraHeaders,sResult);
 	bool bSuccess = (sResult.find("success code=\"200\"") != std::string::npos);

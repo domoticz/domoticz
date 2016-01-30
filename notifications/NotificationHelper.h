@@ -68,6 +68,11 @@ public:
 		const unsigned long long Idx,
 		const std::string &devicename,
 		const _eNotificationTypes ntype);
+	bool CheckAndHandleSwitchNotification(
+		const unsigned long long Idx, 
+		const std::string & devicename, 
+		const _eNotificationTypes ntype, 
+		const int llevel);
 	bool CheckAndHandleRainNotification(
 		const unsigned long long Idx,
 		const std::string &devicename,

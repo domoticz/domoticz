@@ -20,6 +20,7 @@ const std::string NEST_SET_STRUCTURE = "/v2/put/structure.";
 
 #ifdef _DEBUG
 	//#define DEBUG_NextThermostatR
+	//#define DEBUG_NextThermostatW
 #endif
 
 #ifdef DEBUG_NextThermostatW
@@ -137,6 +138,53 @@ void CNest::SendSetPointSensor(const unsigned char Idx, const float Temp, const 
 	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), 255);
 }
 
+
+// Creates and updates switch used to log Heating and/or Colling.
+void CNest::UpdateSwitch(const unsigned char Idx, const bool bOn, const std::string &defaultname)
+{
+	bool bDeviceExits = true;
+	char szIdx[10];
+	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')",
+		m_HwdID, pTypeLighting2, sTypeAC, szIdx);
+	if (!result.empty())
+	{
+		//check if we have a change, if not do not update it
+		int nvalue = atoi(result[0][1].c_str());
+		if ((!bOn) && (nvalue == 0))
+			return;
+		if ((bOn && (nvalue != 0)))
+			return;
+	}
+
+	//Send as Lighting 2
+	tRBUF lcmd;
+	memset(&lcmd, 0, sizeof(RBUF));
+	lcmd.LIGHTING2.packetlength = sizeof(lcmd.LIGHTING2) - 1;
+	lcmd.LIGHTING2.packettype = pTypeLighting2;
+	lcmd.LIGHTING2.subtype = sTypeAC;
+	lcmd.LIGHTING2.id1 = 0;
+	lcmd.LIGHTING2.id2 = 0;
+	lcmd.LIGHTING2.id3 = 0;
+	lcmd.LIGHTING2.id4 = Idx;
+	lcmd.LIGHTING2.unitcode = 1;
+	int level = 15;
+	if (!bOn)
+	{
+		level = 0;
+		lcmd.LIGHTING2.cmnd = light2_sOff;
+	}
+	else
+	{
+		level = 15;
+		lcmd.LIGHTING2.cmnd = light2_sOn;
+	}
+	lcmd.LIGHTING2.level = level;
+	lcmd.LIGHTING2.filler = 0;
+	lcmd.LIGHTING2.rssi = 12;
+	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255);
+}
 
 bool CNest::Login()
 {
@@ -328,6 +376,10 @@ void CNest::GetMeterDetails()
 	}
 #endif
 
+#ifdef DEBUG_NextThermostatW
+	SaveString2Disk(sResult, "E:\\nest.json");
+#endif
+
 	Json::Value root;
 	Json::Reader jReader;
 	if (!jReader.parse(sResult, root))
@@ -476,28 +528,63 @@ void CNest::GetMeterDetails()
 		return;
 	}
 
-	Json::Value::Members members;
-
 	size_t iThermostat = 0;
-	for (Json::Value::iterator itShared = root["shared"].begin(); itShared != root["shared"].end(); ++itShared)
+	for (Json::Value::iterator ittStructure = root["structure"].begin(); ittStructure != root["structure"].end(); ++ittStructure)
 	{
-		Json::Value nshared = *itShared;
-		if (nshared.isObject())
+		Json::Value nstructure = *ittStructure;
+		if (!nstructure.isObject())
+			continue;
+		std::string StructureID = ittStructure.key().asString();
+		std::string StructureName = nstructure["name"].asString();
+
+		for (Json::Value::iterator ittDevice = nstructure["devices"].begin(); ittDevice != nstructure["devices"].end(); ++ittDevice)
 		{
-			std::string Serial = itShared.key().asString();
-			members = root["structure"].getMemberNames();
-			if (iThermostat>members.size())
+			std::string devID = (*ittDevice).asString();
+			if (devID.find("device.")==std::string::npos)
 				continue;
-			std::string StructureID = *(members.begin()+iThermostat);
-			if (root["structure"][StructureID].empty())
+			std::string Serial = devID.substr(7);
+			if (root["device"].empty())
 				continue;
-			std::string Name = root["structure"][StructureID]["name"].asString();
+			if (root["device"][Serial].empty())
+				continue; //not found !?
+			if (root["shared"][Serial].empty())
+				continue; //Nothing shared?
+
+
+			Json::Value ndevice = root["device"][Serial];
+			if (!ndevice.isObject())
+				continue;
+
+			std::string Name = "Thermostat";
+			if (!ndevice["where_id"].empty())
+			{
+				//Lookup our 'where' (for the Name of the thermostat)
+				std::string where_id = ndevice["where_id"].asString();
+
+				if (!root["where"].empty())
+				{
+					if (!root["where"][StructureID].empty())
+					{
+						for (Json::Value::iterator ittWheres = root["where"][StructureID]["wheres"].begin(); ittWheres != root["where"][StructureID]["wheres"].end(); ++ittWheres)
+						{
+							Json::Value nwheres = *ittWheres;
+							if (nwheres["where_id"] == where_id)
+							{
+								Name = StructureName + " " + nwheres["name"].asString();
+								break;
+							}
+						}
+					}
+				}
+			}
 
 			_tNestThemostat ntherm;
 			ntherm.Serial = Serial;
 			ntherm.StructureID = StructureID;
 			ntherm.Name = Name;
 			m_thermostats[iThermostat] = ntherm;
+
+			Json::Value nshared = root["shared"][Serial];
 
 			//Setpoint
 			if (!nshared["target_temperature"].empty())
@@ -513,10 +600,24 @@ void CNest::GetMeterDetails()
 				SendTempHumSensor((iThermostat * 3) + 2, 255, currentTemp, Humidity, Name + " TempHum");
 			}
 
-			//Away
-			if (!root["structure"][StructureID]["away"].empty())
+			// Check if thermostat is currently Heating
+			if (nshared["can_heat"].asBool() && !nshared["hvac_heater_state"].empty())
 			{
-				bool bIsAway = root["structure"][StructureID]["away"].asBool();
+				bool bIsHeating = nshared["hvac_heater_state"].asBool();
+				UpdateSwitch(113 + (iThermostat * 3), bIsHeating, Name + " HeatingOn");
+			}
+
+			// Check if thermostat is currently Cooling
+			if (nshared["can_cool"].asBool() && !nshared["hvac_ac_state"].empty())
+			{
+				bool bIsCooling = nshared["hvac_ac_state"].asBool();
+				UpdateSwitch(114 + (iThermostat * 3), bIsCooling, Name + " CoolingOn");
+			}
+
+			//Away
+			if (!nstructure["away"].empty())
+			{
+				bool bIsAway = nstructure["away"].asBool();
 				SendSwitch((iThermostat * 3) + 3, 1, 255, bIsAway, 0, Name + " Away");
 			}
 			iThermostat++;

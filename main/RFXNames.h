@@ -148,6 +148,7 @@ enum _eHardwareTypes {
 	HTYPE_CurrentCostMeterLAN,	//66
 	HTYPE_DomoticzInternal,		//67
 	HTYPE_NefitEastLAN,			//68
+	HTYPE_PanasonicTV,			//69
 	HTYPE_END
 };
 

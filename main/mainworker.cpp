@@ -87,6 +87,7 @@
 #include "../hardware/SolarEdgeAPI.h"
 #include "../hardware/DomoticzInternal.h"
 #include "../hardware/NefitEasy.h"
+#include "../hardware/PanasonicTV.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -772,6 +773,10 @@ bool MainWorker::AddHardwareFromParams(
 		//Kodi Media Player
 		pHardware = new CKodi(ID, Mode1, Mode2);
 		break;
+	case HTYPE_PanasonicTV:
+		//Panasonic Viera TV's
+		pHardware = new CPanasonic(ID, Mode1, Mode2);
+		break;
 	case HTYPE_Mochad:
 		//LAN
 		pHardware = new MochadTCP(ID, Address, Port);
@@ -1018,8 +1023,8 @@ bool MainWorker::IsUpdateAvailable(const bool bIsForced)
 	}
 
 #ifdef DEBUG_DOWNLOAD
-	//m_szSystemName = "linux";
-	//machine = "armv7l";
+	m_szSystemName = "linux";
+	machine = "armv7l";
 #endif
 
 	if (((m_szSystemName != "windows") && (machine != "armv6l") && (machine != "armv7l") && (machine != "x86_64")))
@@ -1061,7 +1066,7 @@ bool MainWorker::IsUpdateAvailable(const bool bIsForced)
 	stdreplace(revfile, "\r\n", "\n");
 	std::vector<std::string> strarray;
 	StringSplit(revfile, "\n", strarray);
-	if (strarray.size() != 3)
+	if (strarray.size() <1)
 		return false;
 	StringSplit(strarray[0], " ", strarray);
 	if (strarray.size() != 3)
@@ -1623,7 +1628,7 @@ unsigned long long MainWorker::PerformRealActionFromDomoticzClient(const unsigne
 		ID = szTmp;
 		Unit=0;
 	}
-	else if (devType == pTypeGeneralSwitch)
+	else if ((devType == pTypeGeneralSwitch) || ((devType == pTypeGeneral) && (subType == sTypeSwitch)))
 	{
 		const _tGeneralSwitch *pSwitch = (const _tGeneralSwitch*)pResponse;
 		sprintf(szTmp, "%08X", pSwitch->id);
@@ -1918,6 +1923,9 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const 
 			CDomoticzHardwareBase *pOrgHardware = NULL;
 			switch (pRXCommand[1])
 			{
+			case pTypeGeneral:
+				if (pRXCommand[2] != sTypeSwitch)
+					break;
 			case pTypeLighting1:
 			case pTypeLighting2:
 			case pTypeLighting3:
@@ -2166,8 +2174,8 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const 
 		if (strlen(defaultName) > 0)
 		{
 			DeviceName = defaultName;
-			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID==%llu)", defaultName, DeviceRowIdx);
-		}
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID==%llu)", defaultName, DeviceRowIdx);
+	}
 	}
 
 	if (pHardware->m_bOutputLog)
@@ -8955,6 +8963,7 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 		(subType == sTypeZWaveClock) ||
 		(subType == sTypeZWaveThermostatMode) ||
 		(subType == sTypeZWaveThermostatFanMode) ||
+		(subType == sTypeSwitch) ||
 		(subType == sTypeFan) ||
 		(subType == sTypeTextStatus) ||
 		(subType == sTypeSoundLevel) ||
@@ -9120,6 +9129,38 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, pMeter->intval1, szTmp, procResult.DeviceName);
 		if (DevRowIdx == -1)
 			return;
+	}
+	else if (subType == sTypeSwitch)
+	{
+/*
+		unsigned char Unit = pMeter->unitcode;
+		unsigned char cmnd = pMeter->cmnd;
+		unsigned char level = pMeter->level;
+		unsigned char SignalLevel = pMeter->rssi;
+
+		sprintf(szTmp, "%d", level);
+		unsigned long long DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, -1, cmnd, szTmp, procResult.DeviceName);
+
+		bool isGroupCommand = ((cmnd == gswitch_sGroupOff) || (cmnd == gswitch_sGroupOn));
+		unsigned char single_cmnd = cmnd;
+
+		if (isGroupCommand)
+		{
+			single_cmnd = (cmnd == gswitch_sGroupOff) ? gswitch_sOff : gswitch_sOn;
+
+			// We write the GROUP_CMD into the log to differentiate between manual turn off/on and group_off/group_on
+			m_sql.UpdateValueLighting2GroupCmd(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, -1, cmnd, szTmp, procResult.DeviceName);
+
+			//set the status of all lights with the same code to on/off
+			m_sql.Lighting2GroupCmd(ID, subType, single_cmnd);
+		}
+
+		if (DevRowIdx == -1) {
+			// not found nothing to do 
+			return;
+		}
+		CheckSceneCode(DevRowIdx, devType, subType, single_cmnd, szTmp);
+*/
 	}
 
 	if (m_verboselevel == EVBL_ALL)
@@ -10719,7 +10760,7 @@ bool MainWorker::SwitchModal(const std::string &idx, const std::string &status, 
 	if(tsen.EVOHOME1.mode==CEvohome::cmTmp)
 		CEvohomeDateTime::DecodeISODate(tsen.EVOHOME1,until.c_str());
 	WriteToHardware(HardwareID,(const char*)&tsen,sizeof(tsen.EVOHOME1));
-
+		
 	//the latency on the scripted solution is quite bad so it's good to see the update happening...ideally this would go to an 'updating' status (also useful to update database if we ever use this as a pure virtual device)
 	PushRxMessage(pHardware, (const unsigned char *)&tsen, NULL, 255);
 	return true;
@@ -10962,12 +11003,12 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 			float tempDest = TempValue;
 			//if ((pHardware->HwdType != HTYPE_OpenZWave) && (pHardware->HwdType != HTYPE_RazberryZWave))
 			{
-				unsigned char tSign = m_sql.m_tempsign[0];
-				if (tSign == 'F')
-				{
-					//Convert to Celsius
-					tempDest = (tempDest - 32.0f) / 1.8f;
-				}
+			unsigned char tSign = m_sql.m_tempsign[0];
+			if (tSign == 'F')
+			{
+				//Convert to Celsius
+				tempDest = (tempDest - 32.0f) / 1.8f;
+			}
 			}
 
 			_tThermostat tmeter;
@@ -11547,26 +11588,26 @@ void MainWorker::SetInternalSecStatus()
 
 	if (m_verboselevel == EVBL_ALL)
 	{
-		char szDate[100];
+	char szDate[100];
 #if !defined WIN32
-		// Get a timestamp
-		struct timeval tv;
-		gettimeofday(&tv, NULL);
+	// Get a timestamp
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
 
-		struct tm timeinfo;
-		localtime_r(&tv.tv_sec, &timeinfo);
+	struct tm timeinfo;
+	localtime_r(&tv.tv_sec, &timeinfo);
 
-		// create a time stamp string for the log message
-		snprintf(szDate, sizeof(szDate), "%04d-%02d-%02d %02d:%02d:%02d.%03d ",
-			timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday,
-			timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec, (int)tv.tv_usec / 1000);
+	// create a time stamp string for the log message
+	snprintf(szDate, sizeof(szDate), "%04d-%02d-%02d %02d:%02d:%02d.%03d ",
+		timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday,
+		timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec, (int)tv.tv_usec / 1000);
 #else
-		// Get a timestamp
-		SYSTEMTIME time;
-		::GetLocalTime(&time);
+	// Get a timestamp
+	SYSTEMTIME time;
+	::GetLocalTime(&time);
 
-		// create a time stamp string for the log message
-		sprintf_s(szDate, sizeof(szDate), "%04d-%02d-%02d %02d:%02d:%02d.%03d ", time.wYear, time.wMonth, time.wDay, time.wHour, time.wMinute, time.wSecond, time.wMilliseconds);
+	// create a time stamp string for the log message
+	sprintf_s(szDate, sizeof(szDate), "%04d-%02d-%02d %02d:%02d:%02d.%03d ", time.wYear, time.wMonth, time.wDay, time.wHour, time.wMinute, time.wSecond, time.wMilliseconds);
 #endif
 
 		_log.Log(LOG_NORM, "%s (System) Domoticz Security Status", szDate);

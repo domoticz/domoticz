@@ -1177,6 +1177,17 @@ bool COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 	}
 
 	_tZWaveDevice *pDevice = FindDevice(nodeID, instanceID, 0, ZWaveBase::ZDTYPE_SWITCH_DIMMER);
+	if (pDevice)
+	{
+		if ((pDevice->Product_id == 0x0060) && (pDevice->Product_type == 0x0003))
+		{
+			//Special case for the Aeotec Smart Switch
+			if (commandClass == COMMAND_CLASS_SWITCH_MULTILEVEL)
+			{
+				pDevice = FindDevice(nodeID, instanceID, 0, COMMAND_CLASS_SWITCH_BINARY, ZWaveBase::ZDTYPE_SWITCH_NORMAL);
+			}
+		}
+	}
 	if (!pDevice)
 		pDevice = FindDevice(nodeID, instanceID, 0);
 	if (!pDevice)
