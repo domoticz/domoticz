@@ -1751,7 +1751,11 @@ bool CSQLHelper::OpenDatabase()
 		}
 		if (dbversion < 96)
 		{
-			query("ALTER TABLE MobileDevices ADD COLUMN [Name] VARCHAR(100) DEFAULT ''");
+			if (!DoesColumnExistsInTable("Name", "MobileDevices"))
+			{
+				query("ALTER TABLE MobileDevices ADD COLUMN [Name] VARCHAR(100) DEFAULT ''");
+			}
+
 		}
 	}
 	else if (bNewInstall)

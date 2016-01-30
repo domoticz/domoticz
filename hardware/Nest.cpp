@@ -348,7 +348,7 @@ void CNest::GetMeterDetails()
 {
 	std::string sResult;
 #ifdef DEBUG_NextThermostatR
-	sResult = ReadFile("E:\\nest.json");
+	sResult = ReadFile("E:\\Nest_DoubleTherm.json");
 #else
 	if (m_UserName.size()==0)
 		return;
@@ -528,28 +528,63 @@ void CNest::GetMeterDetails()
 		return;
 	}
 
-	Json::Value::Members members;
-
 	size_t iThermostat = 0;
-	for (Json::Value::iterator itShared = root["shared"].begin(); itShared != root["shared"].end(); ++itShared)
+	for (Json::Value::iterator ittStructure = root["structure"].begin(); ittStructure != root["structure"].end(); ++ittStructure)
 	{
-		Json::Value nshared = *itShared;
-		if (nshared.isObject())
+		Json::Value nstructure = *ittStructure;
+		if (!nstructure.isObject())
+			continue;
+		std::string StructureID = ittStructure.key().asString();
+		std::string StructureName = nstructure["name"].asString();
+
+		for (Json::Value::iterator ittDevice = nstructure["devices"].begin(); ittDevice != nstructure["devices"].end(); ++ittDevice)
 		{
-			std::string Serial = itShared.key().asString();
-			members = root["structure"].getMemberNames();
-			if (iThermostat>=members.size())
+			std::string devID = (*ittDevice).asString();
+			if (devID.find("device.")==std::string::npos)
 				continue;
-			std::string StructureID = *(members.begin()+iThermostat);
-			if (root["structure"][StructureID].empty())
+			std::string Serial = devID.substr(7);
+			if (root["device"].empty())
 				continue;
-			std::string Name = root["structure"][StructureID]["name"].asString();
+			if (root["device"][Serial].empty())
+				continue; //not found !?
+			if (root["shared"][Serial].empty())
+				continue; //Nothing shared?
+
+
+			Json::Value ndevice = root["device"][Serial];
+			if (!ndevice.isObject())
+				continue;
+
+			std::string Name = "Thermostat";
+			if (!ndevice["where_id"].empty())
+			{
+				//Lookup our 'where' (for the Name of the thermostat)
+				std::string where_id = ndevice["where_id"].asString();
+
+				if (!root["where"].empty())
+				{
+					if (!root["where"][StructureID].empty())
+					{
+						for (Json::Value::iterator ittWheres = root["where"][StructureID]["wheres"].begin(); ittWheres != root["where"][StructureID]["wheres"].end(); ++ittWheres)
+						{
+							Json::Value nwheres = *ittWheres;
+							if (nwheres["where_id"] == where_id)
+							{
+								Name = StructureName + " " + nwheres["name"].asString();
+								break;
+							}
+						}
+					}
+				}
+			}
 
 			_tNestThemostat ntherm;
 			ntherm.Serial = Serial;
 			ntherm.StructureID = StructureID;
 			ntherm.Name = Name;
 			m_thermostats[iThermostat] = ntherm;
+
+			Json::Value nshared = root["shared"][Serial];
 
 			//Setpoint
 			if (!nshared["target_temperature"].empty())
@@ -569,20 +604,20 @@ void CNest::GetMeterDetails()
 			if (nshared["can_heat"].asBool() && !nshared["hvac_heater_state"].empty())
 			{
 				bool bIsHeating = nshared["hvac_heater_state"].asBool();
-				UpdateSwitch(113,bIsHeating,"HeatingOn");		
+				UpdateSwitch(113, bIsHeating, "HeatingOn");
 			}
 
 			// Check if thermostat is currently Cooling
 			if (nshared["can_cool"].asBool() && !nshared["hvac_ac_state"].empty())
 			{
 				bool bIsCooling = nshared["hvac_ac_state"].asBool();
-				UpdateSwitch(114,bIsCooling,"CoolingOn");		
+				UpdateSwitch(114, bIsCooling, "CoolingOn");
 			}
 
 			//Away
-			if (!root["structure"][StructureID]["away"].empty())
+			if (!nstructure["away"].empty())
 			{
-				bool bIsAway = root["structure"][StructureID]["away"].asBool();
+				bool bIsAway = nstructure["away"].asBool();
 				SendSwitch((iThermostat * 3) + 3, 1, 255, bIsAway, 0, Name + " Away");
 			}
 			iThermostat++;
