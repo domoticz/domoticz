@@ -6,7 +6,7 @@
 #include "../json/json.h"
 
 #define GAPI_POST_URL "https://gcm-http.googleapis.com/gcm/send"
-#define GAPI "AIzaSyDo5VebQi1-fZSEYbxnbGY1mJA74fRDZUQ"
+#define GAPI "AIzaSyBnRMroiDaXCKbwPeOmoxkNiQfjWkGMre8"
 
 CNotificationGCM::CNotificationGCM() : CNotificationBase(std::string("gcm"), OPTIONS_URL_SUBJECT | OPTIONS_URL_BODY | OPTIONS_URL_PARAMS)
 {
@@ -40,9 +40,9 @@ bool CNotificationGCM::SendMessageImplementation(const std::string &Subject, con
 		//bool Active = (sd[1] == "true");
 		//if (Active)
 		{
-			sstr << "\"" << sd[0] << "\"";
 			if (ii != 0)
 				sstr << ", ";
+			sstr << "\"" << sd[0] << "\"";
 			ii++;
 		}
 	}
