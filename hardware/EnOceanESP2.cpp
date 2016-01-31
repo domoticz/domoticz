@@ -121,6 +121,8 @@ const char* Get_EnoceanManufacturer(unsigned long ID)
 		{ 0x03F, "SENSORTEC" },
 		{ 0x040, "JAEGER_DIREKT" },
 		{ 0x041, "AIR_SYSTEM_COMPONENTS_INC" },
+		{ 0x046, "NodOn" },
+		{ 0x048, "Ewattch" },
 		{ 0x7FF, "Multi user Manufacturer ID" }, 
 		{ 0, NULL }
 	};
@@ -1494,8 +1496,8 @@ bool CEnOceanESP2::ParseData()
 						// [Eltako FTR55D, FTR55H, Thermokon SR04 *, Thanos SR *, untested]
 						// pFrame->DATA_BYTE3 is the fan speed or night reduction for Eltako
 						// pFrame->DATA_BYTE2 is the setpoint where 0x00 = min ... 0xFF = max or
-						// reference temperature for Eltako where 0x00 = 0캜 ... 0xFF = 40캜
-						// pFrame->DATA_BYTE1 is the temperature where 0x00 = +40캜 ... 0xFF = 0캜
+						// reference temperature for Eltako where 0x00 = 0째C ... 0xFF = 40째C
+						// pFrame->DATA_BYTE1 is the temperature where 0x00 = +40째C ... 0xFF = 0째C
 						// pFrame->DATA_BYTE0_bit_0 is the occupy button, pushbutton or slide switch
 						float temp=GetValueRange(pFrame->DATA_BYTE1,0,40);
 						if (Manufacturer == 0x0D) 
