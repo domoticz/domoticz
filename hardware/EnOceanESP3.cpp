@@ -319,6 +319,10 @@ typedef enum
 #define DB3_HRC_SR  0x08
 #define DB3_HRC_SR_SHIFT 3
 
+// 2016-01-31 Stéphane Guillard : added 4BS learn bit definitions below
+#define RORG_4BS_TEACHIN_LRN_BIT (1 << 3)
+#define RORG_4BS_TEACHIN_EEP_BIT (1 << 7)
+
 bool CEnOceanESP3::sendFrame(unsigned char frametype, unsigned char *databuf, unsigned short datalen, unsigned char *optdata, unsigned char optdatalen)
 {
 	unsigned char crc=0;
@@ -1006,7 +1010,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 	char szTmp[100];
 	if (m_OptionalDataSize == 7) 
 	{
-		sprintf(szTmp,"destination: 0x%02x%02x%02x%02x\nRSSI: %i",
+		sprintf(szTmp,"destination: 0x%02x%02x%02x%02x RSSI: %i",
 			m_buffer[m_DataSize+1],m_buffer[m_DataSize+2],m_buffer[m_DataSize+3],m_buffer[m_DataSize+4],
 			(100-m_buffer[m_DataSize+5])
 			);
@@ -1076,34 +1080,56 @@ void CEnOceanESP3::ParseRadioDatagram()
 				char szDeviceID[20];
 				sprintf(szDeviceID,"%08X",(unsigned int)id);
 
-				if ((DATA_BYTE0 & 0x08) == 0)
+				if ((DATA_BYTE0 & RORG_4BS_TEACHIN_LRN_BIT) == 0)	// LRN_BIT is 0 -> Teach-in datagram
 				{
-					if (DATA_BYTE0 & 0x80)
+					int manufacturer;
+					int profile;
+					int ttype;
+
+					// 2016-01-31 Stéphane Guillard : added handling of this case:
+					if ((DATA_BYTE0 & RORG_4BS_TEACHIN_EEP_BIT) == 0)
 					{
-						//Teach in datagram
+						// RORG_4BS_TEACHIN_EEP_BIT is 0 -> Teach-in Variant 1 : data doesn't contain EEP and Manufacturer ID
+						// An EEP profile must be manually allocated per sender ID (see EEP 2.6.2 specification §3.3 p173/197)
+						_log.Log(LOG_NORM, "EnOcean: 4BS, Variant 1 Teach-in diagram: Sender_ID: 0x%08X", id);
+						_log.Log(LOG_NORM, "Teach-in data contains no EEP profile. Created generic A5-02-05 profile (0/40°C temp sensor); please adjust by hand using Setup button on EnOcean adapter in Setup/Hardware menu");
+
+						manufacturer = 0x7FF;			// Generic
+						profile = 2;					// == T4BSTable[4].Func: Temperature Sensor Range 0C to +40C
+						ttype = 5;						// == T4BSTable[4].Type
+					}
+					else
+					{
+						// RORG_4BS_TEACHIN_EEP_BIT is 1 -> Teach-in Variant 2 : data contains EEP and Manufacturer ID
 
 						//DB3		DB3/2	DB2/1			DB0
-						//Profile	Type	Manufacturer-ID	LRN Type	RE2		RE1
+						//Profile	Type	Manufacturer-ID	RORG_4BS_TEACHIN_EEP_BIT		RE2		RE1				RORG_4BS_TEACHIN_LRN_BIT
 						//6 Bit		7 Bit	11 Bit			1Bit		1Bit	1Bit	1Bit	1Bit	1Bit	1Bit	1Bit
 
-						int manufacturer = ((DATA_BYTE2 & 7) << 8) | DATA_BYTE1;
-						int profile = DATA_BYTE3 >> 2;
-						int ttype = ((DATA_BYTE3 & 3) << 5) | (DATA_BYTE2 >> 3);
-						_log.Log(LOG_NORM,"EnOcean: 4BS, Teach-in diagram: Sender_ID: 0x%08X\nManufacturer: 0x%02x (%s)\nProfile: 0x%02X\nType: 0x%02X (%s)", 
+						// Extract manufacturer, profile and type from data
+						manufacturer = ((DATA_BYTE2 & 7) << 8) | DATA_BYTE1;
+						profile = DATA_BYTE3 >> 2;
+						ttype = ((DATA_BYTE3 & 3) << 5) | (DATA_BYTE2 >> 3);
+
+						_log.Log(LOG_NORM,"EnOcean: 4BS, Variant 2 Teach-in diagram: Sender_ID: 0x%08X\nManufacturer: 0x%02x (%s)\nProfile: 0x%02X\nType: 0x%02X (%s)", 
 							id, manufacturer,Get_EnoceanManufacturer(manufacturer),
 							profile,ttype,Get_Enocean4BSType(0xA5,profile,ttype));
+ 					}
 
-
-						std::vector<std::vector<std::string> > result;
-						result = m_sql.safe_query("SELECT ID FROM EnoceanSensors WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, szDeviceID);
-						if (result.size()<1)
-						{
-							//Add it to the database
-							m_sql.safe_query("INSERT INTO EnoceanSensors (HardwareID, DeviceID, Manufacturer, Profile, [Type]) VALUES (%d,'%q',%d,%d,%d)", m_HwdID, szDeviceID, manufacturer, profile, ttype);
-						}
+					// Search the sensor in database
+					std::vector<std::vector<std::string> > result;
+					result = m_sql.safe_query("SELECT ID FROM EnoceanSensors WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, szDeviceID);
+					if (result.size()<1)
+					{
+						// If not found, add it to the database
+						m_sql.safe_query("INSERT INTO EnoceanSensors (HardwareID, DeviceID, Manufacturer, Profile, [Type]) VALUES (%d,'%q',%d,%d,%d)", m_HwdID, szDeviceID, manufacturer, profile, ttype);
+						_log.Log(LOG_NORM, "EnOcean: Sender_ID 0x%08X inserted in the database", id);
 					}
+					else
+						_log.Log(LOG_NORM, "EnOcean: Sender_ID 0x%08X already in the database", id);
+
 				}
-				else
+				else	// RORG_4BS_TEACHIN_LRN_BIT is 1 -> Data datagram
 				{
 					//Following sensors need to have had a teach-in
 					std::vector<std::vector<std::string> > result;
