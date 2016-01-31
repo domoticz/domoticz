@@ -575,7 +575,20 @@ define(['app'], function (app) {
 					return false;
 				}
 			});
-	
+			
+			$scope.AllowNewHardware = function(minutes)
+		{
+			$.ajax({
+				 url: "json.htm?type=command&param=allownewhardware&timeout=" + minutes,
+				 async: false, 
+				 dataType: 'json',
+				 success: function(data) {
+					var msg=$.t('Allowing new sensors for ') + minutes + ' ' + $.t('Minutes');
+					ShowNotify(msg, 3000);
+				 }
+			});
+		}
+		
 		};
 	} ]);
 });
