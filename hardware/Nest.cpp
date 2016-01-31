@@ -19,8 +19,8 @@ const std::string NEST_SET_SHARED = "/v2/put/shared.";
 const std::string NEST_SET_STRUCTURE = "/v2/put/structure.";
 
 #ifdef _DEBUG
-	//#define DEBUG_NextThermostatR
-	//#define DEBUG_NextThermostatW
+	#define DEBUG_NextThermostatR
+	#define DEBUG_NextThermostatW
 #endif
 
 #ifdef DEBUG_NextThermostatW
@@ -285,7 +285,7 @@ void CNest::UpdateSmokeSensor(const unsigned char Idx, const bool bOn, const std
 {
 	bool bDeviceExits = true;
 	char szIdx[10];
-	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);
+	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, Idx, 0);
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, szIdx);
 	if (result.size() < 1)
@@ -310,8 +310,8 @@ void CNest::UpdateSmokeSensor(const unsigned char Idx, const bool bOn, const std
 	lcmd.LIGHTING2.subtype = sTypeAC;
 	lcmd.LIGHTING2.id1 = 0;
 	lcmd.LIGHTING2.id2 = 0;
-	lcmd.LIGHTING2.id3 = 0;
-	lcmd.LIGHTING2.id4 = Idx;
+	lcmd.LIGHTING2.id3 = Idx;
+	lcmd.LIGHTING2.id4 = 0;
 	lcmd.LIGHTING2.unitcode = 1;
 	int level = 15;
 	if (!bOn)
@@ -348,7 +348,7 @@ void CNest::GetMeterDetails()
 {
 	std::string sResult;
 #ifdef DEBUG_NextThermostatR
-	sResult = ReadFile("E:\\Nest_DoubleTherm.json");
+	sResult = ReadFile("E:\\nest.json");
 #else
 	if (m_UserName.size()==0)
 		return;
@@ -604,14 +604,14 @@ void CNest::GetMeterDetails()
 			if (nshared["can_heat"].asBool() && !nshared["hvac_heater_state"].empty())
 			{
 				bool bIsHeating = nshared["hvac_heater_state"].asBool();
-				UpdateSwitch(113 + (iThermostat * 3), bIsHeating, Name + " HeatingOn");
+				UpdateSwitch((unsigned char)(113 + (iThermostat * 3)), bIsHeating, Name + " HeatingOn");
 			}
 
 			// Check if thermostat is currently Cooling
 			if (nshared["can_cool"].asBool() && !nshared["hvac_ac_state"].empty())
 			{
 				bool bIsCooling = nshared["hvac_ac_state"].asBool();
-				UpdateSwitch(114 + (iThermostat * 3), bIsCooling, Name + " CoolingOn");
+				UpdateSwitch((unsigned char)(114 + (iThermostat * 3)), bIsCooling, Name + " CoolingOn");
 			}
 
 			//Away

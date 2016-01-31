@@ -39,7 +39,7 @@ then
 fi 
 echo "Success, making beta...";
 
-head -n1 appversion.h > ${version_file}
+cp -f appversion.h ${version_file}
 cp -f History.txt ${history_file}
 
 # Generate the archive
