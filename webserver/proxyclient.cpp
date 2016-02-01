@@ -4,6 +4,7 @@
 #include "request.hpp"
 #include "reply.hpp"
 #include "request_parser.hpp"
+#include "../main/Helper.h"
 #include "../main/SQLHelper.h"
 #include "../webserver/Base64.h"
 #include "../tcpserver/TCPServer.h"
@@ -91,7 +92,7 @@ namespace http {
 			}
 			if (b_Connected) {
 				_socket.lowest_layer().close();
-				boost::this_thread::sleep_for(boost::chrono::seconds(10));
+				sleep_seconds(10);
 			}
 			b_Connected = false;
 			boost::asio::ip::tcp::resolver resolver(_io_service);
