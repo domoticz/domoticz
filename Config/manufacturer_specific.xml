@@ -396,7 +396,7 @@
 		<Product type="0001" id="0002" name="AS2-RF Thermostat Transmitter"/>
 		<Product type="0001" id="0003" name="HRT4-ZW Thermostat Transmitter" config="horstmann/hrt4zw.xml"/>
 		<Product type="0003" id="0001" name="ASR-ZW Thermostat Receiver"/>
-		<Product type="0004" id="0001" name="SCSC17 Thermostat"/>
+		<Product type="0004" id="0001" name="SCSC17 Thermostat" config="horstmann/scsc17.xml"/>
 		<Product type="000d" id="0001" name="SES 301 Temperature Sensor"/>
 		<Product type="000f" id="0001" name="SWM01 Water Meter Sensor"/>
 	</Manufacturer>
