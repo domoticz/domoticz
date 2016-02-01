@@ -56,7 +56,7 @@ void CurrentCostMeterBase::ExtractReadings()
 	}
 	
 	float temp;
-	float sensor(0);
+	float sensor(0.0);
 	float type;
 	float reading;
 	
@@ -64,9 +64,9 @@ void CurrentCostMeterBase::ExtractReadings()
 	// earlier versions don't have this
 	if(m_buffer.find("<sensor>") != std::string::npos)
 	{
-		if(!ExtractNumberBetweenStrings("<sensor>", "</sensor>", &sensor))
+		if(!ExtractNumberBetweenStrings("<sensor>", "</sensor>", &sensor) || sensor > 9.0)
 		{
-			// no sensor corrupt
+			// no sensor end tag found or too high a sensor number data corrupt
 			return;
 		}
 	}
@@ -108,10 +108,11 @@ void CurrentCostMeterBase::ExtractReadings()
 	{
 		// create a suitable default name
 		// there can only be 8 sensors so this
-		// method 
+		// method is OK and should be faster
+		char sensorInt(static_cast<char>(sensor));
 		std::string sensorName("CC Sensor 0 Power");
-		sensorName[10] += static_cast<char>(sensor);
-		SendWattMeter(2 + sensor, 1, 255, totalPower, sensorName);
+		sensorName[10] += sensorInt;
+		SendWattMeter(2 + sensorInt, 1, 255, totalPower, sensorName);
 	}
 }
 
