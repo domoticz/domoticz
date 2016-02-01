@@ -66,7 +66,8 @@ void CurrentCostMeterBase::ExtractReadings()
 	{
 		if(!ExtractNumberBetweenStrings("<sensor>", "</sensor>", &sensor) || sensor > 9.0)
 		{
-			// no sensor end tag found or too high a sensor number data corrupt
+			// no sensor end tag found or too high a sensor number 
+			// indicating data must be corrupt
 			return;
 		}
 	}
