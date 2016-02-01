@@ -3444,6 +3444,7 @@
     <Text Include="..\www\templates\readme.txt">
       <Filter>www\templates</Filter>
     </Text>
+    <Text Include="..\History.txt" />
   </ItemGroup>
   <ItemGroup>
     <Font Include="..\www\css\fonts\Oswald-Light.ttf">

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Product xmlns='http://code.google.com/p/open-zwave/'>
 
-<!-- Qubino: ZMNHDD1 Z-Wave Plus Flush Dimmer -->
+<!-- Qubino: ZMNHUD1 Z-Wave Plus DIN Pilot Wire -->
 
 	<!-- Configuration -->
 	<CommandClass id="112">
@@ -10,25 +10,11 @@
 			<Item label="Mono-stable switch type (push button)" value="0" />
 			<Item label="Bi-stable switch type" value="1" />
 		</Value>
-
-		<Value type="list" genre="config" instance="1" index="2" label="Input 2 contact type" size="1" min="0" max="1" value="0">
+		<Value type="list" genre="config" instance="1" index="5" label="Working mode" size="1" min="0" max="1" value="0">
 			<Help>Default value 0.</Help>
-			<Item label="Mono-stable switch type (push button)" value="0" />
-			<Item label="Bi-stable switch type" value="1" />
+			<Item label="Dimmer mode" value="0"/>
+			<Item label="Switch mode" value="1"/>
 		</Value>
-	
-		<Value type="list" genre="config" instance="1" index="3" label="Input 3 contact type" size="1" min="0" max="1" value="0">
-			<Help>Default value 0.</Help>
-			<Item label="NO (normally open) input type" value="0"/>
-			<Item label="NC (normally close) input type" value="1"/>
-		</Value> 
-	
-		<Value type="list" genre="config" instance="1" index="4" label="Input 4 contact type" size="1" min="0" max="1" value="0">
-			<Help>Default value 0.</Help>
-			<Item label="NO (normally open) input type" value="0"/>
-			<Item label="NC (normally close) input type" value="1"/>
-		</Value> 
-	
 		<Value type="list" genre="config" instance="1" index="10" label="Activate / deactivate functions ALL ON/ALL OFF" size="1" min="0" max="255" value="255">
 			<Help>Flush dimmer module responds to commands ALL ON / ALL OFF that may be sent by the main controller or by other controller belonging to the system.
 			Default value 255.</Help>
@@ -50,14 +36,6 @@
 			Set value from 1 to 32535.
 			1 second – 32535 seconds Auto ON enabled with defined time, step is 1 second.
 			Default value 0.</Help>
-		</Value> 
-	
-		<Value type="list" genre="config" instance="1" index="20" label="Enable/Disable 3-way switch" size="1" min="0" max="1" value="0">
-			<Help>Dimming is done by push button or switch connected to I1 (by default).
-				Enabling 3-way switch, dimming can be controlled by push button or switch connected to I1 and I2.
-				Default value 0. </Help>
-			<Item label="single push button (connected to I1)" value="0"/>
-			<Item label="3-way switch (connected to I1 and I2)" value="1"/>
 		</Value> 
 
 		<Value type="list" genre="config" instance="1" index="21" label="Enable/Disable Double click function" size="1" min="0" max="1" value="0">
@@ -81,12 +59,12 @@
 			Default value 5.</Help>
 			</Value>
 	
-		<Value type="short" genre="config" instance="1" index="42" label="Power reporting in Watts by time interval" min="0" max="32767" value="300">
+		<Value type="short" genre="config" instance="1" index="42" label="Power reporting in Watts by time interval" min="0" max="32767" value="0">
 			<Help>Set value means time interval (0 - 32767) in seconds, when power report is send.
-			0 - Reporting Disabled.
+			0 - Reporting by time interval Disabled.
 			1 - 32767 = 1 second - 32767 seconds reporting enabled.
 			Power report is send with time interval set by entered value.
-			Default value 300 (power report in Watts is sent each 300s).</Help>
+			Default value 0.</Help>
 		</Value>
 
 		<Value type="byte" genre="config" instance="1" index="60" label="Minimum dimming value" min="1" max="98" value="1">
@@ -127,41 +105,6 @@
 				Default value 0.
 				1 - 127 from 1 to 127 seconds.</Help>
 		</Value> 
-		
-		<Value type="list" genre="config" instance="1" index="100" label="Enable / Disable Endpoints I2 or select Notification Type and Event" size="1" min="0" max="9" value="1">
-			<Help>Enabling I2 means that Endpoint (I2) will be present on UI.
-			Disabling it will result in hiding the endpoint according to the parameter set value.
-			Additionally, a Notification Type and Event can be selected for the endpoint.
-			Endpoint device type selection: notification sensor (1 - 6) sensor binary (9).
-			NOTE: After parameter change, module has to be re included into the network in order setting to take effect!
-			Default value 1.</Help>
-			<Item label="Home Security; Motion Detection, unknown location." value="1"/>
-			<Item label="Carbon Monoxide; Carbon Monoxide detected, unknown location." value="2"/>
-			<Item label="Carbon Dioxide; Carbon Dioxide detected, unknown location." value="3"/>
-			<Item label="Water Alarm; Water Leak detected, unknown location." value="4"/>
-			<Item label="Heat Alarm; Overheat detected, unknown location" value="5"/>
-			<Item label="Smoke Alarm; Smoke detected, unknown location" value="6"/>
-			<Item label="Endpoint, I2 disabled" value="0"/>
-			<Item label="Sensor binary" value="9"/>
-		</Value> 
-		
-		<Value type="list" genre="config" instance="1" index="101" label="Enable / Disable Endpoints I3 or select Notification Type and Event" size="1" min="0" max="9" value="1">
-			<Help>Enabling I3 means that Endpoint (I3) will be present on UI.
-			Disabling it will result in hiding the endpoint according to the parameter set value.
-			Additionally, a Notification Type and Event can be selected for the endpoint.
-			Endpoint device type selection: notification sensor (1 - 6) sensor binary (9).
-			NOTE: After parameter change, module has to be re included into the network in order setting to take effect!
-			Default value 1.</Help>
-			<Item label="Home Security; Motion Detection, unknown location." value="1"/>
-			<Item label="Carbon Monoxide; Carbon Monoxide detected, unknown location." value="2"/>
-			<Item label="Carbon Dioxide; Carbon Dioxide detected, unknown location." value="3"/>
-			<Item label="Water Alarm; Water Leak detected, unknown location." value="4"/>
-			<Item label="Heat Alarm; Overheat detected, unknown location" value="5"/>
-			<Item label="Smoke Alarm; Smoke detected, unknown location" value="6"/>
-			<Item label="Endpoint, I3 disabled" value="0"/>
-			<Item label="Sensor binary" value="9"/>
-		</Value> 
-
 		<Value type="short" genre="config" instance="1" index="110" label="Temperature sensor offset settings" min="1" max="32536" value="32536">
 			<Help>Set value is added or subtracted to actual measured value by sensor.
 			32536 – offset is 0.0C.
@@ -182,18 +125,12 @@
 
 	<!-- Association Groups -->
 	<CommandClass id="133">
-		<Associations num_groups="11">
+		<Associations num_groups="5">
 			<Group index="1" max_associations="1" label="Lifeline group" />
 			<Group index="2" max_associations="16" label="Basic on/off input I1"/>
-			<Group index="3" max_associations="16" label="Multilevel set Flush dimmer"/>
-			<Group index="4" max_associations="16" label="Start level change/stop level change input I1"/>
-			<Group index="5" max_associations="16" label="Basic on/off input I2"/>
-			<Group index="6" max_associations="16" label="Notification report input I2"/>
-			<Group index="7" max_associations="16" label="Binary sensor input I2"/>
-			<Group index="8" max_associations="16" label="Basic on/off input I3"/>
-			<Group index="9" max_associations="16" label="Notification report input I3"/>
-			<Group index="10" max_associations="16" label="Binary sensor input I3"/>
-			<Group index="11" max_associations="16" label="Multilevel sensor report temp sensor"/>
+			<Group index="3" max_associations="16" label="Start level change/stop level change input I1"/>
+			<Group index="4" max_associations="16" label="Multilevel Set command reflecting module output state."/>
+			<Group index="5" max_associations="16" label="Multilevel Sensor report according to temperature change."/>
 		</Associations>
 	</CommandClass>
 

@@ -192,6 +192,7 @@
 		<Product type="0002" id="000e" name="DCH-Z110 Door/Window 3 in 1 sensor" config="dlink/dch-z110.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0002" name="Danfoss">
+		<Product type="0005" id="0175" name="Devolo Home Control Radiator Thermostat" config="danfoss/z.xml"/>
 		<Product type="0005" id="0003" name="Z Thermostat" config="danfoss/z.xml"/>
 		<Product type="0005" id="0004" name="Z Thermostat 014G0013" config="danfoss/z.xml"/>
 		<Product type="0064" id="0001" name="RA Plus-W Radiator Thermostat"/>
@@ -232,6 +233,9 @@
 	</Manufacturer>
 	<Manufacturer id="011a" name="Enerwave">
 		<Product type="0801" id="0b03" name="ZWN-SC7 7-Button Scene Controller" config="enerwave/zwn-sc7.xml"/>
+		<Product type="0101" id="0102" name="ZW15S 15A On/Off Switch" config="enerwave/zw15s.xml"/>
+		<Product type="0101" id="0603" name="ZW20R 20A Tamper Resistant Duplex Receptacle" config="enerwave/zw20r.xml"/>
+		<Product type="0102" id="0201" name="ZW500D 500W In-Wall Preset Dimmer Switch" config="enerwave/zw500d.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0060" name="Everspring">
 		<Product type="0001" id="0001" name="HSP02 Motion Detector" config="everspring/hsp02.xml"/>
@@ -295,6 +299,7 @@
 		<Product type="0100" id="100a" name="FGD211 Universal Dimmer 500W" config="fibaro/fgd211.xml" />
 		<Product type="0100" id="300a" name="FGD211 Universal Dimmer 500W" config="fibaro/fgd211.xml" />
 		<Product type="0102" id="1000" name="FGD212 Dimmer 2" config="fibaro/fgd212.xml" />		
+		<Product type="0102" id="3000" name="FGD212 Dimmer 2" config="fibaro/fgd212.xml" />
 		<Product type="0700" id="1000" name="FGK101 Door Opening Sensor" config="fibaro/fgk001.xml" />
 		<Product type="0700" id="2000" name="FGK10x Door Opening Sensor" config="fibaro/fgk001.xml" />
 		<Product type="0700" id="4000" name="FGK101 Door Opening Sensor" config="fibaro/fgk001.xml" />
@@ -588,17 +593,23 @@
 	</Manufacturer>
 	<Manufacturer id="0159" name="Qubino">
 		<Product type="0001" id="0001" name="ZMNHDA2 Flush Dimmer" config="qubino/ZMNHDA2.xml"/>
-		<Product type="0001" id="0051" name="ZMNHDD1 Z-Wave Plus Flush Dimmer" config="qubino/ZMNHDD1.xml"/>
 		<Product type="0002" id="0001" name="ZMNHBA2 Flush 2 Relays" config="qubino/ZMNHBA2.xml"/>
-		<Product type="0002" id="0051" name="ZMNHBD2 Flush 2 Relays" config="qubino/ZMNHBD2.xml"/>
 		<Product type="0002" id="0002" name="ZMNHAA2 Flush 1 Relay" config="qubino/ZMNHAA2.xml"/>
-		<Product type="0002" id="0052" name="ZMNHAD1 Flush 1 Relay" config="qubino/ZMNHAD1.xml"/>
-		<Product type="0002" id="0053" name="ZMNHND1 Flush 1D relay" config="qubino/ZMNHND1.xml"/>
 		<Product type="0003" id="0002" name="ZMNHCA2 Flush Shutter" config="qubino/ZMNHCA2.xml"/>
-                <Product type="0003" id="0052" name="ZMNHCD Flush Shutter" config="qubino/ZMNHCD.xml"/>
 		<Product type="0004" id="0001" name="ZMNHJA2 Flush Dimmer Fil Pilote" config="qubino/ZMNHJA2.xml"/>
-		<Product type="0004" id="0051" name="ZMNHJD1 Flush Pilot Wire Dimmer" config="qubino/ZMNHJD1.xml"/>
-		<Product type="0005" id="0001" name="ZMNHIA2 Flush on/off thermostat" config="qubino/ZMNHIA2.xml"/>
+		<Product type="0005" id="0001" name="ZMNHIA2 Flush On/Off Thermostat" config="qubino/ZMNHIA2.xml"/>
+		
+		<Product type="0001" id="0051" name="ZMNHDD1 Flush Dimmer Plus" config="qubino/ZMNHDD1.xml"/>
+		<Product type="0004" id="0051" name="ZMNHJD1 Flush Dimmer Fil Pilote Plus" config="qubino/ZMNHJD1.xml"/>
+		<Product type="0001" id="0052" name="ZMNHSD1 DIN Dimmer Plus" config="qubino/ZMNHSD1.xml"/>
+		<Product type="0004" id="0052" name="ZMNHUD1 DIN Fil Pilote Plus" config="qubino/ZMNHUD1.xml"/>
+		<Product type="0005" id="0051" name="ZMNHID1 Flush On/Off Thermostat Plus" config="qubino/ZMNHID1.xml"/>
+		<Product type="0005" id="0053" name="ZMNHLD1 Flush PWM Thermostat Plus" config="qubino/ZMNHLD1.xml"/>
+		<Product type="0002" id="0051" name="ZMNHBD1 Flush 2 Relays Plus" config="qubino/ZMNHBD1.xml"/>
+		<Product type="0002" id="0052" name="ZMNHAD1 Flush 1 Relay Plus" config="qubino/ZMNHAD1.xml"/>
+		<Product type="0002" id="0053" name="ZMNHND1 Flush 1D relay Plus" config="qubino/ZMNHND1.xml"/>
+		<Product type="0003" id="0052" name="ZMNHCD1 Flush Shutter Plus" config="qubino/ZMNHCD1.xml"/>
+		<Product type="0003" id="0053" name="ZMNHOD1 Flush Shutter DC Plus" config="qubino/ZMNHOD1.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0130" name="Quby">
 		<Product type="0001" id="0001" name="Energy Management System"/>
@@ -719,6 +730,7 @@
 		<Product type="0001" id="0001" name="TZ88 Smart Energy Plug-in Switch" config="wenzhou/tz88.xml"/>
 		<Product type="0002" id="0001" name="SM103 Door/Window Sensor" config="wenzhou/sm103.xml"/>
 		<Product type="0002" id="0002" name="TSP01 3 in 1 PIR Motion Sensor" config="wenzhou/tsp01.xml" />
+		<Product type="0003" id="0002" name="TZ68 On/Off Switch Socket" config="wenzhou/tz68.xml"/>
 		<Product type="0808" id="0808" name="TZ65D Dual Wall Dimmer" config="wenzhou/tz65d.xml"/>
 		<Product type="0101" id="0103" name="TZ68 On/Off Switch Socket" config="wenzhou/tz68.xml"/>
 		<Product type="0102" id="1020" name="TZ66D Dual Wall Switch" config="wenzhou/tz66d.xml"/>
@@ -769,6 +781,7 @@
 		<Product type="2012" id="1203" name="ZR1202 Repeater"/>
 		<Product type="2014" id="1401" name="ZL7101 Plug-in Dimmer Module"/>
 		<Product type="2017" id="1717" name="ZL7432 In-Wall Switch, Dual Relay"/>
+		<Product type="201c" id="1c01" name="ZF5201 Flood Detector"/>
 		<Product type="3001" id="0104" name="ZM1602 Main Operated Siren"/>
 	</Manufacturer>
 	<Manufacturer id="0115" name="Z-Wave.Me">

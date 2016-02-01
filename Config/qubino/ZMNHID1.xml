@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+
+<!-- Qubino: ZMNHID1 Flush On Off Thermostat Plus -->
+
+	<!-- Configuration -->
+	<CommandClass id="112">
+		<Value type="list" genre="config" instance="1" index="1" label="Input 1 switch type" size="1" min="0" max="1" value="1">
+			<Help/>
+			<Item label="mono-stable switch type (push button)" value="0"/>
+			<Item label="bi-stable switch type" value="1"/>
+		</Value>
+
+		<Value type="list" genre="config" instance="1" index="2" label="Input 2 switch type" size="1" min="0" max="1" value="1">
+			<Help/>
+			<Item label="mono-stable switch type (push button)" value="0"/>
+			<Item label="bi-stable switch type" value="1"/>
+		</Value>
+
+		<Value type="list" genre="config" instance="1" index="3" label="Input 3 switch type" size="1" min="0" max="1" value="0">
+			<Help/>
+			<Item label="mono-stable switch type (push button)" value="0"/>
+			<Item label="bi-stable switch type" value="1"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="4" label="Input 1 contact type" size="1" min="0" max="1" value="0">
+			<Help/>
+			<Item label="NO (normaly open) input type" value="0"/>
+			<Item label="NC (normaly close) input type" value="1"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="5" label="Input 2 contact type" size="1" min="0" max="1" value="0">
+			<Help/>
+			<Item label="NO (normaly open) input type" value="0"/>
+			<Item label="NC (normaly close) input type" value="1"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="6" label="Input 3 contact type" size="1" min="0" max="1" value="0">
+			<Help/>
+			<Item label="NO (normaly open) input type" value="0"/>
+			<Item label="NC (normaly close) input type" value="1"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="10" label="Activate / deactivate functions ALL ON/ALL OFF" size="1" min="0" max="255" value="255">
+			<Help>Flush on off thermostat module responds to commands ALL ON / ALL OFF that may be sent by the main controller or by other controller belonging to the system.</Help>
+			<Item label="ALL ON active, ALL OFF active" value="255" />
+			<Item label="ALL ON is not active ALL OFF is not active" value="0" />
+			<Item label="ALL ON is not active ALL OFF active" value="1" />
+			<Item label="ALL ON active ALL OFF is not active" value="2" />
+		</Value>
+		<Value type="short" genre="config" instance="1" index="11" label="Setpoint set by I2" min="0" max="32767" value="32767">
+			<Help>When I2 is pressed set point will be set according to the value of this parameter.
+			Default value 32767 - Input I2 does not influence the setpoint.
+			0 - 990 - Setpoint from 0.0°C to 99.0°C.
+			1001 - 1150 - Setpoint from -0.1°C to -15.0°C.
+			</Help>
+		</Value>
+		<Value type="short" genre="config" instance="1" index="12" label="Setpoint set by I3" min="0" max="32767" value="32767">
+			<Help>When I3 is pressed set point will be set according to the value of this parameter.
+			Default value 32767 - Input I3 does not influence the setpoint.
+			0 - 990 - Setpoint from 0.0°C to 99.0°C.
+			1001 - 1150 - Setpoint from -0.1°C to -15.0°C.
+			</Help>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="30" label="Saving the state of the relay after a power failure" size="1" min="0" max="1" value="0">
+			<Help/>
+			<Item label="Flush dimmer module saves its state before power failure (it returns to the last position saved before a power failure)" value="0" />
+			<Item label="Flush dimmer module does not save the state after a power failure, it returns to off position" value="1" />
+		</Value>
+
+		<Value type="byte" genre="config" instance="1" index="40" label="Power reporting in Watts on power change" size="1" min="0" max="100" value="3">
+			<Help>Set value from 0 - 100 (0% - 100%). 0 - Reporting Disabled. 1 - 100 = 1% - 100% Reporting enabled. Power report is send (push) only when actual power in Watts in real time change for more than set percentage comparing to previous actual power in Watts, step is 1%. Default value 3</Help>
+		</Value>
+		
+		<Value type="short" genre="config" instance="1" index="42" label="Power reporting in Watts by time interval" min="0" max="32767" value="300">
+			<Help>Set value means time interval (0 - 32767) in seconds, when power report is send. 0 - Reporting Disabled. 1 - 32767 = 1 second - 32767 seconds. Reporting enabled. Power report is send with time interval set by entered value. Default value 300 (power report in Watts is send each 300s)</Help>
+		</Value>
+
+		 <Value type="byte" genre="config" instance="1" index="43" label="Hysteresis On" size="1" min="0" max="255" value="132">
+                        <Help>This parameter defines temperature min difference between real measured temperature and set-point temperature to turn heating on. The parameter can be set from 0 to 255 where 0 to 127 means from 0.0 °C to 12.7 °C and from 128 to 255 means from - 0.1 °C to -12.7 °C.</Help>
+                </Value>
+
+		<Value type="byte" genre="config" instance="1" index="44" label="Hysteresis Off" size="1" min="0" max="255" value="5">
+			<Help>This parameter defines temperature min difference between real measured temperature and set-point temperature to turn heating off. The parameter can be set from 0 to 255 where 0 to 127 means from 0.0 °C to 12.7 °C and from 128 to 255 means from - 0.0 °C to -12.7 °C.</Help>
+		</Value>
+
+        <Value type="byte" genre="config" instance="1" index="45" label="Antifreeze" size="1" min="0" max="255" value="50">
+			<Help>Set value means at which temperature the heating will be turned on even if the thermostat was manually set to off. The parameter can be set from 0 to 255 where 0 to 127 means from 0.0 °C to 12.7 °C and from 128 to 255 means from - 0.0 °C to -12.7 °C.</Help>
+		</Value>
+		<Value type="short" genre="config" instance="1" index="60" label="Too low temperature limit" size="2" min="1" max="1000" value="50">
+			<Help>Too low temperature limit is set by entering the value from 1 - 1000 (0,1°C to 100,0 °C). In case the value is set outside this range the module sets the value to default.</Help>
+		</Value>
+		<Value type="short" genre="config" instance="1" index="61" label="Too high temperature limit" size="2" min="1" max="1000" value="700">
+			<Help>Too high temperature limit is set by entering the value from 1 - 1000 (0,1°C to 100,0 °C). In case the value is set outside this range the module sets the value to default.</Help>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="63" label="Switch selection" size="1" min="0" max="1" value="0">
+			<Help>Set value means the type of the heating device that is connected to the relay output. The heating device type can be normally open (NO) or normally close (NC).</Help>
+			<Item label="When system is turned off the output is 0 V." value="0"/>
+			<Item label="When system is turned off the output is 230 V." value="1"/>
+		</Value>
+		
+		<Value type="list" genre="config" instance="1" index="100" label="Enable/Disable endpoint I1 or select notification type and event" size="1" min="0" max="9" value="0">
+			<Help>Enabling I1 means that the Endpoint I1 will be present on the UI. Disabling it will result in hiding the endpoint according to the parameter set value. Additionally, a notification type and event can be selected for the endpoint.</Help>
+			<Item label="Endpoint I1 disabled" value="0"/>
+			<Item label="Home Security; Motion Detection; unknown location" value="1"/>
+			<Item label="CO; Carbon Monoxide detected; unknown location" value="2"/>
+			<Item label="CO2; Carbon Dioxide detected; unknown location" value="3"/>
+			<Item label="Water Alarm; Water Leak detected; unknown location" value="4"/>
+			<Item label="Heat Alarm; Water Leak detected; unknown location" value="5"/>
+			<Item label="Smoke Alarm; Smoke detected; unknown location" value="6"/>
+			<Item label="Sensor binary" value="9"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="101" label="Enable/Disable endpoint I2 or select notification type and event" size="1" min="0" max="9" value="0">
+			<Help>Enabling I2 means that the Endpoint I2 will be present on the UI. Disabling it will result in hiding the endpoint according to the parameter set value. Additionally, a notification type and event can be selected for the endpoint.</Help>
+			<Item label="Endpoint I2 disabled" value="0"/>
+			<Item label="Home Security; Motion Detection; unknown location" value="1"/>
+			<Item label="CO; Carbon Monoxide detected; unknown location" value="2"/>
+			<Item label="CO2; Carbon Dioxide detected; unknown location" value="3"/>
+			<Item label="Water Alarm; Water Leak detected; unknown location" value="4"/>
+			<Item label="Heat Alarm; Water Leak detected; unknown location" value="5"/>
+			<Item label="Smoke Alarm; Smoke detected; unknown location" value="6"/>
+			<Item label="Sensor binary" value="9"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="102" label="Enable/Disable endpoint I3 or select notification type and event" size="1" min="0" max="9" value="0">
+			<Help>Enabling I3 means that the Endpoint I3 will be present on the UI. Disabling it will result in hiding the endpoint according to the parameter set value. Additionally, a notification type and event can be selected for the endpoint.</Help>
+			<Item label="Endpoint I3 disabled" value="0"/>
+			<Item label="Home Security; Motion Detection; unknown location" value="1"/>
+			<Item label="CO; Carbon Monoxide detected; unknown location" value="2"/>
+			<Item label="CO2; Carbon Dioxide detected; unknown location" value="3"/>
+			<Item label="Water Alarm; Water Leak detected; unknown location" value="4"/>
+			<Item label="Heat Alarm; Water Leak detected; unknown location" value="5"/>
+			<Item label="Smoke Alarm; Smoke detected; unknown location" value="6"/>
+			<Item label="Sensor binary" value="9"/>
+		</Value>
+		<Value type="short" genre="config" instance="1" index="110" label="Temperature sensor offset settings" size="2" min="1" max="32536" value="32536">
+			<Help>Set value is added or subtracted to actual measured value by the sensor.
+			Default value 32536
+			1 - 100 = value from 0,1°C to 10,0°C is added to actual measured temperature
+			1001 - 1100 = value from -0,1°C to - 10,0°C is subtracted from actual measured temperature</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="120" label="Digital temperature sensor reporting" size="1" min="0" max="127" value="5">
+			<Help>When temperature sensor is connected the module reports measured temperature on temperature change defined by this parameter.
+			Default value 5 = 0,5°C.
+			0 - Reporting disabled
+			1 - 127 = 0,1°C - 12,7°C, step is 0,1°C</Help>
+		</Value>
+	</CommandClass>
+
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="7">
+			<Group index="1" max_associations="1" label="Lifeline" auto="true"/>
+			<Group index="2" max_associations="16" label="Basic Set triggered at the change of output Q and reflecting it's state." />
+			<Group index="3" max_associations="16" label="Basic Set triggered at the change of thermostat mode." />
+			<Group index="6" max_associations="16" label="Basic Set trigerred by change of input I1." />
+			<Group index="7" max_associations="16" label="Basic Set trigerred by change of input I2." />
+			<Group index="8" max_associations="16" label="Basic Set trigerred by change of input I3." />
+			<Group index="9" max_associations="16" label="Basic Set trigerred by change of temperature." />
+		</Associations>
+	</CommandClass>
+
+	<!-- Remove COMMAND_CLASS_BASIC -->
+	<CommandClass id="32" action="remove" />
+
+	<!-- Map endpoints to instances -->
+	<CommandClass id="96" mapping="endpoints" />
+
+</Product>
