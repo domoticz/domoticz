@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<!-- The thermostat does not properly setup the Setpoints - set them as 1 (Heating 1) and 13 (Away Temp) not 2 & 10 as default -->
+	<CommandClass id="67" name="COMMAND_CLASS_THERMOSTAT_SETPOINT" version="1" request_flags="4" innif="true" base="1">
+		<Instance index="1" />
+		<Value type="decimal" genre="user" instance="1" index="1" label="Heating 1" units="C" read_only="false" write_only="false" verify_changes="false" poll_intensity="0" min="0" max="0" value="17.0" />
+		<Value type="decimal" genre="user" instance="1" index="13" label="Away Temperature" units="C" read_only="false" write_only="false" verify_changes="false" poll_intensity="0" min="0" max="0" value="5.0" />
+	</CommandClass>
+</Product>
