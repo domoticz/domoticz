@@ -294,12 +294,26 @@ void CNest::UpdateSmokeSensor(const unsigned char Idx, const bool bOn, const std
 	}
 	else
 	{
-		//check if we have a change, if not do not update it
+		//check if we have a change, if not only update the LastUpdate field
+		bool bNoChange = false;
 		int nvalue = atoi(result[0][1].c_str());
 		if ((!bOn) && (nvalue == 0))
+			bNoChange = true;
+		else if ((bOn && (nvalue != 0)))
+			bNoChange = true;
+		if (bNoChange)
+		{
+			time_t now = time(0);
+			struct tm ltime;
+			localtime_r(&now, &ltime);
+
+			char szLastUpdate[40];
+			sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
+
+			m_sql.safe_query("UPDATE DeviceStatus SET LastUpdate='%q' WHERE(HardwareID == %d) AND (DeviceID == '%q')",
+				szLastUpdate, m_HwdID, szIdx);
 			return;
-		if ((bOn && (nvalue != 0)))
-			return;
+		}
 	}
 
 	//Send as Lighting 2
