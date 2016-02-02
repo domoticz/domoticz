@@ -963,7 +963,7 @@ void SatelIntegra::UpdateZoneName(const unsigned int Idx, const unsigned char* n
 		namePrefix = "Temp";
 	}
 
-	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Name=='%q:%q') AND (Unit=1)", m_HwdID, szTmp, namePrefix.c_str(), shortName.c_str());
+	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Name!='Unknown') AND (Unit=1)", m_HwdID, szTmp);
 	if (result.size() < 1)
 	{
 		//Assign zone name from Integra
@@ -986,7 +986,7 @@ void SatelIntegra::UpdateTempName(const unsigned int Idx, const unsigned char* n
 	shortName.erase(pos + 1);
 	shortName = ISO2UTF8(shortName);
 
-	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Name=='Temp:%q') AND (Unit=0)", m_HwdID, szTmp, shortName.c_str());
+	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Name!='Unknown') AND (Unit=0)", m_HwdID, szTmp);
 	if (result.size() < 1)
 	{
 		//Assign zone name from Integra
@@ -1009,7 +1009,7 @@ void SatelIntegra::UpdateOutputName(const unsigned int Idx, const unsigned char*
 	shortName.erase(pos + 1);
 	shortName = ISO2UTF8(shortName);
 
-	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Name=='Output:%q') AND (Unit=1)", m_HwdID, szTmp, shortName.c_str());
+	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Name!='Unknown') AND (Unit=1)", m_HwdID, szTmp);
 	if (result.size() < 1)
 	{
 		//Assign output name from Integra
