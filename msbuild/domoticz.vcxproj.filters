@@ -1785,6 +1785,7 @@
     </ClInclude>
     <ClInclude Include="..\webserver\WebsocketHandler.h">
       <Filter>Webserver</Filter>
+	</ClInclude>
     <ClInclude Include="..\hardware\NefitEasy.h">
       <Filter>Devices\Nefit-Easy</Filter>
     </ClInclude>
@@ -2267,7 +2268,6 @@
     <ClCompile Include="..\hardware\CurrentCostMeterTCP.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-<<<<<<< HEAD
     <ClCompile Include="..\webserver\Websockets.cpp">
       <Filter>Webserver</Filter>
     </ClCompile>
@@ -2276,7 +2276,7 @@
     </ClCompile>
     <ClCompile Include="..\webserver\WebsocketHandler.cpp">
       <Filter>Webserver</Filter>
-=======
+	</ClCompile>
     <ClCompile Include="..\hardware\NefitEasy.cpp">
       <Filter>Devices\Nefit-Easy</Filter>
     </ClCompile>
@@ -2327,7 +2327,6 @@
     </ClCompile>
     <ClCompile Include="..\tinyxpath\xpath_syntax.cpp">
       <Filter>tinyxpath</Filter>
->>>>>>> master
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
