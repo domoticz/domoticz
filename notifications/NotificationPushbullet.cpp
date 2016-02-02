@@ -18,6 +18,8 @@ CNotificationPushbullet::~CNotificationPushbullet()
 bool CNotificationPushbullet::SendMessageImplementation(const std::string &Subject, const std::string &Text, const std::string &ExtraData, const int Priority, const std::string &Sound, const bool bFromNotification)
 {
 	//send message to Pushbullet
+	std::string cSubject = (Subject == Text) ? "Domoticz" : Subject;
+
 	bool bRet;
 	std::string sPostData;
 	std::stringstream sHeaderKey;
@@ -28,7 +30,7 @@ bool CNotificationPushbullet::SendMessageImplementation(const std::string &Subje
 
 	//Build the message in JSON
 	json["type"] = "note";
-	json["title"] = CURLEncode::URLDecode(Subject);
+	json["title"] = CURLEncode::URLDecode(cSubject);
 	json["body"] = CURLEncode::URLDecode(Text);
 	sPostData = jsonWriter.write(json);
 

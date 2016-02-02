@@ -82,6 +82,7 @@ static const _tGuiLanguage guiLanguage[] =
 	{ "en", "English" },
 	{ "ar", "Arabic" },
 	{ "bg", "Bulgarian" },
+	{ "zh", "Chinese" },
 	{ "cs", "Czech" },
 	{ "da", "Danish" },
 	{ "nl", "Dutch" },
@@ -105,7 +106,6 @@ static const _tGuiLanguage guiLanguage[] =
 	{ "es", "Spanish" },
 	{ "sv", "Swedish" },
 	{ "tr", "Turkish" },
-
 	{ NULL, NULL }
 };
 
@@ -360,7 +360,6 @@ namespace http {
 			m_pWebEm->RegisterIncludeCode("switchtypes", boost::bind(&CWebServer::DisplaySwitchTypesCombo, this));
 			m_pWebEm->RegisterIncludeCode("metertypes", boost::bind(&CWebServer::DisplayMeterTypesCombo, this));
 			m_pWebEm->RegisterIncludeCode("timertypes", boost::bind(&CWebServer::DisplayTimerTypesCombo, this));
-			m_pWebEm->RegisterIncludeCode("timertypesextended", boost::bind(&CWebServer::DisplayTimerTypesComboExtendend, this));
 			m_pWebEm->RegisterIncludeCode("combolanguage", boost::bind(&CWebServer::DisplayLanguageCombo, this));
 
 			m_pWebEm->RegisterPageCode("/json.htm", boost::bind(&CWebServer::GetJSonPage, this, _1, _2));
@@ -426,6 +425,14 @@ namespace http {
 			RegisterCommandCode("kodiremovenode", boost::bind(&CWebServer::Cmd_KodiRemoveNode, this, _1, _2, _3));
 			RegisterCommandCode("kodiclearnodes", boost::bind(&CWebServer::Cmd_KodiClearNodes, this, _1, _2, _3));
 			RegisterCommandCode("kodimediacommand", boost::bind(&CWebServer::Cmd_KodiMediaCommand, this, _1, _2, _3));
+
+			RegisterCommandCode("panasonicsetmode", boost::bind(&CWebServer::Cmd_PanasonicSetMode, this, _1, _2, _3));
+			RegisterCommandCode("panasonicgetnodes", boost::bind(&CWebServer::Cmd_PanasonicGetNodes, this, _1, _2, _3));
+			RegisterCommandCode("panasonicaddnode", boost::bind(&CWebServer::Cmd_PanasonicAddNode, this, _1, _2, _3));
+			RegisterCommandCode("panasonicupdatenode", boost::bind(&CWebServer::Cmd_PanasonicUpdateNode, this, _1, _2, _3));
+			RegisterCommandCode("panasonicremovenode", boost::bind(&CWebServer::Cmd_PanasonicRemoveNode, this, _1, _2, _3));
+			RegisterCommandCode("panasonicclearnodes", boost::bind(&CWebServer::Cmd_PanasonicClearNodes, this, _1, _2, _3));
+			RegisterCommandCode("panasonicmediacommand", boost::bind(&CWebServer::Cmd_PanasonicMediaCommand, this, _1, _2, _3));
 
 			RegisterCommandCode("lmssetmode", boost::bind(&CWebServer::Cmd_LMSSetMode, this, _1, _2, _3));
 			RegisterCommandCode("lmsgetnodes", boost::bind(&CWebServer::Cmd_LMSGetNodes, this, _1, _2, _3));
@@ -525,6 +532,9 @@ namespace http {
 			RegisterCommandCode("addlogmessage", boost::bind(&CWebServer::Cmd_AddLogMessage, this, _1, _2, _3));
 			RegisterCommandCode("clearshortlog", boost::bind(&CWebServer::Cmd_ClearShortLog, this, _1, _2, _3));
 			RegisterCommandCode("vacuumdatabase", boost::bind(&CWebServer::Cmd_VacuumDatabase, this, _1, _2, _3));
+
+			RegisterCommandCode("addmobiledevice", boost::bind(&CWebServer::Cmd_AddMobileDevice, this, _1, _2, _3));
+			RegisterCommandCode("deletemobiledevice", boost::bind(&CWebServer::Cmd_DeleteMobileDevice, this, _1, _2, _3));
 
 			RegisterRType("graph", boost::bind(&CWebServer::RType_HandleGraph, this, _1, _2, _3));
 			RegisterRType("lightlog", boost::bind(&CWebServer::RType_LightLog, this, _1, _2, _3));
@@ -1039,6 +1049,9 @@ namespace http {
 			else if (htype == HTYPE_Kodi) {
 				//all fine here!
 			}
+			else if (htype == HTYPE_PanasonicTV) {
+				// all fine here!
+			}
 			else if (htype == HTYPE_LogitechMediaServer) {
 				//all fine here!
 			}
@@ -1146,6 +1159,11 @@ namespace http {
 				mode2 = 1000;
 			}
 			else if (htype == HTYPE_Kodi)
+			{
+				mode1 = 30;
+				mode2 = 1000;
+			}
+			else if (htype == HTYPE_PanasonicTV)
 			{
 				mode1 = 30;
 				mode2 = 1000;
@@ -1273,6 +1291,9 @@ namespace http {
 				//All fine here
 			}
 			else if (htype == HTYPE_Kodi) {
+				//All fine here
+			}
+			else if (htype == HTYPE_PanasonicTV) {
 				//All fine here
 			}
 			else if (htype == HTYPE_LogitechMediaServer) {
@@ -3249,108 +3270,6 @@ namespace http {
 					}
 				}
 			}
-			else if (cparam == "gettimerlist")
-			{
-				root["status"] = "OK";
-				root["title"] = "GetTimerList";
-				std::vector<std::vector<std::string> > result;
-				result = m_sql.safe_query("SELECT t.ID, t.Active, d.[Name], t.DeviceRowID, t.[Date], t.Time, t.Type, t.Cmd, t.Level, t.Hue, t.Days, t.UseRandomness, t.MDay, t.Month, t.Occurence FROM Timers as t, DeviceStatus as d WHERE (d.ID == t.DeviceRowID) AND (t.TimerPlan==%d) ORDER BY d.[Name], t.Time",
-					m_sql.m_ActiveTimerPlan);
-				if (result.size() > 0)
-				{
-					std::vector<std::vector<std::string> >::const_iterator itt;
-					int ii = 0;
-					for (itt = result.begin(); itt != result.end(); ++itt)
-					{
-						std::vector<std::string> sd = *itt;
-
-						unsigned char iLevel = atoi(sd[8].c_str());
-						if (iLevel == 0)
-							iLevel = 100;
-
-						int iTimerType = atoi(sd[6].c_str());
-						std::string sdate = sd[4];
-						if ((iTimerType == TTYPE_FIXEDDATETIME) && (sdate.size() == 10))
-						{
-							int Year = atoi(sdate.substr(0, 4).c_str());
-							int Month = atoi(sdate.substr(5, 2).c_str());
-							int Day = atoi(sdate.substr(8, 2).c_str());
-							sprintf(szTmp, "%02d-%02d-%04d", Month, Day, Year);
-							sdate = szTmp;
-						}
-						else
-							sdate = "";
-
-						root["result"][ii]["idx"] = sd[0];
-						root["result"][ii]["Active"] = (atoi(sd[1].c_str()) == 0) ? "false" : "true";
-						root["result"][ii]["Name"] = sd[2];
-						root["result"][ii]["DeviceRowID"] = sd[3];
-						root["result"][ii]["Date"] = sdate;
-						root["result"][ii]["Time"] = sd[5];
-						root["result"][ii]["Type"] = iTimerType;
-						root["result"][ii]["Cmd"] = atoi(sd[7].c_str());
-						root["result"][ii]["Level"] = iLevel;
-						root["result"][ii]["Hue"] = atoi(sd[9].c_str());
-						root["result"][ii]["Days"] = atoi(sd[10].c_str());
-						root["result"][ii]["Randomness"] = (atoi(sd[11].c_str()) == 0) ? "false" : "true";
-						root["result"][ii]["MDay"] = atoi(sd[12].c_str());
-						root["result"][ii]["Month"] = atoi(sd[13].c_str());
-						root["result"][ii]["Occurence"] = atoi(sd[14].c_str());
-						ii++;
-					}
-				}
-			}
-			else if (cparam == "getscenetimerlist")
-			{
-				root["status"] = "OK";
-				root["title"] = "GetSceneTimerList";
-				std::vector<std::vector<std::string> > result;
-				result = m_sql.safe_query("SELECT t.ID, t.Active, s.[Name], t.SceneRowID, t.[Date], t.Time, t.Type, t.Cmd, t.Level, t.Hue, t.Days, t.UseRandomness, t.MDay, T.Month, t.Occurence FROM SceneTimers as t, Scenes as s WHERE (s.ID == t.SceneRowID) AND (t.TimerPlan==%d) ORDER BY s.[Name], t.Time",
-					m_sql.m_ActiveTimerPlan);
-				if (result.size() > 0)
-				{
-					std::vector<std::vector<std::string> >::const_iterator itt;
-					int ii = 0;
-					for (itt = result.begin(); itt != result.end(); ++itt)
-					{
-						std::vector<std::string> sd = *itt;
-
-						unsigned char iLevel = atoi(sd[8].c_str());
-						if (iLevel == 0)
-							iLevel = 100;
-
-						int iTimerType = atoi(sd[6].c_str());
-						std::string sdate = sd[4];
-						if ((iTimerType == TTYPE_FIXEDDATETIME) && (sdate.size() == 10))
-						{
-							int Year = atoi(sdate.substr(0, 4).c_str());
-							int Month = atoi(sdate.substr(5, 2).c_str());
-							int Day = atoi(sdate.substr(8, 2).c_str());
-							sprintf(szTmp, "%02d-%02d-%04d", Month, Day, Year);
-							sdate = szTmp;
-						}
-						else
-							sdate = "";
-
-						root["result"][ii]["idx"] = sd[0];
-						root["result"][ii]["Active"] = (atoi(sd[1].c_str()) == 0) ? "false" : "true";
-						root["result"][ii]["Name"] = sd[2];
-						root["result"][ii]["SceneRowID"] = sd[3];
-						root["result"][ii]["Date"] = sdate;
-						root["result"][ii]["Time"] = sd[5];
-						root["result"][ii]["Type"] = iTimerType;
-						root["result"][ii]["Cmd"] = atoi(sd[7].c_str());
-						root["result"][ii]["Level"] = iLevel;
-						root["result"][ii]["Hue"] = atoi(sd[9].c_str());
-						root["result"][ii]["Days"] = atoi(sd[10].c_str());
-						root["result"][ii]["Randomness"] = (atoi(sd[11].c_str()) == 0) ? "false" : "true";
-						root["result"][ii]["MDay"] = atoi(sd[12].c_str());
-						root["result"][ii]["Month"] = atoi(sd[13].c_str());
-						root["result"][ii]["Occurence"] = atoi(sd[14].c_str());
-						ii++;
-					}
-				}
-			}
 			else if (cparam == "getscenedevices")
 			{
 				std::string idx = request::findValue(&req, "idx");
@@ -5318,7 +5237,12 @@ namespace http {
 					(ntype == NTYPE_DEWPOINT)
 					)
 				{
-					strcpy(szTmp, ttype.c_str());
+					if ((ntype == NTYPE_SWITCH_ON) && (swhen == "2")) { // '='
+						unsigned char twhen = '=';
+						sprintf(szTmp, "%s;%c;%s", ttype.c_str(), twhen, svalue.c_str());
+					}
+					else
+						strcpy(szTmp, ttype.c_str());
 				}
 				else
 				{
@@ -5366,7 +5290,12 @@ namespace http {
 					(ntype == NTYPE_DEWPOINT)
 					)
 				{
-					strcpy(szTmp, ttype.c_str());
+					if ((ntype == NTYPE_SWITCH_ON) && (swhen == "2")) { // '='
+						unsigned char twhen = '=';
+						sprintf(szTmp, "%s;%c;%s", ttype.c_str(), twhen, svalue.c_str());
+					}
+					else
+						strcpy(szTmp, ttype.c_str());
 				}
 				else
 				{
@@ -6753,18 +6682,6 @@ namespace http {
 		}
 
 		char * CWebServer::DisplayTimerTypesCombo()
-		{
-			m_retstr = "";
-			char szTmp[200];
-			for (int ii = 0; ii <= TTYPE_FIXEDDATETIME; ii++)
-			{
-				sprintf(szTmp, "<option data-i18n=\"%s\" value=\"%d\">%s</option>\n", Timer_Type_Desc(ii), ii, Timer_Type_Desc(ii));
-				m_retstr += szTmp;
-			}
-			return (char*)m_retstr.c_str();
-		}
-
-		char * CWebServer::DisplayTimerTypesComboExtendend()
 		{
 			m_retstr = "";
 			char szTmp[200];
@@ -10168,10 +10085,14 @@ namespace http {
 				{
 					std::vector<std::string> sd = *itt;
 
+					_eHardwareTypes hType = (_eHardwareTypes)atoi(sd[3].c_str());
+					if (hType == HTYPE_DomoticzInternal)
+						continue;
+
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
 					root["result"][ii]["Enabled"] = (sd[2] == "1") ? "true" : "false";
-					root["result"][ii]["Type"] = atoi(sd[3].c_str());
+					root["result"][ii]["Type"] = hType;
 					root["result"][ii]["Address"] = sd[4];
 					root["result"][ii]["Port"] = atoi(sd[5].c_str());
 					root["result"][ii]["SerialPort"] = sd[6];
@@ -10807,7 +10728,55 @@ namespace http {
 			m_sql.VacuumDatabase();
 		}
 		
-		
+		void CWebServer::Cmd_AddMobileDevice(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			std::string suuid = request::findValue(&req, "uuid");
+			std::string ssenderid = request::findValue(&req, "senderid");
+			if (
+				(suuid.empty()) ||
+				(ssenderid.empty())
+				)
+				return;
+			root["status"] = "OK";
+			root["title"] = "AddMobileDevice";
+
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query("SELECT ID FROM MobileDevices WHERE (UUID=='%q')", suuid.c_str());
+			if (result.empty())
+			{
+				//New
+				m_sql.safe_query("INSERT INTO MobileDevices (UUID,SenderID) VALUES ('%q','%q')", suuid.c_str(), ssenderid.c_str());
+			}
+			else
+			{
+				//Update
+				time_t now = time(0);
+				struct tm ltime;
+				localtime_r(&now, &ltime);
+				m_sql.safe_query("UPDATE MobileDevices SET SenderID='%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (UUID == '%q')",
+					ssenderid.c_str(),
+					ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
+					suuid.c_str()
+					);
+			}
+		}
+
+		void CWebServer::Cmd_DeleteMobileDevice(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+				return;//Only admin user allowed
+			std::string suuid = request::findValue(&req, "uuid");
+			if (suuid.empty())
+				return;
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query("SELECT ID FROM MobileDevices WHERE (UUID=='%q')", suuid.c_str());
+			if (result.empty())
+				return;
+			m_sql.safe_query("DELETE FROM MobileDevices WHERE (UUID == '%q')", suuid.c_str());
+			root["status"] = "OK";
+			root["title"] = "DeleteMobileDevice";
+		}
+
 
 		void CWebServer::RType_GetTransfers(WebEmSession & session, const request& req, Json::Value &root)
 		{
@@ -10942,9 +10911,12 @@ namespace http {
 			std::map<std::string, CNotificationBase*>::const_iterator ittNotifiers;
 			for (ittNotifiers = m_notifications.m_notifiers.begin(); ittNotifiers != m_notifications.m_notifiers.end(); ++ittNotifiers)
 			{
-				root["notifiers"][ii]["name"] = ittNotifiers->first;
-				root["notifiers"][ii]["description"] = ittNotifiers->first;
-				ii++;
+				if (ittNotifiers->first != "gcm")
+				{
+					root["notifiers"][ii]["name"] = ittNotifiers->first;
+					root["notifiers"][ii]["description"] = ittNotifiers->first;
+					ii++;
+				}
 			}
 
 			unsigned long long idx = 0;

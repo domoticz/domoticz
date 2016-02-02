@@ -1,6 +1,7 @@
-Version 2.3xxx
+Version 2.4xxx
 - Implemented: Blockly, now possible to use expressions in notifications/email/SMS like "My temperature is {{temperaturedevice[1234]}} degrees" (see http://www.domoticz.com/wiki/Events)
 - Implemented: Blockly, now possible to send a notification with a user variable/device as subject/body
+- Implemented: Chinese language support, big thanks to wxws!!
 - Implemented: Day display in energy/gas/water/temp report
 - Implemented: Dummy Hardware, Option to supply name, sensor is now also directly added to the system
 - Implemented: Dummy Hardware, Wind+Temp+Chill
@@ -30,6 +31,7 @@ Version 2.3xxx
 - Implemented: Waterflow sensor
 - Implemented: Wind Beaufort scale
 - Implemented: Wind Graph, option to delete a short-log data point
+- Implemented: Panasonic TV support (Viera TV's after 2011 should work)
 - Changed: Alert sensor, removed level notation in user interface
 - Changed: EventSystem, don't process unused devices
 - Changed: Fritzbox, Now updating text sensor on connect/disconnect

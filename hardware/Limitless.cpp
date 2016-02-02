@@ -504,7 +504,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 			break;
 		case Limitless_LedOff:
 			if (pLed->dunit==0)
-				pCMD=(unsigned char*)&AllOn;
+				pCMD=(unsigned char*)&AllOff;
 			else if (pLed->dunit==1)
 				pCMD=(unsigned char*)&Group1Off;
 			else if (pLed->dunit==2)

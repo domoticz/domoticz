@@ -387,6 +387,15 @@
     <Filter Include="www\views">
       <UniqueIdentifier>{59523cae-1093-486a-9c2b-9f939ce7e8d2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\CurrentCost">
+      <UniqueIdentifier>{44396f52-871f-4e10-831e-2ddeb202fbbd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\Panasonic">
+      <UniqueIdentifier>{6f61ac8c-0b97-4506-aac7-fdf909d0b54f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="XML">
+      <UniqueIdentifier>{19baf552-3c12-432c-bebe-8bb25fa327d0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -1765,29 +1774,26 @@
     <ClInclude Include="..\hardware\SolarEdgeAPI.h">
       <Filter>Devices\SolarEdge</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\CurrentCostMeterBase.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\CurrentCostMeterSerial.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\CurrentCostMeterTCP.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\webserver\Websockets.hpp">
-      <Filter>Webserver</Filter>
-    </ClInclude>
-    <ClInclude Include="..\webserver\sha1.hpp">
-      <Filter>Webserver</Filter>
-    </ClInclude>
-    <ClInclude Include="..\webserver\WebsocketPush.h">
-      <Filter>Webserver</Filter>
-    </ClInclude>
-    <ClInclude Include="..\webserver\WebsocketHandler.h">
-      <Filter>Webserver</Filter>
-	</ClInclude>
     <ClInclude Include="..\hardware\NefitEasy.h">
       <Filter>Devices\Nefit-Easy</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\CurrentCostMeterBase.h">
+      <Filter>Devices\CurrentCost</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\CurrentCostMeterTCP.h">
+      <Filter>Devices\CurrentCost</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\CurrentCostMeterSerial.h">
+      <Filter>Devices\CurrentCost</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\NefitEasy.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\PanasonicTV.h">
+      <Filter>Devices\Panasonic</Filter>
+    </ClInclude>
+    <ClInclude Include="..\notifications\NotificationGCM.h">
+      <Filter>Notifications</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2259,74 +2265,71 @@
     <ClCompile Include="..\hardware\SolarEdgeAPI.cpp">
       <Filter>Devices\SolarEdge</Filter>
     </ClCompile>
+    <ClCompile Include="..\hardware\PanasonicTV.cpp">
+      <Filter>Devices\Panasonic</Filter>
+    </ClCompile>
     <ClCompile Include="..\hardware\CurrentCostMeterBase.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Devices\CurrentCost</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\CurrentCostMeterSerial.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Devices\CurrentCost</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\CurrentCostMeterTCP.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Devices\CurrentCost</Filter>
     </ClCompile>
-    <ClCompile Include="..\webserver\Websockets.cpp">
-      <Filter>Webserver</Filter>
+    <ClCompile Include="..\tinyxpath\xml_util.cpp">
+      <Filter>XML</Filter>
     </ClCompile>
-    <ClCompile Include="..\webserver\WebsocketPush.cpp">
-      <Filter>Webserver</Filter>
+    <ClCompile Include="..\tinyxpath\xpath_expression.cpp">
+      <Filter>XML</Filter>
     </ClCompile>
-    <ClCompile Include="..\webserver\WebsocketHandler.cpp">
-      <Filter>Webserver</Filter>
-	</ClCompile>
+    <ClCompile Include="..\tinyxpath\xpath_processor.cpp">
+      <Filter>XML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tinyxpath\xpath_stack.cpp">
+      <Filter>XML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tinyxpath\xpath_static.cpp">
+      <Filter>XML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tinyxpath\xpath_stream.cpp">
+      <Filter>XML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tinyxpath\xpath_syntax.cpp">
+      <Filter>XML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tinyxpath\action_store.cpp">
+      <Filter>XML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tinyxpath\htmlutil.cpp">
+      <Filter>XML</Filter>
+    </ClCompile>
     <ClCompile Include="..\hardware\NefitEasy.cpp">
       <Filter>Devices\Nefit-Easy</Filter>
     </ClCompile>
-    <ClCompile Include="..\tinyxpath\action_store.cpp">
-      <Filter>tinyxpath</Filter>
-    </ClCompile>
-    <ClCompile Include="..\tinyxpath\htmlutil.cpp">
-      <Filter>tinyxpath</Filter>
-    </ClCompile>
     <ClCompile Include="..\tinyxpath\lex_util.cpp">
-      <Filter>tinyxpath</Filter>
+      <Filter>XML</Filter>
     </ClCompile>
     <ClCompile Include="..\tinyxpath\node_set.cpp">
-      <Filter>tinyxpath</Filter>
+      <Filter>XML</Filter>
     </ClCompile>
     <ClCompile Include="..\tinyxpath\tinystr.cpp">
-      <Filter>tinyxpath</Filter>
+      <Filter>XML</Filter>
     </ClCompile>
     <ClCompile Include="..\tinyxpath\tinyxml.cpp">
-      <Filter>tinyxpath</Filter>
+      <Filter>XML</Filter>
     </ClCompile>
     <ClCompile Include="..\tinyxpath\tinyxmlerror.cpp">
-      <Filter>tinyxpath</Filter>
+      <Filter>XML</Filter>
     </ClCompile>
     <ClCompile Include="..\tinyxpath\tinyxmlparser.cpp">
-      <Filter>tinyxpath</Filter>
+      <Filter>XML</Filter>
     </ClCompile>
     <ClCompile Include="..\tinyxpath\tokenlist.cpp">
-      <Filter>tinyxpath</Filter>
+      <Filter>XML</Filter>
     </ClCompile>
-    <ClCompile Include="..\tinyxpath\xml_util.cpp">
-      <Filter>tinyxpath</Filter>
-    </ClCompile>
-    <ClCompile Include="..\tinyxpath\xpath_expression.cpp">
-      <Filter>tinyxpath</Filter>
-    </ClCompile>
-    <ClCompile Include="..\tinyxpath\xpath_processor.cpp">
-      <Filter>tinyxpath</Filter>
-    </ClCompile>
-    <ClCompile Include="..\tinyxpath\xpath_stack.cpp">
-      <Filter>tinyxpath</Filter>
-    </ClCompile>
-    <ClCompile Include="..\tinyxpath\xpath_static.cpp">
-      <Filter>tinyxpath</Filter>
-    </ClCompile>
-    <ClCompile Include="..\tinyxpath\xpath_stream.cpp">
-      <Filter>tinyxpath</Filter>
-    </ClCompile>
-    <ClCompile Include="..\tinyxpath\xpath_syntax.cpp">
-      <Filter>tinyxpath</Filter>
+    <ClCompile Include="..\notifications\NotificationGCM.cpp">
+      <Filter>Notifications</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -3441,6 +3444,7 @@
     <Text Include="..\www\templates\readme.txt">
       <Filter>www\templates</Filter>
     </Text>
+    <Text Include="..\History.txt" />
   </ItemGroup>
   <ItemGroup>
     <Font Include="..\www\css\fonts\Oswald-Light.ttf">

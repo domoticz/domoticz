@@ -86,7 +86,7 @@
 			0 - Reporting Disabled.
 			1 - 32767 = 1 second - 32767 seconds reporting enabled.
 			Power report is send with time interval set by entered value.
-			Default value 300 (power report in Watts is send each 300s).</Help>
+			Default value 300 (power report in Watts is sent each 300s).</Help>
 		</Value>
 
 		<Value type="byte" genre="config" instance="1" index="60" label="Minimum dimming value" min="1" max="98" value="1">
@@ -120,13 +120,12 @@
 			<Item label="ignore start level" value="1"/>
 		</Value> 
 		
-		<Value type="list" genre="config" instance="1" index="68" label="Dimming duration" size="1" min="0" max="1" value="0">
+		<Value type="byte" genre="config" instance="1" index="68" label="Dimming duration" size="1" min="0" max="127" value="0">
 			<Help>This parameter is used with association group 3.
 				The Duration field MUST specify the time that the transition should take from the current value to the new target value.
 				A supporting device SHOULD respect the specified Duration value.
-				Default value 0.</Help>
-			<Item label="respect start level" value="0"/>
-			<Item label="ignore start level" value="1"/>
+				Default value 0.
+				1 - 127 from 1 to 127 seconds.</Help>
 		</Value> 
 		
 		<Value type="list" genre="config" instance="1" index="100" label="Enable / Disable Endpoints I2 or select Notification Type and Event" size="1" min="0" max="9" value="1">

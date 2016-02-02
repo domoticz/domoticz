@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 2.8.4)
 
 project(domoticz)
- 
+
 option(USE_BUILTIN_LUA "Use builtin lua library" YES)
 IF(USE_BUILTIN_LUA)
   add_subdirectory (lua)
@@ -19,11 +19,27 @@ ELSE(USE_BUILTIN_LUA)
   ENDIF(LUA_FOUND)
 ENDIF(USE_BUILTIN_LUA)
 
-add_subdirectory (MQTT)
-get_directory_property (CMAKE_MQTT_INCLUDES DIRECTORY MQTT
-    DEFINITION MQTT_INCLUDE_DIRS)
-get_directory_property (CMAKE_MQTT_LIBRARIES DIRECTORY MQTT
-    DEFINITION MQTT_LIBRARIES)
+option(USE_BUILTIN_MQTT "Use builtin Mosquitto library" YES)
+IF(USE_BUILTIN_MQTT)
+  message(STATUS "Using builtin Mosquitto library")
+  add_subdirectory (MQTT)
+  get_directory_property (CMAKE_MQTT_INCLUDES DIRECTORY MQTT
+      DEFINITION MQTT_INCLUDE_DIRS)
+  get_directory_property (CMAKE_MQTT_LIBRARIES DIRECTORY MQTT
+      DEFINITION MQTT_LIBRARIES)
+  add_definitions(-DBUILTIN_MQTT)
+ELSE(USE_BUILTIN_MQTT)
+  find_path(CMAKE_MQTT_INCLUDE NAMES mosquittopp.h)
+  IF(CMAKE_MQTT_INCLUDE)
+     message(STATUS "Found mosquitto mosquittopp.h at: ${CMAKE_MQTT_INCLUDE}")
+     find_library(CMAKE_MQTT_LIBRARIES NAMES libmosquitto.so)
+     IF(CMAKE_MQTT_LIBRARIES)
+        message(STATUS "Found mosquitto lib at: ${CMAKE_MQTT_LIBRARIES}") 
+     ENDIF(CMAKE_MQTT_LIBRARIES)
+  ELSE(CMAKE_MQTT_INCLUDE)
+     meessage(FATAL_ERROR "Mosquitto includes or library cannot be found, and you ask to NOT use builtin")
+  ENDIF(CMAKE_MQTT_INCLUDE)
+ENDIF(USE_BUILTIN_MQTT)
 
 option(USE_BUILTIN_SQLITE "Use builtin sqlite library" YES)
 IF(USE_BUILTIN_SQLITE)
@@ -41,7 +57,7 @@ ELSE(USE_BUILTIN_SQLITE)
   ENDIF(SQLite_FOUND)
 ENDIF(USE_BUILTIN_SQLITE)
 
-SET(EXECUTABLE_OUTPUT_PATH "" CACHE INTERNAL 
+SET(EXECUTABLE_OUTPUT_PATH "" CACHE INTERNAL
   "Where to put the executables for Domoticz"
   )
 
@@ -150,14 +166,14 @@ set (domoticz_VERSION_MAJOR 3)
 set (domoticz_VERSION_MINOR 0)
 set (domoticz_VERSION_PATCH ${ProjectRevision})
 
-include_directories(${CMAKE_SOURCE_DIR}/main) 
+include_directories(${CMAKE_SOURCE_DIR}/main)
 
 # a custom target that is always built
 ADD_CUSTOM_TARGET(revisiontag ALL)
 
 # creates appversion.h using cmake script
 ADD_CUSTOM_COMMAND(TARGET revisiontag COMMAND ${CMAKE_COMMAND}
-   -DSOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR} 
+   -DSOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}
    -P ${CMAKE_CURRENT_SOURCE_DIR}/getgit.cmake)
 
 ## Target
@@ -237,6 +253,7 @@ hardware/openzwave/control_panel/zwavelib.cpp
 hardware/OTGWBase.cpp
 hardware/OTGWSerial.cpp
 hardware/OTGWTCP.cpp
+hardware/PanasonicTV.cpp
 hardware/P1MeterBase.cpp
 hardware/P1MeterSerial.cpp
 hardware/P1MeterTCP.cpp
@@ -277,6 +294,7 @@ hardware/ZWaveBase.cpp
 MQTT/mosquittopp.cpp
 notifications/NotificationBase.cpp
 notifications/NotificationEmail.cpp
+notifications/NotificationGCM.cpp
 notifications/NotificationHelper.cpp
 notifications/NotificationHTTP.cpp
 notifications/NotificationKodi.cpp
@@ -329,18 +347,55 @@ add_dependencies(domoticz revisiontag)
 
 ## Link libraries
 
-option(USE_STATIC_BOOST "Build with static BOOST libraries" YES)
+option(USE_PYTHON "Use Python as a scripting language" NO)
+if(USE_PYTHON)
+  FIND_PACKAGE(PythonLibs)
+  IF(PYTHONLIBS_FOUND)
+    MESSAGE(STATUS "Python libraries found at: ${PYTHON_LIBRARIES}")
+    MESSAGE(STATUS "Python includes found at: ${PYTHON_INCLUDE_PATH}")
+    INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
+  else()
+    MESSAGE(FATAL_ERROR "Python not found on your system, see install.txt how to get them installed. (for example 'sudo apt-get install python-dev')")
+  ENDIF(PYTHONLIBS_FOUND)
+
+  FIND_PACKAGE(PythonInterp)
+  IF(PYTHONINTERP_FOUND)
+    MESSAGE(STATUS "Python interpreter found at: ${PYTHON_EXECUTABLE}")
+    INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
+    LIST(APPEND ADDITIONAL_LIBS ${PYTHON_LIBRARIES})
+    MESSAGE(STATUS "Python as scripting languages: ENABLED")
+    IF(PYTHONLIBS_FOUND)
+      add_definitions(-DENABLE_PYTHON)
+      add_definitions(-DPYTHON_EXE=${PYTHON_EXECUTABLE})
+      target_link_libraries(domoticz ${PYTHON_LIBRARIES})
+    ELSE()
+      MESSAGE(FATAL_ERROR "Python not found on your system, see install.txt how to get them installed. (for example 'sudo apt-get install python-dev')")
+    ENDIF(PYTHONLIBS_FOUND)
+
+  else()
+    MESSAGE(FATAL_ERROR "Python not found on your system, see install.txt how to get them installed. (for example 'sudo apt-get install python-dev')")
+  ENDIF(PYTHONINTERP_FOUND)
+endif(USE_PYTHON)
+
+option(USE_STATIC_BOOST "Build with static BOOST libraries" NO)
 set(Boost_USE_STATIC_LIBS ${USE_STATIC_BOOST})
 set(Boost_USE_MULTITHREADED ON)
 unset(Boost_INCLUDE_DIR CACHE)
 unset(Boost_LIBRARY_DIRS CACHE)
-find_package(Boost REQUIRED COMPONENTS thread date_time system)
+IF(USE_PYTHON AND PYTHONLIBS_FOUND)
+  find_package(Boost REQUIRED COMPONENTS thread date_time system python)
+else()
+  find_package(Boost REQUIRED COMPONENTS thread date_time system)
+endif(USE_PYTHON AND PYTHONLIBS_FOUND)
+
 if(USE_STATIC_BOOST)
    message(STATUS "Linking against boost static libraries")
 else(USE_STATIC_BOOST)
    message(STATUS "Linking against boost dynamic libraries")
 endif(USE_STATIC_BOOST)
 include_directories(${Boost_INCLUDE_DIRS})
+
+
 
 option(USE_BUILTIN_ZLIB "Use builtin zlib library" NO)
 if(USE_BUILTIN_ZLIB)
@@ -418,12 +473,12 @@ else()
     MESSAGE(STATUS "==== OpenZWave package found!")
     find_library(OpenZWave NAMES libopenzwave.so HINTS ${OPENZWAVE_LIBRARY_DIRS})
     message(STATUS ${OpenZWave})
-  endif()    
+  endif()
 endif()
 IF(OpenZWave)
   message(STATUS ${OpenZWave})
   target_link_libraries(domoticz ${OpenZWave})
-  include_directories(${CMAKE_SOURCE_DIR}/hardware/openzwave) 
+  include_directories(${CMAKE_SOURCE_DIR}/hardware/openzwave)
   add_definitions(-DWITH_OPENZWAVE)
   # open-zwave needs libudev
   IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
@@ -432,16 +487,16 @@ IF(OpenZWave)
   else()
     IF(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
       MESSAGE(STATUS "Building on FreeBSD, libudev not needed!")
-      FIND_PATH(ICONV_INCLUDE_DIR iconv.h) 
+      FIND_PATH(ICONV_INCLUDE_DIR iconv.h)
       FIND_LIBRARY(ICONV_LIBRARIES NAMES iconv libiconv libiconv-2 c)
-      IF(ICONV_INCLUDE_DIR AND ICONV_LIBRARIES) 
-        SET(ICONV_FOUND TRUE) 
+      IF(ICONV_INCLUDE_DIR AND ICONV_LIBRARIES)
+        SET(ICONV_FOUND TRUE)
         #target_link_libraries(domoticz ${ICONV_INCLUDE_DIR})
         target_link_libraries(domoticz ${ICONV_LIBRARIES} -lrt)
         message(STATUS ${ICONV_LIBRARIES})
       else()
         MESSAGE(FATAL_ERROR "libiconv not found on your system")
-      ENDIF(ICONV_INCLUDE_DIR AND ICONV_LIBRARIES)  
+      ENDIF(ICONV_INCLUDE_DIR AND ICONV_LIBRARIES)
     else()
       find_library(UDEV NAMES libudev.a)
       IF(UDEV)
@@ -473,7 +528,7 @@ IF(RaspberryPi)
     IF(WIRINGPI_LIBRARY)
       message(STATUS "WiringPi library was found in ${WIRINGPI_LIBRARY}...")
       add_definitions(-DWITH_GPIO)
-      target_link_libraries(domoticz ${WIRINGPI_LIBRARY})   
+      target_link_libraries(domoticz ${WIRINGPI_LIBRARY})
     else()
       message(STATUS "==== WiringPi library not found. GPIO support disabled.")
     message(STATUS "==== (Please follow http://wiringpi.com/download-and-install/ if you want to use GPIO.)")
@@ -495,11 +550,19 @@ else()
   message(STATUS "Not found telldus-core (telldus-core.h), not adding tellstick support")
 endif (TELLDUSCORE_INCLUDE)
 
-IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-  target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} mqtt ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS})
-else()
-  target_link_libraries(domoticz -lrt ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} mqtt ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS})
-ENDIF()
+IF(USE_BUILTIN_MQTT)
+  IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} mqtt ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS})
+  else()
+    target_link_libraries(domoticz -lrt ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} -LXXXPREFIXXX/lib pthread ${LUA_LIBRARIES} mqtt ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS})
+  ENDIF()
+ELSE(USE_BUILTIN_MQTT)
+  IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} -lmosquitto ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS})
+  else()
+    target_link_libraries(domoticz -lrt ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} -LXXXPREFIXXX/lib pthread ${LUA_LIBRARIES} -lmosquitto ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS})
+  ENDIF()
+ENDIF(USE_BUILTIN_MQTT)
 
 ADD_PRECOMPILED_HEADER(domoticz "main/stdafx.h")
 

@@ -31,7 +31,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 94
+#define DB_VERSION 96
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -580,6 +580,16 @@ const char *sqlCreateUserSessions =
 	" [LastUpdate] DATETIME DEFAULT(datetime('now', 'localtime')),"
 	" PRIMARY KEY([SessionID]));";
 
+const char *sqlCreateMobileDevices =
+"CREATE TABLE IF NOT EXISTS [MobileDevices]("
+"[ID] INTEGER PRIMARY KEY, "
+"[Active] BOOLEAN DEFAULT false, "
+"[Name] VARCHAR(100) DEFAULT '',"
+"[SenderID] TEXT NOT NULL,"
+"[UUID] TEXT NOT NULL, "
+"[LastUpdate] DATETIME DEFAULT(datetime('now', 'localtime'))"
+");";
+
 extern std::string szUserDataFolder;
 
 CSQLHelper::CSQLHelper(void)
@@ -701,6 +711,7 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateMySensorsChilds);
 	query(sqlCreateToonDevices);
 	query(sqlCreateUserSessions);
+	query(sqlCreateMobileDevices);
 	//Add indexes to log tables
 	query("create index if not exists f_idx on Fan(DeviceRowID);");
 	query("create index if not exists fc_idx on Fan_Calendar(DeviceRowID);");
@@ -1723,7 +1734,29 @@ bool CSQLHelper::OpenDatabase()
 			szQuery << "UPDATE SceneTimers SET [Type]=[Type]+2 WHERE ([Type]>" << TTYPE_FIXEDDATETIME << ")";
 			query(szQuery.str());
 		}
+		if (dbversion < 95)
+		{
+			if (!DoesColumnExistsInTable("Month", "SetpointTimers"))
+			{
+				query("ALTER TABLE SetpointTimers ADD COLUMN [Month] INTEGER DEFAULT 0");
+			}
+			if (!DoesColumnExistsInTable("MDay", "SetpointTimers"))
+			{
+				query("ALTER TABLE SetpointTimers ADD COLUMN [MDay] INTEGER DEFAULT 0");
+			}
+			if (!DoesColumnExistsInTable("Occurence", "SetpointTimers"))
+			{
+				query("ALTER TABLE SetpointTimers ADD COLUMN [Occurence] INTEGER DEFAULT 0");
+			}
+		}
+		if (dbversion < 96)
+		{
+			if (!DoesColumnExistsInTable("Name", "MobileDevices"))
+			{
+				query("ALTER TABLE MobileDevices ADD COLUMN [Name] VARCHAR(100) DEFAULT ''");
+			}
 
+		}
 	}
 	else if (bNewInstall)
 	{
@@ -2999,7 +3032,10 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 			//Check for notifications
 			if (HWtype != HTYPE_LogitechMediaServer) // Skip notifications for LMS here; is handled by the LMS plug-in
 			{
-				m_notifications.CheckAndHandleSwitchNotification(ulID, devname, (bIsLightSwitchOn) ? NTYPE_SWITCH_ON : NTYPE_SWITCH_OFF);
+				if (switchtype == STYPE_Selector)
+					m_notifications.CheckAndHandleSwitchNotification(ulID, devname, (bIsLightSwitchOn) ? NTYPE_SWITCH_ON : NTYPE_SWITCH_OFF, llevel);
+				else
+					m_notifications.CheckAndHandleSwitchNotification(ulID, devname, (bIsLightSwitchOn) ? NTYPE_SWITCH_ON : NTYPE_SWITCH_OFF);
 			}
 			if (bIsLightSwitchOn)
 			{
