@@ -171,7 +171,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_OpenThermGateway, "OpenTherm Gateway USB" },
 		{ HTYPE_TeleinfoMeter, "Teleinfo EDF USB" },
 		{ HTYPE_OpenThermGatewayTCP, "OpenTherm Gateway with LAN interface" },
-		{ HTYPE_OpenZWave, "OpenZWave USB" },
+		{ HTYPE_OpenZWave, "OpenZWave" },
 		{ HTYPE_LimitlessLights, "Limitless/AppLamp/Mi Light with LAN/WiFi interface" },
 		{ HTYPE_System, "Motherboard sensors" },
 		{ HTYPE_EnOceanESP2, "EnOcean USB (ESP2)" },
