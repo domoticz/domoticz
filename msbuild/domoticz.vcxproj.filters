@@ -393,6 +393,9 @@
     <Filter Include="Devices\Panasonic">
       <UniqueIdentifier>{6f61ac8c-0b97-4506-aac7-fdf909d0b54f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="XML">
+      <UniqueIdentifier>{19baf552-3c12-432c-bebe-8bb25fa327d0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -1789,6 +1792,9 @@
     <ClInclude Include="..\hardware\PanasonicTV.h">
       <Filter>Devices\Panasonic</Filter>
     </ClInclude>
+    <ClInclude Include="..\notifications\NotificationGCM.h">
+      <Filter>Notifications</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2259,57 +2265,6 @@
     <ClCompile Include="..\hardware\SolarEdgeAPI.cpp">
       <Filter>Devices\SolarEdge</Filter>
     </ClCompile>
-    <ClCompile Include="..\hardware\NefitEasy.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\tinyxpath\action_store.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\tinyxpath\htmlutil.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\tinyxpath\lex_util.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\tinyxpath\node_set.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\tinyxpath\tinystr.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\tinyxpath\tinyxml.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\tinyxpath\tinyxmlerror.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\tinyxpath\tinyxmlparser.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\tinyxpath\tokenlist.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\tinyxpath\xml_util.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\tinyxpath\xpath_expression.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\tinyxpath\xpath_processor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\tinyxpath\xpath_stack.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\tinyxpath\xpath_static.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\tinyxpath\xpath_stream.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\tinyxpath\xpath_syntax.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\hardware\PanasonicTV.cpp">
       <Filter>Devices\Panasonic</Filter>
     </ClCompile>
@@ -2321,6 +2276,60 @@
     </ClCompile>
     <ClCompile Include="..\hardware\CurrentCostMeterTCP.cpp">
       <Filter>Devices\CurrentCost</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tinyxpath\xml_util.cpp">
+      <Filter>XML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tinyxpath\xpath_expression.cpp">
+      <Filter>XML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tinyxpath\xpath_processor.cpp">
+      <Filter>XML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tinyxpath\xpath_stack.cpp">
+      <Filter>XML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tinyxpath\xpath_static.cpp">
+      <Filter>XML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tinyxpath\xpath_stream.cpp">
+      <Filter>XML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tinyxpath\xpath_syntax.cpp">
+      <Filter>XML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tinyxpath\action_store.cpp">
+      <Filter>XML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tinyxpath\htmlutil.cpp">
+      <Filter>XML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\NefitEasy.cpp">
+      <Filter>Devices\Nefit-Easy</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tinyxpath\lex_util.cpp">
+      <Filter>XML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tinyxpath\node_set.cpp">
+      <Filter>XML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tinyxpath\tinystr.cpp">
+      <Filter>XML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tinyxpath\tinyxml.cpp">
+      <Filter>XML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tinyxpath\tinyxmlerror.cpp">
+      <Filter>XML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tinyxpath\tinyxmlparser.cpp">
+      <Filter>XML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tinyxpath\tokenlist.cpp">
+      <Filter>XML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\notifications\NotificationGCM.cpp">
+      <Filter>Notifications</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -3435,6 +3444,7 @@
     <Text Include="..\www\templates\readme.txt">
       <Filter>www\templates</Filter>
     </Text>
+    <Text Include="..\History.txt" />
   </ItemGroup>
   <ItemGroup>
     <Font Include="..\www\css\fonts\Oswald-Light.ttf">

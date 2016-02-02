@@ -15,6 +15,9 @@
 #include "NotificationHTTP.h"
 #include "NotificationKodi.h"
 #include "NotificationLogitechMediaServer.h"
+#include "NotificationGCM.h"
+
+
 #include <boost/lexical_cast.hpp>
 #include <map>
 
@@ -29,6 +32,8 @@ CNotificationHelper::CNotificationHelper()
 	m_NotificationSwitchInterval = 0;
 	m_NotificationSensorInterval = 12 * 3600;
 
+	/* more notifiers can be added here */
+
 	AddNotifier(new CNotificationProwl());
 	AddNotifier(new CNotificationNma());
 	AddNotifier(new CNotificationPushbullet());
@@ -39,7 +44,7 @@ CNotificationHelper::CNotificationHelper()
 	AddNotifier(new CNotificationHTTP());
 	AddNotifier(new CNotificationKodi());
 	AddNotifier(new CNotificationLogitechMediaServer());
-	/* more notifiers can be added here */
+	AddNotifier(new CNotificationGCM());
 }
 
 CNotificationHelper::~CNotificationHelper()
@@ -125,7 +130,7 @@ void CNotificationHelper::LoadConfig()
 		tot++;
 		iter->second->LoadConfig();
 		if (iter->second->IsConfigured()) {
-			if (iter->second->m_IsEnabled)
+			if ((iter->second->m_IsEnabled) && (iter->first != "gcm"))
 			{
 				if (active == 0)
 					logline << " " << iter->first;

@@ -19,11 +19,27 @@ ELSE(USE_BUILTIN_LUA)
   ENDIF(LUA_FOUND)
 ENDIF(USE_BUILTIN_LUA)
 
-add_subdirectory (MQTT)
-get_directory_property (CMAKE_MQTT_INCLUDES DIRECTORY MQTT
-    DEFINITION MQTT_INCLUDE_DIRS)
-get_directory_property (CMAKE_MQTT_LIBRARIES DIRECTORY MQTT
-    DEFINITION MQTT_LIBRARIES)
+option(USE_BUILTIN_MQTT "Use builtin Mosquitto library" YES)
+IF(USE_BUILTIN_MQTT)
+  message(STATUS "Using builtin Mosquitto library")
+  add_subdirectory (MQTT)
+  get_directory_property (CMAKE_MQTT_INCLUDES DIRECTORY MQTT
+      DEFINITION MQTT_INCLUDE_DIRS)
+  get_directory_property (CMAKE_MQTT_LIBRARIES DIRECTORY MQTT
+      DEFINITION MQTT_LIBRARIES)
+  add_definitions(-DBUILTIN_MQTT)
+ELSE(USE_BUILTIN_MQTT)
+  find_path(CMAKE_MQTT_INCLUDE NAMES mosquittopp.h)
+  IF(CMAKE_MQTT_INCLUDE)
+     message(STATUS "Found mosquitto mosquittopp.h at: ${CMAKE_MQTT_INCLUDE}")
+     find_library(CMAKE_MQTT_LIBRARIES NAMES libmosquitto.so)
+     IF(CMAKE_MQTT_LIBRARIES)
+        message(STATUS "Found mosquitto lib at: ${CMAKE_MQTT_LIBRARIES}") 
+     ENDIF(CMAKE_MQTT_LIBRARIES)
+  ELSE(CMAKE_MQTT_INCLUDE)
+     meessage(FATAL_ERROR "Mosquitto includes or library cannot be found, and you ask to NOT use builtin")
+  ENDIF(CMAKE_MQTT_INCLUDE)
+ENDIF(USE_BUILTIN_MQTT)
 
 option(USE_BUILTIN_SQLITE "Use builtin sqlite library" YES)
 IF(USE_BUILTIN_SQLITE)
@@ -278,6 +294,7 @@ hardware/ZWaveBase.cpp
 MQTT/mosquittopp.cpp
 notifications/NotificationBase.cpp
 notifications/NotificationEmail.cpp
+notifications/NotificationGCM.cpp
 notifications/NotificationHelper.cpp
 notifications/NotificationHTTP.cpp
 notifications/NotificationKodi.cpp
@@ -533,11 +550,19 @@ else()
   message(STATUS "Not found telldus-core (telldus-core.h), not adding tellstick support")
 endif (TELLDUSCORE_INCLUDE)
 
-IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-  target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} mqtt ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS})
-else()
-  target_link_libraries(domoticz -lrt ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} mqtt ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS})
-ENDIF()
+IF(USE_BUILTIN_MQTT)
+  IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} mqtt ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS})
+  else()
+    target_link_libraries(domoticz -lrt ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} -LXXXPREFIXXX/lib pthread ${LUA_LIBRARIES} mqtt ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS})
+  ENDIF()
+ELSE(USE_BUILTIN_MQTT)
+  IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} -lmosquitto ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS})
+  else()
+    target_link_libraries(domoticz -lrt ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} -LXXXPREFIXXX/lib pthread ${LUA_LIBRARIES} -lmosquitto ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS})
+  ENDIF()
+ENDIF(USE_BUILTIN_MQTT)
 
 ADD_PRECOMPILED_HEADER(domoticz "main/stdafx.h")
 
