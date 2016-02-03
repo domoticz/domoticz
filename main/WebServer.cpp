@@ -8111,6 +8111,7 @@ namespace http {
 							if (levelNames.empty()) {
 								levelNames.assign("Off"); // default is Off only
 							}
+							root["result"][ii]["TypeImg"] = "Light";
 							root["result"][ii]["SelectorStyle"] = atoi(selectorStyle.c_str());
 							root["result"][ii]["LevelOffHidden"] = levelOffHidden == "true";
 							root["result"][ii]["LevelNames"] = levelNames;
