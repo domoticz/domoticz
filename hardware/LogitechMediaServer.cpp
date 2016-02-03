@@ -386,7 +386,7 @@ void CLogitechMediaServer::GetPlayerInfo()
 					(model == "Squeezebox") ||			//Squeezebox 1
 					(model == "squeezebox2") ||			//Squeezebox 2
 					(model == "squeezebox3") ||			//Squeezebox 3
-					//(model == "transporter") ||		//Transporter
+					(model == "transporter") ||			//Transporter
 					(model == "receiver") ||			//Squeezebox Receiver
 					(model == "boom") ||				//Squeezebox Boom
 					//(model == "softsqueeze") ||		//Softsqueeze
