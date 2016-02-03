@@ -7248,7 +7248,7 @@ namespace http {
 							" A.Protected, B.XOffset, B.YOffset, B.PlanID, A.Description"
 							" FROM Scenes as A"
 							" LEFT OUTER JOIN DeviceToPlansMap as B ON (B.DeviceRowID==a.ID) AND (B.DevSceneType==1)"
-							" ORDER BY %s",
+							" ORDER BY %q",
 							szOrderBy);
 
 					if (result.size() > 0)
@@ -7429,7 +7429,7 @@ namespace http {
 						" A.Options "
 						"FROM DeviceStatus as A LEFT OUTER JOIN DeviceToPlansMap as B "
 						"ON (B.DeviceRowID==a.ID) AND (B.DevSceneType==0) "
-						"ORDER BY %s",
+						"ORDER BY %q",
 						szOrderBy);
 				}
 			}
@@ -7530,7 +7530,7 @@ namespace http {
 						"FROM DeviceStatus as A, SharedDevices as B "
 						"LEFT OUTER JOIN DeviceToPlansMap as C  ON (C.DeviceRowID==A.ID)"
 						"WHERE (B.DeviceRowID==A.ID)"
-						" AND (B.SharedUserID==%lu) ORDER BY %s",
+						" AND (B.SharedUserID==%lu) ORDER BY %q",
 						m_users[iUser].ID, szOrderBy);
 				}
 			}

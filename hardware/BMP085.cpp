@@ -588,9 +588,7 @@ void CBMP085::ReadSensorDetails()
 				if (pressure <= 980)
 					nforecast = bmpbaroforecast_thunderstorm;
 				else if (pressure <= 995)
-				{
 					nforecast = bmpbaroforecast_rain;
-				}
 				else if (pressure >= 1029)
 					nforecast = bmpbaroforecast_sunny;
 				m_LastSendForecast = nforecast;
