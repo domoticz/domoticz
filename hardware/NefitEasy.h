@@ -24,7 +24,7 @@ private:
 	bool StartHardware();
 	bool StopHardware();
 	void Do_Work();
-	void GetStatusDetails();
-	void GetPressureDetails();
+	bool GetStatusDetails();
+	bool GetPressureDetails();
 };
 

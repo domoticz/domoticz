@@ -51,11 +51,13 @@ Version 2.4xxx
 - Fixed: Manual add Blyss type (Group code was wrong)
 - Fixed: Manual add LightwaveRF type (DeviceID was wrong)
 - Fixed: Month temperature report avarage is now calculated by the daily avarage value
+- Fixed: MySensors, barometric value was not used when below 995 hPa
 - Fixed: Nest Thermostat, setting set point in Fahrenheit
 - Fixed: RFXCom (433) protocol setup, Home Comfort checkbox did not show correct state
 - Fixed: RGB sensor now also uses the RGB popup system
 - Fixed: S0 Meter, fix for reloading totals of (#179)
 - Fixed: Thermosmart unpauze
+- Fixed: The select menu of a selector switch can come out of its frame depending on the width of the page.
 - Updated: OpenZWave, configuration files
 
 Version 2.3530 (November 1th 2015)
