@@ -57,6 +57,7 @@ Version 2.4xxx
 - Fixed: RGB sensor now also uses the RGB popup system
 - Fixed: S0 Meter, fix for reloading totals of (#179)
 - Fixed: Thermosmart unpauze
+- Fixed: The select menu of a selector switch can come out of its frame depending on the width of the page.
 - Updated: OpenZWave, configuration files
 
 Version 2.3530 (November 1th 2015)

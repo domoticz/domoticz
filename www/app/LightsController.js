@@ -3067,7 +3067,7 @@ define(['app'], function (app) {
 			//Create Selector selectmenu
 			$('#lightcontent .selectorlevels select').selectmenu({
 				//Config
-				width: '272px',
+				width: '75%',
 				value: 0,
 				//Selector selectmenu events
 				create: function (event, ui) {
