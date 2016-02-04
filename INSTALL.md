@@ -2,14 +2,15 @@
 
 Usage:
 ```
-      Domoticz [-www <port>]  [-verbose <0|1>]
-                -www <port>   Default is: -www 8080
-                -verbose <0|1> (0 is none, 1 is debug)   Default is: -verbose 0
+Domoticz [-www <port>]  [-verbose <0|1>]
+          -www <port>   Default is: -www 8080
+          -verbose <0|1> (0 is none, 1 is debug)   Default is: -verbose 0
 ```
+
 Examples:
 ```
-                Domoticz            (this is the same as Domoticz -www 8080 -verbose 0)
-		Domoticz -www 81 -verbose 1
+Domoticz            (this is the same as Domoticz -www 8080 -verbose 0)
+Domoticz -www 81 -verbose 1
 ```
 
 If Domoticz and the browser are running on the same system you can connect with http://localhost:8080/
@@ -28,9 +29,11 @@ If you run domoticz on port 80, make sure to run it as root, e.g. : sudo ./domot
 Compiling from source code:
 ---------------------------
 
-Get the source code:
+First get get all prerequisites for your operation system. See the section below.
+
+Then get the source code:
 ```
-git clone https://github.com/domoticz/domoticz.git`
+git clone https://github.com/domoticz/domoticz.git
 cd domoticz
 
 cmake -DCMAKE_BUILD_TYPE=Release CMakeLists.txt
@@ -46,7 +49,7 @@ For additional parameters type:
 Note: Compiling on the Raspberry Pi will take about 15 minutes
 
 To Update to a newer version:
-- stop the application (control-c), or stop the startup script (see below) with /etc/init.d/domoticz.sh stop
+- stop the application (control-c), or stop the startup script (see below) with `/etc/init.d/domoticz.sh stop`
 
 (from the domoticz folder)
 ```
@@ -74,41 +77,46 @@ If you want to use another web interface port change:
 `OPTIONS="-www 8080"`
 
 You can now start domoticz with:
-sudo /etc/init.d/domoticz.sh start
+`sudo /etc/init.d/domoticz.sh start`
 
 To stop:
-sudo /etc/init.d/domoticz.sh stop
+`sudo /etc/init.d/domoticz.sh stop`
 
 To check if domoticz is running:
-sudo /etc/init.d/domoticz.sh status
+`sudo /etc/init.d/domoticz.sh status`
 
 If your system supports it you can also do
+```
 sudo service domoticz.sh start
 sudo service domoticz.sh stop
 sudo service domoticz.sh status
+```
 
 To update when you have installed it as startup service:
-cd /home/pi/domoticz (or where you installed domoticz)
+```
+cd /home/pi/domoticz # (or where you installed domoticz)
 sudo service domoticz.sh stop
 git pull
 make
 sudo service domoticz.sh start
+```
 
 Option: Create an update and backup script
-chmod +x updatedomo
+`chmod +x updatedomo`
 
 To update domoticz
 
-login to your Raspberry Pi
+* login to your Raspberry Pi
+```
 cd domoticz
 ./updatedomo
-
+```
 
 
 ## Prerequisites
 
-All:
-(Assuming domoticz development is in a subfolder of the user)
+All: (Assuming domoticz development is in a subfolder of the user)
+
 `cd ~`
 
 ### OpenZWave support
