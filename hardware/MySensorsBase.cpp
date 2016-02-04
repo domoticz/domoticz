@@ -522,7 +522,6 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 						nforecast = wsbaroforcast_rain;
 					else
 						nforecast = wsbaroforcast_snow;
-					break;
 				}
 				else if (Baro >= 1029)
 					nforecast = wsbaroforcast_sunny;
@@ -605,7 +604,6 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 						nforecast = wsbaroforcast_rain;
 					else
 						nforecast = wsbaroforcast_snow;
-					break;
 				}
 				else if (Baro >= 1029)
 					nforecast = wsbaroforcast_sunny;
@@ -682,7 +680,6 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 						nforecast = wsbaroforcast_rain;
 					else
 						nforecast = wsbaroforcast_snow;
-					break;
 				}
 				else if (Baro >= 1029)
 					nforecast = wsbaroforcast_sunny;
