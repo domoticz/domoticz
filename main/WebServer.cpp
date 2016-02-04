@@ -2596,6 +2596,85 @@ namespace http {
 			return 0;
 		}
 
+		void CWebServer::Cmd_UpdateDevice(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			std::string idx = request::findValue(&req, "idx");
+			std::string hid = request::findValue(&req, "hid");
+			std::string did = request::findValue(&req, "did");
+			std::string dunit = request::findValue(&req, "dunit");
+			std::string dtype = request::findValue(&req, "dtype");
+			std::string dsubtype = request::findValue(&req, "dsubtype");
+
+			std::string nvalue = request::findValue(&req, "nvalue");
+			std::string svalue = request::findValue(&req, "svalue");
+
+			if ((nvalue.empty() && svalue.empty()))
+			{
+				return;
+			}
+
+			int signallevel = 12;
+			int batterylevel = 255;
+
+			if (idx.empty())
+			{
+				//No index supplied, check if raw parameters where supplied
+				if (
+					(hid.empty()) ||
+					(did.empty()) ||
+					(dunit.empty()) ||
+					(dtype.empty()) ||
+					(dsubtype.empty())
+					)
+					return;
+			}
+			else
+			{
+				//Get the raw device parameters
+				std::vector<std::vector<std::string> > result;
+				result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID=='%q')",
+					idx.c_str());
+				if (result.empty())
+					return;
+				hid = result[0][0];
+				did = result[0][1];
+				dunit = result[0][2];
+				dtype = result[0][3];
+				dsubtype = result[0][4];
+			}
+
+			int HardwareID = atoi(hid.c_str());
+			std::string DeviceID = did;
+			int unit = atoi(dunit.c_str());
+			int devType = atoi(dtype.c_str());
+			int subType = atoi(dsubtype.c_str());
+
+			std::stringstream sstr;
+
+			unsigned long long ulIdx;
+			sstr << idx;
+			sstr >> ulIdx;
+
+			int invalue = (!nvalue.empty()) ? atoi(nvalue.c_str()) : 0;
+
+
+			std::string sSignalLevel = request::findValue(&req, "rssi");
+			if (sSignalLevel != "")
+			{
+				signallevel = atoi(sSignalLevel.c_str());
+			}
+			std::string sBatteryLevel = request::findValue(&req, "battery");
+			if (sBatteryLevel != "")
+			{
+				batterylevel = atoi(sBatteryLevel.c_str());
+			}
+			if (m_mainworker.UpdateDevice(HardwareID, DeviceID, unit, devType, subType, invalue, svalue, signallevel, batterylevel))
+			{
+				root["status"] = "OK";
+				root["title"] = "Update Device";
+			}
+		}
+
 		void CWebServer::Cmd_UpdateDevices(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			std::stringstream lua_DirT;
@@ -2676,85 +2755,6 @@ namespace http {
 			{
 				report_errors(lua_state, status);
 				lua_close(lua_state);
-			}
-		}
-
-		void CWebServer::Cmd_UpdateDevice(WebEmSession & session, const request& req, Json::Value &root)
-		{
-			std::string idx = request::findValue(&req, "idx");
-			std::string hid = request::findValue(&req, "hid");
-			std::string did = request::findValue(&req, "did");
-			std::string dunit = request::findValue(&req, "dunit");
-			std::string dtype = request::findValue(&req, "dtype");
-			std::string dsubtype = request::findValue(&req, "dsubtype");
-
-			std::string nvalue = request::findValue(&req, "nvalue");
-			std::string svalue = request::findValue(&req, "svalue");
-
-			if ( (nvalue.empty() && svalue.empty()) )
-			{
-				return;
-			}
-
-			int signallevel = 12;
-			int batterylevel = 255;
-
-			if (idx.empty())
-			{
-				//No index supplied, check if raw parameters where supplied
-				if (
-					(hid.empty()) ||
-					(did.empty()) ||
-					(dunit.empty()) ||
-					(dtype.empty()) ||
-					(dsubtype.empty())
-					)
-					return;
-			}
-			else
-			{
-				//Get the raw device parameters
-				std::vector<std::vector<std::string> > result;
-				result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID=='%q')",
-					idx.c_str());
-				if (result.empty())
-					return;
-				hid = result[0][0];
-				did = result[0][1];
-				dunit = result[0][2];
-				dtype = result[0][3];
-				dsubtype = result[0][4];
-			}
-
-			int HardwareID = atoi(hid.c_str());
-			std::string DeviceID = did;
-			int unit = atoi(dunit.c_str());
-			int devType = atoi(dtype.c_str());
-			int subType = atoi(dsubtype.c_str());
-
-			std::stringstream sstr;
-
-			unsigned long long ulIdx;
-			sstr << idx;
-			sstr >> ulIdx;
-
-			int invalue = (!nvalue.empty()) ? atoi(nvalue.c_str()) : 0;
-
-
-			std::string sSignalLevel = request::findValue(&req, "rssi");
-			if (sSignalLevel != "")
-			{
-				signallevel = atoi(sSignalLevel.c_str());
-			}
-			std::string sBatteryLevel = request::findValue(&req, "battery");
-			if (sBatteryLevel != "")
-			{
-				batterylevel = atoi(sBatteryLevel.c_str());
-			}
-			if (m_mainworker.UpdateDevice(HardwareID, DeviceID, unit, devType, subType, invalue, svalue, signallevel, batterylevel))
-			{
-				root["status"] = "OK";
-				root["title"] = "Update Device";
 			}
 		}
 
