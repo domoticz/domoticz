@@ -181,7 +181,8 @@ enum _eNotificationTypes
 	NTYPE_PHOTO,
 	NTYPE_PAUSED,
 	NTYPE_STOPPED,
-	NTYPE_PLAYING
+	NTYPE_PLAYING,
+	NTYPE_TODAYTIME
 };
 
 const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum);
