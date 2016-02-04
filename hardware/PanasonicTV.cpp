@@ -419,8 +419,9 @@ void CPanasonicNode::Do_Work()
 				_volReply = handleWriteAndRead(buildXMLStringRendCtl("Get", "Volume"));
 				if (_volReply != "ERROR")
 				{
-					m_CurrentStatus.Volume(handleMessage(_volReply));
-					if (m_CurrentStatus.Status() != MSTAT_ON)
+					int iVol = handleMessage(_volReply);
+					m_CurrentStatus.Volume(iVol);
+					if (m_CurrentStatus.Status() != MSTAT_ON && iVol > -1)
 					{
 						m_CurrentStatus.Status(MSTAT_ON);
 						UpdateStatus();
