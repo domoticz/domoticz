@@ -998,7 +998,8 @@ void CPiFace::GetAndSetInitialDeviceState(unsigned char devId)
 int CPiFace::Read_Write_SPI_Byte(unsigned char *data, int len)
 {
 #ifdef __arm__
-    struct spi_ioc_transfer spi ;
+  struct spi_ioc_transfer spi ;
+  memset (&spi, 0, sizeof(spi));
 
   spi.tx_buf        = (unsigned long)data ;
   spi.rx_buf        = (unsigned long)data ;
