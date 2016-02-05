@@ -31,7 +31,7 @@ class CPanasonicNode //: public boost::enable_shared_from_this<CPanasonicNode>
 		bool			UpdateRequired(CPanasonicStatus&);
 		bool			OnOffRequired(CPanasonicStatus&);
 		bool			IsOn() { return (m_nStatus != MSTAT_OFF); };
-		void			Volume(int pVolume) { m_VolumeLevel = pVolume; };
+		void			Volume(int pVolume) { m_VolumeLevel = pVolume;};
 		void			Muted(bool pMuted) { m_Muted = pMuted; };
 	private:
 		_eMediaStatus	m_nStatus;
