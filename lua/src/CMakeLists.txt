@@ -12,7 +12,7 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	add_definitions(-DLUA_USE_LINUX)
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
-ADD_LIBRARY(lua ${LIB} ${CORE})
+ADD_LIBRARY(lua STATIC ${LIB} ${CORE})
 #ADD_EXECUTABLE(luaexec lua.c)
 #TARGET_LINK_LIBRARIES(luaexec lua m) 
 

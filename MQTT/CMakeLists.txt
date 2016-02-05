@@ -31,4 +31,4 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	SET(OperatingSystem "Linux")
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
-ADD_LIBRARY(mqtt ${LIB} ${CORE})
+ADD_LIBRARY(mqtt STATIC ${LIB} ${CORE})
