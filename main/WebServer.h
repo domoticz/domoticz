@@ -208,7 +208,6 @@ private:
 	void Cmd_GetHttpLinks(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_SaveHttpLink(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DeleteHttpLink(WebEmSession & session, const request& req, Json::Value &root);
-	void Cmd_GetDevicesForHttpLink(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_AddLogMessage(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_ClearShortLog(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_VacuumDatabase(WebEmSession & session, const request& req, Json::Value &root);
@@ -219,6 +218,8 @@ private:
 	void Cmd_PanasonicRemoveNode(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_PanasonicClearNodes(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_PanasonicMediaCommand(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_AddMobileDevice(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_DeleteMobileDevice(WebEmSession & session, const request& req, Json::Value &root);
 
 
 	//RTypes

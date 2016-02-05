@@ -671,6 +671,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneral, sTypeCounterIncremental, "Counter Incremental" },
 		{ pTypeGeneral, sTypeKwh, "kWh" },
 		{ pTypeGeneral, sTypeWaterflow, "Waterflow" },
+		{ pTypeGeneral, sTypeSwitch, "Switch" },
 
 		{ pTypeThermostat, sTypeThermSetpoint, "SetPoint" },
 		{ pTypeThermostat, sTypeThermTemperature, "Temperature" },
@@ -983,6 +984,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeGeneral, sTypeCounterIncremental, "Counter Incremental" },
 		{ pTypeGeneral, sTypeKwh, "Instant,Usage" },
 		{ pTypeGeneral, sTypeWaterflow, "Percentage" },
+		{ pTypeGeneral, sTypeSwitch, "Status" },
 
 		{ pTypeThermostat, sTypeThermSetpoint, "Temperature" },
 		{ pTypeThermostat, sTypeThermTemperature, "Temperature" },
@@ -1553,6 +1555,48 @@ void GetLightStatus(
 			case HomeConfort_sGroupOff:
 				lstatus = "Group Off";
 				break;
+			}
+			break;
+		}
+		break;
+	case pTypeGeneral:
+		switch (dSubType)
+		{
+			case sTypeSwitch:
+			{
+				maxDimLevel = 100;
+				bHaveDimmer = true;
+				llevel = (int)float((100.0f / float(maxDimLevel))*atof(sValue.c_str()));
+				bHaveGroupCmd = true;
+				switch (nValue)
+				{
+				case gswitch_sOff:
+					lstatus = "Off";
+					break;
+				case gswitch_sOn:
+					lstatus = "On";
+					break;
+				case gswitch_sSetLevel:
+					sprintf(szTmp, "Set Level: %d %%", llevel);
+					if (sValue != "0")
+						lstatus = szTmp;
+					else
+						lstatus = "Off";
+					break;
+				case gswitch_sGroupOff:
+					lstatus = "Group Off";
+					break;
+				case gswitch_sGroupOn:
+					lstatus = "Group On";
+					break;
+				case gswitch_sSetGroupLevel:
+					sprintf(szTmp, "Set Group Level: %d %%", atoi(sValue.c_str()));
+					if (sValue != "0")
+						lstatus = szTmp;
+					else
+						lstatus = "Off";
+					break;
+				}
 			}
 			break;
 		}
@@ -2365,6 +2409,106 @@ bool GetLightCommand(
 		}
 		else
 			return false;
+		break;
+	case pTypeGeneral:
+		switch (dSubType)
+		{
+			case sTypeSwitch:
+				{
+					if (switchtype == STYPE_Doorbell)
+					{
+						if ((switchcmd == "On") || (switchcmd == "Group On"))
+						{
+							cmd = gswitch_sGroupOn;
+							return true;
+						}
+						//no other combinations for the door switch
+						return false;
+					}
+					else if (switchtype == STYPE_X10Siren)
+					{
+						if ((switchcmd == "On") || (switchcmd == "Group On"))
+						{
+							cmd = gswitch_sGroupOn;
+							return true;
+						}
+						else if ((switchcmd == "Off") || (switchcmd == "Group Off"))
+						{
+							cmd = gswitch_sGroupOff;
+							return true;
+						}
+						return false;
+					}
+					if (switchcmd == "Off")
+					{
+						cmd = gswitch_sOff;
+						return true;
+					}
+					else if (switchcmd == "On")
+					{
+						cmd = gswitch_sOn;
+						return true;
+					}
+					else if (switchcmd == "Set Level")
+					{
+						cmd = gswitch_sSetLevel;
+						return true;
+					}
+					else if (switchcmd == "Group Off")
+					{
+						cmd = gswitch_sGroupOff;
+						return true;
+					}
+					else if (switchcmd == "Group On")
+					{
+						cmd = gswitch_sGroupOn;
+						return true;
+					}
+					else if (switchcmd == "Set Group Level")
+					{
+						cmd = gswitch_sSetGroupLevel;
+						return true;
+					}
+					else if (switchcmd == "Stop")
+					{
+						cmd = gswitch_sStop;
+						return true;
+					}
+					else if ((switchcmd == "Paused") || (switchcmd == "Pause"))
+					{
+						cmd = gswitch_sPause;
+						return true;
+					}
+					else if ((switchcmd == "Playing") || (switchcmd == "Play"))
+					{
+						cmd = gswitch_sPlay;
+						return true;
+					}
+					else if (switchcmd == "Play Playlist")
+					{
+						cmd = gswitch_sPlayPlaylist;
+						return true;
+					}
+					else if (switchcmd == "Play Favorites")
+					{
+						cmd = gswitch_sPlayFavorites;
+						return true;
+					}
+					else if (switchcmd == "Set Volume")
+					{
+						cmd = gswitch_sSetVolume;
+						return true;
+					}
+					else if (switchcmd == "Execute")
+					{
+						cmd = gswitch_sExecute;
+						return true;
+					}
+					else
+						return false;
+				}
+				break;
+		}
 		break;
 	case pTypeGeneralSwitch:
 		if (switchtype == STYPE_Doorbell)

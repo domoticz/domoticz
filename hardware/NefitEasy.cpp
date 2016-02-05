@@ -113,6 +113,8 @@ void CNefitEasy::Do_Work()
 {
 	int sec_counter = 0;
 	bool bFirstTime = true;
+	int nstat_pollint = NEFIT_STATUS_POLL_INTERVAL;
+	int npres_pollint = NEFIT_PRESSURE_POLL_INTERVAL;
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
@@ -120,22 +122,23 @@ void CNefitEasy::Do_Work()
 		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat = mytime(NULL);
 		}
-		if ((sec_counter % NEFIT_STATUS_POLL_INTERVAL == 0) || (bFirstTime))
+		if ((sec_counter % nstat_pollint == 0) || (bFirstTime))
 		{
 			try
 			{
-				GetStatusDetails();
+				nstat_pollint = (GetStatusDetails() == true) ? NEFIT_STATUS_POLL_INTERVAL : NEFIT_STATUS_POLL_INTERVAL * 3;
 			}
 			catch (...)
 			{
 				_log.Log(LOG_ERROR, "NefitEasy: Error getting/processing status result...");
 			}
 		}
-		if ((sec_counter % NEFIT_PRESSURE_POLL_INTERVAL == 0) || (bFirstTime))
+		if ((sec_counter % npres_pollint == 0) || (bFirstTime))
 		{
 			try
 			{
-				GetPressureDetails();
+				nstat_pollint = NEFIT_STATUS_POLL_INTERVAL;
+				int npres_pollint = (GetPressureDetails() == true) ? NEFIT_PRESSURE_POLL_INTERVAL : NEFIT_PRESSURE_POLL_INTERVAL * 2;
 			}
 			catch (...)
 			{
@@ -152,7 +155,7 @@ bool CNefitEasy::WriteToHardware(const char *pdata, const unsigned char length)
 	return false;
 }
 
-void CNefitEasy::GetStatusDetails()
+bool CNefitEasy::GetStatusDetails()
 {
 	std::string sResult;
 
@@ -169,13 +172,13 @@ void CNefitEasy::GetStatusDetails()
 		if (!bret)
 		{
 			_log.Log(LOG_ERROR, "NefitEasy: Error getting http data!");
-			return;
+			return false;
 		}
 	}
 	catch (...)
 	{
 		_log.Log(LOG_ERROR, "NefitEasy: Error getting http data!");
-		return;
+		return false;
 	}
 #endif
 
@@ -189,19 +192,19 @@ void CNefitEasy::GetStatusDetails()
 	bool ret = jReader.parse(sResult, root);
 	if (!ret)
 	{
-		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received!");
-		return;
+		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received (main)!");
+		return false;
 	}
 	if (root["value"].empty())
 	{
-		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received");
-		return;
+		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received (main)");
+		return false;
 	}
 	root2 = root["value"];
 	if (root2["TOT"].empty())
 	{
-		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received");
-		return;
+		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received (main)");
+		return false;
 	}
 /*
 Status output:
@@ -289,13 +292,13 @@ UMD -> 'user mode' string (clock)
 		if (!bret)
 		{
 			_log.Log(LOG_ERROR, "NefitEasy: Error getting http data!");
-			return;
+			return false;
 		}
 	}
 	catch (...)
 	{
 		_log.Log(LOG_ERROR, "NefitEasy: Error getting http data!");
-		return;
+		return false;
 	}
 #endif
 
@@ -305,13 +308,13 @@ UMD -> 'user mode' string (clock)
 	ret = jReader.parse(sResult, root);
 	if (!ret)
 	{
-		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received!");
-		return;
+		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received! (ODT)");
+		return false;
 	}
 	if (root["value"].empty() == true)
 	{
-		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received");
-		return;
+		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received (ODT)");
+		return false;
 	}
 
 	float temp = root["value"].asFloat();
@@ -330,13 +333,13 @@ UMD -> 'user mode' string (clock)
 		if (!bret)
 		{
 			_log.Log(LOG_ERROR, "NefitEasy: Error getting http data!");
-			return;
+			return false;
 		}
 	}
 	catch (...)
 	{
 		_log.Log(LOG_ERROR, "NefitEasy: Error getting http data!");
-		return;
+		return false;
 	}
 #endif
 
@@ -346,13 +349,13 @@ UMD -> 'user mode' string (clock)
 	ret = jReader.parse(sResult, root);
 	if (!ret)
 	{
-		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received!");
-		return;
+		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received! (DP)");
+		return false;
 	}
 	if (root["value"].empty() == true)
 	{
-		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received");
-		return;
+		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received (DP)");
+		return false;
 	}
 
 	std::string dcode = root["value"].asString();
@@ -405,9 +408,10 @@ UMD -> 'user mode' string (clock)
 		m_LastDisplayCode = display_code;
 		SendTextSensor(1, 1, -1, display_code, "Display Code");
 	}
+	return true;
 }
 
-void CNefitEasy::GetPressureDetails()
+bool CNefitEasy::GetPressureDetails()
 {
 	std::string sResult;
 
@@ -424,13 +428,13 @@ void CNefitEasy::GetPressureDetails()
 		if (!bret)
 		{
 			_log.Log(LOG_ERROR, "NefitEasy: Error getting http data!");
-			return;
+			return false;
 		}
 	}
 	catch (...)
 	{
 		_log.Log(LOG_ERROR, "NefitEasy: Error getting http data!");
-		return;
+		return false;
 	}
 #endif
 
@@ -444,16 +448,17 @@ void CNefitEasy::GetPressureDetails()
 	bool ret = jReader.parse(sResult, root);
 	if (!ret)
 	{
-		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received!");
-		return;
+		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received! (Press)");
+		return false;
 	}
 	if (root["value"].empty())
 	{
-		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received");
-		return;
+		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received (Press)");
+		return false;
 	}
 	float pressure = root["value"].asFloat();
 	SendPressureSensor(1, 1, -1, pressure, "Pressure");
+	return true;
 }
 
 void CNefitEasy::SetSetpoint(const int idx, const float temp)

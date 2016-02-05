@@ -263,6 +263,7 @@ void C1Wire::GetDeviceDetails()
 		  {
 			  ReportTemperatureHumidity(device.devid, temperature, m_system->GetHumidity(device));
 		  }
+		  ReportPressure(device.devid,m_system->GetPressure(device));
 		  break;
 			}
 

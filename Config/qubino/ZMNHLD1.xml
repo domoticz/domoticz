@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+
+<!-- Qubino: ZMNHLD1 Flush PWM Thermostat Plus -->
+
+	<!-- Configuration -->
+	<CommandClass id="112">
+		<Value type="list" genre="config" instance="1" index="1" label="Input 1 switch type" size="1" min="0" max="1" value="1">
+			<Help/>
+			<Item label="mono-stable switch type (push button)" value="0"/>
+			<Item label="bi-stable switch type" value="1"/>
+		</Value>
+
+		<Value type="list" genre="config" instance="1" index="2" label="Input 2 switch type" size="1" min="0" max="1" value="1">
+			<Help/>
+			<Item label="mono-stable switch type (push button)" value="0"/>
+			<Item label="bi-stable switch type" value="1"/>
+		</Value>
+
+		<Value type="list" genre="config" instance="1" index="3" label="Input 3 switch type" size="1" min="0" max="1" value="0">
+			<Help/>
+			<Item label="mono-stable switch type (push button)" value="0"/>
+			<Item label="bi-stable switch type" value="1"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="4" label="Input 1 contact type" size="1" min="0" max="1" value="0">
+			<Help/>
+			<Item label="NO (normaly open) input type" value="0"/>
+			<Item label="NC (normaly close) input type" value="1"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="5" label="Input 2 contact type" size="1" min="0" max="1" value="0">
+			<Help/>
+			<Item label="NO (normaly open) input type" value="0"/>
+			<Item label="NC (normaly close) input type" value="1"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="6" label="Input 3 contact type" size="1" min="0" max="1" value="0">
+			<Help/>
+			<Item label="NO (normaly open) input type" value="0"/>
+			<Item label="NC (normaly close) input type" value="1"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="10" label="Activate / deactivate functions ALL ON/ALL OFF" size="1" min="0" max="255" value="255">
+			<Help>Flush on off thermostat module responds to commands ALL ON / ALL OFF that may be sent by the main controller or by other controller belonging to the system.</Help>
+			<Item label="ALL ON active, ALL OFF active" value="255" />
+			<Item label="ALL ON is not active ALL OFF is not active" value="0" />
+			<Item label="ALL ON is not active ALL OFF active" value="1" />
+			<Item label="ALL ON active ALL OFF is not active" value="2" />
+		</Value>
+		<Value type="list" genre="config" instance="1" index="30" label="Saving the state of the relay after a power failure" size="1" min="0" max="1" value="0">
+			<Help/>
+			<Item label="Flush dimmer module saves its state before power failure (it returns to the last position saved before a power failure)" value="0" />
+			<Item label="Flush dimmer module does not save the state after a power failure, it returns to off position" value="1" />
+		</Value>
+		<Value type="short" genre="config" instance="1" index="11" label="I1 functionality selection" min="0" max="32767" value="1">
+			<Help>
+			Default value 1 - Input I1 changes the mode of the thermostat between On and Off. In this case the function on window sensor is disabled.
+			32767 - Input I1 doesn't influence the heat/cool process.
+			2 - Input I1 influences on the cooling and heating valves according to status of window sensor. In this case function of Off and On selection by I1 is disabled.
+			</Help>
+		</Value>
+		<Value type="short" genre="config" instance="1" index="12" label="I2 functionality selection" min="0" max="32767" value="32767">
+			<Help>
+			Default value 32767 - input I2 does not influence the heat/cool process.
+			0 - 990 Temperature setpoint from 0,0°C to 99,0°C. When I2 is pressed, it automatically sets the temperature setpoint to the value defined here. In this case the function of the condensation sensor is disabled.
+			1001 - 1150 Temperature setpoint from -0,1°C to -15,0°C. When I2 is pressed, it automatically sets the temperature setpoint to the value defined here. In this case the function of the condensation sensor is disabled. 
+			2000 - Input I2 influences on the cooling valve according to status of condense sensor. In this case function of setpoint selection with I2 is disabled.
+			</Help>
+		</Value>
+		<Value type="short" genre="config" instance="1" index="13" label="I3 functionality selection" min="0" max="32767" value="32767">
+			<Help>
+			Default value 32767 - input I3 does not influence the heat/cool process.
+			1 - input I3 changes the mode of the thermostat between Heat and Cool. In this case function on the flood sensor is disabled.
+			2 - input I3 influences cooling and heating valves according to the status of flood sensor. In this case function of Heat and Cool selection by I3 is disabled.
+			</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="40" label="Power reporting in Watts on power change" size="1" min="0" max="100" value="0">
+			<Help>Set value from 0 - 100 (0% - 100%). 0 - Reporting Disabled. 1 - 100 = 1% - 100% Reporting enabled. Power report is send (push) only when actual power in Watts in real time change for more than set percentage comparing to previous actual power in Watts, step is 1%. Default value 0</Help>
+		</Value>
+		
+		<Value type="short" genre="config" instance="1" index="42" label="Power reporting in Watts by time interval" min="0" max="32767" value="300">
+			<Help>Set value means time interval (0 - 32767) in seconds, when power report is send. 0 - Reporting Disabled. 1 - 32767 = 1 second - 32767 seconds. Reporting enabled. Power report is send with time interval set by entered value. Default value 300 (power report in Watts is send each 300s)</Help>
+		</Value>
+        <Value type="byte" genre="config" instance="1" index="45" label="Antifreeze" size="1" min="0" max="255" value="50">
+			<Help>Set value means at which temperature the heating will be turned on even if the thermostat was manually set to off. The parameter can be set from 0 to 255 where 0 to 127 means from 0.0 °C to 12.7 °C and from 128 to 254 means from - 0.0 °C to -12.6 °C. The value 255 means that the Antifreeze functionality is disabled.Note; this functionality is activated only in heating mode.</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="50" label="PWM maximum value" size="1" min="2" max="100" value="100">
+			<Help>This parameter sets the minimum PWM percentage value that the PWM output stays on. Note, the minimum level may not exceed the maximum level.
+			Default value 0.
+			2 - 100 = 2% to 100% seconds, step is 1%.</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="51" label="PWM minimum value" size="1" min="0" max="99" value="0">
+			<Help>This parameter sets the minimum PWM percentage value that the PWM output stays on. Note, the minimum level may not exceed the maximum level.
+			Default value 0.
+			1 - 99 = 1% to 99% seconds, step is 1%.</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="52" label="PWM cycle duration" size="1" min="5" max="127" value="10">
+			<Help>PWM cycle duration defines the sum of all ON and OFF time periods. Setting the parameter sets the PWM duty cycle to that value in seconds.
+			Default value 10.
+			5 - 127 = 0 seconds to 127 seconds, step is 1 second</Help>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="53" label="PID value inside deadband" size="1" min="0" max="1" value="0">
+			<Help/>
+			<Item label="Default value (PID value equals zero)" value="0" />
+			<Item label="PID value set to last value before entering deadband" value="1" />
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="54" label="PID deadband" size="1" min="0" max="127" value="5">
+			<Help>This parameter defines the zone in which PID is not active. If the temperature difference between actual and setpoint is bigger than PID deadband, then the PID will start to regulate the system, otherwise PID is zero or fixed.
+			Default value 5.
+			0 - 127 = 0,0 °C to 12,7 °C, step is 0,1°C</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="55" label="Integral sampling time" size="1" min="0" max="127" value="5">
+			<Help>This parameter defines the time between samples. On each sample time duration the controller will calculate the differrence between setpoint and actual temperature.
+			Default value 5.
+			0 - 127 = 0 seconds to 127 seconds, step is 1 second</Help>
+		</Value>
+		<Value type="short" genre="config" instance="1" index="56" label="P parameter" size="2" min="0" max="1000" value="100">
+			<Help>Default value 100
+			0 - 1000 P value, step is 1</Help>
+		</Value>
+		<Value type="short" genre="config" instance="1" index="57" label="I parameter" size="2" min="0" max="1000" value="1">
+			<Help>Default value 1
+			0 - 1000 I value, step is 1</Help>
+		</Value>
+		<Value type="short" genre="config" instance="1" index="58" label="D parameter" size="2" min="0" max="1000" value="1">
+			<Help>Default value 1
+			0 - 1000 D value, step is 1</Help>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="59" label="Thermostat mode" size="1" min="0" max="1" value="0">
+			<Help/>
+			<Item label="Heat mode" value="0" />
+			<Item label="Cool mode" value="1" />
+		</Value>
+		<Value type="short" genre="config" instance="1" index="60" label="Too low temperature limit" size="2" min="1" max="1000" value="50">
+			<Help>Too low temperature limit is set by entering the value from 1 - 1000 (0,1°C to 100,0 °C). In case the value is set outside this range the module sets the value to default.</Help>
+		</Value>
+		<Value type="short" genre="config" instance="1" index="61" label="Too high temperature limit" size="2" min="1" max="1000" value="700">
+			<Help>Too high temperature limit is set by entering the value from 1 - 1000 (0,1°C to 100,0 °C). In case the value is set outside this range the module sets the value to default.</Help>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="63" label="Output switch selection" size="1" min="0" max="1" value="0">
+			<Help>Set value means the type of the heating device that is connected to the PWM output. The heating device type can be normally open (NO) or normally close (NC).</Help>
+			<Item label="When system is turned off the output is 0 V." value="0"/>
+			<Item label="When system is turned off the output is 230 V." value="1"/>
+		</Value>
+		<Value type="short" genre="config" instance="1" index="70" label="Input I1 status on delay" size="2" min="0" max="32000" value="0">
+			<Help>If the value of parameter is different to 0 it means that the influence of this input to heating or cooling will react after inserted time. NOTE: Device status on the UI is changed immediately.
+				  Default value 0.
+				  1 - 32000 seconds.</Help>
+		</Value>
+		<Value type="short" genre="config" instance="1" index="71" label="Input I1 status off delay" size="2" min="0" max="32000" value="0">
+			<Help>If the value of parameter is different to 0 it means that the influence of this input to heating or cooling will react after inserted time. NOTE: Device status on the UI is changed immediately.
+				  Default value 0.
+				  1 - 32000 seconds.</Help>
+		</Value>
+		<Value type="short" genre="config" instance="1" index="72" label="Input I2 status on delay" size="2" min="0" max="32000" value="0">
+			<Help>If the value of parameter is different to 0 it means that the influence of this input to heating or cooling will react after inserted time. NOTE: Device status on the UI is changed immediately.
+				  Default value 0.
+				  1 - 32000 seconds.</Help>
+		</Value>
+		<Value type="short" genre="config" instance="1" index="73" label="Input I2 status off delay" size="2" min="0" max="32000" value="0">
+			<Help>If the value of parameter is different to 0 it means that the influence of this input to heating or cooling will react after inserted time. NOTE: Device status on the UI is changed immediately.
+				  Default value 0.
+				  1 - 32000 seconds.</Help>
+		</Value>
+		<Value type="short" genre="config" instance="1" index="74" label="Input I3 status on delay" size="2" min="0" max="32000" value="0">
+			<Help>If the value of parameter is different to 0 it means that the influence of this input to heating or cooling will react after inserted time. NOTE: Device status on the UI is changed immediately.
+				  Default value 0.
+				  1 - 32000 seconds.</Help>
+		</Value>
+		<Value type="short" genre="config" instance="1" index="75" label="Input I3 status off delay" size="2" min="0" max="32000" value="0">
+			<Help>If the value of parameter is different to 0 it means that the influence of this input to heating or cooling will react after inserted time. NOTE: Device status on the UI is changed immediately.
+				  Default value 0.
+				  1 - 32000 seconds.</Help>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="100" label="Enable/Disable endpoint I1 or select notification type and event" size="1" min="0" max="9" value="0">
+			<Help>Enabling I1 means that the Endpoint I1 will be present on the UI. Disabling it will result in hiding the endpoint according to the parameter set value. Additionally, a notification type and event can be selected for the endpoint.</Help>
+			<Item label="Endpoint I1 disabled" value="0"/>
+			<Item label="Home Security; Motion Detection; unknown location" value="1"/>
+			<Item label="CO; Carbon Monoxide detected; unknown location" value="2"/>
+			<Item label="CO2; Carbon Dioxide detected; unknown location" value="3"/>
+			<Item label="Water Alarm; Water Leak detected; unknown location" value="4"/>
+			<Item label="Heat Alarm; Water Leak detected; unknown location" value="5"/>
+			<Item label="Smoke Alarm; Smoke detected; unknown location" value="6"/>
+			<Item label="Sensor binary" value="9"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="101" label="Enable/Disable endpoint I2 or select notification type and event" size="1" min="0" max="9" value="0">
+			<Help>Enabling I2 means that the Endpoint I2 will be present on the UI. Disabling it will result in hiding the endpoint according to the parameter set value. Additionally, a notification type and event can be selected for the endpoint.</Help>
+			<Item label="Endpoint I2 disabled" value="0"/>
+			<Item label="Home Security; Motion Detection; unknown location" value="1"/>
+			<Item label="CO; Carbon Monoxide detected; unknown location" value="2"/>
+			<Item label="CO2; Carbon Dioxide detected; unknown location" value="3"/>
+			<Item label="Water Alarm; Water Leak detected; unknown location" value="4"/>
+			<Item label="Heat Alarm; Water Leak detected; unknown location" value="5"/>
+			<Item label="Smoke Alarm; Smoke detected; unknown location" value="6"/>
+			<Item label="Sensor binary" value="9"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="102" label="Enable/Disable endpoint I3 or select notification type and event" size="1" min="0" max="9" value="0">
+			<Help>Enabling I3 means that the Endpoint I3 will be present on the UI. Disabling it will result in hiding the endpoint according to the parameter set value. Additionally, a notification type and event can be selected for the endpoint.</Help>
+			<Item label="Endpoint I3 disabled" value="0"/>
+			<Item label="Home Security; Motion Detection; unknown location" value="1"/>
+			<Item label="CO; Carbon Monoxide detected; unknown location" value="2"/>
+			<Item label="CO2; Carbon Dioxide detected; unknown location" value="3"/>
+			<Item label="Water Alarm; Water Leak detected; unknown location" value="4"/>
+			<Item label="Heat Alarm; Water Leak detected; unknown location" value="5"/>
+			<Item label="Smoke Alarm; Smoke detected; unknown location" value="6"/>
+			<Item label="Sensor binary" value="9"/>
+		</Value>
+		<Value type="short" genre="config" instance="1" index="110" label="Temperature sensor offset settings" size="2" min="1" max="32536" value="32536">
+			<Help>Set value is added or subtracted to actual measured value by the sensor.
+			Default value 32536
+			1 - 100 = value from 0,1°C to 10,0°C is added to actual measured temperature
+			1001 - 1100 = value from -0,1°C to - 10,0°C is subtracted from actual measured temperature</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="120" label="Digital temperature sensor reporting" size="1" min="0" max="127" value="5">
+			<Help>When temperature sensor is connected the module reports measured temperature on temperature change defined by this parameter.
+			Default value 5 = 0,5°C.
+			0 - Reporting disabled
+			1 - 127 = 0,1°C - 12,7°C, step is 0,1°C</Help>
+		</Value>
+	</CommandClass>
+
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="9">
+			<Group index="1" max_associations="1" label="Lifeline" auto="true"/>
+			<Group index="2" max_associations="16" label="Basic Set triggered at the change of output Q and reflecting it's state." />
+			<Group index="3" max_associations="16" label="Basic Set triggered at the change of thermostat mode." />
+			<Group index="4" max_associations="16" label="Basic Set trigerred by Too high temperature limit, sending FF." />
+			<Group index="5" max_associations="16" label="Basic Set trigerred by Too low temperature limit, sending FF." />
+			<Group index="6" max_associations="16" label="Basic Set trigerred by change of input I1." />
+			<Group index="7" max_associations="16" label="Basic Set trigerred by change of input I2." />
+			<Group index="8" max_associations="16" label="Basic Set trigerred by change of input I3." />
+			<Group index="9" max_associations="16" label="Basic Set trigerred by change of temperature." />
+		</Associations>
+	</CommandClass>
+
+	<!-- Remove COMMAND_CLASS_BASIC -->
+	<CommandClass id="32" action="remove" />
+
+	<!-- Map endpoints to instances -->
+	<CommandClass id="96" mapping="endpoints" />
+
+</Product>

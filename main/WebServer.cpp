@@ -82,6 +82,7 @@ static const _tGuiLanguage guiLanguage[] =
 	{ "en", "English" },
 	{ "ar", "Arabic" },
 	{ "bg", "Bulgarian" },
+	{ "zh", "Chinese" },
 	{ "cs", "Czech" },
 	{ "da", "Danish" },
 	{ "nl", "Dutch" },
@@ -105,7 +106,6 @@ static const _tGuiLanguage guiLanguage[] =
 	{ "es", "Spanish" },
 	{ "sv", "Swedish" },
 	{ "tr", "Turkish" },
-
 	{ NULL, NULL }
 };
 
@@ -532,6 +532,9 @@ namespace http {
 			RegisterCommandCode("addlogmessage", boost::bind(&CWebServer::Cmd_AddLogMessage, this, _1, _2, _3));
 			RegisterCommandCode("clearshortlog", boost::bind(&CWebServer::Cmd_ClearShortLog, this, _1, _2, _3));
 			RegisterCommandCode("vacuumdatabase", boost::bind(&CWebServer::Cmd_VacuumDatabase, this, _1, _2, _3));
+
+			RegisterCommandCode("addmobiledevice", boost::bind(&CWebServer::Cmd_AddMobileDevice, this, _1, _2, _3));
+			RegisterCommandCode("deletemobiledevice", boost::bind(&CWebServer::Cmd_DeleteMobileDevice, this, _1, _2, _3));
 
 			RegisterRType("graph", boost::bind(&CWebServer::RType_HandleGraph, this, _1, _2, _3));
 			RegisterRType("lightlog", boost::bind(&CWebServer::RType_LightLog, this, _1, _2, _3));
@@ -2593,6 +2596,85 @@ namespace http {
 			return 0;
 		}
 
+		void CWebServer::Cmd_UpdateDevice(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			std::string idx = request::findValue(&req, "idx");
+			std::string hid = request::findValue(&req, "hid");
+			std::string did = request::findValue(&req, "did");
+			std::string dunit = request::findValue(&req, "dunit");
+			std::string dtype = request::findValue(&req, "dtype");
+			std::string dsubtype = request::findValue(&req, "dsubtype");
+
+			std::string nvalue = request::findValue(&req, "nvalue");
+			std::string svalue = request::findValue(&req, "svalue");
+
+			if ((nvalue.empty() && svalue.empty()))
+			{
+				return;
+			}
+
+			int signallevel = 12;
+			int batterylevel = 255;
+
+			if (idx.empty())
+			{
+				//No index supplied, check if raw parameters where supplied
+				if (
+					(hid.empty()) ||
+					(did.empty()) ||
+					(dunit.empty()) ||
+					(dtype.empty()) ||
+					(dsubtype.empty())
+					)
+					return;
+			}
+			else
+			{
+				//Get the raw device parameters
+				std::vector<std::vector<std::string> > result;
+				result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID=='%q')",
+					idx.c_str());
+				if (result.empty())
+					return;
+				hid = result[0][0];
+				did = result[0][1];
+				dunit = result[0][2];
+				dtype = result[0][3];
+				dsubtype = result[0][4];
+			}
+
+			int HardwareID = atoi(hid.c_str());
+			std::string DeviceID = did;
+			int unit = atoi(dunit.c_str());
+			int devType = atoi(dtype.c_str());
+			int subType = atoi(dsubtype.c_str());
+
+			std::stringstream sstr;
+
+			unsigned long long ulIdx;
+			sstr << idx;
+			sstr >> ulIdx;
+
+			int invalue = (!nvalue.empty()) ? atoi(nvalue.c_str()) : 0;
+
+
+			std::string sSignalLevel = request::findValue(&req, "rssi");
+			if (sSignalLevel != "")
+			{
+				signallevel = atoi(sSignalLevel.c_str());
+			}
+			std::string sBatteryLevel = request::findValue(&req, "battery");
+			if (sBatteryLevel != "")
+			{
+				batterylevel = atoi(sBatteryLevel.c_str());
+			}
+			if (m_mainworker.UpdateDevice(HardwareID, DeviceID, unit, devType, subType, invalue, svalue, signallevel, batterylevel))
+			{
+				root["status"] = "OK";
+				root["title"] = "Update Device";
+			}
+		}
+
 		void CWebServer::Cmd_UpdateDevices(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			std::stringstream lua_DirT;
@@ -2673,85 +2755,6 @@ namespace http {
 			{
 				report_errors(lua_state, status);
 				lua_close(lua_state);
-			}
-		}
-
-		void CWebServer::Cmd_UpdateDevice(WebEmSession & session, const request& req, Json::Value &root)
-		{
-			std::string idx = request::findValue(&req, "idx");
-			std::string hid = request::findValue(&req, "hid");
-			std::string did = request::findValue(&req, "did");
-			std::string dunit = request::findValue(&req, "dunit");
-			std::string dtype = request::findValue(&req, "dtype");
-			std::string dsubtype = request::findValue(&req, "dsubtype");
-
-			std::string nvalue = request::findValue(&req, "nvalue");
-			std::string svalue = request::findValue(&req, "svalue");
-
-			if ( (nvalue.empty() && svalue.empty()) )
-			{
-				return;
-			}
-
-			int signallevel = 12;
-			int batterylevel = 255;
-
-			if (idx.empty())
-			{
-				//No index supplied, check if raw parameters where supplied
-				if (
-					(hid.empty()) ||
-					(did.empty()) ||
-					(dunit.empty()) ||
-					(dtype.empty()) ||
-					(dsubtype.empty())
-					)
-					return;
-			}
-			else
-			{
-				//Get the raw device parameters
-				std::vector<std::vector<std::string> > result;
-				result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID=='%q')",
-					idx.c_str());
-				if (result.empty())
-					return;
-				hid = result[0][0];
-				did = result[0][1];
-				dunit = result[0][2];
-				dtype = result[0][3];
-				dsubtype = result[0][4];
-			}
-
-			int HardwareID = atoi(hid.c_str());
-			std::string DeviceID = did;
-			int unit = atoi(dunit.c_str());
-			int devType = atoi(dtype.c_str());
-			int subType = atoi(dsubtype.c_str());
-
-			std::stringstream sstr;
-
-			unsigned long long ulIdx;
-			sstr << idx;
-			sstr >> ulIdx;
-
-			int invalue = (!nvalue.empty()) ? atoi(nvalue.c_str()) : 0;
-
-
-			std::string sSignalLevel = request::findValue(&req, "rssi");
-			if (sSignalLevel != "")
-			{
-				signallevel = atoi(sSignalLevel.c_str());
-			}
-			std::string sBatteryLevel = request::findValue(&req, "battery");
-			if (sBatteryLevel != "")
-			{
-				batterylevel = atoi(sBatteryLevel.c_str());
-			}
-			if (m_mainworker.UpdateDevice(HardwareID, DeviceID, unit, devType, subType, invalue, svalue, signallevel, batterylevel))
-			{
-				root["status"] = "OK";
-				root["title"] = "Update Device";
 			}
 		}
 
@@ -7245,7 +7248,7 @@ namespace http {
 							" A.Protected, B.XOffset, B.YOffset, B.PlanID, A.Description"
 							" FROM Scenes as A"
 							" LEFT OUTER JOIN DeviceToPlansMap as B ON (B.DeviceRowID==a.ID) AND (B.DevSceneType==1)"
-							" ORDER BY %s",
+							" ORDER BY %q",
 							szOrderBy);
 
 					if (result.size() > 0)
@@ -7426,7 +7429,7 @@ namespace http {
 						" A.Options "
 						"FROM DeviceStatus as A LEFT OUTER JOIN DeviceToPlansMap as B "
 						"ON (B.DeviceRowID==a.ID) AND (B.DevSceneType==0) "
-						"ORDER BY %s",
+						"ORDER BY %q",
 						szOrderBy);
 				}
 			}
@@ -7527,7 +7530,7 @@ namespace http {
 						"FROM DeviceStatus as A, SharedDevices as B "
 						"LEFT OUTER JOIN DeviceToPlansMap as C  ON (C.DeviceRowID==A.ID)"
 						"WHERE (B.DeviceRowID==A.ID)"
-						" AND (B.SharedUserID==%lu) ORDER BY %s",
+						" AND (B.SharedUserID==%lu) ORDER BY %q",
 						m_users[iUser].ID, szOrderBy);
 				}
 			}
@@ -8108,6 +8111,7 @@ namespace http {
 							if (levelNames.empty()) {
 								levelNames.assign("Off"); // default is Off only
 							}
+							root["result"][ii]["TypeImg"] = "Light";
 							root["result"][ii]["SelectorStyle"] = atoi(selectorStyle.c_str());
 							root["result"][ii]["LevelOffHidden"] = levelOffHidden == "true";
 							root["result"][ii]["LevelNames"] = levelNames;
@@ -10082,10 +10086,14 @@ namespace http {
 				{
 					std::vector<std::string> sd = *itt;
 
+					_eHardwareTypes hType = (_eHardwareTypes)atoi(sd[3].c_str());
+					if (hType == HTYPE_DomoticzInternal)
+						continue;
+
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
 					root["result"][ii]["Enabled"] = (sd[2] == "1") ? "true" : "false";
-					root["result"][ii]["Type"] = atoi(sd[3].c_str());
+					root["result"][ii]["Type"] = hType;
 					root["result"][ii]["Address"] = sd[4];
 					root["result"][ii]["Port"] = atoi(sd[5].c_str());
 					root["result"][ii]["SerialPort"] = sd[6];
@@ -10721,7 +10729,55 @@ namespace http {
 			m_sql.VacuumDatabase();
 		}
 		
-		
+		void CWebServer::Cmd_AddMobileDevice(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			std::string suuid = request::findValue(&req, "uuid");
+			std::string ssenderid = request::findValue(&req, "senderid");
+			if (
+				(suuid.empty()) ||
+				(ssenderid.empty())
+				)
+				return;
+			root["status"] = "OK";
+			root["title"] = "AddMobileDevice";
+
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query("SELECT ID FROM MobileDevices WHERE (UUID=='%q')", suuid.c_str());
+			if (result.empty())
+			{
+				//New
+				m_sql.safe_query("INSERT INTO MobileDevices (UUID,SenderID) VALUES ('%q','%q')", suuid.c_str(), ssenderid.c_str());
+			}
+			else
+			{
+				//Update
+				time_t now = time(0);
+				struct tm ltime;
+				localtime_r(&now, &ltime);
+				m_sql.safe_query("UPDATE MobileDevices SET SenderID='%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (UUID == '%q')",
+					ssenderid.c_str(),
+					ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
+					suuid.c_str()
+					);
+			}
+		}
+
+		void CWebServer::Cmd_DeleteMobileDevice(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+				return;//Only admin user allowed
+			std::string suuid = request::findValue(&req, "uuid");
+			if (suuid.empty())
+				return;
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query("SELECT ID FROM MobileDevices WHERE (UUID=='%q')", suuid.c_str());
+			if (result.empty())
+				return;
+			m_sql.safe_query("DELETE FROM MobileDevices WHERE (UUID == '%q')", suuid.c_str());
+			root["status"] = "OK";
+			root["title"] = "DeleteMobileDevice";
+		}
+
 
 		void CWebServer::RType_GetTransfers(WebEmSession & session, const request& req, Json::Value &root)
 		{
@@ -10856,9 +10912,12 @@ namespace http {
 			std::map<std::string, CNotificationBase*>::const_iterator ittNotifiers;
 			for (ittNotifiers = m_notifications.m_notifiers.begin(); ittNotifiers != m_notifications.m_notifiers.end(); ++ittNotifiers)
 			{
-				root["notifiers"][ii]["name"] = ittNotifiers->first;
-				root["notifiers"][ii]["description"] = ittNotifiers->first;
-				ii++;
+				if (ittNotifiers->first != "gcm")
+				{
+					root["notifiers"][ii]["name"] = ittNotifiers->first;
+					root["notifiers"][ii]["description"] = ittNotifiers->first;
+					ii++;
+				}
 			}
 
 			unsigned long long idx = 0;

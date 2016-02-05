@@ -1628,7 +1628,7 @@ unsigned long long MainWorker::PerformRealActionFromDomoticzClient(const unsigne
 		ID = szTmp;
 		Unit=0;
 	}
-	else if (devType == pTypeGeneralSwitch)
+	else if ((devType == pTypeGeneralSwitch) || ((devType == pTypeGeneral) && (subType == sTypeSwitch)))
 	{
 		const _tGeneralSwitch *pSwitch = (const _tGeneralSwitch*)pResponse;
 		sprintf(szTmp, "%08X", pSwitch->id);
@@ -1923,6 +1923,9 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const 
 			CDomoticzHardwareBase *pOrgHardware = NULL;
 			switch (pRXCommand[1])
 			{
+			case pTypeGeneral:
+				if (pRXCommand[2] != sTypeSwitch)
+					break;
 			case pTypeLighting1:
 			case pTypeLighting2:
 			case pTypeLighting3:
@@ -8960,6 +8963,7 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 		(subType == sTypeZWaveClock) ||
 		(subType == sTypeZWaveThermostatMode) ||
 		(subType == sTypeZWaveThermostatFanMode) ||
+		(subType == sTypeSwitch) ||
 		(subType == sTypeFan) ||
 		(subType == sTypeTextStatus) ||
 		(subType == sTypeSoundLevel) ||
@@ -9125,6 +9129,38 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, pMeter->intval1, szTmp, procResult.DeviceName);
 		if (DevRowIdx == -1)
 			return;
+	}
+	else if (subType == sTypeSwitch)
+	{
+/*
+		unsigned char Unit = pMeter->unitcode;
+		unsigned char cmnd = pMeter->cmnd;
+		unsigned char level = pMeter->level;
+		unsigned char SignalLevel = pMeter->rssi;
+
+		sprintf(szTmp, "%d", level);
+		unsigned long long DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, -1, cmnd, szTmp, procResult.DeviceName);
+
+		bool isGroupCommand = ((cmnd == gswitch_sGroupOff) || (cmnd == gswitch_sGroupOn));
+		unsigned char single_cmnd = cmnd;
+
+		if (isGroupCommand)
+		{
+			single_cmnd = (cmnd == gswitch_sGroupOff) ? gswitch_sOff : gswitch_sOn;
+
+			// We write the GROUP_CMD into the log to differentiate between manual turn off/on and group_off/group_on
+			m_sql.UpdateValueLighting2GroupCmd(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, -1, cmnd, szTmp, procResult.DeviceName);
+
+			//set the status of all lights with the same code to on/off
+			m_sql.Lighting2GroupCmd(ID, subType, single_cmnd);
+		}
+
+		if (DevRowIdx == -1) {
+			// not found nothing to do 
+			return;
+		}
+		CheckSceneCode(DevRowIdx, devType, subType, single_cmnd, szTmp);
+*/
 	}
 
 	if (m_verboselevel == EVBL_ALL)

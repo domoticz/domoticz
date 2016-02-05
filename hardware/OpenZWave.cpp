@@ -547,7 +547,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		{
 			// Add the new value to our list
 
-			if (nodeInfo->Manufacturer_id.empty())
+			if (nodeInfo->Manufacturer_name.empty())
 			{
 				nodeInfo->Manufacturer_id = pManager->GetNodeManufacturerId(_homeID, _nodeID);
 				nodeInfo->Manufacturer_name = pManager->GetNodeManufacturerName(_homeID, _nodeID);
@@ -2113,7 +2113,8 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 			if (m_pManager->GetValueAsByte(vID, &byteValue) == false)
 				return;
 		}
-		_log.Log(LOG_STATUS, "OpenZWave: Unhandled class: 0x%02X (%s), NodeID: %d (0x%02x), Index: %d, Instance: %d", commandclass, cclassStr(commandclass), NodeID, NodeID, vOrgIndex, vOrgInstance);
+		//Ignore this class, we can make our own schedule with timers
+		//_log.Log(LOG_STATUS, "OpenZWave: Unhandled class: 0x%02X (%s), NodeID: %d (0x%02x), Index: %d, Instance: %d", commandclass, cclassStr(commandclass), NodeID, NodeID, vOrgIndex, vOrgInstance);
 	}
 	else if (commandclass == COMMAND_CLASS_DOOR_LOCK)
 	{
@@ -2578,6 +2579,34 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 	pDevice->bValidValue = true;
 	pDevice->orgInstanceID = vOrgInstance;
 	pDevice->orgIndexID = vOrgIndex;
+
+	if (
+		(pDevice->Manufacturer_id == 0) &&
+		(pDevice->Product_id == 0) &&
+		(pDevice->Product_type == 0)
+		)
+	{
+		COpenZWave::NodeInfo *pNode = GetNodeInfo(HomeID, NodeID);
+		if (pNode)
+		{
+			if (!pNode->Manufacturer_name.empty())
+			{
+				int xID;
+				std::stringstream ss;
+				ss << std::hex << pNode->Manufacturer_id;
+				ss >> xID;
+				pDevice->Manufacturer_id = xID;
+				std::stringstream ss2;
+				ss2 << std::hex << pNode->Product_id;
+				ss2 >> xID;
+				pDevice->Product_id = xID;
+				std::stringstream ss3;
+				ss3 << std::hex << pNode->Product_type;
+				ss3 >> xID;
+				pDevice->Product_type = xID;
+			}
+		}
+	}
 
 	switch (pDevice->devType)
 	{

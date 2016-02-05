@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Product xmlns='http://code.google.com/p/open-zwave/'>
 
-<!-- Qubino: ZMNHCA2 Flush shutter -->
+<!-- Qubino: ZMNHCA2 Flush shutter Flush shutter with SW version S3 and above (SW version is part of P/N). Example: P/N: ZMNHCAx H1S3P1 for SW version 3 -->
 
 	<!-- Configuration  -->
 	<CommandClass id="112">
@@ -26,28 +26,49 @@
 			<Item label="Self-measurement disabled" value="0" />
 			<Item label="Self-measurement enable" value="1" />
 		</Value>
-
+		<Value type="list" genre="config" instance="1" index="71" label="Operating modes" size="1" min="0" max="1" value="0">
+			<Help>This parameter defines selection between two operating modes. NOTE: After setting a mode the module needs to be reconfigured. Please check the detailed description in the product manual.</Help>
+			<Item label="Shutter mode" value="0" />
+			<Item label="Venetian mode" value="1" />
+		</Value>
+		<Value type="short" genre="config" instance="1" index="72" label="Slats tilting full turn time" min="0" max="32767" value="150">
+			<Help>This parameter defines the time necessary for slats to make a full turn (180 degrees). 0 – tilting time disabled. Values range from 1 – 32767 = 0,01 seconds – 327,67 seconds. Default value 150. NOTE: If the time is set too high the shutter will move the slats up or down until the duration is reached.</Help>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="73" label="Slats position" size="1" min="0" max="2" value="2">
+			<Help>This parameter defines slat position after up/down movement through UI or push button.</Help>
+			<Item label="Slats return to previously set position only in case of UI control." value="0" />
+			<Item label="Slats return to previously set position in case of UI control, push button or when the limit switch is reached." value="1" />
+			<Item label="Slats return to previously set position in case of UI control, push button, when the limit switch is reached or when receiving a Multilevel Switch Stop Level Change command." value="2" />
+		</Value>
 		<Value type="short" genre="config" instance="1" index="74" label="Motor moving up/down time" min="0" max="65535" value="0">
-			<Help>This parameter defines shutter motor moving time of complete opening or complete closing. 0 – moving time disabled (working with limit switches). 1 – 65535 = 0,1seconds – 6553,5seconds After that time motor is stopped (relay goes to off state). Default value 0</Help>
+			<Help>This parameter defines shutter motor moving time of complete opening or complete closing. 0 – moving time disabled (working with limit switches). 1 – 65535 = 0,1seconds – 6553,5 seconds After that time motor is stopped (relay goes to off state). Default value 0</Help>
 		</Value>
 
-		<Value type="byte" genre="config" instance="1" index="76" label="Motor operation detection" min="0" max="255" value="0">
-			<Help>Power threshold to be interpreted when motor reach the limit switch. Available settings: 0 – 255 (1-255 W). The value 0 means reaching a limit switch will not be detected. Default value: 10 (10W).</Help>
+		<Value type="byte" genre="config" instance="1" index="76" label="Motor operation detection" min="0" max="127" value="10">
+			<Help>Power threshold to be interpreted when motor reach the limit switch. Available settings: 0 – 127 (0-127 W). The value 0 means reaching a limit switch will not be detected. Default value: 10 (10W).</Help>
 		</Value>
 
 		<Value type="list" genre="config" instance="1" index="78" label="Forced Shutter calibration" size="1" min="0" max="1" value="0">
-			<Help>By modifying the parameters setting from 0 to 1 a Shutter enters the calibration mode</Help>
+			<Help>By modifying the parameters setting from 0 to 1 a Shutter enters the calibration mode. Once the calibration process finished the parameter is reset back to 0.</Help>
 			<Item label="Default" value="0" />
 			<Item label="Start calibration process" value="1" />
 		</Value>
-
+		<Value type="byte" genre="config" instance="1" index="85" label="Power consumption max time delay" min="3" max="50" value="0">
+			<Help>The parameter defines the maximum time before motor power consumption is read after one of the relays is switched on. If there is no power consumption during this time the relay will switch off. Default value is 0 which signifies automatic detection. Value 3 signifies a time of 0,3 seconds.</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="90" label="Relay delay time" min="1" max="30" value="5">
+			<Help>The parameter defines the time delay between output relay switching (time between switching up/down and vice versa). The value 1 of this parameter corresponds to a 0,1 second delay. Default value is 5, which corresponds to 0,5 seconds.</Help>
+		</Value>
 	</CommandClass>
 
 	<!-- Association Groups -->
 	<CommandClass id="133">
-		<Associations num_groups="2">
-			<Group index="1" max_associations="5" label="Multilevel" />
-			<Group index="2" max_associations="1" label="Default reporting" auto="true"/>
+		<Associations num_groups="5">
+			<Group index="1" max_associations="16" label="Basic Set On/Off reflecting input I1 state." />
+			<Group index="2" max_associations="16" label="Basic Set On/Off reflecting input I2 state." />
+			<Group index="3" max_associations="16" label="Multilevel Set triggered at shutter position changes." />
+			<Group index="4" max_associations="16" label="Multilevel Set triggered at changes of slat tilting position." />
+			<Group index="5" max_associations="1" label="Default reporting group" auto="true"/>
 		</Associations>
 	</CommandClass>
 

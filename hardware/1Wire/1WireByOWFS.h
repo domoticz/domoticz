@@ -30,4 +30,5 @@ protected:
    void GetDevices(const std::string &inDir, /*out*/std::vector<_t1WireDevice>& devices) const;
    std::string readRawData(const std::string& filename) const;
    void writeData(const _t1WireDevice& device,std::string propertyName,const std::string &value) const;
+   std::string nameHelper(const std::string& dirname) const;
 };
