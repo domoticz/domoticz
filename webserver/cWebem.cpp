@@ -974,6 +974,7 @@ void cWebem::CleanTimedOutSessions() {
 
 	time_t now = mytime(NULL);
 	if (myNextSessionCleanup < now) {
+		// Clean up timed out sessions from memory
 		myNextSessionCleanup = now + 15 * 60; // in 15 minutes
 		std::vector<std::string> ssids;
 		std::map<std::string, WebEmSession>::iterator itt;
@@ -986,6 +987,10 @@ void cWebem::CleanTimedOutSessions() {
 		for (ssitt=ssids.begin(); ssitt!=ssids.end(); ++ssitt) {
 			std::string ssid = *ssitt;
 			m_sessions.erase(ssid);
+		}
+		// Clean up expired sessions from database in order to avoid to wait for the domoticz restart (long time running instance)
+		if (mySessionStore != NULL) {
+			this->mySessionStore->CleanSessions();
 		}
 	}
 }
@@ -1654,7 +1659,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 			|| content_type == "application/javascript"
 			)
 		{
-			// check if content is not gzipped, include won´t work with non-text content
+			// check if content is not gzipped, include wonï¿½t work with non-text content
 			if (!rep.bIsGZIP) {
 				// Find and include any special cWebem strings
 				if (!myWebem->Include(rep.content)) {
