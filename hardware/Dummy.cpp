@@ -129,12 +129,8 @@ namespace http {
 			case 6:
 				//Switch
 				{
-					unsigned char ID1 = (unsigned char)((nid & 0xFF000000) >> 24);
-					unsigned char ID2 = (unsigned char)((nid & 0x00FF0000) >> 16);
-					unsigned char ID3 = (unsigned char)((nid & 0x0000FF00) >> 8);
-					unsigned char ID4 = (unsigned char)((nid & 0x000000FF));
-					sprintf(ID, "%X%02X%02X%02X", ID1, ID2, ID3, ID4);
-					DeviceRowIdx=m_sql.UpdateValue(HwdID, ID, 1, pTypeLighting2, sTypeAC, 12, 255, 0, "15", devname);
+					sprintf(ID, "%08X", nid);
+					DeviceRowIdx=m_sql.UpdateValue(HwdID, ID, 1, pTypeGeneralSwitch, sSwitchGeneralSwitch, 12, 255, 0, "100", devname);
 					bCreated = true;
 				}
 				break;

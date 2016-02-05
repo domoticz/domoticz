@@ -56,7 +56,7 @@
 #define sTypeAlert					0x16
 #define sTypeCurrent				0x17
 #define sTypeSoundLevel				0x18
-#define sTypeSwitch					0x19
+//#define sTypeReservedForyou		0x19
 #define sTypeBaro					0x1A
 #define sTypeDistance				0x1B
 #define sTypeCounterIncremental		0x1C
@@ -132,6 +132,7 @@
 #define sSwitchTypeVMC				0x46
 #define sSwitchTypeKeeloq			0x47
 #define sSwitchCustomSwitch			0x48
+#define sSwitchGeneralSwitch		0x49
 
 //Switch commands
 #define gswitch_sOff				0x00

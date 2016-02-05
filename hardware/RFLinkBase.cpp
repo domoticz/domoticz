@@ -83,7 +83,8 @@ const _tRFLinkStringIntHelper rfswitches[] =
 	{ "MedionDB", sSwitchTypeMedionDB },	 // p..
 	{ "VMC", sSwitchTypeVMC },	 // p..
 	{ "Keeloq", sSwitchTypeKeeloq },	 // p..
-	{ "CustomSwitch", sSwitchCustomSwitch },	 // p..
+	{ "CustomSwitch", sSwitchCustomSwitch },	 // NA
+	{ "GeneralSwitch", sSwitchGeneralSwitch },	 // NA
 	{ "", -1 }
 };
 
