@@ -535,7 +535,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLighting1, sTypeEnergenie, "Energenie" },
 		{ pTypeLighting1, sTypeEnergenie5, "Energenie 5-gang" },
 		{ pTypeLighting1, sTypeGDR2, "COCO GDR2" },
-
+		{ pTypeLighting1, sTypeHQ, "HQ COCO-20" },
 
 		{ pTypeLighting2, sTypeAC, "AC" },
 		{ pTypeLighting2, sTypeHEU, "HomeEasy EU" },
@@ -559,6 +559,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLighting5, sTypeRGB432W, "RGB432W" },
 		{ pTypeLighting5, sTypeMDREMOTE107, "MDRemote 107" },
 		{ pTypeLighting5, sTypeLegrandCAD, "Legrand CAD" },
+		{ pTypeLighting5, sTypeAvantek, "Avantek" },
 
 		{ pTypeLighting6, sTypeBlyss, "Blyss" },
 
@@ -577,6 +578,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeBlinds, sTypeBlindsT8, "Chamberlain CS4330CN" },
 		{ pTypeBlinds, sTypeBlindsT9, "Sunpery" },
 		{ pTypeBlinds, sTypeBlindsT10, "Dolat DLM-1" },
+		{ pTypeBlinds, sTypeBlindsT11, "ASP" },
 
 		{ pTypeSecurity1, sTypeSecX10, "X10 security" },
 		{ pTypeSecurity1, sTypeSecX10M, "X10 security motion" },
@@ -846,7 +848,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeLighting1, sTypeEnergenie, "Status" },
 		{ pTypeLighting1, sTypeEnergenie5, "Status" },
 		{ pTypeLighting1, sTypeGDR2, "Status" },
-
+		{ pTypeLighting1, sTypeHQ, "Status" },
 
 		{ pTypeLighting2, sTypeAC, "Status" },
 		{ pTypeLighting2, sTypeHEU, "Status" },
@@ -871,6 +873,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeLighting5, sTypeRGB432W, "Status" },
 		{ pTypeLighting5, sTypeMDREMOTE107, "Status" },
 		{ pTypeLighting5, sTypeLegrandCAD, "Status" },
+		{ pTypeLighting5, sTypeAvantek, "Status" },
 
 		{ pTypeLighting6, sTypeBlyss, "Status" },
 
@@ -889,6 +892,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeBlinds, sTypeBlindsT8, "Status" },
 		{ pTypeBlinds, sTypeBlindsT9, "Status" },
 		{ pTypeBlinds, sTypeBlindsT10, "Status" },
+		{ pTypeBlinds, sTypeBlindsT11, "Status" },
 
 		{ pTypeSecurity1, sTypeSecX10, "Status" },
 		{ pTypeSecurity1, sTypeSecX10M, "Status" },
@@ -1198,6 +1202,7 @@ void GetLightStatus(
 		case sTypeEnergenie:
 		case sTypeEnergenie5:
 		case sTypeGDR2:
+		case sTypeHQ:
 			bHaveGroupCmd=true;
 			switch (nValue)
 			{

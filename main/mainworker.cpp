@@ -4063,6 +4063,7 @@ void MainWorker::decode_Lighting1(const int HwdID, const _eHardwareTypes HwdType
 		case sTypeEnergenie:
 		case sTypeEnergenie5:
 		case sTypeGDR2:
+		case sTypeHQ:
 			//decoding of these types is only implemented for use by simulate and verbose
 			//these types are not received by the RFXtrx433
 			switch (pResponse->LIGHTING1.subtype)
@@ -4090,6 +4091,9 @@ void MainWorker::decode_Lighting1(const int HwdID, const _eHardwareTypes HwdType
 				break;
 			case sTypeGDR2:
 				WriteMessage("subtype       = COCO GDR2");
+				break;
+			case sTypeHQ:
+				WriteMessage("subtype       = HQ COCO-20");
 				break;
 			}
 			sprintf(szTmp,"Sequence nbr  = %d", pResponse->LIGHTING1.seqnbr);
@@ -4864,6 +4868,35 @@ void MainWorker::decode_Lighting5(const int HwdID, const _eHardwareTypes HwdType
 			sprintf(szTmp, "ID            = %02X%02X", pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
 			WriteMessage(szTmp);
 			WriteMessage("Command       = Toggle");
+			break;
+		case sTypeAvantek:
+			WriteMessage("subtype       = Avantek");
+			sprintf(szTmp, "Sequence nbr  = %d", pResponse->LIGHTING5.seqnbr);
+			WriteMessage(szTmp);
+			sprintf(szTmp, "ID            = %02X%02X%02X", pResponse->LIGHTING5.id1, pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
+			WriteMessage(szTmp);
+			sprintf(szTmp, "Unit          = %d", pResponse->LIGHTING5.unitcode);
+			WriteMessage(szTmp);
+			WriteMessage("Command       = ", false);
+			switch (pResponse->LIGHTING5.cmnd)
+			{
+			case light5_sOff:
+				WriteMessage("Off");
+				break;
+			case light5_sOn:
+				WriteMessage("On");
+				break;
+			case light5_sGroupOff:
+				WriteMessage("Group Off");
+				break;
+			case light5_sGroupOn:
+				WriteMessage("Group On");
+				break;
+			default:
+				WriteMessage("Unknown");
+				break;
+			}
+			break;
 		default:
 			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->LIGHTING5.packettype, pResponse->LIGHTING5.subtype);
 			WriteMessage(szTmp);
@@ -5447,6 +5480,9 @@ void MainWorker::decode_BLINDS1(const int HwdID, const _eHardwareTypes HwdType, 
 			break;
 		case sTypeBlindsT10:
 			WriteMessage("subtype       = Dolat DLM-1");
+			break;
+		case sTypeBlindsT11:
+			WriteMessage("subtype       = ASP");
 			break;
 		default:
 			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X:", pResponse->BLINDS1.packettype, pResponse->BLINDS1.subtype);
@@ -11240,6 +11276,8 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 	//Get Scene details
 	std::vector<std::vector<std::string> > result;
 	int nValue=(switchcmd=="On")?1:0;
+
+	m_sql.safe_query("INSERT INTO SceneLog (SceneRowID, nValue) VALUES ('%llu', '%d')", idx, nValue);
 
 	time_t now = time(0);
 	struct tm ltime;
