@@ -4184,11 +4184,11 @@ namespace http {
 						if (dtype == pTypeBlinds) {
 							dtype = pTypeGeneralSwitch;
 							if (subtype == sTypeBlindsT5) subtype = sSwitchTypeBofu;
-							if (subtype == sTypeBlindsT6) subtype = sSwitchTypeBrel;
-							if (subtype == sTypeBlindsT7) subtype = sSwitchTypeAOK;
-							if (subtype == sTypeBlindsT8) subtype = sSwitchTypeBofu;
-							if (subtype == sTypeBlindsT9) subtype = sSwitchTypeBrel;
-							if (subtype == sTypeBlindsT10) subtype = sSwitchTypeAOK;
+							else if (subtype == sTypeBlindsT6) subtype = sSwitchTypeBrel;
+							else if (subtype == sTypeBlindsT7) subtype = sSwitchTypeAOK;
+							else if (subtype == sTypeBlindsT8) subtype = sSwitchTypeBofu;
+							else if (subtype == sTypeBlindsT9) subtype = sSwitchTypeBrel;
+							else if (subtype == sTypeBlindsT10) subtype = sSwitchTypeAOK;
 							std::stringstream s_strid;
 							s_strid << std::hex << strtoul(devid.c_str(), NULL, 16);
 							unsigned long deviceid = 0;
@@ -4709,11 +4709,11 @@ namespace http {
 						if (dtype == pTypeBlinds) {
 							dtype = pTypeGeneralSwitch;
 							if (subtype == sTypeBlindsT5) subtype = sSwitchTypeBofu;
-							if (subtype == sTypeBlindsT6) subtype = sSwitchTypeBrel;
-							if (subtype == sTypeBlindsT7) subtype = sSwitchTypeAOK;
-							if (subtype == sTypeBlindsT8) subtype = sSwitchTypeBofu;
-							if (subtype == sTypeBlindsT9) subtype = sSwitchTypeBrel;
-							if (subtype == sTypeBlindsT10) subtype = sSwitchTypeAOK;
+							else if (subtype == sTypeBlindsT6) subtype = sSwitchTypeBrel;
+							else if (subtype == sTypeBlindsT7) subtype = sSwitchTypeAOK;
+							else if (subtype == sTypeBlindsT8) subtype = sSwitchTypeBofu;
+							else if (subtype == sTypeBlindsT9) subtype = sSwitchTypeBrel;
+							else if (subtype == sTypeBlindsT10) subtype = sSwitchTypeAOK;
 							std::stringstream s_strid;
 							s_strid << std::hex << strtoul(devid.c_str(), NULL, 16);
 							unsigned long deviceid = 0;
