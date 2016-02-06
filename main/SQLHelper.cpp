@@ -1763,19 +1763,34 @@ bool CSQLHelper::OpenDatabase()
 		if (dbversion < 97)
 		{
 			//Patch for pTypeLighting2/sTypeZWaveSwitch to pTypeGeneralSwitch/sSwitchGeneralSwitch
-			std::stringstream szQuery2;
-			std::vector<std::vector<std::string> > result;
+			std::stringstream szQuery,szQuery2;
+			std::vector<std::vector<std::string> > result, result2;
+			std::vector<std::string> sd;
 			result = query("SELECT ID FROM Hardware WHERE ([Type] = 9) OR ([Type] = 21)");
 			if (result.size() > 0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
 				for (itt = result.begin(); itt != result.end(); ++itt)
 				{
-					szQuery2.clear();
-					szQuery2.str("");
-					//#define sTypeZWaveSwitch 0xA1
-					szQuery2 << "UPDATE DeviceStatus SET [Type]=" << pTypeGeneralSwitch << ", SubType=" << sSwitchGeneralSwitch << " WHERE ([Type]=" << pTypeLighting2 << ") AND (SubType=" << 0xA1 << ") AND (HardwareID=" << result[0][0] << ")";
-					query(szQuery2.str());
+					sd = *itt;
+					szQuery.clear();
+					szQuery.str("");
+					szQuery << "SELECT ID, DeviceID FROM DeviceStatus WHERE ([Type]=" << pTypeLighting2 << ") AND (SubType=" << 0xA1 << ") AND (HardwareID=" << sd[0] << ")";
+					result2 = query(szQuery.str());
+					if (result2.size() > 0)
+					{
+						std::vector<std::vector<std::string> >::const_iterator itt2;
+						for (itt2 = result2.begin(); itt2 != result2.end(); ++itt2)
+						{
+							sd = *itt2;
+							std::string ndeviceid = "0" + sd[1];
+							szQuery2.clear();
+							szQuery2.str("");
+							//#define sTypeZWaveSwitch 0xA1
+							szQuery2 << "UPDATE DeviceStatus SET DeviceID='" << ndeviceid << "', [Type]=" << pTypeGeneralSwitch << ", SubType=" << sSwitchGeneralSwitch << " WHERE (ID=" << sd[0] << ")";
+							query(szQuery2.str());
+						}
+					}
 				}
 			}
 		}
