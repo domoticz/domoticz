@@ -532,6 +532,7 @@ bool CNetatmo::ParseDashboard(const Json::Value &root, const int DevIdx, const i
 		}
 		if (nforecast == wsbaroforcast_unknown)
 		{
+			nforecast = wsbaroforcast_some_clouds;
 			float pressure = baro;
 			if (pressure <= 980)
 				nforecast = wsbaroforcast_heavy_rain;
