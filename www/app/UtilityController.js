@@ -1185,7 +1185,7 @@ define(['app'], function (app) {
 								xhtm+='PV48.png" height="48" width="48"></td>\n';
 							}
 							else if (item.SwitchTypeVal==5) {
-								xhtm+='Time48.png" height="48" width="48"></td>\n';
+								xhtm+='clock48_On.png" height="48" width="48"></td>\n';
 							}
 							else {
 								xhtm+='Counter48.png" height="48" width="48"></td>\n';
