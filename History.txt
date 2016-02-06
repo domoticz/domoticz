@@ -25,6 +25,7 @@ Version 2.4xxx
 - Implemented: Philips Hue, support for stored Scenes (create them with an external app like Hue Pro)
 - Implemented: RFXCom support for Legrand CAD
 - Implemented: SBFSpot, support for multiple inverter instances
+- Implemented: Scene Log
 - Implemented: SolarEdge via Web API
 - Implemented: Temperature Tab room selector
 - Implemented: Thermosmart option to set specify outside temperature sensor
