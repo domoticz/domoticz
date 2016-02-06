@@ -2,7 +2,7 @@
 Domoticz Software : http://domoticz.com/
 File : Teleinfo.h
 Author : Nicolas HILAIRE
-Version : 1.3
+Version : 1.4
 Description : This class manage the Teleinfo Signal
 
 
@@ -11,6 +11,7 @@ History :
 - 2014-10-29 : Add 'EJP' contract (Laurent MEY)
 - 2014-12-13 : Add 'Tempo' contract (Kevin NICOLAS)
 - 2015-06-10 : Fix bug power divided by 2 (Christophe DELPECH)
+- 2016-02-05 : Fix bug power display with 'Tempo' contract (Anthony LAGUERRE)
 */
 
 #pragma once
@@ -91,6 +92,8 @@ public:
 	std::string m_szSerialPort;
 
 	P1Power   m_p1power;
+	P1Power   m_p2power;
+	P1Power   m_p3power;
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 private:
 	bool StartHardware();
@@ -109,6 +112,10 @@ private:
 
 	int m_counter;
 	bool m_bLabel_PAPP_Exist;
+	bool m_bLabel_PTEC_JB;
+	bool m_bLabel_PTEC_JW;
+	bool m_bLabel_PTEC_JR;
+	bool m_bLabel_Tempo;
 	static const int NumberOfFrameToSendOne = 8;
 
 	void Init();

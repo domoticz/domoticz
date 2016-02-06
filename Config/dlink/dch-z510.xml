@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- D-Link: DCH-Z510 Siren -->
+<Product xmlns="http://code.google.com/p/open-zwave/">
+ 
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value type="byte" index="7" genre="config" label="Customer Function" min="0" max="127" value="0">
+       <Help>
+          Bit 0: Reserved 
+          Bit 1: Reserved 
+          Bit 2: Reserved 
+          Bit 3: Reserved 
+          Bit 4: Notification type (0: Using Notification Report, 1: Using sensor Binary Report). 
+          Bit 5: Reserved
+          Bit 6: Reserved
+          Bit 7: Reserved
+       </Help>
+    </Value>
+    <Value type="list" index="29" genre="config" label="Disable Alarm" units="" min="0" max="1" value="0" size="1">
+      <Help>
+          Disable the alarm function.
+          0: Enable Alarm, 1:Disable Alarm,
+          Caution: After the power up, this configuration always be 0.
+       </Help>
+       <Item label="Enable Alarm" value="0" />
+       <Item label="Disable Alarm" value="1" />
+    </Value>
+    <Value type="byte" index="31" genre="config" label="31. Alarm Duration" units="30 sec" min="0" max="12" value="6">
+       <Help>
+          Play alarm sound duration.
+          1 tick is 30 second. Default is 3 minutes, maximum is 63.5 minutes.
+          0: means never auto stop
+       </Help>
+    </Value>
+  
+  </CommandClass>
+
+  <!-- Basic set as report -->
+  <!-- <CommandClass id="32" setasreport="true" ignoremapping="true"/> -->
+ 
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" max_associations="8" label="Group 1" auto="true"/>
+    </Associations>
+  </CommandClass>
+
+</Product>

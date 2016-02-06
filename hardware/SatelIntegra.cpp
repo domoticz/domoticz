@@ -923,7 +923,7 @@ std::string SatelIntegra::ISO2UTF8(const std::string &name)
 	char utf8[] = "\xC4\x85\xC4\x87\xC4\x99\xC5\x82\xC5\x84\xC3\xB3\xC5\x9B\xC5\xBA\xC5\xBC\xC4\x84\xC4\x86\xC4\x98\xC5\x81\xC5\x83\xC3\x93\xC5\x9A\xC5\xB9\xC5\xBB";
 
 	std::string UTF8Name;
-	for (int i = 0; i < name.length(); ++i)
+	for (size_t i = 0; i < name.length(); ++i)
 	{
 		bool changed = false;
 		for (int j = 0; j < sizeof(cp1250); ++j)

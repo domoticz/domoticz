@@ -158,7 +158,21 @@ MACRO(Gitversion_GET_REVISION dir variable)
 ENDMACRO(Gitversion_GET_REVISION)
 
 Gitversion_GET_REVISION(. ProjectRevision)
-MATH(EXPR ProjectRevision "${ProjectRevision}+2107")
+IF(NOT ProjectRevision)
+  MESSAGE(STATUS "Failed to get ProjectRevision from git")
+  IF(EXISTS appversion.h.txt)
+    MESSAGE(STATUS "Read ProjectRevision from appversion.h.txt")
+    FILE(STRINGS appversion.h.txt AppVersionContent)
+    LIST(GET AppVersionContent 0 AppVersionContent)
+    STRING(REPLACE " " ";" AppVersionContent ${AppVersionContent})
+    LIST(GET AppVersionContent 2 ProjectRevision)
+  ELSE(EXISTS appversion.h.txt)
+    MESSAGE(STATUS "No appversion.h.txt, set ProjectRevision to 0")
+    set (ProjectRevision 0)
+  ENDIF(EXISTS appversion.h.txt)
+ELSE(NOT ProjectRevision)
+  MATH(EXPR ProjectRevision "${ProjectRevision}+2107")
+ENDIF(NOT ProjectRevision)
 MESSAGE(STATUS "Compiling Revision #${ProjectRevision}")
 
 # The version number.
@@ -607,7 +621,9 @@ SET(CPACK_DEBIAN_ARCHITECTURE ${CMAKE_SYSTEM_PROCESSOR})
 
 INCLUDE(CPack)
 
-set(CMAKE_INSTALL_PREFIX "/opt/${CPACK_PACKAGE_NAME}" CACHE PATH "Install path prefix, prepended onto install directories." FORCE)
+IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  set(CMAKE_INSTALL_PREFIX "/opt/${CPACK_PACKAGE_NAME}" CACHE PATH "Install path prefix, prepended onto install directories." FORCE)
+ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 
 install(TARGETS domoticz DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/www DESTINATION ${CMAKE_INSTALL_PREFIX} USE_SOURCE_PERMISSIONS)
