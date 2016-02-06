@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 1196
+# ref 1197
 
 CACHE:
 # CSS
@@ -298,7 +298,6 @@ images/temperature.png
 images/temp-gt-30.png
 images/text.png
 images/text48.png
-images/Time48.png
 images/TV.png
 images/TV48_Off.png
 images/TV48_On.png
