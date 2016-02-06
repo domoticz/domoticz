@@ -192,11 +192,6 @@
 #define sTypeRego6XXStatus   0x02
 #define sTypeRego6XXCounter  0x03
 
-//Z-Wave
-//#define pTypeENERGY 0x5A
-#define sTypeZWaveUsage 0xA0
-#define sTypeZWaveSwitch 0xA1
-
 //types for evohome
 #define pTypeEvohome 0x45 
 #define sTypeEvohome 0x00 //Controller

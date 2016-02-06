@@ -537,7 +537,6 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLighting2, sTypeAC, "AC" },
 		{ pTypeLighting2, sTypeHEU, "HomeEasy EU" },
 		{ pTypeLighting2, sTypeANSLUT, "Anslut" },
-		{ pTypeLighting2, sTypeZWaveSwitch, "ZWave" },
 
 		{ pTypeLighting3, sTypeKoppla, "Ikea Koppla" },
 
@@ -618,7 +617,6 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 
 		{ pTypeENERGY, sTypeELEC2, "CM119 / CM160" },
 		{ pTypeENERGY, sTypeELEC3, "CM180" },
-		{ pTypeENERGY, sTypeZWaveUsage, "ZWave Usage" },
 
 		{ pTypeCURRENTENERGY, sTypeELEC4, "CM180i" },
 
@@ -851,7 +849,6 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeLighting2, sTypeHEU, "Status" },
 		{ pTypeLighting2, sTypeANSLUT, "Status" },
 		{ pTypeLighting2, sTypeKambrook, "Status" },
-		{ pTypeLighting2, sTypeZWaveSwitch, "Status" },
 
 		{ pTypeLighting3, sTypeKoppla, "Status" },
 
@@ -931,7 +928,6 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 
 		{ pTypeENERGY, sTypeELEC2, "Instant,Usage" },
 		{ pTypeENERGY, sTypeELEC3, "Instant,Usage" },
-		{ pTypeENERGY, sTypeZWaveUsage, "Instant,Usage" },
 
 		{ pTypeCURRENTENERGY, sTypeELEC4, "Current 1,Current 2,Current 3,Usage" },
 
@@ -1238,7 +1234,7 @@ void GetLightStatus(
 		break;
 	case pTypeLighting2:
 		// Determine max dim level based on switch type
-		maxDimLevel=(dSubType != sTypeZWaveSwitch) ? 15 : 100;
+		maxDimLevel = 15;
 
 		if (switchtype != STYPE_Media) {
 			// Calculate % that the light is currently on, taking the maxdimlevel into account.
@@ -1281,25 +1277,6 @@ void GetLightStatus(
 					lstatus=szTmp;
 				else
 					lstatus="Off";
-				break;
-			}
-			break;
-		case sTypeZWaveSwitch:
-			bHaveDimmer = true;
-			switch (nValue)
-			{
-			case light2_sOff:
-				lstatus = "Off";
-				break;
-			case light2_sOn:
-				lstatus = "On";
-				break;
-			case light2_sSetLevel:
-				sprintf(szTmp, "Set Level: %d %%", llevel);
-				if (sValue != "0")
-					lstatus = szTmp;
-				else
-					lstatus = "Off";
 				break;
 			}
 			break;
