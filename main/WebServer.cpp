@@ -8760,7 +8760,7 @@ namespace http {
                                 root["result"][ii]["Counter"] = szTmp;
                                 break;
 						case MTYPE_TIME:
-							sprintf(szTmp, "%.03f min", fvalue / WaterDivider);
+							sprintf(szTmp, "%i min", atoi(sValue.c_str()));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
