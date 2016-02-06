@@ -11276,6 +11276,8 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 	std::vector<std::vector<std::string> > result;
 	int nValue=(switchcmd=="On")?1:0;
 
+	m_sql.safe_query("INSERT INTO SceneLog (SceneRowID, nValue) VALUES ('%llu', '%d')", idx, nValue);
+
 	time_t now = time(0);
 	struct tm ltime;
 	localtime_r(&now,&ltime);

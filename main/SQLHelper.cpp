@@ -98,6 +98,12 @@ const char *sqlCreateLightingLog =
 "[sValue] VARCHAR(200), "
 "[Date] DATETIME DEFAULT (datetime('now','localtime')));";
 
+const char *sqlCreateSceneLog =
+"CREATE TABLE IF NOT EXISTS [SceneLog] ("
+"[SceneRowID] BIGINT(10) NOT NULL, "
+"[nValue] INTEGER DEFAULT 0, "
+"[Date] DATETIME DEFAULT (datetime('now','localtime')));";
+
 const char *sqlCreatePreferences =
 "CREATE TABLE IF NOT EXISTS [Preferences] ("
 "[Key] VARCHAR(50) NOT NULL, "
@@ -662,6 +668,7 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateEventActions);
 	query(sqlCreateEventActionsTrigger);
 	query(sqlCreateLightingLog);
+	query(sqlCreateSceneLog);
 	query(sqlCreatePreferences);
 	query(sqlCreateRain);
 	query(sqlCreateRain_Calendar);
@@ -719,6 +726,7 @@ bool CSQLHelper::OpenDatabase()
 	query("create index if not exists f_idx on Fan(DeviceRowID);");
 	query("create index if not exists fc_idx on Fan_Calendar(DeviceRowID);");
 	query("create index if not exists l_idx on LightingLog(DeviceRowID);");
+	query("create index if not exists s_idx on SceneLog(SceneRowID);");
 	query("create index if not exists m_idx on Meter(DeviceRowID);");
 	query("create index if not exists mc_idx on Meter_Calendar(DeviceRowID);");
 	query("create index if not exists mm_idx on MultiMeter(DeviceRowID);");
@@ -3495,7 +3503,7 @@ void CSQLHelper::ScheduleDay()
 		AddCalendarUpdateMultiMeter();
 		AddCalendarUpdatePercentage();
 		AddCalendarUpdateFan();
-		CleanupLightLog();
+		CleanupLightSceneLog();
 	}
 	catch (boost::exception & e)
 	{
@@ -5574,7 +5582,7 @@ void CSQLHelper::CheckAndUpdateSceneDeviceOrder()
 	}
 }
 
-void CSQLHelper::CleanupLightLog()
+void CSQLHelper::CleanupLightSceneLog()
 {
 	//cleanup the lighting log
 	int nMaxDays=30;
@@ -5600,9 +5608,8 @@ void CSQLHelper::CleanupLightLog()
 	localtime_r(&daybefore,&tm2);
 	sprintf(szDateEnd,"%04d-%02d-%02d %02d:%02d:00",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday,tm2.tm_hour,tm2.tm_min);
 
-	safe_query("DELETE FROM LightingLog WHERE (Date<'%q')",
-		szDateEnd
-		);
+	safe_query("DELETE FROM LightingLog WHERE (Date<'%q')", szDateEnd);
+	safe_query("DELETE FROM SceneLog WHERE (Date<'%q')", szDateEnd);
 }
 
 bool CSQLHelper::DoesSceneByNameExits(const std::string &SceneName)
