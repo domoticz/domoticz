@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Philio: PAN08-1 In Wall Roller Shutter Controller with Power Measurement -->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+
+	<!-- Configuration Parameters -->
+	<CommandClass id="112">
+		<Value type="short" instance="1" index="1" genre="config" label="Watt meter report period" min="1" max="32767" value="720">
+			<Help>Watt Meter Report Period. Unit: 5 seconds.</Help>
+		</Value>
+
+		<Value type="short" instance="1" index="2" genre="config" label="kWh meter report period" min="1" max="32767" value="6">
+			<Help>kWH Meter Report Period. Unit: 10 minutes.</Help>
+		</Value>
+
+		<Value type="short" instance="1" index="3" genre="config" label="Threshold of Watt for Load Caution" min="10" max="1100" value="1100">
+			 <Help>Threshold of Watt for Load Caution. Unit: 1 watt</Help>
+		</Value>
+
+		<Value type="short" instance="1" index="4" genre="config" label="Threshold of kWh for Load Caution" min="1" max="10000" value="10000">
+			 <Help>Threshold of kWH for Load Caution. Unit: 1 kWH</Help>
+		</Value>
+
+		<Value type="byte" instance="1" index="5" genre="config" label="External switch type" min="1" max="2" value="1">
+			 <Help>External switch type: 1-> One Push button, 2->Two Push button</Help>
+		</Value>
+
+		<Value type="byte" instance="1" index="6" genre="config" label="Level report mode" min="1" max="2" value="1">
+			 <Help>Level report mode: 1-> Report destination level in 5s, 2-> Report 10 percent level while running</Help>
+		</Value>
+	</CommandClass>
+	<CommandClass id="133">
+		<Associations num_groups="1">
+			<Group index="1" max_associations="1" label="Group 1" />
+		</Associations>
+	</CommandClass>
+
+</Product>

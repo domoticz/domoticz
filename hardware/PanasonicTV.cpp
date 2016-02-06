@@ -218,23 +218,14 @@ bool CPanasonicNode::handleConnect(boost::asio::ip::tcp::socket& socket, boost::
 			if (!ec)
 			{
 				if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Panasonic Plugin: (%s) Connected to '%s:%s'.", m_Name.c_str(), m_IP.c_str(), (m_Port[0] != '-' ? m_Port.c_str() : m_Port.substr(1).c_str()));
-				if (m_CurrentStatus.Status() != MSTAT_ON)
-				{
-					m_CurrentStatus.Clear();
-					m_CurrentStatus.Status(MSTAT_ON);
-					UpdateStatus();
-				}
 				return true;
 			}
 			else
 			{
-				if ((DEBUG_LOGGING) ||
-					((ec.value() != 113) && (ec.value() != 111) &&
+				if (DEBUG_LOGGING)
+					if (((ec.value() != 113) && (ec.value() != 111) &&
 						(ec.value() != 10060) && (ec.value() != 10061) && (ec.value() != 10064) && (ec.value() != 10061))) // Connection failed due to no response, no route or active refusal
 					_log.Log(LOG_NORM, "Panasonic Plugin: (%s) Connect to '%s:%s' failed: (%d) %s", m_Name.c_str(), m_IP.c_str(), (m_Port[0] != '-' ? m_Port.c_str() : m_Port.substr(1).c_str()), ec.value(), ec.message().c_str());
-				m_CurrentStatus.Clear();
-				m_CurrentStatus.Status(MSTAT_OFF);
-				UpdateStatus();
 				return false;
 			}
 		}
@@ -297,10 +288,10 @@ std::string CPanasonicNode::handleWriteAndRead(std::string pMessageToSend)
 		std::string pReceived(_Buffer.begin(), reply_length);
 		return pReceived;
 	}
-	catch (std::exception& e)
+	catch (...)
 	{
-		socket.close();
 		//_log.Log(LOG_ERROR, "Panasonic Plugin: (%s) Exception in Write/Read message: %s", m_Name.c_str(), e.what());
+		socket.close();
 		std::string error = "ERROR";
 		return error;
 	}
@@ -428,7 +419,22 @@ void CPanasonicNode::Do_Work()
 				_volReply = handleWriteAndRead(buildXMLStringRendCtl("Get", "Volume"));
 				if (_volReply != "ERROR")
 				{
-					m_CurrentStatus.Volume(handleMessage(_volReply));
+					int iVol = handleMessage(_volReply);
+					m_CurrentStatus.Volume(iVol);
+					if (m_CurrentStatus.Status() != MSTAT_ON && iVol > -1)
+					{
+						m_CurrentStatus.Status(MSTAT_ON);
+						UpdateStatus();
+					}
+				}
+				else
+				{
+					if (m_CurrentStatus.Status() != MSTAT_OFF)
+					{
+						m_CurrentStatus.Clear();
+						m_CurrentStatus.Status(MSTAT_OFF);
+						UpdateStatus();
+					}
 				}
 
 				//_muteReply = handleWriteAndRead(buildXMLStringRendCtl("Get", "Mute"));

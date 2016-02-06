@@ -31,7 +31,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 96
+#define DB_VERSION 97
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -398,7 +398,10 @@ const char *sqlCreateSetpointTimers =
 "[Type] INTEGER NOT NULL, "
 "[Temperature] FLOAT DEFAULT 0, "
 "[TimerPlan] INTEGER DEFAULT 0, "
-"[Days] INTEGER NOT NULL);";
+"[Days] INTEGER NOT NULL, "
+"[Month] INTEGER DEFAULT 0, "
+"[MDay] INTEGER DEFAULT 0, "
+"[Occurence] INTEGER DEFAULT 0);";
 
 const char *sqlCreateSharedDevices =
 "CREATE TABLE IF NOT EXISTS [SharedDevices] ("
@@ -1251,7 +1254,7 @@ bool CSQLHelper::OpenDatabase()
 			//Patch for new ZWave light sensor type
 			std::stringstream szQuery2;
 			std::vector<std::vector<std::string> > result;
-			result = query("SELECT ID FROM Hardware WHERE ([Type] = 21) OR ([Type] = 21)");
+			result = query("SELECT ID FROM Hardware WHERE ([Type] = 9) OR ([Type] = 21)");
 			if (result.size() > 0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
@@ -1259,7 +1262,8 @@ bool CSQLHelper::OpenDatabase()
 				{
 					szQuery2.clear();
 					szQuery2.str("");
-					szQuery2 << "UPDATE DeviceStatus SET SubType=" << sTypeZWaveSwitch << " WHERE ([Type]=" << pTypeLighting2 << ") AND (SubType=" << sTypeAC << ") AND (HardwareID=" << result[0][0] << ")";
+					//#define sTypeZWaveSwitch 0xA1
+					szQuery2 << "UPDATE DeviceStatus SET SubType=" << 0xA1 << " WHERE ([Type]=" << pTypeLighting2 << ") AND (SubType=" << sTypeAC << ") AND (HardwareID=" << result[0][0] << ")";
 					query(szQuery2.str());
 				}
 			}
@@ -1755,7 +1759,25 @@ bool CSQLHelper::OpenDatabase()
 			{
 				query("ALTER TABLE MobileDevices ADD COLUMN [Name] VARCHAR(100) DEFAULT ''");
 			}
-
+		}
+		if (dbversion < 97)
+		{
+			//Patch for pTypeLighting2/sTypeZWaveSwitch to pTypeGeneralSwitch/sSwitchGeneralSwitch
+			std::stringstream szQuery2;
+			std::vector<std::vector<std::string> > result;
+			result = query("SELECT ID FROM Hardware WHERE ([Type] = 9) OR ([Type] = 21)");
+			if (result.size() > 0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					szQuery2.clear();
+					szQuery2.str("");
+					//#define sTypeZWaveSwitch 0xA1
+					szQuery2 << "UPDATE DeviceStatus SET [Type]=" << pTypeGeneralSwitch << ", SubType=" << sSwitchGeneralSwitch << " WHERE ([Type]=" << pTypeLighting2 << ") AND (SubType=" << 0xA1 << ") AND (HardwareID=" << result[0][0] << ")";
+					query(szQuery2.str());
+				}
+			}
 		}
 	}
 	else if (bNewInstall)

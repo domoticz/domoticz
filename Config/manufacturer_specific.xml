@@ -190,6 +190,7 @@
 	</Manufacturer>
 	<Manufacturer id="0108" name="D-Link Corporation">
 		<Product type="0002" id="000e" name="DCH-Z110 Door/Window 3 in 1 sensor" config="dlink/dch-z110.xml"/>
+		<Product type="0004" id="000a" name="DCH-Z510 Siren" config="dlink/dch-z510.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0002" name="Danfoss">
 		<Product type="0005" id="0175" name="Devolo Home Control Radiator Thermostat" config="danfoss/z.xml"/>
@@ -285,6 +286,7 @@
 	<Manufacturer id="009f" name="Exigent">
 	</Manufacturer>
 	<Manufacturer id="0085" name="Fakro">
+		<Product type="0002" id="0002" name="ARZ Roof Window Roller Shutter" />
 	</Manufacturer>
 	<Manufacturer id="010f" name="FIBARO System">
 		<Product type="0501" id="0101" name="FGBS001 Universal Binary Sensor" config="fibaro/fgbs001.xml" />
@@ -396,7 +398,7 @@
 		<Product type="0001" id="0002" name="AS2-RF Thermostat Transmitter"/>
 		<Product type="0001" id="0003" name="HRT4-ZW Thermostat Transmitter" config="horstmann/hrt4zw.xml"/>
 		<Product type="0003" id="0001" name="ASR-ZW Thermostat Receiver"/>
-		<Product type="0004" id="0001" name="SCSC17 Thermostat"/>
+		<Product type="0004" id="0001" name="SCSC17 Thermostat" config="horstmann/scsc17.xml"/>
 		<Product type="000d" id="0001" name="SES 301 Temperature Sensor"/>
 		<Product type="000f" id="0001" name="SWM01 Water Meter Sensor"/>
 	</Manufacturer>
@@ -551,7 +553,7 @@
 		<Product type="0001" id="0001" name="PAN11-4 Smart Energy Plug In Switch"/>
 		<Product type="0001" id="0003" name="PAN04-1 Double Relay Switch 2x1.5kW with Power Measurement" config="philio/pan04.xml"/>
 		<Product type="0001" id="0004" name="PAN06-1 In Wall Dual Relay (1 Way) Switch Module"/>
-		<Product type="0001" id="0006" name="PAN08-1 In Wall Roller Shutter Controller"/>
+		<Product type="0001" id="0006" name="PAN08-1 In Wall Roller Shutter Controller" config="philio/pan08.xml" />
 		<Product type="0001" id="0012" name="PAN04-1 Double Relay Switch 2x1.5kW with Power Measurement" config="philio/pan04.xml"/>
 		<Product type="0002" id="0002" name="PSM02-1 Slim Multi-Sensor" config="philio/psm02.xml"/>
                 <Product type="0002" id="000c" name="PST02-A 4 in 1 Multi-Sensor" config="philio/pst02.xml"/>
@@ -805,6 +807,7 @@
 		<Product type="1000" id="0002" name="ZME_06433/05433 Wall Flush-Mountable Dimmer" config="zwave.me/ZME_06433.xml"/>
 		<Product type="1000" id="0003" name="ZME_06436 Motor Control" config="zwave.me/ZME_06436.xml" />
 		<Product type="1000" id="0004" name="ZME_064435 Wall Controller" config="zwave.me/ZME_064435.xml"/>
+                <Product type="1000" id="0100" name="ZME_05461 Dual Load Wall Switch" config="zwave.me/ZME_05461.xml"/>
 		<Product type="1000" id="0200" name="ZME_064381 IP44 Plug-in Switch" config="zwave.me/ZME_064381.xml"/>
 		<Product type="1100" id="0002" name="PLDE Plug-in Dimmer"/>
 	</Manufacturer>
