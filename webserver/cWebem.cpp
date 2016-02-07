@@ -992,7 +992,6 @@ WebEmSession * cWebem::GetSession(const std::string & ssid) {
 void cWebem::AddSession(const WebEmSession & session) {
 	boost::mutex::scoped_lock lock(m_sessionsMutex);
 	m_sessions[session.id] = session;
-	//_log.Log(LOG_STATUS, "[web:%s] AddSession: %s (thread %s)", myPort.c_str(), session.id.c_str(), boost::lexical_cast<std::string>(boost::this_thread::get_id()).c_str());
 }
 
 void cWebem::RemoveSession(const WebEmSession & session) {
@@ -1004,7 +1003,6 @@ void cWebem::RemoveSession(const std::string & ssid) {
 	std::map<std::string, WebEmSession>::iterator itt = m_sessions.find(ssid);
 	if (itt != m_sessions.end()) {
 		m_sessions.erase(itt);
-		//_log.Log(LOG_STATUS, "[web:%s] RemoveSession: %s (thread %s)", myPort.c_str(), ssid.c_str(), boost::lexical_cast<std::string>(boost::this_thread::get_id()).c_str());
 	}
 }
 
@@ -1046,7 +1044,6 @@ void cWebem::CleanSessions() {
 			i += 1;
 		}
 	}
-	//_log.Log(LOG_STATUS, "[web:%s] CleanSessions: %d -> %d [%s] (thread %s)", myPort.c_str(), before, after, ss.str().c_str(), boost::lexical_cast<std::string>(boost::this_thread::get_id()).c_str());
 	// Clean up expired sessions from database in order to avoid to wait for the domoticz restart (long time running instance)
 	if (mySessionStore != NULL) {
 		this->mySessionStore->CleanSessions();
