@@ -4786,6 +4786,11 @@ void CSQLHelper::AddCalendarUpdateMeter()
 					if (musage!=0)
 						m_notifications.CheckAndHandleNotification(ID, devname, devType, subType, NTYPE_TODAYCOUNTER, musage);
 					break;
+				case MTYPE_TIME:
+					musage = float(total_real);
+					if (musage != 0)
+						m_notifications.CheckAndHandleNotification(ID, devname, devType, subType, NTYPE_TODAYTIME, musage);
+					break;
 				}
 			}
 			else
