@@ -427,8 +427,13 @@ bool MainWorker::GetSunSettings()
 	std::vector<std::string> strarray;
 	StringSplit(sValue, ";", strarray);
 
-	if (strarray.size()!=2)
+	if (strarray.size() != 2)
+	{
+		// No location entered in the settings, lets just reload our schedules and return
+		// Load non sun settings timers 
+		m_scheduler.ReloadSchedules();
 		return false;
+	}
 
 	std::string Latitude=strarray[0];
 	std::string Longitude=strarray[1];
@@ -9908,12 +9913,10 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 	if (switchcmd=="Set Level")
 	{
 		if (
-			(level > 0) && 
-			(switchtype != STYPE_Selector) &&
-			((dType==pTypeGeneralSwitch)&&(dSubType != sSwitchGeneralSwitch))
+			(level > 0) &&
+			(switchtype != STYPE_Selector)
 			)
 		{
-			//GizMoCuz: Who did this and why?
 			level -= 1;
 		}
 		if (level==0)
