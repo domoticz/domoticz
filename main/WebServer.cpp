@@ -2011,7 +2011,7 @@ namespace http {
 			}
 			else
 			{
-				root["HaveUpdate"] = m_mainworker.IsUpdateAvailable(true);
+				root["HaveUpdate"] = m_mainworker.IsUpdateAvailable(false);
 				root["DomoticzUpdateURL"] = m_mainworker.m_szDomoticzUpdateURL;
 				root["SystemName"] = m_mainworker.m_szSystemName;
 				root["Revision"] = m_mainworker.m_iRevision;

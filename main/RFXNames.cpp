@@ -469,7 +469,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeTEMP, sTypeTEMP4, "RTHN318" },
 		{ pTypeTEMP, sTypeTEMP5, "LaCrosse TX3" },
 		{ pTypeTEMP, sTypeTEMP6, "TS15C" },
-		{ pTypeTEMP, sTypeTEMP7, "Viking 02811, Proove TSS330" },
+		{ pTypeTEMP, sTypeTEMP7, "Viking 02811/02813, Proove TSS330" },
 		{ pTypeTEMP, sTypeTEMP8, "LaCrosse WS2300" },
 		{ pTypeTEMP, sTypeTEMP9, "RUBiCSON" },
 		{ pTypeTEMP, sTypeTEMP10, "TFA 30.3133" },

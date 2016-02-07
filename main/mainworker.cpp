@@ -9907,12 +9907,10 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 	if (switchcmd=="Set Level")
 	{
 		if (
-			(level > 0) && 
-			(switchtype != STYPE_Selector) &&
-			((dType==pTypeGeneralSwitch)&&(dSubType != sSwitchGeneralSwitch))
+			(level > 0) &&
+			(switchtype != STYPE_Selector)
 			)
 		{
-			//GizMoCuz: Who did this and why?
 			level -= 1;
 		}
 		if (level==0)
