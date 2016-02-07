@@ -13,7 +13,6 @@ and the Eclipse Distribution License is available at
 Contributors:
    Roger Light - initial implementation and documentation.
 */
-#include "stdafx.h"
 
 #include <cstdlib>
 #include "mosquitto.h"
