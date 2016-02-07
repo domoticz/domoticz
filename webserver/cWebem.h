@@ -40,7 +40,6 @@ namespace http {
 			int rights;
 			bool rememberme;
 			bool isnew;
-			bool removecookie;
 			bool forcelogin;
 			std::string lastRequestPath;
 			std::string outputfilename;

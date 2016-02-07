@@ -1329,14 +1329,17 @@ void cWebemRequestHandler::send_cookie(reply& rep, const WebEmSession & session)
 
 void cWebemRequestHandler::send_authorization_request(reply& rep)
 {
+	rep = reply::stock_reply(reply::unauthorized);
 	rep.status = reply::unauthorized;
-	reply::AddHeader(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
-	char szAuthHeader[200];
-	sprintf(szAuthHeader,
-		"Basic "
-		"realm=\"%s\"",
-		myWebem->m_DigistRealm.c_str());
-	reply::AddHeader(&rep, "WWW-Authenticate", szAuthHeader);
+	send_remove_cookie(rep);
+	if (myWebem->m_authmethod == AUTH_BASIC) {
+		char szAuthHeader[200];
+		sprintf(szAuthHeader,
+			"Basic "
+			"realm=\"%s\"",
+			myWebem->m_DigistRealm.c_str());
+		reply::AddHeader(&rep, "WWW-Authenticate", szAuthHeader);
+	}
 }
 
 bool cWebemRequestHandler::CompressWebOutput(const request& req, reply& rep)
@@ -1384,11 +1387,8 @@ bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const req
 	if (session.forcelogin)
 	{
 		session.forcelogin = false;
-		if (myWebem->m_authmethod == AUTH_BASIC)
-		{
-			send_authorization_request(rep);
-			return false;
-		}
+		send_authorization_request(rep);
+		return false;
 	}
 
 	if (myWebem->m_userpasswords.size() == 0)
@@ -1452,18 +1452,13 @@ bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const req
 			{
 				//expired session, remove session
 				m_failcounter = 0;
-				send_remove_cookie(rep);
 				if (oldSession != NULL)
 				{
 					// session exists (delete it from memory and database)
 					myWebem->RemoveSession(sSID);
 					removeAuthToken(sSID);
-					rep = reply::stock_reply(reply::unauthorized);
 				}
-				if (myWebem->m_authmethod == AUTH_BASIC)
-				{
-					send_authorization_request(rep);
-				}
+				send_authorization_request(rep);
 				return false;
 			}
 			if (oldSession != NULL) {
@@ -1474,19 +1469,22 @@ bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const req
 				session.id = sSID;
 			}
 			session.auth_token = sAuthToken;
-			session.removecookie = false;
 			// Check authen_token and restore session
 			if (checkAuthToken(session)) {
 				// user is authenticated
 				return true;
 			}
-			rep = reply::stock_reply(reply::unauthorized);
-			send_remove_cookie(rep);
+
+			send_authorization_request(rep);
 			return false;
 
 		} else {
-			//invalid cookie
-			session.removecookie = true;
+			// invalid cookie
+			if (myWebem->m_authmethod != AUTH_BASIC) {
+				// Force login form
+				send_authorization_request(rep);
+				return false;
+			}
 		}
 	}
 
@@ -1527,11 +1525,7 @@ bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const req
 			return true;
 	}
 
-	rep = reply::stock_reply(reply::unauthorized);
-	if (session.removecookie)
-	{
-		send_remove_cookie(rep);
-	}
+	send_authorization_request(rep);
 	return false;
 }
 
@@ -1624,7 +1618,6 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 	WebEmSession session;
 	session.remote_host = req.host;
 	session.isnew = false;
-	session.removecookie = false;
 	session.forcelogin = false;
 	session.rememberme = false;
 
@@ -1660,9 +1653,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 		session.username = "";
 		session.rights = -1;
 		session.forcelogin = true;
-		_log.Log(LOG_ERROR, "[web:%s] Setting removecookie = true", myWebem->GetPort().c_str());
-		session.removecookie = true;
-		bCheckAuthentication = false; // do not authenticate the user, just logout
+		_log.Log(LOG_STATUS, "[web:%s] Force login", myWebem->GetPort().c_str());
 	}
 
 	// Check user authentication on each page or action, if it exists.
@@ -1779,12 +1770,6 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 		session.isnew = false;
 		myWebem->AddSession(session);
 		send_cookie(rep, session);
-	}
-	else if (session.removecookie == true)
-	{
-		// Invalid cookie, unauthorized or logout
-		removeAuthToken(session.id);
-		send_remove_cookie(rep);
 	}
 	else if (session.id.size() > 0)
 	{
