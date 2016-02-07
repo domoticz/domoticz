@@ -7,7 +7,6 @@ CMakeFiles
 *.cmake
 *.a
 CMakeCache.txt
-appversion.h*
 domoticz
 stdafx.h.gch
 .DS_Store

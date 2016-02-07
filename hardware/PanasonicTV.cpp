@@ -288,10 +288,10 @@ std::string CPanasonicNode::handleWriteAndRead(std::string pMessageToSend)
 		std::string pReceived(_Buffer.begin(), reply_length);
 		return pReceived;
 	}
-	catch (std::exception& e)
+	catch (...)
 	{
-		socket.close();
 		//_log.Log(LOG_ERROR, "Panasonic Plugin: (%s) Exception in Write/Read message: %s", m_Name.c_str(), e.what());
+		socket.close();
 		std::string error = "ERROR";
 		return error;
 	}

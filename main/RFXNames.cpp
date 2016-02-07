@@ -259,6 +259,7 @@ const char *Meter_Type_Desc(const _eMeterType sType)
 		{ MTYPE_WATER, "Water" },
 		{ MTYPE_COUNTER, "Counter" },
 		{ MTYPE_ENERGY_GENERATED, "Energy Generated" },
+		{ MTYPE_TIME, "Time" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, sType);
@@ -294,6 +295,7 @@ const char *Notification_Type_Desc(const int nType, const unsigned char snum)
 		{ NTYPE_PAUSED, "Pause Stream", "Y" },
 		{ NTYPE_STOPPED, "Stop Stream", "Q" },
 		{ NTYPE_PLAYING, "Play Stream", "a" },
+		{ NTYPE_TODAYTIME, "Today", "m" },
 		{  0,NULL,NULL }
 	};
 	if (snum==0)
@@ -332,6 +334,7 @@ const char *Notification_Type_Label(const int nType)
 		{ NTYPE_PAUSED, "" },
 		{ NTYPE_STOPPED, "" },
 		{ NTYPE_PLAYING, "" },
+		{ NTYPE_TODAYTIME, "min" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, nType);
@@ -469,7 +472,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeTEMP, sTypeTEMP4, "RTHN318" },
 		{ pTypeTEMP, sTypeTEMP5, "LaCrosse TX3" },
 		{ pTypeTEMP, sTypeTEMP6, "TS15C" },
-		{ pTypeTEMP, sTypeTEMP7, "Viking 02811, Proove TSS330" },
+		{ pTypeTEMP, sTypeTEMP7, "Viking 02811/02813, Proove TSS330" },
 		{ pTypeTEMP, sTypeTEMP8, "LaCrosse WS2300" },
 		{ pTypeTEMP, sTypeTEMP9, "RUBiCSON" },
 		{ pTypeTEMP, sTypeTEMP10, "TFA 30.3133" },
@@ -532,12 +535,11 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLighting1, sTypeEnergenie, "Energenie" },
 		{ pTypeLighting1, sTypeEnergenie5, "Energenie 5-gang" },
 		{ pTypeLighting1, sTypeGDR2, "COCO GDR2" },
-
+		{ pTypeLighting1, sTypeHQ, "HQ COCO-20" },
 
 		{ pTypeLighting2, sTypeAC, "AC" },
 		{ pTypeLighting2, sTypeHEU, "HomeEasy EU" },
 		{ pTypeLighting2, sTypeANSLUT, "Anslut" },
-		{ pTypeLighting2, sTypeZWaveSwitch, "ZWave" },
 
 		{ pTypeLighting3, sTypeKoppla, "Ikea Koppla" },
 
@@ -557,6 +559,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLighting5, sTypeRGB432W, "RGB432W" },
 		{ pTypeLighting5, sTypeMDREMOTE107, "MDRemote 107" },
 		{ pTypeLighting5, sTypeLegrandCAD, "Legrand CAD" },
+		{ pTypeLighting5, sTypeAvantek, "Avantek" },
 
 		{ pTypeLighting6, sTypeBlyss, "Blyss" },
 
@@ -575,6 +578,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeBlinds, sTypeBlindsT8, "Chamberlain CS4330CN" },
 		{ pTypeBlinds, sTypeBlindsT9, "Sunpery" },
 		{ pTypeBlinds, sTypeBlindsT10, "Dolat DLM-1" },
+		{ pTypeBlinds, sTypeBlindsT11, "ASP" },
 
 		{ pTypeSecurity1, sTypeSecX10, "X10 security" },
 		{ pTypeSecurity1, sTypeSecX10M, "X10 security motion" },
@@ -618,7 +622,6 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 
 		{ pTypeENERGY, sTypeELEC2, "CM119 / CM160" },
 		{ pTypeENERGY, sTypeELEC3, "CM180" },
-		{ pTypeENERGY, sTypeZWaveUsage, "ZWave Usage" },
 
 		{ pTypeCURRENTENERGY, sTypeELEC4, "CM180i" },
 
@@ -671,7 +674,6 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneral, sTypeCounterIncremental, "Counter Incremental" },
 		{ pTypeGeneral, sTypeKwh, "kWh" },
 		{ pTypeGeneral, sTypeWaterflow, "Waterflow" },
-		{ pTypeGeneral, sTypeSwitch, "Switch" },
 
 		{ pTypeThermostat, sTypeThermSetpoint, "SetPoint" },
 		{ pTypeThermostat, sTypeThermTemperature, "Temperature" },
@@ -767,6 +769,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchTypeVMC, "VMC" },
 		{ pTypeGeneralSwitch, sSwitchTypeKeeloq, "Keeloq" },
 		{ pTypeGeneralSwitch, sSwitchCustomSwitch, "CustomSwitch" },
+		{ pTypeGeneralSwitch, sSwitchGeneralSwitch, "Switch" },
 		{  0,0,NULL }
 	};
 	return findTableID1ID2(Table, dType, sType);
@@ -845,13 +848,12 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeLighting1, sTypeEnergenie, "Status" },
 		{ pTypeLighting1, sTypeEnergenie5, "Status" },
 		{ pTypeLighting1, sTypeGDR2, "Status" },
-
+		{ pTypeLighting1, sTypeHQ, "Status" },
 
 		{ pTypeLighting2, sTypeAC, "Status" },
 		{ pTypeLighting2, sTypeHEU, "Status" },
 		{ pTypeLighting2, sTypeANSLUT, "Status" },
 		{ pTypeLighting2, sTypeKambrook, "Status" },
-		{ pTypeLighting2, sTypeZWaveSwitch, "Status" },
 
 		{ pTypeLighting3, sTypeKoppla, "Status" },
 
@@ -871,6 +873,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeLighting5, sTypeRGB432W, "Status" },
 		{ pTypeLighting5, sTypeMDREMOTE107, "Status" },
 		{ pTypeLighting5, sTypeLegrandCAD, "Status" },
+		{ pTypeLighting5, sTypeAvantek, "Status" },
 
 		{ pTypeLighting6, sTypeBlyss, "Status" },
 
@@ -889,6 +892,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeBlinds, sTypeBlindsT8, "Status" },
 		{ pTypeBlinds, sTypeBlindsT9, "Status" },
 		{ pTypeBlinds, sTypeBlindsT10, "Status" },
+		{ pTypeBlinds, sTypeBlindsT11, "Status" },
 
 		{ pTypeSecurity1, sTypeSecX10, "Status" },
 		{ pTypeSecurity1, sTypeSecX10M, "Status" },
@@ -931,7 +935,6 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 
 		{ pTypeENERGY, sTypeELEC2, "Instant,Usage" },
 		{ pTypeENERGY, sTypeELEC3, "Instant,Usage" },
-		{ pTypeENERGY, sTypeZWaveUsage, "Instant,Usage" },
 
 		{ pTypeCURRENTENERGY, sTypeELEC4, "Current 1,Current 2,Current 3,Usage" },
 
@@ -984,7 +987,6 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeGeneral, sTypeCounterIncremental, "Counter Incremental" },
 		{ pTypeGeneral, sTypeKwh, "Instant,Usage" },
 		{ pTypeGeneral, sTypeWaterflow, "Percentage" },
-		{ pTypeGeneral, sTypeSwitch, "Status" },
 
 		{ pTypeThermostat, sTypeThermSetpoint, "Temperature" },
 		{ pTypeThermostat, sTypeThermTemperature, "Temperature" },
@@ -1200,6 +1202,7 @@ void GetLightStatus(
 		case sTypeEnergenie:
 		case sTypeEnergenie5:
 		case sTypeGDR2:
+		case sTypeHQ:
 			bHaveGroupCmd=true;
 			switch (nValue)
 			{
@@ -1239,7 +1242,7 @@ void GetLightStatus(
 		break;
 	case pTypeLighting2:
 		// Determine max dim level based on switch type
-		maxDimLevel=(dSubType != sTypeZWaveSwitch) ? 15 : 100;
+		maxDimLevel = 15;
 
 		if (switchtype != STYPE_Media) {
 			// Calculate % that the light is currently on, taking the maxdimlevel into account.
@@ -1282,25 +1285,6 @@ void GetLightStatus(
 					lstatus=szTmp;
 				else
 					lstatus="Off";
-				break;
-			}
-			break;
-		case sTypeZWaveSwitch:
-			bHaveDimmer = true;
-			switch (nValue)
-			{
-			case light2_sOff:
-				lstatus = "Off";
-				break;
-			case light2_sOn:
-				lstatus = "On";
-				break;
-			case light2_sSetLevel:
-				sprintf(szTmp, "Set Level: %d %%", llevel);
-				if (sValue != "0")
-					lstatus = szTmp;
-				else
-					lstatus = "Off";
 				break;
 			}
 			break;
@@ -1559,48 +1543,6 @@ void GetLightStatus(
 			break;
 		}
 		break;
-	case pTypeGeneral:
-		switch (dSubType)
-		{
-			case sTypeSwitch:
-			{
-				maxDimLevel = 100;
-				bHaveDimmer = true;
-				llevel = (int)float((100.0f / float(maxDimLevel))*atof(sValue.c_str()));
-				bHaveGroupCmd = true;
-				switch (nValue)
-				{
-				case gswitch_sOff:
-					lstatus = "Off";
-					break;
-				case gswitch_sOn:
-					lstatus = "On";
-					break;
-				case gswitch_sSetLevel:
-					sprintf(szTmp, "Set Level: %d %%", llevel);
-					if (sValue != "0")
-						lstatus = szTmp;
-					else
-						lstatus = "Off";
-					break;
-				case gswitch_sGroupOff:
-					lstatus = "Group Off";
-					break;
-				case gswitch_sGroupOn:
-					lstatus = "Group On";
-					break;
-				case gswitch_sSetGroupLevel:
-					sprintf(szTmp, "Set Group Level: %d %%", atoi(sValue.c_str()));
-					if (sValue != "0")
-						lstatus = szTmp;
-					else
-						lstatus = "Off";
-					break;
-				}
-			}
-			break;
-		}
-		break;
 	case pTypeGeneralSwitch:
 		maxDimLevel = 100;
 
@@ -1614,6 +1556,7 @@ void GetLightStatus(
 		case sTypeHEU:
 		case sTypeANSLUT:
 		case sSwitchTypeSelector:
+		case sSwitchGeneralSwitch:
 			bHaveDimmer = true;
 			bHaveGroupCmd = true;
 			break;
@@ -2409,106 +2352,6 @@ bool GetLightCommand(
 		}
 		else
 			return false;
-		break;
-	case pTypeGeneral:
-		switch (dSubType)
-		{
-			case sTypeSwitch:
-				{
-					if (switchtype == STYPE_Doorbell)
-					{
-						if ((switchcmd == "On") || (switchcmd == "Group On"))
-						{
-							cmd = gswitch_sGroupOn;
-							return true;
-						}
-						//no other combinations for the door switch
-						return false;
-					}
-					else if (switchtype == STYPE_X10Siren)
-					{
-						if ((switchcmd == "On") || (switchcmd == "Group On"))
-						{
-							cmd = gswitch_sGroupOn;
-							return true;
-						}
-						else if ((switchcmd == "Off") || (switchcmd == "Group Off"))
-						{
-							cmd = gswitch_sGroupOff;
-							return true;
-						}
-						return false;
-					}
-					if (switchcmd == "Off")
-					{
-						cmd = gswitch_sOff;
-						return true;
-					}
-					else if (switchcmd == "On")
-					{
-						cmd = gswitch_sOn;
-						return true;
-					}
-					else if (switchcmd == "Set Level")
-					{
-						cmd = gswitch_sSetLevel;
-						return true;
-					}
-					else if (switchcmd == "Group Off")
-					{
-						cmd = gswitch_sGroupOff;
-						return true;
-					}
-					else if (switchcmd == "Group On")
-					{
-						cmd = gswitch_sGroupOn;
-						return true;
-					}
-					else if (switchcmd == "Set Group Level")
-					{
-						cmd = gswitch_sSetGroupLevel;
-						return true;
-					}
-					else if (switchcmd == "Stop")
-					{
-						cmd = gswitch_sStop;
-						return true;
-					}
-					else if ((switchcmd == "Paused") || (switchcmd == "Pause"))
-					{
-						cmd = gswitch_sPause;
-						return true;
-					}
-					else if ((switchcmd == "Playing") || (switchcmd == "Play"))
-					{
-						cmd = gswitch_sPlay;
-						return true;
-					}
-					else if (switchcmd == "Play Playlist")
-					{
-						cmd = gswitch_sPlayPlaylist;
-						return true;
-					}
-					else if (switchcmd == "Play Favorites")
-					{
-						cmd = gswitch_sPlayFavorites;
-						return true;
-					}
-					else if (switchcmd == "Set Volume")
-					{
-						cmd = gswitch_sSetVolume;
-						return true;
-					}
-					else if (switchcmd == "Execute")
-					{
-						cmd = gswitch_sExecute;
-						return true;
-					}
-					else
-						return false;
-				}
-				break;
-		}
 		break;
 	case pTypeGeneralSwitch:
 		if (switchtype == STYPE_Doorbell)
