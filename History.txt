@@ -2,10 +2,12 @@ Version 2.4xxx
 - Implemented: Blockly, now possible to use expressions in notifications/email/SMS like "My temperature is {{temperaturedevice[1234]}} degrees" (see http://www.domoticz.com/wiki/Events)
 - Implemented: Blockly, now possible to send a notification with a user variable/device as subject/body
 - Implemented: Chinese language support, big thanks to wxws!!
+- Implemented: CounterType 'Time'
 - Implemented: Day display in energy/gas/water/temp report
 - Implemented: Dummy Hardware, Option to supply name, sensor is now also directly added to the system
 - Implemented: Dummy Hardware, Wind+Temp+Chill
 - Implemented: Dummy Hardware, option to create an RGBW switch
+- Implemented: Extra timer-schedules: Odd/Even Days, Odd/Even Weeks, Monthly & Yearly
 - Implemented: Icelandic language support, big thanks to Magnus!!
 - Implemented: Log View, added options to display All/Status/Error
 - Implemented: Macedonian translation (Big thanks to jocogvg!!!)
@@ -25,6 +27,7 @@ Version 2.4xxx
 - Implemented: Philips Hue, support for stored Scenes (create them with an external app like Hue Pro)
 - Implemented: RFXCom support for Legrand CAD
 - Implemented: SBFSpot, support for multiple inverter instances
+- Implemented: Scene Log
 - Implemented: SolarEdge via Web API
 - Implemented: Temperature Tab room selector
 - Implemented: Thermosmart option to set specify outside temperature sensor

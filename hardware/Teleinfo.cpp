@@ -11,6 +11,7 @@ History :
 - 2014-10-29 : Add 'EJP' contract (Laurent MEY)
 - 2014-12-13 : Add 'Tempo' contract (Kevin NICOLAS)
 - 2015-06-10 : Fix bug power divided by 2 (Christophe DELPECH)
+- 2016-02-05 : Fix bug power display with 'Tempo' contract (Anthony LAGUERRE)
 */
 
 #include "stdafx.h"
@@ -110,11 +111,23 @@ void Teleinfo::Init()
 
 	memset(&m_buffer, 0, sizeof(m_buffer));
 	memset(&m_p1power, 0, sizeof(m_p1power));
+	memset(&m_p2power, 0, sizeof(m_p2power));
+	memset(&m_p3power, 0, sizeof(m_p3power));
 
 	m_p1power.len = sizeof(P1Power) - 1;
 	m_p1power.type = pTypeP1Power;
 	m_p1power.subtype = sTypeP1Power;
 	m_p1power.ID = 1;
+	
+	m_p2power.len = sizeof(P1Power) - 1;
+	m_p2power.type = pTypeP1Power;
+	m_p2power.subtype = sTypeP1Power;
+	m_p2power.ID = 2;
+	
+	m_p3power.len = sizeof(P1Power) - 1;
+	m_p3power.type = pTypeP1Power;
+	m_p3power.subtype = sTypeP1Power;
+	m_p3power.ID = 3;
 
 	m_counter = 0;
 }
@@ -221,6 +234,7 @@ void Teleinfo::MatchLine()
 			value[t.width] = 0;
 		}
 		unsigned long ulValue = (unsigned long)atoi(value);
+		vString = value;
 		switch (t.type)
 		{
 		case TELEINFO_TYPE_ADCO:
@@ -233,6 +247,15 @@ void Teleinfo::MatchLine()
 			*/
 			break;
 		case TELEINFO_TYPE_OPTARIF:
+			if (vString.substr (0,3) == "BBR")
+                        {
+                                m_bLabel_Tempo = true;
+                        }
+                        else
+                        {
+                                m_bLabel_Tempo = false;
+                        }
+
 			break;
 		case TELEINFO_TYPE_ISOUSC:
 			break;
@@ -266,21 +289,40 @@ void Teleinfo::MatchLine()
 			break;
 		case TELEINFO_TYPE_BBRHCJW:
 			if (ulValue != 0)
-				m_p1power.powerusage2 = ulValue;
+				m_p2power.powerusage2 = ulValue;
 			break;
 		case TELEINFO_TYPE_BBRHPJW:
 			if (ulValue != 0)
-				m_p1power.powerusage1 = ulValue;
+				m_p2power.powerusage1 = ulValue;
 			break;
 		case TELEINFO_TYPE_BBRHCJR:
 			if (ulValue != 0)
-				m_p1power.powerusage2 = ulValue;
+				m_p3power.powerusage2 = ulValue;
 			break;
 		case TELEINFO_TYPE_BBRHPJR:
 			if (ulValue != 0)
-				m_p1power.powerusage1 = ulValue;
+				m_p3power.powerusage1 = ulValue;
 			break;
 		case TELEINFO_TYPE_PTEC:
+			 if (vString.substr (2,2) == "JB")
+                        {
+                                m_bLabel_PTEC_JB = true;
+                                m_bLabel_PTEC_JW = false;
+                                m_bLabel_PTEC_JR = false;
+                        }
+                        else if (vString.substr (2,2) == "JW")
+                        {
+                                m_bLabel_PTEC_JB = false;
+                                m_bLabel_PTEC_JW = true;
+                                m_bLabel_PTEC_JR = false;
+                        }
+                        else if (vString.substr (2,2) == "JR")
+                        {
+                                m_bLabel_PTEC_JB = false;
+                                m_bLabel_PTEC_JW = false;
+                                m_bLabel_PTEC_JR = true;
+                        }
+
 			break;
 		case TELEINFO_TYPE_IINST:
 			//we convert A to W setting RFXMeter/Counter Dividers Energy to 1000 / voltage => 1000/230 = 4.35
@@ -290,7 +332,25 @@ void Teleinfo::MatchLine()
 			break;
 		case TELEINFO_TYPE_PAPP:
 			//we count to prevent add each block but only one every 10 seconds
-			m_p1power.usagecurrent += ulValue;
+			if (m_bLabel_PTEC_JW == true)
+                        {
+                        m_p1power.usagecurrent = 0;
+                        m_p2power.usagecurrent += ulValue;
+                        m_p3power.usagecurrent = 0;
+                        }
+                        else if (m_bLabel_PTEC_JR == true)
+                        {
+                        m_p1power.usagecurrent = 0;
+                        m_p2power.usagecurrent = 0;
+                        m_p3power.usagecurrent += ulValue;
+                        }
+                        else
+                        {
+                        m_p1power.usagecurrent += ulValue;
+                        m_p2power.usagecurrent = 0;
+                        m_p3power.usagecurrent = 0;
+                        }
+
 			m_counter++;
 			m_bLabel_PAPP_Exist = true;
 			if (m_counter >= NumberOfFrameToSendOne)
@@ -300,10 +360,19 @@ void Teleinfo::MatchLine()
 				//_log.Log(LOG_NORM,"powerusage2 = %lu", m_p1power.powerusage2);
 				//_log.Log(LOG_NORM,"usagecurrent = %lu", m_p1power.usagecurrent);
 				m_p1power.usagecurrent /= m_counter;
-				sDecodeRXMessage(this, (const unsigned char *)&m_p1power, NULL, 255);
-				m_counter = 0;
-				m_p1power.usagecurrent = 0;
-			}
+                                m_p2power.usagecurrent /= m_counter;
+                                m_p3power.usagecurrent /= m_counter;
+                                sDecodeRXMessage(this, (const unsigned char *)&m_p1power, NULL, 255);
+                                if (m_bLabel_Tempo == true)
+                                {
+                                        sDecodeRXMessage(this, (const unsigned char *)&m_p2power, NULL, 255);
+                                        sDecodeRXMessage(this, (const unsigned char *)&m_p3power, NULL, 255);
+                                }
+                                m_counter = 0;
+                                m_p1power.usagecurrent = 0;
+                                m_p2power.usagecurrent = 0;
+                                m_p3power.usagecurrent = 0;
+                        }
 			break;
 		case TELEINFO_TYPE_MOTDETAT:
 			if (m_bLabel_PAPP_Exist == false)
@@ -316,11 +385,20 @@ void Teleinfo::MatchLine()
 					//_log.Log(LOG_NORM,"powerusage2 = %lu", m_p1power.powerusage2);
 					//_log.Log(LOG_NORM,"usagecurrent = %lu", m_p1power.usagecurrent);
 					m_p1power.usagecurrent /= m_counter;
-					sDecodeRXMessage(this, (const unsigned char *)&m_p1power, NULL, 255);
-					m_counter = 0;
-					m_p1power.usagecurrent = 0;
-				}
-			}
+                                        m_p2power.usagecurrent /= m_counter;
+                                        m_p3power.usagecurrent /= m_counter;
+                                        sDecodeRXMessage(this, (const unsigned char *)&m_p1power, NULL, 255);
+                                        if (m_bLabel_Tempo == true)
+                                        {
+                                                sDecodeRXMessage(this, (const unsigned char *)&m_p2power, NULL, 255);
+                                                sDecodeRXMessage(this, (const unsigned char *)&m_p3power, NULL, 255);
+                                        }
+                                        m_counter = 0;
+                                        m_p1power.usagecurrent = 0;
+                                        m_p2power.usagecurrent = 0;
+                                        m_p3power.usagecurrent = 0;
+                                }
+                        }
 			break;
 		default:
 			_log.Log(LOG_ERROR, "Teleinfo: label '%s' not handled!", t.key);
@@ -374,12 +452,12 @@ result (this translates into a logical AND between the amount previously calcula
 Finally, we added 20 hexadecimal. The result will always be a printable ASCII character (sign, digit,
 capital letter) of from 0x20 to hexadecimal 0x5F
 
-La "checksum" est calcul»e sur l'ensemble des caractÀres allant du d»but du champ »tiquette á la fin du champ
-donn»e, caractÀre SP inclus. On fait tout d'abord la somme des codes ASCII de tous ces caractÀres. Pour »viter
-d'introduire des fonctions ASCII (00 á 1F en hexad»cimal), on ne conserve que les six bits de poids faible du
-r»sultat obtenu (cette op»ration se traduit par un ET logique entre la somme pr»c»demment calcul»e et 03Fh).
-Enfin, on ajoute 20 en hexad»cimal. Le r»sultat sera donc toujours un caractÀre ASCII imprimable (signe, chiffre,
-lettre majuscule) allant de 20 á 5F en hexad»cimal.
+La "checksum" est calcul√àe sur l'ensemble des caract√ãres allant du d√àbut du champ √àtiquette ¬á la fin du champ
+donn√àe, caract√ãre SP inclus. On fait tout d'abord la somme des codes ASCII de tous ces caract√ãres. Pour √àviter
+d'introduire des fonctions ASCII (00 ¬á 1F en hexad√àcimal), on ne conserve que les six bits de poids faible du
+r√àsultat obtenu (cette op√àration se traduit par un ET logique entre la somme pr√àc√àdemment calcul√àe et 03Fh).
+Enfin, on ajoute 20 en hexad√àcimal. Le r√àsultat sera donc toujours un caract√ãre ASCII imprimable (signe, chiffre,
+lettre majuscule) allant de 20 ¬á 5F en hexad√àcimal.
 */
 
 bool Teleinfo::isCheckSumOk()

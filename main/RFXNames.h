@@ -36,6 +36,7 @@ enum _eMeterType
 	MTYPE_WATER,
     MTYPE_COUNTER,
 	MTYPE_ENERGY_GENERATED,
+	MTYPE_TIME,
 	MTYPE_END
 };
 
@@ -180,7 +181,8 @@ enum _eNotificationTypes
 	NTYPE_PHOTO,
 	NTYPE_PAUSED,
 	NTYPE_STOPPED,
-	NTYPE_PLAYING
+	NTYPE_PLAYING,
+	NTYPE_TODAYTIME
 };
 
 const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum);

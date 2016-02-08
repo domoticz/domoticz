@@ -31,7 +31,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 96
+#define DB_VERSION 97
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -96,6 +96,12 @@ const char *sqlCreateLightingLog =
 "[DeviceRowID] BIGINT(10) NOT NULL, "
 "[nValue] INTEGER DEFAULT 0, "
 "[sValue] VARCHAR(200), "
+"[Date] DATETIME DEFAULT (datetime('now','localtime')));";
+
+const char *sqlCreateSceneLog =
+"CREATE TABLE IF NOT EXISTS [SceneLog] ("
+"[SceneRowID] BIGINT(10) NOT NULL, "
+"[nValue] INTEGER DEFAULT 0, "
 "[Date] DATETIME DEFAULT (datetime('now','localtime')));";
 
 const char *sqlCreatePreferences =
@@ -398,7 +404,10 @@ const char *sqlCreateSetpointTimers =
 "[Type] INTEGER NOT NULL, "
 "[Temperature] FLOAT DEFAULT 0, "
 "[TimerPlan] INTEGER DEFAULT 0, "
-"[Days] INTEGER NOT NULL);";
+"[Days] INTEGER NOT NULL, "
+"[Month] INTEGER DEFAULT 0, "
+"[MDay] INTEGER DEFAULT 0, "
+"[Occurence] INTEGER DEFAULT 0);";
 
 const char *sqlCreateSharedDevices =
 "CREATE TABLE IF NOT EXISTS [SharedDevices] ("
@@ -659,6 +668,7 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateEventActions);
 	query(sqlCreateEventActionsTrigger);
 	query(sqlCreateLightingLog);
+	query(sqlCreateSceneLog);
 	query(sqlCreatePreferences);
 	query(sqlCreateRain);
 	query(sqlCreateRain_Calendar);
@@ -716,6 +726,7 @@ bool CSQLHelper::OpenDatabase()
 	query("create index if not exists f_idx on Fan(DeviceRowID);");
 	query("create index if not exists fc_idx on Fan_Calendar(DeviceRowID);");
 	query("create index if not exists l_idx on LightingLog(DeviceRowID);");
+	query("create index if not exists s_idx on SceneLog(SceneRowID);");
 	query("create index if not exists m_idx on Meter(DeviceRowID);");
 	query("create index if not exists mc_idx on Meter_Calendar(DeviceRowID);");
 	query("create index if not exists mm_idx on MultiMeter(DeviceRowID);");
@@ -1251,7 +1262,7 @@ bool CSQLHelper::OpenDatabase()
 			//Patch for new ZWave light sensor type
 			std::stringstream szQuery2;
 			std::vector<std::vector<std::string> > result;
-			result = query("SELECT ID FROM Hardware WHERE ([Type] = 21) OR ([Type] = 21)");
+			result = query("SELECT ID FROM Hardware WHERE ([Type] = 9) OR ([Type] = 21)");
 			if (result.size() > 0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
@@ -1259,7 +1270,8 @@ bool CSQLHelper::OpenDatabase()
 				{
 					szQuery2.clear();
 					szQuery2.str("");
-					szQuery2 << "UPDATE DeviceStatus SET SubType=" << sTypeZWaveSwitch << " WHERE ([Type]=" << pTypeLighting2 << ") AND (SubType=" << sTypeAC << ") AND (HardwareID=" << result[0][0] << ")";
+					//#define sTypeZWaveSwitch 0xA1
+					szQuery2 << "UPDATE DeviceStatus SET SubType=" << 0xA1 << " WHERE ([Type]=" << pTypeLighting2 << ") AND (SubType=" << sTypeAC << ") AND (HardwareID=" << result[0][0] << ")";
 					query(szQuery2.str());
 				}
 			}
@@ -1755,7 +1767,40 @@ bool CSQLHelper::OpenDatabase()
 			{
 				query("ALTER TABLE MobileDevices ADD COLUMN [Name] VARCHAR(100) DEFAULT ''");
 			}
-
+		}
+		if (dbversion < 97)
+		{
+			//Patch for pTypeLighting2/sTypeZWaveSwitch to pTypeGeneralSwitch/sSwitchGeneralSwitch
+			std::stringstream szQuery,szQuery2;
+			std::vector<std::vector<std::string> > result, result2;
+			std::vector<std::string> sd;
+			result = query("SELECT ID FROM Hardware WHERE ([Type] = 9) OR ([Type] = 21)");
+			if (result.size() > 0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					sd = *itt;
+					szQuery.clear();
+					szQuery.str("");
+					szQuery << "SELECT ID, DeviceID FROM DeviceStatus WHERE ([Type]=" << pTypeLighting2 << ") AND (SubType=" << 0xA1 << ") AND (HardwareID=" << sd[0] << ")";
+					result2 = query(szQuery.str());
+					if (result2.size() > 0)
+					{
+						std::vector<std::vector<std::string> >::const_iterator itt2;
+						for (itt2 = result2.begin(); itt2 != result2.end(); ++itt2)
+						{
+							sd = *itt2;
+							std::string ndeviceid = "0" + sd[1];
+							szQuery2.clear();
+							szQuery2.str("");
+							//#define sTypeZWaveSwitch 0xA1
+							szQuery2 << "UPDATE DeviceStatus SET DeviceID='" << ndeviceid << "', [Type]=" << pTypeGeneralSwitch << ", SubType=" << sSwitchGeneralSwitch << " WHERE (ID=" << sd[0] << ")";
+							query(szQuery2.str());
+						}
+					}
+				}
+			}
 		}
 	}
 	else if (bNewInstall)
@@ -3458,7 +3503,7 @@ void CSQLHelper::ScheduleDay()
 		AddCalendarUpdateMultiMeter();
 		AddCalendarUpdatePercentage();
 		AddCalendarUpdateFan();
-		CleanupLightLog();
+		CleanupLightSceneLog();
 	}
 	catch (boost::exception & e)
 	{
@@ -4741,6 +4786,11 @@ void CSQLHelper::AddCalendarUpdateMeter()
 					if (musage!=0)
 						m_notifications.CheckAndHandleNotification(ID, devname, devType, subType, NTYPE_TODAYCOUNTER, musage);
 					break;
+				case MTYPE_TIME:
+					musage = float(total_real);
+					if (musage != 0)
+						m_notifications.CheckAndHandleNotification(ID, devname, devType, subType, NTYPE_TODAYTIME, musage);
+					break;
 				}
 			}
 			else
@@ -5537,7 +5587,7 @@ void CSQLHelper::CheckAndUpdateSceneDeviceOrder()
 	}
 }
 
-void CSQLHelper::CleanupLightLog()
+void CSQLHelper::CleanupLightSceneLog()
 {
 	//cleanup the lighting log
 	int nMaxDays=30;
@@ -5563,9 +5613,8 @@ void CSQLHelper::CleanupLightLog()
 	localtime_r(&daybefore,&tm2);
 	sprintf(szDateEnd,"%04d-%02d-%02d %02d:%02d:00",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday,tm2.tm_hour,tm2.tm_min);
 
-	safe_query("DELETE FROM LightingLog WHERE (Date<'%q')",
-		szDateEnd
-		);
+	safe_query("DELETE FROM LightingLog WHERE (Date<'%q')", szDateEnd);
+	safe_query("DELETE FROM SceneLog WHERE (Date<'%q')", szDateEnd);
 }
 
 bool CSQLHelper::DoesSceneByNameExits(const std::string &SceneName)

@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 1195
+# ref 1198
 
 CACHE:
 # CSS
@@ -112,6 +112,7 @@ images/camera-web.png
 images/capture.png
 images/clock.png
 images/clock48.png
+images/clock48_On.png
 images/collection.png
 images/collection_hover.png
 images/ChristmasTree.png
