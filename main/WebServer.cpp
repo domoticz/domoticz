@@ -830,13 +830,10 @@ namespace http {
 			}
 		exitjson:
 			std::string jcallback = request::findValue(&req, "jsoncallback");
-			if (jcallback.size() == 0)
-				m_retstr = root.toStyledString();
-			else
-			{
-				m_retstr = "var data=" + root.toStyledString() + "\n" + jcallback + "(data);";
+			if (jcallback.size() == 0) {
+				return root.toStyledString();
 			}
-			return m_retstr;
+			return "var data=" + root.toStyledString() + "\n" + jcallback + "(data);";
 		}
 
 		void CWebServer::Cmd_GetLanguage(WebEmSession & session, const request& req, Json::Value &root)
