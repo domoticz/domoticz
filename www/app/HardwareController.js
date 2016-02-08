@@ -65,6 +65,7 @@ define(['app'], function (app) {
             }
             else if (text.indexOf("USB") >= 0)
             {
+                var Mode1 = "0";
                 var serialport=$("#hardwarecontent #divserial #comboserialport option:selected").text();
                 if (typeof serialport == 'undefined')
                 {
@@ -76,6 +77,20 @@ define(['app'], function (app) {
                         serialport="";
                     }
                 }
+
+                if (text.indexOf("MySensors") >= 0)
+                {
+                    var baudrate=$("#hardwarecontent #divbaudratemysensors #combobaudrate option:selected").val();
+
+                    if (typeof baudrate == 'undefined')
+                    {
+                        ShowNotify($.t('No baud rate selected!'), 2500, true);
+                        return;
+                    }
+
+                    Mode1 = baudrate;
+                }
+
                 var address="";
                 if (text.indexOf("S0 Meter") >= 0)
                 {
@@ -490,18 +505,18 @@ define(['app'], function (app) {
             var text = $("#hardwarecontent #hardwareparamstable #combotype option:selected").text();
 
             if (
-				(text.indexOf("Panasonic") >= 0) || 
-				(text.indexOf("TE923") >= 0) || 
-				(text.indexOf("Volcraft") >= 0) || 
-				(text.indexOf("1-Wire") >= 0) || 
-				(text.indexOf("BMP085") >= 0) || 
-				(text.indexOf("Dummy") >= 0) || 
-				(text.indexOf("System Alive") >= 0) || 
-				(text.indexOf("Kodi") >= 0) || 
-				(text.indexOf("PiFace") >= 0) || 
-				(text.indexOf("GPIO") >= 0) || 
-				(text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0) || 
-				(text.indexOf("Tellstick") >= 0) || 
+				(text.indexOf("Panasonic") >= 0) ||
+				(text.indexOf("TE923") >= 0) ||
+				(text.indexOf("Volcraft") >= 0) ||
+				(text.indexOf("1-Wire") >= 0) ||
+				(text.indexOf("BMP085") >= 0) ||
+				(text.indexOf("Dummy") >= 0) ||
+				(text.indexOf("System Alive") >= 0) ||
+				(text.indexOf("Kodi") >= 0) ||
+				(text.indexOf("PiFace") >= 0) ||
+				(text.indexOf("GPIO") >= 0) ||
+				(text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0) ||
+				(text.indexOf("Tellstick") >= 0) ||
 				(text.indexOf("Motherboard") >= 0)
 				)
             {
@@ -519,14 +534,30 @@ define(['app'], function (app) {
             }
             else if (text.indexOf("USB") >= 0)
             {
+                var Mode1 = "0";
                 var serialport=$("#hardwarecontent #divserial #comboserialport option:selected").text();
                 if (typeof serialport == 'undefined')
                 {
                     ShowNotify($.t('No serial port selected!'), 2500, true);
                     return;
                 }
+
+                if (text.indexOf("MySensors") >= 0)
+                {
+                    var baudrate=$("#hardwarecontent #divbaudratemysensors #combobaudrate option:selected").val();
+
+                    if (typeof baudrate == 'undefined')
+                    {
+                        ShowNotify($.t('No baud rate selected!'), 2500, true);
+                        return;
+                    }
+
+                    Mode1 = baudrate;
+                }
+
                 $.ajax({
-                     url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&port=" + encodeURIComponent(serialport) + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
+                     url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&port=" + encodeURIComponent(serialport) + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout +
+                          "&Mode1=" + Mode1,
                      async: false,
                      dataType: 'json',
                      success: function(data) {
@@ -1910,7 +1941,7 @@ define(['app'], function (app) {
         }
 
         /* Start of Panasonic Plugin Code */
-        
+
         PanasonicAddNode = function () {
             var name = $("#hardwarecontent #panasonicnodeparamstable #nodename").val();
             if (name == "") {
@@ -2145,7 +2176,7 @@ define(['app'], function (app) {
         }
 
         /* End of Panasonic Plugin Code */
-        
+
         RefreshLMSNodeTable = function () {
             $('#modal').show();
             $('#updelclr #nodeupdate').attr("class", "btnstyle3-dis");
@@ -3594,6 +3625,10 @@ define(['app'], function (app) {
                             {
                                 $("#hardwarecontent #divremote #tcpaddress").val(data["Address"]);
                             }
+                            if (data["Type"].indexOf("MySensors") >= 0)
+                            {
+                                $("#hardwarecontent #divbaudratemysensors #combobaudrate").val(data["Mode1"]);
+                            }
                         }
                         else if (((data["Type"].indexOf("LAN") >= 0) && (data["Type"].indexOf("YouLess") == -1) && (data["Type"].indexOf("Satel") == -1)) ||(data["Type"].indexOf("Domoticz") >= 0) ||(data["Type"].indexOf("Harmony") >= 0)) {
                             $("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
@@ -3704,6 +3739,7 @@ define(['app'], function (app) {
             $("#hardwarecontent #username").show();
             $("#hardwarecontent #lblusername").show();
 
+            $("#hardwarecontent #divbaudratemysensors").hide();
             $("#hardwarecontent #divlocation").hide();
             $("#hardwarecontent #divphilipshue").hide();
             $("#hardwarecontent #divwinddelen").hide();
@@ -3719,6 +3755,10 @@ define(['app'], function (app) {
             }
             else if (text.indexOf("USB") >= 0)
             {
+                if (text.indexOf("MySensors") >= 0)
+                {
+                    $("#hardwarecontent #divbaudratemysensors").show();
+                }
                 $("#hardwarecontent #divserial").show();
                 $("#hardwarecontent #divremote").hide();
                 $("#hardwarecontent #divlogin").hide();
