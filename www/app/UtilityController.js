@@ -720,6 +720,23 @@ define(['app'], function (app) {
 		  $("#dialog-editmeterdevice #devicename").val(unescape(name));
 		  $("#dialog-editmeterdevice #devicedescription").val(unescape(description));
 		  $("#dialog-editmeterdevice #combometertype").val(switchtype);
+		  //Todo: EddyK69
+		  $("#dialog-editmeterdevice #valueprefix").val(unescape("Time"));
+		  $("#dialog-editmeterdevice #valuesuffix").val(unescape("Min"));
+		  $("#dialog-editmeterdevice #counterdivider").val("10");
+		  $("#dialog-editmeterdevice #metertable #customcounter").hide();
+		  if (switchtype==3) { //Counter
+			$("#dialog-editmeterdevice #metertable #customcounter").show();
+		  }
+		  
+		  $("#dialog-editmeterdevice #combometertype").change(function() { 
+			$("#dialog-editmeterdevice #metertable #customcounter").hide();
+			var meterType=$("#dialog-editmeterdevice #combometertype").val();
+			if (meterType==3) { //Counter
+				$("#dialog-editmeterdevice #metertable #customcounter").show();
+			}
+		  });
+		  
 		  $("#dialog-editmeterdevice" ).i18n();
 		  $("#dialog-editmeterdevice" ).dialog( "open" );
 		}
@@ -1720,15 +1737,31 @@ define(['app'], function (app) {
 			var dialog_editmeterdevice_buttons = {};
 			dialog_editmeterdevice_buttons[$.t("Update")]=function() {
 				  var bValid = true;
+				  var devOptionsParam = [], devOptions = [];
+				  var meterType=$("#dialog-editmeterdevice #combometertype").val();
 				  bValid = bValid && checkLength( $("#dialog-editmeterdevice #devicename"), 2, 100 );
 				  if ( bValid ) {
+					  if (meterType==3) //Counter
+					  {
+						devOptions.push("ValuePrefix:");
+						devOptions.push($("#dialog-editmeterdevice #valueprefix").val());
+						devOptions.push(";");
+						devOptions.push("ValueSuffix:");
+						devOptions.push($("#dialog-editmeterdevice #valuesuffix").val());
+						devOptions.push(";");
+						devOptions.push("CounterDivider:");
+						devOptions.push($("#dialog-editmeterdevice #counterdivider").val());
+						devOptions.push(";");
+						devOptionsParam.push(devOptions.join(''));
+					  }
 					  $( this ).dialog( "close" );
 					  $.ajax({
 						 url: "json.htm?type=setused&idx=" + $.devIdx + 
 							'&name=' + encodeURIComponent($("#dialog-editmeterdevice #devicename").val()) + 
 							'&description=' + encodeURIComponent($("#dialog-editmeterdevice #devicedescription").val()) + 
-							'&switchtype=' + $("#dialog-editmeterdevice #combometertype").val() + 
-							'&used=true',
+							'&switchtype=' + meterType + 
+						    '&used=true' +
+						    '&options=' + btoa(encodeURIComponent(devOptionsParam.join(''))), // encode before b64 to prevent from character encoding issue
 						 async: false, 
 						 dataType: 'json',
 						 success: function(data) {

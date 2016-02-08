@@ -8570,7 +8570,10 @@ namespace http {
 						float EnergyDivider = 1000.0f;
 						float GasDivider = 100.0f;
 						float WaterDivider = 100.0f;
+						float CounterDivider = 1.0f;
 						int tValue;
+						std::string ValuePrefix = "";
+						std::string ValueSuffix = "";
 						if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
 						{
 							EnergyDivider = float(tValue);
@@ -8582,6 +8585,15 @@ namespace http {
 						if (m_sql.GetPreferencesVar("MeterDividerWater", tValue))
 						{
 							WaterDivider = float(tValue);
+						}
+
+						if (metertype == MTYPE_COUNTER)
+						{
+							std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sOptions);
+
+							ValuePrefix = options["ValuePrefix"];
+							ValueSuffix = options["ValueSuffix"];
+							CounterDivider = atof(options["CounterDivider"].c_str());
 						}
 
 						//get value of today
@@ -8634,7 +8646,7 @@ namespace http {
 								sprintf(szTmp, "%llu Liter", total_real);
 								break;
 							case MTYPE_COUNTER:
-								sprintf(szTmp, "%llu", total_real);
+								sprintf(szTmp, "%llu %s", total_real, ValueSuffix.c_str());
 								break;
 							case MTYPE_TIME:
 								sprintf(szTmp, "%llu min", total_real);
@@ -8663,6 +8675,13 @@ namespace http {
 							sprintf(szTmp, "%.03f m3", fvalue / WaterDivider);
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
+							break;
+						case MTYPE_COUNTER:
+							sprintf(szTmp, "%.03f %s", fvalue / CounterDivider, ValueSuffix.c_str());
+							root["result"][ii]["Data"] = szTmp;
+							root["result"][ii]["Counter"] = szTmp;
+							root["result"][ii]["ValuePrefix"] = ValuePrefix;
+							root["result"][ii]["ValueSuffix"] = ValueSuffix;
 							break;
 						case MTYPE_TIME:
 							sprintf(szTmp, "%i min", atoi(sValue.c_str()));
