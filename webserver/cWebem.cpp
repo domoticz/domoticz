@@ -1721,7 +1721,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 			|| content_type == "application/javascript"
 			)
 		{
-			// check if content is not gzipped, include won�t work with non-text content
+			// check if content is not gzipped, include won't work with non-text content
 			if (!rep.bIsGZIP) {
 				// Find and include any special cWebem strings
 				if (!myWebem->Include(rep.content)) {
