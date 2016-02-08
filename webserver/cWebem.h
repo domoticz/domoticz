@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <boost/asio.hpp>
 #include <boost/function.hpp>
 #include "server.hpp"
 #include "session_store.hpp"
@@ -39,7 +40,6 @@ namespace http {
 			int rights;
 			bool rememberme;
 			bool isnew;
-			bool removecookie;
 			bool forcelogin;
 			std::string lastRequestPath;
 			std::string outputfilename;
@@ -209,10 +209,13 @@ namespace http {
 			void SetSessionStore(session_store* sessionStore);
 			session_store* GetSessionStore();
 
-			void CleanTimedOutSessions();
-
 			std::string m_zippassword;
-			std::map<std::string,WebEmSession> m_sessions;
+			const std::string GetPort();
+			WebEmSession * GetSession(const std::string & ssid);
+			void AddSession(const WebEmSession & session);
+			void RemoveSession(const WebEmSession & session);
+			void RemoveSession(const std::string & ssid);
+			int CountSessions();
 			_eAuthenticationMethod m_authmethod;
 			//Whitelist url strings that bypass authentication checks (not used by basic-auth authentication)
 			std::vector < std::string > myWhitelistURLs;
@@ -231,16 +234,19 @@ namespace http {
 			server myServer;
 			/// port server is listening on
 			std::string myPort;
-			/// session store
-			session_store* mySessionStore;
-			/// next timed out session cleanup time
-			time_t myNextSessionCleanup;
 			// actual theme selected
 			std::string m_actTheme;
 			// root of url for reverse proxy servers
 			std::string m_webRoot;
 			/// request handler specialized to handle webem requests
 			cWebemRequestHandler myRequestHandler;
+			/// sessions management
+			std::map<std::string,WebEmSession> m_sessions;
+			boost::mutex m_sessionsMutex;
+			boost::asio::io_service m_io_service;
+			boost::asio::deadline_timer m_session_clean_timer;
+			void CleanSessions();
+			session_store* mySessionStore; /// session store
 		};
 
 	}
