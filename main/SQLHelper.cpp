@@ -31,7 +31,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 97
+#define DB_VERSION 98
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -1801,6 +1801,11 @@ bool CSQLHelper::OpenDatabase()
 					}
 				}
 			}
+		}
+		if (dbversion < 98)
+		{
+			// Shorthen cookies validity to 30 days
+			query("UPDATE UserSessions SET ExpirationDate = datetime(ExpirationDate, '-335 days')");
 		}
 	}
 	else if (bNewInstall)
