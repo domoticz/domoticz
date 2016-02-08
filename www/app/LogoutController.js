@@ -28,7 +28,13 @@ define(['app'], function (app) {
 					permissions.setPermissions(permissionList);
 					window.location = '#/Dashboard';
 				},
-				error: function () {
+				error: function (xhr, status, error) {
+					var authenticate = xhr.getResponseHeader("WWW-Authenticate");
+					if (authenticate && (authenticate.indexOf("Basic") > -1)) {
+						// When Basic authentication is used, user should close window after logout
+						$('#logout').html('<div style="text-align: center;"><span>Please close this browser tab or browser window before you log in again.</span></div>')
+						return;
+					}
 					window.location = '#/Dashboard';
 				}
 			});
