@@ -52,11 +52,15 @@ IF(ProjectDirty)
 ENDIF(ProjectDirty)
 
 # write a file with the APPVERSION define
-# if ProjectDate is not 0, (re)write appversion.h.txt, otherwise keep existing
-# appversion.h.txt if it exists
-IF(${ProjectDate} OR NOT EXISTS appversion.h.txt)
 file(WRITE appversion.h.txt "#define APPVERSION ${ProjectRevision}\n#define APPHASH \"${ProjectHash}\"\n#define APPDATE ${ProjectDate}\n")
-ENDIF()
+
+# if ProjectDate is 0, create appversion.h.txt from a copy of appversion.default
+IF(NOT ProjectDate AND EXISTS appversion.default)
+  MESSAGE(STATUS "ProjectDate is 0 and appversion.default exists, copy it")
+  execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                        appversion.default ${CMAKE_CURRENT_LIST_DIR}/appversion.h.txt)
+ENDIF(NOT ProjectDate AND EXISTS appversion.default)
+
 # copy the file to the final header only if the version changes
 # reduces needless rebuilds
 

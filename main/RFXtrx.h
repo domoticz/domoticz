@@ -789,7 +789,7 @@ SDK version 4.9
 #define sTypeTEMP4 0x4	//RTHN318
 #define sTypeTEMP5 0x5  //LaCrosse TX3
 #define sTypeTEMP6 0x6  //TS15C
-#define sTypeTEMP7 0x7  //Viking 02811,TSS330
+#define sTypeTEMP7 0x7  //Viking 02811/02813, Proove TSS330, 311346
 #define sTypeTEMP8 0x8  //LaCrosse WS2300
 #define sTypeTEMP9 0x9  //RUBiCSON
 #define sTypeTEMP10 0xA  //TFA 30.3133

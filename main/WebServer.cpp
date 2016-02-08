@@ -2015,7 +2015,7 @@ namespace http {
 			}
 			else
 			{
-				root["HaveUpdate"] = m_mainworker.IsUpdateAvailable(true);
+				root["HaveUpdate"] = m_mainworker.IsUpdateAvailable(false);
 				root["DomoticzUpdateURL"] = m_mainworker.m_szDomoticzUpdateURL;
 				root["SystemName"] = m_mainworker.m_szSystemName;
 				root["Revision"] = m_mainworker.m_iRevision;
@@ -4988,6 +4988,12 @@ namespace http {
 						root["result"][ii]["val"] = NTYPE_TODAYCOUNTER;
 						root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_TODAYCOUNTER, 0);
 						root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_TODAYCOUNTER, 1);
+					}
+					else if (switchtype == MTYPE_TIME)
+					{
+						root["result"][ii]["val"] = NTYPE_TODAYTIME;
+						root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_TODAYTIME, 0);
+						root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_TODAYTIME, 1);
 					}
 					else
 					{
@@ -8634,6 +8640,9 @@ namespace http {
 							case MTYPE_COUNTER:
 								sprintf(szTmp, "%llu", total_real);
 								break;
+							case MTYPE_TIME:
+								sprintf(szTmp, "%llu min", total_real);
+								break;
 							}
 						}
 						root["result"][ii]["Counter"] = sValue;
@@ -8656,6 +8665,11 @@ namespace http {
 							break;
 						case MTYPE_WATER:
 							sprintf(szTmp, "%.03f m3", fvalue / WaterDivider);
+							root["result"][ii]["Data"] = szTmp;
+							root["result"][ii]["Counter"] = szTmp;
+							break;
+						case MTYPE_TIME:
+							sprintf(szTmp, "%i min", atoi(sValue.c_str()));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
@@ -8733,6 +8747,9 @@ namespace http {
                             case MTYPE_COUNTER:
                                     sprintf(szTmp, "%llu", total_real);
                                     break;
+							case MTYPE_TIME:
+								sprintf(szTmp, "%llu min", total_real);
+								break;
                             }
                         }
                         root["result"][ii]["Counter"] = sValue;
@@ -8759,6 +8776,11 @@ namespace http {
                                 root["result"][ii]["Data"] = szTmp;
                                 root["result"][ii]["Counter"] = szTmp;
                                 break;
+						case MTYPE_TIME:
+							sprintf(szTmp, "%i min", atoi(sValue.c_str()));
+							root["result"][ii]["Data"] = szTmp;
+							root["result"][ii]["Counter"] = szTmp;
+							break;
                         }
                     }
 					else if (dType == pTypeYouLess)
@@ -8834,6 +8856,9 @@ namespace http {
 							case MTYPE_COUNTER:
 								sprintf(szTmp, "%llu", total_real);
 								break;
+							case MTYPE_TIME:
+								sprintf(szTmp, "%llu min", total_real);
+								break;
 							}
 						}
 						root["result"][ii]["CounterToday"] = szTmp;
@@ -8863,6 +8888,9 @@ namespace http {
 						case MTYPE_COUNTER:
 							sprintf(szTmp, "%llu", total_actual);
 							break;
+						case MTYPE_TIME:
+							sprintf(szTmp, "%llu min", total_actual);
+							break;
 						}
 						root["result"][ii]["Counter"] = szTmp;
 
@@ -8890,6 +8918,9 @@ namespace http {
 						case MTYPE_COUNTER:
 							sprintf(szTmp, "%llu", acounter);
 							break;
+						case MTYPE_TIME:
+							sprintf(szTmp, "%llu min", acounter);
+							break;
 						}
 						root["result"][ii]["Data"] = szTmp;
 						switch (metertype)
@@ -8905,6 +8936,7 @@ namespace http {
 							sprintf(szTmp, "%s m", splitresults[1].c_str());
 							break;
 						case MTYPE_COUNTER:
+						case MTYPE_TIME:
 							sprintf(szTmp, "%s", splitresults[1].c_str());
 							break;
 						}
@@ -12653,6 +12685,7 @@ namespace http {
 												sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
 												break;
 											case MTYPE_COUNTER:
+											case MTYPE_TIME:
 												sprintf(szTmp, "%.1f", TotalValue);
 												break;
 											}
@@ -12704,6 +12737,7 @@ namespace http {
 										sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
 										break;
 									case MTYPE_COUNTER:
+									case MTYPE_TIME:
 										sprintf(szTmp, "%.1f", TotalValue);
 										break;
 									}
@@ -12810,6 +12844,7 @@ namespace http {
 													sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
 													break;
 												case MTYPE_COUNTER:
+												case MTYPE_TIME:
 													sprintf(szTmp, "%.1f", TotalValue);
 													break;
 												}
@@ -12875,6 +12910,7 @@ namespace http {
 												sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
 												break;
 											case MTYPE_COUNTER:
+											case MTYPE_TIME:
 												sprintf(szTmp, "%.1f", TotalValue);
 												break;
 											}
@@ -12914,6 +12950,7 @@ namespace http {
 									sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
 									break;
 								case MTYPE_COUNTER:
+								case MTYPE_TIME:
 									sprintf(szTmp, "%.1f", TotalValue);
 									break;
 								}
@@ -14624,6 +14661,9 @@ namespace http {
 							case MTYPE_WATER:
 								sprintf(szTmp, "%.3f", fvalue / WaterDivider);
 								break;
+							default:
+								sprintf(szTmp, "");
+								break;
 							}
 							root["counter"] = szTmp;
 						}
@@ -14646,6 +14686,9 @@ namespace http {
 									break;
 								case MTYPE_WATER:
 									sprintf(szTmp, "%.3f", fvalue / WaterDivider);
+									break;
+								default:
+									sprintf(szTmp, "");
 									break;
 								}
 								root["counter"] = szTmp;
@@ -14703,6 +14746,7 @@ namespace http {
 									root["result"][ii]["c"] = szTmp;
 									break;
 								case MTYPE_COUNTER:
+								case MTYPE_TIME:
 									sprintf(szTmp, "%.0f", atof(szValue.c_str()));
 									root["result"][ii]["v"] = szTmp;
 									if (fcounter != 0)
@@ -14743,6 +14787,7 @@ namespace http {
 									root["resultprev"][iPrev]["v"] = szTmp;
 									break;
 								case MTYPE_COUNTER:
+								case MTYPE_TIME:
 									sprintf(szTmp, "%.0f", atof(szValue.c_str()));
 									root["resultprev"][iPrev]["v"] = szTmp;
 									break;
@@ -15023,6 +15068,7 @@ namespace http {
 								root["result"][ii]["c"] = szTmp;
 								break;
 							case MTYPE_COUNTER:
+							case MTYPE_TIME:
 								sprintf(szTmp, "%.0f", atof(szValue.c_str()));
 								root["result"][ii]["v"] = szTmp;
 								sprintf(szTmp, "%.0f", (atof(sValue.c_str()) - atof(szValue.c_str())));
