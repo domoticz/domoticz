@@ -1067,11 +1067,29 @@ int cWebemRequestHandler::parse_auth_header(const request& req, struct ah *ah)
 	{
 		// DN looks like: /C=Country/ST=State/L=City/O=Org/OU=OrganizationUnit/CN=username/emailAddress=user@mail.com
 		std::string dn = auth_header;
-		int spos = dn.find("/CN=");
-		int epos = dn.find("/emailAddress=");
+		int spos, epos;
 
-		ah->user = dn.substr(spos + 4, epos - spos - 4);
-		ah->response = dn.substr(epos + 14);
+		spos = dn.find("/CN=");
+		epos = dn.find("/", spos + 1);
+		if (spos != std::string::npos) {
+				if (epos == std::string::npos) {
+						epos = dn.size();
+				}
+				ah->user = dn.substr(spos + 4, epos - spos - 4);
+		}
+
+		spos = dn.find("/emailAddress=");
+		epos = dn.find("/", spos + 1);
+		if (spos != std::string::npos) {
+				if (epos == std::string::npos) {
+						epos = dn.size();
+				}
+				ah->response = dn.substr(spos + 14, epos - spos - 14);
+		}
+
+		if (ah->user.empty()) { // TODO: Should ah->response be not empty ?
+			return 0;
+		}
 		return 1;
 	}
 	// Basic Auth header

@@ -61,6 +61,7 @@ Version 2.4xxx
 - Fixed: S0 Meter, fix for reloading totals of (#179)
 - Fixed: Thermosmart unpauze
 - Fixed: The select menu of a selector switch can come out of its frame depending on the width of the page.
+- Fixed: Fix a potential issue in login process using a certificate when the subjectDN of the certificate has a different format.
 - Updated: OpenZWave, configuration files
 
 Version 2.3530 (November 1th 2015)
