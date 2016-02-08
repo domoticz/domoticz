@@ -999,6 +999,10 @@ namespace http {
 			int port = atoi(sport.c_str());
 			if (IsSerialDevice(htype))
 			{
+				std::string modeStr = request::findValue(&req, "Mode1");
+				if (!modeStr.empty()) {
+					mode1 = atoi(modeStr.c_str());
+				}
 			}
 			else if (
 				(htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) || (htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) ||
