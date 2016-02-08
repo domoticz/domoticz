@@ -2,6 +2,7 @@
 msbuild
 domoticz.db
 appversion.h
+appversion.h.txt
 Makefile
 CMakeFiles
 *.cmake
