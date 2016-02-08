@@ -40,8 +40,8 @@ Version 2.4xxx
 - Changed: Fritzbox, Now updating text sensor on connect/disconnect
 - Changed: OpenZWave, Control Panel log starts displaying from the end when entering for the first time
 - Changed: OpenZwave, kWh sensor now maybe compatible with more hardware
-- Changed: OpenZwave, not sending cold-white in the colorclass, solved issues on different zipato bulbs
-- Changed: OpenZWave, Ranamed internally 'Color Control' to 'Color"
+- Changed: OpenZwave, not sending cold-white in the colorclass, solved issues on different Zipato bulbs
+- Changed: OpenZWave, Renamed internally 'Color Control' to 'Color"
 - Fixed: Alert Sensor, displaying sValue again
 - Fixed: Blockly, Set user variables (you need to resave your blockly's)
 - Fixed: Blockly, string uservariables where saved with quotes when not using with set-after
@@ -53,13 +53,13 @@ Version 2.4xxx
 - Fixed: Log display in webgui for log items containing multiple lines
 - Fixed: Manual add Blyss type (Group code was wrong)
 - Fixed: Manual add LightwaveRF type (DeviceID was wrong)
-- Fixed: Month temperature report avarage is now calculated by the daily avarage value
+- Fixed: Month temperature report average is now calculated by the daily average value
 - Fixed: MySensors, barometric value was not used when below 995 hPa
 - Fixed: Nest Thermostat, setting set point in Fahrenheit
 - Fixed: RFXCom (433) protocol setup, Home Comfort checkbox did not show correct state
 - Fixed: RGB sensor now also uses the RGB popup system
 - Fixed: S0 Meter, fix for reloading totals of (#179)
-- Fixed: Thermosmart unpauze
+- Fixed: Thermosmart unpause
 - Fixed: The select menu of a selector switch can come out of its frame depending on the width of the page.
 - Fixed: Fix a potential issue in login process using a certificate when the subjectDN of the certificate has a different format.
 - Updated: OpenZWave, configuration files
