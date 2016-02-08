@@ -144,12 +144,12 @@ Version 2.3521 (October 31th 2015)
 - Changed: Air Quality chart will now not begin at 0
 - Changed: All Energy sensors have been transfered to General kWh sensors (more accurate)
 - Changed: BMP085, when forecast is unknown, its calculated directly based on the pressure
-- Changed: disabled timeout for smartwares thermostat (no incomming data from device)
+- Changed: disabled timeout for smartwares thermostat (no incoming data from device)
 - Changed: EnOcean rocker inclusion (thanks to zorgluf!)
 - Changed: EventSystem, not adding sensors from disable hardware
 - Changed: forced fixed icon sizes on some locations (in case of to big user defined icons)
 - Changed: Internal HTML/JS changes to support all types of characters in the sensors name
-- Changed: json "udevice" Perecentage sensor, you might get new ID's, now also creates an event for blockly/lua
+- Changed: json "udevice" Percentage sensor, you might get new ID's, now also creates an event for blockly/lua
 - Changed: KMTronic LAN, now using actual On/Off commands instead of 'Toggle'
 - Changed: Lowered HTTP connection timeout to 10 seconds
 - Changed: Main, all fatal signals where not handled (e.g. SIGILL, SIGABRT,SIGFPE) (cgaudry)
@@ -190,13 +190,13 @@ Version 2.3521 (October 31th 2015)
 - Fixed: OpenZWave with large homeid values
 - Fixed: Post command handling
 - Fixed: pushover sound notification (thanks to Eduard)
-- Fixed: Revolt, Enery Graph
+- Fixed: Revolt, Energy Graph
 - Fixed: Scenes RFY switch command now correctly handled
 - Fixed: Security Panel delay, now again possible to set delay to 0 (directly)
 - Fixed: Temperatures not updated on UI without refreshing browser or changing tabs
 - Fixed: Tooltip bug for the Dusk sensor in the Lights tab
 - Fixed: upgrading via the web interface (some users had experienced a problem)
-- Fixed: Weather tab, nofications
+- Fixed: Weather tab, notifications
 
 Version 2.2563 (June 14th 2015)
 - Implemented: WebServer, native SSL and keep-alive, big thanks to chimit!!!!
