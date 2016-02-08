@@ -1401,12 +1401,6 @@ bool cWebemRequestHandler::CompressWebOutput(const request& req, reply& rep)
 bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const request& req, reply& rep)
 {
 	session.rights = -1; // no rights
-	if (session.forcelogin)
-	{
-		session.forcelogin = false;
-		send_authorization_request(rep);
-		return false;
-	}
 
 	if (myWebem->m_userpasswords.size() == 0)
 	{
@@ -1644,37 +1638,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 	bool isAction = myWebem->IsAction(req);
 
 	// Check authentication on each page or action, if it exists.
-	bool bCheckAuthentication = false;
-	if (isPage || isAction) {
-		bCheckAuthentication = true;
-	}
-
-	if (isPage && (req.uri.find("dologout") != std::string::npos))
-	{
-		//Remove session id based on cookie
-		const char *cookie;
-		cookie = request::get_req_header(&req, "Cookie");
-		if (cookie != NULL)
-		{
-			std::string scookie = cookie;
-			int fpos = scookie.find("SID=");
-			int upos = scookie.find("_", fpos);
-			if ((fpos != std::string::npos) && (upos != std::string::npos))
-			{
-				std::string sSID = scookie.substr(fpos + 4, upos-fpos-4);
-				_log.Log(LOG_STATUS, "[web:%s] Logout : remove session %s", myWebem->GetPort().c_str(), sSID.c_str());
-				myWebem->RemoveSession(sSID);
-				removeAuthToken(sSID);
-			}
-		}
-		session.username = "";
-		session.rights = -1;
-		session.forcelogin = true;
-		_log.Log(LOG_STATUS, "[web:%s] Force login", myWebem->GetPort().c_str());
-	}
-
-	// Check user authentication on each page or action, if it exists.
-	if (bCheckAuthentication && !CheckAuthentication(session, req, rep)) {
+	if ((isPage || isAction) && !CheckAuthentication(session, req, rep)) {
 		return;
 	}
 
@@ -1774,7 +1738,15 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 	// Set timeout to make session in use
 	session.timeout = mytime(NULL) + SESSION_TIMEOUT;
 
-	if (session.isnew == true)
+	if (session.forcelogin == true) {
+		_log.Log(LOG_STATUS, "[web:%s] Logout : remove session %s", myWebem->GetPort().c_str(), session.id.c_str());
+		myWebem->RemoveSession(session.id);
+		removeAuthToken(session.id);
+		if (myWebem->m_authmethod == AUTH_BASIC) {
+			send_authorization_request(rep);
+		}
+	}
+	else if (session.isnew == true)
 	{
 		// Create a new session ID
 		session.id = generateSessionID();

@@ -818,6 +818,7 @@ namespace http {
 				}
 				if (cparam == "dologout")
 				{
+					session.forcelogin = true;
 					root["status"] = "OK";
 					root["title"] = "Logout";
 					goto exitjson;
