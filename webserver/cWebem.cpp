@@ -1230,7 +1230,7 @@ bool cWebemRequestHandler::AreWeInLocalNetwork(const std::string &sHost, const r
 				host_header=request::get_req_header(&req, "X-Real-IP"); //try our NGINX header
 				if (!host_header)
 				{
-					_log.Log(LOG_ERROR,"Webserver: Multiple proxies are used (Or possible spoofing attempt), ignoring client request (remote addresses: %s)",host.c_str());
+					_log.Log(LOG_ERROR,"Webserver: Multiple proxies are used (Or possible spoofing attempt), ignoring client request (remote address: %s)",host.c_str());
 					return false;
 				}
 				host=host_header;
@@ -1520,7 +1520,7 @@ bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const req
 		if (!authorize(session, req, rep))
 		{
 			if (m_failcounter > 0) {
-				_log.Log(LOG_ERROR, "[web:%s] Failed authentication attempt, ignoring client request (remote addresses: %s)", myWebem->GetPort().c_str(), session.remote_host.c_str());
+				_log.Log(LOG_ERROR, "[web:%s] Failed authentication attempt, ignoring client request (remote address: %s)", myWebem->GetPort().c_str(), session.remote_host.c_str());
 			}
 			if (m_failcounter > 2)
 			{
