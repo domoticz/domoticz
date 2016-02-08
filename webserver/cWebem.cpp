@@ -1738,16 +1738,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 	// Set timeout to make session in use
 	session.timeout = mytime(NULL) + SESSION_TIMEOUT;
 
-	if (session.forcelogin == true) {
-		_log.Log(LOG_STATUS, "[web:%s] Logout : remove session %s", myWebem->GetPort().c_str(), session.id.c_str());
-		myWebem->RemoveSession(session.id);
-		removeAuthToken(session.id);
-		if (myWebem->m_authmethod == AUTH_BASIC) {
-			send_authorization_request(rep);
-		}
-	}
-	else if (session.isnew == true)
-	{
+	if (session.isnew == true) {
 		// Create a new session ID
 		session.id = generateSessionID();
 		session.expires = session.timeout;
@@ -1759,9 +1750,16 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 		session.isnew = false;
 		myWebem->AddSession(session);
 		send_cookie(rep, session);
-	}
-	else if (session.id.size() > 0)
-	{
+
+	} else if (session.forcelogin == true) {
+		_log.Log(LOG_STATUS, "[web:%s] Logout : remove session %s", myWebem->GetPort().c_str(), session.id.c_str());
+		myWebem->RemoveSession(session.id);
+		removeAuthToken(session.id);
+		if (myWebem->m_authmethod == AUTH_BASIC) {
+			send_authorization_request(rep);
+		}
+
+	} else if (session.id.size() > 0) {
 		// Renew session expiration and authentication token
 		WebEmSession* memSession = myWebem->GetSession(session.id);
 		if (memSession != NULL)
