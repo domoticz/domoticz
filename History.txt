@@ -61,6 +61,7 @@ Version 2.4xxx
 - Fixed: S0 Meter, fix for reloading totals of (#179)
 - Fixed: Thermosmart unpause
 - Fixed: The select menu of a selector switch can come out of its frame depending on the width of the page.
+- Fixed: Fix the cleanup of sessions by shortening the validity duration of long term cookies (45 days instead of 1 year) and by cleaning all sessions asynchronously every 15 minutes.
 - Fixed: Fix a potential issue in login process using a certificate when the subjectDN of the certificate has a different format.
 - Updated: OpenZWave, configuration files
 
