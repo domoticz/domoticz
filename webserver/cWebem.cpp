@@ -523,8 +523,6 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& r
 		return false;
 	}
 
-	session.lastRequestPath = request_path;
-
 	request_path = ExtractRequestPath(request_path);
 	
 	req.parameters.clear();

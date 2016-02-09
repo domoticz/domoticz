@@ -405,8 +405,12 @@ namespace http {
 		std::string CWebServer::GetInternalCameraSnapshot(WebEmSession & session, const request& req)
 		{
 			m_retstr = "";
+
+			std::string request_path;
+			request_handler::url_decode(req.uri, request_path);
+
 			std::vector<unsigned char> camimage;
-			if (session.lastRequestPath.find("raspberry") != std::string::npos)
+			if (request_path.find("raspberry") != std::string::npos)
 			{
 				if (!m_mainworker.m_cameras.TakeRaspberrySnapshot(camimage))
 					goto exitproc;

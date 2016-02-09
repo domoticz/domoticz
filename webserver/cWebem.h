@@ -41,7 +41,6 @@ namespace http {
 			bool rememberme;
 			bool isnew;
 			bool forcelogin;
-			std::string lastRequestPath;
 			std::string outputfilename;
 		} WebEmSession;
 
