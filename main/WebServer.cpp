@@ -370,18 +370,18 @@ namespace http {
 			m_pWebEm->RegisterPageCode("/raspberry.cgi", boost::bind(&CWebServer::GetInternalCameraSnapshot, this, _1, _2));
 			m_pWebEm->RegisterPageCode("/uvccapture.cgi", boost::bind(&CWebServer::GetInternalCameraSnapshot, this, _1, _2)); //TODO: fix me double
 
-			m_pWebEm->RegisterActionCode("storesettings", boost::bind(&CWebServer::PostSettings, this, _1, _2));
-			m_pWebEm->RegisterActionCode("setrfxcommode", boost::bind(&CWebServer::SetRFXCOMMode, this, _1, _2));
-			m_pWebEm->RegisterActionCode("rfxupgradefirmware", boost::bind(&CWebServer::RFXComUpgradeFirmware, this, _1, _2));
+			m_pWebEm->RegisterActionCode("storesettings", boost::bind(&CWebServer::PostSettings, this, _1, _2, _3));
+			m_pWebEm->RegisterActionCode("setrfxcommode", boost::bind(&CWebServer::SetRFXCOMMode, this, _1, _2, _3));
+			m_pWebEm->RegisterActionCode("rfxupgradefirmware", boost::bind(&CWebServer::RFXComUpgradeFirmware, this, _1, _2, _3));
 			RegisterCommandCode("rfxfirmwaregetpercentage", boost::bind(&CWebServer::Cmd_RFXComGetFirmwarePercentage, this, _1, _2, _3), true);
-			m_pWebEm->RegisterActionCode("setrego6xxtype", boost::bind(&CWebServer::SetRego6XXType, this, _1, _2));
-			m_pWebEm->RegisterActionCode("sets0metertype", boost::bind(&CWebServer::SetS0MeterType, this, _1, _2));
-			m_pWebEm->RegisterActionCode("setlimitlesstype", boost::bind(&CWebServer::SetLimitlessType, this, _1, _2));
-			m_pWebEm->RegisterActionCode("setopenthermsettings", boost::bind(&CWebServer::SetOpenThermSettings, this, _1, _2));
-			m_pWebEm->RegisterActionCode("setp1usbtype", boost::bind(&CWebServer::SetP1USBType, this, _1, _2));
-			m_pWebEm->RegisterActionCode("setcurrentcostmetertype", boost::bind(&CWebServer::SetCurrentCostUSBType, this, _1, _2));
-			m_pWebEm->RegisterActionCode("restoredatabase", boost::bind(&CWebServer::RestoreDatabase, this, _1, _2));
-			m_pWebEm->RegisterActionCode("sbfspotimportolddata", boost::bind(&CWebServer::SBFSpotImportOldData, this, _1, _2));
+			m_pWebEm->RegisterActionCode("setrego6xxtype", boost::bind(&CWebServer::SetRego6XXType, this, _1, _2, _3));
+			m_pWebEm->RegisterActionCode("sets0metertype", boost::bind(&CWebServer::SetS0MeterType, this, _1, _2, _3));
+			m_pWebEm->RegisterActionCode("setlimitlesstype", boost::bind(&CWebServer::SetLimitlessType, this, _1, _2, _3));
+			m_pWebEm->RegisterActionCode("setopenthermsettings", boost::bind(&CWebServer::SetOpenThermSettings, this, _1, _2, _3));
+			m_pWebEm->RegisterActionCode("setp1usbtype", boost::bind(&CWebServer::SetP1USBType, this, _1, _2, _3));
+			m_pWebEm->RegisterActionCode("setcurrentcostmetertype", boost::bind(&CWebServer::SetCurrentCostUSBType, this, _1, _2, _3));
+			m_pWebEm->RegisterActionCode("restoredatabase", boost::bind(&CWebServer::RestoreDatabase, this, _1, _2, _3));
+			m_pWebEm->RegisterActionCode("sbfspotimportolddata", boost::bind(&CWebServer::SBFSpotImportOldData, this, _1, _2, _3));
 
 			RegisterCommandCode("getlanguage", boost::bind(&CWebServer::Cmd_GetLanguage, this, _1, _2, _3), true);
 			RegisterCommandCode("getthemes", boost::bind(&CWebServer::Cmd_GetThemes, this, _1, _2, _3), true);
@@ -6803,14 +6803,14 @@ namespace http {
 			return false;
 		}
 
-		char * CWebServer::PostSettings(WebEmSession & session, const request& req)
+		void CWebServer::PostSettings(WebEmSession & session, const request& req, std::string & redirect_uri)
 		{
-			m_retstr = "/index.html";
+			redirect_uri = "/index.html";
 
 			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
-				return (char*)m_retstr.c_str();
+				return;
 			}
 
 			std::string Latitude = request::findValue(&req, "Latitude");
@@ -7108,30 +7108,26 @@ namespace http {
 
 			m_notifications.LoadConfig();
 
-			return (char*)m_retstr.c_str();
 		}
 
-		char * CWebServer::RestoreDatabase(WebEmSession & session, const request& req)
+		void CWebServer::RestoreDatabase(WebEmSession & session, const request& req, std::string & redirect_uri)
 		{
-			m_retstr = "/index.html";
+			redirect_uri = "/index.html";
 			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
-				return (char*)m_retstr.c_str();
+				return;
 			}
 
 			std::string dbasefile = request::findValue(&req, "dbasefile");
 			if (dbasefile == "") {
-				return (char*)m_retstr.c_str();
+				return;
 			}
 
 			m_mainworker.StopDomoticzHardware();
 
 			bool bOK = m_sql.RestoreDatabase(dbasefile);
 			m_mainworker.AddAllDomoticzHardware();
-			if (!bOK)
-				return (char*)m_retstr.c_str();
-			return (char*)m_retstr.c_str();
 		}
 
 		struct _tHardwareListInt{

@@ -93,7 +93,7 @@ namespace http {
 		class cWebem;
 		typedef boost::function< char*() > webem_include_function;
 		typedef boost::function< wchar_t*() > webem_include_function_w;
-		typedef boost::function< char*( WebEmSession & session, const request& ) > webem_action_function;
+		typedef boost::function< void( WebEmSession & session, const request& req, std::string & redirecturi ) > webem_action_function;
 		typedef boost::function< std::string( WebEmSession & session, const request& ) > webem_page_function;
 		typedef boost::function< wchar_t*( WebEmSession & session, const request& ) > webem_page_function_w;
 

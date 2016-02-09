@@ -68,6 +68,7 @@ Version 2.4xxx
 - Fixed: Fix a cache refresh issue by respecting HTTP standard (HTTP 304 and 204).
 - Fixed: Remove unnecessary session attribute _tWebEmSession::lastRequestPath (used to check the request URI).
 - Fixed: Optimize the database backup file reading method by allocating memory before reading the file.
+- Fixed: Optimize webem_action_function execution by replacing return value with an argument passed by reference.
 - Updated: OpenZWave, configuration files
 
 Version 2.3530 (November 1th 2015)

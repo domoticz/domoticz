@@ -475,16 +475,14 @@ bool cWebem::CheckForAction(WebEmSession & session, request& req )
 	}
 
 	// call the function
-	std::string ret;
 	try
 	{
-		ret = pfun->second(session, req);
+		pfun->second(session, req, req.uri);
 	}
 	catch (...)
 	{
 		
 	}
-	req.uri = ret;
 
 	return true;
 }

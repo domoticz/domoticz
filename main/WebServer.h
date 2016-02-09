@@ -47,17 +47,17 @@ public:
 	std::string GetDatabaseBackup(WebEmSession & session, const request& req);
 	std::string Post_UploadCustomIcon(WebEmSession & session, const request& req);
 
-	char * PostSettings(WebEmSession & session, const request& req);
-	char * SetRFXCOMMode(WebEmSession & session, const request& req);
-	char * RFXComUpgradeFirmware(WebEmSession & session, const request& req);
-	char * SetRego6XXType(WebEmSession & session, const request& req);
-	char * SetS0MeterType(WebEmSession & session, const request& req);
-	char * SetLimitlessType(WebEmSession & session, const request& req);
-	char * SetOpenThermSettings(WebEmSession & session, const request& req);
-	char * SetP1USBType(WebEmSession & session, const request& req);
-	char * RestoreDatabase(WebEmSession & session, const request& req);
-	char * SBFSpotImportOldData(WebEmSession & session, const request& req);
-	char * SetCurrentCostUSBType(WebEmSession & session, const request& req);
+	void PostSettings(WebEmSession & session, const request& req, std::string & redirect_uri);
+	void SetRFXCOMMode(WebEmSession & session, const request& req, std::string & redirect_uri);
+	void RFXComUpgradeFirmware(WebEmSession & session, const request& req, std::string & redirect_uri);
+	void SetRego6XXType(WebEmSession & session, const request& req, std::string & redirect_uri);
+	void SetS0MeterType(WebEmSession & session, const request& req, std::string & redirect_uri);
+	void SetLimitlessType(WebEmSession & session, const request& req, std::string & redirect_uri);
+	void SetOpenThermSettings(WebEmSession & session, const request& req, std::string & redirect_uri);
+	void SetP1USBType(WebEmSession & session, const request& req, std::string & redirect_uri);
+	void RestoreDatabase(WebEmSession & session, const request& req, std::string & redirect_uri);
+	void SBFSpotImportOldData(WebEmSession & session, const request& req, std::string & redirect_uri);
+	void SetCurrentCostUSBType(WebEmSession & session, const request& req, std::string & redirect_uri);
 
 	cWebem *m_pWebEm;
 
