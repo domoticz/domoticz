@@ -8593,7 +8593,7 @@ namespace http {
 
 							ValuePrefix = options["ValuePrefix"];
 							ValueSuffix = options["ValueSuffix"];
-							CounterDivider = atof(options["CounterDivider"].c_str());
+							CounterDivider = float(atoi(options["CounterDivider"].c_str()));
 						}
 
 						//get value of today
