@@ -193,7 +193,7 @@ Version 2.3521 (October 31th 2015)
 - Fixed: Netatmo, Rain Sensor
 - Fixed: OpenZWave with large homeid values
 - Fixed: Post command handling
-- Fixed: pushover sound notification (thanks to Eduard)
+- Fixed: pushover sound notification (thanks to EddyK69)
 - Fixed: Revolt, Energy Graph
 - Fixed: Scenes RFY switch command now correctly handled
 - Fixed: Security Panel delay, now again possible to set delay to 0 (directly)
