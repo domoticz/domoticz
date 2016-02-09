@@ -11314,10 +11314,8 @@ namespace http {
 				m_sql.safe_query("DELETE FROM Timers WHERE (DeviceRowID == '%q')", idx.c_str());
 			}
 
-			if (!sOptions.empty()) {
-				// Save device options
-				m_sql.SetDeviceOptions(ullidx, m_sql.BuildDeviceOptions(sOptions, false));
-			}
+			// Save device options
+			m_sql.SetDeviceOptions(ullidx, m_sql.BuildDeviceOptions(sOptions, false));
 
 			if (maindeviceidx != "")
 			{

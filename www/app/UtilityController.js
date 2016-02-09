@@ -1743,6 +1743,11 @@ define(['app'], function (app) {
 				  if ( bValid ) {
 					  if (meterType==3) //Counter
 					  {
+						var counterDivider=parseInt($("#dialog-editmeterdevice #counterdivider").val(),10);
+						if (!Number.isInteger(counterDivider))
+						{
+							counterDivider=1;
+						}							
 						devOptions.push("ValuePrefix:");
 						devOptions.push($("#dialog-editmeterdevice #valueprefix").val());
 						devOptions.push(";");
@@ -1750,7 +1755,7 @@ define(['app'], function (app) {
 						devOptions.push($("#dialog-editmeterdevice #valuesuffix").val());
 						devOptions.push(";");
 						devOptions.push("CounterDivider:");
-						devOptions.push($("#dialog-editmeterdevice #counterdivider").val());
+						devOptions.push(counterDivider);
 						devOptions.push(";");
 						devOptionsParam.push(devOptions.join(''));
 					  }
