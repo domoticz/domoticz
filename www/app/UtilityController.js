@@ -1765,8 +1765,8 @@ define(['app'], function (app) {
 							'&name=' + encodeURIComponent($("#dialog-editmeterdevice #devicename").val()) + 
 							'&description=' + encodeURIComponent($("#dialog-editmeterdevice #devicedescription").val()) + 
 							'&switchtype=' + meterType + 
-						    '&used=true' +
-						    '&options=' + btoa(encodeURIComponent(devOptionsParam.join(''))), // encode before b64 to prevent from character encoding issue
+							'&used=true' +
+							'&options=' + btoa(encodeURIComponent(devOptionsParam.join(''))), // encode before b64 to prevent from character encoding issue
 						 async: false, 
 						 dataType: 'json',
 						 success: function(data) {
