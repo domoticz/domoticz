@@ -259,7 +259,6 @@ const char *Meter_Type_Desc(const _eMeterType sType)
 		{ MTYPE_WATER, "Water" },
 		{ MTYPE_COUNTER, "Counter" },
 		{ MTYPE_ENERGY_GENERATED, "Energy Generated" },
-		{ MTYPE_TIME, "Time" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, sType);
@@ -295,7 +294,6 @@ const char *Notification_Type_Desc(const int nType, const unsigned char snum)
 		{ NTYPE_PAUSED, "Pause Stream", "Y" },
 		{ NTYPE_STOPPED, "Stop Stream", "Q" },
 		{ NTYPE_PLAYING, "Play Stream", "a" },
-		{ NTYPE_TODAYTIME, "Today", "m" },
 		{  0,NULL,NULL }
 	};
 	if (snum==0)
@@ -334,7 +332,6 @@ const char *Notification_Type_Label(const int nType)
 		{ NTYPE_PAUSED, "" },
 		{ NTYPE_STOPPED, "" },
 		{ NTYPE_PLAYING, "" },
-		{ NTYPE_TODAYTIME, "min" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, nType);

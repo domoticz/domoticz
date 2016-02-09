@@ -1806,7 +1806,7 @@ bool CSQLHelper::OpenDatabase()
 		if (dbversion < 100)
 		{
 			//Convert depricated CounterType 'Time' to type Counter with options ValuePrefix='Time' & ValueSuffix='Min'
-			std::stringstream szQuery, szQuery2;
+			std::stringstream szQuery, szQuery2, szQuery3;
 			std::vector<std::vector<std::string> > result, result2;
 			std::vector<std::string> sd;
 			result = query("SELECT ID FROM Hardware WHERE ([Type] = 15)");
@@ -1818,10 +1818,10 @@ bool CSQLHelper::OpenDatabase()
 					sd = *itt;
 					szQuery.clear();
 					szQuery.str("");
-					szQuery << "SELECT ID, DeviceID FROM DeviceStatus WHERE ([Type]=" << pTypeRFXMeter << ")"
-						" AND (SubType=" << sTypeRFXMeterCount << ")"
-						" AND (SwitchType=" << MTYPE_TIME << ")"
-						" AND (HardwareID=" << sd[0] << ")";
+					szQuery << "SELECT ID, DeviceID FROM DeviceStatus"
+						" WHERE ((([Type]=" << pTypeRFXMeter << ") AND (SubType=" << sTypeRFXMeterCount << "))"
+						" OR (([Type]=" << pTypeGeneral << ") AND (SubType=" << sTypeCounterIncremental << ")))"
+						" AND (SwitchType=" << 0x05 << ") AND (HardwareID=" << sd[0] << ")";
 					result2 = query(szQuery.str());
 					if (result2.size() > 0)
 					{
@@ -1837,6 +1837,12 @@ bool CSQLHelper::OpenDatabase()
 							query(szQuery2.str());
 							//Set default options
 							m_sql.SetDeviceOptions(devidx, m_sql.BuildDeviceOptions("ValuePrefix:Time;ValueSuffix:Min;CounterDivider:1", false));
+							//Update notifications 'Time' -> 'Counter'
+							szQuery3.clear();
+							szQuery3.str("");
+							szQuery3 << "UPDATE Notifications SET Params=REPLACE(Params, 'm;', '" << Notification_Type_Desc(NTYPE_TODAYCOUNTER, 1) << ";')"
+								" WHERE (DeviceRowID=" << devidx << ")";
+							query(szQuery3.str());
 						}
 					}
 				}
@@ -4825,11 +4831,6 @@ void CSQLHelper::AddCalendarUpdateMeter()
 					musage=float(total_real);
 					if (musage!=0)
 						m_notifications.CheckAndHandleNotification(ID, devname, devType, subType, NTYPE_TODAYCOUNTER, musage);
-					break;
-				case MTYPE_TIME:
-					musage = float(total_real);
-					if (musage != 0)
-						m_notifications.CheckAndHandleNotification(ID, devname, devType, subType, NTYPE_TODAYTIME, musage);
 					break;
 				}
 			}
