@@ -9731,14 +9731,16 @@ namespace http {
 #endif
 			if (m_sql.BackupDatabase(OutputFileName))
 			{
-				std::ifstream testFile(OutputFileName.c_str(), std::ios::binary);
-				std::vector<char> fileContents((std::istreambuf_iterator<char>(testFile)),
-					std::istreambuf_iterator<char>());
-				if (fileContents.size() > 0)
-				{
-					dbcontent.insert(dbcontent.begin(), fileContents.begin(), fileContents.end());
+				std::ifstream testFile(OutputFileName.c_str(), std::ios::in | std::ios::binary);
+				testFile.seekg(0, std::ios::end);
+				int fileSize = testFile.tellg();
+				if (fileSize > 0) {
+					dbcontent.resize(fileSize);
+					testFile.seekg(0, std::ios::beg);
+					testFile.read(&dbcontent[0], dbcontent.size());
 					session.outputfilename = "domoticz.db";
 				}
+				testFile.close();
 			}
 			return dbcontent;
 		}
