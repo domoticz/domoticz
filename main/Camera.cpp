@@ -404,7 +404,7 @@ namespace http {
 		}
 		std::string CWebServer::GetInternalCameraSnapshot(WebEmSession & session, const request& req)
 		{
-			m_retstr = "";
+			std::string snapshot = "";
 
 			std::string request_path;
 			request_handler::url_decode(req.uri, request_path);
@@ -420,10 +420,10 @@ namespace http {
 				if (!m_mainworker.m_cameras.TakeUVCSnapshot(camimage))
 					goto exitproc;
 			}
-			m_retstr.insert(m_retstr.begin(), camimage.begin(), camimage.end());
+			snapshot.insert(snapshot.begin(), camimage.begin(), camimage.end());
 			session.outputfilename = "snapshot.jpg";
 		exitproc:
-			return m_retstr;
+			return snapshot;
 		}
 
 		std::string CWebServer::GetCameraSnapshot(WebEmSession & session, const request& req)
