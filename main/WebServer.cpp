@@ -818,6 +818,7 @@ namespace http {
 				}
 				if (cparam == "dologout")
 				{
+					session.forcelogin = true;
 					root["status"] = "OK";
 					root["title"] = "Logout";
 					goto exitjson;
@@ -830,13 +831,10 @@ namespace http {
 			}
 		exitjson:
 			std::string jcallback = request::findValue(&req, "jsoncallback");
-			if (jcallback.size() == 0)
-				m_retstr = root.toStyledString();
-			else
-			{
-				m_retstr = "var data=" + root.toStyledString() + "\n" + jcallback + "(data);";
+			if (jcallback.size() == 0) {
+				return root.toStyledString();
 			}
-			return m_retstr;
+			return "var data=" + root.toStyledString() + "\n" + jcallback + "(data);";
 		}
 
 		void CWebServer::Cmd_GetLanguage(WebEmSession & session, const request& req, Json::Value &root)
@@ -1001,6 +999,10 @@ namespace http {
 			int port = atoi(sport.c_str());
 			if (IsSerialDevice(htype))
 			{
+				std::string modeStr = request::findValue(&req, "Mode1");
+				if (!modeStr.empty()) {
+					mode1 = atoi(modeStr.c_str());
+				}
 			}
 			else if (
 				(htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) || (htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) ||

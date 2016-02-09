@@ -147,10 +147,7 @@ const char accepted[] =
   "<body><h1>202 Accepted</h1></body>"
   "</html>";
 const char no_content[] =
-  "<html>"
-  "<head><title>No Content</title></head>"
-  "<body><h1>204 Content</h1></body>"
-  "</html>";
+  ""; // The 204 response MUST NOT contain a message-body
 const char multiple_choices[] =
   "<html>"
   "<head><title>Multiple Choices</title></head>"
@@ -167,10 +164,7 @@ const char moved_temporarily[] =
   "<body><h1>302 Moved Temporarily</h1></body>"
   "</html>";
 const char not_modified[] =
-  "<html>"
-  "<head><title>Not Modified</title></head>"
-  "<body><h1>304 Not Modified</h1></body>"
-  "</html>";
+  ""; // The 304 response MUST NOT contain a message-body
 const char bad_request[] =
   "<html>"
   "<head><title>Bad Request</title></head>"
@@ -257,15 +251,17 @@ std::string to_string(reply::status_type status)
 
 reply reply::stock_reply(reply::status_type status)
 {
-  reply rep;
-  rep.status = status;
-  rep.content = stock_replies::to_string(status);
-  rep.headers.resize(2);
-  rep.headers[0].name = "Content-Length";
-  rep.headers[0].value = boost::lexical_cast<std::string>(rep.content.size());
-  rep.headers[1].name = "Content-Type";
-  rep.headers[1].value = "text/html";
-  return rep;
+	reply rep;
+	rep.status = status;
+	rep.content = stock_replies::to_string(status);
+	if (!rep.content.empty()) { // response can be empty (eg. HTTP 304)
+		rep.headers.resize(2);
+		rep.headers[0].name = "Content-Length";
+		rep.headers[0].value = boost::lexical_cast<std::string>(rep.content.size());
+		rep.headers[1].name = "Content-Type";
+		rep.headers[1].value = "text/html";
+	}
+	return rep;
 }
 
 void reply::AddHeader(reply *rep, const std::string &name, const std::string &value, bool replace)

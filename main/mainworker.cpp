@@ -645,7 +645,7 @@ bool MainWorker::AddHardwareFromParams(
 			}
 			else if (Type == HTYPE_MySensorsUSB)
 			{
-				pHardware = new MySensorsSerial(ID, SerialPort);
+				pHardware = new MySensorsSerial(ID, SerialPort, Mode1);
 			}
 			else if (Type == HTYPE_KMTronicUSB)
 			{
