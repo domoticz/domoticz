@@ -539,6 +539,7 @@ namespace http {
 			RegisterRType("graph", boost::bind(&CWebServer::RType_HandleGraph, this, _1, _2, _3));
 			RegisterRType("lightlog", boost::bind(&CWebServer::RType_LightLog, this, _1, _2, _3));
 			RegisterRType("textlog", boost::bind(&CWebServer::RType_TextLog, this, _1, _2, _3));
+			RegisterRType("scenelog", boost::bind(&CWebServer::RType_SceneLog, this, _1, _2, _3));
 			RegisterRType("settings", boost::bind(&CWebServer::RType_Settings, this, _1, _2, _3));
 			RegisterRType("events", boost::bind(&CWebServer::RType_Events, this, _1, _2, _3));
 			RegisterRType("hardware", boost::bind(&CWebServer::RType_Hardware, this, _1, _2, _3));
@@ -817,6 +818,7 @@ namespace http {
 				}
 				if (cparam == "dologout")
 				{
+					session.forcelogin = true;
 					root["status"] = "OK";
 					root["title"] = "Logout";
 					goto exitjson;
@@ -829,13 +831,10 @@ namespace http {
 			}
 		exitjson:
 			std::string jcallback = request::findValue(&req, "jsoncallback");
-			if (jcallback.size() == 0)
-				m_retstr = root.toStyledString();
-			else
-			{
-				m_retstr = "var data=" + root.toStyledString() + "\n" + jcallback + "(data);";
+			if (jcallback.size() == 0) {
+				return root.toStyledString();
 			}
-			return m_retstr;
+			return "var data=" + root.toStyledString() + "\n" + jcallback + "(data);";
 		}
 
 		void CWebServer::Cmd_GetLanguage(WebEmSession & session, const request& req, Json::Value &root)
@@ -1000,6 +999,10 @@ namespace http {
 			int port = atoi(sport.c_str());
 			if (IsSerialDevice(htype))
 			{
+				std::string modeStr = request::findValue(&req, "Mode1");
+				if (!modeStr.empty()) {
+					mode1 = atoi(modeStr.c_str());
+				}
 			}
 			else if (
 				(htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) || (htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) ||
@@ -2010,7 +2013,7 @@ namespace http {
 			}
 			else
 			{
-				root["HaveUpdate"] = m_mainworker.IsUpdateAvailable(true);
+				root["HaveUpdate"] = m_mainworker.IsUpdateAvailable(false);
 				root["DomoticzUpdateURL"] = m_mainworker.m_szDomoticzUpdateURL;
 				root["SystemName"] = m_mainworker.m_szSystemName;
 				root["Revision"] = m_mainworker.m_iRevision;
@@ -4184,11 +4187,11 @@ namespace http {
 						if (dtype == pTypeBlinds) {
 							dtype = pTypeGeneralSwitch;
 							if (subtype == sTypeBlindsT5) subtype = sSwitchTypeBofu;
-							if (subtype == sTypeBlindsT6) subtype = sSwitchTypeBrel;
-							if (subtype == sTypeBlindsT7) subtype = sSwitchTypeAOK;
-							if (subtype == sTypeBlindsT8) subtype = sSwitchTypeBofu;
-							if (subtype == sTypeBlindsT9) subtype = sSwitchTypeBrel;
-							if (subtype == sTypeBlindsT10) subtype = sSwitchTypeAOK;
+							else if (subtype == sTypeBlindsT6) subtype = sSwitchTypeBrel;
+							else if (subtype == sTypeBlindsT7) subtype = sSwitchTypeAOK;
+							else if (subtype == sTypeBlindsT8) subtype = sSwitchTypeBofu;
+							else if (subtype == sTypeBlindsT9) subtype = sSwitchTypeBrel;
+							else if (subtype == sTypeBlindsT10) subtype = sSwitchTypeAOK;
 							std::stringstream s_strid;
 							s_strid << std::hex << strtoul(devid.c_str(), NULL, 16);
 							unsigned long deviceid = 0;
@@ -4709,11 +4712,11 @@ namespace http {
 						if (dtype == pTypeBlinds) {
 							dtype = pTypeGeneralSwitch;
 							if (subtype == sTypeBlindsT5) subtype = sSwitchTypeBofu;
-							if (subtype == sTypeBlindsT6) subtype = sSwitchTypeBrel;
-							if (subtype == sTypeBlindsT7) subtype = sSwitchTypeAOK;
-							if (subtype == sTypeBlindsT8) subtype = sSwitchTypeBofu;
-							if (subtype == sTypeBlindsT9) subtype = sSwitchTypeBrel;
-							if (subtype == sTypeBlindsT10) subtype = sSwitchTypeAOK;
+							else if (subtype == sTypeBlindsT6) subtype = sSwitchTypeBrel;
+							else if (subtype == sTypeBlindsT7) subtype = sSwitchTypeAOK;
+							else if (subtype == sTypeBlindsT8) subtype = sSwitchTypeBofu;
+							else if (subtype == sTypeBlindsT9) subtype = sSwitchTypeBrel;
+							else if (subtype == sTypeBlindsT10) subtype = sSwitchTypeAOK;
 							std::stringstream s_strid;
 							s_strid << std::hex << strtoul(devid.c_str(), NULL, 16);
 							unsigned long deviceid = 0;
@@ -4983,6 +4986,12 @@ namespace http {
 						root["result"][ii]["val"] = NTYPE_TODAYCOUNTER;
 						root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_TODAYCOUNTER, 0);
 						root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_TODAYCOUNTER, 1);
+					}
+					else if (switchtype == MTYPE_TIME)
+					{
+						root["result"][ii]["val"] = NTYPE_TODAYTIME;
+						root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_TODAYTIME, 0);
+						root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_TODAYTIME, 1);
 					}
 					else
 					{
@@ -5717,8 +5726,20 @@ namespace http {
 				root["status"] = "OK";
 				root["title"] = "ClearLightLog";
 
-				result = m_sql.safe_query("DELETE FROM LightingLog WHERE (DeviceRowID=='%q')",
-					idx.c_str());
+				result = m_sql.safe_query("DELETE FROM LightingLog WHERE (DeviceRowID=='%q')", idx.c_str());
+			}
+			else if (cparam == "clearscenelog")
+			{
+				if (session.rights < 2)
+					return;//Only admin user allowed
+
+				std::string idx = request::findValue(&req, "idx");
+				if (idx == "")
+					return;
+				root["status"] = "OK";
+				root["title"] = "ClearSceneLog";
+
+				result = m_sql.safe_query("DELETE FROM SceneLog WHERE (SceneRowID=='%q')", idx.c_str());
 			}
 			else if (cparam == "learnsw")
 			{
@@ -8617,6 +8638,9 @@ namespace http {
 							case MTYPE_COUNTER:
 								sprintf(szTmp, "%llu", total_real);
 								break;
+							case MTYPE_TIME:
+								sprintf(szTmp, "%llu min", total_real);
+								break;
 							}
 						}
 						root["result"][ii]["Counter"] = sValue;
@@ -8639,6 +8663,11 @@ namespace http {
 							break;
 						case MTYPE_WATER:
 							sprintf(szTmp, "%.03f m3", fvalue / WaterDivider);
+							root["result"][ii]["Data"] = szTmp;
+							root["result"][ii]["Counter"] = szTmp;
+							break;
+						case MTYPE_TIME:
+							sprintf(szTmp, "%i min", atoi(sValue.c_str()));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
@@ -8716,6 +8745,9 @@ namespace http {
                             case MTYPE_COUNTER:
                                     sprintf(szTmp, "%llu", total_real);
                                     break;
+							case MTYPE_TIME:
+								sprintf(szTmp, "%llu min", total_real);
+								break;
                             }
                         }
                         root["result"][ii]["Counter"] = sValue;
@@ -8742,6 +8774,11 @@ namespace http {
                                 root["result"][ii]["Data"] = szTmp;
                                 root["result"][ii]["Counter"] = szTmp;
                                 break;
+						case MTYPE_TIME:
+							sprintf(szTmp, "%i min", atoi(sValue.c_str()));
+							root["result"][ii]["Data"] = szTmp;
+							root["result"][ii]["Counter"] = szTmp;
+							break;
                         }
                     }
 					else if (dType == pTypeYouLess)
@@ -8817,6 +8854,9 @@ namespace http {
 							case MTYPE_COUNTER:
 								sprintf(szTmp, "%llu", total_real);
 								break;
+							case MTYPE_TIME:
+								sprintf(szTmp, "%llu min", total_real);
+								break;
 							}
 						}
 						root["result"][ii]["CounterToday"] = szTmp;
@@ -8846,6 +8886,9 @@ namespace http {
 						case MTYPE_COUNTER:
 							sprintf(szTmp, "%llu", total_actual);
 							break;
+						case MTYPE_TIME:
+							sprintf(szTmp, "%llu min", total_actual);
+							break;
 						}
 						root["result"][ii]["Counter"] = szTmp;
 
@@ -8873,6 +8916,9 @@ namespace http {
 						case MTYPE_COUNTER:
 							sprintf(szTmp, "%llu", acounter);
 							break;
+						case MTYPE_TIME:
+							sprintf(szTmp, "%llu min", acounter);
+							break;
 						}
 						root["result"][ii]["Data"] = szTmp;
 						switch (metertype)
@@ -8888,6 +8934,7 @@ namespace http {
 							sprintf(szTmp, "%s m", splitresults[1].c_str());
 							break;
 						case MTYPE_COUNTER:
+						case MTYPE_TIME:
 							sprintf(szTmp, "%s", splitresults[1].c_str());
 							break;
 						}
@@ -9758,6 +9805,7 @@ namespace http {
 			m_sql.safe_query("DELETE FROM Scenes WHERE (ID == '%q')", idx.c_str());
 			m_sql.safe_query("DELETE FROM SceneDevices WHERE (SceneRowID == '%q')", idx.c_str());
 			m_sql.safe_query("DELETE FROM SceneTimers WHERE (SceneRowID == '%q')", idx.c_str());
+			m_sql.safe_query("DELETE FROM SceneLog WHERE (SceneRowID=='%q')", idx.c_str());
 		}
 
 		void CWebServer::RType_UpdateScene(WebEmSession & session, const request& req, Json::Value &root)
@@ -11651,8 +11699,7 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "LightLog";
 
-			result = m_sql.safe_query("SELECT ROWID, nValue, sValue, Date FROM LightingLog WHERE (DeviceRowID==%llu) ORDER BY Date DESC",
-				idx);
+			result = m_sql.safe_query("SELECT ROWID, nValue, sValue, Date FROM LightingLog WHERE (DeviceRowID==%llu) ORDER BY Date DESC", idx);
 			if (result.size() > 0)
 			{
 				std::map<std::string, std::string> selectorStatuses;
@@ -11748,6 +11795,38 @@ namespace http {
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Date"] = sd[2];
 					root["result"][ii]["Data"] = sd[1];
+					ii++;
+				}
+			}
+		}
+
+		void CWebServer::RType_SceneLog(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			unsigned long long idx = 0;
+			if (request::findValue(&req, "idx") != "")
+			{
+				std::stringstream s_str(request::findValue(&req, "idx"));
+				s_str >> idx;
+			}
+			std::vector<std::vector<std::string> > result;
+			std::stringstream szQuery;
+
+			root["status"] = "OK";
+			root["title"] = "SceneLog";
+
+			result = m_sql.safe_query("SELECT ROWID, nValue, Date FROM SceneLog WHERE (SceneRowID==%llu) ORDER BY Date DESC", idx);
+			if (result.size() > 0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				int ii = 0;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
+
+					int nValue = atoi(sd[1].c_str());
+					root["result"][ii]["idx"] = sd[0];
+					root["result"][ii]["Date"] = sd[2];
+					root["result"][ii]["Data"] = (nValue == 0) ? "Off" : "On";
 					ii++;
 				}
 			}
@@ -12604,6 +12683,7 @@ namespace http {
 												sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
 												break;
 											case MTYPE_COUNTER:
+											case MTYPE_TIME:
 												sprintf(szTmp, "%.1f", TotalValue);
 												break;
 											}
@@ -12655,6 +12735,7 @@ namespace http {
 										sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
 										break;
 									case MTYPE_COUNTER:
+									case MTYPE_TIME:
 										sprintf(szTmp, "%.1f", TotalValue);
 										break;
 									}
@@ -12761,6 +12842,7 @@ namespace http {
 													sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
 													break;
 												case MTYPE_COUNTER:
+												case MTYPE_TIME:
 													sprintf(szTmp, "%.1f", TotalValue);
 													break;
 												}
@@ -12826,6 +12908,7 @@ namespace http {
 												sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
 												break;
 											case MTYPE_COUNTER:
+											case MTYPE_TIME:
 												sprintf(szTmp, "%.1f", TotalValue);
 												break;
 											}
@@ -12865,6 +12948,7 @@ namespace http {
 									sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
 									break;
 								case MTYPE_COUNTER:
+								case MTYPE_TIME:
 									sprintf(szTmp, "%.1f", TotalValue);
 									break;
 								}
@@ -14575,6 +14659,9 @@ namespace http {
 							case MTYPE_WATER:
 								sprintf(szTmp, "%.3f", fvalue / WaterDivider);
 								break;
+							default:
+								sprintf(szTmp, "");
+								break;
 							}
 							root["counter"] = szTmp;
 						}
@@ -14597,6 +14684,9 @@ namespace http {
 									break;
 								case MTYPE_WATER:
 									sprintf(szTmp, "%.3f", fvalue / WaterDivider);
+									break;
+								default:
+									sprintf(szTmp, "");
 									break;
 								}
 								root["counter"] = szTmp;
@@ -14654,6 +14744,7 @@ namespace http {
 									root["result"][ii]["c"] = szTmp;
 									break;
 								case MTYPE_COUNTER:
+								case MTYPE_TIME:
 									sprintf(szTmp, "%.0f", atof(szValue.c_str()));
 									root["result"][ii]["v"] = szTmp;
 									if (fcounter != 0)
@@ -14694,6 +14785,7 @@ namespace http {
 									root["resultprev"][iPrev]["v"] = szTmp;
 									break;
 								case MTYPE_COUNTER:
+								case MTYPE_TIME:
 									sprintf(szTmp, "%.0f", atof(szValue.c_str()));
 									root["resultprev"][iPrev]["v"] = szTmp;
 									break;
@@ -14974,6 +15066,7 @@ namespace http {
 								root["result"][ii]["c"] = szTmp;
 								break;
 							case MTYPE_COUNTER:
+							case MTYPE_TIME:
 								sprintf(szTmp, "%.0f", atof(szValue.c_str()));
 								root["result"][ii]["v"] = szTmp;
 								sprintf(szTmp, "%.0f", (atof(sValue.c_str()) - atof(szValue.c_str())));

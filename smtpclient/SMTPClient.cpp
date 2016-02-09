@@ -275,7 +275,7 @@ const std::string SMTPClient::MakeMessage()
 		// we have attachments
 		ret += "Content-Type: multipart/mixed;\n"
 			"\tboundary=\"" + std::string(szBoundaryMixed) + "\"\n\n";
-		ret += "This is a multi-part message in MIME format.\n";
+		ret += "This is a multipart message in MIME format.\n";
 		bHaveSendMimeFormat = true;
 	}
 
@@ -284,7 +284,7 @@ const std::string SMTPClient::MakeMessage()
 		ret += "Content-Type: multipart/alternative;\n"
 			"\tboundary=\"" + std::string(szBoundary) + "\"\n\n";
 		if (!bHaveSendMimeFormat)
-			ret += "This is a multi-part message in MIME format.\n";
+			ret += "This is a multipart message in MIME format.\n";
 
 		if (!m_PlainBody.empty()) {
 			ret += "--" + std::string(szBoundary) + "\n";

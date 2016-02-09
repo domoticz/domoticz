@@ -20,15 +20,15 @@ else()
   add_definitions(-DNS_ENABLE_SSL)
 endif()
 
-SET(CORE
+SET(CORE mosquitto.c
 	logging_mosq.c memory_mosq.c messages_mosq.c net_mosq.c read_handle.c read_handle_client.c read_handle_shared.c
 	send_client_mosq.c send_mosq.c socks_mosq.c srv_mosq.c thread_mosq.c time_mosq.c tls_mosq.c util_mosq.c will_mosq.c
 )
 
-SET (LIB mosquitto.c)
+SET (LIB mosquittopp.cpp)
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	SET(OperatingSystem "Linux")
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
-ADD_LIBRARY(mqtt ${LIB} ${CORE})
+ADD_LIBRARY(mqtt STATIC ${LIB} ${CORE})
