@@ -9723,7 +9723,7 @@ namespace http {
 
 		std::string CWebServer::GetDatabaseBackup(WebEmSession & session, const request& req)
 		{
-			m_retstr = "";
+			std::string dbcontent = "";
 #ifdef WIN32
 			std::string OutputFileName = szUserDataFolder + "backup.db";
 #else
@@ -9736,11 +9736,11 @@ namespace http {
 					std::istreambuf_iterator<char>());
 				if (fileContents.size() > 0)
 				{
-					m_retstr.insert(m_retstr.begin(), fileContents.begin(), fileContents.end());
+					dbcontent.insert(dbcontent.begin(), fileContents.begin(), fileContents.end());
 					session.outputfilename = "domoticz.db";
 				}
 			}
-			return m_retstr;
+			return dbcontent;
 		}
 
 		void CWebServer::RType_DeleteDevice(WebEmSession & session, const request& req, Json::Value &root)
