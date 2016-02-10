@@ -9,7 +9,10 @@
 //
 #include "stdafx.h"
 #include "reply.hpp"
+#include "mime_types.hpp"
+#include "utf.hpp"
 #include <string>
+#include <fstream>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 
@@ -264,7 +267,7 @@ reply reply::stock_reply(reply::status_type status)
 	return rep;
 }
 
-void reply::AddHeader(reply *rep, const std::string &name, const std::string &value, bool replace)
+void reply::add_header(reply *rep, const std::string &name, const std::string &value, bool replace)
 {
 	int num = rep->headers.size();
 	if (replace) {
@@ -278,6 +281,55 @@ void reply::AddHeader(reply *rep, const std::string &name, const std::string &va
 	rep->headers.resize(num + 1);
 	rep->headers[num].name = name;
 	rep->headers[num].value = value;
+}
+
+void reply::set_content(reply *rep, const std::string & content) {
+	rep->content.assign(content);
+}
+
+void reply::set_content(reply *rep, const std::wstring & content_w) {
+	cUTF utf( content_w.c_str() );
+	rep->content.assign(utf.get8(), strlen(utf.get8()));
+}
+
+void reply::set_content_from_file(reply *rep, const std::string & file_path) {
+	std::ifstream file(file_path.c_str(), std::ios::in | std::ios::binary);
+	file.seekg(0, std::ios::end);
+	int fileSize = file.tellg();
+	if (fileSize > 0) {
+		rep->content.resize(fileSize);
+		file.seekg(0, std::ios::beg);
+		file.read(&rep->content[0], rep->content.size());
+	}
+	file.close();
+}
+
+void reply::set_content_from_file(reply *rep, const std::string & file_path, const std::string & attachment, bool set_content_type) {
+	reply::set_content_from_file(rep, file_path);
+	reply::add_header_attachment(rep, attachment);
+	if (set_content_type == true) {
+		std::size_t last_dot_pos = attachment.find_last_of(".");
+		if (last_dot_pos != std::string::npos) {
+			std::string file_extension = attachment.substr(last_dot_pos + 1);
+			std::string mime_type = mime_types::extension_to_type(file_extension);
+			if ((mime_type.find("text/") >= 0) ||
+					(mime_type.find("/xml") >= 0) ||
+					(mime_type.find("/javascript") >= 0) ||
+					(mime_type.find("/json") >= 0)) {
+				// Add charset on text content
+				mime_type += ";charset=UTF-8";
+			}
+			reply::add_header_content_type(rep, mime_type);
+		}
+	}
+}
+
+void reply::add_header_attachment(reply *rep, const std::string & attachment) {
+	reply::add_header(rep, "Content-Disposition", "attachment; filename=" + attachment);
+}
+
+void reply::add_header_content_type(reply *rep, const std::string & content_type) {
+	reply::add_header(rep, "Content-Type", content_type);
 }
 
 } // namespace server

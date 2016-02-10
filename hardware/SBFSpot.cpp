@@ -638,18 +638,18 @@ void CSBFSpot::GetMeterDetails()
 //Webserver helpers
 namespace http {
 	namespace server {
-		char * CWebServer::SBFSpotImportOldData(WebEmSession & session, const request& req)
+		void CWebServer::SBFSpotImportOldData(WebEmSession & session, const request& req, std::string & redirect_uri)
 		{
-			m_retstr = "/index.html";
+			redirect_uri = "/index.html";
 			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
-				return (char*)m_retstr.c_str();
+				return;
 			}
 
 			std::string idx = request::findValue(&req, "idx");
 			if (idx == "") {
-				return (char*)m_retstr.c_str();
+				return;
 			}
 			int hardwareID = atoi(idx.c_str());
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hardwareID);
@@ -661,7 +661,6 @@ namespace http {
 					pSBFSpot->ImportOldMonthData();
 				}
 			}
-			return (char*)m_retstr.c_str();
 		}
 	}
 }

@@ -66,6 +66,14 @@ Version 2.4xxx
 - Fixed: Do not save each command response in the shared memory (attribute of the server instance).
 - Fixed: Remove session only when the Logout command has been executed.
 - Fixed: Fix a cache refresh issue by respecting HTTP standard (HTTP 304 and 204).
+- Fixed: Remove unnecessary session attribute _tWebEmSession::lastRequestPath (used to check the request URI).
+- Fixed: Optimize the reading method of the database backup file by allocating memory before reading the file and set it as the reply content.
+- Fixed: Optimize the methods webem_action_function, webem_include_function and webem_include_function_x execution, by replacing the return value with an argument passed by reference.
+- Fixed: Remove the unnecessary attributes cWebServer::m_retstr and cWebServer::m_wretstr used to received command and action result (these attributes were virtually shared by all connections on the same listening port).
+- Fixed: Remove unnecessary session attribute _tWebEmSession::outputfilename (used to set content disposition header in the HTTP response).
+- Fixed: Optimize the reading method of the '/ozwcp/cp.html' file by allocating memory before reading the file and set it as the reply content.
+- Fixed: Optimize the reading method of the zwave configuration file by allocating memory before reading the file and set it as the reply content.
+- Fixed: Refactor the http::server::reply structure and add some helper methods.
 - Updated: OpenZWave, configuration files
 
 Version 2.3530 (November 1th 2015)

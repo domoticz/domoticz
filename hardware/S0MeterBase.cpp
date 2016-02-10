@@ -350,18 +350,18 @@ void S0MeterBase::ParseLine()
 //Webserver helpers
 namespace http {
 	namespace server {
-		char * CWebServer::SetS0MeterType(WebEmSession & session, const request& req)
+		void CWebServer::SetS0MeterType(WebEmSession & session, const request& req, std::string & redirect_uri)
 		{
-			m_retstr = "/index.html";
+			redirect_uri = "/index.html";
 			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
-				return (char*)m_retstr.c_str();
+				return;
 			}
 
 			std::string idx = request::findValue(&req, "idx");
 			if (idx == "") {
-				return (char*)m_retstr.c_str();
+				return;
 			}
 
 			std::stringstream szAddress;
@@ -387,7 +387,6 @@ namespace http {
 
 			m_sql.safe_query("UPDATE Hardware SET Address='%q' WHERE (ID='%q')", szAddress.str().c_str(), idx.c_str());
 			m_mainworker.RestartHardware(idx);
-			return (char*)m_retstr.c_str();
 		}
 	}
 }
