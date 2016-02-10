@@ -8566,8 +8566,8 @@ namespace http {
 						float WaterDivider = 100.0f;
 						float CounterDivider = 1.0f;
 						int tValue;
-						std::string ValuePrefix = "";
-						std::string ValueSuffix = "";
+						std::string ValueQuantity = "";
+						std::string ValueUnits = "";
 						if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
 						{
 							EnergyDivider = float(tValue);
@@ -8585,8 +8585,8 @@ namespace http {
 						{
 							std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sOptions);
 
-							ValuePrefix = options["ValuePrefix"];
-							ValueSuffix = options["ValueSuffix"];
+							ValueQuantity = options["ValueQuantity"];
+							ValueUnits = options["ValueUnits"];
 							CounterDivider = float(atoi(options["CounterDivider"].c_str()));
 						}
 
@@ -8640,7 +8640,7 @@ namespace http {
 								sprintf(szTmp, "%llu Liter", total_real);
 								break;
 							case MTYPE_COUNTER:
-								sprintf(szTmp, "%llu %s", total_real, ValueSuffix.c_str());
+								sprintf(szTmp, "%llu %s", total_real, ValueUnits.c_str());
 								break;
 							}
 						}
@@ -8668,11 +8668,12 @@ namespace http {
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_COUNTER:
-							sprintf(szTmp, "%.03f %s", fvalue / CounterDivider, ValueSuffix.c_str());
+							sprintf(szTmp, "%.03f %s", fvalue / CounterDivider, ValueUnits.c_str());
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
-							root["result"][ii]["ValuePrefix"] = ValuePrefix;
-							root["result"][ii]["ValueSuffix"] = ValueSuffix;
+							root["result"][ii]["ValueQuantity"] = ValueQuantity;
+							root["result"][ii]["ValueUnits"] = ValueUnits;
+							root["result"][ii]["CounterDivider"] = CounterDivider;
 							break;
 						}
 					}
@@ -8683,8 +8684,8 @@ namespace http {
                         float WaterDivider = 100.0f;
                         float CounterDivider = 1.0f;
                         int tValue;
-                        std::string ValuePrefix = "";
-                        std::string ValueSuffix = "";
+                        std::string ValueQuantity = "";
+                        std::string ValueUnits = "";
                         if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
                         {
                                 EnergyDivider = float(tValue);
@@ -8702,8 +8703,8 @@ namespace http {
                         {
                             std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sOptions);
 
-                            ValuePrefix = options["ValuePrefix"];
-                            ValueSuffix = options["ValueSuffix"];
+                            ValueQuantity = options["ValueQuantity"];
+                            ValueUnits = options["ValueUnits"];
                             CounterDivider = float(atoi(options["CounterDivider"].c_str()));
                         }
 
@@ -8758,7 +8759,7 @@ namespace http {
                                     sprintf(szTmp, "%.03f m3", musage);
                                     break;
                             case MTYPE_COUNTER:
-                                    sprintf(szTmp, "%llu %s", total_real, ValueSuffix.c_str());
+                                    sprintf(szTmp, "%llu %s", total_real, ValueUnits.c_str());
                                     break;
                             }
                         }
@@ -8787,11 +8788,12 @@ namespace http {
                                 root["result"][ii]["Counter"] = szTmp;
                                 break;
                         case MTYPE_COUNTER:
-                                sprintf(szTmp, "%.03f %s", fvalue / CounterDivider, ValueSuffix.c_str());
+                                sprintf(szTmp, "%.03f %s", fvalue / CounterDivider, ValueUnits.c_str());
                                 root["result"][ii]["Data"] = szTmp;
                                 root["result"][ii]["Counter"] = szTmp;
-                                root["result"][ii]["ValuePrefix"] = ValuePrefix;
-                                root["result"][ii]["ValueSuffix"] = ValueSuffix;
+                                root["result"][ii]["ValueQuantity"] = ValueQuantity;
+                                root["result"][ii]["ValueUnits"] = ValueUnits;
+                                root["result"][ii]["CounterDivider"] = CounterDivider;
                                 break;
                         }
                     }

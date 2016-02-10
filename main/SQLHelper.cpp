@@ -1805,7 +1805,7 @@ bool CSQLHelper::OpenDatabase()
 		//Todo: EddyK69
 		if (dbversion < 100)
 		{
-			//Convert depricated CounterType 'Time' to type Counter with options ValuePrefix='Time' & ValueSuffix='Min'
+			//Convert depricated CounterType 'Time' to type Counter with options ValueQuantity='Time' & ValueUnits='Min'
 			std::stringstream szQuery, szQuery2, szQuery3;
 			std::vector<std::vector<std::string> > result, result2;
 			std::vector<std::string> sd;
@@ -1836,7 +1836,7 @@ bool CSQLHelper::OpenDatabase()
 							szQuery2 << "UPDATE DeviceStatus SET SwitchType=" << MTYPE_COUNTER << " WHERE (ID=" << devidx << ")";
 							query(szQuery2.str());
 							//Set default options
-							m_sql.SetDeviceOptions(devidx, m_sql.BuildDeviceOptions("ValuePrefix:Time;ValueSuffix:Min;CounterDivider:1", false));
+							m_sql.SetDeviceOptions(devidx, m_sql.BuildDeviceOptions("ValueQuantity:Time;ValueUnits:Min;CounterDivider:1", false));
 							//Update notifications 'Time' -> 'Counter'
 							szQuery3.clear();
 							szQuery3.str("");

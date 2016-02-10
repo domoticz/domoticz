@@ -710,7 +710,7 @@ define(['app'], function (app) {
 		  $("#dialog-editdistancedevice" ).dialog( "open" );
 		}
 
-		EditMeterDevice = function(idx,name,description,switchtype)
+		EditMeterDevice = function(idx,name,description,switchtype,valuequantity,valueunits,counterdivider)
 		{
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
@@ -720,10 +720,9 @@ define(['app'], function (app) {
 		  $("#dialog-editmeterdevice #devicename").val(unescape(name));
 		  $("#dialog-editmeterdevice #devicedescription").val(unescape(description));
 		  $("#dialog-editmeterdevice #combometertype").val(switchtype);
-		  //Todo: EddyK69
-		  $("#dialog-editmeterdevice #valueprefix").val(unescape("Time"));
-		  $("#dialog-editmeterdevice #valuesuffix").val(unescape("Min"));
-		  $("#dialog-editmeterdevice #counterdivider").val("10");
+		  $("#dialog-editmeterdevice #valuequantity").val(unescape(valuequantity));
+		  $("#dialog-editmeterdevice #valueunits").val(unescape(valueunits));
+		  $("#dialog-editmeterdevice #counterdivider").val(counterdivider);
 		  $("#dialog-editmeterdevice #metertable #customcounter").hide();
 		  if (switchtype==3) { //Counter
 			$("#dialog-editmeterdevice #metertable #customcounter").show();
@@ -1343,7 +1342,7 @@ define(['app'], function (app) {
 							xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 						}
 						else {
-							xhtm+='<a class="btnsmall" onclick="EditMeterDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.SwitchTypeVal +');" data-i18n="Edit">Edit</a> ';
+						    xhtm += '<a class="btnsmall" onclick="EditMeterDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.SwitchTypeVal + ',\'' + escape(item.ValueQuantity) + '\',\'' + escape(item.ValueUnits) + '\',\'' + item.CounterDivider + '\');" data-i18n="Edit">Edit</a> ';
 						}
 					}
 				  }
@@ -1745,11 +1744,11 @@ define(['app'], function (app) {
 						{
 							counterDivider=1;
 						}							
-						devOptions.push("ValuePrefix:");
-						devOptions.push($("#dialog-editmeterdevice #valueprefix").val());
+						devOptions.push("ValueQuantity:");
+						devOptions.push($("#dialog-editmeterdevice #valuequantity").val());
 						devOptions.push(";");
-						devOptions.push("ValueSuffix:");
-						devOptions.push($("#dialog-editmeterdevice #valuesuffix").val());
+						devOptions.push("ValueUnits:");
+						devOptions.push($("#dialog-editmeterdevice #valueunits").val());
 						devOptions.push(";");
 						devOptions.push("CounterDivider:");
 						devOptions.push(counterDivider);
