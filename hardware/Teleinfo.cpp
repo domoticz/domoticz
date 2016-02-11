@@ -2,7 +2,7 @@
 Domoticz Software : http://domoticz.com/
 File : Teleinfo.cpp
 Author : Nicolas HILAIRE
-Version : 1.3
+Version : 1.4
 Description : This class manage the Teleinfo Signal
 
 
@@ -12,6 +12,7 @@ History :
 - 2014-12-13 : Add 'Tempo' contract (Kevin NICOLAS)
 - 2015-06-10 : Fix bug power divided by 2 (Christophe DELPECH)
 - 2016-02-05 : Fix bug power display with 'Tempo' contract (Anthony LAGUERRE)
+- 2016-02-11 : Fix power display when PAPP is missing (Anthony LAGUERRE)
 */
 
 #include "stdafx.h"
@@ -27,7 +28,7 @@ History :
 
 #include <ctime>
 
-//Teleinfo for EDF power meter. Only "Base" and "Heures creuses" are suported
+//Teleinfo for EDF power meter.
 
 //Teleinfo official specification :
 //http://www.planete-domotique.com/notices/ERDF-NOI-CPT_O2E.pdf
@@ -238,13 +239,6 @@ void Teleinfo::MatchLine()
 		switch (t.type)
 		{
 		case TELEINFO_TYPE_ADCO:
-			/*
-			//structure initialization
-			memset(&m_p1power,0,sizeof(m_p1power));
-			m_p1power.len=sizeof(P1Power)-1;
-			m_p1power.type=pTypeP1Power;
-			m_p1power.subtype=sTypeP1Power;
-			*/
 			break;
 		case TELEINFO_TYPE_OPTARIF:
 			if (vString.substr (0,3) == "BBR")
@@ -325,8 +319,27 @@ void Teleinfo::MatchLine()
 
 			break;
 		case TELEINFO_TYPE_IINST:
-			//we convert A to W setting RFXMeter/Counter Dividers Energy to 1000 / voltage => 1000/230 = 4.35
-			//m_p1power.usagecurrent = ulValue;
+			if (m_bLabel_PAPP_Exist == false)
+			{
+				if (m_bLabel_PTEC_JW == true)
+				{
+					m_p1power.usagecurrent = 0;
+                        		m_p2power.usagecurrent += (ulValue * 230);
+                        		m_p3power.usagecurrent = 0;
+                        	}
+                		else if (m_bLabel_PTEC_JR == true)
+                        	{
+                        		m_p1power.usagecurrent = 0;
+                        		m_p2power.usagecurrent = 0;
+                        		m_p3power.usagecurrent += (ulValue * 230);
+                        	}
+                        	else
+                        	{
+                        		m_p1power.usagecurrent += (ulValue * 230);
+                        		m_p2power.usagecurrent = 0;
+                        		m_p3power.usagecurrent = 0;
+                        	}
+			}
 			break;
 		case TELEINFO_TYPE_IMAX:
 			break;
