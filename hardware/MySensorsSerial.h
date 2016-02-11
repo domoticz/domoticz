@@ -6,7 +6,7 @@
 class MySensorsSerial: public AsyncSerial, public MySensorsBase
 {
 public:
-	MySensorsSerial(const int ID, const std::string& devname);
+	MySensorsSerial(const int ID, const std::string& devname, const int Mode1);
     ~MySensorsSerial();
 private:
 	bool StartHardware();

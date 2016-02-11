@@ -17,11 +17,19 @@
 
 #define RETRY_DELAY 30
 
-MySensorsSerial::MySensorsSerial(const int ID, const std::string& devname):
+MySensorsSerial::MySensorsSerial(const int ID, const std::string& devname, const int Mode1):
 m_retrycntr(RETRY_DELAY),
 m_stoprequested(false)
 {
-	m_iBaudRate = 115200;
+	switch (Mode1)
+	{
+	case 1: // Arduino Pro 3.3V and SenseBender are running on 8 MHz, and the highest reliable baudrate is 38400
+		m_iBaudRate = 38400;
+		break;
+	default:
+		m_iBaudRate = 115200;
+		break;
+	}
 	m_szSerialPort = devname;
 	m_HwdID=ID;
 }

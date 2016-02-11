@@ -15,4 +15,4 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	SET(OperatingSystem "Linux")
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
-ADD_LIBRARY(sqlite ${LIB})
+ADD_LIBRARY(sqlite STATIC ${LIB})

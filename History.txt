@@ -2,10 +2,12 @@ Version 2.4xxx
 - Implemented: Blockly, now possible to use expressions in notifications/email/SMS like "My temperature is {{temperaturedevice[1234]}} degrees" (see http://www.domoticz.com/wiki/Events)
 - Implemented: Blockly, now possible to send a notification with a user variable/device as subject/body
 - Implemented: Chinese language support, big thanks to wxws!!
+- Implemented: CounterType 'Time'
 - Implemented: Day display in energy/gas/water/temp report
 - Implemented: Dummy Hardware, Option to supply name, sensor is now also directly added to the system
 - Implemented: Dummy Hardware, Wind+Temp+Chill
 - Implemented: Dummy Hardware, option to create an RGBW switch
+- Implemented: Extra timer-schedules: Odd/Even Days, Odd/Even Weeks, Monthly & Yearly
 - Implemented: Icelandic language support, big thanks to Magnus!!
 - Implemented: Log View, added options to display All/Status/Error
 - Implemented: Macedonian translation (Big thanks to jocogvg!!!)
@@ -38,8 +40,8 @@ Version 2.4xxx
 - Changed: Fritzbox, Now updating text sensor on connect/disconnect
 - Changed: OpenZWave, Control Panel log starts displaying from the end when entering for the first time
 - Changed: OpenZwave, kWh sensor now maybe compatible with more hardware
-- Changed: OpenZwave, not sending cold-white in the colorclass, solved issues on different zipato bulbs
-- Changed: OpenZWave, Ranamed internally 'Color Control' to 'Color"
+- Changed: OpenZwave, not sending cold-white in the colorclass, solved issues on different Zipato bulbs
+- Changed: OpenZWave, Renamed internally 'Color Control' to 'Color"
 - Fixed: Alert Sensor, displaying sValue again
 - Fixed: Blockly, Set user variables (you need to resave your blockly's)
 - Fixed: Blockly, string uservariables where saved with quotes when not using with set-after
@@ -51,14 +53,27 @@ Version 2.4xxx
 - Fixed: Log display in webgui for log items containing multiple lines
 - Fixed: Manual add Blyss type (Group code was wrong)
 - Fixed: Manual add LightwaveRF type (DeviceID was wrong)
-- Fixed: Month temperature report avarage is now calculated by the daily avarage value
+- Fixed: Month temperature report average is now calculated by the daily average value
 - Fixed: MySensors, barometric value was not used when below 995 hPa
 - Fixed: Nest Thermostat, setting set point in Fahrenheit
 - Fixed: RFXCom (433) protocol setup, Home Comfort checkbox did not show correct state
 - Fixed: RGB sensor now also uses the RGB popup system
 - Fixed: S0 Meter, fix for reloading totals of (#179)
-- Fixed: Thermosmart unpauze
+- Fixed: Thermosmart unpause
 - Fixed: The select menu of a selector switch can come out of its frame depending on the width of the page.
+- Fixed: Fix the cleanup of sessions by shortening the validity duration of long term cookies (30 days instead of 1 year) and by cleaning all sessions asynchronously every 15 minutes.
+- Fixed: Fix a potential issue in login process using a certificate when the subjectDN of the certificate has a different format.
+- Fixed: Do not save each command response in the shared memory (attribute of the server instance).
+- Fixed: Remove session only when the Logout command has been executed.
+- Fixed: Fix a cache refresh issue by respecting HTTP standard (HTTP 304 and 204).
+- Fixed: Remove unnecessary session attribute _tWebEmSession::lastRequestPath (used to check the request URI).
+- Fixed: Optimize the reading method of the database backup file by allocating memory before reading the file and set it as the reply content.
+- Fixed: Optimize the methods webem_action_function, webem_include_function and webem_include_function_x execution, by replacing the return value with an argument passed by reference.
+- Fixed: Remove the unnecessary attributes cWebServer::m_retstr and cWebServer::m_wretstr used to received command and action result (these attributes were virtually shared by all connections on the same listening port).
+- Fixed: Remove unnecessary session attribute _tWebEmSession::outputfilename (used to set content disposition header in the HTTP response).
+- Fixed: Optimize the reading method of the '/ozwcp/cp.html' file by allocating memory before reading the file and set it as the reply content.
+- Fixed: Optimize the reading method of the zwave configuration file by allocating memory before reading the file and set it as the reply content.
+- Fixed: Refactor the http::server::reply structure and add some helper methods.
 - Updated: OpenZWave, configuration files
 
 Version 2.3530 (November 1th 2015)
@@ -141,12 +156,12 @@ Version 2.3521 (October 31th 2015)
 - Changed: Air Quality chart will now not begin at 0
 - Changed: All Energy sensors have been transfered to General kWh sensors (more accurate)
 - Changed: BMP085, when forecast is unknown, its calculated directly based on the pressure
-- Changed: disabled timeout for smartwares thermostat (no incomming data from device)
+- Changed: disabled timeout for smartwares thermostat (no incoming data from device)
 - Changed: EnOcean rocker inclusion (thanks to zorgluf!)
 - Changed: EventSystem, not adding sensors from disable hardware
 - Changed: forced fixed icon sizes on some locations (in case of to big user defined icons)
 - Changed: Internal HTML/JS changes to support all types of characters in the sensors name
-- Changed: json "udevice" Perecentage sensor, you might get new ID's, now also creates an event for blockly/lua
+- Changed: json "udevice" Percentage sensor, you might get new ID's, now also creates an event for blockly/lua
 - Changed: KMTronic LAN, now using actual On/Off commands instead of 'Toggle'
 - Changed: Lowered HTTP connection timeout to 10 seconds
 - Changed: Main, all fatal signals where not handled (e.g. SIGILL, SIGABRT,SIGFPE) (cgaudry)
@@ -186,14 +201,14 @@ Version 2.3521 (October 31th 2015)
 - Fixed: Netatmo, Rain Sensor
 - Fixed: OpenZWave with large homeid values
 - Fixed: Post command handling
-- Fixed: pushover sound notification (thanks to Eduard)
-- Fixed: Revolt, Enery Graph
+- Fixed: pushover sound notification (thanks to EddyK69)
+- Fixed: Revolt, Energy Graph
 - Fixed: Scenes RFY switch command now correctly handled
 - Fixed: Security Panel delay, now again possible to set delay to 0 (directly)
 - Fixed: Temperatures not updated on UI without refreshing browser or changing tabs
 - Fixed: Tooltip bug for the Dusk sensor in the Lights tab
 - Fixed: upgrading via the web interface (some users had experienced a problem)
-- Fixed: Weather tab, nofications
+- Fixed: Weather tab, notifications
 
 Version 2.2563 (June 14th 2015)
 - Implemented: WebServer, native SSL and keep-alive, big thanks to chimit!!!!

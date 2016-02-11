@@ -133,6 +133,11 @@
 #define sSwitchTypeKeeloq			0x47
 #define sSwitchCustomSwitch			0x48
 #define sSwitchGeneralSwitch		0x49
+#define sSwitchTypeKoch				0x4a
+#define sSwitchTypeKingpin			0x4b
+#define sSwitchTypeFunkbus			0x4c
+#define sSwitchTypeNice				0x4d
+#define sSwitchTypeForest			0x4e
 
 //Switch commands
 #define gswitch_sOff				0x00

@@ -1309,6 +1309,9 @@
     <ClInclude Include="..\webserver\header.hpp">
       <Filter>Webserver</Filter>
     </ClInclude>
+    <ClInclude Include="..\webserver\utf.hpp">
+      <Filter>Webserver</Filter>
+    </ClInclude>
     <ClInclude Include="..\main\appversion.h">
       <Filter>Header Files</Filter>
     </ClInclude>

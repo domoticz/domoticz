@@ -402,40 +402,42 @@ namespace http {
 				}
 			}
 		}
-		std::string CWebServer::GetInternalCameraSnapshot(WebEmSession & session, const request& req)
+		void CWebServer::GetInternalCameraSnapshot(WebEmSession & session, const request& req, reply & rep)
 		{
-			m_retstr = "";
+			std::string snapshot = "";
+
+			std::string request_path;
+			request_handler::url_decode(req.uri, request_path);
+
 			std::vector<unsigned char> camimage;
-			if (session.lastRequestPath.find("raspberry") != std::string::npos)
+			if (request_path.find("raspberry") != std::string::npos)
 			{
-				if (!m_mainworker.m_cameras.TakeRaspberrySnapshot(camimage))
-					goto exitproc;
+				if (!m_mainworker.m_cameras.TakeRaspberrySnapshot(camimage)) {
+					return;
+				}
 			}
 			else
 			{
-				if (!m_mainworker.m_cameras.TakeUVCSnapshot(camimage))
-					goto exitproc;
+				if (!m_mainworker.m_cameras.TakeUVCSnapshot(camimage)) {
+					return;
+				}
 			}
-			m_retstr.insert(m_retstr.begin(), camimage.begin(), camimage.end());
-			session.outputfilename = "snapshot.jpg";
-		exitproc:
-			return m_retstr;
+			reply::set_content(&rep, camimage.begin(), camimage.end());
+			reply::add_header_attachment(&rep, "snapshot.jpg");
 		}
 
-		std::string CWebServer::GetCameraSnapshot(WebEmSession & session, const request& req)
+		void CWebServer::GetCameraSnapshot(WebEmSession & session, const request& req, reply & rep)
 		{
-			m_retstr = "";
 			std::vector<unsigned char> camimage;
 			std::string idx = request::findValue(&req, "idx");
-			if (idx == "")
-				goto exitproc;
-
-			if (!m_mainworker.m_cameras.TakeSnapshot(idx, camimage))
-				goto exitproc;
-			m_retstr.insert(m_retstr.begin(), camimage.begin(), camimage.end());
-			session.outputfilename = "snapshot.jpg";
-		exitproc:
-			return m_retstr;
+			if (idx == "") {
+				return;
+			}
+			if (!m_mainworker.m_cameras.TakeSnapshot(idx, camimage)) {
+				return;
+			}
+			reply::set_content(&rep, camimage.begin(), camimage.end());
+			reply::add_header_attachment(&rep, "snapshot.jpg");
 		}
 	}
 }

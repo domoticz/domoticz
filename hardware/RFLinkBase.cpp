@@ -81,10 +81,15 @@ const _tRFLinkStringIntHelper rfswitches[] =
 	{ "Atlantic", sSwitchTypeAtlantic },	 // p..
 	{ "SilvercrestDB", sSwitchTypeSilvercrestDB }, // p..
 	{ "MedionDB", sSwitchTypeMedionDB },	 // p..
-	{ "VMC", sSwitchTypeVMC },	 // p..
-	{ "Keeloq", sSwitchTypeKeeloq },	 // p..
-	{ "CustomSwitch", sSwitchCustomSwitch },	 // NA
-	{ "GeneralSwitch", sSwitchGeneralSwitch },	 // NA
+	{ "VMC", sSwitchTypeVMC },				 // p..
+	{ "Keeloq", sSwitchTypeKeeloq },		 // p..
+	{ "CustomSwitch", sSwitchCustomSwitch }, // NA
+	{ "GeneralSwitch", sSwitchGeneralSwitch }, // NA
+	{ "Koch", sSwitchTypeKoch },			 // NA
+	{ "Kingpin", sSwitchTypeKingpin },		 // NA
+	{ "Funkbus", sSwitchTypeFunkbus },		 // NA
+	{ "Nice", sSwitchTypeNice },			 // NA
+	{ "Forest", sSwitchTypeForest },		 // NA
 	{ "", -1 }
 };
 

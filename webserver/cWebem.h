@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <boost/asio.hpp>
 #include <boost/function.hpp>
 #include "server.hpp"
 #include "session_store.hpp"
@@ -39,10 +40,7 @@ namespace http {
 			int rights;
 			bool rememberme;
 			bool isnew;
-			bool removecookie;
 			bool forcelogin;
-			std::string lastRequestPath;
-			std::string outputfilename;
 		} WebEmSession;
 
 		typedef struct _tIPNetwork
@@ -92,11 +90,10 @@ namespace http {
 
 		*/
 		class cWebem;
-		typedef boost::function< char*() > webem_include_function;
-		typedef boost::function< wchar_t*() > webem_include_function_w;
-		typedef boost::function< char*( WebEmSession & session, const request& ) > webem_action_function;
-		typedef boost::function< std::string( WebEmSession & session, const request& ) > webem_page_function;
-		typedef boost::function< wchar_t*( WebEmSession & session, const request& ) > webem_page_function_w;
+		typedef boost::function< void( std::string & content_part ) > webem_include_function;
+		typedef boost::function< void( std::wstring & content_part_w ) > webem_include_function_w;
+		typedef boost::function< void( WebEmSession & session, const request& req, std::string & redirecturi ) > webem_action_function;
+		typedef boost::function< void( WebEmSession & session, const request & req, reply & rep ) > webem_page_function;
 
 
 		/**
@@ -173,7 +170,7 @@ namespace http {
 				webem_page_function fun );
 			void RegisterPageCodeW(
 				const char* pageurl,
-				webem_page_function_w fun );
+				webem_page_function fun );
 
 			bool Include( std::string& reply );
 
@@ -209,10 +206,13 @@ namespace http {
 			void SetSessionStore(session_store* sessionStore);
 			session_store* GetSessionStore();
 
-			void CleanTimedOutSessions();
-
 			std::string m_zippassword;
-			std::map<std::string,WebEmSession> m_sessions;
+			const std::string GetPort();
+			WebEmSession * GetSession(const std::string & ssid);
+			void AddSession(const WebEmSession & session);
+			void RemoveSession(const WebEmSession & session);
+			void RemoveSession(const std::string & ssid);
+			int CountSessions();
 			_eAuthenticationMethod m_authmethod;
 			//Whitelist url strings that bypass authentication checks (not used by basic-auth authentication)
 			std::vector < std::string > myWhitelistURLs;
@@ -226,21 +226,24 @@ namespace http {
 			/// store name walue pairs for form submit action
 			std::map < std::string, webem_page_function > myPages;
 			/// store map between pages and application functions
-			std::map < std::string, webem_page_function_w > myPages_w;
+			std::map < std::string, webem_page_function > myPages_w;
 			/// boost::asio web server (RK: plain or secure)
 			server myServer;
 			/// port server is listening on
 			std::string myPort;
-			/// session store
-			session_store* mySessionStore;
-			/// next timed out session cleanup time
-			time_t myNextSessionCleanup;
 			// actual theme selected
 			std::string m_actTheme;
 			// root of url for reverse proxy servers
 			std::string m_webRoot;
 			/// request handler specialized to handle webem requests
 			cWebemRequestHandler myRequestHandler;
+			/// sessions management
+			std::map<std::string,WebEmSession> m_sessions;
+			boost::mutex m_sessionsMutex;
+			boost::asio::io_service m_io_service;
+			boost::asio::deadline_timer m_session_clean_timer;
+			void CleanSessions();
+			session_store* mySessionStore; /// session store
 		};
 
 	}
