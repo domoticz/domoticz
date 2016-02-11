@@ -26,6 +26,7 @@ Version 2.4xxx
 - Implemented: Philips Hue, support for Groups (create them with an external app like HueMote)
 - Implemented: Philips Hue, support for stored Scenes (create them with an external app like Hue Pro)
 - Implemented: RFXCom support for Legrand CAD
+- Implemented: Romanian Language translation (Thanks to Adrian!)
 - Implemented: SBFSpot, support for multiple inverter instances
 - Implemented: Scene Log
 - Implemented: SolarEdge via Web API
