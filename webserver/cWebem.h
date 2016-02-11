@@ -41,8 +41,6 @@ namespace http {
 			bool rememberme;
 			bool isnew;
 			bool forcelogin;
-			std::string lastRequestPath;
-			std::string outputfilename;
 		} WebEmSession;
 
 		typedef struct _tIPNetwork
@@ -92,11 +90,10 @@ namespace http {
 
 		*/
 		class cWebem;
-		typedef boost::function< char*() > webem_include_function;
-		typedef boost::function< wchar_t*() > webem_include_function_w;
-		typedef boost::function< char*( WebEmSession & session, const request& ) > webem_action_function;
-		typedef boost::function< std::string( WebEmSession & session, const request& ) > webem_page_function;
-		typedef boost::function< wchar_t*( WebEmSession & session, const request& ) > webem_page_function_w;
+		typedef boost::function< void( std::string & content_part ) > webem_include_function;
+		typedef boost::function< void( std::wstring & content_part_w ) > webem_include_function_w;
+		typedef boost::function< void( WebEmSession & session, const request& req, std::string & redirecturi ) > webem_action_function;
+		typedef boost::function< void( WebEmSession & session, const request & req, reply & rep ) > webem_page_function;
 
 
 		/**
@@ -173,7 +170,7 @@ namespace http {
 				webem_page_function fun );
 			void RegisterPageCodeW(
 				const char* pageurl,
-				webem_page_function_w fun );
+				webem_page_function fun );
 
 			bool Include( std::string& reply );
 
@@ -229,7 +226,7 @@ namespace http {
 			/// store name walue pairs for form submit action
 			std::map < std::string, webem_page_function > myPages;
 			/// store map between pages and application functions
-			std::map < std::string, webem_page_function_w > myPages_w;
+			std::map < std::string, webem_page_function > myPages_w;
 			/// boost::asio web server (RK: plain or secure)
 			server myServer;
 			/// port server is listening on

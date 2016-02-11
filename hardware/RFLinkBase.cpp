@@ -89,6 +89,7 @@ const _tRFLinkStringIntHelper rfswitches[] =
 	{ "Kingpin", sSwitchTypeKingpin },		 // NA
 	{ "Funkbus", sSwitchTypeFunkbus },		 // NA
 	{ "Nice", sSwitchTypeNice },			 // NA
+	{ "Forest", sSwitchTypeForest },		 // NA
 	{ "", -1 }
 };
 

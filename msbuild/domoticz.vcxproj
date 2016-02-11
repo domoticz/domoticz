@@ -580,6 +580,7 @@
     <ClInclude Include="..\webserver\request_handler.hpp" />
     <ClInclude Include="..\webserver\request_parser.hpp" />
     <ClInclude Include="..\webserver\server.hpp" />
+    <ClInclude Include="..\webserver\utf.hpp" />
     <ClInclude Include="WindowsHelper.h" />
     <ClInclude Include="..\hardware\YouLess.h" />
   </ItemGroup>

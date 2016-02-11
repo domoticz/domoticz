@@ -3273,26 +3273,28 @@ bool COpenZWave::CancelControllerCommand(const bool bForce)
 	return m_pManager->CancelControllerCommand(m_controllerID);
 }
 
-std::string COpenZWave::GetConfigFile(std::string &szConfigFile)
+void COpenZWave::GetConfigFile(std::string & filePath, std::string & fileContent)
 {
 	std::string retstring = "";
 	if (m_pManager == NULL)
-		return retstring;
+		return;
 
 	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
 	WriteControllerConfig();
 
 	char szFileName[255];
 	sprintf(szFileName, "%sConfig/zwcfg_0x%08x.xml", szUserDataFolder.c_str(), m_controllerID);
-	szConfigFile = szFileName;
-	std::ifstream testFile(szConfigFile.c_str(), std::ios::binary);
-	std::vector<char> fileContents((std::istreambuf_iterator<char>(testFile)),
-		std::istreambuf_iterator<char>());
-	if (fileContents.size() > 0)
-	{
-		retstring.insert(retstring.begin(), fileContents.begin(), fileContents.end());
+	filePath = szFileName;
+
+	std::ifstream file(filePath.c_str(), std::ios::in | std::ios::binary);
+	file.seekg(0, std::ios::end);
+	int fileSize = file.tellg();
+	if (fileSize > 0) {
+		fileContent.resize(fileSize);
+		file.seekg(0, std::ios::beg);
+		file.read(&fileContent[0], fileContent.size());
 	}
-	return retstring;
+	file.close();
 }
 
 void COpenZWave::OnZWaveDeviceStatusUpdate(int _cs, int _err)
@@ -4825,12 +4827,12 @@ namespace http {
 				root["title"] = "ZWaveTransferPrimaryRole";
 			}
 		}
-		std::string CWebServer::ZWaveGetConfigFile(WebEmSession & session, const request& req)
+		void CWebServer::ZWaveGetConfigFile(WebEmSession & session, const request& req, reply & rep)
 		{
 			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
-				return "";
-			m_retstr = "";
+				return;
+
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
 			if (pHardware != NULL)
 			{
@@ -4838,18 +4840,15 @@ namespace http {
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
 					std::string szConfigFile = "";
-					m_retstr = pOZWHardware->GetConfigFile(szConfigFile);
-					if (m_retstr != "")
-					{
-						session.outputfilename = szConfigFile;
+					pOZWHardware->GetConfigFile(szConfigFile, rep.content);
+					if (!szConfigFile.empty() && !rep.content.empty()) {
+						reply::add_header_attachment(&rep, szConfigFile);
 					}
 				}
 			}
-			return m_retstr;
 		}
-		std::string CWebServer::ZWaveCPIndex(WebEmSession & session, const request& req)
+		void CWebServer::ZWaveCPIndex(WebEmSession & session, const request& req, reply & rep)
 		{
-			m_retstr = "";
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
 			if (pHardware != NULL)
 			{
@@ -4858,20 +4857,12 @@ namespace http {
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
 					pOZWHardware->m_ozwcp.SetAllNodesChanged();
 					std::string wwwFile = szWWWFolder + "/ozwcp/cp.html";
-					std::ifstream testFile(wwwFile.c_str(), std::ios::binary);
-					std::vector<char> fileContents((std::istreambuf_iterator<char>(testFile)),
-						std::istreambuf_iterator<char>());
-					if (fileContents.size() > 0)
-					{
-						m_retstr.insert(m_retstr.begin(), fileContents.begin(), fileContents.end());
-					}
+					reply::set_content_from_file(&rep, wwwFile);
 				}
 			}
-			return m_retstr;
 		}
-		std::string CWebServer::ZWaveCPPollXml(WebEmSession & session, const request& req)
+		void CWebServer::ZWaveCPPollXml(WebEmSession & session, const request& req, reply & rep)
 		{
-			m_retstr = "";
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
 			if (pHardware != NULL)
 			{
@@ -4879,22 +4870,21 @@ namespace http {
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
 					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
-					m_retstr = pOZWHardware->m_ozwcp.SendPollResponse();
-					session.outputfilename = "poll.xml";
+
+					reply::set_content(&rep, pOZWHardware->m_ozwcp.SendPollResponse());
+					reply::add_header_attachment(&rep, "poll.xml");
 				}
 			}
-			return m_retstr;
 		}
-		std::string CWebServer::ZWaveCPNodeGetConf(WebEmSession & session, const request& req)
+		void CWebServer::ZWaveCPNodeGetConf(WebEmSession & session, const request& req, reply & rep)
 		{
-			m_retstr = "";
 			if (req.content.find("node") == std::string::npos)
-				return "";
+				return;
 			std::multimap<std::string, std::string> values;
 			request::makeValuesFromPostContent(&req, values);
 			std::string sNode = request::findValue(&values, "node");
 			if (sNode == "")
-				return m_retstr;
+				return;
 			int iNode = atoi(sNode.c_str());
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
 			if (pHardware != NULL)
@@ -4903,21 +4893,19 @@ namespace http {
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
 					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
-					m_retstr = pOZWHardware->m_ozwcp.SendNodeConfResponse(iNode);
+					reply::set_content(&rep, pOZWHardware->m_ozwcp.SendNodeConfResponse(iNode));
 				}
 			}
-			return m_retstr;
 		}
-		std::string CWebServer::ZWaveCPNodeGetValues(WebEmSession & session, const request& req)
+		void CWebServer::ZWaveCPNodeGetValues(WebEmSession & session, const request& req, reply & rep)
 		{
-			m_retstr = "";
 			if (req.content.find("node") == std::string::npos)
-				return "";
+				return;
 			std::multimap<std::string, std::string> values;
 			request::makeValuesFromPostContent(&req, values);
 			std::string sNode = request::findValue(&values, "node");
 			if (sNode == "")
-				return m_retstr;
+				return;
 			int iNode = atoi(sNode.c_str());
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
 			if (pHardware != NULL)
@@ -4926,18 +4914,16 @@ namespace http {
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
 					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
-					m_retstr = pOZWHardware->m_ozwcp.SendNodeValuesResponse(iNode);
+					reply::set_content(&rep, pOZWHardware->m_ozwcp.SendNodeValuesResponse(iNode));
 				}
 			}
-			return m_retstr;
 		}
-		std::string CWebServer::ZWaveCPNodeSetValue(WebEmSession & session, const request& req)
+		void CWebServer::ZWaveCPNodeSetValue(WebEmSession & session, const request& req, reply & rep)
 		{
-			m_retstr = "";
 			std::vector<std::string> strarray;
 			StringSplit(req.content, "=", strarray);
 			if (strarray.size() != 2)
-				return "";
+				return;
 
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
 			if (pHardware != NULL)
@@ -4946,18 +4932,16 @@ namespace http {
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
 					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
-					m_retstr = pOZWHardware->m_ozwcp.SetNodeValue(strarray[0], strarray[1]);
+					reply::set_content(&rep, pOZWHardware->m_ozwcp.SetNodeValue(strarray[0], strarray[1]));
 				}
 			}
-			return m_retstr;
 		}
-		std::string CWebServer::ZWaveCPNodeSetButton(WebEmSession & session, const request& req)
+		void CWebServer::ZWaveCPNodeSetButton(WebEmSession & session, const request& req, reply & rep)
 		{
-			m_retstr = "";
 			std::vector<std::string> strarray;
 			StringSplit(req.content, "=", strarray);
 			if (strarray.size() != 2)
-				return "";
+				return;
 
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
 			if (pHardware != NULL)
@@ -4966,16 +4950,14 @@ namespace http {
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
 					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
-					m_retstr = pOZWHardware->m_ozwcp.SetNodeButton(strarray[0], strarray[1]);
+					reply::set_content(&rep, pOZWHardware->m_ozwcp.SetNodeButton(strarray[0], strarray[1]));
 				}
 			}
-			return m_retstr;
 		}
-		std::string CWebServer::ZWaveCPAdminCommand(WebEmSession & session, const request& req)
+		void CWebServer::ZWaveCPAdminCommand(WebEmSession & session, const request& req, reply & rep)
 		{
-			m_retstr = "";
 			if (req.content.find("fun") == std::string::npos)
-				return "";
+				return;
 			std::multimap<std::string, std::string> values;
 			request::makeValuesFromPostContent(&req, values);
 			std::string sFun = request::findValue(&values, "fun");
@@ -4994,16 +4976,14 @@ namespace http {
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
 					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
-					m_retstr = pOZWHardware->m_ozwcp.DoAdminCommand(sFun, atoi(sNode.c_str()), atoi(sButton.c_str()));
+					reply::set_content(&rep, pOZWHardware->m_ozwcp.DoAdminCommand(sFun, atoi(sNode.c_str()), atoi(sButton.c_str())));
 				}
 			}
-			return m_retstr;
 		}
-		std::string CWebServer::ZWaveCPNodeChange(WebEmSession & session, const request& req)
+		void CWebServer::ZWaveCPNodeChange(WebEmSession & session, const request& req, reply & rep)
 		{
-			m_retstr = "";
 			if (req.content.find("fun") == std::string::npos)
-				return "";
+				return;
 			std::multimap<std::string, std::string> values;
 			request::makeValuesFromPostContent(&req, values);
 			std::string sFun = request::findValue(&values, "fun");
@@ -5020,14 +5000,12 @@ namespace http {
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
 					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
-					m_retstr = pOZWHardware->m_ozwcp.DoNodeChange(sFun, atoi(sNode.c_str()), sValue);
+					reply::set_content(&rep, pOZWHardware->m_ozwcp.DoNodeChange(sFun, atoi(sNode.c_str()), sValue));
 				}
 			}
-			return m_retstr;
 		}
-		std::string CWebServer::ZWaveCPSaveConfig(WebEmSession & session, const request& req)
+		void CWebServer::ZWaveCPSaveConfig(WebEmSession & session, const request& req, reply & rep)
 		{
-			m_retstr = "";
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
 			if (pHardware != NULL)
 			{
@@ -5035,14 +5013,12 @@ namespace http {
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
 					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
-					m_retstr = pOZWHardware->m_ozwcp.SaveConfig();
+					reply::set_content(&rep, pOZWHardware->m_ozwcp.SaveConfig());
 				}
 			}
-			return m_retstr;
 		}
-		std::string CWebServer::ZWaveCPGetTopo(WebEmSession & session, const request& req)
+		void CWebServer::ZWaveCPGetTopo(WebEmSession & session, const request& req, reply & rep)
 		{
-			m_retstr = "";
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
 			if (pHardware != NULL)
 			{
@@ -5050,15 +5026,13 @@ namespace http {
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
 					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
-					m_retstr = pOZWHardware->m_ozwcp.GetCPTopo();
-					session.outputfilename = "topo.xml";
+					reply::set_content(&rep, pOZWHardware->m_ozwcp.GetCPTopo());
+					reply::add_header_attachment(&rep, "topo.xml");
 				}
 			}
-			return m_retstr;
 		}
-		std::string CWebServer::ZWaveCPGetStats(WebEmSession & session, const request& req)
+		void CWebServer::ZWaveCPGetStats(WebEmSession & session, const request& req, reply & rep)
 		{
-			m_retstr = "";
 			//Crashes at OpenZWave::GetNodeStatistics::_data->m_sentTS = m_sentTS.GetAsString();
 			/*
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
@@ -5068,12 +5042,11 @@ namespace http {
 			{
 			COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
 			boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
-			m_retstr = pOZWHardware->GetCPStats();
-			session.outputfilename = "stats.xml";
+			reply::set_content(&rep, pOZWHardware->GetCPStats());
+			reply::add_header_attachment(&rep, "stats.xml");
 			}
 			}
 			*/
-			return m_retstr;
 		}
 
 

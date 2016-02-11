@@ -14,6 +14,7 @@
 #include "reply.hpp"
 #include "request.hpp"
 #include "mime_types.hpp"
+#include "utf.hpp"
 #include "Base64.h"
 #include "GZipHelper.h"
 #include <stdarg.h>
@@ -129,9 +130,9 @@ void cWebem::RegisterPageCode( const char* pageurl, webem_page_function fun )
 {
 	myPages.insert( std::pair<std::string, webem_page_function >( std::string(pageurl), fun  ) );
 }
-void cWebem::RegisterPageCodeW( const char* pageurl, webem_page_function_w fun )
+void cWebem::RegisterPageCodeW( const char* pageurl, webem_page_function fun )
 {
-	myPages_w.insert( std::pair<std::string, webem_page_function_w >( std::string(pageurl), fun  ) );
+	myPages_w.insert( std::pair<std::string, webem_page_function >( std::string(pageurl), fun  ) );
 }
 
 
@@ -153,72 +154,6 @@ void cWebem::RegisterWhitelistURLString(const char* idname)
 {
 	myWhitelistURLs.push_back(idname);
 }
-
-		/**
-
-		Conversion between UTF-8 and UTF-16 strings.
-
-		UTF-8 is used by web pages.  It is a variable byte length encoding
-		of UNICODE characters which is independant of the byte order in a computer word.
-
-		UTF-16 is the native Windows UNICODE encoding.
-
-		The class stores two copies of the string, one in each encoding,
-		so should only exist briefly while conversion is done.
-
-		This is a wrapper for the WideCharToMultiByte and MultiByteToWideChar
-		*/
-		class cUTF
-		{
-			char * myString8;			///< string in UTF-6
-		public:
-			/// Construct from UTF-16
-			cUTF( const wchar_t * ws );
-			///  Construct from UTF8
-			cUTF( const char * s );
-			// copy constructor
-			cUTF();
-			/// get UTF8 version
-			const char * get8() { return myString8; }
-			/// free buffers
-			~cUTF() { if (myString8) free(myString8); }
-		};
-
-		cUTF::cUTF()
-		{
-			myString8 = NULL;
-		}
-
-		/// Construct from UTF-16
-		cUTF::cUTF( const wchar_t * ws )
-		{
-			std::string dest;
-			std::wstring src=ws;
-			for (size_t i = 0; i < src.size(); i++)
-			{
-				wchar_t w = src[i];
-				if (w <= 0x7f)
-					dest.push_back((char)w);
-				else if (w <= 0x7ff){
-					dest.push_back(0xc0 | ((w >> 6)& 0x1f));
-					dest.push_back(0x80| (w & 0x3f));
-				}
-				else if (w <= 0xffff){
-					dest.push_back(0xe0 | ((w >> 12)& 0x0f));
-					dest.push_back(0x80| ((w >> 6) & 0x3f));
-					dest.push_back(0x80| (w & 0x3f));
-				}
-				else
-					dest.push_back('?');
-			}
-			int len=dest.size();
-			myString8 = (char * ) malloc( len + 1 );
-			if (myString8)
-			{
-				memcpy(myString8, dest.c_str(), len);
-				*(myString8 + len) = '\0';
-			}
-		}
 
 /**
 
@@ -260,16 +195,16 @@ bool cWebem::Include( std::string& reply )
 		std::map < std::string, webem_include_function >::iterator pf = myIncludes.find( code );
 		if( pf != myIncludes.end() ) {
 			// insert generated text
-			std::string ret;
+			std::string content_part;
 			try
 			{
-				ret = pf->second();
+				pf->second(content_part);
 			}
 			catch (...)
 			{
 				
 			}
-			reply.insert( p, ret );
+			reply.insert( p, content_part );
 			res = true;
 		} else {
 			// no function found, look for a wide character fuction
@@ -277,16 +212,16 @@ bool cWebem::Include( std::string& reply )
 			if( pf != myIncludes_w.end() ) {
 				// function found
 				// get return string and convert from UTF-16 to UTF-8
-				std::wstring wret;
+				std::wstring content_part_w;
 				try
 				{
-					wret = pf->second();
+					pf->second(content_part_w);
 				}
 				catch (...)
 				{
 					
 				}
-				cUTF utf( wret.c_str() );
+				cUTF utf( content_part_w.c_str() );
 				// insert generated text
 				reply.insert( p, utf.get8() );
 				res = true;
@@ -425,16 +360,14 @@ bool cWebem::CheckForAction(WebEmSession & session, request& req )
 				if (req.parameters.empty())
 					return true;
 				// call the function
-				std::string ret;
 				try
 				{
-					ret = pfun->second(session, req);
+					pfun->second(session, req, req.uri);
 				}
 				catch (...)
 				{
 					
 				}
-				req.uri = ret;
 				return true;
 			}
 		}
@@ -475,16 +408,14 @@ bool cWebem::CheckForAction(WebEmSession & session, request& req )
 	}
 
 	// call the function
-	std::string ret;
 	try
 	{
-		ret = pfun->second(session, req);
+		pfun->second(session, req, req.uri);
 	}
 	catch (...)
 	{
 		
 	}
-	req.uri = ret;
 
 	return true;
 }
@@ -506,7 +437,7 @@ bool cWebem::IsPageOverride(const request& req, reply& rep)
 	if (pfun != myPages.end())
 		return true;
 	//check wchar_t
-	std::map < std::string, webem_page_function_w >::iterator
+	std::map < std::string, webem_page_function >::iterator
 		pfunW = myPages_w.find(request_path);
 	if (pfunW != myPages_w.end())
 		return true;
@@ -522,8 +453,6 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& r
 		rep = reply::stock_reply(reply::bad_request);
 		return false;
 	}
-
-	session.lastRequestPath = request_path;
 
 	request_path = ExtractRequestPath(request_path);
 	
@@ -641,10 +570,9 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& r
 
 	// Determine the file extension.
 	std::string extension;
-	if (req.uri.find("json.htm") != std::string::npos)
+	if (req.uri.find("json.htm") != std::string::npos) {
 		extension = "json";
-	else
-	{
+	} else {
 		std::size_t last_slash_pos = request_path.find_last_of("/");
 		std::size_t last_dot_pos = request_path.find_last_of(".");
 		if (last_dot_pos != std::string::npos && last_dot_pos > last_slash_pos)
@@ -652,98 +580,88 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& r
 			extension = request_path.substr(last_dot_pos + 1);
 		}
 	}
+	std::string strMimeType = mime_types::extension_to_type(extension);
 
 	std::map < std::string, webem_page_function >::iterator
 		pfun = myPages.find(  request_path );
 
 	if (pfun!=myPages.end())
 	{
-		session.outputfilename="";
 		rep.status = reply::ok;
-		std::string retstr;
 		try
 		{
-			retstr = pfun->second(session, req);
+			pfun->second(session, req, rep);
 		}
 		catch (...)
 		{
 			
 		}
 
-		rep.content.append(retstr.c_str(), retstr.size());
-
-		std::string strMimeType=mime_types::extension_to_type(extension);
-		if (session.outputfilename!="")
-		{
-			std::size_t last_dot_pos = session.outputfilename.find_last_of(".");
-			if (last_dot_pos != std::string::npos)
-			{
-				extension = session.outputfilename.substr(last_dot_pos + 1);
-				strMimeType=mime_types::extension_to_type(extension);
+		std::string attachment;
+		int num = rep.headers.size();
+		for (int h = 0; h < num; h++) {
+			if (boost::iequals(rep.headers[h].name, "Content-Disposition")) {
+				attachment = rep.headers[h].value.substr(rep.headers[h].value.find("=") + 1);
+				std::size_t last_dot_pos = attachment.find_last_of(".");
+				if (last_dot_pos != std::string::npos)
+				{
+					extension = attachment.substr(last_dot_pos + 1);
+					strMimeType=mime_types::extension_to_type(extension);
+				}
+				break;
 			}
 		}
 
 		if (!boost::algorithm::starts_with(strMimeType, "image"))
 		{
-			reply::AddHeader(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
-			reply::AddHeader(&rep, "Content-Type", strMimeType + ";charset=UTF-8");
-			reply::AddHeader(&rep, "Cache-Control", "no-cache");
-			reply::AddHeader(&rep, "Pragma", "no-cache");
-			reply::AddHeader(&rep, "Access-Control-Allow-Origin", "*");
+			reply::add_header(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
+			reply::add_header(&rep, "Content-Type", strMimeType + ";charset=UTF-8");
+			reply::add_header(&rep, "Cache-Control", "no-cache");
+			reply::add_header(&rep, "Pragma", "no-cache");
+			reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
 			if (req.keep_alive) {
-				reply::AddHeader(&rep, "Connection", "Keep-Alive");
-				reply::AddHeader(&rep, "Keep-Alive", "max=20, timeout=10");
-			}
-			if (session.outputfilename != "")
-			{
-				reply::AddHeader(&rep, "Content-Disposition", "attachment; filename=" + session.outputfilename);
+				reply::add_header(&rep, "Connection", "Keep-Alive");
+				reply::add_header(&rep, "Keep-Alive", "max=20, timeout=10");
 			}
 		}
 		else
 		{
-			reply::AddHeader(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
-			reply::AddHeader(&rep, "Content-Type", strMimeType);
-			reply::AddHeader(&rep, "Cache-Control", "max-age=3600, public");
+			reply::add_header(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
+			reply::add_header(&rep, "Content-Type", strMimeType);
+			reply::add_header(&rep, "Cache-Control", "max-age=3600, public");
 			if (req.keep_alive) {
-				reply::AddHeader(&rep, "Connection", "Keep-Alive");
-				reply::AddHeader(&rep, "Keep-Alive", "max=20, timeout=10");
-			}
-			if (session.outputfilename != "")
-			{
-				reply::AddHeader(&rep, "Content-Disposition", "attachment; filename=" + session.outputfilename);
+				reply::add_header(&rep, "Connection", "Keep-Alive");
+				reply::add_header(&rep, "Keep-Alive", "max=20, timeout=10");
 			}
 		}
 		return true;
 	}
+
 	//check wchar_t
-	std::map < std::string, webem_page_function_w >::iterator
+	std::map < std::string, webem_page_function >::iterator
 		pfunW = myPages_w.find(  request_path );
 	if (pfunW==myPages_w.end())
 		return false;
 
-	std::wstring wret;
 	try
 	{
-		wret = pfunW->second(session, req);
+		pfunW->second(session, req, rep);
 	}
 	catch (...)
 	{
 		
 	}
-	cUTF utf( wret.c_str() );
 
 	rep.status = reply::ok;
-	rep.content.append(utf.get8(), strlen(utf.get8()));
-
-	reply::AddHeader(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
-	reply::AddHeader(&rep, "Content-Type", mime_types::extension_to_type(extension) + "; charset=UTF-8");
-	reply::AddHeader(&rep, "Cache-Control", "no-cache");
-	reply::AddHeader(&rep, "Pragma", "no-cache");
-	reply::AddHeader(&rep, "Access-Control-Allow-Origin", "*");
+	reply::add_header(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
+	reply::add_header(&rep, "Content-Type", strMimeType + "; charset=UTF-8");
+	reply::add_header(&rep, "Cache-Control", "no-cache");
+	reply::add_header(&rep, "Pragma", "no-cache");
+	reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
 
 	if (req.keep_alive) {
-		reply::AddHeader(&rep, "Connection", "Keep-Alive");
-		reply::AddHeader(&rep, "Keep-Alive", "max=20, timeout=10");
+		reply::add_header(&rep, "Connection", "Keep-Alive");
+		reply::add_header(&rep, "Keep-Alive", "max=20, timeout=10");
 	}
 	return true;
 }
@@ -1282,7 +1200,7 @@ void cWebemRequestHandler::send_remove_cookie(reply& rep)
 	std::stringstream sstr;
 	sstr << "SID=none";
 	sstr << "; path=/; Expires=" << make_web_time(0);
-	reply::AddHeader(&rep, "Set-Cookie", sstr.str(), false);
+	reply::add_header(&rep, "Set-Cookie", sstr.str(), false);
 }
 
 std::string cWebemRequestHandler::generateSessionID()
@@ -1341,7 +1259,7 @@ void cWebemRequestHandler::send_cookie(reply& rep, const WebEmSession & session)
 	std::stringstream sstr;
 	sstr << "SID=" << session.id << "_" << session.auth_token << "." << session.expires;
 	sstr << "; path=/; Expires=" << make_web_time(session.expires);
-	reply::AddHeader(&rep, "Set-Cookie", sstr.str(), false);
+	reply::add_header(&rep, "Set-Cookie", sstr.str(), false);
 }
 
 void cWebemRequestHandler::send_authorization_request(reply& rep)
@@ -1355,7 +1273,7 @@ void cWebemRequestHandler::send_authorization_request(reply& rep)
 			"Basic "
 			"realm=\"%s\"",
 			myWebem->m_DigistRealm.c_str());
-		reply::AddHeader(&rep, "WWW-Authenticate", szAuthHeader);
+		reply::add_header(&rep, "WWW-Authenticate", szAuthHeader);
 	}
 }
 
@@ -1388,9 +1306,9 @@ bool cWebemRequestHandler::CompressWebOutput(const request& req, reply& rep)
 				rep.content.clear();
 				rep.content.append((char*)gzip.pgzip, gzip.Length);
 				//Set new content length
-				reply::AddHeader(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
+				reply::add_header(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
 				//Add gzip header
-				reply::AddHeader(&rep, "Content-Encoding", "gzip");
+				reply::add_header(&rep, "Content-Encoding", "gzip");
 				return true;
 			}
 		}
@@ -1700,14 +1618,14 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 				// ( Firefox ignores this, but apparently some browsers truncate display without it.
 				// fix provided by http://www.codeproject.com/Members/jaeheung72 )
 
-				reply::AddHeader(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
+				reply::add_header(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
 
 				//check gzip support if yes, send it back in gzip format
 				CompressWebOutput(req, rep);
 			}
 
 			// tell browser that we are using UTF-8 encoding
-			reply::AddHeader(&rep, "Content-Type", content_type + ";charset=UTF-8");
+			reply::add_header(&rep, "Content-Type", content_type + ";charset=UTF-8");
 		}
 		else if (content_type.find("image/")!=std::string::npos)
 		{
@@ -1717,8 +1635,8 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 				return;
 			}
 			//Cache images
-			reply::AddHeader(&rep, "Date", strftime_t("%a, %d %b %Y %H:%M:%S GMT", mytime(NULL)));
-			reply::AddHeader(&rep, "Expires", "Sat, 26 Dec 2099 11:40:31 GMT");
+			reply::add_header(&rep, "Date", strftime_t("%a, %d %b %Y %H:%M:%S GMT", mytime(NULL)));
+			reply::add_header(&rep, "Expires", "Sat, 26 Dec 2099 11:40:31 GMT");
 		}
 		else {
 			if (mInfo.mtime_support && !mInfo.is_modified) {
