@@ -1802,52 +1802,6 @@ bool CSQLHelper::OpenDatabase()
 				}
 			}
 		}
-		//Todo: EddyK69
-		if (dbversion < 100)
-		{
-			//Convert depricated CounterType 'Time' to type Counter with options ValueQuantity='Time' & ValueUnits='Min'
-			std::stringstream szQuery, szQuery2, szQuery3;
-			std::vector<std::vector<std::string> > result, result2;
-			std::vector<std::string> sd;
-			result = query("SELECT ID FROM Hardware WHERE ([Type] = 15)");
-			if (result.size() > 0)
-			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
-				for (itt = result.begin(); itt != result.end(); ++itt)
-				{
-					sd = *itt;
-					szQuery.clear();
-					szQuery.str("");
-					szQuery << "SELECT ID, DeviceID FROM DeviceStatus"
-						" WHERE ((([Type]=" << pTypeRFXMeter << ") AND (SubType=" << sTypeRFXMeterCount << "))"
-						" OR (([Type]=" << pTypeGeneral << ") AND (SubType=" << sTypeCounterIncremental << ")))"
-						" AND (SwitchType=" << 0x05 << ") AND (HardwareID=" << sd[0] << ")";
-					result2 = query(szQuery.str());
-					if (result2.size() > 0)
-					{
-						std::vector<std::vector<std::string> >::const_iterator itt2;
-						for (itt2 = result2.begin(); itt2 != result2.end(); ++itt2)
-						{
-							sd = *itt2;
-							unsigned long long devidx = atoi(sd[0].c_str());
-							szQuery2.clear();
-							szQuery2.str("");
-							//Convert to Counter
-							szQuery2 << "UPDATE DeviceStatus SET SwitchType=" << MTYPE_COUNTER << " WHERE (ID=" << devidx << ")";
-							query(szQuery2.str());
-							//Set default options
-							m_sql.SetDeviceOptions(devidx, m_sql.BuildDeviceOptions("ValueQuantity:Time;ValueUnits:Min;CounterDivider:1", false));
-							//Update notifications 'Time' -> 'Counter'
-							szQuery3.clear();
-							szQuery3.str("");
-							szQuery3 << "UPDATE Notifications SET Params=REPLACE(Params, 'm;', '" << Notification_Type_Desc(NTYPE_TODAYCOUNTER, 1) << ";')"
-								" WHERE (DeviceRowID=" << devidx << ")";
-							query(szQuery3.str());
-						}
-					}
-				}
-			}
-		}
 	}
 	else if (bNewInstall)
 	{

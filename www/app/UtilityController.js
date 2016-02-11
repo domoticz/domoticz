@@ -1342,7 +1342,7 @@ define(['app'], function (app) {
 							xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 						}
 						else {
-						    xhtm += '<a class="btnsmall" onclick="EditMeterDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.SwitchTypeVal + ',\'' + escape(item.ValueQuantity) + '\',\'' + escape(item.ValueUnits) + '\',\'' + item.CounterDivider + '\');" data-i18n="Edit">Edit</a> ';
+							xhtm += '<a class="btnsmall" onclick="EditMeterDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.SwitchTypeVal + ',\'' + escape(item.ValueQuantity) + '\',\'' + escape(item.ValueUnits) + '\',\'' + item.CounterDivider + '\');" data-i18n="Edit">Edit</a> ';
 						}
 					}
 				  }
