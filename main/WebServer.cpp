@@ -99,6 +99,7 @@ static const _tGuiLanguage guiLanguage[] =
 	{ "no", "Norwegian" },
 	{ "pl", "Polish" },
 	{ "pt", "Portuguese" },
+	{ "ro", "Romanian" },
 	{ "ru", "Russian" },
 	{ "sr", "Serbian" },
 	{ "sk", "Slovak" },

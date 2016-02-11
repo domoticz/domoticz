@@ -446,6 +446,7 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeThermostat, "Thermostat" , "thermostat" },
 		{ pTypeTEMP_RAIN, "Temp + Rain" , "Temp + Rain" },
 		{ pTypeChime, "Chime" , "doorbell" },
+		{ pTypeFan, "Fan" , "fan" },
 		{ pTypeBBQ, "BBQ Meter", "bbq" },
 		{ pTypePOWER, "Current/Energy" , "current" },
 		{ pTypeRFY, "RFY" , "blinds" },
@@ -683,6 +684,10 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeChime, sTypeSelectPlus, "SelectPlus" },
 		{ pTypeChime, sTypeSelectPlus3, "SelectPlus3" },
 		{ pTypeChime, sTypeEnvivo, "Envivo" },
+
+		{ pTypeFan, sTypeSiemensSF01 , "Siemens SF01" },
+		{ pTypeFan, sTypeItho , "Itho CVE RFT" },
+		{ pTypeFan, sTypeLucciAir, "Lucci Air" },
 
 		{ pTypeTEMP_RAIN, sTypeTR1, "Alecto WS1200" },
 
