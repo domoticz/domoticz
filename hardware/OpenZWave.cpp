@@ -4839,10 +4839,14 @@ namespace http {
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-					std::string szConfigFile = "";
-					pOZWHardware->GetConfigFile(szConfigFile, rep.content);
-					if (!szConfigFile.empty() && !rep.content.empty()) {
-						reply::add_header_attachment(&rep, szConfigFile);
+					std::string configFilePath = "";
+					pOZWHardware->GetConfigFile(configFilePath, rep.content);
+					if (!configFilePath.empty() && !rep.content.empty()) {
+						std::size_t last_slash_pos = configFilePath.find_last_of("/");
+						if (last_slash_pos != std::string::npos) {
+							std::string filename = configFilePath.substr(last_slash_pos + 1);
+							reply::add_header_attachment(&rep, filename);
+						}
 					}
 				}
 			}
