@@ -265,19 +265,21 @@ bool CSBFSpot::GetMeter(const unsigned char ID1,const unsigned char ID2, double 
 
 void CSBFSpot::ImportOldMonthData()
 {
+	_log.Log(LOG_STATUS, "SBFSpot Import Old Month Data: Start");
 	//check if this device exists in the database, if not exit
 	bool bDeviceExits = true;
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
-		m_HwdID, int(1), int(pTypeENERGY), int(sTypeELEC2));
+	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
+		m_HwdID, "00000001", int(pTypeGeneral), int(sTypeKwh));
 	if (result.size() < 1)
 	{
 		//Lets create the sensor, and try again
 		SendMeter(0, 1, 0, 0, "SolarMain");
-		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
-			m_HwdID, int(1), int(pTypeENERGY), int(sTypeELEC2));
+		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
+			m_HwdID, "00000001", int(pTypeGeneral), int(sTypeKwh));
 		if (result.size() < 1)
 		{
+			_log.Log(LOG_ERROR, "SBFSpot Import Old Month Data: FAILED - Cannot find sensor in database");
 			return;
 		}
 	}
@@ -300,6 +302,7 @@ void CSBFSpot::ImportOldMonthData()
 			ImportOldMonthData(ulID,iYear, iMonth);
 		}
 	}
+	_log.Log(LOG_STATUS, "SBFSpot Import Old Month Data: Complete");
 }
 
 void CSBFSpot::ImportOldMonthData(const unsigned long long DevID, const int Year, const int Month)
@@ -373,6 +376,7 @@ void CSBFSpot::ImportOldMonthData(const unsigned long long DevID, const int Year
 					//Insert value into our database
 					result = m_sql.safe_query("INSERT INTO Meter_Calendar (DeviceRowID, Value, Date) VALUES ('%llu', '%llu', '%q')",
 						DevID, ulCounter, szDate);
+					_log.Log(LOG_STATUS, "SBFSpot Import Old Month Data: Inserting %s",szDate);
 				}
 
 			}
@@ -422,25 +426,26 @@ void CSBFSpot::ImportOldMonthData(const unsigned long long DevID, const int Year
 						int month = atoi(results[0].substr(monthPos, 2).c_str());
 						int year = atoi(results[0].substr(yearPos, 4).c_str());
 
-std::string szKwhCounter = results[iInvOff + 1];
-stdreplace(szKwhCounter, ",", ".");
-double kWhCounter = atof(szKwhCounter.c_str()) * 100000;
-unsigned long long ulCounter = (unsigned long long)kWhCounter;
+						std::string szKwhCounter = results[iInvOff + 1];
+						stdreplace(szKwhCounter, ",", ".");
+						double kWhCounter = atof(szKwhCounter.c_str()) * 100000;
+						unsigned long long ulCounter = (unsigned long long)kWhCounter;
 
-//check if this day record does not exists in the database, and insert it
-std::vector<std::vector<std::string> > result;
+						//check if this day record does not exists in the database, and insert it
+						std::vector<std::vector<std::string> > result;
 
-char szDate[40];
-sprintf(szDate, "%04d-%02d-%02d", year, month, day);
+						char szDate[40];
+						sprintf(szDate, "%04d-%02d-%02d", year, month, day);
 
-result = m_sql.safe_query("SELECT Value FROM Meter_Calendar WHERE (DeviceRowID==%llu) AND (Date=='%q')",
-	DevID, szDate);
-if (result.size() == 0)
-{
-	//Insert value into our database
-	m_sql.safe_query("INSERT INTO Meter_Calendar (DeviceRowID, Value, Date) VALUES ('%llu', '%llu', '%q')",
-		DevID, ulCounter, szDate);
-}
+						result = m_sql.safe_query("SELECT Value FROM Meter_Calendar WHERE (DeviceRowID==%llu) AND (Date=='%q')",
+							DevID, szDate);
+						if (result.size() == 0)
+						{
+							//Insert value into our database
+							m_sql.safe_query("INSERT INTO Meter_Calendar (DeviceRowID, Value, Date) VALUES ('%llu', '%llu', '%q')",
+								DevID, ulCounter, szDate);
+							_log.Log(LOG_STATUS, "SBFSpot Import Old Month Data: Inserting %s", szDate);
+						}
 					}
 				}
 			}
