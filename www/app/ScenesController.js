@@ -1464,7 +1464,7 @@ define(['app'], function (app) {
 							}
 
 							if (item.Type=="Scene") {
-								img1='<img src="images/push48.png" title="Activate" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes,' + item.Protected +');" class="lcursor" height="48" width="48">';
+								img1='<img src="images/push48.png" title="' + $.t('Activate scene') +'" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes,' + item.Protected +');" class="lcursor" height="48" width="48">';
 							}
 							else {
 								var onclass="";
@@ -1478,8 +1478,8 @@ define(['app'], function (app) {
 									offclass="transimg";
 								}
 
-								img1='<img class="lcursor ' + onclass + '" src="images/push48.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected +');" height="48" width="48">';
-								img2='<img class="lcursor ' + offclass + '"src="images/pushoff48.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes, ' + item.Protected +');" height="48" width="48">';
+								img1='<img class="lcursor ' + onclass + '" src="images/push48.png" title="' + $.t('Turn On') +'" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected +');" height="48" width="48">';
+								img2='<img class="lcursor ' + offclass + '"src="images/pushoff48.png" title="' + $.t('Turn Off') +'" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes, ' + item.Protected +');" height="48" width="48">';
 								if ($(id + " #img2").html()!=img2) {
 									$(id + " #img2").html(img2);
 								}
@@ -1590,7 +1590,7 @@ define(['app'], function (app) {
 					  xhtm+=bigtext+'</td>\n';
 
 					if (item.Type=="Scene") {
-						xhtm+='<td id="img1"><img src="images/push48.png" title="Activate" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected +');" class="lcursor" height="48" width="48"></td>\n';
+						xhtm+='<td id="img1"><img src="images/push48.png" title="' + $.t('Activate scene') +'" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected +');" class="lcursor" height="48" width="48"></td>\n';
 						xhtm+='\t      <td id="status">&nbsp;</td>\n';
 					}
 					else {
@@ -1605,8 +1605,8 @@ define(['app'], function (app) {
 							offclass="transimg";
 						}
 
-						xhtm+='<td id="img1"><img class="lcursor ' + onclass + '" src="images/push48.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected +');" height="48" width="48"></td>\n';
-						xhtm+='<td id="img2"><img class="lcursor ' + offclass + '"src="images/pushoff48.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes, ' + item.Protected +');" height="48" width="48"></td>\n';
+						xhtm+='<td id="img1"><img class="lcursor ' + onclass + '" src="images/push48.png" title="' + $.t('Turn On') +'" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected +');" height="48" width="48"></td>\n';
+						xhtm+='<td id="img2"><img class="lcursor ' + offclass + '"src="images/pushoff48.png" title="' + $.t('Turn Off') +'" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes, ' + item.Protected +');" height="48" width="48"></td>\n';
 						xhtm+='\t      <td id="status">&nbsp;</td>\n';
 					}
 					xhtm+=
@@ -1621,6 +1621,8 @@ define(['app'], function (app) {
 					xhtm+=      
 						  '<img src="images/favorite.png" title="' + $.t('Remove from Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',0);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
 				  }
+				  xhtm+='<a class="btnsmall" onclick="ShowSceneLog(\'#scenecontent\',\'ShowScenes\',' + item.idx + ',\'' + escape(item.Name) + '\');" data-i18n="Log">Log</a> ';
+			  
 				  if (permissions.hasPermission("Admin")) {
 						xhtm+='<a class="btnsmall" onclick="EditSceneDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\',' + item.HardwareID + ',\'' + item.Type + '\', ' + item.Protected + ',\'' + item.OnAction + '\', \'' + item.OffAction + '\');" data-i18n="Edit">Edit</a> ';
 						if (bAddTimer == true) {

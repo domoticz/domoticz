@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 1188
+# ref 1203
 
 CACHE:
 # CSS
@@ -112,6 +112,7 @@ images/camera-web.png
 images/capture.png
 images/clock.png
 images/clock48.png
+images/clock48_On.png
 images/collection.png
 images/collection_hover.png
 images/ChristmasTree.png
@@ -428,12 +429,14 @@ i18n/domoticz-nl.json
 i18n/domoticz-no.json
 i18n/domoticz-pl.json
 i18n/domoticz-pt.json
+i18n/domoticz-ro.json
 i18n/domoticz-ru.json
 i18n/domoticz-sk.json
 i18n/domoticz-sl.json
 i18n/domoticz-sr.json
 i18n/domoticz-sv.json
 i18n/domoticz-tr.json
+i18n/domoticz-zh.json
 
 # Scripts
 app/AboutController.js

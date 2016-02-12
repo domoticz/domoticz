@@ -580,6 +580,7 @@
     <ClInclude Include="..\webserver\request_handler.hpp" />
     <ClInclude Include="..\webserver\request_parser.hpp" />
     <ClInclude Include="..\webserver\server.hpp" />
+    <ClInclude Include="..\webserver\utf.hpp" />
     <ClInclude Include="WindowsHelper.h" />
     <ClInclude Include="..\hardware\YouLess.h" />
   </ItemGroup>
@@ -727,7 +728,10 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\MQTT\mosquittopp.cpp" />
+    <ClCompile Include="..\MQTT\mosquittopp.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="..\MQTT\net_mosq.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1204,6 +1208,7 @@
     <Image Include="..\www\styles\elemental\images\imgbg.jpg" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="..\History.txt" />
     <Text Include="..\www\switch_icons.txt" />
     <Text Include="..\www\templates\readme.txt" />
   </ItemGroup>

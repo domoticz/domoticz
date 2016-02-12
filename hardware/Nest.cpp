@@ -285,7 +285,7 @@ void CNest::UpdateSmokeSensor(const unsigned char Idx, const bool bOn, const std
 {
 	bool bDeviceExits = true;
 	char szIdx[10];
-	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);
+	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, Idx, 0);
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, szIdx);
 	if (result.size() < 1)
@@ -294,12 +294,26 @@ void CNest::UpdateSmokeSensor(const unsigned char Idx, const bool bOn, const std
 	}
 	else
 	{
-		//check if we have a change, if not do not update it
+		//check if we have a change, if not only update the LastUpdate field
+		bool bNoChange = false;
 		int nvalue = atoi(result[0][1].c_str());
 		if ((!bOn) && (nvalue == 0))
+			bNoChange = true;
+		else if ((bOn && (nvalue != 0)))
+			bNoChange = true;
+		if (bNoChange)
+		{
+			time_t now = time(0);
+			struct tm ltime;
+			localtime_r(&now, &ltime);
+
+			char szLastUpdate[40];
+			sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
+
+			m_sql.safe_query("UPDATE DeviceStatus SET LastUpdate='%q' WHERE(HardwareID == %d) AND (DeviceID == '%q')",
+				szLastUpdate, m_HwdID, szIdx);
 			return;
-		if ((bOn && (nvalue != 0)))
-			return;
+		}
 	}
 
 	//Send as Lighting 2
@@ -310,8 +324,8 @@ void CNest::UpdateSmokeSensor(const unsigned char Idx, const bool bOn, const std
 	lcmd.LIGHTING2.subtype = sTypeAC;
 	lcmd.LIGHTING2.id1 = 0;
 	lcmd.LIGHTING2.id2 = 0;
-	lcmd.LIGHTING2.id3 = 0;
-	lcmd.LIGHTING2.id4 = Idx;
+	lcmd.LIGHTING2.id3 = Idx;
+	lcmd.LIGHTING2.id4 = 0;
 	lcmd.LIGHTING2.unitcode = 1;
 	int level = 15;
 	if (!bOn)
@@ -348,7 +362,7 @@ void CNest::GetMeterDetails()
 {
 	std::string sResult;
 #ifdef DEBUG_NextThermostatR
-	sResult = ReadFile("E:\\Nest_DoubleTherm.json");
+	sResult = ReadFile("E:\\nest.json");
 #else
 	if (m_UserName.size()==0)
 		return;
@@ -604,14 +618,14 @@ void CNest::GetMeterDetails()
 			if (nshared["can_heat"].asBool() && !nshared["hvac_heater_state"].empty())
 			{
 				bool bIsHeating = nshared["hvac_heater_state"].asBool();
-				UpdateSwitch(113 + (iThermostat * 3), bIsHeating, Name + " HeatingOn");
+				UpdateSwitch((unsigned char)(113 + (iThermostat * 3)), bIsHeating, Name + " HeatingOn");
 			}
 
 			// Check if thermostat is currently Cooling
 			if (nshared["can_cool"].asBool() && !nshared["hvac_ac_state"].empty())
 			{
 				bool bIsCooling = nshared["hvac_ac_state"].asBool();
-				UpdateSwitch(114 + (iThermostat * 3), bIsCooling, Name + " CoolingOn");
+				UpdateSwitch((unsigned char)(114 + (iThermostat * 3)), bIsCooling, Name + " CoolingOn");
 			}
 
 			//Away

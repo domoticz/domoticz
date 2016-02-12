@@ -44,7 +44,7 @@
       <Item label="Learn Mode" value="5" />
     </Value>
 
-    <Value type="list" index="250" genre="config" label="Mode" units="" min="0" max="1" size="1" value="1">
+    <Value type="list" index="250" genre="config" label="Mode" units="" min="0" max="1" size="1" value="0">
       <Help>
         Enable selective Group Mode or Scene Mode when Button is in Use.
         NOTE: Minimote firmware 1.17 or higher is required, firmware 1.19 is highly recommended.</Help>

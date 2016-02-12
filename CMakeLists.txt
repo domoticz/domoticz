@@ -10,20 +10,36 @@ IF(USE_BUILTIN_LUA)
     DEFINITION LUA_LIBRARIES)
 ELSE(USE_BUILTIN_LUA)
   find_package(PkgConfig)
-  pkg_check_modules(LUA lua>=5.2)
+  pkg_search_module(LUA lua5.2>=5.2 lua>=5.2 lua-5.2)
   IF(LUA_FOUND)
     INCLUDE_DIRECTORIES(${LUA_INCLUDE_DIRS})
     add_definitions(-DWITH_EXTERNAL_LUA)
+    link_directories(${LUA_LIBRARY_DIRS})
   ELSE(LUA_FOUND)
     MESSAGE(FATAL_ERROR "LUA not found but USE_BUILTIN_LUA=NO")
   ENDIF(LUA_FOUND)
 ENDIF(USE_BUILTIN_LUA)
 
-add_subdirectory (MQTT)
-get_directory_property (CMAKE_MQTT_INCLUDES DIRECTORY MQTT
-    DEFINITION MQTT_INCLUDE_DIRS)
-get_directory_property (CMAKE_MQTT_LIBRARIES DIRECTORY MQTT
-    DEFINITION MQTT_LIBRARIES)
+option(USE_BUILTIN_MQTT "Use builtin Mosquitto library" YES)
+IF(USE_BUILTIN_MQTT)
+  message(STATUS "Using builtin Mosquitto library")
+  add_subdirectory (MQTT)
+  get_directory_property (MQTT_LIBRARIES DIRECTORY MQTT
+      DEFINITION MQTT_LIBRARIES)
+  add_definitions(-DBUILTIN_MQTT)
+ELSE(USE_BUILTIN_MQTT)
+  find_path(MQTT_INCLUDE_DIRS NAMES mosquittopp.h)
+  IF(MQTT_INCLUDE_DIRS)
+    message(STATUS "Found mosquittopp.h at: ${MQTT_INCLUDE_DIRS}")
+    find_library(MQTT_LIBRARIES NAMES libmosquittopp.so)
+    IF(MQTT_LIBRARIES)
+      message(STATUS "Found libmosquittopp at: ${MQTT_LIBRARIES}") 
+    ENDIF(MQTT_LIBRARIES)
+    INCLUDE_DIRECTORIES(${MQTT_INCLUDE_DIRS})
+  ELSE(MQTT_INCLUDE_DIRS)
+     meessage(FATAL_ERROR "Mosquitto includes or library cannot be found, and you ask to NOT use builtin")
+  ENDIF(MQTT_INCLUDE_DIRS)
+ENDIF(USE_BUILTIN_MQTT)
 
 option(USE_BUILTIN_SQLITE "Use builtin sqlite library" YES)
 IF(USE_BUILTIN_SQLITE)
@@ -142,7 +158,21 @@ MACRO(Gitversion_GET_REVISION dir variable)
 ENDMACRO(Gitversion_GET_REVISION)
 
 Gitversion_GET_REVISION(. ProjectRevision)
-MATH(EXPR ProjectRevision "${ProjectRevision}+2107")
+IF(NOT ProjectRevision)
+  MESSAGE(STATUS "Failed to get ProjectRevision from git")
+  IF(EXISTS appversion.default)
+    MESSAGE(STATUS "Read ProjectRevision from appversion.default")
+    FILE(STRINGS appversion.default AppVersionContent)
+    LIST(GET AppVersionContent 0 AppVersionContent)
+    STRING(REPLACE " " ";" AppVersionContent ${AppVersionContent})
+    LIST(GET AppVersionContent 2 ProjectRevision)
+  ELSE(EXISTS appversion.default)
+    MESSAGE(STATUS "No appversion.default, set ProjectRevision to 0")
+    set (ProjectRevision 0)
+  ENDIF(EXISTS appversion.default)
+ELSE(NOT ProjectRevision)
+  MATH(EXPR ProjectRevision "${ProjectRevision}+2107")
+ENDIF(NOT ProjectRevision)
 MESSAGE(STATUS "Compiling Revision #${ProjectRevision}")
 
 # The version number.
@@ -275,7 +305,6 @@ hardware/WOL.cpp
 hardware/Wunderground.cpp
 hardware/YouLess.cpp
 hardware/ZWaveBase.cpp
-MQTT/mosquittopp.cpp
 notifications/NotificationBase.cpp
 notifications/NotificationEmail.cpp
 notifications/NotificationGCM.cpp
@@ -535,9 +564,9 @@ else()
 endif (TELLDUSCORE_INCLUDE)
 
 IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-  target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} mqtt ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS})
+  target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} ${MQTT_LIBRARIES} ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS})
 else()
-  target_link_libraries(domoticz -lrt ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} mqtt ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS})
+  target_link_libraries(domoticz -lrt ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} -LXXXPREFIXXX/lib pthread ${LUA_LIBRARIES} ${MQTT_LIBRARIES} ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS})
 ENDIF()
 
 ADD_PRECOMPILED_HEADER(domoticz "main/stdafx.h")
@@ -583,7 +612,9 @@ SET(CPACK_DEBIAN_ARCHITECTURE ${CMAKE_SYSTEM_PROCESSOR})
 
 INCLUDE(CPack)
 
-set(CMAKE_INSTALL_PREFIX "/opt/${CPACK_PACKAGE_NAME}" CACHE PATH "Install path prefix, prepended onto install directories." FORCE)
+IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  set(CMAKE_INSTALL_PREFIX "/opt/${CPACK_PACKAGE_NAME}" CACHE PATH "Install path prefix, prepended onto install directories." FORCE)
+ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 
 install(TARGETS domoticz DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/www DESTINATION ${CMAKE_INSTALL_PREFIX} USE_SOURCE_PERMISSIONS)

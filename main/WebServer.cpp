@@ -82,6 +82,7 @@ static const _tGuiLanguage guiLanguage[] =
 	{ "en", "English" },
 	{ "ar", "Arabic" },
 	{ "bg", "Bulgarian" },
+	{ "zh", "Chinese" },
 	{ "cs", "Czech" },
 	{ "da", "Danish" },
 	{ "nl", "Dutch" },
@@ -98,6 +99,7 @@ static const _tGuiLanguage guiLanguage[] =
 	{ "no", "Norwegian" },
 	{ "pl", "Polish" },
 	{ "pt", "Portuguese" },
+	{ "ro", "Romanian" },
 	{ "ru", "Russian" },
 	{ "sr", "Serbian" },
 	{ "sk", "Slovak" },
@@ -105,7 +107,6 @@ static const _tGuiLanguage guiLanguage[] =
 	{ "es", "Spanish" },
 	{ "sv", "Swedish" },
 	{ "tr", "Turkish" },
-
 	{ NULL, NULL }
 };
 
@@ -357,31 +358,31 @@ namespace http {
 			}
 
 			//register callbacks
-			m_pWebEm->RegisterIncludeCode("switchtypes", boost::bind(&CWebServer::DisplaySwitchTypesCombo, this));
-			m_pWebEm->RegisterIncludeCode("metertypes", boost::bind(&CWebServer::DisplayMeterTypesCombo, this));
-			m_pWebEm->RegisterIncludeCode("timertypes", boost::bind(&CWebServer::DisplayTimerTypesCombo, this));
-			m_pWebEm->RegisterIncludeCode("combolanguage", boost::bind(&CWebServer::DisplayLanguageCombo, this));
+			m_pWebEm->RegisterIncludeCode("switchtypes", boost::bind(&CWebServer::DisplaySwitchTypesCombo, this, _1));
+			m_pWebEm->RegisterIncludeCode("metertypes", boost::bind(&CWebServer::DisplayMeterTypesCombo, this, _1));
+			m_pWebEm->RegisterIncludeCode("timertypes", boost::bind(&CWebServer::DisplayTimerTypesCombo, this, _1));
+			m_pWebEm->RegisterIncludeCode("combolanguage", boost::bind(&CWebServer::DisplayLanguageCombo, this, _1));
 
-			m_pWebEm->RegisterPageCode("/json.htm", boost::bind(&CWebServer::GetJSonPage, this, _1, _2));
-			m_pWebEm->RegisterPageCode("/uploadcustomicon", boost::bind(&CWebServer::Post_UploadCustomIcon, this, _1, _2));
-			m_pWebEm->RegisterPageCode("/html5.appcache", boost::bind(&CWebServer::GetAppCache, this, _1, _2));
-			m_pWebEm->RegisterPageCode("/camsnapshot.jpg", boost::bind(&CWebServer::GetCameraSnapshot, this, _1, _2));
-			m_pWebEm->RegisterPageCode("/backupdatabase.php", boost::bind(&CWebServer::GetDatabaseBackup, this, _1, _2));
-			m_pWebEm->RegisterPageCode("/raspberry.cgi", boost::bind(&CWebServer::GetInternalCameraSnapshot, this, _1, _2));
-			m_pWebEm->RegisterPageCode("/uvccapture.cgi", boost::bind(&CWebServer::GetInternalCameraSnapshot, this, _1, _2)); //TODO: fix me double
+			m_pWebEm->RegisterPageCode("/json.htm", boost::bind(&CWebServer::GetJSonPage, this, _1, _2, _3));
+			m_pWebEm->RegisterPageCode("/uploadcustomicon", boost::bind(&CWebServer::Post_UploadCustomIcon, this, _1, _2, _3));
+			m_pWebEm->RegisterPageCode("/html5.appcache", boost::bind(&CWebServer::GetAppCache, this, _1, _2, _3));
+			m_pWebEm->RegisterPageCode("/camsnapshot.jpg", boost::bind(&CWebServer::GetCameraSnapshot, this, _1, _2, _3));
+			m_pWebEm->RegisterPageCode("/backupdatabase.php", boost::bind(&CWebServer::GetDatabaseBackup, this, _1, _2, _3));
+			m_pWebEm->RegisterPageCode("/raspberry.cgi", boost::bind(&CWebServer::GetInternalCameraSnapshot, this, _1, _2, _3));
+			m_pWebEm->RegisterPageCode("/uvccapture.cgi", boost::bind(&CWebServer::GetInternalCameraSnapshot, this, _1, _2, _3)); //TODO: fix me double
 
-			m_pWebEm->RegisterActionCode("storesettings", boost::bind(&CWebServer::PostSettings, this, _1, _2));
-			m_pWebEm->RegisterActionCode("setrfxcommode", boost::bind(&CWebServer::SetRFXCOMMode, this, _1, _2));
-			m_pWebEm->RegisterActionCode("rfxupgradefirmware", boost::bind(&CWebServer::RFXComUpgradeFirmware, this, _1, _2));
+			m_pWebEm->RegisterActionCode("storesettings", boost::bind(&CWebServer::PostSettings, this, _1, _2, _3));
+			m_pWebEm->RegisterActionCode("setrfxcommode", boost::bind(&CWebServer::SetRFXCOMMode, this, _1, _2, _3));
+			m_pWebEm->RegisterActionCode("rfxupgradefirmware", boost::bind(&CWebServer::RFXComUpgradeFirmware, this, _1, _2, _3));
 			RegisterCommandCode("rfxfirmwaregetpercentage", boost::bind(&CWebServer::Cmd_RFXComGetFirmwarePercentage, this, _1, _2, _3), true);
-			m_pWebEm->RegisterActionCode("setrego6xxtype", boost::bind(&CWebServer::SetRego6XXType, this, _1, _2));
-			m_pWebEm->RegisterActionCode("sets0metertype", boost::bind(&CWebServer::SetS0MeterType, this, _1, _2));
-			m_pWebEm->RegisterActionCode("setlimitlesstype", boost::bind(&CWebServer::SetLimitlessType, this, _1, _2));
-			m_pWebEm->RegisterActionCode("setopenthermsettings", boost::bind(&CWebServer::SetOpenThermSettings, this, _1, _2));
-			m_pWebEm->RegisterActionCode("setp1usbtype", boost::bind(&CWebServer::SetP1USBType, this, _1, _2));
-			m_pWebEm->RegisterActionCode("setcurrentcostmetertype", boost::bind(&CWebServer::SetCurrentCostUSBType, this, _1, _2));
-			m_pWebEm->RegisterActionCode("restoredatabase", boost::bind(&CWebServer::RestoreDatabase, this, _1, _2));
-			m_pWebEm->RegisterActionCode("sbfspotimportolddata", boost::bind(&CWebServer::SBFSpotImportOldData, this, _1, _2));
+			m_pWebEm->RegisterActionCode("setrego6xxtype", boost::bind(&CWebServer::SetRego6XXType, this, _1, _2, _3));
+			m_pWebEm->RegisterActionCode("sets0metertype", boost::bind(&CWebServer::SetS0MeterType, this, _1, _2, _3));
+			m_pWebEm->RegisterActionCode("setlimitlesstype", boost::bind(&CWebServer::SetLimitlessType, this, _1, _2, _3));
+			m_pWebEm->RegisterActionCode("setopenthermsettings", boost::bind(&CWebServer::SetOpenThermSettings, this, _1, _2, _3));
+			m_pWebEm->RegisterActionCode("setp1usbtype", boost::bind(&CWebServer::SetP1USBType, this, _1, _2, _3));
+			m_pWebEm->RegisterActionCode("setcurrentcostmetertype", boost::bind(&CWebServer::SetCurrentCostUSBType, this, _1, _2, _3));
+			m_pWebEm->RegisterActionCode("restoredatabase", boost::bind(&CWebServer::RestoreDatabase, this, _1, _2, _3));
+			m_pWebEm->RegisterActionCode("sbfspotimportolddata", boost::bind(&CWebServer::SBFSpotImportOldData, this, _1, _2, _3));
 
 			RegisterCommandCode("getlanguage", boost::bind(&CWebServer::Cmd_GetLanguage, this, _1, _2, _3), true);
 			RegisterCommandCode("getthemes", boost::bind(&CWebServer::Cmd_GetThemes, this, _1, _2, _3), true);
@@ -539,6 +540,7 @@ namespace http {
 			RegisterRType("graph", boost::bind(&CWebServer::RType_HandleGraph, this, _1, _2, _3));
 			RegisterRType("lightlog", boost::bind(&CWebServer::RType_LightLog, this, _1, _2, _3));
 			RegisterRType("textlog", boost::bind(&CWebServer::RType_TextLog, this, _1, _2, _3));
+			RegisterRType("scenelog", boost::bind(&CWebServer::RType_SceneLog, this, _1, _2, _3));
 			RegisterRType("settings", boost::bind(&CWebServer::RType_Settings, this, _1, _2, _3));
 			RegisterRType("events", boost::bind(&CWebServer::RType_Events, this, _1, _2, _3));
 			RegisterRType("hardware", boost::bind(&CWebServer::RType_Hardware, this, _1, _2, _3));
@@ -599,19 +601,19 @@ namespace http {
 			RegisterCommandCode("zwavegetusercodes", boost::bind(&CWebServer::Cmd_ZWaveGetNodeUserCodes, this, _1, _2, _3));
 			RegisterCommandCode("zwaveremoveusercode", boost::bind(&CWebServer::Cmd_ZWaveRemoveUserCode, this, _1, _2, _3));
 
-			m_pWebEm->RegisterPageCode("/zwavegetconfig.php", boost::bind(&CWebServer::ZWaveGetConfigFile,	this, _1, _2));
+			m_pWebEm->RegisterPageCode("/zwavegetconfig.php", boost::bind(&CWebServer::ZWaveGetConfigFile,	this, _1, _2, _3));
 
-			m_pWebEm->RegisterPageCode("/ozwcp/poll.xml", boost::bind(&CWebServer::ZWaveCPPollXml, this, _1, _2));
-			m_pWebEm->RegisterPageCode("/ozwcp/cp.html", boost::bind(&CWebServer::ZWaveCPIndex, this, _1, _2));
-			m_pWebEm->RegisterPageCode("/ozwcp/confparmpost.html", boost::bind(&CWebServer::ZWaveCPNodeGetConf, this, _1, _2));
-			m_pWebEm->RegisterPageCode("/ozwcp/refreshpost.html", boost::bind(&CWebServer::ZWaveCPNodeGetValues, this, _1, _2));
-			m_pWebEm->RegisterPageCode("/ozwcp/valuepost.html", boost::bind(&CWebServer::ZWaveCPNodeSetValue, this, _1, _2));
-			m_pWebEm->RegisterPageCode("/ozwcp/buttonpost.html", boost::bind(&CWebServer::ZWaveCPNodeSetButton, this, _1, _2));
-			m_pWebEm->RegisterPageCode("/ozwcp/admpost.html", boost::bind(&CWebServer::ZWaveCPAdminCommand, this, _1, _2));
-			m_pWebEm->RegisterPageCode("/ozwcp/nodepost.html", boost::bind(&CWebServer::ZWaveCPNodeChange, this, _1, _2));
-			m_pWebEm->RegisterPageCode("/ozwcp/savepost.html", boost::bind(&CWebServer::ZWaveCPSaveConfig, this, _1, _2));
-			m_pWebEm->RegisterPageCode("/ozwcp/topopost.html", boost::bind(&CWebServer::ZWaveCPGetTopo, this, _1, _2));
-			m_pWebEm->RegisterPageCode("/ozwcp/statpost.html", boost::bind(&CWebServer::ZWaveCPGetStats, this, _1, _2));
+			m_pWebEm->RegisterPageCode("/ozwcp/poll.xml", boost::bind(&CWebServer::ZWaveCPPollXml, this, _1, _2, _3));
+			m_pWebEm->RegisterPageCode("/ozwcp/cp.html", boost::bind(&CWebServer::ZWaveCPIndex, this, _1, _2, _3));
+			m_pWebEm->RegisterPageCode("/ozwcp/confparmpost.html", boost::bind(&CWebServer::ZWaveCPNodeGetConf, this, _1, _2, _3));
+			m_pWebEm->RegisterPageCode("/ozwcp/refreshpost.html", boost::bind(&CWebServer::ZWaveCPNodeGetValues, this, _1, _2, _3));
+			m_pWebEm->RegisterPageCode("/ozwcp/valuepost.html", boost::bind(&CWebServer::ZWaveCPNodeSetValue, this, _1, _2, _3));
+			m_pWebEm->RegisterPageCode("/ozwcp/buttonpost.html", boost::bind(&CWebServer::ZWaveCPNodeSetButton, this, _1, _2, _3));
+			m_pWebEm->RegisterPageCode("/ozwcp/admpost.html", boost::bind(&CWebServer::ZWaveCPAdminCommand, this, _1, _2, _3));
+			m_pWebEm->RegisterPageCode("/ozwcp/nodepost.html", boost::bind(&CWebServer::ZWaveCPNodeChange, this, _1, _2, _3));
+			m_pWebEm->RegisterPageCode("/ozwcp/savepost.html", boost::bind(&CWebServer::ZWaveCPSaveConfig, this, _1, _2, _3));
+			m_pWebEm->RegisterPageCode("/ozwcp/topopost.html", boost::bind(&CWebServer::ZWaveCPGetTopo, this, _1, _2, _3));
+			m_pWebEm->RegisterPageCode("/ozwcp/statpost.html", boost::bind(&CWebServer::ZWaveCPGetStats, this, _1, _2, _3));
 			//grouppost.html
 			//pollpost.html
 			//scenepost.html
@@ -718,12 +720,12 @@ namespace http {
 			return 0;
 		}
 
-		std::string CWebServer::GetAppCache(WebEmSession & session, const request& req)
+		void CWebServer::GetAppCache(WebEmSession & session, const request& req, reply & rep)
 		{
 			std::string response = "";
 			if (g_bDontCacheWWW)
 			{
-				return response;
+				return;
 			}
 			//Return the appcache file (dynamicly generated)
 			std::string sLine;
@@ -795,10 +797,10 @@ namespace http {
 					response += sLine + "\n";
 				}
 			}
-			return response;
+			reply::set_content(&rep, response);
 		}
 
-		std::string CWebServer::GetJSonPage(WebEmSession & session, const request& req)
+		void CWebServer::GetJSonPage(WebEmSession & session, const request& req, reply & rep)
 		{
 			Json::Value root;
 			root["status"] = "ERR";
@@ -817,6 +819,7 @@ namespace http {
 				}
 				if (cparam == "dologout")
 				{
+					session.forcelogin = true;
 					root["status"] = "OK";
 					root["title"] = "Logout";
 					goto exitjson;
@@ -829,13 +832,11 @@ namespace http {
 			}
 		exitjson:
 			std::string jcallback = request::findValue(&req, "jsoncallback");
-			if (jcallback.size() == 0)
-				m_retstr = root.toStyledString();
-			else
-			{
-				m_retstr = "var data=" + root.toStyledString() + "\n" + jcallback + "(data);";
+			if (jcallback.size() == 0) {
+				reply::set_content(&rep, root.toStyledString());
+				return;
 			}
-			return m_retstr;
+			reply::set_content(&rep, "var data=" + root.toStyledString() + "\n" + jcallback + "(data);");
 		}
 
 		void CWebServer::Cmd_GetLanguage(WebEmSession & session, const request& req, Json::Value &root)
@@ -1000,6 +1001,10 @@ namespace http {
 			int port = atoi(sport.c_str());
 			if (IsSerialDevice(htype))
 			{
+				std::string modeStr = request::findValue(&req, "Mode1");
+				if (!modeStr.empty()) {
+					mode1 = atoi(modeStr.c_str());
+				}
 			}
 			else if (
 				(htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) || (htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) ||
@@ -2010,7 +2015,7 @@ namespace http {
 			}
 			else
 			{
-				root["HaveUpdate"] = m_mainworker.IsUpdateAvailable(true);
+				root["HaveUpdate"] = m_mainworker.IsUpdateAvailable(false);
 				root["DomoticzUpdateURL"] = m_mainworker.m_szDomoticzUpdateURL;
 				root["SystemName"] = m_mainworker.m_szSystemName;
 				root["Revision"] = m_mainworker.m_iRevision;
@@ -2596,6 +2601,85 @@ namespace http {
 			return 0;
 		}
 
+		void CWebServer::Cmd_UpdateDevice(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			std::string idx = request::findValue(&req, "idx");
+			std::string hid = request::findValue(&req, "hid");
+			std::string did = request::findValue(&req, "did");
+			std::string dunit = request::findValue(&req, "dunit");
+			std::string dtype = request::findValue(&req, "dtype");
+			std::string dsubtype = request::findValue(&req, "dsubtype");
+
+			std::string nvalue = request::findValue(&req, "nvalue");
+			std::string svalue = request::findValue(&req, "svalue");
+
+			if ((nvalue.empty() && svalue.empty()))
+			{
+				return;
+			}
+
+			int signallevel = 12;
+			int batterylevel = 255;
+
+			if (idx.empty())
+			{
+				//No index supplied, check if raw parameters where supplied
+				if (
+					(hid.empty()) ||
+					(did.empty()) ||
+					(dunit.empty()) ||
+					(dtype.empty()) ||
+					(dsubtype.empty())
+					)
+					return;
+			}
+			else
+			{
+				//Get the raw device parameters
+				std::vector<std::vector<std::string> > result;
+				result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID=='%q')",
+					idx.c_str());
+				if (result.empty())
+					return;
+				hid = result[0][0];
+				did = result[0][1];
+				dunit = result[0][2];
+				dtype = result[0][3];
+				dsubtype = result[0][4];
+			}
+
+			int HardwareID = atoi(hid.c_str());
+			std::string DeviceID = did;
+			int unit = atoi(dunit.c_str());
+			int devType = atoi(dtype.c_str());
+			int subType = atoi(dsubtype.c_str());
+
+			std::stringstream sstr;
+
+			unsigned long long ulIdx;
+			sstr << idx;
+			sstr >> ulIdx;
+
+			int invalue = (!nvalue.empty()) ? atoi(nvalue.c_str()) : 0;
+
+
+			std::string sSignalLevel = request::findValue(&req, "rssi");
+			if (sSignalLevel != "")
+			{
+				signallevel = atoi(sSignalLevel.c_str());
+			}
+			std::string sBatteryLevel = request::findValue(&req, "battery");
+			if (sBatteryLevel != "")
+			{
+				batterylevel = atoi(sBatteryLevel.c_str());
+			}
+			if (m_mainworker.UpdateDevice(HardwareID, DeviceID, unit, devType, subType, invalue, svalue, signallevel, batterylevel))
+			{
+				root["status"] = "OK";
+				root["title"] = "Update Device";
+			}
+		}
+
 		void CWebServer::Cmd_UpdateDevices(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			std::stringstream lua_DirT;
@@ -2676,85 +2760,6 @@ namespace http {
 			{
 				report_errors(lua_state, status);
 				lua_close(lua_state);
-			}
-		}
-
-		void CWebServer::Cmd_UpdateDevice(WebEmSession & session, const request& req, Json::Value &root)
-		{
-			std::string idx = request::findValue(&req, "idx");
-			std::string hid = request::findValue(&req, "hid");
-			std::string did = request::findValue(&req, "did");
-			std::string dunit = request::findValue(&req, "dunit");
-			std::string dtype = request::findValue(&req, "dtype");
-			std::string dsubtype = request::findValue(&req, "dsubtype");
-
-			std::string nvalue = request::findValue(&req, "nvalue");
-			std::string svalue = request::findValue(&req, "svalue");
-
-			if ( (nvalue.empty() && svalue.empty()) )
-			{
-				return;
-			}
-
-			int signallevel = 12;
-			int batterylevel = 255;
-
-			if (idx.empty())
-			{
-				//No index supplied, check if raw parameters where supplied
-				if (
-					(hid.empty()) ||
-					(did.empty()) ||
-					(dunit.empty()) ||
-					(dtype.empty()) ||
-					(dsubtype.empty())
-					)
-					return;
-			}
-			else
-			{
-				//Get the raw device parameters
-				std::vector<std::vector<std::string> > result;
-				result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID=='%q')",
-					idx.c_str());
-				if (result.empty())
-					return;
-				hid = result[0][0];
-				did = result[0][1];
-				dunit = result[0][2];
-				dtype = result[0][3];
-				dsubtype = result[0][4];
-			}
-
-			int HardwareID = atoi(hid.c_str());
-			std::string DeviceID = did;
-			int unit = atoi(dunit.c_str());
-			int devType = atoi(dtype.c_str());
-			int subType = atoi(dsubtype.c_str());
-
-			std::stringstream sstr;
-
-			unsigned long long ulIdx;
-			sstr << idx;
-			sstr >> ulIdx;
-
-			int invalue = (!nvalue.empty()) ? atoi(nvalue.c_str()) : 0;
-
-
-			std::string sSignalLevel = request::findValue(&req, "rssi");
-			if (sSignalLevel != "")
-			{
-				signallevel = atoi(sSignalLevel.c_str());
-			}
-			std::string sBatteryLevel = request::findValue(&req, "battery");
-			if (sBatteryLevel != "")
-			{
-				batterylevel = atoi(sBatteryLevel.c_str());
-			}
-			if (m_mainworker.UpdateDevice(HardwareID, DeviceID, unit, devType, subType, invalue, svalue, signallevel, batterylevel))
-			{
-				root["status"] = "OK";
-				root["title"] = "Update Device";
 			}
 		}
 
@@ -4184,11 +4189,11 @@ namespace http {
 						if (dtype == pTypeBlinds) {
 							dtype = pTypeGeneralSwitch;
 							if (subtype == sTypeBlindsT5) subtype = sSwitchTypeBofu;
-							if (subtype == sTypeBlindsT6) subtype = sSwitchTypeBrel;
-							if (subtype == sTypeBlindsT7) subtype = sSwitchTypeAOK;
-							if (subtype == sTypeBlindsT8) subtype = sSwitchTypeBofu;
-							if (subtype == sTypeBlindsT9) subtype = sSwitchTypeBrel;
-							if (subtype == sTypeBlindsT10) subtype = sSwitchTypeAOK;
+							else if (subtype == sTypeBlindsT6) subtype = sSwitchTypeBrel;
+							else if (subtype == sTypeBlindsT7) subtype = sSwitchTypeAOK;
+							else if (subtype == sTypeBlindsT8) subtype = sSwitchTypeBofu;
+							else if (subtype == sTypeBlindsT9) subtype = sSwitchTypeBrel;
+							else if (subtype == sTypeBlindsT10) subtype = sSwitchTypeAOK;
 							std::stringstream s_strid;
 							s_strid << std::hex << strtoul(devid.c_str(), NULL, 16);
 							unsigned long deviceid = 0;
@@ -4709,11 +4714,11 @@ namespace http {
 						if (dtype == pTypeBlinds) {
 							dtype = pTypeGeneralSwitch;
 							if (subtype == sTypeBlindsT5) subtype = sSwitchTypeBofu;
-							if (subtype == sTypeBlindsT6) subtype = sSwitchTypeBrel;
-							if (subtype == sTypeBlindsT7) subtype = sSwitchTypeAOK;
-							if (subtype == sTypeBlindsT8) subtype = sSwitchTypeBofu;
-							if (subtype == sTypeBlindsT9) subtype = sSwitchTypeBrel;
-							if (subtype == sTypeBlindsT10) subtype = sSwitchTypeAOK;
+							else if (subtype == sTypeBlindsT6) subtype = sSwitchTypeBrel;
+							else if (subtype == sTypeBlindsT7) subtype = sSwitchTypeAOK;
+							else if (subtype == sTypeBlindsT8) subtype = sSwitchTypeBofu;
+							else if (subtype == sTypeBlindsT9) subtype = sSwitchTypeBrel;
+							else if (subtype == sTypeBlindsT10) subtype = sSwitchTypeAOK;
 							std::stringstream s_strid;
 							s_strid << std::hex << strtoul(devid.c_str(), NULL, 16);
 							unsigned long deviceid = 0;
@@ -4983,6 +4988,12 @@ namespace http {
 						root["result"][ii]["val"] = NTYPE_TODAYCOUNTER;
 						root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_TODAYCOUNTER, 0);
 						root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_TODAYCOUNTER, 1);
+					}
+					else if (switchtype == MTYPE_TIME)
+					{
+						root["result"][ii]["val"] = NTYPE_TODAYTIME;
+						root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_TODAYTIME, 0);
+						root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_TODAYTIME, 1);
 					}
 					else
 					{
@@ -5717,8 +5728,20 @@ namespace http {
 				root["status"] = "OK";
 				root["title"] = "ClearLightLog";
 
-				result = m_sql.safe_query("DELETE FROM LightingLog WHERE (DeviceRowID=='%q')",
-					idx.c_str());
+				result = m_sql.safe_query("DELETE FROM LightingLog WHERE (DeviceRowID=='%q')", idx.c_str());
+			}
+			else if (cparam == "clearscenelog")
+			{
+				if (session.rights < 2)
+					return;//Only admin user allowed
+
+				std::string idx = request::findValue(&req, "idx");
+				if (idx == "")
+					return;
+				root["status"] = "OK";
+				root["title"] = "ClearSceneLog";
+
+				result = m_sql.safe_query("DELETE FROM SceneLog WHERE (SceneRowID=='%q')", idx.c_str());
 			}
 			else if (cparam == "learnsw")
 			{
@@ -6624,9 +6647,8 @@ namespace http {
 			}
 		}
 
-		char * CWebServer::DisplaySwitchTypesCombo()
+		void CWebServer::DisplaySwitchTypesCombo(std::string & content_part)
 		{
-			m_retstr = "";
 			char szTmp[200];
 
 			std::map<std::string, int> _switchtypes;
@@ -6640,27 +6662,22 @@ namespace http {
 			for (itt = _switchtypes.begin(); itt != _switchtypes.end(); ++itt)
 			{
 				sprintf(szTmp, "<option value=\"%d\">%s</option>\n", itt->second, itt->first.c_str());
-				m_retstr += szTmp;
-
+				content_part += szTmp;
 			}
-			return (char*)m_retstr.c_str();
 		}
 
-		char * CWebServer::DisplayMeterTypesCombo()
+		void CWebServer::DisplayMeterTypesCombo(std::string & content_part)
 		{
-			m_retstr = "";
 			char szTmp[200];
 			for (int ii = 0; ii < MTYPE_END; ii++)
 			{
 				sprintf(szTmp, "<option value=\"%d\">%s</option>\n", ii, Meter_Type_Desc((_eMeterType)ii));
-				m_retstr += szTmp;
+				content_part += szTmp;
 			}
-			return (char*)m_retstr.c_str();
 		}
 
-		char * CWebServer::DisplayLanguageCombo()
+		void CWebServer::DisplayLanguageCombo(std::string & content_part)
 		{
-			m_retstr = "";
 			//return a sorted list
 			std::map<std::string, std::string> _ltypes;
 			std::map<std::string, std::string>::const_iterator itt;
@@ -6674,23 +6691,18 @@ namespace http {
 			for (itt = _ltypes.begin(); itt != _ltypes.end(); ++itt)
 			{
 				sprintf(szTmp, "<option value=\"%s\">%s</option>\n", itt->second.c_str(), itt->first.c_str());
-				m_retstr += szTmp;
-
+				content_part += szTmp;
 			}
-
-			return (char*)m_retstr.c_str();
 		}
 
-		char * CWebServer::DisplayTimerTypesCombo()
+		void CWebServer::DisplayTimerTypesCombo(std::string & content_part)
 		{
-			m_retstr = "";
 			char szTmp[200];
 			for (int ii = 0; ii < TTYPE_END; ii++)
 			{
 				sprintf(szTmp, "<option data-i18n=\"%s\" value=\"%d\">%s</option>\n", Timer_Type_Desc(ii), ii, Timer_Type_Desc(ii));
-				m_retstr += szTmp;
+				content_part += szTmp;
 			}
-			return (char*)m_retstr.c_str();
 		}
 
 		void CWebServer::LoadUsers()
@@ -6782,14 +6794,14 @@ namespace http {
 			return false;
 		}
 
-		char * CWebServer::PostSettings(WebEmSession & session, const request& req)
+		void CWebServer::PostSettings(WebEmSession & session, const request& req, std::string & redirect_uri)
 		{
-			m_retstr = "/index.html";
+			redirect_uri = "/index.html";
 
 			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
-				return (char*)m_retstr.c_str();
+				return;
 			}
 
 			std::string Latitude = request::findValue(&req, "Latitude");
@@ -7087,30 +7099,26 @@ namespace http {
 
 			m_notifications.LoadConfig();
 
-			return (char*)m_retstr.c_str();
 		}
 
-		char * CWebServer::RestoreDatabase(WebEmSession & session, const request& req)
+		void CWebServer::RestoreDatabase(WebEmSession & session, const request& req, std::string & redirect_uri)
 		{
-			m_retstr = "/index.html";
+			redirect_uri = "/index.html";
 			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
-				return (char*)m_retstr.c_str();
+				return;
 			}
 
 			std::string dbasefile = request::findValue(&req, "dbasefile");
 			if (dbasefile == "") {
-				return (char*)m_retstr.c_str();
+				return;
 			}
 
 			m_mainworker.StopDomoticzHardware();
 
 			bool bOK = m_sql.RestoreDatabase(dbasefile);
 			m_mainworker.AddAllDomoticzHardware();
-			if (!bOK)
-				return (char*)m_retstr.c_str();
-			return (char*)m_retstr.c_str();
 		}
 
 		struct _tHardwareListInt{
@@ -7248,7 +7256,7 @@ namespace http {
 							" A.Protected, B.XOffset, B.YOffset, B.PlanID, A.Description"
 							" FROM Scenes as A"
 							" LEFT OUTER JOIN DeviceToPlansMap as B ON (B.DeviceRowID==a.ID) AND (B.DevSceneType==1)"
-							" ORDER BY %s",
+							" ORDER BY %q",
 							szOrderBy);
 
 					if (result.size() > 0)
@@ -7429,7 +7437,7 @@ namespace http {
 						" A.Options "
 						"FROM DeviceStatus as A LEFT OUTER JOIN DeviceToPlansMap as B "
 						"ON (B.DeviceRowID==a.ID) AND (B.DevSceneType==0) "
-						"ORDER BY %s",
+						"ORDER BY %q",
 						szOrderBy);
 				}
 			}
@@ -7530,7 +7538,7 @@ namespace http {
 						"FROM DeviceStatus as A, SharedDevices as B "
 						"LEFT OUTER JOIN DeviceToPlansMap as C  ON (C.DeviceRowID==A.ID)"
 						"WHERE (B.DeviceRowID==A.ID)"
-						" AND (B.SharedUserID==%lu) ORDER BY %s",
+						" AND (B.SharedUserID==%lu) ORDER BY %q",
 						m_users[iUser].ID, szOrderBy);
 				}
 			}
@@ -8111,6 +8119,7 @@ namespace http {
 							if (levelNames.empty()) {
 								levelNames.assign("Off"); // default is Off only
 							}
+							root["result"][ii]["TypeImg"] = "Light";
 							root["result"][ii]["SelectorStyle"] = atoi(selectorStyle.c_str());
 							root["result"][ii]["LevelOffHidden"] = levelOffHidden == "true";
 							root["result"][ii]["LevelNames"] = levelNames;
@@ -8616,6 +8625,9 @@ namespace http {
 							case MTYPE_COUNTER:
 								sprintf(szTmp, "%llu", total_real);
 								break;
+							case MTYPE_TIME:
+								sprintf(szTmp, "%llu min", total_real);
+								break;
 							}
 						}
 						root["result"][ii]["Counter"] = sValue;
@@ -8638,6 +8650,11 @@ namespace http {
 							break;
 						case MTYPE_WATER:
 							sprintf(szTmp, "%.03f m3", fvalue / WaterDivider);
+							root["result"][ii]["Data"] = szTmp;
+							root["result"][ii]["Counter"] = szTmp;
+							break;
+						case MTYPE_TIME:
+							sprintf(szTmp, "%i min", atoi(sValue.c_str()));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
@@ -8715,6 +8732,9 @@ namespace http {
                             case MTYPE_COUNTER:
                                     sprintf(szTmp, "%llu", total_real);
                                     break;
+							case MTYPE_TIME:
+								sprintf(szTmp, "%llu min", total_real);
+								break;
                             }
                         }
                         root["result"][ii]["Counter"] = sValue;
@@ -8741,6 +8761,11 @@ namespace http {
                                 root["result"][ii]["Data"] = szTmp;
                                 root["result"][ii]["Counter"] = szTmp;
                                 break;
+						case MTYPE_TIME:
+							sprintf(szTmp, "%i min", atoi(sValue.c_str()));
+							root["result"][ii]["Data"] = szTmp;
+							root["result"][ii]["Counter"] = szTmp;
+							break;
                         }
                     }
 					else if (dType == pTypeYouLess)
@@ -8816,6 +8841,9 @@ namespace http {
 							case MTYPE_COUNTER:
 								sprintf(szTmp, "%llu", total_real);
 								break;
+							case MTYPE_TIME:
+								sprintf(szTmp, "%llu min", total_real);
+								break;
 							}
 						}
 						root["result"][ii]["CounterToday"] = szTmp;
@@ -8845,6 +8873,9 @@ namespace http {
 						case MTYPE_COUNTER:
 							sprintf(szTmp, "%llu", total_actual);
 							break;
+						case MTYPE_TIME:
+							sprintf(szTmp, "%llu min", total_actual);
+							break;
 						}
 						root["result"][ii]["Counter"] = szTmp;
 
@@ -8872,6 +8903,9 @@ namespace http {
 						case MTYPE_COUNTER:
 							sprintf(szTmp, "%llu", acounter);
 							break;
+						case MTYPE_TIME:
+							sprintf(szTmp, "%llu min", acounter);
+							break;
 						}
 						root["result"][ii]["Data"] = szTmp;
 						switch (metertype)
@@ -8887,6 +8921,7 @@ namespace http {
 							sprintf(szTmp, "%s m", splitresults[1].c_str());
 							break;
 						case MTYPE_COUNTER:
+						case MTYPE_TIME:
 							sprintf(szTmp, "%s", splitresults[1].c_str());
 							break;
 						}
@@ -9673,9 +9708,9 @@ namespace http {
 			}
 		}
 
-		std::string CWebServer::GetDatabaseBackup(WebEmSession & session, const request& req)
+		void CWebServer::GetDatabaseBackup(WebEmSession & session, const request& req, reply & rep)
 		{
-			m_retstr = "";
+			std::string dbcontent = "";
 #ifdef WIN32
 			std::string OutputFileName = szUserDataFolder + "backup.db";
 #else
@@ -9683,16 +9718,8 @@ namespace http {
 #endif
 			if (m_sql.BackupDatabase(OutputFileName))
 			{
-				std::ifstream testFile(OutputFileName.c_str(), std::ios::binary);
-				std::vector<char> fileContents((std::istreambuf_iterator<char>(testFile)),
-					std::istreambuf_iterator<char>());
-				if (fileContents.size() > 0)
-				{
-					m_retstr.insert(m_retstr.begin(), fileContents.begin(), fileContents.end());
-					session.outputfilename = "domoticz.db";
-				}
+				reply::set_content_from_file(&rep, OutputFileName, "domoticz.db", true);
 			}
-			return m_retstr;
 		}
 
 		void CWebServer::RType_DeleteDevice(WebEmSession & session, const request& req, Json::Value &root)
@@ -9757,6 +9784,7 @@ namespace http {
 			m_sql.safe_query("DELETE FROM Scenes WHERE (ID == '%q')", idx.c_str());
 			m_sql.safe_query("DELETE FROM SceneDevices WHERE (SceneRowID == '%q')", idx.c_str());
 			m_sql.safe_query("DELETE FROM SceneTimers WHERE (SceneRowID == '%q')", idx.c_str());
+			m_sql.safe_query("DELETE FROM SceneLog WHERE (SceneRowID=='%q')", idx.c_str());
 		}
 
 		void CWebServer::RType_UpdateScene(WebEmSession & session, const request& req, Json::Value &root)
@@ -10526,7 +10554,7 @@ namespace http {
 			}
 		}
 
-		std::string CWebServer::Post_UploadCustomIcon(WebEmSession & session, const request& req)
+		void CWebServer::Post_UploadCustomIcon(WebEmSession & session, const request& req, reply & rep)
 		{
 			Json::Value root;
 			root["title"] = "UploadCustomIcon";
@@ -10552,13 +10580,11 @@ namespace http {
 				}
 			}
 			std::string jcallback = request::findValue(&req, "jsoncallback");
-			if (jcallback.size() == 0)
-				m_retstr = root.toStyledString();
-			else
-			{
-				m_retstr = "var data=" + root.toStyledString() + "\n" + jcallback + "(data);";
+			if (jcallback.size() == 0) {
+				reply::set_content(&rep, root.toStyledString());
+				return;
 			}
-			return m_retstr;
+			reply::set_content(&rep, "var data=" + root.toStyledString() + "\n" + jcallback + "(data);");
 		}
 
 		void CWebServer::Cmd_GetCustomIconSet(WebEmSession & session, const request& req, Json::Value &root)
@@ -11650,8 +11676,7 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "LightLog";
 
-			result = m_sql.safe_query("SELECT ROWID, nValue, sValue, Date FROM LightingLog WHERE (DeviceRowID==%llu) ORDER BY Date DESC",
-				idx);
+			result = m_sql.safe_query("SELECT ROWID, nValue, sValue, Date FROM LightingLog WHERE (DeviceRowID==%llu) ORDER BY Date DESC", idx);
 			if (result.size() > 0)
 			{
 				std::map<std::string, std::string> selectorStatuses;
@@ -11747,6 +11772,38 @@ namespace http {
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Date"] = sd[2];
 					root["result"][ii]["Data"] = sd[1];
+					ii++;
+				}
+			}
+		}
+
+		void CWebServer::RType_SceneLog(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			unsigned long long idx = 0;
+			if (request::findValue(&req, "idx") != "")
+			{
+				std::stringstream s_str(request::findValue(&req, "idx"));
+				s_str >> idx;
+			}
+			std::vector<std::vector<std::string> > result;
+			std::stringstream szQuery;
+
+			root["status"] = "OK";
+			root["title"] = "SceneLog";
+
+			result = m_sql.safe_query("SELECT ROWID, nValue, Date FROM SceneLog WHERE (SceneRowID==%llu) ORDER BY Date DESC", idx);
+			if (result.size() > 0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				int ii = 0;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
+
+					int nValue = atoi(sd[1].c_str());
+					root["result"][ii]["idx"] = sd[0];
+					root["result"][ii]["Date"] = sd[2];
+					root["result"][ii]["Data"] = (nValue == 0) ? "Off" : "On";
 					ii++;
 				}
 			}
@@ -12603,6 +12660,7 @@ namespace http {
 												sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
 												break;
 											case MTYPE_COUNTER:
+											case MTYPE_TIME:
 												sprintf(szTmp, "%.1f", TotalValue);
 												break;
 											}
@@ -12654,6 +12712,7 @@ namespace http {
 										sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
 										break;
 									case MTYPE_COUNTER:
+									case MTYPE_TIME:
 										sprintf(szTmp, "%.1f", TotalValue);
 										break;
 									}
@@ -12760,6 +12819,7 @@ namespace http {
 													sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
 													break;
 												case MTYPE_COUNTER:
+												case MTYPE_TIME:
 													sprintf(szTmp, "%.1f", TotalValue);
 													break;
 												}
@@ -12825,6 +12885,7 @@ namespace http {
 												sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
 												break;
 											case MTYPE_COUNTER:
+											case MTYPE_TIME:
 												sprintf(szTmp, "%.1f", TotalValue);
 												break;
 											}
@@ -12864,6 +12925,7 @@ namespace http {
 									sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
 									break;
 								case MTYPE_COUNTER:
+								case MTYPE_TIME:
 									sprintf(szTmp, "%.1f", TotalValue);
 									break;
 								}
@@ -14574,6 +14636,9 @@ namespace http {
 							case MTYPE_WATER:
 								sprintf(szTmp, "%.3f", fvalue / WaterDivider);
 								break;
+							default:
+								sprintf(szTmp, "");
+								break;
 							}
 							root["counter"] = szTmp;
 						}
@@ -14596,6 +14661,9 @@ namespace http {
 									break;
 								case MTYPE_WATER:
 									sprintf(szTmp, "%.3f", fvalue / WaterDivider);
+									break;
+								default:
+									sprintf(szTmp, "");
 									break;
 								}
 								root["counter"] = szTmp;
@@ -14653,6 +14721,7 @@ namespace http {
 									root["result"][ii]["c"] = szTmp;
 									break;
 								case MTYPE_COUNTER:
+								case MTYPE_TIME:
 									sprintf(szTmp, "%.0f", atof(szValue.c_str()));
 									root["result"][ii]["v"] = szTmp;
 									if (fcounter != 0)
@@ -14693,6 +14762,7 @@ namespace http {
 									root["resultprev"][iPrev]["v"] = szTmp;
 									break;
 								case MTYPE_COUNTER:
+								case MTYPE_TIME:
 									sprintf(szTmp, "%.0f", atof(szValue.c_str()));
 									root["resultprev"][iPrev]["v"] = szTmp;
 									break;
@@ -14973,6 +15043,7 @@ namespace http {
 								root["result"][ii]["c"] = szTmp;
 								break;
 							case MTYPE_COUNTER:
+							case MTYPE_TIME:
 								sprintf(szTmp, "%.0f", atof(szValue.c_str()));
 								root["result"][ii]["v"] = szTmp;
 								sprintf(szTmp, "%.0f", (atof(sValue.c_str()) - atof(szValue.c_str())));

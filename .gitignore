@@ -2,12 +2,12 @@
 msbuild
 domoticz.db
 appversion.h
+appversion.h.txt
 Makefile
 CMakeFiles
 *.cmake
 *.a
 CMakeCache.txt
-appversion.h*
 domoticz
 stdafx.h.gch
 .DS_Store
