@@ -160,9 +160,9 @@ bool AsyncSerial::errorStatus() const
 
 void AsyncSerial::close()
 {
-	pimpl->open=false;
     if(!isOpen()) return;
 
+    pimpl->open = false;
     pimpl->io.post(boost::bind(&AsyncSerial::doClose, this));
     pimpl->backgroundThread.join();
     pimpl->io.reset();
