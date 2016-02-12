@@ -86,6 +86,7 @@ const char *szHelp=
 	"\t-wwwroot file_path (for example /opt/domoticz/www)\n"
 	"\t-dbase file_path (for example /opt/domoticz/domoticz.db)\n"
 	"\t-userdata file_path (for example /opt/domoticz)\n"
+	"\t-ozwconfig file_path (for example /opt/domoticz/Config)\n"
 #endif
 	"\t-webroot additional web root, useful with proxy servers (for example domoticz)\n"
 	"\t-verbose x (where x=0 is none, x=1 is debug)\n"
@@ -113,6 +114,7 @@ std::string szStartupFolder;
 std::string szUserDataFolder;
 std::string szWWWFolder;
 std::string szWebRoot;
+std::string szOZWConfigFolder;
 
 bool bHasInternalTemperature=false;
 std::string szInternalTemperatureCommand = "/opt/vc/bin/vcgencmd measure_temp";
@@ -554,6 +556,18 @@ int main(int argc, char**argv)
 		std::string szroot = cmdLine.GetSafeArgument("-userdata", 0, "");
 		if (szroot.size() != 0)
 			szUserDataFolder = szroot;
+	}
+
+	if (cmdLine.HasSwitch("-ozwconfig"))
+	{
+		if (cmdLine.GetArgumentCount("-ozwconfig") != 1)
+		{
+			_log.Log(LOG_ERROR, "Please specify a path for OpenZwave config location");
+			return 1;
+		}
+		std::string szroot = cmdLine.GetSafeArgument("-ozwconfig", 0, "");
+		if (szroot.size() != 0)
+			szOZWConfigFolder = szroot;
 	}
 
 	if (cmdLine.HasSwitch("-startupdelay"))

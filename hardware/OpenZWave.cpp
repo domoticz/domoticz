@@ -97,6 +97,7 @@ unsigned char GetIndexFromAlarm(const std::string &sLabel)
 
 extern std::string szStartupFolder;
 extern std::string szUserDataFolder;
+extern std::string szOZWConfigFolder;
 
 #define round(a) ( int ) ( a + .5 )
 
@@ -953,14 +954,19 @@ bool COpenZWave::OpenSerialConnector()
 	m_bNeedSave = false;
 	std::string ConfigPath = szStartupFolder + "Config/";
 	std::string UserPath = ConfigPath;
-	if (szStartupFolder != szUserDataFolder)
+	if (!szUserDataFolder.empty())
 	{
-		UserPath = szUserDataFolder;
+		UserPath = szUserDataFolder + "Config/";
+	}
+	if (!szOZWConfigFolder.empty())
+	{
+		ConfigPath = szOZWConfigFolder;
 	}
 	// Create the OpenZWave Manager.
 	// The first argument is the path to the config files (where the manufacturer_specific.xml file is located
 	// The second argument is the path for saved Z-Wave network state and the log file.  If you leave it NULL 
 	// the log file will appear in the program's working directory.
+	_log.Log(LOG_STATUS, "OpenZWave: writing log and network state to: %s", UserPath.c_str());
 	_log.Log(LOG_STATUS, "OpenZWave: using config in: %s", ConfigPath.c_str());
 	OpenZWave::Options::Create(ConfigPath, UserPath, "--SaveConfiguration=true ");
 	EnableDisableDebug();
