@@ -230,10 +230,7 @@ void AsyncSerial::readEnd(const boost::system::error_code& error,
         if(isOpen())
         {
 			_log.Log(LOG_ERROR,"Serial Port closed!... Error: %s", error.message().c_str());
-			clearReadCallback();
-			close();
-	        doClose();
-            setErrorStatus(true);
+			stop(false);
         }
     } else {
         if(pimpl->callback) pimpl->callback(pimpl->readBuffer,
@@ -318,3 +315,21 @@ void AsyncSerial::clearReadCallback()
     pimpl->callback.clear();
 }
 
+void AsyncSerial::stop(bool silent/*=true*/) {
+	try {
+		clearReadCallback();
+		close();
+		doClose();
+		setErrorStatus(true);
+	} catch(...) {
+		if (silent == false) {
+			throw;
+		}
+	}
+}
+
+void AsyncSerial::stopIfOpened(bool silent/*=true*/) {
+	if (isOpen()) {
+		stop(silent);
+	}
+}

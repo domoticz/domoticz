@@ -161,13 +161,13 @@ private:
 
     boost::shared_ptr<AsyncSerialImpl> pimpl;
 
-protected:
-
     /**
      * To allow derived classes to report errors
      * \param e error status
      */
     void setErrorStatus(bool e);
+
+protected:
 
     /**
      * To allow derived classes to set a read callback
@@ -181,6 +181,16 @@ protected:
      * base class destructor
      */
     void clearReadCallback();
+
+    /**
+     * Process clean stop
+     */
+    void stop(bool silent = true);
+
+    /**
+	 * Process clean stop if it is opened
+	 */
+	void stopIfOpened(bool silent = true);
 
 };
 

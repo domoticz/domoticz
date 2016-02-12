@@ -427,18 +427,7 @@ bool CEnOceanESP3::StopHardware()
 		// Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
 		sleep_milliseconds(10);
 	}
-	if (isOpen())
-	{
-		try {
-			clearReadCallback();
-			close();
-			doClose();
-			setErrorStatus(true);
-		} catch(...)
-		{
-			//Don't throw from a Stop command
-		}
-	}
+	stopIfOpened();
 	m_bIsStarted=false;
 	return true;
 }

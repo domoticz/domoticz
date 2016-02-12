@@ -133,18 +133,7 @@ bool S0MeterSerial::StartHardware()
 bool S0MeterSerial::StopHardware()
 {
 	m_bIsStarted=false;
-	if (isOpen())
-	{
-		try {
-			clearReadCallback();
-			close();
-			doClose();
-			setErrorStatus(true);
-		} catch(...)
-		{
-			//Don't throw from a Stop command
-		}
-	}
+	stopIfOpened();
 	StopHeartbeatThread();
 	_log.Log(LOG_STATUS, "S0 Meter: Serial Worker stopped...");
 	return true;

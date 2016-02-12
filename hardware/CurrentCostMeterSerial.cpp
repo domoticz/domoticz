@@ -71,18 +71,7 @@ bool CurrentCostMeterSerial::StartHardware()
 
 bool CurrentCostMeterSerial::StopHardware()
 {
-	if (isOpen())
-	{
-		try {
-			clearReadCallback();
-			close();
-			doClose();
-			setErrorStatus(true);
-		} catch(...)
-		{
-			//Don't throw from a Stop command
-		}
-	}
+	stopIfOpened();
 	m_stoprequested = true;
 	if (m_thread)
 	{
