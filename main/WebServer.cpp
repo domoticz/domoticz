@@ -4199,7 +4199,7 @@ namespace http {
 							unsigned long deviceid = 0;
 							s_strid >> deviceid;
 							deviceid = (unsigned long)((deviceid & 0xffffff00) >> 8);
-							sprintf(szTmp, "%x", deviceid);
+							sprintf(szTmp, "%lx", deviceid);
 							//_log.Log(LOG_ERROR, "RFLink: deviceid: %x", deviceid);
 							devid = szTmp;
 						}
@@ -4733,7 +4733,7 @@ namespace http {
 							unsigned long deviceid = 0;
 							s_strid >> deviceid;
 							deviceid = (unsigned long)((deviceid & 0xffffff00) >> 8);
-							sprintf(szTmp, "%x", deviceid);
+							sprintf(szTmp, "%lx", deviceid);
 							//_log.Log(LOG_ERROR, "RFLink: deviceid: %x", deviceid);
 							devid = szTmp;
 						}
