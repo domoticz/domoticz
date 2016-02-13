@@ -153,23 +153,24 @@ FIND_PROGRAM(GIT_EXECUTABLE git
 
 MACRO(Gitversion_GET_REVISION dir variable)
   EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} rev-list HEAD --count
+    WORKING_DIRECTORY ${dir}
     OUTPUT_VARIABLE ${variable}
     OUTPUT_STRIP_TRAILING_WHITESPACE)
 ENDMACRO(Gitversion_GET_REVISION)
 
-Gitversion_GET_REVISION(. ProjectRevision)
+Gitversion_GET_REVISION("${CMAKE_SOURCE_DIR}" ProjectRevision)
 IF(NOT ProjectRevision)
   MESSAGE(STATUS "Failed to get ProjectRevision from git")
-  IF(EXISTS appversion.default)
+  IF(EXISTS ${CMAKE_SOURCE_DIR}/appversion.default)
     MESSAGE(STATUS "Read ProjectRevision from appversion.default")
-    FILE(STRINGS appversion.default AppVersionContent)
+    FILE(STRINGS ${CMAKE_SOURCE_DIR}/appversion.default AppVersionContent)
     LIST(GET AppVersionContent 0 AppVersionContent)
     STRING(REPLACE " " ";" AppVersionContent ${AppVersionContent})
     LIST(GET AppVersionContent 2 ProjectRevision)
-  ELSE(EXISTS appversion.default)
+  ELSE(EXISTS ${CMAKE_SOURCE_DIR}/appversion.default)
     MESSAGE(STATUS "No appversion.default, set ProjectRevision to 0")
     set (ProjectRevision 0)
-  ENDIF(EXISTS appversion.default)
+  ENDIF(EXISTS ${CMAKE_SOURCE_DIR}/appversion.default)
 ELSE(NOT ProjectRevision)
   MATH(EXPR ProjectRevision "${ProjectRevision}+2107")
 ENDIF(NOT ProjectRevision)
