@@ -8553,6 +8553,8 @@ namespace http {
 						float EnergyDivider = 1000.0f;
 						float GasDivider = 100.0f;
 						float WaterDivider = 100.0f;
+						std::string ValueQuantity = options["ValueQuantity"];
+						std::string ValueUnits = options["ValueUnits"];
 						int tValue;
 						if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
 						{
@@ -8565,6 +8567,12 @@ namespace http {
 						if (m_sql.GetPreferencesVar("MeterDividerWater", tValue))
 						{
 							WaterDivider = float(tValue);
+						}
+						if (ValueQuantity.empty()) {
+							ValueQuantity.assign("Count");
+						}
+						if (ValueUnits.empty()) {
+							ValueUnits.assign("x");
 						}
 
 						//get value of today
@@ -8617,7 +8625,7 @@ namespace http {
 								sprintf(szTmp, "%llu Liter", total_real);
 								break;
 							case MTYPE_COUNTER:
-								sprintf(szTmp, "%llu %s", total_real, options["ValueUnits"].c_str());
+								sprintf(szTmp, "%llu %s", total_real, ValueUnits.c_str());
 								break;
 							}
 						}
@@ -8625,6 +8633,8 @@ namespace http {
 						root["result"][ii]["CounterToday"] = szTmp;
 						root["result"][ii]["SwitchTypeVal"] = metertype;
 						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+						root["result"][ii]["ValueQuantity"] = "";
+						root["result"][ii]["ValueUnits"] = "";
 						float fvalue = static_cast<float>(atof(sValue.c_str()));
 						switch (metertype)
 						{
@@ -8645,11 +8655,11 @@ namespace http {
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_COUNTER:
-							sprintf(szTmp, "%.03f %s", fvalue, options["ValueUnits"].c_str());
+							sprintf(szTmp, "%.03f %s", fvalue, ValueUnits.c_str());
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
-							root["result"][ii]["ValueQuantity"] = options["ValueQuantity"];
-							root["result"][ii]["ValueUnits"] = options["ValueUnits"];
+							root["result"][ii]["ValueQuantity"] = ValueQuantity;
+							root["result"][ii]["ValueUnits"] = ValueUnits;
 							break;
 						}
 					}
@@ -8658,6 +8668,8 @@ namespace http {
                         float EnergyDivider = 1000.0f;
                         float GasDivider = 100.0f;
                         float WaterDivider = 100.0f;
+                        std::string ValueQuantity = options["ValueQuantity"];
+                        std::string ValueUnits = options["ValueUnits"];
                         int tValue;
                         if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
                         {
@@ -8670,6 +8682,12 @@ namespace http {
                         if (m_sql.GetPreferencesVar("MeterDividerWater", tValue))
                         {
                                 WaterDivider = float(tValue);
+                        }
+                        if (ValueQuantity.empty()) {
+                                ValueQuantity.assign("Count");
+                        }
+                        if (ValueUnits.empty()) {
+                                ValueUnits.assign("x");
                         }
 
                         //get value of today
@@ -8723,7 +8741,7 @@ namespace http {
                                     sprintf(szTmp, "%.03f m3", musage);
                                     break;
                             case MTYPE_COUNTER:
-                                    sprintf(szTmp, "%llu %s", total_real, options["ValueUnits"].c_str());
+                                    sprintf(szTmp, "%llu %s", total_real, ValueUnits.c_str());
                                     break;
                             }
                         }
@@ -8731,7 +8749,9 @@ namespace http {
                         root["result"][ii]["CounterToday"] = szTmp;
                         root["result"][ii]["SwitchTypeVal"] = metertype;
                         root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-						root["result"][ii]["TypeImg"] = "counter";
+                        root["result"][ii]["TypeImg"] = "counter";
+                        root["result"][ii]["ValueQuantity"] = "";
+                        root["result"][ii]["ValueUnits"] = "";
                         float fvalue = static_cast<float>(atof(sValue.c_str()));
                         switch (metertype)
                         {
@@ -8752,11 +8772,11 @@ namespace http {
                                 root["result"][ii]["Counter"] = szTmp;
                                 break;
                         case MTYPE_COUNTER:
-                                sprintf(szTmp, "%.03f %s", fvalue, options["ValueUnits"].c_str());
+                                sprintf(szTmp, "%.03f %s", fvalue, ValueUnits.c_str());
                                 root["result"][ii]["Data"] = szTmp;
                                 root["result"][ii]["Counter"] = szTmp;
-                                root["result"][ii]["ValueQuantity"] = options["ValueQuantity"];
-                                root["result"][ii]["ValueUnits"] = options["ValueUnits"];
+                                root["result"][ii]["ValueQuantity"] = ValueQuantity;
+                                root["result"][ii]["ValueUnits"] = ValueUnits;
                                 break;
                         }
                     }
@@ -8765,6 +8785,8 @@ namespace http {
 						float EnergyDivider = 1000.0f;
 						float GasDivider = 100.0f;
 						float WaterDivider = 100.0f;
+						std::string ValueQuantity = options["ValueQuantity"];
+						std::string ValueUnits = options["ValueUnits"];
 						float musage = 0;
 						int tValue;
 						if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
@@ -8778,6 +8800,12 @@ namespace http {
 						if (m_sql.GetPreferencesVar("MeterDividerWater", tValue))
 						{
 							WaterDivider = float(tValue);
+						}
+						if (ValueQuantity.empty()) {
+							ValueQuantity.assign("Count");
+						}
+						if (ValueUnits.empty()) {
+							ValueUnits.assign("x");
 						}
 
 						//get value of today
@@ -8831,7 +8859,7 @@ namespace http {
 								sprintf(szTmp, "%.03f m3", musage);
 								break;
 							case MTYPE_COUNTER:
-								sprintf(szTmp, "%llu %s", total_real, options["ValueUnits"].c_str());
+								sprintf(szTmp, "%llu %s", total_real, ValueUnits.c_str());
 								break;
 							}
 						}
@@ -8887,10 +8915,12 @@ namespace http {
 							sprintf(szTmp, "%.03f m3", musage);
 							break;
 						case MTYPE_COUNTER:
-							sprintf(szTmp, "%llu %s", acounter, options["ValueUnits"].c_str());
+							sprintf(szTmp, "%llu %s", acounter, ValueUnits.c_str());
 							break;
 						}
 						root["result"][ii]["Data"] = szTmp;
+						root["result"][ii]["ValueQuantity"] = "";
+						root["result"][ii]["ValueUnits"] = "";
 						switch (metertype)
 						{
 						case MTYPE_ENERGY:
@@ -8905,6 +8935,8 @@ namespace http {
 							break;
 						case MTYPE_COUNTER:
 							sprintf(szTmp, "%s", splitresults[1].c_str());
+							root["result"][ii]["ValueQuantity"] = ValueQuantity;
+							root["result"][ii]["ValueUnits"] = ValueUnits;
 							break;
 						}
 
