@@ -67,7 +67,7 @@ bool CNotificationGCM::SendMessageImplementation(const std::string &Subject, con
 	bool ret = jReader.parse(sResult, root);
 	if (!ret)
 	{
-		_log.Log(LOG_ERROR, "GCM: ", sResult.c_str());
+		_log.Log(LOG_ERROR, "GCM: Can not connect to GCM API URL");
 		return false;
 	}
 	bool bSuccess = root["success"].asInt() == 1;

@@ -4530,6 +4530,15 @@ namespace http {
 							)
 							return;
 						int iUnitCode = atoi(sunitcode.c_str());
+						if (
+							(lighttype == 205) ||
+							(lighttype == 210) ||
+							(lighttype == 211)
+							)
+						{
+							id = id.substr(0, 6);
+							sunitcode = "0";
+						}
 						sprintf(szTmp, "%d", iUnitCode);
 						sunitcode = szTmp;
 						devid = id;
