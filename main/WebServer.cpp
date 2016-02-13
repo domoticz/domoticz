@@ -99,6 +99,7 @@ static const _tGuiLanguage guiLanguage[] =
 	{ "no", "Norwegian" },
 	{ "pl", "Polish" },
 	{ "pt", "Portuguese" },
+	{ "ro", "Romanian" },
 	{ "ru", "Russian" },
 	{ "sr", "Serbian" },
 	{ "sk", "Slovak" },
@@ -4198,7 +4199,7 @@ namespace http {
 							unsigned long deviceid = 0;
 							s_strid >> deviceid;
 							deviceid = (unsigned long)((deviceid & 0xffffff00) >> 8);
-							sprintf(szTmp, "%x", deviceid);
+							sprintf(szTmp, "%lx", deviceid);
 							//_log.Log(LOG_ERROR, "RFLink: deviceid: %x", deviceid);
 							devid = szTmp;
 						}
@@ -4529,6 +4530,15 @@ namespace http {
 							)
 							return;
 						int iUnitCode = atoi(sunitcode.c_str());
+						if (
+							(lighttype == 205) ||
+							(lighttype == 210) ||
+							(lighttype == 211)
+							)
+						{
+							id = id.substr(0, 6);
+							sunitcode = "0";
+						}
 						sprintf(szTmp, "%d", iUnitCode);
 						sunitcode = szTmp;
 						devid = id;
@@ -4723,7 +4733,7 @@ namespace http {
 							unsigned long deviceid = 0;
 							s_strid >> deviceid;
 							deviceid = (unsigned long)((deviceid & 0xffffff00) >> 8);
-							sprintf(szTmp, "%x", deviceid);
+							sprintf(szTmp, "%lx", deviceid);
 							//_log.Log(LOG_ERROR, "RFLink: deviceid: %x", deviceid);
 							devid = szTmp;
 						}

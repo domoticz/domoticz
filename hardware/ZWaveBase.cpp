@@ -257,7 +257,7 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 		unsigned long lID = (ID1 << 24) + (ID2 << 16) + (ID3 << 8) + ID4;
 
 		char szID[10];
-		sprintf(szID, "%08X", lID);
+		sprintf(szID, "%08lX", lID);
 		unsigned char unitcode = 1;
 
 		//Check if we already exist

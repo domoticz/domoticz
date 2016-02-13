@@ -1233,6 +1233,7 @@ void MainWorker::ParseRFXLogFile()
 					_line=_line.substr(1);
 				}
 			}
+			stdreplace(_line, " ", "");
 			_lines.push_back(_line);
 		}
 		myfile.close();
