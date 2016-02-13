@@ -26,6 +26,7 @@ Version 2.4xxx
 - Implemented: Philips Hue, support for Groups (create them with an external app like HueMote)
 - Implemented: Philips Hue, support for stored Scenes (create them with an external app like Hue Pro)
 - Implemented: RFXCom support for Legrand CAD
+- Implemented: Romanian Language translation (Thanks to Adrian!)
 - Implemented: SBFSpot, support for multiple inverter instances
 - Implemented: Scene Log
 - Implemented: SolarEdge via Web API
@@ -74,6 +75,7 @@ Version 2.4xxx
 - Fixed: Optimize the reading method of the '/ozwcp/cp.html' file by allocating memory before reading the file and set it as the reply content.
 - Fixed: Optimize the reading method of the zwave configuration file by allocating memory before reading the file and set it as the reply content.
 - Fixed: Refactor the http::server::reply structure and add some helper methods.
+- Fixed: Fix filename attachment when saving ZWave configuration file (use filename instead of path).
 - Updated: OpenZWave, configuration files
 
 Version 2.3530 (November 1th 2015)

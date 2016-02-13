@@ -22,7 +22,7 @@ namespace Json
 	class Value;
 }
 
-class COpenZWave : public AsyncSerial, public ZWaveBase
+class COpenZWave : public ZWaveBase
 {
 public:
 	typedef struct  
