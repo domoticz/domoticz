@@ -125,13 +125,13 @@ public:
     */
     void writeString(const std::string& s);
 
+    ~AsyncSerial();
+private:
     /**
      * Callback to close serial port
      */
     void doClose();
 
-    ~AsyncSerial();
-private:
     /**
      * Callback called to start an asynchronous read operation.
      * This callback is called by the io_service in the spawned thread.
