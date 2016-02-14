@@ -77,6 +77,7 @@ Version 2.4xxx
 - Fixed: Refactor the http::server::reply structure and add some helper methods.
 - Fixed: Fix filename attachment when saving ZWave configuration file (use filename instead of path).
 - Fixed: Fix Security devices edit form by hiding Selector switch options (#473).
+- Fixed: Fix missing Selector switch levels in MQTT device info response by returning all device options (#459)
 - Updated: OpenZWave, configuration files
 
 Version 2.3530 (November 1th 2015)
