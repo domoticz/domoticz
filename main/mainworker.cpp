@@ -9817,7 +9817,6 @@ bool MainWorker::GetSensorData(const unsigned long long idx, int &nValue, std::s
 				sprintf(szTmp, "%llu", total_real);
 				break;
 			case MTYPE_COUNTER:
-			case MTYPE_TIME:
 				sprintf(szTmp, "%llu", total_real);
 				break;
 			}
