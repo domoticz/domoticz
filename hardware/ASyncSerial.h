@@ -176,9 +176,7 @@ protected:
             boost::function<void (const char*, size_t)>& callback);
 
     /**
-     * To unregister the read callback in the derived class destructor so it
-     * does not get called after the derived class destructor but before the
-     * base class destructor
+     * Unregister the read callback.
      */
     void clearReadCallback();
 

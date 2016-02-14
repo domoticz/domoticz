@@ -302,6 +302,9 @@ void AsyncSerial::setReadCallback(const boost::function<void (const char*, size_
     pimpl->callback=callback;
 }
 
+/**
+ * Unregister the read callback.
+ */
 void AsyncSerial::clearReadCallback()
 {
     pimpl->callback.clear();
