@@ -125,7 +125,11 @@ public:
     */
     void writeString(const std::string& s);
 
-    ~AsyncSerial();
+	/**
+	 * Destructor. If necessary it silently removes the read callback and close the serial port. 
+	 */
+	~AsyncSerial();
+
 private:
     /**
      * Callback to close serial port
