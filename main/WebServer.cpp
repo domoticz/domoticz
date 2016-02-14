@@ -8664,7 +8664,7 @@ namespace http {
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_COUNTER:
-							sprintf(szTmp, "%.03f %s", fvalue, ValueUnits.c_str());
+							sprintf(szTmp, "%.0f %s", fvalue, ValueUnits.c_str());
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							root["result"][ii]["ValueQuantity"] = ValueQuantity;
@@ -8781,7 +8781,7 @@ namespace http {
                                 root["result"][ii]["Counter"] = szTmp;
                                 break;
                         case MTYPE_COUNTER:
-                                sprintf(szTmp, "%.03f %s", fvalue, ValueUnits.c_str());
+                                sprintf(szTmp, "%.0f %s", fvalue, ValueUnits.c_str());
                                 root["result"][ii]["Data"] = szTmp;
                                 root["result"][ii]["Counter"] = szTmp;
                                 root["result"][ii]["ValueQuantity"] = ValueQuantity;
@@ -12685,7 +12685,7 @@ namespace http {
 												sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
 												break;
 											case MTYPE_COUNTER:
-												sprintf(szTmp, "%.1f", TotalValue);
+												sprintf(szTmp, "%.0f", TotalValue);
 												break;
 											}
 											root["result"][ii]["v"] = szTmp;
@@ -12736,7 +12736,7 @@ namespace http {
 										sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
 										break;
 									case MTYPE_COUNTER:
-										sprintf(szTmp, "%.1f", TotalValue);
+										sprintf(szTmp, "%.0f", TotalValue);
 										break;
 									}
 									root["result"][ii]["v"] = szTmp;
@@ -12844,7 +12844,7 @@ namespace http {
 													sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
 													break;
 												case MTYPE_COUNTER:
-													sprintf(szTmp, "%.1f", TotalValue);
+													sprintf(szTmp, "%.0f", TotalValue);
 													break;
 												}
 												root["result"][ii]["v"] = szTmp;
@@ -12909,7 +12909,7 @@ namespace http {
 												sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
 												break;
 											case MTYPE_COUNTER:
-												sprintf(szTmp, "%.1f", TotalValue);
+												sprintf(szTmp, "%.0f", TotalValue);
 												break;
 											}
 											root["result"][ii]["v"] = szTmp;
@@ -12948,7 +12948,7 @@ namespace http {
 									sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
 									break;
 								case MTYPE_COUNTER:
-									sprintf(szTmp, "%.1f", TotalValue);
+									sprintf(szTmp, "%.0f", TotalValue);
 									break;
 								}
 								root["result"][ii]["v"] = szTmp;

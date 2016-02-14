@@ -731,6 +731,10 @@ define(['app'], function (app) {
 			$("#dialog-editmeterdevice #metertable #customcounter").hide();
 			var meterType=$("#dialog-editmeterdevice #combometertype").val();
 			if (meterType==3) { //Counter
+				if (($("#dialog-editmeterdevice #valuequantity").val() == "") 
+					&& ($("#dialog-editmeterdevice #valueunits").val() == "")) {
+					$("#dialog-editmeterdevice #valuequantity").val("Count");
+				}
 				$("#dialog-editmeterdevice #metertable #customcounter").show();
 			}
 		  });
