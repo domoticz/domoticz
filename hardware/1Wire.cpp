@@ -12,6 +12,7 @@
 #include "../main/Helper.h"
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
+#include "../main/SQLHelper.h"
 
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -25,12 +26,14 @@
 
 #define round(a) ( int ) ( a + .5 )
 
+extern CSQLHelper m_sql;
+
 C1Wire::C1Wire(const int ID) :
 	m_stoprequested(false),
 	m_system(NULL)
 {
 	m_HwdID=ID;
-  DetectSystem();
+	DetectSystem();
 }
 
 C1Wire::~C1Wire()
@@ -182,12 +185,15 @@ void C1Wire::GetDeviceDetails()
 		return;
 
 	// Get all devices
-	std::vector<_t1WireDevice> devices;
-	m_system->GetDevices(devices);
+	if ((m_devices.size() == 0) || (m_sql.m_bAcceptNewHardware))
+	{
+		_log.Log(LOG_STATUS, "1-Wire: Searching devices...");
+		m_system->GetDevices(m_devices);
+	}
 
 	// Parse our devices (have to test m_stoprequested because it can take some time in case of big networks)
 	std::vector<_t1WireDevice>::const_iterator itt;
-	for (itt=devices.begin(); itt!=devices.end() && !m_stoprequested; ++itt)
+	for (itt=m_devices.begin(); itt!=m_devices.end() && !m_stoprequested; ++itt)
 	{
 		const _t1WireDevice& device=*itt;
 
