@@ -36,7 +36,7 @@ m_stoprequested(false)
 
 MySensorsSerial::~MySensorsSerial()
 {
-	clearReadCallback();
+
 }
 
 bool MySensorsSerial::StartHardware()

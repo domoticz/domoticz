@@ -28,7 +28,7 @@ CurrentCostMeterSerial::CurrentCostMeterSerial(const int ID, const std::string& 
 
 CurrentCostMeterSerial::~CurrentCostMeterSerial()
 {
-	clearReadCallback();
+
 }
 
 bool CurrentCostMeterSerial::StartHardware()

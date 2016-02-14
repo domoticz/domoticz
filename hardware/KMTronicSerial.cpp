@@ -27,7 +27,7 @@ KMTronicSerial::KMTronicSerial(const int ID, const std::string& devname)
 
 KMTronicSerial::~KMTronicSerial()
 {
-	clearReadCallback();
+
 }
 
 bool KMTronicSerial::StartHardware()

@@ -636,7 +636,7 @@ CEnOceanESP2::CEnOceanESP2(const int ID, const std::string& devname, const int t
 
 CEnOceanESP2::~CEnOceanESP2()
 {
-	clearReadCallback();
+
 }
 
 bool CEnOceanESP2::StartHardware()

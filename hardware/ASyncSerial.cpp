@@ -81,15 +81,7 @@ AsyncSerial::AsyncSerial(const std::string& devname, unsigned int baud_rate,
 
 AsyncSerial::~AsyncSerial()
 {
-	if(isOpen())
-	{
-		try {
-			close();
-		} catch(...)
-		{
-			//Don't throw from a destructor
-		}
-	}
+	terminate();
 }
 
 void AsyncSerial::open(const std::string& devname, unsigned int baud_rate,

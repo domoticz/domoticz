@@ -30,7 +30,7 @@ OTGWSerial::OTGWSerial(const int ID, const std::string& devname, const unsigned 
 
 OTGWSerial::~OTGWSerial()
 {
-	clearReadCallback();
+
 }
 
 bool OTGWSerial::StartHardware()

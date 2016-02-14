@@ -27,7 +27,7 @@ KMTronic433::KMTronic433(const int ID, const std::string& devname)
 
 KMTronic433::~KMTronic433()
 {
-	clearReadCallback();
+
 }
 
 bool KMTronic433::StartHardware()

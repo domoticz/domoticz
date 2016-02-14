@@ -82,7 +82,7 @@ RFXComSerial::RFXComSerial(const int ID, const std::string& devname, unsigned in
 
 RFXComSerial::~RFXComSerial()
 {
-	clearReadCallback();
+
 }
 
 bool RFXComSerial::StartHardware()

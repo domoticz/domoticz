@@ -36,7 +36,7 @@ Meteostick::Meteostick(const int ID, const std::string& devname, const unsigned 
 
 Meteostick::~Meteostick()
 {
-	clearReadCallback();
+
 }
 
 bool Meteostick::StartHardware()

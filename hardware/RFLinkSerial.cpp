@@ -15,7 +15,7 @@ CRFLinkSerial::CRFLinkSerial(const int ID, const std::string& devname)
 
 CRFLinkSerial::~CRFLinkSerial()
 {
-	clearReadCallback();
+
 }
 
 bool CRFLinkSerial::StartHardware()

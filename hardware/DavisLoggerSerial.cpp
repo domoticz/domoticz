@@ -34,6 +34,7 @@ CDavisLoggerSerial::CDavisLoggerSerial(const int ID, const std::string& devname,
 
 CDavisLoggerSerial::~CDavisLoggerSerial(void)
 {
+
 }
 
 bool CDavisLoggerSerial::StartHardware()

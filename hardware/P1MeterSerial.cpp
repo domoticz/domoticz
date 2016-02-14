@@ -43,7 +43,7 @@ P1MeterSerial::P1MeterSerial(const std::string& devname,
 
 P1MeterSerial::~P1MeterSerial()
 {
-	clearReadCallback();
+
 }
 
 //#define DEBUG_FROM_FILE
