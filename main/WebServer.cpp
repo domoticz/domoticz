@@ -4994,7 +4994,6 @@ namespace http {
 					}
 					else if (switchtype == MTYPE_COUNTER)
 					{
-						//Todo EddyK69
 						root["result"][ii]["val"] = NTYPE_TODAYCOUNTER;
 						root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_TODAYCOUNTER, 0);
 						root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_TODAYCOUNTER, 1);
@@ -8582,7 +8581,7 @@ namespace http {
 							ValueQuantity.assign("Count");
 						}
 						if (ValueUnits.empty()) {
-							ValueUnits.assign("x");
+							ValueUnits.assign("");
 						}
 
 						//get value of today
@@ -8697,7 +8696,7 @@ namespace http {
                                 ValueQuantity.assign("Count");
                         }
                         if (ValueUnits.empty()) {
-                                ValueUnits.assign("x");
+                                ValueUnits.assign("");
                         }
 
                         //get value of today
@@ -8815,7 +8814,7 @@ namespace http {
 							ValueQuantity.assign("Count");
 						}
 						if (ValueUnits.empty()) {
-							ValueUnits.assign("x");
+							ValueUnits.assign("");
 						}
 
 						//get value of today
@@ -11854,7 +11853,7 @@ namespace http {
 			struct tm tm1;
 			localtime_r(&now, &tm1);
 
-			result = m_sql.safe_query("SELECT Type, SubType, SwitchType, AddjValue, AddjMulti FROM DeviceStatus WHERE (ID == %llu)",
+			result = m_sql.safe_query("SELECT Type, SubType, SwitchType, AddjValue, AddjMulti, Options FROM DeviceStatus WHERE (ID == %llu)",
 				idx);
 			if (result.size() < 1)
 				return;
@@ -11871,6 +11870,8 @@ namespace http {
 
 			double AddjValue = atof(result[0][3].c_str());
 			double AddjMulti = atof(result[0][4].c_str());
+			std::string sOptions = result[0][5].c_str();
+			std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sOptions);
 
 			std::string dbasetable = "";
 			if (srange == "day") {
@@ -12563,6 +12564,8 @@ namespace http {
 					{
 						root["status"] = "OK";
 						root["title"] = "Graph " + sensor + " " + srange;
+						root["ValueQuantity"] = options["ValueQuantity"];
+						root["ValueUnits"] = options["ValueUnits"];
 
 						float EnergyDivider = 1000.0f;
 						float GasDivider = 100.0f;
@@ -12746,6 +12749,8 @@ namespace http {
 					{
 						root["status"] = "OK";
 						root["title"] = "Graph " + sensor + " " + srange;
+						root["ValueQuantity"] = options["ValueQuantity"];
+						root["ValueUnits"] = options["ValueUnits"];
 
 						float EnergyDivider = 1000.0f;
 						float GasDivider = 100.0f;
@@ -13354,6 +13359,8 @@ namespace http {
 				{
 					root["status"] = "OK";
 					root["title"] = "Graph " + sensor + " " + srange;
+					root["ValueQuantity"] = options["ValueQuantity"];
+					root["ValueUnits"] = options["ValueUnits"];
 
 					float EnergyDivider = 1000.0f;
 					float GasDivider = 100.0f;
@@ -14120,6 +14127,8 @@ namespace http {
 				else if (sensor == "counter") {
 					root["status"] = "OK";
 					root["title"] = "Graph " + sensor + " " + srange;
+					root["ValueQuantity"] = options["ValueQuantity"];
+					root["ValueUnits"] = options["ValueUnits"];
 
 					int nValue = 0;
 					std::string sValue = "";
@@ -15581,6 +15590,8 @@ namespace http {
 				else if (sensor == "counter") {
 					root["status"] = "OK";
 					root["title"] = "Graph " + sensor + " " + srange;
+					root["ValueQuantity"] = options["ValueQuantity"];
+					root["ValueUnits"] = options["ValueUnits"];
 
 					float EnergyDivider = 1000.0f;
 					float GasDivider = 100.0f;

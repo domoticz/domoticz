@@ -1811,6 +1811,8 @@ bool CSQLHelper::OpenDatabase()
 		{
 			//Convert depricated CounterType 'Time' to type Counter with options ValueQuantity='Time' & ValueUnits='Min'
 			//Add options ValueQuantity='Count' & ValueUnits='x' to existing CounterType 'Counter' 
+			const int MTYPE_TIME = 5;
+			const unsigned char charNTYPE_TODAYTIME = 'm';
 			std::stringstream szQuery, szQuery1, szQuery2, szQuery3;
 			std::vector<std::vector<std::string> > result, result1;
 			std::vector<std::string> sd;
@@ -1831,7 +1833,7 @@ bool CSQLHelper::OpenDatabase()
 						" WHERE ((([Type]=" << pTypeRFXMeter << ") AND (SubType=" << sTypeRFXMeterCount << "))"
 						" OR (([Type]=" << pTypeGeneral << ") AND (SubType=" << sTypeCounterIncremental << "))"
 						" OR ([Type]=" << pTypeYouLess << "))"
-						" AND ((SwitchType=" << MTYPE_COUNTER << ") OR (SwitchType=" << 0x05 << "))" //MTYPE_TIME
+						" AND ((SwitchType=" << MTYPE_COUNTER << ") OR (SwitchType=" << MTYPE_TIME << "))"
 						" AND (HardwareID=" << sd[0] << ")";
 					result1 = query(szQuery1.str());
 					if (result1.size() > 0)
@@ -1846,9 +1848,9 @@ bool CSQLHelper::OpenDatabase()
 							if (switchType == MTYPE_COUNTER)
 							{
 								//Add options to existing SwitchType 'Counter'
-								m_sql.SetDeviceOptions(devidx, m_sql.BuildDeviceOptions("ValueQuantity:Count;ValueUnits:x", false));
+								m_sql.SetDeviceOptions(devidx, m_sql.BuildDeviceOptions("ValueQuantity:Count;ValueUnits:", false));
 							}
-							else if (switchType == 0x05) //MTYPE_TIME
+							else if (switchType == MTYPE_TIME)
 							{
 								//Set default options
 								m_sql.SetDeviceOptions(devidx, m_sql.BuildDeviceOptions("ValueQuantity:Time;ValueUnits:Min", false));
@@ -1856,13 +1858,15 @@ bool CSQLHelper::OpenDatabase()
 								//Convert to Counter
 								szQuery2.clear();
 								szQuery2.str("");
-								szQuery2 << "UPDATE DeviceStatus SET SwitchType=" << MTYPE_COUNTER << " WHERE (ID=" << devidx << ")";
+								szQuery2 << "UPDATE DeviceStatus"
+									" SET SwitchType=" << MTYPE_COUNTER << " WHERE (ID=" << devidx << ")";
 								query(szQuery2.str());
 
 								//Update notifications 'Time' -> 'Counter'
 								szQuery3.clear();
 								szQuery3.str("");
-								szQuery3 << "UPDATE Notifications SET Params=REPLACE(Params, 'm;', '" << Notification_Type_Desc(NTYPE_TODAYCOUNTER, 1) << ";')"
+								szQuery3 << "UPDATE Notifications"
+									" SET Params=REPLACE(Params, '" << charNTYPE_TODAYTIME  << ";', '" << Notification_Type_Desc(NTYPE_TODAYCOUNTER, 1) << ";')"
 									" WHERE (DeviceRowID=" << devidx << ")";
 								query(szQuery3.str());
 							}
