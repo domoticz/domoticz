@@ -1573,6 +1573,8 @@ define(['app'], function (app) {
 			$("#lightcontent #devicename").val(unescape(name));
 			$("#lightcontent #devicedescription").val(unescape(description));
 
+			$("#lightcontent .selector-switch-options").hide();
+
 			if ($.stype=="Security") {
 				$("#lightcontent #SwitchType").hide();
 				$("#lightcontent #OnDelayDiv").hide();
@@ -1617,7 +1619,6 @@ define(['app'], function (app) {
 				$("#lightcontent #OffDelayDiv").hide();
 				$("#lightcontent #MotionDiv").hide();
 				$("#lightcontent #SwitchIconDiv").hide();
-				$("#lightcontent .selector-switch-options").hide();
 				if (switchtype==8) {
 					$("#lightcontent #MotionDiv").show();
 					$("#lightcontent #motionoffdelay").val(addjvalue);
