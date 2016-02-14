@@ -37,7 +37,7 @@ bool CRFLinkSerial::StopHardware()
 		// Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
 		sleep_milliseconds(10);
 	}
-	stopIfOpened();
+	terminate();
 	m_bIsStarted=false;
 	return true;
 }
@@ -80,7 +80,7 @@ void CRFLinkSerial::Do_Work()
 				_log.Log(LOG_ERROR, "RFLink: Nothing received for more then 50 seconds, restarting...");
 				m_retrycntr = 0;
 				m_LastReceivedTime = atime;
-				stop();
+				terminate();
 				} else {
 				if (atime - m_LastReceivedTime > 25) {
 				//_log.Log(LOG_STATUS, "RFLink: ping...");

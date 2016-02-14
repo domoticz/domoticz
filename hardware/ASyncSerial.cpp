@@ -230,8 +230,8 @@ void AsyncSerial::readEnd(const boost::system::error_code& error,
         if(isOpen())
         {
 			_log.Log(LOG_ERROR,"Serial Port closed!... Error: %s", error.message().c_str());
-			stop(false);
         }
+        terminate(false);
     } else {
         if(pimpl->callback) pimpl->callback(pimpl->readBuffer,
                 bytes_transferred);
@@ -315,21 +315,22 @@ void AsyncSerial::clearReadCallback()
     pimpl->callback.clear();
 }
 
-void AsyncSerial::stop(bool silent/*=true*/) {
-	try {
-		clearReadCallback();
-		close();
-		doClose();
-		setErrorStatus(true);
-	} catch(...) {
-		if (silent == false) {
-			throw;
+/**
+ * Process a clean close by unregistering the read callback and closing the port.
+ * Once this method has been called, you have to open the port and register the read callback again.
+ */
+void AsyncSerial::terminate(bool silent/*=true*/) {
+	if (isOpen()) {
+		try {
+			clearReadCallback();
+			close();
+			doClose();
+			setErrorStatus(true);
+		} catch(...) {
+			if (silent == false) {
+				throw;
+			}
 		}
 	}
 }
 
-void AsyncSerial::stopIfOpened(bool silent/*=true*/) {
-	if (isOpen()) {
-		stop(silent);
-	}
-}

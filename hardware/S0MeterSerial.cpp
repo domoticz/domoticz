@@ -133,7 +133,7 @@ bool S0MeterSerial::StartHardware()
 bool S0MeterSerial::StopHardware()
 {
 	m_bIsStarted=false;
-	stopIfOpened();
+	terminate();
 	StopHeartbeatThread();
 	_log.Log(LOG_STATUS, "S0 Meter: Serial Worker stopped...");
 	return true;

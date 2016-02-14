@@ -43,7 +43,7 @@ bool OTGWSerial::StartHardware()
 bool OTGWSerial::StopHardware()
 {
 	m_bIsStarted=false;
-	stopIfOpened();
+	terminate();
 	StopPollerThread();
 	return true;
 }

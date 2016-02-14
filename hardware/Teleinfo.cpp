@@ -171,7 +171,7 @@ bool Teleinfo::StartHardware()
 
 bool Teleinfo::StopHardware()
 {
-	stopIfOpened();
+	terminate();
 	StopHeartbeatThread();
 	m_bIsStarted = false;
 	return true;

@@ -183,14 +183,10 @@ protected:
     void clearReadCallback();
 
     /**
-     * Process clean stop
+     * Process a clean close by unregistering the read callback and closing the port.
+     * Once this method has been called, you have to open the port and register the read callback again.
      */
-    void stop(bool silent = true);
-
-    /**
-	 * Process clean stop if it is opened
-	 */
-	void stopIfOpened(bool silent = true);
+    void terminate(bool silent = true);
 
 };
 

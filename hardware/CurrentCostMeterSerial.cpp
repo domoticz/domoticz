@@ -71,7 +71,7 @@ bool CurrentCostMeterSerial::StartHardware()
 
 bool CurrentCostMeterSerial::StopHardware()
 {
-	stopIfOpened();
+	terminate();
 	m_stoprequested = true;
 	if (m_thread)
 	{

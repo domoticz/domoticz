@@ -49,7 +49,7 @@ bool Meteostick::StartHardware()
 bool Meteostick::StopHardware()
 {
 	m_bIsStarted = false;
-	stopIfOpened();
+	terminate();
 	StopPollerThread();
 	return true;
 }

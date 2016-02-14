@@ -109,7 +109,7 @@ bool RFXComSerial::StopHardware()
     sleep_milliseconds(10);
 	if (m_serial.isOpen())
 		m_serial.close();
-	stopIfOpened();
+	terminate();
 	m_bIsStarted=false;
 	return true;
 }
@@ -132,7 +132,7 @@ void RFXComSerial::Do_Work()
 		if (m_bStartFirmwareUpload)
 		{
 			m_bStartFirmwareUpload = false;
-			stopIfOpened();
+			terminate();
 			try {
 				sleep_seconds(1);
 				UpgradeFirmware();
@@ -771,7 +771,7 @@ void RFXComSerial::readCallback(const char *data, size_t len)
 			if (bRet == false)
 			{
 				//close serial connection, and restart
-				stopIfOpened();
+				terminate();
 
 			}
 		}

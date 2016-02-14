@@ -200,7 +200,7 @@ bool CEvohome::StopHardware()
 		m_thread->join();
 		// Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
 		sleep_milliseconds(10);
-		stopIfOpened();
+		terminate();
 		m_bIsStarted=false;
 		if(m_bDebug && m_pEvoLog)
 		{
@@ -574,7 +574,7 @@ void CEvohome::ReadCallback(const char *data, size_t len)
 		if (!HandleLoopData(data,len))
 		{
 			//error in data, try again...
-			stop();
+			terminate();
 		}
 	}
 	catch (...)

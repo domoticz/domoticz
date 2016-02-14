@@ -111,7 +111,7 @@ bool P1MeterSerial::StartHardware()
 
 bool P1MeterSerial::StopHardware()
 {
-	stopIfOpened();
+	terminate();
 	m_stoprequested = true;
 	if (m_thread)
 	{
