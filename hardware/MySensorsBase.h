@@ -374,6 +374,7 @@ private:
 
 
 	void UpdateSwitch(const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname, const int BatLevel);
+	void UpdateSwitchLastUpdate(const unsigned char Idx, const int SubUnit);
 
 	bool GetSwitchValue(const unsigned char Idx, const int SubUnit, const int sub_type, std::string &sSwitchValue);
 
@@ -394,6 +395,7 @@ private:
 	_tMySensorChild* FindChildWithValueType(const int nodeID, const _eSetType valType);
 	void InsertSensor(_tMySensorChild device);
 	void UpdateNodeBatteryLevel(const int nodeID, const int Level);
+	void UpdateNodeHeartbeat(const int nodeID);
 
 	void UpdateVar(const int NodeID, const int ChildID, const int VarID, const std::string &svalue);
 	bool GetVar(const int NodeID, const int ChildID, const int VarID, std::string &sValue);
