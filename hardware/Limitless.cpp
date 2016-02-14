@@ -574,24 +574,24 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 //Webserver helpers
 namespace http {
 	namespace server {
-		char * CWebServer::SetLimitlessType(WebEmSession & session, const request& req)
+		void CWebServer::SetLimitlessType(WebEmSession & session, const request& req, std::string & redirect_uri)
 		{
-			m_retstr = "/index.html";
+			redirect_uri = "/index.html";
 			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
-				return (char*)m_retstr.c_str();
+				return;
 			}
 			std::string idx = request::findValue(&req, "idx");
 			if (idx == "") {
-				return (char*)m_retstr.c_str();
+				return;
 			}
 
 			std::vector<std::vector<std::string> > result;
 
 			result = m_sql.safe_query("SELECT Mode1, Mode2, Mode3, Mode4, Mode5, Mode6 FROM Hardware WHERE (ID='%q')", idx.c_str());
 			if (result.size() < 1)
-				return (char*)m_retstr.c_str();
+				return;
 
 			int Mode1 = atoi(request::findValue(&req, "LimitlessType").c_str());
 			int Mode2 = atoi(result[0][1].c_str());
@@ -601,7 +601,7 @@ namespace http {
 
 			m_mainworker.RestartHardware(idx);
 
-			return (char*)m_retstr.c_str();
+			return;
 		}
 	}
 }

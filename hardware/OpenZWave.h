@@ -22,7 +22,7 @@ namespace Json
 	class Value;
 }
 
-class COpenZWave : public AsyncSerial, public ZWaveBase
+class COpenZWave : public ZWaveBase
 {
 public:
 	typedef struct  
@@ -122,7 +122,7 @@ public:
 	int ListAssociatedNodesinGroup(const int nodeID,const int groupID,std::vector< string > &nodesingroup);
 	bool AddNodeToGroup(const int nodeID,const int groupID, const int addID, const int instance);
 	bool RemoveNodeFromGroup(const int nodeID,const int groupID, const int removeID, const int instance);
-	std::string GetConfigFile(std::string &szConfigFile);
+	void GetConfigFile(std::string & filePath, std::string & fileContent);
 	unsigned int GetControllerID();
 	void NightlyNodeHeal();
 

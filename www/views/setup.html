@@ -251,28 +251,16 @@
 										<h2><span data-i18n="MyDomoticzSettings">MyDomoticz settings</span>:</h2>
 										<table class="display" id="mydomoticztable" border="0" cellpadding="0" cellspacing="0">
 											<tr>
-												<td>
-													<span data-i18n="MyInstanceId">MyDomoticz Instance ID</span>:
-												</td>
-												<td>
-													<span id="mydomoticzinstanceidid">(none)</span>
-												</td>
+												<td align="right" style="width:180px"><label><span data-i18n="MyInstanceId">MyDomoticz Instance ID</span>:</label></td>
+												<td><span id="mydomoticzinstanceidid">(none)</span></td>
 											</tr>
 											<tr>
-												<td>
-													MyDomoticz <span data-i18n="API Key"></span>:
-												</td>
-												<td>
-													<span id="mydomoticzuseridid"><input type="text" name="MyDomoticzUserId" id="MyDomoticzUserId" value="" class="text ui-widget-content ui-corner-all" /></span>
-												</td>
+												<td align="right" style="width:180px">MyDomoticz <label><span data-i18n="API Key"></span>:</label></td>
+												<td><span id="mydomoticzuseridid"><input type="text" name="MyDomoticzUserId" id="MyDomoticzUserId" style="width: 200px; padding: .2em;" value="" class="text ui-widget-content ui-corner-all" /></span></td>
 											</tr>
 											<tr>
-												<td>
-													<span data-i18n="Password">MyDomoticz password</span>:
-												</td>
-												<td>
-													<span id="mydomoticzpasswordid"><input type="password" name="MyDomoticzPassword" id="MyDomoticzPassword" value="" class="text ui-widget-content ui-corner-all" /></span>
-												</td>
+												<td align="right" style="width:180px">MyDomoticz <label><span data-i18n="Password">MyDomoticz password</span>:</label></td>
+												<td><span id="mydomoticzpasswordid"><input type="password" name="MyDomoticzPassword" id="MyDomoticzPassword" style="width: 200px; padding: .2em;" value="" class="text ui-widget-content ui-corner-all" /></span></td>
 											</tr>
 											<tr>
 												<td colspan="2">
@@ -283,7 +271,7 @@
 											</tr>
 										</table>
 										<br/>
-										To register for a MyDomoticz account, click <a href="https://my.domoticz.com/login" target="_blank">here</a>.
+										<span data-i18n="To register for a MyDomoticz account, click">To register for a MyDomoticz account, click</span> <a href="https://my.domoticz.com/login" class="norm-link" target="_blank"><span class="norm-link" data-i18n="Here"></span></a>
 									</div>
 								</div>
 							</div>
@@ -506,7 +494,7 @@
 									<tr>
 										<td align="right"><label for="HTTPURL"><span data-i18n="URL"></span>/<span data-i18n="Action"></span>: </label></td>
 										<td>
-											<textarea id="HTTPURL" name="HTTPURL" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all"></textarea><button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('http')">Test</button><br>
+											<textarea id="HTTPURL" name="HTTPURL" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all"></textarea>  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('http')">Test</button><br>
 											<span data-i18n="(Should start with http:// or script://)">(Should start with http://, https:// or script://)</span><br>
 											<span data-i18n="(Optional)">(Optional)</span> #SUBJECT, #MESSAGE
 										</td>
@@ -839,7 +827,7 @@
 							<table class="display" id="floorplancolourtable" border="0" cellpadding="0" cellspacing="0">
 								<tr>
 									<td align="right" style="width:250px"><label><span data-i18n="Room Area Colour"></span>: </label></td>
-									<td><input type="input" id="FloorplanRoomColour" name="FloorplanRoomColour" style="width: 120px; padding: .2em;" class="text ui-widget-content ui-corner-all"/>&nbsp;&nbsp;&nbsp;<a href="http://www.december.com/html/spec/colorsvg.html" target="HTML Colours" data-i18n="Colour name or HEX value"></a></td>
+									<td><input type="input" id="FloorplanRoomColour" name="FloorplanRoomColour" style="width: 120px; padding: .2em;" class="text ui-widget-content ui-corner-all"/>&nbsp;&nbsp;&nbsp;<a href="http://www.december.com/html/spec/colorsvg.html" class="norm-link" target="HTML Colours"><span class="norm-link" data-i18n="Colour name or HEX value"></span></a></td>
 								</tr>
 								<tr>
 									<td align="right" style="width:250px"><label><span data-i18n="Active Room Area Opacity"></span>: </label></td>
@@ -968,8 +956,8 @@
 						<section id="restoredatabase">
 						  <div class="page-header-small">
 							<h1 data-i18n="Backup / Restore Database"></h1>
+						</div>
 							<center><a data-i18n="Backup Database" class="btn btn-primary" href="backupdatabase.php" download>Backup Database</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a data-i18n="Restore Database" class="btn btn-warning" href="javascript:SwitchLayout('RestoreDatabase')">Restore Database</a></center>
-						  </div>
 						</section>
 					</div>
 				</div>

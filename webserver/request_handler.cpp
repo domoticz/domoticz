@@ -170,7 +170,7 @@ bool request_handler::not_modified(std::string full_path, const request &req, re
 	}
 	mInfo.mtime_support = true;
 	// propagate timestamp to browser
-	reply::AddHeader(&rep, "Last-Modified", convert_to_http_date(mInfo.last_written));
+	reply::add_header(&rep, "Last-Modified", convert_to_http_date(mInfo.last_written));
 	const char *if_modified = request::get_req_header(&req, "If-Modified-Since");
 	if (NULL == if_modified) {
 		// we have no if-modified header, continue to serve content
@@ -373,17 +373,17 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
   }
 #endif
 
-  reply::AddHeader(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
-  reply::AddHeader(&rep, "Content-Type", mime_types::extension_to_type(extension));
-  reply::AddHeader(&rep, "Access-Control-Allow-Origin", "*");
+  reply::add_header(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
+  reply::add_header(&rep, "Content-Type", mime_types::extension_to_type(extension));
+  reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
   if (req.keep_alive)
   {
-  	reply::AddHeader(&rep, "Connection", "Keep-Alive");
-  	reply::AddHeader(&rep, "Keep-Alive", "max=20, timeout=10");
+  	reply::add_header(&rep, "Connection", "Keep-Alive");
+  	reply::add_header(&rep, "Keep-Alive", "max=20, timeout=10");
   }
   if (bHaveLoadedgzip)
   {
-	reply::AddHeader(&rep, "Content-Encoding", "gzip");
+	reply::add_header(&rep, "Content-Encoding", "gzip");
   }
 }
 

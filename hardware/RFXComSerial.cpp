@@ -882,13 +882,13 @@ bool RFXComSerial::WriteToHardware(const char *pdata, const unsigned char length
 //Webserver helpers
 namespace http {
 	namespace server {
-		char * CWebServer::RFXComUpgradeFirmware(WebEmSession & session, const request& req)
+		void CWebServer::RFXComUpgradeFirmware(WebEmSession & session, const request& req, std::string & redirect_uri)
 		{
-			m_retstr = "/index.html";
+			redirect_uri = "/index.html";
 			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
-				return (char*)m_retstr.c_str();
+				return;
 			}
 
 			std::string hardwareid = request::findValue(&req, "hardwareid");
@@ -896,7 +896,7 @@ namespace http {
 
 			if (firmwarefile.empty())
 			{
-				return (char*)m_retstr.c_str();
+				return;
 			}
 
 			CDomoticzHardwareBase *pHardware = NULL;
@@ -913,7 +913,7 @@ namespace http {
 					pHardware = m_mainworker.GetHardwareByType(HTYPE_RFXtrx868);
 					if (pHardware == NULL)
 					{
-						return (char*)m_retstr.c_str();
+						return;
 					}
 				}
 			}
@@ -925,7 +925,7 @@ namespace http {
 			std::ofstream outfile;
 			outfile.open(outputfile.c_str(), std::ios::out | std::ios::binary | std::ios::trunc);
 			if (!outfile.is_open())
-				return (char*)m_retstr.c_str();
+				return;
 			outfile << firmwarefile;
 			outfile.flush();
 			outfile.close();
@@ -939,28 +939,27 @@ namespace http {
 				RFXComSerial *pRFXComSerial = (RFXComSerial *)pHardware;
 				pRFXComSerial->UploadFirmware(outputfile);
 			}
-			return (char*)m_retstr.c_str();
 		}
-		char * CWebServer::SetRFXCOMMode(WebEmSession & session, const request& req)
+		void CWebServer::SetRFXCOMMode(WebEmSession & session, const request& req, std::string & redirect_uri)
 		{
-			m_retstr = "/index.html";
+			redirect_uri = "/index.html";
 
 			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
-				return (char*)m_retstr.c_str();
+				return;
 			}
 
 			std::string idx = request::findValue(&req, "idx");
 			if (idx == "") {
-				return (char*)m_retstr.c_str();
+				return;
 			}
 			std::vector<std::vector<std::string> > result;
 
 			result = m_sql.safe_query("SELECT Mode1, Mode2, Mode3, Mode4, Mode5, Mode6 FROM Hardware WHERE (ID='%q')",
 				idx.c_str());
 			if (result.size() < 1)
-				return (char*)m_retstr.c_str();
+				return;
 
 			unsigned char Mode1 = atoi(result[0][0].c_str());
 			unsigned char Mode2 = atoi(result[0][1].c_str());
@@ -1006,7 +1005,6 @@ namespace http {
 
 			m_mainworker.SetRFXCOMHardwaremodes(atoi(idx.c_str()), Response.ICMND.freqsel, Response.ICMND.xmitpwr, Response.ICMND.msg3, Response.ICMND.msg4, Response.ICMND.msg5, Response.ICMND.msg6);
 
-			return (char*)m_retstr.c_str();
 		}
 		void CWebServer::Cmd_RFXComGetFirmwarePercentage(WebEmSession & session, const request& req, Json::Value &root)
 		{
