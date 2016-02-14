@@ -12685,7 +12685,7 @@ namespace http {
 												sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
 												break;
 											case MTYPE_COUNTER:
-												sprintf(szTmp, "%.0f", TotalValue);
+												sprintf(szTmp, "%.1f", TotalValue);
 												break;
 											}
 											root["result"][ii]["v"] = szTmp;
@@ -12736,7 +12736,7 @@ namespace http {
 										sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
 										break;
 									case MTYPE_COUNTER:
-										sprintf(szTmp, "%.0f", TotalValue);
+										sprintf(szTmp, "%.1f", TotalValue);
 										break;
 									}
 									root["result"][ii]["v"] = szTmp;
@@ -12844,7 +12844,7 @@ namespace http {
 													sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
 													break;
 												case MTYPE_COUNTER:
-													sprintf(szTmp, "%.0f", TotalValue);
+													sprintf(szTmp, "%.1f", TotalValue);
 													break;
 												}
 												root["result"][ii]["v"] = szTmp;
@@ -12909,7 +12909,7 @@ namespace http {
 												sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
 												break;
 											case MTYPE_COUNTER:
-												sprintf(szTmp, "%.0f", TotalValue);
+												sprintf(szTmp, "%.1f", TotalValue);
 												break;
 											}
 											root["result"][ii]["v"] = szTmp;
@@ -12948,7 +12948,7 @@ namespace http {
 									sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
 									break;
 								case MTYPE_COUNTER:
-									sprintf(szTmp, "%.0f", TotalValue);
+									sprintf(szTmp, "%.1f", TotalValue);
 									break;
 								}
 								root["result"][ii]["v"] = szTmp;
