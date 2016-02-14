@@ -77,7 +77,7 @@ const std::string CRazberry::GetControllerURL()
 const std::string CRazberry::GetRunURL(const std::string &cmd)
 {
 	std::stringstream sUrl;
-	if (m_username=="")
+	if (m_username.empty())
 		sUrl << "http://" << m_ipaddress << ":" << m_port << "/ZWaveAPI/Run/" << cmd;
 	else
 		sUrl << "http://"  << m_username << ":" << m_password << "@" << m_ipaddress << ":" << m_port << "/ZWaveAPI/Run/" << cmd;

@@ -142,7 +142,11 @@ public:
 		I_GET_NONCE = 16,				//Used between sensors when requesting nonce.
 		I_GET_NONCE_RESPONSE = 17,		//Used between sensors for nonce response.
 		I_HEARTBEAT = 18,
-		I_PRESENTATION = 19
+		I_PRESENTATION = 19,
+		I_DISCOVER = 20,
+		I_DISCOVER_RESPONSE = 21,
+		I_HEARTBEAT_RESPONSE = 22,
+		I_LOCKED = 23					//!< Node is locked (reason in string-payload)
 	};
 
 	struct _tMySensorValue
@@ -370,6 +374,7 @@ private:
 
 
 	void UpdateSwitch(const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname, const int BatLevel);
+	void UpdateSwitchLastUpdate(const unsigned char Idx, const int SubUnit);
 
 	bool GetSwitchValue(const unsigned char Idx, const int SubUnit, const int sub_type, std::string &sSwitchValue);
 
@@ -390,6 +395,7 @@ private:
 	_tMySensorChild* FindChildWithValueType(const int nodeID, const _eSetType valType);
 	void InsertSensor(_tMySensorChild device);
 	void UpdateNodeBatteryLevel(const int nodeID, const int Level);
+	void UpdateNodeHeartbeat(const int nodeID);
 
 	void UpdateVar(const int NodeID, const int ChildID, const int VarID, const std::string &svalue);
 	bool GetVar(const int NodeID, const int ChildID, const int VarID, std::string &sValue);
