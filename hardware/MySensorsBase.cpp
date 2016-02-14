@@ -1510,7 +1510,7 @@ void MySensorsBase::ParseLine()
 		{
 		case I_VERSION:
 			{
-				if ((node_id == 0) && (child_sensor_id == 0))
+				if (node_id == 0)
 				{
 					//Store gateway version
 					m_GatewayVersion = payload;
@@ -2076,6 +2076,9 @@ void MySensorsBase::Do_Send_Work()
 			//Exit thread
 			return;
 		}
+#ifdef _DEBUG
+		_log.Log(LOG_STATUS, "MySensors: going to send: %s", toSend.c_str());
+#endif
 		WriteInt(toSend);
 	}
 }
