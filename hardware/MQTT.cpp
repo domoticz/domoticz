@@ -522,11 +522,11 @@ void MQTT::SendDeviceInfo(const int m_HwdID, const unsigned long long DeviceRowI
 			root["switchType"] = Switch_Type_Desc(switchType);
 		}
 		// Add device options
-		std::map<std::string, std::string>::const_iterator itt;
-		for (itt = options.begin(); itt != options.end(); ++itt)
+		std::map<std::string, std::string>::const_iterator ittOptions;
+		for (ittOptions = options.begin(); ittOptions != options.end(); ++ittOptions)
 		{
-			std::string optionName = itt->first.c_str();
-			std::string optionValue = itt->second.c_str();
+			std::string optionName = ittOptions->first.c_str();
+			std::string optionValue = ittOptions->second.c_str();
 			root[optionName] = optionValue;
 		}
 
