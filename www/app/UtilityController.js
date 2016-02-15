@@ -899,7 +899,7 @@ define(['app'], function (app) {
 						  status=item.Data;
 						  bigtext=item.Data;
 						}
-						else if ((item.Type == "Energy")||(item.Type == "Current/Energy")||(item.SubType == "kWh")) {
+						else if ((item.Type == "Energy") || (item.Type == "Current/Energy") || (item.Type == "Power") || (item.SubType == "kWh")) {
 							status=item.Data;
 							if (typeof item.CounterToday != 'undefined') {
 								status+=', ' + $.t("Today") + ': ' + item.CounterToday;
@@ -1226,7 +1226,7 @@ define(['app'], function (app) {
 					  xhtm+='current48.png" height="48" width="48"></td>\n';
 					  status=item.Data;
 					}
-					else if ((item.Type == "Energy")||(item.Type == "Current/Energy")||(item.SubType == "kWh")) {
+					else if ((item.Type == "Energy") || (item.Type == "Current/Energy") || (item.Type == "Power") || (item.SubType == "kWh")) {
 						if (((item.Type == "Energy")||(item.SubType == "kWh"))&&(item.SwitchTypeVal == 4)) {
 							xhtm+='PV48.png" height="48" width="48"></td>\n';
 						}
@@ -1391,7 +1391,7 @@ define(['app'], function (app) {
 						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 					}
 				  }
-				  else if ((item.Type == "Energy")||(item.SubType == "kWh")||(item.Type == "Current/Energy")) {
+				  else if ((item.Type == "Energy")||(item.SubType == "kWh")||(item.Type == "Power")) {
 						xhtm+='<a class="btnsmall" onclick="ShowCounterLogSpline(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" data-i18n="Log">Log</a> ';
 						if (permissions.hasPermission("Admin")) {
 							if ((item.Type == "Energy")||(item.SubType == "kWh")) {
@@ -1401,7 +1401,7 @@ define(['app'], function (app) {
 							}
 						}
 				  }
-				  else if (item.Type == "Current") {
+                else if ((item.Type == "Current")||(item.Type == "Current/Energy")) {
 					xhtm+='<a class="btnsmall" onclick="ShowCurrentLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.displaytype + ');" data-i18n="Log">Log</a> ';
 					if (permissions.hasPermission("Admin")) {
 						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';

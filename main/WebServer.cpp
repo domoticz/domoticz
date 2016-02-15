@@ -11861,8 +11861,16 @@ namespace http {
 			unsigned char dType = atoi(result[0][0].c_str());
 			unsigned char dSubType = atoi(result[0][1].c_str());
 			_eMeterType metertype = (_eMeterType)atoi(result[0][2].c_str());
-			if ((dType == pTypeP1Power) || (dType == pTypeENERGY) || (dType == pTypePOWER) || ((dType == pTypeGeneral) && (dSubType == sTypeKwh)))
+			if (
+				(dType == pTypeP1Power) || 
+				(dType == pTypeENERGY) || 
+				(dType == pTypePOWER) || 
+				(dType == pTypeCURRENTENERGY) ||
+				((dType == pTypeGeneral) && (dSubType == sTypeKwh))
+				)
+			{
 				metertype = MTYPE_ENERGY;
+			}
 			else if (dType == pTypeP1Gas)
 				metertype = MTYPE_GAS;
 			else if ((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXCounter))

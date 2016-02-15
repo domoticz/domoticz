@@ -4361,7 +4361,7 @@ void CSQLHelper::UpdateMultiMeter()
 				value1=(unsigned long)(atof(splitresults[0].c_str())*10.0f);
 				value2=(unsigned long)(atof(splitresults[1].c_str())*10.0f);
 				value3=(unsigned long)(atof(splitresults[2].c_str())*10.0f);
-				value4=(unsigned long)(atof(splitresults[3].c_str())*1000.0f);
+				value4=(unsigned long long)(atof(splitresults[3].c_str())*1000.0f);
 			}
 			else
 				continue;//don't know you (yet)
