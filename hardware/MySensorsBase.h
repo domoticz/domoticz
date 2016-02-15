@@ -374,7 +374,10 @@ private:
 
 
 	void UpdateSwitch(const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname, const int BatLevel);
+	
 	void UpdateSwitchLastUpdate(const unsigned char Idx, const int SubUnit);
+	void UpdateBlindSensorLastUpdate(const int NodeID, const int ChildID);
+	void UpdateRGBWSwitchLastUpdate(const int NodeID, const int ChildID);
 
 	bool GetSwitchValue(const unsigned char Idx, const int SubUnit, const int sub_type, std::string &sSwitchValue);
 
