@@ -1810,7 +1810,7 @@ bool CSQLHelper::OpenDatabase()
 		if (dbversion < 99)
 		{
 			//Convert depricated CounterType 'Time' to type Counter with options ValueQuantity='Time' & ValueUnits='Min'
-			//Add options ValueQuantity='Count' & ValueUnits='x' to existing CounterType 'Counter' 
+			//Add options ValueQuantity='Count' to existing CounterType 'Counter' 
 			const int MTYPE_TIME = 5;
 			const unsigned char charNTYPE_TODAYTIME = 'm';
 			std::stringstream szQuery, szQuery1, szQuery2, szQuery3;

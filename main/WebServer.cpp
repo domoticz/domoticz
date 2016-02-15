@@ -8664,7 +8664,7 @@ namespace http {
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_COUNTER:
-							sprintf(szTmp, "%.03f %s", fvalue, ValueUnits.c_str());
+							sprintf(szTmp, "%.0f %s", fvalue, ValueUnits.c_str());
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							root["result"][ii]["ValueQuantity"] = ValueQuantity;
@@ -8781,7 +8781,7 @@ namespace http {
                                 root["result"][ii]["Counter"] = szTmp;
                                 break;
                         case MTYPE_COUNTER:
-                                sprintf(szTmp, "%.03f %s", fvalue, ValueUnits.c_str());
+                                sprintf(szTmp, "%.0f %s", fvalue, ValueUnits.c_str());
                                 root["result"][ii]["Data"] = szTmp;
                                 root["result"][ii]["Counter"] = szTmp;
                                 root["result"][ii]["ValueQuantity"] = ValueQuantity;
