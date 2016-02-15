@@ -1,11 +1,7 @@
 #pragma once
 
 #include "DomoticzHardware.h"
-#ifdef WIN32
-#include "..\hardware\1Wire\1WireCommon.h"
-#else
 #include "../hardware/1Wire/1WireCommon.h"
-#endif
 
 class I_1WireSystem;
 class C1Wire : public CDomoticzHardwareBase
