@@ -197,12 +197,15 @@ domoticz_SRCS
 main/stdafx.cpp
 main/CmdLine.cpp
 main/Camera.cpp
+main/DataPush.cpp
 main/domoticz.cpp
 main/EventSystem.cpp
 main/Helper.cpp
+main/HttpPush.cpp
 main/localtime_r.cpp
 main/Logger.cpp
 main/mainworker.cpp
+main/Push.cpp
 main/RFXNames.cpp
 main/Scheduler.cpp
 main/SQLHelper.cpp
@@ -210,9 +213,6 @@ main/SunRiseSet.cpp
 main/WebServer.cpp
 main/WebServerHelper.cpp
 main/WindCalculation.cpp
-main/Push.cpp
-main/DataPush.cpp
-main/HttpPush.cpp
 httpclient/HTTPClient.cpp
 httpclient/UrlEncode.cpp
 hardware/1Wire.cpp
