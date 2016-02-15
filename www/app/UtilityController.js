@@ -710,7 +710,7 @@ define(['app'], function (app) {
 		  $("#dialog-editdistancedevice" ).dialog( "open" );
 		}
 
-		EditMeterDevice = function(idx,name,description,switchtype)
+		EditMeterDevice = function(idx,name,description,switchtype,valuequantity,valueunits)
 		{
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
@@ -720,6 +720,25 @@ define(['app'], function (app) {
 		  $("#dialog-editmeterdevice #devicename").val(unescape(name));
 		  $("#dialog-editmeterdevice #devicedescription").val(unescape(description));
 		  $("#dialog-editmeterdevice #combometertype").val(switchtype);
+		  $("#dialog-editmeterdevice #valuequantity").val(unescape(valuequantity));
+		  $("#dialog-editmeterdevice #valueunits").val(unescape(valueunits));
+		  $("#dialog-editmeterdevice #metertable #customcounter").hide();
+		  if (switchtype==3) { //Counter
+			$("#dialog-editmeterdevice #metertable #customcounter").show();
+		  }
+		  
+		  $("#dialog-editmeterdevice #combometertype").change(function() { 
+			$("#dialog-editmeterdevice #metertable #customcounter").hide();
+			var meterType=$("#dialog-editmeterdevice #combometertype").val();
+			if (meterType==3) { //Counter
+				if (($("#dialog-editmeterdevice #valuequantity").val() == "") 
+					&& ($("#dialog-editmeterdevice #valueunits").val() == "")) {
+					$("#dialog-editmeterdevice #valuequantity").val("Count");
+				}
+				$("#dialog-editmeterdevice #metertable #customcounter").show();
+			}
+		  });
+		  
 		  $("#dialog-editmeterdevice" ).i18n();
 		  $("#dialog-editmeterdevice" ).dialog( "open" );
 		}
@@ -1184,9 +1203,6 @@ define(['app'], function (app) {
 							else if (item.SwitchTypeVal==4) {
 								xhtm+='PV48.png" height="48" width="48"></td>\n';
 							}
-							else if (item.SwitchTypeVal==5) {
-								xhtm+='clock48_On.png" height="48" width="48"></td>\n';
-							}
 							else {
 								xhtm+='Counter48.png" height="48" width="48"></td>\n';
 							}
@@ -1329,7 +1345,7 @@ define(['app'], function (app) {
 							xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 						}
 						else {
-							xhtm+='<a class="btnsmall" onclick="EditMeterDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.SwitchTypeVal +');" data-i18n="Edit">Edit</a> ';
+							xhtm+='<a class="btnsmall" onclick="EditMeterDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.SwitchTypeVal + ',\'' + escape(item.ValueQuantity) + '\',\'' + escape(item.ValueUnits) + '\');" data-i18n="Edit">Edit</a> ';
 						}
 					}
 				  }
@@ -1720,15 +1736,28 @@ define(['app'], function (app) {
 			var dialog_editmeterdevice_buttons = {};
 			dialog_editmeterdevice_buttons[$.t("Update")]=function() {
 				  var bValid = true;
+				  var devOptionsParam = [], devOptions = [];
+				  var meterType=$("#dialog-editmeterdevice #combometertype").val();
 				  bValid = bValid && checkLength( $("#dialog-editmeterdevice #devicename"), 2, 100 );
 				  if ( bValid ) {
+					  if (meterType==3) //Counter
+					  {
+						devOptions.push("ValueQuantity:");
+						devOptions.push($("#dialog-editmeterdevice #valuequantity").val());
+						devOptions.push(";");
+						devOptions.push("ValueUnits:");
+						devOptions.push($("#dialog-editmeterdevice #valueunits").val());
+						devOptions.push(";");
+						devOptionsParam.push(devOptions.join(''));
+					  }
 					  $( this ).dialog( "close" );
 					  $.ajax({
 						 url: "json.htm?type=setused&idx=" + $.devIdx + 
 							'&name=' + encodeURIComponent($("#dialog-editmeterdevice #devicename").val()) + 
 							'&description=' + encodeURIComponent($("#dialog-editmeterdevice #devicedescription").val()) + 
-							'&switchtype=' + $("#dialog-editmeterdevice #combometertype").val() + 
-							'&used=true',
+							'&switchtype=' + meterType + 
+							'&used=true' +
+							'&options=' + btoa(encodeURIComponent(devOptionsParam.join(''))), // encode before b64 to prevent from character encoding issue
 						 async: false, 
 						 dataType: 'json',
 						 success: function(data) {

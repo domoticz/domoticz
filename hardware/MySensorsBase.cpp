@@ -426,6 +426,57 @@ void MySensorsBase::UpdateNodeBatteryLevel(const int nodeID, const int Level)
 	}
 }
 
+void MySensorsBase::UpdateNodeHeartbeat(const int nodeID)
+{
+	std::map<int, _tMySensorNode>::iterator ittNode = m_nodes.find(nodeID);
+	if (ittNode == m_nodes.end())
+		return; //Not found
+
+	int intValue;
+
+	_tMySensorNode *pNode = &ittNode->second;
+	std::vector<_tMySensorChild>::iterator itt;
+	for (itt = pNode->m_childs.begin(); itt != pNode->m_childs.end(); ++itt)
+	{
+		std::map<_eSetType, _tMySensorValue>::const_iterator itt2;
+		for (itt2 = itt->values.begin(); itt2 != itt->values.end(); ++itt2)
+		{
+			if (itt2->second.bValidValue)
+			{
+				_eSetType vType = itt2->first;
+				switch (vType)
+				{
+				case V_TRIPPED:
+				case V_ARMED:
+				case V_LOCK_STATUS:
+				case V_STATUS:
+				case V_PERCENTAGE:
+					UpdateSwitchLastUpdate(nodeID, itt->childID);
+					break;
+				case V_SCENE_ON:
+				case V_SCENE_OFF:
+					if (itt->GetValue(vType, intValue))
+						UpdateSwitchLastUpdate(nodeID, itt->childID + intValue);
+					//	Dimmer value. 0 - 100 %
+					break;
+/*
+				case V_RGB:
+				case V_RGBW:
+					UpdateRGBWSwitchhLastUpdate(pChild->nodeID, pChild->childID);
+					break;
+				case V_UP:
+				case V_DOWN:
+				case V_STOP:
+					UpdateBlindSensorhLastUpdate(pChild->nodeID, pChild->childID);
+					break;
+*/
+				}
+			}
+		}
+	}
+
+}
+
 void MySensorsBase::MakeAndSendWindSensor(const int nodeID, const std::string &sname)
 {
 	bool bHaveTemp = false;
@@ -961,6 +1012,24 @@ void MySensorsBase::ParseData(const unsigned char *pData, int Len)
 	}
 }
 
+void MySensorsBase::UpdateSwitchLastUpdate(const unsigned char Idx, const int SubUnit)
+{
+	char szIdx[10];
+	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, szIdx, SubUnit, int(pTypeLighting2), int(sTypeAC));
+	if (result.size() < 1)
+		return; //not found!
+	time_t now = time(0);
+	struct tm ltime;
+	localtime_r(&now, &ltime);
+
+	char szLastUpdate[40];
+	sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
+
+	m_sql.safe_query("UPDATE DeviceStatus SET LastUpdate='%q' WHERE (ID = '%q')", szLastUpdate, result[0][0].c_str());
+}
+
 void MySensorsBase::UpdateSwitch(const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname, const int BatLevel)
 {
 	bool bDeviceExits = true;
@@ -1441,7 +1510,7 @@ void MySensorsBase::ParseLine()
 		{
 		case I_VERSION:
 			{
-				if ((node_id == 0) && (child_sensor_id == 0))
+				if (node_id == 0)
 				{
 					//Store gateway version
 					m_GatewayVersion = payload;
@@ -1516,7 +1585,15 @@ void MySensorsBase::ParseLine()
 			}
 			break;
 		case I_HEARTBEAT:
-			//Received a heartbeat
+		case I_HEARTBEAT_RESPONSE:
+			//Received a heartbeat request/response
+			if ((node_id != 0) && (node_id != 255))
+			{
+				UpdateNodeHeartbeat(node_id);
+			}
+			break;
+		case I_REQUEST_SIGNING:
+			//Used between sensors when initiating signing.
 			while (1 == 0);
 			break;
 		default:
@@ -1999,6 +2076,9 @@ void MySensorsBase::Do_Send_Work()
 			//Exit thread
 			return;
 		}
+#ifdef _DEBUG
+		_log.Log(LOG_STATUS, "MySensors: going to send: %s", toSend.c_str());
+#endif
 		WriteInt(toSend);
 	}
 }
