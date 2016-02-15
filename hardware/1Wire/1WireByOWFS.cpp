@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "1WireByOWFS.h"
+#include "../../main/mainworker.h"
 
 #include <fstream>
 #include <algorithm>
@@ -214,6 +215,12 @@ void C1WireByOWFS::SetLightState(const std::string& sId,int unit,bool value)
 float C1WireByOWFS::GetTemperature(const _t1WireDevice& device) const
 {
    std::string readValue=readRawData(std::string(device.filename+"/temperature"));
+
+   if (m_mainworker.GetVerboseLevel() == EVBL_DEBUG)
+   {
+	   _log.Log(LOG_STATUS, "1Wire (OWFS): Get Temperature from %s = %s", device.filename, readValue);
+   }
+
    if (readValue.empty())
       return -1000.0;
    return static_cast<float>(atof(readValue.c_str()));
