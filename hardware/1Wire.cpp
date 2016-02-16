@@ -191,7 +191,7 @@ void C1Wire::GetDeviceDetails()
 		m_system->GetDevices(m_devices);
 	}
 
-	if (typeid(m_system) == typeid(C1WireByOWFS))
+	if (typeid(*m_system) == typeid(C1WireByOWFS))
 	{
 		if (m_mainworker.GetVerboseLevel() == EVBL_DEBUG)
 		{
