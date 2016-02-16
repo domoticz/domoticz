@@ -124,6 +124,10 @@ void C1WireByOWFS::GetDevices(const std::string &inDir, /*out*/std::vector<_t1Wi
             GetDevice(inDir, de->d_name, device);
 
             // Add device to list
+			if (m_mainworker.GetVerboseLevel() == EVBL_DEBUG)
+			{
+				_log.Log(LOG_STATUS, "1Wire (OWFS): Add device %s", device.filename.c_str());
+			}
             devices.push_back(device);
 
             // If device is a hub, scan for all hub connected devices (recursively)
@@ -218,7 +222,7 @@ float C1WireByOWFS::GetTemperature(const _t1WireDevice& device) const
 
    if (m_mainworker.GetVerboseLevel() == EVBL_DEBUG)
    {
-	   _log.Log(LOG_STATUS, "1Wire (OWFS): Get Temperature from %s = %s", device.filename, readValue);
+	   _log.Log(LOG_STATUS, "1Wire (OWFS): Get Temperature from %s = %s", device.filename.c_str(), readValue.c_str());
    }
 
    if (readValue.empty())
@@ -229,6 +233,12 @@ float C1WireByOWFS::GetTemperature(const _t1WireDevice& device) const
 float C1WireByOWFS::GetHumidity(const _t1WireDevice& device) const
 {
    std::string readValue=readRawData(std::string(device.filename+"/humidity"));
+
+   if (m_mainworker.GetVerboseLevel() == EVBL_DEBUG)
+   {
+	   _log.Log(LOG_STATUS, "1Wire (OWFS): Get Humidity from %s = %s", device.filename.c_str(), readValue.c_str());
+   }
+
    if (readValue.empty())
 	   return -1000.0;
    return static_cast<float>(atof(readValue.c_str()));
