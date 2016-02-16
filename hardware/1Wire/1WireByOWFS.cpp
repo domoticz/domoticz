@@ -421,7 +421,7 @@ void C1WireByOWFS::GetDevice(const std::string &inDir, const std::string &dirnam
     
     device.filename=inDir;
     if (device.family == Environmental_Monitors || device.family == smart_battery_monitor) {
-        device.filename+="/" + dirname + "/" + nameHelper(dirname);;
+        device.filename+="/" + dirname + nameHelper(dirname);;
     } else { 
         device.filename+="/" + dirname;
     }
@@ -432,22 +432,22 @@ std::string C1WireByOWFS::nameHelper(const std::string& dirname) const {
 	DIR *d=NULL;
 	
 	d=opendir(std::string(std::string(OWFS_Base_Dir) + "/" + dirname.c_str()).c_str());
-        if (d != NULL)
-        {
-            struct dirent *de=NULL;
-            while ((de = readdir(d)))
-            {
-            name = de->d_name;
-            if (de->d_type==DT_DIR)
-            {
-		if (name.compare(0,3, "EDS") == 0 || name.compare(0,7, "B1-R1-A") == 0) {
-		    closedir(d);
-		    return name;
+	if (d != NULL)
+	{
+		struct dirent *de = NULL;
+		while ((de = readdir(d)))
+		{
+			name = de->d_name;
+			if (de->d_type == DT_DIR)
+			{
+				if (name.compare(0, 3, "EDS") == 0 || name.compare(0, 7, "B1-R1-A") == 0) {
+					closedir(d);
+					return "/" + name;
+				}
+			}
 		}
-            }
-        }
-        closedir(d);
-    }
+		closedir(d);
+	}
     return "";
 }
 
