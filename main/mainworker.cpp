@@ -7871,6 +7871,16 @@ void MainWorker::decode_Energy(const int HwdID, const _eHardwareTypes HwdType, c
 	gdevice.subtype = sTypeKwh;
 	gdevice.floatval1 = (float)instant;
 	gdevice.floatval2 = (float)total;
+
+	int voltage = 230;
+	m_sql.GetPreferencesVar("ElectricVoltage", voltage);
+	if (voltage != 230)
+	{
+		float mval = float(voltage) / 230.0f;
+		gdevice.floatval1 *= mval;
+		gdevice.floatval2 *= mval;
+	}
+
 	decode_General(HwdID, HwdType, (const tRBUF*)&gdevice, procResult, SignalLevel, BatteryLevel);
 	procResult.bProcessBatteryValue = false;
 }
