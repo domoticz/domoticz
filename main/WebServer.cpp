@@ -14671,7 +14671,7 @@ namespace http {
 								sprintf(szTmp, "%.3f", fvalue / WaterDivider);
 								break;
 							default:
-								sprintf(szTmp, "");
+								strcpy(szTmp, "");
 								break;
 							}
 							root["counter"] = szTmp;
@@ -14697,7 +14697,7 @@ namespace http {
 									sprintf(szTmp, "%.3f", fvalue / WaterDivider);
 									break;
 								default:
-									sprintf(szTmp, "");
+									strcpy(szTmp, "");
 									break;
 								}
 								root["counter"] = szTmp;
