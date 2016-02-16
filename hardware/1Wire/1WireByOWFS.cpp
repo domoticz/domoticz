@@ -124,7 +124,12 @@ void C1WireByOWFS::GetDevices(const std::string &inDir, /*out*/std::vector<_t1Wi
             GetDevice(inDir, de->d_name, device);
 
             // Add device to list
-            devices.push_back(device);
+			if (m_mainworker.GetVerboseLevel() == EVBL_ALL)
+			{
+				_log.Log(LOG_STATUS, "[1WireByOWFS]: Add device to list: %s", device.filename);
+			}
+
+			devices.push_back(device);
 
             // If device is a hub, scan for all hub connected devices (recursively)
             if (device.family==microlan_coupler)
@@ -215,6 +220,10 @@ void C1WireByOWFS::SetLightState(const std::string& sId,int unit,bool value)
 float C1WireByOWFS::GetTemperature(const _t1WireDevice& device) const
 {
    std::string readValue=readRawData(std::string(device.filename+"/temperature"));
+   if (m_mainworker.GetVerboseLevel() == EVBL_ALL)
+   {
+	   _log.Log(LOG_STATUS, "[1WireByOWFS]: Read temperature from %s = %s", device.filename, readValue);
+   }
 
    if (readValue.empty())
       return -1000.0;
@@ -224,6 +233,11 @@ float C1WireByOWFS::GetTemperature(const _t1WireDevice& device) const
 float C1WireByOWFS::GetHumidity(const _t1WireDevice& device) const
 {
    std::string readValue=readRawData(std::string(device.filename+"/humidity"));
+   if (m_mainworker.GetVerboseLevel() == EVBL_ALL)
+   {
+	   _log.Log(LOG_STATUS, "[1WireByOWFS]: Read humidity from %s = %s", device.filename, readValue);
+   }
+
    if (readValue.empty())
 	   return -1000.0;
    return static_cast<float>(atof(readValue.c_str()));
@@ -427,22 +441,22 @@ std::string C1WireByOWFS::nameHelper(const std::string& dirname) const {
 	DIR *d=NULL;
 	
 	d=opendir(std::string(std::string(OWFS_Base_Dir) + "/" + dirname.c_str()).c_str());
-        if (d != NULL)
-        {
-            struct dirent *de=NULL;
-            while ((de = readdir(d)))
-            {
-            name = de->d_name;
-            if (de->d_type==DT_DIR)
-            {
-		if (name.compare(0,3, "EDS") == 0 || name.compare(0,7, "B1-R1-A") == 0) {
-		    closedir(d);
-		    return name;
+	if (d != NULL)
+	{
+		struct dirent *de = NULL;
+		while ((de = readdir(d)))
+		{
+			name = de->d_name;
+			if (de->d_type == DT_DIR)
+			{
+				if (name.compare(0, 3, "EDS") == 0 || name.compare(0, 7, "B1-R1-A") == 0) {
+					closedir(d);
+					return name;
+				}
+			}
 		}
-            }
-        }
-        closedir(d);
-    }
+		closedir(d);
+	}
     return "";
 }
 
