@@ -8,7 +8,7 @@
 #define OWFS_Base_Dir "/mnt/1wire"
 #endif // WIN32
 #else // _DEBUG
-#define OWFS_Base_Dir "/mnt/1wire/uncached"
+#define OWFS_Base_Dir "/mnt/1wire"
 #endif //_DEBUG
 
 #define OWFS_Simultaneous "/mnt/1wire/simultaneous/temperature"
