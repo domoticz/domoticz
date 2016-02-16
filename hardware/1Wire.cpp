@@ -191,14 +191,22 @@ void C1Wire::GetDeviceDetails()
 		m_system->GetDevices(m_devices);
 	}
 
-	if (typeid(m_system) == typeid(C1WireByOWFS))
+	if (typeid(*m_system) == typeid(C1WireByOWFS))
 	{
+		if (m_mainworker.GetVerboseLevel() == EVBL_DEBUG)
+		{
+			_log.Log(LOG_STATUS, "1Wire (OWFS): Sending 'Skip ROM' command");
+		}
 		std::ofstream file;
 		file.open(OWFS_Simultaneous);
 		if (file.is_open())
 		{
 			file << "1";
 			file.close();
+			if (m_mainworker.GetVerboseLevel() == EVBL_DEBUG)
+			{
+				_log.Log(LOG_STATUS, "1Wire (OWFS): Sent 'Skip ROM' command");
+			}
 		}
 	}
 
