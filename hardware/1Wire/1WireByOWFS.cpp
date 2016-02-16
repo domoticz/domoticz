@@ -218,7 +218,7 @@ float C1WireByOWFS::GetTemperature(const _t1WireDevice& device) const
 
    if (m_mainworker.GetVerboseLevel() == EVBL_DEBUG)
    {
-	   _log.Log(LOG_STATUS, "1Wire (OWFS): Get Temperature from %s = %s", device.filename, readValue);
+	   _log.Log(LOG_STATUS, "1Wire (OWFS): Get Temperature from %s = %s", device.filename.c_str(), readValue.c_str());
    }
 
    if (readValue.empty())

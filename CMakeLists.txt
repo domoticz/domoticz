@@ -111,7 +111,7 @@ MACRO(ADD_PRECOMPILED_HEADER _targetName _input)
   ENDIF(MSVC)
 
   IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-switch -Wno-parentheses-equality -Wno-deprecated-declarations -Wno-tautological-compare -Wno-unused-value -Wno-absolute-value -Wno-comment -Wno-unsequenced -Wno-logical-op-parentheses -Wno-literal-conversion")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-switch -Wno-parentheses-equality -Wno-deprecated-declarations -Wno-tautological-compare -Wno-unused-value -Wno-comment -Wno-unsequenced -Wno-logical-op-parentheses -Wno-literal-conversion")
   ENDIF()
 
   IF(CMAKE_COMPILER_IS_GNUCXX)
@@ -153,23 +153,24 @@ FIND_PROGRAM(GIT_EXECUTABLE git
 
 MACRO(Gitversion_GET_REVISION dir variable)
   EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} rev-list HEAD --count
+    WORKING_DIRECTORY ${dir}
     OUTPUT_VARIABLE ${variable}
     OUTPUT_STRIP_TRAILING_WHITESPACE)
 ENDMACRO(Gitversion_GET_REVISION)
 
-Gitversion_GET_REVISION(. ProjectRevision)
+Gitversion_GET_REVISION("${CMAKE_SOURCE_DIR}" ProjectRevision)
 IF(NOT ProjectRevision)
   MESSAGE(STATUS "Failed to get ProjectRevision from git")
-  IF(EXISTS appversion.default)
+  IF(EXISTS ${CMAKE_SOURCE_DIR}/appversion.default)
     MESSAGE(STATUS "Read ProjectRevision from appversion.default")
-    FILE(STRINGS appversion.default AppVersionContent)
+    FILE(STRINGS ${CMAKE_SOURCE_DIR}/appversion.default AppVersionContent)
     LIST(GET AppVersionContent 0 AppVersionContent)
     STRING(REPLACE " " ";" AppVersionContent ${AppVersionContent})
     LIST(GET AppVersionContent 2 ProjectRevision)
-  ELSE(EXISTS appversion.default)
+  ELSE(EXISTS ${CMAKE_SOURCE_DIR}/appversion.default)
     MESSAGE(STATUS "No appversion.default, set ProjectRevision to 0")
     set (ProjectRevision 0)
-  ENDIF(EXISTS appversion.default)
+  ENDIF(EXISTS ${CMAKE_SOURCE_DIR}/appversion.default)
 ELSE(NOT ProjectRevision)
   MATH(EXPR ProjectRevision "${ProjectRevision}+2107")
 ENDIF(NOT ProjectRevision)
@@ -196,12 +197,15 @@ domoticz_SRCS
 main/stdafx.cpp
 main/CmdLine.cpp
 main/Camera.cpp
+main/DataPush.cpp
 main/domoticz.cpp
 main/EventSystem.cpp
 main/Helper.cpp
+main/HttpPush.cpp
 main/localtime_r.cpp
 main/Logger.cpp
 main/mainworker.cpp
+main/Push.cpp
 main/RFXNames.cpp
 main/Scheduler.cpp
 main/SQLHelper.cpp
@@ -209,9 +213,6 @@ main/SunRiseSet.cpp
 main/WebServer.cpp
 main/WebServerHelper.cpp
 main/WindCalculation.cpp
-main/Push.cpp
-main/DataPush.cpp
-main/HttpPush.cpp
 httpclient/HTTPClient.cpp
 httpclient/UrlEncode.cpp
 hardware/1Wire.cpp
@@ -556,17 +557,20 @@ ENDIF(RaspberryPi)
 
 find_path(TELLDUSCORE_INCLUDE NAMES telldus-core.h)
 if (TELLDUSCORE_INCLUDE)
-  message(STATUS "Found telldus-core (telldus-core.h), adding tellstick support")
-  target_link_libraries (domoticz telldus-core)
-  add_definitions(-DWITH_TELLDUSCORE)
+  message(STATUS "Found telldus-core (telldus-core.h) at : ${TELLDUSCORE_INCLUDE}")
+  find_library(TELLDUS_LIBRARIES NAMES libtelldus-core.so)
+  if(TELLDUS_LIBRARIES)
+    message(STATUS "Found libtelldus-core at : ${TELLDUS_LIBRARIES}, adding telldus support")
+    add_definitions(-DWITH_TELLDUSCORE)
+  endif(TELLDUS_LIBRARIES)
 else()
   message(STATUS "Not found telldus-core (telldus-core.h), not adding tellstick support")
 endif (TELLDUSCORE_INCLUDE)
 
 IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-  target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} ${MQTT_LIBRARIES} ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS})
+  target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} ${MQTT_LIBRARIES} ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS} ${TELLDUS_LIBRARIES})
 else()
-  target_link_libraries(domoticz -lrt ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} -LXXXPREFIXXX/lib pthread ${LUA_LIBRARIES} ${MQTT_LIBRARIES} ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS})
+  target_link_libraries(domoticz -lrt ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} ${MQTT_LIBRARIES} ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS} ${TELLDUS_LIBRARIES})
 ENDIF()
 
 ADD_PRECOMPILED_HEADER(domoticz "main/stdafx.h")

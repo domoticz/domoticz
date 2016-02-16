@@ -129,7 +129,7 @@ namespace http {
 			case 6:
 				//Switch
 				{
-					sprintf(ID, "%08X", nid);
+					sprintf(ID, "%08lX", nid);
 					DeviceRowIdx=m_sql.UpdateValue(HwdID, ID, 1, pTypeGeneralSwitch, sSwitchGeneralSwitch, 12, 255, 0, "100", devname);
 					bCreated = true;
 				}

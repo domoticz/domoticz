@@ -1233,6 +1233,7 @@ void MainWorker::ParseRFXLogFile()
 					_line=_line.substr(1);
 				}
 			}
+			stdreplace(_line, " ", "");
 			_lines.push_back(_line);
 		}
 		myfile.close();
@@ -7870,6 +7871,16 @@ void MainWorker::decode_Energy(const int HwdID, const _eHardwareTypes HwdType, c
 	gdevice.subtype = sTypeKwh;
 	gdevice.floatval1 = (float)instant;
 	gdevice.floatval2 = (float)total;
+
+	int voltage = 230;
+	m_sql.GetPreferencesVar("ElectricVoltage", voltage);
+	if (voltage != 230)
+	{
+		float mval = float(voltage) / 230.0f;
+		gdevice.floatval1 *= mval;
+		gdevice.floatval2 *= mval;
+	}
+
 	decode_General(HwdID, HwdType, (const tRBUF*)&gdevice, procResult, SignalLevel, BatteryLevel);
 	procResult.bProcessBatteryValue = false;
 }
@@ -9816,7 +9827,6 @@ bool MainWorker::GetSensorData(const unsigned long long idx, int &nValue, std::s
 				sprintf(szTmp, "%llu", total_real);
 				break;
 			case MTYPE_COUNTER:
-			case MTYPE_TIME:
 				sprintf(szTmp, "%llu", total_real);
 				break;
 			}
@@ -11599,7 +11609,7 @@ void MainWorker::SetInternalSecStatus()
 	}
 
 	CDomoticzHardwareBase *pHardware = GetHardwareByType(HTYPE_DomoticzInternal);
-	PushAndWaitRxMessage(pHardware, (const unsigned char *)&tsen, "Domoticz Security Panel", tsen.SECURITY1.battery_level);
+	PushAndWaitRxMessage(pHardware, (const unsigned char *)&tsen, "Domoticz Security Panel", 100);
 }
 
 void MainWorker::UpdateDomoticzSecurityStatus(const int iSecStatus)

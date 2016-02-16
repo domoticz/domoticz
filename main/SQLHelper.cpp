@@ -31,7 +31,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 98
+#define DB_VERSION 99
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -1806,6 +1806,74 @@ bool CSQLHelper::OpenDatabase()
 		{
 			// Shorthen cookies validity to 30 days
 			query("UPDATE UserSessions SET ExpirationDate = datetime(ExpirationDate, '-335 days')");
+		}
+		if (dbversion < 99)
+		{
+			//Convert depricated CounterType 'Time' to type Counter with options ValueQuantity='Time' & ValueUnits='Min'
+			//Add options ValueQuantity='Count' to existing CounterType 'Counter' 
+			const int MTYPE_TIME = 5;
+			const unsigned char charNTYPE_TODAYTIME = 'm';
+			std::stringstream szQuery, szQuery1, szQuery2, szQuery3;
+			std::vector<std::vector<std::string> > result, result1;
+			std::vector<std::string> sd;
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "SELECT ID FROM Hardware"
+				" WHERE (([Type] = " << HTYPE_Dummy << ") OR ([Type] = " << HTYPE_YouLess << "))";
+			result = query(szQuery.str());
+			if (result.size() > 0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					sd = *itt;
+					szQuery1.clear();
+					szQuery1.str("");
+					szQuery1 << "SELECT ID, DeviceID, SwitchType FROM DeviceStatus"
+						" WHERE ((([Type]=" << pTypeRFXMeter << ") AND (SubType=" << sTypeRFXMeterCount << "))"
+						" OR (([Type]=" << pTypeGeneral << ") AND (SubType=" << sTypeCounterIncremental << "))"
+						" OR ([Type]=" << pTypeYouLess << "))"
+						" AND ((SwitchType=" << MTYPE_COUNTER << ") OR (SwitchType=" << MTYPE_TIME << "))"
+						" AND (HardwareID=" << sd[0] << ")";
+					result1 = query(szQuery1.str());
+					if (result1.size() > 0)
+					{
+						std::vector<std::vector<std::string> >::const_iterator itt2;
+						for (itt2 = result1.begin(); itt2 != result1.end(); ++itt2)
+						{
+							sd = *itt2;
+							unsigned long long devidx = atoi(sd[0].c_str());
+							unsigned long long switchType = atoi(sd[2].c_str());
+
+							if (switchType == MTYPE_COUNTER)
+							{
+								//Add options to existing SwitchType 'Counter'
+								m_sql.SetDeviceOptions(devidx, m_sql.BuildDeviceOptions("ValueQuantity:Count;ValueUnits:", false));
+							}
+							else if (switchType == MTYPE_TIME)
+							{
+								//Set default options
+								m_sql.SetDeviceOptions(devidx, m_sql.BuildDeviceOptions("ValueQuantity:Time;ValueUnits:Min", false));
+
+								//Convert to Counter
+								szQuery2.clear();
+								szQuery2.str("");
+								szQuery2 << "UPDATE DeviceStatus"
+									" SET SwitchType=" << MTYPE_COUNTER << " WHERE (ID=" << devidx << ")";
+								query(szQuery2.str());
+
+								//Update notifications 'Time' -> 'Counter'
+								szQuery3.clear();
+								szQuery3.str("");
+								szQuery3 << "UPDATE Notifications"
+									" SET Params=REPLACE(Params, '" << charNTYPE_TODAYTIME  << ";', '" << Notification_Type_Desc(NTYPE_TODAYCOUNTER, 1) << ";')"
+									" WHERE (DeviceRowID=" << devidx << ")";
+								query(szQuery3.str());
+							}
+						}
+					}
+				}
+			}
 		}
 	}
 	else if (bNewInstall)
@@ -4293,7 +4361,7 @@ void CSQLHelper::UpdateMultiMeter()
 				value1=(unsigned long)(atof(splitresults[0].c_str())*10.0f);
 				value2=(unsigned long)(atof(splitresults[1].c_str())*10.0f);
 				value3=(unsigned long)(atof(splitresults[2].c_str())*10.0f);
-				value4=(unsigned long)(atof(splitresults[3].c_str())*1000.0f);
+				value4=(unsigned long long)(atof(splitresults[3].c_str())*1000.0f);
 			}
 			else
 				continue;//don't know you (yet)
@@ -4790,11 +4858,6 @@ void CSQLHelper::AddCalendarUpdateMeter()
 					musage=float(total_real);
 					if (musage!=0)
 						m_notifications.CheckAndHandleNotification(ID, devname, devType, subType, NTYPE_TODAYCOUNTER, musage);
-					break;
-				case MTYPE_TIME:
-					musage = float(total_real);
-					if (musage != 0)
-						m_notifications.CheckAndHandleNotification(ID, devname, devType, subType, NTYPE_TODAYTIME, musage);
 					break;
 				}
 			}

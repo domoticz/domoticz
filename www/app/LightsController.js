@@ -1573,6 +1573,8 @@ define(['app'], function (app) {
 			$("#lightcontent #devicename").val(unescape(name));
 			$("#lightcontent #devicedescription").val(unescape(description));
 
+			$("#lightcontent .selector-switch-options").hide();
+
 			if ($.stype=="Security") {
 				$("#lightcontent #SwitchType").hide();
 				$("#lightcontent #OnDelayDiv").hide();
@@ -1617,7 +1619,6 @@ define(['app'], function (app) {
 				$("#lightcontent #OffDelayDiv").hide();
 				$("#lightcontent #MotionDiv").hide();
 				$("#lightcontent #SwitchIconDiv").hide();
-				$("#lightcontent .selector-switch-options").hide();
 				if (switchtype==8) {
 					$("#lightcontent #MotionDiv").show();
 					$("#lightcontent #motionoffdelay").val(addjvalue);
@@ -3283,6 +3284,17 @@ define(['app'], function (app) {
 			else if ((lighttype>=200)&&(lighttype<300)) {
 				//Blinds
 				$("#dialog-addmanuallightdevice #blindsparams").show();
+				var bShow4 = (lighttype==206)||(lighttype==207)||(lighttype==209);
+				var bShowUnit = (lighttype==206)||(lighttype==207)||(lighttype==208)||(lighttype==209);
+				if (bShow4)
+					$('#dialog-addmanuallightdevice #blindsparams #combocmd4').show();
+				else
+					$('#dialog-addmanuallightdevice #blindsparams #combocmd4').hide();
+				if (bShowUnit)
+					$('#dialog-addmanuallightdevice #blindparamsUnitCode').show();
+				else
+					$('#dialog-addmanuallightdevice #blindparamsUnitCode').hide();
+
 				$("#dialog-addmanuallightdevice #lighting1params").hide();
 				$("#dialog-addmanuallightdevice #lighting2params").hide();
 				$("#dialog-addmanuallightdevice #lighting3params").hide();

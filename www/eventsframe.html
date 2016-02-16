@@ -206,6 +206,11 @@
 					var valueA = $(timeBlock).children("title[name='SunriseSunset']")[0];
 					compareString = 'timeofday '+locOperand+' @'+$(valueA).text(); 
 				}
+				else if (timeBlock.attr("type").indexOf("uservariables") >= 0) {
+					var titleA = $(timeBlock).find("title[name='Variable']")[0];
+					var valueA = "variable["+$(titleA).text()+"]";         
+					compareString = 'timeofday '+locOperand+' tonumber(string.sub('+valueA+',1,2))*60+tonumber(string.sub('+valueA+',4,5))';
+				}
 				return compareString;	
 		}
 		
