@@ -13,24 +13,6 @@
 
 #include "../../main/Helper.h"
 
-#ifdef _DEBUG
-#ifdef WIN32
-#define OWFS_Base_Dir "E:\\w1\\1wire\\uncached"
-#else // WIN32
-#define OWFS_Base_Dir "/mnt/1wire/uncached"
-#endif // WIN32
-#else // _DEBUG
-#define OWFS_Base_Dir "/mnt/1wire/uncached"
-#endif //_DEBUG
-
-#define HUB_MAIN_SUB_PATH     "/main"
-#ifdef WIN32
-#define HUB_AUX_SUB_PATH      "/_aux"
-#else
-#define HUB_AUX_SUB_PATH      "/aux"
-#endif
-
-
 bool C1WireByOWFS::IsAvailable()
 {
     DIR *d=NULL;

@@ -1,6 +1,25 @@
 #pragma once
 #include "1WireSystem.h"
 
+#ifdef _DEBUG
+#ifdef WIN32
+#define OWFS_Base_Dir "E:\\w1\\1wire\\uncached"
+#else // WIN32
+#define OWFS_Base_Dir "/mnt/1wire"
+#endif // WIN32
+#else // _DEBUG
+#define OWFS_Base_Dir "/mnt/1wire/uncached"
+#endif //_DEBUG
+
+#define OWFS_Simultaneous "/mnt/1wire/simultaneous/temperature"
+
+#define HUB_MAIN_SUB_PATH     "/main"
+#ifdef WIN32
+#define HUB_AUX_SUB_PATH      "/_aux"
+#else
+#define HUB_AUX_SUB_PATH      "/aux"
+#endif
+
 class C1WireByOWFS : public I_1WireSystem
 {
 public:
