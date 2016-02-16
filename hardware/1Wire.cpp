@@ -191,6 +191,17 @@ void C1Wire::GetDeviceDetails()
 		m_system->GetDevices(m_devices);
 	}
 
+	if (typeid(m_system) == typeid(C1WireByOWFS))
+	{
+		std::ofstream file;
+		file.open(OWFS_Simultaneous);
+		if (file.is_open())
+		{
+			file << "1";
+			file.close();
+		}
+	}
+
 	// Parse our devices (have to test m_stoprequested because it can take some time in case of big networks)
 	std::vector<_t1WireDevice>::const_iterator itt;
 	for (itt=m_devices.begin(); itt!=m_devices.end() && !m_stoprequested; ++itt)
