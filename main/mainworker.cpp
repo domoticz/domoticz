@@ -10312,6 +10312,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			lcmd.SECURITY1.packettype=dType;
 			lcmd.SECURITY1.subtype=dSubType;
 			lcmd.SECURITY1.seqnbr=m_hardwaredevices[hindex]->m_SeqNr++;
+			lcmd.SECURITY1.battery_level = 9;
 			lcmd.SECURITY1.id1=ID2;
 			lcmd.SECURITY1.id2=ID3;
 			lcmd.SECURITY1.id3=ID4;
