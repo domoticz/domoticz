@@ -91,8 +91,24 @@
 	<form id="openthermform">
 		<br>
 		<center>
-			<span data-i18n="Outside Temperature Sensor">Outside Temperature Sensor</span>: <select id="combooutsidesensor" name="combooutsidesensor" style="width:300px" class="combobox ui-corner-all">
-			</select>
+			<table border="0" cellpadding="10" cellspacing="10">
+			<tr>
+				<td align="right" style="width:310px">
+					<span data-i18n="Outside Temperature Sensor">Outside Temperature Sensor</span>:
+				</td>
+				<td>
+					<select id="combooutsidesensor" name="combooutsidesensor" style="width:300px" class="combobox ui-corner-all"></select>
+				</td>
+			</tr>
+			<tr>
+				<td align="right">
+					<span data-i18n="Command">Command</span>:
+				</td>
+				<td>
+					<input type="input" id="otgwcmnd" name="otgwcmnd" style="width: 120px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Send" class="btn btn-info" id="buttonsendotgwcmnd">Send</button>
+				</td>
+			</tr>
+			</table>
 			<br><br>
 			<input type="hidden" id="idx" name="idx" value="-1">
 			<button class="btn btn-danger" id="submitbuttonopentherm">Save</button>

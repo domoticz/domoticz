@@ -3287,14 +3287,12 @@ void COpenZWave::GetConfigFile(std::string & filePath, std::string & fileContent
 	filePath = szFileName;
 
 	std::ifstream file(filePath.c_str(), std::ios::in | std::ios::binary);
-	file.seekg(0, std::ios::end);
-	int fileSize = file.tellg();
-	if (fileSize > 0) {
-		fileContent.resize(fileSize);
-		file.seekg(0, std::ios::beg);
-		file.read(&fileContent[0], fileContent.size());
+	if (file)
+	{
+		fileContent.append((std::istreambuf_iterator<char>(file)),
+			(std::istreambuf_iterator<char>()));
+		//file.close();
 	}
-	file.close();
 }
 
 void COpenZWave::OnZWaveDeviceStatusUpdate(int _cs, int _err)
