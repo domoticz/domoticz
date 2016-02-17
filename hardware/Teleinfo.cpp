@@ -131,6 +131,7 @@ void Teleinfo::Init()
 	m_p3power.ID = 3;
 
 	m_counter = 0;
+	m_power_inst = 0;
 }
 
 bool Teleinfo::StartHardware()
