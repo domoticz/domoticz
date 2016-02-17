@@ -188,10 +188,11 @@ void C1Wire::GetDeviceDetails()
 	if ((m_devices.size() == 0) || (m_sql.m_bAcceptNewHardware))
 	{
 		_log.Log(LOG_STATUS, "1-Wire: Searching devices...");
+		m_devices.clear();
 		m_system->GetDevices(m_devices);
 	}
 
-	if (typeid(*m_system) == typeid(C1WireByOWFS))
+	if (typeid(*m_system) == typeid(C1WireByOWFS) && (m_devices.size() > 2))
 	{
 		if (m_mainworker.GetVerboseLevel() == EVBL_DEBUG)
 		{
