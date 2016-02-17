@@ -131,7 +131,9 @@ void Teleinfo::Init()
 	m_p3power.ID = 3;
 
 	m_counter = 0;
-	m_power_inst = 0;
+	m_Power_USAGE_IINST = 0;
+	m_Power_USAGE_IINST_JW = 0;
+	m_Power_USAGE_IINST_JR = 0;
 }
 
 bool Teleinfo::StartHardware()
@@ -324,21 +326,21 @@ void Teleinfo::MatchLine()
 			{
 				if (m_bLabel_PTEC_JW == true)
 				{
-					m_p1power.usagecurrent = 0;
-                        		m_p2power.usagecurrent += (ulValue * 230);
-                        		m_p3power.usagecurrent = 0;
+					m_Power_USAGE_IINST = 0;
+                        		m_Power_USAGE_IINST_JW += (ulValue * 230);
+                        		m_Power_USAGE_IINST_JR = 0;
                         	}
                 		else if (m_bLabel_PTEC_JR == true)
                         	{
-                        		m_p1power.usagecurrent = 0;
-                        		m_p2power.usagecurrent = 0;
-                        		m_p3power.usagecurrent += (ulValue * 230);
+                        		m_Power_USAGE_IINST = 0;
+                        		m_Power_USAGE_IINST_JW = 0;
+                        		m_Power_USAGE_IINST_JR += (ulValue * 230);
                         	}
                         	else
                         	{
-                        		m_p1power.usagecurrent += (ulValue * 230);
-                        		m_p2power.usagecurrent = 0;
-                        		m_p3power.usagecurrent = 0;
+                        		m_Power_USAGE_IINST += (ulValue * 230);
+                        		m_Power_USAGE_IINST_JW = 0;
+                        		m_Power_USAGE_IINST_JR = 0;
                         	}
 			}
 			break;
@@ -398,9 +400,9 @@ void Teleinfo::MatchLine()
 					//_log.Log(LOG_NORM,"powerusage1 = %lu", m_p1power.powerusage1);
 					//_log.Log(LOG_NORM,"powerusage2 = %lu", m_p1power.powerusage2);
 					//_log.Log(LOG_NORM,"usagecurrent = %lu", m_p1power.usagecurrent);
-					m_p1power.usagecurrent /= m_counter;
-                                        m_p2power.usagecurrent /= m_counter;
-                                        m_p3power.usagecurrent /= m_counter;
+					m_p1power.usagecurrent = (m_Power_USAGE_IINST / m_counter);
+                        		m_p2power.usagecurrent = (m_Power_USAGE_IINST_JW / m_counter);
+                        		m_p3power.usagecurrent = (m_Power_USAGE_IINST_JR / m_counter);
                                         sDecodeRXMessage(this, (const unsigned char *)&m_p1power, NULL, 255);
                                         if (m_bLabel_Tempo == true)
                                         {
@@ -411,6 +413,9 @@ void Teleinfo::MatchLine()
                                         m_p1power.usagecurrent = 0;
                                         m_p2power.usagecurrent = 0;
                                         m_p3power.usagecurrent = 0;
+                                        m_Power_USAGE_IINST = 0;
+                        		m_Power_USAGE_IINST_JW = 0;
+                        		m_Power_USAGE_IINST_JR = 0;
                                 }
                         }
 			break;
