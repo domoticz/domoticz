@@ -111,6 +111,9 @@ private:
 	boost::asio::serial_port_base::stop_bits m_iOptStop;
 
 	int m_counter;
+	unsigned long m_Power_USAGE_IINST;
+	unsigned long m_Power_USAGE_IINST_JW;
+	unsigned long m_Power_USAGE_IINST_JR;
 	bool m_bLabel_PAPP_Exist;
 	bool m_bLabel_PTEC_JB;
 	bool m_bLabel_PTEC_JW;
