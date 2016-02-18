@@ -1023,6 +1023,8 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeEvohomeRelay, sTypeEvohomeRelay, "Status" },
 
 		{ pTypeGeneralSwitch, sSwitchTypeX10, "Status" },
+
+		{ pTypeGeneralSwitch, sSwitchTypeX10, "Status" },
 		{ pTypeGeneralSwitch, sSwitchTypeARC, "Status" },
 		{ pTypeGeneralSwitch, sSwitchTypeAB400D, "Status" },
 		{ pTypeGeneralSwitch, sSwitchTypeWaveman, "Status" },
@@ -1036,6 +1038,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeGeneralSwitch, sSwitchTypeAC, "Status" },
 		{ pTypeGeneralSwitch, sSwitchTypeHEU, "Status" },
 		{ pTypeGeneralSwitch, sSwitchTypeANSLUT, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeKambrook, "Status" },
 		{ pTypeGeneralSwitch, sSwitchTypeKoppla, "Status" },
 		{ pTypeGeneralSwitch, sSwitchTypePT2262, "Status" },
 		{ pTypeGeneralSwitch, sSwitchTypeLightwaveRF, "Status" },
@@ -1045,8 +1048,8 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeGeneralSwitch, sSwitchTypeRSL, "Status" },
 		{ pTypeGeneralSwitch, sSwitchTypeLivolo, "Status" },
 		{ pTypeGeneralSwitch, sSwitchTypeTRC02, "Status" },
-		{ pTypeGeneralSwitch, sSwitchTypeTRC02_2, "Status" },
 		{ pTypeGeneralSwitch, sSwitchTypeAoke, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeTRC02_2, "Status" },
 		{ pTypeGeneralSwitch, sSwitchTypeEurodomest, "Status" },
 		{ pTypeGeneralSwitch, sSwitchTypeLivoloAppliance, "Status" },
 		{ pTypeGeneralSwitch, sSwitchTypeBlyss, "Status" },
@@ -1054,6 +1057,46 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeGeneralSwitch, sSwitchTypeByronMP001, "Status" },
 		{ pTypeGeneralSwitch, sSwitchTypeSelectPlus, "Status" },
 		{ pTypeGeneralSwitch, sSwitchTypeSelectPlus3, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeFA20, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeChuango, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypePlieger, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeSilvercrest, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeMertik, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeHomeConfort, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypePowerfix, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeTriState, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeDeltronic, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeFA500, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeHT12E, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeEV1527, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeElmes, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeAster, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeSartano, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeEurope, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeAvidsen, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeBofu, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeBrel, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeRTS, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeElroDB, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeAOK, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeUnitec, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeSelector, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeMaclean, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeR546, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeDiya, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeX10secu, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeAtlantic, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeSilvercrestDB, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeMedionDB, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeVMC, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeKeeloq, "Status" },
+		{ pTypeGeneralSwitch, sSwitchCustomSwitch, "Status" },
+		{ pTypeGeneralSwitch, sSwitchGeneralSwitch, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeKoch, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeKingpin, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeFunkbus, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeNice, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeForest, "Status" },
 
 		{  0,0,NULL }
 	};
@@ -1952,6 +1995,86 @@ void GetLightStatus(
 			break;
 		case light1_sOn:
 			lstatus="On";
+			break;
+		}
+		break;
+	case pTypeFan:
+		switch (dSubType)
+		{
+			case sTypeSiemensSF01:
+			{
+				switch (nValue)
+				{
+					case fan_sTimer:
+						lstatus = "timer";
+						break;
+					case fan_sPlus:
+						lstatus = "+";
+						break;
+					case fan_sMin:
+						lstatus = "-";
+						break;
+					case fan_sLearn:
+						lstatus = "learn";
+						break;
+					case fan_sConfirm:
+						lstatus = "confirm";
+						break;
+					case fan_sLight:
+						lstatus = "light";
+						break;
+				}
+			}
+			break;
+			case sTypeItho:
+			{
+				switch (nValue)
+				{
+					case fan_Itho1:
+						lstatus = "1";
+						break;
+					case fan_Itho2:
+						lstatus = "2";
+						break;
+					case fan_Itho3:
+						lstatus = "3";
+						break;
+					case fan_IthoTimer:
+						lstatus = "timer";
+						break;
+					case fan_IthoNotAtHome:
+						lstatus = "notathome";
+						break;
+					case fan_IthoLearn:
+						lstatus = "learn";
+						break;
+					case fan_IthoEraseAll:
+						lstatus = "eraseall";
+						break;
+				}
+			}
+			break;
+			case sTypeLucciAir:
+			{
+				switch (nValue)
+				{
+					case fan_LucciHi:
+						lstatus = "hi";
+						break;
+					case fan_LucciMed:
+						lstatus = "med";
+						break;
+					case fan_LucciLow:
+						lstatus = "low";
+						break;
+					case fan_LucciOff:
+						lstatus = "off";
+						break;
+					case fan_LucciLight:
+						lstatus = "light";
+						break;
+				}
+			}
 			break;
 		}
 		break;
@@ -3000,6 +3123,97 @@ bool GetLightCommand(
 		}
 		return true;
 	}
+	case pTypeFan:
+	{
+		switch (dSubType)
+		{
+			case sTypeSiemensSF01:
+			{
+				if (switchcmd == "timer")
+				{
+					cmd = fan_sTimer;
+				}
+				else if (switchcmd == "+")
+				{
+					cmd = fan_sPlus;
+				}
+				else if (switchcmd == "-")
+				{
+					cmd = fan_sMin;
+				}
+				else if (switchcmd == "learn")
+				{
+					cmd = fan_sLearn;
+				}
+				else if (switchcmd == "confirm")
+				{
+					cmd = fan_sConfirm;
+				}
+				else if (switchcmd == "light")
+				{
+					cmd = fan_sLight;
+				}
+			}
+			break;
+			case sTypeItho:
+			{
+				if ((switchcmd == "1") || (switchcmd == "On"))
+				{
+					cmd = fan_Itho1;
+				}
+				else if (switchcmd == "2")
+				{
+					cmd = fan_Itho2;
+				}
+				else if (switchcmd == "3")
+				{
+					cmd = fan_Itho3;
+				}
+				else if (switchcmd == "timer")
+				{
+					cmd = fan_IthoTimer;
+				}
+				else if (switchcmd == "notathome")
+				{
+					cmd = fan_IthoNotAtHome;
+				}
+				else if (switchcmd == "learn")
+				{
+					cmd = fan_IthoLearn;
+				}
+				else if (switchcmd == "eraseall")
+				{
+					cmd = fan_IthoEraseAll;
+				}
+			}
+			break;
+			case sTypeLucciAir:
+			{
+				if (switchcmd == "hi")
+				{
+					cmd = fan_LucciHi;
+				}
+				else if (switchcmd == "med")
+				{
+					cmd = fan_LucciMed;
+				}
+				else if (switchcmd == "low")
+				{
+					cmd = fan_LucciLow;
+				}
+				else if (switchcmd == "off")
+				{
+					cmd = fan_LucciOff;
+				}
+				else if (switchcmd == "light")
+				{
+					cmd = fan_LucciLight;
+				}
+			}
+			break;
+		}
+		return true;
+	}
 	break;
 	}
 	//unknown command
@@ -3020,7 +3234,10 @@ bool IsLightSwitchOn(const std::string &lstatus)
 		(lstatus=="Light 2 On")||
 		(lstatus=="Open inline relay")||
 		(lstatus.find("Set Level")!=std::string::npos)||
-		(lstatus.find("Set Group Level")!=std::string::npos)
+		(lstatus.find("Set Group Level")!=std::string::npos)||
+		(lstatus == "1") || //fan itho
+		(lstatus == "2") ||
+		(lstatus == "3")
 		);
 }
 
@@ -3063,3 +3280,84 @@ bool IsSerialDevice(const _eHardwareTypes htype)
 		(htype == HTYPE_MySensorsUSB) || (htype == HTYPE_RFLINKUSB) || (htype == HTYPE_KMTronicUSB) || (htype == HTYPE_KMTronic433) || (htype == HTYPE_CurrentCostMeter)
 		);
 }
+
+void ConvertToGeneralSwitchType(std::string &devid, int &dtype, int &subtype)
+{
+	if (dtype == pTypeLighting1) {
+		dtype = pTypeGeneralSwitch;
+		if (subtype == sTypeIMPULS) subtype = sSwitchTypeTriState;
+		if (subtype == sTypeAB400D) subtype = sSwitchTypeAB400D;
+		if (subtype == sTypeIMPULS) subtype = sSwitchTypeTriState;
+		std::stringstream s_strid;
+		s_strid << std::hex << atoi(devid.c_str());
+		devid = s_strid.str();
+		devid = "000000" + devid;
+	}
+	else if (dtype == pTypeLighting2) {
+		dtype = pTypeGeneralSwitch;
+		if (subtype == sTypeAC) subtype = sSwitchTypeAC;
+		if (subtype == sTypeHEU) { subtype = sSwitchTypeHEU; devid = "7" + devid; }
+		if (subtype == sTypeKambrook) subtype = sSwitchTypeKambrook;
+		devid = "0" + devid;
+	}
+	else if (dtype == pTypeLighting3) {
+		dtype = pTypeGeneralSwitch;
+		if (subtype == sTypeKoppla) subtype = sSwitchTypeKoppla;
+	}
+	else if (dtype == pTypeLighting4) {
+		dtype = pTypeGeneralSwitch;
+		subtype = sSwitchTypeTriState;
+	}
+	else if (dtype == pTypeLighting5) {
+		dtype = pTypeGeneralSwitch;
+		if (subtype == sTypeEMW100) { subtype = sSwitchTypeEMW100; devid = "00" + devid; }
+		if (subtype == sTypeLivolo) { subtype = sSwitchTypeLivolo; devid = "00" + devid; }
+		if (subtype == sTypeLightwaveRF) { subtype = sSwitchTypeLightwaveRF; devid = "00" + devid; }
+		if (subtype == sTypeLivoloAppliance) { subtype = sSwitchTypeLivoloAppliance; devid = "00" + devid; }
+		if (subtype == sTypeEurodomest) subtype = sSwitchTypeEurodomest;
+	}
+	else if (dtype == pTypeLighting6) {
+		dtype = pTypeGeneralSwitch;
+		subtype = sSwitchTypeBlyss;
+	}
+	else if (dtype == pTypeChime) {
+		dtype = pTypeGeneralSwitch;
+		if (subtype == sTypeByronSX) subtype = sSwitchTypeByronSX;
+		if (subtype == sTypeSelectPlus) subtype = sSwitchTypeSelectPlus;
+		if (subtype == sTypeSelectPlus3) subtype = sSwitchTypeSelectPlus3;
+		if (subtype == sTypeByronMP001) subtype = sSwitchTypeByronMP001;
+	}
+	else if (dtype == pTypeSecurity1) {
+		dtype = pTypeGeneralSwitch;
+		if (subtype == sTypeSecX10) subtype = sSwitchTypeX10secu;
+		if (subtype == sTypeSecX10M) subtype = sSwitchTypeX10secu;
+		if (subtype == sTypeSecX10R) subtype = sSwitchTypeX10secu;
+	}
+	else if (dtype == pTypeHomeConfort) {
+		dtype = pTypeGeneralSwitch;
+		subtype = sSwitchTypeHomeConfort;
+	}
+	else if (dtype == pTypeBlinds) {
+		dtype = pTypeGeneralSwitch;
+		if (subtype == sTypeBlindsT5) subtype = sSwitchTypeBofu;
+		else if (subtype == sTypeBlindsT6) subtype = sSwitchTypeBrel;
+		else if (subtype == sTypeBlindsT7) subtype = sSwitchTypeAOK;
+		else if (subtype == sTypeBlindsT8) subtype = sSwitchTypeBofu;
+		else if (subtype == sTypeBlindsT9) subtype = sSwitchTypeBrel;
+		else if (subtype == sTypeBlindsT10) subtype = sSwitchTypeAOK;
+		std::stringstream s_strid;
+		s_strid << std::hex << strtoul(devid.c_str(), NULL, 16);
+		unsigned long deviceid = 0;
+		s_strid >> deviceid;
+		deviceid = (unsigned long)((deviceid & 0xffffff00) >> 8);
+		char szTmp[20];
+		sprintf(szTmp, "%lx", deviceid);
+		//_log.Log(LOG_ERROR, "RFLink: deviceid: %x", deviceid);
+		devid = szTmp;
+	}
+	else if (dtype == pTypeRFY) {
+		dtype = pTypeGeneralSwitch;
+		subtype = sSwitchTypeRTS;
+	}
+}
+
