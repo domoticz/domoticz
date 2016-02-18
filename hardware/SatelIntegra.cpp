@@ -695,24 +695,19 @@ bool SatelIntegra::ReadAlarm(const bool firstTime)
 	return true;
 }
 
-void SatelIntegra::ReportZonesViolation(const unsigned long Idx, const bool violation)
+void SatelIntegra::ReportZonesViolation(const int Idx, const bool violation)
 {
+	if (m_mainworker.GetVerboseLevel() >= EVBL_ALL)
+	{
+		_log.Log(LOG_STATUS, "Satel Integra: Report Zone %d = %d", Idx, violation ? 3 : 1);
+	}
+
 	m_zonesLastState[Idx - 1] = violation;
 
-	_tGeneralDevice zone;
-	zone.subtype = sTypeAlert;
-	zone.id = (unsigned char)Idx;
-	zone.intval1 = violation ? 3 : 1;
-
-  if (m_mainworker.GetVerboseLevel() >= EVBL_ALL)
-  {
-    _log.Log(LOG_STATUS, "Satel Integra: Report Zone %d = %d", zone.id, zone.intval1);
-  }
-  
-  sDecodeRXMessage(this, (const unsigned char *)&zone, NULL, 255);
+	SendAlertSensor(Idx, 255, violation ? 3 : 1, NULL);
 }
 
-void SatelIntegra::ReportOutputState(const unsigned long Idx, const bool state)
+void SatelIntegra::ReportOutputState(const int Idx, const bool state)
 {
 	m_outputsLastState[Idx - 1] = state;
 
@@ -734,14 +729,14 @@ void SatelIntegra::ReportOutputState(const unsigned long Idx, const bool state)
 	else
 	{
 		char szTmp[10];
-		sprintf(szTmp, "%08X", (unsigned int)Idx);
+		sprintf(szTmp, "%08X", (int)Idx);
 		std::string devname;
 
 		m_sql.UpdateValue(m_HwdID, szTmp, 1, pTypeGeneral, sTypeTextStatus, 12, 255, 0, state ? "On" : "Off", devname);
 	}
 }
 
-void SatelIntegra::ReportArmState(const unsigned int Idx, const bool isArm)
+void SatelIntegra::ReportArmState(const int Idx, const bool isArm)
 {
 	m_armLastState[Idx-1] = isArm;
 
@@ -770,10 +765,11 @@ void SatelIntegra::ReportAlarm(const bool isAlarm)
 	m_sql.UpdateValue(m_HwdID, "Alarm", 2, pTypeGeneral, sTypeAlert, 12, 255, isAlarm ? 4 : 1, isAlarm ? "Alarm !" : "Normal", devname);
 }
 
-void SatelIntegra::ReportTemperature(const unsigned long Idx, int temp)
+void SatelIntegra::ReportTemperature(const int Idx, int temp)
 {
 	RBUF tsen;
 	memset(&tsen,0,sizeof(RBUF));
+
 	tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;
 	tsen.TEMP.packettype=pTypeTEMP;
 	tsen.TEMP.subtype=sTypeTEMP10;
@@ -792,7 +788,7 @@ void SatelIntegra::ReportTemperature(const unsigned long Idx, int temp)
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, NULL, 255);
 }
 
-bool SatelIntegra::ArmPartitions(const unsigned int partition, const unsigned int mode)
+bool SatelIntegra::ArmPartitions(const int partition, const int mode)
 {
 #ifdef DEBUG_SatelIntegra
 	_log.Log(LOG_STATUS, "Satel Integra: arming partition %d", partition);
@@ -827,7 +823,7 @@ bool SatelIntegra::ArmPartitions(const unsigned int partition, const unsigned in
 	return true;
 }
 
-bool SatelIntegra::DisarmPartitions(const unsigned int partition)
+bool SatelIntegra::DisarmPartitions(const int partition)
 {
 #ifdef DEBUG_SatelIntegra
 	_log.Log(LOG_STATUS, "Satel Integra: disarming partition %d", partition);
@@ -944,12 +940,12 @@ std::string SatelIntegra::ISO2UTF8(const std::string &name)
 	return UTF8Name;
 }
 
-void SatelIntegra::UpdateZoneName(const unsigned int Idx, const unsigned char* name, const unsigned int partition)
+void SatelIntegra::UpdateZoneName(const int Idx, const unsigned char* name, const int partition)
 {
 	std::vector<std::vector<std::string> > result;
 
 	char szTmp[4];
-	sprintf(szTmp, "%d", (unsigned int)Idx);
+	sprintf(szTmp, "%d", (int)Idx);
 
 	std::string shortName((char*)name, 16);
 	std::string::size_type pos = shortName.find_last_not_of(' ');
@@ -974,12 +970,12 @@ void SatelIntegra::UpdateZoneName(const unsigned int Idx, const unsigned char* n
 	}
 }
 
-void SatelIntegra::UpdateTempName(const unsigned int Idx, const unsigned char* name, const unsigned int partition)
+void SatelIntegra::UpdateTempName(const int Idx, const unsigned char* name, const int partition)
 {
 	std::vector<std::vector<std::string> > result;
 
 	char szTmp[4];
-	sprintf(szTmp, "%d", (unsigned int)Idx);
+	sprintf(szTmp, "%d", (int)Idx);
 
 	std::string shortName((char*)name, 16);
 	std::string::size_type pos = shortName.find_last_not_of(' ');
@@ -997,12 +993,12 @@ void SatelIntegra::UpdateTempName(const unsigned int Idx, const unsigned char* n
 	}
 }
 
-void SatelIntegra::UpdateOutputName(const unsigned int Idx, const unsigned char* name, const bool switchable)
+void SatelIntegra::UpdateOutputName(const int Idx, const unsigned char* name, const bool switchable)
 {
 	std::vector<std::vector<std::string> > result;
 
 	char szTmp[10];
-	sprintf(szTmp, "%08X", (unsigned int)Idx);
+	sprintf(szTmp, "%08X", (int)Idx);
 
 	std::string shortName((char*)name, 16);
 	std::string::size_type pos = shortName.find_last_not_of(' ');
@@ -1047,7 +1043,7 @@ void SatelIntegra::UpdateAlarmAndArmName()
 		if (m_isPartitions[i])
 		{
 			char szTmp[10];
-			sprintf(szTmp, "%08X", (unsigned int)i+1);
+			sprintf(szTmp, "%08X", (int)i+1);
 			result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Name=='Arm %d partition') AND (Unit=2)", m_HwdID, szTmp, i+1);
 			if (result.size() < 1)
 			{
