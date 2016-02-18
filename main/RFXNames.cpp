@@ -1955,6 +1955,86 @@ void GetLightStatus(
 			break;
 		}
 		break;
+	case pTypeFan:
+		switch (dSubType)
+		{
+			case sTypeSiemensSF01:
+			{
+				switch (nValue)
+				{
+					case fan_sTimer:
+						lstatus = "timer";
+						break;
+					case fan_sPlus:
+						lstatus = "+";
+						break;
+					case fan_sMin:
+						lstatus = "-";
+						break;
+					case fan_sLearn:
+						lstatus = "learn";
+						break;
+					case fan_sConfirm:
+						lstatus = "confirm";
+						break;
+					case fan_sLight:
+						lstatus = "light";
+						break;
+				}
+			}
+			break;
+			case sTypeItho:
+			{
+				switch (nValue)
+				{
+					case fan_Itho1:
+						lstatus = "1";
+						break;
+					case fan_Itho2:
+						lstatus = "2";
+						break;
+					case fan_Itho3:
+						lstatus = "3";
+						break;
+					case fan_IthoTimer:
+						lstatus = "timer";
+						break;
+					case fan_IthoNotAtHome:
+						lstatus = "notathome";
+						break;
+					case fan_IthoLearn:
+						lstatus = "learn";
+						break;
+					case fan_IthoEraseAll:
+						lstatus = "eraseall";
+						break;
+				}
+			}
+			break;
+			case sTypeLucciAir:
+			{
+				switch (nValue)
+				{
+					case fan_LucciHi:
+						lstatus = "hi";
+						break;
+					case fan_LucciMed:
+						lstatus = "med";
+						break;
+					case fan_LucciLow:
+						lstatus = "low";
+						break;
+					case fan_LucciOff:
+						lstatus = "off";
+						break;
+					case fan_LucciLight:
+						lstatus = "light";
+						break;
+				}
+			}
+			break;
+		}
+		break;
 	}
 }
 
@@ -3000,6 +3080,97 @@ bool GetLightCommand(
 		}
 		return true;
 	}
+	case pTypeFan:
+	{
+		switch (dSubType)
+		{
+			case sTypeSiemensSF01:
+			{
+				if (switchcmd == "timer")
+				{
+					cmd = fan_sTimer;
+				}
+				else if (switchcmd == "+")
+				{
+					cmd = fan_sPlus;
+				}
+				else if (switchcmd == "-")
+				{
+					cmd = fan_sMin;
+				}
+				else if (switchcmd == "learn")
+				{
+					cmd = fan_sLearn;
+				}
+				else if (switchcmd == "confirm")
+				{
+					cmd = fan_sConfirm;
+				}
+				else if (switchcmd == "light")
+				{
+					cmd = fan_sLight;
+				}
+			}
+			break;
+			case sTypeItho:
+			{
+				if (switchcmd == "1")
+				{
+					cmd = fan_Itho1;
+				}
+				else if (switchcmd == "2")
+				{
+					cmd = fan_Itho2;
+				}
+				else if (switchcmd == "3")
+				{
+					cmd = fan_Itho3;
+				}
+				else if (switchcmd == "timer")
+				{
+					cmd = fan_IthoTimer;
+				}
+				else if (switchcmd == "notathome")
+				{
+					cmd = fan_IthoNotAtHome;
+				}
+				else if (switchcmd == "learn")
+				{
+					cmd = fan_IthoLearn;
+				}
+				else if (switchcmd == "eraseall")
+				{
+					cmd = fan_IthoEraseAll;
+				}
+			}
+			break;
+			case sTypeLucciAir:
+			{
+				if (switchcmd == "hi")
+				{
+					cmd = fan_LucciHi;
+				}
+				else if (switchcmd == "med")
+				{
+					cmd = fan_LucciMed;
+				}
+				else if (switchcmd == "low")
+				{
+					cmd = fan_LucciLow;
+				}
+				else if (switchcmd == "off")
+				{
+					cmd = fan_LucciOff;
+				}
+				else if (switchcmd == "light")
+				{
+					cmd = fan_LucciLight;
+				}
+			}
+			break;
+		}
+		return true;
+	}
 	break;
 	}
 	//unknown command
@@ -3020,7 +3191,10 @@ bool IsLightSwitchOn(const std::string &lstatus)
 		(lstatus=="Light 2 On")||
 		(lstatus=="Open inline relay")||
 		(lstatus.find("Set Level")!=std::string::npos)||
-		(lstatus.find("Set Group Level")!=std::string::npos)
+		(lstatus.find("Set Group Level")!=std::string::npos)||
+		(lstatus == "1") || //fan itho
+		(lstatus == "2") ||
+		(lstatus == "3")
 		);
 }
 

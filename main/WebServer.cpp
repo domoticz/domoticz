@@ -3496,6 +3496,7 @@ namespace http {
 						case pTypeLighting4:
 						case pTypeLighting5:
 						case pTypeLighting6:
+						case pTypeFan:
 						case pTypeLimitlessLights:
 						case pTypeSecurity1:
 						case pTypeSecurity2:
@@ -3574,6 +3575,7 @@ namespace http {
 							case pTypeLighting4:
 							case pTypeLighting5:
 							case pTypeLighting6:
+							case pTypeFan:
 							case pTypeLimitlessLights:
 							case pTypeSecurity1:
 							case pTypeSecurity2:
@@ -5711,6 +5713,7 @@ namespace http {
 					(dType != pTypeLighting4) &&
 					(dType != pTypeLighting5) &&
 					(dType != pTypeLighting6) &&
+					(dType != pTypeFan) &&
 					(dType != pTypeLimitlessLights) &&
 					(dType != pTypeSecurity1) &&
 					(dType != pTypeSecurity2) &&
@@ -7656,6 +7659,7 @@ namespace http {
 								(dType != pTypeLighting4) &&
 								(dType != pTypeLighting5) &&
 								(dType != pTypeLighting6) &&
+								(dType != pTypeFan) &&
 								(dType != pTypeLimitlessLights) &&
 								(dType != pTypeSecurity1) &&
 								(dType != pTypeSecurity2) &&
@@ -7904,6 +7908,7 @@ namespace http {
 						(dType == pTypeLighting4) ||
 						(dType == pTypeLighting5) ||
 						(dType == pTypeLighting6) ||
+						(dType == pTypeFan) ||
 						(dType == pTypeLimitlessLights) ||
 						(dType == pTypeCurtain) ||
 						(dType == pTypeBlinds) ||
@@ -11678,6 +11683,7 @@ namespace http {
 				(dType != pTypeLighting4) &&
 				(dType != pTypeLighting5) &&
 				(dType != pTypeLighting6) &&
+				(dType != pTypeFan) &&
 				(dType != pTypeLimitlessLights) &&
 				(dType != pTypeSecurity1) &&
 				(dType != pTypeSecurity2) &&

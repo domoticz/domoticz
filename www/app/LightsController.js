@@ -2262,6 +2262,9 @@ define(['app'], function (app) {
 							img += '<img src="images/' + item.Image + '48_On.png" title="' + $.t("Turn Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48" width="48">';
 						}
 					}
+					else if (item.SubType.indexOf("Itho")==0) {
+						img=$(id + " #img").html();
+					}
 					else {
 						if (
 							(item.Status == 'On')||
@@ -2784,6 +2787,10 @@ define(['app'], function (app) {
 									xhtm += '\t      <td id="img"><img src="images/' + item.Image + '48_On.png" title="' + $.t("Turn Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48" width="48"></td>\n';
 								}
 							}
+							else if (item.SubType.indexOf("Itho")==0) {
+								bAddTimer=false;
+								xhtm+='\t      <td id="img"><img src="images/Fan48_Off.png" height="48" width="48" class="lcursor" onclick="ShowIthoPopup(event, ' + item.idx + ', ShowLights, ' + item.Protected +');"></td>\n';
+							}					
 						  else {
 							if (
 								(item.Status == 'On')||
