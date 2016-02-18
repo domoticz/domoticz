@@ -4123,6 +4123,17 @@ namespace http {
 							return;
 						devid = id;
 					}
+					else if (lighttype == 304)
+					{
+						//Itho CVE RFT
+						dtype = pTypeFan;
+						subtype = sTypeItho;
+						std::string id = request::findValue(&req, "id");
+						if (id.empty())
+							return;
+						devid = id;
+						sunitcode = "0";
+					}
 				}
                 
                 // ----------- RFlink "Test Switch" Fix -----------
@@ -4640,6 +4651,17 @@ namespace http {
 							deviceoptions.append(";");
 						}
 						deviceoptions.append("SelectorStyle:0;LevelNames:Off|Level1|Level2|Level3");
+					}
+					else if (lighttype == 304)
+					{
+						//Itho CVE RFT
+						dtype = pTypeFan;
+						subtype = sTypeItho;
+						std::string id = request::findValue(&req, "id");
+						if (id.empty())
+							return;
+						devid = id;
+						sunitcode = "0";
 					}
 				}
 

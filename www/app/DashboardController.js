@@ -2336,7 +2336,7 @@ define(['app'], function (app) {
 										}
 									}
 									else if (item.SubType.indexOf("Itho")==0) {
-										xhtm+='\t      <td id="img"><img src="images/Fan48_Off.png" height="40" width="40" class="lcursor" onclick="ShowIthoPopup(event, ' + item.idx + ', RefreshFavorites, ' + item.Protected +');"></td>\n';
+										xhtm+='\t      <td id="img"><img src="images/Fan48_On.png" height="40" width="40" class="lcursor" onclick="ShowIthoPopup(event, ' + item.idx + ', RefreshFavorites, ' + item.Protected +');"></td>\n';
 									}					
 									else {
 										if (
