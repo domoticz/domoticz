@@ -713,18 +713,7 @@ void SatelIntegra::ReportOutputState(const int Idx, const bool state)
 
 	if (m_isOutputSwitch[Idx - 1])
 	{
-		_tGeneralSwitch output;
-		output.len = sizeof(_tGeneralSwitch) - 1;
-		output.type = pTypeGeneralSwitch;
-		output.subtype = sSwitchTypeAC;
-		output.id = Idx;
-		output.unitcode = 1;
-		output.cmnd = state ? gswitch_sOn : gswitch_sOff;
-		output.level = 0;
-		output.battery_level = 0;
-		output.rssi = 12;
-		output.seqnbr = 0;
-		sDecodeRXMessage(this, (const unsigned char *)&output, NULL, 255);
+		SendGeneralSwitchSensor(Idx, 255, state ? gswitch_sOn : gswitch_sOff, NULL, 1);
 	}
 	else
 	{
@@ -740,18 +729,7 @@ void SatelIntegra::ReportArmState(const int Idx, const bool isArm)
 {
 	m_armLastState[Idx-1] = isArm;
 
-	_tGeneralSwitch arm;
-	arm.len = sizeof(_tGeneralSwitch) - 1;
-	arm.type = pTypeGeneralSwitch;
-	arm.subtype = sSwitchTypeAC;
-	arm.id = Idx;
-	arm.unitcode = 2;
-	arm.cmnd = isArm ? gswitch_sOn : gswitch_sOff;
-	arm.level = 0;
-	arm.battery_level = 0x0f;
-	arm.rssi = 12;
-	arm.seqnbr = 0;
-	sDecodeRXMessage(this, (const unsigned char *)&arm, NULL, 255);
+	SendGeneralSwitchSensor(Idx, 255, isArm ? gswitch_sOn : gswitch_sOff, NULL, 2);
 }
 
 void SatelIntegra::ReportAlarm(const bool isAlarm)
