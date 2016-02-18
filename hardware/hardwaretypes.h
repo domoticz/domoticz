@@ -390,6 +390,9 @@ typedef struct _tGeneralSwitch {
 		seqnbr = 0;
 		reserved_int = 0;
 		reserved_float = 0;
+		level = 0;
+		battery_level = 255;
+		rssi = 12;
 	}
 } GeneralSwitch;
 

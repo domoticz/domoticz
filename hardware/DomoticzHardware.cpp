@@ -769,6 +769,24 @@ void CDomoticzHardwareBase::SendSoundSensor(const int NodeID, const int BatteryL
 	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), BatteryLevel);
 }
 
+void CDomoticzHardwareBase::SendAlertSensor(const int NodeID, const int BatteryLevel, const int alertLevel, const char* defaultname)
+{
+	_tGeneralDevice gDevice;
+	gDevice.subtype = sTypeAlert;
+	gDevice.id = (unsigned char)NodeID;
+	gDevice.intval1 = alertLevel;
+	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname, BatteryLevel);
+}
+
+void CDomoticzHardwareBase::SendGeneralSwitchSensor(const int NodeID, const int BatteryLevel, const int switchState, const char* defaultname, const int unitCode)
+{
+	_tGeneralSwitch gSwitch;
+	gSwitch.id = NodeID;
+	gSwitch.unitcode = unitCode;
+	gSwitch.cmnd = switchState;
+	sDecodeRXMessage(this, (const unsigned char *)&gSwitch, defaultname, BatteryLevel);
+}
+
 void CDomoticzHardwareBase::SendMoistureSensor(const int NodeID, const int BatteryLevel, const int mLevel, const std::string &defaultname)
 {
 	_tGeneralDevice gDevice;
