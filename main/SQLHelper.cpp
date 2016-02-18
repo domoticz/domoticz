@@ -1810,7 +1810,7 @@ bool CSQLHelper::OpenDatabase()
 		if (dbversion < 99)
 		{
 			//Convert depricated CounterType 'Time' to type Counter with options ValueQuantity='Time' & ValueUnits='Min'
-			//Add options ValueQuantity='Count' & ValueUnits='x' to existing CounterType 'Counter' 
+			//Add options ValueQuantity='Count' to existing CounterType 'Counter' 
 			const int MTYPE_TIME = 5;
 			const unsigned char charNTYPE_TODAYTIME = 'm';
 			std::stringstream szQuery, szQuery1, szQuery2, szQuery3;
@@ -4361,7 +4361,7 @@ void CSQLHelper::UpdateMultiMeter()
 				value1=(unsigned long)(atof(splitresults[0].c_str())*10.0f);
 				value2=(unsigned long)(atof(splitresults[1].c_str())*10.0f);
 				value3=(unsigned long)(atof(splitresults[2].c_str())*10.0f);
-				value4=(unsigned long)(atof(splitresults[3].c_str())*1000.0f);
+				value4=(unsigned long long)(atof(splitresults[3].c_str())*1000.0f);
 			}
 			else
 				continue;//don't know you (yet)

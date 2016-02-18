@@ -445,7 +445,7 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeChime, "Chime" , "doorbell" },
 		{ pTypeFan, "Fan" , "fan" },
 		{ pTypeBBQ, "BBQ Meter", "bbq" },
-		{ pTypePOWER, "Current/Energy" , "current" },
+		{ pTypePOWER, "Power" , "current" },
 		{ pTypeRFY, "RFY" , "blinds" },
 		{ pTypeEvohome, "Heating" , "evohome" },
 		{ pTypeEvohomeZone, "Heating" , "evohome" },

@@ -457,19 +457,18 @@ void MySensorsBase::UpdateNodeHeartbeat(const int nodeID)
 				case V_SCENE_OFF:
 					if (itt->GetValue(vType, intValue))
 						UpdateSwitchLastUpdate(nodeID, itt->childID + intValue);
-					//	Dimmer value. 0 - 100 %
-					break;
-/*
-				case V_RGB:
-				case V_RGBW:
-					UpdateRGBWSwitchhLastUpdate(pChild->nodeID, pChild->childID);
 					break;
 				case V_UP:
 				case V_DOWN:
 				case V_STOP:
-					UpdateBlindSensorhLastUpdate(pChild->nodeID, pChild->childID);
+					if (itt->GetValue(vType, intValue))
+						UpdateBlindSensorLastUpdate(nodeID, itt->childID);
 					break;
-*/
+				case V_RGB:
+				case V_RGBW:
+					if (itt->GetValue(vType, intValue))
+						UpdateRGBWSwitchLastUpdate(nodeID, itt->childID);
+					break;
 				}
 			}
 		}
@@ -1027,6 +1026,44 @@ void MySensorsBase::UpdateSwitchLastUpdate(const unsigned char Idx, const int Su
 	char szLastUpdate[40];
 	sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
 
+	m_sql.safe_query("UPDATE DeviceStatus SET LastUpdate='%q' WHERE (ID = '%q')", szLastUpdate, result[0][0].c_str());
+}
+
+void MySensorsBase::UpdateBlindSensorLastUpdate(const int NodeID, const int ChildID)
+{
+	char szIdx[10];
+	sprintf(szIdx, "%02X%02X%02X", 0, 0, NodeID);
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, szIdx, ChildID);
+	if (result.size() < 1)
+		return;
+	time_t now = time(0);
+	struct tm ltime;
+	localtime_r(&now, &ltime);
+
+	char szLastUpdate[40];
+	sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
+	m_sql.safe_query("UPDATE DeviceStatus SET LastUpdate='%q' WHERE (ID = '%q')", szLastUpdate, result[0][0].c_str());
+}
+
+void MySensorsBase::UpdateRGBWSwitchLastUpdate(const int NodeID, const int ChildID)
+{
+	char szIdx[10];
+	if (NodeID == 1)
+		sprintf(szIdx, "%d", 1);
+	else
+		sprintf(szIdx, "%08x", (unsigned int)NodeID);
+
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, szIdx, ChildID);
+	if (result.size() < 1)
+		return;
+	time_t now = time(0);
+	struct tm ltime;
+	localtime_r(&now, &ltime);
+
+	char szLastUpdate[40];
+	sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
 	m_sql.safe_query("UPDATE DeviceStatus SET LastUpdate='%q' WHERE (ID = '%q')", szLastUpdate, result[0][0].c_str());
 }
 

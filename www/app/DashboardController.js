@@ -1235,7 +1235,8 @@ define(['app'], function (app) {
 							(item.Type == "Current") || 
 							(item.Type == "Energy") || 
 							(item.Type == "Current/Energy") || 
-							(item.Type == "Air Quality") || 
+							(item.Type == "Power") ||
+							(item.Type == "Air Quality") ||
 							(item.Type == "Lux") || 
 							(item.Type == "Weight") || 
 							(item.Type == "Usage")||
@@ -1283,8 +1284,9 @@ define(['app'], function (app) {
 								}
 								else if (
 											(item.Type == "Energy")||
-											(item.Type == "Current/Energy")||
-											(item.SubType=="kWh")||
+											(item.Type == "Current/Energy") ||
+											(item.Type == "Power") ||
+											(item.SubType == "kWh") ||
 											(item.Type == "Air Quality")||
 											(item.Type == "Lux")||
 											(item.Type == "Weight")||
@@ -1360,7 +1362,7 @@ define(['app'], function (app) {
 									status=item.Data;
 									bigtext=item.Data;
 								}
-								else if ((item.Type == "Energy")||(item.Type == "Current/Energy")||(item.SubType=="kWh")) {
+								else if ((item.Type == "Energy") || (item.Type == "Current/Energy") || (item.Type == "Power") || (item.SubType == "kWh")) {
 									status=item.Data;
 								}
 								else if (item.Type == "Air Quality") {
@@ -3006,8 +3008,9 @@ define(['app'], function (app) {
 							(item.Type == "Current") || 
 							(item.Type == "Energy") || 
 							(item.SubType=="kWh") ||
-							(item.Type == "Current/Energy") || 
-							(item.Type == "Air Quality") || 
+							(item.Type == "Current/Energy") ||
+							(item.Type == "Power") ||
+							(item.Type == "Air Quality") ||
 							(item.Type == "Lux") || 
 							(item.Type == "Weight") || 
 							(item.Type == "Usage")||
@@ -3084,7 +3087,7 @@ define(['app'], function (app) {
 						else if ((item.Type == "Current")||(item.Type == "Current/Energy")) {
 							vname='<img src="images/next.png" onclick="ShowCurrentLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.displaytype + ');" height="16" width="16">' + " " + item.Name;
 						}
-						else if ((item.Type == "Energy")||(item.SubType=="kWh")) {
+						else if ((item.Type == "Energy") || (item.SubType == "kWh") || (item.SubType == "Power")) {
 							vname='<img src="images/next.png" onclick="ShowCounterLogSpline(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="16" width="16">' + " " + item.Name;
 						}
 						else if (item.Type == "Air Quality") {
@@ -3153,7 +3156,8 @@ define(['app'], function (app) {
 						else if (
 									(item.Type == "Energy")||
 									(item.Type == "Current/Energy")||
-									(item.SubType=="kWh") ||
+									(item.Type == "Power") ||
+									(item.SubType == "kWh") ||
 									(item.Type == "Air Quality")||
 									(item.Type == "Lux")||
 									(item.Type == "Weight")||
@@ -3320,8 +3324,8 @@ define(['app'], function (app) {
 								status="&nbsp;";
 							}
 						}
-						else if ((item.Type == "Energy")||(item.Type == "Current/Energy")||(item.SubType=="kWh")) {
-							if (((item.Type == "Energy")||(item.Type == "Current/Energy")||(item.SubType=="kWh"))&&(item.SwitchTypeVal == 4)) {
+						else if ((item.Type == "Energy")||(item.Type == "Power")||(item.SubType=="kWh")) {
+							if (((item.Type == "Energy")||(item.Type == "Power")||(item.SubType=="kWh"))&&(item.SwitchTypeVal == 4)) {
 								xhtm+='PV48.png" class="lcursor" onclick="ShowCounterLogSpline(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="40" width="40"></td>\n';
 							}
 							else {
@@ -3329,7 +3333,7 @@ define(['app'], function (app) {
 							}
 							status=item.Data;
 						}
-						else if (item.Type == "Current") {
+						else if ((item.Type == "Current")||(item.Type == "Current/Energy")) {
 							xhtm+='current48.png" class="lcursor" onclick="ShowCurrentLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.displaytype + ');" height="40" width="40"></td>\n';
 							status=item.Data;
 						}

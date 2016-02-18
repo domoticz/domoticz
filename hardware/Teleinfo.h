@@ -2,7 +2,7 @@
 Domoticz Software : http://domoticz.com/
 File : Teleinfo.h
 Author : Nicolas HILAIRE
-Version : 1.4
+Version : 1.6
 Description : This class manage the Teleinfo Signal
 
 
@@ -19,23 +19,6 @@ History :
 #include "DomoticzHardware.h"
 #include "P1MeterBase.h"
 #include "ASyncSerial.h"
-
-/*
-typedef struct _teleinfoData {
-unsigned char len;
-unsigned char type;
-unsigned char subtype;
-char optTariff[4];
-unsigned long powerusage1;   // normal tariff at power Usage in Wh
-unsigned long powerusage2;   // low tariff at power Usage in Wh
-unsigned long currentPowerSubscribe; //in A
-char currentTariffPeriod[4];
-unsigned long instantCurrentPowerUsage; //in A
-unsigned long maximalCurrentPowerUsage; //in A
-unsigned long apparentPower;   //in VA
-} TeleinfoData;
-*/
-
 #define TELEINFO_BAUD_RATE         1200
 #define TELEINFO_PARITY            boost::asio::serial_port_base::parity::even
 #define TELEINFO_CARACTER_SIZE      7
@@ -48,13 +31,6 @@ class Teleinfo : public CDomoticzHardwareBase, AsyncSerial
 		ID = 0,
 		STD,
 	} MatchType;
-
-	//typedef enum {
-	//   TELEINFO_OPTION_BASE,   //single tariff
-	//   TELEINFO_OPTION_HC,      //double tariff (low and normal)
-	//   TELEINFO_OPTION_EJP,      //EJP Option,  (test)
-	//   TELEINFO_OPTION_TEMPO,   //Tempo option,  (test)
-	//} Option;
 
 	typedef enum {
 		TELEINFO_TYPE_ADCO,
@@ -111,6 +87,9 @@ private:
 	boost::asio::serial_port_base::stop_bits m_iOptStop;
 
 	int m_counter;
+	unsigned long m_Power_USAGE_IINST;
+	unsigned long m_Power_USAGE_IINST_JW;
+	unsigned long m_Power_USAGE_IINST_JR;
 	bool m_bLabel_PAPP_Exist;
 	bool m_bLabel_PTEC_JB;
 	bool m_bLabel_PTEC_JW;

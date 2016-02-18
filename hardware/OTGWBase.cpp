@@ -569,5 +569,26 @@ namespace http {
 				m_mainworker.RestartHardware(idx);
 			}
 		}
+		void CWebServer::Cmd_SendOpenThermCommand(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string idx = request::findValue(&req, "idx");
+			std::string cmnd = request::findValue(&req, "cmnd");
+			if (idx.empty() || cmnd.empty())
+			{
+				return;
+			}
+			OTGWBase *pOTGW = (OTGWBase*)m_mainworker.GetHardware(atoi(idx.c_str()));
+			if (pOTGW == NULL)
+				return;
+			pOTGW->WriteInt((const unsigned char*)cmnd.c_str(), (const unsigned char)cmnd.size());
+			root["status"] = "OK";
+			root["title"] = "SendOpenThermCommand";
+		}
 	}
 }

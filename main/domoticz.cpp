@@ -88,7 +88,7 @@ const char *szHelp=
 	"\t-userdata file_path (for example /opt/domoticz)\n"
 #endif
 	"\t-webroot additional web root, useful with proxy servers (for example domoticz)\n"
-	"\t-verbose x (where x=0 is none, x=1 is debug)\n"
+	"\t-verbose x (where x=0 is none, x=1 is all important, x=2 is debug)\n"
 	"\t-startupdelay seconds (default=0)\n"
 	"\t-nowwwpwd (in case you forgot the web server username/password)\n"
 	"\t-nocache (do not return appcache, use only when developing the web pages)\n"

@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "1WireByOWFS.h"
+#include "../../main/mainworker.h"
 
 #include <fstream>
 #include <algorithm>
@@ -11,24 +12,6 @@
 #endif
 
 #include "../../main/Helper.h"
-
-#ifdef _DEBUG
-#ifdef WIN32
-#define OWFS_Base_Dir "E:\\w1\\1wire\\uncached"
-#else // WIN32
-#define OWFS_Base_Dir "/mnt/1wire/uncached"
-#endif // WIN32
-#else // _DEBUG
-#define OWFS_Base_Dir "/mnt/1wire/uncached"
-#endif //_DEBUG
-
-#define HUB_MAIN_SUB_PATH     "/main"
-#ifdef WIN32
-#define HUB_AUX_SUB_PATH      "/_aux"
-#else
-#define HUB_AUX_SUB_PATH      "/aux"
-#endif
-
 
 bool C1WireByOWFS::IsAvailable()
 {
@@ -123,6 +106,10 @@ void C1WireByOWFS::GetDevices(const std::string &inDir, /*out*/std::vector<_t1Wi
             GetDevice(inDir, de->d_name, device);
 
             // Add device to list
+			if (m_mainworker.GetVerboseLevel() == EVBL_DEBUG)
+			{
+				_log.Log(LOG_STATUS, "1Wire (OWFS): Add device %s", device.filename.c_str());
+			}
             devices.push_back(device);
 
             // If device is a hub, scan for all hub connected devices (recursively)
@@ -214,6 +201,12 @@ void C1WireByOWFS::SetLightState(const std::string& sId,int unit,bool value)
 float C1WireByOWFS::GetTemperature(const _t1WireDevice& device) const
 {
    std::string readValue=readRawData(std::string(device.filename+"/temperature"));
+
+   if (m_mainworker.GetVerboseLevel() == EVBL_DEBUG)
+   {
+	   _log.Log(LOG_STATUS, "1Wire (OWFS): Get Temperature from %s = %s", device.filename.c_str(), readValue.c_str());
+   }
+
    if (readValue.empty())
       return -1000.0;
    return static_cast<float>(atof(readValue.c_str()));
@@ -222,6 +215,12 @@ float C1WireByOWFS::GetTemperature(const _t1WireDevice& device) const
 float C1WireByOWFS::GetHumidity(const _t1WireDevice& device) const
 {
    std::string readValue=readRawData(std::string(device.filename+"/humidity"));
+
+   if (m_mainworker.GetVerboseLevel() == EVBL_DEBUG)
+   {
+	   _log.Log(LOG_STATUS, "1Wire (OWFS): Get Humidity from %s = %s", device.filename.c_str(), readValue.c_str());
+   }
+
    if (readValue.empty())
 	   return -1000.0;
    return static_cast<float>(atof(readValue.c_str()));
@@ -229,7 +228,9 @@ float C1WireByOWFS::GetHumidity(const _t1WireDevice& device) const
 
 float C1WireByOWFS::GetPressure(const _t1WireDevice& device) const
 {
-   std::string readValue=readRawData(std::string(device.filename+"/pressure"));
+   std::string realFilename = device.filename + nameHelper(device.filename, device.family); // for family 26 (DS2438) + pressure + HobbyBoards
+   
+   std::string readValue=readRawData(std::string(realFilename+"/pressure"));
    if (readValue.empty())
 	   return -1000.0;
    return static_cast<float>(atof(readValue.c_str()));
@@ -413,34 +414,35 @@ void C1WireByOWFS::GetDevice(const std::string &inDir, const std::string &dirnam
     device.devid=id;
     
     device.filename=inDir;
-    if (device.family == Environmental_Monitors || device.family == smart_battery_monitor) {
-        device.filename+="/" + dirname + "/" + nameHelper(dirname);;
+    if (device.family == Environmental_Monitors) {
+        device.filename+="/" + dirname + nameHelper(dirname, device.family);
     } else { 
         device.filename+="/" + dirname;
     }
 }
 
-std::string C1WireByOWFS::nameHelper(const std::string& dirname) const {
+std::string C1WireByOWFS::nameHelper(const std::string& dirname, const _e1WireFamilyType family) const {
 	std::string name;
 	DIR *d=NULL;
 	
 	d=opendir(std::string(std::string(OWFS_Base_Dir) + "/" + dirname.c_str()).c_str());
-        if (d != NULL)
-        {
-            struct dirent *de=NULL;
-            while ((de = readdir(d)))
-            {
-            name = de->d_name;
-            if (de->d_type==DT_DIR)
-            {
-		if (name.compare(0,3, "EDS") == 0 || name.compare(0,7, "B1-R1-A") == 0) {
-		    closedir(d);
-		    return name;
+	if (d != NULL)
+	{
+		struct dirent *de = NULL;
+		while ((de = readdir(d)))
+		{
+			name = de->d_name;
+			if (de->d_type == DT_DIR)
+			{
+				if ( ((family == Environmental_Monitors) && (name.compare(0, 3, "EDS") == 0))
+				  || ((family == smart_battery_monitor) && (name.compare(0, 7, "B1-R1-A") == 0)) ) {
+					closedir(d);
+					return "/" + name;
+				}
+			}
 		}
-            }
-        }
-        closedir(d);
-    }
+		closedir(d);
+	}
     return "";
 }
 

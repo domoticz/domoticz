@@ -197,12 +197,15 @@ domoticz_SRCS
 main/stdafx.cpp
 main/CmdLine.cpp
 main/Camera.cpp
+main/DataPush.cpp
 main/domoticz.cpp
 main/EventSystem.cpp
 main/Helper.cpp
+main/HttpPush.cpp
 main/localtime_r.cpp
 main/Logger.cpp
 main/mainworker.cpp
+main/Push.cpp
 main/RFXNames.cpp
 main/Scheduler.cpp
 main/SQLHelper.cpp
@@ -210,9 +213,6 @@ main/SunRiseSet.cpp
 main/WebServer.cpp
 main/WebServerHelper.cpp
 main/WindCalculation.cpp
-main/Push.cpp
-main/DataPush.cpp
-main/HttpPush.cpp
 httpclient/HTTPClient.cpp
 httpclient/UrlEncode.cpp
 hardware/1Wire.cpp
@@ -557,17 +557,20 @@ ENDIF(RaspberryPi)
 
 find_path(TELLDUSCORE_INCLUDE NAMES telldus-core.h)
 if (TELLDUSCORE_INCLUDE)
-  message(STATUS "Found telldus-core (telldus-core.h), adding tellstick support")
-  target_link_libraries (domoticz telldus-core)
-  add_definitions(-DWITH_TELLDUSCORE)
+  message(STATUS "Found telldus-core (telldus-core.h) at : ${TELLDUSCORE_INCLUDE}")
+  find_library(TELLDUS_LIBRARIES NAMES libtelldus-core.so)
+  if(TELLDUS_LIBRARIES)
+    message(STATUS "Found libtelldus-core at : ${TELLDUS_LIBRARIES}, adding telldus support")
+    add_definitions(-DWITH_TELLDUSCORE)
+  endif(TELLDUS_LIBRARIES)
 else()
   message(STATUS "Not found telldus-core (telldus-core.h), not adding tellstick support")
 endif (TELLDUSCORE_INCLUDE)
 
 IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-  target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} ${MQTT_LIBRARIES} ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS})
+  target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} ${MQTT_LIBRARIES} ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS} ${TELLDUS_LIBRARIES})
 else()
-  target_link_libraries(domoticz -lrt ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} -LXXXPREFIXXX/lib pthread ${LUA_LIBRARIES} ${MQTT_LIBRARIES} ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS})
+  target_link_libraries(domoticz -lrt ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} ${MQTT_LIBRARIES} ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS} ${TELLDUS_LIBRARIES})
 ENDIF()
 
 ADD_PRECOMPILED_HEADER(domoticz "main/stdafx.h")

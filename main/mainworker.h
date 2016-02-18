@@ -15,8 +15,9 @@
 
 enum eVerboseLevel
 {
-	EVBL_None,
-	EVBL_ALL,
+	EVBL_None = 0,
+	EVBL_ALL = 1,
+	EVBL_DEBUG = 2
 };
 
 class MainWorker

@@ -378,7 +378,10 @@ namespace http {
 			m_pWebEm->RegisterActionCode("setrego6xxtype", boost::bind(&CWebServer::SetRego6XXType, this, _1, _2, _3));
 			m_pWebEm->RegisterActionCode("sets0metertype", boost::bind(&CWebServer::SetS0MeterType, this, _1, _2, _3));
 			m_pWebEm->RegisterActionCode("setlimitlesstype", boost::bind(&CWebServer::SetLimitlessType, this, _1, _2, _3));
+
 			m_pWebEm->RegisterActionCode("setopenthermsettings", boost::bind(&CWebServer::SetOpenThermSettings, this, _1, _2, _3));
+			RegisterCommandCode("sendopenthermcommand", boost::bind(&CWebServer::Cmd_SendOpenThermCommand, this, _1, _2, _3), true);
+
 			m_pWebEm->RegisterActionCode("setp1usbtype", boost::bind(&CWebServer::SetP1USBType, this, _1, _2, _3));
 			m_pWebEm->RegisterActionCode("setcurrentcostmetertype", boost::bind(&CWebServer::SetCurrentCostUSBType, this, _1, _2, _3));
 			m_pWebEm->RegisterActionCode("restoredatabase", boost::bind(&CWebServer::RestoreDatabase, this, _1, _2, _3));
@@ -8664,7 +8667,7 @@ namespace http {
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_COUNTER:
-							sprintf(szTmp, "%.03f %s", fvalue, ValueUnits.c_str());
+							sprintf(szTmp, "%.0f %s", fvalue, ValueUnits.c_str());
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							root["result"][ii]["ValueQuantity"] = ValueQuantity;
@@ -8781,7 +8784,7 @@ namespace http {
                                 root["result"][ii]["Counter"] = szTmp;
                                 break;
                         case MTYPE_COUNTER:
-                                sprintf(szTmp, "%.03f %s", fvalue, ValueUnits.c_str());
+                                sprintf(szTmp, "%.0f %s", fvalue, ValueUnits.c_str());
                                 root["result"][ii]["Data"] = szTmp;
                                 root["result"][ii]["Counter"] = szTmp;
                                 root["result"][ii]["ValueQuantity"] = ValueQuantity;
@@ -11861,8 +11864,16 @@ namespace http {
 			unsigned char dType = atoi(result[0][0].c_str());
 			unsigned char dSubType = atoi(result[0][1].c_str());
 			_eMeterType metertype = (_eMeterType)atoi(result[0][2].c_str());
-			if ((dType == pTypeP1Power) || (dType == pTypeENERGY) || (dType == pTypePOWER) || ((dType == pTypeGeneral) && (dSubType == sTypeKwh)))
+			if (
+				(dType == pTypeP1Power) || 
+				(dType == pTypeENERGY) || 
+				(dType == pTypePOWER) || 
+				(dType == pTypeCURRENTENERGY) ||
+				((dType == pTypeGeneral) && (dSubType == sTypeKwh))
+				)
+			{
 				metertype = MTYPE_ENERGY;
+			}
 			else if (dType == pTypeP1Gas)
 				metertype = MTYPE_GAS;
 			else if ((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXCounter))
@@ -14663,7 +14674,7 @@ namespace http {
 								sprintf(szTmp, "%.3f", fvalue / WaterDivider);
 								break;
 							default:
-								sprintf(szTmp, "");
+								strcpy(szTmp, "");
 								break;
 							}
 							root["counter"] = szTmp;
@@ -14689,7 +14700,7 @@ namespace http {
 									sprintf(szTmp, "%.3f", fvalue / WaterDivider);
 									break;
 								default:
-									sprintf(szTmp, "");
+									strcpy(szTmp, "");
 									break;
 								}
 								root["counter"] = szTmp;
