@@ -578,71 +578,70 @@ bool CPhilipsHue::GetLights(const Json::Value &root)
 		{
 			std::string szLID = iLight.key().asString();
 			int lID = atoi(szLID.c_str());
-            _tHueLight tlight;
-            int BrightnessLevel = 0;
-            tlight.level = 0;
-            tlight.sat = 0;
-            tlight.hue = 0;
-            int tbri = 0;
-            bool bIsOn = light["state"]["on"].asBool();
-            bool bDoSend = true;
+			_tHueLight tlight;
+			int BrightnessLevel = 0;
+			tlight.level = 0;
+			tlight.sat = 0;
+			tlight.hue = 0;
+			int tbri = 0;
+			bool bIsOn = light["state"]["on"].asBool();
+			bool bDoSend = true;
 			_eHueLightType LType = HLTYPE_NORMAL;
-            
-            if (bIsOn)
+			
+			if (bIsOn)
 			{
 				tlight.cmd = light2_sOn;
 			}
 			else
 				tlight.cmd = light2_sOff;
-                
-            if (!light["state"]["bri"].empty())
-            {
-                //Lamp with brightness control
-                LType = HLTYPE_DIM;
-                tbri = light["state"]["bri"].asInt();
+				
+			if (!light["state"]["bri"].empty())
+			{
+				//Lamp with brightness control
+				LType = HLTYPE_DIM;
+				tbri = light["state"]["bri"].asInt();
 				if ((tbri != 0) && (tbri != 255))
 					tbri += 1; //hue reports 255 as 254
 				tlight.level = tbri;
-                BrightnessLevel = int((100.0f / 255.0f)*float(tbri));
-                if (bIsOn)
+				BrightnessLevel = int((100.0f / 255.0f)*float(tbri));
+				if (bIsOn)
 				{
 					tlight.cmd = (BrightnessLevel != 0) ? light2_sSetLevel : light2_sOn;
 				}
 				else
 					tlight.cmd = light2_sOff;
-            }
-            if ((!light["state"]["sat"].empty()) && (!light["state"]["hue"].empty()))
-            {
-                //Lamp with hue/sat control
-                LType = HLTYPE_RGBW;
-                tlight.sat = light["state"]["sat"].asInt();
+			}
+			if ((!light["state"]["sat"].empty()) && (!light["state"]["hue"].empty()))
+			{
+				//Lamp with hue/sat control
+				LType = HLTYPE_RGBW;
+				tlight.sat = light["state"]["sat"].asInt();
 				tlight.hue = light["state"]["hue"].asInt();
-                if (bIsOn)
+				if (bIsOn)
 				{
 					tlight.cmd = (BrightnessLevel != 0) ? Limitless_SetBrightnessLevel : Limitless_LedOn;
 				}
 				else
 					tlight.cmd = Limitless_LedOff;
-            }
-            if (m_lights.find(lID) != m_lights.end())
-            {
-                _tHueLight alight = m_lights[lID];
-                if (
-                    (alight.cmd == tlight.cmd) &&
-                    (alight.level == tlight.level) &&
-                    (alight.sat == tlight.sat) &&
-                    (alight.hue == tlight.hue)
-                    )
-                {
-                    bDoSend = false;
-                }
-            }
-            m_lights[lID] = tlight;
-            if (bDoSend)
-            {
-                InsertUpdateSwitch(lID, LType, bIsOn, BrightnessLevel, tlight.sat, tlight.hue, light["name"].asString(), "");
-            }
-            
+			}
+			if (m_lights.find(lID) != m_lights.end())
+			{
+				_tHueLight alight = m_lights[lID];
+				if (
+					(alight.cmd == tlight.cmd) &&
+					(alight.level == tlight.level) &&
+					(alight.sat == tlight.sat) &&
+					(alight.hue == tlight.hue)
+					)
+				{
+					bDoSend = false;
+				}
+			}
+			m_lights[lID] = tlight;
+			if (bDoSend)
+			{
+				InsertUpdateSwitch(lID, LType, bIsOn, BrightnessLevel, tlight.sat, tlight.hue, light["name"].asString(), "");
+			}
 		}
 	}
 	return true;
