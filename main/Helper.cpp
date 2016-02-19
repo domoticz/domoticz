@@ -50,6 +50,12 @@ void stdreplace(
 	}
 }
 
+void stdupper(std::string &inoutstring)
+{
+	for (size_t i = 0; i < inoutstring.size(); ++i)
+		inoutstring[i] = toupper(inoutstring[i]);
+}
+
 std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 {
 	bUseDirectPath=false;
@@ -601,6 +607,7 @@ bool IsLightOrSwitch(const int devType, const int subType)
 	case pTypeLighting4:
 	case pTypeLighting5:
 	case pTypeLighting6:
+	case pTypeFan:
 	case pTypeLimitlessLights:
 	case pTypeSecurity1:
 	case pTypeSecurity2:

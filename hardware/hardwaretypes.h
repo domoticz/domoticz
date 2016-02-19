@@ -127,7 +127,7 @@
 #define sSwitchTypeDiya				0x41
 #define sSwitchTypeX10secu			0x42
 #define sSwitchTypeAtlantic			0x43
-#define sSwitchTypeSilvercrestDB	0x44 
+#define sSwitchTypeSilvercrestDB	0x44
 #define sSwitchTypeMedionDB			0x45
 #define sSwitchTypeVMC				0x46
 #define sSwitchTypeKeeloq			0x47
