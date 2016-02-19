@@ -775,7 +775,7 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 	}
 	if (bHaveImpedance)
 	{
-		SendPercentageSensor(Node_ID, Child_ID, BatteryLevel, impedance, tmp_Name);
+		SendPercentageSensor(Node_ID, Child_ID, BatteryLevel, impedance, tmp_Name.c_str());
 	}
 	if (bHaveSwitch && bHaveSwitchCmd)
 	{
