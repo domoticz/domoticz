@@ -67,7 +67,7 @@ protected:
 	void SendRGBWSwitch(const int NodeID, const int ChildID, const int BatteryLevel, const double Level, const bool bIsRGBW, const std::string &defaultname);
 	void SendVoltageSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float Volt, const std::string &defaultname);
 	void SendCurrentSensor(const int NodeID, const int BatteryLevel, const float Current1, const float Current2, const float Current3, const std::string &defaultname);
-	void SendPercentageSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float Percentage, const std::string &defaultname);
+	void SendPercentageSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float Percentage, const char* defaultname);
 	void SendWaterflowSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float LPM, const std::string &defaultname);
 	void SendRainSensor(const int NodeID, const int BatteryLevel, const float RainCounter, const std::string &defaultname);
 	float GetRainSensorValue(const int NodeID, bool &bExists);
