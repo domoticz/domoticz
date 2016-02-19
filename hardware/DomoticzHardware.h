@@ -75,7 +75,7 @@ protected:
 	void SendPressureSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float pressure, const char* defaultname);
 	void SendDistanceSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float distance, const std::string &defaultname);
 	void SendMeterSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float metervalue, const std::string &defaultname);
-	void SendUVSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float UVI, const std::string &defaultname);
+	void SendUVSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float UVI, const char* defaultname);
 	void SendBlindSensor(const int NodeID, const int ChildID, const int BatteryLevel, const int Command, const std::string &defaultname);
 	void SendSoundSensor(const int NodeID, const int BatteryLevel, const int sLevel, const std::string &defaultname);
 	void SendAlertSensor(const int NodeID, const int BatteryLevel, const int alertLevel, const char* defaultname);
