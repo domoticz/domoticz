@@ -657,14 +657,14 @@ void CDomoticzHardwareBase::SendCurrentSensor(const int NodeID, const int Batter
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.CURRENT, defaultname.c_str(), BatteryLevel);
 }
 
-void CDomoticzHardwareBase::SendPercentageSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float Percentage, const std::string &defaultname)
+void CDomoticzHardwareBase::SendPercentageSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float Percentage, const char* defaultname)
 {
 	_tGeneralDevice gDevice;
 	gDevice.subtype = sTypePercentage;
 	gDevice.id = ChildID;
 	gDevice.floatval1 = Percentage;
 	gDevice.intval1 = static_cast<int>(NodeID);
-	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), BatteryLevel);
+	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname, BatteryLevel);
 }
 
 void CDomoticzHardwareBase::SendWaterflowSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float LPM, const std::string &defaultname)
@@ -750,13 +750,14 @@ void CDomoticzHardwareBase::SendWind(const int NodeID, const int BatteryLevel, c
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND, defaultname.c_str(), BatteryLevel);
 }
 
-void CDomoticzHardwareBase::SendPressureSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float pressure, const std::string &defaultname)
+void CDomoticzHardwareBase::SendPressureSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float pressure, const char* defaultname, const int ID)
 {
 	_tGeneralDevice gdevice;
 	gdevice.intval1 = (NodeID << 8) | ChildID;
 	gdevice.subtype = sTypePressure;
 	gdevice.floatval1 = pressure;
-	sDecodeRXMessage(this, (const unsigned char *)&gdevice, defaultname.c_str(), BatteryLevel);
+	gdevice.id = ID;
+	sDecodeRXMessage(this, (const unsigned char *)&gdevice, defaultname, BatteryLevel);
 }
 
 void CDomoticzHardwareBase::SendSoundSensor(const int NodeID, const int BatteryLevel, const int sLevel, const std::string &defaultname)
@@ -797,7 +798,7 @@ void CDomoticzHardwareBase::SendMoistureSensor(const int NodeID, const int Batte
 	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), BatteryLevel);
 }
 
-void CDomoticzHardwareBase::SendUVSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float UVI, const std::string &defaultname)
+void CDomoticzHardwareBase::SendUVSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float UVI, const char* defaultname)
 {
 	RBUF tsen;
 	memset(&tsen, 0, sizeof(RBUF));
@@ -810,7 +811,7 @@ void CDomoticzHardwareBase::SendUVSensor(const int NodeID, const int ChildID, co
 	tsen.UV.id2 = (unsigned char)ChildID;
 
 	tsen.UV.uv = (BYTE)round(UVI * 10);
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.UV, defaultname.c_str(), BatteryLevel);
+	sDecodeRXMessage(this, (const unsigned char *)&tsen.UV, defaultname, BatteryLevel);
 }
 
 int CDomoticzHardwareBase::CalculateBaroForecast(const double pressure)

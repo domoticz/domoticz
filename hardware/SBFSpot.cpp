@@ -233,16 +233,6 @@ void CSBFSpot::SendVoltage(const unsigned long Idx, const float Volt, const std:
 	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), 255);
 }
 
-void CSBFSpot::SendPercentage(const unsigned long Idx, const float Percentage, const std::string &defaultname)
-{
-	_tGeneralDevice gDevice;
-	gDevice.subtype=sTypePercentage;
-	gDevice.id=1;
-	gDevice.floatval1=Percentage;
-	gDevice.intval1 = static_cast<int>(Idx);
-	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), 255);
-}
-
 bool CSBFSpot::GetMeter(const unsigned char ID1,const unsigned char ID2, double &musage, double &mtotal)
 {
 	int Idx=(ID1 * 256) + ID2;
@@ -604,15 +594,15 @@ void CSBFSpot::GetMeterDetails()
 		tmpString = results[21];
 		stdreplace(tmpString, ",", ".");
 		percentage = static_cast<float>(atof(tmpString.c_str()));
-		SendPercentage((InvIdx * 10) + 1, percentage, "Efficiency");
+		SendPercentageSensor((InvIdx * 10) + 1, 1, 255, percentage, "Efficiency");
 		tmpString = results[24];
 		stdreplace(tmpString, ",", ".");
 		percentage = static_cast<float>(atof(tmpString.c_str()));
-		SendPercentage((InvIdx * 10) + 2, percentage, "Hz");
+		SendPercentageSensor((InvIdx * 10) + 2, 1, 255, percentage, "Hz");
 		tmpString = results[27];
 		stdreplace(tmpString, ",", ".");
 		percentage = static_cast<float>(atof(tmpString.c_str()));
-		SendPercentage((InvIdx * 10) + 3, percentage, "BT_Signal");
+		SendPercentageSensor((InvIdx * 10) + 3, 1, 255, percentage, "BT_Signal");
 
 		if (results.size() >= 31)
 		{

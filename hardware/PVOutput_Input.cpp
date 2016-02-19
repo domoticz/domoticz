@@ -115,16 +115,6 @@ void CPVOutputInput::SendVoltage(const unsigned long Idx, const float Volt, cons
 	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), 255);
 }
 
-void CPVOutputInput::SendPercentage(const unsigned long Idx, const float Percentage, const std::string &defaultname)
-{
-	_tGeneralDevice gDevice;
-	gDevice.subtype=sTypePercentage;
-	gDevice.id=1;
-	gDevice.floatval1=Percentage;
-	gDevice.intval1 = static_cast<int>(Idx);
-	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), 255);
-}
-
 void CPVOutputInput::GetMeterDetails()
 {
 	if (m_SID.size()==0)
@@ -168,7 +158,7 @@ void CPVOutputInput::GetMeterDetails()
 		double Efficiency=atof(splitresult[6].c_str())*100.0;
 		if (Efficiency>100.0)
 			Efficiency=100.0;
-		SendPercentage(1,float(Efficiency),"Efficiency");
+		SendPercentageSensor(static_cast<int>(1), 1, 255, float(Efficiency), "Efficiency");
 	}
 	if (splitresult[7]!="NaN")
 	{

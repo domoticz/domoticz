@@ -12,7 +12,6 @@ public:
 private:
 	void SendTempSensor(const unsigned char Idx, const float Temp, const std::string &defaultname);
 	void SendVoltage(const unsigned long Idx, const float Volt, const std::string &defaultname);
-	void SendPercentage(const unsigned long Idx, const float Percentage, const std::string &defaultname);
 
 	std::string m_SID;
 	std::string m_KEY;

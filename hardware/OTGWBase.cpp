@@ -153,16 +153,6 @@ void OTGWBase::UpdateSetPointSensor(const unsigned char Idx, const float Temp, c
 	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), 255);
 }
 
-void OTGWBase::UpdatePressureSensor(const unsigned long Idx, const float Pressure, const std::string &defaultname)
-{
-	_tGeneralDevice gDevice;
-	gDevice.subtype=sTypePressure;
-	gDevice.id=1;
-	gDevice.floatval1=Pressure;
-	gDevice.intval1 = static_cast<int>(Idx);
-	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), 255);
-}
-
 bool OTGWBase::GetOutsideTemperatureFromDomoticz(float &tvalue)
 {
 	if (m_OutsideTemperatureIdx == 0)
@@ -429,7 +419,7 @@ void OTGWBase::ParseLine()
 		bExists = CheckPercentageSensorExists(idx - 1, 1);
 		if (_status.CH_water_pressure != 0)
 		{
-			UpdatePressureSensor(idx-1,_status.CH_water_pressure,"CH Water Pressure");
+			SendPressureSensor(0, idx - 1, 255, _status.CH_water_pressure, "CH Water Pressure", 1);
 		}
 
 		_status.Room_temperature = static_cast<float>(atof(results[idx++].c_str()));						UpdateTempSensor(idx - 1, _status.Room_temperature, "Room Temperature");

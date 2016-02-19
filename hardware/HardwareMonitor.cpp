@@ -192,16 +192,6 @@ void CHardwareMonitor::SendTempSensor(const int Idx, const float Temp, const std
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, defaultname.c_str(), 255);
 }
 
-void CHardwareMonitor::SendPercentage(const unsigned long Idx, const float Percentage, const std::string &defaultname)
-{
-	_tGeneralDevice gDevice;
-	gDevice.subtype = sTypePercentage;
-	gDevice.id = 1;
-	gDevice.floatval1 = Percentage;
-	gDevice.intval1 = static_cast<int>(Idx);
-	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), 255);
-}
-
 void CHardwareMonitor::SendFanSensor(const int Idx, const int FanSpeed, const std::string &defaultname)
 {
 	_tGeneralDevice gDevice;
@@ -329,7 +319,7 @@ void CHardwareMonitor::UpdateSystemSensor(const std::string& qType, const int di
 	{
 		doffset = 1100;
 		float perc = static_cast<float>(atof(devValue.c_str()));
-		SendPercentage(doffset + dindex, perc, devName);
+		SendPercentageSensor(doffset + dindex, 1, 255, perc, devName.c_str());
 	}
 	else if (qType == "Fan")
 	{

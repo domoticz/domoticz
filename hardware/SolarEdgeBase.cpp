@@ -303,16 +303,6 @@ void SolarEdgeBase::SendTempSensor(const unsigned char Idx, const float Temp, co
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, defaultname.c_str(), 255);
 }
 
-void SolarEdgeBase::SendPercentage(const unsigned long Idx, const float Percentage, const std::string &defaultname)
-{
-	_tGeneralDevice gDevice;
-	gDevice.subtype=sTypePercentage;
-	gDevice.id=1;
-	gDevice.floatval1=Percentage;
-	gDevice.intval1 = static_cast<int>(Idx);
-	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), 255);
-}
-
 float SolarEdgeBase::GetFloat(const unsigned char *pData)
 {
 	unsigned long ul=(pData[2]<<24)|(pData[3]<<16)|(pData[0]<<8)|pData[1];
@@ -350,7 +340,7 @@ int SolarEdgeBase::ParsePacket0x0280(const unsigned char *pData, int dlen)
 	dlen-=4;
 	//Frequency
 	float freq=GetFloat(b);
-	SendPercentage(SE_FREQ,freq,"Hz");
+	SendPercentageSensor(static_cast<int>(SE_FREQ), 1, 255, freq, "Hz");
 	b+=4;
 	dlen-=4;
 	//Ampere
@@ -429,7 +419,7 @@ int SolarEdgeBase::ParsePacket0x0282(const unsigned char *pData, int dlen)
 	b+=4;
 	//Frequency
 	float freq=GetFloat(b);
-	SendPercentage(SE_FREQ,freq,"Hz");
+	SendPercentageSensor(static_cast<int>(SE_FREQ), 1, 255, freq, "Hz");
 	b+=4;
 	//skip the rest
 	return dlen-2;
@@ -582,7 +572,7 @@ int SolarEdgeBase::ParsePacket0x0500(const unsigned char *pData, int dlen)
 			b2+=4;
 			SendMeter(0,1, Pac/100.0f, counter/1000.0f, "SolarMain");
 			SendTempSensor(1,temp,"SolarMain");
-			SendPercentage(SE_FREQ,freq,"Hz");
+			SendPercentageSensor(static_cast<int>(SE_FREQ), 1, 255, freq, "Hz");
 			SendVoltage(SE_VOLT_AC,voltageAC,"AC");
 			SendVoltage(SE_VOLT_DC,voltageDC,"DC");
 		}
