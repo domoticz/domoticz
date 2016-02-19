@@ -175,17 +175,7 @@ bool Teleinfo::StartHardware()
 
 bool Teleinfo::StopHardware()
 {
-	if (isOpen())
-	{
-		try {
-			clearReadCallback();
-			close();
-		}
-		catch (...)
-		{
-			//Don't throw from a Stop command
-		}
-	}
+	terminate();
 	StopHeartbeatThread();
 	m_bIsStarted = false;
 	return true;

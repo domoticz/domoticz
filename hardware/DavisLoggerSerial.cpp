@@ -34,6 +34,7 @@ CDavisLoggerSerial::CDavisLoggerSerial(const int ID, const std::string& devname,
 
 CDavisLoggerSerial::~CDavisLoggerSerial(void)
 {
+
 }
 
 bool CDavisLoggerSerial::StartHardware()
@@ -57,18 +58,7 @@ bool CDavisLoggerSerial::StopHardware()
 	}
 	// Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
 	sleep_milliseconds(10);
-	if (isOpen())
-	{
-		try {
-			clearReadCallback();
-			close();
-			doClose();
-			setErrorStatus(true);
-		} catch(...)
-		{
-			//Don't throw from a Stop command
-		}
-	}
+	terminate();
 	m_bIsStarted=false;
 	return true;
 }
@@ -155,15 +145,7 @@ void CDavisLoggerSerial::Do_Work()
 				else {
 					m_retrycntr=0;
 					//still did not receive a wakeup, lets try again
-					try {
-						clearReadCallback();
-						close();
-						doClose();
-						setErrorStatus(true);
-					} catch(...)
-					{
-						//Don't throw from a Stop command
-					}
+					terminate();
 				}
 				break;
 			case DSTATE_LOOP:
@@ -202,29 +184,13 @@ void CDavisLoggerSerial::readCallback(const char *data, size_t len)
 			if (len!=100) {
 				_log.Log(LOG_ERROR,"Davis: Invalid bytes received!...");
 				//lets try again
-				try {
-					clearReadCallback();
-					close();
-					doClose();
-					setErrorStatus(true);
-				} catch(...)
-				{
-					//Don't throw from a Stop command
-				}
+				terminate();
 			}
 			else {
 				if (!HandleLoopData((const unsigned char*)data,len))
 				{
 					//error in data, try again...
-					try {
-						clearReadCallback();
-						close();
-						doClose();
-						setErrorStatus(true);
-					} catch(...)
-					{
-						//Don't throw from a Stop command
-					}
+					terminate();
 				}
 			}
 			break;

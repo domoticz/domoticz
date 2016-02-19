@@ -30,7 +30,7 @@ OTGWSerial::OTGWSerial(const int ID, const std::string& devname, const unsigned 
 
 OTGWSerial::~OTGWSerial()
 {
-	clearReadCallback();
+
 }
 
 bool OTGWSerial::StartHardware()
@@ -43,18 +43,7 @@ bool OTGWSerial::StartHardware()
 bool OTGWSerial::StopHardware()
 {
 	m_bIsStarted=false;
-	if (isOpen())
-	{
-		try {
-			clearReadCallback();
-			close();
-			doClose();
-			setErrorStatus(true);
-		} catch(...)
-		{
-			//Don't throw from a Stop command
-		}
-	}
+	terminate();
 	StopPollerThread();
 	return true;
 }
