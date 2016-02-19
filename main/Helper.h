@@ -6,6 +6,7 @@ void stdreplace(
 	std::string &inoutstring,
 	const std::string& replaceWhat, 
 	const std::string& replaceWithWhat);
+void stdupper(std::string &inoutstring);
 bool file_exist (const char *filename);
 std::vector<std::string> GetSerialPorts(bool &bUseDirectPath);
 double CalculateAltitudeFromPressure(double pressure);
