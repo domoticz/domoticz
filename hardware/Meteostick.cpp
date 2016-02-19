@@ -36,7 +36,7 @@ Meteostick::Meteostick(const int ID, const std::string& devname, const unsigned 
 
 Meteostick::~Meteostick()
 {
-	clearReadCallback();
+
 }
 
 bool Meteostick::StartHardware()
@@ -49,19 +49,7 @@ bool Meteostick::StartHardware()
 bool Meteostick::StopHardware()
 {
 	m_bIsStarted = false;
-	if (isOpen())
-	{
-		try {
-			clearReadCallback();
-			close();
-			doClose();
-			setErrorStatus(true);
-		}
-		catch (...)
-		{
-			//Don't throw from a Stop command
-		}
-	}
+	terminate();
 	StopPollerThread();
 	return true;
 }

@@ -82,7 +82,7 @@ RFXComSerial::RFXComSerial(const int ID, const std::string& devname, unsigned in
 
 RFXComSerial::~RFXComSerial()
 {
-	clearReadCallback();
+
 }
 
 bool RFXComSerial::StartHardware()
@@ -109,18 +109,7 @@ bool RFXComSerial::StopHardware()
     sleep_milliseconds(10);
 	if (m_serial.isOpen())
 		m_serial.close();
-	if (isOpen())
-	{
-		try {
-			clearReadCallback();
-			close();
-			doClose();
-			setErrorStatus(true);
-		} catch(...)
-		{
-			//Don't throw from a Stop command
-		}
-	}
+	terminate();
 	m_bIsStarted=false;
 	return true;
 }
@@ -143,19 +132,7 @@ void RFXComSerial::Do_Work()
 		if (m_bStartFirmwareUpload)
 		{
 			m_bStartFirmwareUpload = false;
-			if (isOpen())
-			{
-				try {
-					clearReadCallback();
-					close();
-					doClose();
-					setErrorStatus(true);
-				}
-				catch (...)
-				{
-					//Don't throw from a Stop command
-				}
-			}
+			terminate();
 			try {
 				sleep_seconds(1);
 				UpgradeFirmware();
@@ -794,19 +771,7 @@ void RFXComSerial::readCallback(const char *data, size_t len)
 			if (bRet == false)
 			{
 				//close serial connection, and restart
-				if (isOpen())
-				{
-					try {
-						clearReadCallback();
-						close();
-						doClose();
-						setErrorStatus(true);
-					}
-					catch (...)
-					{
-						//Don't throw from a Stop command
-					}
-				}
+				terminate();
 
 			}
 		}

@@ -28,7 +28,7 @@ CurrentCostMeterSerial::CurrentCostMeterSerial(const int ID, const std::string& 
 
 CurrentCostMeterSerial::~CurrentCostMeterSerial()
 {
-	clearReadCallback();
+
 }
 
 bool CurrentCostMeterSerial::StartHardware()
@@ -71,18 +71,7 @@ bool CurrentCostMeterSerial::StartHardware()
 
 bool CurrentCostMeterSerial::StopHardware()
 {
-	if (isOpen())
-	{
-		try {
-			clearReadCallback();
-			close();
-			doClose();
-			setErrorStatus(true);
-		} catch(...)
-		{
-			//Don't throw from a Stop command
-		}
-	}
+	terminate();
 	m_stoprequested = true;
 	if (m_thread)
 	{
