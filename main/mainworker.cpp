@@ -10791,7 +10791,16 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 				level = (level > 99) ? 99 : level;
 			}
 
-			if (switchtype == STYPE_Selector)
+			if (switchtype == STYPE_Doorbell) {
+				int rnvalue = 0;
+				m_sql.GetPreferencesVar("DoorbellCommand", rnvalue);
+				if (rnvalue == 0)
+					lcmd.LIGHTING2.cmnd = gswitch_sGroupOn;
+				else
+					lcmd.LIGHTING2.cmnd = gswitch_sOn;
+				level = 15;
+			}
+			else if (switchtype == STYPE_Selector)
 			{
 				if ((switchcmd == "Set Level") || (switchcmd == "Set Group Level")) {
 					std::map<std::string, std::string> statuses;

@@ -3157,7 +3157,7 @@ bool GetLightCommand(
 			break;
 			case sTypeItho:
 			{
-				if ((switchcmd == "1") || (switchcmd == "On"))
+				if ((switchcmd == "1") || (switchcmd == "On") || (switchcmd == "Off"))
 				{
 					cmd = fan_Itho1;
 				}
