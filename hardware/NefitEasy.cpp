@@ -457,7 +457,7 @@ bool CNefitEasy::GetPressureDetails()
 		return false;
 	}
 	float pressure = root["value"].asFloat();
-	SendPressureSensor(1, 1, -1, pressure, "Pressure");
+	SendPressureSensor(1, 1, -1, pressure, "Pressure", 0);
 	return true;
 }
 

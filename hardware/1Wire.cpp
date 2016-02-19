@@ -402,7 +402,7 @@ void C1Wire::ReportPressure(const std::string& deviceId,float pressure)
 	if (pressure == -1000.0)
 		return;
 
-	SendPressureSensor(0, 0, 255, pressure, NULL);
+	SendPressureSensor(0, 0, 255, pressure, NULL, 0);
 }
 
 void C1Wire::ReportTemperatureHumidity(const std::string& deviceId,float temperature,float humidity)

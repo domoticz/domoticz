@@ -72,7 +72,7 @@ protected:
 	void SendRainSensor(const int NodeID, const int BatteryLevel, const float RainCounter, const std::string &defaultname);
 	float GetRainSensorValue(const int NodeID, bool &bExists);
 	void SendWind(const int NodeID, const int BatteryLevel, const float WindDir, const float WindSpeed, const float WindGust, const float WindTemp, const float WindChill, const bool bHaveWindTemp, const std::string &defaultname);
-	void SendPressureSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float pressure, const char* defaultname);
+	void SendPressureSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float pressure, const char* defaultname, const int NodeID);
 	void SendDistanceSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float distance, const std::string &defaultname);
 	void SendMeterSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float metervalue, const std::string &defaultname);
 	void SendUVSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float UVI, const char* defaultname);

@@ -750,12 +750,13 @@ void CDomoticzHardwareBase::SendWind(const int NodeID, const int BatteryLevel, c
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND, defaultname.c_str(), BatteryLevel);
 }
 
-void CDomoticzHardwareBase::SendPressureSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float pressure, const char* defaultname)
+void CDomoticzHardwareBase::SendPressureSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float pressure, const char* defaultname, const int ID)
 {
 	_tGeneralDevice gdevice;
 	gdevice.intval1 = (NodeID << 8) | ChildID;
 	gdevice.subtype = sTypePressure;
 	gdevice.floatval1 = pressure;
+	gdevice.id = ID;
 	sDecodeRXMessage(this, (const unsigned char *)&gdevice, defaultname, BatteryLevel);
 }
 
