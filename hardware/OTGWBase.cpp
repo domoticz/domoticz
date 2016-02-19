@@ -155,12 +155,7 @@ void OTGWBase::UpdateSetPointSensor(const unsigned char Idx, const float Temp, c
 
 void OTGWBase::UpdatePressureSensor(const unsigned long Idx, const float Pressure, const std::string &defaultname)
 {
-	_tGeneralDevice gDevice;
-	gDevice.subtype=sTypePressure;
-	gDevice.id=1;
-	gDevice.floatval1=Pressure;
-	gDevice.intval1 = static_cast<int>(Idx);
-	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), 255);
+	SendPressureSensor(0, Idx, 255, Pressure, defaultname.c_str());
 }
 
 bool OTGWBase::GetOutsideTemperatureFromDomoticz(float &tvalue)

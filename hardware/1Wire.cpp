@@ -402,10 +402,7 @@ void C1Wire::ReportPressure(const std::string& deviceId,float pressure)
 	if (pressure == -1000.0)
 		return;
 
-	_tGeneralDevice gdevice;
-	gdevice.subtype=sTypePressure;
-	gdevice.floatval1=pressure;
-	sDecodeRXMessage(this, (const unsigned char *)&gdevice, NULL, 255);
+	SendPressureSensor(0, 0, 255, pressure, NULL);
 }
 
 void C1Wire::ReportTemperatureHumidity(const std::string& deviceId,float temperature,float humidity)
