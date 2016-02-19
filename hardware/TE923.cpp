@@ -362,7 +362,7 @@ void CTE923::GetSensorDetails()
 	//UV
 	if (data._uv==0)
 	{
-		SendUVSensor(0, 1, 255, data.uv, NULL)
+		SendUVSensor(0, 1, 255, data.uv, NULL);
 	}
 }
 #endif //WITH_LIBUSB
