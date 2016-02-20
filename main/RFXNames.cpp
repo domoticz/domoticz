@@ -790,7 +790,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeTEMP, sTypeTEMP2, "Temperature" },
 		{ pTypeTEMP, sTypeTEMP3, "Temperature" },
 		{ pTypeTEMP, sTypeTEMP4, "Temperature" },
-		{ pTypeTEMP, sTypeTEMP5, "Temperature,Humidity,Humidity Status" },
+		{ pTypeTEMP, sTypeTEMP5, "Temperature" },
 		{ pTypeTEMP, sTypeTEMP6, "Temperature" },
 		{ pTypeTEMP, sTypeTEMP7, "Temperature" },
 		{ pTypeTEMP, sTypeTEMP8, "Temperature" },
@@ -799,8 +799,8 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeTEMP, sTypeTEMP11, "Temperature" },
 		{ pTypeTEMP, sTypeTEMP_SYSTEM, "Temperature" },
 
-		{ pTypeHUM, sTypeHUM1, "Temperature,Humidity,Humidity Status" },
-		{ pTypeHUM, sTypeHUM2, "Humidity" },
+		{ pTypeHUM, sTypeHUM1, "Humidity,Humidity Status" },
+		{ pTypeHUM, sTypeHUM2, "Humidity,Humidity Status" },
 
 		{ pTypeTEMP_HUM, sTypeTH1, "Temperature,Humidity,Humidity Status" },
 		{ pTypeTEMP_HUM, sTypeTH2, "Temperature,Humidity,Humidity Status" },

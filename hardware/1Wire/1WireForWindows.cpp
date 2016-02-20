@@ -393,7 +393,7 @@ int C1WireForWindows::GetVoltage(const _t1WireDevice& device,int unit) const
    return ansRoot.get("Voltage",0).asInt();
 }
 
-float C1WireForWindows::GetIlluminescence(const _t1WireDevice& device) const
+float C1WireForWindows::GetIlluminance(const _t1WireDevice& device) const
 {
    Json::Value ansRoot;
    try

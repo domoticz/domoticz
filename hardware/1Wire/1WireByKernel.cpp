@@ -307,7 +307,7 @@ int C1WireByKernel::GetVoltage(const _t1WireDevice& device,int unit) const
 	return -1000;// Device not supported in kernel mode (maybe later...), use OWFS solution.
 }
 
-float C1WireByKernel::GetIlluminescence(const _t1WireDevice& device) const
+float C1WireByKernel::GetIlluminance(const _t1WireDevice& device) const
 {
 	return -1000.0;// Device not supported in kernel mode (maybe later...), use OWFS solution.
 }
