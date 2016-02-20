@@ -3190,6 +3190,23 @@ define(['app'], function (app) {
           });
         }
 
+		SendOTGWCommand = function()
+		{
+			var idx=$('#hardwarecontent #idx').val();
+			var cmnd = $('#hardwarecontent #otgwcmnd').val();
+            $.ajax({
+                url: "json.htm?type=command&param=sendopenthermcommand" +
+                    "&idx=" + idx +
+                    "&cmnd=" + cmnd,
+                 async: false,
+                 dataType: 'json',
+                 success: function(data) {
+                 },
+                 error: function(){
+                 }
+            });
+		}
+
         EditOpenTherm = function(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5,Mode6)
         {
         //Mode1=Outside Temperature Sensor DeviceIdx, 0=Not Using
@@ -3211,6 +3228,11 @@ define(['app'], function (app) {
                 e.preventDefault();
                 SetOpenThermSettings();
             });
+            $('#hardwarecontent #buttonsendotgwcmnd').click(function (e) {
+                e.preventDefault();
+                SendOTGWCommand();
+            });
+            
 
             //Get Temperature Sensors
             $.ajax({

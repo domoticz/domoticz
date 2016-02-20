@@ -95,28 +95,6 @@ bool CICYThermostat::WriteToHardware(const char *pdata, const unsigned char leng
 	return false;
 }
 
-void CICYThermostat::SendTempSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
-{
-	RBUF tsen;
-	memset(&tsen,0,sizeof(RBUF));
-
-	tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;
-	tsen.TEMP.packettype=pTypeTEMP;
-	tsen.TEMP.subtype=sTypeTEMP10;
-	tsen.TEMP.battery_level=9;
-	tsen.TEMP.rssi=12;
-	tsen.TEMP.id1=0;
-	tsen.TEMP.id2=Idx;
-
-	tsen.TEMP.tempsign=(Temp>=0)?0:1;
-	int at10=round(abs(Temp*10.0f));
-	tsen.TEMP.temperatureh=(BYTE)(at10/256);
-	at10-=(tsen.TEMP.temperatureh*256);
-	tsen.TEMP.temperaturel=(BYTE)(at10);
-
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, defaultname.c_str(), 255);
-}
-
 void CICYThermostat::SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
 {
 	_tThermostat thermos;
@@ -283,7 +261,7 @@ void CICYThermostat::GetMeterDetails()
 		_log.Log(LOG_ERROR, "ICYThermostat: Invalid data received!");
 		return;
 	}
-	SendTempSensor(1, root["temperature2"].asFloat(), "Room Temperature");
+	SendTempSensor(1, 255, root["temperature2"].asFloat(), "Room Temperature");
 }
 
 void CICYThermostat::SetSetpoint(const int idx, const float temp)

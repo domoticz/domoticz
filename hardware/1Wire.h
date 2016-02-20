@@ -1,6 +1,7 @@
 #pragma once
 
 #include "DomoticzHardware.h"
+#include "../hardware/1Wire/1WireCommon.h"
 
 class I_1WireSystem;
 class C1Wire : public CDomoticzHardwareBase
@@ -17,6 +18,7 @@ private:
 	boost::shared_ptr<boost::thread> m_thread;
 	I_1WireSystem* m_system;
 	std::map<std::string, bool> m_LastSwitchState;
+	std::vector<_t1WireDevice> m_devices;
 
 	static void LogSystem();
 	void DetectSystem();

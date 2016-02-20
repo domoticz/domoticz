@@ -19,9 +19,6 @@ private:
 	int ParsePacket(const unsigned char *pData, int len);
 	//
 	void SendMeter(const unsigned char ID1,const unsigned char ID2, const double musage, const double mtotal, const std::string &defaultname);
-	void SendTempSensor(const unsigned char Idx, const float Temp, const std::string &defaultname);
-	void SendVoltage(const unsigned long Idx, const float Volt, const std::string &defaultname);
-	void SendPercentage(const unsigned long Idx, const float Percentage, const std::string &defaultname);
 
 	float GetFloat(const unsigned char *pData);
 	int ParsePacket0x0280(const unsigned char *pData, int dlen);

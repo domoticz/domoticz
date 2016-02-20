@@ -116,28 +116,6 @@ void OTGWBase::UpdateSwitch(const unsigned char Idx, const bool bOn, const std::
 	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255);
 }
 
-void OTGWBase::UpdateTempSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
-{
-	RBUF tsen;
-	memset(&tsen,0,sizeof(RBUF));
-
-	tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;
-	tsen.TEMP.packettype=pTypeTEMP;
-	tsen.TEMP.subtype=sTypeTEMP10;
-	tsen.TEMP.battery_level=9;
-	tsen.TEMP.rssi=12;
-	tsen.TEMP.id1=0;
-	tsen.TEMP.id2=Idx;
-
-	tsen.TEMP.tempsign=(Temp>=0)?0:1;
-	int at10=round(abs(Temp*10.0f));
-	tsen.TEMP.temperatureh=(BYTE)(at10/256);
-	at10-=(tsen.TEMP.temperatureh*256);
-	tsen.TEMP.temperaturel=(BYTE)(at10);
-
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, defaultname.c_str(), 255);
-}
-
 void OTGWBase::UpdateSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
 {
 	_tThermostat thermos;
@@ -151,16 +129,6 @@ void OTGWBase::UpdateSetPointSensor(const unsigned char Idx, const float Temp, c
 	thermos.temp=Temp;
 
 	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), 255);
-}
-
-void OTGWBase::UpdatePressureSensor(const unsigned long Idx, const float Pressure, const std::string &defaultname)
-{
-	_tGeneralDevice gDevice;
-	gDevice.subtype=sTypePressure;
-	gDevice.id=1;
-	gDevice.floatval1=Pressure;
-	gDevice.intval1 = static_cast<int>(Idx);
-	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), 255);
 }
 
 bool OTGWBase::GetOutsideTemperatureFromDomoticz(float &tvalue)
@@ -409,7 +377,7 @@ void OTGWBase::ParseLine()
 			bool bDiagnosticEvent=(_status.MsgID[9+1]=='1');												UpdateSwitch(116,bDiagnosticEvent,"DiagnosticEvent");
 		}
 
-		_status.Control_setpoint=static_cast<float>(atof(results[idx++].c_str()));							UpdateTempSensor(idx-1,_status.Control_setpoint,"Control Setpoint");
+		_status.Control_setpoint = static_cast<float>(atof(results[idx++].c_str()));						SendTempSensor(idx - 1, 255, _status.Control_setpoint, "Control Setpoint");
 		_status.Remote_parameter_flags=results[idx++];
 		_status.Maximum_relative_modulation_level = static_cast<float>(atof(results[idx++].c_str()));
 		bool bExists = CheckPercentageSensorExists(idx - 1, 1);
@@ -426,17 +394,16 @@ void OTGWBase::ParseLine()
 			SendPercentageSensor(idx - 1, 1, 255, _status.Relative_modulation_level, "Relative modulation level");
 		}
 		_status.CH_water_pressure = static_cast<float>(atof(results[idx++].c_str()));
-		bExists = CheckPercentageSensorExists(idx - 1, 1);
 		if (_status.CH_water_pressure != 0)
 		{
-			UpdatePressureSensor(idx-1,_status.CH_water_pressure,"CH Water Pressure");
+			SendPressureSensor(0, idx - 1, 255, _status.CH_water_pressure, "CH Water Pressure");
 		}
 
-		_status.Room_temperature = static_cast<float>(atof(results[idx++].c_str()));						UpdateTempSensor(idx - 1, _status.Room_temperature, "Room Temperature");
-		_status.Boiler_water_temperature = static_cast<float>(atof(results[idx++].c_str()));				UpdateTempSensor(idx - 1, _status.Boiler_water_temperature, "Boiler Water Temperature");
-		_status.DHW_temperature = static_cast<float>(atof(results[idx++].c_str()));							UpdateTempSensor(idx - 1, _status.DHW_temperature, "DHW Temperature");
-		_status.Outside_temperature = static_cast<float>(atof(results[idx++].c_str()));						UpdateTempSensor(idx - 1, _status.Outside_temperature, "Outside Temperature");
-		_status.Return_water_temperature = static_cast<float>(atof(results[idx++].c_str()));				UpdateTempSensor(idx - 1, _status.Return_water_temperature, "Return Water Temperature");
+		_status.Room_temperature = static_cast<float>(atof(results[idx++].c_str()));						SendTempSensor(idx - 1, 255, _status.Room_temperature, "Room Temperature");
+		_status.Boiler_water_temperature = static_cast<float>(atof(results[idx++].c_str()));				SendTempSensor(idx - 1, 255, _status.Boiler_water_temperature, "Boiler Water Temperature");
+		_status.DHW_temperature = static_cast<float>(atof(results[idx++].c_str()));							SendTempSensor(idx - 1, 255, _status.DHW_temperature, "DHW Temperature");
+		_status.Outside_temperature = static_cast<float>(atof(results[idx++].c_str()));						SendTempSensor(idx - 1, 255, _status.Outside_temperature, "Outside Temperature");
+		_status.Return_water_temperature = static_cast<float>(atof(results[idx++].c_str()));				SendTempSensor(idx - 1, 255, _status.Return_water_temperature, "Return Water Temperature");
 		_status.DHW_setpoint_boundaries=results[idx++];
 		_status.Max_CH_setpoint_boundaries=results[idx++];
 		_status.DHW_setpoint = static_cast<float>(atof(results[idx++].c_str()));							UpdateSetPointSensor(idx - 1, _status.DHW_setpoint, "DHW Setpoint");
@@ -568,6 +535,43 @@ namespace http {
 				m_sql.UpdateRFXCOMHardwareDetails(atoi(idx.c_str()), newMode1, 0, 0, 0, 0, 0);
 				m_mainworker.RestartHardware(idx);
 			}
+		}
+		void CWebServer::Cmd_SendOpenThermCommand(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string idx = request::findValue(&req, "idx");
+			std::string cmnd = request::findValue(&req, "cmnd");
+			if (idx.empty() || cmnd.empty())
+			{
+				return;
+			}
+			size_t tpos = cmnd.find('=');
+			if (tpos != 2)
+			{
+				_log.Log(LOG_STATUS, "OTGW: Invalid user command!: %s", cmnd.c_str());
+				return;
+			}
+			std::string rcmnd = cmnd.substr(0, 2);
+			std::string rdata = cmnd.substr(2);
+			stdupper(rcmnd);
+			cmnd = rcmnd + rdata;
+
+			OTGWBase *pOTGW = (OTGWBase*)m_mainworker.GetHardware(atoi(idx.c_str()));
+			if (pOTGW == NULL)
+				return;
+
+			_log.Log(LOG_STATUS, "User: %s initiated a manual command: %s", session.username.c_str(), cmnd.c_str());
+
+			cmnd += "\r\n";
+
+			pOTGW->WriteInt((const unsigned char*)cmnd.c_str(), (const unsigned char)cmnd.size());
+			root["status"] = "OK";
+			root["title"] = "SendOpenThermCommand";
 		}
 	}
 }

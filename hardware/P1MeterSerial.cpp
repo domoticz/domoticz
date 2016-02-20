@@ -43,7 +43,7 @@ P1MeterSerial::P1MeterSerial(const std::string& devname,
 
 P1MeterSerial::~P1MeterSerial()
 {
-	clearReadCallback();
+
 }
 
 //#define DEBUG_FROM_FILE
@@ -111,18 +111,7 @@ bool P1MeterSerial::StartHardware()
 
 bool P1MeterSerial::StopHardware()
 {
-	if (isOpen())
-	{
-		try {
-			clearReadCallback();
-			close();
-			doClose();
-			setErrorStatus(true);
-		} catch(...)
-		{
-			//Don't throw from a Stop command
-		}
-	}
+	terminate();
 	m_stoprequested = true;
 	if (m_thread)
 	{

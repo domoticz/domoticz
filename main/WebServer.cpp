@@ -378,7 +378,10 @@ namespace http {
 			m_pWebEm->RegisterActionCode("setrego6xxtype", boost::bind(&CWebServer::SetRego6XXType, this, _1, _2, _3));
 			m_pWebEm->RegisterActionCode("sets0metertype", boost::bind(&CWebServer::SetS0MeterType, this, _1, _2, _3));
 			m_pWebEm->RegisterActionCode("setlimitlesstype", boost::bind(&CWebServer::SetLimitlessType, this, _1, _2, _3));
+
 			m_pWebEm->RegisterActionCode("setopenthermsettings", boost::bind(&CWebServer::SetOpenThermSettings, this, _1, _2, _3));
+			RegisterCommandCode("sendopenthermcommand", boost::bind(&CWebServer::Cmd_SendOpenThermCommand, this, _1, _2, _3), true);
+
 			m_pWebEm->RegisterActionCode("setp1usbtype", boost::bind(&CWebServer::SetP1USBType, this, _1, _2, _3));
 			m_pWebEm->RegisterActionCode("setcurrentcostmetertype", boost::bind(&CWebServer::SetCurrentCostUSBType, this, _1, _2, _3));
 			m_pWebEm->RegisterActionCode("restoredatabase", boost::bind(&CWebServer::RestoreDatabase, this, _1, _2, _3));
@@ -3493,6 +3496,7 @@ namespace http {
 						case pTypeLighting4:
 						case pTypeLighting5:
 						case pTypeLighting6:
+						case pTypeFan:
 						case pTypeLimitlessLights:
 						case pTypeSecurity1:
 						case pTypeSecurity2:
@@ -3571,6 +3575,7 @@ namespace http {
 							case pTypeLighting4:
 							case pTypeLighting5:
 							case pTypeLighting6:
+							case pTypeFan:
 							case pTypeLimitlessLights:
 							case pTypeSecurity1:
 							case pTypeSecurity2:
@@ -4118,95 +4123,25 @@ namespace http {
 							return;
 						devid = id;
 					}
+					else if (lighttype == 304)
+					{
+						//Itho CVE RFT
+						dtype = pTypeFan;
+						subtype = sTypeItho;
+						std::string id = request::findValue(&req, "id");
+						if (id.empty())
+							return;
+						devid = id;
+						sunitcode = "0";
+					}
 				}
                 
-                // ----------- RFlink "Test Switch" Fix -----------
+                // ----------- If needed convert to GeneralSwitch type (for o.a. RFlink) -----------
                 CDomoticzHardwareBase *pBaseHardware = (CDomoticzHardwareBase*)m_mainworker.GetHardware(atoi(hwdid.c_str()));
 				if (pBaseHardware != NULL)
 				{
-					if ((pBaseHardware->HwdType == HTYPE_RFLINKUSB)|| (pBaseHardware->HwdType == HTYPE_RFLINKTCP)) {
-						if (dtype == pTypeLighting1) {
-							dtype = pTypeGeneralSwitch;
-							if (subtype == sTypeIMPULS) subtype = sSwitchTypeTriState;
-							if (subtype == sTypeAB400D) subtype = sSwitchTypeAB400D;
-							if (subtype == sTypeIMPULS) subtype = sSwitchTypeTriState;
-							std::stringstream s_strid;
-							s_strid << std::hex << atoi(devid.c_str());
-							devid = s_strid.str();
-							devid = "000000" + devid;
-						}
-						else if (dtype == pTypeLighting2) {
-							dtype = pTypeGeneralSwitch;
-							if (subtype == sTypeAC) subtype = sSwitchTypeAC;
-							if (subtype == sTypeHEU) { subtype = sSwitchTypeHEU; devid = "7" + devid; }
-							if (subtype == sTypeKambrook) subtype = sSwitchTypeKambrook;
-							devid = "0" + devid;
-						}
-						if (dtype == pTypeLighting3) {
-							dtype = pTypeGeneralSwitch;
-							if (subtype == sTypeKoppla) subtype = sSwitchTypeKoppla;
-						}
-						else
-						if (dtype == pTypeLighting4) {
-							dtype = pTypeGeneralSwitch;
-							subtype = sSwitchTypeTriState;
-						}
-						else
-						if (dtype == pTypeLighting5) {
-							dtype = pTypeGeneralSwitch;
-							if (subtype == sTypeEMW100) { subtype = sSwitchTypeEMW100; devid = "00" + devid; }
-							if (subtype == sTypeLivolo) { subtype = sSwitchTypeLivolo; devid = "00" + devid; }
-							if (subtype == sTypeLightwaveRF) { subtype = sSwitchTypeLightwaveRF; devid = "00" + devid; }
-							if (subtype == sTypeLivoloAppliance) { subtype = sSwitchTypeLivoloAppliance; devid = "00" + devid; }
-							if (subtype == sTypeEurodomest) subtype = sSwitchTypeEurodomest;
-						}
-						else
-						if (dtype == pTypeLighting6) {
-							dtype = pTypeGeneralSwitch;
-							subtype = sSwitchTypeBlyss;
-						}
-						else
-						if (dtype == pTypeChime) {
-							dtype = pTypeGeneralSwitch;
-							if (subtype == sTypeByronSX) subtype = sSwitchTypeByronSX;
-							if (subtype == sTypeSelectPlus) subtype = sSwitchTypeSelectPlus;
-							if (subtype == sTypeSelectPlus3) subtype = sSwitchTypeSelectPlus3;
-							if (subtype == sTypeByronMP001) subtype = sSwitchTypeByronMP001;
-						}
-						else
-						if (dtype == pTypeSecurity1) {
-							dtype = pTypeGeneralSwitch;
-							if (subtype == sTypeSecX10) subtype = sSwitchTypeX10secu;
-							if (subtype == sTypeSecX10M) subtype = sSwitchTypeX10secu;
-							if (subtype == sTypeSecX10R) subtype = sSwitchTypeX10secu;
-						}
-						else
-						if (dtype == pTypeHomeConfort) {
-							dtype = pTypeGeneralSwitch;
-							subtype = sSwitchTypeHomeConfort;
-						}
-						else
-						if (dtype == pTypeBlinds) {
-							dtype = pTypeGeneralSwitch;
-							if (subtype == sTypeBlindsT5) subtype = sSwitchTypeBofu;
-							else if (subtype == sTypeBlindsT6) subtype = sSwitchTypeBrel;
-							else if (subtype == sTypeBlindsT7) subtype = sSwitchTypeAOK;
-							else if (subtype == sTypeBlindsT8) subtype = sSwitchTypeBofu;
-							else if (subtype == sTypeBlindsT9) subtype = sSwitchTypeBrel;
-							else if (subtype == sTypeBlindsT10) subtype = sSwitchTypeAOK;
-							std::stringstream s_strid;
-							s_strid << std::hex << strtoul(devid.c_str(), NULL, 16);
-							unsigned long deviceid = 0;
-							s_strid >> deviceid;
-							deviceid = (unsigned long)((deviceid & 0xffffff00) >> 8);
-							sprintf(szTmp, "%lx", deviceid);
-							//_log.Log(LOG_ERROR, "RFLink: deviceid: %x", deviceid);
-							devid = szTmp;
-						}
-						if (dtype == pTypeRFY) {
-							dtype = pTypeGeneralSwitch;
-							subtype = sSwitchTypeRTS;
-						}
+					if ((pBaseHardware->HwdType == HTYPE_RFLINKUSB) || (pBaseHardware->HwdType == HTYPE_RFLINKTCP)) {
+						ConvertToGeneralSwitchType(devid, dtype, subtype);
 					}
 				}
                 // -----------------------------------------------
@@ -4636,6 +4571,17 @@ namespace http {
 						}
 						deviceoptions.append("SelectorStyle:0;LevelNames:Off|Level1|Level2|Level3");
 					}
+					else if (lighttype == 304)
+					{
+						//Itho CVE RFT
+						dtype = pTypeFan;
+						subtype = sTypeItho;
+						std::string id = request::findValue(&req, "id");
+						if (id.empty())
+							return;
+						devid = id;
+						sunitcode = "0";
+					}
 				}
 
 				//check if switch is unique
@@ -4649,98 +4595,12 @@ namespace http {
 					return;
 				}
 
-                // ----------- RFlink "Manual Add" Fix -----------
-                CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(atoi(hwdid.c_str()));
+				// ----------- If needed convert to GeneralSwitch type (for o.a. RFlink) -----------
+				CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(atoi(hwdid.c_str()));
 				if (pBaseHardware != NULL)
 				{
-					if ((pBaseHardware->HwdType == HTYPE_RFLINKUSB)|| (pBaseHardware->HwdType == HTYPE_RFLINKTCP)) {
-						if (dtype == pTypeLighting1){
-							dtype = pTypeGeneralSwitch;
-
-							if (subtype == sTypeIMPULS) subtype = sSwitchTypeTriState;
-							if (subtype == sTypeAB400D) subtype = sSwitchTypeAB400D;
-							if (subtype == sTypeIMPULS) subtype = sSwitchTypeTriState;
-
-							std::stringstream s_strid;
-							s_strid << std::hex << atoi(devid.c_str());
-							devid = s_strid.str();
-							devid = "000000" + devid;
-						}
-						else
-						if (dtype == pTypeLighting2) {
-							dtype = pTypeGeneralSwitch;
-
-							if (subtype == sTypeAC) subtype = sSwitchTypeAC;
-							if (subtype == sTypeHEU) { subtype = sSwitchTypeHEU; devid = "7" + devid;}
-							if (subtype == sTypeKambrook) subtype = sSwitchTypeKambrook;
-							devid = "0" + devid;
-						}
-						else
-						if (dtype == pTypeLighting3) {
-							dtype = pTypeGeneralSwitch;
-							if (subtype == sTypeKoppla) subtype = sSwitchTypeKoppla;
-						}
-						else	
-						if (dtype == pTypeLighting4) {
-							dtype = pTypeGeneralSwitch;
-							subtype = sSwitchTypeTriState;
-						}
-						else
-						if (dtype == pTypeLighting5) {
-							dtype = pTypeGeneralSwitch;
-							if (subtype == sTypeEMW100) { subtype = sSwitchTypeEMW100; devid = "00" + devid; }
-							if (subtype == sTypeLivolo) { subtype = sSwitchTypeLivolo; devid = "00" + devid;}
-							if (subtype == sTypeLightwaveRF) {subtype = sSwitchTypeLightwaveRF; devid = "00" + devid;}
-							if (subtype == sTypeLivoloAppliance) {subtype = sSwitchTypeLivoloAppliance; devid = "00" + devid;}
-							if (subtype == sTypeEurodomest) subtype = sSwitchTypeEurodomest; 
-						}
-						else
-						if (dtype == pTypeLighting6) {
-							dtype = pTypeGeneralSwitch;
-							subtype = sSwitchTypeBlyss;
-						}
-						else
-						if (dtype == pTypeChime) {
-							dtype = pTypeGeneralSwitch;
-							if (subtype == sTypeByronSX) subtype = sSwitchTypeByronSX;
-							if (subtype == sTypeSelectPlus) subtype = sSwitchTypeSelectPlus;
-							if (subtype == sTypeSelectPlus3) subtype = sSwitchTypeSelectPlus3;
-							if (subtype == sTypeByronMP001) subtype = sSwitchTypeByronMP001;
-						}
-						else
-						if (dtype == pTypeSecurity1) {
-							dtype = pTypeGeneralSwitch;
-							if (subtype == sTypeSecX10) subtype = sSwitchTypeX10secu;
-							if (subtype == sTypeSecX10M) subtype = sSwitchTypeX10secu;
-							if (subtype == sTypeSecX10R) subtype = sSwitchTypeX10secu;
-						}
-						else
-						if (dtype == pTypeHomeConfort) {
-							dtype = pTypeGeneralSwitch;
-							subtype = sSwitchTypeHomeConfort;
-						}
-						else
-						if (dtype == pTypeBlinds) {
-							dtype = pTypeGeneralSwitch;
-							if (subtype == sTypeBlindsT5) subtype = sSwitchTypeBofu;
-							else if (subtype == sTypeBlindsT6) subtype = sSwitchTypeBrel;
-							else if (subtype == sTypeBlindsT7) subtype = sSwitchTypeAOK;
-							else if (subtype == sTypeBlindsT8) subtype = sSwitchTypeBofu;
-							else if (subtype == sTypeBlindsT9) subtype = sSwitchTypeBrel;
-							else if (subtype == sTypeBlindsT10) subtype = sSwitchTypeAOK;
-							std::stringstream s_strid;
-							s_strid << std::hex << strtoul(devid.c_str(), NULL, 16);
-							unsigned long deviceid = 0;
-							s_strid >> deviceid;
-							deviceid = (unsigned long)((deviceid & 0xffffff00) >> 8);
-							sprintf(szTmp, "%lx", deviceid);
-							//_log.Log(LOG_ERROR, "RFLink: deviceid: %x", deviceid);
-							devid = szTmp;
-						}
-						if (dtype == pTypeRFY) {
-							dtype = pTypeGeneralSwitch;
-							subtype = sSwitchTypeRTS;
-						}
+					if ((pBaseHardware->HwdType == HTYPE_RFLINKUSB) || (pBaseHardware->HwdType == HTYPE_RFLINKTCP)) {
+						ConvertToGeneralSwitchType(devid, dtype, subtype);
 					}
 				}
                 // -----------------------------------------------
@@ -5708,6 +5568,7 @@ namespace http {
 					(dType != pTypeLighting4) &&
 					(dType != pTypeLighting5) &&
 					(dType != pTypeLighting6) &&
+					(dType != pTypeFan) &&
 					(dType != pTypeLimitlessLights) &&
 					(dType != pTypeSecurity1) &&
 					(dType != pTypeSecurity2) &&
@@ -7653,6 +7514,7 @@ namespace http {
 								(dType != pTypeLighting4) &&
 								(dType != pTypeLighting5) &&
 								(dType != pTypeLighting6) &&
+								(dType != pTypeFan) &&
 								(dType != pTypeLimitlessLights) &&
 								(dType != pTypeSecurity1) &&
 								(dType != pTypeSecurity2) &&
@@ -7901,6 +7763,7 @@ namespace http {
 						(dType == pTypeLighting4) ||
 						(dType == pTypeLighting5) ||
 						(dType == pTypeLighting6) ||
+						(dType == pTypeFan) ||
 						(dType == pTypeLimitlessLights) ||
 						(dType == pTypeCurtain) ||
 						(dType == pTypeBlinds) ||
@@ -8664,7 +8527,7 @@ namespace http {
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_COUNTER:
-							sprintf(szTmp, "%.03f %s", fvalue, ValueUnits.c_str());
+							sprintf(szTmp, "%.0f %s", fvalue, ValueUnits.c_str());
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							root["result"][ii]["ValueQuantity"] = ValueQuantity;
@@ -8781,7 +8644,7 @@ namespace http {
                                 root["result"][ii]["Counter"] = szTmp;
                                 break;
                         case MTYPE_COUNTER:
-                                sprintf(szTmp, "%.03f %s", fvalue, ValueUnits.c_str());
+                                sprintf(szTmp, "%.0f %s", fvalue, ValueUnits.c_str());
                                 root["result"][ii]["Data"] = szTmp;
                                 root["result"][ii]["Counter"] = szTmp;
                                 root["result"][ii]["ValueQuantity"] = ValueQuantity;
@@ -11675,6 +11538,7 @@ namespace http {
 				(dType != pTypeLighting4) &&
 				(dType != pTypeLighting5) &&
 				(dType != pTypeLighting6) &&
+				(dType != pTypeFan) &&
 				(dType != pTypeLimitlessLights) &&
 				(dType != pTypeSecurity1) &&
 				(dType != pTypeSecurity2) &&
@@ -11861,8 +11725,16 @@ namespace http {
 			unsigned char dType = atoi(result[0][0].c_str());
 			unsigned char dSubType = atoi(result[0][1].c_str());
 			_eMeterType metertype = (_eMeterType)atoi(result[0][2].c_str());
-			if ((dType == pTypeP1Power) || (dType == pTypeENERGY) || (dType == pTypePOWER) || ((dType == pTypeGeneral) && (dSubType == sTypeKwh)))
+			if (
+				(dType == pTypeP1Power) || 
+				(dType == pTypeENERGY) || 
+				(dType == pTypePOWER) || 
+				(dType == pTypeCURRENTENERGY) ||
+				((dType == pTypeGeneral) && (dSubType == sTypeKwh))
+				)
+			{
 				metertype = MTYPE_ENERGY;
+			}
 			else if (dType == pTypeP1Gas)
 				metertype = MTYPE_GAS;
 			else if ((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXCounter))
@@ -14663,7 +14535,7 @@ namespace http {
 								sprintf(szTmp, "%.3f", fvalue / WaterDivider);
 								break;
 							default:
-								sprintf(szTmp, "");
+								strcpy(szTmp, "");
 								break;
 							}
 							root["counter"] = szTmp;
@@ -14689,7 +14561,7 @@ namespace http {
 									sprintf(szTmp, "%.3f", fvalue / WaterDivider);
 									break;
 								default:
-									sprintf(szTmp, "");
+									strcpy(szTmp, "");
 									break;
 								}
 								root["counter"] = szTmp;

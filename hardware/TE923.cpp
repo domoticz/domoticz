@@ -151,122 +151,37 @@ void CTE923::GetSensorDetails()
 	//Add temp sensors
 	for (ii=0; ii<6; ii++)
 	{
+		int BatLevel = 100;
+		if (ii > 0)
+		{
+			if (dev.battery[ii - 1])
+				BatLevel = 100;
+			else
+				BatLevel = 0;
+		}
+
 		if ((data._t[ii]==0)&&(data._h[ii]==0))
 		{
 			//Temp+Hum
-			RBUF tsen;
-			memset(&tsen,0,sizeof(RBUF));
-
 			//special case if baro is present for first sensor
 			if ((ii==0)&&(data._press == 0 ))
 			{
-				tsen.TEMP_HUM_BARO.packetlength=sizeof(tsen.TEMP_HUM_BARO)-1;
-				tsen.TEMP_HUM_BARO.packettype=pTypeTEMP_HUM_BARO;
-				tsen.TEMP_HUM_BARO.subtype=sTypeTHBFloat;
-
-				tsen.TEMP_HUM_BARO.battery_level=9;
-				tsen.TEMP_HUM_BARO.rssi=12;
-				tsen.TEMP_HUM_BARO.id1=0;
-				tsen.TEMP_HUM_BARO.id2=ii;
-
-				tsen.TEMP_HUM_BARO.tempsign=(data.t[ii]>=0)?0:1;
-				int at10=round(abs(data.t[ii]*10.0f));
-				tsen.TEMP_HUM_BARO.temperatureh=(BYTE)(at10/256);
-				at10-=(tsen.TEMP_HUM_BARO.temperatureh*256);
-				tsen.TEMP_HUM_BARO.temperaturel=(BYTE)(at10);
-				tsen.TEMP_HUM_BARO.humidity=(BYTE)data.h[ii];
-				tsen.TEMP_HUM_BARO.humidity_status=Get_Humidity_Level(tsen.TEMP_HUM.humidity);
-
-				int ab10=round(data.press*10.0f);
-				tsen.TEMP_HUM_BARO.baroh=(BYTE)(ab10/256);
-				ab10-=(tsen.TEMP_HUM_BARO.baroh*256);
-				tsen.TEMP_HUM_BARO.barol=(BYTE)(ab10);
-				tsen.TEMP_HUM_BARO.forecast=data.forecast;
-
-				sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM_BARO, NULL, (dev.battery[ii - 1]) ? 100 : 0);
+				SendTempHumBaroSensorFloat(ii, BatLevel, data.t[ii], data.h[ii], data.press, data.forecast, "THB");
 			}
 			else
 			{
-				tsen.TEMP_HUM.packetlength=sizeof(tsen.TEMP_HUM)-1;
-				tsen.TEMP_HUM.packettype=pTypeTEMP_HUM;
-				tsen.TEMP_HUM.subtype=sTypeTH5;
-				if (dev.battery[ii-1])
-					tsen.TEMP_HUM.battery_level=9;
-				else
-					tsen.TEMP_HUM.battery_level=0;
-				tsen.TEMP_HUM.rssi=12;
-				tsen.TEMP_HUM.id1=0;
-				tsen.TEMP_HUM.id2=ii;
-
-				tsen.TEMP_HUM.tempsign=(data.t[ii]>=0)?0:1;
-				int at10=round(abs(data.t[ii]*10.0f));
-				tsen.TEMP_HUM.temperatureh=(BYTE)(at10/256);
-				at10-=(tsen.TEMP_HUM.temperatureh*256);
-				tsen.TEMP_HUM.temperaturel=(BYTE)(at10);
-				tsen.TEMP_HUM.humidity=(BYTE)data.h[ii];
-				tsen.TEMP_HUM.humidity_status=Get_Humidity_Level(tsen.TEMP_HUM.humidity);
-
-				sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM, NULL, -1);
+				SendTempHumSensor(ii, BatLevel, data.t[ii], data.h[ii], "TempHum");
 			}
 		}
 		else if (data._t[ii]==0)
 		{
 			//Temp
-			RBUF tsen;
-			memset(&tsen,0,sizeof(RBUF));
-			tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;
-			tsen.TEMP.packettype=pTypeTEMP;
-			tsen.TEMP.subtype=sTypeTEMP10;
-			if (ii>0)
-			{
-				if (dev.battery[ii-1])
-					tsen.TEMP.battery_level=9;
-				else
-					tsen.TEMP.battery_level=0;
-			}
-			else
-			{
-				tsen.TEMP.battery_level=9;
-			}
-			tsen.TEMP.rssi=12;
-			tsen.TEMP.id1=0;
-			tsen.TEMP.id2=ii;
-
-			tsen.TEMP.tempsign=(data.t[ii]>=0)?0:1;
-			int at10=round(abs(data.t[ii]*10.0f));
-			tsen.TEMP.temperatureh=(BYTE)(at10/256);
-			at10-=(tsen.TEMP.temperatureh*256);
-			tsen.TEMP.temperaturel=(BYTE)(at10);
-
-			sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, NULL, -1);
+			SendTempSensor(ii, BatLevel, data.t[ii], "Temperature");
 		}
 		else if (data._h[ii]==0)
 		{
 			//Hum
-			RBUF tsen;
-			memset(&tsen,0,sizeof(RBUF));
-			tsen.HUM.packetlength=sizeof(tsen.HUM)-1;
-			tsen.HUM.packettype=pTypeHUM;
-			tsen.HUM.subtype=sTypeHUM2;
-			if (ii>0)
-			{
-				if (dev.battery[ii-1])
-					tsen.HUM.battery_level=9;
-				else
-					tsen.HUM.battery_level=0;
-			}
-			else
-			{
-				tsen.HUM.battery_level=9;
-			}
-			tsen.HUM.rssi=12;
-			tsen.HUM.id1=0;
-			tsen.HUM.id2=ii;
-
-			tsen.HUM.humidity=(BYTE)data.h[ii];
-			tsen.HUM.humidity_status=Get_Humidity_Level(tsen.HUM.humidity);
-
-			sDecodeRXMessage(this, (const unsigned char *)&tsen.HUM, NULL, -1);
+			SendHumiditySensor(ii, BatLevel, data.h[ii], "Humidity");
 		}
 	}
 
@@ -334,6 +249,9 @@ void CTE923::GetSensorDetails()
 	//Rain
 	if (data._RainCount==0)
 	{
+		int BatLevel = (dev.batteryRain) ? 100 : 0;
+		SendRainSensor(1, BatLevel, float(data.RainCount) / 0.7f, "Rain");
+/*
 		RBUF tsen;
 		memset(&tsen,0,sizeof(RBUF));
 		tsen.RAIN.packetlength=sizeof(tsen.RAIN)-1;
@@ -356,8 +274,8 @@ void CTE923::GetSensorDetails()
 		tsen.RAIN.raintotal2=(BYTE)(tr10/256);
 		tr10-=(tsen.RAIN.raintotal2*256);
 		tsen.RAIN.raintotal3=(BYTE)(tr10);
-
 		sDecodeRXMessage(this, (const unsigned char *)&tsen.RAIN, NULL, -1);
+*/
 	}
 	//UV
 	if (data._uv==0)

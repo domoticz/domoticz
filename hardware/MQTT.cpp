@@ -493,7 +493,7 @@ void MQTT::SendDeviceInfo(const int m_HwdID, const unsigned long long DeviceRowI
 	if (!m_IsConnected)
 		return;
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT DeviceID, Unit, Name, [Type], SubType, nValue, sValue, SwitchType, SignalLevel, BatteryLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (ID==%llu)", m_HwdID, DeviceRowIdx);
+	result = m_sql.safe_query("SELECT DeviceID, Unit, Name, [Type], SubType, nValue, sValue, SwitchType, SignalLevel, BatteryLevel, Options FROM DeviceStatus WHERE (HardwareID==%d) AND (ID==%llu)", m_HwdID, DeviceRowIdx);
 	if (result.size() > 0)
 	{
 		std::vector<std::string> sd = result[0];
@@ -507,6 +507,7 @@ void MQTT::SendDeviceInfo(const int m_HwdID, const unsigned long long DeviceRowI
 		_eSwitchType switchType = (_eSwitchType)atoi(sd[7].c_str());
 		int RSSI = atoi(sd[8].c_str());
 		int BatteryLevel = atoi(sd[9].c_str());
+		std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sd[10]);
 
 		Json::Value root;
 
@@ -519,6 +520,14 @@ void MQTT::SendDeviceInfo(const int m_HwdID, const unsigned long long DeviceRowI
 
 		if (IsLightOrSwitch(dType, dSubType) == true) {
 			root["switchType"] = Switch_Type_Desc(switchType);
+		}
+		// Add device options
+		std::map<std::string, std::string>::const_iterator ittOptions;
+		for (ittOptions = options.begin(); ittOptions != options.end(); ++ittOptions)
+		{
+			std::string optionName = ittOptions->first.c_str();
+			std::string optionValue = ittOptions->second.c_str();
+			root[optionName] = optionValue;
 		}
 
 		root["RSSI"] = RSSI;

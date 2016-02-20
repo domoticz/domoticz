@@ -127,7 +127,7 @@
 #define sSwitchTypeDiya				0x41
 #define sSwitchTypeX10secu			0x42
 #define sSwitchTypeAtlantic			0x43
-#define sSwitchTypeSilvercrestDB	0x44 
+#define sSwitchTypeSilvercrestDB	0x44
 #define sSwitchTypeMedionDB			0x45
 #define sSwitchTypeVMC				0x46
 #define sSwitchTypeKeeloq			0x47
@@ -390,6 +390,9 @@ typedef struct _tGeneralSwitch {
 		seqnbr = 0;
 		reserved_int = 0;
 		reserved_float = 0;
+		level = 0;
+		battery_level = 255;
+		rssi = 12;
 	}
 } GeneralSwitch;
 

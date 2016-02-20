@@ -405,7 +405,7 @@ CEnOceanESP3::CEnOceanESP3(const int ID, const std::string& devname, const int t
 
 CEnOceanESP3::~CEnOceanESP3()
 {
-	clearReadCallback();
+
 }
 
 bool CEnOceanESP3::StartHardware()
@@ -427,18 +427,7 @@ bool CEnOceanESP3::StopHardware()
 		// Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
 		sleep_milliseconds(10);
 	}
-	if (isOpen())
-	{
-		try {
-			clearReadCallback();
-			close();
-			doClose();
-			setErrorStatus(true);
-		} catch(...)
-		{
-			//Don't throw from a Stop command
-		}
-	}
+	terminate();
 	m_bIsStarted=false;
 	return true;
 }

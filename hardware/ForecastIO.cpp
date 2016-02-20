@@ -200,76 +200,17 @@ void CForecastIO::GetMeterDetails()
 	if (barometric!=0)
 	{
 		//Add temp+hum+baro device
-		RBUF tsen;
-		memset(&tsen,0,sizeof(RBUF));
-		tsen.TEMP_HUM_BARO.packetlength=sizeof(tsen.TEMP_HUM_BARO)-1;
-		tsen.TEMP_HUM_BARO.packettype=pTypeTEMP_HUM_BARO;
-		tsen.TEMP_HUM_BARO.subtype=sTypeTHB1;
-		tsen.TEMP_HUM_BARO.battery_level=9;
-		tsen.TEMP_HUM_BARO.rssi=12;
-		tsen.TEMP_HUM_BARO.id1=0;
-		tsen.TEMP_HUM_BARO.id2=1;
-
-		tsen.TEMP_HUM_BARO.tempsign=(temp>=0)?0:1;
-		int at10=round(abs(temp*10.0f));
-		tsen.TEMP_HUM_BARO.temperatureh=(BYTE)(at10/256);
-		at10-=(tsen.TEMP_HUM_BARO.temperatureh*256);
-		tsen.TEMP_HUM_BARO.temperaturel=(BYTE)(at10);
-		tsen.TEMP_HUM_BARO.humidity=(BYTE)humidity;
-		tsen.TEMP_HUM_BARO.humidity_status=Get_Humidity_Level(tsen.TEMP_HUM.humidity);
-
-		int ab10=round(barometric);
-		tsen.TEMP_HUM_BARO.baroh=(BYTE)(ab10/256);
-		ab10-=(tsen.TEMP_HUM_BARO.baroh*256);
-		tsen.TEMP_HUM_BARO.barol=(BYTE)(ab10);
-		
-		tsen.TEMP_HUM_BARO.forecast=barometric_forcast;
-
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM_BARO, NULL, 255);
+		SendTempHumBaroSensor(1, 255, temp, humidity, static_cast<float>(barometric), barometric_forcast, "THB");
 	}
 	else if (humidity!=0)
 	{
 		//add temp+hum device
-		RBUF tsen;
-		memset(&tsen,0,sizeof(RBUF));
-		tsen.TEMP_HUM.packetlength=sizeof(tsen.TEMP_HUM)-1;
-		tsen.TEMP_HUM.packettype=pTypeTEMP_HUM;
-		tsen.TEMP_HUM.subtype=sTypeTH5;
-		tsen.TEMP_HUM.battery_level=9;
-		tsen.TEMP_HUM.rssi=12;
-		tsen.TEMP_HUM.id1=0;
-		tsen.TEMP_HUM.id2=1;
-
-		tsen.TEMP_HUM.tempsign=(temp>=0)?0:1;
-		int at10=round(abs(temp*10.0f));
-		tsen.TEMP_HUM.temperatureh=(BYTE)(at10/256);
-		at10-=(tsen.TEMP_HUM.temperatureh*256);
-		tsen.TEMP_HUM.temperaturel=(BYTE)(at10);
-		tsen.TEMP_HUM.humidity=(BYTE)humidity;
-		tsen.TEMP_HUM.humidity_status=Get_Humidity_Level(tsen.TEMP_HUM.humidity);
-
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM, NULL, 255);
+		SendTempHumSensor(1, 255, temp, humidity, "TempHum");
 	}
 	else
 	{
 		//add temp device
-		RBUF tsen;
-		memset(&tsen,0,sizeof(RBUF));
-		tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;
-		tsen.TEMP.packettype=pTypeTEMP;
-		tsen.TEMP.subtype=sTypeTEMP10;
-		tsen.TEMP.battery_level=9;
-		tsen.TEMP.rssi=12;
-		tsen.TEMP.id1=0;
-		tsen.TEMP.id2=1;
-
-		tsen.TEMP.tempsign=(temp>=0)?0:1;
-		int at10=round(abs(temp*10.0f));
-		tsen.TEMP.temperatureh=(BYTE)(at10/256);
-		at10-=(tsen.TEMP.temperatureh*256);
-		tsen.TEMP.temperaturel=(BYTE)(at10);
-
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, NULL, 255);
+		SendTempSensor(1, 255, temp, "Temperature");
 	}
 
 	//Wind

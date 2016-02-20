@@ -34,6 +34,7 @@ CDavisLoggerSerial::CDavisLoggerSerial(const int ID, const std::string& devname,
 
 CDavisLoggerSerial::~CDavisLoggerSerial(void)
 {
+
 }
 
 bool CDavisLoggerSerial::StartHardware()
@@ -57,18 +58,7 @@ bool CDavisLoggerSerial::StopHardware()
 	}
 	// Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
 	sleep_milliseconds(10);
-	if (isOpen())
-	{
-		try {
-			clearReadCallback();
-			close();
-			doClose();
-			setErrorStatus(true);
-		} catch(...)
-		{
-			//Don't throw from a Stop command
-		}
-	}
+	terminate();
 	m_bIsStarted=false;
 	return true;
 }
@@ -155,15 +145,7 @@ void CDavisLoggerSerial::Do_Work()
 				else {
 					m_retrycntr=0;
 					//still did not receive a wakeup, lets try again
-					try {
-						clearReadCallback();
-						close();
-						doClose();
-						setErrorStatus(true);
-					} catch(...)
-					{
-						//Don't throw from a Stop command
-					}
+					terminate();
 				}
 				break;
 			case DSTATE_LOOP:
@@ -202,29 +184,13 @@ void CDavisLoggerSerial::readCallback(const char *data, size_t len)
 			if (len!=100) {
 				_log.Log(LOG_ERROR,"Davis: Invalid bytes received!...");
 				//lets try again
-				try {
-					clearReadCallback();
-					close();
-					doClose();
-					setErrorStatus(true);
-				} catch(...)
-				{
-					//Don't throw from a Stop command
-				}
+				terminate();
 			}
 			else {
 				if (!HandleLoopData((const unsigned char*)data,len))
 				{
 					//error in data, try again...
-					try {
-						clearReadCallback();
-						close();
-						doClose();
-						setErrorStatus(true);
-					} catch(...)
-					{
-						//Don't throw from a Stop command
-					}
+					terminate();
 				}
 			}
 			break;
@@ -234,70 +200,6 @@ void CDavisLoggerSerial::readCallback(const char *data, size_t len)
 	{
 
 	}
-}
-
-void CDavisLoggerSerial::UpdateTempHumSensor(const unsigned char Idx, const float Temp, const int Hum)
-{
-	RBUF tsen;
-	memset(&tsen,0,sizeof(RBUF));
-	tsen.TEMP_HUM.packetlength=sizeof(tsen.TEMP_HUM)-1;
-	tsen.TEMP_HUM.packettype=pTypeTEMP_HUM;
-	tsen.TEMP_HUM.subtype=sTypeTH5;
-	tsen.TEMP_HUM.battery_level=9;
-	tsen.TEMP_HUM.rssi=12;
-	tsen.TEMP_HUM.id1=0;
-	tsen.TEMP_HUM.id2=Idx;
-
-	tsen.TEMP_HUM.tempsign=(Temp>=0)?0:1;
-	int at10=round(abs(Temp*10.0f));
-	tsen.TEMP_HUM.temperatureh=(BYTE)(at10/256);
-	at10-=(tsen.TEMP_HUM.temperatureh*256);
-	tsen.TEMP_HUM.temperaturel=(BYTE)(at10);
-	tsen.TEMP_HUM.humidity=(BYTE)Hum;
-	tsen.TEMP_HUM.humidity_status=Get_Humidity_Level(tsen.TEMP_HUM.humidity);
-
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM, NULL, 255);
-}
-
-void CDavisLoggerSerial::UpdateTempSensor(const unsigned char Idx, const float Temp)
-{
-	RBUF tsen;
-	memset(&tsen,0,sizeof(RBUF));
-
-	tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;
-	tsen.TEMP.packettype=pTypeTEMP;
-	tsen.TEMP.subtype=sTypeTEMP10;
-	tsen.TEMP.battery_level=9;
-	tsen.TEMP.rssi=12;
-	tsen.TEMP.id1=0;
-	tsen.TEMP.id2=Idx;
-
-	tsen.TEMP.tempsign=(Temp>=0)?0:1;
-	int at10=round(abs(Temp*10.0f));
-	tsen.TEMP.temperatureh=(BYTE)(at10/256);
-	at10-=(tsen.TEMP.temperatureh*256);
-	tsen.TEMP.temperaturel=(BYTE)(at10);
-
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, NULL, 255);
-}
-
-void CDavisLoggerSerial::UpdateHumSensor(const unsigned char Idx, const int Hum)
-{
-	RBUF tsen;
-	memset(&tsen,0,sizeof(RBUF));
-
-	tsen.HUM.packetlength=sizeof(tsen.HUM)-1;
-	tsen.HUM.packettype=pTypeHUM;
-	tsen.HUM.subtype=sTypeHUM2;
-	tsen.HUM.battery_level=9;
-	tsen.HUM.rssi=12;
-	tsen.HUM.id1=0;
-	tsen.HUM.id2=Idx;
-
-	tsen.HUM.humidity=(BYTE)Hum;
-	tsen.HUM.humidity_status=Get_Humidity_Level(tsen.HUM.humidity);
-
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.HUM, NULL, 255);
 }
 
 bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
@@ -381,45 +283,21 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 
 	if (bBaroValid&&bInsideTemperatureValid&&bInsideHumidityValid)
 	{
-		memset(&tsen,0,sizeof(RBUF));
-		tsen.TEMP_HUM_BARO.packetlength=sizeof(tsen.TEMP_HUM_BARO)-1;
-		tsen.TEMP_HUM_BARO.packettype=pTypeTEMP_HUM_BARO;
-		tsen.TEMP_HUM_BARO.subtype=sTypeTHBFloat;
-		tsen.TEMP_HUM_BARO.battery_level=9;
-		tsen.TEMP_HUM_BARO.rssi=12;
-		tsen.TEMP_HUM_BARO.id1=0;
-		tsen.TEMP_HUM_BARO.id2=tempIdx++;
+		uint8_t forecastitem = pData[89];
+		int forecast = 0;
 
-		tsen.TEMP_HUM_BARO.tempsign=(InsideTemperature>=0)?0:1;
-		int at10=round(abs(InsideTemperature*10.0f));
-		tsen.TEMP_HUM_BARO.temperatureh=(BYTE)(at10/256);
-		at10-=(tsen.TEMP_HUM_BARO.temperatureh*256);
-		tsen.TEMP_HUM_BARO.temperaturel=(BYTE)(at10);
-		tsen.TEMP_HUM_BARO.humidity=(BYTE)InsideHumidity;
-		tsen.TEMP_HUM_BARO.humidity_status=Get_Humidity_Level(tsen.TEMP_HUM.humidity);
+		if ((forecastitem & 0x01) == 0x01)
+			forecast = wsbaroforcast_rain;
+		else if ((forecastitem & 0x02) == 0x02)
+			forecast = wsbaroforcast_cloudy;
+		else if ((forecastitem & 0x04) == 0x04)
+			forecast = wsbaroforcast_some_clouds;
+		else if ((forecastitem & 0x08) == 0x08)
+			forecast = wsbaroforcast_sunny;
+		else if ((forecastitem & 0x10) == 0x10)
+			forecast = wsbaroforcast_snow;
 
-		int ab10=round(BaroMeter*10.0f);
-		tsen.TEMP_HUM_BARO.baroh=(BYTE)(ab10/256);
-		ab10-=(tsen.TEMP_HUM_BARO.baroh*256);
-		tsen.TEMP_HUM_BARO.barol=(BYTE)(ab10);
-
-		uint8_t forecastitem=pData[89];
-		int forecast=0;
-
-		if ((forecastitem&0x01)==0x01)
-			forecast=wsbaroforcast_rain;
-		else if ((forecastitem&0x02)==0x02)
-			forecast=wsbaroforcast_cloudy;
-		else if ((forecastitem&0x04)==0x04)
-			forecast=wsbaroforcast_some_clouds;
-		else if ((forecastitem&0x08)==0x08)
-			forecast=wsbaroforcast_sunny;
-		else if ((forecastitem&0x10)==0x10)
-			forecast=wsbaroforcast_snow;
-
-		tsen.TEMP_HUM_BARO.forecast=forecast;
-
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM_BARO, NULL, 255);
+		SendTempHumBaroSensorFloat(tempIdx++, 255, InsideTemperature, InsideHumidity, BaroMeter, forecast, "THB");
 	}
 
 	//Outside Temperature
@@ -439,23 +317,20 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 	}
 	if (bOutsideTemperatureValid||bOutsideHumidityValid)
 	{
-		//add outside sensor
-		memset(&tsen,0,sizeof(RBUF));
-
 		if ((bOutsideTemperatureValid)&&(bOutsideHumidityValid))
 		{
 			//Temp+hum
-			UpdateTempHumSensor(tempIdx++,OutsideTemperature,OutsideHumidity);
+			SendTempHumSensor(tempIdx++, 255, OutsideTemperature, OutsideHumidity,"Outside TempHum");
 		}
 		else if (bOutsideTemperatureValid)
 		{
 			//Temp
-			UpdateTempSensor(tempIdx++,OutsideTemperature);
+			SendTempSensor(tempIdx++, 255, OutsideTemperature, "Outside Temp");
 		}
 		else if (bOutsideHumidityValid)
 		{
 			//hum
-			UpdateHumSensor(tempIdx++,OutsideHumidity);
+			SendHumiditySensor(tempIdx++, 255, OutsideHumidity, "Outside Humidity");
 		}
 	}
 
@@ -483,17 +358,17 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 		if ((bTempValid)&&(bHumValid))
 		{
 			//Temp+hum
-			UpdateTempHumSensor(tempIdx++,temp,hum);
+			SendTempHumSensor(tempIdx++, 255, temp, hum, "Extra TempHum");
 		}
 		else if (bTempValid)
 		{
 			//Temp
-			UpdateTempSensor(tempIdx++,temp);
+			SendTempSensor(tempIdx++, 255, temp, "Extra Temp");
 		}
 		else if (bHumValid)
 		{
 			//hum
-			UpdateHumSensor(tempIdx++,hum);
+			SendHumiditySensor(tempIdx++, 255, hum, "Extra Humidity");
 		}
 	}
 
@@ -512,7 +387,7 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 		}
 		if (bTempValid)
 		{
-			UpdateTempSensor(tempIdx++,temp);
+			SendTempSensor(tempIdx++, 255, temp, "Soil Temp");
 		}
 	}
 
@@ -531,7 +406,7 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 		}
 		if (bTempValid)
 		{
-			UpdateTempSensor(tempIdx++,temp);
+			SendTempSensor(tempIdx++, 255, temp, "Leaf Temp");
 		}
 	}
 
@@ -641,27 +516,7 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 		float rainYear=((unsigned int)((pData[55] << 8) | pData[54])) / 100.0f; //inches
 		rainYear*=25.4f; //mm
 
-		RBUF tsen;
-		memset(&tsen,0,sizeof(RBUF));
-		tsen.RAIN.packetlength=sizeof(tsen.RAIN)-1;
-		tsen.RAIN.packettype=pTypeRAIN;
-		tsen.RAIN.subtype=sTypeRAIN3;
-		tsen.RAIN.battery_level=9;
-		tsen.RAIN.rssi=12;
-		tsen.RAIN.id1=0;
-		tsen.RAIN.id2=1;
-
-		tsen.RAIN.rainrateh=0;
-		tsen.RAIN.rainratel=0;
-
-		int tr10=int(float(rainYear)*10.0f);
-
-		tsen.RAIN.raintotal1=0;
-		tsen.RAIN.raintotal2=(BYTE)(tr10/256);
-		tr10-=(tsen.RAIN.raintotal2*256);
-		tsen.RAIN.raintotal3=(BYTE)(tr10);
-
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.RAIN, NULL, 255);
+		SendRainSensor(1, 255, rainYear, "Rain");
 	}
 
 	//Solar Radiation

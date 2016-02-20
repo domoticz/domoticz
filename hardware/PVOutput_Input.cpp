@@ -83,48 +83,6 @@ bool CPVOutputInput::WriteToHardware(const char *pdata, const unsigned char leng
 	return false;
 }
 
-void CPVOutputInput::SendTempSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
-{
-	RBUF tsen;
-	memset(&tsen,0,sizeof(RBUF));
-
-	tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;
-	tsen.TEMP.packettype=pTypeTEMP;
-	tsen.TEMP.subtype=sTypeTEMP10;
-	tsen.TEMP.battery_level=9;
-	tsen.TEMP.rssi=12;
-	tsen.TEMP.id1=0;
-	tsen.TEMP.id2=Idx;
-
-	tsen.TEMP.tempsign=(Temp>=0)?0:1;
-	int at10=round(abs(Temp*10.0f));
-	tsen.TEMP.temperatureh=(BYTE)(at10/256);
-	at10-=(tsen.TEMP.temperatureh*256);
-	tsen.TEMP.temperaturel=(BYTE)(at10);
-
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, defaultname.c_str(), 255);
-}
-
-void CPVOutputInput::SendVoltage(const unsigned long Idx, const float Volt, const std::string &defaultname)
-{
-	_tGeneralDevice gDevice;
-	gDevice.subtype=sTypeVoltage;
-	gDevice.id=1;
-	gDevice.floatval1=Volt;
-	gDevice.intval1 = static_cast<int>(Idx);
-	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), 255);
-}
-
-void CPVOutputInput::SendPercentage(const unsigned long Idx, const float Percentage, const std::string &defaultname)
-{
-	_tGeneralDevice gDevice;
-	gDevice.subtype=sTypePercentage;
-	gDevice.id=1;
-	gDevice.floatval1=Percentage;
-	gDevice.intval1 = static_cast<int>(Idx);
-	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), 255);
-}
-
 void CPVOutputInput::GetMeterDetails()
 {
 	if (m_SID.size()==0)
@@ -168,18 +126,18 @@ void CPVOutputInput::GetMeterDetails()
 		double Efficiency=atof(splitresult[6].c_str())*100.0;
 		if (Efficiency>100.0)
 			Efficiency=100.0;
-		SendPercentage(1,float(Efficiency),"Efficiency");
+		SendPercentageSensor(1, 0, 255, float(Efficiency), "Efficiency");
 	}
 	if (splitresult[7]!="NaN")
 	{
 		double Temperature=atof(splitresult[7].c_str());
-		SendTempSensor(1,float(Temperature),"Temperature");
+		SendTempSensor(1, 255, float(Temperature), "Temperature");
 	}
 	if (splitresult[8]!="NaN")
 	{
 		double Voltage=atof(splitresult[8].c_str());
-		if (Voltage>=0)
-			SendVoltage(1,float(Voltage),"Voltage");
+		if (Voltage >= 0)
+			SendVoltageSensor(0, 1, 255, float(Voltage), "Voltage");
 	}
 
 	sstr.clear();

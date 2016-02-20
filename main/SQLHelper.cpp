@@ -31,7 +31,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 99
+#define DB_VERSION 101
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -1810,7 +1810,7 @@ bool CSQLHelper::OpenDatabase()
 		if (dbversion < 99)
 		{
 			//Convert depricated CounterType 'Time' to type Counter with options ValueQuantity='Time' & ValueUnits='Min'
-			//Add options ValueQuantity='Count' & ValueUnits='x' to existing CounterType 'Counter' 
+			//Add options ValueQuantity='Count' to existing CounterType 'Counter' 
 			const int MTYPE_TIME = 5;
 			const unsigned char charNTYPE_TODAYTIME = 'm';
 			std::stringstream szQuery, szQuery1, szQuery2, szQuery3;
@@ -1872,6 +1872,69 @@ bool CSQLHelper::OpenDatabase()
 							}
 						}
 					}
+				}
+			}
+		}
+		if (dbversion < 100)
+		{
+			//Convert temperature sensor type sTypeTEMP10 to sTypeTEMP5 for specified hardware classes
+			std::stringstream szQuery, szQuery2;
+			std::vector<std::vector<std::string> > result;
+			std::vector<std::string> sd;
+			szQuery << "SELECT ID FROM Hardware WHERE ( "
+				<< "([Type] = " << HTYPE_OpenThermGateway << ") OR "
+				<< "([Type] = " << HTYPE_OpenThermGatewayTCP << ") OR "
+				<< "([Type] = " << HTYPE_DavisVantage << ") OR "
+				<< "([Type] = " << HTYPE_System << ") OR "
+				<< "([Type] = " << HTYPE_ICYTHERMOSTAT << ") OR "
+				<< "([Type] = " << HTYPE_Meteostick << ") OR "
+				<< "([Type] = " << HTYPE_PVOUTPUT_INPUT << ") OR "
+				<< "([Type] = " << HTYPE_SBFSpot << ") OR "
+				<< "([Type] = " << HTYPE_SolarEdgeTCP << ") OR "
+				<< "([Type] = " << HTYPE_TE923 << ") OR "
+				<< "([Type] = " << HTYPE_TOONTHERMOSTAT << ") OR "
+				<< "([Type] = " << HTYPE_Wunderground << ") OR "
+				<< "([Type] = " << HTYPE_ForecastIO << ") OR "
+				<< "([Type] = " << HTYPE_RazberryZWave << ") OR "
+				<< "([Type] = " << HTYPE_OpenZWave << ")"
+				<< ")";
+			result = query(szQuery.str());
+			if (result.size() > 0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					sd = *itt;
+					szQuery2.clear();
+					szQuery2.str("");
+					szQuery2 << "UPDATE DeviceStatus SET SubType=" << sTypeTEMP5 << " WHERE ([Type]==" << pTypeTEMP << ") AND (SubType==" << sTypeTEMP10 << ") AND (HardwareID=" << sd[0] << ")";
+					query(szQuery2.str());
+				}
+			}
+		}
+		if (dbversion < 101)
+		{
+			//Convert TempHum sensor type sTypeTH2 to sTypeHUM1 for specified hardware classes
+			std::stringstream szQuery, szQuery2;
+			std::vector<std::vector<std::string> > result;
+			std::vector<std::string> sd;
+			szQuery << "SELECT ID FROM Hardware WHERE ( "
+				<< "([Type] = " << HTYPE_DavisVantage << ") OR "
+				<< "([Type] = " << HTYPE_TE923 << ") OR "
+				<< "([Type] = " << HTYPE_RazberryZWave << ") OR "
+				<< "([Type] = " << HTYPE_OpenZWave << ")"
+				<< ")";
+			result = query(szQuery.str());
+			if (result.size() > 0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					sd = *itt;
+					szQuery2.clear();
+					szQuery2.str("");
+					szQuery2 << "UPDATE DeviceStatus SET SubType=" << sTypeHUM1 << " WHERE ([Type]==" << pTypeHUM << ") AND (SubType==" << sTypeTH2 << ") AND (HardwareID=" << sd[0] << ")";
+					query(szQuery2.str());
 				}
 			}
 		}
@@ -3018,6 +3081,7 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 	case pTypeEvohomeRelay:
 	case pTypeCurtain:
 	case pTypeBlinds:
+	case pTypeFan:
 	case pTypeRFY:
 	case pTypeChime:
 	case pTypeThermostat2:
@@ -4361,7 +4425,7 @@ void CSQLHelper::UpdateMultiMeter()
 				value1=(unsigned long)(atof(splitresults[0].c_str())*10.0f);
 				value2=(unsigned long)(atof(splitresults[1].c_str())*10.0f);
 				value3=(unsigned long)(atof(splitresults[2].c_str())*10.0f);
-				value4=(unsigned long)(atof(splitresults[3].c_str())*1000.0f);
+				value4=(unsigned long long)(atof(splitresults[3].c_str())*1000.0f);
 			}
 			else
 				continue;//don't know you (yet)
@@ -6305,7 +6369,7 @@ void CSQLHelper::CheckDeviceTimeout()
 
 	std::vector<std::vector<std::string> > result;
 	result = safe_query(
-		"SELECT ID,Name,LastUpdate FROM DeviceStatus WHERE (Used!=0 AND LastUpdate<='%04d-%02d-%02d %02d:%02d:%02d' AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d) ORDER BY Name",
+		"SELECT ID,Name,LastUpdate FROM DeviceStatus WHERE (Used!=0 AND LastUpdate<='%04d-%02d-%02d %02d:%02d:%02d' AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d) ORDER BY Name",
 		ltime.tm_year+1900,ltime.tm_mon+1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
 		pTypeLighting1,
 		pTypeLighting2,
@@ -6313,6 +6377,7 @@ void CSQLHelper::CheckDeviceTimeout()
 		pTypeLighting4,
 		pTypeLighting5,
 		pTypeLighting6,
+		pTypeFan,
 		pTypeRadiator1,
 		pTypeLimitlessLights,
 		pTypeSecurity1,

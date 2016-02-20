@@ -3050,6 +3050,7 @@ void CEventSystem::UpdateDevice(const std::string &DevParams)
 		case pTypeLighting4:
 		case pTypeLighting5:
 		case pTypeLighting6:
+		case pTypeFan:
 		case pTypeLimitlessLights:
 		case pTypeSecurity1:
 		case pTypeSecurity2:
@@ -3717,6 +3718,10 @@ namespace http {
 
 				int ii = 0;
 
+				std::string sEditorTheme = "ace/theme/xcode";
+				m_sql.GetPreferencesVar("ScriptEditorTheme", sEditorTheme);
+				root["editortheme"] = sEditorTheme;
+
 				result = m_sql.safe_query("SELECT ID, Name, XMLStatement, Status, Interpreter, Type FROM EventMaster WHERE (ID=='%q')",
 					idx.c_str());
 				if (result.size() > 0)
@@ -3813,6 +3818,14 @@ namespace http {
 						_log.Log(LOG_ERROR, "Error writing event actions to database!");
 					}
 					else {
+						std::string sNewEditorTheme = request::findValue(&req, "editortheme");
+						std::string sOldEditorTheme = "ace/theme/xcode";
+						m_sql.GetPreferencesVar("ScriptEditorTheme", sOldEditorTheme);
+						if (sNewEditorTheme.length() && (sNewEditorTheme != sOldEditorTheme))
+						{
+							m_sql.UpdatePreferencesVar("ScriptEditorTheme", sNewEditorTheme);
+						}
+
 						if (interpreter == "Blockly") {
 							const Json::Value array = jsonRoot["eventlogic"];
 							for (int index = 0; index < (int)array.size(); ++index)

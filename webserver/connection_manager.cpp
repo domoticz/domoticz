@@ -20,21 +20,30 @@ namespace server {
 
 void connection_manager::start(connection_ptr c)
 {
-  connections_.insert(c);
-  std::string s = c->socket().remote_endpoint().address().to_string();
+	connections_.insert(c);
 
-  if (s.substr(0, 7) == "::ffff:") {
-	  s = s.substr(7);
-  }
+	boost::system::error_code ec;
+	boost::asio::ip::tcp::endpoint endpoint = c->socket().remote_endpoint(ec);
+	if (ec) {
+		// Prevent the exception to be thrown to run to avoid the server to be locked (still listening but no more connection or stop).
+		// If the exception returns to WebServer to also create a exception loop.
+		_log.Log(LOG_ERROR,"Getting error '%s' while getting remote_endpoint in connection_manager::start", ec.message().c_str());
+		stop(c);
+		return;
+	}
 
-  if (connectedips_.find(s)==connectedips_.end())
-  {
-	  //ok, this could get a very long list when running for years
-	  connectedips_.insert(s);
-	  _log.Log(LOG_STATUS,"Incoming connection from: %s", s.c_str());
-  }
+	std::string s = endpoint.address().to_string();
+	if (s.substr(0, 7) == "::ffff:") {
+		s = s.substr(7);
+	}
+	if (connectedips_.find(s) == connectedips_.end())
+	{
+		//ok, this could get a very long list when running for years
+		connectedips_.insert(s);
+		_log.Log(LOG_STATUS,"Incoming connection from: %s", s.c_str());
+	}
 
-  c->start();
+	c->start();
 }
 
 void connection_manager::stop(connection_ptr c)
