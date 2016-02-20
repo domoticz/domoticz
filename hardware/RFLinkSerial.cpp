@@ -15,7 +15,7 @@ CRFLinkSerial::CRFLinkSerial(const int ID, const std::string& devname)
 
 CRFLinkSerial::~CRFLinkSerial()
 {
-	clearReadCallback();
+
 }
 
 bool CRFLinkSerial::StartHardware()
@@ -37,18 +37,7 @@ bool CRFLinkSerial::StopHardware()
 		// Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
 		sleep_milliseconds(10);
 	}
-	if (isOpen())
-	{
-		try {
-			clearReadCallback();
-			close();
-			doClose();
-			setErrorStatus(true);
-		} catch(...)
-		{
-			//Don't throw from a Stop command
-		}
-	}
+	terminate();
 	m_bIsStarted=false;
 	return true;
 }
@@ -91,16 +80,7 @@ void CRFLinkSerial::Do_Work()
 				_log.Log(LOG_ERROR, "RFLink: Nothing received for more then 50 seconds, restarting...");
 				m_retrycntr = 0;
 				m_LastReceivedTime = atime;
-				try {
-				clearReadCallback();
-				close();
-				doClose();
-				setErrorStatus(true);
-				}
-				catch (...)
-				{
-				//Don't throw from a Stop command
-				}
+				terminate();
 				} else {
 				if (atime - m_LastReceivedTime > 25) {
 				//_log.Log(LOG_STATUS, "RFLink: ping...");

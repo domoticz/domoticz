@@ -81,15 +81,7 @@ AsyncSerial::AsyncSerial(const std::string& devname, unsigned int baud_rate,
 
 AsyncSerial::~AsyncSerial()
 {
-	if(isOpen())
-	{
-		try {
-			close();
-		} catch(...)
-		{
-			//Don't throw from a destructor
-		}
-	}
+	terminate();
 }
 
 void AsyncSerial::open(const std::string& devname, unsigned int baud_rate,
@@ -160,9 +152,9 @@ bool AsyncSerial::errorStatus() const
 
 void AsyncSerial::close()
 {
-	pimpl->open=false;
     if(!isOpen()) return;
 
+    pimpl->open = false;
     pimpl->io.post(boost::bind(&AsyncSerial::doClose, this));
     pimpl->backgroundThread.join();
     pimpl->io.reset();
@@ -230,11 +222,8 @@ void AsyncSerial::readEnd(const boost::system::error_code& error,
         if(isOpen())
         {
 			_log.Log(LOG_ERROR,"Serial Port closed!... Error: %s", error.message().c_str());
-			clearReadCallback();
-			close();
-	        doClose();
-            setErrorStatus(true);
         }
+        terminate(false);
     } else {
         if(pimpl->callback) pimpl->callback(pimpl->readBuffer,
                 bytes_transferred);
@@ -313,8 +302,30 @@ void AsyncSerial::setReadCallback(const boost::function<void (const char*, size_
     pimpl->callback=callback;
 }
 
+/**
+ * Unregister the read callback.
+ */
 void AsyncSerial::clearReadCallback()
 {
     pimpl->callback.clear();
+}
+
+/**
+ * Process a clean close by unregistering the read callback and closing the port.
+ * Once this method has been called, you have to open the port and register the read callback again.
+ */
+void AsyncSerial::terminate(bool silent/*=true*/) {
+	if (isOpen()) {
+		try {
+			clearReadCallback();
+			close();
+			doClose();
+			setErrorStatus(true);
+		} catch(...) {
+			if (silent == false) {
+				throw;
+			}
+		}
+	}
 }
 

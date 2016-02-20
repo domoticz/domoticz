@@ -373,7 +373,7 @@ private:
 	void SendNodeCommand(const int NodeID, const int ChildID, const _eMessageType messageType, const int SubType, const std::string &Payload);
 
 
-	void UpdateSwitch(const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname, const int BatLevel);
+	void UpdateSwitch(const _eSetType vType, const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname, const int BatLevel);
 	
 	void UpdateSwitchLastUpdate(const unsigned char Idx, const int SubUnit);
 	void UpdateBlindSensorLastUpdate(const int NodeID, const int ChildID);

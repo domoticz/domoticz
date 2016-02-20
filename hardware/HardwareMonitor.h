@@ -27,7 +27,6 @@ private:
 	void UpdateSystemSensor(const std::string& qType, const int dindex, const std::string& devName, const std::string& devValue);
 	void SendVoltage(const unsigned long Idx, const float Volt, const std::string &defaultname);
 	void SendCurrent(const unsigned long Idx, const float Curr, const std::string &defaultname);
-	void SendTempSensor(const int Idx, const float Temp, const std::string &defaultname);
 	void SendPercentage(const unsigned long Idx, const float Percentage, const std::string &defaultname);
 	void SendFanSensor(const int Idx, const int FanSpeed, const std::string &defaultname);
 #ifdef WIN32

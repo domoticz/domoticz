@@ -236,3 +236,4 @@ bool GetLightCommand(
 bool IsLightSwitchOn(const std::string &lstatus);
 
 bool IsSerialDevice(const _eHardwareTypes htype);
+void ConvertToGeneralSwitchType(std::string &devid, int &dtype, int &subtype);

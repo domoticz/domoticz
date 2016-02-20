@@ -281,28 +281,6 @@ void SolarEdgeBase::SendVoltage(const unsigned long Idx, const float Volt, const
 	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), 255);
 }
 
-void SolarEdgeBase::SendTempSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
-{
-	RBUF tsen;
-	memset(&tsen,0,sizeof(RBUF));
-
-	tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;
-	tsen.TEMP.packettype=pTypeTEMP;
-	tsen.TEMP.subtype=sTypeTEMP10;
-	tsen.TEMP.battery_level=9;
-	tsen.TEMP.rssi=12;
-	tsen.TEMP.id1=0;
-	tsen.TEMP.id2=Idx;
-
-	tsen.TEMP.tempsign=(Temp>=0)?0:1;
-	int at10=round(abs(Temp*10.0f));
-	tsen.TEMP.temperatureh=(BYTE)(at10/256);
-	at10-=(tsen.TEMP.temperatureh*256);
-	tsen.TEMP.temperaturel=(BYTE)(at10);
-
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, defaultname.c_str(), 255);
-}
-
 void SolarEdgeBase::SendPercentage(const unsigned long Idx, const float Percentage, const std::string &defaultname)
 {
 	_tGeneralDevice gDevice;
@@ -581,7 +559,7 @@ int SolarEdgeBase::ParsePacket0x0500(const unsigned char *pData, int dlen)
 			float counter=GetFloat(b2);
 			b2+=4;
 			SendMeter(0,1, Pac/100.0f, counter/1000.0f, "SolarMain");
-			SendTempSensor(1,temp,"SolarMain");
+			SendTempSensor(1, 255, temp, "SolarMain");
 			SendPercentage(SE_FREQ,freq,"Hz");
 			SendVoltage(SE_VOLT_AC,voltageAC,"AC");
 			SendVoltage(SE_VOLT_DC,voltageDC,"DC");

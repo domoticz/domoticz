@@ -27,7 +27,7 @@ KMTronic433::KMTronic433(const int ID, const std::string& devname)
 
 KMTronic433::~KMTronic433()
 {
-	clearReadCallback();
+
 }
 
 bool KMTronic433::StartHardware()
@@ -52,19 +52,7 @@ bool KMTronic433::StopHardware()
 		m_thread->join();
 	// Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
 	sleep_milliseconds(10);
-	if (isOpen())
-	{
-		try {
-			clearReadCallback();
-			close();
-			doClose();
-			setErrorStatus(true);
-		}
-		catch (...)
-		{
-			//Don't throw from a Stop command
-		}
-	}
+	terminate();
 	m_bIsStarted = false;
 	return true;
 }
