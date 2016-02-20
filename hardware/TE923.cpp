@@ -187,26 +187,15 @@ void CTE923::GetSensorDetails()
 			}
 			else
 			{
-				tsen.TEMP_HUM.packetlength=sizeof(tsen.TEMP_HUM)-1;
-				tsen.TEMP_HUM.packettype=pTypeTEMP_HUM;
-				tsen.TEMP_HUM.subtype=sTypeTH5;
-				if (dev.battery[ii-1])
-					tsen.TEMP_HUM.battery_level=9;
-				else
-					tsen.TEMP_HUM.battery_level=0;
-				tsen.TEMP_HUM.rssi=12;
-				tsen.TEMP_HUM.id1=0;
-				tsen.TEMP_HUM.id2=ii;
-
-				tsen.TEMP_HUM.tempsign=(data.t[ii]>=0)?0:1;
-				int at10=round(abs(data.t[ii]*10.0f));
-				tsen.TEMP_HUM.temperatureh=(BYTE)(at10/256);
-				at10-=(tsen.TEMP_HUM.temperatureh*256);
-				tsen.TEMP_HUM.temperaturel=(BYTE)(at10);
-				tsen.TEMP_HUM.humidity=(BYTE)data.h[ii];
-				tsen.TEMP_HUM.humidity_status=Get_Humidity_Level(tsen.TEMP_HUM.humidity);
-
-				sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM, NULL, -1);
+				int BatLevel = 100;
+				if (ii > 0)
+				{
+					if (dev.battery[ii - 1])
+						BatLevel = 100;
+					else
+						BatLevel = 0;
+				}
+				SendTempHumSensor(ii, BatLevel, data.t[ii], data.h[ii], "TempHum");
 			}
 		}
 		else if (data._t[ii]==0)
@@ -220,7 +209,6 @@ void CTE923::GetSensorDetails()
 				else
 					BatLevel = 0;
 			}
-
 			SendTempSensor(ii, BatLevel, data.t[ii], "Temperature");
 		}
 		else if (data._h[ii]==0)

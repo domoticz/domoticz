@@ -194,29 +194,6 @@ void Meteostick::ParseData(const unsigned char *pData, int Len)
 	}
 }
 
-void Meteostick::SendTempHumSensor(const unsigned char Idx, const float Temp, const int Hum, const std::string &defaultname)
-{
-	RBUF tsen;
-	memset(&tsen, 0, sizeof(RBUF));
-	tsen.TEMP_HUM.packetlength = sizeof(tsen.TEMP_HUM) - 1;
-	tsen.TEMP_HUM.packettype = pTypeTEMP_HUM;
-	tsen.TEMP_HUM.subtype = sTypeTH5;
-	tsen.TEMP_HUM.battery_level = 9;
-	tsen.TEMP_HUM.rssi = 12;
-	tsen.TEMP_HUM.id1 = 0;
-	tsen.TEMP_HUM.id2 = Idx;
-
-	tsen.TEMP_HUM.tempsign = (Temp >= 0) ? 0 : 1;
-	int at10 = round(abs(Temp*10.0f));
-	tsen.TEMP_HUM.temperatureh = (BYTE)(at10 / 256);
-	at10 -= (tsen.TEMP_HUM.temperatureh * 256);
-	tsen.TEMP_HUM.temperaturel = (BYTE)(at10);
-	tsen.TEMP_HUM.humidity = (BYTE)Hum;
-	tsen.TEMP_HUM.humidity_status = Get_Humidity_Level(tsen.TEMP_HUM.humidity);
-
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM, defaultname.c_str(), 255);
-}
-
 void Meteostick::SendTempBaroSensor(const unsigned char Idx, const float Temp, const float Baro, const std::string &defaultname)
 {
 	//Calculate Pressure
@@ -489,7 +466,7 @@ void Meteostick::ParseLine()
 			float temp = static_cast<float>(atof(results[2].c_str()));
 			int hum = static_cast<int>(atoi(results[3].c_str()));
 
-			SendTempHumSensor(ID, temp, hum, "Outside Temp+Hum");
+			SendTempHumSensor(ID, 255, temp, hum, "Outside Temp+Hum");
 			m_LastOutsideTemp[ID%MAX_IDS] = temp;
 			m_LastOutsideHum[ID%MAX_IDS] = hum;
 		}

@@ -230,25 +230,7 @@ void CForecastIO::GetMeterDetails()
 	else if (humidity!=0)
 	{
 		//add temp+hum device
-		RBUF tsen;
-		memset(&tsen,0,sizeof(RBUF));
-		tsen.TEMP_HUM.packetlength=sizeof(tsen.TEMP_HUM)-1;
-		tsen.TEMP_HUM.packettype=pTypeTEMP_HUM;
-		tsen.TEMP_HUM.subtype=sTypeTH5;
-		tsen.TEMP_HUM.battery_level=9;
-		tsen.TEMP_HUM.rssi=12;
-		tsen.TEMP_HUM.id1=0;
-		tsen.TEMP_HUM.id2=1;
-
-		tsen.TEMP_HUM.tempsign=(temp>=0)?0:1;
-		int at10=round(abs(temp*10.0f));
-		tsen.TEMP_HUM.temperatureh=(BYTE)(at10/256);
-		at10-=(tsen.TEMP_HUM.temperatureh*256);
-		tsen.TEMP_HUM.temperaturel=(BYTE)(at10);
-		tsen.TEMP_HUM.humidity=(BYTE)humidity;
-		tsen.TEMP_HUM.humidity_status=Get_Humidity_Level(tsen.TEMP_HUM.humidity);
-
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM, NULL, 255);
+		SendTempHumSensor(1, 255, temp, humidity, "TempHum");
 	}
 	else
 	{

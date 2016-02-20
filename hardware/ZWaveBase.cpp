@@ -568,27 +568,8 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		{
 			if (!pHumDevice->bValidValue)
 				return;
-			tsen.TEMP_HUM.packetlength=sizeof(tsen.TEMP_HUM)-1;
-			tsen.TEMP_HUM.packettype=pTypeTEMP_HUM;
-			tsen.TEMP_HUM.subtype=sTypeTH5;
-			tsen.TEMP_HUM.rssi=12;
-			tsen.TEMP_HUM.id1=ID3;
-			tsen.TEMP_HUM.id2=ID4;
-
-			tsen.TEMP_HUM.battery_level=9;
-			if (pDevice->hasBattery)
-			{
-				tsen.TEMP_HUM.battery_level=Convert_Battery_To_PercInt(pDevice->batValue);
-			}
-
-			tsen.TEMP_HUM.tempsign=(pDevice->floatValue>=0)?0:1;
-			int at10=round(abs(pDevice->floatValue*10.0f));
-			tsen.TEMP_HUM.temperatureh=(BYTE)(at10/256);
-			at10-=(tsen.TEMP_HUM.temperatureh*256);
-			tsen.TEMP_HUM.temperaturel=(BYTE)(at10);
-			tsen.TEMP_HUM.humidity=(BYTE)pHumDevice->intvalue;
-			tsen.TEMP_HUM.humidity_status=Get_Humidity_Level(tsen.TEMP_HUM.humidity);
-			sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM, NULL, BatLevel);
+			uint16_t NodeID = (ID3 << 8) | ID4;
+			SendTempHumSensor(NodeID, pDevice->batValue, pDevice->floatValue, pHumDevice->intvalue, "TempHum");
 		}
 		else
 		{
@@ -615,28 +596,8 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 			ID3 = (unsigned char)pTempDevice->nodeID & 0xFF;
 			ID4 = pTempDevice->instanceID;
 
-			tsen.TEMP_HUM.packetlength=sizeof(tsen.TEMP_HUM)-1;
-			tsen.TEMP_HUM.packettype=pTypeTEMP_HUM;
-			tsen.TEMP_HUM.subtype=sTypeTH5;
-			tsen.TEMP_HUM.rssi=12;
-			tsen.TEMP_HUM.id1=ID3;
-			tsen.TEMP_HUM.id2=ID4;
-			ID4=pTempDevice->instanceID;
-
-			tsen.TEMP_HUM.battery_level=9;
-			if (pDevice->hasBattery)
-			{
-				tsen.TEMP_HUM.battery_level=Convert_Battery_To_PercInt(pDevice->batValue);
-			}
-
-			tsen.TEMP_HUM.tempsign=(pTempDevice->floatValue>=0)?0:1;
-			int at10=round(abs(pTempDevice->floatValue*10.0f));
-			tsen.TEMP_HUM.temperatureh=(BYTE)(at10/256);
-			at10-=(tsen.TEMP_HUM.temperatureh*256);
-			tsen.TEMP_HUM.temperaturel=(BYTE)(at10);
-			tsen.TEMP_HUM.humidity=(BYTE)pDevice->intvalue;
-			tsen.TEMP_HUM.humidity_status=Get_Humidity_Level(tsen.TEMP_HUM.humidity);
-			sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM, NULL, BatLevel);
+			uint16_t NodeID = (ID3 << 8) | ID4;
+			SendTempHumSensor(NodeID, pDevice->batValue, pTempDevice->floatValue, pDevice->intvalue, "TempHum");
 		}
 		else
 		{
