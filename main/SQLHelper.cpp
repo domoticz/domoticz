@@ -31,7 +31,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 100
+#define DB_VERSION 101
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -1908,6 +1908,32 @@ bool CSQLHelper::OpenDatabase()
 					szQuery2.clear();
 					szQuery2.str("");
 					szQuery2 << "UPDATE DeviceStatus SET SubType=" << sTypeTEMP5 << " WHERE ([Type]==" << pTypeTEMP << ") AND (SubType==" << sTypeTEMP10 << ") AND (HardwareID=" << sd[0] << ")";
+					query(szQuery2.str());
+				}
+			}
+		}
+		if (dbversion < 101)
+		{
+			//Convert TempHum sensor type sTypeTH2 to sTypeHUM1 for specified hardware classes
+			std::stringstream szQuery, szQuery2;
+			std::vector<std::vector<std::string> > result;
+			std::vector<std::string> sd;
+			szQuery << "SELECT ID FROM Hardware WHERE ( "
+				<< "([Type] = " << HTYPE_DavisVantage << ") OR "
+				<< "([Type] = " << HTYPE_TE923 << ") OR "
+				<< "([Type] = " << HTYPE_RazberryZWave << ") OR "
+				<< "([Type] = " << HTYPE_OpenZWave << ")"
+				<< ")";
+			result = query(szQuery.str());
+			if (result.size() > 0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					sd = *itt;
+					szQuery2.clear();
+					szQuery2.str("");
+					szQuery2 << "UPDATE DeviceStatus SET SubType=" << sTypeHUM1 << " WHERE ([Type]==" << pTypeHUM << ") AND (SubType==" << sTypeTH2 << ") AND (HardwareID=" << sd[0] << ")";
 					query(szQuery2.str());
 				}
 			}

@@ -601,21 +601,8 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		}
 		else
 		{
-			memset(&tsen,0,sizeof(RBUF));
-			tsen.HUM.packetlength=sizeof(tsen.HUM)-1;
-			tsen.HUM.packettype=pTypeHUM;
-			tsen.HUM.subtype=sTypeHUM2;
-			tsen.HUM.rssi=12;
-			tsen.HUM.id1=ID3;
-			tsen.HUM.id2=ID4;
-			tsen.HUM.battery_level=9;
-			if (pDevice->hasBattery)
-			{
-				tsen.HUM.battery_level=Convert_Battery_To_PercInt(pDevice->batValue);
-			}
-			tsen.HUM.humidity=(BYTE)pDevice->intvalue;
-			tsen.HUM.humidity_status=Get_Humidity_Level(tsen.HUM.humidity);
-			sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, NULL, BatLevel);
+			uint16_t NodeID = (ID3 << 8) | ID4;
+			SendHumiditySensor(NodeID, pDevice->batValue, pDevice->intvalue, "Humidity");
 		}
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_VELOCITY)

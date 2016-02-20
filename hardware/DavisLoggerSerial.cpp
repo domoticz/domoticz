@@ -202,25 +202,6 @@ void CDavisLoggerSerial::readCallback(const char *data, size_t len)
 	}
 }
 
-void CDavisLoggerSerial::UpdateHumSensor(const unsigned char Idx, const int Hum)
-{
-	RBUF tsen;
-	memset(&tsen,0,sizeof(RBUF));
-
-	tsen.HUM.packetlength=sizeof(tsen.HUM)-1;
-	tsen.HUM.packettype=pTypeHUM;
-	tsen.HUM.subtype=sTypeHUM2;
-	tsen.HUM.battery_level=9;
-	tsen.HUM.rssi=12;
-	tsen.HUM.id1=0;
-	tsen.HUM.id2=Idx;
-
-	tsen.HUM.humidity=(BYTE)Hum;
-	tsen.HUM.humidity_status=Get_Humidity_Level(tsen.HUM.humidity);
-
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.HUM, NULL, 255);
-}
-
 bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 {
 	const uint8_t *pData=data+1;
@@ -302,45 +283,21 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 
 	if (bBaroValid&&bInsideTemperatureValid&&bInsideHumidityValid)
 	{
-		memset(&tsen,0,sizeof(RBUF));
-		tsen.TEMP_HUM_BARO.packetlength=sizeof(tsen.TEMP_HUM_BARO)-1;
-		tsen.TEMP_HUM_BARO.packettype=pTypeTEMP_HUM_BARO;
-		tsen.TEMP_HUM_BARO.subtype=sTypeTHBFloat;
-		tsen.TEMP_HUM_BARO.battery_level=9;
-		tsen.TEMP_HUM_BARO.rssi=12;
-		tsen.TEMP_HUM_BARO.id1=0;
-		tsen.TEMP_HUM_BARO.id2=tempIdx++;
+		uint8_t forecastitem = pData[89];
+		int forecast = 0;
 
-		tsen.TEMP_HUM_BARO.tempsign=(InsideTemperature>=0)?0:1;
-		int at10=round(abs(InsideTemperature*10.0f));
-		tsen.TEMP_HUM_BARO.temperatureh=(BYTE)(at10/256);
-		at10-=(tsen.TEMP_HUM_BARO.temperatureh*256);
-		tsen.TEMP_HUM_BARO.temperaturel=(BYTE)(at10);
-		tsen.TEMP_HUM_BARO.humidity=(BYTE)InsideHumidity;
-		tsen.TEMP_HUM_BARO.humidity_status=Get_Humidity_Level(tsen.TEMP_HUM.humidity);
+		if ((forecastitem & 0x01) == 0x01)
+			forecast = wsbaroforcast_rain;
+		else if ((forecastitem & 0x02) == 0x02)
+			forecast = wsbaroforcast_cloudy;
+		else if ((forecastitem & 0x04) == 0x04)
+			forecast = wsbaroforcast_some_clouds;
+		else if ((forecastitem & 0x08) == 0x08)
+			forecast = wsbaroforcast_sunny;
+		else if ((forecastitem & 0x10) == 0x10)
+			forecast = wsbaroforcast_snow;
 
-		int ab10=round(BaroMeter*10.0f);
-		tsen.TEMP_HUM_BARO.baroh=(BYTE)(ab10/256);
-		ab10-=(tsen.TEMP_HUM_BARO.baroh*256);
-		tsen.TEMP_HUM_BARO.barol=(BYTE)(ab10);
-
-		uint8_t forecastitem=pData[89];
-		int forecast=0;
-
-		if ((forecastitem&0x01)==0x01)
-			forecast=wsbaroforcast_rain;
-		else if ((forecastitem&0x02)==0x02)
-			forecast=wsbaroforcast_cloudy;
-		else if ((forecastitem&0x04)==0x04)
-			forecast=wsbaroforcast_some_clouds;
-		else if ((forecastitem&0x08)==0x08)
-			forecast=wsbaroforcast_sunny;
-		else if ((forecastitem&0x10)==0x10)
-			forecast=wsbaroforcast_snow;
-
-		tsen.TEMP_HUM_BARO.forecast=forecast;
-
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM_BARO, NULL, 255);
+		SendTempHumBaroSensorFloat(tempIdx++, 255, InsideTemperature, InsideHumidity, BaroMeter, forecast, "THB");
 	}
 
 	//Outside Temperature
@@ -360,9 +317,6 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 	}
 	if (bOutsideTemperatureValid||bOutsideHumidityValid)
 	{
-		//add outside sensor
-		memset(&tsen,0,sizeof(RBUF));
-
 		if ((bOutsideTemperatureValid)&&(bOutsideHumidityValid))
 		{
 			//Temp+hum
@@ -376,7 +330,7 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 		else if (bOutsideHumidityValid)
 		{
 			//hum
-			UpdateHumSensor(tempIdx++,OutsideHumidity);
+			SendHumiditySensor(tempIdx++, 255, OutsideHumidity, "Outside Humidity");
 		}
 	}
 
@@ -414,7 +368,7 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 		else if (bHumValid)
 		{
 			//hum
-			UpdateHumSensor(tempIdx++,hum);
+			SendHumiditySensor(tempIdx++, 255, hum, "Extra Humidity");
 		}
 	}
 
