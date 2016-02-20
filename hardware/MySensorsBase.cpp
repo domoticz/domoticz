@@ -761,37 +761,37 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 	case V_TRIPPED:
 		//	Tripped status of a security sensor. 1 = Tripped, 0 = Untripped
 		if (pChild->GetValue(vType, intValue))
-			UpdateSwitch(pChild->nodeID, pChild->childID, (intValue == 1), 100, (!pChild->childName.empty()) ? pChild->childName : "Security Sensor", pChild->batValue);
+			UpdateSwitch(vType, pChild->nodeID, pChild->childID, (intValue == 1), 100, (!pChild->childName.empty()) ? pChild->childName : "Security Sensor", pChild->batValue);
 		break;
 	case V_ARMED:
 		//Armed status of a security sensor. 1 = Armed, 0 = Bypassed
 		if (pChild->GetValue(vType, intValue))
-			UpdateSwitch(pChild->nodeID, pChild->childID, (intValue == 1), 100, (!pChild->childName.empty()) ? pChild->childName : "Security Sensor", pChild->batValue);
+			UpdateSwitch(vType, pChild->nodeID, pChild->childID, (intValue == 1), 100, (!pChild->childName.empty()) ? pChild->childName : "Security Sensor", pChild->batValue);
 		break;
 	case V_LOCK_STATUS:
 		//Lock status. 1 = Locked, 0 = Unlocked
 		if (pChild->GetValue(vType, intValue))
-			UpdateSwitch(pChild->nodeID, pChild->childID, (intValue == 1), 100, (!pChild->childName.empty()) ? pChild->childName : "Lock Sensor", pChild->batValue);
+			UpdateSwitch(vType, pChild->nodeID, pChild->childID, (intValue == 1), 100, (!pChild->childName.empty()) ? pChild->childName : "Lock Sensor", pChild->batValue);
 		break;
 	case V_STATUS:
 		//	Light status. 0 = off 1 = on
 		if (pChild->GetValue(vType, intValue))
-			UpdateSwitch(pChild->nodeID, pChild->childID, (intValue != 0), 100, (!pChild->childName.empty()) ? pChild->childName : "Light", pChild->batValue);
+			UpdateSwitch(vType, pChild->nodeID, pChild->childID, (intValue != 0), 100, (!pChild->childName.empty()) ? pChild->childName : "Light", pChild->batValue);
 		break;
 	case V_SCENE_ON:
 		if (pChild->GetValue(vType, intValue))
-			UpdateSwitch(pChild->nodeID, pChild->childID + intValue, true, 100, (!pChild->childName.empty()) ? pChild->childName : "Scene", pChild->batValue);
+			UpdateSwitch(vType, pChild->nodeID, pChild->childID + intValue, true, 100, (!pChild->childName.empty()) ? pChild->childName : "Scene", pChild->batValue);
 		break;
 	case V_SCENE_OFF:
 		if (pChild->GetValue(vType, intValue))
-			UpdateSwitch(pChild->nodeID, pChild->childID + intValue, false, 100, (!pChild->childName.empty()) ? pChild->childName : "Scene", pChild->batValue);
+			UpdateSwitch(vType, pChild->nodeID, pChild->childID + intValue, false, 100, (!pChild->childName.empty()) ? pChild->childName : "Scene", pChild->batValue);
 		break;
 	case V_PERCENTAGE:
 		//	Dimmer value. 0 - 100 %
 		if (pChild->GetValue(vType, intValue))
 		{
 			int level = intValue;
-			UpdateSwitch(pChild->nodeID, pChild->childID, (level != 0), level, (!pChild->childName.empty()) ? pChild->childName : "Light", pChild->batValue);
+			UpdateSwitch(vType, pChild->nodeID, pChild->childID, (level != 0), level, (!pChild->childName.empty()) ? pChild->childName : "Light", pChild->batValue);
 		}
 		break;
 	case V_RGB:
@@ -1067,7 +1067,7 @@ void MySensorsBase::UpdateRGBWSwitchLastUpdate(const int NodeID, const int Child
 	m_sql.safe_query("UPDATE DeviceStatus SET LastUpdate='%q' WHERE (ID = '%q')", szLastUpdate, result[0][0].c_str());
 }
 
-void MySensorsBase::UpdateSwitch(const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname, const int BatLevel)
+void MySensorsBase::UpdateSwitch(const _eSetType vType, const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname, const int BatLevel)
 {
 	bool bDeviceExits = true;
 	double rlevel = (15.0 / 100)*Level;
@@ -1083,16 +1083,19 @@ void MySensorsBase::UpdateSwitch(const unsigned char Idx, const int SubUnit, con
 	}
 	else
 	{
-		//check if we have a change, if not do not update it
-		int nvalue = atoi(result[0][1].c_str());
-		if ((!bOn) && (nvalue == 0))
-			return;
-		if ((bOn && (nvalue != 0)))
+		if (vType != V_TRIPPED)
 		{
-			//Check Level
-			int slevel = atoi(result[0][2].c_str());
-			if (slevel==level)
+			//check if we have a change, if not do not update it
+			int nvalue = atoi(result[0][1].c_str());
+			if ((!bOn) && (nvalue == 0))
 				return;
+			if ((bOn && (nvalue != 0)))
+			{
+				//Check Level
+				int slevel = atoi(result[0][2].c_str());
+				if (slevel == level)
+					return;
+			}
 		}
 	}
 
@@ -2010,9 +2013,9 @@ void MySensorsBase::ParseLine()
 			{
 				//Add it to the system
 				if ((vType == V_STATUS) || (vType == V_PERCENTAGE) || (vType == V_LOCK_STATUS))
-					UpdateSwitch(node_id, child_sensor_id, false, 100, (!pSensor->childName.empty()) ? pSensor->childName : "Light", pSensor->batValue);
+					UpdateSwitch(vType, node_id, child_sensor_id, false, 100, (!pSensor->childName.empty()) ? pSensor->childName : "Light", pSensor->batValue);
 				else if (vType == V_TRIPPED)
-					UpdateSwitch(node_id, child_sensor_id, false, 100, (!pSensor->childName.empty()) ? pSensor->childName : "Security Sensor", pSensor->batValue);
+					UpdateSwitch(vType, node_id, child_sensor_id, false, 100, (!pSensor->childName.empty()) ? pSensor->childName : "Security Sensor", pSensor->batValue);
 				else if (vType == V_RGBW)
 					SendRGBWSwitch(node_id, child_sensor_id, pSensor->batValue, 0, true, (!pSensor->childName.empty()) ? pSensor->childName : "RGBW Light");
 				else if (vType == V_RGB)
