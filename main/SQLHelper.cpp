@@ -1894,6 +1894,7 @@ bool CSQLHelper::OpenDatabase()
 				<< "([Type] = " << HTYPE_TE923 << ") OR "
 				<< "([Type] = " << HTYPE_TOONTHERMOSTAT << ") OR "
 				<< "([Type] = " << HTYPE_Wunderground << ") OR "
+				<< "([Type] = " << HTYPE_ForecastIO << ") OR "
 				<< "([Type] = " << HTYPE_RazberryZWave << ") OR "
 				<< "([Type] = " << HTYPE_OpenZWave << ")"
 				<< ")";
