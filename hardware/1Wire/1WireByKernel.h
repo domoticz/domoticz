@@ -17,7 +17,7 @@ public:
    virtual unsigned int GetNbChannels(const _t1WireDevice& device) const;
    virtual unsigned long GetCounter(const _t1WireDevice& device,int unit) const;
    virtual int GetVoltage(const _t1WireDevice& device,int unit) const;
-   virtual float GetIlluminescence(const _t1WireDevice& device) const;
+   virtual float GetIlluminance(const _t1WireDevice& device) const;
    // END : I_1WireSystem implementation
 
    static bool IsAvailable();
