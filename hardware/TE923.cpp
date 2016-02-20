@@ -249,7 +249,7 @@ void CTE923::GetSensorDetails()
 	//Rain
 	if (data._RainCount==0)
 	{
-		int BatLevel = (batteryRain) ? 100 : 0;
+		int BatLevel = (dev.batteryRain) ? 100 : 0;
 		SendRainSensor(1, BatLevel, float(data.RainCount) / 0.7f, "Rain");
 /*
 		RBUF tsen;
