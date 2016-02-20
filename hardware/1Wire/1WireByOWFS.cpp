@@ -352,7 +352,7 @@ int C1WireByOWFS::GetVoltage(const _t1WireDevice& device,int unit) const
    return static_cast<int>((atof(readValue.c_str())*1000.0));
 }
 
-float C1WireByOWFS::GetIlluminescence(const _t1WireDevice& device) const
+float C1WireByOWFS::GetIlluminance(const _t1WireDevice& device) const
 {
    // Both terms "illumination" and "illuminance" are in the OWFS documentation, so try both
    std::string readValue=readRawData(std::string(device.filename+"/S3-R1-A/illuminance"));

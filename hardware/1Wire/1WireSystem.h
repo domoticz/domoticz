@@ -20,5 +20,5 @@ public:
    virtual unsigned int GetNbChannels(const _t1WireDevice& device) const=0;
    virtual unsigned long GetCounter(const _t1WireDevice& device,int unit) const=0;
    virtual int GetVoltage(const _t1WireDevice& device,int unit) const=0;
-   virtual float GetIlluminescence(const _t1WireDevice& device) const=0;
+   virtual float GetIlluminance(const _t1WireDevice& device) const=0;
 };

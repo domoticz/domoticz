@@ -759,6 +759,15 @@ void CDomoticzHardwareBase::SendPressureSensor(const int NodeID, const int Child
 	sDecodeRXMessage(this, (const unsigned char *)&gdevice, defaultname.c_str(), BatteryLevel);
 }
 
+void CDomoticzHardwareBase::SendSolarRadiationSensor(const unsigned char NodeID, const int BatteryLevel, const float radiation, const std::string &defaultname)
+{
+	_tGeneralDevice gdevice;
+	gdevice.id = NodeID;
+	gdevice.subtype = sTypeSolarRadiation;
+	gdevice.floatval1 = radiation;
+	sDecodeRXMessage(this, (const unsigned char *)&gdevice, defaultname.c_str(), BatteryLevel);
+}
+
 void CDomoticzHardwareBase::SendSoundSensor(const int NodeID, const int BatteryLevel, const int sLevel, const std::string &defaultname)
 {
 	_tGeneralDevice gDevice;
