@@ -75,20 +75,30 @@ boost::asio::ip::tcp::socket& connection::socket()
 
 void connection::start()
 {
-    host_endpoint_ = socket().remote_endpoint().address().to_string();
-    if (secure_) {
+	boost::system::error_code ec;
+	boost::asio::ip::tcp::endpoint endpoint = socket().remote_endpoint(ec);
+	if (ec) {
+		// Prevent the exception to be thrown to run to avoid the server to be locked (still listening but no more connection or stop).
+		// If the exception returns to WebServer to also create a exception loop.
+		_log.Log(LOG_ERROR,"Getting error '%s' while getting remote_endpoint in connection::start", ec.message().c_str());
+		connection_manager_.stop(shared_from_this());
+		return;
+	}
+
+	host_endpoint_ = endpoint.address().to_string();
+	if (secure_) {
 #ifdef NS_ENABLE_SSL
 		// with ssl, we first need to complete the handshake before reading
-  		sslsocket_->async_handshake(boost::asio::ssl::stream_base::server,
-        	boost::bind(&connection::handle_handshake, shared_from_this(),
-          	boost::asio::placeholders::error));
+		sslsocket_->async_handshake(boost::asio::ssl::stream_base::server,
+			boost::bind(&connection::handle_handshake, shared_from_this(),
+			boost::asio::placeholders::error));
 #endif
-    }
-    else {
+	}
+	else {
 		// start reading data
 		read_more();
-    }
-    m_lastresponse=mytime(NULL);
+	}
+	m_lastresponse=mytime(NULL);
 }
 
 void connection::stop()
