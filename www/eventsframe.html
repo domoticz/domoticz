@@ -522,6 +522,9 @@
 			  	dataType: 'json',
 			  	success: function(data) {
 				  	if (typeof data.result != 'undefined') {
+						if (data.editortheme != 'undefined') {
+							editor.setTheme(data.editortheme);
+						}
 				  		if (data.status=="OK") {
 							$("#eventName").val(data.result[0].name);
 							$("#interpreter").val(data.result[0].interpreter).prop('disabled', true);
@@ -545,6 +548,7 @@
 								editor.getSession().setMode("ace/mode/" + data.result[0].interpreter.toLowerCase());
 								editor.setValue(data.result[0].xmlstatement);
 								editor.gotoLine(1);
+								editor.scrollToLine(1, true, true, function () {});
 								ResizeAceWindow();
 							}
 							$('#btnSave').attr("class", "btnstyle3");
@@ -677,6 +681,7 @@
 			else {doSave = true;}
       		if (doSave) {
 				var logicArray;
+				var editorTheme = "";
 				if ($("#interpreter").val() == "Blockly") {
 					var xml = Blockly.Xml.workspaceToDom( Blockly.mainWorkspace );
 					var blockXml  = Blockly.Xml.domToText( xml );
@@ -694,13 +699,14 @@
 				}
 				else {
 					logicArray = "";
+					editorTheme = "&editortheme="+encodeURIComponent(editor.getTheme());
 					blockXml = editor.getValue();
 				}
 
 				var isActive = 0;
 				if ($('#eventActive').is(':checked')) {isActive = 1};
 				$.ajax({
-					url : "json.htm?type=events&param=create&name="+encodeURIComponent(eventName)+"&interpreter="+encodeURIComponent($("#interpreter").val())+"&eventtype="+encodeURIComponent($("#eventType").val())+"&xml="+encodeURIComponent(blockXml)+"&logicarray="+encodeURIComponent(logicArray)+"&eventid="+id+"&eventstatus="+isActive, 
+					url : "json.htm?type=events&param=create&name="+encodeURIComponent(eventName)+"&interpreter="+encodeURIComponent($("#interpreter").val())+"&eventtype="+encodeURIComponent($("#eventType").val())+"&xml="+encodeURIComponent(blockXml)+"&logicarray="+encodeURIComponent(logicArray)+"&eventid="+id+"&eventstatus="+isActive+editorTheme, 
 					async: false, 
 					dataType: 'json',
 					success: function(data) {
