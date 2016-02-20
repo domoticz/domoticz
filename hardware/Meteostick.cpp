@@ -194,28 +194,6 @@ void Meteostick::ParseData(const unsigned char *pData, int Len)
 	}
 }
 
-void Meteostick::SendTempSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
-{
-	RBUF tsen;
-	memset(&tsen, 0, sizeof(RBUF));
-
-	tsen.TEMP.packetlength = sizeof(tsen.TEMP) - 1;
-	tsen.TEMP.packettype = pTypeTEMP;
-	tsen.TEMP.subtype = sTypeTEMP10;
-	tsen.TEMP.battery_level = 9;
-	tsen.TEMP.rssi = 12;
-	tsen.TEMP.id1 = 0;
-	tsen.TEMP.id2 = Idx;
-
-	tsen.TEMP.tempsign = (Temp >= 0) ? 0 : 1;
-	int at10 = round(abs(Temp*10.0f));
-	tsen.TEMP.temperatureh = (BYTE)(at10 / 256);
-	at10 -= (tsen.TEMP.temperatureh * 256);
-	tsen.TEMP.temperaturel = (BYTE)(at10);
-
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, defaultname.c_str(), 255);
-}
-
 void Meteostick::SendTempHumSensor(const unsigned char Idx, const float Temp, const int Hum, const std::string &defaultname)
 {
 	RBUF tsen;
@@ -602,7 +580,7 @@ void Meteostick::ParseLine()
 			unsigned char Channel = (unsigned char)atoi(results[2].c_str());
 			float temp = static_cast<float>(atof(results[3].c_str()));
 			unsigned char finalID = (ID * 10) + Channel;
-			SendTempSensor(finalID, temp, "Soil/Leaf Temp");
+			SendTempSensor(finalID, 255, temp, "Soil/Leaf Temp");
 		}
 		break;
 	case 'P':

@@ -170,28 +170,6 @@ void CHardwareMonitor::SendCurrent(const unsigned long Idx, const float Curr, co
 	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), 255);
 }
 
-void CHardwareMonitor::SendTempSensor(const int Idx, const float Temp, const std::string &defaultname)
-{
-	RBUF tsen;
-	memset(&tsen, 0, sizeof(RBUF));
-
-	tsen.TEMP.packetlength = sizeof(tsen.TEMP) - 1;
-	tsen.TEMP.packettype = pTypeTEMP;
-	tsen.TEMP.subtype = sTypeTEMP10;
-	tsen.TEMP.battery_level = 9;
-	tsen.TEMP.rssi = 12;
-	tsen.TEMP.id1 = (unsigned char)(Idx>>8);
-	tsen.TEMP.id2 = (unsigned char)Idx&0xFF;
-
-	tsen.TEMP.tempsign = (Temp >= 0) ? 0 : 1;
-	int at10 = round(abs(Temp*10.0f));
-	tsen.TEMP.temperatureh = (BYTE)(at10 / 256);
-	at10 -= (tsen.TEMP.temperatureh * 256);
-	tsen.TEMP.temperaturel = (BYTE)(at10);
-
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, defaultname.c_str(), 255);
-}
-
 void CHardwareMonitor::SendPercentage(const unsigned long Idx, const float Percentage, const std::string &defaultname)
 {
 	_tGeneralDevice gDevice;
@@ -233,7 +211,7 @@ void CHardwareMonitor::GetInternalTemperature()
 
 	if ((temperature != 85) && (temperature != -127) && (temperature > -273))
 	{
-		SendTempSensor(1, temperature, "Internal Temperature");
+		SendTempSensor(1, 255, temperature, "Internal Temperature");
 	}
 }
 
@@ -323,7 +301,7 @@ void CHardwareMonitor::UpdateSystemSensor(const std::string& qType, const int di
 	{
 		doffset = 1000;
 		float temp = static_cast<float>(atof(devValue.c_str()));
-		SendTempSensor(doffset + dindex, temp, devName);
+		SendTempSensor(doffset + dindex, 255, temp, devName);
 	}
 	else if (qType == "Load")
 	{

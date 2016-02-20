@@ -225,28 +225,6 @@ void CDavisLoggerSerial::UpdateTempHumSensor(const unsigned char Idx, const floa
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM, NULL, 255);
 }
 
-void CDavisLoggerSerial::UpdateTempSensor(const unsigned char Idx, const float Temp)
-{
-	RBUF tsen;
-	memset(&tsen,0,sizeof(RBUF));
-
-	tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;
-	tsen.TEMP.packettype=pTypeTEMP;
-	tsen.TEMP.subtype=sTypeTEMP10;
-	tsen.TEMP.battery_level=9;
-	tsen.TEMP.rssi=12;
-	tsen.TEMP.id1=0;
-	tsen.TEMP.id2=Idx;
-
-	tsen.TEMP.tempsign=(Temp>=0)?0:1;
-	int at10=round(abs(Temp*10.0f));
-	tsen.TEMP.temperatureh=(BYTE)(at10/256);
-	at10-=(tsen.TEMP.temperatureh*256);
-	tsen.TEMP.temperaturel=(BYTE)(at10);
-
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, NULL, 255);
-}
-
 void CDavisLoggerSerial::UpdateHumSensor(const unsigned char Idx, const int Hum)
 {
 	RBUF tsen;
@@ -416,7 +394,7 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 		else if (bOutsideTemperatureValid)
 		{
 			//Temp
-			UpdateTempSensor(tempIdx++,OutsideTemperature);
+			SendTempSensor(tempIdx++, 255, OutsideTemperature, "Outside Temp");
 		}
 		else if (bOutsideHumidityValid)
 		{
@@ -454,7 +432,7 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 		else if (bTempValid)
 		{
 			//Temp
-			UpdateTempSensor(tempIdx++,temp);
+			SendTempSensor(tempIdx++, 255, temp, "Extra Temp");
 		}
 		else if (bHumValid)
 		{
@@ -478,7 +456,7 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 		}
 		if (bTempValid)
 		{
-			UpdateTempSensor(tempIdx++,temp);
+			SendTempSensor(tempIdx++, 255, temp, "Soil Temp");
 		}
 	}
 
@@ -497,7 +475,7 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 		}
 		if (bTempValid)
 		{
-			UpdateTempSensor(tempIdx++,temp);
+			SendTempSensor(tempIdx++, 255, temp, "Leaf Temp");
 		}
 	}
 

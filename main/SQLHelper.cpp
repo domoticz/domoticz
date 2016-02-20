@@ -31,7 +31,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 99
+#define DB_VERSION 100
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -1872,6 +1872,42 @@ bool CSQLHelper::OpenDatabase()
 							}
 						}
 					}
+				}
+			}
+		}
+		if (dbversion < 100)
+		{
+			//Convert temperature sensor type sTypeTEMP10 to sTypeTEMP5 for specified hardware classes
+			std::stringstream szQuery, szQuery2;
+			std::vector<std::vector<std::string> > result;
+			std::vector<std::string> sd;
+			szQuery << "SELECT ID FROM Hardware WHERE ( "
+				<< "([Type] = " << HTYPE_OpenThermGateway << ") OR "
+				<< "([Type] = " << HTYPE_OpenThermGatewayTCP << ") OR "
+				<< "([Type] = " << HTYPE_DavisVantage << ") OR "
+				<< "([Type] = " << HTYPE_System << ") OR "
+				<< "([Type] = " << HTYPE_ICYTHERMOSTAT << ") OR "
+				<< "([Type] = " << HTYPE_Meteostick << ") OR "
+				<< "([Type] = " << HTYPE_PVOUTPUT_INPUT << ") OR "
+				<< "([Type] = " << HTYPE_SBFSpot << ") OR "
+				<< "([Type] = " << HTYPE_SolarEdgeTCP << ") OR "
+				<< "([Type] = " << HTYPE_TE923 << ") OR "
+				<< "([Type] = " << HTYPE_TOONTHERMOSTAT << ") OR "
+				<< "([Type] = " << HTYPE_Wunderground << ") OR "
+				<< "([Type] = " << HTYPE_RazberryZWave << ") OR "
+				<< "([Type] = " << HTYPE_OpenZWave << ")"
+				<< ")";
+			result = query(szQuery.str());
+			if (result.size() > 0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					sd = *itt;
+					szQuery2.clear();
+					szQuery2.str("");
+					szQuery2 << "UPDATE DeviceStatus SET SubType=" << sTypeTEMP5 << " WHERE ([Type]==" << pTypeTEMP << ") AND (SubType==" << sTypeTEMP10 << ") AND (HardwareID=" << sd[0] << ")";
+					query(szQuery2.str());
 				}
 			}
 		}

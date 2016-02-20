@@ -194,28 +194,6 @@ void CToonThermostat::Do_Work()
 	_log.Log(LOG_STATUS,"ToonThermostat: Worker stopped...");
 }
 
-void CToonThermostat::SendTempSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
-{
-	RBUF tsen;
-	memset(&tsen,0,sizeof(RBUF));
-
-	tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;
-	tsen.TEMP.packettype=pTypeTEMP;
-	tsen.TEMP.subtype=sTypeTEMP10;
-	tsen.TEMP.battery_level=9;
-	tsen.TEMP.rssi=12;
-	tsen.TEMP.id1=0;
-	tsen.TEMP.id2=Idx;
-
-	tsen.TEMP.tempsign=(Temp>=0)?0:1;
-	int at10=round(abs(Temp*10.0f));
-	tsen.TEMP.temperatureh=(BYTE)(at10/256);
-	at10-=(tsen.TEMP.temperatureh*256);
-	tsen.TEMP.temperaturel=(BYTE)(at10);
-
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, defaultname.c_str(), 255);
-}
-
 void CToonThermostat::SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
 {
 	_tThermostat thermos;
@@ -673,7 +651,7 @@ void CToonThermostat::GetMeterDetails()
 		float currentTemp = root["thermostatInfo"]["currentTemp"].asFloat() / 100.0f;
 		float currentSetpoint = root["thermostatInfo"]["currentSetpoint"].asFloat() / 100.0f;
 		SendSetPointSensor(1, currentSetpoint, "Room Setpoint");
-		SendTempSensor(1, currentTemp, "Room Temperature");
+		SendTempSensor(1, 255, currentTemp, "Room Temperature");
 
 		//int programState = root["thermostatInfo"]["programState"].asInt();
 		//int activeState = root["thermostatInfo"]["activeState"].asInt();

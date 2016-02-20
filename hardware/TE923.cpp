@@ -212,33 +212,16 @@ void CTE923::GetSensorDetails()
 		else if (data._t[ii]==0)
 		{
 			//Temp
-			RBUF tsen;
-			memset(&tsen,0,sizeof(RBUF));
-			tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;
-			tsen.TEMP.packettype=pTypeTEMP;
-			tsen.TEMP.subtype=sTypeTEMP10;
-			if (ii>0)
+			int BatLevel = 100;
+			if (ii > 0)
 			{
-				if (dev.battery[ii-1])
-					tsen.TEMP.battery_level=9;
+				if (dev.battery[ii - 1])
+					BatLevel = 100;
 				else
-					tsen.TEMP.battery_level=0;
+					BatLevel = 0;
 			}
-			else
-			{
-				tsen.TEMP.battery_level=9;
-			}
-			tsen.TEMP.rssi=12;
-			tsen.TEMP.id1=0;
-			tsen.TEMP.id2=ii;
 
-			tsen.TEMP.tempsign=(data.t[ii]>=0)?0:1;
-			int at10=round(abs(data.t[ii]*10.0f));
-			tsen.TEMP.temperatureh=(BYTE)(at10/256);
-			at10-=(tsen.TEMP.temperatureh*256);
-			tsen.TEMP.temperaturel=(BYTE)(at10);
-
-			sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, NULL, -1);
+			SendTempSensor(ii, BatLevel, data.t[ii], "Temperature");
 		}
 		else if (data._h[ii]==0)
 		{

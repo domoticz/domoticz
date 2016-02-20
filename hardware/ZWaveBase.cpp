@@ -592,25 +592,8 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		}
 		else
 		{
-			tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;
-			tsen.TEMP.packettype=pTypeTEMP;
-			tsen.TEMP.subtype=sTypeTEMP10;
-			tsen.TEMP.rssi=12;
-			tsen.TEMP.id1=ID3;
-			tsen.TEMP.id2=ID4;
-
-			tsen.TEMP.battery_level=9;
-			if (pDevice->hasBattery)
-			{
-				tsen.TEMP.battery_level=Convert_Battery_To_PercInt(pDevice->batValue);
-			}
-
-			tsen.TEMP.tempsign=(pDevice->floatValue>=0)?0:1;
-			int at10=round(abs(pDevice->floatValue*10.0f));
-			tsen.TEMP.temperatureh=(BYTE)(at10/256);
-			at10-=(tsen.TEMP.temperatureh*256);
-			tsen.TEMP.temperaturel=(BYTE)(at10);
-			sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, NULL, BatLevel);
+			uint16_t NodeID = (ID3 << 8) | ID4;
+			SendTempSensor(NodeID, pDevice->batValue, pDevice->floatValue, "Temperature");
 		}
 	}
 	else if (pDevice->devType==ZDTYPE_SENSOR_HUMIDITY)

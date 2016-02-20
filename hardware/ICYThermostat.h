@@ -17,7 +17,6 @@ public:
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 	void SetSetpoint(const int idx, const float temp);
 private:
-	void SendTempSensor(const unsigned char Idx, const float Temp, const std::string &defaultname);
 	void SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname);
 
 	bool GetSerialAndToken();
