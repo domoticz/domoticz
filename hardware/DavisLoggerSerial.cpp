@@ -516,27 +516,7 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 		float rainYear=((unsigned int)((pData[55] << 8) | pData[54])) / 100.0f; //inches
 		rainYear*=25.4f; //mm
 
-		RBUF tsen;
-		memset(&tsen,0,sizeof(RBUF));
-		tsen.RAIN.packetlength=sizeof(tsen.RAIN)-1;
-		tsen.RAIN.packettype=pTypeRAIN;
-		tsen.RAIN.subtype=sTypeRAIN3;
-		tsen.RAIN.battery_level=9;
-		tsen.RAIN.rssi=12;
-		tsen.RAIN.id1=0;
-		tsen.RAIN.id2=1;
-
-		tsen.RAIN.rainrateh=0;
-		tsen.RAIN.rainratel=0;
-
-		int tr10=int(float(rainYear)*10.0f);
-
-		tsen.RAIN.raintotal1=0;
-		tsen.RAIN.raintotal2=(BYTE)(tr10/256);
-		tr10-=(tsen.RAIN.raintotal2*256);
-		tsen.RAIN.raintotal3=(BYTE)(tr10);
-
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.RAIN, NULL, 255);
+		SendRainSensor(1, 255, rainYear, "Rain");
 	}
 
 	//Solar Radiation

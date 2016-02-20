@@ -663,7 +663,7 @@ void CDomoticzHardwareBase::SendPercentageSensor(const int NodeID, const int Chi
 	gDevice.subtype = sTypePercentage;
 	gDevice.id = ChildID;
 	gDevice.floatval1 = Percentage;
-	gDevice.intval1 = static_cast<int>(NodeID);
+	gDevice.intval1 = NodeID;
 	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), BatteryLevel);
 }
 
@@ -673,7 +673,7 @@ void CDomoticzHardwareBase::SendWaterflowSensor(const int NodeID, const int Chil
 	gDevice.subtype = sTypeWaterflow;
 	gDevice.id = ChildID;
 	gDevice.floatval1 = LPM;
-	gDevice.intval1 = static_cast<int>(NodeID);
+	gDevice.intval1 = NodeID;
 	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), BatteryLevel);
 }
 

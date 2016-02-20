@@ -515,21 +515,12 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_VOLTAGE)
 	{
-		_tGeneralDevice gDevice;
-		gDevice.subtype=sTypeVoltage;
-		gDevice.id=ID4;
-		gDevice.floatval1=pDevice->floatValue;
-		gDevice.intval1=(int)(ID1<<24)|(ID2<<16)|(ID3<<8)|ID4;
-		sDecodeRXMessage(this, (const unsigned char *)&gDevice, NULL, BatLevel);
+		int sid = (int)(ID1 << 24) | (ID2 << 16) | (ID3 << 8) | ID4;
+		SendVoltageSensor(0, sid, pDevice->batValue, pDevice->floatValue, "Voltage");
 	}
 	else if (pDevice->devType==ZDTYPE_SENSOR_PERCENTAGE)
 	{
-		_tGeneralDevice gDevice;
-		gDevice.subtype=sTypePercentage;
-		gDevice.id=ID4;
-		gDevice.floatval1=pDevice->floatValue;
-		gDevice.intval1=(int)(ID1<<24)|(ID2<<16)|(ID3<<8)|ID4;
-		sDecodeRXMessage(this, (const unsigned char *)&gDevice, NULL, BatLevel);
+		SendPercentageSensor((int)(ID1 << 24) | (ID2 << 16) | (ID3 << 8) | ID4, 0, pDevice->batValue, pDevice->floatValue, "Percentage");
 	}
 	else if (pDevice->devType==ZDTYPE_SENSOR_AMPERE)
 	{

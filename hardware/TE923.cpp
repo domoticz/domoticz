@@ -249,6 +249,9 @@ void CTE923::GetSensorDetails()
 	//Rain
 	if (data._RainCount==0)
 	{
+		int BatLevel = (batteryRain) ? 100 : 0;
+		SendRainSensor(1, BatLevel, float(data.RainCount) / 0.7f, "Rain");
+/*
 		RBUF tsen;
 		memset(&tsen,0,sizeof(RBUF));
 		tsen.RAIN.packetlength=sizeof(tsen.RAIN)-1;
@@ -271,8 +274,8 @@ void CTE923::GetSensorDetails()
 		tsen.RAIN.raintotal2=(BYTE)(tr10/256);
 		tr10-=(tsen.RAIN.raintotal2*256);
 		tsen.RAIN.raintotal3=(BYTE)(tr10);
-
 		sDecodeRXMessage(this, (const unsigned char *)&tsen.RAIN, NULL, -1);
+*/
 	}
 	//UV
 	if (data._uv==0)
