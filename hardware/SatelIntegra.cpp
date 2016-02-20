@@ -745,25 +745,10 @@ void SatelIntegra::ReportAlarm(const bool isAlarm)
 
 void SatelIntegra::ReportTemperature(const int Idx, int temp)
 {
-	RBUF tsen;
-	memset(&tsen,0,sizeof(RBUF));
-
-	tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;
-	tsen.TEMP.packettype=pTypeTEMP;
-	tsen.TEMP.subtype=sTypeTEMP10;
-	tsen.TEMP.battery_level=9;
-	tsen.TEMP.rssi=12;
-	tsen.TEMP.id1=(BYTE)Idx;
-	tsen.TEMP.id2=0;
-
 	temp = temp - 0x6E;
-	tsen.TEMP.tempsign=(temp>=0)?0:1;
-	int at10=round(abs(temp*5.0f));
-	tsen.TEMP.temperatureh=(BYTE)(at10/256);
-	at10-=(tsen.TEMP.temperatureh*256);
-	tsen.TEMP.temperaturel=(BYTE)(at10);
+	temp = temp / 2;
 
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, NULL, 255);
+	SendTempSensor(Idx, 255, temp, "Temperature");
 }
 
 bool SatelIntegra::ArmPartitions(const int partition, const int mode)
