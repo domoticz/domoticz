@@ -145,11 +145,24 @@ m_LastSunriseSet("")
 	
 	m_bStartHardware=false;
 	m_hardwareStartCounter=0;
-	m_webserverport="8080";
-	m_webserveraddress="::";
-	m_secure_webserverport = "";
-	m_secure_web_cert_file = "./server_cert.pem";
-	m_secure_web_passphrase = "";
+
+	// Set default settings for web servers
+	m_webserver_settings.listening_address = "::"; // listen to all network interfaces
+	m_webserver_settings.listening_port = "8080";
+	m_secure_webserver_settings.listening_address = "::"; // listen to all network interfaces
+	m_secure_webserver_settings.listening_port = ""; // disabled
+	m_secure_webserver_settings.ssl_method = "sslv23";
+	m_secure_webserver_settings.certificate_chain_file_path = "./server_cert.pem";
+	m_secure_webserver_settings.ca_cert_file_path = m_secure_webserver_settings.certificate_chain_file_path; // not used
+	m_secure_webserver_settings.cert_file_path = m_secure_webserver_settings.certificate_chain_file_path;
+	m_secure_webserver_settings.private_key_file_path = m_secure_webserver_settings.certificate_chain_file_path;
+	m_secure_webserver_settings.private_key_pass_phrase = "";
+	m_secure_webserver_settings.options  = "default_workarounds,no_sslv2,single_dh_use";
+	m_secure_webserver_settings.tmp_dh_file_path = m_secure_webserver_settings.certificate_chain_file_path;
+	m_secure_webserver_settings.verify_peer = false;
+	m_secure_webserver_settings.verify_fail_if_no_peer_cert = false;
+	m_secure_webserver_settings.verify_file_path = "";
+
 	m_bIgnoreUsernamePassword=false;
 
 	time_t atime=mytime(NULL);
@@ -486,44 +499,29 @@ eVerboseLevel MainWorker::GetVerboseLevel()
   return m_verboselevel;
 }
 
-void MainWorker::SetWebserverAddress(const std::string &Address)
+void MainWorker::SetWebserverSettings(const server_settings & settings)
 {
-	m_webserveraddress = Address;
-}
-
-void MainWorker::SetWebserverPort(const std::string &Port)
-{
-	m_webserverport=Port;
+	m_webserver_settings.set(settings);
 }
 
 std::string MainWorker::GetWebserverAddress()
 {
-	return m_webserveraddress;
+	return m_webserver_settings.listening_address;
 }
 
 std::string MainWorker::GetWebserverPort()
 {
-	return m_webserverport;
-}
-
-void MainWorker::SetSecureWebserverPort(const std::string &Port)
-{
-	m_secure_webserverport = Port;
+	return m_webserver_settings.listening_port;
 }
 
 std::string MainWorker::GetSecureWebserverPort()
 {
-	return m_secure_webserverport;
+	return m_secure_webserver_settings.listening_port;
 }
 
-void MainWorker::SetSecureWebserverCert(const std::string &CertFile)
+void MainWorker::SetSecureWebserverSettings(const ssl_server_settings & ssl_settings)
 {
-	m_secure_web_cert_file = CertFile;
-}
-
-void MainWorker::SetSecureWebserverPass(const std::string &passphrase)
-{
-	m_secure_web_passphrase = passphrase;
+	m_secure_webserver_settings.set(ssl_settings);
 }
 
 bool MainWorker::RestartHardware(const std::string &idx)
@@ -954,10 +952,10 @@ bool MainWorker::Stop()
 
 bool MainWorker::StartThread()
 {
-	if (!m_webserverport.empty())
+	if (!m_webserver_settings.listening_port.empty())
 	{
 		//Start WebServer
-		if (!m_webservers.StartServers(m_webserveraddress, m_webserverport, m_secure_webserverport, szWWWFolder, m_secure_web_cert_file, m_secure_web_passphrase, m_bIgnoreUsernamePassword, &m_sharedserver))
+		if (!m_webservers.StartServers(m_webserver_settings, m_secure_webserver_settings, szWWWFolder, m_bIgnoreUsernamePassword, &m_sharedserver))
 		{
 #ifdef WIN32
 			MessageBox(0,"Error starting webserver, check if ports are not in use!", MB_OK, MB_ICONERROR);

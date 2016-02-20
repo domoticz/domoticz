@@ -37,32 +37,37 @@ namespace http {
 	namespace server {
 
 /**
-
 Webem constructor
 
-@param[in] address  IP address.  In general, use  "0.0.0.0"
-@param[in] port     port to listen on for browser requests e.g. "8080"
+@param[in] server_settings  Server settings (IP address, listening port, ssl options...)
 @param[in] doc_root path to folder containing html e.g. "./"
-
 */
 cWebem::cWebem(
-	   const std::string& address,
-	   const std::string& port,
-	   const std::string& doc_root,
-	   const std::string& secure_cert_file,
-	   const std::string& secure_cert_passphrase) :
-myRequestHandler( doc_root,this ), myPort( port ),
-myServer( address, port, myRequestHandler, secure_cert_file, secure_cert_passphrase ),
-m_DigistRealm("Domoticz.com"),
-m_zippassword(""),
-m_actTheme(""),
-m_io_service(),
-m_session_clean_timer(m_io_service, boost::posix_time::minutes(1))
-{
-	m_authmethod=AUTH_LOGIN;
+		const server_settings & settings,
+		const std::string& doc_root) :
+				m_io_service(),
+				m_settings(settings),
+				myRequestHandler(doc_root, this),
+				m_DigistRealm("Domoticz.com"),
+				m_zippassword(""),
+				m_actTheme(""),
+				m_session_clean_timer(m_io_service, boost::posix_time::minutes(1)
+				) {
+	m_authmethod = AUTH_LOGIN;
 	mySessionStore = NULL;
+	if (settings.is_secure()) {
+		myServer = new ssl_server(*(ssl_server_settings const *)&settings, myRequestHandler);
+	} else {
+		myServer = new server(m_settings, myRequestHandler);
+	}
 }
 
+cWebem::~cWebem() {
+	if (myServer != NULL) {
+		myServer->stop();
+		delete myServer;
+	}
+}
 /**
 
 Start the server.
@@ -72,16 +77,21 @@ This does not return.
 If application needs to continue, start new thread with call to this method.
 
 */
-
 void cWebem::Run() {
-	//_log.Log(LOG_STATUS, "[web:%s] Run", GetPort().c_str());
+	//_log.Log(LOG_STATUS, "[web:%s] Run...", GetPort().c_str());
+	// Start session cleaner
 	m_session_clean_timer.async_wait(boost::bind(&cWebem::CleanSessions, this));
 	boost::thread t(boost::bind(&boost::asio::io_service::run, &m_io_service));
-	myServer.run();
+	// Start Web server
+	myServer->run();
+	//_log.Log(LOG_STATUS, "[web:%s] Run ends", GetPort().c_str());
 }
 
 void cWebem::Stop() {
-	myServer.stop();
+	//_log.Log(LOG_STATUS, "[web:%s] Stop...", GetPort().c_str());
+	// Stop Web server
+	myServer->stop();
+	// Stop session cleaner
 	m_session_clean_timer.cancel();
 	m_io_service.stop();
 }
@@ -896,7 +906,7 @@ static int check_password(struct ah *ah, const std::string &ha1, const std::stri
 }
 
 const std::string cWebem::GetPort() {
-	return myPort;
+	return m_settings.listening_port;
 }
 
 WebEmSession * cWebem::GetSession(const std::string & ssid) {

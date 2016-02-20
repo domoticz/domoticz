@@ -585,6 +585,7 @@ int main(int argc, char**argv)
 		sleep_seconds(DelaySeconds);
 	}
 
+	http::server::server_settings webserver_settings;
 	if (cmdLine.HasSwitch("-wwwbind"))
 	{
 		if (cmdLine.GetArgumentCount("-wwwbind") != 1)
@@ -592,8 +593,7 @@ int main(int argc, char**argv)
 			_log.Log(LOG_ERROR, "Please specify an address");
 			return 1;
 		}
-		std::string wwwbind = cmdLine.GetSafeArgument("-wwwbind", 0, "0.0.0.0");
-		m_mainworker.SetWebserverAddress(wwwbind);
+		webserver_settings.listening_address = cmdLine.GetSafeArgument("-wwwbind", 0, "0.0.0.0");
 	}
 
 	if (cmdLine.HasSwitch("-www"))
@@ -606,9 +606,11 @@ int main(int argc, char**argv)
 		std::string wwwport = cmdLine.GetSafeArgument("-www", 0, "8080");
 		if (wwwport == "0")
 			wwwport.clear();//HTTP server disabled
-		m_mainworker.SetWebserverPort(wwwport);
+		webserver_settings.listening_port = wwwport;
 	}
+	m_mainworker.SetWebserverSettings(webserver_settings);
 #ifdef NS_ENABLE_SSL
+	http::server::ssl_server_settings secure_webserver_settings;
 	if (cmdLine.HasSwitch("-sslwww"))
 	{
 		if (cmdLine.GetArgumentCount("-sslwww") != 1)
@@ -619,7 +621,7 @@ int main(int argc, char**argv)
 		std::string wwwport = cmdLine.GetSafeArgument("-sslwww", 0, "443");
 		if (wwwport == "0")
 			wwwport.clear();//HTTPS server disabled
-		m_mainworker.SetSecureWebserverPort(wwwport);
+		secure_webserver_settings.listening_port = wwwport;
 	}
 	if (cmdLine.HasSwitch("-sslcert"))
 	{
@@ -628,8 +630,7 @@ int main(int argc, char**argv)
 			_log.Log(LOG_ERROR, "Please specify the file path");
 			return 1;
 		}
-		std::string ca_cert = cmdLine.GetSafeArgument("-sslcert", 0, "./server_cert.pem");
-		m_mainworker.SetSecureWebserverCert(ca_cert);
+		secure_webserver_settings.cert_file_path = cmdLine.GetSafeArgument("-sslcert", 0, "./server_cert.pem");
 	}
 	if (cmdLine.HasSwitch("-sslpass"))
 	{
@@ -638,9 +639,9 @@ int main(int argc, char**argv)
 			_log.Log(LOG_ERROR, "Please specify a passphrase for your certificate file");
 			return 1;
 		}
-		std::string ca_passphrase = cmdLine.GetSafeArgument("-sslpass", 0, "");
-		m_mainworker.SetSecureWebserverPass(ca_passphrase);
+		secure_webserver_settings.private_key_pass_phrase = cmdLine.GetSafeArgument("-sslpass", 0, "");
 	}
+	m_mainworker.SetSecureWebserverSettings(secure_webserver_settings);
 #endif
 	if (cmdLine.HasSwitch("-nowwwpwd"))
 	{

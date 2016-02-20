@@ -148,12 +148,9 @@ namespace http {
 		friend class CProxyClient;
 		public:
 			cWebem(
-				const std::string& address,
-				const std::string& port,
-				const std::string& doc_root,
-				const std::string& secure_cert_file,
-				const std::string& secure_cert_passphrase);
-
+				const server_settings & settings,
+				const std::string& doc_root);
+			~cWebem();
 			void Run();
 			void Stop();
 
@@ -217,6 +214,7 @@ namespace http {
 			//Whitelist url strings that bypass authentication checks (not used by basic-auth authentication)
 			std::vector < std::string > myWhitelistURLs;
 		private:
+			server_settings m_settings;
 			/// store map between include codes and application functions
 			std::map < std::string, webem_include_function > myIncludes;
 			/// store map between include codes and application functions returning UTF-16 strings
@@ -228,9 +226,7 @@ namespace http {
 			/// store map between pages and application functions
 			std::map < std::string, webem_page_function > myPages_w;
 			/// boost::asio web server (RK: plain or secure)
-			server myServer;
-			/// port server is listening on
-			std::string myPort;
+			server_base* myServer;
 			// actual theme selected
 			std::string m_actTheme;
 			// root of url for reverse proxy servers
