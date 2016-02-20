@@ -150,32 +150,12 @@ void CHardwareMonitor::Do_Work()
 	_log.Log(LOG_STATUS,"Hardware Monitor: Stopped...");			
 }
 
-void CHardwareMonitor::SendVoltage(const unsigned long Idx, const float Volt, const std::string &defaultname)
-{
-	_tGeneralDevice gDevice;
-	gDevice.subtype = sTypeVoltage;
-	gDevice.id = 1;
-	gDevice.floatval1 = Volt;
-	gDevice.intval1 = static_cast<int>(Idx);
-	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), 255);
-}
-
 void CHardwareMonitor::SendCurrent(const unsigned long Idx, const float Curr, const std::string &defaultname)
 {
 	_tGeneralDevice gDevice;
 	gDevice.subtype = sTypeCurrent;
 	gDevice.id = 1;
 	gDevice.floatval1 = Curr;
-	gDevice.intval1 = static_cast<int>(Idx);
-	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), 255);
-}
-
-void CHardwareMonitor::SendPercentage(const unsigned long Idx, const float Percentage, const std::string &defaultname)
-{
-	_tGeneralDevice gDevice;
-	gDevice.subtype = sTypePercentage;
-	gDevice.id = 1;
-	gDevice.floatval1 = Percentage;
 	gDevice.intval1 = static_cast<int>(Idx);
 	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), 255);
 }
@@ -234,7 +214,7 @@ void CHardwareMonitor::GetInternalVoltage()
 	if (voltage == 0)
 		return; //hardly possible for a on board temp sensor, if it is, it is probably not working
 
-	SendVoltage(1, voltage, "Internal Voltage");
+	SendVoltageSensor(0, 1, 255, voltage, "Internal Voltage");
 }
 
 void CHardwareMonitor::GetInternalCurrent()
@@ -307,7 +287,7 @@ void CHardwareMonitor::UpdateSystemSensor(const std::string& qType, const int di
 	{
 		doffset = 1100;
 		float perc = static_cast<float>(atof(devValue.c_str()));
-		SendPercentage(doffset + dindex, perc, devName);
+		SendPercentageSensor(doffset + dindex, 0, 255, perc, devName);
 	}
 	else if (qType == "Fan")
 	{
@@ -319,7 +299,7 @@ void CHardwareMonitor::UpdateSystemSensor(const std::string& qType, const int di
 	{
 		doffset = 1300;
 		float volt = static_cast<float>(atof(devValue.c_str()));
-		SendVoltage(doffset + dindex, volt, devName);
+		SendVoltageSensor(0, doffset + dindex, 255, volt, devName);
 	}
 	else if (qType == "Current")
 	{

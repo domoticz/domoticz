@@ -297,60 +297,6 @@ void Meteostick::SendUVSensor(const unsigned char Idx, const float UV, const std
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.UV, defaultname.c_str(), 255);
 }
 
-void Meteostick::SendPercentage(const unsigned long Idx, const float Percentage, const std::string &defaultname)
-{
-	_tGeneralDevice gDevice;
-	gDevice.subtype = sTypePercentage;
-	gDevice.id = 1;
-	gDevice.floatval1 = Percentage;
-	gDevice.intval1 = static_cast<int>(Idx);
-	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), 255);
-}
-
-float Meteostick::GetRainSensorCounter(const unsigned char Idx)
-{
-	float counter = 0;
-
-	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, int(Idx), int(pTypeRAIN), int(sTypeRAIN3));
-	if (result.size() >0)
-	{
-		std::vector<std::string> strarray;
-		StringSplit(result[0][0], ";", strarray);
-		if (strarray.size() == 2)
-		{
-			counter = static_cast<float>(atof(strarray[1].c_str()));
-		}
-	}
-
-	return counter;
-}
-
-void Meteostick::SendRainSensor(const unsigned char Idx, const float Rainmm, const std::string &defaultname)
-{
-	RBUF tsen;
-	memset(&tsen, 0, sizeof(RBUF));
-	tsen.RAIN.packetlength = sizeof(tsen.RAIN) - 1;
-	tsen.RAIN.packettype = pTypeRAIN;
-	tsen.RAIN.subtype = sTypeRAIN3;
-	tsen.RAIN.battery_level = 9;
-	tsen.RAIN.rssi = 12;
-	tsen.RAIN.id1 = 0;
-	tsen.RAIN.id2 = Idx;
-
-	tsen.RAIN.rainrateh = 0;
-	tsen.RAIN.rainratel = 0;
-
-	int tr10 = int(float(Rainmm)*10.0f);
-
-	tsen.RAIN.raintotal1 = 0;
-	tsen.RAIN.raintotal2 = (BYTE)(tr10 / 256);
-	tr10 -= (tsen.RAIN.raintotal2 * 256);
-	tsen.RAIN.raintotal3 = (BYTE)(tr10);
-
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.RAIN, defaultname.c_str(), 255);
-}
-
 void Meteostick::SendLeafWetnessRainSensor(const unsigned char Idx, const unsigned char Channel, const int Wetness, const std::string &defaultname)
 {
 	int finalID = (Idx * 10) + Channel;
@@ -500,12 +446,12 @@ void Meteostick::ParseLine()
 			if (m_ActRainCounter[ID%MAX_IDS] == -1)
 			{
 				//Get Last stored Rain counter
-				float rcounter=GetRainSensorCounter(ID);
+				bool bExists = false;
+				float rcounter= GetRainSensorValue(ID,bExists);
 				m_ActRainCounter[ID%MAX_IDS] = rcounter;
 			}
 			m_ActRainCounter[ID%MAX_IDS] += Rainmm;
-
-			SendRainSensor(ID, m_ActRainCounter[ID%MAX_IDS], "Rain");
+			SendRainSensor(ID, 255, m_ActRainCounter[ID%MAX_IDS], "Rain");
 		}
 		break;
 	case 'S':
@@ -566,7 +512,7 @@ void Meteostick::ParseLine()
 		{
 			unsigned char ID = (unsigned char)atoi(results[1].c_str());
 			float Percentage = static_cast<float>(atof(results[2].c_str()));
-			SendPercentage(ID, Percentage, "power of solar panel");
+			SendPercentageSensor(ID, 0, 255, Percentage, "power of solar panel");
 		}
 		break;
 	default:

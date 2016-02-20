@@ -743,12 +743,11 @@ void SatelIntegra::ReportAlarm(const bool isAlarm)
 	m_sql.UpdateValue(m_HwdID, "Alarm", 2, pTypeGeneral, sTypeAlert, 12, 255, isAlarm ? 4 : 1, isAlarm ? "Alarm !" : "Normal", devname);
 }
 
-void SatelIntegra::ReportTemperature(const int Idx, int temp)
+void SatelIntegra::ReportTemperature(const int Idx, const int temp)
 {
-	temp = temp - 0x6E;
-	temp = temp / 2;
-
-	SendTempSensor(Idx, 255, temp, "Temperature");
+	float ftemp = static_cast<float>(temp - 0x6E);
+	ftemp /= 2;
+	SendTempSensor(Idx, 255, ftemp, "Temperature");
 }
 
 bool SatelIntegra::ArmPartitions(const int partition, const int mode)
