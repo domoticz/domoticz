@@ -640,7 +640,6 @@ namespace http {
 
 		CProxyManager::CProxyManager(const std::string& doc_root, http::server::cWebem *webEm, tcp::server::CTCPServer *domServ)
 		{
-			proxyclient = NULL;
 			m_pWebEm = webEm;
 			m_pDomServ = domServ;
 			m_thread = NULL;

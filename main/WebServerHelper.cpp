@@ -106,7 +106,7 @@ namespace http {
 			}
 			// we are not connected yet. save this master and connect later.
 			sharedData.AddTCPClient(master);
-			return NULL;
+			return boost::shared_ptr<CProxyClient>();
 		}
 
 		void CWebServerHelper::RemoveMaster(DomoticzTCP *master) {
