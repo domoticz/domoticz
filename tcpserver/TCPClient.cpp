@@ -7,7 +7,7 @@ namespace tcp {
 namespace server {
 
 CTCPClientBase::CTCPClientBase(CTCPServerIntBase *pManager)
-	: pConnectionManager(pManager), m_username("")
+	: pConnectionManager(pManager)
 {
 	socket_ = NULL;
 	m_bIsLoggedIn = false;

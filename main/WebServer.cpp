@@ -119,6 +119,7 @@ namespace http {
 		{
 			m_pWebEm = NULL;
 			m_bDoStop = false;
+			m_bIsSecure = false;
 #ifdef WITH_OPENZWAVE
 			m_ZW_Hwidx = -1;
 #endif
@@ -857,8 +858,7 @@ namespace http {
 				if (request_handler::url_decode(tmpusrpass, usrpass))
 				{
 					usrname = base64_decode(usrname);
-					int iUser = -1;
-					iUser = FindUser(usrname.c_str());
+					int iUser = FindUser(usrname.c_str());
 					if (iUser == -1) {
 						// log brute force attack
 						_log.Log(LOG_ERROR, "Failed login attempt from %s for user '%s' !", session.remote_host.c_str(), usrname.c_str());
@@ -2048,7 +2048,7 @@ namespace http {
 				{
 					getline(infile, sLine);
 					root["LastLogTime"] = "";
-					if (sLine.find("Version ") == 0)
+					if (sLine.compare("Version ") == 0)
 						root["result"][ii]["level"] = 1;
 					else
 						root["result"][ii]["level"] = 0;
@@ -2101,7 +2101,7 @@ namespace http {
 			while (std::getline(stream, sLine))
 			{
 				root["LastLogTime"] = "";
-				if (sLine.find("Version ") == 0)
+				if (sLine.compare("Version ") == 0)
 					root["result"][ii]["level"] = 1;
 				else
 					root["result"][ii]["level"] = 0;
@@ -2123,8 +2123,7 @@ namespace http {
 			unsigned long UserID = 0;
 			if (bHaveUser)
 			{
-				int iUser = -1;
-				iUser = FindUser(session.username.c_str());
+				int iUser = FindUser(session.username.c_str());
 				if (iUser != -1)
 				{
 					urights = static_cast<int>(m_users[iUser].userrights);
@@ -2498,7 +2497,7 @@ namespace http {
 				if (lua_isnumber(lua_state, 1) && (lua_isstring(lua_state, 2) || lua_isnumber(lua_state, 2)) && lua_isstring(lua_state, 3))
 				{
 					// Extract the parameters from the lua 'updateDevice' function	
-					int idx = lua_tointeger(lua_state, 1);
+					int idx = (int)lua_tointeger(lua_state, 1);
 					std::string nvalue = lua_tostring(lua_state, 2);
 					std::string svalue = lua_tostring(lua_state, 3);
 					if (((lua_isstring(lua_state, 3) && nvalue.empty()) && svalue.empty()))
@@ -2512,12 +2511,12 @@ namespace http {
 					int signallevel = 12;
 					if (nargs >= 4 && lua_isnumber(lua_state, 4))
 					{
-						signallevel = lua_tointeger(lua_state, 4);
+						signallevel = (int)lua_tointeger(lua_state, 4);
 					}
 					int batterylevel = 255;
 					if (nargs == 5 && lua_isnumber(lua_state, 5))
 					{
-						batterylevel = lua_tointeger(lua_state, 5);
+						batterylevel = (int)lua_tointeger(lua_state, 5);
 					}
 					_log.Log(LOG_NORM, "WebServer (updateDevice from LUA) : idx=%d nvalue=%s svalue=%s invalue=%d signallevel=%d batterylevel=%d", idx, nvalue.c_str(), svalue.c_str(), invalue, signallevel, batterylevel);
 
@@ -2752,8 +2751,7 @@ namespace http {
 			bool bHaveUser = (session.username != "");
 			if (bHaveUser)
 			{
-				int iUser = -1;
-				iUser = FindUser(session.username.c_str());
+				int iUser = FindUser(session.username.c_str());
 				if (iUser != -1)
 				{
 					urights = static_cast<int>(m_users[iUser].userrights);
@@ -2881,8 +2879,8 @@ namespace http {
 				}
 
 				unsigned char dType = atoi(sd[0].c_str());
-				unsigned char subType = atoi(sd[1].c_str());
-				nValue = (unsigned char)atoi(sd[2].c_str());
+				//unsigned char subType = atoi(sd[1].c_str());
+				//nValue = (unsigned char)atoi(sd[2].c_str());
 				std::string sValue = sd[3];
 
 				if (dType == pTypeP1Power)
@@ -2939,8 +2937,7 @@ namespace http {
 			int urights = 3;
 			if (bHaveUser)
 			{
-				int iUser = -1;
-				iUser = FindUser(session.username.c_str());
+				int iUser = FindUser(session.username.c_str());
 				if (iUser != -1)
 					urights = static_cast<int>(m_users[iUser].userrights);
 			}
@@ -3784,7 +3781,7 @@ namespace http {
 						)
 						return;
 					sunitcode = sgroupcode;//Button A or B
-					CDomoticzHardwareBase *pBaseHardware = (CDomoticzHardwareBase*)m_mainworker.GetHardware(atoi(hwdid.c_str()));
+					CDomoticzHardwareBase *pBaseHardware = reinterpret_cast<CDomoticzHardwareBase*>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
 					if (pBaseHardware == NULL)
 						return;
 					if ((pBaseHardware->HwdType != HTYPE_EnOceanESP2) && (pBaseHardware->HwdType != HTYPE_EnOceanESP3))
@@ -3792,12 +3789,12 @@ namespace http {
 					unsigned long rID = 0;
 					if (pBaseHardware->HwdType == HTYPE_EnOceanESP2)
 					{
-						CEnOceanESP2 *pEnoceanHardware = (CEnOceanESP2 *)pBaseHardware;
+						CEnOceanESP2 *pEnoceanHardware = reinterpret_cast<CEnOceanESP2 *>(pBaseHardware);
 						rID = pEnoceanHardware->m_id_base + iUnitTest;
 					}
 					else
 					{
-						CEnOceanESP3 *pEnoceanHardware = (CEnOceanESP3 *)pBaseHardware;
+						CEnOceanESP3 *pEnoceanHardware = reinterpret_cast<CEnOceanESP3 *>(pBaseHardware);
 						rID = pEnoceanHardware->m_id_base + iUnitTest;
 					}
 					//convert to hex, and we have our ID
@@ -4108,7 +4105,7 @@ namespace http {
 				}
                 
                 // ----------- If needed convert to GeneralSwitch type (for o.a. RFlink) -----------
-                CDomoticzHardwareBase *pBaseHardware = (CDomoticzHardwareBase*)m_mainworker.GetHardware(atoi(hwdid.c_str()));
+				CDomoticzHardwareBase *pBaseHardware = reinterpret_cast<CDomoticzHardwareBase*>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
 				if (pBaseHardware != NULL)
 				{
 					if ((pBaseHardware->HwdType == HTYPE_RFLINKUSB) || (pBaseHardware->HwdType == HTYPE_RFLINKTCP)) {
@@ -4188,7 +4185,7 @@ namespace http {
 						)
 						return;
 					sunitcode = sgroupcode;//Button A/B
-					CDomoticzHardwareBase *pBaseHardware = (CDomoticzHardwareBase*)m_mainworker.GetHardware(atoi(hwdid.c_str()));
+					CDomoticzHardwareBase *pBaseHardware = reinterpret_cast<CDomoticzHardwareBase*>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
 					if (pBaseHardware == NULL)
 						return;
 					if ((pBaseHardware->HwdType != HTYPE_EnOceanESP2) && (pBaseHardware->HwdType != HTYPE_EnOceanESP3))
@@ -4196,7 +4193,7 @@ namespace http {
 					unsigned long rID = 0;
 					if (pBaseHardware->HwdType == HTYPE_EnOceanESP2)
 					{
-						CEnOceanESP2 *pEnoceanHardware = (CEnOceanESP2*)pBaseHardware;
+						CEnOceanESP2 *pEnoceanHardware = reinterpret_cast<CEnOceanESP2*>(pBaseHardware);
 						if (pEnoceanHardware->m_id_base == 0)
 						{
 							root["message"] = "BaseID not found, is the hardware running?";
@@ -4206,7 +4203,7 @@ namespace http {
 					}
 					else
 					{
-						CEnOceanESP3 *pEnoceanHardware = (CEnOceanESP3*)pBaseHardware;
+						CEnOceanESP3 *pEnoceanHardware = reinterpret_cast<CEnOceanESP3*>(pBaseHardware);
 						if (pEnoceanHardware->m_id_base == 0)
 						{
 							root["message"] = "BaseID not found, is the hardware running?";
@@ -4687,44 +4684,43 @@ namespace http {
 					{
 						std::string idx = request::findValue(&req, "idx");
 						std::vector<std::vector<std::string> > result;
-						_eHardwareTypes type;
 
 						result = m_sql.safe_query("SELECT HardwareID FROM DeviceStatus WHERE (ID=='%q')", idx.c_str());
-						if (result.size() == 1) {
+						if (!result.empty())
+						{
 							std::string hdwid = result[0][0];
-							CDomoticzHardwareBase *pBaseHardware = (CDomoticzHardwareBase*)m_mainworker.GetHardware(atoi(hdwid.c_str()));
+							CDomoticzHardwareBase *pBaseHardware = reinterpret_cast<CDomoticzHardwareBase*>(m_mainworker.GetHardware(atoi(hdwid.c_str())));
 							if (pBaseHardware != NULL) {
-								type = pBaseHardware->HwdType;
+								_eHardwareTypes type = pBaseHardware->HwdType;
+								root["result"][ii]["val"] = NTYPE_PAUSED;
+								root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_PAUSED, 0);
+								root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_PAUSED, 1);
+								ii++;
+								if (type == HTYPE_Kodi) {
+									root["result"][ii]["val"] = NTYPE_AUDIO;
+									root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_AUDIO, 0);
+									root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_AUDIO, 1);
+									ii++;
+									root["result"][ii]["val"] = NTYPE_VIDEO;
+									root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_VIDEO, 0);
+									root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_VIDEO, 1);
+									ii++;
+									root["result"][ii]["val"] = NTYPE_PHOTO;
+									root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_PHOTO, 0);
+									root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_PHOTO, 1);
+									ii++;
+								}
+								if (type == HTYPE_LogitechMediaServer) {
+									root["result"][ii]["val"] = NTYPE_PLAYING;
+									root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_PLAYING, 0);
+									root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_PLAYING, 1);
+									ii++;
+									root["result"][ii]["val"] = NTYPE_STOPPED;
+									root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_STOPPED, 0);
+									root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_STOPPED, 1);
+									ii++;
+								}
 							}
-						}
-
-						root["result"][ii]["val"] = NTYPE_PAUSED;
-						root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_PAUSED, 0);
-						root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_PAUSED, 1);
-						ii++;
-						if (type == HTYPE_Kodi) {
-							root["result"][ii]["val"] = NTYPE_AUDIO;
-							root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_AUDIO, 0);
-							root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_AUDIO, 1);
-							ii++;
-							root["result"][ii]["val"] = NTYPE_VIDEO;
-							root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_VIDEO, 0);
-							root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_VIDEO, 1);
-							ii++;
-							root["result"][ii]["val"] = NTYPE_PHOTO;
-							root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_PHOTO, 0);
-							root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_PHOTO, 1);
-							ii++;
-						}
-						if (type == HTYPE_LogitechMediaServer) {
-							root["result"][ii]["val"] = NTYPE_PLAYING;
-							root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_PLAYING, 0);
-							root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_PLAYING, 1);
-							ii++;
-							root["result"][ii]["val"] = NTYPE_STOPPED;
-							root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_STOPPED, 0);
-							root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_STOPPED, 1);
-							ii++;
 						}
 					}
 				}
@@ -6552,7 +6548,7 @@ namespace http {
 					if ((WebUserName != "") && (WebPassword != ""))
 					{
 						WebUserName = base64_decode(WebUserName);
-						WebPassword = WebPassword;
+						//WebPassword = WebPassword;
 						AddUser(10000, WebUserName, WebPassword, URIGHTS_ADMIN, 0xFFFF);
 
 						std::vector<std::vector<std::string> > result;
@@ -6952,7 +6948,7 @@ namespace http {
 
 			m_mainworker.StopDomoticzHardware();
 
-			bool bOK = m_sql.RestoreDatabase(dbasefile);
+			m_sql.RestoreDatabase(dbasefile);
 			m_mainworker.AddAllDomoticzHardware();
 		}
 
@@ -7649,7 +7645,7 @@ namespace http {
 						}
 						else if (pHardware->HwdType == HTYPE_Wunderground)
 						{
-							CWunderground *pWHardware = (CWunderground *)pHardware;
+							CWunderground *pWHardware = reinterpret_cast<CWunderground *>(pHardware);
 							std::string forecast_url = pWHardware->GetForecastURL();
 							if (forecast_url != "")
 							{
@@ -7658,7 +7654,7 @@ namespace http {
 						}
 						else if (pHardware->HwdType == HTYPE_ForecastIO)
 						{
-							CForecastIO *pWHardware = (CForecastIO*)pHardware;
+							CForecastIO *pWHardware = reinterpret_cast<CForecastIO*>(pHardware);
 							std::string forecast_url = pWHardware->GetForecastURL();
 							if (forecast_url != "")
 							{
@@ -9567,7 +9563,6 @@ namespace http {
 
 		void CWebServer::GetDatabaseBackup(WebEmSession & session, const request& req, reply & rep)
 		{
-			std::string dbcontent = "";
 #ifdef WIN32
 			std::string OutputFileName = szUserDataFolder + "backup.db";
 #else
@@ -9998,12 +9993,12 @@ namespace http {
 					{
 						if ((pHardware->HwdType == HTYPE_MySensorsUSB) || (pHardware->HwdType == HTYPE_MySensorsTCP))
 						{
-							MySensorsBase *pMyHardware = (MySensorsBase*)pHardware;
+							MySensorsBase *pMyHardware = reinterpret_cast<MySensorsBase*>(pHardware);
 							root["result"][ii]["version"] = pMyHardware->GetGatewayVersion();
 						}
 						else if ((pHardware->HwdType == HTYPE_OpenThermGateway) || (pHardware->HwdType == HTYPE_OpenThermGatewayTCP))
 						{
-							OTGWBase *pMyHardware = (OTGWBase*)pHardware;
+							OTGWBase *pMyHardware = reinterpret_cast<OTGWBase*>(pHardware);
 							root["result"][ii]["version"] = pMyHardware->m_Version;
 						}
 						else
@@ -10011,7 +10006,7 @@ namespace http {
 #ifdef WITH_OPENZWAVE
 							if (pHardware->HwdType == HTYPE_OpenZWave)
 							{
-								COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+								COpenZWave *pOZWHardware = reinterpret_cast<COpenZWave*>(pHardware);
 								root["result"][ii]["version"] = pOZWHardware->GetVersionLong();
 								root["result"][ii]["NodesQueried"] = (pOZWHardware->m_awakeNodesQueried || pOZWHardware->m_allNodesQueried);
 							}
@@ -10055,8 +10050,7 @@ namespace http {
 			int urights = 3;
 			if (bHaveUser)
 			{
-				int iUser = -1;
-				iUser = FindUser(session.username.c_str());
+				int iUser = FindUser(session.username.c_str());
 				if (iUser != -1)
 					urights = static_cast<int>(m_users[iUser].userrights);
 			}
@@ -10210,12 +10204,10 @@ namespace http {
 			root["title"] = "AddSceneCode";
 
 			//First check if we do not already have this device as activation code
-			bool bFound = false;
-			std::vector<std::vector<std::string> > result, result2;
+			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT Activators, SceneType FROM Scenes WHERE (ID==%q)", sceneidx.c_str());
 			if (result.empty())
 				return;
-			int ii = 0;
 			std::string Activators = result[0][0];
 			unsigned char scenetype = atoi(result[0][1].c_str());
 
@@ -10275,11 +10267,10 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "RemoveSceneCode";
 
-			std::vector<std::vector<std::string> > result, result2;
+			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT Activators, SceneType FROM Scenes WHERE (ID==%q)", sceneidx.c_str());
 			if (result.empty())
 				return;
-			int ii = 0;
 			std::string Activators = result[0][0];
 			int SceneType = atoi(result[0][1].c_str());
 			if (!Activators.empty())
@@ -10355,7 +10346,6 @@ namespace http {
 			bool bUseDirectPath = false;
 			std::vector<std::string> serialports = GetSerialPorts(bUseDirectPath);
 			std::vector<std::string>::iterator itt;
-			int iDevice = 0;
 			int ii = 0;
 			for (itt = serialports.begin(); itt != serialports.end(); ++itt)
 			{
@@ -10953,7 +10943,7 @@ namespace http {
 			std::vector<std::string> sd = result[0];
 				
 			unsigned char dType=atoi(sd[0].c_str());
-			unsigned char dSubType=atoi(sd[1].c_str());
+			//unsigned char dSubType=atoi(sd[1].c_str());
 			
 			int nEvoMode=0;
 			
@@ -11008,8 +10998,7 @@ namespace http {
 				int urights = 3;
 				if (bHaveUser)
 				{
-					int iUser = -1;
-					iUser = FindUser(session.username.c_str());
+					int iUser = FindUser(session.username.c_str());
 					if (iUser != -1)
 					{
 						urights = static_cast<int>(m_users[iUser].userrights);
@@ -11030,8 +11019,7 @@ namespace http {
 				int urights = 3;
 				if (bHaveUser)
 				{
-					int iUser = -1;
-					iUser = FindUser(session.username.c_str());
+					int iUser = FindUser(session.username.c_str());
 					if (iUser != -1)
 					{
 						urights = static_cast<int>(m_users[iUser].userrights);
@@ -11047,8 +11035,7 @@ namespace http {
 				int urights = 3;
 				if (bHaveUser)
 				{
-					int iUser = -1;
-					iUser = FindUser(session.username.c_str());
+					int iUser = FindUser(session.username.c_str());
 					if (iUser != -1)
 					{
 						urights = static_cast<int>(m_users[iUser].userrights);
@@ -11064,8 +11051,7 @@ namespace http {
 				int urights = 3;
 				if (bHaveUser)
 				{
-					int iUser = -1;
-					iUser = FindUser(session.username.c_str());
+					int iUser = FindUser(session.username.c_str());
 					if (iUser != -1)
 					{
 						urights = static_cast<int>(m_users[iUser].userrights);
@@ -11608,7 +11594,6 @@ namespace http {
 				s_str >> idx;
 			}
 			std::vector<std::vector<std::string> > result;
-			std::stringstream szQuery;
 
 			root["status"] = "OK";
 			root["title"] = "TextLog";
@@ -11622,8 +11607,6 @@ namespace http {
 				for (itt = result.begin(); itt != result.end(); ++itt)
 				{
 					std::vector<std::string> sd = *itt;
-
-					std::string sValue = sd[1];
 
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Date"] = sd[2];
@@ -11642,7 +11625,6 @@ namespace http {
 				s_str >> idx;
 			}
 			std::vector<std::vector<std::string> > result;
-			std::stringstream szQuery;
 
 			root["status"] = "OK";
 			root["title"] = "SceneLog";

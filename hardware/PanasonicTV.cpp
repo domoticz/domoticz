@@ -89,6 +89,29 @@ void CPanasonicNode::CPanasonicStatus::Clear()
 	m_Muted = false;
 }
 
+void CPanasonicNode::StopThread()
+{
+	try {
+		if (m_thread)
+		{
+			m_stoprequested = true;
+			m_thread->join();
+			m_thread.reset();
+		}
+	}
+	catch (...)
+	{
+		//Don't throw from a Stop command
+	}
+}
+
+bool CPanasonicNode::StartThread()
+{
+	StopThread();
+	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CPanasonicNode::Do_Work, this)));
+	return (m_thread != NULL);
+}
+
 std::string	CPanasonicNode::CPanasonicStatus::LogMessage()
 {
 	std::string	sLogText;
@@ -161,6 +184,7 @@ CPanasonicNode::CPanasonicNode(const int pHwdID, const int PollIntervalsec, cons
 
 CPanasonicNode::~CPanasonicNode(void)
 {
+	StopThread();
 	if (DEBUG_LOGGING) _log.Log(LOG_STATUS, "Panasonic Plugin: (%s) Destroyed.", m_Name.c_str());
 }
 
@@ -223,9 +247,18 @@ bool CPanasonicNode::handleConnect(boost::asio::ip::tcp::socket& socket, boost::
 			else
 			{
 				if (DEBUG_LOGGING)
-					if (((ec.value() != 113) && (ec.value() != 111) &&
-						(ec.value() != 10060) && (ec.value() != 10061) && (ec.value() != 10064) && (ec.value() != 10061))) // Connection failed due to no response, no route or active refusal
-					_log.Log(LOG_NORM, "Panasonic Plugin: (%s) Connect to '%s:%s' failed: (%d) %s", m_Name.c_str(), m_IP.c_str(), (m_Port[0] != '-' ? m_Port.c_str() : m_Port.substr(1).c_str()), ec.value(), ec.message().c_str());
+					if ((
+						(ec.value() != 113) &&
+						(ec.value() != 111) &&
+						(ec.value() != 10060) &&
+						(ec.value() != 10061) &&
+						(ec.value() != 10064) //&&
+						//(ec.value() != 10061)
+						)
+						) // Connection failed due to no response, no route or active refusal
+					{
+						_log.Log(LOG_NORM, "Panasonic Plugin: (%s) Connect to '%s:%s' failed: (%d) %s", m_Name.c_str(), m_IP.c_str(), (m_Port[0] != '-' ? m_Port.c_str() : m_Port.substr(1).c_str()), ec.value(), ec.message().c_str());
+					}
 				return false;
 			}
 		}
@@ -414,9 +447,7 @@ void CPanasonicNode::Do_Work()
 			iPollCount = 0;
 			try
 			{
-				std::string _volReply;
-				std::string _muteReply;
-				_volReply = handleWriteAndRead(buildXMLStringRendCtl("Get", "Volume"));
+				std::string _volReply = handleWriteAndRead(buildXMLStringRendCtl("Get", "Volume"));
 				if (_volReply != "ERROR")
 				{
 					int iVol = handleMessage(_volReply);
@@ -437,7 +468,7 @@ void CPanasonicNode::Do_Work()
 					}
 				}
 
-				//_muteReply = handleWriteAndRead(buildXMLStringRendCtl("Get", "Mute"));
+				//_std::string _muteReply = handleWriteAndRead(buildXMLStringRendCtl("Get", "Mute"));
 				//_log.Log(LOG_NORM, "Panasonic Plugin: (%s) Mute reply - \r\n", m_Name.c_str(), _muteReply.c_str());
 				//if (_muteReply != "ERROR")
 				//{
@@ -455,7 +486,7 @@ void CPanasonicNode::Do_Work()
 	m_Busy = false;
 }
 
-void CPanasonicNode::SendCommand(const std::string command)
+void CPanasonicNode::SendCommand(const std::string &command)
 {
 	std::string	sPanasonicCall = "";
 	
@@ -572,7 +603,7 @@ void CPanasonicNode::SendCommand(const std::string command)
 	
 }
 
-void CPanasonicNode::SendCommand(const std::string command, const int iValue)
+void CPanasonicNode::SendCommand(const std::string &command, const int iValue)
 {
 	std::string	sPanasonicCall;
 	if (command == "setvolume")
@@ -602,22 +633,24 @@ bool CPanasonicNode::SendShutdown()
 	return false;
 }
 
-void CPanasonicNode::SetExecuteCommand(const std::string command)
+void CPanasonicNode::SetExecuteCommand(const std::string &command)
 {
 	_log.Log(LOG_ERROR, "Panasonic Plugin: (%s) SetExecuteCommand called with: '%s.", m_Name.c_str(), command.c_str());
 }
 
 std::vector<boost::shared_ptr<CPanasonicNode> > CPanasonic::m_pNodes;
 
-CPanasonic::CPanasonic(const int ID, const int PollIntervalsec, const int PingTimeoutms) : m_stoprequested(false)
+CPanasonic::CPanasonic(const int ID, const int PollIntervalsec, const int PingTimeoutms)
 {
 	m_HwdID = ID;
+	m_stoprequested = false;
 	SetSettings(PollIntervalsec, PingTimeoutms);
 }
 
-CPanasonic::CPanasonic(const int ID) : m_stoprequested(false)
+CPanasonic::CPanasonic(const int ID)
 {
 	m_HwdID = ID;
+	m_stoprequested = false;
 	SetSettings(10, 3000);
 }
 
@@ -682,26 +715,14 @@ void CPanasonic::Do_Work()
 				if (!(*itt)->IsBusy())
 				{
 					_log.Log(LOG_NORM, "Panasonic Plugin: (%s) - Restarting thread.", (*itt)->m_Name.c_str());
-					boost::thread* tAsync = new boost::thread(&CPanasonicNode::Do_Work, (*itt));
-					//m_ios.stop();
+					(*itt)->StartThread();
 				}
 				if ((*itt)->IsOn()) bWorkToDo = true;
 			}
-
-			//if (bWorkToDo && m_ios.stopped())  // make sure that there is a boost thread to service i/o operations
-			//{
-			//	m_ios.reset();
-			//	// Note that this is the only thread that handles async i/o so we don't
-			//	// need to worry about locking or concurrency issues when processing messages
-			//	_log.Log(LOG_NORM, "Panasonic Plugin: Restarting I/O service thread.");
-			//	boost::thread bt(boost::bind(&boost::asio::io_service::run, &m_ios));
-			//}
 		}
 		sleep_milliseconds(500);
 	}
-
 	UnloadNodes();
-
 	_log.Log(LOG_STATUS, "Panasonic Plugin: Worker stopped...");
 }
 
@@ -725,7 +746,7 @@ void CPanasonic::Restart()
 
 bool CPanasonic::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	tRBUF *pSen = (tRBUF*)pdata;
+	const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
 
 	unsigned char packettype = pSen->ICMND.packettype;
 
@@ -872,7 +893,7 @@ void CPanasonic::ReloadNodes()
 		for (std::vector<boost::shared_ptr<CPanasonicNode> >::iterator itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
 		{
 			_log.Log(LOG_NORM, "Panasonic Plugin: (%s) Starting thread.", (*itt)->m_Name.c_str());
-			boost::thread* tAsync = new boost::thread(&CPanasonicNode::Do_Work, (*itt));
+			(*itt)->StartThread();
 		}
 		sleep_milliseconds(100);
 		//_log.Log(LOG_NORM, "Panasonic Plugin: Starting I/O service thread.");
@@ -894,7 +915,7 @@ void CPanasonic::UnloadNodes()
 		std::vector<boost::shared_ptr<CPanasonicNode> >::iterator itt;
 		for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
 		{
-			(*itt)->StopRequest();
+			(*itt)->StopThread();
 			if (!(*itt)->IsBusy())
 			{
 				_log.Log(LOG_NORM, "Panasonic Plugin: (%s) Removing device.", (*itt)->m_Name.c_str());
@@ -998,7 +1019,7 @@ namespace http {
 				return;
 			if (pBaseHardware->HwdType != HTYPE_PanasonicTV)
 				return;
-			CPanasonic *pHardware = (CPanasonic*)pBaseHardware;
+			CPanasonic *pHardware = reinterpret_cast<CPanasonic*>(pBaseHardware);
 
 			root["status"] = "OK";
 			root["title"] = "PanasonicSetMode";
@@ -1037,7 +1058,7 @@ namespace http {
 				return;
 			if (pBaseHardware->HwdType != HTYPE_PanasonicTV)
 				return;
-			CPanasonic *pHardware = (CPanasonic*)pBaseHardware;
+			CPanasonic *pHardware = reinterpret_cast<CPanasonic*>(pBaseHardware);
 
 			root["status"] = "OK";
 			root["title"] = "PanasonicAddNode";
@@ -1071,7 +1092,7 @@ namespace http {
 				return;
 			if (pBaseHardware->HwdType != HTYPE_PanasonicTV)
 				return;
-			CPanasonic *pHardware = (CPanasonic*)pBaseHardware;
+			CPanasonic *pHardware = reinterpret_cast<CPanasonic*>(pBaseHardware);
 
 			int NodeID = atoi(nodeid.c_str());
 			root["status"] = "OK";
@@ -1100,7 +1121,7 @@ namespace http {
 				return;
 			if (pBaseHardware->HwdType != HTYPE_PanasonicTV)
 				return;
-			CPanasonic *pHardware = (CPanasonic*)pBaseHardware;
+			CPanasonic *pHardware = reinterpret_cast<CPanasonic*>(pBaseHardware);
 
 			int NodeID = atoi(nodeid.c_str());
 			root["status"] = "OK";
@@ -1125,7 +1146,7 @@ namespace http {
 				return;
 			if (pBaseHardware->HwdType != HTYPE_PanasonicTV)
 				return;
-			CPanasonic *pHardware = (CPanasonic*)pBaseHardware;
+			CPanasonic *pHardware = reinterpret_cast<CPanasonic*>(pBaseHardware);
 
 			root["status"] = "OK";
 			root["title"] = "PanasonicClearNodes";

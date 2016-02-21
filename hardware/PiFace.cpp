@@ -742,7 +742,7 @@ bool CPiFace::StopHardware()
 
 bool CPiFace::WriteToHardware(const char *pdata, const unsigned char length)
 {
-  tRBUF *SendData=(tRBUF*) pdata;
+	const tRBUF *SendData = reinterpret_cast<const tRBUF*>(pdata);
   int mask=0x01;
   unsigned char CurrentLatchState;
   unsigned char OutputData;
@@ -900,7 +900,7 @@ int CPiFace::Init_SPI_Device(int Init)
 
 #endif
 
-    if (result ==-1)
+    if (result == -1)
      {
 #ifdef __arm__
          close(m_fd);
@@ -1132,10 +1132,11 @@ CIOCount::CIOCount()
   UpdateInterval_ms=10000;
   Enabled=false;
   InitialStateSent=false;
- #ifndef DISABLE_NEW_FUNCTIONS
+  UpdateDownCount_ms = 0;
+  Minimum_Pulse_Period_ms = 0;
+#ifndef DISABLE_NEW_FUNCTIONS
   Last_Call=boost::posix_time::microsec_clock::universal_time();
   Cur_Call=boost::posix_time::microsec_clock::universal_time();
-  Minimum_Pulse_Period_ms=0;
  #endif
 };
 
@@ -1309,8 +1310,7 @@ int CIOPort::Update(unsigned char New)
     bool UpdateCounter=false;
     int meterid;
 
-    CPiFace *myCallback;
-    myCallback=((CPiFace*)Callback_pntr);
+	CPiFace *myCallback = reinterpret_cast<CPiFace*>(Callback_pntr);
 
     Last=Current;
     Current=New;
@@ -1384,8 +1384,7 @@ int CIOPort::UpdateInterrupt(unsigned char IntFlag,unsigned char PinState)
 
 void CIOPort::ConfigureCounter(unsigned char Pinnr,bool Enable)
 {
-    CPiFace *myCallback;
-    myCallback=((CPiFace*)Callback_pntr);
+	CPiFace *myCallback = reinterpret_cast<CPiFace*>(Callback_pntr);
 
     Pin[Pinnr].Count.Enabled=Enable;
 	if (Pin[Pinnr].Direction == 'I')
@@ -1399,7 +1398,9 @@ CIOPort::CIOPort()
   Last=0;
   Current=0;
   Present=false;
-
+  Callback_pntr = NULL;
+  PortType = 0;
+  devId = 0;
   for (int i=0; i<8; i++)
    {
     Pin[i].Id=i;

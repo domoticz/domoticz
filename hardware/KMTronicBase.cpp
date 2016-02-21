@@ -63,7 +63,7 @@ void KMTronicBase::ParseData(const unsigned char *pData, int Len)
 
 bool KMTronicBase::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	tRBUF *pCmd = (tRBUF *)pdata;
+	const static tRBUF *pCmd = reinterpret_cast<const tRBUF *>(pdata);
 	if (pCmd->LIGHTING2.packettype == pTypeLighting2)
 	{
 		//Light command

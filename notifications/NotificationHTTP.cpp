@@ -31,7 +31,7 @@ bool CNotificationHTTP::SendMessageImplementation(const std::string &Subject, co
 	if (uPos == std::string::npos)
 		return false;
 
-	if (destURL.find("http") == 0)
+	if (destURL.compare("http") == 0)
 	{
 		//HTTP/HTTPS
 		stdreplace(destURL, "#FIELD1", CURLEncode::URLEncode(_HTTPField1));
@@ -44,7 +44,7 @@ bool CNotificationHTTP::SendMessageImplementation(const std::string &Subject, co
 		std::string sResult;
 		bRet = HTTPClient::GET(destURL, sResult, true);
 	}
-	else if (destURL.find("script://") == 0)
+	else if (destURL.compare("script://") == 0)
 	{
 		//Script
 		stdreplace(destURL, "#FIELD1", _HTTPField1);
@@ -58,7 +58,7 @@ bool CNotificationHTTP::SendMessageImplementation(const std::string &Subject, co
 		std::string scriptname = destURL.substr(9);
 		std::string scriptparams = "";
 #if !defined WIN32
-		if (scriptname.find("/") != 0)
+		if (scriptname.compare("/") != 0)
 			scriptname = szUserDataFolder + "scripts/" + scriptname;
 #endif
 		//Add parameters

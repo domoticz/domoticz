@@ -49,8 +49,6 @@ cWebem::cWebem(
 				m_settings(settings),
 				myRequestHandler(doc_root, this),
 				m_DigistRealm("Domoticz.com"),
-				m_zippassword(""),
-				m_actTheme(""),
 				m_session_clean_timer(m_io_service, boost::posix_time::minutes(1)),
 				myServer(server_factory::create(settings, myRequestHandler)) {
 	m_authmethod = AUTH_LOGIN;

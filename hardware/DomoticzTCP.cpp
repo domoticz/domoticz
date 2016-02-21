@@ -23,6 +23,7 @@ m_username(username), m_password(password), m_szIPAddress(IPAddress)
 	b_ProxyConnected = false;
 #endif
 	m_bIsStarted = false;
+	m_retrycntr = RETRY_DELAY;
 }
 
 DomoticzTCP::~DomoticzTCP(void)
@@ -421,10 +422,8 @@ bool DomoticzTCP::isConnectedProxy()
 void DomoticzTCP::writeProxy(const char *data, size_t size)
 {
 	/* send data to slave */
-	http::server::CProxyClient *proxy;
-
 	if (isConnectedProxy()) {
-		proxy = m_webservers.GetProxyForMaster(this);
+		http::server::CProxyClient *proxy = m_webservers.GetProxyForMaster(this);
 		if (proxy) {
 			proxy->WriteMasterData(token, data, size);
 		}
