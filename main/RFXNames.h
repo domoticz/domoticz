@@ -44,7 +44,7 @@ enum _eTimerType
 	TTYPE_BEFORESUNRISE=0,
 	TTYPE_AFTERSUNRISE,
 	TTYPE_ONTIME,
-	TTYPE_BEFORESUNSET, 
+	TTYPE_BEFORESUNSET,
 	TTYPE_AFTERSUNSET,
 	TTYPE_FIXEDDATETIME,
 	TTYPE_DAYSODD,
@@ -149,6 +149,7 @@ enum _eHardwareTypes {
 	HTYPE_DomoticzInternal,		//67
 	HTYPE_NefitEastLAN,			//68
 	HTYPE_PanasonicTV,			//69
+	HTYPE_RaspberryHTU21D, //70
 	HTYPE_END
 };
 
@@ -209,13 +210,13 @@ int Lookup_ZWave_Thermostat_Modes(const std::string &sMode);
 int Lookup_ZWave_Thermostat_Fan_Modes(const std::string &sMode);
 
 void GetLightStatus(
-	const unsigned char dType, 
+	const unsigned char dType,
 	const unsigned char dSubType,
 	const _eSwitchType switchtype,
-	const unsigned char nValue, 
-	const std::string &sValue, 
-	std::string &lstatus, 
-	int &llevel, 
+	const unsigned char nValue,
+	const std::string &sValue,
+	std::string &lstatus,
+	int &llevel,
 	bool &bHaveDimmer,
 	int &maxDimLevel,
 	bool &bHaveGroupCmd);
@@ -225,8 +226,8 @@ std::string GetSelectorSwitchLevelAction(const std::map<std::string, std::string
 void GetSelectorSwitchStatuses(const std::map<std::string, std::string> & options, std::map<std::string, std::string> & statuses);
 
 bool GetLightCommand(
-	const unsigned char dType, 
-	const unsigned char dSubType, 
+	const unsigned char dType,
+	const unsigned char dSubType,
 	const _eSwitchType switchtype,
 	std::string switchcmd,
 	unsigned char &cmd,

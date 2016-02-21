@@ -51,6 +51,7 @@ define(['app'], function (app) {
 				(text.indexOf("1-Wire") >= 0) ||
 				(text.indexOf("GPIO") >= 0) ||
 				(text.indexOf("BMP085") >= 0) ||
+				(text.indexOf("HTU21D") >= 0) ||
 				(text.indexOf("Dummy") >= 0) ||
 				(text.indexOf("System Alive") >= 0) ||
 				(text.indexOf("PiFace") >= 0) ||
@@ -130,11 +131,11 @@ define(['app'], function (app) {
                 });
             }
             else if (
-					(text.indexOf("LAN") >= 0 && 
-					text.indexOf("YouLess") == -1 && 
-					text.indexOf("Integra") == -1 && 
-					text.indexOf("ETH8020") == -1 && 
-					text.indexOf("Anna") == -1 && 
+					(text.indexOf("LAN") >= 0 &&
+					text.indexOf("YouLess") == -1 &&
+					text.indexOf("Integra") == -1 &&
+					text.indexOf("ETH8020") == -1 &&
+					text.indexOf("Anna") == -1 &&
 					text.indexOf("KMTronic") == -1  &&
 					text.indexOf("MQTT") == -1 &&
 					text.indexOf("Razberry") == -1
@@ -545,6 +546,7 @@ define(['app'], function (app) {
 				(text.indexOf("Volcraft") >= 0) ||
 				(text.indexOf("1-Wire") >= 0) ||
 				(text.indexOf("BMP085") >= 0) ||
+        (text.indexOf("HTU21D") >= 0) ||
 				(text.indexOf("Dummy") >= 0) ||
 				(text.indexOf("System Alive") >= 0) ||
 				(text.indexOf("Kodi") >= 0) ||
@@ -604,12 +606,12 @@ define(['app'], function (app) {
                 });
             }
             else if (
-					(text.indexOf("LAN") >= 0 && 
-					text.indexOf("YouLess") == -1 && 
-					text.indexOf("ETH8020") == -1 && 
-					text.indexOf("Anna") == -1 && 
-					text.indexOf("KMTronic") == -1 
-					&& text.indexOf("MQTT") == -1 && 
+					(text.indexOf("LAN") >= 0 &&
+					text.indexOf("YouLess") == -1 &&
+					text.indexOf("ETH8020") == -1 &&
+					text.indexOf("Anna") == -1 &&
+					text.indexOf("KMTronic") == -1
+					&& text.indexOf("MQTT") == -1 &&
 					text.indexOf("Integra") == -1 &&
 					text.indexOf("Razberry") == -1
 					)
@@ -3232,7 +3234,7 @@ define(['app'], function (app) {
                 e.preventDefault();
                 SendOTGWCommand();
             });
-            
+
 
             //Get Temperature Sensors
             $.ajax({
@@ -3478,7 +3480,7 @@ define(['app'], function (app) {
                     {
                         SerialName="System";
                     }
-                    else if (item.Type == 13)
+                    else if ((item.Type == 13)||(item.Type == 70))
                     {
                         SerialName="I2C";
                     }
@@ -3694,8 +3696,16 @@ define(['app'], function (app) {
                         $('#hardwarecontent #hardwareparamstable #combodatatimeout').val(data["DataTimeout"]);
 
                         UpdateHardwareParamControls();
-                        
-                        if ((data["Type"].indexOf("TE923") >= 0)||(data["Type"].indexOf("Volcraft") >= 0)||(data["Type"].indexOf("1-Wire") >= 0)||(data["Type"].indexOf("BMP085") >= 0)||(data["Type"].indexOf("Dummy") >= 0)||(data["Type"].indexOf("System Alive") >= 0) ||(data["Type"].indexOf("PiFace") >= 0)||(data["Type"].indexOf("Tellstick") >= 0))
+
+                        if ((data["Type"].indexOf("TE923") >= 0)||
+                           (data["Type"].indexOf("Volcraft") >= 0)||
+                           (data["Type"].indexOf("1-Wire") >= 0)||
+                           (data["Type"].indexOf("BMP085") >= 0)||
+                           (data["Type"].indexOf("HTU21D") >= 0)||
+                           (data["Type"].indexOf("Dummy") >= 0)||
+                           (data["Type"].indexOf("System Alive") >= 0)||
+                           (data["Type"].indexOf("PiFace") >= 0)||
+                           (data["Type"].indexOf("Tellstick") >= 0))
                         {
                             //nothing to be set
                         }
@@ -3740,7 +3750,7 @@ define(['app'], function (app) {
                             $("#hardwarecontent #hardwareparamswinddelen #combomillselect").val(data["Mode1"]);
                             $("#hardwarecontent #hardwareparamswinddelen #nrofwinddelen").val(data["Port"]);
                         }
-                        
+
                         if (data["Type"].indexOf("MQTT") >= 0) {
                             $("#hardwarecontent #hardwareparamsmqtt #filename").val(data["Extra"]);
                             $("#hardwarecontent #hardwareparamsmqtt #combotopicselect").val(data["Mode1"]);
@@ -3828,7 +3838,13 @@ define(['app'], function (app) {
             $("#hardwarecontent #divmqtt").hide();
             $("#hardwarecontent #divsolaredgeapi").hide();
 
-            if ((text.indexOf("TE923") >= 0)||(text.indexOf("Volcraft") >= 0)||(text.indexOf("BMP085") >= 0)||(text.indexOf("Dummy") >= 0)||(text.indexOf("System Alive") >= 0)||(text.indexOf("PiFace") >= 0))
+            if ((text.indexOf("TE923") >= 0)||
+               (text.indexOf("Volcraft") >= 0)||
+               (text.indexOf("BMP085") >= 0)||
+               (text.indexOf("HTU21D") >= 0)||
+               (text.indexOf("Dummy") >= 0)||
+               (text.indexOf("System Alive") >= 0)||
+               (text.indexOf("PiFace") >= 0))
             {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").hide();
