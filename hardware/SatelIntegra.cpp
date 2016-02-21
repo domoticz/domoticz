@@ -45,8 +45,6 @@ static Model models[TOT_MODELS] =
 
 #define MAX_LENGTH_OF_ANSWER 63 * 2 + 4 + 1
 
-// const unsigned char allPartitions[4] = { 0xFF, 0xFF, 0xFF, 0xFF };
-
 SatelIntegra::SatelIntegra(const int ID, const std::string &IPAddress, const unsigned short IPPort, const std::string& userCode) :
 	m_modelIndex(-1),
 	m_data32(false),
@@ -112,7 +110,7 @@ SatelIntegra::SatelIntegra(const int ID, const std::string &IPAddress, const uns
 
 SatelIntegra::~SatelIntegra()
 {
-	_log.Log(LOG_NORM, "Satel Integra: Destroy instance");
+	_log.Log(LOG_STATUS, "Satel Integra: Destroy instance");
 }
 
 bool SatelIntegra::StartHardware()
@@ -354,7 +352,7 @@ bool SatelIntegra::GetInfo()
 				}
 				else
 				{
-					_log.Log(LOG_STATUS, "Satel Integra: unknown version of ETHM-1");
+					_log.Log(LOG_ERROR, "Satel Integra: unknown version of ETHM-1");
 					return false;
 				}
 			}
@@ -1088,7 +1086,7 @@ int SatelIntegra::SendCommand(const unsigned char* cmd, const unsigned int cmdLe
 
 	if ((ret <= 0) || (ret >= MAX_LENGTH_OF_ANSWER)) 
 	{
-		_log.Log(LOG_STATUS, "Satel Integra: bad data length received");
+		_log.Log(LOG_ERROR, "Satel Integra: bad data length received");
 		return -1;
 	}
 
@@ -1155,7 +1153,7 @@ int SatelIntegra::SendCommand(const unsigned char* cmd, const unsigned int cmdLe
 		{
 			if (buffer[0] == 16)
 			{
-				_log.Log(LOG_STATUS, "Satel Integra: busy");
+				_log.Log(LOG_ERROR, "Satel Integra: busy");
 				return -1;
 			}
 			else
