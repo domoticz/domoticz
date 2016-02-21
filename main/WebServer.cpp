@@ -137,34 +137,23 @@ namespace http {
 
 		void CWebServer::Do_Work()
 		{
+			bool exception_thrown = false;
 			while (!m_bDoStop)
 			{
-				try
-				{
-					if (m_pWebEm)
+				exception_thrown = false;
+				try {
+					if (m_pWebEm) {
 						m_pWebEm->Run();
-				}
-				catch (std::exception& e)
-				{
-					if (!m_bDoStop)
-					{
-						_log.Log(LOG_ERROR, "WebServer(%s) stopped by exception, starting again..., %s", m_server_alias.c_str(), e.what());
-						if (m_pWebEm) {
-							m_pWebEm->Stop();
-						}
-						continue;
 					}
+				} catch (std::exception& e) {
+					exception_thrown = true;
+				} catch (...) {
+					exception_thrown = true;
 				}
-				catch (...)
-				{
-					if (!m_bDoStop)
-					{
-						_log.Log(LOG_ERROR, "WebServer(%s) stopped by exception, starting again...", m_server_alias.c_str());
-						if (m_pWebEm) {
-							m_pWebEm->Stop();
-						}
-						continue;
-					}
+				if (exception_thrown) {
+					_log.Log(LOG_STATUS, "WebServer(%s) restart server in 5 seconds", m_server_alias.c_str());
+					sleep_milliseconds(5000); // prevents from an exception flood
+					continue;
 				}
 				break;
 			}

@@ -73,17 +73,14 @@ If application needs to continue, start new thread with call to this method.
 
 */
 void cWebem::Run() {
-	//_log.Log(LOG_STATUS, "[web:%s] Run...", GetPort().c_str());
 	// Start session cleaner
 	m_session_clean_timer.async_wait(boost::bind(&cWebem::CleanSessions, this));
 	boost::thread t(boost::bind(&boost::asio::io_service::run, &m_io_service));
 	// Start Web server
 	myServer->run();
-	//_log.Log(LOG_STATUS, "[web:%s] Run ends", GetPort().c_str());
 }
 
 void cWebem::Stop() {
-	//_log.Log(LOG_STATUS, "[web:%s] Stop...", GetPort().c_str());
 	// Stop Web server
 	myServer->stop();
 	// Stop session cleaner
