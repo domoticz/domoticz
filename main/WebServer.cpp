@@ -2526,7 +2526,7 @@ namespace http {
 				if (lua_isnumber(lua_state, 1) && (lua_isstring(lua_state, 2) || lua_isnumber(lua_state, 2)) && lua_isstring(lua_state, 3))
 				{
 					// Extract the parameters from the lua 'updateDevice' function	
-					int idx = lua_tointeger(lua_state, 1);
+					int idx = (int)lua_tointeger(lua_state, 1);
 					std::string nvalue = lua_tostring(lua_state, 2);
 					std::string svalue = lua_tostring(lua_state, 3);
 					if (((lua_isstring(lua_state, 3) && nvalue.empty()) && svalue.empty()))
@@ -2540,12 +2540,12 @@ namespace http {
 					int signallevel = 12;
 					if (nargs >= 4 && lua_isnumber(lua_state, 4))
 					{
-						signallevel = lua_tointeger(lua_state, 4);
+						signallevel = (int)lua_tointeger(lua_state, 4);
 					}
 					int batterylevel = 255;
 					if (nargs == 5 && lua_isnumber(lua_state, 5))
 					{
-						batterylevel = lua_tointeger(lua_state, 5);
+						batterylevel = (int)lua_tointeger(lua_state, 5);
 					}
 					_log.Log(LOG_NORM, "WebServer (updateDevice from LUA) : idx=%d nvalue=%s svalue=%s invalue=%d signallevel=%d batterylevel=%d", idx, nvalue.c_str(), svalue.c_str(), invalue, signallevel, batterylevel);
 
