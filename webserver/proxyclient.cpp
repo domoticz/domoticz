@@ -51,7 +51,6 @@ namespace http {
 			}
 			m_pWebEm = webEm;
 			m_pDomServ = NULL;
-			Reconnect();
 		}
 
 		void CProxyClient::WriteSlaveData(const std::string &token, const char *pData, size_t Length)
@@ -100,7 +99,7 @@ namespace http {
 			boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
 			boost::asio::ip::tcp::endpoint endpoint = *iterator;
 			_socket.lowest_layer().async_connect(endpoint,
-				boost::bind(&CProxyClient::handle_connect, this,
+				boost::bind(&CProxyClient::handle_connect, shared_from_this(),
 					boost::asio::placeholders::error, iterator));
 		}
 
@@ -109,7 +108,7 @@ namespace http {
 			if (!error)
 			{
 				_socket.async_handshake(boost::asio::ssl::stream_base::client,
-					boost::bind(&CProxyClient::handle_handshake, this,
+					boost::bind(&CProxyClient::handle_handshake, shared_from_this(),
 						boost::asio::placeholders::error));
 			}
 			else if (endpoint_iterator != boost::asio::ip::tcp::resolver::iterator())
@@ -117,7 +116,7 @@ namespace http {
 				_socket.lowest_layer().close();
 				boost::asio::ip::tcp::endpoint endpoint = *endpoint_iterator;
 				_socket.lowest_layer().async_connect(endpoint,
-					boost::bind(&CProxyClient::handle_connect, this,
+					boost::bind(&CProxyClient::handle_connect, shared_from_this(),
 						boost::asio::placeholders::error, ++endpoint_iterator));
 			}
 			else
@@ -161,7 +160,7 @@ namespace http {
 			writePdu = pdu;
 			_writebuf.clear(); // make sure
 			_writebuf.push_back(boost::asio::buffer(writePdu->content(), writePdu->length()));
-			boost::asio::async_write(_socket, _writebuf, boost::bind(&CProxyClient::handle_write, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
+			boost::asio::async_write(_socket, _writebuf, boost::bind(&CProxyClient::handle_write, shared_from_this(), boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
 		}
 
 		void CProxyClient::MyWrite(pdu_type type, CValueLengthPart &parameters)
@@ -226,10 +225,10 @@ namespace http {
 
 			// set timeout timer
 			timer_.expires_from_now(boost::posix_time::seconds(timeout_));
-			timer_.async_wait(boost::bind(&CProxyClient::handle_timeout, this, boost::asio::placeholders::error));
+			timer_.async_wait(boost::bind(&CProxyClient::handle_timeout, shared_from_this(), boost::asio::placeholders::error));
 
 			_socket.async_read_some(buf,
-				boost::bind(&CProxyClient::handle_read, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred)
+				boost::bind(&CProxyClient::handle_read, shared_from_this(), boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred)
 				);
 		}
 
@@ -652,7 +651,6 @@ namespace http {
 			if (m_thread) {
 				m_thread->join();
 			}
-			if (proxyclient) delete proxyclient;
 		}
 
 		int CProxyManager::Start(bool first)
@@ -668,7 +666,8 @@ namespace http {
 				boost::asio::ssl::context ctx(io_service, boost::asio::ssl::context::sslv23);
 				ctx.set_verify_mode(boost::asio::ssl::verify_none);
 
-				proxyclient = new CProxyClient(io_service, ctx, m_pWebEm);
+				proxyclient.reset(new CProxyClient(io_service, ctx, m_pWebEm));
+				proxyclient->Reconnect();
 				if (_first && proxyclient->SharedServerAllowed()) {
 					m_pDomServ->StartServer(proxyclient);
 				}
@@ -690,7 +689,7 @@ namespace http {
 			m_thread->join();
 		}
 
-		CProxyClient *CProxyManager::GetProxyForMaster(DomoticzTCP *master) {
+		boost::shared_ptr<CProxyClient> CProxyManager::GetProxyForMaster(DomoticzTCP *master) {
 			sharedData.AddTCPClient(master);
 			return proxyclient;
 		}

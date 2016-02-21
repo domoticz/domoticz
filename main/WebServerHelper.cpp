@@ -99,7 +99,7 @@ namespace http {
 			_log.Log(LOG_STATUS, "Proxymanager started.");
 		}
 
-		CProxyClient *CWebServerHelper::GetProxyForMaster(DomoticzTCP *master) {
+		boost::shared_ptr<CProxyClient> CWebServerHelper::GetProxyForMaster(DomoticzTCP *master) {
 			if (proxymanagerCollection.size() > 0) {
 				// todo: make this a random connection?
 				return proxymanagerCollection[0]->GetProxyForMaster(master);
