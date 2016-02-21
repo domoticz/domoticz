@@ -521,63 +521,6 @@ namespace http {
 			ONPDU(PDU_SERV_RECEIVE)
 			ONPDU(PDU_SERV_SEND)
 			ONPDU(PDU_SERV_ROSTERIND)
-#if 0
-			case PDU_REQUEST:
-				if (_allowed_subsystems & SUBSYSTEM_HTTP) {
-					HandleRequest(&pdu);
-				}
-				else {
-					_log.Log(LOG_ERROR, "PROXY: HTTP access disallowed, denying request.");
-				}
-				break;
-			case PDU_ASSIGNKEY:
-				HandleAssignkey(&pdu);
-				break;
-			case PDU_ENQUIRE:
-				HandleEnquire(&pdu);
-				break;
-			case PDU_AUTHRESP:
-				HandleAuthresp(&pdu);
-				break;
-			case PDU_SERV_CONNECT:
-				/* incoming connect from master */
-				if (_allowed_subsystems & SUBSYSTEM_SHAREDDOMOTICZ) {
-					HandleServConnect(&pdu);
-				}
-				else {
-					_log.Log(LOG_ERROR, "PROXY: Shared Server access disallowed, denying connect request.");
-				}
-				break;
-			case PDU_SERV_DISCONNECT:
-				if (_allowed_subsystems & SUBSYSTEM_SHAREDDOMOTICZ) {
-					HandleServDisconnect(&pdu);
-				}
-				else {
-					_log.Log(LOG_ERROR, "PROXY: Shared Server access disallowed, denying disconnect request.");
-				}
-				break;
-			case PDU_SERV_CONNECTRESP:
-				/* authentication result from slave */
-				HandleServConnectResp(&pdu);
-				break;
-			case PDU_SERV_RECEIVE:
-				/* data from slave to master */
-				if (_allowed_subsystems & SUBSYSTEM_SHAREDDOMOTICZ) {
-					HandleServReceive(&pdu);
-				}
-				else {
-					_log.Log(LOG_ERROR, "PROXY: Shared Server access disallowed, denying receive data request.");
-				}
-				break;
-			case PDU_SERV_SEND:
-				/* data from master to slave */
-				HandleServSend(&pdu);
-				break;
-			case PDU_SERV_ROSTERIND:
-				/* the slave that we want to connect to is back online */
-				HandleServRosterInd(&pdu);
-				break;
-#endif
 			default:
 				_log.Log(LOG_ERROR, "PROXY: pdu type: %d not expected.", pdu._type);
 				break;
