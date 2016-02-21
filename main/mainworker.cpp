@@ -134,7 +134,7 @@ namespace server {
 } //namespace server
 } //namespace tcp
 
-MainWorker::MainWorker() :
+MainWorker::MainWorker()
 {
 	m_SecCountdown=-1;
 	m_stoprequested=false;
