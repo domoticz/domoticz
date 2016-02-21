@@ -76,7 +76,9 @@ const char *szHelp=
 #ifdef NS_ENABLE_SSL
 	"\t-sslwww port (for example -sslwww 443, or -sslwww 0 to disable https)\n"
 	"\t-sslcert file_path (for example /opt/domoticz/server_cert.pem)\n"
-	"\t-sslpass passphrase for private key in certificate\n"
+	"\t-sslpass passphrase (to access to server private key in certificate)\n"
+	"\t-sslmethod method (for SSL method)\n"
+	"\t-ssldhparam file_path (for SSL DH parameters)\n"
 #endif
 #if defined WIN32
 	"\t-wwwroot file_path (for example D:\\www)\n"
@@ -627,7 +629,7 @@ int main(int argc, char**argv)
 	{
 		if (cmdLine.GetArgumentCount("-sslcert") != 1)
 		{
-			_log.Log(LOG_ERROR, "Please specify the file path");
+			_log.Log(LOG_ERROR, "Please specify a file path for your server certificate file");
 			return 1;
 		}
 		secure_webserver_settings.cert_file_path = cmdLine.GetSafeArgument("-sslcert", 0, "./server_cert.pem");
@@ -636,10 +638,28 @@ int main(int argc, char**argv)
 	{
 		if (cmdLine.GetArgumentCount("-sslpass") != 1)
 		{
-			_log.Log(LOG_ERROR, "Please specify a passphrase for your certificate file");
+			_log.Log(LOG_ERROR, "Please specify a passphrase to access to your server private key in certificate file");
 			return 1;
 		}
 		secure_webserver_settings.private_key_pass_phrase = cmdLine.GetSafeArgument("-sslpass", 0, "");
+	}
+	if (cmdLine.HasSwitch("-sslmethod"))
+	{
+		if (cmdLine.GetArgumentCount("-sslmethod") != 1)
+		{
+			_log.Log(LOG_ERROR, "Please specify a valid SSL method");
+			return 1;
+		}
+		secure_webserver_settings.ssl_method = cmdLine.GetSafeArgument("-sslmethod", 0, "");
+	}
+	if (cmdLine.HasSwitch("-ssldhparam"))
+	{
+		if (cmdLine.GetArgumentCount("-ssldhparam") != 1)
+		{
+			_log.Log(LOG_ERROR, "Please specify a file path for the SSL DH parameters file");
+			return 1;
+		}
+		secure_webserver_settings.tmp_dh_file_path = cmdLine.GetSafeArgument("-ssldhparam", 0, "");
 	}
 	m_mainworker.SetSecureWebserverSettings(secure_webserver_settings);
 #endif

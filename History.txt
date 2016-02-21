@@ -44,6 +44,7 @@ Version 2.4xxx
 - Changed: OpenZwave, not sending cold-white in the colorclass, solved issues on different Zipato bulbs
 - Changed: OpenZWave, Renamed internally 'Color Control' to 'Color"
 - Changed: Webserver, Refactor the webserver server class to separate the HTTP and HTTPS implementation, and gather all server settings in the new server_settings and ssl_server_settings.
+- Changed: Webserver, Add -sslmethod and -ssldhparam argument to domoticz executable.
 - Fixed: Alert Sensor, displaying sValue again
 - Fixed: Blockly, Set user variables (you need to resave your blockly's)
 - Fixed: Blockly, string uservariables where saved with quotes when not using with set-after
