@@ -117,7 +117,7 @@ bool CTellstick::StopHardware()
 
 bool CTellstick::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	_tGeneralSwitch *pSwitch = (_tGeneralSwitch*)pdata;
+	const _tGeneralSwitch *pSwitch = reinterpret_cast<const _tGeneralSwitch*>(pdata);
 	//tRBUF *pCmd=(tRBUF*) pdata;
 	_log.Log(LOG_NORM, "Tellstick: WriteToHardware %d id: %d cmd: %d", pSwitch->type, pSwitch->id, pSwitch->cmnd);
 

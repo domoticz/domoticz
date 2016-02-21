@@ -14,11 +14,11 @@
 
 //#define DEBUG_ForecastIO
 
-CForecastIO::CForecastIO(const int ID, const std::string &APIKey, const std::string &Location)
+CForecastIO::CForecastIO(const int ID, const std::string &APIKey, const std::string &Location) :
+m_APIKey(APIKey),
+m_Location(Location)
 {
 	m_HwdID=ID;
-	m_APIKey=APIKey;
-	m_Location=Location;
 	m_stoprequested=false;
 	Init();
 }

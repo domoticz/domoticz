@@ -139,7 +139,7 @@ void C1Wire::Do_Work()
 
 bool C1Wire::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	tRBUF *pSen=(tRBUF*)pdata;
+	const tRBUF *pSen= reinterpret_cast<const tRBUF*>(pdata);
 
 	if (!m_system)
 		return false;//no 1-wire support

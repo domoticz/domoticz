@@ -520,7 +520,7 @@ void CEvohome::SetRelayHeatDemand(uint8_t nDevNo, uint8_t nDemand)
 
 void CEvohome::CheckRelayHeatDemand()
 {
-	for(tmap_relay_check_it it = m_RelayCheck.begin(); it != m_RelayCheck.end(); it++)
+	for(tmap_relay_check_it it = m_RelayCheck.begin(); it != m_RelayCheck.end(); ++it)
 	{
 		if((boost::get_system_time()-it->second.m_stLastCheck)>boost::posix_time::seconds(1202)) //avg seems around 1202-1203 but not clear how reference point derived
 		{
@@ -1773,7 +1773,7 @@ namespace http {
 				return;
 			if (pHardware->HwdType != HTYPE_EVOHOME_SERIAL)
 				return;
-			CEvohome *pEvoHW = (CEvohome*)pHardware;
+			CEvohome *pEvoHW = reinterpret_cast<CEvohome*>(pHardware);
 
 			int nDevNo = 0;
 			int nID = 0;

@@ -74,10 +74,10 @@ void KMTronicTCP::Do_Work()
 
 bool KMTronicTCP::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	tRBUF *pSen = (tRBUF*)pdata;
+	const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
 
 	unsigned char packettype = pSen->ICMND.packettype;
-	unsigned char subtype = pSen->ICMND.subtype;
+	//unsigned char subtype = pSen->ICMND.subtype;
 
 	if (packettype == pTypeLighting2)
 	{

@@ -6,11 +6,12 @@
 
 #define RFLINK_RETRY_DELAY 30
 
-CRFLinkSerial::CRFLinkSerial(const int ID, const std::string& devname)
+CRFLinkSerial::CRFLinkSerial(const int ID, const std::string& devname) :
+m_szSerialPort(devname)
 {
 	m_HwdID=ID;
-	m_szSerialPort=devname;
 	m_stoprequested=false;
+	m_retrycntr = RFLINK_RETRY_DELAY * 5;
 }
 
 CRFLinkSerial::~CRFLinkSerial()

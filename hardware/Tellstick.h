@@ -8,7 +8,7 @@
 class CTellstick : public CDomoticzHardwareBase
 {
 public:
-	CTellstick(const int ID);
+	explicit CTellstick(const int ID);
 	~CTellstick(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 	void SendCommand(const int ID, const std::string &command);

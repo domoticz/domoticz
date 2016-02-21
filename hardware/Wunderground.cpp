@@ -46,11 +46,11 @@ std::string ReadFile(std::string filename)
 }
 #endif
 
-CWunderground::CWunderground(const int ID, const std::string &APIKey, const std::string &Location)
+CWunderground::CWunderground(const int ID, const std::string &APIKey, const std::string &Location) :
+m_APIKey(APIKey),
+m_Location(Location)
 {
 	m_HwdID=ID;
-	m_APIKey=APIKey;
-	m_Location=Location;
 	m_stoprequested=false;
 	Init();
 }
@@ -191,7 +191,6 @@ void CWunderground::GetMeterDetails()
 	*/
 
 	std::string tmpstr;
-	int pos;
 	float temp;
 	int humidity=0;
 	int barometric=0;
@@ -203,7 +202,7 @@ void CWunderground::GetMeterDetails()
 	if (root["current_observation"]["relative_humidity"].empty()==false)
 	{
 		tmpstr=root["current_observation"]["relative_humidity"].asString();
-		pos=tmpstr.find("%");
+		size_t pos=tmpstr.find("%");
 		if (pos==std::string::npos)
 		{
 			_log.Log(LOG_ERROR,"WUnderground: Invalid data received!");

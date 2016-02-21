@@ -59,16 +59,22 @@ const unsigned char PKT_VERIFY_OK[5] = { 0x08, 0x01, 0x00, 0x00, 0x00 };
 //
 //Class RFXComSerial
 //
-RFXComSerial::RFXComSerial(const int ID, const std::string& devname, unsigned int baud_rate)
+RFXComSerial::RFXComSerial(const int ID, const std::string& devname, unsigned int baud_rate) :
+m_szSerialPort(devname),
+m_szUploadMessage("")
 {
 	m_HwdID=ID;
-	m_szSerialPort=devname;
 	m_iBaudRate=baud_rate;
+	
 	m_stoprequested=false;
 	m_bReceiverStarted = false;
 	m_bInBootloaderMode = false;
 	m_bStartFirmwareUpload = false;
-	m_szUploadMessage = "";
+	m_FirmwareUploadPercentage = 0;
+	m_bHaveRX = false;
+	m_rx_tot_bytes = 0;
+	m_retrycntr = RETRY_DELAY;
+
 	m_serial.setPort(m_szSerialPort);
 	m_serial.setBaudrate(m_iBaudRate);
 	m_serial.setBytesize(serial::eightbits);
@@ -600,7 +606,6 @@ bool RFXComSerial::EraseMemory(const int StartAddress, const int StopAddress)
 	_log.Log(LOG_STATUS, m_szUploadMessage.c_str());
 	int BootAddr = StartAddress;
 
-	int blockcnt = 1;
 	while (BootAddr < StopAddress)
 	{
 		int nBlocks = ((StopAddress - StartAddress + 1) * PKT_bytesperaddr) / PKT_eraseblock;
@@ -901,7 +906,7 @@ namespace http {
 				(pHardware->HwdType == HTYPE_RFXtrx868)
 				)
 			{
-				RFXComSerial *pRFXComSerial = (RFXComSerial *)pHardware;
+				RFXComSerial *pRFXComSerial = reinterpret_cast<RFXComSerial *>(pHardware);
 				pRFXComSerial->UploadFirmware(outputfile);
 			}
 		}
@@ -999,7 +1004,7 @@ namespace http {
 					(pHardware->HwdType == HTYPE_RFXtrx868)
 					)
 				{
-					RFXComSerial *pRFXComSerial = (RFXComSerial *)pHardware;
+					RFXComSerial *pRFXComSerial = reinterpret_cast<RFXComSerial *>(pHardware);
 					root["status"] = "OK";
 					root["percentage"] = pRFXComSerial->GetUploadPercentage();
 					root["message"] = pRFXComSerial->GetUploadMessage();

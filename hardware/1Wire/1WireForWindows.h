@@ -42,7 +42,7 @@ protected:
 class C1WireForWindowsReadException : public std::exception
 {
 public:
-   C1WireForWindowsReadException(const std::string& message) : m_Message("1-Wire system : error reading value, ") {m_Message.append(message);}
+   explicit C1WireForWindowsReadException(const std::string& message) : m_Message("1-Wire system : error reading value, ") {m_Message.append(message);}
    virtual ~C1WireForWindowsReadException() throw() {}
    virtual const char* what() const throw() {return m_Message.c_str();}
 protected:

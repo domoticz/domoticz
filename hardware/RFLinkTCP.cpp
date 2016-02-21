@@ -14,6 +14,7 @@ CRFLinkTCP::CRFLinkTCP(const int ID, const std::string &IPAddress, const unsigne
 	m_bDoRestart=false;
 	m_stoprequested=false;
 	m_usIPPort=usIPPort;
+	m_retrycntr = RFLINK_RETRY_DELAY;
 }
 
 CRFLinkTCP::~CRFLinkTCP(void)

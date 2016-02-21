@@ -57,6 +57,7 @@ SatelIntegra::SatelIntegra(const int ID, const std::string &IPAddress, const uns
 {
 	_log.Log(LOG_STATUS, "Satel Integra: Create instance");
 	m_HwdID = ID;
+	memset(m_newData, 0, sizeof(m_newData));
 
 	// clear last local state of zones and outputs
 	for (unsigned int i = 0; i< 256; ++i)
@@ -616,15 +617,11 @@ bool SatelIntegra::ReadArmState(const bool firstTime)
 	cmd[0] = 0x0A; // read armed partition
 	if (SendCommand(cmd, 1, buffer) > 0)
 	{
-		bool armed;
-		unsigned int byteNumber;
-		unsigned int bitNumber;
-
 		for (unsigned int index = 0; index < 32; ++index)
 		{
-			byteNumber = index / 8;
-			bitNumber = index % 8;
-			armed = (buffer[byteNumber + 1] >> bitNumber) & 0x01;
+			unsigned int byteNumber = index / 8;
+			unsigned int bitNumber = index % 8;
+			bool armed = (buffer[byteNumber + 1] >> bitNumber) & 0x01;
 
 			if ((firstTime || (m_armLastState[index] != armed)) && (m_isPartitions[index]))
 			{
@@ -817,11 +814,11 @@ bool SatelIntegra::DisarmPartitions(const int partition)
 
 bool SatelIntegra::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	tRBUF *output = (tRBUF*)pdata;
+	const tRBUF *output = reinterpret_cast<const tRBUF*>(pdata);
 
 	if (output->ICMND.packettype == pTypeGeneralSwitch && output->ICMND.subtype == sSwitchTypeAC)
 	{
-		_tGeneralSwitch *general = (_tGeneralSwitch*)pdata;
+		const _tGeneralSwitch *general = reinterpret_cast<const _tGeneralSwitch*>(pdata);
 		if (general->unitcode == 2) // arm
 		{
 			if (general->cmnd == gswitch_sOn)
@@ -835,7 +832,6 @@ bool SatelIntegra::WriteToHardware(const char *pdata, const unsigned char length
 		}
 		else if (general->unitcode == 1) // outputs
 		{
-			_tGeneralSwitch *general = (_tGeneralSwitch*)pdata;
 			unsigned char buffer[2];
 			unsigned char cmd[41] = { 0 };
 
@@ -928,7 +924,7 @@ void SatelIntegra::UpdateZoneName(const int Idx, const unsigned char* name, cons
 #ifdef DEBUG_SatelIntegra
 		_log.Log(LOG_STATUS, "Satel Integra: update name for %d to '%s:%s'", Idx, namePrefix.c_str(), shortName.c_str());
 #endif
-		result = m_sql.safe_query("UPDATE DeviceStatus SET Name='%q:%q', SwitchType=%d, Unit=%d WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit=1)", namePrefix.c_str(), shortName.c_str(), STYPE_Contact, partition, m_HwdID, szTmp);
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q:%q', SwitchType=%d, Unit=%d WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit=1)", namePrefix.c_str(), shortName.c_str(), STYPE_Contact, partition, m_HwdID, szTmp);
 	}
 }
 
@@ -951,7 +947,7 @@ void SatelIntegra::UpdateTempName(const int Idx, const unsigned char* name, cons
 #ifdef DEBUG_SatelIntegra
 		_log.Log(LOG_STATUS, "Satel Integra: update name for %d to 'Temp:%s'", Idx, shortName.c_str());
 #endif
-		result = m_sql.safe_query("UPDATE DeviceStatus SET Name='Temp:%q', SwitchType=%d, Unit=%d WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit=0)", shortName.c_str(), STYPE_Contact, partition, m_HwdID, szTmp);
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='Temp:%q', SwitchType=%d, Unit=%d WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit=0)", shortName.c_str(), STYPE_Contact, partition, m_HwdID, szTmp);
 	}
 }
 
@@ -980,7 +976,7 @@ void SatelIntegra::UpdateOutputName(const int Idx, const unsigned char* name, co
 		{
 			switchType = STYPE_OnOff;
 		}
-		result = m_sql.safe_query("UPDATE DeviceStatus SET Name='Output:%q', SwitchType=%d WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit=1)", shortName.c_str(), switchType, m_HwdID, szTmp);
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='Output:%q', SwitchType=%d WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit=1)", shortName.c_str(), switchType, m_HwdID, szTmp);
 	}
 }
 
@@ -996,7 +992,7 @@ void SatelIntegra::UpdateAlarmAndArmName()
 #ifdef DEBUG_SatelIntegra
 		_log.Log(LOG_STATUS, "Satel Integra: update Alarm name to 'Alarm'");
 #endif
-		result = m_sql.safe_query("UPDATE DeviceStatus SET Name='Alarm' WHERE (HardwareID==%d) AND (DeviceID=='Alarm') AND (Unit=2)", m_HwdID);
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='Alarm' WHERE (HardwareID==%d) AND (DeviceID=='Alarm') AND (Unit=2)", m_HwdID);
 	}
 
 	//Arm
@@ -1013,11 +1009,10 @@ void SatelIntegra::UpdateAlarmAndArmName()
 #ifdef DEBUG_SatelIntegra
 				_log.Log(LOG_STATUS, "Satel Integra: update Arm name to 'Arm %d partition'", i+1);
 #endif
-				result = m_sql.safe_query("UPDATE DeviceStatus SET Name='Arm %d partition' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit=2)", i+1, m_HwdID, szTmp);
+				m_sql.safe_query("UPDATE DeviceStatus SET Name='Arm %d partition' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit=2)", i+1, m_HwdID, szTmp);
 			}
 		}
 	}
-
 }
 
 void expandForSpecialValue(std::list<unsigned char> &result)

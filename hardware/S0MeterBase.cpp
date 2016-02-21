@@ -338,7 +338,7 @@ void S0MeterBase::ParseLine()
 				m_meters[ii].m_current_counter = s0_counter;
 				m_meters[ii].m_CurrentUsage = atof(results[roffset + 2].c_str());
 
-				double counter_value = m_meters[ii].m_counter_start + s0_counter;
+				//double counter_value = m_meters[ii].m_counter_start + s0_counter;
 				SendMeter(ii + 1, m_meters[ii].m_CurrentUsage / 1000.0f, m_meters[ii].m_current_counter);
 			}
 

@@ -218,7 +218,7 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 
 		const Json::Value nodeInstances=node["instances"];
 		// For all instances
-		bool haveMultipleInstance=(nodeInstances.size()>1);
+		//bool haveMultipleInstance=(nodeInstances.size()>1);
 		for (Json::Value::iterator ittInstance=nodeInstances.begin(); ittInstance!=nodeInstances.end(); ++ittInstance)
 		{
 			_device.commandClassID=0;

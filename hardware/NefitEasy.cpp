@@ -138,7 +138,7 @@ void CNefitEasy::Do_Work()
 			try
 			{
 				nstat_pollint = NEFIT_STATUS_POLL_INTERVAL;
-				int npres_pollint = (GetPressureDetails() == true) ? NEFIT_PRESSURE_POLL_INTERVAL : NEFIT_PRESSURE_POLL_INTERVAL * 2;
+				npres_pollint = (GetPressureDetails() == true) ? NEFIT_PRESSURE_POLL_INTERVAL : NEFIT_PRESSURE_POLL_INTERVAL * 2;
 			}
 			catch (...)
 			{
@@ -378,8 +378,8 @@ UMD -> 'user mode' string (clock)
 		display_code = "system waiting (boiler cannot transfer heat to central heating)";
 	else if (dcode == "0Y")
 		display_code = "system waiting (boiler cannot transfer heat to central heating)";
-	else if (dcode == "0E")
-		display_code = "system waiting (boiler cannot transfer heat to central heating)";
+	//else if (dcode == "0E")
+		//display_code = "system waiting (boiler cannot transfer heat to central heating)";
 	else if (dcode == "2E")
 		display_code = "boiler water pressure too low";
 	else if (dcode == "H07")

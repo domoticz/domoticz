@@ -55,11 +55,11 @@ std::string ReadFile(std::string filename)
 
 CNest::CNest(const int ID, const std::string &Username, const std::string &Password) :
 m_UserName(CURLEncode::URLEncode(Username)),
-m_Password(CURLEncode::URLEncode(Password))
+m_Password(CURLEncode::URLEncode(Password)),
+m_AccessToken(""),
+m_UserID("")
 {
 	m_HwdID=ID;
-	m_AccessToken = "";
-	m_UserID = "";
 	Init();
 }
 
@@ -264,7 +264,7 @@ bool CNest::WriteToHardware(const char *pdata, const unsigned char length)
 	if (m_Password.size() == 0)
 		return false;
 
-	tRBUF *pCmd = (tRBUF *)pdata;
+	const tRBUF *pCmd = reinterpret_cast<const tRBUF *>(pdata);
 	if (pCmd->LIGHTING2.packettype != pTypeLighting2)
 		return false; //later add RGB support, if someone can provide access
 

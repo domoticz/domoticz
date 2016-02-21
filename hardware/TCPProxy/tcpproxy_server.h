@@ -12,9 +12,7 @@ namespace tcp_proxy
 	class bridge : public boost::enable_shared_from_this<bridge>
 	{
 	public:
-		bridge(
-			boost::asio::io_service& ios
-			);
+		explicit bridge(boost::asio::io_service& ios);
 		boost::asio::ip::tcp::socket& downstream_socket();
 		boost::asio::ip::tcp::socket& upstream_socket();
 

@@ -13,11 +13,11 @@
 
 #define round(a) ( int ) ( a + .5 )
 
-CSBFSpot::CSBFSpot(const int ID, const std::string &SMAConfigFile)
+CSBFSpot::CSBFSpot(const int ID, const std::string &SMAConfigFile) :
+m_SBFInverter("")
 {
 	std::vector<std::string> results;
 	
-	m_SBFInverter="";
 	m_HwdID=ID;
 #ifdef WIN32
 	StringSplit(SMAConfigFile, ";", results);
@@ -61,7 +61,7 @@ void CSBFSpot::Init()
 		sLine = stdstring_trim(sLine);
 		if (sLine.size()!=0)
 		{
-			if (sLine.find("OutputPath=")==0)
+			if (sLine.compare("OutputPath=")==0)
 			{
 				tmpString=sLine.substr(strlen("OutputPath="));
 				if (tmpString!="")
@@ -77,15 +77,15 @@ void CSBFSpot::Init()
 					m_SBFDataPath=tmpString;
 				}
 			}
-			else if (sLine.find("Plantname=")==0)
+			else if (sLine.compare("Plantname=")==0)
 			{
 				m_SBFPlantName=sLine.substr(strlen("Plantname="));
 			}
-			else if (sLine.find("DateFormat=")==0)
+			else if (sLine.compare("DateFormat=")==0)
 			{
 				m_SBFDateFormat=sLine.substr(strlen("DateFormat="));
 			}
-			else if (sLine.find("TimeFormat=")==0)
+			else if (sLine.compare("TimeFormat=")==0)
 			{
 				m_SBFTimeFormat=sLine.substr(strlen("TimeFormat="));
 			}
@@ -161,8 +161,6 @@ char *strftime_t (const char *format, const time_t rawtime)
 
 void CSBFSpot::SendMeter(const unsigned char ID1,const unsigned char ID2, const double musage, const double mtotal, const std::string &defaultname)
 {
-	int Idx=(ID1 * 256) + ID2;
-
 	RBUF tsen;
 	memset(&tsen,0,sizeof(RBUF));
 
@@ -204,7 +202,6 @@ void CSBFSpot::SendMeter(const unsigned char ID1,const unsigned char ID2, const 
 bool CSBFSpot::GetMeter(const unsigned char ID1,const unsigned char ID2, double &musage, double &mtotal)
 {
 	int Idx=(ID1 * 256) + ID2;
-	bool bDeviceExits=true;
 	std::vector<std::vector<std::string> > result;
 	result=m_sql.safe_query("SELECT Name, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
 		m_HwdID, int(Idx), int(pTypeENERGY), int(sTypeELEC2));
@@ -327,18 +324,16 @@ void CSBFSpot::ImportOldMonthData(const unsigned long long DevID, const int Year
 				char szDate[40];
 				sprintf(szDate, "%04d-%02d-%02d", year, month, day);
 
-				result = m_sql.safe_query("SELECT Value FROM Meter_Calendar WHERE (DeviceRowID==%llu) AND (Date=='%q')",
-					DevID, szDate);
+				result = m_sql.safe_query("SELECT Value FROM Meter_Calendar WHERE (DeviceRowID==%llu) AND (Date=='%q')", DevID, szDate);
 				if (result.size() == 0)
 				{
 					//Insert value into our database
-					result = m_sql.safe_query("INSERT INTO Meter_Calendar (DeviceRowID, Value, Date) VALUES ('%llu', '%llu', '%q')",
-						DevID, ulCounter, szDate);
+					m_sql.safe_query("INSERT INTO Meter_Calendar (DeviceRowID, Value, Date) VALUES ('%llu', '%llu', '%q')", DevID, ulCounter, szDate);
 					_log.Log(LOG_STATUS, "SBFSpot Import Old Month Data: Inserting %s",szDate);
 				}
 
 			}
-			else if (sLine.find("Time,Energy (Wh)") == 0)
+			else if (sLine.compare("Time,Energy (Wh)") == 0)
 			{
 				dayPos = 0;
 				monthPos = 3;
@@ -346,7 +341,7 @@ void CSBFSpot::ImportOldMonthData(const unsigned long long DevID, const int Year
 				bIsSMAWebExport = true;
 				continue;
 			}
-			else if (sLine.find("sep=") == 0)
+			else if (sLine.compare("sep=") == 0)
 			{
 				tmpString = sLine.substr(strlen("sep="));
 				if (tmpString != "")
@@ -354,7 +349,7 @@ void CSBFSpot::ImportOldMonthData(const unsigned long long DevID, const int Year
 					szSeperator = tmpString;
 				}
 			}
-			else if (sLine.find("Version CSV1") == 0)
+			else if (sLine.compare("Version CSV1") == 0)
 			{
 				bHaveVersion = true;
 			}
@@ -460,7 +455,7 @@ void CSBFSpot::GetMeterDetails()
 		sLine.erase(std::remove(sLine.begin(), sLine.end(), '\r'), sLine.end());
 		if (sLine.size() != 0)
 		{
-			if (sLine.find("sep=") == 0)
+			if (sLine.compare("sep=") == 0)
 			{
 				tmpString = sLine.substr(strlen("sep="));
 				if (tmpString != "")
@@ -468,7 +463,7 @@ void CSBFSpot::GetMeterDetails()
 					szSeperator = tmpString;
 				}
 			}
-			else if (sLine.find("Version CSV1") == 0)
+			else if (sLine.compare("Version CSV1") == 0)
 			{
 				bHaveVersion = true;
 			}
@@ -620,7 +615,7 @@ namespace http {
 			{
 				if (pHardware->HwdType == HTYPE_SBFSpot)
 				{
-					CSBFSpot *pSBFSpot = (CSBFSpot *)pHardware;
+					CSBFSpot *pSBFSpot = reinterpret_cast<CSBFSpot *>(pHardware);
 					pSBFSpot->ImportOldMonthData();
 				}
 			}
