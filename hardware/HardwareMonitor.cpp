@@ -462,7 +462,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 		pEnumerator->Release();
 	}
 }
-#elif defined(__linux__) || defined(__CYGWIN32__)
+#elif defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__)
 	double time_so_far()
 	{
 		struct timeval tp;
