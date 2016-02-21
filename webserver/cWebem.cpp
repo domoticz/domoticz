@@ -55,11 +55,18 @@ cWebem::cWebem(
 				myServer(server_factory::create(settings, myRequestHandler)) {
 	m_authmethod = AUTH_LOGIN;
 	mySessionStore = NULL;
+	// Start session cleaner
+	m_session_clean_timer.async_wait(boost::bind(&cWebem::CleanSessions, this));
+	boost::thread t(boost::bind(&boost::asio::io_service::run, &m_io_service));
 }
 
 cWebem::~cWebem() {
+	// Stop session cleaner
+	m_session_clean_timer.cancel();
+	m_io_service.stop();
+	// Free server resources
 	if (myServer != NULL) {
-		myServer->stop();
+		Stop();
 		delete myServer;
 	}
 }
@@ -73,19 +80,17 @@ If application needs to continue, start new thread with call to this method.
 
 */
 void cWebem::Run() {
-	// Start session cleaner
-	m_session_clean_timer.async_wait(boost::bind(&cWebem::CleanSessions, this));
-	boost::thread t(boost::bind(&boost::asio::io_service::run, &m_io_service));
 	// Start Web server
-	myServer->run();
+	if (myServer != NULL) {
+		myServer->run();
+	}
 }
 
 void cWebem::Stop() {
 	// Stop Web server
-	myServer->stop();
-	// Stop session cleaner
-	m_session_clean_timer.cancel();
-	m_io_service.stop();
+	if (myServer != NULL) {
+		myServer->stop();
+	}
 }
 
 
