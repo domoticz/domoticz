@@ -119,7 +119,6 @@ namespace http {
 		{
 			m_pWebEm = NULL;
 			m_bDoStop = false;
-			m_bIsSecure = false;
 #ifdef WITH_OPENZWAVE
 			m_ZW_Hwidx = -1;
 #endif
