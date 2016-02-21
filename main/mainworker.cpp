@@ -88,6 +88,7 @@
 #include "../hardware/DomoticzInternal.h"
 #include "../hardware/NefitEasy.h"
 #include "../hardware/PanasonicTV.h"
+#include "../hardware/OpenWebNet.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -882,6 +883,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_DomoticzInternal:
 		pHardware = new DomoticzInternal(ID);
+		break;
+	case HTYPE_OpenWebNet:
+		pHardware = new COpenWebNet(ID, Address, Port);
 		break;
 	}
 
@@ -5596,6 +5600,9 @@ void MainWorker::decode_BLINDS1(const int HwdID, const _eHardwareTypes HwdType, 
 			break;
 		case sTypeBlindsT11:
 			WriteMessage("subtype       = ASP");
+			break;
+		case sTypeBlindsT12:
+			WriteMessage("subtype       = Legrand MyHome");
 			break;
 		default:
 			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X:", pResponse->BLINDS1.packettype, pResponse->BLINDS1.subtype);
@@ -10569,6 +10576,12 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 				lcmd.BLINDS1.id2 = ID2;
 				lcmd.BLINDS1.id3 = ID3;
 				lcmd.BLINDS1.id4 = ID4;
+			}else if ((dSubType == sTypeBlindsT12))
+			{
+				lcmd.BLINDS1.id1 = Unit;
+				lcmd.BLINDS1.id2 = 0;
+				lcmd.BLINDS1.id3 = 0;
+				lcmd.BLINDS1.id4 = 0;
 			}
 			else
 			{

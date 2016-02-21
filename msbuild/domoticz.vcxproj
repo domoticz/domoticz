@@ -44,26 +44,31 @@
     <LinkIncremental>true</LinkIncremental>
     <IntDir>$(Configuration)_Build\</IntDir>
     <PreBuildEventUseInBuild>true</PreBuildEventUseInBuild>
+    <LibraryPath>$(ProjectDir)..\Windows Libraries\Boost\boost_1_59_0\Debug;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)..;$(ProjectDir)..\Windows Libraries\ZLib;$(ProjectDir)..\Windows Libraries\Boost\boost_1_59_0;$(ProjectDir)..\Windows Libraries\openssl;$(ProjectDir)..\Windows Libraries\Curl;$(ProjectDir)..\Windows Libraries\gloox;$(ProjectDir)..\Windows Libraries\Lua;$(ProjectDir)..\Windows Libraries\pthread;$(ProjectDir)..\main;$(ProjectDir)..\Windows Libraries\zlib;$(IncludePath)</IncludePath>
+	<OutDir>.\Debug\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <IntDir>$(Configuration)_Build\</IntDir>
     <PreBuildEventUseInBuild>true</PreBuildEventUseInBuild>
+    <LibraryPath>C:\Users\stephane\Source\Repos\domoticz\Windows Libraries\Boost\boost_1_59_0\Debug;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)..;$(ProjectDir)..\Windows Libraries\ZLib;$(ProjectDir)..\Windows Libraries\Boost\boost_1_59_0;$(ProjectDir)..\Windows Libraries\openssl;$(ProjectDir)..\Windows Libraries\Curl;$(ProjectDir)..\Windows Libraries\gloox;$(ProjectDir)..\Windows Libraries\Lua;$(ProjectDir)..\Windows Libraries\pthread;$(ProjectDir)..\main;$(ProjectDir)..\Windows Libraries\zlib;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;PTW32_STATIC_LIB;WITH_OPENZWAVE;OPENZWAVE_USEDLL;_CONSOLE;NS_ENABLE_SSL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;PTW32_STATIC_LIB;WITH_OPENZWAVE;OPENZWAVE_USEDLL;_CONSOLE;NS_ENABLE_SSL;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>./Windows Libraries/Boost/boost_1_59_0;./libusb;..\hardware\openzwave;./Windows Libraries/openssl;./Windows Libraries/Curl;./Windows Libraries/pthread;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>./Windows Libraries/Boost/boost_1_59_0/Debug;../libusb;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>./Windows Libraries/pthread/pthread.lib;./Windows Libraries/Curl/libcurl.lib;./Windows Libraries/openssl/ssleay32MT.lib;./Windows Libraries/openssl/libeay32MT.lib;./Windows Libraries/Lua/Debug/LuaMSVS.lib;./Windows Libraries/OpenZwave/Debug/OpenZWaveD.lib;./Windows Libraries/ZLib/zlib.lib;Setupapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\Windows Libraries\Boost\boost_1_59_0\Debug;../libusb;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>$(ProjectDir)..\Windows Libraries/pthread\pthread.lib;$(ProjectDir)..\Windows Libraries\Curl\libcurl.lib;$(ProjectDir)..\Windows Libraries\openssl\ssleay32MT.lib;$(ProjectDir)..\Windows Libraries\openssl\libeay32MT.lib;$(ProjectDir)..\Windows Libraries\Lua/Debug\LuaMSVS.lib;$(ProjectDir)..\Windows Libraries\OpenZwave\Debug\OpenZWaveD.lib;$(ProjectDir)..\Windows Libraries\ZLib\zlib.lib;Setupapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <Profile>true</Profile>
     </Link>
@@ -445,6 +450,8 @@
     <ClInclude Include="..\hardware\NefitEasy.h" />
     <ClInclude Include="..\hardware\Nest.h" />
     <ClInclude Include="..\hardware\Netatmo.h" />
+    <ClInclude Include="..\hardware\OpenWebNet.h" />
+    <ClInclude Include="..\hardware\openwebnet\bt_openwebnet.h" />
     <ClInclude Include="..\hardware\OpenZWave.h" />
     <ClInclude Include="..\hardware\openzwave\control_panel\ozwcp.h" />
     <ClInclude Include="..\hardware\OTGWBase.h" />
@@ -641,6 +648,11 @@
     <ClCompile Include="..\hardware\NefitEasy.cpp" />
     <ClCompile Include="..\hardware\Nest.cpp" />
     <ClCompile Include="..\hardware\Netatmo.cpp" />
+    <ClCompile Include="..\hardware\OpenWebNet.cpp" />
+    
+    <ClCompile Include="..\hardware\openwebnet\bt_openwebnet.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="..\hardware\OpenZWave.cpp" />
     <ClCompile Include="..\hardware\openzwave\control_panel\ozwcp.cpp" />
     <ClCompile Include="..\hardware\openzwave\control_panel\zwavelib.cpp" />
@@ -728,10 +740,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\MQTT\mosquittopp.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-    </ClCompile>
+    <ClCompile Include="..\MQTT\mosquittopp.cpp" />
+    
     <ClCompile Include="..\MQTT\net_mosq.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>

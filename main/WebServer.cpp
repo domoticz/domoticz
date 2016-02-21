@@ -1142,6 +1142,9 @@ namespace http {
 			else if (htype == HTYPE_RaspberryGPIO) {
 				//all fine here!
 			}
+			else if (htype == HTYPE_OpenWebNet) {
+				//All fine here
+			}
 			else
 				return;
 
@@ -1369,6 +1372,9 @@ namespace http {
 				  (sport == "")
 				)
 					return;
+			}
+			else if (htype == HTYPE_OpenWebNet) {
+				//All fine here
 			}
 			else
 				return;
@@ -3432,6 +3438,7 @@ namespace http {
 						case HTYPE_RaspberryGPIO:
 						case HTYPE_RFLINKUSB:
 						case HTYPE_RFLINKTCP:
+						case HTYPE_OpenWebNet:
 							root["result"][ii]["idx"] = ID;
 							root["result"][ii]["Name"] = Name;
 							ii++;

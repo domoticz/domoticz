@@ -603,6 +603,7 @@ SDK version 4.9
 #define sTypeBlindsT9 0x9	//Sunpery
 #define sTypeBlindsT10 0xA	//Dolat DLM-1
 #define sTypeBlindsT11 0xB	//ASP
+#define sTypeBlindsT12 0xC	//Blinds Legrand MyHome
 
 #define blinds_sOpen 0x0
 #define blinds_sClose 0x1
