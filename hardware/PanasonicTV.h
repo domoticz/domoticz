@@ -45,9 +45,9 @@ public:
 	CPanasonicNode(const int, const int, const int, const std::string&, const std::string&, const std::string&, const std::string&);
 	~CPanasonicNode(void);
 	void			Do_Work();
-	void			SendCommand(const std::string);
-	void			SendCommand(const std::string, const int iValue);
-	void			SetExecuteCommand(const std::string command);
+	void			SendCommand(const std::string &command);
+	void			SendCommand(const std::string &command, const int iValue);
+	void			SetExecuteCommand(const std::string &command);
 	bool			SendShutdown();
 	void			StopRequest() { m_stoprequested = true; };
 	bool			IsBusy() { return m_Busy; };

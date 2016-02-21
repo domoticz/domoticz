@@ -74,7 +74,8 @@ CHardwareMonitor::CHardwareMonitor(const int ID)
 	m_pLocator = NULL;
 	m_pServicesOHM = NULL;
 	m_pServicesSystem = NULL;
-//	CoInitializeEx(0, COINIT_MULTITHREADED);
+	m_lastquerytime = 0;
+	//	CoInitializeEx(0, COINIT_MULTITHREADED);
 //	CoInitializeSecurity(NULL, -1, NULL, NULL, RPC_C_AUTHN_LEVEL_DEFAULT, RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE, NULL);
 #endif
 }

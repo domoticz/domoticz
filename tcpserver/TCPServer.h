@@ -21,7 +21,7 @@ struct _tRemoteShareUser
 class CTCPServerIntBase
 {
 public:
-	CTCPServerIntBase(CTCPServer *pRoot);
+	explicit CTCPServerIntBase(CTCPServer *pRoot);
 	~CTCPServerIntBase(void);
 
 	virtual void start() = 0;
@@ -97,7 +97,7 @@ class CTCPServer : public CDomoticzHardwareBase
 {
 public:
 	CTCPServer();
-	CTCPServer(const int ID);
+	explicit CTCPServer(const int ID);
 	~CTCPServer(void);
 
 	bool StartServer(const std::string &address, const std::string &port);

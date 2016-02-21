@@ -233,7 +233,7 @@ namespace http {
 				);
 		}
 
-		void CProxyClient::GetRequest(const std::string originatingip, boost::asio::mutable_buffers_1 _buf, http::server::reply &reply_)
+		void CProxyClient::GetRequest(const std::string &originatingip, boost::asio::mutable_buffers_1 _buf, http::server::reply &reply_)
 		{
 			/// The parser for the incoming request.
 			http::server::request_parser request_parser_;

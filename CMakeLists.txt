@@ -290,8 +290,6 @@ hardware/SBFSpot.cpp
 hardware/serial/serial.cpp
 hardware/serial/impl/unix.cpp
 hardware/SolarEdgeAPI.cpp
-hardware/SolarEdgeBase.cpp
-hardware/SolarEdgeTCP.cpp
 hardware/SolarMaxTCP.cpp
 hardware/TCPProxy/tcpproxy_server.cpp
 hardware/TE923.cpp

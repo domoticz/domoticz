@@ -78,11 +78,11 @@ and does not require smbus or wire libs
 
 const unsigned char BMPx8x_OverSampling = 3;
 
-CBMP085::CBMP085(const int ID)
+CBMP085::CBMP085(const int ID) :
+m_ActI2CBus("/dev/i2c-1")
 {
 	m_stoprequested=false;
 	m_HwdID=ID;
-	m_ActI2CBus = "/dev/i2c-1";
 	if (!i2c_test(m_ActI2CBus.c_str()))
 	{
 		m_ActI2CBus = "/dev/i2c-0";

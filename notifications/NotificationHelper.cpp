@@ -772,7 +772,7 @@ bool CNotificationHelper::CheckAndHandleRainNotification(
 		Idx);
 	if (result.size() == 0)
 		return false;
-	double AddjValue = atof(result[0][0].c_str());
+	//double AddjValue = atof(result[0][0].c_str());
 	double AddjMulti = atof(result[0][1].c_str());
 
 	char szDateEnd[40];

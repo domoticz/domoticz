@@ -14,11 +14,11 @@
 
 //#define DEBUG_PVOutputInput
 
-CPVOutputInput::CPVOutputInput(const int ID, const std::string &SID, const std::string &Key)
+CPVOutputInput::CPVOutputInput(const int ID, const std::string &SID, const std::string &Key) :
+m_SID(SID),
+m_KEY(Key)
 {
 	m_HwdID=ID;
-	m_SID=SID;
-	m_KEY=Key;
 	m_stoprequested=false;
 	Init();
 }

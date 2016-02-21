@@ -23,6 +23,9 @@ KMTronicSerial::KMTronicSerial(const int ID, const std::string& devname)
 	m_szSerialPort=devname;
 	m_iBaudRate = 9600;
 	m_stoprequested = false;
+	m_iQueryState = 0;
+	m_retrycntr = RETRY_DELAY - 2;
+	m_bHaveReceived = false;
 }
 
 KMTronicSerial::~KMTronicSerial()
