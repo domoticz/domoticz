@@ -1474,12 +1474,6 @@
     <ClInclude Include="..\hardware\ASyncTCP.h">
       <Filter>Devices\SerialTCP</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\SolarEdgeBase.h">
-      <Filter>Devices\SolarEdge</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\SolarEdgeTCP.h">
-      <Filter>Devices\SolarEdge</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\TCPProxy\tcpproxy_server.h">
       <Filter>TCPProxy</Filter>
     </ClInclude>
@@ -1997,12 +1991,6 @@
     </ClCompile>
     <ClCompile Include="..\hardware\ASyncTCP.cpp">
       <Filter>Devices\SerialTCP</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\SolarEdgeBase.cpp">
-      <Filter>Devices\SolarEdge</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\SolarEdgeTCP.cpp">
-      <Filter>Devices\SolarEdge</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\TCPProxy\tcpproxy_server.cpp">
       <Filter>TCPProxy</Filter>
