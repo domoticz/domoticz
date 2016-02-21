@@ -3,6 +3,8 @@
 //from openwebnet class
 //see www.bticino.it; www.myhome-bticino.it
 
+#include "stdafx.h"
+
 #include <sstream>
 #include <iostream>
 #include <string>
@@ -511,7 +513,7 @@ void bt_openwebnet::CreateMsgOpen(string who, string what,	string where,	string 
 }
 
 // crea il messaggio OPEN *chi*cosa*dove#livello#interfaccia*quando##
-void bt_openwebnet::CreateMsgOpen(string who, string what, string where, string lev, string interface, string when)
+void bt_openwebnet::CreateMsgOpen(string who, string what, string where, string lev, string interf, string when)
 {
   //richiamo la procedura CreateNullMsgOpen()
   CreateNullMsgOpen();
@@ -527,7 +529,7 @@ void bt_openwebnet::CreateMsgOpen(string who, string what, string where, string 
 	  frame << "4";
   else
 	  frame << lev;
-  frame << "#"; frame << interface;
+  frame << "#"; frame << interf;
   //per togliere l'asterisco finale
   if (!when.empty()) {
 	  frame << "*";
@@ -602,7 +604,7 @@ string bt_openwebnet::EliminoCaratteriControllo(string in_frame)
 }
 
 //crea il messaggio open *#chi*dove#livello#interfaccia##
-void bt_openwebnet::CreateStateMsgOpen(string who, string where, string lev, string interface)
+void bt_openwebnet::CreateStateMsgOpen(string who, string where, string lev, string interf)
 {
   //richiamo la procedura CreateNullMsgOpen()
   CreateNullMsgOpen();
@@ -616,7 +618,7 @@ void bt_openwebnet::CreateStateMsgOpen(string who, string where, string lev, str
 	  frame << "4";
   else
 	  frame << lev;
-  frame << "#"; frame << interface;
+  frame << "#"; frame << interf;
   frame << "##";
 
   frame_open = EliminoCaratteriControllo(frame.str());
@@ -653,7 +655,7 @@ void bt_openwebnet::CreateDimensionMsgOpen(string who, string where, string dime
 }
 
 //crea il messaggio open *#chi*dove#livello#interfaccia*grandezza##
-void bt_openwebnet::CreateDimensionMsgOpen(string who, string where, string lev, string interface, string dimension)
+void bt_openwebnet::CreateDimensionMsgOpen(string who, string where, string lev, string interf, string dimension)
 {
   //richiamo la procedura CreateNullMsgOpen()
   CreateNullMsgOpen();
@@ -668,7 +670,7 @@ void bt_openwebnet::CreateDimensionMsgOpen(string who, string where, string lev,
 	  frame << "4";
   else
 	  frame << lev;
-  frame << "#"; frame << interface;
+  frame << "#"; frame << interf;
 
   //per togliere l'asterisco finale
   if (dimension.length() != 0)
@@ -710,7 +712,7 @@ void bt_openwebnet::CreateWrDimensionMsgOpen(string who, string where, string di
 }
 
 //crea il messaggio open *#chi*dove#livello#interfaccia*#grandezza*val_1*val_2*...val_n##
-void bt_openwebnet::CreateWrDimensionMsgOpen(string who, string where, string lev, string interface, string dimension, vector<string> value)
+void bt_openwebnet::CreateWrDimensionMsgOpen(string who, string where, string lev, string interf, string dimension, vector<string> value)
 {
   //richiamo la procedura CreateNullMsgOpen()
   CreateNullMsgOpen();
@@ -725,7 +727,7 @@ void bt_openwebnet::CreateWrDimensionMsgOpen(string who, string where, string le
 	  frame << "4";
   else
 	  frame << lev;
-  frame << "#"; frame << interface;
+  frame << "#"; frame << interf;
 
   //per togliere l'asterisco finale
   if (!dimension.empty())

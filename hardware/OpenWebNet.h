@@ -69,6 +69,6 @@ protected:
 	bool sendCommand(bt_openwebnet& command, vector<bt_openwebnet>& response, int waitForResponse = 0, bool silent=false);
 	bool ParseData(char* data, int length, vector<bt_openwebnet>& messages);
 	bool FindDevice(int who, int where, int *used);
-	bool AddDeviceIfNotExits(string& who, string& where);
+	bool AddDeviceIfNotExits(string who, string where);
 	string frameToString(bt_openwebnet& frame);
 };

@@ -335,7 +335,7 @@ void COpenWebNet::Do_Work()
 
 
 
-bool COpenWebNet::AddDeviceIfNotExits(string& who, string& where)
+bool COpenWebNet::AddDeviceIfNotExits(string who, string where)
 {
 	if (!m_sql.m_bAcceptNewHardware)
 	{
