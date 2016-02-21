@@ -89,6 +89,29 @@ void CPanasonicNode::CPanasonicStatus::Clear()
 	m_Muted = false;
 }
 
+void CPanasonicNode::StopThread()
+{
+	try {
+		if (m_thread)
+		{
+			m_stoprequested = true;
+			m_thread->join();
+			m_thread.reset();
+		}
+	}
+	catch (...)
+	{
+		//Don't throw from a Stop command
+	}
+}
+
+bool CPanasonicNode::StartThread()
+{
+	StopThread();
+	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CPanasonicNode::Do_Work, this)));
+	return (m_thread != NULL);
+}
+
 std::string	CPanasonicNode::CPanasonicStatus::LogMessage()
 {
 	std::string	sLogText;
@@ -616,15 +639,17 @@ void CPanasonicNode::SetExecuteCommand(const std::string &command)
 
 std::vector<boost::shared_ptr<CPanasonicNode> > CPanasonic::m_pNodes;
 
-CPanasonic::CPanasonic(const int ID, const int PollIntervalsec, const int PingTimeoutms) : m_stoprequested(false)
+CPanasonic::CPanasonic(const int ID, const int PollIntervalsec, const int PingTimeoutms)
 {
 	m_HwdID = ID;
+	m_stoprequested = false;
 	SetSettings(PollIntervalsec, PingTimeoutms);
 }
 
-CPanasonic::CPanasonic(const int ID) : m_stoprequested(false)
+CPanasonic::CPanasonic(const int ID)
 {
 	m_HwdID = ID;
+	m_stoprequested = false;
 	SetSettings(10, 3000);
 }
 
@@ -689,26 +714,14 @@ void CPanasonic::Do_Work()
 				if (!(*itt)->IsBusy())
 				{
 					_log.Log(LOG_NORM, "Panasonic Plugin: (%s) - Restarting thread.", (*itt)->m_Name.c_str());
-					boost::thread* tAsync = new boost::thread(&CPanasonicNode::Do_Work, (*itt));
-					//m_ios.stop();
+					(*itt)->StartThread();
 				}
 				if ((*itt)->IsOn()) bWorkToDo = true;
 			}
-
-			//if (bWorkToDo && m_ios.stopped())  // make sure that there is a boost thread to service i/o operations
-			//{
-			//	m_ios.reset();
-			//	// Note that this is the only thread that handles async i/o so we don't
-			//	// need to worry about locking or concurrency issues when processing messages
-			//	_log.Log(LOG_NORM, "Panasonic Plugin: Restarting I/O service thread.");
-			//	boost::thread bt(boost::bind(&boost::asio::io_service::run, &m_ios));
-			//}
 		}
 		sleep_milliseconds(500);
 	}
-
 	UnloadNodes();
-
 	_log.Log(LOG_STATUS, "Panasonic Plugin: Worker stopped...");
 }
 
@@ -879,7 +892,7 @@ void CPanasonic::ReloadNodes()
 		for (std::vector<boost::shared_ptr<CPanasonicNode> >::iterator itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
 		{
 			_log.Log(LOG_NORM, "Panasonic Plugin: (%s) Starting thread.", (*itt)->m_Name.c_str());
-			boost::thread* tAsync = new boost::thread(&CPanasonicNode::Do_Work, (*itt));
+			(*itt)->StartThread();
 		}
 		sleep_milliseconds(100);
 		//_log.Log(LOG_NORM, "Panasonic Plugin: Starting I/O service thread.");
@@ -901,7 +914,7 @@ void CPanasonic::UnloadNodes()
 		std::vector<boost::shared_ptr<CPanasonicNode> >::iterator itt;
 		for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
 		{
-			(*itt)->StopRequest();
+			(*itt)->StopThread();
 			if (!(*itt)->IsBusy())
 			{
 				_log.Log(LOG_NORM, "Panasonic Plugin: (%s) Removing device.", (*itt)->m_Name.c_str());
