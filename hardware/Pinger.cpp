@@ -488,7 +488,7 @@ namespace http {
 				return;
 			if (pBaseHardware->HwdType != HTYPE_Pinger)
 				return;
-			CPinger *pHardware = (CPinger*)pBaseHardware;
+			CPinger *pHardware = reinterpret_cast<CPinger*>(pBaseHardware);
 
 			root["status"] = "OK";
 			root["title"] = "PingerSetMode";
@@ -531,7 +531,7 @@ namespace http {
 				return;
 			if (pBaseHardware->HwdType != HTYPE_Pinger)
 				return;
-			CPinger *pHardware = (CPinger*)pBaseHardware;
+			CPinger *pHardware = reinterpret_cast<CPinger*>(pBaseHardware);
 
 			root["status"] = "OK";
 			root["title"] = "PingerAddNode";
@@ -565,7 +565,7 @@ namespace http {
 				return;
 			if (pBaseHardware->HwdType != HTYPE_Pinger)
 				return;
-			CPinger *pHardware = (CPinger*)pBaseHardware;
+			CPinger *pHardware = reinterpret_cast<CPinger*>(pBaseHardware);
 
 			int NodeID = atoi(nodeid.c_str());
 			root["status"] = "OK";
@@ -594,7 +594,7 @@ namespace http {
 				return;
 			if (pBaseHardware->HwdType != HTYPE_Pinger)
 				return;
-			CPinger *pHardware = (CPinger*)pBaseHardware;
+			CPinger *pHardware = reinterpret_cast<CPinger*>(pBaseHardware);
 
 			int NodeID = atoi(nodeid.c_str());
 			root["status"] = "OK";
@@ -619,7 +619,7 @@ namespace http {
 				return;
 			if (pBaseHardware->HwdType != HTYPE_Pinger)
 				return;
-			CPinger *pHardware = (CPinger*)pBaseHardware;
+			CPinger *pHardware = reinterpret_cast<CPinger*>(pBaseHardware);
 
 			root["status"] = "OK";
 			root["title"] = "PingerClearNodes";

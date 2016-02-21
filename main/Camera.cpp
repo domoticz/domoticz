@@ -404,8 +404,6 @@ namespace http {
 		}
 		void CWebServer::GetInternalCameraSnapshot(WebEmSession & session, const request& req, reply & rep)
 		{
-			std::string snapshot = "";
-
 			std::string request_path;
 			request_handler::url_decode(req.uri, request_path);
 

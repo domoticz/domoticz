@@ -295,7 +295,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 	}
 	else if (szCommand == "sendnotification")
 	{
-		std::string subject(""), body(""), sound("");
+		std::string subject, body, sound;
 		int priority = 0;
 		if (!root["subject"].empty())
 		{
@@ -542,7 +542,7 @@ void MQTT::SendDeviceInfo(const int m_HwdID, const unsigned long long DeviceRowI
 		int sIndex = 1;
 		for (itt = strarray.begin(); itt != strarray.end(); ++itt)
 		{
-			std::stringstream szQuery("");
+			std::stringstream szQuery;
 			szQuery << "svalue" << sIndex;
 			root[szQuery.str()] = *itt;
 			sIndex++;
@@ -560,7 +560,7 @@ void MQTT::SendDeviceInfo(const int m_HwdID, const unsigned long long DeviceRowI
 				std::vector<std::string> sd = result[i];
 				std::string floor = sd[0];
 				std::string room =  sd[1];
-				std::stringstream topic("");
+				std::stringstream topic;
 				topic << TOPIC_OUT << "/" << floor << "/" + room;
 
 				SendMessage(topic.str() , message);

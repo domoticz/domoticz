@@ -209,7 +209,8 @@ void CRFLinkBase::ParseData(const char *data, size_t len)
 
 bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	_tGeneralSwitch *pSwitch = (_tGeneralSwitch*)pdata;
+	const _tGeneralSwitch *pSwitch = reinterpret_cast<const _tGeneralSwitch*>(pdata);
+
 	if (pSwitch->type != pTypeGeneralSwitch)
 		return false; //only allowed to control switches
 

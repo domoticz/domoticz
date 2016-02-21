@@ -160,7 +160,7 @@ static int read_one_sensor (struct usb_device *dev, uint16_t &value)
 		| ((unsigned char *)usb_io_buf)[2] << 0;
 
 	/* Dummy read.  */
-	ret = usb_interrupt_read(devh, 0x0081/*endpoint*/,
+	usb_interrupt_read(devh, 0x0081/*endpoint*/,
 		usb_io_buf, 0x10/*len*/, 1000/*msec*/);
 out_unlock:
 	ret = usb_release_interface(devh, 0/*intrf*/);

@@ -54,8 +54,6 @@ cWebem::cWebem(
 myRequestHandler( doc_root,this ), myPort( port ),
 myServer( address, port, myRequestHandler, secure_cert_file, secure_cert_passphrase ),
 m_DigistRealm("Domoticz.com"),
-m_zippassword(""),
-m_actTheme(""),
 m_io_service(),
 m_session_clean_timer(m_io_service, boost::posix_time::minutes(1))
 {

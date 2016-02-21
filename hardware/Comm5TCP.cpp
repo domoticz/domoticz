@@ -41,6 +41,9 @@ m_szIPAddress(IPAddress)
 	m_usIPPort=usIPPort;
 	lastKnownSensorState = 0;
 	initSensorData = true;
+	reqState = Idle;
+	notificationEnabled = false;
+	m_bReceiverStarted = false;
 }
 
 bool Comm5TCP::StartHardware()
@@ -185,10 +188,10 @@ void Comm5TCP::enableNotifications()
 
 bool Comm5TCP::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	tRBUF *pSen = (tRBUF*)pdata;
+	const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
 
 	unsigned char packettype = pSen->ICMND.packettype;
-	unsigned char subtype = pSen->ICMND.subtype;
+	//unsigned char subtype = pSen->ICMND.subtype;
 
 	if (!mIsConnected)
 		return false;
