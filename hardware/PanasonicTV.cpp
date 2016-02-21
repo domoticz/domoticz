@@ -184,6 +184,7 @@ CPanasonicNode::CPanasonicNode(const int pHwdID, const int PollIntervalsec, cons
 
 CPanasonicNode::~CPanasonicNode(void)
 {
+	StopThread();
 	if (DEBUG_LOGGING) _log.Log(LOG_STATUS, "Panasonic Plugin: (%s) Destroyed.", m_Name.c_str());
 }
 
