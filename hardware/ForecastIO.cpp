@@ -78,13 +78,13 @@ bool CForecastIO::WriteToHardware(const char *pdata, const unsigned char length)
 
 static std::string readForecastIOTestFile( const char *path )
 {
+	std::string text;
 	FILE *file = fopen( path, "rb" );
 	if ( !file )
-		return std::string("");
+		return text;
 	fseek( file, 0, SEEK_END );
 	long size = ftell( file );
 	fseek( file, 0, SEEK_SET );
-	std::string text;
 	char *buffer = new char[size+1];
 	buffer[size] = 0;
 	if ( fread( buffer, 1, size, file ) == (unsigned long)size )

@@ -58,8 +58,7 @@ Cleanup and changes: GizMoCuz
 CHarmonyHub::CHarmonyHub(const int ID, const std::string &IPAddress, const unsigned int port, const std::string &username, const std::string &password):
 m_username(username),
 m_password(password),
-m_harmonyAddress(IPAddress),
-m_szAuthorizationToken("")
+m_harmonyAddress(IPAddress)
 {
 	m_usIPPort = port;
 	m_HwdID=ID;

@@ -209,7 +209,7 @@ int CHTU21D::checkCRC8(uint16_t data)
 	unsigned int bit;
   for (bit = 0; bit < 16; bit++)
   {
-    if (data & 0x8000)
+		if (data & 0x8000)
     {
       data =  (data << 1) ^ CRC8_POLYNOMINAL;
     }
@@ -239,7 +239,7 @@ int CHTU21D::GetHumidity(int fd, float *Hum)
 	rawHumidity = ((rValues[0] << 8) | rValues[1]);
 	Checksum = rValues[2];
 	if (checkCRC8(rawHumidity) != Checksum)
-  {
+	{
 		_log.Log(LOG_ERROR, "HTU21D: Incorrect humidity checksum!...");
     return -1;
   }
