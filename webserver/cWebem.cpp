@@ -51,15 +51,10 @@ cWebem::cWebem(
 				m_DigistRealm("Domoticz.com"),
 				m_zippassword(""),
 				m_actTheme(""),
-				m_session_clean_timer(m_io_service, boost::posix_time::minutes(1)
-				) {
+				m_session_clean_timer(m_io_service, boost::posix_time::minutes(1)),
+				myServer(server_factory::create(settings, myRequestHandler)) {
 	m_authmethod = AUTH_LOGIN;
 	mySessionStore = NULL;
-	if (settings.is_secure()) {
-		myServer = new ssl_server(*(ssl_server_settings const *)&settings, myRequestHandler);
-	} else {
-		myServer = new server(m_settings, myRequestHandler);
-	}
 }
 
 cWebem::~cWebem() {

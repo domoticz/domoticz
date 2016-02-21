@@ -100,7 +100,7 @@ ssl_server::ssl_server(const ssl_server_settings & ssl_settings, request_handler
 		settings_(ssl_settings),
 		context_(io_service_, ssl_settings.get_ssl_method())
 {
-	//_log.Log(LOG_STATUS, "[web:%s] create ssl_server using settings : %s", ssl_settings.listening_port.c_str(), ssl_settings.to_string().c_str());
+	//_log.Log(LOG_STATUS, "[web:%s] create ssl_server using ssl_server_settings : %s", ssl_settings.listening_port.c_str(), ssl_settings.to_string().c_str());
 }
 
 ssl_server::ssl_server(const server_settings & settings, request_handler & user_request_handler) :
@@ -108,6 +108,7 @@ ssl_server::ssl_server(const server_settings & settings, request_handler & user_
 		settings_(dynamic_cast<ssl_server_settings const &>(settings)),
 		context_(io_service_, dynamic_cast<ssl_server_settings const &>(settings).get_ssl_method()) {
 	// this constructor will send std::bad_cast exception if the settings argument is not a ssl_server_settings object
+	//_log.Log(LOG_STATUS, "[web:%s] create ssl_server using server_settings : %s", settings.listening_port.c_str(), settings.to_string().c_str());
 }
 
 void ssl_server::init_connection() {
@@ -190,6 +191,21 @@ void ssl_server::handle_accept(const boost::system::error_code& e) {
 std::string ssl_server::get_passphrase() const {
 	return settings_.private_key_pass_phrase;
 }
+#endif
+
+server_base * server_factory::create(const server_settings & settings, request_handler & user_request_handler) {
+#ifdef NS_ENABLE_SSL
+		if (settings.is_secure()) {
+			return create(dynamic_cast<ssl_server_settings const &>(settings), user_request_handler);
+		}
+#endif
+		return new server(settings, user_request_handler);
+	}
+
+#ifdef NS_ENABLE_SSL
+server_base * server_factory::create(const ssl_server_settings & ssl_settings, request_handler & user_request_handler) {
+		return new ssl_server(ssl_settings, user_request_handler);
+	}
 #endif
 
 } // namespace server

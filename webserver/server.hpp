@@ -118,6 +118,16 @@ private:
 };
 #endif
 
+/// server factory
+class server_factory {
+public:
+	static server_base * create(const server_settings & settings, request_handler & user_request_handler);
+
+#ifdef NS_ENABLE_SSL
+	static server_base * create(const ssl_server_settings & ssl_settings, request_handler & user_request_handler);
+#endif
+};
+
 } // namespace server
 } // namespace http
 
