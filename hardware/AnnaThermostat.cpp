@@ -52,8 +52,7 @@ CAnnaThermostat::CAnnaThermostat(const int ID, const std::string &IPAddress, con
 m_IPAddress(IPAddress),
 m_IPPort(usIPPort),
 m_UserName(CURLEncode::URLEncode(Username)),
-m_Password(CURLEncode::URLEncode(Password)),
-m_ThermostatID("")
+m_Password(CURLEncode::URLEncode(Password))
 {
 	m_HwdID=ID;
 	Init();

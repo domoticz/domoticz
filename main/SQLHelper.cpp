@@ -7151,7 +7151,7 @@ bool CSQLHelper::SetDeviceOptions(const unsigned long long idx, const std::map<s
 		return false;
 	}
 
-	std::string options("");
+	std::string options;
 	int count = optionsMap.size();
 	if (count > 0) {
 		int i = 0;

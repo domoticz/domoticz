@@ -13,8 +13,7 @@
 
 #define round(a) ( int ) ( a + .5 )
 
-CSBFSpot::CSBFSpot(const int ID, const std::string &SMAConfigFile) :
-m_SBFInverter("")
+CSBFSpot::CSBFSpot(const int ID, const std::string &SMAConfigFile)
 {
 	std::vector<std::string> results;
 	
