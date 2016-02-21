@@ -14,7 +14,6 @@ public:
 	// signals
 	boost::signals2::signal<void()>	sDisconnected;
 private:
-	int m_retrycntr;
 	bool StartHardware();
 	bool StopHardware();
 protected:

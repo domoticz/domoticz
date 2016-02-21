@@ -60,7 +60,6 @@ std::string ReadFile(std::string filename)
 
 CThermosmart::CThermosmart(const int ID, const std::string &Username, const std::string &Password, const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5, const int Mode6)
 {
-	m_UserName = "";
 	if ((Password == "secret")|| (Password.empty()))
 	{
 		_log.Log(LOG_ERROR, "Thermosmart: Please update your username/password!...");
@@ -74,6 +73,7 @@ CThermosmart::CThermosmart(const int ID, const std::string &Username, const std:
 	}
 	m_HwdID=ID;
 	m_OutsideTemperatureIdx = 0; //use build in
+	m_LastMinute = -1;
 	SetModes(Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
 	Init();
 }
@@ -169,18 +169,6 @@ bool CThermosmart::GetOutsideTemperatureFromDomoticz(float &tvalue)
 
 void CThermosmart::SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
 {
-	bool bDeviceExits=true;
-
-	char szID[10];
-	sprintf(szID,"%X%02X%02X%02X", 0, 0, 0, Idx);
-
-	std::vector<std::vector<std::string> > result;
-	result=m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, szID);
-	if (result.size()<1)
-	{
-		bDeviceExits=false;
-	}
-
 	_tThermostat thermos;
 	thermos.subtype=sTypeThermSetpoint;
 	thermos.id1=0;
@@ -188,12 +176,9 @@ void CThermosmart::SendSetPointSensor(const unsigned char Idx, const float Temp,
 	thermos.id3=0;
 	thermos.id4=Idx;
 	thermos.dunit=0;
-
 	thermos.temp=Temp;
-
 	sDecodeRXMessage(this, (const unsigned char *)&thermos, "Setpoint", 255);
 }
-
 
 bool CThermosmart::Login()
 {
@@ -330,7 +315,7 @@ void CThermosmart::Logout()
 
 bool CThermosmart::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	tRBUF *pCmd = (tRBUF *)pdata;
+	const tRBUF *pCmd = reinterpret_cast<const tRBUF *>(pdata);
 	if (pCmd->LIGHTING2.packettype == pTypeLighting2)
 	{
 		//Light command

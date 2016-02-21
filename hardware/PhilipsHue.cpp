@@ -114,10 +114,10 @@ void CPhilipsHue::Do_Work()
 
 bool CPhilipsHue::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	tRBUF *pSen = (tRBUF*)pdata;
+	const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
 
 	unsigned char packettype = pSen->ICMND.packettype;
-	unsigned char subtype = pSen->ICMND.subtype;
+	//unsigned char subtype = pSen->ICMND.subtype;
 
 	int svalue = 0;
 	std::string LCmd = "";
@@ -583,7 +583,6 @@ bool CPhilipsHue::GetLights(const Json::Value &root)
 			tlight.level = 0;
 			tlight.sat = 0;
 			tlight.hue = 0;
-			int tbri = 0;
 			bool bIsOn = light["state"]["on"].asBool();
 			bool bDoSend = true;
 			_eHueLightType LType = HLTYPE_NORMAL;
@@ -599,7 +598,7 @@ bool CPhilipsHue::GetLights(const Json::Value &root)
 			{
 				//Lamp with brightness control
 				LType = HLTYPE_DIM;
-				tbri = light["state"]["bri"].asInt();
+				int tbri = light["state"]["bri"].asInt();
 				if ((tbri != 0) && (tbri != 255))
 					tbri += 1; //hue reports 255 as 254
 				tlight.level = tbri;
@@ -725,7 +724,6 @@ bool CPhilipsHue::GetGroups(const Json::Value &root)
 	Json::Reader jReader;
 	Json::Value root2;
 	bool ret = jReader.parse(sResult, root2);
-	ret = jReader.parse(sResult, root2);
 	if (!ret)
 	{
 		_log.Log(LOG_ERROR, "Philips Hue: Invalid data received, or invalid IPAddress/Username!");

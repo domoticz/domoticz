@@ -69,16 +69,11 @@ void OTGWBase::ParseData(const unsigned char *pData, int Len)
 
 void OTGWBase::UpdateSwitch(const unsigned char Idx, const bool bOn, const std::string &defaultname)
 {
-	bool bDeviceExits=true;
 	char szIdx[10];
 	sprintf(szIdx,"%X%02X%02X%02X",0,0,0,Idx);
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, szIdx);
-	if (result.size()<1)
-	{
-		bDeviceExits=false;
-	}
-	else
+	if (!result.empty())
 	{
 		//check if we have a change, if not do not update it
 		int nvalue=atoi(result[0][1].c_str());
@@ -160,7 +155,6 @@ bool OTGWBase::SwitchLight(const int idx, const std::string &LCmd, const int sva
 {
 	char szCmd[100];
 	char szOTGWCommand[3] = "-";
-	bool doSwitch = false;
 	if (idx == 102)
 	{
 		sprintf(szOTGWCommand, "HW");
@@ -199,17 +193,16 @@ bool OTGWBase::SwitchLight(const int idx, const std::string &LCmd, const int sva
 
 bool OTGWBase::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	tRBUF *pSen = (tRBUF*)pdata;
+	const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
 
 	unsigned char packettype = pSen->ICMND.packettype;
 	unsigned char subtype = pSen->ICMND.subtype;
 
-	int svalue = 0;
-	std::string LCmd = "";
-	int nodeID = 0;
-
 	if (packettype == pTypeLighting2)
 	{
+		std::string LCmd = "";
+		int nodeID = 0;
+		int svalue = 0;
 		//light command
 		nodeID = pSen->LIGHTING2.id4;
 		if ((pSen->LIGHTING2.cmnd == light2_sOff) || (pSen->LIGHTING2.cmnd == light2_sGroupOff))
@@ -226,7 +219,7 @@ bool OTGWBase::WriteToHardware(const char *pdata, const unsigned char length)
   }
   else if ((packettype == pTypeThermostat) && (subtype == sTypeThermSetpoint))
   {
-      const _tThermostat *pMeter=(const _tThermostat*)pdata;
+      const _tThermostat *pMeter=reinterpret_cast<const _tThermostat*>(pdata);
       float temp = pMeter->temp;
       unsigned char idx = pMeter->id4;
       SetSetpoint(idx, temp);
@@ -454,8 +447,8 @@ void OTGWBase::ParseLine()
 			_GPIO.B=static_cast<int>(sLine[7]- '0');
 			UpdateSwitch(99,(_GPIO.B==1),"GPIOBStatusIsHigh");
 		}
-                else if (sLine.find("PR: O")!=std::string::npos)
-                {
+		else if (sLine.find("PR: O")!=std::string::npos)
+		{
 			// Check if setpoint is overriden
  			m_OverrideTemperature=0.0f;
 			char status=sLine[6];
@@ -473,17 +466,6 @@ void OTGWBase::ParseLine()
 			if (tpos != std::string::npos)
 			{
 				m_Version = tmpstr.substr(tpos + 9);
-			}
-		}
-		else if (sLine.find("PR: O") != std::string::npos)
-		{
-			// Check if setpoint is overriden
-			m_OverrideTemperature = 0.0f;
-			char status = sLine[6];
-			if (status == 'c' || status == 't')
-			{
-				// Get override setpoint value
-				m_OverrideTemperature = static_cast<float>(atof(sLine.substr(7).c_str()));
 			}
 		}
 		else
@@ -561,7 +543,7 @@ namespace http {
 			stdupper(rcmnd);
 			cmnd = rcmnd + rdata;
 
-			OTGWBase *pOTGW = (OTGWBase*)m_mainworker.GetHardware(atoi(idx.c_str()));
+			OTGWBase *pOTGW = reinterpret_cast<OTGWBase*>(m_mainworker.GetHardware(atoi(idx.c_str())));
 			if (pOTGW == NULL)
 				return;
 

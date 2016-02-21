@@ -77,7 +77,7 @@ namespace http {
 			PDUPROTO(PDU_SERV_RECEIVE)
 			PDUPROTO(PDU_SERV_SEND)
 			PDUPROTO(PDU_SERV_ROSTERIND)
-			void GetRequest(const std::string originatingip, boost::asio::mutable_buffers_1 _buf, http::server::reply &reply_);
+			void GetRequest(const std::string &originatingip, boost::asio::mutable_buffers_1 _buf, http::server::reply &reply_);
 			void SendServDisconnect(const std::string &token, int reason);
 
 			void PduHandler(ProxyPdu &pdu);
@@ -123,7 +123,7 @@ namespace http {
 
 		class CProxySharedData {
 		public:
-			CProxySharedData() : _instanceid("") {};
+			CProxySharedData() {};
 			void SetInstanceId(std::string instanceid);
 			std::string GetInstanceId();
 			void LockPrefsMutex();

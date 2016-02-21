@@ -1701,7 +1701,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 	if (dindex == -1)
 		return ret;
 
-	if (Argument.find("temperaturedevice") == 0)
+	if (Argument.compare("temperaturedevice") == 0)
 	{
 		std::map<unsigned long long, float>::const_iterator itt = m_tempValuesByID.find(dindex);
 		if (itt != m_tempValuesByID.end())
@@ -1711,7 +1711,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 			return sstr.str();
 		}
 	}
-	else if (Argument.find("dewpointdevice") == 0)
+	else if (Argument.compare("dewpointdevice") == 0)
 	{
 		std::map<unsigned long long, float>::const_iterator itt = m_dewValuesByID.find(dindex);
 		if (itt != m_dewValuesByID.end())
@@ -1721,7 +1721,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 			return sstr.str();
 		}
 	}
-	else if (Argument.find("humiditydevice") == 0)
+	else if (Argument.compare("humiditydevice") == 0)
 	{
 		std::map<unsigned long long, int>::const_iterator itt = m_humValuesByID.find(dindex);
 		if (itt != m_humValuesByID.end())
@@ -1731,7 +1731,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 			return sstr.str();
 		}
 	}
-	else if (Argument.find("barometerdevice") == 0)
+	else if (Argument.compare("barometerdevice") == 0)
 	{
 		std::map<unsigned long long, float>::const_iterator itt = m_baroValuesByID.find(dindex);
 		if (itt != m_baroValuesByID.end())
@@ -1741,7 +1741,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 			return sstr.str();
 		}
 	}
-	else if (Argument.find("utilitydevice") == 0)
+	else if (Argument.compare("utilitydevice") == 0)
 	{
 		std::map<unsigned long long, float>::const_iterator itt = m_utilityValuesByID.find(dindex);
 		if (itt != m_utilityValuesByID.end())
@@ -1751,7 +1751,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 			return sstr.str();
 		}
 	}
-	else if (Argument.find("weatherdevice") == 0)
+	else if (Argument.compare("weatherdevice") == 0)
 	{
 		std::map<unsigned long long, float>::const_iterator itt = m_weatherValuesByID.find(dindex);
 		if (itt != m_weatherValuesByID.end())
@@ -1761,7 +1761,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 			return sstr.str();
 		}
 	}
-	else if (Argument.find("raindevice") == 0)
+	else if (Argument.compare("raindevice") == 0)
 	{
 		std::map<unsigned long long, float>::const_iterator itt = m_rainValuesByID.find(dindex);
 		if (itt != m_rainValuesByID.end())
@@ -1771,7 +1771,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 			return sstr.str();
 		}
 	}
-	else if (Argument.find("rainlasthourdevice") == 0)
+	else if (Argument.compare("rainlasthourdevice") == 0)
 	{
 		std::map<unsigned long long, float>::const_iterator itt = m_rainLastHourValuesByID.find(dindex);
 		if (itt != m_rainLastHourValuesByID.end())
@@ -1781,7 +1781,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 			return sstr.str();
 		}
 	}
-	else if (Argument.find("uvdevice") == 0)
+	else if (Argument.compare("uvdevice") == 0)
 	{
 		std::map<unsigned long long, float>::const_iterator itt = m_uvValuesByID.find(dindex);
 		if (itt != m_uvValuesByID.end())
@@ -1791,7 +1791,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 			return sstr.str();
 		}
 	}
-	else if (Argument.find("winddirdevice") == 0)
+	else if (Argument.compare("winddirdevice") == 0)
 	{
 		std::map<unsigned long long, float>::const_iterator itt = m_winddirValuesByID.find(dindex);
 		if (itt != m_winddirValuesByID.end())
@@ -1801,7 +1801,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 			return sstr.str();
 		}
 	}
-	else if (Argument.find("windspeeddevice") == 0)
+	else if (Argument.compare("windspeeddevice") == 0)
 	{
 		std::map<unsigned long long, float>::const_iterator itt = m_windspeedValuesByID.find(dindex);
 		if (itt != m_windspeedValuesByID.end())
@@ -1811,7 +1811,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 			return sstr.str();
 		}
 	}
-	else if (Argument.find("windgustdevice") == 0)
+	else if (Argument.compare("windgustdevice") == 0)
 	{
 		std::map<unsigned long long, float>::const_iterator itt = m_windgustValuesByID.find(dindex);
 		if (itt != m_windgustValuesByID.end())
@@ -1821,7 +1821,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 			return sstr.str();
 		}
 	}
-	else if (Argument.find("variable") == 0)
+	else if (Argument.compare("variable") == 0)
 	{
 		std::map<unsigned long long, _tUserVariable>::const_iterator itt = m_uservariables.find(dindex);
 		if (itt != m_uservariables.end())
@@ -1887,16 +1887,16 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 			std::string variableNo = "0";
 			bool isScene = false;
 			bool isVariable = false;
-			if ((deviceName.find("Scene:") == 0) || (deviceName.find("Group:") == 0))
+			if ((deviceName.compare("Scene:") == 0) || (deviceName.compare("Group:") == 0))
 			{
 				isScene = true;
 				sceneType = 1;
-				if (deviceName.find("Group:") == 0) {
+				if (deviceName.compare("Group:") == 0) {
 					sceneType = 2;
 				}
 				deviceName = deviceName.substr(6);
 			}
-			else if (deviceName.find("Variable:") == 0)
+			else if (deviceName.compare("Variable:") == 0)
 			{
 				isVariable = true;
 				variableNo = deviceName.substr(9);
@@ -1956,7 +1956,7 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 			else {
 				std::string devNameNoQuotes = deviceName.substr(1, deviceName.size() - 2);
 				if (devNameNoQuotes == "SendNotification") {
-					std::string subject(""), body(""), priority("0"), sound("");
+					std::string subject, body, priority("0"), sound;
 					std::vector<std::string> aParam;
 					StringSplit(doWhat, "#", aParam);
 					subject = body = aParam[0];
@@ -1984,7 +1984,7 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 					actionsDone = true;
 				}
 				else if (devNameNoQuotes == "SendEmail") {
-					std::string subject(""), body(""), to("");
+					std::string subject, body, to;
 					std::vector<std::string> aParam;
 					StringSplit(doWhat, "#", aParam);
 					if (aParam.size() !=3 )
@@ -2015,7 +2015,7 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 					OpenURL(doWhat);
 					actionsDone = true;
 				}
-				else if (devNameNoQuotes.find("WriteToLog") == 0) {
+				else if (devNameNoQuotes.compare("WriteToLog") == 0) {
 					WriteToLog(devNameNoQuotes,doWhat);
 					actionsDone = true;
 				}
@@ -2862,8 +2862,8 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 	if (std::string(lua_tostring(lua_state, -2)) == "SendNotification")
 	{
 		std::string luaString = lua_tostring(lua_state, -1);
-		std::string subject(""), body(""), priority("0"), sound("");
-		std::string extraData("");
+		std::string subject, body, priority("0"), sound;
+		std::string extraData;
 		std::vector<std::string> aParam;
 		StringSplit(luaString, "#", aParam);
 		subject = body = aParam[0];
@@ -2884,7 +2884,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 	}
 	else if (std::string(lua_tostring(lua_state, -2)) == "SendEmail") {
 		std::string luaString = lua_tostring(lua_state, -1);
-		std::string subject(""), body(""), to("");
+		std::string subject, body, to;
 		std::vector<std::string> aParam;
 		StringSplit(luaString, "#", aParam);
 		if (aParam.size() != 3)
@@ -3136,11 +3136,11 @@ bool CEventSystem::ScheduleEvent(std::string deviceName, const std::string &Acti
 {
 	bool isScene = false;
 	int sceneType = 0;
-	if ((deviceName.find("Scene:") == 0) || (deviceName.find("Group:") == 0))
+	if ((deviceName.compare("Scene:") == 0) || (deviceName.compare("Group:") == 0))
 	{
 		isScene = true;
 		sceneType = 1;
-		if (deviceName.find("Group:") == 0) {
+		if (deviceName.compare("Group:") == 0) {
 			sceneType = 2;
 		}
 		deviceName = deviceName.substr(6);
@@ -3208,25 +3208,25 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 	}
 
 	unsigned char _level = 0;
-	if (Action.find("Set Level") == 0)
+	if (Action.compare("Set Level") == 0)
 	{
 		_level = calculateDimLevel(deviceID, atoi(Action.substr(10).c_str()));
 		Action = Action.substr(0, 9);
 	}
 
-	if (Action.find("Set Volume") == 0)
+	if (Action.compare("Set Volume") == 0)
 	{
 		_level = atoi(Action.substr(11).c_str());
 		Action = Action.substr(0, 10);
 	}
 
-	if (Action.find("Play Playlist") == 0)
+	if (Action.compare("Play Playlist") == 0)
 	{
 		std::string	sParams = Action.substr(14);
 		CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByType(HTYPE_Kodi);
 		if (pBaseHardware != NULL)
 		{
-			CKodi			*pHardware = (CKodi*)pBaseHardware;
+			CKodi			*pHardware = reinterpret_cast<CKodi*>(pBaseHardware);
 			std::string		sPlayList = sParams;
 			size_t			iLastSpace = sParams.find_last_of(' ', sParams.length());
 
@@ -3245,7 +3245,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 		{
 			pBaseHardware = m_mainworker.GetHardwareByType(HTYPE_LogitechMediaServer);
 			if (pBaseHardware == NULL) return false;
-			CLogitechMediaServer *pHardware = (CLogitechMediaServer*)pBaseHardware;
+			CLogitechMediaServer *pHardware = reinterpret_cast<CLogitechMediaServer*>(pBaseHardware);
 
 			int iPlaylistID = pHardware->GetPlaylistRefID(Action.substr(14).c_str());
 			if (iPlaylistID == 0) return false;
@@ -3255,13 +3255,13 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 
 		Action = Action.substr(0, 13);
 	}
-	if ((Action.find("Play Favorites") == 0) && (Action.length() > 14))
+	if ((Action.compare("Play Favorites") == 0) && (Action.length() > 14))
 	{
 		std::string	sParams = Action.substr(15);
 		CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByType(HTYPE_Kodi);
 		if (pBaseHardware != NULL)
 		{
-			CKodi			*pHardware = (CKodi*)pBaseHardware;
+			CKodi			*pHardware = reinterpret_cast<CKodi*>(pBaseHardware);
 			if (sParams.length() > 0)
 			{
 				_level = atoi(sParams.c_str());
@@ -3270,13 +3270,13 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 
 		Action = Action.substr(0, 14);
 	}
-	if (Action.find("Execute") == 0)
+	if (Action.compare("Execute") == 0)
 	{
 		std::string	sParams = Action.substr(8);
 		CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByType(HTYPE_Kodi);
 		if (pBaseHardware != NULL)
 		{
-			CKodi	*pHardware = (CKodi*)pBaseHardware;
+			CKodi	*pHardware = reinterpret_cast<CKodi*>(pBaseHardware);
 			pHardware->SetExecuteCommand(deviceID, sParams);
 		}
 
@@ -3660,7 +3660,7 @@ namespace http {
 						if (_levents.find(Name) != _levents.end())
 						{
 							//Duplicate event name, add the ID
-							std::stringstream szQuery("");
+							std::stringstream szQuery;
 							szQuery << Name << " (" << ID << ")";
 							Name = szQuery.str();
 						}
