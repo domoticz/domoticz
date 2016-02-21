@@ -84,15 +84,15 @@ namespace http {
 			if (we_locked_prefs_mutex) {
 				// avoid deadlock if we got a read or write error in between handle_handshake() and HandleAuthresp()
 				we_locked_prefs_mutex = false;
-				sharedData.LockPrefsMutex();
+				sharedData.UnlockPrefsMutex();
 			}
 			if (doStop) {
 				return;
 			}
 			if (b_Connected) {
 				_socket.lowest_layer().close();
-				sleep_seconds(10);
 			}
+			sleep_seconds(15);
 			b_Connected = false;
 			boost::asio::ip::tcp::resolver resolver(_io_service);
 			boost::asio::ip::tcp::resolver::query query(address, port);
@@ -204,7 +204,7 @@ namespace http {
 			if (!error)
 			{
 				// lock until we have a valid api id
-				sharedData.UnlockPrefsMutex();
+				sharedData.LockPrefsMutex();
 				b_Connected = true;
 				we_locked_prefs_mutex = true;
 				LoginToService();
