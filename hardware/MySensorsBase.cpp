@@ -211,16 +211,15 @@ std::string MySensorsBase::GetMySensorsPresentationTypeStr(const enum _ePresenta
 	return "Unknown!";
 }
 
-MySensorsBase::MySensorsBase(void)
+MySensorsBase::MySensorsBase(void):
+m_GatewayVersion("?")
 {
 	m_bufferpos = 0;
 	m_bAckReceived = false;
 	m_AckNodeID = -1;
 	m_AckChildID = -1;
 	m_AckSetType = V_UNKNOWN;
-	m_GatewayVersion = "?";
 }
-
 
 MySensorsBase::~MySensorsBase(void)
 {
@@ -426,6 +425,56 @@ void MySensorsBase::UpdateNodeBatteryLevel(const int nodeID, const int Level)
 	}
 }
 
+void MySensorsBase::UpdateNodeHeartbeat(const int nodeID)
+{
+	std::map<int, _tMySensorNode>::iterator ittNode = m_nodes.find(nodeID);
+	if (ittNode == m_nodes.end())
+		return; //Not found
+
+	int intValue;
+
+	_tMySensorNode *pNode = &ittNode->second;
+	std::vector<_tMySensorChild>::iterator itt;
+	for (itt = pNode->m_childs.begin(); itt != pNode->m_childs.end(); ++itt)
+	{
+		std::map<_eSetType, _tMySensorValue>::const_iterator itt2;
+		for (itt2 = itt->values.begin(); itt2 != itt->values.end(); ++itt2)
+		{
+			if (itt2->second.bValidValue)
+			{
+				_eSetType vType = itt2->first;
+				switch (vType)
+				{
+				case V_TRIPPED:
+				case V_ARMED:
+				case V_LOCK_STATUS:
+				case V_STATUS:
+				case V_PERCENTAGE:
+					UpdateSwitchLastUpdate(nodeID, itt->childID);
+					break;
+				case V_SCENE_ON:
+				case V_SCENE_OFF:
+					if (itt->GetValue(vType, intValue))
+						UpdateSwitchLastUpdate(nodeID, itt->childID + intValue);
+					break;
+				case V_UP:
+				case V_DOWN:
+				case V_STOP:
+					if (itt->GetValue(vType, intValue))
+						UpdateBlindSensorLastUpdate(nodeID, itt->childID);
+					break;
+				case V_RGB:
+				case V_RGBW:
+					if (itt->GetValue(vType, intValue))
+						UpdateRGBWSwitchLastUpdate(nodeID, itt->childID);
+					break;
+				}
+			}
+		}
+	}
+
+}
+
 void MySensorsBase::MakeAndSendWindSensor(const int nodeID, const std::string &sname)
 {
 	bool bHaveTemp = false;
@@ -583,11 +632,11 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 			}
 		}
 		float Temp;
-		float Baro;
 		int Humidity;
 		pChild->GetValue(V_HUM, Humidity);
 		if (pChildTemp && pChildBaro)
 		{
+			float Baro;
 			bool bHaveTemp = pChildTemp->GetValue(V_TEMP, Temp);
 			bool bHaveBaro = pChildBaro->GetValue(V_PRESSURE, Baro);
 			if (bHaveTemp && bHaveBaro)
@@ -711,37 +760,37 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 	case V_TRIPPED:
 		//	Tripped status of a security sensor. 1 = Tripped, 0 = Untripped
 		if (pChild->GetValue(vType, intValue))
-			UpdateSwitch(pChild->nodeID, pChild->childID, (intValue == 1), 100, (!pChild->childName.empty()) ? pChild->childName : "Security Sensor", pChild->batValue);
+			UpdateSwitch(vType, pChild->nodeID, pChild->childID, (intValue == 1), 100, (!pChild->childName.empty()) ? pChild->childName : "Security Sensor", pChild->batValue);
 		break;
 	case V_ARMED:
 		//Armed status of a security sensor. 1 = Armed, 0 = Bypassed
 		if (pChild->GetValue(vType, intValue))
-			UpdateSwitch(pChild->nodeID, pChild->childID, (intValue == 1), 100, (!pChild->childName.empty()) ? pChild->childName : "Security Sensor", pChild->batValue);
+			UpdateSwitch(vType, pChild->nodeID, pChild->childID, (intValue == 1), 100, (!pChild->childName.empty()) ? pChild->childName : "Security Sensor", pChild->batValue);
 		break;
 	case V_LOCK_STATUS:
 		//Lock status. 1 = Locked, 0 = Unlocked
 		if (pChild->GetValue(vType, intValue))
-			UpdateSwitch(pChild->nodeID, pChild->childID, (intValue == 1), 100, (!pChild->childName.empty()) ? pChild->childName : "Lock Sensor", pChild->batValue);
+			UpdateSwitch(vType, pChild->nodeID, pChild->childID, (intValue == 1), 100, (!pChild->childName.empty()) ? pChild->childName : "Lock Sensor", pChild->batValue);
 		break;
 	case V_STATUS:
 		//	Light status. 0 = off 1 = on
 		if (pChild->GetValue(vType, intValue))
-			UpdateSwitch(pChild->nodeID, pChild->childID, (intValue != 0), 100, (!pChild->childName.empty()) ? pChild->childName : "Light", pChild->batValue);
+			UpdateSwitch(vType, pChild->nodeID, pChild->childID, (intValue != 0), 100, (!pChild->childName.empty()) ? pChild->childName : "Light", pChild->batValue);
 		break;
 	case V_SCENE_ON:
 		if (pChild->GetValue(vType, intValue))
-			UpdateSwitch(pChild->nodeID, pChild->childID + intValue, true, 100, (!pChild->childName.empty()) ? pChild->childName : "Scene", pChild->batValue);
+			UpdateSwitch(vType, pChild->nodeID, pChild->childID + intValue, true, 100, (!pChild->childName.empty()) ? pChild->childName : "Scene", pChild->batValue);
 		break;
 	case V_SCENE_OFF:
 		if (pChild->GetValue(vType, intValue))
-			UpdateSwitch(pChild->nodeID, pChild->childID + intValue, false, 100, (!pChild->childName.empty()) ? pChild->childName : "Scene", pChild->batValue);
+			UpdateSwitch(vType, pChild->nodeID, pChild->childID + intValue, false, 100, (!pChild->childName.empty()) ? pChild->childName : "Scene", pChild->batValue);
 		break;
 	case V_PERCENTAGE:
 		//	Dimmer value. 0 - 100 %
 		if (pChild->GetValue(vType, intValue))
 		{
 			int level = intValue;
-			UpdateSwitch(pChild->nodeID, pChild->childID, (level != 0), level, (!pChild->childName.empty()) ? pChild->childName : "Light", pChild->batValue);
+			UpdateSwitch(vType, pChild->nodeID, pChild->childID, (level != 0), level, (!pChild->childName.empty()) ? pChild->childName : "Light", pChild->batValue);
 		}
 		break;
 	case V_RGB:
@@ -961,9 +1010,64 @@ void MySensorsBase::ParseData(const unsigned char *pData, int Len)
 	}
 }
 
-void MySensorsBase::UpdateSwitch(const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname, const int BatLevel)
+void MySensorsBase::UpdateSwitchLastUpdate(const unsigned char Idx, const int SubUnit)
 {
-	bool bDeviceExits = true;
+	char szIdx[10];
+	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, szIdx, SubUnit, int(pTypeLighting2), int(sTypeAC));
+	if (result.size() < 1)
+		return; //not found!
+	time_t now = time(0);
+	struct tm ltime;
+	localtime_r(&now, &ltime);
+
+	char szLastUpdate[40];
+	sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
+
+	m_sql.safe_query("UPDATE DeviceStatus SET LastUpdate='%q' WHERE (ID = '%q')", szLastUpdate, result[0][0].c_str());
+}
+
+void MySensorsBase::UpdateBlindSensorLastUpdate(const int NodeID, const int ChildID)
+{
+	char szIdx[10];
+	sprintf(szIdx, "%02X%02X%02X", 0, 0, NodeID);
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, szIdx, ChildID);
+	if (result.size() < 1)
+		return;
+	time_t now = time(0);
+	struct tm ltime;
+	localtime_r(&now, &ltime);
+
+	char szLastUpdate[40];
+	sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
+	m_sql.safe_query("UPDATE DeviceStatus SET LastUpdate='%q' WHERE (ID = '%q')", szLastUpdate, result[0][0].c_str());
+}
+
+void MySensorsBase::UpdateRGBWSwitchLastUpdate(const int NodeID, const int ChildID)
+{
+	char szIdx[10];
+	if (NodeID == 1)
+		sprintf(szIdx, "%d", 1);
+	else
+		sprintf(szIdx, "%08x", (unsigned int)NodeID);
+
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, szIdx, ChildID);
+	if (result.size() < 1)
+		return;
+	time_t now = time(0);
+	struct tm ltime;
+	localtime_r(&now, &ltime);
+
+	char szLastUpdate[40];
+	sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
+	m_sql.safe_query("UPDATE DeviceStatus SET LastUpdate='%q' WHERE (ID = '%q')", szLastUpdate, result[0][0].c_str());
+}
+
+void MySensorsBase::UpdateSwitch(const _eSetType vType, const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname, const int BatLevel)
+{
 	double rlevel = (15.0 / 100)*Level;
 	int level = int(rlevel);
 
@@ -971,22 +1075,21 @@ void MySensorsBase::UpdateSwitch(const unsigned char Idx, const int SubUnit, con
 	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, szIdx, SubUnit, int(pTypeLighting2), int(sTypeAC));
-	if (result.size() < 1)
+	if (!result.empty())
 	{
-		bDeviceExits = false;
-	}
-	else
-	{
-		//check if we have a change, if not do not update it
-		int nvalue = atoi(result[0][1].c_str());
-		if ((!bOn) && (nvalue == 0))
-			return;
-		if ((bOn && (nvalue != 0)))
+		if (vType != V_TRIPPED)
 		{
-			//Check Level
-			int slevel = atoi(result[0][2].c_str());
-			if (slevel==level)
+			//check if we have a change, if not do not update it
+			int nvalue = atoi(result[0][1].c_str());
+			if ((!bOn) && (nvalue == 0))
 				return;
+			if ((bOn && (nvalue != 0)))
+			{
+				//Check Level
+				int slevel = atoi(result[0][2].c_str());
+				if (slevel == level)
+					return;
+			}
 		}
 	}
 
@@ -1111,7 +1214,7 @@ void MySensorsBase::SendCommandInt(const int NodeID, const int ChildID, const _e
 
 bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	tRBUF *pCmd = (tRBUF *)pdata;
+	const tRBUF *pCmd = reinterpret_cast<const tRBUF *>(pdata);
 	unsigned char packettype = pCmd->ICMND.packettype;
 	unsigned char subtype = pCmd->ICMND.subtype;
 
@@ -1181,8 +1284,8 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 	{
 		//RGW/RGBW command
 		_tLimitlessLights *pLed = (_tLimitlessLights *)pdata;
-		unsigned char ID1 = (unsigned char)((pLed->id & 0xFF000000) >> 24);
-		unsigned char ID2 = (unsigned char)((pLed->id & 0x00FF0000) >> 16);
+		//unsigned char ID1 = (unsigned char)((pLed->id & 0xFF000000) >> 24);
+		//unsigned char ID2 = (unsigned char)((pLed->id & 0x00FF0000) >> 16);
 		unsigned char ID3 = (unsigned char)((pLed->id & 0x0000FF00) >> 8);
 		unsigned char ID4 = (unsigned char)pLed->id & 0x000000FF;
 
@@ -1289,7 +1392,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 	else if ((packettype == pTypeThermostat) && (subtype == sTypeThermSetpoint))
 	{
 		//Set Point
-		_tThermostat *pMeter = (_tThermostat *)pCmd;
+		const _tThermostat *pMeter = reinterpret_cast<const _tThermostat *>(pCmd);
 
 		int node_id = pMeter->id2;
 		int child_sensor_id = pMeter->id3;
@@ -1316,7 +1419,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 	else if (packettype == pTypeGeneralSwitch)
 	{
 		//Used to store IR codes
-		_tGeneralSwitch *pSwitch=(_tGeneralSwitch *)pCmd;
+		const _tGeneralSwitch *pSwitch= reinterpret_cast<const _tGeneralSwitch *>(pCmd);
 
 		int node_id = pSwitch->unitcode;
 		unsigned int ir_code = pSwitch->id;
@@ -1441,7 +1544,7 @@ void MySensorsBase::ParseLine()
 		{
 		case I_VERSION:
 			{
-				if ((node_id == 0) && (child_sensor_id == 0))
+				if (node_id == 0)
 				{
 					//Store gateway version
 					m_GatewayVersion = payload;
@@ -1516,7 +1619,15 @@ void MySensorsBase::ParseLine()
 			}
 			break;
 		case I_HEARTBEAT:
-			//Received a heartbeat
+		case I_HEARTBEAT_RESPONSE:
+			//Received a heartbeat request/response
+			if ((node_id != 0) && (node_id != 255))
+			{
+				UpdateNodeHeartbeat(node_id);
+			}
+			break;
+		case I_REQUEST_SIGNING:
+			//Used between sensors when initiating signing.
 			while (1 == 0);
 			break;
 		default:
@@ -1896,9 +2007,9 @@ void MySensorsBase::ParseLine()
 			{
 				//Add it to the system
 				if ((vType == V_STATUS) || (vType == V_PERCENTAGE) || (vType == V_LOCK_STATUS))
-					UpdateSwitch(node_id, child_sensor_id, false, 100, (!pSensor->childName.empty()) ? pSensor->childName : "Light", pSensor->batValue);
+					UpdateSwitch(vType, node_id, child_sensor_id, false, 100, (!pSensor->childName.empty()) ? pSensor->childName : "Light", pSensor->batValue);
 				else if (vType == V_TRIPPED)
-					UpdateSwitch(node_id, child_sensor_id, false, 100, (!pSensor->childName.empty()) ? pSensor->childName : "Security Sensor", pSensor->batValue);
+					UpdateSwitch(vType, node_id, child_sensor_id, false, 100, (!pSensor->childName.empty()) ? pSensor->childName : "Security Sensor", pSensor->batValue);
 				else if (vType == V_RGBW)
 					SendRGBWSwitch(node_id, child_sensor_id, pSensor->batValue, 0, true, (!pSensor->childName.empty()) ? pSensor->childName : "RGBW Light");
 				else if (vType == V_RGB)
@@ -1999,6 +2110,9 @@ void MySensorsBase::Do_Send_Work()
 			//Exit thread
 			return;
 		}
+#ifdef _DEBUG
+		_log.Log(LOG_STATUS, "MySensors: going to send: %s", toSend.c_str());
+#endif
 		WriteInt(toSend);
 	}
 }
@@ -2020,7 +2134,7 @@ namespace http {
 				(pHardware->HwdType != HTYPE_MySensorsTCP)
 				)
 				return;
-			MySensorsBase *pMySensorsHardware = (MySensorsBase*)pHardware;
+			MySensorsBase *pMySensorsHardware = reinterpret_cast<MySensorsBase*>(pHardware);
 
 			root["status"] = "OK";
 			root["title"] = "MySensorsGetNodes";
@@ -2032,7 +2146,6 @@ namespace http {
 			if (result.size() > 0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
-				std::vector<std::vector<std::string> >::const_iterator itt2;
 				int ii = 0;
 				for (itt = result.begin(); itt != result.end(); ++itt)
 				{
@@ -2094,7 +2207,7 @@ namespace http {
 				(pHardware->HwdType != HTYPE_MySensorsTCP)
 				)
 				return;
-			MySensorsBase *pMySensorsHardware = (MySensorsBase*)pHardware;
+			MySensorsBase *pMySensorsHardware = reinterpret_cast<MySensorsBase*>(pHardware);
 
 			root["status"] = "OK";
 			root["title"] = "MySensorsGetChilds";
@@ -2168,7 +2281,7 @@ namespace http {
 				(pBaseHardware->HwdType != HTYPE_MySensorsTCP)
 				)
 				return;
-			MySensorsBase *pMySensorsHardware = (MySensorsBase*)pBaseHardware;
+			MySensorsBase *pMySensorsHardware = reinterpret_cast<MySensorsBase*>(pBaseHardware);
 			int NodeID = atoi(nodeid.c_str());
 			root["status"] = "OK";
 			root["title"] = "MySensorsUpdateNode";
@@ -2198,7 +2311,7 @@ namespace http {
 				(pBaseHardware->HwdType != HTYPE_MySensorsTCP)
 				)
 				return;
-			MySensorsBase *pMySensorsHardware = (MySensorsBase*)pBaseHardware;
+			MySensorsBase *pMySensorsHardware = reinterpret_cast<MySensorsBase*>(pBaseHardware);
 			int NodeID = atoi(nodeid.c_str());
 			root["status"] = "OK";
 			root["title"] = "MySensorsRemoveNode";
@@ -2230,7 +2343,7 @@ namespace http {
 				(pBaseHardware->HwdType != HTYPE_MySensorsTCP)
 				)
 				return;
-			MySensorsBase *pMySensorsHardware = (MySensorsBase*)pBaseHardware;
+			MySensorsBase *pMySensorsHardware = reinterpret_cast<MySensorsBase*>(pBaseHardware);
 			int NodeID = atoi(nodeid.c_str());
 			int ChildID = atoi(childid.c_str());
 			root["status"] = "OK";
@@ -2265,7 +2378,7 @@ namespace http {
 				(pBaseHardware->HwdType != HTYPE_MySensorsTCP)
 				)
 				return;
-			MySensorsBase *pMySensorsHardware = (MySensorsBase*)pBaseHardware;
+			MySensorsBase *pMySensorsHardware = reinterpret_cast<MySensorsBase*>(pBaseHardware);
 			int NodeID = atoi(nodeid.c_str());
 			int ChildID = atoi(childid.c_str());
 			root["status"] = "OK";

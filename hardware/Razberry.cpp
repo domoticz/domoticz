@@ -77,7 +77,7 @@ const std::string CRazberry::GetControllerURL()
 const std::string CRazberry::GetRunURL(const std::string &cmd)
 {
 	std::stringstream sUrl;
-	if (m_username=="")
+	if (m_username.empty())
 		sUrl << "http://" << m_ipaddress << ":" << m_port << "/ZWaveAPI/Run/" << cmd;
 	else
 		sUrl << "http://"  << m_username << ":" << m_password << "@" << m_ipaddress << ":" << m_port << "/ZWaveAPI/Run/" << cmd;
@@ -218,7 +218,7 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 
 		const Json::Value nodeInstances=node["instances"];
 		// For all instances
-		bool haveMultipleInstance=(nodeInstances.size()>1);
+		//bool haveMultipleInstance=(nodeInstances.size()>1);
 		for (Json::Value::iterator ittInstance=nodeInstances.begin(); ittInstance!=nodeInstances.end(); ++ittInstance)
 		{
 			_device.commandClassID=0;

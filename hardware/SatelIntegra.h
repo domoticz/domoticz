@@ -68,27 +68,27 @@ private:
 	// Read alarm
 	bool ReadAlarm(const bool firstTime = false);
 	// Updates temperature name and type in database
-	void UpdateTempName(const unsigned int Idx, const unsigned char* name, const unsigned int partition);
+	void UpdateTempName(const int Idx, const unsigned char* name, const int partition);
 	// Updates zone name and type in database
-	void UpdateZoneName(const unsigned int Idx, const unsigned char* name, const unsigned int partition);
+	void UpdateZoneName(const int Idx, const unsigned char* name, const int partition);
 	// Updates output name and type in database
-	void UpdateOutputName(const unsigned int Idx, const unsigned char* name, const bool switchable);
+	void UpdateOutputName(const int Idx, const unsigned char* name, const bool switchable);
 	// Updates output name for virtual in/out (arming ald alarm)
 	void UpdateAlarmAndArmName();
 	// Reports zones states to domoticz
-	void ReportZonesViolation(const unsigned long Idx, const bool violation);
+	void ReportZonesViolation(const int Idx, const bool violation);
 	// Reports output states to domoticz
-	void ReportOutputState(const unsigned long Idx, const bool state);
+	void ReportOutputState(const int Idx, const bool state);
 	// Reports arm state to domoticz
-	void ReportArmState(const unsigned int Idx, const bool isArm);
+	void ReportArmState(const int Idx, const bool isArm);
 	// Reports alarms to domoticz
 	void ReportAlarm(const bool isAlarm);
 	// Reports temperatures to domoticz
-	void ReportTemperature(const unsigned long Idx, int temp);
+	void ReportTemperature(const int Idx, const int temp);
 	// arms given partitions
-	bool ArmPartitions(const unsigned int  partition, const unsigned int mode = 0);
+	bool ArmPartitions(const int  partition, const int mode = 0);
 	// disarms given partitions
-	bool DisarmPartitions(const unsigned int partition);
+	bool DisarmPartitions(const int partition);
 
 	// convert string from iso to utf8
 	std::string ISO2UTF8(const std::string &name);

@@ -33,7 +33,7 @@ Source: http://wiringpi.com
 class CGpio : public CDomoticzHardwareBase
 {
 public:
-	CGpio(const int ID);
+	explicit CGpio(const int ID);
 	~CGpio();
 
 	bool WriteToHardware(const char *pdata, const unsigned char length);

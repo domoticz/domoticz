@@ -59,16 +59,22 @@ const unsigned char PKT_VERIFY_OK[5] = { 0x08, 0x01, 0x00, 0x00, 0x00 };
 //
 //Class RFXComSerial
 //
-RFXComSerial::RFXComSerial(const int ID, const std::string& devname, unsigned int baud_rate)
+RFXComSerial::RFXComSerial(const int ID, const std::string& devname, unsigned int baud_rate) :
+m_szSerialPort(devname),
+m_szUploadMessage("")
 {
 	m_HwdID=ID;
-	m_szSerialPort=devname;
 	m_iBaudRate=baud_rate;
+	
 	m_stoprequested=false;
 	m_bReceiverStarted = false;
 	m_bInBootloaderMode = false;
 	m_bStartFirmwareUpload = false;
-	m_szUploadMessage = "";
+	m_FirmwareUploadPercentage = 0;
+	m_bHaveRX = false;
+	m_rx_tot_bytes = 0;
+	m_retrycntr = RETRY_DELAY;
+
 	m_serial.setPort(m_szSerialPort);
 	m_serial.setBaudrate(m_iBaudRate);
 	m_serial.setBytesize(serial::eightbits);
@@ -82,7 +88,7 @@ RFXComSerial::RFXComSerial(const int ID, const std::string& devname, unsigned in
 
 RFXComSerial::~RFXComSerial()
 {
-	clearReadCallback();
+
 }
 
 bool RFXComSerial::StartHardware()
@@ -109,18 +115,7 @@ bool RFXComSerial::StopHardware()
     sleep_milliseconds(10);
 	if (m_serial.isOpen())
 		m_serial.close();
-	if (isOpen())
-	{
-		try {
-			clearReadCallback();
-			close();
-			doClose();
-			setErrorStatus(true);
-		} catch(...)
-		{
-			//Don't throw from a Stop command
-		}
-	}
+	terminate();
 	m_bIsStarted=false;
 	return true;
 }
@@ -143,19 +138,7 @@ void RFXComSerial::Do_Work()
 		if (m_bStartFirmwareUpload)
 		{
 			m_bStartFirmwareUpload = false;
-			if (isOpen())
-			{
-				try {
-					clearReadCallback();
-					close();
-					doClose();
-					setErrorStatus(true);
-				}
-				catch (...)
-				{
-					//Don't throw from a Stop command
-				}
-			}
+			terminate();
 			try {
 				sleep_seconds(1);
 				UpgradeFirmware();
@@ -623,7 +606,6 @@ bool RFXComSerial::EraseMemory(const int StartAddress, const int StopAddress)
 	_log.Log(LOG_STATUS, m_szUploadMessage.c_str());
 	int BootAddr = StartAddress;
 
-	int blockcnt = 1;
 	while (BootAddr < StopAddress)
 	{
 		int nBlocks = ((StopAddress - StartAddress + 1) * PKT_bytesperaddr) / PKT_eraseblock;
@@ -794,19 +776,7 @@ void RFXComSerial::readCallback(const char *data, size_t len)
 			if (bRet == false)
 			{
 				//close serial connection, and restart
-				if (isOpen())
-				{
-					try {
-						clearReadCallback();
-						close();
-						doClose();
-						setErrorStatus(true);
-					}
-					catch (...)
-					{
-						//Don't throw from a Stop command
-					}
-				}
+				terminate();
 
 			}
 		}
@@ -936,7 +906,7 @@ namespace http {
 				(pHardware->HwdType == HTYPE_RFXtrx868)
 				)
 			{
-				RFXComSerial *pRFXComSerial = (RFXComSerial *)pHardware;
+				RFXComSerial *pRFXComSerial = reinterpret_cast<RFXComSerial *>(pHardware);
 				pRFXComSerial->UploadFirmware(outputfile);
 			}
 		}
@@ -1034,7 +1004,7 @@ namespace http {
 					(pHardware->HwdType == HTYPE_RFXtrx868)
 					)
 				{
-					RFXComSerial *pRFXComSerial = (RFXComSerial *)pHardware;
+					RFXComSerial *pRFXComSerial = reinterpret_cast<RFXComSerial *>(pHardware);
 					root["status"] = "OK";
 					root["percentage"] = pRFXComSerial->GetUploadPercentage();
 					root["message"] = pRFXComSerial->GetUploadMessage();

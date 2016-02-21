@@ -12,13 +12,16 @@
 #include "../webserver/cWebem.h"
 #include "../httpclient/HTTPClient.h"
 
-CLogitechMediaServer::CLogitechMediaServer(const int ID, const std::string &IPAddress, const int Port, const std::string &User, const std::string &Pwd, const int PollIntervalsec, const int PingTimeoutms) : m_stoprequested(false), m_iThreadsRunning(0)
+CLogitechMediaServer::CLogitechMediaServer(const int ID, const std::string &IPAddress, const int Port, const std::string &User, const std::string &Pwd, const int PollIntervalsec, const int PingTimeoutms) : 
+m_IP(IPAddress),
+m_User(User),
+m_Pwd(Pwd),
+m_stoprequested(false),
+m_iThreadsRunning(0)
 {
 	m_HwdID = ID;
-	m_IP = IPAddress;
 	m_Port = Port;
-	m_User = User;
-	m_Pwd = Pwd;
+	m_bShowedStartupMessage = false;
 	SetSettings(PollIntervalsec, PingTimeoutms);
 }
 
@@ -29,6 +32,7 @@ CLogitechMediaServer::CLogitechMediaServer(const int ID) : m_stoprequested(false
 	m_Port = 0;
 	m_User = "";
 	m_Pwd = "";
+	m_bShowedStartupMessage = false;
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Address, Port, Username, Password FROM Hardware WHERE ID==%d", m_HwdID);
 
@@ -369,7 +373,7 @@ void CLogitechMediaServer::GetPlayerInfo()
 				if (root["players_loop"][ii]["name"].empty())
 					continue;
 
-				int isplayer = root["players_loop"][ii]["isplayer"].asInt();
+				//int isplayer = root["players_loop"][ii]["isplayer"].asInt();
 				std::string name = root["players_loop"][ii]["name"].asString();
 				std::string model = root["players_loop"][ii]["model"].asString();
 				std::string ipport = root["players_loop"][ii]["ip"].asString();
@@ -379,7 +383,7 @@ void CLogitechMediaServer::GetPlayerInfo()
 				if (IPPort.size() < 2)
 					continue; //invalid ip:port
 				std::string ip = IPPort[0];
-				int port = atoi(IPPort[1].c_str());
+				//int port = atoi(IPPort[1].c_str());
 
 				if (
 					//(model == "slimp3") ||			//SliMP3
@@ -500,7 +504,7 @@ void CLogitechMediaServer::Restart()
 
 bool CLogitechMediaServer::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	tRBUF *pSen = (tRBUF*)pdata;
+	const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
 
 	unsigned char packettype = pSen->ICMND.packettype;
 
@@ -640,7 +644,7 @@ bool CLogitechMediaServer::SendCommand(const int ID, const std::string &command,
 
 	if (result.size() == 1)
 	{
-		std::string	sLMSCall;
+		//std::string	sLMSCall;
 		if (command == "Left") {
 			sLMSCmnd = "\"button\", \"arrow_left\"";
 		}
@@ -812,7 +816,7 @@ namespace http {
 				return;
 			if (pBaseHardware->HwdType != HTYPE_LogitechMediaServer)
 				return;
-			CLogitechMediaServer *pHardware = (CLogitechMediaServer*)pBaseHardware;
+			CLogitechMediaServer *pHardware = reinterpret_cast<CLogitechMediaServer*>(pBaseHardware);
 
 			root["status"] = "OK";
 			root["title"] = "LMSSetMode";
@@ -869,7 +873,7 @@ namespace http {
 				return;
 			if (pBaseHardware->HwdType != HTYPE_LogitechMediaServer)
 				return;
-			CLogitechMediaServer *pHardware = (CLogitechMediaServer*)pBaseHardware;
+			CLogitechMediaServer *pHardware = reinterpret_cast<CLogitechMediaServer*>(pBaseHardware);
 
 			root["status"] = "OK";
 			root["title"] = "Cmd_LMSGetPlaylists";

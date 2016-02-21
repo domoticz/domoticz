@@ -24,6 +24,5 @@ private:
 	void Do_Work();
 	void GetMeterDetails();
 	void UpdateSwitch(const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname);
-	void SendVoltage(const unsigned long Idx, const float Volt, const std::string &defaultname);
 };
 

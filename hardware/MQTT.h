@@ -27,7 +27,6 @@ public:
 	void SendMessage(const std::string &Topic, const std::string &Message);
 
 	bool m_bDoReconnect;
-	bool m_disc_finished;
 	bool m_IsConnected;
 public:
 	// signals

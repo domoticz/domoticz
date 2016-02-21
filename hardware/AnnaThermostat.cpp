@@ -52,10 +52,10 @@ CAnnaThermostat::CAnnaThermostat(const int ID, const std::string &IPAddress, con
 m_IPAddress(IPAddress),
 m_IPPort(usIPPort),
 m_UserName(CURLEncode::URLEncode(Username)),
-m_Password(CURLEncode::URLEncode(Password))
+m_Password(CURLEncode::URLEncode(Password)),
+m_ThermostatID("")
 {
 	m_HwdID=ID;
-	m_ThermostatID = "";
 	Init();
 	GetMeterDetails();
 }
@@ -139,7 +139,7 @@ bool CAnnaThermostat::WriteToHardware(const char *pdata, const unsigned char len
 	if (m_Password.size() == 0)
 		return false;
 
-	tRBUF *pCmd = (tRBUF *)pdata;
+	const tRBUF *pCmd = reinterpret_cast<const tRBUF *>(pdata);
 	if (pCmd->LIGHTING2.packettype != pTypeLighting2)
 		return false; //later add RGB support, if someone can provide access
 

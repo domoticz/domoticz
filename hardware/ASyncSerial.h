@@ -125,13 +125,17 @@ public:
     */
     void writeString(const std::string& s);
 
+	/**
+	 * Destructor. If necessary it silently removes the read callback and close the serial port. 
+	 */
+	~AsyncSerial();
+
+private:
     /**
      * Callback to close serial port
      */
     void doClose();
 
-    ~AsyncSerial();
-private:
     /**
      * Callback called to start an asynchronous read operation.
      * This callback is called by the io_service in the spawned thread.
@@ -161,13 +165,13 @@ private:
 
     boost::shared_ptr<AsyncSerialImpl> pimpl;
 
-protected:
-
     /**
      * To allow derived classes to report errors
      * \param e error status
      */
     void setErrorStatus(bool e);
+
+protected:
 
     /**
      * To allow derived classes to set a read callback
@@ -176,11 +180,15 @@ protected:
             boost::function<void (const char*, size_t)>& callback);
 
     /**
-     * To unregister the read callback in the derived class destructor so it
-     * does not get called after the derived class destructor but before the
-     * base class destructor
+     * Unregister the read callback.
      */
     void clearReadCallback();
+
+    /**
+     * Process a clean close by unregistering the read callback and closing the port.
+     * Once this method has been called, you have to open the port and register the read callback again.
+     */
+    void terminate(bool silent = true);
 
 };
 

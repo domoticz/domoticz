@@ -12,6 +12,7 @@
 #include "../main/Helper.h"
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
+#include "../main/SQLHelper.h"
 
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -25,12 +26,14 @@
 
 #define round(a) ( int ) ( a + .5 )
 
+extern CSQLHelper m_sql;
+
 C1Wire::C1Wire(const int ID) :
 	m_stoprequested(false),
 	m_system(NULL)
 {
 	m_HwdID=ID;
-  DetectSystem();
+	DetectSystem();
 }
 
 C1Wire::~C1Wire()
@@ -136,7 +139,7 @@ void C1Wire::Do_Work()
 
 bool C1Wire::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	tRBUF *pSen=(tRBUF*)pdata;
+	const tRBUF *pSen= reinterpret_cast<const tRBUF*>(pdata);
 
 	if (!m_system)
 		return false;//no 1-wire support
@@ -182,12 +185,35 @@ void C1Wire::GetDeviceDetails()
 		return;
 
 	// Get all devices
-	std::vector<_t1WireDevice> devices;
-	m_system->GetDevices(devices);
+	if ((m_devices.size() == 0) || (m_sql.m_bAcceptNewHardware))
+	{
+		_log.Log(LOG_STATUS, "1-Wire: Searching devices...");
+		m_devices.clear();
+		m_system->GetDevices(m_devices);
+	}
+
+	if (typeid(*m_system) == typeid(C1WireByOWFS) && (m_devices.size() > 2))
+	{
+		if (m_mainworker.GetVerboseLevel() == EVBL_DEBUG)
+		{
+			_log.Log(LOG_STATUS, "1Wire (OWFS): Sending 'Skip ROM' command");
+		}
+		std::ofstream file;
+		file.open(OWFS_Simultaneous);
+		if (file.is_open())
+		{
+			file << "1";
+			file.close();
+			if (m_mainworker.GetVerboseLevel() == EVBL_DEBUG)
+			{
+				_log.Log(LOG_STATUS, "1Wire (OWFS): Sent 'Skip ROM' command");
+			}
+		}
+	}
 
 	// Parse our devices (have to test m_stoprequested because it can take some time in case of big networks)
 	std::vector<_t1WireDevice>::const_iterator itt;
-	for (itt=devices.begin(); itt!=devices.end() && !m_stoprequested; ++itt)
+	for (itt=m_devices.begin(); itt!=m_devices.end() && !m_stoprequested; ++itt)
 	{
 		const _t1WireDevice& device=*itt;
 
@@ -276,10 +302,10 @@ void C1Wire::GetDeviceDetails()
 
 		case quad_ad_converter:
 			{
-				ReportVoltage(0,m_system->GetVoltage(device,0));
-				ReportVoltage(1,m_system->GetVoltage(device,1));
-				ReportVoltage(2,m_system->GetVoltage(device,2));
-				ReportVoltage(3,m_system->GetVoltage(device,3));
+				ReportVoltage(device.devid, 0, m_system->GetVoltage(device, 0));
+				ReportVoltage(device.devid, 1, m_system->GetVoltage(device, 1));
+				ReportVoltage(device.devid, 2, m_system->GetVoltage(device, 2));
+				ReportVoltage(device.devid, 3, m_system->GetVoltage(device, 3));
 				break;
 			}
 
@@ -291,18 +317,18 @@ void C1Wire::GetDeviceDetails()
 
 		case smart_battery_monitor:
 			{
-		  float temperature = m_system->GetTemperature(device);
-		  if (IsTemperatureValid(device.family, temperature))
-		  {
-			  ReportTemperature(device.devid, temperature);
-		  }
+				float temperature = m_system->GetTemperature(device);
+				if (IsTemperatureValid(device.family, temperature))
+				{
+					ReportTemperature(device.devid, temperature);
+				}
 				ReportHumidity(device.devid,m_system->GetHumidity(device));
-				ReportVoltage(0,m_system->GetVoltage(device,0));   // VAD
-				ReportVoltage(1,m_system->GetVoltage(device,1));   // VDD
-				ReportVoltage(2,m_system->GetVoltage(device,2));   // vis
+				ReportVoltage(device.devid, 0, m_system->GetVoltage(device, 0));   // VAD
+				ReportVoltage(device.devid, 1, m_system->GetVoltage(device, 1));   // VDD
+				ReportVoltage(device.devid, 2, m_system->GetVoltage(device, 2));   // vis
 				ReportPressure(device.devid,m_system->GetPressure(device));
-				// Commonly used as illuminescence sensor, see http://www.hobby-boards.com/store/products/Solar-Radiation-Detector.html
-				ReportIlluminescence(m_system->GetIlluminescence(device));
+				// Commonly used as Illuminance sensor, see http://www.hobby-boards.com/store/products/Solar-Radiation-Detector.html
+				ReportIlluminance(device.devid, m_system->GetIlluminance(device));
 				break;
 			}
 
@@ -320,7 +346,7 @@ void C1Wire::GetDeviceDetails()
 	}
 }
 
-void C1Wire::ReportTemperature(const std::string& deviceId,float temperature)
+void C1Wire::ReportTemperature(const std::string& deviceId, const float temperature)
 {
 	if (temperature == -1000.0)
 		return;
@@ -347,7 +373,7 @@ void C1Wire::ReportTemperature(const std::string& deviceId,float temperature)
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, NULL, 255);
 }
 
-void C1Wire::ReportHumidity(const std::string& deviceId,float humidity)
+void C1Wire::ReportHumidity(const std::string& deviceId, const float humidity)
 {
 	if (humidity == -1000.0)
 		return;
@@ -371,46 +397,29 @@ void C1Wire::ReportHumidity(const std::string& deviceId,float humidity)
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.HUM, NULL, 255);
 }
 
-void C1Wire::ReportPressure(const std::string& deviceId,float pressure)
+void C1Wire::ReportPressure(const std::string& deviceId, const float pressure)
 {
 	if (pressure == -1000.0)
 		return;
+	unsigned char deviceIdByteArray[DEVICE_ID_SIZE] = { 0 };
+	DeviceIdToByteArray(deviceId, deviceIdByteArray);
 
-	_tGeneralDevice gdevice;
-	gdevice.subtype=sTypePressure;
-	gdevice.floatval1=pressure;
-	sDecodeRXMessage(this, (const unsigned char *)&gdevice, NULL, 255);
+	int lID = (deviceIdByteArray[0] << 24) + (deviceIdByteArray[1] << 16) + (deviceIdByteArray[2] << 8) + deviceIdByteArray[3];
+	SendPressureSensor(0, lID, 255, pressure, "Pressure");
 }
 
-void C1Wire::ReportTemperatureHumidity(const std::string& deviceId,float temperature,float humidity)
+void C1Wire::ReportTemperatureHumidity(const std::string& deviceId, const float temperature, const float humidity)
 {
 	if ((temperature == -1000.0) || (humidity == -1000.0))
 		return;
 	unsigned char deviceIdByteArray[DEVICE_ID_SIZE]={0};
 	DeviceIdToByteArray(deviceId,deviceIdByteArray);
 
-	RBUF tsen;
-	memset(&tsen,0,sizeof(RBUF));
-	tsen.TEMP_HUM.packetlength=sizeof(tsen.TEMP_HUM)-1;
-	tsen.TEMP_HUM.packettype=pTypeTEMP_HUM;
-	tsen.TEMP_HUM.subtype=sTypeTH5;
-	tsen.TEMP_HUM.battery_level=9;
-	tsen.TEMP_HUM.rssi=12;
-	tsen.TEMP.id1=(BYTE)deviceIdByteArray[0];
-	tsen.TEMP.id2=(BYTE)deviceIdByteArray[1];
-
-	tsen.TEMP_HUM.tempsign=(temperature>=0)?0:1;
-	int at10=round(abs(temperature*10.0f));
-	tsen.TEMP_HUM.temperatureh=(BYTE)(at10/256);
-	at10-=(tsen.TEMP_HUM.temperatureh*256);
-	tsen.TEMP_HUM.temperaturel=(BYTE)(at10);
-	tsen.TEMP_HUM.humidity=(BYTE)round(humidity);
-	tsen.TEMP_HUM.humidity_status=Get_Humidity_Level(tsen.TEMP_HUM.humidity);
-
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM, NULL, 255);
+	uint16_t NodeID = (deviceIdByteArray[0] << 8) | deviceIdByteArray[1];
+	SendTempHumSensor(NodeID, 255, temperature, round(humidity), "TempHum");
 }
 
-void C1Wire::ReportLightState(const std::string& deviceId,int unit,bool state)
+void C1Wire::ReportLightState(const std::string& deviceId, const int unit, const bool state)
 {
 // check - is state changed ?
 	char num[16];
@@ -448,7 +457,7 @@ void C1Wire::ReportLightState(const std::string& deviceId,int unit,bool state)
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, NULL, 255);
 }
 
-void C1Wire::ReportCounter(const std::string& deviceId,int unit,unsigned long counter)
+void C1Wire::ReportCounter(const std::string& deviceId, const int unit, const unsigned long counter)
 {
 	unsigned char deviceIdByteArray[DEVICE_ID_SIZE]={0};
 	DeviceIdToByteArray(deviceId,deviceIdByteArray);
@@ -469,7 +478,7 @@ void C1Wire::ReportCounter(const std::string& deviceId,int unit,unsigned long co
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER, NULL, 255);
 }
 
-void C1Wire::ReportVoltage(int unit,int voltage)
+void C1Wire::ReportVoltage(const std::string& deviceId, const int unit, const int voltage)
 {
 	if (voltage == -1000.0)
 		return;
@@ -487,13 +496,14 @@ void C1Wire::ReportVoltage(int unit,int voltage)
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR, NULL, 255);
 }
 
-void C1Wire::ReportIlluminescence(float illuminescence)
+void C1Wire::ReportIlluminance(const std::string& deviceId, const float illuminescence)
 {
 	if (illuminescence == -1000.0)
 		return;
 
-	_tGeneralDevice gdevice;
-	gdevice.subtype=sTypeSolarRadiation;
-	gdevice.floatval1=illuminescence;
-	sDecodeRXMessage(this, (const unsigned char *)&gdevice, NULL, 255);
+	unsigned char deviceIdByteArray[DEVICE_ID_SIZE] = { 0 };
+	DeviceIdToByteArray(deviceId, deviceIdByteArray);
+
+	uint8_t NodeID = deviceIdByteArray[0] ^ deviceIdByteArray[1];
+	SendSolarRadiationSensor(NodeID, 255, illuminescence, "Solar Radiation");
 }

@@ -79,10 +79,10 @@ void CETH8020::Do_Work()
 
 bool CETH8020::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	tRBUF *pSen = (tRBUF*)pdata;
+	const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
 
 	unsigned char packettype = pSen->ICMND.packettype;
-	unsigned char subtype = pSen->ICMND.subtype;
+	//unsigned char subtype = pSen->ICMND.subtype;
 
 	if (packettype == pTypeLighting2)
 	{
@@ -129,7 +129,6 @@ bool CETH8020::WriteToHardware(const char *pdata, const unsigned char length)
 
 void CETH8020::UpdateSwitch(const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname)
 {
-	bool bDeviceExits = true;
 	double rlevel = (15.0 / 100)*Level;
 	int level = int(rlevel);
 
@@ -137,11 +136,7 @@ void CETH8020::UpdateSwitch(const unsigned char Idx, const int SubUnit, const bo
 	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, szIdx, SubUnit);
-	if (result.size() < 1)
-	{
-		bDeviceExits = false;
-	}
-	else
+	if (!result.empty())
 	{
 		//check if we have a change, if not do not update it
 		int nvalue = atoi(result[0][1].c_str());
@@ -179,16 +174,6 @@ void CETH8020::UpdateSwitch(const unsigned char Idx, const int SubUnit, const bo
 	lcmd.LIGHTING2.filler = 0;
 	lcmd.LIGHTING2.rssi = 12;
 	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255);
-}
-
-void CETH8020::SendVoltage(const unsigned long Idx, const float Volt, const std::string &defaultname)
-{
-	_tGeneralDevice gDevice;
-	gDevice.subtype = sTypeVoltage;
-	gDevice.id = 1;
-	gDevice.floatval1 = Volt;
-	gDevice.intval1 = static_cast<int>(Idx);
-	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), 255);
 }
 
 void CETH8020::GetMeterDetails()
@@ -266,7 +251,7 @@ void CETH8020::GetMeterDetails()
 						voltage = 5.0f;
 					std::stringstream sstr;
 					sstr << "Voltage " << Idx;
-					SendVoltage(Idx, voltage, sstr.str());
+					SendVoltageSensor(0, Idx, 255, voltage, sstr.str());
 				}
 			}
 		}

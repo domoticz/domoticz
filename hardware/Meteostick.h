@@ -35,18 +35,12 @@ private:
      */
     void readCallback(const char *data, size_t len);
 
-	void SendTempSensor(const unsigned char Idx, const float Temp, const std::string &defaultname);
-	void SendTempHumSensor(const unsigned char Idx, const float Temp, const int Hum, const std::string &defaultname);
 	void SendTempBaroSensor(const unsigned char Idx, const float Temp, const float Baro, const std::string &defaultname);
-	void SendRainSensor(const unsigned char Idx, const float Temp, const float Baro, const std::string &defaultname);
 	void SendWindSensor(const unsigned char Idx, const float Temp, const float Speed, const int Direction, const std::string &defaultname);
 	void SendUVSensor(const unsigned char Idx, const float UV, const std::string &defaultname);
-	void SendPercentage(const unsigned long Idx, const float Percentage, const std::string &defaultname);
-	void SendRainSensor(const unsigned char Idx, const float Rainmm, const std::string &defaultname);
 	void SendLeafWetnessRainSensor(const unsigned char Idx, const unsigned char Channel, const int Wetness, const std::string &defaultname);
 	void SendSoilMoistureSensor(const unsigned char Idx, const unsigned char Channel, const int Moisture, const std::string &defaultname);
 	void SendSolarRadiationSensor(const unsigned char Idx, const float Radiation, const std::string &defaultname);
-	float GetRainSensorCounter(const unsigned char Idx);
 
 	float m_LastOutsideTemp[MAX_IDS];
 	int m_LastOutsideHum[MAX_IDS];

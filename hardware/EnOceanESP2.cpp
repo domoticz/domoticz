@@ -636,7 +636,7 @@ CEnOceanESP2::CEnOceanESP2(const int ID, const std::string& devname, const int t
 
 CEnOceanESP2::~CEnOceanESP2()
 {
-	clearReadCallback();
+
 }
 
 bool CEnOceanESP2::StartHardware()
@@ -658,18 +658,7 @@ bool CEnOceanESP2::StopHardware()
 		// Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
 		sleep_milliseconds(10);
 	}
-	if (isOpen())
-	{
-		try {
-			clearReadCallback();
-			close();
-			doClose();
-			setErrorStatus(true);
-		} catch(...)
-		{
-			//Don't throw from a Stop command
-		}
-	}
+	terminate();
 	m_bIsStarted=false;
 	return true;
 }
@@ -740,9 +729,8 @@ void CEnOceanESP2::Add2SendQueue(const char* pData, const size_t length)
 enocean_data_structure enocean_clean_data_structure() {
 	int i = 0;
 	enocean_data_structure ds;
-	BYTE* b;
 	for (i=0;i < sizeof(ds);i++) {
-		b = (BYTE*) &ds + i;
+		BYTE* b = (BYTE*) &ds + i;
 		*b = 0x00;
 	}
 	return ds;
@@ -1094,7 +1082,6 @@ bool CEnOceanESP2::WriteToHardware(const char *pdata, const unsigned char length
 	iframe.ID_BYTE0=(unsigned char)(sID&0x0000FF);//tsen->LIGHTING2.id4;
 
 	unsigned char RockerID=0;
-	unsigned char UpDown=1;
 	unsigned char Pressed=1;
 
 	if (tsen->LIGHTING2.unitcode<10)
@@ -1147,7 +1134,7 @@ bool CEnOceanESP2::WriteToHardware(const char *pdata, const unsigned char length
 	if (cmnd!=light2_sSetLevel)
 	{
 		//On/Off
-		UpDown=((cmnd!=light2_sOff)&&(cmnd!=light2_sGroupOff));
+		unsigned char UpDown = ((cmnd != light2_sOff) && (cmnd != light2_sGroupOff));
 
 
 		iframe.DATA_BYTE3 = (RockerID<<DB3_RPS_NU_RID_SHIFT) | (UpDown<<DB3_RPS_NU_UD_SHIFT) | (Pressed<<DB3_RPS_NU_PR_SHIFT);//0x30;

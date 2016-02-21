@@ -522,19 +522,19 @@ void CTE923Tool::GetPrintData( Te923DataSet_t *data, char *szOutputBuffer)
 	strcat(szOutputBuffer,szTmp);
 
 	if ( data->_forecast == 0 ) 
-		sprintf(szTmp, "%d:", data->forecast );
+		sprintf(szTmp, "%d:", (int)data->forecast );
 	else
 		sprintf(szTmp, "%s:", iText );
 	strcat(szOutputBuffer,szTmp);
 
 	if ( data->_storm == 0 ) 
-		sprintf(szTmp, "%d:", data->storm );
+		sprintf(szTmp, "%d:", (int)data->storm );
 	else 
 		sprintf(szTmp, "%s:", iText );
 	strcat(szOutputBuffer,szTmp);
 
 	if ( data->_wDir == 0 ) 
-		sprintf(szTmp, "%d:", data->wDir );
+		sprintf(szTmp, "%d:", (int)data->wDir );
 	else 
 		sprintf(szTmp, "%s:", iText );
 	strcat(szOutputBuffer,szTmp);

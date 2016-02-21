@@ -25,12 +25,13 @@ OTGWSerial::OTGWSerial(const int ID, const std::string& devname, const unsigned 
 	m_szSerialPort=devname;
 	m_iBaudRate=baud_rate;
 	m_stoprequestedpoller=false;
+	m_retrycntr = RETRY_DELAY;
 	SetModes(Mode1,Mode2,Mode3,Mode4,Mode5, Mode6);
 }
 
 OTGWSerial::~OTGWSerial()
 {
-	clearReadCallback();
+
 }
 
 bool OTGWSerial::StartHardware()
@@ -43,18 +44,7 @@ bool OTGWSerial::StartHardware()
 bool OTGWSerial::StopHardware()
 {
 	m_bIsStarted=false;
-	if (isOpen())
-	{
-		try {
-			clearReadCallback();
-			close();
-			doClose();
-			setErrorStatus(true);
-		} catch(...)
-		{
-			//Don't throw from a Stop command
-		}
-	}
+	terminate();
 	StopPollerThread();
 	return true;
 }

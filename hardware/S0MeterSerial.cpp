@@ -61,7 +61,7 @@ S0MeterSerial::S0MeterSerial(const int ID, const std::string& devname, const uns
 
 S0MeterSerial::~S0MeterSerial()
 {
-	clearReadCallback();
+
 }
 
 bool S0MeterSerial::StartHardware()
@@ -133,18 +133,7 @@ bool S0MeterSerial::StartHardware()
 bool S0MeterSerial::StopHardware()
 {
 	m_bIsStarted=false;
-	if (isOpen())
-	{
-		try {
-			clearReadCallback();
-			close();
-			doClose();
-			setErrorStatus(true);
-		} catch(...)
-		{
-			//Don't throw from a Stop command
-		}
-	}
+	terminate();
 	StopHeartbeatThread();
 	_log.Log(LOG_STATUS, "S0 Meter: Serial Worker stopped...");
 	return true;

@@ -237,6 +237,15 @@ namespace http {
 					bCreated = true;
 				}
 				break;
+			case 20:
+				//Solar Radiation
+				{
+					std::string rID = std::string(ID);
+					padLeft(rID, 8, '0');
+					DeviceRowIdx = m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeSolarRadiation, 12, 255, 0, "1.0", devname);
+					bCreated = true;
+				}
+				break;
 			case pTypeLimitlessLights:
 				//RGB switch
 				{
