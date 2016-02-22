@@ -20,7 +20,7 @@ namespace http {
 			void StopServers();
 #ifndef NOCLOUD
 			void RestartProxy();
-			CProxyClient *GetProxyForMaster(DomoticzTCP *master);
+			boost::shared_ptr<CProxyClient> GetProxyForMaster(DomoticzTCP *master);
 			void RemoveMaster(DomoticzTCP *master);
 #endif
 			void SetAuthenticationMethod(int amethod);
