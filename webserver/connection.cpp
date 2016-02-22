@@ -247,6 +247,8 @@ void connection::handle_write(const boost::system::error_code& error)
 		} else {
 			connection_manager_.stop(shared_from_this());
 		}
+	} else {
+		connection_manager_.stop(shared_from_this());
 	}
 	m_lastresponse=mytime(NULL);
 }
