@@ -82,6 +82,7 @@ Version 2.4xxx
 - Fixed: Fix a security issue (DOS) in webserver to prevent a remote_endpoint exception to be thrown to the WebServer class causing the webserver to be down (no possible stop and no possible connection). Now, the webserver can be scanned using the nmap tool (for the SSL configuration purpose).
 - Fixed: Under FreeBSD Hardware Monitor works, but it needs the libsysinfo package to work.
 - Fixed: Fix std::string::compare method issue (#507).
+- Fixed: Fix the closure of the Web server sockets by making a graceful shutdown before closing.
 - Updated: OpenZWave, configuration files
 
 Version 2.3530 (November 1th 2015)
