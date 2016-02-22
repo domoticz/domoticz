@@ -35,7 +35,7 @@ namespace http {
 #endif
 		}
 
-		bool CWebServerHelper::StartServers(const std::string &listenaddress, const std::string &listenport, const std::string &secure_listenport, const std::string &serverpath, const std::string &secure_cert_file, const std::string &secure_cert_passphrase, const bool bIgnoreUsernamePassword, tcp::server::CTCPServer *sharedServer)
+		bool CWebServerHelper::StartServers(const server_settings & web_settings, const ssl_server_settings & secure_web_settings, const std::string &serverpath, const bool bIgnoreUsernamePassword, tcp::server::CTCPServer *sharedServer)
 		{
 			bool bRet = false;
 
@@ -43,18 +43,18 @@ namespace http {
 
 #ifdef NS_ENABLE_SSL
 			SSL_library_init();
-			serverCollection.resize(secure_listenport.empty() ? 1 : 2);
+			serverCollection.resize(secure_web_settings.is_enabled() ? 2 : 1);
 #else
 			serverCollection.resize(1);
 #endif
 			our_serverpath = serverpath;
 			plainServer_ = new CWebServer();
 			serverCollection[0] = plainServer_;
-			bRet |= plainServer_->StartServer(listenaddress, listenport, serverpath, bIgnoreUsernamePassword);
+			bRet |= plainServer_->StartServer(web_settings, serverpath, bIgnoreUsernamePassword);
 #ifdef NS_ENABLE_SSL
-			if (!secure_listenport.empty()) {
+			if (secure_web_settings.is_enabled()) {
 				secureServer_ = new CWebServer();
-				bRet |= secureServer_->StartServer(listenaddress, secure_listenport, serverpath, bIgnoreUsernamePassword, secure_cert_file, secure_cert_passphrase);
+				bRet |= secureServer_->StartServer(secure_web_settings, serverpath, bIgnoreUsernamePassword);
 				serverCollection[1] = secureServer_;
 			}
 #endif
