@@ -307,6 +307,8 @@ namespace http {
 			else
 				_log.Log(LOG_STATUS, "Webserver(%s) started on port: %s", m_server_alias.c_str(), settings_copy->listening_port.c_str());
 
+			delete settings_copy;
+
 			m_pWebEm->SetDigistRealm("Domoticz.com");
 			m_pWebEm->SetSessionStore(this);
 
