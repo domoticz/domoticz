@@ -176,10 +176,10 @@ public:
 				update_options(opts, boost::asio::ssl::context::no_sslv3);
 			} else if (option.compare("no_tlsv1") == 0) {
 				update_options(opts, boost::asio::ssl::context::no_tlsv1);
-			} else if (option.compare("no_tlsv1_1") == 0) {
-				update_options(opts, boost::asio::ssl::context::no_tlsv1_1);
-			} else if (option.compare("no_tlsv1_2") == 0) {
-				update_options(opts, boost::asio::ssl::context::no_tlsv1_2);
+			//} else if (option.compare("no_tlsv1_1") == 0) {
+			//	update_options(opts, boost::asio::ssl::context::no_tlsv1_1);
+			//} else if (option.compare("no_tlsv1_2") == 0) {
+			//	update_options(opts, boost::asio::ssl::context::no_tlsv1_2);
 			} else if (option.compare("no_compression") == 0) {
 				update_options(opts, boost::asio::ssl::context::no_compression);
 			} else {
