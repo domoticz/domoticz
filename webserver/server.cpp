@@ -58,14 +58,14 @@ void server_base::run() {
 	try {
 		io_service_.run();
 	} catch (std::exception& e) {
-		_log.Log(LOG_ERROR, "[web:%s] exception occurred : %s (need to run again)", settings_.listening_port.c_str(), e.what());
-		handle_stop(); // dispatch or post call does NOT work because it are pushed in the event queue (executed only on next io service run)
+		_log.Log(LOG_ERROR, "[web:%s] exception occurred : '%s' (need to run again)", settings_.listening_port.c_str(), e.what());
+		handle_stop(); // dispatch or post call does NOT work because it is pushed in the event queue (executed only on next io service run)
 		io_service_.reset(); // this call is needed before calling run() again
 		throw e;
 	}
 	catch (...) {
 		_log.Log(LOG_ERROR, "[web:%s] unknown exception occurred (need to run again)", settings_.listening_port.c_str());
-		handle_stop(); // dispatch or post call does NOT work because it are pushed in the event queue (executed only on next io service run)
+		handle_stop(); // dispatch or post call does NOT work because it is pushed in the event queue (executed only on next io service run)
 		io_service_.reset(); // this call is needed before calling run() again
 		throw;
 	}
