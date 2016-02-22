@@ -1701,7 +1701,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 	if (dindex == -1)
 		return ret;
 
-	if (Argument.compare("temperaturedevice") == 0)
+	if (Argument.find("temperaturedevice") == 0)
 	{
 		std::map<unsigned long long, float>::const_iterator itt = m_tempValuesByID.find(dindex);
 		if (itt != m_tempValuesByID.end())
@@ -1711,7 +1711,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 			return sstr.str();
 		}
 	}
-	else if (Argument.compare("dewpointdevice") == 0)
+	else if (Argument.find("dewpointdevice") == 0)
 	{
 		std::map<unsigned long long, float>::const_iterator itt = m_dewValuesByID.find(dindex);
 		if (itt != m_dewValuesByID.end())
@@ -1721,7 +1721,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 			return sstr.str();
 		}
 	}
-	else if (Argument.compare("humiditydevice") == 0)
+	else if (Argument.find("humiditydevice") == 0)
 	{
 		std::map<unsigned long long, int>::const_iterator itt = m_humValuesByID.find(dindex);
 		if (itt != m_humValuesByID.end())
@@ -1731,7 +1731,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 			return sstr.str();
 		}
 	}
-	else if (Argument.compare("barometerdevice") == 0)
+	else if (Argument.find("barometerdevice") == 0)
 	{
 		std::map<unsigned long long, float>::const_iterator itt = m_baroValuesByID.find(dindex);
 		if (itt != m_baroValuesByID.end())
@@ -1741,7 +1741,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 			return sstr.str();
 		}
 	}
-	else if (Argument.compare("utilitydevice") == 0)
+	else if (Argument.find("utilitydevice") == 0)
 	{
 		std::map<unsigned long long, float>::const_iterator itt = m_utilityValuesByID.find(dindex);
 		if (itt != m_utilityValuesByID.end())
@@ -1751,7 +1751,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 			return sstr.str();
 		}
 	}
-	else if (Argument.compare("weatherdevice") == 0)
+	else if (Argument.find("weatherdevice") == 0)
 	{
 		std::map<unsigned long long, float>::const_iterator itt = m_weatherValuesByID.find(dindex);
 		if (itt != m_weatherValuesByID.end())
@@ -1761,7 +1761,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 			return sstr.str();
 		}
 	}
-	else if (Argument.compare("raindevice") == 0)
+	else if (Argument.find("raindevice") == 0)
 	{
 		std::map<unsigned long long, float>::const_iterator itt = m_rainValuesByID.find(dindex);
 		if (itt != m_rainValuesByID.end())
@@ -1771,7 +1771,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 			return sstr.str();
 		}
 	}
-	else if (Argument.compare("rainlasthourdevice") == 0)
+	else if (Argument.find("rainlasthourdevice") == 0)
 	{
 		std::map<unsigned long long, float>::const_iterator itt = m_rainLastHourValuesByID.find(dindex);
 		if (itt != m_rainLastHourValuesByID.end())
@@ -1781,7 +1781,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 			return sstr.str();
 		}
 	}
-	else if (Argument.compare("uvdevice") == 0)
+	else if (Argument.find("uvdevice") == 0)
 	{
 		std::map<unsigned long long, float>::const_iterator itt = m_uvValuesByID.find(dindex);
 		if (itt != m_uvValuesByID.end())
@@ -1791,7 +1791,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 			return sstr.str();
 		}
 	}
-	else if (Argument.compare("winddirdevice") == 0)
+	else if (Argument.find("winddirdevice") == 0)
 	{
 		std::map<unsigned long long, float>::const_iterator itt = m_winddirValuesByID.find(dindex);
 		if (itt != m_winddirValuesByID.end())
@@ -1801,7 +1801,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 			return sstr.str();
 		}
 	}
-	else if (Argument.compare("windspeeddevice") == 0)
+	else if (Argument.find("windspeeddevice") == 0)
 	{
 		std::map<unsigned long long, float>::const_iterator itt = m_windspeedValuesByID.find(dindex);
 		if (itt != m_windspeedValuesByID.end())
@@ -1811,7 +1811,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 			return sstr.str();
 		}
 	}
-	else if (Argument.compare("windgustdevice") == 0)
+	else if (Argument.find("windgustdevice") == 0)
 	{
 		std::map<unsigned long long, float>::const_iterator itt = m_windgustValuesByID.find(dindex);
 		if (itt != m_windgustValuesByID.end())
@@ -1821,7 +1821,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 			return sstr.str();
 		}
 	}
-	else if (Argument.compare("variable") == 0)
+	else if (Argument.find("variable") == 0)
 	{
 		std::map<unsigned long long, _tUserVariable>::const_iterator itt = m_uservariables.find(dindex);
 		if (itt != m_uservariables.end())
