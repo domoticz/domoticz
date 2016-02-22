@@ -1887,16 +1887,16 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 			std::string variableNo = "0";
 			bool isScene = false;
 			bool isVariable = false;
-			if ((deviceName.compare("Scene:") == 0) || (deviceName.compare("Group:") == 0))
+			if ((deviceName.find("Scene:") == 0) || (deviceName.find("Group:") == 0))
 			{
 				isScene = true;
 				sceneType = 1;
-				if (deviceName.compare("Group:") == 0) {
+				if (deviceName.find("Group:") == 0) {
 					sceneType = 2;
 				}
 				deviceName = deviceName.substr(6);
 			}
-			else if (deviceName.compare("Variable:") == 0)
+			else if (deviceName.find("Variable:") == 0)
 			{
 				isVariable = true;
 				variableNo = deviceName.substr(9);
@@ -2015,7 +2015,7 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 					OpenURL(doWhat);
 					actionsDone = true;
 				}
-				else if (devNameNoQuotes.compare("WriteToLog") == 0) {
+				else if (devNameNoQuotes.find("WriteToLog") == 0) {
 					WriteToLog(devNameNoQuotes,doWhat);
 					actionsDone = true;
 				}
@@ -3136,11 +3136,11 @@ bool CEventSystem::ScheduleEvent(std::string deviceName, const std::string &Acti
 {
 	bool isScene = false;
 	int sceneType = 0;
-	if ((deviceName.compare("Scene:") == 0) || (deviceName.compare("Group:") == 0))
+	if ((deviceName.find("Scene:") == 0) || (deviceName.find("Group:") == 0))
 	{
 		isScene = true;
 		sceneType = 1;
-		if (deviceName.compare("Group:") == 0) {
+		if (deviceName.find("Group:") == 0) {
 			sceneType = 2;
 		}
 		deviceName = deviceName.substr(6);
@@ -3208,19 +3208,19 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 	}
 
 	unsigned char _level = 0;
-	if (Action.compare("Set Level") == 0)
+	if (Action.find("Set Level") == 0)
 	{
 		_level = calculateDimLevel(deviceID, atoi(Action.substr(10).c_str()));
 		Action = Action.substr(0, 9);
 	}
 
-	if (Action.compare("Set Volume") == 0)
+	if (Action.find("Set Volume") == 0)
 	{
 		_level = atoi(Action.substr(11).c_str());
 		Action = Action.substr(0, 10);
 	}
 
-	if (Action.compare("Play Playlist") == 0)
+	if (Action.find("Play Playlist") == 0)
 	{
 		std::string	sParams = Action.substr(14);
 		CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByType(HTYPE_Kodi);
@@ -3255,7 +3255,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 
 		Action = Action.substr(0, 13);
 	}
-	if ((Action.compare("Play Favorites") == 0) && (Action.length() > 14))
+	if ((Action.find("Play Favorites") == 0) && (Action.length() > 14))
 	{
 		std::string	sParams = Action.substr(15);
 		CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByType(HTYPE_Kodi);
@@ -3270,7 +3270,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 
 		Action = Action.substr(0, 14);
 	}
-	if (Action.compare("Execute") == 0)
+	if (Action.find("Execute") == 0)
 	{
 		std::string	sParams = Action.substr(8);
 		CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByType(HTYPE_Kodi);
