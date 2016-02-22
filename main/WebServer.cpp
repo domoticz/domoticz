@@ -146,8 +146,10 @@ namespace http {
 						m_pWebEm->Run();
 					}
 				} catch (std::exception& e) {
+					_log.Log(LOG_ERROR, "WebServer(%s) exception occurred : '%s'", m_server_alias.c_str(), e.what());
 					exception_thrown = true;
 				} catch (...) {
+					_log.Log(LOG_ERROR, "WebServer(%s) unknown exception occurred", m_server_alias.c_str());
 					exception_thrown = true;
 				}
 				if (exception_thrown) {
