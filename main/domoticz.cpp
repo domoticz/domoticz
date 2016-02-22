@@ -605,7 +605,7 @@ int main(int argc, char**argv)
 			_log.Log(LOG_ERROR, "Please specify a port");
 			return 1;
 		}
-		std::string wwwport = cmdLine.GetSafeArgument("-www", 0, "8080");
+		std::string wwwport = cmdLine.GetSafeArgument("-www", 0, "");
 		if (wwwport == "0")
 			wwwport.clear();//HTTP server disabled
 		webserver_settings.listening_port = wwwport;
@@ -620,7 +620,7 @@ int main(int argc, char**argv)
 			_log.Log(LOG_ERROR, "Please specify a port");
 			return 1;
 		}
-		std::string wwwport = cmdLine.GetSafeArgument("-sslwww", 0, "443");
+		std::string wwwport = cmdLine.GetSafeArgument("-sslwww", 0, "");
 		if (wwwport == "0")
 			wwwport.clear();//HTTPS server disabled
 		secure_webserver_settings.listening_port = wwwport;
@@ -632,7 +632,7 @@ int main(int argc, char**argv)
 			_log.Log(LOG_ERROR, "Please specify a file path for your server certificate file");
 			return 1;
 		}
-		secure_webserver_settings.cert_file_path = cmdLine.GetSafeArgument("-sslcert", 0, "./server_cert.pem");
+		secure_webserver_settings.cert_file_path = cmdLine.GetSafeArgument("-sslcert", 0, "");
 	}
 	if (cmdLine.HasSwitch("-sslpass"))
 	{
