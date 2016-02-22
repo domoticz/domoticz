@@ -91,6 +91,7 @@ Version 2.4xxx
 - Fixed: Fix multiple session cleaner start after restarting webserver.
 >>>>>>> e2e9e337b194ec3496412a2af0130d1202a17e08
 - Updated: OpenZWave, configuration files
+- Updated: SQLite3 v3.11.0.
 
 Version 2.3530 (November 1th 2015)
 - Implemented: Degree Days in Temperature report
