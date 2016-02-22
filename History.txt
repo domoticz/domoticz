@@ -83,6 +83,7 @@ Version 2.4xxx
 - Fixed: Under FreeBSD Hardware Monitor works, but it needs the libsysinfo package to work.
 - Fixed: Fix std::string::compare method issue (#507).
 - Updated: OpenZWave, configuration files
+- Updated: SQLite3 v3.11.0.
 
 Version 2.3530 (November 1th 2015)
 - Implemented: Degree Days in Temperature report
