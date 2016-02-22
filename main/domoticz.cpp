@@ -78,6 +78,7 @@ const char *szHelp=
 	"\t-sslcert file_path (for example /opt/domoticz/server_cert.pem)\n"
 	"\t-sslpass passphrase (to access to server private key in certificate)\n"
 	"\t-sslmethod method (for SSL method)\n"
+	"\t-ssloptions options (for SSL options, default is 'default_workarounds,no_sslv2,single_dh_use')\n"
 	"\t-ssldhparam file_path (for SSL DH parameters)\n"
 #endif
 #if defined WIN32
@@ -643,10 +644,19 @@ int main(int argc, char**argv)
 	{
 		if (cmdLine.GetArgumentCount("-sslmethod") != 1)
 		{
-			_log.Log(LOG_ERROR, "Please specify a valid SSL method");
+			_log.Log(LOG_ERROR, "Please specify a SSL method");
 			return 1;
 		}
 		secure_webserver_settings.ssl_method = cmdLine.GetSafeArgument("-sslmethod", 0, "");
+	}
+	if (cmdLine.HasSwitch("-ssloptions"))
+	{
+		if (cmdLine.GetArgumentCount("-ssloptions") != 1)
+		{
+			_log.Log(LOG_ERROR, "Please specify SSL options");
+			return 1;
+		}
+		secure_webserver_settings.options = cmdLine.GetSafeArgument("-ssloptions", 0, "");
 	}
 	if (cmdLine.HasSwitch("-ssldhparam"))
 	{
