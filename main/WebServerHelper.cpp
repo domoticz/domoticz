@@ -84,9 +84,7 @@ namespace http {
 			sharedData.StopTCPClients();
 			for (proxy_iterator it = proxymanagerCollection.begin(); it != proxymanagerCollection.end(); ++it) {
 				(*it)->Stop();
-				// todo: This seems to crash on a Pi (fatal signal 6). Windows goes fine.
-				// stop old threads first
-				//delete (*it);
+				delete (*it);
 			}
 
 			// restart threads
@@ -99,14 +97,14 @@ namespace http {
 			_log.Log(LOG_STATUS, "Proxymanager started.");
 		}
 
-		CProxyClient *CWebServerHelper::GetProxyForMaster(DomoticzTCP *master) {
+		boost::shared_ptr<CProxyClient> CWebServerHelper::GetProxyForMaster(DomoticzTCP *master) {
 			if (proxymanagerCollection.size() > 0) {
 				// todo: make this a random connection?
 				return proxymanagerCollection[0]->GetProxyForMaster(master);
 			}
 			// we are not connected yet. save this master and connect later.
 			sharedData.AddTCPClient(master);
-			return NULL;
+			return boost::shared_ptr<CProxyClient>();
 		}
 
 		void CWebServerHelper::RemoveMaster(DomoticzTCP *master) {

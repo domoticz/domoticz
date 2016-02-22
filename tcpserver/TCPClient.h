@@ -60,7 +60,7 @@ class CSharedClient : public CTCPClientBase,
 	public boost::enable_shared_from_this<CSharedClient>
 {
 public:
-	CSharedClient(CTCPServerIntBase *pManager, http::server::CProxyClient *proxy, const std::string &token, const std::string &username);
+	CSharedClient(CTCPServerIntBase *pManager, boost::shared_ptr<http::server::CProxyClient> proxy, const std::string &token, const std::string &username);
 	~CSharedClient();
 	virtual void start();
 	virtual void stop();
@@ -68,7 +68,7 @@ public:
 	void OnIncomingData(const unsigned char *data, size_t bytes_transferred);
 	bool CompareToken(const std::string &token);
 private:
-	http::server::CProxyClient *m_pProxyClient;
+	boost::shared_ptr<http::server::CProxyClient> m_pProxyClient;
 	std::string _token;
 };
 #endif
