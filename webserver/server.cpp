@@ -20,6 +20,9 @@ server_base::server_base(const server_settings & settings, request_handler & use
 		timeout_(20), // default read timeout in seconds
 		first_run(true) {
 	//_log.Log(LOG_STATUS, "[web:%s] create server_base using settings : %s", settings.listening_port.c_str(), settings.to_string().c_str());
+	if (!settings.is_enabled()) {
+		throw std::invalid_argument("cannot initialize a disabled server (listening port cannot be empty or 0)");
+	}
 }
 
 void server_base::init() {

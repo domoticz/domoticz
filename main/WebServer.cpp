@@ -261,7 +261,7 @@ namespace http {
 
 			StopServer();
 
-			if (settings.listening_port.empty())
+			if (!settings.is_enabled())
 				return true;
 
 			ReloadCustomSwitchIcons();

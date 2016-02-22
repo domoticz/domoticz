@@ -43,7 +43,7 @@ namespace http {
 
 #ifdef NS_ENABLE_SSL
 			SSL_library_init();
-			serverCollection.resize(secure_web_settings.listening_port.empty() ? 1 : 2);
+			serverCollection.resize(secure_web_settings.is_enabled() ? 2 : 1);
 #else
 			serverCollection.resize(1);
 #endif
@@ -52,7 +52,7 @@ namespace http {
 			serverCollection[0] = plainServer_;
 			bRet |= plainServer_->StartServer(web_settings, serverpath, bIgnoreUsernamePassword);
 #ifdef NS_ENABLE_SSL
-			if (!secure_web_settings.listening_port.empty()) {
+			if (secure_web_settings.is_enabled()) {
 				secureServer_ = new CWebServer();
 				bRet |= secureServer_->StartServer(secure_web_settings, serverpath, bIgnoreUsernamePassword);
 				serverCollection[1] = secureServer_;

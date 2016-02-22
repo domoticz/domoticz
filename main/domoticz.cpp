@@ -606,8 +606,6 @@ int main(int argc, char**argv)
 			return 1;
 		}
 		std::string wwwport = cmdLine.GetSafeArgument("-www", 0, "");
-		if (wwwport == "0")
-			wwwport.clear();//HTTP server disabled
 		webserver_settings.listening_port = wwwport;
 	}
 	m_mainworker.SetWebserverSettings(webserver_settings);
@@ -621,8 +619,6 @@ int main(int argc, char**argv)
 			return 1;
 		}
 		std::string wwwport = cmdLine.GetSafeArgument("-sslwww", 0, "");
-		if (wwwport == "0")
-			wwwport.clear();//HTTPS server disabled
 		secure_webserver_settings.listening_port = wwwport;
 	}
 	if (cmdLine.HasSwitch("-sslcert"))

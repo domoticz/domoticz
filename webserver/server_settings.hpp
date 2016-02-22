@@ -42,12 +42,18 @@ public:
 	bool is_secure() const {
 		return is_secure_;
 	}
+	bool is_enabled() const {
+		return ((listening_port != "0") && (listening_port != ""));
+	}
 	/**
 	 * Set relevant values
 	 */
 	virtual void set(const server_settings & settings) {
 		listening_address = get_valid_value(listening_address, settings.listening_address);
 		listening_port = get_valid_value(listening_port, settings.listening_port);
+		if (listening_port == "0") {
+			listening_port.clear();// server NOT enabled
+		}
 	}
 
 	virtual std::string to_string() const {
