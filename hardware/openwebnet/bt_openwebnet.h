@@ -34,27 +34,27 @@ private:
   const static int PWD_FRAME        = 9;
 
 
-  // assegna chi cosa dove e quando per le frame "normali"
+  // assign who what where and when for normal frame
   void Assegna_chi_cosa_dove_quando();
-  // assegna chi dove e grandezza chiesta per le frame di richiesta grandezze
+  // assign who where and dimension for dimension frame request
   void Assegna_chi_dove_grandezza();
-  // assegna chi e dove per le frame di richiesta stato
+  // assign who and where for request state frame
   void Assegna_chi_dove();
-  // assegna chi dove grandezza e i valori per le frame di scrittura grandezze
+  // assign who where dimension and value for write dimension frame
   void Assegna_chi_dove_grandezza_valori();
-  // assegna chi per le frame di risultato elaborazione password
+  // assign who for frame result of elaborate password
   void Assegna_chi();
-  // assegna livello, intrfaccia per le frame estese
+  // assign level, interface for extended frame
   void Assegna_livello_interfaccia();
-  // assegna indirizzo
+  // assign address
   void Assegna_indirizzo();
-  // verifica sintattica ...e restituisce il tipo di frame
+  // check frame syntax
   void IsCorrect();
 
   string EliminoCaratteriControllo(string in_frame);
   string FirstToken(string text, string delimiter);
 
-  // contenuti  della frame normale
+  // contents of normal frame
   string chi;
   vector<string> indirizzo;
   string cosa;
@@ -65,7 +65,7 @@ private:
   string grandezza;
   vector<string> valori;
 
-  // lunghezza frame
+  // frame length
   int length_frame_open;
 
 public:
@@ -73,38 +73,38 @@ public:
   // frame
   string frame_open;
 
-  // tipo di frame open
-  int tipo_frame;
+  // type of frame open
+  int frame_type;
 
-  //indica le frame estese
-  bool estesa;
+  //indicates extended frame
+  bool extended;
 
-  // costruttori
+  // constructors
   bt_openwebnet();
   bt_openwebnet(string message);
   bt_openwebnet(int who, int what, int where);
   bt_openwebnet(string who, string what, string where, string when);
 
   void CreateNullMsgOpen();
-  //open normale
+  //normal open
   void CreateMsgOpen(string who, string what, string where, string when);
   void CreateMsgOpen(string who, string what,	string where, string lev, string strInterface, string when);
-  //richiesta stato
+  //state request
   void CreateStateMsgOpen(string who, string where);
   void CreateStateMsgOpen(string who, string where,  string lev, string strInterface);
-  //richiesta grandezza
+  //dimension request
   void CreateDimensionMsgOpen(string who, string where,	string dimension);
   void CreateDimensionMsgOpen(string who, string where,	string lev, string strInterface, string dimension);
-  //scrittura grandezza
+  //dimension write
   void CreateWrDimensionMsgOpen(string who, string where, string dimension, vector<string> value);
   void CreateWrDimensionMsgOpen(string who, string where,  string lev, string strInterface,  string dimension, vector<string> value);
-  //open generale
+  //general message
   void CreateMsgOpen(string message);
 
   // confronta due messaggi open
   bool IsEqual(bt_openwebnet msg_to_compare);
 
-  // tipo di frame ?
+  // frame type?
   bool IsErrorFrame();
   bool IsNullFrame();
   bool IsNormalFrame();
@@ -115,21 +115,21 @@ public:
   bool IsOKFrame();
   bool IsKOFrame();
 
-  // estrai chi, gli indirizzi, cosa, dove, livello, interfaccia, quando, 
-  // grandezza e i valori da frame_open
-  string Extract_chi();
-  string Extract_indirizzo(int i);
-  string Extract_cosa();
-  string Extract_dove();
-  string Extract_livello();
-  string Extract_interfaccia();
-  string Extract_quando();
-  string Extract_grandezza();
-  string Extract_valori(int i);
+  // extract who, addresses, what, where, level, interface, when
+  // dimensions and values of frame open
+  string Extract_who();
+  string Extract_address(unsigned int i);
+  string Extract_what();
+  string Extract_where();
+  string Extract_level();
+  string Extract_interface();
+  string Extract_when();
+  string Extract_dimension();
+  string Extract_value(unsigned int i);
 
   string Extract_OpenOK();
   string Extract_OpenKO();
 
-  // distruttore
+  // destructor
   ~bt_openwebnet();
 };

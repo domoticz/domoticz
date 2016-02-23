@@ -4141,6 +4141,18 @@ namespace http {
 						devid = id;
 						sunitcode = "0";
 					}
+					else if (lighttype == 305) {
+						//Blinds Openwebnet
+						dtype = pTypeGeneralSwitch;
+						subtype = sSwitchBlindsT1;
+						devid = request::findValue(&req, "id");
+						sunitcode = request::findValue(&req, "unitcode");
+						if (
+							(devid == "") ||
+							(sunitcode == "")
+							)
+							return;
+					}
 				}
                 
                 // ----------- If needed convert to GeneralSwitch type (for o.a. RFlink) -----------
@@ -4588,6 +4600,19 @@ namespace http {
 							return;
 						devid = id;
 						sunitcode = "0";
+					}
+					else if (lighttype == 305)
+					{
+						//Blinds Openwebnet
+						dtype = pTypeGeneralSwitch;
+						subtype = sSwitchBlindsT1;
+						devid = request::findValue(&req, "id");
+						sunitcode = request::findValue(&req, "unitcode");
+						if (
+							(devid == "") ||
+							(sunitcode == "")
+							)
+							return;
 					}
 				}
 

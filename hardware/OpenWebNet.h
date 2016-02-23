@@ -71,4 +71,6 @@ protected:
 	bool FindDevice(int who, int where, int *used);
 	bool AddDeviceIfNotExits(string who, string where);
 	string frameToString(bt_openwebnet& frame);
+	string getWhoDescription(string who);
+	string getWhatDescription(string who, string what);
 };

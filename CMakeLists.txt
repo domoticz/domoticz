@@ -263,6 +263,7 @@ hardware/NefitEasy.cpp
 hardware/Nest.cpp
 hardware/Netatmo.cpp
 hardware/OpenWebNet.cpp
+hardware/openwebnet/bt_openwebnet.cpp
 hardware/OpenZWave.cpp
 hardware/openzwave/control_panel/ozwcp.cpp
 hardware/openzwave/control_panel/zwavelib.cpp

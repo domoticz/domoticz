@@ -10,7 +10,7 @@
 #include <string>
 #include "bt_openwebnet.h"
 
-// metodi privati ......
+// private methods ......
 
 string bt_openwebnet::FirstToken(string myText, string delimiters)
 {
@@ -24,63 +24,63 @@ string bt_openwebnet::FirstToken(string myText, string delimiters)
 }
 
 
-// esegue il controllo sintattico
+// performs syntax checking
 void bt_openwebnet::IsCorrect()
 {
   int j  = 0;
   string sup;
   string campo;
 
-  // se frame ACK -->
+  // if frame ACK -->
   if (frame_open.compare(OPENWEBNET_MSG_OPEN_OK) == 0)
   {
-    tipo_frame = OK_FRAME;
+    frame_type = OK_FRAME;
     return;
   }
 
-  // se frame NACK -->
+  // if frame NACK -->
   if (frame_open.compare(OPENWEBNET_MSG_OPEN_KO) == 0)
   {
-    tipo_frame = KO_FRAME;
+    frame_type = KO_FRAME;
     return;
   }
 
 
-  //se il primo carattere non è *
-  //oppure la frame è troppo lunga
-  //oppure se non termina con due '#'
+  //if the first character is not *
+  //or the frame is too long
+  //or the frame does not end with two '#'
   if ((frame_open[0] != '*') ||
       (length_frame_open >	MAX_LENGTH_OPEN) ||
       (frame_open[length_frame_open-1] != '#') ||
       (frame_open[length_frame_open-2] != '#'))
   {
-    tipo_frame = ERROR_FRAME;
+    frame_type = ERROR_FRAME;
     return;
   }
 
-  //Controllo se sono stati digitati dei caratteri
+  //Check if there are typed character
   for (j=0;j<length_frame_open;j++)
   {
     if(!isdigit(frame_open[j]))
     {
       if((frame_open[j] != '*') && (frame_open[j] != '#'))
       {
-        tipo_frame = ERROR_FRAME;
+        frame_type = ERROR_FRAME;
         return;
       }
     }
   }
 
-  // frame normale ...
-  //*chi#indirizzo*cosa*dove#livello#indirizzo*qunado##
+  // normal frame...
+  //*who#address*what*where#level#address*when##
   if (frame_open[1] != '#')
   {
-    tipo_frame = NORMAL_FRAME;
-    //estraggo i vari campi della frame open nella prima modalità (chi+indirizzo e dove+livello+interfaccia)
+    frame_type = NORMAL_FRAME;
+    //extract the various fields of the open frame in the first mode (who + address and where + level + interface)
     Assegna_chi_cosa_dove_quando();
-    //estraggo gli eventuali valori di indirizzo
+    //extract any address values
     Assegna_indirizzo();
-    //estraggo gli eventuali valori di livello ed interfaccia
+    //extract any level values and interface
     Assegna_livello_interfaccia();
     return;
   }
@@ -89,13 +89,13 @@ void bt_openwebnet::IsCorrect()
   //*#pwd##
   if(frame_open.find('*', 2) == string::npos)
   {
-    tipo_frame = PWD_FRAME;
-    // estraggo il chi
+    frame_type = PWD_FRAME;
+    //I extract the who
     Assegna_chi();
     return;
   }
 
-  //per le altre tipologie di frame
+  //for other types of frames
   sup = frame_open.substr(2);
   campo = FirstToken(sup, "*");
   sup = frame_open.substr(2 + campo.length() + 1);
@@ -105,66 +105,66 @@ void bt_openwebnet::IsCorrect()
 	  sup = frame_open.substr(2 + campo.length() + 1);
   }
 
-  //frame richiesta stato ...
-  //*#chi*dove##
+  //frame request was ...
+  //*#who*where##
   if(sup[0] != '*')
   {
-    tipo_frame = STATE_FRAME;
-    //estraggo i vari campi della frame open nella prima modalità (chi+indirizzo e dove+livello+interfaccia)
+    frame_type = STATE_FRAME;
+	//extract the various fields of the open frame in the first mode (who + address and where + level + interface)
     Assegna_chi_dove();
-    //estraggo gli eventuali valori di indirizzo
-    Assegna_indirizzo();
-    //estraggo gli eventuali valori di livello ed interfaccia
-    Assegna_livello_interfaccia();
+	//extract any address values
+	Assegna_indirizzo();
+	//extract any level values and interface
+	Assegna_livello_interfaccia();
     return;
   }
   else
   {
-    //frame di richiesta misura ...
-    //*#chi*dove*grandezza## o *#chi*dove*grandezza*valore_N°##
+    //frame measurement request ...
+    //*#who*where*dimension## or *#who*where*dimension*valueN##
     if(sup[1] != '#')
     {
-      tipo_frame = MEASURE_FRAME;
-      //estraggo i vari campi della frame open nella prima modalità (chi+indirizzo e dove+livello+interfaccia)
-      Assegna_chi_dove_grandezza();
-      //estraggo gli eventuali valori di indirizzo
+      frame_type = MEASURE_FRAME;
+      //extract the various fields of the open frame in the first mode (who + address and where + level + interface)
+	  Assegna_chi_dove_grandezza();
+	  //extract any address values
       Assegna_indirizzo();
-      //estraggo gli eventuali valori di livello ed interfaccia
+	  //extract any level values and interface
       Assegna_livello_interfaccia();
       return;
     }
-    //frame di scrittura grandezza ...
-    //*#chi*dove*#grandezza*valore_N°##
+    //writing dimension frame ...
+    //*#who*where*#dimension*valueN##
     else
     {
-      tipo_frame = WRITE_FRAME;
-      //estraggo i vari campi della frame open nella prima modalità (chi+indirizzo e dove+livello+interfaccia)
+      frame_type = WRITE_FRAME;
+      //extract the different fields of the open frame in the first mode (who+address and where+level+interface)
       Assegna_chi_dove_grandezza_valori();
-      //estraggo gli eventuali valori di indirizzo
+	  //extract any address values
       Assegna_indirizzo();
-      //estraggo gli eventuali valori di livello ed interfaccia
+	  //extract any level values and interface
       Assegna_livello_interfaccia();
       return;
     }
   }
 
   // frame errata !!!
-  tipo_frame = ERROR_FRAME;
+  frame_type = ERROR_FRAME;
   return;
 }
 
-// assegna chi dove e la grandezza richiesta per le frame di richiesta grandezze
+// assigns who where dimension required for the request dimension frame
 void bt_openwebnet::Assegna_chi_dove_grandezza()
 {
   string sup;
   size_t len = 0;
 
-  // CHI
+  // WHO
   sup = frame_open.substr(2);
   if (sup.at(0) != '*') {
 	  chi = FirstToken(sup, "*");
   }
-  // DOVE
+  // WHERE
   sup = frame_open.substr(2 + chi.length() + 1);
   if(sup.find("*") == string::npos)
     dove = sup.substr(0, sup.length()-2);
@@ -172,7 +172,7 @@ void bt_openwebnet::Assegna_chi_dove_grandezza()
   {
     if(sup.at(0) != '*')
       dove = FirstToken(sup, "*");
-    // GRANDEZZA
+    // DIMENSION
     sup = frame_open.substr(2+chi.length()+1+dove.length()+1);
     if(sup.find("*") == string::npos)
 		grandezza = sup.substr(0, sup.length() - 2);
@@ -181,7 +181,7 @@ void bt_openwebnet::Assegna_chi_dove_grandezza()
 		if (sup.at(0) != '*') {
 			grandezza = FirstToken(sup, "*");
 		}
-      // VALORI **##
+      // VALUES **##
       sup = frame_open.substr(2+ chi.length() + 1 + dove.length() + 1 +grandezza.length()+1);
       len = 2 + chi.length() + 1 + dove.length() + 1 + grandezza.length() + 1;
       while ((sup.find("*") != string::npos) && (sup.at(0) != '*'))
@@ -202,17 +202,17 @@ void bt_openwebnet::Assegna_chi_dove_grandezza()
   return;
 }
 
-// assegna chi e dove per le frame di richiesta stato
+// assigns who and where required for the request dimension frame
 void bt_openwebnet::Assegna_chi_dove()
 {
   string sup;
 
-  // CHI
+  // WHO
   sup = frame_open.substr(2);
   if (sup.at(0) != '*') {
 	  chi = FirstToken(sup, "*");
   }
-  // DOVE
+  // WHERE
   sup = frame_open.substr(2 + chi.length() + 1);
   if (sup.find("*") == string::npos) {
 	  dove = sup.substr(0, sup.length() - 2);
@@ -226,7 +226,7 @@ void bt_openwebnet::Assegna_chi_dove()
   return;
 }
 
-// assegna chi cosa dove e quando per le frame "normali"
+// assigns who what where and when for the normal frames
 void bt_openwebnet::Assegna_chi_cosa_dove_quando()
 {
 	string sup;
@@ -267,18 +267,18 @@ void bt_openwebnet::Assegna_chi_cosa_dove_quando()
 	return;
 }
 
-// assegna chi dove grandezza e i valori per le frame di scrittura grandezze
+// assigns who where dimension and values for the write dimension frame
 void bt_openwebnet::Assegna_chi_dove_grandezza_valori()
 {
 	string sup;
   int len = 0;
   int i = -1;
 
-  // CHI
+  // WHO
   sup = frame_open.substr(2);
   if(sup[0] != '*')
     chi = FirstToken(sup, "*");
-  // DOVE
+  // WHERE
   sup =  frame_open.substr(2+chi.length()+1);
   if(sup.find('*') == string::npos)
     dove = sup.substr(0,sup.length()-2);
@@ -286,15 +286,15 @@ void bt_openwebnet::Assegna_chi_dove_grandezza_valori()
   {
     if(sup.at(0) != '*')
       dove =FirstToken(sup, "*");
-    // GRANDEZZA
+    // DIMENSION
     sup = frame_open.substr(2+chi.length()+1+dove.length()+2);
     if(sup.find('*') == string::npos)
-      tipo_frame = ERROR_FRAME;
+      frame_type = ERROR_FRAME;
     else
     {
       if(sup.at(0) != '*')
         grandezza = FirstToken(sup, "*");
-      // VALORI
+      // VALUES
 	  len = 2 + chi.length() + 1 + dove.length() + 2 + grandezza.length() + 1;
 	  sup = frame_open.substr(len);
       while (sup.find('*') != string::npos && (sup.at(0) != '*'))
@@ -322,35 +322,35 @@ void bt_openwebnet::Assegna_chi_dove_grandezza_valori()
   return;
 }
 
-// assegna chi per le frame di risultato elaborazione password
+// assignes who for the frame processing password
 void bt_openwebnet::Assegna_chi()
 {
 	string sup;
 
-	// CHI
+	// WHO
 	sup = frame_open.substr(2);
 	if (sup.at(0) != '#') {
 		chi = FirstToken(sup, "#");
 	}
 	else {
-		tipo_frame = ERROR_FRAME;
+		frame_type = ERROR_FRAME;
 	}
 	
 	sup = frame_open.substr(2+chi.length());
 	if (sup.at(1) != '#') {
-		tipo_frame = ERROR_FRAME;
+		frame_type = ERROR_FRAME;
 	}
 
   return;
 }
 
-// assegna livello, intrfaccia per le frame estese
+//assign level interface for extended frame
 void bt_openwebnet::Assegna_livello_interfaccia()
 {
 	string sup;
   string orig;
 
-  // DOVE
+  // WHERE
   if (dove.at(0) == '#')
 	  sup = dove.substr(1);
   else
@@ -358,104 +358,104 @@ void bt_openwebnet::Assegna_livello_interfaccia()
   orig = dove;
   if(sup.find('#') != string::npos)
   {
-    estesa = true;
+    extended = true;
     if(orig.at(0) == '#')
       dove, "#" +  FirstToken(sup, "#");
     else
       dove = FirstToken(sup, "#");
-    // LIVELLO + INTERFACCIA
+    // LEVEL + INTERFACE
     sup= orig.substr(dove.length()+1);
     if(sup.find('#') != NULL)
     {
       livello = FirstToken(sup, "#");
       interfaccia = orig.substr(dove.length()+1+livello.length()+1);
       if(interfaccia.length() == 0)
-        tipo_frame = ERROR_FRAME;
+        frame_type = ERROR_FRAME;
     }
     else
-      //Modifica per Bt_vctMM per accensione telecamere esetrne (*6*0*4000#2*##)
-      //tipo_frame = ERROR_FRAME;
+      //Modified by Bt_vctMM for "accensione telecamere esetrne" (*6*0*4000#2*##)
+      //frame_type = ERROR_FRAME;
       livello = sup;
   }
   
   return;
 }
 
-// assegna indirizzo
+// assign address
 void bt_openwebnet::Assegna_indirizzo()
 {
 	string sup;
 	string orig;
 	indirizzo.reserve(4);
 
-	// CHI
+	// WHO
 	sup = chi;
 	orig = chi;
 
 	if (sup.find("#") != string::npos)
 	{
 		chi = FirstToken(sup, "#");
-		// INDIRIZZO
+		// ADDRESS
 		indirizzo.clear();
 		sup = orig.substr(chi.length() + 1);
 		if (sup.find('#') == string::npos)
 		{
-			// solo indirizzo seriale
+			// unique serial address
 			if (sup.length() != 0)
 				indirizzo.push_back(sup);
 			else
-				tipo_frame = ERROR_FRAME;
+				frame_type = ERROR_FRAME;
 		}
 		else
 		{
-		  // indirizzo IP
+		  // IP address
 		  indirizzo[0] = FirstToken(sup, "#");
 		  sup = orig.substr(chi.length() + 1 + indirizzo[0].length() + 1);
 		  if(sup.find('#') != string::npos)
 		  {
-			// indirizzo IP
+			// IP address
 			indirizzo[1] = FirstToken(sup, "#");
 			sup = orig.substr(chi.length() + 1 + indirizzo[0].length() + 1 + indirizzo[1].length() + 1);
 			if(sup.find('#') != string::npos)
 			{
-			  // indirizzo IP
+			  // IP address
 			  indirizzo[2] = FirstToken(sup, "#");
 			  sup = orig.substr(chi.length() + 1 + indirizzo[0].length() + 1 + indirizzo[1].length() + 1 + indirizzo[2].length() + 1);
 			  if(sup.find('#') == string::npos)
 			  {
-				// indirizzo IP
+				// IP address
 				if(sup.length() != 0)
 				  indirizzo[3] = sup;
 				else
-				  tipo_frame = ERROR_FRAME;
+				  frame_type = ERROR_FRAME;
 			  }
 			  else
-				tipo_frame = ERROR_FRAME;
+				frame_type = ERROR_FRAME;
 			}
 			else
-			  tipo_frame = ERROR_FRAME;
+			  frame_type = ERROR_FRAME;
 		  }
 		  else
-			tipo_frame = ERROR_FRAME;
+			frame_type = ERROR_FRAME;
 		}
   }
 
   return;
 }
 
-// metodi publici ......
+// public methods ......
 
-// costruttori
+// constructors
 bt_openwebnet::bt_openwebnet()
 {
-  //richiamo la procedura CreateNullMsgOpen()
+  //call CreateNullMsgOpen() function
   CreateNullMsgOpen();
 }
 
 
 bt_openwebnet::bt_openwebnet(string message)
 {
-  //richiamo la procedura CreateMsgOpen(char message[MAX_LENGTH_OPEN], int length_message)
+  //call CreateMsgOpen(string) function
   CreateMsgOpen(message);
 }
 
@@ -472,33 +472,33 @@ bt_openwebnet::bt_openwebnet(int who, int what, int where)
 	CreateMsgOpen(whoStr.str().c_str(), whatStr.str().c_str(), whereStr.str().c_str(), "");
 }
 
-// crea il messaggio OPEN *chi*cosa*dove*quando##
+// creates the open message *who*what*where*when##
 bt_openwebnet::bt_openwebnet(string who, string what, string where, string when)
 {
-  //richiamo la procedura CreateMsgOpen()
+	//call CreateMsgOpen function
   CreateMsgOpen(who, what, where, when);
 }
 
 
-// distruttore
+// destructor
 bt_openwebnet::~bt_openwebnet()
 {
 }
 
-// crea il messaggio OPEN *chi*cosa*dove*quando##
+// creates the open message *who*what*where*when##
 void bt_openwebnet::CreateMsgOpen(string who, string what,	string where,	string when)
 {
-  //richiamo la procedura CreateNullMsgOpen()
+	//call CreateNullMsgOpen function
   CreateNullMsgOpen();
 
   stringstream frame;
 
-  // creo il messaggio open
+  // creates the open message
   frame << "*";
   frame << who;  frame << "*";
   frame << what;  frame << "*";
   frame << where;
-  //per togliere l'asterisco finale
+  //to remove the trailing asterisk
   if (when.length() != 0) {
 	  frame << "*";
 	  frame << when;
@@ -508,19 +508,19 @@ void bt_openwebnet::CreateMsgOpen(string who, string what,	string where,	string 
   frame_open = EliminoCaratteriControllo(frame.str());
   length_frame_open = frame_open.length();
 
-  // controlla se sintassi corretta ...
+  // checks for correct syntax ...
   IsCorrect();
 }
 
-// crea il messaggio OPEN *chi*cosa*dove#livello#interfaccia*quando##
+// creates the open message *who*what*where#level#interface*when##
 void bt_openwebnet::CreateMsgOpen(string who, string what, string where, string lev, string interf, string when)
 {
-  //richiamo la procedura CreateNullMsgOpen()
+  //call CreateNullMsgOpen function
   CreateNullMsgOpen();
 
   stringstream frame; 
   
-  // creo il messaggio open
+  // creates the open message
   frame << "*";
   frame << who;  frame << "*";
   frame << what;  frame << "*";
@@ -530,7 +530,7 @@ void bt_openwebnet::CreateMsgOpen(string who, string what, string where, string 
   else
 	  frame << lev;
   frame << "#"; frame << interf;
-  //per togliere l'asterisco finale
+  //to remove the trailing asterisk
   if (!when.empty()) {
 	  frame << "*";
 	  frame << when;
@@ -540,25 +540,25 @@ void bt_openwebnet::CreateMsgOpen(string who, string what, string where, string 
   frame_open = EliminoCaratteriControllo(frame.str());
   length_frame_open = frame_open.length();
 
-  // controlla se sintassi corretta ...
+  // checks for correct syntax ...
   IsCorrect();
 }
 
-// crea il messaggio OPEN ****##
+// creates the open message ****##
 void bt_openwebnet::CreateNullMsgOpen()
 {
-  //contatore per azzarare i valori
+  //Counter to reset the values
   int i = 0;
 
-  // azzera tutto
+  // clears everything
   frame_open = "";
-  tipo_frame = NULL_FRAME;
+  frame_type = NULL_FRAME;
 
   length_frame_open = 0;
 
-  estesa = false;
+  extended = false;
 
-  // azzera tutto
+  // clears everything
   chi = "";
   indirizzo.clear();
   cosa = "";
@@ -570,15 +570,15 @@ void bt_openwebnet::CreateNullMsgOpen()
   valori.clear();
 }
 
-//crea il messaggio open *#chi*dove##
+//creates the OPEN message *#who*where##
 void bt_openwebnet::CreateStateMsgOpen(string who, string where)
 {
-  //richiamo la procedura CreateNullMsgOpen()
+	//call CreateNullMsgOpen function
   CreateNullMsgOpen();
 
   stringstream frame;
 
-  // creo il messaggio open
+  // creates the OPEN message
   frame << "*#";
   frame << who;  frame << "*";
   frame << where; frame << "##";
@@ -586,7 +586,7 @@ void bt_openwebnet::CreateStateMsgOpen(string who, string where)
   frame_open = EliminoCaratteriControllo(frame.str());
   length_frame_open = frame_open.length();
 
-  // controlla se sintassi corretta ...
+  // checks for correct syntax ...
   IsCorrect();
 }
 
@@ -594,7 +594,7 @@ string bt_openwebnet::EliminoCaratteriControllo(string in_frame)
 {
 	string out_frame = in_frame;
 
-	// elimino i caratteri di controllo ....
+	// delete control characters ....
 	while ((out_frame.at(out_frame.length() - 1) == '\n') || ((out_frame.at(out_frame.length() - 1) == '\r')))
 	{
 		out_frame.erase(out_frame.length() - 1, 1);
@@ -603,10 +603,10 @@ string bt_openwebnet::EliminoCaratteriControllo(string in_frame)
 	return out_frame;
 }
 
-//crea il messaggio open *#chi*dove#livello#interfaccia##
+//creates the OPEN message *#who*where#level#interface##
 void bt_openwebnet::CreateStateMsgOpen(string who, string where, string lev, string interf)
 {
-  //richiamo la procedura CreateNullMsgOpen()
+	//call CreateNullMsgOpen function
   CreateNullMsgOpen();
 
   stringstream frame;
@@ -624,23 +624,23 @@ void bt_openwebnet::CreateStateMsgOpen(string who, string where, string lev, str
   frame_open = EliminoCaratteriControllo(frame.str());
   length_frame_open = frame_open.length();
 
-  // controlla se sintassi corretta ...
+  // checks for correct syntax ...
   IsCorrect();
 }
 
-//crea il messaggio open *#chi*dove*grandezza##
+// creates the OPEN message *#who*where*dimension##
 void bt_openwebnet::CreateDimensionMsgOpen(string who, string where, string dimension)
 {
-  //richiamo la procedura CreateNullMsgOpen()
+	//call CreateNullMsgOpen function
   CreateNullMsgOpen();
 
   stringstream frame;
   
-  // creo il messaggio open
+  // creates the OPEN message
   frame << "*#";
   frame << who;  frame << "*";
   frame << where;  
-  //per togliere l'asterisco finale
+  //to remove the trailing asterisk
   if (!dimension.empty()) {
 	  frame << "*";
 	  frame << dimension;
@@ -650,19 +650,19 @@ void bt_openwebnet::CreateDimensionMsgOpen(string who, string where, string dime
   frame_open = EliminoCaratteriControllo(frame.str());
   length_frame_open = frame_open.length();
 
-  // controlla se sintassi corretta ...
+  // checks for correct syntax ...
   IsCorrect();
 }
 
-//crea il messaggio open *#chi*dove#livello#interfaccia*grandezza##
+//creates the OPEN message *#who*where#level#interface*dimension##
 void bt_openwebnet::CreateDimensionMsgOpen(string who, string where, string lev, string interf, string dimension)
 {
-  //richiamo la procedura CreateNullMsgOpen()
+	//call CreateNullMsgOpen function
   CreateNullMsgOpen();
 
   stringstream frame; 
   
-  // creo il messaggio open
+  // creates the OPEN message
   frame << "*#";
   frame << who;  frame << "*";
   frame << where; frame << "#";
@@ -672,7 +672,7 @@ void bt_openwebnet::CreateDimensionMsgOpen(string who, string where, string lev,
 	  frame << lev;
   frame << "#"; frame << interf;
 
-  //per togliere l'asterisco finale
+  //to remove the trailing asterisk
   if (dimension.length() != 0)
 	  frame << "*";
   frame << dimension; frame << "##";
@@ -680,19 +680,19 @@ void bt_openwebnet::CreateDimensionMsgOpen(string who, string where, string lev,
   frame_open = EliminoCaratteriControllo(frame.str());
   length_frame_open = frame_open.length();
 
-  // controlla se sintassi corretta ...
+  // checks for correct syntax ...
   IsCorrect();
 }
 
-//crea il messaggio open *#chi*dove*#grandezza*val_1*val_2*...val_n##
+//creates the OPEN message *#who*where*#dimension*val_1*val_2*...val_n##
 void bt_openwebnet::CreateWrDimensionMsgOpen(string who, string where, string dimension, vector<string> value)
 {
-  //richiamo la procedura CreateNullMsgOpen()
+	//call CreateNullMsgOpen function
   CreateNullMsgOpen();
 
   stringstream frame; 
   
-  // creo il messaggio open
+  // creates the OPEN message
   frame << "*#";
   frame << who;  frame << "*";
   frame << where; frame << "*#";
@@ -707,19 +707,19 @@ void bt_openwebnet::CreateWrDimensionMsgOpen(string who, string where, string di
   frame_open = EliminoCaratteriControllo(frame.str());
   length_frame_open = frame_open.length();
 
-  // controlla se sintassi corretta ...
+  // checks for correct syntax ...
   IsCorrect();
 }
 
-//crea il messaggio open *#chi*dove#livello#interfaccia*#grandezza*val_1*val_2*...val_n##
+//creates the OPEN message *#who*where#level#interface*#dimension*val_1*val_2*...val_n##
 void bt_openwebnet::CreateWrDimensionMsgOpen(string who, string where, string lev, string interf, string dimension, vector<string> value)
 {
-  //richiamo la procedura CreateNullMsgOpen()
+	//call CreateNullMsgOpen function
   CreateNullMsgOpen();
 
   stringstream frame;
 
-  // creo il messaggio open
+  // creates the OPEN message
   frame << "*#";
   frame << who;  frame << "*";
   frame << where; frame << "*#";
@@ -729,7 +729,7 @@ void bt_openwebnet::CreateWrDimensionMsgOpen(string who, string where, string le
 	  frame << lev;
   frame << "#"; frame << interf;
 
-  //per togliere l'asterisco finale
+  //to remove the trailing asterisk
   if (!dimension.empty())
   {
 	  frame << "*";
@@ -745,89 +745,89 @@ void bt_openwebnet::CreateWrDimensionMsgOpen(string who, string where, string le
   frame_open = EliminoCaratteriControllo(frame.str());
   length_frame_open = frame_open.length();
 
-  // controlla se sintassi corretta ...
+  // checks for correct syntax ...
   IsCorrect();
 }
 
 
 void bt_openwebnet::CreateMsgOpen(string message)
 {
-  //richiamo la procedura CreateNullMsgOpen()
+	//call CreateNullMsgOpen function
   CreateNullMsgOpen();
 
-  // salva il tipo di frame e la sua lunghezza
+  // saves the type of frame and its length
   frame_open = message;
   
   frame_open = EliminoCaratteriControllo(frame_open);
   length_frame_open = frame_open.length();
 
-  // controlla se sintassi corretta ...
+  // checks for correct syntax ...
   IsCorrect();
 }
 
 bool bt_openwebnet::IsEqual(bt_openwebnet msg_to_compare)
 {
-  // controlla se sintassi corretta ...
+	// checks for correct syntax ...
   IsCorrect();
 
-  //conttrollo che sia la stessa tipologia
-  if(msg_to_compare.tipo_frame != tipo_frame)
+  //control that is the same type
+  if(msg_to_compare.frame_type != frame_type)
     return false;
 
-  //conttrollo che siano entrambe due frame estese o meno
-  if(msg_to_compare.estesa != estesa)
+  //control that are both two frames extended or not
+  if(msg_to_compare.extended != extended)
     return false;
 
-  if(!estesa)
+  if(!extended)
   {
-    if ((msg_to_compare.Extract_chi().compare(chi) == 0) &&
-        (msg_to_compare.Extract_cosa().compare(cosa) == 0) &&
-        (msg_to_compare.Extract_dove().compare(dove) == 0) &&
-        (msg_to_compare.Extract_quando().compare(quando) == 0) &&
-        (msg_to_compare.Extract_grandezza().compare(grandezza) == 0))
+    if ((msg_to_compare.Extract_who().compare(chi) == 0) &&
+        (msg_to_compare.Extract_what().compare(cosa) == 0) &&
+        (msg_to_compare.Extract_where().compare(dove) == 0) &&
+        (msg_to_compare.Extract_when().compare(quando) == 0) &&
+        (msg_to_compare.Extract_dimension().compare(grandezza) == 0))
       return true;
     else
       return false;
   }
   else
   {
-    if ((msg_to_compare.Extract_chi().compare(chi) == 0) &&
-        (msg_to_compare.Extract_cosa().compare(cosa) == 0) &&
-        (msg_to_compare.Extract_dove().compare(dove) == 0) &&
-        (msg_to_compare.Extract_livello().compare(livello) == 0) &&
-        (msg_to_compare.Extract_interfaccia().compare(interfaccia) == 0) &&
-        (msg_to_compare.Extract_quando().compare(quando) == 0) &&
-        (msg_to_compare.Extract_grandezza().compare(grandezza) == 0))
+    if ((msg_to_compare.Extract_who().compare(chi) == 0) &&
+        (msg_to_compare.Extract_what().compare(cosa) == 0) &&
+        (msg_to_compare.Extract_where().compare(dove) == 0) &&
+        (msg_to_compare.Extract_level().compare(livello) == 0) &&
+        (msg_to_compare.Extract_interface().compare(interfaccia) == 0) &&
+        (msg_to_compare.Extract_when().compare(quando) == 0) &&
+        (msg_to_compare.Extract_dimension().compare(grandezza) == 0))
       return true;
     else
       return false;
   }
 }
 
-  // estrai chi, gli indirizzi, cosa, dove, livello, interfaccia, quando, grandezza e i valori da frame_open
-string bt_openwebnet::Extract_chi(){return chi;}
-string bt_openwebnet::Extract_indirizzo(int i) { if (i >= 0 && i < indirizzo.size()) return indirizzo.at(i); return ""; }
-string bt_openwebnet::Extract_cosa(){return cosa;}
-string bt_openwebnet::Extract_dove(){return dove;}
-string bt_openwebnet::Extract_livello(){return livello;}
-string bt_openwebnet::Extract_interfaccia(){return interfaccia;}
-string bt_openwebnet::Extract_quando(){return quando;}
-string bt_openwebnet::Extract_grandezza(){return grandezza;}
-string bt_openwebnet::Extract_valori(int i){ if (i >= 0 && i < valori.size()) return valori.at(i); return "";
+  // extract who, addresses, what, where, level, interface, when, dimension and values of frame_open
+string bt_openwebnet::Extract_who(){return chi;}
+string bt_openwebnet::Extract_address(unsigned int i) { if (i >= 0 && i < indirizzo.size()) return indirizzo.at(i); return ""; }
+string bt_openwebnet::Extract_what(){return cosa;}
+string bt_openwebnet::Extract_where(){return dove;}
+string bt_openwebnet::Extract_level(){return livello;}
+string bt_openwebnet::Extract_interface(){return interfaccia;}
+string bt_openwebnet::Extract_when(){return quando;}
+string bt_openwebnet::Extract_dimension(){return grandezza;}
+string bt_openwebnet::Extract_value(unsigned int i){ if (i >= 0 && i < valori.size()) return valori.at(i); return "";
 }
 
 string bt_openwebnet::Extract_OpenOK(){return OPENWEBNET_MSG_OPEN_OK;};
 string bt_openwebnet::Extract_OpenKO(){return OPENWEBNET_MSG_OPEN_KO;};
 
 
-// tipo di frame ?
+// frame type?
 
-bool bt_openwebnet::IsErrorFrame(){return (tipo_frame == ERROR_FRAME);}
-bool bt_openwebnet::IsNullFrame(){return (tipo_frame == NULL_FRAME);}
-bool bt_openwebnet::IsNormalFrame(){return (tipo_frame == NORMAL_FRAME);}
-bool bt_openwebnet::IsMeasureFrame(){return (tipo_frame == MEASURE_FRAME);}
-bool bt_openwebnet::IsStateFrame(){return (tipo_frame == STATE_FRAME);}
-bool bt_openwebnet::IsWriteFrame(){return (tipo_frame == WRITE_FRAME);}
-bool bt_openwebnet::IsPwdFrame(){return (tipo_frame == PWD_FRAME);}
-bool bt_openwebnet::IsOKFrame(){return (tipo_frame == OK_FRAME);}
-bool bt_openwebnet::IsKOFrame(){return (tipo_frame == KO_FRAME);}
+bool bt_openwebnet::IsErrorFrame(){return (frame_type == ERROR_FRAME);}
+bool bt_openwebnet::IsNullFrame(){return (frame_type == NULL_FRAME);}
+bool bt_openwebnet::IsNormalFrame(){return (frame_type == NORMAL_FRAME);}
+bool bt_openwebnet::IsMeasureFrame(){return (frame_type == MEASURE_FRAME);}
+bool bt_openwebnet::IsStateFrame(){return (frame_type == STATE_FRAME);}
+bool bt_openwebnet::IsWriteFrame(){return (frame_type == WRITE_FRAME);}
+bool bt_openwebnet::IsPwdFrame(){return (frame_type == PWD_FRAME);}
+bool bt_openwebnet::IsOKFrame(){return (frame_type == OK_FRAME);}
+bool bt_openwebnet::IsKOFrame(){return (frame_type == KO_FRAME);}

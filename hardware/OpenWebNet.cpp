@@ -169,7 +169,7 @@ void COpenWebNet::MonitorFrames()
 
 				for (vector<bt_openwebnet>::iterator iter = responses.begin(); iter != responses.end(); iter++) {
 					if (iter->IsNormalFrame()) {
-						AddDeviceIfNotExits(iter->Extract_chi(), iter->Extract_dove());
+						AddDeviceIfNotExits(iter->Extract_who(), iter->Extract_where());
 					}
 					_log.Log(LOG_STATUS, "COpenWebNet : received=%s", frameToString(*iter).c_str());
 				}
@@ -182,33 +182,33 @@ void COpenWebNet::MonitorFrames()
 
 bool COpenWebNet:: WriteToHardware(const char *pdata, const unsigned char length)
 {
-	tRBUF *pCmd = (tRBUF*)pdata;
+	_tGeneralSwitch *pCmd = (_tGeneralSwitch*)pdata;
 
-	unsigned char packetlength = pCmd->ICMND.packetlength;
-	unsigned char packettype = pCmd->ICMND.packettype;
-	unsigned char subtype = pCmd->ICMND.subtype;
-	unsigned char seqnbr = pCmd->ICMND.seqnbr;
+	unsigned char packetlength = pCmd->len;
+	unsigned char packettype = pCmd->type;
+	unsigned char subtype = pCmd->subtype;
+
 
 	int who;
 	int what;
 	int where;
 	
-	if (packettype == pTypeBlinds && subtype == sTypeBlindsT12){
+	if (packettype == pTypeGeneralSwitch && subtype == sSwitchBlindsT1){
 		//Blinds/Window command
-		int blindId = pCmd->BLINDS1.id1;
+		int blindId = pCmd->unitcode;
 
 		who = WHO_AUTOMATION;
 		where = blindId;
 
-		if (pCmd->BLINDS1.cmnd == blinds_sOpen)
+		if (pCmd->cmnd == gswitch_sOff)
 		{
 			what = AUTOMATION_WHAT_UP;
 		}
-		else if (pCmd->BLINDS1.cmnd == blinds_sClose)
+		else if (pCmd->cmnd == gswitch_sOn)
 		{
 			what = AUTOMATION_WHAT_DOWN;
 		}
-		else if (pCmd->BLINDS1.cmnd == blinds_sStop)
+		else if (pCmd->cmnd == gswitch_sStop)
 		{
 			what = AUTOMATION_WHAT_STOP;
 		}
@@ -351,8 +351,8 @@ bool COpenWebNet::AddDeviceIfNotExits(string who, string where)
 
 		switch (atoi(who.c_str())) {
 		case WHO_AUTOMATION:
-			devType = pTypeBlinds;
-			subType = sTypeBlindsT12; 
+			devType = pTypeGeneralSwitch;
+			subType = sSwitchBlindsT1;
 			switchType = STYPE_Blinds;
 			devname = OPENWEBNET_AUTOMATION;
 			devname += " " + where;
@@ -397,8 +397,8 @@ bool COpenWebNet::FindDevice(int who, int where, int* used)
 
 	switch (who) {
 	case WHO_AUTOMATION : 
-		devType = pTypeBlinds;
-		subType = sTypeBlindsT12;
+		devType = pTypeGeneralSwitch;
+		subType = sSwitchBlindsT1;
 		break;
 	default:
 		return "";
@@ -464,46 +464,46 @@ string COpenWebNet::frameToString(bt_openwebnet& frame)
 	{
 		frameStr << "NORMAL FRAME";
 
-		if (frame.estesa) {
+		if (frame.extended) {
 			frameStr << " - EXTENDED";
 		}
 
-		frameStr << " - who=" << frame.Extract_chi();
-		frameStr << " - what=" << frame.Extract_cosa();
-		frameStr << " - where=" << frame.Extract_dove();
-		if (!frame.Extract_quando().empty()) {
-			frameStr << " - when=" << frame.Extract_quando();
+		frameStr << " - who=" << getWhoDescription(frame.Extract_who());
+		frameStr << " - what=" << getWhatDescription(frame.Extract_who(), frame.Extract_what());
+		frameStr << " - where=" << frame.Extract_where();
+		if (!frame.Extract_when().empty()) {
+			frameStr << " - when=" << frame.Extract_when();
 		}
-		if (!frame.Extract_livello().empty()) {
-			frameStr << " - level=" << frame.Extract_livello();
+		if (!frame.Extract_level().empty()) {
+			frameStr << " - level=" << frame.Extract_level();
 		}
-		if (!frame.Extract_interfaccia().empty()) {
-			frameStr << " - interface=" << frame.Extract_interfaccia();
+		if (!frame.Extract_interface().empty()) {
+			frameStr << " - interface=" << frame.Extract_interface();
 		}
-		if (!frame.Extract_grandezza().empty()) {
-			frameStr << " - dimension=" << frame.Extract_grandezza();
+		if (!frame.Extract_dimension().empty()) {
+			frameStr << " - dimension=" << frame.Extract_dimension();
 		}
 
-		string indirizzo = frame.Extract_indirizzo(0);
+		string indirizzo = frame.Extract_address(0);
 		if (!indirizzo.empty()) {
 			int i = 1;
 			frameStr << " - address=";
 			while (!indirizzo.empty()) {
 				frameStr << indirizzo;
-				indirizzo = frame.Extract_indirizzo(i++);
+				indirizzo = frame.Extract_address(i++);
 				if (!indirizzo.empty()) {
 					frameStr << ", ";
 				}
 			}
 		}
 
-		string valori = frame.Extract_valori(0);
+		string valori = frame.Extract_value(0);
 		if (!valori.empty()) {
 			int i = 1;
 			frameStr << " - value=";
 			while (!valori.empty()) {
 				frameStr << valori;
-				indirizzo = frame.Extract_valori(i++);
+				indirizzo = frame.Extract_value(i++);
 				if (!valori.empty()) {
 					frameStr << ", ";
 				}
@@ -512,4 +512,151 @@ string COpenWebNet::frameToString(bt_openwebnet& frame)
 	}
 
 	return frameStr.str();
+}
+
+string COpenWebNet::getWhoDescription(string who)
+{
+	if (who == "0") {
+		return "Scenario";
+	}
+	if (who == "1") {
+		return "Lighting";
+	}
+	if (who == "2") {
+		return "Automation";
+	}
+	if (who == "3") {
+		return "Load control";
+	}
+	if (who == "4") {
+		return "Temperature control";
+	}
+	if (who == "5") {
+		return "Burglar alarm";
+	}
+	if (who == "6") {
+		return "Door entry system";
+	}
+	if (who == "7") {
+		return "Multimedia";
+	}
+	if (who == "9") {
+		return "Auxiliary";
+	}
+	if (who == "13") {
+		return "Gateway interfaces management";
+	}
+	if (who == "14") {
+		return "Light shutter actuator lock";
+	}
+	if (who == "15") {
+		return "Scenario Scheduler Switch";
+	}
+	if (who == "16") {
+		return "Audio";
+	}
+	if (who == "17") {
+		return "Scenario programming";
+	}
+	if (who == "18") {
+		return "Energy management";
+	}
+	if (who == "24") {
+		return "Lighting management";
+	}
+	if (who == "25") {
+		return "Scenario scheduler buttons";
+	}
+	if (who == "1000") {
+		return "Diagnostic";
+	}
+	if (who == "1001") {
+		return "Automation diagnostic";
+	}
+	if (who == "1004") {
+		return "Thermoregulation diagnostic failure";
+	}
+	if (who == "1013") {
+		return "Device diagnostic";
+	}
+
+	return who;
+}
+
+string COpenWebNet::getWhatDescription(string who, string what)
+{
+	if (who == "0") {
+		// "Scenario";
+	}
+	if (who == "1") {
+		// "Lighting";
+	}
+	if (who == "2") {
+		// "Automation";
+		if (what == "0") {
+			return "Stop";
+		}
+		if (what == "1") {
+			return "Up";
+		}
+		if (what == "2") {
+			return "Down";
+		}
+	}
+	if (who == "3") {
+		// "Load control";
+	}
+	if (who == "4") {
+		// "Temperature control";
+	}
+	if (who == "5") {
+		// "Burglar alarm";
+	}
+	if (who == "6") {
+		// "Door entry system";
+	}
+	if (who == "7") {
+		// "Multimedia";
+	}
+	if (who == "9") {
+		// "Auxiliary";
+	}
+	if (who == "13") {
+		// "Gateway interfaces management";
+	}
+	if (who == "14") {
+		// "Light shutter actuator lock";
+	}
+	if (who == "15") {
+		// "Scenario Scheduler Switch";
+	}
+	if (who == "16") {
+		// "Audio";
+	}
+	if (who == "17") {
+		// "Scenario programming";
+	}
+	if (who == "18") {
+		// "Energy management";
+	}
+	if (who == "24") {
+		// "Lighting management";
+	}
+	if (who == "25") {
+		// "Scenario scheduler buttons";
+	}
+	if (who == "1000") {
+		// "Diagnostic";
+	}
+	if (who == "1001") {
+		// "Automation diagnostic";
+	}
+	if (who == "1004") {
+		// "Thermoregulation diagnostic failure";
+	}
+	if (who == "1013") {
+		// "Device diagnostic";
+	}
+
+	return what;
 }

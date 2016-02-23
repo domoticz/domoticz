@@ -138,6 +138,7 @@
 #define sSwitchTypeFunkbus			0x4c
 #define sSwitchTypeNice				0x4d
 #define sSwitchTypeForest			0x4e
+#define sSwitchBlindsT1				0x4f
 
 //Switch commands
 #define gswitch_sOff				0x00
