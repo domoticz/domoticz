@@ -86,6 +86,8 @@ Version 2.4xxx
 - Fixed: Fix std::string::compare method issue (#507).
 - Fixed: Fix the webserver not stopping and not restarting issue after an exception occurred.
 - Fixed: Fix multiple session cleaner start after restarting webserver.
+- Fixed: Fix compilation issue in environment with boost <= 1.57 (in server_settings).
+- Fixed: Fix issue when no certificate file path is set in the command line.
 - Updated: OpenZWave, configuration files
 - Updated: SQLite3 v3.11.0.
 
