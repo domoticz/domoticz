@@ -244,10 +244,11 @@ void connection::handle_write(const boost::system::error_code& error)
 		if (keepalive_) {
 			// if a keep-alive connection is requested, we read the next request
 			read_more();
-		}
-		else {
+		} else {
 			connection_manager_.stop(shared_from_this());
 		}
+	} else {
+		connection_manager_.stop(shared_from_this());
 	}
 	m_lastresponse=mytime(NULL);
 }
