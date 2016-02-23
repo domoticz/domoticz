@@ -88,6 +88,7 @@ Version 2.4xxx
 - Fixed: Fix multiple session cleaner start after restarting webserver.
 - Fixed: Fix compilation issue in environment with boost <= 1.57 (in server_settings).
 - Fixed: Fix issue when no certificate file path is set in the command line.
+- Fixed: Fix the closure of the Web server sockets by making a graceful shutdown before closing.
 - Updated: OpenZWave, configuration files
 - Updated: SQLite3 v3.11.0.
 

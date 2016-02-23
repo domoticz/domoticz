@@ -103,6 +103,10 @@ void connection::start()
 
 void connection::stop()
 {
+	// Initiate graceful connection closure.
+	boost::system::error_code ignored_ec;
+	socket().shutdown(boost::asio::ip::tcp::socket::shutdown_both, ignored_ec); // @note For portable behaviour with respect to graceful closure of a
+																				// connected socket, call shutdown() before closing the socket.
 	socket().close();
 }
 
@@ -242,9 +246,6 @@ void connection::handle_write(const boost::system::error_code& error)
 			read_more();
 		}
 		else {
-			// Initiate graceful connection closure.
-			boost::system::error_code ignored_ec;
-			socket().shutdown(boost::asio::ip::tcp::socket::shutdown_both, ignored_ec);
 			connection_manager_.stop(shared_from_this());
 		}
 	}
