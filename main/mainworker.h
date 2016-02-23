@@ -12,7 +12,6 @@
 #include "DataPush.h"
 #include "HttpPush.h"
 #include "concurrent_queue.h"
-#include "../webserver/server_settings.hpp"
 
 enum eVerboseLevel
 {
@@ -47,11 +46,14 @@ public:
 
 	void SetVerboseLevel(eVerboseLevel Level);
 	eVerboseLevel GetVerboseLevel();
-	void SetWebserverSettings(const http::server::server_settings & settings);
+	void SetWebserverAddress(const std::string &Address);
+	void SetWebserverPort(const std::string &Port);
 	std::string GetWebserverAddress();
 	std::string GetWebserverPort();
-	void SetSecureWebserverSettings(const http::server::ssl_server_settings & ssl_settings);
+	void SetSecureWebserverPort(const std::string &Port);
 	std::string GetSecureWebserverPort();
+	void SetSecureWebserverCert(const std::string &CertFile);
+	void SetSecureWebserverPass(const std::string &passphrase);
 
 	void DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand, const char *defaultName, const int BatteryLevel);
 	void PushAndWaitRxMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand, const char *defaultName, const int BatteryLevel);
@@ -167,8 +169,11 @@ private:
 
 	std::vector<CDomoticzHardwareBase*> m_hardwaredevices;
 	eVerboseLevel m_verboselevel;
-	http::server::server_settings m_webserver_settings;
-	http::server::ssl_server_settings m_secure_webserver_settings;
+	std::string m_webserverport;
+	std::string m_webserveraddress;
+	std::string m_secure_webserverport;
+	std::string m_secure_web_cert_file;
+	std::string m_secure_web_passphrase;
 
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;

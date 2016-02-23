@@ -119,6 +119,7 @@ namespace http {
 		{
 			m_pWebEm = NULL;
 			m_bDoStop = false;
+			m_bIsSecure = false;
 #ifdef WITH_OPENZWAVE
 			m_ZW_Hwidx = -1;
 #endif
@@ -137,29 +138,45 @@ namespace http {
 
 		void CWebServer::Do_Work()
 		{
-			bool exception_thrown = false;
 			while (!m_bDoStop)
 			{
-				exception_thrown = false;
-				try {
-					if (m_pWebEm) {
+				try
+				{
+					if (m_pWebEm)
 						m_pWebEm->Run();
-					}
-				} catch (std::exception& e) {
-					_log.Log(LOG_ERROR, "WebServer(%s) exception occurred : '%s'", m_server_alias.c_str(), e.what());
-					exception_thrown = true;
-				} catch (...) {
-					_log.Log(LOG_ERROR, "WebServer(%s) unknown exception occurred", m_server_alias.c_str());
-					exception_thrown = true;
 				}
-				if (exception_thrown) {
-					_log.Log(LOG_STATUS, "WebServer(%s) restart server in 5 seconds", m_server_alias.c_str());
-					sleep_milliseconds(5000); // prevents from an exception flood
-					continue;
+				catch (std::exception& e)
+				{
+					if (!m_bDoStop)
+					{
+						if (!m_bIsSecure)
+							_log.Log(LOG_ERROR, "WebServer(HTTP) stopped by exception, starting again..., %s",e.what());
+						else
+							_log.Log(LOG_ERROR, "WebServer(SSL) stopped by exception, starting again..., %s", e.what());
+						if (m_pWebEm)
+							m_pWebEm->Stop();
+						continue;
+					}
+				}
+				catch (...)
+				{
+					if (!m_bDoStop)
+					{
+						if (!m_bIsSecure)
+							_log.Log(LOG_ERROR, "WebServer(HTTP) stopped by exception, starting again...");
+						else
+							_log.Log(LOG_ERROR, "WebServer(SSL) stopped by exception, starting again...");
+						if (m_pWebEm)
+							m_pWebEm->Stop();
+						continue;
+					}
 				}
 				break;
 			}
-			_log.Log(LOG_STATUS, "WebServer(%s) stopped...", m_server_alias.c_str());
+			if (!m_bIsSecure)
+				_log.Log(LOG_STATUS, "WebServer(HTTP) stopped...");
+			else
+				_log.Log(LOG_STATUS, "WebServer(SSL) stopped...");
 		}
 
 		void CWebServer::ReloadCustomSwitchIcons()
@@ -257,13 +274,11 @@ namespace http {
 			}
 		}
 
-		bool CWebServer::StartServer(const server_settings & settings, const std::string &serverpath, const bool bIgnoreUsernamePassword)
+		bool CWebServer::StartServer(const std::string &listenaddress, const std::string &listenport, const std::string &serverpath, const bool bIgnoreUsernamePassword, const std::string &secure_cert_file, const std::string &secure_cert_passphrase)
 		{
-			m_server_alias = (settings.is_secure() == true) ? "SSL" : "HTTP";
-
 			StopServer();
 
-			if (!settings.is_enabled())
+			if (listenport.empty())
 				return true;
 
 			ReloadCustomSwitchIcons();
@@ -271,43 +286,54 @@ namespace http {
 			if (m_pWebEm != NULL)
 				delete m_pWebEm;
 
+			m_bIsSecure = !secure_cert_file.empty();
+
 			int tries = 0;
 			bool exception = false;
+			std::string listen_address = listenaddress;
 
-			server_settings * settings_copy = settings.clone(); // copy to change listening address
-			//_log.Log(LOG_STATUS, "CWebServer::StartServer() : settings_copy : %s", settings_copy->to_string().c_str());
 			do {
 				try {
 					exception = false;
-					m_pWebEm = new http::server::cWebem(*settings_copy, serverpath.c_str());
+					m_pWebEm = new http::server::cWebem(
+						listen_address.c_str(),						// address
+						listenport.c_str(),							// port
+						serverpath.c_str(), secure_cert_file, secure_cert_passphrase);
 				}
 				catch (std::exception& e) {
 					exception = true;
 					switch (tries) {
 					case 0:
-						settings_copy->listening_address = "::";
+						listen_address = "::";
 						break;
 					case 1:
-						settings_copy->listening_address = "0.0.0.0";
+						listen_address = "0.0.0.0";
 						break;
 					case 2:
 						_log.Log(LOG_ERROR, "Failed to start the web server: %s", e.what());
-						if (atoi(settings_copy->listening_port.c_str()) < 1024)
+						if (atoi(listenport.c_str()) < 1024)
 							_log.Log(LOG_ERROR, "check privileges for opening ports below 1024");
 						else
-							_log.Log(LOG_ERROR, "check if no other application is using port: %s", settings_copy->listening_port.c_str());
+							_log.Log(LOG_ERROR, "check if no other application is using port: %s", listenport.c_str());
 						return false;
 					}
 					tries++;
 				}
 			} while (exception);
-
-			if (settings_copy->listening_address != "0.0.0.0" && settings_copy->listening_address != "::")
-				_log.Log(LOG_STATUS, "Webserver(%s) started on address: %s, port: %s", m_server_alias.c_str(), settings_copy->listening_address.c_str(), settings_copy->listening_port.c_str());
+			if (!m_bIsSecure)
+			{
+				if (listen_address != "0.0.0.0" && listen_address != "::")
+					_log.Log(LOG_STATUS, "Webserver(HTTP) started on address: %s, port: %s", listen_address.c_str(), listenport.c_str());
+				else
+					_log.Log(LOG_STATUS, "Webserver(HTTP) started on port: %s", listenport.c_str());
+			}
 			else
-				_log.Log(LOG_STATUS, "Webserver(%s) started on port: %s", m_server_alias.c_str(), settings_copy->listening_port.c_str());
-
-			delete settings_copy;
+			{
+				if (listen_address != "0.0.0.0" && listen_address != "::")
+					_log.Log(LOG_STATUS, "Webserver(SSL) started on address: %s, port: %s", listen_address.c_str(), listenport.c_str());
+				else
+					_log.Log(LOG_STATUS, "Webserver(SSL) started on port: %s", listenport.c_str());
+			}
 
 			m_pWebEm->SetDigistRealm("Domoticz.com");
 			m_pWebEm->SetSessionStore(this);
