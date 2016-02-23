@@ -622,6 +622,10 @@ int main(int argc, char**argv)
 		std::string wwwport = cmdLine.GetSafeArgument("-sslwww", 0, "");
 		secure_webserver_settings.listening_port = wwwport;
 	}
+	if (!webserver_settings.listening_address.empty()) {
+		// Secure listening address has to be equal
+		secure_webserver_settings.listening_address = webserver_settings.listening_address;
+	}
 	if (cmdLine.HasSwitch("-sslcert"))
 	{
 		if (cmdLine.GetArgumentCount("-sslcert") != 1)
