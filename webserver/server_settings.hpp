@@ -208,9 +208,10 @@ public:
 
 		ssl_method = server_settings::get_valid_value(ssl_method, ssl_settings.ssl_method);
 
-		bool update_cert = cert_file_path != ssl_settings.cert_file_path;
-		cert_file_path = server_settings::get_valid_value(cert_file_path, ssl_settings.cert_file_path);
+		std::string path = server_settings::get_valid_value(cert_file_path, ssl_settings.cert_file_path);
+		bool update_cert = path.compare(ssl_settings.cert_file_path) == 0;
 		if (update_cert) {
+			cert_file_path = ssl_settings.cert_file_path;
 			// use certificate file for all usage by default
 			certificate_chain_file_path = ssl_settings.cert_file_path;
 			ca_cert_file_path = ssl_settings.cert_file_path;
