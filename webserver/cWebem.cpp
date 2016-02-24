@@ -53,44 +53,58 @@ cWebem::cWebem(
 				myServer(server_factory::create(settings, myRequestHandler)) {
 	m_authmethod = AUTH_LOGIN;
 	mySessionStore = NULL;
-	// Start session cleaner
-	m_session_clean_timer.async_wait(boost::bind(&cWebem::CleanSessions, this));
-	boost::thread t(boost::bind(&boost::asio::io_service::run, &m_io_service));
+	m_io_service_thread = NULL;
 }
 
 cWebem::~cWebem() {
-	// Stop session cleaner
-	m_session_clean_timer.cancel();
-	m_io_service.stop();
-	// Free server resources
-	if (myServer != NULL) {
-		Stop();
+	if (m_io_service_thread) {
+		delete m_io_service_thread;
+	}
+	if (myServer) {
 		delete myServer;
 	}
 }
+
 /**
 
 Start the server.
 
 This does not return.
 
-If application needs to continue, start new thread with call to this method.
+IMPORTANT: This method does not return. If application needs to continue, start new thread with call to this method.
 
 */
 void cWebem::Run() {
+	if (m_io_service_thread == NULL) {
+		// Start session cleaner
+		m_session_clean_timer.async_wait(boost::bind(&cWebem::CleanSessions, this));
+		m_io_service_thread = new boost::thread(boost::bind(&boost::asio::io_service::run, &m_io_service));
+	}
 	// Start Web server
 	if (myServer != NULL) {
 		myServer->run();
 	}
 }
 
+/**
+
+Stop and delete the internal server.
+
+IMPORTANT:  To start the server again, delete it and create a new cWebem instance.
+
+*/
 void cWebem::Stop() {
+	// Stop session cleaner
+	if (m_io_service_thread != NULL) {
+		m_session_clean_timer.cancel();
+		m_io_service.stop();
+		m_io_service_thread->join();
+	}
 	// Stop Web server
 	if (myServer != NULL) {
 		myServer->stop();
 	}
 }
-
 
 void cWebem::SetAuthenticationMethod(const _eAuthenticationMethod amethod)
 {
