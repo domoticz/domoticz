@@ -33,6 +33,8 @@ public:
 	/// Print server settings to string (debug purpose)
 	virtual std::string to_string() const = 0;
 protected:
+	void init();
+
 	/// Initialize acceptor
 	virtual void init_connection() =0;
 

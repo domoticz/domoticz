@@ -22,7 +22,6 @@ server_base::server_base(const server_settings & settings, request_handler & use
 	if (!settings.is_enabled()) {
 		throw std::invalid_argument("cannot initialize a disabled server (listening port cannot be empty or 0)");
 	}
-	init();
 }
 
 void server_base::init() {
@@ -82,6 +81,7 @@ void server_base::handle_stop() {
 server::server(const server_settings & settings, request_handler & user_request_handler) :
 		server_base(settings, user_request_handler) {
 	//_log.Log(LOG_STATUS, "[web:%s] create server using settings : %s", settings.listening_port.c_str(), settings.to_string().c_str());
+	init();
 }
 
 void server::init_connection() {
@@ -110,6 +110,7 @@ ssl_server::ssl_server(const ssl_server_settings & ssl_settings, request_handler
 		context_(io_service_, ssl_settings.get_ssl_method())
 {
 	//_log.Log(LOG_STATUS, "[web:%s] create ssl_server using ssl_server_settings : %s", ssl_settings.listening_port.c_str(), ssl_settings.to_string().c_str());
+	init();
 }
 
 // this constructor will send std::bad_cast exception if the settings argument is not a ssl_server_settings object
@@ -118,6 +119,7 @@ ssl_server::ssl_server(const server_settings & settings, request_handler & user_
 		settings_(dynamic_cast<ssl_server_settings const &>(settings)),
 		context_(io_service_, dynamic_cast<ssl_server_settings const &>(settings).get_ssl_method()) {
 	//_log.Log(LOG_STATUS, "[web:%s] create ssl_server using server_settings : %s", settings.listening_port.c_str(), settings.to_string().c_str());
+	init();
 }
 
 void ssl_server::init_connection() {
