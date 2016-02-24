@@ -217,6 +217,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_CurrentCostMeterLAN, "CurrentCost Meter with LAN interface" },
 		{ HTYPE_DomoticzInternal, "Domoticz Internal interface" },
 		{ HTYPE_NefitEastLAN, "Nefit Easy HTTP server over LAN interface" },
+		{ HTYPE_OpenWebNet, "MyHome OpenWebNet" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -777,6 +778,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchTypeFunkbus, "Funkbus" },
 		{ pTypeGeneralSwitch, sSwitchTypeNice, "Nice" },
 		{ pTypeGeneralSwitch, sSwitchTypeForest, "Forest" },
+		{ pTypeGeneralSwitch, sSwitchBlindsT1, "Legrand MyHome" },
 		{  0,0,NULL }
 	};
 	return findTableID1ID2(Table, dType, sType);
