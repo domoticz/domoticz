@@ -2986,7 +2986,7 @@ define(['app'], function (app) {
 
 				//Slider Events
 				create: function(event,ui ) {
-					$( this ).slider( "option", "max", $( this ).data('maxlevel'));
+					$( this ).slider( "option", "max", $( this ).data('maxlevel')+1);
 					$( this ).slider( "option", "type", $( this ).data('type'));
 					$( this ).slider( "option", "isprotected", $( this ).data('isprotected'));
 					$( this ).slider( "value", $( this ).data('svalue')+1 );
@@ -2998,10 +2998,7 @@ define(['app'], function (app) {
 					var maxValue=$( this ).slider( "option", "max");
 					var dtype=$( this ).slider( "option", "type");
 					var isProtected=$( this ).slider( "option", "isprotected");
-					var fPercentage=0;
-					if (ui.value!=1) {
-						fPercentage=parseInt((100.0/(maxValue-1))*((ui.value-1)));
-					}
+					var fPercentage=parseInt((100.0/(maxValue-1))*((ui.value-1)));
 					var idx=$( this ).data('idx');
 					id="#lightcontent #" + idx;
 					var obj=$(id);
