@@ -33,6 +33,8 @@ public:
 	/// Print server settings to string (debug purpose)
 	virtual std::string to_string() const = 0;
 protected:
+	void init();
+
 	/// Initialize acceptor
 	virtual void init_connection() =0;
 
@@ -58,12 +60,8 @@ protected:
 	/// read timeout in seconds
 	int timeout_;
 private:
-	void init();
-
 	/// Handle a request to stop the server.
 	void handle_stop();
-
-	bool first_run; // use to init connection on first run
 };
 
 class server : public server_base {

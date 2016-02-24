@@ -302,10 +302,7 @@ namespace http {
 				}
 			} while (exception);
 
-			if (settings_copy->listening_address != "0.0.0.0" && settings_copy->listening_address != "::")
-				_log.Log(LOG_STATUS, "Webserver(%s) started on address: %s, port: %s", m_server_alias.c_str(), settings_copy->listening_address.c_str(), settings_copy->listening_port.c_str());
-			else
-				_log.Log(LOG_STATUS, "Webserver(%s) started on port: %s", m_server_alias.c_str(), settings_copy->listening_port.c_str());
+			_log.Log(LOG_STATUS, "Webserver(%s) started on address: %s, port: %s", m_server_alias.c_str(), settings_copy->listening_address.c_str(), settings_copy->listening_port.c_str());
 
 			delete settings_copy;
 
