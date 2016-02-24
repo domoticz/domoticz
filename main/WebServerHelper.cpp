@@ -70,12 +70,16 @@ namespace http {
 		void CWebServerHelper::StopServers()
 		{
 			for (server_iterator it = serverCollection.begin(); it != serverCollection.end(); ++it) {
-				(*it)->StopServer();
+				((CWebServer*) *it)->StopServer();
+				delete (*it);
 			}
+			serverCollection.clear();
 #ifndef NOCLOUD
 			for (proxy_iterator it = proxymanagerCollection.begin(); it != proxymanagerCollection.end(); ++it) {
-				(*it)->Stop();
+				((CProxyManager*) *it)->Stop();
+				delete (*it);
 			}
+			proxymanagerCollection.clear();
 #endif
 		}
 
