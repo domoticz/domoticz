@@ -145,6 +145,7 @@ bool CPhilipsHue::WriteToHardware(const char *pdata, const unsigned char length)
 				fvalue = 255.0f;
 			svalue = round(fvalue);
 		}
+		//_log.Log(LOG_STATUS, "HueBridge state change: svalue = %d, psen-level = %d", svalue, pSen->LIGHTING2.level);
 		SwitchLight(nodeID, LCmd, svalue);
 	}
 	else if (packettype == pTypeLimitlessLights)
@@ -361,66 +362,69 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 			sprintf(szID, "%d", NodeID);
 		else
 			sprintf(szID, "%08x", (unsigned int)NodeID);
-
 		sprintf(szSValue, "%d;%d", Sat, Hue);
-
 		unsigned char unitcode = 1;
-		int cmd = 0;
-		if (bIsOn)
-		{
-			cmd = (BrightnessLevel != 0) ? Limitless_SetBrightnessLevel : Limitless_LedOn;
-		}
-		else
-			cmd = Limitless_LedOff;
-
-		//Check if we already exist
+		int cmd = (bIsOn ? Limitless_LedOn : Limitless_LedOff);
+		
+		//Get current nValue if exist
 		std::vector<std::vector<std::string> > result;
-		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')", m_HwdID, int(unitcode), pTypeLimitlessLights, sTypeLimitlessRGBW, szID);
-		if (result.size() > 0)
+		result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')",
+			m_HwdID, int(unitcode), pTypeLimitlessLights, sTypeLimitlessRGBW, szID);
+
+		if (!result.empty())
 		{
 			//Already in the system
-			//Update state
-
-			time_t now = time(0);
-			struct tm ltime;
-			localtime_r(&now, &ltime);
-
-			char szLastUpdate[40];
-			sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
-
-			m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d, sValue='%q', LastLevel = %d, LastUpdate='%q' WHERE(HardwareID == %d) AND (DeviceID == '%q')",
-				int(cmd), szSValue, BrightnessLevel, szLastUpdate, m_HwdID, szID);
-			return;
+			//Update state for sValue, use Limitless_SetRGBColour ?
+			int nvalue = atoi(result[0][0].c_str());
+			bool tIsOn = (nvalue != 0);				
+			m_sql.safe_query("UPDATE DeviceStatus SET sValue='%q', LastLevel = %d WHERE(HardwareID == %d) AND (DeviceID == '%q')",
+				szSValue, BrightnessLevel, m_HwdID, szID);
+			if (bIsOn == tIsOn) //Check if the light was switched
+				return;
 		}
 
 		//Send as LimitlessLight
 		_tLimitlessLights lcmd;
 		lcmd.id = NodeID;
-		lcmd.command = Limitless_LedOff;
+		lcmd.command = cmd;
 		lcmd.value = 0;
 		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd, Name.c_str(), 255);
-
+		
+		if (result.empty())
+		{
 		//Set Name/Parameters
 		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, nValue=%d, sValue='%q', LastLevel=%d WHERE(HardwareID == %d) AND (DeviceID == '%q')",
 			Name.c_str(), int(STYPE_Dimmer), int(cmd), szSValue, BrightnessLevel, m_HwdID, szID);
+		}
 	}
 	else if (LType == HLTYPE_SCENE)
 	{
-		unsigned char unitcode = 1;
 		char szID[10];
 		sprintf(szID, "%08x", (unsigned int)NodeID);
-
-		//Check if we already exist
+		unsigned char unitcode = 1;
+		int cmd = (bIsOn ? Limitless_LedOn : Limitless_LedOff);
+		
+		//Get current nValue if exist
 		std::vector<std::vector<std::string> > result;
-		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID == '%q') AND (Options=='%q')", m_HwdID, int(unitcode), pTypeLimitlessLights, sTypeLimitlessRGBW, szID, Options.c_str());
+		result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID == '%q') AND (Options=='%q')",
+			m_HwdID, int(unitcode), pTypeLimitlessLights, sTypeLimitlessRGBW, szID, Options.c_str());
+		if (!result.empty())
+		{
+			//Already in the system
+			int nvalue = atoi(result[0][0].c_str());
+			bool tIsOn = (nvalue != 0);
+			if (bIsOn == tIsOn) //Check if the light was switched
+				return;
+		}
+		//Send as LimitlessLight
+		_tLimitlessLights lcmd;
+		lcmd.id = NodeID;
+		lcmd.command = cmd;
+		lcmd.value = 0;
+		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd, Name.c_str(), 255);
+		
 		if (result.empty())
 		{
-			//Send as LimitlessLight
-			_tLimitlessLights lcmd;
-			lcmd.id = NodeID;
-			lcmd.command = Limitless_LedOff;
-			lcmd.value = 0;
-			m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd, Name.c_str(), 255);
 			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, Options='%q' WHERE (HardwareID == %d) AND(DeviceID == '%q')",
 				Name.c_str(), int(STYPE_PushOn), Options.c_str(), m_HwdID, szID);
 		}
@@ -431,63 +435,36 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 		char szID[10];
 		sprintf(szID, "%X%02X%02X%02X", 0, 0, 0, NodeID);
 		unsigned char unitcode = 1;
-		int cmd = 0;
-		if (bIsOn)
-		{
-			cmd = (BrightnessLevel!=0) ? light2_sSetLevel : light2_sOn;
-		}
-		else
-			cmd = light2_sOff;
-
-		int level = 15;
+		int cmd = (bIsOn ? light2_sOn : light2_sOff);
+		int level = 0;
+		
 		if (LType == HLTYPE_NORMAL)
-		{
-			//simple on/off device
-			if (BrightnessLevel == 0)
-			{
-				level = 0;
-			}
-			else
-			{
-				level = 15;
-			}
-		}
+			bIsOn ? level = 15 : level = 0;
 		else
 		{
-			//dimmer able device
-			if (BrightnessLevel == 0)
-				level = 0;
-			if (BrightnessLevel == 100)
+			float flevel = (15.0f / 100.0f)*float(BrightnessLevel);
+			level = round(flevel);
+			if (level > 15)
 				level = 15;
-			else
-			{
-				float flevel = (15.0f / 100.0f)*float(BrightnessLevel);
-				level = round(flevel);
-				if (level > 15)
-					level = 15;
-			}
 		}
 		char szLevel[20];
 		sprintf(szLevel, "%d", level);
 
 		//Check if we already exist
 		std::vector<std::vector<std::string> > result;
-		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')",
+		result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')",
 			m_HwdID, int(unitcode), pTypeLighting2, sTypeAC, szID);
-		if (result.size() > 0)
+		//_log.Log(LOG_STATUS, "HueBridge state change: Bri = %d, Level = %d", BrightnessLevel, level);
+		if (!result.empty())
 		{
 			//Already in the system
 			//Update state
-			time_t now = time(0);
-			struct tm ltime;
-			localtime_r(&now, &ltime);
-
-			char szLastUpdate[40];
-			sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
-
-			m_sql.safe_query("UPDATE DeviceStatus SET LastLevel=%d, nValue=%d, sValue='%q', LastUpdate='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')",
-				BrightnessLevel, int(cmd), szLevel, szLastUpdate, m_HwdID, szID);
-			return;
+			int nvalue = atoi(result[0][0].c_str());
+			bool tIsOn = (nvalue != 0);					
+			m_sql.safe_query("UPDATE DeviceStatus SET LastLevel=%d, sValue='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')",
+				BrightnessLevel, szLevel, m_HwdID, szID);
+			if (bIsOn == tIsOn) //Check if the light was switched
+				return;
 		}
 
 		tRBUF lcmd;
@@ -507,10 +484,14 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 		lcmd.LIGHTING2.rssi = 12;
 
 		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd.LIGHTING2, Name.c_str(), 255);
+		
 
-		//Set Name/Parameters
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, LastLevel=%d, nValue=%d, sValue='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')",
-			Name.c_str(), int(LType == HLTYPE_DIM ? STYPE_Dimmer : STYPE_OnOff), BrightnessLevel, int(cmd), szLevel, m_HwdID, szID);
+		if (result.empty())
+		{
+			//Set Name/Parameters
+			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, LastLevel=%d, nValue=%d, sValue='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')",
+				Name.c_str(), int(LType == HLTYPE_DIM ? STYPE_Dimmer : STYPE_OnOff), BrightnessLevel, int(cmd), szLevel, m_HwdID, szID);
+		}
 	}
 }
 
@@ -579,21 +560,13 @@ bool CPhilipsHue::GetLights(const Json::Value &root)
 			std::string szLID = iLight.key().asString();
 			int lID = atoi(szLID.c_str());
 			_tHueLight tlight;
-			int BrightnessLevel = 0;
 			tlight.level = 0;
-			tlight.sat = 0;
-			tlight.hue = 0;
-			bool bIsOn = light["state"]["on"].asBool();
+			tlight.sat = 0; // Philips 0- 254, should be corrected to 0 - 255 ?
+			tlight.hue = 0; // Philips 0 - 65535, should be converted to 0 - 255 ?
+			tlight.on = light["state"]["on"].asBool();
 			bool bDoSend = true;
 			_eHueLightType LType = HLTYPE_NORMAL;
-			
-			if (bIsOn)
-			{
-				tlight.cmd = light2_sOn;
-			}
-			else
-				tlight.cmd = light2_sOff;
-				
+	
 			if (!light["state"]["bri"].empty())
 			{
 				//Lamp with brightness control
@@ -601,14 +574,7 @@ bool CPhilipsHue::GetLights(const Json::Value &root)
 				int tbri = light["state"]["bri"].asInt();
 				if ((tbri != 0) && (tbri != 255))
 					tbri += 1; //hue reports 255 as 254
-				tlight.level = tbri;
-				BrightnessLevel = int((100.0f / 255.0f)*float(tbri));
-				if (bIsOn)
-				{
-					tlight.cmd = (BrightnessLevel != 0) ? light2_sSetLevel : light2_sOn;
-				}
-				else
-					tlight.cmd = light2_sOff;
+				tlight.level = int((100.0f / 255.0f)*float(tbri));
 			}
 			if ((!light["state"]["sat"].empty()) && (!light["state"]["hue"].empty()))
 			{
@@ -616,18 +582,12 @@ bool CPhilipsHue::GetLights(const Json::Value &root)
 				LType = HLTYPE_RGBW;
 				tlight.sat = light["state"]["sat"].asInt();
 				tlight.hue = light["state"]["hue"].asInt();
-				if (bIsOn)
-				{
-					tlight.cmd = (BrightnessLevel != 0) ? Limitless_SetBrightnessLevel : Limitless_LedOn;
-				}
-				else
-					tlight.cmd = Limitless_LedOff;
 			}
 			if (m_lights.find(lID) != m_lights.end())
 			{
 				_tHueLight alight = m_lights[lID];
 				if (
-					(alight.cmd == tlight.cmd) &&
+					(alight.on == tlight.on) &&
 					(alight.level == tlight.level) &&
 					(alight.sat == tlight.sat) &&
 					(alight.hue == tlight.hue)
@@ -639,7 +599,8 @@ bool CPhilipsHue::GetLights(const Json::Value &root)
 			m_lights[lID] = tlight;
 			if (bDoSend)
 			{
-				InsertUpdateSwitch(lID, LType, bIsOn, BrightnessLevel, tlight.sat, tlight.hue, light["name"].asString(), "");
+				//_log.Log(LOG_STATUS, "HueBridge state change: tbri = %d, level = %d", tbri, tlight.level);
+				InsertUpdateSwitch(lID, LType, tlight.on, tlight.level, tlight.sat, tlight.hue, light["name"].asString(), "");
 			}
 		}
 	}
@@ -660,38 +621,32 @@ bool CPhilipsHue::GetGroups(const Json::Value &root)
 		{
 			std::string szGID = iGroup.key().asString();
 			int gID = atoi(szGID.c_str());
-			bool bIsOn = false;
-			int tbri = 255;
-			int tsat = 255;
-			int thue = 255;
+			_tHueLight tstate;
+			tstate.on = false;
+			tstate.level = 0;
+			tstate.sat = 0;
+			tstate.hue = 0;
 
 			if (!group["action"]["on"].empty())
-				bIsOn = group["action"]["on"].asBool();
+				tstate.on = group["action"]["on"].asBool();
 			if (!group["action"]["bri"].empty())
-				tbri = group["action"]["bri"].asInt();
-			if (!group["action"]["sat"].empty())
-				tsat = group["action"]["sat"].asInt();
-			if (!group["action"]["hue"].empty())
-				thue = group["action"]["hue"].asInt();
-			if ((tbri != 0) && (tbri != 255))
-				tbri += 1; //hue reports 255 as 254
-			int BrightnessLevel = int((100.0f / 255.0f)*float(tbri));
-			_tHueLight tstate;
-			if (bIsOn)
 			{
-				tstate.cmd = (BrightnessLevel != 0) ? Limitless_SetBrightnessLevel : Limitless_LedOn;
+				int tbri = group["action"]["bri"].asInt();
+				if ((tbri != 0) && (tbri != 255))
+					tbri += 1; //hue reports 255 as 254
+				tstate.level = int((100.0f / 255.0f)*float(tbri));
 			}
-			else
-				tstate.cmd = Limitless_LedOff;
-			tstate.level = BrightnessLevel;
-			tstate.sat = tsat;
-			tstate.hue = thue;
+			if (!group["action"]["sat"].empty())
+				tstate.sat = group["action"]["sat"].asInt();
+			if (!group["action"]["hue"].empty())
+				tstate.hue = group["action"]["hue"].asInt();
+			
 			bool bDoSend = true;
 			if (m_groups.find(gID) != m_groups.end())
 			{
 				_tHueGroup agroup = m_groups[gID];
 				if (
-					(agroup.gstate.cmd == tstate.cmd) &&
+					(agroup.gstate.on == tstate.on) &&
 					(agroup.gstate.level == tstate.level) &&
 					(agroup.gstate.sat == tstate.sat) &&
 					(agroup.gstate.hue == tstate.hue)
@@ -704,7 +659,7 @@ bool CPhilipsHue::GetGroups(const Json::Value &root)
 			if (bDoSend)
 			{
 				std::string Name = "Group " + group["name"].asString();
-				InsertUpdateSwitch(1000 + gID, HLTYPE_RGBW, bIsOn, BrightnessLevel, tsat, thue, Name, "");
+				InsertUpdateSwitch(1000 + gID, HLTYPE_RGBW, tstate.on, tstate.level, tstate.sat, tstate.hue, Name, "");
 			}
 		}
 	}
@@ -724,6 +679,7 @@ bool CPhilipsHue::GetGroups(const Json::Value &root)
 	Json::Reader jReader;
 	Json::Value root2;
 	bool ret = jReader.parse(sResult, root2);
+
 	if (!ret)
 	{
 		_log.Log(LOG_ERROR, "Philips Hue: Invalid data received, or invalid IPAddress/Username!");
@@ -741,39 +697,33 @@ bool CPhilipsHue::GetGroups(const Json::Value &root)
 	{
 		return false;
 	}
-	bool bIsOn = false;
-	int tbri = 255;
-	int tsat = 255;
-	int thue = 255;
+	_tHueLight tstate;
+	tstate.on = false;
+	tstate.level = 0;
+	tstate.sat = 0;
+	tstate.hue = 0;
 
 	if (!root2["action"]["on"].empty())
-		bIsOn = root2["action"]["on"].asBool();
+		tstate.on = root2["action"]["on"].asBool();
 	if (!root2["action"]["bri"].empty())
-		tbri = root2["action"]["bri"].asInt();
-	if (!root2["action"]["sat"].empty())
-		tsat = root2["action"]["sat"].asInt();
-	if (!root2["action"]["hue"].empty())
-		thue = root2["action"]["hue"].asInt();
-	if ((tbri != 0) && (tbri != 255))
-		tbri += 1; //hue reports 255 as 254
-	int BrightnessLevel = int((100.0f / 255.0f)*float(tbri));
-	_tHueLight tstate;
-	if (bIsOn)
 	{
-		tstate.cmd = (BrightnessLevel != 0) ? Limitless_SetBrightnessLevel : Limitless_LedOn;
+		int tbri = root2["action"]["bri"].asInt();
+		if ((tbri != 0) && (tbri < 3))
+			tbri = 3;
+		tstate.level = int((100.0f / 254.0f)*float(tbri));
 	}
-	else
-		tstate.cmd = Limitless_LedOff;
-	tstate.level = BrightnessLevel;
-	tstate.sat = tsat;
-	tstate.hue = thue;
+	if (!root2["action"]["sat"].empty())
+		tstate.sat = root2["action"]["sat"].asInt();
+	if (!root2["action"]["hue"].empty())
+		tstate.hue = root2["action"]["hue"].asInt();
+
 	bool bDoSend = true;
 	int gID = 0;
 	if (m_groups.find(gID) != m_groups.end())
 	{
 		_tHueGroup agroup = m_groups[gID];
 		if (
-			(agroup.gstate.cmd == tstate.cmd) &&
+			(agroup.gstate.on == tstate.on) &&
 			(agroup.gstate.level == tstate.level) &&
 			(agroup.gstate.sat == tstate.sat) &&
 			(agroup.gstate.hue == tstate.hue)
@@ -786,7 +736,7 @@ bool CPhilipsHue::GetGroups(const Json::Value &root)
 	if (bDoSend)
 	{
 		std::string Name = "Group All Lights";
-		InsertUpdateSwitch(1000 + gID, HLTYPE_RGBW, bIsOn, BrightnessLevel, tsat, thue, Name,"");
+		InsertUpdateSwitch(1000 + gID, HLTYPE_RGBW, tstate.on, tstate.level, tstate.sat, tstate.hue, Name,"");
 	}
 	return true;
 }
@@ -828,7 +778,7 @@ bool CPhilipsHue::GetScenes(const Json::Value &root)
 			if (bDoSend)
 			{
 				std::string Name = "Scene " + hscene.name;
-				InsertUpdateSwitch(2000 + sID, HLTYPE_SCENE, false, 1000, 0, 0, Name, hscene.id);
+				InsertUpdateSwitch(2000 + sID, HLTYPE_SCENE, false, 100, 0, 0, Name, hscene.id);
 			}
 		}
 		ii++;
