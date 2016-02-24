@@ -43,6 +43,8 @@ Version 2.4xxx
 - Changed: OpenZwave, kWh sensor now maybe compatible with more hardware
 - Changed: OpenZwave, not sending cold-white in the colorclass, solved issues on different Zipato bulbs
 - Changed: OpenZWave, Renamed internally 'Color Control' to 'Color"
+- Changed: Webserver, Refactor the webserver server class to separate the HTTP and HTTPS implementation, and gather all server settings in the new server_settings and ssl_server_settings classes.
+- Changed: Webserver, Add -sslmethod, -ssloptions and -ssldhparam arguments to domoticz executable.
 - Fixed: Alert Sensor, displaying sValue again
 - Fixed: Blockly, Set user variables (you need to resave your blockly's)
 - Fixed: Blockly, string uservariables where saved with quotes when not using with set-after
@@ -82,6 +84,11 @@ Version 2.4xxx
 - Fixed: Fix a security issue (DOS) in webserver to prevent a remote_endpoint exception to be thrown to the WebServer class causing the webserver to be down (no possible stop and no possible connection). Now, the webserver can be scanned using the nmap tool (for the SSL configuration purpose).
 - Fixed: Under FreeBSD Hardware Monitor works, but it needs the libsysinfo package to work.
 - Fixed: Fix std::string::compare method issue (#507).
+- Fixed: Fix the webserver not stopping and not restarting issue after an exception occurred.
+- Fixed: Fix multiple session cleaner start after restarting webserver.
+- Fixed: Fix compilation issue in environment with boost <= 1.57 (in server_settings).
+- Fixed: Fix issue when no certificate file path is set in the command line.
+- Fixed: Fix the closure of the Web server sockets by making a graceful shutdown before closing.
 - Updated: OpenZWave, configuration files
 - Updated: SQLite3 v3.11.0.
 
