@@ -1795,6 +1795,12 @@
     <ClInclude Include="..\notifications\NotificationGCM.h">
       <Filter>Notifications</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\OpenWebNet.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\openwebnet\bt_openwebnet.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2324,6 +2330,12 @@
     </ClCompile>
     <ClCompile Include="..\notifications\NotificationGCM.cpp">
       <Filter>Notifications</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\OpenWebNet.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\openwebnet\bt_openwebnet.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

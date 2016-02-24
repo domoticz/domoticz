@@ -87,6 +87,7 @@
 #include "../hardware/DomoticzInternal.h"
 #include "../hardware/NefitEasy.h"
 #include "../hardware/PanasonicTV.h"
+#include "../hardware/OpenWebNet.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -873,6 +874,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_DomoticzInternal:
 		pHardware = new DomoticzInternal(ID);
+		break;
+	case HTYPE_OpenWebNet:
+		pHardware = new COpenWebNet(ID, Address, Port);
 		break;
 	}
 
