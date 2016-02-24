@@ -17,20 +17,16 @@ server_base::server_base(const server_settings & settings, request_handler & use
 		acceptor_(io_service_),
 		settings_(settings),
 		request_handler_(user_request_handler),
-		timeout_(20), // default read timeout in seconds
-		first_run(true) {
+		timeout_(20) { // default read timeout in seconds
 	//_log.Log(LOG_STATUS, "[web:%s] create server_base using settings : %s", settings.listening_port.c_str(), settings.to_string().c_str());
 	if (!settings.is_enabled()) {
 		throw std::invalid_argument("cannot initialize a disabled server (listening port cannot be empty or 0)");
 	}
+	init();
 }
 
 void server_base::init() {
-
-	if (first_run) {
-		init_connection();
-		first_run = false;
-	}
+	init_connection();
 
 	// Open the acceptor with the option to reuse the address (i.e. SO_REUSEADDR).
 	boost::asio::ip::tcp::resolver resolver(io_service_);
@@ -49,8 +45,6 @@ void server_base::init() {
 }
 
 void server_base::run() {
-	init();
-
 	// The io_service::run() call will block until all asynchronous operations
 	// have finished. While the server is running, there is always at least one
 	// asynchronous operation outstanding: the asynchronous accept call waiting

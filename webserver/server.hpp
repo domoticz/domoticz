@@ -62,8 +62,6 @@ private:
 
 	/// Handle a request to stop the server.
 	void handle_stop();
-
-	bool first_run; // use to init connection on first run
 };
 
 class server : public server_base {
