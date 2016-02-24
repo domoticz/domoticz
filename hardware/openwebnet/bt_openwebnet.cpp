@@ -2,9 +2,6 @@
 //class bt_openwebnet is a modification of GNU bticino C++ openwebnet client
 //from openwebnet class
 //see www.bticino.it; www.myhome-bticino.it
-
-#include "stdafx.h"
-
 #include <sstream>
 #include <iostream>
 #include <string>
