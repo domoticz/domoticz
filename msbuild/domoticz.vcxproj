@@ -56,13 +56,13 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;PTW32_STATIC_LIB;WITH_OPENZWAVE;OPENZWAVE_USEDLL;_CONSOLE;NS_ENABLE_SSL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-	  <AdditionalIncludeDirectories>./Windows Libraries/Boost/boost_1_59_0;./libusb;..\hardware\openzwave;./Windows Libraries/openssl;./Windows Libraries/Curl;./Windows Libraries/pthread;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./Windows Libraries/Boost/boost_1_59_0;./libusb;..\hardware\openzwave;./Windows Libraries/openssl;./Windows Libraries/Curl;./Windows Libraries/pthread;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-	  <AdditionalLibraryDirectories>./Windows Libraries/Boost/boost_1_59_0/Debug;../libusb;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>./Windows Libraries/Boost/boost_1_59_0/Debug;../libusb;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>./Windows Libraries/pthread/pthread.lib;./Windows Libraries/Curl/libcurl.lib;./Windows Libraries/openssl/ssleay32MT.lib;./Windows Libraries/openssl/libeay32MT.lib;./Windows Libraries/Lua/Debug/LuaMSVS.lib;./Windows Libraries/OpenZwave/Debug/OpenZWaveD.lib;./Windows Libraries/ZLib/zlib.lib;Setupapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <Profile>true</Profile>
@@ -90,8 +90,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>false</EnableCOMDATFolding>
       <OptimizeReferences>false</OptimizeReferences>
-      <AdditionalLibraryDirectories>C:\Users\stephane\Source\Repos\domoticz\Windows Libraries\pthread;./Windows Libraries/Boost/boost_1_59_0/Release;../libusb;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>$(ProjectDir)..\Windows Libraries/pthread\pthread.lib;$(ProjectDir)..\Windows Libraries\Curl\libcurl.lib;$(ProjectDir)..\Windows Libraries\openssl\ssleay32MT.lib;$(ProjectDir)..\Windows Libraries\openssl\libeay32MT.lib;$(ProjectDir)..\Windows Libraries\Lua/Release\LuaMSVS.lib;$(ProjectDir)..\Windows Libraries\OpenZwave\Release\OpenZWave.lib;$(ProjectDir)..\Windows Libraries\ZLib\zlib.lib;Setupapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>./Windows Libraries/Boost/boost_1_59_0/Release;../libusb;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>./Windows Libraries/pthread/pthread.lib;./Windows Libraries/Curl/libcurl.lib;./Windows Libraries/openssl/ssleay32MT.lib;./Windows Libraries/openssl/libeay32MT.lib;./Windows Libraries/Lua/Release/LuaMSVS.lib;./Windows Libraries/OpenZwave/Release/OpenZWave.lib;./Windows Libraries/ZLib/zlib.lib;Setupapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
@@ -445,11 +445,11 @@
     <ClInclude Include="..\hardware\NefitEasy.h" />
     <ClInclude Include="..\hardware\Nest.h" />
     <ClInclude Include="..\hardware\Netatmo.h" />
-    <ClInclude Include="..\hardware\OpenWebNet.h" />
-    <ClInclude Include="..\hardware\openwebnet\bt_openwebnet.h" />
     <ClInclude Include="..\hardware\OpenZWave.h" />
     <ClInclude Include="..\hardware\openzwave\control_panel\ozwcp.h" />
-    <ClInclude Include="..\hardware\OTGWBase.h" />
+	<ClInclude Include="..\hardware\OpenWebNet.h" />
+	<ClInclude Include="..\hardware\openwebnet\bt_openwebnet.h" />
+	<ClInclude Include="..\hardware\OTGWBase.h" />
     <ClInclude Include="..\hardware\OTGWSerial.h" />
     <ClInclude Include="..\hardware\OTGWTCP.h" />
     <ClInclude Include="..\hardware\PanasonicTV.h" />
@@ -468,8 +468,6 @@
     <ClInclude Include="..\hardware\SBFSpot.h" />
     <ClInclude Include="..\hardware\serial\serial.h" />
     <ClInclude Include="..\hardware\SolarEdgeAPI.h" />
-    <ClInclude Include="..\hardware\SolarEdgeBase.h" />
-    <ClInclude Include="..\hardware\SolarEdgeTCP.h" />
     <ClInclude Include="..\hardware\SolarMaxTCP.h" />
     <ClInclude Include="..\hardware\TCPProxy\tcpproxy_server.h" />
     <ClInclude Include="..\hardware\TE923.h" />
@@ -582,6 +580,7 @@
     <ClInclude Include="..\webserver\request_handler.hpp" />
     <ClInclude Include="..\webserver\request_parser.hpp" />
     <ClInclude Include="..\webserver\server.hpp" />
+    <ClInclude Include="..\webserver\server_settings.hpp" />
     <ClInclude Include="..\webserver\utf.hpp" />
     <ClInclude Include="WindowsHelper.h" />
     <ClInclude Include="..\hardware\YouLess.h" />
@@ -643,10 +642,11 @@
     <ClCompile Include="..\hardware\NefitEasy.cpp" />
     <ClCompile Include="..\hardware\Nest.cpp" />
     <ClCompile Include="..\hardware\Netatmo.cpp" />
-    <ClCompile Include="..\hardware\OpenWebNet.cpp" />
-    <ClCompile Include="..\hardware\openwebnet\bt_openwebnet.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-    </ClCompile>
+	<ClCompile Include="..\hardware\OpenWebNet.cpp" />
+	<ClCompile Include="..\hardware\openwebnet\bt_openwebnet.cpp">
+		<PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+		<PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+     </ClCompile>
     <ClCompile Include="..\hardware\OpenZWave.cpp" />
     <ClCompile Include="..\hardware\openzwave\control_panel\ozwcp.cpp" />
     <ClCompile Include="..\hardware\openzwave\control_panel\zwavelib.cpp" />
@@ -669,8 +669,6 @@
     <ClCompile Include="..\hardware\serial\impl\win.cpp" />
     <ClCompile Include="..\hardware\serial\serial.cpp" />
     <ClCompile Include="..\hardware\SolarEdgeAPI.cpp" />
-    <ClCompile Include="..\hardware\SolarEdgeBase.cpp" />
-    <ClCompile Include="..\hardware\SolarEdgeTCP.cpp" />
     <ClCompile Include="..\hardware\SolarMaxTCP.cpp" />
     <ClCompile Include="..\hardware\TCPProxy\tcpproxy_server.cpp" />
     <ClCompile Include="..\hardware\TE923.cpp" />

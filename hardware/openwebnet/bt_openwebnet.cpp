@@ -365,7 +365,7 @@ void bt_openwebnet::Assegna_livello_interfaccia()
       dove = FirstToken(sup, "#");
     // LEVEL + INTERFACE
     sup= orig.substr(dove.length()+1);
-    if(sup.find('#') != NULL)
+    if(sup.find('#') != string::npos)
     {
       livello = FirstToken(sup, "#");
       interfaccia = orig.substr(dove.length()+1+livello.length()+1);
