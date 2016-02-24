@@ -445,12 +445,11 @@
     <ClInclude Include="..\hardware\NefitEasy.h" />
     <ClInclude Include="..\hardware\Nest.h" />
     <ClInclude Include="..\hardware\Netatmo.h" />
+    <ClInclude Include="..\hardware\OpenWebNet.h" />
+    <ClInclude Include="..\hardware\openwebnet\bt_openwebnet.h" />	
     <ClInclude Include="..\hardware\OpenZWave.h" />
     <ClInclude Include="..\hardware\openzwave\control_panel\ozwcp.h" />
-	<ClInclude Include="..\hardware\OTGWBase.h" />
-	<ClInclude Include="..\hardware\OpenWebNet.h" />
-	<ClInclude Include="..\hardware\openwebnet\bt_openwebnet.h" />
-	<ClInclude Include="..\hardware\OTGWBase.h" />
+    <ClInclude Include="..\hardware\OTGWBase.h" />
     <ClInclude Include="..\hardware\OTGWSerial.h" />
     <ClInclude Include="..\hardware\OTGWTCP.h" />
     <ClInclude Include="..\hardware\PanasonicTV.h" />
@@ -469,8 +468,8 @@
     <ClInclude Include="..\hardware\SBFSpot.h" />
     <ClInclude Include="..\hardware\serial\serial.h" />
     <ClInclude Include="..\hardware\SolarEdgeAPI.h" />
-	<ClInclude Include="..\hardware\SolarEdgeBase.h" />
-	<ClInclude Include="..\hardware\SolarEdgeTCP.h" />
+    <ClInclude Include="..\hardware\SolarEdgeBase.h" />
+    <ClInclude Include="..\hardware\SolarEdgeTCP.h" />
     <ClInclude Include="..\hardware\SolarMaxTCP.h" />
     <ClInclude Include="..\hardware\TCPProxy\tcpproxy_server.h" />
     <ClInclude Include="..\hardware\TE923.h" />
@@ -644,11 +643,11 @@
     <ClCompile Include="..\hardware\NefitEasy.cpp" />
     <ClCompile Include="..\hardware\Nest.cpp" />
     <ClCompile Include="..\hardware\Netatmo.cpp" />
-	<ClCompile Include="..\hardware\OpenWebNet.cpp" />
-	<ClCompile Include="..\hardware\openwebnet\bt_openwebnet.cpp">
-		<PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-		<PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-     </ClCompile>
+    <ClCompile Include="..\hardware\OpenWebNet.cpp" />
+    <ClCompile Include="..\hardware\openwebnet\bt_openwebnet.cpp">
+ 	  <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="..\hardware\OpenZWave.cpp" />
     <ClCompile Include="..\hardware\openzwave\control_panel\ozwcp.cpp" />
     <ClCompile Include="..\hardware\openzwave\control_panel\zwavelib.cpp" />
@@ -671,8 +670,8 @@
     <ClCompile Include="..\hardware\serial\impl\win.cpp" />
     <ClCompile Include="..\hardware\serial\serial.cpp" />
     <ClCompile Include="..\hardware\SolarEdgeAPI.cpp" />
-	<ClCompile Include="..\hardware\SolarEdgeBase.cpp" />
-	<ClCompile Include="..\hardware\SolarEdgeTCP.cpp" />
+    <ClCompile Include="..\hardware\SolarEdgeBase.cpp" />
+    <ClCompile Include="..\hardware\SolarEdgeTCP.cpp" />
     <ClCompile Include="..\hardware\SolarMaxTCP.cpp" />
     <ClCompile Include="..\hardware\TCPProxy\tcpproxy_server.cpp" />
     <ClCompile Include="..\hardware\TE923.cpp" />
