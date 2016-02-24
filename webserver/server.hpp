@@ -60,8 +60,6 @@ protected:
 	/// read timeout in seconds
 	int timeout_;
 private:
-	void init();
-
 	/// Handle a request to stop the server.
 	void handle_stop();
 };
