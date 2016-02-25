@@ -50,16 +50,16 @@ cWebem::cWebem(
 				myRequestHandler(doc_root, this),
 				m_DigistRealm("Domoticz.com"),
 				m_session_clean_timer(m_io_service, boost::posix_time::minutes(1)),
+				m_io_service_thread(boost::bind(&boost::asio::io_service::run, &m_io_service)),
 				myServer(server_factory::create(settings, myRequestHandler)) {
 	m_authmethod = AUTH_LOGIN;
 	mySessionStore = NULL;
-	m_io_service_thread = NULL;
+	// associate handler to timer and schedule the first iteration
+	m_session_clean_timer.async_wait(boost::bind(&cWebem::CleanSessions, this));
 }
 
 cWebem::~cWebem() {
-	if (m_io_service_thread) {
-		delete m_io_service_thread;
-	}
+	// Delete server
 	if (myServer) {
 		delete myServer;
 	}
@@ -75,11 +75,6 @@ IMPORTANT: This method does not return. If application needs to continue, start 
 
 */
 void cWebem::Run() {
-	if (m_io_service_thread == NULL) {
-		// Start session cleaner
-		m_session_clean_timer.async_wait(boost::bind(&cWebem::CleanSessions, this));
-		m_io_service_thread = new boost::thread(boost::bind(&boost::asio::io_service::run, &m_io_service));
-	}
 	// Start Web server
 	if (myServer != NULL) {
 		myServer->run();
@@ -95,10 +90,11 @@ IMPORTANT:  To start the server again, delete it and create a new cWebem instanc
 */
 void cWebem::Stop() {
 	// Stop session cleaner
-	if (m_io_service_thread != NULL) {
-		m_session_clean_timer.cancel();
+	try {
 		m_io_service.stop();
-		m_io_service_thread->join();
+		m_io_service_thread.join();
+	} catch (...) {
+		_log.Log(LOG_ERROR, "[web:%s] exception thrown while stopping session cleaner", GetPort().c_str());
 	}
 	// Stop Web server
 	if (myServer != NULL) {
@@ -949,6 +945,7 @@ int cWebem::CountSessions() {
 }
 
 void cWebem::CleanSessions() {
+	//_log.Log(LOG_STATUS, "[web:%s] cleaning sessions...", GetPort().c_str());
 	int before = CountSessions();
 	// Clean up timed out sessions from memory
 	std::vector<std::string> ssids;

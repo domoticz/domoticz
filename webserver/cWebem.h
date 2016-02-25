@@ -238,7 +238,7 @@ namespace http {
 			boost::mutex m_sessionsMutex;
 			boost::asio::io_service m_io_service;
 			boost::asio::deadline_timer m_session_clean_timer;
-			boost::thread* m_io_service_thread;
+			boost::thread m_io_service_thread;
 			void CleanSessions();
 			session_store* mySessionStore; /// session store
 		};
