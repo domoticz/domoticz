@@ -159,7 +159,7 @@ namespace http {
 				}
 				break;
 			}
-			_log.Log(LOG_STATUS, "WebServer(%s) stopped...", m_server_alias.c_str());
+			_log.Log(LOG_STATUS, "WebServer(%s) stopped", m_server_alias.c_str());
 		}
 
 		void CWebServer::ReloadCustomSwitchIcons()
@@ -291,18 +291,18 @@ namespace http {
 						settings_copy->listening_address = "0.0.0.0";
 						break;
 					case 2:
-						_log.Log(LOG_ERROR, "Failed to start the web server: %s", e.what());
+						_log.Log(LOG_ERROR, "WebServer(%s) startup failed on address %s with port: %s: %s", m_server_alias.c_str(), settings_copy->listening_address.c_str(), settings_copy->listening_port.c_str(), e.what());
 						if (atoi(settings_copy->listening_port.c_str()) < 1024)
-							_log.Log(LOG_ERROR, "check privileges for opening ports below 1024");
+							_log.Log(LOG_ERROR, "WebServer(%s) check privileges for opening ports below 1024", m_server_alias.c_str());
 						else
-							_log.Log(LOG_ERROR, "check if no other application is using port: %s", settings_copy->listening_port.c_str());
+							_log.Log(LOG_ERROR, "WebServer(%s) check if no other application is using port: %s", m_server_alias.c_str(), settings_copy->listening_port.c_str());
 						return false;
 					}
 					tries++;
 				}
 			} while (exception);
 
-			_log.Log(LOG_STATUS, "Webserver(%s) started on address: %s, port: %s", m_server_alias.c_str(), settings_copy->listening_address.c_str(), settings_copy->listening_port.c_str());
+			_log.Log(LOG_STATUS, "WebServer(%s) started on address: %s with port %s", m_server_alias.c_str(), settings_copy->listening_address.c_str(), settings_copy->listening_port.c_str());
 
 			delete settings_copy;
 
