@@ -59,10 +59,7 @@ cWebem::cWebem(
 }
 
 cWebem::~cWebem() {
-	// Delete server
-	if (myServer) {
-		delete myServer;
-	}
+	// Delete server (no need with smart pointer)
 }
 
 /**

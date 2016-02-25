@@ -226,7 +226,7 @@ namespace http {
 			/// store map between pages and application functions
 			std::map < std::string, webem_page_function > myPages_w;
 			/// boost::asio web server (RK: plain or secure)
-			server_base* myServer;
+			boost::shared_ptr<server_base> myServer;
 			// actual theme selected
 			std::string m_actTheme;
 			// root of url for reverse proxy servers
