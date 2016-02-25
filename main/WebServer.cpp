@@ -274,42 +274,38 @@ namespace http {
 			int tries = 0;
 			bool exception = false;
 
-			server_settings * settings_copy = settings.clone(); // copy to change listening address
-			//_log.Log(LOG_STATUS, "CWebServer::StartServer() : settings_copy : %s", settings_copy->to_string().c_str());
+			server_settings settings_copy = settings; // copy to change listening address
+			//_log.Log(LOG_STATUS, "CWebServer::StartServer() : settings_copy : %s", settings_copy.to_string().c_str());
 			do {
 				try {
 					exception = false;
-					m_pWebEm = new http::server::cWebem(*settings_copy, serverpath.c_str());
+					m_pWebEm = new http::server::cWebem(settings_copy, serverpath.c_str());
 				}
 				catch (std::exception& e) {
 					exception = true;
 					switch (tries) {
 					case 0:
-						settings_copy->listening_address = "::";
+						settings_copy.listening_address = "::";
 						break;
 					case 1:
-						settings_copy->listening_address = "0.0.0.0";
+						settings_copy.listening_address = "0.0.0.0";
 						break;
 					case 2:
 						_log.Log(LOG_ERROR, "Failed to start the web server: %s", e.what());
-						if (atoi(settings_copy->listening_port.c_str()) < 1024)
+						if (atoi(settings_copy.listening_port.c_str()) < 1024)
 							_log.Log(LOG_ERROR, "check privileges for opening ports below 1024");
 						else
-							_log.Log(LOG_ERROR, "check if no other application is using port: %s", settings_copy->listening_port.c_str());
+							_log.Log(LOG_ERROR, "check if no other application is using port: %s", settings_copy.listening_port.c_str());
 						return false;
 					}
 					tries++;
 				}
 			} while (exception);
 
-			if (settings_copy->listening_address != "0.0.0.0" && settings_copy->listening_address != "::")
-				_log.Log(LOG_STATUS, "Webserver(%s) started on address: %s, port: %s", m_server_alias.c_str(), settings_copy->listening_address.c_str(), settings_copy->listening_port.c_str());
-			else
-				_log.Log(LOG_STATUS, "Webserver(%s) started on port: %s", m_server_alias.c_str(), settings_copy->listening_port.c_str());
-
-			delete settings_copy;
+			_log.Log(LOG_STATUS, "Webserver(%s) started on address: %s, port: %s", m_server_alias.c_str(), settings_copy.listening_address.c_str(), settings_copy.listening_port.c_str());
 
 			m_pWebEm->SetDigistRealm("Domoticz.com");
+
 			m_pWebEm->SetSessionStore(this);
 
 			if (!bIgnoreUsernamePassword)
@@ -615,6 +611,7 @@ namespace http {
 			{
 				if (m_pWebEm == NULL)
 					return;
+				m_pWebEm->SetSessionStore(NULL);
 				m_pWebEm->Stop();
 			}
 			catch (...)
@@ -1116,6 +1113,9 @@ namespace http {
 			else if (htype == HTYPE_RaspberryGPIO) {
 				//all fine here!
 			}
+			else if (htype == HTYPE_OpenWebNet) {
+				//All fine here
+			}
 			else
 				return;
 
@@ -1343,6 +1343,9 @@ namespace http {
 				  (sport == "")
 				)
 					return;
+			}
+			else if (htype == HTYPE_OpenWebNet) {
+				//All fine here
 			}
 			else
 				return;
@@ -3403,6 +3406,7 @@ namespace http {
 						case HTYPE_RaspberryGPIO:
 						case HTYPE_RFLINKUSB:
 						case HTYPE_RFLINKTCP:
+						case HTYPE_OpenWebNet:
 							root["result"][ii]["idx"] = ID;
 							root["result"][ii]["Name"] = Name;
 							ii++;
@@ -4105,6 +4109,18 @@ namespace http {
 						devid = id;
 						sunitcode = "0";
 					}
+					else if (lighttype == 305) {
+						//Blinds Openwebnet
+						dtype = pTypeGeneralSwitch;
+						subtype = sSwitchBlindsT1;
+						devid = request::findValue(&req, "id");
+						sunitcode = request::findValue(&req, "unitcode");
+						if (
+							(devid == "") ||
+							(sunitcode == "")
+							)
+							return;
+					}
 				}
                 
                 // ----------- If needed convert to GeneralSwitch type (for o.a. RFlink) -----------
@@ -4552,6 +4568,19 @@ namespace http {
 							return;
 						devid = id;
 						sunitcode = "0";
+					}
+					else if (lighttype == 305)
+					{
+						//Blinds Openwebnet
+						dtype = pTypeGeneralSwitch;
+						subtype = sSwitchBlindsT1;
+						devid = request::findValue(&req, "id");
+						sunitcode = request::findValue(&req, "unitcode");
+						if (
+							(devid == "") ||
+							(sunitcode == "")
+							)
+							return;
 					}
 				}
 

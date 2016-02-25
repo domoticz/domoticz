@@ -33,6 +33,8 @@ public:
 	/// Print server settings to string (debug purpose)
 	virtual std::string to_string() const = 0;
 protected:
+	void init();
+
 	/// Initialize acceptor
 	virtual void init_connection() =0;
 
@@ -58,12 +60,8 @@ protected:
 	/// read timeout in seconds
 	int timeout_;
 private:
-	void init();
-
 	/// Handle a request to stop the server.
 	void handle_stop();
-
-	bool first_run; // use to init connection on first run
 };
 
 class server : public server_base {
@@ -85,7 +83,7 @@ protected:
 	virtual void handle_accept(const boost::system::error_code& error);
 };
 
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 class ssl_server : public server_base {
 public:
 	/// Construct the HTTPS server to listen on the specified TCP address and port, and
@@ -123,7 +121,7 @@ class server_factory {
 public:
 	static server_base * create(const server_settings & settings, request_handler & user_request_handler);
 
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 	static server_base * create(const ssl_server_settings & ssl_settings, request_handler & user_request_handler);
 #endif
 };

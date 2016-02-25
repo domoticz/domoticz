@@ -10,15 +10,13 @@
 
 #include <string>
 #include <boost/asio.hpp>
+#include <boost/asio/ssl.hpp>
 #include <boost/algorithm/string.hpp>
 
 namespace http {
 namespace server {
 
-class server_settings;
-class ssl_server_settings;
-
-class server_settings {
+struct server_settings {
 public:
 	std::string listening_address;
 	std::string listening_port;
@@ -29,9 +27,6 @@ public:
 		is_secure_(s.is_secure_),
 		listening_address(s.listening_address),
 		listening_port(s.listening_port) {}
-	virtual server_settings * clone() const {
-		return new server_settings(*this);
-	}
 	virtual ~server_settings() {}
 	server_settings & operator=(const server_settings & s) {
 		is_secure_ = s.is_secure_;
@@ -64,7 +59,7 @@ public:
 	}
 
 protected:
-	server_settings(bool is_secure) :
+	explicit server_settings(bool is_secure) :
 		is_secure_(is_secure) {}
 	std::string get_valid_value(const std::string & old_value, const std::string & new_value) {
 		if ((!new_value.empty()) && (new_value != old_value)) {
@@ -76,7 +71,7 @@ private:
 	bool is_secure_;
 };
 
-class ssl_server_settings : public server_settings {
+struct ssl_server_settings : public server_settings {
 public:
 	std::string ssl_method;
 	std::string certificate_chain_file_path;
@@ -110,9 +105,6 @@ public:
 		verify_peer(s.verify_peer),
 		verify_fail_if_no_peer_cert(s.verify_fail_if_no_peer_cert),
 		verify_file_path(s.verify_file_path) {}
-	virtual server_settings * clone() const {
-		return new ssl_server_settings(*this);
-	}
 	virtual ~ssl_server_settings() {}
 	ssl_server_settings & operator=(const ssl_server_settings & s) {
 		server_settings::operator=(s);
@@ -176,7 +168,7 @@ public:
 				update_options(opts, boost::asio::ssl::context::no_sslv3);
 			} else if (option.compare("no_tlsv1") == 0) {
 				update_options(opts, boost::asio::ssl::context::no_tlsv1);
-#if (BOOST_VERSION > 105700)
+#if (BOOST_VERSION > 105900)
 			} else if (option.compare("no_tlsv1_1") == 0) {
 				update_options(opts, boost::asio::ssl::context::no_tlsv1_1);
 			} else if (option.compare("no_tlsv1_2") == 0) {

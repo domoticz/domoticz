@@ -17,7 +17,7 @@ Contributors:
 #ifndef _TLS_MOSQ_H_
 #define _TLS_MOSQ_H_
 
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 
 #include <openssl/ssl.h>
 #ifdef WITH_TLS_PSK
@@ -31,6 +31,6 @@ Contributors:
 int _mosquitto_server_certificate_verify(int preverify_ok, X509_STORE_CTX *ctx);
 int _mosquitto_verify_certificate_hostname(X509 *cert, const char *hostname);
 
-#endif /* NS_ENABLE_SSL */
+#endif /* WWW_ENABLE_SSL */
 
 #endif

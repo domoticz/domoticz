@@ -20,7 +20,7 @@
 #include "request.hpp"
 #include "request_handler.hpp"
 #include "request_parser.hpp"
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 #include <boost/asio/ssl.hpp>
 typedef boost::asio::ssl::stream<boost::asio::ip::tcp::socket> ssl_socket;
 #endif
@@ -39,14 +39,14 @@ public:
   /// Construct a connection with the given io_service.
   explicit connection(boost::asio::io_service& io_service,
       connection_manager& manager, request_handler& handler, int timeout);
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
   explicit connection(boost::asio::io_service& io_service,
       connection_manager& manager, request_handler& handler, int timeout, boost::asio::ssl::context& context);
 #endif
   ~connection();
 
   /// Get the socket associated with the connection.
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
   ssl_socket::lowest_layer_type& socket();
 #else
   boost::asio::ip::tcp::socket& socket();
@@ -102,7 +102,7 @@ private:
   // secure connection members below
   // secure connection yes/no
   bool secure_;
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
   // the SSL socket
   ssl_socket *sslsocket_;
   void handle_handshake(const boost::system::error_code& error);

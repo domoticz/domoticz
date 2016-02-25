@@ -17,8 +17,7 @@ server_base::server_base(const server_settings & settings, request_handler & use
 		acceptor_(io_service_),
 		settings_(settings),
 		request_handler_(user_request_handler),
-		timeout_(20), // default read timeout in seconds
-		first_run(true) {
+		timeout_(20) { // default read timeout in seconds
 	//_log.Log(LOG_STATUS, "[web:%s] create server_base using settings : %s", settings.listening_port.c_str(), settings.to_string().c_str());
 	if (!settings.is_enabled()) {
 		throw std::invalid_argument("cannot initialize a disabled server (listening port cannot be empty or 0)");
@@ -26,11 +25,7 @@ server_base::server_base(const server_settings & settings, request_handler & use
 }
 
 void server_base::init() {
-
-	if (first_run) {
-		init_connection();
-		first_run = false;
-	}
+	init_connection();
 
 	// Open the acceptor with the option to reuse the address (i.e. SO_REUSEADDR).
 	boost::asio::ip::tcp::resolver resolver(io_service_);
@@ -49,8 +44,6 @@ void server_base::init() {
 }
 
 void server_base::run() {
-	init();
-
 	// The io_service::run() call will block until all asynchronous operations
 	// have finished. While the server is running, there is always at least one
 	// asynchronous operation outstanding: the asynchronous accept call waiting
@@ -88,6 +81,7 @@ void server_base::handle_stop() {
 server::server(const server_settings & settings, request_handler & user_request_handler) :
 		server_base(settings, user_request_handler) {
 	//_log.Log(LOG_STATUS, "[web:%s] create server using settings : %s", settings.listening_port.c_str(), settings.to_string().c_str());
+	init();
 }
 
 void server::init_connection() {
@@ -109,13 +103,14 @@ void server::handle_accept(const boost::system::error_code& e) {
 	}
 }
 
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 ssl_server::ssl_server(const ssl_server_settings & ssl_settings, request_handler & user_request_handler) :
 		server_base(ssl_settings, user_request_handler),
 		settings_(ssl_settings),
 		context_(io_service_, ssl_settings.get_ssl_method())
 {
 	//_log.Log(LOG_STATUS, "[web:%s] create ssl_server using ssl_server_settings : %s", ssl_settings.listening_port.c_str(), ssl_settings.to_string().c_str());
+	init();
 }
 
 // this constructor will send std::bad_cast exception if the settings argument is not a ssl_server_settings object
@@ -124,6 +119,7 @@ ssl_server::ssl_server(const server_settings & settings, request_handler & user_
 		settings_(dynamic_cast<ssl_server_settings const &>(settings)),
 		context_(io_service_, dynamic_cast<ssl_server_settings const &>(settings).get_ssl_method()) {
 	//_log.Log(LOG_STATUS, "[web:%s] create ssl_server using server_settings : %s", settings.listening_port.c_str(), settings.to_string().c_str());
+	init();
 }
 
 void ssl_server::init_connection() {
@@ -209,7 +205,7 @@ std::string ssl_server::get_passphrase() const {
 #endif
 
 server_base * server_factory::create(const server_settings & settings, request_handler & user_request_handler) {
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 		if (settings.is_secure()) {
 			return create(dynamic_cast<ssl_server_settings const &>(settings), user_request_handler);
 		}
@@ -217,7 +213,7 @@ server_base * server_factory::create(const server_settings & settings, request_h
 		return new server(settings, user_request_handler);
 	}
 
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 server_base * server_factory::create(const ssl_server_settings & ssl_settings, request_handler & user_request_handler) {
 		return new ssl_server(ssl_settings, user_request_handler);
 	}

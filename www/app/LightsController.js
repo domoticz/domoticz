@@ -3224,6 +3224,12 @@ define(['app'], function (app) {
 				tothousecodes=4;
 				totunits=4;
 			}
+			else if (lighttype==305) {
+				//Openwebnet Blinds
+				totrooms=10;
+				totpointofloads=10;
+			}
+
 			
 			$("#dialog-addmanuallightdevice #he105params").hide();
 			$("#dialog-addmanuallightdevice #blindsparams").hide();
@@ -3231,6 +3237,7 @@ define(['app'], function (app) {
 			$("#dialog-addmanuallightdevice #lightingparams_gpio").hide();
 			$("#dialog-addmanuallightdevice #homeconfortparams").hide();
 			$("#dialog-addmanuallightdevice #fanparams").hide();
+			$("#dialog-addmanuallightdevice #openwebnetparams").hide();
 
 			if (lighttype==104) {
 				//HE105
@@ -3317,6 +3324,24 @@ define(['app'], function (app) {
 				$("#dialog-addmanuallightdevice #lighting2params").hide();
 				$("#dialog-addmanuallightdevice #lighting3params").hide();
 				$("#dialog-addmanuallightdevice #fanparams").show();
+			}
+			else if (lighttype==305) {
+				//Openwebnet Blinds
+				$("#dialog-addmanuallightdevice #openwebnetparams #combocmd1  >option").remove();
+				for (ii=1; ii<totrooms; ii++)
+				{
+					$('#dialog-addmanuallightdevice #openwebnetparams #combocmd1').append($('<option></option>').val(ii).html(ii));
+				}
+				$("#dialog-addmanuallightdevice #openwebnetparams #combocmd2  >option").remove();
+				for (ii=1; ii<totpointofloads; ii++)
+				{
+					$('#dialog-addmanuallightdevice #openwebnetparams #combocmd2').append($('<option></option>').val(ii).html(ii));
+				}
+				
+				$("#dialog-addmanuallightdevice #lighting1params").hide();
+				$("#dialog-addmanuallightdevice #lighting2params").hide();
+				$("#dialog-addmanuallightdevice #lighting3params").hide();
+				$("#dialog-addmanuallightdevice #openwebnetparams").show();
 			}
 			else if (bIsARCType==1) {
 				$('#dialog-addmanuallightdevice #lightparams1 #combohousecode >option').remove();
@@ -3440,6 +3465,14 @@ define(['app'], function (app) {
 					$("#dialog-addmanuallightdevice #fanparams #combocmd2 option:selected").text()+
 					$("#dialog-addmanuallightdevice #fanparams #combocmd3 option:selected").text();
 				mParams+="&id="+ID;
+			}
+			else if (lighttype==305) {
+				//OpenWebNet Blinds
+				var ID="OpenWebNet";
+				var unitcode=
+					$("#dialog-addmanuallightdevice #openwebnetparams #combocmd1 option:selected").val()+
+					$("#dialog-addmanuallightdevice #openwebnetparams #combocmd2 option:selected").val();
+				mParams+="&id="+ID+"&unitcode="+unitcode;
 			}
 			else {
 				//AC
