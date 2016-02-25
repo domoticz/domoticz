@@ -58,12 +58,9 @@ public:
   /// Stop all asynchronous operations associated with the connection.
   void stop();
 
-  /// Last user interaction
-  time_t m_lastresponse;
-
-  /// read timeout timer
-  boost::asio::deadline_timer timer_;
+  /// Timer handlers
   void handle_timeout(const boost::system::error_code& error);
+  void handle_abandoned_timeout(const boost::system::error_code& error);
 
 private:
   /// Handle completion of a read operation.
@@ -73,6 +70,14 @@ private:
   /// Handle completion of a write operation.
   void handle_write(const boost::system::error_code& e);
 
+
+	/// Schedule abandoned timeout timer
+	void set_abandoned_timeout();
+	/// Stop abandoned timeout timer
+	void cancel_abandoned_timeout();
+	/// Reschedule abandoned timeout timer
+	void reset_abandoned_timeout();
+
   /// Socket for the (PLAIN) connection.
   boost::asio::ip::tcp::socket *socket_;
   //Host EndPoint
@@ -81,8 +86,16 @@ private:
   /// If this is a keep-alive connection or not
   bool keepalive_;
 
-  /// timeouts (persistent and other) connections in seconds
+  /// Read timeout in seconds
   int timeout_;
+
+  /// Read timeout timer
+  boost::asio::deadline_timer timer_;
+
+  /// Abandoned connection timeout (in seconds)
+  long default_abandoned_timeout_;
+  /// Abandoned timeout timer
+  boost::asio::deadline_timer abandoned_timer_;
 
   /// The manager for this connection.
   connection_manager& connection_manager_;
@@ -96,7 +109,7 @@ private:
   /// The reply to be sent back to the client.
   reply reply_;
 
-  /// the buffer that we receive data in
+  /// The buffer that we receive data in
   boost::asio::streambuf _buf;
 
   // secure connection members below

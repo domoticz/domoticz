@@ -92,6 +92,7 @@ Version 2.4xxx
 - Fixed: Fix the closure of the Web server sockets by making a graceful shutdown before closing.
 - Fixed: Fix webserver initialization failure if the local network interface is not IPv6 (due to wrong initialization sequence).
 - Fixed: Fix the exception thrown on domoticz termination ("terminate called after throwing an instance of 'boost::exception_detail::clone_impl<boost::exception_detail::error_info_injector<boost::lock_error> >'    what():  boost: mutex lock failed in pthread_mutex_lock: Invalid argument").
+- Fixed: Fix abandoned connections not removed because the method connection_manager::check_timeout is never called [Security/Performance].
 - Updated: OpenZWave, configuration files
 - Updated: SQLite3 v3.11.0.
 

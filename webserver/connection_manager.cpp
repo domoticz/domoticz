@@ -59,19 +59,6 @@ void connection_manager::stop_all()
   connections_.clear();
 }
 
-void connection_manager::check_timeouts()
-{
-	time_t atime=mytime(NULL);
-	std::set<connection_ptr>::const_iterator itt;
-	for (itt=connections_.begin(); itt!=connections_.end(); ++itt)
-	{
-		if (atime-(*itt)->m_lastresponse>20*60)
-		{
-			stop(*itt);
-			itt=connections_.begin();
-		}
-	}
-}
 
 } // namespace server
 } // namespace http
