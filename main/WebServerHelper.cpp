@@ -23,16 +23,7 @@ namespace http {
 
 		CWebServerHelper::~CWebServerHelper()
 		{
-#ifdef NS_ENABLE_SSL
-			if (secureServer_) delete secureServer_;
-#endif
-			if (plainServer_) delete plainServer_;
-
-#ifndef NOCLOUD
-			for (proxy_iterator it = proxymanagerCollection.begin(); it != proxymanagerCollection.end(); ++it) {
-				delete (*it);
-			}
-#endif
+			StopServers();
 		}
 
 		bool CWebServerHelper::StartServers(const server_settings & web_settings, const ssl_server_settings & secure_web_settings, const std::string &serverpath, const bool bIgnoreUsernamePassword, tcp::server::CTCPServer *sharedServer)
@@ -71,13 +62,18 @@ namespace http {
 		{
 			for (server_iterator it = serverCollection.begin(); it != serverCollection.end(); ++it) {
 				((CWebServer*) *it)->StopServer();
-				delete (*it);
+				if (*it) delete (*it);
 			}
 			serverCollection.clear();
+			plainServer_ = NULL; // avoid double free
+#ifdef NS_ENABLE_SSL
+			secureServer_ = NULL; // avoid double free
+#endif
+
 #ifndef NOCLOUD
 			for (proxy_iterator it = proxymanagerCollection.begin(); it != proxymanagerCollection.end(); ++it) {
 				((CProxyManager*) *it)->Stop();
-				delete (*it);
+				if (*it) delete (*it);
 			}
 			proxymanagerCollection.clear();
 #endif
