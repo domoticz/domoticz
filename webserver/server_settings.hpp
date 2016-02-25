@@ -71,6 +71,8 @@ private:
 	bool is_secure_;
 };
 
+#ifdef WWW_ENABLE_SSL
+
 struct ssl_server_settings : public server_settings {
 public:
 	std::string ssl_method;
@@ -250,6 +252,8 @@ protected:
 		}
 	}
 };
+
+#endif //#ifdef WWW_ENABLE_SSL
 
 } // namespace server
 } // namespace http
