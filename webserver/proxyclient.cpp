@@ -36,8 +36,6 @@ namespace http {
 			timer_(io_service, boost::posix_time::seconds(TIMEOUT))
 		{
 			writePdu = NULL;
-			_apikey = "";
-			_password = "";
 			_allowed_subsystems = 0;
 			m_sql.GetPreferencesVar("MyDomoticzUserId", _apikey);
 			m_sql.GetPreferencesVar("MyDomoticzPassword", _password);
@@ -586,6 +584,7 @@ namespace http {
 			m_pWebEm = webEm;
 			m_pDomServ = domServ;
 			m_thread = NULL;
+			_first = true;
 		}
 
 		CProxyManager::~CProxyManager()

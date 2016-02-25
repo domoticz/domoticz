@@ -83,7 +83,7 @@ protected:
 private:
 };
 
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 class ssl_server : public server_base {
 public:
 	/// Construct the HTTPS server to listen on the specified TCP address and port, and
@@ -121,7 +121,7 @@ class server_factory {
 public:
 	static server_base * create(const server_settings & settings, request_handler & user_request_handler);
 
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 	static server_base * create(const ssl_server_settings & ssl_settings, request_handler & user_request_handler);
 #endif
 };

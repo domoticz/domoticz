@@ -13,7 +13,7 @@ namespace http {
 
 		CWebServerHelper::CWebServerHelper()
 		{
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 			secureServer_ = NULL;
 #endif
 			plainServer_ = NULL;
@@ -32,21 +32,16 @@ namespace http {
 
 			m_pDomServ = sharedServer;
 
-#ifdef NS_ENABLE_SSL
-			SSL_library_init();
-			serverCollection.resize(secure_web_settings.is_enabled() ? 2 : 1);
-#else
-			serverCollection.resize(1);
-#endif
 			our_serverpath = serverpath;
 			plainServer_ = new CWebServer();
-			serverCollection[0] = plainServer_;
+			serverCollection.push_back(plainServer_);
 			bRet |= plainServer_->StartServer(web_settings, serverpath, bIgnoreUsernamePassword);
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 			if (secure_web_settings.is_enabled()) {
+				SSL_library_init();
 				secureServer_ = new CWebServer();
 				bRet |= secureServer_->StartServer(secure_web_settings, serverpath, bIgnoreUsernamePassword);
-				serverCollection[1] = secureServer_;
+				serverCollection.push_back(secureServer_);
 			}
 #endif
 
@@ -66,7 +61,7 @@ namespace http {
 			}
 			serverCollection.clear();
 			plainServer_ = NULL; // avoid double free
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 			secureServer_ = NULL; // avoid double free
 #endif
 
@@ -146,7 +141,7 @@ namespace http {
 			if (plainServer_) { // assert
 				plainServer_->GetJSonDevices(root, rused, rfilter, order, rowid, planID, floorID, bDisplayHidden, LastUpdate, username);
 			}
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 			else if (secureServer_) {
 				secureServer_->GetJSonDevices(root, rused, rfilter, order, rowid, planID, floorID, bDisplayHidden, LastUpdate, username);
 			}

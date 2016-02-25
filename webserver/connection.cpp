@@ -30,14 +30,14 @@ connection::connection(boost::asio::io_service& io_service,
 {
 	secure_ = false;
 	keepalive_ = false;
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 	sslsocket_ = NULL;
 #endif
 	socket_ = new boost::asio::ip::tcp::socket(io_service),
 	m_lastresponse=mytime(NULL);
 }
 
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 // this is the constructor for secure connections
 connection::connection(boost::asio::io_service& io_service,
     connection_manager& manager, request_handler& handler, int timeout, boost::asio::ssl::context& context)
@@ -54,7 +54,7 @@ connection::connection(boost::asio::io_service& io_service,
 }
 #endif
 
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 // get the attached client socket of this connection
 ssl_socket::lowest_layer_type& connection::socket()
 {
@@ -87,7 +87,7 @@ void connection::start()
 
 	host_endpoint_ = endpoint.address().to_string();
 	if (secure_) {
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 		// with ssl, we first need to complete the handshake before reading
 		sslsocket_->async_handshake(boost::asio::ssl::stream_base::server,
 			boost::bind(&connection::handle_handshake, shared_from_this(),
@@ -117,7 +117,7 @@ void connection::handle_timeout(const boost::system::error_code& error)
 		}
 }
 
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 void connection::handle_handshake(const boost::system::error_code& error)
 {
     if (secure_) { // assert
@@ -144,7 +144,7 @@ void connection::read_more()
 	timer_.async_wait(boost::bind(&connection::handle_timeout, shared_from_this(), boost::asio::placeholders::error));
 
 	if (secure_) {
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 		// Perform secure read
 		sslsocket_->async_read_some(buf,
 			boost::bind(&connection::handle_read, shared_from_this(),
@@ -198,7 +198,7 @@ void connection::handle_read(const boost::system::error_code& error, std::size_t
 			}
 			request_handler_.handle_request(request_, reply_);
 			if (secure_) {
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 				boost::asio::async_write(*sslsocket_, reply_.to_buffers(request_.method),
 					boost::bind(&connection::handle_write, shared_from_this(),
 						boost::asio::placeholders::error));
@@ -215,7 +215,7 @@ void connection::handle_read(const boost::system::error_code& error, std::size_t
 			keepalive_ = false;
 			reply_ = reply::stock_reply(reply::bad_request);
 			if (secure_) {
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 				boost::asio::async_write(*sslsocket_, reply_.to_buffers(request_.method),
 					boost::bind(&connection::handle_write, shared_from_this(),
 						boost::asio::placeholders::error));
@@ -257,7 +257,7 @@ connection::~connection()
 {
 	// free up resources, delete the socket pointers
 	if (socket_) delete socket_;
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 	if (sslsocket_) delete sslsocket_;
 #endif
 }

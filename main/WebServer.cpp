@@ -609,6 +609,7 @@ namespace http {
 			{
 				if (m_pWebEm == NULL)
 					return;
+				m_pWebEm->SetSessionStore(NULL);
 				m_pWebEm->Stop();
 			}
 			catch (...)
