@@ -59,6 +59,8 @@ cWebem::cWebem(
 }
 
 cWebem::~cWebem() {
+	// Remove reference to CWebServer before its deletion (fix a "pure virtual method called" exception on server termination)
+	mySessionStore = NULL;
 	// Delete server (no need with smart pointer)
 }
 
