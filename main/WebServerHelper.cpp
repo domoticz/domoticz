@@ -26,7 +26,7 @@ namespace http {
 			StopServers();
 		}
 
-		bool CWebServerHelper::StartServers(const server_settings & web_settings, const ssl_server_settings & secure_web_settings, const std::string &serverpath, const bool bIgnoreUsernamePassword, tcp::server::CTCPServer *sharedServer)
+		bool CWebServerHelper::StartServers(server_settings & web_settings, ssl_server_settings & secure_web_settings, const std::string &serverpath, const bool bIgnoreUsernamePassword, tcp::server::CTCPServer *sharedServer)
 		{
 			bool bRet = false;
 
