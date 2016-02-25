@@ -115,7 +115,7 @@ extern http::server::CWebServerHelper m_webservers;
 namespace http {
 	namespace server {
 
-		CWebServer::CWebServer(void)
+		CWebServer::CWebServer(void) : session_store()
 		{
 			m_pWebEm = NULL;
 			m_bDoStop = false;

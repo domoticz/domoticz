@@ -200,8 +200,8 @@ namespace http {
 			void SetZipPassword(std::string password);
 
 			// Session store manager
-			void SetSessionStore(session_store* sessionStore);
-			session_store* GetSessionStore();
+			void SetSessionStore(session_store_impl_ptr sessionStore);
+			session_store_impl_ptr GetSessionStore();
 
 			std::string m_zippassword;
 			const std::string GetPort();
@@ -240,7 +240,7 @@ namespace http {
 			boost::asio::deadline_timer m_session_clean_timer;
 			boost::thread m_io_service_thread;
 			void CleanSessions();
-			session_store* mySessionStore; /// session store
+			session_store_impl_ptr mySessionStore; /// session store
 		};
 
 	}

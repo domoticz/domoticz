@@ -888,11 +888,11 @@ void cWebem::SetZipPassword(std::string password)
 	m_zippassword = password;
 }
 
-void cWebem::SetSessionStore(session_store* sessionStore) {
+void cWebem::SetSessionStore(session_store_impl_ptr sessionStore) {
 	mySessionStore = sessionStore;
 }
 
-session_store* cWebem::GetSessionStore() {
+session_store_impl_ptr cWebem::GetSessionStore() {
 	return mySessionStore;
 }
 
@@ -1255,7 +1255,7 @@ std::string cWebemRequestHandler::generateAuthToken(const WebEmSession & session
 	_log.Log(LOG_STATUS, "[web:%s] generate new authentication token %s", myWebem->GetPort().c_str(), authToken.c_str());
 #endif
 
-	session_store* sstore = myWebem->GetSessionStore();
+	session_store_impl_ptr sstore = myWebem->GetSessionStore();
 	if (sstore != NULL) {
 		WebEmStoredSession storedSession;
 		storedSession.id = session.id;
@@ -1477,7 +1477,7 @@ bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const req
  * Check authentication token if exists and restore the user session if necessary
  */
 bool cWebemRequestHandler::checkAuthToken(WebEmSession & session) {
-	session_store* sstore = myWebem->GetSessionStore();
+	session_store_impl_ptr sstore = myWebem->GetSessionStore();
 	if (sstore == NULL) {
 		_log.Log(LOG_ERROR, "CheckAuthToken([%s_%s]) : no store defined", session.id.c_str(), session.auth_token.c_str());
 		return true;
@@ -1541,7 +1541,7 @@ bool cWebemRequestHandler::checkAuthToken(WebEmSession & session) {
 }
 
 void cWebemRequestHandler::removeAuthToken(const std::string & sessionId) {
-	session_store* sstore = myWebem->GetSessionStore();
+	session_store_impl_ptr sstore = myWebem->GetSessionStore();
 	if (sstore != NULL) {
 		sstore->RemoveSession(sessionId);
 	}
@@ -1565,7 +1565,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 	session.forcelogin = false;
 	session.rememberme = false;
 
-		rep.bIsGZIP = false;
+	rep.bIsGZIP = false;
 
 	bool isPage = myWebem->IsPageOverride(req, rep);
 	bool isAction = myWebem->IsAction(req);
