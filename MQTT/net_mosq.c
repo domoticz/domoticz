@@ -50,7 +50,7 @@ Contributors:
 #include <netinet/in.h>
 #endif
 
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 #include <openssl/conf.h>
 #include <openssl/engine.h>
 #include <openssl/err.h>
@@ -81,7 +81,7 @@ Contributors:
 #include "time_mosq.h"
 #include "util_mosq.h"
 
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 int tls_ex_index_mosq = -1;
 #endif
 
@@ -91,7 +91,7 @@ void _mosquitto_net_init(void)
 	ares_library_init(ARES_LIB_INIT_ALL);
 #endif
 
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 	SSL_load_error_strings();
 	SSL_library_init();
 	OpenSSL_add_all_algorithms();
@@ -103,7 +103,7 @@ void _mosquitto_net_init(void)
 
 void _mosquitto_net_cleanup(void)
 {
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 	ERR_remove_state(0);
 	ENGINE_cleanup();
 	CONF_modules_unload(1);
@@ -197,7 +197,7 @@ int _mosquitto_socket_close(struct mosquitto *mosq)
 	int rc = 0;
 
 	assert(mosq);
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 	if(mosq->ssl){
 		SSL_shutdown(mosq->ssl);
 		SSL_free(mosq->ssl);
@@ -270,7 +270,7 @@ int _mosquitto_try_connect(struct mosquitto *mosq, const char *host, uint16_t po
 
 	*sock = INVALID_SOCKET;
 	memset(&hints, 0, sizeof(struct addrinfo));
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 	if(mosq->tls_cafile || mosq->tls_capath || mosq->tls_psk){
 		hints.ai_family = PF_INET;
 	}else
@@ -361,7 +361,7 @@ int _mosquitto_try_connect(struct mosquitto *mosq, const char *host, uint16_t po
 	return rc;
 }
 
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 int mosquitto__socket_connect_tls(struct mosquitto *mosq)
 {
 	int ret;
@@ -395,7 +395,7 @@ int _mosquitto_socket_connect(struct mosquitto *mosq, const char *host, uint16_t
 {
 	mosq_sock_t sock = INVALID_SOCKET;
 	int rc;
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 	int ret;
 	BIO *bio;
 #endif
@@ -405,7 +405,7 @@ int _mosquitto_socket_connect(struct mosquitto *mosq, const char *host, uint16_t
 	rc = _mosquitto_try_connect(mosq, host, port, &sock, bind_address, blocking);
 	if(rc > 0) return rc;
 
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 	if(mosq->tls_cafile || mosq->tls_capath || mosq->tls_psk){
 #if OPENSSL_VERSION_NUMBER >= 0x10001000L
 		if(!mosq->tls_version || !strcmp(mosq->tls_version, "tlsv1.2")){
@@ -642,7 +642,7 @@ void _mosquitto_write_uint16(struct _mosquitto_packet *packet, uint16_t word)
 
 ssize_t _mosquitto_net_read(struct mosquitto *mosq, void *buf, size_t count)
 {
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 	int ret;
 	int err;
 	char ebuf[256];
@@ -650,7 +650,7 @@ ssize_t _mosquitto_net_read(struct mosquitto *mosq, void *buf, size_t count)
 #endif
 	assert(mosq);
 	errno = 0;
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 	if(mosq->ssl){
 		ret = SSL_read(mosq->ssl, buf, count);
 		if(ret <= 0){
@@ -683,14 +683,14 @@ ssize_t _mosquitto_net_read(struct mosquitto *mosq, void *buf, size_t count)
 	return recv(mosq->sock, buf, count, 0);
 #endif
 
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 	}
 #endif
 }
 
 ssize_t _mosquitto_net_write(struct mosquitto *mosq, void *buf, size_t count)
 {
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 	int ret;
 	int err;
 	char ebuf[256];
@@ -699,7 +699,7 @@ ssize_t _mosquitto_net_write(struct mosquitto *mosq, void *buf, size_t count)
 	assert(mosq);
 
 	errno = 0;
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 	if(mosq->ssl){
 		ret = SSL_write(mosq->ssl, buf, count);
 		if(ret < 0){
@@ -731,7 +731,7 @@ ssize_t _mosquitto_net_write(struct mosquitto *mosq, void *buf, size_t count)
 	return send(mosq->sock, buf, count, 0);
 #endif
 
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 	}
 #endif
 }

@@ -103,7 +103,7 @@ void server::handle_accept(const boost::system::error_code& e) {
 	}
 }
 
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 ssl_server::ssl_server(const ssl_server_settings & ssl_settings, request_handler & user_request_handler) :
 		server_base(ssl_settings, user_request_handler),
 		settings_(ssl_settings),
@@ -205,7 +205,7 @@ std::string ssl_server::get_passphrase() const {
 #endif
 
 server_base * server_factory::create(const server_settings & settings, request_handler & user_request_handler) {
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 		if (settings.is_secure()) {
 			return create(dynamic_cast<ssl_server_settings const &>(settings), user_request_handler);
 		}
@@ -213,7 +213,7 @@ server_base * server_factory::create(const server_settings & settings, request_h
 		return new server(settings, user_request_handler);
 	}
 
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 server_base * server_factory::create(const ssl_server_settings & ssl_settings, request_handler & user_request_handler) {
 		return new ssl_server(ssl_settings, user_request_handler);
 	}

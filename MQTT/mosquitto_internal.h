@@ -23,7 +23,7 @@ Contributors:
 #  include <winsock2.h>
 #endif
 
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 #  include <openssl/ssl.h>
 #else
 #  include <time.h>
@@ -161,7 +161,7 @@ struct mosquitto {
 	struct _mosquitto_packet *current_out_packet;
 	struct _mosquitto_packet *out_packet;
 	struct mosquitto_message *will;
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 	SSL *ssl;
 	SSL_CTX *ssl_ctx;
 	char *tls_cafile;

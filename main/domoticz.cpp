@@ -73,7 +73,7 @@ const char *szHelp=
 	"Usage: Domoticz -www port -verbose x\n"
 	"\t-www port (for example -www 8080, or -www 0 to disable http)\n"
 	"\t-wwwbind address (for example -wwwbind 0.0.0.0 or -wwwbind 192.168.0.20)\n"
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 	"\t-sslwww port (for example -sslwww 443, or -sslwww 0 to disable https)\n"
 	"\t-sslcert file_path (for example /opt/domoticz/server_cert.pem)\n"
 	"\t-sslpass passphrase (to access to server private key in certificate)\n"
@@ -610,7 +610,7 @@ int main(int argc, char**argv)
 		webserver_settings.listening_port = wwwport;
 	}
 	m_mainworker.SetWebserverSettings(webserver_settings);
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 	http::server::ssl_server_settings secure_webserver_settings;
 	if (cmdLine.HasSwitch("-sslwww"))
 	{

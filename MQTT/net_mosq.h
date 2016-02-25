@@ -84,7 +84,7 @@ int _mosquitto_packet_read(struct mosquitto_db *db, struct mosquitto *mosq);
 int _mosquitto_packet_read(struct mosquitto *mosq);
 #endif
 
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 int _mosquitto_socket_apply_tls(struct mosquitto *mosq);
 int mosquitto__socket_connect_tls(struct mosquitto *mosq);
 #endif

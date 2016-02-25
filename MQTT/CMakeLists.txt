@@ -17,7 +17,7 @@ endif()
 if(NOT OPENSSL_FOUND)
   message(STATUS "Failed to find the openssl library, no TLS support")
 else()
-  add_definitions(-DNS_ENABLE_SSL)
+  add_definitions(-DWWW_ENABLE_SSL)
 endif()
 
 SET(CORE mosquitto.c

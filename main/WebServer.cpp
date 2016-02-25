@@ -274,39 +274,38 @@ namespace http {
 			int tries = 0;
 			bool exception = false;
 
-			server_settings * settings_copy = settings.clone(); // copy to change listening address
-			//_log.Log(LOG_STATUS, "CWebServer::StartServer() : settings_copy : %s", settings_copy->to_string().c_str());
+			server_settings settings_copy = settings; // copy to change listening address
+			//_log.Log(LOG_STATUS, "CWebServer::StartServer() : settings_copy : %s", settings_copy.to_string().c_str());
 			do {
 				try {
 					exception = false;
-					m_pWebEm = new http::server::cWebem(*settings_copy, serverpath.c_str());
+					m_pWebEm = new http::server::cWebem(settings_copy, serverpath.c_str());
 				}
 				catch (std::exception& e) {
 					exception = true;
 					switch (tries) {
 					case 0:
-						settings_copy->listening_address = "::";
+						settings_copy.listening_address = "::";
 						break;
 					case 1:
-						settings_copy->listening_address = "0.0.0.0";
+						settings_copy.listening_address = "0.0.0.0";
 						break;
 					case 2:
 						_log.Log(LOG_ERROR, "Failed to start the web server: %s", e.what());
-						if (atoi(settings_copy->listening_port.c_str()) < 1024)
+						if (atoi(settings_copy.listening_port.c_str()) < 1024)
 							_log.Log(LOG_ERROR, "check privileges for opening ports below 1024");
 						else
-							_log.Log(LOG_ERROR, "check if no other application is using port: %s", settings_copy->listening_port.c_str());
+							_log.Log(LOG_ERROR, "check if no other application is using port: %s", settings_copy.listening_port.c_str());
 						return false;
 					}
 					tries++;
 				}
 			} while (exception);
 
-			_log.Log(LOG_STATUS, "Webserver(%s) started on address: %s, port: %s", m_server_alias.c_str(), settings_copy->listening_address.c_str(), settings_copy->listening_port.c_str());
-
-			delete settings_copy;
+			_log.Log(LOG_STATUS, "Webserver(%s) started on address: %s, port: %s", m_server_alias.c_str(), settings_copy.listening_address.c_str(), settings_copy.listening_port.c_str());
 
 			m_pWebEm->SetDigistRealm("Domoticz.com");
+
 			m_pWebEm->SetSessionStore(this);
 
 			if (!bIgnoreUsernamePassword)
@@ -612,6 +611,7 @@ namespace http {
 			{
 				if (m_pWebEm == NULL)
 					return;
+				m_pWebEm->SetSessionStore(NULL);
 				m_pWebEm->Stop();
 			}
 			catch (...)

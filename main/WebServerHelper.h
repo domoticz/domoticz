@@ -33,7 +33,7 @@ namespace http {
 			void ReloadCustomSwitchIcons();
 		private:
 			CWebServer *plainServer_;
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 			CWebServer *secureServer_;
 #endif
 			tcp::server::CTCPServer *m_pDomServ;
