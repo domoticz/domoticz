@@ -4493,10 +4493,12 @@ void MainWorker::decode_Lighting5(const int HwdID, const _eHardwareTypes HwdType
 	unsigned char Unit=pResponse->LIGHTING5.unitcode;
 	unsigned char cmnd=pResponse->LIGHTING5.cmnd;
 	float flevel;
-	if (subType==sTypeLivolo)
-		flevel=(100.0f/7.0f)*float(pResponse->LIGHTING5.level);
+	if (subType == sTypeLivolo)
+		flevel = (100.0f / 7.0f)*float(pResponse->LIGHTING5.level);
+	else if (subType == sTypeLightwaveRF)
+		flevel = (100.0f / 31.0f)*float(pResponse->LIGHTING5.level);
 	else
-		flevel=(100.0f/31.0f)*float(pResponse->LIGHTING5.level);
+		flevel = (100.0f / 7.0f)*float(pResponse->LIGHTING5.level);
 	unsigned char SignalLevel=pResponse->LIGHTING5.rssi;
 
 	bool bDoUpdate=true;
@@ -4920,6 +4922,10 @@ void MainWorker::decode_Lighting5(const int HwdID, const _eHardwareTypes HwdType
 				break;
 			case light5_sGroupOn:
 				WriteMessage("Group On");
+				break;
+			case light5_sSetLevel:
+				sprintf(szTmp, "Set dim level to: %.2f %%", flevel);
+				WriteMessage(szTmp);
 				break;
 			default:
 				WriteMessage("UNKNOWN");

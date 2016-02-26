@@ -3882,6 +3882,8 @@ namespace http {
 				{
 					dtype = pTypeLighting5;
 					subtype = lighttype - 50;
+					if (lighttype == 59)
+						subtype = sTypeIT;
 					std::string id = request::findValue(&req, "id");
 					sunitcode = request::findValue(&req, "unitcode");
 					if (
@@ -3889,10 +3891,10 @@ namespace http {
 						(sunitcode == "")
 						)
 						return;
-					if ((subtype != sTypeEMW100) && (subtype != sTypeLivolo) && (subtype != sTypeLivoloAppliance) && (subtype != sTypeRGB432W))
+					if ((subtype != sTypeEMW100) && (subtype != sTypeLivolo) && (subtype != sTypeLivoloAppliance) && (subtype != sTypeRGB432W) && (subtype != sTypeIT))
 						devid = "00" + id;
 					else
-					devid = id;
+						devid = id;
 				}
 				else if (lighttype < 70)
 				{
@@ -4291,6 +4293,8 @@ namespace http {
 				{
 					dtype = pTypeLighting5;
 					subtype = lighttype - 50;
+					if (lighttype == 59)
+						subtype = sTypeIT;
 					std::string id = request::findValue(&req, "id");
 					sunitcode = request::findValue(&req, "unitcode");
 					if (
@@ -4298,10 +4302,10 @@ namespace http {
 						(sunitcode == "")
 						)
 						return;
-					if ((subtype != sTypeEMW100) && (subtype != sTypeLivolo) && (subtype != sTypeLivoloAppliance) && (subtype != sTypeRGB432W) && (subtype != sTypeLightwaveRF))
+					if ((subtype != sTypeEMW100) && (subtype != sTypeLivolo) && (subtype != sTypeLivoloAppliance) && (subtype != sTypeRGB432W) && (subtype != sTypeLightwaveRF) && (subtype != sTypeIT))
 						devid = "00" + id;
 					else
-					devid = id;
+						devid = id;
 				}
 				else if (lighttype < 70)
 				{
@@ -7987,10 +7991,12 @@ namespace http {
 							root["result"][ii]["LevelNames"] = levelNames;
 							root["result"][ii]["LevelActions"] = levelActions;
 						}
-						if (llevel != 0)
-							sprintf(szData, "%s, Level: %d %%", lstatus.c_str(), llevel);
-						else
-							sprintf(szData, "%s", lstatus.c_str());
+						//Rob: Dont know who did this, but this should be solved in GetLightCommand
+						//Now we had double Set Level/Level notations
+						//if (llevel != 0)
+							//sprintf(szData, "%s, Level: %d %%", lstatus.c_str(), llevel);
+						//else
+						sprintf(szData, "%s", lstatus.c_str());
 						root["result"][ii]["Data"] = szData;
 					}
 					else if (dType == pTypeSecurity1)

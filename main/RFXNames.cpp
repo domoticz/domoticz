@@ -1365,7 +1365,8 @@ void GetLightStatus(
 		case sTypeLightwaveRF:
 			bHaveGroupCmd=true;
 			bHaveDimmer=true;
-			maxDimLevel=32;
+			maxDimLevel = 32;
+			llevel = (int)float((100.0f / float(maxDimLevel))*atof(sValue.c_str()));
 			switch (nValue)
 			{
 			case light5_sOff:
@@ -1547,6 +1548,32 @@ void GetLightStatus(
 				break;
 			case light5_sGroupOn:
 				lstatus = "Group On";
+				break;
+			}
+			break;
+		case sTypeIT:
+			maxDimLevel = 9;
+			llevel = (int)float((100.0f / float(maxDimLevel))*atof(sValue.c_str()));
+			switch (nValue)
+			{
+			case light5_sOff:
+				lstatus = "Off";
+				break;
+			case light5_sOn:
+				lstatus = "On";
+				break;
+			case light5_sGroupOff:
+				lstatus = "Group Off";
+				break;
+			case light5_sGroupOn:
+				lstatus = "Group On";
+				break;
+			case light5_sSetLevel:
+				sprintf(szTmp, "Set Level: %d %%", llevel);
+				if (sValue != "0")
+					lstatus = szTmp;
+				else
+					lstatus = "Off";
 				break;
 			}
 			break;
@@ -2346,20 +2373,21 @@ bool GetLightCommand(
 				return true;
 			}
 		}
-		else if (dSubType!=sTypeLightwaveRF)
+		else if ((dSubType != sTypeLightwaveRF) && (dSubType != sTypeIT))
 		{
-			//Only LightwaveRF devices have a set-level
- 			if (switchcmd=="Set Level")
- 				switchcmd="On";
- 		}
+			//Only LightwaveRF/IT devices have a set-level
+			if (switchcmd == "Set Level")
+				switchcmd = "On";
+		}
+		else if ((dSubType == sTypeLightwaveRF) && (switchtype == STYPE_VenetianBlindsEU))
+		{
 			// The LightwaveRF inline relay has to be controlled by Venetian blinds logic as it has a stop setting
-		else if ((dSubType==sTypeLightwaveRF)&&(switchtype==STYPE_VenetianBlindsEU)){
-				if (switchcmd=="On")
-					switchcmd="Close inline relay";
-				else if (switchcmd=="Off")
-					switchcmd="Open inline relay";
-				else if (switchcmd=="Stop")
-					switchcmd="Stop inline relay";
+			if (switchcmd == "On")
+				switchcmd = "Close inline relay";
+			else if (switchcmd == "Off")
+				switchcmd = "Open inline relay";
+			else if (switchcmd == "Stop")
+				switchcmd = "Stop inline relay";
 		}
  
  		if (switchtype==STYPE_Doorbell)
