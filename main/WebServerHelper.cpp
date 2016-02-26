@@ -23,19 +23,10 @@ namespace http {
 
 		CWebServerHelper::~CWebServerHelper()
 		{
-#ifdef WWW_ENABLE_SSL
-			if (secureServer_) delete secureServer_;
-#endif
-			if (plainServer_) delete plainServer_;
-
-#ifndef NOCLOUD
-			for (proxy_iterator it = proxymanagerCollection.begin(); it != proxymanagerCollection.end(); ++it) {
-				delete (*it);
-			}
-#endif
+			StopServers();
 		}
 
-		bool CWebServerHelper::StartServers(const server_settings & web_settings, const ssl_server_settings & secure_web_settings, const std::string &serverpath, const bool bIgnoreUsernamePassword, tcp::server::CTCPServer *sharedServer)
+		bool CWebServerHelper::StartServers(server_settings & web_settings, ssl_server_settings & secure_web_settings, const std::string &serverpath, const bool bIgnoreUsernamePassword, tcp::server::CTCPServer *sharedServer)
 		{
 			bool bRet = false;
 
@@ -65,12 +56,21 @@ namespace http {
 		void CWebServerHelper::StopServers()
 		{
 			for (server_iterator it = serverCollection.begin(); it != serverCollection.end(); ++it) {
-				(*it)->StopServer();
+				((CWebServer*) *it)->StopServer();
+				if (*it) delete (*it);
 			}
+			serverCollection.clear();
+			plainServer_ = NULL; // avoid double free
+#ifdef WWW_ENABLE_SSL
+			secureServer_ = NULL; // avoid double free
+#endif
+
 #ifndef NOCLOUD
 			for (proxy_iterator it = proxymanagerCollection.begin(); it != proxymanagerCollection.end(); ++it) {
-				(*it)->Stop();
+				((CProxyManager*) *it)->Stop();
+				if (*it) delete (*it);
 			}
+			proxymanagerCollection.clear();
 #endif
 		}
 

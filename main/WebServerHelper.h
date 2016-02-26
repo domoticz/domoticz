@@ -16,7 +16,7 @@ namespace http {
 			~CWebServerHelper();
 
 			// called from mainworker():
-			bool StartServers(const server_settings & web_settings, const ssl_server_settings & secure_web_settings, const std::string &serverpath, const bool bIgnoreUsernamePassword, tcp::server::CTCPServer *sharedServer);
+			bool StartServers(server_settings & web_settings, ssl_server_settings & secure_web_settings, const std::string &serverpath, const bool bIgnoreUsernamePassword, tcp::server::CTCPServer *sharedServer);
 			void StopServers();
 #ifndef NOCLOUD
 			void RestartProxy();

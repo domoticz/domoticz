@@ -200,8 +200,8 @@ namespace http {
 			void SetZipPassword(std::string password);
 
 			// Session store manager
-			void SetSessionStore(session_store* sessionStore);
-			session_store* GetSessionStore();
+			void SetSessionStore(session_store_impl_ptr sessionStore);
+			session_store_impl_ptr GetSessionStore();
 
 			std::string m_zippassword;
 			const std::string GetPort();
@@ -226,7 +226,7 @@ namespace http {
 			/// store map between pages and application functions
 			std::map < std::string, webem_page_function > myPages_w;
 			/// boost::asio web server (RK: plain or secure)
-			server_base* myServer;
+			boost::shared_ptr<server_base> myServer;
 			// actual theme selected
 			std::string m_actTheme;
 			// root of url for reverse proxy servers
@@ -238,8 +238,9 @@ namespace http {
 			boost::mutex m_sessionsMutex;
 			boost::asio::io_service m_io_service;
 			boost::asio::deadline_timer m_session_clean_timer;
+			boost::thread m_io_service_thread;
 			void CleanSessions();
-			session_store* mySessionStore; /// session store
+			session_store_impl_ptr mySessionStore; /// session store
 		};
 
 	}

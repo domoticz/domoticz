@@ -16,6 +16,9 @@
 namespace http {
 namespace server {
 
+typedef boost::function< void() > init_connectionhandler_func;
+typedef boost::function< void(const boost::system::error_code & error) > accept_handler_func;
+
 /// The top-level class of the HTTP(S) server.
 class server_base : private boost::noncopyable {
 public:
@@ -31,15 +34,11 @@ public:
 	void stop();
 
 	/// Print server settings to string (debug purpose)
-	virtual std::string to_string() const = 0;
+	virtual std::string to_string() const {
+		return "'server_base[" + settings_.to_string() + "]'";
+	}
 protected:
-	void init();
-
-	/// Initialize acceptor
-	virtual void init_connection() =0;
-
-	/// Handle completion of an asynchronous accept operation.
-	virtual void handle_accept(const boost::system::error_code& error) = 0;
+	void init(init_connectionhandler_func init_connection_handler, accept_handler_func accept_handler);
 
 	/// The io_service used to perform asynchronous operations.
 	boost::asio::io_service io_service_;
@@ -77,10 +76,11 @@ public:
 	}
 protected:
 	/// Initialize acceptor
-	virtual void init_connection();
+	void init_connection();
 
 	/// Handle completion of an asynchronous accept operation.
-	virtual void handle_accept(const boost::system::error_code& error);
+	void handle_accept(const boost::system::error_code& error);
+private:
 };
 
 #ifdef WWW_ENABLE_SSL
@@ -99,10 +99,10 @@ public:
 
 protected:
 	/// Initialize acceptor
-	virtual void init_connection();
+	void init_connection();
 
 	/// Handle completion of an asynchronous accept operation.
-	virtual void handle_accept(const boost::system::error_code& error);
+	void handle_accept(const boost::system::error_code& error);
 
 	// The HTTPS server settings
 	ssl_server_settings settings_;
@@ -119,10 +119,10 @@ private:
 /// server factory
 class server_factory {
 public:
-	static server_base * create(const server_settings & settings, request_handler & user_request_handler);
+	static boost::shared_ptr<server_base> create(const server_settings & settings, request_handler & user_request_handler);
 
 #ifdef WWW_ENABLE_SSL
-	static server_base * create(const ssl_server_settings & ssl_settings, request_handler & user_request_handler);
+	static boost::shared_ptr<server_base> create(const ssl_server_settings & ssl_settings, request_handler & user_request_handler);
 #endif
 };
 

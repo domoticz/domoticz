@@ -62,7 +62,7 @@ protected:
 	explicit server_settings(bool is_secure) :
 		is_secure_(is_secure) {}
 	std::string get_valid_value(const std::string & old_value, const std::string & new_value) {
-		if ((!new_value.empty()) && (new_value != old_value)) {
+		if ((!new_value.empty()) && (new_value.compare(old_value) != 0)) {
 			return new_value;
 		}
 		return old_value;
@@ -70,6 +70,8 @@ protected:
 private:
 	bool is_secure_;
 };
+
+#ifdef WWW_ENABLE_SSL
 
 struct ssl_server_settings : public server_settings {
 public:
@@ -250,6 +252,8 @@ protected:
 		}
 	}
 };
+
+#endif //#ifdef WWW_ENABLE_SSL
 
 } // namespace server
 } // namespace http

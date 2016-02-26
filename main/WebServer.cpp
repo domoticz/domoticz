@@ -115,7 +115,7 @@ extern http::server::CWebServerHelper m_webservers;
 namespace http {
 	namespace server {
 
-		CWebServer::CWebServer(void)
+		CWebServer::CWebServer(void) : session_store()
 		{
 			m_pWebEm = NULL;
 			m_bDoStop = false;
@@ -159,7 +159,7 @@ namespace http {
 				}
 				break;
 			}
-			_log.Log(LOG_STATUS, "WebServer(%s) stopped...", m_server_alias.c_str());
+			_log.Log(LOG_STATUS, "WebServer(%s) stopped", m_server_alias.c_str());
 		}
 
 		void CWebServer::ReloadCustomSwitchIcons()
@@ -257,7 +257,7 @@ namespace http {
 			}
 		}
 
-		bool CWebServer::StartServer(const server_settings & settings, const std::string &serverpath, const bool bIgnoreUsernamePassword)
+		bool CWebServer::StartServer(server_settings & settings, const std::string & serverpath, const bool bIgnoreUsernamePassword)
 		{
 			m_server_alias = (settings.is_secure() == true) ? "SSL" : "HTTP";
 
@@ -274,38 +274,36 @@ namespace http {
 			int tries = 0;
 			bool exception = false;
 
-			server_settings settings_copy = settings; // copy to change listening address
-			//_log.Log(LOG_STATUS, "CWebServer::StartServer() : settings_copy : %s", settings_copy.to_string().c_str());
+			//_log.Log(LOG_STATUS, "CWebServer::StartServer() : settings : %s", settings.to_string().c_str());
 			do {
 				try {
 					exception = false;
-					m_pWebEm = new http::server::cWebem(settings_copy, serverpath.c_str());
+					m_pWebEm = new http::server::cWebem(settings, serverpath.c_str());
 				}
 				catch (std::exception& e) {
 					exception = true;
 					switch (tries) {
 					case 0:
-						settings_copy.listening_address = "::";
+						settings.listening_address = "::";
 						break;
 					case 1:
-						settings_copy.listening_address = "0.0.0.0";
+						settings.listening_address = "0.0.0.0";
 						break;
 					case 2:
-						_log.Log(LOG_ERROR, "Failed to start the web server: %s", e.what());
-						if (atoi(settings_copy.listening_port.c_str()) < 1024)
-							_log.Log(LOG_ERROR, "check privileges for opening ports below 1024");
+						_log.Log(LOG_ERROR, "WebServer(%s) startup failed on address %s with port: %s: %s", m_server_alias.c_str(), settings.listening_address.c_str(), settings.listening_port.c_str(), e.what());
+						if (atoi(settings.listening_port.c_str()) < 1024)
+							_log.Log(LOG_ERROR, "WebServer(%s) check privileges for opening ports below 1024", m_server_alias.c_str());
 						else
-							_log.Log(LOG_ERROR, "check if no other application is using port: %s", settings_copy.listening_port.c_str());
+							_log.Log(LOG_ERROR, "WebServer(%s) check if no other application is using port: %s", m_server_alias.c_str(), settings.listening_port.c_str());
 						return false;
 					}
 					tries++;
 				}
 			} while (exception);
 
-			_log.Log(LOG_STATUS, "Webserver(%s) started on address: %s, port: %s", m_server_alias.c_str(), settings_copy.listening_address.c_str(), settings_copy.listening_port.c_str());
+			_log.Log(LOG_STATUS, "WebServer(%s) started on address: %s with port %s", m_server_alias.c_str(), settings.listening_address.c_str(), settings.listening_port.c_str());
 
 			m_pWebEm->SetDigistRealm("Domoticz.com");
-
 			m_pWebEm->SetSessionStore(this);
 
 			if (!bIgnoreUsernamePassword)
@@ -611,7 +609,6 @@ namespace http {
 			{
 				if (m_pWebEm == NULL)
 					return;
-				m_pWebEm->SetSessionStore(NULL);
 				m_pWebEm->Stop();
 			}
 			catch (...)

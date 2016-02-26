@@ -50,31 +50,27 @@ cWebem::cWebem(
 				myRequestHandler(doc_root, this),
 				m_DigistRealm("Domoticz.com"),
 				m_session_clean_timer(m_io_service, boost::posix_time::minutes(1)),
+				m_io_service_thread(boost::bind(&boost::asio::io_service::run, &m_io_service)),
 				myServer(server_factory::create(settings, myRequestHandler)) {
 	m_authmethod = AUTH_LOGIN;
 	mySessionStore = NULL;
-	// Start session cleaner
+	// associate handler to timer and schedule the first iteration
 	m_session_clean_timer.async_wait(boost::bind(&cWebem::CleanSessions, this));
-	boost::thread t(boost::bind(&boost::asio::io_service::run, &m_io_service));
 }
 
 cWebem::~cWebem() {
-	// Stop session cleaner
-	m_session_clean_timer.cancel();
-	m_io_service.stop();
-	// Free server resources
-	if (myServer != NULL) {
-		Stop();
-		delete myServer;
-	}
+	// Remove reference to CWebServer before its deletion (fix a "pure virtual method called" exception on server termination)
+	mySessionStore = NULL;
+	// Delete server (no need with smart pointer)
 }
+
 /**
 
 Start the server.
 
 This does not return.
 
-If application needs to continue, start new thread with call to this method.
+IMPORTANT: This method does not return. If application needs to continue, start new thread with call to this method.
 
 */
 void cWebem::Run() {
@@ -84,13 +80,26 @@ void cWebem::Run() {
 	}
 }
 
+/**
+
+Stop and delete the internal server.
+
+IMPORTANT:  To start the server again, delete it and create a new cWebem instance.
+
+*/
 void cWebem::Stop() {
+	// Stop session cleaner
+	try {
+		m_io_service.stop();
+		m_io_service_thread.join();
+	} catch (...) {
+		_log.Log(LOG_ERROR, "[web:%s] exception thrown while stopping session cleaner", GetPort().c_str());
+	}
 	// Stop Web server
 	if (myServer != NULL) {
 		myServer->stop();
 	}
 }
-
 
 void cWebem::SetAuthenticationMethod(const _eAuthenticationMethod amethod)
 {
@@ -879,11 +888,11 @@ void cWebem::SetZipPassword(std::string password)
 	m_zippassword = password;
 }
 
-void cWebem::SetSessionStore(session_store* sessionStore) {
+void cWebem::SetSessionStore(session_store_impl_ptr sessionStore) {
 	mySessionStore = sessionStore;
 }
 
-session_store* cWebem::GetSessionStore() {
+session_store_impl_ptr cWebem::GetSessionStore() {
 	return mySessionStore;
 }
 
@@ -935,6 +944,7 @@ int cWebem::CountSessions() {
 }
 
 void cWebem::CleanSessions() {
+	//_log.Log(LOG_STATUS, "[web:%s] cleaning sessions...", GetPort().c_str());
 	int before = CountSessions();
 	// Clean up timed out sessions from memory
 	std::vector<std::string> ssids;
@@ -1245,7 +1255,7 @@ std::string cWebemRequestHandler::generateAuthToken(const WebEmSession & session
 	_log.Log(LOG_STATUS, "[web:%s] generate new authentication token %s", myWebem->GetPort().c_str(), authToken.c_str());
 #endif
 
-	session_store* sstore = myWebem->GetSessionStore();
+	session_store_impl_ptr sstore = myWebem->GetSessionStore();
 	if (sstore != NULL) {
 		WebEmStoredSession storedSession;
 		storedSession.id = session.id;
@@ -1467,7 +1477,7 @@ bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const req
  * Check authentication token if exists and restore the user session if necessary
  */
 bool cWebemRequestHandler::checkAuthToken(WebEmSession & session) {
-	session_store* sstore = myWebem->GetSessionStore();
+	session_store_impl_ptr sstore = myWebem->GetSessionStore();
 	if (sstore == NULL) {
 		_log.Log(LOG_ERROR, "CheckAuthToken([%s_%s]) : no store defined", session.id.c_str(), session.auth_token.c_str());
 		return true;
@@ -1531,7 +1541,7 @@ bool cWebemRequestHandler::checkAuthToken(WebEmSession & session) {
 }
 
 void cWebemRequestHandler::removeAuthToken(const std::string & sessionId) {
-	session_store* sstore = myWebem->GetSessionStore();
+	session_store_impl_ptr sstore = myWebem->GetSessionStore();
 	if (sstore != NULL) {
 		sstore->RemoveSession(sessionId);
 	}
@@ -1555,7 +1565,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 	session.forcelogin = false;
 	session.rememberme = false;
 
-		rep.bIsGZIP = false;
+	rep.bIsGZIP = false;
 
 	bool isPage = myWebem->IsPageOverride(req, rep);
 	bool isAction = myWebem->IsAction(req);

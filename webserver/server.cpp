@@ -24,8 +24,13 @@ server_base::server_base(const server_settings & settings, request_handler & use
 	}
 }
 
-void server_base::init() {
-	init_connection();
+void server_base::init(init_connectionhandler_func init_connection_handler, accept_handler_func accept_handler) {
+
+	init_connection_handler();
+
+	if (!new_connection_) {
+		throw std::invalid_argument("cannot initialize a server without a valid connection");
+	}
 
 	// Open the acceptor with the option to reuse the address (i.e. SO_REUSEADDR).
 	boost::asio::ip::tcp::resolver resolver(io_service_);
@@ -37,10 +42,9 @@ void server_base::init() {
 	acceptor_.bind(endpoint);
 	// listen for incoming requests
 	acceptor_.listen();
+
 	// start the accept thread
-	acceptor_.async_accept(new_connection_->socket(),
-			boost::bind(&server_base::handle_accept, this,
-					boost::asio::placeholders::error));
+	acceptor_.async_accept(new_connection_->socket(), accept_handler);
 }
 
 void server_base::run() {
@@ -81,7 +85,8 @@ void server_base::handle_stop() {
 server::server(const server_settings & settings, request_handler & user_request_handler) :
 		server_base(settings, user_request_handler) {
 	//_log.Log(LOG_STATUS, "[web:%s] create server using settings : %s", settings.listening_port.c_str(), settings.to_string().c_str());
-	init();
+	init(boost::bind(&server::init_connection, this),
+			boost::bind(&server::handle_accept, this, _1));
 }
 
 void server::init_connection() {
@@ -110,7 +115,8 @@ ssl_server::ssl_server(const ssl_server_settings & ssl_settings, request_handler
 		context_(io_service_, ssl_settings.get_ssl_method())
 {
 	//_log.Log(LOG_STATUS, "[web:%s] create ssl_server using ssl_server_settings : %s", ssl_settings.listening_port.c_str(), ssl_settings.to_string().c_str());
-	init();
+	init(boost::bind(&ssl_server::init_connection, this),
+			boost::bind(&ssl_server::handle_accept, this, _1));
 }
 
 // this constructor will send std::bad_cast exception if the settings argument is not a ssl_server_settings object
@@ -119,7 +125,8 @@ ssl_server::ssl_server(const server_settings & settings, request_handler & user_
 		settings_(dynamic_cast<ssl_server_settings const &>(settings)),
 		context_(io_service_, dynamic_cast<ssl_server_settings const &>(settings).get_ssl_method()) {
 	//_log.Log(LOG_STATUS, "[web:%s] create ssl_server using server_settings : %s", settings.listening_port.c_str(), settings.to_string().c_str());
-	init();
+	init(boost::bind(&ssl_server::init_connection, this),
+			boost::bind(&ssl_server::handle_accept, this, _1));
 }
 
 void ssl_server::init_connection() {
@@ -204,18 +211,18 @@ std::string ssl_server::get_passphrase() const {
 }
 #endif
 
-server_base * server_factory::create(const server_settings & settings, request_handler & user_request_handler) {
+boost::shared_ptr<server_base> server_factory::create(const server_settings & settings, request_handler & user_request_handler) {
 #ifdef WWW_ENABLE_SSL
 		if (settings.is_secure()) {
 			return create(dynamic_cast<ssl_server_settings const &>(settings), user_request_handler);
 		}
 #endif
-		return new server(settings, user_request_handler);
+		return boost::shared_ptr<server_base>(new server(settings, user_request_handler));
 	}
 
 #ifdef WWW_ENABLE_SSL
-server_base * server_factory::create(const ssl_server_settings & ssl_settings, request_handler & user_request_handler) {
-		return new ssl_server(ssl_settings, user_request_handler);
+boost::shared_ptr<server_base> server_factory::create(const ssl_server_settings & ssl_settings, request_handler & user_request_handler) {
+		return boost::shared_ptr<server_base>(new ssl_server(ssl_settings, user_request_handler));
 	}
 #endif
 
