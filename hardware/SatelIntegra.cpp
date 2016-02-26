@@ -137,6 +137,11 @@ bool SatelIntegra::StopHardware()
 #endif
 
 	m_stoprequested = true;
+	
+	if (m_thread)
+	{
+		m_thread->join();
+	}
 
 	DestroySocket();
 
