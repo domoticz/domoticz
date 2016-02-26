@@ -55,9 +55,7 @@ std::string ReadFile(std::string filename)
 
 CNest::CNest(const int ID, const std::string &Username, const std::string &Password) :
 m_UserName(CURLEncode::URLEncode(Username)),
-m_Password(CURLEncode::URLEncode(Password)),
-m_AccessToken(""),
-m_UserID("")
+m_Password(CURLEncode::URLEncode(Password))
 {
 	m_HwdID=ID;
 	Init();

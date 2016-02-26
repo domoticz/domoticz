@@ -58,8 +58,7 @@ Cleanup and changes: GizMoCuz
 CHarmonyHub::CHarmonyHub(const int ID, const std::string &IPAddress, const unsigned int port, const std::string &username, const std::string &password):
 m_username(username),
 m_password(password),
-m_harmonyAddress(IPAddress),
-m_szAuthorizationToken("")
+m_harmonyAddress(IPAddress)
 {
 	m_usIPPort = port;
 	m_HwdID=ID;
@@ -639,7 +638,7 @@ bool CHarmonyHub::SwapAuthorizationToken(csocket* authorizationcsocket, std::str
 
 	strData = m_databuffer; /* <- Expect: <iq/> ... <success xmlns= ... identity=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX:status=succeeded ... */
 
-	if(strData.compare("<iq/>") != 0)
+	if(strData.find("<iq/>") != 0)
 	{
 		//errorString = "SwapAuthorizationToken : Invalid Harmony response";
 		return false;  

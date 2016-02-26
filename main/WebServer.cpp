@@ -115,11 +115,10 @@ extern http::server::CWebServerHelper m_webservers;
 namespace http {
 	namespace server {
 
-		CWebServer::CWebServer(void)
+		CWebServer::CWebServer(void) : session_store()
 		{
 			m_pWebEm = NULL;
 			m_bDoStop = false;
-			m_bIsSecure = false;
 #ifdef WITH_OPENZWAVE
 			m_ZW_Hwidx = -1;
 #endif
@@ -138,45 +137,29 @@ namespace http {
 
 		void CWebServer::Do_Work()
 		{
+			bool exception_thrown = false;
 			while (!m_bDoStop)
 			{
-				try
-				{
-					if (m_pWebEm)
+				exception_thrown = false;
+				try {
+					if (m_pWebEm) {
 						m_pWebEm->Run();
-				}
-				catch (std::exception& e)
-				{
-					if (!m_bDoStop)
-					{
-						if (!m_bIsSecure)
-							_log.Log(LOG_ERROR, "WebServer(HTTP) stopped by exception, starting again..., %s",e.what());
-						else
-							_log.Log(LOG_ERROR, "WebServer(SSL) stopped by exception, starting again..., %s", e.what());
-						if (m_pWebEm)
-							m_pWebEm->Stop();
-						continue;
 					}
+				} catch (std::exception& e) {
+					_log.Log(LOG_ERROR, "WebServer(%s) exception occurred : '%s'", m_server_alias.c_str(), e.what());
+					exception_thrown = true;
+				} catch (...) {
+					_log.Log(LOG_ERROR, "WebServer(%s) unknown exception occurred", m_server_alias.c_str());
+					exception_thrown = true;
 				}
-				catch (...)
-				{
-					if (!m_bDoStop)
-					{
-						if (!m_bIsSecure)
-							_log.Log(LOG_ERROR, "WebServer(HTTP) stopped by exception, starting again...");
-						else
-							_log.Log(LOG_ERROR, "WebServer(SSL) stopped by exception, starting again...");
-						if (m_pWebEm)
-							m_pWebEm->Stop();
-						continue;
-					}
+				if (exception_thrown) {
+					_log.Log(LOG_STATUS, "WebServer(%s) restart server in 5 seconds", m_server_alias.c_str());
+					sleep_milliseconds(5000); // prevents from an exception flood
+					continue;
 				}
 				break;
 			}
-			if (!m_bIsSecure)
-				_log.Log(LOG_STATUS, "WebServer(HTTP) stopped...");
-			else
-				_log.Log(LOG_STATUS, "WebServer(SSL) stopped...");
+			_log.Log(LOG_STATUS, "WebServer(%s) stopped", m_server_alias.c_str());
 		}
 
 		void CWebServer::ReloadCustomSwitchIcons()
@@ -274,11 +257,13 @@ namespace http {
 			}
 		}
 
-		bool CWebServer::StartServer(const std::string &listenaddress, const std::string &listenport, const std::string &serverpath, const bool bIgnoreUsernamePassword, const std::string &secure_cert_file, const std::string &secure_cert_passphrase)
+		bool CWebServer::StartServer(server_settings & settings, const std::string & serverpath, const bool bIgnoreUsernamePassword)
 		{
+			m_server_alias = (settings.is_secure() == true) ? "SSL" : "HTTP";
+
 			StopServer();
 
-			if (listenport.empty())
+			if (!settings.is_enabled())
 				return true;
 
 			ReloadCustomSwitchIcons();
@@ -286,54 +271,37 @@ namespace http {
 			if (m_pWebEm != NULL)
 				delete m_pWebEm;
 
-			m_bIsSecure = !secure_cert_file.empty();
-
 			int tries = 0;
 			bool exception = false;
-			std::string listen_address = listenaddress;
 
+			//_log.Log(LOG_STATUS, "CWebServer::StartServer() : settings : %s", settings.to_string().c_str());
 			do {
 				try {
 					exception = false;
-					m_pWebEm = new http::server::cWebem(
-						listen_address.c_str(),						// address
-						listenport.c_str(),							// port
-						serverpath.c_str(), secure_cert_file, secure_cert_passphrase);
+					m_pWebEm = new http::server::cWebem(settings, serverpath.c_str());
 				}
 				catch (std::exception& e) {
 					exception = true;
 					switch (tries) {
 					case 0:
-						listen_address = "::";
+						settings.listening_address = "::";
 						break;
 					case 1:
-						listen_address = "0.0.0.0";
+						settings.listening_address = "0.0.0.0";
 						break;
 					case 2:
-						_log.Log(LOG_ERROR, "Failed to start the web server: %s", e.what());
-						if (atoi(listenport.c_str()) < 1024)
-							_log.Log(LOG_ERROR, "check privileges for opening ports below 1024");
+						_log.Log(LOG_ERROR, "WebServer(%s) startup failed on address %s with port: %s: %s", m_server_alias.c_str(), settings.listening_address.c_str(), settings.listening_port.c_str(), e.what());
+						if (atoi(settings.listening_port.c_str()) < 1024)
+							_log.Log(LOG_ERROR, "WebServer(%s) check privileges for opening ports below 1024", m_server_alias.c_str());
 						else
-							_log.Log(LOG_ERROR, "check if no other application is using port: %s", listenport.c_str());
+							_log.Log(LOG_ERROR, "WebServer(%s) check if no other application is using port: %s", m_server_alias.c_str(), settings.listening_port.c_str());
 						return false;
 					}
 					tries++;
 				}
 			} while (exception);
-			if (!m_bIsSecure)
-			{
-				if (listen_address != "0.0.0.0" && listen_address != "::")
-					_log.Log(LOG_STATUS, "Webserver(HTTP) started on address: %s, port: %s", listen_address.c_str(), listenport.c_str());
-				else
-					_log.Log(LOG_STATUS, "Webserver(HTTP) started on port: %s", listenport.c_str());
-			}
-			else
-			{
-				if (listen_address != "0.0.0.0" && listen_address != "::")
-					_log.Log(LOG_STATUS, "Webserver(SSL) started on address: %s, port: %s", listen_address.c_str(), listenport.c_str());
-				else
-					_log.Log(LOG_STATUS, "Webserver(SSL) started on port: %s", listenport.c_str());
-			}
+
+			_log.Log(LOG_STATUS, "WebServer(%s) started on address: %s with port %s", m_server_alias.c_str(), settings.listening_address.c_str(), settings.listening_port.c_str());
 
 			m_pWebEm->SetDigistRealm("Domoticz.com");
 			m_pWebEm->SetSessionStore(this);
@@ -1142,6 +1110,9 @@ namespace http {
 			else if (htype == HTYPE_RaspberryGPIO) {
 				//all fine here!
 			}
+			else if (htype == HTYPE_OpenWebNet) {
+				//All fine here
+			}
 			else
 				return;
 
@@ -1369,6 +1340,9 @@ namespace http {
 				  (sport == "")
 				)
 					return;
+			}
+			else if (htype == HTYPE_OpenWebNet) {
+				//All fine here
 			}
 			else
 				return;
@@ -2077,7 +2051,7 @@ namespace http {
 				{
 					getline(infile, sLine);
 					root["LastLogTime"] = "";
-					if (sLine.compare("Version ") == 0)
+					if (sLine.find("Version ") == 0)
 						root["result"][ii]["level"] = 1;
 					else
 						root["result"][ii]["level"] = 0;
@@ -2130,7 +2104,7 @@ namespace http {
 			while (std::getline(stream, sLine))
 			{
 				root["LastLogTime"] = "";
-				if (sLine.compare("Version ") == 0)
+				if (sLine.find("Version ") == 0)
 					root["result"][ii]["level"] = 1;
 				else
 					root["result"][ii]["level"] = 0;
@@ -2526,7 +2500,7 @@ namespace http {
 				if (lua_isnumber(lua_state, 1) && (lua_isstring(lua_state, 2) || lua_isnumber(lua_state, 2)) && lua_isstring(lua_state, 3))
 				{
 					// Extract the parameters from the lua 'updateDevice' function	
-					int idx = lua_tointeger(lua_state, 1);
+					int idx = (int)lua_tointeger(lua_state, 1);
 					std::string nvalue = lua_tostring(lua_state, 2);
 					std::string svalue = lua_tostring(lua_state, 3);
 					if (((lua_isstring(lua_state, 3) && nvalue.empty()) && svalue.empty()))
@@ -2540,12 +2514,12 @@ namespace http {
 					int signallevel = 12;
 					if (nargs >= 4 && lua_isnumber(lua_state, 4))
 					{
-						signallevel = lua_tointeger(lua_state, 4);
+						signallevel = (int)lua_tointeger(lua_state, 4);
 					}
 					int batterylevel = 255;
 					if (nargs == 5 && lua_isnumber(lua_state, 5))
 					{
-						batterylevel = lua_tointeger(lua_state, 5);
+						batterylevel = (int)lua_tointeger(lua_state, 5);
 					}
 					_log.Log(LOG_NORM, "WebServer (updateDevice from LUA) : idx=%d nvalue=%s svalue=%s invalue=%d signallevel=%d batterylevel=%d", idx, nvalue.c_str(), svalue.c_str(), invalue, signallevel, batterylevel);
 
@@ -3429,6 +3403,7 @@ namespace http {
 						case HTYPE_RaspberryGPIO:
 						case HTYPE_RFLINKUSB:
 						case HTYPE_RFLINKTCP:
+						case HTYPE_OpenWebNet:
 							root["result"][ii]["idx"] = ID;
 							root["result"][ii]["Name"] = Name;
 							ii++;
@@ -3907,6 +3882,8 @@ namespace http {
 				{
 					dtype = pTypeLighting5;
 					subtype = lighttype - 50;
+					if (lighttype == 59)
+						subtype = sTypeIT;
 					std::string id = request::findValue(&req, "id");
 					sunitcode = request::findValue(&req, "unitcode");
 					if (
@@ -3914,10 +3891,10 @@ namespace http {
 						(sunitcode == "")
 						)
 						return;
-					if ((subtype != sTypeEMW100) && (subtype != sTypeLivolo) && (subtype != sTypeLivoloAppliance) && (subtype != sTypeRGB432W))
+					if ((subtype != sTypeEMW100) && (subtype != sTypeLivolo) && (subtype != sTypeLivoloAppliance) && (subtype != sTypeRGB432W) && (subtype != sTypeIT))
 						devid = "00" + id;
 					else
-					devid = id;
+						devid = id;
 				}
 				else if (lighttype < 70)
 				{
@@ -4131,6 +4108,18 @@ namespace http {
 						devid = id;
 						sunitcode = "0";
 					}
+					else if (lighttype == 305) {
+						//Blinds Openwebnet
+						dtype = pTypeGeneralSwitch;
+						subtype = sSwitchBlindsT1;
+						devid = request::findValue(&req, "id");
+						sunitcode = request::findValue(&req, "unitcode");
+						if (
+							(devid == "") ||
+							(sunitcode == "")
+							)
+							return;
+					}
 				}
                 
                 // ----------- If needed convert to GeneralSwitch type (for o.a. RFlink) -----------
@@ -4304,6 +4293,8 @@ namespace http {
 				{
 					dtype = pTypeLighting5;
 					subtype = lighttype - 50;
+					if (lighttype == 59)
+						subtype = sTypeIT;
 					std::string id = request::findValue(&req, "id");
 					sunitcode = request::findValue(&req, "unitcode");
 					if (
@@ -4311,10 +4302,10 @@ namespace http {
 						(sunitcode == "")
 						)
 						return;
-					if ((subtype != sTypeEMW100) && (subtype != sTypeLivolo) && (subtype != sTypeLivoloAppliance) && (subtype != sTypeRGB432W) && (subtype != sTypeLightwaveRF))
+					if ((subtype != sTypeEMW100) && (subtype != sTypeLivolo) && (subtype != sTypeLivoloAppliance) && (subtype != sTypeRGB432W) && (subtype != sTypeLightwaveRF) && (subtype != sTypeIT))
 						devid = "00" + id;
 					else
-					devid = id;
+						devid = id;
 				}
 				else if (lighttype < 70)
 				{
@@ -4578,6 +4569,19 @@ namespace http {
 							return;
 						devid = id;
 						sunitcode = "0";
+					}
+					else if (lighttype == 305)
+					{
+						//Blinds Openwebnet
+						dtype = pTypeGeneralSwitch;
+						subtype = sSwitchBlindsT1;
+						devid = request::findValue(&req, "id");
+						sunitcode = request::findValue(&req, "unitcode");
+						if (
+							(devid == "") ||
+							(sunitcode == "")
+							)
+							return;
 					}
 				}
 
@@ -7987,10 +7991,12 @@ namespace http {
 							root["result"][ii]["LevelNames"] = levelNames;
 							root["result"][ii]["LevelActions"] = levelActions;
 						}
-						if (llevel != 0)
-							sprintf(szData, "%s, Level: %d %%", lstatus.c_str(), llevel);
-						else
-							sprintf(szData, "%s", lstatus.c_str());
+						//Rob: Dont know who did this, but this should be solved in GetLightCommand
+						//Now we had double Set Level/Level notations
+						//if (llevel != 0)
+							//sprintf(szData, "%s, Level: %d %%", lstatus.c_str(), llevel);
+						//else
+						sprintf(szData, "%s", lstatus.c_str());
 						root["result"][ii]["Data"] = szData;
 					}
 					else if (dType == pTypeSecurity1)

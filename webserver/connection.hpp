@@ -22,7 +22,7 @@
 #include "request_handler.hpp"
 #include "request_parser.hpp"
 #include "Websockets.hpp"
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 #include <boost/asio/ssl.hpp>
 typedef boost::asio::ssl::stream<boost::asio::ip::tcp::socket> ssl_socket;
 #endif
@@ -42,14 +42,14 @@ public:
   /// Construct a connection with the given io_service.
   explicit connection(boost::asio::io_service& io_service,
       connection_manager& manager, request_handler& handler, int timeout);
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
   explicit connection(boost::asio::io_service& io_service,
       connection_manager& manager, request_handler& handler, int timeout, boost::asio::ssl::context& context);
 #endif
   ~connection();
 
   /// Get the socket associated with the connection.
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
   ssl_socket::lowest_layer_type& socket();
 #else
   boost::asio::ip::tcp::socket& socket();
@@ -64,12 +64,11 @@ public:
   /// Last user interaction
   time_t m_lastresponse;
 
-  /// read timeout timer
-  boost::asio::deadline_timer timer_;
-
-  void handle_timeout(const boost::system::error_code& error);
   /// Add content to write buffer
   void MyWrite(const std::string &buf);
+  /// Timer handlers
+  void handle_timeout(const boost::system::error_code& error);
+  void handle_abandoned_timeout(const boost::system::error_code& error);
 
 private:
   /// Handle completion of a read operation.
@@ -86,6 +85,14 @@ private:
   bool write_in_progress;
   void SocketWrite(const std::string &buf);
 
+
+	/// Schedule abandoned timeout timer
+	void set_abandoned_timeout();
+	/// Stop abandoned timeout timer
+	void cancel_abandoned_timeout();
+	/// Reschedule abandoned timeout timer
+	void reset_abandoned_timeout();
+
   /// Socket for the (PLAIN) connection.
   boost::asio::ip::tcp::socket *socket_;
   //Host EndPoint
@@ -94,8 +101,16 @@ private:
   /// If this is a keep-alive connection or not
   bool keepalive_;
 
-  /// timeouts (persistent and other) connections in seconds
+  /// Read timeout in seconds
   int timeout_;
+
+  /// Read timeout timer
+  boost::asio::deadline_timer timer_;
+
+  /// Abandoned connection timeout (in seconds)
+  long default_abandoned_timeout_;
+  /// Abandoned timeout timer
+  boost::asio::deadline_timer abandoned_timer_;
 
   /// The manager for this connection.
   connection_manager& connection_manager_;
@@ -109,13 +124,13 @@ private:
   /// our write buffer
   std::string write_buffer;
 
-  /// the buffer that we receive data in
+  /// The buffer that we receive data in
   boost::asio::streambuf _buf;
 
   // secure connection members below
   // secure connection yes/no
   bool secure_;
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
   // the SSL socket
   ssl_socket *sslsocket_;
   void handle_handshake(const boost::system::error_code& error);

@@ -13,7 +13,7 @@
 
 #ifdef WIN32
 	#include <comdef.h>
-#elif defined(__linux__) || defined(__CYGWIN32__)
+#elif defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__)
 	#include <sys/sysinfo.h>
 	#include <iostream>
 	#include <fstream>
@@ -251,7 +251,7 @@ void CHardwareMonitor::FetchData()
 		RunWMIQuery("Sensor","Voltage");
 		return;
 	}
-#elif defined(__linux__) || defined(__CYGWIN32__)
+#elif defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__)
 	_log.Log(LOG_NORM,"Hardware Monitor: Fetching data (System sensors)");
 	FetchUnixData();
 	if (bHasInternalTemperature)
@@ -463,7 +463,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 		pEnumerator->Release();
 	}
 }
-#elif defined(__linux__) || defined(__CYGWIN32__)
+#elif defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__)
 	double time_so_far()
 	{
 		struct timeval tp;
@@ -601,7 +601,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 							continue;
 						}
 					}
-#if defined(__linux__)
+#if defined(__linux__) || defined(__FreeBSD__)
 					if (strstr(dname, "/dev") != NULL)
 #elif defined(__CYGWIN32__)
 					if (strstr(smountpoint, "/cygdrive/") != NULL)
@@ -634,5 +634,5 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 			}
 		}
 	}
-#endif //WIN32/#elif defined(__linux__) || defined(__CYGWIN32__)
+#endif //WIN32/#elif defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__)
 

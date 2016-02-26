@@ -33,9 +33,6 @@ public:
   /// Stop all connections.
   void stop_all();
 
-  /// Check for timeouts
-  void check_timeouts();
-
 private:
   /// The managed connections.
   std::set<connection_ptr> connections_;
