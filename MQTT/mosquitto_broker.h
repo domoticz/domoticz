@@ -60,7 +60,7 @@ struct _mqtt3_listener {
 	int client_count;
 	enum mosquitto_protocol protocol;
 	bool use_username_as_clientid;
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 	char *cafile;
 	char *capath;
 	char *certfile;
@@ -183,7 +183,7 @@ struct mosquitto_client_msg{
 struct _mosquitto_unpwd{
 	char *username;
 	char *password;
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 	unsigned int password_len;
 	unsigned int salt_len;
 	unsigned char *salt;
@@ -306,7 +306,7 @@ struct _mqtt3_bridge{
 	int threshold;
 	bool lazy_reconnect;
 	bool attempt_unsubscribe;
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 	char *tls_cafile;
 	char *tls_capath;
 	char *tls_certfile;

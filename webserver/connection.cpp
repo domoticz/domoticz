@@ -26,42 +26,43 @@ connection::connection(boost::asio::io_service& io_service,
   : connection_manager_(manager),
     request_handler_(handler),
 	timeout_(timeout),
-	timer_(io_service, boost::posix_time::seconds( timeout ))
+	timer_(io_service, boost::posix_time::seconds( timeout )),
+	default_abandoned_timeout_(20*60), // 20mn before stopping abandoned connection
+	abandoned_timer_(io_service, boost::posix_time::seconds(default_abandoned_timeout_))
 {
 	secure_ = false;
 	keepalive_ = false;
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 	sslsocket_ = NULL;
 #endif
-	socket_ = new boost::asio::ip::tcp::socket(io_service),
-	m_lastresponse=mytime(NULL);
+	socket_ = new boost::asio::ip::tcp::socket(io_service);
 }
 
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 // this is the constructor for secure connections
 connection::connection(boost::asio::io_service& io_service,
     connection_manager& manager, request_handler& handler, int timeout, boost::asio::ssl::context& context)
   : connection_manager_(manager),
     request_handler_(handler),
 	timeout_(timeout),
-	timer_(io_service, boost::posix_time::seconds( timeout ))
+	timer_(io_service, boost::posix_time::seconds( timeout )),
+	default_abandoned_timeout_(20*60), // 20mn before stopping abandoned connection
+	abandoned_timer_(io_service, boost::posix_time::seconds(default_abandoned_timeout_))
 {
 	secure_ = true;
 	keepalive_ = false;
 	socket_ = NULL;
 	sslsocket_ = new ssl_socket(io_service, context);
-	m_lastresponse=mytime(NULL);
 }
 #endif
 
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 // get the attached client socket of this connection
 ssl_socket::lowest_layer_type& connection::socket()
 {
   if (secure_) {
 	return sslsocket_->lowest_layer();
-  }
-  else {
+  } else {
 	return socket_->lowest_layer();
   }
 }
@@ -85,9 +86,10 @@ void connection::start()
 		return;
 	}
 
+	set_abandoned_timeout();
 	host_endpoint_ = endpoint.address().to_string();
 	if (secure_) {
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 		// with ssl, we first need to complete the handshake before reading
 		sslsocket_->async_handshake(boost::asio::ssl::stream_base::server,
 			boost::bind(&connection::handle_handshake, shared_from_this(),
@@ -98,11 +100,18 @@ void connection::start()
 		// start reading data
 		read_more();
 	}
-	m_lastresponse=mytime(NULL);
 }
 
 void connection::stop()
 {
+	// Cancel timers
+	cancel_abandoned_timeout();
+	timer_.cancel();
+
+	// Initiate graceful connection closure.
+	boost::system::error_code ignored_ec;
+	socket().shutdown(boost::asio::ip::tcp::socket::shutdown_both, ignored_ec); // @note For portable behaviour with respect to graceful closure of a
+																				// connected socket, call shutdown() before closing the socket.
 	socket().close();
 }
 
@@ -113,7 +122,7 @@ void connection::handle_timeout(const boost::system::error_code& error)
 		}
 }
 
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 void connection::handle_handshake(const boost::system::error_code& error)
 {
     if (secure_) { // assert
@@ -140,7 +149,7 @@ void connection::read_more()
 	timer_.async_wait(boost::bind(&connection::handle_timeout, shared_from_this(), boost::asio::placeholders::error));
 
 	if (secure_) {
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 		// Perform secure read
 		sslsocket_->async_read_some(buf,
 			boost::bind(&connection::handle_read, shared_from_this(),
@@ -165,7 +174,6 @@ void connection::handle_read(const boost::system::error_code& error, std::size_t
     {
 		// ensure written bytes in the buffer
 		_buf.commit(bytes_transferred);
-		m_lastresponse=mytime(NULL);
 		boost::tribool result;
 		/// The incoming request.
 		request request_;
@@ -194,7 +202,7 @@ void connection::handle_read(const boost::system::error_code& error, std::size_t
 			}
 			request_handler_.handle_request(request_, reply_);
 			if (secure_) {
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 				boost::asio::async_write(*sslsocket_, reply_.to_buffers(request_.method),
 					boost::bind(&connection::handle_write, shared_from_this(),
 						boost::asio::placeholders::error));
@@ -211,7 +219,7 @@ void connection::handle_read(const boost::system::error_code& error, std::size_t
 			keepalive_ = false;
 			reply_ = reply::stock_reply(reply::bad_request);
 			if (secure_) {
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 				boost::asio::async_write(*sslsocket_, reply_.to_buffers(request_.method),
 					boost::bind(&connection::handle_write, shared_from_this(),
 						boost::asio::placeholders::error));
@@ -236,28 +244,46 @@ void connection::handle_read(const boost::system::error_code& error, std::size_t
 
 void connection::handle_write(const boost::system::error_code& error)
 {
-	if (!error) {
-		if (keepalive_) {
-			// if a keep-alive connection is requested, we read the next request
-			read_more();
-		}
-		else {
-			// Initiate graceful connection closure.
-			boost::system::error_code ignored_ec;
-			socket().shutdown(boost::asio::ip::tcp::socket::shutdown_both, ignored_ec);
-			connection_manager_.stop(shared_from_this());
-		}
+	if (!error && keepalive_) {
+		// if a keep-alive connection is requested, we read the next request
+		read_more();
+	} else {
+		connection_manager_.stop(shared_from_this());
 	}
-	m_lastresponse=mytime(NULL);
 }
 
 connection::~connection()
 {
 	// free up resources, delete the socket pointers
 	if (socket_) delete socket_;
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 	if (sslsocket_) delete sslsocket_;
 #endif
+}
+
+/// schedule abandoned timeout timer
+void connection::set_abandoned_timeout() {
+	abandoned_timer_.expires_from_now(boost::posix_time::seconds(default_abandoned_timeout_));
+	abandoned_timer_.async_wait(boost::bind(&connection::handle_abandoned_timeout, shared_from_this(), boost::asio::placeholders::error));
+}
+
+/// simply cancel abandoned timeout timer
+void connection::cancel_abandoned_timeout() {
+	abandoned_timer_.cancel();
+}
+
+/// reschedule abandoned timeout timer
+void connection::reset_abandoned_timeout() {
+	cancel_abandoned_timeout();
+	set_abandoned_timeout();
+}
+
+/// stop connection on abandoned timeout
+void connection::handle_abandoned_timeout(const boost::system::error_code& error) {
+	if (error != boost::asio::error::operation_aborted) {
+		_log.Log(LOG_ERROR, "%s -> connection abandoned", host_endpoint_.c_str());
+		connection_manager_.stop(shared_from_this());
+	}
 }
 
 } // namespace server

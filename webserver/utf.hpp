@@ -32,7 +32,7 @@ class cUTF
 	char * myString8;			///< string in UTF-6
 public:
 	/// Construct from UTF-16
-	cUTF( const wchar_t * ws ) {
+	explicit cUTF( const wchar_t * ws ) {
 		std::string dest;
 		std::wstring src=ws;
 		for (size_t i = 0; i < src.size(); i++)
@@ -61,7 +61,7 @@ public:
 		}
 	}
 	///  Construct from UTF8
-	cUTF( const char * s );
+	explicit cUTF( const char * s );
 	// copy constructor
 	cUTF() {
 		myString8 = NULL;

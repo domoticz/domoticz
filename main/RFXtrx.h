@@ -27,6 +27,9 @@ portions of this file.
 */
 
 /*
+SDK version 9.07
+	Lighting5 IT added
+
 SDK version 9.06
 	Lighting1 HQ COCO-20 added
 	Lighting5 Avantek added
@@ -476,6 +479,7 @@ SDK version 4.9
 #define sTypeMDREMOTE107 0x0C
 #define sTypeLegrandCAD 0x0D
 #define sTypeAvantek 0x0E
+#define sTypeIT 0x0F
 
 #define light5_sOff 0x0
 #define light5_sOn 0x1
@@ -789,7 +793,7 @@ SDK version 4.9
 #define sTypeTEMP4 0x4	//RTHN318
 #define sTypeTEMP5 0x5  //LaCrosse TX3
 #define sTypeTEMP6 0x6  //TS15C
-#define sTypeTEMP7 0x7  //Viking 02811/02813, Proove TSS330, 311346
+#define sTypeTEMP7 0x7  //Viking 02811,TSS330
 #define sTypeTEMP8 0x8  //LaCrosse WS2300
 #define sTypeTEMP9 0x9  //RUBiCSON
 #define sTypeTEMP10 0xA  //TFA 30.3133

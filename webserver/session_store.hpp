@@ -24,6 +24,8 @@ typedef struct _tWebEmStoredSession {
  */
 class session_store {
 public:
+	virtual ~session_store() {};
+
 	/**
 	 * Retrieve user session from store
 	 */
@@ -44,6 +46,8 @@ public:
 	 */
 	virtual void CleanSessions()=0;
 };
+
+typedef session_store* session_store_impl_ptr;
 
 }
 }
