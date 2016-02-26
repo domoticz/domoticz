@@ -31,7 +31,7 @@ public:
   void stop(connection_ptr c);
 
   /// Stop all connections.
-  void stop_all();
+  void stop_all(bool graceful_stop);
 
 private:
   /// The managed connections.

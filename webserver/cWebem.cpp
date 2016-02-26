@@ -97,7 +97,13 @@ void cWebem::Stop() {
 	}
 	// Stop Web server
 	if (myServer != NULL) {
-		myServer->stop();
+		myServer->stop(); // asynchronous stop
+		while(true) {
+			sleep_milliseconds(100);
+			if (myServer->stopped()) {
+				break;
+			}
+		}
 	}
 }
 

@@ -17,7 +17,9 @@ server_base::server_base(const server_settings & settings, request_handler & use
 		acceptor_(io_service_),
 		settings_(settings),
 		request_handler_(user_request_handler),
-		timeout_(20) { // default read timeout in seconds
+		timeout_(20), // default read timeout in seconds
+		is_running(false),
+		is_stopping(false) {
 	//_log.Log(LOG_STATUS, "[web:%s] create server_base using settings : %s", settings.listening_port.c_str(), settings.to_string().c_str());
 	if (!settings.is_enabled()) {
 		throw std::invalid_argument("cannot initialize a disabled server (listening port cannot be empty or 0)");
@@ -53,33 +55,48 @@ void server_base::run() {
 	// asynchronous operation outstanding: the asynchronous accept call waiting
 	// for new incoming connections.
 	try {
+		is_running = true;
 		io_service_.run();
+		is_running = false;
 	} catch (std::exception& e) {
 		_log.Log(LOG_ERROR, "[web:%s] exception occurred : '%s' (need to run again)", settings_.listening_port.c_str(), e.what());
+		is_running = false;
 		handle_stop(); // dispatch or post call does NOT work because it is pushed in the event queue (executed only on next io service run)
 		io_service_.reset(); // this call is needed before calling run() again
 		throw e;
-	}
-	catch (...) {
+	} catch (...) {
 		_log.Log(LOG_ERROR, "[web:%s] unknown exception occurred (need to run again)", settings_.listening_port.c_str());
+		is_running = false;
 		handle_stop(); // dispatch or post call does NOT work because it is pushed in the event queue (executed only on next io service run)
 		io_service_.reset(); // this call is needed before calling run() again
 		throw;
 	}
 }
 
+/// Ask the server to stop using asynchronous command
 void server_base::stop() {
 	// Post a call to the stop function so that server_base::stop() is safe to call
 	// from any thread.
 	io_service_.post(boost::bind(&server_base::handle_stop, this));
 }
 
+/// Returns true if the server is stopped.
+bool server_base::stopped() {
+	return !is_running;
+}
+
 void server_base::handle_stop() {
 	// The server is stopped by cancelling all outstanding asynchronous
 	// operations. Once all operations have finished the io_service::run() call
 	// will exit.
-	acceptor_.close();
-	connection_manager_.stop_all();
+	is_stopping = true;
+	connection_manager_.stop_all(true);
+	try {
+		boost::system::error_code ignored_ec;
+		acceptor_.close(ignored_ec);
+	} catch (...) {
+		_log.Log(LOG_ERROR, "[web:%s] exception occurred while closing acceptor", settings_.listening_port.c_str());
+	}
 }
 
 server::server(const server_settings & settings, request_handler & user_request_handler) :
@@ -97,6 +114,9 @@ void server::init_connection() {
  * accepting incoming requests and start the client connection loop
  */
 void server::handle_accept(const boost::system::error_code& e) {
+	if (is_stopping) {
+		return;
+	}
 	if (!e) {
 		connection_manager_.start(new_connection_);
 		new_connection_.reset(new connection(io_service_,
@@ -195,6 +215,9 @@ void ssl_server::init_connection() {
  * accepting incoming requests and start the client connection loop
  */
 void ssl_server::handle_accept(const boost::system::error_code& e) {
+	if (is_stopping) {
+		return;
+	}
 	if (!e) {
 		connection_manager_.start(new_connection_);
 		new_connection_.reset(new connection(io_service_,
