@@ -90,19 +90,21 @@ IMPORTANT:  To start the server again, delete it and create a new cWebem instanc
 void cWebem::Stop() {
 	// Stop session cleaner
 	try {
-		m_io_service.stop();
-		m_io_service_thread.join();
+		if (!m_io_service.stopped()) {
+			m_io_service.stop();
+			m_io_service_thread.join();
+		}
 	} catch (...) {
 		_log.Log(LOG_ERROR, "[web:%s] exception thrown while stopping session cleaner", GetPort().c_str());
 	}
 	// Stop Web server
-	if (myServer != NULL) {
+	if ((myServer != NULL) && !myServer->stopped()) {
 		myServer->stop(); // asynchronous stop
 		while(true) {
-			sleep_milliseconds(100);
 			if (myServer->stopped()) {
 				break;
 			}
+			sleep_milliseconds(500);
 		}
 	}
 }
