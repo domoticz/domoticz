@@ -185,8 +185,10 @@ void SatelIntegra::Do_Work()
 	_log.Log(LOG_STATUS, "Satel Integra: fetching changed data");
 #endif
 
-				if (IsNewData())
+				if (ReadNewData())
 				{
+					SetHeartbeatReceived();
+
 					if (m_newData[3] & 8)
 					{
 						ReadAlarm();
@@ -300,7 +302,7 @@ void SatelIntegra::DestroySocket()
 	}
 }
 
-bool SatelIntegra::IsNewData()
+bool SatelIntegra::ReadNewData()
 {
 	unsigned char cmd[1];
 	cmd[0] = 0x7F; // list of new data
