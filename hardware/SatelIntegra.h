@@ -54,7 +54,7 @@ private:
 	// Connects socket
 	bool ConnectToIntegra();
 	// new data is collected in Integra for selected command
-	bool IsNewData();
+	bool ReadNewData();
 	// Gets info from hardware about PCB, ETHM1 etc
 	bool GetInfo();
 	// Reads and reports zones violation
