@@ -127,7 +127,6 @@ namespace http {
 
 		CWebServer::~CWebServer(void)
 		{
-			StopServer();
 			if (m_pWebEm != NULL)
 			{
 				delete m_pWebEm;
