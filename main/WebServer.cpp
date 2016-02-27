@@ -260,15 +260,10 @@ namespace http {
 		{
 			m_server_alias = (settings.is_secure() == true) ? "SSL" : "HTTP";
 
-			StopServer();
-
 			if (!settings.is_enabled())
 				return true;
 
 			ReloadCustomSwitchIcons();
-
-			if (m_pWebEm != NULL)
-				delete m_pWebEm;
 
 			int tries = 0;
 			bool exception = false;
