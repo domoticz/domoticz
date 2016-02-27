@@ -69,9 +69,7 @@ void server_base::run() {
 }
 
 void server_base::stop() {
-	// Post a call to the stop function so that server_base::stop() is safe to call
-	// from any thread.
-	io_service_.post(boost::bind(&server_base::handle_stop, this));
+	handle_stop();
 }
 
 void server_base::handle_stop() {
