@@ -320,7 +320,9 @@ void connection::reset_read_timeout() {
 /// stop connection on read timeout
 void connection::handle_read_timeout(const boost::system::error_code& error) {
 	if (error != boost::asio::error::operation_aborted) {
-		//_log.Log(LOG_STATUS, "%s -> handle read timeout", host_endpoint_.c_str());
+#ifdef _DEBUG
+		_log.Log(LOG_STATUS, "%s -> handle read timeout", host_endpoint_.c_str());
+#endif
 		connection_manager_.stop(shared_from_this());
 	}
 }

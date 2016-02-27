@@ -952,7 +952,9 @@ int cWebem::CountSessions() {
 }
 
 void cWebem::CleanSessions() {
-	//_log.Log(LOG_STATUS, "[web:%s] cleaning sessions...", GetPort().c_str());
+#ifdef _DEBUG
+	_log.Log(LOG_STATUS, "[web:%s] cleaning sessions...", GetPort().c_str());
+#endif
 	int before = CountSessions();
 	// Clean up timed out sessions from memory
 	std::vector<std::string> ssids;
@@ -1631,7 +1633,9 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 				// Find and include any special cWebem strings
 				if (!myWebem->Include(rep.content)) {
 					if (mInfo.mtime_support && !mInfo.is_modified) {
-						//_log.Log(LOG_STATUS, "[web:%s] %s not modified (1).", myWebem->GetPort().c_str(), req.uri.c_str());
+#ifdef _DEBUG
+						_log.Log(LOG_STATUS, "[web:%s] %s not modified (1).", myWebem->GetPort().c_str(), req.uri.c_str());
+#endif
 						rep = reply::stock_reply(reply::not_modified);
 						return;
 					}
@@ -1654,7 +1658,9 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 		{
 			if (mInfo.mtime_support && !mInfo.is_modified) {
 				rep = reply::stock_reply(reply::not_modified);
-				//_log.Log(LOG_STATUS, "[web:%s] %s not modified (2).", myWebem->GetPort().c_str(), req.uri.c_str());
+#ifdef _DEBUG
+				_log.Log(LOG_STATUS, "[web:%s] %s not modified (2).", myWebem->GetPort().c_str(), req.uri.c_str());
+#endif
 				return;
 			}
 			//Cache images
@@ -1664,7 +1670,9 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 		else {
 			if (mInfo.mtime_support && !mInfo.is_modified) {
 				rep = reply::stock_reply(reply::not_modified);
-				//_log.Log(LOG_STATUS, "[web:%s] %s not modified (3).", myWebem->GetPort().c_str(), req.uri.c_str());
+#ifdef _DEBUG
+				_log.Log(LOG_STATUS, "[web:%s] %s not modified (3).", myWebem->GetPort().c_str(), req.uri.c_str());
+#endif
 				return;
 			}
 		}

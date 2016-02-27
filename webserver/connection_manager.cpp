@@ -55,9 +55,10 @@ void connection_manager::stop(connection_ptr c)
 
 void connection_manager::stop_all(bool graceful_stop)
 {
-	//_log.Log(LOG_STATUS,"connection_manager::stop_all(%s)", graceful_stop ? "true" : "false");
+#ifdef _DEBUG
+	_log.Log(LOG_STATUS,"%stopping connections...", graceful_stop ? "Gracefully s" : "S");
+#endif
 	if (graceful_stop) {
-		_log.Log(LOG_STATUS,"Gracefully stopping connections...");
 		std::for_each(connections_.begin(), connections_.end(),
 				boost::bind(&connection::stop_gracefully, _1));
 		int timeout = 10; // force stop after 10 seconds
@@ -68,17 +69,20 @@ void connection_manager::stop_all(bool graceful_stop)
 			}
 			if ((mytime(NULL) - start) > timeout) {
 				// timeout occurred : force stop
+#ifdef _DEBUG
 				_log.Log(LOG_STATUS,"Graceful stop timeout occurred : remaining connections will be closed now");
+#endif
 				break;
 			}
-			//_log.Log(LOG_STATUS,"Graceful stopping : %d active connection(s)", (int) connections_.size());
+#ifdef _DEBUG
+			_log.Log(LOG_STATUS,"Graceful stopping : %d active connection(s)", (int) connections_.size());
+#endif
 			sleep_milliseconds(500);
 		}
 	}
 	std::for_each(connections_.begin(), connections_.end(),
 			boost::bind(&connection::stop, _1));
 	connections_.clear();
-	//_log.Log(LOG_STATUS,"connection_manager::stop_all(%s) ends", graceful_stop ? "true" : "false");
 }
 
 
