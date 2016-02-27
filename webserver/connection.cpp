@@ -361,6 +361,10 @@ void connection::handle_abandoned_timeout(const boost::system::error_code& error
 /// Wait for all asynchronous operations to abort.
 void connection::stop_gracefully() {
 	stop_required = true;
+	if ((status.compare("waiting-read") == 0) || (status.compare("waiting-handshake"))) {
+		// avoid to wait until timeout
+		connection_manager_.stop(shared_from_this());
+	}
 }
 
 /// stop the connection if it is required
