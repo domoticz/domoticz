@@ -32,7 +32,7 @@ connection::connection(boost::asio::io_service& io_service,
 				read_timer_(io_service, boost::posix_time::seconds(read_timeout)),
 				status("initializing"),
 				stop_required(false),
-				websocket_handler(this, NULL) // todo!
+				websocket_handler(this, request_handler_.Get_myWebem())
 {
 	secure_ = false;
 	keepalive_ = false;
@@ -54,7 +54,7 @@ connection::connection(boost::asio::io_service& io_service,
 				read_timer_(io_service, boost::posix_time::seconds(read_timeout)),
 				status("initializing"),
 				stop_required(false),
-				websocket_handler(this, NULL) // todo!!
+				websocket_handler(this, request_handler_.Get_myWebem())
 {
 	secure_ = true;
 	keepalive_ = false;
