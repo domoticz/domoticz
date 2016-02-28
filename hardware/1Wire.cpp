@@ -208,6 +208,7 @@ void C1Wire::GetDeviceDetails()
 			{
 				_log.Log(LOG_STATUS, "1Wire (OWFS): Sent 'Skip ROM' command");
 			}
+			sleep_seconds(1);
 		}
 	}
 
