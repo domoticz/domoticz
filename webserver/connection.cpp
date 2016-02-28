@@ -23,14 +23,16 @@ namespace server {
 
 // this is the constructor for plain connections
 connection::connection(boost::asio::io_service& io_service,
-    connection_manager& manager, request_handler& handler, int timeout)
-  : connection_manager_(manager),
-    request_handler_(handler),
-	timeout_(timeout),
-	timer_(io_service, boost::posix_time::seconds( timeout )),
-	websocket_handler(this, request_handler_.Get_myWebem()),
-	default_abandoned_timeout_(20 * 60), // 20mn before stopping abandoned connection
-	abandoned_timer_(io_service, boost::posix_time::seconds(default_abandoned_timeout_))
+		connection_manager& manager,
+		request_handler& handler,
+		int read_timeout) :
+				connection_manager_(manager),
+				request_handler_(handler),
+				read_timeout_(read_timeout),
+				read_timer_(io_service, boost::posix_time::seconds(read_timeout)),
+				status("initializing"),
+				stop_required(false),
+				websocket_handler(this, NULL) // todo!
 {
 	secure_ = false;
 	keepalive_ = false;
@@ -45,14 +47,14 @@ connection::connection(boost::asio::io_service& io_service,
 #ifdef WWW_ENABLE_SSL
 // this is the constructor for secure connections
 connection::connection(boost::asio::io_service& io_service,
-    connection_manager& manager, request_handler& handler, int timeout, boost::asio::ssl::context& context)
-  : connection_manager_(manager),
-    request_handler_(handler),
-	timeout_(timeout),
-	timer_(io_service, boost::posix_time::seconds( timeout )),
-	websocket_handler(this, request_handler_.Get_myWebem()),
-	default_abandoned_timeout_(20*60), // 20mn before stopping abandoned connection
-	abandoned_timer_(io_service, boost::posix_time::seconds(default_abandoned_timeout_))
+	connection_manager& manager, request_handler& handler, int read_timeout, boost::asio::ssl::context& context) :
+				connection_manager_(manager),
+				request_handler_(handler),
+				read_timeout_(read_timeout),
+				read_timer_(io_service, boost::posix_time::seconds(read_timeout)),
+				status("initializing"),
+				stop_required(false),
+				websocket_handler(this, NULL) // todo!!
 {
 	secure_ = true;
 	keepalive_ = false;
@@ -92,11 +94,11 @@ void connection::start()
 		connection_manager_.stop(shared_from_this());
 		return;
 	}
-
-	set_abandoned_timeout();
 	host_endpoint_ = endpoint.address().to_string();
+
 	if (secure_) {
 #ifdef WWW_ENABLE_SSL
+		status = "waiting-handshake";
 		// with ssl, we first need to complete the handshake before reading
 		sslsocket_->async_handshake(boost::asio::ssl::stream_base::server,
 			boost::bind(&connection::handle_handshake, shared_from_this(),
@@ -121,8 +123,6 @@ void connection::stop()
 		break;
 	}
 	// Cancel timers
-	cancel_abandoned_timeout();
-	timer_.cancel();
 
 	// Initiate graceful connection closure.
 	boost::system::error_code ignored_ec;
@@ -143,11 +143,23 @@ void connection::handle_timeout(const boost::system::error_code& error)
 				break;
 			}
 		}
+	cancel_read_timeout();
+
+	try {
+		// Initiate graceful connection closure.
+		boost::system::error_code ignored_ec;
+		socket().shutdown(boost::asio::ip::tcp::socket::shutdown_both, ignored_ec); // @note For portable behaviour with respect to graceful closure of a
+																					// connected socket, call shutdown() before closing the socket.
+		socket().close(ignored_ec);
+	} catch(...) {
+		_log.Log(LOG_ERROR, "%s -> exception thrown while stopping connection", host_endpoint_.c_str());
+	}
 }
 
 #ifdef WWW_ENABLE_SSL
 void connection::handle_handshake(const boost::system::error_code& error)
 {
+	status = "handshaking";
     if (secure_) { // assert
 		if (!error)
 		{
@@ -164,12 +176,16 @@ void connection::handle_handshake(const boost::system::error_code& error)
 
 void connection::read_more()
 {
+	status = "waiting-read";
+	if (is_stopping()) {
+		return;
+	}
+
 	// read chunks of max 4 KB
 	boost::asio::streambuf::mutable_buffers_type buf = _buf.prepare(4096);
 
 	// set timeout timer
-	timer_.expires_from_now(boost::posix_time::seconds(timeout_));
-	timer_.async_wait(boost::bind(&connection::handle_timeout, shared_from_this(), boost::asio::placeholders::error));
+	reset_read_timeout();
 
 	if (secure_) {
 #ifdef WWW_ENABLE_SSL
@@ -228,8 +244,14 @@ void connection::MyWrite(const std::string &buf)
 
 void connection::handle_read(const boost::system::error_code& error, std::size_t bytes_transferred)
 {
+	status = "reading";
+	if (is_stopping()) {
+		return;
+	}
+
 	// data read, no need for timeouts (RK, note: race condition)
-	timer_.cancel();
+	cancel_read_timeout();
+
     if (!error && bytes_transferred > 0)
     {
 		// ensure written bytes in the buffer
@@ -258,6 +280,14 @@ void connection::handle_read(const boost::system::error_code& error, std::size_t
 			{
 				_log.Log(LOG_ERROR, "Exception parsing http request.");
 			}
+
+			request_handler_.handle_request(request_, reply_);
+
+			status = "waiting-write";
+			if (is_stopping()) {
+				return;
+			}
+
 			if (result) {
 				size_t sizeread = begin - boost::asio::buffer_cast<const char*>(_buf.data());
 				_buf.consume(sizeread);
@@ -314,10 +344,6 @@ void connection::handle_read(const boost::system::error_code& error, std::size_t
 					connection_type = connection_closing;
 				}
 			}
-			else if (!result) {
-				// we received a complete frame but not a complete packet yet or a control frame)
-				read_more();
-			}
 			else {
 				// we received an incomplete frame
 				read_more();
@@ -345,6 +371,12 @@ void connection::handle_write(const boost::system::error_code& error, size_t byt
 			connection_manager_.stop(shared_from_this());
 		}
 	}
+	if (!error && keepalive_ && !stop_required) {
+		// if a keep-alive connection is requested, we read the next request
+		read_more();
+	} else {
+		connection_manager_.stop(shared_from_this());
+	}
 }
 
 connection::~connection()
@@ -356,29 +388,57 @@ connection::~connection()
 #endif
 }
 
-/// schedule abandoned timeout timer
-void connection::set_abandoned_timeout() {
-	abandoned_timer_.expires_from_now(boost::posix_time::seconds(default_abandoned_timeout_));
-	abandoned_timer_.async_wait(boost::bind(&connection::handle_abandoned_timeout, shared_from_this(), boost::asio::placeholders::error));
+// schedule read timeout timer
+void connection::set_read_timeout() {
+	read_timer_.expires_from_now(boost::posix_time::seconds(read_timeout_));
+	read_timer_.async_wait(boost::bind(&connection::handle_read_timeout, shared_from_this(), boost::asio::placeholders::error));
 }
 
-/// simply cancel abandoned timeout timer
-void connection::cancel_abandoned_timeout() {
-	abandoned_timer_.cancel();
+/// simply cancel read timeout timer
+void connection::cancel_read_timeout() {
+	try {
+		boost::system::error_code ignored_ec;
+		read_timer_.cancel(ignored_ec);
+		if (ignored_ec) {
+			_log.Log(LOG_ERROR, "%s -> exception thrown while canceling read timeout : %s", host_endpoint_.c_str(), ignored_ec.message().c_str());
+		}
+	} catch (...) {
+		_log.Log(LOG_ERROR, "%s -> exception thrown while canceling read timeout", host_endpoint_.c_str());
+	}
 }
 
-/// reschedule abandoned timeout timer
-void connection::reset_abandoned_timeout() {
-	cancel_abandoned_timeout();
-	set_abandoned_timeout();
+/// reschedule read timeout timer
+void connection::reset_read_timeout() {
+	cancel_read_timeout();
+	set_read_timeout();
 }
 
-/// stop connection on abandoned timeout
-void connection::handle_abandoned_timeout(const boost::system::error_code& error) {
+/// stop connection on read timeout
+void connection::handle_read_timeout(const boost::system::error_code& error) {
 	if (error != boost::asio::error::operation_aborted) {
-		_log.Log(LOG_ERROR, "%s -> connection abandoned", host_endpoint_.c_str());
+#ifdef DEBUG_WWW
+		_log.Log(LOG_STATUS, "%s -> handle read timeout", host_endpoint_.c_str());
+#endif
 		connection_manager_.stop(shared_from_this());
 	}
+}
+
+/// Wait for all asynchronous operations to abort.
+void connection::stop_gracefully() {
+	stop_required = true;
+	if ((status.compare("waiting-read") == 0) || (status.compare("waiting-handshake"))) {
+		// avoid to wait until timeout
+		connection_manager_.stop(shared_from_this());
+	}
+}
+
+/// stop the connection if it is required
+bool connection::is_stopping() {
+	if (stop_required) {
+		connection_manager_.stop(shared_from_this());
+		return true;
+	}
+	return false;
 }
 
 } // namespace server

@@ -68,7 +68,11 @@ public:
   void MyWrite(const std::string &buf);
   /// Timer handlers
   void handle_timeout(const boost::system::error_code& error);
-  void handle_abandoned_timeout(const boost::system::error_code& error);
+  /// Wait for all asynchronous operations to abort.
+  void stop_gracefully();
+
+  /// Timer handler
+  void handle_read_timeout(const boost::system::error_code& error);
 
 private:
   /// Handle completion of a read operation.
@@ -85,13 +89,15 @@ private:
   bool write_in_progress;
   void SocketWrite(const std::string &buf);
 
+	/// Initialize read timeout timer
+	void set_read_timeout();
+	/// Stop read timeout timer
+	void cancel_read_timeout();
+	/// Reset read timeout timer
+	void reset_read_timeout();
 
-	/// Schedule abandoned timeout timer
-	void set_abandoned_timeout();
-	/// Stop abandoned timeout timer
-	void cancel_abandoned_timeout();
-	/// Reschedule abandoned timeout timer
-	void reset_abandoned_timeout();
+	/// Check if the connection is about to stop
+	bool is_stopping();
 
   /// Socket for the (PLAIN) connection.
   boost::asio::ip::tcp::socket *socket_;
@@ -102,17 +108,12 @@ private:
   bool keepalive_;
 
   /// Read timeout in seconds
-  int timeout_;
+  int read_timeout_;
 
   /// Read timeout timer
-  boost::asio::deadline_timer timer_;
+  boost::asio::deadline_timer read_timer_;
 
-  /// Abandoned connection timeout (in seconds)
-  long default_abandoned_timeout_;
-  /// Abandoned timeout timer
-  boost::asio::deadline_timer abandoned_timer_;
-
-  /// The manager for this connection.
+    /// The manager for this connection.
   connection_manager& connection_manager_;
 
   /// The handler used to process the incoming request.
@@ -126,6 +127,12 @@ private:
 
   /// The buffer that we receive data in
   boost::asio::streambuf _buf;
+
+  /// The status of the connection (can be initializing, handshaking, waiting, reading, writing)
+  std::string status;
+
+  /// Ask the connection to stop as soon as possible
+  bool stop_required;
 
   // secure connection members below
   // secure connection yes/no
