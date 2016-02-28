@@ -215,7 +215,6 @@ main/WebServerHelper.cpp
 main/WindCalculation.cpp
 httpclient/HTTPClient.cpp
 httpclient/UrlEncode.cpp
-hardware/I2C.cpp
 hardware/1Wire.cpp
 hardware/1Wire/1WireByOWFS.cpp
 hardware/1Wire/1WireByKernel.cpp
@@ -245,6 +244,7 @@ hardware/Gpio.cpp
 hardware/GpioPin.cpp
 hardware/HardwareMonitor.cpp
 hardware/HarmonyHub.cpp
+hardware/I2C.cpp
 hardware/ICYThermostat.cpp
 hardware/KMTronicBase.cpp
 hardware/KMTronic433.cpp
