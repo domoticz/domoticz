@@ -393,6 +393,9 @@
     <Filter Include="XML">
       <UniqueIdentifier>{19baf552-3c12-432c-bebe-8bb25fa327d0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\OpenWebNet">
+      <UniqueIdentifier>{9cd757d1-3254-4dad-8fa4-bb2ba44472dd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -1792,11 +1795,11 @@
     <ClInclude Include="..\notifications\NotificationGCM.h">
       <Filter>Notifications</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\OpenWebNet.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\openwebnet\bt_openwebnet.h">
-      <Filter>Header Files</Filter>
+      <Filter>Devices\OpenWebNet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\OpenWebNet.h">
+      <Filter>Devices\OpenWebNet</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2328,11 +2331,11 @@
     <ClCompile Include="..\notifications\NotificationGCM.cpp">
       <Filter>Notifications</Filter>
     </ClCompile>
-    <ClCompile Include="..\hardware\OpenWebNet.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\hardware\openwebnet\bt_openwebnet.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Devices\OpenWebNet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\OpenWebNet.cpp">
+      <Filter>Devices\OpenWebNet</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
