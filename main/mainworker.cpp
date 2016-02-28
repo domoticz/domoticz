@@ -34,7 +34,7 @@
 #endif
 #include "../hardware/DavisLoggerSerial.h"
 #include "../hardware/1Wire.h"
-#include "../hardware/BMP085.h"
+#include "../hardware/I2C.h"
 #include "../hardware/Wunderground.h"
 #include "../hardware/ForecastIO.h"
 #include "../hardware/HardwareMonitor.h"
@@ -87,7 +87,8 @@
 #include "../hardware/DomoticzInternal.h"
 #include "../hardware/NefitEasy.h"
 #include "../hardware/PanasonicTV.h"
-#include "../hardware/HTU21D.h"
+//#include "../hardware/HTU21D.h"
+#include "../hardware/OpenWebNet.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -135,10 +136,7 @@ namespace server {
 } //namespace server
 } //namespace tcp
 
-MainWorker::MainWorker() :
-m_webserverport("8080"),
-m_webserveraddress("::"),
-m_secure_web_cert_file("./server_cert.pem")
+MainWorker::MainWorker()
 {
 	m_SecCountdown=-1;
 	m_stoprequested=false;
@@ -147,6 +145,24 @@ m_secure_web_cert_file("./server_cert.pem")
 
 	m_bStartHardware=false;
 	m_hardwareStartCounter=0;
+
+	// Set default settings for web servers
+	m_webserver_settings.listening_address = "::"; // listen to all network interfaces
+	m_webserver_settings.listening_port = "8080";
+	m_secure_webserver_settings.listening_address = "::"; // listen to all network interfaces
+	m_secure_webserver_settings.listening_port = "443";
+	m_secure_webserver_settings.ssl_method = "sslv23";
+	m_secure_webserver_settings.certificate_chain_file_path = "./server_cert.pem";
+	m_secure_webserver_settings.ca_cert_file_path = m_secure_webserver_settings.certificate_chain_file_path; // not used
+	m_secure_webserver_settings.cert_file_path = m_secure_webserver_settings.certificate_chain_file_path;
+	m_secure_webserver_settings.private_key_file_path = m_secure_webserver_settings.certificate_chain_file_path;
+	m_secure_webserver_settings.private_key_pass_phrase = "";
+	m_secure_webserver_settings.options  = "default_workarounds,no_sslv2,single_dh_use";
+	m_secure_webserver_settings.tmp_dh_file_path = m_secure_webserver_settings.certificate_chain_file_path;
+	m_secure_webserver_settings.verify_peer = false;
+	m_secure_webserver_settings.verify_fail_if_no_peer_cert = false;
+	m_secure_webserver_settings.verify_file_path = "";
+
 	m_bIgnoreUsernamePassword=false;
 
 	time_t atime=mytime(NULL);
@@ -481,44 +497,29 @@ eVerboseLevel MainWorker::GetVerboseLevel()
   return m_verboselevel;
 }
 
-void MainWorker::SetWebserverAddress(const std::string &Address)
+void MainWorker::SetWebserverSettings(const server_settings & settings)
 {
-	m_webserveraddress = Address;
-}
-
-void MainWorker::SetWebserverPort(const std::string &Port)
-{
-	m_webserverport=Port;
+	m_webserver_settings.set(settings);
 }
 
 std::string MainWorker::GetWebserverAddress()
 {
-	return m_webserveraddress;
+	return m_webserver_settings.listening_address;
 }
 
 std::string MainWorker::GetWebserverPort()
 {
-	return m_webserverport;
-}
-
-void MainWorker::SetSecureWebserverPort(const std::string &Port)
-{
-	m_secure_webserverport = Port;
+	return m_webserver_settings.listening_port;
 }
 
 std::string MainWorker::GetSecureWebserverPort()
 {
-	return m_secure_webserverport;
+	return m_secure_webserver_settings.listening_port;
 }
 
-void MainWorker::SetSecureWebserverCert(const std::string &CertFile)
+void MainWorker::SetSecureWebserverSettings(const ssl_server_settings & ssl_settings)
 {
-	m_secure_web_cert_file = CertFile;
-}
-
-void MainWorker::SetSecureWebserverPass(const std::string &passphrase)
-{
-	m_secure_web_passphrase = passphrase;
+	m_secure_webserver_settings.set(ssl_settings);
 }
 
 bool MainWorker::RestartHardware(const std::string &idx)
@@ -800,10 +801,10 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 #endif
 	case HTYPE_RaspberryBMP085:
-		pHardware = new CBMP085(ID);
+		pHardware = new I2C(ID,1);
 		break;
 	case HTYPE_RaspberryHTU21D:
-			pHardware = new CHTU21D(ID);
+			pHardware = new I2C(ID,2);
 			break;
 	case HTYPE_Wunderground:
 		pHardware = new CWunderground(ID,Username,Password);
@@ -878,6 +879,9 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_DomoticzInternal:
 		pHardware = new DomoticzInternal(ID);
 		break;
+	case HTYPE_OpenWebNet:
+		pHardware = new COpenWebNet(ID, Address, Port);
+		break;
 	}
 
 	if (pHardware)
@@ -949,13 +953,13 @@ bool MainWorker::Stop()
 
 bool MainWorker::StartThread()
 {
-	if (!m_webserverport.empty())
+	if (!m_webserver_settings.listening_port.empty())
 	{
 		//Start WebServer
-		if (!m_webservers.StartServers(m_webserveraddress, m_webserverport, m_secure_webserverport, szWWWFolder, m_secure_web_cert_file, m_secure_web_passphrase, m_bIgnoreUsernamePassword, &m_sharedserver))
+		if (!m_webservers.StartServers(m_webserver_settings, m_secure_webserver_settings, szWWWFolder, m_bIgnoreUsernamePassword, &m_sharedserver))
 		{
 #ifdef WIN32
-			MessageBox(0,"Error starting webserver, check if ports are not in use!", MB_OK, MB_ICONERROR);
+			MessageBox(0,"Error starting webserver(s), check if ports are not in use!", MB_OK, MB_ICONERROR);
 #endif
 			return false;
 		}
@@ -2211,6 +2215,7 @@ void MainWorker::decode_InterfaceMessage(const int HwdID, const _eHardwareTypes 
 	{
 	case sTypeInterfaceCommand:
 		{
+			int mlen = pResponse->IRESPONSE.packetlength;
 			WriteMessage("subtype           = Interface Response");
 			sprintf(szTmp,"Sequence nbr      = %d",pResponse->IRESPONSE.seqnbr);
 			WriteMessage(szTmp);
@@ -2310,8 +2315,51 @@ void MainWorker::decode_InterfaceMessage(const int HwdID, const _eHardwareTypes 
 						WriteMessage("Receiver type     = unknown");
 						break;
 					}
-					sprintf(szTmp,"Firmware version  = %d", pResponse->IRESPONSE.msg2);
+					int FWType = 0;
+					int FWVersion = 0;
+					if (mlen > 13)
+					{
+						FWType = pResponse->IRESPONSE.msg10;
+						FWVersion = pResponse->IRESPONSE.msg2 + 1000;
+					}
+					else
+					{
+						FWVersion = pResponse->IRESPONSE.msg2;
+						if ((pResponse->IRESPONSE.msg1 == recType43392) && (FWVersion < 162))
+							FWType = 0; //Type1 RFXrec
+						else if ((pResponse->IRESPONSE.msg1 == recType43392) && (FWVersion < 162))
+							FWType = 1; //Type1
+						else if ((pResponse->IRESPONSE.msg1 == recType43392) && ((FWVersion > 162) && (FWVersion < 225)))
+							FWType = 2; //Type2
+						else
+							FWType = 3; //Ext
+					}
+
+					sprintf(szTmp,"Firmware version  = %d", FWVersion);
 					WriteMessage(szTmp);
+					WriteMessage( "Firmware type     = ",false);
+					switch (FWType)
+					{
+					case 0:
+						WriteMessage("Type1 Receive only");
+						break;
+					case 1:
+						WriteMessage("Type1");
+						break;
+					case 2:
+						WriteMessage("Type2");
+						break;
+					case 3:
+						WriteMessage("Ext");
+						break;
+					case 4:
+						WriteMessage("Ext2");
+						break;
+					default:
+						WriteMessage("?");
+						break;
+					}
+
 					sprintf(szTmp,"Hardware version  = %d.%d",pResponse->IRESPONSE.msg7,pResponse->IRESPONSE.msg8);
 					WriteMessage(szTmp);
 
@@ -4495,10 +4543,12 @@ void MainWorker::decode_Lighting5(const int HwdID, const _eHardwareTypes HwdType
 	unsigned char Unit=pResponse->LIGHTING5.unitcode;
 	unsigned char cmnd=pResponse->LIGHTING5.cmnd;
 	float flevel;
-	if (subType==sTypeLivolo)
-		flevel=(100.0f/7.0f)*float(pResponse->LIGHTING5.level);
+	if (subType == sTypeLivolo)
+		flevel = (100.0f / 7.0f)*float(pResponse->LIGHTING5.level);
+	else if (subType == sTypeLightwaveRF)
+		flevel = (100.0f / 31.0f)*float(pResponse->LIGHTING5.level);
 	else
-		flevel=(100.0f/31.0f)*float(pResponse->LIGHTING5.level);
+		flevel = (100.0f / 7.0f)*float(pResponse->LIGHTING5.level);
 	unsigned char SignalLevel=pResponse->LIGHTING5.rssi;
 
 	bool bDoUpdate=true;
@@ -4897,6 +4947,38 @@ void MainWorker::decode_Lighting5(const int HwdID, const _eHardwareTypes HwdType
 				break;
 			default:
 				WriteMessage("Unknown");
+				break;
+			}
+			break;
+		case sTypeIT:
+			WriteMessage("subtype       = Intertek,FA500,PROmax");
+			sprintf(szTmp, "Sequence nbr  = %d", pResponse->LIGHTING5.seqnbr);
+			WriteMessage(szTmp);
+			sprintf(szTmp, "ID            = %02X%02X%02X", pResponse->LIGHTING5.id1, pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
+			WriteMessage(szTmp);
+			sprintf(szTmp, "Unit          = %d", pResponse->LIGHTING5.unitcode);
+			WriteMessage(szTmp);
+			WriteMessage("Command       = ", false);
+			switch (pResponse->LIGHTING5.cmnd)
+			{
+			case light5_sOff:
+				WriteMessage("Off");
+				break;
+			case light5_sOn:
+				WriteMessage("On");
+				break;
+			case light5_sGroupOff:
+				WriteMessage("Group Off");
+				break;
+			case light5_sGroupOn:
+				WriteMessage("Group On");
+				break;
+			case light5_sSetLevel:
+				sprintf(szTmp, "Set dim level to: %.2f %%", flevel);
+				WriteMessage(szTmp);
+				break;
+			default:
+				WriteMessage("UNKNOWN");
 				break;
 			}
 			break;

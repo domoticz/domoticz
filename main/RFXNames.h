@@ -149,7 +149,8 @@ enum _eHardwareTypes {
 	HTYPE_DomoticzInternal,		//67
 	HTYPE_NefitEastLAN,			//68
 	HTYPE_PanasonicTV,			//69
-	HTYPE_RaspberryHTU21D, //70
+	HTYPE_OpenWebNet,			//70
+	HTYPE_RaspberryHTU21D, //71
 	HTYPE_END
 };
 

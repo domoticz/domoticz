@@ -102,7 +102,6 @@
     <ClCompile Include="..\ltablib.c" />
     <ClCompile Include="..\ltm.c" />
     <ClCompile Include="..\lundump.c" />
-    <ClCompile Include="..\lutf8lib.c" />
     <ClCompile Include="..\lvm.c" />
     <ClCompile Include="..\lzio.c" />
   </ItemGroup>

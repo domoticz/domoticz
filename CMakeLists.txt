@@ -215,6 +215,7 @@ main/WebServerHelper.cpp
 main/WindCalculation.cpp
 httpclient/HTTPClient.cpp
 httpclient/UrlEncode.cpp
+hardware/I2C.cpp
 hardware/1Wire.cpp
 hardware/1Wire/1WireByOWFS.cpp
 hardware/1Wire/1WireByKernel.cpp
@@ -223,7 +224,6 @@ hardware/1Wire/1WireForWindows.cpp
 hardware/AnnaThermostat.cpp
 hardware/ASyncSerial.cpp
 hardware/ASyncTCP.cpp
-hardware/BMP085.cpp
 hardware/Comm5TCP.cpp
 hardware/csocket.cpp
 hardware/CurrentCostMeterBase.cpp
@@ -245,7 +245,6 @@ hardware/Gpio.cpp
 hardware/GpioPin.cpp
 hardware/HardwareMonitor.cpp
 hardware/HarmonyHub.cpp
-hardware/HTU21D.cpp
 hardware/ICYThermostat.cpp
 hardware/KMTronicBase.cpp
 hardware/KMTronic433.cpp
@@ -263,6 +262,8 @@ hardware/MySensorsTCP.cpp
 hardware/NefitEasy.cpp
 hardware/Nest.cpp
 hardware/Netatmo.cpp
+hardware/OpenWebNet.cpp
+hardware/openwebnet/bt_openwebnet.cpp
 hardware/OpenZWave.cpp
 hardware/openzwave/control_panel/ozwcp.cpp
 hardware/openzwave/control_panel/zwavelib.cpp
@@ -430,7 +431,7 @@ IF(CURL_FOUND)
   MESSAGE(STATUS "Curl libraries found at: ${CURL_LIBRARIES}")
   MESSAGE(STATUS "Curl includes found at: ${CURL_INCLUDE_DIRS}")
   INCLUDE_DIRECTORIES(${CURL_INCLUDE_DIRS})
-  add_definitions(-DNS_ENABLE_SSL)
+  add_definitions(-DWWW_ENABLE_SSL)
 else()
   MESSAGE(FATAL_ERROR "cURL not found on your system, see install.txt how to get them installed. (for example 'sudo apt-get install curl libcurl4-openssl-dev')")
 ENDIF(CURL_FOUND)
@@ -464,7 +465,7 @@ if(NOT OPENSSL_FOUND)
     target_link_libraries(domoticz ${MD_LIBRARY})
   endif(MD_LIBRARY)
 else()
-  add_definitions(-DNS_ENABLE_SSL)
+  add_definitions(-DWWW_ENABLE_SSL)
   include_directories(${OPENSSL_INCLUDE_DIR})
   target_link_libraries(domoticz ${OPENSSL_LIBRARIES})
 endif()
@@ -566,10 +567,26 @@ else()
   message(STATUS "Not found telldus-core (telldus-core.h), not adding tellstick support")
 endif (TELLDUSCORE_INCLUDE)
 
+# Under FreeBSD sys/sysinfo?h exist using a separate pkg
+IF(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
+  find_path(SYSINFO_INCLUDE NAMES sys/sysinfo.h)
+  if (SYSINFO_INCLUDE)
+     message(STATUS "Found sys/sysinfo.h at : ${SYSINFO_INCLUDE}")
+     find_library(SYSINFO_LIBRARIES NAMES libsysinfo.so)
+     if(SYSINFO_LIBRARIES)
+       message(STATUS "Found libsysinfo.so at : ${SYSINFO_LIBRARIES}")
+     else(SYSINFO_LIBRARIES)
+       message(FATAL_ERROR "Cannot find libsysinfo, please install it with 'pkg install libsysinfo'")
+     endif(SYSINFO_LIBRARIES)
+  else()
+     message(FATAL_ERROR "Cannot find sysinfo.h, please install it with 'pkg install libsysinfo'")
+  endif()
+ENDIF()
+
 IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
   target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} ${MQTT_LIBRARIES} ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS} ${TELLDUS_LIBRARIES})
 else()
-  target_link_libraries(domoticz -lrt ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} ${MQTT_LIBRARIES} ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS} ${TELLDUS_LIBRARIES})
+  target_link_libraries(domoticz -lrt ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} ${MQTT_LIBRARIES} ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS} ${TELLDUS_LIBRARIES} ${SYSINFO_LIBRARIES})
 ENDIF()
 
 ADD_PRECOMPILED_HEADER(domoticz "main/stdafx.h")
