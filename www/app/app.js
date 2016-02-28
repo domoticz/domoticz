@@ -315,6 +315,11 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				templateUrl: 'views/about.html',
 				controller: 'AboutController'
 			  })).
+			  when('/Custom/:custompage', angularAMD.route({
+					templateUrl: 'views/custom.html',
+					controller: 'CustomController'
+				})
+			  ).
 			  otherwise({
 				redirectTo: '/Dashboard'
 			  });

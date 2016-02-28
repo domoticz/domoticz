@@ -949,7 +949,7 @@ bool MainWorker::Stop()
 
 bool MainWorker::StartThread()
 {
-	if (!m_webserver_settings.listening_port.empty())
+	if (m_webserver_settings.is_enabled() || m_secure_webserver_settings.is_enabled())
 	{
 		//Start WebServer
 		if (!m_webservers.StartServers(m_webserver_settings, m_secure_webserver_settings, szWWWFolder, m_bIgnoreUsernamePassword, &m_sharedserver))
@@ -2211,6 +2211,7 @@ void MainWorker::decode_InterfaceMessage(const int HwdID, const _eHardwareTypes 
 	{
 	case sTypeInterfaceCommand:
 		{
+			int mlen = pResponse->IRESPONSE.packetlength;
 			WriteMessage("subtype           = Interface Response");
 			sprintf(szTmp,"Sequence nbr      = %d",pResponse->IRESPONSE.seqnbr);
 			WriteMessage(szTmp);
@@ -2310,8 +2311,51 @@ void MainWorker::decode_InterfaceMessage(const int HwdID, const _eHardwareTypes 
 						WriteMessage("Receiver type     = unknown");
 						break;
 					}
-					sprintf(szTmp,"Firmware version  = %d", pResponse->IRESPONSE.msg2);
+					int FWType = 0;
+					int FWVersion = 0;
+					if (mlen > 13)
+					{
+						FWType = pResponse->IRESPONSE.msg10;
+						FWVersion = pResponse->IRESPONSE.msg2 + 1000;
+					}
+					else
+					{
+						FWVersion = pResponse->IRESPONSE.msg2;
+						if ((pResponse->IRESPONSE.msg1 == recType43392) && (FWVersion < 162))
+							FWType = 0; //Type1 RFXrec
+						else if ((pResponse->IRESPONSE.msg1 == recType43392) && (FWVersion < 162))
+							FWType = 1; //Type1
+						else if ((pResponse->IRESPONSE.msg1 == recType43392) && ((FWVersion > 162) && (FWVersion < 225)))
+							FWType = 2; //Type2
+						else
+							FWType = 3; //Ext
+					}
+
+					sprintf(szTmp,"Firmware version  = %d", FWVersion);
 					WriteMessage(szTmp);
+					WriteMessage( "Firmware type     = ",false);
+					switch (FWType)
+					{
+					case 0:
+						WriteMessage("Type1 Receive only");
+						break;
+					case 1:
+						WriteMessage("Type1");
+						break;
+					case 2:
+						WriteMessage("Type2");
+						break;
+					case 3:
+						WriteMessage("Ext");
+						break;
+					case 4:
+						WriteMessage("Ext2");
+						break;
+					default:
+						WriteMessage("?");
+						break;
+					}
+
 					sprintf(szTmp,"Hardware version  = %d.%d",pResponse->IRESPONSE.msg7,pResponse->IRESPONSE.msg8);
 					WriteMessage(szTmp);
 

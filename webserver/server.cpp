@@ -17,8 +17,9 @@ server_base::server_base(const server_settings & settings, request_handler & use
 		acceptor_(io_service_),
 		settings_(settings),
 		request_handler_(user_request_handler),
-		timeout_(20) { // default read timeout in seconds
-	//_log.Log(LOG_STATUS, "[web:%s] create server_base using settings : %s", settings.listening_port.c_str(), settings.to_string().c_str());
+		timeout_(20), // default read timeout in seconds
+		is_running(false),
+		is_stopping(false) {
 	if (!settings.is_enabled()) {
 		throw std::invalid_argument("cannot initialize a disabled server (listening port cannot be empty or 0)");
 	}
@@ -53,38 +54,50 @@ void server_base::run() {
 	// asynchronous operation outstanding: the asynchronous accept call waiting
 	// for new incoming connections.
 	try {
+		is_running = true;
 		io_service_.run();
+		is_running = false;
 	} catch (std::exception& e) {
 		_log.Log(LOG_ERROR, "[web:%s] exception occurred : '%s' (need to run again)", settings_.listening_port.c_str(), e.what());
+		is_running = false;
 		handle_stop(); // dispatch or post call does NOT work because it is pushed in the event queue (executed only on next io service run)
 		io_service_.reset(); // this call is needed before calling run() again
-		throw e;
-	}
-	catch (...) {
+		throw;
+	} catch (...) {
 		_log.Log(LOG_ERROR, "[web:%s] unknown exception occurred (need to run again)", settings_.listening_port.c_str());
+		is_running = false;
 		handle_stop(); // dispatch or post call does NOT work because it is pushed in the event queue (executed only on next io service run)
 		io_service_.reset(); // this call is needed before calling run() again
 		throw;
 	}
 }
 
+/// Ask the server to stop using asynchronous command
 void server_base::stop() {
-	// Post a call to the stop function so that server_base::stop() is safe to call
-	// from any thread.
-	io_service_.post(boost::bind(&server_base::handle_stop, this));
+	handle_stop();
+}
+
+/// Returns true if the server is stopped.
+bool server_base::stopped() {
+	return !is_running;
 }
 
 void server_base::handle_stop() {
-	// The server is stopped by cancelling all outstanding asynchronous
-	// operations. Once all operations have finished the io_service::run() call
-	// will exit.
-	acceptor_.close();
-	connection_manager_.stop_all();
+	is_stopping = true;
+	try {
+		boost::system::error_code ignored_ec;
+		acceptor_.close(ignored_ec);
+	} catch (...) {
+		_log.Log(LOG_ERROR, "[web:%s] exception occurred while closing acceptor", settings_.listening_port.c_str());
+	}
+	connection_manager_.stop_all(false);
 }
 
 server::server(const server_settings & settings, request_handler & user_request_handler) :
 		server_base(settings, user_request_handler) {
-	//_log.Log(LOG_STATUS, "[web:%s] create server using settings : %s", settings.listening_port.c_str(), settings.to_string().c_str());
+#ifdef DEBUG_WWW
+	_log.Log(LOG_STATUS, "[web:%s] create server using settings : %s", settings.listening_port.c_str(), settings.to_string().c_str());
+#endif
 	init(boost::bind(&server::init_connection, this),
 			boost::bind(&server::handle_accept, this, _1));
 }
@@ -97,6 +110,9 @@ void server::init_connection() {
  * accepting incoming requests and start the client connection loop
  */
 void server::handle_accept(const boost::system::error_code& e) {
+	if (is_stopping) {
+		return;
+	}
 	if (!e) {
 		connection_manager_.start(new_connection_);
 		new_connection_.reset(new connection(io_service_,
@@ -114,7 +130,9 @@ ssl_server::ssl_server(const ssl_server_settings & ssl_settings, request_handler
 		settings_(ssl_settings),
 		context_(io_service_, ssl_settings.get_ssl_method())
 {
-	//_log.Log(LOG_STATUS, "[web:%s] create ssl_server using ssl_server_settings : %s", ssl_settings.listening_port.c_str(), ssl_settings.to_string().c_str());
+#ifdef DEBUG_WWW
+	_log.Log(LOG_STATUS, "[web:%s] create ssl_server using ssl_server_settings : %s", ssl_settings.listening_port.c_str(), ssl_settings.to_string().c_str());
+#endif
 	init(boost::bind(&ssl_server::init_connection, this),
 			boost::bind(&ssl_server::handle_accept, this, _1));
 }
@@ -124,13 +142,14 @@ ssl_server::ssl_server(const server_settings & settings, request_handler & user_
 		server_base(settings, user_request_handler),
 		settings_(dynamic_cast<ssl_server_settings const &>(settings)),
 		context_(io_service_, dynamic_cast<ssl_server_settings const &>(settings).get_ssl_method()) {
-	//_log.Log(LOG_STATUS, "[web:%s] create ssl_server using server_settings : %s", settings.listening_port.c_str(), settings.to_string().c_str());
+#ifdef DEBUG_WWW
+	_log.Log(LOG_STATUS, "[web:%s] create ssl_server using server_settings : %s", settings.listening_port.c_str(), settings.to_string().c_str());
+#endif
 	init(boost::bind(&ssl_server::init_connection, this),
 			boost::bind(&ssl_server::handle_accept, this, _1));
 }
 
 void ssl_server::init_connection() {
-	//_log.Log(LOG_STATUS, "[web:%s] ssl_server::init_connection() : new connection using settings : %s", settings_.listening_port.c_str(), settings_.to_string().c_str());
 
 	new_connection_.reset(new connection(io_service_, connection_manager_, request_handler_, timeout_, context_));
 
@@ -184,7 +203,9 @@ void ssl_server::init_connection() {
 				(std::istreambuf_iterator<char>()));
 		if (content.find("BEGIN DH PARAMETERS") != std::string::npos) {
 			context_.use_tmp_dh_file(settings_.tmp_dh_file_path);
-			//_log.Log(LOG_STATUS, "[web:%s] 'BEGIN DH PARAMETERS' found in file %s", settings_.listening_port.c_str(), settings_.tmp_dh_file_path.c_str());
+#ifdef DEBUG_WWW
+			_log.Log(LOG_STATUS, "[web:%s] 'BEGIN DH PARAMETERS' found in file %s", settings_.listening_port.c_str(), settings_.tmp_dh_file_path.c_str());
+#endif
 		} else {
 			_log.Log(LOG_ERROR, "[web:%s] missing SSL DH parameters from file %s", settings_.listening_port.c_str(), settings_.tmp_dh_file_path.c_str());
 		}
@@ -195,6 +216,9 @@ void ssl_server::init_connection() {
  * accepting incoming requests and start the client connection loop
  */
 void ssl_server::handle_accept(const boost::system::error_code& e) {
+	if (is_stopping) {
+		return;
+	}
 	if (!e) {
 		connection_manager_.start(new_connection_);
 		new_connection_.reset(new connection(io_service_,
