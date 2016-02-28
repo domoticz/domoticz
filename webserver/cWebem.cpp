@@ -1435,6 +1435,14 @@ bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const req
 		} else {
 			// invalid cookie
 			if (myWebem->m_authmethod != AUTH_BASIC) {
+				//Check if we need to bypass authentication (not when using basic-auth)
+				std::vector < std::string >::const_iterator itt;
+				for (itt = myWebem->myWhitelistURLs.begin(); itt != myWebem->myWhitelistURLs.end(); ++itt)
+				{
+					if (req.uri.find(*itt) != std::string::npos)
+						return true;
+				}
+
 				// Force login form
 				send_authorization_request(rep);
 				return false;
