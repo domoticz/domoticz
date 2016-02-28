@@ -29,10 +29,11 @@ connection::connection(boost::asio::io_service& io_service,
 				request_handler_(handler),
 				read_timeout_(read_timeout),
 				read_timer_(io_service, boost::posix_time::seconds(read_timeout)),
-				default_abandoned_timeout_(20*60), // 20mn before stopping abandoned connection
+				default_abandoned_timeout_(20*60), // close abandoned connections after 20 minutes
 				abandoned_timer_(io_service, boost::posix_time::seconds(default_abandoned_timeout_)),
 				status("initializing"),
-				stop_required(false)
+				stop_required(false),
+				reply_(reply::stock_reply(reply::internal_server_error))
 {
 	secure_ = false;
 	keepalive_ = false;
@@ -53,10 +54,11 @@ connection::connection(boost::asio::io_service& io_service,
 				request_handler_(handler),
 				read_timeout_(read_timeout),
 				read_timer_(io_service, boost::posix_time::seconds(read_timeout)),
-				default_abandoned_timeout_(20*60), // 20mn before stopping abandoned connection
+				default_abandoned_timeout_(20*60), // close abandoned connections after 20 minutes
 				abandoned_timer_(io_service, boost::posix_time::seconds(default_abandoned_timeout_)),
 				status("initializing"),
-				stop_required(false)
+				stop_required(false),
+				reply_(reply::stock_reply(reply::internal_server_error))
 {
 	secure_ = true;
 	keepalive_ = false;
@@ -320,7 +322,7 @@ void connection::reset_read_timeout() {
 /// stop connection on read timeout
 void connection::handle_read_timeout(const boost::system::error_code& error) {
 	if (error != boost::asio::error::operation_aborted) {
-#ifdef _DEBUG
+#ifdef DEBUG_WWW
 		_log.Log(LOG_STATUS, "%s -> handle read timeout", host_endpoint_.c_str());
 #endif
 		connection_manager_.stop(shared_from_this());

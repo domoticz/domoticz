@@ -62,7 +62,7 @@ void server_base::run() {
 		is_running = false;
 		handle_stop(); // dispatch or post call does NOT work because it is pushed in the event queue (executed only on next io service run)
 		io_service_.reset(); // this call is needed before calling run() again
-		throw e;
+		throw;
 	} catch (...) {
 		_log.Log(LOG_ERROR, "[web:%s] unknown exception occurred (need to run again)", settings_.listening_port.c_str());
 		is_running = false;
@@ -83,22 +83,19 @@ bool server_base::stopped() {
 }
 
 void server_base::handle_stop() {
-	// The server is stopped by cancelling all outstanding asynchronous
-	// operations. Once all operations have finished the io_service::run() call
-	// will exit.
 	is_stopping = true;
-	connection_manager_.stop_all(true);
 	try {
 		boost::system::error_code ignored_ec;
 		acceptor_.close(ignored_ec);
 	} catch (...) {
 		_log.Log(LOG_ERROR, "[web:%s] exception occurred while closing acceptor", settings_.listening_port.c_str());
 	}
+	connection_manager_.stop_all(false);
 }
 
 server::server(const server_settings & settings, request_handler & user_request_handler) :
 		server_base(settings, user_request_handler) {
-#ifdef _DEBUG
+#ifdef DEBUG_WWW
 	_log.Log(LOG_STATUS, "[web:%s] create server using settings : %s", settings.listening_port.c_str(), settings.to_string().c_str());
 #endif
 	init(boost::bind(&server::init_connection, this),
@@ -133,7 +130,7 @@ ssl_server::ssl_server(const ssl_server_settings & ssl_settings, request_handler
 		settings_(ssl_settings),
 		context_(io_service_, ssl_settings.get_ssl_method())
 {
-#ifdef _DEBUG
+#ifdef DEBUG_WWW
 	_log.Log(LOG_STATUS, "[web:%s] create ssl_server using ssl_server_settings : %s", ssl_settings.listening_port.c_str(), ssl_settings.to_string().c_str());
 #endif
 	init(boost::bind(&ssl_server::init_connection, this),
@@ -145,7 +142,7 @@ ssl_server::ssl_server(const server_settings & settings, request_handler & user_
 		server_base(settings, user_request_handler),
 		settings_(dynamic_cast<ssl_server_settings const &>(settings)),
 		context_(io_service_, dynamic_cast<ssl_server_settings const &>(settings).get_ssl_method()) {
-#ifdef _DEBUG
+#ifdef DEBUG_WWW
 	_log.Log(LOG_STATUS, "[web:%s] create ssl_server using server_settings : %s", settings.listening_port.c_str(), settings.to_string().c_str());
 #endif
 	init(boost::bind(&ssl_server::init_connection, this),
@@ -206,7 +203,7 @@ void ssl_server::init_connection() {
 				(std::istreambuf_iterator<char>()));
 		if (content.find("BEGIN DH PARAMETERS") != std::string::npos) {
 			context_.use_tmp_dh_file(settings_.tmp_dh_file_path);
-#ifdef _DEBUG
+#ifdef DEBUG_WWW
 			_log.Log(LOG_STATUS, "[web:%s] 'BEGIN DH PARAMETERS' found in file %s", settings_.listening_port.c_str(), settings_.tmp_dh_file_path.c_str());
 #endif
 		} else {

@@ -53,9 +53,9 @@ void connection_manager::stop(connection_ptr c)
 	c->stop();
 }
 
-void connection_manager::stop_all(bool graceful_stop)
+void connection_manager::stop_all(const bool graceful_stop)
 {
-#ifdef _DEBUG
+#ifdef DEBUG_WWW
 	_log.Log(LOG_STATUS,"%stopping connections...", graceful_stop ? "Gracefully s" : "S");
 #endif
 	if (graceful_stop) {
@@ -64,17 +64,17 @@ void connection_manager::stop_all(bool graceful_stop)
 		int timeout = 10; // force stop after 10 seconds
 		time_t start = mytime(NULL);
 		while(true) {
-			if (connections_.size() < 1) {
+			if (connections_.empty()) {
 				break;
 			}
 			if ((mytime(NULL) - start) > timeout) {
 				// timeout occurred : force stop
-#ifdef _DEBUG
+#ifdef DEBUG_WWW
 				_log.Log(LOG_STATUS,"Graceful stop timeout occurred : remaining connections will be closed now");
 #endif
 				break;
 			}
-#ifdef _DEBUG
+#ifdef DEBUG_WWW
 			_log.Log(LOG_STATUS,"Graceful stopping : %d active connection(s)", (int) connections_.size());
 #endif
 			sleep_milliseconds(500);
