@@ -315,6 +315,13 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				templateUrl: 'views/about.html',
 				controller: 'AboutController'
 			  })).
+			  when('/Custom/:custompage', angularAMD.route({
+					templateUrl: function(params) {
+						return 'templates/' + params.custompage + '.html';
+					},
+					controller: 'DummyController'
+				})
+			  ).
 			  otherwise({
 				redirectTo: '/Dashboard'
 			  });

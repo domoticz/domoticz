@@ -3,6 +3,7 @@ Version 2.4xxx
 - Implemented: Blockly, now possible to send a notification with a user variable/device as subject/body
 - Implemented: Chinese language support, big thanks to wxws!!
 - Implemented: CounterType 'Time'
+- Implemented: Custom Templates, now possible to directly call custom template pages (http://127.0.0.1:8080/#/Custom/mypage)
 - Implemented: Day display in energy/gas/water/temp report
 - Implemented: Dummy Hardware, Option to supply name, sensor is now also directly added to the system
 - Implemented: Dummy Hardware, Wind+Temp+Chill

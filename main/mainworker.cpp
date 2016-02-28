@@ -953,7 +953,7 @@ bool MainWorker::Stop()
 
 bool MainWorker::StartThread()
 {
-	if (!m_webserver_settings.listening_port.empty())
+	if (m_webserver_settings.is_enabled() || m_secure_webserver_settings.is_enabled())
 	{
 		//Start WebServer
 		if (!m_webservers.StartServers(m_webserver_settings, m_secure_webserver_settings, szWWWFolder, m_bIgnoreUsernamePassword, &m_sharedserver))

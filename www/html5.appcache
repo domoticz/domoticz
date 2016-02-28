@@ -447,6 +447,7 @@ app/DashboardController.js
 app/DevicesController.js
 app/DPFibaroController.js
 app/DPHttpController.js
+app/DummyController.js
 app/EventsController.js
 app/FloorplanController.js
 app/FloorplanEditController.js
