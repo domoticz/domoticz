@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 1220
+# ref 1221
 
 CACHE:
 # CSS
@@ -447,6 +447,7 @@ app/DashboardController.js
 app/DevicesController.js
 app/DPFibaroController.js
 app/DPHttpController.js
+app/DummyController.js
 app/EventsController.js
 app/FloorplanController.js
 app/FloorplanEditController.js
