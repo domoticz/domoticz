@@ -442,12 +442,12 @@ i18n/domoticz-zh.json
 app/AboutController.js
 app/app.js
 app/CamController.js
-app/CustomController.js
 app/CustomIconsController.js
 app/DashboardController.js
 app/DevicesController.js
 app/DPFibaroController.js
 app/DPHttpController.js
+app/DummyController.js
 app/EventsController.js
 app/FloorplanController.js
 app/FloorplanEditController.js
@@ -543,7 +543,6 @@ ozwcp/cp.js
 # HTML pages
 views/about.html
 views/cam.html
-views/custom.html
 views/customicons.html
 views/dashboard.html
 views/devices.html

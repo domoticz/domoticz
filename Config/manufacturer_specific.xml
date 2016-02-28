@@ -60,7 +60,7 @@
 		<Product type="0003" id="000c" name="Micro Smart Energy Switch" config="aeotec/ses.xml"/>
 		<Product type="0003" id="000d" name="Micro Smart Energy Illuminator"/>
 		<Product type="0003" id="000e" name="Micro Motor Controller"/>
-		<Product type="0003" id="0011" name="Micro Double Switch" />
+		<Product type="0003" id="0011" name="Micro Double Switch"  config="aeotec/msesv2.xml"/>
                 <Product type="0003" id="0018" name="Smart Switch (2nd Edition)"/>
 		<Product type="0003" id="001a" name="Micro Switch (2nd Edition)"/>
 		<Product type="0003" id="001b" name="Micro Smart Energy Illuminator G2"/>
@@ -190,6 +190,7 @@
 	</Manufacturer>
 	<Manufacturer id="0108" name="D-Link Corporation">
 		<Product type="0002" id="000e" name="DCH-Z110 Door/Window 3 in 1 sensor" config="dlink/dch-z110.xml"/>
+		<Product type="0002" id="000d" name="DCH-Z120 PIR/Motion 3 in 1 sensor" config="dlink/dch-z120.xml"/>
 		<Product type="0004" id="000a" name="DCH-Z510 Siren" config="dlink/dch-z510.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0002" name="Danfoss">
@@ -211,6 +212,7 @@
 		<Product type="0001" id="0001" name="Switchkeeper Plug-in Appliance Module"/>
 	</Manufacturer>
         <Manufacturer id="014a" name="Ecolink">
+                <Product type="0001" id="0001" name="Door/Window Sensor"/>
                 <Product type="0001" id="0003" name="Garage Door Sensor"/>
         </Manufacturer>
 	<Manufacturer id="0087" name="Eka Systems">
