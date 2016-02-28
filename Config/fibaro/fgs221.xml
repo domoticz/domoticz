@@ -4,7 +4,7 @@
   <!-- Configuration -->
   <CommandClass id="112">
     <Value type="list" genre="config" instance="1" index="1" label="Enable/Disable ALL ON/OFF" value="255" size="1">
-      <Help>Activate/Deactive ALL ON/OFF</Help>
+      <Help>Activate/Deactive ALL ON/OFF. Default setting: 255</Help>
       <Item label="ALL ON disabled/ ALL OFF disabled" value="0" />
       <Item label="ALL ON disabled/ ALL OFF active" value="1" />
       <Item label="ALL ON active / ALL OFF disabled" value="2" />
@@ -13,17 +13,17 @@
     
     <Value type="list" genre="config" instance="1" index="3" label="Auto off relay after specified time" value="0" size="1">
       <Help>Auto off relay after specified time, with the possibility of manual override - immediate Off after button push.
-      Default value: 0 Manual override disabled</Help>
+      Default setting: 0 Manual override disabled</Help>
       <Item label="Manual override disabled" value="0" />
       <Item label="Manual override enabled" value="1" />
     </Value>
     
     <Value type="short" genre="config" instance="1" index="4" label="Relay 1: OFF-delay time" value="0">
-      <Help>Automatic turning off relay 1 after set time, (0-255) in 10ms increments for FW1.0 to FW2.0, (0-65535) in 100 ms increment for FW2.1+</Help>
+      <Help>Automatic turning off relay 1 after set time. For FW1.0 to FW2.0: [1-255] (10ms - 2,5s)  10ms increments, 0 - Auto off disabled.  Default setting: 20 (200ms). For FW2.1+: [1- 65535] (0,1s – 6553,5s)  100ms increments, 0 - Auto off disabled.  Default setting: 0</Help>
     </Value>
     
     <Value type="short" genre="config" instance="1" index="5" label="Relay 2: OFF-delay time" value="0">
-      <Help>Automatic turning off relay 2 after set time, (0-255) in 10ms increments for FW1.0 to FW2.0, (0-65535) in 100 ms increment for FW2.1+</Help>
+      <Help>Automatic turning off relay 1 after set time. For FW1.0 to FW2.0: [1-255] (10ms - 2,5s)  10ms increments, 0 - Auto off disabled.  Default setting: 20 (200ms). For FW2.1+: [1- 65535] (0,1s – 6553,5s)  100ms increments, 0 - Auto off disabled.  Default setting: 0</Help>
     </Value>
     
     <Value type="list" genre="config" instance="1" index="6" label="Managing the transmission of control commands to the devices from first group of associations (key 1)." value="0" size="1">
@@ -34,7 +34,7 @@
     </Value>
     
     <Value type="list" genre="config" instance="1" index="7" label="Managing the transmission of control commands to the devices from second group of associations (key 2)." value="0" size="1">
-      <Help>Correct working parameter No. 6 requires settings parameter No. 15 to 1. This activates functionality double-click - Control Dimmer/Roller Shutter. Default setting: 0</Help>
+      <Help>Correct working parameter No. 7 requires settings parameter No. 15 to 1. This activates functionality double-click - Control Dimmer/Roller Shutter. Default setting: 0</Help>
       <Item label="The control commands are sent when the device is turned on and off (default)" value="0" />
       <Item label="The control commands are sent when the device is turned off. Enabling the device does not send commands controls. Double click on key 2 will send ON to all devices in group 2, all dimmers set to prev.value (ex. 50%)" value="1" />
       <Item label="The control commands are sent when the device is turned off. Enabling the device does not send commands controls. Double click on key 2 will send ON to all devices in group 2, all dimmers set to 100%" value="2" />

@@ -252,9 +252,6 @@
     <Filter Include="Devices\Nefit-Easy">
       <UniqueIdentifier>{eda6c8ec-7cdc-4897-9d23-c502aedbee4b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="tinyxpath">
-      <UniqueIdentifier>{dec41c77-32d9-454a-a9fc-a9c2de0dc4a1}</UniqueIdentifier>
-    </Filter>
     <Filter Include="www">
       <UniqueIdentifier>{86db03ef-13cf-48f9-8cfd-9c490e22c5d2}</UniqueIdentifier>
     </Filter>
