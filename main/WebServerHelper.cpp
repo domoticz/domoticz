@@ -23,7 +23,6 @@ namespace http {
 
 		CWebServerHelper::~CWebServerHelper()
 		{
-			StopServers();
 		}
 
 		bool CWebServerHelper::StartServers(server_settings & web_settings, ssl_server_settings & secure_web_settings, const std::string &serverpath, const bool bIgnoreUsernamePassword, tcp::server::CTCPServer *sharedServer)

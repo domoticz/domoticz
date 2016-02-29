@@ -185,7 +185,6 @@ MainWorker::MainWorker()
 
 MainWorker::~MainWorker()
 {
-	Stop();
 }
 
 void MainWorker::AddAllDomoticzHardware()
