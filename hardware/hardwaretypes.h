@@ -139,6 +139,9 @@
 #define sSwitchTypeNice				0x4d
 #define sSwitchTypeForest			0x4e
 #define sSwitchBlindsT1				0x4f
+#define sSwitchMC145026				0x50
+#define sSwitchLobeco				0x51
+#define sSwitchFriedland			0x52
 
 //Switch commands
 #define gswitch_sOff				0x00
