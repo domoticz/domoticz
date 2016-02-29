@@ -1399,9 +1399,6 @@
     <ClInclude Include="..\main\dirent_windows.h">
       <Filter>Windows</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\BMP085.h">
-      <Filter>Devices\I2C</Filter>
-    </ClInclude>
     <ClInclude Include="..\main\EventSystem.h">
       <Filter>EventSystem</Filter>
     </ClInclude>
@@ -1801,6 +1798,9 @@
     <ClInclude Include="..\hardware\OpenWebNet.h">
       <Filter>Devices\OpenWebNet</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\I2C.h">
+      <Filter>Devices\I2C</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -1931,9 +1931,6 @@
     </ClCompile>
     <ClCompile Include="..\hardware\1Wire.cpp">
       <Filter>Devices\1-Wire</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\BMP085.cpp">
-      <Filter>Devices\I2C</Filter>
     </ClCompile>
     <ClCompile Include="..\main\EventSystem.cpp">
       <Filter>EventSystem</Filter>
@@ -2336,6 +2333,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\OpenWebNet.cpp">
       <Filter>Devices\OpenWebNet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\I2C.cpp">
+      <Filter>Devices\I2C</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

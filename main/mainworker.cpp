@@ -3368,9 +3368,6 @@ void MainWorker::decode_TempHum(const int HwdID, const _eHardwareTypes HwdType, 
 		else if (pResponse->TEMP_HUM.id1 < 0xE0)
 			Unit = 5;
 		break;
-	case sTypeHTU21D_TC:
-		Unit = 1;
-		break;
 	}
 
 	float temp;

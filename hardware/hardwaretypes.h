@@ -173,8 +173,6 @@
 
 #define pTypeTEMP_BARO	0xF7
 #define sTypeBMP085		0x01
-#define sTypeHTU21D		0x04 // Hum only
-#define sTypeHTU21D_TC 0x0F // Temp & Hum combined
 
 #define pTypeUsage		0xF8
 #define sTypeElectric	0x01

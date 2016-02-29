@@ -62,6 +62,8 @@ and does not require smbus or wire libs
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 
+#define round(a) ( int ) ( a + .5 )
+
 #define I2C_READ_INTERVAL 30
 
 #define sleepms(ms)  usleep((ms)*1000)
@@ -92,7 +94,6 @@ const unsigned char BMPx8x_OverSampling = 3;
 
 I2C::I2C(const int ID, const int Mode1)
 {
-
 	switch (Mode1)
 	{
 		case 1:
@@ -388,7 +389,7 @@ void I2C::HTU21D_ReadSensorDetails()
 	float temperature, humidity;
 
 #ifndef __arm__
-	temperature = 21.3;
+	temperature = 21.3f;
 	humidity = 45;
 #else
 	int fd = i2c_Open(m_ActI2CBus.c_str());
@@ -411,7 +412,7 @@ void I2C::HTU21D_ReadSensorDetails()
 		humidity = humidity + (25 - temperature) * HTU21D_TEMP_COEFFICIENT;
 #endif
 
-	SendTempHumSensor(1, 255, temperature, humidity, "TempHum");
+	SendTempHumSensor(1, 255, temperature, round(humidity), "TempHum");
 }
 
 // BMP085 functions
