@@ -217,6 +217,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_CurrentCostMeterLAN, "CurrentCost Meter with LAN interface" },
 		{ HTYPE_DomoticzInternal, "Domoticz Internal interface" },
 		{ HTYPE_NefitEastLAN, "Nefit Easy HTTP server over LAN interface" },
+		{ HTYPE_RaspberryHTU21D, "HTU21D(F)/SI702x Humidity+Temp I2C sensor" },
 		{ HTYPE_OpenWebNet, "MyHome OpenWebNet" },
 		{ 0, NULL, NULL }
 	};
@@ -480,6 +481,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 
 		{ pTypeHUM, sTypeHUM1, "LaCrosse TX3" },
 		{ pTypeHUM, sTypeHUM2, "LaCrosse WS2300" },
+		{ pTypeHUM, sTypeHTU21D, "HTU21D I2C" },
 
 		{ pTypeTEMP_HUM, sTypeTH1, "THGN122/123, THGN132, THGR122/228/238/268" },
 		{ pTypeTEMP_HUM, sTypeTH2, "THGR810, THGN800" },
@@ -496,6 +498,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeTEMP_HUM, sTypeTH13, "Alecto WS1700" },
 		{ pTypeTEMP_HUM, sTypeTH14, "Alecto" },
 		{ pTypeTEMP_HUM, sTypeTH_LC_TC, "LaCrosse TX3" },
+		{ pTypeTEMP_HUM, sTypeHTU21D_TC, "HTU21D I2C" },
 
 
 		{ pTypeTEMP_HUM_BARO, sTypeTHB1, "THB1 - BTHR918, BTHGN129" },
@@ -804,6 +807,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 
 		{ pTypeHUM, sTypeHUM1, "Humidity,Humidity Status" },
 		{ pTypeHUM, sTypeHUM2, "Humidity,Humidity Status" },
+		{ pTypeHUM, sTypeHTU21D, "Humidity,Humidity Status" },
 
 		{ pTypeTEMP_HUM, sTypeTH1, "Temperature,Humidity,Humidity Status" },
 		{ pTypeTEMP_HUM, sTypeTH2, "Temperature,Humidity,Humidity Status" },
@@ -820,6 +824,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeTEMP_HUM, sTypeTH13, "Temperature,Humidity,Humidity Status" },
 		{ pTypeTEMP_HUM, sTypeTH14, "Temperature,Humidity,Humidity Status" },
 		{ pTypeTEMP_HUM, sTypeTH_LC_TC, "Temperature,Humidity,Humidity Status" },
+		{ pTypeTEMP_HUM, sTypeHTU21D_TC, "Temperature,Humidity,Humidity Status" },
 
 
 		{ pTypeTEMP_HUM_BARO, sTypeTHB1, "Temperature,Humidity,Humidity Status,Barometer,Forecast" },
@@ -2389,7 +2394,7 @@ bool GetLightCommand(
 			else if (switchcmd == "Stop")
 				switchcmd = "Stop inline relay";
 		}
- 
+
  		if (switchtype==STYPE_Doorbell)
  		{
 			if ((switchcmd=="On")||(switchcmd=="Group On"))
@@ -3392,4 +3397,3 @@ void ConvertToGeneralSwitchType(std::string &devid, int &dtype, int &subtype)
 		subtype = sSwitchTypeRTS;
 	}
 }
-
