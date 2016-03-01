@@ -1,3 +1,4 @@
+
 #include "stdafx.h"
 #include "RFLinkBase.h"
 #include "../main/Logger.h"
@@ -90,6 +91,9 @@ const _tRFLinkStringIntHelper rfswitches[] =
 	{ "Funkbus", sSwitchTypeFunkbus },		 // NA
 	{ "Nice", sSwitchTypeNice },			 // NA
 	{ "Forest", sSwitchTypeForest },		 // NA
+	{ "MC145026", sSwitchMC145026 },		 // NA
+	{ "Lobeco", sSwitchLobeco },			 // NA
+	{ "Friedland", sSwitchFriedland },		 // NA
 	{ "", -1 }
 };
 
