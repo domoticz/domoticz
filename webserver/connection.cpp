@@ -128,7 +128,7 @@ void connection::stop()
 void connection::handle_handshake(const boost::system::error_code& error)
 {
 	status = "handshaking";
-    if (secure_) { // assert
+	if (secure_) { // assert
 		if (!error)
 		{
 			// handshake completed, start reading
@@ -138,7 +138,7 @@ void connection::handle_handshake(const boost::system::error_code& error)
 		{
 			connection_manager_.stop(shared_from_this());
 		}
-  }
+	}
 }
 #endif
 
@@ -183,8 +183,8 @@ void connection::handle_read(const boost::system::error_code& error, std::size_t
 	// data read, no need for timeouts (RK, note: race condition)
 	cancel_read_timeout();
 
-    if (!error && bytes_transferred > 0)
-    {
+	if (!error && bytes_transferred > 0)
+	{
 		// ensure written bytes in the buffer
 		_buf.commit(bytes_transferred);
 		boost::tribool result;
@@ -261,10 +261,10 @@ void connection::handle_read(const boost::system::error_code& error, std::size_t
 			read_more();
 		}
 	}
-    else if (error != boost::asio::error::operation_aborted)
-    {
+	else if (error != boost::asio::error::operation_aborted)
+	{
 		connection_manager_.stop(shared_from_this());
-    }
+	}
 }
 
 void connection::handle_write(const boost::system::error_code& error)
@@ -324,7 +324,9 @@ void connection::handle_read_timeout(const boost::system::error_code& error) {
 /// Wait for all asynchronous operations to abort.
 void connection::stop_gracefully() {
 	stop_required = true;
-	if ((status.compare("waiting-read") == 0) || (status.compare("waiting-handshake"))) {
+	if ((status.compare("initializing") == 0) ||
+			(status.compare("waiting-read") == 0) ||
+			(status.compare("waiting-handshake") == 0)) {
 		// avoid to wait until timeout
 		connection_manager_.stop(shared_from_this());
 	}
