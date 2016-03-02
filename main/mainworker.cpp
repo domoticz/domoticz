@@ -149,6 +149,7 @@ MainWorker::MainWorker()
 	// Set default settings for web servers
 	m_webserver_settings.listening_address = "::"; // listen to all network interfaces
 	m_webserver_settings.listening_port = "8080";
+#ifdef WWW_ENABLE_SSL
 	m_secure_webserver_settings.listening_address = "::"; // listen to all network interfaces
 	m_secure_webserver_settings.listening_port = "443";
 	m_secure_webserver_settings.ssl_method = "sslv23";
@@ -162,7 +163,7 @@ MainWorker::MainWorker()
 	m_secure_webserver_settings.verify_peer = false;
 	m_secure_webserver_settings.verify_fail_if_no_peer_cert = false;
 	m_secure_webserver_settings.verify_file_path = "";
-
+#endif
 	m_bIgnoreUsernamePassword=false;
 
 	time_t atime=mytime(NULL);
@@ -512,6 +513,7 @@ std::string MainWorker::GetWebserverPort()
 	return m_webserver_settings.listening_port;
 }
 
+#ifdef WWW_ENABLE_SSL
 std::string MainWorker::GetSecureWebserverPort()
 {
 	return m_secure_webserver_settings.listening_port;
@@ -521,6 +523,7 @@ void MainWorker::SetSecureWebserverSettings(const ssl_server_settings & ssl_sett
 {
 	m_secure_webserver_settings.set(ssl_settings);
 }
+#endif
 
 bool MainWorker::RestartHardware(const std::string &idx)
 {
@@ -953,10 +956,18 @@ bool MainWorker::Stop()
 
 bool MainWorker::StartThread()
 {
-	if (m_webserver_settings.is_enabled() || m_secure_webserver_settings.is_enabled())
+	if (m_webserver_settings.is_enabled()
+#ifdef WWW_ENABLE_SSL
+		|| m_secure_webserver_settings.is_enabled()
+#endif
+		)
 	{
 		//Start WebServer
+#ifdef WWW_ENABLE_SSL
 		if (!m_webservers.StartServers(m_webserver_settings, m_secure_webserver_settings, szWWWFolder, m_bIgnoreUsernamePassword, &m_sharedserver))
+#else
+		if (!m_webservers.StartServers(m_webserver_settings, szWWWFolder, m_bIgnoreUsernamePassword, &m_sharedserver))
+#endif
 		{
 #ifdef WIN32
 			MessageBox(0,"Error starting webserver(s), check if ports are not in use!", MB_OK, MB_ICONERROR);

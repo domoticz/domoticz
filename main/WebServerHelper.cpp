@@ -25,8 +25,11 @@ namespace http {
 		{
 			StopServers();
 		}
-
+#ifdef WWW_ENABLE_SSL
 		bool CWebServerHelper::StartServers(server_settings & web_settings, ssl_server_settings & secure_web_settings, const std::string &serverpath, const bool bIgnoreUsernamePassword, tcp::server::CTCPServer *sharedServer)
+#else
+		bool CWebServerHelper::StartServers(server_settings & web_settings, const std::string &serverpath, const bool bIgnoreUsernamePassword, tcp::server::CTCPServer *sharedServer)
+#endif
 		{
 			bool bRet = false;
 
