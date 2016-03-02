@@ -44,17 +44,17 @@ and does not require smbus or wire libs
 */
 
 #include "stdafx.h"
-#include "BMP085.h"
+#include "I2C.h"
 #include <stdio.h>
 #include <fcntl.h>
 #include <stdlib.h>
 #ifdef __arm__
 	#include <linux/i2c-dev.h>
-	#include <linux/i2c.h> 
+	#include <linux/i2c.h>
 	#include <unistd.h>
 	#include <sys/ioctl.h>
 #endif
-#include <math.h> 
+#include <math.h>
 #include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "hardwaretypes.h"
@@ -62,10 +62,11 @@ and does not require smbus or wire libs
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 
+#define round(a) ( int ) ( a + .5 )
+
 #define I2C_READ_INTERVAL 30
 
 #define sleepms(ms)  usleep((ms)*1000)
-
 // BMP085 & BMP180 Specific code
 #define BMPx8x_I2CADDR           0x77
 #define BMPx8x_CtrlMeas          0xF4
@@ -77,43 +78,68 @@ and does not require smbus or wire libs
 //Will stop waiting if conversion is complete
 
 const unsigned char BMPx8x_OverSampling = 3;
+// HTU21D registers
+#define HTU21D_ADDRESS							0x40    /* I2C address */
+#define HTU21D_USER_REGISTER_WRITE					0xE6    /* Write user register*/
+#define HTU21D_USER_REGISTER_READ					0xE7    /* Read  user register*/
+#define HTU21D_SOFT_RESET									0xFE    /* Soft Reset (takes 15ms). Switch sensor OFF & ON again. All registers set to default exept heater bit. */
+#define HTU21D_TEMP_COEFFICIENT						-0.15   /* Temperature coefficient (from 0deg.C to 80deg.C) */
+#define HTU21D_CRC8_POLYNOMINAL						0x13100 /* CRC8 polynomial for 16bit CRC8 x^8 + x^5 + x^4 + 1 */
+#define HTU21D_TRIGGER_HUMD_MEASURE_HOLD		0xE5  /* Trigger Humidity Measurement. Hold master (SCK line is blocked) */
+#define HTU21D_TRIGGER_TEMP_MEASURE_HOLD		0xE3  /* Trigger Temperature Measurement. Hold master (SCK line is blocked) */
+#define HTU21D_TRIGGER_HUMD_MEASURE_NOHOLD	0xF5   /* Trigger Humidity Measurement. No Hold master (allows other I2C communication on a bus while sensor is measuring) */
+#define HTU21D_TRIGGER_TEMP_MEASURE_NOHOLD	0xF3   /* Trigger Temperature Measurement. No Hold master (allows other I2C communication on a bus while sensor is measuring) */
+#define HTU21D_TEMP_DELAY									70   /* Maximum required measuring time for a complete temperature read */
+#define HTU21D_HUM_DELAY										36   /* Maximum required measuring time for a complete humidity read */
 
-CBMP085::CBMP085(const int ID) :
-m_ActI2CBus("/dev/i2c-1")
+I2C::I2C(const int ID, const int Mode1)
 {
+	switch (Mode1)
+	{
+		case 1:
+			device = "BMP085";
+			break;
+		case 2:
+			device = "HTU21D";
+			break;
+	}
+
 	m_stoprequested=false;
 	m_HwdID=ID;
+	m_ActI2CBus = "/dev/i2c-1";
 	if (!i2c_test(m_ActI2CBus.c_str()))
 	{
 		m_ActI2CBus = "/dev/i2c-0";
 	}
 }
 
-CBMP085::~CBMP085()
+I2C::~I2C()
 {
 }
 
-bool CBMP085::StartHardware()
+bool I2C::StartHardware()
 {
 #ifndef __arm__
 	return false;
 #endif
 	m_stoprequested=false;
-	m_minuteCount = 0;
-	m_firstRound = true;
-	m_LastMinute = -1;
-	m_LastForecast = -1;
-	m_LastSendForecast = baroForecastNoInfo;
-
+	if (device=="BMP085")
+	{
+		m_minuteCount = 0;
+		m_firstRound = true;
+		m_LastMinute = -1;
+		m_LastForecast = -1;
+		m_LastSendForecast = baroForecastNoInfo;
+	}
 
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CBMP085::Do_Work, this)));
+	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&I2C::Do_Work, this)));
 	sOnConnected(this);
 	m_bIsStarted=true;
 	return (m_thread!=NULL);
 }
 
-bool CBMP085::StopHardware()
+bool I2C::StopHardware()
 {
 	m_stoprequested=true;
 	if (m_thread!=NULL)
@@ -122,16 +148,16 @@ bool CBMP085::StopHardware()
 	return true;
 }
 
-bool CBMP085::WriteToHardware(const char *pdata, const unsigned char length)
+bool I2C::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	return false;
 }
 
-void CBMP085::Do_Work()
+void I2C::Do_Work()
 {
 	int msec_counter = 0;
 	int sec_counter = I2C_READ_INTERVAL - 5;
-
+	_log.Log(LOG_STATUS,"%s: Worker started...", device.c_str());
 	while (!m_stoprequested)
 	{
 		sleep_milliseconds(500);
@@ -149,20 +175,27 @@ void CBMP085::Do_Work()
 			{
 				try
 				{
-					ReadSensorDetails();
+					if (device=="BMP085")
+					{
+						bmp_ReadSensorDetails();
+					}
+					else if (device=="HTU21D")
+					{
+						HTU21D_ReadSensorDetails();
+					}
 				}
 				catch (...)
 				{
-					_log.Log(LOG_ERROR, "BMP085: Error reading sensor data!...");
+					_log.Log(LOG_ERROR, "%s: Error reading sensor data!...", device.c_str());
 				}
 			}
 		}
 	}
-	_log.Log(LOG_STATUS,"BMP085: Worker stopped...");
+	_log.Log(LOG_STATUS,"%s: Worker stopped...", device.c_str());
 }
 
 //returns true if it could be opened
-bool CBMP085::i2c_test(const char *I2CBusName)
+bool I2C::i2c_test(const char *I2CBusName)
 {
 #ifndef __arm__
 	return false;
@@ -177,7 +210,7 @@ bool CBMP085::i2c_test(const char *I2CBusName)
 }
 
 // Returns a file id for the port/bus
-int CBMP085::i2c_Open(const char *I2CBusName)
+int I2C::i2c_Open(const char *I2CBusName)
 {
 #ifndef __arm__
 	return -1;
@@ -186,9 +219,9 @@ int CBMP085::i2c_Open(const char *I2CBusName)
 	//Open port for reading and writing
 	if ((fd = open(I2CBusName, O_RDWR)) < 0)
 	{
-		_log.Log(LOG_ERROR, "BMP085: Failed to open the i2c bus!...");
-		_log.Log(LOG_ERROR, "BMP085: Check to see if you have a bus: %s", I2CBusName);
-		_log.Log(LOG_ERROR, "BMP085: We might only be able to access this as root user");
+		_log.Log(LOG_ERROR, "%s: Failed to open the i2c bus!...", device.c_str());
+		_log.Log(LOG_ERROR, "%s: Check to see if you have a bus: %s", device.c_str(), I2CBusName);
+		_log.Log(LOG_ERROR, "%s: We might only be able to access this as root user", device.c_str());
 		return -1;
 	}
 	return fd;
@@ -197,7 +230,7 @@ int CBMP085::i2c_Open(const char *I2CBusName)
 
 // BMP085 & BMP180 Specific code
 
-int CBMP085::bmp_ReadInt(int fd, uint8_t *devValues, uint8_t startReg, uint8_t bytesToRead)
+int I2C::ReadInt(int fd, uint8_t *devValues, uint8_t startReg, uint8_t bytesToRead)
 {
 #ifndef __arm__
 	return -1;
@@ -208,13 +241,24 @@ int CBMP085::bmp_ReadInt(int fd, uint8_t *devValues, uint8_t startReg, uint8_t b
 	//Build a register read command
 	//Requires a one complete message containing a command
 	//and anaother complete message for the reply
-	struct i2c_msg read_reg[2] = {
-		{ BMPx8x_I2CADDR, 0, 1, &startReg },
-		{ BMPx8x_I2CADDR, I2C_M_RD, bytesToRead, devValues }
-	};
+	if (device=="BMP085")
+	{
+		struct i2c_msg read_reg[2] = {
+			{ BMPx8x_I2CADDR, 0, 1, &startReg },
+			{ BMPx8x_I2CADDR, I2C_M_RD, bytesToRead, devValues }
+		};
+		messagebuffer.nmsgs = 2;                  //Two message/action
+		messagebuffer.msgs = read_reg;            //load the 'read__reg' message into the buffer
+	}
+	else if (device=="HTU21D")
+	{
+		struct i2c_msg read_reg[1] = {
+			{ HTU21D_ADDRESS, I2C_M_RD, bytesToRead, devValues }
+		};
+		messagebuffer.nmsgs = 1;
+		messagebuffer.msgs = read_reg;            //load the 'read__reg' message into the buffer
+	}
 
-	messagebuffer.nmsgs = 2;                  //Two message/action
-	messagebuffer.msgs = read_reg;            //load the 'read__reg' message into the buffer
 	rc = ioctl(fd, I2C_RDWR, &messagebuffer); //Send the buffer to the bus and returns a send status
 	if (rc < 0){
 		return rc;
@@ -224,7 +268,7 @@ int CBMP085::bmp_ReadInt(int fd, uint8_t *devValues, uint8_t startReg, uint8_t b
 #endif
 }
 
-int CBMP085::bmp_WriteCmd(int fd, uint8_t devAction)
+int I2C::WriteCmd(int fd, uint8_t devAction)
 {
 #ifndef __arm__
 	return -1;
@@ -233,16 +277,29 @@ int CBMP085::bmp_WriteCmd(int fd, uint8_t devAction)
 	struct i2c_rdwr_ioctl_data messagebuffer;
 	uint8_t datatosend[2];
 
-	datatosend[0] = BMPx8x_CtrlMeas;
-	datatosend[1] = devAction;
-	//Build a register write command
-	//Requires one complete message containing a reg address and command
-	struct i2c_msg write_reg[1] = {
-		{ BMPx8x_I2CADDR, 0, 2, datatosend }
-	};
+	if (device=="BMP085")
+	{
+		datatosend[0] = BMPx8x_CtrlMeas;
+		datatosend[1] = devAction;
+		//Build a register write command
+		//Requires one complete message containing a reg address and command
+		struct i2c_msg write_reg[1] = {
+			{ BMPx8x_I2CADDR, 0, 2, datatosend }
+		};
+		messagebuffer.msgs = write_reg;           //load the 'write__reg' message into the buffer
+	}
+	else if (device=="HTU21D")
+	{
+		datatosend[0] = devAction;
+		//Build a register write command
+		//Requires one complete message containing a reg address and command
+		struct i2c_msg write_reg[1] = {
+			{ HTU21D_ADDRESS, 0, 2, datatosend }
+		};
+		messagebuffer.msgs = write_reg;           //load the 'write__reg' message into the buffer
+	}
 
 	messagebuffer.nmsgs = 1;                  //One message/action
-	messagebuffer.msgs = write_reg;           //load the 'write__reg' message into the buffer
 	rc = ioctl(fd, I2C_RDWR, &messagebuffer); //Send the buffer to the bus and returns a send status
 	if (rc < 0){
 		return rc;
@@ -251,12 +308,120 @@ int CBMP085::bmp_WriteCmd(int fd, uint8_t devAction)
 #endif
 }
 
-int CBMP085::bmp_Calibration(int fd)
+// HTU21D functions
+int I2C::HTU21D_checkCRC8(uint16_t data)
+{
+	unsigned int bit;
+  for (bit = 0; bit < 16; bit++)
+  {
+		if (data & 0x8000)
+    {
+      data =  (data << 1) ^ HTU21D_CRC8_POLYNOMINAL;
+    }
+    else
+    {
+      data <<= 1;
+    }
+  }
+  data >>= 8;
+  return data;
+}
+
+int I2C::HTU21D_GetHumidity(int fd, float *Hum)
+{
+#ifndef __arm__
+	return -1;
+#else
+	uint16_t rawHumidity;
+	uint8_t rValues[3];
+	uint8_t Checksum;
+
+	if (WriteCmd(fd, (HTU21D_TRIGGER_HUMD_MEASURE_HOLD)) != 0) return -1;
+
+	sleepms(HTU21D_HUM_DELAY);
+
+	if (ReadInt(fd, rValues, 0, 3) != 0) return -1;
+	rawHumidity = ((rValues[0] << 8) | rValues[1]);
+	Checksum = rValues[2];
+	if (HTU21D_checkCRC8(rawHumidity) != Checksum)
+	{
+		_log.Log(LOG_ERROR, "%s: Incorrect humidity checksum!...", device.c_str());
+    return -1;
+  }
+	rawHumidity ^=  0x02;
+	*Hum = -6 + 0.001907 * (float)rawHumidity;
+	return 0;
+#endif
+}
+
+int I2C::HTU21D_GetTemperature(int fd, float *Temp)
+{
+#ifndef __arm__
+	return -1;
+#else
+	uint16_t rawTemperature;
+	uint8_t rValues[3];
+	uint8_t Checksum;
+
+	if (WriteCmd(fd, HTU21D_TRIGGER_TEMP_MEASURE_HOLD) != 0) {
+		_log.Log(LOG_ERROR, "%s: Error writing I2C!...", device.c_str());
+		return -1;
+	}
+	sleepms(HTU21D_TEMP_DELAY);
+	if (ReadInt(fd, rValues, 0, 3) != 0) {
+		_log.Log(LOG_ERROR, "%s: Error reading I2C!...", device.c_str());
+		return -1;
+	}
+	rawTemperature = ((rValues[0] << 8) | rValues[1]);
+	Checksum = rValues[2];
+	if (HTU21D_checkCRC8(rawTemperature) != Checksum)
+  {
+		_log.Log(LOG_ERROR, "%s: Incorrect temperature checksum!...", device.c_str());
+    return -1;
+  }
+  *Temp = -46.85 + 0.002681 * (float)rawTemperature;
+	return 0;
+#endif
+}
+
+void I2C::HTU21D_ReadSensorDetails()
+{
+	float temperature, humidity;
+
+#ifndef __arm__
+	temperature = 21.3f;
+	humidity = 45;
+#else
+	int fd = i2c_Open(m_ActI2CBus.c_str());
+	if (fd < 0) {
+		_log.Log(LOG_ERROR, "%s: Error opening device!...", device.c_str());
+		return;
+	}
+	if (HTU21D_GetTemperature(fd, &temperature) < 0) {
+		_log.Log(LOG_ERROR, "%s: Error reading temperature!...", device.c_str());
+		close(fd);
+		return;
+	}
+	if (HTU21D_GetHumidity(fd, &humidity) < 0) {
+		_log.Log(LOG_ERROR, "%s: Error reading humidity!...", device.c_str());
+		close(fd);
+		return;
+	}
+	close(fd);
+	if (temperature >= 0 && temperature <= 80)
+		humidity = humidity + (25 - temperature) * HTU21D_TEMP_COEFFICIENT;
+#endif
+
+	SendTempHumSensor(1, 255, temperature, round(humidity), "TempHum");
+}
+
+// BMP085 functions
+int I2C::bmp_Calibration(int fd)
 {
 #ifdef __arm__
 	uint8_t rValue[22];
 	//printf("Entering Calibration\n");
-	if (bmp_ReadInt(fd,rValue,0xAA,22) == 0)
+	if (ReadInt(fd,rValue,0xAA,22) == 0)
 	{
 		bmp_ac1=((rValue[0]<<8)|rValue[1]);
 		bmp_ac2 = ((rValue[2] << 8) | rValue[3]);
@@ -288,7 +453,7 @@ int CBMP085::bmp_Calibration(int fd)
 	return -1;
 }
 
-int CBMP085::WaitForConversion(int fd)
+int I2C::bmp_WaitForConversion(int fd)
 {
 #ifdef __arm__
 	uint8_t rValues[3];
@@ -296,7 +461,7 @@ int CBMP085::WaitForConversion(int fd)
 	//Delay can now be reduced by checking that bit 5 of Ctrl_Meas(0xF4) == 0
 	do{
 		sleepms(BMPx8x_RetryDelay);
-		if (bmp_ReadInt(fd, rValues, BMPx8x_CtrlMeas, 1) != 0) return -1;
+		if (ReadInt(fd, rValues, BMPx8x_CtrlMeas, 1) != 0) return -1;
 		counter++;
 		//printf("GetPressure:\t Loop:%i\trValues:0x%0x\n",counter,rValues[0]);
 	} while (((rValues[0] & 0x20) != 0) && counter < 20);
@@ -304,9 +469,9 @@ int CBMP085::WaitForConversion(int fd)
 	return 0;
 }
 
-// Calculate calibrated pressure 
+// Calculate calibrated pressure
 // Value returned will be in hPa
-int CBMP085::bmp_GetPressure(int fd, double *Pres)
+int I2C::bmp_GetPressure(int fd, double *Pres)
 {
 #ifndef __arm__
 	return -1;
@@ -315,18 +480,18 @@ int CBMP085::bmp_GetPressure(int fd, double *Pres)
 	uint8_t rValues[3];
 
 	// Pressure conversion with oversampling 0x34+ BMPx8x_OverSampling 'bit shifted'
-	if (bmp_WriteCmd(fd, (BMPx8x_PresConversion0 + (BMPx8x_OverSampling << 6))) != 0) return -1;
+	if (WriteCmd(fd, (BMPx8x_PresConversion0 + (BMPx8x_OverSampling << 6))) != 0) return -1;
 
-	//Delay gets longer the higher the oversampling must be at least 26 ms plus a bit for turbo 
+	//Delay gets longer the higher the oversampling must be at least 26 ms plus a bit for turbo
 	//clock error ie 26 * 1000/700 or 38 ms
 	//sleepms (BMPx8x_minDelay + (4<<BMPx8x_OverSampling));  //39ms at oversample = 3
 
-	//Code is now 'turbo' overclock independent 
+	//Code is now 'turbo' overclock independent
 	sleepms(BMPx8x_minDelay);
-	if (WaitForConversion(fd) != 0) return -1;
+	if (bmp_WaitForConversion(fd) != 0) return -1;
 
-	//printf ("\nDelay:%i\n",(BMPx8x_minDelay+(4<<BMPx8x_OverSampling))); 
-	if (bmp_ReadInt(fd, rValues, BMPx8x_Results, 3) != 0) return -1;
+	//printf ("\nDelay:%i\n",(BMPx8x_minDelay+(4<<BMPx8x_OverSampling)));
+	if (ReadInt(fd, rValues, BMPx8x_Results, 3) != 0) return -1;
 	up = (((unsigned int)rValues[0] << 16) | ((unsigned int)rValues[1] << 8) | (unsigned int)rValues[2]) >> (8 - BMPx8x_OverSampling);
 
 	int x1, x2, x3, b3, b6, p;
@@ -360,7 +525,7 @@ int CBMP085::bmp_GetPressure(int fd, double *Pres)
 
 // Calculate calibrated temperature
 // Value returned will be in units of 0.1 deg C
-int CBMP085::bmp_GetTemperature(int fd, double *Temp)
+int I2C::bmp_GetTemperature(int fd, double *Temp)
 {
 #ifndef __arm__
 	return -1;
@@ -368,12 +533,12 @@ int CBMP085::bmp_GetTemperature(int fd, double *Temp)
 	unsigned int ut;
 	uint8_t rValues[2];
 
-	if (bmp_WriteCmd(fd, BMPx8x_TempConversion) != 0) return -1;
-	//Code is now 'turbo' overclock independent 
+	if (WriteCmd(fd, BMPx8x_TempConversion) != 0) return -1;
+	//Code is now 'turbo' overclock independent
 	sleepms(BMPx8x_minDelay);
-	if (WaitForConversion(fd) != 0) return -1;
+	if (bmp_WaitForConversion(fd) != 0) return -1;
 
-	if (bmp_ReadInt(fd, rValues, BMPx8x_Results, 2) != 0) return -1;
+	if (ReadInt(fd, rValues, BMPx8x_Results, 2) != 0) return -1;
 	ut = ((rValues[0] << 8) | rValues[1]);
 
 	int x1, x2;
@@ -387,17 +552,17 @@ int CBMP085::bmp_GetTemperature(int fd, double *Temp)
 #endif
 }
 
-double CBMP085::bmp_altitude(double p){
+double I2C::bmp_altitude(double p){
 	return 145437.86*(1 - pow((p / 1013.25), 0.190294496)); //return feet
 	//return 44330*(1- pow((p/1013.25),0.190294496)); //return meters
 }
 
-double CBMP085::bmp_qnh(double p, double StationAlt){
+double I2C::bmp_qnh(double p, double StationAlt){
 	return p / pow((1 - (StationAlt / 145437.86)), 5.255); //return hPa based on feet
 	//return p / pow((1-(StationAlt/44330)),5.255) ; //return hPa based on feet
 }
 
-double CBMP085::ppl_DensityAlt(double PAlt, double Temp){
+double I2C::bmp_ppl_DensityAlt(double PAlt, double Temp){
 	double ISA = 15 - (1.98*(PAlt / 1000));
 	return PAlt + (120 * (Temp - ISA)); //So,So density altitude
 }
@@ -410,7 +575,7 @@ double CBMP085::ppl_DensityAlt(double PAlt, double Temp){
 #define FC_BMP085_UNKNOWN 5			//
 
 //Should be called every minute
-int CBMP085::CalculateForecast(const float pressure)
+int I2C::bmp_CalculateForecast(const float pressure)
 {
 	double dP_dt = 0;
 
@@ -513,7 +678,7 @@ int CBMP085::CalculateForecast(const float pressure)
 		return FC_BMP085_UNKNOWN; // Unknown
 }
 
-void CBMP085::ReadSensorDetails()
+void I2C::bmp_ReadSensorDetails()
 {
 	double temperature, pressure;
 	double altitude;
@@ -527,17 +692,17 @@ void CBMP085::ReadSensorDetails()
 	if (fd < 0)
 		return;
 	if (bmp_Calibration(fd) < 0) {
-		_log.Log(LOG_ERROR, "BMP085: Error reading sensor data!...");
+		_log.Log(LOG_ERROR, "%s: Error reading sensor data!...", device.c_str());
 		close(fd);
 		return;
 	}
 	if (bmp_GetTemperature(fd, &temperature) < 0) {
-		_log.Log(LOG_ERROR, "BMP085: Error reading temperature!...");
+		_log.Log(LOG_ERROR, "%s: Error reading temperature!...", device.c_str());
 		close(fd);
 		return;
 	}
 	if (bmp_GetPressure(fd, &pressure) < 0) {
-		_log.Log(LOG_ERROR, "BMP085: Error reading pressure!...");
+		_log.Log(LOG_ERROR, "%s: Error reading pressure!...", device.c_str());
 		close(fd);
 		return;
 	}
@@ -554,7 +719,7 @@ void CBMP085::ReadSensorDetails()
 	//this is probably not good, need to take the rising/falling of the pressure into account?
 	//any help would be welcome!
 
-	int forecast = CalculateForecast(((float)pressure) * 10.0f);
+	int forecast = bmp_CalculateForecast(((float)pressure) * 10.0f);
 	if (forecast != m_LastForecast)
 	{
 		m_LastForecast = forecast;

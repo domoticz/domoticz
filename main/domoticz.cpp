@@ -321,7 +321,7 @@ void daemonize(const char *rundir, const char *pidfile)
 	}
 
 	int cdret = chdir(rundir); /* change running directory */
-	if (dret == -1)
+	if (cdret == -1)
 	{
 		_log.Log(LOG_ERROR, "Could not change running directory !");
 	}

@@ -50,9 +50,10 @@ public:
 	void SetWebserverSettings(const http::server::server_settings & settings);
 	std::string GetWebserverAddress();
 	std::string GetWebserverPort();
+#ifdef WWW_ENABLE_SSL
 	void SetSecureWebserverSettings(const http::server::ssl_server_settings & ssl_settings);
 	std::string GetSecureWebserverPort();
-
+#endif
 	void DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand, const char *defaultName, const int BatteryLevel);
 	void PushAndWaitRxMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand, const char *defaultName, const int BatteryLevel);
 
@@ -168,8 +169,9 @@ private:
 	std::vector<CDomoticzHardwareBase*> m_hardwaredevices;
 	eVerboseLevel m_verboselevel;
 	http::server::server_settings m_webserver_settings;
+#ifdef WWW_ENABLE_SSL
 	http::server::ssl_server_settings m_secure_webserver_settings;
-
+#endif
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;
 	boost::mutex m_mutex;

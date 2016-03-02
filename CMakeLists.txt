@@ -33,7 +33,7 @@ ELSE(USE_BUILTIN_MQTT)
     message(STATUS "Found mosquittopp.h at: ${MQTT_INCLUDE_DIRS}")
     find_library(MQTT_LIBRARIES NAMES libmosquittopp.so)
     IF(MQTT_LIBRARIES)
-      message(STATUS "Found libmosquittopp at: ${MQTT_LIBRARIES}") 
+      message(STATUS "Found libmosquittopp at: ${MQTT_LIBRARIES}")
     ENDIF(MQTT_LIBRARIES)
     INCLUDE_DIRECTORIES(${MQTT_INCLUDE_DIRS})
   ELSE(MQTT_INCLUDE_DIRS)
@@ -223,7 +223,6 @@ hardware/1Wire/1WireForWindows.cpp
 hardware/AnnaThermostat.cpp
 hardware/ASyncSerial.cpp
 hardware/ASyncTCP.cpp
-hardware/BMP085.cpp
 hardware/Comm5TCP.cpp
 hardware/csocket.cpp
 hardware/CurrentCostMeterBase.cpp
@@ -245,6 +244,7 @@ hardware/Gpio.cpp
 hardware/GpioPin.cpp
 hardware/HardwareMonitor.cpp
 hardware/HarmonyHub.cpp
+hardware/I2C.cpp
 hardware/ICYThermostat.cpp
 hardware/KMTronicBase.cpp
 hardware/KMTronic433.cpp

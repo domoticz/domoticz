@@ -1,4 +1,4 @@
-Version 2.4xxx
+Version 3.4834 (March 2nd 2016)
 - Implemented: Blockly, now possible to use expressions in notifications/email/SMS like "My temperature is {{temperaturedevice[1234]}} degrees" (see http://www.domoticz.com/wiki/Events)
 - Implemented: Blockly, now possible to send a notification with a user variable/device as subject/body
 - Implemented: Chinese language support, big thanks to wxws!!
@@ -10,8 +10,10 @@ Version 2.4xxx
 - Implemented: Dummy Hardware, option to create an RGBW switch
 - Implemented: Extra timer-schedules: Odd/Even Days, Odd/Even Weeks, Monthly & Yearly
 - Implemented: Hardware Monitor for FreeBSD (but it needs the libsysinfo package to work)
+- Implemented: HTU21D(F)/SI702x Humidity+Temp I2C sensor (jvandenb)
 - Implemented: Icelandic language support, big thanks to Magnus!!
 - Implemented: Log View, added options to display All/Status/Error
+- Implemented: Lua Editor
 - Implemented: Macedonian translation (Big thanks to jocogvg!!!)
 - Implemented: MySensors Ethernet gateway will now request the gateway version on startup
 - Implemented: MySensors, Implemented V_CUSTOM
@@ -27,6 +29,7 @@ Version 2.4xxx
 - Implemented: Option to transfer old Percentage sensors to new Percentage sensors
 - Implemented: Philips Hue, support for Groups (create them with an external app like HueMote)
 - Implemented: Philips Hue, support for stored Scenes (create them with an external app like Hue Pro)
+- Implemented: RFLink: Added various sensors/devices (stuntteam)
 - Implemented: RFXCom support for Legrand CAD
 - Implemented: RFXCom support for Lighting5 IT (Intertek,FA500,PROmax,...)
 - Implemented: Romanian Language translation (Thanks to Adrian!)
