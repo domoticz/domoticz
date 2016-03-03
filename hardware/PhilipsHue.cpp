@@ -792,6 +792,8 @@ namespace http {
 	namespace server {
 		void CWebServer::Cmd_PhilipsHueRegister(WebEmSession & session, const request& req, Json::Value &root)
 		{
+			if (session.rights != 2)
+				return;//Only admin user allowed
 			root["title"] = "RegisterOnHue";
 
 			std::string sipaddress = request::findValue(&req, "ipaddress");

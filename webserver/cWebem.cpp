@@ -1341,6 +1341,20 @@ bool cWebemRequestHandler::CompressWebOutput(const request& req, reply& rep)
 	return false;
 }
 
+static void GetURICommandParameter(const std::string &uri, std::string &cmdparam)
+{
+	cmdparam = uri;
+	size_t ppos = uri.find("&param=");
+	if (ppos == std::string::npos)
+		return;
+	cmdparam = uri.substr(ppos + 7);
+	ppos = cmdparam.find("&");
+	if (ppos != std::string::npos)
+	{
+		cmdparam = cmdparam.substr(0, ppos);
+	}
+}
+
 bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const request& req, reply& rep)
 {
 	session.rights = -1; // no rights
@@ -1436,13 +1450,14 @@ bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const req
 			// invalid cookie
 			if (myWebem->m_authmethod != AUTH_BASIC) {
 				//Check if we need to bypass authentication (not when using basic-auth)
+				std::string cmdparam;
+				GetURICommandParameter(req.uri, cmdparam);
 				std::vector < std::string >::const_iterator itt;
 				for (itt = myWebem->myWhitelistURLs.begin(); itt != myWebem->myWhitelistURLs.end(); ++itt)
 				{
-					if (req.uri.find(*itt) != std::string::npos)
+					if (*itt == cmdparam)
 						return true;
 				}
-
 				// Force login form
 				send_authorization_request(rep);
 				return false;
@@ -1480,10 +1495,12 @@ bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const req
 	}
 
 	//Check if we need to bypass authentication (not when using basic-auth)
+	std::string cmdparam;
+	GetURICommandParameter(req.uri, cmdparam);
 	std::vector < std::string >::const_iterator itt;
 	for (itt = myWebem->myWhitelistURLs.begin(); itt != myWebem->myWhitelistURLs.end(); ++itt)
 	{
-		if (req.uri.find(*itt) != std::string::npos)
+		if (*itt == cmdparam)
 			return true;
 	}
 
