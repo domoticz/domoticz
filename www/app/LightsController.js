@@ -2333,6 +2333,7 @@ define(['app'], function (app) {
 										.find('label')
 											.removeClass('ui-state-active')
 											.removeClass('ui-state-focus')
+											.removeClass('ui-state-hover')
 											.end()
 										.find('input:radio')
 											.removeProp('checked')
