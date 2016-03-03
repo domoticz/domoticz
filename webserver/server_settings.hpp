@@ -20,18 +20,22 @@ struct server_settings {
 public:
 	std::string listening_address;
 	std::string listening_port;
+	bool graceful_stop;
 
 	server_settings() :
-		is_secure_(false) {}
+		is_secure_(false),
+		graceful_stop(false) {}
 	server_settings(const server_settings & s) :
 		is_secure_(s.is_secure_),
 		listening_address(s.listening_address),
-		listening_port(s.listening_port) {}
+		listening_port(s.listening_port),
+		graceful_stop(s.graceful_stop) {}
 	virtual ~server_settings() {}
 	server_settings & operator=(const server_settings & s) {
 		is_secure_ = s.is_secure_;
 		listening_address = s.listening_address;
 		listening_port = s.listening_port;
+		graceful_stop = s.graceful_stop;
 		return *this;
 	}
 	bool is_secure() const {
@@ -49,12 +53,14 @@ public:
 		if (listening_port == "0") {
 			listening_port.clear();// server NOT enabled
 		}
+		graceful_stop = settings.graceful_stop;
 	}
 
 	virtual std::string to_string() const {
 		return std::string("'server_settings[is_secure_=") + (is_secure_ == true ? "true" : "false") +
 				", listening_address='" + listening_address + "'" +
 				", listening_port='" + listening_port + "'" +
+				", graceful_stop='" + (graceful_stop ? "true" : "false") + "'" +
 				"]'";
 	}
 
