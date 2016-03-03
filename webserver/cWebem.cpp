@@ -641,20 +641,12 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& r
 			reply::add_header(&rep, "Cache-Control", "no-cache");
 			reply::add_header(&rep, "Pragma", "no-cache");
 			reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
-			if (req.keep_alive) {
-				reply::add_header(&rep, "Connection", "Keep-Alive");
-				reply::add_header(&rep, "Keep-Alive", "max=20, timeout=10");
-			}
 		}
 		else
 		{
 			reply::add_header(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
 			reply::add_header(&rep, "Content-Type", strMimeType);
 			reply::add_header(&rep, "Cache-Control", "max-age=3600, public");
-			if (req.keep_alive) {
-				reply::add_header(&rep, "Connection", "Keep-Alive");
-				reply::add_header(&rep, "Keep-Alive", "max=20, timeout=10");
-			}
 		}
 		return true;
 	}
@@ -681,10 +673,6 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& r
 	reply::add_header(&rep, "Pragma", "no-cache");
 	reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
 
-	if (req.keep_alive) {
-		reply::add_header(&rep, "Connection", "Keep-Alive");
-		reply::add_header(&rep, "Keep-Alive", "max=20, timeout=10");
-	}
 	return true;
 }
 

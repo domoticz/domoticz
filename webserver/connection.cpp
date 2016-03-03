@@ -31,7 +31,8 @@ connection::connection(boost::asio::io_service& io_service,
 				read_timer_(io_service, boost::posix_time::seconds(read_timeout)),
 				status("initializing"),
 				stop_required(false),
-				reply_(reply::stock_reply(reply::internal_server_error))
+				reply_(reply::stock_reply(reply::internal_server_error)),
+				default_max_requests_(20)
 {
 	secure_ = false;
 	keepalive_ = false;
@@ -54,7 +55,8 @@ connection::connection(boost::asio::io_service& io_service,
 				read_timer_(io_service, boost::posix_time::seconds(read_timeout)),
 				status("initializing"),
 				stop_required(false),
-				reply_(reply::stock_reply(reply::internal_server_error))
+				reply_(reply::stock_reply(reply::internal_server_error)),
+				default_max_requests_(20)
 {
 	secure_ = true;
 	keepalive_ = false;
@@ -214,6 +216,14 @@ void connection::handle_read(const boost::system::error_code& error, std::size_t
 				request_.host = request_.host.substr(7);
 			}
 			request_handler_.handle_request(request_, reply_);
+
+			if (request_.keep_alive && ((reply_.status == reply::ok) || (reply_.status == reply::no_content) || (reply_.status == reply::not_modified))) {
+				// Allows request handler to override the header (but it should not)
+				reply::add_header_if_absent(&reply_, "Connection", "Keep-Alive");
+				std::stringstream ss;
+				ss << "max=" << default_max_requests_ << ", timeout=" << read_timeout_;
+				reply::add_header_if_absent(&reply_, "Keep-Alive", ss.str());
+			}
 
 			status = "waiting-write";
 			if (is_stopping()) {
