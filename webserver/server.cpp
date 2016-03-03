@@ -60,13 +60,15 @@ void server_base::run() {
 	} catch (std::exception& e) {
 		_log.Log(LOG_ERROR, "[web:%s] exception occurred : '%s' (need to run again)", settings_.listening_port.c_str(), e.what());
 		is_running = false;
-		handle_stop(); // dispatch or post call does NOT work because it is pushed in the event queue (executed only on next io service run)
+		// Note: if acceptor is up everything is OK, we can call run() again
+		//       but if the exception has broken the acceptor we cannot stop/start it and the next run() will exit immediatly.
 		io_service_.reset(); // this call is needed before calling run() again
 		throw;
 	} catch (...) {
 		_log.Log(LOG_ERROR, "[web:%s] unknown exception occurred (need to run again)", settings_.listening_port.c_str());
 		is_running = false;
-		handle_stop(); // dispatch or post call does NOT work because it is pushed in the event queue (executed only on next io service run)
+		// Note: if acceptor is up everything is OK, we can call run() again
+		//       but if the exception has broken the acceptor we cannot stop/start it and the next run() will exit immediatly.
 		io_service_.reset(); // this call is needed before calling run() again
 		throw;
 	}
