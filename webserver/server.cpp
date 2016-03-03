@@ -76,7 +76,8 @@ void server_base::run() {
 
 /// Ask the server to stop using asynchronous command
 void server_base::stop() {
-	handle_stop();
+	// Post a call to the stop function so that server_base::stop() is safe to call from any thread.
+	io_service_.post(boost::bind(&server_base::handle_stop, this));
 }
 
 /// Returns true if the server is stopped.
