@@ -1,3 +1,8 @@
+Version 3.xxxx (March xx 2016)
+- Fixed: Database backup is now only possible for admin users
+- Fixed: Better handling of white listed commands/urls
+- Fixed: Double checking command rights
+
 Version 3.4834 (March 2nd 2016)
 - Implemented: Blockly, now possible to use expressions in notifications/email/SMS like "My temperature is {{temperaturedevice[1234]}} degrees" (see http://www.domoticz.com/wiki/Events)
 - Implemented: Blockly, now possible to send a notification with a user variable/device as subject/body
