@@ -252,9 +252,6 @@
     <Filter Include="Devices\Nefit-Easy">
       <UniqueIdentifier>{eda6c8ec-7cdc-4897-9d23-c502aedbee4b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="tinyxpath">
-      <UniqueIdentifier>{dec41c77-32d9-454a-a9fc-a9c2de0dc4a1}</UniqueIdentifier>
-    </Filter>
     <Filter Include="www">
       <UniqueIdentifier>{86db03ef-13cf-48f9-8cfd-9c490e22c5d2}</UniqueIdentifier>
     </Filter>
@@ -395,6 +392,9 @@
     </Filter>
     <Filter Include="XML">
       <UniqueIdentifier>{19baf552-3c12-432c-bebe-8bb25fa327d0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\OpenWebNet">
+      <UniqueIdentifier>{9cd757d1-3254-4dad-8fa4-bb2ba44472dd}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -1309,6 +1309,9 @@
     <ClInclude Include="..\webserver\header.hpp">
       <Filter>Webserver</Filter>
     </ClInclude>
+    <ClInclude Include="..\webserver\server_settings.hpp">
+      <Filter>Webserver</Filter>
+    </ClInclude>
     <ClInclude Include="..\webserver\utf.hpp">
       <Filter>Webserver</Filter>
     </ClInclude>
@@ -1396,9 +1399,6 @@
     <ClInclude Include="..\main\dirent_windows.h">
       <Filter>Windows</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\BMP085.h">
-      <Filter>Devices\I2C</Filter>
-    </ClInclude>
     <ClInclude Include="..\main\EventSystem.h">
       <Filter>EventSystem</Filter>
     </ClInclude>
@@ -1470,12 +1470,6 @@
     </ClInclude>
     <ClInclude Include="..\hardware\ASyncTCP.h">
       <Filter>Devices\SerialTCP</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\SolarEdgeBase.h">
-      <Filter>Devices\SolarEdge</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\SolarEdgeTCP.h">
-      <Filter>Devices\SolarEdge</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\TCPProxy\tcpproxy_server.h">
       <Filter>TCPProxy</Filter>
@@ -1798,6 +1792,15 @@
     <ClInclude Include="..\notifications\NotificationGCM.h">
       <Filter>Notifications</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\openwebnet\bt_openwebnet.h">
+      <Filter>Devices\OpenWebNet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\OpenWebNet.h">
+      <Filter>Devices\OpenWebNet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\I2C.h">
+      <Filter>Devices\I2C</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -1929,9 +1932,6 @@
     <ClCompile Include="..\hardware\1Wire.cpp">
       <Filter>Devices\1-Wire</Filter>
     </ClCompile>
-    <ClCompile Include="..\hardware\BMP085.cpp">
-      <Filter>Devices\I2C</Filter>
-    </ClCompile>
     <ClCompile Include="..\main\EventSystem.cpp">
       <Filter>EventSystem</Filter>
     </ClCompile>
@@ -1994,12 +1994,6 @@
     </ClCompile>
     <ClCompile Include="..\hardware\ASyncTCP.cpp">
       <Filter>Devices\SerialTCP</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\SolarEdgeBase.cpp">
-      <Filter>Devices\SolarEdge</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\SolarEdgeTCP.cpp">
-      <Filter>Devices\SolarEdge</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\TCPProxy\tcpproxy_server.cpp">
       <Filter>TCPProxy</Filter>
@@ -2333,6 +2327,15 @@
     </ClCompile>
     <ClCompile Include="..\notifications\NotificationGCM.cpp">
       <Filter>Notifications</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\openwebnet\bt_openwebnet.cpp">
+      <Filter>Devices\OpenWebNet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\OpenWebNet.cpp">
+      <Filter>Devices\OpenWebNet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\I2C.cpp">
+      <Filter>Devices\I2C</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

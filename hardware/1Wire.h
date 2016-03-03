@@ -28,12 +28,12 @@ private:
 	void GetDeviceDetails();
 
 	// Messages to Domoticz
-	void ReportLightState(const std::string& deviceId,int unit,bool state);
-	void ReportTemperature(const std::string& deviceId,float temperature);
-	void ReportTemperatureHumidity(const std::string& deviceId,float temperature,float humidity);
-	void ReportHumidity(const std::string& deviceId,float humidity);
-	void ReportPressure(const std::string& deviceId,float pressure);
-	void ReportCounter(const std::string& deviceId,int unit,unsigned long counter);
-	void ReportVoltage(int unit,int voltage);
-	void ReportIlluminescence(float illuminescence);
+	void ReportLightState(const std::string& deviceId, const int unit, const bool state);
+	void ReportTemperature(const std::string& deviceId, const float temperature);
+	void ReportTemperatureHumidity(const std::string& deviceId, const float temperature, const float humidity);
+	void ReportHumidity(const std::string& deviceId, const float humidity);
+	void ReportPressure(const std::string& deviceId,const float pressure);
+	void ReportCounter(const std::string& deviceId,const int unit,const unsigned long counter);
+	void ReportVoltage(const std::string& deviceId, const int unit, const int voltage);
+	void ReportIlluminance(const std::string& deviceId, const float illuminescence);
 };

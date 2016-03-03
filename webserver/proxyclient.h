@@ -32,7 +32,7 @@ namespace http {
 #define PDUPROTO(type) virtual void Handle##type(const char *pduname, CValueLengthPart &part);
 #define PDUFUNCTION(type) void CProxyClient::Handle##type(const char *pduname, CValueLengthPart &part)
 
-		class CProxyClient {
+		class CProxyClient : public boost::enable_shared_from_this<CProxyClient> {
 		public:
 			CProxyClient(boost::asio::io_service& io_service, boost::asio::ssl::context& context, http::server::cWebem *webEm);
 			~CProxyClient();
@@ -77,7 +77,7 @@ namespace http {
 			PDUPROTO(PDU_SERV_RECEIVE)
 			PDUPROTO(PDU_SERV_SEND)
 			PDUPROTO(PDU_SERV_ROSTERIND)
-			void GetRequest(const std::string originatingip, boost::asio::mutable_buffers_1 _buf, http::server::reply &reply_);
+			void GetRequest(const std::string &originatingip, boost::asio::mutable_buffers_1 _buf, http::server::reply &reply_);
 			void SendServDisconnect(const std::string &token, int reason);
 
 			void PduHandler(ProxyPdu &pdu);
@@ -110,11 +110,11 @@ namespace http {
 			~CProxyManager();
 			int Start(bool first);
 			void Stop();
-			CProxyClient *GetProxyForMaster(DomoticzTCP *master);
+			boost::shared_ptr<CProxyClient> GetProxyForMaster(DomoticzTCP *master);
 		private:
 			void StartThread();
 			boost::asio::io_service io_service;
-			CProxyClient *proxyclient;
+			boost::shared_ptr<CProxyClient> proxyclient;
 			boost::thread* m_thread;
 			http::server::cWebem *m_pWebEm;
 			tcp::server::CTCPServer *m_pDomServ;
@@ -123,7 +123,7 @@ namespace http {
 
 		class CProxySharedData {
 		public:
-			CProxySharedData() : _instanceid("") {};
+			CProxySharedData() {};
 			void SetInstanceId(std::string instanceid);
 			std::string GetInstanceId();
 			void LockPrefsMutex();

@@ -14,7 +14,7 @@ Contributors:
    Roger Light - initial implementation and documentation.
 */
 
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 
 #ifdef WIN32
 #  include <winsock2.h>

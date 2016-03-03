@@ -211,16 +211,15 @@ std::string MySensorsBase::GetMySensorsPresentationTypeStr(const enum _ePresenta
 	return "Unknown!";
 }
 
-MySensorsBase::MySensorsBase(void)
+MySensorsBase::MySensorsBase(void):
+m_GatewayVersion("?")
 {
 	m_bufferpos = 0;
 	m_bAckReceived = false;
 	m_AckNodeID = -1;
 	m_AckChildID = -1;
 	m_AckSetType = V_UNKNOWN;
-	m_GatewayVersion = "?";
 }
-
 
 MySensorsBase::~MySensorsBase(void)
 {
@@ -633,11 +632,11 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 			}
 		}
 		float Temp;
-		float Baro;
 		int Humidity;
 		pChild->GetValue(V_HUM, Humidity);
 		if (pChildTemp && pChildBaro)
 		{
+			float Baro;
 			bool bHaveTemp = pChildTemp->GetValue(V_TEMP, Temp);
 			bool bHaveBaro = pChildBaro->GetValue(V_PRESSURE, Baro);
 			if (bHaveTemp && bHaveBaro)
@@ -1069,7 +1068,6 @@ void MySensorsBase::UpdateRGBWSwitchLastUpdate(const int NodeID, const int Child
 
 void MySensorsBase::UpdateSwitch(const _eSetType vType, const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname, const int BatLevel)
 {
-	bool bDeviceExits = true;
 	double rlevel = (15.0 / 100)*Level;
 	int level = int(rlevel);
 
@@ -1077,13 +1075,9 @@ void MySensorsBase::UpdateSwitch(const _eSetType vType, const unsigned char Idx,
 	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, szIdx, SubUnit, int(pTypeLighting2), int(sTypeAC));
-	if (result.size() < 1)
+	if (!result.empty())
 	{
-		bDeviceExits = false;
-	}
-	else
-	{
-		if (vType != V_TRIPPED)
+		if ((vType != V_TRIPPED) || (!bOn))
 		{
 			//check if we have a change, if not do not update it
 			int nvalue = atoi(result[0][1].c_str());
@@ -1220,7 +1214,7 @@ void MySensorsBase::SendCommandInt(const int NodeID, const int ChildID, const _e
 
 bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	tRBUF *pCmd = (tRBUF *)pdata;
+	const tRBUF *pCmd = reinterpret_cast<const tRBUF *>(pdata);
 	unsigned char packettype = pCmd->ICMND.packettype;
 	unsigned char subtype = pCmd->ICMND.subtype;
 
@@ -1290,8 +1284,8 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 	{
 		//RGW/RGBW command
 		_tLimitlessLights *pLed = (_tLimitlessLights *)pdata;
-		unsigned char ID1 = (unsigned char)((pLed->id & 0xFF000000) >> 24);
-		unsigned char ID2 = (unsigned char)((pLed->id & 0x00FF0000) >> 16);
+		//unsigned char ID1 = (unsigned char)((pLed->id & 0xFF000000) >> 24);
+		//unsigned char ID2 = (unsigned char)((pLed->id & 0x00FF0000) >> 16);
 		unsigned char ID3 = (unsigned char)((pLed->id & 0x0000FF00) >> 8);
 		unsigned char ID4 = (unsigned char)pLed->id & 0x000000FF;
 
@@ -1398,7 +1392,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 	else if ((packettype == pTypeThermostat) && (subtype == sTypeThermSetpoint))
 	{
 		//Set Point
-		_tThermostat *pMeter = (_tThermostat *)pCmd;
+		const _tThermostat *pMeter = reinterpret_cast<const _tThermostat *>(pCmd);
 
 		int node_id = pMeter->id2;
 		int child_sensor_id = pMeter->id3;
@@ -1425,7 +1419,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 	else if (packettype == pTypeGeneralSwitch)
 	{
 		//Used to store IR codes
-		_tGeneralSwitch *pSwitch=(_tGeneralSwitch *)pCmd;
+		const _tGeneralSwitch *pSwitch= reinterpret_cast<const _tGeneralSwitch *>(pCmd);
 
 		int node_id = pSwitch->unitcode;
 		unsigned int ir_code = pSwitch->id;
@@ -2128,6 +2122,8 @@ namespace http {
 	namespace server {
 		void CWebServer::Cmd_MySensorsGetNodes(WebEmSession & session, const request& req, Json::Value &root)
 		{
+			if (session.rights != 2)
+				return;//Only admin user allowed
 			std::string hwid = request::findValue(&req, "idx");
 			if (hwid == "")
 				return;
@@ -2140,7 +2136,7 @@ namespace http {
 				(pHardware->HwdType != HTYPE_MySensorsTCP)
 				)
 				return;
-			MySensorsBase *pMySensorsHardware = (MySensorsBase*)pHardware;
+			MySensorsBase *pMySensorsHardware = reinterpret_cast<MySensorsBase*>(pHardware);
 
 			root["status"] = "OK";
 			root["title"] = "MySensorsGetNodes";
@@ -2152,7 +2148,6 @@ namespace http {
 			if (result.size() > 0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
-				std::vector<std::vector<std::string> >::const_iterator itt2;
 				int ii = 0;
 				for (itt = result.begin(); itt != result.end(); ++itt)
 				{
@@ -2198,6 +2193,8 @@ namespace http {
 		}
 		void CWebServer::Cmd_MySensorsGetChilds(WebEmSession & session, const request& req, Json::Value &root)
 		{
+			if (session.rights != 2)
+				return;//Only admin user allowed
 			std::string hwid = request::findValue(&req, "idx");
 			std::string nodeid = request::findValue(&req, "nodeid");
 			if (
@@ -2214,7 +2211,7 @@ namespace http {
 				(pHardware->HwdType != HTYPE_MySensorsTCP)
 				)
 				return;
-			MySensorsBase *pMySensorsHardware = (MySensorsBase*)pHardware;
+			MySensorsBase *pMySensorsHardware = reinterpret_cast<MySensorsBase*>(pHardware);
 
 			root["status"] = "OK";
 			root["title"] = "MySensorsGetChilds";
@@ -2288,7 +2285,7 @@ namespace http {
 				(pBaseHardware->HwdType != HTYPE_MySensorsTCP)
 				)
 				return;
-			MySensorsBase *pMySensorsHardware = (MySensorsBase*)pBaseHardware;
+			MySensorsBase *pMySensorsHardware = reinterpret_cast<MySensorsBase*>(pBaseHardware);
 			int NodeID = atoi(nodeid.c_str());
 			root["status"] = "OK";
 			root["title"] = "MySensorsUpdateNode";
@@ -2318,7 +2315,7 @@ namespace http {
 				(pBaseHardware->HwdType != HTYPE_MySensorsTCP)
 				)
 				return;
-			MySensorsBase *pMySensorsHardware = (MySensorsBase*)pBaseHardware;
+			MySensorsBase *pMySensorsHardware = reinterpret_cast<MySensorsBase*>(pBaseHardware);
 			int NodeID = atoi(nodeid.c_str());
 			root["status"] = "OK";
 			root["title"] = "MySensorsRemoveNode";
@@ -2350,7 +2347,7 @@ namespace http {
 				(pBaseHardware->HwdType != HTYPE_MySensorsTCP)
 				)
 				return;
-			MySensorsBase *pMySensorsHardware = (MySensorsBase*)pBaseHardware;
+			MySensorsBase *pMySensorsHardware = reinterpret_cast<MySensorsBase*>(pBaseHardware);
 			int NodeID = atoi(nodeid.c_str());
 			int ChildID = atoi(childid.c_str());
 			root["status"] = "OK";
@@ -2385,7 +2382,7 @@ namespace http {
 				(pBaseHardware->HwdType != HTYPE_MySensorsTCP)
 				)
 				return;
-			MySensorsBase *pMySensorsHardware = (MySensorsBase*)pBaseHardware;
+			MySensorsBase *pMySensorsHardware = reinterpret_cast<MySensorsBase*>(pBaseHardware);
 			int NodeID = atoi(nodeid.c_str());
 			int ChildID = atoi(childid.c_str());
 			root["status"] = "OK";

@@ -23,6 +23,7 @@ m_username(username), m_password(password), m_szIPAddress(IPAddress)
 	b_ProxyConnected = false;
 #endif
 	m_bIsStarted = false;
+	m_retrycntr = RETRY_DELAY;
 }
 
 DomoticzTCP::~DomoticzTCP(void)
@@ -377,7 +378,7 @@ bool DomoticzTCP::StartHardwareProxy()
 
 bool DomoticzTCP::ConnectInternalProxy()
 {
-	http::server::CProxyClient *proxy;
+	boost::shared_ptr<http::server::CProxyClient> proxy;
 	const int version = 1;
 	// we temporarily use the instance id as an identifier for this connection, meanwhile we get a token from the proxy
 	// this means that we connect connect twice to the same server
@@ -404,7 +405,7 @@ bool DomoticzTCP::StopHardwareProxy()
 
 void DomoticzTCP::DisconnectProxy()
 {
-	http::server::CProxyClient *proxy;
+	boost::shared_ptr<http::server::CProxyClient> proxy;
 
 	proxy = m_webservers.GetProxyForMaster(this);
 	if (proxy) {
@@ -421,10 +422,8 @@ bool DomoticzTCP::isConnectedProxy()
 void DomoticzTCP::writeProxy(const char *data, size_t size)
 {
 	/* send data to slave */
-	http::server::CProxyClient *proxy;
-
 	if (isConnectedProxy()) {
-		proxy = m_webservers.GetProxyForMaster(this);
+		boost::shared_ptr<http::server::CProxyClient> proxy = m_webservers.GetProxyForMaster(this);
 		if (proxy) {
 			proxy->WriteMasterData(token, data, size);
 		}

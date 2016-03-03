@@ -1,5 +1,9 @@
 <link href="http://fonts.googleapis.com/css?family=Orbitron:700" rel="stylesheet" type="text/css">
 <style>
+body {
+	background: #000;
+}
+
 div#cnt {
 	background: #FF00FF;
 	width: 990px;

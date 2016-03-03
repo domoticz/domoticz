@@ -58,8 +58,7 @@ Cleanup and changes: GizMoCuz
 CHarmonyHub::CHarmonyHub(const int ID, const std::string &IPAddress, const unsigned int port, const std::string &username, const std::string &password):
 m_username(username),
 m_password(password),
-m_harmonyAddress(IPAddress),
-m_szAuthorizationToken("")
+m_harmonyAddress(IPAddress)
 {
 	m_usIPPort = port;
 	m_HwdID=ID;
@@ -76,8 +75,7 @@ CHarmonyHub::~CHarmonyHub(void)
 
 bool CHarmonyHub::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	tRBUF *pCmd=(tRBUF*) pdata;
-	BYTE idx=0;
+	const tRBUF *pCmd = reinterpret_cast<const tRBUF*>(pdata);
 
 	if(this->m_bIsChangingActivity)
 	{
@@ -87,8 +85,6 @@ bool CHarmonyHub::WriteToHardware(const char *pdata, const unsigned char length)
 	//activities can be switched on
 	if ((pCmd->LIGHTING2.packettype == pTypeLighting2) && (pCmd->LIGHTING2.cmnd==1))
 	{
-		//char szIdx[10];
-		//sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, pCmd->LIGHTING2.id4);
 		int lookUpId = (int)(pCmd->LIGHTING2.id1 << 24) |  (int)(pCmd->LIGHTING2.id2 << 16) | (int)(pCmd->LIGHTING2.id3 << 8) | (int)(pCmd->LIGHTING2.id4) ;
 		std::stringstream sstr;
 		sstr << lookUpId;
@@ -244,7 +240,6 @@ void CHarmonyHub::Do_Work()
 bool CHarmonyHub::Login()
 {
 	// Read the token
-	bool bAuthorizationComplete = false;
 	if (!m_szAuthorizationToken.empty())
 	{
 
@@ -270,36 +265,32 @@ bool CHarmonyHub::Login()
 		}
 	}
 
-	if(bAuthorizationComplete == false)
+	// Log into the Logitech Web Service to retrieve the login authorization token
+	if(!HarmonyWebServiceLogin(m_username, m_password, m_szAuthorizationToken))
 	{
-		// Log into the Logitech Web Service to retrieve the login authorization token
-		if(!HarmonyWebServiceLogin(m_username, m_password, m_szAuthorizationToken))
-		{
-			_log.Log(LOG_ERROR,"Harmony Hub: Logitech web service login failed.");
-			return false;
-		}
-		_log.Log(LOG_STATUS,"Harmony Hub: Logged in to the Logitech web service");
-
-		//printf("\nLogin Authorization Token is: %s\n\n", m_szAuthorizationToken.c_str());
-
-		csocket authorizationcsocket;
-		if(!ConnectToHarmony(m_harmonyAddress, m_usIPPort, &authorizationcsocket))
-		{
-			_log.Log(LOG_ERROR,"Harmony Hub: Cannot connect to Harmony Hub");
-			//printf("ERROR : %s\n", errorString.c_str());
-			return false;
-		}
-
-		if(SwapAuthorizationToken(&authorizationcsocket, m_szAuthorizationToken)==true)
-		{
-			// Authorization Token found worked.  
-			// Bypass authorization through Logitech's servers.
-			_log.Log(LOG_STATUS,"Harmony Hub: Authentication successful");
-			return true;
-		}
-		_log.Log(LOG_ERROR, "Harmony Hub: Authentication unsuccessful");
+		_log.Log(LOG_ERROR,"Harmony Hub: Logitech web service login failed.");
 		return false;
 	}
+	_log.Log(LOG_STATUS,"Harmony Hub: Logged in to the Logitech web service");
+
+	//printf("\nLogin Authorization Token is: %s\n\n", m_szAuthorizationToken.c_str());
+
+	csocket authorizationcsocket;
+	if(!ConnectToHarmony(m_harmonyAddress, m_usIPPort, &authorizationcsocket))
+	{
+		_log.Log(LOG_ERROR,"Harmony Hub: Cannot connect to Harmony Hub");
+		//printf("ERROR : %s\n", errorString.c_str());
+		return false;
+	}
+
+	if(SwapAuthorizationToken(&authorizationcsocket, m_szAuthorizationToken)==true)
+	{
+		// Authorization Token found worked.  
+		// Bypass authorization through Logitech's servers.
+		_log.Log(LOG_STATUS,"Harmony Hub: Authentication successful");
+		return true;
+	}
+	_log.Log(LOG_ERROR, "Harmony Hub: Authentication unsuccessful");
 	return false;
 }
 
@@ -421,18 +412,13 @@ void CHarmonyHub::CheckSetActivity(const std::string &activityID, const bool on)
 
 void CHarmonyHub::UpdateSwitch(unsigned char idx,const char * realID, const bool bOn, const std::string &defaultname)
 {
-	bool bDeviceExits = true;
 	std::stringstream hexId ;
 	hexId << std::setw(7) << std::setfill('0') << std::hex << std::uppercase << (int)( atoi(realID) );
 	//char szIdx[10];
 	//sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, idx);
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, hexId.str().c_str());
-	if (result.size() < 1)
-	{
-		bDeviceExits = false;
-	}
-	else
+	if (!result.empty())
 	{
 		//check if we have a change, if not do not update it
 		int nvalue = atoi(result[0][1].c_str());
@@ -1035,6 +1021,7 @@ bool CHarmonyHub::ParseAction(const std::string& strAction, std::vector<Action>&
 	return true;
 }
 
+/*
 bool CHarmonyHub::ParseFunction(const std::string& strFunction, std::vector<Function>& vecDeviceFunctions, const std::string& strDeviceID)
 {
 	Function f;
@@ -1069,4 +1056,5 @@ bool CHarmonyHub::ParseFunction(const std::string& strFunction, std::vector<Func
 
 	return true;
 }
+*/
 

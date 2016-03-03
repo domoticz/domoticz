@@ -196,7 +196,7 @@ int mosquitto_reinitialise(struct mosquitto *mosq, const char *id, bool clean_se
 	mosq->reconnect_delay_max = 1;
 	mosq->reconnect_exponential_backoff = false;
 	mosq->threaded = false;
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 	mosq->ssl = NULL;
 	mosq->tls_cert_reqs = SSL_VERIFY_PEER;
 	mosq->tls_insecure = false;
@@ -302,7 +302,7 @@ void _mosquitto_destroy(struct mosquitto *mosq)
 	}
 	_mosquitto_message_cleanup_all(mosq);
 	_mosquitto_will_clear(mosq);
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 	if(mosq->ssl){
 		SSL_free(mosq->ssl);
 	}
@@ -631,7 +631,7 @@ int mosquitto_unsubscribe(struct mosquitto *mosq, int *mid, const char *sub)
 
 int mosquitto_tls_set(struct mosquitto *mosq, const char *cafile, const char *capath, const char *certfile, const char *keyfile, int (*pw_callback)(char *buf, int size, int rwflag, void *userdata))
 {
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 	FILE *fptr;
 
 	if(!mosq || (!cafile && !capath) || (certfile && !keyfile) || (!certfile && keyfile)) return MOSQ_ERR_INVAL;
@@ -727,7 +727,7 @@ int mosquitto_tls_set(struct mosquitto *mosq, const char *cafile, const char *ca
 
 int mosquitto_tls_opts_set(struct mosquitto *mosq, int cert_reqs, const char *tls_version, const char *ciphers)
 {
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 	if(!mosq) return MOSQ_ERR_INVAL;
 
 	mosq->tls_cert_reqs = cert_reqs;
@@ -776,7 +776,7 @@ int mosquitto_tls_opts_set(struct mosquitto *mosq, int cert_reqs, const char *tl
 
 int mosquitto_tls_insecure_set(struct mosquitto *mosq, bool value)
 {
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 	if(!mosq) return MOSQ_ERR_INVAL;
 	mosq->tls_insecure = value;
 	return MOSQ_ERR_SUCCESS;
@@ -847,7 +847,7 @@ int mosquitto_loop(struct mosquitto *mosq, int timeout, int max_packets)
 		if(mosq->out_packet || mosq->current_out_packet){
 			FD_SET(mosq->sock, &writefds);
 		}
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 		if(mosq->ssl){
 			if(mosq->want_write){
 				FD_SET(mosq->sock, &writefds);
@@ -924,7 +924,7 @@ int mosquitto_loop(struct mosquitto *mosq, int timeout, int max_packets)
 	}else{
 		if(mosq->sock != INVALID_SOCKET){
 			if(FD_ISSET(mosq->sock, &readfds)){
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 				if(mosq->want_connect){
 					rc = mosquitto__socket_connect_tls(mosq);
 					if(rc) return rc;
@@ -950,7 +950,7 @@ int mosquitto_loop(struct mosquitto *mosq, int timeout, int max_packets)
 				FD_SET(mosq->sock, &writefds);
 			}
 			if(FD_ISSET(mosq->sock, &writefds)){
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 				if(mosq->want_connect){
 					rc = mosquitto__socket_connect_tls(mosq);
 					if(rc) return rc;
@@ -1179,7 +1179,7 @@ bool mosquitto_want_write(struct mosquitto *mosq)
 {
 	if(mosq->out_packet || mosq->current_out_packet){
 		return true;
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 	}else if(mosq->ssl && mosq->want_write){
 		return true;
 #endif

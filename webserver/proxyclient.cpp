@@ -36,8 +36,6 @@ namespace http {
 			timer_(io_service, boost::posix_time::seconds(TIMEOUT))
 		{
 			writePdu = NULL;
-			_apikey = "";
-			_password = "";
 			_allowed_subsystems = 0;
 			m_sql.GetPreferencesVar("MyDomoticzUserId", _apikey);
 			m_sql.GetPreferencesVar("MyDomoticzPassword", _password);
@@ -51,7 +49,6 @@ namespace http {
 			}
 			m_pWebEm = webEm;
 			m_pDomServ = NULL;
-			Reconnect();
 		}
 
 		void CProxyClient::WriteSlaveData(const std::string &token, const char *pData, size_t Length)
@@ -85,22 +82,22 @@ namespace http {
 			if (we_locked_prefs_mutex) {
 				// avoid deadlock if we got a read or write error in between handle_handshake() and HandleAuthresp()
 				we_locked_prefs_mutex = false;
-				sharedData.LockPrefsMutex();
+				sharedData.UnlockPrefsMutex();
 			}
 			if (doStop) {
 				return;
 			}
 			if (b_Connected) {
 				_socket.lowest_layer().close();
-				sleep_seconds(10);
 			}
+			sleep_seconds(15);
 			b_Connected = false;
 			boost::asio::ip::tcp::resolver resolver(_io_service);
 			boost::asio::ip::tcp::resolver::query query(address, port);
 			boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
 			boost::asio::ip::tcp::endpoint endpoint = *iterator;
 			_socket.lowest_layer().async_connect(endpoint,
-				boost::bind(&CProxyClient::handle_connect, this,
+				boost::bind(&CProxyClient::handle_connect, shared_from_this(),
 					boost::asio::placeholders::error, iterator));
 		}
 
@@ -109,7 +106,7 @@ namespace http {
 			if (!error)
 			{
 				_socket.async_handshake(boost::asio::ssl::stream_base::client,
-					boost::bind(&CProxyClient::handle_handshake, this,
+					boost::bind(&CProxyClient::handle_handshake, shared_from_this(),
 						boost::asio::placeholders::error));
 			}
 			else if (endpoint_iterator != boost::asio::ip::tcp::resolver::iterator())
@@ -117,7 +114,7 @@ namespace http {
 				_socket.lowest_layer().close();
 				boost::asio::ip::tcp::endpoint endpoint = *endpoint_iterator;
 				_socket.lowest_layer().async_connect(endpoint,
-					boost::bind(&CProxyClient::handle_connect, this,
+					boost::bind(&CProxyClient::handle_connect, shared_from_this(),
 						boost::asio::placeholders::error, ++endpoint_iterator));
 			}
 			else
@@ -161,7 +158,7 @@ namespace http {
 			writePdu = pdu;
 			_writebuf.clear(); // make sure
 			_writebuf.push_back(boost::asio::buffer(writePdu->content(), writePdu->length()));
-			boost::asio::async_write(_socket, _writebuf, boost::bind(&CProxyClient::handle_write, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
+			boost::asio::async_write(_socket, _writebuf, boost::bind(&CProxyClient::handle_write, shared_from_this(), boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
 		}
 
 		void CProxyClient::MyWrite(pdu_type type, CValueLengthPart &parameters)
@@ -205,7 +202,7 @@ namespace http {
 			if (!error)
 			{
 				// lock until we have a valid api id
-				sharedData.UnlockPrefsMutex();
+				sharedData.LockPrefsMutex();
 				b_Connected = true;
 				we_locked_prefs_mutex = true;
 				LoginToService();
@@ -226,14 +223,14 @@ namespace http {
 
 			// set timeout timer
 			timer_.expires_from_now(boost::posix_time::seconds(timeout_));
-			timer_.async_wait(boost::bind(&CProxyClient::handle_timeout, this, boost::asio::placeholders::error));
+			timer_.async_wait(boost::bind(&CProxyClient::handle_timeout, shared_from_this(), boost::asio::placeholders::error));
 
 			_socket.async_read_some(buf,
-				boost::bind(&CProxyClient::handle_read, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred)
+				boost::bind(&CProxyClient::handle_read, shared_from_this(), boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred)
 				);
 		}
 
-		void CProxyClient::GetRequest(const std::string originatingip, boost::asio::mutable_buffers_1 _buf, http::server::reply &reply_)
+		void CProxyClient::GetRequest(const std::string &originatingip, boost::asio::mutable_buffers_1 _buf, http::server::reply &reply_)
 		{
 			/// The parser for the incoming request.
 			http::server::request_parser request_parser_;
@@ -522,63 +519,6 @@ namespace http {
 			ONPDU(PDU_SERV_RECEIVE)
 			ONPDU(PDU_SERV_SEND)
 			ONPDU(PDU_SERV_ROSTERIND)
-#if 0
-			case PDU_REQUEST:
-				if (_allowed_subsystems & SUBSYSTEM_HTTP) {
-					HandleRequest(&pdu);
-				}
-				else {
-					_log.Log(LOG_ERROR, "PROXY: HTTP access disallowed, denying request.");
-				}
-				break;
-			case PDU_ASSIGNKEY:
-				HandleAssignkey(&pdu);
-				break;
-			case PDU_ENQUIRE:
-				HandleEnquire(&pdu);
-				break;
-			case PDU_AUTHRESP:
-				HandleAuthresp(&pdu);
-				break;
-			case PDU_SERV_CONNECT:
-				/* incoming connect from master */
-				if (_allowed_subsystems & SUBSYSTEM_SHAREDDOMOTICZ) {
-					HandleServConnect(&pdu);
-				}
-				else {
-					_log.Log(LOG_ERROR, "PROXY: Shared Server access disallowed, denying connect request.");
-				}
-				break;
-			case PDU_SERV_DISCONNECT:
-				if (_allowed_subsystems & SUBSYSTEM_SHAREDDOMOTICZ) {
-					HandleServDisconnect(&pdu);
-				}
-				else {
-					_log.Log(LOG_ERROR, "PROXY: Shared Server access disallowed, denying disconnect request.");
-				}
-				break;
-			case PDU_SERV_CONNECTRESP:
-				/* authentication result from slave */
-				HandleServConnectResp(&pdu);
-				break;
-			case PDU_SERV_RECEIVE:
-				/* data from slave to master */
-				if (_allowed_subsystems & SUBSYSTEM_SHAREDDOMOTICZ) {
-					HandleServReceive(&pdu);
-				}
-				else {
-					_log.Log(LOG_ERROR, "PROXY: Shared Server access disallowed, denying receive data request.");
-				}
-				break;
-			case PDU_SERV_SEND:
-				/* data from master to slave */
-				HandleServSend(&pdu);
-				break;
-			case PDU_SERV_ROSTERIND:
-				/* the slave that we want to connect to is back online */
-				HandleServRosterInd(&pdu);
-				break;
-#endif
 			default:
 				_log.Log(LOG_ERROR, "PROXY: pdu type: %d not expected.", pdu._type);
 				break;
@@ -641,10 +581,10 @@ namespace http {
 
 		CProxyManager::CProxyManager(const std::string& doc_root, http::server::cWebem *webEm, tcp::server::CTCPServer *domServ)
 		{
-			proxyclient = NULL;
 			m_pWebEm = webEm;
 			m_pDomServ = domServ;
 			m_thread = NULL;
+			_first = true;
 		}
 
 		CProxyManager::~CProxyManager()
@@ -652,7 +592,6 @@ namespace http {
 			if (m_thread) {
 				m_thread->join();
 			}
-			if (proxyclient) delete proxyclient;
 		}
 
 		int CProxyManager::Start(bool first)
@@ -668,7 +607,8 @@ namespace http {
 				boost::asio::ssl::context ctx(io_service, boost::asio::ssl::context::sslv23);
 				ctx.set_verify_mode(boost::asio::ssl::verify_none);
 
-				proxyclient = new CProxyClient(io_service, ctx, m_pWebEm);
+				proxyclient.reset(new CProxyClient(io_service, ctx, m_pWebEm));
+				proxyclient->Reconnect();
 				if (_first && proxyclient->SharedServerAllowed()) {
 					m_pDomServ->StartServer(proxyclient);
 				}
@@ -690,7 +630,7 @@ namespace http {
 			m_thread->join();
 		}
 
-		CProxyClient *CProxyManager::GetProxyForMaster(DomoticzTCP *master) {
+		boost::shared_ptr<CProxyClient> CProxyManager::GetProxyForMaster(DomoticzTCP *master) {
 			sharedData.AddTCPClient(master);
 			return proxyclient;
 		}

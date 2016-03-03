@@ -21,7 +21,7 @@ struct _tRemoteShareUser
 class CTCPServerIntBase
 {
 public:
-	CTCPServerIntBase(CTCPServer *pRoot);
+	explicit CTCPServerIntBase(CTCPServer *pRoot);
 	~CTCPServerIntBase(void);
 
 	virtual void start() = 0;
@@ -77,7 +77,7 @@ private:
 #ifndef NOCLOUD
 class CTCPServerProxied : public CTCPServerIntBase {
 public:
-	CTCPServerProxied(CTCPServer *pRoot, http::server::CProxyClient *proxy);
+	CTCPServerProxied(CTCPServer *pRoot, boost::shared_ptr<http::server::CProxyClient> proxy);
 	~CTCPServerProxied(void);
 	virtual void start();
 	virtual void stop();
@@ -89,7 +89,7 @@ public:
 	bool OnIncomingData(const std::string &token, const unsigned char *data, size_t bytes_transferred);
 	CSharedClient *FindClient(const std::string &token);
 private:
-	http::server::CProxyClient *m_pProxyClient;
+	boost::shared_ptr<http::server::CProxyClient> m_pProxyClient;
 };
 #endif
 
@@ -97,12 +97,12 @@ class CTCPServer : public CDomoticzHardwareBase
 {
 public:
 	CTCPServer();
-	CTCPServer(const int ID);
+	explicit CTCPServer(const int ID);
 	~CTCPServer(void);
 
 	bool StartServer(const std::string &address, const std::string &port);
 #ifndef NOCLOUD
-	bool StartServer(http::server::CProxyClient *proxy);
+	bool StartServer(boost::shared_ptr<http::server::CProxyClient> proxy);
 #endif
 	void StopServer();
 	void SendToAll(const unsigned long long DeviceRowID, const char *pData, size_t Length, const CTCPClientBase* pClient2Ignore);

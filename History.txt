@@ -1,15 +1,24 @@
-Version 2.4xxx
+Version 3.xxxx (March xx 2016)
+- Fixed: Database backup is now only possible for admin users
+- Fixed: Better handling of white listed commands/urls
+- Fixed: Double checking command rights
+
+Version 3.4834 (March 2nd 2016)
 - Implemented: Blockly, now possible to use expressions in notifications/email/SMS like "My temperature is {{temperaturedevice[1234]}} degrees" (see http://www.domoticz.com/wiki/Events)
 - Implemented: Blockly, now possible to send a notification with a user variable/device as subject/body
 - Implemented: Chinese language support, big thanks to wxws!!
 - Implemented: CounterType 'Time'
+- Implemented: Custom Templates, now possible to directly call custom template pages (http://127.0.0.1:8080/#/Custom/mypage)
 - Implemented: Day display in energy/gas/water/temp report
 - Implemented: Dummy Hardware, Option to supply name, sensor is now also directly added to the system
 - Implemented: Dummy Hardware, Wind+Temp+Chill
 - Implemented: Dummy Hardware, option to create an RGBW switch
 - Implemented: Extra timer-schedules: Odd/Even Days, Odd/Even Weeks, Monthly & Yearly
+- Implemented: Hardware Monitor for FreeBSD (but it needs the libsysinfo package to work)
+- Implemented: HTU21D(F)/SI702x Humidity+Temp I2C sensor (jvandenb)
 - Implemented: Icelandic language support, big thanks to Magnus!!
 - Implemented: Log View, added options to display All/Status/Error
+- Implemented: Lua Editor
 - Implemented: Macedonian translation (Big thanks to jocogvg!!!)
 - Implemented: MySensors Ethernet gateway will now request the gateway version on startup
 - Implemented: MySensors, Implemented V_CUSTOM
@@ -25,7 +34,9 @@ Version 2.4xxx
 - Implemented: Option to transfer old Percentage sensors to new Percentage sensors
 - Implemented: Philips Hue, support for Groups (create them with an external app like HueMote)
 - Implemented: Philips Hue, support for stored Scenes (create them with an external app like Hue Pro)
+- Implemented: RFLink: Added various sensors/devices (stuntteam)
 - Implemented: RFXCom support for Legrand CAD
+- Implemented: RFXCom support for Lighting5 IT (Intertek,FA500,PROmax,...)
 - Implemented: Romanian Language translation (Thanks to Adrian!)
 - Implemented: SBFSpot, support for multiple inverter instances
 - Implemented: Scene Log
@@ -39,48 +50,50 @@ Version 2.4xxx
 - Changed: Alert sensor, removed level notation in user interface
 - Changed: EventSystem, don't process unused devices
 - Changed: Fritzbox, Now updating text sensor on connect/disconnect
+- Changed: Month temperature report average is now calculated by the daily average value
 - Changed: OpenZWave, Control Panel log starts displaying from the end when entering for the first time
 - Changed: OpenZwave, kWh sensor now maybe compatible with more hardware
 - Changed: OpenZwave, not sending cold-white in the colorclass, solved issues on different Zipato bulbs
 - Changed: OpenZWave, Renamed internally 'Color Control' to 'Color"
+- Changed: Webserver, Refactor the webserver server class to separate the HTTP and HTTPS implementation, and gather all server settings in the new server_settings and ssl_server_settings classes.
+- Changed: Webserver, Add -sslmethod, -ssloptions and -ssldhparam arguments to domoticz executable.
+- Changed: Webserver, Refactor the logs to distinguish the two servers (HTTP and SSL).
 - Fixed: Alert Sensor, displaying sValue again
 - Fixed: Blockly, Set user variables (you need to resave your blockly's)
 - Fixed: Blockly, string uservariables where saved with quotes when not using with set-after
 - Fixed: Changing device order when selected a Room in the lights/utility tab
 - Fixed: CM180i graph display
 - Fixed: Dummy RGB sensor creation (was created with wrong ID)
-- Fixed: Edit Light/Switch Security sensors protected checkbox
 - Fixed: EventSystem, now also handling sensors that only uses numbers instead of strings for data
-- Fixed: Log display in webgui for log items containing multiple lines
 - Fixed: Manual add Blyss type (Group code was wrong)
 - Fixed: Manual add LightwaveRF type (DeviceID was wrong)
-- Fixed: Month temperature report average is now calculated by the daily average value
 - Fixed: MySensors, barometric value was not used when below 995 hPa
 - Fixed: Nest Thermostat, setting set point in Fahrenheit
 - Fixed: RFXCom (433) protocol setup, Home Comfort checkbox did not show correct state
 - Fixed: RGB sensor now also uses the RGB popup system
 - Fixed: S0 Meter, fix for reloading totals of (#179)
-- Fixed: Thermosmart unpause
-- Fixed: The select menu of a selector switch can come out of its frame depending on the width of the page.
+- Fixed: Thermosmart, unpause
 - Fixed: Fix the cleanup of sessions by shortening the validity duration of long term cookies (30 days instead of 1 year) and by cleaning all sessions asynchronously every 15 minutes.
 - Fixed: Fix a potential issue in login process using a certificate when the subjectDN of the certificate has a different format.
-- Fixed: Do not save each command response in the shared memory (attribute of the server instance).
 - Fixed: Remove session only when the Logout command has been executed.
 - Fixed: Fix a cache refresh issue by respecting HTTP standard (HTTP 304 and 204).
 - Fixed: Remove unnecessary session attribute _tWebEmSession::lastRequestPath (used to check the request URI).
 - Fixed: Optimize the reading method of the database backup file by allocating memory before reading the file and set it as the reply content.
 - Fixed: Optimize the methods webem_action_function, webem_include_function and webem_include_function_x execution, by replacing the return value with an argument passed by reference.
-- Fixed: Remove the unnecessary attributes cWebServer::m_retstr and cWebServer::m_wretstr used to received command and action result (these attributes were virtually shared by all connections on the same listening port).
+- Fixed: Remove the unnecessary attributes cWebServer::m_retstr and cWebServer::m_wretstr used to received command and action result
 - Fixed: Remove unnecessary session attribute _tWebEmSession::outputfilename (used to set content disposition header in the HTTP response).
 - Fixed: Optimize the reading method of the '/ozwcp/cp.html' file by allocating memory before reading the file and set it as the reply content.
 - Fixed: Optimize the reading method of the zwave configuration file by allocating memory before reading the file and set it as the reply content.
 - Fixed: Refactor the http::server::reply structure and add some helper methods.
 - Fixed: Fix filename attachment when saving ZWave configuration file (use filename instead of path).
-- Fixed: Fix Security devices edit form by hiding Selector switch options (#473).
-- Fixed: Fix missing Selector switch levels in MQTT device info response by returning all device options (#459)
 - Fixed: Fix dead code in the AsyncSerial::close method causing the method not to stop or close the background resources.
 - Fixed: Fix a security issue (DOS) in webserver to prevent a remote_endpoint exception to be thrown to the WebServer class causing the webserver to be down (no possible stop and no possible connection). Now, the webserver can be scanned using the nmap tool (for the SSL configuration purpose).
+- Fixed: Fix the webserver not stopping and not restarting issue after an exception occurred.
+- Fixed: Fix multiple session cleaner start after restarting webserver.
+- Fixed: Fix webserver initialization failure if the local network interface is not IPv6 (due to wrong initialization sequence).
+- Fixed: Fix abandoned connections not removed because the method connection_manager::check_timeout is never called [Security/Performance].
 - Updated: OpenZWave, configuration files
+- Updated: SQLite3 v3.11.0.
 
 Version 2.3530 (November 1th 2015)
 - Implemented: Degree Days in Temperature report

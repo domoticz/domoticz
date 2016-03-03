@@ -295,7 +295,7 @@ void reply::set_content(reply *rep, const std::wstring & content_w) {
 void reply::set_content_from_file(reply *rep, const std::string & file_path) {
 	std::ifstream file(file_path.c_str(), std::ios::in | std::ios::binary);
 	file.seekg(0, std::ios::end);
-	int fileSize = file.tellg();
+	size_t fileSize = (size_t)file.tellg();
 	if (fileSize > 0) {
 		rep->content.resize(fileSize);
 		file.seekg(0, std::ios::beg);

@@ -590,9 +590,18 @@ void CKodiNode::handleConnect()
 			else
 			{
 				if ((DEBUG_LOGGING) ||
-					((ec.value() != 113) && (ec.value() != 111) &&
-					(ec.value() != 10060) && (ec.value() != 10061) && (ec.value() != 10064) && (ec.value() != 10061))) // Connection failed due to no response, no route or active refusal
+					(
+						(ec.value() != 113) &&
+						(ec.value() != 111) &&
+						(ec.value() != 10060) &&
+						(ec.value() != 10061) &&
+						(ec.value() != 10064) //&&
+						//(ec.value() != 10061)
+						)
+					) // Connection failed due to no response, no route or active refusal
+				{
 					_log.Log(LOG_NORM, "Kodi: (%s) Connect to '%s:%s' failed: (%d) %s", m_Name.c_str(), m_IP.c_str(), (m_Port[0] != '-' ? m_Port.c_str() : m_Port.substr(1).c_str()), ec.value(), ec.message().c_str());
+				}
 				delete m_Socket;
 				m_Socket = NULL;
 				m_CurrentStatus.Clear();
@@ -995,7 +1004,7 @@ void CKodi::Restart()
 
 bool CKodi::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	tRBUF *pSen = (tRBUF*)pdata;
+	const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
 
 	unsigned char packettype = pSen->ICMND.packettype;
 
@@ -1228,6 +1237,8 @@ namespace http {
 	namespace server {
 		void CWebServer::Cmd_KodiGetNodes(WebEmSession & session, const request& req, Json::Value &root)
 		{
+			if (session.rights != 2)
+				return;//Only admin user allowed
 			std::string hwid = request::findValue(&req, "idx");
 			if (hwid == "")
 				return;
@@ -1282,7 +1293,7 @@ namespace http {
 				return;
 			if (pBaseHardware->HwdType != HTYPE_Kodi)
 				return;
-			CKodi *pHardware = (CKodi*)pBaseHardware;
+			CKodi *pHardware = reinterpret_cast<CKodi*>(pBaseHardware);
 
 			root["status"] = "OK";
 			root["title"] = "KodiSetMode";
@@ -1320,7 +1331,7 @@ namespace http {
 				return;
 			if (pBaseHardware->HwdType != HTYPE_Kodi)
 				return;
-			CKodi *pHardware = (CKodi*)pBaseHardware;
+			CKodi *pHardware = reinterpret_cast<CKodi*>(pBaseHardware);
 
 			root["status"] = "OK";
 			root["title"] = "KodiAddNode";
@@ -1354,7 +1365,7 @@ namespace http {
 				return;
 			if (pBaseHardware->HwdType != HTYPE_Kodi)
 				return;
-			CKodi *pHardware = (CKodi*)pBaseHardware;
+			CKodi *pHardware = reinterpret_cast<CKodi*>(pBaseHardware);
 
 			int NodeID = atoi(nodeid.c_str());
 			root["status"] = "OK";
@@ -1383,7 +1394,7 @@ namespace http {
 				return;
 			if (pBaseHardware->HwdType != HTYPE_Kodi)
 				return;
-			CKodi *pHardware = (CKodi*)pBaseHardware;
+			CKodi *pHardware = reinterpret_cast<CKodi*>(pBaseHardware);
 
 			int NodeID = atoi(nodeid.c_str());
 			root["status"] = "OK";
@@ -1408,7 +1419,7 @@ namespace http {
 				return;
 			if (pBaseHardware->HwdType != HTYPE_Kodi)
 				return;
-			CKodi *pHardware = (CKodi*)pBaseHardware;
+			CKodi *pHardware = reinterpret_cast<CKodi*>(pBaseHardware);
 
 			root["status"] = "OK";
 			root["title"] = "KodiClearNodes";

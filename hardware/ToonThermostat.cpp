@@ -88,7 +88,6 @@ m_UserName(Username),
 m_Password(Password)
 {
 	m_HwdID=ID;
-	m_ClientID = "";
 
 	memset(&m_p1power, 0, sizeof(m_p1power));
 	memset(&m_p1gas, 0, sizeof(m_p1gas));
@@ -102,6 +101,26 @@ m_Password(Password)
 	m_p1gas.type = pTypeP1Gas;
 	m_p1gas.subtype = sTypeP1Gas;
 	m_p1gas.ID = 1;
+
+	m_ClientID = "";
+	m_ClientIDChecksum = "";
+	m_stoprequested = false;
+	m_lastSharedSendElectra = 0;
+	m_lastSharedSendGas = 0;
+	m_lastgasusage = 0;
+	m_lastelectrausage = 0;
+	m_lastelectradeliv = 0;
+
+	m_LastUsage1 = 0;
+	m_LastUsage2 = 0;
+	m_OffsetUsage1 = 0;
+	m_OffsetUsage2 = 0;
+	m_LastDeliv1 = 0;
+	m_LastDeliv2 = 0;
+	m_OffsetDeliv1 = 0;
+	m_OffsetDeliv2 = 0;
+
+	m_bDoLogin = true;
 }
 
 CToonThermostat::~CToonThermostat(void)
@@ -505,7 +524,7 @@ bool CToonThermostat::WriteToHardware(const char *pdata, const unsigned char len
 	if (m_Password.size() == 0)
 		return false;
 
-	tRBUF *pCmd = (tRBUF *)pdata;
+	const tRBUF *pCmd = reinterpret_cast<const tRBUF *>(pdata);
 	if (pCmd->LIGHTING2.packettype != pTypeLighting2)
 		return false; //later add RGB support, if someone can provide access
 
@@ -514,10 +533,8 @@ bool CToonThermostat::WriteToHardware(const char *pdata, const unsigned char len
 		return false; //we can not turn on/off the internal status
 
 	int state = 0;
-	int light_command = pCmd->LIGHTING2.cmnd;
 	if (pCmd->LIGHTING2.cmnd == light2_sOn)
 		state = 1;
-
 
 	if (node_id == 254)
 		return SwitchAll(state);
@@ -631,7 +648,7 @@ void CToonThermostat::GetMeterDetails()
 					double currentUsage = root["deviceStatusInfo"]["device"][ii]["currentUsage"].asDouble();
 					double DayCounter = root["deviceStatusInfo"]["device"][ii]["dayUsage"].asDouble();
 
-					double ElecOffset = GetElectricOffset(Idx, DayCounter);
+					//double ElecOffset = GetElectricOffset(Idx, DayCounter);
 					double OldDayCounter = m_LastElectricCounter[Idx];
 					if (DayCounter < OldDayCounter)
 					{

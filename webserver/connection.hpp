@@ -20,7 +20,7 @@
 #include "request.hpp"
 #include "request_handler.hpp"
 #include "request_parser.hpp"
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 #include <boost/asio/ssl.hpp>
 typedef boost::asio::ssl::stream<boost::asio::ip::tcp::socket> ssl_socket;
 #endif
@@ -39,14 +39,14 @@ public:
   /// Construct a connection with the given io_service.
   explicit connection(boost::asio::io_service& io_service,
       connection_manager& manager, request_handler& handler, int timeout);
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
   explicit connection(boost::asio::io_service& io_service,
       connection_manager& manager, request_handler& handler, int timeout, boost::asio::ssl::context& context);
 #endif
   ~connection();
 
   /// Get the socket associated with the connection.
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
   ssl_socket::lowest_layer_type& socket();
 #else
   boost::asio::ip::tcp::socket& socket();
@@ -58,12 +58,11 @@ public:
   /// Stop all asynchronous operations associated with the connection.
   void stop();
 
-  /// Last user interaction
-  time_t m_lastresponse;
+  /// Wait for all asynchronous operations to abort.
+  void stop_gracefully();
 
-  /// read timeout timer
-  boost::asio::deadline_timer timer_;
-  void handle_timeout(const boost::system::error_code& error);
+  /// Timer handler
+  void handle_read_timeout(const boost::system::error_code& error);
 
 private:
   /// Handle completion of a read operation.
@@ -73,6 +72,16 @@ private:
   /// Handle completion of a write operation.
   void handle_write(const boost::system::error_code& e);
 
+	/// Initialize read timeout timer
+	void set_read_timeout();
+	/// Stop read timeout timer
+	void cancel_read_timeout();
+	/// Reset read timeout timer
+	void reset_read_timeout();
+
+	/// Check if the connection is about to stop
+	bool is_stopping();
+
   /// Socket for the (PLAIN) connection.
   boost::asio::ip::tcp::socket *socket_;
   //Host EndPoint
@@ -81,10 +90,13 @@ private:
   /// If this is a keep-alive connection or not
   bool keepalive_;
 
-  /// timeouts (persistent and other) connections in seconds
-  int timeout_;
+  /// Read timeout in seconds
+  int read_timeout_;
 
-  /// The manager for this connection.
+  /// Read timeout timer
+  boost::asio::deadline_timer read_timer_;
+
+    /// The manager for this connection.
   connection_manager& connection_manager_;
 
   /// The handler used to process the incoming request.
@@ -96,13 +108,19 @@ private:
   /// The reply to be sent back to the client.
   reply reply_;
 
-  /// the buffer that we receive data in
+  /// The buffer that we receive data in
   boost::asio::streambuf _buf;
+
+  /// The status of the connection (can be initializing, handshaking, waiting, reading, writing)
+  std::string status;
+
+  /// Ask the connection to stop as soon as possible
+  bool stop_required;
 
   // secure connection members below
   // secure connection yes/no
   bool secure_;
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
   // the SSL socket
   ssl_socket *sslsocket_;
   void handle_handshake(const boost::system::error_code& error);

@@ -2986,7 +2986,7 @@ define(['app'], function (app) {
 
 				//Slider Events
 				create: function(event,ui ) {
-					$( this ).slider( "option", "max", $( this ).data('maxlevel'));
+					$( this ).slider( "option", "max", $( this ).data('maxlevel')+1);
 					$( this ).slider( "option", "type", $( this ).data('type'));
 					$( this ).slider( "option", "isprotected", $( this ).data('isprotected'));
 					$( this ).slider( "value", $( this ).data('svalue')+1 );
@@ -2998,10 +2998,7 @@ define(['app'], function (app) {
 					var maxValue=$( this ).slider( "option", "max");
 					var dtype=$( this ).slider( "option", "type");
 					var isProtected=$( this ).slider( "option", "isprotected");
-					var fPercentage=0;
-					if (ui.value!=1) {
-						fPercentage=parseInt((100.0/(maxValue-1))*((ui.value-1)));
-					}
+					var fPercentage=parseInt((100.0/(maxValue-1))*((ui.value-1)));
 					var idx=$( this ).data('idx');
 					id="#lightcontent #" + idx;
 					var obj=$(id);
@@ -3195,6 +3192,11 @@ define(['app'], function (app) {
 				bIsType5=1;
 				totunits=16;
 			}
+			else if (lighttype==59) {
+				//IT (Intertek,FA500,PROmax...)
+				bIsType5=1;
+				totunits=4;
+			}
 			else if ((lighttype==55)||(lighttype==57)) {
 				//Livolo
 				bIsType5=1;
@@ -3227,6 +3229,12 @@ define(['app'], function (app) {
 				tothousecodes=4;
 				totunits=4;
 			}
+			else if (lighttype==305) {
+				//Openwebnet Blinds
+				totrooms=10;
+				totpointofloads=10;
+			}
+
 			
 			$("#dialog-addmanuallightdevice #he105params").hide();
 			$("#dialog-addmanuallightdevice #blindsparams").hide();
@@ -3234,6 +3242,7 @@ define(['app'], function (app) {
 			$("#dialog-addmanuallightdevice #lightingparams_gpio").hide();
 			$("#dialog-addmanuallightdevice #homeconfortparams").hide();
 			$("#dialog-addmanuallightdevice #fanparams").hide();
+			$("#dialog-addmanuallightdevice #openwebnetparams").hide();
 
 			if (lighttype==104) {
 				//HE105
@@ -3321,6 +3330,24 @@ define(['app'], function (app) {
 				$("#dialog-addmanuallightdevice #lighting3params").hide();
 				$("#dialog-addmanuallightdevice #fanparams").show();
 			}
+			else if (lighttype==305) {
+				//Openwebnet Blinds
+				$("#dialog-addmanuallightdevice #openwebnetparams #combocmd1  >option").remove();
+				for (ii=1; ii<totrooms; ii++)
+				{
+					$('#dialog-addmanuallightdevice #openwebnetparams #combocmd1').append($('<option></option>').val(ii).html(ii));
+				}
+				$("#dialog-addmanuallightdevice #openwebnetparams #combocmd2  >option").remove();
+				for (ii=1; ii<totpointofloads; ii++)
+				{
+					$('#dialog-addmanuallightdevice #openwebnetparams #combocmd2').append($('<option></option>').val(ii).html(ii));
+				}
+				
+				$("#dialog-addmanuallightdevice #lighting1params").hide();
+				$("#dialog-addmanuallightdevice #lighting2params").hide();
+				$("#dialog-addmanuallightdevice #lighting3params").hide();
+				$("#dialog-addmanuallightdevice #openwebnetparams").show();
+			}
 			else if (bIsARCType==1) {
 				$('#dialog-addmanuallightdevice #lightparams1 #combohousecode >option').remove();
 				$('#dialog-addmanuallightdevice #lightparams1 #combounitcode >option').remove();
@@ -3349,9 +3376,9 @@ define(['app'], function (app) {
 				}
 				else {
 					$("#dialog-addmanuallightdevice #lighting2params #combocmd1").hide();
-					if ((lighttype==55)||(lighttype==57)||(lighttype==100)) {
+					if ((lighttype==55)||(lighttype==57)||(lighttype==59)||(lighttype==100)) {
 						$("#dialog-addmanuallightdevice #lighting2params #combocmd2").hide();
-						if (lighttype!=100) {
+						if ((lighttype!=59)&&(lighttype!=100)) {
 							$("#dialog-addmanuallightdevice #lighting2paramsUnitCode").hide();
 						}
 					}
@@ -3444,12 +3471,28 @@ define(['app'], function (app) {
 					$("#dialog-addmanuallightdevice #fanparams #combocmd3 option:selected").text();
 				mParams+="&id="+ID;
 			}
+			else if (lighttype==305) {
+				//OpenWebNet Blinds
+				var ID="OpenWebNet";
+				var unitcode=
+					$("#dialog-addmanuallightdevice #openwebnetparams #combocmd1 option:selected").val()+
+					$("#dialog-addmanuallightdevice #openwebnetparams #combocmd2 option:selected").val();
+				mParams+="&id="+ID+"&unitcode="+unitcode;
+			}
 			else {
 				//AC
 				var ID="";
 				var bIsType5=0;
-				if ((lighttype==50)||(lighttype==55)||(lighttype==57)||(lighttype==100)||(lighttype==102)||(lighttype==105)||(lighttype==103))
-				{
+				if (
+					(lighttype==50)||
+					(lighttype==55)||
+					(lighttype==57)||
+					(lighttype==59)||
+					(lighttype==100)||
+					(lighttype==102)||
+					(lighttype==105)||
+					(lighttype==103)
+				) {
 					bIsType5=1;
 				}
 				if (bIsType5==0) {

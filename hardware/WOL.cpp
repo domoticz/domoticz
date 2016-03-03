@@ -118,7 +118,7 @@ bool CWOL::SendWOLPacket(const unsigned char *pPacket)
 
 bool CWOL::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	tRBUF *pSen=(tRBUF*)pdata;
+	const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
 
 	unsigned char packettype=pSen->ICMND.packettype;
 	//unsigned char subtype=pSen->ICMND.subtype;
@@ -238,6 +238,8 @@ namespace http {
 	namespace server {
 		void CWebServer::Cmd_WOLGetNodes(WebEmSession & session, const request& req, Json::Value &root)
 		{
+			if (session.rights != 2)
+				return;//Only admin user allowed
 			std::string hwid = request::findValue(&req, "idx");
 			if (hwid == "")
 				return;
@@ -293,7 +295,7 @@ namespace http {
 				return;
 			if (pBaseHardware->HwdType != HTYPE_WOL)
 				return;
-			CWOL *pHardware = (CWOL*)pBaseHardware;
+			CWOL *pHardware = reinterpret_cast<CWOL*>(pBaseHardware);
 
 			root["status"] = "OK";
 			root["title"] = "WOLAddNode";
@@ -325,7 +327,7 @@ namespace http {
 				return;
 			if (pBaseHardware->HwdType != HTYPE_WOL)
 				return;
-			CWOL *pHardware = (CWOL*)pBaseHardware;
+			CWOL *pHardware = reinterpret_cast<CWOL*>(pBaseHardware);
 
 			int NodeID = atoi(nodeid.c_str());
 			root["status"] = "OK";
@@ -354,7 +356,7 @@ namespace http {
 				return;
 			if (pBaseHardware->HwdType != HTYPE_WOL)
 				return;
-			CWOL *pHardware = (CWOL*)pBaseHardware;
+			CWOL *pHardware = reinterpret_cast<CWOL*>(pBaseHardware);
 
 			int NodeID = atoi(nodeid.c_str());
 			root["status"] = "OK";
@@ -379,7 +381,7 @@ namespace http {
 				return;
 			if (pBaseHardware->HwdType != HTYPE_WOL)
 				return;
-			CWOL *pHardware = (CWOL*)pBaseHardware;
+			CWOL *pHardware = reinterpret_cast<CWOL*>(pBaseHardware);
 
 			root["status"] = "OK";
 			root["title"] = "WOLClearNodes";

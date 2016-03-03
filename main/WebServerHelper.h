@@ -16,11 +16,15 @@ namespace http {
 			~CWebServerHelper();
 
 			// called from mainworker():
-			bool StartServers(const std::string &listenaddress, const std::string &listenport, const std::string &secure_listenport, const std::string &serverpath, const std::string &secure_cert_file, const std::string &secure_cert_passphrase, const bool bIgnoreUsernamePassword, tcp::server::CTCPServer *sharedServer);
+#ifdef WWW_ENABLE_SSL
+			bool StartServers(server_settings & web_settings, ssl_server_settings & secure_web_settings, const std::string &serverpath, const bool bIgnoreUsernamePassword, tcp::server::CTCPServer *sharedServer);
+#else
+			bool StartServers(server_settings & web_settings, const std::string &serverpath, const bool bIgnoreUsernamePassword, tcp::server::CTCPServer *sharedServer);
+#endif
 			void StopServers();
 #ifndef NOCLOUD
 			void RestartProxy();
-			CProxyClient *GetProxyForMaster(DomoticzTCP *master);
+			boost::shared_ptr<CProxyClient> GetProxyForMaster(DomoticzTCP *master);
 			void RemoveMaster(DomoticzTCP *master);
 #endif
 			void SetAuthenticationMethod(int amethod);
@@ -33,7 +37,7 @@ namespace http {
 			void ReloadCustomSwitchIcons();
 		private:
 			CWebServer *plainServer_;
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 			CWebServer *secureServer_;
 #endif
 			tcp::server::CTCPServer *m_pDomServ;

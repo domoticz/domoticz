@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <boost/bind.hpp>
 #include <iostream>
+#include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "../main/localtime_r.h"
 
@@ -52,26 +53,38 @@ void connection_manager::stop(connection_ptr c)
 	c->stop();
 }
 
-void connection_manager::stop_all()
+void connection_manager::stop_all(const bool graceful_stop)
 {
-  std::for_each(connections_.begin(), connections_.end(),
-      boost::bind(&connection::stop, _1));
-  connections_.clear();
-}
-
-void connection_manager::check_timeouts()
-{
-	time_t atime=mytime(NULL);
-	std::set<connection_ptr>::const_iterator itt;
-	for (itt=connections_.begin(); itt!=connections_.end(); ++itt)
-	{
-		if (atime-(*itt)->m_lastresponse>20*60)
-		{
-			stop(*itt);
-			itt=connections_.begin();
+#ifdef DEBUG_WWW
+	_log.Log(LOG_STATUS,"%stopping connections...", graceful_stop ? "Gracefully s" : "S");
+#endif
+	if (graceful_stop) {
+		std::for_each(connections_.begin(), connections_.end(),
+				boost::bind(&connection::stop_gracefully, _1));
+		int timeout = 10; // force stop after 10 seconds
+		time_t start = mytime(NULL);
+		while(true) {
+			if (connections_.empty()) {
+				break;
+			}
+			if ((mytime(NULL) - start) > timeout) {
+				// timeout occurred : force stop
+#ifdef DEBUG_WWW
+				_log.Log(LOG_STATUS,"Graceful stop timeout occurred : remaining connections will be closed now");
+#endif
+				break;
+			}
+#ifdef DEBUG_WWW
+			_log.Log(LOG_STATUS,"Graceful stopping : %d active connection(s)", (int) connections_.size());
+#endif
+			sleep_milliseconds(500);
 		}
 	}
+	std::for_each(connections_.begin(), connections_.end(),
+			boost::bind(&connection::stop, _1));
+	connections_.clear();
 }
+
 
 } // namespace server
 } // namespace http
