@@ -3,6 +3,7 @@ Version 3.xxxx (March xx 2016)
 - Fixed: Better handling of white listed commands/urls
 - Fixed: Double checking command rights
 - Fixed: Fix on/off delays not saved on the selector switch edit form (#532).
+- Fixed: Fix Off Delay not handled for Selector switch (#538).
 
 Version 3.4834 (March 2nd 2016)
 - Implemented: Blockly, now possible to use expressions in notifications/email/SMS like "My temperature is {{temperaturedevice[1234]}} degrees" (see http://www.domoticz.com/wiki/Events)
