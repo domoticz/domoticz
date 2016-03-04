@@ -24,7 +24,7 @@ archive_file="http://www.domoticz.com/download.php?channel=${CHANNEL}&type=relea
 checksum_file="http://www.domoticz.com/download.php?channel=${CHANNEL}&type=checksum&system=${OS}&machine=${MACH}"
 
 # Download checksum
-wget -q ${checksum_file} -O update.tgz.sha256sum
+wget -q "${checksum_file}" -O update.tgz.sha256sum
 if [ $? -ne 0 ]
 then
         echo "Error downloading checksum file!...";
@@ -32,7 +32,7 @@ then
 fi
 
 # Download archive file
-wget -q ${archive_file} -O update.tgz
+wget -q "${archive_file}" -O update.tgz
 if [ $? -ne 0 ]
 then
         echo "Error downloading archive file!...";
