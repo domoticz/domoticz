@@ -10993,7 +10993,7 @@ bool MainWorker::SwitchLight(const unsigned long long idx, const std::string &sw
 	//Get Device details
 	std::vector<std::vector<std::string> > result;
 	result=m_sql.safe_query(
-		"SELECT HardwareID,DeviceID,Unit,Type,SubType,SwitchType,AddjValue,AddjValue2,nValue,sValue,Name,Options FROM DeviceStatus WHERE (ID == %llu)",
+		"SELECT HardwareID,DeviceID,Unit,Type,SubType,SwitchType,AddjValue,nValue,sValue,Name,Options FROM DeviceStatus WHERE (ID == %llu)",
 		idx);
 	if (result.size()<1)
 		return false;
@@ -11003,12 +11003,11 @@ bool MainWorker::SwitchLight(const unsigned long long idx, const std::string &sw
 	//unsigned char dType = atoi(sd[3].c_str());
 	//unsigned char dSubType = atoi(sd[4].c_str());
 	_eSwitchType switchtype = (_eSwitchType)atoi(sd[5].c_str());
-	int iOffDelay = atoi(sd[6].c_str());
-	int iOnDelay = atoi(sd[7].c_str());
-	int nValue = atoi(sd[8].c_str());
-	std::string sValue = sd[9].c_str();
-	std::string devName = sd[10].c_str();
-	//std::string sOptions = sd[11].c_str();
+	int iOnDelay = atoi(sd[6].c_str());
+	int nValue = atoi(sd[7].c_str());
+	std::string sValue = sd[8].c_str();
+	std::string devName = sd[9].c_str();
+	//std::string sOptions = sd[10].c_str();
 
 	bool bIsOn = IsLightSwitchOn(switchcmd);
 	if (ooc)//Only on change
@@ -11023,9 +11022,9 @@ bool MainWorker::SwitchLight(const unsigned long long idx, const std::string &sw
 	if (switchtype == STYPE_Selector) {
 		bIsOn = (level > 0) ? true : false;
 	}
-	int iDelay = bIsOn ? iOnDelay : iOffDelay;
+	int iDelay = bIsOn ? iOnDelay : 0;
 
-	//Check if we have an OnDelay/OffDelay, if yes, add it to the tasker
+	//Check if we have an OnDelay, if yes, add it to the tasker
 	if ((iDelay != 0) || ExtraDelay)
 	{
 		if (ExtraDelay != 0)
