@@ -10993,7 +10993,7 @@ bool MainWorker::SwitchLight(const unsigned long long idx, const std::string &sw
 	//Get Device details
 	std::vector<std::vector<std::string> > result;
 	result=m_sql.safe_query(
-		"SELECT HardwareID,DeviceID,Unit,Type,SubType,SwitchType,AddjValue2,nValue,sValue,Name,Options FROM DeviceStatus WHERE (ID == %llu)",
+		"SELECT HardwareID,DeviceID,Unit,Type,SubType,SwitchType,AddjValue,AddjValue2,nValue,sValue,Name,Options FROM DeviceStatus WHERE (ID == %llu)",
 		idx);
 	if (result.size()<1)
 		return false;
@@ -11003,30 +11003,36 @@ bool MainWorker::SwitchLight(const unsigned long long idx, const std::string &sw
 	//unsigned char dType = atoi(sd[3].c_str());
 	//unsigned char dSubType = atoi(sd[4].c_str());
 	_eSwitchType switchtype = (_eSwitchType)atoi(sd[5].c_str());
-	int iOnDelay = atoi(sd[6].c_str());
-	int nValue = atoi(sd[7].c_str());
-	std::string sValue = sd[8].c_str();
-	std::string devName = sd[9].c_str();
-	//std::string sOptions = sd[10].c_str();
+	int iOffDelay = atoi(sd[6].c_str());
+	int iOnDelay = atoi(sd[7].c_str());
+	int nValue = atoi(sd[8].c_str());
+	std::string sValue = sd[9].c_str();
+	std::string devName = sd[10].c_str();
+	//std::string sOptions = sd[11].c_str();
 
 	bool bIsOn = IsLightSwitchOn(switchcmd);
 	if (ooc)//Only on change
 	{
-		int nNewVal=bIsOn?1:0;//Is that everything we need here
+		int nNewVal = bIsOn ? 1 : 0;//Is that everything we need here
 		if ((switchtype == STYPE_Selector) && (nValue == nNewVal) && (level == atoi(sValue.c_str()))) {
 			return true;
 		} else if (nValue == nNewVal) {
 			return true;//FIXME no return code for already set
 		}
 	}
-	//Check if we have an On-Delay, if yes, add it to the tasker
-	if (((bIsOn) && (iOnDelay != 0)) || ExtraDelay)
+	if (switchtype == STYPE_Selector) {
+		bIsOn = (level > 0) ? true : false;
+	}
+	int iDelay = bIsOn ? iOnDelay : iOffDelay;
+
+	//Check if we have an OnDelay/OffDelay, if yes, add it to the tasker
+	if ((iDelay != 0) || ExtraDelay)
 	{
 		if (ExtraDelay != 0)
 		{
 			_log.Log(LOG_NORM, "Delaying switch [%s] action (%s) for %d seconds", devName.c_str(), switchcmd.c_str(), ExtraDelay);
 		}
-		m_sql.AddTaskItem(_tTaskItem::SwitchLightEvent(iOnDelay + ExtraDelay, idx, switchcmd, level, hue, "Switch with Delay"));
+		m_sql.AddTaskItem(_tTaskItem::SwitchLightEvent(iDelay + ExtraDelay, idx, switchcmd, level, hue, "Switch with Delay"));
 		return true;
 	}
 	else
