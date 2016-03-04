@@ -3220,11 +3220,12 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 					bool bAdd2DelayQueue=false;
 					int cmd=0;
 					if (
-						(switchtype==STYPE_OnOff)||
-						(switchtype==STYPE_Motion)||
+						(switchtype == STYPE_OnOff) ||
+						(switchtype == STYPE_Motion) ||
 						(switchtype == STYPE_Dimmer) ||
 						(switchtype == STYPE_PushOn) ||
-						(switchtype==STYPE_DoorLock)
+						(switchtype == STYPE_DoorLock) ||
+						(switchtype == STYPE_Selector)
 						)
 					{
 						switch (devType)

@@ -3316,21 +3316,22 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 	}
 	else {
 		//Lights/Switches
+		//Get Device details, check for switch global OnDelay/OffDelay (stored in AddjValue2/AddjValue)
+		std::vector<std::vector<std::string> > result;
+		result = m_sql.safe_query("SELECT SwitchType, AddjValue2 FROM DeviceStatus WHERE (ID == %d)", deviceID);
+		if (result.size() < 1)
+			return false;
+
+		std::vector<std::string> sd = result[0];
+		_eSwitchType switchtype = (_eSwitchType)atoi(sd[0].c_str());
+		int iOnDelay = atoi(sd[1].c_str());
+
 		bool bIsOn = IsLightSwitchOn(Action);
-		if (bIsOn)
-		{
-			//Get Device details, check for switch global OnDelay (stored in AddjValue2)
-			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT AddjValue2 FROM DeviceStatus WHERE (ID == %d)",
-				deviceID);
-			if (result.size() < 1)
-				return false;
-
-			std::vector<std::string> sd = result[0];
-
-			int iOnDelay = atoi(sd[0].c_str());
-			DelayTime += iOnDelay;
+		if (switchtype == STYPE_Selector) {
+			bIsOn = (_level > 0) ? true : false;
 		}
+		int iDelay = bIsOn ? iOnDelay : 0;
+		DelayTime += iDelay;
 
 		tItem = _tTaskItem::SwitchLightEvent(DelayTime, deviceID, Action, _level, -1, eventName);
 	}
