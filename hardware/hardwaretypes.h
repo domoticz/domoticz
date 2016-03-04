@@ -142,6 +142,8 @@
 #define sSwitchMC145026				0x50
 #define sSwitchLobeco				0x51
 #define sSwitchFriedland			0x52
+#define sSwitchBFT					0x53
+#define sSwitchNovatys				0x54
 
 //Switch commands
 #define gswitch_sOff				0x00
