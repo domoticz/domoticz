@@ -149,11 +149,9 @@ MainWorker::MainWorker()
 	// Set default settings for web servers
 	m_webserver_settings.listening_address = "::"; // listen to all network interfaces
 	m_webserver_settings.listening_port = "8080";
-	m_webserver_settings.graceful_stop = false;
 #ifdef WWW_ENABLE_SSL
 	m_secure_webserver_settings.listening_address = "::"; // listen to all network interfaces
 	m_secure_webserver_settings.listening_port = "443";
-	m_secure_webserver_settings.graceful_stop = false;
 	m_secure_webserver_settings.ssl_method = "sslv23";
 	m_secure_webserver_settings.certificate_chain_file_path = "./server_cert.pem";
 	m_secure_webserver_settings.ca_cert_file_path = m_secure_webserver_settings.certificate_chain_file_path; // not used
