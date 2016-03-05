@@ -1,4 +1,5 @@
 Version 3.xxxx (March xx 2016)
+- Implemented: Nefit Easy, Clock mode (as switch, On=Clock, Off=Manual)
 - Fixed: Database backup is now only possible for admin users
 - Fixed: Better handling of white listed commands/urls
 - Fixed: Double checking command rights

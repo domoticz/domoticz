@@ -278,6 +278,12 @@ UMD -> 'user mode' string (clock)
 			}
 		}
 	}
+	if (!root2["UMD"].empty())
+	{
+		tmpstr = root2["UMD"].asString();
+		bool bIsClockMode = (tmpstr == "clock");
+		SendSwitch(1, 1, -1, bIsClockMode, 100, "Clock Mode");
+	}
 
 	//Outdoor Temperature
 #ifdef DEBUG_NefitEasyR
