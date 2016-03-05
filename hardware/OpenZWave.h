@@ -174,6 +174,7 @@ private:
 	bool m_bInUserCodeEnrollmentMode;
 	bool m_bNightlyNetworkHeal;
 	bool m_bNeedSave;
+	bool m_bAeotecBlinkingMode;
 };
 
 #endif //WITH_OPENZWAVE

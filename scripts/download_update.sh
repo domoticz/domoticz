@@ -8,11 +8,9 @@ lowercase(){
 OS=`lowercase \`uname -s\``
 # KERNEL=`uname -r`
 MACH=`uname -m`
-
-ARCH=${MACH}
-if [ ${ARCH} = "armv6l" ]
+if [ ${MACH} = "armv6l" ]
 then
- ARCH="armv7l"
+ MACH="armv7l"
 fi
 
 CHANNEL="stable"

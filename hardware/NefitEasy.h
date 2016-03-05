@@ -26,5 +26,6 @@ private:
 	void Do_Work();
 	bool GetStatusDetails();
 	bool GetPressureDetails();
+	void SetUserMode(bool bSetUserModeClock);
 };
 
