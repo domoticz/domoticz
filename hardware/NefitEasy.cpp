@@ -116,6 +116,9 @@ void CNefitEasy::Do_Work()
 	bool bFirstTime = true;
 	int nstat_pollint = NEFIT_STATUS_POLL_INTERVAL;
 	int npres_pollint = NEFIT_PRESSURE_POLL_INTERVAL;
+
+	_log.Log(LOG_STATUS, "NefitEasy: Worker started...");
+
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
@@ -148,7 +151,7 @@ void CNefitEasy::Do_Work()
 		}
 		bFirstTime = false;
 	}
-	_log.Log(LOG_STATUS, "NefitEasy Worker stopped...");
+	_log.Log(LOG_STATUS, "NefitEasy: Worker stopped...");
 }
 
 bool CNefitEasy::WriteToHardware(const char *pdata, const unsigned char length)
