@@ -18,8 +18,7 @@ server_base::server_base(const server_settings & settings, request_handler & use
 		settings_(settings),
 		request_handler_(user_request_handler),
 		timeout_(20), // default read timeout in seconds
-		is_running(false),
-		is_stopping(false) {
+		is_running(false) {
 	if (!settings.is_enabled()) {
 		throw std::invalid_argument("cannot initialize a disabled server (listening port cannot be empty or 0)");
 	}
@@ -86,7 +85,6 @@ bool server_base::stopped() {
 }
 
 void server_base::handle_stop() {
-	is_stopping = true;
 	try {
 		boost::system::error_code ignored_ec;
 		acceptor_.close(ignored_ec);
@@ -94,7 +92,6 @@ void server_base::handle_stop() {
 		_log.Log(LOG_ERROR, "[web:%s] exception occurred while closing acceptor", settings_.listening_port.c_str());
 	}
 	connection_manager_.stop_all(settings_.graceful_stop);
-	is_stopping = false;
 }
 
 server::server(const server_settings & settings, request_handler & user_request_handler) :
@@ -114,9 +111,6 @@ void server::init_connection() {
  * accepting incoming requests and start the client connection loop
  */
 void server::handle_accept(const boost::system::error_code& e) {
-	if (is_stopping) {
-		return;
-	}
 	if (!e) {
 		connection_manager_.start(new_connection_);
 		new_connection_.reset(new connection(io_service_,
@@ -220,9 +214,6 @@ void ssl_server::init_connection() {
  * accepting incoming requests and start the client connection loop
  */
 void ssl_server::handle_accept(const boost::system::error_code& e) {
-	if (is_stopping) {
-		return;
-	}
 	if (!e) {
 		connection_manager_.start(new_connection_);
 		new_connection_.reset(new connection(io_service_,
