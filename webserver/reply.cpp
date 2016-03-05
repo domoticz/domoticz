@@ -285,16 +285,13 @@ void reply::add_header(reply *rep, const std::string &name, const std::string &v
 
 void reply::add_header_if_absent(reply *rep, const std::string &name, const std::string &value) {
 	int num = rep->headers.size();
-	bool is_present = false;
 	for (int h = 0; h < num; h++) {
 		if (boost::iequals(rep->headers[h].name, name)) {
-			is_present = true;
-			break;
+			// is present
+			return;
 		}
 	}
-	if (!is_present) {
-		add_header(rep, name, value, false);
-	}
+	add_header(rep, name, value, false);
 }
 
 void reply::set_content(reply *rep, const std::string & content) {
