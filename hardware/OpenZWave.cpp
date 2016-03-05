@@ -3882,26 +3882,30 @@ void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const int nodeID, 
 		std::string Product_type = m_pManager->GetNodeProductType(m_controllerID, m_controllerNodeId);
 		std::string Product_id = m_pManager->GetNodeProductId(m_controllerID, m_controllerNodeId);
 
-		if (
-			(Manufacturer_id == "0x0086") &&
-			(Product_type == "0x0001") &&
-			(Product_id == "0x005a")
-			)
+		if (Manufacturer_id == "0x0086")
 		{
-			int blinkenabled = 1;
-			m_sql.GetPreferencesVar("ZWaveAeotecBlinkEnabled", blinkenabled);
+			if (
+				((Product_type == "0x0001") && (Product_id == "0x005a")) || //Z-Stick Gen5
+				((Product_type == "0x0001") && (Product_id == "0x005c")) || //Z-Stick Lite Gen5
+				((Product_type == "0x0101") && (Product_id == "0x005a")) || //Z-Stick Gen5
+				((Product_type == "0x0201") && (Product_id == "0x005a"))    //Z-Stick Gen5
+				)
+			{
+				int blinkenabled = 1;
+				m_sql.GetPreferencesVar("ZWaveAeotecBlinkEnabled", blinkenabled);
 
-			root["result"][index]["config"][ivalue]["index"] = vIndex;
-			root["result"][index]["config"][ivalue]["type"] = "list";
-			root["result"][index]["config"][ivalue]["units"] = "";
-			root["result"][index]["config"][ivalue]["label"] = "Enable Controller Blinking";
-			root["result"][index]["config"][ivalue]["help"] = "Enable/Disable controller blinking colors when plugged in USB.";
-			root["result"][index]["config"][ivalue]["LastUpdate"] = "-";
+				root["result"][index]["config"][ivalue]["index"] = vIndex;
+				root["result"][index]["config"][ivalue]["type"] = "list";
+				root["result"][index]["config"][ivalue]["units"] = "";
+				root["result"][index]["config"][ivalue]["label"] = "Enable Controller Blinking";
+				root["result"][index]["config"][ivalue]["help"] = "Enable/Disable controller blinking colors when plugged in USB.";
+				root["result"][index]["config"][ivalue]["LastUpdate"] = "-";
 
-			root["result"][index]["config"][ivalue]["list_items"] = 2;
-			root["result"][index]["config"][ivalue]["listitem"][0] = "Disabled";
-			root["result"][index]["config"][ivalue]["listitem"][1] = "Enabled";
-			root["result"][index]["config"][ivalue]["value"] = (blinkenabled == 0) ? "Disabled" : "Enabled";
+				root["result"][index]["config"][ivalue]["list_items"] = 2;
+				root["result"][index]["config"][ivalue]["listitem"][0] = "Disabled";
+				root["result"][index]["config"][ivalue]["listitem"][1] = "Enabled";
+				root["result"][index]["config"][ivalue]["value"] = (blinkenabled == 0) ? "Disabled" : "Enabled";
+			}
 		}
 		vIndex++;
 		ivalue++;
@@ -4114,20 +4118,24 @@ bool COpenZWave::ApplyNodeConfig(const unsigned int homeID, const int nodeID, co
 				std::string Product_type = m_pManager->GetNodeProductType(m_controllerID, m_controllerNodeId);
 				std::string Product_id = m_pManager->GetNodeProductId(m_controllerID, m_controllerNodeId);
 
-				if (
-					(Manufacturer_id == "0x0086") &&
-					(Product_type == "0x0001") &&
-					(Product_id == "0x005a")
-					)
+				if (Manufacturer_id == "0x0086")
 				{
-					int blinkenabled = (ValueVal == "Disabled") ? 0 : 1;
-					int old_blinkenabled = 1;
-					m_sql.GetPreferencesVar("ZWaveAeotecBlinkEnabled", old_blinkenabled);
-					if (old_blinkenabled != blinkenabled)
+					if (
+						((Product_type == "0x0001") && (Product_id == "0x005a")) || //Z-Stick Gen5
+						((Product_type == "0x0001") && (Product_id == "0x005c")) || //Z-Stick Lite Gen5
+						((Product_type == "0x0101") && (Product_id == "0x005a")) || //Z-Stick Gen5
+						((Product_type == "0x0201") && (Product_id == "0x005a"))    //Z-Stick Gen5
+						)
 					{
-						m_sql.UpdatePreferencesVar("ZWaveAeotecBlinkEnabled", blinkenabled);
-						bRestartOpenZWave = true;
-						m_bAeotecBlinkingMode = true;
+						int blinkenabled = (ValueVal == "Disabled") ? 0 : 1;
+						int old_blinkenabled = 1;
+						m_sql.GetPreferencesVar("ZWaveAeotecBlinkEnabled", old_blinkenabled);
+						if (old_blinkenabled != blinkenabled)
+						{
+							m_sql.UpdatePreferencesVar("ZWaveAeotecBlinkEnabled", blinkenabled);
+							bRestartOpenZWave = true;
+							m_bAeotecBlinkingMode = true;
+						}
 					}
 				}
 			}
