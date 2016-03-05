@@ -1,5 +1,5 @@
 Version 3.xxxx (March xx 2016)
-- Implemented: Nefit Easy, Clock mode (as switch, On=Clock, Off=Manual)
+- Implemented: Nefit Easy, User Mode (as switch, On=Clock, Off=Manual)
 - Implemented: OpenZWave, Aeotec ZWave+ USB Controller, Enable/Disable blinking mode (@Schmart, Thanks for the magic codes!)
 - Fixed: Database backup is now only possible for admin users
 - Fixed: Better handling of white listed commands/urls
