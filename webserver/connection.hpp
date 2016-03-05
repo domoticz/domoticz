@@ -79,9 +79,6 @@ private:
 	/// Reset read timeout timer
 	void reset_read_timeout();
 
-	/// Check if the connection is about to stop
-	bool is_stopping();
-
   /// Socket for the (PLAIN) connection.
   boost::asio::ip::tcp::socket *socket_;
   //Host EndPoint

@@ -147,7 +147,8 @@ void connection::handle_handshake(const boost::system::error_code& error)
 void connection::read_more()
 {
 	status = "waiting-read";
-	if (is_stopping()) {
+	if (stop_required) {
+		connection_manager_.stop(shared_from_this());
 		return;
 	}
 
@@ -178,7 +179,8 @@ void connection::read_more()
 void connection::handle_read(const boost::system::error_code& error, std::size_t bytes_transferred)
 {
 	status = "reading";
-	if (is_stopping()) {
+	if (stop_required) {
+		connection_manager_.stop(shared_from_this());
 		return;
 	}
 
@@ -226,7 +228,8 @@ void connection::handle_read(const boost::system::error_code& error, std::size_t
 			}
 
 			status = "waiting-write";
-			if (is_stopping()) {
+			if (stop_required) {
+				connection_manager_.stop(shared_from_this());
 				return;
 			}
 
@@ -249,7 +252,8 @@ void connection::handle_read(const boost::system::error_code& error, std::size_t
 			reply_ = reply::stock_reply(reply::bad_request);
 
 			status = "writing";
-			if (is_stopping()) {
+			if (stop_required) {
+				connection_manager_.stop(shared_from_this());
 				return;
 			}
 
@@ -340,15 +344,6 @@ void connection::stop_gracefully() {
 		// avoid to wait until timeout
 		connection_manager_.stop(shared_from_this());
 	}
-}
-
-/// stop the connection if it is required
-bool connection::is_stopping() {
-	if (stop_required) {
-		connection_manager_.stop(shared_from_this());
-		return true;
-	}
-	return false;
 }
 
 } // namespace server
