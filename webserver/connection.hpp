@@ -109,7 +109,15 @@ private:
   boost::asio::streambuf _buf;
 
   /// The status of the connection (can be initializing, handshaking, waiting, reading, writing)
-  std::string status;
+  enum connection_status {
+    INITIALIZING,
+    WAITING_HANDSHAKE,
+	ENDING_HANDSHAKE,
+    WAITING_READ,
+	READING,
+    WAITING_WRITE,
+	ENDING_WRITE
+  } status_;
 
   /// Ask the connection to stop as soon as possible
   bool stop_required;

@@ -29,7 +29,7 @@ connection::connection(boost::asio::io_service& io_service,
 				request_handler_(handler),
 				read_timeout_(read_timeout),
 				read_timer_(io_service, boost::posix_time::seconds(read_timeout)),
-				status("initializing"),
+				status_(INITIALIZING),
 				stop_required(false),
 				reply_(reply::stock_reply(reply::internal_server_error)),
 				default_max_requests_(20)
@@ -53,7 +53,7 @@ connection::connection(boost::asio::io_service& io_service,
 				request_handler_(handler),
 				read_timeout_(read_timeout),
 				read_timer_(io_service, boost::posix_time::seconds(read_timeout)),
-				status("initializing"),
+				status_(INITIALIZING),
 				stop_required(false),
 				reply_(reply::stock_reply(reply::internal_server_error)),
 				default_max_requests_(20)
@@ -98,7 +98,7 @@ void connection::start()
 
 	if (secure_) {
 #ifdef WWW_ENABLE_SSL
-		status = "waiting-handshake";
+		status_ = WAITING_HANDSHAKE;
 		// with ssl, we first need to complete the handshake before reading
 		sslsocket_->async_handshake(boost::asio::ssl::stream_base::server,
 			boost::bind(&connection::handle_handshake, shared_from_this(),
@@ -129,7 +129,6 @@ void connection::stop()
 #ifdef WWW_ENABLE_SSL
 void connection::handle_handshake(const boost::system::error_code& error)
 {
-	status = "handshaking";
 	if (secure_) { // assert
 		if (!error)
 		{
@@ -146,7 +145,7 @@ void connection::handle_handshake(const boost::system::error_code& error)
 
 void connection::read_more()
 {
-	status = "waiting-read";
+	status_ = WAITING_READ;
 	if (stop_required) {
 		connection_manager_.stop(shared_from_this());
 		return;
@@ -178,7 +177,7 @@ void connection::read_more()
 
 void connection::handle_read(const boost::system::error_code& error, std::size_t bytes_transferred)
 {
-	status = "reading";
+	status_ = READING;
 	if (stop_required) {
 		connection_manager_.stop(shared_from_this());
 		return;
@@ -227,7 +226,7 @@ void connection::handle_read(const boost::system::error_code& error, std::size_t
 				reply::add_header_if_absent(&reply_, "Keep-Alive", ss.str());
 			}
 
-			status = "waiting-write";
+			status_ = WAITING_WRITE;
 			if (stop_required) {
 				connection_manager_.stop(shared_from_this());
 				return;
@@ -251,7 +250,7 @@ void connection::handle_read(const boost::system::error_code& error, std::size_t
 			keepalive_ = false;
 			reply_ = reply::stock_reply(reply::bad_request);
 
-			status = "writing";
+			status_ = WAITING_WRITE;
 			if (stop_required) {
 				connection_manager_.stop(shared_from_this());
 				return;
@@ -283,6 +282,7 @@ void connection::handle_read(const boost::system::error_code& error, std::size_t
 
 void connection::handle_write(const boost::system::error_code& error)
 {
+	status_ = ENDING_WRITE;
 	if (!error && keepalive_ && !stop_required) {
 		// if a keep-alive connection is requested, we read the next request
 		read_more();
@@ -338,9 +338,9 @@ void connection::handle_read_timeout(const boost::system::error_code& error) {
 /// Wait for all asynchronous operations to abort.
 void connection::stop_gracefully() {
 	stop_required = true;
-	if ((status.compare("initializing") == 0) ||
-			(status.compare("waiting-read") == 0) ||
-			(status.compare("waiting-handshake") == 0)) {
+	if ((status_ == INITIALIZING) ||
+			(status_ == WAITING_READ) ||
+			(status_ == WAITING_HANDSHAKE)) {
 		// avoid to wait until timeout
 		connection_manager_.stop(shared_from_this());
 	}
