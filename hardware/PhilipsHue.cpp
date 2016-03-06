@@ -406,12 +406,13 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 		
 		//Get current nValue if exist
 		std::vector<std::vector<std::string> > result;
-		result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID == '%q') AND (Options=='%q')",
-			m_HwdID, int(unitcode), pTypeLimitlessLights, sTypeLimitlessRGBW, szID, Options.c_str());
+		result = m_sql.safe_query("SELECT DeviceID, nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d) AND (Options=='%q')",
+			m_HwdID, int(unitcode), pTypeLimitlessLights, sTypeLimitlessRGBW, Options.c_str());
 		if (!result.empty())
 		{
 			//Already in the system
-			int nvalue = atoi(result[0][0].c_str());
+			strcpy(szID, result[0][0].c_str());
+			int nvalue = atoi(result[0][1].c_str());
 			bool tIsOn = (nvalue != 0);
 			if (bIsOn == tIsOn) //Check if the light was switched
 				return;
