@@ -380,6 +380,9 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 			if (bIsOn == tIsOn) //Check if the light was switched
 				return;
 		}
+		
+		if (bIsOn and (BrightnessLevel != 100))
+				cmd = Limitless_SetBrightnessLevel;
 
 		//Send as LimitlessLight
 		_tLimitlessLights lcmd;
@@ -444,6 +447,8 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 			level = round(flevel);
 			if (level > 15)
 				level = 15;
+			if (bIsOn and (level != 15))
+				cmd = light2_sSetLevel;
 		}
 		char szLevel[20];
 		sprintf(szLevel, "%d", level);
