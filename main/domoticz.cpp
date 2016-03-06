@@ -609,6 +609,7 @@ int main(int argc, char**argv)
 		std::string wwwport = cmdLine.GetSafeArgument("-www", 0, "");
 		webserver_settings.listening_port = wwwport;
 	}
+
 	m_mainworker.SetWebserverSettings(webserver_settings);
 #ifdef WWW_ENABLE_SSL
 	http::server::ssl_server_settings secure_webserver_settings;

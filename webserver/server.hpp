@@ -62,9 +62,6 @@ protected:
 	/// read timeout in seconds
 	int timeout_;
 
-	/// indicate if the server should stop
-	bool is_stopping;
-
 	/// indicate if the server is running
 	bool is_running;
 
