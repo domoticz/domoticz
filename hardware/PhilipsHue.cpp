@@ -375,8 +375,8 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 			//Update state for sValue, use Limitless_SetRGBColour ?
 			int nvalue = atoi(result[0][0].c_str());
 			bool tIsOn = (nvalue != 0);				
-			m_sql.safe_query("UPDATE DeviceStatus SET sValue='%q', LastLevel = %d WHERE(HardwareID == %d) AND (DeviceID == '%q')",
-				szSValue, BrightnessLevel, m_HwdID, szID);
+			m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d, sValue='%q', LastLevel = %d WHERE(HardwareID == %d) AND (DeviceID == '%q')",
+				int(cmd), szSValue, BrightnessLevel, m_HwdID, szID);
 			if (bIsOn == tIsOn) //Check if the light was switched
 				return;
 		}
@@ -464,8 +464,8 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 			//Update state
 			int nvalue = atoi(result[0][0].c_str());
 			bool tIsOn = (nvalue != 0);					
-			m_sql.safe_query("UPDATE DeviceStatus SET LastLevel=%d, sValue='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')",
-				BrightnessLevel, szLevel, m_HwdID, szID);
+			m_sql.safe_query("UPDATE DeviceStatus SET LastLevel=%d, nValue=%d, sValue='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')",
+				BrightnessLevel, int(cmd), szLevel, m_HwdID, szID);
 			if (bIsOn == tIsOn) //Check if the light was switched
 				return;
 		}
