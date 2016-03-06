@@ -57,7 +57,8 @@ std::string ReadFile(std::string filename)
 
 #define NEFITEASY_HTTP_BRIDGE "/bridge"
 #define NEFITEASY_STATUS_URL "/ecus/rrc/uiStatus"
-#define NEFITEASY_OUTDOOR_URL "/system/sensors/temperatures/outdoor_t1"
+#define NEFITEASY_OUTDOORTEMP_URL "/system/sensors/temperatures/outdoor_t1"
+#define NEFITEASY_FLOWTEMP_URL "/heatingCircuits/hc1/actualSupplyTemperature"
 #define NEFITEASY_PRESSURE_URL "/system/appliance/systemPressure"
 #define NEFITEASY_DISPLAYCODE_URL "/system/appliance/displaycode"
 #define NEFITEASY_CAUSECODE_URL "/system/appliance/causecode"
@@ -107,15 +108,17 @@ bool CNefitEasy::StopHardware()
     return true;
 }
 
-#define NEFIT_STATUS_POLL_INTERVAL 30
-#define NEFIT_PRESSURE_POLL_INTERVAL 300
+#define NEFIT_FAST_POLL_INTERVAL 30
+#define NEFIT_SLOW_INTERVAL 300
 
 void CNefitEasy::Do_Work()
 {
 	int sec_counter = 0;
 	bool bFirstTime = true;
-	int nstat_pollint = NEFIT_STATUS_POLL_INTERVAL;
-	int npres_pollint = NEFIT_PRESSURE_POLL_INTERVAL;
+	bool ret = true;
+
+	int fast_pollint = NEFIT_FAST_POLL_INTERVAL;
+	int slow_pollint = NEFIT_SLOW_INTERVAL;
 
 	_log.Log(LOG_STATUS, "NefitEasy: Worker started...");
 
@@ -126,23 +129,30 @@ void CNefitEasy::Do_Work()
 		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat = mytime(NULL);
 		}
-		if ((sec_counter % nstat_pollint == 0) || (bFirstTime))
+		if ((sec_counter % fast_pollint == 0) || (bFirstTime))
 		{
 			try
 			{
-				nstat_pollint = (GetStatusDetails() == true) ? NEFIT_STATUS_POLL_INTERVAL : NEFIT_STATUS_POLL_INTERVAL * 3;
+				ret = GetStatusDetails();
+				if (ret)
+					ret = GetFlowTemp();
+				if (ret)
+					ret = GetDisplayCode();
+				fast_pollint = (ret == true) ? NEFIT_FAST_POLL_INTERVAL : NEFIT_FAST_POLL_INTERVAL * 3;
 			}
 			catch (...)
 			{
 				_log.Log(LOG_ERROR, "NefitEasy: Error getting/processing status result...");
 			}
 		}
-		if ((sec_counter % npres_pollint == 0) || (bFirstTime))
+		if ((sec_counter % slow_pollint == 0) || (bFirstTime))
 		{
 			try
 			{
-				nstat_pollint = NEFIT_STATUS_POLL_INTERVAL;
-				npres_pollint = (GetPressureDetails() == true) ? NEFIT_PRESSURE_POLL_INTERVAL : NEFIT_PRESSURE_POLL_INTERVAL * 2;
+				ret = GetPressure();
+				if (ret)
+					ret = GetOutdoorTemp();
+				slow_pollint = (ret == true) ? NEFIT_SLOW_INTERVAL : NEFIT_SLOW_INTERVAL * 2;
 			}
 			catch (...)
 			{
@@ -331,17 +341,26 @@ UMD -> 'user mode' string (clock)
 		SendSwitch(1, 1, -1, bIsClockMode, 100, "Clock Mode");
 	}
 
+	return true;
+}
+
+bool CNefitEasy::GetOutdoorTemp()
+{
+	std::string sResult;
+	Json::Reader jReader;
+	Json::Value root;
+	bool ret;
+
 	//Outdoor Temperature
 #ifdef DEBUG_NefitEasyR
 	sResult = ReadFile("E:\\nefit_outdoor.json");
 #else
 	std::stringstream szURL2;
-	szURL2 << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << NEFITEASY_OUTDOOR_URL;
+	szURL2 << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << NEFITEASY_OUTDOORTEMP_URL;
 	try
 	{
-		bool bret;
-		bret = HTTPClient::GET(szURL2.str(), sResult);
-		if (!bret)
+		ret = HTTPClient::GET(szURL2.str(), sResult);
+		if (!ret)
 		{
 			_log.Log(LOG_ERROR, "NefitEasy: Error getting http data!");
 			return false;
@@ -371,8 +390,113 @@ UMD -> 'user mode' string (clock)
 
 	float temp = root["value"].asFloat();
 	SendTempSensor(2, -1, temp, "Outside Temperature");
+	return true;
+}
 
-	//Display Code
+bool CNefitEasy::GetFlowTemp()
+{
+	std::string sResult;
+	Json::Reader jReader;
+	Json::Value root;
+	bool ret;
+
+	//Flow Temperature
+#ifdef DEBUG_NefitEasyR
+	sResult = ReadFile("E:\\nefit_flow.json");
+#else
+	std::stringstream szURL2;
+	szURL2 << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << NEFITEASY_FLOWTEMP_URL;
+	try
+	{
+		ret = HTTPClient::GET(szURL2.str(), sResult);
+		if (!ret)
+		{
+			_log.Log(LOG_ERROR, "NefitEasy: Error getting http data!");
+			return false;
+		}
+	}
+	catch (...)
+	{
+		_log.Log(LOG_ERROR, "NefitEasy: Error getting http data!");
+		return false;
+	}
+#endif
+
+#ifdef DEBUG_NefitEasyW
+	SaveString2Disk(sResult, "E:\\nefit_flow.json");
+#endif
+	ret = jReader.parse(sResult, root);
+	if (!ret)
+	{
+		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received! (FT)");
+		return false;
+	}
+	if (root["value"].empty() == true)
+	{
+		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received (FT)");
+		return false;
+	}
+
+	float temp = root["value"].asFloat();
+	SendTempSensor(3, -1, temp, "Flow Temperature");
+	return true;
+}
+
+bool CNefitEasy::GetPressure()
+{
+	std::string sResult;
+	Json::Reader jReader;
+	Json::Value root;
+	bool ret;
+
+	//Status
+#ifdef DEBUG_NefitEasyR
+	sResult = ReadFile("E:\\nefit_pressure.json");
+#else
+	std::stringstream szURL;
+	szURL << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << NEFITEASY_PRESSURE_URL;
+	try
+	{
+		ret = HTTPClient::GET(szURL.str(), sResult);
+		if (!ret)
+		{
+			_log.Log(LOG_ERROR, "NefitEasy: Error getting http data!");
+			return false;
+		}
+	}
+	catch (...)
+	{
+		_log.Log(LOG_ERROR, "NefitEasy: Error getting http data!");
+		return false;
+	}
+#endif
+
+#ifdef DEBUG_NefitEasyW
+	SaveString2Disk(sResult, "E:\\nefit_uistatus.json");
+#endif
+	ret = jReader.parse(sResult, root);
+	if (!ret)
+	{
+		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received! (Press)");
+		return false;
+	}
+	if (root["value"].empty())
+	{
+		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received (Press)");
+		return false;
+	}
+	float pressure = root["value"].asFloat();
+	SendPressureSensor(1, 1, -1, pressure, "Pressure");
+	return true;
+}
+
+bool CNefitEasy::GetDisplayCode()
+{
+	std::string sResult;
+	Json::Reader jReader;
+	Json::Value root;
+	bool ret;
+
 #ifdef DEBUG_NefitEasyR
 	sResult = ReadFile("E:\\nefit_displaycode.json");
 #else
@@ -380,9 +504,8 @@ UMD -> 'user mode' string (clock)
 	szURL3 << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << NEFITEASY_DISPLAYCODE_URL;
 	try
 	{
-		bool bret;
-		bret = HTTPClient::GET(szURL3.str(), sResult);
-		if (!bret)
+		ret = HTTPClient::GET(szURL3.str(), sResult);
+		if (!ret)
 		{
 			_log.Log(LOG_ERROR, "NefitEasy: Error getting http data!");
 			return false;
@@ -431,7 +554,7 @@ UMD -> 'user mode' string (clock)
 	else if (dcode == "0Y")
 		display_code = "system waiting (boiler cannot transfer heat to central heating)";
 	//else if (dcode == "0E")
-		//display_code = "system waiting (boiler cannot transfer heat to central heating)";
+	//display_code = "system waiting (boiler cannot transfer heat to central heating)";
 	else if (dcode == "2E")
 		display_code = "boiler water pressure too low";
 	else if (dcode == "H07")
@@ -460,56 +583,6 @@ UMD -> 'user mode' string (clock)
 		m_LastDisplayCode = display_code;
 		SendTextSensor(1, 1, -1, display_code, "Display Code");
 	}
-	return true;
-}
-
-bool CNefitEasy::GetPressureDetails()
-{
-	std::string sResult;
-
-	//Status
-#ifdef DEBUG_NefitEasyR
-	sResult = ReadFile("E:\\nefit_pressure.json");
-#else
-	std::stringstream szURL;
-	szURL << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << NEFITEASY_PRESSURE_URL;
-	try
-	{
-		bool bret;
-		bret = HTTPClient::GET(szURL.str(), sResult);
-		if (!bret)
-		{
-			_log.Log(LOG_ERROR, "NefitEasy: Error getting http data!");
-			return false;
-		}
-	}
-	catch (...)
-	{
-		_log.Log(LOG_ERROR, "NefitEasy: Error getting http data!");
-		return false;
-	}
-#endif
-
-#ifdef DEBUG_NefitEasyW
-	SaveString2Disk(sResult, "E:\\nefit_uistatus.json");
-#endif
-	Json::Value root;
-	Json::Value root2;
-
-	Json::Reader jReader;
-	bool ret = jReader.parse(sResult, root);
-	if (!ret)
-	{
-		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received! (Press)");
-		return false;
-	}
-	if (root["value"].empty())
-	{
-		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received (Press)");
-		return false;
-	}
-	float pressure = root["value"].asFloat();
-	SendPressureSensor(1, 1, -1, pressure, "Pressure");
 	return true;
 }
 

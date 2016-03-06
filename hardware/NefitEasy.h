@@ -24,8 +24,13 @@ private:
 	bool StartHardware();
 	bool StopHardware();
 	void Do_Work();
+
 	bool GetStatusDetails();
-	bool GetPressureDetails();
+	bool GetOutdoorTemp();
+	bool GetFlowTemp();
+	bool GetPressure();
+	bool GetDisplayCode();
+
 	void SetUserMode(bool bSetUserModeClock);
 };
 
