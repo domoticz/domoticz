@@ -9258,7 +9258,7 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 		DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,pMeter->intval2, procResult.DeviceName);
 		if (DevRowIdx == -1)
 			return;
-		m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName,devType, subType, NTYPE_USAGE, (float)pMeter->intval1);
+		m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName,devType, subType, NTYPE_USAGE, (float)pMeter->intval2);
 	}
 	else if (subType==sTypeLeafWetness)
 	{
@@ -9321,7 +9321,7 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 		if (DevRowIdx == -1)
 			return;
-		m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName,devType, subType, NTYPE_RPM, (float)pMeter->intval1);
+		m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName,devType, subType, NTYPE_RPM, (float)pMeter->intval2);
 	}
 	else if (subType == sTypeSoundLevel)
 	{
@@ -9329,7 +9329,7 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 		if (DevRowIdx == -1)
 			return;
-		m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName,devType, subType, NTYPE_RPM, (float)pMeter->intval1);
+		m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName,devType, subType, NTYPE_RPM, (float)pMeter->intval2);
 	}
 	else if (subType == sTypeZWaveClock)
 	{
