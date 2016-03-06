@@ -10992,13 +10992,13 @@ bool MainWorker::SwitchLight(const unsigned long long idx, const std::string &sw
 {
 	//Get Device details
 	std::vector<std::vector<std::string> > result;
-	result=m_sql.safe_query(
-		"SELECT HardwareID,DeviceID,Unit,Type,SubType,SwitchType,AddjValue,nValue,sValue,Name,Options FROM DeviceStatus WHERE (ID == %llu)",
+	result = m_sql.safe_query(
+		"SELECT HardwareID,DeviceID,Unit,Type,SubType,SwitchType,AddjValue2,nValue,sValue,Name,Options FROM DeviceStatus WHERE (ID == %llu)",
 		idx);
-	if (result.size()<1)
+	if (result.size() < 1)
 		return false;
 
-	std::vector<std::string> sd=result[0];
+	std::vector<std::string> sd = result[0];
 
 	//unsigned char dType = atoi(sd[3].c_str());
 	//unsigned char dSubType = atoi(sd[4].c_str());
@@ -11015,27 +11015,23 @@ bool MainWorker::SwitchLight(const unsigned long long idx, const std::string &sw
 		int nNewVal = bIsOn ? 1 : 0;//Is that everything we need here
 		if ((switchtype == STYPE_Selector) && (nValue == nNewVal) && (level == atoi(sValue.c_str()))) {
 			return true;
-		} else if (nValue == nNewVal) {
+		}
+		else if (nValue == nNewVal) {
 			return true;//FIXME no return code for already set
 		}
 	}
-	if (switchtype == STYPE_Selector) {
-		bIsOn = (level > 0) ? true : false;
-	}
-	int iDelay = bIsOn ? iOnDelay : 0;
-
-	//Check if we have an OnDelay, if yes, add it to the tasker
-	if ((iDelay != 0) || ExtraDelay)
+	//Check if we have an On-Delay, if yes, add it to the tasker
+	if (((bIsOn) && (iOnDelay != 0)) || ExtraDelay)
 	{
 		if (ExtraDelay != 0)
 		{
 			_log.Log(LOG_NORM, "Delaying switch [%s] action (%s) for %d seconds", devName.c_str(), switchcmd.c_str(), ExtraDelay);
 		}
-		m_sql.AddTaskItem(_tTaskItem::SwitchLightEvent(iDelay + ExtraDelay, idx, switchcmd, level, hue, "Switch with Delay"));
+		m_sql.AddTaskItem(_tTaskItem::SwitchLightEvent(iOnDelay + ExtraDelay, idx, switchcmd, level, hue, "Switch with Delay"));
 		return true;
 	}
 	else
-		return SwitchLightInt(sd,switchcmd,level,hue,false);
+		return SwitchLightInt(sd, switchcmd, level, hue, false);
 }
 
 bool MainWorker::SetSetPoint(const std::string &idx, const float TempValue, const int newMode, const std::string &until)
