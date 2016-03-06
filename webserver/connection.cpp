@@ -32,6 +32,8 @@ connection::connection(boost::asio::io_service& io_service,
 				status_(INITIALIZING),
 				stop_required(false),
 				reply_(reply::stock_reply(reply::internal_server_error)),
+				default_abandoned_timeout_(20*60), // 20mn before stopping abandoned connection
+				abandoned_timer_(io_service, boost::posix_time::seconds(default_abandoned_timeout_)),
 				default_max_requests_(20)
 {
 	secure_ = false;
@@ -56,6 +58,8 @@ connection::connection(boost::asio::io_service& io_service,
 				status_(INITIALIZING),
 				stop_required(false),
 				reply_(reply::stock_reply(reply::internal_server_error)),
+				default_abandoned_timeout_(20*60), // 20mn before stopping abandoned connection
+				abandoned_timer_(io_service, boost::posix_time::seconds(default_abandoned_timeout_)),
 				default_max_requests_(20)
 {
 	secure_ = true;
@@ -96,6 +100,8 @@ void connection::start()
 	}
 	host_endpoint_ = endpoint.address().to_string();
 
+	set_abandoned_timeout();
+
 	if (secure_) {
 #ifdef WWW_ENABLE_SSL
 		status_ = WAITING_HANDSHAKE;
@@ -113,6 +119,7 @@ void connection::start()
 
 void connection::stop()
 {
+	cancel_abandoned_timeout();
 	cancel_read_timeout();
 
 	try {
@@ -286,6 +293,7 @@ void connection::handle_write(const boost::system::error_code& error)
 	status_ = ENDING_WRITE;
 	if (!error && keepalive_ && !stop_required) {
 		// if a keep-alive connection is requested, we read the next request
+		reset_abandoned_timeout();
 		read_more();
 	} else {
 		connection_manager_.stop(shared_from_this());
@@ -332,6 +340,39 @@ void connection::handle_read_timeout(const boost::system::error_code& error) {
 #ifdef DEBUG_WWW
 		_log.Log(LOG_STATUS, "%s -> handle read timeout", host_endpoint_.c_str());
 #endif
+		connection_manager_.stop(shared_from_this());
+	}
+}
+
+/// schedule abandoned timeout timer
+void connection::set_abandoned_timeout() {
+	abandoned_timer_.expires_from_now(boost::posix_time::seconds(default_abandoned_timeout_));
+	abandoned_timer_.async_wait(boost::bind(&connection::handle_abandoned_timeout, shared_from_this(), boost::asio::placeholders::error));
+}
+
+/// simply cancel abandoned timeout timer
+void connection::cancel_abandoned_timeout() {
+	try {
+		boost::system::error_code ignored_ec;
+		abandoned_timer_.cancel(ignored_ec);
+		if (ignored_ec) {
+			_log.Log(LOG_ERROR, "%s -> exception thrown while canceling abandoned timeout : %s", host_endpoint_.c_str(), ignored_ec.message().c_str());
+		}
+	} catch (...) {
+		_log.Log(LOG_ERROR, "%s -> exception thrown while canceling abandoned timeout", host_endpoint_.c_str());
+	}
+}
+
+/// reschedule abandoned timeout timer
+void connection::reset_abandoned_timeout() {
+	cancel_abandoned_timeout();
+	set_abandoned_timeout();
+}
+
+/// stop connection on abandoned timeout
+void connection::handle_abandoned_timeout(const boost::system::error_code& error) {
+	if (error != boost::asio::error::operation_aborted) {
+		_log.Log(LOG_STATUS, "%s -> handle abandoned timeout (status=%d)", host_endpoint_.c_str(), status_);
 		connection_manager_.stop(shared_from_this());
 	}
 }

@@ -61,8 +61,9 @@ public:
   /// Wait for all asynchronous operations to abort.
   void stop_gracefully();
 
-  /// Timer handler
+  /// Timer handlers
   void handle_read_timeout(const boost::system::error_code& error);
+  void handle_abandoned_timeout(const boost::system::error_code& error);
 
 private:
   /// Handle completion of a read operation.
@@ -79,6 +80,13 @@ private:
 	/// Reset read timeout timer
 	void reset_read_timeout();
 
+	/// Schedule abandoned timeout timer
+	void set_abandoned_timeout();
+	/// Stop abandoned timeout timer
+	void cancel_abandoned_timeout();
+	/// Reschedule abandoned timeout timer
+	void reset_abandoned_timeout();
+
   /// Socket for the (PLAIN) connection.
   boost::asio::ip::tcp::socket *socket_;
   //Host EndPoint
@@ -93,7 +101,12 @@ private:
   /// Read timeout timer
   boost::asio::deadline_timer read_timer_;
 
-    /// The manager for this connection.
+  /// Abandoned connection timeout (in seconds)
+  long default_abandoned_timeout_;
+  /// Abandoned timeout timer
+  boost::asio::deadline_timer abandoned_timer_;
+
+  /// The manager for this connection.
   connection_manager& connection_manager_;
 
   /// The handler used to process the incoming request.
