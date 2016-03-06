@@ -9,6 +9,7 @@
 #include "../json/json.h"
 #include "../main/RFXtrx.h"
 #include "../main/mainworker.h"
+#include "../webserver/Base64.h"
 
 /*
 We need HTTP server to access Nefit/Bosch XMPP backend over HTTP written by Robert Klep (https://github.com/robertklep/nefit-easy-http-server)
@@ -24,7 +25,7 @@ easy-server --host=0.0.0.0 --serial=XXXX --access-key=XXXX --password=XXXX
 After this you should be able to connect to port 3000
 */
 
-//#define DEBUG_NefitEasyR
+//#define DEBUG_NefitEasyW
 #ifdef DEBUG_NefitEasyW
 void SaveString2Disk(std::string str, std::string filename)
 {
@@ -69,17 +70,69 @@ std::string ReadFile(std::string filename)
 #define NEFITEASY_LOCATION_LATITUDE "/system/location/latitude"
 #define NEFITEASY_LOCATION_LONGITUDE "/system/location/longitude"
 
+// Magic numbers
+const uint8_t nmagic_chat[] = {
+	0x58, 0xf1, 0x8d, 0x70, 0xf6, 0x67, 0xc9, 0xc7,
+	0x9e, 0xf7, 0xde, 0x43, 0x5b, 0xf0, 0xf9, 0xb1,
+	0x55, 0x3b, 0xbb, 0x6e, 0x61, 0x81, 0x62, 0x12,
+	0xab, 0x80, 0xe5, 0xb0, 0xd3, 0x51, 0xfb, 0xb1
+};
+const uint8_t nmagic_email[] = {
+	0x52, 0xea, 0xfb, 0x7a, 0x84, 0xe9, 0x5c, 0x1d,
+	0xbd, 0xb0, 0xff, 0xef, 0x1a, 0xa5, 0xc8, 0xd1,
+	0xaa, 0xb8, 0x15, 0x8b, 0x52, 0x32, 0x93, 0x4f,
+	0x15, 0x4a, 0x7c, 0xff, 0xee, 0x29, 0xb9, 0x23 
+};
+const uint8_t nmagic_alarm[] = { 
+	0xb7, 0x69, 0x18, 0x67, 0x79, 0x9c, 0x11, 0xd5, 
+	0xb8, 0x37, 0xf8, 0xa5, 0xe8, 0x6e, 0x81, 0xc8, 
+	0xe6, 0xd2, 0xbb, 0xcc, 0x62, 0x4f, 0x15, 0x7a, 
+	0xc4, 0xf0, 0x3d, 0x5d, 0x37, 0x01, 0xe1, 0x1e 
+};
+
+// Various prefixes used by Bosch.
+#define NEFITEASY_HOST_URL "wa2-mz36-qrmzh6.bosch.de"
+#define NEFITEASY_HOST_PORT 5222
+#define NEFITEASY_USER_AGENT "User-Agent: NefitEasy"
+#define NEFITEASY_ACCESSKEY_PREFIX "Ct7ZR03b_"
+#define NEFITEASY_RRCCONTACT_PREFIX "rrccontact_"
+#define NEFITEASY_RRCGATEWAY_PREFIX "rrcgateway_"
+
 CNefitEasy::CNefitEasy(const int ID, const std::string &IPAddress, const unsigned short usIPPort):
 m_szIPAddress(IPAddress)
 {
 	m_HwdID = ID;
 	m_stoprequested = false;
 	m_usIPPort = usIPPort;
+	m_bDoLogin = true;
+/*
+	// Generate some commonly used properties.
+	m_ConnectionPassword = NEFITEASY_ACCESSKEY_PREFIX + m_AccessKey;
+	std::string suffix = m_SerialNumber + "@" + NEFITEASY_HOST_URL;
+	m_jid = NEFITEASY_RRCCONTACT_PREFIX + suffix;
+	m_from = m_jid;
+	m_to = NEFITEASY_RRCGATEWAY_PREFIX + suffix;
+
+	if (ConnectToXMPP(NEFITEASY_HOST_URL, NEFITEASY_HOST_PORT))
+	{
+	}
+*/
 	Init();
 }
 
 CNefitEasy::~CNefitEasy(void)
 {
+	Logout();
+}
+
+bool CNefitEasy::ConnectToXMPP(const std::string &IPAddress, const int PortNumber)
+{
+	return false;
+}
+
+void CNefitEasy::Logout()
+{
+	m_bDoLogin = true;
 }
 
 void CNefitEasy::Init()
@@ -107,6 +160,7 @@ bool CNefitEasy::StopHardware()
     m_bIsStarted=false;
     return true;
 }
+
 
 #define NEFIT_FAST_POLL_INTERVAL 30
 #define NEFIT_SLOW_INTERVAL 300

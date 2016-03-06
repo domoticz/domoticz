@@ -3878,17 +3878,29 @@ void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const int nodeID, 
 		ivalue++;
 
 		//Aeotec Blinking state
-		std::string Manufacturer_id = m_pManager->GetNodeManufacturerId(m_controllerID, m_controllerNodeId);
-		std::string Product_type = m_pManager->GetNodeProductType(m_controllerID, m_controllerNodeId);
-		std::string Product_id = m_pManager->GetNodeProductId(m_controllerID, m_controllerNodeId);
+		uint32_t Manufacturer_id;
+		uint32_t Product_type;
+		uint32_t Product_id;
 
-		if (Manufacturer_id == "0x0086")
+		std::stringstream ss;
+		ss << std::hex << m_pManager->GetNodeManufacturerId(m_controllerID, m_controllerNodeId);
+		ss >> Manufacturer_id;
+
+		std::stringstream ss2;
+		ss2 << std::hex << m_pManager->GetNodeProductId(m_controllerID, m_controllerNodeId);
+		ss2 >> Product_id;
+
+		std::stringstream ss3;
+		ss3 << std::hex << m_pManager->GetNodeProductType(m_controllerID, m_controllerNodeId);
+		ss3 >> Product_type;
+
+		if (Manufacturer_id == 0x0086)
 		{
 			if (
-				((Product_type == "0x0001") && (Product_id == "0x005a")) || //Z-Stick Gen5
-				((Product_type == "0x0001") && (Product_id == "0x005c")) || //Z-Stick Lite Gen5
-				((Product_type == "0x0101") && (Product_id == "0x005a")) || //Z-Stick Gen5
-				((Product_type == "0x0201") && (Product_id == "0x005a"))    //Z-Stick Gen5
+				((Product_type == 0x0001) && (Product_id == 0x005a)) || //Z-Stick Gen5
+				((Product_type == 0x0001) && (Product_id == 0x005c)) || //Z-Stick Lite Gen5
+				((Product_type == 0x0101) && (Product_id == 0x005a)) || //Z-Stick Gen5
+				((Product_type == 0x0201) && (Product_id == 0x005a))    //Z-Stick Gen5
 				)
 			{
 				int blinkenabled = 1;
@@ -4114,17 +4126,29 @@ bool COpenZWave::ApplyNodeConfig(const unsigned int homeID, const int nodeID, co
 			}
 			else if (rvIndex == 5)
 			{
-				std::string Manufacturer_id = m_pManager->GetNodeManufacturerId(m_controllerID, m_controllerNodeId);
-				std::string Product_type = m_pManager->GetNodeProductType(m_controllerID, m_controllerNodeId);
-				std::string Product_id = m_pManager->GetNodeProductId(m_controllerID, m_controllerNodeId);
+				uint32_t Manufacturer_id;
+				uint32_t Product_type;
+				uint32_t Product_id;
 
-				if (Manufacturer_id == "0x0086")
+				std::stringstream ss;
+				ss << std::hex << m_pManager->GetNodeManufacturerId(m_controllerID, m_controllerNodeId);
+				ss >> Manufacturer_id;
+
+				std::stringstream ss2;
+				ss2 << std::hex << m_pManager->GetNodeProductId(m_controllerID, m_controllerNodeId);
+				ss2 >> Product_id;
+
+				std::stringstream ss3;
+				ss3 << std::hex << m_pManager->GetNodeProductType(m_controllerID, m_controllerNodeId);
+				ss3 >> Product_type;
+
+				if (Manufacturer_id == 0x0086)
 				{
 					if (
-						((Product_type == "0x0001") && (Product_id == "0x005a")) || //Z-Stick Gen5
-						((Product_type == "0x0001") && (Product_id == "0x005c")) || //Z-Stick Lite Gen5
-						((Product_type == "0x0101") && (Product_id == "0x005a")) || //Z-Stick Gen5
-						((Product_type == "0x0201") && (Product_id == "0x005a"))    //Z-Stick Gen5
+						((Product_type == 0x0001) && (Product_id == 0x005a)) || //Z-Stick Gen5
+						((Product_type == 0x0001) && (Product_id == 0x005c)) || //Z-Stick Lite Gen5
+						((Product_type == 0x0101) && (Product_id == 0x005a)) || //Z-Stick Gen5
+						((Product_type == 0x0201) && (Product_id == 0x005a))    //Z-Stick Gen5
 						)
 					{
 						int blinkenabled = (ValueVal == "Disabled") ? 0 : 1;
