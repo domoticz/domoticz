@@ -388,7 +388,7 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 		_tLimitlessLights lcmd;
 		lcmd.id = NodeID;
 		lcmd.command = cmd;
-		lcmd.value = 0;
+		lcmd.value = BrightnessLevel;
 		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd, Name.c_str(), 255);
 		
 		if (result.empty())
