@@ -129,6 +129,7 @@ void connection::stop()
 #ifdef WWW_ENABLE_SSL
 void connection::handle_handshake(const boost::system::error_code& error)
 {
+	status_ = ENDING_HANDSHAKE;
 	if (secure_) { // assert
 		if (!error)
 		{
