@@ -363,7 +363,8 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 		sprintf(szSValue, "%d;%d", Sat, Hue);
 		unsigned char unitcode = 1;
 		int cmd = (bIsOn ? Limitless_LedOn : Limitless_LedOff);
-		
+		if (bIsOn and (BrightnessLevel != 100))
+				cmd = Limitless_SetBrightnessLevel;
 		//Get current nValue if exist
 		std::vector<std::vector<std::string> > result;
 		result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')",
@@ -380,9 +381,6 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 			if (bIsOn == tIsOn) //Check if the light was switched
 				return;
 		}
-		
-		if (bIsOn and (BrightnessLevel != 100))
-				cmd = Limitless_SetBrightnessLevel;
 
 		//Send as LimitlessLight
 		_tLimitlessLights lcmd;
