@@ -10991,14 +10991,14 @@ namespace http {
 
 			std::vector<std::vector<std::string> > result;
 
-			result=m_sql.safe_query("SELECT Type,SubType FROM DeviceStatus WHERE (ID == '%q')",
-				idx.c_str());
+			result=m_sql.safe_query("SELECT Type,SubType,HardwareID FROM DeviceStatus WHERE (ID == '%q')",	idx.c_str());
 			if (result.size()<1)
 				return;
 			std::vector<std::string> sd = result[0];
 
 			unsigned char dType=atoi(sd[0].c_str());
 			//unsigned char dSubType=atoi(sd[1].c_str());
+			//int HwdID = atoi(sd[2].c_str());
 
 			int nEvoMode=0;
 
@@ -11173,7 +11173,10 @@ namespace http {
 			}
 
 			// Save device options
-			m_sql.SetDeviceOptions(ullidx, m_sql.BuildDeviceOptions(sOptions, false));
+			if (!sOptions.empty())
+			{
+				m_sql.SetDeviceOptions(ullidx, m_sql.BuildDeviceOptions(sOptions, false));
+			}
 
 			if (maindeviceidx != "")
 			{
