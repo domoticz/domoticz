@@ -263,11 +263,9 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const std::string &LCmd, const i
 		//Scene
 		//Because Scenes does not have a unique numeric value (but a string as ID),
 		//lookup the Options, and activate this scene
-		char szID[10];
-		unsigned char unitcode = 1;
-		sprintf(szID, "%08x", (unsigned int)nodeID);
+
 		std::vector<std::vector<std::string> > result;
-		result = m_sql.safe_query("SELECT Options FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')", m_HwdID, int(unitcode), pTypeLimitlessLights, sTypeLimitlessRGBW, szID);
+		result = m_sql.safe_query("SELECT MacAddress FROM WOLNodes WHERE (HardwareID==%d) AND (ID==%d)", m_HwdID, nodeID - 2000);
 		if (result.empty())
 		{
 			_log.Log(LOG_ERROR, "Philips Hue: Scene not found!");
@@ -406,13 +404,12 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 		
 		//Get current nValue if exist
 		std::vector<std::vector<std::string> > result;
-		result = m_sql.safe_query("SELECT DeviceID, nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d) AND (Options=='%q')",
-			m_HwdID, int(unitcode), pTypeLimitlessLights, sTypeLimitlessRGBW, Options.c_str());
+		result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')",
+			m_HwdID, int(unitcode), pTypeLimitlessLights, sTypeLimitlessRGBW, szID);
 		if (!result.empty())
 		{
 			//Already in the system
-			strcpy(szID, result[0][0].c_str());
-			int nvalue = atoi(result[0][1].c_str());
+			int nvalue = atoi(result[0][0].c_str());
 			bool tIsOn = (nvalue != 0);
 			if (bIsOn == tIsOn) //Check if the light was switched
 				return;
@@ -747,7 +744,6 @@ bool CPhilipsHue::GetScenes(const Json::Value &root)
 	if (root["scenes"].empty())
 		return false;
 
-	int ii=0;
 	for (Json::Value::iterator iScene = root["scenes"].begin(); iScene != root["scenes"].end(); ++iScene)
 	{
 		Json::Value scene = *iScene;
@@ -765,7 +761,6 @@ bool CPhilipsHue::GetScenes(const Json::Value &root)
 				hscene.name = hscene.name.substr(0, tpos);
 			}
 
-			int sID = ii + 1;
 			bool bDoSend = true;
 			if (m_scenes.find(hscene.id) != m_scenes.end())
 			{
@@ -776,13 +771,33 @@ bool CPhilipsHue::GetScenes(const Json::Value &root)
 				}
 			}
 			m_scenes[hscene.id] = hscene;
+
 			if (bDoSend)
 			{
+				int sID = -1;
+				std::vector<std::vector<std::string> > result;
+				result = m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (MacAddress=='%q')", m_HwdID, hscene.id.c_str());
+				if (!result.empty())
+				{
+					//existing scene
+					sID = atoi(result[0][0].c_str());
+				}
+				else
+				{
+					//New scene
+					m_sql.safe_query("INSERT INTO WOLNodes (HardwareID, Name, MacAddress) VALUES (%d, '%q', '%q')", m_HwdID, hscene.name.c_str(), hscene.id.c_str());
+					result = m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (MacAddress=='%q')", m_HwdID, hscene.id.c_str());
+					if (result.empty())
+					{
+						_log.Log(LOG_ERROR, "Philips Hue: Problem adding new Scene!!");
+						return false;
+					}
+					sID = atoi(result[0][0].c_str());
+				}
 				std::string Name = "Scene " + hscene.name;
 				InsertUpdateSwitch(2000 + sID, HLTYPE_SCENE, false, 100, 0, 0, Name, hscene.id);
 			}
 		}
-		ii++;
 	}
 	return true;
 }

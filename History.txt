@@ -3,6 +3,7 @@ Version 3.xxxx (March xx 2016)
 - Implemented: OpenZWave, Aeotec ZWave+ USB Controller, Enable/Disable blinking mode (@Schmart, Thanks for the magic codes!)
 - Implemented: OpenZWave, Node table, now also displays Manufacturer, Product ID and Product Type
 - Implemented: Blockly/Lua Camera device, to send camera snapshots with subject after xx seconds
+- Changed: Stable ID generation for Philips Hue scenes (you need to delete all scenes and restart the hue hardware or domoticz)
 - Fixed: Database backup is now only possible for admin users
 - Fixed: Better handling of white listed commands/urls
 - Fixed: Double checking command rights
