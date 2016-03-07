@@ -11983,6 +11983,12 @@ void MainWorker::HeartbeatCheck()
 bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID, const int unit, const int devType, const int subType, const int nValue, const std::string &sValue, const int signallevel, const int batterylevel, const bool parseTrigger)
 {
 	CDomoticzHardwareBase *pHardware = GetHardware(HardwareID);
+
+	unsigned long ID = 0;
+	std::stringstream s_strid;
+	s_strid << std::hex << DeviceID;
+	s_strid >> ID;
+
 	if (pHardware)
 	{
 		if (devType == pTypeLighting2)
@@ -12011,36 +12017,62 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 			lcmd.LIGHTING2.level = (unsigned char)atoi(sValue.c_str());
 			lcmd.LIGHTING2.filler = 0;
 			lcmd.LIGHTING2.rssi = signallevel;
-			DecodeRXMessage(pHardware, (const unsigned char *)&lcmd.LIGHTING2, NULL, -1);
+			DecodeRXMessage(pHardware, (const unsigned char *)&lcmd.LIGHTING2, NULL, batterylevel);
 			return true;
 		}
-		else if ((devType == pTypeGeneral) && (subType == sTypePercentage))
+		else if (devType == pTypeGeneral)
 		{
-			unsigned long ID;
-			std::stringstream s_strid;
-			s_strid << std::hex << DeviceID;
-			s_strid >> ID;
-			_tGeneralDevice gDevice;
-			gDevice.subtype = sTypePercentage;
-			gDevice.id = unit;
-			gDevice.floatval1 = (float)atof(sValue.c_str());
-			gDevice.intval1 = static_cast<int>(ID);
-			DecodeRXMessage(pHardware, (const unsigned char *)&gDevice, NULL, -1);
-			return true;
+			if (subType == sTypePercentage)
+			{
+				_tGeneralDevice gDevice;
+				gDevice.subtype = sTypePercentage;
+				gDevice.id = unit;
+				gDevice.floatval1 = (float)atof(sValue.c_str());
+				gDevice.intval1 = static_cast<int>(ID);
+				DecodeRXMessage(pHardware, (const unsigned char *)&gDevice, NULL, batterylevel);
+				return true;
+			}
+			else if (subType == sTypeWaterflow)
+			{
+				unsigned long ID;
+				std::stringstream s_strid;
+				s_strid << std::hex << DeviceID;
+				s_strid >> ID;
+				_tGeneralDevice gDevice;
+				gDevice.subtype = sTypeWaterflow;
+				gDevice.id = unit;
+				gDevice.floatval1 = (float)atof(sValue.c_str());
+				gDevice.intval1 = static_cast<int>(ID);
+				DecodeRXMessage(pHardware, (const unsigned char *)&gDevice, NULL, batterylevel);
+				return true;
+			}
+			else if (subType == sTypeSoundLevel)
+			{
+				_tGeneralDevice gDevice;
+				gDevice.subtype = sTypeSoundLevel;
+				gDevice.id = unit;
+				gDevice.intval1 = static_cast<int>(ID);
+				gDevice.intval2 = atoi(sValue.c_str());
+				DecodeRXMessage(pHardware, (const unsigned char *)&gDevice, NULL, batterylevel);
+				return true;
+			}
 		}
-		else if ((devType == pTypeGeneral) && (subType == sTypeWaterflow))
+		else if ((devType == pTypeAirQuality) && (subType == sTypeVoltcraft))
 		{
-			unsigned long ID;
-			std::stringstream s_strid;
-			s_strid << std::hex << DeviceID;
-			s_strid >> ID;
-			_tGeneralDevice gDevice;
-			gDevice.subtype = sTypeWaterflow;
-			gDevice.id = unit;
-			gDevice.floatval1 = (float)atof(sValue.c_str());
-			gDevice.intval1 = static_cast<int>(ID);
-			DecodeRXMessage(pHardware, (const unsigned char *)&gDevice, NULL, -1);
-			return true;
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query(
+				"SELECT ID,Name FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",
+				HardwareID, DeviceID.c_str(), unit, devType, subType);
+			if (!result.empty())
+			{
+				std::vector<std::string> sd = result[0];
+				unsigned long long dID = 0;
+				std::stringstream s_strid;
+				s_strid << sd[0];
+				s_strid >> dID;
+
+				m_notifications.CheckAndHandleNotification(dID, sd[1], devType, subType, NTYPE_USAGE, (const float)nValue);
+			}
 		}
 	}
 

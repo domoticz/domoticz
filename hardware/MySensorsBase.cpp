@@ -1676,9 +1676,8 @@ void MySensorsBase::ParseLine()
 			m_AckNodeID = m_AckChildID = -1;
 			m_AckSetType = V_UNKNOWN;
 			m_bAckReceived = true;
-                        //No need to process ack commands
-                        return;
-
+			//No need to process ack commands
+			return;
 		}
 
 		bool bHaveValue = false;
