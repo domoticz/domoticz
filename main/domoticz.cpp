@@ -131,7 +131,7 @@ static const _facilities facilities[] =
 	{ "local6", LOG_LOCAL6 },
 	{ "local7", LOG_LOCAL7 }
 }; 
-std::string logfacname = "";
+std::string logfacname = "user";
 #endif
 std::string szStartupFolder;
 std::string szUserDataFolder;
