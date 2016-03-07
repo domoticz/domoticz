@@ -94,6 +94,8 @@ const _tRFLinkStringIntHelper rfswitches[] =
 	{ "MC145026", sSwitchMC145026 },		 // NA
 	{ "Lobeco", sSwitchLobeco },			 // NA
 	{ "Friedland", sSwitchFriedland },		 // NA
+	{ "BFT", sSwitchBFT },					 // NA
+	{ "Novatys", sSwitchNovatys},			 // NA
 	{ "", -1 }
 };
 

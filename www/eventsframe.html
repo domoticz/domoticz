@@ -335,12 +335,7 @@
 	        	var valueC = $(this).find("value[name='C']")[0];
 	        	var titleC = $(valueC).find("title")[0];
 	        	var blockA = $(valueA).children("block:first");
-	        	/*if ((blockA.attr("type")=="scenevariables")) {
-	        		var setString = "commandArray[Scene:"+$(titleA).text()+"]";
-	        	}
-	        	else { */
 		        var setString = "commandArray["+$(titleA).text()+"]";
-	        	//}
 	        	var valueB = $(this).find("value[name='B']")[0];
 	        	var titleB = $(valueB).find("title")[0];
 	        	var blockB = $(valueB).children("block:first");
@@ -384,12 +379,7 @@
 	        	var valueC = $(this).find("value[name='C']")[0];
 	        	var titleC = $(valueC).find("title")[0];
 	        	var blockA = $(valueA).children("block:first");
-	        	/*if ((blockA.attr("type")=="scenevariables")) {
-	        		var setString = "commandArray[Scene:"+$(titleA).text()+"]";
-	        	}
-	        	else { */
 		        var setString = "commandArray["+$(titleA).text()+"]";
-	        	//}
 	        	var valueB = $(this).find("value[name='B']")[0];
 	        	var titleB = $(valueB).find("title")[0];
 	        	var blockB = $(valueB).children("block:first");
@@ -411,12 +401,7 @@
 	        	var valueC = $(this).find("value[name='C']")[0];
 	        	var titleC = $(valueC).find("title")[0];
 	        	var blockA = $(valueA).children("block:first");
-	        	/* if ((blockA.attr("type")=="scenevariables")) {
-	        		var setString = "commandArray[Scene:"+$(titleA).text()+"]";
-	        	}
-	        	else { */
 		        var setString = "commandArray["+$(titleA).text()+"]";
-	        	//}
 	        	var blockB = $(valueB).children("block:first");
 		        if ((blockB.attr("type")=="logic_states") && ($(titleB).attr("name") == "State")) {	        	
 	        		setString += '="'+$(titleB).text()+' RANDOM '+ $(titleC).text()+'"'; 
@@ -507,6 +492,14 @@
 			   	var titleB = $(this).find("title[name='Status']")[0];
 	        	var setString = "commandArray[Scene:"+$(titleA).text()+"]";
 	        	setString += '="'+$(titleB).text()+'"'; 
+	        	setArray.push(setString);
+		    }		    
+		    else if ($(this).attr('type') == 'cameravariables') {
+			   	var titleA = $(this).find("title[name='Camera']")[0];
+			   	var titleB = $(this).find("title[name='Subject']")[0];
+			   	var titleC = $(this).find("title[name='NUM']")[0];
+	        	var setString = "commandArray[SendCamera:"+$(titleA).text()+"]";
+	        	setString += '="'+ $(titleB).text()+'" AFTER ' + $(titleC).text().replace(/\,/g, ' '); 
 	        	setArray.push(setString);
 		    }		    
 		  });
@@ -928,6 +921,9 @@
 		   	<category name="Scenes/groups">
 			   	<block type="scenevariables"></block>
 			   	<block type="groupvariables"></block>
+		   	</category>
+		   	<category name="Cameras">
+			   	<block type="cameravariables"></block>
 		   	</category>
 		</category>
     </xml>

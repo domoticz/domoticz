@@ -2984,9 +2984,12 @@ define(['app'], function (app) {
                         "0": nodeStr,
                         "1": item.Name,
                         "2": item.Description,
-                        "3": item.LastUpdate,
-                        "4": $.t((item.PollEnabled == "true")?"Yes":"No"),
-                        "5": statusImg+'&nbsp;&nbsp;'+healButton,
+                        "3": item.Manufacturer_name,
+                        "4": item.Product_id,
+                        "5": item.Product_type,
+                        "6": item.LastUpdate,
+                        "7": $.t((item.PollEnabled == "true")?"Yes":"No"),
+                        "8": statusImg+'&nbsp;&nbsp;'+healButton,
                     } );
                 });
               }
@@ -3021,7 +3024,7 @@ define(['app'], function (app) {
                             $('#updelclr #nodedelete').attr("class", "btnstyle3");
                             $("#updelclr #nodedelete").attr("href", "javascript:DeleteNode(" + idx + ")");
                         }
-                        $("#hardwarecontent #nodeparamstable #nodename").val(data["1"]);
+                        $("#hardwarecontent #nodeparamstable #nodename").val(data["Name"]);
                         $('#hardwarecontent #nodeparamstable #EnablePolling').prop('checked',(data["PollEnabled"]=="true"));
                         if (iNode==iOwnNodeId) {
                             $("#hardwarecontent #nodeparamstable #trEnablePolling").hide();

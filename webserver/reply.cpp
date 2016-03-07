@@ -283,6 +283,17 @@ void reply::add_header(reply *rep, const std::string &name, const std::string &v
 	rep->headers[num].value = value;
 }
 
+void reply::add_header_if_absent(reply *rep, const std::string &name, const std::string &value) {
+	int num = rep->headers.size();
+	for (int h = 0; h < num; h++) {
+		if (boost::iequals(rep->headers[h].name, name)) {
+			// is present
+			return;
+		}
+	}
+	add_header(rep, name, value, false);
+}
+
 void reply::set_content(reply *rep, const std::string & content) {
 	rep->content.assign(content);
 }
