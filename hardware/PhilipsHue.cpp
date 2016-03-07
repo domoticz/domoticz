@@ -455,6 +455,8 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 			level = round(flevel);
 			if (level > 15)
 				level = 15;
+			if (level == 0)
+				level += 1; //If brightnesslevel < 6, level = 0 even if light is on
 		}
 		char szLevel[20];
 		sprintf(szLevel, "%d", level);
