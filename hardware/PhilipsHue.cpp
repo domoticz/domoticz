@@ -389,7 +389,7 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 			m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd, Name.c_str(), 255);
 		}
 		
-		if (bIsOn and (BrightnessLevel != 100))
+		if (bIsOn && (BrightnessLevel != 100))
 				cmd = Limitless_SetBrightnessLevel;
 
 		if (!result.empty())
@@ -501,7 +501,7 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 			m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd.LIGHTING2, Name.c_str(), 255);
 		}
 		
-		if (bIsOn and (level != 15))
+		if (bIsOn && (level != 15))
 				cmd = light2_sSetLevel;
 		
 		if (!result.empty())
