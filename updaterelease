@@ -13,7 +13,7 @@ then
  MACH="armv7l"
 fi
 
-echo "Updating to latest beta version..."
+echo "Updating to latest release version..."
 echo "Please Standby..."
 wget -O domoticz_release.tgz "http://www.domoticz.com/download.php?channel=release&type=release&system=${OS}&machine=${MACH}"
 tar xvfz domoticz_release.tgz
