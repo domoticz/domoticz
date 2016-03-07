@@ -394,8 +394,14 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 
 		if (!result.empty())
 		{
-			m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d, sValue='%q', LastLevel = %d WHERE(HardwareID == %d) AND (DeviceID == '%q')",
-			int(cmd), szSValue, BrightnessLevel, m_HwdID, szID);
+			time_t now = time(0);
+			struct tm ltime;
+			localtime_r(&now, &ltime);
+
+			char szLastUpdate[40];
+			sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
+			m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d, sValue='%q', LastLevel = %d, LastUpdate='%q' WHERE(HardwareID == %d) AND (DeviceID == '%q')",
+			int(cmd), szSValue, BrightnessLevel, szLastUpdate, m_HwdID, szID);
 		}
 		else
 		{
@@ -499,9 +505,15 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 				cmd = light2_sSetLevel;
 		
 		if (!result.empty())
-		{		
-			m_sql.safe_query("UPDATE DeviceStatus SET LastLevel=%d, nValue=%d, sValue='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')",
-				BrightnessLevel, int(cmd), szLevel, m_HwdID, szID);
+		{
+			time_t now = time(0);
+			struct tm ltime;
+			localtime_r(&now, &ltime);
+
+			char szLastUpdate[40];
+			sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
+			m_sql.safe_query("UPDATE DeviceStatus SET LastLevel=%d, nValue=%d, sValue='%q', LastUpdate='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')",
+				BrightnessLevel, int(cmd), szLevel, szLastUpdate, m_HwdID, szID);
 		}
 		else
 		{
