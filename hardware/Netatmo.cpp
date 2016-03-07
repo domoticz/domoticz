@@ -112,7 +112,7 @@ bool CNetatmo::StopHardware()
 
 void CNetatmo::Do_Work()
 {
-	int sec_counter = 28;
+	int sec_counter = 600 - 5;
 	bool bFirstTimeWS = true;
 	bool bFirstTimeTH = true;
 	_log.Log(LOG_STATUS, "Netatmo: Worker started...");
