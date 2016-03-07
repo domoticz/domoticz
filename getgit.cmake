@@ -8,28 +8,28 @@ if(NOT GIT_FOUND)
 endif()
 
 MACRO(Gitversion_GET_REVISION dir variable)
-  EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} rev-list HEAD --count
+  EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} --git-dir ./.git rev-list HEAD --count
     WORKING_DIRECTORY ${dir}
     OUTPUT_VARIABLE ${variable}
     OUTPUT_STRIP_TRAILING_WHITESPACE)
 ENDMACRO(Gitversion_GET_REVISION)
 
 MACRO(Gitversion_GET_HASH dir variable)
-  EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD
+  EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} --git-dir ./.git rev-parse --short HEAD
     WORKING_DIRECTORY ${dir}
     OUTPUT_VARIABLE ${variable}
     OUTPUT_STRIP_TRAILING_WHITESPACE)
 ENDMACRO(Gitversion_GET_HASH)
 
 MACRO(Gitversion_GET_DATE dir variable)
-  EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} show -s --format=%ct
+  EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} --git-dir ./.git show -s --format=%ct
     WORKING_DIRECTORY ${dir}
     OUTPUT_VARIABLE ${variable}
     OUTPUT_STRIP_TRAILING_WHITESPACE)
 ENDMACRO(Gitversion_GET_DATE)
 
 MACRO(Gitversion_CHECK_DIRTY dir variable)
-  EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} diff-index -m --name-only HEAD
+  EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} --git-dir ./.git diff-index -m --name-only HEAD
     WORKING_DIRECTORY ${dir}
     OUTPUT_VARIABLE ${variable}
     OUTPUT_STRIP_TRAILING_WHITESPACE)
