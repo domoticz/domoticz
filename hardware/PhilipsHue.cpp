@@ -363,6 +363,8 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 		sprintf(szSValue, "%d;%d", Sat, Hue);
 		unsigned char unitcode = 1;
 		int cmd = (bIsOn ? Limitless_LedOn : Limitless_LedOff);
+		int nvalue = 0;
+		bool tIsOn = false;
 		
 		//Get current nValue if exist
 		std::vector<std::vector<std::string> > result;
@@ -372,23 +374,36 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 		if (!result.empty())
 		{
 			//Already in the system
-			//Update state for sValue, use Limitless_SetRGBColour ?
-			int nvalue = atoi(result[0][0].c_str());
-			bool tIsOn = (nvalue != 0);				
-			m_sql.safe_query("UPDATE DeviceStatus SET sValue='%q', LastLevel = %d WHERE(HardwareID == %d) AND (DeviceID == '%q')",
-				szSValue, BrightnessLevel, m_HwdID, szID);
-			if (bIsOn == tIsOn) //Check if the light was switched
-				return;
+			//Update state
+			nvalue = atoi(result[0][0].c_str());
+			tIsOn = (nvalue != 0);					
 		}
-
-		//Send as LimitlessLight
-		_tLimitlessLights lcmd;
-		lcmd.id = NodeID;
-		lcmd.command = cmd;
-		lcmd.value = 0;
-		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd, Name.c_str(), 255);
 		
-		if (result.empty())
+		if (bIsOn != tIsOn) //light was switched, send on or off
+		{
+			//Send as LimitlessLight
+			_tLimitlessLights lcmd;
+			lcmd.id = NodeID;
+			lcmd.command = cmd;
+			lcmd.value = BrightnessLevel;
+			m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd, Name.c_str(), 255);
+		}
+		
+		if (bIsOn && (BrightnessLevel != 100))
+				cmd = Limitless_SetBrightnessLevel;
+
+		if (!result.empty())
+		{
+			time_t now = time(0);
+			struct tm ltime;
+			localtime_r(&now, &ltime);
+
+			char szLastUpdate[40];
+			sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
+			m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d, sValue='%q', LastLevel = %d, LastUpdate='%q' WHERE(HardwareID == %d) AND (DeviceID == '%q')",
+			int(cmd), szSValue, BrightnessLevel, szLastUpdate, m_HwdID, szID);
+		}
+		else
 		{
 		//Set Name/Parameters
 		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, nValue=%d, sValue='%q', LastLevel=%d WHERE(HardwareID == %d) AND (DeviceID == '%q')",
@@ -411,7 +426,7 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 			//Already in the system
 			int nvalue = atoi(result[0][0].c_str());
 			bool tIsOn = (nvalue != 0);
-			if (bIsOn == tIsOn) //Check if the light was switched
+			if (bIsOn == tIsOn) //Check if the scene was switched
 				return;
 		}
 		//Send as LimitlessLight
@@ -435,6 +450,8 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 		unsigned char unitcode = 1;
 		int cmd = (bIsOn ? light2_sOn : light2_sOff);
 		int level = 0;
+		int nvalue = 0;
+		bool tIsOn = false;
 		
 		if (LType == HLTYPE_NORMAL)
 			bIsOn ? level = 15 : level = 0;
@@ -444,6 +461,8 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 			level = round(flevel);
 			if (level > 15)
 				level = 15;
+			if (level == 0)
+				level += 1; //If brightnesslevel < 6, level = 0 even if light is on
 		}
 		char szLevel[20];
 		sprintf(szLevel, "%d", level);
@@ -453,38 +472,50 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 		result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')",
 			m_HwdID, int(unitcode), pTypeLighting2, sTypeAC, szID);
 		//_log.Log(LOG_STATUS, "HueBridge state change: Bri = %d, Level = %d", BrightnessLevel, level);
+
 		if (!result.empty())
 		{
 			//Already in the system
 			//Update state
-			int nvalue = atoi(result[0][0].c_str());
-			bool tIsOn = (nvalue != 0);					
-			m_sql.safe_query("UPDATE DeviceStatus SET LastLevel=%d, sValue='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')",
-				BrightnessLevel, szLevel, m_HwdID, szID);
-			if (bIsOn == tIsOn) //Check if the light was switched
-				return;
+			nvalue = atoi(result[0][0].c_str());
+			tIsOn = (nvalue != 0);					
 		}
-
-		tRBUF lcmd;
-		memset(&lcmd, 0, sizeof(RBUF));
-		lcmd.LIGHTING2.packetlength = sizeof(lcmd.LIGHTING2) - 1;
-		lcmd.LIGHTING2.packettype = pTypeLighting2;
-		lcmd.LIGHTING2.subtype = sTypeAC;
-		lcmd.LIGHTING2.seqnbr = 1;
-		lcmd.LIGHTING2.id1 = 0;
-		lcmd.LIGHTING2.id2 = 0;
-		lcmd.LIGHTING2.id3 = 0;
-		lcmd.LIGHTING2.id4 = NodeID;
-		lcmd.LIGHTING2.unitcode = unitcode;
-		lcmd.LIGHTING2.cmnd = cmd;
-		lcmd.LIGHTING2.level = level;
-		lcmd.LIGHTING2.filler = 0;
-		lcmd.LIGHTING2.rssi = 12;
-
-		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd.LIGHTING2, Name.c_str(), 255);
 		
+		if (bIsOn != tIsOn) //light was switched, send on or off
+		{
+			tRBUF lcmd;
+			memset(&lcmd, 0, sizeof(RBUF));
+			lcmd.LIGHTING2.packetlength = sizeof(lcmd.LIGHTING2) - 1;
+			lcmd.LIGHTING2.packettype = pTypeLighting2;
+			lcmd.LIGHTING2.subtype = sTypeAC;
+			lcmd.LIGHTING2.seqnbr = 1;
+			lcmd.LIGHTING2.id1 = 0;
+			lcmd.LIGHTING2.id2 = 0;
+			lcmd.LIGHTING2.id3 = 0;
+			lcmd.LIGHTING2.id4 = NodeID;
+			lcmd.LIGHTING2.unitcode = unitcode;
+			lcmd.LIGHTING2.cmnd = cmd;
+			lcmd.LIGHTING2.level = level;
+			lcmd.LIGHTING2.filler = 0;
+			lcmd.LIGHTING2.rssi = 12;
+			m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd.LIGHTING2, Name.c_str(), 255);
+		}
+		
+		if (bIsOn && (level != 15))
+				cmd = light2_sSetLevel;
+		
+		if (!result.empty())
+		{
+			time_t now = time(0);
+			struct tm ltime;
+			localtime_r(&now, &ltime);
 
-		if (result.empty())
+			char szLastUpdate[40];
+			sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
+			m_sql.safe_query("UPDATE DeviceStatus SET LastLevel=%d, nValue=%d, sValue='%q', LastUpdate='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')",
+				BrightnessLevel, int(cmd), szLevel, szLastUpdate, m_HwdID, szID);
+		}
+		else
 		{
 			//Set Name/Parameters
 			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, LastLevel=%d, nValue=%d, sValue='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')",
