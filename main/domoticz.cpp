@@ -108,10 +108,31 @@ const char *szHelp=
 #ifndef WIN32
 	"\t-daemon (run as background daemon)\n"
 	"\t-pidfile pid file location (for example /var/run/domoticz.pid)\n"
-	"\t-syslog (use syslog as log output)\n"
+	"\t-syslog [user|daemon|local0 .. local7] (use syslog as log output, defaults to facility 'user')\n"
 #endif
 	"";
 
+#ifndef WIN32
+struct _facilities {
+	const char* facname;
+	const int   facvalue;
+};
+
+static const _facilities facilities[] =
+{
+	{ "daemon", LOG_DAEMON },
+	{ "user",   LOG_USER },
+	{ "local0", LOG_LOCAL0 },
+	{ "local1", LOG_LOCAL1 },
+	{ "local2", LOG_LOCAL2 },
+	{ "local3", LOG_LOCAL3 },
+	{ "local4", LOG_LOCAL4 },
+	{ "local5", LOG_LOCAL5 },
+	{ "local6", LOG_LOCAL6 },
+	{ "local7", LOG_LOCAL7 }
+}; 
+std::string logfacname = "user";
+#endif
 std::string szStartupFolder;
 std::string szUserDataFolder;
 std::string szWWWFolder;
@@ -796,10 +817,37 @@ int main(int argc, char**argv)
 		pidfile = cmdLine.GetSafeArgument("-pidfile", 0, PID_FILE);
 	}
 
+	if (cmdLine.HasSwitch("-syslog"))
+	{
+		g_bUseSyslog = true;
+		logfacname = cmdLine.GetSafeArgument("-syslog", 0, "");
+		if ( logfacname.length() == 0 ) 
+		{
+			logfacname = "user";
+		}
+	}
+
 	if ((g_bRunAsDaemon)||(g_bUseSyslog))
 	{
+		int idx, logfacility = 0;
+
+		for ( idx = 0; idx < sizeof(facilities)/sizeof(facilities[0]); idx++ ) 
+		{
+			if (strcmp(facilities[idx].facname, logfacname.c_str()) == 0) 
+			{
+				logfacility = facilities[idx].facvalue;
+				break;
+			}
+		} 
+		if ( logfacility == 0 ) 
+		{
+			_log.Log(LOG_ERROR, "%s is an unknown syslog facility", logfacname.c_str());
+			return 1;
+		}
+
+		// _log.Log(LOG_STATUS, "syslog to %s (%x)", logfacname.c_str(), logfacility);
 		setlogmask(LOG_UPTO(LOG_INFO));
-		openlog(daemonname.c_str(), LOG_CONS | LOG_PERROR, LOG_USER);
+		openlog(daemonname.c_str(), LOG_CONS | LOG_PERROR, logfacility);
 
 		syslog(LOG_INFO, "Domoticz is starting up....");
 	}
