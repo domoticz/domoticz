@@ -65,6 +65,9 @@ protected:
 	/// indicate if the server is running
 	bool is_running;
 
+	/// indicate if the server is stopped (acceptor and connections)
+	bool is_stop_complete;
+
 private:
 	/// Handle a request to stop the server.
 	void handle_stop();

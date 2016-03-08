@@ -7,6 +7,8 @@
 #include "server.hpp"
 #include <fstream>
 #include "../main/Logger.h"
+#include "../main/Helper.h"
+#include "../main/localtime_r.h"
 
 namespace http {
 namespace server {
@@ -18,7 +20,8 @@ server_base::server_base(const server_settings & settings, request_handler & use
 		settings_(settings),
 		request_handler_(user_request_handler),
 		timeout_(20), // default read timeout in seconds
-		is_running(false) {
+		is_running(false),
+		is_stop_complete(false) {
 	if (!settings.is_enabled()) {
 		throw std::invalid_argument("cannot initialize a disabled server (listening port cannot be empty or 0)");
 	}
@@ -75,13 +78,27 @@ void server_base::run() {
 
 /// Ask the server to stop using asynchronous command
 void server_base::stop() {
-	// Post a call to the stop function so that server_base::stop() is safe to call from any thread.
-	io_service_.post(boost::bind(&server_base::handle_stop, this));
-}
+	if (is_running) {
+		// Post a call to the stop function so that server_base::stop() is safe to call from any thread.
+		io_service_.post(boost::bind(&server_base::handle_stop, this));
+	} else {
+		// if io_service is not running then the post call will not be performed
+		handle_stop();
+	}
 
-/// Returns true if the server is stopped.
-bool server_base::stopped() {
-	return !is_running;
+	// Wait for acceptor and connections to stop
+	int timeout = 15; // force stop after 15 seconds
+	time_t start = mytime(NULL);
+	while(true) {
+		if (!is_running && is_stop_complete) {
+			break;
+		}
+		if ((mytime(NULL) - start) > timeout) {
+			// timeout occurred
+			break;
+		}
+		sleep_milliseconds(500);
+	}
 }
 
 void server_base::handle_stop() {
@@ -92,6 +109,7 @@ void server_base::handle_stop() {
 		_log.Log(LOG_ERROR, "[web:%s] exception occurred while closing acceptor", settings_.listening_port.c_str());
 	}
 	connection_manager_.stop_all(false);
+	is_stop_complete = true;
 }
 
 server::server(const server_settings & settings, request_handler & user_request_handler) :
