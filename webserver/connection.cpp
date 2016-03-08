@@ -119,6 +119,9 @@ void connection::start()
 
 void connection::stop()
 {
+	// Timers should be cancelled before stopping to remove tasks from the io_service.
+	// The io_service will stop naturally when every tasks are removed.
+	// If timers are not cancelled, the exception ERROR_ABANDONED_WAIT_0 is thrown up to the io_service::run() caller.
 	cancel_abandoned_timeout();
 	cancel_read_timeout();
 
@@ -384,7 +387,7 @@ void connection::stop_gracefully() {
 			(status_ == WAITING_READ) ||
 			(status_ == WAITING_HANDSHAKE)) {
 		// avoid to wait until timeout
-		connection_manager_.stop(shared_from_this());
+		stop(); // stop with clearing, it will be done in connection_manager::stop
 	}
 }
 
