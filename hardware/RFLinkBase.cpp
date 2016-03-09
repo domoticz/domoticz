@@ -563,13 +563,13 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 		{
 			bHaveWindSpeed = true;
 			iTemp = RFLinkGetHexStringValue(results[ii]); // received value is km/u
-			windspeed = (float(iTemp) * 0.0277778f)/10;   //convert to m/s
+			windspeed = (float(iTemp) * 0.0277778f);   //convert to m/s
 		}
 		else if (results[ii].find("WINGS") != std::string::npos)
 		{
 			bHaveWindGust = true;
 			iTemp = RFLinkGetHexStringValue(results[ii]); // received value is km/u
-			windgust = (float(iTemp) * 0.0277778f)/10;    //convert to m/s
+			windgust = (float(iTemp) * 0.0277778f);    //convert to m/s
 		}
 		else if (results[ii].find("WINTMP") != std::string::npos)
 		{
