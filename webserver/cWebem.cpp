@@ -98,14 +98,8 @@ void cWebem::Stop() {
 		_log.Log(LOG_ERROR, "[web:%s] exception thrown while stopping session cleaner", GetPort().c_str());
 	}
 	// Stop Web server
-	if ((myServer != NULL) && !myServer->stopped()) {
-		myServer->stop(); // asynchronous stop
-		while(true) {
-			if (myServer->stopped()) {
-				break;
-			}
-			sleep_milliseconds(500);
-		}
+	if (myServer != NULL) {
+		myServer->stop();
 	}
 }
 

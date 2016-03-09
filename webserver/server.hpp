@@ -33,9 +33,6 @@ public:
 	/// Stop the server.
 	void stop();
 
-	/// Check if the server is running
-	bool stopped();
-
 	/// Print server settings to string (debug purpose)
 	virtual std::string to_string() const {
 		return "'server_base[" + settings_.to_string() + "]'";
@@ -64,6 +61,9 @@ protected:
 
 	/// indicate if the server is running
 	bool is_running;
+
+	/// indicate if the server is stopped (acceptor and connections)
+	bool is_stop_complete;
 
 private:
 	/// Handle a request to stop the server.
