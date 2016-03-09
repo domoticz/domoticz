@@ -58,9 +58,6 @@ public:
   /// Stop all asynchronous operations associated with the connection.
   void stop();
 
-  /// Wait for all asynchronous operations to abort.
-  void stop_gracefully();
-
   /// Timer handlers
   void handle_read_timeout(const boost::system::error_code& error);
   void handle_abandoned_timeout(const boost::system::error_code& error);
@@ -131,9 +128,6 @@ private:
     WAITING_WRITE,
 	ENDING_WRITE
   } status_;
-
-  /// Ask the connection to stop as soon as possible
-  bool stop_required;
 
   /// The default number of request to handle with the connection when keep-alive is enabled
   unsigned int default_max_requests_;

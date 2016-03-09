@@ -108,7 +108,7 @@ void server_base::handle_stop() {
 	} catch (...) {
 		_log.Log(LOG_ERROR, "[web:%s] exception occurred while closing acceptor", settings_.listening_port.c_str());
 	}
-	connection_manager_.stop_all(false);
+	connection_manager_.stop_all();
 	is_stop_complete = true;
 }
 
