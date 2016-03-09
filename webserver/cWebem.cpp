@@ -1329,7 +1329,7 @@ static void GetURICommandParameter(const std::string &uri, std::string &cmdparam
 	size_t ppos = uri.find("&param=");
 	if (ppos == std::string::npos)
 	{
-		size_t ppos = uri.find("?param=");
+		ppos = uri.find("?param=");
 		if (ppos == std::string::npos)
 		{
 			return;
