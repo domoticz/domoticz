@@ -1326,14 +1326,20 @@ bool cWebemRequestHandler::CompressWebOutput(const request& req, reply& rep)
 static void GetURICommandParameter(const std::string &uri, std::string &cmdparam)
 {
 	cmdparam = uri;
-	size_t ppos = uri.find("&param=");
+	size_t ppos1 = uri.find("&param=");
+	size_t ppos2 = uri.find("?param=");
+	if (
+		(ppos1 == std::string::npos) &&
+		(ppos2 == std::string::npos)
+		)
+		return;
+	size_t ppos = ppos1;
 	if (ppos == std::string::npos)
+		ppos = ppos2;
+	else
 	{
-		ppos = uri.find("?param=");
-		if (ppos == std::string::npos)
-		{
-			return;
-		}
+		if ((ppos2 < ppos) && (ppos != std::string::npos))
+			ppos = ppos2;
 	}
 	cmdparam = uri.substr(ppos + 7);
 	ppos = cmdparam.find("&");
