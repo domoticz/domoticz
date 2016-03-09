@@ -58,9 +58,6 @@ public:
   /// Stop all asynchronous operations associated with the connection.
   void stop();
 
-  /// Wait for all asynchronous operations to abort.
-  void stop_gracefully();
-
   /// Timer handlers
   void handle_read_timeout(const boost::system::error_code& error);
   void handle_abandoned_timeout(const boost::system::error_code& error);

@@ -30,7 +30,6 @@ connection::connection(boost::asio::io_service& io_service,
 				read_timeout_(read_timeout),
 				read_timer_(io_service, boost::posix_time::seconds(read_timeout)),
 				status_(INITIALIZING),
-				stop_required(false),
 				reply_(reply::stock_reply(reply::internal_server_error)),
 				default_abandoned_timeout_(20*60), // 20mn before stopping abandoned connection
 				abandoned_timer_(io_service, boost::posix_time::seconds(default_abandoned_timeout_)),
@@ -56,7 +55,6 @@ connection::connection(boost::asio::io_service& io_service,
 				read_timeout_(read_timeout),
 				read_timer_(io_service, boost::posix_time::seconds(read_timeout)),
 				status_(INITIALIZING),
-				stop_required(false),
 				reply_(reply::stock_reply(reply::internal_server_error)),
 				default_abandoned_timeout_(20*60), // 20mn before stopping abandoned connection
 				abandoned_timer_(io_service, boost::posix_time::seconds(default_abandoned_timeout_)),
@@ -157,10 +155,6 @@ void connection::handle_handshake(const boost::system::error_code& error)
 void connection::read_more()
 {
 	status_ = WAITING_READ;
-	if (stop_required) {
-		connection_manager_.stop(shared_from_this());
-		return;
-	}
 
 	// read chunks of max 4 KB
 	boost::asio::streambuf::mutable_buffers_type buf = _buf.prepare(4096);
@@ -189,10 +183,6 @@ void connection::read_more()
 void connection::handle_read(const boost::system::error_code& error, std::size_t bytes_transferred)
 {
 	status_ = READING;
-	if (stop_required) {
-		connection_manager_.stop(shared_from_this());
-		return;
-	}
 
 	// data read, no need for timeouts (RK, note: race condition)
 	cancel_read_timeout();
@@ -238,10 +228,6 @@ void connection::handle_read(const boost::system::error_code& error, std::size_t
 			}
 
 			status_ = WAITING_WRITE;
-			if (stop_required) {
-				connection_manager_.stop(shared_from_this());
-				return;
-			}
 
 			if (secure_) {
 #ifdef WWW_ENABLE_SSL
@@ -262,10 +248,6 @@ void connection::handle_read(const boost::system::error_code& error, std::size_t
 			reply_ = reply::stock_reply(reply::bad_request);
 
 			status_ = WAITING_WRITE;
-			if (stop_required) {
-				connection_manager_.stop(shared_from_this());
-				return;
-			}
 
 			if (secure_) {
 #ifdef WWW_ENABLE_SSL
@@ -294,7 +276,7 @@ void connection::handle_read(const boost::system::error_code& error, std::size_t
 void connection::handle_write(const boost::system::error_code& error)
 {
 	status_ = ENDING_WRITE;
-	if (!error && keepalive_ && !stop_required) {
+	if (!error && keepalive_) {
 		// if a keep-alive connection is requested, we read the next request
 		reset_abandoned_timeout();
 		read_more();
@@ -377,17 +359,6 @@ void connection::handle_abandoned_timeout(const boost::system::error_code& error
 	if (error != boost::asio::error::operation_aborted) {
 		_log.Log(LOG_STATUS, "%s -> handle abandoned timeout (status=%d)", host_endpoint_.c_str(), status_);
 		connection_manager_.stop(shared_from_this());
-	}
-}
-
-/// Wait for all asynchronous operations to abort.
-void connection::stop_gracefully() {
-	stop_required = true;
-	if ((status_ == INITIALIZING) ||
-			(status_ == WAITING_READ) ||
-			(status_ == WAITING_HANDSHAKE)) {
-		// avoid to wait until timeout
-		stop(); // stop with clearing, it will be done in connection_manager::stop
 	}
 }
 
