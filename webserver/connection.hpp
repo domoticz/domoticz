@@ -129,9 +129,6 @@ private:
 	ENDING_WRITE
   } status_;
 
-  /// Ask the connection to stop as soon as possible
-  bool stop_required;
-
   /// The default number of request to handle with the connection when keep-alive is enabled
   unsigned int default_max_requests_;
 
