@@ -675,6 +675,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneral, sTypeCounterIncremental, "Counter Incremental" },
 		{ pTypeGeneral, sTypeKwh, "kWh" },
 		{ pTypeGeneral, sTypeWaterflow, "Waterflow" },
+		{ pTypeGeneral, sTypeCustom, "Custom Sensor" },
 
 		{ pTypeThermostat, sTypeThermSetpoint, "SetPoint" },
 		{ pTypeThermostat, sTypeThermTemperature, "Temperature" },
@@ -1004,6 +1005,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeGeneral, sTypeCounterIncremental, "Counter Incremental" },
 		{ pTypeGeneral, sTypeKwh, "Instant,Usage" },
 		{ pTypeGeneral, sTypeWaterflow, "Percentage" },
+		{ pTypeGeneral, sTypeCustom, "Percentage" },
 
 		{ pTypeThermostat, sTypeThermSetpoint, "Temperature" },
 		{ pTypeThermostat, sTypeThermTemperature, "Temperature" },

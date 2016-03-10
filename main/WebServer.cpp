@@ -5084,6 +5084,13 @@ namespace http {
 					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_USAGE, 1);
 					ii++;
 				}
+				if ((dType == pTypeGeneral) && (dSubType == sTypeCustom))
+				{
+					root["result"][ii]["val"] = NTYPE_USAGE;
+					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_USAGE, 0);
+					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_USAGE, 1);
+					ii++;
+				}
 				if ((dType == pTypeGeneral) && (dSubType == sTypeFan))
 				{
 					root["result"][ii]["val"] = NTYPE_RPM;
@@ -7603,6 +7610,7 @@ namespace http {
 								(!((dType == pTypeGeneral) && (dSubType == sTypeLeafWetness))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypePercentage))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeWaterflow))) &&
+								(!((dType == pTypeGeneral) && (dSubType == sTypeCustom))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeFan))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeSoundLevel))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeZWaveClock))) &&
@@ -9307,6 +9315,36 @@ namespace http {
 							root["result"][ii]["Image"] = "Moisture";
 							root["result"][ii]["TypeImg"] = "moisture";
 						}
+						else if (dSubType == sTypeCustom)
+						{
+							std::string szAxesLabel = "";
+							int SensorType = 1;
+							std::vector<std::string> sResults;
+							StringSplit(sOptions, ";", sResults);
+
+							if (sResults.size() == 2)
+							{
+								SensorType = atoi(sResults[0].c_str());
+								szAxesLabel = sResults[1];
+							}
+							sprintf(szData, "%.2f %s", atof(sValue.c_str()), szAxesLabel.c_str());
+							root["result"][ii]["Data"] = szData;
+							root["result"][ii]["SensorType"] = SensorType;
+							root["result"][ii]["SensorUnit"] = szAxesLabel;
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+
+							std::string IconFile = "Custom";
+							if (CustomImage != 0)
+							{
+								std::map<int, int>::const_iterator ittIcon = m_custom_light_icons_lookup.find(CustomImage);
+								if (ittIcon != m_custom_light_icons_lookup.end())
+								{
+									IconFile = m_custom_light_icons[ittIcon->second].RootFile;
+								}
+							}
+							root["result"][ii]["Image"] = IconFile;
+							root["result"][ii]["TypeImg"] = "air";
+						}
 						else if (dSubType == sTypeFan)
 						{
 							sprintf(szData, "%d RPM", atoi(sValue.c_str()));
@@ -10954,6 +10992,7 @@ namespace http {
 			int iProtected = (tmpstr == "true") ? 1 : 0;
 
 			std::string sOptions = CURLEncode::URLDecode(base64_decode(request::findValue(&req, "options")));
+			std::string devoptions = CURLEncode::URLDecode(request::findValue(&req, "devoptions"));
 
 			char szTmp[200];
 
@@ -11048,7 +11087,7 @@ namespace http {
 
 			m_sql.safe_query("UPDATE DeviceStatus SET Protected=%d WHERE (ID == '%q')", iProtected, idx.c_str());
 
-			if (setPoint != "" || state!="")
+			if (!setPoint.empty() || !state.empty())
 			{
 				int urights = 3;
 				if (bHaveUser)
@@ -11069,7 +11108,7 @@ namespace http {
 				else
 					m_mainworker.SetSetPoint(idx, static_cast<float>(atof(setPoint.c_str())));
 			}
-			else if (clock != "")
+			else if (!clock.empty())
 			{
 				int urights = 3;
 				if (bHaveUser)
@@ -11085,7 +11124,7 @@ namespace http {
 					return;
 				m_mainworker.SetClock(idx, clock);
 			}
-			else if (tmode != "")
+			else if (!tmode.empty())
 			{
 				int urights = 3;
 				if (bHaveUser)
@@ -11101,7 +11140,7 @@ namespace http {
 					return;
 				m_mainworker.SetZWaveThermostatMode(idx, atoi(tmode.c_str()));
 			}
-			else if (fmode != "")
+			else if (!fmode.empty())
 			{
 				int urights = 3;
 				if (bHaveUser)
@@ -11118,24 +11157,24 @@ namespace http {
 				m_mainworker.SetZWaveThermostatFanMode(idx, atoi(fmode.c_str()));
 			}
 
-			if (strunit != "")
+			if (!strunit.empty())
 			{
 				m_sql.safe_query("UPDATE DeviceStatus SET Unit='%q' WHERE (ID == '%q')",
 					strunit.c_str(), idx.c_str());
 			}
 			//FIXME evohome ...we need the zone id to update the correct zone...but this should be ok as a generic call?
-			if (deviceid != "")
+			if (!deviceid.empty())
 			{
 				m_sql.safe_query("UPDATE DeviceStatus SET DeviceID='%q' WHERE (ID == '%q')",
 					deviceid.c_str(), idx.c_str());
 			}
-			if (addjvalue != "")
+			if (!addjvalue.empty())
 			{
 				double faddjvalue = atof(addjvalue.c_str());
 				m_sql.safe_query("UPDATE DeviceStatus SET AddjValue=%f WHERE (ID == '%q')",
 					faddjvalue, idx.c_str());
 			}
-			if (addjmulti != "")
+			if (!addjmulti.empty())
 			{
 				double faddjmulti = atof(addjmulti.c_str());
 				if (faddjmulti == 0)
@@ -11143,19 +11182,23 @@ namespace http {
 				m_sql.safe_query("UPDATE DeviceStatus SET AddjMulti=%f WHERE (ID == '%q')",
 					faddjmulti, idx.c_str());
 			}
-			if (addjvalue2 != "")
+			if (!addjvalue2.empty())
 			{
 				double faddjvalue2 = atof(addjvalue2.c_str());
 				m_sql.safe_query("UPDATE DeviceStatus SET AddjValue2=%f WHERE (ID == '%q')",
 					faddjvalue2, idx.c_str());
 			}
-			if (addjmulti2 != "")
+			if (!addjmulti2.empty())
 			{
 				double faddjmulti2 = atof(addjmulti2.c_str());
 				if (faddjmulti2 == 0)
 					faddjmulti2 = 1;
 				m_sql.safe_query("UPDATE DeviceStatus SET AddjMulti2=%f WHERE (ID == '%q')",
 					faddjmulti2, idx.c_str());
+			}
+			if (!devoptions.empty())
+			{
+				m_sql.safe_query("UPDATE DeviceStatus SET Options='%q' WHERE (ID == '%q')", devoptions.c_str(), idx.c_str());
 			}
 
 			if (used == 0)

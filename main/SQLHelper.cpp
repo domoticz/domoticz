@@ -4453,9 +4453,10 @@ void CSQLHelper::UpdatePercentageLog()
 	GetPreferencesVar("SensorTimeout", SensorTimeOut);
 
 	std::vector<std::vector<std::string> > result;
-	result = safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d)",
+	result = safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d)",
 		pTypeGeneral, sTypePercentage,
-		pTypeGeneral, sTypeWaterflow
+		pTypeGeneral, sTypeWaterflow,
+		pTypeGeneral, sTypeCustom
 		);
 	if (result.size()>0)
 	{

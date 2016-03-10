@@ -696,6 +696,75 @@ define(['app'], function (app) {
 		  $("#dialog-editutilitydevice" ).dialog( "open" );
 		}
 
+		EditCustomSensorDevice = function(idx,name,description,customimage,sensortype,axislabel)
+		{
+			if (typeof $scope.mytimer != 'undefined') {
+				$interval.cancel($scope.mytimer);
+				$scope.mytimer = undefined;
+			}
+			$.ddData=[];
+			$scope.CustomImages=[];
+			//Get Custom icons
+			$.ajax({
+			 url: "json.htm?type=custom_light_icons", 
+			 async: false, 
+			 dataType: 'json',
+			 success: function(data) {
+				if (typeof data.result != 'undefined') {
+					var totalItems=data.result.length;
+					$.each(data.result, function(i,item){
+						var bSelected=false;
+						if (i==0) {
+							bSelected=true;
+						}
+						var itext = item.text;
+						var idescription = item.description;
+						
+						var img="images/";
+						if (item.idx==0) {
+							img+="Custom";
+							itext="Custom";
+							idescription="Custom Sensor";
+						}
+						else {
+							img+=item.imageSrc;
+						}
+						img+="48_On.png";
+						$.ddData.push({ text: itext, value: item.idx, selected: bSelected, description: idescription, imageSrc: img });
+						$scope.CustomImages.push({ text: itext, value: item.idx, selected: bSelected, description: idescription, imageSrc: img });
+					});
+					if (totalItems>0) {
+						$scope.customimagesel=$scope.CustomImages[0];
+					}
+				}
+			 }
+			});
+			
+			$.devIdx=idx;
+			$.sensorType=sensortype;
+			$("#dialog-editcustomsensordevice #devicename").val(unescape(name));
+			$("#dialog-editcustomsensordevice #sensoraxis").val(unescape(axislabel));
+
+			$("#dialog-editcustomsensordevice #devicedescription").val(unescape(description));
+		  
+			$('#dialog-editcustomsensordevice #combosensoricon').ddslick({
+				data: $.ddData,
+				width:260,
+				height:390,
+				selectText: "Sensor Icon",
+				imagePosition:"left"
+			});
+			//find our custom image index and select it
+			$.each($.ddData, function(i,item){
+				if (item.value==customimage) {
+					$('#dialog-editcustomsensordevice #combosensoricon').ddslick('select', {index: i });
+				}
+			});
+		  
+			$("#dialog-editcustomsensordevice" ).i18n();
+			$("#dialog-editcustomsensordevice" ).dialog( "open" );
+		}
+
 		EditDistanceDevice = function(idx,name,description,switchtype)
 		{
 			if (typeof $scope.mytimer != 'undefined') {
@@ -919,6 +988,10 @@ define(['app'], function (app) {
 						}
 						else if (item.SubType == "Soil Moisture") {
 							status=item.Data + " (" + item.Desc + ")";
+							bigtext=item.Data;
+						}
+						else if (item.SubType == "Custom Sensor") {
+							status=item.Data;
 							bigtext=item.Data;
 						}
 						else if (item.SubType == "Leaf Wetness") {
@@ -1153,6 +1226,9 @@ define(['app'], function (app) {
 						else if (item.Type == "Air Quality") {
 						  xhtm+=item.Data;
 						}
+						else if (item.SubType == "Custom Sensor") {
+						  xhtm+=item.Data;
+						}
 						else if (item.Type == "Current") {
 						  xhtm+=item.Data;
 						}
@@ -1241,6 +1317,10 @@ define(['app'], function (app) {
 					else if (item.Type == "Air Quality") {
 					  xhtm+='air48.png" height="48" width="48"></td>\n';
 					  status=item.Data + " (" + item.Quality + ")";
+					}
+					else if (item.SubType == "Custom Sensor") {
+					  xhtm+= item.Image + '48_On.png" height="48" width="48"></td>\n';
+					  status=item.Data;
 					}
 					else if (item.SubType == "Soil Moisture") {
 					  xhtm+='moisture48.png" height="48" width="48"></td>\n';
@@ -1353,6 +1433,12 @@ define(['app'], function (app) {
 					xhtm+='<a class="btnsmall" onclick="ShowAirQualityLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\');" data-i18n="Log">Log</a> ';
 					if (permissions.hasPermission("Admin")) {
 						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
+					}
+				  }
+				  else if (item.SubType == "Custom Sensor") {
+					xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.SensorUnit) +'\', \'' + item.SubType + '\');" data-i18n="Log">Log</a> ';
+					if (permissions.hasPermission("Admin")) {
+						xhtm+='<a class="btnsmall" onclick="EditCustomSensorDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.CustomImage + ', ' + item.SensorType + ', \'' + escape(item.SensorUnit) + '\');" data-i18n="Edit">Edit</a> ';
 					}
 				  }
 				  else if (item.SubType == "Percentage") {
@@ -1672,6 +1758,74 @@ define(['app'], function (app) {
 				  resizable: false,
 				  title: $.t("Edit Device"),
 				  buttons: dialog_editutilitydevice_buttons,
+				  close: function() {
+					$( this ).dialog( "close" );
+				  }
+			});
+
+			var dialog_editcustomsensordevice_buttons = {};
+			
+			dialog_editcustomsensordevice_buttons[$.t("Update")]=function() {
+			  var bValid = true;
+			  bValid = bValid && checkLength( $("#dialog-editcustomsensordevice #devicename"), 2, 100 );
+			  bValid = bValid && checkLength( $("#dialog-editcustomsensordevice #sensoraxis"), 1, 100 );
+			  if ( bValid ) {
+				  $( this ).dialog( "close" );
+				  var soptions = $.sensorType + ";" + encodeURIComponent($("#dialog-editcustomsensordevice #sensoraxis").val());
+					var cval=$('#dialog-editcustomsensordevice #combosensoricon').data('ddslick').selectedIndex;
+					var CustomImage=$.ddData[cval].value;
+				  
+				  $.ajax({
+					 url: "json.htm?type=setused&idx=" + $.devIdx + 
+						'&name=' + encodeURIComponent($("#dialog-editcustomsensordevice #devicename").val()) + 
+						'&description=' + encodeURIComponent($("#dialog-editcustomsensordevice #devicedescription").val()) + 
+						'&switchtype=0' + 
+						'&customimage=' + CustomImage +
+						'&devoptions=' + encodeURIComponent(soptions) + 
+						'&used=true',
+					 async: false, 
+					 dataType: 'json',
+					 success: function(data) {
+						ShowUtilities();
+					 }
+				  });
+				  
+			  }
+			};
+			dialog_editcustomsensordevice_buttons[$.t("Remove Device")]=function() {
+				$( this ).dialog( "close" );
+				bootbox.confirm($.t("Are you sure to remove this Device?"), function(result) {
+					if (result==true) {
+					  $.ajax({
+						 url: "json.htm?type=setused&idx=" + $.devIdx + 
+							'&name=' + encodeURIComponent($("#dialog-editcustomsensordevice #devicename").val()) + 
+							'&description=' + encodeURIComponent($("#dialog-editcustomsensordevice #devicedescription").val()) + 
+							'&used=false',
+						 async: false, 
+						 dataType: 'json',
+						 success: function(data) {
+							ShowUtilities();
+						 }
+					  });
+					}
+				});
+			};
+			dialog_editcustomsensordevice_buttons[$.t("Replace")]=function() {
+				  $( this ).dialog( "close" );
+				  ReplaceDevice($.devIdx,ShowUtilities);
+			};
+			dialog_editcustomsensordevice_buttons[$.t("Cancel")]=function() {
+				  $( this ).dialog( "close" );
+			};
+			
+			$( "#dialog-editcustomsensordevice" ).dialog({
+				  autoOpen: false,
+				  width: 'auto',
+				  height: 'auto',
+				  modal: true,
+				  resizable: false,
+				  title: $.t("Edit Device"),
+				  buttons: dialog_editcustomsensordevice_buttons,
 				  close: function() {
 					$( this ).dialog( "close" );
 				  }
@@ -2047,6 +2201,12 @@ define(['app'], function (app) {
 		  ShowUtilities();
 
 			$( "#dialog-editutilitydevice" ).keydown(function (event) {
+				if (event.keyCode == 13) {
+					$(this).siblings('.ui-dialog-buttonpane').find('button:eq(0)').trigger("click");
+					return false;
+				}
+			});
+			$( "#dialog-editcustomsensordevice" ).keydown(function (event) {
 				if (event.keyCode == 13) {
 					$(this).siblings('.ui-dialog-buttonpane').find('button:eq(0)').trigger("click");
 					return false;

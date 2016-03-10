@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 1227
+# ref 1229
 
 CACHE:
 # CSS
@@ -133,6 +133,9 @@ images/csv.png
 images/csv_hover.png
 images/current.png
 images/current48.png
+images/Custom.png
+images/Custom48_Off.png
+images/Custom48_On.png
 images/customicons.png
 images/delete.png
 images/demand.png

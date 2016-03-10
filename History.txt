@@ -1,14 +1,16 @@
 Version 3.xxxx (March xx 2016)
+- Implemented: Blockly/Lua Camera device, to send camera snapshots with subject after xx seconds
+- Implemented: Custom Sensor
+- Implemented: Dust Sensor (ug/m3)
 - Implemented: Nefit Easy, User Mode (as switch, On=Clock, Off=Manual), Flow Temperature
 - Implemented: OpenZWave, Aeotec ZWave+ USB Controller, Enable/Disable blinking mode (@Schmart, Thanks for the magic codes!)
 - Implemented: OpenZWave, Node table, now also displays Manufacturer, Product ID and Product Type
-- Implemented: Blockly/Lua Camera device, to send camera snapshots with subject after xx seconds
 - Changed: Stable ID generation for Philips Hue scenes (you need to delete all scenes and restart the hue hardware or domoticz)
-- Fixed: Database backup is now only possible for admin users
 - Fixed: Better handling of white listed commands/urls
+- Fixed: Database backup is now only possible for admin users
 - Fixed: Double checking command rights
-- Fixed: Fix on/off delays not saved on the selector switch edit form (#532).
 - Fixed: Fix Off Delay not handled for Selector switch (#538).
+- Fixed: Fix On/Off delays not saved on the selector switch edit form (#532).
 
 Version 3.4834 (March 2nd 2016)
 - Implemented: Blockly, now possible to use expressions in notifications/email/SMS like "My temperature is {{temperaturedevice[1234]}} degrees" (see http://www.domoticz.com/wiki/Events)

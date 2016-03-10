@@ -62,6 +62,7 @@
 #define sTypeCounterIncremental		0x1C
 #define sTypeKwh					0x1D
 #define sTypeWaterflow				0x1E
+#define sTypeCustom					0x1F
 
 //General Switch
 #define pTypeGeneralSwitch			0xF4
