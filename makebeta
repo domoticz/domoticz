@@ -54,12 +54,23 @@ then
   rm ${archive_file}.sha256sum
 fi
 
+bash ./packagingtasks prepare
+if [ $? -ne 0 ]; then
+	echo "Error preparing package !";
+	exit 1
+fi
 tar -zcf ${archive_file} domoticz History.txt License.txt domoticz.sh server_cert.pem updatebeta updaterelease www/ scripts/ Config/
 if [ $? -ne 0 ]
 then
         echo "Error creating archive!...";
         exit 1
 fi
+bash ./packagingtasks clean
+if [ $? -ne 0 ]; then
+	echo "Error cleaning packaging resources !";
+	exit 1
+fi
+
 echo "Creating checksum file...";
 hash="$(sha256sum ${archive_file} | sed -e 's/\s.*$//')  update.tgz";
 echo $hash > ${archive_file}.sha256sum

@@ -1,0 +1,59 @@
+#!/bin/bash
+
+typeset mode=$1
+typeset www_dir=www/
+
+function compress_www_files {
+	typeset filter=$1
+	echo "Compressing ${filter:?} files..."
+	for in_file_path in `find "${www_dir:?}" -type f -name ${filter:?};`
+	do
+		typeset out_file_path=${in_file_path:?}.gz
+		if [ -f "${in_file_path:?}" ] && [ "${in_file_path:?}" -nt "${out_file_path:?}" ]; then
+			gzip -fkv "${in_file_path:?}"
+			touch -r "${in_file_path:?}" "${out_file_path:?}"
+		fi
+	done
+}
+
+function remove_compressed_files {
+	typeset filter=$1
+	echo "Cleaning ${filter:?}.gz files..."
+	for in_file_path in `find "${www_dir:?}" -type f -name ${filter:?};`
+	do
+		typeset out_file_path=${in_file_path:?}.gz
+		if [ -f "${in_file_path:?}" ] && [ -f "${out_file_path:?}" ]; then
+			rm -v "${out_file_path:?}"
+		fi
+	done
+}
+
+if [ ! -d "${www_dir:?}" ]; then
+  echo "File not found : ${www_dir:?}"
+  exit 1;
+fi
+
+if [ "$mode" == "prepare" ]; then
+	# compress .js, .json and .css files
+	compress_www_files "*.js"
+	compress_www_files "*.json"
+	compress_www_files "*.css"
+
+elif [ "$mode" == "clean" ]; then
+	# remove .js.gz, .json.gz and .css.gz files
+	remove_compressed_files "*.js"
+	remove_compressed_files "*.json"
+	remove_compressed_files "*.css"
+
+elif [ "$mode" == "" ]; then
+	echo "Missing script argument !"
+	echo "Usage: bash ./packagingtasks prepare|clean"
+	exit 1;
+
+else
+	echo "Invalid script argument : $mode !"
+	echo "Usage: bash ./packagingtasks prepare|clean"
+	exit 1;
+fi
+
+exit 0;
