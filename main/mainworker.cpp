@@ -9370,6 +9370,14 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 			return;
 		m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_USAGE, pMeter->floatval1);
 	}
+	else if (subType == sTypeCustom)
+	{
+		sprintf(szTmp, "%.2f", pMeter->floatval1);
+		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
+		if (DevRowIdx == -1)
+			return;
+		m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_USAGE, pMeter->floatval1);
+	}
 
 	if (m_verboselevel >= EVBL_ALL)
 	{
@@ -12065,12 +12073,8 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 			}
 			else if (subType == sTypeCustom)
 			{
-				unsigned long ID;
-				std::stringstream s_strid;
-				s_strid << std::hex << DeviceID;
-				s_strid >> ID;
 				_tGeneralDevice gDevice;
-				gDevice.subtype = subType;
+				gDevice.subtype = sTypeCustom;
 				gDevice.id = unit;
 				gDevice.floatval1 = (float)atof(sValue.c_str());
 				gDevice.intval1 = static_cast<int>(ID);
