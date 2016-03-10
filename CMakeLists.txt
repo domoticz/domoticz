@@ -650,3 +650,31 @@ TEST_BIG_ENDIAN(BIGENDIAN)
 IF(${BIGENDIAN})
      ADD_DEFINITIONS(-DIS_BIG_ENDIAN)
 ENDIF(${BIGENDIAN})
+
+# Compress www files to optimize webserver response times
+macro(compress_www_files _filter)
+  file(GLOB_RECURSE _files "${CMAKE_CURRENT_BINARY_DIR}/www/${_filter}")
+  foreach (_file_path ${_files})
+    set(_in_file_path "${_file_path}")
+    set(_out_file_path "${_file_path}.gz")
+    file(TIMESTAMP ${_in_file_path} _in_ts)
+    file(TIMESTAMP ${_out_file_path} _out_ts)
+    if(NOT _in_ts STREQUAL _out_ts)
+      execute_process(COMMAND rm -f "${_out_file_path}")
+    endif(NOT _in_ts STREQUAL _out_ts)
+    add_custom_command(
+      OUTPUT ${_out_file_path}
+      COMMAND gzip -fk "${_in_file_path}"
+      COMMAND touch -r "${_in_file_path}" "${_out_file_path}"
+    )
+    set(compressed_www_files ${compressed_www_files} ${_out_file_path})
+  endforeach()
+endmacro()
+compress_www_files("*.js")
+compress_www_files("*.json")
+compress_www_files("*.css")
+
+add_custom_target(www_files_compression ALL
+  DEPENDS ${compressed_www_files})
+
+add_dependencies(domoticz www_files_compression)

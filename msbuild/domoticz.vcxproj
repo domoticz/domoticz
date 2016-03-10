@@ -73,6 +73,9 @@
     <PreBuildEvent>
       <Message>Getting git version info</Message>
     </PreBuildEvent>
+    <PostBuildEvent>
+      <Command>"$(SolutionDir)postbuildevent.cmd"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -102,6 +105,9 @@
       <Command>"$(SolutionDir)makeversion.bat"</Command>
       <Message>Getting git version info</Message>
     </PreBuildEvent>
+    <PostBuildEvent>
+      <Command>"$(SolutionDir)postbuildevent.cmd"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt" />
