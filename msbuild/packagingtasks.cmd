@@ -7,7 +7,6 @@ set script_dir=%~dp0
 set www_dir=%script_dir%\..\www
 set touch_home=%script_dir%\tools
 set gzip_home=%script_dir%\WindowsInstaller
-set path=%path%;%touch_home%;%gzip_home%
 
 if not exist "%www_dir%" (
 	echo %www_dir% directory not found !
@@ -45,8 +44,8 @@ goto :eof
 :compress_static
 set in_file_path=%~1
 set out_file_path=%in_file_path%.gz
-for /f "tokens=*" %%i in ('touch.exe /v "%in_file_path%"') do set in_file_date=%%i
-for /f "tokens=*" %%i in ('touch.exe /v "%out_file_path%"') do set out_file_date=%%i
+for /f "tokens=*" %%i in ('%touch_home%\touch.exe /v "%in_file_path%"') do set in_file_date=%%i
+for /f "tokens=*" %%i in ('%touch_home%\touch.exe /v "%out_file_path%"') do set out_file_date=%%i
 if "%in_file_date%"=="%out_file_date%" (
 REM	echo %in_file_path% not modified
 	goto :eof
@@ -54,7 +53,7 @@ REM	echo %in_file_path% not modified
 if exist "%out_file_path%" (
 	del /q /s "%out_file_path%" >nul
 )
-7z.exe a -tgzip -mx5 "%out_file_path%" "%in_file_path%" >nul
+%gzip_home%\7z.exe a -tgzip -mx5 "%out_file_path%" "%in_file_path%" >nul
 if %errorlevel% neq 0 (
 	echo 7zip has failed compressing the file "%in_file_path%"
 	goto :eof
@@ -63,7 +62,7 @@ if not exist "%out_file_path%" (
  	echo File not found : "%out_file_path%"
 	goto :eof
 )
-touch.exe /r "%in_file_path%" "%out_file_path%" >nul
+%touch_home%\touch.exe /r "%in_file_path%" "%out_file_path%" >nul
 if %errorlevel% neq 0 (
 	echo Touch has failed on file "%out_file_path%"
 	goto :eof
