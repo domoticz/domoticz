@@ -237,26 +237,26 @@ int I2C::ReadInt(int fd, uint8_t *devValues, uint8_t startReg, uint8_t bytesToRe
 #else
 	int rc;
 	struct i2c_rdwr_ioctl_data messagebuffer;
+	struct i2c_msg bmp_read_reg[2] = {
+			{ BMPx8x_I2CADDR, 0, 1, &startReg },
+			{ BMPx8x_I2CADDR, I2C_M_RD, bytesToRead, devValues }
+	};
+	struct i2c_msg htu_read_reg[1] = {
+			{ HTU21D_ADDRESS, I2C_M_RD, bytesToRead, devValues }
+	};
 
 	//Build a register read command
 	//Requires a one complete message containing a command
 	//and anaother complete message for the reply
 	if (device=="BMP085")
 	{
-		struct i2c_msg read_reg[2] = {
-			{ BMPx8x_I2CADDR, 0, 1, &startReg },
-			{ BMPx8x_I2CADDR, I2C_M_RD, bytesToRead, devValues }
-		};
 		messagebuffer.nmsgs = 2;                  //Two message/action
-		messagebuffer.msgs = read_reg;            //load the 'read__reg' message into the buffer
+		messagebuffer.msgs = bmp_read_reg;            //load the 'read__reg' message into the buffer
 	}
 	else if (device=="HTU21D")
 	{
-		struct i2c_msg read_reg[1] = {
-			{ HTU21D_ADDRESS, I2C_M_RD, bytesToRead, devValues }
-		};
 		messagebuffer.nmsgs = 1;
-		messagebuffer.msgs = read_reg;            //load the 'read__reg' message into the buffer
+		messagebuffer.msgs = htu_read_reg;            //load the 'read__reg' message into the buffer
 	}
 
 	rc = ioctl(fd, I2C_RDWR, &messagebuffer); //Send the buffer to the bus and returns a send status
@@ -276,6 +276,12 @@ int I2C::WriteCmd(int fd, uint8_t devAction)
 	int rc;
 	struct i2c_rdwr_ioctl_data messagebuffer;
 	uint8_t datatosend[2];
+	struct i2c_msg bmp_write_reg[1] = {
+			{ BMPx8x_I2CADDR, 0, 2, datatosend }
+	};
+	struct i2c_msg htu_write_reg[1] = {
+			{ HTU21D_ADDRESS, 0, 2, datatosend }
+	};
 
 	if (device=="BMP085")
 	{
@@ -283,20 +289,14 @@ int I2C::WriteCmd(int fd, uint8_t devAction)
 		datatosend[1] = devAction;
 		//Build a register write command
 		//Requires one complete message containing a reg address and command
-		struct i2c_msg write_reg[1] = {
-			{ BMPx8x_I2CADDR, 0, 2, datatosend }
-		};
-		messagebuffer.msgs = write_reg;           //load the 'write__reg' message into the buffer
+		messagebuffer.msgs = bmp_write_reg;           //load the 'write__reg' message into the buffer
 	}
 	else if (device=="HTU21D")
 	{
 		datatosend[0] = devAction;
 		//Build a register write command
 		//Requires one complete message containing a reg address and command
-		struct i2c_msg write_reg[1] = {
-			{ HTU21D_ADDRESS, 0, 2, datatosend }
-		};
-		messagebuffer.msgs = write_reg;           //load the 'write__reg' message into the buffer
+		messagebuffer.msgs = htu_write_reg;           //load the 'write__reg' message into the buffer
 	}
 
 	messagebuffer.nmsgs = 1;                  //One message/action
