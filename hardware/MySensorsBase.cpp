@@ -820,7 +820,7 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 		{
 			if (pChild->presType == S_DUST)
 			{
-				SendAirQualitySensor(pChild->nodeID, pChild->childID, pChild->batValue, intValue, (!pChild->childName.empty()) ? pChild->childName : "Dust");
+				SendCustomSensor(pChild->nodeID, pChild->childID, pChild->batValue, intValue, (!pChild->childName.empty()) ? pChild->childName : "Dust Sensor", "ug/m3");
 			}
 			else if (pChild->presType == S_AIR_QUALITY)
 			{
