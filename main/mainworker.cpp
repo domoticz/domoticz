@@ -9191,7 +9191,6 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 		(subType == sTypeCurrent) ||
 		(subType == sTypePercentage) ||
 		(subType == sTypeWaterflow) ||
-		(subType == sTypeCustom) ||
 		(subType == sTypePressure) ||
 		(subType == sTypeZWaveClock) ||
 		(subType == sTypeZWaveThermostatMode) ||
@@ -9362,22 +9361,6 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 		if (DevRowIdx == -1)
 			return;
 	}
-	else if (subType == sTypeWaterflow)
-	{
-		sprintf(szTmp, "%.2f", pMeter->floatval1);
-		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
-		if (DevRowIdx == -1)
-			return;
-		m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_USAGE, pMeter->floatval1);
-	}
-	else if (subType == sTypeCustom)
-	{
-		sprintf(szTmp, "%.4f", pMeter->floatval1);
-		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
-		if (DevRowIdx == -1)
-			return;
-		m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_USAGE, pMeter->floatval1);
-	}
 
 	if (m_verboselevel >= EVBL_ALL)
 	{
@@ -9480,11 +9463,6 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 		case sTypeAlert:
 			WriteMessage("subtype       = Alert");
 			sprintf(szTmp, "Alert = %d", pMeter->intval1);
-			WriteMessage(szTmp);
-			break;
-		case sTypeCustom:
-			WriteMessage("subtype       = Custom");
-			sprintf(szTmp, "Value = %.2f", pMeter->floatval1);
 			WriteMessage(szTmp);
 			break;
 		default:
@@ -11104,8 +11082,6 @@ bool MainWorker::SetSetPoint(const std::string &idx, const float TempValue, cons
 		tsen.EVOHOME2.mode=newMode;
 		if(newMode==CEvohome::zmTmp)
 			CEvohomeDateTime::DecodeISODate(tsen.EVOHOME2,until.c_str());
-		else
-			tsen.EVOHOME2.year=0xFFFF;
 		WriteToHardware(HardwareID,(const char*)&tsen,sizeof(tsen.EVOHOME2));
 
 		//Pass across the current controller mode if we're going to update as per the hw device
@@ -12067,16 +12043,6 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 				s_strid >> ID;
 				_tGeneralDevice gDevice;
 				gDevice.subtype = sTypeWaterflow;
-				gDevice.id = unit;
-				gDevice.floatval1 = (float)atof(sValue.c_str());
-				gDevice.intval1 = static_cast<int>(ID);
-				DecodeRXMessage(pHardware, (const unsigned char *)&gDevice, NULL, batterylevel);
-				return true;
-			}
-			else if (subType == sTypeCustom)
-			{
-				_tGeneralDevice gDevice;
-				gDevice.subtype = sTypeCustom;
 				gDevice.id = unit;
 				gDevice.floatval1 = (float)atof(sValue.c_str());
 				gDevice.intval1 = static_cast<int>(ID);
