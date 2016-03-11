@@ -526,7 +526,7 @@ bool CNefitEasy::GetPressure()
 #endif
 
 #ifdef DEBUG_NefitEasyW
-	SaveString2Disk(sResult, "E:\\nefit_uistatus.json");
+	SaveString2Disk(sResult, "E:\\nefit_uipres.json");
 #endif
 	ret = jReader.parse(sResult, root);
 	if (!ret)
