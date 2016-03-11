@@ -1266,7 +1266,7 @@ define(['app'], function (app) {
 				  xhtm+='\t      <td id="img"><img src="images/';
 					var status="";
 					if (typeof item.Counter != 'undefined') {
-					   if ((item.Type == "RFXMeter")||(item.SubType == "Counter Incremental")) {
+					   if ((item.Type == "RFXMeter")||(item.Type == "YouLess Meter")||(item.SubType == "Counter Incremental")) {
 							if (item.SwitchTypeVal==1) {
 								xhtm+='Gas48.png" height="48" width="48"></td>\n';
 							}
