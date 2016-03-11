@@ -4475,7 +4475,8 @@ namespace http {
 						if (
 							(lighttype == 205) ||
 							(lighttype == 210) ||
-							(lighttype == 211)
+							(lighttype == 211)||
+							(lighttype == 212)
 							)
 						{
 							id = id.substr(0, 6);
