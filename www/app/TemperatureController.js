@@ -654,7 +654,9 @@ define(['app'], function (app) {
 							}
 							status+=$.t('Mode') + ': ' + EvoDisplayTextMode(sHeatMode);
 							if (tUntil!=""){
-								status+=', '+$.t('Until') + ': ' + tUntil.replace(/T/,' ').replace(/\..+/, '');
+								var dtUntil = new Date(tUntil);
+								dtUntil = new Date(dtUntil.getTime() - dtUntil.getTimezoneOffset()*60000);
+								status+=', '+$.t('Until') + ': ' + dtUntil.toISOString().replace(/T/,' ').replace(/\..+/, '');
 							}
 							bHaveBefore=true;
 						}
@@ -952,8 +954,10 @@ define(['app'], function (app) {
 								}
 								xhtm+=$.t('Mode') + ': ' + EvoDisplayTextMode(sHeatMode);
 								if (typeof item.Until != 'undefined'){
-									tUntil=item.Until;
-									xhtm+=', '+$.t('Until') + ': ' + tUntil.replace(/T/,' ').replace(/\..+/, '');
+                                                                        tUntil=item.Until.replace(/Z/,'').replace(/\..+/, '')+'Z';
+									var dtUntil = new Date(tUntil);
+									dtUntil = new Date(dtUntil.getTime() - dtUntil.getTimezoneOffset()*60000);
+									xhtm+=', '+$.t('Until') + ': ' + dtUntil.toISOString().replace(/T/,' ').replace(/\..+/, '');
 								}
 								bHaveBefore=true;
 							}
