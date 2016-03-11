@@ -9372,7 +9372,7 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 	}
 	else if (subType == sTypeCustom)
 	{
-		sprintf(szTmp, "%.2f", pMeter->floatval1);
+		sprintf(szTmp, "%.4f", pMeter->floatval1);
 		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 		if (DevRowIdx == -1)
 			return;

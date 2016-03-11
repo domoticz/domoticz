@@ -9327,7 +9327,7 @@ namespace http {
 								SensorType = atoi(sResults[0].c_str());
 								szAxesLabel = sResults[1];
 							}
-							sprintf(szData, "%.2f %s", atof(sValue.c_str()), szAxesLabel.c_str());
+							sprintf(szData, "%g %s", atof(sValue.c_str()), szAxesLabel.c_str());
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["SensorType"] = SensorType;
 							root["result"][ii]["SensorUnit"] = szAxesLabel;
