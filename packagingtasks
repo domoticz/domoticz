@@ -1,7 +1,9 @@
 #!/bin/bash
 
 typeset mode=$1
-typeset www_dir=www/
+typeset script_path=$(readlink -f "$0")
+typeset script_dir=$(dirname "${script_path:?}")
+typeset www_dir=${script_dir:?}/www/
 
 function compress_www_files {
 	typeset filter=$1
