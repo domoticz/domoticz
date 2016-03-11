@@ -5680,6 +5680,9 @@ void MainWorker::decode_BLINDS1(const int HwdID, const _eHardwareTypes HwdType, 
 		case sTypeBlindsT11:
 			WriteMessage("subtype       = ASP");
 			break;
+		case sTypeBlindsT12:
+			WriteMessage("subtype       = Confexx");
+			break;
 		default:
 			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X:", pResponse->BLINDS1.packettype, pResponse->BLINDS1.subtype);
 			WriteMessage(szTmp);

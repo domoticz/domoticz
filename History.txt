@@ -5,6 +5,7 @@ Version 3.xxxx (March xx 2016)
 - Implemented: Nefit Easy, User Mode (as switch, On=Clock, Off=Manual), Flow Temperature
 - Implemented: OpenZWave, Aeotec ZWave+ USB Controller, Enable/Disable blinking mode (@Schmart, Thanks for the magic codes!)
 - Implemented: OpenZWave, Node table, now also displays Manufacturer, Product ID and Product Type
+- Implemented: RFXCom, Blinds T12 (Confexx)
 - Changed: Stable ID generation for Philips Hue scenes (you need to delete all scenes and restart the hue hardware or domoticz)
 - Fixed: Better handling of white listed commands/urls
 - Fixed: Database backup is now only possible for admin users

@@ -815,12 +815,13 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 			SendLuxSensor(pChild->nodeID, pChild->childID, pChild->batValue, floatValue, (!pChild->childName.empty()) ? pChild->childName.c_str() : "Light Level");
 		}
 		break;
-	case V_LEVEL:
+	case V_LEVEL: //stored as Int AND Float
 		if (pChild->GetValue(vType, intValue))
 		{
 			if (pChild->presType == S_DUST)
 			{
-				SendCustomSensor(pChild->nodeID, pChild->childID, pChild->batValue, intValue, (!pChild->childName.empty()) ? pChild->childName : "Dust Sensor", "ug/m3");
+				if (pChild->GetValue(vType, floatValue))
+					SendCustomSensor(pChild->nodeID, pChild->childID, pChild->batValue, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Dust Sensor", "ug/m3");
 			}
 			else if (pChild->presType == S_AIR_QUALITY)
 			{
@@ -828,7 +829,8 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 			}
 			else if (pChild->presType == S_LIGHT_LEVEL)
 			{
-				SendLuxSensor(pChild->nodeID, pChild->childID, pChild->batValue, (float)intValue, (!pChild->childName.empty()) ? pChild->childName : "Lux");
+				if (pChild->GetValue(vType, floatValue))
+					SendLuxSensor(pChild->nodeID, pChild->childID, pChild->batValue, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Lux");
 			}
 			else if (pChild->presType == S_SOUND)
 			{
