@@ -9372,7 +9372,7 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 	}
 	else if (subType == sTypeCustom)
 	{
-		sprintf(szTmp, "%.2f", pMeter->floatval1);
+		sprintf(szTmp, "%.4f", pMeter->floatval1);
 		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 		if (DevRowIdx == -1)
 			return;
@@ -11104,6 +11104,8 @@ bool MainWorker::SetSetPoint(const std::string &idx, const float TempValue, cons
 		tsen.EVOHOME2.mode=newMode;
 		if(newMode==CEvohome::zmTmp)
 			CEvohomeDateTime::DecodeISODate(tsen.EVOHOME2,until.c_str());
+		else
+			tsen.EVOHOME2.year=0xFFFF;
 		WriteToHardware(HardwareID,(const char*)&tsen,sizeof(tsen.EVOHOME2));
 
 		//Pass across the current controller mode if we're going to update as per the hw device

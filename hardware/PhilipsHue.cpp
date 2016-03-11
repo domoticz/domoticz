@@ -784,7 +784,9 @@ bool CPhilipsHue::GetScenes(const Json::Value &root)
 			hscene.id = iScene.key().asString();;
 			hscene.name = scene["name"].asString();
 			hscene.lastupdated = scene["lastupdated"].asString();
-
+			if (hscene.lastupdated.empty())
+				continue; //old scene/legacy scene
+			
 			//Strip some info
 			size_t tpos = hscene.name.find(" from ");
 			if (tpos != std::string::npos)
