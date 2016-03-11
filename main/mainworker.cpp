@@ -11104,6 +11104,8 @@ bool MainWorker::SetSetPoint(const std::string &idx, const float TempValue, cons
 		tsen.EVOHOME2.mode=newMode;
 		if(newMode==CEvohome::zmTmp)
 			CEvohomeDateTime::DecodeISODate(tsen.EVOHOME2,until.c_str());
+		else
+			tsen.EVOHOME2.year=0xFFFF;
 		WriteToHardware(HardwareID,(const char*)&tsen,sizeof(tsen.EVOHOME2));
 
 		//Pass across the current controller mode if we're going to update as per the hw device
