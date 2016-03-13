@@ -1,5 +1,4 @@
 *.orig
-msbuild
 domoticz.db
 appversion.h
 appversion.h.txt

@@ -385,9 +385,12 @@ images/startup/apple-touch-startup-image-1242x2148.png
 images/startup/apple-touch-startup-image-2208x1182.png
 media/1x1.gif
 media/handclosed.cur
+media/handdelete.cur
 media/handopen.cur
 media/quote0.png
 media/quote1.png
+media/sprites.png
+media/sprites.svg
 media/trashbody.png
 media/trashlid.png
 media/tree.png
@@ -396,8 +399,11 @@ media/swf/copy_csv_xls_pdf.swf
 secpanel/bg.jpg
 
 # Audio
+media/click.mp3
 media/click.wav
+media/delete.mp3
 media/delete.wav
+media/disconnect.wav
 secpanel/media/arm.aac
 secpanel/media/arm.mp3
 secpanel/media/arm.ogg
@@ -486,6 +492,7 @@ js/angular-tree-control.js
 js/angular.min.js
 js/angularAMD.min.js
 js/blockly_compressed.js
+js/blocks_compressed.js
 js/bootbox.min.js
 js/bootstrap.min.js
 js/colpick.js
