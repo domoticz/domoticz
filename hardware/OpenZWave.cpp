@@ -1883,7 +1883,6 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 						_device.scaleID = SCALEID_ENERGY;
 					else
 						_device.scaleID = SCALEID_POWER;
-					_device.floatValue = fValue;
 					_device.scaleMultiply = 1;
 					if (vUnits == "kWh")
 					{
@@ -1894,6 +1893,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 					{
 						_device.devType = ZDTYPE_SENSOR_POWER;
 					}
+					_device.floatValue = fValue*_device.scaleMultiply;
 					InsertDevice(_device);
 				}
 			}
