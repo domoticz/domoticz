@@ -409,6 +409,7 @@
     </ClInclude>
     <ClInclude Include="..\hardware\AnnaThermostat.h" />
     <ClInclude Include="..\hardware\ASyncTCP.h" />
+    <ClInclude Include="..\hardware\AtagOne.h" />
     <ClInclude Include="..\hardware\Comm5TCP.h" />
     <ClInclude Include="..\hardware\csocket.h" />
     <ClInclude Include="..\hardware\CurrentCostMeterBase.h" />
@@ -606,6 +607,7 @@
     <ClCompile Include="..\hardware\AnnaThermostat.cpp" />
     <ClCompile Include="..\hardware\ASyncSerial.cpp" />
     <ClCompile Include="..\hardware\ASyncTCP.cpp" />
+    <ClCompile Include="..\hardware\AtagOne.cpp" />
     <ClCompile Include="..\hardware\Comm5TCP.cpp" />
     <ClCompile Include="..\hardware\csocket.cpp" />
     <ClCompile Include="..\hardware\CurrentCostMeterBase.cpp" />

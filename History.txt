@@ -1,6 +1,9 @@
 Version 3.xxxx (March xx 2016)
+- Implemented: Atag One Thermostat support
 - Implemented: Blockly/Lua Camera device, to send camera snapshots with subject after xx seconds
+- Implemented: Blockly upgraded to latest version (fixed and cleaned some code as well), this fixes problem with long sensor lists
 - Implemented: Custom Sensor
+- Implemented: Devices Tab, Log icon for Pressure
 - Implemented: Dust Sensor (ug/m3)
 - Implemented: Nefit Easy, User Mode (as switch, On=Clock, Off=Manual), Flow Temperature
 - Implemented: OpenZWave, Aeotec ZWave+ USB Controller, Enable/Disable blinking mode (@Schmart, Thanks for the magic codes!)

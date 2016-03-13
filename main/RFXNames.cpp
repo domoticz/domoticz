@@ -219,6 +219,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_NefitEastLAN, "Nefit Easy HTTP server over LAN interface" },
 		{ HTYPE_OpenWebNet, "MyHome OpenWebNet" },
 		{ HTYPE_RaspberryHTU21D, "I2C sensor HTU21D(F)/SI702x Humidity+Temp" },
+		{ HTYPE_AtagOne, "Atag One Thermostat" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
