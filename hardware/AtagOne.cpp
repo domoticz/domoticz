@@ -145,7 +145,7 @@ std::string CAtagOne::GetRequestVerificationToken(const std::string &url)
 	if (!HTTPClient::GET(sURL, sResult))
 	{
 		_log.Log(LOG_ERROR, "AtagOne: Error requesting token!");
-		return false;
+		return "";
 	}
 #ifdef DEBUG_AtagOneThermostat
 	SaveString2Disk(sResult, "E:\\AtagOne_requesttoken.txt");
