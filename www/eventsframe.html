@@ -802,6 +802,7 @@
 		if ($("#blocklyDiv").css("display") == "none") {
 			$("#aceDiv").css("display","none");
 			$("#blocklyDiv").css("display","");
+			$(".blocklyToolboxDiv").css("display","");
 		}
 		$("#blocklyDiv").css("width", $(window).width()-250);
 		$("#blocklyDiv").css("height", $(window).height()-20);
@@ -812,6 +813,7 @@
 	{
 		if ($("#aceDiv").css("display") == "none") {
 			$("#blocklyDiv").css("display","none");
+			$(".blocklyToolboxDiv").css("display","none");
 			$("#aceDiv").css("display","");
 		}
 		$("#aceDiv").css("width", $(window).width()-250);
