@@ -3528,9 +3528,28 @@ namespace http {
 								bool bIsDimmer = (
 									(switchtype == STYPE_Dimmer) ||
 									(switchtype == STYPE_BlindsPercentage) ||
-									(switchtype == STYPE_BlindsPercentageInverted)
+									(switchtype == STYPE_BlindsPercentageInverted) ||
+									(switchtype == STYPE_Selector)
 									);
 								root["result"][ii]["IsDimmer"] = bIsDimmer;
+								std::string dimmerLevels = bIsDimmer ? "all" : "none";
+								if (switchtype == STYPE_Selector) {
+									std::stringstream ss;
+									std::map<std::string, std::string> selectorStatuses;
+									GetSelectorSwitchStatuses(options, selectorStatuses);
+									bool levelOffHidden = options["LevelOffHidden"] == "true";
+									for(int i = 0; i < selectorStatuses.size(); i++) {
+										if (levelOffHidden && (i == 0)) {
+											continue;
+										}
+										if((levelOffHidden && (i > 1)) || (i > 0)) {
+											ss << ",";
+										}
+										ss << i * 10;
+									}
+									dimmerLevels = ss.str();
+								}
+								root["result"][ii]["DimmerLevels"] = dimmerLevels;
 								ii++;
 							}
 							break;
