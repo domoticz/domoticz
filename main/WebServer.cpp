@@ -3466,7 +3466,7 @@ namespace http {
 				root["status"] = "OK";
 				root["title"] = "GetLightSwitches";
 				std::vector<std::vector<std::string> > result;
-				result = m_sql.safe_query("SELECT ID, Name, Type, SubType, Used, SwitchType FROM DeviceStatus ORDER BY Name");
+				result = m_sql.safe_query("SELECT ID, Name, Type, SubType, Used, SwitchType, Options FROM DeviceStatus ORDER BY Name");
 				if (result.size() > 0)
 				{
 					std::vector<std::vector<std::string> >::const_iterator itt;
@@ -3481,6 +3481,7 @@ namespace http {
 						int SubType = atoi(sd[3].c_str());
 						int used = atoi(sd[4].c_str());
 						_eSwitchType switchtype = (_eSwitchType)atoi(sd[5].c_str());
+						std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sd[6]);
 						bool bdoAdd=false;
 						switch (Type)
 						{
