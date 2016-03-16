@@ -616,7 +616,6 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 			bHaveBlind = true;
 			blind = RFLinkGetIntStringValue(results[ii]);
 		}
-
 		else if (results[ii].find("KWATT") != std::string::npos)
 		{
 			iTemp = RFLinkGetHexStringValue(results[ii]);
@@ -675,6 +674,13 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 			switchunit = 1;
 			bHaveSwitchCmd = true;
 			switchcmd = RFLinkGetStringValue(results[ii]);
+		}
+		else if (results[ii].find("CHIME") != std::string::npos)
+		{
+			bHaveSwitch = true;
+			switchunit = 2;
+			bHaveSwitchCmd = true;
+			switchcmd = "ON";
 		}
 	}
 
