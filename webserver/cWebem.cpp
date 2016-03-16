@@ -1665,6 +1665,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 				// fix provided by http://www.codeproject.com/Members/jaeheung72 )
 
 				reply::add_header(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
+				reply::add_header(&rep, "Last-Modified", make_web_time(mytime(NULL)), true);
 
 				//check gzip support if yes, send it back in gzip format
 				CompressWebOutput(req, rep);

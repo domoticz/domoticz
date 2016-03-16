@@ -9346,7 +9346,7 @@ namespace http {
 								}
 							}
 							root["result"][ii]["Image"] = IconFile;
-							root["result"][ii]["TypeImg"] = "air";
+							root["result"][ii]["TypeImg"] = IconFile;
 						}
 						else if (dSubType == sTypeFan)
 						{
