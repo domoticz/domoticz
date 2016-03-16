@@ -11682,6 +11682,15 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 						fLevel=100;
 					ilevel=round(fLevel)+1;
 				}
+				if (switchtype == STYPE_Selector) {
+					if (lstatus != "Set Level") {
+						ilevel = 0;
+					}
+					ilevel = round(ilevel/10.0f)*10; // select only multiples of 10
+					if (ilevel == 0) {
+						lstatus ="Off";
+					}
+				}
 			}
 
 			int idx = atoi(sd[0].c_str());
