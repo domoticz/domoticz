@@ -4,7 +4,7 @@
 #include <iostream>
 #include "hardwaretypes.h"
 
-#define BUFFER_SIZE									10000000
+#define BUFFER_SIZE								2*1024*1024
 
 class csocket;
 

@@ -40,7 +40,7 @@ Cleanup and changes: GizMoCuz
 
 #define HARMONY_COMMUNICATION_PORT					5222
 #define TEMP_AUTH_TOKEN								"TEMP_AUT_TOKEN"
-#define LOGITECH_AUTH_URL							"https://svcs.myharmony.com/CompositeSecurityServices/Security.svc/json/GetUserAuthToken"
+#define LOGITECH_AUTH_URL							"http://svcs.myharmony.com/CompositeSecurityServices/Security.svc/json/GetUserAuthToken"
 #define LOGITECH_AUTH_HOSTNAME						"svcs.myharmony.com"
 #define LOGITECH_AUTH_PATH							"/CompositeSecurityServices/Security.svc/json/GetUserAuthToken"
 #define HARMONY_HUB_AUTHORIZATION_TOKEN_FILENAME	"HarmonyHub.AuthorizationToken"

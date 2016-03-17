@@ -566,24 +566,29 @@ define(['app'], function (app) {
 			}
 			var bShowLevel=false;
 			var bIsLED=false;
+			var dimmerLevels = "none";
 			$.each($.LightsAndSwitches, function(i,item){
 				if (item.idx==DeviceIdx) {
 					bShowLevel=item.isdimmer;
 					bIsLED=(item.SubType.indexOf("RGB") >= 0);
+					dimmerLevels = item.DimmerLevels;
 				}
 			});
 			
+			$("#scenecontent #LedColor").hide();
+			$("#scenecontent #LevelDiv").hide();
 			if (bIsLED) {
 				$("#scenecontent #LedColor").show();
-				$("#scenecontent #LevelDiv").hide();
-			}
-			else {
-				$("#scenecontent #LedColor").hide();
+			} else {
 				if (bShowLevel==true) {
-					$("#scenecontent #LevelDiv").show();
-				}
-				else {
-					$("#scenecontent #LevelDiv").hide();
+					var levelDiv$ = $("#scenecontent #LevelDiv");
+					levelDiv$.find("option").show().end().show();
+					if (dimmerLevels !== "all") {
+						levelDiv$.find("option").hide();
+						$.each(dimmerLevels.split(','), function(i, level) {
+							levelDiv$.find("option[value=\"" + level + "\"]").show();
+						});
+					}
 				}
 			}
 		}
@@ -718,7 +723,8 @@ define(['app'], function (app) {
 									idx: item.idx,
 									name: item.Name,
 									SubType: item.SubType,
-									isdimmer: item.IsDimmer
+									isdimmer: item.IsDimmer,
+									DimmerLevels: item.DimmerLevels
 								 }
 							);
 				});

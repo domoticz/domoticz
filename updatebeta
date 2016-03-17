@@ -8,6 +8,10 @@ lowercase(){
 
 OS=`lowercase \`uname -s\``
 MACH=`uname -m`
+if [ ${MACH} = "armv6l" ]
+then
+ MACH="armv7l"
+fi
 
 echo "Updating to latest beta version..."
 echo "Please Standby..."
