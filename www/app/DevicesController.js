@@ -269,6 +269,14 @@ define(['app'], function (app) {
 									else {
 													itemImage='<img src="images/push.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',ShowDevices);" class="lcursor">';
 									}
+				  } else if (item.SubType === "Selector Switch") {
+					var imagePath; 
+					if (item.CustomImage !== 0) {
+						imagePath = (this.levelName === "Off") ? "images/" + item.Image + "48_Off.png" : "images/" + item.Image + "48_On.png";
+					} else {
+						imagePath = (this.levelName === "Off") ? "images/" + item.TypeImg + "48_Off.png" : "images/" + item.TypeImg + "48_On.png";
+					}
+					itemImage = '<img src="' + imagePath + '" width="16" height="16">';
 				  }
 				  if ((item.Type == "Group")||(item.Type == "Scene")) {
 					itemSubIcons+='&nbsp;<img src="images/empty16.png">';
