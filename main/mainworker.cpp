@@ -11834,7 +11834,7 @@ void MainWorker::SetInternalSecStatus()
 	tsen.SECURITY1.packetlength=sizeof(tsen.TEMP)-1;
 	tsen.SECURITY1.packettype=pTypeSecurity1;
 	tsen.SECURITY1.subtype=sTypeDomoticzSecurity;
-	tsen.SECURITY1.battery_level=255;
+	tsen.SECURITY1.battery_level=9;
 	tsen.SECURITY1.rssi=12;
 	tsen.SECURITY1.id1=0x14;
 	tsen.SECURITY1.id2=0x87;
