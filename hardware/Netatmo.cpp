@@ -778,7 +778,7 @@ bool CNetatmo::ParseNetatmoGetResponse(const std::string &sResult, const bool bI
 	}
 	if (!bHaveDevices)
 	{
-		if ((!bIsThermostat)&&(!m_bPollWeatherData))
+		if ((!bIsThermostat)&&(m_bPollWeatherData))
 		{
 			//Do not warn if we check if we have a Thermostat device
 			_log.Log(LOG_STATUS, "Netatmo: No Weather Station devices found...");
