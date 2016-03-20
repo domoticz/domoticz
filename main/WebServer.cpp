@@ -3539,7 +3539,7 @@ namespace http {
 									std::map<std::string, std::string> selectorStatuses;
 									GetSelectorSwitchStatuses(options, selectorStatuses);
 									bool levelOffHidden = options["LevelOffHidden"] == "true";
-									for(int i = 0; i < selectorStatuses.size(); i++) {
+									for(int i = 0; i < (int)selectorStatuses.size(); i++) {
 										if (levelOffHidden && (i == 0)) {
 											continue;
 										}
@@ -8546,7 +8546,8 @@ namespace http {
 								sprintf(szTmp, "%.03f m3", musage);
 								break;
 							case MTYPE_WATER:
-								sprintf(szTmp, "%llu Liter", total_real);
+								musage = float(total_real) / (WaterDivider/1000.0f);
+								sprintf(szTmp, "%d Liter", round(musage));
 								break;
 							case MTYPE_COUNTER:
 								sprintf(szTmp, "%llu %s", total_real, ValueUnits.c_str());
