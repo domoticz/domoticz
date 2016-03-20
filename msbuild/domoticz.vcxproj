@@ -494,6 +494,8 @@
     <ClInclude Include="..\hardware\hardwaretypes.h" />
     <ClInclude Include="..\main\concurrent_queue.h" />
     <ClInclude Include="..\main\DataPush.h" />
+    <ClInclude Include="..\main\Device.h" />
+    <ClInclude Include="..\main\DeviceHelper.h" />
     <ClInclude Include="..\main\dirent_windows.h" />
     <ClInclude Include="..\main\EventSystem.h" />
     <ClInclude Include="..\main\GZipHelper.h" />
@@ -696,6 +698,8 @@
     <ClCompile Include="..\hardware\DomoticzInternal.cpp" />
     <ClCompile Include="..\hardware\DomoticzTCP.cpp" />
     <ClCompile Include="..\main\DataPush.cpp" />
+    <ClCompile Include="..\main\Device.cpp" />
+    <ClCompile Include="..\main\DeviceHelper.cpp" />
     <ClCompile Include="..\main\EventSystem.cpp" />
     <ClCompile Include="..\main\HttpPush.cpp" />
     <ClCompile Include="..\main\localtime_r.cpp" />

@@ -74,7 +74,7 @@ void CEventSystem::StartEventSystem()
 
 	LoadEvents();
 	GetCurrentStates();
-
+	m_DeviceHelper.Load();
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CEventSystem::Do_Work, this)));
 }
 
@@ -965,6 +965,7 @@ void CEventSystem::RemoveSingleState(int ulDevID)
 	//_log.Log(LOG_STATUS,"EventSystem: deleted device %d",ulDevID);
 	m_devicestates.erase(ulDevID);
 
+	m_DeviceHelper.DeleteDevice(ulDevID);
 }
 
 void CEventSystem::WWWUpdateSingleState(const unsigned long long ulDevID, const std::string &devname)
@@ -1036,6 +1037,7 @@ std::string CEventSystem::UpdateSingleState(const unsigned long long ulDevID, co
 		newitem.lastLevel = lastLevel;
 		m_devicestates[newitem.ID] = newitem;
 	}
+	m_DeviceHelper.UpdateDevice(ulDevID);
 	return nValueWording;
 }
 
