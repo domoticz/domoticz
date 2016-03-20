@@ -3380,7 +3380,7 @@ define(['app'], function (app) {
 						xhtm+='\t      <td id="img"><img src="images/';
 						var status="";
 						if (typeof item.Counter != 'undefined') {
-							if (item.Type == "RFXMeter") {
+							if ((item.Type == "RFXMeter")||(item.Type == "YouLess Meter")) {
 								if (item.SwitchTypeVal==1) {
 									xhtm+='Gas48.png" class="lcursor" onclick="ShowCounterLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="40" width="40"></td>\n';
 								}

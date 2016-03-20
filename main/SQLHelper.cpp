@@ -31,7 +31,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 101
+#define DB_VERSION 102
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -724,24 +724,43 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateUserSessions);
 	query(sqlCreateMobileDevices);
 	//Add indexes to log tables
-	query("create index if not exists f_idx on Fan(DeviceRowID);");
-	query("create index if not exists fc_idx on Fan_Calendar(DeviceRowID);");
-	query("create index if not exists l_idx on LightingLog(DeviceRowID);");
-	query("create index if not exists s_idx on SceneLog(SceneRowID);");
-	query("create index if not exists m_idx on Meter(DeviceRowID);");
-	query("create index if not exists mc_idx on Meter_Calendar(DeviceRowID);");
-	query("create index if not exists mm_idx on MultiMeter(DeviceRowID);");
-	query("create index if not exists mmc_idx on MultiMeter_Calendar(DeviceRowID);");
-	query("create index if not exists p_idx on Percentage(DeviceRowID);");
-	query("create index if not exists pc_idx on Percentage_Calendar(DeviceRowID);");
-	query("create index if not exists r_idx on Rain(DeviceRowID);");
-	query("create index if not exists rc_idx on Rain_Calendar(DeviceRowID);");
-	query("create index if not exists t_idx on Temperature(DeviceRowID);");
-	query("create index if not exists tc_idx on Temperature_Calendar(DeviceRowID);");
-	query("create index if not exists u_idx on UV(DeviceRowID);");
-	query("create index if not exists uv_idx on UV_Calendar(DeviceRowID);");
-	query("create index if not exists w_idx on Wind(DeviceRowID);");
-	query("create index if not exists wc_idx on Wind_Calendar(DeviceRowID);");
+	query("create index if not exists ds_hduts_idx    on DeviceStatus(HardwareID, DeviceID, Unit, Type, SubType);");
+	query("create index if not exists f_id_idx        on Fan(DeviceRowID);");
+	query("create index if not exists f_id_date_idx   on Fan(DeviceRowID, Date);");
+	query("create index if not exists fc_id_idx       on Fan_Calendar(DeviceRowID);");
+	query("create index if not exists fc_id_date_idx  on Fan_Calendar(DeviceRowID, Date);");
+	query("create index if not exists ll_id_idx       on LightingLog(DeviceRowID);");
+	query("create index if not exists ll_id_date_idx  on LightingLog(DeviceRowID, Date);");
+	query("create index if not exists sl_id_idx       on SceneLog(SceneRowID);");
+	query("create index if not exists sl_id_date_idx  on SceneLog(SceneRowID, Date);");
+	query("create index if not exists m_id_idx        on Meter(DeviceRowID);");
+	query("create index if not exists m_id_date_idx   on Meter(DeviceRowID, Date);");
+	query("create index if not exists mc_id_idx       on Meter_Calendar(DeviceRowID);");
+	query("create index if not exists mc_id_date_idx  on Meter_Calendar(DeviceRowID, Date);");
+	query("create index if not exists mm_id_idx       on MultiMeter(DeviceRowID);");
+	query("create index if not exists mm_id_date_idx  on MultiMeter(DeviceRowID, Date);");
+	query("create index if not exists mmc_id_idx      on MultiMeter_Calendar(DeviceRowID);");
+	query("create index if not exists mmc_id_date_idx on MultiMeter_Calendar(DeviceRowID, Date);");
+	query("create index if not exists p_id_idx        on Percentage(DeviceRowID);");
+	query("create index if not exists p_id_date_idx   on Percentage(DeviceRowID, Date);");
+	query("create index if not exists pc_id_idx       on Percentage_Calendar(DeviceRowID);");
+	query("create index if not exists pc_id_date_idx  on Percentage_Calendar(DeviceRowID, Date);");
+	query("create index if not exists r_id_idx        on Rain(DeviceRowID);");
+	query("create index if not exists r_id_date_idx   on Rain(DeviceRowID, Date);");
+	query("create index if not exists rc_id_idx       on Rain_Calendar(DeviceRowID);");
+	query("create index if not exists rc_id_date_idx  on Rain_Calendar(DeviceRowID, Date);");
+	query("create index if not exists t_id_idx        on Temperature(DeviceRowID);");
+	query("create index if not exists t_id_date_idx   on Temperature(DeviceRowID, Date);");
+	query("create index if not exists tc_id_idx       on Temperature_Calendar(DeviceRowID);");
+	query("create index if not exists tc_id_date_idx  on Temperature_Calendar(DeviceRowID, Date);");
+	query("create index if not exists u_id_idx        on UV(DeviceRowID);");
+	query("create index if not exists u_id_date_idx   on UV(DeviceRowID, Date);");
+	query("create index if not exists uv_id_idx       on UV_Calendar(DeviceRowID);");
+	query("create index if not exists uv_id_date_idx  on UV_Calendar(DeviceRowID, Date);");
+	query("create index if not exists w_id_idx        on Wind(DeviceRowID);");
+	query("create index if not exists w_id_date_idx   on Wind(DeviceRowID, Date);");
+	query("create index if not exists wc_id_idx       on Wind_Calendar(DeviceRowID);");
+	query("create index if not exists wc_id_date_idx  on Wind_Calendar(DeviceRowID, Date);");
 
 	if ((!bNewInstall) && (dbversion < DB_VERSION))
 	{
@@ -1935,6 +1954,66 @@ bool CSQLHelper::OpenDatabase()
 					query(szQuery2.str());
 				}
 			}
+		}
+		if (dbversion < 102)
+		{
+			// Remove old indexes
+			query("drop index if exists f_idx;");
+			query("drop index if exists fc_idx;");
+			query("drop index if exists l_idx;");
+			query("drop index if exists s_idx;");
+			query("drop index if exists m_idx;");
+			query("drop index if exists mc_idx;");
+			query("drop index if exists mm_idx;");
+			query("drop index if exists mmc_idx;");
+			query("drop index if exists p_idx;");
+			query("drop index if exists pc_idx;");
+			query("drop index if exists r_idx;");
+			query("drop index if exists rc_idx;");
+			query("drop index if exists t_idx;");
+			query("drop index if exists tc_idx;");
+			query("drop index if exists u_idx;");
+			query("drop index if exists uv_idx;");
+			query("drop index if exists w_idx;");
+			query("drop index if exists wc_idx;");
+			// Add new indexes
+			query("create index if not exists ds_hduts_idx    on DeviceStatus(HardwareID, DeviceID, Unit, Type, SubType);");
+			query("create index if not exists f_id_idx        on Fan(DeviceRowID);");
+			query("create index if not exists f_id_date_idx   on Fan(DeviceRowID, Date);");
+			query("create index if not exists fc_id_idx       on Fan_Calendar(DeviceRowID);");
+			query("create index if not exists fc_id_date_idx  on Fan_Calendar(DeviceRowID, Date);");
+			query("create index if not exists ll_id_idx       on LightingLog(DeviceRowID);");
+			query("create index if not exists ll_id_date_idx  on LightingLog(DeviceRowID, Date);");
+			query("create index if not exists sl_id_idx       on SceneLog(SceneRowID);");
+			query("create index if not exists sl_id_date_idx  on SceneLog(SceneRowID, Date);");
+			query("create index if not exists m_id_idx        on Meter(DeviceRowID);");
+			query("create index if not exists m_id_date_idx   on Meter(DeviceRowID, Date);");
+			query("create index if not exists mc_id_idx       on Meter_Calendar(DeviceRowID);");
+			query("create index if not exists mc_id_date_idx  on Meter_Calendar(DeviceRowID, Date);");
+			query("create index if not exists mm_id_idx       on MultiMeter(DeviceRowID);");
+			query("create index if not exists mm_id_date_idx  on MultiMeter(DeviceRowID, Date);");
+			query("create index if not exists mmc_id_idx      on MultiMeter_Calendar(DeviceRowID);");
+			query("create index if not exists mmc_id_date_idx on MultiMeter_Calendar(DeviceRowID, Date);");
+			query("create index if not exists p_id_idx        on Percentage(DeviceRowID);");
+			query("create index if not exists p_id_date_idx   on Percentage(DeviceRowID, Date);");
+			query("create index if not exists pc_id_idx       on Percentage_Calendar(DeviceRowID);");
+			query("create index if not exists pc_id_date_idx  on Percentage_Calendar(DeviceRowID, Date);");
+			query("create index if not exists r_id_idx        on Rain(DeviceRowID);");
+			query("create index if not exists r_id_date_idx   on Rain(DeviceRowID, Date);");
+			query("create index if not exists rc_id_idx       on Rain_Calendar(DeviceRowID);");
+			query("create index if not exists rc_id_date_idx  on Rain_Calendar(DeviceRowID, Date);");
+			query("create index if not exists t_id_idx        on Temperature(DeviceRowID);");
+			query("create index if not exists t_id_date_idx   on Temperature(DeviceRowID, Date);");
+			query("create index if not exists tc_id_idx       on Temperature_Calendar(DeviceRowID);");
+			query("create index if not exists tc_id_date_idx  on Temperature_Calendar(DeviceRowID, Date);");
+			query("create index if not exists u_id_idx        on UV(DeviceRowID);");
+			query("create index if not exists u_id_date_idx   on UV(DeviceRowID, Date);");
+			query("create index if not exists uv_id_idx       on UV_Calendar(DeviceRowID);");
+			query("create index if not exists uv_id_date_idx  on UV_Calendar(DeviceRowID, Date);");
+			query("create index if not exists w_id_idx        on Wind(DeviceRowID);");
+			query("create index if not exists w_id_date_idx   on Wind(DeviceRowID, Date);");
+			query("create index if not exists wc_id_idx       on Wind_Calendar(DeviceRowID);");
+			query("create index if not exists wc_id_date_idx  on Wind_Calendar(DeviceRowID, Date);");
 		}
 	}
 	else if (bNewInstall)

@@ -1052,6 +1052,7 @@ namespace http {
 				(htype == HTYPE_ForecastIO) ||
 				(htype == HTYPE_ICYTHERMOSTAT) ||
 				(htype == HTYPE_TOONTHERMOSTAT) ||
+				(htype == HTYPE_AtagOne) ||
 				(htype == HTYPE_PVOUTPUT_INPUT) ||
 				(htype == HTYPE_NEST) ||
 				(htype == HTYPE_ANNATHERMOSTAT) ||
@@ -1299,6 +1300,7 @@ namespace http {
 				(htype == HTYPE_ForecastIO) ||
 				(htype == HTYPE_ICYTHERMOSTAT) ||
 				(htype == HTYPE_TOONTHERMOSTAT) ||
+				(htype == HTYPE_AtagOne) ||
 				(htype == HTYPE_PVOUTPUT_INPUT) ||
 				(htype == HTYPE_NEST) ||
 				(htype == HTYPE_ANNATHERMOSTAT) ||
@@ -3464,7 +3466,7 @@ namespace http {
 				root["status"] = "OK";
 				root["title"] = "GetLightSwitches";
 				std::vector<std::vector<std::string> > result;
-				result = m_sql.safe_query("SELECT ID, Name, Type, SubType, Used, SwitchType FROM DeviceStatus ORDER BY Name");
+				result = m_sql.safe_query("SELECT ID, Name, Type, SubType, Used, SwitchType, Options FROM DeviceStatus ORDER BY Name");
 				if (result.size() > 0)
 				{
 					std::vector<std::vector<std::string> >::const_iterator itt;
@@ -3479,6 +3481,7 @@ namespace http {
 						int SubType = atoi(sd[3].c_str());
 						int used = atoi(sd[4].c_str());
 						_eSwitchType switchtype = (_eSwitchType)atoi(sd[5].c_str());
+						std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sd[6]);
 						bool bdoAdd=false;
 						switch (Type)
 						{
@@ -3526,9 +3529,28 @@ namespace http {
 								bool bIsDimmer = (
 									(switchtype == STYPE_Dimmer) ||
 									(switchtype == STYPE_BlindsPercentage) ||
-									(switchtype == STYPE_BlindsPercentageInverted)
+									(switchtype == STYPE_BlindsPercentageInverted) ||
+									(switchtype == STYPE_Selector)
 									);
 								root["result"][ii]["IsDimmer"] = bIsDimmer;
+								std::string dimmerLevels = bIsDimmer ? "all" : "none";
+								if (switchtype == STYPE_Selector) {
+									std::stringstream ss;
+									std::map<std::string, std::string> selectorStatuses;
+									GetSelectorSwitchStatuses(options, selectorStatuses);
+									bool levelOffHidden = options["LevelOffHidden"] == "true";
+									for(int i = 0; i < selectorStatuses.size(); i++) {
+										if (levelOffHidden && (i == 0)) {
+											continue;
+										}
+										if((levelOffHidden && (i > 1)) || (i > 0)) {
+											ss << ",";
+										}
+										ss << i * 10;
+									}
+									dimmerLevels = ss.str();
+								}
+								root["result"][ii]["DimmerLevels"] = dimmerLevels;
 								ii++;
 							}
 							break;
@@ -8754,7 +8776,7 @@ namespace http {
 								break;
 							case MTYPE_GAS:
 								musage = float(total_real) / GasDivider;
-								sprintf(szTmp, "%.02f m3", musage);
+								sprintf(szTmp, "%.03f m3", musage);
 								break;
 							case MTYPE_WATER:
 								musage = float(total_real) / WaterDivider;
@@ -8810,7 +8832,7 @@ namespace http {
 							break;
 						case MTYPE_GAS:
 							musage = float(acounter) / GasDivider;
-							sprintf(szTmp, "%.02f m3", musage);
+							sprintf(szTmp, "%.03f m3", musage);
 							break;
 						case MTYPE_WATER:
 							musage = float(acounter) / WaterDivider;
@@ -8830,10 +8852,10 @@ namespace http {
 							sprintf(szTmp, "%s Watt", splitresults[1].c_str());
 							break;
 						case MTYPE_GAS:
-							sprintf(szTmp, "%s m", splitresults[1].c_str());
+							sprintf(szTmp, "%s m3", splitresults[1].c_str());
 							break;
 						case MTYPE_WATER:
-							sprintf(szTmp, "%s m", splitresults[1].c_str());
+							sprintf(szTmp, "%s m3", splitresults[1].c_str());
 							break;
 						case MTYPE_COUNTER:
 							sprintf(szTmp, "%s", splitresults[1].c_str());
@@ -9344,7 +9366,7 @@ namespace http {
 								}
 							}
 							root["result"][ii]["Image"] = IconFile;
-							root["result"][ii]["TypeImg"] = "air";
+							root["result"][ii]["TypeImg"] = IconFile;
 						}
 						else if (dSubType == sTypeFan)
 						{
@@ -12542,7 +12564,7 @@ namespace http {
 						if (bHaveUsage == false)
 							method = 0;
 
-						if (dType == pTypeYouLess)
+						if ((dType == pTypeYouLess) && ((metertype == MTYPE_ENERGY) || (metertype == MTYPE_ENERGY_GENERATED)))
 							method = 1;
 
 						int iDisplayInPower = 1;
@@ -12606,7 +12628,7 @@ namespace http {
 												sprintf(szTmp, "%.3f", (TotalValue / EnergyDivider)*1000.0f);	//from kWh -> Watt
 												break;
 											case MTYPE_GAS:
-												sprintf(szTmp, "%.2f", TotalValue / GasDivider);
+												sprintf(szTmp, "%.3f", TotalValue / GasDivider);
 												break;
 											case MTYPE_WATER:
 												sprintf(szTmp, "%.3f", TotalValue / WaterDivider);

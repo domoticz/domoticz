@@ -141,7 +141,7 @@ void CNetatmo::Do_Work()
 				{
 					//Weather station data is updated every 10 minutes
 					bFirstTimeWS = false;
-					if (m_bPollWeatherData)
+					if ((m_bPollWeatherData)|| (sec_counter % 1200 == 0))
 					{
 						GetMeterDetails();
 					}
@@ -778,7 +778,7 @@ bool CNetatmo::ParseNetatmoGetResponse(const std::string &sResult, const bool bI
 	}
 	if (!bHaveDevices)
 	{
-		if (!bIsThermostat)
+		if ((!bIsThermostat)&&(m_bPollWeatherData))
 		{
 			//Do not warn if we check if we have a Thermostat device
 			_log.Log(LOG_STATUS, "Netatmo: No Weather Station devices found...");

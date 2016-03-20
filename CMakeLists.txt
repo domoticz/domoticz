@@ -223,6 +223,7 @@ hardware/1Wire/1WireForWindows.cpp
 hardware/AnnaThermostat.cpp
 hardware/ASyncSerial.cpp
 hardware/ASyncTCP.cpp
+hardware/AtagOne.cpp
 hardware/Comm5TCP.cpp
 hardware/csocket.cpp
 hardware/CurrentCostMeterBase.cpp
