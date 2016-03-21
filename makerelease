@@ -59,7 +59,7 @@ if [ $? -ne 0 ]; then
 	echo "Error preparing package !";
 	exit 1
 fi
-tar -zcf ${archive_file} domoticz History.txt License.txt domoticz.sh server_cert.pem updatebeta updaterelease www/ scripts/ Config/
+tar -zcf ${archive_file} domoticz History.txt License.txt domoticz.sh server_cert.pem updatebeta updaterelease www/ scripts/ Config/ --exclude=www/*.js --exclude=www/*.json --exclude=www/*.css
 if [ $? -ne 0 ]
 then
         echo "Error creating archive!...";

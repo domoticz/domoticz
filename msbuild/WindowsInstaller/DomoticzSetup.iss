@@ -49,7 +49,7 @@ Name: RunAsService; Description: "Run as service"; Flags: exclusive unchecked
 
 [Files]
 Source: "..\Release\domoticz.exe"; DestDir: {app}; Flags: ignoreversion;
-Source: "..\..\www\*"; DestDir: {app}\www; Flags: recursesubdirs createallsubdirs ignoreversion;
+Source: "..\..\www\*"; Excludes: "*.js,*.json,*.css"; DestDir: {app}\www; Flags: recursesubdirs createallsubdirs ignoreversion;
 Source: "..\..\Config\*"; DestDir: {app}\Config; Flags: recursesubdirs createallsubdirs ignoreversion;
 Source: "..\..\scripts\*"; DestDir: {app}\scripts; Flags: recursesubdirs createallsubdirs ignoreversion;
 Source: "..\Debug\libcurl.dll"; DestDir: {app}; Flags: ignoreversion;
