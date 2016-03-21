@@ -51,6 +51,7 @@ define(['app'], function (app) {
 				(text.indexOf("1-Wire") >= 0) ||
 				(text.indexOf("GPIO") >= 0) ||
 				(text.indexOf("BMP085") >= 0) ||
+				(text.indexOf("HTU21D") >= 0) ||
 				(text.indexOf("Dummy") >= 0) ||
 				(text.indexOf("System Alive") >= 0) ||
 				(text.indexOf("PiFace") >= 0) ||
@@ -130,11 +131,11 @@ define(['app'], function (app) {
                 });
             }
             else if (
-					(text.indexOf("LAN") >= 0 && 
-					text.indexOf("YouLess") == -1 && 
-					text.indexOf("Integra") == -1 && 
-					text.indexOf("ETH8020") == -1 && 
-					text.indexOf("Anna") == -1 && 
+					(text.indexOf("LAN") >= 0 &&
+					text.indexOf("YouLess") == -1 &&
+					text.indexOf("Integra") == -1 &&
+					text.indexOf("ETH8020") == -1 &&
+					text.indexOf("Anna") == -1 &&
 					text.indexOf("KMTronic") == -1  &&
 					text.indexOf("MQTT") == -1 &&
 					text.indexOf("Razberry") == -1
@@ -421,7 +422,7 @@ define(['app'], function (app) {
                      }
                 });
             }
-            else if ((text.indexOf("ICY") >= 0) || (text.indexOf("Toon") >= 0) || (text.indexOf("Nest Th") >= 0) || (text.indexOf("PVOutput") >= 0) || (text.indexOf("Netatmo") >= 0) || (text.indexOf("Thermosmart") >= 0)) {
+            else if ((text.indexOf("ICY") >= 0) || (text.indexOf("Toon") >= 0) || (text.indexOf("Atag") >= 0) || (text.indexOf("Nest Th") >= 0) || (text.indexOf("PVOutput") >= 0) || (text.indexOf("Netatmo") >= 0) || (text.indexOf("Thermosmart") >= 0)) {
                 var username = $("#hardwarecontent #divlogin #username").val();
                 var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
                 $.ajax({
@@ -536,7 +537,7 @@ define(['app'], function (app) {
                     ShowNotify($.t('Please enter an Valid Port!'), 2500, true);
                     return;
                 }
-               
+
                 $.ajax({
                      url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
                         "&address=" + address +
@@ -585,6 +586,7 @@ define(['app'], function (app) {
 				(text.indexOf("Volcraft") >= 0) ||
 				(text.indexOf("1-Wire") >= 0) ||
 				(text.indexOf("BMP085") >= 0) ||
+        (text.indexOf("HTU21D") >= 0) ||
 				(text.indexOf("Dummy") >= 0) ||
 				(text.indexOf("System Alive") >= 0) ||
 				(text.indexOf("Kodi") >= 0) ||
@@ -644,12 +646,12 @@ define(['app'], function (app) {
                 });
             }
             else if (
-					(text.indexOf("LAN") >= 0 && 
-					text.indexOf("YouLess") == -1 && 
-					text.indexOf("ETH8020") == -1 && 
-					text.indexOf("Anna") == -1 && 
-					text.indexOf("KMTronic") == -1 
-					&& text.indexOf("MQTT") == -1 && 
+					(text.indexOf("LAN") >= 0 &&
+					text.indexOf("YouLess") == -1 &&
+					text.indexOf("ETH8020") == -1 &&
+					text.indexOf("Anna") == -1 &&
+					text.indexOf("KMTronic") == -1
+					&& text.indexOf("MQTT") == -1 &&
 					text.indexOf("Integra") == -1 &&
 					text.indexOf("Razberry") == -1
 					)
@@ -930,7 +932,7 @@ define(['app'], function (app) {
                      }
                 });
             }
-            else if ((text.indexOf("ICY") >= 0)||(text.indexOf("Toon") >= 0)||(text.indexOf("Nest Th") >= 0)||(text.indexOf("PVOutput") >= 0)||(text.indexOf("Netatmo") >= 0) || (text.indexOf("Thermosmart") >= 0))
+            else if ((text.indexOf("ICY") >= 0)||(text.indexOf("Toon") >= 0)||(text.indexOf("Atag") >= 0)||(text.indexOf("Nest Th") >= 0)||(text.indexOf("PVOutput") >= 0)||(text.indexOf("Netatmo") >= 0) || (text.indexOf("Thermosmart") >= 0))
             {
                 var username=$("#hardwarecontent #divlogin #username").val();
                 var password=encodeURIComponent($("#hardwarecontent #divlogin #password").val());
@@ -977,10 +979,10 @@ define(['app'], function (app) {
                     ShowNotify($.t('Please enter a username!'), 2500, true);
                     return;
                 }*/
-				
+
                 $.ajax({
-                     url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + 
-					 //"&username=" + encodeURIComponent(username) + 
+                     url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port +
+					 //"&username=" + encodeURIComponent(username) +
 					 "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
                      async: false,
                      dataType: 'json',
@@ -2982,9 +2984,12 @@ define(['app'], function (app) {
                         "0": nodeStr,
                         "1": item.Name,
                         "2": item.Description,
-                        "3": item.LastUpdate,
-                        "4": $.t((item.PollEnabled == "true")?"Yes":"No"),
-                        "5": statusImg+'&nbsp;&nbsp;'+healButton,
+                        "3": item.Manufacturer_name,
+                        "4": item.Product_id,
+                        "5": item.Product_type,
+                        "6": item.LastUpdate,
+                        "7": $.t((item.PollEnabled == "true")?"Yes":"No"),
+                        "8": statusImg+'&nbsp;&nbsp;'+healButton,
                     } );
                 });
               }
@@ -3019,7 +3024,7 @@ define(['app'], function (app) {
                             $('#updelclr #nodedelete').attr("class", "btnstyle3");
                             $("#updelclr #nodedelete").attr("href", "javascript:DeleteNode(" + idx + ")");
                         }
-                        $("#hardwarecontent #nodeparamstable #nodename").val(data["1"]);
+                        $("#hardwarecontent #nodeparamstable #nodename").val(data["Name"]);
                         $('#hardwarecontent #nodeparamstable #EnablePolling').prop('checked',(data["PollEnabled"]=="true"));
                         if (iNode==iOwnNodeId) {
                             $("#hardwarecontent #nodeparamstable #trEnablePolling").hide();
@@ -3312,7 +3317,7 @@ define(['app'], function (app) {
                 e.preventDefault();
                 SendOTGWCommand();
             });
-            
+
 
             //Get Temperature Sensors
             $.ajax({
@@ -3464,10 +3469,24 @@ define(['app'], function (app) {
         CreateDummySensors = function(idx,name)
         {
             $.devIdx=idx;
+            $("#dialog-createsensor #vsensoraxis").hide();
+            $("#dialog-createsensor #sensoraxis").val("");
+            
+			$("#dialog-createsensor #sensortype").change(function() { 
+				var stype=$("#dialog-createsensor #sensortype option:selected").val();
+				$("#dialog-createsensor #sensoraxis").val("");
+				if (stype == 1004) {
+					$("#dialog-createsensor #vsensoraxis").show();
+				}
+				else {
+					$("#dialog-createsensor #vsensoraxis").hide();
+				}
+			});
+            
             $( "#dialog-createsensor" ).dialog({
                   autoOpen: false,
                   width: 420,
-                  height: 220,
+                  height: 250,
                   modal: true,
                   resizable: false,
                   buttons: {
@@ -3485,10 +3504,21 @@ define(['app'], function (app) {
                                 bootbox.alert($.t('No Sensor Type Selected!'));
                                 return ;
                             }
+                            var extraSendData="";
+                            if (SensorType==1004) {
+								var AxisLabel=$("#dialog-createsensor #sensoraxis").val();
+								if (AxisLabel=="")
+								{
+									ShowNotify($.t('Please enter a Axis Label!'), 2500, true);
+									return;
+								}
+								extraSendData="&sensoroptions=1;" + encodeURIComponent(AxisLabel);
+                            }
                             $.ajax({
                                  url: "json.htm?type=createvirtualsensor&idx=" + $.devIdx +
 									"&sensorname=" + encodeURIComponent(SensorName) +
-									"&sensortype=" + SensorType,
+									"&sensortype=" + SensorType +
+									extraSendData,
                                  async: false,
                                  dataType: 'json',
                                  success: function(data) {
@@ -3558,7 +3588,7 @@ define(['app'], function (app) {
                     {
                         SerialName="System";
                     }
-                    else if (item.Type == 13)
+                    else if ((item.Type == 13)||(item.Type == 71))
                     {
                         SerialName="I2C";
                     }
@@ -3774,8 +3804,16 @@ define(['app'], function (app) {
                         $('#hardwarecontent #hardwareparamstable #combodatatimeout').val(data["DataTimeout"]);
 
                         UpdateHardwareParamControls();
-                        
-                        if ((data["Type"].indexOf("TE923") >= 0)||(data["Type"].indexOf("Volcraft") >= 0)||(data["Type"].indexOf("1-Wire") >= 0)||(data["Type"].indexOf("BMP085") >= 0)||(data["Type"].indexOf("Dummy") >= 0)||(data["Type"].indexOf("System Alive") >= 0) ||(data["Type"].indexOf("PiFace") >= 0)||(data["Type"].indexOf("Tellstick") >= 0))
+
+                        if ((data["Type"].indexOf("TE923") >= 0)||
+                           (data["Type"].indexOf("Volcraft") >= 0)||
+                           (data["Type"].indexOf("1-Wire") >= 0)||
+                           (data["Type"].indexOf("BMP085") >= 0)||
+                           (data["Type"].indexOf("HTU21D") >= 0)||
+                           (data["Type"].indexOf("Dummy") >= 0)||
+                           (data["Type"].indexOf("System Alive") >= 0)||
+                           (data["Type"].indexOf("PiFace") >= 0)||
+                           (data["Type"].indexOf("Tellstick") >= 0))
                         {
                             //nothing to be set
                         }
@@ -3820,7 +3858,7 @@ define(['app'], function (app) {
                             $("#hardwarecontent #hardwareparamswinddelen #combomillselect").val(data["Mode1"]);
                             $("#hardwarecontent #hardwareparamswinddelen #nrofwinddelen").val(data["Port"]);
                         }
-                        
+
                         if (data["Type"].indexOf("MQTT") >= 0) {
                             $("#hardwarecontent #hardwareparamsmqtt #filename").val(data["Extra"]);
                             $("#hardwarecontent #hardwareparamsmqtt #combotopicselect").val(data["Mode1"]);
@@ -3830,6 +3868,7 @@ define(['app'], function (app) {
                             (data["Type"].indexOf("ICY") >= 0) ||
                             (data["Type"].indexOf("Harmony") >= 0)||
                             (data["Type"].indexOf("Toon") >= 0)||
+                            (data["Type"].indexOf("Atag") >= 0)||
                             (data["Type"].indexOf("Nest Th") >= 0)||
                             (data["Type"].indexOf("PVOutput") >= 0)||
                             (data["Type"].indexOf("ETH8020") >= 0)||
@@ -3908,7 +3947,13 @@ define(['app'], function (app) {
             $("#hardwarecontent #divmqtt").hide();
             $("#hardwarecontent #divsolaredgeapi").hide();
 
-            if ((text.indexOf("TE923") >= 0)||(text.indexOf("Volcraft") >= 0)||(text.indexOf("BMP085") >= 0)||(text.indexOf("Dummy") >= 0)||(text.indexOf("System Alive") >= 0)||(text.indexOf("PiFace") >= 0))
+            if ((text.indexOf("TE923") >= 0)||
+               (text.indexOf("Volcraft") >= 0)||
+               (text.indexOf("BMP085") >= 0)||
+               (text.indexOf("HTU21D") >= 0)||
+               (text.indexOf("Dummy") >= 0)||
+               (text.indexOf("System Alive") >= 0)||
+               (text.indexOf("PiFace") >= 0))
             {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").hide();
@@ -3974,7 +4019,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #username").hide();
                 $("#hardwarecontent #lblusername").hide();
             }
-            else if ((text.indexOf("ICY") >= 0)||(text.indexOf("Toon") >= 0)||(text.indexOf("Nest Th") >= 0)||(text.indexOf("PVOutput") >= 0)||(text.indexOf("Netatmo") >= 0)||(text.indexOf("Thermosmart") >= 0))
+            else if ((text.indexOf("ICY") >= 0)||(text.indexOf("Toon") >= 0)||(text.indexOf("Atag") >= 0)||(text.indexOf("Nest Th") >= 0)||(text.indexOf("PVOutput") >= 0)||(text.indexOf("Netatmo") >= 0)||(text.indexOf("Thermosmart") >= 0))
             {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").hide();

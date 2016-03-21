@@ -58,9 +58,6 @@ public:
   /// Stop all asynchronous operations associated with the connection.
   void stop();
 
-  /// Wait for all asynchronous operations to abort.
-  void stop_gracefully();
-
   /// Timer handlers
   void handle_read_timeout(const boost::system::error_code& error);
   void handle_abandoned_timeout(const boost::system::error_code& error);
@@ -86,9 +83,6 @@ private:
 	void cancel_abandoned_timeout();
 	/// Reschedule abandoned timeout timer
 	void reset_abandoned_timeout();
-
-	/// Check if the connection is about to stop
-	bool is_stopping();
 
   /// Socket for the (PLAIN) connection.
   boost::asio::ip::tcp::socket *socket_;
@@ -125,10 +119,18 @@ private:
   boost::asio::streambuf _buf;
 
   /// The status of the connection (can be initializing, handshaking, waiting, reading, writing)
-  std::string status;
+  enum connection_status {
+    INITIALIZING,
+    WAITING_HANDSHAKE,
+	ENDING_HANDSHAKE,
+    WAITING_READ,
+	READING,
+    WAITING_WRITE,
+	ENDING_WRITE
+  } status_;
 
-  /// Ask the connection to stop as soon as possible
-  bool stop_required;
+  /// The default number of request to handle with the connection when keep-alive is enabled
+  unsigned int default_max_requests_;
 
   // secure connection members below
   // secure connection yes/no

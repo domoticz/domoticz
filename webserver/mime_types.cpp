@@ -39,6 +39,9 @@ struct mapping
   { "wav", "audio/x-wav" },
   { "svg", "image/svg+xml" },
   { "db", "application/octet-stream" },
+  { "otf", "application/x-font-otf" },
+  { "ttf", "application/x-font-ttf" },
+  { "woff", "application/x-font-woff" },
   { 0, 0 } // Marks end of list.
 };
 

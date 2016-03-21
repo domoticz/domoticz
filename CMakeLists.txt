@@ -33,7 +33,7 @@ ELSE(USE_BUILTIN_MQTT)
     message(STATUS "Found mosquittopp.h at: ${MQTT_INCLUDE_DIRS}")
     find_library(MQTT_LIBRARIES NAMES libmosquittopp.so)
     IF(MQTT_LIBRARIES)
-      message(STATUS "Found libmosquittopp at: ${MQTT_LIBRARIES}") 
+      message(STATUS "Found libmosquittopp at: ${MQTT_LIBRARIES}")
     ENDIF(MQTT_LIBRARIES)
     INCLUDE_DIRECTORIES(${MQTT_INCLUDE_DIRS})
   ELSE(MQTT_INCLUDE_DIRS)
@@ -152,7 +152,7 @@ FIND_PROGRAM(GIT_EXECUTABLE git
   DOC "git command line client")
 
 MACRO(Gitversion_GET_REVISION dir variable)
-  EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} rev-list HEAD --count
+  EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} --git-dir ./.git rev-list HEAD --count
     WORKING_DIRECTORY ${dir}
     OUTPUT_VARIABLE ${variable}
     OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -223,7 +223,7 @@ hardware/1Wire/1WireForWindows.cpp
 hardware/AnnaThermostat.cpp
 hardware/ASyncSerial.cpp
 hardware/ASyncTCP.cpp
-hardware/BMP085.cpp
+hardware/AtagOne.cpp
 hardware/Comm5TCP.cpp
 hardware/csocket.cpp
 hardware/CurrentCostMeterBase.cpp
@@ -245,6 +245,7 @@ hardware/Gpio.cpp
 hardware/GpioPin.cpp
 hardware/HardwareMonitor.cpp
 hardware/HarmonyHub.cpp
+hardware/I2C.cpp
 hardware/ICYThermostat.cpp
 hardware/KMTronicBase.cpp
 hardware/KMTronic433.cpp
@@ -531,29 +532,22 @@ else()
   MESSAGE(STATUS "==== OpenZWave not found, support disabled!")
 ENDIF(OpenZWave)
 
-# try to detect Raspberry Pi hardware and WiringPi library. If found, include GPIO support
-find_path(RaspberryPi NAMES bcm_host.h PATHS "/opt/vc/include")
-IF(RaspberryPi)
-  message(STATUS "Building on Raspberry Pi... (bcm_host.h found in ${RaspberryPi})")
-  find_path(WiringPi wiringPi.h)
-  IF(WiringPi)
-    message(STATUS "WiringPi include was found in ${WiringPi}...")
-    find_library(WIRINGPI_LIBRARY NAMES libwiringPi.a)
-    IF(WIRINGPI_LIBRARY)
-      message(STATUS "WiringPi library was found in ${WIRINGPI_LIBRARY}...")
-      add_definitions(-DWITH_GPIO)
-      target_link_libraries(domoticz ${WIRINGPI_LIBRARY})
-    else()
-      message(STATUS "==== WiringPi library not found. GPIO support disabled.")
-    message(STATUS "==== (Please follow http://wiringpi.com/download-and-install/ if you want to use GPIO.)")
-    ENDIF()
+find_path(WiringPi wiringPi.h)
+IF(WiringPi)
+  message(STATUS "WiringPi include was found in ${WiringPi}...")
+  find_library(WIRINGPI_LIBRARY NAMES libwiringPi.a)
+  IF(WIRINGPI_LIBRARY)
+    message(STATUS "WiringPi library was found in ${WIRINGPI_LIBRARY}...")
+    add_definitions(-DWITH_GPIO)
+    target_link_libraries(domoticz ${WIRINGPI_LIBRARY})
   else()
-    message(STATUS "==== WiringPi include file (wiringPi.h) not found. GPIO support disabled.")
-    message(STATUS "==== (Please follow http://wiringpi.com/download-and-install/ if you want to use GPIO.)")
-  ENDIF(WiringPi)
+    message(STATUS "==== WiringPi library not found. GPIO support disabled.")
+  message(STATUS "==== (Please follow http://wiringpi.com/download-and-install/ if you want to use GPIO.)")
+  ENDIF()
 else()
-  message(STATUS "Not building on Raspberry Pi. GPIO support disabled.")
-ENDIF(RaspberryPi)
+  message(STATUS "==== WiringPi include file (wiringPi.h) not found. GPIO support disabled.")
+  message(STATUS "==== (Please follow http://wiringpi.com/download-and-install/ if you want to use GPIO.)")
+ENDIF(WiringPi)
 
 find_path(TELLDUSCORE_INCLUDE NAMES telldus-core.h)
 if (TELLDUSCORE_INCLUDE)

@@ -62,6 +62,7 @@
 #define sTypeCounterIncremental		0x1C
 #define sTypeKwh					0x1D
 #define sTypeWaterflow				0x1E
+#define sTypeCustom					0x1F
 
 //General Switch
 #define pTypeGeneralSwitch			0xF4
@@ -139,6 +140,11 @@
 #define sSwitchTypeNice				0x4d
 #define sSwitchTypeForest			0x4e
 #define sSwitchBlindsT1				0x4f
+#define sSwitchMC145026				0x50
+#define sSwitchLobeco				0x51
+#define sSwitchFriedland			0x52
+#define sSwitchBFT					0x53
+#define sSwitchNovatys				0x54
 
 //Switch commands
 #define gswitch_sOff				0x00
@@ -199,7 +205,7 @@
 #define sTypeRego6XXCounter  0x03
 
 //types for evohome
-#define pTypeEvohome 0x45 
+#define pTypeEvohome 0x45
 #define sTypeEvohome 0x00 //Controller
 
 #define pTypeEvohomeZone 0x46 //Seems easier to define a new type here
@@ -209,7 +215,7 @@
 #define sTypeEvohomeWater 0x00 //Hot water (Ideally this would just be a zone but for whatever reason evohome treats this differently)
 
 #define pTypeEvohomeRelay 0x44 //Relay
-#define sTypeEvohomeRelay 0x00 
+#define sTypeEvohomeRelay 0x00
 
 //#define sTypeEvohomeOutside 0x30 //If connected
 //#define sTypeEvohomeStatus 0x40 //Not sure if we can do this in 1 sensor would be for things like zone valve status, boiler relay status (maybe OT values too) and comms errors (maybe seperature sensor or switch for each is easiest)
@@ -514,7 +520,7 @@ typedef union tREVOBUF {
 		uint8_t	mins;
 		uint8_t	battery_level;
 	} EVOHOME2;
-	
+
 	struct _tEVOHOME3 {
 		unsigned char len;
 		unsigned char type;

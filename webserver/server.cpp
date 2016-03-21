@@ -7,6 +7,8 @@
 #include "server.hpp"
 #include <fstream>
 #include "../main/Logger.h"
+#include "../main/Helper.h"
+#include "../main/localtime_r.h"
 
 namespace http {
 namespace server {
@@ -19,7 +21,7 @@ server_base::server_base(const server_settings & settings, request_handler & use
 		request_handler_(user_request_handler),
 		timeout_(20), // default read timeout in seconds
 		is_running(false),
-		is_stopping(false) {
+		is_stop_complete(false) {
 	if (!settings.is_enabled()) {
 		throw std::invalid_argument("cannot initialize a disabled server (listening port cannot be empty or 0)");
 	}
@@ -60,13 +62,15 @@ void server_base::run() {
 	} catch (std::exception& e) {
 		_log.Log(LOG_ERROR, "[web:%s] exception occurred : '%s' (need to run again)", settings_.listening_port.c_str(), e.what());
 		is_running = false;
-		handle_stop(); // dispatch or post call does NOT work because it is pushed in the event queue (executed only on next io service run)
+		// Note: if acceptor is up everything is OK, we can call run() again
+		//       but if the exception has broken the acceptor we cannot stop/start it and the next run() will exit immediatly.
 		io_service_.reset(); // this call is needed before calling run() again
 		throw;
 	} catch (...) {
 		_log.Log(LOG_ERROR, "[web:%s] unknown exception occurred (need to run again)", settings_.listening_port.c_str());
 		is_running = false;
-		handle_stop(); // dispatch or post call does NOT work because it is pushed in the event queue (executed only on next io service run)
+		// Note: if acceptor is up everything is OK, we can call run() again
+		//       but if the exception has broken the acceptor we cannot stop/start it and the next run() will exit immediatly.
 		io_service_.reset(); // this call is needed before calling run() again
 		throw;
 	}
@@ -74,23 +78,38 @@ void server_base::run() {
 
 /// Ask the server to stop using asynchronous command
 void server_base::stop() {
-	handle_stop();
-}
+	if (is_running) {
+		// Post a call to the stop function so that server_base::stop() is safe to call from any thread.
+		io_service_.post(boost::bind(&server_base::handle_stop, this));
+	} else {
+		// if io_service is not running then the post call will not be performed
+		handle_stop();
+	}
 
-/// Returns true if the server is stopped.
-bool server_base::stopped() {
-	return !is_running;
+	// Wait for acceptor and connections to stop
+	int timeout = 15; // force stop after 15 seconds
+	time_t start = mytime(NULL);
+	while(true) {
+		if (!is_running && is_stop_complete) {
+			break;
+		}
+		if ((mytime(NULL) - start) > timeout) {
+			// timeout occurred
+			break;
+		}
+		sleep_milliseconds(500);
+	}
 }
 
 void server_base::handle_stop() {
-	is_stopping = true;
 	try {
 		boost::system::error_code ignored_ec;
 		acceptor_.close(ignored_ec);
 	} catch (...) {
 		_log.Log(LOG_ERROR, "[web:%s] exception occurred while closing acceptor", settings_.listening_port.c_str());
 	}
-	connection_manager_.stop_all(false);
+	connection_manager_.stop_all();
+	is_stop_complete = true;
 }
 
 server::server(const server_settings & settings, request_handler & user_request_handler) :
@@ -110,9 +129,6 @@ void server::init_connection() {
  * accepting incoming requests and start the client connection loop
  */
 void server::handle_accept(const boost::system::error_code& e) {
-	if (is_stopping) {
-		return;
-	}
 	if (!e) {
 		connection_manager_.start(new_connection_);
 		new_connection_.reset(new connection(io_service_,
@@ -216,9 +232,6 @@ void ssl_server::init_connection() {
  * accepting incoming requests and start the client connection loop
  */
 void ssl_server::handle_accept(const boost::system::error_code& e) {
-	if (is_stopping) {
-		return;
-	}
 	if (!e) {
 		connection_manager_.start(new_connection_);
 		new_connection_.reset(new connection(io_service_,

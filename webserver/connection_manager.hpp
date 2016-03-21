@@ -31,7 +31,7 @@ public:
   void stop(const connection_ptr c);
 
   /// Stop all connections.
-  void stop_all(const bool graceful_stop);
+  void stop_all();
 
 private:
   /// The managed connections.

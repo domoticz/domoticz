@@ -98,14 +98,8 @@ void cWebem::Stop() {
 		_log.Log(LOG_ERROR, "[web:%s] exception thrown while stopping session cleaner", GetPort().c_str());
 	}
 	// Stop Web server
-	if ((myServer != NULL) && !myServer->stopped()) {
-		myServer->stop(); // asynchronous stop
-		while(true) {
-			if (myServer->stopped()) {
-				break;
-			}
-			sleep_milliseconds(500);
-		}
+	if (myServer != NULL) {
+		myServer->stop();
 	}
 }
 
@@ -641,20 +635,12 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& r
 			reply::add_header(&rep, "Cache-Control", "no-cache");
 			reply::add_header(&rep, "Pragma", "no-cache");
 			reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
-			if (req.keep_alive) {
-				reply::add_header(&rep, "Connection", "Keep-Alive");
-				reply::add_header(&rep, "Keep-Alive", "max=20, timeout=10");
-			}
 		}
 		else
 		{
 			reply::add_header(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
 			reply::add_header(&rep, "Content-Type", strMimeType);
 			reply::add_header(&rep, "Cache-Control", "max-age=3600, public");
-			if (req.keep_alive) {
-				reply::add_header(&rep, "Connection", "Keep-Alive");
-				reply::add_header(&rep, "Keep-Alive", "max=20, timeout=10");
-			}
 		}
 		return true;
 	}
@@ -681,10 +667,6 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& r
 	reply::add_header(&rep, "Pragma", "no-cache");
 	reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
 
-	if (req.keep_alive) {
-		reply::add_header(&rep, "Connection", "Keep-Alive");
-		reply::add_header(&rep, "Keep-Alive", "max=20, timeout=10");
-	}
 	return true;
 }
 
@@ -1341,6 +1323,32 @@ bool cWebemRequestHandler::CompressWebOutput(const request& req, reply& rep)
 	return false;
 }
 
+static void GetURICommandParameter(const std::string &uri, std::string &cmdparam)
+{
+	cmdparam = uri;
+	size_t ppos1 = uri.find("&param=");
+	size_t ppos2 = uri.find("?param=");
+	if (
+		(ppos1 == std::string::npos) &&
+		(ppos2 == std::string::npos)
+		)
+		return;
+	size_t ppos = ppos1;
+	if (ppos == std::string::npos)
+		ppos = ppos2;
+	else
+	{
+		if ((ppos2 < ppos) && (ppos != std::string::npos))
+			ppos = ppos2;
+	}
+	cmdparam = uri.substr(ppos + 7);
+	ppos = cmdparam.find("&");
+	if (ppos != std::string::npos)
+	{
+		cmdparam = cmdparam.substr(0, ppos);
+	}
+}
+
 bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const request& req, reply& rep)
 {
 	session.rights = -1; // no rights
@@ -1435,6 +1443,15 @@ bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const req
 		} else {
 			// invalid cookie
 			if (myWebem->m_authmethod != AUTH_BASIC) {
+				//Check if we need to bypass authentication (not when using basic-auth)
+				std::string cmdparam;
+				GetURICommandParameter(req.uri, cmdparam);
+				std::vector < std::string >::const_iterator itt;
+				for (itt = myWebem->myWhitelistURLs.begin(); itt != myWebem->myWhitelistURLs.end(); ++itt)
+				{
+					if (*itt == cmdparam)
+						return true;
+				}
 				// Force login form
 				send_authorization_request(rep);
 				return false;
@@ -1472,10 +1489,12 @@ bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const req
 	}
 
 	//Check if we need to bypass authentication (not when using basic-auth)
+	std::string cmdparam;
+	GetURICommandParameter(req.uri, cmdparam);
 	std::vector < std::string >::const_iterator itt;
 	for (itt = myWebem->myWhitelistURLs.begin(); itt != myWebem->myWhitelistURLs.end(); ++itt)
 	{
-		if (req.uri.find(*itt) != std::string::npos)
+		if (*itt == cmdparam)
 			return true;
 	}
 
@@ -1646,6 +1665,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 				// fix provided by http://www.codeproject.com/Members/jaeheung72 )
 
 				reply::add_header(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
+				reply::add_header(&rep, "Last-Modified", make_web_time(mytime(NULL)), true);
 
 				//check gzip support if yes, send it back in gzip format
 				CompressWebOutput(req, rep);

@@ -127,7 +127,11 @@ bool SMTPClient::SendEmail()
 	}
 
 	std::stringstream sstr;
-	sstr << "smtp://" << m_Server << ":" << m_Port;
+	if (m_Port != 465)
+		sstr << "smtp://";
+	else
+		sstr << "smtps://"; //SSL connection
+	sstr << m_Server << ":" << m_Port;
 	std::string szURL=sstr.str();//"smtp://"+MailServer;
 
 	try

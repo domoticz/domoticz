@@ -84,8 +84,8 @@ protected:
 	void SendMoistureSensor(const int NodeID, const int BatteryLevel, const int mLevel, const std::string &defaultname);
 	void SendTextSensor(const int NodeID, const int ChildID, const int BatteryLevel, const std::string &textMessage, const std::string &defaultname);
 	std::string GetTextSensorText(const int NodeID, const int ChildID, bool &bExists);
-
 	bool CheckPercentageSensorExists(const int NodeID, const int ChildID);
+	void SendCustomSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float Dust, const std::string &defaultname, const std::string &defaultLabel);
 
 	int m_iHBCounter;
 	boost::mutex readQueueMutex;

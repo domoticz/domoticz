@@ -1,3 +1,4 @@
+
 #include "stdafx.h"
 #include "RFLinkBase.h"
 #include "../main/Logger.h"
@@ -90,6 +91,11 @@ const _tRFLinkStringIntHelper rfswitches[] =
 	{ "Funkbus", sSwitchTypeFunkbus },		 // NA
 	{ "Nice", sSwitchTypeNice },			 // NA
 	{ "Forest", sSwitchTypeForest },		 // NA
+	{ "MC145026", sSwitchMC145026 },		 // NA
+	{ "Lobeco", sSwitchLobeco },			 // NA
+	{ "Friedland", sSwitchFriedland },		 // NA
+	{ "BFT", sSwitchBFT },					 // NA
+	{ "Novatys", sSwitchNovatys},			 // NA
 	{ "", -1 }
 };
 
@@ -557,13 +563,13 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 		{
 			bHaveWindSpeed = true;
 			iTemp = RFLinkGetHexStringValue(results[ii]); // received value is km/u
-			windspeed = (float(iTemp) * 0.0277778f)/10;   //convert to m/s
+			windspeed = (float(iTemp) * 0.0277778f);   //convert to m/s
 		}
 		else if (results[ii].find("WINGS") != std::string::npos)
 		{
 			bHaveWindGust = true;
 			iTemp = RFLinkGetHexStringValue(results[ii]); // received value is km/u
-			windgust = (float(iTemp) * 0.0277778f)/10;    //convert to m/s
+			windgust = (float(iTemp) * 0.0277778f);    //convert to m/s
 		}
 		else if (results[ii].find("WINTMP") != std::string::npos)
 		{
@@ -610,7 +616,6 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 			bHaveBlind = true;
 			blind = RFLinkGetIntStringValue(results[ii]);
 		}
-
 		else if (results[ii].find("KWATT") != std::string::npos)
 		{
 			iTemp = RFLinkGetHexStringValue(results[ii]);
@@ -669,6 +674,13 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 			switchunit = 1;
 			bHaveSwitchCmd = true;
 			switchcmd = RFLinkGetStringValue(results[ii]);
+		}
+		else if (results[ii].find("CHIME") != std::string::npos)
+		{
+			bHaveSwitch = true;
+			switchunit = 2;
+			bHaveSwitchCmd = true;
+			switchcmd = "ON";
 		}
 	}
 

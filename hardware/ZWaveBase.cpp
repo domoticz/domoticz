@@ -341,7 +341,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 	unsigned long lID = (ID1 << 24) + (ID2 << 16) + (ID3 << 8) + ID4;
 
 	int BatLevel = 255;
-	if (pDevice->hasBattery)
+	if ((pDevice->hasBattery) && (pDevice->batValue != 0))
 	{
 		BatLevel = pDevice->batValue;
 	}
