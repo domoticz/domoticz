@@ -1,13 +1,25 @@
 Version 3.xxxx (March xx 2016)
-- Fixed: Database backup is now only possible for admin users
+- Implemented: Atag One Thermostat support
+- Implemented: Blockly/Lua Camera device, to send camera snapshots with subject after xx seconds
+- Implemented: Blockly upgraded to latest version (fixed and cleaned some code as well), this fixes problem with long sensor lists
+- Implemented: Custom Sensor
+- Implemented: Devices Tab, Log icon for Pressure
+- Implemented: Dust Sensor (ug/m3)
+- Implemented: Nefit Easy, User Mode (as switch, On=Clock, Off=Manual), Flow Temperature
+- Implemented: OpenZWave, Aeotec ZWave+ USB Controller, Enable/Disable blinking mode (@Schmart, Thanks for the magic codes!)
+- Implemented: OpenZWave, Node table, now also displays Manufacturer, Product ID and Product Type
+- Implemented: RFXCom, Blinds T12 (Confexx)
+- Changed: Stable ID generation for Philips Hue scenes (you need to delete all scenes and restart the hue hardware or domoticz)
 - Fixed: Better handling of white listed commands/urls
+- Fixed: Database backup is now only possible for admin users
 - Fixed: Double checking command rights
+- Fixed: Fix Off Delay not handled for Selector switch (#538).
+- Fixed: Fix On/Off delays not saved on the selector switch edit form (#532).
 
 Version 3.4834 (March 2nd 2016)
 - Implemented: Blockly, now possible to use expressions in notifications/email/SMS like "My temperature is {{temperaturedevice[1234]}} degrees" (see http://www.domoticz.com/wiki/Events)
 - Implemented: Blockly, now possible to send a notification with a user variable/device as subject/body
 - Implemented: Chinese language support, big thanks to wxws!!
-- Implemented: CounterType 'Time'
 - Implemented: Custom Templates, now possible to directly call custom template pages (http://127.0.0.1:8080/#/Custom/mypage)
 - Implemented: Day display in energy/gas/water/temp report
 - Implemented: Dummy Hardware, Option to supply name, sensor is now also directly added to the system
@@ -94,6 +106,7 @@ Version 3.4834 (March 2nd 2016)
 - Fixed: Fix abandoned connections not removed because the method connection_manager::check_timeout is never called [Security/Performance].
 - Updated: OpenZWave, configuration files
 - Updated: SQLite3 v3.11.0.
+- Updated: SQLite3 v3.11.1.
 
 Version 2.3530 (November 1th 2015)
 - Implemented: Degree Days in Temperature report

@@ -213,14 +213,7 @@ void CVolcraftCO20::GetSensorDetails()
 				_log.Log(LOG_ERROR, "Voltcraft CO-20: Sensor data out of range!!");
 				return;
 			}
-			//got the data
-			_tAirQualityMeter meter;
-			meter.len=sizeof(_tAirQualityMeter)-1;
-			meter.type=pTypeAirQuality;
-			meter.subtype=sTypeVoltcraft;
-			meter.airquality=voc;
-			meter.id1=1;
-			sDecodeRXMessage(this, (const unsigned char *)&meter, NULL, 255);
+			SendAirQualitySensor(1, 1, 255, voc, "Air Quality");
 		}
 	}
 	catch (...)

@@ -223,7 +223,7 @@ void AsyncSerial::readEnd(const boost::system::error_code& error,
         {
 			_log.Log(LOG_ERROR,"Serial Port closed!... Error: %s", error.message().c_str());
         }
-        terminate(false);
+        terminate();
     } else {
         if(pimpl->callback) pimpl->callback(pimpl->readBuffer,
                 bytes_transferred);

@@ -979,7 +979,7 @@ define(['app'], function (app) {
 					if (switchtype==8) {
 						addjvalstr="&addjvalue=" + $("#lightcontent #motionoffdelay").val();
 					}
-					else if ((switchtype==0)||(switchtype==7)||(switchtype==9)||(switchtype==11)) {
+					else if ((switchtype==0)||(switchtype==7)||(switchtype==9)||(switchtype==11)||(switchtype==18)) {
 						addjvalstr="&addjvalue=" + $("#lightcontent #offdelay").val();
 						addjvalstr+="&addjvalue2=" + $("#lightcontent #ondelay").val();
 					}
@@ -2333,6 +2333,7 @@ define(['app'], function (app) {
 										.find('label')
 											.removeClass('ui-state-active')
 											.removeClass('ui-state-focus')
+											.removeClass('ui-state-hover')
 											.end()
 										.find('input:radio')
 											.removeProp('checked')

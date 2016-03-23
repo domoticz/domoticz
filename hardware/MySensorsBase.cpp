@@ -815,12 +815,13 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 			SendLuxSensor(pChild->nodeID, pChild->childID, pChild->batValue, floatValue, (!pChild->childName.empty()) ? pChild->childName.c_str() : "Light Level");
 		}
 		break;
-	case V_LEVEL:
+	case V_LEVEL: //stored as Int AND Float
 		if (pChild->GetValue(vType, intValue))
 		{
 			if (pChild->presType == S_DUST)
 			{
-				SendAirQualitySensor(pChild->nodeID, pChild->childID, pChild->batValue, intValue, (!pChild->childName.empty()) ? pChild->childName : "Dust");
+				if (pChild->GetValue(vType, floatValue))
+					SendCustomSensor(pChild->nodeID, pChild->childID, pChild->batValue, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Dust Sensor", "ug/m3");
 			}
 			else if (pChild->presType == S_AIR_QUALITY)
 			{
@@ -828,7 +829,8 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 			}
 			else if (pChild->presType == S_LIGHT_LEVEL)
 			{
-				SendLuxSensor(pChild->nodeID, pChild->childID, pChild->batValue, (float)intValue, (!pChild->childName.empty()) ? pChild->childName : "Lux");
+				if (pChild->GetValue(vType, floatValue))
+					SendLuxSensor(pChild->nodeID, pChild->childID, pChild->batValue, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Lux");
 			}
 			else if (pChild->presType == S_SOUND)
 			{
@@ -837,6 +839,11 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 			else if (pChild->presType == S_MOISTURE)
 			{
 				SendMoistureSensor(cNode, pChild->batValue, intValue, (!pChild->childName.empty()) ? pChild->childName : "Moisture");
+			}
+			if (pChild->presType == S_VIBRATION)
+			{
+				if (pChild->GetValue(vType, floatValue))
+					SendCustomSensor(pChild->nodeID, pChild->childID, pChild->batValue, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Vibration", "Hz");
 			}
 		}
 		break;
@@ -1676,9 +1683,8 @@ void MySensorsBase::ParseLine()
 			m_AckNodeID = m_AckChildID = -1;
 			m_AckSetType = V_UNKNOWN;
 			m_bAckReceived = true;
-                        //No need to process ack commands
-                        return;
-
+			//No need to process ack commands
+			return;
 		}
 
 		bool bHaveValue = false;

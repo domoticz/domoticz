@@ -29,6 +29,7 @@ portions of this file.
 /*
 SDK version 9.07
 	Lighting5 IT added
+	BlindsT12 Confexx added
 
 SDK version 9.06
 	Lighting1 HQ COCO-20 added
@@ -607,6 +608,7 @@ SDK version 4.9
 #define sTypeBlindsT9 0x9	//Sunpery
 #define sTypeBlindsT10 0xA	//Dolat DLM-1
 #define sTypeBlindsT11 0xB	//ASP
+#define sTypeBlindsT12 0xC	//Confexx
 
 #define blinds_sOpen 0x0
 #define blinds_sClose 0x1

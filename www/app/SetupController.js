@@ -405,6 +405,9 @@ define(['app'], function (app) {
 			  if (typeof data.TempUnit != 'undefined') {
 				$("#temperaturetable #comboTempUnit").val(data.TempUnit);
 			  }
+			  if (typeof data.DegreeDaysBaseTemperature!= 'undefined') {
+				$("#temperaturetable #DegreeDaysBaseTemperature").val(data.DegreeDaysBaseTemperature);
+			  }
 			  if (typeof data.UseAutoUpdate != 'undefined') {
 				$("#autoupdatetable #checkforupdates").prop('checked',data.UseAutoUpdate==1);
 			  }
@@ -506,10 +509,6 @@ define(['app'], function (app) {
 				$("#acceptnewhardwaretable #ShowUpdateEffect").prop('checked',data.ShowUpdateEffect==1);
 			  }
 
-			  if (typeof data.DegreeDaysBaseTemperature!= 'undefined') {
-				$("#ddaystable #DegreeDaysBaseTemperature").val(data.DegreeDaysBaseTemperature);
-			  }
-			  
 			  if (typeof data.DisableEventScriptSystem!= 'undefined') {
 				$("#eventsystemtable #DisableEventScriptSystem").prop('checked',data.DisableEventScriptSystem==1);
 			  }

@@ -1052,6 +1052,7 @@ namespace http {
 				(htype == HTYPE_ForecastIO) ||
 				(htype == HTYPE_ICYTHERMOSTAT) ||
 				(htype == HTYPE_TOONTHERMOSTAT) ||
+				(htype == HTYPE_AtagOne) ||
 				(htype == HTYPE_PVOUTPUT_INPUT) ||
 				(htype == HTYPE_NEST) ||
 				(htype == HTYPE_ANNATHERMOSTAT) ||
@@ -1299,6 +1300,7 @@ namespace http {
 				(htype == HTYPE_ForecastIO) ||
 				(htype == HTYPE_ICYTHERMOSTAT) ||
 				(htype == HTYPE_TOONTHERMOSTAT) ||
+				(htype == HTYPE_AtagOne) ||
 				(htype == HTYPE_PVOUTPUT_INPUT) ||
 				(htype == HTYPE_NEST) ||
 				(htype == HTYPE_ANNATHERMOSTAT) ||
@@ -3464,7 +3466,7 @@ namespace http {
 				root["status"] = "OK";
 				root["title"] = "GetLightSwitches";
 				std::vector<std::vector<std::string> > result;
-				result = m_sql.safe_query("SELECT ID, Name, Type, SubType, Used, SwitchType FROM DeviceStatus ORDER BY Name");
+				result = m_sql.safe_query("SELECT ID, Name, Type, SubType, Used, SwitchType, Options FROM DeviceStatus ORDER BY Name");
 				if (result.size() > 0)
 				{
 					std::vector<std::vector<std::string> >::const_iterator itt;
@@ -3479,6 +3481,7 @@ namespace http {
 						int SubType = atoi(sd[3].c_str());
 						int used = atoi(sd[4].c_str());
 						_eSwitchType switchtype = (_eSwitchType)atoi(sd[5].c_str());
+						std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sd[6]);
 						bool bdoAdd=false;
 						switch (Type)
 						{
@@ -3526,9 +3529,28 @@ namespace http {
 								bool bIsDimmer = (
 									(switchtype == STYPE_Dimmer) ||
 									(switchtype == STYPE_BlindsPercentage) ||
-									(switchtype == STYPE_BlindsPercentageInverted)
+									(switchtype == STYPE_BlindsPercentageInverted) ||
+									(switchtype == STYPE_Selector)
 									);
 								root["result"][ii]["IsDimmer"] = bIsDimmer;
+								std::string dimmerLevels = bIsDimmer ? "all" : "none";
+								if (switchtype == STYPE_Selector) {
+									std::stringstream ss;
+									std::map<std::string, std::string> selectorStatuses;
+									GetSelectorSwitchStatuses(options, selectorStatuses);
+									bool levelOffHidden = options["LevelOffHidden"] == "true";
+									for(int i = 0; i < (int)selectorStatuses.size(); i++) {
+										if (levelOffHidden && (i == 0)) {
+											continue;
+										}
+										if((levelOffHidden && (i > 1)) || (i > 0)) {
+											ss << ",";
+										}
+										ss << i * 10;
+									}
+									dimmerLevels = ss.str();
+								}
+								root["result"][ii]["DimmerLevels"] = dimmerLevels;
 								ii++;
 							}
 							break;
@@ -4475,7 +4497,8 @@ namespace http {
 						if (
 							(lighttype == 205) ||
 							(lighttype == 210) ||
-							(lighttype == 211)
+							(lighttype == 211)||
+							(lighttype == 212)
 							)
 						{
 							id = id.substr(0, 6);
@@ -5078,6 +5101,13 @@ namespace http {
 					ii++;
 				}
 				if ((dType == pTypeGeneral) && (dSubType == sTypeWaterflow))
+				{
+					root["result"][ii]["val"] = NTYPE_USAGE;
+					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_USAGE, 0);
+					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_USAGE, 1);
+					ii++;
+				}
+				if ((dType == pTypeGeneral) && (dSubType == sTypeCustom))
 				{
 					root["result"][ii]["val"] = NTYPE_USAGE;
 					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_USAGE, 0);
@@ -7603,6 +7633,7 @@ namespace http {
 								(!((dType == pTypeGeneral) && (dSubType == sTypeLeafWetness))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypePercentage))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeWaterflow))) &&
+								(!((dType == pTypeGeneral) && (dSubType == sTypeCustom))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeFan))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeSoundLevel))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeZWaveClock))) &&
@@ -8515,7 +8546,8 @@ namespace http {
 								sprintf(szTmp, "%.03f m3", musage);
 								break;
 							case MTYPE_WATER:
-								sprintf(szTmp, "%llu Liter", total_real);
+								musage = float(total_real) / (WaterDivider/1000.0f);
+								sprintf(szTmp, "%d Liter", round(musage));
 								break;
 							case MTYPE_COUNTER:
 								sprintf(szTmp, "%llu %s", total_real, ValueUnits.c_str());
@@ -8745,7 +8777,7 @@ namespace http {
 								break;
 							case MTYPE_GAS:
 								musage = float(total_real) / GasDivider;
-								sprintf(szTmp, "%.02f m3", musage);
+								sprintf(szTmp, "%.03f m3", musage);
 								break;
 							case MTYPE_WATER:
 								musage = float(total_real) / WaterDivider;
@@ -8801,7 +8833,7 @@ namespace http {
 							break;
 						case MTYPE_GAS:
 							musage = float(acounter) / GasDivider;
-							sprintf(szTmp, "%.02f m3", musage);
+							sprintf(szTmp, "%.03f m3", musage);
 							break;
 						case MTYPE_WATER:
 							musage = float(acounter) / WaterDivider;
@@ -8821,10 +8853,10 @@ namespace http {
 							sprintf(szTmp, "%s Watt", splitresults[1].c_str());
 							break;
 						case MTYPE_GAS:
-							sprintf(szTmp, "%s m", splitresults[1].c_str());
+							sprintf(szTmp, "%s m3", splitresults[1].c_str());
 							break;
 						case MTYPE_WATER:
-							sprintf(szTmp, "%s m", splitresults[1].c_str());
+							sprintf(szTmp, "%s m3", splitresults[1].c_str());
 							break;
 						case MTYPE_COUNTER:
 							sprintf(szTmp, "%s", splitresults[1].c_str());
@@ -9306,6 +9338,36 @@ namespace http {
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 							root["result"][ii]["Image"] = "Moisture";
 							root["result"][ii]["TypeImg"] = "moisture";
+						}
+						else if (dSubType == sTypeCustom)
+						{
+							std::string szAxesLabel = "";
+							int SensorType = 1;
+							std::vector<std::string> sResults;
+							StringSplit(sOptions, ";", sResults);
+
+							if (sResults.size() == 2)
+							{
+								SensorType = atoi(sResults[0].c_str());
+								szAxesLabel = sResults[1];
+							}
+							sprintf(szData, "%g %s", atof(sValue.c_str()), szAxesLabel.c_str());
+							root["result"][ii]["Data"] = szData;
+							root["result"][ii]["SensorType"] = SensorType;
+							root["result"][ii]["SensorUnit"] = szAxesLabel;
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+
+							std::string IconFile = "Custom";
+							if (CustomImage != 0)
+							{
+								std::map<int, int>::const_iterator ittIcon = m_custom_light_icons_lookup.find(CustomImage);
+								if (ittIcon != m_custom_light_icons_lookup.end())
+								{
+									IconFile = m_custom_light_icons[ittIcon->second].RootFile;
+								}
+							}
+							root["result"][ii]["Image"] = IconFile;
+							root["result"][ii]["TypeImg"] = IconFile;
 						}
 						else if (dSubType == sTypeFan)
 						{
@@ -10954,6 +11016,7 @@ namespace http {
 			int iProtected = (tmpstr == "true") ? 1 : 0;
 
 			std::string sOptions = CURLEncode::URLDecode(base64_decode(request::findValue(&req, "options")));
+			std::string devoptions = CURLEncode::URLDecode(request::findValue(&req, "devoptions"));
 
 			char szTmp[200];
 
@@ -10991,14 +11054,14 @@ namespace http {
 
 			std::vector<std::vector<std::string> > result;
 
-			result=m_sql.safe_query("SELECT Type,SubType FROM DeviceStatus WHERE (ID == '%q')",
-				idx.c_str());
+			result=m_sql.safe_query("SELECT Type,SubType,HardwareID FROM DeviceStatus WHERE (ID == '%q')",	idx.c_str());
 			if (result.size()<1)
 				return;
 			std::vector<std::string> sd = result[0];
 
 			unsigned char dType=atoi(sd[0].c_str());
 			//unsigned char dSubType=atoi(sd[1].c_str());
+			//int HwdID = atoi(sd[2].c_str());
 
 			int nEvoMode=0;
 
@@ -11048,7 +11111,7 @@ namespace http {
 
 			m_sql.safe_query("UPDATE DeviceStatus SET Protected=%d WHERE (ID == '%q')", iProtected, idx.c_str());
 
-			if (setPoint != "" || state!="")
+			if (!setPoint.empty() || !state.empty())
 			{
 				int urights = 3;
 				if (bHaveUser)
@@ -11069,7 +11132,7 @@ namespace http {
 				else
 					m_mainworker.SetSetPoint(idx, static_cast<float>(atof(setPoint.c_str())));
 			}
-			else if (clock != "")
+			else if (!clock.empty())
 			{
 				int urights = 3;
 				if (bHaveUser)
@@ -11085,7 +11148,7 @@ namespace http {
 					return;
 				m_mainworker.SetClock(idx, clock);
 			}
-			else if (tmode != "")
+			else if (!tmode.empty())
 			{
 				int urights = 3;
 				if (bHaveUser)
@@ -11101,7 +11164,7 @@ namespace http {
 					return;
 				m_mainworker.SetZWaveThermostatMode(idx, atoi(tmode.c_str()));
 			}
-			else if (fmode != "")
+			else if (!fmode.empty())
 			{
 				int urights = 3;
 				if (bHaveUser)
@@ -11118,24 +11181,24 @@ namespace http {
 				m_mainworker.SetZWaveThermostatFanMode(idx, atoi(fmode.c_str()));
 			}
 
-			if (strunit != "")
+			if (!strunit.empty())
 			{
 				m_sql.safe_query("UPDATE DeviceStatus SET Unit='%q' WHERE (ID == '%q')",
 					strunit.c_str(), idx.c_str());
 			}
 			//FIXME evohome ...we need the zone id to update the correct zone...but this should be ok as a generic call?
-			if (deviceid != "")
+			if (!deviceid.empty())
 			{
 				m_sql.safe_query("UPDATE DeviceStatus SET DeviceID='%q' WHERE (ID == '%q')",
 					deviceid.c_str(), idx.c_str());
 			}
-			if (addjvalue != "")
+			if (!addjvalue.empty())
 			{
 				double faddjvalue = atof(addjvalue.c_str());
 				m_sql.safe_query("UPDATE DeviceStatus SET AddjValue=%f WHERE (ID == '%q')",
 					faddjvalue, idx.c_str());
 			}
-			if (addjmulti != "")
+			if (!addjmulti.empty())
 			{
 				double faddjmulti = atof(addjmulti.c_str());
 				if (faddjmulti == 0)
@@ -11143,19 +11206,23 @@ namespace http {
 				m_sql.safe_query("UPDATE DeviceStatus SET AddjMulti=%f WHERE (ID == '%q')",
 					faddjmulti, idx.c_str());
 			}
-			if (addjvalue2 != "")
+			if (!addjvalue2.empty())
 			{
 				double faddjvalue2 = atof(addjvalue2.c_str());
 				m_sql.safe_query("UPDATE DeviceStatus SET AddjValue2=%f WHERE (ID == '%q')",
 					faddjvalue2, idx.c_str());
 			}
-			if (addjmulti2 != "")
+			if (!addjmulti2.empty())
 			{
 				double faddjmulti2 = atof(addjmulti2.c_str());
 				if (faddjmulti2 == 0)
 					faddjmulti2 = 1;
 				m_sql.safe_query("UPDATE DeviceStatus SET AddjMulti2=%f WHERE (ID == '%q')",
 					faddjmulti2, idx.c_str());
+			}
+			if (!devoptions.empty())
+			{
+				m_sql.safe_query("UPDATE DeviceStatus SET Options='%q' WHERE (ID == '%q')", devoptions.c_str(), idx.c_str());
 			}
 
 			if (used == 0)
@@ -11173,7 +11240,10 @@ namespace http {
 			}
 
 			// Save device options
-			m_sql.SetDeviceOptions(ullidx, m_sql.BuildDeviceOptions(sOptions, false));
+			if (!sOptions.empty())
+			{
+				m_sql.SetDeviceOptions(ullidx, m_sql.BuildDeviceOptions(sOptions, false));
+			}
 
 			if (maindeviceidx != "")
 			{
@@ -12495,7 +12565,7 @@ namespace http {
 						if (bHaveUsage == false)
 							method = 0;
 
-						if (dType == pTypeYouLess)
+						if ((dType == pTypeYouLess) && ((metertype == MTYPE_ENERGY) || (metertype == MTYPE_ENERGY_GENERATED)))
 							method = 1;
 
 						int iDisplayInPower = 1;
@@ -12559,7 +12629,7 @@ namespace http {
 												sprintf(szTmp, "%.3f", (TotalValue / EnergyDivider)*1000.0f);	//from kWh -> Watt
 												break;
 											case MTYPE_GAS:
-												sprintf(szTmp, "%.2f", TotalValue / GasDivider);
+												sprintf(szTmp, "%.3f", TotalValue / GasDivider);
 												break;
 											case MTYPE_WATER:
 												sprintf(szTmp, "%.3f", TotalValue / WaterDivider);

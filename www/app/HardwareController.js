@@ -422,7 +422,7 @@ define(['app'], function (app) {
                      }
                 });
             }
-            else if ((text.indexOf("ICY") >= 0) || (text.indexOf("Toon") >= 0) || (text.indexOf("Nest Th") >= 0) || (text.indexOf("PVOutput") >= 0) || (text.indexOf("Netatmo") >= 0) || (text.indexOf("Thermosmart") >= 0)) {
+            else if ((text.indexOf("ICY") >= 0) || (text.indexOf("Toon") >= 0) || (text.indexOf("Atag") >= 0) || (text.indexOf("Nest Th") >= 0) || (text.indexOf("PVOutput") >= 0) || (text.indexOf("Netatmo") >= 0) || (text.indexOf("Thermosmart") >= 0)) {
                 var username = $("#hardwarecontent #divlogin #username").val();
                 var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
                 $.ajax({
@@ -932,7 +932,7 @@ define(['app'], function (app) {
                      }
                 });
             }
-            else if ((text.indexOf("ICY") >= 0)||(text.indexOf("Toon") >= 0)||(text.indexOf("Nest Th") >= 0)||(text.indexOf("PVOutput") >= 0)||(text.indexOf("Netatmo") >= 0) || (text.indexOf("Thermosmart") >= 0))
+            else if ((text.indexOf("ICY") >= 0)||(text.indexOf("Toon") >= 0)||(text.indexOf("Atag") >= 0)||(text.indexOf("Nest Th") >= 0)||(text.indexOf("PVOutput") >= 0)||(text.indexOf("Netatmo") >= 0) || (text.indexOf("Thermosmart") >= 0))
             {
                 var username=$("#hardwarecontent #divlogin #username").val();
                 var password=encodeURIComponent($("#hardwarecontent #divlogin #password").val());
@@ -2984,9 +2984,12 @@ define(['app'], function (app) {
                         "0": nodeStr,
                         "1": item.Name,
                         "2": item.Description,
-                        "3": item.LastUpdate,
-                        "4": $.t((item.PollEnabled == "true")?"Yes":"No"),
-                        "5": statusImg+'&nbsp;&nbsp;'+healButton,
+                        "3": item.Manufacturer_name,
+                        "4": item.Product_id,
+                        "5": item.Product_type,
+                        "6": item.LastUpdate,
+                        "7": $.t((item.PollEnabled == "true")?"Yes":"No"),
+                        "8": statusImg+'&nbsp;&nbsp;'+healButton,
                     } );
                 });
               }
@@ -3021,7 +3024,7 @@ define(['app'], function (app) {
                             $('#updelclr #nodedelete').attr("class", "btnstyle3");
                             $("#updelclr #nodedelete").attr("href", "javascript:DeleteNode(" + idx + ")");
                         }
-                        $("#hardwarecontent #nodeparamstable #nodename").val(data["1"]);
+                        $("#hardwarecontent #nodeparamstable #nodename").val(data["Name"]);
                         $('#hardwarecontent #nodeparamstable #EnablePolling').prop('checked',(data["PollEnabled"]=="true"));
                         if (iNode==iOwnNodeId) {
                             $("#hardwarecontent #nodeparamstable #trEnablePolling").hide();
@@ -3466,10 +3469,24 @@ define(['app'], function (app) {
         CreateDummySensors = function(idx,name)
         {
             $.devIdx=idx;
+            $("#dialog-createsensor #vsensoraxis").hide();
+            $("#dialog-createsensor #sensoraxis").val("");
+            
+			$("#dialog-createsensor #sensortype").change(function() { 
+				var stype=$("#dialog-createsensor #sensortype option:selected").val();
+				$("#dialog-createsensor #sensoraxis").val("");
+				if (stype == 1004) {
+					$("#dialog-createsensor #vsensoraxis").show();
+				}
+				else {
+					$("#dialog-createsensor #vsensoraxis").hide();
+				}
+			});
+            
             $( "#dialog-createsensor" ).dialog({
                   autoOpen: false,
                   width: 420,
-                  height: 220,
+                  height: 250,
                   modal: true,
                   resizable: false,
                   buttons: {
@@ -3487,10 +3504,21 @@ define(['app'], function (app) {
                                 bootbox.alert($.t('No Sensor Type Selected!'));
                                 return ;
                             }
+                            var extraSendData="";
+                            if (SensorType==1004) {
+								var AxisLabel=$("#dialog-createsensor #sensoraxis").val();
+								if (AxisLabel=="")
+								{
+									ShowNotify($.t('Please enter a Axis Label!'), 2500, true);
+									return;
+								}
+								extraSendData="&sensoroptions=1;" + encodeURIComponent(AxisLabel);
+                            }
                             $.ajax({
                                  url: "json.htm?type=createvirtualsensor&idx=" + $.devIdx +
 									"&sensorname=" + encodeURIComponent(SensorName) +
-									"&sensortype=" + SensorType,
+									"&sensortype=" + SensorType +
+									extraSendData,
                                  async: false,
                                  dataType: 'json',
                                  success: function(data) {
@@ -3840,6 +3868,7 @@ define(['app'], function (app) {
                             (data["Type"].indexOf("ICY") >= 0) ||
                             (data["Type"].indexOf("Harmony") >= 0)||
                             (data["Type"].indexOf("Toon") >= 0)||
+                            (data["Type"].indexOf("Atag") >= 0)||
                             (data["Type"].indexOf("Nest Th") >= 0)||
                             (data["Type"].indexOf("PVOutput") >= 0)||
                             (data["Type"].indexOf("ETH8020") >= 0)||
@@ -3990,7 +4019,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #username").hide();
                 $("#hardwarecontent #lblusername").hide();
             }
-            else if ((text.indexOf("ICY") >= 0)||(text.indexOf("Toon") >= 0)||(text.indexOf("Nest Th") >= 0)||(text.indexOf("PVOutput") >= 0)||(text.indexOf("Netatmo") >= 0)||(text.indexOf("Thermosmart") >= 0))
+            else if ((text.indexOf("ICY") >= 0)||(text.indexOf("Toon") >= 0)||(text.indexOf("Atag") >= 0)||(text.indexOf("Nest Th") >= 0)||(text.indexOf("PVOutput") >= 0)||(text.indexOf("Netatmo") >= 0)||(text.indexOf("Thermosmart") >= 0))
             {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").hide();
