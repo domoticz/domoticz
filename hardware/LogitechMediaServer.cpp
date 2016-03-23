@@ -22,6 +22,7 @@ m_iThreadsRunning(0)
 	m_HwdID = ID;
 	m_Port = Port;
 	m_bShowedStartupMessage = false;
+	m_iMissedQueries = 0;
 	SetSettings(PollIntervalsec, PingTimeoutms);
 }
 
@@ -365,10 +366,14 @@ void CLogitechMediaServer::GetPlayerInfo()
 		Json::Value root = Query(m_IP, m_Port, sPostdata);
 
 		if (root.isNull()) {
-			_log.Log(LOG_ERROR, "Logitech Media Server: No response from server %s:%i on request '%s'", m_IP.c_str(), m_Port, sPostdata.c_str());
+			m_iMissedQueries++;
+			if (m_iMissedQueries % 3 == 0) {
+				_log.Log(LOG_ERROR, "Logitech Media Server: No response from server %s:%i", m_IP.c_str(), m_Port);
+			}
 		}
 		else {
 			SetHeartbeatReceived();
+			m_iMissedQueries = 0;
 
 			int totPlayers = root["player count"].asInt();
 			if (totPlayers > 0) {
@@ -604,7 +609,7 @@ void CLogitechMediaServer::ReloadPlaylists()
 	Json::Value root = Query(m_IP, m_Port, sPostdata);
 
 	if (root.isNull()) {
-		_log.Log(LOG_ERROR, "Logitech Media Server: No response from server %s:%i on request '%s'", m_IP.c_str(), m_Port, sPostdata.c_str());
+		_log.Log(LOG_ERROR, "Logitech Media Server: No response from server %s:%i", m_IP.c_str(), m_Port);
 	}
 	else {
 		int totPlaylists = root["count"].asInt();
