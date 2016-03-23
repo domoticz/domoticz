@@ -417,6 +417,7 @@ define(['app'], function (app) {
 														.find('label')
 															.removeClass('ui-state-active')
 															.removeClass('ui-state-focus')
+															.removeClass('ui-state-hover')
 															.end()
 														.find('input:radio')
 															.removeProp('checked')
@@ -1297,7 +1298,8 @@ define(['app'], function (app) {
 							(item.SubType=="Thermostat Fan Mode")||
 							(item.SubType=="Smartwares")||
 							(item.SubType=="Waterflow")||
-							(item.SubType=="Sound Level")
+							(item.SubType=="Sound Level")||
+							(item.SubType=="Custom Sensor")
 						) &&
 						(item.Favorite!=0)
 					  )
@@ -1342,7 +1344,8 @@ define(['app'], function (app) {
 											(item.SubType=="Pressure")||
 											(item.SubType=="A/D")||
 											(item.SubType == "Waterflow")||
-											(item.SubType=="Sound Level")
+											(item.SubType=="Sound Level")||
+											(item.SubType=="Custom Sensor")
 										) {
 											if (typeof item.CounterToday != 'undefined') {
 												status+='T: ' + item.CounterToday;
@@ -1410,6 +1413,10 @@ define(['app'], function (app) {
 									bigtext=item.Data;
 								}
 								else if (item.SubType == "Percentage") {
+									status=item.Data;
+									bigtext=item.Data;
+								}
+								else if (item.SubType == "Custom Sensor") {
 									status=item.Data;
 									bigtext=item.Data;
 								}
@@ -3108,7 +3115,8 @@ define(['app'], function (app) {
 							(item.SubType=="Thermostat Fan Mode")||
 							(item.SubType=="Smartwares")||
 							(item.SubType == "Waterflow")||	
-							(item.SubType=="Sound Level")
+							(item.SubType=="Sound Level")||
+							(item.SubType=="Custom Sensor")
 						) &&
 						(item.Favorite!=0)
 					  )
@@ -3173,6 +3181,9 @@ define(['app'], function (app) {
 						}
 						else if (item.SubType == "Percentage") {
 							vname='<img src="images/next.png" onclick="ShowPercentageLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="16" width="16">' + " " + item.Name;
+						}
+						else if (item.SubType=="Custom Sensor") {
+							vname='<img src="images/' + item.Image + '48_On.png" onclick="ShowGeneralGraph(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', \'' + escape(item.SensorUnit) +'\', \'' + item.SubType + '\');" height="16" width="16">' + " " + item.Name;
 						}
 						else if (item.Type == "Fan") {
 							vname='<img src="images/next.png" onclick="ShowFanLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="16" width="16">' + " " + item.Name;
@@ -3251,7 +3262,8 @@ define(['app'], function (app) {
 									(item.SubType=="Pressure")||
 									(item.SubType=="A/D")||
 									(item.SubType == "Waterflow")||
-									(item.SubType=="Sound Level")
+									(item.SubType=="Sound Level")||
+									(item.SubType=="Custom Sensor")
 								) {
 									if (typeof item.CounterToday != 'undefined') {
 										status+='T: ' + item.CounterToday;
@@ -3353,7 +3365,8 @@ define(['app'], function (app) {
 								(item.SubType=="A/D")||
 								(item.SubType=="Sound Level")||
 								(item.SubType == "Waterflow")||
-								(item.Type == "Current")
+								(item.Type == "Current")||
+								(item.SybType == "Custom Sensor")
 							) {
 							xhtm+=item.Data;
 						}
@@ -3367,7 +3380,7 @@ define(['app'], function (app) {
 						xhtm+='\t      <td id="img"><img src="images/';
 						var status="";
 						if (typeof item.Counter != 'undefined') {
-							if (item.Type == "RFXMeter") {
+							if ((item.Type == "RFXMeter")||(item.Type == "YouLess Meter")) {
 								if (item.SwitchTypeVal==1) {
 									xhtm+='Gas48.png" class="lcursor" onclick="ShowCounterLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="40" width="40"></td>\n';
 								}
@@ -3441,6 +3454,10 @@ define(['app'], function (app) {
 						}
 						else if (item.SubType=="Soil Moisture") {
 							xhtm+='moisture48.png" class="lcursor" onclick="ShowGeneralGraph(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal +', \'' + item.SubType + '\');" height="40" width="40"></td>\n';
+							status=item.Data;
+						}
+						else if (item.SubType=="Custom Sensor") {
+							xhtm+=item.Image + '48_On.png" class="lcursor" onclick="ShowGeneralGraph(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.SensorUnit) +'\', \'' + item.SubType + '\');" height="40" width="40"></td>\n';
 							status=item.Data;
 						}
 						else if (item.SubType=="Waterflow") {

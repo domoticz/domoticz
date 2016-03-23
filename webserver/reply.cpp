@@ -283,6 +283,17 @@ void reply::add_header(reply *rep, const std::string &name, const std::string &v
 	rep->headers[num].value = value;
 }
 
+void reply::add_header_if_absent(reply *rep, const std::string &name, const std::string &value) {
+	int num = rep->headers.size();
+	for (int h = 0; h < num; h++) {
+		if (boost::iequals(rep->headers[h].name, name)) {
+			// is present
+			return;
+		}
+	}
+	add_header(rep, name, value, false);
+}
+
 void reply::set_content(reply *rep, const std::string & content) {
 	rep->content.assign(content);
 }
@@ -292,8 +303,10 @@ void reply::set_content(reply *rep, const std::wstring & content_w) {
 	rep->content.assign(utf.get8(), strlen(utf.get8()));
 }
 
-void reply::set_content_from_file(reply *rep, const std::string & file_path) {
+bool reply::set_content_from_file(reply *rep, const std::string & file_path) {
 	std::ifstream file(file_path.c_str(), std::ios::in | std::ios::binary);
+	if (!file.is_open())
+		return false;
 	file.seekg(0, std::ios::end);
 	size_t fileSize = (size_t)file.tellg();
 	if (fileSize > 0) {
@@ -302,10 +315,12 @@ void reply::set_content_from_file(reply *rep, const std::string & file_path) {
 		file.read(&rep->content[0], rep->content.size());
 	}
 	file.close();
+	return true;
 }
 
-void reply::set_content_from_file(reply *rep, const std::string & file_path, const std::string & attachment, bool set_content_type) {
-	reply::set_content_from_file(rep, file_path);
+bool reply::set_content_from_file(reply *rep, const std::string & file_path, const std::string & attachment, bool set_content_type) {
+	if (!reply::set_content_from_file(rep, file_path))
+		return false;
 	reply::add_header_attachment(rep, attachment);
 	if (set_content_type == true) {
 		std::size_t last_dot_pos = attachment.find_last_of(".");
@@ -322,6 +337,7 @@ void reply::set_content_from_file(reply *rep, const std::string & file_path, con
 			reply::add_header_content_type(rep, mime_type);
 		}
 	}
+	return true;
 }
 
 void reply::add_header_attachment(reply *rep, const std::string & attachment) {

@@ -49,10 +49,10 @@ and does not require smbus or wire libs
 #include <fcntl.h>
 #include <stdlib.h>
 #ifdef __arm__
-	#include <linux/i2c-dev.h>
-	#include <linux/i2c.h>
-	#include <unistd.h>
-	#include <sys/ioctl.h>
+#include <linux/i2c-dev.h>
+#include <linux/i2c.h>
+#include <unistd.h>
+#include <sys/ioctl.h>
 #endif
 #include <math.h>
 #include "../main/Helper.h"
@@ -96,16 +96,16 @@ I2C::I2C(const int ID, const int Mode1)
 {
 	switch (Mode1)
 	{
-		case 1:
-			device = "BMP085";
-			break;
-		case 2:
-			device = "HTU21D";
-			break;
+	case 1:
+		device = "BMP085";
+		break;
+	case 2:
+		device = "HTU21D";
+		break;
 	}
 
-	m_stoprequested=false;
-	m_HwdID=ID;
+	m_stoprequested = false;
+	m_HwdID = ID;
 	m_ActI2CBus = "/dev/i2c-1";
 	if (!i2c_test(m_ActI2CBus.c_str()))
 	{
@@ -122,8 +122,8 @@ bool I2C::StartHardware()
 #ifndef __arm__
 	return false;
 #endif
-	m_stoprequested=false;
-	if (device=="BMP085")
+	m_stoprequested = false;
+	if (device == "BMP085")
 	{
 		m_minuteCount = 0;
 		m_firstRound = true;
@@ -135,16 +135,16 @@ bool I2C::StartHardware()
 	//Start worker thread
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&I2C::Do_Work, this)));
 	sOnConnected(this);
-	m_bIsStarted=true;
-	return (m_thread!=NULL);
+	m_bIsStarted = true;
+	return (m_thread != NULL);
 }
 
 bool I2C::StopHardware()
 {
-	m_stoprequested=true;
-	if (m_thread!=NULL)
+	m_stoprequested = true;
+	if (m_thread != NULL)
 		m_thread->join();
-	m_bIsStarted=false;
+	m_bIsStarted = false;
 	return true;
 }
 
@@ -157,7 +157,7 @@ void I2C::Do_Work()
 {
 	int msec_counter = 0;
 	int sec_counter = I2C_READ_INTERVAL - 5;
-	_log.Log(LOG_STATUS,"%s: Worker started...", device.c_str());
+	_log.Log(LOG_STATUS, "%s: Worker started...", device.c_str());
 	while (!m_stoprequested)
 	{
 		sleep_milliseconds(500);
@@ -175,11 +175,11 @@ void I2C::Do_Work()
 			{
 				try
 				{
-					if (device=="BMP085")
+					if (device == "BMP085")
 					{
 						bmp_ReadSensorDetails();
 					}
-					else if (device=="HTU21D")
+					else if (device == "HTU21D")
 					{
 						HTU21D_ReadSensorDetails();
 					}
@@ -191,7 +191,7 @@ void I2C::Do_Work()
 			}
 		}
 	}
-	_log.Log(LOG_STATUS,"%s: Worker stopped...", device.c_str());
+	_log.Log(LOG_STATUS, "%s: Worker stopped...", device.c_str());
 }
 
 //returns true if it could be opened
@@ -237,30 +237,30 @@ int I2C::ReadInt(int fd, uint8_t *devValues, uint8_t startReg, uint8_t bytesToRe
 #else
 	int rc;
 	struct i2c_rdwr_ioctl_data messagebuffer;
+	struct i2c_msg bmp_read_reg[2] = {
+		{ BMPx8x_I2CADDR, 0, 1, &startReg },
+		{ BMPx8x_I2CADDR, I2C_M_RD, bytesToRead, devValues }
+	};
+	struct i2c_msg htu_read_reg[1] = {
+		{ HTU21D_ADDRESS, I2C_M_RD, bytesToRead, devValues }
+	};
 
 	//Build a register read command
 	//Requires a one complete message containing a command
 	//and anaother complete message for the reply
-	if (device=="BMP085")
+	if (device == "BMP085")
 	{
-		struct i2c_msg read_reg[2] = {
-			{ BMPx8x_I2CADDR, 0, 1, &startReg },
-			{ BMPx8x_I2CADDR, I2C_M_RD, bytesToRead, devValues }
-		};
 		messagebuffer.nmsgs = 2;                  //Two message/action
-		messagebuffer.msgs = read_reg;            //load the 'read__reg' message into the buffer
+		messagebuffer.msgs = bmp_read_reg;            //load the 'read__reg' message into the buffer
 	}
-	else if (device=="HTU21D")
+	else if (device == "HTU21D")
 	{
-		struct i2c_msg read_reg[1] = {
-			{ HTU21D_ADDRESS, I2C_M_RD, bytesToRead, devValues }
-		};
 		messagebuffer.nmsgs = 1;
-		messagebuffer.msgs = read_reg;            //load the 'read__reg' message into the buffer
+		messagebuffer.msgs = htu_read_reg;            //load the 'read__reg' message into the buffer
 	}
 
 	rc = ioctl(fd, I2C_RDWR, &messagebuffer); //Send the buffer to the bus and returns a send status
-	if (rc < 0){
+	if (rc < 0) {
 		return rc;
 	}
 	//note that the return data is contained in the array pointed to by devValues (passed by-ref)
@@ -276,32 +276,32 @@ int I2C::WriteCmd(int fd, uint8_t devAction)
 	int rc;
 	struct i2c_rdwr_ioctl_data messagebuffer;
 	uint8_t datatosend[2];
+	struct i2c_msg bmp_write_reg[1] = {
+		{ BMPx8x_I2CADDR, 0, 2, datatosend }
+	};
+	struct i2c_msg htu_write_reg[1] = {
+		{ HTU21D_ADDRESS, 0, 2, datatosend }
+	};
 
-	if (device=="BMP085")
+	if (device == "BMP085")
 	{
 		datatosend[0] = BMPx8x_CtrlMeas;
 		datatosend[1] = devAction;
 		//Build a register write command
 		//Requires one complete message containing a reg address and command
-		struct i2c_msg write_reg[1] = {
-			{ BMPx8x_I2CADDR, 0, 2, datatosend }
-		};
-		messagebuffer.msgs = write_reg;           //load the 'write__reg' message into the buffer
+		messagebuffer.msgs = bmp_write_reg;           //load the 'write__reg' message into the buffer
 	}
-	else if (device=="HTU21D")
+	else if (device == "HTU21D")
 	{
 		datatosend[0] = devAction;
 		//Build a register write command
 		//Requires one complete message containing a reg address and command
-		struct i2c_msg write_reg[1] = {
-			{ HTU21D_ADDRESS, 0, 2, datatosend }
-		};
-		messagebuffer.msgs = write_reg;           //load the 'write__reg' message into the buffer
+		messagebuffer.msgs = htu_write_reg;           //load the 'write__reg' message into the buffer
 	}
 
 	messagebuffer.nmsgs = 1;                  //One message/action
 	rc = ioctl(fd, I2C_RDWR, &messagebuffer); //Send the buffer to the bus and returns a send status
-	if (rc < 0){
+	if (rc < 0) {
 		return rc;
 	}
 	return 0;
@@ -312,19 +312,19 @@ int I2C::WriteCmd(int fd, uint8_t devAction)
 int I2C::HTU21D_checkCRC8(uint16_t data)
 {
 	unsigned int bit;
-  for (bit = 0; bit < 16; bit++)
-  {
+	for (bit = 0; bit < 16; bit++)
+	{
 		if (data & 0x8000)
-    {
-      data =  (data << 1) ^ HTU21D_CRC8_POLYNOMINAL;
-    }
-    else
-    {
-      data <<= 1;
-    }
-  }
-  data >>= 8;
-  return data;
+		{
+			data = (data << 1) ^ HTU21D_CRC8_POLYNOMINAL;
+		}
+		else
+		{
+			data <<= 1;
+		}
+	}
+	data >>= 8;
+	return data;
 }
 
 int I2C::HTU21D_GetHumidity(int fd, float *Hum)
@@ -346,9 +346,9 @@ int I2C::HTU21D_GetHumidity(int fd, float *Hum)
 	if (HTU21D_checkCRC8(rawHumidity) != Checksum)
 	{
 		_log.Log(LOG_ERROR, "%s: Incorrect humidity checksum!...", device.c_str());
-    return -1;
-  }
-	rawHumidity ^=  0x02;
+		return -1;
+	}
+	rawHumidity ^= 0x02;
 	*Hum = -6 + 0.001907 * (float)rawHumidity;
 	return 0;
 #endif
@@ -375,11 +375,11 @@ int I2C::HTU21D_GetTemperature(int fd, float *Temp)
 	rawTemperature = ((rValues[0] << 8) | rValues[1]);
 	Checksum = rValues[2];
 	if (HTU21D_checkCRC8(rawTemperature) != Checksum)
-  {
+	{
 		_log.Log(LOG_ERROR, "%s: Incorrect temperature checksum!...", device.c_str());
-    return -1;
-  }
-  *Temp = -46.85 + 0.002681 * (float)rawTemperature;
+		return -1;
+	}
+	*Temp = -46.85 + 0.002681 * (float)rawTemperature;
 	return 0;
 #endif
 }
@@ -421,9 +421,9 @@ int I2C::bmp_Calibration(int fd)
 #ifdef __arm__
 	uint8_t rValue[22];
 	//printf("Entering Calibration\n");
-	if (ReadInt(fd,rValue,0xAA,22) == 0)
+	if (ReadInt(fd, rValue, 0xAA, 22) == 0)
 	{
-		bmp_ac1=((rValue[0]<<8)|rValue[1]);
+		bmp_ac1 = ((rValue[0] << 8) | rValue[1]);
 		bmp_ac2 = ((rValue[2] << 8) | rValue[3]);
 		bmp_ac3 = ((rValue[4] << 8) | rValue[5]);
 		bmp_ac4 = ((rValue[6] << 8) | rValue[7]);
@@ -459,7 +459,7 @@ int I2C::bmp_WaitForConversion(int fd)
 	uint8_t rValues[3];
 	int counter = 0;
 	//Delay can now be reduced by checking that bit 5 of Ctrl_Meas(0xF4) == 0
-	do{
+	do {
 		sleepms(BMPx8x_RetryDelay);
 		if (ReadInt(fd, rValues, BMPx8x_CtrlMeas, 1) != 0) return -1;
 		counter++;
@@ -552,17 +552,17 @@ int I2C::bmp_GetTemperature(int fd, double *Temp)
 #endif
 }
 
-double I2C::bmp_altitude(double p){
+double I2C::bmp_altitude(double p) {
 	return 145437.86*(1 - pow((p / 1013.25), 0.190294496)); //return feet
-	//return 44330*(1- pow((p/1013.25),0.190294496)); //return meters
+															//return 44330*(1- pow((p/1013.25),0.190294496)); //return meters
 }
 
-double I2C::bmp_qnh(double p, double StationAlt){
+double I2C::bmp_qnh(double p, double StationAlt) {
 	return p / pow((1 - (StationAlt / 145437.86)), 5.255); //return hPa based on feet
-	//return p / pow((1-(StationAlt/44330)),5.255) ; //return hPa based on feet
+														   //return p / pow((1-(StationAlt/44330)),5.255) ; //return hPa based on feet
 }
 
-double I2C::bmp_ppl_DensityAlt(double PAlt, double Temp){
+double I2C::bmp_ppl_DensityAlt(double PAlt, double Temp) {
 	double ISA = 15 - (1.98*(PAlt / 1000));
 	return PAlt + (120 * (Temp - ISA)); //So,So density altitude
 }
@@ -668,7 +668,7 @@ int I2C::bmp_CalculateForecast(const float pressure)
 		return FC_BMP085_THUNDERSTORM; // Quickly falling LP, Thunderstorm, not stable
 	else if (dP_dt > 0.25)
 		return FC_BMP085_UNSTABLE; // Quickly rising HP, not stable weather
-	else if ((dP_dt > (-0.25)) && (dP_dt < (-0.05)))
+	else if ((dP_dt >(-0.25)) && (dP_dt < (-0.05)))
 		return FC_BMP085_CLOUDY_RAIN; // Slowly falling Low Pressure System, stable rainy weather
 	else if ((dP_dt > 0.05) && (dP_dt < 0.25))
 		return FC_BMP085_SUNNY; // Slowly rising HP stable good weather
@@ -711,10 +711,10 @@ void I2C::bmp_ReadSensorDetails()
 #endif
 
 	_tTempBaro tsensor;
-	tsensor.id1=1;
-	tsensor.temp=float(temperature);
-	tsensor.baro=float(pressure);
-	tsensor.altitude=float(altitude);
+	tsensor.id1 = 1;
+	tsensor.temp = float(temperature);
+	tsensor.baro = float(pressure);
+	tsensor.altitude = float(altitude);
 
 	//this is probably not good, need to take the rising/falling of the pressure into account?
 	//any help would be welcome!
@@ -748,17 +748,17 @@ void I2C::bmp_ReadSensorDetails()
 			m_LastSendForecast = bmpbaroforecast_thunderstorm;
 			break;
 		case FC_BMP085_UNKNOWN:			//
-			{
-				int nforecast = bmpbaroforecast_cloudy;
-				if (pressure <= 980)
-					nforecast = bmpbaroforecast_thunderstorm;
-				else if (pressure <= 995)
-					nforecast = bmpbaroforecast_rain;
-				else if (pressure >= 1029)
-					nforecast = bmpbaroforecast_sunny;
-				m_LastSendForecast = nforecast;
+		{
+			int nforecast = bmpbaroforecast_cloudy;
+			if (pressure <= 980)
+				nforecast = bmpbaroforecast_thunderstorm;
+			else if (pressure <= 995)
+				nforecast = bmpbaroforecast_rain;
+			else if (pressure >= 1029)
+				nforecast = bmpbaroforecast_sunny;
+			m_LastSendForecast = nforecast;
 		}
-			break;
+		break;
 		}
 	}
 	tsensor.forecast = m_LastSendForecast;

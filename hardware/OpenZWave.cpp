@@ -36,6 +36,8 @@
 
 #include "ZWaveCommands.h"
 
+#include "serial/serial.h"
+
 extern std::string szWWWFolder;
 
 //Note!, Some devices uses the same instance for multiple values,
@@ -302,6 +304,7 @@ m_szSerialPort(devname)
 	m_bNightlyNetworkHeal = false;
 	m_pManager = NULL;
 	m_bNeedSave = false;
+	m_bAeotecBlinkingMode = false;
 }
 
 
@@ -949,6 +952,43 @@ bool COpenZWave::OpenSerialConnector()
 	m_allNodesQueried = false;
 	m_updateTime = mytime(NULL);
 	CloseSerialConnector();
+
+	if (m_bAeotecBlinkingMode)
+	{
+		m_bAeotecBlinkingMode = false;
+
+		serial::Serial _serial;
+		_serial.setPort(m_szSerialPort);
+		_serial.setBaudrate(115200);
+		_serial.setBytesize(serial::eightbits);
+		_serial.setParity(serial::parity_none);
+		_serial.setStopbits(serial::stopbits_one);
+		_serial.setFlowcontrol(serial::flowcontrol_none);
+		serial::Timeout stimeout = serial::Timeout::simpleTimeout(100);
+		_serial.setTimeout(stimeout);
+		try
+		{
+			_serial.open();
+			
+			uint8_t _AeotecBlink_On[10]  = { 0x01, 0x08, 0x00, 0xF2, 0x51, 0x01, 0x01, 0x05, 0x01, 0x50 };
+			uint8_t _AeotecBlink_Off[10] = { 0x01, 0x08, 0x00, 0xF2, 0x51, 0x01, 0x00, 0x05, 0x01, 0x51 };
+
+			int blinkenabled = 1;
+			m_sql.GetPreferencesVar("ZWaveAeotecBlinkEnabled", blinkenabled);
+
+			if (blinkenabled == 1)
+				_serial.write(_AeotecBlink_On, 10);
+			else
+				_serial.write(_AeotecBlink_Off, 10);
+
+			_serial.close();
+		}
+		catch (...)
+		{
+			_log.Log(LOG_ERROR, "OpenZWave: Problem with setting Aeotec's Controller blinking mode!");
+		}
+
+	}
 	m_nodes.clear();
 	m_bNeedSave = false;
 	std::string ConfigPath = szStartupFolder + "Config/";
@@ -1658,7 +1698,6 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 						_device.scaleID = SCALEID_ENERGY;
 					else
 						_device.scaleID = SCALEID_POWER;
-					_device.floatValue = fValue;
 					_device.scaleMultiply = 1;
 					if (vUnits == "kWh")
 					{
@@ -1669,6 +1708,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 					{
 						_device.devType = ZDTYPE_SENSOR_POWER;
 					}
+					_device.floatValue = fValue*_device.scaleMultiply;
 					InsertDevice(_device);
 				}
 			}
@@ -1843,7 +1883,6 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 						_device.scaleID = SCALEID_ENERGY;
 					else
 						_device.scaleID = SCALEID_POWER;
-					_device.floatValue = fValue;
 					_device.scaleMultiply = 1;
 					if (vUnits == "kWh")
 					{
@@ -1854,6 +1893,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 					{
 						_device.devType = ZDTYPE_SENSOR_POWER;
 					}
+					_device.floatValue = fValue*_device.scaleMultiply;
 					InsertDevice(_device);
 				}
 			}
@@ -3747,11 +3787,15 @@ bool COpenZWave::RequestNodeConfig(const unsigned int homeID, const int nodeID)
 
 void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const int nodeID, Json::Value &root, const int index)
 {
+	if (!m_pManager)
+		return;
+
 	NodeInfo *pNode = GetNodeInfo(homeID, nodeID);
 	if (pNode == NULL)
 		return;
 
 	int ivalue = 0;
+	int vIndex = 1;
 	std::string szValue;
 
 	if (nodeID == m_controllerNodeId)
@@ -3765,7 +3809,7 @@ void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const int nodeID, 
 		m_sql.GetPreferencesVar("ZWavePollInterval", intervalseconds);
 		root["result"][index]["config"][ivalue]["value"] = intervalseconds;
 
-		root["result"][index]["config"][ivalue]["index"] = 1;
+		root["result"][index]["config"][ivalue]["index"] = vIndex++;
 		root["result"][index]["config"][ivalue]["label"] = "Poll Interval";
 		root["result"][index]["config"][ivalue]["units"] = "Seconds";
 		root["result"][index]["config"][ivalue]["help"] =
@@ -3776,34 +3820,39 @@ void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const int nodeID, 
 		ivalue++;
 
 		//Debug
-		root["result"][index]["config"][ivalue]["type"] = "short";
-
+		root["result"][index]["config"][ivalue]["type"] = "list";
 		int debugenabled = 0;
 		m_sql.GetPreferencesVar("ZWaveEnableDebug", debugenabled);
-		root["result"][index]["config"][ivalue]["value"] = debugenabled;
 
-		root["result"][index]["config"][ivalue]["index"] = 2;
+		root["result"][index]["config"][ivalue]["index"] = vIndex++;
 		root["result"][index]["config"][ivalue]["label"] = "Enable Debug";
 		root["result"][index]["config"][ivalue]["units"] = "";
 		root["result"][index]["config"][ivalue]["help"] =
-			"Enable/Disable debug logging. Disabled=0, Enabled=1 "
+			"Enable/Disable debug logging. "
 			"It is not recommended to enable Debug for a live system as the log files generated will grow large quickly.";
 		root["result"][index]["config"][ivalue]["LastUpdate"] = "-";
+
+		root["result"][index]["config"][ivalue]["list_items"] = 2;
+		root["result"][index]["config"][ivalue]["listitem"][0] = "Disabled";
+		root["result"][index]["config"][ivalue]["listitem"][1] = "Enabled";
+		root["result"][index]["config"][ivalue]["value"] = (debugenabled == 0) ? "Disabled" : "Enabled";
 		ivalue++;
 
 		//Nightly Node Heal
-		root["result"][index]["config"][ivalue]["type"] = "short";
+		root["result"][index]["config"][ivalue]["type"] = "list";
 
 		int nightly_heal = 0;
 		m_sql.GetPreferencesVar("ZWaveEnableNightlyNetworkHeal", nightly_heal);
-		root["result"][index]["config"][ivalue]["value"] = nightly_heal;
 
-		root["result"][index]["config"][ivalue]["index"] = 3;
+		root["result"][index]["config"][ivalue]["index"] = vIndex++;
 		root["result"][index]["config"][ivalue]["label"] = "Enable Nightly Heal Network (04:00 am)";
 		root["result"][index]["config"][ivalue]["units"] = "";
-		root["result"][index]["config"][ivalue]["help"] =
-			"Enable/Disable nightly heal network. Disabled=0, Enabled=1 ";
+		root["result"][index]["config"][ivalue]["help"] = "Enable/Disable nightly heal network.";
 		root["result"][index]["config"][ivalue]["LastUpdate"] = "-";
+		root["result"][index]["config"][ivalue]["list_items"] = 2;
+		root["result"][index]["config"][ivalue]["listitem"][0] = "Disabled";
+		root["result"][index]["config"][ivalue]["listitem"][1] = "Enabled";
+		root["result"][index]["config"][ivalue]["value"] = (nightly_heal == 0) ? "Disabled" : "Enabled";
 		ivalue++;
 
 		//Network Key
@@ -3819,7 +3868,7 @@ void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const int nodeID, 
 		}
 		root["result"][index]["config"][ivalue]["value"] = sValue;
 
-		root["result"][index]["config"][ivalue]["index"] = 4;
+		root["result"][index]["config"][ivalue]["index"] = vIndex++;
 		root["result"][index]["config"][ivalue]["label"] = "Security Network Key";
 		root["result"][index]["config"][ivalue]["units"] = "";
 		root["result"][index]["config"][ivalue]["help"] =
@@ -3827,6 +3876,52 @@ void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const int nodeID, 
 			"The length should be 16 bytes!";
 		root["result"][index]["config"][ivalue]["LastUpdate"] = "-";
 		ivalue++;
+
+		//Aeotec Blinking state
+		uint32_t Manufacturer_id;
+		uint32_t Product_type;
+		uint32_t Product_id;
+
+		std::stringstream ss;
+		ss << std::hex << m_pManager->GetNodeManufacturerId(m_controllerID, m_controllerNodeId);
+		ss >> Manufacturer_id;
+
+		std::stringstream ss2;
+		ss2 << std::hex << m_pManager->GetNodeProductId(m_controllerID, m_controllerNodeId);
+		ss2 >> Product_id;
+
+		std::stringstream ss3;
+		ss3 << std::hex << m_pManager->GetNodeProductType(m_controllerID, m_controllerNodeId);
+		ss3 >> Product_type;
+
+		if (Manufacturer_id == 0x0086)
+		{
+			if (
+				((Product_type == 0x0001) && (Product_id == 0x005a)) || //Z-Stick Gen5
+				((Product_type == 0x0001) && (Product_id == 0x005c)) || //Z-Stick Lite Gen5
+				((Product_type == 0x0101) && (Product_id == 0x005a)) || //Z-Stick Gen5
+				((Product_type == 0x0201) && (Product_id == 0x005a))    //Z-Stick Gen5
+				)
+			{
+				int blinkenabled = 1;
+				m_sql.GetPreferencesVar("ZWaveAeotecBlinkEnabled", blinkenabled);
+
+				root["result"][index]["config"][ivalue]["index"] = vIndex;
+				root["result"][index]["config"][ivalue]["type"] = "list";
+				root["result"][index]["config"][ivalue]["units"] = "";
+				root["result"][index]["config"][ivalue]["label"] = "Enable Controller Blinking";
+				root["result"][index]["config"][ivalue]["help"] = "Enable/Disable controller blinking colors when plugged in USB.";
+				root["result"][index]["config"][ivalue]["LastUpdate"] = "-";
+
+				root["result"][index]["config"][ivalue]["list_items"] = 2;
+				root["result"][index]["config"][ivalue]["listitem"][0] = "Disabled";
+				root["result"][index]["config"][ivalue]["listitem"][1] = "Enabled";
+				root["result"][index]["config"][ivalue]["value"] = (blinkenabled == 0) ? "Disabled" : "Enabled";
+			}
+		}
+		vIndex++;
+		ivalue++;
+
 
 		return;
 	}
@@ -3987,7 +4082,7 @@ bool COpenZWave::ApplyNodeConfig(const unsigned int homeID, const int nodeID, co
 			else if (rvIndex == 2)
 			{
 				//Debug mode
-				int debugenabled = atoi(ValueVal.c_str());
+				int debugenabled = (ValueVal == "Disabled") ? 0 : 1;
 				int old_debugenabled = 0;
 				m_sql.GetPreferencesVar("ZWaveEnableDebug", old_debugenabled);
 				if (old_debugenabled != debugenabled)
@@ -3999,7 +4094,7 @@ bool COpenZWave::ApplyNodeConfig(const unsigned int homeID, const int nodeID, co
 			else if (rvIndex == 3)
 			{
 				//Nightly Node Heal
-				int nightly_heal = atoi(ValueVal.c_str());
+				int nightly_heal = (ValueVal == "Disabled") ? 0 : 1;
 				int old_nightly_heal = 0;
 				m_sql.GetPreferencesVar("ZWaveEnableNightlyNetworkHeal", old_nightly_heal);
 				if (old_nightly_heal != nightly_heal)
@@ -4026,6 +4121,45 @@ bool COpenZWave::ApplyNodeConfig(const unsigned int homeID, const int nodeID, co
 					{
 						m_sql.UpdatePreferencesVar("ZWaveNetworkKey", networkkey.c_str());
 						bRestartOpenZWave = true;
+					}
+				}
+			}
+			else if (rvIndex == 5)
+			{
+				uint32_t Manufacturer_id;
+				uint32_t Product_type;
+				uint32_t Product_id;
+
+				std::stringstream ss;
+				ss << std::hex << m_pManager->GetNodeManufacturerId(m_controllerID, m_controllerNodeId);
+				ss >> Manufacturer_id;
+
+				std::stringstream ss2;
+				ss2 << std::hex << m_pManager->GetNodeProductId(m_controllerID, m_controllerNodeId);
+				ss2 >> Product_id;
+
+				std::stringstream ss3;
+				ss3 << std::hex << m_pManager->GetNodeProductType(m_controllerID, m_controllerNodeId);
+				ss3 >> Product_type;
+
+				if (Manufacturer_id == 0x0086)
+				{
+					if (
+						((Product_type == 0x0001) && (Product_id == 0x005a)) || //Z-Stick Gen5
+						((Product_type == 0x0001) && (Product_id == 0x005c)) || //Z-Stick Lite Gen5
+						((Product_type == 0x0101) && (Product_id == 0x005a)) || //Z-Stick Gen5
+						((Product_type == 0x0201) && (Product_id == 0x005a))    //Z-Stick Gen5
+						)
+					{
+						int blinkenabled = (ValueVal == "Disabled") ? 0 : 1;
+						int old_blinkenabled = 1;
+						m_sql.GetPreferencesVar("ZWaveAeotecBlinkEnabled", old_blinkenabled);
+						if (old_blinkenabled != blinkenabled)
+						{
+							m_sql.UpdatePreferencesVar("ZWaveAeotecBlinkEnabled", blinkenabled);
+							bRestartOpenZWave = true;
+							m_bAeotecBlinkingMode = true;
+						}
 					}
 				}
 			}
