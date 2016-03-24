@@ -840,6 +840,11 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 			{
 				SendMoistureSensor(cNode, pChild->batValue, intValue, (!pChild->childName.empty()) ? pChild->childName : "Moisture");
 			}
+			if (pChild->presType == S_VIBRATION)
+			{
+				if (pChild->GetValue(vType, floatValue))
+					SendCustomSensor(pChild->nodeID, pChild->childID, pChild->batValue, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Vibration", "Hz");
+			}
 		}
 		break;
 	case V_RAIN:

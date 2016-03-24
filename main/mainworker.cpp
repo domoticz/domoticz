@@ -6191,12 +6191,13 @@ void MainWorker::decode_Security1(const int HwdID, const _eHardwareTypes HwdType
 	unsigned char SignalLevel=pResponse->SECURITY1.rssi;
 	unsigned char BatteryLevel = get_BateryLevel(HwdType,false, pResponse->SECURITY1.battery_level & 0x0F);
 	if (
-		(pResponse->SECURITY1.subtype == sTypeKD101)||
-		(pResponse->SECURITY1.subtype == sTypeSA30)
+		(pResponse->SECURITY1.subtype == sTypeKD101) ||
+		(pResponse->SECURITY1.subtype == sTypeSA30) ||
+		(pResponse->SECURITY1.subtype == sTypeDomoticzSecurity)
 		)
 	{
 		//KD101 & SA30 do not support battery low indication
-		BatteryLevel=255;
+		BatteryLevel = 255;
 	}
 
 	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd, procResult.DeviceName);
@@ -11874,7 +11875,7 @@ void MainWorker::SetInternalSecStatus()
 	}
 
 	CDomoticzHardwareBase *pHardware = GetHardwareByType(HTYPE_DomoticzInternal);
-	PushAndWaitRxMessage(pHardware, (const unsigned char *)&tsen, "Domoticz Security Panel", 100);
+	PushAndWaitRxMessage(pHardware, (const unsigned char *)&tsen, "Domoticz Security Panel", -1);
 }
 
 void MainWorker::UpdateDomoticzSecurityStatus(const int iSecStatus)
