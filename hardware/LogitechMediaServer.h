@@ -68,6 +68,7 @@ private:
 	std::string m_User;
 	std::string m_Pwd;
 	bool m_bShowedStartupMessage;
+	int m_iMissedQueries;
 
 	boost::shared_ptr<boost::thread> m_thread;
 	volatile bool m_stoprequested;

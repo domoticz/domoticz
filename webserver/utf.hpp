@@ -52,7 +52,7 @@ public:
 			else
 				dest.push_back('?');
 		}
-		int len=dest.size();
+		size_t len=dest.size();
 		myString8 = (char * ) malloc( len + 1 );
 		if (myString8)
 		{
