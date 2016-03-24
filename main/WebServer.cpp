@@ -12604,15 +12604,15 @@ namespace http {
 							{
 								std::vector<std::string> sd = *itt;
 
-								if (method == 0)
+								//If method == 1, provide BOTH hourly and instant usage for combined graph
 								{
 									//bars / hour
 									std::string actDateTimeHour = sd[2].substr(0, 13);
-									if (actDateTimeHour != LastDateTime)
+									if (actDateTimeHour != LastDateTime || ((method == 1) && (itt + 1 == result.end())))
 									{
 										if (bHaveFirstValue)
 										{
-											root["result"][ii]["d"] = LastDateTime + ":00";
+											root["result"][ii]["d"] = LastDateTime + (method == 1 ? ":30" : ":00");
 
 											long long ulTotalValue = ulLastValue - ulFirstValue;
 											if (ulTotalValue == 0)
@@ -12638,7 +12638,7 @@ namespace http {
 												sprintf(szTmp, "%.1f", TotalValue);
 												break;
 											}
-											root["result"][ii]["v"] = szTmp;
+											root["result"][ii][method==1 ? "eu" : "v"] = szTmp;
 											ii++;
 										}
 										LastDateTime = actDateTimeHour;
@@ -12662,7 +12662,8 @@ namespace http {
 										ulFirstRealValue = ulLastValue;
 									}
 								}
-								else
+								
+								if (method == 1)
 								{
 									std::stringstream s_str1(sd[1]);
 									long long actValue;
