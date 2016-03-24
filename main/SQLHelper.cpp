@@ -2828,6 +2828,73 @@ std::vector<std::vector<std::string> > CSQLHelper::queryBlob(const std::string &
 	return results;
 }
 
+std::vector<std::map<std::string, std::string> > CSQLHelper::safe_query_map(const char *fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+	char *zQuery = sqlite3_vmprintf(fmt, args);
+	va_end(args);
+	if (!zQuery)
+	{
+		_log.Log(LOG_ERROR, "SQL: Out of memory, or invalid printf!....");
+		std::vector<std::map<std::string, std::string> > results;
+		return results;
+	}
+	std::vector<std::map<std::string, std::string> > results = query_map(zQuery);
+	sqlite3_free(zQuery);
+	return results;
+}
+
+std::vector<std::map<std::string, std::string> > CSQLHelper::query_map(const std::string &szQuery)
+{
+	if (!m_dbase)
+	{
+		_log.Log(LOG_ERROR, "Database not open!!...Check your user rights!..");
+		std::vector<std::map<std::string, std::string> > results;
+		return results;
+	}
+	boost::lock_guard<boost::mutex> l(m_sqlQueryMutex);
+
+	sqlite3_stmt *statement;
+	std::vector<std::map<std::string, std::string> > results;
+
+	if (sqlite3_prepare_v2(m_dbase, szQuery.c_str(), -1, &statement, 0) == SQLITE_OK)
+	{
+		int cols = sqlite3_column_count(statement);
+		while (true)
+		{
+			int result = sqlite3_step(statement);
+			if (result == SQLITE_ROW)
+			{
+				std::map<std::string, std::string> values;
+				for (int col = 0; col < cols; col++)
+				{
+					char* name  = (char*)sqlite3_column_name(statement, col);
+					char* value = (char*)sqlite3_column_text(statement, col);
+					if ((value == 0) && (col == 0))
+						break;
+					else if (value == 0)
+						values[name] = std::string(""); //insert empty string
+					else
+						values[name] = value;
+				}
+				if (values.size()>0)
+					results.push_back(values);
+			}
+			else
+			{
+				break;
+			}
+		}
+		sqlite3_finalize(statement);
+	}
+
+	std::string error = sqlite3_errmsg(m_dbase);
+	if (error != "not an error")
+		_log.Log(LOG_ERROR, "SQL Query(\"%s\") : %s", szQuery.c_str(), error.c_str());
+	return results;
+}
+
 unsigned long long CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, std::string &devname, const bool bUseOnOffAction)
 {
 	return UpdateValue(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, nValue, "", devname, bUseOnOffAction);
@@ -5633,8 +5700,7 @@ void CSQLHelper::DeleteDevices(const std::string &idx)
 			safe_exec_no_return("DELETE FROM DeviceToPlansMap WHERE (DeviceRowID == '%q')", (*itt).c_str());
 			safe_exec_no_return("DELETE FROM CamerasActiveDevices WHERE (DevSceneType==0) AND (DevSceneRowID == '%q')", (*itt).c_str());
 			safe_exec_no_return("DELETE FROM SharedDevices WHERE (DeviceRowID== '%q')", (*itt).c_str());
-			//notify eventsystem device is no longer present
-			m_mainworker.m_eventsystem.RemoveSingleState(atoi((*itt).c_str()));
+
 			//and now delete all records in the DeviceStatus table itself
 			safe_exec_no_return("DELETE FROM DeviceStatus WHERE (ID == '%q')", (*itt).c_str());
 		}
@@ -5642,6 +5708,12 @@ void CSQLHelper::DeleteDevices(const std::string &idx)
 	}
 	else
 		return;
+
+	//notify eventsystem device is no longer present outside of the transaction to prevent deadlocks
+	for (std::vector<std::string>::const_iterator itt = _idx.begin(); itt != _idx.end(); ++itt)
+	{
+		m_mainworker.m_eventsystem.RemoveSingleState(atoi((*itt).c_str()));
+	}
 
 	m_notifications.ReloadNotifications();
 }

@@ -260,6 +260,7 @@ public:
 
 	std::vector<std::vector<std::string> > safe_query(const char *fmt, ...);
 	std::vector<std::vector<std::string> > safe_queryBlob(const char *fmt, ...);
+	std::vector<std::map<std::string, std::string> > safe_query_map(const char *fmt, ...);
 	void safe_exec_no_return(const char *fmt, ...);
 	bool DoesColumnExistsInTable(const std::string &columnname, const std::string &tablename);
 	std::string DeleteUserVariable(const std::string &idx);
@@ -345,6 +346,7 @@ private:
 
 	std::vector<std::vector<std::string> > query(const std::string &szQuery);
 	std::vector<std::vector<std::string> > queryBlob(const std::string &szQuery);
+	std::vector<std::map<std::string, std::string> > query_map(const std::string &szQuery);
 };
 
 extern CSQLHelper m_sql;
