@@ -1807,6 +1807,9 @@
     <ClInclude Include="..\hardware\AtagOne.h">
       <Filter>Devices\AtagOne</Filter>
     </ClInclude>
+    <ClInclude Include="..\webserver\fastcgi.hpp">
+      <Filter>Webserver</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2345,6 +2348,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\AtagOne.cpp">
       <Filter>Devices\AtagOne</Filter>
+    </ClCompile>
+    <ClCompile Include="..\webserver\fastcgi.cpp">
+      <Filter>Webserver</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -87,7 +87,8 @@ private:
   /// Socket for the (PLAIN) connection.
   boost::asio::ip::tcp::socket *socket_;
   //Host EndPoint
-  std::string host_endpoint_;
+  std::string host_endpoint_address_;
+  std::string host_endpoint_port_;
 
   /// If this is a keep-alive connection or not
   bool keepalive_;

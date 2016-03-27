@@ -272,8 +272,8 @@ bool cWebem::IsAction(const request& req)
 		return false;
 	return true;
 }
-/**
 
+/**
 Do not call from application code,
 used by server to handle form submissions.
 
@@ -1589,7 +1589,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 {
 	// Initialize session
 	WebEmSession session;
-	session.remote_host = req.host;
+	session.remote_host = req.host_address;
 	session.isnew = false;
 	session.forcelogin = false;
 	session.rememberme = false;

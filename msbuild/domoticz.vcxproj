@@ -544,6 +544,7 @@
     <ClInclude Include="..\notifications\NotificationPushbullet.h" />
     <ClInclude Include="..\notifications\NotificationPushover.h" />
     <ClInclude Include="..\notifications\NotificationSMS.h" />
+    <ClInclude Include="..\webserver\fastcgi.hpp" />
     <ClInclude Include="..\webserver\GZipHelper.h" />
     <ClInclude Include="..\webserver\proxyclient.h" />
     <ClInclude Include="..\webserver\proxycommon.h" />
@@ -832,6 +833,7 @@
     <ClCompile Include="..\webserver\connection.cpp" />
     <ClCompile Include="..\webserver\connection_manager.cpp" />
     <ClCompile Include="..\webserver\cWebem.cpp" />
+    <ClCompile Include="..\webserver\fastcgi.cpp" />
     <ClCompile Include="..\webserver\mime_types.cpp" />
     <ClCompile Include="..\webserver\proxyclient.cpp" />
     <ClCompile Include="..\webserver\proxycommon.cpp" />

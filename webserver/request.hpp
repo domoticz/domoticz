@@ -22,7 +22,8 @@ namespace server {
 class request
 {
 public:
-	std::string host;
+	std::string host_address;
+	std::string host_port;
 	std::string method;
 	std::string uri;
 	int http_version_major;
