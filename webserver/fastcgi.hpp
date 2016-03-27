@@ -1,3 +1,4 @@
+#pragma once
 #ifndef HTTP_FASTCGI_HPP
 #define HTTP_FASTCGI_HPP
 

@@ -4,7 +4,7 @@
  *  Created on: 10 févr. 2016
  *      Author: gaudryc
  */
-
+#pragma once
 #ifndef WEBSERVER_UTF_HPP_
 #define WEBSERVER_UTF_HPP_
 

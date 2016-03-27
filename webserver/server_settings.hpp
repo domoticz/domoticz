@@ -4,7 +4,7 @@
  *  Created on: 15 févr. 2016
  *      Author: gaudryc
  */
-
+#pragma once
 #ifndef WEBSERVER_SERVER_SETTINGS_HPP_
 #define WEBSERVER_SERVER_SETTINGS_HPP_
 
