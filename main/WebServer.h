@@ -170,6 +170,7 @@ private:
 	void Cmd_DownloadUpdate(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DownloadReady(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DeleteDatePoint(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_SetActiveTimerPlan(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_AddTimer(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_UpdateTimer(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DeleteTimer(WebEmSession & session, const request& req, Json::Value &root);
