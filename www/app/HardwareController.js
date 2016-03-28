@@ -3480,6 +3480,8 @@ define(['app'], function (app) {
 
         CreateDummySensors = function(idx,name)
         {
+			$.devIdx=idx;
+			
             $("#dialog-createsensor #vsensoraxis").hide();
             $("#dialog-createsensor #sensoraxis").val("");
             
