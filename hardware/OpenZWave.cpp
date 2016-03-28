@@ -5192,7 +5192,54 @@ namespace http {
 			*/
 		}
 
+		void CWebServer::ZWaveCPTestHeal(WebEmSession & session, const request& req, reply & rep)
+		{
+			if (session.rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+			if (req.content.find("fun") == std::string::npos)
+				return;
 
+			std::multimap<std::string, std::string> values;
+			request::makeValuesFromPostContent(&req, values);
+			std::string sFun = request::findValue(&values, "fun");
+
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
+			if (pHardware == NULL)
+				return;
+			COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+
+			if (pHardware->HwdType == HTYPE_OpenZWave)
+			{
+				COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+				boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+
+				if (sFun == "test")
+				{
+					std::string sNum = request::findValue(&values, "num");
+					std::string sArg = request::findValue(&values, "cnt");
+
+					int node = atoi(sNum.c_str());
+					int cnt = atoi(sArg.c_str());
+
+					reply::set_content(&rep, pOZWHardware->m_ozwcp.DoTestNetwork(node, cnt));
+					reply::add_header_attachment(&rep, "testheal.xml");
+				}
+				else if (sFun == "heal")
+				{
+					std::string sNum = request::findValue(&values, "num");
+					std::string sHealRRS = request::findValue(&values, "healrrs");
+
+					int node = atoi(sNum.c_str());
+					bool healrrs = !sHealRRS.empty();
+
+					reply::set_content(&rep, pOZWHardware->m_ozwcp.HealNetworkNode(node, healrrs));
+					reply::add_header_attachment(&rep, "testheal.xml");
+				}
+			}
+		}
 
 		void CWebServer::Cmd_ZWaveSetUserCodeEnrollmentMode(WebEmSession & session, const request& req, Json::Value &root)
 		{
