@@ -28,8 +28,6 @@ struct _tFCGI_Header {
 	uint8_t contentLengthB0;
 	uint8_t paddingLength; //We recommend that records be placed on boundaries that are multiples of eight bytes. The fixed-length portion of a FCGI_Record is eight bytes.
 	uint8_t reserved;
-	uint8_t *pContentData;
-	uint8_t *pPaddingData;
 };
 
 /*
@@ -165,6 +163,15 @@ extern std::istream & safeGetline(std::istream & is, std::string & line);
 
 bool fastcgi_parser::handlePHP(const server_settings &settings, const std::string &script_path, const request &req, reply &rep, modify_info &mInfo)
 {
+	std::string full_path = settings.www_root + script_path;
+	std::ifstream is(full_path.c_str(), std::ios::in | std::ios::binary);
+	if (!is)
+	{
+		rep = reply::stock_reply(reply::not_found);
+		return false;
+	}
+	is.close();
+
 	std::multimap<std::string, std::string> parameters;
 
 	std::string request_path2 = req.uri; // we need the raw request string to parse the get-request
@@ -274,21 +281,16 @@ bool fastcgi_parser::handlePHP(const server_settings &settings, const std::strin
 	}
 
 	//
-	std::ifstream is(script_path.c_str(), std::ios::in | std::ios::binary);
-	if (!is)
-	{
-		rep = reply::stock_reply(reply::not_found);
-		return false;
-	}
-	is.close();
 	
 	_tFCGI_Header gfci;
 	gfci.version = 1;
 	gfci.type = 1;
 	gfci.requestIdB1 = (request_id_ & 0xFF00 >> 8);
 	gfci.requestIdB0 = request_id_ & 0xFF;
+	gfci.paddingLength = 0;
 	request_id_++;
 
+	std::string szQueryString;
 
 	std::string str_params;
 	std::multimap<std::string, std::string>::const_iterator itt;
@@ -296,14 +298,43 @@ bool fastcgi_parser::handlePHP(const server_settings &settings, const std::strin
 	{
 		if (!str_params.empty())
 			str_params += " ";
+
 		str_params.append(itt->first);
 		str_params.append("=");
 		str_params.append(itt->second);
+
+		if (!szQueryString.empty())
+			szQueryString += "&";
+		szQueryString.append(itt->first);
+		szQueryString.append("=");
+		szQueryString.append(CURLEncode::URLEncode(itt->second));
 	}
 
-	std::string fullexecmd = settings.php_cgi_path + " " + script_path;
+	std::string fullexecmd = settings.php_cgi_path + " " + full_path;
 	if (!str_params.empty())
 		fullexecmd = fullexecmd + " " + str_params;
+
+	std::map<std::string, std::string> fcgi_params;
+	fcgi_params["SCRIPT_FILENAME"] = settings.www_root + script_path;
+	fcgi_params["QUERY_STRING"] = szQueryString;
+	fcgi_params["REQUEST_METHOD"] = "GET";
+	fcgi_params["CONTENT_TYPE"] = "";
+	fcgi_params["CONTENT_LENGTH"] = "";
+	fcgi_params["SCRIPT_NAME"] = script_path;
+	fcgi_params["REQUEST_URI"] = script_path;
+	fcgi_params["DOCUMENT_URI"] = script_path;
+	fcgi_params["DOCUMENT_ROOT"] = settings.www_root;
+	fcgi_params["SERVER_PROTOCOL"] = "HTTP/1.1";
+	fcgi_params["REQUEST_SCHEME"] = "http";
+	fcgi_params["GATEWAY_INTERFACE"] = "CGI/1.1";
+	fcgi_params["SERVER_SOFTWARE"] = "Domoticz";
+	fcgi_params["REMOTE_ADDR"] = req.host_address;
+	fcgi_params["REMOTE_PORT"] = req.host_port;
+	fcgi_params["SERVER_ADDR"] = settings.listening_address;
+	fcgi_params["SERVER_PORT"] = settings.listening_port;
+	fcgi_params["SERVER_NAME"] = "localhost";
+	fcgi_params["REDIRECT_STATUS"] = "200";
+
 
 	fullexecmd += " SERVER_SOFTWARE=Domoticz";
 	fullexecmd += " SERVER_NAME=localhost";
@@ -312,7 +343,6 @@ bool fastcgi_parser::handlePHP(const server_settings &settings, const std::strin
 	fullexecmd += " REMOTE_ADDR=" + req.host_address;
 	fullexecmd += " REMOTE_PORT=" + req.host_port;
 
-	//Add all headers (fastcgi style)
 	std::vector<header>::const_iterator ittHeader;
 	for (ittHeader = req.headers.begin(); ittHeader != req.headers.end(); ++ittHeader)
 	{
@@ -320,6 +350,8 @@ bool fastcgi_parser::handlePHP(const server_settings &settings, const std::strin
 		stdreplace(rName, "-", "_");
 		stdupper(rName);
 		fullexecmd += " " + rName + "=" + CURLEncode::URLEncode(ittHeader->value);
+
+		fcgi_params[rName] = CURLEncode::URLEncode(ittHeader->value);
 	}
 
 	std::string pret = ExecuteCommandAndReturnRaw(fullexecmd);

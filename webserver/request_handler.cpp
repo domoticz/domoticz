@@ -264,8 +264,7 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 		  //
 		  //For now this is very simplistic!
 		  //Later we should add FastCGI support, or at least provide some environment variables
-		  std::string full_path = doc_root_ + request_path;
-		  fastcgi_parser::handlePHP(myWebem->m_settings, full_path, req, rep, mInfo);
+		  fastcgi_parser::handlePHP(myWebem->m_settings, request_path, req, rep, mInfo);
 		  return;
 	  }
 	  else
