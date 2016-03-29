@@ -37,7 +37,7 @@ protected:
 	boost::shared_ptr<boost::thread> m_thread;
 	volatile bool m_stoprequested;
 	sockaddr_in m_addr;
-	int m_socket;
+	SOCKET m_socket;
 	std::string m_endpoint;
 	unsigned char m_buffer[512];
 };

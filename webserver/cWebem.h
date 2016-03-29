@@ -21,7 +21,7 @@ namespace http {
 		};
 		typedef struct _tWebUserPassword
 		{
-			unsigned long ID;
+			uint32_t ID;
 			std::string Username;
 			std::string Password;
 
@@ -186,7 +186,7 @@ namespace http {
 			void SetAuthenticationMethod(const _eAuthenticationMethod amethod);
 			void SetWebTheme(const std::string &themename);
 			void SetWebRoot(const std::string &webRoot);
-			void AddUserPassword(const unsigned long ID, const std::string &username, const std::string &password, const _eUserRights userrights, const int activetabs);
+			void AddUserPassword(const uint32_t ID, const std::string &username, const std::string &password, const _eUserRights userrights, const int activetabs);
 			std::string ExtractRequestPath(const std::string& original_request_path);
 			bool IsBadRequestPath(const std::string& original_request_path);
 			

@@ -31,7 +31,7 @@ private:
 	bool UpgradeFirmware();
 	bool Write_TX_PKT(const unsigned char *pdata, size_t length, const int max_retry = 3);
 	bool Handle_RX_PKT(const unsigned char *pdata, size_t length);
-	bool Read_Firmware_File(const char *szFilename, std::map<unsigned long, std::string>& fileBuffer);
+	bool Read_Firmware_File(const char *szFilename, std::map<uint32_t, std::string>& fileBuffer);
 	bool EraseMemory(const int StartAddress, const int StopAddress);
 
 	serial::Serial m_serial;

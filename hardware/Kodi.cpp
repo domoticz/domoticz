@@ -94,14 +94,14 @@ std::string	CKodiNode::CKodiStatus::StatusMessage()
 	}
 	while (sStatus.length() > MAX_TITLE_LEN)
 	{
-		int begin = sStatus.find_first_of("(",0);
-		int end = sStatus.find_first_of(")", begin);
+		size_t begin = sStatus.find_first_of("(",0);
+		size_t end = sStatus.find_first_of(")", begin);
 		if ((std::string::npos == begin) || (std::string::npos == end) || (begin >= end)) break;
 		sStatus.erase(begin, end - begin + 1);
 	}
 	while (sStatus.length() > MAX_TITLE_LEN)
 	{
-		int end = sStatus.find_last_of(",");
+		size_t end = sStatus.find_last_of(",");
 		if (std::string::npos == end) break;
 		sStatus = sStatus.substr(0, end);
 	}
@@ -623,9 +623,9 @@ void CKodiNode::handleRead(const boost::system::error_code& e, std::size_t bytes
 		//do something with the data
 		std::string sData(m_Buffer.begin(), bytes_transferred);
 		sData = m_RetainedData + sData;  // if there was some data left over from last time add it back in
-		int iPos = 1;
+		size_t iPos = 1;
 		while (iPos) {
-			iPos = sData.find("}{", 0) + 1;		//  Look for message separater in case there is more than one
+			iPos = sData.find("}{", 0) + 1;		//  Look for message separator in case there is more than one
 			if (!iPos) // no, just one or part of one
 			{
 				if ((sData.substr(sData.length()-1, 1) == "}") &&

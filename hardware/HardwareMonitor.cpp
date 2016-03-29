@@ -27,9 +27,9 @@
 	struct _tDUsageStruct
 	{
 		std::string MountPoint;
-		long long TotalBlocks;
-		long long UsedBlocks;
-		long long AvailBlocks;
+		int64_t TotalBlocks;
+		int64_t UsedBlocks;
+		int64_t AvailBlocks;
 	};
  
 //USER_HZ detection, from openssl code
@@ -151,7 +151,7 @@ void CHardwareMonitor::Do_Work()
 	_log.Log(LOG_STATUS,"Hardware Monitor: Stopped...");			
 }
 
-void CHardwareMonitor::SendCurrent(const unsigned long Idx, const float Curr, const std::string &defaultname)
+void CHardwareMonitor::SendCurrent(const uint32_t Idx, const float Curr, const std::string &defaultname)
 {
 	_tGeneralDevice gDevice;
 	gDevice.subtype = sTypeCurrent;
@@ -478,10 +478,10 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 		std::ifstream mfile("/proc/meminfo");
 		if (!mfile.is_open())
 			return -1;
-		unsigned long MemTotal = -1;
-		unsigned long MemFree = -1;
-		unsigned long MemBuffers = -1;
-		unsigned long  MemCached = -1;
+		uint32_t MemTotal = -1;
+		uint32_t MemFree = -1;
+		uint32_t MemBuffers = -1;
+		uint32_t  MemCached = -1;
 		std::string token;
 		while (mfile >> token) {
 			if (token == "MemTotal:") {
@@ -499,7 +499,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 			// ignore rest of the line
 			mfile.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 		}
-		unsigned long MemUsed = MemTotal - MemFree - MemBuffers - MemCached;
+		uint32_t MemUsed = MemTotal - MemFree - MemBuffers - MemCached;
 		float memusedpercentage = (100.0f / float(MemTotal))*MemUsed;
 		return memusedpercentage;
 	}
@@ -516,7 +516,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 			int ret = sysinfo(&mySysInfo);
 			if (ret != 0)
 				return;
-			unsigned long usedram = mySysInfo.totalram - mySysInfo.freeram;
+			uint32_t usedram = mySysInfo.totalram - mySysInfo.freeram;
 			memusedpercentage = (100.0f / float(mySysInfo.totalram))*usedram;
 		}
 		sprintf(szTmp,"%.2f",memusedpercentage);
@@ -564,7 +564,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 				fclose(fIn);
 				if (ret==4)
 				{
-					long long t = (actload1+actload2+actload3)-m_lastloadcpu;
+					int64_t t = (actload1+actload2+actload3)-m_lastloadcpu;
 					double cpuper=((t / ((acttime-m_lastquerytime) * HZ)) * 100)/double(m_totcpu);
 					if (cpuper>0)
 					{

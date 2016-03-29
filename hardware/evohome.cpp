@@ -364,7 +364,7 @@ void CEvohome::RunScript(const char *pdata, const unsigned char length)
 	result = m_sql.safe_query("SELECT  HardwareID, DeviceID,Unit,Type,SubType,SwitchType,StrParam1 FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d)",	m_HwdID, (int)tsen->EVOHOME2.zone, (int)tsen->EVOHOME2.type);
 	if (result.size()>0)
 	{
-		unsigned long ID;
+		uint32_t ID;
 		std::vector<std::string> sd=result[0];
 		std::stringstream s_strid;
 		s_strid << std::hex << sd[1];
@@ -402,7 +402,7 @@ void CEvohome::RunScript(const char *pdata, const unsigned char length)
 				scriptname = OnAction.substr(8);
 			std::string scriptparams="";
 			//Add parameters
-			int pindex=scriptname.find(' ');
+			size_t pindex=scriptname.find(' ');
 			if (pindex!=std::string::npos)
 			{
 				scriptparams=scriptname.substr(pindex+1);
@@ -592,7 +592,7 @@ bool CEvohome::HandleLoopData(const char *data, size_t len)
 		return false;
 	}
 	memcpy(m_buf + m_nBufPtr, data, len);
-	m_nBufPtr += len;
+	m_nBufPtr += (int)len;
 	m_nBufPtr = ProcessBuf(m_buf, m_nBufPtr);
 	return true;
 }
@@ -627,7 +627,7 @@ int CEvohome::ProcessBuf(char * buf, int size)
 
 bool CEvohomeMsg::DecodePacket(const char * rawmsg)
 {
-	int cmdidx=0;
+	size_t cmdidx=0;
 	int nid=0;
 	std::string line(rawmsg);
 	std::vector<std::string> tkns;
@@ -703,7 +703,7 @@ bool CEvohomeMsg::DecodePacket(const char * rawmsg)
 		}
 		else
 		{
-			int nPos=tkn.find(':');
+			size_t nPos=tkn.find(':');
 			if(nPos!=std::string::npos)
 			{
 				if(nid>=3)
@@ -1696,7 +1696,7 @@ namespace http {
 			//Make a unique number for ID
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT MAX(ID) FROM DeviceStatus");
-			unsigned long nid = 1; //could be the first device ever
+			uint32_t nid = 1; //could be the first device ever
 
 			if (result.size() > 0)
 			{

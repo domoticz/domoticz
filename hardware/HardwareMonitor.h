@@ -25,7 +25,7 @@ private:
 	void GetInternalVoltage();
 	void GetInternalCurrent();
 	void UpdateSystemSensor(const std::string& qType, const int dindex, const std::string& devName, const std::string& devValue);
-	void SendCurrent(const unsigned long Idx, const float Curr, const std::string &defaultname);
+	void SendCurrent(const uint32_t Idx, const float Curr, const std::string &defaultname);
 	void SendFanSensor(const int Idx, const int FanSpeed, const std::string &defaultname);
 #ifdef WIN32
 	bool InitWMI();
@@ -37,7 +37,7 @@ private:
 	IWbemServices *m_pServicesSystem;
 #elif defined (__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__)
 	void FetchUnixData();
-	long long m_lastloadcpu;
+	int64_t m_lastloadcpu;
 	int m_totcpu;
 #endif
 };

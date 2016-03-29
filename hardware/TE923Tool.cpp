@@ -334,7 +334,7 @@ int CTE923Tool::get_te923_lifedata( Te923DataSet_t *data )
 	if ( buf[0] != 0x5A )
 		return -1;
 	memmove( buf, buf + 1, BUFLEN - 1 );
-	data->timestamp = (unsigned long)time( NULL );
+	data->timestamp = (uint32_t)time( NULL );
 	decode_te923_data( buf, data );
 	return 0;
 }
@@ -465,7 +465,7 @@ int CTE923Tool::get_te923_memdata( Te923DataSet_t *data )
 	newtime.tm_sec  = 0;
 	newtime.tm_isdst = -1;
 
-	data->timestamp = (unsigned long)mktime( &newtime );
+	data->timestamp = (uint32_t)mktime( &newtime );
 	memcpy( databuf, buf + 5, 11 );
 	adr += 0x10;
 	readretries=0;

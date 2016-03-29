@@ -540,7 +540,7 @@ void CNest::GetMeterDetails()
 		return;
 	}
 
-	size_t iThermostat = 0;
+	int iThermostat = 0;
 	for (Json::Value::iterator ittStructure = root["structure"].begin(); ittStructure != root["structure"].end(); ++ittStructure)
 	{
 		Json::Value nstructure = *ittStructure;
@@ -674,7 +674,7 @@ void CNest::SetSetpoint(const int idx, const float temp)
 
 	std::string sResult;
 
-	std::string sURL = m_TransportURL + NEST_SET_SHARED + m_thermostats[iThermostat].Serial;
+	std::string sURL = m_TransportURL + NEST_SET_SHARED + m_thermostats[(int)iThermostat].Serial;
 	if (!HTTPClient::POST(sURL, root.toStyledString(), ExtraHeaders, sResult))
 	{
 		_log.Log(LOG_ERROR, "Nest: Error setting setpoint!");
@@ -714,7 +714,7 @@ bool CNest::SetAway(const unsigned char Idx, const bool bIsAway)
 
 	std::string sResult;
 
-	std::string sURL = m_TransportURL + NEST_SET_STRUCTURE + m_thermostats[iThermostat].StructureID;
+	std::string sURL = m_TransportURL + NEST_SET_STRUCTURE + m_thermostats[(int)iThermostat].StructureID;
 	if (!HTTPClient::POST(sURL, root.toStyledString(), ExtraHeaders, sResult))
 	{
 		_log.Log(LOG_ERROR, "Nest: Error setting away mode!");

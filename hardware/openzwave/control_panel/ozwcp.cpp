@@ -457,7 +457,7 @@ MyValue *MyNode::lookup (string data)
  */
 int32 MyNode::getValueCount ()
 {
-  return values.size();
+  return (int32)values.size();
 }
 
 /*

@@ -1871,7 +1871,7 @@ void MySensorsBase::ParseLine()
 		{
 			if (!payload.empty())
 			{
-				unsigned long long idx = boost::lexical_cast<unsigned long long>(payload);
+				uint64_t idx = boost::lexical_cast<uint64_t>(payload);
 				int nValue;
 				std::string sValue;
 				if (m_mainworker.GetSensorData(idx, nValue, sValue))

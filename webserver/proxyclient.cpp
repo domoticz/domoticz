@@ -716,7 +716,7 @@ namespace http {
 					return;
 				}
 			}
-			int size = TCPClients.size();
+			size_t size = TCPClients.size();
 			TCPClients.resize(size + 1);
 			TCPClients[size] = client;
 		}

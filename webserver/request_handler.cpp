@@ -307,7 +307,7 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 					  std::string gzcontent((std::istreambuf_iterator<char>(is)),
 						  (std::istreambuf_iterator<char>()));
 
-					  CGZIP2AT<> decompress((LPGZIP)gzcontent.c_str(), gzcontent.size());
+					  CGZIP2AT<> decompress((LPGZIP)gzcontent.c_str(), (int)gzcontent.size());
 
 					  rep.status = reply::ok;
 					  // Fill out the reply to be sent to the client.

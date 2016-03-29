@@ -33,7 +33,7 @@ public:
     ~CEnOceanESP2();
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 	void SendDimmerTeachIn(const char *pdata, const unsigned char length);
-	unsigned long m_id_base;
+	uint32_t m_id_base;
 private:
 	void Init();
 	bool StartHardware();

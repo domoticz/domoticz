@@ -147,7 +147,7 @@ unsigned int CTCPServerIntBase::GetUserDevicesCount(const std::string &username)
 	return (unsigned int) pUser->Devices.size();
 }
 
-void CTCPServerIntBase::SendToAll(const unsigned long long DeviceRowID, const char *pData, size_t Length, const CTCPClientBase* pClient2Ignore)
+void CTCPServerIntBase::SendToAll(const uint64_t DeviceRowID, const char *pData, size_t Length, const CTCPClientBase* pClient2Ignore)
 {
 	boost::lock_guard<boost::mutex> l(connectionMutex);
 
@@ -176,8 +176,8 @@ void CTCPServerIntBase::SendToAll(const unsigned long long DeviceRowID, const ch
 					bOk2Send=true;
 				else
 				{
-					int tdevices=pUser->Devices.size();
-					for (int ii=0; ii<tdevices; ii++)
+					size_t tdevices=pUser->Devices.size();
+					for (size_t ii=0; ii<tdevices; ii++)
 					{
 						if (pUser->Devices[ii]==DeviceRowID)
 						{
@@ -416,7 +416,7 @@ void CTCPServer::Do_Work()
 	}
 }
 
-void CTCPServer::SendToAll(const unsigned long long DeviceRowID, const char *pData, size_t Length, const CTCPClientBase* pClient2Ignore)
+void CTCPServer::SendToAll(const uint64_t DeviceRowID, const char *pData, size_t Length, const CTCPClientBase* pClient2Ignore)
 {
 	boost::lock_guard<boost::mutex> l(m_server_mutex);
 	if (m_pTCPServer)

@@ -173,7 +173,7 @@ void CSBFSpot::SendMeter(const unsigned char ID1,const unsigned char ID2, const 
 
 	tsen.ENERGY.battery_level=9;
 
-	unsigned long long instant=(unsigned long long)(musage*1000.0);
+	uint64_t instant=(uint64_t)(musage*1000.0);
 	tsen.ENERGY.instant1=(unsigned char)(instant/0x1000000);
 	instant-=tsen.ENERGY.instant1*0x1000000;
 	tsen.ENERGY.instant2=(unsigned char)(instant/0x10000);
@@ -237,7 +237,7 @@ void CSBFSpot::ImportOldMonthData()
 			return;
 		}
 	}
-	unsigned long long ulID;
+	uint64_t ulID;
 	std::stringstream s_str(result[0][0]);
 	s_str >> ulID;
 
@@ -259,14 +259,14 @@ void CSBFSpot::ImportOldMonthData()
 	_log.Log(LOG_STATUS, "SBFSpot Import Old Month Data: Complete");
 }
 
-void CSBFSpot::ImportOldMonthData(const unsigned long long DevID, const int Year, const int Month)
+void CSBFSpot::ImportOldMonthData(const uint64_t DevID, const int Year, const int Month)
 {
 	if (m_SBFDataPath.size() == 0)
 		return;
 	if (m_SBFPlantName.size() == 0)
 		return;
 
-	int iInvOff = 1;
+	size_t iInvOff = 1;
 	char szLogFile[256];
 	std::string tmpPath = m_SBFDataPath;
 	std::stringstream sstr;
@@ -315,7 +315,7 @@ void CSBFSpot::ImportOldMonthData(const unsigned long long DevID, const int Year
 					szKwhCounter = "0," + szKwhCounter;
 				stdreplace(szKwhCounter, ",", ".");
 				double kWhCounter = atof(szKwhCounter.c_str()) * 100000;
-				unsigned long long ulCounter = (unsigned long long)kWhCounter;
+				uint64_t ulCounter = (uint64_t)kWhCounter;
 
 				//check if this day record does not exists in the database, and insert it
 				std::vector<std::vector<std::string> > result;
@@ -381,7 +381,7 @@ void CSBFSpot::ImportOldMonthData(const unsigned long long DevID, const int Year
 						std::string szKwhCounter = results[iInvOff + 1];
 						stdreplace(szKwhCounter, ",", ".");
 						double kWhCounter = atof(szKwhCounter.c_str()) * 100000;
-						unsigned long long ulCounter = (unsigned long long)kWhCounter;
+						uint64_t ulCounter = (uint64_t)kWhCounter;
 
 						//check if this day record does not exists in the database, and insert it
 						std::vector<std::vector<std::string> > result;

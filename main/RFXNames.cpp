@@ -8,18 +8,18 @@
 //#include "Logger.h"
 
 typedef struct _STR_TABLE_SINGLE {
-	unsigned long    id;
+	uint32_t    id;
 	const char   *str1;
 	const char   *str2;
 } STR_TABLE_SINGLE;
 
 typedef struct _STR_TABLE_ID1_ID2 {
-	unsigned long    id1;
-	unsigned long    id2;
+	uint32_t    id1;
+	uint32_t    id2;
 	const char   *str1;
 } STR_TABLE_ID1_ID2;
 
-const char *findTableIDSingle1 (const STR_TABLE_SINGLE *t, const unsigned long id)
+const char *findTableIDSingle1 (const STR_TABLE_SINGLE *t, const uint32_t id)
 {
 	while (t->str1) {
 		if (t->id == id)
@@ -29,7 +29,7 @@ const char *findTableIDSingle1 (const STR_TABLE_SINGLE *t, const unsigned long i
 	return "Unknown";
 }
 
-const char *findTableIDSingle2 (const STR_TABLE_SINGLE *t, const unsigned long id)
+const char *findTableIDSingle2 (const STR_TABLE_SINGLE *t, const uint32_t id)
 {
 	while (t->str2) {
 		if (t->id == id)
@@ -39,7 +39,7 @@ const char *findTableIDSingle2 (const STR_TABLE_SINGLE *t, const unsigned long i
 	return "Unknown";
 }
 
-const char *findTableID1ID2 (const _STR_TABLE_ID1_ID2 *t, const unsigned long id1, const unsigned long id2)
+const char *findTableID1ID2 (const _STR_TABLE_ID1_ID2 *t, const uint32_t id1, const uint32_t id2)
 {
 	while (t->str1) {
 		if ( (t->id1 == id1) && (t->id2 == id2) )
@@ -3391,9 +3391,9 @@ void ConvertToGeneralSwitchType(std::string &devid, int &dtype, int &subtype)
 		else if (subtype == sTypeBlindsT10) subtype = sSwitchTypeAOK;
 		std::stringstream s_strid;
 		s_strid << std::hex << strtoul(devid.c_str(), NULL, 16);
-		unsigned long deviceid = 0;
+		uint32_t deviceid = 0;
 		s_strid >> deviceid;
-		deviceid = (unsigned long)((deviceid & 0xffffff00) >> 8);
+		deviceid = (uint32_t)((deviceid & 0xffffff00) >> 8);
 		char szTmp[20];
 		sprintf(szTmp, "%lx", deviceid);
 		//_log.Log(LOG_ERROR, "RFLink: deviceid: %x", deviceid);

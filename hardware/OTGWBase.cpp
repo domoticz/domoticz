@@ -401,14 +401,14 @@ void OTGWBase::ParseLine()
 		_status.Max_CH_setpoint_boundaries=results[idx++];
 		_status.DHW_setpoint = static_cast<float>(atof(results[idx++].c_str()));							UpdateSetPointSensor(idx - 1, _status.DHW_setpoint, "DHW Setpoint");
 		_status.Max_CH_water_setpoint = static_cast<float>(atof(results[idx++].c_str()));					UpdateSetPointSensor(idx - 1, _status.Max_CH_water_setpoint, "Max_CH Water Setpoint");
-		_status.Burner_starts=atol(results[idx++].c_str());
-		_status.CH_pump_starts=atol(results[idx++].c_str());
-		_status.DHW_pump_valve_starts=atol(results[idx++].c_str());
-		_status.DHW_burner_starts=atol(results[idx++].c_str());
-		_status.Burner_operation_hours=atol(results[idx++].c_str());
-		_status.CH_pump_operation_hours=atol(results[idx++].c_str());
-		_status.DHW_pump_valve_operation_hours=atol(results[idx++].c_str());
-		_status.DHW_burner_operation_hours=atol(results[idx++].c_str());
+		_status.Burner_starts=(int32_t)atol(results[idx++].c_str());
+		_status.CH_pump_starts= (int32_t)atol(results[idx++].c_str());
+		_status.DHW_pump_valve_starts= (int32_t)atol(results[idx++].c_str());
+		_status.DHW_burner_starts= (int32_t)atol(results[idx++].c_str());
+		_status.Burner_operation_hours= (int32_t)atol(results[idx++].c_str());
+		_status.CH_pump_operation_hours= (int32_t)atol(results[idx++].c_str());
+		_status.DHW_pump_valve_operation_hours= (int32_t)atol(results[idx++].c_str());
+		_status.DHW_burner_operation_hours= (int32_t)atol(results[idx++].c_str());
 		return;
 	}
 	else

@@ -228,7 +228,7 @@ void Teleinfo::MatchLine()
 			strncpy(value, (char*)&(m_buffer[position + 1]), t.width);
 			value[t.width] = 0;
 		}
-		unsigned long ulValue = (unsigned long)atoi(value);
+		uint32_t ulValue = (uint32_t)atoi(value);
 		vString = value;
 		switch (t.type)
 		{

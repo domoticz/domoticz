@@ -23,14 +23,14 @@ class OTGWBase : public CDomoticzHardwareBase
 		std::string Max_CH_setpoint_boundaries;
 		float DHW_setpoint;
 		float Max_CH_water_setpoint;
-		long Burner_starts;
-		long CH_pump_starts;
-		long DHW_pump_valve_starts;
-		long DHW_burner_starts;
-		long Burner_operation_hours;
-		long CH_pump_operation_hours;
-		long DHW_pump_valve_operation_hours;
-		long DHW_burner_operation_hours;
+		int32_t Burner_starts;
+		int32_t CH_pump_starts;
+		int32_t DHW_pump_valve_starts;
+		int32_t DHW_burner_starts;
+		int32_t Burner_operation_hours;
+		int32_t CH_pump_operation_hours;
+		int32_t DHW_pump_valve_operation_hours;
+		int32_t DHW_burner_operation_hours;
 	};
 	struct _tOTGWGPIO
 	{

@@ -15,7 +15,7 @@ public:
    virtual float GetPressure(const _t1WireDevice& device) const;
    virtual bool GetLightState(const _t1WireDevice& device,int unit) const;
    virtual unsigned int GetNbChannels(const _t1WireDevice& device) const;
-   virtual unsigned long GetCounter(const _t1WireDevice& device,int unit) const;
+   virtual uint32_t GetCounter(const _t1WireDevice& device,int unit) const;
    virtual int GetVoltage(const _t1WireDevice& device,int unit) const;
    virtual float GetIlluminance(const _t1WireDevice& device) const;
    // END : I_1WireSystem implementation

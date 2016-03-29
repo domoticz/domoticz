@@ -96,8 +96,8 @@ public:
 	bool GetNodeUserCodes(const unsigned int homeID, const int nodeID, Json::Value &root);
 	bool RemoveUserCode(const unsigned int homeID, const int nodeID, const int codeIndex);
 
-	std::string GetSupportedThermostatModes(const unsigned long ID);
-	std::string GetSupportedThermostatFanModes(const unsigned long ID);
+	std::string GetSupportedThermostatModes(const uint32_t ID);
+	std::string GetSupportedThermostatFanModes(const uint32_t ID);
 
 	//Controller Commands
 	bool RequestNodeConfig(const unsigned int homeID, const int nodeID);

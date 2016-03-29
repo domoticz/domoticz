@@ -442,7 +442,7 @@ double CDomoticzHardwareBase::GetKwhMeter(const int NodeID, const int ChildID, b
 
 void CDomoticzHardwareBase::SendMeterSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float metervalue, const std::string &defaultname)
 {
-	unsigned long counter = (unsigned long)(metervalue*1000.0f);
+	uint32_t counter = (uint32_t)(metervalue*1000.0f);
 	RBUF tsen;
 	memset(&tsen, 0, sizeof(RBUF));
 	tsen.RFXMETER.packetlength = sizeof(tsen.RFXMETER) - 1;

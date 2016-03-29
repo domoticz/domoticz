@@ -21,7 +21,7 @@ class CEventSystem
 
 	struct _tEventItem
 	{
-		unsigned long long ID;
+		uint64_t ID;
 		std::string Name;
 		std::string Interpreter;
 		std::string Type;
@@ -35,9 +35,9 @@ class CEventSystem
 public:
 	struct _tDeviceStatus
 	{
-		unsigned long long ID;
+		uint64_t ID;
 		std::string deviceName;
-		unsigned long long nValue;
+		uint64_t nValue;
 		std::string sValue;
 		unsigned char devType;
 		unsigned char subType;
@@ -49,7 +49,7 @@ public:
 
 	struct _tUserVariable
 	{
-		unsigned long long ID;
+		uint64_t ID;
 		std::string variableName;
 		std::string variableValue;
 		int variableType;
@@ -63,10 +63,10 @@ public:
 	void StopEventSystem();
 
 	void LoadEvents();
-	void ProcessUserVariable(const unsigned long long varId);
-	void ProcessDevice(const int HardwareID, const unsigned long long ulDevID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, const std::string &devname, const int varId);
+	void ProcessUserVariable(const uint64_t varId);
+	void ProcessDevice(const int HardwareID, const uint64_t ulDevID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, const std::string &devname, const int varId);
 	void RemoveSingleState(int ulDevID);
-	void WWWUpdateSingleState(const unsigned long long ulDevID, const std::string &devname);
+	void WWWUpdateSingleState(const uint64_t ulDevID, const std::string &devname);
 	void WWWUpdateSecurityState(int securityStatus);
 	void WWWGetItemStates(std::vector<_tDeviceStatus> &iStates);
 	void SetEnabled(const bool bEnabled);
@@ -89,21 +89,21 @@ private:
 	void GetCurrentStates();
 	void GetCurrentMeasurementStates();
 	void GetCurrentUserVariables();
-	std::string UpdateSingleState(const unsigned long long ulDevID, const std::string &devname, const int nValue, const char* sValue, const unsigned char devType, const unsigned char subType, const _eSwitchType switchType, const std::string &lastUpdate, const unsigned char lastLevel, const std::map<std::string, std::string> & options);
+	std::string UpdateSingleState(const uint64_t ulDevID, const std::string &devname, const int nValue, const char* sValue, const unsigned char devType, const unsigned char subType, const _eSwitchType switchType, const std::string &lastUpdate, const unsigned char lastLevel, const std::map<std::string, std::string> & options);
 	void EvaluateEvent(const std::string &reason);
-	void EvaluateEvent(const std::string &reason, const unsigned long long varId);
-	void EvaluateEvent(const std::string &reason, const unsigned long long DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const unsigned long long varId);
-	void EvaluateBlockly(const std::string &reason, const unsigned long long DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const unsigned long long varId);
-	bool parseBlocklyActions(const std::string &Actions, const std::string &eventName, const unsigned long long eventID);
+	void EvaluateEvent(const std::string &reason, const uint64_t varId);
+	void EvaluateEvent(const std::string &reason, const uint64_t DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const uint64_t varId);
+	void EvaluateBlockly(const std::string &reason, const uint64_t DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const uint64_t varId);
+	bool parseBlocklyActions(const std::string &Actions, const std::string &eventName, const uint64_t eventID);
 	std::string ProcessVariableArgument(const std::string &Argument);
 #ifdef ENABLE_PYTHON
-	void EvaluatePython(const std::string &reason, const std::string &filename, const std::string &PyString, const unsigned long long varId);
+	void EvaluatePython(const std::string &reason, const std::string &filename, const std::string &PyString, const uint64_t varId);
 	void EvaluatePython(const std::string &reason, const std::string &filename, const std::string &PyString);
-	void EvaluatePython(const std::string &reason, const std::string &filename, const std::string &PyString, const unsigned long long DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const unsigned long long varId);
+	void EvaluatePython(const std::string &reason, const std::string &filename, const std::string &PyString, const uint64_t DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const uint64_t varId);
 #endif
-	void EvaluateLua(const std::string &reason, const std::string &filename, const std::string &LuaString, const unsigned long long varId);
+	void EvaluateLua(const std::string &reason, const std::string &filename, const std::string &LuaString, const uint64_t varId);
 	void EvaluateLua(const std::string &reason, const std::string &filename, const std::string &LuaString);
-	void EvaluateLua(const std::string &reason, const std::string &filename, const std::string &LuaString, const unsigned long long DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const unsigned long long varId);
+	void EvaluateLua(const std::string &reason, const std::string &filename, const std::string &LuaString, const uint64_t DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const uint64_t varId);
 	void luaThread(lua_State *lua_state, const std::string &filename);
 	static void luaStop(lua_State *L, lua_Debug *ar);
 	std::string nValueToWording(const unsigned char dType, const unsigned char dSubType, const _eSwitchType switchtype, const unsigned char nValue, const std::string &sValue, const std::map<std::string, std::string> & options);
@@ -122,8 +122,8 @@ private:
 	std::vector<_tEventItem> m_events;
 
 
-	std::map<unsigned long long, _tDeviceStatus> m_devicestates;
-	std::map<unsigned long long, _tUserVariable> m_uservariables;
+	std::map<uint64_t, _tDeviceStatus> m_devicestates;
+	std::map<uint64_t, _tUserVariable> m_uservariables;
 	std::map<std::string, float> m_tempValuesByName;
 	std::map<std::string, float> m_dewValuesByName;
 	std::map<std::string, float> m_rainValuesByName;
@@ -137,20 +137,20 @@ private:
 	std::map<std::string, float> m_windspeedValuesByName;
 	std::map<std::string, float> m_windgustValuesByName;
 
-	std::map<unsigned long long, float> m_tempValuesByID;
-	std::map<unsigned long long, float> m_dewValuesByID;
-	std::map<unsigned long long, float> m_rainValuesByID;
-	std::map<unsigned long long, float> m_rainLastHourValuesByID;
-	std::map<unsigned long long, float> m_uvValuesByID;
-	std::map<unsigned long long, float> m_weatherValuesByID;
-	std::map<unsigned long long, int>	m_humValuesByID;
-	std::map<unsigned long long, float> m_baroValuesByID;
-	std::map<unsigned long long, float> m_utilityValuesByID;
-	std::map<unsigned long long, float> m_winddirValuesByID;
-	std::map<unsigned long long, float> m_windspeedValuesByID;
-	std::map<unsigned long long, float> m_windgustValuesByID;
+	std::map<uint64_t, float> m_tempValuesByID;
+	std::map<uint64_t, float> m_dewValuesByID;
+	std::map<uint64_t, float> m_rainValuesByID;
+	std::map<uint64_t, float> m_rainLastHourValuesByID;
+	std::map<uint64_t, float> m_uvValuesByID;
+	std::map<uint64_t, float> m_weatherValuesByID;
+	std::map<uint64_t, int>	m_humValuesByID;
+	std::map<uint64_t, float> m_baroValuesByID;
+	std::map<uint64_t, float> m_utilityValuesByID;
+	std::map<uint64_t, float> m_winddirValuesByID;
+	std::map<uint64_t, float> m_windspeedValuesByID;
+	std::map<uint64_t, float> m_windgustValuesByID;
 
-	void reportMissingDevice(const int deviceID, const std::string &EventName, const unsigned long long eventID);
+	void reportMissingDevice(const int deviceID, const std::string &EventName, const uint64_t eventID);
 	int getSunRiseSunSetMinutes(const std::string &what);
 	bool isEventscheduled(const std::string &eventName);
 	bool iterateLuaTable(lua_State *lua_state, const int tIndex, const std::string &filename);

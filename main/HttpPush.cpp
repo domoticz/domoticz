@@ -19,8 +19,8 @@
 #endif
 
 typedef struct _STR_TABLE_ID1_ID2 {
-	unsigned long    id1;
-	unsigned long    id2;
+	uint32_t    id1;
+	uint32_t    id2;
 	const char   *str1;
 } STR_TABLE_ID1_ID2;
 
@@ -62,7 +62,7 @@ void CHttpPush::UpdateActive()
 	m_bLinkActive = (fActive == 1);
 }
 
-void CHttpPush::OnDeviceReceived(const int m_HwdID, const unsigned long long DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
+void CHttpPush::OnDeviceReceived(const int m_HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
 {
 	m_DeviceRowIdx = DeviceRowIdx;
 	if (m_bLinkActive)
@@ -133,14 +133,14 @@ void CHttpPush::DoHttpPush()
 
 			// Compute tz
 			boost::posix_time::time_duration uoffset = get_utc_offset();
-			unsigned long tzoffset = (int)((double)(uoffset.ticks() / 3600000000LL) * 3600);
+			uint32_t tzoffset = (int)((double)(uoffset.ticks() / 3600000000LL) * 3600);
 
 #ifdef WIN32
 			unsigned __int64 localTime = lastUpdate;
 			unsigned __int64 localTimeUtc = lastUpdate - tzoffset;
 #else
-			unsigned long long int localTime = lastUpdate;
-			unsigned long long int localTimeUtc = lastUpdate - tzoffset;
+			uint64_t int localTime = lastUpdate;
+			uint64_t int localTimeUtc = lastUpdate - tzoffset;
 #endif
 
 			char szLocalTime[16];

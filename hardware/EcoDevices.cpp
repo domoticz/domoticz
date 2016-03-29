@@ -136,9 +136,9 @@ void CEcoDevices::GetMeterDetails()
 		std::string tPAPP = root["T1_PAPP"].asString();
 		if (tPAPP != "----")
 		{
-			m_p1power.powerusage1 = (unsigned long)(root["T1_HCHP"].asFloat());
-			m_p1power.powerusage2 = (unsigned long)(root["T1_HCHC"].asFloat());
-			m_p1power.usagecurrent = (unsigned long)(root["T1_PAPP"].asFloat());	//Watt
+			m_p1power.powerusage1 = (uint32_t)(root["T1_HCHP"].asFloat());
+			m_p1power.powerusage2 = (uint32_t)(root["T1_HCHC"].asFloat());
+			m_p1power.usagecurrent = (uint32_t)(root["T1_PAPP"].asFloat());	//Watt
 		}
 	}
 

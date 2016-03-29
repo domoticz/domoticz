@@ -152,15 +152,15 @@ void CToonThermostat::Init()
 	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==1) AND ([Type]==%d) AND (SubType==%d)", m_HwdID, pTypeP1Power, sTypeP1Power);
 	if (!result.empty())
 	{
-		unsigned long devID = (unsigned long)atol(result[0][0].c_str());
+		uint32_t devID = (uint32_t)atol(result[0][0].c_str());
 		result = m_sql.safe_query("SELECT MAX(Counter1), MAX(Counter2), MAX(Counter3), MAX(Counter4) FROM Multimeter_Calendar WHERE (DeviceRowID==%ld)", devID);
 		if (result.size() > 0)
 		{
 			std::vector<std::string> sd = *result.begin();
-			m_OffsetUsage1 = (unsigned long)atol(sd[0].c_str());
-			m_OffsetDeliv1 = (unsigned long)atol(sd[1].c_str());
-			m_OffsetUsage2 = (unsigned long)atol(sd[2].c_str());
-			m_OffsetDeliv2 = (unsigned long)atol(sd[3].c_str());
+			m_OffsetUsage1 = (uint32_t)atol(sd[0].c_str());
+			m_OffsetDeliv1 = (uint32_t)atol(sd[1].c_str());
+			m_OffsetUsage2 = (uint32_t)atol(sd[2].c_str());
+			m_OffsetDeliv2 = (uint32_t)atol(sd[3].c_str());
 		}
 	}
 
@@ -719,19 +719,19 @@ void CToonThermostat::GetMeterDetails()
 
 	if (root["gasUsage"].empty() == false)
 	{
-		m_p1gas.gasusage = (unsigned long)(root["gasUsage"]["meterReading"].asFloat());
+		m_p1gas.gasusage = (uint32_t)(root["gasUsage"]["meterReading"].asFloat());
 	}
 
 	if (root["powerUsage"].empty() == false)
 	{
-		m_p1power.powerusage1 = (unsigned long)(root["powerUsage"]["meterReadingLow"].asFloat());
-		m_p1power.powerusage2 = (unsigned long)(root["powerUsage"]["meterReading"].asFloat());
+		m_p1power.powerusage1 = (uint32_t)(root["powerUsage"]["meterReadingLow"].asFloat());
+		m_p1power.powerusage2 = (uint32_t)(root["powerUsage"]["meterReading"].asFloat());
 
 		if ((m_p1power.powerusage1 == 0) && (m_p1power.powerusage2 == 0))
 		{
 			//New firmware does not provide meter readings anymore
-			unsigned long usage1 = (unsigned long)(root["powerUsage"]["dayUsage"].asFloat());
-			unsigned long usage2 = (unsigned long)(root["powerUsage"]["dayLowUsage"].asFloat());
+			uint32_t usage1 = (uint32_t)(root["powerUsage"]["dayUsage"].asFloat());
+			uint32_t usage2 = (uint32_t)(root["powerUsage"]["dayLowUsage"].asFloat());
 			if (usage1 < m_LastUsage1)
 			{
 				m_OffsetUsage1 += m_LastUsage1;
@@ -748,8 +748,8 @@ void CToonThermostat::GetMeterDetails()
 
 		if (root["powerUsage"]["meterReadingProdu"].empty() == false)
 		{
-			m_p1power.powerdeliv1 = (unsigned long)(root["powerUsage"]["meterReadingLowProdu"].asFloat());
-			m_p1power.powerdeliv2 = (unsigned long)(root["powerUsage"]["meterReadingProdu"].asFloat());
+			m_p1power.powerdeliv1 = (uint32_t)(root["powerUsage"]["meterReadingLowProdu"].asFloat());
+			m_p1power.powerdeliv2 = (uint32_t)(root["powerUsage"]["meterReadingProdu"].asFloat());
 
 			if ((m_p1power.powerdeliv1 == 0) && (m_p1power.powerdeliv2 == 0))
 			{
@@ -758,8 +758,8 @@ void CToonThermostat::GetMeterDetails()
 			}
 		}
 
-		m_p1power.usagecurrent = (unsigned long)(root["powerUsage"]["value"].asFloat());	//Watt
-		m_p1power.delivcurrent = (unsigned long)(root["powerUsage"]["valueProduced"].asFloat());	//Watt
+		m_p1power.usagecurrent = (uint32_t)(root["powerUsage"]["value"].asFloat());	//Watt
+		m_p1power.delivcurrent = (uint32_t)(root["powerUsage"]["valueProduced"].asFloat());	//Watt
 		
 	}
 

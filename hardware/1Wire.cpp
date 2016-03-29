@@ -458,7 +458,7 @@ void C1Wire::ReportLightState(const std::string& deviceId, const int unit, const
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, NULL, 255);
 }
 
-void C1Wire::ReportCounter(const std::string& deviceId, const int unit, const unsigned long counter)
+void C1Wire::ReportCounter(const std::string& deviceId, const int unit, const uint32_t counter)
 {
 	unsigned char deviceIdByteArray[DEVICE_ID_SIZE]={0};
 	DeviceIdToByteArray(deviceId,deviceIdByteArray);

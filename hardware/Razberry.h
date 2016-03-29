@@ -32,8 +32,8 @@ private:
 	void SetClock(const int nodeID, const int instanceID, const int commandClass, const int day, const int hour, const int minute);
 	void SetThermostatMode(const int nodeID, const int instanceID, const int commandClass, const int tMode);
 	void SetThermostatFanMode(const int nodeID, const int instanceID, const int commandClass, const int fMode);
-	std::string GetSupportedThermostatModes(const unsigned long ID);
-	std::string GetSupportedThermostatFanModes(const unsigned long ID);
+	std::string GetSupportedThermostatModes(const uint32_t ID);
+	std::string GetSupportedThermostatFanModes(const uint32_t ID);
 
 	bool HasNodeFailed(const int nodeID);
 

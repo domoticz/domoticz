@@ -189,7 +189,7 @@ void P1MeterBase::MatchLine()
 			if (t.matchtype==STD)
 			{
 				vString=(const char*)&m_buffer+t.start;
-				int ePos=vString.find_first_of("*");
+				size_t ePos=vString.find_first_of("*");
 				if (ePos==std::string::npos)
 				{
 					ePos=vString.find_first_of(")");
@@ -211,7 +211,7 @@ void P1MeterBase::MatchLine()
 			else if (t.matchtype==LINE18)
 			{
 				vString=(const char*)&m_buffer+t.start;
-				int ePos=vString.find_first_of(")");
+				size_t ePos=vString.find_first_of(")");
 				if (ePos==std::string::npos)
 				{
 					strncpy(value, (const char*)&m_buffer+t.start, t.width);
@@ -232,37 +232,37 @@ void P1MeterBase::MatchLine()
 				value[t.width] = 0;
 			}
 
-			unsigned long temp_usage = 0;
+			uint32_t temp_usage = 0;
 
 			switch (t.type)
 			{
 			case P1TYPE_POWERUSAGE1:
-				temp_usage = (unsigned long)(atof(value)*1000.0f);
+				temp_usage = (uint32_t)(atof(value)*1000.0f);
 				m_p1power.powerusage1 = temp_usage;
 				break;
 			case P1TYPE_POWERUSAGE2:
-				temp_usage = (unsigned long)(atof(value)*1000.0f);
+				temp_usage = (uint32_t)(atof(value)*1000.0f);
 				m_p1power.powerusage2=temp_usage;
 				break;
 			case P1TYPE_POWERDELIV1:
-				temp_usage = (unsigned long)(atof(value)*1000.0f);
+				temp_usage = (uint32_t)(atof(value)*1000.0f);
 				m_p1power.powerdeliv1=temp_usage;
 				break;
 			case P1TYPE_POWERDELIV2:
-				temp_usage = (unsigned long)(atof(value)*1000.0f);
+				temp_usage = (uint32_t)(atof(value)*1000.0f);
 				m_p1power.powerdeliv2=temp_usage;
 				break;
 			case P1TYPE_TARIFF:
 				break;
 			case P1TYPE_USAGECURRENT:
-				temp_usage = (unsigned long)(atof(value)*1000.0f);	//Watt
+				temp_usage = (uint32_t)(atof(value)*1000.0f);	//Watt
 				if (temp_usage < 17250)
 				{
 					m_p1power.usagecurrent = temp_usage;
 				}
 				break;
 			case P1TYPE_DELIVCURRENT:
-				temp_usage = (unsigned long)(atof(value)*1000.0f);	//Watt;
+				temp_usage = (uint32_t)(atof(value)*1000.0f);	//Watt;
 				if (temp_usage < 17250)
 				{
 					m_p1power.delivcurrent = temp_usage;
@@ -274,7 +274,7 @@ void P1MeterBase::MatchLine()
 			case P1TYPE_GASUSAGE:
 			case P1TYPE_GASUSAGEDSMRv4:
 			case P1TYPE_GASUSAGEGyrE350:
-				temp_usage = (unsigned long)(atof(value)*1000.0f);
+				temp_usage = (uint32_t)(atof(value)*1000.0f);
 				m_p1gas.gasusage = temp_usage;
 				break;
 			}

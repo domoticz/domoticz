@@ -65,12 +65,12 @@ void HTTPClient::SetGlobalOptions(void *curlobj)
 }
 
 //Configuration functions
-void HTTPClient::SetConnectionTimeout(const long timeout)
+void HTTPClient::SetConnectionTimeout(const int32_t timeout)
 {
 	m_iConnectionTimeout=timeout;
 }
 
-void HTTPClient::SetTimeout(const long timeout)
+void HTTPClient::SetTimeout(const int32_t timeout)
 {
 	m_iTimeout=timeout;
 }

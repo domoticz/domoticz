@@ -98,7 +98,7 @@ bool MochadTCP::StartHardware()
 	m_addr.sin_family = AF_INET;
 	m_addr.sin_port = htons(m_usIPPort);
 
-	unsigned long ip;
+	uint32_t ip;
 	ip=inet_addr(m_szIPAddress.c_str());
 
 	// if we have a error in the ip, it means we have entered a string
@@ -178,7 +178,7 @@ bool MochadTCP::ConnectInternal()
 void MochadTCP::OnData(const unsigned char *pData, size_t length)
 {
 	boost::lock_guard<boost::mutex> l(readQueueMutex);
-	ParseData(pData, length);
+	ParseData(pData, (int)length);
 }
 
 

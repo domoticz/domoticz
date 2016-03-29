@@ -160,7 +160,7 @@ void S0MeterBase::SendMeter(unsigned char ID, double musage, double mtotal)
 
 		tsen.ENERGY.battery_level=9;
 
-		unsigned long long instant=(unsigned long long)(musage*1000.0);
+		uint64_t instant=(uint64_t)(musage*1000.0);
 		tsen.ENERGY.instant1=(unsigned char)(instant/0x1000000);
 		instant-=tsen.ENERGY.instant1*0x1000000;
 		tsen.ENERGY.instant2=(unsigned char)(instant/0x10000);
@@ -191,7 +191,7 @@ void S0MeterBase::SendMeter(unsigned char ID, double musage, double mtotal)
 		m_p1gas.len=sizeof(P1Gas)-1;
 		m_p1gas.type=pTypeP1Gas;
 		m_p1gas.subtype=sTypeP1Gas;
-		m_p1gas.gasusage=(unsigned long)(mtotal*1000.0);
+		m_p1gas.gasusage=(uint32_t)(mtotal*1000.0);
 		m_p1gas.ID = ID;
 		sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, NULL, 255);
 	}
@@ -208,7 +208,7 @@ void S0MeterBase::SendMeter(unsigned char ID, double musage, double mtotal)
 		tsen.RFXMETER.id1=0;
 		tsen.RFXMETER.id2=ID;
 
-		unsigned long counterA=(unsigned long)(mtotal*1000.0);
+		uint32_t counterA=(uint32_t)(mtotal*1000.0);
 
 		tsen.RFXMETER.count1 = (BYTE)((counterA & 0xFF000000) >> 24);
 		tsen.RFXMETER.count2 = (BYTE)((counterA & 0x00FF0000) >> 16);
@@ -244,7 +244,7 @@ void S0MeterBase::ParseLine()
 		_log.Log(LOG_ERROR,"S0 Meter: Invalid Data received! %s",sLine.c_str());
 		return;
 	}
-	int totmeters=(results.size()-4)/3;
+	int totmeters=(int)(results.size()-4)/3;
 	if (totmeters>max_s0_meters)
 		totmeters=max_s0_meters;
 	//ID:0001:I:99:M1:123:456:M2:234:567 = ID(1)/Pulse Interval(3)/M1Actual(5)/M1Total(7)/M2Actual(8)/M2Total(9)
@@ -260,8 +260,8 @@ void S0MeterBase::ParseLine()
 
 			double s0_pulse = atof(results[roffset + 1].c_str());
 
-			unsigned long LastTotalPulses = m_meters[ii].total_pulses;
-			m_meters[ii].total_pulses = (unsigned long)atol(results[roffset + 2].c_str());
+			uint32_t LastTotalPulses = m_meters[ii].total_pulses;
+			m_meters[ii].total_pulses = (uint32_t)atol(results[roffset + 2].c_str());
 			if (m_meters[ii].total_pulses < LastTotalPulses)
 			{
 				//counter has looped

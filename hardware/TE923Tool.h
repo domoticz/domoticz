@@ -4,7 +4,7 @@
 #ifdef WITH_LIBUSB
 typedef struct {
 	// this are the values from station
-	unsigned long timestamp;                 // timestamp for this dataset
+	uint32_t timestamp;                 // timestamp for this dataset
 	float t[6];                             // temperature of the sensors in °C
 	signed short h[6];                      // humidity of the sensors in % rel
 	float uv;                               // UV index

@@ -22,33 +22,33 @@ class CIOCount
 	   CIOCount();
 	   ~CIOCount();
 
-	   int Update(unsigned long Counts);
-	   unsigned long GetCurrent(void) const {return Current;};
-	   unsigned long GetTotal(void) const {return Total;};
-	   unsigned long GetLastTotal(void) const { return LastTotal; };
-	   unsigned long GetRateLimit(void) const { return Minimum_Pulse_Period_ms; };
-	   void SetCurrent(unsigned long NewCurValue) {Current=NewCurValue;};
-	   void SetTotal(unsigned long NewTotalValue) { Total = NewTotalValue; };
-	   void SetLastTotal(unsigned long NewTotalValue) { LastTotal = NewTotalValue; };
-	   void SetRateLimit(unsigned long NewRateLimit) { Minimum_Pulse_Period_ms = NewRateLimit; };
+	   int Update(uint32_t Counts);
+	   uint32_t GetCurrent(void) const {return Current;};
+	   uint32_t GetTotal(void) const {return Total;};
+	   uint32_t GetLastTotal(void) const { return LastTotal; };
+	   uint32_t GetRateLimit(void) const { return Minimum_Pulse_Period_ms; };
+	   void SetCurrent(uint32_t NewCurValue) {Current=NewCurValue;};
+	   void SetTotal(uint32_t NewTotalValue) { Total = NewTotalValue; };
+	   void SetLastTotal(uint32_t NewTotalValue) { LastTotal = NewTotalValue; };
+	   void SetRateLimit(uint32_t NewRateLimit) { Minimum_Pulse_Period_ms = NewRateLimit; };
 	   void ResetCurrent(void) {Current=0;};
 	   void ResetTotal(void) {
 		   Total = 0;
 		   LastTotal = 0;
 	   };
-	   bool ProcessUpdateInterval(unsigned long PassedTime_ms);
-	   void SetUpdateInterval(unsigned long NewValue_ms);
-	   unsigned long GetUpdateInterval(void) {return UpdateInterval_ms;};
+	   bool ProcessUpdateInterval(uint32_t PassedTime_ms);
+	   void SetUpdateInterval(uint32_t NewValue_ms);
+	   uint32_t GetUpdateInterval(void) {return UpdateInterval_ms;};
 	   bool Enabled;
 	   bool InitialStateSent;
 
    private:
-	   unsigned long Current;
-	   unsigned long Total;
-	   unsigned long LastTotal;
-	   unsigned long UpdateInterval_ms;
-	   unsigned long UpdateDownCount_ms;
-	   unsigned long Minimum_Pulse_Period_ms;
+	   uint32_t Current;
+	   uint32_t Total;
+	   uint32_t LastTotal;
+	   uint32_t UpdateInterval_ms;
+	   uint32_t UpdateDownCount_ms;
+	   uint32_t Minimum_Pulse_Period_ms;
 	   boost::posix_time::ptime Last_Call;
 	   boost::posix_time::ptime Cur_Call;
 };
@@ -154,7 +154,7 @@ private:
 	std::string & ltrim(std::string &s);
 	std::string & rtrim(std::string &s);
 	int LocateValueInParameterArray(std::string Parametername,const std::string *ParameterArray,int Items);
-	int GetParameterString(std::string TargetString,const char * SearchStr, int StartPos,  std::string &Parameter);
+	int GetParameterString(std::string TargetString,const char * SearchStr, size_t StartPos,  std::string &Parameter);
 	int LoadConfig(void);
 	void LoadDefaultConfig(void);
 	void AutoCreate_piface_config(void);

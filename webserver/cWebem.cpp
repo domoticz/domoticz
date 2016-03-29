@@ -761,7 +761,7 @@ bool cWebem::IsBadRequestPath(const std::string& request_path)
 	return false;
 }
 
-void cWebem::AddUserPassword(const unsigned long ID, const std::string &username, const std::string &password, const _eUserRights userrights, const int activetabs)
+void cWebem::AddUserPassword(const uint32_t ID, const std::string &username, const std::string &password, const _eUserRights userrights, const int activetabs)
 {
 	_tWebUserPassword wtmp;
 	wtmp.ID=ID;
@@ -1306,7 +1306,7 @@ bool cWebemRequestHandler::CompressWebOutput(const request& req, reply& rep)
 		bool bHaveGZipSupport=(strstr(encoding_header,"gzip")!=NULL);
 		if (bHaveGZipSupport)
 		{
-			CA2GZIP gzip((char*)rep.content.c_str(), rep.content.size());
+			CA2GZIP gzip((char*)rep.content.c_str(), (int)rep.content.size());
 			if ((gzip.Length>0)&&(gzip.Length<(int)rep.content.size()))
 			{
 				rep.bIsGZIP = true; // flag for later

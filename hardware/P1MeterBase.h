@@ -14,8 +14,8 @@ public:
 	P1Power	m_p1power;
 	P1Gas	m_p1gas;
 private:
-	unsigned long m_lastgasusage;
-	unsigned long m_lastelectrausage;
+	uint32_t m_lastgasusage;
+	uint32_t m_lastelectrausage;
 	time_t m_lastSharedSendElectra;
 	time_t m_lastSharedSendGas;
 

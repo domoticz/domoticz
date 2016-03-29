@@ -100,7 +100,7 @@ private:
   boost::asio::deadline_timer read_timer_;
 
   /// Abandoned connection timeout (in seconds)
-  long default_abandoned_timeout_;
+  uint32_t default_abandoned_timeout_;
   /// Abandoned timeout timer
   boost::asio::deadline_timer abandoned_timer_;
 

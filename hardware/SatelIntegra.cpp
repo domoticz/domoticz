@@ -230,7 +230,7 @@ bool SatelIntegra::CheckAddress()
 	m_addr.sin_family = AF_INET;
 	m_addr.sin_port = htons(m_IPPort);
 
-	unsigned long ip;
+	uint32_t ip;
 	ip = inet_addr(m_IPAddress.c_str());
 
 	if (ip != INADDR_NONE)
@@ -1082,7 +1082,7 @@ int SatelIntegra::SendCommand(const unsigned char* cmd, const unsigned int cmdLe
 	struct timeval tv;
 	tv.tv_sec = 3;
 	tv.tv_usec = 0;
-	if (select(m_socket + 1, &rfds, NULL, NULL, &tv) < 0)
+	if (select((int)m_socket + 1, &rfds, NULL, NULL, &tv) < 0)
 	{
 		_log.Log(LOG_ERROR, "Satel Integra: connection lost.");
 		DestroySocket();
@@ -1202,7 +1202,7 @@ std::pair<unsigned char*, unsigned int> SatelIntegra::getFullFrame(const unsigne
 	result.push_back(0xFE);
 	result.push_back(0x0D);
 
-	unsigned int resultSize = result.size();
+	unsigned int resultSize = (unsigned int)result.size();
 	unsigned char* pResult = new unsigned char[resultSize];
 	memset(pResult, 0, resultSize);
 	std::list<unsigned char>::iterator it = result.begin();

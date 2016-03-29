@@ -24,7 +24,7 @@ void CPush::replaceAll(std::string& context, const std::string& from, const std:
 	}
 }
 
-std::vector<std::string> CPush::DropdownOptions(const unsigned long long DeviceRowIdxIn)
+std::vector<std::string> CPush::DropdownOptions(const uint64_t DeviceRowIdxIn)
 {
 	std::vector<std::string> dropdownOptions;
 
@@ -49,7 +49,7 @@ std::vector<std::string> CPush::DropdownOptions(const unsigned long long DeviceR
 	return dropdownOptions;
 }
 
-std::string CPush::DropdownOptionsValue(const unsigned long long DeviceRowIdxIn, const int pos)
+std::string CPush::DropdownOptionsValue(const uint64_t DeviceRowIdxIn, const int pos)
 {	
 	std::string wording = "???";
 	int getpos = pos-1; // 0 pos is always nvalue/status, 1 and higher goes to svalues

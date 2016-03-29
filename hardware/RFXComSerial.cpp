@@ -223,8 +223,8 @@ bool RFXComSerial::UpgradeFirmware()
 	}
 	m_FirmwareUploadPercentage = 0;
 	m_bStartFirmwareUpload = false;
-	std::map<unsigned long, std::string> firmwareBuffer;
-	std::map<unsigned long, std::string>::const_iterator itt;
+	std::map<uint32_t, std::string> firmwareBuffer;
+	std::map<uint32_t, std::string>::const_iterator itt;
 	int icntr = 0;
 	if (!Read_Firmware_File(m_szFirmwareFile.c_str(), firmwareBuffer))
 	{
@@ -314,7 +314,7 @@ bool RFXComSerial::UpgradeFirmware()
 		{
 			m_LastHeartbeat = mytime(NULL);
 		}
-		unsigned long Address = itt->first;
+		uint32_t Address = itt->first;
 		m_FirmwareUploadPercentage = (100.0f / float(firmwareBuffer.size()))*icntr;
 		if (m_FirmwareUploadPercentage > 100)
 			m_FirmwareUploadPercentage = 100;
@@ -428,7 +428,7 @@ std::string RFXComSerial::GetUploadMessage()
 	return m_szUploadMessage;
 }
 
-bool RFXComSerial::Read_Firmware_File(const char *szFilename, std::map<unsigned long, std::string>& fileBuffer)
+bool RFXComSerial::Read_Firmware_File(const char *szFilename, std::map<uint32_t, std::string>& fileBuffer)
 {
 #ifndef WIN32
 	struct stat info;
@@ -460,7 +460,7 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename, std::map<unsigned 
 
 	unsigned char rawLineBuf[PKT_writeblock];
 	int raw_length = 0;
-	unsigned long dest_address = 0;
+	uint32_t dest_address = 0;
 	int line = 0;
 	int addrh = 0;
 
@@ -676,7 +676,7 @@ bool RFXComSerial::Write_TX_PKT(const unsigned char *pdata, size_t length, const
 	*/
 	int nretry = 0;
 	unsigned char input_buffer[512];
-	int tot_read;
+	size_t tot_read;
 
 	while (nretry < max_retry)
 	{

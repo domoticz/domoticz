@@ -8,8 +8,8 @@ typedef struct _tYouLessMeter {
 	unsigned char type;
 	unsigned char subtype;
 	unsigned short ID1;
-	unsigned long powerusage;
-	unsigned long usagecurrent;
+	uint32_t powerusage;
+	uint32_t usagecurrent;
 } YouLessMeter;
 
 class CYouLess : public CDomoticzHardwareBase
