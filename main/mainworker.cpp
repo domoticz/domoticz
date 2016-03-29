@@ -8792,7 +8792,7 @@ void MainWorker::decode_P1MeterPower(const int HwdID, const _eHardwareTypes HwdT
 	unsigned char SignalLevel=12;
 	unsigned char BatteryLevel = 255;
 
-	sprintf(szTmp,"%lu;%lu;%lu;%lu;%lu;%lu",
+	sprintf(szTmp,"%u;%u;%u;%u;%u;%u",
 		p1Power->powerusage1,
 		p1Power->powerusage2,
 		p1Power->powerdeliv1,
@@ -8824,9 +8824,9 @@ void MainWorker::decode_P1MeterPower(const int HwdID, const _eHardwareTypes HwdT
 			sprintf(szTmp,"powerdeliv2 = %.3f kWh", float(p1Power->powerdeliv2) / 1000.0f);
 			WriteMessage(szTmp);
 
-			sprintf(szTmp,"current usage = %03lu Watt", p1Power->usagecurrent);
+			sprintf(szTmp,"current usage = %03u Watt", p1Power->usagecurrent);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"current deliv = %03lu Watt", p1Power->delivcurrent);
+			sprintf(szTmp,"current deliv = %03u Watt", p1Power->delivcurrent);
 			WriteMessage(szTmp);
 			break;
 		default:
