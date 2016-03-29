@@ -3682,7 +3682,7 @@ void COpenZWave::SetThermostatFanMode(const int nodeID, const int instanceID, co
 	m_updateTime = mytime(NULL);
 }
 
-std::string COpenZWave::GetSupportedThermostatModes(const uint32_t ID)
+std::string COpenZWave::GetSupportedThermostatModes(const unsigned long ID)
 {
 	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
 	std::string retstr = "";
@@ -3726,7 +3726,7 @@ std::string COpenZWave::GetSupportedThermostatModes(const uint32_t ID)
 	return retstr;
 }
 
-std::string COpenZWave::GetSupportedThermostatFanModes(const uint32_t ID)
+std::string COpenZWave::GetSupportedThermostatFanModes(const unsigned long ID)
 {
 	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
 	std::string retstr = "";
@@ -4263,7 +4263,7 @@ bool COpenZWave::RemoveUserCode(const unsigned int homeID, const int nodeID, con
 				{
 					//Set our code to zero
 					//First find code length in bytes
-					int cLength = (int)(sValue.size() + 1) / 5;
+					int cLength = (sValue.size() + 1) / 5;
 					//Make an string with zero's
 					sValue = "";
 					for (int ii = 0; ii < cLength; ii++)

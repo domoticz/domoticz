@@ -90,7 +90,7 @@ public:
   bool getChanged() { return changed; }
   void setChanged(bool ch) { changed = ch; nodechanged = ch; }
   static void addRemoved(uint8 node) { removed.push_back(node); }
-  static uint32 getRemovedCount() { return (uint32_t)removed.size(); }
+  static uint32 getRemovedCount() { return removed.size(); }
   static uint8 getRemoved();
   void addGroup(uint8 node, uint8 g, uint8 n, uint8 *v);
   MyGroup *getGroup(uint8 i);
@@ -142,7 +142,7 @@ private:
 	void web_get_values(int i, TiXmlElement *ep);
 	TiXmlElement *newstat(char const *tag, char const *label, uint32 const value);
 	TiXmlElement *newstat(char const *tag, char const *label, char const *value);
-	uint32_t logbytes;
+	unsigned long logbytes;
 	bool adminstate;
 	string adminmsg;
 	string adminfun;

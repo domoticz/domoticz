@@ -24,17 +24,17 @@
 
 struct _tTableLookup2
 {
-	uint32_t ID;
+	unsigned long ID;
 	const char* Label;
 };
 struct _tTableLookup3
 {
-	uint32_t ID1;
-	uint32_t ID2;
+	unsigned long ID1;
+	unsigned long ID2;
 	const char* Label;
 };
 
-const char *LookupTable2(const _tTableLookup2 *pOrgTable, uint32_t ID)
+const char *LookupTable2(const _tTableLookup2 *pOrgTable, unsigned long ID)
 {
 	while (pOrgTable->Label) 
 	{
@@ -46,7 +46,7 @@ const char *LookupTable2(const _tTableLookup2 *pOrgTable, uint32_t ID)
 	return ">>Unkown... Please report!<<";
 }
 
-const char *LookupTable3(const _tTableLookup3 *pOrgTable, uint32_t ID1, uint32_t ID2)
+const char *LookupTable3(const _tTableLookup3 *pOrgTable, unsigned long ID1, unsigned long ID2)
 {
 	while (pOrgTable->Label) 
 	{
@@ -58,7 +58,7 @@ const char *LookupTable3(const _tTableLookup3 *pOrgTable, uint32_t ID1, uint32_t
 	return ">>Unkown... Please report!<<";
 }
 
-const char* Get_EnoceanManufacturer(uint32_t ID)
+const char* Get_EnoceanManufacturer(unsigned long ID)
 {
 	const _tTableLookup2 TTable[]=
 	{
@@ -1069,7 +1069,7 @@ bool CEnOceanESP2::WriteToHardware(const char *pdata, const unsigned char length
 	iframe.H_SEQ_LENGTH=0x6B;//TX+Length
 	iframe.ORG = 0x05;
 
-	uint32_t sID=(tsen->LIGHTING2.id1<<24)|(tsen->LIGHTING2.id2<<16)|(tsen->LIGHTING2.id3<<8)|tsen->LIGHTING2.id4;
+	unsigned long sID=(tsen->LIGHTING2.id1<<24)|(tsen->LIGHTING2.id2<<16)|(tsen->LIGHTING2.id3<<8)|tsen->LIGHTING2.id4;
 	if ((sID<m_id_base)||(sID>m_id_base+129))
 	{
 		_log.Log(LOG_ERROR,"EnOcean: Can not switch with this DeviceID, use a switch created with our id_base!...");
@@ -1187,7 +1187,7 @@ void CEnOceanESP2::SendDimmerTeachIn(const char *pdata, const unsigned char leng
 		iframe.H_SEQ_LENGTH=0x6B;//TX+Length
 		iframe.ORG = 0x05;
 
-		uint32_t sID=(tsen->LIGHTING2.id1<<24)|(tsen->LIGHTING2.id2<<16)|(tsen->LIGHTING2.id3<<8)|tsen->LIGHTING2.id4;
+		unsigned long sID=(tsen->LIGHTING2.id1<<24)|(tsen->LIGHTING2.id2<<16)|(tsen->LIGHTING2.id3<<8)|tsen->LIGHTING2.id4;
 		if ((sID<m_id_base)||(sID>m_id_base+129))
 		{
 			_log.Log(LOG_ERROR,"EnOcean: Can not switch with this DeviceID, use a switch created with our id_base!...");
@@ -1238,7 +1238,7 @@ bool CEnOceanESP2::ParseData()
 	if (Checksum!=pFrame->CHECKSUM)
 		return false; //checksum Mismatch!
 
-	unsigned int id = (pFrame->ID_BYTE3 << 24) + (pFrame->ID_BYTE2 << 16) + (pFrame->ID_BYTE1 << 8) + pFrame->ID_BYTE0;
+	long id = (pFrame->ID_BYTE3 << 24) + (pFrame->ID_BYTE2 << 16) + (pFrame->ID_BYTE1 << 8) + pFrame->ID_BYTE0;
 	char szDeviceID[20];
 	sprintf(szDeviceID,"%08X",(unsigned int)id);
 
@@ -1411,7 +1411,7 @@ bool CEnOceanESP2::ParseData()
 				if (szST=="AMR.Counter")
 				{
 					//0xA5, 0x12, 0x00, "Counter"
-					uint32_t cvalue=(pFrame->DATA_BYTE3<<16)|(pFrame->DATA_BYTE2<<8)|(pFrame->DATA_BYTE1);
+					unsigned long cvalue=(pFrame->DATA_BYTE3<<16)|(pFrame->DATA_BYTE2<<8)|(pFrame->DATA_BYTE1);
 					RBUF tsen;
 					memset(&tsen,0,sizeof(RBUF));
 					tsen.RFXMETER.packetlength=sizeof(tsen.RFXMETER)-1;
@@ -1442,7 +1442,7 @@ bool CEnOceanESP2::ParseData()
 				else if (szST=="AMR.Gas")
 				{
 					//0xA5, 0x12, 0x02, "Gas"
-					uint32_t cvalue=(pFrame->DATA_BYTE3<<16)|(pFrame->DATA_BYTE2<<8)|(pFrame->DATA_BYTE1);
+					unsigned long cvalue=(pFrame->DATA_BYTE3<<16)|(pFrame->DATA_BYTE2<<8)|(pFrame->DATA_BYTE1);
 					RBUF tsen;
 					memset(&tsen,0,sizeof(RBUF));
 					tsen.RFXMETER.packetlength=sizeof(tsen.RFXMETER)-1;
@@ -1460,7 +1460,7 @@ bool CEnOceanESP2::ParseData()
 				else if (szST=="AMR.Water")
 				{
 					//0xA5, 0x12, 0x03, "Water"
-					uint32_t cvalue=(pFrame->DATA_BYTE3<<16)|(pFrame->DATA_BYTE2<<8)|(pFrame->DATA_BYTE1);
+					unsigned long cvalue=(pFrame->DATA_BYTE3<<16)|(pFrame->DATA_BYTE2<<8)|(pFrame->DATA_BYTE1);
 					RBUF tsen;
 					memset(&tsen,0,sizeof(RBUF));
 					tsen.RFXMETER.packetlength=sizeof(tsen.RFXMETER)-1;

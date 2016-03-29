@@ -134,7 +134,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 	Json::Reader jReader;
 	std::string szCommand = "udevice";
 	std::vector<std::vector<std::string> > result;
-	uint64_t idx = 0;
+	unsigned long long idx = 0;
 
 	bool ret = jReader.parse(qMessage, root);
 	if (!ret)
@@ -155,7 +155,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		if (!root["idx"].isInt64())
 			goto mqttinvaliddata;
 
-		idx = (uint64_t)root["idx"].asInt64();
+		idx = (unsigned long long)root["idx"].asInt64();
 		//Get the raw device parameters
 		result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID==%llu)", idx);
 		if (result.empty())
@@ -171,7 +171,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		if (!root["idx"].isInt64())
 			goto mqttinvaliddata;
 
-		idx = (uint64_t)root["idx"].asInt64();
+		idx = (unsigned long long)root["idx"].asInt64();
 		result = m_sql.safe_query("SELECT Name FROM Scenes WHERE (ID==%llu)", idx);
 		if (result.empty())
 		{
@@ -186,7 +186,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		if (!root["idx"].isInt64())
 			goto mqttinvaliddata;
 
-		idx = (uint64_t)root["idx"].asInt64();
+		idx = (unsigned long long)root["idx"].asInt64();
 		result = m_sql.safe_query("SELECT Name FROM UserVariables WHERE (ID==%llu)", idx);
 		if (result.empty())
 		{
@@ -461,7 +461,7 @@ void MQTT::SendMessage(const std::string &Topic, const std::string &Message)
 			_log.Log(LOG_STATUS, "MQTT: Not Connected, failed to send message: %s", Message.c_str());
 			return;
 		}
-		publish(NULL, Topic.c_str(), (int)Message.size(), Message.c_str());
+		publish(NULL, Topic.c_str(), Message.size(), Message.c_str());
 	}
 	catch (...)
 	{
@@ -481,13 +481,13 @@ void MQTT::WriteInt(const std::string &sendStr)
 
 void MQTT::ProcessMySensorsMessage(const std::string &MySensorsMessage)
 {
-	m_bufferpos = (int)MySensorsMessage.size();
+	m_bufferpos = MySensorsMessage.size();
 	memcpy(&m_buffer, MySensorsMessage.c_str(), m_bufferpos);
 	m_buffer[m_bufferpos] = 0;
 	ParseLine();
 }
 
-void MQTT::SendDeviceInfo(const int m_HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
+void MQTT::SendDeviceInfo(const int m_HwdID, const unsigned long long DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
 {
 	boost::lock_guard<boost::mutex> l(m_mqtt_mutex);
 	if (!m_IsConnected)

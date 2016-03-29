@@ -101,7 +101,7 @@ int CCmdLine::SplitLine(int argc, char **argv)
       }
    }
 
-   return (int) size();
+   return size();
 }
 
 /*------------------------------------------------------
@@ -122,7 +122,7 @@ bool CCmdLine::IsSwitch(const char *pParam)
 
    // switches must non-empty
    // must have at least one character after the '-'
-   size_t len = strlen(pParam);
+   int len = strlen(pParam);
    if (len <= 1)
    {
       return false;
@@ -266,7 +266,7 @@ int CCmdLine::GetArgumentCount(const char *pSwitch)
       theIterator = find(pSwitch);
 	   if (theIterator!=end())
       {
-         iArgumentCount = (int)(*theIterator).second.m_strings.size();
+         iArgumentCount = (*theIterator).second.m_strings.size();
       }
    }
 

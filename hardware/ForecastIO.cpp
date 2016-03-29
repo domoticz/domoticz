@@ -87,7 +87,7 @@ static std::string readForecastIOTestFile( const char *path )
 	fseek( file, 0, SEEK_SET );
 	char *buffer = new char[size+1];
 	buffer[size] = 0;
-	if ( fread( buffer, 1, size, file ) == (uint32_t)size )
+	if ( fread( buffer, 1, size, file ) == (unsigned long)size )
 		text = buffer;
 	fclose( file );
 	delete[] buffer;

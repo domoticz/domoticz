@@ -67,7 +67,7 @@ bool SolarMaxTCP::StartHardware()
 	m_addr.sin_family = AF_INET;
 	m_addr.sin_port = htons(m_usIPPort);
 
-	uint32_t ip;
+	unsigned long ip;
 	ip = inet_addr(m_szIPAddress.c_str());
 
 	// if we have a error in the ip, it means we have entered a string
@@ -146,7 +146,7 @@ bool SolarMaxTCP::ConnectInternal()
 	tv.tv_sec = 120;
 	setsockopt(m_socket, SOL_SOCKET, SO_RCVTIMEO,(struct timeval *)&tv,sizeof(struct timeval));
 	#else
-	uint32_t nTimeout = 120*1000;
+	unsigned long nTimeout = 120*1000;
 	setsockopt(m_socket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&nTimeout, sizeof(DWORD));
 	#endif
 	*/
@@ -253,7 +253,7 @@ void SolarMaxTCP::write(const char *data, size_t size)
 {
 	if (m_socket == INVALID_SOCKET)
 		return; //not connected!
-	send(m_socket, data, (int)size, 0);
+	send(m_socket, data, size, 0);
 }
 
 bool SolarMaxTCP::WriteToHardware(const char *pdata, const unsigned char length)
@@ -294,9 +294,9 @@ void SolarMaxTCP::ParseData(const unsigned char *pData, int Len)
 	}
 }
 
-static uint32_t SolarMaxGetHexStringValue(const std::string &svalue)
+static unsigned long SolarMaxGetHexStringValue(const std::string &svalue)
 {
-	uint32_t ret = -1;
+	unsigned long ret = -1;
 	std::stringstream ss;
 	ss << std::hex << svalue;
 	ss >> ret;

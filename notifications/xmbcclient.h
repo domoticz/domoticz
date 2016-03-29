@@ -203,10 +203,10 @@ public:
     if (m_Payload.size() == 0)
       ConstructPayload();
     bool SendSuccessfull = true;
-    int NbrOfPackages = (int)(m_Payload.size() / MAX_PAYLOAD_SIZE) + 1;
+    int NbrOfPackages = (m_Payload.size() / MAX_PAYLOAD_SIZE) + 1;
     int Send = 0;
     int Sent = 0;
-    int Left = (int)m_Payload.size();
+    int Left = m_Payload.size();
     for (int Package = 1; Package <= NbrOfPackages; Package++)
     {
       if (Left > MAX_PAYLOAD_SIZE)
@@ -326,8 +326,8 @@ public:
   {
     m_PacketType = PT_HELO;
 
-    size_t len = strlen(DevName);
-    for (size_t i = 0; i < len; i++)
+    unsigned int len = strlen(DevName);
+    for (unsigned int i = 0; i < len; i++)
       m_DeviceName.push_back(DevName[i]);    
 
     m_IconType = IconType;
@@ -410,18 +410,18 @@ public:
     m_PacketType = PT_NOTIFICATION;
     m_IconData = NULL;
     m_IconSize = 0;
-    size_t len = 0;
+    unsigned int len = 0;
     if (Title != NULL)
     {
       len = strlen(Title);
-      for (size_t i = 0; i < len; i++)
+      for (unsigned int i = 0; i < len; i++)
         m_Title.push_back(Title[i]);
     }
 
     if (Message != NULL)
     {
       len = strlen(Message);
-      for (size_t i = 0; i < len; i++)
+      for (unsigned int i = 0; i < len; i++)
         m_Message.push_back(Message[i]);
     }
     m_IconType = IconType;
@@ -536,12 +536,12 @@ public:
     m_ButtonCode = 0;
     m_Amount     = Amount;
 
-    size_t len = strlen(DeviceMap);
-    for (size_t i = 0; i < len; i++)
+    unsigned int len = strlen(DeviceMap);
+    for (unsigned int i = 0; i < len; i++)
       m_DeviceMap.push_back(DeviceMap[i]);
 
     len = strlen(Button);
-    for (size_t i = 0; i < len; i++)
+    for (unsigned int i = 0; i < len; i++)
       m_Button.push_back(Button[i]);
   }
 
@@ -552,8 +552,8 @@ public:
     m_ButtonCode = ButtonCode;
     m_Amount     = Amount;
 
-    size_t len = strlen(DeviceMap);
-    for (size_t i = 0; i < len; i++)
+    unsigned int len = strlen(DeviceMap);
+    for (unsigned int i = 0; i < len; i++)
       m_DeviceMap.push_back(DeviceMap[i]);
   }
 
@@ -667,8 +667,8 @@ public:
   {
     m_PacketType = PT_LOG;
 
-    size_t len = strlen(Message);
-    for (size_t i = 0; i < len; i++)
+    unsigned int len = strlen(Message);
+    for (unsigned int i = 0; i < len; i++)
       m_Message.push_back(Message[i]);
 
     m_LogLevel = LogLevel;
@@ -712,8 +712,8 @@ public:
     m_PacketType = PT_ACTION;
 
     m_ActionType = ActionType;
-    size_t len = strlen(Action);
-    for (size_t i = 0; i < len; i++)
+    unsigned int len = strlen(Action);
+    for (unsigned int i = 0; i < len; i++)
       m_Action.push_back(Action[i]);
   }
 
@@ -736,14 +736,14 @@ class CXBMCClient
 {
 private:
   CAddress      m_Addr;
-  int			m_Socket;
+  int           m_Socket;
   unsigned int  m_UID;
 public:
   CXBMCClient(const char *IP = "127.0.0.1", int Port = 9777, int Socket = -1, unsigned int UID = 0)
   {
     m_Addr = CAddress(IP, Port);
     if (Socket == -1)
-      m_Socket = (int)socket(AF_INET, SOCK_DGRAM, 0);
+      m_Socket = socket(AF_INET, SOCK_DGRAM, 0);
     else
       m_Socket = Socket;
 

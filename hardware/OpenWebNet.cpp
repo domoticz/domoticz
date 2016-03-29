@@ -112,7 +112,7 @@ bool COpenWebNet::connectStatusSocket()
 
 	_log.Log(LOG_STATUS, "COpenWebNet : connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
 
-	int bytesWritten = m_pStatusSocket->write(OPENWEBNET_EVENT_SESSION, (unsigned int) strlen(OPENWEBNET_EVENT_SESSION));
+	int bytesWritten = m_pStatusSocket->write(OPENWEBNET_EVENT_SESSION, strlen(OPENWEBNET_EVENT_SESSION));
 	if (bytesWritten != strlen(OPENWEBNET_EVENT_SESSION)) {
 		_log.Log(LOG_ERROR, "COpenWebNet : partial write");
 	}
@@ -265,7 +265,7 @@ bool COpenWebNet::sendCommand(bt_openwebnet& command, vector<bt_openwebnet>& res
 		return false;
 	}
 
-	int bytesWritten = commandSocket.write(OPENWEBNET_COMMAND_SESSION, (unsigned int)strlen(OPENWEBNET_COMMAND_SESSION));
+	int bytesWritten = commandSocket.write(OPENWEBNET_COMMAND_SESSION, strlen(OPENWEBNET_COMMAND_SESSION));
 	if (bytesWritten != strlen(OPENWEBNET_COMMAND_SESSION)) {
 		if (!silent) {
 			_log.Log(LOG_ERROR, "COpenWebNet sendCommand : partial write");
@@ -284,8 +284,8 @@ bool COpenWebNet::sendCommand(bt_openwebnet& command, vector<bt_openwebnet>& res
 		return false;
 	}
 
-	bytesWritten = commandSocket.write(command.m_frame_open.c_str(), (unsigned int)command.m_frame_open.length());
-	if (bytesWritten != command.m_frame_open.length()) {
+	bytesWritten = commandSocket.write(command.frame_open.c_str(), command.frame_open.length());
+	if (bytesWritten != command.frame_open.length()) {
 		if (!silent) {
 			_log.Log(LOG_ERROR, "COpenWebNet sendCommand : partial write");
 		}
@@ -300,7 +300,7 @@ bool COpenWebNet::sendCommand(bt_openwebnet& command, vector<bt_openwebnet>& res
 	read = commandSocket.read(responseBuffer, OPENWEBNET_BUFFER_SIZE, false);
 
 	if (!silent) {
-		_log.Log(LOG_STATUS, "COpenWebNet : sent=%s received=%s", command.m_frame_open.c_str(), responseBuffer);
+		_log.Log(LOG_STATUS, "COpenWebNet : sent=%s received=%s", command.frame_open.c_str(), responseBuffer);
 	}
 	return ParseData(responseBuffer, read, response);
 }
@@ -425,7 +425,7 @@ string COpenWebNet::frameToString(bt_openwebnet& frame)
 {
 	stringstream frameStr;
 
-	frameStr << frame.m_frame_open;
+	frameStr << frame.frame_open;
 	frameStr << " : ";
 
 	if (frame.IsErrorFrame())

@@ -100,7 +100,7 @@ bool Send(SOCKET theSocket,std::string requestToSend)
       return false;
 
    // Send message
-   if (send(theSocket,requestToSend.c_str(), (int)requestToSend.length(),0) == SOCKET_ERROR)
+   if (send(theSocket,requestToSend.c_str(),requestToSend.length(),0) == SOCKET_ERROR)
       return false;
 
    return true;
@@ -116,7 +116,7 @@ std::string Receive(SOCKET theSocket)
 
    // Now the answer content
    char* answerBuffer = new char[answerSize];
-   if (recv(theSocket,answerBuffer, (int)answerSize,0)==SOCKET_ERROR)
+   if (recv(theSocket,answerBuffer,answerSize,0)==SOCKET_ERROR)
       return "";
 
    std::string answer(answerBuffer, answerSize);
@@ -363,7 +363,7 @@ unsigned int C1WireForWindows::GetNbChannels(const _t1WireDevice& device) const
    }
 }
 
-uint32_t C1WireForWindows::GetCounter(const _t1WireDevice& device,int unit) const
+unsigned long C1WireForWindows::GetCounter(const _t1WireDevice& device,int unit) const
 {
    Json::Value ansRoot;
    try

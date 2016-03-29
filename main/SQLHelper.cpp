@@ -1859,8 +1859,8 @@ bool CSQLHelper::OpenDatabase()
 						for (itt2 = result1.begin(); itt2 != result1.end(); ++itt2)
 						{
 							sd = *itt2;
-							uint64_t devidx = atoi(sd[0].c_str());
-							uint64_t switchType = atoi(sd[2].c_str());
+							unsigned long long devidx = atoi(sd[0].c_str());
+							unsigned long long switchType = atoi(sd[2].c_str());
 
 							if (switchType == MTYPE_COUNTER)
 							{
@@ -2423,14 +2423,14 @@ bool CSQLHelper::StartThread()
 
 bool CSQLHelper::SwitchLightFromTasker(const std::string &idx, const std::string &switchcmd, const std::string &level, const std::string &hue)
 {
-	uint64_t ID;
+	unsigned long long ID;
 	std::stringstream s_str(idx);
 	s_str >> ID;
 
 	return SwitchLightFromTasker(ID, switchcmd, atoi(level.c_str()), atoi(hue.c_str()));
 }
 
-bool CSQLHelper::SwitchLightFromTasker(uint64_t idx, const std::string &switchcmd, int level, int hue)
+bool CSQLHelper::SwitchLightFromTasker(unsigned long long idx, const std::string &switchcmd, int level, int hue)
 {
 	//Get Device details
 	std::vector<std::vector<std::string> > result;
@@ -2832,19 +2832,19 @@ std::vector<std::vector<std::string> > CSQLHelper::queryBlob(const std::string &
 	return results;
 }
 
-uint64_t CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, std::string &devname, const bool bUseOnOffAction)
+unsigned long long CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, std::string &devname, const bool bUseOnOffAction)
 {
 	return UpdateValue(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, nValue, "", devname, bUseOnOffAction);
 }
 
-uint64_t CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const char* sValue, std::string &devname, const bool bUseOnOffAction)
+unsigned long long CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const char* sValue, std::string &devname, const bool bUseOnOffAction)
 {
 	return UpdateValue(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, 0, sValue, devname, bUseOnOffAction);
 }
 
-uint64_t CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, std::string &devname, const bool bUseOnOffAction)
+unsigned long long CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, std::string &devname, const bool bUseOnOffAction)
 {
-	uint64_t devRowID=UpdateValueInt(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, nValue, sValue,devname,bUseOnOffAction);
+	unsigned long long devRowID=UpdateValueInt(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, nValue, sValue,devname,bUseOnOffAction);
 	if (devRowID == -1)
 		return -1;
 
@@ -2885,7 +2885,7 @@ uint64_t CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const uns
 				);
 
 			//Call the EventSystem for the main switch
-			uint64_t ParentID = (uint64_t)atoll(sd[0].c_str());
+			unsigned long long ParentID = (unsigned long long)atoll(sd[0].c_str());
 			std::string ParentName = sd[1];
 			int ParentHardwareID = atoi(sd[2].c_str());
 			unsigned char ParentType = (unsigned char)atoi(sd[3].c_str());
@@ -3057,12 +3057,12 @@ uint64_t CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const uns
 	return devRowID;
 }
 
-uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, std::string &devname, const bool bUseOnOffAction)
+unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, std::string &devname, const bool bUseOnOffAction)
 {
 	if (!m_dbase)
 		return -1;
 
-	uint64_t ulID=0;
+	unsigned long long ulID=0;
 	bool bDeviceUsed = false;
 	std::vector<std::vector<std::string> > result;
 	result = safe_query("SELECT ID,Name, Used FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID, unit, devType, subType);
@@ -3591,7 +3591,7 @@ void CSQLHelper::SetLastBackupNo(const char *Key, const int nValue)
 	else
 	{
 		//Update
-		uint64_t ID = 0;
+		unsigned long long ID = 0;
 		std::stringstream s_str( result[0][0] );
 		s_str >> ID;
 
@@ -3610,7 +3610,7 @@ void CSQLHelper::UpdateRFXCOMHardwareDetails(const int HardwareID, const int msg
 		msg1, msg2, msg3, msg4, msg5, msg6, HardwareID);
 }
 
-bool CSQLHelper::HasTimers(const uint64_t Idx)
+bool CSQLHelper::HasTimers(const unsigned long long Idx)
 {
 	if (!m_dbase)
 		return false;
@@ -3638,12 +3638,12 @@ bool CSQLHelper::HasTimers(const uint64_t Idx)
 bool CSQLHelper::HasTimers(const std::string &Idx)
 {
 	std::stringstream s_str( Idx );
-	uint64_t idxll;
+	unsigned long long idxll;
 	s_str >> idxll;
 	return HasTimers(idxll);
 }
 
-bool CSQLHelper::HasSceneTimers(const uint64_t Idx)
+bool CSQLHelper::HasSceneTimers(const unsigned long long Idx)
 {
 	if (!m_dbase)
 		return false;
@@ -3661,7 +3661,7 @@ bool CSQLHelper::HasSceneTimers(const uint64_t Idx)
 bool CSQLHelper::HasSceneTimers(const std::string &Idx)
 {
 	std::stringstream s_str( Idx );
-	uint64_t idxll;
+	unsigned long long idxll;
 	s_str >> idxll;
 	return HasSceneTimers(idxll);
 }
@@ -3769,7 +3769,7 @@ void CSQLHelper::UpdateTemperatureLog()
 		{
 			std::vector<std::string> sd=*itt;
 
-			uint64_t ID;
+			unsigned long long ID;
 			std::stringstream s_str( sd[0] );
 			s_str >> ID;
 
@@ -3939,7 +3939,7 @@ void CSQLHelper::UpdateRainLog()
 		{
 			std::vector<std::string> sd=*itt;
 
-			uint64_t ID;
+			unsigned long long ID;
 			std::stringstream s_str( sd[0] );
 			s_str >> ID;
 			//unsigned char dType=atoi(sd[1].c_str());
@@ -4004,7 +4004,7 @@ void CSQLHelper::UpdateWindLog()
 		{
 			std::vector<std::string> sd=*itt;
 
-			uint64_t ID;
+			unsigned long long ID;
 			std::stringstream s_str( sd[0] );
 			s_str >> ID;
 
@@ -4086,7 +4086,7 @@ void CSQLHelper::UpdateUVLog()
 		{
 			std::vector<std::string> sd=*itt;
 
-			uint64_t ID;
+			unsigned long long ID;
 			std::stringstream s_str( sd[0] );
 			s_str >> ID;
 			//unsigned char dType=atoi(sd[1].c_str());
@@ -4209,7 +4209,7 @@ void CSQLHelper::UpdateMeter()
 			char szTmp[200];
 			std::vector<std::string> sd=*itt;
 
-			uint64_t ID;
+			unsigned long long ID;
 			std::stringstream s_str( sd[0] );
 			s_str >> ID;
 			std::string devname = sd[1];
@@ -4379,11 +4379,11 @@ void CSQLHelper::UpdateMeter()
 				sValue=szTmp;
 			}
 
-			int64_t MeterValue;
+			long long MeterValue;
 			std::stringstream s_str2( sValue );
 			s_str2 >> MeterValue;
 
-			int64_t MeterUsage;
+			long long MeterUsage;
 			std::stringstream s_str3( susage );
 			s_str3 >> MeterUsage;
 
@@ -4423,7 +4423,7 @@ void CSQLHelper::UpdateMultiMeter()
 		{
 			std::vector<std::string> sd=*itt;
 
-			uint64_t ID;
+			unsigned long long ID;
 			std::stringstream s_str( sd[0] );
 			s_str >> ID;
 			unsigned char dType=atoi(sd[1].c_str());
@@ -4447,23 +4447,23 @@ void CSQLHelper::UpdateMultiMeter()
 			std::vector<std::string> splitresults;
 			StringSplit(sValue, ";", splitresults);
 
-			uint64_t value1=0;
-			uint64_t value2=0;
-			uint64_t value3=0;
-			uint64_t value4=0;
-			uint64_t value5=0;
-			uint64_t value6=0;
+			unsigned long long value1=0;
+			unsigned long long value2=0;
+			unsigned long long value3=0;
+			unsigned long long value4=0;
+			unsigned long long value5=0;
+			unsigned long long value6=0;
 
 			if (dType==pTypeP1Power)
 			{
 				if (splitresults.size()!=6)
 					continue; //impossible
-				uint64_t powerusage1;
-				uint64_t powerusage2;
-				uint64_t powerdeliv1;
-				uint64_t powerdeliv2;
-				uint64_t usagecurrent;
-				uint64_t delivcurrent;
+				unsigned long long powerusage1;
+				unsigned long long powerusage2;
+				unsigned long long powerdeliv1;
+				unsigned long long powerdeliv2;
+				unsigned long long usagecurrent;
+				unsigned long long delivcurrent;
 
 				std::stringstream s_powerusage1(splitresults[0]);
 				std::stringstream s_powerusage2(splitresults[1]);
@@ -4491,19 +4491,19 @@ void CSQLHelper::UpdateMultiMeter()
 				if (splitresults.size()!=3)
 					continue; //impossible
 
-				value1=(uint32_t)(atof(splitresults[0].c_str())*10.0f);
-				value2=(uint32_t)(atof(splitresults[1].c_str())*10.0f);
-				value3=(uint32_t)(atof(splitresults[2].c_str())*10.0f);
+				value1=(unsigned long)(atof(splitresults[0].c_str())*10.0f);
+				value2=(unsigned long)(atof(splitresults[1].c_str())*10.0f);
+				value3=(unsigned long)(atof(splitresults[2].c_str())*10.0f);
 			}
 			else if ((dType==pTypeCURRENTENERGY)&&(dSubType==sTypeELEC4))
 			{
 				if (splitresults.size()!=4)
 					continue; //impossible
 
-				value1=(uint32_t)(atof(splitresults[0].c_str())*10.0f);
-				value2=(uint32_t)(atof(splitresults[1].c_str())*10.0f);
-				value3=(uint32_t)(atof(splitresults[2].c_str())*10.0f);
-				value4=(uint64_t)(atof(splitresults[3].c_str())*1000.0f);
+				value1=(unsigned long)(atof(splitresults[0].c_str())*10.0f);
+				value2=(unsigned long)(atof(splitresults[1].c_str())*10.0f);
+				value3=(unsigned long)(atof(splitresults[2].c_str())*10.0f);
+				value4=(unsigned long long)(atof(splitresults[3].c_str())*1000.0f);
 			}
 			else
 				continue;//don't know you (yet)
@@ -4548,7 +4548,7 @@ void CSQLHelper::UpdatePercentageLog()
 		{
 			std::vector<std::string> sd=*itt;
 
-			uint64_t ID;
+			unsigned long long ID;
 			std::stringstream s_str( sd[0] );
 			s_str >> ID;
 
@@ -4611,7 +4611,7 @@ void CSQLHelper::UpdateFanLog()
 		{
 			std::vector<std::string> sd=*itt;
 
-			uint64_t ID;
+			unsigned long long ID;
 			std::stringstream s_str( sd[0] );
 			s_str >> ID;
 
@@ -4693,7 +4693,7 @@ void CSQLHelper::AddCalendarTemperature()
 	for (itt=resultdevices.begin(); itt!=resultdevices.end(); ++itt)
 	{
 		std::vector<std::string> sddev=*itt;
-		uint64_t ID;
+		unsigned long long ID;
 		std::stringstream s_str( sddev[0] );
 		s_str >> ID;
 
@@ -4779,7 +4779,7 @@ void CSQLHelper::AddCalendarUpdateRain()
 	for (itt=resultdevices.begin(); itt!=resultdevices.end(); ++itt)
 	{
 		std::vector<std::string> sddev=*itt;
-		uint64_t ID;
+		unsigned long long ID;
 		std::stringstream s_str( sddev[0] );
 		s_str >> ID;
 
@@ -4900,7 +4900,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 	for (itt=resultdevices.begin(); itt!=resultdevices.end(); ++itt)
 	{
 		std::vector<std::string> sddev=*itt;
-		uint64_t ID;
+		unsigned long long ID;
 		std::stringstream s_str( sddev[0] );
 		s_str >> ID;
 
@@ -5102,7 +5102,7 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 	for (itt=resultdevices.begin(); itt!=resultdevices.end(); ++itt)
 	{
 		std::vector<std::string> sddev=*itt;
-		uint64_t ID;
+		unsigned long long ID;
 		std::stringstream s_str( sddev[0] );
 		s_str >> ID;
 
@@ -5243,7 +5243,7 @@ void CSQLHelper::AddCalendarUpdateWind()
 	for (itt=resultdevices.begin(); itt!=resultdevices.end(); ++itt)
 	{
 		std::vector<std::string> sddev=*itt;
-		uint64_t ID;
+		unsigned long long ID;
 		std::stringstream s_str( sddev[0] );
 		s_str >> ID;
 
@@ -5318,7 +5318,7 @@ void CSQLHelper::AddCalendarUpdateUV()
 	for (itt=resultdevices.begin(); itt!=resultdevices.end(); ++itt)
 	{
 		std::vector<std::string> sddev=*itt;
-		uint64_t ID;
+		unsigned long long ID;
 		std::stringstream s_str( sddev[0] );
 		s_str >> ID;
 
@@ -5385,7 +5385,7 @@ void CSQLHelper::AddCalendarUpdatePercentage()
 	for (itt=resultdevices.begin(); itt!=resultdevices.end(); ++itt)
 	{
 		std::vector<std::string> sddev=*itt;
-		uint64_t ID;
+		unsigned long long ID;
 		std::stringstream s_str( sddev[0] );
 		s_str >> ID;
 
@@ -5456,7 +5456,7 @@ void CSQLHelper::AddCalendarUpdateFan()
 	for (itt=resultdevices.begin(); itt!=resultdevices.end(); ++itt)
 	{
 		std::vector<std::string> sddev=*itt;
-		uint64_t ID;
+		unsigned long long ID;
 		std::stringstream s_str( sddev[0] );
 		s_str >> ID;
 
@@ -5833,12 +5833,12 @@ bool CSQLHelper::DoesSceneByNameExits(const std::string &SceneName)
 void CSQLHelper::CheckSceneStatusWithDevice(const std::string &DevIdx)
 {
 	std::stringstream s_str( DevIdx );
-	uint64_t idxll;
+	unsigned long long idxll;
 	s_str >> idxll;
 	return CheckSceneStatusWithDevice(idxll);
 }
 
-void CSQLHelper::CheckSceneStatusWithDevice(const uint64_t DevIdx)
+void CSQLHelper::CheckSceneStatusWithDevice(const unsigned long long DevIdx)
 {
 	std::vector<std::vector<std::string> > result;
 
@@ -5854,12 +5854,12 @@ void CSQLHelper::CheckSceneStatusWithDevice(const uint64_t DevIdx)
 void CSQLHelper::CheckSceneStatus(const std::string &Idx)
 {
 	std::stringstream s_str( Idx );
-	uint64_t idxll;
+	unsigned long long idxll;
 	s_str >> idxll;
 	return CheckSceneStatus(idxll);
 }
 
-void CSQLHelper::CheckSceneStatus(const uint64_t Idx)
+void CSQLHelper::CheckSceneStatus(const unsigned long long Idx)
 {
 	std::vector<std::vector<std::string> > result;
 
@@ -6165,7 +6165,7 @@ bool CSQLHelper::BackupDatabase(const std::string &OutputFile)
 	return ( rc==SQLITE_OK );
 }
 
-uint64_t CSQLHelper::UpdateValueLighting2GroupCmd(const int HardwareID, const char* ID, const unsigned char unit,
+unsigned long long CSQLHelper::UpdateValueLighting2GroupCmd(const int HardwareID, const char* ID, const unsigned char unit,
 	const unsigned char devType, const unsigned char subType,
 	const unsigned char signallevel, const unsigned char batterylevel,
 	const int nValue, const char* sValue,
@@ -6175,7 +6175,7 @@ uint64_t CSQLHelper::UpdateValueLighting2GroupCmd(const int HardwareID, const ch
 	// We only have to update all others units within the ID group. If the current unit does not have the same value, 
 	// it will be updated too. The reason we choose the UpdateValue is the propagation of the change to all units involved, including LogUpdate. 
 
-	uint64_t devRowIndex = -1;
+	unsigned long long devRowIndex = -1;
 	typedef std::vector<std::vector<std::string> > VectorVectorString;
 
 	VectorVectorString result = safe_query("SELECT Unit FROM DeviceStatus WHERE ((DeviceID=='%q') AND (Type==%d) AND (SubType==%d) AND (nValue!=%d))",
@@ -6208,7 +6208,7 @@ void CSQLHelper::Lighting2GroupCmd(const std::string &ID, const unsigned char su
 		GroupCmd);
 }
 
-uint64_t CSQLHelper::UpdateValueHomeConfortGroupCmd(const int HardwareID, const char* ID, const unsigned char unit,
+unsigned long long CSQLHelper::UpdateValueHomeConfortGroupCmd(const int HardwareID, const char* ID, const unsigned char unit,
 	const unsigned char devType, const unsigned char subType,
 	const unsigned char signallevel, const unsigned char batterylevel,
 	const int nValue, const char* sValue,
@@ -6218,7 +6218,7 @@ uint64_t CSQLHelper::UpdateValueHomeConfortGroupCmd(const int HardwareID, const 
 	// We only have to update all others units within the ID group. If the current unit does not have the same value, 
 	// it will be updated too. The reason we choose the UpdateValue is the propagation of the change to all units involved, including LogUpdate. 
 
-	uint64_t devRowIndex = -1;
+	unsigned long long devRowIndex = -1;
 	typedef std::vector<std::vector<std::string> > VectorVectorString;
 
 	VectorVectorString result = safe_query("SELECT Unit FROM DeviceStatus WHERE ((DeviceID=='%q') AND (Type==%d) AND (SubType==%d) AND (nValue!=%d))",
@@ -6320,7 +6320,7 @@ bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string &OnAction
 #endif
 			std::string scriptparams="";
 			//Add parameters
-			size_t pindex=scriptname.find(' ');
+			int pindex=scriptname.find(' ');
 			if (pindex!=std::string::npos)
 			{
 				scriptparams=scriptname.substr(pindex+1);
@@ -6351,7 +6351,7 @@ bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string &OnAction
 				scriptname = szUserDataFolder + "scripts/" + scriptname;
 #endif
 			std::string scriptparams="";
-			size_t pindex=scriptname.find(' ');
+			int pindex=scriptname.find(' ');
 			if (pindex!=std::string::npos)
 			{
 				scriptparams=scriptname.substr(pindex+1);
@@ -6383,7 +6383,7 @@ void CSQLHelper::CheckBatteryLow()
 	struct tm stoday;
 	localtime_r(&now, &stoday);
 
-	uint64_t ulID;
+	unsigned long long ulID;
 	std::vector<std::vector<std::string> >::const_iterator itt;
 
 	//check if last batterylow_notification is not sent today and if true, send notification
@@ -6393,7 +6393,7 @@ void CSQLHelper::CheckBatteryLow()
 		std::stringstream s_str(sd[0]);
 		s_str >> ulID;
 		bool bDoSend = true;
-		std::map<uint64_t, int>::const_iterator sitt;
+		std::map<unsigned long long, int>::const_iterator sitt;
 		sitt = m_batterylowlastsend.find(ulID);
 		if (sitt != m_batterylowlastsend.end())
 		{
@@ -6462,7 +6462,7 @@ void CSQLHelper::CheckDeviceTimeout()
 	if (result.size()<1)
 		return;
 
-	uint64_t ulID;
+	unsigned long long ulID;
 	std::vector<std::vector<std::string> >::const_iterator itt;
 
 	//check if last timeout_notification is not sent today and if true, send notification
@@ -6472,7 +6472,7 @@ void CSQLHelper::CheckDeviceTimeout()
 		std::stringstream s_str( sd[0] );
 		s_str >> ulID;
 		bool bDoSend=true;
-		std::map<uint64_t,int>::const_iterator sitt;
+		std::map<unsigned long long,int>::const_iterator sitt;
 		sitt=m_timeoutlastsend.find(ulID);
 		if (sitt!=m_timeoutlastsend.end())
 		{
@@ -6499,8 +6499,8 @@ void CSQLHelper::FixDaylightSavingTableSimple(const std::string &TableName)
 	{
 		std::vector<std::vector<std::string> >::const_iterator itt;
 		std::stringstream sstr;
-		uint32_t ID1;
-		uint32_t ID2;
+		unsigned long ID1;
+		unsigned long ID2;
 		for (itt=result.begin(); itt!=result.end(); ++itt)
 		{
 			std::vector<std::string> sd=*itt;
@@ -6557,11 +6557,11 @@ void CSQLHelper::FixDaylightSaving()
 	{
 		std::vector<std::vector<std::string> >::const_iterator itt;
 		std::stringstream sstr;
-		uint32_t ID1;
-		uint32_t ID2;
-		uint64_t Value1;
-		uint64_t Value2;
-		uint64_t ValueDest;
+		unsigned long ID1;
+		unsigned long ID2;
+		unsigned long long Value1;
+		unsigned long long Value2;
+		unsigned long long ValueDest;
 		for (itt=result.begin(); itt!=result.end(); ++itt)
 		{
 			std::vector<std::string> sd1=*itt;
@@ -6617,28 +6617,28 @@ void CSQLHelper::FixDaylightSaving()
 	{
 		std::vector<std::vector<std::string> >::const_iterator itt;
 		std::stringstream sstr;
-		uint32_t ID1;
-		uint32_t ID2;
-		uint64_t tValue1;
-		uint64_t tValue2;
-		uint64_t tValue3;
-		uint64_t tValue4;
-		uint64_t tValue5;
-		uint64_t tValue6;
+		unsigned long ID1;
+		unsigned long ID2;
+		unsigned long long tValue1;
+		unsigned long long tValue2;
+		unsigned long long tValue3;
+		unsigned long long tValue4;
+		unsigned long long tValue5;
+		unsigned long long tValue6;
 
-		uint64_t uValue1;
-		uint64_t uValue2;
-		uint64_t uValue3;
-		uint64_t uValue4;
-		uint64_t uValue5;
-		uint64_t uValue6;
+		unsigned long long uValue1;
+		unsigned long long uValue2;
+		unsigned long long uValue3;
+		unsigned long long uValue4;
+		unsigned long long uValue5;
+		unsigned long long uValue6;
 
-		uint64_t ValueDest1;
-		uint64_t ValueDest2;
-		uint64_t ValueDest3;
-		uint64_t ValueDest4;
-		uint64_t ValueDest5;
-		uint64_t ValueDest6;
+		unsigned long long ValueDest1;
+		unsigned long long ValueDest2;
+		unsigned long long ValueDest3;
+		unsigned long long ValueDest4;
+		unsigned long long ValueDest5;
+		unsigned long long ValueDest6;
 		for (itt=result.begin(); itt!=result.end(); ++itt)
 		{
 			std::vector<std::string> sd1=*itt;
@@ -6786,7 +6786,7 @@ std::string CSQLHelper::SaveUserVariable(const std::string &varname, const std::
 	{
 		std::vector<std::string> sd = result[0];
 		std::stringstream vId_str(sd[0]);
-		uint64_t vId;
+		unsigned long long vId;
 		vId_str >> vId;
 		m_mainworker.m_eventsystem.ProcessUserVariable(vId);
 	}
@@ -6830,14 +6830,14 @@ std::string CSQLHelper::UpdateUserVariable(const std::string &idx, const std::st
 		);
 	if (eventtrigger) {
 		std::stringstream vId_str(idx);
-		uint64_t vId;
+		unsigned long long vId;
 		vId_str >> vId;
 		m_mainworker.m_eventsystem.ProcessUserVariable(vId);
 	}
 	return "OK";
 }
 
-bool CSQLHelper::SetUserVariable(const uint64_t idx, const std::string &varvalue, const bool eventtrigger)
+bool CSQLHelper::SetUserVariable(const unsigned long long idx, const std::string &varvalue, const bool eventtrigger)
 {
 	time_t now = mytime(NULL);
 	struct tm ltime;
@@ -6942,7 +6942,8 @@ bool CSQLHelper::CheckDate(const std::string &sDate, int& d, int& m, int& y)
 
 bool CSQLHelper::CheckTime(const std::string &sTime)
 {
-	size_t iSemiColon = sTime.find(':');
+	
+	int iSemiColon = sTime.find(':');
 	if ((iSemiColon == std::string::npos) || (iSemiColon < 1) || (iSemiColon > 2) || (iSemiColon == sTime.length()-1)) return false;
 	if ((sTime.length() < 3) || (sTime.length() > 5)) return false;
 	if (atoi(sTime.substr(0, iSemiColon).c_str()) >= 24) return false;
@@ -6998,7 +6999,7 @@ bool CSQLHelper::InsertCustomIconFromZip(const std::string &szZip, std::string &
 		if (fpath.find("__MACOSX") != std::string::npos)
 			continue;
 
-		size_t ipos = fpath.find("icons.txt");
+		int ipos = fpath.find("icons.txt");
 		if ( ipos != std::string::npos)
 		{
 			std::string rpath;
@@ -7217,7 +7218,7 @@ std::map<std::string, std::string> CSQLHelper::GetDeviceOptions(const std::strin
 		return optionsMap;
 	}
 
-	uint64_t ulID;
+	unsigned long long ulID;
 	std::stringstream s_str(idx);
 	s_str >> ulID;
 	std::vector<std::vector<std::string> > result;
@@ -7229,14 +7230,14 @@ std::map<std::string, std::string> CSQLHelper::GetDeviceOptions(const std::strin
 	return optionsMap;
 }
 
-bool CSQLHelper::SetDeviceOptions(const uint64_t idx, const std::map<std::string, std::string> & optionsMap) {
+bool CSQLHelper::SetDeviceOptions(const unsigned long long idx, const std::map<std::string, std::string> & optionsMap) {
 	if (idx < 0) {
 		_log.Log(LOG_ERROR, "Cannot set options on device %llu", idx);
 		return false;
 	}
 
 	std::string options;
-	size_t count = optionsMap.size();
+	int count = optionsMap.size();
 	if (count > 0) {
 		int i = 0;
 		std::stringstream ssoptions;

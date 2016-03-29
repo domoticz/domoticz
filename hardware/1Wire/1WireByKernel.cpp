@@ -297,7 +297,7 @@ unsigned int C1WireByKernel::GetNbChannels(const _t1WireDevice& device) const
    return 0;// Device not supported in kernel mode (maybe later...), use OWFS solution.
 }
 
-uint32_t C1WireByKernel::GetCounter(const _t1WireDevice& device,int unit) const
+unsigned long C1WireByKernel::GetCounter(const _t1WireDevice& device,int unit) const
 {
    return 0;// Device not supported in kernel mode (maybe later...), use OWFS solution.
 }
@@ -331,7 +331,7 @@ float C1WireByKernel::ThreadReadRawDataHighPrecisionDigitalThermometer(const std
       while (!file.eof())
       {
          getline(file, sLine);
-         size_t tpos;
+         int tpos;
          if (sLine.find("crc=")!=std::string::npos)
          {
             if (sLine.find("YES")!=std::string::npos)

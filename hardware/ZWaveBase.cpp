@@ -215,7 +215,7 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 		//ID4 = pDevice->indexID;
 		//but current users gets new devices in this case
 
-		uint32_t lID = (ID1 << 24) + (ID2 << 16) + (ID3 << 8) + ID4;
+		unsigned long lID = (ID1 << 24) + (ID2 << 16) + (ID3 << 8) + ID4;
 
 		char szID[10];
 		sprintf(szID, "%08x", (unsigned int)lID);
@@ -254,7 +254,7 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 		unsigned char ID3 = (unsigned char)pDevice->nodeID & 0xFF;
 		unsigned char ID4 = pDevice->instanceID;
 
-		uint32_t lID = (ID1 << 24) + (ID2 << 16) + (ID3 << 8) + ID4;
+		unsigned long lID = (ID1 << 24) + (ID2 << 16) + (ID3 << 8) + ID4;
 
 		char szID[10];
 		sprintf(szID, "%08lX", lID);
@@ -338,7 +338,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 	char szID[10];
 	sprintf(szID,"%X%02X%02X%02X", ID1, ID2, ID3, ID4);
 
-	uint32_t lID = (ID1 << 24) + (ID2 << 16) + (ID3 << 8) + ID4;
+	unsigned long lID = (ID1 << 24) + (ID2 << 16) + (ID3 << 8) + ID4;
 
 	int BatLevel = 255;
 	if ((pDevice->hasBattery) && (pDevice->batValue != 0))
@@ -691,7 +691,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		P1Gas	m_p1gas;
 		m_p1gas.type = pTypeP1Gas;
 		m_p1gas.subtype = sTypeP1Gas;
-		m_p1gas.gasusage = (uint32_t)(pDevice->floatValue * 1000);
+		m_p1gas.gasusage = (unsigned long)(pDevice->floatValue * 1000);
 		m_p1gas.ID = lID;
 		sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, NULL, BatLevel);
 	}

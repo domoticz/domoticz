@@ -67,7 +67,7 @@ public:
 	void ReloadCustomSwitchIcons();
 
 	void LoadUsers();
-	void AddUser(const uint32_t ID, const std::string &username, const std::string &password, const int userrights, const int activetabs);
+	void AddUser(const unsigned long ID, const std::string &username, const std::string &password, const int userrights, const int activetabs);
 	void ClearUserPasswords();
 	bool FindAdminUser();
 	int FindUser(const char* szUserName);

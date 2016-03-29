@@ -35,7 +35,7 @@ static std::string readInputTestFile( const char *path )
 	fseek( file, 0, SEEK_SET );
 	char *buffer = new char[size+1];
 	buffer[size] = 0;
-	if ( fread( buffer, 1, size, file ) == (uint32_t)size )
+	if ( fread( buffer, 1, size, file ) == (unsigned long)size )
 		text = buffer;
 	fclose( file );
 	delete[] buffer;
@@ -197,7 +197,7 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 	{
 		const std::string devID=itt.key().asString();
 
-		uint32_t nodeID=atol(devID.c_str());
+		unsigned long nodeID=atol(devID.c_str());
 		if ((nodeID==255)||(nodeID==m_controllerID))
 			continue; //skip ourself
 
@@ -896,13 +896,13 @@ void CRazberry::SetThermostatFanMode(const int nodeID, const int instanceID, con
 
 }
 
-std::string CRazberry::GetSupportedThermostatModes(const uint32_t ID)
+std::string CRazberry::GetSupportedThermostatModes(const unsigned long ID)
 {
 	std::string retstr = "";
 	return retstr;
 }
 
-std::string CRazberry::GetSupportedThermostatFanModes(const uint32_t ID)
+std::string CRazberry::GetSupportedThermostatFanModes(const unsigned long ID)
 {
 	std::string retstr = "";
 	return retstr;

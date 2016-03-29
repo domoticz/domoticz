@@ -9,7 +9,7 @@
 
 struct _tNotification
 {
-	uint64_t ID;
+	unsigned long long ID;
 	std::string Params;
 	int Priority;
 	time_t LastSend;
@@ -34,54 +34,54 @@ public:
 	bool AddNotification(const std::string &DevIdx, const std::string &Param, const std::string &CustomMessage, const std::string &ActiveSystems, const int Priority, const bool SendAlways);
 	bool RemoveDeviceNotifications(const std::string &DevIdx);
 	bool RemoveNotification(const std::string &ID);
-	std::vector<_tNotification> GetNotifications(const uint64_t DevIdx);
+	std::vector<_tNotification> GetNotifications(const unsigned long long DevIdx);
 	std::vector<_tNotification> GetNotifications(const std::string &DevIdx);
-	void TouchNotification(const uint64_t ID);
-	bool HasNotifications(const uint64_t DevIdx);
+	void TouchNotification(const unsigned long long ID);
+	bool HasNotifications(const unsigned long long DevIdx);
 	bool HasNotifications(const std::string &DevIdx);
 
 	bool CheckAndHandleTempHumidityNotification(
-		const uint64_t Idx,
+		const unsigned long long Idx,
 		const std::string &devicename,
 		const float temp,
 		const int humidity,
 		const bool bHaveTemp,
 		const bool bHaveHumidity);
 	bool CheckAndHandleDewPointNotification(
-		const uint64_t Idx,
+		const unsigned long long Idx,
 		const std::string &devicename,
 		const float temp,
 		const float dewpoint);
 	bool CheckAndHandleNotification(
-		const uint64_t Idx,
+		const unsigned long long Idx,
 		const std::string &devicename,
 		const unsigned char devType,
 		const unsigned char subType,
 		const _eNotificationTypes ntype,
 		const float mvalue);
 	bool CheckAndHandleNotification(
-		const uint64_t Idx,
+		const unsigned long long Idx,
 		const std::string &devicename,
 		const _eNotificationTypes ntype,
 		const std::string &message);
 	bool CheckAndHandleSwitchNotification(
-		const uint64_t Idx,
+		const unsigned long long Idx,
 		const std::string &devicename,
 		const _eNotificationTypes ntype);
 	bool CheckAndHandleSwitchNotification(
-		const uint64_t Idx, 
+		const unsigned long long Idx, 
 		const std::string & devicename, 
 		const _eNotificationTypes ntype, 
 		const int llevel);
 	bool CheckAndHandleRainNotification(
-		const uint64_t Idx,
+		const unsigned long long Idx,
 		const std::string &devicename,
 		const unsigned char devType,
 		const unsigned char subType,
 		const _eNotificationTypes ntype,
 		const float mvalue);
 	bool CheckAndHandleAmpere123Notification(
-		const uint64_t Idx,
+		const unsigned long long Idx,
 		const std::string &devicename,
 		const float Ampere1,
 		const float Ampere2,
@@ -94,7 +94,7 @@ protected:
 private:
 	void AddNotifier(CNotificationBase *notifier);
 	boost::mutex m_mutex;
-	std::map<uint64_t, std::vector<_tNotification> > m_notifications;
+	std::map<unsigned long long, std::vector<_tNotification> > m_notifications;
 	int m_NotificationSensorInterval;
 	int m_NotificationSwitchInterval;
 };

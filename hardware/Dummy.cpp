@@ -69,11 +69,11 @@ namespace http {
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT MAX(ID) FROM DeviceStatus");
 
-			uint32_t nid = 1; //could be the first device ever
+			unsigned long nid = 1; //could be the first device ever
 
 			if (result.size() > 0)
 			{
-				nid = (uint32_t)atol(result[0][0].c_str());
+				nid = atol(result[0][0].c_str());
 			}
 			nid += 82000;
 			char ID[40];
@@ -83,7 +83,7 @@ namespace http {
 
 			bool bPrevAcceptNewHardware = m_sql.m_bAcceptNewHardware;
 			m_sql.m_bAcceptNewHardware = true;
-			uint64_t DeviceRowIdx = -1;
+			unsigned long long DeviceRowIdx = -1;
 			switch (iSensorType)
 			{
 			case 1:

@@ -9,8 +9,8 @@ class S0MeterBase : public CDomoticzHardwareBase
 		double m_counter_start;
 		double m_current_counter;
 		double m_pulse_per_unit;
-		uint32_t first_total_pulses_received;
-		uint32_t total_pulses;
+		unsigned long first_total_pulses_received;
+		unsigned long total_pulses;
 		int m_value_buffer_total;
 		int m_value_buffer_write_pos;
 		double m_last_values[5];

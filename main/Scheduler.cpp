@@ -405,7 +405,7 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 	localtime_r(&atime, &ltime);
 	ltime.tm_sec = 0;
 
-	uint32_t HourMinuteOffset = (pItem->startHour * 3600) + (pItem->startMin * 60);
+	unsigned long HourMinuteOffset = (pItem->startHour * 3600) + (pItem->startMin * 60);
 
 	int nRandomTimerFrame = 15;
 	m_sql.GetPreferencesVar("RandomTimerFrame", nRandomTimerFrame);
@@ -859,7 +859,7 @@ void CScheduler::DeleteExpiredTimers()
 			szDate,
 			szTime
 			);
-		iExpiredTimers += (int)result.size();
+		iExpiredTimers += result.size();
 	}
 	
 	// Check SceneTimers
@@ -876,7 +876,7 @@ void CScheduler::DeleteExpiredTimers()
 			szDate,
 			szTime
 			);
-		iExpiredTimers += (int)result.size();
+		iExpiredTimers += result.size();
 	}
 
 	if (iExpiredTimers > 0) {
@@ -1024,7 +1024,7 @@ namespace http {
 		}
 		void CWebServer::RType_Timers(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			uint64_t idx = 0;
+			unsigned long long idx = 0;
 			if (request::findValue(&req, "idx") != "")
 			{
 				std::stringstream s_str(request::findValue(&req, "idx"));
@@ -1396,7 +1396,7 @@ namespace http {
 
 		void CWebServer::RType_SetpointTimers(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			uint64_t idx = 0;
+			unsigned long long idx = 0;
 			if (request::findValue(&req, "idx") != "")
 			{
 				std::stringstream s_str(request::findValue(&req, "idx"));
@@ -1679,7 +1679,7 @@ namespace http {
 
 		void CWebServer::RType_SceneTimers(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			uint64_t idx = 0;
+			unsigned long long idx = 0;
 			if (request::findValue(&req, "idx") != "")
 			{
 				std::stringstream s_str(request::findValue(&req, "idx"));

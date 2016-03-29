@@ -21,7 +21,7 @@ private:
 
 	P1Power	m_p1power;
 	time_t m_lastSharedSendElectra;
-	uint32_t m_lastelectrausage;
+	unsigned long m_lastelectrausage;
 
 	void Init();
 	bool StartHardware();

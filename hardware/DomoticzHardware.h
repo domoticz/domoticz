@@ -26,7 +26,7 @@ public:
 	time_t m_LastHeartbeatReceive;
 	bool m_bSkipReceiveCheck;
 	int m_HwdID;
-	uint32_t m_DataTimeout;
+	unsigned long m_DataTimeout;
 	std::string Name;
 	_eHardwareTypes HwdType;
 	unsigned char m_SeqNr;

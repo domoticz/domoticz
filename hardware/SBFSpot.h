@@ -31,6 +31,6 @@ private:
 	void Do_Work();
 	void GetMeterDetails();
 
-	void ImportOldMonthData(const uint64_t DevID, const int Year, const int Month);
+	void ImportOldMonthData(const unsigned long long DevID, const int Year, const int Month);
 };
 

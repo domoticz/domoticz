@@ -66,12 +66,12 @@ private:
   vector<string> valori;
 
   // frame length
-  size_t m_length_frame_open;
+  int length_frame_open;
 
 public:
 
   // frame
-  string m_frame_open;
+  string frame_open;
 
   // type of frame open
   int frame_type;

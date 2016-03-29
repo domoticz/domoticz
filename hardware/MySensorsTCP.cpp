@@ -134,7 +134,7 @@ void MySensorsTCP::Do_Work()
 void MySensorsTCP::OnData(const unsigned char *pData, size_t length)
 {
 	boost::lock_guard<boost::mutex> l(readQueueMutex);
-	ParseData(pData, (int)length);
+	ParseData(pData,length);
 }
 
 void MySensorsTCP::OnError(const std::exception e)

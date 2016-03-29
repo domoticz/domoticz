@@ -19,7 +19,7 @@ private:
 	int m_modelIndex;
 	bool m_data32;
 	sockaddr_in m_addr;
-	SOCKET m_socket;
+	int m_socket;
 	const unsigned short m_IPPort;
 	const std::string m_IPAddress;
 	volatile bool m_stoprequested;

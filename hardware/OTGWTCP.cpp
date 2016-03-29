@@ -132,7 +132,7 @@ void OTGWTCP::Do_Work()
 void OTGWTCP::OnData(const unsigned char *pData, size_t length)
 {
 	boost::lock_guard<boost::mutex> l(readQueueMutex);
-	ParseData(pData, (int)length);
+	ParseData(pData,length);
 }
 
 void OTGWTCP::OnError(const std::exception e)

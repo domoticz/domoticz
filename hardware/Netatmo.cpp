@@ -917,7 +917,7 @@ bool CNetatmo::ParseNetatmoGetResponse(const std::string &sResult, const bool bI
 				if (*ittNM == id)
 				{
 					nDevice = *ittND;
-					iDevIndex = (int)(ittND - _netatmo_devices.begin());
+					iDevIndex = (ittND - _netatmo_devices.begin());
 					bHaveFoundND = true;
 					break;
 				}

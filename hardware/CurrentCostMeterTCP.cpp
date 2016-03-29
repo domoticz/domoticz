@@ -29,7 +29,7 @@ bool CurrentCostMeterTCP::StartHardware()
 	m_addr.sin_family = AF_INET;
 	m_addr.sin_port = htons(m_usIPPort);
 
-	uint32_t ip;
+	unsigned long ip;
 	ip=inet_addr(m_szIPAddress.c_str());
 
 	// if we have a error in the ip, it means we have entered a string

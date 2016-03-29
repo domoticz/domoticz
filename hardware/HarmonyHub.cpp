@@ -498,8 +498,8 @@ bool CHarmonyHub::HarmonyWebServiceLogin(const std::string &strUserEmail, const 
 	strHttpRequestText.append(contentLength);
 	strHttpRequestText.append("\r\ncontent-type: application/json;charset=utf-8\r\n\r\n");
 
-	authcsocket.write(strHttpRequestText.c_str(), (unsigned int)strHttpRequestText.size());
-	authcsocket.write(jsonString.c_str(), (unsigned int)jsonString.size());
+	authcsocket.write(strHttpRequestText.c_str(), strHttpRequestText.size());
+	authcsocket.write(jsonString.c_str(), jsonString.size());
 
 	memset(m_databuffer, 0, BUFFER_SIZE);
 	authcsocket.read(m_databuffer, BUFFER_SIZE, false);
@@ -571,7 +571,7 @@ bool CHarmonyHub::StartCommunication(csocket* communicationcsocket, const std::s
 
 	// Start communication
 	std::string data = "<stream:stream to='connect.logitech.com' xmlns:stream='http://etherx.jabber.org/streams' xmlns='jabber:client' xml:lang='en' version='1.0'>";
-	communicationcsocket->write(data.c_str(), (unsigned int)data.size());
+	communicationcsocket->write(data.c_str(), data.size());
 	memset(m_databuffer, 0, BUFFER_SIZE);
 	communicationcsocket->read(m_databuffer, BUFFER_SIZE, false);
 
@@ -584,7 +584,7 @@ bool CHarmonyHub::StartCommunication(csocket* communicationcsocket, const std::s
 	tmp.append(strPassword);
 	data.append(base64_encode((const unsigned char*)tmp.c_str(), tmp.size()));
 	data.append("</auth>");
-	communicationcsocket->write(data.c_str(), (unsigned int)data.size());
+	communicationcsocket->write(data.c_str(), data.size());
 
 	memset(m_databuffer, 0, BUFFER_SIZE);
 	communicationcsocket->read(m_databuffer, BUFFER_SIZE, false);
@@ -597,7 +597,7 @@ bool CHarmonyHub::StartCommunication(csocket* communicationcsocket, const std::s
 	} 
 
 	data = "<stream:stream to='connect.logitech.com' xmlns:stream='http://etherx.jabber.org/streams' xmlns='jabber:client' xml:lang='en' version='1.0'>";
-	communicationcsocket->write(data.c_str(), (unsigned int)data.size());
+	communicationcsocket->write(data.c_str(), data.size());
 
 	memset(m_databuffer, 0, BUFFER_SIZE);
 	communicationcsocket->read(m_databuffer, BUFFER_SIZE, false);
@@ -631,7 +631,7 @@ bool CHarmonyHub::SwapAuthorizationToken(csocket* authorizationcsocket, std::str
 	sendData.append(m_szAuthorizationToken.c_str());
 	sendData.append(":name=foo#iOS8.3.0#iPhone</oa></iq>");
 
-	authorizationcsocket->write(sendData.c_str(), (unsigned int)sendData.size());
+	authorizationcsocket->write(sendData.c_str(), sendData.size());
 
 	memset(m_databuffer, 0, BUFFER_SIZE);
 	authorizationcsocket->read(m_databuffer, BUFFER_SIZE, false);
@@ -699,7 +699,7 @@ bool CHarmonyHub::SendPing()
 	sendData.append(m_szAuthorizationToken.c_str());
 	sendData.append(":name=foo#iOS8.3.0#iPhone</oa></iq>");
 
-	m_commandcsocket->write(sendData.c_str(), (unsigned int)sendData.size());
+	m_commandcsocket->write(sendData.c_str(), sendData.size());
 
 
 	bool bIsDataReadable = true;
@@ -730,6 +730,7 @@ bool CHarmonyHub::SendPing()
 bool CHarmonyHub::SubmitCommand(const std::string &strCommand, const std::string &strCommandParameterPrimary, const std::string &strCommandParameterSecondary)
 {
 	boost::lock_guard<boost::mutex> lock(m_mutex);
+	int pos;
 	if(m_commandcsocket== NULL || m_szAuthorizationToken.size() == 0)
 	{
 		//errorString = "SubmitCommand : NULL csocket or empty authorization token provided";
@@ -776,7 +777,7 @@ bool CHarmonyHub::SubmitCommand(const std::string &strCommand, const std::string
 		sendData.append("\"}:status=press</oa></iq>");
 	}
 
-	m_commandcsocket->write(sendData.c_str(), (unsigned int)sendData.size());
+	m_commandcsocket->write(sendData.c_str(), sendData.size());
 
 	bool bIsDataReadable = true;
 	m_commandcsocket->canRead(&bIsDataReadable,5.0f);
@@ -805,7 +806,7 @@ bool CHarmonyHub::SubmitCommand(const std::string &strCommand, const std::string
 
 	if (strCommand == GET_CURRENT_ACTIVITY_COMMAND || strCommand == GET_CURRENT_ACTIVITY_COMMAND_RAW)
 	{
-		size_t pos = strData.find("result=");
+		pos = strData.find("result=");
 		if (pos != std::string::npos)
 		{
 			strData = strData.substr(pos + 7);
@@ -848,7 +849,7 @@ bool CHarmonyHub::SubmitCommand(const std::string &strCommand, const std::string
 				bIsDataReadable = false;
 		}
 
-		size_t pos = strData.find("<![CDATA[");
+		pos = strData.find("<![CDATA[");
 		if (pos == std::string::npos)
 			return false;
 		strData=strData.substr(pos + 9);
@@ -877,7 +878,7 @@ bool CHarmonyHub::CheckIfChanging(const std::string& strData)
 	std::string LastActivity = m_szCurActivityID;
 
 	std::string szData = strData;
-	size_t pos;
+	int pos;
 
 	while (!szData.empty())
 	{
@@ -988,15 +989,15 @@ bool CHarmonyHub::ParseAction(const std::string& strAction, std::vector<Action>&
 {
 	Action a;
 	const std::string commandTag = "\\\"command\\\":\\\"";
-	size_t commandStart = strAction.find(commandTag);
-	size_t commandEnd = strAction.find("\\\",\\\"", commandStart);
+	int commandStart = strAction.find(commandTag);
+	int commandEnd = strAction.find("\\\",\\\"", commandStart);
 	a.m_strCommand = strAction.substr(commandStart + commandTag.size(), commandEnd - commandStart - commandTag.size());
 
 	const std::string deviceIdTag = "\\\"deviceId\\\":\\\"";
-	size_t deviceIDStart = strAction.find(deviceIdTag, commandEnd);
+	int deviceIDStart = strAction.find(deviceIdTag, commandEnd);
 
 	const std::string nameTag = "\\\"}\",\"name\":\"";
-	size_t deviceIDEnd = strAction.find(nameTag, deviceIDStart);
+	int deviceIDEnd = strAction.find(nameTag, deviceIDStart);
 
 	std::string commandDeviceID = strAction.substr(deviceIDStart + deviceIdTag.size(), deviceIDEnd - deviceIDStart - deviceIdTag.size());
 	if(commandDeviceID != strDeviceID)
@@ -1004,15 +1005,15 @@ bool CHarmonyHub::ParseAction(const std::string& strAction, std::vector<Action>&
 		return false;
 	}
 
-	size_t nameStart = deviceIDEnd + nameTag.size();
+	int nameStart = deviceIDEnd + nameTag.size();
 
 	const std::string labelTag = "\",\"label\":\"";
-	size_t nameEnd = strAction.find(labelTag, nameStart);
+	int nameEnd = strAction.find(labelTag, nameStart);
 
 	a.m_strName = strAction.substr(nameStart, nameEnd - nameStart);
 
-	size_t labelStart = nameEnd + labelTag.size();
-	size_t labelEnd = strAction.find("\"}", labelStart);
+	int labelStart = nameEnd + labelTag.size();
+	int labelEnd = strAction.find("\"}", labelStart);
 
 	a.m_strLabel = strAction.substr(labelStart, labelEnd - labelStart);
 

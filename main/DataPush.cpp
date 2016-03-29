@@ -12,12 +12,12 @@
 #include "../json/json.h"
 
 typedef struct _STR_TABLE_ID1_ID2 {
-	uint32_t    id1;
-	uint32_t    id2;
+	unsigned long    id1;
+	unsigned long    id2;
 	const char   *str1;
 } STR_TABLE_ID1_ID2;
 
-const char *findVarTableID1ID2 (_STR_TABLE_ID1_ID2 *t, uint32_t id1, uint32_t id2)
+const char *findVarTableID1ID2 (_STR_TABLE_ID1_ID2 *t, unsigned long id1, unsigned long id2)
 {
 	while (t->str1) {
 		if ( (t->id1 == id1) && (t->id2 == id2) )
@@ -51,7 +51,7 @@ void CDataPush::UpdateActive()
 	m_bLinkActive = (fActive == 1);
 }
 
-void CDataPush::OnDeviceReceived(const int m_HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
+void CDataPush::OnDeviceReceived(const int m_HwdID, const unsigned long long DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
 {
 	m_DeviceRowIdx = DeviceRowIdx;
 	if (m_bLinkActive)

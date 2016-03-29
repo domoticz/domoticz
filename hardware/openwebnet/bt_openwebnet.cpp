@@ -24,18 +24,19 @@ string bt_openwebnet::FirstToken(string myText, string delimiters)
 // performs syntax checking
 void bt_openwebnet::IsCorrect()
 {
+  int j  = 0;
   string sup;
   string campo;
 
   // if frame ACK -->
-  if (m_frame_open.compare(OPENWEBNET_MSG_OPEN_OK) == 0)
+  if (frame_open.compare(OPENWEBNET_MSG_OPEN_OK) == 0)
   {
     frame_type = OK_FRAME;
     return;
   }
 
   // if frame NACK -->
-  if (m_frame_open.compare(OPENWEBNET_MSG_OPEN_KO) == 0)
+  if (frame_open.compare(OPENWEBNET_MSG_OPEN_KO) == 0)
   {
     frame_type = KO_FRAME;
     return;
@@ -45,31 +46,31 @@ void bt_openwebnet::IsCorrect()
   //if the first character is not *
   //or the frame is too long
   //or the frame does not end with two '#'
-  if ((m_frame_open[0] != '*') ||
-      (m_length_frame_open >	MAX_LENGTH_OPEN) ||
-      (m_frame_open[m_length_frame_open-1] != '#') ||
-      (m_frame_open[m_length_frame_open-2] != '#'))
+  if ((frame_open[0] != '*') ||
+      (length_frame_open >	MAX_LENGTH_OPEN) ||
+      (frame_open[length_frame_open-1] != '#') ||
+      (frame_open[length_frame_open-2] != '#'))
   {
     frame_type = ERROR_FRAME;
     return;
   }
 
   //Check if there are typed character
-  for (size_t j = 0; j < m_length_frame_open; j++)
+  for (j=0;j<length_frame_open;j++)
   {
-	  if (!isdigit(m_frame_open[j]))
-	  {
-		  if ((m_frame_open[j] != '*') && (m_frame_open[j] != '#'))
-		  {
-			  frame_type = ERROR_FRAME;
-			  return;
-		  }
-	  }
+    if(!isdigit(frame_open[j]))
+    {
+      if((frame_open[j] != '*') && (frame_open[j] != '#'))
+      {
+        frame_type = ERROR_FRAME;
+        return;
+      }
+    }
   }
 
   // normal frame...
   //*who#address*what*where#level#address*when##
-  if (m_frame_open[1] != '#')
+  if (frame_open[1] != '#')
   {
     frame_type = NORMAL_FRAME;
     //extract the various fields of the open frame in the first mode (who + address and where + level + interface)
@@ -83,7 +84,7 @@ void bt_openwebnet::IsCorrect()
 
   // frame password ...
   //*#pwd##
-  if(m_frame_open.find('*', 2) == string::npos)
+  if(frame_open.find('*', 2) == string::npos)
   {
     frame_type = PWD_FRAME;
     //I extract the who
@@ -92,13 +93,13 @@ void bt_openwebnet::IsCorrect()
   }
 
   //for other types of frames
-  sup = m_frame_open.substr(2);
+  sup = frame_open.substr(2);
   campo = FirstToken(sup, "*");
-  sup = m_frame_open.substr(2 + campo.length() + 1);
+  sup = frame_open.substr(2 + campo.length() + 1);
   if (sup.at(0) != '*')
   {
 	  campo = campo + FirstToken(sup, "*");
-	  sup = m_frame_open.substr(2 + campo.length() + 1);
+	  sup = frame_open.substr(2 + campo.length() + 1);
   }
 
   //frame request was ...
@@ -156,12 +157,12 @@ void bt_openwebnet::Assegna_chi_dove_grandezza()
   size_t len = 0;
 
   // WHO
-  sup = m_frame_open.substr(2);
+  sup = frame_open.substr(2);
   if (sup.at(0) != '*') {
 	  chi = FirstToken(sup, "*");
   }
   // WHERE
-  sup = m_frame_open.substr(2 + chi.length() + 1);
+  sup = frame_open.substr(2 + chi.length() + 1);
   if(sup.find("*") == string::npos)
     dove = sup.substr(0, sup.length()-2);
   else
@@ -169,7 +170,7 @@ void bt_openwebnet::Assegna_chi_dove_grandezza()
     if(sup.at(0) != '*')
       dove = FirstToken(sup, "*");
     // DIMENSION
-    sup = m_frame_open.substr(2+chi.length()+1+dove.length()+1);
+    sup = frame_open.substr(2+chi.length()+1+dove.length()+1);
     if(sup.find("*") == string::npos)
 		grandezza = sup.substr(0, sup.length() - 2);
     else
@@ -178,14 +179,14 @@ void bt_openwebnet::Assegna_chi_dove_grandezza()
 			grandezza = FirstToken(sup, "*");
 		}
       // VALUES **##
-      sup = m_frame_open.substr(2+ chi.length() + 1 + dove.length() + 1 +grandezza.length()+1);
+      sup = frame_open.substr(2+ chi.length() + 1 + dove.length() + 1 +grandezza.length()+1);
       len = 2 + chi.length() + 1 + dove.length() + 1 + grandezza.length() + 1;
       while ((sup.find("*") != string::npos) && (sup.at(0) != '*'))
       {
         string valoriValue = FirstToken(sup, "*");
 		valori.push_back(valoriValue);
         len = len+ valoriValue.length()+1;
-        sup = m_frame_open.substr(len);
+        sup = frame_open.substr(len);
       }
       if ((sup[0] != '*') && (sup[0] != '#'))
       {
@@ -204,12 +205,12 @@ void bt_openwebnet::Assegna_chi_dove()
   string sup;
 
   // WHO
-  sup = m_frame_open.substr(2);
+  sup = frame_open.substr(2);
   if (sup.at(0) != '*') {
 	  chi = FirstToken(sup, "*");
   }
   // WHERE
-  sup = m_frame_open.substr(2 + chi.length() + 1);
+  sup = frame_open.substr(2 + chi.length() + 1);
   if (sup.find("*") == string::npos) {
 	  dove = sup.substr(0, sup.length() - 2);
   }
@@ -228,12 +229,12 @@ void bt_openwebnet::Assegna_chi_cosa_dove_quando()
 	string sup;
 
 	// CHI
-	sup = m_frame_open.substr(1);
+	sup = frame_open.substr(1);
 	if (sup.at(0) != '*') {
 		chi = FirstToken(sup, "*");
 	}
 	// COSA
-	sup = m_frame_open.substr(1 + chi.length() + 1);
+	sup = frame_open.substr(1 + chi.length() + 1);
 	if (sup.find("*") == string::npos) {
 		cosa = sup.substr(0, sup.length() - 2);
 	}
@@ -241,7 +242,7 @@ void bt_openwebnet::Assegna_chi_cosa_dove_quando()
 		if (sup[0] != '*')
 			cosa = FirstToken(sup, "*");
 		// DOVE
-		sup = m_frame_open.substr(1 + chi.length() + 1 + cosa.length() + 1);
+		sup = frame_open.substr(1 + chi.length() + 1 + cosa.length() + 1);
 		if (sup.find("*") == string::npos) {
 			dove = sup.substr(0, sup.length() - 2);
 		}
@@ -250,7 +251,7 @@ void bt_openwebnet::Assegna_chi_cosa_dove_quando()
 			if (sup[0] != '*')
 				dove = FirstToken(sup, "*");
 			// QUANDO
-			sup = m_frame_open.substr(1 + chi.length() + 1 + cosa.length() + 1 + dove.length() + 1);
+			sup = frame_open.substr(1 + chi.length() + 1 + cosa.length() + 1 + dove.length() + 1);
 			if (sup.find("*") == string::npos) {
 				quando = sup.substr(0, sup.length() - 2);
 			}
@@ -267,15 +268,15 @@ void bt_openwebnet::Assegna_chi_cosa_dove_quando()
 void bt_openwebnet::Assegna_chi_dove_grandezza_valori()
 {
 	string sup;
-  size_t len = 0;
+  int len = 0;
   int i = -1;
 
   // WHO
-  sup = m_frame_open.substr(2);
+  sup = frame_open.substr(2);
   if(sup[0] != '*')
     chi = FirstToken(sup, "*");
   // WHERE
-  sup =  m_frame_open.substr(2+chi.length()+1);
+  sup =  frame_open.substr(2+chi.length()+1);
   if(sup.find('*') == string::npos)
     dove = sup.substr(0,sup.length()-2);
   else
@@ -283,7 +284,7 @@ void bt_openwebnet::Assegna_chi_dove_grandezza_valori()
     if(sup.at(0) != '*')
       dove =FirstToken(sup, "*");
     // DIMENSION
-    sup = m_frame_open.substr(2+chi.length()+1+dove.length()+2);
+    sup = frame_open.substr(2+chi.length()+1+dove.length()+2);
     if(sup.find('*') == string::npos)
       frame_type = ERROR_FRAME;
     else
@@ -292,17 +293,17 @@ void bt_openwebnet::Assegna_chi_dove_grandezza_valori()
         grandezza = FirstToken(sup, "*");
       // VALUES
 	  len = 2 + chi.length() + 1 + dove.length() + 2 + grandezza.length() + 1;
-	  sup = m_frame_open.substr(len);
+	  sup = frame_open.substr(len);
       while (sup.find('*') != string::npos && (sup.at(0) != '*'))
       {
 		  string newValue = FirstToken(sup, "*");
 		  valori.push_back(newValue);
 			len = len+ newValue.length() +1;
-			sup = m_frame_open.substr(len);
+			sup = frame_open.substr(len);
         while(sup.at(0) == '*')
         {
           len++;
-		  sup = m_frame_open.substr(len);
+		  sup = frame_open.substr(len);
 		  valori.push_back("");
         }
         if (sup.at(0) != '*')
@@ -324,7 +325,7 @@ void bt_openwebnet::Assegna_chi()
 	string sup;
 
 	// WHO
-	sup = m_frame_open.substr(2);
+	sup = frame_open.substr(2);
 	if (sup.at(0) != '#') {
 		chi = FirstToken(sup, "#");
 	}
@@ -332,7 +333,7 @@ void bt_openwebnet::Assegna_chi()
 		frame_type = ERROR_FRAME;
 	}
 	
-	sup = m_frame_open.substr(2+chi.length());
+	sup = frame_open.substr(2+chi.length());
 	if (sup.at(1) != '#') {
 		frame_type = ERROR_FRAME;
 	}
@@ -501,8 +502,8 @@ void bt_openwebnet::CreateMsgOpen(string who, string what,	string where,	string 
   }
   frame << "##";
 
-  m_frame_open = EliminoCaratteriControllo(frame.str());
-  m_length_frame_open = m_frame_open.length();
+  frame_open = EliminoCaratteriControllo(frame.str());
+  length_frame_open = frame_open.length();
 
   // checks for correct syntax ...
   IsCorrect();
@@ -533,8 +534,8 @@ void bt_openwebnet::CreateMsgOpen(string who, string what, string where, string 
   }
   frame << "##";
 
-  m_frame_open = EliminoCaratteriControllo(frame.str());
-  m_length_frame_open = m_frame_open.length();
+  frame_open = EliminoCaratteriControllo(frame.str());
+  length_frame_open = frame_open.length();
 
   // checks for correct syntax ...
   IsCorrect();
@@ -547,10 +548,10 @@ void bt_openwebnet::CreateNullMsgOpen()
   int i = 0;
 
   // clears everything
-  m_frame_open = "";
+  frame_open = "";
   frame_type = NULL_FRAME;
 
-  m_length_frame_open = 0;
+  length_frame_open = 0;
 
   extended = false;
 
@@ -579,8 +580,8 @@ void bt_openwebnet::CreateStateMsgOpen(string who, string where)
   frame << who;  frame << "*";
   frame << where; frame << "##";
   
-  m_frame_open = EliminoCaratteriControllo(frame.str());
-  m_length_frame_open = m_frame_open.length();
+  frame_open = EliminoCaratteriControllo(frame.str());
+  length_frame_open = frame_open.length();
 
   // checks for correct syntax ...
   IsCorrect();
@@ -617,8 +618,8 @@ void bt_openwebnet::CreateStateMsgOpen(string who, string where, string lev, str
   frame << "#"; frame << interf;
   frame << "##";
 
-  m_frame_open = EliminoCaratteriControllo(frame.str());
-  m_length_frame_open = m_frame_open.length();
+  frame_open = EliminoCaratteriControllo(frame.str());
+  length_frame_open = frame_open.length();
 
   // checks for correct syntax ...
   IsCorrect();
@@ -643,8 +644,8 @@ void bt_openwebnet::CreateDimensionMsgOpen(string who, string where, string dime
   }
   frame << "##";
 
-  m_frame_open = EliminoCaratteriControllo(frame.str());
-  m_length_frame_open = m_frame_open.length();
+  frame_open = EliminoCaratteriControllo(frame.str());
+  length_frame_open = frame_open.length();
 
   // checks for correct syntax ...
   IsCorrect();
@@ -673,8 +674,8 @@ void bt_openwebnet::CreateDimensionMsgOpen(string who, string where, string lev,
 	  frame << "*";
   frame << dimension; frame << "##";
 
-  m_frame_open = EliminoCaratteriControllo(frame.str());
-  m_length_frame_open = m_frame_open.length();
+  frame_open = EliminoCaratteriControllo(frame.str());
+  length_frame_open = frame_open.length();
 
   // checks for correct syntax ...
   IsCorrect();
@@ -700,8 +701,8 @@ void bt_openwebnet::CreateWrDimensionMsgOpen(string who, string where, string di
   }
   frame << "##";
 
-  m_frame_open = EliminoCaratteriControllo(frame.str());
-  m_length_frame_open = m_frame_open.length();
+  frame_open = EliminoCaratteriControllo(frame.str());
+  length_frame_open = frame_open.length();
 
   // checks for correct syntax ...
   IsCorrect();
@@ -738,8 +739,8 @@ void bt_openwebnet::CreateWrDimensionMsgOpen(string who, string where, string le
   }
   frame << "##";
 
-  m_frame_open = EliminoCaratteriControllo(frame.str());
-  m_length_frame_open = m_frame_open.length();
+  frame_open = EliminoCaratteriControllo(frame.str());
+  length_frame_open = frame_open.length();
 
   // checks for correct syntax ...
   IsCorrect();
@@ -752,10 +753,10 @@ void bt_openwebnet::CreateMsgOpen(string message)
   CreateNullMsgOpen();
 
   // saves the type of frame and its length
-  m_frame_open = message;
+  frame_open = message;
   
-  m_frame_open = EliminoCaratteriControllo(m_frame_open);
-  m_length_frame_open = m_frame_open.length();
+  frame_open = EliminoCaratteriControllo(frame_open);
+  length_frame_open = frame_open.length();
 
   // checks for correct syntax ...
   IsCorrect();

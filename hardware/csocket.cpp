@@ -60,9 +60,9 @@ int csocket::resolveHost(const std::string& szRemoteHostName, struct hostent** p
 
     if (*pHostEnt == NULL) 
     {
-        uint32_t uhostname = inet_addr ( szRemoteHostName.c_str() );
+        unsigned long uhostname = inet_addr ( szRemoteHostName.c_str() );
         *pHostEnt = gethostbyaddr( reinterpret_cast<char *>(&uhostname), 
-            sizeof(uint32_t),
+            sizeof(unsigned long),
             AF_INET);
 
         if (*pHostEnt == NULL)
@@ -191,7 +191,7 @@ int csocket::canRead( bool* readyToRead, float waitTime )
 
     
 //#ifdef WIN32
-    nfds = (int)m_socket+1;
+    nfds = m_socket+1;
 //#endif
 
     int n = select(nfds, &fds, NULL, NULL, &timeout);

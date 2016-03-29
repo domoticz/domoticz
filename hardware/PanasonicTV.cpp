@@ -333,8 +333,8 @@ std::string CPanasonicNode::handleWriteAndRead(std::string pMessageToSend)
 int CPanasonicNode::handleMessage(std::string pMessage)
 {
 	bool bFound = false;
-	size_t iPosBegin = 0;
-	size_t iPosEnd = 0;
+	int iPosBegin = 0;
+	int iPosEnd = 0;
 	std::string begin(">");
 	std::string end("<");
 
@@ -378,7 +378,7 @@ std::string CPanasonicNode::buildXMLStringRendCtl(std::string action, std::strin
 std::string CPanasonicNode::buildXMLStringRendCtl(std::string action, std::string command, std::string value)
 {
 	std::string head, body;
-	size_t size;
+	int size;
 
 	body = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n";
 	body += "<s:Envelope s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\" xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\">\r\n";
@@ -406,7 +406,7 @@ std::string CPanasonicNode::buildXMLStringRendCtl(std::string action, std::strin
 std::string CPanasonicNode::buildXMLStringNetCtl(std::string command)
 {
 	std::string head, body;
-	size_t size;
+	int size;
 
 	body = "<?xml version=\"1.0\" encoding=\"utf-8\"?>";
 	body += "<s:Envelope s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\" xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\">";

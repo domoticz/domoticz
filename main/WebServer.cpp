@@ -189,7 +189,7 @@ namespace http {
 							cImage.Title = results[1];
 							cImage.Description = results[2];
 							m_custom_light_icons.push_back(cImage);
-							m_custom_light_icons_lookup[cImage.idx] = (int)m_custom_light_icons.size()-1;
+							m_custom_light_icons_lookup[cImage.idx] = m_custom_light_icons.size()-1;
 						}
 					}
 				}
@@ -250,7 +250,7 @@ namespace http {
 					}
 
 					m_custom_light_icons.push_back(cImage);
-					m_custom_light_icons_lookup[cImage.idx] = (int)m_custom_light_icons.size() - 1;
+					m_custom_light_icons_lookup[cImage.idx] = m_custom_light_icons.size() - 1;
 					ii++;
 				}
 			}
@@ -2143,7 +2143,7 @@ namespace http {
 
 			bool bHaveUser = (session.username != "");
 			int urights = 3;
-			uint32_t UserID = 0;
+			unsigned long UserID = 0;
 			if (bHaveUser)
 			{
 				int iUser = FindUser(session.username.c_str());
@@ -2561,7 +2561,7 @@ namespace http {
 					int subType = atoi(dsubtype.c_str());
 
 					std::stringstream sstr;
-					uint64_t ulIdx;
+					unsigned long long ulIdx;
 					sstr << idx;
 					sstr >> ulIdx;
 					m_mainworker.UpdateDevice(HardwareID, DeviceID, unit, devType, subType, invalue, svalue, signallevel, batterylevel);
@@ -2652,7 +2652,7 @@ namespace http {
 
 			std::stringstream sstr;
 
-			uint64_t ulIdx;
+			unsigned long long ulIdx;
 			sstr << idx;
 			sstr >> ulIdx;
 
@@ -2925,12 +2925,12 @@ namespace http {
 						EnergyDivider = float(tValue);
 					}
 
-					uint64_t powerusage1;
-					uint64_t powerusage2;
-					uint64_t powerdeliv1;
-					uint64_t powerdeliv2;
-					uint64_t usagecurrent;
-					uint64_t delivcurrent;
+					unsigned long long powerusage1;
+					unsigned long long powerusage2;
+					unsigned long long powerdeliv1;
+					unsigned long long powerdeliv2;
+					unsigned long long usagecurrent;
+					unsigned long long delivcurrent;
 
 					std::stringstream s_powerusage1(splitresults[0]);
 					std::stringstream s_powerusage2(splitresults[1]);
@@ -3834,7 +3834,7 @@ namespace http {
 						return;
 					if ((pBaseHardware->HwdType != HTYPE_EnOceanESP2) && (pBaseHardware->HwdType != HTYPE_EnOceanESP3))
 						return;
-					uint32_t rID = 0;
+					unsigned long rID = 0;
 					if (pBaseHardware->HwdType == HTYPE_EnOceanESP2)
 					{
 						CEnOceanESP2 *pEnoceanHardware = reinterpret_cast<CEnOceanESP2 *>(pBaseHardware);
@@ -4251,7 +4251,7 @@ namespace http {
 						return;
 					if ((pBaseHardware->HwdType != HTYPE_EnOceanESP2) && (pBaseHardware->HwdType != HTYPE_EnOceanESP3))
 						return;
-					uint32_t rID = 0;
+					unsigned long rID = 0;
 					if (pBaseHardware->HwdType == HTYPE_EnOceanESP2)
 					{
 						CEnOceanESP2 *pEnoceanHardware = reinterpret_cast<CEnOceanESP2*>(pBaseHardware);
@@ -6035,7 +6035,7 @@ namespace http {
 				{
 					return;
 				}
-				uint64_t ID;
+				unsigned long long ID;
 				std::stringstream s_strid;
 				s_strid << idx;
 				s_strid >> ID;
@@ -6100,7 +6100,7 @@ namespace http {
 					return;
 				}
 
-				uint64_t ID;
+				unsigned long long ID;
 				std::stringstream s_strid;
 				s_strid << idx;
 				s_strid >> ID;
@@ -6116,7 +6116,7 @@ namespace http {
 					return;
 				}
 
-				uint64_t ID;
+				unsigned long long ID;
 				std::stringstream s_strid;
 				s_strid << idx;
 				s_strid >> ID;
@@ -6132,7 +6132,7 @@ namespace http {
 					return;
 				}
 
-				uint64_t ID;
+				unsigned long long ID;
 				std::stringstream s_strid;
 				s_strid << idx;
 				s_strid >> ID;
@@ -6148,7 +6148,7 @@ namespace http {
 					return;
 				}
 
-				uint64_t ID;
+				unsigned long long ID;
 				std::stringstream s_strid;
 				s_strid << idx;
 				s_strid >> ID;
@@ -6164,7 +6164,7 @@ namespace http {
 					return;
 				}
 
-				uint64_t ID;
+				unsigned long long ID;
 				std::stringstream s_strid;
 				s_strid << idx;
 				s_strid >> ID;
@@ -6180,7 +6180,7 @@ namespace http {
 					return;
 				}
 
-				uint64_t ID;
+				unsigned long long ID;
 				std::stringstream s_strid;
 				s_strid << idx;
 				s_strid >> ID;
@@ -6196,7 +6196,7 @@ namespace http {
 					return;
 				}
 
-				uint64_t ID;
+				unsigned long long ID;
 				std::stringstream s_strid;
 				s_strid << idx;
 				s_strid >> ID;
@@ -6212,7 +6212,7 @@ namespace http {
 					return;
 				}
 
-				uint64_t ID;
+				unsigned long long ID;
 				std::stringstream s_strid;
 				s_strid << idx;
 				s_strid >> ID;
@@ -6228,7 +6228,7 @@ namespace http {
 					return;
 				}
 
-				uint64_t ID;
+				unsigned long long ID;
 				std::stringstream s_strid;
 				s_strid << idx;
 				s_strid >> ID;
@@ -6244,7 +6244,7 @@ namespace http {
 					return;
 				}
 
-				uint64_t ID;
+				unsigned long long ID;
 				std::stringstream s_strid;
 				s_strid << idx;
 				s_strid >> ID;
@@ -6260,7 +6260,7 @@ namespace http {
 					return;
 				}
 
-				uint64_t ID;
+				unsigned long long ID;
 				std::stringstream s_strid;
 				s_strid << idx;
 				s_strid >> ID;
@@ -6276,7 +6276,7 @@ namespace http {
 					return;
 				}
 
-				uint64_t ID;
+				unsigned long long ID;
 				std::stringstream s_strid;
 				s_strid << idx;
 				s_strid >> ID;
@@ -6648,7 +6648,7 @@ namespace http {
 								int bIsActive = static_cast<int>(atoi(sd[1].c_str()));
 								if (bIsActive)
 								{
-									uint32_t ID = (uint32_t)atol(sd[0].c_str());
+									unsigned long ID = (unsigned long)atol(sd[0].c_str());
 
 									std::string username = base64_decode(sd[2]);
 									std::string password = sd[3];
@@ -6666,7 +6666,7 @@ namespace http {
 			m_mainworker.LoadSharedUsers();
 		}
 
-		void CWebServer::AddUser(const uint32_t ID, const std::string &username, const std::string &password, const int userrights, const int activetabs)
+		void CWebServer::AddUser(const unsigned long ID, const std::string &username, const std::string &password, const int userrights, const int activetabs)
 		{
 			_tWebUserPassword wtmp;
 			wtmp.ID = ID;
@@ -7248,7 +7248,7 @@ namespace http {
 							else
 								root["result"][ii]["Status"] = "Mixed";
 							root["result"][ii]["Data"] = root["result"][ii]["Status"];
-							uint64_t camIDX = m_mainworker.m_cameras.IsDevSceneInCamera(1, sd[0]);
+							unsigned long long camIDX = m_mainworker.m_cameras.IsDevSceneInCamera(1, sd[0]);
 							root["result"][ii]["UsedByCamera"] = (camIDX != 0) ? true : false;
 							if (camIDX != 0) {
 								std::stringstream scidx;
@@ -7840,7 +7840,7 @@ namespace http {
 							if (pHardware->HwdType == HTYPE_OpenZWave)
 							{
 								COpenZWave *pZWave = (COpenZWave*)pHardware;
-								uint32_t ID;
+								unsigned long ID;
 								std::stringstream s_strid;
 								s_strid << std::hex << sd[1];
 								s_strid >> ID;
@@ -7896,7 +7896,7 @@ namespace http {
 						root["result"][ii]["HaveGroupCmd"] = bHaveGroupCmd;
 						root["result"][ii]["SwitchType"] = Switch_Type_Desc(switchtype);
 						root["result"][ii]["SwitchTypeVal"] = switchtype;
-						uint64_t camIDX = m_mainworker.m_cameras.IsDevSceneInCamera(0, sd[0]);
+						unsigned long long camIDX = m_mainworker.m_cameras.IsDevSceneInCamera(0, sd[0]);
 						root["result"][ii]["UsedByCamera"] = (camIDX != 0) ? true : false;
 						if (camIDX != 0) {
 							std::stringstream scidx;
@@ -8526,7 +8526,7 @@ namespace http {
 						{
 							std::vector<std::string> sd2 = result2[0];
 
-							uint64_t total_min, total_max, total_real;
+							unsigned long long total_min, total_max, total_real;
 
 							std::stringstream s_str1(sd2[0]);
 							s_str1 >> total_min;
@@ -8642,7 +8642,7 @@ namespace http {
                         {
                             std::vector<std::string> sd2 = result2[0];
 
-                            uint64_t total_min, total_max, total_real;
+                            unsigned long long total_min, total_max, total_real;
 
                             std::stringstream s_str1(sd2[0]);
                             s_str1 >> total_min;
@@ -8760,7 +8760,7 @@ namespace http {
 						{
 							std::vector<std::string> sd2 = result2[0];
 
-							uint64_t total_min, total_max, total_real;
+							unsigned long long total_min, total_max, total_real;
 
 							std::stringstream s_str1(sd2[0]);
 							s_str1 >> total_min;
@@ -8798,7 +8798,7 @@ namespace http {
 						if (splitresults.size() < 2)
 							continue;
 
-						uint64_t total_actual;
+						unsigned long long total_actual;
 						std::stringstream s_stra(splitresults[0]);
 						s_stra >> total_actual;
 						musage = 0;
@@ -8822,7 +8822,7 @@ namespace http {
 
 						root["result"][ii]["SwitchTypeVal"] = metertype;
 
-						uint64_t acounter;
+						unsigned long long acounter;
 						std::stringstream s_str3(sValue);
 						s_str3 >> acounter;
 						musage = 0;
@@ -8884,12 +8884,12 @@ namespace http {
 							EnergyDivider = float(tValue);
 						}
 
-						uint64_t powerusage1;
-						uint64_t powerusage2;
-						uint64_t powerdeliv1;
-						uint64_t powerdeliv2;
-						uint64_t usagecurrent;
-						uint64_t delivcurrent;
+						unsigned long long powerusage1;
+						unsigned long long powerusage2;
+						unsigned long long powerdeliv1;
+						unsigned long long powerdeliv2;
+						unsigned long long usagecurrent;
+						unsigned long long delivcurrent;
 
 						std::stringstream s_powerusage1(splitresults[0]);
 						std::stringstream s_powerusage2(splitresults[1]);
@@ -8905,8 +8905,8 @@ namespace http {
 						s_usagecurrent >> usagecurrent;
 						s_delivcurrent >> delivcurrent;
 
-						uint64_t powerusage = powerusage1 + powerusage2;
-						uint64_t powerdeliv = powerdeliv1 + powerdeliv2;
+						unsigned long long powerusage = powerusage1 + powerusage2;
+						unsigned long long powerdeliv = powerdeliv1 + powerdeliv2;
 						if (powerdeliv < 2)
 							powerdeliv = 0;
 
@@ -8957,8 +8957,8 @@ namespace http {
 						{
 							std::vector<std::string> sd2 = result2[0];
 
-							uint64_t total_min_usage_1, total_min_usage_2, total_real_usage;
-							uint64_t total_min_deliv_1, total_min_deliv_2, total_real_deliv;
+							unsigned long long total_min_usage_1, total_min_usage_2, total_real_usage;
+							unsigned long long total_min_deliv_1, total_min_deliv_2, total_real_deliv;
 
 							std::stringstream s_str1(sd2[0]);
 							s_str1 >> total_min_usage_1;
@@ -9014,8 +9014,8 @@ namespace http {
 						{
 							std::vector<std::string> sd2 = result2[0];
 
-							uint64_t total_min_gas, total_real_gas;
-							uint64_t gasactual;
+							unsigned long long total_min_gas, total_real_gas;
+							unsigned long long gasactual;
 
 							std::stringstream s_str1(sd2[0]);
 							s_str1 >> total_min_gas;
@@ -9483,7 +9483,7 @@ namespace http {
 								if (pHardware->HwdType == HTYPE_OpenZWave)
 								{
 									COpenZWave *pZWave = (COpenZWave*)pHardware;
-									uint32_t ID;
+									unsigned long ID;
 									std::stringstream s_strid;
 									s_strid << std::hex << sd[1];
 									s_strid >> ID;
@@ -9522,7 +9522,7 @@ namespace http {
 								if (pHardware->HwdType == HTYPE_OpenZWave)
 								{
 									COpenZWave *pZWave = (COpenZWave*)pHardware;
-									uint32_t ID;
+									unsigned long ID;
 									std::stringstream s_strid;
 									s_strid << std::hex << sd[1];
 									s_strid >> ID;
@@ -9616,7 +9616,7 @@ namespace http {
 							else
 								root["result"][ii]["Image"] = "Light";
 
-							uint64_t camIDX = m_mainworker.m_cameras.IsDevSceneInCamera(0, sd[0]);
+							unsigned long long camIDX = m_mainworker.m_cameras.IsDevSceneInCamera(0, sd[0]);
 							root["result"][ii]["UsedByCamera"] = (camIDX != 0) ? true : false;
 							if (camIDX != 0) {
 								std::stringstream scidx;
@@ -9655,7 +9655,7 @@ namespace http {
 							{
 								std::vector<std::string> sd2 = result2[0];
 
-								uint64_t total_min, total_max, total_real;
+								unsigned long long total_min, total_max, total_real;
 
 								std::stringstream s_str1(sd2[0]);
 								s_str1 >> total_min;
@@ -10040,7 +10040,7 @@ namespace http {
 					else
 						root["result"][ii]["Status"] = "Mixed";
 					root["result"][ii]["Timers"] = (m_sql.HasSceneTimers(sd[0]) == true) ? "true" : "false";
-					uint64_t camIDX = m_mainworker.m_cameras.IsDevSceneInCamera(1, sd[0]);
+					unsigned long long camIDX = m_mainworker.m_cameras.IsDevSceneInCamera(1, sd[0]);
 					root["result"][ii]["UsedByCamera"] = (camIDX != 0) ? true : false;
 					if (camIDX != 0) {
 						std::stringstream scidx;
@@ -10293,7 +10293,7 @@ namespace http {
 							GetLightStatus(devType, subType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 						}
 						std::stringstream sstr;
-						uint64_t dID;
+						unsigned long long dID;
 						sstr << sID;
 						sstr >> dID;
 						root["result"][ii]["idx"] = dID;
@@ -10775,7 +10775,7 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "GetTransfers";
 
-			uint64_t idx = 0;
+			unsigned long long idx = 0;
 			if (request::findValue(&req, "idx") != "")
 			{
 				std::stringstream s_str(request::findValue(&req, "idx"));
@@ -10911,7 +10911,7 @@ namespace http {
 				}
 			}
 
-			uint64_t idx = 0;
+			unsigned long long idx = 0;
 			if (request::findValue(&req, "idx") != "")
 			{
 				std::stringstream s_str(request::findValue(&req, "idx"));
@@ -11050,7 +11050,7 @@ namespace http {
 			description = stdstring_trim(description);
 
 			std::stringstream sstridx(idx);
-			uint64_t ullidx;
+			unsigned long long ullidx;
 			sstridx >> ullidx;
 			m_mainworker.m_eventsystem.WWWUpdateSingleState(ullidx, name);
 
@@ -11597,7 +11597,7 @@ namespace http {
 
 		void CWebServer::RType_LightLog(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			uint64_t idx = 0;
+			unsigned long long idx = 0;
 			if (request::findValue(&req, "idx") != "")
 			{
 				std::stringstream s_str(request::findValue(&req, "idx"));
@@ -11683,7 +11683,7 @@ namespace http {
 					} else if ((switchtype == STYPE_Selector) && (selectorStatuses.size() > 0)) {
 						if (ii == 0) {
 							bHaveSelector = true;
-							maxDimLevel = (int)selectorStatuses.size();
+							maxDimLevel = selectorStatuses.size();
 						}
 						ldata = selectorStatuses[sValue];
 						lstatus = "Set Level: " + selectorStatuses[sValue];
@@ -11714,7 +11714,7 @@ namespace http {
 
 		void CWebServer::RType_TextLog(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			uint64_t idx = 0;
+			unsigned long long idx = 0;
 			if (request::findValue(&req, "idx") != "")
 			{
 				std::stringstream s_str(request::findValue(&req, "idx"));
@@ -11745,7 +11745,7 @@ namespace http {
 
 		void CWebServer::RType_SceneLog(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			uint64_t idx = 0;
+			unsigned long long idx = 0;
 			if (request::findValue(&req, "idx") != "")
 			{
 				std::stringstream s_str(request::findValue(&req, "idx"));
@@ -11776,7 +11776,7 @@ namespace http {
 
 		void CWebServer::RType_HandleGraph(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			uint64_t idx = 0;
+			unsigned long long idx = 0;
 			if (request::findValue(&req, "idx") != "")
 			{
 				std::stringstream s_str(request::findValue(&req, "idx"));
@@ -12039,10 +12039,10 @@ namespace http {
 							int ii = 0;
 							bool bHaveDeliverd = false;
 							bool bHaveFirstValue = false;
-							int64_t lastUsage1, lastUsage2, lastDeliv1, lastDeliv2;
+							long long lastUsage1, lastUsage2, lastDeliv1, lastDeliv2;
 							time_t lastTime = 0;
 
-							int64_t firstUsage1, firstUsage2, firstDeliv1, firstDeliv2;
+							long long firstUsage1, firstUsage2, firstDeliv1, firstDeliv2;
 
 							int nMeterType = 0;
 							m_sql.GetPreferencesVar("SmartMeterType", nMeterType);
@@ -12055,7 +12055,7 @@ namespace http {
 
 								if (nMeterType == 0)
 								{
-									int64_t actUsage1, actUsage2, actDeliv1, actDeliv2;
+									long long actUsage1, actUsage2, actDeliv1, actDeliv2;
 									std::stringstream s_str1(sd[0]);
 									s_str1 >> actUsage1;
 									std::stringstream s_str2(sd[4]);
@@ -12546,10 +12546,10 @@ namespace http {
 						if (result.size() > 0)
 						{
 							std::stringstream s_str1(result[0][0]);
-							int64_t minValue;
+							long long minValue;
 							s_str1 >> minValue;
 							std::stringstream s_str2(result[0][1]);
-							int64_t maxValue;
+							long long maxValue;
 							s_str2 >> maxValue;
 							if ((minValue == 0) && (maxValue == 0))
 							{
@@ -12593,9 +12593,9 @@ namespace http {
 						bool bHaveFirstValue = false;
 						bool bHaveFirstRealValue = false;
 						float FirstValue = 0;
-						int64_t ulFirstRealValue = 0;
-						int64_t ulFirstValue = 0;
-						int64_t ulLastValue = 0;
+						long long ulFirstRealValue = 0;
+						long long ulFirstValue = 0;
+						long long ulLastValue = 0;
 						std::string LastDateTime = "";
 						time_t lastTime = 0;
 
@@ -12616,7 +12616,7 @@ namespace http {
 										{
 											root["result"][ii]["d"] = LastDateTime + (method == 1 ? ":30" : ":00");
 
-											int64_t ulTotalValue = ulLastValue - ulFirstValue;
+											long long ulTotalValue = ulLastValue - ulFirstValue;
 											if (ulTotalValue == 0)
 											{
 												//Could be the P1 Gas Meter, only transmits one every 1 a 2 hours
@@ -12647,7 +12647,7 @@ namespace http {
 										bHaveFirstValue = false;
 									}
 									std::stringstream s_str1(sd[0]);
-									int64_t actValue;
+									long long actValue;
 									s_str1 >> actValue;
 
 									if (actValue >= ulLastValue)
@@ -12668,7 +12668,7 @@ namespace http {
 								if (method == 1)
 								{
 									std::stringstream s_str1(sd[1]);
-									int64_t actValue;
+									long long actValue;
 									s_str1 >> actValue;
 
 									root["result"][ii]["d"] = sd[2].substr(0, 16);
@@ -12737,9 +12737,9 @@ namespace http {
 						bool bHaveFirstValue = false;
 						bool bHaveFirstRealValue = false;
 						float FirstValue = 0;
-						uint64_t ulFirstRealValue = 0;
-						uint64_t ulFirstValue = 0;
-						uint64_t ulLastValue = 0;
+						unsigned long long ulFirstRealValue = 0;
+						unsigned long long ulFirstValue = 0;
+						unsigned long long ulLastValue = 0;
 
 						std::string LastDateTime = "";
 						time_t lastTime = 0;
@@ -12756,7 +12756,7 @@ namespace http {
 									//bars / hour
 
 									std::stringstream s_str1(sd[0]);
-									uint64_t actValue;
+									unsigned long long actValue;
 									s_str1 >> actValue;
 
 									std::string actDateTimeHour = sd[1].substr(0, 13);
@@ -12819,7 +12819,7 @@ namespace http {
 								{
 									//realtime graph
 									std::stringstream s_str1(sd[0]);
-									uint64_t actValue;
+									unsigned long long actValue;
 									s_str1 >> actValue;
 
 									std::string stime = sd[1];
@@ -12836,7 +12836,7 @@ namespace http {
 
 									if (bHaveFirstRealValue)
 									{
-										int64_t curValue = actValue - ulLastValue;
+										long long curValue = actValue - ulLastValue;
 
 										time_t tdiff = atime - lastTime;
 										if (tdiff == 0)
@@ -12882,7 +12882,7 @@ namespace http {
 							//add last value
 							root["result"][ii]["d"] = LastDateTime + ":00";
 
-							uint64_t ulTotalValue = ulLastValue - ulFirstValue;
+							unsigned long long ulTotalValue = ulLastValue - ulFirstValue;
 
 							float TotalValue = float(ulTotalValue);
 
@@ -13443,8 +13443,8 @@ namespace http {
 						{
 							std::vector<std::string> sd = result[0];
 
-							uint64_t total_min_usage_1, total_min_usage_2, total_max_usage_1, total_max_usage_2, total_real_usage_1, total_real_usage_2;
-							uint64_t total_min_deliv_1, total_min_deliv_2, total_max_deliv_1, total_max_deliv_2, total_real_deliv_1, total_real_deliv_2;
+							unsigned long long total_min_usage_1, total_min_usage_2, total_max_usage_1, total_max_usage_2, total_real_usage_1, total_real_usage_2;
+							unsigned long long total_min_deliv_1, total_min_deliv_2, total_max_deliv_1, total_max_deliv_2, total_real_deliv_1, total_real_deliv_2;
 
 							bool bHaveDeliverd = false;
 
@@ -13509,7 +13509,7 @@ namespace http {
 						{
 							std::vector<std::string> sd = result[0];
 
-							uint64_t total_min, total_max, total_real;
+							unsigned long long total_min, total_max, total_real;
 
 							std::stringstream s_str1(sd[0]);
 							s_str1 >> total_min;
@@ -14787,8 +14787,8 @@ namespace http {
 						if (result.size() > 0)
 						{
 							std::vector<std::string> sd = result[0];
-							uint64_t total_min_usage_1, total_min_usage_2, total_max_usage_1, total_max_usage_2, total_real_usage_1, total_real_usage_2;
-							uint64_t total_min_deliv_1, total_min_deliv_2, total_max_deliv_1, total_max_deliv_2, total_real_deliv_1, total_real_deliv_2;
+							unsigned long long total_min_usage_1, total_min_usage_2, total_max_usage_1, total_max_usage_2, total_real_usage_1, total_real_usage_2;
+							unsigned long long total_min_deliv_1, total_min_deliv_2, total_max_deliv_1, total_max_deliv_2, total_real_deliv_1, total_real_deliv_2;
 
 							std::stringstream s_str1(sd[0]);
 							s_str1 >> total_min_usage_1;
@@ -14974,7 +14974,7 @@ namespace http {
 						if (result.size() > 0)
 						{
 							std::vector<std::string> sd = result[0];
-							uint64_t total_min, total_max, total_real;
+							unsigned long long total_min, total_max, total_real;
 
 							std::stringstream s_str1(sd[0]);
 							s_str1 >> total_min;
@@ -15653,8 +15653,8 @@ namespace http {
 						if (result.size() > 0)
 						{
 							std::vector<std::string> sd = result[0];
-							uint64_t total_min_usage_1, total_min_usage_2, total_max_usage_1, total_max_usage_2, total_real_usage;
-							uint64_t total_min_deliv_1, total_min_deliv_2, total_max_deliv_1, total_max_deliv_2, total_real_deliv;
+							unsigned long long total_min_usage_1, total_min_usage_2, total_max_usage_1, total_max_usage_2, total_real_usage;
+							unsigned long long total_min_deliv_1, total_min_deliv_2, total_max_deliv_1, total_max_deliv_2, total_real_deliv;
 
 							std::stringstream s_str1(sd[0]);
 							s_str1 >> total_min_usage_1;
@@ -15706,7 +15706,7 @@ namespace http {
 						if (result.size() > 0)
 						{
 							std::vector<std::string> sd = result[0];
-							uint64_t total_min, total_max, total_real;
+							unsigned long long total_min, total_max, total_real;
 
 							std::stringstream s_str1(sd[0]);
 							s_str1 >> total_min;

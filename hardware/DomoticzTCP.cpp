@@ -108,6 +108,7 @@ bool DomoticzTCP::StartHardwareTCP()
 	m_addr.sin6_family = AF_INET6;
 	m_addr.sin6_port = htons(m_usIPPort);
 
+	// RK, removed: unsigned long ip;
 	memset(&hints, 0x00, sizeof(hints));
     hints.ai_flags    = AI_NUMERICSERV;
     hints.ai_family   = AF_UNSPEC;
@@ -202,13 +203,13 @@ bool DomoticzTCP::ConnectInternal()
 	tv.tv_sec = 120;
 	setsockopt(m_socket, SOL_SOCKET, SO_RCVTIMEO,(struct timeval *)&tv,sizeof(struct timeval));
 #else
-	uint32_t nTimeout = 120*1000;
+	unsigned long nTimeout = 120*1000;
 	setsockopt(m_socket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&nTimeout, sizeof(DWORD));
 #endif
 */
 	// connect to the server
 	int nRet;
-	nRet = connect(m_socket,info->ai_addr, (int)info->ai_addrlen);
+	nRet = connect(m_socket,info->ai_addr, info->ai_addrlen);
 	if (nRet == SOCKET_ERROR)
 	{
 		closesocket(m_socket);
@@ -307,7 +308,7 @@ void DomoticzTCP::writeTCP(const char *data, size_t size)
 {
 	if (m_socket==INVALID_SOCKET)
 		return; //not connected!
-	send(m_socket,data,(int)size,0);
+	send(m_socket,data,size,0);
 }
 
 bool DomoticzTCP::WriteToHardware(const char *pdata, const unsigned char length)

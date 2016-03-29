@@ -28,8 +28,8 @@ public:
 	static void Cleanup();
 
 	//Configuration functions
-	static void SetConnectionTimeout(const int32_t timeout);
-	static void SetTimeout(const int32_t timeout);
+	static void SetConnectionTimeout(const long timeout);
+	static void SetTimeout(const long timeout);
 	static void SetUserAgent(const std::string &useragent);
 private:
 	static void SetGlobalOptions(void *curlobj);

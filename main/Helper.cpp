@@ -42,7 +42,7 @@ void stdreplace(
 	const std::string& replaceWhat, 
 	const std::string& replaceWithWhat)
 {
-	size_t pos = 0;
+	int pos = 0;
 	while (std::string::npos != (pos = inoutstring.find(replaceWhat, pos)))
 	{
 		inoutstring.replace(pos, replaceWhat.size(), replaceWithWhat);
@@ -371,7 +371,7 @@ bool isInt(const std::string &s)
 	return true;
 }
 
-void sleep_seconds(const int32_t seconds)
+void sleep_seconds(const long seconds)
 {
 #if (BOOST_VERSION < 105000)
 	boost::this_thread::sleep(boost::posix_time::seconds(seconds));
@@ -380,7 +380,7 @@ void sleep_seconds(const int32_t seconds)
 #endif
 }
 
-void sleep_milliseconds(const int32_t milliseconds)
+void sleep_milliseconds(const long milliseconds)
 {
 #if (BOOST_VERSION < 105000)
 	boost::this_thread::sleep(boost::posix_time::milliseconds(milliseconds));
@@ -434,8 +434,8 @@ double ConvertToFahrenheit(const double Celsius)
 
 double RoundDouble(const long double invalue, const short numberOfPrecisions)
 {
-	int64_t p = (int64_t) pow(10.0L, numberOfPrecisions);
-	double ret= (int64_t)(invalue * p + 0.5L) / (double)p;
+	long long p = (long long) pow(10.0L, numberOfPrecisions);
+	double ret= (long long)(invalue * p + 0.5L) / (double)p;
 	return ret;
 }
 
@@ -499,7 +499,7 @@ std::string GenerateMD5Hash(const std::string &InputString, const std::string &S
 void hue2rgb(const float hue, int &outR, int &outG, int &outB, const double maxValue)
 {
 	double      hh, p, q, t, ff;
-	int32_t        i;
+	long        i;
 	hh = hue;
 	if (hh >= 360.0) hh = 0.0;
 	hh /= 60.0;

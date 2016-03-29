@@ -15,7 +15,7 @@ struct _tRemoteShareUser
 {
 	std::string Username;
 	std::string Password;
-	std::vector<uint64_t> Devices;
+	std::vector<unsigned long long> Devices;
 };
 
 class CTCPServerIntBase
@@ -29,7 +29,7 @@ public:
 	virtual void stopClient(CTCPClient_ptr c) = 0;
 	virtual void stopAllClients();
 
-	void SendToAll(const uint64_t DeviceRowID, const char *pData, size_t Length, const CTCPClientBase* pClient2Ignore);
+	void SendToAll(const unsigned long long DeviceRowID, const char *pData, size_t Length, const CTCPClientBase* pClient2Ignore);
 
 	void SetRemoteUsers(const std::vector<_tRemoteShareUser> &users);
 	std::vector<_tRemoteShareUser> GetRemoteUsers();
@@ -105,7 +105,7 @@ public:
 	bool StartServer(boost::shared_ptr<http::server::CProxyClient> proxy);
 #endif
 	void StopServer();
-	void SendToAll(const uint64_t DeviceRowID, const char *pData, size_t Length, const CTCPClientBase* pClient2Ignore);
+	void SendToAll(const unsigned long long DeviceRowID, const char *pData, size_t Length, const CTCPClientBase* pClient2Ignore);
 	void SetRemoteUsers(const std::vector<_tRemoteShareUser> &users);
 	unsigned int GetUserDevicesCount(const std::string &username);
 	void stopAllClients();

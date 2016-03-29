@@ -171,7 +171,7 @@ void KMTronicTCP::GetMeterDetails()
 			{
 				bool bIsOn = (results2[jj] != "0");
 				std::stringstream sstr;
-				int iRelay = (int)(jj + 1);
+				int iRelay = (jj + 1);
 				sstr << "Relay " << iRelay;
 				SendSwitch(iRelay, 1, 255, bIsOn, 0, sstr.str());
 				if (iRelay > m_TotRelais)

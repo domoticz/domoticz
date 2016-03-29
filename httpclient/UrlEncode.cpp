@@ -60,10 +60,10 @@ std::string CURLEncode::decToHex(char num, int radix)
 bool CURLEncode::isUnsafe(char compareChar)
 {
 	bool bcharfound = false;
-	size_t m_strLen = 0;
+	int m_strLen = 0;
 
 	m_strLen = csUnsafeString.size();
-	for(size_t ichar_pos = 0; ichar_pos < m_strLen ;ichar_pos++)
+	for(int ichar_pos = 0; ichar_pos < m_strLen ;ichar_pos++)
 	{
 		char tmpsafeChar = csUnsafeString[ichar_pos]; 
 		if(tmpsafeChar == compareChar)
@@ -92,10 +92,10 @@ bool CURLEncode::isUnsafe(char compareChar)
 // TO URL ENCODE FORM.
 std::string CURLEncode::URLEncode(const std::string &pcsEncode)
 {	
-	size_t ichar_pos;
+	int ichar_pos;
 	std::string csEncode;
 	std::string csEncoded;	
-	size_t m_length;
+	int m_length;
 
 	csEncode = pcsEncode;
 	m_length = csEncode.size();

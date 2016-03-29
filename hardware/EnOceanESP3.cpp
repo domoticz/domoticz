@@ -29,7 +29,7 @@
 
 #define round(a) ( int ) ( a + .5 )
 
-extern const char* Get_EnoceanManufacturer(uint32_t ID);
+extern const char* Get_EnoceanManufacturer(unsigned long ID);
 extern const char* Get_Enocean4BSType(const int Org, const int Func, const int Type);
 
 // the following lines are taken from EO300I API header file
@@ -617,7 +617,7 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 	if (tsen->LIGHTING2.packettype!=pTypeLighting2)
 		return false; //only allowed to control switches
 
-	uint32_t sID=(tsen->LIGHTING2.id1<<24)|(tsen->LIGHTING2.id2<<16)|(tsen->LIGHTING2.id3<<8)|tsen->LIGHTING2.id4;
+	unsigned long sID=(tsen->LIGHTING2.id1<<24)|(tsen->LIGHTING2.id2<<16)|(tsen->LIGHTING2.id3<<8)|tsen->LIGHTING2.id4;
 	if ((sID<m_id_base)||(sID>m_id_base+129))
 	{
 		_log.Log(LOG_ERROR,"EnOcean: Can not switch with this DeviceID, use a switch created with our id_base!...");
@@ -736,7 +736,7 @@ void CEnOceanESP3::SendDimmerTeachIn(const char *pdata, const unsigned char leng
 		RBUF *tsen = (RBUF*)pdata;
 		if (tsen->LIGHTING2.packettype != pTypeLighting2)
 			return; //only allowed to control switches
-		uint32_t sID = (tsen->LIGHTING2.id1 << 24) | (tsen->LIGHTING2.id2 << 16) | (tsen->LIGHTING2.id3 << 8) | tsen->LIGHTING2.id4;
+		unsigned long sID = (tsen->LIGHTING2.id1 << 24) | (tsen->LIGHTING2.id2 << 16) | (tsen->LIGHTING2.id3 << 8) | tsen->LIGHTING2.id4;
 		if ((sID<m_id_base) || (sID>m_id_base + 129))
 		{
 			_log.Log(LOG_ERROR, "EnOcean: Can not switch with this DeviceID, use a switch created with our id_base!...");
@@ -861,7 +861,7 @@ bool CEnOceanESP3::ParseData()
 	if (Checksum!=pFrame->CHECKSUM)
 		return false; //checksum Mismatch!
 
-	unsigned int id = (pFrame->ID_BYTE3 << 24) + (pFrame->ID_BYTE2 << 16) + (pFrame->ID_BYTE1 << 8) + pFrame->ID_BYTE0;
+	long id = (pFrame->ID_BYTE3 << 24) + (pFrame->ID_BYTE2 << 16) + (pFrame->ID_BYTE1 << 8) + pFrame->ID_BYTE0;
 	char szDeviceID[20];
 	sprintf(szDeviceID,"%08X",(unsigned int)id);
 
@@ -1065,7 +1065,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 				unsigned char ID_BYTE1  = m_buffer[7];
 				unsigned char ID_BYTE0  = m_buffer[8];
 
-				unsigned int id = (ID_BYTE3 << 24) + (ID_BYTE2 << 16) + (ID_BYTE1 << 8) + ID_BYTE0;
+				long id = (ID_BYTE3 << 24) + (ID_BYTE2 << 16) + (ID_BYTE1 << 8) + ID_BYTE0;
 				char szDeviceID[20];
 				sprintf(szDeviceID,"%08X",(unsigned int)id);
 
@@ -1137,7 +1137,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 					if (szST=="AMR.Counter")
 					{
 						//0xA5, 0x12, 0x00, "Counter"
-						uint32_t cvalue=(DATA_BYTE3<<16)|(DATA_BYTE2<<8)|(DATA_BYTE1);
+						unsigned long cvalue=(DATA_BYTE3<<16)|(DATA_BYTE2<<8)|(DATA_BYTE1);
 						RBUF tsen;
 						memset(&tsen,0,sizeof(RBUF));
 						tsen.RFXMETER.packetlength=sizeof(tsen.RFXMETER)-1;
@@ -1168,7 +1168,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 					else if (szST=="AMR.Gas")
 					{
 						//0xA5, 0x12, 0x02, "Gas"
-						uint32_t cvalue=(DATA_BYTE3<<16)|(DATA_BYTE2<<8)|(DATA_BYTE1);
+						unsigned long cvalue=(DATA_BYTE3<<16)|(DATA_BYTE2<<8)|(DATA_BYTE1);
 						RBUF tsen;
 						memset(&tsen,0,sizeof(RBUF));
 						tsen.RFXMETER.packetlength=sizeof(tsen.RFXMETER)-1;
@@ -1186,7 +1186,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 					else if (szST=="AMR.Water")
 					{
 						//0xA5, 0x12, 0x03, "Water"
-						uint32_t cvalue=(DATA_BYTE3<<16)|(DATA_BYTE2<<8)|(DATA_BYTE1);
+						unsigned long cvalue=(DATA_BYTE3<<16)|(DATA_BYTE2<<8)|(DATA_BYTE1);
 						RBUF tsen;
 						memset(&tsen,0,sizeof(RBUF));
 						tsen.RFXMETER.packetlength=sizeof(tsen.RFXMETER)-1;
@@ -1551,7 +1551,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 				unsigned char ID_BYTE2=m_buffer[3];
 				unsigned char ID_BYTE1=m_buffer[4];
 				unsigned char ID_BYTE0=m_buffer[5];
-				unsigned int id = (ID_BYTE3 << 24) + (ID_BYTE2 << 16) + (ID_BYTE1 << 8) + ID_BYTE0;
+				long id = (ID_BYTE3 << 24) + (ID_BYTE2 << 16) + (ID_BYTE1 << 8) + ID_BYTE0;
 				char szDeviceID[20];
 				sprintf(szDeviceID,"%08X",(unsigned int)id);
 

@@ -27,8 +27,6 @@ The WiringPi project
 
  ************************************************************************/
 
-///We should fix the size_t / int conversion stuff here, std::find returns size_t , not int !
-
 #include "stdafx.h"
 #include "PiFace.h"
 #include <stdio.h>
@@ -139,19 +137,20 @@ int CPiFace::LocateValueInParameterArray(std::string Parametername,const std::st
  return (NameFound);
 }
 
-int CPiFace::GetParameterString(std::string TargetString,const char * SearchStr, size_t StartPos,  std::string &Parameter)
+int CPiFace::GetParameterString(std::string TargetString,const char * SearchStr, int StartPos,  std::string &Parameter)
 {
+   int EndPos=-1;
    std::string Substring;
    std::string SearchString(SearchStr);
 
-   size_t EndPos=TargetString.find(SearchString,StartPos);
-   if (EndPos != std::string::npos)
+   EndPos=TargetString.find(SearchString,StartPos);
+   if (EndPos >= 0)
     {
        Substring=TargetString.substr(StartPos,EndPos-StartPos);
        Parameter=preprocess(Substring);
-       EndPos=EndPos+SearchString.length(); //set end position to new search start position
+       EndPos=EndPos+SearchString.length(); //set endposition to new search start position
     }
-    return (int)EndPos;
+    return EndPos;
 }
 
 
@@ -210,7 +209,7 @@ int CPiFace::LoadConfig(void)
          Line=preprocess(input);
 
          //find any comments
-         StartPos=(int)Line.find("//",0);
+         StartPos=Line.find("//",0);
          if (StartPos>=0)
            {
              //comment found, remove it
@@ -367,7 +366,7 @@ int CPiFace::LoadConfig(void)
                     case 6:
                     case 7:
                         //count_update_interval(_s)(ec)
-                            uint32_t UpdateInterval;
+                            unsigned long UpdateInterval;
 
                             UpdateInterval=strtol(Parametervalue.c_str(),NULL,0);
                             IOport->Pin[PinNumber].Count.SetUpdateInterval(UpdateInterval*1000);
@@ -378,7 +377,7 @@ int CPiFace::LoadConfig(void)
 		/*  disabled until code part is completed and tested */
                     case 8:
                         //count_initial_value
-                            uint32_t StartValue;
+                            unsigned long StartValue;
 
                             StartValue=strtol(Parametervalue.c_str(),NULL,0);
                             IOport->Pin[PinNumber].Count.SetCurrent(StartValue);
@@ -388,7 +387,7 @@ int CPiFace::LoadConfig(void)
                         break;
                     case 9:
                         //count_minimum_pulse_period_msec
-                            uint32_t Min_Pulse_Period;
+                            unsigned long Min_Pulse_Period;
 
                             Min_Pulse_Period=strtol(Parametervalue.c_str(),NULL,0);
                             IOport->Pin[PinNumber].Count.SetRateLimit(Min_Pulse_Period);
@@ -1002,8 +1001,8 @@ int CPiFace::Read_Write_SPI_Byte(unsigned char *data, int len)
   struct spi_ioc_transfer spi ;
   memset (&spi, 0, sizeof(spi));
 
-  spi.tx_buf        = (uint32_t)data ;
-  spi.rx_buf        = (uint32_t)data ;
+  spi.tx_buf        = (unsigned long)data ;
+  spi.rx_buf        = (unsigned long)data ;
   spi.len           = len ;
   spi.delay_usecs   = 0 ;
   spi.speed_hz      = 4000000;
@@ -1073,13 +1072,13 @@ void CPiFace::Sample_and_Process_Input_Interrupts(unsigned char devId)
     }
 }
 
-void CIOCount::SetUpdateInterval(uint32_t NewValue_ms)
+void CIOCount::SetUpdateInterval(unsigned long NewValue_ms)
 {
     UpdateInterval_ms=NewValue_ms;
     UpdateDownCount_ms=UpdateInterval_ms;
 }
 
-bool CIOCount::ProcessUpdateInterval(uint32_t PassedTime_ms)
+bool CIOCount::ProcessUpdateInterval(unsigned long PassedTime_ms)
 {
    bool Update=false;
    if (Enabled)
@@ -1099,7 +1098,7 @@ bool CIOCount::ProcessUpdateInterval(uint32_t PassedTime_ms)
    return Update;
 }
 
-int CIOCount::Update(uint32_t Counts)
+int CIOCount::Update(unsigned long Counts)
 {
   int result=-1;
 #ifndef DISABLE_NEW_FUNCTIONS
@@ -1345,8 +1344,8 @@ int CIOPort::Update(unsigned char New)
         IOPinCounterPacket.RFXMETER.id1=((meterid >>8) & 0xFF);
         IOPinCounterPacket.RFXMETER.id2= (meterid & 0xFF);
 
-		uint32_t Count = Pin[i].Count.GetTotal();
-		uint32_t LastCount = Pin[i].Count.GetLastTotal();
+		unsigned long Count = Pin[i].Count.GetTotal();
+		unsigned long LastCount = Pin[i].Count.GetLastTotal();
 		if (Count != LastCount)
 		{
 			Pin[i].Count.SetLastTotal(Count);

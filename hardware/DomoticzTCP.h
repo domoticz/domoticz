@@ -67,6 +67,6 @@ protected:
 	volatile bool m_stoprequested;
 	sockaddr_in6 m_addr;
 	struct addrinfo *info;
-	SOCKET m_socket;
+	int m_socket;
 	unsigned char mBuffer[512];
 };
