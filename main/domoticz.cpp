@@ -105,6 +105,7 @@ const char *szHelp=
 #endif
 	"\t-loglevel (0=All, 1=Status+Error, 2=Error)\n"
 	"\t-notimestamps (do not prepend timestamps to logs; useful with syslog, etc.)\n"
+	"\t-php_cgi_path (for example /usr/bin/php-cgi)\n"
 #ifndef WIN32
 	"\t-daemon (run as background daemon)\n"
 	"\t-pidfile pid file location (for example /var/run/domoticz.pid)\n"
@@ -631,6 +632,48 @@ int main(int argc, char**argv)
 		webserver_settings.listening_port = wwwport;
 	}
 
+	if (cmdLine.HasSwitch("-php_cgi_path"))
+	{
+		if (cmdLine.GetArgumentCount("-php_cgi_path") != 1)
+		{
+			_log.Log(LOG_ERROR, "Please specify the path to the php-cgi command");
+			return 1;
+		}
+		webserver_settings.php_cgi_path = cmdLine.GetSafeArgument("-php_cgi_path", 0, "");
+	}
+	if (cmdLine.HasSwitch("-wwwroot"))
+	{
+		if (cmdLine.GetArgumentCount("-wwwroot") != 1)
+		{
+			_log.Log(LOG_ERROR, "Please specify a WWW root path");
+			return 1;
+		}
+		std::string szroot = cmdLine.GetSafeArgument("-wwwroot", 0, "");
+		if (szroot.size() != 0)
+			szWWWFolder = szroot;
+	}
+
+	char real_www_path[255];
+	strcpy(real_www_path, szWWWFolder.c_str());
+#ifdef WIN32
+	LPTSTR pLPSTR = NULL;
+
+	if (!GetFullPathName(
+		szWWWFolder.c_str(),
+		255,
+		real_www_path,
+		&pLPSTR
+		))
+	{
+		strcpy(real_www_path, szWWWFolder.c_str());
+	}
+#else
+	if (!realpath(szWWWFolder.c_str(), real_www_path))
+	{
+		strcpy(real_www_path, szWWWFolder.c_str());
+	}
+#endif
+	webserver_settings.www_root = real_www_path;
 	m_mainworker.SetWebserverSettings(webserver_settings);
 #ifdef WWW_ENABLE_SSL
 	http::server::ssl_server_settings secure_webserver_settings;
@@ -693,6 +736,16 @@ int main(int argc, char**argv)
 		}
 		secure_webserver_settings.tmp_dh_file_path = cmdLine.GetSafeArgument("-ssldhparam", 0, "");
 	}
+	if (cmdLine.HasSwitch("-php_cgi_path"))
+	{
+		if (cmdLine.GetArgumentCount("-php_cgi_path") != 1)
+		{
+			_log.Log(LOG_ERROR, "Please specify the path to the php-cgi command");
+			return 1;
+		}
+		secure_webserver_settings.php_cgi_path = cmdLine.GetSafeArgument("-php_cgi_path", 0, "");
+	}
+	secure_webserver_settings.www_root = real_www_path;
 	m_mainworker.SetSecureWebserverSettings(secure_webserver_settings);
 #endif
 	if (cmdLine.HasSwitch("-nowwwpwd"))
@@ -741,18 +794,6 @@ int main(int argc, char**argv)
 		dbasefile = cmdLine.GetSafeArgument("-dbase", 0, "domoticz.db");
 	}
 	m_sql.SetDatabaseName(dbasefile);
-
-	if (cmdLine.HasSwitch("-wwwroot"))
-	{
-		if (cmdLine.GetArgumentCount("-wwwroot") != 1)
-		{
-			_log.Log(LOG_ERROR, "Please specify a WWW root path");
-			return 1;
-		}
-		std::string szroot = cmdLine.GetSafeArgument("-wwwroot", 0, "");
-		if (szroot.size() != 0)
-			szWWWFolder = szroot;
-	}
 
 	if (cmdLine.HasSwitch("-webroot"))
 	{

@@ -2,7 +2,7 @@
 // server.hpp
 // ~~~~~~~~~~
 //
-
+#pragma once
 #ifndef HTTP_SSLSERVER_HPP
 #define HTTP_SSLSERVER_HPP
 

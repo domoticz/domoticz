@@ -1,3 +1,4 @@
+#pragma once
 #ifndef CSOCKET_H
 #define CSOCKET_H
 
