@@ -724,7 +724,7 @@ int main(int argc, char**argv)
 		}
 		secure_webserver_settings.php_cgi_path = cmdLine.GetSafeArgument("-php_cgi_path", 0, "");
 	}
-	secure_webserver_settings.www_root = real_www_path;
+	secure_webserver_settings.www_root = szWWWFolder;
 	m_mainworker.SetSecureWebserverSettings(secure_webserver_settings);
 #endif
 	if (cmdLine.HasSwitch("-nowwwpwd"))
