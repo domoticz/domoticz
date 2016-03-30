@@ -652,28 +652,7 @@ int main(int argc, char**argv)
 		if (szroot.size() != 0)
 			szWWWFolder = szroot;
 	}
-
-	char real_www_path[255];
-	strcpy(real_www_path, szWWWFolder.c_str());
-#ifdef WIN32
-	LPTSTR pLPSTR = NULL;
-
-	if (!GetFullPathName(
-		szWWWFolder.c_str(),
-		255,
-		real_www_path,
-		&pLPSTR
-		))
-	{
-		strcpy(real_www_path, szWWWFolder.c_str());
-	}
-#else
-	if (!realpath(szWWWFolder.c_str(), real_www_path))
-	{
-		strcpy(real_www_path, szWWWFolder.c_str());
-	}
-#endif
-	webserver_settings.www_root = real_www_path;
+	webserver_settings.www_root = szWWWFolder;
 	m_mainworker.SetWebserverSettings(webserver_settings);
 #ifdef WWW_ENABLE_SSL
 	http::server::ssl_server_settings secure_webserver_settings;
