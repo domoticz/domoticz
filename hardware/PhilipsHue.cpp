@@ -364,7 +364,7 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 		unsigned char unitcode = 1;
 		int cmd = (bIsOn ? Limitless_LedOn : Limitless_LedOff);
 		int nvalue = 0;
-		bool tIsOn = false;
+		bool tIsOn = !(bIsOn);
 		
 		//Get current nValue if exist
 		std::vector<std::vector<std::string> > result;
@@ -451,7 +451,7 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 		int cmd = (bIsOn ? light2_sOn : light2_sOff);
 		int level = 0;
 		int nvalue = 0;
-		bool tIsOn = false;
+		bool tIsOn = !(bIsOn);
 		
 		if (LType == HLTYPE_NORMAL)
 			bIsOn ? level = 15 : level = 0;
