@@ -548,7 +548,7 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 		{
 			iTemp = RFLinkGetHexStringValue(results[ii]);
 			bHaveUV = true;
-			uv = float(iTemp);
+			uv = float(iTemp) /10.0f;
 		}
 		else if (results[ii].find("BAT") != std::string::npos)
 		{
