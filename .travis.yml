@@ -49,7 +49,11 @@ matrix:
         packages:
           - gcc-4.9
           - g++-4.9
-          - libboost1.55-all-dev
+          - libboost-thread-dev
+          - libboost-date-time-dev
+          - libboost-system-dev
+          - libboost-atomic-dev
+          - libboost-regex-dev
           - cmake
           - libsqlite3-dev
           - curl
@@ -59,10 +63,10 @@ matrix:
           - libssl-dev
           - libudev-dev
           - git
-          - libdigest-sha-perl
+          - libdigest-sha1-perl
     script:
       - (cd open-zwave-read-only; make)
-      - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=open-zwave-read-only
+      - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=open-zwave-read-only -DUSE_STATIC_BOOST=YES
       - make
   # Apple OSX
   - os: osx
