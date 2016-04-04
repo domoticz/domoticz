@@ -49,11 +49,11 @@ matrix:
         packages:
           - gcc-4.9
           - g++-4.9
-          - libboost-thread
-          - libboost-date_time
-          - libboost-system
-          - libboost-atomic
-          - libboost-regex
+          - libboost-thread-dev
+          - libboost-date_time-dev
+          - libboost-system-dev
+          - libboost-atomic-dev
+          - libboost-regex-dev
           - cmake
           - libsqlite3-dev
           - curl
