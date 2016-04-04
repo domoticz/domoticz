@@ -3504,7 +3504,7 @@ int CEventSystem::l_domoticz_print(lua_State* lua_state)
 		if (lua_isstring(lua_state, i))
 		{
 			//std::string lstring=lua_tostring(lua_state, i);
-			_log.Log(LOG_NORM, "LUA: %s", lua_tostring(lua_state, i));
+			_log.Log(LOG_STATUS, "LUA: %s", lua_tostring(lua_state, i));
 		}
 		else
 		{
