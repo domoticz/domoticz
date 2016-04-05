@@ -120,7 +120,7 @@
 #define sSwitchTypeBrel				0x39
 #define sSwitchTypeRTS   			0x3a
 #define sSwitchTypeElroDB			0x3b
-#define sSwitchTypeAOK				0x3c
+#define sSwitchTypeDooya			0x3c
 #define sSwitchTypeUnitec			0x3d
 #define sSwitchTypeSelector			0x3e
 #define sSwitchTypeMaclean			0x3f

@@ -73,7 +73,7 @@ const _tRFLinkStringIntHelper rfswitches[] =
 	{ "BrelMotor", sSwitchTypeBrel },        // p..
 	{ "RTS", sSwitchTypeRTS },               // p..
 	{ "ElroDB", sSwitchTypeElroDB },         // p..
-	{ "AOK", sSwitchTypeAOK },               // p..
+	{ "Dooya", sSwitchTypeDooya },           // p..
 	{ "Unitec", sSwitchTypeUnitec },         // p..
 	{ "Maclean", sSwitchTypeMaclean },		 // p..
 	{ "R546", sSwitchTypeR546 },	         // p..

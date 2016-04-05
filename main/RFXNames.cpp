@@ -764,7 +764,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchTypeBrel, "BrelMotor" },
 		{ pTypeGeneralSwitch, sSwitchTypeRTS, "RTS" },
 		{ pTypeGeneralSwitch, sSwitchTypeElroDB, "ElroDB" },
-		{ pTypeGeneralSwitch, sSwitchTypeAOK, "AOK" },
+		{ pTypeGeneralSwitch, sSwitchTypeDooya, "Dooya" },
 		{ pTypeGeneralSwitch, sSwitchTypeUnitec, "Unitec" },
 		{ pTypeGeneralSwitch, sSwitchTypeSelector, "Selector Switch" },
 		{ pTypeGeneralSwitch, sSwitchTypeMaclean, "Maclean" },
