@@ -651,7 +651,7 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 		{
 			iTemp = RFLinkGetHexStringValue(results[ii]);
 			bHaveCurrent = true;
-			current = float(iTemp) / 10.0f;
+			current = float(iTemp) / 100.0f;
 		}
 		else if (results[ii].find("IMPEDANCE") != std::string::npos)
 		{
