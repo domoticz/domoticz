@@ -54,7 +54,7 @@ IF(NOT ProjectDate)
 ENDIF(NOT ProjectDate)
 Gitversion_CHECK_DIRTY("${SOURCE_DIR}" ProjectDirty)
 IF(ProjectDirty)
-  MESSAGE(STATUS "domoticz has been modified locally: add \"-modified\" to hash")
+  MESSAGE(STATUS "domoticz has been modified locally: adding \"-modified\" to hash")
   set (ProjectHash "${ProjectHash}-modified")
 ENDIF(ProjectDirty)
 
