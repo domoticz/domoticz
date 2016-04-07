@@ -6,7 +6,7 @@
  *      Source: https://www.justsoftwaresolutions.co.uk/threading/implementing-a-thread-safe-queue-using-condition-variables.html
  *      Source: https://www.justsoftwaresolutions.co.uk/threading/condition-variable-spurious-wakes.html
  */
-
+#pragma once
 #ifndef MAIN_CONCURRENT_QUEUE_H_
 #define MAIN_CONCURRENT_QUEUE_H_
 

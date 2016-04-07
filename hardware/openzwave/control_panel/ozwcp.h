@@ -126,6 +126,9 @@ public:
 	std::string SaveConfig();
 	std::string GetCPTopo();
 	std::string GetCPStats();
+	std::string DoTestNetwork(const int node_id, const int cnt);
+	std::string HealNetworkNode(const int node_id, const bool healrrs);
+
 	bool isReady() { return ready; }
 	void SetAllNodesChanged();
 	bool getAdminState() { return adminstate; }

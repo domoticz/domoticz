@@ -1082,6 +1082,29 @@ namespace http {
 			}
 		}
 
+		void CWebServer::Cmd_SetActiveTimerPlan(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			int rnOldvalue = 0;
+			int rnvalue = 0;
+			m_sql.GetPreferencesVar("ActiveTimerPlan", rnOldvalue);
+			rnvalue = atoi(request::findValue(&req, "ActiveTimerPlan").c_str());
+			if ((rnOldvalue != rnvalue) && ((rnvalue==0) || (rnvalue==1)))
+			{
+				m_sql.UpdatePreferencesVar("ActiveTimerPlan", rnvalue);
+				m_sql.m_ActiveTimerPlan = rnvalue;
+				m_mainworker.m_scheduler.ReloadSchedules();
+			}
+
+			root["status"] = "OK";
+			root["title"] = "SetActiveTimerPlan";
+		}
+
 		void CWebServer::Cmd_AddTimer(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)

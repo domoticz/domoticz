@@ -73,7 +73,7 @@ const _tRFLinkStringIntHelper rfswitches[] =
 	{ "BrelMotor", sSwitchTypeBrel },        // p..
 	{ "RTS", sSwitchTypeRTS },               // p..
 	{ "ElroDB", sSwitchTypeElroDB },         // p..
-	{ "AOK", sSwitchTypeAOK },               // p..
+	{ "Dooya", sSwitchTypeDooya },           // p..
 	{ "Unitec", sSwitchTypeUnitec },         // p..
 	{ "Maclean", sSwitchTypeMaclean },		 // p..
 	{ "R546", sSwitchTypeR546 },	         // p..
@@ -96,6 +96,7 @@ const _tRFLinkStringIntHelper rfswitches[] =
 	{ "Friedland", sSwitchFriedland },		 // NA
 	{ "BFT", sSwitchBFT },					 // NA
 	{ "Novatys", sSwitchNovatys},			 // NA
+	{ "Halemeier", sSwitchHalemeier},
 	{ "", -1 }
 };
 
@@ -547,7 +548,7 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 		{
 			iTemp = RFLinkGetHexStringValue(results[ii]);
 			bHaveUV = true;
-			uv = float(iTemp);
+			uv = float(iTemp) /10.0f;
 		}
 		else if (results[ii].find("BAT") != std::string::npos)
 		{
@@ -650,7 +651,7 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 		{
 			iTemp = RFLinkGetHexStringValue(results[ii]);
 			bHaveCurrent = true;
-			current = float(iTemp) / 10.0f;
+			current = float(iTemp) / 100.0f;
 		}
 		else if (results[ii].find("IMPEDANCE") != std::string::npos)
 		{

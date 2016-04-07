@@ -31,7 +31,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 102
+#define DB_VERSION 103
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -2014,6 +2014,10 @@ bool CSQLHelper::OpenDatabase()
 			query("create index if not exists w_id_date_idx   on Wind(DeviceRowID, Date);");
 			query("create index if not exists wc_id_idx       on Wind_Calendar(DeviceRowID);");
 			query("create index if not exists wc_id_date_idx  on Wind_Calendar(DeviceRowID, Date);");
+		}
+		if (dbversion < 103)
+		{
+			FixDaylightSaving();
 		}
 	}
 	else if (bNewInstall)

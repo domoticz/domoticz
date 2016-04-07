@@ -4,7 +4,7 @@
  *  Created on: 15 févr. 2016
  *      Author: gaudryc
  */
-
+#pragma once
 #ifndef WEBSERVER_SERVER_SETTINGS_HPP_
 #define WEBSERVER_SERVER_SETTINGS_HPP_
 
@@ -18,20 +18,31 @@ namespace server {
 
 struct server_settings {
 public:
+	std::string www_root;
 	std::string listening_address;
 	std::string listening_port;
+
+	std::string php_cgi_path; //if not empty, php files are handled
+	//feature
+	//std::string fastcgi_php_server; (like nginx)
+
 
 	server_settings() :
 		is_secure_(false) {}
 	server_settings(const server_settings & s) :
 		is_secure_(s.is_secure_),
+		www_root(s.www_root),
 		listening_address(s.listening_address),
-		listening_port(s.listening_port) {}
+		listening_port(s.listening_port),
+		php_cgi_path(s.php_cgi_path)
+		{}
 	virtual ~server_settings() {}
 	server_settings & operator=(const server_settings & s) {
 		is_secure_ = s.is_secure_;
+		www_root = s.www_root;
 		listening_address = s.listening_address;
 		listening_port = s.listening_port;
+		php_cgi_path = s.php_cgi_path;
 		return *this;
 	}
 	bool is_secure() const {
@@ -40,12 +51,17 @@ public:
 	bool is_enabled() const {
 		return ((listening_port != "0") && (listening_port != ""));
 	}
+	bool is_php_enabled() const {
+		return !php_cgi_path.empty();
+	}
 	/**
 	 * Set relevant values
 	 */
 	virtual void set(const server_settings & settings) {
+		www_root = get_valid_value(listening_address, settings.www_root);
 		listening_address = get_valid_value(listening_address, settings.listening_address);
 		listening_port = get_valid_value(listening_port, settings.listening_port);
+		php_cgi_path = get_valid_value(php_cgi_path, settings.php_cgi_path);
 		if (listening_port == "0") {
 			listening_port.clear();// server NOT enabled
 		}
@@ -53,9 +69,11 @@ public:
 
 	virtual std::string to_string() const {
 		return std::string("'server_settings[is_secure_=") + (is_secure_ == true ? "true" : "false") +
-				", listening_address='" + listening_address + "'" +
-				", listening_port='" + listening_port + "'" +
-				"]'";
+			", www_root='" + www_root + "'" +
+			", listening_address='" + listening_address + "'" +
+			", listening_port='" + listening_port + "'" +
+			", php_cgi_path='" + php_cgi_path + "'" +
+			"]'";
 	}
 
 protected:

@@ -7,7 +7,7 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
-
+#pragma once
 #ifndef HTTP_REQUEST_HPP
 #define HTTP_REQUEST_HPP
 
@@ -22,7 +22,8 @@ namespace server {
 class request
 {
 public:
-	std::string host;
+	std::string host_address;
+	std::string host_port;
 	std::string method;
 	std::string uri;
 	int http_version_major;
@@ -120,18 +121,18 @@ public:
 		std::string value;
 
 		std::string uri = preq->content;
-		int q = 0;
-		int p = q;
+		size_t q = 0;
+		size_t p = q;
 		int flag_done = 0;
 		while (!flag_done) {
 			q = uri.find("=", p);
-			if (q == -1) {
+			if (q == std::string::npos) {
 				return;
 			}
 			name = uri.substr(p, q - p);
 			p = q + 1;
 			q = uri.find("&", p);
-			if (q != -1) {
+			if (q != std::string::npos) {
 				value = uri.substr(p, q - p);
 			} else {
 				value = uri.substr(p);
@@ -139,8 +140,8 @@ public:
 			}
 			// the browser sends blanks as +
 			while (1) {
-				int p = value.find("+");
-				if (p == -1) {
+				size_t p = value.find("+");
+				if (p == std::string::npos) {
 					break;
 				}
 				value.replace(p, 1, " ");

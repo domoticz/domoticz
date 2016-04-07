@@ -101,6 +101,7 @@
    }
 
 ------------------------------------------------------*/
+#pragma once
 #ifndef SACMDSH
 #define SACMDSH
 
