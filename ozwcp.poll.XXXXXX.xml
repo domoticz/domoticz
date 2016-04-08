@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<poll homeid="d3cf129c" nodeid="1" sucnodeid="0" nodecount="3" cmode="Primary" save="1" noop="0">
+    <log size="0" offset="41115"></log>
+    <admin active="false" />
+    <update />
+</poll>
