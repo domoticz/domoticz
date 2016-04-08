@@ -393,7 +393,7 @@ if(USE_PYTHON)
   ENDIF(PYTHONINTERP_FOUND)
 endif(USE_PYTHON)
 
-option(USE_STATIC_BOOST "Build with static BOOST libraries" NO)
+option(USE_STATIC_BOOST "Build with static BOOST libraries" YES)
 set(Boost_USE_STATIC_LIBS ${USE_STATIC_BOOST})
 set(Boost_USE_MULTITHREADED ON)
 unset(Boost_INCLUDE_DIR CACHE)
