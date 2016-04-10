@@ -1350,6 +1350,66 @@ std::string COpenZWaveControlPanel::SaveConfig()
 	return "OK";
 }
 
+std::string COpenZWaveControlPanel::DoTestNetwork(const int node_id, const int cnt)
+{
+	TiXmlDocument doc;
+
+	TiXmlDeclaration* decl = new TiXmlDeclaration("1.0", "utf-8", "");
+	doc.LinkEndChild(decl);
+	TiXmlElement* testElement = new TiXmlElement("testheal");
+	doc.LinkEndChild(testElement);
+
+	if (node_id == 0)
+		Manager::Get()->TestNetwork(homeId, cnt);
+	else
+		Manager::Get()->TestNetworkNode(homeId, node_id, cnt);
+	
+	char fntemp[200];
+	sprintf(fntemp, "%sozwcp.testheal.XXXXXX", szUserDataFolder.c_str());
+	doc.SaveFile(fntemp);
+
+	std::string retstring = "";
+	std::ifstream testFile(fntemp, std::ios::binary);
+	std::vector<char> fileContents((std::istreambuf_iterator<char>(testFile)),
+		std::istreambuf_iterator<char>());
+	if (fileContents.size() > 0)
+	{
+		retstring.insert(retstring.begin(), fileContents.begin(), fileContents.end());
+	}
+
+	return retstring;
+}
+
+std::string COpenZWaveControlPanel::HealNetworkNode(const int node_id, const bool healrrs)
+{
+	TiXmlDocument doc;
+
+	TiXmlDeclaration* decl = new TiXmlDeclaration("1.0", "utf-8", "");
+	doc.LinkEndChild(decl);
+	TiXmlElement* testElement = new TiXmlElement("testheal");
+	doc.LinkEndChild(testElement);
+
+	if (node_id == 0)
+		Manager::Get()->HealNetwork(homeId, healrrs);
+	else
+		Manager::Get()->HealNetworkNode(homeId, node_id, healrrs);
+
+	char fntemp[200];
+	sprintf(fntemp, "%sozwcp.testheal.XXXXXX", szUserDataFolder.c_str());
+	doc.SaveFile(fntemp);
+
+	std::string retstring = "";
+	std::ifstream testFile(fntemp, std::ios::binary);
+	std::vector<char> fileContents((std::istreambuf_iterator<char>(testFile)),
+		std::istreambuf_iterator<char>());
+	if (fileContents.size() > 0)
+	{
+		retstring.insert(retstring.begin(), fileContents.begin(), fileContents.end());
+	}
+
+	return retstring;
+}
+
 std::string COpenZWaveControlPanel::GetCPTopo()
 {
 	TiXmlDocument doc;

@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+
+<!--
+	Qubino: ZMNHCDx Flush shutter zwave+
+
+	ZMNHCD1 868,4 MHz
+	ZMNHCD2 921,4 MHz
+	ZMNHCD3 908,4 MHz
+	ZMNHCD4 869,0 MHz
+	ZMNHCD5 916,0 MHz
+-->
+
+	<!-- Configuration -->
+	<CommandClass id="112">
+	<Value type="list" genre="config" instance="1" index="10" label="Activate / deactivate functions ALL ON/ALL OFF" size="1" min="0" max="255" value="255">
+		<Help>Flush 1 relay module responds to commands ALL ON / ALL OFF that may be sent by the main controller or by other controller belonging to the system.</Help>
+		<Item label="ALL ON active, ALL OFF active" value="255" />
+		<Item label="ALL ON is not active ALL OFF is not active" value="0" />
+		<Item label="ALL ON is not active ALL OFF active" value="1" />
+		<Item label="ALL ON active ALL OFF is not active" value="2" />
+		</Value>
+
+		<Value type="byte" genre="config" instance="1" index="40" label="Power reporting in Watts on power change for Q1 or Q2" size="1" min="0" max="100" units="%" value="1">
+			<Help>Set value from 0 - 100 (0% - 100%). 0 - Reporting Disabled. 1 - 100 = 1% - 100% Reporting enabled. Power report is send (push) only when actual power (in Watts) in real time changes for more than set percentage comparing to previous actual power in Watts, step is 1%. Default value 1</Help>
+		</Value>
+
+		<Value type="short" genre="config" instance="1" index="42" label="Power reporting in Watts by time interval for Q1 or Q2" min="0" max="65535" units="s" value="300">
+			<Help>Set value means time interval (0 - 65535) in seconds, when power report is send. 0 - Reporting Disabled. 1 - 65535 = 1second - 65535 seconds. Reporting enabled. Power report is send with time interval set by entered value. Default value 300 (power report in Watts is send each 300s)</Help>
+		</Value>
+
+		<Value type="list" genre="config" instance="1" index="71" label="Operating modes" size="1" min="0" max="1" value="0">
+			<Help>This parameter defines selection between two available operating modes</Help>
+			<Item label="Shutter mode" value="0" />
+			<Item label="Venetian mode (up/down and slate rotation)" value="1" />
+		</Value>
+
+		<Value type="short" genre="config" instance="1" index="72" label="Slats tilting full turn time" min="0" max="65535" units="s" value="150">
+			<Help>
+				This parameter defines the time necessary for slats to make full turn (180 degrees)
+				default value 150 = 1,5 seconds
+				0 - Tilting time disabled
+				1 - 32767 = 0,01seconds - 327,67 seconds
+				</Help>
+		</Value>
+
+		<Value type="list" genre="config" instance="1" index="73" label="Slats position" min="0" max="1" value="1">
+			<Help>This parameter defines slats position after up/down movement through Z-wave or push-buttons
+				Slats return to previously set position only in case of
+				</Help>
+			<Item label="Z-wave control" value="0" />
+			<Item label="Z-wave control, push-button operation or when the lower limit switch is reached" value="1" />
+		</Value>
+
+		<Value type="short" genre="config" instance="1" index="74" label="Motor moving up/down time" min="0" max="65535" value="0">
+			<Help>This parameter defines shutter motor moving time of complete opening or complete closing.
+				Default value 0
+				0 - moving time disabled (working with limit switches).
+				1 - 65535 = 0,1seconds - 6553,5seconds
+				After that time motor is stopped (relay goes to off state)</Help>
+		</Value>
+
+		<Value type="byte" genre="config" instance="1" index="76" label="Motor operation detection" min="0" max="127" units="w" value="10">
+			<Help>
+				Power threshold to be interpreted when motor reach the limit switch.
+				default value 10 = 10W
+				0 - 127 = 1-127 W. The value 0 means reaching a limit switch will not be detected.
+			</Help>
+		</Value>
+
+		<Value type="list" genre="config" instance="1" index="78" label="Forced Shutter calibration" size="1" min="0" max="1" value="0">
+			<Help>By modifying the parameters setting from 0 to 1 a Shutter enters the calibration mode</Help>
+			<Item label="Default" value="0" />
+			<Item label="Start calibration process" value="1" />
+		</Value>
+
+		<Value type="byte" genre="config" instance="1" index="85" label="Power consumption max delay time" min="0" max="50" units="" value="0">
+			<Help>
+				This parameter defines the max time before motor power consumption is read after one of the relays is switched ON.
+				If there is no power consumption during this max time (motor not connected, damaged or requires higher time to start, motor in end position) the relay will switch OFF.
+				Time is defined by entering it manually.
+				default value 0 = time is set automatically
+				3 - 50 = 0,3seconds - 5seconds (100ms resolution)
+				</Help>
+		</Value>
+
+		<Value type="byte" genre="config" instance="1" index="90" label="Time delay for next motor movement" min="1" max="30" units="" value="5">
+			<Help>
+				This parameter defines the minimum time delay between next motor movement (minimum time between switching motor off and on again).
+				default value 5 = 500ms
+				1 - 30 = 0,1seconds - 3seconds (100ms resolution)
+				</Help>
+		</Value>
+
+		<Value type="short" genre="config" instance="1" index="110" label="Temperature sensor offset settings" min="1" max="65535" value="32536">
+			<Help>
+				Set value is added or subtracted to actual measured value by sensor.
+				default value 32536
+				32536 - offset is 0.0C
+				From 1 to 100 - value from 0.1 C to 10.0 C is added to actual measured temperature.
+				From 1001 to 1100 - value from -0.1 C to -10.0 C is subtracted to actual measured temperature.
+			</Help>
+		</Value>
+
+		<Value type="byte" genre="config" instance="1" index="120" label="Digital temperature sensor reporting" min="0" max="127" units="" value="5">
+			<Help>
+				If digital temperature sensor is connected, module reports measured temperature on temperature change defined by this parameter
+				default value 5 = 0,5C
+				0 - Reporting disabled
+				1-127 = 0,1C - 12,7C, step is 0,1C
+				</Help>
+		</Value>
+
+	</CommandClass>
+
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="9">
+			<Group index="1" max_associations="1"  label="Lifeline" />
+			<Group index="2" max_associations="16" label="basic on/off (triggered at change of the input I1 state and reflecting its state)" />
+			<Group index="3" max_associations="16" label="basic on/off (triggered at change of the input I2 state and reflecting its state)" />
+			<Group index="4" max_associations="16" label="basic on/off (triggered at sensing moving direction of roller: up=FF, down=0)" />
+			<Group index="5" max_associations="16" label="basic on/off (triggered at reaching roller position: bottom=FF, top=0)" />
+			<Group index="6" max_associations="16" label="basic on/off (triggered at reaching roller position: bottom=FF, not bottom=0)" />
+			<Group index="7" max_associations="16" label="multilevel set (triggered at changes of value of the Flush shutter DC position)" />
+			<Group index="8" max_associations="16" label="multilevel set (triggered at changes of value of slats tilting position)" />
+			<Group index="9" max_associations="16" label="multilevel sensor report (triggered at change of temperature sensor)" />
+		</Associations>
+	</CommandClass>
+
+	<!-- Remove COMMAND_CLASS_BASIC -->
+	<CommandClass id="32" action="remove" />
+
+	<!-- Map endpoints to instances -->
+	<CommandClass id="96" mapping="endpoints" />
+
+</Product>

@@ -26,9 +26,9 @@
   <CommandClass id="133">
     <Associations num_groups="4">
       <Group index="1" max_associations="8" label="Group 1" auto="false"/>
-      <Group index="2" max_associations="8" label="Group 2" auto="false"/>
-      <Group index="3" max_associations="8" label="Group 3" auto="false"/>
-      <Group index="4" max_associations="8" label="Group 4" auto="false"/>
+      <Group index="2" max_associations="8" label="Group 2" />
+      <Group index="3" max_associations="8" label="Group 3" />
+      <Group index="4" max_associations="8" label="Group 4" />
     </Associations>
   </CommandClass>
 

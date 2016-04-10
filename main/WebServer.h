@@ -170,6 +170,7 @@ private:
 	void Cmd_DownloadUpdate(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DownloadReady(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DeleteDatePoint(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_SetActiveTimerPlan(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_AddTimer(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_UpdateTimer(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DeleteTimer(WebEmSession & session, const request& req, Json::Value &root);
@@ -191,6 +192,8 @@ private:
 	void Cmd_AddSetpointTimer(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_UpdateSetpointTimer(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DeleteSetpointTimer(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_EnableSetpointTimer(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_DisableSetpointTimer(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_ClearSetpointTimers(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetSerialDevices(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetDevicesList(WebEmSession & session, const request& req, Json::Value &root);
@@ -295,6 +298,7 @@ private:
 	void Cmd_ZWaveSetUserCodeEnrollmentMode(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_ZWaveGetNodeUserCodes(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_ZWaveRemoveUserCode(WebEmSession & session, const request& req, Json::Value &root);
+	void ZWaveCPTestHeal(WebEmSession & session, const request& req, reply & rep);
 	//RTypes
 	void RType_OpenZWaveNodes(WebEmSession & session, const request& req, Json::Value &root);
 	int m_ZW_Hwidx;

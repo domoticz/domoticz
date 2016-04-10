@@ -223,6 +223,7 @@ hardware/1Wire/1WireForWindows.cpp
 hardware/AnnaThermostat.cpp
 hardware/ASyncSerial.cpp
 hardware/ASyncTCP.cpp
+hardware/AtagOne.cpp
 hardware/Comm5TCP.cpp
 hardware/csocket.cpp
 hardware/CurrentCostMeterBase.cpp
@@ -326,6 +327,7 @@ webserver/Base64.cpp
 webserver/connection.cpp
 webserver/connection_manager.cpp
 webserver/cWebem.cpp
+webserver/fastcgi.cpp
 webserver/mime_types.cpp
 webserver/reply.cpp
 webserver/request_handler.cpp
@@ -391,7 +393,7 @@ if(USE_PYTHON)
   ENDIF(PYTHONINTERP_FOUND)
 endif(USE_PYTHON)
 
-option(USE_STATIC_BOOST "Build with static BOOST libraries" NO)
+option(USE_STATIC_BOOST "Build with static BOOST libraries" YES)
 set(Boost_USE_STATIC_LIBS ${USE_STATIC_BOOST})
 set(Boost_USE_MULTITHREADED ON)
 unset(Boost_INCLUDE_DIR CACHE)
@@ -431,7 +433,7 @@ IF(CURL_FOUND)
   MESSAGE(STATUS "Curl libraries found at: ${CURL_LIBRARIES}")
   MESSAGE(STATUS "Curl includes found at: ${CURL_INCLUDE_DIRS}")
   INCLUDE_DIRECTORIES(${CURL_INCLUDE_DIRS})
-  add_definitions(-DWWW_ENABLE_SSL)
+  # add_definitions(-DWWW_ENABLE_SSL)
 else()
   MESSAGE(FATAL_ERROR "cURL not found on your system, see install.txt how to get them installed. (for example 'sudo apt-get install curl libcurl4-openssl-dev')")
 ENDIF(CURL_FOUND)
@@ -531,29 +533,22 @@ else()
   MESSAGE(STATUS "==== OpenZWave not found, support disabled!")
 ENDIF(OpenZWave)
 
-# try to detect Raspberry Pi hardware and WiringPi library. If found, include GPIO support
-find_path(RaspberryPi NAMES bcm_host.h PATHS "/opt/vc/include")
-IF(RaspberryPi)
-  message(STATUS "Building on Raspberry Pi... (bcm_host.h found in ${RaspberryPi})")
-  find_path(WiringPi wiringPi.h)
-  IF(WiringPi)
-    message(STATUS "WiringPi include was found in ${WiringPi}...")
-    find_library(WIRINGPI_LIBRARY NAMES libwiringPi.a)
-    IF(WIRINGPI_LIBRARY)
-      message(STATUS "WiringPi library was found in ${WIRINGPI_LIBRARY}...")
-      add_definitions(-DWITH_GPIO)
-      target_link_libraries(domoticz ${WIRINGPI_LIBRARY})
-    else()
-      message(STATUS "==== WiringPi library not found. GPIO support disabled.")
-    message(STATUS "==== (Please follow http://wiringpi.com/download-and-install/ if you want to use GPIO.)")
-    ENDIF()
+find_path(WiringPi wiringPi.h)
+IF(WiringPi)
+  message(STATUS "WiringPi include was found in ${WiringPi}...")
+  find_library(WIRINGPI_LIBRARY NAMES libwiringPi.a)
+  IF(WIRINGPI_LIBRARY)
+    message(STATUS "WiringPi library was found in ${WIRINGPI_LIBRARY}...")
+    add_definitions(-DWITH_GPIO)
+    target_link_libraries(domoticz ${WIRINGPI_LIBRARY})
   else()
-    message(STATUS "==== WiringPi include file (wiringPi.h) not found. GPIO support disabled.")
-    message(STATUS "==== (Please follow http://wiringpi.com/download-and-install/ if you want to use GPIO.)")
-  ENDIF(WiringPi)
+    message(STATUS "==== WiringPi library not found. GPIO support disabled.")
+  message(STATUS "==== (Please follow http://wiringpi.com/download-and-install/ if you want to use GPIO.)")
+  ENDIF()
 else()
-  message(STATUS "Not building on Raspberry Pi. GPIO support disabled.")
-ENDIF(RaspberryPi)
+  message(STATUS "==== WiringPi include file (wiringPi.h) not found. GPIO support disabled.")
+  message(STATUS "==== (Please follow http://wiringpi.com/download-and-install/ if you want to use GPIO.)")
+ENDIF(WiringPi)
 
 find_path(TELLDUSCORE_INCLUDE NAMES telldus-core.h)
 if (TELLDUSCORE_INCLUDE)

@@ -1698,7 +1698,6 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 						_device.scaleID = SCALEID_ENERGY;
 					else
 						_device.scaleID = SCALEID_POWER;
-					_device.floatValue = fValue;
 					_device.scaleMultiply = 1;
 					if (vUnits == "kWh")
 					{
@@ -1709,6 +1708,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 					{
 						_device.devType = ZDTYPE_SENSOR_POWER;
 					}
+					_device.floatValue = fValue*_device.scaleMultiply;
 					InsertDevice(_device);
 				}
 			}
@@ -1883,7 +1883,6 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 						_device.scaleID = SCALEID_ENERGY;
 					else
 						_device.scaleID = SCALEID_POWER;
-					_device.floatValue = fValue;
 					_device.scaleMultiply = 1;
 					if (vUnits == "kWh")
 					{
@@ -1894,6 +1893,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 					{
 						_device.devType = ZDTYPE_SENSOR_POWER;
 					}
+					_device.floatValue = fValue*_device.scaleMultiply;
 					InsertDevice(_device);
 				}
 			}
@@ -5176,7 +5176,8 @@ namespace http {
 		}
 		void CWebServer::ZWaveCPGetStats(WebEmSession & session, const request& req, reply & rep)
 		{
-			//Crashes at OpenZWave::GetNodeStatistics::_data->m_sentTS = m_sentTS.GetAsString();
+			//Crashes at the moment at:
+			//string TimeStampImpl::GetAsString
 			/*
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
 			if (pHardware != NULL)
@@ -5185,14 +5186,61 @@ namespace http {
 			{
 			COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
 			boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
-			reply::set_content(&rep, pOZWHardware->GetCPStats());
+			reply::set_content(&rep, pOZWHardware->m_ozwcp.GetCPStats());
 			reply::add_header_attachment(&rep, "stats.xml");
 			}
 			}
 			*/
 		}
 
+		void CWebServer::ZWaveCPTestHeal(WebEmSession & session, const request& req, reply & rep)
+		{
+			if (session.rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+			if (req.content.find("fun") == std::string::npos)
+				return;
 
+			std::multimap<std::string, std::string> values;
+			request::makeValuesFromPostContent(&req, values);
+			std::string sFun = request::findValue(&values, "fun");
+
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
+			if (pHardware == NULL)
+				return;
+			COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+
+			if (pHardware->HwdType == HTYPE_OpenZWave)
+			{
+				COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+				boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+
+				if (sFun == "test")
+				{
+					std::string sNum = request::findValue(&values, "num");
+					std::string sArg = request::findValue(&values, "cnt");
+
+					int node = atoi(sNum.c_str());
+					int cnt = atoi(sArg.c_str());
+
+					reply::set_content(&rep, pOZWHardware->m_ozwcp.DoTestNetwork(node, cnt));
+					reply::add_header_attachment(&rep, "testheal.xml");
+				}
+				else if (sFun == "heal")
+				{
+					std::string sNum = request::findValue(&values, "num");
+					std::string sHealRRS = request::findValue(&values, "healrrs");
+
+					int node = atoi(sNum.c_str());
+					bool healrrs = !sHealRRS.empty();
+
+					reply::set_content(&rep, pOZWHardware->m_ozwcp.HealNetworkNode(node, healrrs));
+					reply::add_header_attachment(&rep, "testheal.xml");
+				}
+			}
+		}
 
 		void CWebServer::Cmd_ZWaveSetUserCodeEnrollmentMode(WebEmSession & session, const request& req, Json::Value &root)
 		{

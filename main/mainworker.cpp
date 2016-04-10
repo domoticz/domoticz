@@ -87,8 +87,8 @@
 #include "../hardware/DomoticzInternal.h"
 #include "../hardware/NefitEasy.h"
 #include "../hardware/PanasonicTV.h"
-//#include "../hardware/HTU21D.h"
 #include "../hardware/OpenWebNet.h"
+#include "../hardware/AtagOne.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -807,8 +807,8 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new I2C(ID,1);
 		break;
 	case HTYPE_RaspberryHTU21D:
-			pHardware = new I2C(ID,2);
-			break;
+		pHardware = new I2C(ID,2);
+		break;
 	case HTYPE_Wunderground:
 		pHardware = new CWunderground(ID,Username,Password);
 		break;
@@ -829,6 +829,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_TOONTHERMOSTAT:
 		pHardware = new CToonThermostat(ID, Username, Password);
+		break;
+	case HTYPE_AtagOne:
+		pHardware = new CAtagOne(ID, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
 		break;
 	case HTYPE_NEST:
 		pHardware = new CNest(ID, Username, Password);
@@ -1042,7 +1045,7 @@ bool MainWorker::IsUpdateAvailable(const bool bIsForced)
 	machine = "armv7l";
 #endif
 
-	if (((m_szSystemName != "windows") && (machine != "armv6l") && (machine != "armv7l") && (machine != "x86_64")))
+	if ((m_szSystemName != "windows") && (machine != "armv6l") && (machine != "armv7l") && (machine != "x86_64") && (machine!= "aarch64"))
 	{
 		//Only Raspberry Pi (Wheezy)/Ubuntu/windows/osx for now!
 		return false;
@@ -6015,7 +6018,10 @@ void MainWorker::decode_evohome1(const int HwdID, const _eHardwareTypes HwdType,
 	unsigned char devType=pTypeEvohome;
 	unsigned char subType=pEvo->EVOHOME1.subtype;
 	std::stringstream szID;
-	szID << std::hex << (int)RFX_GETID3(pEvo->EVOHOME1.id1,pEvo->EVOHOME1.id2,pEvo->EVOHOME1.id3);
+	if (HwdType==HTYPE_EVOHOME_SCRIPT) //GB3: scripted evohome uses decimal device ID's
+		szID << std::dec << (int)RFX_GETID3(pEvo->EVOHOME1.id1,pEvo->EVOHOME1.id2,pEvo->EVOHOME1.id3);
+	else
+		szID << std::hex << (int)RFX_GETID3(pEvo->EVOHOME1.id1,pEvo->EVOHOME1.id2,pEvo->EVOHOME1.id3);
 	std::string ID(szID.str());
 	unsigned char Unit=0;
 	unsigned char cmnd=pEvo->EVOHOME1.status;
@@ -6074,7 +6080,10 @@ void MainWorker::decode_evohome1(const int HwdID, const _eHardwareTypes HwdType,
 			break;
 		}
 
-		sprintf(szTmp, "id            = %02X:%02X:%02X", pEvo->EVOHOME1.id1, pEvo->EVOHOME1.id2, pEvo->EVOHOME1.id3);
+		if (HwdType==HTYPE_EVOHOME_SCRIPT) //GB3: scripted evohome uses decimal device ID's
+			sprintf(szTmp, "id            = %u", (int)RFX_GETID3(pEvo->EVOHOME1.id1,pEvo->EVOHOME1.id2,pEvo->EVOHOME1.id3));
+		else
+			sprintf(szTmp, "id            = %02X:%02X:%02X", pEvo->EVOHOME1.id1, pEvo->EVOHOME1.id2, pEvo->EVOHOME1.id3);
 		WriteMessage(szTmp);
 		sprintf(szTmp, "action        = %d", (int)pEvo->EVOHOME1.action);
 		WriteMessage(szTmp);
@@ -6188,12 +6197,13 @@ void MainWorker::decode_Security1(const int HwdID, const _eHardwareTypes HwdType
 	unsigned char SignalLevel=pResponse->SECURITY1.rssi;
 	unsigned char BatteryLevel = get_BateryLevel(HwdType,false, pResponse->SECURITY1.battery_level & 0x0F);
 	if (
-		(pResponse->SECURITY1.subtype == sTypeKD101)||
-		(pResponse->SECURITY1.subtype == sTypeSA30)
+		(pResponse->SECURITY1.subtype == sTypeKD101) ||
+		(pResponse->SECURITY1.subtype == sTypeSA30) ||
+		(pResponse->SECURITY1.subtype == sTypeDomoticzSecurity)
 		)
 	{
 		//KD101 & SA30 do not support battery low indication
-		BatteryLevel=255;
+		BatteryLevel = 255;
 	}
 
 	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd, procResult.DeviceName);
@@ -8782,7 +8792,7 @@ void MainWorker::decode_P1MeterPower(const int HwdID, const _eHardwareTypes HwdT
 	unsigned char SignalLevel=12;
 	unsigned char BatteryLevel = 255;
 
-	sprintf(szTmp,"%lu;%lu;%lu;%lu;%lu;%lu",
+	sprintf(szTmp,"%u;%u;%u;%u;%u;%u",
 		p1Power->powerusage1,
 		p1Power->powerusage2,
 		p1Power->powerdeliv1,
@@ -8814,9 +8824,9 @@ void MainWorker::decode_P1MeterPower(const int HwdID, const _eHardwareTypes HwdT
 			sprintf(szTmp,"powerdeliv2 = %.3f kWh", float(p1Power->powerdeliv2) / 1000.0f);
 			WriteMessage(szTmp);
 
-			sprintf(szTmp,"current usage = %03lu Watt", p1Power->usagecurrent);
+			sprintf(szTmp,"current usage = %03u Watt", p1Power->usagecurrent);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"current deliv = %03lu Watt", p1Power->delivcurrent);
+			sprintf(szTmp,"current deliv = %03u Watt", p1Power->delivcurrent);
 			WriteMessage(szTmp);
 			break;
 		default:
@@ -8846,7 +8856,7 @@ void MainWorker::decode_P1MeterGas(const int HwdID, const _eHardwareTypes HwdTyp
 	unsigned char SignalLevel=12;
 	unsigned char BatteryLevel = 255;
 
-	sprintf(szTmp,"%lu",p1Gas->gasusage);
+	sprintf(szTmp,"%u",p1Gas->gasusage);
 	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp, procResult.DeviceName);
 	if (DevRowIdx == -1)
 		return;
@@ -9204,6 +9214,7 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 		(subType == sTypeBaro) ||
 		(subType == sTypeDistance) ||
 		(subType == sTypeSoilMoisture) ||
+		(subType == sTypeCustom) ||
 		(subType == sTypeKwh)
 		)
 	{
@@ -9364,6 +9375,14 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 		if (DevRowIdx == -1)
 			return;
 	}
+	else if (subType == sTypeCustom)
+	{
+		sprintf(szTmp, "%.4f", pMeter->floatval1);
+		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
+		if (DevRowIdx == -1)
+			return;
+		m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_USAGE, pMeter->floatval1);
+	}
 
 	if (m_verboselevel >= EVBL_ALL)
 	{
@@ -9466,6 +9485,11 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 		case sTypeAlert:
 			WriteMessage("subtype       = Alert");
 			sprintf(szTmp, "Alert = %d", pMeter->intval1);
+			WriteMessage(szTmp);
+			break;
+		case sTypeCustom:
+			WriteMessage("subtype       = Custom Sensor");
+			sprintf(szTmp, "Value = %g", pMeter->floatval1);
 			WriteMessage(szTmp);
 			break;
 		default:
@@ -10962,7 +10986,10 @@ bool MainWorker::SwitchModal(const std::string &idx, const std::string &status, 
 
 	unsigned long ID;
 	std::stringstream s_strid;
-	s_strid << std::hex << sd[1];
+	if (pHardware->HwdType==HTYPE_EVOHOME_SCRIPT) //GB3: scripted evohome uses decimal device ID's. We need to convert those to hex here to fit the 3-byte ID defined in the message struct
+		s_strid << std::hex << std::dec << sd[1];
+	else
+		s_strid << std::hex << sd[1];
 	s_strid >> ID;
 
 	//Update Domoticz evohome Device
@@ -11131,6 +11158,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		(pHardware->HwdType == HTYPE_OpenThermGatewayTCP) ||
 		(pHardware->HwdType == HTYPE_ICYTHERMOSTAT) ||
 		(pHardware->HwdType == HTYPE_TOONTHERMOSTAT) ||
+		(pHardware->HwdType == HTYPE_AtagOne) ||
 		(pHardware->HwdType == HTYPE_NEST) ||
 		(pHardware->HwdType == HTYPE_ANNATHERMOSTAT) ||
 		(pHardware->HwdType == HTYPE_THERMOSMART) ||
@@ -11158,6 +11186,11 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		else if (pHardware->HwdType == HTYPE_TOONTHERMOSTAT)
 		{
 			CToonThermostat *pGateway = reinterpret_cast<CToonThermostat*>(pHardware);
+			pGateway->SetSetpoint(ID4, TempValue);
+		}
+		else if (pHardware->HwdType == HTYPE_AtagOne)
+		{
+			CAtagOne *pGateway = reinterpret_cast<CAtagOne*>(pHardware);
 			pGateway->SetSetpoint(ID4, TempValue);
 		}
 		else if (pHardware->HwdType == HTYPE_NEST)
@@ -11422,6 +11455,12 @@ bool MainWorker::SetThermostatState(const std::string &idx, const int newState)
 		pGateway->SetProgramState(newState);
 		return true;
 	}
+	if (pHardware->HwdType == HTYPE_AtagOne)
+	{
+		//CAtagOne *pGateway = reinterpret_cast<CAtagOne*>(pHardware);
+		//pGateway->SetProgramState(newState);
+		return true;
+	}
 	else if (pHardware->HwdType == HTYPE_NEST)
 	{
 		CNest *pGateway = reinterpret_cast<CNest*>(pHardware);
@@ -11653,6 +11692,15 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 						fLevel=100;
 					ilevel=round(fLevel)+1;
 				}
+				if (switchtype == STYPE_Selector) {
+					if (lstatus != "Set Level") {
+						ilevel = 0;
+					}
+					ilevel = round(ilevel/10.0f)*10; // select only multiples of 10
+					if (ilevel == 0) {
+						lstatus ="Off";
+					}
+				}
 			}
 
 			int idx = atoi(sd[0].c_str());
@@ -11836,7 +11884,7 @@ void MainWorker::SetInternalSecStatus()
 	}
 
 	CDomoticzHardwareBase *pHardware = GetHardwareByType(HTYPE_DomoticzInternal);
-	PushAndWaitRxMessage(pHardware, (const unsigned char *)&tsen, "Domoticz Security Panel", 100);
+	PushAndWaitRxMessage(pHardware, (const unsigned char *)&tsen, "Domoticz Security Panel", -1);
 }
 
 void MainWorker::UpdateDomoticzSecurityStatus(const int iSecStatus)
@@ -12059,6 +12107,16 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 				gDevice.id = unit;
 				gDevice.intval1 = static_cast<int>(ID);
 				gDevice.intval2 = atoi(sValue.c_str());
+				DecodeRXMessage(pHardware, (const unsigned char *)&gDevice, NULL, batterylevel);
+				return true;
+			}
+			else if (subType == sTypeCustom)
+			{
+				_tGeneralDevice gDevice;
+				gDevice.subtype = sTypeCustom;
+				gDevice.id = unit;
+				gDevice.floatval1 = (float)atof(sValue.c_str());
+				gDevice.intval1 = static_cast<int>(ID);
 				DecodeRXMessage(pHardware, (const unsigned char *)&gDevice, NULL, batterylevel);
 				return true;
 			}

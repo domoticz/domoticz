@@ -7,7 +7,7 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
-
+#pragma once
 #ifndef HTTP_CONNECTION_HPP
 #define HTTP_CONNECTION_HPP
 
@@ -87,7 +87,8 @@ private:
   /// Socket for the (PLAIN) connection.
   boost::asio::ip::tcp::socket *socket_;
   //Host EndPoint
-  std::string host_endpoint_;
+  std::string host_endpoint_address_;
+  std::string host_endpoint_port_;
 
   /// If this is a keep-alive connection or not
   bool keepalive_;

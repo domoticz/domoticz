@@ -53,7 +53,7 @@
 	<CommandClass id="133">
 	    <Associations num_groups="2">
 			<Group index="1" max_associations="5" label="Lifeline" />
-			<Group index="1" max_associations="5" label="Retransmit" />
+			<Group index="2" max_associations="5" label="Retransmit" />
 	    </Associations>
   </CommandClass>
 </Product>

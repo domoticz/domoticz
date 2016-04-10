@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<!-- Popp: Z-Weather Wind and Weather Sensor (Manufacturer id is 0x0115 Z-Wave.Me) -->
+	<!-- Configuration  -->
+	<CommandClass id="112">
+		<Value type="byte" genre="config" instance="1" index="1" label="Threshold for too much wind" size="1" min="0" max="30" units="ms" value="6">
+			<Help>
+			Crossing this parameter on the rising edge, Z-Weather sends a basic set to the associated groups, serves the lifeline and sends a wake up notification.
+			Valid values: 0-30 m/s, where 0 means no notification on too much wind.
+			Default: 6
+			</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="2" label="Threshold for twilight" size="1" min="0" max="100" units="%" value="37">
+			<Help>
+			Crossing this parameter from night to day, association group 3 is informed.
+			Crossing this parameter from day to night, association group 4 is informed.
+			Valid values: 0-100 %, where 0 means off.
+			Default: 37 (street lightning)
+			</Help>
+		</Value>
+	</CommandClass>
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="4">
+			<Group index="1" max_associations="1" label="Lifeline"/>
+			<Group index="2" max_associations="5" label="Wind speed is higher than 6 m/s (22 Km/h)" />
+			<Group index="3" max_associations="5" label="At the end of the dawn if it becomes bright (luminance rising)" />
+			<Group index="4" max_associations="5" label="At the end of the dusk if it becomes bright (luminance decreasing)" />
+		</Associations>
+	</CommandClass>
+</Product>

@@ -126,7 +126,7 @@ void Comm5TCP::processSensorData(const std::string& line)
 	for (int i = 0; i < 16; ++i) {
 		bool on = (sensorbitfield & (1 << i)) != 0 ? true : false;
 		if ((lastKnownSensorState & (1 << i) ^ (sensorbitfield & (1 << i))) || initSensorData) {
-			SendSwitch((i + 1) << 8, 1, 255, on, on ? 100 : 0, "Sensor " + boost::lexical_cast<std::string>(i + 1));
+			SendSwitch((i + 1) << 8, 1, 255, on, 0, "Sensor " + boost::lexical_cast<std::string>(i + 1));
 		}
 	}
 	lastKnownSensorState = sensorbitfield;
@@ -151,7 +151,7 @@ void Comm5TCP::ParseData(const unsigned char* data, const size_t len)
 			unsigned int relaybitfield = ::strtol(tokens[1].c_str(), 0, 16);
 			for (int i = 0; i < 16; ++i) {
 				bool on = (relaybitfield & (1 << i)) != 0 ? true : false;
-				SendSwitch(i + 1, 1, 255, on, on ? 100 : 0, "Relay " + boost::lexical_cast<std::string>(i + 1));
+				SendSwitch(i + 1, 1, 255, on, 0, "Relay " + boost::lexical_cast<std::string>(i + 1));
 			}
 			reqState = Idle;
 		} else if (reqState == QuerySensorState && startsWith(line, "210")) {

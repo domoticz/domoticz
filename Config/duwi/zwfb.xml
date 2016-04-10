@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Popp / Duwi ZW FB Wireless remote control 10-channel -->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+
+	<!-- COMMAND_CLASS_CONFIGURATION. Configuration Parameters -->
+	<CommandClass id="112">
+		<Value type="list" index="10" genre="config" label="Command to Control Group No1 (association group 2)" units="" min="0" max="5" value="1" size="1">
+			<Help>This parameter defines the command to be sent to devices of control group No1 when the related button is pressed (association group 2)</Help>
+			<Item label="Disabled" value="0"/>
+			<Item label="Switch On/Off and Dim (send Basic Set and Switch Multilevel) (default)" value="1"/>
+			<Item label="Switch On/Off only (send Basic Set)" value="2"/>
+			<Item label="Switch All" value="3"/>
+			<Item label="Send Scene" value="4"/>
+			<Item label="Send Preconfigured Scenes" value="5"/>			
+		</Value>
+		<Value type="list" index="11" genre="config" label="Command to Control Group No2 (association group 3)" units="" min="0" max="5" value="1" size="1">
+			<Help>This parameter defines the command to be sent to devices of control group No2 when the related button is pressed (association group 3)</Help>
+			<Item label="Disabled" value="0"/>
+			<Item label="Switch On/Off and Dim (send Basic Set and Switch Multilevel) (default)" value="1"/>
+			<Item label="Switch On/Off only (send Basic Set)" value="2"/>
+			<Item label="Switch All" value="3"/>
+			<Item label="Send Scene" value="4"/>
+			<Item label="Send Preconfigured Scenes" value="5"/>			
+		</Value>
+		<Value type="list" index="12" genre="config" label="Command to Control Group No3 (association group 4)" units="" min="0" max="5" value="1" size="1">
+			<Help>This parameter defines the command to be sent to devices of control group No3 when the related button is pressed (association group 4)</Help>
+			<Item label="Disabled" value="0"/>
+			<Item label="Switch On/Off and Dim (send Basic Set and Switch Multilevel) (default)" value="1"/>
+			<Item label="Switch On/Off only (send Basic Set)" value="2"/>
+			<Item label="Switch All" value="3"/>
+			<Item label="Send Scene" value="4"/>
+			<Item label="Send Preconfigured Scenes" value="5"/>			
+		</Value>
+		<Value type="list" index="13" genre="config" label="Command to Control Group No4 (association group 5)" units="" min="0" max="5" value="1" size="1">
+			<Help>This parameter defines the command to be sent to devices of control group No4 when the related button is pressed (association group 5)</Help>
+			<Item label="Disabled" value="0"/>
+			<Item label="Switch On/Off and Dim (send Basic Set and Switch Multilevel) (default)" value="1"/>
+			<Item label="Switch On/Off only (send Basic Set)" value="2"/>
+			<Item label="Switch All" value="3"/>
+			<Item label="Send Scene" value="4"/>
+			<Item label="Send Preconfigured Scenes" value="5"/>			
+		</Value>
+		<Value type="list" index="14" genre="config" label="Command to Control Group No5 (association group 6)" units="" min="0" max="5" value="1" size="1">
+			<Help>This parameter defines the command to be sent to devices of control group No5 when the related button is pressed (association group 6)</Help>
+			<Item label="Disabled" value="0"/>
+			<Item label="Switch On/Off and Dim (send Basic Set and Switch Multilevel) (default)" value="1"/>
+			<Item label="Switch On/Off only (send Basic Set)" value="2"/>
+			<Item label="Switch All" value="3"/>
+			<Item label="Send Scene" value="4"/>
+			<Item label="Send Preconfigured Scenes" value="5"/>			
+		</Value>
+		<Value type="list" index="15" genre="config" label="Command to Control Group No6 (association group 7)" units="" min="0" max="5" value="1" size="1">
+			<Help>This parameter defines the command to be sent to devices of control group No6 when the related button is pressed (association group 7)</Help>
+			<Item label="Disabled" value="0"/>
+			<Item label="Switch On/Off and Dim (send Basic Set and Switch Multilevel) (default)" value="1"/>
+			<Item label="Switch On/Off only (send Basic Set)" value="2"/>
+			<Item label="Switch All" value="3"/>
+			<Item label="Send Scene" value="4"/>
+			<Item label="Send Preconfigured Scenes" value="5"/>			
+		</Value>
+		<Value type="list" index="16" genre="config" label="Command to Control Group No7 (association group 8)" units="" min="0" max="5" value="1" size="1">
+			<Help>This parameter defines the command to be sent to devices of control group No7 when the related button is pressed (association group 8)</Help>
+			<Item label="Disabled" value="0"/>
+			<Item label="Switch On/Off and Dim (send Basic Set and Switch Multilevel) (default)" value="1"/>
+			<Item label="Switch On/Off only (send Basic Set)" value="2"/>
+			<Item label="Switch All" value="3"/>
+			<Item label="Send Scene" value="4"/>
+			<Item label="Send Preconfigured Scenes" value="5"/>			
+		</Value>
+		<Value type="list" index="17" genre="config" label="Command to Control Scene No1 (association group 9)" units="" min="0" max="6" value="4" size="1">
+			<Help>This parameter defines the command to be sent to devices of control scene group No1 when the related button is pressed (association group 9)</Help>
+			<Item label="Disabled" value="0"/>
+			<Item label="Switch On/Off and Dim (send Basic Set and Switch Multilevel)" value="1"/>
+			<Item label="Switch On/Off only (send Basic Set)" value="2"/>
+			<Item label="Switch All" value="3"/>
+			<Item label="Send Scene (default)" value="4"/>
+			<Item label="Send Preconfigured Scenes" value="5"/>			
+		</Value>
+		<Value type="list" index="18" genre="config" label="Command to Control Scene No2 (association group 10)" units="" min="0" max="6" value="4" size="1">
+			<Help>This parameter defines the command to be sent to devices of control scene group No2 when the related button is pressed (association group 10)</Help>
+			<Item label="Disabled" value="0"/>
+			<Item label="Switch On/Off and Dim (send Basic Set and Switch Multilevel)" value="1"/>
+			<Item label="Switch On/Off only (send Basic Set)" value="2"/>
+			<Item label="Switch All" value="3"/>
+			<Item label="Send Scene (default)" value="4"/>
+			<Item label="Send Preconfigured Scenes" value="5"/>			
+		</Value>
+		<Value type="list" index="19" genre="config" label="Command to Control Scene No3 (association group 11)" units="" min="0" max="6" value="4" size="1">
+			<Help>This parameter defines the command to be sent to devices of control scene group No3 when the related button is pressed (association group 11)</Help>
+			<Item label="Disabled" value="0"/>
+			<Item label="Switch On/Off and Dim (send Basic Set and Switch Multilevel)" value="1"/>
+			<Item label="Switch On/Off only (send Basic Set)" value="2"/>
+			<Item label="Switch All" value="3"/>
+			<Item label="Send Scene (default)" value="4"/>
+			<Item label="Send Preconfigured Scenes" value="5"/>			
+		</Value>
+		<Value type="list" index="20" genre="config" label="Command to Control group All On/Off (association group 12)" units="" min="0" max="6" value="3" size="1">
+			<Help>This parameter defines the command to be sent to devices of control group All On/Off when the related button is pressed (association group 12)</Help>
+			<Item label="Disabled" value="0"/>
+			<Item label="Switch On/Off and Dim (send Basic Set and Switch Multilevel)" value="1"/>
+			<Item label="Switch On/Off only (send Basic Set)" value="2"/>
+			<Item label="Switch All (default)" value="3"/>
+			<Item label="Send Scene" value="4"/>
+			<Item label="Send Preconfigured Scenes" value="5"/>			
+		</Value>
+		<Value type="list" index="21" genre="config" label="Send the following Switch All commands" units="" min="1" max="255" value="1" size="1">
+			<Help>Send the following Switch All ON/OFF commands</Help>
+			<Item label="Switch Off only (default)" value="1"/>
+			<Item label="Switch On only" value="2"/>
+			<Item label="Switch On and Off" value="255"/>
+		</Value>
+	</CommandClass>
+
+
+	<!-- COMMAND_CLASS_ASSOCIATION -->
+	<CommandClass id="133">
+		<Associations num_groups="12">
+			<Group index="1" max_associations="5" label="Lifeline"/>
+			<Group index="2" max_associations="5" label="The buttons of group No1" />
+			<Group index="3" max_associations="5" label="The buttons of group No2" />
+			<Group index="4" max_associations="5" label="The buttons of group No3" />
+			<Group index="5" max_associations="5" label="The buttons of group No4" />
+			<Group index="6" max_associations="5" label="The buttons of group No5" />
+			<Group index="7" max_associations="5" label="The buttons of group No6" />
+			<Group index="8" max_associations="5" label="The buttons of group No7" />
+			<Group index="9" max_associations="5" label="The buttons of scene No1" />
+			<Group index="10" max_associations="5" label="The buttons of scene No2" />
+			<Group index="11" max_associations="5" label="The buttons of scene No3" />
+			<Group index="12" max_associations="5" label="The buttons of All On/Off" />
+		</Associations>
+	</CommandClass>
+
+</Product>

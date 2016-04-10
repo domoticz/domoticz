@@ -65,9 +65,9 @@
   <CommandClass id="133">
     <Associations num_groups="4">
       <Group index="1" max_associations="5" label="Button #1" auto="false" write_only="true" />
-      <Group index="2" max_associations="5" label="Button #2" auto="false" write_only="true" />
-      <Group index="3" max_associations="5" label="Button #3" auto="false" write_only="true" />
-      <Group index="4" max_associations="5" label="Button #4" auto="false" write_only="true" />
+      <Group index="2" max_associations="5" label="Button #2" write_only="true" />
+      <Group index="3" max_associations="5" label="Button #3" write_only="true" />
+      <Group index="4" max_associations="5" label="Button #4" write_only="true" />
     </Associations>
   </CommandClass>
 

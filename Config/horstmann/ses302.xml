@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+     <Value type="byte" instance="1" index="1" genre="config" label="Delta Temperature change internal" min="0" max="255" value="0">
+      <Help>Change between temperatures to trigger a temperature report (step 0.1) (Default 0 = disabled)</Help>
+    </Value>
+    <Value type="byte" instance="2" index="1" genre="config" label="Delta Temperature change external 2" min="0" max="255" value="0">
+      <Help>Change between temperatures to trigger a temperature report (step 0.1) (Default 0 = disabled)</Help>
+    </Value>
+    <Value type="byte" instance="3" index="1" genre="config" label="Delta Temperature change external 3" min="0" max="255" value="0">
+      <Help>Change between temperatures to trigger a temperature report (step 0.1) (Default 0 = disabled)</Help>
+    </Value>
+    <Value type="byte" instance="4" index="1" genre="config" label="Delta Temperature change external 4" min="0" max="255" value="0">
+      <Help>Change between temperatures to trigger a temperature report (step 0.1) (Default 0 = disabled)</Help>
+    </Value>
+    <Value type="byte" instance="5" index="1" genre="config" label="Delta Temperature change external 5" min="0" max="255" value="0">
+      <Help>Change between temperatures to trigger a temperature report (step 0.1) (Default 0 = disabled)</Help>
+    </Value>
+    <Value type="byte" instance="1" index="2" genre="config" label="Temperature reporting interval internal" min="0" max="255" value="5">
+      <Help>Temperature reporting interval in minutes (Default 5 minutes)</Help>
+    </Value>
+    <Value type="byte" instance="2" index="2" genre="config" label="Temperature reporting interval external 2" min="0" max="255" value="5">
+      <Help>Temperature reporting interval in minutes (Default 5 minutes)</Help>
+    </Value>
+    <Value type="byte" instance="3" index="2" genre="config" label="Temperature reporting interval external 3" min="0" max="255" value="5">
+      <Help>Temperature reporting interval in minutes (Default 5 minutes)</Help>
+    </Value>
+    <Value type="byte" instance="4" index="2" genre="config" label="Temperature reporting interval external 4" min="0" max="255" value="5">
+      <Help>Temperature reporting interval in minutes (Default 5 minutes)</Help>
+    </Value>
+    <Value type="byte" instance="5" index="2" genre="config" label="Temperature reporting interval external 5" min="0" max="255" value="5">
+      <Help>Temperature reporting interval in minutes (Default 5 minutes)</Help>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">   
+    <Associations num_groups="1">
+      <Group index="1" max_associations="1" label="Lifeline"/>
+    </Associations>
+  </CommandClass>
+
+</Product>

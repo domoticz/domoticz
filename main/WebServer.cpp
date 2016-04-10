@@ -458,6 +458,7 @@ namespace http {
 			RegisterCommandCode("downloadready", boost::bind(&CWebServer::Cmd_DownloadReady, this, _1, _2, _3));
 			RegisterCommandCode("deletedatapoint", boost::bind(&CWebServer::Cmd_DeleteDatePoint, this, _1, _2, _3));
 
+			RegisterCommandCode("setactivetimerplan", boost::bind(&CWebServer::Cmd_SetActiveTimerPlan, this, _1, _2, _3));
 			RegisterCommandCode("addtimer", boost::bind(&CWebServer::Cmd_AddTimer, this, _1, _2, _3));
 			RegisterCommandCode("updatetimer", boost::bind(&CWebServer::Cmd_UpdateTimer, this, _1, _2, _3));
 			RegisterCommandCode("deletetimer", boost::bind(&CWebServer::Cmd_DeleteTimer, this, _1, _2, _3));
@@ -481,6 +482,8 @@ namespace http {
 			RegisterCommandCode("addsetpointtimer", boost::bind(&CWebServer::Cmd_AddSetpointTimer, this, _1, _2, _3));
 			RegisterCommandCode("updatesetpointtimer", boost::bind(&CWebServer::Cmd_UpdateSetpointTimer, this, _1, _2, _3));
 			RegisterCommandCode("deletesetpointtimer", boost::bind(&CWebServer::Cmd_DeleteSetpointTimer, this, _1, _2, _3));
+			RegisterCommandCode("enablesetpointtimer", boost::bind(&CWebServer::Cmd_EnableSetpointTimer, this, _1, _2, _3));
+			RegisterCommandCode("disablesetpointtimer", boost::bind(&CWebServer::Cmd_DisableSetpointTimer, this, _1, _2, _3));
 			RegisterCommandCode("clearsetpointtimers", boost::bind(&CWebServer::Cmd_ClearSetpointTimers, this, _1, _2, _3));
 
 			RegisterCommandCode("serial_devices", boost::bind(&CWebServer::Cmd_GetSerialDevices, this, _1, _2, _3));
@@ -578,6 +581,7 @@ namespace http {
 			m_pWebEm->RegisterPageCode("/ozwcp/admpost.html", boost::bind(&CWebServer::ZWaveCPAdminCommand, this, _1, _2, _3));
 			m_pWebEm->RegisterPageCode("/ozwcp/nodepost.html", boost::bind(&CWebServer::ZWaveCPNodeChange, this, _1, _2, _3));
 			m_pWebEm->RegisterPageCode("/ozwcp/savepost.html", boost::bind(&CWebServer::ZWaveCPSaveConfig, this, _1, _2, _3));
+			m_pWebEm->RegisterPageCode("/ozwcp/thpost.html", boost::bind(&CWebServer::ZWaveCPTestHeal, this, _1, _2, _3));
 			m_pWebEm->RegisterPageCode("/ozwcp/topopost.html", boost::bind(&CWebServer::ZWaveCPGetTopo, this, _1, _2, _3));
 			m_pWebEm->RegisterPageCode("/ozwcp/statpost.html", boost::bind(&CWebServer::ZWaveCPGetStats, this, _1, _2, _3));
 			//grouppost.html
@@ -1052,6 +1056,7 @@ namespace http {
 				(htype == HTYPE_ForecastIO) ||
 				(htype == HTYPE_ICYTHERMOSTAT) ||
 				(htype == HTYPE_TOONTHERMOSTAT) ||
+				(htype == HTYPE_AtagOne) ||
 				(htype == HTYPE_PVOUTPUT_INPUT) ||
 				(htype == HTYPE_NEST) ||
 				(htype == HTYPE_ANNATHERMOSTAT) ||
@@ -1299,6 +1304,7 @@ namespace http {
 				(htype == HTYPE_ForecastIO) ||
 				(htype == HTYPE_ICYTHERMOSTAT) ||
 				(htype == HTYPE_TOONTHERMOSTAT) ||
+				(htype == HTYPE_AtagOne) ||
 				(htype == HTYPE_PVOUTPUT_INPUT) ||
 				(htype == HTYPE_NEST) ||
 				(htype == HTYPE_ANNATHERMOSTAT) ||
@@ -2104,7 +2110,7 @@ namespace http {
 					machine = "armv7l";
 				}
 
-				if (((machine != "armv6l") && (machine != "armv7l") && (systemname!="windows") && (machine != "x86_64")) || (strstr(my_uname.release, "ARCH+") != NULL))
+				if (((machine != "armv6l") && (machine != "armv7l") && (systemname!="windows") && (machine != "x86_64") && (machine != "aarch64")) || (strstr(my_uname.release, "ARCH+") != NULL))
 					szHistoryURL = "http://www.domoticz.com/download.php?channel=beta&type=history";
 				else
 					szHistoryURL = "http://www.domoticz.com/download.php?channel=beta&type=history&system=" + systemname + "&machine=" + machine;
@@ -3464,7 +3470,7 @@ namespace http {
 				root["status"] = "OK";
 				root["title"] = "GetLightSwitches";
 				std::vector<std::vector<std::string> > result;
-				result = m_sql.safe_query("SELECT ID, Name, Type, SubType, Used, SwitchType FROM DeviceStatus ORDER BY Name");
+				result = m_sql.safe_query("SELECT ID, Name, Type, SubType, Used, SwitchType, Options FROM DeviceStatus ORDER BY Name");
 				if (result.size() > 0)
 				{
 					std::vector<std::vector<std::string> >::const_iterator itt;
@@ -3479,6 +3485,7 @@ namespace http {
 						int SubType = atoi(sd[3].c_str());
 						int used = atoi(sd[4].c_str());
 						_eSwitchType switchtype = (_eSwitchType)atoi(sd[5].c_str());
+						std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sd[6]);
 						bool bdoAdd=false;
 						switch (Type)
 						{
@@ -3526,9 +3533,28 @@ namespace http {
 								bool bIsDimmer = (
 									(switchtype == STYPE_Dimmer) ||
 									(switchtype == STYPE_BlindsPercentage) ||
-									(switchtype == STYPE_BlindsPercentageInverted)
+									(switchtype == STYPE_BlindsPercentageInverted) ||
+									(switchtype == STYPE_Selector)
 									);
 								root["result"][ii]["IsDimmer"] = bIsDimmer;
+								std::string dimmerLevels = bIsDimmer ? "all" : "none";
+								if (switchtype == STYPE_Selector) {
+									std::stringstream ss;
+									std::map<std::string, std::string> selectorStatuses;
+									GetSelectorSwitchStatuses(options, selectorStatuses);
+									bool levelOffHidden = options["LevelOffHidden"] == "true";
+									for(int i = 0; i < (int)selectorStatuses.size(); i++) {
+										if (levelOffHidden && (i == 0)) {
+											continue;
+										}
+										if((levelOffHidden && (i > 1)) || (i > 0)) {
+											ss << ",";
+										}
+										ss << i * 10;
+									}
+									dimmerLevels = ss.str();
+								}
+								root["result"][ii]["DimmerLevels"] = dimmerLevels;
 								ii++;
 							}
 							break;
@@ -8524,7 +8550,8 @@ namespace http {
 								sprintf(szTmp, "%.03f m3", musage);
 								break;
 							case MTYPE_WATER:
-								sprintf(szTmp, "%llu Liter", total_real);
+								musage = float(total_real) / (WaterDivider/1000.0f);
+								sprintf(szTmp, "%d Liter", round(musage));
 								break;
 							case MTYPE_COUNTER:
 								sprintf(szTmp, "%llu %s", total_real, ValueUnits.c_str());
@@ -9344,7 +9371,7 @@ namespace http {
 								}
 							}
 							root["result"][ii]["Image"] = IconFile;
-							root["result"][ii]["TypeImg"] = "air";
+							root["result"][ii]["TypeImg"] = IconFile;
 						}
 						else if (dSubType == sTypeFan)
 						{
@@ -12581,15 +12608,15 @@ namespace http {
 							{
 								std::vector<std::string> sd = *itt;
 
-								if (method == 0)
+								//If method == 1, provide BOTH hourly and instant usage for combined graph
 								{
 									//bars / hour
 									std::string actDateTimeHour = sd[2].substr(0, 13);
-									if (actDateTimeHour != LastDateTime)
+									if (actDateTimeHour != LastDateTime || ((method == 1) && (itt + 1 == result.end())))
 									{
 										if (bHaveFirstValue)
 										{
-											root["result"][ii]["d"] = LastDateTime + ":00";
+											root["result"][ii]["d"] = LastDateTime + (method == 1 ? ":30" : ":00");
 
 											long long ulTotalValue = ulLastValue - ulFirstValue;
 											if (ulTotalValue == 0)
@@ -12615,7 +12642,7 @@ namespace http {
 												sprintf(szTmp, "%.1f", TotalValue);
 												break;
 											}
-											root["result"][ii]["v"] = szTmp;
+											root["result"][ii][method==1 ? "eu" : "v"] = szTmp;
 											ii++;
 										}
 										LastDateTime = actDateTimeHour;
@@ -12639,7 +12666,8 @@ namespace http {
 										ulFirstRealValue = ulLastValue;
 									}
 								}
-								else
+								
+								if (method == 1)
 								{
 									std::stringstream s_str1(sd[1]);
 									long long actValue;
