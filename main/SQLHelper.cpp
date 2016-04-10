@@ -3064,8 +3064,9 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 
 	unsigned long long ulID=0;
 	bool bDeviceUsed = false;
+	bool bSameDeviceStatusValue = false;
 	std::vector<std::vector<std::string> > result;
-	result = safe_query("SELECT ID,Name, Used FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID, unit, devType, subType);
+	result = safe_query("SELECT ID,Name, Used, SwitchType, nValue, sValue FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID, unit, devType, subType);
 	if (result.size()==0)
 	{
 		//Insert
@@ -3105,6 +3106,9 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 
 		devname=result[0][1];
 		bDeviceUsed= atoi(result[0][2].c_str())!=0;
+		_eSwitchType stype = (_eSwitchType)atoi(result[0][3].c_str());
+		int old_nValue = atoi(result[0][4].c_str());
+		std::string old_sValue = result[0][5];
 
 		time_t now = time(0);
 		struct tm ltime;
@@ -3123,6 +3127,21 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
         }
 		else
 		{
+			if (
+				(stype == STYPE_DoorLock) ||
+				(stype == STYPE_Contact)
+				)
+			{
+				//Check if we received the same state as before, if yes, don't do anything (only update)
+				//This is specially handy for devices that send a keep-alive status every xx minutes
+				//like professional alarm system equipment
+				//.. we should make this an option of course
+				bSameDeviceStatusValue = (
+					(nValue == old_nValue) &&
+					(sValue == old_sValue)
+					);
+			}
+
 			result = safe_query(
 				"UPDATE DeviceStatus SET SignalLevel=%d, BatteryLevel=%d, nValue=%d, sValue='%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' "
 				"WHERE (ID = %llu)",
@@ -3132,6 +3151,9 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 				ulID);
 		}
 	}
+
+	if (bSameDeviceStatusValue)
+		return ulID; //status has not changed, no need to process further
 
 	switch (devType)
 	{
