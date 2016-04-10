@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+
+<!-- Popp: Solar Powered Outdoor Siren -->
+
+	<!-- Configuration  -->
+	<CommandClass id="112">
+		<Value type="list" genre="config" instance="1" index="1" label="Siren triggering mode" value="0" size="1">
+			<Help>Sets the tamper triggering mode when removed from the holder</Help>
+			<Item label="The Siren triggers automatically when it's removed from the holder. Must be turned off, using the button or from the controller (Default)" value="0" />
+			<Item label="The Siren triggers automatically when it's removed from the holder and turns off, when placed back on the holder" value="1" />
+			<Item label="Siren doesn't trigger at all, when removed from the holder. Service Mode" value="2" />
+		</Value>
+	
+		<Value type="byte" genre="config" instance="1" index="2" label="Temperature adjustments" size="1" min="0" max="255" value="0">
+			<Help>Temperature correction. For positive value 10 = 1 C, for negative value x = 256 - (TC * 10). Example, if need shift -2.6C, value calculate: 256 - (2.6 * 10) = 230 Default: 0</Help>
+		</Value>
+
+		<Value type="byte" genre="config" instance="1" index="3" label="Send unsolicited temperature report" size="1" min="0" max="255" value="0">
+			<Help>Threshold temperature to send unsolicited report. 10 = 1C</Help>
+		</Value>
+		
+		<Value type="short" genre="config" instance="1" index="4" label="Send unsolicited temperature report after N wake up" size="2" min="0" max="65535" value="15">
+			<Help>If the value is set, after N wake up number (measurement is every 4 minutes) the temperature report will be sent. By default it's 15 = every 1 hour</Help>
+		</Value>
+		
+		<Value type="list" genre="config" instance="1" index="5" label="Switch mode" size="1" value="2">
+			<Help>Siren only, flash only, flash + siren</Help>
+			<Item label="Siren only" value="0" />
+			<Item label="Flash only" value="1" />
+			<Item label="Flash + Siren (Default)" value="2" />
+		</Value>
+		
+		<Value type="byte" genre="config" instance="1" index="6" label="Auto OFF" units="minutes" size="1" min="0" max="255" value="5">
+			<Help>If the value is set, the siren will be switched off automatically after a defined alarm time.
+				0: No auto off
+			</Help>
+		</Value>
+
+	</CommandClass>
+
+	<!-- Association Groups -->
+	
+	<CommandClass id="133">
+		<Associations num_groups="1">
+			<Group index="1" max_associations="10" label="Lifeline"/>
+		</Associations>
+	</CommandClass>
+
+</Product>
+

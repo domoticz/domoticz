@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- FortrezZ: SSA1/SSA2 - Siren and Strobe Alarm-->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<!-- Configuration -->
+	<CommandClass id="112">
+		<Value type="byte" genre="config" instance="1" index="1" label="Delay before accept of Basic Set Off" units="seconds" min="0" max="255" value="0">
+			<Help>
+				Delay, from the time the siren-strobe turns on, before the Basic Set Off command is accepted.
+				This could be used, for example, to avoid the situation where an associated window/door sensor turns the SSA1 alarm on and then immediately off when the window/door is opened and then quickly closed.
+				-128 seconds to -1 seconds -> Interpreted as unsigned integer for negative values sent in set command.
+			</Help>
+		</Value>
+	</CommandClass>
+
+</Product>
