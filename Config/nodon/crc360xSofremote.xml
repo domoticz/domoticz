@@ -1,0 +1,81 @@
+<Product xmlns="http://code.google.com/p/open-zwave/">
+    <!-- NodOn CRC 3 6 04 Soft Remote Z-Wave+ -->
+    <!-- Configuration Parameters -->
+    <CommandClass id="112">
+        <Value type="list" index="1" genre="config" label="Profile Buttons 1 &amp; 3" min="0" max="2" size="1" value="0">
+        <Help>This parameter configures the behavior of the buttons 1 and 3 when the product is in "Gateway Centric Mode"</Help>
+            <Item label="Scene Mode" value="0"/>
+            <Item label="Mono Mode" value="1"/>
+            <Item label="Duo Mode" value="2"/>
+        </Value>	
+        <Value type="list" index="2" genre="config" label="Profile Buttons 2 &amp; 4" min="0" max="2" size="1" value="0">
+        <Help>This parameter configures the behavior of the buttons 2 and 4 when the product is in "Gateway Centric Mode"</Help>
+            <Item label="Scene Mode" value="0"/>
+            <Item label="Mono Mode" value="1"/>
+            <Item label="Duo Mode" value="2"/>
+        </Value>
+        <Value type="list" index="3" genre="config" label="Scene Type" min="0" max="1" size="1" value="0">
+        <Help>This parameter configures the type of command sent when the product is in "Gateway Centric Mode", with buttons profile configuration set in "Scene Behavior".</Help>
+            <Item label="Central Scene" value="0"/>
+            <Item label="Scene Activation" value="1"/>
+        </Value>
+        <Value type="list" index="4" genre="config" label="Action Button 1 Mono" min="0" max="2" size="1" value="0">
+        <Help>When button are set in Mono Button mode they can have 3 different behaviors :
+        1: They can directly control other nodes with Basic and multi-level command class
+        2: Send Switch All On command
+        3: Send Switch All Off command
+         </Help>
+            <Item label="Control Group 2" value="0"/>
+            <Item label="All Switch ON" value="1"/>
+            <Item label="All Switch OFF" value="2"/>
+        </Value>
+        <Value type="list" index="5" genre="config" label="Action Button 2 Mono" min="0" max="2" size="1" value="0">
+        <Help>When button are set in Mono Button mode they can have 3 different behaviors :
+        1: They can directly control other nodes with Basic and multi-level command class
+        2: Send Switch All On command
+        3: Send Switch All Off command
+         </Help>
+            <Item label="Control Group 3" value="0"/>
+            <Item label="All Switch ON" value="1"/>
+            <Item label="All Switch OFF" value="2"/>
+        </Value>
+        <Value type="list" index="6" genre="config" label="Action Button 3 Mono" min="0" max="2" size="1" value="0">
+        <Help>When button are set in Mono Button mode they can have 3 different behaviors :
+        1: They can directly control other nodes with Basic and multi-level command class
+        2: Send Switch All On command
+        3: Send Switch All Off command
+         </Help>
+            <Item label="Control Group 4" value="0"/>
+            <Item label="All Switch ON" value="1"/>
+            <Item label="All Switch OFF" value="2"/>
+        </Value>
+        <Value type="list" index="7" genre="config" label="Action Button 4 Mono" min="0" max="2" size="1" value="0">
+        <Help>When button are set in Mono Button mode they can have 3 different behaviors :
+        1: They can directly control other nodes with Basic and multi-level command class
+        2: Send Switch All On command
+        3: Send Switch All Off command
+         </Help>
+            <Item label="Control Group 5" value="0"/>
+            <Item label="All Switch ON" value="1"/>
+            <Item label="All Switch OFF" value="2"/>
+        </Value>
+        <Value type="list" index="8" genre="config" label="Led Management" min="0" max="3" size="1" value="0">
+            <Item label="Led OFF" value="0"/>
+            <Item label="Led Blink on button action" value="1"/>
+            <Item label="Led Blink on transmission result" value="2"/>
+            <Item label="Led Blink on button action and transmission result" value="3"/>
+        </Value>
+    </CommandClass>
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="7">
+            <Group index="1" max_associations="1" label="Lifeline"/>
+            <Group index="2" max_associations="8" label="Button 1 - Mono - Controlled nodes" />
+            <Group index="3" max_associations="8" label="Button 2 - Mono - Controlled nodes" />
+            <Group index="4" max_associations="8" label="Button 3 - Mono - Controlled nodes" />
+            <Group index="5" max_associations="8" label="Button 4 - Mono - Controlled nodes" />
+            <Group index="6" max_associations="8" label="Button 1 &amp; 3 - Duo - Controlled nodes" />
+            <Group index="7" max_associations="8" label="Button 2 &amp; 4 - Duo - Controlled nodes" />
+        </Associations>
+    </CommandClass>
+</Product>

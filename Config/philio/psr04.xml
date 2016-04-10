@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Philio: PSR04 Smart Color Button -->
+<Product xmlns="http://code.google.com/p/open-zwave/">
+ 
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+
+    <Value type="byte" index="1" genre="config" label="Basic Set Off Level" min="0" max="99" value="0">
+      <Help>
+          Control the value represented by the left-side in area D.
+		  E.g. Setting this configuration
+		  to 15 means range of Command Basic Set value start from 15
+	  </Help>
+    </Value>
+	
+	<Value type="byte" index="2" genre="config" label="Basic Set On Level" min="0" max="99" value="99">
+      <Help>
+          Control the value represented by the right-side in area D.
+		  E.g. Setting this configuration
+		  to 15 means range of Command Basic Set value start from 15
+	  </Help>
+    </Value>
+
+    <Value type="byte" index="10" genre="config" label="Auto report battery time" min="0" max="127" value="12">
+       <Help>
+          The interval time for auto reporting
+          the Battery level. 0 means turn off auto report battery.
+          The default value is 12.
+       </Help>
+    </Value>
+	
+    <Value type="byte" index="25" genre="config" label="Customer function" min="0" max="3" value="0">
+      <Help>
+          Bit 0: Dimmer setting method.
+          0 : Auto send Command Basic Set after rotating.
+          1 : Send Command Basic Set by touching key after rotating
+          Bit 1: Disable buzzer in timer mode.
+          0: Enable.
+          1: Disable.
+       </Help>
+    </Value>
+	
+    <Value type="list" index="26" genre="config" label="Scene Holding report" size="1" value="0">
+       <Help>
+          Send Central Scene Holding when the button is held.
+       </Help>
+	  <Item label="Enabled" value="0" />
+      <Item label="Disabled" value="1" />
+    </Value> 
+  </CommandClass>
+
+  <!-- Basic set as report -->
+  <CommandClass id="32" setasreport="true"/>
+ 
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" max_associations="8" label="Reports"/>
+      <Group index="2" max_associations="8" label="Light Control" auto="true"/>
+    </Associations>
+  </CommandClass>
+
+</Product>
