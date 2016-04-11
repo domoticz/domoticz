@@ -220,6 +220,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_OpenWebNet, "MyHome OpenWebNet" },
 		{ HTYPE_RaspberryHTU21D, "I2C sensor HTU21D(F)/SI702x Humidity+Temp" },
 		{ HTYPE_AtagOne, "Atag One Thermostat" },
+		{ HTYPE_Sterbox, "Sterbox PLC with LAN interface" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -764,7 +765,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchTypeBrel, "BrelMotor" },
 		{ pTypeGeneralSwitch, sSwitchTypeRTS, "RTS" },
 		{ pTypeGeneralSwitch, sSwitchTypeElroDB, "ElroDB" },
-		{ pTypeGeneralSwitch, sSwitchTypeDooya, "Dooya" },
+		{ pTypeGeneralSwitch, sSwitchTypeAOK, "AOK" },
 		{ pTypeGeneralSwitch, sSwitchTypeUnitec, "Unitec" },
 		{ pTypeGeneralSwitch, sSwitchTypeSelector, "Selector Switch" },
 		{ pTypeGeneralSwitch, sSwitchTypeMaclean, "Maclean" },
@@ -789,7 +790,6 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchFriedland, "Friedland" },
 		{ pTypeGeneralSwitch, sSwitchBFT, "BFT" },
 		{ pTypeGeneralSwitch, sSwitchNovatys, "Novatys" },
-		{ pTypeGeneralSwitch, sSwitchHalemeier, "Halemeier" },
 		{  0,0,NULL }
 	};
 	return findTableID1ID2(Table, dType, sType);
@@ -1094,7 +1094,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeGeneralSwitch, sSwitchTypeBrel, "Status" },
 		{ pTypeGeneralSwitch, sSwitchTypeRTS, "Status" },
 		{ pTypeGeneralSwitch, sSwitchTypeElroDB, "Status" },
-		{ pTypeGeneralSwitch, sSwitchTypeDooya, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeAOK, "Status" },
 		{ pTypeGeneralSwitch, sSwitchTypeUnitec, "Status" },
 		{ pTypeGeneralSwitch, sSwitchTypeSelector, "Status" },
 		{ pTypeGeneralSwitch, sSwitchTypeMaclean, "Status" },
@@ -3385,10 +3385,10 @@ void ConvertToGeneralSwitchType(std::string &devid, int &dtype, int &subtype)
 		dtype = pTypeGeneralSwitch;
 		if (subtype == sTypeBlindsT5) subtype = sSwitchTypeBofu;
 		else if (subtype == sTypeBlindsT6) subtype = sSwitchTypeBrel;
-		else if (subtype == sTypeBlindsT7) subtype = sSwitchTypeDooya;
+		else if (subtype == sTypeBlindsT7) subtype = sSwitchTypeAOK;
 		else if (subtype == sTypeBlindsT8) subtype = sSwitchTypeBofu;
 		else if (subtype == sTypeBlindsT9) subtype = sSwitchTypeBrel;
-		else if (subtype == sTypeBlindsT10) subtype = sSwitchTypeDooya;
+		else if (subtype == sTypeBlindsT10) subtype = sSwitchTypeAOK;
 		std::stringstream s_strid;
 		s_strid << std::hex << strtoul(devid.c_str(), NULL, 16);
 		unsigned long deviceid = 0;
