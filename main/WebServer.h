@@ -192,6 +192,8 @@ private:
 	void Cmd_AddSetpointTimer(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_UpdateSetpointTimer(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DeleteSetpointTimer(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_EnableSetpointTimer(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_DisableSetpointTimer(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_ClearSetpointTimers(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetSerialDevices(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetDevicesList(WebEmSession & session, const request& req, Json::Value &root);

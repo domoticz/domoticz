@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value type="list" instance="1" index="1" genre="config" label="Enable Fails Safe Timer" value="0">
+      <Help>Enables or not the Fails Safe Timer</Help>
+      <Item label="Disabled" value="0" />
+	  <Item label="Enabled" value="255" />
+    </Value>
+    <Value type="list" instance="1" index="2" genre="config" label="Temperature Scale" value="0">
+      <Help>Controls the temperature sensor scale</Help>
+      <Item label="Celsius" value="0" />
+	  <Item label="Fahrenheit" value="255" />
+    </Value>
+    <Value type="short" instance="1" index="3" genre="config" label="Temperature reporting intervals" min="0" max="65534" value="0" size="2">
+      <Help>Time interval to trigger a temperature report (step 1s) (Default 0 = disabled)</Help>
+    </Value>
+    <Value type="short" instance="1" index="4" genre="config" label="Delta T: Temperature change" min="0" max="100" value="0" size="2">
+      <Help>Change between temperatures to trigger a temperature report (step 0.1) (Default 0 = disabled)</Help>
+    </Value>
+    <Value type="short" instance="1" index="5" genre="config" label="Temperature Cutoff" min="0" max="1000" value="0" size="2">
+      <Help>Temperature that when reached will cutt off the switch</Help>
+    </Value>
+  </CommandClass>
+  <!-- Basic set as report -->
+  <CommandClass id="32" setasreport="true"/>
+  <!-- Association Groups -->
+  <CommandClass id="133">   
+    <Associations num_groups="2">
+      <Group index="1" max_associations="4" label="Lifeline"/>
+      <Group index="2" max_associations="4" label="Unsolicited Sensor Multilevel Reports" auto="true"/>
+    </Associations>
+  </CommandClass>
+
+</Product>

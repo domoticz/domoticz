@@ -1657,6 +1657,46 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
+		void CWebServer::Cmd_EnableSetpointTimer(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string idx = request::findValue(&req, "idx");
+			if (idx == "")
+				return;
+			root["status"] = "OK";
+			root["title"] = "EnableSetpointTimer";
+			m_sql.safe_query(
+				"UPDATE SetpointTimers SET Active=1 WHERE (ID == '%q')",
+				idx.c_str()
+				);
+			m_mainworker.m_scheduler.ReloadSchedules();
+		}
+
+		void CWebServer::Cmd_DisableSetpointTimer(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string idx = request::findValue(&req, "idx");
+			if (idx == "")
+				return;
+			root["status"] = "OK";
+			root["title"] = "DisableSetpointTimer";
+			m_sql.safe_query(
+				"UPDATE SetpointTimers SET Active=0 WHERE (ID == '%q')",
+				idx.c_str()
+				);
+			m_mainworker.m_scheduler.ReloadSchedules();
+		}
+
 		void CWebServer::Cmd_ClearSetpointTimers(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)

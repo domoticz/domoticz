@@ -81,8 +81,8 @@
       <Item label="Double click disabled" value="0"/>
       <Item label="Double click enabled" value="1"/>
     </Value>
-    <Value type="list" genre="config" instance="1" index="16" label="Saving state before power faillure" size="1" value="1">
-      <Help>Saving state before power faillure</Help>
+    <Value type="list" genre="config" instance="1" index="16" label="Saving state before power failure" size="1" value="1">
+      <Help>Saving state before power failure</Help>
       <Item label="State NOT saved at power failure, all outputs are set to OFF upon power restore" value="0"/>
       <Item label="State saved at power failure, all outputs are set to previous state upon power restore" value="1"/>
     </Value>
