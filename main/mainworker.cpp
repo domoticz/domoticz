@@ -89,6 +89,7 @@
 #include "../hardware/PanasonicTV.h"
 #include "../hardware/OpenWebNet.h"
 #include "../hardware/AtagOne.h"
+#include "../hardware/Sterbox.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -789,6 +790,10 @@ bool MainWorker::AddHardwareFromParams(
 		//Logitech Media Server
 		pHardware = new CLogitechMediaServer(ID, Address, Port, Username, Password, Mode1, Mode2);
 		break;
+	case HTYPE_Sterbox:
+		//LAN
+		pHardware = new CSterbox(ID, Address, Port, Username, Password);
+		break;
 #ifndef WIN32
 	case HTYPE_TE923:
 		//TE923 compatible weather station
@@ -1045,7 +1050,7 @@ bool MainWorker::IsUpdateAvailable(const bool bIsForced)
 	machine = "armv7l";
 #endif
 
-	if ((m_szSystemName != "windows") && (machine != "armv6l") && (machine != "armv7l") && (machine != "x86_64") && (machine!= "aarch64"))
+	if (((m_szSystemName != "windows") && (machine != "armv6l") && (machine != "armv7l") && (machine != "x86_64")))
 	{
 		//Only Raspberry Pi (Wheezy)/Ubuntu/windows/osx for now!
 		return false;
@@ -6018,10 +6023,7 @@ void MainWorker::decode_evohome1(const int HwdID, const _eHardwareTypes HwdType,
 	unsigned char devType=pTypeEvohome;
 	unsigned char subType=pEvo->EVOHOME1.subtype;
 	std::stringstream szID;
-	if (HwdType==HTYPE_EVOHOME_SCRIPT) //GB3: scripted evohome uses decimal device ID's
-		szID << std::dec << (int)RFX_GETID3(pEvo->EVOHOME1.id1,pEvo->EVOHOME1.id2,pEvo->EVOHOME1.id3);
-	else
-		szID << std::hex << (int)RFX_GETID3(pEvo->EVOHOME1.id1,pEvo->EVOHOME1.id2,pEvo->EVOHOME1.id3);
+	szID << std::hex << (int)RFX_GETID3(pEvo->EVOHOME1.id1,pEvo->EVOHOME1.id2,pEvo->EVOHOME1.id3);
 	std::string ID(szID.str());
 	unsigned char Unit=0;
 	unsigned char cmnd=pEvo->EVOHOME1.status;
@@ -6080,10 +6082,7 @@ void MainWorker::decode_evohome1(const int HwdID, const _eHardwareTypes HwdType,
 			break;
 		}
 
-		if (HwdType==HTYPE_EVOHOME_SCRIPT) //GB3: scripted evohome uses decimal device ID's
-			sprintf(szTmp, "id            = %u", (int)RFX_GETID3(pEvo->EVOHOME1.id1,pEvo->EVOHOME1.id2,pEvo->EVOHOME1.id3));
-		else
-			sprintf(szTmp, "id            = %02X:%02X:%02X", pEvo->EVOHOME1.id1, pEvo->EVOHOME1.id2, pEvo->EVOHOME1.id3);
+		sprintf(szTmp, "id            = %02X:%02X:%02X", pEvo->EVOHOME1.id1, pEvo->EVOHOME1.id2, pEvo->EVOHOME1.id3);
 		WriteMessage(szTmp);
 		sprintf(szTmp, "action        = %d", (int)pEvo->EVOHOME1.action);
 		WriteMessage(szTmp);
@@ -6197,13 +6196,12 @@ void MainWorker::decode_Security1(const int HwdID, const _eHardwareTypes HwdType
 	unsigned char SignalLevel=pResponse->SECURITY1.rssi;
 	unsigned char BatteryLevel = get_BateryLevel(HwdType,false, pResponse->SECURITY1.battery_level & 0x0F);
 	if (
-		(pResponse->SECURITY1.subtype == sTypeKD101) ||
-		(pResponse->SECURITY1.subtype == sTypeSA30) ||
-		(pResponse->SECURITY1.subtype == sTypeDomoticzSecurity)
+		(pResponse->SECURITY1.subtype == sTypeKD101)||
+		(pResponse->SECURITY1.subtype == sTypeSA30)
 		)
 	{
 		//KD101 & SA30 do not support battery low indication
-		BatteryLevel = 255;
+		BatteryLevel=255;
 	}
 
 	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd, procResult.DeviceName);
@@ -8792,7 +8790,7 @@ void MainWorker::decode_P1MeterPower(const int HwdID, const _eHardwareTypes HwdT
 	unsigned char SignalLevel=12;
 	unsigned char BatteryLevel = 255;
 
-	sprintf(szTmp,"%u;%u;%u;%u;%u;%u",
+	sprintf(szTmp,"%lu;%lu;%lu;%lu;%lu;%lu",
 		p1Power->powerusage1,
 		p1Power->powerusage2,
 		p1Power->powerdeliv1,
@@ -8824,9 +8822,9 @@ void MainWorker::decode_P1MeterPower(const int HwdID, const _eHardwareTypes HwdT
 			sprintf(szTmp,"powerdeliv2 = %.3f kWh", float(p1Power->powerdeliv2) / 1000.0f);
 			WriteMessage(szTmp);
 
-			sprintf(szTmp,"current usage = %03u Watt", p1Power->usagecurrent);
+			sprintf(szTmp,"current usage = %03lu Watt", p1Power->usagecurrent);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"current deliv = %03u Watt", p1Power->delivcurrent);
+			sprintf(szTmp,"current deliv = %03lu Watt", p1Power->delivcurrent);
 			WriteMessage(szTmp);
 			break;
 		default:
@@ -8856,7 +8854,7 @@ void MainWorker::decode_P1MeterGas(const int HwdID, const _eHardwareTypes HwdTyp
 	unsigned char SignalLevel=12;
 	unsigned char BatteryLevel = 255;
 
-	sprintf(szTmp,"%u",p1Gas->gasusage);
+	sprintf(szTmp,"%lu",p1Gas->gasusage);
 	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp, procResult.DeviceName);
 	if (DevRowIdx == -1)
 		return;
@@ -10986,10 +10984,7 @@ bool MainWorker::SwitchModal(const std::string &idx, const std::string &status, 
 
 	unsigned long ID;
 	std::stringstream s_strid;
-	if (pHardware->HwdType==HTYPE_EVOHOME_SCRIPT) //GB3: scripted evohome uses decimal device ID's. We need to convert those to hex here to fit the 3-byte ID defined in the message struct
-		s_strid << std::hex << std::dec << sd[1];
-	else
-		s_strid << std::hex << sd[1];
+	s_strid << std::hex << sd[1];
 	s_strid >> ID;
 
 	//Update Domoticz evohome Device
@@ -11884,7 +11879,7 @@ void MainWorker::SetInternalSecStatus()
 	}
 
 	CDomoticzHardwareBase *pHardware = GetHardwareByType(HTYPE_DomoticzInternal);
-	PushAndWaitRxMessage(pHardware, (const unsigned char *)&tsen, "Domoticz Security Panel", -1);
+	PushAndWaitRxMessage(pHardware, (const unsigned char *)&tsen, "Domoticz Security Panel", 100);
 }
 
 void MainWorker::UpdateDomoticzSecurityStatus(const int iSecStatus)
