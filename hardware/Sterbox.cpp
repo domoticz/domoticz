@@ -342,10 +342,10 @@ void CSterbox::GetMeterDetails()
 					tmpinp = analog[jj];
 					tmpstr2 = tmpstr2.substr(1, 10);
 					pos1 = tmpstr.find("+");
-					if (pos1 != std::string::npos)
-					{
-						tmpstr2 = tmpstr2.substr(1, 10);
-					}
+					//if (pos1 != std::string::npos)
+					//{
+					//	tmpstr2 = tmpstr2.substr(1, 10);
+					//}
 					float lValue = atof(tmpstr2.c_str());
 					std::stringstream sstr;
 					sstr << "Analog " << jj;
