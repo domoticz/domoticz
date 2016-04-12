@@ -9,6 +9,8 @@
 #include "../main/SQLHelper.h"
 #include <sstream>
 
+//http://sterbox.eu/index.php/sterbox
+
 extern CSQLHelper m_sql;
 
 #define STERBOX_POLL_INTERVAL 10
@@ -346,7 +348,7 @@ void CSterbox::GetMeterDetails()
 					{
 						tmpstr2 = tmpstr2.substr(1, 10);
 					}
-					float lValue = atof(tmpstr2.c_str());
+					float lValue = (float)atof(tmpstr2.c_str());
 					std::stringstream sstr;
 					sstr << "Analog " << jj;
 					pos1 = tmpinp.find("t");
@@ -367,7 +369,7 @@ void CSterbox::GetMeterDetails()
 					pos1 = tmpinp.find("h");
 					if (pos1 != std::string::npos)
 					{
-						SendHumiditySensor(jj,255,lValue, sstr.str());
+						SendHumiditySensor(jj,255,int(lValue), sstr.str());
 					}
 	
 					//SendTempSensor(jj,255,lValue, sstr.str());

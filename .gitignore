@@ -1,6 +1,7 @@
 *.orig
 msbuild
-domoticz.db
+*.db
+*.bak
 appversion.h
 appversion.h.txt
 Makefile
@@ -16,3 +17,4 @@ Config/zwscene.xml
 backups/
 domocookie.txt
 domoticz.exe
+

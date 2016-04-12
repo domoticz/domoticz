@@ -461,7 +461,7 @@
 	<Manufacturer id="0063" name="GE">
 		<Product type="4450" id="3030" name="45602 Lamp Dimmer Module" config="ge/dimmer_module.xml"/>
 		<Product type="4457" id="3230" name="45606 2-Way Dimmer Switch" config="ge/dimmer.xml"/>
-		<Product type="4944" id="3031" name="12724 3-Way Dimmer Switch"/>
+		<Product type="4944" id="3031" name="12724 3-Way Dimmer Switch" config="ge/dimmer.xml"/>
 		<Product type="5250" id="3030" name="45603 Plugin Appliance Module"/>
 		<Product type="5250" id="3130" name="45604 Outdoor Module"/>
 		<Product type="5252" id="3530" name="45605 Duplex Receptacle"/>

@@ -73,7 +73,7 @@
 	</CommandClass>
 	<!-- Association Groups -->
 	<CommandClass id="133">
-		<Associations num_groups="2">
+		<Associations num_groups="5">
 			<Group index="1" max_associations="2" label="When the input is triggered or untriggered, the MIMOlite will automatically send a Basic Set command to turn on or off the device(s) associated with this group." auto="false"/>
 			<Group index="2" max_associations="2" label="The MIMOlite will periodically (see Parameter 9 of Configuration Command Class below) send a MultiLevel Sensor report indicating the input’s analog voltage level." auto="true"/>
 			<Group index="3" max_associations="2" label="If a power dropout occurs, the MIMOlite will send an Alarm Command Class report (if there is enough available residual power)" />
