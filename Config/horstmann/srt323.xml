@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+  <!-- This thermostat's setpoint descriptions are 0 based, not 1 -->
+  <CommandClass id="67" base="0" />
+
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value type="list" instance="1" index="1" genre="config" label="Temperature sensor reading" value="255">
+      <Help>Enables or not the temperature sensor reading</Help>
+      <Item label="Disabled" value="0" />
+	  <Item label="Enabled" value="255" />
+    </Value>
+    <Value type="list" instance="1" index="2" genre="config" label="Temperature Scale" value="0">
+      <Help>Controls the temperature sensor scale</Help>
+      <Item label="Celsius" value="0" />
+	  <Item label="Fahrenheit" value="255" />
+    </Value>
+    <Value type="byte" instance="1" index="3" genre="config" label="Delta T: Temperature change" min="1" max="100" value="10">
+      <Help>Change between temperatures to trigger a temperature report (step 0.1) (Default 10 = 1C)</Help>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">   
+    <Associations num_groups="5">
+      <Group index="1" max_associations="1" label="Lifeline"/>
+      <Group index="2" max_associations="4" label="Thermostat Operating State Reports" auto="true"/>
+      <Group index="3" max_associations="4" label="Unsolicited Battery Level Reports" auto="true"/>
+      <Group index="4" max_associations="4" label="Thermostat Set Point Reports" auto="true"/>
+      <Group index="5" max_associations="4" label="Unsolicited Sensor Multilevel Reports" auto="true"/>
+    </Associations>
+  </CommandClass>
+
+</Product>

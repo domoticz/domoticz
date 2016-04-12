@@ -641,7 +641,18 @@ int main(int argc, char**argv)
 		}
 		webserver_settings.php_cgi_path = cmdLine.GetSafeArgument("-php_cgi_path", 0, "");
 	}
-
+	if (cmdLine.HasSwitch("-wwwroot"))
+	{
+		if (cmdLine.GetArgumentCount("-wwwroot") != 1)
+		{
+			_log.Log(LOG_ERROR, "Please specify a WWW root path");
+			return 1;
+		}
+		std::string szroot = cmdLine.GetSafeArgument("-wwwroot", 0, "");
+		if (szroot.size() != 0)
+			szWWWFolder = szroot;
+	}
+	webserver_settings.www_root = szWWWFolder;
 	m_mainworker.SetWebserverSettings(webserver_settings);
 #ifdef WWW_ENABLE_SSL
 	http::server::ssl_server_settings secure_webserver_settings;
@@ -713,7 +724,7 @@ int main(int argc, char**argv)
 		}
 		secure_webserver_settings.php_cgi_path = cmdLine.GetSafeArgument("-php_cgi_path", 0, "");
 	}
-
+	secure_webserver_settings.www_root = szWWWFolder;
 	m_mainworker.SetSecureWebserverSettings(secure_webserver_settings);
 #endif
 	if (cmdLine.HasSwitch("-nowwwpwd"))
@@ -762,18 +773,6 @@ int main(int argc, char**argv)
 		dbasefile = cmdLine.GetSafeArgument("-dbase", 0, "domoticz.db");
 	}
 	m_sql.SetDatabaseName(dbasefile);
-
-	if (cmdLine.HasSwitch("-wwwroot"))
-	{
-		if (cmdLine.GetArgumentCount("-wwwroot") != 1)
-		{
-			_log.Log(LOG_ERROR, "Please specify a WWW root path");
-			return 1;
-		}
-		std::string szroot = cmdLine.GetSafeArgument("-wwwroot", 0, "");
-		if (szroot.size() != 0)
-			szWWWFolder = szroot;
-	}
 
 	if (cmdLine.HasSwitch("-webroot"))
 	{

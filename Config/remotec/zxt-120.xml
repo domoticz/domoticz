@@ -46,6 +46,12 @@
 		<Value type="int" index="33" genre="config" label="Surround IR control" value="0">
 			<Help>Value 0 SWING OFF. Value 255 SWING AUTO (Default).</Help>
 		</Value>
+		<Value type="int" genre="config" instance="1" index="37" label="Temperature compensation" min="0" max="255" value="0">
+			<Help>
+				0-5 = 0 to +5 C.
+				251-255 = -5 to -1 C.
+			</Help>
+		</Value>
 	</CommandClass>
 
 </Product>

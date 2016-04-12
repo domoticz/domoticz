@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Vision ZG8101 -->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+        <!-- COMMAND_CLASS_CONFIGURATION -->
+        <!--    IMPORTANT: Controllers may only allow to configure signed values.
+                In order to set values in the range 128...255 the value sent in the application shall be the desired value minus 256.
+                For example: to set a parameter to 200? it may be needed to set a value of 200 minus 256 = minus 56.
+                In case of two byte value the same logic applies: Values greater than 32768 may needed to be given as negative values too.-->
+
+        <!-- COMMAND_CLASS_BASIC -->
+        <CommandClass id="32" setasreport="true"/>
+
+        <!-- COMMAND_CLASS_ASSOCIATION -->
+        <CommandClass id="133">
+                <Associations num_groups="1">
+                        <Group index="1" max_associations="5" label="Control Command when trip"/>
+                </Associations>
+        </CommandClass>
+
+</Product>

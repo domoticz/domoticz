@@ -250,7 +250,7 @@ Default setting: 10 (10%)</Help>
 Default setting: 3600 (3600s)</Help>
     </Value>
     <!-- size of two and max 255 seems off -->    
-    <Value type="byte" size="2" genre="config" instance="1" index="53" label="Energy reports" min="0" max="255" units="kWh" value="10">
+    <Value type="byte" size="2" genre="config" instance="1" index="59" label="Energy reports" min="0" max="255" units="kWh" value="10">
       <Help>Energy level change which will result in sending a new energy report. Available settings:
 0 - energy reports disabled; 
 1-255 (0,01 - 2,55 kWh) - report triggering threshold;
@@ -267,7 +267,7 @@ Default setting: 10 (0,1 kWh)</Help>
       <Item label="approximation based on the calibration data" value="1" />
       <Item label="approximation based on the control angle" value="2" />
     </Value>
-    <Value type="short" size="2" genre="config" instance="1" index="59" label="Approximated power at the maximum brightness level" min="0" max="500" units="Watt" value="0">
+    <Value type="short" size="2" genre="config" instance="1" index="53" label="Approximated power at the maximum brightness level" min="0" max="500" units="Watt" value="0">
       <Help>This parameter determines the approximate value of the power that will be reported by the device at its maximum brightness level. This parameter works only when parameter 58 has a value other than 0. Available settings: 0-500 (0-500W) - power consumed by the load at the maximum brightness level. Default setting: 0</Help>
     </Value>
   </CommandClass>
@@ -278,11 +278,11 @@ Default setting: 10 (0,1 kWh)</Help>
   <!-- Association Groups -->  
   <CommandClass id="133">
     <Associations num_groups="5">
-      <Group index="1" max_associations="1" label="Lifeline" auto="true"/>
-      <Group index="2" max_associations="10" label="On/Off(S1)" auto="false"/>
-      <Group index="3" max_associations="10" label="Dimmer(S1)" auto="false"/>
-      <Group index="4" max_associations="10" label="On/Off(S2)" auto="false"/>
-      <Group index="5" max_associations="10" label="Dimmer(S2)" auto="false"/>
+      <Group index="1" max_associations="1" label="Lifeline"/>
+      <Group index="2" max_associations="10" label="On/Off(S1)"/>
+      <Group index="3" max_associations="10" label="Dimmer(S1)"/>
+      <Group index="4" max_associations="10" label="On/Off(S2)"/>
+      <Group index="5" max_associations="10" label="Dimmer(S2)"/>
     </Associations>
   </CommandClass>
 </Product>

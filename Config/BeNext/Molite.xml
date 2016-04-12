@@ -3,16 +3,16 @@
 <Product xmlns='http://code.google.com/p/open-zwave/'>
 	<!-- Configuration -->
 	<CommandClass id="112">
-		<Value type="byte" genre="config" instance="1" index="1" label="Set to Default" value="-1">
+		<Value type="byte" genre="config" instance="1" index="1" label="Set to Default" >
 			<Help>Set all configuration values to default values (factory settings).</Help>
 		</Value>
-		<Value type="byte" genre="config" instance="1" index="2" label="Mode timeout" size="2" value="1" units="seconds">
-			<Help> 	The time used in mode 2 to turn the sensor off. This Time will start running as soon as detection is seen.</Help>
+		<Value type="int" genre="config" instance="1" index="2" label="Mode timeout" size="2" min="1" max="32767" value="900" units="seconds">
+			<Help>The time used in mode 2 to turn the sensor off. This Time will start running as soon as detection is seen.</Help>
 		</Value>
-		<Value type="byte" genre="config" instance="1" index="3" label="Switch off time" size="2" value="15" units="seconds">
-			<Help> 	The switch off time will start running as soon as mode timeout is done. Motion sensor is turned on and when movement is detected again the mode timeout (cfg param 1) will start running all over again. When switch off time is done a basic off message is sent to the associated node.</Help>
+		<Value type="int" genre="config" instance="1" index="3" label="Switch off time" size="2" min="1" max="32767" value="2700" units="seconds">
+			<Help>The switch off time will start running as soon as mode timeout is done. Motion sensor is turned on and when movement is detected again the mode timeout (cfg param 1) will start running all over again. When switch off time is done a basic off message is sent to the associated node.</Help>
 		</Value>
-		<Value type="byte" genre="config" instance="1" index="4" label="Sensitivity" size="1" value="100">
+		<Value type="byte" genre="config" instance="1" index="4" label="Sensitivity" size="1" min="0" max="127" value="80">
 			<Help>Sensitivity value between 0 and 127 (values above 127 will be reported as the set value but will be handled in SW as 127).</Help>
 		</Value>
 		<Value type="list" genre="config" instance="1" index="5" label="The mode" size="1" value="2">
@@ -20,14 +20,49 @@
 			<Item label="no detection possible. Battery save mode" value="1"/>
 			<Item label="normal operation mode: send on after detection and off after given time no detection" value="2"/>
 			<Item label="Z-Wave chip is always on to request e.g. version or manufacturer id" value="3"/>
-
+		</Value>		
+		<Value type="int" genre="config" instance="1" index="6" label="The temperature offset" size="2" min="0" max="32767" value="0">
+			<Help>An offset for the temperature</Help>
+		</Value>		
+		<Value type="int" genre="config" instance="1" index="7" label="Light Table 100" size="2" min="1" max="32767" value="17">
+			<Help>If a LDR resistance measured lower then this value the returned light percentage is 100%. See chapter light table for more information.</Help>
 		</Value>
+		<Value type="int" genre="config" instance="1" index="8" label="Light Table 90" size="2" min="1" max="32767" value="38">
+			<Help>If a LDR resistance measured lower then this value the returned light percentage is 90%. See chapter light table for more information.</Help>
+		</Value>
+		<Value type="int" genre="config" instance="1" index="9" label="Light Table 80" size="2" min="1" max="32767" value="85">
+			<Help>If a LDR resistance measured lower then this value the returned light percentage is 80%. See chapter light table for more information.</Help>
+		</Value>
+		<Value type="int" genre="config" instance="1" index="10" label="Light Table 70" size="2" min="1" max="32767" value="186">
+			<Help>If a LDR resistance measured lower then this value the returned light percentage is 70%. See chapter light table for more information.</Help>
+		</Value>
+		<Value type="int" genre="config" instance="1" index="11" label="Light Table 60" size="2" min="1" max="32767" value="407">
+			<Help>If a LDR resistance measured lower then this value the returned light percentage is 60%. See chapter light table for more information.</Help>
+		</Value>
+		<Value type="int" genre="config" instance="1" index="12" label="Light Table 50" size="2" min="1" max="32767" value="891">
+			<Help>If a LDR resistance measured lower then this value the returned light percentage is 50%. See chapter light table for more information.</Help>
+		</Value>
+		<Value type="int" genre="config" instance="1" index="13" label="Light Table 40" size="2" min="1" max="32767" value="1949">
+			<Help>If a LDR resistance measured lower then this value the returned light percentage is 40%. See chapter light table for more information.</Help>
+		</Value>
+		<Value type="int" genre="config" instance="1" index="14" label="Light Table 30" size="2" min="1" max="32767" value="4265">
+			<Help>If a LDR resistance measured lower then this value the returned light percentage is 30%. See chapter light table for more information.</Help>
+		</Value>
+		<Value type="int" genre="config" instance="1" index="15" label="Light Table 20" size="2" min="1" max="32767" value="9332">
+			<Help>If a LDR resistance measured lower then this value the returned light percentage is 20%. See chapter light table for more information.</Help>
+		</Value>
+		<Value type="int" genre="config" instance="1" index="16" label=". Light Table 10" size="2" min="1" max="32767" value="20417">
+			<Help>If a LDR resistance measured lower then this value the returned light percentage is 10%. See chapter light table for more information.</Help>
+		</Value>
+		
 	</CommandClass>
-
+	<!-- Basic set as report -->
+	<CommandClass id="32" setasreport="true" />
+		
 	<!-- Association Groups -->
 	<CommandClass id="133">
 		<Associations num_groups="1">
-			<Group index="1" max_associations="5" label="Group 1" auto="false"/>
+			<Group index="1" max_associations="5" label="Group 1"/>
 		</Associations>
 	</CommandClass>
 </Product>

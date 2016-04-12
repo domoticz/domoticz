@@ -19,7 +19,7 @@
 			<Item label="Enabled level 2" value="2" />
 			<Item label="Enabled level 3" value="3" />
 			<Item label="Enabled level 4" value="4" />
-			<Item label="Enabled level 5 (maximum sensitivity" value="5" />
+			<Item label="Enabled level 5 (maximum sensitivity)" value="5" />
 		</Value>
 		<Value type="list" index="5" genre="config" label="Command Options" min="1" max="2" value="1" size="1">
 			<Help>Which commands to send when PIR motion sensor triggered
@@ -38,7 +38,7 @@
 			<Item label="Disabled" value="0" />
 			<Item label="Enabled" value="1" /> 			
 		</Value>
-		<Value type="short" index="41" genre="config" label="Temperature Reporting Threshold" units="%" min="0" max="39321" value="1" size="2">
+		<Value type="short" index="41" genre="config" label="Temperature Reporting Threshold" units="%" min="0" max="39321" value="20" size="2">
 			<Help>Threshold change in temperature to induce an automatic report.  
 			Note: 
 			1. When the unit is Celsius, threshold=Value. 
@@ -46,21 +46,19 @@
 			3. The high byte is the part of integer, the low byte is the fractional part. 
 			</Help>
 		</Value>
-		<Value type="short" index="42" genre="config" label="Humidity Reporting Threshold" units="%" min="0" max="39321" value="5" size="2">
+		<Value type="short" index="42" genre="config" label="Humidity Reporting Threshold" units="%" min="0" max="100" value="10" size="2">
 			<Help>Threshold change in humidity to induce an automatic report. 
 			Note: 
-			The accuracy is 0.1. 
-			The high byte is the part of integer, the low byte is the fractional part. 
+			The default value is 10, which means that if the current humidity gap is more than 10%, it will send out a humidity report. 
 			</Help>
 		</Value>
-		<Value type="short" index="43" genre="config" label="Luminance Reporting Threshold" units="LUX" min="0" max="65535" value="100" size="2">
+		<Value type="short" index="43" genre="config" label="Luminance Reporting Threshold" units="LUX" min="0" max="1000" value="100" size="2">
 			<Help>Threshold change in luminance to induce an automatic report. </Help>
 		</Value>
-		<Value type="short" index="44" genre="config" label="Battery Reporting Threshold" units="%" min="0" max="39321" value="5" size="2">
+		<Value type="short" index="44" genre="config" label="Battery Reporting Threshold" units="%" min="0" max="100" value="10" size="2">
 			<Help>Threshold change in battery level to induce an  automatic report. 
 			Note: 
-			The accuracy is 0.1. 
-			The high byte is the part of integer, the low byte is the fractional part.  
+			The default value is 10, which means that if the current battery level gap is more than 10%, it will send out a battery report.  
 			</Help>
 		</Value>
         <Value type="byte" index="45" genre="config" label="UV Reporting Threshold" units="" min="0" max="255" value="2">
@@ -97,28 +95,35 @@
 		<Value type="int" index="113" genre="config" label="Group 3 Interval" units="seconds" min="1" max="2678400" value="3600">
 			<Help>The interval of sending report group 3. 1 to 2678400 seconds</Help>
 		</Value>
-		<Value type="byte" index="201" genre="config" label="Temperature Calibration" value="0">
-			<Help>The calibration value = standard value ‐ measure value. 
-			E.g.  If measure value =25.3°C  and the standard value = 23.2°C, so the calibration value= 23.2°C ‐ 25.3°C= ‐2.1°C (0xFFEB). 
-			If the measure value =30.1°C and the standard value = 33.2°C, so the calibration value= 33.2°C ‐ 30.1°C=3.1°C (0x001F). 
+		<Value type="byte" index="201" genre="config" label="Temperature Calibration" min="0" max="255" value="0">
+			<Help>The calibration value = standard value - measure value. 
+			(the available value range is [-100, 100] or [-10C, 10C]).
+			Note:
+			1. The value contains one decimal point. E.g. if the value is set to 20, the calibration value is 2.0 (EU/AU version) or 2.0 (US version)
+			2. The calibration value = standard value - measure value.
+			If measure value =25.3 and the standard value = 23.2, so the calibration value= 23.2-25.3 = -2.1 (0xEB).
+			If the measure value =30.1 and the standard value = 33.2, so the calibration value= 33.2-30.1= 3.1 (0x1F). 
 			</Help>
 		</Value>
-		<Value type="byte" index="202" genre="config" label="Humidity Calibration" value="0">
-			<Help>The calibration value = standard value ‐ measure value. 
-			E.g.  If measure value =80RH and the standard value = 75RH, so the calibration value= 75RH – 80RH= ‐5RH (0xFFFB). 
-			If the measure value =85RH and the standard value = 90RH, so the calibration value= 90RH – 85RH=5RH (0x0005). 
+		<Value type="byte" index="202" genre="config" label="Humidity Calibration" min="0" max="255" value="0">
+			<Help>The calibration value = standard value - measure value.
+			(the available value range is [-50, 50]).
+			If measure value =80RH and the standard value = 75RH, so the calibration value= 75RH-80RH = -5RH (0xFB).
+			If the measure value =85RH and the standard value = 90RH, so the calibration value= 90RH-85RH = 5RH (0x05).  
 			</Help>
 		</Value>
-		<Value type="short" index="203" genre="config" label="Luminance Calibration" value="0">
-			<Help>The calibration value = standard value ‐ measure value. 
-			E.g.  If measure value =800Lux and the standard value = 750Lux, so the calibration value= 750 – 800= ‐50 (0xFFCE). 
-			If the measure value =850Lux and the standard value = 900Lux, so the calibration value= 900 – 850=50 (0x0032). 
+		<Value type="short" index="203" genre="config" label="Luminance Calibration" min="0" max="65535"  value="0">
+			<Help>The calibration value = standard value - measure value. 
+			(the available value range is [-1000, 1000]).
+			If measure value =800Lux and the standard value = 750Lux, so the calibration value= 750-800 = -50 (0xFFCE). 
+			If the measure value =850Lux and the standard value = 900Lux, so the calibration value= 900-850 = 50 (0x0032). 
 			</Help>
 		</Value>
-		<Value type="byte" index="204" genre="config" label="Ultraviolet Calibration" value="0">
-			<Help>The calibration value = standard value ‐ measure value. 
-			E.g.  If measure value =9 and the standard value = 8, so the calibration value= 8 – 9= ‐1 (0xFE). 
-			If the measure value =7 and the standard value = 9, so the calibration value= 9 – 7=2 (0x02).  
+		<Value type="byte" index="204" genre="config" label="Ultraviolet Calibration" min="0" max="255" value="0">
+			<Help>The calibration value = standard value measure value. 
+			(the available value range is [-10, 10]).
+			If measure value =9 and the standard value = 8, so the calibration value= 8-9 = -1 (0xFE). 
+			If the measure value =7 and the standard value = 9, so the calibration value= 9-7 = 2 (0x02).  
 			</Help>
 		</Value>
 		<Value type="list" index="252" genre="config" label="Enable/disable Lock Configuration" units="" min="0" max="1" value="0" size="1">

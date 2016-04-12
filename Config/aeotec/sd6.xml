@@ -15,7 +15,7 @@
 		</Help>
 	</Value>
 	-->
-    <Value type="list" index="3" genre="config" label="Current Overload Protection" units="" min="0" max="1" size="1" value="0">
+    <Value type="list" index="3" genre="config" label="Current Overload Protection" units="" min="0" max="1" size="1" value="1">
       <Help>Load will be closed when the Current overruns (US 15.5A, Others 16.2) for more than 2 minutes</Help>
       <Item label="Deactivate Overload Protection (Default)" value="0"/>
       <Item label="Active Overload Protection" value="1"/>
@@ -35,7 +35,7 @@
       Byte 4 - Blue Value</Help>
     </Value>    
     -->
-    <Value type="list" index="80" genre="config" label="Notification status" units="" min="0" max="2" size="1" value="2">
+    <Value type="list" index="80" genre="config" label="Notification status" units="" min="0" max="2" size="1" value="0">
       <Help>Defines the automated status notification of an associated device when status changes</Help>
       <Item label="Nothing" value="0" />
       <Item label="Hail" value="1" />
@@ -77,7 +77,7 @@
 	Set report types for groups 1, 2 and 3 to default.
       </Help>
     </Value>
-    <Value type="int" index="101" genre="config" label="Report type sent in Reporting Group 1" units="" value="4">
+    <Value type="int" index="101" genre="config" label="Report type sent in Reporting Group 1" units="" value="0">
       <Help>
 	Defines the type of report sent for reporting group 1. 2 is multisensor report. 4 is meter report for watts. 8 is meter report for kilowatts.
 	 Value 1 (msb) Reserved
@@ -91,7 +91,7 @@
 		bit 0 Voltage
       </Help>
     </Value>
-    <Value type="int" index="102" genre="config" label="Report type sent in Reporting Group 2" units="" value="8">
+    <Value type="int" index="102" genre="config" label="Report type sent in Reporting Group 2" units="" value="0">
       <Help>
 	Defines the type of report sent for reporting group 1. 2 is multisensor report. 4 is meter report for watts. 8 is meter report for kilowatts.
 	 Value 1 (msb) Reserved
@@ -124,7 +124,7 @@
 	Set time interval for sending reports for groups 1, 2 and 3 to default.
       </Help>
     </Value>
-    <Value type="int" index="111" genre="config" label="Send Interval for Reporting Group 1" units="seconds" min="0" max="65535" value="600">
+    <Value type="int" index="111" genre="config" label="Send Interval for Reporting Group 1" units="seconds" min="0" max="65535" value="3">
       <Help>
 	Defines the time interval when the defined report for group 1 is sent.
       </Help>
@@ -161,7 +161,7 @@
     </Value>
   </CommandClass>
   <CommandClass id="96" mapping="endpoints" forceUniqueEndpoints="true" />
-
+  
   <!-- Association Groups -->
   <CommandClass id="133">
     <Associations num_groups="2">

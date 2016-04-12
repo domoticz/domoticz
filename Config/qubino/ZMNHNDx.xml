@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<!-- 
+	Qubino ZMNHNDx Flush 1D Relay 
+	ZMNHND1 868,4 MHz
+	ZMNHND2 921,4 MHz
+	ZMNHND3 908,4 MHz
+	ZMNHND4 869,0 MHz
+	ZMNHND5 916,0 MHz
+	-->
+	
+	<!-- Configuration  -->
+	<CommandClass id="112">
+		<Value type="list" genre="config" instance="1" index="1" label="Input 1 switch type" size="1" min="0" max="1" value="1">
+			<Help/>
+			<Item label="Mono-stable switch type (push button)" value="0" />
+			<Item label="Bi-stable switch type" value="1" />
+		</Value>		
+		<Value type="list" genre="config" instance="1" index="2" label="Input 2 contact type" size="1" min="0" max="1" value="0">
+			<Help/>
+			<Item label="NO (normaly open) input type" value="0"/>
+			<Item label="NC (normaly close) input type" value="1"/>
+		</Value> 
+		<Value type="list" genre="config" instance="1" index="10" label="Activate / deactivate functions ALL ON/ALL OFF" size="1" min="0" max="255" value="255">
+			<Help>Flush 1 relay module responds to commands ALL ON / ALL OFF that may be sent by the main controller or by other controller belonging to the system</Help>
+			<Item label="ALL ON active, ALL OFF active" value="255" />
+			<Item label="ALL ON is not active ALL OFF is not active" value="0" />
+			<Item label="ALL ON is not active ALL OFF active" value="1" />
+			<Item label="ALL ON active ALL OFF is not active" value="2" />
+		</Value> 		
+		<Value type="short" genre="config" instance="1" index="11" label="Automatic turning off relay after set time" min="0" max="32535" value="0">
+			<Help>
+			0 => Auto OFF disabled. 
+			1 - 32535  => 1 second (0,01s) - 32535 seconds (325,35s). 
+			Auto OFF enabled with define time, step is 1s or 10ms according to parameter 15. Default value 0</Help>
+		</Value>		
+        <Value type="short" genre="config" instance="1" index="12" label="Automatic turning on relay after set time" min="0" max="32535" value="0">
+            <Help>
+			0 - Auto OFF disabled. 
+			1 - 32535  => 1 second (0,01s) - 32535 seconds (325,35s).
+			Auto ON enabled with define time, step is 1s or 10ms according to parameter 15. Default value 0</Help>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="15" label="Automatic turning on/off seconds or milliseconds selection" min="0" max="1" value="0">
+            <Help/>
+            <Item label="seconds" value="0" />
+            <Item label="milliseconds" value="1" />
+        </Value>
+		<Value type="list" genre="config" instance="1" index="30" label="Saving the state of the relay after a power failure" size="1" min="0" max="1" value="0">
+			<Help/>
+			<Item label="Flush 1 relay module saves its state before power failure (it returns to the last position saved before a power failure)" value="0" />
+			<Item label="Flush 1 relay module does not save the state after a power failure, it returns to off position." value="1" />
+		</Value>		
+        <Value type="list" genre="config" instance="1" index="63" label="Output switch selection" size="1" min="0" max="1" value="0">
+            <Help/>
+            <Item label="When system is turned off the output is 0V (NC)" value="0" />
+            <Item label="When system is turned off the output is 230V or 24V (NO)" value="1" />
+        </Value>
+		<Value type="list" genre="config" instance="1" index="100" label="Enable / Disable Endpoints I2 or select notification type and event" size="1" min="0" max="9" value="1">
+            <Help/>
+            <Item label="Endpoint, I2 disabled" value="0" />
+			<Item label="Home Security; Motion Detection, unknown location" value="1" />
+			<Item label="Carbon Monoxide; Carbon Monoxide detected, unknown location" value="2" />
+			<Item label="Carbon Dioxide; Carbon Dioxide detected, unknown location" value="3" />
+			<Item label="Water Alarm; Water Leak detected, unknown location" value="4" />
+			<Item label="Heat Alarm; Overheat detected, unknown location" value="5" />
+			<Item label="Smoke Alarm; Smoke detected, unknown location" value="6" />
+			<Item label="Sensor binary" value="9" />
+        </Value>
+		<Value type="short" genre="config" instance="1" index="110" label="Temperature sensor offset settings" min="0" max="32535" value="32535">
+            <Help>Set value is added or subtracted to actual measured value by sensor. 
+			Available configuration parameters : default value 32536. 32536  offset is 0.0C. 
+			From 1 to 100 = value from 0.1C to 10.0C is added to actual measured temperature.
+			From 1001 to 1100 = value from -0.1 C to -10.0 C is subtracted to actual measured temperature.</Help>
+        </Value>
+		<Value type="byte" genre="config" instance="1" index="120" label="Digital temperature sensor reporting" min="0" max="127" value="5">
+            <Help>If digital temperature sensor is connected, module reports measured temperature on temperature change defined by this parameter. 
+			Available configuration parameters : 0 = reporting disabled. 1 to 127 = 0,1C to 12,7C, step is 0,1C. Default value is 5 = 0,5C</Help>
+        </Value>
+	</CommandClass>
+
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="5">
+			<Group index="1" max_associations="1" label="Lifeline" />
+			<Group index="2" max_associations="16" label="Basic on/off of the output state" />
+			<Group index="3" max_associations="16" label="Basic on/off of the input I2 state"/>		  
+			<Group index="4" max_associations="16" label="Binary Sensor Report of the input I2 state" />
+			<Group index="5" max_associations="16" label="Notification Report of the input I2 state" /> 
+		</Associations>
+	</CommandClass>
+
+	<!-- Remove COMMAND_CLASS_BASIC -->
+	<CommandClass id="32" action="remove" />
+
+</Product>

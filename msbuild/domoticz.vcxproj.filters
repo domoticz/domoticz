@@ -399,6 +399,9 @@
     <Filter Include="Devices\AtagOne">
       <UniqueIdentifier>{604bf7b4-5455-4d54-9e9f-1b9deac8e65c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\Sterbox">
+      <UniqueIdentifier>{08a528fa-9097-40bd-abc4-800a70838c6d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -1810,6 +1813,9 @@
     <ClInclude Include="..\webserver\fastcgi.hpp">
       <Filter>Webserver</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\Sterbox.h">
+      <Filter>Devices\Sterbox</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2351,6 +2357,9 @@
     </ClCompile>
     <ClCompile Include="..\webserver\fastcgi.cpp">
       <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\Sterbox.cpp">
+      <Filter>Devices\Sterbox</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
