@@ -11,6 +11,7 @@ CMakeCache.txt
 domoticz
 stdafx.h.gch
 .DS_Store
+.AppleDouble
 Config/OZW_Log.txt
 Config/zwscene.xml
 backups/
