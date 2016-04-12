@@ -89,6 +89,7 @@
 #include "../hardware/PanasonicTV.h"
 #include "../hardware/OpenWebNet.h"
 #include "../hardware/AtagOne.h"
+#include "../hardware/Sterbox.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -789,6 +790,10 @@ bool MainWorker::AddHardwareFromParams(
 		//Logitech Media Server
 		pHardware = new CLogitechMediaServer(ID, Address, Port, Username, Password, Mode1, Mode2);
 		break;
+	case HTYPE_Sterbox:
+		//LAN
+		pHardware = new CSterbox(ID, Address, Port, Username, Password);
+		break;		
 #ifndef WIN32
 	case HTYPE_TE923:
 		//TE923 compatible weather station
