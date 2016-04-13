@@ -604,7 +604,7 @@ void CPiFace::AutoCreate_piface_config(void)
                     ConfigFile.write(configline,strlen(configline));
                     
                     Value=IOport->Pin[PinNr].Count.GetRateLimit();
-                    sprintf(configline,"piface.%d.%s.%d.count_minimum_pulse_period_msec=%lu\r\n",BoardNr,PortType.c_str(),PinNr,Value);
+                    sprintf(configline,"piface.%d.%s.%d.count_minimum_pulse_period_msec=%d\r\n",BoardNr,PortType.c_str(),PinNr,Value);
                     ConfigFile.write(configline,strlen(configline));
                     
                     sprintf(configline,"\r\n");
