@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ #include "stdafx.h"
 #ifdef WITH_TELLDUSCORE
 #include "Tellstick.h"
 
@@ -16,6 +16,8 @@ CTellstick::CTellstick(const int ID)
 {
 	m_HwdID=ID;
 	m_bSkipReceiveCheck = true;
+	deviceEventId = -1;
+	sensorEventId = -1;
 }
 
 CTellstick::~CTellstick(void)
@@ -41,6 +43,37 @@ bool CTellstick::AddSwitchIfNotExits(const int id, const char* devname, bool isD
 	}
 	return false;
 }
+
+void CTellstick::sensorEvent(int deviceId, const char *protocol, const char *model, int dataType, const char *value) {
+  // _log.Log(LOG_NORM, "Tellstick: SensorEvent %d,%s,%s,%d,%s", deviceId, protocol, model, dataType, value);
+
+    switch (dataType) {
+      
+    case TELLSTICK_TEMPERATURE:
+      SendTempSensor(deviceId, 255, atof(value), "Temp");
+      break;
+      
+    case TELLSTICK_HUMIDITY:
+      SendHumiditySensor(deviceId, 255, atof(value), "Humid");
+      break;
+
+    case TELLSTICK_RAINRATE:
+      break;
+
+    case TELLSTICK_RAINTOTAL:
+      break;
+
+    case TELLSTICK_WINDDIRECTION:
+      break;
+
+    case TELLSTICK_WINDAVERAGE:
+      break;
+
+    case  TELLSTICK_WINDGUST:
+      break;
+  }
+}
+
 
 void CTellstick::deviceEvent(int deviceId, int method, const char *data) {
 	_log.Log(LOG_NORM, "Tellstick: deviceEvent %d %d: %s", deviceId, method, data);
@@ -83,11 +116,28 @@ void CTellstick::deviceEventCallback(int deviceId, int method, const char *data,
   }
 }
 
+void CTellstick::sensorEventCallback(const char *protocol, const char *model, int deviceId, int dataType, 
+				     const char *value, int timestamp, int callbackId, void *context) {
+  CTellstick *t = reinterpret_cast<CTellstick *>(context);
+  if (t) {
+    /** Please note!
+     * We are here in another thread than the main. Some measures to syncronize
+     * this must be taken!
+     **/
+    t->sensorEvent(deviceId, protocol, model, dataType, value);
+ }
+}
+
 void CTellstick::Init()
 {
   tdInit();
-  tdRegisterDeviceEvent( reinterpret_cast<TDDeviceEvent>(&CTellstick::deviceEventCallback), this );
+  deviceEventId = tdRegisterDeviceEvent( reinterpret_cast<TDDeviceEvent>(&CTellstick::deviceEventCallback), this);
   int intNumberOfDevices = tdGetNumberOfDevices();
+
+  sensorEventId = tdRegisterSensorEvent( reinterpret_cast<TDSensorEvent>(&CTellstick::sensorEventCallback), this);
+  _log.Log(LOG_NORM, "Tellstick: Registering Sensor Event Calback %d", sensorEventId);
+  
+  
   for (int i = 0; i < intNumberOfDevices; i++) {
     int id = tdGetDeviceId(i);
     char *name = tdGetName(id);
@@ -96,7 +146,7 @@ void CTellstick::Init()
     AddSwitchIfNotExits(id, name, isDimmer);
     tdReleaseString(name);
   }
-
+  
 }
 
 bool CTellstick::StartHardware()
@@ -110,6 +160,11 @@ bool CTellstick::StartHardware()
 
 bool CTellstick::StopHardware()
 {
+  if (deviceEventId != -1)
+    tdUnregisterCallback( deviceEventId );
+  if (sensorEventId != -1)
+    tdUnregisterCallback( sensorEventId );
+  
 	tdClose();
  	m_bIsStarted=false;
 	return true;
