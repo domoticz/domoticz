@@ -454,24 +454,24 @@ void CPiFace::LoadDefaultConfig(void)
 {
     for (int i=0; i<=3 ;i++)
     {
-        for (int Pnr=0; Pnr<=7 ;Pnr++)
+        for (int PinNr=0; PinNr<=7 ;PinNr++)
         {
-            if (Pnr < 4)
+            if (PinNr < 4)
             {
-                m_Inputs[i].Pin[Pnr].Enabled=true;
+                m_Inputs[i].Pin[PinNr].Enabled=true;
             }
-            m_Inputs[i].Pin[Pnr].Type=TOGGLE_RISING;
-            m_Inputs[i].Pin[Pnr].Count.SetUpdateInterval(10000);
-            m_Inputs[i].Pin[Pnr].Direction = 'I';
+            m_Inputs[i].Pin[PinNr].Type=TOGGLE_RISING;
+            m_Inputs[i].Pin[PinNr].Count.SetUpdateInterval(10000);
+            m_Inputs[i].Pin[PinNr].Direction = 'I';
             
-            if (Pnr >= 4)
+            if (PinNr >= 4)
             {
-                m_Inputs[i].ConfigureCounter(Pnr,true);
+                m_Inputs[i].ConfigureCounter(PinNr,true);
             }
-            m_Outputs[i].ConfigureCounter(Pnr,true);
-            m_Outputs[i].Pin[Pnr].Type=LEVEL;
-            m_Outputs[i].Pin[Pnr].Count.SetUpdateInterval(10000);
-            m_Outputs[i].Pin[Pnr].Direction = 'O';
+            m_Outputs[i].ConfigureCounter(PinNr,true);
+            m_Outputs[i].Pin[PinNr].Type=LEVEL;
+            m_Outputs[i].Pin[PinNr].Count.SetUpdateInterval(10000);
+            m_Outputs[i].Pin[PinNr].Direction = 'O';
         }
     }
 }
@@ -1263,8 +1263,6 @@ CIOPinState::~CIOPinState()
 void CIOPort::Init(bool Available, int hwdId, int devId /* 0 - 4 */, unsigned char housecode, unsigned char initial_state)
 {
     int PinNr;
-    int hardware_type;
-    int meterid;
     unsigned long value;
     bool found;
 
@@ -1295,14 +1293,13 @@ void CIOPort::Init(bool Available, int hwdId, int devId /* 0 - 4 */, unsigned ch
                 Pin[PinNr].IOPinCounterPacket.RFXMETER.rssi = 12;
                 Pin[PinNr].IOPinCounterPacket.RFXMETER.seqnbr = 0;
 
-                // GetLastKnownValues
-                hardware_type = pTypeRFXMeter;
+                int meterid;
                 if (housecode == 'I')
                     meterid=100+PinNr + (devId*10);
                 else
                     meterid=0+PinNr + (devId*10);
                 
-                result = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (HardwareID=%d AND Type=%d AND DeviceID='%d')", hwdId, hardware_type, meterid);
+                result = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (HardwareID=%d AND Type=%d AND DeviceID='%d')", hwdId, int(pTypeRFXMeter), meterid);
                 if (result.size() == 1)
                 {
                     value = atol(result[0][0].c_str());
@@ -1311,26 +1308,19 @@ void CIOPort::Init(bool Available, int hwdId, int devId /* 0 - 4 */, unsigned ch
                 break;
       
             case COUNT_TYPE_ENERGY:
-                //set generic packet info for ENERGY packet, so we do not have every packet
-                Pin[PinNr].IOPinCounterPacket.ENERGY.packetlength = sizeof(Pin[PinNr].IOPinCounterPacket.ENERGY) -1;
-                Pin[PinNr].IOPinCounterPacket.ENERGY.packettype = pTypeENERGY;
-                Pin[PinNr].IOPinCounterPacket.ENERGY.subtype = sTypeELEC2;
-                Pin[PinNr].IOPinCounterPacket.ENERGY.rssi = 12;
-                Pin[PinNr].IOPinCounterPacket.ENERGY.seqnbr = 0;
-                Pin[PinNr].IOPinCounterPacket.ENERGY.battery_level = 9;
-
-                // GetLastKnownValues
-                hardware_type = pTypeGeneral;
+                int nodeId;
                 if (housecode == 'I')
-                    meterid=300+PinNr + (devId*10);
+                    nodeId=300+devId;
                 else
-                    meterid=200+PinNr + (devId*10);
-                
-                result = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (HardwareID=%d AND Type=%d AND DeviceID='%08X')", hwdId, hardware_type, meterid);
+                    nodeId=200+devId;
+
+                int dID = (nodeId << 8) | PinNr;
+              
+                result = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (HardwareID=%d AND Type=%d AND DeviceID='%08X')", hwdId, int(pTypeGeneral), dID);
                 if (result.size() == 1)
                 {
                     StringSplit(result[0][0], ";", resultparts);
-					double dValue = 0;
+                    double dValue = 0;
                     if (resultparts.size() == 1)
                     {
                         dValue = atol(resultparts[0].c_str()) / ( 1000. / Pin[PinNr].Count.GetDivider() );
@@ -1341,7 +1331,7 @@ void CIOPort::Init(bool Available, int hwdId, int devId /* 0 - 4 */, unsigned ch
                         dValue = atol(resultparts[1].c_str()) / ( 1000. / Pin[PinNr].Count.GetDivider() );
                         found = true;
                     }
-					value = (unsigned long)dValue;
+                    value = (unsigned long)dValue;
                 }
                 break;
         }
@@ -1360,107 +1350,86 @@ void CIOPort::Init(bool Available, int hwdId, int devId /* 0 - 4 */, unsigned ch
 int CIOPort::Update(unsigned char New)
 {
     int mask=0x01;
-    int i;
     int ChangeState=-1;
     bool UpdateCounter=false;
-    int meterid;
     
     CPiFace *myCallback = reinterpret_cast<CPiFace*>(Callback_pntr);
     
     Last=Current;
     Current=New;
     
-    for (i=0;i <= 7;i++)
+    for (int PinNr=0; PinNr<=7 ;PinNr++)
     {
-        ChangeState=Pin[i].Update((New&mask)==mask);
-        if ((ChangeState >=0) || ((!Pin[i].InitialStateSent) && Pin[i].Enabled))
+        ChangeState=Pin[PinNr].Update((New&mask)==mask);
+        if ((ChangeState >=0) || ((!Pin[PinNr].InitialStateSent) && Pin[PinNr].Enabled))
         {
-            Pin[i].InitialStateSent=true;
+            Pin[PinNr].InitialStateSent=true;
             if (ChangeState <0)
             {
                 //we have to sent current state
-                ChangeState=Pin[i].GetInitialState();
+                ChangeState=Pin[PinNr].GetInitialState();
             }
             //We have something to report to the upper layer
             IOPinStatusPacket.LIGHTING1.cmnd = (ChangeState != 0) ? light1_sOn : light1_sOff;
             IOPinStatusPacket.LIGHTING1.seqnbr++;
-            IOPinStatusPacket.LIGHTING1.unitcode = i + (devId*10) ; //report inputs from PiFace X (X0..X9)
+            IOPinStatusPacket.LIGHTING1.unitcode = PinNr + (devId*10) ; //report inputs from PiFace X (X0..X9)
             myCallback->CallBackSendEvent((const unsigned char *)&IOPinStatusPacket, sizeof(IOPinStatusPacket.LIGHTING1));
         }
         
-        UpdateCounter=Pin[i].Count.ProcessUpdateInterval(PIFACE_INPUT_PROCESS_INTERVAL*PIFACE_WORKER_THREAD_SLEEP_INTERVAL_MS);
+        UpdateCounter=Pin[PinNr].Count.ProcessUpdateInterval(PIFACE_INPUT_PROCESS_INTERVAL*PIFACE_WORKER_THREAD_SLEEP_INTERVAL_MS);
         if (UpdateCounter)
         {
-            unsigned long Count = Pin[i].Count.GetTotal();
-            unsigned long LastCount = Pin[i].Count.GetLastTotal();
+            unsigned long Count = Pin[PinNr].Count.GetTotal();
+            unsigned long LastCount = Pin[PinNr].Count.GetLastTotal();
             
-            switch( Pin[i].Count.Type )
+            switch( Pin[PinNr].Count.Type )
             {
                 case COUNT_TYPE_GENERIC:
                 case COUNT_TYPE_RFXMETER:
+                    int meterid;
                     if (IOPinStatusPacket.LIGHTING1.housecode == 'I')
-                        meterid=100+i + (devId*10);
+                        meterid=100+PinNr + (devId*10);
                     else
-                        meterid=0+i + (devId*10);
+                        meterid=0+PinNr + (devId*10);
     
-                    Pin[i].IOPinCounterPacket.RFXMETER.id1=((meterid >>8) & 0xFF);
-                    Pin[i].IOPinCounterPacket.RFXMETER.id2= (meterid & 0xFF);
+                    Pin[PinNr].IOPinCounterPacket.RFXMETER.id1=((meterid >>8) & 0xFF);
+                    Pin[PinNr].IOPinCounterPacket.RFXMETER.id2= (meterid & 0xFF);
                     
                     if (Count != LastCount)
                     {
-                        Pin[i].Count.SetLastTotal(Count);
+                        Pin[PinNr].Count.SetLastTotal(Count);
                         //    _log.Log(LOG_NORM,"Counter %lu\n",Count);
-                        Pin[i].IOPinCounterPacket.RFXMETER.count1 = (unsigned char)((Count >> 24) & 0xFF);
-                        Pin[i].IOPinCounterPacket.RFXMETER.count2 = (unsigned char)((Count >> 16) & 0xFF);
-                        Pin[i].IOPinCounterPacket.RFXMETER.count3 = (unsigned char)((Count >> 8) & 0xFF);
-                        Pin[i].IOPinCounterPacket.RFXMETER.count4 = (unsigned char)((Count)& 0xFF);
-                        Pin[i].IOPinCounterPacket.RFXMETER.seqnbr++;
-                        //    _log.Log(LOG_NORM,"RFXMeter Packet C1 %d, C2 %d C3 %d C4 %d\n",Pin[i].IOPinCounterPacket.RFXMETER.count1,Pin[i].IOPinCounterPacket.RFXMETER.count2,Pin[i].IOPinCounterPacket.RFXMETER.count3,Pin[i].IOPinCounterPacket.RFXMETER.count4);
-                        myCallback->CallBackSendEvent((const unsigned char *)&Pin[i].IOPinCounterPacket, sizeof(Pin[i].IOPinCounterPacket.RFXMETER));
+                        Pin[PinNr].IOPinCounterPacket.RFXMETER.count1 = (unsigned char)((Count >> 24) & 0xFF);
+                        Pin[PinNr].IOPinCounterPacket.RFXMETER.count2 = (unsigned char)((Count >> 16) & 0xFF);
+                        Pin[PinNr].IOPinCounterPacket.RFXMETER.count3 = (unsigned char)((Count >> 8) & 0xFF);
+                        Pin[PinNr].IOPinCounterPacket.RFXMETER.count4 = (unsigned char)((Count)& 0xFF);
+                        Pin[PinNr].IOPinCounterPacket.RFXMETER.seqnbr++;
+                        //    _log.Log(LOG_NORM,"RFXMeter Packet C1 %d, C2 %d C3 %d C4 %d\n",Pin[PinNr].IOPinCounterPacket.RFXMETER.count1,Pin[PinNr].IOPinCounterPacket.RFXMETER.count2,Pin[PinNr].IOPinCounterPacket.RFXMETER.count3,Pin[PinNr].IOPinCounterPacket.RFXMETER.count4);
+                        myCallback->CallBackSendEvent((const unsigned char *)&Pin[PinNr].IOPinCounterPacket, sizeof(Pin[PinNr].IOPinCounterPacket.RFXMETER));
                     }
                     break;
                     
                 case COUNT_TYPE_ENERGY:
+                    int nodeId;
                     if (IOPinStatusPacket.LIGHTING1.housecode == 'I')
-                        meterid=300+i + (devId*10); // this will create new devices if type is changed afterwards
+                        nodeId=300+devId;
                     else
-                        meterid=200+i + (devId*10);
-    
-                    Pin[i].IOPinCounterPacket.ENERGY.id1=((meterid >>8) & 0xFF);
-                    Pin[i].IOPinCounterPacket.ENERGY.id2= (meterid & 0xFF);
+                        nodeId=200+devId;
                     
-                    boost::posix_time::time_duration Diff = Pin[i].Count.Cur_Call - Pin[i].Count.Last_Call;
+                    boost::posix_time::time_duration Diff = Pin[PinNr].Count.Cur_Call - Pin[PinNr].Count.Last_Call;
                     boost::posix_time::ptime Now = boost::posix_time::microsec_clock::universal_time();
-                    if ( Now - Pin[i].Count.Cur_Call > Diff )
+                    if ( Now - Pin[PinNr].Count.Cur_Call > Diff )
                     {
-                        Diff = Now - Pin[i].Count.Cur_Call;
+                        Diff = Now - Pin[PinNr].Count.Cur_Call;
                     }
                     if (
                         Diff.total_milliseconds() > 0 &&
-                        Pin[i].Count.GetDivider() > 0
+                        Pin[PinNr].Count.GetDivider() > 0
                     )
                     {
-                        double dEnergy = ( ( 1000. / Pin[i].Count.GetDivider() ) * Count  ); // kWh
-                        dEnergy *= 223.666;
-                        double dPower = ( ( 1000. / Pin[i].Count.GetDivider() ) * ( 1000. / Diff.total_milliseconds() ) * 3600 ); // Watt
-                        
-						uint64_t Energy = (uint64_t)dEnergy;
-						uint64_t Power = (uint64_t)dPower;
-
-                        Pin[i].IOPinCounterPacket.ENERGY.instant1 = (unsigned char)((Power >> 24) & 0xFF);
-                        Pin[i].IOPinCounterPacket.ENERGY.instant2 = (unsigned char)((Power >> 16) & 0xFF);
-                        Pin[i].IOPinCounterPacket.ENERGY.instant3 = (unsigned char)((Power >> 8) & 0xFF);
-                        Pin[i].IOPinCounterPacket.ENERGY.instant4 = (unsigned char)((Power)& 0xFF);
-                        
-                        Pin[i].IOPinCounterPacket.ENERGY.total1 = (unsigned char)((Energy >> 40) & 0xFF);
-                        Pin[i].IOPinCounterPacket.ENERGY.total2 = (unsigned char)((Energy >> 32) & 0xFF);
-                        Pin[i].IOPinCounterPacket.ENERGY.total3 = (unsigned char)((Energy >> 24) & 0xFF);
-                        Pin[i].IOPinCounterPacket.ENERGY.total4 = (unsigned char)((Energy >> 16) & 0xFF);
-                        Pin[i].IOPinCounterPacket.ENERGY.total5 = (unsigned char)((Energy >> 8) & 0xFF);
-                        Pin[i].IOPinCounterPacket.ENERGY.total6 = (unsigned char)((Energy)& 0xFF);
-                        
-                        Pin[i].IOPinCounterPacket.ENERGY.seqnbr++;
-                        myCallback->CallBackSendEvent((const unsigned char *)&Pin[i].IOPinCounterPacket, sizeof(Pin[i].IOPinCounterPacket.ENERGY));
+                        double dEnergy = ( ( 1. / Pin[PinNr].Count.GetDivider() ) * Count  ); // kWh
+                        double dPower = ( ( 1000. / Pin[PinNr].Count.GetDivider() ) * ( 1000. / Diff.total_milliseconds() ) * 3600 ); // Watt
+                        myCallback->SendKwhMeter(nodeId, PinNr, 255, dPower, dEnergy, "kWh Meter" );
                     }
                     break;
             }
@@ -1474,13 +1443,12 @@ int CIOPort::Update(unsigned char New)
 int CIOPort::UpdateInterrupt(unsigned char IntFlag,unsigned char PinState)
 {
     int mask=0x01;
-    int i;
     int ChangeState=-1; //nothing changed
     int Changed;
     
-    for (i=0;i <= 7;i++)
+    for (int PinNr=0; PinNr<=7 ;PinNr++)
     {
-        Changed=Pin[i].UpdateInterrupt(((IntFlag&mask)==mask),((PinState&mask)==mask));
+        Changed=Pin[PinNr].UpdateInterrupt(((IntFlag&mask)==mask),((PinState&mask)==mask));
         if (Changed != -1)
             ChangeState=Changed;
         mask<<=1;
@@ -1507,9 +1475,9 @@ CIOPort::CIOPort()
     Callback_pntr = NULL;
     PortType = 0;
     devId = 0;
-    for (int i=0; i<8; i++)
+    for (int PinNr=0; PinNr<=7 ;PinNr++)
     {
-        Pin[i].Id=i;
+        Pin[PinNr].Id=PinNr;
     }
     
 };

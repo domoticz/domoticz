@@ -122,6 +122,8 @@ private:
 
 class CPiFace : public CDomoticzHardwareBase
 {
+    friend class CIOPort;
+    
 public:
     explicit CPiFace(const int ID);
     ~CPiFace();
