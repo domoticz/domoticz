@@ -402,6 +402,9 @@
     <Filter Include="Devices\Sterbox">
       <UniqueIdentifier>{08a528fa-9097-40bd-abc4-800a70838c6d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\Http">
+      <UniqueIdentifier>{efe2b02b-141c-473d-b168-fd06058fe9d2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -1816,6 +1819,12 @@
     <ClInclude Include="..\hardware\Sterbox.h">
       <Filter>Devices\Sterbox</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\Http.h">
+      <Filter>Devices\Http</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\LuaHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2360,6 +2369,12 @@
     </ClCompile>
     <ClCompile Include="..\hardware\Sterbox.cpp">
       <Filter>Devices\Sterbox</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\Http.cpp">
+      <Filter>Devices\Http</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\LuaHandler.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
