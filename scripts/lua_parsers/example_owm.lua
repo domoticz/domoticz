@@ -3,7 +3,7 @@
 -- Data are coming from the OpenWeatherMap API : See http://www.openweathermap.org/current
 
 -- <current>
--- 	<city id="2988507" name="Paris">
+-- 	<city id="12345" name="Paris">
 -- 		<coord lon="2.35" lat="48.85"/>
 -- 		<country>FR</country>
 -- 		<sun rise="2016-04-22T04:45:07" set="2016-04-22T18:53:47"/>
@@ -28,9 +28,7 @@ s = request['content'];
 
 -- Update some devices (index are here for this example)
 
-local id = domoticz_applyXPath(s,'//current/city/@id')
-domoticz_createVirtualDevice(hwdId,id,"temperature",84)
 local temp = domoticz_applyXPath(s,'//current/temperature/@value')
 local humidity = domoticz_applyXPath(s,'//current/humidity/@value')
 local pressure = domoticz_applyXPath(s,'//current/pressure/@value')
-domoticz_updateDevice(id,'',temp .. ";" .. humidity .. ";0;" .. pressure .. ";0")
+domoticz_updateDevice(2988507,'',temp .. ";" .. humidity .. ";0;" .. pressure .. ";0")
