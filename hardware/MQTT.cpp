@@ -225,10 +225,25 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		std::string svalue = (bsvalue) ? root["svalue"].asString() : "";
 		bool bParseTrigger = (bParseValue) ? root["parse"].asBool() : true;
 
-		int signallevel = 12;
-		int batterylevel = 255;
+		int signal_level = 12;
+		bool b_signal_level = not root["RSSI"].empty();
+		if (b_signal_level)
+		{
+			if (not root["RSSI"].isInt())
+				goto mqttinvaliddata;
+			signal_level = root["RSSI"].asInt();
+		}
 
-		if (!m_mainworker.UpdateDevice(HardwareID, DeviceID, unit, devType, subType, nvalue, svalue, signallevel, batterylevel, bParseTrigger))
+		int battery_level = 255;
+		bool b_battery_level = not root["Battery"].empty();
+		if (b_battery_level)
+		{
+			if (not root["Battery"].isInt())
+				goto mqttinvaliddata;
+			battery_level = root["Battery"].asInt();
+		}
+
+		if (!m_mainworker.UpdateDevice(HardwareID, DeviceID, unit, devType, subType, nvalue, svalue, signal_level, battery_level, bParseTrigger))
 		{
 			_log.Log(LOG_ERROR, "MQTT: Problem updating sensor (check idx, hardware enabled)");
 			return;
