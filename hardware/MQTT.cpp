@@ -229,7 +229,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		bool b_signallevel = ! root["RSSI"].empty();
 		if (b_signallevel)
 		{
-			if (not root["RSSI"].isInt())
+			if (! root["RSSI"].isInt())
 				goto mqttinvaliddata;
 			signallevel = root["RSSI"].asInt();
 		}
@@ -238,7 +238,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		bool b_batterylevel = ! root["Battery"].empty();
 		if (b_batterylevel)
 		{
-			if (not root["Battery"].isInt())
+			if (! root["Battery"].isInt())
 				goto mqttinvaliddata;
 			batterylevel = root["Battery"].asInt();
 		}
