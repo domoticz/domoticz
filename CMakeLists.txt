@@ -265,7 +265,7 @@ hardware/MySensorsTCP.cpp
 hardware/NefitEasy.cpp
 hardware/Nest.cpp
 hardware/Netatmo.cpp
-hardware/Http.cpp
+hardware/HttpPoller.cpp
 hardware/OpenWebNet.cpp
 hardware/openwebnet/bt_openwebnet.cpp
 hardware/OpenZWave.cpp

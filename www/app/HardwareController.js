@@ -323,17 +323,17 @@ define(['app'], function (app) {
                 });
             }
             else if ((text.indexOf("HTTP/HTTPS") >= 0)) {
-                var url = $("#hardwarecontent #divhttp #url").val();
+                var url = $("#hardwarecontent #divhttppoller #url").val();
                 if (url == "") {
                     ShowNotify($.t('Please enter an url!'), 2500, true);
                     return;
                 }
-                var script = $("#hardwarecontent #divhttp #script").val();
+                var script = $("#hardwarecontent #divhttppoller #script").val();
                 if (script == "") {
                     ShowNotify($.t('Please enter a script!'), 2500, true);
                     return;
                 }
-                var refresh = $("#hardwarecontent #divhttp #refresh").val();
+                var refresh = $("#hardwarecontent #divhttppoller #refresh").val();
                 if (refresh == "") {
                     ShowNotify($.t('Please enter a refresh rate!'), 2500, true);
                     return;
@@ -884,17 +884,17 @@ define(['app'], function (app) {
                 });
             }
             else if ((text.indexOf("HTTP/HTTPS") >= 0)) {
-                var url = $("#hardwarecontent #divhttp #url").val();
+                var url = $("#hardwarecontent #divhttppoller #url").val();
                 if (url == "") {
                     ShowNotify($.t('Please enter an url!'), 2500, true);
                     return;
                 }
-                var script = $("#hardwarecontent #divhttp #script").val();
+                var script = $("#hardwarecontent #divhttppoller #script").val();
                 if (script == "") {
                     ShowNotify($.t('Please enter a script!'), 2500, true);
                     return;
                 }
-                var refresh = $("#hardwarecontent #divhttp #refresh").val();
+                var refresh = $("#hardwarecontent #divhttppoller #refresh").val();
                 if (refresh == "") {
                     ShowNotify($.t('Please enter a refresh rate!'), 2500, true);
                     return;
@@ -4111,7 +4111,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divremote").hide();
                 $("#hardwarecontent #divlogin").hide();
                 $("#hardwarecontent #divunderground").hide();
-                $("#hardwarecontent #divhttp").hide();
+                $("#hardwarecontent #divhttppoller").hide();
             }
             else if (text.indexOf("USB") >= 0)
             {
@@ -4123,7 +4123,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divremote").hide();
                 $("#hardwarecontent #divlogin").hide();
                 $("#hardwarecontent #divunderground").hide();
-                $("#hardwarecontent #divhttp").hide();
+                $("#hardwarecontent #divhttppoller").hide();
             }
             else if (text.indexOf("LAN") >= 0 && text.indexOf("YouLess") == -1 && text.indexOf("Integra") == -1)
             {
@@ -4131,7 +4131,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divremote").show();
                 $("#hardwarecontent #divlogin").hide();
                 $("#hardwarecontent #divunderground").hide();
-                $("#hardwarecontent #divhttp").hide();
+                $("#hardwarecontent #divhttppoller").hide();
             }
             else if (text.indexOf("LAN") >= 0 && (text.indexOf("YouLess") >= 0 || text.indexOf("Integra") >= 0))
             {
@@ -4141,7 +4141,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #username").hide();
                 $("#hardwarecontent #lblusername").hide();
                 $("#hardwarecontent #divunderground").hide();
-                $("#hardwarecontent #divhttp").hide();
+                $("#hardwarecontent #divhttppoller").hide();
             }
             else if (text.indexOf("Domoticz") >= 0)
             {
@@ -4149,7 +4149,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divremote").show();
                 $("#hardwarecontent #divlogin").show();
                 $("#hardwarecontent #divunderground").hide();
-                $("#hardwarecontent #divhttp").hide();
+                $("#hardwarecontent #divhttppoller").hide();
                 $("#hardwarecontent #hardwareparamsremote #tcpport").val(6144);
             }
             else if (text.indexOf("Harmony") >= 0)
@@ -4158,7 +4158,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divremote").show();
                 $("#hardwarecontent #divlogin").show();
                 $("#hardwarecontent #divunderground").hide();
-                $("#hardwarecontent #divhttp").hide();
+                $("#hardwarecontent #divhttppoller").hide();
             }
             else if (text.indexOf("SolarEdge via") >= 0)
             {
@@ -4166,7 +4166,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divremote").hide();
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divunderground").hide();
-                $("#hardwarecontent #divhttp").hide();
+                $("#hardwarecontent #divhttppoller").hide();
             }
             else if (text.indexOf("SBFSpot") >= 0)
             {
@@ -4175,7 +4175,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divremote").hide();
                 $("#hardwarecontent #divlogin").hide();
                 $("#hardwarecontent #divunderground").hide();
-                $("#hardwarecontent #divhttp").hide();
+                $("#hardwarecontent #divhttppoller").hide();
                 $("#hardwarecontent #username").hide();
                 $("#hardwarecontent #lblusername").hide();
             }
@@ -4185,14 +4185,14 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divremote").hide();
                 $("#hardwarecontent #divlogin").show();
                 $("#hardwarecontent #divunderground").hide();
-                $("#hardwarecontent #divhttp").hide();
+                $("#hardwarecontent #divhttppoller").hide();
             }
             else if (text.indexOf("HTTP") >= 0) {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").hide();
                 $("#hardwarecontent #divlogin").show();
                 $("#hardwarecontent #divunderground").hide();
-                $("#hardwarecontent #divhttp").show();
+                $("#hardwarecontent #divhttppoller").show();
                 $("#hardwarecontent #hardwareparamshttp #refresh").val(300);
             }
             else if ((text.indexOf("Underground") >= 0)||(text.indexOf("Forecast") >= 0))
@@ -4201,7 +4201,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divremote").hide();
                 $("#hardwarecontent #divlogin").hide();
                 $("#hardwarecontent #divunderground").show();
-                $("#hardwarecontent #divhttp").hide();
+                $("#hardwarecontent #divhttppoller").hide();
             }
             else if (text.indexOf("Philips Hue") >= 0)
             {
@@ -4210,7 +4210,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divlogin").hide();
                 $("#hardwarecontent #divphilipshue").show();
                 $("#hardwarecontent #divunderground").hide();
-                $("#hardwarecontent #divhttp").hide();
+                $("#hardwarecontent #divhttppoller").hide();
                 $("#hardwarecontent #hardwareparamsremote #tcpport").val(80);
             }
             else if (text.indexOf("Winddelen") >= 0)
@@ -4221,7 +4221,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #username").hide();
                 $("#hardwarecontent #lblusername").hide();
                 $("#hardwarecontent #divunderground").hide();
-                $("#hardwarecontent #divhttp").hide();
+                $("#hardwarecontent #divhttppoller").hide();
                 $("#hardwarecontent #divwinddelen").show();
             }
             else if (text.indexOf("Logitech Media Server") >= 0)
@@ -4237,7 +4237,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divremote").show();
                 $("#hardwarecontent #divlogin").hide();
                 $("#hardwarecontent #divunderground").hide();
-                $("#hardwarecontent #divhttp").hide();
+                $("#hardwarecontent #divhttppoller").hide();
                 $("#hardwarecontent #hardwareparamsremote #tcpport").val(20000);
             }
             else
@@ -4246,7 +4246,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divremote").hide();
                 $("#hardwarecontent #divlogin").hide();
                 $("#hardwarecontent #divunderground").hide();
-                $("#hardwarecontent #divhttp").hide();
+                $("#hardwarecontent #divhttppoller").hide();
             }
             if (
 				(text.indexOf("ETH8020") >= 0) ||

@@ -221,7 +221,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_RaspberryHTU21D, "I2C sensor HTU21D(F)/SI702x Humidity+Temp" },
 		{ HTYPE_AtagOne, "Atag One Thermostat" },
 		{ HTYPE_Sterbox, "Sterbox v2-3 PLC with LAN interface" },
-		{ HTYPE_HTTP, "HTTP/HTTPS client" },
+		{ HTYPE_HTTPPOLLER, "HTTP/HTTPS poller" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);

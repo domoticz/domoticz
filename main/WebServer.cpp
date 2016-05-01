@@ -1038,7 +1038,7 @@ namespace http {
 			else if (htype == HTYPE_PiFace) {
 				//all fine here!
 			}
-			else if (htype == HTYPE_HTTP) {
+			else if (htype == HTYPE_HTTPPOLLER) {
 				//all fine here!
 			}
 			else if (
@@ -1289,7 +1289,7 @@ namespace http {
 			else if (htype == HTYPE_PiFace) {
 				//All fine here
 			}
-			else if (htype == HTYPE_HTTP) {
+			else if (htype == HTYPE_HTTPPOLLER) {
 				//all fine here!
 			}
 			else if (

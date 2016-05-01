@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Http.h"
+#include "HttpPoller.h"
 #include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "../main/SQLHelper.h"
@@ -14,7 +14,7 @@
 
 #define round(a) ( int ) ( a + .5 )
 
-CHttp::CHttp(const int ID, const std::string& username, const std::string& password, const std::string& url, const std::string& script, const unsigned short refresh) :
+CHttpPoller::CHttpPoller(const int ID, const std::string& username, const std::string& password, const std::string& url, const std::string& script, const unsigned short refresh) :
 m_username(CURLEncode::URLEncode(username)),
 m_password(CURLEncode::URLEncode(password)),
 m_url(url),
@@ -27,30 +27,30 @@ m_refresh(refresh)
 	Init();
 }
 
-CHttp::~CHttp(void)
+CHttpPoller::~CHttpPoller(void)
 {
 }
 
-void CHttp::Init()
+void CHttpPoller::Init()
 {
 }
 
-bool CHttp::WriteToHardware(const char *pdata, const unsigned char length)
+bool CHttpPoller::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	return false;
 }
 
-bool CHttp::StartHardware()
+bool CHttpPoller::StartHardware()
 {
 	Init();
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CHttp::Do_Work, this)));
+	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CHttpPoller::Do_Work, this)));
 	m_bIsStarted=true;
 	sOnConnected(this);
 	return (m_thread!=NULL);
 }
 
-bool CHttp::StopHardware()
+bool CHttpPoller::StopHardware()
 {
 	if (m_thread!=NULL)
 	{
@@ -61,7 +61,7 @@ bool CHttp::StopHardware()
     return true;
 }
 
-void CHttp::Do_Work()
+void CHttpPoller::Do_Work()
 {
 	int sec_counter = 300 - 5;
 	_log.Log(LOG_STATUS, "Http: Worker started...");
@@ -78,7 +78,7 @@ void CHttp::Do_Work()
 	_log.Log(LOG_STATUS,"Http: Worker stopped...");
 }
 
-void CHttp::GetScript()
+void CHttpPoller::GetScript()
 {
 	std::string sURL(m_url);
 	std::vector<std::string> ExtraHeaders;

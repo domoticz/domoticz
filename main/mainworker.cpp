@@ -76,7 +76,7 @@
 #include "../hardware/Thermosmart.h"
 #include "../hardware/Kodi.h"
 #include "../hardware/Netatmo.h"
-#include "../hardware/Http.h"
+#include "../hardware/HttpPoller.h"
 #include "../hardware/AnnaThermostat.h"
 #include "../hardware/Winddelen.h"
 #include "../hardware/SatelIntegra.h"
@@ -818,8 +818,8 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_Wunderground:
 		pHardware = new CWunderground(ID,Username,Password);
 		break;
-	case HTYPE_HTTP:
-		pHardware = new CHttp(ID, Username, Password, Address, Filename, Port);
+	case HTYPE_HTTPPOLLER:
+		pHardware = new CHttpPoller(ID, Username, Password, Address, Filename, Port);
 		break;
 	case HTYPE_ForecastIO:
 		pHardware = new CForecastIO(ID,Username,Password);
