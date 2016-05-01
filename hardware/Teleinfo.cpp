@@ -310,6 +310,12 @@ void Teleinfo::MatchLine()
                                 m_bLabel_PTEC_JW = false;
                                 m_bLabel_PTEC_JR = true;
                         }
+                        else
+                        {
+                                m_bLabel_PTEC_JB = false;
+                                m_bLabel_PTEC_JW = false;
+                                m_bLabel_PTEC_JR = false;
+                        }
 
 			break;
 		case TELEINFO_TYPE_IINST:

@@ -12091,6 +12091,16 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 				DecodeRXMessage(pHardware, (const unsigned char *)&gDevice, NULL, batterylevel);
 				return true;
 			}
+			else if (subType == sTypeVoltage)
+			{
+				_tGeneralDevice gDevice;
+				gDevice.subtype = sTypeVoltage;
+				gDevice.id = unit;
+				gDevice.floatval1 = (float)atof(sValue.c_str());
+				gDevice.intval1 = static_cast<int>(ID);
+				DecodeRXMessage(pHardware, (const unsigned char *)&gDevice, NULL, batterylevel);
+				return true;
+			}
 			else if (subType == sTypeWaterflow)
 			{
 				unsigned long ID;

@@ -37,7 +37,7 @@ ELSE(USE_BUILTIN_MQTT)
     ENDIF(MQTT_LIBRARIES)
     INCLUDE_DIRECTORIES(${MQTT_INCLUDE_DIRS})
   ELSE(MQTT_INCLUDE_DIRS)
-     meessage(FATAL_ERROR "Mosquitto includes or library cannot be found, and you ask to NOT use builtin")
+     message(FATAL_ERROR "Mosquitto includes or library cannot be found, and you ask to NOT use builtin")
   ENDIF(MQTT_INCLUDE_DIRS)
 ENDIF(USE_BUILTIN_MQTT)
 

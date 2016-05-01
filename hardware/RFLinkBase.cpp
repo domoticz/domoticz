@@ -7,6 +7,11 @@
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 
+#include "../main/mainworker.h"
+#include "../main/WebServer.h"
+#include "../webserver/cWebem.h"
+#include "../json/json.h"
+
 #ifdef _DEBUG
 	#define ENABLE_LOGGING
 #endif
@@ -286,7 +291,7 @@ bool CRFLinkBase::SendSwitchInt(const int ID, const int switchunit, const int Ba
 
 	int svalue=level;
 	if (cmnd==-1) {
-		if (switchcmd.compare(0, 9, "SETLEVEL=") == 0 ){
+		if (switchcmd.compare(0, 9, "SET_LEVEL=") == 0 ){
 			cmnd=gswitch_sSetLevel;
 			std::string str2 = switchcmd.substr(10);
 			svalue=atoi(str2.c_str()); 
@@ -800,3 +805,66 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
     return true;
 }
 
+//Webserver helpers
+namespace http {
+	namespace server {
+		void CWebServer::RType_CreateRFLinkDevice(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				return;									//No admin user, and not allowed to be here
+			}
+
+			std::string idx = request::findValue(&req, "idx");
+			std::string scommand = request::findValue(&req, "command");
+			if (idx.empty() || scommand.empty())
+			{
+				return;
+			}
+
+			#ifdef _DEBUG
+			_log.Log(LOG_STATUS, "RFLink Custom Command: %s", scommand.c_str());
+			_log.Log(LOG_STATUS, "RFLink Custom Command idx: %s", idx.c_str());
+			#endif
+
+			bool bCreated = false;						// flag to know if the command was a success
+			CRFLinkBase *pRFLINK = reinterpret_cast<CRFLinkBase*>(m_mainworker.GetHardware(atoi(idx.c_str())));
+			if (pRFLINK == NULL)
+				return;
+
+			_log.Log(LOG_STATUS, "User: %s initiated a RFLink Device Create command: %s", session.username.c_str(), scommand.c_str());
+
+			scommand = "11;" + scommand;
+			#ifdef _DEBUG
+			_log.Log(LOG_STATUS, "User: %s initiated a RFLink Device Create command: %s", session.username.c_str(), scommand.c_str());
+			#endif
+			scommand += "\r\n";
+
+			bCreated = true;
+			pRFLINK->m_bTXokay = false; // clear OK flag
+			pRFLINK->WriteInt(scommand.c_str());
+			time_t atime = mytime(NULL);
+			time_t btime = mytime(NULL);
+
+			// Wait for an OK response from RFLink to make sure the command was executed
+			while (pRFLINK->m_bTXokay == false) {
+				if (btime - atime > 4) {
+					_log.Log(LOG_ERROR, "RFLink: TX time out...");
+					bCreated = false;
+					break;
+				}
+				btime = mytime(NULL);
+			}
+
+			#ifdef _DEBUG
+			_log.Log(LOG_STATUS, "RFLink custom command done");
+			#endif
+
+			if (bCreated)
+			{
+				root["status"] = "OK";
+				root["title"] = "CreateRFLinkDevice";
+			}
+		}
+	}
+}

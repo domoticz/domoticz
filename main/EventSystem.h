@@ -56,6 +56,15 @@ public:
 		std::string lastUpdate;
 	};
 
+	struct _tScenesGroups
+	{
+		unsigned long long ID;
+		std::string scenesgroupName;
+		std::string scenesgroupValue;
+		int scenesgroupType;
+		std::string lastUpdate;
+	};
+
 	CEventSystem(void);
 	~CEventSystem(void);
 
@@ -76,6 +85,7 @@ private:
 	boost::shared_mutex m_devicestatesMutex;
 	boost::shared_mutex m_eventsMutex;
 	boost::shared_mutex m_uservariablesMutex;
+	boost::shared_mutex m_scenesgroupsMutex;
 	boost::mutex m_measurementStatesMutex;
 	boost::mutex luaMutex;
 	volatile bool m_stoprequested;
@@ -89,6 +99,7 @@ private:
 	void GetCurrentStates();
 	void GetCurrentMeasurementStates();
 	void GetCurrentUserVariables();
+	void GetCurrentScenesGroups();
 	std::string UpdateSingleState(const unsigned long long ulDevID, const std::string &devname, const int nValue, const char* sValue, const unsigned char devType, const unsigned char subType, const _eSwitchType switchType, const std::string &lastUpdate, const unsigned char lastLevel, const std::map<std::string, std::string> & options);
 	void EvaluateEvent(const std::string &reason);
 	void EvaluateEvent(const std::string &reason, const unsigned long long varId);
@@ -124,6 +135,7 @@ private:
 
 	std::map<unsigned long long, _tDeviceStatus> m_devicestates;
 	std::map<unsigned long long, _tUserVariable> m_uservariables;
+	std::map<unsigned long long, _tScenesGroups> m_scenesgroups;
 	std::map<std::string, float> m_tempValuesByName;
 	std::map<std::string, float> m_dewValuesByName;
 	std::map<std::string, float> m_rainValuesByName;
