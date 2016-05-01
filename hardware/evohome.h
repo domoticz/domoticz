@@ -563,7 +563,7 @@ private:
 	static const uint8_t m_dczToEvoZoneMode[3];
 	static const uint8_t m_dczToEvoControllerMode[6];
 	
-	template <typename RT> RT ConvertMode(RT* pArray, uint8_t nIdx){return pArray[(nIdx<sizeof(pArray))?nIdx:0];}
+	template <typename RT> RT ConvertMode(RT* pArray, uint8_t nIdx){return pArray[nIdx];}
 	
 	boost::shared_ptr<boost::thread> m_thread;
 	volatile bool m_stoprequested;
