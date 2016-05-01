@@ -1,6 +1,8 @@
 *.orig
 msbuild
 *.db
+*.db-shm
+*.db-wal
 *.bak
 appversion.h
 appversion.h.txt
