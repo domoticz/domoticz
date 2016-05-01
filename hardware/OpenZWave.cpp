@@ -5176,21 +5176,17 @@ namespace http {
 		}
 		void CWebServer::ZWaveCPGetStats(WebEmSession & session, const request& req, reply & rep)
 		{
-			//Crashes at the moment at:
-			//string TimeStampImpl::GetAsString
-			/*
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
 			if (pHardware != NULL)
 			{
-			if (pHardware->HwdType == HTYPE_OpenZWave)
-			{
-			COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-			boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
-			reply::set_content(&rep, pOZWHardware->m_ozwcp.GetCPStats());
-			reply::add_header_attachment(&rep, "stats.xml");
+				if (pHardware->HwdType == HTYPE_OpenZWave)
+				{
+					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+					reply::set_content(&rep, pOZWHardware->m_ozwcp.GetCPStats());
+					reply::add_header_attachment(&rep, "stats.xml");
+				}
 			}
-			}
-			*/
 		}
 
 		void CWebServer::ZWaveCPTestHeal(WebEmSession & session, const request& req, reply & rep)
