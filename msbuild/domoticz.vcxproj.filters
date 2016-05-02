@@ -1825,6 +1825,9 @@
     <ClInclude Include="..\hardware\HttpPoller.h">
       <Filter>Devices\HttpPoller</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\RFXBase.h">
+      <Filter>Devices\RFXCom</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2375,6 +2378,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\HttpPoller.cpp">
       <Filter>Devices\HttpPoller</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\RFXBase.cpp">
+      <Filter>Devices\RFXCom</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

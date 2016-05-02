@@ -3766,7 +3766,7 @@ define(['app'], function (app) {
                     }
                     if (HwTypeStr.indexOf("RFXCOM") >= 0)
                     {
-                        HwTypeStr+='<br>Version: ' + item.Mode2;
+                        HwTypeStr+='<br>Version: ' + item.version;
                         if (HwTypeStr.indexOf("868") >= 0) {
 							HwTypeStr+=' <span class="label label-info lcursor" onclick="EditRFXCOMMode868(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Set Mode") + '</span>';
                         }

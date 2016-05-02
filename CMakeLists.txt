@@ -287,6 +287,7 @@ hardware/Rego6XXSerial.cpp
 hardware/RFLinkBase.cpp
 hardware/RFLinkSerial.cpp
 hardware/RFLinkTCP.cpp
+hardware/RFXBase.cpp
 hardware/RFXComSerial.cpp
 hardware/RFXComTCP.cpp
 hardware/S0MeterBase.cpp

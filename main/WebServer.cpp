@@ -22,6 +22,7 @@
 #include "../hardware/Kodi.h"
 #include "../hardware/LogitechMediaServer.h"
 #include "../hardware/MySensorsBase.h"
+#include "../hardware/RFXBase.h"
 #include "../hardware/RFLinkBase.h"
 #ifdef WITH_GPIO
 #include "../hardware/Gpio.h"
@@ -9774,7 +9775,17 @@ namespace http {
 					CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(sd[0].c_str()));
 					if (pHardware != NULL)
 					{
-						if ((pHardware->HwdType == HTYPE_MySensorsUSB) || (pHardware->HwdType == HTYPE_MySensorsTCP))
+						if (
+							(pHardware->HwdType == HTYPE_RFXtrx315) || 
+							(pHardware->HwdType == HTYPE_RFXtrx433) || 
+							(pHardware->HwdType == HTYPE_RFXtrx868) || 
+							(pHardware->HwdType == HTYPE_RFXLAN)
+							)
+						{
+							CRFXBase *pMyHardware = reinterpret_cast<CRFXBase*>(pHardware);
+							root["result"][ii]["version"] = pMyHardware->m_Version;
+						}
+						else if ((pHardware->HwdType == HTYPE_MySensorsUSB) || (pHardware->HwdType == HTYPE_MySensorsTCP))
 						{
 							MySensorsBase *pMyHardware = reinterpret_cast<MySensorsBase*>(pHardware);
 							root["result"][ii]["version"] = pMyHardware->GetGatewayVersion();

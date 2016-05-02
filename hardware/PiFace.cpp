@@ -1130,7 +1130,7 @@ bool CIOCount::ProcessUpdateInterval(unsigned long PassedTime_ms)
                 Cur_Interval = Now - Cur_Pulse;
             }
             
-            double perc = ( 100. / Last_Interval.total_milliseconds() ) * labs( Cur_Interval.total_milliseconds() - Last_Interval.total_milliseconds() );
+			double perc = (100. / Last_Interval.total_milliseconds()) * labs((long)(Cur_Interval.total_milliseconds() - Last_Interval.total_milliseconds()));
             if ( perc > UpdateIntervalPerc )
             {
                 UpdateDownCount_ms=UpdateInterval_ms;

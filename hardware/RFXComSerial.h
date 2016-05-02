@@ -3,17 +3,15 @@
 #define	BUFFEREDASYNCSERIAL_H
 
 #include "ASyncSerial.h"
-#include "DomoticzHardware.h"
+#include "RFXBase.h"
 #include "serial/serial.h"
 #include <map>
 
-class RFXComSerial: public AsyncSerial, public CDomoticzHardwareBase
+class RFXComSerial: public CRFXBase, AsyncSerial
 {
 public:
 	RFXComSerial(const int ID, const std::string& devname, unsigned int baud_rate);
     ~RFXComSerial();
-	std::string m_szSerialPort;
-	unsigned int m_iBaudRate;
 
 	bool m_bReceiverStarted;
 
@@ -34,6 +32,8 @@ private:
 	bool Read_Firmware_File(const char *szFilename, std::map<unsigned long, std::string>& fileBuffer);
 	bool EraseMemory(const int StartAddress, const int StopAddress);
 
+	std::string m_szSerialPort;
+	unsigned int m_iBaudRate;
 	serial::Serial m_serial;
 	bool m_bStartFirmwareUpload;
 	std::string m_szFirmwareFile;

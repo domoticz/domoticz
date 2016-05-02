@@ -2360,31 +2360,40 @@ void MainWorker::decode_InterfaceMessage(const int HwdID, const _eHardwareTypes 
 						else
 							FWType = 3; //Ext
 					}
-
 					sprintf(szTmp,"Firmware version  = %d", FWVersion);
 					WriteMessage(szTmp);
 					WriteMessage( "Firmware type     = ",false);
 					switch (FWType)
 					{
 					case 0:
-						WriteMessage("Type1 Receive only");
+						strcpy(szTmp, "Type1 RX");
 						break;
 					case 1:
-						WriteMessage("Type1");
+						strcpy(szTmp, "Type1");
 						break;
 					case 2:
-						WriteMessage("Type2");
+						strcpy(szTmp, "Type2");
 						break;
 					case 3:
-						WriteMessage("Ext");
+						strcpy(szTmp, "Ext");
 						break;
 					case 4:
-						WriteMessage("Ext2");
+						strcpy(szTmp, "Ext2");
 						break;
 					default:
-						WriteMessage("?");
+						strcpy(szTmp, "?");
 						break;
 					}
+					WriteMessage(szTmp);
+
+					CRFXBase *pMyHardware = reinterpret_cast<CRFXBase*>(GetHardware(HwdID));
+					if (pMyHardware)
+					{
+						std::stringstream sstr;
+						sstr << szTmp << "/" << FWVersion;
+						pMyHardware->m_Version = sstr.str();
+					}
+
 
 					sprintf(szTmp,"Hardware version  = %d.%d",pResponse->IRESPONSE.msg7,pResponse->IRESPONSE.msg8);
 					WriteMessage(szTmp);
