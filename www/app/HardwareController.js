@@ -3823,6 +3823,9 @@ define(['app'], function (app) {
                     else if (HwTypeStr.indexOf("Dummy") >= 0) {
                         HwTypeStr+=' <span class="label label-info lcursor" onclick="CreateDummySensors(' + item.idx + ',\'' + item.Name + '\');">' + $.t("Create Virtual Sensors") + '</span>';
                     }
+                    else if (HwTypeStr.indexOf("PiFace") >= 0) {
+                        HwTypeStr+=' <span class="label label-info lcursor" onclick="ReloadPiFace(' + item.idx + ',\'' + item.Name + '\');">' + $.t("Reload") + '</span>';
+                    }
                     else if (HwTypeStr.indexOf("HTTP/HTTPS") >= 0) {
                         HwTypeStr+=' <span class="label label-info lcursor" onclick="CreateDummySensors(' + item.idx + ',\'' + item.Name + '\');">' + $.t("Create Virtual Sensors") + '</span>';
                     }
