@@ -12054,6 +12054,24 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 
 	if (pHardware)
 	{
+		std::vector<std::vector<std::string> > result;
+		result = m_sql.safe_query(
+			"SELECT ID,Name FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",
+			HardwareID, DeviceID.c_str(), unit, devType, subType);
+
+		unsigned long long dID = 0;
+		std::string dName = "";
+
+		if (!result.empty())
+		{
+			std::vector<std::string> sd = result[0];
+			std::stringstream s_strid;
+			s_strid << sd[0];
+			s_strid >> dID;
+			unsigned long long dID = 0;
+			std::string dName = sd[1];
+		}
+
 		if (devType == pTypeLighting2)
 		{
 			//Update as Lighting 2
@@ -12142,20 +12160,13 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 		}
 		else if ((devType == pTypeAirQuality) && (subType == sTypeVoltcraft))
 		{
-			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query(
-				"SELECT ID,Name FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",
-				HardwareID, DeviceID.c_str(), unit, devType, subType);
-			if (!result.empty())
-			{
-				std::vector<std::string> sd = result[0];
-				unsigned long long dID = 0;
-				std::stringstream s_strid;
-				s_strid << sd[0];
-				s_strid >> dID;
-
-				m_notifications.CheckAndHandleNotification(dID, sd[1], devType, subType, NTYPE_USAGE, (const float)nValue);
-			}
+			if (dID != 0)
+				m_notifications.CheckAndHandleNotification(dID, dName, devType, subType, NTYPE_USAGE, (const float)nValue);
+		}
+		else if (devType == pTypeTEMP)
+		{
+			if (dID != 0)
+				m_notifications.CheckAndHandleNotification(dID, dName, devType, subType, NTYPE_TEMPERATURE, (float)atof(sValue.c_str()));
 		}
 	}
 
@@ -12172,12 +12183,12 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 		sValue.c_str(),
 		devname,
 		false
-		);
+	);
 	if (devidx == -1)
 		return false;
 
 	// signal connected devices (MQTT, fibaro, http push ... ) about the web update
-	if ((pHardware)&&(parseTrigger))
+	if ((pHardware) && (parseTrigger))
 	{
 		sOnDeviceReceived(pHardware->m_HwdID, devidx, devname, NULL);
 	}
