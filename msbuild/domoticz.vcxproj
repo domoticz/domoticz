@@ -427,6 +427,7 @@
     <ClInclude Include="..\hardware\Gpio.h" />
     <ClInclude Include="..\hardware\GpioPin.h" />
     <ClInclude Include="..\hardware\HarmonyHub.h" />
+    <ClInclude Include="..\hardware\HttpPoller.h" />
     <ClInclude Include="..\hardware\I2C.h" />
     <ClInclude Include="..\hardware\ICYThermostat.h" />
     <ClInclude Include="..\hardware\KMTronic433.h" />
@@ -504,6 +505,7 @@
     <ClInclude Include="..\hardware\P1MeterSerial.h" />
     <ClInclude Include="..\hardware\P1MeterTCP.h" />
     <ClInclude Include="..\main\Logger.h" />
+    <ClInclude Include="..\main\LuaHandler.h" />
     <ClInclude Include="..\main\mainstructs.h" />
     <ClInclude Include="..\main\Push.h" />
     <ClInclude Include="..\main\unzip.h" />
@@ -627,6 +629,7 @@
     <ClCompile Include="..\hardware\Gpio.cpp" />
     <ClCompile Include="..\hardware\GpioPin.cpp" />
     <ClCompile Include="..\hardware\HarmonyHub.cpp" />
+    <ClCompile Include="..\hardware\HttpPoller.cpp" />
     <ClCompile Include="..\hardware\I2C.cpp" />
     <ClCompile Include="..\hardware\ICYThermostat.cpp" />
     <ClCompile Include="..\hardware\KMTronic433.cpp" />
@@ -702,6 +705,7 @@
     <ClCompile Include="..\hardware\P1MeterSerial.cpp" />
     <ClCompile Include="..\hardware\P1MeterTCP.cpp" />
     <ClCompile Include="..\main\Logger.cpp" />
+    <ClCompile Include="..\main\LuaHandler.cpp" />
     <ClCompile Include="..\main\Push.cpp" />
     <ClCompile Include="..\main\Scheduler.cpp" />
     <ClCompile Include="..\main\SQLHelper.cpp" />

@@ -153,6 +153,7 @@ enum _eHardwareTypes {
 	HTYPE_RaspberryHTU21D,		//71
 	HTYPE_AtagOne,				//72
 	HTYPE_Sterbox,				//73
+	HTYPE_HTTPPOLLER,					//74
 
 	HTYPE_END
 };
