@@ -3608,14 +3608,14 @@ define(['app'], function (app) {
         CreateDummySensors = function(idx,name)
         {
 			$.devIdx=idx;
-			
+
             $("#dialog-createsensor #vsensoraxis").hide();
             $("#dialog-createsensor #sensoraxis").val("");
-            
-			$("#dialog-createsensor #sensortype").change(function() { 
+
+			$("#dialog-createsensor #sensortype").change(function() {
 				OnDummySensorTypeChange();
 			});
-            
+
             $( "#dialog-createsensor" ).dialog({
                   autoOpen: false,
                   width: 420,
@@ -3680,6 +3680,13 @@ define(['app'], function (app) {
             $( "#dialog-createsensor" ).i18n();
             $( "#dialog-createsensor" ).dialog( "open" );
             OnDummySensorTypeChange();
+        }
+
+		ReloadPiFace = function(idx,name)
+        {
+          $.post("reloadpiface.webem", { 'idx':idx }, function(data) {
+            ShowNotify($.t('PiFace config reloaded!'), 2500);
+          });
         }
 
         RefreshHardwareTable = function()
