@@ -22,6 +22,7 @@
 #include "../hardware/Kodi.h"
 #include "../hardware/LogitechMediaServer.h"
 #include "../hardware/MySensorsBase.h"
+#include "../hardware/RFLinkBase.h"
 #ifdef WITH_GPIO
 #include "../hardware/Gpio.h"
 #include "../hardware/GpioPin.h"
@@ -9780,6 +9781,11 @@ namespace http {
 						else if ((pHardware->HwdType == HTYPE_OpenThermGateway) || (pHardware->HwdType == HTYPE_OpenThermGatewayTCP))
 						{
 							OTGWBase *pMyHardware = reinterpret_cast<OTGWBase*>(pHardware);
+							root["result"][ii]["version"] = pMyHardware->m_Version;
+						}
+						else if ((pHardware->HwdType == HTYPE_RFLINKUSB) || (pHardware->HwdType == HTYPE_RFLINKTCP))
+						{
+							CRFLinkBase *pMyHardware = reinterpret_cast<CRFLinkBase*>(pHardware);
 							root["result"][ii]["version"] = pMyHardware->m_Version;
 						}
 						else

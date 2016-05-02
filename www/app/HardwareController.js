@@ -3820,6 +3820,7 @@ define(['app'], function (app) {
                         HwTypeStr+=' <span class="label label-info lcursor" onclick="CreateDummySensors(' + item.idx + ',\'' + item.Name + '\');">' + $.t("Create Virtual Sensors") + '</span>';
                     }
                     else if (HwTypeStr.indexOf("RFLink") >= 0) {
+                        HwTypeStr+='<br>Version: ' + item.version;
                         HwTypeStr+=' <span class="label label-info lcursor" onclick="CreateRFLinkDevices(' + item.idx + ',\'' + item.Name + '\');">' + $.t("Create RFLink Devices") + '</span>';
                     }
                     else if (HwTypeStr.indexOf("Evohome") >= 0) {

@@ -421,6 +421,10 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 			}
 			_log.Log(LOG_STATUS, "RFLink Detected, Version: %d.%d Revision: %d Build: %d", versionhi, versionlo, revision, build);
 
+			std::stringstream sstr;
+			sstr << revision << "." << build;
+			m_Version = sstr.str();
+
 			mytime(&m_LastHeartbeatReceive);  // keep heartbeat happy
 			mytime(&m_LastHeartbeat);  // keep heartbeat happy
 			m_LastReceivedTime = m_LastHeartbeat;
