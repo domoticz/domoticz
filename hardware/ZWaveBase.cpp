@@ -714,7 +714,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		tmeter.dunit=1;
 		tmeter.battery_level= BatLevel;
 		tmeter.temp=pDevice->floatValue;
-		sDecodeRXMessage(this, (const unsigned char *)&tmeter, NULL, BatLevel);
+		sDecodeRXMessage(this, (const unsigned char *)&tmeter, (!pDevice->label.empty()) ? pDevice->label.c_str() : NULL, BatLevel);
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_THERMOSTAT_CLOCK)
 	{

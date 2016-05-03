@@ -9783,7 +9783,10 @@ namespace http {
 							)
 						{
 							CRFXBase *pMyHardware = reinterpret_cast<CRFXBase*>(pHardware);
-							root["result"][ii]["version"] = pMyHardware->m_Version;
+							if (!pMyHardware->m_Version.empty())
+								root["result"][ii]["version"] = pMyHardware->m_Version;
+							else
+								root["result"][ii]["version"] = sd[11];
 						}
 						else if ((pHardware->HwdType == HTYPE_MySensorsUSB) || (pHardware->HwdType == HTYPE_MySensorsTCP))
 						{
