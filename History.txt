@@ -11,6 +11,7 @@ Version 3.xxxx (May xx 2016)
 - Implemented: OpenZWave, When including Thermostat Setpoints, the zwave Label will be used as Name by default
 - Implemented: RFLink: Displaying firmware version in the hardware setup
 - Implemented: RFXCom, Blinds T12 (Confexx)
+- Changed: OpenZWave, Better support for Thermostat Modes
 - Changed: Stable ID generation for Philips Hue scenes (you need to delete all scenes and restart the hue hardware or domoticz)
 - Fixed: Better handling of white listed commands/urls
 - Fixed: Database backup is now only possible for admin users

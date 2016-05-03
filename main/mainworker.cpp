@@ -9475,7 +9475,8 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 			break;
 		case sTypeZWaveThermostatMode:
 			WriteMessage("subtype       = Thermostat Mode");
-			sprintf(szTmp, "Mode = %d (%s)", pMeter->intval2, ZWave_Thermostat_Modes[pMeter->intval2]);
+			//sprintf(szTmp, "Mode = %d (%s)", pMeter->intval2, ZWave_Thermostat_Modes[pMeter->intval2]);
+			sprintf(szTmp, "Mode = %d", pMeter->intval2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeZWaveThermostatFanMode:

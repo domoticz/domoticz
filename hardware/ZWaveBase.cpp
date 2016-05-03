@@ -732,7 +732,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		gDevice.id = ID4;
 		gDevice.intval1 = (int)(ID1 << 24) | (ID2 << 16) | (ID3 << 8) | ID4;
 		gDevice.intval2 = pDevice->intvalue;
-		sDecodeRXMessage(this, (const unsigned char *)&gDevice, NULL, BatLevel);
+		sDecodeRXMessage(this, (const unsigned char *)&gDevice, "Thermostat Mode", BatLevel);
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_THERMOSTAT_FAN_MODE)
 	{

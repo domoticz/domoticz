@@ -9133,12 +9133,10 @@ namespace http {
 						}
 						else if (dSubType == sTypeZWaveThermostatMode)
 						{
-							sprintf(szData, "%s", ZWave_Thermostat_Modes[nValue]);
-							root["result"][ii]["Data"] = szData;
+							strcpy(szData, "");
 							root["result"][ii]["Mode"] = nValue;
 							root["result"][ii]["TypeImg"] = "mode";
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-							bool bAddedSupportedModes = false;
 							std::string modes = "";
 							//Add supported modes
 #ifdef WITH_OPENZWAVE
@@ -9151,22 +9149,29 @@ namespace http {
 									std::stringstream s_strid;
 									s_strid << std::hex << sd[1];
 									s_strid >> ID;
-									modes = pZWave->GetSupportedThermostatModes(ID);
-									bAddedSupportedModes = !modes.empty();
+									std::vector<std::string> vmodes = pZWave->GetSupportedThermostatModes(ID);
+									int smode = 0;
+									char szTmp[200];
+									std::vector<string>::const_iterator itt;
+									for (itt = vmodes.begin(); itt != vmodes.end(); ++itt)
+									{
+										//Value supported
+										sprintf(szTmp, "%d;%s;", smode, (*itt).c_str());
+										modes += szTmp;
+										smode++;
+									}
+
+									if (!vmodes.empty())
+									{
+										if (nValue < (int)vmodes.size())
+										{
+											sprintf(szData, "%s", vmodes[nValue].c_str());
+										}
+									}
 								}
 							}
 #endif
-							if (!bAddedSupportedModes)
-							{
-								//Add all modes
-								int smode = 0;
-								while (ZWave_Thermostat_Modes[smode]!=NULL)
-								{
-									sprintf(szTmp, "%d;%s;", smode, ZWave_Thermostat_Modes[smode]);
-									modes += szTmp;
-									smode++;
-								}
-							}
+							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["Modes"] = modes;
 						}
 						else if (dSubType == sTypeZWaveThermostatFanMode)
