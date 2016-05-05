@@ -99,6 +99,7 @@
 								var maxgroups = data.result.MaxNoOfGroups; 
 								thead = $('<thead></thead>');
 								trow = $('<tr></tr>');
+
 								$('<th></th>').text($.t("Node")).appendTo(trow); 
 								$('<th></th>').text($.t("Name")).appendTo(trow); 
 								for (var i = 0; i < maxgroups; i++) {
@@ -112,7 +113,8 @@
 								$.each(jsonnodes, function(i, item) {
 									var groupsDone = 0;
 									noderow = $('<tr></tr>');
-									$('<td></td>').text(item.nodeID).appendTo(noderow); 
+									var nodeStr = addLeadingZeros(item.nodeID,3) + " (0x" + addLeadingZeros(item.nodeID.toString(16),2) + ")";
+									$('<td></td>').text(nodeStr).appendTo(noderow); 
 									$('<td></td>').text(item.nodeName).appendTo(noderow); 
 									noGroups = item.groupCount;
 									if (noGroups > 0) {

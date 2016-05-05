@@ -427,6 +427,7 @@
     <ClInclude Include="..\hardware\Gpio.h" />
     <ClInclude Include="..\hardware\GpioPin.h" />
     <ClInclude Include="..\hardware\HarmonyHub.h" />
+    <ClInclude Include="..\hardware\HttpPoller.h" />
     <ClInclude Include="..\hardware\I2C.h" />
     <ClInclude Include="..\hardware\ICYThermostat.h" />
     <ClInclude Include="..\hardware\KMTronic433.h" />
@@ -463,6 +464,7 @@
     <ClInclude Include="..\hardware\RFLinkBase.h" />
     <ClInclude Include="..\hardware\RFLinkSerial.h" />
     <ClInclude Include="..\hardware\RFLinkTCP.h" />
+    <ClInclude Include="..\hardware\RFXBase.h" />
     <ClInclude Include="..\hardware\S0MeterBase.h" />
     <ClInclude Include="..\hardware\S0MeterSerial.h" />
     <ClInclude Include="..\hardware\SatelIntegra.h" />
@@ -470,6 +472,7 @@
     <ClInclude Include="..\hardware\serial\serial.h" />
     <ClInclude Include="..\hardware\SolarEdgeAPI.h" />
     <ClInclude Include="..\hardware\SolarMaxTCP.h" />
+    <ClInclude Include="..\hardware\Sterbox.h" />
     <ClInclude Include="..\hardware\TCPProxy\tcpproxy_server.h" />
     <ClInclude Include="..\hardware\TE923.h" />
     <ClInclude Include="..\hardware\TE923Tool.h" />
@@ -505,6 +508,7 @@
     <ClInclude Include="..\hardware\P1MeterSerial.h" />
     <ClInclude Include="..\hardware\P1MeterTCP.h" />
     <ClInclude Include="..\main\Logger.h" />
+    <ClInclude Include="..\main\LuaHandler.h" />
     <ClInclude Include="..\main\mainstructs.h" />
     <ClInclude Include="..\main\Push.h" />
     <ClInclude Include="..\main\unzip.h" />
@@ -546,6 +550,7 @@
     <ClInclude Include="..\notifications\NotificationPushbullet.h" />
     <ClInclude Include="..\notifications\NotificationPushover.h" />
     <ClInclude Include="..\notifications\NotificationSMS.h" />
+    <ClInclude Include="..\webserver\fastcgi.hpp" />
     <ClInclude Include="..\webserver\GZipHelper.h" />
     <ClInclude Include="..\webserver\proxyclient.h" />
     <ClInclude Include="..\webserver\proxycommon.h" />
@@ -631,6 +636,7 @@
     <ClCompile Include="..\hardware\Gpio.cpp" />
     <ClCompile Include="..\hardware\GpioPin.cpp" />
     <ClCompile Include="..\hardware\HarmonyHub.cpp" />
+    <ClCompile Include="..\hardware\HttpPoller.cpp" />
     <ClCompile Include="..\hardware\I2C.cpp" />
     <ClCompile Include="..\hardware\ICYThermostat.cpp" />
     <ClCompile Include="..\hardware\KMTronic433.cpp" />
@@ -670,6 +676,7 @@
     <ClCompile Include="..\hardware\RFLinkBase.cpp" />
     <ClCompile Include="..\hardware\RFLinkSerial.cpp" />
     <ClCompile Include="..\hardware\RFLinkTCP.cpp" />
+    <ClCompile Include="..\hardware\RFXBase.cpp" />
     <ClCompile Include="..\hardware\S0MeterBase.cpp" />
     <ClCompile Include="..\hardware\S0MeterSerial.cpp" />
     <ClCompile Include="..\hardware\SatelIntegra.cpp" />
@@ -678,6 +685,7 @@
     <ClCompile Include="..\hardware\serial\serial.cpp" />
     <ClCompile Include="..\hardware\SolarEdgeAPI.cpp" />
     <ClCompile Include="..\hardware\SolarMaxTCP.cpp" />
+    <ClCompile Include="..\hardware\Sterbox.cpp" />
     <ClCompile Include="..\hardware\TCPProxy\tcpproxy_server.cpp" />
     <ClCompile Include="..\hardware\TE923.cpp" />
     <ClCompile Include="..\hardware\TE923Tool.cpp" />
@@ -707,6 +715,7 @@
     <ClCompile Include="..\hardware\P1MeterSerial.cpp" />
     <ClCompile Include="..\hardware\P1MeterTCP.cpp" />
     <ClCompile Include="..\main\Logger.cpp" />
+    <ClCompile Include="..\main\LuaHandler.cpp" />
     <ClCompile Include="..\main\Push.cpp" />
     <ClCompile Include="..\main\Scheduler.cpp" />
     <ClCompile Include="..\main\SQLHelper.cpp" />
@@ -840,6 +849,7 @@
     <ClCompile Include="..\webserver\connection.cpp" />
     <ClCompile Include="..\webserver\connection_manager.cpp" />
     <ClCompile Include="..\webserver\cWebem.cpp" />
+    <ClCompile Include="..\webserver\fastcgi.cpp" />
     <ClCompile Include="..\webserver\mime_types.cpp" />
     <ClCompile Include="..\webserver\proxyclient.cpp" />
     <ClCompile Include="..\webserver\proxycommon.cpp" />

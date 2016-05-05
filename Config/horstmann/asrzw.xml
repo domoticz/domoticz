@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Horstmann ASR-ZW Thermostat Receiver also know as Secure SSR303-->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+  <CommandClass id="64">
+    <TriggerRefreshValue Genre="user" Index="0" Instance="1">
+        <RefreshClassValue CommandClass="37" RequestFlags="0" Index="0" Instance="1" />
+    </TriggerRefreshValue>
+  </CommandClass>
+</Product>

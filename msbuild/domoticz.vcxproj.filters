@@ -399,6 +399,12 @@
     <Filter Include="Devices\AtagOne">
       <UniqueIdentifier>{604bf7b4-5455-4d54-9e9f-1b9deac8e65c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\Sterbox">
+      <UniqueIdentifier>{08a528fa-9097-40bd-abc4-800a70838c6d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\HttpPoller">
+      <UniqueIdentifier>{efe2b02b-141c-473d-b168-fd06058fe9d2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -1807,24 +1813,6 @@
     <ClInclude Include="..\hardware\AtagOne.h">
       <Filter>Devices\AtagOne</Filter>
     </ClInclude>
-    <ClInclude Include="..\webserver\sha1.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\webserver\WebsocketHandler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\webserver\WebsocketPush.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\webserver\Websockets.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\main\Device.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\main\DeviceHelper.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2363,21 +2351,6 @@
     </ClCompile>
     <ClCompile Include="..\hardware\AtagOne.cpp">
       <Filter>Devices\AtagOne</Filter>
-    </ClCompile>
-    <ClCompile Include="..\webserver\WebsocketHandler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\webserver\WebsocketPush.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\webserver\Websockets.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\main\Device.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\main\DeviceHelper.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

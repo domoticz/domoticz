@@ -3,6 +3,8 @@
 #include <map>
 #include <boost/asio.hpp>
 #include <boost/function.hpp>
+#include <boost/thread.hpp>
+#include <boost/thread/mutex.hpp>
 #include "server.hpp"
 #include "session_store.hpp"
 
@@ -217,8 +219,8 @@ namespace http {
 			//Whitelist url strings that bypass authentication checks (not used by basic-auth authentication)
 			std::vector < std::string > myWhitelistURLs;
 			std::map<std::string, WebEmSession> m_sessions;
-		private:
 			server_settings m_settings;
+		private:
 			/// store map between include codes and application functions
 			std::map < std::string, webem_include_function > myIncludes;
 			/// store map between include codes and application functions returning UTF-16 strings

@@ -4,7 +4,7 @@
  *  Created on: 10 févr. 2016
  *      Author: gaudryc
  */
-
+#pragma once
 #ifndef WEBSERVER_UTF_HPP_
 #define WEBSERVER_UTF_HPP_
 
@@ -52,7 +52,7 @@ public:
 			else
 				dest.push_back('?');
 		}
-		int len=dest.size();
+		size_t len=dest.size();
 		myString8 = (char * ) malloc( len + 1 );
 		if (myString8)
 		{

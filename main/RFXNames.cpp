@@ -220,6 +220,8 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_OpenWebNet, "MyHome OpenWebNet" },
 		{ HTYPE_RaspberryHTU21D, "I2C sensor HTU21D(F)/SI702x Humidity+Temp" },
 		{ HTYPE_AtagOne, "Atag One Thermostat" },
+		{ HTYPE_Sterbox, "Sterbox v2-3 PLC with LAN interface" },
+		{ HTYPE_HTTPPOLLER, "HTTP/HTTPS poller" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -764,7 +766,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchTypeBrel, "BrelMotor" },
 		{ pTypeGeneralSwitch, sSwitchTypeRTS, "RTS" },
 		{ pTypeGeneralSwitch, sSwitchTypeElroDB, "ElroDB" },
-		{ pTypeGeneralSwitch, sSwitchTypeAOK, "AOK" },
+		{ pTypeGeneralSwitch, sSwitchTypeDooya, "Dooya" },
 		{ pTypeGeneralSwitch, sSwitchTypeUnitec, "Unitec" },
 		{ pTypeGeneralSwitch, sSwitchTypeSelector, "Selector Switch" },
 		{ pTypeGeneralSwitch, sSwitchTypeMaclean, "Maclean" },
@@ -1094,7 +1096,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeGeneralSwitch, sSwitchTypeBrel, "Status" },
 		{ pTypeGeneralSwitch, sSwitchTypeRTS, "Status" },
 		{ pTypeGeneralSwitch, sSwitchTypeElroDB, "Status" },
-		{ pTypeGeneralSwitch, sSwitchTypeAOK, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeDooya, "Status" },
 		{ pTypeGeneralSwitch, sSwitchTypeUnitec, "Status" },
 		{ pTypeGeneralSwitch, sSwitchTypeSelector, "Status" },
 		{ pTypeGeneralSwitch, sSwitchTypeMaclean, "Status" },
@@ -1153,7 +1155,7 @@ const char *ZWave_Clock_Days(const unsigned char Day)
 	};
 	return findTableIDSingle1(Table, Day);
 }
-
+/*
 const char *ZWave_Thermostat_Modes[] =
 {
 	"Off",
@@ -1173,7 +1175,7 @@ const char *ZWave_Thermostat_Modes[] =
 	"Unknown",
 	NULL
 };
-
+*/
 const char *ZWave_Thermostat_Fan_Modes[] =
 {
 	"Auto Low",
@@ -1187,15 +1189,14 @@ const char *ZWave_Thermostat_Fan_Modes[] =
 	NULL
 };
 
-int Lookup_ZWave_Thermostat_Modes(const std::string &sMode)
+int Lookup_ZWave_Thermostat_Modes(const std::vector<std::string> &Modes, const std::string &sMode)
 {
 	int ii = 0;
-	while (ZWave_Thermostat_Modes[ii]!=NULL)
+	std::vector<std::string>::const_iterator itt;
+	for (itt = Modes.begin(); itt != Modes.end(); ++itt)
 	{
-		if (ZWave_Thermostat_Modes[ii] == sMode)
-		{
+		if (*itt == sMode)
 			return ii;
-		}
 		ii++;
 	}
 	return -1;
@@ -3385,10 +3386,10 @@ void ConvertToGeneralSwitchType(std::string &devid, int &dtype, int &subtype)
 		dtype = pTypeGeneralSwitch;
 		if (subtype == sTypeBlindsT5) subtype = sSwitchTypeBofu;
 		else if (subtype == sTypeBlindsT6) subtype = sSwitchTypeBrel;
-		else if (subtype == sTypeBlindsT7) subtype = sSwitchTypeAOK;
+		else if (subtype == sTypeBlindsT7) subtype = sSwitchTypeDooya;
 		else if (subtype == sTypeBlindsT8) subtype = sSwitchTypeBofu;
 		else if (subtype == sTypeBlindsT9) subtype = sSwitchTypeBrel;
-		else if (subtype == sTypeBlindsT10) subtype = sSwitchTypeAOK;
+		else if (subtype == sTypeBlindsT10) subtype = sSwitchTypeDooya;
 		std::stringstream s_strid;
 		s_strid << std::hex << strtoul(devid.c_str(), NULL, 16);
 		unsigned long deviceid = 0;

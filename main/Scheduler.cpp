@@ -727,11 +727,11 @@ void CScheduler::CheckSchedules()
 				strftime(ltimeBuf, sizeof(ltimeBuf), "%Y-%m-%d %H:%M:%S", &ltime);
 
 				if (itt->bIsScene == true)
-					_log.Log(LOG_STATUS, "Schedule item started! Type: %s, SceneID: %llu, Time: %s", Timer_Type_Desc(itt->timerType), itt->RowID, ltimeBuf);
+					_log.Log(LOG_STATUS, "Schedule item started! Name: %s, Type: %s, SceneID: %llu, Time: %s", itt->DeviceName.c_str(), Timer_Type_Desc(itt->timerType), itt->RowID, ltimeBuf);
 				else if (itt->bIsThermostat == true)
-					_log.Log(LOG_STATUS, "Schedule item started! Type: %s, ThermostatID: %llu, Time: %s", Timer_Type_Desc(itt->timerType), itt->RowID, ltimeBuf);
+					_log.Log(LOG_STATUS, "Schedule item started! Name: %s, Type: %s, ThermostatID: %llu, Time: %s", itt->DeviceName.c_str(), Timer_Type_Desc(itt->timerType), itt->RowID, ltimeBuf);
 				else
-					_log.Log(LOG_STATUS, "Schedule item started! Type: %s, DevID: %llu, Time: %s", Timer_Type_Desc(itt->timerType), itt->RowID, ltimeBuf);
+					_log.Log(LOG_STATUS, "Schedule item started! Name: %s, Type: %s, DevID: %llu, Time: %s", itt->DeviceName.c_str(), Timer_Type_Desc(itt->timerType), itt->RowID, ltimeBuf);
 				std::string switchcmd = "";
 				if (itt->timerCmd == TCMD_ON)
 					switchcmd = "On";
@@ -1080,6 +1080,29 @@ namespace http {
 					ii++;
 				}
 			}
+		}
+
+		void CWebServer::Cmd_SetActiveTimerPlan(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			int rnOldvalue = 0;
+			int rnvalue = 0;
+			m_sql.GetPreferencesVar("ActiveTimerPlan", rnOldvalue);
+			rnvalue = atoi(request::findValue(&req, "ActiveTimerPlan").c_str());
+			if ((rnOldvalue != rnvalue) && ((rnvalue==0) || (rnvalue==1)))
+			{
+				m_sql.UpdatePreferencesVar("ActiveTimerPlan", rnvalue);
+				m_sql.m_ActiveTimerPlan = rnvalue;
+				m_mainworker.m_scheduler.ReloadSchedules();
+			}
+
+			root["status"] = "OK";
+			root["title"] = "SetActiveTimerPlan";
 		}
 
 		void CWebServer::Cmd_AddTimer(WebEmSession & session, const request& req, Json::Value &root)
@@ -1629,6 +1652,46 @@ namespace http {
 			root["title"] = "DeleteSetpointTimer";
 			m_sql.safe_query(
 				"DELETE FROM SetpointTimers WHERE (ID == '%q')",
+				idx.c_str()
+				);
+			m_mainworker.m_scheduler.ReloadSchedules();
+		}
+
+		void CWebServer::Cmd_EnableSetpointTimer(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string idx = request::findValue(&req, "idx");
+			if (idx == "")
+				return;
+			root["status"] = "OK";
+			root["title"] = "EnableSetpointTimer";
+			m_sql.safe_query(
+				"UPDATE SetpointTimers SET Active=1 WHERE (ID == '%q')",
+				idx.c_str()
+				);
+			m_mainworker.m_scheduler.ReloadSchedules();
+		}
+
+		void CWebServer::Cmd_DisableSetpointTimer(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string idx = request::findValue(&req, "idx");
+			if (idx == "")
+				return;
+			root["status"] = "OK";
+			root["title"] = "DisableSetpointTimer";
+			m_sql.safe_query(
+				"UPDATE SetpointTimers SET Active=0 WHERE (ID == '%q')",
 				idx.c_str()
 				);
 			m_mainworker.m_scheduler.ReloadSchedules();

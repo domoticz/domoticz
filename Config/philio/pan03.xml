@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Philio: PAN03 Micromodule Single Switch -->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+
+	<!-- Configuration Parameters -->
+	<CommandClass id="112">
+		<Value type="short" instance="1" index="1" genre="config" label="Watt meter report period" min="1" max="32767" value="720">
+			<Help>If the setting is configured for 1 hour (set value =720), the device will report its instant power consumption every 1 hour to Z-Wave Controller. Unit: 5 seconds.</Help>
+		</Value>
+
+		<Value type="short" instance="1" index="2" genre="config" label="kWh meter report period" min="1" max="32767" value="6">
+			<Help>If the setting is configured for 1hour (set value =6), the Micromodule will report its Accumulated Power Consumption (KW/h) every 1 hour to Z-Wave Controller. 10min.</Help>
+		</Value>
+
+		<Value type="short" instance="1" index="3" genre="config" label="Threshold of current load for Load Caution" min="10" max="1100" value="1100">
+			<Help>This is a warning when the current of load over the preset threshold value, if the setting value is 1100 (11A), when the load current of Relay1 over this value, Micromodule will send current meter report to warn the Z-Wave Controller. Unit: 0.01A </Help>
+		</Value>
+
+		<Value type="short" instance="1" index="4" genre="config" label="Threshold of KWh for Load Caution" min="10" max="10000" value="10000">
+			<Help>This is a warning when the KWh of load over the preset threshold value, if the setting value is 10000, when the Accumulated Power Consumption of Relay1 over this value, Micromodule will send KWH meter report to warn the Z-Wave Controller. Unit: 1KWh</Help>
+		</Value>
+
+		<Value type="list" instance="1" index="5" genre="config" label="Restore Switch State Mode" min="0" max="2" value="1">
+			<Help>Whenever the AC power return from lost, Micromodule will restore the switch state which could be 
+				SWITCH OFF
+				LAST SWITCH STATE
+				SWITCH ON</Help>
+			<Item label="SWITCH OFF" value="0" />
+                        <Item label="LAST SWITCH STATE" value="1" />
+                        <Item label="SWITCH ON" value="2" />
+
+		</Value>
+
+		<Value type="byte" instance="1" index="6" genre="config" label="Manual ON/OFF Mode" min="0" max="1" value="0">
+			<Help>The On/Off function of S1, S2 and learn switch can be disabled or enabled by this parameter, default value is Enable. But the learning operation won't be affected. When manual On/Off function is disabled, the RF command can only switch On but not Off. This is useful function for keeping the device in switch on state.</Help>
+		</Value>
+
+		<Value type="byte" instance="1" index="7" genre="config" label="LED Indication Mode" min="1" max="3" value="1">
+			<Help> LED Indication Mode:
+				1: SHOW SWITCH STATE: When switch is on, LED is on. When switch is off, LED is off. The default setting is Show Switch State. :
+				2 :SHOW NIGHT MODE: When switch is on, LED is off. When switch is off, LED is on.
+				3 : ONE FLASH MODE: When the state of switch changes, LED will be on only one second, then LED keeps off.</Help>
+        		</Value>
+
+		<Value type="short" instance="1" index="8" genre="config" label="Auto off timer" min="0" max="32767" value="0">
+			<Help>Whenever Micromodule switches to on, the auto off timer begin to count down. After the timer decrease to zero, it will switch to off automatically. However if Auto off timer is set as 0, the auto off function will be disabled. The default setting is 0.</Help>
+		</Value>
+
+		<Value type="byte" instance="1" index="9" genre="config" label="RF Off Command Mode" min="0" max="3" value="0">
+			<Help>Whenever a switch off command, BASIC_SET, BINARY_SWITCH_SET, SWITCH_ALL_OFF, is received, it could be interpreted as 4 variety of commands: 
+				0: SWITCH OFF:It switches to OFF state. The default setting is Switch Off. 
+				1: IGNORE:The switch off command will be ignored. 
+				2: SWITCH TOGGLE:It switches to the inverse of current state. 
+				3 :SWITCH ON:It switches to ON state</Help>
+             		</Value>
+
+		<Value type="byte" instance="1" index="10" genre="config" label="Edge Mode, Pulse mode or Edge-Togle mode" min="1" max="3" value="1">
+			<Help>Manual switch S1 and S2 can set to Edge mode or Pulse mode or Edge-Toggle mode, default value is Edge mode.
+				1: EDGE MODE: This mode is suitable for the bi-stable wall switch that has indicator point on the switch, and the same position correspond to same state of relay1. If the Micromodule relay change the state because of receiving Z-Wave RF command, it may need two times of change (switch on to off or switch off to on) to let relay back to the correspond state. Manual switch S2 is disabled in this mode. 
+				2: PULSE MODE: This mode is suitable for the toggle type wall switch to swap the state of Relay1. 
+				3 :EDGE-TOGGLE MODE: This mode is suitable for the normal bi-stable switch, wheneverchange the state of the wall switch will also swap the state of Relay1.</Help>
+			</Value>
+
+	</CommandClass>
+
+	<CommandClass id="96" mapping="endpoints" />
+
+	<!-- COMMAND_CLASS_BASIC does not respond to requests -->
+	<CommandClass id="32" action="remove" />
+
+	<!-- COMMAND_CLASS_ALARM does not respond to requests -->
+	<CommandClass id="113" action="remove" />
+			
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="1">
+		<Group index="1" max_associations="1" label="Z-wave controller"/>
+		</Associations>
+	</CommandClass>
+
+</Product>
+

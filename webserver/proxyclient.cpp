@@ -251,7 +251,7 @@ namespace http {
 
 			if (result)
 			{
-				request_.host = originatingip;
+				request_.host_address = originatingip;
 				m_pWebEm->myRequestHandler.handle_request(request_, reply_);
 			}
 			else if (!result)

@@ -226,7 +226,22 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		bool bParseTrigger = (bParseValue) ? root["parse"].asBool() : true;
 
 		int signallevel = 12;
+		bool b_signallevel = ! root["RSSI"].empty();
+		if (b_signallevel)
+		{
+			if (! root["RSSI"].isInt())
+				goto mqttinvaliddata;
+			signallevel = root["RSSI"].asInt();
+		}
+
 		int batterylevel = 255;
+		bool b_batterylevel = ! root["Battery"].empty();
+		if (b_batterylevel)
+		{
+			if (! root["Battery"].isInt())
+				goto mqttinvaliddata;
+			batterylevel = root["Battery"].asInt();
+		}
 
 		if (!m_mainworker.UpdateDevice(HardwareID, DeviceID, unit, devType, subType, nvalue, svalue, signallevel, batterylevel, bParseTrigger))
 		{

@@ -98,7 +98,10 @@ void connection::start()
 		connection_manager_.stop(shared_from_this());
 		return;
 	}
-	host_endpoint_ = endpoint.address().to_string();
+	host_endpoint_address_ = endpoint.address().to_string();
+	std::stringstream sstr;
+	sstr << endpoint.port();
+	sstr >> host_endpoint_port_;
 
 	set_abandoned_timeout();
 
@@ -142,22 +145,21 @@ void connection::handle_timeout(const boost::system::error_code& error)
 		if (error != boost::asio::error::operation_aborted) {
 			switch (connection_type) {
 			case connection_http:
-				// Timers should be cancelled before stopping to remove tasks from the io_service.
-				// The io_service will stop naturally when every tasks are removed.
-				// If timers are not cancelled, the exception ERROR_ABANDONED_WAIT_0 is thrown up to the io_service::run() caller.
-				cancel_abandoned_timeout();
-				cancel_read_timeout();
+	// Timers should be cancelled before stopping to remove tasks from the io_service.
+	// The io_service will stop naturally when every tasks are removed.
+	// If timers are not cancelled, the exception ERROR_ABANDONED_WAIT_0 is thrown up to the io_service::run() caller.
+	cancel_abandoned_timeout();
+	cancel_read_timeout();
 
-				try {
-					// Initiate graceful connection closure.
-					boost::system::error_code ignored_ec;
-					socket().shutdown(boost::asio::ip::tcp::socket::shutdown_both, ignored_ec); // @note For portable behaviour with respect to graceful closure of a
-																								// connected socket, call shutdown() before closing the socket.
-					socket().close(ignored_ec);
-				}
-				catch (...) {
-					_log.Log(LOG_ERROR, "%s -> exception thrown while stopping connection", host_endpoint_.c_str());
-				}
+	try {
+		// Initiate graceful connection closure.
+		boost::system::error_code ignored_ec;
+		socket().shutdown(boost::asio::ip::tcp::socket::shutdown_both, ignored_ec); // @note For portable behaviour with respect to graceful closure of a
+																					// connected socket, call shutdown() before closing the socket.
+		socket().close(ignored_ec);
+	} catch(...) {
+		_log.Log(LOG_ERROR, "%s -> exception thrown while stopping connection", host_endpoint_address_.c_str());
+	}
 				break;
 			case connection_websocket:
 				websocket_handler.SendPing();
@@ -244,7 +246,7 @@ void connection::MyWrite(const std::string &buf)
 		}
 		else {
 			SocketWrite(buf);
-		}
+}
 		break;
 	}
 }
@@ -274,16 +276,16 @@ void connection::handle_read(const boost::system::error_code& error, std::size_t
 		switch (connection_type) {
 		case connection_http:
 			begin = boost::asio::buffer_cast<const char*>(_buf.data());
-			try
-			{
-				request_parser_.reset();
-				boost::tie(result, boost::tuples::ignore) = request_parser_.parse(
-					request_, begin, begin + _buf.size());
-			}
-			catch (...)
-			{
-				_log.Log(LOG_ERROR, "Exception parsing http request.");
-			}
+		try
+		{
+			request_parser_.reset();
+			boost::tie(result, boost::tuples::ignore) = request_parser_.parse(
+				request_, begin, begin + _buf.size());
+		}
+		catch (...)
+		{
+			_log.Log(LOG_ERROR, "Exception parsing http request.");
+		}
 
 			request_handler_.handle_request(request_, reply_);
 
@@ -295,18 +297,19 @@ void connection::handle_read(const boost::system::error_code& error, std::size_t
 				reply::add_header_if_absent(&reply_, "Keep-Alive", ss.str());
 			}
 
-			if (result) {
-				size_t sizeread = begin - boost::asio::buffer_cast<const char*>(_buf.data());
-				_buf.consume(sizeread);
-				reply_.reset();
-				const char *pConnection = request_.get_req_header(&request_, "Connection");
-				keepalive_ = pConnection != NULL && boost::iequals(pConnection, "Keep-Alive");
-				request_.keep_alive = keepalive_;
-				request_.host = host_endpoint_;
-				if (request_.host.substr(0, 7) == "::ffff:") {
-					request_.host = request_.host.substr(7);
-				}
-				request_handler_.handle_request(request_, reply_);
+		if (result) {
+			size_t sizeread = begin - boost::asio::buffer_cast<const char*>(_buf.data());
+			_buf.consume(sizeread);
+			reply_.reset();
+			const char *pConnection = request_.get_req_header(&request_, "Connection");
+			keepalive_ = pConnection != NULL && boost::iequals(pConnection, "Keep-Alive");
+			request_.keep_alive = keepalive_;
+			request_.host_address = host_endpoint_address_;
+			request_.host_port = host_endpoint_port_;
+			if (request_.host_address.substr(0, 7) == "::ffff:") {
+				request_.host_address = request_.host_address.substr(7);
+			}
+			request_handler_.handle_request(request_, reply_);
 				MyWrite(reply_.to_string(request_.method));
 				if (reply_.status == reply::switching_protocols) {
 					// this was an upgrade request
@@ -316,16 +319,16 @@ void connection::handle_read(const boost::system::error_code& error, std::size_t
 					// keep sessionid to access our session during websockets requests
 					websocket_handler.store_session_id(request_, reply_);
 					// todo: check if multiple connection from the same client in CONNECTING state?
-				}
+			}
 				if (keepalive_) {
 					read_more();
 				}
-				status_ = WAITING_WRITE;
+			status_ = WAITING_WRITE;
 			}
-			else if (!result)
-			{
-				keepalive_ = false;
-				reply_ = reply::stock_reply(reply::bad_request);
+		else if (!result)
+		{
+			keepalive_ = false;
+			reply_ = reply::stock_reply(reply::bad_request);
 				MyWrite(reply_.to_string(request_.method));
 				if (keepalive_) {
 					read_more();
@@ -345,17 +348,17 @@ void connection::handle_read(const boost::system::error_code& error, std::size_t
 				// we received a complete packet (that was handled already)
 				if (keepalive_) {
 					read_more();
-				}
-				else {
+			}
+			else {
 					// a connection close control packet was received
 					// todo: wait for writeQ to flush?
 					connection_type = connection_closing;
-				}
 			}
+		}
 			else if (!result)
-			{
-				read_more();
-			}
+		{
+			read_more();
+		}
 			break;
 		}
 	}
@@ -379,7 +382,7 @@ void connection::handle_write(const boost::system::error_code& error, size_t byt
 		}
 	}
 	if (!error && keepalive_) {
-		status_ = ENDING_WRITE;
+	status_ = ENDING_WRITE;
 		// if a keep-alive connection is requested, we read the next request
 		reset_abandoned_timeout();
 		read_more();
@@ -409,10 +412,10 @@ void connection::cancel_read_timeout() {
 		boost::system::error_code ignored_ec;
 		read_timer_.cancel(ignored_ec);
 		if (ignored_ec) {
-			_log.Log(LOG_ERROR, "%s -> exception thrown while canceling read timeout : %s", host_endpoint_.c_str(), ignored_ec.message().c_str());
+			_log.Log(LOG_ERROR, "%s -> exception thrown while canceling read timeout : %s", host_endpoint_address_.c_str(), ignored_ec.message().c_str());
 		}
 	} catch (...) {
-		_log.Log(LOG_ERROR, "%s -> exception thrown while canceling read timeout", host_endpoint_.c_str());
+		_log.Log(LOG_ERROR, "%s -> exception thrown while canceling read timeout", host_endpoint_address_.c_str());
 	}
 }
 
@@ -426,7 +429,7 @@ void connection::reset_read_timeout() {
 void connection::handle_read_timeout(const boost::system::error_code& error) {
 	if (error != boost::asio::error::operation_aborted) {
 #ifdef DEBUG_WWW
-		_log.Log(LOG_STATUS, "%s -> handle read timeout", host_endpoint_.c_str());
+		_log.Log(LOG_STATUS, "%s -> handle read timeout", host_endpoint_address_.c_str());
 #endif
 		connection_manager_.stop(shared_from_this());
 	}
@@ -444,10 +447,10 @@ void connection::cancel_abandoned_timeout() {
 		boost::system::error_code ignored_ec;
 		abandoned_timer_.cancel(ignored_ec);
 		if (ignored_ec) {
-			_log.Log(LOG_ERROR, "%s -> exception thrown while canceling abandoned timeout : %s", host_endpoint_.c_str(), ignored_ec.message().c_str());
+			_log.Log(LOG_ERROR, "%s -> exception thrown while canceling abandoned timeout : %s", host_endpoint_address_.c_str(), ignored_ec.message().c_str());
 		}
 	} catch (...) {
-		_log.Log(LOG_ERROR, "%s -> exception thrown while canceling abandoned timeout", host_endpoint_.c_str());
+		_log.Log(LOG_ERROR, "%s -> exception thrown while canceling abandoned timeout", host_endpoint_address_.c_str());
 	}
 }
 
@@ -460,7 +463,7 @@ void connection::reset_abandoned_timeout() {
 /// stop connection on abandoned timeout
 void connection::handle_abandoned_timeout(const boost::system::error_code& error) {
 	if (error != boost::asio::error::operation_aborted) {
-		_log.Log(LOG_STATUS, "%s -> handle abandoned timeout (status=%d)", host_endpoint_.c_str(), status_);
+		_log.Log(LOG_STATUS, "%s -> handle abandoned timeout (status=%d)", host_endpoint_address_.c_str(), status_);
 		connection_manager_.stop(shared_from_this());
 	}
 }
