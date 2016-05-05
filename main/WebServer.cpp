@@ -12804,6 +12804,8 @@ namespace http {
 							int direction = int(fdirection);
 							float speed = static_cast<float>(atof(sd[1].c_str())) * m_sql.m_windscale;
 							float gustOrg = static_cast<float>(atof(sd[2].c_str()));
+							if (gustOrg==0)
+								continue; //no direction if wind is still
 							float gust = gustOrg * m_sql.m_windscale;
 							int bucket = int(fdirection / 22.5f);
 

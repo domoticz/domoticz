@@ -13,12 +13,15 @@ Version 3.xxxx (May xx 2016)
 - Implemented: RFXCom, Blinds T12 (Confexx)
 - Changed: OpenZWave, Better support for Thermostat Modes
 - Changed: Stable ID generation for Philips Hue scenes (you need to delete all scenes and restart the hue hardware or domoticz)
+- Changed: Wind Direction graph (now does not display directions when speed was equal to zero)
 - Fixed: Better handling of white listed commands/urls
 - Fixed: Database backup is now only possible for admin users
 - Fixed: Double checking command rights
 - Fixed: Fix Off Delay not handled for Selector switch (#538).
 - Fixed: Fix On/Off delays not saved on the selector switch edit form (#532).
 - Fixed: KMTronic, did not work in timers/groups/scenes
+- Fixed: Wind Speed/Gust graph, Plotbands
+- Fixed: Added grid lines to percentage/lux/general graphs
 
 Version 3.4834 (March 2nd 2016)
 - Implemented: Blockly, now possible to use expressions in notifications/email/SMS like "My temperature is {{temperaturedevice[1234]}} degrees" (see http://www.domoticz.com/wiki/Events)

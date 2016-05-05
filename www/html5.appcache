@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 1247
+# ref 1248
 
 CACHE:
 # CSS
@@ -534,6 +534,7 @@ js/noty/themes/default.js
 js/require.js
 js/respond.min.js
 js/themes/dark-blue.js
+js/themes/dark-ucust.js
 js/ui-bootstrap.min.js
 js/wow.min.js
 js/ZeroClipboard.js
