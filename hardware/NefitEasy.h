@@ -2,6 +2,7 @@
 
 #include "DomoticzHardware.h"
 #include <iostream>
+#include "hardwaretypes.h"
 
 class CNefitEasy : public CDomoticzHardwareBase
 {
@@ -39,6 +40,9 @@ private:
 	bool GetFlowTemp();
 	bool GetPressure();
 	bool GetDisplayCode();
+	bool GetGasUsage();
+
+	P1Gas	m_p1gas;
 
 	void SetUserMode(bool bSetUserModeClock);
 

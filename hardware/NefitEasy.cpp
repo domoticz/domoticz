@@ -25,7 +25,7 @@ easy-server --host=0.0.0.0 --serial=XXXX --access-key=XXXX --password=XXXX
 After this you should be able to connect to port 3000
 */
 
-//#define DEBUG_NefitEasyW
+//#define DEBUG_NefitEasyR
 #ifdef DEBUG_NefitEasyW
 void SaveString2Disk(std::string str, std::string filename)
 {
@@ -63,6 +63,7 @@ std::string ReadFile(std::string filename)
 #define NEFITEASY_PRESSURE_URL "/system/appliance/systemPressure"
 #define NEFITEASY_DISPLAYCODE_URL "/system/appliance/displaycode"
 #define NEFITEASY_CAUSECODE_URL "/system/appliance/causecode"
+#define NEFITEASY_GAS_URL "/ecus/rrc/recordings/yearTotal"
 #define NEFITEASY_SET_TEMP_ROOM "/heatingCircuits/hc1/temperatureRoomManual"
 #define NEFITEASY_SET_TEMP_OVERRIDE "/heatingCircuits/hc1/manualTempOverride/status"
 #define NEFITEASY_SET_TEMP_OVERRIDE_TEMP "/heatingCircuits/hc1/manualTempOverride/temperature"
@@ -206,6 +207,8 @@ void CNefitEasy::Do_Work()
 				ret = GetPressure();
 				if (ret)
 					ret = GetOutdoorTemp();
+				if (ret)
+					ret = GetGasUsage();
 				slow_pollint = (ret == true) ? NEFIT_SLOW_INTERVAL : NEFIT_SLOW_INTERVAL * 2;
 			}
 			catch (...)
@@ -637,6 +640,57 @@ bool CNefitEasy::GetDisplayCode()
 		m_LastDisplayCode = display_code;
 		SendTextSensor(1, 1, -1, display_code, "Display Code");
 	}
+	return true;
+}
+
+bool CNefitEasy::GetGasUsage()
+{
+	std::string sResult;
+	Json::Reader jReader;
+	Json::Value root;
+	bool ret;
+
+	//Status
+#ifdef DEBUG_NefitEasyR
+	sResult = ReadFile("E:\\nefit_yearTotal.json");
+#else
+	std::stringstream szURL;
+	szURL << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << NEFITEASY_GAS_URL;
+	try
+	{
+		ret = HTTPClient::GET(szURL.str(), sResult);
+		if (!ret)
+		{
+			_log.Log(LOG_ERROR, "NefitEasy: Error getting http data!");
+			return false;
+		}
+	}
+	catch (...)
+	{
+		_log.Log(LOG_ERROR, "NefitEasy: Error getting http data!");
+		return false;
+	}
+#endif
+
+#ifdef DEBUG_NefitEasyW
+	SaveString2Disk(sResult, "E:\\nefit_yearTotal.json");
+#endif
+	ret = jReader.parse(sResult, root);
+	if (!ret)
+	{
+		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received! (Gas)");
+		return false;
+	}
+	if (root["value"].empty())
+	{
+		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received (Gas)");
+		return false;
+	}
+	float yeargas = root["value"].asFloat();
+	//convert from kWh to m3
+	yeargas *= (0.12307692f*1000.0f);
+	m_p1gas.gasusage = (uint32_t)yeargas;
+	sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, "Gas", 255);
 	return true;
 }
 
