@@ -106,6 +106,7 @@ m_szIPAddress(IPAddress)
 	m_stoprequested = false;
 	m_usIPPort = usIPPort;
 	m_bDoLogin = true;
+	m_lastgasusage = 0;
 /*
 	// Generate some commonly used properties.
 	m_ConnectionPassword = NEFITEASY_ACCESSKEY_PREFIX + m_AccessKey;
@@ -138,6 +139,7 @@ void CNefitEasy::Logout()
 
 void CNefitEasy::Init()
 {
+	m_lastgasusage = 0;
 }
 
 bool CNefitEasy::StartHardware()
@@ -689,7 +691,12 @@ bool CNefitEasy::GetGasUsage()
 	float yeargas = root["value"].asFloat();
 	//convert from kWh to m3
 	yeargas *= (0.12307692f*1000.0f);
-	m_p1gas.gasusage = (uint32_t)yeargas;
+	uint32_t gusage = (uint32_t)yeargas;
+	if (gusage < m_lastgasusage)
+	{
+
+	}
+	m_p1gas.gasusage = gusage;
 	sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, "Gas", 255);
 	return true;
 }

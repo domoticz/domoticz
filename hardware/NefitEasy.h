@@ -42,6 +42,7 @@ private:
 	bool GetDisplayCode();
 	bool GetGasUsage();
 
+	uint32_t m_lastgasusage;
 	P1Gas	m_p1gas;
 
 	void SetUserMode(bool bSetUserModeClock);

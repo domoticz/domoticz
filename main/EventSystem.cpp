@@ -533,6 +533,10 @@ void CEventSystem::GetCurrentMeasurementStates()
 				isBaro = true;
 			}
 			break;
+		case pTypeBARO:
+			barometer = static_cast<float>(atof(splitresults[0].c_str()));
+			isBaro = true;
+			break;
 		case pTypeRadiator1:
 			if (sitem.subType == sTypeSmartwares)
 			{
@@ -657,6 +661,11 @@ void CEventSystem::GetCurrentMeasurementStates()
 					isUtility = true;
 					weatherval = utilityval;
 					isWeather = true;
+				}
+				else if (sitem.subType == sTypeBaro)
+				{
+					barometer = static_cast<float>(atof(splitresults[0].c_str()));
+					isBaro = true;
 				}
 				else if ((sitem.subType == sTypeAlert)
 					  || (sitem.subType == sTypeDistance)
