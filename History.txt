@@ -18,6 +18,7 @@ Version 3.xxxx (May xx 2016)
 - Fixed: Double checking command rights
 - Fixed: Fix Off Delay not handled for Selector switch (#538).
 - Fixed: Fix On/Off delays not saved on the selector switch edit form (#532).
+- Fixed: KMTronic, did not work in timers/groups/scenes
 
 Version 3.4834 (March 2nd 2016)
 - Implemented: Blockly, now possible to use expressions in notifications/email/SMS like "My temperature is {{temperaturedevice[1234]}} degrees" (see http://www.domoticz.com/wiki/Events)
