@@ -59,6 +59,11 @@ namespace http {
 
 			void ReadMore();
 
+			void WebsocketGetRequest();
+			bool parse_response(const char *data, size_t len);
+			std::string websocket_key;
+			std::string compute_accept_header(const std::string &websocket_key);
+			std::string SockWriteBuf;
 			void MyWrite(pdu_type type, CValueLengthPart &parameters);
 			void SocketWrite(ProxyPdu *pdu);
 			std::vector<boost::asio::const_buffer> _writebuf;
@@ -98,7 +103,11 @@ namespace http {
 			void handle_timeout(const boost::system::error_code& error);
 			/// timeouts (persistent and other) connections in seconds
 			int timeout_;
-			bool b_Connected;
+			enum status {
+				status_connecting,
+				status_httpmode,
+				status_connected
+			} connection_status;
 
 			// is protected by writeMutex
 			std::queue<ProxyPdu *> writeQ;

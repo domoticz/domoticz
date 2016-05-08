@@ -17,7 +17,7 @@ std::string CreateFrame(opcodes opcode, const std::string &payload)
 	size_t payloadlen = payload.size();
 	std::string res = "";
 	res += ((char)(FIN_MASK + (((char)opcode) & OPCODE_MASK)));
-	if (payloadlen <= 127) {
+	if (payloadlen <= 125) {
 		res += (char)payloadlen;
 	}
 	else {
@@ -42,117 +42,131 @@ std::string CreateFrame(opcodes opcode, const std::string &payload)
 	return res;
 }
 
-class CWebsocketFrame {
-public:
-	CWebsocketFrame() { };
-	~CWebsocketFrame() {};
+CWebsocketFrame::CWebsocketFrame() { };
+CWebsocketFrame::~CWebsocketFrame() {};
 
-	std::string unmask(const unsigned char *mask, const unsigned char *bytes, size_t payloadlen) {
-		std::string result = "";
-		for (size_t i = 0; i < payloadlen; i++) {
-			result += (char)(bytes[i] ^ mask[i % 4]);
-		}
-		return result;
+std::string CWebsocketFrame::unmask(const unsigned char *mask, const unsigned char *bytes, size_t payloadlen) {
+	std::string result = "";
+	for (size_t i = 0; i < payloadlen; i++) {
+		result += (char)(bytes[i] ^ mask[i % 4]);
 	}
+	return result;
+}
 
-	bool Parse (const unsigned char *bytes, size_t size) {
-		size_t remaining = size;
-		bytes_consumed = 0;
+std::string CWebsocketFrame::Create(opcodes opcode, const std::string &payload)
+{
+	size_t payloadlen = payload.length();
+	std::string res;
+	// byte 0
+	res += ((char)opcode | FIN_MASK);
+	if (payloadlen < 126) {
+		res += (char)payloadlen | MASKING_MASK;
+	}
+	else {
+		if (payloadlen <= 0xffff) {
+			res += (char)126 | MASKING_MASK;
+			int bits = 16;
+			while (bits) {
+				bits -= 8;
+				res += (char)((payloadlen >> bits) & 0xff);
+			}
+		}
+		else {
+			res += (char)127 | MASKING_MASK;
+			int bits = 64;
+			while (bits) {
+				bits -= 8;
+				res += (char)((payloadlen >> bits) & 0xff);
+			}
+		}
+	}
+	// masking key
+	for (unsigned i = 0; i < 4; i++) {
+		masking_key[i] = rand();
+		res += masking_key[i];
+	}
+	res += unmask(masking_key, (const unsigned char *)payload.c_str(), payloadlen);
+	return res;
+}
+
+bool CWebsocketFrame::Parse(const unsigned char *bytes, size_t size) {
+	size_t remaining = size;
+	bytes_consumed = 0;
+	if (remaining < 2) {
+		return false;
+	}
+	fin = (bytes[0] & FIN_MASK) > 0;
+	rsvi1 = (bytes[0] & RSVI1_MASK) > 0;
+	rsvi2 = (bytes[0] & RSVI2_MASK) > 0;
+	rsvi3 = (bytes[0] & RSVI3_MASK) > 0;
+	opcode = (opcodes)(bytes[0] & OPCODE_MASK);
+	masking = (bytes[1] & MASKING_MASK) > 0;
+	payloadlen = (bytes[1] & PAYLOADLEN_MASK);
+	remaining -= 2;
+	int ptr = 2;
+	if (payloadlen == 126) {
 		if (remaining < 2) {
 			return false;
 		}
-		fin = (bytes[0] & FIN_MASK) > 0;
-		rsvi1 = (bytes[0] & RSVI1_MASK) > 0;
-		rsvi2 = (bytes[0] & RSVI2_MASK) > 0;
-		rsvi3 = (bytes[0] & RSVI3_MASK) > 0;
-		opcode = (opcodes)(bytes[0] & OPCODE_MASK);
-		masking = (bytes[1] & MASKING_MASK) > 0;
-		payloadlen = (bytes[1] & PAYLOADLEN_MASK);
-		remaining -= 2;
-		int ptr = 2;
-		if (payloadlen == 126) {
-			if (remaining < 2) {
-				return false;
-			}
-			payloadlen = 0;
-			int mult = 1;
-			for (unsigned int i = 0; i < 2; i++) {
-				payloadlen = (payloadlen * mult) + bytes[ptr++];
-				mult *= 256;
-				remaining--;
-			}
+		payloadlen = 0;
+		int mult = 1;
+		for (unsigned int i = 0; i < 2; i++) {
+			payloadlen = (payloadlen * mult) + bytes[ptr++];
+			mult *= 256;
+			remaining--;
 		}
-		else if (payloadlen == 127) {
-			if (remaining < 8) {
-				return false;
-			}
-			payloadlen = 0;
-			int mult = 1;
-			for (unsigned int i = 0; i < 8; i++) {
-				payloadlen = (payloadlen * mult) + bytes[ptr++];
-				mult *= 256;
-				remaining--;
-			}
-		}
-		if (masking) {
-			if (remaining < 4) {
-				return false;
-			}
-			for (unsigned int i = 0; i < 4; i++) {
-				masking_key[i] = bytes[ptr++];
-				remaining--;
-			}
-		}
-		if (remaining < payloadlen) {
+	}
+	else if (payloadlen == 127) {
+		if (remaining < 8) {
 			return false;
 		}
-		if (masking) {
-			payload = unmask(masking_key, &bytes[ptr], payloadlen);
+		payloadlen = 0;
+		int mult = 1;
+		for (unsigned int i = 0; i < 8; i++) {
+			payloadlen = (payloadlen * mult) + bytes[ptr++];
+			mult *= 256;
+			remaining--;
 		}
-		else {
-			payload.assign((char *)&bytes[ptr], payloadlen);
+	}
+	if (masking) {
+		if (remaining < 4) {
+			return false;
 		}
-		remaining -= payloadlen;
-		ptr += payloadlen;
-		bytes_consumed = ptr;
-		return true;
-	};
-
-	std::string Payload() {
-		return payload;
-	};
-
-	bool isFinal() {
-		return fin;
-	};
-
-	size_t Consumed() {
-		return bytes_consumed;
-	};
-
-	opcodes Opcode() {
-		return opcode;
-	};
-
-private:
-	const unsigned char FIN_MASK = 0x80;
-	const unsigned char RSVI1_MASK = 0x40;
-	const unsigned char RSVI2_MASK = 0x20;
-	const unsigned char RSVI3_MASK = 0x10;
-	const unsigned char OPCODE_MASK = 0x0f;
-	const unsigned char MASKING_MASK = 0x80;
-	const unsigned char PAYLOADLEN_MASK = 0x7f;
-	bool fin;
-	bool rsvi1;
-	bool rsvi2;
-	bool rsvi3;
-	opcodes opcode;
-	bool masking;
-	size_t payloadlen, bytes_consumed;
-	unsigned char masking_key[4];
-	std::string payload;
+		for (unsigned int i = 0; i < 4; i++) {
+			masking_key[i] = bytes[ptr++];
+			remaining--;
+		}
+	}
+	if (remaining < payloadlen) {
+		return false;
+	}
+	if (masking) {
+		payload = unmask(masking_key, &bytes[ptr], payloadlen);
+	}
+	else {
+		payload.assign((char *)&bytes[ptr], payloadlen);
+	}
+	remaining -= payloadlen;
+	ptr += payloadlen;
+	bytes_consumed = ptr;
+	return true;
 };
 
+std::string CWebsocketFrame::Payload() {
+	return payload;
+};
+
+bool CWebsocketFrame::isFinal() {
+	return fin;
+};
+
+size_t CWebsocketFrame::Consumed() {
+	return bytes_consumed;
+};
+
+opcodes CWebsocketFrame::Opcode() {
+	return opcode;
+};
 
 CWebsocket::CWebsocket(connection *pConn, cWebem *pWebEm) : m_Push(this)
 {

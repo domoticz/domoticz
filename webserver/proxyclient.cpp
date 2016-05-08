@@ -8,6 +8,8 @@
 #include "../main/SQLHelper.h"
 #include "../webserver/Base64.h"
 #include "../tcpserver/TCPServer.h"
+#include "sha1.hpp"
+#include "Websockets.hpp"
 
 extern std::string szAppVersion;
 
@@ -30,7 +32,7 @@ namespace http {
 			: _socket(io_service, context),
 			_io_service(io_service),
 			doStop(false),
-			b_Connected(false),
+			connection_status(status_connecting),
 			we_locked_prefs_mutex(false),
 			timeout_(TIMEOUT),
 			timer_(io_service, boost::posix_time::seconds(TIMEOUT))
@@ -76,8 +78,8 @@ namespace http {
 		void CProxyClient::Reconnect()
 		{
 
-			std::string address = "my.domoticz.com";
-			std::string port = "9999";
+			std::string address = "localhost"; //  "my.domoticz.com";
+			std::string port = "443";
 
 			if (we_locked_prefs_mutex) {
 				// avoid deadlock if we got a read or write error in between handle_handshake() and HandleAuthresp()
@@ -87,14 +89,12 @@ namespace http {
 			if (doStop) {
 				return;
 			}
-			if (b_Connected) {
-				_socket.lowest_layer().close();
-			}
+			_socket.lowest_layer().close();
 			sleep_seconds(15);
-			b_Connected = false;
+			connection_status = status_connecting;
 			boost::asio::ip::tcp::resolver resolver(_io_service);
 			boost::asio::ip::tcp::resolver::query query(address, port);
-			boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
+			boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query); // shouldnt iterator be a member variable?
 			boost::asio::ip::tcp::endpoint endpoint = *iterator;
 			_socket.lowest_layer().async_connect(endpoint,
 				boost::bind(&CProxyClient::handle_connect, shared_from_this(),
@@ -121,7 +121,6 @@ namespace http {
 			{
 				if (!doStop) {
 					_log.Log(LOG_ERROR, "PROXY: Connect failed, reconnecting: %s", error.message().c_str());
-					b_Connected = true; // signal re-connect
 					Reconnect();
 				}
 			}
@@ -138,36 +137,49 @@ namespace http {
 		void CProxyClient::handle_write(const boost::system::error_code& error, size_t bytes_transferred)
 		{
 			boost::unique_lock<boost::mutex>(writeMutex);
-			if (bytes_transferred < writePdu->length()) {
-				_log.Log(LOG_ERROR, "PROXY: Only wrote %ld of %ld bytes.", bytes_transferred, writePdu->length());
+			switch (connection_status) {
+			case status_connecting:
+				// not possible
+				break;
+			case status_httpmode:
+				// we now wait for the webserver response
+				break;
+			case status_connected:
+				if (bytes_transferred < SockWriteBuf.length()) {
+					_log.Log(LOG_ERROR, "PROXY: Only wrote %ld of %ld bytes.", bytes_transferred, SockWriteBuf.length());
+				}
+				delete writePdu;
+				writePdu = NULL;
+				if (error) {
+					_log.Log(LOG_ERROR, "PROXY: Write failed, code = %d, %s", error.value(), error.message().c_str());
+				}
+				if (!writeQ.empty()) {
+					SocketWrite(writeQ.front());
+					writeQ.pop();
+				}
+				break;
 			}
-			delete writePdu;
-			writePdu = NULL;
-			if (error) {
-				_log.Log(LOG_ERROR, "PROXY: Write failed, code = %d, %s", error.value(), error.message().c_str());
-			}
-			if (!writeQ.empty()) {
-				SocketWrite(writeQ.front());
-				writeQ.pop();
-			}
+			SockWriteBuf.clear();
 		}
 
 		void CProxyClient::SocketWrite(ProxyPdu *pdu)
 		{
 			// do not call directly, use MyWrite()
+			CWebsocketFrame frame;
 			writePdu = pdu;
+			SockWriteBuf = frame.Create(opcode_binary, std::string((char *)writePdu->content(), writePdu->length()));
 			_writebuf.clear(); // make sure
-			_writebuf.push_back(boost::asio::buffer(writePdu->content(), writePdu->length()));
+			_writebuf.push_back(boost::asio::buffer(SockWriteBuf));
 			boost::asio::async_write(_socket, _writebuf, boost::bind(&CProxyClient::handle_write, shared_from_this(), boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
 		}
 
 		void CProxyClient::MyWrite(pdu_type type, CValueLengthPart &parameters)
 		{
 			boost::unique_lock<boost::mutex>(writeMutex);
-			if (!b_Connected) {
+			if (connection_status != status_connected) {
 				return;
 			}
-			ProxyPdu *pdu= new ProxyPdu(type, &parameters);
+			ProxyPdu *pdu = new ProxyPdu(type, &parameters);
 			if (writePdu) {
 				// write in progress, add to queue
 				writeQ.push(pdu);
@@ -203,9 +215,9 @@ namespace http {
 			{
 				// lock until we have a valid api id
 				sharedData.LockPrefsMutex();
-				b_Connected = true;
 				we_locked_prefs_mutex = true;
-				LoginToService();
+				connection_status = status_httpmode;
+				WebsocketGetRequest();
 			}
 			else
 			{
@@ -214,6 +226,20 @@ namespace http {
 					Reconnect();
 				}
 			}
+		}
+
+		void CProxyClient::WebsocketGetRequest()
+		{
+			unsigned char random[16];
+			for (int i = 0; i < sizeof(random); i++) {
+				random[i] = rand();
+			}
+			websocket_key = base64_encode(random, sizeof(random));
+			SockWriteBuf = "GET /json HTTP/1.1\r\nHost: my.domoticz.com\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nOrigin: Domoticz\r\nSec-Websocket-Version: 13\r\nSec-Websocket-Protocol: MyDomoticz\r\nSec-Websocket-Key: " + websocket_key + "\r\n\r\n";
+			_writebuf.clear(); // make sure
+			_writebuf.push_back(boost::asio::buffer(SockWriteBuf));
+			boost::asio::async_write(_socket, _writebuf, boost::bind(&CProxyClient::handle_write, shared_from_this(), boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
+			ReadMore();
 		}
 
 		void CProxyClient::ReadMore()
@@ -525,22 +551,61 @@ namespace http {
 			}
 		}
 
+		std::string CProxyClient::compute_accept_header(const std::string &websocket_key)
+		{
+			// the length of an sha1 hash
+			const int sha1len = 20;
+			// the GUID as specified in RFC 6455
+			const char *GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
+			std::string combined = websocket_key + GUID;
+			unsigned char sha1result[sha1len];
+			sha1::calc((void *)combined.c_str(), combined.length(), sha1result);
+			std::string accept = base64_encode(sha1result, sha1len);
+			return accept;
+		}
+
+		bool CProxyClient::parse_response(const char *data, size_t len)
+		{
+			// todo: status code 101
+			// connection: upgrade
+			// upgrade: websocket
+			// sec-websocket-protocol: domoproxy
+			// Sec-Websocket-Accept: compute_accept_header(websocket_key)
+			std::string response = std::string(data, len);
+			if (response.find("\r\n\r\n") == std::string::npos) {
+				return false;
+			}
+			return true;
+		}
+
 		void CProxyClient::handle_read(const boost::system::error_code& error, size_t bytes_transferred)
 		{
+			const char *data;
 			// data read, no need for timeouts anymore
 			timer_.cancel();
 			if (!error)
 			{
 				_readbuf.commit(bytes_transferred);
-				const char *data = boost::asio::buffer_cast<const char*>(_readbuf.data());
-				ProxyPdu pdu(data, _readbuf.size());
-				if (pdu.Disconnected()) {
-					// todo
-					ReadMore();
-					return;
+				switch (connection_status) {
+				case status_httpmode:
+					data = boost::asio::buffer_cast<const char*>(_readbuf.data());
+					if (parse_response(data, _readbuf.size())) {
+						_readbuf.consume(_readbuf.size());
+						connection_status = status_connected;
+						LoginToService();
+					}
+					break;
+				case status_connected:
+					data = boost::asio::buffer_cast<const char*>(_readbuf.data());
+					ProxyPdu pdu(data, _readbuf.size());
+					if (pdu.Disconnected()) {
+						// todo
+						ReadMore();
+						return;
+					}
+					PduHandler(pdu);
+					_readbuf.consume(pdu.length() + 9); // 9 is header size
 				}
-				PduHandler(pdu);
-				_readbuf.consume(pdu.length() + 9); // 9 is header size
 				ReadMore();
 			}
 			else
