@@ -46,9 +46,10 @@ CWebsocketFrame::CWebsocketFrame() { };
 CWebsocketFrame::~CWebsocketFrame() {};
 
 std::string CWebsocketFrame::unmask(const unsigned char *mask, const unsigned char *bytes, size_t payloadlen) {
-	std::string result = "";
+	std::string result;
+	result.resize(payloadlen);
 	for (size_t i = 0; i < payloadlen; i++) {
-		result += (char)(bytes[i] ^ mask[i % 4]);
+		result[i] = (char)(bytes[i] ^ mask[i % 4]);
 	}
 	return result;
 }
