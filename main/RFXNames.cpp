@@ -222,6 +222,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_AtagOne, "Atag One Thermostat" },
 		{ HTYPE_Sterbox, "Sterbox v2-3 PLC with LAN interface" },
 		{ HTYPE_HTTPPOLLER, "HTTP/HTTPS poller" },
+		{ HTYPE_FITBIT, "Fitbit" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);

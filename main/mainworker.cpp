@@ -91,6 +91,7 @@
 #include "../hardware/OpenWebNet.h"
 #include "../hardware/AtagOne.h"
 #include "../hardware/Sterbox.h"
+#include "../hardware/Fitbit.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -829,6 +830,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_Netatmo:
 		pHardware = new CNetatmo(ID,Username,Password);
+		break;
+	case HTYPE_FITBIT:
+		pHardware = new CFitbit(ID, Username, Password);
 		break;
 	case HTYPE_SBFSpot:
 		pHardware = new CSBFSpot(ID,Username);
@@ -11184,6 +11188,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		(pHardware->HwdType == HTYPE_EVOHOME_SCRIPT) ||
 		(pHardware->HwdType == HTYPE_EVOHOME_SERIAL) ||
 		(pHardware->HwdType == HTYPE_Netatmo) ||
+		(pHardware->HwdType == HTYPE_FITBIT) ||
 		(pHardware->HwdType == HTYPE_NefitEastLAN)
 		)
 	{

@@ -25,7 +25,7 @@ easy-server --host=0.0.0.0 --serial=XXXX --access-key=XXXX --password=XXXX
 After this you should be able to connect to port 3000
 */
 
-//#define DEBUG_NefitEasyR
+//#define DEBUG_NefitEasyW
 #ifdef DEBUG_NefitEasyW
 void SaveString2Disk(std::string str, std::string filename)
 {
@@ -167,6 +167,7 @@ bool CNefitEasy::StopHardware()
 
 #define NEFIT_FAST_POLL_INTERVAL 30
 #define NEFIT_SLOW_INTERVAL 300
+#define NEFIT_GAS_INTERVAL 400
 
 void CNefitEasy::Do_Work()
 {
@@ -209,14 +210,16 @@ void CNefitEasy::Do_Work()
 				ret = GetPressure();
 				if (ret)
 					ret = GetOutdoorTemp();
-				if (ret)
-					ret = GetGasUsage();
 				slow_pollint = (ret == true) ? NEFIT_SLOW_INTERVAL : NEFIT_SLOW_INTERVAL * 2;
 			}
 			catch (...)
 			{
 				_log.Log(LOG_ERROR, "NefitEasy: Error getting/processing pressure result...");
 			}
+		}
+		if (sec_counter % NEFIT_GAS_INTERVAL == 0)
+		{
+			ret = GetGasUsage();
 		}
 		bFirstTime = false;
 	}
@@ -298,7 +301,7 @@ bool CNefitEasy::GetStatusDetails()
 #endif
 
 #ifdef DEBUG_NefitEasyW
-	SaveString2Disk(sResult, "E:\\nefit_uistatus.json");
+	SaveString2Disk(sResult, "E:\\nefit_uistatus_prop.json");
 #endif
 	Json::Value root;
 	Json::Value root2;
@@ -307,7 +310,10 @@ bool CNefitEasy::GetStatusDetails()
 	bool ret = jReader.parse(sResult, root);
 	if (!ret)
 	{
-		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received (main)!");
+		if (sResult.find("Error: REQUEST_TIMEOUT") != std::string::npos)
+			_log.Log(LOG_ERROR, "NefitEasy: Request Timeout !");
+		else
+			_log.Log(LOG_ERROR, "NefitEasy: Invalid data received (main)!");
 		return false;
 	}
 	if (root["value"].empty())

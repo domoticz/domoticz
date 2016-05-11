@@ -1054,7 +1054,8 @@ namespace http {
 				(htype == HTYPE_NEST) ||
 				(htype == HTYPE_ANNATHERMOSTAT) ||
 				(htype == HTYPE_THERMOSMART) ||
-				(htype == HTYPE_Netatmo)
+				(htype == HTYPE_Netatmo) ||
+				(htype == HTYPE_FITBIT)
 				)
 			{
 				if (
@@ -1306,7 +1307,8 @@ namespace http {
 				(htype == HTYPE_ANNATHERMOSTAT) ||
 				(htype == HTYPE_THERMOSMART) ||
 				(htype == HTYPE_SolarEdgeAPI) ||
-				(htype == HTYPE_Netatmo)
+				(htype == HTYPE_Netatmo) ||
+				(htype == HTYPE_FITBIT)
 				)
 			{
 				if (
@@ -9757,7 +9759,10 @@ namespace http {
 					_eHardwareTypes hType = (_eHardwareTypes)atoi(sd[3].c_str());
 					if (hType == HTYPE_DomoticzInternal)
 						continue;
-
+#ifndef _DEBUG
+					if (hType == HTYPE_FITBIT)
+						continue;
+#endif
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
 					root["result"][ii]["Enabled"] = (sd[2] == "1") ? "true" : "false";
