@@ -247,6 +247,8 @@ void CEvohome::Do_Work()
 	int nStartup=0;
 	int sec_counter = 0;
 	bool startup = true;
+	std::vector<std::vector<std::string> > result;
+
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
@@ -287,6 +289,22 @@ void CEvohome::Do_Work()
 					{
 						InitControllerName();
 						InitZoneNames();
+
+						// Update any zone names which are still the defaults
+						result = m_sql.safe_query("SELECT Name FROM Devicestatus WHERE ((HardwareID==%d) AND (Type==%d) AND (Unit <= 12) AND (Name == 'Zone Temp')) OR ((HardwareID==%d) AND (Type==%d) AND (Unit <= 12) AND (Name == 'Setpoint'))", m_HwdID, (int)pTypeEvohomeZone, m_HwdID, (int)pTypeEvohomeZone);
+						if (result.size() != 0)
+						{
+							for (uint8_t i = 1; i < m_nZoneCount + 1; i++)
+							{
+								result = m_sql.safe_query("SELECT Name FROM Devicestatus WHERE ((HardwareID==%d) AND (Type==%d) AND (Unit == %d) AND (Name == 'Zone Temp')) OR ((HardwareID==%d) AND (Type==%d) AND (Unit == %d) AND (Name == 'Setpoint'))", m_HwdID, (int)pTypeEvohomeZone, i, m_HwdID, (int)pTypeEvohomeZone, i);
+								if (result.size() != 0)
+								{
+									Log(true, LOG_STATUS, "Evohome: UPDATE Devicestatus SET Name=%s WHERE (HardwareID==%d) AND (Type==%d) AND (Unit == %d)", m_ZoneNames[i - 1].c_str(), m_HwdID, (int)pTypeEvohomeZone, i);
+									m_sql.safe_query("UPDATE Devicestatus SET Name='%q' WHERE (HardwareID==%d) AND (Type==%d) AND (Unit == %d)", m_ZoneNames[i - 1].c_str(), m_HwdID, (int)pTypeEvohomeZone, i);
+								}
+							}
+						}
+
 						startup = false;
 					}
 					else//Request each individual zone temperature every 300s as the controller omits multi-room zones
