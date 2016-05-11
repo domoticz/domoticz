@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+
+        <CommandClass id="67" name="COMMAND_CLASS_THERMOSTAT_SETPOINT" version="1" request_flags="4" override_precision="2" base="0">
+                <Instance index="1" />
+                <Value type="decimal" genre="user" instance="1" index="1" label="Furnace" units="C" min="0" max="0" value="0.0" />
+                <Value type="decimal" genre="user" instance="1" index="2" label="Cooling" units="C" min="0" max="0" value="0.0" />
+                <Value type="decimal" genre="user" instance="1" index="3" label="Unused" units="C" min="0" max="0" value="0.0" />
+        </CommandClass>
+        <CommandClass id="112">
+                <Value type="short" genre="config" instance="1" index="1" label="Temperature Report threshold" units="C" min="1" max="64" value="5">
+                        <Help>0.1 to 10C 1=0.1C 100=10C.</Help>
+                </Value>
+                <Value type="short" genre="config" instance="1" index="2" label="Set-point display resolution" units="C" min="1" max="64" value="5">
+                        <Help>0.1 to 10C 1=0.1C 100=10C.</Help>
+                </Value>
+                <Value type="short" genre="config" instance="1" index="3" label="Minimum Set-point and override limit" units="C" min="0" max="28" value="12">
+                        <Help>From  min 0°C to max setpoint override limit 0=0C 28=28C.</Help>
+                </Value>
+                <Value type="short" genre="config" instance="1" index="4" label="Maxmum Set-point and override limit" units="C" min="0" max="40" value="28">
+                        <Help>From  min setpoint override limit to max 40C 0=0°C 40=40C.</Help>
+                </Value>
+                <Value type="short" genre="config" instance="1" index="5" label="LED Flash period" min="0" max="65535" value="1">
+                        <Help>0 to 65535 seconds.</Help>
+                </Value>
+                <Value type="list" genre="config" instance="1" index="6" label="Set-point control function" value="1">
+                        <Help>0=Disabled 1=Enabled.</Help>
+                        <Item label="Disabled" value="0" />
+                        <Item label="Enabled" value="1" />
+                </Value>
+                <Value type="list" genre="config" instance="1" index="7" label="Temporary override scheduler" value="1">
+                        <Help>0=Disabled 1=Enabled.</Help>
+                        <Item label="Disabled" value="0" />
+                        <Item label="Enabled" value="1" />
+                </Value>
+                <Value type="list" genre="config" instance="1" index="8" label="Set-point type in Thermostat_Setpoint_Reports" value="1">
+                        <Help>1=Heating 2=Cooling 10=Auto Changeover.</Help>
+                        <Item label="Heating" value="1" />
+                        <Item label="Cooling" value="0" />
+                        <Item label="Auto changeover" value="10" />
+                </Value>
+                <Value type="short" genre="config" instance="1" index="9" label="LED on time" units="ms" min="100" max="500" value="100">
+                        <Help>Milliseconds (in 100ms steps)</Help>
+                </Value>
+                <Value type="byte" genre="config" instance="1" index="10" label="Number of LED flashes (duration)" units="ms" min="0" max="255" value="5">
+                        <Help>0 to 255</Help>
+                </Value>
+                <Value type="list" genre="config" instance="1" index="11" label="LED color" value="1">
+                        <Help>Changes LED color.</Help>
+                        <Item label="Red" value="2" />
+                        <Item label="Green" value="1" />
+                </Value>
+        </CommandClass>
+</Product>

@@ -485,6 +485,12 @@ bool CNetatmo::ParseDashboard(const Json::Value &root, const int DevIdx, const i
 		bHaveBaro = true;
 		baro = root["Pressure"].asFloat();
 	}
+/*
+	if (!root["AbsolutePressure"].empty())
+	{
+		float apressure = root["AbsolutePressure"].asFloat();
+	}
+*/
 	if (!root["Noise"].empty())
 	{
 		bHaveSound = true;

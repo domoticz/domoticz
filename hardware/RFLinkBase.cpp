@@ -291,7 +291,7 @@ bool CRFLinkBase::SendSwitchInt(const int ID, const int switchunit, const int Ba
 
 	int svalue=level;
 	if (cmnd==-1) {
-		if (switchcmd.compare(0, 9, "SETLEVEL=") == 0 ){
+		if (switchcmd.compare(0, 9, "SET_LEVEL=") == 0 ){
 			cmnd=gswitch_sSetLevel;
 			std::string str2 = switchcmd.substr(10);
 			svalue=atoi(str2.c_str()); 
@@ -420,6 +420,10 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 				build = RFLinkGetIntStringValue(results[4]);
 			}
 			_log.Log(LOG_STATUS, "RFLink Detected, Version: %d.%d Revision: %d Build: %d", versionhi, versionlo, revision, build);
+
+			std::stringstream sstr;
+			sstr << revision << "." << build;
+			m_Version = sstr.str();
 
 			mytime(&m_LastHeartbeatReceive);  // keep heartbeat happy
 			mytime(&m_LastHeartbeat);  // keep heartbeat happy

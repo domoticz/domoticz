@@ -220,7 +220,9 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_OpenWebNet, "MyHome OpenWebNet" },
 		{ HTYPE_RaspberryHTU21D, "I2C sensor HTU21D(F)/SI702x Humidity+Temp" },
 		{ HTYPE_AtagOne, "Atag One Thermostat" },
-		{ HTYPE_Sterbox, "Sterbox v2-3 PLC with LAN interface" },		
+		{ HTYPE_Sterbox, "Sterbox v2-3 PLC with LAN interface" },
+		{ HTYPE_HTTPPOLLER, "HTTP/HTTPS poller" },
+		{ HTYPE_FITBIT, "Fitbit" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -1154,7 +1156,7 @@ const char *ZWave_Clock_Days(const unsigned char Day)
 	};
 	return findTableIDSingle1(Table, Day);
 }
-
+/*
 const char *ZWave_Thermostat_Modes[] =
 {
 	"Off",
@@ -1174,7 +1176,7 @@ const char *ZWave_Thermostat_Modes[] =
 	"Unknown",
 	NULL
 };
-
+*/
 const char *ZWave_Thermostat_Fan_Modes[] =
 {
 	"Auto Low",
@@ -1188,15 +1190,14 @@ const char *ZWave_Thermostat_Fan_Modes[] =
 	NULL
 };
 
-int Lookup_ZWave_Thermostat_Modes(const std::string &sMode)
+int Lookup_ZWave_Thermostat_Modes(const std::vector<std::string> &Modes, const std::string &sMode)
 {
 	int ii = 0;
-	while (ZWave_Thermostat_Modes[ii]!=NULL)
+	std::vector<std::string>::const_iterator itt;
+	for (itt = Modes.begin(); itt != Modes.end(); ++itt)
 	{
-		if (ZWave_Thermostat_Modes[ii] == sMode)
-		{
+		if (*itt == sMode)
 			return ii;
-		}
 		ii++;
 	}
 	return -1;

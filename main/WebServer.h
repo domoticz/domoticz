@@ -53,11 +53,12 @@ public:
 	void SetRego6XXType(WebEmSession & session, const request& req, std::string & redirect_uri);
 	void SetS0MeterType(WebEmSession & session, const request& req, std::string & redirect_uri);
 	void SetLimitlessType(WebEmSession & session, const request& req, std::string & redirect_uri);
-	
+
 	void SetOpenThermSettings(WebEmSession & session, const request& req, std::string & redirect_uri);
 	void Cmd_SendOpenThermCommand(WebEmSession & session, const request& req, Json::Value &root);
 
 	void SetP1USBType(WebEmSession & session, const request& req, std::string & redirect_uri);
+	void ReloadPiFace(WebEmSession & session, const request& req, std::string & redirect_uri);
 	void RestoreDatabase(WebEmSession & session, const request& req, std::string & redirect_uri);
 	void SBFSpotImportOldData(WebEmSession & session, const request& req, std::string & redirect_uri);
 	void SetCurrentCostUSBType(WebEmSession & session, const request& req, std::string & redirect_uri);
@@ -303,7 +304,7 @@ private:
 	//RTypes
 	void RType_OpenZWaveNodes(WebEmSession & session, const request& req, Json::Value &root);
 	int m_ZW_Hwidx;
-#endif	
+#endif
 	boost::shared_ptr<boost::thread> m_thread;
 
 	std::map < std::string, webserver_response_function > m_webcommands;
@@ -313,10 +314,6 @@ private:
 	std::map<int, int> m_custom_light_icons_lookup;
 	bool m_bDoStop;
 	std::string m_server_alias;
-
-	void luaThread(lua_State *lua_state, const std::string &filename);
-	static void luaStop(lua_State *L, lua_Debug *ar);
-	void report_errors(lua_State *L, int status);
 };
 
 } //server
