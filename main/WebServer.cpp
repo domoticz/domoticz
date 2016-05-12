@@ -6588,6 +6588,12 @@ namespace http {
 				m_mainworker.m_eventsystem.StartEventSystem();
 			}
 
+			int oneWireSensorPollPeriod = atoi(request::findValue(&req, "1WireSensorPollPeriod").c_str());
+			m_sql.UpdatePreferencesVar("1WireSensorPollPeriod", oneWireSensorPollPeriod);
+
+			int oneWireSwitchPollPeriod = atoi(request::findValue(&req, "1WireSwitchPollPeriod").c_str());
+			m_sql.UpdatePreferencesVar("1WireSwitchPollPeriod", oneWireSensorPollPeriod);
+
 			std::string EnableWidgetOrdering = request::findValue(&req, "AllowWidgetOrdering");
 			int iEnableAllowWidgetOrdering = (EnableWidgetOrdering == "on" ? 1 : 0);
 			m_sql.UpdatePreferencesVar("AllowWidgetOrdering", iEnableAllowWidgetOrdering);
@@ -11213,6 +11219,14 @@ namespace http {
 				else if (Key == "DisableEventScriptSystem")
 				{
 					root["DisableEventScriptSystem"] = nValue;
+				}
+				else if (Key == "(1WireSensorPollPeriod")
+				{
+					root["1WireSensorPollPeriod"] = nValue;
+				}
+				else if (Key == "(1WireSwitchPollPeriod")
+				{
+					root["1WireSwitchPollPeriod"] = nValue;
 				}
 				else if (Key == "SecOnDelay")
 				{

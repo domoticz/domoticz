@@ -55,14 +55,14 @@
 										<td>
 											<select id="combolanguage" name="Language" style="width:160px" class="combobox ui-corner-all">
 											<!--#embed combolanguage -->
-											</select>			
+											</select>
 										</td>
 									</tr>
 									<tr>
 										<td align="right" style="width:60px"><label for="Themes"><span data-i18n="Theme"></span>: </label></td>
 										<td>
 											<select id="combothemes" name="Themes" style="width:200px" class="combobox ui-corner-all">
-											</select>			
+											</select>
 										</td>
 									</tr>
 									</table>
@@ -224,7 +224,7 @@
 											</tr>
 										</table>
 									</div>
-									<br>			
+									<br>
 								</div>
 							</div>
 							<div class="row-fluid">
@@ -275,7 +275,7 @@
 									</div>
 								</div>
 							</div>
-							<br>			
+							<br>
 							<div id="ActiveTabs">
 								<h2><span data-i18n="ActiveMenus"></span>:</h2>
 								<table class="display" id="activemenustable" border="0" cellpadding="0" cellspacing="0">
@@ -952,6 +952,19 @@
 								</td>
 							</tr>
 							</table>
+							<h2><span data-i18n="1Wire Settings"></span>:</h2>
+							<table class="display" id="1wiretable" border="0" cellpadding="0" cellspacing="0">
+							<tr>
+								<td align="right" style="width:90px"><label><span data-i18n="Sensor Poll Period "></span>: </label></td>
+								<td><input type="input" id="1WireSensorPollPeriod" name="1WireSensorPollPeriod" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> (<span data-i18n="milliseconds"></span>)</td>
+							</tr>
+							<tr>
+								<td align="right" style="width:90px"><label><span data-i18n="Switch Poll Period"></span>: </label></td>
+								<td><input type="input" id="1WireSwitchPollPeriod" name="1WireSwitchPollPeriod" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> (<span data-i18n="milliseconds"></span>)</td>
+							</tr>
+							</table>
+							<br>
+
 						</section>
 					</div>
 					<div class="tab-pane" id="tabbackuprestore">
@@ -965,6 +978,6 @@
 						</section>
 					</div>
 				</div>
-			</div>	
+			</div>
 	</div>
 </div>

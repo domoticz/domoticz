@@ -19,9 +19,9 @@
 #include <sys/types.h>
 
 #ifdef _DEBUG
-#define Wire1_POLL_INTERVAL 5
+#define Wire1_POLL_INTERVAL 5000
 #else // _DEBUG
-#define Wire1_POLL_INTERVAL 30
+#define Wire1_POLL_INTERVAL 100
 #endif //_DEBUG
 
 #define round(a) ( int ) ( a + .5 )
@@ -98,20 +98,28 @@ void C1Wire::LogSystem()
 bool C1Wire::StartHardware()
 {
 	// Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&C1Wire::Do_Work, this)));
+	m_threadSensors = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&C1Wire::SensorThread, this)));
+	m_threadSwitches = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&C1Wire::SwitchThread, this)));
 	m_bIsStarted=true;
 	sOnConnected(this);
 	StartHeartbeatThread();
-	return (m_thread!=NULL);
+	return (m_threadSensors!=NULL && m_threadSwitches!=NULL);
 }
 
 bool C1Wire::StopHardware()
 {
-	if (m_thread)
+	if (m_threadSensors)
 	{
 		m_stoprequested = true;
-		m_thread->join();
+		m_threadSensors->join();
 	}
+
+	if (m_threadSwitches)
+	{
+		m_stoprequested = true;
+		m_threadSwitches->join();
+	}
+
 	m_bIsStarted=false;
 	if (m_system)
 	{
@@ -122,20 +130,32 @@ bool C1Wire::StopHardware()
 	return true;
 }
 
-void C1Wire::Do_Work()
+void C1Wire::SensorThread()
 {
-	int pCounter = Wire1_POLL_INTERVAL-2;
+	int pollPeriod = 300 * 1000;
+	m_sql.GetPreferencesVar("1WireSensorPollPeriod", pollPeriod);
+
+
 	while (!m_stoprequested)
 	{
-		sleep_seconds(1);
-
-		pCounter++;
-		if (pCounter % Wire1_POLL_INTERVAL == 0)
-		{
-			GetDeviceDetails();
-		}
+		sleep_milliseconds(pollPeriod);
+		PollSensors();
 	}
 }
+
+void C1Wire::SwitchThread()
+{
+	int pollPeriod = 300 * 1000;
+	m_sql.GetPreferencesVar("1WireSwitchPollPeriod", pollPeriod);
+
+
+	while (!m_stoprequested)
+	{
+		sleep_milliseconds(pollPeriod);
+		PollSwitches();
+	}
+}
+
 
 bool C1Wire::WriteToHardware(const char *pdata, const unsigned char length)
 {
@@ -164,7 +184,7 @@ bool IsTemperatureValid(_e1WireFamilyType deviceFamily, float temperature)
 	if (temperature<=-300 || temperature>=381)
 		return false;
 
-	// Some devices has a power-on value at 85° and -127°, we have to filter it
+	// Some devices has a power-on value at 85ï¿½ and -127ï¿½, we have to filter it
 	switch (deviceFamily)
 	{
 		case high_precision_digital_thermometer:
@@ -179,20 +199,46 @@ bool IsTemperatureValid(_e1WireFamilyType deviceFamily, float temperature)
 	return true;
 }
 
-void C1Wire::GetDeviceDetails()
+void C1Wire::PollSensors()
 {
 	if (!m_system)
 		return;
 
 	// Get all devices
-	if ((m_devices.size() == 0) || (m_sql.m_bAcceptNewHardware))
+	if ((m_sensors.size() == 0) || (m_sql.m_bAcceptNewHardware))
 	{
-		_log.Log(LOG_STATUS, "1-Wire: Searching devices...");
-		m_devices.clear();
-		m_system->GetDevices(m_devices);
+		std::vector<_t1WireDevice> devices;
+		_log.Log(LOG_STATUS, "1-Wire: Searching sensors, size=%d acceptNewHardware=%d", m_sensors.size(), m_sql.m_bAcceptNewHardware);
+		m_sensors.clear();
+		m_system->GetDevices(devices);
+
+		std::vector<_t1WireDevice>::const_iterator device;
+		for (device=devices.begin(); device!=devices.end(); ++device)
+		{
+			switch((*device).family)
+			{
+			case high_precision_digital_thermometer:
+			case Thermachron:
+			case Econo_Digital_Thermometer:
+			case Temperature_memory:
+			case programmable_resolution_digital_thermometer:
+			case Temperature_IO:
+			case Environmental_Monitors:
+			case _4k_ram_with_counter:
+			case quad_ad_converter:
+			case smart_battery_monitor:
+				m_sensors.push_back(*device);
+				break;
+
+			default:
+				break;
+			}
+
+		}
+		devices.clear();
 	}
 
-	if (typeid(*m_system) == typeid(C1WireByOWFS) && (m_devices.size() > 2))
+	if (typeid(*m_system) == typeid(C1WireByOWFS) && (m_sensors.size() > 2))
 	{
 		if (m_mainworker.GetVerboseLevel() == EVBL_DEBUG)
 		{
@@ -214,7 +260,7 @@ void C1Wire::GetDeviceDetails()
 
 	// Parse our devices (have to test m_stoprequested because it can take some time in case of big networks)
 	std::vector<_t1WireDevice>::const_iterator itt;
-	for (itt=m_devices.begin(); itt!=m_devices.end() && !m_stoprequested; ++itt)
+	for (itt=m_sensors.begin(); itt!=m_sensors.end() && !m_stoprequested; ++itt)
 	{
 		const _t1WireDevice& device=*itt;
 
@@ -226,15 +272,129 @@ void C1Wire::GetDeviceDetails()
 		case Econo_Digital_Thermometer:
 		case Temperature_memory:
 		case programmable_resolution_digital_thermometer:
+		case Temperature_IO:
 			{
 				float temperature=m_system->GetTemperature(device);
-			if (IsTemperatureValid(device.family, temperature))
-			{
-				ReportTemperature(device.devid, temperature);
-			}
+				if (IsTemperatureValid(device.family, temperature))
+				{
+					ReportTemperature(device.devid, temperature);
+				}
 				break;
 			}
 
+		case Environmental_Monitors:
+			{
+				float temperature = m_system->GetTemperature(device);
+				if (IsTemperatureValid(device.family, temperature))
+				{
+					ReportTemperatureHumidity(device.devid, temperature, m_system->GetHumidity(device));
+				}
+				ReportPressure(device.devid,m_system->GetPressure(device));
+				break;
+			}
+
+		case _4k_ram_with_counter:
+			{
+				ReportCounter(device.devid,0,m_system->GetCounter(device,0));
+				ReportCounter(device.devid,1,m_system->GetCounter(device,1));
+				break;
+			}
+
+		case quad_ad_converter:
+			{
+				ReportVoltage(device.devid, 0, m_system->GetVoltage(device, 0));
+				ReportVoltage(device.devid, 1, m_system->GetVoltage(device, 1));
+				ReportVoltage(device.devid, 2, m_system->GetVoltage(device, 2));
+				ReportVoltage(device.devid, 3, m_system->GetVoltage(device, 3));
+				break;
+			}
+
+		case smart_battery_monitor:
+			{
+				float temperature = m_system->GetTemperature(device);
+				if (IsTemperatureValid(device.family, temperature))
+				{
+					ReportTemperature(device.devid, temperature);
+				}
+				ReportHumidity(device.devid,m_system->GetHumidity(device));
+				ReportVoltage(device.devid, 0, m_system->GetVoltage(device, 0));   // VAD
+				ReportVoltage(device.devid, 1, m_system->GetVoltage(device, 1));   // VDD
+				ReportVoltage(device.devid, 2, m_system->GetVoltage(device, 2));   // vis
+				ReportPressure(device.devid,m_system->GetPressure(device));
+				// Commonly used as Illuminance sensor, see http://www.hobby-boards.com/store/products/Solar-Radiation-Detector.html
+				ReportIlluminance(device.devid, m_system->GetIlluminance(device));
+				break;
+			}
+		default:
+			break;
+		}
+	}
+}
+
+void C1Wire::PollSwitches()
+{
+	if (!m_system)
+		return;
+
+	// Get all devices
+	if ((m_switches.size() == 0) || (m_sql.m_bAcceptNewHardware))
+	{
+		std::vector<_t1WireDevice> devices;
+		_log.Log(LOG_STATUS, "1-Wire: Searching switches, size=%d acceptNewHardware=%d", m_switches.size(), m_sql.m_bAcceptNewHardware);
+		m_switches.clear();
+		m_system->GetDevices(devices);
+
+		std::vector<_t1WireDevice>::const_iterator device;
+		for (device=devices.begin(); device!=devices.end(); ++device)
+		{
+			switch((*device).family)
+			{
+			case Addresable_Switch:
+			case microlan_coupler:
+			case dual_addressable_switch_plus_1k_memory:
+			case _8_channel_addressable_switch:
+			case Temperature_IO:
+			case dual_channel_addressable_switch:
+			case _4k_EEPROM_with_PIO:
+				m_switches.push_back(*device);
+				break;
+
+			default:
+				break;
+			}
+
+		}
+		devices.clear();
+	}
+
+	if (typeid(*m_system) == typeid(C1WireByOWFS) && (m_switches.size() > 2))
+	{
+		if (m_mainworker.GetVerboseLevel() == EVBL_DEBUG)
+		{
+			_log.Log(LOG_STATUS, "1Wire (OWFS): Sending 'Skip ROM' command");
+		}
+		std::ofstream file;
+		file.open(OWFS_Simultaneous);
+		if (file.is_open())
+		{
+			file << "1";
+			file.close();
+			if (m_mainworker.GetVerboseLevel() == EVBL_DEBUG)
+			{
+				_log.Log(LOG_STATUS, "1Wire (OWFS): Sent 'Skip ROM' command");
+			}
+		}
+	}
+
+	// Parse our devices (have to test m_stoprequested because it can take some time in case of big networks)
+	std::vector<_t1WireDevice>::const_iterator itt;
+	for (itt=m_switches.begin(); itt!=m_switches.end() && !m_stoprequested; ++itt)
+	{
+		const _t1WireDevice& device=*itt;
+
+		// Manage families specificities
+		switch(device.family)
+		{
 		case Addresable_Switch:
 		case microlan_coupler:
 			{
@@ -265,14 +425,9 @@ void C1Wire::GetDeviceDetails()
 
 		case Temperature_IO:
 			{
-		  float temperature = m_system->GetTemperature(device);
-		  if (IsTemperatureValid(device.family, temperature))
-		  {
-			  ReportTemperature(device.devid, temperature);
-		  }
-		  ReportLightState(device.devid, 0, m_system->GetLightState(device, 0));
-		  ReportLightState(device.devid, 1, m_system->GetLightState(device, 1));
-		  break;
+				ReportLightState(device.devid, 0, m_system->GetLightState(device, 0));
+				ReportLightState(device.devid, 1, m_system->GetLightState(device, 1));
+				break;
 			}
 
 		case dual_channel_addressable_switch:
@@ -283,69 +438,12 @@ void C1Wire::GetDeviceDetails()
 				break;
 			}
 
-		case Environmental_Monitors:
-			{
-		  float temperature = m_system->GetTemperature(device);
-		  if (IsTemperatureValid(device.family, temperature))
-		  {
-			  ReportTemperatureHumidity(device.devid, temperature, m_system->GetHumidity(device));
-		  }
-		  ReportPressure(device.devid,m_system->GetPressure(device));
-		  break;
-			}
-
-		case _4k_ram_with_counter:
-			{
-				ReportCounter(device.devid,0,m_system->GetCounter(device,0));
-				ReportCounter(device.devid,1,m_system->GetCounter(device,1));
-				break;
-			}
-
-		case quad_ad_converter:
-			{
-				ReportVoltage(device.devid, 0, m_system->GetVoltage(device, 0));
-				ReportVoltage(device.devid, 1, m_system->GetVoltage(device, 1));
-				ReportVoltage(device.devid, 2, m_system->GetVoltage(device, 2));
-				ReportVoltage(device.devid, 3, m_system->GetVoltage(device, 3));
-				break;
-			}
-
-		case Serial_ID_Button:
-			{
-				// Nothing to do with these devices for Domoticz ==> Filtered
-				break;
-			}
-
-		case smart_battery_monitor:
-			{
-				float temperature = m_system->GetTemperature(device);
-				if (IsTemperatureValid(device.family, temperature))
-				{
-					ReportTemperature(device.devid, temperature);
-				}
-				ReportHumidity(device.devid,m_system->GetHumidity(device));
-				ReportVoltage(device.devid, 0, m_system->GetVoltage(device, 0));   // VAD
-				ReportVoltage(device.devid, 1, m_system->GetVoltage(device, 1));   // VDD
-				ReportVoltage(device.devid, 2, m_system->GetVoltage(device, 2));   // vis
-				ReportPressure(device.devid,m_system->GetPressure(device));
-				// Commonly used as Illuminance sensor, see http://www.hobby-boards.com/store/products/Solar-Radiation-Detector.html
-				ReportIlluminance(device.devid, m_system->GetIlluminance(device));
-				break;
-			}
-
-		case silicon_serial_number:
-		{ // this is only chip with id (equal device.filename and device.devid)
-			break;
-		}
-
 		default: // Device is not actually supported
-			{
-				_log.Log(LOG_ERROR,"1-Wire : Device family (%02x) is not actually supported", device.family);
-				break;
-			}
+			break;
 		}
 	}
 }
+
 
 void C1Wire::ReportTemperature(const std::string& deviceId, const float temperature)
 {
