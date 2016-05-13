@@ -102,6 +102,7 @@ const _tRFLinkStringIntHelper rfswitches[] =
 	{ "BFT", sSwitchBFT },					 // NA
 	{ "Novatys", sSwitchNovatys},			 // NA
 	{ "Halemeier", sSwitchHalemeier},
+	{ "Gaposa", sSwitchGaposa },
 	{ "", -1 }
 };
 
@@ -502,7 +503,9 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 	bool bHaveMeter = false; float meter = 0;   
 	bool bHaveVoltage = false; float voltage = 0;   
 	bool bHaveCurrent = false; float current = 0;   
-	bool bHaveImpedance = false; float impedance = 0;   
+	bool bHaveCurrent2 = false; float current2 = 0;
+	bool bHaveCurrent3 = false; float current3 = 0;
+	bool bHaveImpedance = false; float impedance = 0;
 	bool bHaveSwitch = false; int switchunit = 0; 
 	bool bHaveSwitchCmd = false; std::string switchcmd = ""; int switchlevel = 0;
 
@@ -660,7 +663,19 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 		{
 			iTemp = RFLinkGetHexStringValue(results[ii]);
 			bHaveCurrent = true;
-			current = float(iTemp) / 100.0f;
+			current = float(iTemp) / 10.0f;
+		}
+		else if (results[ii].find("CURRENT2") != std::string::npos)
+		{
+			iTemp = RFLinkGetHexStringValue(results[ii]);
+			bHaveCurrent2 = true;
+			current2 = float(iTemp) / 10.0f;
+		}
+		else if (results[ii].find("CURRENT3") != std::string::npos)
+		{
+			iTemp = RFLinkGetHexStringValue(results[ii]);
+			bHaveCurrent3 = true;
+			current3 = float(iTemp) / 10.0f;
 		}
 		else if (results[ii].find("IMPEDANCE") != std::string::npos)
 		{
@@ -792,7 +807,11 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 	{
 		SendVoltageSensor(Node_ID, Child_ID, BatteryLevel, voltage, tmp_Name);
 	}
-	if (bHaveCurrent)
+	if (bHaveCurrent && bHaveCurrent2 && bHaveCurrent3) 
+	{
+		SendCurrentSensor(ID, BatteryLevel, current, current2, current3, tmp_Name);
+	} 
+	else if (bHaveCurrent)
 	{
 		SendCurrentSensor(ID, BatteryLevel, current, 0, 0, tmp_Name);
 	}

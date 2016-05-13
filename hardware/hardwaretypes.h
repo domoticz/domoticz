@@ -146,6 +146,7 @@
 #define sSwitchBFT					0x53
 #define sSwitchNovatys				0x54
 #define sSwitchHalemeier			0x55
+#define sSwitchGaposa				0x56
 
 //Switch commands
 #define gswitch_sOff				0x00
