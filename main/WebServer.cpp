@@ -9786,9 +9786,9 @@ namespace http {
 					if (pHardware != NULL)
 					{
 						if (
-							(pHardware->HwdType == HTYPE_RFXtrx315) || 
-							(pHardware->HwdType == HTYPE_RFXtrx433) || 
-							(pHardware->HwdType == HTYPE_RFXtrx868) || 
+							(pHardware->HwdType == HTYPE_RFXtrx315) ||
+							(pHardware->HwdType == HTYPE_RFXtrx433) ||
+							(pHardware->HwdType == HTYPE_RFXtrx868) ||
 							(pHardware->HwdType == HTYPE_RFXLAN)
 							)
 						{
