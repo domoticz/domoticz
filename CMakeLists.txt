@@ -133,6 +133,7 @@ MACRO(ADD_PRECOMPILED_HEADER _targetName _input)
       LIST(APPEND _compiler_FLAGS "-I${item}")
     ENDFOREACH(item)
 
+    CMAKE_POLICY(SET CMP0059 NEW)
     GET_DIRECTORY_PROPERTY(_directory_flags DEFINITIONS)
     LIST(APPEND _compiler_FLAGS ${_directory_flags})
 
@@ -606,6 +607,23 @@ IF(CMAKE_COMPILER_IS_GNUCXX)
 ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 
 
+# Compress json files
+FIND_PROGRAM(GZIP_TOOL NAMES gzip PATHS /bin /usr/bin /usr/local/bin)
+
+IF(NOT GZIP_TOOL)
+  MESSAGE(FATAL_ERROR "Unable to find 'gzip' program")
+ENDIF(NOT GZIP_TOOL)
+
+SET(langs ar bg ca cs da de el en es fi fr he hu is it lt mk nl no pl pt ro ru sk sl sr sv th tr uk zh)
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/www/i18n)
+FOREACH(lang ${langs})
+  ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/www/i18n/domoticz-${lang}.json.gz
+      COMMAND ${GZIP_TOOL} -c ${CMAKE_CURRENT_SOURCE_DIR}/i18n/domoticz-${lang}.json > ${CMAKE_CURRENT_SOURCE_DIR}/www/i18n/domoticz-${lang}.json.gz
+      DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/i18n/domoticz-${lang}.json
+      COMMENT "Compressing domoticz-${lang}.json.gz")
+      ADD_CUSTOM_TARGET(i18n-${lang} ALL DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/www/i18n/domoticz-${lang}.json.gz)
+ENDFOREACH(lang)
+
 # build a CPack driven installer package
 INCLUDE(InstallRequiredSystemLibraries)
 
@@ -640,6 +658,10 @@ ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 
 install(TARGETS domoticz DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/www DESTINATION ${CMAKE_INSTALL_PREFIX})
+FOREACH(lang ${langs})
+  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/www/i18n/domoticz-${lang}.json.gz DESTINATION ${CMAKE_INSTALL_PREFIX}www/i18n)
+ENDFOREACH(lang)
+
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/License.txt DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/History.txt DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/scripts DESTINATION ${CMAKE_INSTALL_PREFIX} USE_SOURCE_PERMISSIONS)
