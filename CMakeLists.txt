@@ -240,7 +240,7 @@ hardware/EnOceanESP2.cpp
 hardware/EnOceanESP3.cpp
 hardware/evohome.cpp
 hardware/ETH8020.cpp
-hardware/Sterbox.cpp
+hardware/Fitbit.cpp
 hardware/ForecastIO.cpp
 hardware/FritzboxTCP.cpp
 hardware/Gpio.cpp
@@ -298,6 +298,7 @@ hardware/serial/serial.cpp
 hardware/serial/impl/unix.cpp
 hardware/SolarEdgeAPI.cpp
 hardware/SolarMaxTCP.cpp
+hardware/Sterbox.cpp
 hardware/TCPProxy/tcpproxy_server.cpp
 hardware/TE923.cpp
 hardware/TE923Tool.cpp
