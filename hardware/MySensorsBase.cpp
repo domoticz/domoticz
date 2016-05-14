@@ -432,7 +432,7 @@ void MySensorsBase::UpdateNodeHeartbeat(const int nodeID)
 		return; //Not found
 
 	int intValue;
-
+	mytime(&m_LastHeartbeatReceive);
 	_tMySensorNode *pNode = &ittNode->second;
 	std::vector<_tMySensorChild>::iterator itt;
 	for (itt = pNode->m_childs.begin(); itt != pNode->m_childs.end(); ++itt)
@@ -1633,7 +1633,7 @@ void MySensorsBase::ParseLine()
 		case I_HEARTBEAT:
 		case I_HEARTBEAT_RESPONSE:
 			//Received a heartbeat request/response
-			if ((node_id != 0) && (node_id != 255))
+			if (node_id != 255)
 			{
 				UpdateNodeHeartbeat(node_id);
 			}
