@@ -307,6 +307,7 @@ hardware/Tellstick.cpp
 hardware/Thermosmart.cpp
 hardware/ToonThermostat.cpp
 hardware/VolcraftCO20.cpp
+hardware/RAVEn.cpp
 hardware/Winddelen.cpp
 hardware/WOL.cpp
 hardware/Wunderground.cpp
