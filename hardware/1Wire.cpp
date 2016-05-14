@@ -242,7 +242,7 @@ void C1Wire::PollSensors()
 	{
 		if (m_mainworker.GetVerboseLevel() == EVBL_DEBUG)
 		{
-			_log.Log(LOG_STATUS, "1Wire (OWFS): Sending 'Skip ROM' command");
+			_log.Log(LOG_STATUS, "1Wire (OWFS): Initiating simultaneous temperature read");
 		}
 		std::ofstream file;
 		file.open(OWFS_Simultaneous);
@@ -252,9 +252,9 @@ void C1Wire::PollSensors()
 			file.close();
 			if (m_mainworker.GetVerboseLevel() == EVBL_DEBUG)
 			{
-				_log.Log(LOG_STATUS, "1Wire (OWFS): Sent 'Skip ROM' command");
+				_log.Log(LOG_STATUS, "1Wire (OWFS): Simultaneous temperature read successful");
 			}
-			sleep_seconds(1);
+			sleep_milliseconds(800);
 		}
 	}
 
@@ -365,25 +365,6 @@ void C1Wire::PollSwitches()
 
 		}
 		devices.clear();
-	}
-
-	if (typeid(*m_system) == typeid(C1WireByOWFS) && (m_switches.size() > 2))
-	{
-		if (m_mainworker.GetVerboseLevel() == EVBL_DEBUG)
-		{
-			_log.Log(LOG_STATUS, "1Wire (OWFS): Sending 'Skip ROM' command");
-		}
-		std::ofstream file;
-		file.open(OWFS_Simultaneous);
-		if (file.is_open())
-		{
-			file << "1";
-			file.close();
-			if (m_mainworker.GetVerboseLevel() == EVBL_DEBUG)
-			{
-				_log.Log(LOG_STATUS, "1Wire (OWFS): Sent 'Skip ROM' command");
-			}
-		}
 	}
 
 	// Parse our devices (have to test m_stoprequested because it can take some time in case of big networks)
