@@ -92,6 +92,7 @@
 #include "../hardware/AtagOne.h"
 #include "../hardware/Sterbox.h"
 #include "../hardware/Fitbit.h"
+#include "../hardware/RAVEn.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -603,6 +604,7 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_EVOHOME_SERIAL:
 	case HTYPE_RFLINKUSB:
 	case HTYPE_CurrentCostMeter:
+    case HTYPE_RAVEn:
 	{
 			//USB/Serial
 			if (
@@ -678,6 +680,10 @@ bool MainWorker::AddHardwareFromParams(
 			else if (Type == HTYPE_RFLINKUSB)
 			{
 				pHardware = new CRFLinkSerial(ID, SerialPort);
+			}
+			else if (Type == HTYPE_RAVEn)
+			{
+				pHardware = new RAVEn(ID, SerialPort);
 			}
 			else if (Type == HTYPE_CurrentCostMeter)
 			{

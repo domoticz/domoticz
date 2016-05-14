@@ -155,7 +155,7 @@ enum _eHardwareTypes {
 	HTYPE_Sterbox,				//73
 	HTYPE_HTTPPOLLER,			//74
 	HTYPE_FITBIT,				//75
-
+	HTYPE_RAVEn,	    		//75
 	HTYPE_END
 };
 
