@@ -135,6 +135,15 @@ void C1Wire::SensorThread()
 	int pollPeriod = 300 * 1000;
 	m_sql.GetPreferencesVar("1WireSensorPollPeriod", pollPeriod);
 
+	int pollIterations = 1;
+
+	if (pollPeriod > 1000)
+	{
+		pollIterations = pollPeriod / 1000;
+		pollPeriod = 1000;
+	}
+
+	int iteration = 0;
 
 	while (!m_stoprequested)
 	{
@@ -148,13 +157,13 @@ void C1Wire::SensorThread()
 			PollSensors();
 		}
 	}
-}
 
 	_log.Log(LOG_STATUS, "1-Wire: Sensor thread terminating");
+}
 
 void C1Wire::SwitchThread()
 {
-	int pollPeriod = 300 * 1000;
+	int pollPeriod = 100;
 	m_sql.GetPreferencesVar("1WireSwitchPollPeriod", pollPeriod);
 
 	// Rescan the bus once every 10 seconds if requested
@@ -535,6 +544,10 @@ void C1Wire::ReportTemperatureHumidity(const std::string& deviceId, const float 
 
 void C1Wire::ReportLightState(const std::string& deviceId, const int unit, const bool state)
 {
+#if defined(_DEBUG)
+	_log.Log(LOG_STATUS, "device '%s' unit %d state is %s", deviceId.c_str(), unit, (state) ? "on" : "off");
+#endif
+
 // check - is state changed ?
 	char num[16];
 	sprintf(num, "%s/%d", deviceId.c_str(), unit);
@@ -544,11 +557,16 @@ void C1Wire::ReportLightState(const std::string& deviceId, const int unit, const
 	it = m_LastSwitchState.find(id);
 	if (it != m_LastSwitchState.end())
 	{
-		if (it->second == state)
+		if (m_LastSwitchState[id] == state)
 		{
 			return;
 		}
 	}
+
+#if defined(_DEBUG)
+	_log.Log(LOG_STATUS, "device '%s' unit %d changed state to %s", deviceId.c_str(), unit, (state) ? "on" : "off");
+#endif
+
 	m_LastSwitchState[id] = state;
 
 	unsigned char deviceIdByteArray[DEVICE_ID_SIZE]={0};
