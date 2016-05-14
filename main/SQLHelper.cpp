@@ -2349,14 +2349,14 @@ bool CSQLHelper::OpenDatabase()
 	}
 	m_bDisableEventSystem = (nValue==1);
 
-	if ((!GetPreferencesVar("1WireSensorPollPeriod", nValue)) || (nValue == 0))
+	if ((!GetPreferencesVar("OneWireSensorPollPeriod", nValue)) || (nValue == 0))
 	{
-		UpdatePreferencesVar("1WireSensorPollPeriod", 300 * 1000);
+		UpdatePreferencesVar("OneWireSensorPollPeriod", 300 * 1000);
 	}
 
-	if ((!GetPreferencesVar("1WireSwitchPollPeriod", nValue)) || (nValue == 0))
+	if ((!GetPreferencesVar("OneWireSwitchPollPeriod", nValue)) || (nValue == 0))
 	{
-		UpdatePreferencesVar("1WireSwitchPollPeriod", 100);
+		UpdatePreferencesVar("OneWireSwitchPollPeriod", 100);
 	}
 
 	if ((!GetPreferencesVar("WebTheme", sValue)) || (sValue.empty()))

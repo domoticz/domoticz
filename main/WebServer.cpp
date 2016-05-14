@@ -6684,6 +6684,9 @@ namespace http {
 			}
 #endif
 
+			m_sql.UpdatePreferencesVar("OneWireSensorPollPeriod", atoi(request::findValue(&req, "OneWireSensorPollPeriod").c_str()));
+			m_sql.UpdatePreferencesVar("OneWireSwitchPollPeriod", atoi(request::findValue(&req, "OneWireSwitchPollPeriod").c_str()));
+
 			m_notifications.LoadConfig();
 
 		}
@@ -9792,9 +9795,9 @@ namespace http {
 					if (pHardware != NULL)
 					{
 						if (
-							(pHardware->HwdType == HTYPE_RFXtrx315) || 
-							(pHardware->HwdType == HTYPE_RFXtrx433) || 
-							(pHardware->HwdType == HTYPE_RFXtrx868) || 
+							(pHardware->HwdType == HTYPE_RFXtrx315) ||
+							(pHardware->HwdType == HTYPE_RFXtrx433) ||
+							(pHardware->HwdType == HTYPE_RFXtrx868) ||
 							(pHardware->HwdType == HTYPE_RFXLAN)
 							)
 						{
@@ -11284,6 +11287,14 @@ namespace http {
 				{
 					root["WebTheme"] = sValue;
 				}
+				else if (Key == "OneWireSensorPollPeriod")
+				{
+					root["OneWireSensorPollPeriod"] = nValue;
+				}
+				else if (Key == "OneWireSwitchPollPeriod")
+				{
+					root["OneWireSwitchPollPeriod"] = nValue;
+				}
 #ifndef NOCLOUD
 				else if (Key == "MyDomoticzInstanceId") {
 					root["MyDomoticzInstanceId"] = sValue;
@@ -11296,6 +11307,11 @@ namespace http {
 				}
 				else if (Key == "MyDomoticzSubsystems") {
 					root["MyDomoticzSubsystems"] = nValue;
+				}
+#endif
+#ifdef _DEBUG
+				else {
+					_log.Log(LOG_ERROR, "Unknown preferences detected: '%s'", Key.c_str());
 				}
 #endif
 			}

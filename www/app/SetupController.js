@@ -512,11 +512,11 @@ define(['app'], function (app) {
 			  if (typeof data.DisableEventScriptSystem!= 'undefined') {
 				$("#eventsystemtable #DisableEventScriptSystem").prop('checked',data.DisableEventScriptSystem==1);
 			  }
-			  if (typeof data.1WireSensorPollPeriod!= 'undefined') {
-				$("#1wiretable #1WireSensorPollPeriod").val(data.1WireSensorPollPeriod);
+			  if (typeof data.OneWireSensorPollPeriod!= 'undefined') {
+				$("#onewiretable #OneWireSensorPollPeriod").val(data.OneWireSensorPollPeriod);
 			  }
-			  if (typeof data.1WireSwitchPollPeriod!= 'undefined') {
-				$("#1wiretable #1WireSwitchPollPeriod").val(data.1WireSwitchPollPeriod);
+			  if (typeof data.OneWireSwitchPollPeriod!= 'undefined') {
+				$("#onewiretable #OneWireSwitchPollPeriod").val(data.OneWireSwitchPollPeriod);
 			  }
 
 			  if (typeof data.FloorplanPopupDelay!= 'undefined') {
