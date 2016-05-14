@@ -1,26 +1,25 @@
 #pragma once
 
 #ifndef WIN32
-#ifdef WITH_LIBUSB
 #include "DomoticzHardware.h"
+#include "ASyncSerial.h"
 #include <iostream>
 
-class RAVEn : public CDomoticzHardwareBase
+class RAVEn : public CDomoticzHardwareBase, 
+              public AsyncSerial
 {
 public:
-	explicit RAVEn(const int ID, const std::string& port);
+	explicit RAVEn(const int ID, const std::string& devname);
 	~RAVEn(void);
 
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 private:
-	volatile bool m_stoprequested;
+    const std::string device_;
 	boost::shared_ptr<boost::thread> m_thread;
 
 	bool StartHardware();
 	bool StopHardware();
-	void Do_Work();
-	void GetSensorDetails();
+	void readCallback(const char *data, size_t len);
 };
 
-#endif //WITH_LIBUSB
 #endif //WIN32
