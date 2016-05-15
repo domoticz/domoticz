@@ -3377,9 +3377,11 @@ define(['app'], function (app) {
         {
             $.devIdx=idx;
             if(devtype=="Relay")
-                ShowNotify($.t('Hold bind button on relay...'));
+                ShowNotify($.t('Hold bind button on relay...'),2500);
+            else if (devtype == "ZoneSensor")
+                ShowNotify($.t('Binding Domoticz zone temperature sensor to controller...'),2500);
             else
-                ShowNotify($.t('Binding Domoticz outdoor temperature device to evohome controller...'));
+                ShowNotify($.t('Binding Domoticz outdoor temperature device to evohome controller...'),2500);
 
             setTimeout(function() {
                 var bNewDevice = false;
@@ -3406,9 +3408,11 @@ define(['app'], function (app) {
                     if ((bNewDevice == true) && (bIsUsed == false))
                     {
                         if(devtype=="Relay")
-                            ShowNotify($.t('Relay bound, and can be found in the devices tab!'));
+                            ShowNotify($.t('Relay bound, and can be found in the devices tab!'),2500);
+                        else if (devtype == "ZoneSensor")
+                            ShowNotify($.t('Sensor bound, and can be found in the devices tab!'),2500);
                         else
-                            ShowNotify($.t('Domoticz outdoor temperature device has been bound to evohome controller'));
+                            ShowNotify($.t('Domoticz outdoor temperature device has been bound to evohome controller'),2500);
                     }
                     else {
                         if (bIsUsed == true)
@@ -3751,6 +3755,7 @@ define(['app'], function (app) {
                         {
                             HwTypeStr+=' <span class="label label-info lcursor" onclick="BindEvohome(' + item.idx + ',\'' + item.Name + '\',\'Relay\');">Bind Relay</span>';
                             HwTypeStr+=' <span class="label label-info lcursor" onclick="BindEvohome(' + item.idx + ',\'' + item.Name + '\',\'OutdoorSensor\');">Outdoor Sensor</span>';
+                            HwTypeStr += ' <span class="label label-info lcursor" onclick="BindEvohome(' + item.idx + ',\'' + item.Name + '\',\'ZoneSensor\');">Bind Temp Sensor</span>';
                         }
                     }
                     else if (HwTypeStr.indexOf("Rego 6XX") >= 0)

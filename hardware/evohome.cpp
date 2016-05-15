@@ -88,6 +88,7 @@ CEvohome::CEvohome(const int ID, const std::string &szSerialPort) :
 	m_nSendFail=0;
 	m_nZoneCount=0;
 	m_nControllerMode=0;
+	m_MaxDeviceID = 0;
 	
 	m_iBaudRate=115200;
 	if(!szSerialPort.empty())
@@ -497,6 +498,7 @@ void CEvohome::RequestZoneState()
 	//Trying this linked to DHW heat demand instead...that won't be adequate do it here too!
 	RequestDHWState();
 	SendExternalSensor();
+	SendZoneSensor();
 }
 
 void CEvohome::RequestZoneNames()
@@ -575,6 +577,57 @@ void CEvohome::SendExternalSensor()
 		return;
 	
 	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktinf,0,GetGatewayID(),cmdExternalSensor).Add((uint8_t)0).Add(static_cast<uint16_t>(dbUV*39)).Add((uint8_t)2).Add((uint8_t)2).Add(static_cast<int16_t>(dbTemp*100.0)).Add((uint8_t)1));
+}
+
+void CEvohome::SendZoneSensor()
+{
+	unsigned int ID;
+	
+	if (GetGatewayID() == 0)
+		return;
+	double dbTemp = 0.0;
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT Max(Unit) FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) AND (Unit>=40) AND (Unit<52)", m_HwdID, (int)pTypeEvohomeZone);
+	
+	int nDevCount = 0;
+	if (result.size() > 0)
+	{
+		nDevCount = atoi(result[0][0].c_str());
+	}
+	else return;
+	for (int i = 40; i <= nDevCount; ++i)
+	{
+		result = m_sql.safe_query("SELECT DeviceID, Name  FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) AND (Unit==%d)", m_HwdID, (int)pTypeEvohomeZone, i); // Get Zone Name and DeviceID
+		if (result.size() > 0) //Check that sensor number exists - this allows for deletion
+		{
+			//std::vector<std::string> sd = result[0];
+			std::stringstream s_strid;
+			std::string SensorName = result[0][1].c_str();
+			//s_strid << std::hex << sd[0].c_str();
+			s_strid << std::hex << result[0][0].c_str();
+			s_strid >> ID;
+			result = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (Type !=%d) AND (Name=='%q')", (int)pTypeEvohomeZone, SensorName.c_str()); // Get temperature from external sensor with matching Name
+			if (result.size() == 1) 
+			{
+				std::vector<std::string> strarray;
+				StringSplit(result[0][0], ";", strarray);
+				if (strarray.size() >= 1)
+					dbTemp = atof(strarray[0].c_str());
+				Log(true, LOG_STATUS, "evohome: Send Temp Zone msg Zone: %d DeviceID: 0x%x Name:%s Temp:%f ", i, ID, SensorName.c_str(), dbTemp);
+				AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktinf, 0, ID, cmdZoneTemp).Add((uint8_t)0).Add(static_cast<int16_t>(dbTemp*100.0)));
+				// Update the dummy Temp Zone device with the new temperature
+				REVOBUF tsen;
+				memset(&tsen, 0, sizeof(REVOBUF));
+				tsen.EVOHOME2.len = sizeof(tsen.EVOHOME2) - 1;
+				tsen.EVOHOME2.type = pTypeEvohomeZone;
+				tsen.EVOHOME2.subtype = sTypeEvohomeZone;
+				tsen.EVOHOME2.zone = i;
+				tsen.EVOHOME2.temperature = dbTemp * 100;
+				RFX_SETID3(ID, tsen.EVOHOME2.id1, tsen.EVOHOME2.id2, tsen.EVOHOME2.id3);
+				sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME2, "Zone Temp", 255);
+			}
+		}
+	}
 }
 
 void CEvohome::ReadCallback(const char *data, size_t len)
@@ -804,7 +857,10 @@ int CEvohome::Bind(uint8_t nDevNo, unsigned char nDevType)//use CEvohomeID::devT
 	int nGatewayID=GetGatewayID();
 	if(nGatewayID==0)
 		return 0;
-		
+	uint8_t ID1;
+	uint8_t ID2;
+	uint8_t ID3;
+
 	if(nDevType==CEvohomeID::devRelay)//Binding a relay to the HGI80
 	{
 		boost::unique_lock<boost::mutex> lock(m_mtxBindNotify);
@@ -835,8 +891,8 @@ int CEvohome::Bind(uint8_t nDevNo, unsigned char nDevType)//use CEvohomeID::devT
 		
 		boost::system_time const timeout=boost::get_system_time() + boost::posix_time::seconds(60);//monotonic?
 		while(m_nBindID==0)
-		{
-			AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktinf,0,nGatewayID,cmdBinding).Add((uint8_t)0).Add((uint16_t)cmdExternalSensor).Add(CEvohomeID(nGatewayID)).Add((uint8_t)2).Add((uint16_t)cmdExternalSensor).Add(CEvohomeID(nGatewayID)).Add((uint8_t)0).Add((uint16_t)cmdBinding).Add(CEvohomeID(nGatewayID)));
+		{		
+			AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktinf,0,nGatewayID,cmdBinding).Add((uint8_t)0).Add((uint16_t)cmdExternalSensor).Add(CEvohomeID(nGatewayID)).Add((uint8_t)2).Add((uint16_t)cmdExternalSensor).Add(CEvohomeID(nGatewayID)).Add((uint8_t)0).Add((uint16_t)cmdBinding).Add(CEvohomeID(nGatewayID)));	
 			boost::system_time const wait=boost::get_system_time() + boost::posix_time::seconds(5);//monotonic?
 			if(!m_cndBindNotify.timed_wait(lock,wait) && boost::get_system_time()>timeout)
 				return 0;
@@ -844,7 +900,39 @@ int CEvohome::Bind(uint8_t nDevNo, unsigned char nDevType)//use CEvohomeID::devT
 		AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktinf,m_nBindID,cmdBinding).Add((uint8_t)0).Add((uint16_t)0xFFFF).Add(CEvohomeID(nGatewayID)));
 		return m_nBindID;
 	}
-	
+	else if (nDevType == CEvohomeID::devZone)//Binding the HGI80 to the evohome controller as a zone temperature sensor
+	{
+		// Check that the max Device ID includes the zone temperature sensors
+		std::vector<std::vector<std::string> > result;
+		
+		result = m_sql.safe_query("SELECT MAX(DeviceID) FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) AND (Unit>=40) AND (Unit<52)", m_HwdID, (int)pTypeEvohomeZone);
+		unsigned int ID = 0;
+		if (result.size() > 0)
+		{
+			std::stringstream s_strid; 
+			s_strid << std::hex << result[0][0].c_str();
+			s_strid >> ID;
+		}
+		if (ID > m_MaxDeviceID)
+			m_MaxDeviceID = ID + 1;
+		else
+			m_MaxDeviceID++;
+		boost::unique_lock<boost::mutex> lock(m_mtxBindNotify);
+		m_nBindID = 0;
+		m_nBindIDType = CEvohomeID::devController;
+		RFX_SETID3(m_MaxDeviceID, ID1, ID2, ID3);
+
+		boost::system_time const timeout = boost::get_system_time() + boost::posix_time::seconds(60);//monotonic?
+		while (m_nBindID == 0)
+		{
+			AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktinf, 0, nGatewayID, cmdBinding).Add((uint8_t)0).Add((uint16_t)cmdZoneTemp).Add(ID1).Add(ID2).Add(ID3).Add((uint8_t)2).Add((uint16_t)cmdZoneTemp).Add(ID1).Add(ID2).Add(ID3).Add((uint8_t)0).Add((uint16_t)cmdBinding).Add(CEvohomeID(nGatewayID)));
+			boost::system_time const wait = boost::get_system_time() + boost::posix_time::seconds(5);//monotonic?
+			if (!m_cndBindNotify.timed_wait(lock, wait) && boost::get_system_time()>timeout)
+				return 0;
+		}
+		AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktinf, m_nBindID, cmdBinding).Add((uint8_t)0).Add((uint16_t)0x30C9).Add(ID1).Add(ID2).Add(ID3));
+		return m_MaxDeviceID;
+	}
 	return 0;
 }
 
@@ -1016,6 +1104,8 @@ bool CEvohome::DecodeZoneTemp(CEvohomeMsg &msg)//0x30C9
 			Log(true,LOG_STATUS,"evohome: %s: WARNING: sensor reading with zone != 0: 0x%x - %d", tag, msg.GetID(0), msg.payload[0]);
 		}
 	}
+	if ((msg.GetID(0) > m_MaxDeviceID)) 
+		m_MaxDeviceID = msg.GetID(0);
 
 	return true;
 }
@@ -1812,6 +1902,27 @@ namespace http {
 			}
 			else if (type == "OutdoorSensor")
 				nID = pEvoHW->Bind(0, CEvohomeID::devSensor);
+			else if (type == "ZoneSensor")
+			{	
+				//get dev count
+				std::vector<std::vector<std::string> > result;
+				result = m_sql.safe_query("SELECT MAX(Unit) FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) AND (Unit>=40) AND (Unit<52)", HwdID,(int)pTypeEvohomeZone);
+				int nDevCount = 0;
+				if (result.size() > 0)
+				{
+					nDevCount = atoi(result[0][0].c_str());
+				}
+
+				if (nDevCount == 51)// Allow a maximum of 12 sensors
+				{
+					root["status"] = "ERR";
+					root["message"] = "Maximum number of Zone sensors reached";
+					return;
+				}
+				
+				nDevNo = nDevCount + 1;
+				nID = pEvoHW->Bind(nDevNo, CEvohomeID::devZone);
+			}
 			if (nID == 0)
 			{
 				root["status"] = "ERR";
@@ -1837,6 +1948,25 @@ namespace http {
 				std::string devname;
 				m_sql.UpdateValue(HwdID, devid.c_str(), nDevNo, pTypeEvohomeRelay, sTypeEvohomeRelay, 10, 255, 0, "Off", devname);
 				pEvoHW->SetRelayHeatDemand(nDevNo, 0);//initialize heat demand
+			}
+			else if (type == "ZoneSensor")
+			{
+				char ID[40];
+				sprintf(ID, "%x", nID); 
+
+				std::vector<std::vector<std::string> > result;
+				result = m_sql.safe_query("SELECT ID,DeviceID,Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", HwdID, ID);
+				if (result.size() > 0)
+				{
+					root["status"] = "ERR";
+					root["message"] = "Device already exists";
+					root["Used"] = true;
+					root["Name"] = result[0][2];
+					return;
+				}
+
+				std::string devname; // = "Zone Temp";
+				m_sql.UpdateValue(HwdID, ID, nDevNo, pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, "0.0;0.0;Auto", devname);
 			}
 			root["status"] = "OK";
 			root["title"] = "BindEvohome";

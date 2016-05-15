@@ -5904,7 +5904,14 @@ void MainWorker::decode_evohome2(const int HwdID, const _eHardwareTypes HwdType,
 
 	//Get Device details
 	std::vector<std::vector<std::string> > result;
-	if(pEvo->EVOHOME2.zone)//if unit number is available the id3 will be the controller device id
+	if (pEvo->EVOHOME2.type == pTypeEvohomeZone && pEvo->EVOHOME2.zone > 12) //Allow for additional Zone Temp devices which require DeviceID
+	{
+		result = m_sql.safe_query(
+			"SELECT HardwareID, DeviceID,Unit,Type,SubType,sValue,BatteryLevel "
+			"FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == '%x') AND (Type==%d)",
+			HwdID, (int)RFX_GETID3(pEvo->EVOHOME2.id1, pEvo->EVOHOME2.id2, pEvo->EVOHOME2.id3), (int)pEvo->EVOHOME2.type);
+	}
+	else if (pEvo->EVOHOME2.zone)//if unit number is available the id3 will be the controller device id
 	{
 		result = m_sql.safe_query(
 			"SELECT HardwareID, DeviceID,Unit,Type,SubType,sValue,BatteryLevel "
