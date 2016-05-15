@@ -1,0 +1,7 @@
+checkAllIssues=true
+checkForce=true
+com.googlecode.cppcheclipse.ui.SettingsPreferencePage_useParentScope=false
+eclipse.preferences.version=1
+languageStandardC=c99
+languageStandardCpp=c++11
+targetPlatform=unix64
