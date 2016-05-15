@@ -13,7 +13,7 @@
 #include <stdint.h>
 
 RAVEn::RAVEn(const int ID, const std::string& devname)
-: device_(devname)
+: device_(devname), wptr_(buffer_), currUsage_(0), totalUsage_(0)
 {
     m_HwdID = ID;
 }
@@ -61,34 +61,73 @@ bool RAVEn::StopHardware()
     return true;
 }
 
-void RAVEn::readCallback(const char *data, size_t len)
+void RAVEn::readCallback(const char *indata, size_t inlen)
 {
     boost::lock_guard<boost::mutex> l(readQueueMutex);
     if (!m_bEnableReceive)
         return; //receiving not enabled
 
-#ifdef _DEBUG
-        _log.Log(LOG_INFO, "RAVEn::readCallback got %d: %s", len, data)
-#endif
-    TiXmlDocument doc;
-//FIXME: Null terminated?
-    if (doc.Parse(data))
+    const char* data;
+    for(data = indata; data < indata+inlen; data++)
     {
-        _log.Log(LOG_ERROR, "RAVEn: Not enough data received: ", data);
+        if(*data != '\0')
+            break;
+    }
+    if(data == (indata+inlen))
+    {
+        _log.Log(LOG_ERROR, "RAVEn::readCallback only got NULLs (%d of them)", inlen);
         return;
+    }
+    size_t len = (indata+inlen) - data;
+#ifdef _DEBUG
+    _log.Log(LOG_NORM, "RAVEn::readCallback got %d, have %d.  Incoming: %s, Current: %s", len, wptr_-buffer_, data, buffer_);
+#endif
+    if(wptr_+len > buffer_+MAX_BUFFER_LEN)
+    {
+        _log.Log(LOG_ERROR, "Exceeded buffer space...resetting buffer");
+        wptr_ = buffer_;
+    }
+
+    memcpy(wptr_, data, len);
+    wptr_ += len;
+    *wptr_ = '\0';
+
+    TiXmlDocument doc;
+    const char* endPtr = doc.Parse(buffer_);
+    if (!endPtr)
+    {
+        _log.Log(LOG_ERROR, "RAVEn: Not enough data received (%d): %s", len, data);
+        return;
+    }
+    else
+    {
+#ifdef _DEBUG
+        _log.Log(LOG_NORM, "RAVEn::shifting buffer after parsing %d with %d bytes remaining: %s", endPtr - buffer_, wptr_ - endPtr, endPtr);
+#endif
+        memmove(buffer_, endPtr, wptr_ - endPtr);
+        wptr_ = buffer_ + (wptr_ - endPtr);
     }
 
     TiXmlElement *pRoot;
 
     pRoot = doc.FirstChildElement("InstantaneousDemand");
-    if (!pRoot)
+    bool updated=false;
+    if (pRoot)
     {
-        _log.Log(LOG_ERROR, "RAVEn: Unknown node");
-        return;
+        currUsage_ = 1000*double(strtoul(pRoot->FirstChildElement("Demand")->GetText(), NULL, 16))/strtoul(pRoot->FirstChildElement("Divisor")->GetText(), NULL, 16);
+        updated = true;
     }
-    double currUsage = double(strtoul(pRoot->FirstChildElement("Demand")->GetText(), NULL, 16))/strtoul(pRoot->FirstChildElement("Divisor")->GetText(), NULL, 16);
-    SendKwhMeter(CDomoticzHardwareBase::m_HwdID, 1, 255, currUsage, 5, "Power Meter");
+    pRoot = doc.FirstChildElement("CurrentSummationDelivered");
+    if(pRoot)
+    {
+        totalUsage_ = double(strtoul(pRoot->FirstChildElement("SummationDelivered")->GetText(), NULL, 16))/strtoul(pRoot->FirstChildElement("Divisor")->GetText(), NULL, 16);
+        updated = true;
+    }
 
+    if(updated)
+        SendKwhMeter(CDomoticzHardwareBase::m_HwdID, 1, 255, currUsage_, totalUsage_, "Power Meter");
+    else
+        _log.Log(LOG_ERROR, "RAVEn: Unknown node");
 }
 
 bool RAVEn::WriteToHardware(const char *pdata, const unsigned char length)
