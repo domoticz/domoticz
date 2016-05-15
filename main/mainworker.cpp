@@ -76,6 +76,7 @@
 #include "../hardware/Thermosmart.h"
 #include "../hardware/Kodi.h"
 #include "../hardware/Netatmo.h"
+#include "../hardware/HttpPoller.h"
 #include "../hardware/AnnaThermostat.h"
 #include "../hardware/Winddelen.h"
 #include "../hardware/SatelIntegra.h"
@@ -90,6 +91,7 @@
 #include "../hardware/OpenWebNet.h"
 #include "../hardware/AtagOne.h"
 #include "../hardware/Sterbox.h"
+#include "../hardware/Fitbit.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -817,6 +819,9 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_Wunderground:
 		pHardware = new CWunderground(ID,Username,Password);
 		break;
+	case HTYPE_HTTPPOLLER:
+		pHardware = new CHttpPoller(ID, Username, Password, Address, Filename, Port);
+		break;
 	case HTYPE_ForecastIO:
 		pHardware = new CForecastIO(ID,Username,Password);
 		break;
@@ -825,6 +830,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_Netatmo:
 		pHardware = new CNetatmo(ID,Username,Password);
+		break;
+	case HTYPE_FITBIT:
+		pHardware = new CFitbit(ID, Username, Password);
 		break;
 	case HTYPE_SBFSpot:
 		pHardware = new CSBFSpot(ID,Username);
@@ -2356,31 +2364,40 @@ void MainWorker::decode_InterfaceMessage(const int HwdID, const _eHardwareTypes 
 						else
 							FWType = 3; //Ext
 					}
-
 					sprintf(szTmp,"Firmware version  = %d", FWVersion);
 					WriteMessage(szTmp);
 					WriteMessage( "Firmware type     = ",false);
 					switch (FWType)
 					{
 					case 0:
-						WriteMessage("Type1 Receive only");
+						strcpy(szTmp, "Type1 RX");
 						break;
 					case 1:
-						WriteMessage("Type1");
+						strcpy(szTmp, "Type1");
 						break;
 					case 2:
-						WriteMessage("Type2");
+						strcpy(szTmp, "Type2");
 						break;
 					case 3:
-						WriteMessage("Ext");
+						strcpy(szTmp, "Ext");
 						break;
 					case 4:
-						WriteMessage("Ext2");
+						strcpy(szTmp, "Ext2");
 						break;
 					default:
-						WriteMessage("?");
+						strcpy(szTmp, "?");
 						break;
 					}
+					WriteMessage(szTmp);
+
+					CRFXBase *pMyHardware = reinterpret_cast<CRFXBase*>(GetHardware(HwdID));
+					if (pMyHardware)
+					{
+						std::stringstream sstr;
+						sstr << szTmp << "/" << FWVersion;
+						pMyHardware->m_Version = sstr.str();
+					}
+
 
 					sprintf(szTmp,"Hardware version  = %d.%d",pResponse->IRESPONSE.msg7,pResponse->IRESPONSE.msg8);
 					WriteMessage(szTmp);
@@ -9469,7 +9486,8 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 			break;
 		case sTypeZWaveThermostatMode:
 			WriteMessage("subtype       = Thermostat Mode");
-			sprintf(szTmp, "Mode = %d (%s)", pMeter->intval2, ZWave_Thermostat_Modes[pMeter->intval2]);
+			//sprintf(szTmp, "Mode = %d (%s)", pMeter->intval2, ZWave_Thermostat_Modes[pMeter->intval2]);
+			sprintf(szTmp, "Mode = %d", pMeter->intval2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeZWaveThermostatFanMode:
@@ -11177,6 +11195,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		(pHardware->HwdType == HTYPE_EVOHOME_SCRIPT) ||
 		(pHardware->HwdType == HTYPE_EVOHOME_SERIAL) ||
 		(pHardware->HwdType == HTYPE_Netatmo) ||
+		(pHardware->HwdType == HTYPE_FITBIT) ||
 		(pHardware->HwdType == HTYPE_NefitEastLAN)
 		)
 	{
@@ -12057,6 +12076,24 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 
 	if (pHardware)
 	{
+		std::vector<std::vector<std::string> > result;
+		result = m_sql.safe_query(
+			"SELECT ID,Name FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",
+			HardwareID, DeviceID.c_str(), unit, devType, subType);
+
+		unsigned long long dID = 0;
+		std::string dName = "";
+
+		if (!result.empty())
+		{
+			std::vector<std::string> sd = result[0];
+			std::stringstream s_strid;
+			s_strid << sd[0];
+			s_strid >> dID;
+			unsigned long long dID = 0;
+			std::string dName = sd[1];
+		}
+
 		if (devType == pTypeLighting2)
 		{
 			//Update as Lighting 2
@@ -12092,6 +12129,16 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 			{
 				_tGeneralDevice gDevice;
 				gDevice.subtype = sTypePercentage;
+				gDevice.id = unit;
+				gDevice.floatval1 = (float)atof(sValue.c_str());
+				gDevice.intval1 = static_cast<int>(ID);
+				DecodeRXMessage(pHardware, (const unsigned char *)&gDevice, NULL, batterylevel);
+				return true;
+			}
+			else if (subType == sTypeVoltage)
+			{
+				_tGeneralDevice gDevice;
+				gDevice.subtype = sTypeVoltage;
 				gDevice.id = unit;
 				gDevice.floatval1 = (float)atof(sValue.c_str());
 				gDevice.intval1 = static_cast<int>(ID);
@@ -12135,20 +12182,13 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 		}
 		else if ((devType == pTypeAirQuality) && (subType == sTypeVoltcraft))
 		{
-			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query(
-				"SELECT ID,Name FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",
-				HardwareID, DeviceID.c_str(), unit, devType, subType);
-			if (!result.empty())
-			{
-				std::vector<std::string> sd = result[0];
-				unsigned long long dID = 0;
-				std::stringstream s_strid;
-				s_strid << sd[0];
-				s_strid >> dID;
-
-				m_notifications.CheckAndHandleNotification(dID, sd[1], devType, subType, NTYPE_USAGE, (const float)nValue);
-			}
+			if (dID != 0)
+				m_notifications.CheckAndHandleNotification(dID, dName, devType, subType, NTYPE_USAGE, (const float)nValue);
+		}
+		else if (devType == pTypeTEMP)
+		{
+			if (dID != 0)
+				m_notifications.CheckAndHandleNotification(dID, dName, devType, subType, NTYPE_TEMPERATURE, (float)atof(sValue.c_str()));
 		}
 	}
 
@@ -12165,12 +12205,12 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 		sValue.c_str(),
 		devname,
 		false
-		);
+	);
 	if (devidx == -1)
 		return false;
 
 	// signal connected devices (MQTT, fibaro, http push ... ) about the web update
-	if ((pHardware)&&(parseTrigger))
+	if ((pHardware) && (parseTrigger))
 	{
 		sOnDeviceReceived(pHardware->m_HwdID, devidx, devname, NULL);
 	}

@@ -3,9 +3,9 @@
 #include <deque>
 #include <iostream>
 #include "ASyncTCP.h"
-#include "DomoticzHardware.h"
+#include "RFXBase.h"
 
-class RFXComTCP : public CDomoticzHardwareBase, ASyncTCP
+class RFXComTCP : public CRFXBase, ASyncTCP
 {
 public:
 	RFXComTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort);

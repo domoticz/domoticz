@@ -153,6 +153,8 @@ enum _eHardwareTypes {
 	HTYPE_RaspberryHTU21D,		//71
 	HTYPE_AtagOne,				//72
 	HTYPE_Sterbox,				//73
+	HTYPE_HTTPPOLLER,			//74
+	HTYPE_FITBIT,				//75
 
 	HTYPE_END
 };
@@ -208,9 +210,8 @@ const char *Get_Moisture_Desc(const int moisture);
 const char *Get_Alert_Desc(const int level);
 const char *Media_Player_States(const _eMediaStatus Status);
 const char *ZWave_Clock_Days(const unsigned char Day);
-extern const char *ZWave_Thermostat_Modes[];
 extern const char *ZWave_Thermostat_Fan_Modes[];
-int Lookup_ZWave_Thermostat_Modes(const std::string &sMode);
+int Lookup_ZWave_Thermostat_Modes(const std::vector<std::string> &Modes, const std::string &sMode);
 int Lookup_ZWave_Thermostat_Fan_Modes(const std::string &sMode);
 
 void GetLightStatus(
