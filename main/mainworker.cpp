@@ -804,7 +804,6 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_Sterbox:
 		//LAN
 		pHardware = new CSterbox(ID, Address, Port, Username, Password);
-		break;		
 #ifndef WIN32
 	case HTYPE_TE923:
 		//TE923 compatible weather station
@@ -2406,7 +2405,6 @@ void MainWorker::decode_InterfaceMessage(const int HwdID, const _eHardwareTypes 
 						sstr << szTmp << "/" << FWVersion;
 						pMyHardware->m_Version = sstr.str();
 					}
-
 
 					sprintf(szTmp,"Hardware version  = %u.%u",pResponse->IRESPONSE.msg7,pResponse->IRESPONSE.msg8);
 					WriteMessage(szTmp);
@@ -8061,7 +8059,7 @@ void MainWorker::decode_Energy(const int HwdID, const _eHardwareTypes HwdType, c
 	unsigned char devType=pTypeENERGY;
 	unsigned char subType=pResponse->ENERGY.subtype;
 	std::string ID;
-	sprintf(szTmp,"%d",(pResponse->ENERGY.id1 * 256u) + pResponse->ENERGY.id2);
+	sprintf(szTmp,"%u",(pResponse->ENERGY.id1 * 256u) + pResponse->ENERGY.id2);
 	ID=szTmp;
 	unsigned char Unit=0;
 	unsigned char cmnd=0;
@@ -8125,7 +8123,7 @@ void MainWorker::decode_Power(const int HwdID, const _eHardwareTypes HwdType, co
 	unsigned char devType=pTypePOWER;
 	unsigned char subType=pResponse->POWER.subtype;
 	std::string ID;
-	sprintf(szTmp,"%d",(pResponse->POWER.id1 * 256u) + pResponse->POWER.id2);
+	sprintf(szTmp,"%u",(pResponse->POWER.id1 * 256u) + pResponse->POWER.id2);
 	ID=szTmp;
 	unsigned char Unit=0;
 	unsigned char cmnd=0;
@@ -8211,7 +8209,7 @@ void MainWorker::decode_Current_Energy(const int HwdID, const _eHardwareTypes Hw
 	unsigned char devType=pTypeCURRENTENERGY;
 	unsigned char subType=pResponse->CURRENT_ENERGY.subtype;
 	std::string ID;
-	sprintf(szTmp,"%d",(pResponse->CURRENT_ENERGY.id1 * 256u) + pResponse->CURRENT_ENERGY.id2);
+	sprintf(szTmp,"%u",(pResponse->CURRENT_ENERGY.id1 * 256u) + pResponse->CURRENT_ENERGY.id2);
 	ID=szTmp;
 	unsigned char Unit=0;
 	unsigned char cmnd=0;
@@ -8583,7 +8581,7 @@ void MainWorker::decode_RFXMeter(const int HwdID, const _eHardwareTypes HwdType,
 	if (subType==sTypeRFXMeterCount)
 	{
 		std::string ID;
-		sprintf(szTmp,"%d",(pResponse->RFXMETER.id1 * 256u) + pResponse->RFXMETER.id2);
+		sprintf(szTmp,"%u",(pResponse->RFXMETER.id1 * 256u) + pResponse->RFXMETER.id2);
 		ID=szTmp;
 		unsigned char Unit=0;
 		unsigned char cmnd=0;
@@ -9573,7 +9571,7 @@ void MainWorker::decode_BBQ(const int HwdID, const _eHardwareTypes HwdType, cons
 	unsigned char devType=pTypeBBQ;
 	unsigned char subType=pResponse->BBQ.subtype;
 
-	sprintf(szTmp,"%d",1);//(pResponse->BBQ.id1 * 256u) + pResponse->BBQ.id2); //this because every time you turn the device on, you get a new ID
+	sprintf(szTmp,"%u",1);//(pResponse->BBQ.id1 * 256u) + pResponse->BBQ.id2); //this because every time you turn the device on, you get a new ID
 	std::string ID=szTmp;
 
 	unsigned char Unit=pResponse->BBQ.id2;
