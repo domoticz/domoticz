@@ -617,14 +617,14 @@ ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 add_custom_target(cppcheck-xml
   COMMAND cppcheck --enable=warning,performance,portability,information,missingInclude,unusedFunction --std=c++11 --max-configs=1000
     -i ${CMAKE_SOURCE_DIR}/sqlite -i ${CMAKE_SOURCE_DIR}/tinyxpath -i ${CMAKE_SOURCE_DIR}/libusb -i ${CMAKE_SOURCE_DIR}/zip -i ${CMAKE_SOURCE_DIR}/zlib
-    -i ${CMAKE_SOURCE_DIR}/tinyxpath
+    -i ${CMAKE_SOURCE_DIR}/tinyxpath -i ${CMAKE_SOURCE_DIR}/stdafx.h.gch
     --xml --xml-version=2 ${CMAKE_SOURCE_DIR} 2>cppcheck.xml
   BYPRODUCTS cppcheck.xml)
 
 add_custom_target(cppcheck
   COMMAND cppcheck --enable=warning,performance,portability,information,missingInclude,unusedFunction --std=c++11 --max-configs=1000
     -i ${CMAKE_SOURCE_DIR}/sqlite -i ${CMAKE_SOURCE_DIR}/tinyxpath -i ${CMAKE_SOURCE_DIR}/libusb -i ${CMAKE_SOURCE_DIR}/zip -i ${CMAKE_SOURCE_DIR}/zlib
-    -i ${CMAKE_SOURCE_DIR}/tinyxpath
+    -i ${CMAKE_SOURCE_DIR}/tinyxpath -i ${CMAKE_SOURCE_DIR}/stdafx.h.gch
     ${CMAKE_SOURCE_DIR} 2>cppcheck.txt
   BYPRODUCTS cppcheck.txt)
 
