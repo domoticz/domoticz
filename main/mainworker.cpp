@@ -1576,7 +1576,7 @@ unsigned long long MainWorker::PerformRealActionFromDomoticzClient(const unsigne
 
 	if (devType==pTypeLighting1)
 	{
-		sprintf(szTmp,"%d", pResponse->LIGHTING1.housecode);
+		sprintf(szTmp,"%u", pResponse->LIGHTING1.housecode);
 		ID = szTmp;
 		Unit=pResponse->LIGHTING1.unitcode;
 	}
@@ -1621,7 +1621,7 @@ unsigned long long MainWorker::PerformRealActionFromDomoticzClient(const unsigne
 	}
 	else if (devType==pTypeCurtain)
 	{
-		sprintf(szTmp,"%d", pResponse->CURTAIN1.housecode);
+		sprintf(szTmp,"%u", pResponse->CURTAIN1.housecode);
 		ID = szTmp;
 		Unit=pResponse->CURTAIN1.unitcode;
 	}
@@ -2256,7 +2256,7 @@ void MainWorker::decode_InterfaceMessage(const int HwdID, const _eHardwareTypes 
 		{
 			int mlen = pResponse->IRESPONSE.packetlength;
 			WriteMessage("subtype           = Interface Response");
-			sprintf(szTmp,"Sequence nbr      = %d",pResponse->IRESPONSE.seqnbr);
+			sprintf(szTmp,"Sequence nbr      = %u",pResponse->IRESPONSE.seqnbr);
 			WriteMessage(szTmp);
 			switch (pResponse->IRESPONSE.cmnd)
 			{
@@ -2408,7 +2408,7 @@ void MainWorker::decode_InterfaceMessage(const int HwdID, const _eHardwareTypes 
 					}
 
 
-					sprintf(szTmp,"Hardware version  = %d.%d",pResponse->IRESPONSE.msg7,pResponse->IRESPONSE.msg8);
+					sprintf(szTmp,"Hardware version  = %u.%u",pResponse->IRESPONSE.msg7,pResponse->IRESPONSE.msg8);
 					WriteMessage(szTmp);
 
 					if (pResponse->IRESPONSE.UNDECODEDenabled)
@@ -2551,23 +2551,23 @@ void MainWorker::decode_InterfaceMessage(const int HwdID, const _eHardwareTypes 
 		break;
 	case sTypeUnknownRFYremote:
 		WriteMessage("subtype           = Unknown RFY remote! Use the Program command to create a remote in the RFXtrx433Ext");
-		sprintf(szTmp,"Sequence nbr      = %d", pResponse->IRESPONSE.seqnbr);
+		sprintf(szTmp,"Sequence nbr      = %u", pResponse->IRESPONSE.seqnbr);
 		WriteMessage(szTmp);
 		break;
 	case sTypeExtError:
 		WriteMessage("subtype           = No RFXtrx433E hardware detected");
-		sprintf(szTmp,"Sequence nbr      = %d", pResponse->IRESPONSE.seqnbr);
+		sprintf(szTmp,"Sequence nbr      = %u", pResponse->IRESPONSE.seqnbr);
 		WriteMessage(szTmp);
 		break;
 	case sTypeRFYremoteList:
 		if ((pResponse->ICMND.xmitpwr == 0) && (pResponse->ICMND.msg3 == 0) && (pResponse->ICMND.msg4 == 0) && (pResponse->ICMND.msg5 == 0))
 		{
-			sprintf(szTmp, "subtype           = RFY remote: %d is empty", pResponse->ICMND.freqsel);
+			sprintf(szTmp, "subtype           = RFY remote: %u is empty", pResponse->ICMND.freqsel);
 			WriteMessage(szTmp);
 		}
 		else
 		{
-			sprintf(szTmp, "subtype           = RFY remote: %d, ID: %02d%02d%02d, unitnbr: %d",
+			sprintf(szTmp, "subtype           = RFY remote: %u, ID: %02u%02u%02u, unitnbr: %u",
 				pResponse->ICMND.freqsel,
 				pResponse->ICMND.xmitpwr,
 				pResponse->ICMND.msg3,
@@ -2579,12 +2579,12 @@ void MainWorker::decode_InterfaceMessage(const int HwdID, const _eHardwareTypes 
 	case sTypeASAremoteList:
 		if ((pResponse->ICMND.xmitpwr == 0) && (pResponse->ICMND.msg3 == 0) && (pResponse->ICMND.msg4 == 0) && (pResponse->ICMND.msg5 == 0))
 		{
-			sprintf(szTmp, "subtype           = ASA remote: %d is empty", pResponse->ICMND.freqsel);
+			sprintf(szTmp, "subtype           = ASA remote: %u is empty", pResponse->ICMND.freqsel);
 			WriteMessage(szTmp);
 		}
 		else
 		{
-			sprintf(szTmp, "subtype           = ASA remote: %d, ID: %02d%02d%02d, unitnbr: %d",
+			sprintf(szTmp, "subtype           = ASA remote: %u, ID: %02u%02u%02u, unitnbr: %u",
 				pResponse->ICMND.freqsel,
 				pResponse->ICMND.xmitpwr,
 				pResponse->ICMND.msg3,
@@ -2600,9 +2600,9 @@ void MainWorker::decode_InterfaceMessage(const int HwdID, const _eHardwareTypes 
 		}
 		else
 		{
-			sprintf(szTmp, "subtype          = Wrong command received from application (%d)", pResponse->IRESPONSE.cmnd);
+			sprintf(szTmp, "subtype          = Wrong command received from application (%u)", pResponse->IRESPONSE.cmnd);
 			WriteMessage(szTmp);
-			sprintf(szTmp, "Sequence nbr      = %d", pResponse->IRESPONSE.seqnbr);
+			sprintf(szTmp, "Sequence nbr      = %u", pResponse->IRESPONSE.seqnbr);
 			WriteMessage(szTmp);
 		}
 		break;
@@ -2619,7 +2619,7 @@ void MainWorker::decode_InterfaceControl(const int HwdID, const _eHardwareTypes 
 	{
 	case sTypeInterfaceCommand:
 		WriteMessage("subtype           = Interface Command");
-		sprintf(szTmp, "Sequence nbr      = %d", pResponse->IRESPONSE.seqnbr);
+		sprintf(szTmp, "Sequence nbr      = %u", pResponse->IRESPONSE.seqnbr);
 		WriteMessage(szTmp);
 		switch (pResponse->IRESPONSE.cmnd)
 		{
@@ -2789,7 +2789,7 @@ void MainWorker::decode_Rain(const int HwdID, const _eHardwareTypes HwdType, con
 	unsigned char devType=pTypeRAIN;
 	unsigned char subType=pResponse->RAIN.subtype;
 	std::string ID;
-	sprintf(szTmp,"%d",(pResponse->RAIN.id1 * 256) + pResponse->RAIN.id2);
+	sprintf(szTmp,"%u",(pResponse->RAIN.id1 * 256u) + pResponse->RAIN.id2);
 	ID=szTmp;
 	unsigned char Unit=0;
 	unsigned char cmnd=0;
@@ -2836,7 +2836,7 @@ void MainWorker::decode_Rain(const int HwdID, const _eHardwareTypes HwdType, con
 			break;
 		}
 
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->RAIN.seqnbr);
+		sprintf(szTmp,"Sequence nbr  = %u", pResponse->RAIN.seqnbr);
 		WriteMessage(szTmp);
 
 		sprintf(szTmp,"ID            = %s", ID.c_str());
@@ -2855,7 +2855,7 @@ void MainWorker::decode_Rain(const int HwdID, const _eHardwareTypes HwdType, con
 
 		sprintf(szTmp,"Total rain    = %.1f mm", TotalRain);
 		WriteMessage(szTmp);
-		sprintf(szTmp,"Signal level  = %d", pResponse->RAIN.rssi);
+		sprintf(szTmp,"Signal level  = %u", pResponse->RAIN.rssi);
 		WriteMessage(szTmp);
 
 		decode_BateryLevel(pResponse->RAIN.subtype==sTypeRAIN1, pResponse->RAIN.battery_level & 0x0F);
@@ -3049,7 +3049,7 @@ void MainWorker::decode_Wind(const int HwdID, const _eHardwareTypes HwdType, con
 			break;
 		}
 
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->WIND.seqnbr);
+		sprintf(szTmp,"Sequence nbr  = %u", pResponse->WIND.seqnbr);
 		WriteMessage(szTmp);
 		sprintf(szTmp,"ID            = %s", ID.c_str());
 		WriteMessage(szTmp);
@@ -3081,7 +3081,7 @@ void MainWorker::decode_Wind(const int HwdID, const _eHardwareTypes HwdType, con
 			sprintf(szTmp,"Chill         = %.1f C", chill);
 		}
 
-		sprintf(szTmp,"Signal level  = %d", pResponse->WIND.rssi);
+		sprintf(szTmp,"Signal level  = %u", pResponse->WIND.rssi);
 		WriteMessage(szTmp);
 
 		decode_BateryLevel(pResponse->WIND.subtype==sTypeWIND3, pResponse->WIND.battery_level & 0x0F);
@@ -3095,7 +3095,7 @@ void MainWorker::decode_Temp(const int HwdID, const _eHardwareTypes HwdType, con
 	char szTmp[100];
 	unsigned char devType=pTypeTEMP;
 	unsigned char subType=pResponse->TEMP.subtype;
-	sprintf(szTmp,"%d",(pResponse->TEMP.id1 * 256) + pResponse->TEMP.id2);
+	sprintf(szTmp,"%u",(pResponse->TEMP.id1 * 256u) + pResponse->TEMP.id2);
 	std::string ID=szTmp;
 	unsigned char Unit=pResponse->TEMP.id2;
 
@@ -3183,12 +3183,12 @@ void MainWorker::decode_Temp(const int HwdID, const _eHardwareTypes HwdType, con
 		{
 		case sTypeTEMP1:
 			WriteMessage("subtype       = TEMP1 - THR128/138, THC138");
-			sprintf(szTmp,"                channel %d" , pResponse->TEMP.id2);
+			sprintf(szTmp,"                channel %u" , pResponse->TEMP.id2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeTEMP2:
 			WriteMessage("subtype       = TEMP2 - THC238/268,THN132,THWR288,THRN122,THN122,AW129/131");
-			sprintf(szTmp,"                channel %d" , pResponse->TEMP.id2);
+			sprintf(szTmp,"                channel %u" , pResponse->TEMP.id2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeTEMP3:
@@ -3196,7 +3196,7 @@ void MainWorker::decode_Temp(const int HwdID, const _eHardwareTypes HwdType, con
 			break;
 		case sTypeTEMP4:
 			WriteMessage("subtype       = TEMP4 - RTHN318");
-			sprintf(szTmp,"                channel %d" , pResponse->TEMP.id2);
+			sprintf(szTmp,"                channel %u" , pResponse->TEMP.id2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeTEMP5:
@@ -3232,15 +3232,15 @@ void MainWorker::decode_Temp(const int HwdID, const _eHardwareTypes HwdType, con
 			break;
 		}
 
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->TEMP.seqnbr);
+		sprintf(szTmp,"Sequence nbr  = %u", pResponse->TEMP.seqnbr);
 		WriteMessage(szTmp);
-		sprintf(szTmp,"ID            = %d", (pResponse->TEMP.id1 * 256) + pResponse->TEMP.id2);
+		sprintf(szTmp,"ID            = %u", (pResponse->TEMP.id1 * 256u) + pResponse->TEMP.id2);
 		WriteMessage(szTmp);
 
 		sprintf(szTmp,"Temperature   = %.1f C", temp);
 		WriteMessage(szTmp);
 
-		sprintf(szTmp,"Signal level  = %d", pResponse->TEMP.rssi);
+		sprintf(szTmp,"Signal level  = %u", pResponse->TEMP.rssi);
 		WriteMessage(szTmp);
 
 		if ((pResponse->TEMP.battery_level &0x0F) == 0)
@@ -3257,7 +3257,7 @@ void MainWorker::decode_Hum(const int HwdID, const _eHardwareTypes HwdType, cons
 	char szTmp[100];
 	unsigned char devType=pTypeHUM;
 	unsigned char subType=pResponse->HUM.subtype;
-	sprintf(szTmp,"%d",(pResponse->HUM.id1 * 256) + pResponse->HUM.id2);
+	sprintf(szTmp,"%u",(pResponse->HUM.id1 * 256u) + pResponse->HUM.id2);
 	std::string ID=szTmp;
 	unsigned char Unit=1;
 
@@ -3283,7 +3283,7 @@ void MainWorker::decode_Hum(const int HwdID, const _eHardwareTypes HwdType, cons
 		return;
 	}
 
-	sprintf(szTmp,"%d",pResponse->HUM.humidity_status);
+	sprintf(szTmp,"%u",pResponse->HUM.humidity_status);
 	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,humidity,szTmp, procResult.DeviceName);
 	if (DevRowIdx == -1)
 		return;
@@ -3306,7 +3306,7 @@ void MainWorker::decode_Hum(const int HwdID, const _eHardwareTypes HwdType, cons
 			float AddjMulti=1.0f;
 			m_sql.GetAddjustment(HwdID, ID.c_str(),2,pTypeTEMP_HUM,sTypeTH_LC_TC,AddjValue,AddjMulti);
 			temp+=AddjValue;
-			sprintf(szTmp,"%.1f;%d;%d",temp,humidity,pResponse->HUM.humidity_status);
+			sprintf(szTmp,"%.1f;%d;%u",temp,humidity,pResponse->HUM.humidity_status);
 			DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),2,pTypeTEMP_HUM,sTypeTH_LC_TC,SignalLevel,BatteryLevel,0,szTmp, procResult.DeviceName);
 			m_notifications.CheckAndHandleTempHumidityNotification(DevRowIdx, procResult.DeviceName, temp, humidity, true, true);
 			float dewpoint=(float)CalculateDewPoint(temp,humidity);
@@ -3334,12 +3334,12 @@ void MainWorker::decode_Hum(const int HwdID, const _eHardwareTypes HwdType, cons
 			break;
 		}
 
-		sprintf(szTmp,"Sequence nbr  = %d" ,pResponse->HUM.seqnbr);
+		sprintf(szTmp,"Sequence nbr  = %u" ,pResponse->HUM.seqnbr);
 		WriteMessage(szTmp);
-		sprintf(szTmp,"ID            = %d", (pResponse->HUM.id1 * 256) + pResponse->HUM.id2);
+		sprintf(szTmp,"ID            = %u", (pResponse->HUM.id1 * 256u) + pResponse->HUM.id2);
 		WriteMessage(szTmp);
 
-		sprintf(szTmp,"Humidity      = %d %%" ,pResponse->HUM.humidity);
+		sprintf(szTmp,"Humidity      = %u %%" ,pResponse->HUM.humidity);
 		WriteMessage(szTmp);
 
 		switch(pResponse->HUM.humidity_status)
@@ -3358,7 +3358,7 @@ void MainWorker::decode_Hum(const int HwdID, const _eHardwareTypes HwdType, cons
 			break;
 		}
 
-		sprintf(szTmp, "Signal level  = %d", pResponse->HUM.rssi);
+		sprintf(szTmp, "Signal level  = %u", pResponse->HUM.rssi);
 		WriteMessage(szTmp);
 
 		if ((pResponse->HUM.battery_level & 0x0F) == 0)
@@ -3376,7 +3376,7 @@ void MainWorker::decode_TempHum(const int HwdID, const _eHardwareTypes HwdType, 
 	unsigned char devType=pTypeTEMP_HUM;
 	unsigned char subType=pResponse->TEMP_HUM.subtype;
 	std::string ID;
-	sprintf(szTmp,"%d",(pResponse->TEMP_HUM.id1 * 256) + pResponse->TEMP_HUM.id2);
+	sprintf(szTmp,"%u",(pResponse->TEMP_HUM.id1 * 256u) + pResponse->TEMP_HUM.id2);
 	ID=szTmp;
 	unsigned char Unit=0;
 
@@ -3473,22 +3473,22 @@ void MainWorker::decode_TempHum(const int HwdID, const _eHardwareTypes HwdType, 
 		{
 		case sTypeTH1:
 			WriteMessage("subtype       = TH1 - THGN122/123/132,THGR122/228/238/268");
-			sprintf(szTmp,"                channel %d", pResponse->TEMP_HUM.id2);
+			sprintf(szTmp,"                channel %u", pResponse->TEMP_HUM.id2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeTH2:
 			WriteMessage("subtype       = TH2 - THGR810,THGN800");
-			sprintf(szTmp,"                channel %d", pResponse->TEMP_HUM.id2);
+			sprintf(szTmp,"                channel %u", pResponse->TEMP_HUM.id2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeTH3:
 			WriteMessage("subtype       = TH3 - RTGR328");
-			sprintf(szTmp,"                channel %d", pResponse->TEMP_HUM.id2);
+			sprintf(szTmp,"                channel %u", pResponse->TEMP_HUM.id2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeTH4:
 			WriteMessage("subtype       = TH4 - THGR328");
-			sprintf(szTmp,"                channel %d", pResponse->TEMP_HUM.id2);
+			sprintf(szTmp,"                channel %u", pResponse->TEMP_HUM.id2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeTH5:
@@ -3496,7 +3496,7 @@ void MainWorker::decode_TempHum(const int HwdID, const _eHardwareTypes HwdType, 
 			break;
 		case sTypeTH6:
 			WriteMessage("subtype       = TH6 - THGR918/928,THGRN228,THGN500");
-			sprintf(szTmp,"                channel %d", pResponse->TEMP_HUM.id2);
+			sprintf(szTmp,"                channel %u", pResponse->TEMP_HUM.id2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeTH7:
@@ -3516,7 +3516,7 @@ void MainWorker::decode_TempHum(const int HwdID, const _eHardwareTypes HwdType, 
 			break;
 		case sTypeTH8:
 			WriteMessage("subtype       = TH8 - WT260,WT260H,WT440H,WT450,WT450H");
-			sprintf(szTmp,"                channel %d", pResponse->TEMP_HUM.id2);
+			sprintf(szTmp,"                channel %u", pResponse->TEMP_HUM.id2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeTH9:
@@ -3524,27 +3524,27 @@ void MainWorker::decode_TempHum(const int HwdID, const _eHardwareTypes HwdType, 
 			break;
 		case sTypeTH10:
 			WriteMessage("subtype       = TH10 - Rubicson/IW008T/TX95");
-			sprintf(szTmp,"                channel %d", pResponse->TEMP_HUM.id2);
+			sprintf(szTmp,"                channel %u", pResponse->TEMP_HUM.id2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeTH11:
 			WriteMessage("subtype       = TH11 - Oregon EW109");
-			sprintf(szTmp,"                channel %d", pResponse->TEMP_HUM.id2);
+			sprintf(szTmp,"                channel %u", pResponse->TEMP_HUM.id2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeTH12:
 			WriteMessage("subtype       = TH12 - Imagintronix/Opus TX300");
-			sprintf(szTmp, "                channel %d", pResponse->TEMP_HUM.id2);
+			sprintf(szTmp, "                channel %u", pResponse->TEMP_HUM.id2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeTH13:
 			WriteMessage("subtype       = TH13 - Alecto WS1700 and compatibles");
-			sprintf(szTmp, "                channel %d", pResponse->TEMP_HUM.id2);
+			sprintf(szTmp, "                channel %u", pResponse->TEMP_HUM.id2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeTH14:
 			WriteMessage("subtype       = TH14 - Alecto");
-			sprintf(szTmp, "                channel %d", pResponse->TEMP_HUM.id2);
+			sprintf(szTmp, "                channel %u", pResponse->TEMP_HUM.id2);
 			WriteMessage(szTmp);
 			break;
 		default:
@@ -3553,7 +3553,7 @@ void MainWorker::decode_TempHum(const int HwdID, const _eHardwareTypes HwdType, 
 			break;
 		}
 
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->TEMP_HUM.seqnbr);
+		sprintf(szTmp,"Sequence nbr  = %u", pResponse->TEMP_HUM.seqnbr);
 		WriteMessage(szTmp);
 		sprintf(szTmp,"ID            = %s", ID.c_str());
 		WriteMessage(szTmp);
@@ -3580,7 +3580,7 @@ void MainWorker::decode_TempHum(const int HwdID, const _eHardwareTypes HwdType, 
 			break;
 		}
 
-		sprintf(szTmp, "Signal level  = %d", pResponse->TEMP_HUM.rssi);
+		sprintf(szTmp, "Signal level  = %u", pResponse->TEMP_HUM.rssi);
 		WriteMessage(szTmp);
 
 		decode_BateryLevel(pResponse->TEMP_HUM.subtype == sTypeTH8,pResponse->TEMP_HUM.battery_level);
@@ -3594,7 +3594,7 @@ void MainWorker::decode_TempHumBaro(const int HwdID, const _eHardwareTypes HwdTy
 	char szTmp[100];
 	unsigned char devType=pTypeTEMP_HUM_BARO;
 	unsigned char subType=pResponse->TEMP_HUM_BARO.subtype;
-	sprintf(szTmp,"%d",(pResponse->TEMP_HUM_BARO.id1 * 256) + pResponse->TEMP_HUM_BARO.id2);
+	sprintf(szTmp,"%u",(pResponse->TEMP_HUM_BARO.id1 * 256u) + pResponse->TEMP_HUM_BARO.id2);
 	std::string ID=szTmp;
 	unsigned char Unit=pResponse->TEMP_HUM_BARO.id2;
 	unsigned char cmnd=0;
@@ -3692,12 +3692,12 @@ void MainWorker::decode_TempHumBaro(const int HwdID, const _eHardwareTypes HwdTy
 		{
 		case sTypeTHB1:
 			WriteMessage("subtype       = THB1 - BTHR918, BTHGN129");
-			sprintf(szTmp,"                channel %d", pResponse->TEMP_HUM_BARO.id2);
+			sprintf(szTmp,"                channel %u", pResponse->TEMP_HUM_BARO.id2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeTHB2:
 			WriteMessage("subtype       = THB2 - BTHR918N, BTHR968");
-			sprintf(szTmp,"                channel %d", pResponse->TEMP_HUM_BARO.id2);
+			sprintf(szTmp,"                channel %u", pResponse->TEMP_HUM_BARO.id2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeTHBFloat:
@@ -3709,17 +3709,17 @@ void MainWorker::decode_TempHumBaro(const int HwdID, const _eHardwareTypes HwdTy
 			break;
 		}
 
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->TEMP_HUM_BARO.seqnbr);
+		sprintf(szTmp,"Sequence nbr  = %u", pResponse->TEMP_HUM_BARO.seqnbr);
 		WriteMessage(szTmp);
 
-		sprintf(szTmp, "ID            = %d", (pResponse->TEMP_HUM_BARO.id1 * 256) + pResponse->TEMP_HUM_BARO.id2);
+		sprintf(szTmp, "ID            = %u", (pResponse->TEMP_HUM_BARO.id1 * 256u) + pResponse->TEMP_HUM_BARO.id2);
 		WriteMessage(szTmp);
 
 		double tvalue=ConvertTemperature(temp,m_sql.m_tempsign[0]);
 		sprintf(szTmp,"Temperature   = %.1f C", tvalue);
 		WriteMessage(szTmp);
 
-		sprintf(szTmp,"Humidity      = %d %%" ,pResponse->TEMP_HUM_BARO.humidity);
+		sprintf(szTmp,"Humidity      = %u %%" ,pResponse->TEMP_HUM_BARO.humidity);
 		WriteMessage(szTmp);
 
 		switch(pResponse->TEMP_HUM_BARO.humidity_status)
@@ -3763,7 +3763,7 @@ void MainWorker::decode_TempHumBaro(const int HwdID, const _eHardwareTypes HwdTy
 			break;
 		}
 
-		sprintf(szTmp, "Signal level  = %d", pResponse->TEMP_HUM_BARO.rssi);
+		sprintf(szTmp, "Signal level  = %u", pResponse->TEMP_HUM_BARO.rssi);
 		WriteMessage(szTmp);
 
 		if ((pResponse->TEMP_HUM_BARO.battery_level &0x0F) == 0)
@@ -3822,7 +3822,7 @@ void MainWorker::decode_TempBaro(const int HwdID, const _eHardwareTypes HwdType,
 		{
 		case sTypeBMP085:
 			WriteMessage("subtype       = BMP085 I2C");
-			sprintf(szTmp,"                channel %d", pTempBaro->id1);
+			sprintf(szTmp,"                channel %u", pTempBaro->id1);
 			WriteMessage(szTmp);
 			break;
 		default:
@@ -3875,7 +3875,7 @@ void MainWorker::decode_TempRain(const int HwdID, const _eHardwareTypes HwdType,
 	unsigned char devType=pTypeTEMP_RAIN;
 	unsigned char subType=pResponse->TEMP_RAIN.subtype;
 
-	sprintf(szTmp,"%d",(pResponse->TEMP_RAIN.id1 * 256) + pResponse->TEMP_RAIN.id2);
+	sprintf(szTmp,"%u",(pResponse->TEMP_RAIN.id1 * 256u) + pResponse->TEMP_RAIN.id2);
 	std::string ID=szTmp;
 	int Unit=pResponse->TEMP_RAIN.id2;
 	int cmnd=0;
@@ -3931,9 +3931,9 @@ void MainWorker::decode_TempRain(const int HwdID, const _eHardwareTypes HwdType,
 			WriteMessage("Subtype       = Alecto WS1200");
 			break;
 		}
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->TEMP_RAIN.seqnbr);
+		sprintf(szTmp,"Sequence nbr  = %u", pResponse->TEMP_RAIN.seqnbr);
 		WriteMessage(szTmp);
-		sprintf(szTmp,"ID            = %d", (pResponse->TEMP_RAIN.id1 * 256) + pResponse->TEMP_RAIN.id2);
+		sprintf(szTmp,"ID            = %u", (pResponse->TEMP_RAIN.id1 * 256u) + pResponse->TEMP_RAIN.id2);
 		WriteMessage(szTmp);
 
 		sprintf(szTmp,"Temperature   = %.1f C", temp);
@@ -3941,7 +3941,7 @@ void MainWorker::decode_TempRain(const int HwdID, const _eHardwareTypes HwdType,
 		sprintf(szTmp,"Total Rain    = %.1f mm", TotalRain);
 		WriteMessage(szTmp);
 
-		sprintf(szTmp,"Signal level  = %d", pResponse->TEMP_RAIN.rssi);
+		sprintf(szTmp,"Signal level  = %u", pResponse->TEMP_RAIN.rssi);
 		WriteMessage(szTmp);
 
 		if ((pResponse->TEMP_RAIN.battery_level & 0x0F) == 0)
@@ -3960,7 +3960,7 @@ void MainWorker::decode_UV(const int HwdID, const _eHardwareTypes HwdType, const
 	unsigned char devType=pTypeUV;
 	unsigned char subType=pResponse->UV.subtype;
 	std::string ID;
-	sprintf(szTmp,"%d",(pResponse->UV.id1 * 256) + pResponse->UV.id2);
+	sprintf(szTmp,"%u",(pResponse->UV.id1 * 256u) + pResponse->UV.id2);
 	ID=szTmp;
 	unsigned char Unit=0;
 	unsigned char cmnd=0;
@@ -4028,9 +4028,9 @@ void MainWorker::decode_UV(const int HwdID, const _eHardwareTypes HwdType, const
 			break;
 		}
 
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->UV.seqnbr);
+		sprintf(szTmp,"Sequence nbr  = %u", pResponse->UV.seqnbr);
 		WriteMessage(szTmp);
-		sprintf(szTmp,"ID            = %d", (pResponse->UV.id1 * 256) + pResponse->UV.id2);
+		sprintf(szTmp,"ID            = %u", (pResponse->UV.id1 * 256u) + pResponse->UV.id2);
 		WriteMessage(szTmp);
 
 		sprintf(szTmp,"Level         = %.1f UVI", Level);
@@ -4053,7 +4053,7 @@ void MainWorker::decode_UV(const int HwdID, const _eHardwareTypes HwdType, const
 		else
 			WriteMessage("Description = Dangerous");
 
-		sprintf(szTmp,"Signal level  = %d", pResponse->UV.rssi);
+		sprintf(szTmp,"Signal level  = %u", pResponse->UV.rssi);
 		WriteMessage(szTmp);
 
 		if ((pResponse->UV.battery_level & 0x0F) == 0)
@@ -4070,7 +4070,7 @@ void MainWorker::decode_Lighting1(const int HwdID, const _eHardwareTypes HwdType
 	char szTmp[100];
 	unsigned char devType=pTypeLighting1;
 	unsigned char subType=pResponse->LIGHTING1.subtype;
-	sprintf(szTmp,"%d", pResponse->LIGHTING1.housecode);
+	sprintf(szTmp,"%u", pResponse->LIGHTING1.housecode);
 	std::string ID = szTmp;
 	unsigned char Unit=pResponse->LIGHTING1.unitcode;
 	unsigned char cmnd=pResponse->LIGHTING1.cmnd;
@@ -4088,11 +4088,11 @@ void MainWorker::decode_Lighting1(const int HwdID, const _eHardwareTypes HwdType
 		{
 		case sTypeX10:
 			WriteMessage("subtype       = X10");
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->LIGHTING1.seqnbr);
+			sprintf(szTmp,"Sequence nbr  = %u", pResponse->LIGHTING1.seqnbr);
 			WriteMessage(szTmp);
 			sprintf(szTmp,"housecode     = %c", pResponse->LIGHTING1.housecode);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"unitcode      = %d", pResponse->LIGHTING1.unitcode);
+			sprintf(szTmp,"unitcode      = %u", pResponse->LIGHTING1.unitcode);
 			WriteMessage(szTmp);
 			WriteMessage("Command       = ", false);
 			switch (pResponse->LIGHTING1.cmnd)
@@ -4122,11 +4122,11 @@ void MainWorker::decode_Lighting1(const int HwdID, const _eHardwareTypes HwdType
 			break;
 		case sTypeARC:
 			WriteMessage("subtype       = ARC");
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->LIGHTING1.seqnbr);
+			sprintf(szTmp,"Sequence nbr  = %u", pResponse->LIGHTING1.seqnbr);
 			WriteMessage(szTmp);
 			sprintf(szTmp,"housecode     = %c", pResponse->LIGHTING1.housecode);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"unitcode      = %d", pResponse->LIGHTING1.unitcode);
+			sprintf(szTmp,"unitcode      = %u", pResponse->LIGHTING1.unitcode);
 			WriteMessage(szTmp);
 			WriteMessage("Command       = ", false);
 			switch (pResponse->LIGHTING1.cmnd)
@@ -4192,11 +4192,11 @@ void MainWorker::decode_Lighting1(const int HwdID, const _eHardwareTypes HwdType
 				WriteMessage("subtype       = HQ COCO-20");
 				break;
 			}
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->LIGHTING1.seqnbr);
+			sprintf(szTmp,"Sequence nbr  = %u", pResponse->LIGHTING1.seqnbr);
 			WriteMessage(szTmp);
 			sprintf(szTmp,"housecode     = %c", pResponse->LIGHTING1.housecode);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"unitcode      = %d", pResponse->LIGHTING1.unitcode);
+			sprintf(szTmp,"unitcode      = %u", pResponse->LIGHTING1.unitcode);
 			WriteMessage(szTmp);
 			WriteMessage("Command       = ", false);
 
@@ -4217,11 +4217,11 @@ void MainWorker::decode_Lighting1(const int HwdID, const _eHardwareTypes HwdType
 			//decoding of this type is only implemented for use by simulate and verbose
 			//this type is not received by the RFXtrx433
 			WriteMessage("subtype       = Philips SBC");
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->LIGHTING1.seqnbr);
+			sprintf(szTmp,"Sequence nbr  = %u", pResponse->LIGHTING1.seqnbr);
 			WriteMessage(szTmp);
 			sprintf(szTmp,"housecode     = %c", pResponse->LIGHTING1.housecode);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"unitcode      = %d", pResponse->LIGHTING1.unitcode);
+			sprintf(szTmp,"unitcode      = %u", pResponse->LIGHTING1.unitcode);
 			WriteMessage(szTmp);
 			WriteMessage("Command       = ", false);
 
@@ -4249,7 +4249,7 @@ void MainWorker::decode_Lighting1(const int HwdID, const _eHardwareTypes HwdType
 			WriteMessage(szTmp);
 			break;
 		}
-		sprintf(szTmp,"Signal level  = %d", pResponse->LIGHTING1.rssi);
+		sprintf(szTmp,"Signal level  = %u", pResponse->LIGHTING1.rssi);
 		WriteMessage(szTmp);
 		WriteMessageEnd();
 	}
@@ -4311,11 +4311,11 @@ void MainWorker::decode_Lighting2(const int HwdID, const _eHardwareTypes HwdType
 				WriteMessage("subtype       = ANSLUT");
 				break;
 			}
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->LIGHTING2.seqnbr);
+			sprintf(szTmp,"Sequence nbr  = %u", pResponse->LIGHTING2.seqnbr);
 			WriteMessage(szTmp);
 			sprintf(szTmp,"ID            = %s", ID.c_str());
 			WriteMessage(szTmp);
-			sprintf(szTmp,"Unit          = %d", Unit);
+			sprintf(szTmp,"Unit          = %u", Unit);
 			WriteMessage(szTmp);
 			WriteMessage("Command       = ", false);
 			switch (pResponse->LIGHTING2.cmnd)
@@ -4367,7 +4367,7 @@ void MainWorker::decode_Lighting3(const int HwdID, const _eHardwareTypes HwdType
 	{
 	case sTypeKoppla:
 		WriteMessage("subtype       = Ikea Koppla");
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->LIGHTING3.seqnbr);
+		sprintf(szTmp,"Sequence nbr  = %u", pResponse->LIGHTING3.seqnbr);
 		WriteMessage(szTmp);
 		WriteMessage("Command       = ", false);
 		switch (pResponse->LIGHTING3.cmnd)
@@ -4379,7 +4379,7 @@ void MainWorker::decode_Lighting3(const int HwdID, const _eHardwareTypes HwdType
 			WriteMessage("On");
 			break;
 		case 0x20:
-			sprintf(szTmp,"Set Level: %d", pResponse->LIGHTING3.channel10_9);
+			sprintf(szTmp,"Set Level: %u", pResponse->LIGHTING3.channel10_9);
 			WriteMessage(szTmp);
 			break;
 		case 0x21:
@@ -4400,7 +4400,7 @@ void MainWorker::decode_Lighting3(const int HwdID, const _eHardwareTypes HwdType
 		WriteMessage(szTmp);
 		break;
 	}
-	sprintf(szTmp,"Signal level  = %d", pResponse->LIGHTING3.rssi);
+	sprintf(szTmp,"Signal level  = %u", pResponse->LIGHTING3.rssi);
 	WriteMessage(szTmp);
 	WriteMessageEnd();
 	procResult.DeviceRowIdx = -1;
@@ -4429,7 +4429,7 @@ void MainWorker::decode_Lighting4(const int HwdID, const _eHardwareTypes HwdType
 		{
 		case sTypePT2262:
 			WriteMessage("subtype       = PT2262");
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->LIGHTING4.seqnbr);
+			sprintf(szTmp,"Sequence nbr  = %u", pResponse->LIGHTING4.seqnbr);
 			WriteMessage(szTmp);
 			sprintf(szTmp,"Code          = %02X%02X%02X", pResponse->LIGHTING4.cmd1,pResponse->LIGHTING4.cmd2,pResponse->LIGHTING4.cmd3);
 			WriteMessage(szTmp);
@@ -4568,7 +4568,7 @@ void MainWorker::decode_Lighting4(const int HwdID, const _eHardwareTypes HwdType
 			WriteMessage(szTmp);
 			break;
 		}
-		sprintf(szTmp,"Signal level  = %d", pResponse->LIGHTING4.rssi);
+		sprintf(szTmp,"Signal level  = %u", pResponse->LIGHTING4.rssi);
 		WriteMessage(szTmp);
 		WriteMessageEnd();
 	}
@@ -4612,7 +4612,7 @@ void MainWorker::decode_Lighting5(const int HwdID, const _eHardwareTypes HwdType
 	unsigned long long DevRowIdx=-1;
 	if (bDoUpdate)
 	{
-		sprintf(szTmp,"%d",pResponse->LIGHTING5.level);
+		sprintf(szTmp,"%u",pResponse->LIGHTING5.level);
 		DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,szTmp, procResult.DeviceName);
 		if (DevRowIdx == -1)
 			return;
@@ -4626,11 +4626,11 @@ void MainWorker::decode_Lighting5(const int HwdID, const _eHardwareTypes HwdType
 		{
 		case sTypeLightwaveRF:
 			WriteMessage("subtype       = LightwaveRF");
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->LIGHTING5.seqnbr);
+			sprintf(szTmp,"Sequence nbr  = %u", pResponse->LIGHTING5.seqnbr);
 			WriteMessage(szTmp);
 			sprintf(szTmp,"ID            = %02X%02X%02X", pResponse->LIGHTING5.id1, pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"Unit          = %d", pResponse->LIGHTING5.unitcode);
+			sprintf(szTmp,"Unit          = %u", pResponse->LIGHTING5.unitcode);
 			WriteMessage(szTmp);
 			WriteMessage("Command       = ", false);
 			switch (pResponse->LIGHTING5.cmnd)
@@ -4706,11 +4706,11 @@ void MainWorker::decode_Lighting5(const int HwdID, const _eHardwareTypes HwdType
 			break;
 		case sTypeEMW100:
 			WriteMessage("subtype       = EMW100");
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->LIGHTING5.seqnbr);
+			sprintf(szTmp,"Sequence nbr  = %u", pResponse->LIGHTING5.seqnbr);
 			WriteMessage(szTmp);
 			sprintf(szTmp,"ID            = %02X%02X", pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"Unit          = %d", pResponse->LIGHTING5.unitcode);
+			sprintf(szTmp,"Unit          = %u", pResponse->LIGHTING5.unitcode);
 			WriteMessage(szTmp);
 			WriteMessage("Command       = ", false);
 			switch (pResponse->LIGHTING5.cmnd)
@@ -4731,11 +4731,11 @@ void MainWorker::decode_Lighting5(const int HwdID, const _eHardwareTypes HwdType
 			break;
 		case sTypeBBSB:
 			WriteMessage("subtype       = BBSB new");
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->LIGHTING5.seqnbr);
+			sprintf(szTmp,"Sequence nbr  = %u", pResponse->LIGHTING5.seqnbr);
 			WriteMessage(szTmp);
 			sprintf(szTmp,"ID            = %02X%02X%02X", pResponse->LIGHTING5.id1, pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"Unit          = %d", pResponse->LIGHTING5.unitcode);
+			sprintf(szTmp,"Unit          = %u", pResponse->LIGHTING5.unitcode);
 			WriteMessage(szTmp);
 			WriteMessage("Command       = ", false);
 			switch (pResponse->LIGHTING5.cmnd)
@@ -4759,11 +4759,11 @@ void MainWorker::decode_Lighting5(const int HwdID, const _eHardwareTypes HwdType
 			break;
 		case sTypeRSL:
 			WriteMessage("subtype       = Conrad RSL");
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->LIGHTING5.seqnbr);
+			sprintf(szTmp,"Sequence nbr  = %u", pResponse->LIGHTING5.seqnbr);
 			WriteMessage(szTmp);
 			sprintf(szTmp,"ID            = %02X%02X%02X", pResponse->LIGHTING5.id1, pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"Unit          = %d", pResponse->LIGHTING5.unitcode);
+			sprintf(szTmp,"Unit          = %u", pResponse->LIGHTING5.unitcode);
 			WriteMessage(szTmp);
 			WriteMessage("Command       = ", false);
 			switch (pResponse->LIGHTING5.cmnd)
@@ -4787,11 +4787,11 @@ void MainWorker::decode_Lighting5(const int HwdID, const _eHardwareTypes HwdType
 			break;
 		case sTypeLivolo:
 			WriteMessage("subtype       = Livolo Dimmer");
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->LIGHTING5.seqnbr);
+			sprintf(szTmp,"Sequence nbr  = %u", pResponse->LIGHTING5.seqnbr);
 			WriteMessage(szTmp);
 			sprintf(szTmp,"ID            = %02X%02X%02X", pResponse->LIGHTING5.id1, pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"Unit          = %d", pResponse->LIGHTING5.unitcode);
+			sprintf(szTmp,"Unit          = %u", pResponse->LIGHTING5.unitcode);
 			WriteMessage(szTmp);
 			WriteMessage("Command       = ", false);
 			switch (pResponse->LIGHTING5.cmnd)
@@ -4815,11 +4815,11 @@ void MainWorker::decode_Lighting5(const int HwdID, const _eHardwareTypes HwdType
 			break;
 		case sTypeLivoloAppliance:
 			WriteMessage("subtype       = Livolo On/Off module");
-			sprintf(szTmp, "Sequence nbr  = %d", pResponse->LIGHTING5.seqnbr);
+			sprintf(szTmp, "Sequence nbr  = %u", pResponse->LIGHTING5.seqnbr);
 			WriteMessage(szTmp);
 			sprintf(szTmp, "ID            = %02X%02X", pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
 			WriteMessage(szTmp);
-			sprintf(szTmp, "Unit          = %d", pResponse->LIGHTING5.unitcode);
+			sprintf(szTmp, "Unit          = %u", pResponse->LIGHTING5.unitcode);
 			WriteMessage(szTmp);
 			WriteMessage("Command       = ", false);
 			switch (pResponse->LIGHTING5.cmnd)
@@ -4837,11 +4837,11 @@ void MainWorker::decode_Lighting5(const int HwdID, const _eHardwareTypes HwdType
 			break;
 		case sTypeRGB432W:
 			WriteMessage("subtype       = RGB432W");
-			sprintf(szTmp, "Sequence nbr  = %d", pResponse->LIGHTING5.seqnbr);
+			sprintf(szTmp, "Sequence nbr  = %u", pResponse->LIGHTING5.seqnbr);
 			WriteMessage(szTmp);
 			sprintf(szTmp, "ID            = %02X%02X", pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
 			WriteMessage(szTmp);
-			sprintf(szTmp, "Unit          = %d", pResponse->LIGHTING5.unitcode);
+			sprintf(szTmp, "Unit          = %u", pResponse->LIGHTING5.unitcode);
 			WriteMessage(szTmp);
 			WriteMessage("Command       = ", false);
 			switch (pResponse->LIGHTING5.cmnd)
@@ -4865,7 +4865,7 @@ void MainWorker::decode_Lighting5(const int HwdID, const _eHardwareTypes HwdType
 				WriteMessage("Color-");
 				break;
 			default:
-				sprintf(szTmp, "Color =          = %d", pResponse->LIGHTING5.cmnd);
+				sprintf(szTmp, "Color =          = %u", pResponse->LIGHTING5.cmnd);
 				WriteMessage(szTmp);
 				break;
 			}
@@ -4876,11 +4876,11 @@ void MainWorker::decode_Lighting5(const int HwdID, const _eHardwareTypes HwdType
 				WriteMessage("subtype       = TRC02 (RGB)");
 			else
 				WriteMessage("subtype       = TRC02_2 (RGB)");
-			sprintf(szTmp, "Sequence nbr  = %d", pResponse->LIGHTING5.seqnbr);
+			sprintf(szTmp, "Sequence nbr  = %u", pResponse->LIGHTING5.seqnbr);
 			WriteMessage(szTmp);
 			sprintf(szTmp,"ID            = %02X%02X%02X", pResponse->LIGHTING5.id1, pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"Unit          = %d", pResponse->LIGHTING5.unitcode);
+			sprintf(szTmp,"Unit          = %u", pResponse->LIGHTING5.unitcode);
 			WriteMessage(szTmp);
 			WriteMessage("Command       = ", false);
 			switch (pResponse->LIGHTING5.cmnd)
@@ -4904,18 +4904,18 @@ void MainWorker::decode_Lighting5(const int HwdID, const _eHardwareTypes HwdType
 				WriteMessage("Color-");
 				break;
 			default:
-				sprintf(szTmp,"Color = %d",pResponse->LIGHTING5.cmnd);
+				sprintf(szTmp,"Color = %u",pResponse->LIGHTING5.cmnd);
 				WriteMessage(szTmp);
 				break;
 			}
 			break;
 		case sTypeAoke:
 			WriteMessage("subtype       = Aoke");
-			sprintf(szTmp, "Sequence nbr  = %d", pResponse->LIGHTING5.seqnbr);
+			sprintf(szTmp, "Sequence nbr  = %u", pResponse->LIGHTING5.seqnbr);
 			WriteMessage(szTmp);
 			sprintf(szTmp, "ID            = %02X%02X", pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
 			WriteMessage(szTmp);
-			sprintf(szTmp, "Unit          = %d", pResponse->LIGHTING5.unitcode);
+			sprintf(szTmp, "Unit          = %u", pResponse->LIGHTING5.unitcode);
 			WriteMessage(szTmp);
 			WriteMessage("Command       = ", false);
 			switch (pResponse->LIGHTING5.cmnd)
@@ -4933,11 +4933,11 @@ void MainWorker::decode_Lighting5(const int HwdID, const _eHardwareTypes HwdType
 			break;
 		case sTypeEurodomest:
 			WriteMessage("subtype       = Eurodomest");
-			sprintf(szTmp, "Sequence nbr  = %d", pResponse->LIGHTING5.seqnbr);
+			sprintf(szTmp, "Sequence nbr  = %u", pResponse->LIGHTING5.seqnbr);
 			WriteMessage(szTmp);
 			sprintf(szTmp, "ID            = %02X%02X", pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
 			WriteMessage(szTmp);
-			sprintf(szTmp, "Unit          = %d", pResponse->LIGHTING5.unitcode);
+			sprintf(szTmp, "Unit          = %u", pResponse->LIGHTING5.unitcode);
 			WriteMessage(szTmp);
 			WriteMessage("Command       = ", false);
 			switch (pResponse->LIGHTING5.cmnd)
@@ -4961,7 +4961,7 @@ void MainWorker::decode_Lighting5(const int HwdID, const _eHardwareTypes HwdType
 			break;
 		case sTypeLegrandCAD:
 			WriteMessage("subtype       = Legrand CAD");
-			sprintf(szTmp, "Sequence nbr  = %d", pResponse->LIGHTING5.seqnbr);
+			sprintf(szTmp, "Sequence nbr  = %u", pResponse->LIGHTING5.seqnbr);
 			WriteMessage(szTmp);
 			sprintf(szTmp, "ID            = %02X%02X", pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
 			WriteMessage(szTmp);
@@ -4969,11 +4969,11 @@ void MainWorker::decode_Lighting5(const int HwdID, const _eHardwareTypes HwdType
 			break;
 		case sTypeAvantek:
 			WriteMessage("subtype       = Avantek");
-			sprintf(szTmp, "Sequence nbr  = %d", pResponse->LIGHTING5.seqnbr);
+			sprintf(szTmp, "Sequence nbr  = %u", pResponse->LIGHTING5.seqnbr);
 			WriteMessage(szTmp);
 			sprintf(szTmp, "ID            = %02X%02X%02X", pResponse->LIGHTING5.id1, pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
 			WriteMessage(szTmp);
-			sprintf(szTmp, "Unit          = %d", pResponse->LIGHTING5.unitcode);
+			sprintf(szTmp, "Unit          = %u", pResponse->LIGHTING5.unitcode);
 			WriteMessage(szTmp);
 			WriteMessage("Command       = ", false);
 			switch (pResponse->LIGHTING5.cmnd)
@@ -4997,11 +4997,11 @@ void MainWorker::decode_Lighting5(const int HwdID, const _eHardwareTypes HwdType
 			break;
 		case sTypeIT:
 			WriteMessage("subtype       = Intertek,FA500,PROmax");
-			sprintf(szTmp, "Sequence nbr  = %d", pResponse->LIGHTING5.seqnbr);
+			sprintf(szTmp, "Sequence nbr  = %u", pResponse->LIGHTING5.seqnbr);
 			WriteMessage(szTmp);
 			sprintf(szTmp, "ID            = %02X%02X%02X", pResponse->LIGHTING5.id1, pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
 			WriteMessage(szTmp);
-			sprintf(szTmp, "Unit          = %d", pResponse->LIGHTING5.unitcode);
+			sprintf(szTmp, "Unit          = %u", pResponse->LIGHTING5.unitcode);
 			WriteMessage(szTmp);
 			WriteMessage("Command       = ", false);
 			switch (pResponse->LIGHTING5.cmnd)
@@ -5032,7 +5032,7 @@ void MainWorker::decode_Lighting5(const int HwdID, const _eHardwareTypes HwdType
 			WriteMessage(szTmp);
 			break;
 		}
-		sprintf(szTmp,"Signal level  = %d", pResponse->LIGHTING5.rssi);
+		sprintf(szTmp,"Signal level  = %u", pResponse->LIGHTING5.rssi);
 		WriteMessage(szTmp);
 		WriteMessageEnd();
 	}
@@ -5064,13 +5064,13 @@ void MainWorker::decode_Lighting6(const int HwdID, const _eHardwareTypes HwdType
 		{
 		case sTypeBlyss:
 			WriteMessage("subtype       = Blyss");
-			sprintf(szTmp,"Sequence nbr  = %d",  pResponse->LIGHTING6.seqnbr);
+			sprintf(szTmp,"Sequence nbr  = %u",  pResponse->LIGHTING6.seqnbr);
 			WriteMessage(szTmp);
 			sprintf(szTmp,"ID            = %02X%02X", pResponse->LIGHTING6.id1, pResponse->LIGHTING6.id2);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"groupcode     = %d", pResponse->LIGHTING6.groupcode);
+			sprintf(szTmp,"groupcode     = %u", pResponse->LIGHTING6.groupcode);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"unitcode      = %d", pResponse->LIGHTING6.unitcode);
+			sprintf(szTmp,"unitcode      = %u", pResponse->LIGHTING6.unitcode);
 			WriteMessage(szTmp);
 			WriteMessage("Command       = ", false);
 			switch (pResponse->LIGHTING6.cmnd)
@@ -5091,9 +5091,9 @@ void MainWorker::decode_Lighting6(const int HwdID, const _eHardwareTypes HwdType
 				WriteMessage("UNKNOWN");
 				break;
 			}
-			sprintf(szTmp,"Command seqnbr= %d", pResponse->LIGHTING6.cmndseqnbr);
+			sprintf(szTmp,"Command seqnbr= %u", pResponse->LIGHTING6.cmndseqnbr);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"seqnbr2       = %d", pResponse->LIGHTING6.seqnbr2);
+			sprintf(szTmp,"seqnbr2       = %u", pResponse->LIGHTING6.seqnbr2);
 			WriteMessage(szTmp);
 			break;
 		default:
@@ -5101,7 +5101,7 @@ void MainWorker::decode_Lighting6(const int HwdID, const _eHardwareTypes HwdType
 			WriteMessage(szTmp);
 			break;
 		}
-		sprintf(szTmp,"Signal level  = %d", pResponse->LIGHTING6.rssi);
+		sprintf(szTmp,"Signal level  = %u", pResponse->LIGHTING6.rssi);
 		WriteMessage(szTmp);
 		WriteMessageEnd();
 	}
@@ -5131,7 +5131,7 @@ void MainWorker::decode_Fan(const int HwdID, const _eHardwareTypes HwdType, cons
 		{
 		case sTypeSiemensSF01:
 			WriteMessage("subtype       = Siemens SF01");
-			sprintf(szTmp, "Sequence nbr  = %d", pResponse->FAN.seqnbr);
+			sprintf(szTmp, "Sequence nbr  = %u", pResponse->FAN.seqnbr);
 			WriteMessage(szTmp);
 			sprintf(szTmp, "ID            = %02X%02X", pResponse->FAN.id2, pResponse->FAN.id3);
 			WriteMessage(szTmp);
@@ -5163,7 +5163,7 @@ void MainWorker::decode_Fan(const int HwdID, const _eHardwareTypes HwdType, cons
 			break;
 		case sTypeItho:
 			WriteMessage("subtype       = Itho CVE RFT");
-			sprintf(szTmp, "Sequence nbr  = %d", pResponse->FAN.seqnbr);
+			sprintf(szTmp, "Sequence nbr  = %u", pResponse->FAN.seqnbr);
 			WriteMessage(szTmp);
 			sprintf(szTmp, "ID            = %02X%02X%02X", pResponse->FAN.id1, pResponse->FAN.id2, pResponse->FAN.id3);
 			WriteMessage(szTmp);
@@ -5204,7 +5204,7 @@ void MainWorker::decode_Fan(const int HwdID, const _eHardwareTypes HwdType, cons
 			WriteMessage(szTmp);
 			break;
 		}
-		sprintf(szTmp, "Signal level  = %d", pResponse->LIGHTING6.rssi);
+		sprintf(szTmp, "Signal level  = %u", pResponse->LIGHTING6.rssi);
 		WriteMessage(szTmp);
 		WriteMessageEnd();
 	}
@@ -5249,13 +5249,13 @@ void MainWorker::decode_HomeConfort(const int HwdID, const _eHardwareTypes HwdTy
 		{
 		case sTypeHomeConfortTEL010:
 			WriteMessage("subtype       = TEL-010");
-			sprintf(szTmp, "Sequence nbr  = %d", pResponse->HOMECONFORT.seqnbr);
+			sprintf(szTmp, "Sequence nbr  = %u", pResponse->HOMECONFORT.seqnbr);
 			WriteMessage(szTmp);
 			sprintf(szTmp, "ID            = %02X%02X%02X", pResponse->HOMECONFORT.id1, pResponse->HOMECONFORT.id2, pResponse->HOMECONFORT.id3);
 			WriteMessage(szTmp);
-			sprintf(szTmp, "housecode     = %d", pResponse->HOMECONFORT.housecode);
+			sprintf(szTmp, "Housecode     = %u", pResponse->HOMECONFORT.housecode);
 			WriteMessage(szTmp);
-			sprintf(szTmp, "unitcode      = %d", pResponse->HOMECONFORT.unitcode);
+			sprintf(szTmp, "unitcode      = %u", pResponse->HOMECONFORT.unitcode);
 			WriteMessage(szTmp);
 			WriteMessage("Command       = ", false);
 			switch (pResponse->HOMECONFORT.cmnd)
@@ -5282,7 +5282,7 @@ void MainWorker::decode_HomeConfort(const int HwdID, const _eHardwareTypes HwdTy
 			WriteMessage(szTmp);
 			break;
 		}
-		sprintf(szTmp, "Signal level  = %d", pResponse->HOMECONFORT.rssi);
+		sprintf(szTmp, "Signal level  = %u", pResponse->HOMECONFORT.rssi);
 		WriteMessage(szTmp);
 		WriteMessageEnd();
 	}
@@ -5357,7 +5357,7 @@ void MainWorker::decode_Chime(const int HwdID, const _eHardwareTypes HwdType, co
 		{
 		case sTypeByronSX:
 			WriteMessage("subtype       = Byron SX");
-			sprintf(szTmp,"Sequence nbr  = %d",  pResponse->CHIME.seqnbr);
+			sprintf(szTmp,"Sequence nbr  = %u",  pResponse->CHIME.seqnbr);
 			WriteMessage(szTmp);
 			sprintf(szTmp,"ID            = %02X%02X", pResponse->CHIME.id1, pResponse->CHIME.id2);
 			WriteMessage(szTmp);
@@ -5387,11 +5387,11 @@ void MainWorker::decode_Chime(const int HwdID, const _eHardwareTypes HwdType, co
 			break;
 		case sTypeByronMP001:
 			WriteMessage("subtype       = Byron MP001");
-			sprintf(szTmp, "Sequence nbr  = %d", pResponse->CHIME.seqnbr);
+			sprintf(szTmp, "Sequence nbr  = %u", pResponse->CHIME.seqnbr);
 			WriteMessage(szTmp);
 			sprintf(szTmp, "ID            = %02X%02X", pResponse->CHIME.id1, pResponse->CHIME.id2);
 			WriteMessage(szTmp);
-			sprintf(szTmp, "Sound          = %d", pResponse->CHIME.sound);
+			sprintf(szTmp, "Sound          = %u", pResponse->CHIME.sound);
 			WriteMessage(szTmp);
 
 			if ((pResponse->CHIME.id1 & 0x40) == 0x40)
@@ -5426,21 +5426,21 @@ void MainWorker::decode_Chime(const int HwdID, const _eHardwareTypes HwdType, co
 			break;
 		case sTypeSelectPlus:
 			WriteMessage("subtype       = SelectPlus200689101");
-			sprintf(szTmp, "Sequence nbr  = %d", pResponse->CHIME.seqnbr);
+			sprintf(szTmp, "Sequence nbr  = %u", pResponse->CHIME.seqnbr);
 			WriteMessage(szTmp);
 			sprintf(szTmp, "ID            = %02X%02X", pResponse->CHIME.id1, pResponse->CHIME.id2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeSelectPlus3:
 			WriteMessage("subtype       = SelectPlus200689103");
-			sprintf(szTmp, "Sequence nbr  = %d", pResponse->CHIME.seqnbr);
+			sprintf(szTmp, "Sequence nbr  = %u", pResponse->CHIME.seqnbr);
 			WriteMessage(szTmp);
 			sprintf(szTmp, "ID            = %02X%02X", pResponse->CHIME.id1, pResponse->CHIME.id2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeEnvivo:
 			WriteMessage("subtype       = Envivo");
-			sprintf(szTmp, "Sequence nbr  = %d", pResponse->CHIME.seqnbr);
+			sprintf(szTmp, "Sequence nbr  = %u", pResponse->CHIME.seqnbr);
 			WriteMessage(szTmp);
 			sprintf(szTmp, "ID            = %02X%02X", pResponse->CHIME.id1, pResponse->CHIME.id2);
 			WriteMessage(szTmp);
@@ -5450,7 +5450,7 @@ void MainWorker::decode_Chime(const int HwdID, const _eHardwareTypes HwdType, co
 			WriteMessage(szTmp);
 			break;
 		}
-		sprintf(szTmp,"Signal level  = %d", pResponse->CHIME.rssi);
+		sprintf(szTmp,"Signal level  = %u", pResponse->CHIME.rssi);
 		WriteMessage(szTmp);
 		WriteMessageEnd();
 	}
@@ -5550,12 +5550,12 @@ void MainWorker::decode_RecXmitMessage(const int HwdID, const _eHardwareTypes Hw
 	{
 	case sTypeReceiverLockError:
 		WriteMessage("subtype           = Receiver lock error");
-		sprintf(szTmp,"Sequence nbr      = %d", pResponse->RXRESPONSE.seqnbr);
+		sprintf(szTmp,"Sequence nbr      = %u", pResponse->RXRESPONSE.seqnbr);
 		WriteMessage(szTmp);
 		break;
 	case sTypeTransmitterResponse:
 		WriteMessage("subtype           = Transmitter Response");
-		sprintf(szTmp,"Sequence nbr      = %d", pResponse->RXRESPONSE.seqnbr);
+		sprintf(szTmp,"Sequence nbr      = %u", pResponse->RXRESPONSE.seqnbr);
 		WriteMessage(szTmp);
 
 		switch (pResponse->RXRESPONSE.msg)
@@ -5591,7 +5591,7 @@ void MainWorker::decode_Curtain(const int HwdID, const _eHardwareTypes HwdType, 
 	char szTmp[100];
 	unsigned char devType=pTypeCurtain;
 	unsigned char subType=pResponse->CURTAIN1.subtype;
-	sprintf(szTmp,"%d", pResponse->CURTAIN1.housecode);
+	sprintf(szTmp,"%u", pResponse->CURTAIN1.housecode);
 	std::string ID = szTmp;
 	unsigned char Unit=pResponse->CURTAIN1.unitcode;
 	unsigned char cmnd=pResponse->CURTAIN1.cmnd;
@@ -5616,13 +5616,13 @@ void MainWorker::decode_Curtain(const int HwdID, const _eHardwareTypes HwdType, 
 			WriteMessage(szTmp);
 			break;
 		}
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->CURTAIN1.seqnbr);
+		sprintf(szTmp,"Sequence nbr  = %u", pResponse->CURTAIN1.seqnbr);
 		WriteMessage(szTmp);
 
-		sprintf(szTmp,"Housecode         = %d", pResponse->CURTAIN1.housecode);
+		sprintf(szTmp,"Housecode         = %u", pResponse->CURTAIN1.housecode);
 		WriteMessage(szTmp);
 
-		sprintf(szTmp,"Unit          = %d", pResponse->CURTAIN1.unitcode);
+		sprintf(szTmp,"Unit          = %u", pResponse->CURTAIN1.unitcode);
 		WriteMessage(szTmp);
 
 		WriteMessage("Command       = ", false);
@@ -5722,7 +5722,7 @@ void MainWorker::decode_BLINDS1(const int HwdID, const _eHardwareTypes HwdType, 
 			WriteMessage(szTmp);
 			break;
 		}
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->BLINDS1.seqnbr);
+		sprintf(szTmp,"Sequence nbr  = %u", pResponse->BLINDS1.seqnbr);
 		WriteMessage(szTmp);
 
 		sprintf(szTmp,"id1-3         = %02X%02X%02X", pResponse->BLINDS1.id1, pResponse->BLINDS1.id2, pResponse->BLINDS1.id3);
@@ -5738,7 +5738,7 @@ void MainWorker::decode_BLINDS1(const int HwdID, const _eHardwareTypes HwdType, 
 			WriteMessage("Unit          = All");
 		else
 		{
-			sprintf(szTmp,"Unit          = %d", pResponse->BLINDS1.unitcode);
+			sprintf(szTmp,"Unit          = %u", pResponse->BLINDS1.unitcode);
 			WriteMessage(szTmp);
 		}
 
@@ -5784,7 +5784,7 @@ void MainWorker::decode_BLINDS1(const int HwdID, const _eHardwareTypes HwdType, 
 			WriteMessage("UNKNOWN");
 			break;
 		}
-		sprintf(szTmp,"Signal level  = %d", pResponse->BLINDS1.rssi);
+		sprintf(szTmp,"Signal level  = %u", pResponse->BLINDS1.rssi);
 		WriteMessage(szTmp);
 		WriteMessageEnd();
 	}
@@ -5828,7 +5828,7 @@ void MainWorker::decode_RFY(const int HwdID, const _eHardwareTypes HwdType, cons
 			WriteMessage(szTmp);
 			break;
 		}
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFY.seqnbr);
+		sprintf(szTmp,"Sequence nbr  = %u", pResponse->RFY.seqnbr);
 		WriteMessage(szTmp);
 
 		sprintf(szTmp,"id1-3         = %02X%02X%02X", pResponse->RFY.id1, pResponse->RFY.id2, pResponse->RFY.id3);
@@ -5838,7 +5838,7 @@ void MainWorker::decode_RFY(const int HwdID, const _eHardwareTypes HwdType, cons
 			WriteMessage("Unit          = All");
 		else
 		{
-			sprintf(szTmp,"Unit          = %d", pResponse->RFY.unitcode);
+			sprintf(szTmp,"Unit          = %u", pResponse->RFY.unitcode);
 			WriteMessage(szTmp);
 		}
 
@@ -5913,7 +5913,7 @@ void MainWorker::decode_RFY(const int HwdID, const _eHardwareTypes HwdType, cons
 			WriteMessage("UNKNOWN");
 			break;
 		}
-		sprintf(szTmp,"Signal level  = %d", pResponse->RFY.rssi);
+		sprintf(szTmp,"Signal level  = %u", pResponse->RFY.rssi);
 		WriteMessage(szTmp);
 		WriteMessageEnd();
 	}
@@ -6112,7 +6112,7 @@ void MainWorker::decode_evohome1(const int HwdID, const _eHardwareTypes HwdType,
 		}
 
 		if (HwdType==HTYPE_EVOHOME_SCRIPT) //GB3: scripted evohome uses decimal device ID's
-			sprintf(szTmp, "id            = %u", (int)RFX_GETID3(pEvo->EVOHOME1.id1,pEvo->EVOHOME1.id2,pEvo->EVOHOME1.id3));
+			sprintf(szTmp, "id            = %u", RFX_GETID3(pEvo->EVOHOME1.id1,pEvo->EVOHOME1.id2,pEvo->EVOHOME1.id3));
 		else
 			sprintf(szTmp, "id            = %02X:%02X:%02X", pEvo->EVOHOME1.id1, pEvo->EVOHOME1.id2, pEvo->EVOHOME1.id3);
 		WriteMessage(szTmp);
@@ -6286,7 +6286,7 @@ void MainWorker::decode_Security1(const int HwdID, const _eHardwareTypes HwdType
 			break;
 		}
 
-		sprintf(szTmp, "Sequence nbr  = %d", pResponse->SECURITY1.seqnbr);
+		sprintf(szTmp, "Sequence nbr  = %u", pResponse->SECURITY1.seqnbr);
 		WriteMessage(szTmp);
 		sprintf(szTmp, "id1-3         = %02X:%02X:%02X", pResponse->SECURITY1.id1, pResponse->SECURITY1.id2, pResponse->SECURITY1.id3);
 		WriteMessage(szTmp);
@@ -6394,7 +6394,7 @@ void MainWorker::decode_Security1(const int HwdID, const _eHardwareTypes HwdType
 			else
 				WriteMessage("battery level = OK");
 		}
-		sprintf(szTmp,"Signal level  = %d", pResponse->SECURITY1.rssi);
+		sprintf(szTmp,"Signal level  = %u", pResponse->SECURITY1.rssi);
 		WriteMessage(szTmp);
 		WriteMessageEnd();
 	}
@@ -6433,7 +6433,7 @@ void MainWorker::decode_Security2(const int HwdID, const _eHardwareTypes HwdType
 			break;
 		}
 
-		sprintf(szTmp, "Sequence nbr  = %d", pResponse->SECURITY2.seqnbr);
+		sprintf(szTmp, "Sequence nbr  = %u", pResponse->SECURITY2.seqnbr);
 		WriteMessage(szTmp);
 		sprintf(szTmp, "id1-8         = %02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X", pResponse->SECURITY2.id1, pResponse->SECURITY2.id2, pResponse->SECURITY2.id3, pResponse->SECURITY2.id4, pResponse->SECURITY2.id5, pResponse->SECURITY2.id6, pResponse->SECURITY2.id7, pResponse->SECURITY2.id8);
 		WriteMessage(szTmp);
@@ -6443,7 +6443,7 @@ void MainWorker::decode_Security2(const int HwdID, const _eHardwareTypes HwdType
 		else
 			WriteMessage("battery level = OK");
 
-		sprintf(szTmp, "Signal level  = %d", pResponse->SECURITY2.rssi);
+		sprintf(szTmp, "Signal level  = %u", pResponse->SECURITY2.rssi);
 		WriteMessage(szTmp);
 		WriteMessageEnd();
 	}
@@ -6463,7 +6463,7 @@ void MainWorker::decode_Camera1(const int HwdID, const _eHardwareTypes HwdType, 
 	{
 	case sTypeNinja:
 		WriteMessage("subtype       = X10 Ninja/Robocam");
-		sprintf(szTmp, "Sequence nbr  = %d", pResponse->CAMERA1.seqnbr);
+		sprintf(szTmp, "Sequence nbr  = %u", pResponse->CAMERA1.seqnbr);
 		WriteMessage(szTmp);
 
 		WriteMessage("Command       = ", false);
@@ -6522,7 +6522,7 @@ void MainWorker::decode_Camera1(const int HwdID, const _eHardwareTypes HwdType, 
 			WriteMessage("UNKNOWN");
 			break;
 		}
-		sprintf(szTmp, "Housecode     = %d", pResponse->CAMERA1.housecode);
+		sprintf(szTmp, "Housecode     = %u", pResponse->CAMERA1.housecode);
 		WriteMessage(szTmp);
 		break;
 	default:
@@ -6530,7 +6530,7 @@ void MainWorker::decode_Camera1(const int HwdID, const _eHardwareTypes HwdType, 
 		WriteMessage(szTmp);
 		break;
 	}
-	sprintf(szTmp, "Signal level  = %d", pResponse->CAMERA1.rssi);
+	sprintf(szTmp, "Signal level  = %u", pResponse->CAMERA1.rssi);
 	WriteMessage(szTmp);
 	procResult.DeviceRowIdx = -1;
 }
@@ -6540,7 +6540,7 @@ void MainWorker::decode_Remote(const int HwdID, const _eHardwareTypes HwdType, c
 	char szTmp[100];
 	unsigned char devType=pTypeRemote;
 	unsigned char subType=pResponse->REMOTE.subtype;
-	sprintf(szTmp,"%d", pResponse->REMOTE.id);
+	sprintf(szTmp,"%u", pResponse->REMOTE.id);
 	std::string ID = szTmp;
 	unsigned char Unit=pResponse->REMOTE.cmnd;
 	unsigned char cmnd=light2_sOn;
@@ -6558,9 +6558,9 @@ void MainWorker::decode_Remote(const int HwdID, const _eHardwareTypes HwdType, c
 		{
 			case sTypeATI:
 				WriteMessage("subtype       = ATI Remote Wonder");
-				sprintf(szTmp,"Sequence nbr  = %d", pResponse->REMOTE.seqnbr);
+				sprintf(szTmp,"Sequence nbr  = %u", pResponse->REMOTE.seqnbr);
 				WriteMessage(szTmp);
-				sprintf(szTmp,"ID            = %d", pResponse->REMOTE.id);
+				sprintf(szTmp,"ID            = %u", pResponse->REMOTE.id);
 				WriteMessage(szTmp);
 				switch (pResponse->REMOTE.cmnd)
 				{
@@ -6778,9 +6778,9 @@ void MainWorker::decode_Remote(const int HwdID, const _eHardwareTypes HwdType, c
 				break;
 			case sTypeATIplus:
 				WriteMessage("subtype       = ATI Remote Wonder Plus");
-				sprintf(szTmp,"Sequence nbr  = %d", pResponse->REMOTE.seqnbr);
+				sprintf(szTmp,"Sequence nbr  = %u", pResponse->REMOTE.seqnbr);
 				WriteMessage(szTmp);
-				sprintf(szTmp,"ID            = %d", pResponse->REMOTE.id);
+				sprintf(szTmp,"ID            = %u", pResponse->REMOTE.id);
 				WriteMessage(szTmp);
 
 				WriteMessage("Command       = ", false);
@@ -7010,9 +7010,9 @@ void MainWorker::decode_Remote(const int HwdID, const _eHardwareTypes HwdType, c
 				break;
 			case sTypeATIrw2:
 				WriteMessage("subtype       = ATI Remote Wonder II");
-				sprintf(szTmp,"Sequence nbr  = %d", pResponse->REMOTE.seqnbr);
+				sprintf(szTmp,"Sequence nbr  = %u", pResponse->REMOTE.seqnbr);
 				WriteMessage(szTmp);
-				sprintf(szTmp,"ID            = %d", pResponse->REMOTE.id);
+				sprintf(szTmp,"ID            = %u", pResponse->REMOTE.id);
 				WriteMessage(szTmp);
 				WriteMessage("Command type  = ", false);
 
@@ -7225,9 +7225,9 @@ void MainWorker::decode_Remote(const int HwdID, const _eHardwareTypes HwdType, c
 				break;
 			case sTypeMedion:
 				WriteMessage("subtype       = Medion Remote");
-				sprintf(szTmp, "Sequence nbr  = %d", pResponse->REMOTE.seqnbr);
+				sprintf(szTmp, "Sequence nbr  = %u", pResponse->REMOTE.seqnbr);
 				WriteMessage(szTmp);
-				sprintf(szTmp,"ID            = %d", pResponse->REMOTE.id);
+				sprintf(szTmp,"ID            = %u", pResponse->REMOTE.id);
 				WriteMessage(szTmp);
 
 				WriteMessage("Command       = ", false);
@@ -7448,9 +7448,9 @@ void MainWorker::decode_Remote(const int HwdID, const _eHardwareTypes HwdType, c
 				break;
 			case sTypePCremote:
 				WriteMessage("subtype       = PC Remote");
-				sprintf(szTmp,"Sequence nbr  = %d", pResponse->REMOTE.seqnbr);
+				sprintf(szTmp,"Sequence nbr  = %u", pResponse->REMOTE.seqnbr);
 				WriteMessage(szTmp);
-				sprintf(szTmp,"ID            = %d", pResponse->REMOTE.id);
+				sprintf(szTmp,"ID            = %u", pResponse->REMOTE.id);
 				WriteMessage(szTmp);
 				WriteMessage("Command       = ", false);
 				switch (pResponse->REMOTE.cmnd)
@@ -7612,7 +7612,7 @@ void MainWorker::decode_Remote(const int HwdID, const _eHardwareTypes HwdType, c
 				WriteMessage(szTmp);
 				break;
 		}
-		sprintf(szTmp, "Signal level  = %d", pResponse->REMOTE.rssi);
+		sprintf(szTmp, "Signal level  = %u", pResponse->REMOTE.rssi);
 		WriteMessage(szTmp);
 		WriteMessageEnd();
 	}
@@ -7625,7 +7625,7 @@ void MainWorker::decode_Thermostat1(const int HwdID, const _eHardwareTypes HwdTy
 	unsigned char devType=pTypeThermostat1;
 	unsigned char subType=pResponse->THERMOSTAT1.subtype;
 	std::string ID;
-	sprintf(szTmp,"%d",(pResponse->THERMOSTAT1.id1 * 256) + pResponse->THERMOSTAT1.id2);
+	sprintf(szTmp,"%d",(pResponse->THERMOSTAT1.id1 * 256u) + pResponse->THERMOSTAT1.id2);
 	ID=szTmp;
 	unsigned char Unit=0;
 	unsigned char cmnd=0;
@@ -7659,16 +7659,16 @@ void MainWorker::decode_Thermostat1(const int HwdID, const _eHardwareTypes HwdTy
 			break;
 		}
 
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->THERMOSTAT1.seqnbr);
+		sprintf(szTmp,"Sequence nbr  = %u", pResponse->THERMOSTAT1.seqnbr);
 		WriteMessage(szTmp);
-		sprintf(szTmp,"ID            = %d", (pResponse->THERMOSTAT1.id1 * 256) + pResponse->THERMOSTAT1.id2);
+		sprintf(szTmp,"ID            = %u", (pResponse->THERMOSTAT1.id1 * 256u) + pResponse->THERMOSTAT1.id2);
 		WriteMessage(szTmp);
-		sprintf(szTmp, "Temperature   = %d C", pResponse->THERMOSTAT1.temperature);
+		sprintf(szTmp, "Temperature   = %u C", pResponse->THERMOSTAT1.temperature);
 		WriteMessage(szTmp);
 
 		if (pResponse->THERMOSTAT1.subtype == sTypeDigimax)
 		{
-			sprintf(szTmp,"Set           = %d C", pResponse->THERMOSTAT1.set_point);
+			sprintf(szTmp,"Set           = %u C", pResponse->THERMOSTAT1.set_point);
 			WriteMessage(szTmp);
 
 			if ((pResponse->THERMOSTAT1.mode & 0x80) == 0)
@@ -7693,7 +7693,7 @@ void MainWorker::decode_Thermostat1(const int HwdID, const _eHardwareTypes HwdTy
 			}
 		}
 
-		sprintf(szTmp,"Signal level  = %d", pResponse->THERMOSTAT1.rssi);
+		sprintf(szTmp,"Signal level  = %u", pResponse->THERMOSTAT1.rssi);
 		WriteMessage(szTmp);
 		WriteMessageEnd();
 	}
@@ -7734,7 +7734,7 @@ void MainWorker::decode_Thermostat2(const int HwdID, const _eHardwareTypes HwdTy
 			break;
 		}
 
-		sprintf(szTmp, "Sequence nbr  = %d", pResponse->THERMOSTAT2.seqnbr);
+		sprintf(szTmp, "Sequence nbr  = %u", pResponse->THERMOSTAT2.seqnbr);
 		WriteMessage(szTmp);
 
 		sprintf(szTmp, "Unit code        = 0x%02X", pResponse->THERMOSTAT2.unitcode);
@@ -7753,7 +7753,7 @@ void MainWorker::decode_Thermostat2(const int HwdID, const _eHardwareTypes HwdTy
 			break;
 		}
 
-		sprintf(szTmp, "Signal level  = %d", pResponse->THERMOSTAT2.rssi);
+		sprintf(szTmp, "Signal level  = %u", pResponse->THERMOSTAT2.rssi);
 		WriteMessage(szTmp);
 		WriteMessageEnd();
 	}
@@ -7801,7 +7801,7 @@ void MainWorker::decode_Thermostat3(const int HwdID, const _eHardwareTypes HwdTy
 			break;
 		}
 
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->THERMOSTAT3.seqnbr);
+		sprintf(szTmp,"Sequence nbr  = %u", pResponse->THERMOSTAT3.seqnbr);
 		WriteMessage(szTmp);
 
 		sprintf(szTmp, "ID            = 0x%02X%02X%02X", pResponse->THERMOSTAT3.unitcode1,pResponse->THERMOSTAT3.unitcode2,pResponse->THERMOSTAT3.unitcode3);
@@ -7843,7 +7843,7 @@ void MainWorker::decode_Thermostat3(const int HwdID, const _eHardwareTypes HwdTy
 			break;
 		}
 
-		sprintf(szTmp,"Signal level  = %d", pResponse->THERMOSTAT3.rssi);
+		sprintf(szTmp,"Signal level  = %u", pResponse->THERMOSTAT3.rssi);
 		WriteMessage(szTmp);
 		WriteMessageEnd();
 	}
@@ -7863,7 +7863,7 @@ void MainWorker::decode_Radiator1(const int HwdID, const _eHardwareTypes HwdType
 	unsigned char SignalLevel = pResponse->RADIATOR1.rssi;
 	unsigned char BatteryLevel = 255;
 
-	sprintf(szTmp, "%d.%d", pResponse->RADIATOR1.temperature, pResponse->RADIATOR1.tempPoint5);
+	sprintf(szTmp, "%u.%u", pResponse->RADIATOR1.temperature, pResponse->RADIATOR1.tempPoint5);
 	unsigned long long DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 	if (DevRowIdx == -1)
 		return;
@@ -7885,12 +7885,12 @@ void MainWorker::decode_Radiator1(const int HwdID, const _eHardwareTypes HwdType
 			break;
 		}
 
-		sprintf(szTmp, "Sequence nbr  = %d", pResponse->THERMOSTAT3.seqnbr);
+		sprintf(szTmp, "Sequence nbr  = %u", pResponse->THERMOSTAT3.seqnbr);
 		WriteMessage(szTmp);
 
 		sprintf(szTmp, "ID            = %X%02X%02X%02X", pResponse->RADIATOR1.id1, pResponse->RADIATOR1.id2, pResponse->RADIATOR1.id3, pResponse->RADIATOR1.id4);
 		WriteMessage(szTmp);
-		sprintf(szTmp, "Unit          = %d", pResponse->RADIATOR1.unitcode);
+		sprintf(szTmp, "Unit          = %u", pResponse->RADIATOR1.unitcode);
 		WriteMessage(szTmp);
 
 		switch (pResponse->RADIATOR1.cmnd)
@@ -7909,9 +7909,9 @@ void MainWorker::decode_Radiator1(const int HwdID, const _eHardwareTypes HwdType
 			break;
 		}
 
-		sprintf(szTmp, "Temp          = %d.%d", pResponse->RADIATOR1.temperature, pResponse->RADIATOR1.tempPoint5);
+		sprintf(szTmp, "Temp          = %u.%u", pResponse->RADIATOR1.temperature, pResponse->RADIATOR1.tempPoint5);
 		WriteMessage(szTmp);
-		sprintf(szTmp, "Signal level  = %d", pResponse->RADIATOR1.rssi);
+		sprintf(szTmp, "Signal level  = %u", pResponse->RADIATOR1.rssi);
 		WriteMessage(szTmp);
 		WriteMessageEnd();
 	}
@@ -7949,9 +7949,9 @@ void MainWorker::decode_DateTime(const int HwdID, const _eHardwareTypes HwdType,
 		WriteMessage(szTmp);
 		break;
 	}
-	sprintf(szTmp,"Sequence nbr  = %d", pResponse->DT.seqnbr);
+	sprintf(szTmp,"Sequence nbr  = %u", pResponse->DT.seqnbr);
 	WriteMessage(szTmp);
-	sprintf(szTmp,"ID            = %d", (pResponse->DT.id1 * 256) + pResponse->DT.id2);
+	sprintf(szTmp,"ID            = %u", (pResponse->DT.id1 * 256u) + pResponse->DT.id2);
 	WriteMessage(szTmp);
 
 	WriteMessage("Day of week   = ", false);
@@ -7980,11 +7980,11 @@ void MainWorker::decode_DateTime(const int HwdID, const _eHardwareTypes HwdType,
 		WriteMessage(" Saturday");
 		break;
 	}
-	sprintf(szTmp,"Date yy/mm/dd = %02d/%02d/%02d", pResponse->DT.yy, pResponse->DT.mm, pResponse->DT.dd);
+	sprintf(szTmp,"Date yy/mm/dd = %02u/%02u/%02u", pResponse->DT.yy, pResponse->DT.mm, pResponse->DT.dd);
 	WriteMessage(szTmp);
-	sprintf(szTmp,"Time          = %02d:%02d:%02d", pResponse->DT.hr, pResponse->DT.min, pResponse->DT.sec);
+	sprintf(szTmp,"Time          = %02u:%02u:%02u", pResponse->DT.hr, pResponse->DT.min, pResponse->DT.sec);
 	WriteMessage(szTmp);
-	sprintf(szTmp,"Signal level  = %d", pResponse->DT.rssi);
+	sprintf(szTmp,"Signal level  = %u", pResponse->DT.rssi);
 	WriteMessage(szTmp);
 	if ((pResponse->DT.battery_level & 0x0F)==0)
 		WriteMessage("Battery       = Low");
@@ -7999,7 +7999,7 @@ void MainWorker::decode_Current(const int HwdID, const _eHardwareTypes HwdType, 
 	unsigned char devType=pTypeCURRENT;
 	unsigned char subType=pResponse->CURRENT.subtype;
 	std::string ID;
-	sprintf(szTmp,"%d",(pResponse->CURRENT.id1 * 256) + pResponse->CURRENT.id2);
+	sprintf(szTmp,"%d",(pResponse->CURRENT.id1 * 256u) + pResponse->CURRENT.id2);
 	ID=szTmp;
 	unsigned char Unit=0;
 	unsigned char cmnd=0;
@@ -8030,11 +8030,11 @@ void MainWorker::decode_Current(const int HwdID, const _eHardwareTypes HwdType, 
 			break;
 		}
 
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->CURRENT.seqnbr);
+		sprintf(szTmp,"Sequence nbr  = %u", pResponse->CURRENT.seqnbr);
 		WriteMessage(szTmp);
-		sprintf(szTmp,"ID            = %d", (pResponse->CURRENT.id1 * 256) + pResponse->CURRENT.id2);
+		sprintf(szTmp,"ID            = %u", (pResponse->CURRENT.id1 * 256u) + pResponse->CURRENT.id2);
 		WriteMessage(szTmp);
-		sprintf(szTmp,"Count         = %d", pResponse->CURRENT.id2);//m_rxbuffer[5]);
+		sprintf(szTmp,"Count         = %u", pResponse->CURRENT.id2);//m_rxbuffer[5]);
 		WriteMessage(szTmp);
 		sprintf(szTmp,"Channel 1     = %.1f ampere", CurrentChannel1);
 		WriteMessage(szTmp);
@@ -8043,7 +8043,7 @@ void MainWorker::decode_Current(const int HwdID, const _eHardwareTypes HwdType, 
 		sprintf(szTmp,"Channel 3     = %.1f ampere", CurrentChannel3);
 		WriteMessage(szTmp);
 
-		sprintf(szTmp, "Signal level  = %d", pResponse->CURRENT.rssi);
+		sprintf(szTmp, "Signal level  = %u", pResponse->CURRENT.rssi);
 		WriteMessage(szTmp);
 
 		if ((pResponse->CURRENT.battery_level & 0xF) == 0)
@@ -8061,7 +8061,7 @@ void MainWorker::decode_Energy(const int HwdID, const _eHardwareTypes HwdType, c
 	unsigned char devType=pTypeENERGY;
 	unsigned char subType=pResponse->ENERGY.subtype;
 	std::string ID;
-	sprintf(szTmp,"%d",(pResponse->ENERGY.id1 * 256) + pResponse->ENERGY.id2);
+	sprintf(szTmp,"%d",(pResponse->ENERGY.id1 * 256u) + pResponse->ENERGY.id2);
 	ID=szTmp;
 	unsigned char Unit=0;
 	unsigned char cmnd=0;
@@ -8101,7 +8101,7 @@ void MainWorker::decode_Energy(const int HwdID, const _eHardwareTypes HwdType, c
 
 	//Translate this sensor type to the new kWh sensor type
 	_tGeneralDevice gdevice;
-	gdevice.intval1 = (pResponse->ENERGY.id1 * 256) + pResponse->ENERGY.id2;
+	gdevice.intval1 = (pResponse->ENERGY.id1 * 256u) + pResponse->ENERGY.id2;
 	gdevice.subtype = sTypeKwh;
 	gdevice.floatval1 = (float)instant;
 	gdevice.floatval2 = (float)total;
@@ -8125,7 +8125,7 @@ void MainWorker::decode_Power(const int HwdID, const _eHardwareTypes HwdType, co
 	unsigned char devType=pTypePOWER;
 	unsigned char subType=pResponse->POWER.subtype;
 	std::string ID;
-	sprintf(szTmp,"%d",(pResponse->POWER.id1 * 256) + pResponse->POWER.id2);
+	sprintf(szTmp,"%d",(pResponse->POWER.id1 * 256u) + pResponse->POWER.id2);
 	ID=szTmp;
 	unsigned char Unit=0;
 	unsigned char cmnd=0;
@@ -8178,9 +8178,9 @@ void MainWorker::decode_Power(const int HwdID, const _eHardwareTypes HwdType, co
 			break;
 		}
 
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->POWER.seqnbr);
+		sprintf(szTmp,"Sequence nbr  = %u", pResponse->POWER.seqnbr);
 		WriteMessage(szTmp);
-		sprintf(szTmp,"ID            = %d", (pResponse->POWER.id1 * 256) + pResponse->POWER.id2);
+		sprintf(szTmp,"ID            = %u", (pResponse->POWER.id1 * 256u) + pResponse->POWER.id2);
 		WriteMessage(szTmp);
 
 		sprintf(szTmp,"Voltage       = %d Volt", Voltage);
@@ -8198,7 +8198,7 @@ void MainWorker::decode_Power(const int HwdID, const _eHardwareTypes HwdType, co
 		sprintf(szTmp,"Frequency     = %d Hz", frequency);
 		WriteMessage(szTmp);
 
-		sprintf(szTmp,"Signal level  = %d", pResponse->POWER.rssi);
+		sprintf(szTmp,"Signal level  = %u", pResponse->POWER.rssi);
 		WriteMessage(szTmp);
 		WriteMessageEnd();
 	}
@@ -8211,7 +8211,7 @@ void MainWorker::decode_Current_Energy(const int HwdID, const _eHardwareTypes Hw
 	unsigned char devType=pTypeCURRENTENERGY;
 	unsigned char subType=pResponse->CURRENT_ENERGY.subtype;
 	std::string ID;
-	sprintf(szTmp,"%d",(pResponse->CURRENT_ENERGY.id1 * 256) + pResponse->CURRENT_ENERGY.id2);
+	sprintf(szTmp,"%d",(pResponse->CURRENT_ENERGY.id1 * 256u) + pResponse->CURRENT_ENERGY.id2);
 	ID=szTmp;
 	unsigned char Unit=0;
 	unsigned char cmnd=0;
@@ -8298,11 +8298,11 @@ void MainWorker::decode_Current_Energy(const int HwdID, const _eHardwareTypes Hw
 			break;
 		}
 
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->CURRENT_ENERGY.seqnbr);
+		sprintf(szTmp,"Sequence nbr  = %u", pResponse->CURRENT_ENERGY.seqnbr);
 		WriteMessage(szTmp);
-		sprintf(szTmp,"ID            = %d", (pResponse->CURRENT_ENERGY.id1 * 256) + pResponse->CURRENT_ENERGY.id2);
+		sprintf(szTmp,"ID            = %u", (pResponse->CURRENT_ENERGY.id1 * 256u) + pResponse->CURRENT_ENERGY.id2);
 		WriteMessage(szTmp);
-		sprintf(szTmp,"Count         = %d", pResponse->CURRENT_ENERGY.count);
+		sprintf(szTmp,"Count         = %u", pResponse->CURRENT_ENERGY.count);
 		WriteMessage(szTmp);
 		float ampereChannel1,ampereChannel2,ampereChannel3;
 		ampereChannel1=float((pResponse->CURRENT_ENERGY.ch1h * 256) + pResponse->CURRENT_ENERGY.ch1l) / 10.0f;
@@ -8321,7 +8321,7 @@ void MainWorker::decode_Current_Energy(const int HwdID, const _eHardwareTypes Hw
 			WriteMessage(szTmp);
 		}
 
-		sprintf(szTmp,"Signal level  = %d", pResponse->CURRENT_ENERGY.rssi);
+		sprintf(szTmp,"Signal level  = %u", pResponse->CURRENT_ENERGY.rssi);
 		WriteMessage(szTmp);
 
 		if ((pResponse->CURRENT_ENERGY.battery_level & 0xF) == 0)
@@ -8399,13 +8399,13 @@ void MainWorker::decode_Weight(const int HwdID, const _eHardwareTypes HwdType, c
 			break;
 		}
 
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->WEIGHT.seqnbr);
+		sprintf(szTmp,"Sequence nbr  = %u", pResponse->WEIGHT.seqnbr);
 		WriteMessage(szTmp);
-		sprintf(szTmp,"ID            = %d", (pResponse->WEIGHT.id1 * 256) + pResponse->WEIGHT.id2);
+		sprintf(szTmp,"ID            = %u", (pResponse->WEIGHT.id1 * 256u) + pResponse->WEIGHT.id2);
 		WriteMessage(szTmp);
 		sprintf(szTmp,"Weight        = %.1f kg", (float(pResponse->WEIGHT.weighthigh) * 25.6f) + (float(pResponse->WEIGHT.weightlow) / 10));
 		WriteMessage(szTmp);
-		sprintf(szTmp, "Signal level  = %d", pResponse->WEIGHT.rssi);
+		sprintf(szTmp, "Signal level  = %u", pResponse->WEIGHT.rssi);
 		WriteMessage(szTmp);
 		WriteMessageEnd();
 	}
@@ -8418,7 +8418,7 @@ void MainWorker::decode_RFXSensor(const int HwdID, const _eHardwareTypes HwdType
 	unsigned char devType=pTypeRFXSensor;
 	unsigned char subType=pResponse->RFXSENSOR.subtype;
 	std::string ID;
-	sprintf(szTmp, "%d", pResponse->RFXSENSOR.id);
+	sprintf(szTmp, "%u", pResponse->RFXSENSOR.id);
 	ID=szTmp;
 	unsigned char Unit=0;
 	unsigned char cmnd=0;
@@ -8492,9 +8492,9 @@ void MainWorker::decode_RFXSensor(const int HwdID, const _eHardwareTypes HwdType
 		{
 		case sTypeRFXSensorTemp:
 			WriteMessage("subtype       = Temperature");
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXSENSOR.seqnbr);
+			sprintf(szTmp,"Sequence nbr  = %u", pResponse->RFXSENSOR.seqnbr);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"ID            = %d", pResponse->RFXSENSOR.id);
+			sprintf(szTmp,"ID            = %u", pResponse->RFXSENSOR.id);
 			WriteMessage(szTmp);
 
 			if ((pResponse->RFXSENSOR.msg1 & 0x80) == 0) //positive temperature?
@@ -8510,27 +8510,27 @@ void MainWorker::decode_RFXSensor(const int HwdID, const _eHardwareTypes HwdType
 			break;
 		case sTypeRFXSensorAD:
 			WriteMessage("subtype       = A/D");
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXSENSOR.seqnbr);
+			sprintf(szTmp,"Sequence nbr  = %u", pResponse->RFXSENSOR.seqnbr);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"ID            = %d", pResponse->RFXSENSOR.id);
+			sprintf(szTmp,"ID            = %u", pResponse->RFXSENSOR.id);
 			WriteMessage(szTmp);
 			sprintf(szTmp,"volt          = %d mV", (pResponse->RFXSENSOR.msg1 * 256) + pResponse->RFXSENSOR.msg2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeRFXSensorVolt:
 			WriteMessage("subtype       = Voltage");
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXSENSOR.seqnbr);
+			sprintf(szTmp,"Sequence nbr  = %u", pResponse->RFXSENSOR.seqnbr);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"ID            = %d", pResponse->RFXSENSOR.id);
+			sprintf(szTmp,"ID            = %u", pResponse->RFXSENSOR.id);
 			WriteMessage(szTmp);
 			sprintf(szTmp,"volt          = %d mV", (pResponse->RFXSENSOR.msg1 * 256) + pResponse->RFXSENSOR.msg2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeRFXSensorMessage:
 			WriteMessage("subtype       = Message");
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXSENSOR.seqnbr);
+			sprintf(szTmp,"Sequence nbr  = %u", pResponse->RFXSENSOR.seqnbr);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"ID            = %d", pResponse->RFXSENSOR.id);
+			sprintf(szTmp,"ID            = %u", pResponse->RFXSENSOR.id);
 			WriteMessage(szTmp);
 			switch (pResponse->RFXSENSOR.msg2)
 			{
@@ -8567,7 +8567,7 @@ void MainWorker::decode_RFXSensor(const int HwdID, const _eHardwareTypes HwdType
 			WriteMessage(szTmp);
 			break;
 		}
-		sprintf(szTmp,"Signal level  = %d", pResponse->RFXSENSOR.rssi);
+		sprintf(szTmp,"Signal level  = %u", pResponse->RFXSENSOR.rssi);
 		WriteMessage(szTmp);
 		WriteMessageEnd();
 	}
@@ -8583,7 +8583,7 @@ void MainWorker::decode_RFXMeter(const int HwdID, const _eHardwareTypes HwdType,
 	if (subType==sTypeRFXMeterCount)
 	{
 		std::string ID;
-		sprintf(szTmp,"%d",(pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
+		sprintf(szTmp,"%d",(pResponse->RFXMETER.id1 * 256u) + pResponse->RFXMETER.id2);
 		ID=szTmp;
 		unsigned char Unit=0;
 		unsigned char cmnd=0;
@@ -8608,9 +8608,9 @@ void MainWorker::decode_RFXMeter(const int HwdID, const _eHardwareTypes HwdType,
 		{
 		case sTypeRFXMeterCount:
 			WriteMessage("subtype       = RFXMeter counter");
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXMETER.seqnbr);
+			sprintf(szTmp,"Sequence nbr  = %u", pResponse->RFXMETER.seqnbr);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
+			sprintf(szTmp,"ID            = %u", (pResponse->RFXMETER.id1 * 256u) + pResponse->RFXMETER.id2);
 			WriteMessage(szTmp);
 			counter = (pResponse->RFXMETER.count1 << 24) + (pResponse->RFXMETER.count2 << 16) + (pResponse->RFXMETER.count3 << 8) + pResponse->RFXMETER.count4;
 			sprintf(szTmp,"Counter       = %lu", counter);
@@ -8620,9 +8620,9 @@ void MainWorker::decode_RFXMeter(const int HwdID, const _eHardwareTypes HwdType,
 			break;
 		case sTypeRFXMeterInterval:
 			WriteMessage("subtype       = RFXMeter new interval time set");
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXMETER.seqnbr);
+			sprintf(szTmp,"Sequence nbr  = %u", pResponse->RFXMETER.seqnbr);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
+			sprintf(szTmp,"ID            = %u", (pResponse->RFXMETER.id1 * 256u) + pResponse->RFXMETER.id2);
 			WriteMessage(szTmp);
 			WriteMessage("Interval time = ", false);
 
@@ -8667,7 +8667,7 @@ void MainWorker::decode_RFXMeter(const int HwdID, const _eHardwareTypes HwdType,
 				WriteMessage("subtype       = Calibrate mode for channel 3");
 				break;
 			}
-			sprintf(szTmp,"ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
+			sprintf(szTmp,"ID            = %u", (pResponse->RFXMETER.id1 * 256u) + pResponse->RFXMETER.id2);
 			WriteMessage(szTmp);
 			counter = ( ((pResponse->RFXMETER.count2 & 0x3F) << 16) + (pResponse->RFXMETER.count3 << 8) + pResponse->RFXMETER.count4 ) / 1000;
 			sprintf(szTmp,"Calibrate cnt = %lu msec", counter);
@@ -8678,9 +8678,9 @@ void MainWorker::decode_RFXMeter(const int HwdID, const _eHardwareTypes HwdType,
 			break;
 		case sTypeRFXMeterAddr:
 			WriteMessage("subtype       = New address set, push button for next address");
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXMETER.seqnbr);
+			sprintf(szTmp,"Sequence nbr  = %u", pResponse->RFXMETER.seqnbr);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
+			sprintf(szTmp,"ID            = %u", (pResponse->RFXMETER.id1 * 256u) + pResponse->RFXMETER.id2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeRFXMeterCounterReset:
@@ -8696,9 +8696,9 @@ void MainWorker::decode_RFXMeter(const int HwdID, const _eHardwareTypes HwdType,
 				WriteMessage("subtype       = Push the button for next mode within 5 seconds or else RESET COUNTER channel 3 will be executed");
 				break;
 			}
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXMETER.seqnbr);
+			sprintf(szTmp,"Sequence nbr  = %u", pResponse->RFXMETER.seqnbr);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
+			sprintf(szTmp,"ID            = %u", (pResponse->RFXMETER.id1 * 256u) + pResponse->RFXMETER.id2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeRFXMeterCounterSet:
@@ -8714,9 +8714,9 @@ void MainWorker::decode_RFXMeter(const int HwdID, const _eHardwareTypes HwdType,
 				WriteMessage("subtype       = Counter channel 3 is reset to zero");
 				break;
 			}
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXMETER.seqnbr);
+			sprintf(szTmp,"Sequence nbr  = %u", pResponse->RFXMETER.seqnbr);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
+			sprintf(szTmp,"ID            = %u", (pResponse->RFXMETER.id1 * 256u) + pResponse->RFXMETER.id2);
 			WriteMessage(szTmp);
 			counter =  (pResponse->RFXMETER.count1 << 24) + (pResponse->RFXMETER.count2 << 16) + (pResponse->RFXMETER.count3 << 8) + pResponse->RFXMETER.count4;
 			sprintf(szTmp,"Counter       = %lu", counter);
@@ -8724,9 +8724,9 @@ void MainWorker::decode_RFXMeter(const int HwdID, const _eHardwareTypes HwdType,
 			break;
 		case sTypeRFXMeterSetInterval:
 			WriteMessage("subtype       = Push the button for next mode within 5 seconds or else SET INTERVAL MODE will be entered");
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXMETER.seqnbr);
+			sprintf(szTmp,"Sequence nbr  = %u", pResponse->RFXMETER.seqnbr);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
+			sprintf(szTmp,"ID            = %u", (pResponse->RFXMETER.id1 * 256u) + pResponse->RFXMETER.id2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeRFXMeterSetCalib:
@@ -8742,23 +8742,23 @@ void MainWorker::decode_RFXMeter(const int HwdID, const _eHardwareTypes HwdType,
 				WriteMessage("subtype       = Push the button for next mode within 5 seconds or else CALIBRATION mode for channel 3 will be executed");
 				break;
 			}
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXMETER.seqnbr);
+			sprintf(szTmp,"Sequence nbr  = %u", pResponse->RFXMETER.seqnbr);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
+			sprintf(szTmp,"ID            = %u", (pResponse->RFXMETER.id1 * 256u) + pResponse->RFXMETER.id2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeRFXMeterSetAddr:
 			WriteMessage("subtype       = Push the button for next mode within 5 seconds or else SET ADDRESS MODE will be entered");
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXMETER.seqnbr);
+			sprintf(szTmp,"Sequence nbr  = %u", pResponse->RFXMETER.seqnbr);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
+			sprintf(szTmp,"ID            = %u", (pResponse->RFXMETER.id1 * 256u) + pResponse->RFXMETER.id2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeRFXMeterIdent:
 			WriteMessage("subtype       = RFXMeter identification");
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXMETER.seqnbr);
+			sprintf(szTmp,"Sequence nbr  = %u", pResponse->RFXMETER.seqnbr);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
+			sprintf(szTmp,"ID            = %u", (pResponse->RFXMETER.id1 * 256u) + pResponse->RFXMETER.id2);
 			WriteMessage(szTmp);
 			sprintf(szTmp,"FW version    = %02X", pResponse->RFXMETER.count3);
 			WriteMessage(szTmp);
@@ -8797,7 +8797,7 @@ void MainWorker::decode_RFXMeter(const int HwdID, const _eHardwareTypes HwdType,
 			WriteMessage(szTmp);
 			break;
 		}
-		sprintf(szTmp,"Signal level  = %d", pResponse->RFXMETER.rssi);
+		sprintf(szTmp,"Signal level  = %u", pResponse->RFXMETER.rssi);
 		WriteMessage(szTmp);
 		WriteMessageEnd();
 	}
@@ -8919,7 +8919,7 @@ void MainWorker::decode_YouLessMeter(const int HwdID, const _eHardwareTypes HwdT
 	const _tYouLessMeter *pMeter = reinterpret_cast<const _tYouLessMeter*>(pResponse);
 	unsigned char devType=pMeter->type;
 	unsigned char subType=pMeter->subtype;
-	sprintf(szTmp,"%d",pMeter->ID1);
+	sprintf(szTmp,"%u",pMeter->ID1);
 	std::string ID=szTmp;
 	unsigned char Unit=subType;
 	unsigned char cmnd=0;
@@ -9573,7 +9573,7 @@ void MainWorker::decode_BBQ(const int HwdID, const _eHardwareTypes HwdType, cons
 	unsigned char devType=pTypeBBQ;
 	unsigned char subType=pResponse->BBQ.subtype;
 
-	sprintf(szTmp,"%d",1);//(pResponse->BBQ.id1 * 256) + pResponse->BBQ.id2); //this because every time you turn the device on, you get a new ID
+	sprintf(szTmp,"%d",1);//(pResponse->BBQ.id1 * 256u) + pResponse->BBQ.id2); //this because every time you turn the device on, you get a new ID
 	std::string ID=szTmp;
 
 	unsigned char Unit=pResponse->BBQ.id2;
@@ -9610,9 +9610,9 @@ void MainWorker::decode_BBQ(const int HwdID, const _eHardwareTypes HwdType, cons
 			break;
 		}
 
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->BBQ.seqnbr);
+		sprintf(szTmp,"Sequence nbr  = %u", pResponse->BBQ.seqnbr);
 		WriteMessage(szTmp);
-		sprintf(szTmp,"ID            = %d", (pResponse->BBQ.id1 * 256) + pResponse->BBQ.id2);
+		sprintf(szTmp,"ID            = %u", (pResponse->BBQ.id1 * 256u) + pResponse->BBQ.id2);
 		WriteMessage(szTmp);
 
 		sprintf(szTmp,"Sensor1 Temp  = %.1f C", temp1);
@@ -9620,7 +9620,7 @@ void MainWorker::decode_BBQ(const int HwdID, const _eHardwareTypes HwdType, cons
 		sprintf(szTmp,"Sensor2 Temp  = %.1f C", temp2);
 		WriteMessage(szTmp);
 
-		sprintf(szTmp,"Signal level  = %d", pResponse->BBQ.rssi);
+		sprintf(szTmp,"Signal level  = %u", pResponse->BBQ.rssi);
 		WriteMessage(szTmp);
 
 		if ((pResponse->BBQ.battery_level &0x0F) == 0)
@@ -9680,7 +9680,7 @@ void MainWorker::decode_FS20(const int HwdID, const _eHardwareTypes HwdType, con
 	{
 	case sTypeFS20:
 		WriteMessage("subtype       = FS20");
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->FS20.seqnbr);
+		sprintf(szTmp,"Sequence nbr  = %u", pResponse->FS20.seqnbr);
 		WriteMessage(szTmp);
 		sprintf(szTmp,"House code    = %02X%02X", pResponse->FS20.hc1, pResponse->FS20.hc2);
 		WriteMessage(szTmp);
@@ -9805,7 +9805,7 @@ void MainWorker::decode_FS20(const int HwdID, const _eHardwareTypes HwdType, con
 	case sTypeFHT8V:
 		WriteMessage("subtype       = FHT 8V valve");
 
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->FS20.seqnbr);
+		sprintf(szTmp,"Sequence nbr  = %u", pResponse->FS20.seqnbr);
 		WriteMessage(szTmp);
 		sprintf(szTmp,"House code    = %02X%02X", pResponse->FS20.hc1, pResponse->FS20.hc2);
 		WriteMessage(szTmp);
@@ -9862,7 +9862,7 @@ void MainWorker::decode_FS20(const int HwdID, const _eHardwareTypes HwdType, con
 			break;
 		case 0xC:
 			WriteMessage("                synchronization active");
-			sprintf(szTmp,"Cmd2          = count down is %d seconds", pResponse->FS20.cmd2 >> 1);
+			sprintf(szTmp,"Cmd2          = count down is %u seconds", pResponse->FS20.cmd2 >> 1);
 			WriteMessage(szTmp);
 			break;
 		case 0xE:
@@ -9870,7 +9870,7 @@ void MainWorker::decode_FS20(const int HwdID, const _eHardwareTypes HwdType, con
 			break;
 		case 0xF:
 			WriteMessage("                pair valve (cmd2 bit 7-1 is count down in seconds, bit 0=1)");
-			sprintf(szTmp,"Cmd2          = count down is %d seconds", pResponse->FS20.cmd2 >> 1);
+			sprintf(szTmp,"Cmd2          = count down is %u seconds", pResponse->FS20.cmd2 >> 1);
 			WriteMessage(szTmp);
 			break;
 		default:
@@ -9881,7 +9881,7 @@ void MainWorker::decode_FS20(const int HwdID, const _eHardwareTypes HwdType, con
 		break;
 	case sTypeFHT80:
 		WriteMessage("subtype       = FHT80 door/window sensor");
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->FS20.seqnbr);
+		sprintf(szTmp,"Sequence nbr  = %u", pResponse->FS20.seqnbr);
 		WriteMessage(szTmp);
 		sprintf(szTmp,"House code    = %02X%02X", pResponse->FS20.hc1, pResponse->FS20.hc2);
 		WriteMessage(szTmp);
@@ -9918,7 +9918,7 @@ void MainWorker::decode_FS20(const int HwdID, const _eHardwareTypes HwdType, con
 		break;
 	}
 
-	sprintf(szTmp,"Signal level  = %d", pResponse->FS20.rssi);
+	sprintf(szTmp,"Signal level  = %u", pResponse->FS20.rssi);
 	WriteMessage(szTmp);
 	procResult.DeviceRowIdx = -1;
 }
