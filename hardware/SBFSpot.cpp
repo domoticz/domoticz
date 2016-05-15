@@ -16,7 +16,7 @@
 CSBFSpot::CSBFSpot(const int ID, const std::string &SMAConfigFile)
 {
 	std::vector<std::string> results;
-	
+
 	m_HwdID=ID;
 #ifdef WIN32
 	StringSplit(SMAConfigFile, ";", results);
@@ -60,7 +60,7 @@ void CSBFSpot::Init()
 		sLine = stdstring_trim(sLine);
 		if (sLine.size()!=0)
 		{
-			if (sLine.find("OutputPath=")==0)
+			if (sLine.compare(0, 10, "OutputPath=")==0)
 			{
 				tmpString=sLine.substr(strlen("OutputPath="));
 				if (tmpString!="")
@@ -76,15 +76,15 @@ void CSBFSpot::Init()
 					m_SBFDataPath=tmpString;
 				}
 			}
-			else if (sLine.find("Plantname=")==0)
+			else if (sLine.compare(0, 9, "Plantname=")==0)
 			{
 				m_SBFPlantName=sLine.substr(strlen("Plantname="));
 			}
-			else if (sLine.find("DateFormat=")==0)
+			else if (sLine.compare(0, 10, "DateFormat=")==0)
 			{
 				m_SBFDateFormat=sLine.substr(strlen("DateFormat="));
 			}
-			else if (sLine.find("TimeFormat=")==0)
+			else if (sLine.compare(0, 11, "TimeFormat=")==0)
 			{
 				m_SBFTimeFormat=sLine.substr(strlen("TimeFormat="));
 			}
@@ -332,7 +332,7 @@ void CSBFSpot::ImportOldMonthData(const unsigned long long DevID, const int Year
 				}
 
 			}
-			else if (sLine.find("Time,Energy (Wh)") == 0)
+			else if (sLine.compare(0, 16, "Time,Energy (Wh)") == 0)
 			{
 				dayPos = 0;
 				monthPos = 3;
@@ -340,7 +340,7 @@ void CSBFSpot::ImportOldMonthData(const unsigned long long DevID, const int Year
 				bIsSMAWebExport = true;
 				continue;
 			}
-			else if (sLine.find("sep=") == 0)
+			else if (sLine.compare(0, 4, "sep=") == 0)
 			{
 				tmpString = sLine.substr(strlen("sep="));
 				if (tmpString != "")
@@ -348,7 +348,7 @@ void CSBFSpot::ImportOldMonthData(const unsigned long long DevID, const int Year
 					szSeperator = tmpString;
 				}
 			}
-			else if (sLine.find("Version CSV1") == 0)
+			else if (sLine.compare(0, 12, "Version CSV1") == 0)
 			{
 				bHaveVersion = true;
 			}
@@ -496,7 +496,7 @@ void CSBFSpot::GetMeterDetails()
 		sLine.erase(std::remove(sLine.begin(), sLine.end(), '\r'), sLine.end());
 		if (sLine.size() != 0)
 		{
-			if (sLine.find("sep=") == 0)
+			if (sLine.compare(0, 4, "sep=") == 0)
 			{
 				tmpString = sLine.substr(strlen("sep="));
 				if (tmpString != "")
@@ -504,15 +504,15 @@ void CSBFSpot::GetMeterDetails()
 					szSeperator = tmpString;
 				}
 			}
-			else if (sLine.find("Version CSV1") == 0)
+			else if (sLine.compare(0, 12, "Version CSV1") == 0)
 			{
 				bHaveVersion = true;
 			}
 			else if (bHaveVersion)
 			{
 				if (
-					(sLine.find(";DeviceName") == std::string::npos) &&
-					(sLine.find(";Watt") == std::string::npos)
+					(sLine.compare(0, 11, ";DeviceName") != 0) &&
+					(sLine.compare(0, 5, ";Watt") != 0)
 					)
 				{
 					StringSplit(sLine, szSeperator, results);

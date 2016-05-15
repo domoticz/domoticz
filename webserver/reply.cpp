@@ -327,10 +327,10 @@ bool reply::set_content_from_file(reply *rep, const std::string & file_path, con
 		if (last_dot_pos != std::string::npos) {
 			std::string file_extension = attachment.substr(last_dot_pos + 1);
 			std::string mime_type = mime_types::extension_to_type(file_extension);
-			if ((mime_type.find("text/") >= 0) ||
-					(mime_type.find("/xml") >= 0) ||
-					(mime_type.find("/javascript") >= 0) ||
-					(mime_type.find("/json") >= 0)) {
+			if ((mime_type.compare(0, 5, "text/") >= 0) ||
+					(mime_type.compare(0, 4, "/xml") >= 0) ||
+					(mime_type.compare(0, 10, "/javascript") >= 0) ||
+					(mime_type.compare(0, 5, "/json") >= 0)) {
 				// Add charset on text content
 				mime_type += ";charset=UTF-8";
 			}

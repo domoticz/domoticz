@@ -260,7 +260,7 @@ void Meteostick::SendWindSensor(const unsigned char Idx, const float Temp, const
 	//tsen.WIND.temperatureh = 0;
 	//tsen.WIND.temperaturel = 0;
 	//tsen.WIND.tempsign = (Temp >= 0) ? 0 : 1;
-	
+
 	float dWindSpeed = Speed * 3.6f;
 	float dWindChill = Temp;
 	if (dWindSpeed > 5 && Temp < 10)
@@ -337,7 +337,7 @@ void Meteostick::ParseLine()
 	switch (m_state)
 	{
 	case MSTATE_INIT:
-		if (sLine.find("# MeteoStick Version") == 0) {
+		if (sLine.compare(0, 20, "# MeteoStick Version") == 0) {
 			_log.Log(LOG_STATUS, sLine.c_str());
 			return;
 		}

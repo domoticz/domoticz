@@ -17,7 +17,7 @@ namespace http {
 	namespace server {
 
 uint16_t fastcgi_parser::request_id_ = 1;
-		
+
 //http://www.mit.edu/~yandros/doc/specs/fcgi-spec.html
 struct _tFCGI_Header {
 	uint8_t version;
@@ -281,7 +281,7 @@ bool fastcgi_parser::handlePHP(const server_settings &settings, const std::strin
 	}
 
 	//
-	
+
 	_tFCGI_Header gfci;
 	gfci.version = 1;
 	gfci.type = 1;
@@ -383,7 +383,7 @@ bool fastcgi_parser::handlePHP(const server_settings &settings, const std::strin
 			pret = pret.substr(tpos + 1);
 
 			//Check if we have a status return
-			if (theader.find("Status") == 0)
+			if (theader.compare(0, 6, "Status") == 0)
 			{
 				tpos = theader.find(':');
 				if (tpos == std::string::npos)

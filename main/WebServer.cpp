@@ -2071,7 +2071,7 @@ namespace http {
 				{
 					getline(infile, sLine);
 					root["LastLogTime"] = "";
-					if (sLine.find("Version ") == 0)
+					if (sLine.compare(0, 8, "Version ") == 0)
 						root["result"][ii]["level"] = 1;
 					else
 						root["result"][ii]["level"] = 0;
@@ -2124,7 +2124,7 @@ namespace http {
 			while (std::getline(stream, sLine))
 			{
 				root["LastLogTime"] = "";
-				if (sLine.find("Version ") == 0)
+				if (sLine.compare(0, 8, "Version ") == 0)
 					root["result"][ii]["level"] = 1;
 				else
 					root["result"][ii]["level"] = 0;
