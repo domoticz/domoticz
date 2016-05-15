@@ -163,8 +163,7 @@ Serial::readline (string &buffer, size_t size, string eol)
 {
   ScopedReadLock lock(this->pimpl_);
   size_t eol_len = eol.length ();
-  uint8_t *buffer_ = static_cast<uint8_t*>
-                              (alloca (size * sizeof (uint8_t)));
+  uint8_t buffer_[size];
   size_t read_so_far = 0;
   while (true)
   {
@@ -199,8 +198,8 @@ Serial::readlines (size_t size, string eol)
   ScopedReadLock lock(this->pimpl_);
   std::vector<std::string> lines;
   size_t eol_len = eol.length ();
-  uint8_t *buffer_ = static_cast<uint8_t*>
-    (alloca (size * sizeof (uint8_t)));
+  uint8_t buffer_[size];
+
   size_t read_so_far = 0;
   size_t start_of_line = 0;
   while (read_so_far < size) {
