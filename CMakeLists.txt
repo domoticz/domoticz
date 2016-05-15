@@ -3,6 +3,13 @@ cmake_minimum_required(VERSION 2.8.4)
 
 project(domoticz)
 
+IF(CMAKE_COMPILER_IS_GNUCXX)
+  SET(CMAKE_CXX_FLAGS "-O2 -flto -Wall")
+  SET(CMAKE_C_FLAGS "-O2 -flto -Wall")
+  SET(CMAKE_AR "gcc-ar")
+  SET(CMAKE_RANLIB "gcc-ranlib")
+ENDIF(CMAKE_COMPILER_IS_GNUCXX)
+
 option(USE_BUILTIN_LUA "Use builtin lua library" YES)
 IF(USE_BUILTIN_LUA)
   add_subdirectory (lua)
