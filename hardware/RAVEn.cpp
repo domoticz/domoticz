@@ -126,7 +126,7 @@ void RAVEn::readCallback(const char *indata, size_t inlen)
     }
 
     if(updated)
-        SendKwhMeter(CDomoticzHardwareBase::m_HwdID, 1, 255, m_currUsage, m_totalUsage, "Power Meter");
+        SendKwhMeter(m_HwdID, 1, 255, m_currUsage, m_totalUsage, "Power Meter");
     else
         _log.Log(LOG_ERROR, "RAVEn: Unknown node");
 }
