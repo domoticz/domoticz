@@ -24,7 +24,7 @@
 #define SUCCESS     0
 #define FAILURE     1
 
-csocket::csocket() : m_socketState(CLOSED), 
+csocket::csocket() : m_socketState(CLOSED),
                      m_remotePort(0)
 {
     m_socket = 0;
@@ -32,7 +32,7 @@ csocket::csocket() : m_socketState(CLOSED),
 
 void csocket::close()
 {
-	 if ( m_socketState != csocket::CLOSED || m_socketState != csocket::ERRORED)
+	 if ( m_socketState != csocket::CLOSED && m_socketState != csocket::ERRORED)
     {
 #ifdef WIN32
         closesocket(m_socket);
@@ -51,17 +51,17 @@ csocket::~csocket()
 
 int csocket::resolveHost(const std::string& szRemoteHostName, struct hostent** pHostEnt)
 {
-    if (szRemoteHostName.length() == 0) 
+    if (szRemoteHostName.length() == 0)
     {
         return FAILURE;
     }
 
     *pHostEnt = gethostbyname( szRemoteHostName.c_str() );
 
-    if (*pHostEnt == NULL) 
+    if (*pHostEnt == NULL)
     {
         unsigned long uhostname = inet_addr ( szRemoteHostName.c_str() );
-        *pHostEnt = gethostbyaddr( reinterpret_cast<char *>(&uhostname), 
+        *pHostEnt = gethostbyaddr( reinterpret_cast<char *>(&uhostname),
             sizeof(unsigned long),
             AF_INET);
 
@@ -77,14 +77,14 @@ int csocket::resolveHost(const std::string& szRemoteHostName, struct hostent** p
 
 int csocket::connect( const char* remoteHost, const unsigned int remotePort )
 {
-    if ( m_socketState != CLOSED ) 
+    if ( m_socketState != CLOSED )
     {
         return ERROR_INAPPROPRIATE_STATE;
     }
 
     struct hostent *pHostEnt = NULL;
     int status = resolveHost(remoteHost, &pHostEnt);
-    if (status == FAILURE || !pHostEnt) 
+    if (status == FAILURE || !pHostEnt)
     {
         return FAILURE;
     }
@@ -94,14 +94,14 @@ int csocket::connect( const char* remoteHost, const unsigned int remotePort )
 
     m_remoteSocketAddr.sin_family = pHostEnt->h_addrtype;
     memcpy((char *) &m_remoteSocketAddr.sin_addr.s_addr,
-        pHostEnt->h_addr_list[0], 
+        pHostEnt->h_addr_list[0],
         pHostEnt->h_length);
 
     m_remoteSocketAddr.sin_port = htons(m_remotePort);
 
 
 #ifdef WIN32
-    m_socket = WSASocket(AF_INET, SOCK_STREAM, 
+    m_socket = WSASocket(AF_INET, SOCK_STREAM,
         IPPROTO_TCP, 0 , 0 , 0);
 
     if (m_socket == INVALID_SOCKET)
@@ -120,40 +120,40 @@ int csocket::connect( const char* remoteHost, const unsigned int remotePort )
     m_localSocketAddr.sin_family = AF_INET;
 
     m_localSocketAddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    
+
     int         iRecvTimeout = 1;
-    setsockopt(m_socket, SOL_SOCKET, SO_RCVTIMEO, 
+    setsockopt(m_socket, SOL_SOCKET, SO_RCVTIMEO,
         (char*) &iRecvTimeout, sizeof(iRecvTimeout) );
 
     m_localSocketAddr.sin_port = htons(0);
 
-    status = bind( m_socket, 
-        (const sockaddr*)&(m_localSocketAddr),  
+    status = bind( m_socket,
+        (const sockaddr*)&(m_localSocketAddr),
         sizeof(struct sockaddr) );
 
-    if (status < 0) 
+    if (status < 0)
     {
         return FAILURE;
     }
 
-#ifdef WIN32 
+#ifdef WIN32
     int set = 1;
     setsockopt(m_socket, IPPROTO_TCP, TCP_NODELAY,  (char*) &set, sizeof(set) );
 #endif
 
     m_remoteSocketAddr.sin_family = pHostEnt->h_addrtype;
 
-    memcpy(&(m_remoteSocketAddr.sin_addr), 
-                pHostEnt->h_addr, 
+    memcpy(&(m_remoteSocketAddr.sin_addr),
+                pHostEnt->h_addr,
                 pHostEnt->h_length);
 
     m_remoteSocketAddr.sin_port = htons( m_remotePort );
 
-    status = ::connect(m_socket, 
-                    (const sockaddr*)&(m_remoteSocketAddr), 
+    status = ::connect(m_socket,
+                    (const sockaddr*)&(m_remoteSocketAddr),
                     sizeof(m_remoteSocketAddr)  );
 
-    if (status < 0) 
+    if (status < 0)
     {
         return FAILURE;
     }
@@ -178,30 +178,30 @@ int csocket::canRead( bool* readyToRead, float waitTime )
 
     timeval timeout;
 
-    if ( waitTime <= 0.0f ) 
+    if ( waitTime <= 0.0f )
     {
         timeout.tv_sec = 0;
         timeout.tv_usec = 0;
-    } 
-    else 
+    }
+    else
     {
 		timeout.tv_sec = static_cast<int>((waitTime));
 		timeout.tv_usec = static_cast<int>((1000000.0f * (waitTime - (float)timeout.tv_sec)));
     }
 
-    
+
 //#ifdef WIN32
     nfds = m_socket+1;
 //#endif
 
     int n = select(nfds, &fds, NULL, NULL, &timeout);
-    if ( n < 0 ) 
+    if ( n < 0 )
     {
         m_socketState = ERRORED;
         return FAILURE;
     }
 
-    if (n == 1) 
+    if (n == 1)
     {
         *readyToRead = true;
         return SUCCESS;
@@ -218,14 +218,14 @@ int csocket::canRead( bool* readyToRead, float waitTime )
 
 int csocket::read( char* pDataBuffer, unsigned int numBytesToRead, bool bReadAll )
 {
-    if (m_socketState != CONNECTED ) 
+    if (m_socketState != CONNECTED )
     {
         return ERROR_INAPPROPRIATE_STATE;
     }
 
     int numBytesRemaining = numBytesToRead;
 
-	do 
+	do
     {
 #ifdef WIN32
         int numBytesRead = recv( m_socket, pDataBuffer, numBytesRemaining, 0 );
@@ -235,21 +235,21 @@ int csocket::read( char* pDataBuffer, unsigned int numBytesToRead, bool bReadAll
 
         if (numBytesRead < 0)
         {
-            if ( bReadAll ) 
+            if ( bReadAll )
             {
 #ifdef WIN32
                 Sleep(BLOCK_RETRY_INTERVAL_MSECS);
 #else
                 usleep(BLOCK_RETRY_INTERVAL_MSECS * 1000);
 #endif
-            } 
-            else 
+            }
+            else
             {
                 return numBytesRead;
             }
-        } 
-        
-        if ( numBytesRead > 0 ) 
+        }
+
+        if ( numBytesRead > 0 )
         {
             numBytesRemaining -= numBytesRead;
             pDataBuffer += numBytesRead;
@@ -257,9 +257,9 @@ int csocket::read( char* pDataBuffer, unsigned int numBytesToRead, bool bReadAll
 
         if (numBytesRead == 0)
         {
-            break;              
+            break;
         }
-        
+
     } while ((numBytesRemaining > 0) && (bReadAll) );
 
     return(numBytesToRead - numBytesRemaining);
@@ -268,14 +268,14 @@ int csocket::read( char* pDataBuffer, unsigned int numBytesToRead, bool bReadAll
 
 int csocket::write( const char* pDataBuffer, unsigned int numBytesToWrite )
 {
-    if (m_socketState != CONNECTED ) 
+    if (m_socketState != CONNECTED )
     {
         return ERROR_INAPPROPRIATE_STATE;
     }
 
     int numBytesRemaining = numBytesToWrite;
 
-    while (numBytesRemaining  > 0) 
+    while (numBytesRemaining  > 0)
     {
 #ifdef WIN32
         int numBytesWritten = send ( m_socket, pDataBuffer, numBytesRemaining , 0 );
@@ -283,10 +283,10 @@ int csocket::write( const char* pDataBuffer, unsigned int numBytesToWrite )
         int numBytesWritten= ::write( m_socket, pDataBuffer, numBytesRemaining );
 #endif
 
-        if (numBytesWritten < 0) 
+        if (numBytesWritten < 0)
         {
             m_socketState = ERRORED;
-            return numBytesWritten;      
+            return numBytesWritten;
         }
 
         numBytesRemaining  -= numBytesWritten;
@@ -296,7 +296,7 @@ int csocket::write( const char* pDataBuffer, unsigned int numBytesToWrite )
     return(numBytesToWrite - numBytesRemaining);
 }
 
-csocket::SocketState csocket::getState( void ) const 
-{ 
-    return m_socketState; 
+csocket::SocketState csocket::getState( void ) const
+{
+    return m_socketState;
 }
