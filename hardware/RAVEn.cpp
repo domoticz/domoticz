@@ -1,6 +1,4 @@
-
 #include "stdafx.h"
-#ifndef WIN32
 #include "RAVEn.h"
 #include "../main/Helper.h"
 #include "../main/Logger.h"
@@ -9,8 +7,9 @@
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 #include "../tinyxpath/tinyxml.h"
-#include <usb.h>
-#include <stdint.h>
+
+//Rainforest RAVEn USB ZigBee Smart Meter Adapter
+//https://rainforestautomation.com/rfa-z106-raven/
 
 RAVEn::RAVEn(const int ID, const std::string& devname)
 : device_(devname), wptr_(buffer_), currUsage_(0), totalUsage_(0)
@@ -127,7 +126,7 @@ void RAVEn::readCallback(const char *indata, size_t inlen)
     }
 
     if(updated)
-        SendKwhMeter(CDomoticzHardwareBase::m_HwdID, 1, 255, currUsage_, totalUsage_, "Power Meter");
+        SendKwhMeter(m_HwdID, 1, 255, currUsage_, totalUsage_, "Power Meter");
     else
         _log.Log(LOG_ERROR, "RAVEn: Unknown node");
 }
@@ -138,4 +137,3 @@ bool RAVEn::WriteToHardware(const char *pdata, const unsigned char length)
 }
 
 
-#endif //WIN32

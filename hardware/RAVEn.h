@@ -1,6 +1,4 @@
 #pragma once
-
-#ifndef WIN32
 #include "DomoticzHardware.h"
 #include "ASyncSerial.h"
 #include <iostream>
@@ -30,4 +28,3 @@ private:
     double totalUsage_;
 };
 
-#endif //WIN32

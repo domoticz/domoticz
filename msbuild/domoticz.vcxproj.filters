@@ -408,6 +408,9 @@
     <Filter Include="Devices\Fitbit">
       <UniqueIdentifier>{db856641-3bbc-455d-8a88-9955fb74e49e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\Raven">
+      <UniqueIdentifier>{0854a79e-fd9c-4b55-a9fd-93077f3bad23}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -1834,6 +1837,9 @@
     <ClInclude Include="..\hardware\Fitbit.h">
       <Filter>Devices\Fitbit</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\RAVEn.h">
+      <Filter>Devices\Raven</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2390,6 +2396,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\Fitbit.cpp">
       <Filter>Devices\Fitbit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\RAVEn.cpp">
+      <Filter>Devices\Raven</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
