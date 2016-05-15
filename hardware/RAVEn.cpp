@@ -1,6 +1,4 @@
-
 #include "stdafx.h"
-#ifndef WIN32
 #include "RAVEn.h"
 #include "../main/Helper.h"
 #include "../main/Logger.h"
@@ -9,8 +7,9 @@
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 #include "../tinyxpath/tinyxml.h"
-#include <usb.h>
-#include <stdint.h>
+
+//Rainforest RAVEn USB ZigBee Smart Meter Adapter
+//https://rainforestautomation.com/rfa-z106-raven/
 
 RAVEn::RAVEn(const int ID, const std::string& devname)
 : device_(devname), m_wptr(m_buffer), m_currUsage(0), m_totalUsage(0)
@@ -138,4 +137,3 @@ bool RAVEn::WriteToHardware(const char *pdata, const unsigned char length)
 }
 
 
-#endif //WIN32

@@ -20,7 +20,6 @@
 
 */
 
-#ifndef WIN32
 #include "DomoticzHardware.h"
 #include "ASyncSerial.h"
 #include <iostream>
@@ -50,4 +49,3 @@ private:
     double m_totalUsage;
 };
 
-#endif //WIN32
