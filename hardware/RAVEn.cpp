@@ -96,7 +96,9 @@ void RAVEn::readCallback(const char *indata, size_t inlen)
     const char* endPtr = doc.Parse(buffer_);
     if (!endPtr)
     {
-        _log.Log(LOG_ERROR, "RAVEn: Not enough data received (%d): %s", len, data);
+#ifdef _DEBUG
+        _log.Log(LOG_ERROR, "RAVEn: Not enough data received (%d): %s", len, buffer_);
+#endif
         return;
     }
     else
