@@ -139,21 +139,46 @@ void C1Wire::SensorThread()
 	while (!m_stoprequested)
 	{
 		sleep_milliseconds(pollPeriod);
-		PollSensors();
+		if (0 == iteration++ % pollIterations) // may glitch on overflow, not disastrous
+		{
+			if (m_sql.m_bAcceptNewHardware || 0 == iteration) {
+				BuildSensorList();
+			}
+
+			PollSensors();
+		}
 	}
 }
+
+	_log.Log(LOG_STATUS, "1-Wire: Sensor thread terminating");
 
 void C1Wire::SwitchThread()
 {
 	int pollPeriod = 300 * 1000;
 	m_sql.GetPreferencesVar("1WireSwitchPollPeriod", pollPeriod);
 
+	// Rescan the bus once every 10 seconds if requested
+#define HARDWARE_RESCAN_PERIOD 10000
+	int rescanIterations = HARDWARE_RESCAN_PERIOD / pollPeriod;
+
+	int iteration = 0;
 
 	while (!m_stoprequested)
 	{
 		sleep_milliseconds(pollPeriod);
+
+		if (0 == iteration++ % rescanIterations) // may glitch on overflow, not disastrous
+		{
+			if (m_sql.m_bAcceptNewHardware || 0 == iteration)
+			{
+				BuildSwitchList();
+			}
+		}
+
 		PollSwitches();
 	}
+
+	_log.Log(LOG_STATUS, "1-Wire: Switch thread terminating");
 }
 
 
@@ -184,7 +209,7 @@ bool IsTemperatureValid(_e1WireFamilyType deviceFamily, float temperature)
 	if (temperature<=-300 || temperature>=381)
 		return false;
 
-	// Some devices has a power-on value at 85� and -127�, we have to filter it
+	// Some devices has a power-on value at 85C and -127C, we have to filter it
 	switch (deviceFamily)
 	{
 		case high_precision_digital_thermometer:
@@ -199,46 +224,43 @@ bool IsTemperatureValid(_e1WireFamilyType deviceFamily, float temperature)
 	return true;
 }
 
-void C1Wire::PollSensors()
-{
+void C1Wire::BuildSensorList() {
 	if (!m_system)
 		return;
 
-	// Get all devices
-	if ((m_sensors.size() == 0) || (m_sql.m_bAcceptNewHardware))
+	std::vector<_t1WireDevice> devices;
+	_log.Log(LOG_STATUS, "1-Wire: Searching sensors");
+	m_sensors.clear();
+	m_system->GetDevices(devices);
+
+	std::vector<_t1WireDevice>::const_iterator device;
+	for (device=devices.begin(); device!=devices.end(); ++device)
 	{
-		std::vector<_t1WireDevice> devices;
-		_log.Log(LOG_STATUS, "1-Wire: Searching sensors, size=%d acceptNewHardware=%d", m_sensors.size(), m_sql.m_bAcceptNewHardware);
-		m_sensors.clear();
-		m_system->GetDevices(devices);
-
-		std::vector<_t1WireDevice>::const_iterator device;
-		for (device=devices.begin(); device!=devices.end(); ++device)
+		switch((*device).family)
 		{
-			switch((*device).family)
-			{
-			case high_precision_digital_thermometer:
-			case Thermachron:
-			case Econo_Digital_Thermometer:
-			case Temperature_memory:
-			case programmable_resolution_digital_thermometer:
-			case Temperature_IO:
-			case Environmental_Monitors:
-			case _4k_ram_with_counter:
-			case quad_ad_converter:
-			case smart_battery_monitor:
-				m_sensors.push_back(*device);
-				break;
+		case high_precision_digital_thermometer:
+		case Thermachron:
+		case Econo_Digital_Thermometer:
+		case Temperature_memory:
+		case programmable_resolution_digital_thermometer:
+		case Temperature_IO:
+		case Environmental_Monitors:
+		case _4k_ram_with_counter:
+		case quad_ad_converter:
+		case smart_battery_monitor:
+			m_sensors.push_back(*device);
+			break;
 
-			default:
-				break;
-			}
-
+		default:
+			break;
 		}
-		devices.clear();
-	}
 
-	if (typeid(*m_system) == typeid(C1WireByOWFS) && (m_sensors.size() > 2))
+	}
+	devices.clear();
+}
+
+void C1Wire::StartSimultaneousTemperatureRead() {
+	if (typeid(*m_system) == typeid(C1WireByOWFS))
 	{
 		if (m_mainworker.GetVerboseLevel() == EVBL_DEBUG)
 		{
@@ -256,6 +278,17 @@ void C1Wire::PollSensors()
 			}
 			sleep_milliseconds(800);
 		}
+	}
+}
+
+void C1Wire::PollSensors()
+{
+	if (!m_system)
+		return;
+
+	if (m_sensors.size() > 2)
+	{
+		StartSimultaneousTemperatureRead();
 	}
 
 	// Parse our devices (have to test m_stoprequested because it can take some time in case of big networks)
@@ -325,47 +358,48 @@ void C1Wire::PollSensors()
 				ReportIlluminance(device.devid, m_system->GetIlluminance(device));
 				break;
 			}
-		default:
+		default: // not a supported sensor
 			break;
 		}
 	}
+}
+
+void C1Wire::BuildSwitchList() {
+	if (!m_system)
+		return;
+
+	std::vector<_t1WireDevice> devices;
+	_log.Log(LOG_STATUS, "1-Wire: Searching switches");
+	m_switches.clear();
+	m_system->GetDevices(devices);
+
+	std::vector<_t1WireDevice>::const_iterator device;
+	for (device=devices.begin(); device!=devices.end(); ++device)
+	{
+		switch((*device).family)
+		{
+		case Addresable_Switch:
+		case microlan_coupler:
+		case dual_addressable_switch_plus_1k_memory:
+		case _8_channel_addressable_switch:
+		case Temperature_IO:
+		case dual_channel_addressable_switch:
+		case _4k_EEPROM_with_PIO:
+			m_switches.push_back(*device);
+			break;
+
+		default:
+			break;
+		}
+
+	}
+	devices.clear();
 }
 
 void C1Wire::PollSwitches()
 {
 	if (!m_system)
 		return;
-
-	// Get all devices
-	if ((m_switches.size() == 0) || (m_sql.m_bAcceptNewHardware))
-	{
-		std::vector<_t1WireDevice> devices;
-		_log.Log(LOG_STATUS, "1-Wire: Searching switches, size=%d acceptNewHardware=%d", m_switches.size(), m_sql.m_bAcceptNewHardware);
-		m_switches.clear();
-		m_system->GetDevices(devices);
-
-		std::vector<_t1WireDevice>::const_iterator device;
-		for (device=devices.begin(); device!=devices.end(); ++device)
-		{
-			switch((*device).family)
-			{
-			case Addresable_Switch:
-			case microlan_coupler:
-			case dual_addressable_switch_plus_1k_memory:
-			case _8_channel_addressable_switch:
-			case Temperature_IO:
-			case dual_channel_addressable_switch:
-			case _4k_EEPROM_with_PIO:
-				m_switches.push_back(*device);
-				break;
-
-			default:
-				break;
-			}
-
-		}
-		devices.clear();
-	}
 
 	// Parse our devices (have to test m_stoprequested because it can take some time in case of big networks)
 	std::vector<_t1WireDevice>::const_iterator itt;
@@ -419,7 +453,7 @@ void C1Wire::PollSwitches()
 				break;
 			}
 
-		default: // Device is not actually supported
+		default: // Not a supported switch
 			break;
 		}
 	}

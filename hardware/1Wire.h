@@ -28,7 +28,10 @@ private:
 	bool StopHardware();
 	void SensorThread();
 	void SwitchThread();
+	void BuildSensorList();
+	void StartSimultaneousTemperatureRead();
 	void PollSensors();
+	void BuildSwitchList();
 	void PollSwitches();
 
 	// Messages to Domoticz
