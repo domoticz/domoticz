@@ -64,7 +64,7 @@ m_szSerialPort(devname)
 {
 	m_HwdID=ID;
 	m_iBaudRate=baud_rate;
-	
+
 	m_stoprequested=false;
 	m_bReceiverStarted = false;
 	m_bInBootloaderMode = false;
@@ -163,7 +163,7 @@ void RFXComSerial::Do_Work()
 
 	}
 	_log.Log(LOG_STATUS,"RFXCOM: Serial Worker stopped...");
-} 
+}
 
 
 bool RFXComSerial::OpenSerialDevice(const bool bIsFirmwareUpgrade)
@@ -519,7 +519,7 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename, std::map<unsigned 
 				_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
 				return false;
 			}
-			
+
 		}
 		//
 		chksum = ~chksum + 1;
@@ -556,13 +556,13 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename, std::map<unsigned 
 			}
 			break;
 		case 2:
-			//Extended Segment Address Record 
+			//Extended Segment Address Record
 			m_szUploadMessage = "RFXCOM: Bootloader type 2 not supported!";
 			_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
 			infile.close();
 			return false;
 		case 3:
-			//Start Segment Address Record 
+			//Start Segment Address Record
 			m_szUploadMessage = "RFXCOM: Bootloader type 3 not supported!";
 			_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
 			infile.close();
@@ -576,7 +576,7 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename, std::map<unsigned 
 				infile.close();
 				return false;
 			}
-			addrh = (rawLineBuf[4] << 8) | rawLineBuf[5]; 
+			addrh = (rawLineBuf[4] << 8) | rawLineBuf[5];
 			break;
 		case 5:
 			//Start Linear Address Record
@@ -607,8 +607,7 @@ bool RFXComSerial::EraseMemory(const int StartAddress, const int StopAddress)
 
 	while (BootAddr < StopAddress)
 	{
-		int nBlocks = ((StopAddress - StartAddress + 1) * PKT_bytesperaddr) / PKT_eraseblock;
-		nBlocks = (StopAddress - StartAddress + 1) / (PKT_eraseblock / PKT_bytesperaddr);
+		int nBlocks = (StopAddress - StartAddress + 1) / (PKT_eraseblock / PKT_bytesperaddr);
 		if (nBlocks > 255)
 			nBlocks = 255;
 

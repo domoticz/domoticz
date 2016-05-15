@@ -3044,9 +3044,9 @@ namespace http {
 				root["status"] = "OK";
 				root["title"] = "ChangeSceneDeviceOrder";
 
-				result = m_sql.safe_query("UPDATE SceneDevices SET [Order] = '%q' WHERE (ID='%q')",
+				(void)m_sql.safe_query("UPDATE SceneDevices SET [Order] = '%q' WHERE (ID='%q')",
 					oOrder.c_str(), idx.c_str());
-				result = m_sql.safe_query("UPDATE SceneDevices SET [Order] = '%q' WHERE (ID='%q')",
+				(void)m_sql.safe_query("UPDATE SceneDevices SET [Order] = '%q' WHERE (ID='%q')",
 					aOrder.c_str(), oID.c_str());
 			}
 			else if (cparam == "deleteallscenedevices")
@@ -3059,7 +3059,7 @@ namespace http {
 					return;
 				root["status"] = "OK";
 				root["title"] = "DeleteAllSceneDevices";
-				result = m_sql.safe_query("DELETE FROM SceneDevices WHERE (SceneRowID == %q)", idx.c_str());
+				(void)m_sql.safe_query("DELETE FROM SceneDevices WHERE (SceneRowID == %q)", idx.c_str());
 			}
 			else if (cparam == "getmanualhardware")
 			{
@@ -5446,8 +5446,7 @@ namespace http {
 				int urights=3;
 				if (bHaveUser)
 				{
-					int iUser=-1;
-					iUser=FindUser(session.username.c_str());
+					int iUser=FindUser(session.username.c_str());
 					if (iUser != -1)
 					{
 						urights = (int)m_users[iUser].userrights;
@@ -6775,11 +6774,10 @@ namespace http {
 
 			unsigned char tempsign = m_sql.m_tempsign[0];
 
-			bool bHaveUser = false;
-			int iUser = -1;
 			unsigned int totUserDevices = 0;
 			bool bShowScenes = true;
-			bHaveUser = (username != "");
+			int iUser = -1;
+			bool bHaveUser = (username != "");
 			if (bHaveUser)
 			{
 				iUser = FindUser(username.c_str());
@@ -7570,13 +7568,10 @@ namespace http {
 							root["result"][ii]["CameraIdx"] = scidx.str();
 						}
 
-						bool bIsSubDevice = false;
 						std::vector<std::vector<std::string> > resultSD;
 						resultSD = m_sql.safe_query("SELECT ID FROM LightSubDevices WHERE (DeviceRowID=='%q')",
 							sd[0].c_str());
-						bIsSubDevice = (resultSD.size() > 0);
-
-						root["result"][ii]["IsSubDevice"] = bIsSubDevice;
+						root["result"][ii]["IsSubDevice"] = (resultSD.size() > 0);
 
 						if (switchtype == STYPE_Doorbell)
 						{
@@ -7586,21 +7581,15 @@ namespace http {
 						else if (switchtype == STYPE_DoorLock)
 						{
 							root["result"][ii]["TypeImg"] = "door";
-							bool bIsOn = IsLightSwitchOn(lstatus);
-							root["result"][ii]["InternalState"] = (bIsOn == true) ? "Open" : "Closed";
-							if (bIsOn) {
-								lstatus = "Open";
-							}
-							else {
-								lstatus = "Closed";
-							}
+							lstatus = IsLightSwitchOn(lstatus) ? "Open" :  "Closed";
+							root["result"][ii]["InternalState"] = lstatus;
 							root["result"][ii]["Status"] = lstatus;
 						}
 						else if (switchtype == STYPE_PushOn)
 						{
 							root["result"][ii]["TypeImg"] = "push";
 							root["result"][ii]["Status"] = "";
-							root["result"][ii]["InternalState"] = (IsLightSwitchOn(lstatus) == true) ? "On" : "Off";
+							root["result"][ii]["InternalState"] = (IsLightSwitchOn(lstatus)) ? "On" : "Off";
 						}
 						else if (switchtype == STYPE_PushOff)
 						{

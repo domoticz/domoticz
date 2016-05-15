@@ -693,8 +693,7 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 	if (cmnd!=light2_sSetLevel)
 	{
 		//On/Off
-		unsigned char UpDown = 1;
-		UpDown = ((cmnd != light2_sOff) && (cmnd != light2_sGroupOff));
+		unsigned char UpDown = ((cmnd != light2_sOff) && (cmnd != light2_sGroupOff));
 
 
 		buf[1] = (RockerID<<DB3_RPS_NU_RID_SHIFT) | (UpDown<<DB3_RPS_NU_UD_SHIFT) | (Pressed<<DB3_RPS_NU_PR_SHIFT);//0x30;

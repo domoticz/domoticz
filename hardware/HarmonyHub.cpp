@@ -575,8 +575,6 @@ bool CHarmonyHub::StartCommunication(csocket* communicationcsocket, const std::s
 	memset(m_databuffer, 0, BUFFER_SIZE);
 	communicationcsocket->read(m_databuffer, BUFFER_SIZE, false);
 
-	std::string strData = m_databuffer;/* <- Expect: <?xml version='1.0' encoding='iso-8859-1'?><stream:stream from='' id='XXXXXXXX' version='1.0' xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams'><stream:features><mechanisms xmlns='urn:ietf:params:xml:ns:xmpp-sasl'><mechanism>PLAIN</mechanism></mechanisms></stream:features> */
-
 	data = "<auth xmlns=\"urn:ietf:params:xml:ns:xmpp-sasl\" mechanism=\"PLAIN\">";
 	std::string tmp = "\0";
 	tmp.append(strUserName);
@@ -589,7 +587,7 @@ bool CHarmonyHub::StartCommunication(csocket* communicationcsocket, const std::s
 	memset(m_databuffer, 0, BUFFER_SIZE);
 	communicationcsocket->read(m_databuffer, BUFFER_SIZE, false);
 
-	strData = m_databuffer; /* <- Expect: <success xmlns='urn:ietf:params:xml:ns:xmpp-sasl'/> */
+	std::string strData = m_databuffer; /* <- Expect: <success xmlns='urn:ietf:params:xml:ns:xmpp-sasl'/> */
 	if(strData != "<success xmlns='urn:ietf:params:xml:ns:xmpp-sasl'/>")
 	{
 		//errorString = "StartCommunication : connection error";
