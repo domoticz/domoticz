@@ -167,7 +167,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_Dummy, "Dummy (Does nothing, use for virtual switches only)" },
 		{ HTYPE_Tellstick, "Tellstick" },
 		{ HTYPE_PiFace, "PiFace - Raspberry Pi IO expansion board" },
-		{ HTYPE_S0SmartMeter, "S0 Meter USB" },
+		{ HTYPE_S0SmartMeterUSB, "S0 Meter USB" },
 		{ HTYPE_OpenThermGateway, "OpenTherm Gateway USB" },
 		{ HTYPE_TeleinfoMeter, "Teleinfo EDF USB" },
 		{ HTYPE_OpenThermGatewayTCP, "OpenTherm Gateway with LAN interface" },
@@ -224,6 +224,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_HTTPPOLLER, "HTTP/HTTPS poller" },
 		{ HTYPE_FITBIT, "Fitbit" },
 		{ HTYPE_RAVEn, "Rainforest RAVEn USB" },
+		{ HTYPE_S0SmartMeterTCP, "S0 Meter with LAN interface" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -3323,7 +3324,7 @@ bool IsSerialDevice(const _eHardwareTypes htype)
 {
 	return (
 		(htype == HTYPE_RFXtrx315) || (htype == HTYPE_RFXtrx433) || (htype == HTYPE_RFXtrx868) ||
-		(htype == HTYPE_P1SmartMeter) || (htype == HTYPE_Rego6XX) || (htype == HTYPE_DavisVantage) || (htype == HTYPE_S0SmartMeter) || (htype == HTYPE_OpenThermGateway) ||
+		(htype == HTYPE_P1SmartMeter) || (htype == HTYPE_Rego6XX) || (htype == HTYPE_DavisVantage) || (htype == HTYPE_S0SmartMeterUSB) || (htype == HTYPE_OpenThermGateway) ||
 		(htype == HTYPE_TeleinfoMeter) || (htype == HTYPE_OpenZWave) || (htype == HTYPE_EnOceanESP2) || (htype == HTYPE_EnOceanESP3) || (htype == HTYPE_Meteostick) ||
 		(htype == HTYPE_MySensorsUSB) || (htype == HTYPE_RFLINKUSB) || (htype == HTYPE_KMTronicUSB) || (htype == HTYPE_KMTronic433) || (htype == HTYPE_CurrentCostMeter) ||
         (htype == HTYPE_RAVEn)

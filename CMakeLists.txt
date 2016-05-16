@@ -292,6 +292,7 @@ hardware/RFXComSerial.cpp
 hardware/RFXComTCP.cpp
 hardware/S0MeterBase.cpp
 hardware/S0MeterSerial.cpp
+hardware/S0MeterTCP.cpp
 hardware/SatelIntegra.cpp
 hardware/SBFSpot.cpp
 hardware/serial/serial.cpp

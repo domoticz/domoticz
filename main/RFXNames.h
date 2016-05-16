@@ -96,7 +96,7 @@ enum _eHardwareTypes {
 	HTYPE_Wunderground,			//14
 	HTYPE_Dummy,				//15
 	HTYPE_PiFace,				//16
-	HTYPE_S0SmartMeter,			//17
+	HTYPE_S0SmartMeterUSB,		//17
 	HTYPE_OpenThermGateway,		//18
 	HTYPE_TeleinfoMeter,		//19
 	HTYPE_OpenThermGatewayTCP,	//20
@@ -156,6 +156,7 @@ enum _eHardwareTypes {
 	HTYPE_HTTPPOLLER,			//74
 	HTYPE_FITBIT,				//75
 	HTYPE_RAVEn,	    		//75
+	HTYPE_S0SmartMeterTCP,		//76
 	HTYPE_END
 };
 
