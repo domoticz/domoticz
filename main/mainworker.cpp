@@ -42,9 +42,9 @@
 #include "../hardware/Tellstick.h"
 #include "../hardware/PiFace.h"
 #include "../hardware/S0MeterSerial.h"
+#include "../hardware/S0MeterTCP.h"
 #include "../hardware/OTGWSerial.h"
 #include "../hardware/OTGWTCP.h"
-//#include "../hardware/S0MeterTCP.h"
 #include "../hardware/Teleinfo.h"
 #include "../hardware/Limitless.h"
 #include "../hardware/MochadTCP.h"
@@ -591,7 +591,7 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_P1SmartMeter:
 	case HTYPE_Rego6XX:
 	case HTYPE_DavisVantage:
-	case HTYPE_S0SmartMeter:
+	case HTYPE_S0SmartMeterUSB:
 	case HTYPE_OpenThermGateway:
 	case HTYPE_TeleinfoMeter:
 	case HTYPE_MySensorsUSB:
@@ -630,10 +630,9 @@ bool MainWorker::AddHardwareFromParams(
 			{
 				pHardware = new CDavisLoggerSerial(ID,SerialPort, 19200);
 			}
-			else if (Type==HTYPE_S0SmartMeter)
+			else if (Type==HTYPE_S0SmartMeterUSB)
 			{
-				int baudrate=9600;
-				pHardware = new S0MeterSerial(ID,SerialPort, baudrate, Address);
+				pHardware = new S0MeterSerial(ID,SerialPort, 9600);
 			}
 			else if (Type == HTYPE_Meteostick)
 			{
@@ -727,6 +726,10 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_RFLINKTCP:
 		//LAN
 		pHardware = new CRFLinkTCP(ID, Address, Port);
+		break;
+	case HTYPE_S0SmartMeterTCP:
+		//LAN
+		pHardware = new S0MeterTCP(ID, Address, Port);
 		break;
 	case HTYPE_MQTT:
 		//LAN

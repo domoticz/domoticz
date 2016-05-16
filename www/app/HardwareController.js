@@ -118,16 +118,16 @@ define(['app'], function (app) {
                     Mode1 = baudrate;
                 }
 
-                var address="";
+                var extra="";
                 if (text.indexOf("S0 Meter") >= 0)
                 {
-                    address=$("#hardwarecontent #divremote #tcpaddress").val();
+					extra = $.devExtra;
                 }
 
                 $.ajax({
                      url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
                         "&port=" + encodeURIComponent(serialport) +
-                        "&address=" + address +
+                        "&extra=" + extra +
                         "&name=" + encodeURIComponent(name) +
                         "&enabled=" + bEnabled +
                         "&idx=" + idx +
@@ -173,10 +173,17 @@ define(['app'], function (app) {
                     ShowNotify($.t('Please enter an Valid Port!'), 2500, true);
                     return;
                 }
+                var extra="";
+                if (text.indexOf("S0 Meter") >= 0)
+                {
+					extra = $.devExtra;
+                }
+
                 $.ajax({
                      url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
                         "&address=" + address +
                         "&port=" + port +
+                        "&extra=" + extra +
                         "&name=" + encodeURIComponent(name) +
                         "&enabled=" + bEnabled +
                         "&idx=" + idx +
@@ -3792,8 +3799,8 @@ define(['app'], function (app) {
 							HwTypeStr+=' <span class="label label-info lcursor" onclick="EditRFXCOMMode(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Set Mode") + '</span>';
 						}
                     }
-                    else if (HwTypeStr.indexOf("S0 Meter USB") >= 0) {
-                        HwTypeStr+=' <span class="label label-info lcursor" onclick="EditS0MeterType(' + item.idx + ',\'' + item.Name + '\',\'' + item.Address + '\');">' + $.t("Set Mode") + '</span>';
+                    else if (HwTypeStr.indexOf("S0 Meter") >= 0) {
+                        HwTypeStr+=' <span class="label label-info lcursor" onclick="EditS0MeterType(' + item.idx + ',\'' + item.Name + '\',\'' + item.Extra + '\');">' + $.t("Set Mode") + '</span>';
                     }
                     else if (HwTypeStr.indexOf("Limitless") >= 0) {
                         HwTypeStr+=' <span class="label label-info lcursor" onclick="EditLimitlessType(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Set Mode") + '</span>';
@@ -3914,9 +3921,6 @@ define(['app'], function (app) {
                     }
 
                     var dispAddress=item.Address;
-                    if (HwTypeStr.indexOf("S0 Meter") >= 0) {
-                        dispAddress="";
-                    }
                     var addId = oTable.fnAddData( {
                         "DT_RowId": item.idx,
                         "Username": item.Username,
@@ -3974,7 +3978,9 @@ define(['app'], function (app) {
                         $('#hardwarecontent #hardwareparamstable #enabled').prop('checked',(data["Enabled"]=="true"));
                         $('#hardwarecontent #hardwareparamstable #combodatatimeout').val(data["DataTimeout"]);
 
-                        UpdateHardwareParamControls();
+						$.devExtra=data["Extra"];
+
+						UpdateHardwareParamControls();
 
                         if ((data["Type"].indexOf("TE923") >= 0)||
                            (data["Type"].indexOf("Volcraft") >= 0)||
@@ -3990,10 +3996,6 @@ define(['app'], function (app) {
                         }
                         else if (data["Type"].indexOf("USB") >= 0) {
                             $("#hardwarecontent #hardwareparamsserial #comboserialport").val(data["IntPort"]);
-                            if (data["Type"].indexOf("S0 Meter") >= 0)
-                            {
-                                $("#hardwarecontent #divremote #tcpaddress").val(data["Address"]);
-                            }
                             if (data["Type"].indexOf("MySensors") >= 0)
                             {
                                 $("#hardwarecontent #divbaudratemysensors #combobaudrate").val(data["Mode1"]);

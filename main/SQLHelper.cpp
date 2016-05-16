@@ -31,7 +31,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 103
+#define DB_VERSION 104
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -1255,7 +1255,7 @@ bool CSQLHelper::OpenDatabase()
 			//S0 Meter patch
 			std::stringstream szQuery2;
 			std::vector<std::vector<std::string> > result;
-			szQuery2 << "SELECT ID, Mode1, Mode2, Mode3, Mode4 FROM HARDWARE WHERE([Type]==" << HTYPE_S0SmartMeter << ")";
+			szQuery2 << "SELECT ID, Mode1, Mode2, Mode3, Mode4 FROM HARDWARE WHERE([Type]==" << HTYPE_S0SmartMeterUSB << ")";
 			result = query(szQuery2.str());
 			if (result.size() > 0)
 			{
@@ -2018,6 +2018,26 @@ bool CSQLHelper::OpenDatabase()
 		if (dbversion < 103)
 		{
 			FixDaylightSaving();
+		}
+		if (dbversion < 104)
+		{
+			//S0 Meter patch
+			std::stringstream szQuery2;
+			std::vector<std::vector<std::string> > result;
+			szQuery2 << "SELECT ID, Address FROM Hardware WHERE([Type]==" << HTYPE_S0SmartMeterUSB << ")";
+			result = query(szQuery2.str());
+			if (result.size() > 0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
+					szQuery2.clear();
+					szQuery2.str("");
+					szQuery2 << "UPDATE Hardware SET Extra='" << sd[1] << "', Address='' WHERE (ID=" << sd[0] << ")";
+					query(szQuery2.str());
+				}
+			}
 		}
 	}
 	else if (bNewInstall)
