@@ -12,7 +12,7 @@
 //https://rainforestautomation.com/rfa-z106-raven/
 
 RAVEn::RAVEn(const int ID, const std::string& devname)
-: device_(devname), wptr_(buffer_), currUsage_(0), totalUsage_(0)
+: device_(devname), m_wptr(m_buffer), m_currUsage(0), m_totalUsage(0)
 {
     m_HwdID = ID;
 }
@@ -79,34 +79,34 @@ void RAVEn::readCallback(const char *indata, size_t inlen)
     }
     size_t len = (indata+inlen) - data;
 #ifdef _DEBUG
-    _log.Log(LOG_NORM, "RAVEn::readCallback got %d, have %d.  Incoming: %s, Current: %s", len, wptr_-buffer_, data, buffer_);
+    _log.Log(LOG_NORM, "RAVEn::readCallback got %d, have %d.  Incoming: %s, Current: %s", len, m_wptr-m_buffer, data, m_buffer);
 #endif
-    if(wptr_+len > buffer_+MAX_BUFFER_LEN)
+    if(m_wptr+len > m_buffer+MAX_BUFFER_LEN)
     {
         _log.Log(LOG_ERROR, "Exceeded buffer space...resetting buffer");
-        wptr_ = buffer_;
+        m_wptr = m_buffer;
     }
 
-    memcpy(wptr_, data, len);
-    wptr_ += len;
-    *wptr_ = '\0';
+    memcpy(m_wptr, data, len);
+    m_wptr += len;
+    *m_wptr = '\0';
 
     TiXmlDocument doc;
-    const char* endPtr = doc.Parse(buffer_);
+    const char* endPtr = doc.Parse(m_buffer);
     if (!endPtr)
     {
 #ifdef _DEBUG
-        _log.Log(LOG_ERROR, "RAVEn: Not enough data received (%d): %s", len, buffer_);
+        _log.Log(LOG_ERROR, "RAVEn: Not enough data received (%d): %s", len, m_buffer);
 #endif
         return;
     }
     else
     {
 #ifdef _DEBUG
-        _log.Log(LOG_NORM, "RAVEn::shifting buffer after parsing %d with %d bytes remaining: %s", endPtr - buffer_, wptr_ - endPtr, endPtr);
+        _log.Log(LOG_NORM, "RAVEn::shifting buffer after parsing %d with %d bytes remaining: %s", endPtr - m_buffer, m_wptr - endPtr, endPtr);
 #endif
-        memmove(buffer_, endPtr, wptr_ - endPtr);
-        wptr_ = buffer_ + (wptr_ - endPtr);
+        memmove(m_buffer, endPtr, m_wptr - endPtr);
+        m_wptr = m_buffer + (m_wptr - endPtr);
     }
 
     TiXmlElement *pRoot;
@@ -115,18 +115,18 @@ void RAVEn::readCallback(const char *indata, size_t inlen)
     bool updated=false;
     if (pRoot)
     {
-        currUsage_ = 1000*double(strtoul(pRoot->FirstChildElement("Demand")->GetText(), NULL, 16))/strtoul(pRoot->FirstChildElement("Divisor")->GetText(), NULL, 16);
+        m_currUsage = 1000*double(strtoul(pRoot->FirstChildElement("Demand")->GetText(), NULL, 16))/strtoul(pRoot->FirstChildElement("Divisor")->GetText(), NULL, 16);
         updated = true;
     }
     pRoot = doc.FirstChildElement("CurrentSummationDelivered");
     if(pRoot)
     {
-        totalUsage_ = double(strtoul(pRoot->FirstChildElement("SummationDelivered")->GetText(), NULL, 16))/strtoul(pRoot->FirstChildElement("Divisor")->GetText(), NULL, 16);
+        m_totalUsage = double(strtoul(pRoot->FirstChildElement("SummationDelivered")->GetText(), NULL, 16))/strtoul(pRoot->FirstChildElement("Divisor")->GetText(), NULL, 16);
         updated = true;
     }
 
     if(updated)
-        SendKwhMeter(m_HwdID, 1, 255, currUsage_, totalUsage_, "Power Meter");
+        SendKwhMeter(m_HwdID, 1, 255, m_currUsage, m_totalUsage, "Power Meter");
     else
         _log.Log(LOG_ERROR, "RAVEn: Unknown node");
 }
