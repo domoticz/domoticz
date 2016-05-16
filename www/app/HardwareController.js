@@ -105,6 +105,19 @@ define(['app'], function (app) {
                     Mode1 = baudrate;
                 }
 
+                if (text.indexOf("P1 Smart Meter") >= 0)
+                {
+                    var baudrate=$("#hardwarecontent #divbaudratep1 #combobaudratep1 option:selected").val();
+
+                    if (typeof baudrate == 'undefined')
+                    {
+                        ShowNotify($.t('No baud rate selected!'), 2500, true);
+                        return;
+                    }
+
+                    Mode1 = baudrate;
+                }
+
                 var address="";
                 if (text.indexOf("S0 Meter") >= 0)
                 {
@@ -465,13 +478,13 @@ define(['app'], function (app) {
                 });
             }
             else if (
-				(text.indexOf("ICY") >= 0) || 
-				(text.indexOf("Toon") >= 0) || 
-				(text.indexOf("Atag") >= 0) || 
-				(text.indexOf("Nest Th") >= 0) || 
-				(text.indexOf("PVOutput") >= 0) || 
-				(text.indexOf("Netatmo") >= 0) || 
-				(text.indexOf("Fitbit") >= 0) || 
+				(text.indexOf("ICY") >= 0) ||
+				(text.indexOf("Toon") >= 0) ||
+				(text.indexOf("Atag") >= 0) ||
+				(text.indexOf("Nest Th") >= 0) ||
+				(text.indexOf("PVOutput") >= 0) ||
+				(text.indexOf("Netatmo") >= 0) ||
+				(text.indexOf("Fitbit") >= 0) ||
 				(text.indexOf("Thermosmart") >= 0)
 			) {
                 var username = $("#hardwarecontent #divlogin #username").val();
@@ -673,6 +686,19 @@ define(['app'], function (app) {
                 if (text.indexOf("MySensors") >= 0)
                 {
                     var baudrate=$("#hardwarecontent #divbaudratemysensors #combobaudrate option:selected").val();
+
+                    if (typeof baudrate == 'undefined')
+                    {
+                        ShowNotify($.t('No baud rate selected!'), 2500, true);
+                        return;
+                    }
+
+                    Mode1 = baudrate;
+                }
+
+                if (text.indexOf("P1 Smart Meter") >= 0)
+                {
+                    var baudrate=$("#hardwarecontent #divbaudratep1 #combobaudratep1 option:selected").val();
 
                     if (typeof baudrate == 'undefined')
                     {
@@ -1021,9 +1047,9 @@ define(['app'], function (app) {
 				(text.indexOf("Atag") >= 0) ||
 				(text.indexOf("Nest Th") >= 0) ||
 				(text.indexOf("PVOutput") >= 0) ||
-				(text.indexOf("Netatmo") >= 0) || 
-				(text.indexOf("Fitbit") >= 0) || 
-				(text.indexOf("Thermosmart") >= 0) || 
+				(text.indexOf("Netatmo") >= 0) ||
+				(text.indexOf("Fitbit") >= 0) ||
+				(text.indexOf("Thermosmart") >= 0) ||
 				(text.indexOf("HTTP") >= 0)
 			) {
                 var username=$("#hardwarecontent #divlogin #username").val();
@@ -1216,13 +1242,6 @@ define(['app'], function (app) {
 
             $('#hardwarecontent #idx').val(idx);
             $('#hardwarecontent #comborego6xxtype').val(Mode1);
-        }
-
-        SetP1USBType = function()
-        {
-          $.post("setp1usbtype.webem", $("#hardwarecontent #p1usbtype").serialize(), function(data) {
-           ShowHardware();
-          });
         }
 
         SetCCUSBType = function()
@@ -2515,25 +2534,6 @@ define(['app'], function (app) {
                     SwitchLayout('Dashboard');
                 });
             });
-        }
-
-        EditP1USB = function(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5,Mode6)
-        {
-            $.devIdx=idx;
-            cursordefault();
-            var htmlcontent = '';
-            htmlcontent='<p><center><h2><span data-i18n="Device"></span>: ' + name + '</h2></center></p>\n';
-            htmlcontent+=$('#p1usbeedit').html();
-            $('#hardwarecontent').html(GetBackbuttonHTMLTable('ShowHardware')+htmlcontent);
-            $('#hardwarecontent').i18n();
-
-            $('#hardwarecontent #submitbuttonp1usb').click(function (e) {
-                e.preventDefault();
-                SetP1USBType();
-            });
-
-            $('#hardwarecontent #idx').val(idx);
-            $('#hardwarecontent #P1Baudrate').val(Mode1);
         }
 
         EditS0MeterType = function(idx,name,Address)
@@ -3835,9 +3835,6 @@ define(['app'], function (app) {
                     else if (HwTypeStr.indexOf("Logitech Media Server") >= 0) {
                         HwTypeStr += ' <span class="label label-info lcursor" onclick="EditLMS(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2 + ',' + item.Mode3 + ',' + item.Mode4 + ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Setup") + '</span>';
                     }
-                    else if (HwTypeStr.indexOf("P1 Smart Meter USB") >= 0) {
-                        HwTypeStr+=' <span class="label label-info lcursor" onclick="EditP1USB(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Setup") + '</span>';
-                    }
                     else if (HwTypeStr.indexOf("Dummy") >= 0) {
                         HwTypeStr+=' <span class="label label-info lcursor" onclick="CreateDummySensors(' + item.idx + ',\'' + item.Name + '\');">' + $.t("Create Virtual Sensors") + '</span>';
                     }
@@ -4001,6 +3998,10 @@ define(['app'], function (app) {
                             {
                                 $("#hardwarecontent #divbaudratemysensors #combobaudrate").val(data["Mode1"]);
                             }
+                            if (data["Type"].indexOf("P1 Smart Meter") >= 0)
+                            {
+                                $("#hardwarecontent #divbaudratep1 #combobaudratep1").val(data["Mode1"]);
+                            }
                         }
                         else if (((data["Type"].indexOf("LAN") >= 0) && (data["Type"].indexOf("YouLess") == -1) && (data["Type"].indexOf("Satel") == -1)) ||(data["Type"].indexOf("Domoticz") >= 0) ||(data["Type"].indexOf("Harmony") >= 0)) {
                             $("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
@@ -4123,6 +4124,7 @@ define(['app'], function (app) {
             $("#hardwarecontent #lblusername").show();
 
             $("#hardwarecontent #divbaudratemysensors").hide();
+            $("#hardwarecontent #divbaudratep1").hide();
             $("#hardwarecontent #divlocation").hide();
             $("#hardwarecontent #divphilipshue").hide();
             $("#hardwarecontent #divwinddelen").hide();
@@ -4148,6 +4150,10 @@ define(['app'], function (app) {
                 if (text.indexOf("MySensors") >= 0)
                 {
                     $("#hardwarecontent #divbaudratemysensors").show();
+                }
+                if (text.indexOf("P1 Smart Meter") >= 0)
+                {
+                    $("#hardwarecontent #divbaudratep1").show();
                 }
                 $("#hardwarecontent #divserial").show();
                 $("#hardwarecontent #divremote").hide();
