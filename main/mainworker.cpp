@@ -724,7 +724,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_1WIRE:
 		//1-Wire file system
-		pHardware = new C1Wire(ID);
+		pHardware = new C1Wire(ID, Mode1, Mode2, Filename);
 		break;
 	case HTYPE_Pinger:
 		//System Alive Checker (Ping)

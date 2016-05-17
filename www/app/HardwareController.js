@@ -44,11 +44,34 @@ define(['app'], function (app) {
             var datatimeout=$('#hardwarecontent #hardwareparamstable #combodatatimeout').val();
 
             var text = $("#hardwarecontent #hardwareparamstable #combotype option:selected").text();
-            if (
+
+            if (text.indexOf("1-Wire") >= 0)
+            {
+    			var extra=$("#hardwarecontent #div1wire #owfspath").val();
+    			var Mode1 = $("#hardwarecontent #div1wire #OneWireSensorPollPeriod").val();
+    			var Mode2 = $("#hardwarecontent #div1wire #OneWireSwitchPollPeriod").val();
+    			$.ajax({
+    				url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+    				"&extra=" + encodeURIComponent(extra) +
+    				"&name=" + encodeURIComponent(name) +
+    				"&enabled=" + bEnabled +
+    				"&idx=" + idx +
+    				"&datatimeout=" + datatimeout +
+    				"&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
+    				async: false,
+    				dataType: 'json',
+    				success: function(data) {
+    					RefreshHardwareTable();
+    				},
+    				error: function(){
+    					ShowNotify($.t('Problem updating hardware!'), 2500, true);
+    				}
+    			});
+            }
+            else if (
 				(text.indexOf("Panasonic") >= 0) ||
 				(text.indexOf("TE923") >= 0) ||
 				(text.indexOf("Volcraft") >= 0) ||
-				(text.indexOf("1-Wire") >= 0) ||
 				(text.indexOf("GPIO") >= 0) ||
 				(text.indexOf("BMP085") >= 0) ||
 				(text.indexOf("HTU21D") >= 0) ||
@@ -62,7 +85,7 @@ define(['app'], function (app) {
             {
                 $.ajax({
                      url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
-                        "&port=1&name=" + encodeURIComponent(name) +
+                        "&name=" + encodeURIComponent(name) +
                         "&enabled=" + bEnabled +
                         "&idx=" + idx +
                         "&datatimeout=" + datatimeout +
@@ -398,7 +421,6 @@ define(['app'], function (app) {
                 }
                 $.ajax({
                      url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
-                        "&port=1" +
                         "&username=" + encodeURIComponent(apikey) +
                         "&password=" + encodeURIComponent(location) +
                         "&name=" + encodeURIComponent(name) +
@@ -439,7 +461,6 @@ define(['app'], function (app) {
 
                 $.ajax({
                      url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
-						"&port=1" +
                         "&username=" + encodeURIComponent(serial) +
                         "&password=" + encodeURIComponent(apikey) +
                         "&name=" + encodeURIComponent(name) +
@@ -467,7 +488,6 @@ define(['app'], function (app) {
                 }
                 $.ajax({
                      url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
-                        "&port=1" +
                         "&username=" + encodeURIComponent(configlocation) +
                         "&name=" + encodeURIComponent(name) +
                         "&enabled=" + bEnabled +
@@ -498,7 +518,6 @@ define(['app'], function (app) {
                 var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
                 $.ajax({
                     url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
-                       "&port=1" +
                        "&username=" + encodeURIComponent(username) +
                        "&password=" + encodeURIComponent(password) +
                        "&name=" + encodeURIComponent(name) +
@@ -651,11 +670,92 @@ define(['app'], function (app) {
 
             var text = $("#hardwarecontent #hardwareparamstable #combotype option:selected").text();
 
-            if (
+            if (text.indexOf("1-Wire") >= 0)
+            {
+                var owfspath=$("#hardwarecontent #div1wire #owfspath").val();
+                var oneWireSensorPollPeriod=$("#hardwarecontent #div1wire #OneWireSensorPollPeriod").val();
+                if (oneWireSensorPollPeriod=="")
+                {
+                    ShowNotify($.t('Please enter a poll period for the sensors'), 2500, true);
+                    return;
+                }
+                var oneWireSwitchPollPeriod=$("#hardwarecontent #div1wire #OneWireSwitchPollPeriod").val();
+                if (oneWireSwitchPollPeriod=="")
+                {
+                    ShowNotify($.t('Please enter a poll period for the switches'), 2500, true);
+                    return;
+                }
+                var intRegex = /^\d+$/;
+                if(!intRegex.test(oneWireSensorPollPeriod)) {
+                    ShowNotify($.t('Please enter a valid poll period for the sensors'), 2500, true);
+                    return;
+                }
+
+                if(!intRegex.test(oneWireSwitchPollPeriod)) {
+                    ShowNotify($.t('Please enter a valid poll period for the switches'), 2500, true);
+                    return;
+                }
+
+                $.ajax({
+                	url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&extra=" + encodeURIComponent(owfspath) +
+                    	"&Mode1=" + oneWireSensorPollPeriod + "&Mode2=" + oneWireSwitchPollPeriod + "&name=" + encodeURIComponent(name) +
+                    	"&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
+                    async: false,
+                    dataType: 'json',
+                    success: function(data) {
+                    	RefreshHardwareTable();
+                    },
+                    error: function(){
+                        ShowNotify($.t('Problem adding hardware!'), 2500, true);
+                    }
+                });
+           }
+            else if (
+					(text.indexOf("LAN") >= 0 &&
+					text.indexOf("YouLess") == -1 &&
+					text.indexOf("ETH8020") == -1 &&
+					text.indexOf("Sterbox") == -1 &&
+					text.indexOf("Anna") == -1 &&
+					text.indexOf("KMTronic") == -1
+					&& text.indexOf("MQTT") == -1 &&
+					text.indexOf("Integra") == -1 &&
+					text.indexOf("Razberry") == -1
+					)
+				)
+            {
+                var address=$("#hardwarecontent #divremote #tcpaddress").val();
+                if (address=="")
+                {
+                    ShowNotify($.t('Please enter an Address!'), 2500, true);
+                    return;
+                }
+                var port=$("#hardwarecontent #divremote #tcpport").val();
+                if (port=="")
+                {
+                    ShowNotify($.t('Please enter an Port!'), 2500, true);
+                    return;
+                }
+                var intRegex = /^\d+$/;
+                if(!intRegex.test(port)) {
+                    ShowNotify($.t('Please enter an Valid Port!'), 2500, true);
+                    return;
+                }
+                $.ajax({
+                     url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
+                     async: false,
+                     dataType: 'json',
+                     success: function(data) {
+                        RefreshHardwareTable();
+                     },
+                     error: function(){
+                            ShowNotify($.t('Problem adding hardware!'), 2500, true);
+                     }
+                });
+            }
+            else if (
 				(text.indexOf("Panasonic") >= 0) ||
 				(text.indexOf("TE923") >= 0) ||
 				(text.indexOf("Volcraft") >= 0) ||
-				(text.indexOf("1-Wire") >= 0) ||
 				(text.indexOf("BMP085") >= 0) ||
         (text.indexOf("HTU21D") >= 0) ||
 				(text.indexOf("Dummy") >= 0) ||
@@ -669,7 +769,7 @@ define(['app'], function (app) {
 				)
             {
                 $.ajax({
-                     url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&port=1&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
+                     url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
                      async: false,
                      dataType: 'json',
                      success: function(data) {
@@ -914,7 +1014,7 @@ define(['app'], function (app) {
                     return;
                 }
                 $.ajax({
-                     url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&port=1" + "&username=" + encodeURIComponent(apikey) + "&password=" + encodeURIComponent(location) + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
+                     url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&username=" + encodeURIComponent(apikey) + "&password=" + encodeURIComponent(location) + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
                      async: false,
                      dataType: 'json',
                      success: function(data) {
@@ -965,7 +1065,6 @@ define(['app'], function (app) {
                 }
                 $.ajax({
                      url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
-                        "&port=1" +
                         "&username=" + encodeURIComponent(configlocation) +
                         "&name=" + encodeURIComponent(name) +
                         "&enabled=" + bEnabled +
@@ -1030,8 +1129,7 @@ define(['app'], function (app) {
                 }
                 $.ajax({
                      url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
-						"&port=1" +
-                        "&name=" + encodeURIComponent(name) +
+						"&name=" + encodeURIComponent(name) +
                         "&username=" + encodeURIComponent(serial) +
                         "&password=" + encodeURIComponent(apikey) +
                         "&enabled=" + bEnabled +
@@ -1063,7 +1161,6 @@ define(['app'], function (app) {
                 var password=encodeURIComponent($("#hardwarecontent #divlogin #password").val());
                 $.ajax({
                      url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
-                     "&port=1" +
                      "&username=" + encodeURIComponent(username) +
                      "&password=" + encodeURIComponent(password) +
                      "&name=" + encodeURIComponent(name) +
@@ -3750,10 +3847,6 @@ define(['app'], function (app) {
                     {
                         SerialName="USB";
                     }
-                    else if (item.Type == 12)
-                    {
-                        SerialName="System";
-                    }
                     else if ((item.Type == 13)||(item.Type == 71))
                     {
                         SerialName="I2C";
@@ -3984,7 +4077,6 @@ define(['app'], function (app) {
 
                         if ((data["Type"].indexOf("TE923") >= 0)||
                            (data["Type"].indexOf("Volcraft") >= 0)||
-                           (data["Type"].indexOf("1-Wire") >= 0)||
                            (data["Type"].indexOf("BMP085") >= 0)||
                            (data["Type"].indexOf("HTU21D") >= 0)||
                            (data["Type"].indexOf("Dummy") >= 0)||
@@ -3993,6 +4085,11 @@ define(['app'], function (app) {
                            (data["Type"].indexOf("Tellstick") >= 0))
                         {
                             //nothing to be set
+                        }
+                        else if (data["Type"].indexOf("1-Wire") >= 0) {
+                            $("#hardwarecontent #hardwareparams1wire #owfspath").val(data["Extra"]);
+                            $("#hardwarecontent #hardwareparams1wire #OneWireSensorPollPeriod").val(data["Mode1"]);
+                            $("#hardwarecontent #hardwareparams1wire #OneWireSwitchPeriod").val(data["Mode2"]);
                         }
                         else if (data["Type"].indexOf("USB") >= 0) {
                             $("#hardwarecontent #hardwareparamsserial #comboserialport").val(data["IntPort"]);
@@ -4132,6 +4229,7 @@ define(['app'], function (app) {
             $("#hardwarecontent #divwinddelen").hide();
             $("#hardwarecontent #divmqtt").hide();
             $("#hardwarecontent #divsolaredgeapi").hide();
+            $("#hardwarecontent #div1wire").hide();
 
             if ((text.indexOf("TE923") >= 0)||
                (text.indexOf("Volcraft") >= 0)||
@@ -4285,6 +4383,15 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
                 $("#hardwarecontent #hardwareparamsremote #tcpport").val(20000);
+            }
+			else if (text.indexOf("1-Wire") >= 0)
+            {
+	            $("#hardwarecontent #div1wire").show();
+                $("#hardwarecontent #divserial").hide();
+                $("#hardwarecontent #divremote").hide();
+                $("#hardwarecontent #divlogin").hide();
+                $("#hardwarecontent #divunderground").hide();
+                $("#hardwarecontent #divhttppoller").hide();
             }
             else
             {

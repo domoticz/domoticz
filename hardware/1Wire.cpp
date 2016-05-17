@@ -18,21 +18,26 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#ifdef _DEBUG
-#define Wire1_POLL_INTERVAL 5000
-#else // _DEBUG
-#define Wire1_POLL_INTERVAL 100
-#endif //_DEBUG
-
 #define round(a) ( int ) ( a + .5 )
 
 extern CSQLHelper m_sql;
 
-C1Wire::C1Wire(const int ID) :
+C1Wire::C1Wire(const int ID, const int sensorThreadPeriod, const int switchThreadPeriod, const std::string& path) :
 	m_stoprequested(false),
-	m_system(NULL)
+	m_system(NULL),
+	m_sensorThreadPeriod(sensorThreadPeriod),
+	m_switchThreadPeriod(switchThreadPeriod),
+	m_path(path)
 {
-	m_HwdID=ID;
+	m_HwdID = ID;
+
+	// Defaults for pre-existing 1wire instances
+	if (0 == m_sensorThreadPeriod)
+		m_sensorThreadPeriod = 5 * 60 * 1000;
+
+	if (0 == m_switchThreadPeriod)
+			m_switchThreadPeriod = 100;
+
 	DetectSystem();
 }
 
@@ -47,7 +52,7 @@ bool C1Wire::Have1WireSystem()
 #ifdef WIN32
 	return (C1WireForWindows::IsAvailable());
 #else // WIN32
-	return (C1WireByOWFS::IsAvailable()||C1WireByKernel::IsAvailable());
+	return true;
 #endif // WIN32
 }
 
@@ -62,14 +67,12 @@ void C1Wire::DetectSystem()
 
 	// Using the both systems at same time results in conflicts,
 	// see http://owfs.org/index.php?page=w1-project.
-	// So priority is given to OWFS (more powerfull than kernel)
-	if (C1WireByOWFS::IsAvailable()) {
-		m_system=new C1WireByOWFS();
-	_log.Log(LOG_STATUS,"1-Wire: Using OWFS...");
-	}
-	else if (C1WireByKernel::IsAvailable()) {
+	if (C1WireByKernel::IsAvailable()) {
 		m_system=new C1WireByKernel();
-	_log.Log(LOG_STATUS,"1-Wire: Using Kernel...");
+		_log.Log(LOG_STATUS,"1-Wire: Using Kernel...");
+	} else {
+		m_system=new C1WireByOWFS(m_path);
+		_log.Log(LOG_STATUS,"1-Wire: Using OWFS...");
 	}
 
 #endif // WIN32
@@ -87,10 +90,10 @@ void C1Wire::LogSystem()
 		{ _log.Log(LOG_STATUS,"1-Wire support available..."); return; }
 #else // WIN32
 
-	if (C1WireByOWFS::IsAvailable())
-		{ _log.Log(LOG_STATUS,"1-Wire support available (By OWFS)..."); return; }
 	if (C1WireByKernel::IsAvailable())
 		{ _log.Log(LOG_STATUS,"1-Wire support available (By Kernel)..."); return; }
+
+	_log.Log(LOG_STATUS,"1-Wire support available (By OWFS)..."); return;
 
 #endif // WIN32
 }
@@ -132,9 +135,7 @@ bool C1Wire::StopHardware()
 
 void C1Wire::SensorThread()
 {
-	int pollPeriod = 300 * 1000;
-	m_sql.GetPreferencesVar("1WireSensorPollPeriod", pollPeriod);
-
+	int pollPeriod = m_sensorThreadPeriod;
 	int pollIterations = 1;
 
 	if (pollPeriod > 1000)
@@ -163,12 +164,13 @@ void C1Wire::SensorThread()
 
 void C1Wire::SwitchThread()
 {
-	int pollPeriod = 100;
-	m_sql.GetPreferencesVar("1WireSwitchPollPeriod", pollPeriod);
+	int pollPeriod = m_switchThreadPeriod;
 
 	// Rescan the bus once every 10 seconds if requested
 #define HARDWARE_RESCAN_PERIOD 10000
 	int rescanIterations = HARDWARE_RESCAN_PERIOD / pollPeriod;
+	if (0 == rescanIterations)
+		rescanIterations = 1;
 
 	int iteration = 0;
 
@@ -268,28 +270,6 @@ void C1Wire::BuildSensorList() {
 	devices.clear();
 }
 
-void C1Wire::StartSimultaneousTemperatureRead() {
-	if (typeid(*m_system) == typeid(C1WireByOWFS))
-	{
-		if (m_mainworker.GetVerboseLevel() == EVBL_DEBUG)
-		{
-			_log.Log(LOG_STATUS, "1Wire (OWFS): Initiating simultaneous temperature read");
-		}
-		std::ofstream file;
-		file.open(OWFS_Simultaneous);
-		if (file.is_open())
-		{
-			file << "1";
-			file.close();
-			if (m_mainworker.GetVerboseLevel() == EVBL_DEBUG)
-			{
-				_log.Log(LOG_STATUS, "1Wire (OWFS): Simultaneous temperature read successful");
-			}
-			sleep_milliseconds(800);
-		}
-	}
-}
-
 void C1Wire::PollSensors()
 {
 	if (!m_system)
@@ -297,7 +277,7 @@ void C1Wire::PollSensors()
 
 	if (m_sensors.size() > 2)
 	{
-		StartSimultaneousTemperatureRead();
+		m_system->StartSimultaneousTemperatureRead();
 	}
 
 	// Parse our devices (have to test m_stoprequested because it can take some time in case of big networks)

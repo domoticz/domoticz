@@ -512,12 +512,6 @@ define(['app'], function (app) {
 			  if (typeof data.DisableEventScriptSystem!= 'undefined') {
 				$("#eventsystemtable #DisableEventScriptSystem").prop('checked',data.DisableEventScriptSystem==1);
 			  }
-			  if (typeof data.OneWireSensorPollPeriod!= 'undefined') {
-				$("#onewiretable #OneWireSensorPollPeriod").val(data.OneWireSensorPollPeriod);
-			  }
-			  if (typeof data.OneWireSwitchPollPeriod!= 'undefined') {
-				$("#onewiretable #OneWireSwitchPollPeriod").val(data.OneWireSwitchPollPeriod);
-			  }
 
 			  if (typeof data.FloorplanPopupDelay!= 'undefined') {
 				$("#floorplanoptionstable #FloorplanPopupDelay").val(data.FloorplanPopupDelay);

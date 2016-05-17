@@ -7,7 +7,7 @@ class I_1WireSystem;
 class C1Wire : public CDomoticzHardwareBase
 {
 public:
-	explicit C1Wire(const int ID);
+	explicit C1Wire(const int ID, const int sensorThreadPeriod, const int switchThreadPeriod, const std::string& path);
 	virtual ~C1Wire();
 
 	static bool Have1WireSystem();
@@ -21,6 +21,10 @@ private:
 	std::map<std::string, bool> m_LastSwitchState;
 	std::vector<_t1WireDevice> m_sensors;
 	std::vector<_t1WireDevice> m_switches;
+
+	int m_sensorThreadPeriod; // milliseconds
+	int m_switchThreadPeriod; // milliseconds
+	const std::string &m_path;
 
 	static void LogSystem();
 	void DetectSystem();
