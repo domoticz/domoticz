@@ -599,10 +599,14 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_DavisVantage:
 		pHardware = new CDavisLoggerSerial(ID,SerialPort, 19200);
 		break;
-	case HTYPE_S0SmartMeter:
-		pHardware = new S0MeterSerial(ID,SerialPort, 9600, Address);
+	case HTYPE_S0SmartMeterUSB:
+		pHardware = new S0MeterSerial(ID,SerialPort, 9600);
 		break;
-	case HTYPE_OpenThermGateway:
+	case HTYPE_S0SmartMeterTCP:
+		//LAN
+		pHardware = new S0MeterTCP(ID, Address, Port);
+		break;
+case HTYPE_OpenThermGateway:
 		pHardware = new OTGWSerial(ID,SerialPort, 9600, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
 		break;
 	case HTYPE_TeleinfoMeter:
@@ -674,10 +678,6 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_RFLINKTCP:
 		//LAN
 		pHardware = new CRFLinkTCP(ID, Address, Port);
-		break;
-	case HTYPE_S0SmartMeterTCP:
-		//LAN
-		pHardware = new S0MeterTCP(ID, Address, Port);
 		break;
 	case HTYPE_MQTT:
 		//LAN
