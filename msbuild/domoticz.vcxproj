@@ -69,13 +69,11 @@
     </Link>
     <PreBuildEvent>
       <Command>"$(SolutionDir)makeversion.bat"</Command>
+      <Message>Getting git version info</Message>
     </PreBuildEvent>
     <PreBuildEvent>
       <Command>"$(SolutionDir)\..\tools\compressjson.bat"</Command>
       <Message>Compressing translations</Message>
-    </PreBuildEvent>
-    <PreBuildEvent>
-      <Message>Getting git version info</Message>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
