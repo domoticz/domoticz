@@ -68,12 +68,8 @@
       <Profile>true</Profile>
     </Link>
     <PreBuildEvent>
-      <Command>"$(SolutionDir)makeversion.bat"</Command>
-      <Message>Getting git version info</Message>
-    </PreBuildEvent>
-    <PreBuildEvent>
-      <Command>"$(SolutionDir)\..\tools\compressjson.bat"</Command>
-      <Message>Compressing translations</Message>
+      <Command>"$(SolutionDir)makeversion.bat" &amp;&amp; "$(SolutionDir)\..\tools\compressjson.bat"</Command>
+      <Message>Getting git version info and compressing translations</Message>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -101,12 +97,8 @@
       </LinkTimeCodeGeneration>
     </Link>
     <PreBuildEvent>
-      <Command>"$(SolutionDir)makeversion.bat"</Command>
-      <Message>Getting git version info</Message>
-    </PreBuildEvent>
-     <PreBuildEvent>
-      <Command>"$(SolutionDir)\..\tools\compressjson.bat"</Command>
-      <Message>Compressing translations</Message>
+      <Command>"$(SolutionDir)makeversion.bat" &amp;&amp; "$(SolutionDir)\..\tools\compressjson.bat"</Command>
+      <Message>Getting git version info and compressing translations</Message>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
