@@ -606,7 +606,7 @@ bool MainWorker::AddHardwareFromParams(
 		//LAN
 		pHardware = new S0MeterTCP(ID, Address, Port);
 		break;
-case HTYPE_OpenThermGateway:
+	case HTYPE_OpenThermGateway:
 		pHardware = new OTGWSerial(ID,SerialPort, 9600, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
 		break;
 	case HTYPE_TeleinfoMeter:
