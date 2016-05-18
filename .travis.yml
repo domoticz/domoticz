@@ -71,7 +71,9 @@ matrix:
       - gcc
     env: TARGET_ARCHITECTURE=x86_64
     install:
-      - brew reinstall cmake
+      - brew update
+      - brew upgrade
+      - brew install cmake
       - brew install boost|| true
       - brew install boost-python|| true
       - brew install libusb
