@@ -2349,16 +2349,6 @@ bool CSQLHelper::OpenDatabase()
 	}
 	m_bDisableEventSystem = (nValue==1);
 
-	if ((!GetPreferencesVar("OneWireSensorPollPeriod", nValue)) || (nValue == 0))
-	{
-		UpdatePreferencesVar("OneWireSensorPollPeriod", 300 * 1000);
-	}
-
-	if ((!GetPreferencesVar("OneWireSwitchPollPeriod", nValue)) || (nValue == 0))
-	{
-		UpdatePreferencesVar("OneWireSwitchPollPeriod", 100);
-	}
-
 	if ((!GetPreferencesVar("WebTheme", sValue)) || (sValue.empty()))
 	{
 		UpdatePreferencesVar("WebTheme", "default");
