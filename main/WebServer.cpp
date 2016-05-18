@@ -6605,12 +6605,6 @@ namespace http {
 				m_mainworker.m_eventsystem.StartEventSystem();
 			}
 
-			int oneWireSensorPollPeriod = atoi(request::findValue(&req, "1WireSensorPollPeriod").c_str());
-			m_sql.UpdatePreferencesVar("1WireSensorPollPeriod", oneWireSensorPollPeriod);
-
-			int oneWireSwitchPollPeriod = atoi(request::findValue(&req, "1WireSwitchPollPeriod").c_str());
-			m_sql.UpdatePreferencesVar("1WireSwitchPollPeriod", oneWireSensorPollPeriod);
-
 			std::string EnableWidgetOrdering = request::findValue(&req, "AllowWidgetOrdering");
 			int iEnableAllowWidgetOrdering = (EnableWidgetOrdering == "on" ? 1 : 0);
 			m_sql.UpdatePreferencesVar("AllowWidgetOrdering", iEnableAllowWidgetOrdering);
@@ -11303,14 +11297,6 @@ namespace http {
 				else if (Key == "WebTheme")
 				{
 					root["WebTheme"] = sValue;
-				}
-				else if (Key == "OneWireSensorPollPeriod")
-				{
-					root["OneWireSensorPollPeriod"] = nValue;
-				}
-				else if (Key == "OneWireSwitchPollPeriod")
-				{
-					root["OneWireSwitchPollPeriod"] = nValue;
 				}
 #ifndef NOCLOUD
 				else if (Key == "MyDomoticzInstanceId") {
