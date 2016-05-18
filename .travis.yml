@@ -62,7 +62,7 @@ matrix:
           - gzip
     script:
       - (cd open-zwave-read-only; make)
-      - curl -sSL https://cmake.org/files/v3.4/cmake-3.4.0-Linux-x86_64.tar.gz | tar -xz
+      - curl -sSL https://cmake.org/files/v3.5/cmake-3.5.2-Linux-x86_64.tar.gz | tar -xz
       - cmake-3.4.0-Linux-x86_64/bin/cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=open-zwave-read-only
       - make
   # Apple OSX
@@ -83,7 +83,7 @@ matrix:
       - export LDFLAGS=-L/usr/local/opt/openssl/lib
       - export CPPFLAGS=-I/usr/local/opt/openssl/include
     script:
-      - cmake -DCMAKE_BUILD_TYPE=Release
+      - /usr/local/bin/cmake -DCMAKE_BUILD_TYPE=Release
       - make
 
 
