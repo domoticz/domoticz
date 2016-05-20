@@ -796,6 +796,8 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchNovatys, "Novatys" },
 		{ pTypeGeneralSwitch, sSwitchHalemeier, "Halemeier" },
 		{ pTypeGeneralSwitch, sSwitchGaposa, "Gaposa" },
+		{ pTypeGeneralSwitch, sSwitchMiLightv1, "MiLightv1" },
+		{ pTypeGeneralSwitch, sSwitchMiLightv2, "MiLightv2" },
 		{  0,0,NULL }
 	};
 	return findTableID1ID2(Table, dType, sType);

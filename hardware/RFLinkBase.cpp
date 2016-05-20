@@ -103,6 +103,8 @@ const _tRFLinkStringIntHelper rfswitches[] =
 	{ "Novatys", sSwitchNovatys},			 // NA
 	{ "Halemeier", sSwitchHalemeier},
 	{ "Gaposa", sSwitchGaposa },
+	{ "MiLightv1", sSwitchMiLightv1 },
+	{ "MiLightv2", sSwitchMiLightv2 },
 	{ "", -1 }
 };
 
