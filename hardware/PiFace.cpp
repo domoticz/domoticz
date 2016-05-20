@@ -180,7 +180,6 @@ int CPiFace::LoadConfig(void)
     int NameFound=0;
     int ValueFound=0;
     CIOPort *IOport=NULL;
-    bool Regenerate_Config=false;
 
     std::string configfile=szUserDataFolder + "piface.conf";
 
@@ -569,8 +568,6 @@ void CPiFace::AutoCreate_piface_config(void)
     std::string configfile=szUserDataFolder + "piface.conf";
     fstream ConfigFile(configfile.c_str(), ios::out);
 
-	int total_explanations = sizeof(explanation);
-
     if (ConfigFile.is_open())
     {
 		int i = 0;
@@ -881,12 +878,13 @@ int CPiFace::Init_SPI_Device(int Init)
 {
     m_fd=0;
     int result=-1;
+
+    _log.Log(LOG_STATUS,"PiFace: Starting PiFace_SPI_Start()");
+#ifdef __arm__
     unsigned char spiMode  = 0 ;
     unsigned char spiBPW   = 8 ;
     int           speed       = 4000000 ;
 
-    _log.Log(LOG_STATUS,"PiFace: Starting PiFace_SPI_Start()");
-#ifdef __arm__
     // Open port for reading and writing
     if ((m_fd = open("/dev/spidev0.0", O_RDWR)) >= 0)
     {

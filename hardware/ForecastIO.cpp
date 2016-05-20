@@ -76,6 +76,7 @@ bool CForecastIO::WriteToHardware(const char *pdata, const unsigned char length)
 	return false;
 }
 
+#ifdef DEBUG_ForecastIO
 static std::string readForecastIOTestFile( const char *path )
 {
 	std::string text;
@@ -93,6 +94,7 @@ static std::string readForecastIOTestFile( const char *path )
 	delete[] buffer;
 	return text;
 }
+#endif
 
 std::string CForecastIO::GetForecastURL()
 {
@@ -221,8 +223,6 @@ void CForecastIO::GetMeterDetails()
 	float windgust_ms=0;
 	float wind_temp=temp;
 	float wind_chill=temp;
-	int windgust=1;
-	float windchill=-1;
 
 	if (root["currently"]["windBearing"].empty()==false)
 	{
@@ -407,7 +407,7 @@ void CForecastIO::GetMeterDetails()
 	{
 		if ((root["currently"]["ozone"] != "N/A") && (root["currently"]["ozone"] != "--"))
 		{
-			float radiation = static_cast<float>(atof(root["currently"]["ozone"].asString().c_str()));	//this is in dobson units, need to convert to Watt/m2? (2.69×(10^20) ?
+			float radiation = static_cast<float>(atof(root["currently"]["ozone"].asString().c_str()));	//this is in dobson units, need to convert to Watt/m2? (2.69ï¿½(10^20) ?
 			if (radiation>=0.0f)
 			{
 				_tGeneralDevice gdevice;

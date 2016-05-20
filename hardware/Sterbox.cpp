@@ -232,7 +232,6 @@ void CSterbox::GetMeterDetails()
 	size_t ii;
 	size_t jj;
 	size_t pos1;
-	int Idx = 0;
 
 	if (m_Username.empty())
 	{

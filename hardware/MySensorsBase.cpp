@@ -1585,7 +1585,7 @@ void MySensorsBase::ParseLine()
 			break;
 		case I_SKETCH_NAME:
 			_log.Log(LOG_STATUS, "MySensors: Node: %d, Sketch Name: %s", node_id, payload.c_str());
-			if (_tMySensorNode *pNode = FindNode(node_id))
+			if (NULL != FindNode(node_id))
 			{
 				DatabaseUpdateSketchName(node_id, payload);
 			}
@@ -1598,7 +1598,7 @@ void MySensorsBase::ParseLine()
 			break;
 		case I_SKETCH_VERSION:
 			_log.Log(LOG_STATUS, "MySensors: Node: %d, Sketch Version: %s", node_id, payload.c_str());
-			if (_tMySensorNode *pNode = FindNode(node_id))
+			if (NULL != FindNode(node_id))
 			{
 				DatabaseUpdateSketchVersion(node_id, payload);
 			}

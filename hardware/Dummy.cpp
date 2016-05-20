@@ -91,7 +91,7 @@ namespace http {
 				{
 					std::string rID = std::string(ID);
 					padLeft(rID, 8, '0');
-					DeviceRowIdx=DeviceRowIdx=m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypePressure, 12, 255, 0, "0.0", devname);
+					DeviceRowIdx=m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypePressure, 12, 255, 0, "0.0", devname);
 					bCreated = true;
 				}
 				break;

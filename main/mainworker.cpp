@@ -1926,9 +1926,6 @@ void MainWorker::Do_Work_On_Rx_Messages()
 
 void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand, const char *defaultName, const int BatteryLevel)
 {
-	// current date/time based on current system
-	size_t Len = pRXCommand[0] + 1;
-
 	int HwdID = pHardware->m_HwdID;
 	_eHardwareTypes HwdType = pHardware->HwdType;
 
@@ -3914,11 +3911,11 @@ void MainWorker::decode_TempRain(const int HwdID, const _eHardwareTypes HwdType,
 		return;
 
 	sprintf(szTmp,"%.1f",temp);
-	DEVICE_ID DevRowIdxTemp=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,pTypeTEMP,sTypeTEMP3,SignalLevel,BatteryLevel,cmnd,szTmp, procResult.DeviceName);
+	(void)m_sql.UpdateValue(HwdID, ID.c_str(),Unit,pTypeTEMP,sTypeTEMP3,SignalLevel,BatteryLevel,cmnd,szTmp, procResult.DeviceName);
 	m_notifications.CheckAndHandleTempHumidityNotification(DevRowIdx, procResult.DeviceName, temp, 0, true, false);
 
 	sprintf(szTmp,"%d;%.1f",0,TotalRain);
-	DEVICE_ID DevRowIdxRain=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,pTypeRAIN,sTypeRAIN3,SignalLevel,BatteryLevel,cmnd,szTmp, procResult.DeviceName);
+	(void)m_sql.UpdateValue(HwdID, ID.c_str(),Unit,pTypeRAIN,sTypeRAIN3,SignalLevel,BatteryLevel,cmnd,szTmp, procResult.DeviceName);
 	m_notifications.CheckAndHandleRainNotification(DevRowIdx, procResult.DeviceName, pTypeRAIN, sTypeRAIN3, NTYPE_RAIN, TotalRain);
 
 	if (m_verboselevel >= EVBL_ALL)
@@ -8063,7 +8060,6 @@ void MainWorker::decode_Energy(const int HwdID, const _eHardwareTypes HwdType, c
 	sprintf(szTmp,"%u",(pResponse->ENERGY.id1 * 256u) + pResponse->ENERGY.id2);
 	ID=szTmp;
 	unsigned char Unit=0;
-	unsigned char cmnd=0;
 	unsigned char SignalLevel=pResponse->ENERGY.rssi;
 	unsigned char BatteryLevel = get_BateryLevel(HwdType,false, pResponse->ENERGY.battery_level & 0x0F);
 
@@ -10977,7 +10973,7 @@ bool MainWorker::SwitchModal(const std::string &idx, const std::string &status, 
 	//Get Device details
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query(
-		"SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType,StrParam1,nValue FROM DeviceStatus WHERE (ID == '%q')",
+		"SELECT HardwareID,nValue FROM DeviceStatus WHERE (ID == '%q')",
 		idx.c_str());
 	if (result.size()<1)
 		return false;
@@ -10997,7 +10993,7 @@ bool MainWorker::SwitchModal(const std::string &idx, const std::string &status, 
 	else if(status=="HeatingOff")
 		nStatus=CEvohome::cmEvoHeatingOff;
 
-	int nValue=atoi(sd[7].c_str());
+	int nValue=atoi(sd[1].c_str());
 	if(ooc=="1" && nValue==nStatus)
 		return false;//FIXME not an error ... status = (already set)
 
@@ -11005,11 +11001,6 @@ bool MainWorker::SwitchModal(const std::string &idx, const std::string &status, 
 	int hindex=FindDomoticzHardware(HardwareID);
 	if (hindex==-1)
 		return false;
-
-	unsigned char Unit=atoi(sd[2].c_str());
-	unsigned char dType=atoi(sd[3].c_str());
-	unsigned char dSubType=atoi(sd[4].c_str());
-	_eSwitchType switchtype=(_eSwitchType)atoi(sd[5].c_str());
 
 	CDomoticzHardwareBase *pHardware=GetHardware(HardwareID);
 	if (pHardware==NULL)
@@ -11179,7 +11170,6 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 	unsigned char Unit=atoi(sd[2].c_str());
 	unsigned char dType=atoi(sd[3].c_str());
 	unsigned char dSubType=atoi(sd[4].c_str());
-	_eSwitchType switchtype=(_eSwitchType)atoi(sd[5].c_str());
 
 	CDomoticzHardwareBase *pHardware=GetHardware(HardwareID);
 	if (pHardware==NULL)
@@ -11252,7 +11242,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		}
 		else if (pHardware->HwdType == HTYPE_EVOHOME_SCRIPT || pHardware->HwdType == HTYPE_EVOHOME_SERIAL)
 		{
-			SetSetPoint(sd[7], TempValue, CEvohome::zmPerm, "");
+			SetSetPoint(sd[5], TempValue, CEvohome::zmPerm, "");
 		}
 	}
 	else
@@ -11321,7 +11311,7 @@ bool MainWorker::SetSetPoint(const std::string &idx, const float TempValue)
 	//Get Device details
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query(
-		"SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType,StrParam1,ID FROM DeviceStatus WHERE (ID == '%q')",
+		"SELECT HardwareID, DeviceID,Unit,Type,SubType,ID FROM DeviceStatus WHERE (ID == '%q')",
 		idx.c_str());
 	if (result.size()<1)
 		return false;
@@ -11507,7 +11497,7 @@ bool MainWorker::SetThermostatState(const std::string &idx, const int newState)
 	}
 	else if (pHardware->HwdType == HTYPE_THERMOSMART)
 	{
-		CThermosmart *pGateway = reinterpret_cast<CThermosmart *>(pHardware);
+		//CThermosmart *pGateway = reinterpret_cast<CThermosmart *>(pHardware);
 		//pGateway->SetProgramState(newState);
 		return true;
 	}
@@ -11669,17 +11659,15 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 		int offdelay = atoi(sd[5].c_str());
 		std::vector<std::vector<std::string> > result2;
 		result2 = m_sql.safe_query(
-			"SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType, nValue, sValue, Name FROM DeviceStatus WHERE (ID == '%q')", sd[0].c_str());
+			"SELECT HardwareID,Type,SubType,SwitchType, sValue, Name FROM DeviceStatus WHERE (ID == '%q')", sd[0].c_str());
 		if (result2.size()>0)
 		{
 			std::vector<std::string> sd2=result2[0];
-			unsigned char rnValue=atoi(sd2[6].c_str());
-			std::string sValue=sd2[7];
-			unsigned char Unit=atoi(sd2[2].c_str());
-			unsigned char dType=atoi(sd2[3].c_str());
-			unsigned char dSubType=atoi(sd2[4].c_str());
-			std::string DeviceName = sd2[8];
-			_eSwitchType switchtype=(_eSwitchType)atoi(sd2[5].c_str());
+			std::string sValue=sd2[4];
+			unsigned char dType=atoi(sd2[1].c_str());
+			unsigned char dSubType=atoi(sd2[2].c_str());
+			std::string DeviceName = sd2[5];
+			_eSwitchType switchtype=(_eSwitchType)atoi(sd2[3].c_str());
 
 			//Check if this device will not activate a scene
 			unsigned long long dID;
@@ -12091,7 +12079,6 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 			std::stringstream s_strid;
 			s_strid << sd[0];
 			s_strid >> dID;
-			unsigned long long dID = 0;
 			std::string dName = sd[1];
 		}
 

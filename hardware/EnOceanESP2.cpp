@@ -1199,15 +1199,6 @@ void CEnOceanESP2::SendDimmerTeachIn(const char *pdata, const unsigned char leng
 		iframe.ID_BYTE1=(unsigned char)((sID&0x0000FF00)>>8);//tsen->LIGHTING2.id3;
 		iframe.ID_BYTE0=(unsigned char)(sID&0x0000FF);//tsen->LIGHTING2.id4;
 
-		unsigned char RockerID=0;
-		unsigned char UpDown=1;
-		unsigned char Pressed=1;
-
-		if (tsen->LIGHTING2.unitcode<10)
-			RockerID=tsen->LIGHTING2.unitcode-1;
-		else
-			return;//double not supported yet!
-
 		//Teach in, DATA 2,1,0 set to 0
 		iframe.ORG = 0x07;
 		iframe.DATA_BYTE3=2;
@@ -1487,35 +1478,7 @@ bool CEnOceanESP2::ParseData()
 						// pFrame->DATA_BYTE1 is the temperature where 0x00 = +40°C ... 0xFF = 0°C
 						// pFrame->DATA_BYTE0_bit_0 is the occupy button, pushbutton or slide switch
 						float temp=GetValueRange(pFrame->DATA_BYTE1,0,40);
-						if (Manufacturer == 0x0D)
-						{
-							//Eltako
-							int nightReduction = 0;
-							if (pFrame->DATA_BYTE3 == 0x06)
-								nightReduction = 1;
-							else if (pFrame->DATA_BYTE3 == 0x0C)
-								nightReduction = 2;
-							else if (pFrame->DATA_BYTE3 == 0x13)
-								nightReduction = 3;
-							else if (pFrame->DATA_BYTE3 == 0x19)
-								nightReduction = 4;
-							else if (pFrame->DATA_BYTE3 == 0x1F)
-								nightReduction = 5;
-							float setpointTemp=GetValueRange(pFrame->DATA_BYTE2,40);
-						}
-						else
-						{
-							int fspeed = 3;
-							if (pFrame->DATA_BYTE3 >= 145)
-								fspeed = 2;
-							else if (pFrame->DATA_BYTE3 >= 165)
-								fspeed = 1;
-							else if (pFrame->DATA_BYTE3 >= 190)
-								fspeed = 0;
-							else if (pFrame->DATA_BYTE3 >= 210)
-								fspeed = -1; //auto
-							int iswitch = pFrame->DATA_BYTE0 & 1;
-						}
+
 						RBUF tsen;
 						memset(&tsen,0,sizeof(RBUF));
 						tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;

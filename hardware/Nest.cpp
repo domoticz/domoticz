@@ -140,7 +140,6 @@ void CNest::SendSetPointSensor(const unsigned char Idx, const float Temp, const 
 // Creates and updates switch used to log Heating and/or Colling.
 void CNest::UpdateSwitch(const unsigned char Idx, const bool bOn, const std::string &defaultname)
 {
-	bool bDeviceExits = true;
 	char szIdx[10];
 	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);
 	std::vector<std::vector<std::string> > result;
@@ -233,7 +232,7 @@ bool CNest::Login()
 		return false;
 	}
 	m_AccessToken = root["access_token"].asString();
-	
+
 	if (root["userid"].empty())
 	{
 		_log.Log(LOG_ERROR, "Nest: Invalid data received, or invalid username/password!");
@@ -458,7 +457,7 @@ void CNest::GetMeterDetails()
 							}
 						}
 					}
-					
+
 				}
 			}
 			bool bIAlarm = false;

@@ -967,7 +967,7 @@ void CKodi::Do_Work()
 				if (!(*itt)->IsBusy())
 				{
 					_log.Log(LOG_NORM, "Kodi: (%s) - Restarting thread.", (*itt)->m_Name.c_str());
-					boost::thread* tAsync = new boost::thread(&CKodiNode::Do_Work, (*itt));
+					(void)new boost::thread(&CKodiNode::Do_Work, (*itt));
 					m_ios.stop();
 				}
 				if ((*itt)->IsOn()) bWorkToDo = true;
@@ -1159,7 +1159,7 @@ void CKodi::ReloadNodes()
 		for (std::vector<boost::shared_ptr<CKodiNode> >::iterator itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
 		{
 			_log.Log(LOG_NORM, "Kodi: (%s) Starting thread.", (*itt)->m_Name.c_str());
-			boost::thread* tAsync = new boost::thread(&CKodiNode::Do_Work, (*itt));
+			(void)new boost::thread(&CKodiNode::Do_Work, (*itt));
 		}
 		sleep_milliseconds(100);
 		_log.Log(LOG_NORM, "Kodi: Starting I/O service thread.");

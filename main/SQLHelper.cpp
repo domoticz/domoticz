@@ -4194,7 +4194,7 @@ void CSQLHelper::UpdateMeter()
 	std::vector<std::vector<std::string> > result2;
 
 	result=safe_query(
-		"SELECT ID,Name,HardwareID,DeviceID,Unit,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE ("
+		"SELECT ID,Name,DeviceID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE ("
 		"Type=%d OR " //pTypeRFXMeter
 		"Type=%d OR " //pTypeP1Gas
 		"Type=%d OR " //pTypeYouLess
@@ -4255,15 +4255,13 @@ void CSQLHelper::UpdateMeter()
 			std::stringstream s_str( sd[0] );
 			s_str >> ID;
 			std::string devname = sd[1];
-			int hardwareID= atoi(sd[2].c_str());
-			std::string DeviceID=sd[3];
-			unsigned char Unit = atoi(sd[4].c_str());
+			std::string DeviceID=sd[2];
 
-			unsigned char dType=atoi(sd[5].c_str());
-			unsigned char dSubType=atoi(sd[6].c_str());
-			int nValue=atoi(sd[7].c_str());
-			std::string sValue=sd[8];
-			std::string sLastUpdate=sd[9];
+			unsigned char dType=atoi(sd[3].c_str());
+			unsigned char dSubType=atoi(sd[4].c_str());
+			int nValue=atoi(sd[5].c_str());
+			std::string sValue=sd[6];
+			std::string sLastUpdate=sd[7];
 
 			std::string susage="0";
 

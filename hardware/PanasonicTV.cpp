@@ -283,7 +283,6 @@ std::string CPanasonicNode::handleWriteAndRead(std::string pMessageToSend)
 	boost::asio::ip::tcp::resolver resolver(io_service);
 	boost::asio::ip::tcp::resolver::query query(m_IP, (m_Port[0] != '-' ? m_Port : m_Port.substr(1)));
 	boost::asio::ip::tcp::resolver::iterator iter = resolver.resolve(query);
-	boost::asio::ip::tcp::endpoint endpoint = *iter;
 	boost::asio::ip::tcp::resolver::iterator end;
 
 	// Try each endpoint until we successfully establish a connection.
@@ -708,7 +707,6 @@ void CPanasonic::Do_Work()
 			boost::lock_guard<boost::mutex> l(m_mutex);
 
 			scounter = 0;
-			bool bWorkToDo = false;
 			std::vector<boost::shared_ptr<CPanasonicNode> >::iterator itt;
 			for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
 			{
@@ -717,7 +715,6 @@ void CPanasonic::Do_Work()
 					_log.Log(LOG_NORM, "Panasonic Plugin: (%s) - Restarting thread.", (*itt)->m_Name.c_str());
 					(*itt)->StartThread();
 				}
-				if ((*itt)->IsOn()) bWorkToDo = true;
 			}
 		}
 		sleep_milliseconds(500);

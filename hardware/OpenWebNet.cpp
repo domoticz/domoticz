@@ -184,7 +184,6 @@ bool COpenWebNet:: WriteToHardware(const char *pdata, const unsigned char length
 {
 	_tGeneralSwitch *pCmd = (_tGeneralSwitch*)pdata;
 
-	unsigned char packetlength = pCmd->len;
 	unsigned char packettype = pCmd->type;
 	unsigned char subtype = pCmd->subtype;
 

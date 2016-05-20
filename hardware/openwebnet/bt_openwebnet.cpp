@@ -269,7 +269,6 @@ void bt_openwebnet::Assegna_chi_dove_grandezza_valori()
 {
 	string sup;
   int len = 0;
-  int i = -1;
 
   // WHO
   sup = frame_open.substr(2);
@@ -332,7 +331,7 @@ void bt_openwebnet::Assegna_chi()
 	else {
 		frame_type = ERROR_FRAME;
 	}
-	
+
 	sup = frame_open.substr(2+chi.length());
 	if (sup.at(1) != '#') {
 		frame_type = ERROR_FRAME;
@@ -357,7 +356,7 @@ void bt_openwebnet::Assegna_livello_interfaccia()
   {
     extended = true;
     if(orig.at(0) == '#')
-      dove, "#" +  FirstToken(sup, "#");
+      dove = "#" +  FirstToken(sup, "#");
     else
       dove = FirstToken(sup, "#");
     // LEVEL + INTERFACE
@@ -374,7 +373,7 @@ void bt_openwebnet::Assegna_livello_interfaccia()
       //frame_type = ERROR_FRAME;
       livello = sup;
   }
-  
+
   return;
 }
 
@@ -460,8 +459,8 @@ bt_openwebnet::bt_openwebnet(int who, int what, int where)
 {
 	stringstream whoStr;
 	stringstream whereStr;
-	stringstream whatStr; 
-	
+	stringstream whatStr;
+
 	whoStr << who;
 	whereStr << what;
 	whatStr << where;
@@ -515,8 +514,8 @@ void bt_openwebnet::CreateMsgOpen(string who, string what, string where, string 
   //call CreateNullMsgOpen function
   CreateNullMsgOpen();
 
-  stringstream frame; 
-  
+  stringstream frame;
+
   // creates the open message
   frame << "*";
   frame << who;  frame << "*";
@@ -544,9 +543,6 @@ void bt_openwebnet::CreateMsgOpen(string who, string what, string where, string 
 // creates the open message ****##
 void bt_openwebnet::CreateNullMsgOpen()
 {
-  //Counter to reset the values
-  int i = 0;
-
   // clears everything
   frame_open = "";
   frame_type = NULL_FRAME;
@@ -579,7 +575,7 @@ void bt_openwebnet::CreateStateMsgOpen(string who, string where)
   frame << "*#";
   frame << who;  frame << "*";
   frame << where; frame << "##";
-  
+
   frame_open = EliminoCaratteriControllo(frame.str());
   length_frame_open = frame_open.length();
 
@@ -632,11 +628,11 @@ void bt_openwebnet::CreateDimensionMsgOpen(string who, string where, string dime
   CreateNullMsgOpen();
 
   stringstream frame;
-  
+
   // creates the OPEN message
   frame << "*#";
   frame << who;  frame << "*";
-  frame << where;  
+  frame << where;
   //to remove the trailing asterisk
   if (!dimension.empty()) {
 	  frame << "*";
@@ -657,8 +653,8 @@ void bt_openwebnet::CreateDimensionMsgOpen(string who, string where, string lev,
 	//call CreateNullMsgOpen function
   CreateNullMsgOpen();
 
-  stringstream frame; 
-  
+  stringstream frame;
+
   // creates the OPEN message
   frame << "*#";
   frame << who;  frame << "*";
@@ -687,8 +683,8 @@ void bt_openwebnet::CreateWrDimensionMsgOpen(string who, string where, string di
 	//call CreateNullMsgOpen function
   CreateNullMsgOpen();
 
-  stringstream frame; 
-  
+  stringstream frame;
+
   // creates the OPEN message
   frame << "*#";
   frame << who;  frame << "*";
@@ -754,7 +750,7 @@ void bt_openwebnet::CreateMsgOpen(string message)
 
   // saves the type of frame and its length
   frame_open = message;
-  
+
   frame_open = EliminoCaratteriControllo(frame_open);
   length_frame_open = frame_open.length();
 

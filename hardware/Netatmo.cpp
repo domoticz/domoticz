@@ -449,7 +449,6 @@ bool CNetatmo::ParseDashboard(const Json::Value &root, const int DevIdx, const i
 	int sound;
 
 	float wind_angle = 0;
-	int wind_gust_angle = 0;
 	float wind_strength = 0;
 	float wind_gust = 0;
 
@@ -517,7 +516,6 @@ bool CNetatmo::ParseDashboard(const Json::Value &root, const int DevIdx, const i
 		{
 			bHaveWind = true;
 			wind_angle = float(root["WindAngle"].asInt())/16.0f;
-			wind_gust_angle = root["GustAngle"].asInt();
 			wind_strength = root["WindStrength"].asFloat()/ 3.6f;
 			wind_gust = root["GustStrength"].asFloat() / 3.6f;
 		}

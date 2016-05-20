@@ -221,7 +221,6 @@ void CSBFSpot::ImportOldMonthData()
 {
 	_log.Log(LOG_STATUS, "SBFSpot Import Old Month Data: Start");
 	//check if this device exists in the database, if not exit
-	bool bDeviceExits = true;
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
 		m_HwdID, "00000001", int(pTypeGeneral), int(sTypeKwh));

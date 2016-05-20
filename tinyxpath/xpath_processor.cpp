@@ -24,11 +24,11 @@ distribution.
 
 /*
  @history:
- 
+
  Modified on  16 December 2006 by  Aman Aggarwal
- ::Added support for Expressions like ( Expr or Expr or Expr) 
+ ::Added support for Expressions like ( Expr or Expr or Expr)
  Modified on 18 December 2006 by Aman Aggarwal
- ::Added support for translate()  
+ ::Added support for translate()
 */
 #include "stdafx.h"
 #include <math.h>
@@ -131,7 +131,7 @@ void xpath_processor::v_build_root ()
       XNp_base_parent = NULL;
 }
 
-/// Compute an XPath expression 
+/// Compute an XPath expression
 expression_result xpath_processor::er_compute_xpath ()
 {
    try
@@ -193,7 +193,7 @@ TIXML_STRING xpath_processor::S_compute_xpath ()
    TIXML_STRING S_res;
 
    er_res = er_compute_xpath ();
-   S_res = er_res . S_get_string ();   
+   S_res = er_res . S_get_string ();
    return S_res;
 }
 
@@ -204,7 +204,7 @@ int xpath_processor::i_compute_xpath ()
    int i_res;
 
    er_res = er_compute_xpath ();
-   i_res = er_res . i_get_int ();   
+   i_res = er_res . i_get_int ();
    return i_res;
 }
 
@@ -214,7 +214,7 @@ bool xpath_processor::o_compute_xpath ()
    bool o_res;
 
    er_res = er_compute_xpath ();
-   o_res = er_res . o_get_bool ();   
+   o_res = er_res . o_get_bool ();
    return o_res;
 }
 
@@ -224,13 +224,13 @@ double xpath_processor::d_compute_xpath ()
    double d_res;
 
    er_res = er_compute_xpath ();
-   d_res = er_res . d_get_double ();   
+   d_res = er_res . d_get_double ();
    return d_res;
 }
 
 /// Callback from the XPath decoder : a rule has to be applied
 void xpath_processor::v_action (
-	xpath_construct xc_rule,      ///< XPath Rule 
+	xpath_construct xc_rule,      ///< XPath Rule
 	unsigned u_sub,               ///< Rule sub number
 	unsigned u_variable,          ///< Parameter, depends on the rule
 	const char * cp_literal)      ///< Input literal, depends on the rule
@@ -249,7 +249,7 @@ int xpath_processor::i_get_action_counter ()
 }
 
 /// Internal use. Executes the XPath expression. The executions starts at the end of the as_action_store list
-void xpath_processor::v_execute_stack () 
+void xpath_processor::v_execute_stack ()
 {
    as_action_store . v_set_position (as_action_store . i_get_size () - 1);
    v_execute_one (xpath_expr, false);
@@ -258,7 +258,7 @@ void xpath_processor::v_execute_stack ()
 /// Retrieves one quadruplet from the action placeholder
 void xpath_processor::v_pop_one_action (
    xpath_construct & xc_action,  ///< Next rule on placeholder
-   unsigned & u_sub,             ///< Sub rule  
+   unsigned & u_sub,             ///< Sub rule
    unsigned & u_ref,             ///< Rule optional parameter
    TIXML_STRING & S_literal)     ///< Rule optional string
 {
@@ -277,7 +277,7 @@ void xpath_processor::v_execute_one (
    bool o_skip_only)             ///< True if we only need to skip rules and not act on the data stack
 {
 	xpath_construct xc_action;
-	unsigned u_sub;      
+	unsigned u_sub;
 	unsigned u_variable;
 	TIXML_STRING S_literal;
    TIXML_STRING S_temp;
@@ -293,11 +293,11 @@ void xpath_processor::v_execute_one (
    switch (xc_action)
    {
       case xpath_expr :
-         // [14] Expr ::= OrExpr 
+         // [14] Expr ::= OrExpr
          v_execute_one (xpath_or_expr, o_skip_only);
          break;
 
-      case xpath_or_expr : 
+      case xpath_or_expr :
          switch (u_sub)
          {
             case xpath_or_expr_simple :
@@ -316,7 +316,7 @@ void xpath_processor::v_execute_one (
                      erpp_arg [1] = new expression_result (* xs_stack . erp_top ());
                      xs_stack . v_pop ();
                   }
-                  v_execute_one (xpath_and_expr, o_skip_only); 
+                  v_execute_one (xpath_and_expr, o_skip_only);
                   if (! o_skip_only)
                   {
                      erpp_arg [0] = new expression_result (* xs_stack . erp_top ());
@@ -379,7 +379,7 @@ void xpath_processor::v_execute_one (
 		         if (o_error)
 			         throw execution_error (7);
 	         }
-	         break;	   
+	         break;
          }
          break;
 
@@ -435,7 +435,7 @@ void xpath_processor::v_execute_one (
             case xpath_equality_expr_simple :
                v_execute_one (xpath_relational_expr, o_skip_only);
                break;
-            case xpath_equality_expr_equal : 
+            case xpath_equality_expr_equal :
             case xpath_equality_expr_not_equal :
                o_error = false;
                erpp_arg = NULL;
@@ -536,7 +536,7 @@ void xpath_processor::v_execute_one (
             case xpath_additive_expr_simple :
                v_execute_one (xpath_multiplicative_expr, o_skip_only);
                break;
-            case xpath_additive_expr_plus :  
+            case xpath_additive_expr_plus :
             case xpath_additive_expr_minus :
                try
                {
@@ -577,9 +577,9 @@ void xpath_processor::v_execute_one (
                if (o_error)
                   throw execution_error (7);
                break;
-            case xpath_additive_expr_more_plus :  
-            case xpath_additive_expr_more_minus :  
-               // These 2 cases are involved for expressions like a+b+c 
+            case xpath_additive_expr_more_plus :
+            case xpath_additive_expr_more_minus :
+               // These 2 cases are involved for expressions like a+b+c
                // The second argument is an additive expression, not a multiplicative as it is the case
                // when single a+b expressions are encountered
                try
@@ -674,8 +674,8 @@ void xpath_processor::v_execute_one (
       case xpath_unary_expr :
          switch (u_sub)
          {
-            case xpath_unary_expr_simple :   
-               // [27]   UnaryExpr			::=   UnionExpr 
+            case xpath_unary_expr_simple :
+               // [27]   UnaryExpr			::=   UnionExpr
                v_execute_one (xpath_union_expr, o_skip_only);
                break;
             case xpath_unary_expr_minus :
@@ -864,17 +864,17 @@ void xpath_processor::v_execute_one (
                break;
          }
          break;
-      
+
       case xpath_relative_location_path :
          switch (u_sub)
          {
             case xpath_relative_location_path_rel_step :
-               // RelativeLocationPath	::=   RelativeLocationPath '/' Step 
+               // RelativeLocationPath	::=   RelativeLocationPath '/' Step
                v_execute_one (xpath_relative_location_path, o_skip_only);
                // v_execute_step (i_relative_action);
                break;
             case xpath_relative_location_path_rel_double_slash_step :
-               // RelativeLocationPath	::= RelativeLocationPath '//' Step 
+               // RelativeLocationPath	::= RelativeLocationPath '//' Step
                break;
             case xpath_relative_location_path_step :
                // RelativeLocationPath	::=   Step
@@ -889,7 +889,7 @@ void xpath_processor::v_execute_one (
          switch (u_sub)
          {
             case xpath_absolute_location_path_slash :
-               // AbsoluteLocationPath	::=   '/' 
+               // AbsoluteLocationPath	::=   '/'
                v_execute_absolute_path (u_variable, false, false);
                break;
             case xpath_absolute_location_path_slash_rel :
@@ -955,7 +955,7 @@ void xpath_processor::v_execute_one (
          break;
 
       case xpath_predicate :
-         // [8]   Predicate				::=   '[' PredicateExpr ']' 
+         // [8]   Predicate				::=   '[' PredicateExpr ']'
          v_execute_one (xpath_predicate_expr, o_skip_only);
          break;
 
@@ -1002,7 +1002,7 @@ void xpath_processor::v_execute_absolute_path (
    if (o_with_rel)
    {
       int i_1, i_2, i_3;
-      int i_bak_position, i_current, i_first, i_relative;
+      int i_current, i_first, i_relative;
       TIXML_STRING S_lit;
 
       // compute position of the first (absolute) step
@@ -1023,7 +1023,6 @@ void xpath_processor::v_execute_absolute_path (
          i_first = i_relative;
       }
       // i_first = i_3 - 1;
-      i_bak_position = as_action_store . i_get_position ();
       as_action_store . v_set_position (i_first);
       if (o_everywhere)
          i_relative_action = -1;
@@ -1100,7 +1099,7 @@ void xpath_processor ::v_execute_step (
             break;
       }
    }
-            
+
    // Pop our step action from the action placeholder
    v_pop_one_action (xc_action, u_sub, u_variable, S_literal);
 
@@ -1239,7 +1238,7 @@ void xpath_processor ::v_execute_step (
                      ns_target . v_add_all_prec_node (XNp_father, S_name);
                      break;
                   case lex_comment :
-                     XNp_next = XNp_father -> FirstChild ();               
+                     XNp_next = XNp_father -> FirstChild ();
                      while (XNp_next)
                      {
                         if (XNp_next -> Type () == TiXmlNode::COMMENT)
@@ -1248,7 +1247,7 @@ void xpath_processor ::v_execute_step (
                      }
                      break;
                   case lex_text :
-                     XNp_next = XNp_father -> FirstChild ();               
+                     XNp_next = XNp_father -> FirstChild ();
                      while (XNp_next)
                      {
                         if (XNp_next -> Type () == TiXmlNode::TEXT)
@@ -1257,7 +1256,7 @@ void xpath_processor ::v_execute_step (
                      }
                      break;
                   case lex_node :
-                     XNp_next = XNp_father -> FirstChild ();               
+                     XNp_next = XNp_father -> FirstChild ();
                      while (XNp_next)
                      {
                         ns_target . v_add_node_in_set (XNp_next);
@@ -1299,10 +1298,10 @@ void xpath_processor ::v_execute_step (
 }
 
 /// Spec extract :
-/// \n A PredicateExpr is evaluated by evaluating the Expr and converting the result to a 
-/// boolean. If the result is a number, the result will be converted to true if the number 
-/// is equal to the context position and will be converted to false otherwise; if the result 
-/// is not a number, then the result will be converted as if by a call to the boolean function. 
+/// \n A PredicateExpr is evaluated by evaluating the Expr and converting the result to a
+/// boolean. If the result is a number, the result will be converted to true if the number
+/// is equal to the context position and will be converted to false otherwise; if the result
+/// is not a number, then the result will be converted as if by a call to the boolean function.
 /// Thus a location path para[3] is equivalent to para[position()=3].
 bool xpath_processor::o_check_predicate (const TiXmlElement * XEp_child, bool o_by_name)
 {
@@ -1457,7 +1456,7 @@ void xpath_processor::v_function_concat (
    unsigned u_nb_arg,               ///< Nb of arguments
    expression_result ** erpp_arg)   ///< Argument list
 {
-   TIXML_STRING S_res;   
+   TIXML_STRING S_res;
    unsigned u_arg;
 
    if (! u_nb_arg)
@@ -1473,7 +1472,7 @@ void xpath_processor::v_function_contains (
    unsigned u_nb_arg,               ///< Nb of arguments
    expression_result ** erpp_arg)   ///< Argument list
 {
-   TIXML_STRING S_arg_1, S_arg_2;   
+   TIXML_STRING S_arg_1, S_arg_2;
 
    if (u_nb_arg != 2)
       throw execution_error (16);
@@ -1495,7 +1494,7 @@ void xpath_processor::v_function_count (
       i_res = 0;
    else
       i_res = erpp_arg [0] -> nsp_get_node_set () -> u_get_nb_node_in_set ();
-      
+
    v_push_int (i_res, "count result");
 }
 
@@ -1555,7 +1554,7 @@ void xpath_processor::v_function_name (
    unsigned u_nb_arg,               ///< Nb of arguments
    expression_result ** erpp_arg)   ///< Argument list
 {
-   TIXML_STRING S_res;   
+   TIXML_STRING S_res;
    node_set * nsp_set;
 
    switch (u_nb_arg)
@@ -1589,7 +1588,7 @@ void xpath_processor::v_function_normalize_space (
    unsigned u_nb_arg,               ///< Nb of arguments
    expression_result ** erpp_arg)   ///< Argument list
 {
-   TIXML_STRING S_arg, S_res;   
+   TIXML_STRING S_arg, S_res;
 
    if (u_nb_arg != 1)
       throw execution_error (23);
@@ -1628,7 +1627,7 @@ void xpath_processor::v_function_starts_with (
    unsigned u_nb_arg,               ///< Nb of arguments
    expression_result ** erpp_arg)   ///< Argument list
 {
-   TIXML_STRING S_arg_1, S_arg_2;   
+   TIXML_STRING S_arg_1, S_arg_2;
 
    if (u_nb_arg != 2)
       throw execution_error (27);
@@ -1642,7 +1641,7 @@ void xpath_processor::v_function_string_length (
    unsigned u_nb_arg,               ///< Nb of arguments
    expression_result ** erpp_arg)   ///< Argument list
 {
-   TIXML_STRING S_arg;   
+   TIXML_STRING S_arg;
 
    if (u_nb_arg != 1)
       throw execution_error (28);
@@ -1653,16 +1652,16 @@ void xpath_processor::v_function_string_length (
 /**
 XPath \b substring function\n
 Standard excerpt:\n
-The substring function returns the substring of the first argument starting at the position specified in the second argument 
-with length specified in the third argument. For example, substring("12345",2,3) returns "234". If the third argument is not 
-specified, it returns the substring starting at the position specified in the second argument and continuing to the end of 
+The substring function returns the substring of the first argument starting at the position specified in the second argument
+with length specified in the third argument. For example, substring("12345",2,3) returns "234". If the third argument is not
+specified, it returns the substring starting at the position specified in the second argument and continuing to the end of
 the string. For example, substring("12345",2) returns "2345".
 */
 void xpath_processor::v_function_substring (
    unsigned u_nb_arg,               ///< Nb of arguments
    expression_result ** erpp_arg)   ///< Argument list
 {
-   TIXML_STRING S_base, S_ret;   
+   TIXML_STRING S_base, S_ret;
    int i_length, i_start;
    const char * cp_base;
    char * cp_work;
@@ -1703,7 +1702,7 @@ void xpath_processor::v_function_substring (
 
 /// XPath \b sum function\n
 /// Standard exerpt :\n
-/// The sum function returns the sum, for each node in the argument node-set, 
+/// The sum function returns the sum, for each node in the argument node-set,
 /// of the result of converting the string-values of the node to a number.
 void xpath_processor::v_function_sum (
    unsigned u_nb_arg,               ///< Nb of arguments
@@ -1763,9 +1762,9 @@ void xpath_processor::v_function_text (
 
 /// XPath \b translate function\n
 /// Standard exerpt :\n
-///The translate function returns the first argument string with occurrences of 
-///characters in the second argument string replaced by the character at the 
-///corresponding position in the third argument string. 
+///The translate function returns the first argument string with occurrences of
+///characters in the second argument string replaced by the character at the
+///corresponding position in the third argument string.
 void xpath_processor::v_function_translate (
    unsigned u_nb_arg,               ///< Nb of arguments
    expression_result ** erpp_arg)   ///< Argument list
@@ -1775,25 +1774,25 @@ void xpath_processor::v_function_translate (
    //pre-conditions
    if (u_nb_arg != 3)
       throw execution_error (40);
-   
+
    TIXML_STRING S_translate_me  = erpp_arg [0] -> S_get_string ();
    TIXML_STRING S_translation_table_lhs = erpp_arg [1] -> S_get_string ();
    TIXML_STRING S_translation_table_rhs = erpp_arg [2] -> S_get_string ();
-   
-   
+
+
    // Strings S_translation_table_lhs and S_translation_table_rhs represent
    // the translation  table's left hand side and right hand side respectively
    // e.g.  for   "abc"  "XYZ" ... we have the table
-   //		"a   "X	
-   //		 b    Y	
-   //		 c    Z 
+   //		"a   "X
+   //		 b    Y
+   //		 c    Z
    //		 "    "
-   //        lhs   rhs   
-   
+   //        lhs   rhs
+
    cp_translated = new char[ S_translate_me.length() + 1];
-   
+
    unsigned int u_write_at = 0 ;
-	
+
    for(unsigned int u_read_at = 0; u_read_at < S_translate_me.length() ; u_read_at++)
    {
       //search in the translation scheme table
@@ -1804,7 +1803,7 @@ void xpath_processor::v_function_translate (
          if(S_translate_me[u_read_at] == S_translation_table_lhs [u_translation_rule_index])
          {
             //translation rule found for current character
-            break;   
+            break;
          }
       }
       if( u_translation_rule_index  <  S_translation_table_lhs.size())
@@ -1819,7 +1818,7 @@ void xpath_processor::v_function_translate (
          {
             // else empty translation scheme
             // so current charater skipped
-         }   
+         }
       }
       else
       {
@@ -1829,12 +1828,12 @@ void xpath_processor::v_function_translate (
          u_write_at++;
       }
    }
-   cp_translated [u_write_at] = 0; 
-   
+   cp_translated [u_write_at] = 0;
+
    S_translated = cp_translated;
-   
+
    delete [] cp_translated;
-   
+
    v_push_string(S_translated);
 }
 
@@ -1852,32 +1851,32 @@ void xpath_processor::v_function_true (
 This function is for internal use : evaluation of an equality expression \n
 Standard excerpt :\n
 
-If both objects to be compared are node-sets, then the comparison will be true if and only if there is a node in the first 
-node-set and a node in the second node-set such that the result of performing the comparison on the string-values of the 
+If both objects to be compared are node-sets, then the comparison will be true if and only if there is a node in the first
+node-set and a node in the second node-set such that the result of performing the comparison on the string-values of the
 two nodes is true. \n
 
-If one object to be compared is a node-set and the other is a number, then the comparison will be true 
-if and only if there is a node in the node-set such that the result of performing the comparison on the number to be compared 
+If one object to be compared is a node-set and the other is a number, then the comparison will be true
+if and only if there is a node in the node-set such that the result of performing the comparison on the number to be compared
 and on the result of converting the string-value of that node to a number using the number function is true. \n
 
-If one object to be compared is a node-set and the other is a string, then the comparison will be true if and only if there is a node in 
+If one object to be compared is a node-set and the other is a string, then the comparison will be true if and only if there is a node in
 the node-set such that the result of performing the comparison on the string-value of the node and the other string is true. \n
 
-If one object to be compared is a node-set and the other is a boolean, then the comparison will be true if and only if the 
-result of performing the comparison on the boolean and on the result of converting the node-set to a boolean using the boolean 
+If one object to be compared is a node-set and the other is a boolean, then the comparison will be true if and only if the
+result of performing the comparison on the boolean and on the result of converting the node-set to a boolean using the boolean
 function is true.\n
 
-When neither object to be compared is a node-set and the operator is = or !=, then the objects are compared by converting them 
-to a common type as follows and then comparing them. 
--  If at least one object to be compared is a boolean, then each object to be compared is converted to a boolean as if by 
-   applying the boolean function. 
--  Otherwise, if at least one object to be compared is a number, then each object to be compared is converted to a number as 
-   if by applying the number function. 
--  Otherwise, both objects to be compared are converted to strings as if by applying the string function. The = comparison will 
-   be true if and only if the objects are equal; the != comparison will be true if and only if the objects are not equal. 
--  Numbers are compared for equality according to IEEE 754. 
--  Two booleans are equal if either both are true or both are false. 
--  Two strings are equal if and only if they consist of the same sequence of UCS characters. 
+When neither object to be compared is a node-set and the operator is = or !=, then the objects are compared by converting them
+to a common type as follows and then comparing them.
+-  If at least one object to be compared is a boolean, then each object to be compared is converted to a boolean as if by
+   applying the boolean function.
+-  Otherwise, if at least one object to be compared is a number, then each object to be compared is converted to a number as
+   if by applying the number function.
+-  Otherwise, both objects to be compared are converted to strings as if by applying the string function. The = comparison will
+   be true if and only if the objects are equal; the != comparison will be true if and only if the objects are not equal.
+-  Numbers are compared for equality according to IEEE 754.
+-  Two booleans are equal if either both are true or both are false.
+-  Two strings are equal if and only if they consist of the same sequence of UCS characters.
 */
 void xpath_processor::v_function_equal (expression_result ** erpp_arg)
 {
@@ -1887,12 +1886,12 @@ void xpath_processor::v_function_equal (expression_result ** erpp_arg)
    assert (erpp_arg [0]);
    assert (erpp_arg [1]);
    if (erpp_arg [0] -> e_type == e_node_set)
-      if (erpp_arg [1] -> e_type == e_node_set)   
+      if (erpp_arg [1] -> e_type == e_node_set)
          v_function_equal_2_node (erpp_arg [0], erpp_arg [1]);
       else
          v_function_equal_node_and_other (erpp_arg [0], erpp_arg [1]);
    else
-      if (erpp_arg [1] -> e_type == e_node_set)   
+      if (erpp_arg [1] -> e_type == e_node_set)
          v_function_equal_node_and_other (erpp_arg [1], erpp_arg [0]);
       else
       {
@@ -1920,15 +1919,15 @@ void xpath_processor::v_function_not_equal (expression_result ** erpp_arg)
 Utility function that evaluates the equality between a node set and a non-node set\n
 
 Standard excerpt :\n
-If one object to be compared is a node-set and the other is a number, then the comparison will be true 
-if and only if there is a node in the node-set such that the result of performing the comparison on the number to be compared 
+If one object to be compared is a node-set and the other is a number, then the comparison will be true
+if and only if there is a node in the node-set such that the result of performing the comparison on the number to be compared
 and on the result of converting the string-value of that node to a number using the number function is true. \n
 
-If one object to be compared is a node-set and the other is a string, then the comparison will be true if and only if there is a node in 
+If one object to be compared is a node-set and the other is a string, then the comparison will be true if and only if there is a node in
 the node-set such that the result of performing the comparison on the string-value of the node and the other string is true. \n
 
-If one object to be compared is a node-set and the other is a boolean, then the comparison will be true if and only if the 
-result of performing the comparison on the boolean and on the result of converting the node-set to a boolean using the boolean 
+If one object to be compared is a node-set and the other is a boolean, then the comparison will be true if and only if the
+result of performing the comparison on the boolean and on the result of converting the node-set to a boolean using the boolean
 function is true.\n
 */
 void xpath_processor::v_function_equal_node_and_other (expression_result * erp_node_set, expression_result * erp_non)
@@ -2027,7 +2026,7 @@ void xpath_processor::v_function_and (expression_result ** erpp_arg)
    v_push_bool (erpp_arg [0] -> o_get_bool () && erpp_arg [1] -> o_get_bool ());
 }
 
-/// XPath relational comparison function 
+/// XPath relational comparison function
 void xpath_processor::v_function_relational (expression_result ** erpp_arg, unsigned u_sub)
 {
    bool o_res;
@@ -2037,7 +2036,7 @@ void xpath_processor::v_function_relational (expression_result ** erpp_arg, unsi
    assert (erpp_arg [1]);
 
    if (erpp_arg [0] -> e_type == e_double || erpp_arg [1] -> e_type == e_double)
-   {  
+   {
       double d_arg_1, d_arg_2;
 
       d_arg_1 = erpp_arg [0] -> d_get_double ();
@@ -2095,7 +2094,7 @@ void xpath_processor::v_function_mult (expression_result ** erpp_arg, unsigned u
    assert (erpp_arg [1]);
 
    if (erpp_arg [0] -> e_type == e_double || erpp_arg [1] -> e_type == e_double || u_sub == xpath_multiplicative_expr_div)
-   {  
+   {
       double d_arg_1, d_arg_2, d_res;
 
       d_arg_1 = erpp_arg [0] -> d_get_double ();
@@ -2164,6 +2163,6 @@ void xpath_processor::v_set_context (
    const TiXmlElement * XEp_in,     ///< Context node
    bool o_by_name)            ///< true if the current node search is by name, false if it's a *
 {
-   XEp_context = XEp_in; 
+   XEp_context = XEp_in;
    o_is_context_by_name = o_by_name;
 }

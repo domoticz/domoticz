@@ -268,8 +268,6 @@ void CWunderground::GetMeterDetails()
 	float windgust_ms=0;
 	float wind_temp=temp;
 	float wind_chill=temp;
-	int windgust=1;
-	float windchill=-1;
 
 	if (root["current_observation"]["wind_degrees"].empty()==false)
 	{

@@ -423,7 +423,6 @@ void CEventSystem::GetCurrentMeasurementStates()
 		StringSplit(sitem.sValue, ";", splitresults);
 
 		float temp = 0;
-		float chill = 0;
 		unsigned char humidity = 0;
 		float barometer = 0;
 		float rainmm = 0;
@@ -440,7 +439,6 @@ void CEventSystem::GetCurrentMeasurementStates()
 		bool isDew = false;
 		bool isHum = false;
 		bool isBaro = false;
-		bool isBaroFloat = false;
 		bool isUtility = false;
 		bool isWeather = false;
 		bool isRain = false;
@@ -512,7 +510,6 @@ void CEventSystem::GetCurrentMeasurementStates()
 			if (sitem.subType == sTypeTHBFloat)
 			{
 				barometer = static_cast<float>(atof(splitresults[3].c_str()));
-				isBaroFloat = true;
 			}
 			else
 			{
@@ -588,7 +585,6 @@ void CEventSystem::GetCurrentMeasurementStates()
 				if ((sitem.subType == sTypeWIND4) || (sitem.subType == sTypeWINDNoTemp))
 				{
 					temp = static_cast<float>(atof(splitresults[4].c_str()));
-					chill = static_cast<float>(atof(splitresults[5].c_str()));
 					isTemp = true;
 				}
 			}
@@ -2392,9 +2388,6 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 		unsigned char thisDeviceHum = 0;
 		float thisDeviceBaro = 0;
 		float thisDeviceUtility = 0;
-		float thisDeviceWindDir = 0;
-		float thisDeviceWindSpeed = 0;
-		float thisDeviceWindGust = 0;
 		float thisDeviceWeather = 0;
 
 		if (m_tempValuesByName.size()>0)
@@ -2526,9 +2519,6 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 				lua_pushstring(lua_state, p->first.c_str());
 				lua_pushnumber(lua_state, (lua_Number)p->second);
 				lua_rawset(lua_state, -3);
-				if (p->first == devname) {
-					thisDeviceWindDir = p->second;
-				}
 			}
 			lua_setglobal(lua_state, "otherdevices_winddir");
 		}
@@ -2541,9 +2531,6 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 				lua_pushstring(lua_state, p->first.c_str());
 				lua_pushnumber(lua_state, (lua_Number)p->second);
 				lua_rawset(lua_state, -3);
-				if (p->first == devname) {
-					thisDeviceWindSpeed = p->second;
-				}
 			}
 			lua_setglobal(lua_state, "otherdevices_windspeed");
 		}
@@ -2556,9 +2543,6 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 				lua_pushstring(lua_state, p->first.c_str());
 				lua_pushnumber(lua_state, (lua_Number)p->second);
 				lua_rawset(lua_state, -3);
-				if (p->first == devname) {
-					thisDeviceWindGust = p->second;
-				}
 			}
 			lua_setglobal(lua_state, "otherdevices_windgust");
 		}
@@ -3349,7 +3333,6 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 		CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByType(HTYPE_Kodi);
 		if (pBaseHardware != NULL)
 		{
-			CKodi			*pHardware = reinterpret_cast<CKodi*>(pBaseHardware);
 			if (sParams.length() > 0)
 			{
 				_level = atoi(sParams.c_str());

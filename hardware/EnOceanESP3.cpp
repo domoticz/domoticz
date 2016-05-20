@@ -756,17 +756,6 @@ void CEnOceanESP3::SendDimmerTeachIn(const char *pdata, const unsigned char leng
 
 		buf[9] = 0x30; // status
 
-		if (tsen->LIGHTING2.unitcode < 10)
-		{
-			unsigned char RockerID = 0;
-			//unsigned char UpDown = 1;
-			//unsigned char Pressed = 1;
-			RockerID = tsen->LIGHTING2.unitcode - 1;
-		}
-		else
-		{
-			return;//double not supported yet!
-		}
 		sendFrame(PACKET_RADIO,buf,10,NULL,0);
 	}
 }
@@ -830,7 +819,6 @@ bool CEnOceanESP3::ParseData()
 		{
 			m_bBaseIDRequested=false;
 			m_id_base = (m_buffer[1] << 24) + (m_buffer[2] << 16) + (m_buffer[3] << 8) + m_buffer[4];
-			unsigned char changes_left=m_buffer[5];
 			_log.Log(LOG_STATUS,"EnOcean: Transceiver ID_Base: 0x%08x",m_id_base);
 		}
 		if (m_bufferpos==33)
@@ -1212,35 +1200,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 							// DATA_BYTE1 is the temperature where 0x00 = +40°C ... 0xFF = 0°C
 							// DATA_BYTE0_bit_0 is the occupy button, pushbutton or slide switch
 							float temp=GetValueRange(DATA_BYTE1,0,40);
-							if (Manufacturer == 0x0D)
-							{
-								//Eltako
-								int nightReduction = 0;
-								if (DATA_BYTE3 == 0x06)
-									nightReduction = 1;
-								else if (DATA_BYTE3 == 0x0C)
-									nightReduction = 2;
-								else if (DATA_BYTE3 == 0x13)
-									nightReduction = 3;
-								else if (DATA_BYTE3 == 0x19)
-									nightReduction = 4;
-								else if (DATA_BYTE3 == 0x1F)
-									nightReduction = 5;
-								float setpointTemp=GetValueRange(DATA_BYTE2,40);
-							}
-							else
-							{
-								int fspeed = 3;
-								if (DATA_BYTE3 >= 145)
-									fspeed = 2;
-								else if (DATA_BYTE3 >= 165)
-									fspeed = 1;
-								else if (DATA_BYTE3 >= 190)
-									fspeed = 0;
-								else if (DATA_BYTE3 >= 210)
-									fspeed = -1; //auto
-								int iswitch = DATA_BYTE0 & 1;
-							}
+
 							RBUF tsen;
 							memset(&tsen,0,sizeof(RBUF));
 							tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;
@@ -1569,12 +1529,12 @@ void CEnOceanESP3::ParseRadioDatagram()
 					unsigned char UpDown=(DATA_BYTE3 & DB3_RPS_NU_UD)  >> DB3_RPS_NU_UD_SHIFT;
 					unsigned char Pressed=(DATA_BYTE3 & DB3_RPS_NU_PR) >> DB3_RPS_NU_PR_SHIFT;
 
-					unsigned char SecondButtonID = (DATA_BYTE3 & DB3_RPS_NU_SBID) >> DB3_RPS_NU_SBID_SHIFT;
 					unsigned char SecondRockerID = (DATA_BYTE3 & DB3_RPS_NU_SRID) >> DB3_RPS_NU_SRID_SHIFT;
 					unsigned char SecondUpDown=(DATA_BYTE3 & DB3_RPS_NU_SUD)>>DB3_RPS_NU_SUD_SHIFT;
 					unsigned char SecondAction=(DATA_BYTE3 & DB3_RPS_NU_SA)>>DB3_RPS_NU_SA_SHIFT;
 
 #ifdef ENOCEAN_BUTTON_DEBUG
+					unsigned char SecondButtonID = (DATA_BYTE3 & DB3_RPS_NU_SBID) >> DB3_RPS_NU_SBID_SHIFT;
 					_log.Log(LOG_NORM,
 						"EnOcean: Received RPS N-Message   message: 0x%02X Node 0x%08x RockerID: %i ButtonID: %i Pressed: %i UD: %i Second Rocker ID: %i SecondButtonID: %i SUD: %i Second Action: %i",
 						DATA_BYTE3,
@@ -1655,12 +1615,12 @@ void CEnOceanESP3::ParseRadioDatagram()
 					{
 						unsigned char DATA_BYTE3 = m_buffer[1];
 
-						unsigned char ButtonID = (DATA_BYTE3 & DB3_RPS_BUTTONS) >> DB3_RPS_BUTTONS_SHIFT;
 						unsigned char Pressed = (DATA_BYTE3 & DB3_RPS_PR) >> DB3_RPS_PR_SHIFT;
 
 						unsigned char UpDown = !((DATA_BYTE3 == 0xD0) || (DATA_BYTE3 == 0xF0));
 
 #ifdef ENOCEAN_BUTTON_DEBUG
+						unsigned char ButtonID = (DATA_BYTE3 & DB3_RPS_BUTTONS) >> DB3_RPS_BUTTONS_SHIFT;
 						_log.Log(LOG_NORM, "EnOcean: Received RPS T21-Message message: 0x%02X Node 0x%08x ButtonID: %i Pressed: %i UD: %i",
 							DATA_BYTE3,
 							id,

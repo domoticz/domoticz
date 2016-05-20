@@ -119,7 +119,6 @@ bool Meteostick::OpenSerialDevice()
 
 void Meteostick::Do_PollWork()
 {
-	bool bFirstTime = true;
 	int sec_counter = 0;
 	while (!m_stoprequestedpoller)
 	{
@@ -140,8 +139,6 @@ void Meteostick::Do_PollWork()
 			if (m_retrycntr >= RETRY_DELAY)
 			{
 				m_retrycntr = 0;
-				if (OpenSerialDevice())
-					bFirstTime = true;
 			}
 		}
 	}
@@ -309,7 +306,6 @@ void Meteostick::SendLeafWetnessRainSensor(const unsigned char Idx, const unsign
 
 void Meteostick::SendSoilMoistureSensor(const unsigned char Idx, const unsigned char Channel, const int Moisture, const std::string &defaultname)
 {
-	bool bDeviceExits = true;
 	int finalID = (Idx * 10) + Channel;
 	SendMoistureSensor(finalID,255, Moisture, defaultname);
 }

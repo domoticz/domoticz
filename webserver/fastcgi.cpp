@@ -16,8 +16,6 @@
 namespace http {
 	namespace server {
 
-uint16_t fastcgi_parser::request_id_ = 1;
-
 //http://www.mit.edu/~yandros/doc/specs/fcgi-spec.html
 struct _tFCGI_Header {
 	uint8_t version;
@@ -279,16 +277,6 @@ bool fastcgi_parser::handlePHP(const server_settings &settings, const std::strin
 			}
 		}
 	}
-
-	//
-
-	_tFCGI_Header gfci;
-	gfci.version = 1;
-	gfci.type = 1;
-	gfci.requestIdB1 = (request_id_ & 0xFF00 >> 8);
-	gfci.requestIdB0 = request_id_ & 0xFF;
-	gfci.paddingLength = 0;
-	request_id_++;
 
 	std::string szQueryString;
 

@@ -938,7 +938,6 @@ void cWebem::CleanSessions() {
 #ifdef DEBUG_WWW
 	_log.Log(LOG_STATUS, "[web:%s] cleaning sessions...", GetPort().c_str());
 #endif
-	int before = CountSessions();
 	// Clean up timed out sessions from memory
 	std::vector<std::string> ssids;
 	{
@@ -956,7 +955,6 @@ void cWebem::CleanSessions() {
 		std::string ssid = *ssitt;
 		RemoveSession(ssid);
 	}
-	int after = CountSessions();
 	std::stringstream ss;
 	{
 		boost::mutex::scoped_lock lock(m_sessionsMutex);

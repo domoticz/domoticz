@@ -15,7 +15,9 @@
 #include "../main/localtime_r.h"
 #include "../httpclient/UrlEncode.h"
 
+#ifdef _MSC_VER
 #pragma warning(disable: 4996)
+#endif
 
 #define round(a) ( int ) ( a + .5 )
 
@@ -51,7 +53,7 @@ m_password(CURLEncode::URLEncode(password))
 	m_HwdID=ID;
 	m_port=port;
 	m_controllerID=0;
-	_log.Log(LOG_ERROR, "Razberry: Depricated, support will be removed (very!) soon!");
+	_log.Log(LOG_ERROR, "Razberry: Deprecated, support will be removed (very!) soon!");
 }
 
 
@@ -88,7 +90,7 @@ bool CRazberry::GetInitialDevices()
 {
 	m_updateTime=0;
 	std::string sResult;
-#ifndef DEBUG_ZWAVE_INT	
+#ifndef DEBUG_ZWAVE_INT
 	std::string szURL=GetControllerURL();
 
 	bool bret;
@@ -670,7 +672,7 @@ void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 		if (pPos==std::string::npos)
 			return;
 		std::string sClassID=tmpStr.substr(0,pPos);
-		
+
 
 		// Device status and battery
 		_device.basicType =		1;
