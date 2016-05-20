@@ -50,7 +50,6 @@ matrix:
           - gcc-4.9
           - g++-4.9
           - libboost1.55-all-dev
-          - cmake
           - libsqlite3-dev
           - curl
           - libcurl4-openssl-dev
@@ -60,9 +59,11 @@ matrix:
           - libudev-dev
           - git
           - libdigest-sha-perl
+          - gzip
     script:
       - (cd open-zwave-read-only; make)
-      - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=open-zwave-read-only
+      - curl -sSL https://cmake.org/files/v3.5/cmake-3.5.2-Linux-x86_64.tar.gz | tar -xz
+      - cmake-3.5.2-Linux-x86_64/bin/cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=open-zwave-read-only
       - make
   # Apple OSX
   - os: osx
@@ -70,6 +71,8 @@ matrix:
       - gcc
     env: TARGET_ARCHITECTURE=x86_64
     install:
+      - brew update
+      - brew upgrade
       - brew install cmake
       - brew install boost|| true
       - brew install boost-python|| true
@@ -82,7 +85,7 @@ matrix:
       - export LDFLAGS=-L/usr/local/opt/openssl/lib
       - export CPPFLAGS=-I/usr/local/opt/openssl/include
     script:
-      - cmake -DCMAKE_BUILD_TYPE=Release
+      - /usr/local/bin/cmake -DCMAKE_BUILD_TYPE=Release
       - make
 
 
