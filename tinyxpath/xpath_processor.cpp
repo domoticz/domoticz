@@ -1570,11 +1570,13 @@ void xpath_processor::v_function_name (
          if (erpp_arg [0] -> e_type == e_node_set)
          {
             nsp_set = erpp_arg [0] -> nsp_get_node_set ();
-            if (nsp_set -> u_get_nb_node_in_set ())
-               if (nsp_set -> o_is_attrib (0))
+            if (nsp_set -> u_get_nb_node_in_set ()) {
+               if (nsp_set -> o_is_attrib (0)) {
                   S_res = nsp_set -> XAp_get_attribute_in_set (0) -> Name ();
-               else
+               } else {
                   S_res = nsp_set -> XNp_get_node_in_set (0) -> Value ();
+               }
+            }
          }
          break;
       default :

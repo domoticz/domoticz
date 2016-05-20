@@ -20,7 +20,9 @@
 
 #define CONTROLLER_COMMAND_TIMEOUT 30
 
+#ifdef _MSC_VER
 #pragma warning(disable: 4996)
+#endif
 
 #define round(a) ( int ) ( a + .5 )
 
