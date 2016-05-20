@@ -160,11 +160,11 @@ namespace tcp_proxy
 			const std::string& local_host, unsigned short local_port,
 			const std::string& upstream_host, const std::string& upstream_port)
 	:	io_service_(),
+		m_bDoStop(false),
 		localhost_address(boost::asio::ip::address_v4::from_string(local_host)),
 		acceptor_(io_service_,boost::asio::ip::tcp::endpoint(localhost_address,local_port)),
-		upstream_port_(upstream_port),
 		upstream_host_(upstream_host),
-		m_bDoStop(false)
+		upstream_port_(upstream_port)
 	{
 
 	}

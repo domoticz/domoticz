@@ -30,10 +30,10 @@ namespace http {
 			: _socket(io_service, context),
 			_io_service(io_service),
 			doStop(false),
-			b_Connected(false),
 			we_locked_prefs_mutex(false),
+			timer_(io_service, boost::posix_time::seconds(TIMEOUT)),
 			timeout_(TIMEOUT),
-			timer_(io_service, boost::posix_time::seconds(TIMEOUT))
+			b_Connected(false)
 		{
 			writePdu = NULL;
 			_allowed_subsystems = 0;

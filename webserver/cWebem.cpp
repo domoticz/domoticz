@@ -45,13 +45,14 @@ Webem constructor
 cWebem::cWebem(
 		const server_settings & settings,
 		const std::string& doc_root) :
-				m_io_service(),
-				m_settings(settings),
-				myRequestHandler(doc_root, this),
 				m_DigistRealm("Domoticz.com"),
+				m_settings(settings),
+				myServer(server_factory::create(settings, myRequestHandler)),
+				myRequestHandler(doc_root, this),
+				m_io_service(),
 				m_session_clean_timer(m_io_service, boost::posix_time::minutes(1)),
-				m_io_service_thread(boost::bind(&boost::asio::io_service::run, &m_io_service)),
-				myServer(server_factory::create(settings, myRequestHandler)) {
+				m_io_service_thread(boost::bind(&boost::asio::io_service::run, &m_io_service))
+{
 	m_authmethod = AUTH_LOGIN;
 	mySessionStore = NULL;
 	// associate handler to timer and schedule the first iteration

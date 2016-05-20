@@ -73,8 +73,8 @@ const char* CEvohome::GetZoneModeName(uint8_t nZoneMode)
 }
 
 CEvohome::CEvohome(const int ID, const std::string &szSerialPort) :
-	m_ZoneNames(m_nMaxZones),
-	m_ZoneOverrideLocal(m_nMaxZones)
+	m_ZoneOverrideLocal(m_nMaxZones),
+	m_ZoneNames(m_nMaxZones)
 {
 	m_HwdID=ID;
 	m_nDevID=0;

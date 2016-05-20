@@ -30,11 +30,11 @@ public:
 	server_settings() :
 		is_secure_(false) {}
 	server_settings(const server_settings & s) :
-		is_secure_(s.is_secure_),
 		www_root(s.www_root),
 		listening_address(s.listening_address),
 		listening_port(s.listening_port),
-		php_cgi_path(s.php_cgi_path)
+		php_cgi_path(s.php_cgi_path),
+		is_secure_(s.is_secure_)
 		{}
 	virtual ~server_settings() {}
 	server_settings & operator=(const server_settings & s) {

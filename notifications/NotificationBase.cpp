@@ -10,9 +10,9 @@ typedef std::map<std::string, std::string* >::iterator it_conf_type;
 typedef std::map<std::string, int* >::iterator it_conf_type_int;
 
 CNotificationBase::CNotificationBase(const std::string &subsystemid, const int options):
+m_IsEnabled(1),
 _subsystemid(subsystemid),
-_options(options),
-m_IsEnabled(1)
+_options(options)
 {
 }
 
@@ -102,7 +102,7 @@ bool CNotificationBase::SendMessageEx(const std::string &Subject, const std::str
 	if (_options & OPTIONS_URL_BODY) {
 		fText = CURLEncode::URLEncode(fText);
 	}
-	
+
 	bool bRet = SendMessageImplementation(fSubject, fText, ExtraData, Priority, Sound, bFromNotification);
 	if (_subsystemid != "gcm")
 	{

@@ -17,8 +17,8 @@ namespace server {
 server_base::server_base(const server_settings & settings, request_handler & user_request_handler) :
 		io_service_(),
 		acceptor_(io_service_),
-		settings_(settings),
 		request_handler_(user_request_handler),
+		settings_(settings),
 		timeout_(20), // default read timeout in seconds
 		is_running(false),
 		is_stop_complete(false) {

@@ -11,7 +11,7 @@
 extern http::server::CWebServerHelper m_webservers;
 
 DomoticzTCP::DomoticzTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password):
-m_username(username), m_password(password), m_szIPAddress(IPAddress)
+m_szIPAddress(IPAddress), m_username(username), m_password(password)
 {
 	m_HwdID=ID;
 	m_socket=INVALID_SOCKET;
@@ -299,10 +299,10 @@ void DomoticzTCP::Do_Work()
 				onRFXMessage((const unsigned char *)&buf,bread);
 			}
 		}
-		
+
 	}
 	_log.Log(LOG_STATUS,"Domoticz: TCP/IP Worker stopped...");
-} 
+}
 
 void DomoticzTCP::writeTCP(const char *data, size_t size)
 {

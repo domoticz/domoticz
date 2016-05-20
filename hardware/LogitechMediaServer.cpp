@@ -13,11 +13,11 @@
 #include "../httpclient/HTTPClient.h"
 
 CLogitechMediaServer::CLogitechMediaServer(const int ID, const std::string &IPAddress, const int Port, const std::string &User, const std::string &Pwd, const int PollIntervalsec, const int PingTimeoutms) :
+m_iThreadsRunning(0),
 m_IP(IPAddress),
 m_User(User),
 m_Pwd(Pwd),
-m_stoprequested(false),
-m_iThreadsRunning(0)
+m_stoprequested(false)
 {
 	m_HwdID = ID;
 	m_Port = Port;
@@ -26,7 +26,8 @@ m_iThreadsRunning(0)
 	SetSettings(PollIntervalsec, PingTimeoutms);
 }
 
-CLogitechMediaServer::CLogitechMediaServer(const int ID) : m_stoprequested(false), m_iThreadsRunning(0)
+CLogitechMediaServer::CLogitechMediaServer(const int ID) :
+m_iThreadsRunning(0), m_stoprequested(false)
 {
 	m_HwdID = ID;
 	m_IP = "";
