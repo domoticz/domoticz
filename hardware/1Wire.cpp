@@ -164,7 +164,7 @@ bool IsTemperatureValid(_e1WireFamilyType deviceFamily, float temperature)
 	if (temperature<=-300 || temperature>=381)
 		return false;
 
-	// Some devices has a power-on value at 85° and -127°, we have to filter it
+	// Some devices has a power-on value at 85ï¿½ and -127ï¿½, we have to filter it
 	switch (deviceFamily)
 	{
 		case high_precision_digital_thermometer:
@@ -420,7 +420,7 @@ void C1Wire::ReportTemperatureHumidity(const std::string& deviceId, const float 
 	SendTempHumSensor(NodeID, 255, temperature, round(humidity), "TempHum");
 }
 
-void C1Wire::ReportLightState(const std::string& deviceId, const int unit, const bool state)
+void C1Wire::ReportLightState(const std::string& deviceId, const UNIT unit, const bool state)
 {
 // check - is state changed ?
 	char num[16];
@@ -458,7 +458,7 @@ void C1Wire::ReportLightState(const std::string& deviceId, const int unit, const
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, NULL, 255);
 }
 
-void C1Wire::ReportCounter(const std::string& deviceId, const int unit, const unsigned long counter)
+void C1Wire::ReportCounter(const std::string& deviceId, const UNIT unit, const unsigned long counter)
 {
 	unsigned char deviceIdByteArray[DEVICE_ID_SIZE]={0};
 	DeviceIdToByteArray(deviceId,deviceIdByteArray);
@@ -479,7 +479,7 @@ void C1Wire::ReportCounter(const std::string& deviceId, const int unit, const un
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER, NULL, 255);
 }
 
-void C1Wire::ReportVoltage(const std::string& deviceId, const int unit, const int voltage)
+void C1Wire::ReportVoltage(const std::string& deviceId, const UNIT unit, const int voltage)
 {
 	if (voltage == -1000.0)
 		return;

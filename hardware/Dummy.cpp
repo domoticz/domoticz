@@ -83,7 +83,7 @@ namespace http {
 
 			bool bPrevAcceptNewHardware = m_sql.m_bAcceptNewHardware;
 			m_sql.m_bAcceptNewHardware = true;
-			unsigned long long DeviceRowIdx = -1;
+			DEVICE_ID DeviceRowIdx = -1;
 			switch (iSensorType)
 			{
 			case 1:

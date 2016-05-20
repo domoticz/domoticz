@@ -17,7 +17,7 @@
 #endif
 
 #undef INVALID_SOCKET
-#define INVALID_SOCKET  (unsigned int)(~0)
+#define INVALID_SOCKET  (int)(~0)
 #define BLOCK_RETRY_INTERVAL_MSECS 1
 #define ERROR_INAPPROPRIATE_STATE -1
 

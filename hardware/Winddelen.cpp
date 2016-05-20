@@ -88,7 +88,7 @@ void CWinddelen::GetMeterDetails()
 	char szURL[200];
 
    sprintf(szURL,"http://backend.windcentrale.nl/windcentrale/productie_%d.txt", m_usMillID);
-	
+
 
 	if (!HTTPClient::GET(szURL,sResult))
 	{
@@ -104,7 +104,7 @@ void CWinddelen::GetMeterDetails()
 		return;
 	}
 
-	int fpos;
+	size_t fpos;
 	std::string pusage=stdstring_trim(results[7]);
 	fpos=pusage.find_first_of(" ");
 	if (fpos!=std::string::npos)
@@ -116,7 +116,7 @@ void CWinddelen::GetMeterDetails()
 	if (fpos!=std::string::npos)
 		pcurrent=pcurrent.substr(0,fpos);
 	stdreplace(pcurrent,",","");
-	
+
 	std::map<int,float> winddelen_per_mill;
   	winddelen_per_mill[1]=9910.0;
   	winddelen_per_mill[2]=10154.0;

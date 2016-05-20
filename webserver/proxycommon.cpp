@@ -288,7 +288,7 @@ void *ProxyPdu::content()
 
 int ProxyPdu::ReadPdu(const char *buffer, size_t buflen)
 {
-	int datacounter = 0;
+	unsigned int datacounter = 0;
 	int mult = 1;
 	unsigned int lencounter = 0;
 	size_t readlen = 0;

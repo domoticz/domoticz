@@ -137,7 +137,7 @@ bool SatelIntegra::StopHardware()
 #endif
 
 	m_stoprequested = true;
-	
+
 	if (m_thread)
 	{
 		m_thread->join();
@@ -885,7 +885,7 @@ std::string SatelIntegra::ISO2UTF8(const std::string &name)
 	for (size_t i = 0; i < name.length(); ++i)
 	{
 		bool changed = false;
-		for (int j = 0; j < sizeof(cp1250); ++j)
+		for (size_t j = 0; j < sizeof(cp1250); ++j)
 		{
 			if (name[i] == cp1250[j])
 			{
@@ -1091,7 +1091,7 @@ int SatelIntegra::SendCommand(const unsigned char* cmd, const unsigned int cmdLe
 
 	int ret = recv(m_socket, (char*)&buffer, MAX_LENGTH_OF_ANSWER, 0);
 
-	if ((ret <= 0) || (ret >= MAX_LENGTH_OF_ANSWER)) 
+	if ((ret <= 0) || (ret >= MAX_LENGTH_OF_ANSWER))
 	{
 		_log.Log(LOG_ERROR, "Satel Integra: bad data length received");
 		return -1;
@@ -1099,7 +1099,7 @@ int SatelIntegra::SendCommand(const unsigned char* cmd, const unsigned int cmdLe
 
 	// remove special chars
 	int offset = 0;
-	for (int i = 0; i < ret; i++) 
+	for (int i = 0; i < ret; i++)
 	{
 		buffer[i] = buffer[i + offset];
 		if (buffer[i] == 0xFE && buffer[i + 1] == 0xF0)

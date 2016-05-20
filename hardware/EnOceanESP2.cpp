@@ -727,7 +727,7 @@ void CEnOceanESP2::Add2SendQueue(const char* pData, const size_t length)
  * returns a clean data structure, filled with 0
  */
 enocean_data_structure enocean_clean_data_structure() {
-	int i = 0;
+	size_t i = 0;
 	enocean_data_structure ds;
 	for (i=0;i < sizeof(ds);i++) {
 		BYTE* b = (BYTE*) &ds + i;

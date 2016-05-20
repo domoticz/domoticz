@@ -194,7 +194,7 @@ void CPanasonicNode::UpdateStatus(bool forceupdate)
 	m_CurrentStatus.LastOK(mytime(NULL));
 
 	// 1:	Update the DeviceStatus
-	
+
 	if (m_CurrentStatus.UpdateRequired(m_PreviousStatus) || forceupdate)
 	{
 		result = m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d, sValue='%q', LastUpdate='%q' WHERE (HardwareID == %d) AND (DeviceID == '%q') AND (Unit == 1) AND (SwitchType == %d)",
@@ -222,7 +222,7 @@ void CPanasonicNode::UpdateStatus(bool forceupdate)
 	}
 
 	// 4:	Trigger Notifications & events on status change
-	
+
 	if (m_CurrentStatus.Status() != m_PreviousStatus.Status() || forceupdate)
 	{
 		m_notifications.CheckAndHandleNotification(m_ID, m_Name, m_CurrentStatus.NotificationType(), sLogText);
@@ -292,7 +292,7 @@ std::string CPanasonicNode::handleWriteAndRead(std::string pMessageToSend)
 	while (error && iter != end)
 	{
 		socket.close();
-		if (handleConnect(socket, *iter, error)) 
+		if (handleConnect(socket, *iter, error))
 		{
 			if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Panasonic Plugin: (%s) Connected.'.", m_Name.c_str());
 			break;
@@ -310,7 +310,7 @@ std::string CPanasonicNode::handleWriteAndRead(std::string pMessageToSend)
 	boost::array<char, 512> _Buffer;
 	size_t request_length = std::strlen(pMessageToSend.c_str());
 	if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Panasonic Plugin: (%s) Attemping write.'.", m_Name.c_str());
-	
+
 	try
 	{
 		boost::asio::write(socket, boost::asio::buffer(pMessageToSend.c_str(), request_length));
@@ -333,8 +333,8 @@ std::string CPanasonicNode::handleWriteAndRead(std::string pMessageToSend)
 int CPanasonicNode::handleMessage(std::string pMessage)
 {
 	bool bFound = false;
-	int iPosBegin = 0;
-	int iPosEnd = 0;
+	size_t iPosBegin = 0;
+	size_t iPosEnd = 0;
 	std::string begin(">");
 	std::string end("<");
 
@@ -343,7 +343,7 @@ int CPanasonicNode::handleMessage(std::string pMessage)
 		_log.Log(LOG_ERROR, "Panasonic Plugin: (%s) handleMessage passed error or empty string!", m_Name.c_str());
 		return -1;
 	}
-		
+
 	while (!bFound)
 	{
 		iPosBegin = pMessage.find(begin, iPosBegin);
@@ -367,7 +367,7 @@ int CPanasonicNode::handleMessage(std::string pMessage)
 
 	// If we got here we didn't find a return string
 	return -1;
-	
+
 }
 
 std::string CPanasonicNode::buildXMLStringRendCtl(std::string action, std::string command)
@@ -390,7 +390,7 @@ std::string CPanasonicNode::buildXMLStringRendCtl(std::string action, std::strin
 	body += "</u:" + action + command + ">\r\n";
 	body += "</s:Body>\r\n";
 	body += "</s:Envelope>\r\n";
-	
+
 	size = body.length();
 
 	head = "POST /dmr/control_0 HTTP/1.1\r\n";
@@ -489,7 +489,7 @@ void CPanasonicNode::Do_Work()
 void CPanasonicNode::SendCommand(const std::string &command)
 {
 	std::string	sPanasonicCall = "";
-	
+
 	if (m_CurrentStatus.Status() == MSTAT_OFF)
 	{
 		// no point trying to send a command if we know the device is off
@@ -600,7 +600,7 @@ void CPanasonicNode::SendCommand(const std::string &command)
 		//else
 		//	_log.Log(LOG_NORM, "Panasonic Plugin: (%s) can't send command: '%s'.", m_Name.c_str(), sPanasonicCall.c_str());
 	}
-	
+
 }
 
 void CPanasonicNode::SendCommand(const std::string &command, const int iValue)
@@ -610,7 +610,7 @@ void CPanasonicNode::SendCommand(const std::string &command, const int iValue)
 		sPanasonicCall = buildXMLStringRendCtl("Set", "Volume", boost::to_string(iValue));
 	else
 		_log.Log(LOG_ERROR, "Panasonic Plugin: (%s) Command: '%s'. Unknown command.", m_Name.c_str(), command.c_str());
-	
+
 	if (sPanasonicCall.length())
 	{
 		if (handleWriteAndRead(sPanasonicCall) != "ERROR")
@@ -998,7 +998,7 @@ namespace http {
 			}
 		}
 
-		
+
 		void CWebServer::Cmd_PanasonicSetMode(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)

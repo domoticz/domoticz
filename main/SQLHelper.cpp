@@ -2852,19 +2852,19 @@ std::vector<std::vector<std::string> > CSQLHelper::queryBlob(const std::string &
 	return results;
 }
 
-unsigned long long CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, std::string &devname, const bool bUseOnOffAction)
+DEVICE_ID CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, std::string &devname, const bool bUseOnOffAction)
 {
 	return UpdateValue(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, nValue, "", devname, bUseOnOffAction);
 }
 
-unsigned long long CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const char* sValue, std::string &devname, const bool bUseOnOffAction)
+DEVICE_ID CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const char* sValue, std::string &devname, const bool bUseOnOffAction)
 {
 	return UpdateValue(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, 0, sValue, devname, bUseOnOffAction);
 }
 
-unsigned long long CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, std::string &devname, const bool bUseOnOffAction)
+DEVICE_ID CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, std::string &devname, const bool bUseOnOffAction)
 {
-	unsigned long long devRowID=UpdateValueInt(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, nValue, sValue,devname,bUseOnOffAction);
+	DEVICE_ID devRowID=UpdateValueInt(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, nValue, sValue,devname,bUseOnOffAction);
 	if (devRowID == -1)
 		return -1;
 
@@ -5942,8 +5942,8 @@ void CSQLHelper::CheckSceneStatus(const unsigned long long Idx)
 	}
 
 	//Check if all on/off
-	int totOn=0;
-	int totOff=0;
+	size_t totOn=0;
+	size_t totOff=0;
 
 	std::vector<bool>::const_iterator itt2;
 	for (itt2=_DeviceStatusResults.begin(); itt2!=_DeviceStatusResults.end(); ++itt2)
@@ -6207,7 +6207,7 @@ bool CSQLHelper::BackupDatabase(const std::string &OutputFile)
 	return ( rc==SQLITE_OK );
 }
 
-unsigned long long CSQLHelper::UpdateValueLighting2GroupCmd(const int HardwareID, const char* ID, const unsigned char unit,
+DEVICE_ID CSQLHelper::UpdateValueLighting2GroupCmd(const int HardwareID, const char* ID, const unsigned char unit,
 	const unsigned char devType, const unsigned char subType,
 	const unsigned char signallevel, const unsigned char batterylevel,
 	const int nValue, const char* sValue,
@@ -6250,7 +6250,7 @@ void CSQLHelper::Lighting2GroupCmd(const std::string &ID, const unsigned char su
 		GroupCmd);
 }
 
-unsigned long long CSQLHelper::UpdateValueHomeConfortGroupCmd(const int HardwareID, const char* ID, const unsigned char unit,
+DEVICE_ID CSQLHelper::UpdateValueHomeConfortGroupCmd(const int HardwareID, const char* ID, const unsigned char unit,
 	const unsigned char devType, const unsigned char subType,
 	const unsigned char signallevel, const unsigned char batterylevel,
 	const int nValue, const char* sValue,
@@ -6362,7 +6362,7 @@ bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string &OnAction
 #endif
 			std::string scriptparams="";
 			//Add parameters
-			int pindex=scriptname.find(' ');
+			size_t pindex=scriptname.find(' ');
 			if (pindex!=std::string::npos)
 			{
 				scriptparams=scriptname.substr(pindex+1);
@@ -6393,7 +6393,7 @@ bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string &OnAction
 				scriptname = szUserDataFolder + "scripts/" + scriptname;
 #endif
 			std::string scriptparams="";
-			int pindex=scriptname.find(' ');
+			size_t pindex=scriptname.find(' ');
 			if (pindex!=std::string::npos)
 			{
 				scriptparams=scriptname.substr(pindex+1);
@@ -6985,7 +6985,7 @@ bool CSQLHelper::CheckDate(const std::string &sDate, int& d, int& m, int& y)
 bool CSQLHelper::CheckTime(const std::string &sTime)
 {
 
-	int iSemiColon = sTime.find(':');
+	size_t iSemiColon = sTime.find(':');
 	if ((iSemiColon == std::string::npos) || (iSemiColon < 1) || (iSemiColon > 2) || (iSemiColon == sTime.length()-1)) return false;
 	if ((sTime.length() < 3) || (sTime.length() > 5)) return false;
 	if (atoi(sTime.substr(0, iSemiColon).c_str()) >= 24) return false;
@@ -7041,7 +7041,7 @@ bool CSQLHelper::InsertCustomIconFromZip(const std::string &szZip, std::string &
 		if (fpath.find("__MACOSX") != std::string::npos)
 			continue;
 
-		int ipos = fpath.find("icons.txt");
+		size_t ipos = fpath.find("icons.txt");
 		if ( ipos != std::string::npos)
 		{
 			std::string rpath;

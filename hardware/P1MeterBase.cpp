@@ -3,12 +3,12 @@
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 
-typedef enum { 
-	ID=0, 
-	STD, 
-	LINE17, 
-	LINE18, 
-	EXCLMARK 
+typedef enum {
+	ID=0,
+	STD,
+	LINE17,
+	LINE18,
+	EXCLMARK
 } MatchType;
 
 #define P1_SMID			"/" // Smart Meter ID. Used to detect start of telegram.
@@ -123,14 +123,14 @@ void P1MeterBase::MatchLine()
 				m_linecount=1;
 				found=1;
 			}
-			else 
+			else
 				continue;
 			break;
 		case STD:
 			if(strncmp(t.key, (const char*)&m_buffer, strlen(t.key)) == 0) {
 				found=1;
 			}
-			else 
+			else
 				continue;
 			break;
 		case LINE17:
@@ -138,7 +138,7 @@ void P1MeterBase::MatchLine()
 				m_linecount = 17;
 				found=1;
 			}
-			else 
+			else
 				continue;
 			break;
 		case LINE18:
@@ -151,13 +151,13 @@ void P1MeterBase::MatchLine()
 				m_exclmarkfound=1;
 				found=1;
 			}
-			else 
+			else
 				continue;
 			break;
 		default:
 			continue;
 		} //switch
-		
+
 		if(!found)
 			continue;
 
@@ -189,7 +189,7 @@ void P1MeterBase::MatchLine()
 			if (t.matchtype==STD)
 			{
 				vString=(const char*)&m_buffer+t.start;
-				int ePos=vString.find_first_of("*");
+				size_t ePos=vString.find_first_of("*");
 				if (ePos==std::string::npos)
 				{
 					ePos=vString.find_first_of(")");
@@ -211,7 +211,7 @@ void P1MeterBase::MatchLine()
 			else if (t.matchtype==LINE18)
 			{
 				vString=(const char*)&m_buffer+t.start;
-				int ePos=vString.find_first_of(")");
+				size_t ePos=vString.find_first_of(")");
 				if (ePos==std::string::npos)
 				{
 					strncpy(value, (const char*)&m_buffer+t.start, t.width);

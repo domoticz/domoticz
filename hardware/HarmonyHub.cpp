@@ -660,7 +660,7 @@ bool CHarmonyHub::SwapAuthorizationToken(csocket* authorizationcsocket, std::str
 	std::string strIdentityTokenTag = "identity=";
 
 	// Parse the session authorization token from the response
-	int pos = (int)strData.find(strIdentityTokenTag);
+	size_t pos = (int)strData.find(strIdentityTokenTag);
 	if(pos == std::string::npos)
 	{
 		//errorString = "SwapAuthorizationToken : Logitech Harmony response does not contain a session authorization token";
@@ -728,7 +728,6 @@ bool CHarmonyHub::SendPing()
 bool CHarmonyHub::SubmitCommand(const std::string &strCommand, const std::string &strCommandParameterPrimary, const std::string &strCommandParameterSecondary)
 {
 	boost::lock_guard<boost::mutex> lock(m_mutex);
-	int pos;
 	if(m_commandcsocket== NULL || m_szAuthorizationToken.size() == 0)
 	{
 		//errorString = "SubmitCommand : NULL csocket or empty authorization token provided";
@@ -804,7 +803,7 @@ bool CHarmonyHub::SubmitCommand(const std::string &strCommand, const std::string
 
 	if (strCommand == GET_CURRENT_ACTIVITY_COMMAND || strCommand == GET_CURRENT_ACTIVITY_COMMAND_RAW)
 	{
-		pos = strData.find("result=");
+		size_t pos = strData.find("result=");
 		if (pos != std::string::npos)
 		{
 			strData = strData.substr(pos + 7);
@@ -847,7 +846,7 @@ bool CHarmonyHub::SubmitCommand(const std::string &strCommand, const std::string
 				bIsDataReadable = false;
 		}
 
-		pos = strData.find("<![CDATA[");
+		size_t pos = strData.find("<![CDATA[");
 		if (pos == std::string::npos)
 			return false;
 		strData=strData.substr(pos + 9);
@@ -876,10 +875,10 @@ bool CHarmonyHub::CheckIfChanging(const std::string& strData)
 	std::string LastActivity = m_szCurActivityID;
 
 	std::string szData = strData;
-	int pos;
 
 	while (!szData.empty())
 	{
+		size_t pos;
 		size_t apos = szData.find("</message>");
 		if (apos == std::string::npos)
 			break;

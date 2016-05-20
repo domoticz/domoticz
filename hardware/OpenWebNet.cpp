@@ -52,7 +52,7 @@ bool COpenWebNet::StartHardware()
 
 	//Start monitor thread
 	m_monitorThread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&COpenWebNet::MonitorFrames, this)));
-	
+
 	//Start worker thread
 	if (m_monitorThread != NULL) {
 		m_heartbeatThread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&COpenWebNet::Do_Work, this)));
@@ -63,7 +63,7 @@ bool COpenWebNet::StartHardware()
 
 bool COpenWebNet::StopHardware()
 {
-	m_stoprequested = true; 
+	m_stoprequested = true;
 	if (isStatusSocketConnected())
 	{
 		try {
@@ -90,7 +90,7 @@ bool COpenWebNet::connectStatusSocket()
 		delete m_pStatusSocket;
 		m_pStatusSocket = NULL;
 	}
-	
+
 	if (m_szIPAddress.size() == 0 || m_usIPPort == 0 || m_usIPPort > 65535)
 	{
 		_log.Log(LOG_ERROR, "COpenWebNet : Cannot connect to gateway, empty  IP Address or Port");
@@ -99,7 +99,7 @@ bool COpenWebNet::connectStatusSocket()
 
 	m_pStatusSocket = new csocket();
 	m_pStatusSocket->connect(m_szIPAddress.c_str(), m_usIPPort);
-	
+
 	if (m_pStatusSocket->getState() != csocket::CONNECTED)
 	{
 		_log.Log(LOG_ERROR, "COpenWebNet : Cannot connect to gateway, Unable to connect to specified IP Address on specified Port");
@@ -192,7 +192,7 @@ bool COpenWebNet:: WriteToHardware(const char *pdata, const unsigned char length
 	int who;
 	int what;
 	int where;
-	
+
 	if (packettype == pTypeGeneralSwitch && subtype == sSwitchBlindsT1){
 		//Blinds/Window command
 		int blindId = pCmd->unitcode;
@@ -240,7 +240,7 @@ bool COpenWebNet:: WriteToHardware(const char *pdata, const unsigned char length
 bool COpenWebNet::sendCommand(bt_openwebnet& command, vector<bt_openwebnet>& response, int waitForResponse, bool silent)
 {
 	csocket commandSocket;
-	
+
 	if (m_szIPAddress.size() == 0 || m_usIPPort == 0 || m_usIPPort > 65535)
 	{
 		if (!silent) {
@@ -285,7 +285,7 @@ bool COpenWebNet::sendCommand(bt_openwebnet& command, vector<bt_openwebnet>& res
 	}
 
 	bytesWritten = commandSocket.write(command.frame_open.c_str(), command.frame_open.length());
-	if (bytesWritten != command.frame_open.length()) {
+	if (bytesWritten != (int)command.frame_open.length()) {
 		if (!silent) {
 			_log.Log(LOG_ERROR, "COpenWebNet sendCommand : partial write");
 		}
@@ -295,7 +295,7 @@ bool COpenWebNet::sendCommand(bt_openwebnet& command, vector<bt_openwebnet>& res
 		sleep_seconds(waitForResponse);
 	}
 
-	char responseBuffer[OPENWEBNET_BUFFER_SIZE]; 
+	char responseBuffer[OPENWEBNET_BUFFER_SIZE];
 	memset(responseBuffer, 0, OPENWEBNET_BUFFER_SIZE);
 	read = commandSocket.read(responseBuffer, OPENWEBNET_BUFFER_SIZE, false);
 
@@ -396,7 +396,7 @@ bool COpenWebNet::FindDevice(int who, int where, int* used)
 	int subType = -1;
 
 	switch (who) {
-	case WHO_AUTOMATION : 
+	case WHO_AUTOMATION :
 		devType = pTypeGeneralSwitch;
 		subType = sSwitchBlindsT1;
 		break;

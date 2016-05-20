@@ -459,7 +459,7 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename, std::map<unsigned 
 	_log.Log(LOG_STATUS, m_szUploadMessage.c_str());
 
 	unsigned char rawLineBuf[PKT_writeblock];
-	int raw_length = 0;
+	size_t raw_length = 0;
 	unsigned long dest_address = 0;
 	int line = 0;
 	int addrh = 0;

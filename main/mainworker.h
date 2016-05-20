@@ -13,6 +13,8 @@
 #include "HttpPush.h"
 #include "concurrent_queue.h"
 #include "../webserver/server_settings.hpp"
+#include "types.h"
+
 
 enum eVerboseLevel
 {
@@ -63,8 +65,8 @@ public:
 
 	bool SwitchScene(const std::string &idx, const std::string &switchcmd);
 	bool SwitchScene(const unsigned long long idx, const std::string &switchcmd);
-	void CheckSceneCode(const unsigned long long DevRowIdx, const unsigned char dType, const unsigned char dSubType, const int nValue, const char* sValue);
-	bool DoesDeviceActiveAScene(const unsigned long long DevRowIdx, const int Cmnd);
+	void CheckSceneCode(const DEVICE_ID DevRowIdx, const unsigned char dType, const unsigned char dSubType, const int nValue, const char* sValue);
+	bool DoesDeviceActiveAScene(const DEVICE_ID DevRowIdx, const int Cmnd);
 
 	bool SetSetPoint(const std::string &idx, const float TempValue);
 	bool SetSetPoint(const std::string &idx, const float TempValue, const int newMode, const std::string &until);
@@ -78,7 +80,7 @@ public:
 	bool SetZWaveThermostatFanModeInt(const std::vector<std::string> &sd, const int fMode);
 
 	bool SetRFXCOMHardwaremodes(const int HardwareID, const unsigned char Mode1, const unsigned char Mode2, const unsigned char Mode3, const unsigned char Mode4, const unsigned char Mode5, const unsigned char Mode6);
-	
+
 	bool SwitchModal(const std::string &idx, const std::string &status, const std::string &action, const std::string &ooc, const std::string &until);
 
 	bool GetSunSettings();
@@ -92,7 +94,7 @@ public:
 				const bool Enabled,
 				const _eHardwareTypes Type,
 				const std::string &Address, const unsigned short Port, const std::string &SerialPort,
-				const std::string &Username, const std::string &Password, 
+				const std::string &Username, const std::string &Password,
 				const std::string &Filename,
 				const int Mode1,
 				const int Mode2,
@@ -140,7 +142,7 @@ public:
 
 private:
 	void HandleAutomaticBackups();
-	unsigned long long PerformRealActionFromDomoticzClient(const unsigned char *pRXCommand, CDomoticzHardwareBase **pOriginalHardware);
+	long long PerformRealActionFromDomoticzClient(const unsigned char *pRXCommand, CDomoticzHardwareBase **pOriginalHardware);
 	std::map<std::string, time_t > m_componentheartbeats;
 	boost::mutex m_heartbeatmutex;
 
@@ -185,7 +187,7 @@ private:
 	void SendResetCommand(CDomoticzHardwareBase *pHardware);
 	void SendCommand(const int HwdID, unsigned char Cmd, const char *szMessage=NULL);
 	bool WriteToHardware(const int HwdID, const char *pdata, const unsigned char length);
-	
+
 	void OnHardwareConnected(CDomoticzHardwareBase *pHardware);
 
 	void WriteMessageStart();

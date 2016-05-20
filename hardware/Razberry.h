@@ -48,7 +48,7 @@ private:
 	int m_port;
 	std::string m_username;
 	std::string m_password;
-	int m_controllerID;
+	unsigned int m_controllerID;
 };
 
 

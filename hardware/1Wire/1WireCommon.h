@@ -1,5 +1,7 @@
 #pragma once
 
+#include "types.h"
+
 // 1-wire chip family definition (merge from http://owfs.sourceforge.net/family.html and http://owfs.org/index.php?page=family-code-list)
 enum _e1WireFamilyType
 {
