@@ -3,13 +3,6 @@ cmake_minimum_required(VERSION 2.8.4)
 
 project(domoticz)
 
-IF(CMAKE_COMPILER_IS_GNUCXX)
-  SET(CMAKE_CXX_FLAGS "-O2 -flto -Wall")
-  SET(CMAKE_C_FLAGS "-O2 -flto -Wall")
-  SET(CMAKE_AR "gcc-ar")
-  SET(CMAKE_RANLIB "gcc-ranlib")
-ENDIF(CMAKE_COMPILER_IS_GNUCXX)
-
 option(USE_BUILTIN_LUA "Use builtin lua library" YES)
 IF(USE_BUILTIN_LUA)
   add_subdirectory (lua)
@@ -122,9 +115,10 @@ MACRO(ADD_PRECOMPILED_HEADER _targetName _input)
   ENDIF()
 
   IF(CMAKE_COMPILER_IS_GNUCXX)
-  #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-switch")
-  #ADD_DEFINITIONS( -Wall -O0 -ggdb )
-  #ADD_DEFINITIONS( -Wfatal-errors -Wformat=2 -Werror=format-security )
+    ADD_DEFINITIONS("-O2 -flto -Wall --std=c++11")
+    #ADD_DEFINITIONS("O0 -ggdb")
+    SET(CMAKE_AR "gcc-ar")
+    SET(CMAKE_RANLIB "gcc-ranlib")
 
     GET_FILENAME_COMPONENT(_name ${_input} NAME)
     SET(_source "${CMAKE_CURRENT_SOURCE_DIR}/${_input}")
