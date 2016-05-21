@@ -34,7 +34,7 @@ class CTCPServerIntBase
 {
 public:
 	explicit CTCPServerIntBase(CTCPServer *pRoot);
-	~CTCPServerIntBase(void);
+	virtual ~CTCPServerIntBase(void);
 
 	virtual void start() = 0;
 	virtual void stop() = 0;
@@ -66,7 +66,7 @@ protected:
 class CTCPServerInt : public CTCPServerIntBase {
 public:
 	CTCPServerInt(const std::string& address, const std::string& port, CTCPServer *pRoot);
-	~CTCPServerInt(void);
+	virtual ~CTCPServerInt(void);
 	virtual void start();
 	virtual void stop();
 	/// Stop the specified connection.
@@ -90,7 +90,7 @@ private:
 class CTCPServerProxied : public CTCPServerIntBase {
 public:
 	CTCPServerProxied(CTCPServer *pRoot, boost::shared_ptr<http::server::CProxyClient> proxy);
-	~CTCPServerProxied(void);
+	virtual ~CTCPServerProxied(void);
 	virtual void start();
 	virtual void stop();
 	/// Stop the specified connection.
