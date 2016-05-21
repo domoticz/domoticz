@@ -248,6 +248,8 @@ void CEvohome::Do_Work()
 	int nStartup=0;
 	int sec_counter = 0;
 	bool startup = true;
+	std::vector<std::vector<std::string> > result;
+
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
@@ -288,6 +290,22 @@ void CEvohome::Do_Work()
 					{
 						InitControllerName();
 						InitZoneNames();
+
+						// Update any zone names which are still the defaults
+						result = m_sql.safe_query("SELECT Name FROM Devicestatus WHERE ((HardwareID==%d) AND (Type==%d) AND (Unit <= 12) AND (Name == 'Zone Temp')) OR ((HardwareID==%d) AND (Type==%d) AND (Unit <= 12) AND (Name == 'Setpoint'))", m_HwdID, (int)pTypeEvohomeZone, m_HwdID, (int)pTypeEvohomeZone);
+						if (result.size() != 0)
+						{
+							for (uint8_t i = 1; i < m_nZoneCount + 1; i++)
+							{
+								result = m_sql.safe_query("SELECT Name FROM Devicestatus WHERE ((HardwareID==%d) AND (Type==%d) AND (Unit == %d) AND (Name == 'Zone Temp')) OR ((HardwareID==%d) AND (Type==%d) AND (Unit == %d) AND (Name == 'Setpoint'))", m_HwdID, (int)pTypeEvohomeZone, i, m_HwdID, (int)pTypeEvohomeZone, i);
+								if (result.size() != 0)
+								{
+									Log(true, LOG_STATUS, "Evohome: UPDATE Devicestatus SET Name=%s WHERE (HardwareID==%d) AND (Type==%d) AND (Unit == %d)", m_ZoneNames[i - 1].c_str(), m_HwdID, (int)pTypeEvohomeZone, i);
+									m_sql.safe_query("UPDATE Devicestatus SET Name='%q' WHERE (HardwareID==%d) AND (Type==%d) AND (Unit == %d)", m_ZoneNames[i - 1].c_str(), m_HwdID, (int)pTypeEvohomeZone, i);
+								}
+							}
+						}
+
 						startup = false;
 					}
 					else//Request each individual zone temperature every 300s as the controller omits multi-room zones
@@ -1401,7 +1419,7 @@ void CEvohome::RXRelay(uint8_t nDevNo, uint8_t nDemand, int nID)
 	RFX_SETID3(nID,tsen.EVOHOME3.id1,tsen.EVOHOME3.id2,tsen.EVOHOME3.id3);
 	tsen.EVOHOME3.devno=nDevNo;
 	tsen.EVOHOME3.demand=nDemand;
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME3, "RX Relay", 255);
+	sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME3, NULL, 255);
 }
 
 bool CEvohome::DecodeHeatDemand(CEvohomeMsg &msg)
@@ -1414,7 +1432,7 @@ bool CEvohome::DecodeHeatDemand(CEvohomeMsg &msg)
 	}
 	int nDevNo = msg.payload[0];
 	int nDemand = msg.payload[1];
-	std::string szSourceType("Unknown"), szDevType("Unknown");
+	std::string szSourceType("Unknown"), szDevType("Unknown");	
 	if(msg.command==0x0008)
 	{
 		//Demand (0x0008 for relays) is handled as a % (i.e. nDemand/200*100) (200=0xc8) where 200/200 corresponds to 100% of the cycle period (start of period determined by 3B00 ACTUATOR_CHECK message)
@@ -1426,7 +1444,12 @@ bool CEvohome::DecodeHeatDemand(CEvohomeMsg &msg)
 			szSourceType="Gateway";
 	}
 	else if(msg.command==0x3150) //heat demand for zone is also a % (as above) of the proportional band (a temperature difference) so if the proportional band is 2 degrees and we are 1 degree from set point the demand is 50%
+	{
+		if (nDevNo <= 12)
+			nDevNo++; //Need to add 1 to give correct zone numbers
+		RXRelay(static_cast<uint8_t>(nDevNo), static_cast<uint8_t>(nDemand), msg.GetID(0)); // adding DeviceID creates multiple devices for zones with mutiple sensors
 		szSourceType="Zone";
+	}
 	
 	if(nDevNo==0xfc)//252...afaik this is also some sort of broadcast channel so maybe there is more to this device number than representing the boiler
 		szDevType="Boiler"; //Boiler demand
@@ -1437,17 +1460,11 @@ bool CEvohome::DecodeHeatDemand(CEvohomeMsg &msg)
 	}
 	else if(nDevNo==0xf9)//249
 		szDevType="Heating"; //Central Heating zone valve
-	else //The controller uses this when a relay is bound to a zone as an actuator (boiler always seems to fire as well though)
-	{
-		std::ostringstream os;
-		os << "Zone " << nDevNo+1;
-		szDevType=os.str();
-	}
-
-	Log(true,LOG_STATUS,"evohome: %s: %s DevNo 0x%02x %s: %d", tag, szSourceType.c_str(), nDevNo, szDevType.c_str(), nDemand);
+	
+	Log(true,LOG_STATUS,"evohome: %s: %s (0x%x) DevNo 0x%02x %d (0x%x)", tag, szSourceType.c_str(), msg.GetID(0), nDevNo, nDemand, msg.command);
 
 	if(msg.command==0x0008)
-		RXRelay(static_cast<uint8_t>(nDevNo),static_cast<uint8_t>(nDemand));
+		RXRelay(static_cast<uint8_t>(nDevNo),static_cast<uint8_t>(nDemand), msg.GetID(0));
 	return true;
 }
 
@@ -1481,7 +1498,7 @@ bool CEvohome::DecodeActuatorState(CEvohomeMsg &msg)
 	//The relay does not appear to always announce its state but this is probably due to the wireless signal and collisions etc
 	
 	Log(true,LOG_STATUS,"evohome: %s: ID:0x%06x (%s) DevNo 0x%02x: %d", tag, msg.GetID(0), msg.GetStrID(0).c_str(), nDevNo, nDemand);
-	RXRelay(static_cast<uint8_t>(0xFF),static_cast<uint8_t>(nDemand),msg.GetID(0));//devno is always 0 and therefore not valid
+	RXRelay(static_cast<uint8_t>(0xFF),static_cast<uint8_t>(nDemand));//devno is always 0 and therefore not valid
 	return true;
 }
 
