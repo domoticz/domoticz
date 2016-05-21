@@ -26,15 +26,15 @@ typedef enum {
 	MOCHAD_RFSEC
 } MochadType;
 
-typedef struct _tMatch {
+typedef struct mochadMatch {
 	MatchType matchtype;
 	MochadType type;
 	const char* key;
 	int start;
 	int width;
-} Match;
+} MOCHAD_MATCH;
 
-static Match matchlist[] = {
+static MOCHAD_MATCH matchlist[] = {
 	{STD,	MOCHAD_STATUS,	"House ",	6, 255},
 	{STD,	MOCHAD_UNIT,	"Tx PL HouseUnit: ",	17, 9},
 	{STD,	MOCHAD_UNIT,	"Rx PL HouseUnit: ",	17, 9},
@@ -274,10 +274,10 @@ void MochadTCP::MatchLine()
 		return; //null value (startup)
 	int j,k;
 	uint8_t found=0;
-	Match t;
+	MOCHAD_MATCH t;
 	std::string vString;
 
-	for(size_t i=0;(i<sizeof(matchlist)/sizeof(Match))&(!found);i++)
+	for(size_t i=0;(i<sizeof(matchlist)/sizeof(MOCHAD_MATCH))&(!found);i++)
 	{
 		t = matchlist[i];
 		switch(t.matchtype)

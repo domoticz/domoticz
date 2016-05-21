@@ -41,16 +41,16 @@ typedef enum {
 	P1TYPE_END,
 } P1Type;
 
-typedef struct _tMatch {
+typedef struct p1MeterMatch {
 	MatchType matchtype;
 	P1Type type;
 	const char* key;
 	const char* topic;
 	int start;
 	int width;
-} Match;
+} P1_METER_MATCH;
 
-Match matchlist[] = {
+P1_METER_MATCH matchlist[] = {
 	{ID,	P1TYPE_SMID,				P1_SMID,		"", 0, 0},
 	{STD,	P1TYPE_POWERUSAGE1,			P1PU1,			"powerusage1",	10, 9},
 	{STD,	P1TYPE_POWERUSAGE2,			P1PU2,			"powerusage2",	10, 9},
@@ -109,11 +109,11 @@ void P1MeterBase::MatchLine()
 		return; //null value (startup)
 	uint8_t i;
 	uint8_t found=0;
-	Match t;
+	P1_METER_MATCH t;
 	char value[20]="";
 	std::string vString;
 
-	for(i=0;(i<sizeof(matchlist)/sizeof(Match))&(!found);i++)
+	for(i=0;(i<sizeof(matchlist)/sizeof(P1_METER_MATCH))&(!found);i++)
 	{
 		t = matchlist[i];
 		switch(t.matchtype)
