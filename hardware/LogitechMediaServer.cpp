@@ -930,12 +930,15 @@ namespace http {
 				// Is the device a media Player?
 				if (sType == STYPE_Media)
 				{
+					CLogitechMediaServer LMS(HwID);
+
 					switch (hType) {
 					case HTYPE_LogitechMediaServer:
-						CLogitechMediaServer LMS(HwID);
 						LMS.SendCommand(idx, sAction);
 						break;
 						// put other players here ...
+					default:
+						break;
 					}
 				}
 			}

@@ -820,6 +820,8 @@ void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 			pDevice->floatValue=obj["value"].asFloat();
 		}
 		break;
+	default:
+		break;
 	}
 
 	pDevice->lastreceived=atime;

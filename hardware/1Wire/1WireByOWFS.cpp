@@ -160,7 +160,7 @@ void C1WireByOWFS::SetLightState(const std::string& sId,UNIT unit,bool value)
 
    switch(device.family)
    {
-   case Addresable_Switch:
+   case Addressable_Switch:
       {
          writeData(device,"PIO",value?"yes":"no");
          break;
@@ -243,7 +243,7 @@ bool C1WireByOWFS::GetLightState(const _t1WireDevice& device,UNIT unit) const
 
    switch(device.family)
    {
-   case Addresable_Switch:
+   case Addressable_Switch:
       {
          fileName.append("/sensed");
          break;
@@ -276,6 +276,8 @@ bool C1WireByOWFS::GetLightState(const _t1WireDevice& device,UNIT unit) const
          fileName.append("/control");
          break;
       }
+   default:
+	   return false;
    }
 
    std::string readValue=readRawData(fileName);
@@ -284,7 +286,7 @@ bool C1WireByOWFS::GetLightState(const _t1WireDevice& device,UNIT unit) const
 
    switch(device.family)
    {
-   case Addresable_Switch:
+   case Addressable_Switch:
    case dual_addressable_switch_plus_1k_memory:
    case Temperature_IO:
    case dual_channel_addressable_switch:
@@ -303,6 +305,8 @@ bool C1WireByOWFS::GetLightState(const _t1WireDevice& device,UNIT unit) const
          else
             return (iValue==2);
       }
+   default:
+	   break;
    }
    return false;
 }

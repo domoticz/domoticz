@@ -277,6 +277,13 @@ void P1MeterBase::MatchLine()
 				temp_usage = (unsigned long)(atof(value)*1000.0f);
 				m_p1gas.gasusage = temp_usage;
 				break;
+
+			case P1TYPE_SMID:
+				// Fixme: unimplemented?
+				break;
+
+			case P1TYPE_END:
+				break;
 			}
 
 			//_log.Log(LOG_NORM,"Key: %s, Value: %s", t.topic,value);

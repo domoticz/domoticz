@@ -164,7 +164,7 @@ bool IsTemperatureValid(_e1WireFamilyType deviceFamily, float temperature)
 	if (temperature<=-300 || temperature>=381)
 		return false;
 
-	// Some devices has a power-on value at 85� and -127�, we have to filter it
+	// Some devices has a power-on value at 85C and -127C, we have to filter it
 	switch (deviceFamily)
 	{
 		case high_precision_digital_thermometer:
@@ -174,6 +174,9 @@ bool IsTemperatureValid(_e1WireFamilyType deviceFamily, float temperature)
 		case Temperature_IO:
 			if ((temperature == 85)|| (temperature == -127))
 				return false;
+			break;
+		default:
+			break;
 	}
 
 	return true;
@@ -235,7 +238,7 @@ void C1Wire::GetDeviceDetails()
 				break;
 			}
 
-		case Addresable_Switch:
+		case Addressable_Switch:
 		case microlan_coupler:
 			{
 				ReportLightState(device.devid,0,m_system->GetLightState(device,0));

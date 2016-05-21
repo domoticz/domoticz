@@ -359,6 +359,12 @@ void Meteostick::ParseLine()
 #endif
 		m_state = MSTATE_DATA;
 		return;
+	case MSTATE_FREQUENCY:
+		// Fixme: unimplemented?
+		break;
+	case MSTATE_DATA:
+		// Fixme: unimplemented?
+		break;
 	}
 
 	if (m_state != MSTATE_DATA)

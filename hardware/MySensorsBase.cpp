@@ -123,8 +123,9 @@ std::string MySensorsBase::GetMySensorsValueTypeStr(const enum _eSetType vType)
 		return "V_TEXT";
 	case V_CUSTOM:
 		return "V_CUSTOM";
+	default:
+		return "Unknown!";
 	}
-	return "Unknown!";
 }
 
 std::string MySensorsBase::GetMySensorsPresentationTypeStr(const enum _ePresentationType pType)
@@ -207,7 +208,10 @@ std::string MySensorsBase::GetMySensorsPresentationTypeStr(const enum _ePresenta
 		return "S_INFO";
 	case S_GAS:
 		return "S_GAS";
+	case S_UNKNOWN:
+		return "Unknown!";
 	}
+
 	return "Unknown!";
 }
 
@@ -467,6 +471,8 @@ void MySensorsBase::UpdateNodeHeartbeat(const int nodeID)
 				case V_RGBW:
 					if (itt->GetValue(vType, intValue))
 						UpdateRGBWSwitchLastUpdate(nodeID, itt->childID);
+					break;
+				default:
 					break;
 				}
 			}
@@ -990,6 +996,54 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 			gswitch.seqnbr = 0;
 			sDecodeRXMessage(this, (const unsigned char *)&gswitch, (!pChild->childName.empty()) ? pChild->childName.c_str() : "IR Command", pChild->batValue);
 		}
+		break;
+	case V_VAR1:
+		// Fixme: unimplemented?
+		break;
+	case V_VAR2:
+		// Fixme: unimplemented?
+		break;
+	case V_VAR3:
+		// Fixme: unimplemented?
+		break;
+	case V_VAR4:
+		// Fixme: unimplemented?
+		break;
+	case V_VAR5:
+		// Fixme: unimplemented?
+		break;
+	case V_UNKNOWN:
+		// Fixme: unimplemented?
+		break;
+	case V_UNIT_PREFIX:
+		// Fixme: unimplemented?
+		break;
+	case V_RAINRATE:
+		// Fixme: unimplemented?
+		break;
+	case V_POSITION:
+		// Fixme: unimplemented?
+		break;
+	case V_IR_SEND:
+		// Fixme: unimplemented?
+		break;
+	case V_ID:
+		// Fixme: unimplemented?
+		break;
+	case V_HVAC_SPEED:
+		// Fixme: unimplemented?
+		break;
+	case V_HVAC_FLOW_STATE:
+		// Fixme: unimplemented?
+		break;
+	case V_HVAC_FLOW_MODE:
+		// Fixme: unimplemented?
+		break;
+	case V_CUSTOM:
+		// Fixme: unimplemented?
+		break;
+	case V_IR_RECORD:
+		// Fixme: unimplemented?
 		break;
 	}
 }
@@ -1972,6 +2026,8 @@ void MySensorsBase::ParseLine()
 		case S_INFO:
 			vType = V_TEXT;
 			bDoAdd = true;
+			break;
+		default:
 			break;
 		}
 		_tMySensorNode *pNode = FindNode(node_id);

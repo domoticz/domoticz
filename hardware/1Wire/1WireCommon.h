@@ -8,7 +8,7 @@ enum _e1WireFamilyType
    silicon_serial_number	= 0x01,
    multikey_1153bit_secure	= 0x02,
    econoram_time_chip	= 0x04,
-   Addresable_Switch	= 0x05,
+   Addressable_Switch	= 0x05,
    _4k_memory_ibutton	= 0x06,
    _1k_memory_ibutton	= 0x08,
    _1k_add_only_memory	= 0x09,

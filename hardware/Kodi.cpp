@@ -1452,12 +1452,15 @@ namespace http {
 				// Is the device a media Player?
 				if (sType == STYPE_Media)
 				{
+					CKodi	Kodi(HwID);
+
 					switch (hType) {
 					case HTYPE_Kodi:
-						CKodi	Kodi(HwID);
 						Kodi.SendCommand(idx, sAction);
 						break;
 						// put other players here ...
+					default:
+						break;
 					}
 				}
 			}

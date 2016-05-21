@@ -38,11 +38,11 @@ typedef enum {e_bool, e_string, e_int, e_double, e_node_set, e_invalid} e_expres
 /// Class holding the result of an expression (e_expression_type)
 class expression_result
 {
-protected :	
+protected :
    /// String content
 	TIXML_STRING S_content;
    #ifdef TINYXPATH_DEBUG
-      /// Comment. This is for debuging only, for stack dump 
+      /// Comment. This is for debuging only, for stack dump
 	   TIXML_STRING S_comment;
    #endif
    /// bool content
@@ -76,7 +76,7 @@ public :
       i_content = 0;
       d_content = 0.0;
 	}
-	
+
 	void v_set_root (const TiXmlNode * XNp_in) {XNp_root = XNp_in;}
 
    /// Copy constructor
@@ -106,6 +106,8 @@ public :
          case e_node_set :
             ns_set = er_2 . ns_set;
             break;
+         default:
+        	break;
       }
       #ifdef TINYXPATH_DEBUG
          S_comment = er_2 . S_comment;
@@ -156,7 +158,7 @@ public :
 	{
 		assert (e_type == e_string);
 		return S_content . c_str ();
-	}	
+	}
 	bool o_get_bool ();
 	double d_get_double ();
    /// Set the expression_result as a node set

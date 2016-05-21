@@ -1172,12 +1172,15 @@ namespace http {
 				// Is the device a media Player?
 				if (sType == STYPE_Media)
 				{
+					CPanasonic	Panasonic(HwID);
+
 					switch (hType) {
 					case HTYPE_PanasonicTV:
-						CPanasonic	Panasonic(HwID);
 						Panasonic.SendCommand(idx, sAction);
 						break;
 						// put other players here ...
+					default:
+						break;
 					}
 				}
 			}

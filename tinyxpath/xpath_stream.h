@@ -40,9 +40,9 @@ namespace TinyXPath
 {
 
 /**
-   A specialized version of byte_stream for XPath 
+   A specialized version of byte_stream for XPath
 */
-class xpath_stream : public byte_stream 
+class xpath_stream : public byte_stream
 {
 protected :
    /// List of tokens
@@ -64,7 +64,7 @@ public :
       unsigned u_size;
       bool o_dot_in_number;
 
-      u_size = 0;            
+      u_size = 0;
       o_dot_in_number = false;
       state = s_init;
       while (state != s_end)
@@ -77,7 +77,7 @@ public :
                {
                   case lex_bchar :
                   case lex_under :
-                     // [XML:4] NCName	::= (Letter | '_') (NCNameChar)* 
+                     // [XML:4] NCName	::= (Letter | '_') (NCNameChar)*
 
                      u_size = 1;
                      state = s_ncname;
@@ -95,8 +95,8 @@ public :
                   case lex_dot :
                      if (lex_get_class (b_forward (1)) == lex_digit)
                      {
-                        // [30]   Number				::=   Digits ('.' Digits?)? | '.' Digits 
-                        // [31]   Digits				::=   [0-9]+ 
+                        // [30]   Number				::=   Digits ('.' Digits?)? | '.' Digits
+                        // [31]   Digits				::=   [0-9]+
                         u_size = 1;
                         state = s_number;
                         o_dot_in_number = true;
@@ -104,37 +104,37 @@ public :
                      }
                      else
                      {
-                        tlp_list -> v_add_token (lex_next, bp_get_backward (1), 1);                 
+                        tlp_list -> v_add_token (lex_next, bp_get_backward (1), 1);
                         b_pop ();
                      }
                      break;
 
                   case lex_1_quote :
-                     // [29]   Literal				::=   '"' [^"]* '"' | "'" [^']* "'" 
+                     // [29]   Literal				::=   '"' [^"]* '"' | "'" [^']* "'"
                      u_size = 0;
                      b_pop ();
                      state = s_literal_1;
                      break;
 
                   case lex_2_quote :
-                     // [29]   Literal				::=   '"' [^"]* '"' | "'" [^']* "'" 
+                     // [29]   Literal				::=   '"' [^"]* '"' | "'" [^']* "'"
                      u_size = 0;
                      b_pop ();
                      state = s_literal_2;
                      break;
 
                   default :
-                     tlp_list -> v_add_token (lex_next, bp_get_backward (1), 1);                 
+                     tlp_list -> v_add_token (lex_next, bp_get_backward (1), 1);
                      b_pop ();
                      break;
                }
                break;
             case s_literal_1 :
-               // [29]   Literal				::=   '"' [^"]* '"' | "'" [^']* "'" 
+               // [29]   Literal				::=   '"' [^"]* '"' | "'" [^']* "'"
                switch (lex_next)
                {
                   case lex_1_quote :
-                     tlp_list -> v_add_token (lex_literal, bp_get_backward (u_size + 1), u_size);                 
+                     tlp_list -> v_add_token (lex_literal, bp_get_backward (u_size + 1), u_size);
                      b_pop ();
                      state = s_init;
                      break;
@@ -145,11 +145,11 @@ public :
                }
                break;
             case s_literal_2 :
-               // [29]   Literal				::=   '"' [^"]* '"' | "'" [^']* "'" 
+               // [29]   Literal				::=   '"' [^"]* '"' | "'" [^']* "'"
                switch (lex_next)
                {
                   case lex_2_quote :
-                     tlp_list -> v_add_token (lex_literal, bp_get_backward (u_size + 1), u_size);                 
+                     tlp_list -> v_add_token (lex_literal, bp_get_backward (u_size + 1), u_size);
                      b_pop ();
                      state = s_init;
                      break;
@@ -182,8 +182,8 @@ public :
             case s_number :
                switch (lex_next)
                {
-                  // [30]   Number				::=   Digits ('.' Digits?)? | '.' Digits 
-                  // [31]   Digits				::=   [0-9]+ 
+                  // [30]   Number				::=   Digits ('.' Digits?)? | '.' Digits
+                  // [31]   Digits				::=   [0-9]+
                   case lex_dot :
                      if (o_dot_in_number)
                      {
@@ -207,6 +207,8 @@ public :
                      break;
                }
                break;
+               default:
+            	   break;
          }
          if (lex_next == lex_null)
             state = s_end;
@@ -214,7 +216,7 @@ public :
    }
 
    /// Evaluate a XPath expression \n
-   /// Decodes the lexical and syntax contents. 
+   /// Decodes the lexical and syntax contents.
    void v_evaluate ()
    {
       v_lexico_decode ();

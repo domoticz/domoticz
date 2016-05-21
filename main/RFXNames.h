@@ -26,8 +26,8 @@ enum _eSwitchType
 	STYPE_BlindsPercentageInverted, //16
 	STYPE_Media,			//17
 	STYPE_Selector,			//18
-	STYPE_END
 };
+#define STYPE_END	19
 
 enum _eMeterType
 {
@@ -36,8 +36,8 @@ enum _eMeterType
 	MTYPE_WATER,
     MTYPE_COUNTER,
 	MTYPE_ENERGY_GENERATED,
-	MTYPE_END
 };
+#define MTYPE_END	5
 
 enum _eTimerType
 {
@@ -55,8 +55,8 @@ enum _eTimerType
 	TTYPE_MONTHLY_WD,
 	TTYPE_YEARLY,
 	TTYPE_YEARLY_WD,
-	TTYPE_END
 };
+#define TTYPE_END	14
 
 enum _eTimerCommand
 {
@@ -157,8 +157,8 @@ enum _eHardwareTypes {
 	HTYPE_FITBIT,				//75
 	HTYPE_RAVEn,	    		//75
 	HTYPE_S0SmartMeterTCP,		//76
-	HTYPE_END
 };
+#define HTYPE_END	77
 
 enum _eNotificationTypes
 {

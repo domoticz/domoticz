@@ -3089,6 +3089,8 @@ namespace http {
 							root["result"][ii]["Name"] = Name;
 							ii++;
 							break;
+						default:
+							break;
 						}
 					}
 				}
@@ -13085,6 +13087,9 @@ namespace http {
 									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / WaterDivider);
 									szValue = szTmp;
 									break;
+								case MTYPE_COUNTER:
+									// Fixme: not implemented?
+									break;
 								}
 								root["result"][ii]["v"] = szValue;
 								ii++;
@@ -13190,6 +13195,9 @@ namespace http {
 							case MTYPE_WATER:
 								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / WaterDivider);
 								szValue = szTmp;
+								break;
+							case MTYPE_COUNTER:
+								// Fixme: not implemented?
 								break;
 							}
 
@@ -15285,6 +15293,9 @@ namespace http {
 									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / WaterDivider);
 									szValue = szTmp;
 									break;
+								case MTYPE_COUNTER:
+									// Fixme: not implemented?
+									break;
 								}
 								root["result"][ii]["d"] = sd[1].substr(0, 16);
 								root["result"][ii]["v"] = szValue;
@@ -15382,6 +15393,9 @@ namespace http {
 							case MTYPE_WATER:
 								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / WaterDivider);
 								szValue = szTmp;
+								break;
+							case MTYPE_COUNTER:
+								// Fixme: not implemented?
 								break;
 							}
 

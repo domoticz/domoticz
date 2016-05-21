@@ -837,6 +837,9 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_SolarEdgeAPI:
 		pHardware = new SolarEdgeAPI(ID, Mode1, Username, Password);
 		break;
+	case HTYPE_SolarEdgeTCP:
+		// Fixme: not implemented?
+		break;
 	case HTYPE_Netatmo:
 		pHardware = new CNetatmo(ID,Username,Password);
 		break;
@@ -876,11 +879,11 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_Dummy:
 		pHardware = new CDummy(ID);
 		break;
-#ifdef WITH_TELLDUSCORE
 	case HTYPE_Tellstick:
+#ifdef WITH_TELLDUSCORE
 		pHardware = new CTellstick(ID);
-		break;
 #endif //WITH_TELLDUSCORE
+		break;
 	case HTYPE_EVOHOME_SCRIPT:
 		pHardware = new CEvohome(ID,"");
 		break;
