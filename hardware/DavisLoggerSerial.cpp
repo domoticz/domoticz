@@ -163,7 +163,7 @@ void CDavisLoggerSerial::Do_Work()
 		}
 	}
 	_log.Log(LOG_STATUS,"Davis: Serial Worker stopped...");
-} 
+}
 
 void CDavisLoggerSerial::readCallback(const char *data, size_t len)
 {
@@ -257,8 +257,6 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 
 	bool bWindSpeedValid=false;
 	float WindSpeed=0;
-	bool bWindSpeedAVR10Valid=false;
-	float WindSpeedAVR10=0;
 
 	bool bUVValid=false;
 	float UV=0;
@@ -419,12 +417,7 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 		bWindSpeedValid=true;
 		WindSpeed=(pData[14])*(4.0f/9.0f);
 	}
-	//Wind Speed AVR 10 minutes
-	if (pData[15]!=0xFF)
-	{
-		bWindSpeedAVR10Valid=true;
-		WindSpeedAVR10=(pData[15])*(4.0f/9.0f);
-	}
+
 	//Wind Direction
 	if ((pData[16]!=0xFF)&&(pData[17]!=0x7F))
 	{
@@ -500,7 +493,7 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 		tsen.UV.uv=(BYTE)round(UV*10);
 		sDecodeRXMessage(this, (const unsigned char *)&tsen.UV, NULL, 255);
 	}
-	
+
 	//Rain Rate
 	if ((pData[41]!=0xFF)&&(pData[42]!=0xFF))
 	{

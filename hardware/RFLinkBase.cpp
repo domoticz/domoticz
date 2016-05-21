@@ -56,7 +56,7 @@ const _tRFLinkStringIntHelper rfswitches[] =
 	{ "Byron", sSwitchTypeByronSX },         // p72
 	{ "Byron MP", sSwitchTypeByronMP001 },   // p74
 	{ "SelectPlus", sSwitchTypeSelectPlus }, // p70
-	{ "Doorbell", sSwitchTypeSelectPlus3 },  // p73  
+	{ "Doorbell", sSwitchTypeSelectPlus3 },  // p73
 	{ "FA20RF", sSwitchTypeFA20 },           // p80
 	{ "Chuango", sSwitchTypeChuango },       // p62
     { "Plieger", sSwitchTypePlieger },       // p71
@@ -236,20 +236,20 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 		return false;
 	}
 	std::string switchcmnd = GetGeneralRFLinkFromInt(rfswitchcommands, pSwitch->cmnd);
-    
+
     // check setlevel command
     if (pSwitch->cmnd == gswitch_sSetLevel) {
         // Get device level to set
 		float fvalue = (15.0f / 100.0f)*float(pSwitch->level);
 		if (fvalue > 15.0f)
 			fvalue = 15.0f; //99 is fully on
-		int svalue = round(fvalue);        
+		int svalue = round(fvalue);
 		//_log.Log(LOG_ERROR, "RFLink: level: %d", svalue);
         char buffer[50] = {0};
 		sprintf(buffer, "%d", svalue);
 		switchcmnd = buffer;
-    }    
-    
+    }
+
 	if (switchcmnd.empty())
 	{
 		_log.Log(LOG_ERROR, "RFLink: trying to send unknown switch command: %d", pSwitch->cmnd);
@@ -269,7 +269,7 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 	WriteInt(sstr.str());
 	time_t atime = mytime(NULL);
 	time_t btime = mytime(NULL);
-    
+
 	// Wait for an OK response from RFLink to make sure the command was executed
 	while (m_bTXokay == false) {
         if (btime-atime > 4) {
@@ -297,11 +297,11 @@ bool CRFLinkBase::SendSwitchInt(const int ID, const int switchunit, const int Ba
 		if (switchcmd.compare(0, 9, "SET_LEVEL=") == 0 ){
 			cmnd=gswitch_sSetLevel;
 			std::string str2 = switchcmd.substr(10);
-			svalue=atoi(str2.c_str()); 
+			svalue=atoi(str2.c_str());
 	  		_log.Log(LOG_STATUS, "RFLink: %d level: %d", cmnd, svalue);
 		}
 	}
-    
+
 	if (cmnd==-1)
 	{
 		_log.Log(LOG_ERROR, "RFLink: Unhandled switch command: %s", switchcmd.c_str());
@@ -373,10 +373,6 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 	if (results.size() < 2)
 		return false; //not needed
 
-	bool bHideDebugLog = (
-		(sLine.find("PONG") != std::string::npos)||
-		(sLine.find("PING") != std::string::npos)
-		);
 
 	int RFLink_ID = atoi(results[0].c_str());
 	if (RFLink_ID != 20)
@@ -385,6 +381,10 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 	}
 
 #ifdef ENABLE_LOGGING
+	bool bHideDebugLog = (
+		(sLine.find("PONG") != std::string::npos)||
+		(sLine.find("PING") != std::string::npos)
+		);
 	if (!bHideDebugLog)
 		_log.Log(LOG_NORM, "RFLink: %s", sLine.c_str());
 #endif
@@ -480,13 +480,12 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 
 	bool bHaveTemp = false; float temp = 0;
 	bool bHaveHum = false; int humidity = 0;
-	bool bHaveHumStatus = false; int humstatus = 0;
 	bool bHaveBaro = false; float baro = 0;
 	int baroforecast = 0;
 	bool bHaveRain = false; float raincounter = 0;
 	bool bHaveLux = false; float lux = 0;
 	bool bHaveUV = false; float uv = 0;
-    
+
 	bool bHaveWindDir = false; int windir = 0;
 	bool bHaveWindSpeed = false; float windspeed = 0;
 	bool bHaveWindGust = false; float windgust = 0;
@@ -497,18 +496,18 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 	bool bHaveRGBW = false; int rgbw = 0;
 	bool bHaveSound = false; int sound = 0;
 	bool bHaveCO2 = false; int co2 = 0;
-	bool bHaveBlind = false; int blind = 0;   
+	bool bHaveBlind = false; int blind = 0;
 
-	bool bHaveKWatt = false; float kwatt = 0;   
-	bool bHaveWatt = false; float watt = 0;   
-	bool bHaveDistance = false; float distance = 0;   
-	bool bHaveMeter = false; float meter = 0;   
-	bool bHaveVoltage = false; float voltage = 0;   
-	bool bHaveCurrent = false; float current = 0;   
+	bool bHaveKWatt = false; float kwatt = 0;
+	bool bHaveWatt = false; float watt = 0;
+	bool bHaveDistance = false; float distance = 0;
+	bool bHaveMeter = false; float meter = 0;
+	bool bHaveVoltage = false; float voltage = 0;
+	bool bHaveCurrent = false; float current = 0;
 	bool bHaveCurrent2 = false; float current2 = 0;
 	bool bHaveCurrent3 = false; float current3 = 0;
 	bool bHaveImpedance = false; float impedance = 0;
-	bool bHaveSwitch = false; int switchunit = 0; 
+	bool bHaveSwitch = false; int switchunit = 0;
 	bool bHaveSwitchCmd = false; std::string switchcmd = ""; int switchlevel = 0;
 
 	int BatteryLevel = 255;
@@ -533,8 +532,7 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 		}
 		else if (results[ii].find("HSTATUS") != std::string::npos)
 		{
-			bHaveHumStatus = true;
-			humstatus = RFLinkGetIntStringValue(results[ii]);
+			// Do nothing
 		}
 		else if (results[ii].find("BARO") != std::string::npos)
 		{
@@ -550,7 +548,7 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 		{
 			bHaveRain = true;
 			iTemp = RFLinkGetHexStringValue(results[ii]);
-			raincounter = float(iTemp) / 10.0f; 
+			raincounter = float(iTemp) / 10.0f;
 		}
 		else if (results[ii].find("LUX") != std::string::npos)
 		{
@@ -742,7 +740,7 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 	{
   		SendUVSensor(Node_ID, Child_ID, BatteryLevel, uv, tmp_Name);
 	}
-    
+
 	if (bHaveRain)
 	{
 		SendRainSensor(ID, BatteryLevel, float(raincounter), tmp_Name);
@@ -760,7 +758,7 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 	{
 		SendWind(ID, BatteryLevel, float(windir), windspeed, windgust, windtemp, windchill, bHaveWindTemp, tmp_Name);
 	}
-    
+
 	if (bHaveCO2)
 	{
 		SendAirQualitySensor((ID & 0xFF00) >> 8, ID & 0xFF, BatteryLevel, co2, tmp_Name);
@@ -809,10 +807,10 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 	{
 		SendVoltageSensor(Node_ID, Child_ID, BatteryLevel, voltage, tmp_Name);
 	}
-	if (bHaveCurrent && bHaveCurrent2 && bHaveCurrent3) 
+	if (bHaveCurrent && bHaveCurrent2 && bHaveCurrent3)
 	{
 		SendCurrentSensor(ID, BatteryLevel, current, current2, current3, tmp_Name);
-	} 
+	}
 	else if (bHaveCurrent)
 	{
 		SendCurrentSensor(ID, BatteryLevel, current, 0, 0, tmp_Name);

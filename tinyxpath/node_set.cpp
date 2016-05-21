@@ -30,7 +30,7 @@ namespace TinyXPath
 
 /// Copy constructor
 node_set::node_set (const node_set & ns2)
-{  
+{
    * this = ns2;
 }
 
@@ -85,7 +85,7 @@ void node_set::v_copy_selected_node_recursive (
 
 /// Copy all nodes in the tree to the node_set, knowing that we are copying the root
 void node_set::v_copy_selected_node_recursive_root_only (
-   const TiXmlNode * XNp_root, const TiXmlNode * XNp_base)      
+   const TiXmlNode * XNp_root, const TiXmlNode * XNp_base)
 {
    v_add_node_in_set (XNp_root);
    v_copy_selected_node_recursive (XNp_base, NULL);
@@ -103,9 +103,9 @@ void node_set::v_copy_selected_node_recursive (
       v_add_node_in_set (XNp_root);
    if (XNp_root -> Type () == TiXmlNode::ELEMENT)
    {
-      XAp_attrib = XNp_root -> ToElement () -> FirstAttribute ();      
+      XAp_attrib = XNp_root -> ToElement () -> FirstAttribute ();
       while (XAp_attrib)
-      {  
+      {
          v_add_attrib_in_set (XAp_attrib);
          XAp_attrib = XAp_attrib -> Next ();
       }
@@ -178,7 +178,7 @@ void node_set::v_add_base_in_set (
    if (o_exist_in_set (XBp_member))
       return;
 
-/*      
+/*
    printf ("add ");
    if (o_attrib)
       printf ("attrib %s='%s'", ((TiXmlAttribute *) XBp_member)->Name(),((TiXmlAttribute *) XBp_member)->Value());
@@ -204,7 +204,7 @@ void node_set::v_add_base_in_set (
    }
    printf ("\n");
 */
-      
+
    vpp_new_list = new const void * [u_nb_node + 1];
    op_new_list = new bool [u_nb_node + 1];
    if (u_nb_node)
@@ -223,8 +223,8 @@ void node_set::v_add_base_in_set (
 
 /// Populate the node set with all following nodes.
 /// \n Exerpt : \n
-/// the following axis contains all nodes in the same document as the context 
-/// node that are after the context node in document order, excluding any 
+/// the following axis contains all nodes in the same document as the context
+/// node that are after the context node in document order, excluding any
 /// descendants and excluding attribute nodes and namespace nodes
 void node_set::v_add_all_foll_node (
    const TiXmlNode * XNp_node,   ///< base node
@@ -251,8 +251,8 @@ void node_set::v_add_all_foll_node (
 
 /// Populate the node set with all preceding nodes.
 /// \n Exerpt : \n
-/// the preceding axis contains all nodes in the same document as the context 
-/// node that are before the context node in document order, excluding any 
+/// the preceding axis contains all nodes in the same document as the context
+/// node that are before the context node in document order, excluding any
 /// ancestors and excluding attribute nodes and namespace nodes
 void node_set::v_add_all_prec_node (
    const TiXmlNode * XNp_node,      ///< base node
@@ -278,7 +278,7 @@ void node_set::v_add_all_prec_node (
 }
 
 /// Internal utility class for the node set sorting
-class ptr_2_and_flag 
+class ptr_2_and_flag
 {
 public :
    const void * vp_node;
@@ -294,7 +294,7 @@ static int i_compare_node_in_tree (const TiXmlNode * XNp_root, const TiXmlBase *
    const TiXmlNode * XNp_child;
    const TiXmlAttribute * XAp_attrib;
    int i_res;
-   
+
    if (! XNp_root || ! XBp_1 || ! XBp_2)
       return e_not_found;
    if (XNp_root == XBp_1)
@@ -308,7 +308,7 @@ static int i_compare_node_in_tree (const TiXmlNode * XNp_root, const TiXmlBase *
    if (XNp_root -> ToElement ())
    {
       // We have an element in the tree, let's see if one of the argument is an attribute of this element
-      XAp_attrib = XNp_root -> ToElement () -> FirstAttribute ();   
+      XAp_attrib = XNp_root -> ToElement () -> FirstAttribute ();
       while (XAp_attrib)
       {
          if (XAp_attrib == XBp_1)
@@ -343,12 +343,12 @@ static int i_compare_ptr_2_and_flag (
 
    p2afp_1 = (const ptr_2_and_flag *) vp_1;
    p2afp_2 = (const ptr_2_and_flag *) vp_2;
-   i_res = i_compare_node_in_tree (p2afp_1 -> XNp_root, (const TiXmlBase *) p2afp_1 -> vp_node, (const TiXmlBase *) p2afp_1 -> vp_node);
+   i_res = i_compare_node_in_tree (p2afp_1 -> XNp_root, (const TiXmlBase *) p2afp_1 -> vp_node, (const TiXmlBase *) p2afp_2 -> vp_node);
    switch (i_res)
    {
       case e_lower :
          return -1;
-      case e_higher : 
+      case e_higher :
          return 1;
    }
    return 0;

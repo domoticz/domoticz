@@ -39,10 +39,10 @@ void StringSplit(std::string str, const std::string &delim, std::vector<std::str
 
 void stdreplace(
 	std::string &inoutstring,
-	const std::string& replaceWhat, 
+	const std::string& replaceWhat,
 	const std::string& replaceWithWhat)
 {
-	int pos = 0;
+	size_t pos = 0;
 	while (std::string::npos != (pos = inoutstring.find(replaceWhat, pos)))
 	{
 		inoutstring.replace(pos, replaceWhat.size(), replaceWithWhat);
@@ -136,7 +136,7 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 				sprintf(szPortName, "COM%d", ii);
 				ret.push_back(szPortName); // add port
 			}
-			// --------------            
+			// --------------
 		}
 	}
 	// Method 3: EnumSerialPortsWindows, often fails
@@ -194,7 +194,7 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 				bUseDirectPath=true;
 				ret.push_back("/dev/" + fname);
 			}
-#ifdef __FreeBSD__            
+#ifdef __FreeBSD__
 			else if (fname.find("ttyU")!=std::string::npos)
 			{
 				bUseDirectPath=true;
@@ -243,7 +243,7 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 
 bool file_exist (const char *filename)
 {
-	struct stat sbuffer;   
+	struct stat sbuffer;
 	return (stat(filename, &sbuffer) == 0);
 }
 
@@ -257,7 +257,7 @@ double CalculateAltitudeFromPressure(double pressure)
 /**************************************************************************/
 /*!
 Calculates the altitude (in meters) from the specified atmospheric
-pressure (in hPa), sea-level pressure (in hPa), and temperature (in °C)
+pressure (in hPa), sea-level pressure (in hPa), and temperature (in ï¿½C)
 @param seaLevel Sea-level pressure in hPa
 @param atmospheric Atmospheric pressure in hPa
 @param temp Temperature in degrees Celsius
@@ -274,7 +274,7 @@ float pressureToAltitude(float seaLevel, float atmospheric, float temp)
 	/* where: h = height (in meters) */
 	/* P0 = sea-level pressure (in hPa) */
 	/* P = atmospheric pressure (in hPa) */
-	/* T = temperature (in °C) */
+	/* T = temperature (in ï¿½C) */
 	return (((float)pow((seaLevel / atmospheric), 0.190223F) - 1.0F)
 		* (temp + 273.15F)) / 0.0065F;
 }
@@ -283,7 +283,7 @@ float pressureToAltitude(float seaLevel, float atmospheric, float temp)
 /*!
 Calculates the sea-level pressure (in hPa) based on the current
 altitude (in meters), atmospheric pressure (in hPa), and temperature
-(in °C)
+(in ï¿½C)
 @param altitude altitude in meters
 @param atmospheric Atmospheric pressure in hPa
 @param temp Temperature in degrees Celsius
@@ -300,7 +300,7 @@ float pressureSeaLevelFromAltitude(float altitude, float atmospheric, float temp
 	/* where: P0 = sea-level pressure (in hPa) */
 	/* P = atmospheric pressure (in hPa) */
 	/* h = altitude (in meters) */
-	/* T = Temperature (in °C) */
+	/* T = Temperature (in ï¿½C) */
 	return atmospheric * (float)pow((1.0F - (0.0065F * altitude) /
 		(temp + 0.0065F * altitude + 273.15F)), -5.257F);
 }
@@ -347,7 +347,7 @@ double CalculateDewPoint(double temp, int humidity)
 	return dew_numer/dew_denom;
 }
 
-uint32_t IPToUInt(const std::string &ip) 
+uint32_t IPToUInt(const std::string &ip)
 {
 	int a, b, c, d;
 	uint32_t addr = 0;
@@ -394,7 +394,7 @@ int mkdir_deep(const char *szDirName, int secattr)
 	char DirName[260];
 	DirName[0] = 0;
 	const char* p = szDirName;
-	char* q = DirName; 
+	char* q = DirName;
 	while(*p)
 	{
 		if (('\\' == *p) || ('/' == *p))
@@ -478,7 +478,7 @@ std::vector<std::string> ExecuteCommandAndReturn(const std::string &szCommand)
 	}
 	catch (...)
 	{
-		
+
 	}
 	return ret;
 }

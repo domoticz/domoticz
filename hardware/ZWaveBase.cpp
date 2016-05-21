@@ -20,7 +20,9 @@
 
 #define CONTROLLER_COMMAND_TIMEOUT 30
 
+#ifdef _MSC_VER
 #pragma warning(disable: 4996)
+#endif
 
 #define round(a) ( int ) ( a + .5 )
 
@@ -135,10 +137,10 @@ void ZWaveBase::InsertDevice(_tZWaveDevice device)
 {
 	device.string_id=GenerateDeviceStringID(&device);
 
-	bool bNewDevice=(m_devices.find(device.string_id)==m_devices.end());
-	
 	device.lastreceived=mytime(NULL);
 #ifdef _DEBUG
+	bool bNewDevice=(m_devices.find(device.string_id)==m_devices.end());
+
 	if (bNewDevice)
 	{
 		_log.Log(LOG_NORM, "New device: %s", device.string_id.c_str());
@@ -386,17 +388,6 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 	}
 	else if ((pDevice->devType == ZDTYPE_SWITCH_FGRGBWM441) || (pDevice->devType == ZDTYPE_SWITCH_COLOR))
 	{
-		unsigned char ID1 = 0;
-		unsigned char ID2 = 0;
-		unsigned char ID3 = 0;
-		unsigned char ID4 = 0;
-
-		//make device ID
-		ID1 = 0;
-		ID2 = (unsigned char)((pDevice->nodeID & 0xFF00) >> 8);
-		ID3 = (unsigned char)pDevice->nodeID & 0xFF;
-		ID4 = pDevice->instanceID;
-
 		//To fix all problems it should be
 		//ID1 = (unsigned char)((pDevice->nodeID & 0xFF00) >> 8);
 		//ID2 = (unsigned char)pDevice->nodeID & 0xFF;
@@ -407,7 +398,6 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		char szID[10];
 		sprintf(szID, "%08x", (unsigned int)lID);
 		std::string ID = szID;
-		unsigned char unitcode = 1;
 
 		//Send as LimitlessLight
 		_tLimitlessLights lcmd;
@@ -875,7 +865,7 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 			{
 				if ((cmnd== gswitch_sOff)||(cmnd== gswitch_sGroupOff))
 					svalue=0;
-				else 
+				else
 					svalue=255;
 				return SwitchLight(nodeID,instanceID,pDevice->commandClassID,svalue);
 			}

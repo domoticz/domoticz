@@ -45,13 +45,14 @@ Webem constructor
 cWebem::cWebem(
 		const server_settings & settings,
 		const std::string& doc_root) :
-				m_io_service(),
-				m_settings(settings),
-				myRequestHandler(doc_root, this),
 				m_DigistRealm("Domoticz.com"),
+				m_settings(settings),
+				myServer(server_factory::create(settings, myRequestHandler)),
+				myRequestHandler(doc_root, this),
+				m_io_service(),
 				m_session_clean_timer(m_io_service, boost::posix_time::minutes(1)),
-				m_io_service_thread(boost::bind(&boost::asio::io_service::run, &m_io_service)),
-				myServer(server_factory::create(settings, myRequestHandler)) {
+				m_io_service_thread(boost::bind(&boost::asio::io_service::run, &m_io_service))
+{
 	m_authmethod = AUTH_LOGIN;
 	mySessionStore = NULL;
 	// associate handler to timer and schedule the first iteration
@@ -218,7 +219,7 @@ bool cWebem::Include( std::string& reply )
 			}
 			catch (...)
 			{
-				
+
 			}
 			reply.insert( p, content_part );
 			res = true;
@@ -235,7 +236,7 @@ bool cWebem::Include( std::string& reply )
 				}
 				catch (...)
 				{
-					
+
 				}
 				cUTF utf( content_part_w.c_str() );
 				// insert generated text
@@ -289,7 +290,7 @@ bool cWebem::CheckForAction(WebEmSession & session, request& req )
 	req.parameters.clear();
 
 	std::string uri = ExtractRequestPath(req.uri);
-	
+
 	// find function matching action code
 	size_t q = uri.find(".webem");
 	std::string code = uri.substr(1,q-1);
@@ -326,7 +327,7 @@ bool cWebem::CheckForAction(WebEmSession & session, request& req )
 						return true;
 					szVariable = szContent.substr(0, pos);
 					szContent = szContent.substr(pos + 2);
-					if (szVariable.find("Content-Disposition") != 0)
+					if (szVariable.compare(0, 19, "Content-Disposition") != 0)
 						return true;
 					pos = szVariable.find("name=\"");
 					if (pos == std::string::npos)
@@ -382,7 +383,7 @@ bool cWebem::CheckForAction(WebEmSession & session, request& req )
 				}
 				catch (...)
 				{
-					
+
 				}
 				return true;
 			}
@@ -430,7 +431,7 @@ bool cWebem::CheckForAction(WebEmSession & session, request& req )
 	}
 	catch (...)
 	{
-		
+
 	}
 
 	return true;
@@ -444,7 +445,7 @@ bool cWebem::IsPageOverride(const request& req, reply& rep)
 		rep = reply::stock_reply(reply::bad_request);
 		return false;
 	}
-	
+
 	request_path = ExtractRequestPath(request_path);
 
 	std::map < std::string, webem_page_function >::iterator
@@ -471,7 +472,7 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& r
 	}
 
 	request_path = ExtractRequestPath(request_path);
-	
+
 	req.parameters.clear();
 
 	std::string request_path2 = req.uri; // we need the raw request string to parse the get-request
@@ -610,7 +611,7 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& r
 		}
 		catch (...)
 		{
-			
+
 		}
 
 		std::string attachment;
@@ -657,7 +658,7 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& r
 	}
 	catch (...)
 	{
-		
+
 	}
 
 	rep.status = reply::ok;
@@ -702,7 +703,7 @@ std::string cWebem::ExtractRequestPath(const std::string& original_request_path)
 		request_path = request_path.substr(0, paramPos);
 	}
 
-	if (request_path.find(m_webRoot + "/@login")==0)
+	if (request_path.compare(0, m_webRoot.size() + 7, m_webRoot + "/@login")==0)
 	{
 		request_path=m_webRoot + "/";
 	}
@@ -712,12 +713,12 @@ std::string cWebem::ExtractRequestPath(const std::string& original_request_path)
 	{
 		request_path += "index.html";
 	}
-	
+
 	if(m_webRoot.size() > 0)
 	{
 		// remove web root if present otherwise
 		// create invalid request
-		if (request_path.find(m_webRoot) == 0)
+		if (request_path.compare(0, m_webRoot.size(), m_webRoot) == 0)
 		{
 			request_path = request_path.substr(m_webRoot.size());
 		}
@@ -727,7 +728,7 @@ std::string cWebem::ExtractRequestPath(const std::string& original_request_path)
 		}
 	}
 
-	if (request_path.find("/acttheme/") == 0)
+	if (request_path.compare(0, 10, "/acttheme/") == 0)
 	{
 		request_path = m_actTheme + request_path.substr(9);
 	}
@@ -742,22 +743,22 @@ bool cWebem::IsBadRequestPath(const std::string& request_path)
 	{
 		return true;
 	}
-	
+
 	// don't allow access to control files
 	if (request_path.find(".htpasswd") != std::string::npos)
 	{
 		return true;
 	}
-	
+
 	// if we have a web root set the request must start with it
 	if(m_webRoot.size() > 0)
 	{
-		if (request_path.find(m_webRoot) != 0)
+		if (request_path.compare(0, m_webRoot.size(), m_webRoot) != 0)
 		{
 			return true;
 		}
 	}
-	
+
 	return false;
 }
 
@@ -937,7 +938,6 @@ void cWebem::CleanSessions() {
 #ifdef DEBUG_WWW
 	_log.Log(LOG_STATUS, "[web:%s] cleaning sessions...", GetPort().c_str());
 #endif
-	int before = CountSessions();
 	// Clean up timed out sessions from memory
 	std::vector<std::string> ssids;
 	{
@@ -955,7 +955,6 @@ void cWebem::CleanSessions() {
 		std::string ssid = *ssitt;
 		RemoveSession(ssid);
 	}
-	int after = CountSessions();
 	std::stringstream ss;
 	{
 		boost::mutex::scoped_lock lock(m_sessionsMutex);
@@ -1110,7 +1109,7 @@ int cWebemRequestHandler::authorize(WebEmSession & session, const request& req, 
 	return 0;
 }
 
-bool IsIPInRange(const std::string &ip, const _tIPNetwork &ipnetwork) 
+bool IsIPInRange(const std::string &ip, const _tIPNetwork &ipnetwork)
 {
 	if (ipnetwork.hostname.size()!=0)
 	{
@@ -1216,7 +1215,7 @@ std::string cWebemRequestHandler::generateSessionID()
 	boost::uuids::random_generator gen;
 	std::stringstream ss;
 	std::string randomValue;
-	
+
 	boost::uuids::uuid u = gen();
 	ss << u;
 	randomValue = ss.str();

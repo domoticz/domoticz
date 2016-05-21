@@ -9,14 +9,14 @@ public:
 
    // I_1WireSystem implementation
    virtual void GetDevices(/*out*/std::vector<_t1WireDevice>& devices) const;
-   virtual void SetLightState(const std::string& sId,int unit,bool value);
+   virtual void SetLightState(const std::string& sId,UNIT unit,bool value);
    virtual float GetTemperature(const _t1WireDevice& device) const;
    virtual float GetHumidity(const _t1WireDevice& device) const;
    virtual float GetPressure(const _t1WireDevice& device) const;
-   virtual bool GetLightState(const _t1WireDevice& device,int unit) const;
+   virtual bool GetLightState(const _t1WireDevice& device,UNIT unit) const;
    virtual unsigned int GetNbChannels(const _t1WireDevice& device) const;
-   virtual unsigned long GetCounter(const _t1WireDevice& device,int unit) const;
-   virtual int GetVoltage(const _t1WireDevice& device,int unit) const;
+   virtual unsigned long GetCounter(const _t1WireDevice& device,UNIT unit) const;
+   virtual int GetVoltage(const _t1WireDevice& device,UNIT unit) const;
    virtual float GetIlluminance(const _t1WireDevice& device) const;
    // END : I_1WireSystem implementation
 
@@ -37,8 +37,8 @@ protected:
    unsigned char ThreadReadRawDataDualChannelAddressableSwitch(const std::string& deviceFileName) const;
    unsigned char ThreadReadRawData8ChannelAddressableSwitch(const std::string& deviceFileName) const;
 
-   void ThreadWriteRawDataDualChannelAddressableSwitch(const std::string& deviceFileName,int unit,bool value) const;
-   void ThreadWriteRawData8ChannelAddressableSwitch(const std::string& deviceFileName,int unit,bool value) const;
+   void ThreadWriteRawDataDualChannelAddressableSwitch(const std::string& deviceFileName,UNIT unit,bool value) const;
+   void ThreadWriteRawData8ChannelAddressableSwitch(const std::string& deviceFileName,UNIT unit,bool value) const;
 
    // Devices
    #define MAX_DIGITAL_IO  8

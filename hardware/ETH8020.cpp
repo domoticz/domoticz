@@ -211,7 +211,7 @@ void CETH8020::GetMeterDetails()
 	}
 	size_t ii;
 	std::string tmpstr;
-	int pos1;
+	size_t pos1;
 	int Idx = 0;
 	for (ii = 1; ii < results.size(); ii++)
 	{

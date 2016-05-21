@@ -119,7 +119,6 @@ bool Meteostick::OpenSerialDevice()
 
 void Meteostick::Do_PollWork()
 {
-	bool bFirstTime = true;
 	int sec_counter = 0;
 	while (!m_stoprequestedpoller)
 	{
@@ -140,8 +139,6 @@ void Meteostick::Do_PollWork()
 			if (m_retrycntr >= RETRY_DELAY)
 			{
 				m_retrycntr = 0;
-				if (OpenSerialDevice())
-					bFirstTime = true;
 			}
 		}
 	}
@@ -260,7 +257,7 @@ void Meteostick::SendWindSensor(const unsigned char Idx, const float Temp, const
 	//tsen.WIND.temperatureh = 0;
 	//tsen.WIND.temperaturel = 0;
 	//tsen.WIND.tempsign = (Temp >= 0) ? 0 : 1;
-	
+
 	float dWindSpeed = Speed * 3.6f;
 	float dWindChill = Temp;
 	if (dWindSpeed > 5 && Temp < 10)
@@ -309,7 +306,6 @@ void Meteostick::SendLeafWetnessRainSensor(const unsigned char Idx, const unsign
 
 void Meteostick::SendSoilMoistureSensor(const unsigned char Idx, const unsigned char Channel, const int Moisture, const std::string &defaultname)
 {
-	bool bDeviceExits = true;
 	int finalID = (Idx * 10) + Channel;
 	SendMoistureSensor(finalID,255, Moisture, defaultname);
 }
@@ -337,7 +333,7 @@ void Meteostick::ParseLine()
 	switch (m_state)
 	{
 	case MSTATE_INIT:
-		if (sLine.find("# MeteoStick Version") == 0) {
+		if (sLine.compare(0, 20, "# MeteoStick Version") == 0) {
 			_log.Log(LOG_STATUS, sLine.c_str());
 			return;
 		}
@@ -363,6 +359,12 @@ void Meteostick::ParseLine()
 #endif
 		m_state = MSTATE_DATA;
 		return;
+	case MSTATE_FREQUENCY:
+		// Fixme: unimplemented?
+		break;
+	case MSTATE_DATA:
+		// Fixme: unimplemented?
+		break;
 	}
 
 	if (m_state != MSTATE_DATA)

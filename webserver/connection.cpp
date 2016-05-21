@@ -25,14 +25,14 @@ connection::connection(boost::asio::io_service& io_service,
 		connection_manager& manager,
 		request_handler& handler,
 		int read_timeout) :
-				connection_manager_(manager),
-				request_handler_(handler),
 				read_timeout_(read_timeout),
 				read_timer_(io_service, boost::posix_time::seconds(read_timeout)),
-				status_(INITIALIZING),
-				reply_(reply::stock_reply(reply::internal_server_error)),
-				default_abandoned_timeout_(20*60), // 20mn before stopping abandoned connection
+				default_abandoned_timeout_(20*60), // 20min before stopping abandoned connection
 				abandoned_timer_(io_service, boost::posix_time::seconds(default_abandoned_timeout_)),
+				connection_manager_(manager),
+				request_handler_(handler),
+				reply_(reply::stock_reply(reply::internal_server_error)),
+				status_(INITIALIZING),
 				default_max_requests_(20)
 {
 	secure_ = false;
@@ -50,14 +50,14 @@ connection::connection(boost::asio::io_service& io_service,
 		request_handler& handler,
 		int read_timeout,
 		boost::asio::ssl::context& context) :
-				connection_manager_(manager),
-				request_handler_(handler),
 				read_timeout_(read_timeout),
 				read_timer_(io_service, boost::posix_time::seconds(read_timeout)),
-				status_(INITIALIZING),
-				reply_(reply::stock_reply(reply::internal_server_error)),
 				default_abandoned_timeout_(20*60), // 20mn before stopping abandoned connection
 				abandoned_timer_(io_service, boost::posix_time::seconds(default_abandoned_timeout_)),
+				connection_manager_(manager),
+				request_handler_(handler),
+				reply_(reply::stock_reply(reply::internal_server_error)),
+				status_(INITIALIZING),
 				default_max_requests_(20)
 {
 	secure_ = true;

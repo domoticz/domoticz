@@ -270,7 +270,7 @@ float C1WireByKernel::GetPressure(const _t1WireDevice& device) const
    return 0.0f;// Device not supported in kernel mode (maybe later...), use OWFS solution.
 }
 
-bool C1WireByKernel::GetLightState(const _t1WireDevice& device,int unit) const
+bool C1WireByKernel::GetLightState(const _t1WireDevice& device,UNIT unit) const
 {
    switch (device.family)
    {
@@ -297,12 +297,12 @@ unsigned int C1WireByKernel::GetNbChannels(const _t1WireDevice& device) const
    return 0;// Device not supported in kernel mode (maybe later...), use OWFS solution.
 }
 
-unsigned long C1WireByKernel::GetCounter(const _t1WireDevice& device,int unit) const
+unsigned long C1WireByKernel::GetCounter(const _t1WireDevice& device,UNIT unit) const
 {
    return 0;// Device not supported in kernel mode (maybe later...), use OWFS solution.
 }
 
-int C1WireByKernel::GetVoltage(const _t1WireDevice& device,int unit) const
+int C1WireByKernel::GetVoltage(const _t1WireDevice& device,UNIT unit) const
 {
 	return -1000;// Device not supported in kernel mode (maybe later...), use OWFS solution.
 }
@@ -331,7 +331,7 @@ float C1WireByKernel::ThreadReadRawDataHighPrecisionDigitalThermometer(const std
       while (!file.eof())
       {
          getline(file, sLine);
-         int tpos;
+         size_t tpos;
          if (sLine.find("crc=")!=std::string::npos)
          {
             if (sLine.find("YES")!=std::string::npos)
@@ -404,7 +404,7 @@ unsigned char C1WireByKernel::ThreadReadRawData8ChannelAddressableSwitch(const s
    return answer[0];
 }
 
-void C1WireByKernel::SetLightState(const std::string& sId,int unit,bool value)
+void C1WireByKernel::SetLightState(const std::string& sId,UNIT unit,bool value)
 {
    DeviceCollection::const_iterator it=m_Devices.find(sId);
    if (it==m_Devices.end())
@@ -443,7 +443,7 @@ void C1WireByKernel::SetLightState(const std::string& sId,int unit,bool value)
    }
 }
 
-void C1WireByKernel::ThreadWriteRawDataDualChannelAddressableSwitch(const std::string& deviceFileName,int unit,bool value) const
+void C1WireByKernel::ThreadWriteRawDataDualChannelAddressableSwitch(const std::string& deviceFileName,UNIT unit,bool value) const
 {
    // First read actual state, to only change the correct unit
    unsigned char readAnswer=ThreadReadRawDataDualChannelAddressableSwitch(deviceFileName);
@@ -468,7 +468,7 @@ void C1WireByKernel::ThreadWriteRawDataDualChannelAddressableSwitch(const std::s
       throw OneWireWriteErrorException(deviceFileName);
 }
 
-void C1WireByKernel::ThreadWriteRawData8ChannelAddressableSwitch(const std::string& deviceFileName,int unit,bool value) const
+void C1WireByKernel::ThreadWriteRawData8ChannelAddressableSwitch(const std::string& deviceFileName,UNIT unit,bool value) const
 {
    // First read actual state, to only change the correct unit
    // Caution : 0 means 'transistor active', we have to invert

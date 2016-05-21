@@ -55,10 +55,10 @@ struct _tNetatmoDevice
 };
 
 CNetatmo::CNetatmo(const int ID, const std::string& username, const std::string& password) :
-m_username(CURLEncode::URLEncode(username)),
-m_password(CURLEncode::URLEncode(password)),
 m_clientId("5588029e485a88af28f4a3c4"),
-m_clientSecret("6vIpQVjNsL2A74Bd8tINscklLw2LKv7NhE9uW2")
+m_clientSecret("6vIpQVjNsL2A74Bd8tINscklLw2LKv7NhE9uW2"),
+m_username(CURLEncode::URLEncode(username)),
+m_password(CURLEncode::URLEncode(password))
 {
 	m_nextRefreshTs = mytime(NULL);
 	m_isLogged = false;
@@ -423,7 +423,7 @@ int CNetatmo::GetBatteryLevel(const std::string &ModuleType, const int battery_v
 		3600 high
 		3300 medium
 		3000 low
-		/* below 3000: very low */
+		// below 3000: very low */
 		if (battery_vp <= 3000)
 			batValue = 0;
 	}
@@ -449,7 +449,6 @@ bool CNetatmo::ParseDashboard(const Json::Value &root, const int DevIdx, const i
 	int sound;
 
 	float wind_angle = 0;
-	int wind_gust_angle = 0;
 	float wind_strength = 0;
 	float wind_gust = 0;
 
@@ -517,7 +516,6 @@ bool CNetatmo::ParseDashboard(const Json::Value &root, const int DevIdx, const i
 		{
 			bHaveWind = true;
 			wind_angle = float(root["WindAngle"].asInt())/16.0f;
-			wind_gust_angle = root["GustAngle"].asInt();
 			wind_strength = root["WindStrength"].asFloat()/ 3.6f;
 			wind_gust = root["GustStrength"].asFloat() / 3.6f;
 		}
@@ -607,7 +605,7 @@ bool CNetatmo::ParseDashboard(const Json::Value &root, const int DevIdx, const i
 	{
 		SendSoundSensor(ID, batValue, sound, name);
 	}
-	
+
 	if (bHaveWind)
 	{
 		SendWind(ID, batValue, wind_angle, wind_strength, wind_gust, 0, 0, false, name);

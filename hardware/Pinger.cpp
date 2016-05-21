@@ -23,8 +23,8 @@ class pinger
 {
 public:
 	pinger(boost::asio::io_service& io_service, const char* destination, const int iPingTimeoutms)
-		: resolver_(io_service), socket_(io_service, boost::asio::ip::icmp::v4()),
-		timer_(io_service), sequence_number_(0), m_PingState(false), num_replies_(0)
+		: num_replies_(0), m_PingState(false), resolver_(io_service),
+		socket_(io_service, boost::asio::ip::icmp::v4()), timer_(io_service), sequence_number_(0)
 	{
 		boost::asio::ip::icmp::resolver::query query(boost::asio::ip::icmp::v4(), destination, "");
 		destination_ = *resolver_.resolve(query);
@@ -136,8 +136,7 @@ private:
 };
 
 CPinger::CPinger(const int ID, const int PollIntervalsec, const int PingTimeoutms):
-m_stoprequested(false),
-m_iThreadsRunning(0)
+m_iThreadsRunning(0), m_stoprequested(false)
 {
 	m_HwdID=ID;
 	m_bSkipReceiveCheck = true;

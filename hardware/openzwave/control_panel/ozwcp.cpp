@@ -8,29 +8,29 @@
 //	All rights reserved.
 //
 // SOFTWARE NOTICE AND LICENSE
-// This work (including software, documents, or other related items) is being 
+// This work (including software, documents, or other related items) is being
 // provided by the copyright holders under the following license. By obtaining,
 // using and/or copying this work, you (the licensee) agree that you have read,
 // understood, and will comply with the following terms and conditions:
 //
 // Permission to use, copy, and distribute this software and its documentation,
-// without modification, for any purpose and without fee or royalty is hereby 
+// without modification, for any purpose and without fee or royalty is hereby
 // granted, provided that you include the full text of this NOTICE on ALL
 // copies of the software and documentation or portions thereof.
 //
-// THIS SOFTWARE AND DOCUMENTATION IS PROVIDED "AS IS," AND COPYRIGHT HOLDERS 
+// THIS SOFTWARE AND DOCUMENTATION IS PROVIDED "AS IS," AND COPYRIGHT HOLDERS
 // MAKE NO REPRESENTATIONS OR WARRANTIES, EXPRESS OR IMPLIED, INCLUDING BUT NOT
-// LIMITED TO, WARRANTIES OF MERCHANTABILITY OR FITNESS FOR ANY PARTICULAR 
-// PURPOSE OR THAT THE USE OF THE SOFTWARE OR DOCUMENTATION WILL NOT INFRINGE 
+// LIMITED TO, WARRANTIES OF MERCHANTABILITY OR FITNESS FOR ANY PARTICULAR
+// PURPOSE OR THAT THE USE OF THE SOFTWARE OR DOCUMENTATION WILL NOT INFRINGE
 // ANY THIRD PARTY PATENTS, COPYRIGHTS, TRADEMARKS OR OTHER RIGHTS.
 //
-// COPYRIGHT HOLDERS WILL NOT BE LIABLE FOR ANY DIRECT, INDIRECT, SPECIAL OR 
-// CONSEQUENTIAL DAMAGES ARISING OUT OF ANY USE OF THE SOFTWARE OR 
+// COPYRIGHT HOLDERS WILL NOT BE LIABLE FOR ANY DIRECT, INDIRECT, SPECIAL OR
+// CONSEQUENTIAL DAMAGES ARISING OUT OF ANY USE OF THE SOFTWARE OR
 // DOCUMENTATION.
 //
-// The name and trademarks of copyright holders may NOT be used in advertising 
-// or publicity pertaining to the software without specific, written prior 
-// permission.  Title to copyright in this software and any associated 
+// The name and trademarks of copyright holders may NOT be used in advertising
+// or publicity pertaining to the software without specific, written prior
+// permission.  Title to copyright in this software and any associated
 // documentation will at all times remain with copyright holders.
 //-----------------------------------------------------------------------------
 #include "stdafx.h"
@@ -1070,7 +1070,7 @@ std::string COpenZWaveControlPanel::SendPollResponse()
 	bcnt = logbytes;
 	if (stat("./Config/OZW_Log.txt", &buf) != -1 &&
 		buf.st_size > bcnt &&
-		(fp = fopen("./Config/OZW_Log.txt", "r")) != NULL) 
+		(fp = fopen("./Config/OZW_Log.txt", "r")) != NULL)
 	{
 		if (bcnt == 0)
 		{
@@ -1131,7 +1131,7 @@ std::string COpenZWaveControlPanel::SendPollResponse()
 				TiXmlElement* nodeElement = new TiXmlElement("node");
 				pollElement->LinkEndChild(nodeElement);
 				nodeElement->SetAttribute("id", i);
-				zwaveplus = Manager::Get()->IsNodeZWavePlus(homeId, i); 
+				zwaveplus = Manager::Get()->IsNodeZWavePlus(homeId, i);
 				if (zwaveplus) {
 					string value = Manager::Get()->GetNodePlusTypeString(homeId, i);
 					value += " " + Manager::Get()->GetNodeRoleString(homeId, i);
@@ -1154,7 +1154,7 @@ std::string COpenZWaveControlPanel::SendPollResponse()
 				nodeElement->SetAttribute("beam", Manager::Get()->IsNodeBeamingDevice(homeId, i) ? "true" : "false");
 				nodeElement->SetAttribute("routing", Manager::Get()->IsNodeRoutingDevice(homeId, i) ? "true" : "false");
 				nodeElement->SetAttribute("security", Manager::Get()->IsNodeSecurityDevice(homeId, i) ? "true" : "false");
-				nodeElement->SetAttribute("time", (int)nodes[i]->getTime()); 
+				nodeElement->SetAttribute("time", (int)nodes[i]->getTime());
 #ifdef OZW_WRITE_LOG
 				Log::Write(LogLevel_Info,"i=%d failed=%d\n", i, Manager::Get()->IsNodeFailed(homeId, i));
 				Log::Write(LogLevel_Info,"i=%d awake=%d\n", i, Manager::Get()->IsNodeAwake(homeId, i));
@@ -1176,7 +1176,7 @@ std::string COpenZWaveControlPanel::SendPollResponse()
 							s = s + (Manager::Get()->IsNodeAwake(homeId, i) ? " (awake)" : " (sleeping)");
 						nodeElement->SetAttribute("status", s.c_str());
 					}
-				} 
+				}
 				web_get_groups(i, nodeElement);
 				// Don't think the UI needs these
 				//web_get_genre(ValueID::ValueGenre_Basic, i, nodeElement);
@@ -1376,7 +1376,7 @@ std::string COpenZWaveControlPanel::DoTestNetwork(const int node_id, const int c
 		Manager::Get()->TestNetwork(homeId, cnt);
 	else
 		Manager::Get()->TestNetworkNode(homeId, node_id, cnt);
-	
+
 	char fntemp[200];
 	sprintf(fntemp, "%sozwcp.testheal.XXXXXX", szUserDataFolder.c_str());
 	doc.SaveFile(fntemp);
@@ -1444,7 +1444,7 @@ std::string COpenZWaveControlPanel::GetCPTopo()
 			len = Manager::Get()->GetNodeNeighbors(homeId, i, &neighbors);
 			if (len > 0) {
 				TiXmlElement* nodeElement = new TiXmlElement("node");
-				snprintf(str, sizeof(str), "%d", i);
+				snprintf(str, sizeof(str), "%u", i);
 				nodeElement->SetAttribute("id", str);
 				string list = "";
 				for (k = 0; k < len; k++) {
@@ -1453,7 +1453,7 @@ std::string COpenZWaveControlPanel::GetCPTopo()
 					if (k < (len - 1))
 						list += ",";
 				}
-				fprintf(stderr, "topo: node=%d %s\n", i, list.c_str());
+				fprintf(stderr, "topo: node=%u %s\n", i, list.c_str());
 				TiXmlText *textElement = new TiXmlText(list.c_str());
 				nodeElement->LinkEndChild(textElement);
 				topoElement->LinkEndChild(nodeElement);

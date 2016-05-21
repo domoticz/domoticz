@@ -115,9 +115,10 @@ MACRO(ADD_PRECOMPILED_HEADER _targetName _input)
   ENDIF()
 
   IF(CMAKE_COMPILER_IS_GNUCXX)
-  #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-switch")
-  #ADD_DEFINITIONS( -Wall -O0 -ggdb )
-  #ADD_DEFINITIONS( -Wfatal-errors -Wformat=2 -Werror=format-security )
+    ADD_DEFINITIONS("-O2 -flto -Wall --std=c++11")
+    #ADD_DEFINITIONS("O0 -ggdb")
+    SET(CMAKE_AR "gcc-ar")
+    SET(CMAKE_RANLIB "gcc-ranlib")
 
     GET_FILENAME_COMPONENT(_name ${_input} NAME)
     SET(_source "${CMAKE_CURRENT_SOURCE_DIR}/${_input}")
@@ -604,6 +605,22 @@ IF(CMAKE_COMPILER_IS_GNUCXX)
     message(STATUS "Using dynamic libgcc_s/libstdc++")
   ENDIF(USE_STATIC_LIBSTDCXX)
 ENDIF(CMAKE_COMPILER_IS_GNUCXX)
+
+
+
+add_custom_target(cppcheck-xml
+  COMMAND cppcheck --enable=warning,performance,portability,information,missingInclude,unusedFunction --std=c++11 --max-configs=1000
+    -i ${CMAKE_SOURCE_DIR}/sqlite -i ${CMAKE_SOURCE_DIR}/tinyxpath -i ${CMAKE_SOURCE_DIR}/libusb -i ${CMAKE_SOURCE_DIR}/zip -i ${CMAKE_SOURCE_DIR}/zlib
+    -i ${CMAKE_SOURCE_DIR}/tinyxpath -i ${CMAKE_SOURCE_DIR}/stdafx.h.gch -i  ${CMAKE_SOURCE_DIR}/CMakeFiles
+    --xml --xml-version=2 ${CMAKE_SOURCE_DIR} 2>cppcheck.xml
+  BYPRODUCTS cppcheck.xml)
+
+add_custom_target(cppcheck
+  COMMAND cppcheck --enable=warning,performance,portability,information,missingInclude,unusedFunction --std=c++11 --max-configs=1000
+    -i ${CMAKE_SOURCE_DIR}/sqlite -i ${CMAKE_SOURCE_DIR}/tinyxpath -i ${CMAKE_SOURCE_DIR}/libusb -i ${CMAKE_SOURCE_DIR}/zip -i ${CMAKE_SOURCE_DIR}/zlib
+    -i ${CMAKE_SOURCE_DIR}/tinyxpath -i ${CMAKE_SOURCE_DIR}/stdafx.h.gch -i  ${CMAKE_SOURCE_DIR}/CMakeFiles
+    ${CMAKE_SOURCE_DIR} 2>cppcheck.txt
+  BYPRODUCTS cppcheck.txt)
 
 
 # build a CPack driven installer package

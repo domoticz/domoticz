@@ -9,11 +9,11 @@
 #define RETRY_DELAY 30
 
 MySensorsTCP::MySensorsTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort):
+m_retrycntr(RETRY_DELAY),
 m_szIPAddress(IPAddress),
 m_usIPPort(usIPPort),
-m_retrycntr(RETRY_DELAY),
-m_stoprequested(false),
-m_bDoRestart(false)
+m_bDoRestart(false),
+m_stoprequested(false)
 {
 	m_HwdID=ID;
 }
@@ -129,7 +129,7 @@ void MySensorsTCP::Do_Work()
 		}
 	}
 	_log.Log(LOG_STATUS,"MySensors: TCP/IP Worker stopped...");
-} 
+}
 
 void MySensorsTCP::OnData(const unsigned char *pData, size_t length)
 {

@@ -36,7 +36,7 @@ struct _tTableLookup3
 
 const char *LookupTable2(const _tTableLookup2 *pOrgTable, unsigned long ID)
 {
-	while (pOrgTable->Label) 
+	while (pOrgTable->Label)
 	{
 		if (pOrgTable->ID == ID)
 			return pOrgTable->Label;
@@ -48,7 +48,7 @@ const char *LookupTable2(const _tTableLookup2 *pOrgTable, unsigned long ID)
 
 const char *LookupTable3(const _tTableLookup3 *pOrgTable, unsigned long ID1, unsigned long ID2)
 {
-	while (pOrgTable->Label) 
+	while (pOrgTable->Label)
 	{
 		if ((pOrgTable->ID1 == ID1)&&(pOrgTable->ID2 == ID2))
 			return pOrgTable->Label;
@@ -123,7 +123,7 @@ const char* Get_EnoceanManufacturer(unsigned long ID)
 		{ 0x041, "AIR_SYSTEM_COMPONENTS_INC" },
 		{ 0x046, "NodOn" },
 		{ 0x048, "Ewattch" },
-		{ 0x7FF, "Multi user Manufacturer ID" }, 
+		{ 0x7FF, "Multi user Manufacturer ID" },
 		{ 0, NULL }
 	};
 	return LookupTable2(TTable,ID);
@@ -285,7 +285,7 @@ const _t4BSLookup T4BSTable[]=
 const char* Get_Enocean4BSType(const int Org, const int Func, const int Type)
 {
 	const _t4BSLookup *pOrgTable=(const _t4BSLookup *)&T4BSTable;
-	while (pOrgTable->Label) 
+	while (pOrgTable->Label)
 	{
 		if (
 			(pOrgTable->Org == Org)&&
@@ -302,7 +302,7 @@ const char* Get_Enocean4BSType(const int Org, const int Func, const int Type)
 const char* Get_Enocean4BSDesc(const int Org, const int Func, const int Type)
 {
 	const _t4BSLookup *pOrgTable=(const _t4BSLookup *)&T4BSTable;
-	while (pOrgTable->Label) 
+	while (pOrgTable->Label)
 	{
 		if (
 			(pOrgTable->Org == Org)&&
@@ -727,7 +727,7 @@ void CEnOceanESP2::Add2SendQueue(const char* pData, const size_t length)
  * returns a clean data structure, filled with 0
  */
 enocean_data_structure enocean_clean_data_structure() {
-	int i = 0;
+	size_t i = 0;
 	enocean_data_structure ds;
 	for (i=0;i < sizeof(ds);i++) {
 		BYTE* b = (BYTE*) &ds + i;
@@ -1199,15 +1199,6 @@ void CEnOceanESP2::SendDimmerTeachIn(const char *pdata, const unsigned char leng
 		iframe.ID_BYTE1=(unsigned char)((sID&0x0000FF00)>>8);//tsen->LIGHTING2.id3;
 		iframe.ID_BYTE0=(unsigned char)(sID&0x0000FF);//tsen->LIGHTING2.id4;
 
-		unsigned char RockerID=0;
-		unsigned char UpDown=1;
-		unsigned char Pressed=1;
-
-		if (tsen->LIGHTING2.unitcode<10)
-			RockerID=tsen->LIGHTING2.unitcode-1;
-		else
-			return;//double not supported yet!
-
 		//Teach in, DATA 2,1,0 set to 0
 		iframe.ORG = 0x07;
 		iframe.DATA_BYTE3=2;
@@ -1315,10 +1306,10 @@ bool CEnOceanESP2::ParseData()
 #ifdef _DEBUG
 			_log.Log(LOG_NORM,"Received RPS N-Message Node 0x%08x Rocker ID: %i UD: %i Pressed: %i Second Rocker ID: %i SUD: %i Second Action: %i",
 				id,
-				RockerID, 
-				UpDown, 
+				RockerID,
+				UpDown,
 				Pressed,
-				SecondRockerID, 
+				SecondRockerID,
 				SecondUpDown,
 				SecondAction);
 #endif
@@ -1369,7 +1360,7 @@ bool CEnOceanESP2::ParseData()
 					int manufacturer = ((pFrame->DATA_BYTE2 & 7) << 8) | pFrame->DATA_BYTE1;
 					int profile = pFrame->DATA_BYTE3 >> 2;
 					int ttype = ((pFrame->DATA_BYTE3 & 3) << 5) | (pFrame->DATA_BYTE2 >> 3);
-					_log.Log(LOG_NORM,"EnOcean: 4BS, Teach-in diagram: Sender_ID: 0x%08X\nManufacturer: 0x%02x (%s)\nProfile: 0x%02X\nType: 0x%02X (%s)", 
+					_log.Log(LOG_NORM,"EnOcean: 4BS, Teach-in diagram: Sender_ID: 0x%08X\nManufacturer: 0x%02x (%s)\nProfile: 0x%02X\nType: 0x%02X (%s)",
 						id, manufacturer,Get_EnoceanManufacturer(manufacturer),
 						profile,ttype,Get_Enocean4BSType(0xA5,profile,ttype));
 
@@ -1475,7 +1466,7 @@ bool CEnOceanESP2::ParseData()
 					tsen.RFXMETER.count4 = (BYTE)(cvalue & 0x000000FF);
 					sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER, NULL, 255);
 				}
-				else if (szST.find("RoomOperatingPanel") == 0)
+				else if (szST.compare(0, 18, "RoomOperatingPanel") == 0)
 				{
 					if (iType<0x0E)
 					{
@@ -1487,35 +1478,7 @@ bool CEnOceanESP2::ParseData()
 						// pFrame->DATA_BYTE1 is the temperature where 0x00 = +40°C ... 0xFF = 0°C
 						// pFrame->DATA_BYTE0_bit_0 is the occupy button, pushbutton or slide switch
 						float temp=GetValueRange(pFrame->DATA_BYTE1,0,40);
-						if (Manufacturer == 0x0D) 
-						{
-							//Eltako
-							int nightReduction = 0;
-							if (pFrame->DATA_BYTE3 == 0x06)
-								nightReduction = 1;
-							else if (pFrame->DATA_BYTE3 == 0x0C)
-								nightReduction = 2;
-							else if (pFrame->DATA_BYTE3 == 0x13)
-								nightReduction = 3;
-							else if (pFrame->DATA_BYTE3 == 0x19)
-								nightReduction = 4;
-							else if (pFrame->DATA_BYTE3 == 0x1F)
-								nightReduction = 5;
-							float setpointTemp=GetValueRange(pFrame->DATA_BYTE2,40);
-						}
-						else 
-						{
-							int fspeed = 3;
-							if (pFrame->DATA_BYTE3 >= 145)
-								fspeed = 2;
-							else if (pFrame->DATA_BYTE3 >= 165)
-								fspeed = 1;
-							else if (pFrame->DATA_BYTE3 >= 190)
-								fspeed = 0;
-							else if (pFrame->DATA_BYTE3 >= 210)
-								fspeed = -1; //auto
-							int iswitch = pFrame->DATA_BYTE0 & 1;
-						}
+
 						RBUF tsen;
 						memset(&tsen,0,sizeof(RBUF));
 						tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;
@@ -1580,7 +1543,7 @@ bool CEnOceanESP2::ParseData()
 					lmeter.fLux=lux;
 					sDecodeRXMessage(this, (const unsigned char *)&lmeter, NULL, 255);
 				}
-				else if (szST.find("Temperature")==0)
+				else if (szST.compare(0, 11, "Temperature")==0)
 				{
 					//(EPP A5-02 01/30)
 					float ScaleMax=0;

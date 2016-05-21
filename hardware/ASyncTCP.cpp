@@ -13,10 +13,9 @@
 #define RECONNECT_TIME 30
 
 ASyncTCP::ASyncTCP()
-	: mIsConnected(false), mIsClosing(false),
-	mSocket(mIos), mReconnectTimer(mIos),
-	mDoReconnect(true), mIsReconnecting(false)
-{	
+	: mIsConnected(false), mIsClosing(false), mDoReconnect(true), mIsReconnecting(false),
+	mSocket(mIos), mReconnectTimer(mIos)
+{
 }
 
 ASyncTCP::~ASyncTCP(void)
@@ -35,13 +34,13 @@ void ASyncTCP::update()
 void ASyncTCP::connect(const std::string &ip, unsigned short port)
 {
 	// connect socket
-	try 
+	try
 	{
 		boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::address::from_string(ip), port);
 
 		connect(endpoint);
 	}
-	catch(const std::exception &e) 
+	catch(const std::exception &e)
 	{
 		OnError(e);
 		_log.Log(LOG_ERROR,"TCP: Exception: %s", e.what());
@@ -61,10 +60,10 @@ void ASyncTCP::connect(boost::asio::ip::tcp::endpoint& endpoint)
 }
 
 void ASyncTCP::disconnect()
-{		
+{
 	// tell socket to close the connection
 	close();
-	
+
 	// tell the IO service to stop
 	mIos.stop();
 
@@ -147,10 +146,10 @@ bool ASyncTCP::set_tcp_keepalive()
 
 // callbacks
 
-void ASyncTCP::handle_connect(const boost::system::error_code& error) 
+void ASyncTCP::handle_connect(const boost::system::error_code& error)
 {
 	if(mIsClosing) return;
-	
+
 	if (!error) {
 		// we are connected!
 		mIsConnected = true;
@@ -183,7 +182,7 @@ void ASyncTCP::handle_connect(const boost::system::error_code& error)
 		{
 			mIsReconnecting = true;
 			_log.Log(LOG_STATUS, "TCP: Reconnecting in %d seconds...", RECONNECT_TIME);
-			// schedule a timer to reconnect after 30 seconds		
+			// schedule a timer to reconnect after 30 seconds
 			mReconnectTimer.expires_from_now(boost::posix_time::seconds(RECONNECT_TIME));
 			mReconnectTimer.async_wait(boost::bind(&ASyncTCP::do_reconnect, this, boost::asio::placeholders::error));
 		}
@@ -287,7 +286,7 @@ void ASyncTCP::write(const std::string &msg)
 void ASyncTCP::do_close()
 {
 	if(mIsClosing) return;
-	
+
 	mIsClosing = true;
 
 	mSocket.close();

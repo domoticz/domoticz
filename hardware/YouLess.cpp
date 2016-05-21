@@ -115,7 +115,7 @@ void CYouLess::GetMeterDetails()
 		_log.Log(LOG_ERROR,"YouLess: Error connecting to: %s", m_szIPAddress.c_str());
 		return;
 	}
-	int fpos;
+	size_t fpos;
 	std::string pusage=stdstring_trim(results[0]);
 	fpos=pusage.find_first_of(" ");
 	if (fpos!=std::string::npos)

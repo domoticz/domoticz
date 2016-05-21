@@ -94,14 +94,14 @@ std::string	CKodiNode::CKodiStatus::StatusMessage()
 	}
 	while (sStatus.length() > MAX_TITLE_LEN)
 	{
-		int begin = sStatus.find_first_of("(",0);
-		int end = sStatus.find_first_of(")", begin);
+		size_t begin = sStatus.find_first_of("(",0);
+		size_t end = sStatus.find_first_of(")", begin);
 		if ((std::string::npos == begin) || (std::string::npos == end) || (begin >= end)) break;
 		sStatus.erase(begin, end - begin + 1);
 	}
 	while (sStatus.length() > MAX_TITLE_LEN)
 	{
-		int end = sStatus.find_last_of(",");
+		size_t end = sStatus.find_last_of(",");
 		if (std::string::npos == end) break;
 		sStatus = sStatus.substr(0, end);
 	}
@@ -468,7 +468,7 @@ void CKodiNode::handleMessage(std::string& pMessage)
 						handleWrite(ssMessage.str());
 						break;
 					case 2002: // attempt to add playlist response
-					case 2003: 
+					case 2003:
 						ssMessage << "{\"jsonrpc\":\"2.0\",\"method\":\"Player.Open\",\"params\":{\"item\":{\"playlistid\":" << m_PlaylistType << ",\"position\":" << m_PlaylistPosition << "}},\"id\":2004}";
 						handleWrite(ssMessage.str());
 						break;
@@ -503,7 +503,7 @@ void CKodiNode::handleMessage(std::string& pMessage)
 											}
 										}
 									}
-								else 
+								else
 									_log.Log(LOG_NORM, "Kodi: (%s) No Favourites returned.", m_Name.c_str());
 							}
 						}
@@ -653,7 +653,7 @@ void CKodiNode::handleRead(const boost::system::error_code& e, std::size_t bytes
 		//ready for next read
 		if (!m_stoprequested && m_Socket)
 			m_Socket->async_read_some(	boost::asio::buffer(m_Buffer, sizeof m_Buffer),
-										boost::bind(&CKodiNode::handleRead, 
+										boost::bind(&CKodiNode::handleRead,
 										shared_from_this(),
 										boost::asio::placeholders::error,
 										boost::asio::placeholders::bytes_transferred));
@@ -681,7 +681,7 @@ void CKodiNode::handleWrite(std::string pMessage)
 			m_Socket->write_some(boost::asio::buffer(pMessage.c_str(), pMessage.length()));
 			m_sLastMessage = pMessage;
 		}
-		else 
+		else
     {
       _log.Log(LOG_ERROR, "Kodi: (%s) Data not sent to NULL socket: '%s'", m_Name.c_str(), pMessage.c_str());
     }
@@ -793,7 +793,7 @@ void CKodiNode::SendCommand(const std::string &command)
 		std::string	sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"" + sKodiCall + "\",\"params\":{";
 		if (sKodiParam.length()) sMessage += "\"action\":\"" + sKodiParam + "\"";
 		sMessage += "},\"id\":1006}";
-		
+
 		if (m_Socket != NULL)
 		{
 			handleWrite(sMessage);
@@ -967,7 +967,7 @@ void CKodi::Do_Work()
 				if (!(*itt)->IsBusy())
 				{
 					_log.Log(LOG_NORM, "Kodi: (%s) - Restarting thread.", (*itt)->m_Name.c_str());
-					boost::thread* tAsync = new boost::thread(&CKodiNode::Do_Work, (*itt));
+					(void)new boost::thread(&CKodiNode::Do_Work, (*itt));
 					m_ios.stop();
 				}
 				if ((*itt)->IsOn()) bWorkToDo = true;
@@ -988,7 +988,7 @@ void CKodi::Do_Work()
 	UnloadNodes();
 
 	_log.Log(LOG_STATUS, "Kodi: Worker stopped...");
-} 
+}
 
 void CKodi::SetSettings(const int PollIntervalsec, const int PingTimeoutms)
 {
@@ -1159,7 +1159,7 @@ void CKodi::ReloadNodes()
 		for (std::vector<boost::shared_ptr<CKodiNode> >::iterator itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
 		{
 			_log.Log(LOG_NORM, "Kodi: (%s) Starting thread.", (*itt)->m_Name.c_str());
-			boost::thread* tAsync = new boost::thread(&CKodiNode::Do_Work, (*itt));
+			(void)new boost::thread(&CKodiNode::Do_Work, (*itt));
 		}
 		sleep_milliseconds(100);
 		_log.Log(LOG_NORM, "Kodi: Starting I/O service thread.");
@@ -1176,7 +1176,7 @@ void CKodi::UnloadNodes()
 	m_ios.stop();	// stop the service if it is running
 	sleep_milliseconds(100);
 
-	while ((!m_pNodes.empty()) || (!m_ios.stopped()) && (iRetryCounter < 15))
+	while ((!m_pNodes.empty()) || (!m_ios.stopped() && (iRetryCounter < 15)))
 	{
 		std::vector<boost::shared_ptr<CKodiNode> >::iterator itt;
 		for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
@@ -1452,12 +1452,15 @@ namespace http {
 				// Is the device a media Player?
 				if (sType == STYPE_Media)
 				{
+					CKodi	Kodi(HwID);
+
 					switch (hType) {
 					case HTYPE_Kodi:
-						CKodi	Kodi(HwID);
 						Kodi.SendCommand(idx, sAction);
 						break;
 						// put other players here ...
+					default:
+						break;
 					}
 				}
 			}

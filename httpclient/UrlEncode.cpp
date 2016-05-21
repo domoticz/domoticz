@@ -13,11 +13,11 @@ char hexVals[16] = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E',
 std::string CURLEncode::csUnsafeString= "\"<>%\\^[]`+$,@:;/!#?=&";
 
 // PURPOSE OF THIS FUNCTION IS TO CONVERT A GIVEN CHAR TO URL HEX FORM
-std::string CURLEncode::convert(char val) 
+std::string CURLEncode::convert(char val)
 {
 	std::string csRet;
 	csRet += "%";
-	csRet += decToHex(val, 16);	
+	csRet += decToHex(val, 16);
 	return  csRet;
 }
 
@@ -29,8 +29,8 @@ std::string CURLEncode::decToHex(char num, int radix)
 	int num_char;
 	num_char = (int) num;
 
-	// ISO-8859-1 
-	// IF THE IF LOOP IS COMMENTED, THE CODE WILL FAIL TO GENERATE A 
+	// ISO-8859-1
+	// IF THE IF LOOP IS COMMENTED, THE CODE WILL FAIL TO GENERATE A
 	// PROPER URL ENCODE FOR THE CHARACTERS WHOSE RANGE IN 127-255(DECIMAL)
 	if (num_char < 0)
 		num_char = 256 + num_char;
@@ -65,12 +65,12 @@ bool CURLEncode::isUnsafe(char compareChar)
 	m_strLen = csUnsafeString.size();
 	for(int ichar_pos = 0; ichar_pos < m_strLen ;ichar_pos++)
 	{
-		char tmpsafeChar = csUnsafeString[ichar_pos]; 
+		char tmpsafeChar = csUnsafeString[ichar_pos];
 		if(tmpsafeChar == compareChar)
-		{ 
+		{
 			bcharfound = true;
 			break;
-		} 
+		}
 	}
 	int char_ascii_value = 0;
 	//char_ascii_value = __toascii(compareChar);
@@ -80,7 +80,7 @@ bool CURLEncode::isUnsafe(char compareChar)
 	{
 		return false;
 	}
-	// found no unsafe chars, return false		
+	// found no unsafe chars, return false
 	else
 	{
 		return true;
@@ -88,13 +88,13 @@ bool CURLEncode::isUnsafe(char compareChar)
 
 	return true;
 }
-// PURPOSE OF THIS FUNCTION IS TO CONVERT A STRING 
+// PURPOSE OF THIS FUNCTION IS TO CONVERT A STRING
 // TO URL ENCODE FORM.
 std::string CURLEncode::URLEncode(const std::string &pcsEncode)
-{	
+{
 	int ichar_pos;
 	std::string csEncode;
-	std::string csEncoded;	
+	std::string csEncoded;
 	int m_length;
 
 	csEncode = pcsEncode;
@@ -103,13 +103,13 @@ std::string CURLEncode::URLEncode(const std::string &pcsEncode)
 	for(ichar_pos = 0; ichar_pos < m_length; ichar_pos++)
 	{
 		char ch = csEncode[ichar_pos];
-		//if (ch < ' ') 
+		//if (ch < ' ')
 		//{
 		//	ch = ch;
-		//}		
+		//}
 		if(!isUnsafe(ch))
 		{
-			// Safe Character				
+			// Safe Character
 			csEncoded += ch;
 		}
 		else
@@ -126,7 +126,7 @@ std::string CURLEncode::URLDecode(const std::string &SRC)
 {
 	std::string ret;
 	char ch;
-	int ii;
+	unsigned int ii;
 	size_t len=SRC.length();
 	for (size_t i=0; i<len; i++) {
 		if (int(SRC[i])==37) {

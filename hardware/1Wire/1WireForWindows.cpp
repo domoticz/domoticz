@@ -201,7 +201,7 @@ C1WireForWindows::~C1WireForWindows()
    // Disconnect from service
    if (m_Socket==INVALID_SOCKET)
       return;
-      
+
    DisconnectFromService(m_Socket);
 }
 
@@ -230,7 +230,7 @@ void C1WireForWindows::GetDevices(/*out*/std::vector<_t1WireDevice>& devices) co
          ansRoot.get("Reason","unknown reason").asString());
       return;
    }
-   
+
    for ( Json::ArrayIndex itDevice = 0; itDevice<ansRoot["Devices"].size(); itDevice++)
    {
       _t1WireDevice device;
@@ -242,7 +242,7 @@ void C1WireForWindows::GetDevices(/*out*/std::vector<_t1WireDevice>& devices) co
    }
 }
 
-Json::Value C1WireForWindows::readData(const _t1WireDevice& device,int unit) const
+Json::Value C1WireForWindows::readData(const _t1WireDevice& device,UNIT unit) const
 {
    if (m_Socket==INVALID_SOCKET)
       throw C1WireForWindowsReadException("invalid socket");
@@ -336,7 +336,7 @@ float C1WireForWindows::GetPressure(const _t1WireDevice& device) const
    return ansRoot.get("Pressure",0.0f).asFloat();
 }
 
-bool C1WireForWindows::GetLightState(const _t1WireDevice& device,int unit) const
+bool C1WireForWindows::GetLightState(const _t1WireDevice& device,UNIT unit) const
 {
    Json::Value ansRoot;
    try
@@ -363,7 +363,7 @@ unsigned int C1WireForWindows::GetNbChannels(const _t1WireDevice& device) const
    }
 }
 
-unsigned long C1WireForWindows::GetCounter(const _t1WireDevice& device,int unit) const
+unsigned long C1WireForWindows::GetCounter(const _t1WireDevice& device,UNIT unit) const
 {
    Json::Value ansRoot;
    try
@@ -378,7 +378,7 @@ unsigned long C1WireForWindows::GetCounter(const _t1WireDevice& device,int unit)
    return ansRoot.get("Counter",0).asUInt();
 }
 
-int C1WireForWindows::GetVoltage(const _t1WireDevice& device,int unit) const
+int C1WireForWindows::GetVoltage(const _t1WireDevice& device,UNIT unit) const
 {
    Json::Value ansRoot;
    try
@@ -407,7 +407,7 @@ float C1WireForWindows::GetIlluminance(const _t1WireDevice& device) const
    return ansRoot.get("Illuminescence",0.0f).asFloat();
 }
 
-void C1WireForWindows::SetLightState(const std::string& sId,int unit,bool value)
+void C1WireForWindows::SetLightState(const std::string& sId,UNIT unit,bool value)
 {
    if (m_Socket==INVALID_SOCKET)
       return;

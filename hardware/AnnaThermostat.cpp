@@ -331,14 +331,13 @@ void CAnnaThermostat::GetMeterDetails()
 			_log.Log(LOG_ERROR, "AnnaThermostat: Invalid data received!");
 			return;
 		}
-		TiXmlHandle hLogs = TiXmlHandle(pElem);
 		pElem = hAppliance.FirstChild("logs").Child("point_log", 0).ToElement();
 		if (!pElem)
 		{
 			_log.Log(LOG_ERROR, "AnnaThermostat: Invalid data received!");
 			return;
 		}
-		for (pElem; pElem; pElem = pElem->NextSiblingElement())
+		for (; pElem; pElem = pElem->NextSiblingElement())
 		{
 			sname = GetElementChildValue(pElem, "type");
 			if (sname == "temperature")

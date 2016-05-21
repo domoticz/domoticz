@@ -43,7 +43,7 @@ private:
 	bool m_bHaveRX;
 
 	unsigned char m_rx_input_buffer[512];
-	int m_rx_tot_bytes;
+	size_t m_rx_tot_bytes;
 
 	boost::shared_ptr<boost::thread> m_thread;
 	volatile bool m_stoprequested;

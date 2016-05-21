@@ -12,6 +12,7 @@
 #endif
 
 #include "../../main/Helper.h"
+#include "types.h"
 
 bool C1WireByOWFS::IsAvailable()
 {
@@ -151,7 +152,7 @@ void C1WireByOWFS::writeData(const _t1WireDevice& device,std::string propertyNam
     file.close();
 }
 
-void C1WireByOWFS::SetLightState(const std::string& sId,int unit,bool value)
+void C1WireByOWFS::SetLightState(const std::string& sId,UNIT unit,bool value)
 {
    _t1WireDevice device;
    if (!FindDevice(sId, device))
@@ -159,7 +160,7 @@ void C1WireByOWFS::SetLightState(const std::string& sId,int unit,bool value)
 
    switch(device.family)
    {
-   case Addresable_Switch:
+   case Addressable_Switch:
       {
          writeData(device,"PIO",value?"yes":"no");
          break;
@@ -229,20 +230,20 @@ float C1WireByOWFS::GetHumidity(const _t1WireDevice& device) const
 float C1WireByOWFS::GetPressure(const _t1WireDevice& device) const
 {
    std::string realFilename = device.filename + nameHelper(device.filename, device.family); // for family 26 (DS2438) + pressure + HobbyBoards
-   
+
    std::string readValue=readRawData(std::string(realFilename+"/pressure"));
    if (readValue.empty())
 	   return -1000.0;
    return static_cast<float>(atof(readValue.c_str()));
 }
 
-bool C1WireByOWFS::GetLightState(const _t1WireDevice& device,int unit) const
+bool C1WireByOWFS::GetLightState(const _t1WireDevice& device,UNIT unit) const
 {
    std::string fileName(device.filename);
 
    switch(device.family)
    {
-   case Addresable_Switch:
+   case Addressable_Switch:
       {
          fileName.append("/sensed");
          break;
@@ -275,6 +276,8 @@ bool C1WireByOWFS::GetLightState(const _t1WireDevice& device,int unit) const
          fileName.append("/control");
          break;
       }
+   default:
+	   return false;
    }
 
    std::string readValue=readRawData(fileName);
@@ -283,7 +286,7 @@ bool C1WireByOWFS::GetLightState(const _t1WireDevice& device,int unit) const
 
    switch(device.family)
    {
-   case Addresable_Switch:
+   case Addressable_Switch:
    case dual_addressable_switch_plus_1k_memory:
    case Temperature_IO:
    case dual_channel_addressable_switch:
@@ -302,6 +305,8 @@ bool C1WireByOWFS::GetLightState(const _t1WireDevice& device,int unit) const
          else
             return (iValue==2);
       }
+   default:
+	   break;
    }
    return false;
 }
@@ -314,7 +319,7 @@ unsigned int C1WireByOWFS::GetNbChannels(const _t1WireDevice& device) const
    return atoi(readValue.c_str());
 }
 
-unsigned long C1WireByOWFS::GetCounter(const _t1WireDevice& device,int unit) const
+unsigned long C1WireByOWFS::GetCounter(const _t1WireDevice& device,UNIT unit) const
 {
    // Depending on OWFS version, file can be "counter" or "counters". So try both.
    std::string readValue=readRawData(std::string(device.filename+"/counter.").append(1,'A'+unit));
@@ -325,7 +330,7 @@ unsigned long C1WireByOWFS::GetCounter(const _t1WireDevice& device,int unit) con
    return (unsigned long)atol(readValue.c_str());
 }
 
-int C1WireByOWFS::GetVoltage(const _t1WireDevice& device,int unit) const
+int C1WireByOWFS::GetVoltage(const _t1WireDevice& device,UNIT unit) const
 {
    std::string fileName(device.filename);
 
@@ -412,11 +417,11 @@ void C1WireByOWFS::GetDevice(const std::string &inDir, const std::string &dirnam
 		c=id[left_position+1]; id[left_position+1]=id[right_position+1]; id[right_position+1]=c;
     }
     device.devid=id;
-    
+
     device.filename=inDir;
     if (device.family == Environmental_Monitors) {
         device.filename+="/" + dirname + nameHelper(dirname, device.family);
-    } else { 
+    } else {
         device.filename+="/" + dirname;
     }
 }
@@ -424,7 +429,7 @@ void C1WireByOWFS::GetDevice(const std::string &inDir, const std::string &dirnam
 std::string C1WireByOWFS::nameHelper(const std::string& dirname, const _e1WireFamilyType family) const {
 	std::string name;
 	DIR *d=NULL;
-	
+
 	d=opendir(std::string(std::string(OWFS_Base_Dir) + "/" + dirname.c_str()).c_str());
 	if (d != NULL)
 	{

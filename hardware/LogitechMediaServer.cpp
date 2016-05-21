@@ -12,12 +12,12 @@
 #include "../webserver/cWebem.h"
 #include "../httpclient/HTTPClient.h"
 
-CLogitechMediaServer::CLogitechMediaServer(const int ID, const std::string &IPAddress, const int Port, const std::string &User, const std::string &Pwd, const int PollIntervalsec, const int PingTimeoutms) : 
+CLogitechMediaServer::CLogitechMediaServer(const int ID, const std::string &IPAddress, const int Port, const std::string &User, const std::string &Pwd, const int PollIntervalsec, const int PingTimeoutms) :
+m_iThreadsRunning(0),
 m_IP(IPAddress),
 m_User(User),
 m_Pwd(Pwd),
-m_stoprequested(false),
-m_iThreadsRunning(0)
+m_stoprequested(false)
 {
 	m_HwdID = ID;
 	m_Port = Port;
@@ -26,7 +26,8 @@ m_iThreadsRunning(0)
 	SetSettings(PollIntervalsec, PingTimeoutms);
 }
 
-CLogitechMediaServer::CLogitechMediaServer(const int ID) : m_stoprequested(false), m_iThreadsRunning(0)
+CLogitechMediaServer::CLogitechMediaServer(const int ID) :
+m_iThreadsRunning(0), m_stoprequested(false)
 {
 	m_HwdID = ID;
 	m_IP = "";
@@ -248,7 +249,7 @@ void CLogitechMediaServer::Do_Node_Work(const LogitechMediaServerNode &Node)
 					nStatus = MSTAT_OFF;
 				else {
 					std::string sMode = root["mode"].asString();
-					if (sMode == "play") 
+					if (sMode == "play")
 						if ((nOldStatus == MSTAT_OFF) || (nOldStatus == MSTAT_DISCONNECTED))
 							nStatus = MSTAT_ON;
 						else
@@ -734,10 +735,10 @@ bool CLogitechMediaServer::SendCommand(const int ID, const std::string &command,
 		if (sLMSCmnd != "")
 		{
 			std::string sPostdata = "{\"id\":1,\"method\":\"slim.request\",\"params\":[\"" + sPlayerId + "\",[" + sLMSCmnd + "]]}";
-			Json::Value root = Query(m_IP, m_Port, sPostdata);
+			(void) Query(m_IP, m_Port, sPostdata);
 
 			sPostdata = "{\"id\":1,\"method\":\"slim.request\",\"params\":[\"" + sPlayerId + "\",[\"status\",\"-\",1,\"tags:uB\"]]}";
-			root = Query(m_IP, m_Port, sPostdata);
+			Json::Value root = Query(m_IP, m_Port, sPostdata);
 
 			if (root["player_connected"].asString() == "1")
 			{
@@ -929,12 +930,15 @@ namespace http {
 				// Is the device a media Player?
 				if (sType == STYPE_Media)
 				{
+					CLogitechMediaServer LMS(HwID);
+
 					switch (hType) {
 					case HTYPE_LogitechMediaServer:
-						CLogitechMediaServer LMS(HwID);
 						LMS.SendCommand(idx, sAction);
 						break;
 						// put other players here ...
+					default:
+						break;
 					}
 				}
 			}

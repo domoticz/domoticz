@@ -202,7 +202,7 @@ void CSterbox::GetMeterDetails()
 	//	szURL << "http://" << m_Username << ":" << m_Password << "@" << m_szIPAddress << ":" << m_usIPPort;
 	//}
 
-	szURL << "/x.cgi"; 
+	szURL << "/x.cgi";
 
 	if (!HTTPClient::GET(szURL.str(),sResult))
 	{
@@ -231,8 +231,7 @@ void CSterbox::GetMeterDetails()
 	}
 	size_t ii;
 	size_t jj;
-	int pos1;
-	int Idx = 0;
+	size_t pos1;
 
 	if (m_Username.empty())
 	{
@@ -252,12 +251,12 @@ void CSterbox::GetMeterDetails()
 			tmpstr = tmpstr.substr(strlen("OU"));
 			pos1 = tmpstr.find("=");
 			if (pos1 != std::string::npos)
-			{	
+			{
 				tmpstr = tmpstr.substr(pos1+1);
 				//_log.Log(LOG_ERROR,"Sterbox: OU Status: %s", tmpstr.c_str());
 				StringSplit(tmpstr, ",", outputs);
-				for (jj = 0; jj < inputs.size(); jj++) 
-				{	
+				for (jj = 0; jj < inputs.size(); jj++)
+				{
 					tmpinp = inputs[jj];
 					//if (( jj < 4 || jj > 7  ))
 					pos1 = tmpinp.find("o");
@@ -288,12 +287,12 @@ void CSterbox::GetMeterDetails()
 			tmpstr = tmpstr.substr(strlen("IN"));
 			pos1 = tmpstr.find("=");
 			if (pos1 != std::string::npos)
-			{	
+			{
 				tmpstr = tmpstr.substr(pos1+1);
 				//_log.Log(LOG_ERROR,"Sterbox: OU Status: %s", tmpstr.c_str());
 				StringSplit(tmpstr, ",", outputs);
-				for (jj = 0; jj < inputs.size(); jj++) 
-				{	
+				for (jj = 0; jj < inputs.size(); jj++)
+				{
 					tmpinp = inputs[jj];
 					//if (( jj > 3 && jj < 8  ))
 					pos1 = tmpinp.find("i");
@@ -367,7 +366,7 @@ void CSterbox::GetMeterDetails()
 					{
 						SendHumiditySensor(jj,255,int(lValue), sstr.str());
 					}
-	
+
 					//SendTempSensor(jj,255,lValue, sstr.str());
 					//_log.Log(LOG_ERROR,"Sterbox: OU Status: %s", tmpstr2.c_str());
 

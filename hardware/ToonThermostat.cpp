@@ -230,7 +230,6 @@ void CToonThermostat::SendSetPointSensor(const unsigned char Idx, const float Te
 
 void CToonThermostat::UpdateSwitch(const unsigned char Idx, const bool bOn, const std::string &defaultname)
 {
-	bool bDeviceExits = true;
 	char szIdx[10];
 	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);
 	std::vector<std::vector<std::string> > result;
@@ -360,7 +359,7 @@ bool CToonThermostat::Login()
 	agreementIdChecksum = root["agreements"][0]["agreementIdChecksum"].asString();
 
 	std::stringstream sstr2;
-	sstr2 << "clientId=" << m_ClientID 
+	sstr2 << "clientId=" << m_ClientID
 		 << "&clientIdChecksum=" << m_ClientIDChecksum
 		 << "&agreementId=" << agreementId
 		 << "&agreementIdChecksum=" << agreementIdChecksum
@@ -760,7 +759,7 @@ void CToonThermostat::GetMeterDetails()
 
 		m_p1power.usagecurrent = (unsigned long)(root["powerUsage"]["value"].asFloat());	//Watt
 		m_p1power.delivcurrent = (unsigned long)(root["powerUsage"]["valueProduced"].asFloat());	//Watt
-		
+
 	}
 
 	//Send Electra if value changed, or at least every 5 minutes
@@ -778,7 +777,7 @@ void CToonThermostat::GetMeterDetails()
 			sDecodeRXMessage(this, (const unsigned char *)&m_p1power, NULL, 255);
 		}
 	}
-	
+
 	//Send GAS if the value changed, or at least every 5 minutes
 	if (
 		(m_p1gas.gasusage != m_lastgasusage) ||

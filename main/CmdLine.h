@@ -7,23 +7,23 @@
    http://www.smalleranimals.com
 
    This software is provided 'as-is', without any express
-   or implied warranty.  In no event will the authors be 
+   or implied warranty.  In no event will the authors be
    held liable for any damages arising from the use of this software.
 
-   Permission is granted to anyone to use this software 
-   for any purpose, including commercial applications, and 
-   to alter it and redistribute it freely, subject to the 
+   Permission is granted to anyone to use this software
+   for any purpose, including commercial applications, and
+   to alter it and redistribute it freely, subject to the
    following restrictions:
 
-     1. The origin of this software must not be misrepresented; 
-   you must not claim that you wrote the original software. 
-   If you use this software in a product, an acknowledgment 
+     1. The origin of this software must not be misrepresented;
+   you must not claim that you wrote the original software.
+   If you use this software in a product, an acknowledgment
    in the product documentation would be appreciated but is not required.
-   
-     2. Altered source versions must be plainly marked as such, 
+
+     2. Altered source versions must be plainly marked as such,
    and must not be misrepresented as being the original software.
-   
-     3. This notice may not be removed or altered from any source 
+
+     3. This notice may not be removed or altered from any source
    distribution.
 
   -------------------------
@@ -35,16 +35,16 @@
    if the required switches are not present and continue with default
    values if the optional switches are not present.
 
-      Sample command line : 
+      Sample command line :
       MyApp.exe -p1 text1 text2 -p2 "this is a big argument" -opt1 -55 -opt2
 
-      Switches -p1 and -p2 are required. 
+      Switches -p1 and -p2 are required.
       p1 has two arguments and p2 has one.
-      
-      Switches -opt1 and -opt2 are optional. 
-      opt1 requires a numeric argument. 
+
+      Switches -opt1 and -opt2 are optional.
+      opt1 requires a numeric argument.
       opt2 has no arguments.
-      
+
       Also, assume that the app displays a 'help' screen if the '-h' switch
       is present on the command line.
 
@@ -55,7 +55,7 @@
       // our cmd line parser object
       CCmdLine cmdLine;
 
-      // parse argc,argv 
+      // parse argc,argv
       if (cmdLine.SplitLine(argc, argv) < 1)
       {
          // no switches were given on the command line, abort
@@ -73,7 +73,7 @@
       // get the required arguments
       std::string p1_1, p1_2, p2_1;
       try
-      {  
+      {
          // if any of these fail, we'll end up in the catch() block
          p1_1 = cmdLine.GetArgument("-p1", 0);
          p1_2 = cmdLine.GetArgument("-p1", 1);
@@ -104,11 +104,6 @@
 #pragma once
 #ifndef SACMDSH
 #define SACMDSH
-
-
-
-// tell the compiler to shut up
-#pragma warning(disable:4786)
 
 //#include <iostream> // you may need this
 #include <map>
@@ -149,7 +144,7 @@ public:
       ----                          ------
       cmdLine.HasSwitch("-a")       true
       cmdLine.HasSwitch("-z")       false
-   ------------------------------------------------------*/   
+   ------------------------------------------------------*/
    bool        HasSwitch(const char *pSwitch);
 
    /*------------------------------------------------------
@@ -161,7 +156,7 @@ public:
       provide.
 
       example :
-  
+
       command line is : app.exe -a p1 p2 p3 -b p4 -c -d p5
 
       call                                      return
@@ -179,11 +174,11 @@ public:
 
       std::string CCmdLine::GetArgument(const char *pSwitch, int iIdx)
 
-      fetch a argument associated with a switch. throws an exception 
+      fetch a argument associated with a switch. throws an exception
       of (int)0, if the parameter at index iIdx is not found.
 
       example :
-  
+
       command line is : app.exe -a p1 p2 p3 -b p4 -c -d p5
 
       call                             return
@@ -192,7 +187,7 @@ public:
       cmdLine.GetArgument("-b", 1)     throws (int)0, returns an empty string
 
    ------------------------------------------------------*/
-   std::string  GetArgument(const char *pSwitch, int iIdx); 
+   std::string  GetArgument(const char *pSwitch, int iIdx);
 
    /*------------------------------------------------------
       int CCmdLine::GetArgumentCount(const char *pSwitch)

@@ -18,8 +18,7 @@
 #define RETRY_DELAY 30
 
 MySensorsSerial::MySensorsSerial(const int ID, const std::string& devname, const int Mode1):
-m_retrycntr(RETRY_DELAY),
-m_stoprequested(false)
+m_stoprequested(false), m_retrycntr(RETRY_DELAY)
 {
 	switch (Mode1)
 	{

@@ -120,12 +120,12 @@ void Teleinfo::Init()
 	m_p1power.type = pTypeP1Power;
 	m_p1power.subtype = sTypeP1Power;
 	m_p1power.ID = 1;
-	
+
 	m_p2power.len = sizeof(P1Power) - 1;
 	m_p2power.type = pTypeP1Power;
 	m_p2power.subtype = sTypeP1Power;
 	m_p2power.ID = 2;
-	
+
 	m_p3power.len = sizeof(P1Power) - 1;
 	m_p3power.type = pTypeP1Power;
 	m_p3power.subtype = sTypeP1Power;
@@ -212,6 +212,8 @@ void Teleinfo::MatchLine()
 			if (strncmp(t.key, (const char*)&m_buffer, strlen(t.key)) == 0) {
 				found = 1;
 			}
+			break;
+		case ID:
 			break;
 		} //switch
 

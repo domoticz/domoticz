@@ -43,7 +43,7 @@ int expression_result::i_get_int ()
       default :
          return atoi (S_get_string () . c_str ());
    }
-}	
+}
 
 /// Get the expression_result as a double
 double expression_result::d_get_double ()
@@ -83,7 +83,7 @@ TIXML_STRING expression_result::S_get_string ()
          // See XPath 1.0 spec, 4.2 :
          // An argument is converted to type string as if by calling the string function
          // ...
-         // A node-set is converted to a string by returning the string-value of the node 
+         // A node-set is converted to a string by returning the string-value of the node
          // in the node-set that is first in document order. If the node-set is empty, an empty string is returned.
          nsp_ptr = nsp_get_node_set ();
          if (nsp_ptr -> u_get_nb_node_in_set ())
@@ -95,15 +95,17 @@ TIXML_STRING expression_result::S_get_string ()
                S_res = nsp_ptr -> XNp_get_node_in_set (0) -> Value ();
          }
          break;
-      case e_bool :  
+      case e_bool :
          if (o_get_bool ())
             S_res = "true";
          else
             S_res = "false";
          break;
+      default:
+    	  break;
    }
    return S_res;
-}	
+}
 
 /**
 Get the expression_result as a bool\n
@@ -129,15 +131,17 @@ bool expression_result::o_get_bool ()
          // See XPath 1.0 spec, 3.2 :
          // An argument is converted to type string as if by calling the string function
          // ...
-         // A node-set is converted to a string by returning the string-value of the node 
+         // A node-set is converted to a string by returning the string-value of the node
          // in the node-set that is first in document order. If the node-set is empty, an empty string is returned.
          nsp_ptr = nsp_get_node_set ();
          return nsp_ptr -> u_get_nb_node_in_set () != 0;
-      case e_bool :  
+      case e_bool :
          return o_content;
+      default:
+    	  break;
    }
 	return false;
-}	
+}
 
 #ifdef TINYXPATH_DEBUG
 
@@ -152,13 +156,13 @@ bool expression_result::o_get_bool ()
          case e_string :
             printf ("   string : %s\n", S_content . c_str ());
             break;
-         case e_int : 
+         case e_int :
             printf ("   int : %d", i_content);
             if (S_comment . length ())
                printf (" (%s)", S_comment . c_str ());
             printf ("\n");
             break;
-         case e_double : 
+         case e_double :
             printf ("   double : %f\n", d_content);
             break;
          case e_node_set :

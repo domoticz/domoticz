@@ -41,7 +41,7 @@
 	#include <syslog.h>
 	#include <errno.h>
 	#include <fcntl.h>
-	#include <string.h> 
+	#include <string.h>
 #endif
 
 #ifdef __gnu_linux__
@@ -131,7 +131,7 @@ static const _facilities facilities[] =
 	{ "local5", LOG_LOCAL5 },
 	{ "local6", LOG_LOCAL6 },
 	{ "local7", LOG_LOCAL7 }
-}; 
+};
 std::string logfacname = "user";
 #endif
 std::string szStartupFolder;
@@ -168,7 +168,7 @@ bool g_bDontCacheWWW = false;
 int pidFilehandle = 0;
 
 #define DAEMON_NAME "domoticz"
-#define PID_FILE "/var/run/domoticz.pid" 
+#define PID_FILE "/var/run/domoticz.pid"
 
 int fatal_handling = 0;
 
@@ -207,7 +207,7 @@ void signal_handler(int sig_num)
 		signal(sig_num, SIG_DFL);
 		raise(sig_num);
 		break;
-	} 
+	}
 }
 
 #ifndef WIN32
@@ -255,7 +255,7 @@ void daemonize(const char *rundir, const char *pidfile)
 #ifndef WIN32
 	sigaction(SIGHUP,  &newSigAction, NULL);    // catch HUP, for logrotation
 #endif
-	
+
 	/* Fork*/
 	pid = fork();
 
@@ -293,8 +293,8 @@ void daemonize(const char *rundir, const char *pidfile)
 	sprintf(str, "%d\n", getpid());
 
 	/* write pid to lockfile */
-	int twrite=write(pidFilehandle, str, strlen(str));
-	if (twrite != strlen(str))
+	long twrite=write(pidFilehandle, str, strlen(str));
+	if (twrite != (long)strlen(str))
 	{
 		syslog(LOG_INFO, "Could not write to lockfile %s, exiting", pidfile);
 		exit(EXIT_FAILURE);
@@ -429,10 +429,10 @@ int main(int argc, char**argv)
 {
 #if defined WIN32
 #ifndef _DEBUG
-	CreateMutexA(0, FALSE, "Local\\Domoticz"); 
-	if(GetLastError() == ERROR_ALREADY_EXISTS) { 
+	CreateMutexA(0, FALSE, "Local\\Domoticz");
+	if(GetLastError() == ERROR_ALREADY_EXISTS) {
 		MessageBox(HWND_DESKTOP,"Another instance of Domoticz is already running!","Domoticz",MB_OK);
-		return 1; 
+		return 1;
 	}
 #endif //_DEBUG
 	bool bStartWebBrowser = true;
@@ -442,10 +442,10 @@ int main(int argc, char**argv)
 	szStartupFolder = "";
 	szWWWFolder = "";
 	szWebRoot = "";
-	
+
 	CCmdLine cmdLine;
 
-	// parse argc,argv 
+	// parse argc,argv
 #if defined WIN32
 	cmdLine.SplitLine(__argc, __argv);
 #else
@@ -841,7 +841,7 @@ int main(int argc, char**argv)
 	{
 		g_bUseSyslog = true;
 		logfacname = cmdLine.GetSafeArgument("-syslog", 0, "");
-		if ( logfacname.length() == 0 ) 
+		if ( logfacname.length() == 0 )
 		{
 			logfacname = "user";
 		}
@@ -849,17 +849,17 @@ int main(int argc, char**argv)
 
 	if ((g_bRunAsDaemon)||(g_bUseSyslog))
 	{
-		int idx, logfacility = 0;
+		int logfacility = 0;
 
-		for ( idx = 0; idx < sizeof(facilities)/sizeof(facilities[0]); idx++ ) 
+		for (size_t idx = 0; idx < sizeof(facilities)/sizeof(facilities[0]); idx++ )
 		{
-			if (strcmp(facilities[idx].facname, logfacname.c_str()) == 0) 
+			if (strcmp(facilities[idx].facname, logfacname.c_str()) == 0)
 			{
 				logfacility = facilities[idx].facvalue;
 				break;
 			}
-		} 
-		if ( logfacility == 0 ) 
+		}
+		if ( logfacility == 0 )
 		{
 			_log.Log(LOG_ERROR, "%s is an unknown syslog facility", logfacname.c_str());
 			return 1;

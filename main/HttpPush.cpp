@@ -72,7 +72,7 @@ void CHttpPush::OnDeviceReceived(const int m_HwdID, const unsigned long long Dev
 }
 
 void CHttpPush::DoHttpPush()
-{			
+{
 	std::string httpUrl = "";
 	std::string httpData = "";
 	int httpMethodInt = 0;
@@ -93,7 +93,7 @@ void CHttpPush::DoHttpPush()
 	}
 	std::vector<std::vector<std::string> > result;
 	result=m_sql.safe_query(
-		"SELECT A.DeviceID, A.DelimitedValue, B.ID, B.Type, B.SubType, B.nValue, B.sValue, A.TargetType, A.TargetVariable, A.TargetDeviceID, A.TargetProperty, A.IncludeUnit, B.SwitchType, strftime('%%s', B.LastUpdate), B.Name FROM HttpLink as A, DeviceStatus as B "
+		"SELECT A.DelimitedValue, B.Type, B.SubType, B.nValue, B.sValue, A.TargetVariable, A.TargetDeviceID, A.TargetProperty, A.IncludeUnit, B.SwitchType, strftime('%%s', B.LastUpdate), B.Name FROM HttpLink as A, DeviceStatus as B "
 		"WHERE (A.DeviceID == '%llu' AND A.Enabled = '1' AND A.DeviceID==B.ID)",
 		m_DeviceRowIdx);
 	if (result.size()>0)
@@ -108,27 +108,21 @@ void CHttpPush::DoHttpPush()
 				return;
 
 			std::vector<std::string> sd=*itt;
-			unsigned int deviceId = atoi(sd[0].c_str());
-			std::string ldelpos = sd[1].c_str();
-			int delpos = atoi(sd[1].c_str());
-			int dType = atoi(sd[3].c_str());
-			int dSubType = atoi(sd[4].c_str());
-			std::string lType = sd[3].c_str();
-			std::string lSubType = sd[4].c_str();
-			int nValue = atoi(sd[5].c_str());
-			std::string sValue = sd[6].c_str();
-			int targetType = atoi(sd[7].c_str());
-			std::string targetVariable = sd[8].c_str();
-			int targetDeviceID = atoi(sd[9].c_str());
-			std::string targetProperty = sd[10].c_str();
-			int includeUnit = atoi(sd[11].c_str());
-			int metertype = atoi(sd[12].c_str());
-			int lastUpdate = atoi(sd[13].c_str());
+			std::string ldelpos = sd[0];
+			int delpos = atoi(sd[0].c_str());
+			int dType = atoi(sd[1].c_str());
+			int dSubType = atoi(sd[2].c_str());
+			int nValue = atoi(sd[3].c_str());
+			std::string sValue = sd[4].c_str();
+			std::string targetVariable = sd[5].c_str();
+			std::string targetProperty = sd[7].c_str();
+			int includeUnit = atoi(sd[8].c_str());
+			int metertype = atoi(sd[9].c_str());
+			int lastUpdate = atoi(sd[10].c_str());
 			std::string lstatus="";
-			std::string lunit = "";
-			std::string ltargetVariable = sd[8].c_str();
-			std::string ltargetDeviceId = sd[9].c_str();
-			std::string lname = sd[14].c_str();
+			std::string ltargetVariable = sd[5].c_str();
+			std::string ltargetDeviceId = sd[6].c_str();
+			std::string lname = sd[11].c_str();
 			sendValue = sValue;
 
 			// Compute tz
@@ -182,10 +176,10 @@ void CHttpPush::DoHttpPush()
 			%h : hostname
 			*/
 
-			lunit = getUnit(delpos, metertype);			
-			lType = RFX_Type_Desc(dType,1);
-			lSubType = RFX_Type_SubType_Desc(dType,dSubType);
-			
+			std::string lunit = getUnit(delpos, metertype);
+			std::string lType = RFX_Type_Desc(dType,1);
+			std::string lSubType = RFX_Type_SubType_Desc(dType,dSubType);
+
 			char hostname[256];
 			gethostname(hostname, sizeof(hostname));
 

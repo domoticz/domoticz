@@ -116,7 +116,7 @@ void Comm5TCP::Do_Work()
 	_log.Log(LOG_STATUS, "Comm5 MA-5XXX: TCP/IP Worker stopped...");
 }
 
-void Comm5TCP::processSensorData(const std::string& line) 
+void Comm5TCP::processSensorData(const std::string& line)
 {
 	std::vector<std::string> tokens = tokenize(line);
 	if (tokens.size() < 2)
@@ -125,7 +125,7 @@ void Comm5TCP::processSensorData(const std::string& line)
 	unsigned int sensorbitfield = ::strtol(tokens[1].c_str(), 0, 16);
 	for (int i = 0; i < 16; ++i) {
 		bool on = (sensorbitfield & (1 << i)) != 0 ? true : false;
-		if ((lastKnownSensorState & (1 << i) ^ (sensorbitfield & (1 << i))) || initSensorData) {
+		if (((lastKnownSensorState & (1 << i)) ^ (sensorbitfield & (1 << i))) || initSensorData) {
 			SendSwitch((i + 1) << 8, 1, 255, on, 0, "Sensor " + boost::lexical_cast<std::string>(i + 1));
 		}
 	}
@@ -161,7 +161,7 @@ void Comm5TCP::ParseData(const unsigned char* data, const size_t len)
 			reqState = Idle;
 		} else if (notificationEnabled && startsWith(line, "210")) {
 			processSensorData(line);
-		} 
+		}
 	}
 
 	// Trim consumed bytes.

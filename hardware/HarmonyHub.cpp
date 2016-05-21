@@ -1,20 +1,20 @@
 /******************************************************************************
-Permission is hereby granted, free of charge, to any person obtaining a copy  
-of this software and associated documentation files (the "Software"), to deal 
-in the Software without restriction, including without limitation the rights 
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell 
-copies of the Software, and to permit persons to whom the Software is 
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all 
+The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ===========
@@ -94,7 +94,7 @@ bool CHarmonyHub::WriteToHardware(const char *pdata, const unsigned char length)
 		{
 			_log.Log(LOG_ERROR,"Harmony Hub: Error sending the switch command");
 			return false;
-		}			
+		}
 	}
 	else if((pCmd->LIGHTING2.packettype == pTypeLighting2) && (pCmd->LIGHTING2.cmnd==0))
 	{
@@ -102,7 +102,7 @@ bool CHarmonyHub::WriteToHardware(const char *pdata, const unsigned char length)
 		{
 			_log.Log(LOG_ERROR,"Harmony Hub: Error sending the power-off command");
 			return false;
-		}			
+		}
 	}
 	return true;
 }
@@ -145,7 +145,7 @@ bool CHarmonyHub::StopHardware()
 
 void CHarmonyHub::Do_Work()
 {
-	_log.Log(LOG_STATUS,"Harmony Hub: Worker thread started..."); 
+	_log.Log(LOG_STATUS,"Harmony Hub: Worker thread started...");
 	//start with getting the activities
 
 	int scounter = 0;
@@ -256,7 +256,7 @@ bool CHarmonyHub::Login()
 
 			if(SwapAuthorizationToken(&authorizationcsocket, m_szAuthorizationToken)==true)
 			{
-				// Authorization Token found worked.  
+				// Authorization Token found worked.
 				// Bypass authorization through Logitech's servers.
 				_log.Log(LOG_STATUS,"Harmony Hub: Authentication successful");
 				return true;
@@ -285,7 +285,7 @@ bool CHarmonyHub::Login()
 
 	if(SwapAuthorizationToken(&authorizationcsocket, m_szAuthorizationToken)==true)
 	{
-		// Authorization Token found worked.  
+		// Authorization Token found worked.
 		// Bypass authorization through Logitech's servers.
 		_log.Log(LOG_STATUS,"Harmony Hub: Authentication successful");
 		return true;
@@ -465,7 +465,7 @@ bool CHarmonyHub::HarmonyWebServiceLogin(const std::string &strUserEmail, const 
 	{
 		//errorString = "HarmonyWebServiceLogin : Empty email or password provided";
 		return false;
-	} 
+	}
 
 	Json::Value root;
 
@@ -567,15 +567,13 @@ bool CHarmonyHub::StartCommunication(csocket* communicationcsocket, const std::s
 	{
 		//errorString = "StartCommunication : Invalid communication parameter(s) provided";
 		return false;
-	} 
+	}
 
 	// Start communication
 	std::string data = "<stream:stream to='connect.logitech.com' xmlns:stream='http://etherx.jabber.org/streams' xmlns='jabber:client' xml:lang='en' version='1.0'>";
 	communicationcsocket->write(data.c_str(), data.size());
 	memset(m_databuffer, 0, BUFFER_SIZE);
 	communicationcsocket->read(m_databuffer, BUFFER_SIZE, false);
-
-	std::string strData = m_databuffer;/* <- Expect: <?xml version='1.0' encoding='iso-8859-1'?><stream:stream from='' id='XXXXXXXX' version='1.0' xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams'><stream:features><mechanisms xmlns='urn:ietf:params:xml:ns:xmpp-sasl'><mechanism>PLAIN</mechanism></mechanisms></stream:features> */
 
 	data = "<auth xmlns=\"urn:ietf:params:xml:ns:xmpp-sasl\" mechanism=\"PLAIN\">";
 	std::string tmp = "\0";
@@ -589,12 +587,12 @@ bool CHarmonyHub::StartCommunication(csocket* communicationcsocket, const std::s
 	memset(m_databuffer, 0, BUFFER_SIZE);
 	communicationcsocket->read(m_databuffer, BUFFER_SIZE, false);
 
-	strData = m_databuffer; /* <- Expect: <success xmlns='urn:ietf:params:xml:ns:xmpp-sasl'/> */
+	std::string strData = m_databuffer; /* <- Expect: <success xmlns='urn:ietf:params:xml:ns:xmpp-sasl'/> */
 	if(strData != "<success xmlns='urn:ietf:params:xml:ns:xmpp-sasl'/>")
 	{
 		//errorString = "StartCommunication : connection error";
 		return false;
-	} 
+	}
 
 	data = "<stream:stream to='connect.logitech.com' xmlns:stream='http://etherx.jabber.org/streams' xmlns='jabber:client' xml:lang='en' version='1.0'>";
 	communicationcsocket->write(data.c_str(), data.size());
@@ -624,7 +622,7 @@ bool CHarmonyHub::SwapAuthorizationToken(csocket* authorizationcsocket, std::str
 	std::string strData;
 	std::string sendData;
 
-	// GENERATE A LOGIN ID REQUEST USING THE HARMONY ID AND LOGIN AUTHORIZATION TOKEN 
+	// GENERATE A LOGIN ID REQUEST USING THE HARMONY ID AND LOGIN AUTHORIZATION TOKEN
 	sendData = "<iq type=\"get\" id=\"";
 	sendData.append(CONNECTION_ID);
 	sendData.append("\"><oa xmlns=\"connect.logitech.com\" mime=\"vnd.logitech.connect/vnd.logitech.pair\">token=");
@@ -638,10 +636,10 @@ bool CHarmonyHub::SwapAuthorizationToken(csocket* authorizationcsocket, std::str
 
 	strData = m_databuffer; /* <- Expect: <iq/> ... <success xmlns= ... identity=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX:status=succeeded ... */
 
-	if(strData.find("<iq/>") != 0)
+	if(strData.compare(0, 5, "<iq/>") != 0)
 	{
 		//errorString = "SwapAuthorizationToken : Invalid Harmony response";
-		return false;  
+		return false;
 	}
 
 	bool bIsDataReadable = false;
@@ -662,11 +660,11 @@ bool CHarmonyHub::SwapAuthorizationToken(csocket* authorizationcsocket, std::str
 	std::string strIdentityTokenTag = "identity=";
 
 	// Parse the session authorization token from the response
-	int pos = (int)strData.find(strIdentityTokenTag);
+	size_t pos = (int)strData.find(strIdentityTokenTag);
 	if(pos == std::string::npos)
 	{
 		//errorString = "SwapAuthorizationToken : Logitech Harmony response does not contain a session authorization token";
-		return false;  
+		return false;
 	}
 
 	m_szAuthorizationToken = strData.substr(pos + strIdentityTokenTag.size());
@@ -675,7 +673,7 @@ bool CHarmonyHub::SwapAuthorizationToken(csocket* authorizationcsocket, std::str
 	if(pos == std::string::npos)
 	{
 		//errorString = "SwapAuthorizationToken : Logitech Harmony response does not contain a valid session authorization token";
-		return false;  
+		return false;
 	}
 	m_szAuthorizationToken = m_szAuthorizationToken.substr(0, pos);
 
@@ -692,7 +690,7 @@ bool CHarmonyHub::SendPing()
 	std::string strData;
 	std::string sendData;
 
-	// GENERATE A LOGIN ID REQUEST USING THE HARMONY ID AND LOGIN AUTHORIZATION TOKEN 
+	// GENERATE A LOGIN ID REQUEST USING THE HARMONY ID AND LOGIN AUTHORIZATION TOKEN
 	sendData = "<iq type=\"get\" id=\"";
 	sendData.append(CONNECTION_ID);
 	sendData.append("\"><oa xmlns=\"connect.logitech.com\" mime=\"vnd.logitech.connect/vnd.logitech.ping\">token=");
@@ -730,7 +728,6 @@ bool CHarmonyHub::SendPing()
 bool CHarmonyHub::SubmitCommand(const std::string &strCommand, const std::string &strCommandParameterPrimary, const std::string &strCommandParameterSecondary)
 {
 	boost::lock_guard<boost::mutex> lock(m_mutex);
-	int pos;
 	if(m_commandcsocket== NULL || m_szAuthorizationToken.size() == 0)
 	{
 		//errorString = "SubmitCommand : NULL csocket or empty authorization token provided";
@@ -760,7 +757,7 @@ bool CHarmonyHub::SubmitCommand(const std::string &strCommand, const std::string
 	}
 	else if (lstrCommand == GET_CONFIG_COMMAND_RAW)
 	{
-		sendData.append("config\"></oa></iq>");        
+		sendData.append("config\"></oa></iq>");
 	}
 	else if (lstrCommand == "start_activity")
 	{
@@ -806,7 +803,7 @@ bool CHarmonyHub::SubmitCommand(const std::string &strCommand, const std::string
 
 	if (strCommand == GET_CURRENT_ACTIVITY_COMMAND || strCommand == GET_CURRENT_ACTIVITY_COMMAND_RAW)
 	{
-		pos = strData.find("result=");
+		size_t pos = strData.find("result=");
 		if (pos != std::string::npos)
 		{
 			strData = strData.substr(pos + 7);
@@ -849,7 +846,7 @@ bool CHarmonyHub::SubmitCommand(const std::string &strCommand, const std::string
 				bIsDataReadable = false;
 		}
 
-		pos = strData.find("<![CDATA[");
+		size_t pos = strData.find("<![CDATA[");
 		if (pos == std::string::npos)
 			return false;
 		strData=strData.substr(pos + 9);
@@ -878,10 +875,10 @@ bool CHarmonyHub::CheckIfChanging(const std::string& strData)
 	std::string LastActivity = m_szCurActivityID;
 
 	std::string szData = strData;
-	int pos;
 
 	while (!szData.empty())
 	{
+		size_t pos;
 		size_t apos = szData.find("</message>");
 		if (apos == std::string::npos)
 			break;
@@ -963,7 +960,7 @@ bool CHarmonyHub::CheckIfChanging(const std::string& strData)
 			LastActivity = "-1";
 		}
 	}
-	
+
 	if (bIsChanging != m_bIsChangingActivity)
 	{
 		m_bIsChangingActivity = bIsChanging;

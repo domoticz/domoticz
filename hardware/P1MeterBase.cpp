@@ -3,12 +3,12 @@
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 
-typedef enum { 
-	ID=0, 
-	STD, 
-	LINE17, 
-	LINE18, 
-	EXCLMARK 
+typedef enum {
+	ID=0,
+	STD,
+	LINE17,
+	LINE18,
+	EXCLMARK
 } MatchType;
 
 #define P1_SMID			"/" // Smart Meter ID. Used to detect start of telegram.
@@ -41,16 +41,16 @@ typedef enum {
 	P1TYPE_END,
 } P1Type;
 
-typedef struct _tMatch {
+typedef struct p1MeterMatch {
 	MatchType matchtype;
 	P1Type type;
 	const char* key;
 	const char* topic;
 	int start;
 	int width;
-} Match;
+} P1_METER_MATCH;
 
-Match matchlist[] = {
+P1_METER_MATCH matchlist[] = {
 	{ID,	P1TYPE_SMID,				P1_SMID,		"", 0, 0},
 	{STD,	P1TYPE_POWERUSAGE1,			P1PU1,			"powerusage1",	10, 9},
 	{STD,	P1TYPE_POWERUSAGE2,			P1PU2,			"powerusage2",	10, 9},
@@ -109,11 +109,11 @@ void P1MeterBase::MatchLine()
 		return; //null value (startup)
 	uint8_t i;
 	uint8_t found=0;
-	Match t;
+	P1_METER_MATCH t;
 	char value[20]="";
 	std::string vString;
 
-	for(i=0;(i<sizeof(matchlist)/sizeof(Match))&(!found);i++)
+	for(i=0;(i<sizeof(matchlist)/sizeof(P1_METER_MATCH))&(!found);i++)
 	{
 		t = matchlist[i];
 		switch(t.matchtype)
@@ -123,14 +123,14 @@ void P1MeterBase::MatchLine()
 				m_linecount=1;
 				found=1;
 			}
-			else 
+			else
 				continue;
 			break;
 		case STD:
 			if(strncmp(t.key, (const char*)&m_buffer, strlen(t.key)) == 0) {
 				found=1;
 			}
-			else 
+			else
 				continue;
 			break;
 		case LINE17:
@@ -138,7 +138,7 @@ void P1MeterBase::MatchLine()
 				m_linecount = 17;
 				found=1;
 			}
-			else 
+			else
 				continue;
 			break;
 		case LINE18:
@@ -151,13 +151,13 @@ void P1MeterBase::MatchLine()
 				m_exclmarkfound=1;
 				found=1;
 			}
-			else 
+			else
 				continue;
 			break;
 		default:
 			continue;
 		} //switch
-		
+
 		if(!found)
 			continue;
 
@@ -189,7 +189,7 @@ void P1MeterBase::MatchLine()
 			if (t.matchtype==STD)
 			{
 				vString=(const char*)&m_buffer+t.start;
-				int ePos=vString.find_first_of("*");
+				size_t ePos=vString.find_first_of("*");
 				if (ePos==std::string::npos)
 				{
 					ePos=vString.find_first_of(")");
@@ -211,7 +211,7 @@ void P1MeterBase::MatchLine()
 			else if (t.matchtype==LINE18)
 			{
 				vString=(const char*)&m_buffer+t.start;
-				int ePos=vString.find_first_of(")");
+				size_t ePos=vString.find_first_of(")");
 				if (ePos==std::string::npos)
 				{
 					strncpy(value, (const char*)&m_buffer+t.start, t.width);
@@ -276,6 +276,13 @@ void P1MeterBase::MatchLine()
 			case P1TYPE_GASUSAGEGyrE350:
 				temp_usage = (unsigned long)(atof(value)*1000.0f);
 				m_p1gas.gasusage = temp_usage;
+				break;
+
+			case P1TYPE_SMID:
+				// Fixme: unimplemented?
+				break;
+
+			case P1TYPE_END:
 				break;
 			}
 

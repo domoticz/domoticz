@@ -31,7 +31,7 @@
 
 #define MAX_LOOP_RETRY 20
 
-struct usb_device *CTE923Tool::find_te923() 
+struct usb_device *CTE923Tool::find_te923()
 {
 	usb_find_busses();
 	usb_find_devices();
@@ -120,14 +120,14 @@ int bcd2int( char bcd ) {
 	return (( int )(( bcd & 0xF0 ) >> 4 ) * 10 + ( int )( bcd & 0x0F ) );
 }
 
-int CTE923Tool::decode_te923_data( unsigned char buf[], Te923DataSet_t *data ) 
+int CTE923Tool::decode_te923_data( unsigned char buf[], Te923DataSet_t *data )
 {
 	//decode temperature and humidity from all sensors
 	int i;
 	for ( i = 0; i <= 5; i++ ) {
 		int offset = i * 3;
 		data->_t[i] = 0;
-		if ( bcd2int( buf[0+offset] & 0x0F ) > 9 ) 
+		if ( bcd2int( buf[0+offset] & 0x0F ) > 9 )
 		{
 			if ((( buf[0+offset] & 0x0F ) == 0x0C ) || (( buf[0+offset] & 0x0F ) == 0x0B ) ) {
 				data->_t[i] = -2;
@@ -282,7 +282,7 @@ int CTE923Tool::decode_te923_data( unsigned char buf[], Te923DataSet_t *data )
 	return 0;
 }
 
-int CTE923Tool::read_from_te923( int adr, unsigned char *rbuf ) 
+int CTE923Tool::read_from_te923( int adr, unsigned char *rbuf )
 {
 	int timeout = 50;
 	int i, ret;
@@ -299,7 +299,7 @@ int CTE923Tool::read_from_te923( int adr, unsigned char *rbuf )
 #ifndef WIN32
 	usleep(300000);
 #endif
-	while ( usb_interrupt_read( m_device_handle, 0x01, (char*)&buf, 0x8, timeout ) > 0 ) 
+	while ( usb_interrupt_read( m_device_handle, 0x01, (char*)&buf, 0x8, timeout ) > 0 )
 	{
 #ifndef WIN32
 		usleep(150000);
@@ -488,7 +488,7 @@ int CTE923Tool::get_te923_memdata( Te923DataSet_t *data )
 	return 0;
 }
 
-void CTE923Tool::GetPrintData( Te923DataSet_t *data, char *szOutputBuffer) 
+void CTE923Tool::GetPrintData( Te923DataSet_t *data, char *szOutputBuffer)
 {
 	char szTmp[100];
 	const char *iText="i";
@@ -496,70 +496,70 @@ void CTE923Tool::GetPrintData( Te923DataSet_t *data, char *szOutputBuffer)
 	sprintf(szOutputBuffer, "%lu:"  , data->timestamp );
 	for ( i = 0; i <= 5; i++ ) {
 
-		if ( data->_t[i] == 0 )  
+		if ( data->_t[i] == 0 )
 			sprintf(szTmp, "%0.2f:", data->t[i] );
 		else
 			sprintf(szTmp, "%s:", iText );
 		strcat(szOutputBuffer,szTmp);
 
-		if ( data->_h[i] == 0 )  
+		if ( data->_h[i] == 0 )
 			sprintf(szTmp, "%d:", data->h[i] );
 		else
 			sprintf(szTmp, "%s:", iText );
 		strcat(szOutputBuffer,szTmp);
 	}
 
-	if ( data->_press == 0 ) 
+	if ( data->_press == 0 )
 		sprintf(szTmp, "%0.1f:", data->press );
 	else
 		sprintf(szTmp, "%s:", iText );
 	strcat(szOutputBuffer,szTmp);
 
-	if ( data->_uv == 0 ) 
+	if ( data->_uv == 0 )
 		sprintf(szTmp, "%0.1f:", data->uv );
 	else
 		sprintf(szTmp, "%s:", iText );
 	strcat(szOutputBuffer,szTmp);
 
-	if ( data->_forecast == 0 ) 
+	if ( data->_forecast == 0 )
 		sprintf(szTmp, "%d:", (int)data->forecast );
 	else
 		sprintf(szTmp, "%s:", iText );
 	strcat(szOutputBuffer,szTmp);
 
-	if ( data->_storm == 0 ) 
+	if ( data->_storm == 0 )
 		sprintf(szTmp, "%d:", (int)data->storm );
-	else 
+	else
 		sprintf(szTmp, "%s:", iText );
 	strcat(szOutputBuffer,szTmp);
 
-	if ( data->_wDir == 0 ) 
+	if ( data->_wDir == 0 )
 		sprintf(szTmp, "%d:", (int)data->wDir );
-	else 
+	else
 		sprintf(szTmp, "%s:", iText );
 	strcat(szOutputBuffer,szTmp);
 
-	if ( data->_wSpeed == 0 ) 
+	if ( data->_wSpeed == 0 )
 		sprintf(szTmp, "%0.1f:", data->wSpeed );
-	else 
+	else
 		sprintf(szTmp, "%s:", iText );
 	strcat(szOutputBuffer,szTmp);
 
-	if ( data->_wGust == 0 ) 
+	if ( data->_wGust == 0 )
 		sprintf(szTmp, "%0.1f:", data->wGust );
-	else 
+	else
 		sprintf(szTmp, "%s:", iText );
 	strcat(szOutputBuffer,szTmp);
 
-	if ( data->_wChill == 0 ) 
+	if ( data->_wChill == 0 )
 		sprintf(szTmp, "%0.1f:", data->wChill );
-	else 
+	else
 		sprintf(szTmp, "%s:", iText );
 	strcat(szOutputBuffer,szTmp);
 
-	if ( data->_RainCount == 0 ) 
+	if ( data->_RainCount == 0 )
 		sprintf(szTmp, "%u", data->RainCount );
-	else 
+	else
 		sprintf(szTmp, "%s:", iText );
 	strcat(szOutputBuffer,szTmp);
 }
@@ -569,7 +569,35 @@ bool CTE923Tool::GetData(Te923DataSet_t *data, Te923DevSet_t *dev)
 	if (m_device_handle==NULL)
 		return false;
 
-	memset (data, 0, sizeof ( Te923DataSet_t ) );
+	data->timestamp = 0;
+	for (int i = 0; i < 6; i++) {
+		data->t[i] = 0.0f;
+		data->h[i] = 0;
+		data->_t[i] = '\0';
+		data->_h[i] = '\0';
+	}
+
+	data->uv = 0.0f;
+	data->press = 0.0f;
+	data->forecast = '\0';
+	data->storm = 0;
+	data->wChill = 0.0f;
+	data->wGust = 0.0f;
+	data->wSpeed = 0.0f;
+	data->wDir = 0;
+	data->uv = 0.0f;
+
+	data->_press = '\0';
+	data->_uv = '\0';
+	data->_wDir = '\0';
+	data->_wSpeed = '\0';
+	data->_wGust = '\0';
+	data->_wChill = '\0';
+	data->_RainCount = '\0';
+	data->_storm = '\0';
+	data->_forecast = '\0';
+	data->__src = '\0';
+
 	//int ret=get_te923_memdata(data);
 	int ret=get_te923_lifedata( data );
 	if (ret==-1)
