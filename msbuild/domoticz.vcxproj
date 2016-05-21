@@ -389,6 +389,7 @@
     <None Include="domoticz.ico" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\main\types.h" />
     <ClInclude Include="..\hardware\1Wire.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
     </ClInclude>
@@ -493,7 +494,6 @@
     <ClInclude Include="..\main\appversion.h" />
     <ClInclude Include="..\hardware\ASyncSerial.h" />
     <ClInclude Include="..\main\Camera.h" />
-    <ClInclude Include="..\main\types.h" />
     <ClInclude Include="..\main\CmdLine.h" />
     <ClInclude Include="..\hardware\DomoticzHardware.h" />
     <ClInclude Include="..\hardware\DomoticzInternal.h" />
