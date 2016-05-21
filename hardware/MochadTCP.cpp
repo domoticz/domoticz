@@ -518,11 +518,11 @@ void MochadTCP::ParseData(const unsigned char *pData, int Len)
 void MochadTCP::setSecID(unsigned char *p)
 {
 	int j = 0;
-	m_mochadsec.SECURITY1.id1 = (hex2bin(p[j++]) << 4) | hex2bin(p[j++]);
-	j++; // skip the ":"
-	m_mochadsec.SECURITY1.id2 = (hex2bin(p[j++]) << 4) | hex2bin(p[j++]);
-	j++; // skip the ":"
-	m_mochadsec.SECURITY1.id3 = (hex2bin(p[j++]) << 4) | hex2bin(p[j]);
+	m_mochadsec.SECURITY1.id1 = (hex2bin(p[j]) << 4) | hex2bin(p[j+1]);
+	j += 3; // skip the ":"
+	m_mochadsec.SECURITY1.id2 = (hex2bin(p[j]) << 4) | hex2bin(p[j+1]);
+	j += 3; // skip the ":"
+	m_mochadsec.SECURITY1.id3 = (hex2bin(p[j]) << 4) | hex2bin(p[j+1]);
 }
 
 unsigned char MochadTCP::hex2bin(char h)
