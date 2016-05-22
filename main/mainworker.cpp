@@ -6097,14 +6097,6 @@ void MainWorker::decode_evohome3(const int HwdID, const _eHardwareTypes HwdType,
 	unsigned char cmnd=(pEvo->EVOHOME3.demand>0)?light1_sOn:light1_sOff;
 	sprintf(szTmp, "%d", pEvo->EVOHOME3.demand);
 	std::string szDemand(szTmp);
-
-	char szSTmp[100]; 
-	WriteMessageStart();
-
-	sprintf(szSTmp, "HEAT Testing Start: %d %x %s %s",Unit,nDevID, ID.c_str(), szDemand.c_str());
-	WriteMessage(szSTmp);
-
-	WriteMessageEnd(); 
 	
 	if(Unit==0xFF && nDevID==0)
 		return;
