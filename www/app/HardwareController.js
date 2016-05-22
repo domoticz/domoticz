@@ -1872,12 +1872,18 @@ define(['app'], function (app) {
                 return;
             }
             var bUseAck=$('#hardwarecontent #mchildsettings #Ack').is(":checked");
+            var AckTimeout=parseInt($('#hardwarecontent #mchildsettings #AckTimeout').val());
+            if (AckTimeout<100)
+				AckTimeout=100;
+			else if (AckTimeout>10000)
+				AckTimeout=10000;
 			$.ajax({
 				 url: "json.htm?type=command&param=mysensorsupdatechild" +
 					"&idx=" + $.devIdx +
 					"&nodeid=" + nodeid +
 					"&childid=" + childid +
-					"&useack=" + bUseAck,
+					"&useack=" + bUseAck +
+					"&acktimeout=" + AckTimeout,
 				 async: false,
 				 dataType: 'json',
 				 success: function(data) {
@@ -1911,12 +1917,14 @@ define(['app'], function (app) {
 							var addId = oTable.fnAddData( {
 								"DT_RowId": item.child_id,
 								"AckEnabled": item.use_ack,
+								"AckTimeout": item.ack_timeout,
 								"0": item.child_id,
 								"1": item.type,
 								"2": item.name,
 								"3": item.Values,
 								"4": item.use_ack,
-								"5": item.LastReceived
+								"5": item.ack_timeout,
+								"6": item.LastReceived
 							});
 						});
 					}
@@ -1943,6 +1951,7 @@ define(['app'], function (app) {
 						var data = oTable.fnGetData( anSelected[0] );
 						var idx= data["DT_RowId"];
 						$('#hardwarecontent #mchildsettings #Ack').prop('checked',(data["AckEnabled"]=="true"));
+						$('#hardwarecontent #mchildsettings #AckTimeout').val(data["AckTimeout"]);
 						$("#activedevicedelete").attr("href", "javascript:MySensorsDeleteChild(" + $.nodeid + "," + idx + ")");
 						$("#activedeviceupdate").attr("href", "javascript:MySensorsUpdateChild(" + $.nodeid + "," + idx + ")");
 					}

@@ -302,6 +302,7 @@
 				<th align="80" data-i18n="Name">Name</th>
 				<th data-i18n="Values">Values</th>
 				<th width="80" align="left" data-i18n="Ack">Ack</th>
+				<th width="100" align="left" data-i18n="Ack Timeout">Ack Timeout</th>
 				<th width="160" align="left" data-i18n="Last Seen">Last Seen</th>
 			</tr>
 		</thead>
@@ -321,8 +322,12 @@
 	<div id="trChildSettings">
 		<table id="mchildsettings" border="0" cellpadding="0" cellspacing="0" width="100%">
 			<tr>
-				<td align="right" style="width:80px"><label for="Ack"><span data-i18n="Ack"></span>:</label></td>
+				<td align="right" style="width:120px"><label for="Ack"><span data-i18n="Ack"></span>:</label></td>
 				<td><input type="checkbox" id="Ack" /></td>
+			</tr>
+			<tr>
+				<td align="right"><label for="Ack"><span data-i18n="Ack Timeout"></span>:</label></td>
+				<td><input type="text" id="AckTimeout" style="width: 100px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;(ms)</td>
 			</tr>
 		</table>
 	</div>

@@ -5,6 +5,7 @@ Version 3.xxxx (May xx 2016)
 - Implemented: Custom Sensor
 - Implemented: Devices Tab, Log icon for Pressure
 - Implemented: Dust Sensor (ug/m3)
+- Implemented: MySensors, Implemented Acknowledge Timeout per Child sensor
 - Implemented: Nefit Easy, User Mode (as switch, On=Clock, Off=Manual), Flow Temperature
 - Implemented: OpenZWave, Aeotec ZWave+ USB Controller, Enable/Disable blinking mode (@Schmart, Thanks for the magic codes!)
 - Implemented: OpenZWave, Node table, now also displays Manufacturer, Product ID and Product Type

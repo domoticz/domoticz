@@ -31,7 +31,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 104
+#define DB_VERSION 105
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -572,7 +572,8 @@ const char *sqlCreateMySensorsChilds =
 " [ChildID] INTEGER NOT NULL,"
 " [Name] VARCHAR(100) DEFAULT '',"
 " [Type] INTEGER NOT NULL,"
-" [UseAck] INTEGER DEFAULT 0);";
+" [UseAck] INTEGER DEFAULT 0,"
+" [AckTimeout] INTEGER DEFAULT 1200);";
 
 const char *sqlCreateToonDevices =
 	"CREATE TABLE IF NOT EXISTS [ToonDevices]("
@@ -2037,6 +2038,13 @@ bool CSQLHelper::OpenDatabase()
 					szQuery2 << "UPDATE Hardware SET Extra='" << sd[1] << "', Address='' WHERE (ID=" << sd[0] << ")";
 					query(szQuery2.str());
 				}
+			}
+		}
+		if (dbversion < 105)
+		{
+			if (!DoesColumnExistsInTable("AckTimeout", "MySensorsChilds"))
+			{
+				query("ALTER TABLE MySensorsChilds ADD COLUMN [AckTimeout] INTEGER DEFAULT 1200");
 			}
 		}
 	}
