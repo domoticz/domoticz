@@ -948,8 +948,7 @@ namespace http {
 			if (
 				(name == "") ||
 				(senabled == "") ||
-				(shtype == "") ||
-				(sport == "")
+				(shtype == "")
 				)
 				return;
 			_eHardwareTypes htype = (_eHardwareTypes)atoi(shtype.c_str());
@@ -962,21 +961,39 @@ namespace http {
 			int mode5 = 0;
 			int mode6 = 0;
 			int port = atoi(sport.c_str());
-			if (IsSerialDevice(htype))
-			{
-				std::string modeStr = request::findValue(&req, "Mode1");
-				if (!modeStr.empty()) {
-					mode1 = atoi(modeStr.c_str());
-				}
+			std::string modeStr = request::findValue(&req, "Mode1");
+			if (!modeStr.empty()) {
+				mode1 = atoi(modeStr.c_str());
 			}
-			else if (
-				(htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) || (htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) || (htype == HTYPE_S0SmartMeterTCP) ||
+			modeStr = request::findValue(&req, "Mode2");
+			if (!modeStr.empty()) {
+				mode2 = atoi(modeStr.c_str());
+			}
+			modeStr = request::findValue(&req, "Mode3");
+			if (!modeStr.empty()) {
+				mode2 = atoi(modeStr.c_str());
+			}
+			modeStr = request::findValue(&req, "Mode4");
+			if (!modeStr.empty()) {
+				mode2 = atoi(modeStr.c_str());
+			}
+			modeStr = request::findValue(&req, "Mode5");
+			if (!modeStr.empty()) {
+				mode2 = atoi(modeStr.c_str());
+			}
+			modeStr = request::findValue(&req, "Mode6");
+			if (!modeStr.empty()) {
+				mode2 = atoi(modeStr.c_str());
+			}
+
+			if (
+				(htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) || (htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) ||
 				(htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_ECODEVICES) || (htype == HTYPE_Mochad) || (htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MQTT) || (htype == HTYPE_FRITZBOX) ||
 				(htype == HTYPE_ETH8020) || (htype == HTYPE_Sterbox) || (htype == HTYPE_KMTronicTCP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_RFLINKTCP) || (htype == HTYPE_Comm5TCP) || (htype == HTYPE_CurrentCostMeterLAN) ||
 				(htype == HTYPE_NefitEastLAN)
 				) {
 				//Lan
-				if (address == "")
+				if (address == "" || port == 0)
 					return;
 
 				if (htype == HTYPE_MQTT) {
@@ -992,7 +1009,7 @@ namespace http {
 			}
 			else if (htype == HTYPE_Domoticz) {
 				//Remote Domoticz
-				if (address == "")
+				if (address == "" || port == 0)
 					return;
 			}
 			else if (htype == HTYPE_TE923) {
@@ -1084,14 +1101,14 @@ namespace http {
 				if (
 					(username == "") ||
 					(password == "") ||
-					(address == "")
+					(address == "" || port == 0)
 					)
 					return;
 			}
 			else if (htype == HTYPE_Philips_Hue) {
 				if (
 					(username == "") ||
-					(address == "")
+					(address == "" || port == 0)
 					)
 					return;
 				if (port == 0)
@@ -6678,6 +6695,9 @@ namespace http {
 			}
 #endif
 
+			m_sql.UpdatePreferencesVar("OneWireSensorPollPeriod", atoi(request::findValue(&req, "OneWireSensorPollPeriod").c_str()));
+			m_sql.UpdatePreferencesVar("OneWireSwitchPollPeriod", atoi(request::findValue(&req, "OneWireSwitchPollPeriod").c_str()));
+
 			m_notifications.LoadConfig();
 
 		}
@@ -9786,9 +9806,9 @@ namespace http {
 					if (pHardware != NULL)
 					{
 						if (
-							(pHardware->HwdType == HTYPE_RFXtrx315) || 
-							(pHardware->HwdType == HTYPE_RFXtrx433) || 
-							(pHardware->HwdType == HTYPE_RFXtrx868) || 
+							(pHardware->HwdType == HTYPE_RFXtrx315) ||
+							(pHardware->HwdType == HTYPE_RFXtrx433) ||
+							(pHardware->HwdType == HTYPE_RFXtrx868) ||
 							(pHardware->HwdType == HTYPE_RFXLAN)
 							)
 						{
@@ -11214,6 +11234,14 @@ namespace http {
 				{
 					root["DisableEventScriptSystem"] = nValue;
 				}
+				else if (Key == "(1WireSensorPollPeriod")
+				{
+					root["1WireSensorPollPeriod"] = nValue;
+				}
+				else if (Key == "(1WireSwitchPollPeriod")
+				{
+					root["1WireSwitchPollPeriod"] = nValue;
+				}
 				else if (Key == "SecOnDelay")
 				{
 					root["SecOnDelay"] = nValue;
@@ -11282,6 +11310,11 @@ namespace http {
 				}
 				else if (Key == "MyDomoticzSubsystems") {
 					root["MyDomoticzSubsystems"] = nValue;
+				}
+#endif
+#ifdef _DEBUG
+				else {
+					_log.Log(LOG_ERROR, "Unknown preferences detected: '%s'", Key.c_str());
 				}
 #endif
 			}

@@ -588,112 +588,64 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_RFXtrx315:
 	case HTYPE_RFXtrx433:
 	case HTYPE_RFXtrx868:
+		pHardware = new RFXComSerial(ID, SerialPort, 38400);
+		break;
 	case HTYPE_P1SmartMeter:
+		pHardware = new P1MeterSerial(ID,SerialPort, (Mode1==1) ? 115200 : 9600);
+		break;
 	case HTYPE_Rego6XX:
+		pHardware = new CRego6XXSerial(ID,SerialPort, Mode1);
+		break;
 	case HTYPE_DavisVantage:
+		pHardware = new CDavisLoggerSerial(ID,SerialPort, 19200);
+		break;
 	case HTYPE_S0SmartMeterUSB:
+		pHardware = new S0MeterSerial(ID,SerialPort, 9600);
+		break;
+	case HTYPE_S0SmartMeterTCP:
+		//LAN
+		pHardware = new S0MeterTCP(ID, Address, Port);
+		break;
 	case HTYPE_OpenThermGateway:
+		pHardware = new OTGWSerial(ID,SerialPort, 9600, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
+		break;
 	case HTYPE_TeleinfoMeter:
+		pHardware = new Teleinfo(ID, SerialPort);
+		break;
 	case HTYPE_MySensorsUSB:
+		pHardware = new MySensorsSerial(ID, SerialPort, Mode1);
+		break;
 	case HTYPE_KMTronicUSB:
+		pHardware = new KMTronicSerial(ID, SerialPort);
+		break;
 	case HTYPE_KMTronic433:
+		pHardware = new KMTronic433(ID, SerialPort);
+		break;
 	case HTYPE_OpenZWave:
+#ifdef WITH_OPENZWAVE
+			pHardware = new COpenZWave(ID, SerialPort);
+#endif
+			break;
 	case HTYPE_EnOceanESP2:
+		pHardware = new CEnOceanESP2(ID,SerialPort, Mode1);
+		break;
 	case HTYPE_EnOceanESP3:
+		pHardware = new CEnOceanESP3(ID,SerialPort, Mode1);
+		break;
 	case HTYPE_Meteostick:
+		pHardware = new Meteostick(ID, SerialPort, 115200);
+		break;
 	case HTYPE_EVOHOME_SERIAL:
+		pHardware = new CEvohome(ID,SerialPort);
+		break;
 	case HTYPE_RFLINKUSB:
+		pHardware = new CRFLinkSerial(ID, SerialPort);
+		break;
 	case HTYPE_CurrentCostMeter:
+		pHardware = new CurrentCostMeterSerial(ID, SerialPort, (Mode1 == 1) ? 57600 : 9600);
+		break;
     case HTYPE_RAVEn:
-	{
-			//USB/Serial
-			if (
-				(Type == HTYPE_RFXtrx315) ||
-				(Type == HTYPE_RFXtrx433) ||
-				(Type == HTYPE_RFXtrx868)
-				)
-			{
-				pHardware = new RFXComSerial(ID, SerialPort, 38400);
-			}
-			else if (Type==HTYPE_P1SmartMeter)
-			{
-				int baudrate=9600;
-				if (Mode1==1)
-					baudrate=115200;
-				pHardware = new P1MeterSerial(ID,SerialPort,baudrate);
-			}
-			else if (Type==HTYPE_Rego6XX)
-			{
-				pHardware = new CRego6XXSerial(ID,SerialPort, Mode1);
-			}
-			else if (Type==HTYPE_DavisVantage)
-			{
-				pHardware = new CDavisLoggerSerial(ID,SerialPort, 19200);
-			}
-			else if (Type==HTYPE_S0SmartMeterUSB)
-			{
-				pHardware = new S0MeterSerial(ID,SerialPort, 9600);
-			}
-			else if (Type == HTYPE_Meteostick)
-			{
-				pHardware = new Meteostick(ID, SerialPort, 115200);
-			}
-			else if (Type == HTYPE_OpenThermGateway)
-			{
-				pHardware = new OTGWSerial(ID,SerialPort, 9600, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
-			}
-			else if (Type==HTYPE_TeleinfoMeter)
-			{
-				pHardware = new Teleinfo(ID, SerialPort);
-			}
-			else if (Type == HTYPE_MySensorsUSB)
-			{
-				pHardware = new MySensorsSerial(ID, SerialPort, Mode1);
-			}
-			else if (Type == HTYPE_KMTronicUSB)
-			{
-				pHardware = new KMTronicSerial(ID, SerialPort);
-			}
-			else if (Type == HTYPE_KMTronic433)
-			{
-				pHardware = new KMTronic433(ID, SerialPort);
-			}
-			else if (Type == HTYPE_OpenZWave)
-			{
-	#ifdef WITH_OPENZWAVE
-				pHardware = new COpenZWave(ID, SerialPort);
-	#endif
-			}
-			else if (Type==HTYPE_EnOceanESP2)
-			{
-				pHardware = new CEnOceanESP2(ID,SerialPort, Mode1);
-			}
-			else if (Type==HTYPE_EnOceanESP3)
-			{
-				pHardware = new CEnOceanESP3(ID,SerialPort, Mode1);
-			}
-			else if (Type==HTYPE_EVOHOME_SERIAL)
-			{
-				pHardware = new CEvohome(ID,SerialPort);
-			}
-			else if (Type == HTYPE_RFLINKUSB)
-			{
-				pHardware = new CRFLinkSerial(ID, SerialPort);
-			}
-			else if (Type == HTYPE_RAVEn)
-			{
-				pHardware = new RAVEn(ID, SerialPort);
-			}
-			else if (Type == HTYPE_CurrentCostMeter)
-			{
-				unsigned int baudRate(9600);
-				if (Mode1 == 1)
-				{
-					baudRate = 57600;
-				}
-				pHardware = new CurrentCostMeterSerial(ID, SerialPort, baudRate);
-			}
-		}
+		pHardware = new RAVEn(ID, SerialPort);
 		break;
 	case HTYPE_RFXLAN:
 		//LAN
@@ -726,10 +678,6 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_RFLINKTCP:
 		//LAN
 		pHardware = new CRFLinkTCP(ID, Address, Port);
-		break;
-	case HTYPE_S0SmartMeterTCP:
-		//LAN
-		pHardware = new S0MeterTCP(ID, Address, Port);
 		break;
 	case HTYPE_MQTT:
 		//LAN
@@ -776,7 +724,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_1WIRE:
 		//1-Wire file system
-		pHardware = new C1Wire(ID);
+		pHardware = new C1Wire(ID, Mode1, Mode2, Filename);
 		break;
 	case HTYPE_Pinger:
 		//System Alive Checker (Ping)
@@ -804,7 +752,7 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_Sterbox:
 		//LAN
 		pHardware = new CSterbox(ID, Address, Port, Username, Password);
-		break;		
+		break;
 #ifndef WIN32
 	case HTYPE_TE923:
 		//TE923 compatible weather station

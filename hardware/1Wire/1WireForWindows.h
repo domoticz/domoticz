@@ -22,6 +22,7 @@ public:
    virtual unsigned long GetCounter(const _t1WireDevice& device,int unit) const;
    virtual int GetVoltage(const _t1WireDevice& device,int unit) const;
    virtual float GetIlluminance(const _t1WireDevice& device) const;
+   virtual void StartSimultaneousTemperatureRead();
    // END : I_1WireSystem implementation
 
    static bool IsAvailable();

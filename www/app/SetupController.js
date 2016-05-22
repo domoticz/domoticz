@@ -17,7 +17,7 @@ define(['app'], function (app) {
 		{
 			$.ajax({
 				 url: "json.htm?type=command&param=allownewhardware&timeout=" + minutes,
-				 async: false, 
+				 async: false,
 				 dataType: 'json',
 				 success: function(data) {
 					SwitchLayout('Log');
@@ -186,7 +186,7 @@ define(['app'], function (app) {
 		  var sunSet="";
 		  $.ajax({
 			 url: "json.htm?type=command&param=getSunRiseSet",
-			 async: false, 
+			 async: false,
 			 dataType: 'json',
 			 success: function(data) {
 				if (typeof data.Sunrise != 'undefined') {
@@ -195,19 +195,19 @@ define(['app'], function (app) {
 				}
 			 }
 		  });
-		  
+
 			var suntext="";
 		  if (sunRise!="")
 		  {
 			suntext='<br>' + $.t('SunRise') + ': ' + sunRise + ', ' + $.t('SunSet') + ': ' + sunSet + '<br><br>\n';
 			$("#sunriseset").html(suntext);
 		  }
-		  
+
 		  //Get Themes
 		  var actTheme="default";
 		  $.ajax({
 			 url: "json.htm?type=command&param=getthemes",
-			 async: false, 
+			 async: false,
 			 dataType: 'json',
 			 success: function(data) {
 				if (typeof data.result != 'undefined') {
@@ -221,11 +221,11 @@ define(['app'], function (app) {
 				}
 			 }
 		  });
-		  
+
 
 		  $.ajax({
-			 url: "json.htm?type=settings", 
-			 async: false, 
+			 url: "json.htm?type=settings",
+			 async: false,
 			 dataType: 'json',
 			 success: function(data) {
 			  if (typeof data.Location != 'undefined') {
@@ -283,7 +283,7 @@ define(['app'], function (app) {
 			  if (typeof data.ClickatellFrom != 'undefined') {
 				$("#smstable #ClickatellFrom").val(atob(data.ClickatellFrom));
 			  }
-			  
+
 			  if (typeof data.HTTPEnabled != 'undefined') {
   				$("#httptable #HTTPEnabled").prop('checked',data.HTTPEnabled==1);
 			  }
@@ -305,7 +305,7 @@ define(['app'], function (app) {
 			  if (typeof data.HTTPURL != 'undefined') {
 				$("#httptable #HTTPURL").val(atob(data.HTTPURL));
 			  }
-			  
+
 			  if (typeof data.KodiEnabled != 'undefined') {
   				$("#koditable #KodiEnabled").prop('checked',data.KodiEnabled==1);
 			  }
@@ -486,7 +486,7 @@ define(['app'], function (app) {
 			  if (typeof data.WebTheme != 'undefined') {
 				$("#settingscontent #combothemes").val(data.WebTheme);
 			  }
-			  
+
 			  if (typeof data.AuthenticationMethod != 'undefined') {
 				$("#webtable #comboauthmethod").val(data.AuthenticationMethod);
 			  }
@@ -512,6 +512,7 @@ define(['app'], function (app) {
 			  if (typeof data.DisableEventScriptSystem!= 'undefined') {
 				$("#eventsystemtable #DisableEventScriptSystem").prop('checked',data.DisableEventScriptSystem==1);
 			  }
+
 			  if (typeof data.FloorplanPopupDelay!= 'undefined') {
 				$("#floorplanoptionstable #FloorplanPopupDelay").val(data.FloorplanPopupDelay);
 			  }
@@ -539,7 +540,7 @@ define(['app'], function (app) {
 			  if (typeof data.FloorplanInactiveOpacity != 'undefined') {
 				$("#floorplancolourtable #FloorplanInactiveOpacity").val(data.FloorplanInactiveOpacity);
 			  }
-			  
+
 			  if (typeof data.AllowWidgetOrdering != 'undefined') {
 				$("#dashmodetable #AllowWidgetOrdering").prop('checked',data.AllowWidgetOrdering==1);
 			  }
@@ -581,10 +582,10 @@ define(['app'], function (app) {
 			ShowNotify($.t('Invalid Location Settings...'), 2000, true);
 			return;
 		  }
-		  
+
 		  var secpanel=$("#sectable #SecPassword").val();
 		  var switchprotection=$("#protectiontable #ProtectionPassword").val();
-		  
+
 		  //Check email settings
 		  var EmailServer=$("#emailtable #EmailServer").val();
 		  if (EmailServer!="")
@@ -607,7 +608,7 @@ define(['app'], function (app) {
 				return;
 			}
 		  }
-		  
+
 		  var popupDelay=$("#floorplanoptionstable #FloorplanPopupDelay").val();
 		  if (popupDelay != "") {
 			if (!$.isNumeric(popupDelay)) {
@@ -615,7 +616,7 @@ define(['app'], function (app) {
 				return;
 			}
 		  }
-		  
+
 		  $.post("storesettings.webem", $("#settings").serialize(), function(data) {
 				$scope.$apply(function() {
 					$window.location = '/#Dashboard';
@@ -632,7 +633,7 @@ define(['app'], function (app) {
 				e.preventDefault();
 			});
 		}
-		
+
 		$scope.CleanupShortLog = function()
 		{
 			bootbox.confirm($.t("Are you sure to delete the Log?\n\nThis action can not be undone!"), function (result) {
@@ -711,7 +712,7 @@ define(['app'], function (app) {
 									}
 								});
 								return false;
-						} );              
+						} );
 				  },
 				  close: function() {
 					$( this ).dialog( "close" );
