@@ -100,9 +100,6 @@ void C1Wire::LogSystem()
 
 bool C1Wire::StartHardware()
 {
-	m_threadSensors = NULL;
-	m_threadSwitches = NULL;
-
 	// Start worker thread
 	if (0 != m_sensorThreadPeriod)
 	{
