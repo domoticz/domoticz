@@ -101,8 +101,14 @@ void C1Wire::LogSystem()
 bool C1Wire::StartHardware()
 {
 	// Start worker thread
-	m_threadSensors = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&C1Wire::SensorThread, this)));
-	m_threadSwitches = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&C1Wire::SwitchThread, this)));
+	if (0 != m_sensorThreadPeriod)
+	{
+		m_threadSensors = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&C1Wire::SensorThread, this)));
+	}
+	if (0 != m_switchThreadPeriod)
+	{
+		m_threadSwitches = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&C1Wire::SwitchThread, this)));
+	}
 	m_bIsStarted=true;
 	sOnConnected(this);
 	StartHeartbeatThread();
