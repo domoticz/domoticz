@@ -157,7 +157,7 @@ void C1Wire::SensorThread()
 		sleep_milliseconds(pollPeriod);
 		if (0 == iteration++ % pollIterations) // may glitch on overflow, not disastrous
 		{
-			if (m_sql.m_bAcceptNewHardware || 0 == iteration) {
+			if (m_sql.m_bAcceptNewHardware || 1 == iteration) {
 				BuildSensorList();
 			}
 
@@ -186,7 +186,7 @@ void C1Wire::SwitchThread()
 
 		if (0 == iteration++ % rescanIterations) // may glitch on overflow, not disastrous
 		{
-			if (m_sql.m_bAcceptNewHardware || 0 == iteration)
+			if (m_sql.m_bAcceptNewHardware || 1 == iteration)
 			{
 				BuildSwitchList();
 			}
