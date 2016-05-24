@@ -63,6 +63,7 @@ std::string ReadFile(std::string filename)
 #define NEFITEASY_PRESSURE_URL "/system/appliance/systemPressure"
 #define NEFITEASY_DISPLAYCODE_URL "/system/appliance/displaycode"
 #define NEFITEASY_CAUSECODE_URL "/system/appliance/causecode"
+#define NEFITEASY_GAS_URL "/ecus/rrc/recordings/yearTotal"
 #define NEFITEASY_SET_TEMP_ROOM "/heatingCircuits/hc1/temperatureRoomManual"
 #define NEFITEASY_SET_TEMP_OVERRIDE "/heatingCircuits/hc1/manualTempOverride/status"
 #define NEFITEASY_SET_TEMP_OVERRIDE_TEMP "/heatingCircuits/hc1/manualTempOverride/temperature"
@@ -105,6 +106,7 @@ m_szIPAddress(IPAddress)
 	m_stoprequested = false;
 	m_usIPPort = usIPPort;
 	m_bDoLogin = true;
+	m_lastgasusage = 0;
 /*
 	// Generate some commonly used properties.
 	m_ConnectionPassword = NEFITEASY_ACCESSKEY_PREFIX + m_AccessKey;
@@ -137,6 +139,7 @@ void CNefitEasy::Logout()
 
 void CNefitEasy::Init()
 {
+	m_lastgasusage = 0;
 }
 
 bool CNefitEasy::StartHardware()
@@ -164,6 +167,7 @@ bool CNefitEasy::StopHardware()
 
 #define NEFIT_FAST_POLL_INTERVAL 30
 #define NEFIT_SLOW_INTERVAL 300
+#define NEFIT_GAS_INTERVAL 400
 
 void CNefitEasy::Do_Work()
 {
@@ -212,6 +216,10 @@ void CNefitEasy::Do_Work()
 			{
 				_log.Log(LOG_ERROR, "NefitEasy: Error getting/processing pressure result...");
 			}
+		}
+		if (sec_counter % NEFIT_GAS_INTERVAL == 0)
+		{
+			ret = GetGasUsage();
 		}
 		bFirstTime = false;
 	}
@@ -293,7 +301,7 @@ bool CNefitEasy::GetStatusDetails()
 #endif
 
 #ifdef DEBUG_NefitEasyW
-	SaveString2Disk(sResult, "E:\\nefit_uistatus.json");
+	SaveString2Disk(sResult, "E:\\nefit_uistatus_prop.json");
 #endif
 	Json::Value root;
 	Json::Value root2;
@@ -302,7 +310,10 @@ bool CNefitEasy::GetStatusDetails()
 	bool ret = jReader.parse(sResult, root);
 	if (!ret)
 	{
-		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received (main)!");
+		if (sResult.find("Error: REQUEST_TIMEOUT") != std::string::npos)
+			_log.Log(LOG_ERROR, "NefitEasy: Request Timeout !");
+		else
+			_log.Log(LOG_ERROR, "NefitEasy: Invalid data received (main)!");
 		return false;
 	}
 	if (root["value"].empty())
@@ -392,7 +403,7 @@ UMD -> 'user mode' string (clock)
 	{
 		tmpstr = root2["UMD"].asString();
 		bool bIsClockMode = (tmpstr == "clock");
-		SendSwitch(1, 1, -1, bIsClockMode, 100, "Clock Mode");
+		SendSwitch(1, 1, -1, bIsClockMode, 0, "Clock Mode");
 	}
 
 	return true;
@@ -637,6 +648,62 @@ bool CNefitEasy::GetDisplayCode()
 		m_LastDisplayCode = display_code;
 		SendTextSensor(1, 1, -1, display_code, "Display Code");
 	}
+	return true;
+}
+
+bool CNefitEasy::GetGasUsage()
+{
+	std::string sResult;
+	Json::Reader jReader;
+	Json::Value root;
+	bool ret;
+
+	//Status
+#ifdef DEBUG_NefitEasyR
+	sResult = ReadFile("E:\\nefit_yearTotal.json");
+#else
+	std::stringstream szURL;
+	szURL << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << NEFITEASY_GAS_URL;
+	try
+	{
+		ret = HTTPClient::GET(szURL.str(), sResult);
+		if (!ret)
+		{
+			_log.Log(LOG_ERROR, "NefitEasy: Error getting http data!");
+			return false;
+		}
+	}
+	catch (...)
+	{
+		_log.Log(LOG_ERROR, "NefitEasy: Error getting http data!");
+		return false;
+	}
+#endif
+
+#ifdef DEBUG_NefitEasyW
+	SaveString2Disk(sResult, "E:\\nefit_yearTotal.json");
+#endif
+	ret = jReader.parse(sResult, root);
+	if (!ret)
+	{
+		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received! (Gas)");
+		return false;
+	}
+	if (root["value"].empty())
+	{
+		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received (Gas)");
+		return false;
+	}
+	float yeargas = root["value"].asFloat();
+	//convert from kWh to m3
+	yeargas *= (0.12307692f*1000.0f);
+	uint32_t gusage = (uint32_t)yeargas;
+	if (gusage < m_lastgasusage)
+	{
+
+	}
+	m_p1gas.gasusage = gusage;
+	sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, "Gas", 255);
 	return true;
 }
 

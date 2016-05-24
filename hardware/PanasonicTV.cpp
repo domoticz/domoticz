@@ -521,7 +521,7 @@ void CPanasonicNode::SendCommand(const std::string &command)
 	else if (command == "inputtv")
 		sPanasonicCall = buildXMLStringNetCtl("TV-ONOFF");
 	else if (command == "inputav")
-		sPanasonicCall = buildXMLStringNetCtl("AV-ONOFF");
+		sPanasonicCall = buildXMLStringNetCtl("CHG_INPUT-ONOFF");
 	else if (command == "Red")
 		sPanasonicCall = buildXMLStringNetCtl("RED-ONOFF");
 	else if (command == "Green")

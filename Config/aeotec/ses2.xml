@@ -7,9 +7,9 @@
   <CommandClass id="112">
     <Value type="short" index="2" genre="config" label="Blinking behavior" units="" min="257" max="65535" size="2" value="3850">
       <Help>
-      Configuration Value 1: 1‐255
+      Configuration Value 1: 1-255
       Configuration Value 1  is to Specify the time that Smart Switch need blink, The unit is Second;
-      Configuration Value 2: 1‐255
+      Configuration Value 2: 1-255
       Configuration Value 2  is to Specify the Cycle of on/off, the unit of it is 0.1 second.
       </Help>
     </Value>
@@ -116,7 +116,7 @@
 	Multilevel Sensor Report Command(wattage) automatically.
       </Help>
     </Value>
-    <Value type="button" index="110" genre="config" label="Set 111‐‐113 to default" units="" write_only="true" value="0" affects="111,112,113">
+    <Value type="button" index="110" genre="config" label="Set 111-113 to default" units="" write_only="true" value="0" affects="111,112,113">
       <Help>
 	Set time interval for sending reports for groups 1, 2 and 3 to default.
       </Help>

@@ -53,7 +53,7 @@
   <CommandClass id="133">
     <Associations num_groups="2">
       <Group index="1" max_associations="5" label="Group 1: if the internal door contact (magnet) is triggered it sends a Z-Wave frame to every node in this group." />
-      <Group index="2" max_associations="5" label="Group 2: if the external door contact is triggered it sends a Z-Wave frame to every node in this group if it is configured (see configuration documentation param 2: external contact)." auto="false"/>
+      <Group index="2" max_associations="5" label="Group 2: if the external door contact is triggered it sends a Z-Wave frame to every node in this group if it is configured (see configuration documentation param 2: external contact)." />
     </Associations>
   </CommandClass>
 

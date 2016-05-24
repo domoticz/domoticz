@@ -1,3 +1,5 @@
+#pragma once
+
 #include "../appversion.h"
  
 #define STRINGIZE2(s) #s

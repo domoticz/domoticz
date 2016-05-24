@@ -1,3 +1,4 @@
+#pragma once
 #ifndef ASYNCSERIAL_H
 #define	ASYNCSERIAL_H
 

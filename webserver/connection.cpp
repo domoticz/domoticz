@@ -96,7 +96,10 @@ void connection::start()
 		connection_manager_.stop(shared_from_this());
 		return;
 	}
-	host_endpoint_ = endpoint.address().to_string();
+	host_endpoint_address_ = endpoint.address().to_string();
+	std::stringstream sstr;
+	sstr << endpoint.port();
+	sstr >> host_endpoint_port_;
 
 	set_abandoned_timeout();
 
@@ -130,7 +133,7 @@ void connection::stop()
 																					// connected socket, call shutdown() before closing the socket.
 		socket().close(ignored_ec);
 	} catch(...) {
-		_log.Log(LOG_ERROR, "%s -> exception thrown while stopping connection", host_endpoint_.c_str());
+		_log.Log(LOG_ERROR, "%s -> exception thrown while stopping connection", host_endpoint_address_.c_str());
 	}
 }
 
@@ -213,9 +216,10 @@ void connection::handle_read(const boost::system::error_code& error, std::size_t
 			const char *pConnection = request_.get_req_header(&request_, "Connection");
 			keepalive_ = pConnection != NULL && boost::iequals(pConnection, "Keep-Alive");
 			request_.keep_alive = keepalive_;
-			request_.host = host_endpoint_;
-			if (request_.host.substr(0, 7) == "::ffff:") {
-				request_.host = request_.host.substr(7);
+			request_.host_address = host_endpoint_address_;
+			request_.host_port = host_endpoint_port_;
+			if (request_.host_address.substr(0, 7) == "::ffff:") {
+				request_.host_address = request_.host_address.substr(7);
 			}
 			request_handler_.handle_request(request_, reply_);
 
@@ -306,10 +310,10 @@ void connection::cancel_read_timeout() {
 		boost::system::error_code ignored_ec;
 		read_timer_.cancel(ignored_ec);
 		if (ignored_ec) {
-			_log.Log(LOG_ERROR, "%s -> exception thrown while canceling read timeout : %s", host_endpoint_.c_str(), ignored_ec.message().c_str());
+			_log.Log(LOG_ERROR, "%s -> exception thrown while canceling read timeout : %s", host_endpoint_address_.c_str(), ignored_ec.message().c_str());
 		}
 	} catch (...) {
-		_log.Log(LOG_ERROR, "%s -> exception thrown while canceling read timeout", host_endpoint_.c_str());
+		_log.Log(LOG_ERROR, "%s -> exception thrown while canceling read timeout", host_endpoint_address_.c_str());
 	}
 }
 
@@ -323,7 +327,7 @@ void connection::reset_read_timeout() {
 void connection::handle_read_timeout(const boost::system::error_code& error) {
 	if (error != boost::asio::error::operation_aborted) {
 #ifdef DEBUG_WWW
-		_log.Log(LOG_STATUS, "%s -> handle read timeout", host_endpoint_.c_str());
+		_log.Log(LOG_STATUS, "%s -> handle read timeout", host_endpoint_address_.c_str());
 #endif
 		connection_manager_.stop(shared_from_this());
 	}
@@ -341,10 +345,10 @@ void connection::cancel_abandoned_timeout() {
 		boost::system::error_code ignored_ec;
 		abandoned_timer_.cancel(ignored_ec);
 		if (ignored_ec) {
-			_log.Log(LOG_ERROR, "%s -> exception thrown while canceling abandoned timeout : %s", host_endpoint_.c_str(), ignored_ec.message().c_str());
+			_log.Log(LOG_ERROR, "%s -> exception thrown while canceling abandoned timeout : %s", host_endpoint_address_.c_str(), ignored_ec.message().c_str());
 		}
 	} catch (...) {
-		_log.Log(LOG_ERROR, "%s -> exception thrown while canceling abandoned timeout", host_endpoint_.c_str());
+		_log.Log(LOG_ERROR, "%s -> exception thrown while canceling abandoned timeout", host_endpoint_address_.c_str());
 	}
 }
 
@@ -357,7 +361,7 @@ void connection::reset_abandoned_timeout() {
 /// stop connection on abandoned timeout
 void connection::handle_abandoned_timeout(const boost::system::error_code& error) {
 	if (error != boost::asio::error::operation_aborted) {
-		_log.Log(LOG_STATUS, "%s -> handle abandoned timeout (status=%d)", host_endpoint_.c_str(), status_);
+		_log.Log(LOG_STATUS, "%s -> handle abandoned timeout (status=%d)", host_endpoint_address_.c_str(), status_);
 		connection_manager_.stop(shared_from_this());
 	}
 }

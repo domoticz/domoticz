@@ -19,7 +19,7 @@
 		</Value>
 		<Value type="list" index="5" genre="config" label="Command Options" min="1" max="2" value="1" size="1">
 			<Help>Which commands to send when PIR motion sensor triggered</Help>
-			<Item label="Basic Set (default) " value="1" />
+			<Item label="Basic Set (default)" value="1" />
 			<Item label="Binary Sensor Report" value="2" />  
 		</Value>
 		<Value type="int" index="100" genre="config" label="Reset #101-103" value="0" write_only="true" affects="101,102,103">

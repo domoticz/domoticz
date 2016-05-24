@@ -246,6 +246,7 @@ void CEvohome::Do_Work()
 	boost::system_time stLastRelayCheck(boost::posix_time::min_date_time);
 	int nStartup=0;
 	int sec_counter = 0;
+	bool startup = true;
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
@@ -282,8 +283,19 @@ void CEvohome::Do_Work()
 				nStartup++;
 				if(nStartup==300)
 				{
-					InitControllerName();
-					InitZoneNames();
+					if (startup)
+					{
+						InitControllerName();
+						InitZoneNames();
+						startup = false;
+					}
+					else//Request each individual zone temperature every 300s as the controller omits multi-room zones
+					{
+						uint8_t nZoneCount = GetZoneCount();
+						for (uint8_t i = 0; i < nZoneCount; i++)
+							RequestZoneTemp(i);
+					}
+					nStartup = 0;
 				}
 			}
 			boost::lock_guard<boost::mutex> l(m_mtxRelayCheck);

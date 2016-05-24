@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns="http://code.google.com/p/open-zwave/">
+
+  <CommandClass id="112">
+    <Value genre="config" instance="1" index="0" value="0" label="Off time" units="" size="1" min="0" max="255" type="byte">
+      <Help>Sets the time after triggering the sensor to send the Basic OFF command. 0: Don't send Basic OFF. 1-240: N minutes. 241-255: 15 seconds.</Help>
+    </Value>
+  </CommandClass>
+
+  <CommandClass id="32" setasreport="true"/>
+
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Reports" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+
+</Product>

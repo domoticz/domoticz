@@ -194,7 +194,7 @@ define(['app'], function (app) {
 					RefreshLinkTable();
 				 },
 				 error: function(){
-						ShowNotify($.t('Problem saving Htto link!'), 2500, true);
+						ShowNotify($.t('Problem saving Http link!'), 2500, true);
 				 }     
 			});
 		}

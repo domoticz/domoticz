@@ -44,11 +44,34 @@ define(['app'], function (app) {
             var datatimeout=$('#hardwarecontent #hardwareparamstable #combodatatimeout').val();
 
             var text = $("#hardwarecontent #hardwareparamstable #combotype option:selected").text();
-            if (
+
+            if (text.indexOf("1-Wire") >= 0)
+            {
+    			var extra=$("#hardwarecontent #div1wire #owfspath").val();
+    			var Mode1 = $("#hardwarecontent #div1wire #OneWireSensorPollPeriod").val();
+    			var Mode2 = $("#hardwarecontent #div1wire #OneWireSwitchPollPeriod").val();
+    			$.ajax({
+    				url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+    				"&extra=" + encodeURIComponent(extra) +
+    				"&name=" + encodeURIComponent(name) +
+    				"&enabled=" + bEnabled +
+    				"&idx=" + idx +
+    				"&datatimeout=" + datatimeout +
+    				"&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
+    				async: false,
+    				dataType: 'json',
+    				success: function(data) {
+    					RefreshHardwareTable();
+    				},
+    				error: function(){
+    					ShowNotify($.t('Problem updating hardware!'), 2500, true);
+    				}
+    			});
+            }
+            else if (
 				(text.indexOf("Panasonic") >= 0) ||
 				(text.indexOf("TE923") >= 0) ||
 				(text.indexOf("Volcraft") >= 0) ||
-				(text.indexOf("1-Wire") >= 0) ||
 				(text.indexOf("GPIO") >= 0) ||
 				(text.indexOf("BMP085") >= 0) ||
 				(text.indexOf("HTU21D") >= 0) ||
@@ -62,7 +85,7 @@ define(['app'], function (app) {
             {
                 $.ajax({
                      url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
-                        "&port=1&name=" + encodeURIComponent(name) +
+                        "&name=" + encodeURIComponent(name) +
                         "&enabled=" + bEnabled +
                         "&idx=" + idx +
                         "&datatimeout=" + datatimeout +
@@ -105,16 +128,29 @@ define(['app'], function (app) {
                     Mode1 = baudrate;
                 }
 
-                var address="";
+                if (text.indexOf("P1 Smart Meter") >= 0)
+                {
+                    var baudrate=$("#hardwarecontent #divbaudratep1 #combobaudratep1 option:selected").val();
+
+                    if (typeof baudrate == 'undefined')
+                    {
+                        ShowNotify($.t('No baud rate selected!'), 2500, true);
+                        return;
+                    }
+
+                    Mode1 = baudrate;
+                }
+
+                var extra="";
                 if (text.indexOf("S0 Meter") >= 0)
                 {
-                    address=$("#hardwarecontent #divremote #tcpaddress").val();
+					extra = $.devExtra;
                 }
 
                 $.ajax({
                      url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
                         "&port=" + encodeURIComponent(serialport) +
-                        "&address=" + address +
+                        "&extra=" + extra +
                         "&name=" + encodeURIComponent(name) +
                         "&enabled=" + bEnabled +
                         "&idx=" + idx +
@@ -135,6 +171,7 @@ define(['app'], function (app) {
 					text.indexOf("YouLess") == -1 &&
 					text.indexOf("Integra") == -1 &&
 					text.indexOf("ETH8020") == -1 &&
+					text.indexOf("Sterbox") == -1 &&
 					text.indexOf("Anna") == -1 &&
 					text.indexOf("KMTronic") == -1  &&
 					text.indexOf("MQTT") == -1 &&
@@ -159,10 +196,17 @@ define(['app'], function (app) {
                     ShowNotify($.t('Please enter an Valid Port!'), 2500, true);
                     return;
                 }
+                var extra="";
+                if (text.indexOf("S0 Meter") >= 0)
+                {
+					extra = $.devExtra;
+                }
+
                 $.ajax({
                      url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
                         "&address=" + address +
                         "&port=" + port +
+                        "&extra=" + extra +
                         "&name=" + encodeURIComponent(name) +
                         "&enabled=" + bEnabled +
                         "&idx=" + idx +
@@ -222,6 +266,7 @@ define(['app'], function (app) {
 				(text.indexOf("Domoticz") >= 0) ||
 				(text.indexOf("Harmony") >= 0) ||
 				(text.indexOf("ETH8020") >= 0) ||
+				(text.indexOf("Sterbox") >= 0) ||
 				(text.indexOf("Anna") >= 0) ||
 				(text.indexOf("KMTronic") >= 0) ||
 				(text.indexOf("MQTT") >= 0) ||
@@ -320,6 +365,46 @@ define(['app'], function (app) {
                      }
                 });
             }
+            else if ((text.indexOf("HTTP/HTTPS") >= 0)) {
+                var url = $("#hardwarecontent #divhttppoller #url").val();
+                if (url == "") {
+                    ShowNotify($.t('Please enter an url!'), 2500, true);
+                    return;
+                }
+                var script = $("#hardwarecontent #divhttppoller #script").val();
+                if (script == "") {
+                    ShowNotify($.t('Please enter a script!'), 2500, true);
+                    return;
+                }
+                var refresh = $("#hardwarecontent #divhttppoller #refresh").val();
+                if (refresh == "") {
+                    ShowNotify($.t('Please enter a refresh rate!'), 2500, true);
+                    return;
+                }
+                var username = $("#hardwarecontent #divlogin #username").val();
+                var password = $("#hardwarecontent #divlogin #password").val();
+                $.ajax({
+                    url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+                       "&port=" + refresh +
+                       "&username=" + encodeURIComponent(username) +
+                       "&password=" + encodeURIComponent(password) +
+                       "&name=" + encodeURIComponent(name) +
+                       "&enabled=" + bEnabled +
+                       "&idx=" + idx +
+                       "&datatimeout=" + datatimeout +
+                       "&address=" + encodeURIComponent(url) +
+                       "&extra=" + encodeURIComponent(script) +
+                       "&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
+                    async: false,
+                    dataType: 'json',
+                    success: function (data) {
+                        RefreshHardwareTable();
+                    },
+                    error: function () {
+                        ShowNotify($.t('Problem updating hardware!'), 2500, true);
+                    }
+                });
+            }
             else if ((text.indexOf("Underground") >= 0)||(text.indexOf("Forecast") >= 0))
             {
                 var apikey=$("#hardwarecontent #divunderground #apikey").val();
@@ -336,7 +421,6 @@ define(['app'], function (app) {
                 }
                 $.ajax({
                      url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
-                        "&port=1" +
                         "&username=" + encodeURIComponent(apikey) +
                         "&password=" + encodeURIComponent(location) +
                         "&name=" + encodeURIComponent(name) +
@@ -377,7 +461,6 @@ define(['app'], function (app) {
 
                 $.ajax({
                      url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
-						"&port=1" +
                         "&username=" + encodeURIComponent(serial) +
                         "&password=" + encodeURIComponent(apikey) +
                         "&name=" + encodeURIComponent(name) +
@@ -405,7 +488,6 @@ define(['app'], function (app) {
                 }
                 $.ajax({
                      url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
-                        "&port=1" +
                         "&username=" + encodeURIComponent(configlocation) +
                         "&name=" + encodeURIComponent(name) +
                         "&enabled=" + bEnabled +
@@ -422,12 +504,20 @@ define(['app'], function (app) {
                      }
                 });
             }
-            else if ((text.indexOf("ICY") >= 0) || (text.indexOf("Toon") >= 0) || (text.indexOf("Atag") >= 0) || (text.indexOf("Nest Th") >= 0) || (text.indexOf("PVOutput") >= 0) || (text.indexOf("Netatmo") >= 0) || (text.indexOf("Thermosmart") >= 0)) {
+            else if (
+				(text.indexOf("ICY") >= 0) ||
+				(text.indexOf("Toon") >= 0) ||
+				(text.indexOf("Atag") >= 0) ||
+				(text.indexOf("Nest Th") >= 0) ||
+				(text.indexOf("PVOutput") >= 0) ||
+				(text.indexOf("Netatmo") >= 0) ||
+				(text.indexOf("Fitbit") >= 0) ||
+				(text.indexOf("Thermosmart") >= 0)
+			) {
                 var username = $("#hardwarecontent #divlogin #username").val();
                 var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
                 $.ajax({
                     url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
-                       "&port=1" +
                        "&username=" + encodeURIComponent(username) +
                        "&password=" + encodeURIComponent(password) +
                        "&name=" + encodeURIComponent(name) +
@@ -580,11 +670,92 @@ define(['app'], function (app) {
 
             var text = $("#hardwarecontent #hardwareparamstable #combotype option:selected").text();
 
-            if (
+            if (text.indexOf("1-Wire") >= 0)
+            {
+                var owfspath=$("#hardwarecontent #div1wire #owfspath").val();
+                var oneWireSensorPollPeriod=$("#hardwarecontent #div1wire #OneWireSensorPollPeriod").val();
+                if (oneWireSensorPollPeriod=="")
+                {
+                    ShowNotify($.t('Please enter a poll period for the sensors'), 2500, true);
+                    return;
+                }
+                var oneWireSwitchPollPeriod=$("#hardwarecontent #div1wire #OneWireSwitchPollPeriod").val();
+                if (oneWireSwitchPollPeriod=="")
+                {
+                    ShowNotify($.t('Please enter a poll period for the switches'), 2500, true);
+                    return;
+                }
+                var intRegex = /^\d+$/;
+                if(!intRegex.test(oneWireSensorPollPeriod)) {
+                    ShowNotify($.t('Please enter a valid poll period for the sensors'), 2500, true);
+                    return;
+                }
+
+                if(!intRegex.test(oneWireSwitchPollPeriod)) {
+                    ShowNotify($.t('Please enter a valid poll period for the switches'), 2500, true);
+                    return;
+                }
+
+                $.ajax({
+                	url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&extra=" + encodeURIComponent(owfspath) +
+                    	"&Mode1=" + oneWireSensorPollPeriod + "&Mode2=" + oneWireSwitchPollPeriod + "&name=" + encodeURIComponent(name) +
+                    	"&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
+                    async: false,
+                    dataType: 'json',
+                    success: function(data) {
+                    	RefreshHardwareTable();
+                    },
+                    error: function(){
+                        ShowNotify($.t('Problem adding hardware!'), 2500, true);
+                    }
+                });
+           }
+            else if (
+					(text.indexOf("LAN") >= 0 &&
+					text.indexOf("YouLess") == -1 &&
+					text.indexOf("ETH8020") == -1 &&
+					text.indexOf("Sterbox") == -1 &&
+					text.indexOf("Anna") == -1 &&
+					text.indexOf("KMTronic") == -1
+					&& text.indexOf("MQTT") == -1 &&
+					text.indexOf("Integra") == -1 &&
+					text.indexOf("Razberry") == -1
+					)
+				)
+            {
+                var address=$("#hardwarecontent #divremote #tcpaddress").val();
+                if (address=="")
+                {
+                    ShowNotify($.t('Please enter an Address!'), 2500, true);
+                    return;
+                }
+                var port=$("#hardwarecontent #divremote #tcpport").val();
+                if (port=="")
+                {
+                    ShowNotify($.t('Please enter an Port!'), 2500, true);
+                    return;
+                }
+                var intRegex = /^\d+$/;
+                if(!intRegex.test(port)) {
+                    ShowNotify($.t('Please enter an Valid Port!'), 2500, true);
+                    return;
+                }
+                $.ajax({
+                     url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
+                     async: false,
+                     dataType: 'json',
+                     success: function(data) {
+                        RefreshHardwareTable();
+                     },
+                     error: function(){
+                            ShowNotify($.t('Problem adding hardware!'), 2500, true);
+                     }
+                });
+            }
+            else if (
 				(text.indexOf("Panasonic") >= 0) ||
 				(text.indexOf("TE923") >= 0) ||
 				(text.indexOf("Volcraft") >= 0) ||
-				(text.indexOf("1-Wire") >= 0) ||
 				(text.indexOf("BMP085") >= 0) ||
         (text.indexOf("HTU21D") >= 0) ||
 				(text.indexOf("Dummy") >= 0) ||
@@ -598,7 +769,7 @@ define(['app'], function (app) {
 				)
             {
                 $.ajax({
-                     url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&port=1&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
+                     url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
                      async: false,
                      dataType: 'json',
                      success: function(data) {
@@ -632,6 +803,19 @@ define(['app'], function (app) {
                     Mode1 = baudrate;
                 }
 
+                if (text.indexOf("P1 Smart Meter") >= 0)
+                {
+                    var baudrate=$("#hardwarecontent #divbaudratep1 #combobaudratep1 option:selected").val();
+
+                    if (typeof baudrate == 'undefined')
+                    {
+                        ShowNotify($.t('No baud rate selected!'), 2500, true);
+                        return;
+                    }
+
+                    Mode1 = baudrate;
+                }
+
                 $.ajax({
                      url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&port=" + encodeURIComponent(serialport) + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout +
                           "&Mode1=" + Mode1,
@@ -649,6 +833,7 @@ define(['app'], function (app) {
 					(text.indexOf("LAN") >= 0 &&
 					text.indexOf("YouLess") == -1 &&
 					text.indexOf("ETH8020") == -1 &&
+					text.indexOf("Sterbox") == -1 &&
 					text.indexOf("Anna") == -1 &&
 					text.indexOf("KMTronic") == -1
 					&& text.indexOf("MQTT") == -1 &&
@@ -759,6 +944,7 @@ define(['app'], function (app) {
 				(text.indexOf("Domoticz") >= 0) ||
 				(text.indexOf("Harmony") >= 0) ||
 				(text.indexOf("ETH8020") >= 0) ||
+				(text.indexOf("Sterbox") >= 0) ||
 				(text.indexOf("Anna") >= 0) ||
 				(text.indexOf("KMTronic") >= 0) ||
 				(text.indexOf("MQTT") >= 0) ||
@@ -828,7 +1014,7 @@ define(['app'], function (app) {
                     return;
                 }
                 $.ajax({
-                     url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&port=1" + "&username=" + encodeURIComponent(apikey) + "&password=" + encodeURIComponent(location) + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
+                     url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&username=" + encodeURIComponent(apikey) + "&password=" + encodeURIComponent(location) + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
                      async: false,
                      dataType: 'json',
                      success: function(data) {
@@ -837,6 +1023,36 @@ define(['app'], function (app) {
                      error: function(){
                             ShowNotify($.t('Problem adding hardware!'), 2500, true);
                      }
+                });
+            }
+            else if ((text.indexOf("HTTP/HTTPS") >= 0)) {
+                var url = $("#hardwarecontent #divhttppoller #url").val();
+                if (url == "") {
+                    ShowNotify($.t('Please enter an url!'), 2500, true);
+                    return;
+                }
+                var script = $("#hardwarecontent #divhttppoller #script").val();
+                if (script == "") {
+                    ShowNotify($.t('Please enter a script!'), 2500, true);
+                    return;
+                }
+                var refresh = $("#hardwarecontent #divhttppoller #refresh").val();
+                if (refresh == "") {
+                    ShowNotify($.t('Please enter a refresh rate!'), 2500, true);
+                    return;
+                }
+                var username = $("#hardwarecontent #divlogin #username").val();
+                var password = $("#hardwarecontent #divlogin #password").val();
+                $.ajax({
+                    url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&port=" + refresh + "&username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password) + "&name=" + encodeURIComponent(name) + "&address=" + encodeURIComponent(url) + "&extra=" + encodeURIComponent(script) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
+                    async: false,
+                    dataType: 'json',
+                    success: function (data) {
+                        RefreshHardwareTable();
+                    },
+                    error: function () {
+                        ShowNotify($.t('Problem adding hardware!'), 2500, true);
+                    }
                 });
             }
             else if (text.indexOf("SBFSpot") >= 0)
@@ -849,7 +1065,6 @@ define(['app'], function (app) {
                 }
                 $.ajax({
                      url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
-                        "&port=1" +
                         "&username=" + encodeURIComponent(configlocation) +
                         "&name=" + encodeURIComponent(name) +
                         "&enabled=" + bEnabled +
@@ -914,8 +1129,7 @@ define(['app'], function (app) {
                 }
                 $.ajax({
                      url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
-						"&port=1" +
-                        "&name=" + encodeURIComponent(name) +
+						"&name=" + encodeURIComponent(name) +
                         "&username=" + encodeURIComponent(serial) +
                         "&password=" + encodeURIComponent(apikey) +
                         "&enabled=" + bEnabled +
@@ -932,13 +1146,21 @@ define(['app'], function (app) {
                      }
                 });
             }
-            else if ((text.indexOf("ICY") >= 0)||(text.indexOf("Toon") >= 0)||(text.indexOf("Atag") >= 0)||(text.indexOf("Nest Th") >= 0)||(text.indexOf("PVOutput") >= 0)||(text.indexOf("Netatmo") >= 0) || (text.indexOf("Thermosmart") >= 0))
-            {
+            else if (
+				(text.indexOf("ICY") >= 0) ||
+				(text.indexOf("Toon") >= 0) ||
+				(text.indexOf("Atag") >= 0) ||
+				(text.indexOf("Nest Th") >= 0) ||
+				(text.indexOf("PVOutput") >= 0) ||
+				(text.indexOf("Netatmo") >= 0) ||
+				(text.indexOf("Fitbit") >= 0) ||
+				(text.indexOf("Thermosmart") >= 0) ||
+				(text.indexOf("HTTP") >= 0)
+			) {
                 var username=$("#hardwarecontent #divlogin #username").val();
                 var password=encodeURIComponent($("#hardwarecontent #divlogin #password").val());
                 $.ajax({
                      url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
-                     "&port=1" +
                      "&username=" + encodeURIComponent(username) +
                      "&password=" + encodeURIComponent(password) +
                      "&name=" + encodeURIComponent(name) +
@@ -1124,13 +1346,6 @@ define(['app'], function (app) {
 
             $('#hardwarecontent #idx').val(idx);
             $('#hardwarecontent #comborego6xxtype').val(Mode1);
-        }
-
-        SetP1USBType = function()
-        {
-          $.post("setp1usbtype.webem", $("#hardwarecontent #p1usbtype").serialize(), function(data) {
-           ShowHardware();
-          });
         }
 
         SetCCUSBType = function()
@@ -1657,12 +1872,18 @@ define(['app'], function (app) {
                 return;
             }
             var bUseAck=$('#hardwarecontent #mchildsettings #Ack').is(":checked");
+            var AckTimeout=parseInt($('#hardwarecontent #mchildsettings #AckTimeout').val());
+            if (AckTimeout<100)
+				AckTimeout=100;
+			else if (AckTimeout>10000)
+				AckTimeout=10000;
 			$.ajax({
 				 url: "json.htm?type=command&param=mysensorsupdatechild" +
 					"&idx=" + $.devIdx +
 					"&nodeid=" + nodeid +
 					"&childid=" + childid +
-					"&useack=" + bUseAck,
+					"&useack=" + bUseAck +
+					"&acktimeout=" + AckTimeout,
 				 async: false,
 				 dataType: 'json',
 				 success: function(data) {
@@ -1696,12 +1917,14 @@ define(['app'], function (app) {
 							var addId = oTable.fnAddData( {
 								"DT_RowId": item.child_id,
 								"AckEnabled": item.use_ack,
+								"AckTimeout": item.ack_timeout,
 								"0": item.child_id,
 								"1": item.type,
 								"2": item.name,
 								"3": item.Values,
 								"4": item.use_ack,
-								"5": item.LastReceived
+								"5": item.ack_timeout,
+								"6": item.LastReceived
 							});
 						});
 					}
@@ -1728,6 +1951,7 @@ define(['app'], function (app) {
 						var data = oTable.fnGetData( anSelected[0] );
 						var idx= data["DT_RowId"];
 						$('#hardwarecontent #mchildsettings #Ack').prop('checked',(data["AckEnabled"]=="true"));
+						$('#hardwarecontent #mchildsettings #AckTimeout').val(data["AckTimeout"]);
 						$("#activedevicedelete").attr("href", "javascript:MySensorsDeleteChild(" + $.nodeid + "," + idx + ")");
 						$("#activedeviceupdate").attr("href", "javascript:MySensorsUpdateChild(" + $.nodeid + "," + idx + ")");
 					}
@@ -2423,25 +2647,6 @@ define(['app'], function (app) {
                     SwitchLayout('Dashboard');
                 });
             });
-        }
-
-        EditP1USB = function(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5,Mode6)
-        {
-            $.devIdx=idx;
-            cursordefault();
-            var htmlcontent = '';
-            htmlcontent='<p><center><h2><span data-i18n="Device"></span>: ' + name + '</h2></center></p>\n';
-            htmlcontent+=$('#p1usbeedit').html();
-            $('#hardwarecontent').html(GetBackbuttonHTMLTable('ShowHardware')+htmlcontent);
-            $('#hardwarecontent').i18n();
-
-            $('#hardwarecontent #submitbuttonp1usb').click(function (e) {
-                e.preventDefault();
-                SetP1USBType();
-            });
-
-            $('#hardwarecontent #idx').val(idx);
-            $('#hardwarecontent #P1Baudrate').val(Mode1);
         }
 
         EditS0MeterType = function(idx,name,Address)
@@ -3466,23 +3671,82 @@ define(['app'], function (app) {
             $( "#dialog-createevohomesensor" ).dialog( "open" );
         }
 
-        CreateDummySensors = function(idx,name)
+        CreateRFLinkDevices= function(idx,name)
         {
             $.devIdx=idx;
+            $("#dialog-createrflinkdevice #vsensoraxis").hide();
+            $("#dialog-createrflinkdevice #sensoraxis").val("");
+            $( "#dialog-createrflinkdevice" ).dialog({
+                  autoOpen: false,
+                  width: 420,
+                  height: 250,
+                  modal: true,
+                  resizable: false,
+                  buttons: {
+                      "OK": function() {
+                          var bValid = true;
+                          $( this ).dialog( "close" );
+                            var SensorName=$("#dialog-createrflinkdevice #sensorname").val();
+							if (SensorName=="")
+							{
+								ShowNotify($.t('Please enter a command!'), 2500, true);
+								return;
+							}
+                            $.ajax({
+                                 url: "json.htm?type=createrflinkdevice&idx=" + $.devIdx +
+									"&command=" + SensorName,
+                                 async: false,
+                                 dataType: 'json',
+                                 success: function(data) {
+                                    if (data.status == 'OK') {
+                                        ShowNotify($.t('Device created, it can be found in the devices tab!'), 2500);
+                                    }
+                                    else {
+                                        ShowNotify($.t('Problem creating Sensor!'), 2500, true);
+                                    }
+                                 },
+                                 error: function(){
+                                        HideNotify();
+                                        ShowNotify($.t('Problem creating Sensor!'), 2500, true);
+                                 }
+                            });
+                      },
+                      Cancel: function() {
+                          $( this ).dialog( "close" );
+                      }
+                  },
+                  close: function() {
+                    $( this ).dialog( "close" );
+                  }
+            });
+
+            $( "#dialog-createrflinkdevice" ).i18n();
+            $( "#dialog-createrflinkdevice" ).dialog( "open" );
+        }
+
+		function OnDummySensorTypeChange()
+		{
+			var stype=$("#dialog-createsensor #sensortype option:selected").val();
+			$("#dialog-createsensor #sensoraxis").val("");
+			if (stype == 1004) {
+				$("#dialog-createsensor #vsensoraxis").show();
+			}
+			else {
+				$("#dialog-createsensor #vsensoraxis").hide();
+			}
+		}
+
+        CreateDummySensors = function(idx,name)
+        {
+			$.devIdx=idx;
+
             $("#dialog-createsensor #vsensoraxis").hide();
             $("#dialog-createsensor #sensoraxis").val("");
-            
-			$("#dialog-createsensor #sensortype").change(function() { 
-				var stype=$("#dialog-createsensor #sensortype option:selected").val();
-				$("#dialog-createsensor #sensoraxis").val("");
-				if (stype == 1004) {
-					$("#dialog-createsensor #vsensoraxis").show();
-				}
-				else {
-					$("#dialog-createsensor #vsensoraxis").hide();
-				}
+
+			$("#dialog-createsensor #sensortype").change(function() {
+				OnDummySensorTypeChange();
 			});
-            
+
             $( "#dialog-createsensor" ).dialog({
                   autoOpen: false,
                   width: 420,
@@ -3546,6 +3810,14 @@ define(['app'], function (app) {
 
             $( "#dialog-createsensor" ).i18n();
             $( "#dialog-createsensor" ).dialog( "open" );
+            OnDummySensorTypeChange();
+        }
+
+		ReloadPiFace = function(idx,name)
+        {
+          $.post("reloadpiface.webem", { 'idx':idx }, function(data) {
+            ShowNotify($.t('PiFace config reloaded!'), 2500);
+          });
         }
 
         RefreshHardwareTable = function()
@@ -3584,10 +3856,6 @@ define(['app'], function (app) {
                     {
                         SerialName="USB";
                     }
-                    else if (item.Type == 12)
-                    {
-                        SerialName="System";
-                    }
                     else if ((item.Type == 13)||(item.Type == 71))
                     {
                         SerialName="I2C";
@@ -3608,6 +3876,11 @@ define(['app'], function (app) {
                     {
                         SerialName="Script";
                     }
+                    else if (item.Type == 74)
+                    {
+                        intport = item.Port;
+                        SerialName = "";
+                    }
                     else
                     {
                         SerialName=item.SerialPort;
@@ -3620,7 +3893,7 @@ define(['app'], function (app) {
                     }
                     if (HwTypeStr.indexOf("RFXCOM") >= 0)
                     {
-                        HwTypeStr+='<br>Version: ' + item.Mode2;
+                        HwTypeStr+='<br>Version: ' + item.version;
                         if (HwTypeStr.indexOf("868") >= 0) {
 							HwTypeStr+=' <span class="label label-info lcursor" onclick="EditRFXCOMMode868(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Set Mode") + '</span>';
                         }
@@ -3628,8 +3901,8 @@ define(['app'], function (app) {
 							HwTypeStr+=' <span class="label label-info lcursor" onclick="EditRFXCOMMode(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Set Mode") + '</span>';
 						}
                     }
-                    else if (HwTypeStr.indexOf("S0 Meter USB") >= 0) {
-                        HwTypeStr+=' <span class="label label-info lcursor" onclick="EditS0MeterType(' + item.idx + ',\'' + item.Name + '\',\'' + item.Address + '\');">' + $.t("Set Mode") + '</span>';
+                    else if (HwTypeStr.indexOf("S0 Meter") >= 0) {
+                        HwTypeStr+=' <span class="label label-info lcursor" onclick="EditS0MeterType(' + item.idx + ',\'' + item.Name + '\',\'' + item.Extra + '\');">' + $.t("Set Mode") + '</span>';
                     }
                     else if (HwTypeStr.indexOf("Limitless") >= 0) {
                         HwTypeStr+=' <span class="label label-info lcursor" onclick="EditLimitlessType(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Set Mode") + '</span>';
@@ -3671,11 +3944,18 @@ define(['app'], function (app) {
                     else if (HwTypeStr.indexOf("Logitech Media Server") >= 0) {
                         HwTypeStr += ' <span class="label label-info lcursor" onclick="EditLMS(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2 + ',' + item.Mode3 + ',' + item.Mode4 + ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Setup") + '</span>';
                     }
-                    else if (HwTypeStr.indexOf("P1 Smart Meter USB") >= 0) {
-                        HwTypeStr+=' <span class="label label-info lcursor" onclick="EditP1USB(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Setup") + '</span>';
-                    }
                     else if (HwTypeStr.indexOf("Dummy") >= 0) {
                         HwTypeStr+=' <span class="label label-info lcursor" onclick="CreateDummySensors(' + item.idx + ',\'' + item.Name + '\');">' + $.t("Create Virtual Sensors") + '</span>';
+                    }
+                    else if (HwTypeStr.indexOf("PiFace") >= 0) {
+                        HwTypeStr+=' <span class="label label-info lcursor" onclick="ReloadPiFace(' + item.idx + ',\'' + item.Name + '\');">' + $.t("Reload") + '</span>';
+                    }
+                    else if (HwTypeStr.indexOf("HTTP/HTTPS") >= 0) {
+                        HwTypeStr+=' <span class="label label-info lcursor" onclick="CreateDummySensors(' + item.idx + ',\'' + item.Name + '\');">' + $.t("Create Virtual Sensors") + '</span>';
+                    }
+                    else if (HwTypeStr.indexOf("RFLink") >= 0) {
+                        HwTypeStr+='<br>Version: ' + item.version;
+                        HwTypeStr+=' <span class="label label-info lcursor" onclick="CreateRFLinkDevices(' + item.idx + ',\'' + item.Name + '\');">' + $.t("Create RFLink Devices") + '</span>';
                     }
                     else if (HwTypeStr.indexOf("Evohome") >= 0) {
                         if(HwTypeStr.indexOf("script") >= 0)
@@ -3743,9 +4023,6 @@ define(['app'], function (app) {
                     }
 
                     var dispAddress=item.Address;
-                    if (HwTypeStr.indexOf("S0 Meter") >= 0) {
-                        dispAddress="";
-                    }
                     var addId = oTable.fnAddData( {
                         "DT_RowId": item.idx,
                         "Username": item.Username,
@@ -3803,11 +4080,12 @@ define(['app'], function (app) {
                         $('#hardwarecontent #hardwareparamstable #enabled').prop('checked',(data["Enabled"]=="true"));
                         $('#hardwarecontent #hardwareparamstable #combodatatimeout').val(data["DataTimeout"]);
 
-                        UpdateHardwareParamControls();
+						$.devExtra=data["Extra"];
+
+						UpdateHardwareParamControls();
 
                         if ((data["Type"].indexOf("TE923") >= 0)||
                            (data["Type"].indexOf("Volcraft") >= 0)||
-                           (data["Type"].indexOf("1-Wire") >= 0)||
                            (data["Type"].indexOf("BMP085") >= 0)||
                            (data["Type"].indexOf("HTU21D") >= 0)||
                            (data["Type"].indexOf("Dummy") >= 0)||
@@ -3817,15 +4095,20 @@ define(['app'], function (app) {
                         {
                             //nothing to be set
                         }
+                        else if (data["Type"].indexOf("1-Wire") >= 0) {
+                            $("#hardwarecontent #hardwareparams1wire #owfspath").val(data["Extra"]);
+                            $("#hardwarecontent #hardwareparams1wire #OneWireSensorPollPeriod").val(data["Mode1"]);
+                            $("#hardwarecontent #hardwareparams1wire #OneWireSwitchPeriod").val(data["Mode2"]);
+                        }
                         else if (data["Type"].indexOf("USB") >= 0) {
                             $("#hardwarecontent #hardwareparamsserial #comboserialport").val(data["IntPort"]);
-                            if (data["Type"].indexOf("S0 Meter") >= 0)
-                            {
-                                $("#hardwarecontent #divremote #tcpaddress").val(data["Address"]);
-                            }
                             if (data["Type"].indexOf("MySensors") >= 0)
                             {
                                 $("#hardwarecontent #divbaudratemysensors #combobaudrate").val(data["Mode1"]);
+                            }
+                            if (data["Type"].indexOf("P1 Smart Meter") >= 0)
+                            {
+                                $("#hardwarecontent #divbaudratep1 #combobaudratep1").val(data["Mode1"]);
                             }
                         }
                         else if (((data["Type"].indexOf("LAN") >= 0) && (data["Type"].indexOf("YouLess") == -1) && (data["Type"].indexOf("Satel") == -1)) ||(data["Type"].indexOf("Domoticz") >= 0) ||(data["Type"].indexOf("Harmony") >= 0)) {
@@ -3840,6 +4123,11 @@ define(['app'], function (app) {
                         else if ((data["Type"].indexOf("Underground") >= 0)||(data["Type"].indexOf("Forecast") >= 0)) {
                             $("#hardwarecontent #hardwareparamsunderground #apikey").val(data["Username"]);
                             $("#hardwarecontent #hardwareparamsunderground #location").val(data["Password"]);
+                        }
+                        else if ((data["Type"].indexOf("HTTP/HTTPS") >= 0)) {
+                            $("#hardwarecontent #hardwareparamshttp #url").val(data["Address"]);
+                            $("#hardwarecontent #hardwareparamshttp #script").val(data["Extra"]);
+                            $("#hardwarecontent #hardwareparamshttp #refresh").val(data["IntPort"]);
                         }
                         else if (data["Type"].indexOf("SBFSpot") >= 0) {
                             $("#hardwarecontent #hardwareparamslocation #location").val(data["Username"]);
@@ -3872,10 +4160,13 @@ define(['app'], function (app) {
                             (data["Type"].indexOf("Nest Th") >= 0)||
                             (data["Type"].indexOf("PVOutput") >= 0)||
                             (data["Type"].indexOf("ETH8020") >= 0)||
+                            (data["Type"].indexOf("Sterbox") >= 0)||
                             (data["Type"].indexOf("Anna") >= 0)||
                             (data["Type"].indexOf("KMTronic") >= 0)||
                             (data["Type"].indexOf("MQTT") >= 0)||
                             (data["Type"].indexOf("Netatmo") >= 0)||
+                            (data["Type"].indexOf("Fitbit") >= 0)||
+							(data["Type"].indexOf("HTTP") >= 0)||
                             (data["Type"].indexOf("Thermosmart") >= 0) ||
 							(data["Type"].indexOf("Logitech Media Server") >= 0) ||
 							(data["Type"].indexOf("Razberry") >= 0) ||
@@ -3941,11 +4232,13 @@ define(['app'], function (app) {
             $("#hardwarecontent #lblusername").show();
 
             $("#hardwarecontent #divbaudratemysensors").hide();
+            $("#hardwarecontent #divbaudratep1").hide();
             $("#hardwarecontent #divlocation").hide();
             $("#hardwarecontent #divphilipshue").hide();
             $("#hardwarecontent #divwinddelen").hide();
             $("#hardwarecontent #divmqtt").hide();
             $("#hardwarecontent #divsolaredgeapi").hide();
+            $("#hardwarecontent #div1wire").hide();
 
             if ((text.indexOf("TE923") >= 0)||
                (text.indexOf("Volcraft") >= 0)||
@@ -3959,6 +4252,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divremote").hide();
                 $("#hardwarecontent #divlogin").hide();
                 $("#hardwarecontent #divunderground").hide();
+                $("#hardwarecontent #divhttppoller").hide();
             }
             else if (text.indexOf("USB") >= 0)
             {
@@ -3966,10 +4260,15 @@ define(['app'], function (app) {
                 {
                     $("#hardwarecontent #divbaudratemysensors").show();
                 }
+                if (text.indexOf("P1 Smart Meter") >= 0)
+                {
+                    $("#hardwarecontent #divbaudratep1").show();
+                }
                 $("#hardwarecontent #divserial").show();
                 $("#hardwarecontent #divremote").hide();
                 $("#hardwarecontent #divlogin").hide();
                 $("#hardwarecontent #divunderground").hide();
+                $("#hardwarecontent #divhttppoller").hide();
             }
             else if (text.indexOf("LAN") >= 0 && text.indexOf("YouLess") == -1 && text.indexOf("Integra") == -1)
             {
@@ -3977,6 +4276,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divremote").show();
                 $("#hardwarecontent #divlogin").hide();
                 $("#hardwarecontent #divunderground").hide();
+                $("#hardwarecontent #divhttppoller").hide();
             }
             else if (text.indexOf("LAN") >= 0 && (text.indexOf("YouLess") >= 0 || text.indexOf("Integra") >= 0))
             {
@@ -3986,6 +4286,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #username").hide();
                 $("#hardwarecontent #lblusername").hide();
                 $("#hardwarecontent #divunderground").hide();
+                $("#hardwarecontent #divhttppoller").hide();
             }
             else if (text.indexOf("Domoticz") >= 0)
             {
@@ -3993,6 +4294,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divremote").show();
                 $("#hardwarecontent #divlogin").show();
                 $("#hardwarecontent #divunderground").hide();
+                $("#hardwarecontent #divhttppoller").hide();
                 $("#hardwarecontent #hardwareparamsremote #tcpport").val(6144);
             }
             else if (text.indexOf("Harmony") >= 0)
@@ -4001,6 +4303,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divremote").show();
                 $("#hardwarecontent #divlogin").show();
                 $("#hardwarecontent #divunderground").hide();
+                $("#hardwarecontent #divhttppoller").hide();
             }
             else if (text.indexOf("SolarEdge via") >= 0)
             {
@@ -4008,6 +4311,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divremote").hide();
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divunderground").hide();
+                $("#hardwarecontent #divhttppoller").hide();
             }
             else if (text.indexOf("SBFSpot") >= 0)
             {
@@ -4016,15 +4320,33 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divremote").hide();
                 $("#hardwarecontent #divlogin").hide();
                 $("#hardwarecontent #divunderground").hide();
+                $("#hardwarecontent #divhttppoller").hide();
                 $("#hardwarecontent #username").hide();
                 $("#hardwarecontent #lblusername").hide();
             }
-            else if ((text.indexOf("ICY") >= 0)||(text.indexOf("Toon") >= 0)||(text.indexOf("Atag") >= 0)||(text.indexOf("Nest Th") >= 0)||(text.indexOf("PVOutput") >= 0)||(text.indexOf("Netatmo") >= 0)||(text.indexOf("Thermosmart") >= 0))
-            {
+            else if (
+				(text.indexOf("ICY") >= 0) ||
+				(text.indexOf("Toon") >= 0) ||
+				(text.indexOf("Atag") >= 0) ||
+				(text.indexOf("Nest Th") >= 0) ||
+				(text.indexOf("PVOutput") >= 0) ||
+				(text.indexOf("Netatmo") >= 0) ||
+				(text.indexOf("Fitbit") >= 0) ||
+				(text.indexOf("Thermosmart") >= 0)
+			) {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").hide();
                 $("#hardwarecontent #divlogin").show();
                 $("#hardwarecontent #divunderground").hide();
+                $("#hardwarecontent #divhttppoller").hide();
+            }
+            else if (text.indexOf("HTTP") >= 0) {
+                $("#hardwarecontent #divserial").hide();
+                $("#hardwarecontent #divremote").hide();
+                $("#hardwarecontent #divlogin").show();
+                $("#hardwarecontent #divunderground").hide();
+                $("#hardwarecontent #divhttppoller").show();
+                $("#hardwarecontent #hardwareparamshttp #refresh").val(300);
             }
             else if ((text.indexOf("Underground") >= 0)||(text.indexOf("Forecast") >= 0))
             {
@@ -4032,6 +4354,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divremote").hide();
                 $("#hardwarecontent #divlogin").hide();
                 $("#hardwarecontent #divunderground").show();
+                $("#hardwarecontent #divhttppoller").hide();
             }
             else if (text.indexOf("Philips Hue") >= 0)
             {
@@ -4040,6 +4363,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divlogin").hide();
                 $("#hardwarecontent #divphilipshue").show();
                 $("#hardwarecontent #divunderground").hide();
+                $("#hardwarecontent #divhttppoller").hide();
                 $("#hardwarecontent #hardwareparamsremote #tcpport").val(80);
             }
             else if (text.indexOf("Winddelen") >= 0)
@@ -4050,6 +4374,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #username").hide();
                 $("#hardwarecontent #lblusername").hide();
                 $("#hardwarecontent #divunderground").hide();
+                $("#hardwarecontent #divhttppoller").hide();
                 $("#hardwarecontent #divwinddelen").show();
             }
             else if (text.indexOf("Logitech Media Server") >= 0)
@@ -4065,7 +4390,17 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divremote").show();
                 $("#hardwarecontent #divlogin").hide();
                 $("#hardwarecontent #divunderground").hide();
+                $("#hardwarecontent #divhttppoller").hide();
                 $("#hardwarecontent #hardwareparamsremote #tcpport").val(20000);
+            }
+			else if (text.indexOf("1-Wire") >= 0)
+            {
+	            $("#hardwarecontent #div1wire").show();
+                $("#hardwarecontent #divserial").hide();
+                $("#hardwarecontent #divremote").hide();
+                $("#hardwarecontent #divlogin").hide();
+                $("#hardwarecontent #divunderground").hide();
+                $("#hardwarecontent #divhttppoller").hide();
             }
             else
             {
@@ -4073,9 +4408,11 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divremote").hide();
                 $("#hardwarecontent #divlogin").hide();
                 $("#hardwarecontent #divunderground").hide();
+                $("#hardwarecontent #divhttppoller").hide();
             }
             if (
 				(text.indexOf("ETH8020") >= 0) ||
+				(text.indexOf("Sterbox") >= 0) ||
 				(text.indexOf("Anna") >= 0) ||
 				(text.indexOf("MQTT") >= 0) ||
 				(text.indexOf("KMTronic Gateway with LAN") >= 0) ||

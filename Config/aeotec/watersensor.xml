@@ -19,7 +19,7 @@
 			<Item label="Normal" value="0" />
 			<Item label="Inverse" value="1" />
 		</Value>
-	        <Value type="int" genre="config" index="121" label="Report Type to Send" min="0" max="4369" value="4113">
+	        <Value type="int" genre="config" index="121" label="Report Type to Send" min="0" max="4369" value="256">
         	    <Help>To set which command will be sent to the associated nodes when the Water Sensor is triggered.
 	            	Bitsets:
 	         	1 -> Battery

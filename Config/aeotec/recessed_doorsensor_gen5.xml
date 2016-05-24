@@ -38,7 +38,7 @@
               Default setting: 86640
             </Help>
         </Value>
-        <Value type="int" genre="config" instance="1" index="121" label="Report Type to Send" min="0" max="256" value="16">
+        <Value type="int" genre="config" instance="1" index="121" label="Report Type to Send" min="0" max="256" value="256">
             <Help>To set which command will be sent to the associated nodes 
             when the magnet switch is triggered.
             	Bitsets:

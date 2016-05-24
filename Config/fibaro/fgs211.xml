@@ -49,8 +49,8 @@
       <Item label="Enable Dimmer/Roller shutter control" value="1"/>
     </Value>
     
-    <Value type="list" genre="config" instance="1" index="16" label="Saving state before power faillure" value="1" size="1">
-      <Help>Saving state before power faillure</Help>
+    <Value type="list" genre="config" instance="1" index="16" label="Saving state before power failure" value="1" size="1">
+      <Help>Saving state before power failure</Help>
       <Item label="State NOT saved at power failure, all outputs are set to OFF upon power restore" value="0"/>
       <Item label="State saved at power failure, all outputs are set to previous state upon power restore" value="1"/>
     </Value>
@@ -96,7 +96,7 @@
   <CommandClass id="133">
     <Associations num_groups="3">
       <Group index="1" max_associations="16" label="Group 1" auto="false"/>
-      <Group index="2" max_associations="16" label="Group 2" auto="false" />
+      <Group index="2" max_associations="16" label="Group 2" />
       <Group index="3" max_associations="1" label="Send updates" auto="true"/>
     </Associations>
   </CommandClass>

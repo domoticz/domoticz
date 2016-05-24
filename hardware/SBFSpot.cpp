@@ -415,6 +415,31 @@ void CSBFSpot::ImportOldMonthData(const unsigned long long DevID, const int Year
 	infile.close();
 }
 
+int CSBFSpot::getSunRiseSunSetMinutes(const bool bGetSunRise)
+{
+	std::vector<std::string> strarray;
+	std::vector<std::string> sunRisearray;
+	std::vector<std::string> sunSetarray;
+
+	if (!m_mainworker.m_LastSunriseSet.empty())
+	{
+		StringSplit(m_mainworker.m_LastSunriseSet, ";", strarray);
+		StringSplit(strarray[0], ":", sunRisearray);
+		StringSplit(strarray[1], ":", sunSetarray);
+
+		int sunRiseInMinutes = (atoi(sunRisearray[0].c_str()) * 60) + atoi(sunRisearray[1].c_str());
+		int sunSetInMinutes = (atoi(sunSetarray[0].c_str()) * 60) + atoi(sunSetarray[1].c_str());
+
+		if (bGetSunRise) {
+			return sunRiseInMinutes;
+		}
+		else {
+			return sunSetInMinutes;
+		}
+	}
+	return 0;
+}
+
 void CSBFSpot::GetMeterDetails()
 {
 	if (m_SBFDataPath.size() == 0)
@@ -429,6 +454,20 @@ void CSBFSpot::GetMeterDetails()
 	}
 
 	time_t atime = time(NULL);
+	struct tm ltime;
+	localtime_r(&atime, &ltime);
+
+	int ActHourMin = (ltime.tm_hour * 60) + ltime.tm_min;
+
+	int sunRise = getSunRiseSunSetMinutes(true);
+	int sunSet = getSunRiseSunSetMinutes(false);
+
+	//We only poll one hour before sunrise till one hour after sunset
+	if (ActHourMin + 120 < sunRise)
+		return;
+	if (ActHourMin - 120 > sunSet)
+		return;
+
 	char szLogFile[256];
 	char szDateStr[50];
 	strcpy(szDateStr, strftime_t("%Y%m%d", atime));
@@ -445,7 +484,10 @@ void CSBFSpot::GetMeterDetails()
 	infile.open(szLogFile);
 	if (!infile.is_open())
 	{
-		_log.Log(LOG_ERROR, "SBFSpot: Could not open spot file: %s", szLogFile);
+		if ((ActHourMin > sunRise) && (ActHourMin < sunSet))
+		{
+			_log.Log(LOG_ERROR, "SBFSpot: Could not open spot file: %s", szLogFile);
+		}
 		return;
 	}
 	while (!infile.eof())

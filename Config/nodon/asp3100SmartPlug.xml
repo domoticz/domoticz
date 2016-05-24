@@ -10,10 +10,10 @@
         </Value>
         <Value type="byte" index="2" genre="config" label="Power Failure" min="0" max="63" value="0">
             <Help>
-                This parameter allows unsolicited “Notification Report” Commands and/or “Basic Set” Commands to be sent when a power failure detection and/or a power failure recover occurs. Only the four least significant bits can be addressed.
+                This parameter allows unsolicited Notification Report Commands and/or Basic Set Commands to be sent when a power failure detection and/or a power failure recover occurs. Only the four least significant bits can be addressed.
                 
                 Bit 0: Enable or disable power failure detection and recover. Setting this bit to 1 automatically allows the product to send unsolicited report through Lifeline. If this bit is not set, it is not possible to enable Association Group 4, 5 and 6. Consequently, if a Configuration Set Command is received, enabling one or more Association Groups (4, 5 and / or 6), this bit will be automatically set.
-                Bit 1: Enable or disable unsolicited Notification Report: Power Management – AC disconnected Command and Notification Report: Power Management – AC re-connected Command sent to associated nodes of Group 4, when, respectively, power failure is detected or power failure is recovered.
+                Bit 1: Enable or disable unsolicited Notification Report: Power Management - AC disconnected Command and Notification Report: Power Management - AC re-connected Command sent to associated nodes of Group 4, when, respectively, power failure is detected or power failure is recovered.
                 Bit 2: Enable or disable Basic Set ON Command sent to associated nodes of Group 5, when power failure is detected.
                 Bit 3: Enable or disable Basic Set OFF Command sent to associated nodes of Group 6, when power failure is detected.
                 Bit 4: Enable or disable Basic Set ON Command sent to associated nodes of Group 7, when power recover is detected.

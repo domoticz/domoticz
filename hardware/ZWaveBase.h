@@ -152,7 +152,6 @@ private:
 	virtual void SetClock(const int nodeID, const int instanceID, const int commandClass, const int day, const int hour, const int minute)=0;
 	virtual void SetThermostatMode(const int nodeID, const int instanceID, const int commandClass, const int tMode) = 0;
 	virtual void SetThermostatFanMode(const int nodeID, const int instanceID, const int commandClass, const int fMode) = 0;
-	virtual std::string GetSupportedThermostatModes(const unsigned long ID) = 0;
 	virtual std::string GetSupportedThermostatFanModes(const unsigned long ID) = 0;
 	virtual void StopHardwareIntern() = 0;
 	virtual bool IncludeDevice(const bool bSecure) = 0;

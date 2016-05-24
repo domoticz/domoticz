@@ -312,6 +312,10 @@ float C1WireByKernel::GetIlluminance(const _t1WireDevice& device) const
 	return -1000.0;// Device not supported in kernel mode (maybe later...), use OWFS solution.
 }
 
+void C1WireByKernel::StartSimultaneousTemperatureRead()
+{
+}
+
 
 float C1WireByKernel::ThreadReadRawDataHighPrecisionDigitalThermometer(const std::string& deviceFileName) const
 {

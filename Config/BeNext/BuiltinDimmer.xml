@@ -70,7 +70,7 @@
     <Associations num_groups="3">
       <Group index="1" max_associations="8" label="Group 1: All nodes in this group will receive a BASIC_SET frame when light is set to a certain state with the button of the Built-in Dimmer (manual switching)." auto="false"/>
       <Group index="2" max_associations="1" label="Group 2: The node associated in this group will receive a SWITCH_MULTILEVEL_REPORT frame every time the level of light is changed, where the value represents the (changed) dim level. The status is reported after every change that means manual but also if changed by Z-Wave. The node in this group will also received the (auto) METER_REPORT." auto="true"/>
-      <Group index="3" max_associations="1" label="Group 3: If configured that the control mode is extern only (configuration param3, value 1) then a BASIC_SET frame is sent to the node in this group when the button is changed." auto="false"/>
+      <Group index="3" max_associations="1" label="Group 3: If configured that the control mode is extern only (configuration param3, value 1) then a BASIC_SET frame is sent to the node in this group when the button is changed." />
     </Associations>
   </CommandClass>
 

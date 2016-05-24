@@ -30,6 +30,7 @@ private:
 	bool StopHardware();
 	void Do_Work();
 	void GetMeterDetails();
+	int getSunRiseSunSetMinutes(const bool bGetSunRise);
 
 	void ImportOldMonthData(const unsigned long long DevID, const int Year, const int Month);
 };

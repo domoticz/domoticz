@@ -66,7 +66,7 @@
 	<!-- Association Groups -->
 	<CommandClass id="133">
 		<Associations num_groups="4">
-			<Group index="1" max_associations="16" label="Multilevel Switch Set reflecting the state/value of the Flush Dimmer" auto="true"/>
+			<Group index="1" max_associations="16" label="Multilevel Switch Set reflecting the state/value of the Flush Dimmer" />
 			<Group index="2" max_associations="16" label="Basic Set On/Off reflecting the input I2 state" auto="true"/>
 			<Group index="3" max_associations="16" label="Basic Set On/Off reflecting the input I3 state" auto="true"/>		
 			<Group index="4" max_associations="1" label="Default controller reporting group" auto="true"/>

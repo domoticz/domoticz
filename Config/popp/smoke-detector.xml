@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+
+<!-- Popp: Smoke Detector and Siren -->
+
+	<!-- Configuration  -->
+	<CommandClass id="112">
+		<Value type="byte" genre="config" instance="1" index="1" label="Siren alarm sequence interval" size="1" min="3" max="129" value="10">
+			<Help>The additional siren is creating a different acoustic signal differentiate from the smoke alarm. This sound is partly on and partly off. This parameter defines the total length of the interval in seconds.</Help>
+		</Value>
+	
+		<Value type="byte" genre="config" instance="1" index="2" label="Siren alarm tone length" size="1" min="3" max="129" value="10">
+			<Help>The additional siren is creating a different acoustic signal differentiate from the smoke alarm. This sound is partly on and partly off. This parameter defines the total length of the sound versus silence within this interval.</Help>
+		</Value>
+
+		<Value type="byte" genre="config" instance="1" index="3" label="Value of On-Command" size="1" min="0" max="99" value="99">
+			<Help>Value of On-Command</Help>
+		</Value>
+		
+		<Value type="byte" genre="config" instance="1" index="4" label="Value of Off-Command" size="1" min="0" max="99" value="99">
+			<Help>Value of Off-Command</Help>
+		</Value>
+		
+		<Value type="list" genre="config" instance="1" index="5" label="Status of automated meshing of smoke alarms" size="1" value="1">
+			<Help>This smoke detector can automatically inform other smoke detectors of same type about smoke alarms. They will then also turn on the siren. This function is a requirement of wireless networked smoke detectors.</Help>
+			<Item label="Inactive" value="0"/>
+			<Item label="Active (default)" value="1"/>
+		</Value>
+		
+		<Value type="list" genre="config" instance="1" index="6" label="Status of automated meshing of battery alarms" size="1" value="1">
+			<Help>This smoke detector can automatically inform other smoke detectors of same type about battery alarms. They will then also turn on the siren. This function is a requirement of wireless networked smoke detectors.</Help>
+			<Item label="Inactive" value="0"/>
+			<Item label="Active (default)" value="1"/>
+		</Value>
+
+	</CommandClass>
+
+	<!-- Association Groups -->
+	
+	<CommandClass id="133">
+		<Associations num_groups="1">
+			<Group index="1" max_associations="10" label="Lifeline"/>
+		</Associations>
+	</CommandClass>
+
+</Product>
+
