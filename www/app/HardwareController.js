@@ -4098,7 +4098,7 @@ define(['app'], function (app) {
                         else if (data["Type"].indexOf("1-Wire") >= 0) {
                             $("#hardwarecontent #hardwareparams1wire #owfspath").val(data["Extra"]);
                             $("#hardwarecontent #hardwareparams1wire #OneWireSensorPollPeriod").val(data["Mode1"]);
-                            $("#hardwarecontent #hardwareparams1wire #OneWireSwitchPeriod").val(data["Mode2"]);
+                            $("#hardwarecontent #hardwareparams1wire #OneWireSwitchPollPeriod").val(data["Mode2"]);
                         }
                         else if (data["Type"].indexOf("USB") >= 0) {
                             $("#hardwarecontent #hardwareparamsserial #comboserialport").val(data["IntPort"]);
