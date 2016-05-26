@@ -1542,8 +1542,6 @@ bool CEvohome::DecodeDeviceInfo(CEvohomeMsg &msg)
 		return true;
 	}
 	Log(true,LOG_STATUS,"evohome: %s: %d: Addr=%d ?=%d ID:0x%06x (%s)", tag,nDevNo,nAddr,nDevType,idDev.GetID(),idDev.GetStrID().c_str());
-	if(nDevType==4 && (nDevNo==0xF9 || nDevNo==0xFA || nDevNo==0xFC)) //not sure what nDevType actually represents so far 4 seems to cover TRVs and Relays but could have entirely alternate meaning
-		RXRelay(nDevNo,static_cast<uint8_t>(0xFF),idDev.GetID());//We've found an internal relay so associate it's deviceid with its devno
 	if(m_bStartup[1])
 		RequestDeviceInfo(nAddr+1);
 	return true;
