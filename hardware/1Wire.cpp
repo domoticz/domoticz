@@ -101,8 +101,14 @@ void C1Wire::LogSystem()
 bool C1Wire::StartHardware()
 {
 	// Start worker thread
-	m_threadSensors = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&C1Wire::SensorThread, this)));
-	m_threadSwitches = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&C1Wire::SwitchThread, this)));
+	if (0 != m_sensorThreadPeriod)
+	{
+		m_threadSensors = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&C1Wire::SensorThread, this)));
+	}
+	if (0 != m_switchThreadPeriod)
+	{
+		m_threadSwitches = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&C1Wire::SwitchThread, this)));
+	}
 	m_bIsStarted=true;
 	sOnConnected(this);
 	StartHeartbeatThread();
@@ -151,7 +157,7 @@ void C1Wire::SensorThread()
 		sleep_milliseconds(pollPeriod);
 		if (0 == iteration++ % pollIterations) // may glitch on overflow, not disastrous
 		{
-			if (m_sql.m_bAcceptNewHardware || 0 == iteration) {
+			if (m_sql.m_bAcceptNewHardware || 1 == iteration) {
 				BuildSensorList();
 			}
 
@@ -180,7 +186,7 @@ void C1Wire::SwitchThread()
 
 		if (0 == iteration++ % rescanIterations) // may glitch on overflow, not disastrous
 		{
-			if (m_sql.m_bAcceptNewHardware || 0 == iteration)
+			if (m_sql.m_bAcceptNewHardware || 1 == iteration)
 			{
 				BuildSwitchList();
 			}
