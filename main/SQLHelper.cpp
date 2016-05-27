@@ -2432,10 +2432,6 @@ bool CSQLHelper::OpenDatabase()
 	if (nValue < 1)
 		nValue = 5;
 	m_ShortLogInterval = nValue;
-	if (!GetPreferencesVar("DisplayPowerUsageInkWhGraph", nValue))
-	{
-		UpdatePreferencesVar("DisplayPowerUsageInkWhGraph", 1);
-	}
 	//Start background thread
 	if (!StartThread())
 		return false;

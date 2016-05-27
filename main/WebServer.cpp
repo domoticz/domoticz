@@ -6555,7 +6555,6 @@ namespace http {
 			}
 			m_sql.UpdatePreferencesVar("DoorbellCommand", atoi(request::findValue(&req, "DoorbellCommand").c_str()));
 			m_sql.UpdatePreferencesVar("SmartMeterType", atoi(request::findValue(&req, "SmartMeterType").c_str()));
-			m_sql.UpdatePreferencesVar("DisplayPowerUsageInkWhGraph", atoi(request::findValue(&req, "DisplayPowerUsageInkWhGraph").c_str()));
 
 			std::string EnableTabFloorplans = request::findValue(&req, "EnableTabFloorplans");
 			m_sql.UpdatePreferencesVar("EnableTabFloorplans", (EnableTabFloorplans == "on" ? 1 : 0));
@@ -11148,10 +11147,6 @@ namespace http {
 				{
 					root["SmartMeterType"] = nValue;
 				}
-				else if (Key == "DisplayPowerUsageInkWhGraph")
-				{
-					root["DisplayPowerUsageInkWhGraph"] = nValue;
-				}
 				else if (Key == "EnableTabFloorplans")
 				{
 					root["EnableTabFloorplans"] = nValue;
@@ -12301,19 +12296,6 @@ namespace http {
 						if ((dType == pTypeYouLess) && ((metertype == MTYPE_ENERGY) || (metertype == MTYPE_ENERGY_GENERATED)))
 							method = 1;
 
-						int iDisplayInPower = 1;
-						m_sql.GetPreferencesVar("DisplayPowerUsageInkWhGraph", iDisplayInPower);
-						if (!iDisplayInPower)
-						{
-							// Force Value graph even if device should show Value graph
-							if ((method == 1) && (
-								((dType == pTypeENERGY) && ((dSubType == sTypeELEC2) || (dSubType == sTypeELEC3))) ||
-								((dType == pTypeGeneral) && (dSubType == sTypeKwh))
-								)) {
-								//_log.Log(LOG_ERROR, "Energy/CMxxx or General/kWh device graph method should be 0!");
-								method = 0;
-							}
-						}
 						if (method != 0)
 						{
 							//realtime graph
