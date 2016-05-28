@@ -353,7 +353,7 @@ define(['app'], function (app) {
 											}
 										}
 										else if (item.SwitchType == "TPI") {
-											var RO=(item.Unit>100)?true:false;
+											var RO=(item.Unit>0)?true:false;
 											isdimmer=true;
 											var img="";
 											if (item.Status == 'On')
@@ -640,7 +640,7 @@ define(['app'], function (app) {
 											}
 										}
 										else if (item.SwitchType == "TPI") {
-											var RO=(item.Unit>100)?true:false;
+											var RO=(item.Unit>0)?true:false;
 											isdimmer=true;
 											if (
 													(item.Status == 'On')
@@ -1954,7 +1954,7 @@ define(['app'], function (app) {
 										}
 									else if (item.SwitchType == "TPI") {
 										var img="";
-										var RO=(item.Unit>100)?true:false;
+										var RO=(item.Unit>0)?true:false;
 										if (item.Status == 'On')
 										{
 													status=
@@ -2057,11 +2057,11 @@ define(['app'], function (app) {
 										xhtm+='</tr>';
 									}
 									else if (item.SwitchType == "TPI") {
-										var RO=(item.Unit>100)?true:false;
+										var RO=(item.Unit>0)?true:false;
 										xhtm+='<tr>';
 										xhtm+='<td colspan="2" style="border:0px solid red; padding-top:10px; padding-bottom:10px;">';
 										xhtm+='<div style="margin-top: -11px; margin-left: 24px;" class="dimslider dimslidernorm" id="light_' + item.idx +'_slider" data-idx="' + item.idx + '" data-type="relay" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"';
-										if(item.Unit>100)
+										if(item.Unit>0)
 											xhtm+=' data-disabled="true"';
 										xhtm+='></div>';
 										xhtm+='</td>';
@@ -2295,7 +2295,7 @@ define(['app'], function (app) {
 										}
 									}
 									else if (item.SwitchType == "TPI") {
-										var RO=(item.Unit>100)?true:false;
+										var RO=(item.Unit>0)?true:false;
 										if (item.Status == 'On')
 										{
 													xhtm+='\t      <td id="img"><img src="images/Fireplace48_On.png" title="' + $.t(RO?"On":"Turn Off") + (RO?'"':'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected +');" class="lcursor"') + ' height="40" width="40"></td>\n';
@@ -2386,7 +2386,7 @@ define(['app'], function (app) {
 									}
 									else if (item.SwitchType == "TPI") {
 										xhtm+='<td><div style="margin-left:50px; margin-top: 0.2em;" class="dimslider dimslidernorm" id="slider" data-idx="' + item.idx + '" data-type="relay" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"';
-										if(item.Unit>100)
+										if(item.Unit>0)
 											xhtm+=' data-disabled="true"';
 										xhtm+='></div></td>';
 									}
