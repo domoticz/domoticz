@@ -4981,7 +4981,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 		}
 
 
-		result=safe_query("SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID='%llu' AND Date>='%q' AND Date<'%q')",
+		result=safe_query("SELECT MIN(Value), MAX(Value), AVG(Value) FROM Meter WHERE (DeviceRowID='%llu' AND Date>='%q' AND Date<'%q')",
 			ID,
 			szDateStart,
 			szDateEnd
@@ -4991,7 +4991,8 @@ void CSQLHelper::AddCalendarUpdateMeter()
 			std::vector<std::string> sd=result[0];
 
 			double total_min=(double)atof(sd[0].c_str());
-			double total_max=(double)atof(sd[1].c_str());
+			double total_max = (double)atof(sd[1].c_str());
+			double avg_value = (double)atof(sd[2].c_str());
 
 			if (
 				(devType!=pTypeAirQuality)&&
@@ -5057,7 +5058,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 					"INSERT INTO MultiMeter_Calendar (DeviceRowID, Value1,Value2,Value3,Value4,Value5,Value6, Date) "
 					"VALUES ('%llu', '%.2f','%.2f','%.2f','%.2f','%.2f','%.2f', '%q')",
 					ID,
-					total_min,total_max,0.0f,0.0f,0.0f,0.0f,
+					total_min,total_max, avg_value,0.0f,0.0f,0.0f,
 					szDateStart
 					);
 			}
