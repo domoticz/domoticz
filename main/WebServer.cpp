@@ -12327,7 +12327,9 @@ namespace http {
 									{
 										if (bHaveFirstValue)
 										{
-											root["result"][ii]["d"] = LastDateTime + (method == 1 ? ":30" : ":00");
+                                            //root["result"][ii]["d"] = LastDateTime + (method == 1 ? ":30" : ":00");
+                                            //^^ not necessarely bad, but is currently inconsistent with all other day graphs
+                                            root["result"][ii]["d"] = LastDateTime + ":00";
 
 											long long ulTotalValue = ulLastValue - ulFirstValue;
 											if (ulTotalValue == 0)
