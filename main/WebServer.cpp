@@ -8938,7 +8938,7 @@ namespace http {
 						{
 							sprintf(szData, "%.1f Bar", atof(sValue.c_str()));
 							root["result"][ii]["Data"] = szData;
-							root["result"][ii]["TypeImg"] = "gauge";
+							root["result"][ii]["TypeImg"] = "baro";
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 							root["result"][ii]["Pressure"] = atof(sValue.c_str());
 						}
@@ -8946,7 +8946,7 @@ namespace http {
 						{
 							sprintf(szData, "%.1f hPa", atof(sValue.c_str()));
 							root["result"][ii]["Data"] = szData;
-							root["result"][ii]["TypeImg"] = "gauge";
+							root["result"][ii]["TypeImg"] = "baro";
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 
 							std::vector<std::string> tstrarray;
