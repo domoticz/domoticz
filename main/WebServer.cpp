@@ -12327,7 +12327,9 @@ namespace http {
 									{
 										if (bHaveFirstValue)
 										{
-											root["result"][ii]["d"] = LastDateTime + (method == 1 ? ":30" : ":00");
+                                            //root["result"][ii]["d"] = LastDateTime + (method == 1 ? ":30" : ":00");
+                                            //^^ not necessarely bad, but is currently inconsistent with all other day graphs
+                                            root["result"][ii]["d"] = LastDateTime + ":00";
 
 											long long ulTotalValue = ulLastValue - ulFirstValue;
 											if (ulTotalValue == 0)
@@ -14013,7 +14015,7 @@ namespace http {
 							vdiv = 1000.0f;
 						}
 
-						result = m_sql.safe_query("SELECT Value1,Value2, Date FROM %s WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart, szDateEnd);
+						result = m_sql.safe_query("SELECT Value1,Value2,Value3,Date FROM %s WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (result.size() > 0)
 						{
 							std::vector<std::vector<std::string> >::const_iterator itt;
@@ -14021,29 +14023,38 @@ namespace http {
 							{
 								std::vector<std::string> sd = *itt;
 
-								root["result"][ii]["d"] = sd[2].substr(0, 16);
-
 								float fValue1 = float(atof(sd[0].c_str())) / vdiv;
 								float fValue2 = float(atof(sd[1].c_str())) / vdiv;
+								float fValue3 = float(atof(sd[2].c_str())) / vdiv;
+								root["result"][ii]["d"] = sd[3].substr(0, 16);
+
 								if (metertype == 1)
 								{
 									fValue1 *= 0.6214f;
 									fValue2 *= 0.6214f;
 								}
-								if ((dType == pTypeGeneral) && (dSubType == sTypeVoltage))
+								if (
+									((dType == pTypeGeneral) && (dSubType == sTypeVoltage)) ||
+									((dType == pTypeGeneral) && (dSubType == sTypeCurrent))
+									)
+								{
 									sprintf(szTmp, "%.3f", fValue1);
-								else if ((dType == pTypeGeneral) && (dSubType == sTypeCurrent))
-									sprintf(szTmp, "%.3f", fValue1);
+									root["result"][ii]["v_min"] = szTmp;
+									sprintf(szTmp, "%.3f", fValue2);
+									root["result"][ii]["v_max"] = szTmp;
+									if (fValue3 != 0)
+									{
+										sprintf(szTmp, "%.3f", fValue3);
+										root["result"][ii]["v_avg"] = szTmp;
+									}
+								}
 								else
+								{
 									sprintf(szTmp, "%.1f", fValue1);
-								root["result"][ii]["v_min"] = szTmp;
-								if ((dType == pTypeGeneral) && (dSubType == sTypeVoltage))
-									sprintf(szTmp, "%.3f", fValue2);
-								else if ((dType == pTypeGeneral) && (dSubType == sTypeCurrent))
-									sprintf(szTmp, "%.3f", fValue2);
-								else
+									root["result"][ii]["v_min"] = szTmp;
 									sprintf(szTmp, "%.1f", fValue2);
-								root["result"][ii]["v_max"] = szTmp;
+									root["result"][ii]["v_max"] = szTmp;
+								}
 								ii++;
 							}
 						}
