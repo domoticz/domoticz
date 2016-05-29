@@ -155,8 +155,8 @@ enum _eHardwareTypes {
 	HTYPE_Sterbox,				//73
 	HTYPE_HTTPPOLLER,			//74
 	HTYPE_FITBIT,				//75
-	HTYPE_RAVEn,	    		//75
-	HTYPE_S0SmartMeterTCP,		//76
+	HTYPE_RAVEn,	    		//76
+	HTYPE_S0SmartMeterTCP,		//77
 	HTYPE_END
 };
 

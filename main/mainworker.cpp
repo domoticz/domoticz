@@ -788,9 +788,11 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_Netatmo:
 		pHardware = new CNetatmo(ID,Username,Password);
 		break;
+#ifdef _DEBUG
 	case HTYPE_FITBIT:
 		pHardware = new CFitbit(ID, Username, Password);
 		break;
+#endif
 	case HTYPE_SBFSpot:
 		pHardware = new CSBFSpot(ID,Username);
 		break;

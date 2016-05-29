@@ -11313,11 +11313,9 @@ namespace http {
 					root["MyDomoticzSubsystems"] = nValue;
 				}
 #endif
-#ifdef _DEBUG
-				else {
-					_log.Log(LOG_ERROR, "Unknown preferences detected: '%s'", Key.c_str());
+				else if (Key == "MyDomoticzSubsystems") {
+					root["MyDomoticzSubsystems"] = nValue;
 				}
-#endif
 			}
 		}
 
