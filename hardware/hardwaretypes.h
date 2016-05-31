@@ -176,6 +176,10 @@
 #define gswitch_sPlayPlaylist		0x16
 #define gswitch_sPlayFavorites		0x17
 #define gswitch_sExecute			0x18
+#define gswitch_sColor				0x19
+#define gswitch_sDiscop				0x1a
+#define gswitch_sDiscom				0x1b
+
 //--------------
 
 #define pTypeLux		0xF6
