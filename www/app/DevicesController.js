@@ -336,6 +336,9 @@ define(['app'], function (app) {
 					  if ((item.Type == "P1 Smart Meter")&&(item.SubType=="Energy")) {
 						itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowSmartLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');">';
 					  }
+					  else if ((item.Type == "YouLess Meter")&&(item.SwitchTypeVal==0 || item.SwitchTypeVal==4)) {
+						itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowCounterLogSpline(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');">';
+					  }
 					  else {
 						itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowCounterLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');">';
 					  }
