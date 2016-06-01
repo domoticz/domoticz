@@ -89,6 +89,8 @@ CEvohome::CEvohome(const int ID, const std::string &szSerialPort) :
 	m_nZoneCount=0;
 	m_nControllerMode=0;
 	m_MaxDeviceID = 0;
+
+	AllSensors = false;
 	
 	m_iBaudRate=115200;
 	if(!szSerialPort.empty())
@@ -313,6 +315,16 @@ void CEvohome::Do_Work()
 						uint8_t nZoneCount = GetZoneCount();
 						for (uint8_t i = 0; i < nZoneCount; i++)
 							RequestZoneTemp(i);
+					}
+					if (AllSensors == false) // Check whether individual zone sensors has been activated 
+					{
+						result = m_sql.safe_query("SELECT HardwareID, DeviceID FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) AND (Unit >= 13) AND (Unit <= 24)", m_HwdID, (int)pTypeEvohomeZone);						
+						if (result.size() != 0)
+							AllSensors = true;	
+						// Check if the dummy sensor exists and delete
+						result = m_sql.safe_query("SELECT HardwareID, DeviceID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == 'FFFFFF') AND (Type==%d) AND (Unit == 13)", m_HwdID, (int)pTypeEvohomeZone);
+						if (result.size() != 0)
+							m_sql.safe_query("DELETE FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='FFFFFF' AND (Type==%d) AND (Unit == 13))", m_HwdID, (int)pTypeEvohomeZone);
 					}
 					nStartup = 0;
 				}
@@ -991,8 +1003,17 @@ bool CEvohome::DecodeSetpoint(CEvohomeMsg &msg)//0x2309
 		//presumably this will ordinarily update to correspond to the transmitted value from the controller
 		//The exception appears to be for local overrides which may be possible to track by seeing if a change
 		//occurs that does not correspond to the controller setpoint for a given zone
-		if (msg.GetID(0) == GetControllerID())
+		if (msg.GetID(0) == GetControllerID())	
 			sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME2, "Setpoint", 255);
+		else if (AllSensors)
+		{
+			char zstrname[40];
+
+			sprintf(zstrname, "Zone %d", tsen.EVOHOME2.zone);
+			tsen.EVOHOME2.zone += 12; //zone number offset by 12
+			Log(true, LOG_STATUS, "evohome: %s: Setting: %d (0x%x): %d", tag, tsen.EVOHOME2.zone, msg.GetID(0), tsen.EVOHOME2.temperature);
+			sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME2, zstrname, 255);
+		}
 	}
 	
 	return true;
@@ -1048,11 +1069,11 @@ bool CEvohome::DecodeSetpointOverride(CEvohomeMsg &msg)//0x2349
 	if(msg.payloadsize == 13)
 	{	
 		CEvohomeDateTime::DecodeDateTime(tsen.EVOHOME2,msg.payload,7);
-		Log(true,LOG_STATUS,"evohome: %s: Setting: %d: %d (%d=%s) %s", tag, tsen.EVOHOME2.zone, tsen.EVOHOME2.temperature, tsen.EVOHOME2.mode, GetZoneModeName(tsen.EVOHOME2.mode),CEvohomeDateTime::GetStrDate(tsen.EVOHOME2).c_str());
+		Log(true,LOG_STATUS,"evohome: %s: Setting: %d (0x%x): %d (%d=%s) %s", tag, tsen.EVOHOME2.zone, msg.GetID(0), tsen.EVOHOME2.temperature, tsen.EVOHOME2.mode, GetZoneModeName(tsen.EVOHOME2.mode),CEvohomeDateTime::GetStrDate(tsen.EVOHOME2).c_str());
 	}
 	else
 	{
-		Log(true,LOG_STATUS,"evohome: %s: Setting: %d: %d (%d=%s)", tag, tsen.EVOHOME2.zone, tsen.EVOHOME2.temperature, tsen.EVOHOME2.mode, GetZoneModeName(tsen.EVOHOME2.mode));
+		Log(true,LOG_STATUS,"evohome: %s: Setting: %d (0x%x): %d (%d=%s)", tag, tsen.EVOHOME2.zone, msg.GetID(0), tsen.EVOHOME2.temperature, tsen.EVOHOME2.mode, GetZoneModeName(tsen.EVOHOME2.mode));
 	}
 	
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME2, "Setpoint", 255);
@@ -1093,7 +1114,7 @@ bool CEvohome::DecodeZoneTemp(CEvohomeMsg &msg)//0x30C9
 			tsen.EVOHOME2.zone = 0;
 		tsen.EVOHOME2.temperature = msg.payload[i + 1] << 8 | msg.payload[i + 2];
 		//this is sent for zones that use a zone temperature instead of the internal sensor.
-		Log(true,LOG_STATUS,"evohome: %s: Zone sensor msg: 0x%x: %d: %d", tag, msg.GetID(0), tsen.EVOHOME2.zone, tsen.EVOHOME2.temperature);
+		Log(true, LOG_STATUS, "evohome: %s: Zone sensor msg: 0x%x: %d: %d", tag, msg.GetID(0), tsen.EVOHOME2.zone, tsen.EVOHOME2.temperature);
 		if(tsen.EVOHOME2.temperature!=0x7FFF)//afaik this is the error value just ignore it right now as we have no way to report errors...also perhaps could be returned if DHW is not installed?
 		{
 			sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME2, "Zone Temp", 255);
@@ -1114,6 +1135,31 @@ bool CEvohome::DecodeZoneTemp(CEvohomeMsg &msg)//0x30C9
 	}
 	else {//no zone number here so we'd need to do a lookup based on the ID to use this
 		//msg from sensor itself
+		if (AllSensors) 
+		{
+			std::vector<std::vector<std::string> > result;
+			char zstrname[40];
+			std::string zstrid(CEvohomeID::GetHexID(msg.GetID(0)));
+
+			result = m_sql.safe_query("SELECT Unit FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == '%q') AND (Type == %d)", m_HwdID, zstrid.c_str(), (int)pTypeEvohomeZone);
+			if (result.size() != 0) // Update existing temp sensor with value directly from sensor
+			{
+				tsen.EVOHOME2.zone = atoi(result[0][0].c_str());
+				Log(true, LOG_STATUS, "evohome: %s: Zone sensor msg: 0x%x: %d: %d", tag, msg.GetID(0), tsen.EVOHOME2.zone, tsen.EVOHOME2.temperature);
+				sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME2, "Zone Temp", 255);
+			}
+			else // If matching relay with same deviceID then create a new Zone Temp sensor with zone number offset by 12
+			{
+				result = m_sql.safe_query("SELECT Unit FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == '%q') AND (Type == %d)", m_HwdID, zstrid.c_str(), (int)pTypeEvohomeRelay);
+				if (result.size() != 0) 
+				{
+					tsen.EVOHOME2.zone = atoi(result[0][0].c_str()) + 12;
+					sprintf(zstrname, "Zone %d", atoi(result[0][0].c_str()));
+					Log(true, LOG_STATUS, "evohome: %s: Zone sensor msg: 0x%x: %d: %d", tag, msg.GetID(0), tsen.EVOHOME2.zone, tsen.EVOHOME2.temperature);
+					sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME2, zstrname, 255); 		
+				}
+			}			
+		}
 		if (msg.payloadsize != 3) {
 			Log(true,LOG_STATUS,"evohome: %s: WARNING: got a sensor temperature msg with an unexpected payload size: %d", tag, msg.payloadsize);
 		}
@@ -1917,6 +1963,21 @@ namespace http {
 			}
 			else if (type == "OutdoorSensor")
 				nID = pEvoHW->Bind(0, CEvohomeID::devSensor);
+			else if (type == "AllSensors")
+			{
+				// Check if All Sensors has already been activated, if not create a temporary dummy sensor				
+				std::vector<std::vector<std::string> > result;
+				result = m_sql.safe_query("SELECT HardwareID, DeviceID FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) AND (Unit > 12) AND (Unit <= 24)", HwdID, (int)pTypeEvohomeZone);
+				if (result.size() == 0)
+				{
+					std::string devname = "Zone Temp";
+					m_sql.UpdateValue(HwdID, "FFFFFF", 13, pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, "0.0;0.0;Auto", devname);
+				}
+				root["status"] = "OK";
+				root["title"] = "CreateEvohomeSensor";
+				root["Used"] = false;
+				return;
+			}
 			else if (type == "ZoneSensor")
 			{	
 				//get dev count
