@@ -5947,6 +5947,7 @@ void MainWorker::decode_evohome2(const int HwdID, const _eHardwareTypes HwdType,
 
 	bool bNewDev=false;
 	std::string name,szDevID;
+	std::stringstream szID;
 	unsigned char Unit;
 	unsigned char dType;
 	unsigned char dSubType;
@@ -5968,11 +5969,16 @@ void MainWorker::decode_evohome2(const int HwdID, const _eHardwareTypes HwdType,
 		dType=pEvo->EVOHOME2.type;
 		dSubType=pEvo->EVOHOME2.subtype;
 
+		szID << std::hex << (int)RFX_GETID3(pEvo->EVOHOME2.id1, pEvo->EVOHOME2.id2, pEvo->EVOHOME2.id3);
+		szDevID = szID.str();
+
 		CEvohome *pEvoHW = reinterpret_cast<CEvohome*>(GetHardware(HwdID));
 		if(!pEvoHW)
 			return;
 		if(dType==pTypeEvohomeWater)
 			name="Hot Water";
+		else if (dType == pTypeEvohomeZone && !szDevID.empty())
+			name = "Zone Temp";
 		else
 			name=pEvoHW->GetZoneName(Unit-1);
 		if(name.empty())

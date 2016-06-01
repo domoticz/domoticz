@@ -606,6 +606,8 @@ private:
 	boost::condition_variable m_cndBindNotify;
 
 	unsigned int m_MaxDeviceID;
+
+	bool AllSensors;
 	
 	struct _tRelayCheck
 	{
