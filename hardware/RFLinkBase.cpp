@@ -310,12 +310,8 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 			break;
 		case Limitless_SetRGBColour:
 			{
-			//The Hue is inverted/swifted 90 degrees
-			int iHue = ((255 - pLed->value) + 192) & 0xFF;
-			//_log.Log(LOG_ERROR, "RFLink: hue: %d", iHue);
-			//RGBWSetColor[1] = (unsigned char)iHue;
 			m_colorbright = m_colorbright & 0xff;
-			m_colorbright = (((unsigned char) iHue) << 8) + m_colorbright;
+			m_colorbright = (((unsigned char)pLed->value) << 8) + m_colorbright;
 			switchcmnd = "COLOR";
 			}
 			break;
@@ -333,18 +329,13 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 			break;
 		case Limitless_SetBrightnessLevel:
 			{
-			//convert brightness (0-100) to (0-50) to 0-59
-			double dval = (59.0 / 100.0)*float(pLed->value / 2);
-			int ival = round(dval);
-			if (ival<2)
-				ival = 2;
-			if (ival>27)
-				ival = 27;
-			//_log.Log(LOG_ERROR, "RFLink: brightness: %d", ival);
+			//brightness (0-100) converted to 0x00-0xff
+			int m_brightness = (unsigned char)pLed->value;
+			m_brightness = (m_brightness * 255) / 100;
+			m_brightness = m_brightness & 0xff;
 			m_colorbright = m_colorbright & 0xff00;
-			m_colorbright = m_colorbright + (unsigned char) ival;
+			m_colorbright = m_colorbright + (unsigned char)m_brightness;
 			switchcmnd = "BRIGHT";
-			//RGBWSetBrightnessLevel[1] = (unsigned char)ival;
 			}
 			break;
 
@@ -929,13 +920,13 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 	if (bHaveRGB)
 	{
 		//RRGGBB
-		_log.Log(LOG_STATUS, "RFLink ID,unit: %x , %x", Node_ID, Child_ID);
 		SendRGBWSwitch(ID, switchunit, BatteryLevel, rgb, false, tmp_Name);
 	} else
 	if (bHaveRGBW)
 	{
 		//RRGGBBWW
-		_log.Log(LOG_STATUS, "RFLink ID,unit: %x , %x", Node_ID, Child_ID);
+		//_log.Log(LOG_STATUS, "RFLink ID,unit,level,cmd: %x , %x, %x, %x", ID, switchunit, rgbw, switchcmd);
+		if (switchcmd == "OFF") rgbw = 0;
 		SendRGBWSwitch(ID, switchunit, BatteryLevel, rgbw, true, tmp_Name);
 	} else
 	if (bHaveSwitch && bHaveSwitchCmd)
