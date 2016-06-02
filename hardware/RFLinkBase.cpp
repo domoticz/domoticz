@@ -920,13 +920,13 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 	if (bHaveRGB)
 	{
 		//RRGGBB
-		_log.Log(LOG_STATUS, "RFLink ID,unit: %x , %x", Node_ID, Child_ID);
 		SendRGBWSwitch(ID, switchunit, BatteryLevel, rgb, false, tmp_Name);
 	} else
 	if (bHaveRGBW)
 	{
 		//RRGGBBWW
-		_log.Log(LOG_STATUS, "RFLink ID,unit: %x , %x", Node_ID, Child_ID);
+		//_log.Log(LOG_STATUS, "RFLink ID,unit,level,cmd: %x , %x, %x, %x", ID, switchunit, rgbw, switchcmd);
+		if (switchcmd == "OFF") rgbw = 0;
 		SendRGBWSwitch(ID, switchunit, BatteryLevel, rgbw, true, tmp_Name);
 	} else
 	if (bHaveSwitch && bHaveSwitchCmd)
