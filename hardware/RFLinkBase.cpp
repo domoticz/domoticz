@@ -293,7 +293,7 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 		//_log.Log(LOG_ERROR, "RFLink: subtype: %d", pLed->subtype);		// rgbw/rgb/white?
 		//_log.Log(LOG_ERROR, "RFLink: id: %d", pLed->id);				// id
 		//_log.Log(LOG_ERROR, "RFLink: unit: %d", pLed->dunit);			// unit 0=All, 1=Group1,2=Group2,3=Group3,4=Group4
-		_log.Log(LOG_ERROR, "RFLink: command: %d", pLed->command);		// command
+		//_log.Log(LOG_ERROR, "RFLink: command: %d", pLed->command);		// command
 		//_log.Log(LOG_ERROR, "RFLink: value: %d", pLed->value);			// brightness/color value
 
 		const int m_LEDType = pLed->type;
@@ -331,15 +331,10 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 			{
 			//brightness (0-100) converted to 0x00-0xff
 			int m_brightness = (unsigned char)pLed->value;
-			_log.Log(LOG_ERROR, "RFLink: br1: %04x", m_brightness);		// command
 			m_brightness = (m_brightness * 255) / 100;
-			_log.Log(LOG_ERROR, "RFLink: br2: %04x", m_brightness);		// command
 			m_brightness = m_brightness & 0xff;
-			_log.Log(LOG_ERROR, "RFLink: br3: %04x", m_brightness);		// command
 			m_colorbright = m_colorbright & 0xff00;
-			//m_colorbright = m_colorbright + (unsigned char)pLed->value;
 			m_colorbright = m_colorbright + (unsigned char)m_brightness;
-			_log.Log(LOG_ERROR, "RFLink: command: %04x", m_colorbright);		// command
 			switchcmnd = "BRIGHT";
 			}
 			break;
