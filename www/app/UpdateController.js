@@ -25,7 +25,7 @@ define(['app'], function (app) {
 			}
 			else {
 				$("#updatecontent #divprogress").hide();
-				$scope.topText = $.t("Error while downloading Update,<br>check your internet connection or try again later !...");
+				$scope.topText = $.t("Error while downloading update,<br>check your internet connection or try again later!");
 			}
 		}
 
@@ -70,7 +70,7 @@ define(['app'], function (app) {
 				 timeout: 20000,
 				 dataType: 'json',
 				 success: function(data) {
-					$scope.topText = $.t("Restarting System (This could take some time...)");
+					$scope.topText = $.t("Restarting system. This could take a while...)");
 				 },
 				 error: function(){
 				 }     
@@ -86,7 +86,7 @@ define(['app'], function (app) {
 			var val = $scope.ProgressData.label;
 			if (val == 100) {
 				$("#updatecontent #divprogress").hide();
-				$scope.topText = $.t("Error while downloading Update,<br>check your internet connection or try again later !...");
+				$scope.topText = $.t("Error while downloading update,<br>check your internet connection or try again later!");
 				return;
 			}
 			$.ajax({
@@ -112,7 +112,7 @@ define(['app'], function (app) {
 						else {
 							$.StopProgress=true;
 							$("#updatecontent #divprogress").hide();
-							$scope.topText = $.t("Error while downloading Update,<br>check your internet connection or try again later !...");
+							$scope.topText = $.t("Error while downloading update,<br>check your internet connection or try again later!");
 						}
 					}
 					else {
@@ -124,7 +124,7 @@ define(['app'], function (app) {
 				 error: function(){
 					$.StopProgress=true;
 					$("#updatecontent #divprogress").hide();
-					$scope.topText = $.t("Error while downloading Update,<br>check your internet connection or try again later !...");
+					$scope.topText = $.t("Error while downloading update,<br>check your internet connection or try again later!");
 				 }     
 			});
 		}
@@ -141,7 +141,7 @@ define(['app'], function (app) {
 				 dataType: 'json',
 				 success: function(data) {
 					if (data.HaveUpdate == true) {
-						$scope.topText = $.t("Update Available... Downloading Update !...");
+						$scope.topText = $.t("Update available! Downloading update...");
 						$.ajax({
 							 url: "json.htm?type=command&param=downloadupdate",
 							 async: false, 
@@ -158,20 +158,20 @@ define(['app'], function (app) {
 									}, 2000);
 								}
 								else {
-									$scope.topText = $.t("Could not start download,<br>check your internet connection or try again later !...");
+									$scope.topText = $.t("Could not start download,<br>check your internet connection or try again later!");
 								}
 							 },
 							 error: function(){
-								$scope.topText = $.t("Error communicating with Server !...");
+								$scope.topText = $.t("Error communicating with server!");
 							 }
 						});
 					}
 					else {
-						$scope.topText = $.t("No Update Available !...");
+						$scope.topText = $.t("No update available!");
 					}
 				 },
 				 error: function(){
-					$scope.topText = $.t("Error communicating with Server !...");
+					$scope.topText = $.t("Error communicating with server!");
 				 }     
 			});
 		}
@@ -186,8 +186,8 @@ define(['app'], function (app) {
 			}, true);
         		
 			$.StopProgress=false;
-			$scope.topText = $.t("Checking for updates....");
-			$scope.bottomText = $.t("Do not poweroff the system while updating !...");
+			$scope.topText = $.t("Checking for updates...");
+			$scope.bottomText = $.t("Do not power-off the system while updating!");
 			
 			$scope.mytimer=$interval(function() {
 				$scope.CheckForUpdate();
