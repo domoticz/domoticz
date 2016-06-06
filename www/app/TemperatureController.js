@@ -1,6 +1,8 @@
 define(['app'], function (app) {
 	app.controller('TemperatureController', [ '$scope', '$rootScope', '$location', '$http', '$interval', 'permissions', function($scope,$rootScope,$location,$http,$interval,permissions) {
 
+		var ctrl = this;
+
 		MakeFavorite = function(id,isfavorite)
 		{
 			if (!permissions.hasPermission("Admin")) {
@@ -433,6 +435,7 @@ define(['app'], function (app) {
 		  htmlcontent+=$('#customlog').html();
 		  $('#tempcontent').html(GetBackbuttonHTMLTable('ShowTemps')+htmlcontent);
 		  $('#tempcontent').i18n();
+			$('#tempwidgets').hide();
 		  
 		  $.content="#tempcontent";
 
@@ -588,164 +591,19 @@ define(['app'], function (app) {
 				if (typeof data.ActTime != 'undefined') {
 					$.LastUpdateTime=parseInt(data.ActTime);
 				}
-				$.each(data.result, function(i,item){
-					id="#tempcontent #" + item.idx;
-					var obj=$(id);
-					if (typeof obj != 'undefined') {
-						if ($(id + " #name").html()!=item.Name) {
-							$(id + " #name").html(item.Name);
-						}
-						var img='<img src="images/';
-						if (typeof item.Temp != 'undefined') {
-							img+=GetTemp48Item(item.Temp);
-						}
-						else {
-							if (item.Type=="Humidity") {
-								img+="gauge48.png";
-							}
-							else {
-								img+=GetTemp48Item(item.Chill);
-							}
-						}
-						img+='" height="48" width="48">';
-			
-						if ($(id + " #img").html()!=img) {
-										$(id + " #img").html(img);
-									}
-						
-						var status="";
-						var bigtext="";
-						var setonclick="";
-						var bHaveBefore=false;
-						//Evohome...
-						var sHeatMode="";
-						if (typeof item.Status != 'undefined') { //FIXME only support this for evohome?
-							sHeatMode=item.Status;
-						}
-						if (typeof item.Temp != 'undefined') {
-							 bigtext=item.Temp + '\u00B0 ' + $scope.config.TempSign;
-						}
-						if (item.SubType=="Zone" || item.SubType=="Hot Water") {
-							var tUntil="";
-							if (typeof item.Until != 'undefined')
-								tUntil=item.Until;
-							if (typeof item.SetPoint != 'undefined'){
-							    if (item.SetPoint != 325.1) {
-							        bigtext += ' (' + item.SetPoint + '\u00B0 ' + $scope.config.TempSign + ')';
-							        if (bHaveBefore == true) {
-							            status += ', ';
-							        }
-							        status += $.t('Set Point') + ': ' + item.SetPoint + '\u00B0 ' + $scope.config.TempSign;
-							    }
-							    else {
-							        bigtext += ' (Off)';
-							        if (bHaveBefore == true) {
-							            status += ', ';
-							        }
-							        status += $.t('Set Point') + ': Off';
-							    }
-							    setonclick = 'EditSetPoint(' + item.idx + ',\'' + item.Name + '\',\'' + item.Description + '\',' + item.SetPoint + ', \'' + sHeatMode + '\', \'' + tUntil + '\', \'ShowTemps\');';
-								bHaveBefore=true;
-							}
-							if (typeof item.State != 'undefined'){
-								bigtext+=' <img height="12" src="images/evohome/'+item.State+'.png" />'
-								if (bHaveBefore==true) {
-									status+=', ';
-								}
-								status+=$.t('State') + ': ' + item.State;
-								setonclick='EditState(' + item.idx + ',\'' + item.Name + '\',\'' + item.Description + '\',\'' + item.State + '\', \''+sHeatMode+'\', \''+tUntil+'\', \'ShowTemps\');';
-								bHaveBefore=true;
-							}
-							if(sHeatMode!="Auto")
-								bigtext+=' <img height="15" src="images/evohome/'+sHeatMode+((item.SubType=="Hot Water")?"Inv":"")+'.png" />'
-							if (bHaveBefore==true) {
-								status+=', ';
-							}
-							status+=$.t('Mode') + ': ' + EvoDisplayTextMode(sHeatMode);
-							if (tUntil!=""){
-								var dtUntil = new Date(tUntil);
-								dtUntil = new Date(dtUntil.getTime() - dtUntil.getTimezoneOffset()*60000);
-								status+=', '+$.t('Until') + ': ' + dtUntil.toISOString().replace(/T/,' ').replace(/\..+/, '');
-							}
-							bHaveBefore=true;
-						}
-						if (typeof item.Chill != 'undefined') {
-							if (bigtext!="") {
-								bigtext+=' / ';
-							}
-							bigtext+=item.Chill + '\u00B0 ' + $scope.config.TempSign;
-						}
-						if (typeof item.Humidity != 'undefined') {
-							if (bigtext!="") {
-								bigtext+=' / ';
-							}
-							bigtext+=item.Humidity + '%';
-						}
-						if (typeof item.HumidityStatus != 'undefined') {
-						  status+=$.t(item.HumidityStatus);
-						  bHaveBefore=true;
-						}
-						if (typeof item.Barometer != 'undefined') {
-							if (bHaveBefore==true) {
-								status+=', ';
-							}
-							status+=$.t('Barometer') + ': ' + item.Barometer + ' hPa';
-							bHaveBefore=true;
-						}
-						if (typeof item.ForecastStr != 'undefined') {
-						  status+=', ' + $.t('Prediction') + ': ' + $.t(item.ForecastStr) + '<br>';
-						  bHaveBefore=false;
-						}
-						if (typeof item.Direction != 'undefined') {
-						  status+=item.Direction + ' ' + item.DirectionStr + ', ' + $.t('Speed') + ': ' + item.Speed + ' ' + $scope.config.WindSign;
-						  if (typeof item.Gust != 'undefined') {
-							status+=', ' + $.t('Gust') + ': ' + item.Gust + ' ' + $scope.config.WindSign;
-						  }
-						}
-						if (typeof item.DewPoint != 'undefined') {
-							if (bHaveBefore==true) {
-								status+=', ';
-							}
-							status+=$.t("Dew Point") + ": " + item.DewPoint + '\u00B0 ' + $scope.config.TempSign;
-						}
 
-						var nbackcolor="#D4E1EE";
-						if (item.HaveTimeout==true) {
-							nbackcolor="#DF2D3A";
-						}
-						else {
-							var BatteryLevel=parseInt(item.BatteryLevel);
-							if (BatteryLevel!=255) {
-								if (BatteryLevel<=10) {
-									nbackcolor="#DDDF2D";
-								}
-							}
-						}
-						if (status.substr(0,2)==", ") {
-							statusnew=status.substr(2);
-							status=statusnew;
-						}
-						//Evohome...
-						nbackcolor=EvoSetPointColor(item,sHeatMode,nbackcolor);
-						
-						var obackcolor=rgb2hex($(id + " #name").css( "background-color" ));
-						if (obackcolor!=nbackcolor) {
-										$(id + " #name").css( "background-color", nbackcolor );
-						}
-						if (($(id + " #status").html()!=status) || ($(id + " #bigtext").html()!=bigtext)) {
-							$(id + " #bigtext").html(bigtext);
-							$(id + " #status").html(status);
-							if (setonclick!="")
-								$(id + " #set").attr("onclick",setonclick);
-						}
-						if ($(id + " #lastupdate").html()!=item.LastUpdate) {
-							$(id + " #lastupdate").html(item.LastUpdate);
-						}
-						if ($scope.config.ShowUpdatedEffect==true) {
-							$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
-						}
-				   }
-				});
+				  // Change updated items in temperatures list
+				  // TODO is there a better way to do this ?
+				  data.result.forEach(function(newitem) {
+					  ctrl.temperatures.forEach(function(olditem, oldindex, oldarray) {
+						 if (olditem.idx == newitem.idx) {
+							oldarray[oldindex] = newitem;
+							 if ($scope.config.ShowUpdatedEffect==true) {
+								 $("#tempwidgets #" + newitem.idx + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
+							 }
+						 }
+					  });
+				  });
 			  }
 			 }
 		  });
@@ -768,7 +626,6 @@ define(['app'], function (app) {
 			}
 		  $('#modal').show();
 
-		  var htmlcontent = '';
 		  var bShowRoomplan=false;
 		  $.RoomPlans = [];
 		  $.ajax({
@@ -866,201 +723,17 @@ define(['app'], function (app) {
 				if (typeof data.ActTime != 'undefined') {
 					$.LastUpdateTime=parseInt(data.ActTime);
 				}
-				$.each(data.result, function(i,item){
-				  if (i % 3 == 0)
-				  {
-					//add devider
-					if (bHaveAddedDevider == true) {
-					  //close previous devider
-					  htmlcontent+='</div>\n';
-					}
-					htmlcontent+='<div class="row divider">\n';
-					bHaveAddedDevider=true;
-				  }
-				  var xhtm=
-						'\t<div class="span4" id="' + item.idx + '">\n' +
-						'\t  <section>\n' +
-						'\t    <table id="itemtablenotype" border="0" cellpadding="0" cellspacing="0">\n' +
-						'\t    <tr>\n';
-						var nbackcolor="#D4E1EE";
-						if (item.HaveTimeout==true) {
-							nbackcolor="#DF2D3A";
-						}
-						else {
-							var BatteryLevel=parseInt(item.BatteryLevel);
-							if (BatteryLevel!=255) {
-								if (BatteryLevel<=10) {
-									nbackcolor="#DDDF2D";
-								}
-							}
-						}
-											
-						//Evohome...
-						var sHeatMode="";
-						if (typeof item.Status != 'undefined') { //FIXME only support this for evohome?
-							sHeatMode=item.Status;
-						}
-						nbackcolor=EvoSetPointColor(item,sHeatMode,nbackcolor);
-						
-						xhtm+='\t      <td id="name" style="background-color: ' + nbackcolor + ';">' + item.Name + '</td>\n';
-				  xhtm+='\t      <td id="bigtext">';
-				  var tUntil="";
-				  var bigtext="";
-					if (typeof item.Temp != 'undefined') {
-						bigtext=item.Temp + '\u00B0 ' + $scope.config.TempSign;
-					}
-					if (item.SubType=="Zone" || item.SubType=="Hot Water") {
-					    if (typeof item.SetPoint != 'undefined') {
-					        if (item.SetPoint != 325.1) {
-					            bigtext += ' (' + item.SetPoint + '\u00B0 ' + $scope.config.TempSign + ')';
-					        }
-					        else {
-					            bigtext += ' (Off)';
-					        }
-					    }
-						if (typeof item.State != 'undefined')
-							bigtext+=' <img height="12" src="images/evohome/'+item.State+'.png" />'
-						if(sHeatMode!="Auto")
-							bigtext+=' <img height="15" src="images/evohome/'+sHeatMode+((item.SubType=="Hot Water")?"Inv":"")+'.png" />'
-					}
-					if (typeof item.Humidity != 'undefined') {
-						if (bigtext!="") {
-							bigtext+=' / ';
-						}
-						bigtext+=item.Humidity + '%';
-					}
-					if (typeof item.Chill != 'undefined') {
-						if (bigtext!="") {
-							bigtext+=' / ';
-						}
-						bigtext+=item.Chill + '\u00B0 ' + $scope.config.TempSign;
-					}
-				  xhtm+=bigtext+'</td>\n';
-				  xhtm+='\t      <td id="img"><img src="images/';
-				  if (typeof item.Temp != 'undefined') {
-						xhtm+=GetTemp48Item(item.Temp);
-					}
-					else {
-						if (item.Type=="Humidity") {
-							xhtm+="gauge48.png";
-						}
-						else {
-							xhtm+=GetTemp48Item(item.Chill);
-						}
-					}
-							xhtm+='" height="48" width="48"></td>\n' +
-									'\t      <td id="status">';
-							var bHaveBefore=false;
-							if (item.SubType=="Zone" || item.SubType=="Hot Water") {
-								if (typeof item.SetPoint != 'undefined'){
-								    if (item.SetPoint != 325.1) {
-								        xhtm += $.t('Set Point') + ': ' + item.SetPoint + '\u00B0 ' + $scope.config.TempSign;
-								    }
-								    else {
-								        xhtm += $.t('Set Point') + ': Off';
-								    }
-								    bHaveBefore = true;
-								}
-								if (typeof item.State != 'undefined'){
-									if (bHaveBefore==true) {
-										xhtm+=', ';
-									}
-									xhtm+=$.t('State') + ': ' + item.State;
-									bHaveBefore=true;
-								}
-								if (bHaveBefore==true) {
-									xhtm+=', ';
-								}
-								xhtm+=$.t('Mode') + ': ' + EvoDisplayTextMode(sHeatMode);
-								if (typeof item.Until != 'undefined'){
-                                                                        tUntil=item.Until.replace(/Z/,'').replace(/\..+/, '')+'Z';
-									var dtUntil = new Date(tUntil);
-									dtUntil = new Date(dtUntil.getTime() - dtUntil.getTimezoneOffset()*60000);
-									xhtm+=', '+$.t('Until') + ': ' + dtUntil.toISOString().replace(/T/,' ').replace(/\..+/, '');
-								}
-								bHaveBefore=true;
-							}
-							if (typeof item.HumidityStatus != 'undefined') {
-								xhtm+=$.t(item.HumidityStatus);
-								bHaveBefore=true;
-							}
-							if (typeof item.Barometer != 'undefined') {
-								if (bHaveBefore==true) {
-									xhtm+=', ';
-								}
-								xhtm+=$.t('Barometer') + ': ' + item.Barometer + ' hPa';
-							}
-							if (typeof item.ForecastStr != 'undefined') {
-								xhtm+=', ' + $.t('Prediction') + ': ' + $.t(item.ForecastStr) + '<br>';
-								bHaveBefore=false;
-							}
-							if (typeof item.Direction != 'undefined') {
-								xhtm+=item.Direction + ' ' + item.DirectionStr + ', ' + $.t('Speed') + ': ' + item.Speed + ' ' + $scope.config.WindSign;
-								if (typeof item.Gust != 'undefined') {
-									xhtm+=', ' + $.t('Gust') + ': ' + item.Gust + ' ' + $scope.config.WindSign;
-								}
-							}
-							if (typeof item.DewPoint != 'undefined') {
-								if (bHaveBefore==true) {
-									xhtm+=', ';
-								}
-								xhtm+=$.t("Dew Point") + ": " + item.DewPoint + '\u00B0 ' + $scope.config.TempSign;
-							}
-							xhtm+=
-									'</td>\n' +
-									'\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
-									'\t      <td>';
-				  if (item.Favorite == 0) {
-					xhtm+=
-						  '<img src="images/nofavorite.png" title="' + $.t('Add to Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',1);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
-				  }
-				  else {
-					xhtm+=
-						  '<img src="images/favorite.png" title="' + $.t('Remove from Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',0);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
-				  }
-				  xhtm+=
-						'<a class="btnsmall" onclick="ShowTempLog(\'#tempcontent\',\'ShowTemps\',' + item.idx + ',\'' + escape(item.Name) + '\');" data-i18n="Log">Log</a> ';
-				if (permissions.hasPermission("Admin")) {
-				  if (item.Type=="Humidity") {
-					  xhtm+='<a class="btnsmall" onclick="EditTempDeviceSmall(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\',' + item.AddjValue + ');" data-i18n="Edit">Edit</a> ';
-				  }
-				  else {
-					  xhtm+='<a class="btnsmall" onclick="EditTempDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\',' + item.AddjValue + ');" data-i18n="Edit">Edit</a> ';
-				  }
-				  if (item.Notifications == "true")
-					xhtm+='<a class="btnsmall-sel" onclick="ShowNotifications(' + item.idx + ',\'' + escape(item.Name) + '\', \'#tempcontent\', \'ShowTemps\');" data-i18n="Notifications">Notifications</a>';
-				  else
-					xhtm+='<a class="btnsmall" onclick="ShowNotifications(' + item.idx + ',\'' + escape(item.Name) + '\', \'#tempcontent\', \'ShowTemps\');" data-i18n="Notifications">Notifications</a>';
-				}
-				if (typeof item.forecast_url != 'undefined') {
-					xhtm+='&nbsp;<a class="btnsmall" onclick="ShowForecast(\'' + atob(item.forecast_url) + '\',\'' + escape(item.Name) + '\', \'#tempcontent\', \'ShowTemps\');" data-i18n="Forecast">Forecast</a>';
-				}
-				if (typeof item.SetPoint != 'undefined')
-					xhtm+='&nbsp;<a id="set" class="btnsmall" onclick="EditSetPoint(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\',' + item.SetPoint + ', \''+item.Status+'\', \''+tUntil+'\', \'ShowTemps\');" data-i18n="Set">Set</a>';
-				if (typeof item.State != 'undefined')
-					xhtm+='&nbsp;<a id="set" class="btnsmall" onclick="EditState(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\',\'' + item.State + '\', \''+item.Status+'\', \''+tUntil+'\', \'ShowTemps\');" data-i18n="Set">Set</a>';
-				
-							xhtm+=
-						'</td>\n' +
-						'\t    </tr>\n' +
-						'\t    </table>\n' +
-						'\t  </section>\n' +
-						'\t</div>\n';
-				  htmlcontent+=xhtm;
-				});
+
+				  ctrl.temperatures = data.result;
+			  } else {
+				  ctrl.temperatures = [];
 			  }
 			 }
 		  });
-		  if (bHaveAddedDevider == true) {
-			//close previous devider
-			htmlcontent+='</div>\n';
-		  }
-		  if (htmlcontent == '')
-		  {
-			htmlcontent='<h2>' + $.t('No Temperature sensors found or added in the system...') + '</h2>';
-		  }
 		  $('#modal').hide();
-		  $('#tempcontent').html(tophtm+htmlcontent);
+		  $('#tempcontent').html(tophtm);
+			$('#tempwidgets').show();
+			$('#tempwidgets').i18n();
 		  $('#tempcontent').i18n();
 			if (bShowRoomplan==true) {
 				$.each($.RoomPlans, function(i,item){
@@ -1079,48 +752,36 @@ define(['app'], function (app) {
 			}
 
 			$rootScope.RefreshTimeAndSun();
-			
-			if ($scope.config.AllowWidgetOrdering==true) {
-				if (permissions.hasPermission("Admin")) {
-					if (window.myglobals.ismobileint==false) {
-						$("#tempcontent .span4").draggable({
-								drag: function() {
-									if (typeof $scope.mytimer != 'undefined') {
-										$interval.cancel($scope.mytimer);
-										$scope.mytimer = undefined;
-									}
-									$.devIdx=$(this).attr("id");
-									$(this).css("z-index", 2);
-								},
-								revert: true
-						});
-						$("#tempcontent .span4").droppable({
-								drop: function() {
-									var myid=$(this).attr("id");
-									$.devIdx.split(' ');
-									var roomid = $("#lightcontent #comboroom option:selected").val();
-									if (typeof roomid == 'undefined') {
-										roomid=0;
-									}
-									$.ajax({
-										 url: "json.htm?type=command&param=switchdeviceorder&idx1=" + myid + "&idx2=" + $.devIdx + "&roomid=" + roomid,
-										 async: false, 
-										 dataType: 'json',
-										 success: function(data) {
-												ShowTemps();
-										 }
-									});
-								}
-						});
-					}
-				}
-			}
+
 			$scope.mytimer=$interval(function() {
 				RefreshTemps();
 			}, 10000);
 		  return false;
-		}
+		};
 
+		$scope.DragWidget = function(idx) {
+			if (typeof $scope.mytimer != 'undefined') {
+				$interval.cancel($scope.mytimer);
+				$scope.mytimer = undefined;
+			}
+			$.devIdx=idx;
+		};
+		$scope.DropWidget = function(idx) {
+			var myid=idx;
+			$.devIdx.split(' ');
+			var roomid = ctrl.roomSelected;
+			if (typeof roomid == 'undefined') {
+				roomid=0;
+			}
+			$.ajax({
+				url: "json.htm?type=command&param=switchdeviceorder&idx1=" + myid + "&idx2=" + $.devIdx + "&roomid=" + roomid,
+				async: false,
+				dataType: 'json',
+				success: function(data) {
+					ShowTemps();
+				}
+			});
+		};
 
 		init();
 
@@ -1401,5 +1062,196 @@ define(['app'], function (app) {
 				$scope.mytimer = undefined;
 			}
 		}); 
-	} ]);
+	} ])
+		.directive('dztemperaturewidget', function() {
+			return {
+				priority: 0,
+				restrict: 'E',
+				templateUrl: 'views/temperatures/temperatureWidget.html',
+				scope: {},
+				bindToController: {
+					item: '=',
+					tempsign: '=',
+					windsign: '=',
+					ordering: '=',
+					dragwidget: '&',
+					dropwidget: '&'
+				},
+				require : 'permissions',
+				controllerAs: 'ctrl',
+				controller: function($scope, $element, $attrs, permissions) {
+					var ctrl = this;
+					var item = ctrl.item;
+
+					ctrl.sHeatMode = function() {
+						if (typeof item.Status != 'undefined') { //FIXME only support this for evohome?
+							return item.Status;
+						} else {
+							return "";
+						}
+					};
+
+					ctrl.nbackcolor = function() {
+						var nbackcolor="#D4E1EE";
+						if (item.HaveTimeout==true) {
+							nbackcolor="#DF2D3A";
+						}
+						else {
+							var BatteryLevel=parseInt(item.BatteryLevel);
+							if (BatteryLevel!=255) {
+								if (BatteryLevel<=10) {
+									nbackcolor="#DDDF2D";
+								}
+							}
+						}
+						nbackcolor=EvoSetPointColor(item,ctrl.sHeatMode(),nbackcolor);
+						return {'background-color': nbackcolor};
+					};
+
+					// TODO use angular isDefined
+					ctrl.displayTemp = function() {
+						return typeof item.Temp != 'undefined';
+					};
+					ctrl.displaySetPoint = function() {
+						return (item.SubType=='Zone' || item.SubType=='Hot Water') && typeof item.SetPoint  != 'undefined';
+					};
+					ctrl.isSetPointOn = function() {
+						return item.SetPoint != 325.1;
+					};
+					ctrl.displayState = function() {
+						return (item.SubType=='Zone' || item.SubType=='Hot Water') && typeof item.State != 'undefined';
+					};
+					ctrl.displayHeat = function() {
+						return (item.SubType=='Zone' || item.SubType=='Hot Water') && ctrl.sHeatMode() != 'Auto';
+					};
+					ctrl.imgHeat = function() {
+						if (ctrl.displayHeat()) {
+							return ctrl.sHeatMode() + (item.SubType == 'Hot Water' ) ? 'Inv' : '';
+						} else {
+							return undefined;
+						}
+					};
+					ctrl.displayHumidity = function() {
+						return typeof item.Humidity != 'undefined';
+					};
+					ctrl.displayChill = function() {
+						return typeof item.Chill != 'undefined';
+					};
+
+					ctrl.image = function() {
+						if (typeof item.Temp != 'undefined') {
+							return GetTemp48Item(item.Temp);
+						}
+						else {
+							if (item.Type=="Humidity") {
+								return "gauge48.png";
+							}
+							else {
+								return GetTemp48Item(item.Chill);
+							}
+						}
+					};
+
+					ctrl.displayMode = function() {
+						return (item.SubType=="Zone" || item.SubType=="Hot Water");
+					};
+					ctrl.EvoDisplayTextMode = function() {
+						return EvoDisplayTextMode(ctrl.sHeatMode());
+					};
+					ctrl.displayUntil = function() {
+						return (item.SubType=="Zone" || item.SubType=="Hot Water") && typeof item.Until != 'undefined';
+					};
+					ctrl.dtUntil = function() {
+						if (angular.isDefined(item.Until)) {
+							var tUntil = item.Until.replace(/Z/, '').replace(/\..+/, '') + 'Z';
+							var dtUntil = new Date(tUntil);
+							dtUntil = new Date(dtUntil.getTime() - dtUntil.getTimezoneOffset() * 60000);
+							return dtUntil.toISOString().replace(/T/, ' ').replace(/\..+/, '');
+						}
+					};
+					ctrl.displayHumidityStatus = function() {
+						return typeof item.HumidityStatus != 'undefined';
+					};
+					ctrl.HumidityStatus = function() {
+						return $.t(item.HumidityStatus);
+					};
+					ctrl.displayBarometer = function() {
+						return typeof item.Barometer != 'undefined';
+					};
+					ctrl.displayForecast = function() {
+						return typeof item.ForecastStr != 'undefined';
+					};
+					ctrl.ForecastStr = function() {
+						return $.t(item.ForecastStr);
+					};
+					ctrl.displayDirection = function() {
+						return typeof item.Direction != 'undefined';
+					};
+					ctrl.displayGust = function() {
+						return ctrl.displayDirection() && typeof item.Gust != 'undefined';
+					};
+					ctrl.displayDewPoint = function() {
+						return typeof item.DewPoint != 'undefined';
+					};
+
+
+					ctrl.MakeFavorite = function(n) {
+						return MakeFavorite(ctrl.item.idx,n);
+					};
+					
+					ctrl.ShowTempLog = function(divId, fn) {
+						$('#tempwidgets').hide(); // TODO delete when multiple views implemented
+						return ShowTempLog(divId, fn, ctrl.item.idx, escape(ctrl.item.Name));
+					};
+
+					ctrl.EditTempDeviceSmall = function () {
+						return EditTempDeviceSmall(ctrl.item.idx,escape(ctrl.item.Name),escape(ctrl.item.Description),ctrl.item.AddjValue);
+					};
+
+					ctrl.EditTempDevice = function() {
+						return EditTempDevice(ctrl.item.idx, escape(ctrl.item.Name), escape(ctrl.item.Description), ctrl.item.AddjValue);
+					};
+
+					ctrl.ShowNotifications = function(divId, fn) {
+						$('#tempwidgets').hide(); // TODO delete when multiple views implemented
+						return ShowNotifications(ctrl.item.idx, escape(ctrl.item.Name), divId, fn);
+					};
+
+					ctrl.ShowForecast = function(divId, fn) {
+						$('#tempwidgets').hide(); // TODO delete when multiple views implemented
+						return ShowForecast(atob(ctrl.item.forecast_url),escape(ctrl.item.Name), divId, fn);
+					};
+
+					ctrl.EditSetPoint = function(fn) {
+						return EditSetPoint(ctrl.item.idx, escape(ctrl.item.Name), escape(ctrl.item.Description), ctrl.item.SetPoint, ctrl.item.Status, ctrl.tUntil, fn);
+					};
+
+					ctrl.EditState = function(fn) {
+						return EditState(ctrl.item.idx, escape(ctrl.item.Name), escape(ctrl.item.Description), ctrl.item.State, ctrl.item.Status, ctrl.tUntil, fn);
+					};
+
+					$element.i18n();
+
+					if (ctrl.ordering==true) {
+						if (permissions.hasPermission("Admin")) {
+							if (window.myglobals.ismobileint==false) {
+								$element.draggable({
+									drag: function() {
+										ctrl.dragwidget({idx:ctrl.item.idx});
+										$element.css("z-index", 2);
+									},
+									revert: true
+								});
+								$element.droppable({
+									drop: function() {
+										ctrl.dropwidget({idx:ctrl.item.idx});
+									}
+								});
+							}
+						}
+					}
+
+				}
+			};
+		});
 });

@@ -124,6 +124,16 @@
 	</table>
 </div>
 
-<div id="tempcontent" class="container">
+<div class="container">
+
+	<div id="tempcontent"></div>
+
+	<div id="tempwidgets" class="row divider">
+		<h2 ng-show="ctrl.temperatures.length == 0" data-i18n="No Temperature sensors found or added in the system...">No Temperature sensors found or added in the system...</h2>
+		<div ng-repeat="t in ctrl.temperatures track by t.idx">
+			<dztemperaturewidget class="span4" id="{{t.idx}}" item="t" tempsign="config.TempSign" windsign="config.WindSign" ordering="config.AllowWidgetOrdering" dragwidget="DragWidget(idx)" dropwidget="DropWidget(idx)"></dztemperaturewidget>
+		</div>
+	</div>
+
 </div>
 
