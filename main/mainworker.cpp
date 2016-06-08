@@ -636,7 +636,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new Meteostick(ID, SerialPort, 115200);
 		break;
 	case HTYPE_EVOHOME_SERIAL:
-		pHardware = new CEvohome(ID,SerialPort);
+		pHardware = new CEvohome(ID,SerialPort, Filename);
 		break;
 	case HTYPE_RFLINKUSB:
 		pHardware = new CRFLinkSerial(ID, SerialPort);
@@ -832,7 +832,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 #endif //WITH_TELLDUSCORE
 	case HTYPE_EVOHOME_SCRIPT:
-		pHardware = new CEvohome(ID,"");
+		pHardware = new CEvohome(ID,"","");
 		break;
 	case HTYPE_PiFace:
 		pHardware = new CPiFace(ID);

@@ -395,7 +395,7 @@ public:
 class CEvohome : public AsyncSerial, public CDomoticzHardwareBase
 {
 public:
-	CEvohome(const int ID, const std::string &szSerialPort);
+	CEvohome(const int ID, const std::string &szSerialPort, const std::string &UserContID);
 	~CEvohome(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 	
@@ -563,6 +563,8 @@ private:
 	static const int m_evoToDczOverrideMode[5];
 	static const uint8_t m_dczToEvoZoneMode[3];
 	static const uint8_t m_dczToEvoControllerMode[6];
+
+	unsigned int MultiControllerID[5];
 	
 	template <typename RT> RT ConvertMode(RT* pArray, uint8_t nIdx){return pArray[nIdx];}
 	
@@ -606,6 +608,8 @@ private:
 	boost::condition_variable m_cndBindNotify;
 
 	unsigned int m_MaxDeviceID;
+
+	unsigned int m_UControllerID;
 
 	bool AllSensors;
 	
