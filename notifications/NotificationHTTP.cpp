@@ -16,6 +16,8 @@ CNotificationHTTP::CNotificationHTTP() : CNotificationBase(std::string("http"), 
 	SetupConfigBase64(std::string("HTTPField4"), _HTTPField4);
 	SetupConfigBase64(std::string("HTTPTo"), _HTTPTo);
 	SetupConfigBase64(std::string("HTTPURL"), _HTTPURL);
+	SetupConfigBase64(std::string("HTTPPostData"), _HTTPPostData);
+	SetupConfigBase64(std::string("HTTPPostContentType"), _HTTPPostContentType);
 }
 
 CNotificationHTTP::~CNotificationHTTP()
@@ -41,8 +43,20 @@ bool CNotificationHTTP::SendMessageImplementation(const std::string &Subject, co
 		stdreplace(destURL, "#TO", CURLEncode::URLEncode(_HTTPTo));
 		stdreplace(destURL, "#SUBJECT", CURLEncode::URLEncode(Subject));
 		stdreplace(destURL, "#MESSAGE", CURLEncode::URLEncode(Text));
+
 		std::string sResult;
-		bRet = HTTPClient::GET(destURL, sResult, true);
+		if (_HTTPPostData.length() > 0)
+		{
+			std::vector<std::string> ExtraHeaders;
+			ExtraHeaders.push_back("Content-type: " + _HTTPPostContentType);
+			std::string httpData = _HTTPPostData;
+			stdreplace(httpData, "#MESSAGE", Text);
+			bRet = HTTPClient::POST(destURL, httpData, ExtraHeaders, sResult);
+		}
+		else
+		{
+			bRet = HTTPClient::GET(destURL, sResult, true);
+		}
 	}
 	else if (destURL.find("script://") == 0)
 	{

@@ -2420,6 +2420,11 @@ bool CSQLHelper::OpenDatabase()
 		std::string sencoded = base64_encode((const unsigned char*)sValue.c_str(), sValue.size());
 		UpdatePreferencesVar("HTTPURL", sencoded);
 	}
+	if ((!GetPreferencesVar("HTTPPostContentType", sValue)) || (sValue.empty()))
+	{
+		sValue = "application/json";
+		UpdatePreferencesVar("HTTPPostContentType", sValue);
+	}
 	if (!GetPreferencesVar("ShowUpdateEffect", nValue))
 	{
 		UpdatePreferencesVar("ShowUpdateEffect", 0);
