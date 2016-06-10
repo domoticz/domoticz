@@ -49,12 +49,18 @@ define(['app'], function (app) {
 				var HTTPField3=encodeURIComponent($("#httptable #HTTPField3").val());
 				var HTTPField4=encodeURIComponent($("#httptable #HTTPField4").val());
 				var HTTPTo=encodeURIComponent($("#httptable #HTTPTo").val());
-				var HTTPURL=encodeURIComponent($("#httptable #HTTPURL").val());
+				var HTTPURL = encodeURIComponent($("#httptable #HTTPURL").val());
+				var HTTPPostData = encodeURIComponent($("#httptable #HTTPPostData").val());
+				var HTTPPostContentType = encodeURIComponent($("#httptable #HTTPPostContentType").val());
+				if (HTTPPostData != "" && HTTPPostContentType=="") {
+				    ShowNotify($.t('Please specify the content type...'), 3500, true);
+				    return;
+				}
 				if (HTTPURL=="") {
 					ShowNotify($.t('Please specify the base URL!...'), 3500, true);
 					return;
 				}
-				extraparams = "HTTPField1=" + HTTPField1 + "&HTTPField2=" + HTTPField2 + "&HTTPField3=" + HTTPField3 + "&HTTPField4=" + HTTPField4 + "&HTTPTo=" + HTTPTo + "&HTTPURL=" + HTTPURL;
+				extraparams = "HTTPField1=" + HTTPField1 + "&HTTPField2=" + HTTPField2 + "&HTTPField3=" + HTTPField3 + "&HTTPField4=" + HTTPField4 + "&HTTPTo=" + HTTPTo + "&HTTPURL=" + HTTPURL + "&HTTPPostData=" + HTTPPostData + "&HTTPPostContentType=" + HTTPPostContentType;
 				break;
 			case "prowl":
 				var ProwlAPI=encodeURIComponent($("#prowltable #ProwlAPI").val());
@@ -304,6 +310,12 @@ define(['app'], function (app) {
 			  }
 			  if (typeof data.HTTPURL != 'undefined') {
 				$("#httptable #HTTPURL").val(atob(data.HTTPURL));
+			  }
+			  if (typeof data.HTTPPostData != 'undefined') {
+			      $("#httptable #HTTPPostData").val(atob(data.HTTPPostData));
+			  }
+			  if (typeof data.HTTPPostContentType != 'undefined') {
+			      $("#httptable #HTTPPostContentType").val(atob(data.HTTPPostContentType));
 			  }
 
 			  if (typeof data.KodiEnabled != 'undefined') {
