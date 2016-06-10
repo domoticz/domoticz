@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "NotificationPushover.h"
 #include "../httpclient/HTTPClient.h"
+#include "../main/Logger.h"
 
 CNotificationPushover::CNotificationPushover() : CNotificationBase(std::string("pushover"), OPTIONS_URL_SUBJECT | OPTIONS_URL_BODY | OPTIONS_URL_PARAMS)
 {
@@ -41,6 +42,8 @@ bool CNotificationPushover::SendMessageImplementation(const std::string &Subject
 	}
 	std::vector<std::string> ExtraHeaders;
 	bRet = HTTPClient::POST("https://api.pushover.net/1/messages.json",sPostData.str(),ExtraHeaders,sResult);
+	if (!bRet)
+		_log.Log(LOG_ERROR, "Pushover: %s", sResult.c_str());
 	return bRet;
 }
 

@@ -4,6 +4,7 @@
 #include "../httpclient/HTTPClient.h"
 #include "../httpclient/UrlEncode.h"
 #include "../main/SQLHelper.h"
+#include "../main/Logger.h"
 
 extern std::string szUserDataFolder;
 
@@ -27,7 +28,7 @@ CNotificationHTTP::~CNotificationHTTP()
 bool CNotificationHTTP::SendMessageImplementation(const std::string &Subject, const std::string &Text, const std::string &ExtraData, const int Priority, const std::string &Sound, const bool bFromNotification)
 {
 	std::string destURL = _HTTPURL;
-	bool bRet = false;
+	bool bSuccess = false;
 
 	size_t uPos = destURL.find("://");
 	if (uPos == std::string::npos)
@@ -51,12 +52,14 @@ bool CNotificationHTTP::SendMessageImplementation(const std::string &Subject, co
 			ExtraHeaders.push_back("Content-type: " + _HTTPPostContentType);
 			std::string httpData = _HTTPPostData;
 			stdreplace(httpData, "#MESSAGE", Text);
-			bRet = HTTPClient::POST(destURL, httpData, ExtraHeaders, sResult);
+			bSuccess = HTTPClient::POST(destURL, httpData, ExtraHeaders, sResult);
 		}
 		else
 		{
-			bRet = HTTPClient::GET(destURL, sResult, true);
+			bSuccess = HTTPClient::GET(destURL, sResult, true);
 		}
+		if (!bSuccess)
+			_log.Log(LOG_ERROR, "HTTP: %s", sResult.c_str());
 	}
 	else if (destURL.find("script://") == 0)
 	{
@@ -85,10 +88,10 @@ bool CNotificationHTTP::SendMessageImplementation(const std::string &Subject, co
 		if (file_exist(scriptname.c_str()))
 		{
 			m_sql.AddTaskItem(_tTaskItem::ExecuteScript(1, scriptname, scriptparams));
-			bRet = true;
+			bSuccess = true;
 		}
 	}
-	return bRet;
+	return bSuccess;
 }
 
 bool CNotificationHTTP::IsConfigured()
