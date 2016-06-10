@@ -50,6 +50,12 @@ bool CNotificationHTTP::SendMessageImplementation(const std::string &Subject, co
 			std::vector<std::string> ExtraHeaders;
 			ExtraHeaders.push_back("Content-type: " + _HTTPPostContentType);
 			std::string httpData = _HTTPPostData;
+			stdreplace(httpData, "#FIELD1", _HTTPField1);
+			stdreplace(httpData, "#FIELD2", _HTTPField2);
+			stdreplace(httpData, "#FIELD3", _HTTPField3);
+			stdreplace(httpData, "#FIELD4", _HTTPField4);
+			stdreplace(httpData, "#TO", _HTTPTo);
+			stdreplace(httpData, "#SUBJECT", Subject);
 			stdreplace(httpData, "#MESSAGE", Text);
 			bRet = HTTPClient::POST(destURL, httpData, ExtraHeaders, sResult);
 		}
