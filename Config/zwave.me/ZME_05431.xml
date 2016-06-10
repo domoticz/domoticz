@@ -89,7 +89,7 @@
 		<Associations num_groups="3">
 			<Group index="1" max_associations="8" label="Group 1 Single press and hold of up/down buttons" auto="false"/>
 			<Group index="2" max_associations="8" label="Group 2 Double press and press-hold of up/down buttons"  />
-			<Group index="3" max_associations="8" label="Group 3 Send Reports on switch state change" auto="true"/>
+			<Group index="3" max_associations="8" label="Lifeline" auto="true"/>
 		</Associations>
 	</CommandClass>
 </Product>

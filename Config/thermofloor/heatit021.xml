@@ -61,9 +61,9 @@
 	</CommandClass>
 
 	<CommandClass id="133" name="COMMAND_CLASS_ASSOCIATION">
-		<Associations num_groups="5">
+		<Associations num_groups="2">
 			<Group index="1" max_associations="1" label="Lifeline"/>
-			<Group index="2" max_associations="8" label="On/Off control. This controls external heaters replicating the state of the internal relay." />
+			<Group index="2" max_associations="8" label="On/Off control" />
 		</Associations>
 	</CommandClass>	
 
