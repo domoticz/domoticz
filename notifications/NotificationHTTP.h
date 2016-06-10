@@ -15,4 +15,6 @@ private:
 	std::string _HTTPField4;
 	std::string _HTTPTo;
 	std::string _HTTPURL;
+	std::string _HTTPPostData;
+	std::string _HTTPPostContentType;
 };
