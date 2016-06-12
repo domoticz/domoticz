@@ -4129,7 +4129,10 @@ void CSQLHelper::UpdateUVLog()
 	GetPreferencesVar("SensorTimeout", SensorTimeOut);
 
 	std::vector<std::vector<std::string> > result;
-	result=safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d)", pTypeUV);
+	result=safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d) OR (Type=%d AND SubType=%d)", 
+		pTypeUV,
+		pTypeGeneral, sTypeUV
+	);
 	if (result.size()>0)
 	{
 		std::vector<std::vector<std::string> >::const_iterator itt;
@@ -4169,7 +4172,7 @@ void CSQLHelper::UpdateUVLog()
 			//insert record
 			safe_query(
 				"INSERT INTO UV (DeviceRowID, Level) "
-				"VALUES ('%llu', '%.1f')",
+				"VALUES ('%llu', '%g')",
 				ID,
 				level
 				);
@@ -5388,7 +5391,7 @@ void CSQLHelper::AddCalendarUpdateUV()
 			//insert into calendar table
 			result=safe_query(
 				"INSERT INTO UV_Calendar (DeviceRowID, Level, Date) "
-				"VALUES ('%llu', '%.2f', '%q')",
+				"VALUES ('%llu', '%g', '%q')",
 				ID,
 				level,
 				szDateStart

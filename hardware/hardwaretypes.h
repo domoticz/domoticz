@@ -56,7 +56,7 @@
 #define sTypeAlert					0x16
 #define sTypeCurrent				0x17
 #define sTypeSoundLevel				0x18
-//#define sTypeReservedForyou		0x19
+#define sTypeUV						0x19
 #define sTypeBaro					0x1A
 #define sTypeDistance				0x1B
 #define sTypeCounterIncremental		0x1C
