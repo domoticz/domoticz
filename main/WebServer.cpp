@@ -986,11 +986,17 @@ namespace http {
 				mode2 = atoi(modeStr.c_str());
 			}
 
-			if (
+			if (IsSerialDevice(htype))
+			{
+				//USB/System
+				if (sport.empty())
+					return; //need to have a serial port
+			}
+			else if (
 				(htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) || (htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) ||
 				(htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_ECODEVICES) || (htype == HTYPE_Mochad) || (htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MQTT) || (htype == HTYPE_FRITZBOX) ||
 				(htype == HTYPE_ETH8020) || (htype == HTYPE_Sterbox) || (htype == HTYPE_KMTronicTCP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_RFLINKTCP) || (htype == HTYPE_Comm5TCP) || (htype == HTYPE_CurrentCostMeterLAN) ||
-				(htype == HTYPE_NefitEastLAN)
+				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviSmartdenLan)
 				) {
 				//Lan
 				if (address == "" || port == 0)
@@ -1247,7 +1253,7 @@ namespace http {
 				(htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MQTT) || (htype == HTYPE_FRITZBOX) || (htype == HTYPE_ETH8020) || (htype == HTYPE_Sterbox) ||
 				(htype == HTYPE_KMTronicTCP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_RFLINKTCP) ||
 				(htype == HTYPE_Comm5TCP || (htype == HTYPE_CurrentCostMeterLAN)) ||
-				(htype == HTYPE_NefitEastLAN)
+				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviSmartdenLan)
 				){
 				//Lan
 				if (address == "")
@@ -6549,7 +6555,6 @@ namespace http {
 			}
 			m_sql.UpdatePreferencesVar("DoorbellCommand", atoi(request::findValue(&req, "DoorbellCommand").c_str()));
 			m_sql.UpdatePreferencesVar("SmartMeterType", atoi(request::findValue(&req, "SmartMeterType").c_str()));
-			m_sql.UpdatePreferencesVar("DisplayPowerUsageInkWhGraph", atoi(request::findValue(&req, "DisplayPowerUsageInkWhGraph").c_str()));
 
 			std::string EnableTabFloorplans = request::findValue(&req, "EnableTabFloorplans");
 			m_sql.UpdatePreferencesVar("EnableTabFloorplans", (EnableTabFloorplans == "on" ? 1 : 0));
@@ -11142,10 +11147,6 @@ namespace http {
 				{
 					root["SmartMeterType"] = nValue;
 				}
-				else if (Key == "DisplayPowerUsageInkWhGraph")
-				{
-					root["DisplayPowerUsageInkWhGraph"] = nValue;
-				}
 				else if (Key == "EnableTabFloorplans")
 				{
 					root["EnableTabFloorplans"] = nValue;
@@ -11312,11 +11313,9 @@ namespace http {
 					root["MyDomoticzSubsystems"] = nValue;
 				}
 #endif
-#ifdef _DEBUG
-				else {
-					_log.Log(LOG_ERROR, "Unknown preferences detected: '%s'", Key.c_str());
+				else if (Key == "MyDomoticzSubsystems") {
+					root["MyDomoticzSubsystems"] = nValue;
 				}
-#endif
 			}
 		}
 
@@ -12295,19 +12294,6 @@ namespace http {
 						if ((dType == pTypeYouLess) && ((metertype == MTYPE_ENERGY) || (metertype == MTYPE_ENERGY_GENERATED)))
 							method = 1;
 
-						int iDisplayInPower = 1;
-						m_sql.GetPreferencesVar("DisplayPowerUsageInkWhGraph", iDisplayInPower);
-						if (!iDisplayInPower)
-						{
-							// Force Value graph even if device should show Value graph
-							if ((method == 1) && (
-								((dType == pTypeENERGY) && ((dSubType == sTypeELEC2) || (dSubType == sTypeELEC3))) ||
-								((dType == pTypeGeneral) && (dSubType == sTypeKwh))
-								)) {
-								//_log.Log(LOG_ERROR, "Energy/CMxxx or General/kWh device graph method should be 0!");
-								method = 0;
-							}
-						}
 						if (method != 0)
 						{
 							//realtime graph
@@ -12339,7 +12325,9 @@ namespace http {
 									{
 										if (bHaveFirstValue)
 										{
-											root["result"][ii]["d"] = LastDateTime + (method == 1 ? ":30" : ":00");
+                                            //root["result"][ii]["d"] = LastDateTime + (method == 1 ? ":30" : ":00");
+                                            //^^ not necessarely bad, but is currently inconsistent with all other day graphs
+                                            root["result"][ii]["d"] = LastDateTime + ":00";
 
 											long long ulTotalValue = ulLastValue - ulFirstValue;
 											if (ulTotalValue == 0)
@@ -14025,7 +14013,7 @@ namespace http {
 							vdiv = 1000.0f;
 						}
 
-						result = m_sql.safe_query("SELECT Value1,Value2, Date FROM %s WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart, szDateEnd);
+						result = m_sql.safe_query("SELECT Value1,Value2,Value3,Date FROM %s WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (result.size() > 0)
 						{
 							std::vector<std::vector<std::string> >::const_iterator itt;
@@ -14033,29 +14021,38 @@ namespace http {
 							{
 								std::vector<std::string> sd = *itt;
 
-								root["result"][ii]["d"] = sd[2].substr(0, 16);
-
 								float fValue1 = float(atof(sd[0].c_str())) / vdiv;
 								float fValue2 = float(atof(sd[1].c_str())) / vdiv;
+								float fValue3 = float(atof(sd[2].c_str())) / vdiv;
+								root["result"][ii]["d"] = sd[3].substr(0, 16);
+
 								if (metertype == 1)
 								{
 									fValue1 *= 0.6214f;
 									fValue2 *= 0.6214f;
 								}
-								if ((dType == pTypeGeneral) && (dSubType == sTypeVoltage))
+								if (
+									((dType == pTypeGeneral) && (dSubType == sTypeVoltage)) ||
+									((dType == pTypeGeneral) && (dSubType == sTypeCurrent))
+									)
+								{
 									sprintf(szTmp, "%.3f", fValue1);
-								else if ((dType == pTypeGeneral) && (dSubType == sTypeCurrent))
-									sprintf(szTmp, "%.3f", fValue1);
+									root["result"][ii]["v_min"] = szTmp;
+									sprintf(szTmp, "%.3f", fValue2);
+									root["result"][ii]["v_max"] = szTmp;
+									if (fValue3 != 0)
+									{
+										sprintf(szTmp, "%.3f", fValue3);
+										root["result"][ii]["v_avg"] = szTmp;
+									}
+								}
 								else
+								{
 									sprintf(szTmp, "%.1f", fValue1);
-								root["result"][ii]["v_min"] = szTmp;
-								if ((dType == pTypeGeneral) && (dSubType == sTypeVoltage))
-									sprintf(szTmp, "%.3f", fValue2);
-								else if ((dType == pTypeGeneral) && (dSubType == sTypeCurrent))
-									sprintf(szTmp, "%.3f", fValue2);
-								else
+									root["result"][ii]["v_min"] = szTmp;
 									sprintf(szTmp, "%.1f", fValue2);
-								root["result"][ii]["v_max"] = szTmp;
+									root["result"][ii]["v_max"] = szTmp;
+								}
 								ii++;
 							}
 						}

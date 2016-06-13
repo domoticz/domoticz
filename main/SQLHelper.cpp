@@ -2420,6 +2420,11 @@ bool CSQLHelper::OpenDatabase()
 		std::string sencoded = base64_encode((const unsigned char*)sValue.c_str(), sValue.size());
 		UpdatePreferencesVar("HTTPURL", sencoded);
 	}
+	if ((!GetPreferencesVar("HTTPPostContentType", sValue)) || (sValue.empty()))
+	{
+		sValue = "application/json";
+		UpdatePreferencesVar("HTTPPostContentType", sValue);
+	}
 	if (!GetPreferencesVar("ShowUpdateEffect", nValue))
 	{
 		UpdatePreferencesVar("ShowUpdateEffect", 0);
@@ -2432,10 +2437,6 @@ bool CSQLHelper::OpenDatabase()
 	if (nValue < 1)
 		nValue = 5;
 	m_ShortLogInterval = nValue;
-	if (!GetPreferencesVar("DisplayPowerUsageInkWhGraph", nValue))
-	{
-		UpdatePreferencesVar("DisplayPowerUsageInkWhGraph", 1);
-	}
 	//Start background thread
 	if (!StartThread())
 		return false;
@@ -4128,7 +4129,10 @@ void CSQLHelper::UpdateUVLog()
 	GetPreferencesVar("SensorTimeout", SensorTimeOut);
 
 	std::vector<std::vector<std::string> > result;
-	result=safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d)", pTypeUV);
+	result=safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d) OR (Type=%d AND SubType=%d)", 
+		pTypeUV,
+		pTypeGeneral, sTypeUV
+	);
 	if (result.size()>0)
 	{
 		std::vector<std::vector<std::string> >::const_iterator itt;
@@ -4168,7 +4172,7 @@ void CSQLHelper::UpdateUVLog()
 			//insert record
 			safe_query(
 				"INSERT INTO UV (DeviceRowID, Level) "
-				"VALUES ('%llu', '%.1f')",
+				"VALUES ('%llu', '%g')",
 				ID,
 				level
 				);
@@ -4985,7 +4989,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 		}
 
 
-		result=safe_query("SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID='%llu' AND Date>='%q' AND Date<'%q')",
+		result=safe_query("SELECT MIN(Value), MAX(Value), AVG(Value) FROM Meter WHERE (DeviceRowID='%llu' AND Date>='%q' AND Date<'%q')",
 			ID,
 			szDateStart,
 			szDateEnd
@@ -4995,7 +4999,8 @@ void CSQLHelper::AddCalendarUpdateMeter()
 			std::vector<std::string> sd=result[0];
 
 			double total_min=(double)atof(sd[0].c_str());
-			double total_max=(double)atof(sd[1].c_str());
+			double total_max = (double)atof(sd[1].c_str());
+			double avg_value = (double)atof(sd[2].c_str());
 
 			if (
 				(devType!=pTypeAirQuality)&&
@@ -5061,7 +5066,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 					"INSERT INTO MultiMeter_Calendar (DeviceRowID, Value1,Value2,Value3,Value4,Value5,Value6, Date) "
 					"VALUES ('%llu', '%.2f','%.2f','%.2f','%.2f','%.2f','%.2f', '%q')",
 					ID,
-					total_min,total_max,0.0f,0.0f,0.0f,0.0f,
+					total_min,total_max, avg_value,0.0f,0.0f,0.0f,
 					szDateStart
 					);
 			}
@@ -5386,7 +5391,7 @@ void CSQLHelper::AddCalendarUpdateUV()
 			//insert into calendar table
 			result=safe_query(
 				"INSERT INTO UV_Calendar (DeviceRowID, Level, Date) "
-				"VALUES ('%llu', '%.2f', '%q')",
+				"VALUES ('%llu', '%g', '%q')",
 				ID,
 				level,
 				szDateStart

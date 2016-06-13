@@ -1,8 +1,9 @@
-Version 3.xxxx (May xx 2016)
+Version 3.xxxx (June xx 2016)
 - Implemented: Atag One Thermostat support
 - Implemented: Blockly/Lua Camera device, to send camera snapshots with subject after xx seconds
 - Implemented: Blockly upgraded to latest version (fixed and cleaned some code as well), this fixes problem with long sensor lists
 - Implemented: Custom Sensor
+- Implemented: Denkovi Smartden with LAN Interface
 - Implemented: Devices Tab, Log icon for Pressure
 - Implemented: Dust Sensor (ug/m3)
 - Implemented: MySensors, Implemented Acknowledge Timeout per Child sensor
@@ -16,6 +17,7 @@ Version 3.xxxx (May xx 2016)
 - Changed: OpenZWave, Better support for Thermostat Modes
 - Changed: Stable ID generation for Philips Hue scenes (you need to delete all scenes and restart the hue hardware or domoticz)
 - Changed: Wind Direction graph (now does not display directions when speed was equal to zero)
+- Changed: ETH-8020, ignoring return message as it always returns (no more Success message)
 - Fixed: Better handling of white listed commands/urls
 - Fixed: Database backup is now only possible for admin users
 - Fixed: Double checking command rights

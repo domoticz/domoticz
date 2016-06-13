@@ -169,6 +169,7 @@ define(['app'], function (app) {
             else if (
 					(text.indexOf("LAN") >= 0 &&
 					text.indexOf("YouLess") == -1 &&
+					text.indexOf("Denkovi") == -1 &&
 					text.indexOf("Integra") == -1 &&
 					text.indexOf("ETH8020") == -1 &&
 					text.indexOf("Sterbox") == -1 &&
@@ -222,7 +223,10 @@ define(['app'], function (app) {
                      }
                 });
             }
-            else if (text.indexOf("LAN") >= 0 && (text.indexOf("YouLess") >= 0 || text.indexOf("Integra") >= 0))
+            else if (
+				(text.indexOf("LAN") >= 0 && ((text.indexOf("YouLess") >= 0)||(text.indexOf("Denkovi") >= 0)) ) ||
+				(text.indexOf("Integra") >= 0)
+				)
             {
                 var address=$("#hardwarecontent #divremote #tcpaddress").val();
                 if (address=="")
@@ -713,6 +717,7 @@ define(['app'], function (app) {
             else if (
 					(text.indexOf("LAN") >= 0 &&
 					text.indexOf("YouLess") == -1 &&
+					text.indexOf("Denkovi") == -1 &&
 					text.indexOf("ETH8020") == -1 &&
 					text.indexOf("Sterbox") == -1 &&
 					text.indexOf("Anna") == -1 &&
@@ -832,6 +837,7 @@ define(['app'], function (app) {
             else if (
 					(text.indexOf("LAN") >= 0 &&
 					text.indexOf("YouLess") == -1 &&
+					text.indexOf("Denkovi") == -1 &&
 					text.indexOf("ETH8020") == -1 &&
 					text.indexOf("Sterbox") == -1 &&
 					text.indexOf("Anna") == -1 &&
@@ -871,7 +877,10 @@ define(['app'], function (app) {
                      }
                 });
             }
-            else if (text.indexOf("LAN") >= 0 && (text.indexOf("YouLess") >= 0 || text.indexOf("Integra") >= 0))
+            else if (
+				(text.indexOf("LAN") >= 0 && ((text.indexOf("YouLess") >= 0) || (text.indexOf("Denkovi") >= 0) )) ||
+				(text.indexOf("Integra") >= 0)
+				)
             {
                 var address=$("#hardwarecontent #divremote #tcpaddress").val();
                 if (address=="")
@@ -3578,9 +3587,13 @@ define(['app'], function (app) {
         {
             $.devIdx=idx;
             if(devtype=="Relay")
-                ShowNotify($.t('Hold bind button on relay...'));
+                ShowNotify($.t('Hold bind button on relay...'),2500);
+            else if (devtype == "AllSensors")
+                ShowNotify($.t('Creating additional sensors...'));
+            else if (devtype == "ZoneSensor")
+                ShowNotify($.t('Binding Domoticz zone temperature sensor to controller...'),2500);
             else
-                ShowNotify($.t('Binding Domoticz outdoor temperature device to evohome controller...'));
+                ShowNotify($.t('Binding Domoticz outdoor temperature device to evohome controller...'),2500);
 
             setTimeout(function() {
                 var bNewDevice = false;
@@ -3607,9 +3620,13 @@ define(['app'], function (app) {
                     if ((bNewDevice == true) && (bIsUsed == false))
                     {
                         if(devtype=="Relay")
-                            ShowNotify($.t('Relay bound, and can be found in the devices tab!'));
+                            ShowNotify($.t('Relay bound, and can be found in the devices tab!'), 2500);
+                        else if (devtype == "AllSensors")
+                            ShowNotify($.t('New sensors will appear in the devices tab after 10min'), 2500);
+                        else if (devtype == "ZoneSensor")
+                            ShowNotify($.t('Sensor bound, and can be found in the devices tab!'),2500);
                         else
-                            ShowNotify($.t('Domoticz outdoor temperature device has been bound to evohome controller'));
+                            ShowNotify($.t('Domoticz outdoor temperature device has been bound to evohome controller'),2500);
                     }
                     else {
                         if (bIsUsed == true)
@@ -3963,7 +3980,9 @@ define(['app'], function (app) {
                         else
                         {
                             HwTypeStr+=' <span class="label label-info lcursor" onclick="BindEvohome(' + item.idx + ',\'' + item.Name + '\',\'Relay\');">Bind Relay</span>';
-                            HwTypeStr+=' <span class="label label-info lcursor" onclick="BindEvohome(' + item.idx + ',\'' + item.Name + '\',\'OutdoorSensor\');">Outdoor Sensor</span>';
+                            HwTypeStr += ' <span class="label label-info lcursor" onclick="BindEvohome(' + item.idx + ',\'' + item.Name + '\',\'OutdoorSensor\');">Outdoor Sensor</span>';
+                            HwTypeStr += ' <span class="label label-info lcursor" onclick="BindEvohome(' + item.idx + ',\'' + item.Name + '\',\'AllSensors\');">All Sensors</span>';
+                            HwTypeStr += ' <span class="label label-info lcursor" onclick="BindEvohome(' + item.idx + ',\'' + item.Name + '\',\'ZoneSensor\');">Bind Temp Sensor</span>';
                         }
                     }
                     else if (HwTypeStr.indexOf("Rego 6XX") >= 0)
@@ -4098,7 +4117,7 @@ define(['app'], function (app) {
                         else if (data["Type"].indexOf("1-Wire") >= 0) {
                             $("#hardwarecontent #hardwareparams1wire #owfspath").val(data["Extra"]);
                             $("#hardwarecontent #hardwareparams1wire #OneWireSensorPollPeriod").val(data["Mode1"]);
-                            $("#hardwarecontent #hardwareparams1wire #OneWireSwitchPeriod").val(data["Mode2"]);
+                            $("#hardwarecontent #hardwareparams1wire #OneWireSwitchPollPeriod").val(data["Mode2"]);
                         }
                         else if (data["Type"].indexOf("USB") >= 0) {
                             $("#hardwarecontent #hardwareparamsserial #comboserialport").val(data["IntPort"]);
@@ -4111,11 +4130,11 @@ define(['app'], function (app) {
                                 $("#hardwarecontent #divbaudratep1 #combobaudratep1").val(data["Mode1"]);
                             }
                         }
-                        else if (((data["Type"].indexOf("LAN") >= 0) && (data["Type"].indexOf("YouLess") == -1) && (data["Type"].indexOf("Satel") == -1)) ||(data["Type"].indexOf("Domoticz") >= 0) ||(data["Type"].indexOf("Harmony") >= 0)) {
+                        else if (((data["Type"].indexOf("LAN") >= 0) && (data["Type"].indexOf("YouLess") == -1) && (data["Type"].indexOf("Denkovi") == -1) && (data["Type"].indexOf("Satel") == -1)) ||(data["Type"].indexOf("Domoticz") >= 0) ||(data["Type"].indexOf("Harmony") >= 0)) {
                             $("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
                             $("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
                         }
-                        else if (((data["Type"].indexOf("LAN") >= 0) && (data["Type"].indexOf("YouLess") >= 0)) ||(data["Type"].indexOf("Domoticz") >= 0) ||(data["Type"].indexOf("Harmony") >= 0) ||(data["Type"].indexOf("Satel") >= 0) ||(data["Type"].indexOf("Logitech Media Server") >= 0)) {
+                        else if (((data["Type"].indexOf("LAN") >= 0) && (data["Type"].indexOf("YouLess") >= 0)) || (data["Type"].indexOf("Domoticz") >= 0) || (data["Type"].indexOf("Denkovi") >= 0) ||(data["Type"].indexOf("Harmony") >= 0) ||(data["Type"].indexOf("Satel") >= 0) ||(data["Type"].indexOf("Logitech Media Server") >= 0)) {
                             $("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
                             $("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
                             $("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
@@ -4270,7 +4289,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
             }
-            else if (text.indexOf("LAN") >= 0 && text.indexOf("YouLess") == -1 && text.indexOf("Integra") == -1)
+            else if (text.indexOf("LAN") >= 0 && text.indexOf("YouLess") == -1 && text.indexOf("Denkovi") == -1 && text.indexOf("Integra") == -1)
             {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").show();
@@ -4278,7 +4297,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
             }
-            else if (text.indexOf("LAN") >= 0 && (text.indexOf("YouLess") >= 0 || text.indexOf("Integra") >= 0))
+            else if (text.indexOf("LAN") >= 0 && (text.indexOf("YouLess") >= 0 || text.indexOf("Denkovi") >= 0 || text.indexOf("Integra") >= 0))
             {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").show();
