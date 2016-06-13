@@ -157,6 +157,7 @@ enum _eHardwareTypes {
 	HTYPE_FITBIT,				//75
 	HTYPE_RAVEn,	    		//76
 	HTYPE_S0SmartMeterTCP,		//77
+	HTYPE_DenkoviSmartdenLan,	//78
 	HTYPE_END
 };
 

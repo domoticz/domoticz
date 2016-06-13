@@ -416,6 +416,7 @@
     <ClInclude Include="..\hardware\CurrentCostMeterSerial.h" />
     <ClInclude Include="..\hardware\CurrentCostMeterTCP.h" />
     <ClInclude Include="..\hardware\DavisLoggerSerial.h" />
+    <ClInclude Include="..\hardware\DenkoviSmartdenLan.h" />
     <ClInclude Include="..\hardware\Dummy.h" />
     <ClInclude Include="..\hardware\EcoDevices.h" />
     <ClInclude Include="..\hardware\EnOceanESP2.h" />
@@ -622,6 +623,7 @@
     <ClCompile Include="..\hardware\CurrentCostMeterSerial.cpp" />
     <ClCompile Include="..\hardware\CurrentCostMeterTCP.cpp" />
     <ClCompile Include="..\hardware\DavisLoggerSerial.cpp" />
+    <ClCompile Include="..\hardware\DenkoviSmartdenLan.cpp" />
     <ClCompile Include="..\hardware\Dummy.cpp" />
     <ClCompile Include="..\hardware\EcoDevices.cpp" />
     <ClCompile Include="..\hardware\EnOceanESP2.cpp" />

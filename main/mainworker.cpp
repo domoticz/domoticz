@@ -93,6 +93,7 @@
 #include "../hardware/Sterbox.h"
 #include "../hardware/Fitbit.h"
 #include "../hardware/RAVEn.h"
+#include "../hardware/DenkoviSmartdenLan.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -752,6 +753,10 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_Sterbox:
 		//LAN
 		pHardware = new CSterbox(ID, Address, Port, Username, Password);
+		break;
+	case HTYPE_DenkoviSmartdenLan:
+		//LAN
+		pHardware = new CDenkoviSmartdenLan(ID, Address, Port, Password);
 		break;
 #ifndef WIN32
 	case HTYPE_TE923:

@@ -231,6 +231,7 @@ hardware/CurrentCostMeterBase.cpp
 hardware/CurrentCostMeterSerial.cpp
 hardware/CurrentCostMeterTCP.cpp
 hardware/DavisLoggerSerial.cpp
+hardware/DenkoviSmartdenLan.cpp
 hardware/DomoticzHardware.cpp
 hardware/DomoticzInternal.cpp
 hardware/DomoticzTCP.cpp
