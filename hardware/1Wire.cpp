@@ -47,8 +47,6 @@ C1Wire::~C1Wire()
 
 bool C1Wire::Have1WireSystem()
 {
-	LogSystem();
-
 #ifdef WIN32
 	return (C1WireForWindows::IsAvailable());
 #else // WIN32
@@ -58,8 +56,6 @@ bool C1Wire::Have1WireSystem()
 
 void C1Wire::DetectSystem()
 {
-	LogSystem();
-
 #ifdef WIN32
 	if (!m_system && C1WireForWindows::IsAvailable())
 		m_system=new C1WireForWindows();
@@ -67,33 +63,11 @@ void C1Wire::DetectSystem()
 
 	// Using the both systems at same time results in conflicts,
 	// see http://owfs.org/index.php?page=w1-project.
-	if (C1WireByKernel::IsAvailable()) {
-		m_system=new C1WireByKernel();
-		_log.Log(LOG_STATUS,"1-Wire: Using Kernel...");
-	} else {
+	if (m_path.length() != 0) {
 		m_system=new C1WireByOWFS(m_path);
-		_log.Log(LOG_STATUS,"1-Wire: Using OWFS...");
+	} else if (C1WireByKernel::IsAvailable()) {
+		m_system=new C1WireByKernel();
 	}
-
-#endif // WIN32
-}
-
-void C1Wire::LogSystem()
-{
-	static bool alreadyLogged=false;
-	if (alreadyLogged)
-		return;
-	alreadyLogged=true;
-
-#ifdef WIN32
-	if (C1WireForWindows::IsAvailable())
-		{ _log.Log(LOG_STATUS,"1-Wire support available..."); return; }
-#else // WIN32
-
-	if (C1WireByKernel::IsAvailable())
-		{ _log.Log(LOG_STATUS,"1-Wire support available (By Kernel)..."); return; }
-
-	_log.Log(LOG_STATUS,"1-Wire support available (By OWFS)..."); return;
 
 #endif // WIN32
 }
