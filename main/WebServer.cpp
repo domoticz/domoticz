@@ -8116,14 +8116,12 @@ namespace http {
 							if (dSubType != sTypeRAINWU)
 							{
 								result2 = m_sql.safe_query(
-									"SELECT MIN(Total), MAX(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID='%q' AND Date>='%q')",
-									sd[0].c_str(), szDate);
+									"SELECT MIN(Total), MAX(Total) FROM Rain WHERE (DeviceRowID='%q' AND Date>='%q')", sd[0].c_str(), szDate);
 							}
 							else
 							{
 								result2 = m_sql.safe_query(
-									"SELECT Total, Total, Rate FROM Rain WHERE (DeviceRowID='%q' AND Date>='%q') ORDER BY ROWID DESC LIMIT 1",
-									sd[0].c_str(), szDate);
+									"SELECT Total, Total FROM Rain WHERE (DeviceRowID='%q' AND Date>='%q') ORDER BY ROWID DESC LIMIT 1", sd[0].c_str(), szDate);
 							}
 							if (result2.size() > 0)
 							{
@@ -8134,24 +8132,18 @@ namespace http {
 								{
 									float total_min = static_cast<float>(atof(sd2[0].c_str()));
 									float total_max = static_cast<float>(atof(strarray[1].c_str()));
-									rate = static_cast<float>(atof(sd2[2].c_str()));
-									if (dSubType == sTypeRAIN2)
-										rate /= 100.0f;
 									total_real = total_max - total_min;
 								}
 								else
 								{
-									rate = static_cast<float>(atof(sd2[2].c_str()));
 									total_real = atof(sd2[1].c_str());
 								}
 								total_real *= AddjMulti;
+								rate = static_cast<float>(atof(strarray[0].c_str()))/100.0f;
 
 								sprintf(szTmp, "%.1f", total_real);
 								root["result"][ii]["Rain"] = szTmp;
-								if (dSubType != sTypeRAIN2)
-									sprintf(szTmp, "%.1f", rate);
-								else
-									sprintf(szTmp, "%.2f", rate);
+								sprintf(szTmp, "%.1f", rate);
 								root["result"][ii]["RainRate"] = szTmp;
 								root["result"][ii]["Data"] = sValue;
 								root["result"][ii]["HaveTimeout"] = bHaveTimeout;

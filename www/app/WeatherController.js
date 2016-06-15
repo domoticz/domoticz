@@ -135,9 +135,7 @@ define(['app'], function (app) {
 						status=item.Rain + ' mm';
 						bigtext=item.Rain + ' mm';
 						if (typeof item.RainRate != 'undefined') {
-							if (item.RainRate!=0) {
-								status+=', Rate: ' + item.RainRate + ' mm/h';
-							}
+							status+=', Rate: ' + item.RainRate + ' mm/h';
 						}
 					}
 					if (typeof item.Visibility != 'undefined') {
@@ -347,9 +345,7 @@ define(['app'], function (app) {
 								xhtm+='rain48.png" height="48" width="48"></td>\n' +
 								'\t      <td  id="status">' + item.Rain + ' mm';
 								if (typeof item.RainRate != 'undefined') {
-									if (item.RainRate!=0) {
-										xhtm+=', Rate: ' + item.RainRate + ' mm/h';
-									}
+									xhtm+=', Rate: ' + item.RainRate + ' mm/h';
 								}
 							}
 							else if (typeof item.Visibility != 'undefined') {

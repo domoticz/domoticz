@@ -2750,8 +2750,44 @@ void MainWorker::decode_Rain(const int HwdID, const _eHardwareTypes HwdType, con
 	unsigned char cmnd=0;
 	unsigned char SignalLevel=pResponse->RAIN.rssi;
 	unsigned char BatteryLevel = get_BateryLevel(HwdType,pResponse->RAIN.subtype==sTypeRAIN1, pResponse->RAIN.battery_level & 0x0F);
-	int Rainrate=(pResponse->RAIN.rainrateh * 256) + pResponse->RAIN.rainratel;
+	
+	int Rainrate = (pResponse->RAIN.rainrateh * 256) + pResponse->RAIN.rainratel;
+	
 	float TotalRain=float((pResponse->RAIN.raintotal1 * 65535) + (pResponse->RAIN.raintotal2 * 256) + pResponse->RAIN.raintotal3) / 10.0f;
+
+	if (subType != sTypeRAINWU)
+	{
+		Rainrate = 0;
+		//Calculate our own rainrate
+		std::vector<std::vector<std::string> > result;
+
+		//Get our index
+		result = m_sql.safe_query(
+			"SELECT ID FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", HwdID, ID.c_str(), Unit, devType, subType);
+		if (result.size() != 0)
+		{
+			unsigned long long ulID;
+			std::stringstream s_str(result[0][0]);
+			s_str >> ulID;
+
+			//Get Counter from one Hour ago
+			time_t now = mytime(NULL);
+			now -= 3600; //subtract one hour
+			struct tm ltime;
+			localtime_r(&now, &ltime);
+
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query(
+				"SELECT MIN(Total) FROM Rain WHERE (DeviceRowID=%lld AND Date>='%04d-%02d-%02d %02d:%02d:%02d')",
+				ulID, ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
+			if (result.size() == 1)
+			{
+				float totalRainFallLastHour = TotalRain - static_cast<float>(atof(result[0][0].c_str()));
+				Rainrate = round(totalRainFallLastHour) * 100;
+			}
+		}
+	}
+
 	sprintf(szTmp,"%d;%.1f",Rainrate,TotalRain);
 	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp, procResult.DeviceName);
 	if (DevRowIdx == -1)

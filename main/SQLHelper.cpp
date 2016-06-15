@@ -4017,11 +4017,8 @@ void CSQLHelper::UpdateRainLog()
 			if (splitresults.size()<2)
 				continue; //impossible
 
-			float total=0;
-			int rate=0;
-
-			rate=atoi(splitresults[0].c_str());
-			total = static_cast<float>(atof(splitresults[1].c_str()));
+			int rate=atoi(splitresults[0].c_str());
+			float total = static_cast<float>(atof(splitresults[1].c_str()));
 
 			//insert record
 			safe_query(
