@@ -2783,7 +2783,7 @@ void MainWorker::decode_Rain(const int HwdID, const _eHardwareTypes HwdType, con
 			if (result.size() == 1)
 			{
 				float totalRainFallLastHour = TotalRain - static_cast<float>(atof(result[0][0].c_str()));
-				Rainrate = round(totalRainFallLastHour) * 100;
+				Rainrate = round(totalRainFallLastHour*100.0f);
 			}
 		}
 	}
