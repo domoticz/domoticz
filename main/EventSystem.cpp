@@ -776,63 +776,34 @@ void CEventSystem::GetCurrentMeasurementStates()
 				if (sitem.subType != sTypeRAINWU)
 				{
 					result2 = m_sql.safe_query(
-						"SELECT MIN(Total), MAX(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID=%llu AND Date>='%q')",
+						"SELECT MIN(Total), MAX(Total) FROM Rain WHERE (DeviceRowID=%llu AND Date>='%q')",
 						sitem.ID, szDate);
 				}
 				else
 				{
 					result2 = m_sql.safe_query(
-						"SELECT Total, Total, Rate FROM Rain WHERE (DeviceRowID=%llu AND Date>='%q') ORDER BY ROWID DESC LIMIT 1",
+						"SELECT Total, Total FROM Rain WHERE (DeviceRowID=%llu AND Date>='%q') ORDER BY ROWID DESC LIMIT 1",
 						sitem.ID, szDate);
 				}
 				if (result2.size()>0)
 				{
 					double total_real = 0;
-					float rate = 0;
 					std::vector<std::string> sd2 = result2[0];
 					if (sitem.subType != sTypeRAINWU)
 					{
 						float total_min = static_cast<float>(atof(sd2[0].c_str()));
 						float total_max = static_cast<float>(atof(splitresults[1].c_str()));
-						rate = static_cast<float>(atof(sd2[2].c_str()));
-						if (sitem.subType == sTypeRAIN2)
-							rate /= 100.0f;
 						total_real = total_max - total_min;
 					}
 					else
 					{
-						rate = static_cast<float>(atof(sd2[2].c_str()));
 						total_real = atof(sd2[1].c_str());
 					}
-					//total_real*=AddjMulti;
 					rainmm = float(total_real);
+					rainmmlasthour = static_cast<float>(atof(splitresults[0].c_str())) / 100.0f;
 					isRain = true;
-					weatherval = rainmm;
+					weatherval = rainmmlasthour;
 					isWeather = true;
-
-					//Calculate Last Hour
-					szQuery.clear();
-					szQuery.str("");
-					sprintf(szDate, "datetime('now', 'localtime', '-%d hour')", 1);
-					if (sitem.subType != sTypeRAINWU)
-					{
-						result2 = m_sql.safe_query(
-							"SELECT MIN(Total), MAX(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID=%llu AND Date>='%q')",
-							sitem.ID, szDate);
-					}
-					else
-					{
-						result2 = m_sql.safe_query(
-							"SELECT Total, Total, Rate FROM Rain WHERE (DeviceRowID=%llu AND Date>='%q') ORDER BY ROWID DESC LIMIT 1",
-							sitem.ID, szDate);
-					}
-					rainmmlasthour = 0;
-					if (result2.size()>0)
-					{
-						std::vector<std::string> sd2 = result2[0];
-						float r_first = static_cast<float>(atof(sd2[0].c_str()));
-						rainmmlasthour = static_cast<float>(atof(splitresults[1].c_str())) - r_first;
-					}
 				}
 			}
 			break;

@@ -11,13 +11,15 @@ Version 3.xxxx (June xx 2016)
 - Implemented: OpenZWave, Aeotec ZWave+ USB Controller, Enable/Disable blinking mode (@Schmart, Thanks for the magic codes!)
 - Implemented: OpenZWave, Node table, now also displays Manufacturer, Product ID and Product Type
 - Implemented: OpenZWave, When including Thermostat Setpoints, the zwave Label will be used as Name by default
+- Implemented: Hourly rainrate for all rain sensors
 - Implemented: RFLink: Displaying firmware version in the hardware setup
 - Implemented: RFXCom, Blinds T12 (Confexx)
 - Implemented: S0 Meter TCP
+- Changed: ETH-8020, ignoring return message as it always returns (no more Success message)
+- Changed: EventSystem, weather/rain value is now the rain-rate
 - Changed: OpenZWave, Better support for Thermostat Modes
 - Changed: Stable ID generation for Philips Hue scenes (you need to delete all scenes and restart the hue hardware or domoticz)
 - Changed: Wind Direction graph (now does not display directions when speed was equal to zero)
-- Changed: ETH-8020, ignoring return message as it always returns (no more Success message)
 - Fixed: Better handling of white listed commands/urls
 - Fixed: Database backup is now only possible for admin users
 - Fixed: Double checking command rights
