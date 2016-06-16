@@ -67,6 +67,8 @@ void C1Wire::DetectSystem()
 		m_system=new C1WireByOWFS(m_path);
 	} else if (C1WireByKernel::IsAvailable()) {
 		m_system=new C1WireByKernel();
+	} else {
+		m_system=new C1WireByOWFS(m_path);
 	}
 
 #endif // WIN32
