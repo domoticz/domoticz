@@ -23,9 +23,11 @@ Version 3.xxxx (June xx 2016)
 - Fixed: Better handling of white listed commands/urls
 - Fixed: Database backup is now only possible for admin users
 - Fixed: Double checking command rights
+- Fixed: Dummy, when new sensor is created, Add it to the EventSystem
 - Fixed: Fix Off Delay not handled for Selector switch (#538).
 - Fixed: Fix On/Off delays not saved on the selector switch edit form (#532).
 - Fixed: KMTronic, did not work in timers/groups/scenes
+- Fixed: Manual Light/Switch, when created, Add it to the EventSystem
 - Fixed: Wind Speed/Gust graph, Plotbands
 - Fixed: Added grid lines to percentage/lux/general graphs
 
