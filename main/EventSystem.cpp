@@ -229,31 +229,15 @@ void CEventSystem::GetCurrentStates()
 {
 	std::vector<std::vector<std::string> > result;
 
-	//Get All Hardware ID's/Names, need them later
-	std::map<unsigned long long, _tHardwareListIntEV> _hardwareNames;
-	result = m_sql.safe_query("SELECT ID, Name, Enabled FROM Hardware");
-	if (result.size() > 0)
-	{
-		std::vector<std::vector<std::string> >::const_iterator itt;
-		for (itt = result.begin(); itt != result.end(); ++itt)
-		{
-			std::vector<std::string> sd = *itt;
-			_tHardwareListIntEV tlist;
-			unsigned long long ID;
-			std::stringstream h_str(sd[0]);
-			h_str >> ID;
-			tlist.Name = sd[1];
-			tlist.Enabled = (atoi(sd[2].c_str()) != 0);
-			_hardwareNames[ID] = tlist;
-		}
-	}
-
 	boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 
 	_log.Log(LOG_STATUS, "EventSystem: reset all device statuses...");
 	m_devicestates.clear();
 
-	result = m_sql.safe_query("SELECT HardwareID,ID,Name,nValue,sValue, Type, SubType, SwitchType, LastUpdate, LastLevel, Options FROM DeviceStatus WHERE (Used = '1')");
+	result = m_sql.safe_query(
+		"SELECT A.HardwareID, A.ID, A.Name, A.nValue, A.sValue, A.Type, A.SubType, A.SwitchType, A.LastUpdate, A.LastLevel, A.Options "
+		"FROM DeviceStatus AS A, Hardware AS B "
+		"WHERE (A.Used = '1') AND (B.ID == A.HardwareID) AND (B.Enabled == 1)");
 	if (result.size()>0)
 	{
 		// Allocate all memory before filling
@@ -262,20 +246,6 @@ void CEventSystem::GetCurrentStates()
 		for (itt = result.begin(); itt != result.end(); ++itt)
 		{
 			std::vector<std::string> sd = *itt;
-
-			unsigned long long HwID;
-			std::stringstream h_str(sd[0]);
-			h_str >> HwID;
-
-			std::map<unsigned long long, _tHardwareListIntEV>::const_iterator hItt = _hardwareNames.find(HwID);
-			if (hItt != _hardwareNames.end())
-			{
-				if (!(*hItt).second.Enabled)
-				{
-					//Hardware is disabled, no need to add the device
-					continue;
-				}
-			}
 
 			_tDeviceStatus sitem;
 
@@ -1011,7 +981,6 @@ void CEventSystem::WWWUpdateSecurityState(int securityStatus)
 
 std::string CEventSystem::UpdateSingleState(const unsigned long long ulDevID, const std::string &devname, const int nValue, const char* sValue, const unsigned char devType, const unsigned char subType, const _eSwitchType switchType, const std::string &lastUpdate, const unsigned char lastLevel, const std::map<std::string, std::string> & options)
 {
-
 	std::string nValueWording = nValueToWording(devType, subType, switchType, nValue, sValue, options);
 
 	// Fix string capacity to avoid map entry resizing

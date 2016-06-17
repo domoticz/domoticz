@@ -383,6 +383,7 @@ namespace http {
 			if (DeviceRowIdx != -1)
 			{
 				m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', Used=1 WHERE (ID==%llu)", ssensorname.c_str(), DeviceRowIdx);
+				m_mainworker.m_eventsystem.GetCurrentStates();
 			}
 		}
 	}
