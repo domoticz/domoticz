@@ -30,6 +30,7 @@ Version 3.xxxx (June xx 2016)
 - Fixed: Manual Light/Switch, when created, Add it to the EventSystem
 - Fixed: Wind Speed/Gust graph, Plotbands
 - Fixed: Added grid lines to percentage/lux/general graphs
+- Updated: SQLite3 v3.13.0
 
 Version 3.4834 (March 2nd 2016)
 - Implemented: Blockly, now possible to use expressions in notifications/email/SMS like "My temperature is {{temperaturedevice[1234]}} degrees" (see http://www.domoticz.com/wiki/Events)
