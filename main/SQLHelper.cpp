@@ -3142,7 +3142,27 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 		time_t now = time(0);
 		struct tm ltime;
 		localtime_r(&now,&ltime);
-
+	//Change: If Option 1: energy is computed as usage*time
+        //Default is Option 0, energy rad from module 
+        if (sOption == "1") {
+            std::vector<std::string> parts;
+            time_t lastReading;
+            struct tm regtm;
+            double interval;
+            float nUsage, nEnergy;
+            char sCompValue[100];
+            StringSplit(result[0][5].c_str(), ";", parts);
+            memset(&regtm, 0, sizeof(struct tm));
+            strptime(result[0][6].c_str(), "%Y-%m-%d %H:%M:%S", &regtm);
+            regtm.tm_isdst = ltime.tm_isdst;
+            lastReading = mktime(&regtm);
+            interval = now - lastReading;
+            nUsage = strtof(parts[0].c_str(),NULL);
+            nEnergy = nUsage*interval/3600 + strtof(parts[1].c_str(), NULL);
+            StringSplit(sValue, ";", parts);
+            sprintf(sCompValue, "%s;%.0f", parts[0].c_str(),nEnergy);
+            sValue = sCompValue;
+            }
         //~ use different update queries based on the device type
         if (devType == pTypeGeneral && subType == sTypeCounterIncremental)
         {
