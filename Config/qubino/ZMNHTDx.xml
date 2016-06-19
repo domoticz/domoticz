@@ -101,18 +101,12 @@ ZMNHTD5 916,0 MHz
 		</Associations>
 	</CommandClass>
 
+	<CommandClass id="142" ForceInstances="true" />
 
 	<!-- Remove COMMAND_CLASS_BASIC -->
 	<CommandClass id="32" action="remove" />
 
 	<!-- Map endpoints to instances -->
 	<CommandClass id="96" mapping="endpoints" />
-
-	<CommandClass id="37">
-		<TriggerRefreshValue Genre="user" Index="0" Instance="1">
-			<RefreshClassValue CommandClass="37" RequestFlags="0" Index="0" Instance="2" />
-			<RefreshClassValue CommandClass="37" RequestFlags="0" Index="0" Instance="3" />
-		</TriggerRefreshValue>
-	</CommandClass>
 
 </Product>
