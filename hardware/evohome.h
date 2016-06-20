@@ -461,6 +461,7 @@ public:
 		updSetPoint,
 		updOverride,
 		updBattery,
+		updDemand,
 	};
 	static const uint8_t m_nMaxZones=12;
 	
@@ -524,6 +525,7 @@ private:
 	void RequestZoneNames();
 	void RequestControllerMode();
 	void RequestSysInfo();
+	void RequestSysInfoZ(int nID);
 	void RequestDHWState();
 	void RequestDHWTemp();
 	void RequestZoneInfo(uint8_t nZone);
@@ -534,6 +536,7 @@ private:
 	void RequestDeviceInfo(uint8_t nAddr);
 	
 	void SendExternalSensor();
+	void SendExternalSensorZ(int val);
 	void SendZoneSensor();
 	
 	void RXRelay(uint8_t nDevNo, uint8_t nDemand, int nID=0);
