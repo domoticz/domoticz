@@ -3308,7 +3308,7 @@ define(['app'], function (app) {
 				//Blinds
 				$("#dialog-addmanuallightdevice #blindsparams").show();
 				var bShow4 = (lighttype==206)||(lighttype==207)||(lighttype==209);
-				var bShowUnit = (lighttype==206)||(lighttype==207)||(lighttype==208)||(lighttype==209);
+				var bShowUnit = (lighttype==206)||(lighttype==207)||(lighttype==208)||(lighttype==209)||(lighttype==212);
 				if (bShow4)
 					$('#dialog-addmanuallightdevice #blindsparams #combocmd4').show();
 				else
