@@ -2420,6 +2420,11 @@ bool CSQLHelper::OpenDatabase()
 		std::string sencoded = base64_encode((const unsigned char*)sValue.c_str(), sValue.size());
 		UpdatePreferencesVar("HTTPURL", sencoded);
 	}
+	if ((!GetPreferencesVar("HTTPPostContentType", sValue)) || (sValue.empty()))  
+	{  
+		sValue = "application/json";  
+		UpdatePreferencesVar("HTTPPostContentType", sValue);  
+	}  
 	if (!GetPreferencesVar("ShowUpdateEffect", nValue))
 	{
 		UpdatePreferencesVar("ShowUpdateEffect", 0);
@@ -3090,7 +3095,7 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 	bool bDeviceUsed = false;
 	bool bSameDeviceStatusValue = false;
 	std::vector<std::vector<std::string> > result;
-	result = safe_query("SELECT ID,Name, Used, SwitchType, nValue, sValue, LastUpdate, Description, Options FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID, unit, devType, subType);
+	result = safe_query("SELECT ID,Name, Used, SwitchType, nValue, sValue, LastUpdate, Options FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID, unit, devType, subType);
 
     if (result.size()==0)
 	{
@@ -3133,7 +3138,7 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 		_eSwitchType stype = (_eSwitchType)atoi(result[0][3].c_str());
 		int old_nValue = atoi(result[0][4].c_str());
 		std::string old_sValue = result[0][5];
-        	std::string sOption=result[0][8];
+        	std::string sOption=result[0][7];
 		time_t now = time(0);
 		struct tm ltime;
 		localtime_r(&now,&ltime);
@@ -3473,7 +3478,7 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 		CheckSceneStatusWithDevice(ulID);
 		break;
 	}
-if (bDeviceUsed)
+	if (bDeviceUsed)
 		m_mainworker.m_eventsystem.ProcessDevice(HardwareID, ulID, unit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, 0);
 	return ulID;
 }
@@ -4034,12 +4039,8 @@ void CSQLHelper::UpdateRainLog()
 			StringSplit(sValue, ";", splitresults);
 			if (splitresults.size()<2)
 				continue; //impossible
-
-			float total=0;
-			int rate=0;
-
-			rate=atoi(splitresults[0].c_str());
-			total = static_cast<float>(atof(splitresults[1].c_str()));
+			int rate=atoi(splitresults[0].c_str());  
+			float total = static_cast<float>(atof(splitresults[1].c_str()));  
 
 			//insert record
 			safe_query(
@@ -4147,7 +4148,11 @@ void CSQLHelper::UpdateUVLog()
 	GetPreferencesVar("SensorTimeout", SensorTimeOut);
 
 	std::vector<std::vector<std::string> > result;
-	result=safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d)", pTypeUV);
+	result=safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d) OR (Type=%d AND SubType=%d)",   
+	pTypeUV,  
+	pTypeGeneral, sTypeUV  
+	); 
+
 	if (result.size()>0)
 	{
 		std::vector<std::vector<std::string> >::const_iterator itt;
@@ -4187,7 +4192,7 @@ void CSQLHelper::UpdateUVLog()
 			//insert record
 			safe_query(
 				"INSERT INTO UV (DeviceRowID, Level) "
-				"VALUES ('%llu', '%.1f')",
+				"VALUES ('%llu', '%g')",
 				ID,
 				level
 				);
@@ -5406,7 +5411,7 @@ void CSQLHelper::AddCalendarUpdateUV()
 			//insert into calendar table
 			result=safe_query(
 				"INSERT INTO UV_Calendar (DeviceRowID, Level, Date) "
-				"VALUES ('%llu', '%.2f', '%q')",
+				"VALUES ('%llu', '%.g', '%q')",
 				ID,
 				level,
 				szDateStart
@@ -7338,6 +7343,3 @@ bool CSQLHelper::SetDeviceOptions(const unsigned long long idx, const std::map<s
 	}
 	return true;
 }
-
-
-
