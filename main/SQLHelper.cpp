@@ -2420,11 +2420,6 @@ bool CSQLHelper::OpenDatabase()
 		std::string sencoded = base64_encode((const unsigned char*)sValue.c_str(), sValue.size());
 		UpdatePreferencesVar("HTTPURL", sencoded);
 	}
-	if ((!GetPreferencesVar("HTTPPostContentType", sValue)) || (sValue.empty()))
-	{
-		sValue = "application/json";
-		UpdatePreferencesVar("HTTPPostContentType", sValue);
-	}
 	if (!GetPreferencesVar("ShowUpdateEffect", nValue))
 	{
 		UpdatePreferencesVar("ShowUpdateEffect", 0);
@@ -3095,8 +3090,9 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 	bool bDeviceUsed = false;
 	bool bSameDeviceStatusValue = false;
 	std::vector<std::vector<std::string> > result;
-	result = safe_query("SELECT ID,Name, Used, SwitchType, nValue, sValue FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID, unit, devType, subType);
-	if (result.size()==0)
+	result = safe_query("SELECT ID,Name, Used, SwitchType, nValue, sValue, LastUpdate, Description, Options FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID, unit, devType, subType);
+
+    if (result.size()==0)
 	{
 		//Insert
 
@@ -3132,36 +3128,39 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 		//Update
 		std::stringstream s_str( result[0][0] );
 		s_str >> ulID;
-
 		devname=result[0][1];
 		bDeviceUsed= atoi(result[0][2].c_str())!=0;
 		_eSwitchType stype = (_eSwitchType)atoi(result[0][3].c_str());
 		int old_nValue = atoi(result[0][4].c_str());
 		std::string old_sValue = result[0][5];
-
+        	std::string sOption=result[0][8];
 		time_t now = time(0);
 		struct tm ltime;
 		localtime_r(&now,&ltime);
-	//Change: If Option 1: energy is computed as usage*time
-        //Default is Option 0, energy rad from module 
-        if (sOption == "1") {
-            std::vector<std::string> parts;
-            time_t lastReading;
-            struct tm regtm;
-            double interval;
-            float nUsage, nEnergy;
-            char sCompValue[100];
-            StringSplit(result[0][5].c_str(), ";", parts);
-            memset(&regtm, 0, sizeof(struct tm));
-            strptime(result[0][6].c_str(), "%Y-%m-%d %H:%M:%S", &regtm);
-            regtm.tm_isdst = ltime.tm_isdst;
-            lastReading = mktime(&regtm);
-            interval = now - lastReading;
-            nUsage = strtof(parts[0].c_str(),NULL);
-            nEnergy = nUsage*interval/3600 + strtof(parts[1].c_str(), NULL);
-            StringSplit(sValue, ";", parts);
-            sprintf(sCompValue, "%s;%.0f", parts[0].c_str(),nEnergy);
-            sValue = sCompValue;
+	        //Commit: If Option 1: energy is computed as usage*time
+	        //Default is option 0, read from device
+	        if (sOption == "1") {
+	            std::vector<std::string> parts;
+	            struct tm ntime;
+	            double interval;
+	            float nEnergy;
+	            char sCompValue[100];
+	            std::string sLastUpdate=result[0][6];
+	
+	            ntime.tm_isdst=ltime.tm_isdst;
+	            ntime.tm_year=atoi(sLastUpdate.substr(0,4).c_str())-1900;
+	            ntime.tm_mon=atoi(sLastUpdate.substr(5,2).c_str())-1;
+	            ntime.tm_mday=atoi(sLastUpdate.substr(8,2).c_str());
+	            ntime.tm_hour=atoi(sLastUpdate.substr(11,2).c_str());
+	            ntime.tm_min=atoi(sLastUpdate.substr(14,2).c_str());
+	            ntime.tm_sec=atoi(sLastUpdate.substr(17,2).c_str());
+	            interval = now - mktime(&ntime);
+		    StringSplit(result[0][5].c_str(), ";", parts);            
+	            nEnergy = strtof(parts[0].c_str(),NULL)*interval/3600 + strtof(parts[1].c_str(), NULL);
+	            
+	            StringSplit(sValue, ";", parts);
+	            sprintf(sCompValue, "%s;%.0f", parts[0].c_str(),nEnergy);
+	            sValue = sCompValue;
             }
         //~ use different update queries based on the device type
         if (devType == pTypeGeneral && subType == sTypeCounterIncremental)
@@ -3200,7 +3199,6 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 				ulID);
 		}
 	}
-
 	if (bSameDeviceStatusValue)
 		return ulID; //status has not changed, no need to process further
 
@@ -3475,7 +3473,7 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 		CheckSceneStatusWithDevice(ulID);
 		break;
 	}
-	if (bDeviceUsed)
+if (bDeviceUsed)
 		m_mainworker.m_eventsystem.ProcessDevice(HardwareID, ulID, unit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, 0);
 	return ulID;
 }
@@ -4037,8 +4035,11 @@ void CSQLHelper::UpdateRainLog()
 			if (splitresults.size()<2)
 				continue; //impossible
 
-			int rate=atoi(splitresults[0].c_str());
-			float total = static_cast<float>(atof(splitresults[1].c_str()));
+			float total=0;
+			int rate=0;
+
+			rate=atoi(splitresults[0].c_str());
+			total = static_cast<float>(atof(splitresults[1].c_str()));
 
 			//insert record
 			safe_query(
@@ -4146,10 +4147,7 @@ void CSQLHelper::UpdateUVLog()
 	GetPreferencesVar("SensorTimeout", SensorTimeOut);
 
 	std::vector<std::vector<std::string> > result;
-	result=safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d) OR (Type=%d AND SubType=%d)", 
-		pTypeUV,
-		pTypeGeneral, sTypeUV
-	);
+	result=safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d)", pTypeUV);
 	if (result.size()>0)
 	{
 		std::vector<std::vector<std::string> >::const_iterator itt;
@@ -4189,7 +4187,7 @@ void CSQLHelper::UpdateUVLog()
 			//insert record
 			safe_query(
 				"INSERT INTO UV (DeviceRowID, Level) "
-				"VALUES ('%llu', '%g')",
+				"VALUES ('%llu', '%.1f')",
 				ID,
 				level
 				);
@@ -5408,7 +5406,7 @@ void CSQLHelper::AddCalendarUpdateUV()
 			//insert into calendar table
 			result=safe_query(
 				"INSERT INTO UV_Calendar (DeviceRowID, Level, Date) "
-				"VALUES ('%llu', '%g', '%q')",
+				"VALUES ('%llu', '%.2f', '%q')",
 				ID,
 				level,
 				szDateStart
@@ -7340,4 +7338,6 @@ bool CSQLHelper::SetDeviceOptions(const unsigned long long idx, const std::map<s
 	}
 	return true;
 }
+
+
 
