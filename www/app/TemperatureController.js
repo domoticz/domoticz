@@ -1,5 +1,5 @@
 define(['app'], function (app) {
-	app.controller('TemperatureController', [ '$scope', '$rootScope', '$location', '$http', '$interval', 'permissions', function($scope,$rootScope,$location,$http,$interval,permissions) {
+	app.controller('TemperatureController', [ '$scope', '$rootScope', '$location', '$http', '$interval', '$window', 'permissions', function($scope,$rootScope,$location,$http,$interval,$window,permissions) {
 
 		var ctrl = this;
 
@@ -436,6 +436,7 @@ define(['app'], function (app) {
 		  $('#tempcontent').html(GetBackbuttonHTMLTable('ShowTemps')+htmlcontent);
 		  $('#tempcontent').i18n();
 			$('#tempwidgets').hide();
+			$('#temptophtm').hide();
 		  
 		  $.content="#tempcontent";
 
@@ -626,93 +627,14 @@ define(['app'], function (app) {
 			}
 		  $('#modal').show();
 
-		  var bShowRoomplan=false;
-		  $.RoomPlans = [];
-		  $.ajax({
-			 url: "json.htm?type=plans",
-			 async: false, 
-			 dataType: 'json',
-			 success: function(data) {
-				if (typeof data.result != 'undefined') {
-					var totalItems=data.result.length;
-					if (totalItems>0) {
-						bShowRoomplan=true;
-		//				if (window.myglobals.ismobile==true) {
-			//				bShowRoomplan=false;
-				//		}
-						if (bShowRoomplan==true) {
-							$.each(data.result, function(i,item) {
-								$.RoomPlans.push({
-									idx: item.idx,
-									name: item.Name
-								});
-							});
-						}
-					}
-				}
-			 }
-		  });
-		  
-		  var bHaveAddedDevider = false;
-		  var tophtm="";
-		  if ($.RoomPlans.length==0) {
-			  tophtm+=
-					'\t<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
-					'\t<tr>\n' +
-					'\t  <td align="left" valign="top" id="timesun"></td>\n' +
-					'\t  <td align="right">\n';
-			  if (window.myglobals.ismobile==false) {
-				  tophtm+=
-						'\t<table class="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
-						'\t<tr>\n' +
-						'\t  <td align="left"></td>\n' +
-						'\t  <td align="right">\n' +
-						'\t    <a class="btnstyle" onclick="ShowCustomTempLog();" data-i18n="Custom Graph">Custom Graph</a>\n';
-				  if ($scope.config.Latitude!="") {
-					tophtm+=
-						'\t    <a id="Forecast" class="btnstyle" onclick="ShowForecast();" data-i18n="Forecast">Forecast</a>\n';
-				  }
-				  tophtm+=     
-						'\t  </td>\n' +
-						'\t</tr>\n' +
-						'\t</table>\n';
-			}
-			tophtm+=     
-					'</td>'+
-					'\t</tr>\n' +
-					'\t</table>\n';
-		  }
-		  else {
-				tophtm+=
-					'\t<table border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
-					'\t<tr>\n' +
-					'\t  <td align="left" valign="top" id="timesun"></td>\n' +
-					'<td align="right" valign="top">'+
-					'<span data-i18n="Room">Room</span>:&nbsp;<select id="comboroom" style="width:160px" class="combobox ui-corner-all">'+
-					'<option value="0" data-i18n="All">All</option>'+
-					'</select>'+
-					'</td>'+
-					'\t</tr>\n' +
-					'\t</table>\n';
-			  if (window.myglobals.ismobile==false) {
-				  tophtm+=
-						'\t<table class="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
-						'\t<tr>\n' +
-						'\t  <td align="left"></td>\n' +
-						'\t  <td align="right">\n' +
-						'\t    <a class="btnstyle" onclick="ShowCustomTempLog();" data-i18n="Custom Graph">Custom Graph</a>\n';
-				  if ($scope.config.Latitude!="") {
-					tophtm+=
-						'\t    <a id="Forecast" class="btnstyle" onclick="ShowForecast();" data-i18n="Forecast">Forecast</a>\n';
-				  }
-				  tophtm+=     
-						'\t  </td>\n' +
-						'\t</tr>\n' +
-						'\t</table>\n';
-			}
-		  }
+			// TODO should belong to a global controller
+			ctrl.isNotMobile = function() {
+				return $window.myglobals.ismobile == false;
+			};
 
-		  var i=0;
+		  var bHaveAddedDevider = false; // TODO remove ?
+
+		  var i=0; // TODO remove ?
 
 		  $.ajax({
 			 url: "json.htm?type=devices&filter=temp&used=true&order=Name&plan="+window.myglobals.LastPlanSelected,
@@ -731,25 +653,12 @@ define(['app'], function (app) {
 			 }
 		  });
 		  $('#modal').hide();
-		  $('#tempcontent').html(tophtm);
+			$('#temptophtm').show();
+			$('#temptophtm').i18n();
 			$('#tempwidgets').show();
 			$('#tempwidgets').i18n();
+			$('#tempcontent').html("");
 		  $('#tempcontent').i18n();
-			if (bShowRoomplan==true) {
-				$.each($.RoomPlans, function(i,item){
-					var option = $('<option />');
-					option.attr('value', item.idx).text(item.name);
-					$("#tempcontent #comboroom").append(option);
-				});
-				if (typeof window.myglobals.LastPlanSelected!= 'undefined') {
-					$("#tempcontent #comboroom").val(window.myglobals.LastPlanSelected);
-				}
-				$("#tempcontent #comboroom").change(function() { 
-					var idx = $("#tempcontent #comboroom option:selected").val();
-					window.myglobals.LastPlanSelected=idx;
-					ShowTemps();
-				});
-			}
 
 			$rootScope.RefreshTimeAndSun();
 
@@ -1061,7 +970,37 @@ define(['app'], function (app) {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
 			}
-		}); 
+		});
+
+		ctrl.RoomPlans = [{idx:0, name:$.t("All")}];
+		$.ajax({
+			url: "json.htm?type=plans",
+			async: false,
+			dataType: 'json',
+			success: function(data) {
+				if (typeof data.result != 'undefined') {
+					var totalItems=data.result.length;
+					if (totalItems>0) {
+						$.each(data.result, function(i,item) {
+							ctrl.RoomPlans.push({
+								idx: item.idx,
+								name: item.Name
+							});
+						});
+					}
+				}
+			}
+		});
+
+		if (typeof window.myglobals.LastPlanSelected!= 'undefined') {
+			ctrl.roomSelected = window.myglobals.LastPlanSelected;
+		}
+		ctrl.changeRoom = function() {
+			var idx = ctrl.roomSelected;
+			window.myglobals.LastPlanSelected = idx;
+			ShowTemps();
+		};
+
 	} ])
 		.directive('dztemperaturewidget', function() {
 			return {
@@ -1201,6 +1140,7 @@ define(['app'], function (app) {
 					
 					ctrl.ShowTempLog = function(divId, fn) {
 						$('#tempwidgets').hide(); // TODO delete when multiple views implemented
+						$('#temptophtm').hide();
 						return ShowTempLog(divId, fn, ctrl.item.idx, escape(ctrl.item.Name));
 					};
 
@@ -1214,11 +1154,13 @@ define(['app'], function (app) {
 
 					ctrl.ShowNotifications = function(divId, fn) {
 						$('#tempwidgets').hide(); // TODO delete when multiple views implemented
+						$('#temptophtm').hide();
 						return ShowNotifications(ctrl.item.idx, escape(ctrl.item.Name), divId, fn);
 					};
 
 					ctrl.ShowForecast = function(divId, fn) {
 						$('#tempwidgets').hide(); // TODO delete when multiple views implemented
+						$('#temptophtm').hide();
 						return ShowForecast(atob(ctrl.item.forecast_url),escape(ctrl.item.Name), divId, fn);
 					};
 

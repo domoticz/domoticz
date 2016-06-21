@@ -128,6 +128,32 @@
 
 	<div id="tempcontent"></div>
 
+	<div id="temptophtm">
+		<table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td align="left" valign="top" id="timesun"></td>
+				<td align="right" valign="top">
+					<div ng-show="ctrl.RoomPlans.length>0">
+						<span data-i18n="Room">Room</span>:
+						<select id="comboroom" style="width:160px" class="combobox ui-corner-all"
+							ng-model="ctrl.roomSelected" ng-options="room.idx as room.name for room in ctrl.RoomPlans"
+							ng-change="ctrl.changeRoom()">
+						</select>
+					</div>
+				</td>
+			</tr>
+		</table>
+		<table ng-show="ctrl.isNotMobile()" class="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td align="left"></td>
+				<td align="right">
+					<a class="btnstyle" onclick="ShowCustomTempLog();" data-i18n="Custom Graph">Custom Graph</a>
+					<a ng-show="config.Latitude!=''" id="Forecast" class="btnstyle" onclick="ShowForecast();" data-i18n="Forecast">Forecast</a>
+				</td>
+			</tr>
+		</table>
+	</div>
+
 	<div id="tempwidgets" class="row divider">
 		<h2 ng-show="ctrl.temperatures.length == 0" data-i18n="No Temperature sensors found or added in the system...">No Temperature sensors found or added in the system...</h2>
 		<div ng-repeat="t in ctrl.temperatures track by t.idx">
