@@ -6189,8 +6189,8 @@ void MainWorker::decode_evohome3(const int HwdID, const _eHardwareTypes HwdType,
 			szDemand="0";
 	}
 
-	unsigned char SignalLevel=255;//Unknown
-	unsigned char BatteryLevel = 255;//Unknown
+	if (pEvo->EVOHOME3.updatetype == CEvohome::updBattery)
+		BatteryLevel = pEvo->EVOHOME3.battery_level;
 
 	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szDemand.c_str(), procResult.DeviceName);
 	if (DevRowIdx == -1)

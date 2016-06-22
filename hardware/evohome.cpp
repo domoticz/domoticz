@@ -1646,14 +1646,13 @@ bool CEvohome::DecodeBatteryInfo(CEvohomeMsg &msg)
 			sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME3, NULL, nBattery);
 		}
 		else
-			else
-			{
-					szType="Dev";  
-					tsen.EVOHOME2.type = pTypeEvohomeZone;
-					tsen.EVOHOME2.subtype = sTypeEvohomeZone;
-					tsen.EVOHOME2.zone = nDevNo; 
-					sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME2, NULL, nBattery);  // Update Relay device battery level
-			}		
+		{
+			szType="Dev";  
+			tsen.EVOHOME2.type = pTypeEvohomeZone;
+			tsen.EVOHOME2.subtype = sTypeEvohomeZone;
+			tsen.EVOHOME2.zone = nDevNo; 
+			sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME2, NULL, nBattery);  // Update Relay device battery level
+		}		
 	}
 	else if(msg.id[0].GetIDType()==CEvohomeID::devSensor)
 	{
