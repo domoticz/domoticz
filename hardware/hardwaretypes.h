@@ -538,5 +538,7 @@ typedef union tREVOBUF {
 		uint8_t	id3;
 		uint8_t	devno;
 		uint8_t	demand;
+		uint8_t	updatetype;
+		uint8_t	battery_level;
 	} EVOHOME3;
 } REVOBUF;
