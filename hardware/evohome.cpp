@@ -293,21 +293,6 @@ void CEvohome::Do_Work()
 						InitControllerName();
 						InitZoneNames();
 
-						// Update any zone names which are still the defaults
-						result = m_sql.safe_query("SELECT Name FROM Devicestatus WHERE ((HardwareID==%d) AND (Type==%d) AND (Unit <= 12) AND (Name == 'Zone Temp')) OR ((HardwareID==%d) AND (Type==%d) AND (Unit <= 12) AND (Name == 'Setpoint'))", m_HwdID, (int)pTypeEvohomeZone, m_HwdID, (int)pTypeEvohomeZone);
-						if (result.size() != 0)
-						{
-							for (uint8_t i = 1; i < m_nZoneCount + 1; i++)
-							{
-								result = m_sql.safe_query("SELECT Name FROM Devicestatus WHERE ((HardwareID==%d) AND (Type==%d) AND (Unit == %d) AND (Name == 'Zone Temp')) OR ((HardwareID==%d) AND (Type==%d) AND (Unit == %d) AND (Name == 'Setpoint'))", m_HwdID, (int)pTypeEvohomeZone, i, m_HwdID, (int)pTypeEvohomeZone, i);
-								if (result.size() != 0)
-								{
-									Log(true, LOG_STATUS, "Evohome: UPDATE Devicestatus SET Name=%s WHERE (HardwareID==%d) AND (Type==%d) AND (Unit == %d)", m_ZoneNames[i - 1].c_str(), m_HwdID, (int)pTypeEvohomeZone, i);
-									m_sql.safe_query("UPDATE Devicestatus SET Name='%q' WHERE (HardwareID==%d) AND (Type==%d) AND (Unit == %d)", m_ZoneNames[i - 1].c_str(), m_HwdID, (int)pTypeEvohomeZone, i);
-								}
-							}
-						}
-
 						startup = false;
 					}
 					else//Request each individual zone temperature every 300s as the controller omits multi-room zones
@@ -1324,6 +1309,8 @@ bool CEvohome::DecodeSysInfo(CEvohomeMsg &msg)//10e0
 bool CEvohome::DecodeZoneName(CEvohomeMsg &msg)
 {
 	char tag[] = "ZONE_NAME";
+	std::vector<std::vector<std::string> > result;
+
 	if (msg.payloadsize == 2){
 		Log(true,LOG_STATUS,"evohome: %s: Request for zone name %d",tag, msg.payload[0]);
 		return true;
@@ -1345,6 +1332,15 @@ bool CEvohome::DecodeZoneName(CEvohomeMsg &msg)
 	Log(true,LOG_STATUS,"evohome: %s: %d: Name %s",tag,nZone,&msg.payload[2]);
 	if(m_bStartup[0] && nZone<m_nMaxZones)
 		RequestZoneStartupInfo(nZone);
+
+	// Update any zone names which are still the defaults
+	result = m_sql.safe_query("SELECT Name FROM Devicestatus WHERE ((HardwareID==%d) AND (Type==%d) AND (Unit == %d) AND (Name == 'Zone Temp')) OR ((HardwareID==%d) AND (Type==%d) AND (Unit == %d) AND (Name == 'Setpoint'))", m_HwdID, (int)pTypeEvohomeZone, nZone, m_HwdID, (int)pTypeEvohomeZone, nZone);
+	if (result.size() != 0)
+		m_sql.safe_query("UPDATE Devicestatus SET Name='%q' WHERE (HardwareID==%d) AND (Type==%d) AND (Unit == %d)", (const char*)&msg.payload[2], m_HwdID, (int)pTypeEvohomeZone, nZone);
+	result = m_sql.safe_query("SELECT Name FROM Devicestatus WHERE (HardwareID==%d) AND (Type==%d) AND (Unit == %d) AND (Name == 'Zone')", m_HwdID, (int)pTypeEvohomeRelay, nZone);
+	if (result.size() != 0)
+		m_sql.safe_query("UPDATE Devicestatus SET Name='%q' WHERE (HardwareID==%d) AND (Type==%d) AND (Unit == %d)", (const char*)&msg.payload[2], m_HwdID, (int)pTypeEvohomeRelay, nZone);
+
 	return true;
 }
 
