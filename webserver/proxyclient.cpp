@@ -137,6 +137,7 @@ namespace http {
 		void CProxyClient::handle_write(const boost::system::error_code& error, size_t bytes_transferred)
 		{
 			boost::unique_lock<boost::mutex>(writeMutex);
+			ProxyPdu *pdu;
 			switch (connection_status) {
 			case status_connecting:
 				// not possible
@@ -154,12 +155,13 @@ namespace http {
 					_log.Log(LOG_ERROR, "PROXY: Write failed, code = %d, %s", error.value(), error.message().c_str());
 				}
 				if (!writeQ.empty()) {
-					SocketWrite(writeQ.front());
+					pdu = writeQ.front();
 					writeQ.pop();
+					SocketWrite(pdu);
 				}
 				break;
 			}
-			SockWriteBuf.clear();
+			//SockWriteBuf.clear();
 		}
 
 		void CProxyClient::SocketWrite(ProxyPdu *pdu)
