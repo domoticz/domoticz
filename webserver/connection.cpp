@@ -276,16 +276,16 @@ void connection::handle_read(const boost::system::error_code& error, std::size_t
 		switch (connection_type) {
 		case connection_http:
 			begin = boost::asio::buffer_cast<const char*>(_buf.data());
-		try
-		{
-			request_parser_.reset();
-			boost::tie(result, boost::tuples::ignore) = request_parser_.parse(
-				request_, begin, begin + _buf.size());
-		}
-		catch (...)
-		{
-			_log.Log(LOG_ERROR, "Exception parsing http request.");
-		}
+			try
+			{
+				request_parser_.reset();
+				boost::tie(result, boost::tuples::ignore) = request_parser_.parse(
+					request_, begin, begin + _buf.size());
+			}
+			catch (...)
+			{
+				_log.Log(LOG_ERROR, "Exception parsing http request.");
+			}
 
 			request_handler_.handle_request(request_, reply_);
 
@@ -297,38 +297,38 @@ void connection::handle_read(const boost::system::error_code& error, std::size_t
 				reply::add_header_if_absent(&reply_, "Keep-Alive", ss.str());
 			}
 
-		if (result) {
-			size_t sizeread = begin - boost::asio::buffer_cast<const char*>(_buf.data());
-			_buf.consume(sizeread);
-			reply_.reset();
-			const char *pConnection = request_.get_req_header(&request_, "Connection");
-			keepalive_ = pConnection != NULL && boost::iequals(pConnection, "Keep-Alive");
-			request_.keep_alive = keepalive_;
-			request_.host_address = host_endpoint_address_;
-			request_.host_port = host_endpoint_port_;
-			if (request_.host_address.substr(0, 7) == "::ffff:") {
-				request_.host_address = request_.host_address.substr(7);
-			}
-			request_handler_.handle_request(request_, reply_);
-				MyWrite(reply_.to_string(request_.method));
-				if (reply_.status == reply::switching_protocols) {
-					// this was an upgrade request
-					connection_type = connection_websocket;
-					// from now on we are a persistant connection
-					keepalive_ = true;
-					// keep sessionid to access our session during websockets requests
-					websocket_handler.store_session_id(request_, reply_);
-					// todo: check if multiple connection from the same client in CONNECTING state?
-			}
+			if (result) {
+				size_t sizeread = begin - boost::asio::buffer_cast<const char*>(_buf.data());
+				_buf.consume(sizeread);
+				reply_.reset();
+				const char *pConnection = request_.get_req_header(&request_, "Connection");
+				keepalive_ = pConnection != NULL && boost::iequals(pConnection, "Keep-Alive");
+				request_.keep_alive = keepalive_;
+				request_.host_address = host_endpoint_address_;
+				request_.host_port = host_endpoint_port_;
+				if (request_.host_address.substr(0, 7) == "::ffff:") {
+					request_.host_address = request_.host_address.substr(7);
+				}
+				request_handler_.handle_request(request_, reply_);
+					MyWrite(reply_.to_string(request_.method));
+					if (reply_.status == reply::switching_protocols) {
+						// this was an upgrade request
+						connection_type = connection_websocket;
+						// from now on we are a persistant connection
+						keepalive_ = true;
+						// keep sessionid to access our session during websockets requests
+						websocket_handler.store_session_id(request_, reply_);
+						// todo: check if multiple connection from the same client in CONNECTING state?
+				}
 				if (keepalive_) {
 					read_more();
 				}
-			status_ = WAITING_WRITE;
+				status_ = WAITING_WRITE;
 			}
-		else if (!result)
-		{
-			keepalive_ = false;
-			reply_ = reply::stock_reply(reply::bad_request);
+			else if (!result)
+			{
+				keepalive_ = false;
+				reply_ = reply::stock_reply(reply::bad_request);
 				MyWrite(reply_.to_string(request_.method));
 				if (keepalive_) {
 					read_more();
@@ -348,17 +348,17 @@ void connection::handle_read(const boost::system::error_code& error, std::size_t
 				// we received a complete packet (that was handled already)
 				if (keepalive_) {
 					read_more();
-			}
-			else {
+				}
+				else {
 					// a connection close control packet was received
 					// todo: wait for writeQ to flush?
 					connection_type = connection_closing;
+				}
 			}
-		}
-			else if (!result)
-		{
-			read_more();
-		}
+			else // if (!result)
+			{
+				read_more();
+			}
 			break;
 		}
 	}

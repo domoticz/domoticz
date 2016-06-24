@@ -349,6 +349,7 @@ int ProxyPdu::ReadPdu(const char *buffer, size_t buflen)
 			_length = 0;
 			lencounter = 0;
 			state = STATE_PDULEN;
+			_log.Log(LOG_NORM, "Opcode %d", _type); // debug
 			break;
 		case STATE_PDULEN:
 			_length += buf * mult;

@@ -137,6 +137,10 @@ namespace http {
 		void CProxyClient::handle_write(const boost::system::error_code& error, size_t bytes_transferred)
 		{
 			boost::unique_lock<boost::mutex>(writeMutex);
+			if (bytes_transferred != SockWriteBuf.length()) {
+				_log.Log(LOG_ERROR, "Only wrote %d of %d bytes.", bytes_transferred, SockWriteBuf.length());
+			}
+			SockWriteBuf.clear();
 			ProxyPdu *pdu;
 			switch (connection_status) {
 			case status_connecting:
@@ -161,12 +165,12 @@ namespace http {
 				}
 				break;
 			}
-			//SockWriteBuf.clear();
 		}
 
 		void CProxyClient::SocketWrite(ProxyPdu *pdu)
 		{
-			// do not call directly, use MyWrite()
+			_log.Log(LOG_NORM, "In SocketWrite"); // debug
+												  // do not call directly, use MyWrite()
 			CWebsocketFrame frame;
 			writePdu = pdu;
 			SockWriteBuf = frame.Create(opcode_binary, std::string((char *)writePdu->content(), writePdu->length()));
@@ -264,7 +268,7 @@ namespace http {
 			http::server::request_parser request_parser_;
 			http::server::request request_;
 
-			boost::tribool result;
+			boost::tribool result = boost::indeterminate;
 			try
 			{
 				size_t bufsize = boost::asio::buffer_size(_buf);
@@ -354,7 +358,8 @@ namespace http {
 				ADDPDUSTRINGBINARY(reply_.content);
 				ADDPDULONG(requestid);
 
-				// send response to proxy
+				_log.Log(LOG_NORM, "Status %d", reply_.status); // debug
+													  // send response to proxy
 				MyWrite(PDU_RESPONSE, parameters);
 			}
 			else {
@@ -599,14 +604,15 @@ namespace http {
 					break;
 				case status_connected:
 					data = boost::asio::buffer_cast<const char*>(_readbuf.data());
-					ProxyPdu pdu(data, _readbuf.size());
-					if (pdu.Disconnected()) {
-						// todo
-						ReadMore();
-						return;
+					CWebsocketFrame frame;
+					if (frame.Parse((const unsigned char *)data, _readbuf.size())) {
+						ProxyPdu pdu(frame.Payload().c_str(), frame.Payload().length());
+						if (!pdu.Disconnected()) {
+							PduHandler(pdu);
+							_readbuf.consume(frame.Consumed());
+						}
 					}
-					PduHandler(pdu);
-					_readbuf.consume(pdu.length() + 9); // 9 is header size
+					break;
 				}
 				ReadMore();
 			}
