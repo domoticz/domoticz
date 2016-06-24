@@ -66,10 +66,9 @@ namespace http {
 			std::string SockWriteBuf;
 			void MyWrite(pdu_type type, CValueLengthPart &parameters);
 			void SocketWrite(ProxyPdu *pdu);
-			std::vector<boost::asio::const_buffer> _writebuf;
-			ProxyPdu *writePdu;
 			/// make sure we only write one packet at a time
 			boost::mutex writeMutex;
+			bool write_in_progress;
 			void LoginToService();
 
 			PDUPROTO(PDU_REQUEST)

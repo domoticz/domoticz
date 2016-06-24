@@ -371,11 +371,13 @@ void connection::handle_read(const boost::system::error_code& error, std::size_t
 void connection::handle_write(const boost::system::error_code& error, size_t bytes_transferred)
 {
 	boost::unique_lock<boost::mutex>(writeMutex);
+	write_buffer.clear();
 	write_in_progress = false;
 	if (!error) {
 		if (!writeQ.empty()) {
-			SocketWrite(writeQ.front());
+			std::string buf = writeQ.front();
 			writeQ.pop();
+			SocketWrite(buf);
 		}
 		else if (!keepalive_) {
 			connection_manager_.stop(shared_from_this());
@@ -385,7 +387,6 @@ void connection::handle_write(const boost::system::error_code& error, size_t byt
 	status_ = ENDING_WRITE;
 		// if a keep-alive connection is requested, we read the next request
 		reset_abandoned_timeout();
-		read_more();
 	} else {
 		connection_manager_.stop(shared_from_this());
 	}

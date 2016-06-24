@@ -35,9 +35,9 @@ namespace http {
 			connection_status(status_connecting),
 			we_locked_prefs_mutex(false),
 			timeout_(TIMEOUT),
-			timer_(io_service, boost::posix_time::seconds(TIMEOUT))
+			timer_(io_service, boost::posix_time::seconds(TIMEOUT)),
+			write_in_progress(false)
 		{
-			writePdu = NULL;
 			_allowed_subsystems = 0;
 			m_sql.GetPreferencesVar("MyDomoticzUserId", _apikey);
 			m_sql.GetPreferencesVar("MyDomoticzPassword", _password);
@@ -153,11 +153,10 @@ namespace http {
 				if (bytes_transferred < SockWriteBuf.length()) {
 					_log.Log(LOG_ERROR, "PROXY: Only wrote %ld of %ld bytes.", bytes_transferred, SockWriteBuf.length());
 				}
-				delete writePdu;
-				writePdu = NULL;
 				if (error) {
 					_log.Log(LOG_ERROR, "PROXY: Write failed, code = %d, %s", error.value(), error.message().c_str());
 				}
+				write_in_progress = false;
 				if (!writeQ.empty()) {
 					pdu = writeQ.front();
 					writeQ.pop();
@@ -169,14 +168,16 @@ namespace http {
 
 		void CProxyClient::SocketWrite(ProxyPdu *pdu)
 		{
-			_log.Log(LOG_NORM, "In SocketWrite"); // debug
-												  // do not call directly, use MyWrite()
+			// do not call directly, use MyWrite()
+			if (write_in_progress) {
+				// something went wrong, this shouldnt happen
+				_log.Log(LOG_ERROR, "write_in_progress error"); // debug
+			}
+			write_in_progress = true;
 			CWebsocketFrame frame;
-			writePdu = pdu;
-			SockWriteBuf = frame.Create(opcode_binary, std::string((char *)writePdu->content(), writePdu->length()));
-			_writebuf.clear(); // make sure
-			_writebuf.push_back(boost::asio::buffer(SockWriteBuf));
-			boost::asio::async_write(_socket, _writebuf, boost::bind(&CProxyClient::handle_write, shared_from_this(), boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
+			SockWriteBuf = frame.Create(opcode_binary, std::string((char *)pdu->content(), pdu->length()));
+			delete pdu;
+			boost::asio::async_write(_socket, boost::asio::buffer(SockWriteBuf), boost::bind(&CProxyClient::handle_write, shared_from_this(), boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
 		}
 
 		void CProxyClient::MyWrite(pdu_type type, CValueLengthPart &parameters)
@@ -186,7 +187,7 @@ namespace http {
 				return;
 			}
 			ProxyPdu *pdu = new ProxyPdu(type, &parameters);
-			if (writePdu) {
+			if (write_in_progress) {
 				// write in progress, add to queue
 				writeQ.push(pdu);
 			}
@@ -201,7 +202,7 @@ namespace http {
 			const long protocol_version = 2;
 
 			// start read thread
-			ReadMore();
+			//ReadMore();
 			// send authenticate pdu
 			CValueLengthPart parameters;
 
@@ -242,9 +243,8 @@ namespace http {
 			}
 			websocket_key = base64_encode(random, sizeof(random));
 			SockWriteBuf = "GET /json HTTP/1.1\r\nHost: my.domoticz.com\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nOrigin: Domoticz\r\nSec-Websocket-Version: 13\r\nSec-Websocket-Protocol: MyDomoticz\r\nSec-Websocket-Key: " + websocket_key + "\r\n\r\n";
-			_writebuf.clear(); // make sure
-			_writebuf.push_back(boost::asio::buffer(SockWriteBuf));
-			boost::asio::async_write(_socket, _writebuf, boost::bind(&CProxyClient::handle_write, shared_from_this(), boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
+			boost::asio::async_write(_socket, boost::asio::buffer(SockWriteBuf), boost::bind(&CProxyClient::handle_write, shared_from_this(), boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
+			// start read thread
 			ReadMore();
 		}
 
@@ -358,8 +358,7 @@ namespace http {
 				ADDPDUSTRINGBINARY(reply_.content);
 				ADDPDULONG(requestid);
 
-				_log.Log(LOG_NORM, "Status %d", reply_.status); // debug
-													  // send response to proxy
+				// send response to proxy
 				MyWrite(PDU_RESPONSE, parameters);
 			}
 			else {
