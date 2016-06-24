@@ -105,7 +105,7 @@ define(['app'], function (app) {
 		}
 		EvoSetPointColor = function(item, sHeatMode, bkcolor){
 			if (typeof item.SetPoint != 'undefined') {
-				if(sHeatMode=="HeatingOff")//seems to be used whenever the heating is off
+			    if (sHeatMode == "HeatingOff" || item.SetPoint == 325.1)//seems to be used whenever the heating is off
 					bkcolor="#9b9b9b";
 				else if(item.SetPoint>=25)
 					bkcolor="#ff0302";
@@ -630,12 +630,21 @@ define(['app'], function (app) {
 							if (typeof item.Until != 'undefined')
 								tUntil=item.Until;
 							if (typeof item.SetPoint != 'undefined'){
-								bigtext+=' ('+item.SetPoint + '\u00B0 ' + $scope.config.TempSign + ')';
-								if (bHaveBefore==true) {
-									status+=', ';
-								}
-								status+=$.t('Set Point') + ': ' + item.SetPoint + '\u00B0 ' + $scope.config.TempSign;
-								setonclick='EditSetPoint(' + item.idx + ',\'' + item.Name + '\',\'' + item.Description + '\',' + item.SetPoint + ', \''+sHeatMode+'\', \''+tUntil+'\', \'ShowTemps\');';
+							    if (item.SetPoint != 325.1) {
+							        bigtext += ' (' + item.SetPoint + '\u00B0 ' + $scope.config.TempSign + ')';
+							        if (bHaveBefore == true) {
+							            status += ', ';
+							        }
+							        status += $.t('Set Point') + ': ' + item.SetPoint + '\u00B0 ' + $scope.config.TempSign;
+							    }
+							    else {
+							        bigtext += ' (Off)';
+							        if (bHaveBefore == true) {
+							            status += ', ';
+							        }
+							        status += $.t('Set Point') + ': Off';
+							    }
+							    setonclick = 'EditSetPoint(' + item.idx + ',\'' + item.Name + '\',\'' + item.Description + '\',' + item.SetPoint + ', \'' + sHeatMode + '\', \'' + tUntil + '\', \'ShowTemps\');';
 								bHaveBefore=true;
 							}
 							if (typeof item.State != 'undefined'){
@@ -901,9 +910,14 @@ define(['app'], function (app) {
 						bigtext=item.Temp + '\u00B0 ' + $scope.config.TempSign;
 					}
 					if (item.SubType=="Zone" || item.SubType=="Hot Water") {
-						if (typeof item.SetPoint != 'undefined'){
-							bigtext+=' ('+item.SetPoint + '\u00B0 ' + $scope.config.TempSign + ')';
-						}
+					    if (typeof item.SetPoint != 'undefined') {
+					        if (item.SetPoint != 325.1) {
+					            bigtext += ' (' + item.SetPoint + '\u00B0 ' + $scope.config.TempSign + ')';
+					        }
+					        else {
+					            bigtext += ' (Off)';
+					        }
+					    }
 						if (typeof item.State != 'undefined')
 							bigtext+=' <img height="12" src="images/evohome/'+item.State+'.png" />'
 						if(sHeatMode!="Auto")
@@ -939,8 +953,13 @@ define(['app'], function (app) {
 							var bHaveBefore=false;
 							if (item.SubType=="Zone" || item.SubType=="Hot Water") {
 								if (typeof item.SetPoint != 'undefined'){
-									xhtm+=$.t('Set Point') + ': ' + item.SetPoint + '\u00B0 ' + $scope.config.TempSign;
-									bHaveBefore=true;
+								    if (item.SetPoint != 325.1) {
+								        xhtm += $.t('Set Point') + ': ' + item.SetPoint + '\u00B0 ' + $scope.config.TempSign;
+								    }
+								    else {
+								        xhtm += $.t('Set Point') + ': Off';
+								    }
+								    bHaveBefore = true;
 								}
 								if (typeof item.State != 'undefined'){
 									if (bHaveBefore==true) {
