@@ -645,7 +645,9 @@ void CEventSystem::GetCurrentMeasurementStates()
 					  || (sitem.subType == sTypeVoltage)
 		 			  || (sitem.subType == sTypeCurrent)
 		 			  || (sitem.subType == sTypeSetPoint)
-					  || (sitem.subType == sTypeKwh))
+					  || (sitem.subType == sTypeKwh)
+					  || (sitem.subType == sTypeSoundLevel)
+					)
 				{
 					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
 					isUtility = true;
