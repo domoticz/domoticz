@@ -5,6 +5,8 @@
 #include "request.hpp"
 #include "reply.hpp"
 
+#define size_t_t long long
+
 namespace http {
 	namespace server {
 
@@ -24,14 +26,14 @@ namespace http {
 		public:
 			CWebsocketFrame();
 			~CWebsocketFrame();
-			bool Parse(const unsigned char *bytes, size_t size);
+			bool Parse(const unsigned char *bytes, size_t_t size);
 			std::string Payload();
 			bool isFinal();
-			size_t Consumed();
+			size_t_t Consumed();
 			opcodes Opcode();
 			std::string Create(opcodes opcode, const std::string &payload);
 		private:
-			std::string unmask(const unsigned char *mask, const unsigned char *bytes, size_t payloadlen);
+			std::string unmask(const unsigned char *mask, const unsigned char *bytes, size_t_t payloadlen);
 			const unsigned char FIN_MASK = 0x80;
 			const unsigned char RSVI1_MASK = 0x40;
 			const unsigned char RSVI2_MASK = 0x20;
@@ -45,7 +47,7 @@ namespace http {
 			bool rsvi3;
 			opcodes opcode;
 			bool masking;
-			size_t payloadlen, bytes_consumed;
+			size_t_t payloadlen, bytes_consumed;
 			unsigned char masking_key[4];
 			std::string payload;
 		};
@@ -54,7 +56,7 @@ namespace http {
 		public:
 			CWebsocket(connection *pConn, cWebem *pWebEm);
 			~CWebsocket();
-			boost::tribool parse(const unsigned char *begin, size_t size, size_t &bytes_consumed, bool &keep_alive);
+			boost::tribool parse(const unsigned char *begin, size_t_t size, size_t_t &bytes_consumed, bool &keep_alive);
 			void SendClose(const std::string &packet_data);
 			void SendPing();
 			void store_session_id(const request &req, const reply &rep);

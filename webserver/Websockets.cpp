@@ -5,6 +5,8 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 #include "WebsocketPush.h"
+// debug
+#include "../main/Logger.h"
 
 namespace http {
 	namespace server {
@@ -14,27 +16,28 @@ std::string CreateFrame(opcodes opcode, const std::string &payload)
 	// note: we dont do masking nor fragmentation
 	const unsigned char FIN_MASK = 0x80;
 	const unsigned char OPCODE_MASK = 0x0f;
-	size_t payloadlen = payload.size();
+	size_t_t payloadlen = payload.size();
 	std::string res = "";
-	res += ((char)(FIN_MASK + (((char)opcode) & OPCODE_MASK)));
+	res += ((unsigned char)(FIN_MASK + (((unsigned char)opcode) & OPCODE_MASK)));
 	if (payloadlen <= 125) {
-		res += (char)payloadlen;
+		res += (unsigned char)payloadlen;
 	}
 	else {
-		if (payloadlen <= 65535) {
-			res += (char)126;
+		if (payloadlen <= 0xffff) {
+			res += (unsigned char)126;
 			int bits = 16;
 			while (bits) {
 				bits -= 8;
-				res += (char)((payloadlen >> bits) & 0xff);
+				res += (unsigned char)((payloadlen >> bits) & 0xff);
 			}
 		}
 		else {
-			res += (char)127;
+			res += (unsigned char)127;
 			int bits = 64;
 			while (bits) {
 				bits -= 8;
-				res += (char)((payloadlen >> bits) & 0xff);
+				unsigned char ch = (unsigned char)((size_t_t)(payloadlen >> bits) & 0xff);
+				res += (unsigned char)((size_t_t)(payloadlen >> bits) & 0xff);
 			}
 		}
 	}
@@ -45,39 +48,40 @@ std::string CreateFrame(opcodes opcode, const std::string &payload)
 CWebsocketFrame::CWebsocketFrame() { };
 CWebsocketFrame::~CWebsocketFrame() {};
 
-std::string CWebsocketFrame::unmask(const unsigned char *mask, const unsigned char *bytes, size_t payloadlen) {
+std::string CWebsocketFrame::unmask(const unsigned char *mask, const unsigned char *bytes, size_t_t payloadlen) {
 	std::string result;
 	result.resize(payloadlen);
-	for (size_t i = 0; i < payloadlen; i++) {
-		result[i] = (char)(bytes[i] ^ mask[i % 4]);
+	for (size_t_t i = 0; i < payloadlen; i++) {
+		result[i] = (unsigned char)(bytes[i] ^ mask[i % 4]);
 	}
 	return result;
 }
 
 std::string CWebsocketFrame::Create(opcodes opcode, const std::string &payload)
 {
-	size_t payloadlen = payload.length();
+	size_t_t payloadlen = payload.length();
 	std::string res;
 	// byte 0
-	res += ((char)opcode | FIN_MASK);
+	res += ((unsigned char)opcode | FIN_MASK);
 	if (payloadlen < 126) {
-		res += (char)payloadlen | MASKING_MASK;
+		res += (unsigned char)payloadlen | MASKING_MASK;
 	}
 	else {
 		if (payloadlen <= 0xffff) {
-			res += (char)126 | MASKING_MASK;
+			res += (unsigned char)126 | MASKING_MASK;
 			int bits = 16;
 			while (bits) {
 				bits -= 8;
-				res += (char)((payloadlen >> bits) & 0xff);
+				res += (unsigned char)((payloadlen >> bits) & 0xff);
 			}
 		}
 		else {
-			res += (char)127 | MASKING_MASK;
+			res += (unsigned char)127 | MASKING_MASK;
 			int bits = 64;
 			while (bits) {
 				bits -= 8;
-				res += (char)((payloadlen >> bits) & 0xff);
+				unsigned char ch = (unsigned char)((size_t_t)(payloadlen >> bits) & 0xff);
+				res += (unsigned char)((size_t_t)(payloadlen >> bits) & 0xff);
 			}
 		}
 	}
@@ -90,8 +94,8 @@ std::string CWebsocketFrame::Create(opcodes opcode, const std::string &payload)
 	return res;
 }
 
-bool CWebsocketFrame::Parse(const unsigned char *bytes, size_t size) {
-	size_t remaining = size;
+bool CWebsocketFrame::Parse(const unsigned char *bytes, size_t_t size) {
+	size_t_t remaining = size;
 	bytes_consumed = 0;
 	if (remaining < 2) {
 		return false;
@@ -110,10 +114,10 @@ bool CWebsocketFrame::Parse(const unsigned char *bytes, size_t size) {
 			return false;
 		}
 		payloadlen = 0;
-		int mult = 1;
+		int bits = 16;
 		for (unsigned int i = 0; i < 2; i++) {
-			payloadlen = (payloadlen * mult) + bytes[ptr++];
-			mult *= 256;
+			bits -= 8;
+			payloadlen += (size_t_t)bytes[ptr++] << bits;
 			remaining--;
 		}
 	}
@@ -122,10 +126,10 @@ bool CWebsocketFrame::Parse(const unsigned char *bytes, size_t size) {
 			return false;
 		}
 		payloadlen = 0;
-		int mult = 1;
+		int bits = 64;
 		for (unsigned int i = 0; i < 8; i++) {
-			payloadlen = (payloadlen * mult) + bytes[ptr++];
-			mult *= 256;
+			bits -= 8;
+			payloadlen += (size_t_t)bytes[ptr++] << bits;
 			remaining--;
 		}
 	}
@@ -161,7 +165,7 @@ bool CWebsocketFrame::isFinal() {
 	return fin;
 };
 
-size_t CWebsocketFrame::Consumed() {
+size_t_t CWebsocketFrame::Consumed() {
 	return bytes_consumed;
 };
 
@@ -181,7 +185,7 @@ CWebsocket::~CWebsocket()
 	m_Push.Stop();
 }
 
-boost::tribool CWebsocket::parse(const unsigned char *begin, size_t size, size_t &bytes_consumed, bool &keep_alive)
+boost::tribool CWebsocket::parse(const unsigned char *begin, size_t_t size, size_t_t &bytes_consumed, bool &keep_alive)
 {
 	CWebsocketFrame frame;
 	if (!frame.Parse(begin, size)) {
@@ -253,7 +257,7 @@ void CWebsocket::OnReceiveText(const std::string &packet_data)
 	req.method = "GET";
 	// Expected format of packet_data: "requestid/query-string" (including the quotes)
 	std::string data = packet_data.substr(1, packet_data.length() - 2); // json-decode, todo: include json.h
-	size_t pos = data.find("/");
+	size_t_t pos = data.find("/");
 	std::string requestid = data.substr(0, pos);
 	std::string querystring = data.substr(pos + 1);
 	req.uri = "/json.htm?" + querystring;
@@ -327,7 +331,7 @@ void CWebsocket::store_session_id(const request &req, const reply &rep)
 		{
 			scookie = scookie.substr(fpos);
 			fpos = 0;
-			size_t epos = scookie.find(';');
+			size_t_t epos = scookie.find(';');
 			if (epos != std::string::npos)
 			{
 				scookie = scookie.substr(0, epos);
@@ -355,7 +359,7 @@ void CWebsocket::store_session_id(const request &req, const reply &rep)
 					{
 						scookie = scookie.substr(fpos);
 						fpos = 0;
-						size_t epos = scookie.find(';');
+						size_t_t epos = scookie.find(';');
 						if (epos != std::string::npos)
 						{
 							scookie = scookie.substr(0, epos);

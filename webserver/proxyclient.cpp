@@ -201,8 +201,6 @@ namespace http {
 			std::string instanceid = sharedData.GetInstanceId();
 			const long protocol_version = 2;
 
-			// start read thread
-			//ReadMore();
 			// send authenticate pdu
 			CValueLengthPart parameters;
 
@@ -237,6 +235,9 @@ namespace http {
 
 		void CProxyClient::WebsocketGetRequest()
 		{
+			// start read thread
+			ReadMore();
+			// generate random websocket key
 			unsigned char random[16];
 			for (int i = 0; i < sizeof(random); i++) {
 				random[i] = rand();
@@ -244,8 +245,6 @@ namespace http {
 			websocket_key = base64_encode(random, sizeof(random));
 			SockWriteBuf = "GET /json HTTP/1.1\r\nHost: my.domoticz.com\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nOrigin: Domoticz\r\nSec-Websocket-Version: 13\r\nSec-Websocket-Protocol: MyDomoticz\r\nSec-Websocket-Key: " + websocket_key + "\r\n\r\n";
 			boost::asio::async_write(_socket, boost::asio::buffer(SockWriteBuf), boost::bind(&CProxyClient::handle_write, shared_from_this(), boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
-			// start read thread
-			ReadMore();
 		}
 
 		void CProxyClient::ReadMore()
