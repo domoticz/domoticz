@@ -250,5 +250,3 @@ namespace http {
 
 	}
 }
-
-

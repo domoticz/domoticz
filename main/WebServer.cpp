@@ -333,7 +333,6 @@ namespace http {
 			m_pWebEm->RegisterActionCode("setopenthermsettings", boost::bind(&CWebServer::SetOpenThermSettings, this, _1, _2, _3));
 			RegisterCommandCode("sendopenthermcommand", boost::bind(&CWebServer::Cmd_SendOpenThermCommand, this, _1, _2, _3), true);
 
-			m_pWebEm->RegisterActionCode("setp1usbtype", boost::bind(&CWebServer::SetP1USBType, this, _1, _2, _3));
 			m_pWebEm->RegisterActionCode("reloadpiface", boost::bind(&CWebServer::ReloadPiFace, this, _1, _2, _3));
 			m_pWebEm->RegisterActionCode("setcurrentcostmetertype", boost::bind(&CWebServer::SetCurrentCostUSBType, this, _1, _2, _3));
 			m_pWebEm->RegisterActionCode("restoredatabase", boost::bind(&CWebServer::RestoreDatabase, this, _1, _2, _3));
@@ -574,7 +573,8 @@ namespace http {
 			m_pWebEm->RegisterPageCode("/ozwcp/thpost.html", boost::bind(&CWebServer::ZWaveCPTestHeal, this, _1, _2, _3));
 			m_pWebEm->RegisterPageCode("/ozwcp/topopost.html", boost::bind(&CWebServer::ZWaveCPGetTopo, this, _1, _2, _3));
 			m_pWebEm->RegisterPageCode("/ozwcp/statpost.html", boost::bind(&CWebServer::ZWaveCPGetStats, this, _1, _2, _3));
-			//grouppost.html
+			m_pWebEm->RegisterPageCode("/ozwcp/grouppost.html", boost::bind(&CWebServer::ZWaveCPSetGroup, this, _1, _2, _3));
+			//
 			//pollpost.html
 			//scenepost.html
 			//thpost.html
@@ -948,8 +948,7 @@ namespace http {
 			if (
 				(name == "") ||
 				(senabled == "") ||
-				(shtype == "") ||
-				(sport == "")
+				(shtype == "")
 				)
 				return;
 			_eHardwareTypes htype = (_eHardwareTypes)atoi(shtype.c_str());
@@ -962,21 +961,45 @@ namespace http {
 			int mode5 = 0;
 			int mode6 = 0;
 			int port = atoi(sport.c_str());
+			std::string modeStr = request::findValue(&req, "Mode1");
+			if (!modeStr.empty()) {
+				mode1 = atoi(modeStr.c_str());
+			}
+			modeStr = request::findValue(&req, "Mode2");
+			if (!modeStr.empty()) {
+				mode2 = atoi(modeStr.c_str());
+			}
+			modeStr = request::findValue(&req, "Mode3");
+			if (!modeStr.empty()) {
+				mode2 = atoi(modeStr.c_str());
+			}
+			modeStr = request::findValue(&req, "Mode4");
+			if (!modeStr.empty()) {
+				mode2 = atoi(modeStr.c_str());
+			}
+			modeStr = request::findValue(&req, "Mode5");
+			if (!modeStr.empty()) {
+				mode2 = atoi(modeStr.c_str());
+			}
+			modeStr = request::findValue(&req, "Mode6");
+			if (!modeStr.empty()) {
+				mode2 = atoi(modeStr.c_str());
+			}
+
 			if (IsSerialDevice(htype))
 			{
-				std::string modeStr = request::findValue(&req, "Mode1");
-				if (!modeStr.empty()) {
-					mode1 = atoi(modeStr.c_str());
-				}
+				//USB/System
+				if (sport.empty())
+					return; //need to have a serial port
 			}
 			else if (
 				(htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) || (htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) ||
 				(htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_ECODEVICES) || (htype == HTYPE_Mochad) || (htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MQTT) || (htype == HTYPE_FRITZBOX) ||
 				(htype == HTYPE_ETH8020) || (htype == HTYPE_Sterbox) || (htype == HTYPE_KMTronicTCP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_RFLINKTCP) || (htype == HTYPE_Comm5TCP) || (htype == HTYPE_CurrentCostMeterLAN) ||
-				(htype == HTYPE_NefitEastLAN)
+				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviSmartdenLan)
 				) {
 				//Lan
-				if (address == "")
+				if (address == "" || port == 0)
 					return;
 
 				if (htype == HTYPE_MQTT) {
@@ -992,7 +1015,7 @@ namespace http {
 			}
 			else if (htype == HTYPE_Domoticz) {
 				//Remote Domoticz
-				if (address == "")
+				if (address == "" || port == 0)
 					return;
 			}
 			else if (htype == HTYPE_TE923) {
@@ -1054,7 +1077,8 @@ namespace http {
 				(htype == HTYPE_NEST) ||
 				(htype == HTYPE_ANNATHERMOSTAT) ||
 				(htype == HTYPE_THERMOSMART) ||
-				(htype == HTYPE_Netatmo)
+				(htype == HTYPE_Netatmo) ||
+				(htype == HTYPE_FITBIT)
 				)
 			{
 				if (
@@ -1083,14 +1107,14 @@ namespace http {
 				if (
 					(username == "") ||
 					(password == "") ||
-					(address == "")
+					(address == "" || port == 0)
 					)
 					return;
 			}
 			else if (htype == HTYPE_Philips_Hue) {
 				if (
 					(username == "") ||
-					(address == "")
+					(address == "" || port == 0)
 					)
 					return;
 				if (port == 0)
@@ -1127,9 +1151,9 @@ namespace http {
 					password = GenerateMD5Hash(password);
 				}
 			}
-			else if (htype == HTYPE_S0SmartMeter)
+			else if ((htype == HTYPE_S0SmartMeterUSB)|| (htype == HTYPE_S0SmartMeterTCP))
 			{
-				address = "0;1000;0;1000;0;1000;0;1000;0;1000";
+				extra = "0;1000;0;1000;0;1000;0;1000;0;1000";
 			}
 			else if (htype == HTYPE_Pinger)
 			{
@@ -1225,11 +1249,11 @@ namespace http {
 			else if (
 				(htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) ||
 				(htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) ||
-				(htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_ECODEVICES) || (htype == HTYPE_Mochad) ||
+				(htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_S0SmartMeterTCP) || (htype == HTYPE_ECODEVICES) || (htype == HTYPE_Mochad) ||
 				(htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MQTT) || (htype == HTYPE_FRITZBOX) || (htype == HTYPE_ETH8020) || (htype == HTYPE_Sterbox) ||
 				(htype == HTYPE_KMTronicTCP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_RFLINKTCP) ||
 				(htype == HTYPE_Comm5TCP || (htype == HTYPE_CurrentCostMeterLAN)) ||
-				(htype == HTYPE_NefitEastLAN)
+				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviSmartdenLan)
 				){
 				//Lan
 				if (address == "")
@@ -1306,7 +1330,8 @@ namespace http {
 				(htype == HTYPE_ANNATHERMOSTAT) ||
 				(htype == HTYPE_THERMOSMART) ||
 				(htype == HTYPE_SolarEdgeAPI) ||
-				(htype == HTYPE_Netatmo)
+				(htype == HTYPE_Netatmo) ||
+				(htype == HTYPE_FITBIT)
 				)
 			{
 				if (
@@ -4334,6 +4359,7 @@ namespace http {
 				m_sql.safe_query(
 					"UPDATE DeviceStatus SET Used=1, Name='%q', SwitchType=%d WHERE (ID == '%q')",
 					name.c_str(), switchtype, ID.c_str());
+				m_mainworker.m_eventsystem.GetCurrentStates();
 
 				//Set device options
 				m_sql.SetDeviceOptions(atoi(ID.c_str()), m_sql.BuildDeviceOptions(deviceoptions, false));
@@ -6530,7 +6556,6 @@ namespace http {
 			}
 			m_sql.UpdatePreferencesVar("DoorbellCommand", atoi(request::findValue(&req, "DoorbellCommand").c_str()));
 			m_sql.UpdatePreferencesVar("SmartMeterType", atoi(request::findValue(&req, "SmartMeterType").c_str()));
-			m_sql.UpdatePreferencesVar("DisplayPowerUsageInkWhGraph", atoi(request::findValue(&req, "DisplayPowerUsageInkWhGraph").c_str()));
 
 			std::string EnableTabFloorplans = request::findValue(&req, "EnableTabFloorplans");
 			m_sql.UpdatePreferencesVar("EnableTabFloorplans", (EnableTabFloorplans == "on" ? 1 : 0));
@@ -6675,6 +6700,9 @@ namespace http {
 				m_webservers.RestartProxy();
 			}
 #endif
+
+			m_sql.UpdatePreferencesVar("OneWireSensorPollPeriod", atoi(request::findValue(&req, "OneWireSensorPollPeriod").c_str()));
+			m_sql.UpdatePreferencesVar("OneWireSwitchPollPeriod", atoi(request::findValue(&req, "OneWireSwitchPollPeriod").c_str()));
 
 			m_notifications.LoadConfig();
 
@@ -7839,10 +7867,14 @@ namespace http {
 							}
 							if (dType == pTypeEvohomeZone)
 							{
-								if (strarray.size()>=4)
-									sprintf(szData,"%.1f %c, (%.1f %c), %s until %s", temp,tempsign,tempSetPoint,tempsign,strstatus.c_str(),strarray[3].c_str());
+								if (tempCelcius == 325.1)
+									sprintf(szTmp, "Off");
 								else
-									sprintf(szData,"%.1f %c, (%.1f %c), %s", temp,tempsign,tempSetPoint,tempsign,strstatus.c_str());
+									sprintf(szTmp, "%.1f %c", tempSetPoint, tempsign);
+								if (strarray.size()>=4)
+									sprintf(szData,"%.1f %c, (%s), %s until %s", temp,tempsign,szTmp,strstatus.c_str(),strarray[3].c_str());
+								else
+									sprintf(szData,"%.1f %c, (%s), %s", temp,tempsign,szTmp,strstatus.c_str());
 							}
 							else
 								if (strarray.size()>=4)
@@ -8089,14 +8121,12 @@ namespace http {
 							if (dSubType != sTypeRAINWU)
 							{
 								result2 = m_sql.safe_query(
-									"SELECT MIN(Total), MAX(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID='%q' AND Date>='%q')",
-									sd[0].c_str(), szDate);
+									"SELECT MIN(Total), MAX(Total) FROM Rain WHERE (DeviceRowID='%q' AND Date>='%q')", sd[0].c_str(), szDate);
 							}
 							else
 							{
 								result2 = m_sql.safe_query(
-									"SELECT Total, Total, Rate FROM Rain WHERE (DeviceRowID='%q' AND Date>='%q') ORDER BY ROWID DESC LIMIT 1",
-									sd[0].c_str(), szDate);
+									"SELECT Total, Total FROM Rain WHERE (DeviceRowID='%q' AND Date>='%q') ORDER BY ROWID DESC LIMIT 1", sd[0].c_str(), szDate);
 							}
 							if (result2.size() > 0)
 							{
@@ -8107,24 +8137,18 @@ namespace http {
 								{
 									float total_min = static_cast<float>(atof(sd2[0].c_str()));
 									float total_max = static_cast<float>(atof(strarray[1].c_str()));
-									rate = static_cast<float>(atof(sd2[2].c_str()));
-									if (dSubType == sTypeRAIN2)
-										rate /= 100.0f;
 									total_real = total_max - total_min;
 								}
 								else
 								{
-									rate = static_cast<float>(atof(sd2[2].c_str()));
 									total_real = atof(sd2[1].c_str());
 								}
 								total_real *= AddjMulti;
+								rate = static_cast<float>(atof(strarray[0].c_str()))/100.0f;
 
 								sprintf(szTmp, "%.1f", total_real);
 								root["result"][ii]["Rain"] = szTmp;
-								if (dSubType != sTypeRAIN2)
-									sprintf(szTmp, "%.1f", rate);
-								else
-									sprintf(szTmp, "%.2f", rate);
+								sprintf(szTmp, "%.1f", rate);
 								root["result"][ii]["RainRate"] = szTmp;
 								root["result"][ii]["Data"] = sValue;
 								root["result"][ii]["HaveTimeout"] = bHaveTimeout;
@@ -9757,7 +9781,10 @@ namespace http {
 					_eHardwareTypes hType = (_eHardwareTypes)atoi(sd[3].c_str());
 					if (hType == HTYPE_DomoticzInternal)
 						continue;
-
+#ifndef _DEBUG
+					if (hType == HTYPE_FITBIT)
+						continue;
+#endif
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
 					root["result"][ii]["Enabled"] = (sd[2] == "1") ? "true" : "false";
@@ -9781,9 +9808,9 @@ namespace http {
 					if (pHardware != NULL)
 					{
 						if (
-							(pHardware->HwdType == HTYPE_RFXtrx315) || 
-							(pHardware->HwdType == HTYPE_RFXtrx433) || 
-							(pHardware->HwdType == HTYPE_RFXtrx868) || 
+							(pHardware->HwdType == HTYPE_RFXtrx315) ||
+							(pHardware->HwdType == HTYPE_RFXtrx433) ||
+							(pHardware->HwdType == HTYPE_RFXtrx868) ||
 							(pHardware->HwdType == HTYPE_RFXLAN)
 							)
 						{
@@ -11117,10 +11144,6 @@ namespace http {
 				{
 					root["SmartMeterType"] = nValue;
 				}
-				else if (Key == "DisplayPowerUsageInkWhGraph")
-				{
-					root["DisplayPowerUsageInkWhGraph"] = nValue;
-				}
 				else if (Key == "EnableTabFloorplans")
 				{
 					root["EnableTabFloorplans"] = nValue;
@@ -11209,6 +11232,14 @@ namespace http {
 				{
 					root["DisableEventScriptSystem"] = nValue;
 				}
+				else if (Key == "(1WireSensorPollPeriod")
+				{
+					root["1WireSensorPollPeriod"] = nValue;
+				}
+				else if (Key == "(1WireSwitchPollPeriod")
+				{
+					root["1WireSwitchPollPeriod"] = nValue;
+				}
 				else if (Key == "SecOnDelay")
 				{
 					root["SecOnDelay"] = nValue;
@@ -11279,6 +11310,9 @@ namespace http {
 					root["MyDomoticzSubsystems"] = nValue;
 				}
 #endif
+				else if (Key == "MyDomoticzSubsystems") {
+					root["MyDomoticzSubsystems"] = nValue;
+				}
 			}
 		}
 
@@ -12257,19 +12291,6 @@ namespace http {
 						if ((dType == pTypeYouLess) && ((metertype == MTYPE_ENERGY) || (metertype == MTYPE_ENERGY_GENERATED)))
 							method = 1;
 
-						int iDisplayInPower = 1;
-						m_sql.GetPreferencesVar("DisplayPowerUsageInkWhGraph", iDisplayInPower);
-						if (!iDisplayInPower)
-						{
-							// Force Value graph even if device should show Value graph
-							if ((method == 1) && (
-								((dType == pTypeENERGY) && ((dSubType == sTypeELEC2) || (dSubType == sTypeELEC3))) ||
-								((dType == pTypeGeneral) && (dSubType == sTypeKwh))
-								)) {
-								//_log.Log(LOG_ERROR, "Energy/CMxxx or General/kWh device graph method should be 0!");
-								method = 0;
-							}
-						}
 						if (method != 0)
 						{
 							//realtime graph
@@ -12301,7 +12322,9 @@ namespace http {
 									{
 										if (bHaveFirstValue)
 										{
-											root["result"][ii]["d"] = LastDateTime + (method == 1 ? ":30" : ":00");
+                                            //root["result"][ii]["d"] = LastDateTime + (method == 1 ? ":30" : ":00");
+                                            //^^ not necessarely bad, but is currently inconsistent with all other day graphs
+                                            root["result"][ii]["d"] = LastDateTime + ":00";
 
 											long long ulTotalValue = ulLastValue - ulFirstValue;
 											if (ulTotalValue == 0)
@@ -13987,7 +14010,7 @@ namespace http {
 							vdiv = 1000.0f;
 						}
 
-						result = m_sql.safe_query("SELECT Value1,Value2, Date FROM %s WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart, szDateEnd);
+						result = m_sql.safe_query("SELECT Value1,Value2,Value3,Date FROM %s WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (result.size() > 0)
 						{
 							std::vector<std::vector<std::string> >::const_iterator itt;
@@ -13995,29 +14018,38 @@ namespace http {
 							{
 								std::vector<std::string> sd = *itt;
 
-								root["result"][ii]["d"] = sd[2].substr(0, 16);
-
 								float fValue1 = float(atof(sd[0].c_str())) / vdiv;
 								float fValue2 = float(atof(sd[1].c_str())) / vdiv;
+								float fValue3 = float(atof(sd[2].c_str())) / vdiv;
+								root["result"][ii]["d"] = sd[3].substr(0, 16);
+
 								if (metertype == 1)
 								{
 									fValue1 *= 0.6214f;
 									fValue2 *= 0.6214f;
 								}
-								if ((dType == pTypeGeneral) && (dSubType == sTypeVoltage))
+								if (
+									((dType == pTypeGeneral) && (dSubType == sTypeVoltage)) ||
+									((dType == pTypeGeneral) && (dSubType == sTypeCurrent))
+									)
+								{
 									sprintf(szTmp, "%.3f", fValue1);
-								else if ((dType == pTypeGeneral) && (dSubType == sTypeCurrent))
-									sprintf(szTmp, "%.3f", fValue1);
+									root["result"][ii]["v_min"] = szTmp;
+									sprintf(szTmp, "%.3f", fValue2);
+									root["result"][ii]["v_max"] = szTmp;
+									if (fValue3 != 0)
+									{
+										sprintf(szTmp, "%.3f", fValue3);
+										root["result"][ii]["v_avg"] = szTmp;
+									}
+								}
 								else
+								{
 									sprintf(szTmp, "%.1f", fValue1);
-								root["result"][ii]["v_min"] = szTmp;
-								if ((dType == pTypeGeneral) && (dSubType == sTypeVoltage))
-									sprintf(szTmp, "%.3f", fValue2);
-								else if ((dType == pTypeGeneral) && (dSubType == sTypeCurrent))
-									sprintf(szTmp, "%.3f", fValue2);
-								else
+									root["result"][ii]["v_min"] = szTmp;
 									sprintf(szTmp, "%.1f", fValue2);
-								root["result"][ii]["v_max"] = szTmp;
+									root["result"][ii]["v_max"] = szTmp;
+								}
 								ii++;
 							}
 						}

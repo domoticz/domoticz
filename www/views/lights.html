@@ -475,35 +475,7 @@
 	</form>
 </div>
 <div id="lightcontent" class="container">
-	<timesun/>
-	<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
-	<tbody><tr>
-	  <td align="left"><a class="btnstylerev" onclick="AddManualLightDevice();" data-i18n="Manual Light/Switch">Manual Light/Switch</a></td>
-	  <td align="right"><a class="btnstyle" onclick="AddLightDevice();" data-i18n="Learn Light/Switch">Learn Light/Switch</a></td>
-	</tr>
-	</tbody></table>
-<script type="text/javascript"> function deselect(e,id) { $(id).slideFadeToggle('swing', function() { e.removeClass('selected'); });} $.fn.slideFadeToggle = function(easing, callback) {  return this.animate({ opacity: 'toggle',height: 'toggle' }, 'fast', easing, callback);};</script>
-	<div class="row divider">
-	<div ng-controller="itemListController">
-	<div class="span4 ui-draggable ui-draggable-handle ui-droppable" id="27" style="position: relative;" ng-repeat="item in result" ng-controller="itemController">
-		  <section>
-			<table id="itemtablenostatus" border="0" cellpadding="0" cellspacing="0"> <!-- todo: filter?? -->
-			<tbody><tr>
-			  <td id="name" ng-style="{ 'background-color' : itembgcolor() }" ng-bind="item.Name"></td>
-			  <td id="bigtext" ng-bind="item.bigtext"></td>
-			  <td id="img"><img ng-src="images/{{item.Image}}48_{{item.Status}}.png" title="Turn Off" ng-click="SwitchLight(item.idx, item.Status);" class="lcursor" height="48" width="48"></td>
-			  <td id="status"></td>
-			  <td id="lastupdate" ng-bind="item.LastUpdate"></td>
-			  <td id="type">{{item.Type}}, {{item.SubType}}, {{item.SwitchType}}</td>
-			  <td><img src="images/nofavorite.png" title="Add to Dashboard" onclick="MakeFavorite(27,1);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;<a class="btnsmall" onclick="ShowLightLog(27,'Test%20abc', '#lightcontent', 'ShowLights');" data-i18n="Log">Log</a> <a class="btnsmall" onclick="EditLightDevice(27,'Test%20abc','', 'Lighting 1', 0, 0, 0, false, 0, 'X10', '', '',false,1);" data-i18n="Edit">Edit</a> <a class="btnsmall" onclick="ShowTimers(27,'Test%20abc',false,'Lighting 1', 'X10');" data-i18n="Timers">Timers</a> <a class="btnsmall" onclick="ShowNotifications(27,'Test%20abc', '#lightcontent', 'ShowLights');" data-i18n="Notifications">Notifications</a></td>
-			</tr>
-			</tbody></table>
-			<div style="clear: both;"></div>
-		  </section>
-	</div> <!-- .droppable -->
-	</div> <!-- itemController -->
-	</div> <!-- .row .divider -->
-</div> <!-- end #lightcontent -->
+</div>
 <div id="edittimers" style="display:none;">
     <table class="display" id="timertable" border="0" cellpadding="0" cellspacing="0" width="100%">
         <thead>

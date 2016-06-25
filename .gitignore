@@ -10,6 +10,12 @@ Makefile
 CMakeFiles
 *.cmake
 *.a
+*.exp
+*.idb
+*.log
+*.obj
+*.pdb
+*.tlog
 CMakeCache.txt
 domoticz
 stdafx.h.gch

@@ -150,7 +150,7 @@ define(['app'], function (app) {
 										   .css("bottom",($("#copyright").css('display')=='none') ? 10 : $("#copyright").height()+10)
 										   .css("display", "inline");
 				}
-				ScrollFloorplans($scope.floorPlans[$scope.actFloorplan].tagName, false);
+				if (typeof $scope.actFloorplan != 'undefined') ScrollFloorplans($scope.floorPlans[$scope.actFloorplan].tagName, false);
 			}
 		}
 
@@ -390,7 +390,7 @@ define(['app'], function (app) {
 			Device.checkDefs();
 
 			//Get initial floorplans
-			$http({ url: "json.htm?type=floorplans"}).success(function(data) {
+			$http({ url: "json.htm?type=floorplans", async: false }).success(function (data) {
 				if (typeof data.result != 'undefined') {
 					if (typeof $scope.actFloorplan == "undefined") {
 						$scope.FloorplanCount = data.result.length;
@@ -453,6 +453,7 @@ define(['app'], function (app) {
 						}
 					});
 				}
+
 				$(".bulletcell").hover(function(){
 												$(this).children().css({'background': $.myglobals.RoomColour});
 												$("#"+$(this).children().attr('related')+"_bullet").css({'display':'inline'});
@@ -466,46 +467,51 @@ define(['app'], function (app) {
 												ScrollFloorplans($(this).children().attr('related'));
 											 });
 
+			    if ((typeof $.myglobals.RoomColour != 'undefined') &&
+				    (typeof $.myglobals.InactiveRoomOpacity != 'undefined')) {
+				    $(".hoverable").css({'fill': $.myglobals.RoomColour, 'fill-opacity': $.myglobals.InactiveRoomOpacity/100});
+			    }
+			    if (typeof $.myglobals.ActiveRoomOpacity != 'undefined') {
+				    $(".hoverable").hover(function(){$(this).css({'fill-opacity': $.myglobals.ActiveRoomOpacity/100})},
+									      function(){$(this).css({'fill-opacity': $.myglobals.InactiveRoomOpacity/100})});
+			    }
+
+			    // Hide menus if query string contains 'fullscreen'
+			    if (window.location.href.search("fullscreen") > 0) {
+			        $scope.doubleClick();
+			    }
+
+			    $("#fpwrapper").dblclick(function () { $scope.doubleClick(); })
+							     .attr('fullscreen',($(".navbar").css('display')=='none') ? 'true' : 'false');
 			});
 
-			if ((typeof $.myglobals.RoomColour != 'undefined') &&
-				(typeof $.myglobals.InactiveRoomOpacity != 'undefined')) {
-				$(".hoverable").css({'fill': $.myglobals.RoomColour, 'fill-opacity': $.myglobals.InactiveRoomOpacity/100});
-			}
-			if (typeof $.myglobals.ActiveRoomOpacity != 'undefined') {
-				$(".hoverable").hover(function(){$(this).css({'fill-opacity': $.myglobals.ActiveRoomOpacity/100})},
-									  function(){$(this).css({'fill-opacity': $.myglobals.InactiveRoomOpacity/100})});
-			}
+			$(window).resize(function () { $scope.FloorplanResize(); });
 
-			$( window ).resize(function() { $scope.FloorplanResize(); });
-
-			$( "#fpwrapper" ).dblclick( function() { $scope.doubleClick(); } )
-							 .attr('fullscreen',($(".navbar").css('display')=='none') ? 'true' : 'false');
 			document.addEventListener('touchstart', FPtouchstart, false);
 			document.addEventListener('touchmove', FPtouchmove, false);
 			document.addEventListener('touchend', FPtouchend, false);
-			$("body").css('overflow','hidden')
-				.on('pageexit', function(){
-					document.removeEventListener('touchstart', FPtouchstart);
-					document.removeEventListener('touchmove', FPtouchmove);
-					document.removeEventListener('touchend', FPtouchend);
-					$( window ).off('resize');
-					$("body").off('pageexit').css('overflow','');
-		
-					//Make vertical scrollbar disappear
-                    $("#fpwrapper").attr("style","display:none;");
-                    $("#floorplancontent").addClass("container ng-scope").attr("style","");
+			$("body").css('overflow', 'hidden')
+                .on('pageexit', function () {
+                    document.removeEventListener('touchstart', FPtouchstart);
+                    document.removeEventListener('touchmove', FPtouchmove);
+                    document.removeEventListener('touchend', FPtouchend);
+                    $(window).off('resize');
+                    $("body").off('pageexit').css('overflow', '');
+
+                    //Make vertical scrollbar disappear
+                    $("#fpwrapper").attr("style", "display:none;");
+                    $("#floorplancontent").addClass("container ng-scope").attr("style", "");
 
                     //Move nav bar with Back and Report button down
-                    if ($(".navbar").css('display')!='none') {
-						$("#floorplancontent").offset({top:$(".navbar").height()});
-					}
-                    else {
-						$("#floorplancontent").offset({top:0});
+                    if ($(".navbar").css('display') != 'none') {
+                        $("#floorplancontent").offset({ top: $(".navbar").height() });
                     }
-					$("#copyright").attr("style","position:absolute");
-					if ($scope.debug > 0) $.cachenoty=generate_noty('info', '<b>PageExit code executed</b>', 2000);
-				});
+                    else {
+                        $("#floorplancontent").offset({ top: 0 });
+                    }
+                    $("#copyright").attr("style", "position:absolute");
+                    if ($scope.debug > 0) $.cachenoty = generate_noty('info', '<b>PageExit code executed</b>', 2000);
+                });
 		}
 
 		init();
@@ -515,7 +521,7 @@ define(['app'], function (app) {
 			try {
 				$scope.MakeGlobalConfig();
 				ShowFloorplans();
-			}
+            }
 			catch(err) {
 				generate_noty('error', '<b>Error Initialising Page</b><br>'+err, false);
 			}

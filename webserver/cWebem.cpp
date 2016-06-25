@@ -1913,4 +1913,3 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 
 } //namespace server {
 } //namespace http {
-

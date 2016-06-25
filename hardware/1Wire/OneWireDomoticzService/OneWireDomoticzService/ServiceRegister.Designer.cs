@@ -1,4 +1,4 @@
-﻿namespace SDFGenerator
+namespace SDFGenerator
 {
    partial class ServiceRegister
    {

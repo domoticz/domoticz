@@ -27,6 +27,7 @@ C1WireByKernel::C1WireByKernel() :
    m_AllDevicesInitialized(false)
 {
    m_Thread = new boost::thread(&C1WireByKernel::ThreadFunction,this);
+   _log.Log(LOG_STATUS,"Using 1-Wire support (kernel W1 module)...");
 }
 
 C1WireByKernel::~C1WireByKernel()
@@ -310,6 +311,10 @@ int C1WireByKernel::GetVoltage(const _t1WireDevice& device,int unit) const
 float C1WireByKernel::GetIlluminance(const _t1WireDevice& device) const
 {
 	return -1000.0;// Device not supported in kernel mode (maybe later...), use OWFS solution.
+}
+
+void C1WireByKernel::StartSimultaneousTemperatureRead()
+{
 }
 
 

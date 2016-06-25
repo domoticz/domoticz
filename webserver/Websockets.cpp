@@ -108,7 +108,7 @@ bool CWebsocketFrame::Parse(const unsigned char *bytes, size_t_t size) {
 	masking = (bytes[1] & MASKING_MASK) > 0;
 	payloadlen = (bytes[1] & PAYLOADLEN_MASK);
 	remaining -= 2;
-	int ptr = 2;
+	size_t_t ptr = 2;
 	if (payloadlen == 126) {
 		if (remaining < 2) {
 			return false;

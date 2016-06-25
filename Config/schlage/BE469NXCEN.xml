@@ -31,11 +31,11 @@
 		<Value type="list" genre="config" index="7" label="Lock Alarm Mode" value="0">
 			<Help>
 				The alarm is turned off by default. After installation,
-				you’ll need to turn on your alarm.
+				you will need to turn on your alarm.
 
 				Activity
 				 Alarms when the door opens or closes.
-				 Perfect for monitoring doors while you’re at home.
+				 Perfect for monitoring doors while you re at home.
 				 After the alarm is triggered, there is a built-in 3-second
 				 delay for it to reset.
 				 Sounds two short beeps.
@@ -48,8 +48,8 @@
 				Forced Entry
 				 Alarms when significant force pushes against the
 				 door, while locked. Perfect for nighttime or
-				 when you’re away from home.
-				  • Least sensitive mode
+				 when you re away from home.
+				   Least sensitive mode
 				 Sounds three-minute shrill, steady alarm (90 dB)
 			</Help>
 			<Item label="Alarm Off" value="0" />

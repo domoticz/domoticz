@@ -405,6 +405,15 @@
     <Filter Include="Devices\HttpPoller">
       <UniqueIdentifier>{efe2b02b-141c-473d-b168-fd06058fe9d2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\Fitbit">
+      <UniqueIdentifier>{db856641-3bbc-455d-8a88-9955fb74e49e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\Raven">
+      <UniqueIdentifier>{0854a79e-fd9c-4b55-a9fd-93077f3bad23}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\Denkovi">
+      <UniqueIdentifier>{fbed8d30-c2ae-4545-a422-68ebe2c781c3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -1813,6 +1822,51 @@
     <ClInclude Include="..\hardware\AtagOne.h">
       <Filter>Devices\AtagOne</Filter>
     </ClInclude>
+    <ClInclude Include="..\webserver\fastcgi.hpp">
+      <Filter>Webserver</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\Sterbox.h">
+      <Filter>Devices\Sterbox</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\LuaHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\HttpPoller.h">
+      <Filter>Devices\HttpPoller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\RFXBase.h">
+      <Filter>Devices\RFXCom</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\Device.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\DeviceHelper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\webserver\sha1.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\webserver\WebsocketHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\webserver\WebsocketPush.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\webserver\Websockets.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\S0MeterTCP.h">
+      <Filter>Devices\S0 Meter</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\RAVEn.h">
+      <Filter>Devices\Raven</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\Fitbit.h">
+      <Filter>Devices\Fitbit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\DenkoviSmartdenLan.h">
+      <Filter>Devices\Denkovi</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2351,6 +2405,42 @@
     </ClCompile>
     <ClCompile Include="..\hardware\AtagOne.cpp">
       <Filter>Devices\AtagOne</Filter>
+    </ClCompile>
+    <ClCompile Include="..\webserver\fastcgi.cpp">
+      <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\Sterbox.cpp">
+      <Filter>Devices\Sterbox</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\LuaHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\HttpPoller.cpp">
+      <Filter>Devices\HttpPoller</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\RFXBase.cpp">
+      <Filter>Devices\RFXCom</Filter>
+    </ClCompile>
+    <ClCompile Include="..\webserver\WebsocketHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\webserver\WebsocketPush.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\webserver\Websockets.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\S0MeterTCP.cpp">
+      <Filter>Devices\S0 Meter</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\RAVEn.cpp">
+      <Filter>Devices\Raven</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\Fitbit.cpp">
+      <Filter>Devices\Fitbit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\DenkoviSmartdenLan.cpp">
+      <Filter>Devices\Denkovi</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

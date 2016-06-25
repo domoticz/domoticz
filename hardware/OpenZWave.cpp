@@ -5143,6 +5143,35 @@ namespace http {
 				}
 			}
 		}
+		void CWebServer::ZWaveCPSetGroup(WebEmSession & session, const request& req, reply & rep)
+		{
+			if (req.content.find("fun") == std::string::npos)
+				return;
+			std::multimap<std::string, std::string> values;
+			request::makeValuesFromPostContent(&req, values);
+			std::string sFun = request::findValue(&values, "fun");
+			std::string sNode = request::findValue(&values, "node");
+			std::string sGroup = request::findValue(&values, "num");
+			std::string glist = request::findValue(&values, "groups");
+
+			if (sNode.size() > 4)
+				sNode = sNode.substr(4);
+
+			if (!sNode.empty() && !sGroup.empty() && !glist.empty())
+			{
+				CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
+				if (pHardware != NULL)
+				{
+					if (pHardware->HwdType == HTYPE_OpenZWave)
+					{
+						COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+						boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+						reply::set_content(&rep, pOZWHardware->m_ozwcp.UpdateGroup(sFun, atoi(sNode.c_str()), atoi(sGroup.c_str()), glist));
+					}
+				}
+			}
+		}
+		
 		void CWebServer::ZWaveCPSaveConfig(WebEmSession & session, const request& req, reply & rep)
 		{
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);

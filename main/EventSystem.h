@@ -15,8 +15,6 @@ extern "C" {
 #endif
 }
 
-#include "DeviceHelper.h"
-
 class CEventSystem
 {
 	typedef struct lua_State lua_State;
@@ -81,6 +79,7 @@ public:
 	void WWWUpdateSecurityState(int securityStatus);
 	void WWWGetItemStates(std::vector<_tDeviceStatus> &iStates);
 	void SetEnabled(const bool bEnabled);
+	void GetCurrentStates();
 private:
 	//lua_State	*m_pLUA;
 	bool m_bEnabled;
@@ -98,7 +97,6 @@ private:
 	//our thread
 	void Do_Work();
 	void ProcessMinute();
-	void GetCurrentStates();
 	void GetCurrentMeasurementStates();
 	void GetCurrentUserVariables();
 	void GetCurrentScenesGroups();
@@ -134,7 +132,6 @@ private:
 	//std::string reciprocalAction (std::string Action);
 	std::vector<_tEventItem> m_events;
 
-	Devices::CDeviceHelper		m_DeviceHelper;
 
 	std::map<unsigned long long, _tDeviceStatus> m_devicestates;
 	std::map<unsigned long long, _tUserVariable> m_uservariables;

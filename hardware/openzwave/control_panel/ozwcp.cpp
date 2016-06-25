@@ -1344,6 +1344,19 @@ std::string COpenZWaveControlPanel::DoNodeChange(const std::string &fun, const i
 	return "OK";
 }
 
+std::string COpenZWaveControlPanel::UpdateGroup(const std::string &fun, const int node_id, const int group_id, const std::string &gList)
+{
+	if ((node_id == 0) || (node_id > 254))
+		return "ERR";
+	if (nodes[node_id] == NULL)
+		return "ERR";
+	char *szGList = strdup(gList.c_str());
+	nodes[node_id]->updateGroup(node_id, group_id, szGList);
+	free(szGList);
+	return "OK";
+}
+
+
 std::string COpenZWaveControlPanel::SaveConfig()
 {
 	Manager::Get()->WriteConfig(homeId);
