@@ -414,6 +414,9 @@
     <Filter Include="Devices\Denkovi">
       <UniqueIdentifier>{fbed8d30-c2ae-4545-a422-68ebe2c781c3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\AccuWeather">
+      <UniqueIdentifier>{3a086069-f89a-44b7-b3a8-19cb9b7509eb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -1849,6 +1852,9 @@
     <ClInclude Include="..\hardware\DenkoviSmartdenLan.h">
       <Filter>Devices\Denkovi</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\AccuWeather.h">
+      <Filter>Devices\AccuWeather</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2414,6 +2420,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\DenkoviSmartdenLan.cpp">
       <Filter>Devices\Denkovi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\AccuWeather.cpp">
+      <Filter>Devices\AccuWeather</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
