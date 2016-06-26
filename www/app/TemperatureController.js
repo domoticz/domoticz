@@ -632,10 +632,6 @@ define(['app'], function (app) {
 				return $window.myglobals.ismobile == false;
 			};
 
-		  var bHaveAddedDevider = false; // TODO remove ?
-
-		  var i=0; // TODO remove ?
-
 		  $.ajax({
 			 url: "json.htm?type=devices&filter=temp&used=true&order=Name&plan="+window.myglobals.LastPlanSelected,
 			 async: false,
