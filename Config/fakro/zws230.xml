@@ -2,6 +2,7 @@
 <!-- Fakro ZWS230 Chain actuator 230VAC -->
 <Product xmlns='http://code.google.com/p/open-zwave/'>
   <!-- Configuration -->
+  <!--
   <CommandClass id="112">
     <Value type="list" genre="config" instance="1" index="7" label="Speed motor I" min="1" max="4" value="2" size="1">
       <Help></Help>
@@ -53,6 +54,7 @@
       <Item label="Normal" value="2" />
     </Value>
   </CommandClass>
+  -->
 
   <!-- Association Groups -->
   <CommandClass id="133">

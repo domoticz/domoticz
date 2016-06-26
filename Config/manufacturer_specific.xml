@@ -337,6 +337,7 @@
 		<Product type="0100" id="300a" name="FGD211 Universal Dimmer 500W" config="fibaro/fgd211.xml" />
 		<Product type="0102" id="1000" name="FGD212 Dimmer 2" config="fibaro/fgd212.xml" />
 		<Product type="0102" id="3000" name="FGD212 Dimmer 2" config="fibaro/fgd212.xml" />
+		<Product type="0102" id="4000" name="FGD212 Dimmer 2" config="fibaro/fgd212.xml" />
 		<Product type="0700" id="1000" name="FGK101 Door Opening Sensor" config="fibaro/fgk001.xml" />
 		<Product type="0700" id="2000" name="FGK10x Door Opening Sensor" config="fibaro/fgk001.xml" />
 		<Product type="0700" id="4000" name="FGK101 Door Opening Sensor" config="fibaro/fgk001.xml" />
@@ -355,6 +356,7 @@
 		<Product type="0400" id="0108" name="FGS211 Switch 3kW" config="fibaro/fgs211.xml" />
 		<Product type="0400" id="0109" name="FGS221 Switch 3kW" config="fibaro/fgs221.xml" />
 		<Product type="0400" id="100a" name="FGS211 Switch 3kW" config="fibaro/fgs211.xml" />
+		<Product type="0400" id="400a" name="FGS211 Switch 3kW" config="fibaro/fgs211.xml" />
 		<Product type="0402" id="1002" name="FGS212 Switch 3kW" config="fibaro/fgs212.xml" />
 		<Product type="0200" id="0104" name="FGS221 Double Relay Switch 2x1.5kW" config="fibaro/fgs221.xml" />
 		<Product type="0200" id="0105" name="FGS221 Double Relay Switch 2x1.5kW" config="fibaro/fgs221.xml" />
@@ -371,6 +373,7 @@
 		<Product type="0801" id="1001" name="FGMS001 Motion Sensor" config="fibaro/fgms.xml" />
 		<Product type="0801" id="2001" name="FGMS001 Motion Sensor" config="fibaro/fgms.xml" />
 		<Product type="0b00" id="3001" name="FGFS101 Flood Sensor" config="fibaro/fgfs101.xml" />
+		<Product type="0b00" id="4001" name="FGFS101 Flood Sensor" config="fibaro/fgfs101.xml" />
 		<Product type="0b00" id="1001" name="FGFS101 Flood Sensor" config="fibaro/fgfs101.xml" />
 		<Product type="0b00" id="9e00" name="FGFS101 Flood Sensor" config="fibaro/fgfs101.xml" />
         <Product type="0b01" id="1002" name="FGFS101 Zwave+ Flood Sensor" config="fibaro/fgfs101zw5.xml" />
