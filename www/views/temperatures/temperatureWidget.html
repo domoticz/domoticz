@@ -44,8 +44,8 @@
                         <a ng-show="ctrl.item.Type=='Humidity'" class="btnsmall" ng-click="ctrl.EditTempDeviceSmall()" data-i18n="Edit">Edit</a>
                         <a ng-show="ctrl.item.Type!='Humidity'" class="btnsmall" ng-click="ctrl.EditTempDevice()" data-i18n="Edit">Edit</a>
 
-                        <a ng-show="ctrl.item.Notifications=='true'" class="btnsmall-sel" ng-click="ctrl.ShowNotifications('#tempcontent', 'ShowTemps')" data-i18n="Notifications">Notifications</a>
-                        <a ng-show="ctrl.item.Notifications!='true'" class="btnsmall" ng-click="ctrl.ShowNotifications('#tempcontent', 'ShowTemps')" data-i18n="Notifications">Notifications</a>
+                        <a ng-show="ctrl.item.Notifications=='true'" ng-href="#/Temperature/{{ctrl.item.idx}}/Notifications" class="btnsmall-sel" data-i18n="Notifications">Notifications</a>
+                        <a ng-show="ctrl.item.Notifications!='true'" ng-href="#/Temperature/{{ctrl.item.idx}}/Notifications" class="btnsmall" data-i18n="Notifications">Notifications</a>
                     </span>
 
                     <a ng-show="ctrl.item.forecast_url" class="btnsmall" ng-click="ctrl.ShowForecast('#tempcontent', 'ShowTemps')" data-i18n="Forecast">Forecast</a>

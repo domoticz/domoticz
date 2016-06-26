@@ -1148,12 +1148,6 @@ define(['app'], function (app) {
 						return EditTempDevice(ctrl.item.idx, escape(ctrl.item.Name), escape(ctrl.item.Description), ctrl.item.AddjValue);
 					};
 
-					ctrl.ShowNotifications = function(divId, fn) {
-						$('#tempwidgets').hide(); // TODO delete when multiple views implemented
-						$('#temptophtm').hide();
-						return ShowNotifications(ctrl.item.idx, escape(ctrl.item.Name), divId, fn);
-					};
-
 					ctrl.ShowForecast = function(divId, fn) {
 						$('#tempwidgets').hide(); // TODO delete when multiple views implemented
 						$('#temptophtm').hide();
