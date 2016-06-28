@@ -211,28 +211,47 @@ define(['app'], function (app) {
                     return false;
                 };
 
-                ctrl.RemoveMultipleDataFromTempChart = function(chart,deviceid)
-                {
-                    hum=chart.get('humidity'+deviceid);
-                    if(hum!=null) {hum.remove()};
-                    chill=chart.get('chill'+deviceid)
-                    if(chill!=null) {chill.remove()};
-                    chillmin=chart.get('chillmin'+deviceid);
-                    if(chillmin!=null) {chillmin.remove()};
-                    temperature=chart.get('temperature'+deviceid);
-                    if(temperature!=null) {temperature.remove()};
-                    temperaturemin=chart.get('temperaturemin'+deviceid);
-                    if(temperaturemin!=null) {temperaturemin.remove()};
-                    dew=chart.get('dewpoint'+deviceid);
-                    if(dew!=null) {dew.remove()};
-                    baro=chart.get('baro'+deviceid);
-                    if(baro!=null) {baro.remove()};
-                    setpoint=chart.get('setpoint'+deviceid);
-                    if(setpoint!=null) {setpoint.remove()};
-                    setpointmin=chart.get('setpointmin'+deviceid);
-                    if(setpointmin!=null) {setpointmin.remove()};
-                    setpointmax=chart.get('setpointmax'+deviceid);
-                    if(setpointmax!=null) {setpointmax.remove()};
+                ctrl.RemoveMultipleDataFromTempChart = function (chart, deviceid) {
+                    hum = chart.get('humidity' + deviceid);
+                    if (hum != null) {
+                        hum.remove();
+                    }
+                    chill = chart.get('chill' + deviceid)
+                    if (chill != null) {
+                        chill.remove();
+                    }
+                    chillmin = chart.get('chillmin' + deviceid);
+                    if (chillmin != null) {
+                        chillmin.remove();
+                    }
+                    temperature = chart.get('temperature' + deviceid);
+                    if (temperature != null) {
+                        temperature.remove();
+                    }
+                    temperaturemin = chart.get('temperaturemin' + deviceid);
+                    if (temperaturemin != null) {
+                        temperaturemin.remove();
+                    }
+                    dew = chart.get('dewpoint' + deviceid);
+                    if (dew != null) {
+                        dew.remove();
+                    }
+                    baro = chart.get('baro' + deviceid);
+                    if (baro != null) {
+                        baro.remove();
+                    }
+                    setpoint = chart.get('setpoint' + deviceid);
+                    if (setpoint != null) {
+                        setpoint.remove();
+                    }
+                    setpointmin = chart.get('setpointmin' + deviceid);
+                    if (setpointmin != null) {
+                        setpointmin.remove();
+                    }
+                    setpointmax = chart.get('setpointmax' + deviceid);
+                    if (setpointmax != null) {
+                        setpointmax.remove();
+                    }
                 };
 
                 ctrl.AddMultipleDataToTempChart = function(data,chart,isday,deviceid,devicename)
