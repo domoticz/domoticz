@@ -102,7 +102,7 @@ define(['app'], function (app) {
 		  var id="";
 
 		  $.ajax({
-			 url: "json.htm?type=devices&filter=all&used=true&order=Name&plan="+window.myglobals.LastPlanSelected+"&lastupdate="+$scope.LastUpdateTime,
+			 url: "json.htm?type=devices&filter=all&used=true&favorite=1&order=Name&plan="+window.myglobals.LastPlanSelected+"&lastupdate="+$scope.LastUpdateTime,
 			 async: false,
 			 dataType: 'json',
 			 success: function(data) {
@@ -1590,7 +1590,7 @@ define(['app'], function (app) {
 			 }
 		  });
 		  $.ajax({
-			 url: "json.htm?type=devices&filter=all&used=true&order=Name&plan="+window.myglobals.LastPlanSelected,
+			 url: "json.htm?type=devices&filter=all&used=true&favorite=1&order=Name&plan="+window.myglobals.LastPlanSelected,
 			 async: false,
 			 dataType: 'json',
 			 success: function(data) {
