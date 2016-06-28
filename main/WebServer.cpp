@@ -9078,7 +9078,6 @@ namespace http {
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 							root["result"][ii]["Image"] = "Fan";
 							root["result"][ii]["TypeImg"] = "Fan";
-							root["result"][ii]["Type"] = "Speaker";
 						}
 						else if (dSubType == sTypeSoundLevel)
 						{
