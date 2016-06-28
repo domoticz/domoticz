@@ -94,6 +94,7 @@
 #include "../hardware/Fitbit.h"
 #include "../hardware/RAVEn.h"
 #include "../hardware/DenkoviSmartdenLan.h"
+#include "../hardware/AccuWeather.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -786,6 +787,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_ForecastIO:
 		pHardware = new CForecastIO(ID,Username,Password);
+		break;
+	case HTYPE_AccuWeather:
+		pHardware = new CAccuWeather(ID, Username, Password);
 		break;
 	case HTYPE_SolarEdgeAPI:
 		pHardware = new SolarEdgeAPI(ID, Mode1, Username, Password);

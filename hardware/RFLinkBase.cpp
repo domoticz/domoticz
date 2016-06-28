@@ -855,15 +855,15 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 
 	if (bHaveWindDir && bHaveWindSpeed && bHaveWindGust && bHaveWindChill)
 	{
-		SendWind(ID, BatteryLevel, float(windir), windspeed, windgust, windtemp, windchill, bHaveWindTemp, tmp_Name);
+		SendWind(ID, BatteryLevel, round(float(windir)*22.5f), windspeed, windgust, windtemp, windchill, bHaveWindTemp, tmp_Name);
 	}
 	else if (bHaveWindDir && bHaveWindGust)
 	{
-		SendWind(ID, BatteryLevel, float(windir), windspeed, windgust, windtemp, windchill, bHaveWindTemp, tmp_Name);
+		SendWind(ID, BatteryLevel, round(float(windir)*22.5f), windspeed, windgust, windtemp, windchill, bHaveWindTemp, tmp_Name);
 	}
 	else if (bHaveWindSpeed)
 	{
-		SendWind(ID, BatteryLevel, float(windir), windspeed, windgust, windtemp, windchill, bHaveWindTemp, tmp_Name);
+		SendWind(ID, BatteryLevel, round(float(windir)*22.5f), windspeed, windgust, windtemp, windchill, bHaveWindTemp, tmp_Name);
 	}
     
 	if (bHaveCO2)

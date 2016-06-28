@@ -20,9 +20,8 @@ ZMNHSD5 916,0 MHz
 	
 		<Value type="list" genre="config" instance="1" index="5" label="Working mode" size="1" min="0" max="1" value="0">
 			<Help>Default value 0</Help>
-			<Item label="D
-				immer mode" value="0"/>
-			<Item label="Switch mode" value="1"/>
+			<Item label="Dimmer" value="0"/>
+			<Item label="Switch" value="1"/>
 		</Value> 
 	
 		<Value type="list" genre="config" instance="1" index="10" label="Activate / deactivate functions ALL ON/ALL OFF" size="2" min="0" max="255" value="255">
