@@ -3336,6 +3336,7 @@ bool IsSerialDevice(const _eHardwareTypes htype)
 	case HTYPE_P1SmartMeter:
 	case HTYPE_Rego6XX:
 	case HTYPE_DavisVantage:
+	case HTYPE_S0SmartMeterUSB:
 	case HTYPE_OpenThermGateway:
 	case HTYPE_TeleinfoMeter:
 	case HTYPE_OpenZWave:
@@ -3347,6 +3348,7 @@ bool IsSerialDevice(const _eHardwareTypes htype)
 	case HTYPE_KMTronicUSB:
 	case HTYPE_KMTronic433:
 	case HTYPE_CurrentCostMeter:
+	case HTYPE_RAVEn:
 	case HTYPE_Comm5Serial:
 		return true;
 	default:
