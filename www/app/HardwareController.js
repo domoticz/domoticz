@@ -100,7 +100,7 @@ define(['app'], function (app) {
                      }
                 });
             }
-            else if ((text.indexOf("USB") >= 0) || (text.indexOf("Serial") >= 0))
+            else if (text.indexOf("USB") >= 0)
             {
                 var Mode1 = "0";
                 var serialport=$("#hardwarecontent #divserial #comboserialport option:selected").text();
@@ -785,7 +785,7 @@ define(['app'], function (app) {
                      }
                 });
             }
-            else if ((text.indexOf("USB") >= 0) || (text.indexOf("Serial") >= 0))
+            else if (text.indexOf("USB") >= 0)
             {
                 var Mode1 = "0";
                 var serialport=$("#hardwarecontent #divserial #comboserialport option:selected").text();
@@ -4119,7 +4119,7 @@ define(['app'], function (app) {
                             $("#hardwarecontent #hardwareparams1wire #OneWireSensorPollPeriod").val(data["Mode1"]);
                             $("#hardwarecontent #hardwareparams1wire #OneWireSwitchPollPeriod").val(data["Mode2"]);
                         }
-                        else if ((data["Type"].indexOf("USB") >= 0) || (data["Type"].indexOf("Serial") >= 0)) {
+                        else if (data["Type"].indexOf("USB") >= 0) {
                             $("#hardwarecontent #hardwareparamsserial #comboserialport").val(data["IntPort"]);
                             if (data["Type"].indexOf("MySensors") >= 0)
                             {
@@ -4273,7 +4273,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
             }
-            else if ((text.indexOf("USB") >= 0) || (text.indexOf("Serial") >= 0))
+            else if (text.indexOf("USB") >= 0)
             {
                 if (text.indexOf("MySensors") >= 0)
                 {
