@@ -18,6 +18,7 @@ if(NOT OPENSSL_FOUND)
   message(STATUS "Failed to find the openssl library, no TLS support")
 else()
   add_definitions(-DWWW_ENABLE_SSL)
+  include_directories(${OPENSSL_INCLUDE_DIR})
 endif()
 
 SET(CORE mosquitto.c

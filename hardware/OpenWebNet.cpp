@@ -660,3 +660,4 @@ string COpenWebNet::getWhatDescription(string who, string what)
 
 	return what;
 }
+
