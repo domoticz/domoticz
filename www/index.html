@@ -106,7 +106,7 @@
 		<script type="text/javascript" charset="utf-8" src="js/highcharts-more.js"></script>
 		<script src="js/modules/exporting.js"></script>
 		<script src="js/export-csv.js"></script>
-		<script type="text/javascript" charset="utf-8" src="js/themes/dark-blue.js"></script>
+		<script type="text/javascript" charset="utf-8" src="js/themes/dark-ucust.js"></script>
 		<script type="text/javascript" charset="utf-8" src="js/domoticz.js"></script>
 		<script type="text/javascript" charset="utf-8" src="js/domoticzdevices.js"></script>
 		<script type="text/javascript" charset="utf-8" src="js/jquery-ui-timepicker-addon.js"></script>
@@ -1001,7 +1001,7 @@ $(document).ready(function() {
 	</div>
 	<div id="dayweekmonthyearlog" style="display:none;">
 		<h2 data-i18n="Day">Day</h2>
-		<div id="daygraph" style="height: 250px;"></div>
+		<div id="daygraph" style="height: 300px;"></div>
 		<br>
 		<h2 data-i18n="Week">Week</h2>
 		<div id="weekgraph" style="height: 300px;"></div>
@@ -1016,7 +1016,7 @@ $(document).ready(function() {
 		<h2 data-i18n="Day">Day</h2>
 		<div id="winddaygraph" style="height: 300px;"></div>
 		<br>
-		<div id="windspeedgraph" style="height: 400px;"></div>
+		<div id="winddirectiongraph" style="height: 400px;"></div>
 		<br>
 		<h2 data-i18n="Month">Month</h2>
 		<div id="windmonthgraph" style="height: 300px;"></div>
@@ -1041,7 +1041,7 @@ $(document).ready(function() {
 		<a class="btnstylerev" onclick="ShowP1YearReportGas(0)" data-i18n="Back">Back</a>&nbsp;
 		<h1 id="theader" data-i18n="Usage this Month">Usage this Month</h1>
 		<br>
-		<span data-i18n="Total Usage">Total Usage</span>: <span id="tu">-</span> <span id="munit">m3</span><br>
+		<span data-i18n="Total Usage" id="spanmonthgastotalusage">Total Usage</span>: <span id="tu">-</span> <span id="munit">m3</span><br>
 		<span data-i18n="Monthly Cost">Monthly Cost</span>: <span id="mc">-</span><br>
 		<br>
 	</div>
@@ -1067,7 +1067,7 @@ $(document).ready(function() {
 		</tr>
 		</table>
 		<br>
-		<span data-i18n="Total Usage">Total Usage</span>: <span id="tu">-</span> <span id="munit">m3</span><br>
+		<span data-i18n="Total Usage" id="spanyeargastotalusage">Total Usage</span>: <span id="tu">-</span> <span id="munit">m3</span><br>
 		<span data-i18n="Counter">Counter</span>: <span id="cntr">-</span><br>
 		<span data-i18n="Year Cost">Year Cost</span>: <span id="mc">-</span><br>
 		<br>
@@ -1197,7 +1197,7 @@ $(document).ready(function() {
 					<th width="30" align="right" data-i18n="Day">Day</th>
 					<th width="70" align="left"></th>
 					<th width="60" align="right" data-i18n="Counter">Counter</th>
-					<th width="60" align="right" data-i18n="Usage">Usage</th>
+					<th width="60" align="right" data-i18n="Usage" id="thmonthgasusage">Usage</th>
 					<th width="60" align="right" data-i18n="Costs">Costs</th>
 					<th width="40" align="right">&lt;&gt;</th>
 				</tr>
@@ -1211,7 +1211,7 @@ $(document).ready(function() {
 			<thead>
 				<tr valign="middle">
 					<th width="30" align="right" data-i18n="Month">Month</th>
-					<th width="60" align="right" data-i18n="Usage">Usage</th>
+					<th width="60" align="right" data-i18n="Usage" id="thyeargasusage">Usage</th>
 					<th width="60" align="right" data-i18n="Costs">Costs</th>
 					<th width="40" align="right">&lt;&gt;</th>
 				</tr>

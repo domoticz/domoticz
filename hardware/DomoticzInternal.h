@@ -4,6 +4,7 @@
  *  Created on: 5 janv. 2016
  *      Author: gaudryc
  */
+#pragma once
 
 #ifndef HARDWARE_DOMOTICZINTERNAL_H_
 #define HARDWARE_DOMOTICZINTERNAL_H_

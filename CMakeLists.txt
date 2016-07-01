@@ -37,7 +37,7 @@ ELSE(USE_BUILTIN_MQTT)
     ENDIF(MQTT_LIBRARIES)
     INCLUDE_DIRECTORIES(${MQTT_INCLUDE_DIRS})
   ELSE(MQTT_INCLUDE_DIRS)
-     meessage(FATAL_ERROR "Mosquitto includes or library cannot be found, and you ask to NOT use builtin")
+     message(FATAL_ERROR "Mosquitto includes or library cannot be found, and you ask to NOT use builtin")
   ENDIF(MQTT_INCLUDE_DIRS)
 ENDIF(USE_BUILTIN_MQTT)
 
@@ -152,7 +152,7 @@ FIND_PROGRAM(GIT_EXECUTABLE git
   DOC "git command line client")
 
 MACRO(Gitversion_GET_REVISION dir variable)
-  EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} rev-list HEAD --count
+  EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} --git-dir ./.git rev-list HEAD --count
     WORKING_DIRECTORY ${dir}
     OUTPUT_VARIABLE ${variable}
     OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -209,6 +209,7 @@ main/Push.cpp
 main/RFXNames.cpp
 main/Scheduler.cpp
 main/SQLHelper.cpp
+main/LuaHandler.cpp
 main/SunRiseSet.cpp
 main/WebServer.cpp
 main/WebServerHelper.cpp
@@ -220,15 +221,18 @@ hardware/1Wire/1WireByOWFS.cpp
 hardware/1Wire/1WireByKernel.cpp
 hardware/1Wire/1WireCommon.cpp
 hardware/1Wire/1WireForWindows.cpp
+hardware/AccuWeather.cpp
 hardware/AnnaThermostat.cpp
 hardware/ASyncSerial.cpp
 hardware/ASyncTCP.cpp
+hardware/AtagOne.cpp
 hardware/Comm5TCP.cpp
 hardware/csocket.cpp
 hardware/CurrentCostMeterBase.cpp
 hardware/CurrentCostMeterSerial.cpp
 hardware/CurrentCostMeterTCP.cpp
 hardware/DavisLoggerSerial.cpp
+hardware/DenkoviSmartdenLan.cpp
 hardware/DomoticzHardware.cpp
 hardware/DomoticzInternal.cpp
 hardware/DomoticzTCP.cpp
@@ -238,6 +242,7 @@ hardware/EnOceanESP2.cpp
 hardware/EnOceanESP3.cpp
 hardware/evohome.cpp
 hardware/ETH8020.cpp
+hardware/Fitbit.cpp
 hardware/ForecastIO.cpp
 hardware/FritzboxTCP.cpp
 hardware/Gpio.cpp
@@ -262,6 +267,7 @@ hardware/MySensorsTCP.cpp
 hardware/NefitEasy.cpp
 hardware/Nest.cpp
 hardware/Netatmo.cpp
+hardware/HttpPoller.cpp
 hardware/OpenWebNet.cpp
 hardware/openwebnet/bt_openwebnet.cpp
 hardware/OpenZWave.cpp
@@ -283,16 +289,19 @@ hardware/Rego6XXSerial.cpp
 hardware/RFLinkBase.cpp
 hardware/RFLinkSerial.cpp
 hardware/RFLinkTCP.cpp
+hardware/RFXBase.cpp
 hardware/RFXComSerial.cpp
 hardware/RFXComTCP.cpp
 hardware/S0MeterBase.cpp
 hardware/S0MeterSerial.cpp
+hardware/S0MeterTCP.cpp
 hardware/SatelIntegra.cpp
 hardware/SBFSpot.cpp
 hardware/serial/serial.cpp
 hardware/serial/impl/unix.cpp
 hardware/SolarEdgeAPI.cpp
 hardware/SolarMaxTCP.cpp
+hardware/Sterbox.cpp
 hardware/TCPProxy/tcpproxy_server.cpp
 hardware/TE923.cpp
 hardware/TE923Tool.cpp
@@ -301,6 +310,7 @@ hardware/Tellstick.cpp
 hardware/Thermosmart.cpp
 hardware/ToonThermostat.cpp
 hardware/VolcraftCO20.cpp
+hardware/RAVEn.cpp
 hardware/Winddelen.cpp
 hardware/WOL.cpp
 hardware/Wunderground.cpp
@@ -326,6 +336,7 @@ webserver/Base64.cpp
 webserver/connection.cpp
 webserver/connection_manager.cpp
 webserver/cWebem.cpp
+webserver/fastcgi.cpp
 webserver/mime_types.cpp
 webserver/reply.cpp
 webserver/request_handler.cpp
@@ -391,7 +402,7 @@ if(USE_PYTHON)
   ENDIF(PYTHONINTERP_FOUND)
 endif(USE_PYTHON)
 
-option(USE_STATIC_BOOST "Build with static BOOST libraries" NO)
+option(USE_STATIC_BOOST "Build with static BOOST libraries" YES)
 set(Boost_USE_STATIC_LIBS ${USE_STATIC_BOOST})
 set(Boost_USE_MULTITHREADED ON)
 unset(Boost_INCLUDE_DIR CACHE)
@@ -431,7 +442,7 @@ IF(CURL_FOUND)
   MESSAGE(STATUS "Curl libraries found at: ${CURL_LIBRARIES}")
   MESSAGE(STATUS "Curl includes found at: ${CURL_INCLUDE_DIRS}")
   INCLUDE_DIRECTORIES(${CURL_INCLUDE_DIRS})
-  add_definitions(-DWWW_ENABLE_SSL)
+  # add_definitions(-DWWW_ENABLE_SSL)
 else()
   MESSAGE(FATAL_ERROR "cURL not found on your system, see install.txt how to get them installed. (for example 'sudo apt-get install curl libcurl4-openssl-dev')")
 ENDIF(CURL_FOUND)
@@ -531,29 +542,22 @@ else()
   MESSAGE(STATUS "==== OpenZWave not found, support disabled!")
 ENDIF(OpenZWave)
 
-# try to detect Raspberry Pi hardware and WiringPi library. If found, include GPIO support
-find_path(RaspberryPi NAMES bcm_host.h PATHS "/opt/vc/include")
-IF(RaspberryPi)
-  message(STATUS "Building on Raspberry Pi... (bcm_host.h found in ${RaspberryPi})")
-  find_path(WiringPi wiringPi.h)
-  IF(WiringPi)
-    message(STATUS "WiringPi include was found in ${WiringPi}...")
-    find_library(WIRINGPI_LIBRARY NAMES libwiringPi.a)
-    IF(WIRINGPI_LIBRARY)
-      message(STATUS "WiringPi library was found in ${WIRINGPI_LIBRARY}...")
-      add_definitions(-DWITH_GPIO)
-      target_link_libraries(domoticz ${WIRINGPI_LIBRARY})
-    else()
-      message(STATUS "==== WiringPi library not found. GPIO support disabled.")
-    message(STATUS "==== (Please follow http://wiringpi.com/download-and-install/ if you want to use GPIO.)")
-    ENDIF()
+find_path(WiringPi wiringPi.h)
+IF(WiringPi)
+  message(STATUS "WiringPi include was found in ${WiringPi}...")
+  find_library(WIRINGPI_LIBRARY NAMES libwiringPi.a)
+  IF(WIRINGPI_LIBRARY)
+    message(STATUS "WiringPi library was found in ${WIRINGPI_LIBRARY}...")
+    add_definitions(-DWITH_GPIO)
+    target_link_libraries(domoticz ${WIRINGPI_LIBRARY})
   else()
-    message(STATUS "==== WiringPi include file (wiringPi.h) not found. GPIO support disabled.")
-    message(STATUS "==== (Please follow http://wiringpi.com/download-and-install/ if you want to use GPIO.)")
-  ENDIF(WiringPi)
+    message(STATUS "==== WiringPi library not found. GPIO support disabled.")
+  message(STATUS "==== (Please follow http://wiringpi.com/download-and-install/ if you want to use GPIO.)")
+  ENDIF()
 else()
-  message(STATUS "Not building on Raspberry Pi. GPIO support disabled.")
-ENDIF(RaspberryPi)
+  message(STATUS "==== WiringPi include file (wiringPi.h) not found. GPIO support disabled.")
+  message(STATUS "==== (Please follow http://wiringpi.com/download-and-install/ if you want to use GPIO.)")
+ENDIF(WiringPi)
 
 find_path(TELLDUSCORE_INCLUDE NAMES telldus-core.h)
 if (TELLDUSCORE_INCLUDE)
@@ -637,11 +641,11 @@ IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 
 install(TARGETS domoticz DESTINATION ${CMAKE_INSTALL_PREFIX})
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/www DESTINATION ${CMAKE_INSTALL_PREFIX} USE_SOURCE_PERMISSIONS)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/www DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/License.txt DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/History.txt DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/scripts DESTINATION ${CMAKE_INSTALL_PREFIX} USE_SOURCE_PERMISSIONS)
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Config DESTINATION ${CMAKE_INSTALL_PREFIX} USE_SOURCE_PERMISSIONS)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Config DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/updatedomo DESTINATION ${CMAKE_INSTALL_PREFIX} PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ)
 
 INCLUDE(TestBigEndian)

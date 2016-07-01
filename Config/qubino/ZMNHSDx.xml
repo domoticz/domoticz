@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+
+<!-- 
+Qubino: ZMNHSDx Din Dimmer Z-Wave+
+ZMNHSD1 868,4 MHz
+ZMNHSD2 921,4 MHz
+ZMNHSD3 908,4 MHz
+ZMNHSD4 869,0 MHz
+ZMNHSD5 916,0 MHz
+-->
+
+	<!-- Configuration -->
+	<CommandClass id="112">
+		<Value type="list" genre="config" instance="1" index="1" label="Input 1 switch type" size="1" min="0" max="1" value="0">
+			<Help/>
+			<Item label="Mono-stable(push button)" value="0" />
+			<Item label="Bi-stable" value="1" />
+		</Value>
+	
+		<Value type="list" genre="config" instance="1" index="5" label="Working mode" size="1" min="0" max="1" value="0">
+			<Help>Default value 0</Help>
+			<Item label="Dimmer" value="0"/>
+			<Item label="Switch" value="1"/>
+		</Value> 
+	
+		<Value type="list" genre="config" instance="1" index="10" label="Activate / deactivate functions ALL ON/ALL OFF" size="2" min="0" max="255" value="255">
+			<Help>Flush dimmer module responds to commands ALL ON / ALL OFF that may be sent by the main controller or by other controller belonging to the system.
+			Default value 255.</Help>
+			<Item label="ALL ON active, ALL OFF active" value="255" />
+			<Item label="ALL ON is not active ALL OFF is not active" value="0" />
+			<Item label="ALL ON is not active ALL OFF active" value="1" />
+			<Item label="ALL ON active ALL OFF is not active" value="2" />
+		</Value>
+	
+		<Value type="short" genre="config" instance="1" index="11" label="Automatic turning off output after set time" size="1" min="0" max="32536" value="0">
+			<Help>0 - Auto OFF disabled.
+			1 second to 32536 seconds Auto OFF enabled with defined time, step is 1 second.
+			Default value 0.</Help>
+		</Value> 
+	
+		<Value type="short" genre="config" instance="1" index="12" label="Automatic turning on output after set time" size="1" min="0" max="32535" value="0">
+			<Help>0 - Auto ON disabled.
+			1 second to 32535 seconds Auto ON enabled with defined time, step is 1 second.
+			Default value 0.</Help>
+		</Value> 
+
+		<Value type="list" genre="config" instance="1" index="21" label="Enable/Disable Double click function" size="1" min="0" max="1" value="0">
+			<Help>If Double click function is enabled, a fast double click on the push button will set dimming power at maximum dimming value.
+				Default value 0.</Help>
+			<Item label="Disabled" value="0"/>
+			<Item label="Enabled" value="1"/>
+		</Value> 
+
+		<Value type="list" genre="config" instance="1" index="30" label="Saving the state of the relay after a power failure" size="1" min="0" max="1" value="0">
+			<Help>Default value 0.</Help>
+			<Item label="Flush dimmer module saves its state before power failure (it returns to the last position saved before a power failure)" value="0" />
+			<Item label="Flush dimmer module does not save the state after a power failure, it returns to off position" value="1" />
+		</Value>
+	
+ 		<Value type="byte" genre="config" instance="1" index="40" label="Power reporting in Watts on power change" size="1" min="0" max="100" value="5">
+			<Help>Set value from 0 - 100 (0% - 100%).
+			0 - Reporting Disabled.
+			1 - 100 = 1% - 100% Reporting enabled.
+			Power report is send (push) only when actual power in Watts in real time change for more than set percentage comparing to previous actual power in Watts, step is 1%.
+			Default value 5.</Help>
+			</Value>
+	
+		<Value type="short" genre="config" instance="1" index="42" label="Power reporting in Watts by time interval" min="0" max="32767" value="300">
+			<Help>Set value means time interval (0 - 32767) in seconds, when power report is send.
+			0 - Reporting Disabled.
+			1 second to 32767 seconds reporting enabled.
+			Power report is send with time interval set by entered value.
+			Default value 300 (power report in Watts is send each 300s).</Help>
+		</Value>
+
+		<Value type="byte" genre="config" instance="1" index="60" label="Minimum dimming value" min="1" max="98" value="1">
+			<Help>1 - 98 = 1% - 98%, step is 1%. Minimum dimming values is set by entered value.
+			Default value 1 (Minimum dimming value is 1%).</Help>
+		</Value>
+
+		<Value type="byte" genre="config" instance="1" index="61" label="Maximum dimming value" min="2" max="99" value="99">
+			<Help>2 - 99 = 2% - 99%, step is 1%. Maximum dimming values is set by entered value.
+			Default value 99 (Maximum dimming value is 99%).</Help>
+		</Value>
+
+		<Value type="short" genre="config" instance="1" index="65" label="Dimming time (soft on/off)" min="1" max="255" value="100">
+			<Help>Set value means time of moving the Dimmer between min. and max. dimming values by short press of push button I1 or controlled through.
+			1- 255 = 10mseconds - 2550mseconds (2,55s), step is 10mseconds.
+			Default value 100 (Dimming time between min. and max. dimming values is 1s).</Help>
+		</Value>
+
+		<Value type="short" genre="config" instance="1" index="66" label="Dimming time when key pressed" min="1" max="255" value="3">
+			<Help>Time of moving the Dimmer between min. and max dimming values by continues hold of push button I1.
+			1- 255 = 1 second - 255 seconds.
+			Default value 3 (Dimming time between min. and max. dimming values is 3s).</Help>
+		</Value>
+		
+		<Value type="list" genre="config" instance="1" index="67" label="Ignore start level" size="1" min="0" max="1" value="0">
+			<Help>This parameter is used with association group 4.
+				A receiving device SHOULD respect the start level if the Ignore Start Level bit is 0.
+				A receiving device MUST ignore the start level if the Ignore Start Level bit is 1.
+				Default value 0.</Help>
+			<Item label="respect start level" value="0"/>
+			<Item label="ignore start level" value="1"/>
+		</Value> 
+		
+		<Value type="list" genre="config" instance="1" index="68" label="Dimming duration" size="1" min="0" max="1" value="0">
+			<Help>This parameter is used with association group 3.
+				The Duration field MUST specify the time that the transition should take from the current value to the new target value.
+				A supporting device SHOULD respect the specified Duration value.
+				Default value 0.</Help>
+			<Item label="Respect start level" value="0"/>
+			<Item label="Ignore start level" value="1"/>
+		</Value> 
+
+		<Value type="short" genre="config" instance="1" index="110" label="Temperature sensor offset settings" min="1" max="32536" value="32536">
+			<Help>Set value is added or subtracted to actual measured value by sensor.
+			32536 : offset is 0.0C.
+			From 1 to 100 : value from 0.1 C to 10.0 C is added to actual measured temperature.
+			From 1001 to 1100 : value from -0.1 C to -10.0 C is subtracted to actual measured temperature.
+			Default value 32536.
+			</Help>
+		</Value>
+
+		<Value type="byte" genre="config" instance="1" index="120" label="Digital temperature sensor reporting" min="0" max="127" value="5">
+			<Help>If digital temperature sensor is connected, module reports measured temperature on temperature change defined by this parameter.
+			0 : Reporting disabled.
+			1- 127 = 0,1C - 12,7C, step is 0,1C.
+			Default value 5 = 0,5C change.
+			</Help>
+		</Value>
+	</CommandClass>
+
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="5">
+			<Group index="1" max_associations="1" label="Lifeline"/>
+			<Group index="2" max_associations="16" label="Basic on/off"/>
+			<Group index="3" max_associations="16" label="Start level change/stop level change"/>
+			<Group index="4" max_associations="16" label="Multilevel set Flush dimmer"/>
+			<Group index="5" max_associations="16" label="Multilevel sensor report temp sensor"/>
+		</Associations>
+	</CommandClass>
+
+
+	<!-- Remove COMMAND_CLASS_BASIC -->
+	<CommandClass id="32" action="remove" />
+
+	<!-- Map endpoints to instances -->
+	<CommandClass id="96" mapping="endpoints" />
+
+</Product>

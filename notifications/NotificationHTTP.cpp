@@ -4,6 +4,7 @@
 #include "../httpclient/HTTPClient.h"
 #include "../httpclient/UrlEncode.h"
 #include "../main/SQLHelper.h"
+#include "../main/Logger.h"
 
 extern std::string szUserDataFolder;
 
@@ -16,6 +17,8 @@ CNotificationHTTP::CNotificationHTTP() : CNotificationBase(std::string("http"), 
 	SetupConfigBase64(std::string("HTTPField4"), _HTTPField4);
 	SetupConfigBase64(std::string("HTTPTo"), _HTTPTo);
 	SetupConfigBase64(std::string("HTTPURL"), _HTTPURL);
+	SetupConfigBase64(std::string("HTTPPostData"), _HTTPPostData);
+	SetupConfigBase64(std::string("HTTPPostContentType"), _HTTPPostContentType);
 }
 
 CNotificationHTTP::~CNotificationHTTP()
@@ -25,7 +28,7 @@ CNotificationHTTP::~CNotificationHTTP()
 bool CNotificationHTTP::SendMessageImplementation(const std::string &Subject, const std::string &Text, const std::string &ExtraData, const int Priority, const std::string &Sound, const bool bFromNotification)
 {
 	std::string destURL = _HTTPURL;
-	bool bRet = false;
+	bool bSuccess = false;
 
 	size_t uPos = destURL.find("://");
 	if (uPos == std::string::npos)
@@ -41,8 +44,28 @@ bool CNotificationHTTP::SendMessageImplementation(const std::string &Subject, co
 		stdreplace(destURL, "#TO", CURLEncode::URLEncode(_HTTPTo));
 		stdreplace(destURL, "#SUBJECT", CURLEncode::URLEncode(Subject));
 		stdreplace(destURL, "#MESSAGE", CURLEncode::URLEncode(Text));
+
 		std::string sResult;
-		bRet = HTTPClient::GET(destURL, sResult, true);
+		if (_HTTPPostData.length() > 0)
+		{
+			std::vector<std::string> ExtraHeaders;
+			ExtraHeaders.push_back("Content-type: " + _HTTPPostContentType);
+			std::string httpData = _HTTPPostData;
+			stdreplace(httpData, "#FIELD1", _HTTPField1);
+			stdreplace(httpData, "#FIELD2", _HTTPField2);
+			stdreplace(httpData, "#FIELD3", _HTTPField3);
+			stdreplace(httpData, "#FIELD4", _HTTPField4);
+			stdreplace(httpData, "#TO", _HTTPTo);
+			stdreplace(httpData, "#SUBJECT", Subject);
+			stdreplace(httpData, "#MESSAGE", Text);
+			bSuccess = HTTPClient::POST(destURL, httpData, ExtraHeaders, sResult);
+		}
+		else
+		{
+			bSuccess = HTTPClient::GET(destURL, sResult, true);
+		}
+		if (!bSuccess)
+			_log.Log(LOG_ERROR, "HTTP: %s", sResult.c_str());
 	}
 	else if (destURL.find("script://") == 0)
 	{
@@ -71,10 +94,10 @@ bool CNotificationHTTP::SendMessageImplementation(const std::string &Subject, co
 		if (file_exist(scriptname.c_str()))
 		{
 			m_sql.AddTaskItem(_tTaskItem::ExecuteScript(1, scriptname, scriptparams));
-			bRet = true;
+			bSuccess = true;
 		}
 	}
-	return bRet;
+	return bSuccess;
 }
 
 bool CNotificationHTTP::IsConfigured()

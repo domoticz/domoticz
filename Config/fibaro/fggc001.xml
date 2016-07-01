@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Fibaro Swipe FGGC-001 -->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+    <!-- Configuration -->
+    <CommandClass id="112">
+        <Value type="list" genre="config" instance="1" index="1" label="Device orientation" min="0" max="3" value="0" size="1">
+            <Help>
+                Parameter determines orientation of the Swipe in relation to its default position.
+                Required for proper gestures recognition.
+            </Help>
+            <Item label="Default orientation" value="0" />
+            <Item label="180 rotation" value="1" />
+            <Item label="90 clockwise rotation" value="2" />
+            <Item label="90 counter-clockwise rotation" value="3" />
+        </Value>
+        <Value type="list" genre="config" instance="1" index="2" label="Buzzer" value="1" size="1">
+            <Help>Acoustic signalling of gestures detection.</Help>
+            <Item label="Disabled" value="0" />
+            <Item label="Enabled" value="1" />
+        </Value>
+        <Value type="list" genre="config" instance="1" index="3" label="LED diode" value="0" min="0" max="1" size="1">
+            <Help>Visual indication of gestures detection</Help>
+            <Item label="Disabled" value="0" />
+            <Item label="Enabled" value="1" />
+        </Value>
+        <Value type="list" genre="config" instance="1" index="4" label="Buzzer signalling result of gesture recognition" min="1" max="3" value="3" size="1">
+            <Help>
+                Acoustic signalling of gesture recognition result (using the built-in buzzer).
+                Note: Parameter 4 is relevant only if parameter 2 is set to Enabled.
+            </Help>
+            <Item label="On successful recognition" value="1" />
+            <Item label="On failed recognition" value="2" />
+            <Item label="Successful and failed recognition is signalled" value="3" />
+        </Value>
+        <Value type="short" genre="config" instance="1" index="5" label="Powering mode - interval of updating the current mode" units="minutes" value="4" min="0" max="1080" size="2">
+            <Help>
+                This parameter determines how often the device checks if the USB power supply is connected and updates powering mode if needed.
+                0 - powering mode is not updated
+                1-1080 (in minutes) - time interval
+                Default : (4 minutes)
+            </Help>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="6" label="Power saving mode (battery mode)" value="0" min="0" max="2" size="1">
+            <Help>
+                This parameter determines operation of gesture detection when battery powered.
+                When Standby Mode is selected, hold gesture must be performed to exit power saving mode and reactivate normal gesture recognition.
+                The device in Standby Mode consumes the least battery life.
+                When Simple Mode mode is selected, gesture recognition is always active, but only slowly performed gestures will be recognized properly (high battery consumption).
+            </Help>
+            <Item label="Standby Mode" value="0" />
+            <Item label="Simple Mode" value="1" />
+            <Item label="The Swipe does not enter power saving mode" value="2" />
+        </Value>
+        <Value type="list" genre="config" instance="1" index="7" label="Hold gesture to enter the menu" value="0" min="0" max="1" size="1">
+            <Help>This parameter allows to choose if the menu can be entered using the Hold gesture</Help>
+            <Item label="Enabled" value="0" />
+            <Item label="Disabled" value="1" />
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="10" label="Scenes sent to the controller" value="15" size="1">
+            <Help>
+                Defines which actions result in sending scenes to 1st Lifeline group
+                1 - scenes for Flick UP gesture enabled
+                2 - scenes for Flick DOWN gesture enabled
+                4 - scenes for Flick LEFT gesture enabled
+                8 - scenes for Flick RIGHT gesture enabled
+                16 - scenes for clockwise circular gesture enabled
+                32 - scenes for counter-clockwise circular gesture enabled
+                Default setting: 15
+            </Help>
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="11" label="Associations in Z-Wave network security mode" value="31" size="1">
+            <Help>
+                Parameter defines how commands are sent in specified association groups: as secure or non-secure.
+                Parameter is active only in Z-Wave network security mode.
+                It does not apply to 1st Lifeline association group.
+                1 - 2nd group Flick UP sent as secure
+                2 - 3rd group Flick DOWN sent as secure
+                4 - 4th group Flick LEFT sent as secure
+                8 - 5th group Flick RIGHT sent as secure
+                16 - 6th group Circular AirWheel sent as secure
+                Default setting: 31
+            </Help>
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="12" label="Control mode of 2nd-5th association groups and scenes" value="15" size="1">
+            <Help>
+                Parameter allows to choose control mode for 2nd-5th groups and scenes.
+                By default, Toggle Mode is active, meaning that a single flick turns ON
+                the group and the same flick turns it OFF, doubled flicks are inactive.
+                After disabling Toggle Mode a single flick will turn the device ON and the same flick doubled will turn it OFF.
+                1 - Toggle Mode enabled for 2nd association group
+                2 - Toggle Mode enabled for 3rd association group
+                4 - Toggle Mode enabled for 4th association group
+                8 - Toggle Mode enabled for 5th association group
+                Default setting: 15
+            </Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="13" label="Rate of smooth level control" value="255" size="2">
+            <Help>
+                Parameter allows to choose how long the hand has to be held near the center of the pad after AirWheel gesture for the associated devices to reach their maximum/minimum level.
+                0-10 - duration in seconds
+                255 - default settings of controlled devices
+            </Help>
+        </Value>
+        <!-- ASSOCIATIONS - CONTROL FRAMES CONFIGURATION -->
+        <Value type="short" genre="config" instance="1" index="20" label="Switch ON control frame value for Flick UP gesture" value="255" size="2">
+            <Help>
+                This parameter allows to set value sent in switch ON command frame to the association group.
+                0-99 or 255
+            </Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="21" label="Switch OFF control frame value for Flick UP gesture" value="0" size="2">
+            <Help>
+                This parameter allows to set value sent in switch OFF command frame to the association group.
+                0-99 or 255
+            </Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="22" label="Switch ON control frame value for Flick DOWN gesture" value="255" size="2">
+            <Help>
+                This parameter allows to set value sent in switch ON command frame to the association group.
+                0-99 or 255
+            </Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="23" label="Switch OFF control frame value for Flick DOWN gesture" value="0" size="2">
+            <Help>
+                This parameter allows to set value sent in switch OFF command frame to the association group.
+                0-99 or 255
+            </Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="24" label="Switch ON control frame value for Flick LEFT gesture" value="255" size="2">
+            <Help>
+                This parameter allows to set value sent in switch ON command frame to the association group.
+                0-99 or 255
+            </Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="25" label="Switch OFF control frame value for Flick LEFT gesture" value="0" size="2">
+            <Help>
+                This parameter allows to set value sent in switch OFF command frame to the association group.
+                0-99 or 255
+            </Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="26" label="Switch ON control frame value for Flick RIGHT gesture" value="255" size="2">
+            <Help>
+                This parameter allows to set value sent in switch ON command frame to the association group.
+                0-99 or 255
+            </Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="27" label="Switch OFF control frame value for Flick RIGHT gesture" value="0" size="2">
+            <Help>
+                This parameter allows to set value sent in switch OFF command frame to the association group.
+                0-99 or 255
+            </Help>
+        </Value>
+        <!-- SEQUENCES OF GESTURES -->
+        <Value type="byte" genre="config" instance="1" index="30" label="Sequence learning mode" value="0" min="0" max="6" size="1">
+            <Help>
+                Parameter activated by the main Z-Wave controller.
+                Change its value to launch sequence learning procedure for the desired slot.
+                0 - learning mode disabled
+                1-6 - launch sequence learning for selected slot
+            </Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="31" label="1st gestures sequence (SLOT 1)" min="0" max="1076" value="0" size="2">
+            <Help>
+                Value containing sequence of gestures. See Sequences of gestures on page 12 for more information.
+            </Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="32" label="2nd gestures sequence (SLOT 2)" min="0" max="1076" value="0" size="2">
+            <Help>
+                Value containing sequence of gestures. See Sequences of gestures on page 12 for more information.
+            </Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="33" label="3rd gestures sequence (SLOT 3)" min="0" max="1076" value="0" size="2">
+            <Help>
+                Value containing sequence of gestures. See Sequences of gestures on page 12 for more information.
+            </Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="34" label="4th gestures sequence (SLOT 4)" min="0" max="1076" value="0" size="2">
+            <Help>
+                Value containing sequence of gestures. See Sequences of gestures on page 12 for more information.
+            </Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="35" label="5th gestures sequence (SLOT 5)" min="0" max="1076" value="0" size="2">
+            <Help>
+                Value containing sequence of gestures. See Sequences of gestures on page 12 for more information.
+            </Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="36" label="6th gestures sequence (SLOT 6)" min="0" max="1076" value="0" size="2">
+            <Help>
+                Value containing sequence of gestures. See Sequences of gestures on page 12 for more information.
+            </Help>
+        </Value>
+    </CommandClass>
+
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="6">
+            <Group index="1" max_associations="1" label="Lifeline"/>
+            <Group index="2" max_associations="5" label="Flick UP"  />
+            <Group index="3" max_associations="5" label="Flick DOWN"  />
+            <Group index="4" max_associations="5" label="Flick LEFT"  />
+            <Group index="5" max_associations="5" label="Flick RIGHT"  />
+            <Group index="6" max_associations="5" label="Circular AirWheel"  />
+        </Associations>
+    </CommandClass>
+
+</Product>

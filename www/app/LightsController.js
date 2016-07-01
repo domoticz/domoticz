@@ -365,14 +365,14 @@ define(['app'], function (app) {
 						DayStrOrig="Monthly on Day " + item.MDay;
 					}
 					else if (item.Type==11) {
-						var Weekday = Math.log2(parseInt(item.Days));
+						var Weekday = Math.log(parseInt(item.Days)) / Math.log(2);
 						DayStrOrig="Monthly on " + $.myglobals.OccurenceStr[item.Occurence-1] + " " + $.myglobals.WeekdayStr[Weekday];
 					}
 					else if (item.Type==12) {
 						DayStrOrig="Yearly on " + item.MDay + " " + $.myglobals.MonthStr[item.Month-1];
 					}
 					else if (item.Type==13) {
-						var Weekday = Math.log2(parseInt(item.Days));
+						var Weekday = Math.log(parseInt(item.Days)) / Math.log(2);
 						DayStrOrig="Yearly on " + $.myglobals.OccurenceStr[item.Occurence-1] + " " + $.myglobals.WeekdayStr[Weekday] + " in " + $.myglobals.MonthStr[item.Month-1];
 					}
 					
@@ -414,7 +414,7 @@ define(['app'], function (app) {
 						"7": item.Month,
 						"8": item.MDay,
 						"9": item.Occurence,
-						"10": Math.log2(parseInt(item.Days))
+						"10": Math.log(parseInt(item.Days)) / Math.log(2)
 					} );
 				});
 			  }
@@ -985,7 +985,7 @@ define(['app'], function (app) {
 					}
 					var CustomImage=0;
 					
-					if ((switchtype == 0) || (switchtype == 17) || (switchtype == 18)) {
+					if ((switchtype == 0) || (switchtype == 7) || (switchtype == 17) || (switchtype == 18)) {
 						var cval=$('#lightcontent #comboswitchicon').data('ddslick').selectedIndex;
 						CustomImage=$.ddData[cval].value;
 					}
@@ -1605,7 +1605,7 @@ define(['app'], function (app) {
 						$("#lightcontent #ondelay").val(addjvalue2);
 					}
 
-					if ((switchtype == 0) || (switchtype == 17) || (switchtype == 18)) {
+					if ((switchtype == 0) || (switchtype == 7) || (switchtype == 17) || (switchtype == 18)) {
 						$("#lightcontent #SwitchIconDiv").show();
 					}
 					if (switchtype == 18) {
@@ -1629,7 +1629,7 @@ define(['app'], function (app) {
 					$("#lightcontent #offdelay").val(addjvalue);
 					$("#lightcontent #ondelay").val(addjvalue2);
 				}
-				if ((switchtype == 0) || (switchtype == 17) || (switchtype == 18)) {
+				if ((switchtype == 0) || (switchtype == 7) || (switchtype == 17) || (switchtype == 18)) {
 				    $("#lightcontent #SwitchIconDiv").show();
 				}
 				if (switchtype == 18) {
@@ -2172,6 +2172,8 @@ define(['app'], function (app) {
 					}
 					else if (item.SwitchType == "Dimmer") {
 						isdimmer=true;
+						if (item.CustomImage == 0) item.Image = item.TypeImg;
+						item.Image = item.Image.charAt(0).toUpperCase() + item.Image.slice(1);
 						if (
 								(item.Status == 'On')||
 								(item.Status == 'Chime')||
@@ -2185,7 +2187,7 @@ define(['app'], function (app) {
 								img='<img src="images/RGB48_On.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshLights\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="48" width="48">';
 							}
 							else {
-								img='<img src="images/Dimmer48_On.png" title="' + $.t("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
+							    img = '<img src="images/' + item.Image + '48_On.png" title="' + $.t("Turn Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48" width="48">';
 							}
 						}
 						else {
@@ -2196,12 +2198,12 @@ define(['app'], function (app) {
 								img='<img src="images/RGB48_Off.png" onclick="ShowRGBWPopup(event, ' + item.idx + ',\'RefreshLights\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="48" width="48">';
 							}
 							else {
-								img='<img src="images/Dimmer48_Off.png" title="' + $.t("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
+							    img = '<img src="images/' + item.Image + '48_Off.png" title="' + $.t("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48" width="48">';
 							}
 						}
 					}
 					else if (item.SwitchType == "TPI") {
-						var RO=(item.Unit>100)?true:false;
+						var RO=(item.Unit>0)?true:false;
 						isdimmer=true;
 						if (
 								(item.Status == 'On')
@@ -2716,6 +2718,8 @@ define(['app'], function (app) {
 							}
 							else if (item.SwitchType == "Dimmer") {
 								bIsDimmer=true;
+								if (item.CustomImage == 0) item.Image = item.TypeImg;
+								item.Image = item.Image.charAt(0).toUpperCase() + item.Image.slice(1);
 								if (
 									(item.Status == 'On')||
 									(item.Status == 'Chime')||
@@ -2729,7 +2733,7 @@ define(['app'], function (app) {
 											xhtm+='\t      <td id="img"><img src="images/RGB48_On.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshLights\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="48" width="48"></td>\n';
 										}
 										else {
-											xhtm+='\t      <td id="img"><img src="images/Dimmer48_On.png" title="' + $.t("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',\'RefreshLights\',' + item.Protected + ');" class="lcursor" height="48" width="48"></td>\n';
+										    xhtm += '\t      <td id="img"><img src="images/'+item.Image+'48_On.png" title="' + $.t("Turn Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',\'RefreshLights\',' + item.Protected + ');" class="lcursor" height="48" width="48"></td>\n';
 										}
 									 }
 									 else {
@@ -2740,12 +2744,12 @@ define(['app'], function (app) {
 											xhtm+='\t      <td id="img"><img src="images/RGB48_Off.png" onclick="ShowRGBWPopup(event, ' + item.idx + ',\'RefreshLights\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="48" width="48"></td>\n';
 										}
 										else {
-											xhtm+='\t      <td id="img"><img src="images/Dimmer48_Off.png" title="' + $.t("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48"></td>\n';
+										    xhtm += '\t      <td id="img"><img src="images/' + item.Image + '48_Off.png" title="' + $.t("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48" width="48"></td>\n';
 										}
 									 }
 							}
 							else if (item.SwitchType == "TPI") {
-									var RO=(item.Unit>100)?true:false;
+									var RO=(item.Unit>0)?true:false;
 									bIsDimmer=true;
 									if (item.Status == 'On')
 									{
@@ -2830,7 +2834,7 @@ define(['app'], function (app) {
 					}
 					else if (item.SwitchType == "TPI") {
 						xhtm+='<br><br><div style="margin-left:60px;" class="dimslider" id="slider" data-idx="' + item.idx + '" data-type="relay" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"';
-						if(item.Unit>100)
+						if(item.Unit>0)
 							xhtm+=' data-disabled="true"';
 						xhtm+='></div>';
 					}
@@ -3005,8 +3009,9 @@ define(['app'], function (app) {
 					var obj=$(id);
 					if (typeof obj != 'undefined') {
 						var img="";
-						var imgname="Dimmer48_O";
-						if (dtype=="relay")
+						var imgname = $('#' + idx + ' .lcursor').prop('src');
+						imgname = imgname.substring(imgname.lastIndexOf("/") + 1, imgname.lastIndexOf("_O") + 2);
+						if (dtype == "relay")
 							imgname="Fireplace48_O"
 						var bigtext;
 						if (fPercentage==0)
@@ -3303,7 +3308,7 @@ define(['app'], function (app) {
 				//Blinds
 				$("#dialog-addmanuallightdevice #blindsparams").show();
 				var bShow4 = (lighttype==206)||(lighttype==207)||(lighttype==209);
-				var bShowUnit = (lighttype==206)||(lighttype==207)||(lighttype==208)||(lighttype==209);
+				var bShowUnit = (lighttype==206)||(lighttype==207)||(lighttype==208)||(lighttype==209)||(lighttype==212);
 				if (bShow4)
 					$('#dialog-addmanuallightdevice #blindsparams #combocmd4').show();
 				else

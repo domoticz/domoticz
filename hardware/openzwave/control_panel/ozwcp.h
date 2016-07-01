@@ -123,9 +123,13 @@ public:
 	std::string SetNodeButton(const std::string &arg1, const std::string &arg2);
 	std::string DoAdminCommand(const std::string &fun, const int node_id, const int button_id);
 	std::string DoNodeChange(const std::string &fun, const int node_id, const std::string &svalue);
+	std::string UpdateGroup(const std::string &fun, const int node_id, const int group_id, const std::string &gList);
 	std::string SaveConfig();
 	std::string GetCPTopo();
 	std::string GetCPStats();
+	std::string DoTestNetwork(const int node_id, const int cnt);
+	std::string HealNetworkNode(const int node_id, const bool healrrs);
+
 	bool isReady() { return ready; }
 	void SetAllNodesChanged();
 	bool getAdminState() { return adminstate; }

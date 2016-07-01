@@ -334,6 +334,12 @@ void CKodiNode::handleMessage(std::string& pMessage)
 						{
 							if (!root["result"]["speed"].asInt())
 								m_CurrentStatus.Status(MSTAT_PAUSED);	// useful when Domoticz restarts when media aleady paused
+							if (root["result"]["speed"].asInt() && m_CurrentStatus.Status() == MSTAT_PAUSED)
+							{
+								// Buffering when playing internet streams show 0 speed but don't trigger OnPause/OnPlay so force a refresh when speed is not 0 again
+								sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"Player.GetItem\",\"id\":1003,\"params\":{\"playerid\":" + m_CurrentStatus.PlayerID() + ",\"properties\":[\"artist\",\"album\",\"year\",\"channel\",\"showtitle\",\"season\",\"episode\",\"title\"]}}";
+								handleWrite(sMessage);
+							}
 						}
 						UpdateStatus();
 						break;

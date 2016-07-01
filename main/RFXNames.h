@@ -96,7 +96,7 @@ enum _eHardwareTypes {
 	HTYPE_Wunderground,			//14
 	HTYPE_Dummy,				//15
 	HTYPE_PiFace,				//16
-	HTYPE_S0SmartMeter,			//17
+	HTYPE_S0SmartMeterUSB,		//17
 	HTYPE_OpenThermGateway,		//18
 	HTYPE_TeleinfoMeter,		//19
 	HTYPE_OpenThermGatewayTCP,	//20
@@ -151,6 +151,14 @@ enum _eHardwareTypes {
 	HTYPE_PanasonicTV,			//69
 	HTYPE_OpenWebNet,			//70
 	HTYPE_RaspberryHTU21D,		//71
+	HTYPE_AtagOne,				//72
+	HTYPE_Sterbox,				//73
+	HTYPE_HTTPPOLLER,			//74
+	HTYPE_FITBIT,				//75
+	HTYPE_RAVEn,	    		//76
+	HTYPE_S0SmartMeterTCP,		//77
+	HTYPE_DenkoviSmartdenLan,	//78
+	HTYPE_AccuWeather,			//79
 	HTYPE_END
 };
 
@@ -205,9 +213,8 @@ const char *Get_Moisture_Desc(const int moisture);
 const char *Get_Alert_Desc(const int level);
 const char *Media_Player_States(const _eMediaStatus Status);
 const char *ZWave_Clock_Days(const unsigned char Day);
-extern const char *ZWave_Thermostat_Modes[];
 extern const char *ZWave_Thermostat_Fan_Modes[];
-int Lookup_ZWave_Thermostat_Modes(const std::string &sMode);
+int Lookup_ZWave_Thermostat_Modes(const std::vector<std::string> &Modes, const std::string &sMode);
 int Lookup_ZWave_Thermostat_Fan_Modes(const std::string &sMode);
 
 void GetLightStatus(

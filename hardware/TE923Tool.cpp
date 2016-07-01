@@ -278,7 +278,7 @@ int CTE923Tool::decode_te923_data( unsigned char buf[], Te923DataSet_t *data )
 	//don't know to find out it sensor link missing, but is no problem, because the counter is inside
 	//the station, not in the sensor.
 	data->_RainCount = 0;
-	data->RainCount = ( int )( buf[31] * 0x100 + buf[30] );
+	data->RainCount = ( int )(( buf[31] * 0x100 + buf[30] )/2);
 	return 0;
 }
 

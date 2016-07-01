@@ -896,12 +896,6 @@ void CRazberry::SetThermostatFanMode(const int nodeID, const int instanceID, con
 
 }
 
-std::string CRazberry::GetSupportedThermostatModes(const unsigned long ID)
-{
-	std::string retstr = "";
-	return retstr;
-}
-
 std::string CRazberry::GetSupportedThermostatFanModes(const unsigned long ID)
 {
 	std::string retstr = "";

@@ -9,6 +9,7 @@
 //
 #include "stdafx.h"
 #include "request_handler.hpp"
+#include "fastcgi.hpp"
 #include <fstream>
 #include <sstream>
 #include <string>
@@ -203,7 +204,6 @@ void request_handler::handle_request(const request& req, reply& rep)
 	handle_request(req, rep, mInfo);
 }
 
-
 void request_handler::handle_request(const request &req, reply &rep, modify_info &mInfo)
 {
   mInfo.mtime_support = false;
@@ -253,80 +253,99 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
   if (!m_bIsZIP)
 #endif
   {
-	  //first try gzip version
-	  if (bHaveGZipSupport)
+	  if (extension == "php")
 	  {
-		  // Open the file to send back.
-		  std::string full_path = doc_root_ + request_path + ".gz";
-		  std::ifstream is(full_path.c_str(), std::ios::in | std::ios::binary);
-		  if (is)
+		  if (!myWebem->m_settings.is_php_enabled())
 		  {
-			  mInfo.delay_status = false;
-			  if (not_modified(full_path, req, rep, mInfo)) {
-				  return;
-			  }
-			  // check if file date is still the same since last request
-			  bHaveLoadedgzip=true;
-			  rep.bIsGZIP=true;
-			  // Fill out the reply to be sent to the client.
-			  rep.status = reply::ok;
-			  rep.content.append((std::istreambuf_iterator<char>(is)),
-				  (std::istreambuf_iterator<char>()));
+			  rep = reply::stock_reply(reply::not_implemented);
+			  return;
 		  }
+
+		  //
+		  //For now this is very simplistic!
+		  //Later we should add FastCGI support, or at least provide some environment variables
+		  fastcgi_parser::handlePHP(myWebem->m_settings, request_path, req, rep, mInfo);
+		  return;
 	  }
-	  if (!bHaveLoadedgzip)
+	  else
 	  {
-		  // Open the file to send back.
-		  std::string full_path = doc_root_ + request_path;
-		  std::ifstream is(full_path.c_str(), std::ios::in | std::ios::binary);
-		  if (!is)
+		  //first try gzip version
+		  if (bHaveGZipSupport)
 		  {
-			  //maybe its a gz file (and clients browser does not support compression)
-			  full_path += ".gz";
-			  is.open(full_path.c_str(), std::ios::in | std::ios::binary);
-			  if (is.is_open())
+			  std::string full_path = doc_root_ + request_path + ".gz";
+			  // Open the file to send back.
+			  std::ifstream is(full_path.c_str(), std::ios::in | std::ios::binary);
+			  if (is)
 			  {
+				  mInfo.delay_status = false;
+				  if (not_modified(full_path, req, rep, mInfo)) {
+					  return;
+				  }
 				  // check if file date is still the same since last request
 				  bHaveLoadedgzip = true;
-				  std::string gzcontent((std::istreambuf_iterator<char>(is)),
-					  (std::istreambuf_iterator<char>()));
-
-				  CGZIP2AT<> decompress((LPGZIP)gzcontent.c_str(), gzcontent.size());
-
-				  rep.status = reply::ok;
+				  rep.bIsGZIP = true;
 				  // Fill out the reply to be sent to the client.
-				  rep.content.append(decompress.psz, decompress.Length);
-			  }
-			  else
-			  {
-				  //Maybe it is a folder, lets add the index file
-				  if (full_path.find('.') != std::string::npos)
-				  {
-					  rep = reply::stock_reply(reply::not_found);
-					  return;
-				  }
-				  request_path += "/index.html";
-				  full_path = doc_root_ + request_path;
-				  is.open(full_path.c_str(), std::ios::in | std::ios::binary);
-				  if (!is.is_open())
-				  {
-					  rep = reply::stock_reply(reply::not_found);
-					  return;
-				  }
-				  extension = "html";
+				  rep.status = reply::ok;
+				  rep.content.append((std::istreambuf_iterator<char>(is)),
+					  (std::istreambuf_iterator<char>()));
 			  }
 		  }
 		  if (!bHaveLoadedgzip)
 		  {
-			  // Fill out the reply to be sent to the client.
-			  rep.status = reply::ok;
-			  rep.content.append((std::istreambuf_iterator<char>(is)),
-				  (std::istreambuf_iterator<char>()));
-			  // set delay_status to true, because it can possibly have
-			  // include codes in it.
-			  mInfo.delay_status = true;
-			  if (not_modified(full_path, req, rep, mInfo)) {
-				  return;
+			  // Open the file to send back.
+			  std::string full_path = doc_root_ + request_path;
+			  std::ifstream is(full_path.c_str(), std::ios::in | std::ios::binary);
+			  if (!is)
+			  {
+				  //maybe its a gz file (and clients browser does not support compression)
+				  full_path += ".gz";
+				  is.open(full_path.c_str(), std::ios::in | std::ios::binary);
+				  if (is.is_open())
+				  {
+					  // check if file date is still the same since last request
+					  bHaveLoadedgzip = true;
+					  std::string gzcontent((std::istreambuf_iterator<char>(is)),
+						  (std::istreambuf_iterator<char>()));
+
+					  CGZIP2AT<> decompress((LPGZIP)gzcontent.c_str(), gzcontent.size());
+
+					  rep.status = reply::ok;
+					  // Fill out the reply to be sent to the client.
+					  rep.content.append(decompress.psz, decompress.Length);
+				  }
+				  else
+				  {
+					  //Maybe it is a folder, lets add the index file
+					  if (full_path.find('.') != std::string::npos)
+					  {
+						  rep = reply::stock_reply(reply::not_found);
+						  _log.Log(LOG_ERROR, "Webserver: File '%s': %s (%d)", request_path.c_str(), strerror(errno), errno);
+						  return;
+					  }
+					  request_path += "/index.html";
+					  full_path = doc_root_ + request_path;
+					  is.open(full_path.c_str(), std::ios::in | std::ios::binary);
+					  if (!is.is_open())
+					  {
+						  rep = reply::stock_reply(reply::not_found);
+						  _log.Log(LOG_ERROR, "Webserver: File '%s': %s (%d)", request_path.c_str(), strerror(errno), errno);
+						  return;
+					  }
+					  extension = "html";
+				  }
+			  }
+			  if (!bHaveLoadedgzip)
+			  {
+				  // Fill out the reply to be sent to the client.
+				  rep.status = reply::ok;
+				  rep.content.append((std::istreambuf_iterator<char>(is)),
+					  (std::istreambuf_iterator<char>()));
+				  // set delay_status to true, because it can possibly have
+				  // include codes in it.
+				  mInfo.delay_status = true;
+				  if (not_modified(full_path, req, rep, mInfo)) {
+					  return;
+				  }
 			  }
 		  }
 	  }
@@ -337,6 +356,7 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 	  if (m_uf==NULL)
 	  {
 		  rep = reply::stock_reply(reply::not_found);
+		  _log.Log(LOG_ERROR, "Webserver: File '%s': %s (%d)", request_path.c_str(), strerror(errno), errno);
 		  return;
 	  }
 
@@ -350,6 +370,7 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 			  if (myWebem && do_extract_currentfile(m_uf,myWebem->m_zippassword.c_str(),rep.content)!=UNZ_OK)
 			  {
 				  rep = reply::stock_reply(reply::not_found);
+				  _log.Log(LOG_ERROR, "Webserver: File '%s': %s (%d)", request_path.c_str(), strerror(errno), errno);
 				  return;
 			  }
 			  bHaveLoadedgzip=true;
@@ -360,11 +381,13 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 		  if (unzLocateFile(m_uf,request_path.c_str(),0)!=UNZ_OK)
 		  {
 			  rep = reply::stock_reply(reply::not_found);
+			  _log.Log(LOG_ERROR, "Webserver: File '%s': %s (%d)", request_path.c_str(), strerror(errno), errno);
 			  return;
 		  }
 		  if (myWebem && do_extract_currentfile(m_uf,myWebem->m_zippassword.c_str(),rep.content)!=UNZ_OK)
 		  {
 			  rep = reply::stock_reply(reply::not_found);
+			  _log.Log(LOG_ERROR, "Webserver: File '%s': %s (%d)", request_path.c_str(), strerror(errno), errno);
 			  return;
 		  }
 	  }
@@ -376,11 +399,6 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
   reply::add_header(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
   reply::add_header(&rep, "Content-Type", mime_types::extension_to_type(extension));
   reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
-  if (req.keep_alive)
-  {
-  	reply::add_header(&rep, "Connection", "Keep-Alive");
-  	reply::add_header(&rep, "Keep-Alive", "max=20, timeout=10");
-  }
   if (bHaveLoadedgzip)
   {
 	reply::add_header(&rep, "Content-Encoding", "gzip");

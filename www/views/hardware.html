@@ -24,7 +24,7 @@
 				  <div class="sk-circle10 sk-circle"></div>
 				  <div class="sk-circle11 sk-circle"></div>
 				  <div class="sk-circle12 sk-circle"></div>
-				</div>				
+				</div>
 				<br>
 				<button type="button" onclick="OnZWaveAbortInclude()" id="izwd_abort" class="btn btn-info">Abort</button><br>
 			</div>
@@ -32,7 +32,7 @@
 				Included node: <b>{{ozw_node_id}}</b><br>
 				<b>{{ozw_node_desc}}</b><br>
 				<br>
-				<button type="button" onclick="OnZWaveCloseInclude()" class="btn btn-default" data-dismiss="modal">Close</button> 
+				<button type="button" onclick="OnZWaveCloseInclude()" class="btn btn-default" data-dismiss="modal">Close</button>
 			</div>
 			</font>
 			</center>
@@ -67,14 +67,14 @@
 				  <div class="sk-circle10 sk-circle"></div>
 				  <div class="sk-circle11 sk-circle"></div>
 				  <div class="sk-circle12 sk-circle"></div>
-				</div>				
+				</div>
 				<br>
 				<button type="button" onclick="OnZWaveAbortExclude()" id="ezwd_abort" class="btn btn-info">Abort</button><br>
 			</div>
 			<div id="ezwd_result" style="display:none;">
 				Excluded node: <b>{{ozw_node_id}}</b><br>
 				<br>
-				<button type="button" onclick="OnZWaveCloseExclude()" class="btn btn-default" data-dismiss="modal">Close</button> 
+				<button type="button" onclick="OnZWaveCloseExclude()" class="btn btn-default" data-dismiss="modal">Close</button>
 			</div>
 			</font>
 			</center>
@@ -149,24 +149,24 @@
 						<span class="caret"></span>
 					  </button>
 					  <ul class="dropdown-menu pull-right" role="menu" aria-labelledby="dropdownMenu1">
-						<li ><a href="javascript:ZWaveIncludeNode(false);" ><span data-i18n="Include Node" class="btn btn-primary">Include Node</span></a></li>
-						<li ><a href="javascript:ZWaveIncludeNode(true);" ><span data-i18n="Include Node Secure" class="btn btn-primary">Include Node Secure</span></a></li>
-						<li><a href="javascript:ZWaveExcludeNode();" ><span data-i18n="Exclude Node" class="btn btn-primary">Exclude Node</span></a></li>
-						<li><a href="javascript:ZWaveHealNetwork();" ><span data-i18n="Heal network" class="btn btn-warning">Heal network</span></a></li>
+						<li ><a href="javascript:ZWaveIncludeNode(false);" ><button type="button" data-i18n="Include Node" class="btn btn-primary">Include Node</button></a></li>
+						<li ><a href="javascript:ZWaveIncludeNode(true);" ><button type="button" data-i18n="Include Node Secure" class="btn btn-primary">Include Node Secure</button></a></li>
+						<li><a href="javascript:ZWaveExcludeNode();" ><button type="button" data-i18n="Exclude Node" class="btn btn-primary">Exclude Node</button></a></li>
+						<li><a href="javascript:ZWaveHealNetwork();" ><button type="button" data-i18n="Heal network" class="btn btn-warning">Heal network</button></a></li>
 						<li role="presentation" class="divider"></li>
-						<li><a href="javascript:ZWaveTopology();" ><span data-i18n="Groups & Network" class="btn btn-success">Groups & Network</span></a></li>
+						<li><a href="javascript:ZWaveTopology();" ><button type="button" data-i18n="Groups & Network" class="btn btn-success">Groups & Network</button></a></li>
 						<li role="presentation" class="divider"></li>
-						<li><a href="javascript:ZWaveSoftResetNode();" ><span data-i18n="Soft reset controller" class="btn btn-danger">Soft reset controller</span></a></li>
-						<li><a href="javascript:ZWaveHardResetNode();" ><span data-i18n="Hard reset controller" class="btn btn-danger">Hard reset controller</span></a></li>
-						<li><a href="javascript:ZWaveReceiveConfiguration();" ><span data-i18n="Receive configuration from other controller" class="btn btn-primary">Receive configuration from other controller</span></a></li>
-						<li><a href="javascript:ZWaveSendConfiguration();" ><span data-i18n="Send configuration to other controller" class="btn btn-primary">Send configuration to other controller</span></a></li>
-						<li><a href="javascript:ZWaveTransferPrimaryRole();" ><span data-i18n="Transfer primary role" class="btn btn-danger">Transfer primary role</span></a></li>
+						<li><a href="javascript:ZWaveSoftResetNode();" ><button type="button" data-i18n="Soft reset controller" class="btn btn-danger">Soft reset controller</button></a></li>
+						<li><a href="javascript:ZWaveHardResetNode();" ><button type="button" data-i18n="Hard reset controller" class="btn btn-danger">Hard reset controller</button></a></li>
+						<li><a href="javascript:ZWaveReceiveConfiguration();" ><button type="button" data-i18n="Receive configuration from other controller" class="btn btn-primary">Receive configuration from other controller</button></a></li>
+						<li><a href="javascript:ZWaveSendConfiguration();" ><button type="button" data-i18n="Send configuration to other controller" class="btn btn-primary">Send configuration to other controller</button></a></li>
+						<li><a href="javascript:ZWaveTransferPrimaryRole();" ><button type="button" data-i18n="Transfer primary role" class="btn btn-danger">Transfer primary role</button></a></li>
 						<li id="usercodegrp" role="presentation" class="divider"></li>
-						<li id="usercodegrp"><a href="javascript:ZWaveStartUserCodeEnrollment();" ><span data-i18n="Start User Code Enrollment" class="btn btn-primary">Start User Code Enrollment</span></a></li>
-						<li id="usercodegrp"><a id="zwavecodemanagement" href="javascript:ZWaveUserCodeManagement();" ><span data-i18n="User Code Management" class="btn btn-primary">User Code Management</span></a></li>
+						<li id="usercodegrp"><a href="javascript:ZWaveStartUserCodeEnrollment();" ><button type="button" data-i18n="Start User Code Enrollment" class="btn btn-primary">Start User Code Enrollment</button></a></li>
+						<li id="usercodegrp"><a id="zwavecodemanagement" href="javascript:ZWaveUserCodeManagement();" ><button type="button" data-i18n="User Code Management" class="btn btn-primary">User Code Management</button></a></li>
 						<li role="presentation" class="divider"></li>
-						<li><a id="zwave_configdownload" href="#" ><span data-i18n="Download Configuration File" class="btn btn-primary">Download Configuration File</span></a></li>
-						<li><a id="zwave_controlpabel" href="/ozwcp/cp.html" ><span data-i18n="Control Panel" class="btn btn-primary">Control Panel</span></a></li>
+						<li><a id="zwave_configdownload" href="#" ><button type="button" data-i18n="Download Configuration File" class="btn btn-primary">Download Configuration File</button></a></li>
+						<li><a id="zwave_controlpabel" href="/ozwcp/cp.html" ><button type="button" data-i18n="Control Panel" class="btn btn-primary">Control Panel</button></a></li>
 					  </ul>
 					</div>
 				</td>
@@ -179,6 +179,9 @@
                 <th width="80" align="center" data-i18n="NodeID">NodeID</th>
                 <th width="150" align="left" data-i18n="Name">Name</th>
                 <th align="left" data-i18n="Description">Description</th>
+                <th width="120" align="center" data-i18n="Manufacturer">Manufacturer</th>
+                <th width="80" align="center" data-i18n="ID">ID</th>
+                <th width="80" align="center" data-i18n="Type">Type</th>
                 <th width="150" align="left" data-i18n="Last Seen">Last Seen</th>
                 <th width="50" align="left" data-i18n="EnablePolling">Enable Polling</th>
                 <th width="50" align="left" data-i18n="Status">Status</th>
@@ -299,6 +302,7 @@
 				<th align="80" data-i18n="Name">Name</th>
 				<th data-i18n="Values">Values</th>
 				<th width="80" align="left" data-i18n="Ack">Ack</th>
+				<th width="100" align="left" data-i18n="Ack Timeout">Ack Timeout</th>
 				<th width="160" align="left" data-i18n="Last Seen">Last Seen</th>
 			</tr>
 		</thead>
@@ -318,8 +322,12 @@
 	<div id="trChildSettings">
 		<table id="mchildsettings" border="0" cellpadding="0" cellspacing="0" width="100%">
 			<tr>
-				<td align="right" style="width:80px"><label for="Ack"><span data-i18n="Ack"></span>:</label></td>
+				<td align="right" style="width:120px"><label for="Ack"><span data-i18n="Ack"></span>:</label></td>
 				<td><input type="checkbox" id="Ack" /></td>
+			</tr>
+			<tr>
+				<td align="right"><label for="Ack"><span data-i18n="Ack Timeout"></span>:</label></td>
+				<td><input type="text" id="AckTimeout" style="width: 100px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;(ms)</td>
 			</tr>
 		</table>
 	</div>
@@ -516,7 +524,7 @@
             <td><input type="text" id="nodeip" style="width: 350px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
         </tr>
         <tr>
-            <td align="right" style="width:110px"><label for="nodetimeout"><span data-i18n="Port">Port</span>:</label></td>
+            <td align="right" style="width:110px"><label for="nodeport"><span data-i18n="Port">Port</span>:</label></td>
             <td><input type="text" id="nodeport" style="width: 70px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
         </tr>
         <tr>
@@ -592,7 +600,7 @@
             <td><input type="text" id="nodeip" style="width: 350px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
         </tr>
         <tr>
-            <td align="right" style="width:110px"><label for="nodetimeout"><span data-i18n="Port">Port</span>:</label></td>
+            <td align="right" style="width:110px"><label for="nodeport"><span data-i18n="Port">Port</span>:</label></td>
             <td><input type="text" id="nodeport" style="width: 70px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
         </tr>
         <tr>
@@ -775,27 +783,6 @@
 	<br>
 	<input type="hidden" id="idx" name="idx" value="-1">
 	<button class="btn btn-danger" id="submitbuttonrego">Set Mode</button>
-</form>
-</center>
-</div>
-<div id="p1usbeedit" style="display:none;">
-<center>
-<form id="p1usbtype">
-	<br>
-	<h2><span data-i18n="Hardware">Hardware</span>:</h2>
-	<table>
-		<tr>
-			<td align="right" style="width:60px"><label><span data-i18n="Baudrate">Baudrate</span>: </label></td>
-			<td><select id="P1Baudrate" name="P1Baudrate" style="width:100px" class="combobox ui-corner-all">
-				<option value="0">9600</option>
-				<option value="1">115200</option>
-			</select></td>
-		</tr>
-	</table>
-	<br>
-	<br>
-	<input type="hidden" id="idx" name="idx" value="-1">
-	<button class="btn btn-danger" id="submitbuttonp1usb">Set Mode</button>
 </form>
 </center>
 </div>
@@ -1010,6 +997,23 @@
 				</td>
 			</tr>
 		</table>
+		<div id="div1wire">
+			<br>
+			<table class="display" id="hardwareparams1wire" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="OWFS Path">OWFS Path</span>:</label></td>
+					<td><input type="text" id="owfspath" style="width: 170px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="/mnt/1wire" /></td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="Sensor Poll Period">Sensor Poll Period</span>:</label></td>
+					<td><input type="text" id="OneWireSensorPollPeriod" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="300000" />(<span data-i18n="milliseconds"></span>)</td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="Switch Poll Period">Switch Poll Period</span>:</label></td>
+					<td><input type="text" id="OneWireSwitchPollPeriod" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="100" />(<span data-i18n="milliseconds"></span>)</td>
+				</tr>
+			</table>
+		</div>
 		<div id="divserial">
 			<br>
 			<table class="display" id="hardwareparamsserial" border="0" cellpadding="0" cellspacing="20">
@@ -1030,6 +1034,19 @@
       </tr>
       </table>
     </div>
+		<div id="divbaudratep1">
+			<table class="display" id="hardwareparamsbaudratep1" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label id="lblbaudratep1" for="name"><span data-i18n="Baudrate">Baudrate</span>: </label></td>
+					<td>
+						<select id="combobaudratep1" style="width:210px" class="combobox ui-corner-all">
+						<option value="0">9600</option>
+						<option value="1">115200</option>
+						</select>
+					</td>
+				</tr>
+			</table>
+		</div>
 		<div id="divremote">
 			<br>
 			<table class="display" id="hardwareparamsremote" border="0" cellpadding="0" cellspacing="20">
@@ -1040,6 +1057,23 @@
 				<tr>
 					<td align="right" style="width:110px"><label id="lblremoteport" for="name"><span data-i18n="Port"></span>:</label></td>
 					<td><input type="text" id="tcpport" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+			</table>
+		</div>
+		<div id="divhttppoller">
+			<br>
+			<table class="display" id="hardwareparamshttp" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="URL"></span>:</label></td>
+					<td><input type="text" id="url" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="Command"></span>:</label></td>
+					<td><input type="text" id="script" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="Refresh"></span>:</label></td>
+					<td><input type="text" id="refresh" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 				</tr>
 			</table>
 		</div>
@@ -1150,7 +1184,7 @@
 						<b>Combined</b> - Use both <b>Flat</b> and <b>Hierarchical</b> topic schemes.<br />
 						<b>None</b> - disable outgoing messages.<br />
 						<br />
-						Note that <b>Hierarchical</b> only reports sensor updates for sensors that are placed on a floorplan/plan. 
+						Note that <b>Hierarchical</b> only reports sensor updates for sensors that are placed on a floorplan/plan.
 					</td>
 				</tr>
 				<tr>
@@ -1158,7 +1192,7 @@
 					<td><input type="text" id="filename" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 				</tr>
 			</table>
-		</div>		
+		</div>
 		<div>
 			<br>
 			<table border="0" cellpadding="0" cellspacing="14">
@@ -1187,6 +1221,7 @@
 					<option value="11" data-i18n="Barometer">Barometer</option>
 					<option value="113" data-i18n="Counter">Counter</option>
 					<option value="14" data-i18n="Counter Incremental">Counter Incremental</option>
+					<option value="1004" data-i18n="Custom Sensor">Custom Sensor</option>
 					<option value="13" data-i18n="Distance">Distance</option>
 					<option value="18" data-i18n="Electric (Instant+Counter)">Electric (Instant+Counter)</option>
 					<option value="3" data-i18n="Gas">Gas</option>
@@ -1199,6 +1234,7 @@
 					<option value="85" data-i18n="Rain">Rain</option>
 					<option value="241" data-i18n="RGB Switch">RGB Switch</option>
 					<option value="1003" data-i18n="RGBW Switch">RGBW Switch</option>
+					<option value="1002" data-i18n="Selector Switch">Selector Switch</option>
 					<option value="15" data-i18n="Soil Moisture">Soil Moisture</option>
 					<option value="20" data-i18n="Solar Radiation">Solar Radiation</option>
 					<option value="10" data-i18n="Sound Level">Sound Level</option>
@@ -1215,9 +1251,12 @@
 					<option value="1000" data-i18n="Waterflow">Waterflow</option>
 					<option value="86" data-i18n="Wind">Wind</option>
 					<option value="1001" data-i18n="Wind+Temp+Chill">Wind+Temp+Chill</option>
-					<option value="1002" data-i18n="Selector Switch">Selector Switch</option>
 				</select>
 				</td>
+			</tr>
+			<tr id="vsensoraxis">
+				<td align="right" style="width:200px"><label for="sensoraxis"><span data-i18n="Axis Label"></span>:</label></td>
+				<td><input type="text" id="sensoraxis" style="width: 240px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 			</tr>
 			</table>
 		</form>
@@ -1230,5 +1269,11 @@
 					<option value="70" data-i18n="Zone">Zone</option>
 					<option value="71" data-i18n="Hot Water">Hot Water</option>
 				</select>
+		</form>
+</div>
+<div id="dialog-createrflinkdevice" title="Manual Create RFLink devices" style="display:none;">
+		<form>
+				<label for="sensorname"><span data-i18n="Command"></span>:</label>
+				<input type="text" id="sensorname" style="width: 240px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
 		</form>
 </div>

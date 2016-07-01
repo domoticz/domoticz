@@ -56,6 +56,7 @@ namespace http {
 			std::string idx = request::findValue(&req, "idx");
 			std::string ssensorname = request::findValue(&req, "sensorname");
 			std::string ssensortype = request::findValue(&req, "sensortype");
+			std::string soptions = request::findValue(&req, "sensoroptions");
 			if ((idx == "") || (ssensortype.empty()) || (ssensorname.empty()))
 				return;
 
@@ -251,21 +252,21 @@ namespace http {
 				{
 					std::string rID = std::string(ID);
 					padLeft(rID, 8, '0');
-					unsigned long long devidx = DeviceRowIdx=m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeLimitlessLights, sTypeLimitlessRGB, 12, 255, 1, devname);
-					if (devidx != -1)
+					DeviceRowIdx=m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeLimitlessLights, sTypeLimitlessRGB, 12, 255, 1, devname);
+					if (DeviceRowIdx != -1)
 					{
 						//Set switch type to dimmer
-						m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (ID==%llu)", STYPE_Dimmer, devidx);
+						m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (ID==%llu)", STYPE_Dimmer, DeviceRowIdx);
 					}
 					bCreated = true;
 				}
 				break;
 			case pTypeTEMP:
-				DeviceRowIdx=m_sql.UpdateValue(HwdID, ID, 1, pTypeTEMP, sTypeTEMP1, 12, 255, 0, "0.0", devname);
+				DeviceRowIdx=m_sql.UpdateValue(HwdID, ID, 1, pTypeTEMP, sTypeTEMP5, 12, 255, 0, "0.0", devname);
 				bCreated = true;
 				break;
 			case pTypeHUM:
-				DeviceRowIdx=m_sql.UpdateValue(HwdID, ID, 1, pTypeHUM, sTypeTEMP1, 12, 255, 50, "1", devname);
+				DeviceRowIdx=m_sql.UpdateValue(HwdID, ID, 1, pTypeHUM, sTypeHUM1, 12, 255, 50, "1", devname);
 				bCreated = true;
 				break;
 			case pTypeTEMP_HUM:
@@ -330,13 +331,13 @@ namespace http {
 					unsigned char ID3 = (unsigned char)((nid & 0x0000FF00) >> 8);
 					unsigned char ID4 = (unsigned char)((nid & 0x000000FF));
 					sprintf(ID, "%02X%02X%02X%02X", ID1, ID2, ID3, ID4);
-					unsigned long long devidx = DeviceRowIdx=m_sql.UpdateValue(HwdID, ID, 1, pTypeGeneralSwitch, sSwitchTypeSelector, 12, 255, 0, "0", devname);
-					if (devidx != -1)
+					DeviceRowIdx=m_sql.UpdateValue(HwdID, ID, 1, pTypeGeneralSwitch, sSwitchTypeSelector, 12, 255, 0, "0", devname);
+					if (DeviceRowIdx != -1)
 					{
 						//Set switch type to selector
-						m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (ID==%llu)", STYPE_Selector, devidx);
+						m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (ID==%llu)", STYPE_Selector, DeviceRowIdx);
 						//Set default device options
-						m_sql.SetDeviceOptions(devidx, m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Level1|Level2|Level3", false));
+						m_sql.SetDeviceOptions(DeviceRowIdx, m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Level1|Level2|Level3", false));
 					}
 					bCreated = true;
 				}
@@ -346,11 +347,26 @@ namespace http {
 				{
 					std::string rID = std::string(ID);
 					padLeft(rID, 8, '0');
-					unsigned long long devidx = DeviceRowIdx = m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeLimitlessLights, sTypeLimitlessRGBW, 12, 255, 1, devname);
-					if (devidx != -1)
+					DeviceRowIdx = m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeLimitlessLights, sTypeLimitlessRGBW, 12, 255, 1, devname);
+					if (DeviceRowIdx != -1)
 					{
 						//Set switch type to dimmer
-						m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (ID==%llu)", STYPE_Dimmer, devidx);
+						m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (ID==%llu)", STYPE_Dimmer, DeviceRowIdx);
+					}
+					bCreated = true;
+				}
+				break;
+			case 1004:
+				//Custom
+				if (!soptions.empty())
+				{
+					std::string rID = std::string(ID);
+					padLeft(rID, 8, '0');
+					DeviceRowIdx = m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeCustom, 12, 255, 0, "0.0", devname);
+					if (DeviceRowIdx != -1)
+					{
+						//Set the Label
+						m_sql.safe_query("UPDATE DeviceStatus SET Options='%q' WHERE (ID==%llu)", soptions.c_str(), DeviceRowIdx);
 					}
 					bCreated = true;
 				}
@@ -367,6 +383,7 @@ namespace http {
 			if (DeviceRowIdx != -1)
 			{
 				m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', Used=1 WHERE (ID==%llu)", ssensorname.c_str(), DeviceRowIdx);
+				m_mainworker.m_eventsystem.GetCurrentStates();
 			}
 		}
 	}

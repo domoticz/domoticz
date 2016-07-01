@@ -213,8 +213,8 @@ namespace http {
 			_eAuthenticationMethod m_authmethod;
 			//Whitelist url strings that bypass authentication checks (not used by basic-auth authentication)
 			std::vector < std::string > myWhitelistURLs;
-		private:
 			server_settings m_settings;
+		private:
 			/// store map between include codes and application functions
 			std::map < std::string, webem_include_function > myIncludes;
 			/// store map between include codes and application functions returning UTF-16 strings

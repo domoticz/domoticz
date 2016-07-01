@@ -7,7 +7,7 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
-
+#pragma once
 #ifndef HTTP_CONNECTION_HPP
 #define HTTP_CONNECTION_HPP
 
@@ -58,11 +58,9 @@ public:
   /// Stop all asynchronous operations associated with the connection.
   void stop();
 
-  /// Wait for all asynchronous operations to abort.
-  void stop_gracefully();
-
-  /// Timer handler
+  /// Timer handlers
   void handle_read_timeout(const boost::system::error_code& error);
+  void handle_abandoned_timeout(const boost::system::error_code& error);
 
 private:
   /// Handle completion of a read operation.
@@ -79,13 +77,18 @@ private:
 	/// Reset read timeout timer
 	void reset_read_timeout();
 
-	/// Check if the connection is about to stop
-	bool is_stopping();
+	/// Schedule abandoned timeout timer
+	void set_abandoned_timeout();
+	/// Stop abandoned timeout timer
+	void cancel_abandoned_timeout();
+	/// Reschedule abandoned timeout timer
+	void reset_abandoned_timeout();
 
   /// Socket for the (PLAIN) connection.
   boost::asio::ip::tcp::socket *socket_;
   //Host EndPoint
-  std::string host_endpoint_;
+  std::string host_endpoint_address_;
+  std::string host_endpoint_port_;
 
   /// If this is a keep-alive connection or not
   bool keepalive_;
@@ -96,7 +99,12 @@ private:
   /// Read timeout timer
   boost::asio::deadline_timer read_timer_;
 
-    /// The manager for this connection.
+  /// Abandoned connection timeout (in seconds)
+  long default_abandoned_timeout_;
+  /// Abandoned timeout timer
+  boost::asio::deadline_timer abandoned_timer_;
+
+  /// The manager for this connection.
   connection_manager& connection_manager_;
 
   /// The handler used to process the incoming request.
@@ -112,10 +120,18 @@ private:
   boost::asio::streambuf _buf;
 
   /// The status of the connection (can be initializing, handshaking, waiting, reading, writing)
-  std::string status;
+  enum connection_status {
+    INITIALIZING,
+    WAITING_HANDSHAKE,
+	ENDING_HANDSHAKE,
+    WAITING_READ,
+	READING,
+    WAITING_WRITE,
+	ENDING_WRITE
+  } status_;
 
-  /// Ask the connection to stop as soon as possible
-  bool stop_required;
+  /// The default number of request to handle with the connection when keep-alive is enabled
+  unsigned int default_max_requests_;
 
   // secure connection members below
   // secure connection yes/no

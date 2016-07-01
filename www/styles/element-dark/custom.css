@@ -20,11 +20,6 @@ body {
 
 #status, #lastupdate, body table#itemtable tr td:first-child + td + td + td + td + td{color: #5e5d5d;}
 
-#status:before {
- content: "Status at this moment:  " !important;
- font-weight: normal;
-}
-
 body table#itemtablesmall tr td:first-child + td + td + td + td:before, 
 body table#itemtablesmalldoubleicon tr td:first-child + td + td + td + td + td:before,
 body table#itemtable tr td:first-child + td + td + td + td:before ,

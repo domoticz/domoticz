@@ -566,24 +566,29 @@ define(['app'], function (app) {
 			}
 			var bShowLevel=false;
 			var bIsLED=false;
+			var dimmerLevels = "none";
 			$.each($.LightsAndSwitches, function(i,item){
 				if (item.idx==DeviceIdx) {
 					bShowLevel=item.isdimmer;
 					bIsLED=(item.SubType.indexOf("RGB") >= 0);
+					dimmerLevels = item.DimmerLevels;
 				}
 			});
 			
+			$("#scenecontent #LedColor").hide();
+			$("#scenecontent #LevelDiv").hide();
 			if (bIsLED) {
 				$("#scenecontent #LedColor").show();
-				$("#scenecontent #LevelDiv").hide();
-			}
-			else {
-				$("#scenecontent #LedColor").hide();
+			} else {
 				if (bShowLevel==true) {
-					$("#scenecontent #LevelDiv").show();
-				}
-				else {
-					$("#scenecontent #LevelDiv").hide();
+					var levelDiv$ = $("#scenecontent #LevelDiv");
+					levelDiv$.find("option").show().end().show();
+					if (dimmerLevels !== "all") {
+						levelDiv$.find("option").hide();
+						$.each(dimmerLevels.split(','), function(i, level) {
+							levelDiv$.find("option[value=\"" + level + "\"]").show();
+						});
+					}
 				}
 			}
 		}
@@ -718,7 +723,8 @@ define(['app'], function (app) {
 									idx: item.idx,
 									name: item.Name,
 									SubType: item.SubType,
-									isdimmer: item.IsDimmer
+									isdimmer: item.IsDimmer,
+									DimmerLevels: item.DimmerLevels
 								 }
 							);
 				});
@@ -1074,14 +1080,14 @@ define(['app'], function (app) {
 						DayStrOrig="Monthly on Day " + item.MDay;
 					}
 					else if (item.Type==11) {
-						var Weekday = Math.log2(parseInt(item.Days));
+						var Weekday = Math.log(parseInt(item.Days)) / Math.log(2);
 						DayStrOrig="Monthly on " + $.myglobals.OccurenceStr[item.Occurence-1] + " " + $.myglobals.WeekdayStr[Weekday];
 					}
 					else if (item.Type==12) {
 						DayStrOrig="Yearly on " + item.MDay + " " + $.myglobals.MonthStr[item.Month-1];
 					}
 					else if (item.Type==13) {
-						var Weekday = Math.log2(parseInt(item.Days));
+						var Weekday = Math.log(parseInt(item.Days)) / Math.log(2);
 						DayStrOrig="Yearly on " + $.myglobals.OccurenceStr[item.Occurence-1] + " " + $.myglobals.WeekdayStr[Weekday] + " in " + $.myglobals.MonthStr[item.Month-1];
 					}
 
@@ -1122,7 +1128,7 @@ define(['app'], function (app) {
 						"7": item.Month,
 						"8": item.MDay,
 						"9": item.Occurence,
-						"10": Math.log2(parseInt(item.Days))
+						"10": Math.log(parseInt(item.Days)) / Math.log(2)
 					} );
 				});
 			  }

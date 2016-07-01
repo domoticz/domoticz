@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Zipato: PH-PSE02.eu Indoor Siren -->
+<Product xmlns="http://code.google.com/p/open-zwave/">
+	<!-- Configuration Parameters -->
+	<CommandClass id="112">
+		<Value type="list" index="7" genre="config" label="Customer Function" size="1" value="0">
+			<Help>
+				Notification Type,
+				0: Using Notification Report.
+				1: Using Sensor Binary Report.
+			</Help>
+			<Item label="Using Notification Report" value="0" />
+			<Item label="Using Sensor Binary Report" value="1" />
+		</Value>
+		<Value type="list" index="29" genre="config" label="Disable Alarm" size="1" value="0">
+			<Help>
+				Disable the alarm function.
+				1: Disable Alarm,
+				0: Enable Alarm.
+				Caution: After the power up, this configuration is always 0.
+			</Help>
+			<Item label="Enable Alarm" value="0" />
+			<Item label="Disable Alarm" value="1" />
+		</Value>
+		<Value type="byte" index="31" genre="config" label="Basic Set Off Level" min="0" max="127" value="6">
+			<Help>
+				Play alarm sound duration,
+				1 tick is 30 seconds. Default is 3 minutes, maximum is 63.5 minutes.
+				0 means never auto stop.
+			</Help>
+		</Value>
+	</CommandClass>
+	<!-- Basic set as report -->
+	<CommandClass id="32" setasreport="true"/>
+	<!-- Different Sounds by using COMMAND_CLASS_SWITCH_MULTILEVEL-->
+	<CommandClass id="38" action="add" getsupported="false" create_vars="false">
+		<Instance index="1" />
+		<Value type="list" genre="user" instance="1" index="0" label="Sounds" min="0" max="255" value="0" size="1" write_only="true">
+			<Help>
+				The device supports using SWITCH_MULTILEVEL SET to play the sound. The sound ID is defined as follows:
+				1 or 255: Emergency sound.
+				2: Fire alert.
+				3: Ambulance sound.
+				4: Police car sound.
+				5: Door chime.
+				6 to 99: Beep Beep.
+				0: means stop the sound.
+			</Help>
+            <Item label="Stop" value="0" />
+            <Item label="Emergency" value="1" />
+            <Item label="Fire" value="2" />
+            <Item label="Ambulance" value="3" />
+            <Item label="Police" value="4" />
+            <Item label="Door chime" value="5" />
+            <Item label="Beep Beep" value="6" />
+		</Value>
+	</CommandClass>
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="1">
+			<Group index="1" max_associations="8" label="Lifeline"/>
+		</Associations>
+	</CommandClass>
+</Product>

@@ -2,6 +2,7 @@
 
 #include "DomoticzHardware.h"
 #include <iostream>
+#include "hardwaretypes.h"
 
 class CNefitEasy : public CDomoticzHardwareBase
 {
@@ -11,6 +12,15 @@ public:
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 	void SetSetpoint(const int idx, const float temp);
 private:
+	std::string m_AccessKey;
+	std::string m_SerialNumber;
+	std::string m_Password;
+
+	std::string m_ConnectionPassword;
+	std::string m_jid;
+	std::string m_from;
+	std::string m_to;
+
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
 
@@ -24,7 +34,22 @@ private:
 	bool StartHardware();
 	bool StopHardware();
 	void Do_Work();
+
 	bool GetStatusDetails();
-	bool GetPressureDetails();
+	bool GetOutdoorTemp();
+	bool GetFlowTemp();
+	bool GetPressure();
+	bool GetDisplayCode();
+	bool GetGasUsage();
+
+	uint32_t m_lastgasusage;
+	P1Gas	m_p1gas;
+
+	void SetUserMode(bool bSetUserModeClock);
+
+	//XMPP stuff
+	bool ConnectToXMPP(const std::string &IPAddress, const int PortNumber);
+	void Logout();
+	bool m_bDoLogin;
 };
 

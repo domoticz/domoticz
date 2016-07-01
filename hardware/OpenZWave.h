@@ -96,7 +96,7 @@ public:
 	bool GetNodeUserCodes(const unsigned int homeID, const int nodeID, Json::Value &root);
 	bool RemoveUserCode(const unsigned int homeID, const int nodeID, const int codeIndex);
 
-	std::string GetSupportedThermostatModes(const unsigned long ID);
+	std::vector<std::string> GetSupportedThermostatModes(const unsigned long ID);
 	std::string GetSupportedThermostatFanModes(const unsigned long ID);
 
 	//Controller Commands
@@ -174,6 +174,7 @@ private:
 	bool m_bInUserCodeEnrollmentMode;
 	bool m_bNightlyNetworkHeal;
 	bool m_bNeedSave;
+	bool m_bAeotecBlinkingMode;
 };
 
 #endif //WITH_OPENZWAVE

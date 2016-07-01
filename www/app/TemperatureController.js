@@ -105,7 +105,7 @@ define(['app'], function (app) {
 		}
 		EvoSetPointColor = function(item, sHeatMode, bkcolor){
 			if (typeof item.SetPoint != 'undefined') {
-				if(sHeatMode=="HeatingOff")//seems to be used whenever the heating is off
+			    if (sHeatMode == "HeatingOff" || item.SetPoint == 325.1)//seems to be used whenever the heating is off
 					bkcolor="#9b9b9b";
 				else if(item.SetPoint>=25)
 					bkcolor="#ff0302";
@@ -630,20 +630,42 @@ define(['app'], function (app) {
 							if (typeof item.Until != 'undefined')
 								tUntil=item.Until;
 							if (typeof item.SetPoint != 'undefined'){
-								bigtext+=' ('+item.SetPoint + '\u00B0 ' + $scope.config.TempSign + ')';
-								status+=', '+$.t('Set Point') + ': ' + item.SetPoint + '\u00B0 ' + $scope.config.TempSign;
-								setonclick='EditSetPoint(' + item.idx + ',\'' + item.Name + '\',\'' + item.Description + '\',' + item.SetPoint + ', \''+sHeatMode+'\', \''+tUntil+'\', \'ShowTemps\');';
+							    if (item.SetPoint != 325.1) {
+							        bigtext += ' (' + item.SetPoint + '\u00B0 ' + $scope.config.TempSign + ')';
+							        if (bHaveBefore == true) {
+							            status += ', ';
+							        }
+							        status += $.t('Set Point') + ': ' + item.SetPoint + '\u00B0 ' + $scope.config.TempSign;
+							    }
+							    else {
+							        bigtext += ' (Off)';
+							        if (bHaveBefore == true) {
+							            status += ', ';
+							        }
+							        status += $.t('Set Point') + ': Off';
+							    }
+							    setonclick = 'EditSetPoint(' + item.idx + ',\'' + item.Name + '\',\'' + item.Description + '\',' + item.SetPoint + ', \'' + sHeatMode + '\', \'' + tUntil + '\', \'ShowTemps\');';
+								bHaveBefore=true;
 							}
 							if (typeof item.State != 'undefined'){
 								bigtext+=' <img height="12" src="images/evohome/'+item.State+'.png" />'
-								status+=', '+$.t('State') + ': ' + item.State;
+								if (bHaveBefore==true) {
+									status+=', ';
+								}
+								status+=$.t('State') + ': ' + item.State;
 								setonclick='EditState(' + item.idx + ',\'' + item.Name + '\',\'' + item.Description + '\',\'' + item.State + '\', \''+sHeatMode+'\', \''+tUntil+'\', \'ShowTemps\');';
+								bHaveBefore=true;
 							}
 							if(sHeatMode!="Auto")
 								bigtext+=' <img height="15" src="images/evohome/'+sHeatMode+((item.SubType=="Hot Water")?"Inv":"")+'.png" />'
-							status+=', '+$.t('Mode') + ': ' + EvoDisplayTextMode(sHeatMode);
+							if (bHaveBefore==true) {
+								status+=', ';
+							}
+							status+=$.t('Mode') + ': ' + EvoDisplayTextMode(sHeatMode);
 							if (tUntil!=""){
-								status+=', '+$.t('Until') + ': ' + tUntil.replace(/T/,' ').replace(/\..+/, '');
+								var dtUntil = new Date(tUntil);
+								dtUntil = new Date(dtUntil.getTime() - dtUntil.getTimezoneOffset()*60000);
+								status+=', '+$.t('Until') + ': ' + dtUntil.toISOString().replace(/T/,' ').replace(/\..+/, '');
 							}
 							bHaveBefore=true;
 						}
@@ -698,6 +720,10 @@ define(['app'], function (app) {
 									nbackcolor="#DDDF2D";
 								}
 							}
+						}
+						if (status.substr(0,2)==", ") {
+							statusnew=status.substr(2);
+							status=statusnew;
 						}
 						//Evohome...
 						nbackcolor=EvoSetPointColor(item,sHeatMode,nbackcolor);
@@ -884,9 +910,14 @@ define(['app'], function (app) {
 						bigtext=item.Temp + '\u00B0 ' + $scope.config.TempSign;
 					}
 					if (item.SubType=="Zone" || item.SubType=="Hot Water") {
-						if (typeof item.SetPoint != 'undefined'){
-							bigtext+=' ('+item.SetPoint + '\u00B0 ' + $scope.config.TempSign + ')';
-						}
+					    if (typeof item.SetPoint != 'undefined') {
+					        if (item.SetPoint != 325.1) {
+					            bigtext += ' (' + item.SetPoint + '\u00B0 ' + $scope.config.TempSign + ')';
+					        }
+					        else {
+					            bigtext += ' (Off)';
+					        }
+					    }
 						if (typeof item.State != 'undefined')
 							bigtext+=' <img height="12" src="images/evohome/'+item.State+'.png" />'
 						if(sHeatMode!="Auto")
@@ -922,15 +953,30 @@ define(['app'], function (app) {
 							var bHaveBefore=false;
 							if (item.SubType=="Zone" || item.SubType=="Hot Water") {
 								if (typeof item.SetPoint != 'undefined'){
-									xhtm+=', '+$.t('Set Point') + ': ' + item.SetPoint + '\u00B0 ' + $scope.config.TempSign;
+								    if (item.SetPoint != 325.1) {
+								        xhtm += $.t('Set Point') + ': ' + item.SetPoint + '\u00B0 ' + $scope.config.TempSign;
+								    }
+								    else {
+								        xhtm += $.t('Set Point') + ': Off';
+								    }
+								    bHaveBefore = true;
 								}
 								if (typeof item.State != 'undefined'){
-									xhtm+=', '+$.t('State') + ': ' + item.State;
+									if (bHaveBefore==true) {
+										xhtm+=', ';
+									}
+									xhtm+=$.t('State') + ': ' + item.State;
+									bHaveBefore=true;
 								}
-								xhtm+=', '+$.t('Mode') + ': ' + EvoDisplayTextMode(sHeatMode);
+								if (bHaveBefore==true) {
+									xhtm+=', ';
+								}
+								xhtm+=$.t('Mode') + ': ' + EvoDisplayTextMode(sHeatMode);
 								if (typeof item.Until != 'undefined'){
-									tUntil=item.Until;
-									xhtm+=', '+$.t('Until') + ': ' + tUntil.replace(/T/,' ').replace(/\..+/, '');
+                                                                        tUntil=item.Until.replace(/Z/,'').replace(/\..+/, '')+'Z';
+									var dtUntil = new Date(tUntil);
+									dtUntil = new Date(dtUntil.getTime() - dtUntil.getTimezoneOffset()*60000);
+									xhtm+=', '+$.t('Until') + ': ' + dtUntil.toISOString().replace(/T/,' ').replace(/\..+/, '');
 								}
 								bHaveBefore=true;
 							}

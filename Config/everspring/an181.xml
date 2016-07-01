@@ -1,0 +1,45 @@
+<Product xmlns="http://code.google.com/p/open-zwave/">
+    <!-- Everspring - AN181 - Miniplug On/Off with meter function -->
+    <!-- Configuration Parameters -->
+    <CommandClass id="112">
+        <Value type="short" index="1" genre="config" label="Basic Set Command" units="" min="0" max="255" size="2" value="255">
+            <Help>
+	Set Basic Set Command value to be sent to group 2 when switch is turned on.
+
+	When the physical button on the mini-plug is used to turn OFF the switch the value "0" will always be sent to group 2,
+	however this is not the case when the switch is turned off remotely.
+	    </Help>
+        </Value>
+        <Value type="byte" index="2" genre="config" label="Delay" units="seconds" min="3" max="25" size="1" value="3">
+            <Help>
+                The delaying time to report to Group 1
+            </Help>
+        </Value>
+        <Value type="list" index="3" genre="config" label="Remember Last" units="" min="0" max="1" value="1">
+            <Help>
+                Remember the last status on plug
+            </Help>
+            <Item label="Do not remember" value="0"/>
+            <Item label="Remember" value="1"/>
+        </Value>
+        <Value type="short" index="4" genre="config" label="Wattage Auto Report" units="minutes" min="0" max="32767" size="2" value="1">
+            <Help>Set the interval for wattage auto report (0 = disabled)</Help>
+        </Value>
+        <Value type="short" index="5" genre="config" label="Energy Auto report" units="minutes" min="0" max="32767" size="2" value="60">
+            <Help>Set the interval for kWh auto report (0 = disabled)</Help>
+        </Value>
+        <Value type="short" index="6" genre="config" label="Value of Wattage surpassed" units="watts" min="0" max="2500" size="2" value="0">
+            <Help>Auto report is sent when load surpasses the set value of wattage (0 = disabled)</Help>
+        </Value>
+        <Value type="byte" index="7" genre="config" label="Change of Wattage surpassed" units="%" min="0" max="100" size="2" value="0">
+            <Help>Auto report is sent when the change of wattage surpasses the set percentage (0 = disabled)</Help>
+        </Value>
+    </CommandClass>
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="2">
+            <Group index="1" max_associations="1" label="Lifeline" />
+            <Group index="2" max_associations="4" label="On/Off control (Button on the mini-plug)" />
+        </Associations>
+    </CommandClass>
+</Product>

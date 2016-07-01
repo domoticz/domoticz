@@ -98,14 +98,8 @@ void cWebem::Stop() {
 		_log.Log(LOG_ERROR, "[web:%s] exception thrown while stopping session cleaner", GetPort().c_str());
 	}
 	// Stop Web server
-	if ((myServer != NULL) && !myServer->stopped()) {
-		myServer->stop(); // asynchronous stop
-		while(true) {
-			if (myServer->stopped()) {
-				break;
-			}
-			sleep_milliseconds(500);
-		}
+	if (myServer != NULL) {
+		myServer->stop();
 	}
 }
 
@@ -196,19 +190,19 @@ void cWebem::RegisterWhitelistURLString(const char* idname)
 bool cWebem::Include( std::string& reply )
 {
 	bool res = false;
-	int p = 0;
+	size_t p = 0;
 	while( 1 ) {
 		// find next request for generated text
 		p = reply.find("<!--#embed",p);
-		if( p == -1 ) {
+		if( p == std::string::npos ) {
 			break;
 		}
-		int q = reply.find("-->",p);
-		if( q == -1 )
+		size_t q = reply.find("-->",p);
+		if( q == std::string::npos )
 			break;
 		q += 3;
 
-		int reply_len = reply.length();
+		size_t reply_len = reply.length();
 
 		// code identifying text generator
 		std::string code = reply.substr( p+11, q-p-15 );
@@ -273,13 +267,13 @@ bool cWebem::IsAction(const request& req)
 {
 	// look for cWebem form action request
 	std::string uri = req.uri;
-	int q = uri.find(".webem");
-	if (q == -1)
+	size_t q = uri.find(".webem");
+	if (q == std::string::npos)
 		return false;
 	return true;
 }
-/**
 
+/**
 Do not call from application code,
 used by server to handle form submissions.
 
@@ -297,7 +291,7 @@ bool cWebem::CheckForAction(WebEmSession & session, request& req )
 	std::string uri = ExtractRequestPath(req.uri);
 	
 	// find function matching action code
-	int q = uri.find(".webem");
+	size_t q = uri.find(".webem");
 	std::string code = uri.substr(1,q-1);
 	std::map < std::string, webem_action_function >::iterator
 		pfun = myActions.find(  code );
@@ -402,16 +396,16 @@ bool cWebem::CheckForAction(WebEmSession & session, request& req )
 	std::string name;
 	std::string value;
 
-	int p = q;
+	size_t p = q;
 	int flag_done = 0;
 	while( ! flag_done ) {
 		q = uri.find("=",p);
-		if (q==-1)
+		if (q == std::string::npos)
 			return true;
 		name = uri.substr(p,q-p);
 		p = q + 1;
 		q = uri.find("&",p);
-		if( q != -1 )
+		if( q != std::string::npos )
 			value = uri.substr(p,q-p);
 		else {
 			value = uri.substr(p);
@@ -419,8 +413,8 @@ bool cWebem::CheckForAction(WebEmSession & session, request& req )
 		}
 		// the browser sends blanks as +
 		while( 1 ) {
-			int p = value.find("+");
-			if( p == -1 )
+			size_t p = value.find("+");
+			if( p == std::string::npos )
 				break;
 			value.replace( p, 1, " " );
 		}
@@ -481,27 +475,27 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& r
 	req.parameters.clear();
 
 	std::string request_path2 = req.uri; // we need the raw request string to parse the get-request
-	int paramPos=request_path2.find_first_of('?');
+	size_t paramPos=request_path2.find_first_of('?');
 	if (paramPos!=std::string::npos)
 	{
 		std::string params=request_path2.substr(paramPos+1);
 		std::string name;
 		std::string value;
 
-		int q=0;
-		int p = q;
+		size_t q=0;
+		size_t p = q;
 		int flag_done = 0;
 		std::string uri=params;
 		while( ! flag_done ) {
 			q = uri.find("=",p);
-			if (q==-1)
+			if (q == std::string::npos)
 			{
 				break;
 			}
 			name = uri.substr(p,q-p);
 			p = q + 1;
 			q = uri.find("&",p);
-			if( q != -1 )
+			if( q != std::string::npos)
 				value = uri.substr(p,q-p);
 			else {
 				value = uri.substr(p);
@@ -509,8 +503,8 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& r
 			}
 			// the browser sends blanks as +
 			while( 1 ) {
-				int p = value.find("+");
-				if( p == -1 )
+				size_t p = value.find("+");
+				if( p == std::string::npos)
 					break;
 				value.replace( p, 1, " " );
 			}
@@ -620,8 +614,8 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& r
 		}
 
 		std::string attachment;
-		int num = rep.headers.size();
-		for (int h = 0; h < num; h++) {
+		size_t num = rep.headers.size();
+		for (size_t h = 0; h < num; h++) {
 			if (boost::iequals(rep.headers[h].name, "Content-Disposition")) {
 				attachment = rep.headers[h].value.substr(rep.headers[h].value.find("=") + 1);
 				std::size_t last_dot_pos = attachment.find_last_of(".");
@@ -641,20 +635,12 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& r
 			reply::add_header(&rep, "Cache-Control", "no-cache");
 			reply::add_header(&rep, "Pragma", "no-cache");
 			reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
-			if (req.keep_alive) {
-				reply::add_header(&rep, "Connection", "Keep-Alive");
-				reply::add_header(&rep, "Keep-Alive", "max=20, timeout=10");
-			}
 		}
 		else
 		{
 			reply::add_header(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
 			reply::add_header(&rep, "Content-Type", strMimeType);
 			reply::add_header(&rep, "Cache-Control", "max-age=3600, public");
-			if (req.keep_alive) {
-				reply::add_header(&rep, "Connection", "Keep-Alive");
-				reply::add_header(&rep, "Keep-Alive", "max=20, timeout=10");
-			}
 		}
 		return true;
 	}
@@ -681,10 +667,6 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& r
 	reply::add_header(&rep, "Pragma", "no-cache");
 	reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
 
-	if (req.keep_alive) {
-		reply::add_header(&rep, "Connection", "Keep-Alive");
-		reply::add_header(&rep, "Keep-Alive", "max=20, timeout=10");
-	}
 	return true;
 }
 
@@ -714,7 +696,7 @@ void cWebem::SetWebRoot(const std::string &webRoot)
 std::string cWebem::ExtractRequestPath(const std::string& original_request_path)
 {
 	std::string request_path(original_request_path);
-	int paramPos = request_path.find_first_of('?');
+	size_t paramPos = request_path.find_first_of('?');
 	if (paramPos != std::string::npos)
 	{
 		request_path = request_path.substr(0, paramPos);
@@ -818,7 +800,7 @@ void cWebem::AddLocalNetworks(std::string network)
 	std::string mask=network;
 
 
-	int pos=network.find_first_of("*");
+	size_t pos=network.find_first_of("*");
 	if (pos>0)
 	{
 		stdreplace(inetwork,"*","0");
@@ -1010,7 +992,7 @@ int cWebemRequestHandler::parse_auth_header(const request& req, struct ah *ah)
 	{
 		// DN looks like: /C=Country/ST=State/L=City/O=Org/OU=OrganizationUnit/CN=username/emailAddress=user@mail.com
 		std::string dn = auth_header;
-		int spos, epos;
+		size_t spos, epos;
 
 		spos = dn.find("/CN=");
 		epos = dn.find("/", spos + 1);
@@ -1039,7 +1021,7 @@ int cWebemRequestHandler::parse_auth_header(const request& req, struct ah *ah)
 	else if (boost::icontains(auth_header, "Basic "))
 	{
 		std::string decoded = base64_decode(auth_header + 6);
-		int npos = decoded.find(':');
+		size_t npos = decoded.find(':');
 		if (npos == std::string::npos) {
 			return 0;
 		}
@@ -1062,8 +1044,8 @@ int cWebemRequestHandler::authorize(WebEmSession & session, const request& req, 
 
 	if (!parse_auth_header(req, &_ah))
 	{
-		int uPos=req.uri.find("username=");
-		int pPos=req.uri.find("password=");
+		size_t uPos=req.uri.find("username=");
+		size_t pPos=req.uri.find("password=");
 		if (
 			(uPos==std::string::npos)||
 			(pPos==std::string::npos)
@@ -1344,9 +1326,21 @@ bool cWebemRequestHandler::CompressWebOutput(const request& req, reply& rep)
 static void GetURICommandParameter(const std::string &uri, std::string &cmdparam)
 {
 	cmdparam = uri;
-	size_t ppos = uri.find("&param=");
-	if (ppos == std::string::npos)
+	size_t ppos1 = uri.find("&param=");
+	size_t ppos2 = uri.find("?param=");
+	if (
+		(ppos1 == std::string::npos) &&
+		(ppos2 == std::string::npos)
+		)
 		return;
+	size_t ppos = ppos1;
+	if (ppos == std::string::npos)
+		ppos = ppos2;
+	else
+	{
+		if ((ppos2 < ppos) && (ppos != std::string::npos))
+			ppos = ppos2;
+	}
 	cmdparam = uri.substr(ppos + 7);
 	ppos = cmdparam.find("&");
 	if (ppos != std::string::npos)
@@ -1382,7 +1376,7 @@ bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const req
 
 		// Parse session id and its expiration date
 		std::string scookie = cookie_header;
-		int fpos = scookie.find("SID=");
+		size_t fpos = scookie.find("SID=");
 		if (fpos != std::string::npos)
 		{
 			scookie = scookie.substr(fpos);
@@ -1393,8 +1387,8 @@ bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const req
 				scookie = scookie.substr(0, epos);
 			}
 		}
-		int upos = scookie.find("_", fpos);
-		int ppos = scookie.find(".", upos);
+		size_t upos = scookie.find("_", fpos);
+		size_t ppos = scookie.find(".", upos);
 		time_t now = mytime(NULL);
 		if ((fpos != std::string::npos) && (upos != std::string::npos) && (ppos != std::string::npos))
 		{
@@ -1595,7 +1589,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 {
 	// Initialize session
 	WebEmSession session;
-	session.remote_host = req.host;
+	session.remote_host = req.host_address;
 	session.isnew = false;
 	session.forcelogin = false;
 	session.rememberme = false;
@@ -1671,6 +1665,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 				// fix provided by http://www.codeproject.com/Members/jaeheung72 )
 
 				reply::add_header(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
+				reply::add_header(&rep, "Last-Modified", make_web_time(mytime(NULL)), true);
 
 				//check gzip support if yes, send it back in gzip format
 				CompressWebOutput(req, rep);

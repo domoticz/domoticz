@@ -174,6 +174,7 @@ public:
 		_ePresentationType presType;
 		std::string childName;
 		bool useAck;
+		int ackTimeout;
 
 		//values
 		std::map<_eSetType, _tMySensorValue> values;
@@ -356,7 +357,7 @@ public:
 	void UpdateNode(const int nodeID, const std::string &name);
 	void RemoveNode(const int nodeID);
 	void RemoveChild(const int nodeID, const int childID);
-	void UpdateChild(const int nodeID, const int childID, const bool UseAck);
+	void UpdateChild(const int nodeID, const int childID, const bool UseAck, const int AckTimeout);
 	static std::string GetMySensorsValueTypeStr(const enum _eSetType vType);
 	static std::string GetMySensorsPresentationTypeStr(const enum _ePresentationType pType);
 	std::string GetGatewayVersion();
@@ -369,7 +370,7 @@ private:
 	bool GetChildDBInfo(const int NodeID, const int ChildID, _ePresentationType &pType, std::string &Name, bool &UseAck);
 
 	void SendCommandInt(const int NodeID, const int ChildID, const _eMessageType messageType, const bool UseAck, const int SubType, const std::string &Payload);
-	bool SendNodeSetCommand(const int NodeID, const int ChildID, const _eMessageType messageType, const _eSetType SubType, const std::string &Payload, const bool bUseAck);
+	bool SendNodeSetCommand(const int NodeID, const int ChildID, const _eMessageType messageType, const _eSetType SubType, const std::string &Payload, const bool bUseAck, const int AckTimeout);
 	void SendNodeCommand(const int NodeID, const int ChildID, const _eMessageType messageType, const int SubType, const std::string &Payload);
 
 

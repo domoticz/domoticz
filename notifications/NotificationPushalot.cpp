@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "NotificationPushalot.h"
 #include "../httpclient/HTTPClient.h"
+#include "../main/Logger.h"
 
 CNotificationPushalot::CNotificationPushalot() : CNotificationBase(std::string("pushalot"), OPTIONS_URL_SUBJECT | OPTIONS_URL_BODY | OPTIONS_URL_PARAMS)
 {
@@ -45,6 +46,8 @@ bool CNotificationPushalot::SendMessageImplementation(const std::string &Subject
 	sPostData << "AuthorizationToken=" << _apikey << "&IsImportant=" << IsImportant << "&IsSilent=" << IsSilent << "&Source=Domoticz&Title=" << cSubject << "&Body=" << Text;
 	std::vector<std::string> ExtraHeaders;
 	bRet = HTTPClient::POST("https://pushalot.com/api/sendmessage", sPostData.str(), ExtraHeaders, sResult);
+	if (!bRet)
+		_log.Log(LOG_ERROR, "Pushalot: %s", sResult.c_str());
 	return bRet;
 }
 
