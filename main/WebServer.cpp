@@ -6738,7 +6738,18 @@ namespace http {
 			bool Enabled;
 		} tHardwareList;
 
-		void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, const std::string &rfilter, const std::string &order, const std::string &rowid, const std::string &planID, const std::string &floorID, const bool bDisplayHidden, const time_t LastUpdate, const std::string &username)
+		void CWebServer::GetJSonDevices(
+			Json::Value &root, 
+			const std::string &rused, 
+			const std::string &rfilter, 
+			const std::string &order, 
+			const std::string &rowid, 
+			const std::string &planID, 
+			const std::string &floorID, 
+			const bool bDisplayHidden, 
+			const bool bFetchFavorites,
+			const time_t LastUpdate, 
+			const std::string &username)
 		{
 			std::vector<std::vector<std::string> > result;
 
@@ -6875,6 +6886,12 @@ namespace http {
 						for (itt = result.begin(); itt != result.end(); ++itt)
 						{
 							std::vector<std::string> sd = *itt;
+
+							unsigned char favorite = atoi(sd[4].c_str());
+							//Check if we only want favorite devices
+							if ((bFetchFavorites) && (!favorite))
+								continue;
+
 							std::string sLastUpdate = sd[3];
 
 							if (iLastUpdate != 0)
@@ -6892,7 +6909,7 @@ namespace http {
 							}
 
 							int nValue = atoi(sd[2].c_str());
-							unsigned char favorite = atoi(sd[4].c_str());
+
 							unsigned char scenetype = atoi(sd[5].c_str());
 							int iProtected = atoi(sd[6].c_str());
 
@@ -7159,6 +7176,15 @@ namespace http {
 				for (itt = result.begin(); itt != result.end(); ++itt)
 				{
 					std::vector<std::string> sd = *itt;
+
+					unsigned char favorite = atoi(sd[12].c_str());
+					if ((planID != "") && (planID != "0"))
+						favorite = 1;
+
+					//Check if we only want favorite devices
+					if ((bFetchFavorites) && (!favorite))
+						continue;
+
 					std::string sDeviceName = sd[3];
 
 					if (!bDisplayHidden)
@@ -7208,9 +7234,6 @@ namespace http {
 							continue;
 					}
 
-					unsigned char favorite = atoi(sd[12].c_str());
-					if ((planID != "") && (planID != "0"))
-						favorite = 1;
 					_eSwitchType switchtype = (_eSwitchType)atoi(sd[13].c_str());
 					_eMeterType metertype = (_eMeterType)switchtype;
 					double AddjValue = atof(sd[15].c_str());
@@ -9078,7 +9101,6 @@ namespace http {
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 							root["result"][ii]["Image"] = "Fan";
 							root["result"][ii]["TypeImg"] = "Fan";
-							root["result"][ii]["Type"] = "Speaker";
 						}
 						else if (dSubType == sTypeSoundLevel)
 						{
@@ -9873,7 +9895,9 @@ namespace http {
 			std::string planid = request::findValue(&req, "plan");
 			std::string floorid = request::findValue(&req, "floor");
 			std::string sDisplayHidden = request::findValue(&req, "displayhidden");
+			std::string sFetchFavorites = request::findValue(&req, "favorite");
 			bool bDisplayHidden = (sDisplayHidden == "1");
+			bool bFetchFavorites = (sFetchFavorites == "1");
 			std::string sLastUpdate = request::findValue(&req, "lastupdate");
 
 			time_t LastUpdate = 0;
@@ -9887,7 +9911,7 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "Devices";
 
-			GetJSonDevices(root, rused, rfilter, order, rid, planid, floorid, bDisplayHidden, LastUpdate, session.username);
+			GetJSonDevices(root, rused, rfilter, order, rid, planid, floorid, bDisplayHidden, bFetchFavorites, LastUpdate, session.username);
 		}
 
 		void CWebServer::RType_Users(WebEmSession & session, const request& req, Json::Value &root)
