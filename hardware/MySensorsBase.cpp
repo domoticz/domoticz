@@ -424,6 +424,19 @@ void MySensorsBase::UpdateNodeBatteryLevel(const int nodeID, const int Level)
 	{
 		itt->hasBattery = true;
 		itt->batValue = Level;
+
+		//Uncomment the below to for a sensor update
+/*
+		std::map<_eSetType, _tMySensorValue>::const_iterator itt2;
+		for (itt2 = itt->values.begin(); itt2 != itt->values.end(); ++itt2)
+		{
+			if (itt2->second.bValidValue)
+			{
+				_eSetType vType = itt2->first;
+				SendSensor2Domoticz(pNode, &(*itt), vType);
+			}
+		}
+*/
 	}
 }
 
