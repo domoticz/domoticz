@@ -162,7 +162,8 @@ std::string CAccuWeather::GetLocationKey()
 	}
 	if (root.size()>0)
 	{
-		root = root[0];
+		if (root.isArray())
+			root = root[0];
 	}
 	if (root["Key"].empty())
 	{
