@@ -202,6 +202,7 @@ main/domoticz.cpp
 main/EventSystem.cpp
 main/Helper.cpp
 main/HttpPush.cpp
+main/GooglePubSubPush.cpp
 main/localtime_r.cpp
 main/Logger.cpp
 main/mainworker.cpp

@@ -901,6 +901,7 @@ bool MainWorker::Start()
 	AddAllDomoticzHardware();
 	m_datapush.Start();
 	m_httppush.Start();
+	m_googlepubsubpush.Start();
 #ifdef PARSE_RFXCOM_DEVICE_LOG
 	if (m_bStartHardware==false)
 		m_bStartHardware=true;
@@ -932,6 +933,7 @@ bool MainWorker::Stop()
 		m_eventsystem.StopEventSystem();
 		m_datapush.Stop();
 		m_httppush.Stop();
+		m_googlepubsubpush.Stop();
 
 		//    m_cameras.StopCameraGrabber();
 
