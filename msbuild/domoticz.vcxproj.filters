@@ -156,9 +156,6 @@
     <Filter Include="Devices\EvoHome">
       <UniqueIdentifier>{424992c9-c3da-4799-9ea2-b4136c3845ac}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Devices\FibaroLink">
-      <UniqueIdentifier>{b108db7e-5f5a-44df-8dfd-bea4d48f48b4}</UniqueIdentifier>
-    </Filter>
     <Filter Include="zip">
       <UniqueIdentifier>{38a9cebe-efb0-4fc7-bcc1-86fe4704ceb1}</UniqueIdentifier>
     </Filter>
@@ -204,17 +201,11 @@
     <Filter Include="Devices\Nest">
       <UniqueIdentifier>{358e4bcd-21c6-47e5-b7e3-7d9bbb9b4e90}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Devices\HttpLink">
-      <UniqueIdentifier>{b84812aa-d71f-4b05-b496-4420b93cd9b9}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Devices\Thermosmart">
       <UniqueIdentifier>{21b14472-4757-4ef4-b27f-107a322f5ef3}</UniqueIdentifier>
     </Filter>
     <Filter Include="Devices\RFXCom">
       <UniqueIdentifier>{48ca3895-ba95-40f6-8441-e2911263a66f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Devices\PushBase">
-      <UniqueIdentifier>{2be86c90-c015-48e9-9009-0100e9c6b0eb}</UniqueIdentifier>
     </Filter>
     <Filter Include="Devices\Netatmo">
       <UniqueIdentifier>{e2b392a3-f7a9-4c9b-b40a-4963b61407ee}</UniqueIdentifier>
@@ -416,6 +407,21 @@
     </Filter>
     <Filter Include="Devices\AccuWeather">
       <UniqueIdentifier>{3a086069-f89a-44b7-b3a8-19cb9b7509eb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pushers">
+      <UniqueIdentifier>{b669cde0-9cf1-43ae-a5c0-5f01851e9b45}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pushers\PushBase">
+      <UniqueIdentifier>{2be86c90-c015-48e9-9009-0100e9c6b0eb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pushers\HttpLink">
+      <UniqueIdentifier>{b84812aa-d71f-4b05-b496-4420b93cd9b9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pushers\GooglePubsub">
+      <UniqueIdentifier>{3afed12d-fbbd-4bb1-b74a-e7047115922a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pushers\FibaroLink">
+      <UniqueIdentifier>{b108db7e-5f5a-44df-8dfd-bea4d48f48b4}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -1552,9 +1558,6 @@
     <ClInclude Include="..\hardware\evohome.h">
       <Filter>Devices\EvoHome</Filter>
     </ClInclude>
-    <ClInclude Include="..\main\DataPush.h">
-      <Filter>Devices\FibaroLink</Filter>
-    </ClInclude>
     <ClInclude Include="..\zip\ioapi.h">
       <Filter>zip\Base</Filter>
     </ClInclude>
@@ -1645,9 +1648,6 @@
     <ClInclude Include="..\hardware\Pinger.h">
       <Filter>Devices\Ping</Filter>
     </ClInclude>
-    <ClInclude Include="..\main\HttpPush.h">
-      <Filter>Devices\HttpLink</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\Thermosmart.h">
       <Filter>Devices\Thermosmart</Filter>
     </ClInclude>
@@ -1728,9 +1728,6 @@
     </ClInclude>
     <ClInclude Include="..\hardware\P1MeterTCP.h">
       <Filter>Devices\P1Smart Meter</Filter>
-    </ClInclude>
-    <ClInclude Include="..\main\Push.h">
-      <Filter>Devices\PushBase</Filter>
     </ClInclude>
     <ClInclude Include="..\webserver\GZipHelper.h">
       <Filter>Webserver</Filter>
@@ -1857,6 +1854,18 @@
     </ClInclude>
     <ClInclude Include="..\hardware\AccuWeather.h">
       <Filter>Devices\AccuWeather</Filter>
+    </ClInclude>
+    <ClInclude Include="..\push\DataPush.h">
+      <Filter>Pushers\FibaroLink</Filter>
+    </ClInclude>
+    <ClInclude Include="..\push\GooglePubSubPush.h">
+      <Filter>Pushers\GooglePubsub</Filter>
+    </ClInclude>
+    <ClInclude Include="..\push\HttpPush.h">
+      <Filter>Pushers\HttpLink</Filter>
+    </ClInclude>
+    <ClInclude Include="..\push\Push.h">
+      <Filter>Pushers\PushBase</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2109,9 +2118,6 @@
     <ClCompile Include="..\hardware\evohome.cpp">
       <Filter>Devices\EvoHome</Filter>
     </ClCompile>
-    <ClCompile Include="..\main\DataPush.cpp">
-      <Filter>Devices\FibaroLink</Filter>
-    </ClCompile>
     <ClCompile Include="..\hardware\MySensorsBase.cpp">
       <Filter>Devices\MySensors</Filter>
     </ClCompile>
@@ -2184,9 +2190,6 @@
     <ClCompile Include="..\hardware\Pinger.cpp">
       <Filter>Devices\Ping</Filter>
     </ClCompile>
-    <ClCompile Include="..\main\HttpPush.cpp">
-      <Filter>Devices\HttpLink</Filter>
-    </ClCompile>
     <ClCompile Include="..\hardware\Thermosmart.cpp">
       <Filter>Devices\Thermosmart</Filter>
     </ClCompile>
@@ -2255,9 +2258,6 @@
     </ClCompile>
     <ClCompile Include="..\hardware\P1MeterTCP.cpp">
       <Filter>Devices\P1Smart Meter</Filter>
-    </ClCompile>
-    <ClCompile Include="..\main\Push.cpp">
-      <Filter>Devices\PushBase</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\Kodi.cpp">
       <Filter>Devices\Kodi</Filter>
@@ -2429,6 +2429,18 @@
     </ClCompile>
     <ClCompile Include="..\hardware\AccuWeather.cpp">
       <Filter>Devices\AccuWeather</Filter>
+    </ClCompile>
+    <ClCompile Include="..\push\DataPush.cpp">
+      <Filter>Pushers\FibaroLink</Filter>
+    </ClCompile>
+    <ClCompile Include="..\push\GooglePubSubPush.cpp">
+      <Filter>Pushers\GooglePubsub</Filter>
+    </ClCompile>
+    <ClCompile Include="..\push\HttpPush.cpp">
+      <Filter>Pushers\HttpLink</Filter>
+    </ClCompile>
+    <ClCompile Include="..\push\Push.cpp">
+      <Filter>Pushers\PushBase</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

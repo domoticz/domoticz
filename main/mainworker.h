@@ -9,9 +9,9 @@
 #include <deque>
 #include "WindCalculation.h"
 #include "../tcpserver/TCPServer.h"
-#include "DataPush.h"
-#include "HttpPush.h"
-#include "GooglePubSubPush.h"
+#include "../push/DataPush.h"
+#include "../push/HttpPush.h"
+#include "../push/GooglePubSubPush.h"
 #include "concurrent_queue.h"
 #include "../webserver/server_settings.hpp"
 

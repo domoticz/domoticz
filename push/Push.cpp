@@ -1,10 +1,10 @@
 #include "stdafx.h"
 #include "Push.h"
-#include "Logger.h"
 #include "../hardware/hardwaretypes.h"
-#include "RFXtrx.h"
-#include "SQLHelper.h"
-#include "Helper.h"
+#include "../main/Logger.h"
+#include "../main/RFXtrx.h"
+#include "../main/SQLHelper.h"
+#include "../main/Helper.h"
 
 CPush::CPush()
 {
