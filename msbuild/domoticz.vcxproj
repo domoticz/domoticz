@@ -505,6 +505,7 @@
     <ClInclude Include="..\main\DataPush.h" />
     <ClInclude Include="..\main\dirent_windows.h" />
     <ClInclude Include="..\main\EventSystem.h" />
+    <ClInclude Include="..\main\GooglePubSubPush.h" />
     <ClInclude Include="..\main\GZipHelper.h" />
     <ClInclude Include="..\main\HttpPush.h" />
     <ClInclude Include="..\main\localtime_r.h" />
@@ -713,6 +714,7 @@
     <ClCompile Include="..\hardware\DomoticzTCP.cpp" />
     <ClCompile Include="..\main\DataPush.cpp" />
     <ClCompile Include="..\main\EventSystem.cpp" />
+    <ClCompile Include="..\main\GooglePubSubPush.cpp" />
     <ClCompile Include="..\main\HttpPush.cpp" />
     <ClCompile Include="..\main\localtime_r.cpp" />
     <ClCompile Include="..\hardware\P1MeterBase.cpp" />

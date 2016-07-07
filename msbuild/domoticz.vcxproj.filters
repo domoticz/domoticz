@@ -417,6 +417,9 @@
     <Filter Include="Devices\AccuWeather">
       <UniqueIdentifier>{3a086069-f89a-44b7-b3a8-19cb9b7509eb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\GooglePubSubLink">
+      <UniqueIdentifier>{8ad0952b-e61d-476e-a705-c2a55faaaf55}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -1858,6 +1861,9 @@
     <ClInclude Include="..\hardware\AccuWeather.h">
       <Filter>Devices\AccuWeather</Filter>
     </ClInclude>
+    <ClInclude Include="..\main\GooglePubSubPush.h">
+      <Filter>Devices\GooglePubSubLink</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2429,6 +2435,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\AccuWeather.cpp">
       <Filter>Devices\AccuWeather</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\GooglePubSubPush.cpp">
+      <Filter>Devices\GooglePubSubLink</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
