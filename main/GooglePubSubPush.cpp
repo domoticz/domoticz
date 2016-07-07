@@ -27,6 +27,9 @@ using namespace boost::python;
 
 extern std::string szUserDataFolder;
 
+// this should be filled in by the preprocessor
+extern const char * Python_exe;
+
 typedef struct _STR_TABLE_ID1_ID2 {
 	unsigned long    id1;
 	unsigned long    id2;
@@ -80,13 +83,50 @@ void CGooglePubSubPush::OnDeviceReceived(const int m_HwdID, const unsigned long 
 	}
 }
 
+
+#ifdef ENABLE_PYTHON
+static int numargs = 0;
+
+/* Return the number of arguments of the application command line */
+static PyObject*
+PyDomoticz_log(PyObject *self, PyObject *args)
+{
+	char* msg;
+	int type;
+	if (!PyArg_ParseTuple(args, "is", &type, &msg))
+		return NULL;
+	_log.Log((_eLogLevel)type, msg);
+	Py_INCREF(Py_None);
+	return Py_None;
+
+}
+
+static PyMethodDef DomoticzMethods[] = {
+	{ "log", PyDomoticz_log, METH_VARARGS,  "log to Domoticz." },
+	{ NULL, NULL, 0, NULL }
+};
+
+
+// from https://gist.github.com/octavifs/5362297
+
+template <class K, class V>
+boost::python::dict toPythonDict(std::map<K, V> map) {
+	typename std::map<K, V>::iterator iter;
+	boost::python::dict dictionary;
+	for (iter = map.begin(); iter != map.end(); ++iter) {
+		dictionary[iter->first] = iter->second;
+	}
+	return dictionary;
+}
+#endif
+
 void CGooglePubSubPush::DoGooglePubSubPush()
 {			
 	std::string googlePubSubData = "";
 
 	int googlePubSubDebugActiveInt;
 	bool googlePubSubDebugActive = false;
-	m_sql.GetPreferencesVar("googlePubSubDebug", googlePubSubDebugActiveInt);
+	m_sql.GetPreferencesVar("GooglePubSubDebug", googlePubSubDebugActiveInt);
 	if (googlePubSubDebugActiveInt == 1) {
 		googlePubSubDebugActive = true;
 	}
@@ -224,9 +264,16 @@ void CGooglePubSubPush::DoGooglePubSubPush()
 #ifdef ENABLE_PYTHON
 #ifdef WIN32
 				python_DirT << szUserDataFolder << "scripts\\python\\";
+				std::string filename = szUserDataFolder + "scripts\\python\\" + "googlepubsub.py";
 #else
 				python_DirT << szUserDataFolder << "scripts/python/";
+				std::string filename = szUserDataFolder + "scripts/python/" + "googlepubsub.py";
 #endif
+
+				char * argv[1];
+				argv[0]=(char *)filename.c_str();
+				PySys_SetArgv(1,argv);
+
 				std::string python_Dir = python_DirT.str();
 				if (!Py_IsInitialized()) {
 					Py_SetProgramName((char*)Python_exe); // will this cast lead to problems ?
@@ -236,29 +283,27 @@ void CGooglePubSubPush::DoGooglePubSubPush()
 					// TODO: may have a small memleak, remove references in destructor
 					PyObject* sys = PyImport_ImportModule("sys");
 					PyObject *path = PyObject_GetAttrString(sys, "path");
-					PyList_Append(path, PyString_FromString(python_Dir.c_str()));
-
-					FILE* PythonScriptFile = fopen(filename.c_str(), "r");
-					object main_module = import("__main__");
-					object main_namespace = dict(main_module.attr("__dict__")).copy();
 				}
+
+				FILE* PythonScriptFile = fopen(filename.c_str(), "r");
+				object main_module = import("__main__");
+				object main_namespace = dict(main_module.attr("__dict__")).copy();
 
 				try {
 					object domoticz_module = import("domoticz");
 					object reloader = import("reloader");
 					reloader.attr("_check_reload")();
 
+					object domoticz_namespace = domoticz_module.attr("__dict__");
+					main_namespace["data"] = googlePubSubData;
 					domoticz_namespace["data"] = googlePubSubData;
 
 					// debug
 					if (googlePubSubDebugActive) {
-						_log.Log(LOG_NORM, "GooglePubSubLink: data to send : ", googlePubSubData.c_str());
+						_log.Log(LOG_NORM, "GooglePubSubLink: data to send : %s", googlePubSubData.c_str());
 					}
 
-					if (PyString.length() > 0)
-						exec(str(PyString), main_namespace);
-					else
-						object ignored = exec_file(str(filename), main_namespace);
+					object ignored = exec_file(str(filename), main_namespace);
 				}
 				catch (...) {
 					PyObject *exc, *val, *tb;
@@ -274,10 +319,7 @@ void CGooglePubSubPush::DoGooglePubSubPush()
 					std::string formatted_str = extract<std::string>(formatted);
 					//PyErr_Print();
 					PyErr_Clear();
-					if (PyString.length() > 0)
-						_log.Log(LOG_ERROR, "in event %s: %s", filename.c_str(), formatted_str.c_str());
-					else
-						_log.Log(LOG_ERROR, "%s", formatted_str.c_str());
+					_log.Log(LOG_ERROR, "%s", formatted_str.c_str());
 				}
 #else
 				_log.Log(LOG_ERROR, "Error sending data to GooglePubSub : Python not available!");
@@ -298,12 +340,10 @@ namespace http {
 				return;
 			}
 
-			std::string url = request::findValue(&req, "url");
 			std::string data = request::findValue(&req, "data");
 			std::string linkactive = request::findValue(&req, "linkactive");
 			std::string debugenabled = request::findValue(&req, "debugenabled");
 			if (
-				(url == "") ||
 				(data == "") ||
 				(linkactive == "") ||
 				(debugenabled == "")
@@ -311,7 +351,6 @@ namespace http {
 				return;
 			int ilinkactive = atoi(linkactive.c_str());
 			int idebugenabled = atoi(debugenabled.c_str());
-			m_sql.UpdatePreferencesVar("GooglePubSubUrl", url.c_str());
 			m_sql.UpdatePreferencesVar("GooglePubSubData", data.c_str());
 			m_sql.UpdatePreferencesVar("GooglePubSubActive", ilinkactive);
 			m_sql.UpdatePreferencesVar("GooglePubSubDebug", idebugenabled);

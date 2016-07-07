@@ -77,7 +77,6 @@ define(['app'], function (app) {
 		}
 		SaveConfiguration = function()
 		{
-			var cleanurl = $('#googlepubsubremote #url').val();
 			var httpdata = $('#googlepubsubremote #data').val();
 			var linkactive = 0;	
 			if ($('#googlepubsubremote #googlepubsublinkenabled').is(":checked"))
@@ -92,7 +91,7 @@ define(['app'], function (app) {
 			
 			$.ajax({
 				 url: "json.htm?type=command&param=savegooglepubsublinkconfig" +
-					"&url=" + encodeURIComponent(cleanurl) + "&data=" + encodeURIComponent(httpdata) + "&linkactive=" + linkactive + "&debugenabled=" + debugenabled,
+					"&data=" + encodeURIComponent(httpdata) + "&linkactive=" + linkactive + "&debugenabled=" + debugenabled,
 				 async: false, 
 				 dataType: 'json',
 				 success: function(data) {
@@ -183,10 +182,8 @@ define(['app'], function (app) {
 				success: function(data) {
 					if (typeof data != 'undefined') {
 						if (data.status=="OK") {
-							$('#googlepubsubremote #url').val(data.HttpUrl);
-							$('#googlepubsubremote #combomethod').val(data.HttpMethod);
-							$('#googlepubsubremote #data').val(data.HttpData);
-							$('#googlepubsubremote #httplinkenabled').prop('checked', false);
+							$('#googlepubsubremote #data').val(data.GooglePubSubData);
+							$('#googlepubsubremote #googlepubsublinkenabled').prop('checked', false);
 							if (data.GooglePubSubActive) {
 								$('#googlepubsubremote #googlepubsublinkenabled').prop('checked', true);
 							}
