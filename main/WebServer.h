@@ -225,6 +225,11 @@ private:
 	void Cmd_GetHttpLinks(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_SaveHttpLink(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DeleteHttpLink(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_SaveGooglePubSubLinkConfig(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_GetGooglePubSubLinkConfig(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_GetGooglePubSubLinks(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_SaveGooglePubSubLink(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_DeleteGooglePubSubLink(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_AddLogMessage(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_ClearShortLog(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_VacuumDatabase(WebEmSession & session, const request& req, Json::Value &root);
