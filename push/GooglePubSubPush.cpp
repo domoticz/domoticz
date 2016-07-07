@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "GooglePubSubPush.h"
-#include <boost/date_time/c_local_time_adjustor.hpp>
 #include "../hardware/hardwaretypes.h"
 #include "../json/json.h"
 #include "../main/Helper.h"
@@ -29,25 +28,6 @@ extern std::string szUserDataFolder;
 
 // this should be filled in by the preprocessor
 extern const char * Python_exe;
-
-typedef struct _STR_TABLE_ID1_ID2 {
-	unsigned long    id1;
-	unsigned long    id2;
-	const char   *str1;
-} STR_TABLE_ID1_ID2;
-
-static boost::posix_time::time_duration get_utc_offset() {
-	using namespace boost::posix_time;
-
-	// boost::date_time::c_local_adjustor uses the C-API to adjust a
-	// moment given in utc to the same moment in the local time zone.
-	typedef boost::date_time::c_local_adjustor<ptime> local_adj;
-
-	const ptime utc_now = second_clock::universal_time();
-	const ptime now = local_adj::utc_to_local(utc_now);
-
-	return now - utc_now;
-}
 
 CGooglePubSubPush::CGooglePubSubPush()
 {
@@ -151,8 +131,6 @@ void CGooglePubSubPush::DoGooglePubSubPush()
 			int delpos = atoi(sd[1].c_str());
 			int dType = atoi(sd[3].c_str());
 			int dSubType = atoi(sd[4].c_str());
-			std::string lType = sd[3].c_str();
-			std::string lSubType = sd[4].c_str();
 			int nValue = atoi(sd[5].c_str());
 			std::string sValue = sd[6].c_str();
 			int targetType = atoi(sd[7].c_str());
@@ -162,16 +140,12 @@ void CGooglePubSubPush::DoGooglePubSubPush()
 			int includeUnit = atoi(sd[11].c_str());
 			int metertype = atoi(sd[12].c_str());
 			int lastUpdate = atoi(sd[13].c_str());
-			std::string lstatus="";
-			std::string lunit = "";
 			std::string ltargetVariable = sd[8].c_str();
 			std::string ltargetDeviceId = sd[9].c_str();
 			std::string lname = sd[14].c_str();
 			sendValue = sValue;
 
-			// Compute tz
-			boost::posix_time::time_duration uoffset = get_utc_offset();
-			unsigned long tzoffset = (int)((double)(uoffset.ticks() / 3600000000LL) * 3600);
+			unsigned long tzoffset = get_tzoffset();
 
 #ifdef WIN32
 			unsigned __int64 localTime = lastUpdate;
@@ -190,18 +164,7 @@ void CGooglePubSubPush::DoGooglePubSubPush()
 			char szLocalTimeUtcMs[16];
 			sprintf(szLocalTimeUtcMs, "%llu", localTimeUtc * 1000);
 
-			// RFC3339 time format
-			time_t tmpT = localTimeUtc;
-			struct tm* timeinfo = gmtime(&tmpT);
-
-			char llastUpdate[255];
-#if !defined WIN32
-			snprintf(llastUpdate, sizeof(llastUpdate), "%04d-%02d-%02dT%02d:%02d:%02dZ",
-				timeinfo->tm_year + 1900, timeinfo->tm_mon + 1, timeinfo->tm_mday, timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
-#else
-			sprintf_s(llastUpdate, sizeof(llastUpdate), "%04d-%02d-%02dT%02d:%02d:%02dZ",
-				timeinfo->tm_year + 1900, timeinfo->tm_mon + 1, timeinfo->tm_mday, timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
-#endif
+			std::string llastUpdate = get_lastUpdate(localTimeUtc);
 
 			// Replace keywords
 			/*
@@ -220,9 +183,9 @@ void CGooglePubSubPush::DoGooglePubSubPush()
 			%h : hostname
 			*/
 
-			lunit = getUnit(delpos, metertype);			
-			lType = RFX_Type_Desc(dType,1);
-			lSubType = RFX_Type_SubType_Desc(dType,dSubType);
+			std::string lunit = getUnit(delpos, metertype);
+			std::string lType = RFX_Type_Desc(dType,1);
+			std::string lSubType = RFX_Type_SubType_Desc(dType,dSubType);
 			
 			char hostname[256];
 			gethostname(hostname, sizeof(hostname));
@@ -252,8 +215,8 @@ void CGooglePubSubPush::DoGooglePubSubPush()
 			replaceAll(googlePubSubData, "%t1", std::string(szLocalTimeMs));
 			replaceAll(googlePubSubData, "%t2", std::string(szLocalTimeUtc));
 			replaceAll(googlePubSubData, "%t3", std::string(szLocalTimeUtcMs));
-			replaceAll(googlePubSubData, "%t4", std::string(llastUpdate));
-			replaceAll(googlePubSubData, "%n", std::string(lname));
+			replaceAll(googlePubSubData, "%t4", llastUpdate);
+			replaceAll(googlePubSubData, "%n", lname);
 			replaceAll(googlePubSubData, "%T0", lType);
 			replaceAll(googlePubSubData, "%T1", lSubType);
 			replaceAll(googlePubSubData, "%h", std::string(hostname));
