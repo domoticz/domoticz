@@ -83,9 +83,10 @@ const std::string TOON_SWITCH_ALL = "/toonMobileBackendWeb/client/auth/smartplug
 //	STATE_HOLIDAY	//4
 //};
 
-CToonThermostat::CToonThermostat(const int ID, const std::string &Username, const std::string &Password) :
+CToonThermostat::CToonThermostat(const int ID, const std::string &Username, const std::string &Password, const int &Agreement) :
 m_UserName(Username),
-m_Password(Password)
+m_Password(Password),
+m_Agreement(Agreement)
 {
 	m_HwdID=ID;
 
@@ -356,8 +357,9 @@ bool CToonThermostat::Login()
 		_log.Log(LOG_ERROR, "ToonThermostat: No agreements found, did you setup your toon correctly?");
 		return false;
 	}
-	agreementId = root["agreements"][0]["agreementId"].asString();
-	agreementIdChecksum = root["agreements"][0]["agreementIdChecksum"].asString();
+
+	agreementId = root["agreements"][m_Agreement]["agreementId"].asString();
+	agreementIdChecksum = root["agreements"][m_Agreement]["agreementIdChecksum"].asString();
 
 	std::stringstream sstr2;
 	sstr2 << "clientId=" << m_ClientID 
