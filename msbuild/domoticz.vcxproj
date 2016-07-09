@@ -555,10 +555,13 @@
     <ClInclude Include="..\push\GooglePubSubPush.h" />
     <ClInclude Include="..\push\HttpPush.h" />
     <ClInclude Include="..\push\Push.h" />
+    <ClInclude Include="..\push\WebsocketPush.h" />
     <ClInclude Include="..\webserver\fastcgi.hpp" />
     <ClInclude Include="..\webserver\GZipHelper.h" />
     <ClInclude Include="..\webserver\proxyclient.h" />
     <ClInclude Include="..\webserver\proxycommon.h" />
+    <ClInclude Include="..\webserver\WebsocketHandler.h" />
+    <ClInclude Include="..\webserver\Websockets.hpp" />
     <ClInclude Include="..\zip\ioapi.h" />
     <ClInclude Include="..\zip\unzip.h" />
     <ClInclude Include="..\zip\zip.h" />
@@ -826,6 +829,7 @@
     <ClCompile Include="..\push\GooglePubSubPush.cpp" />
     <ClCompile Include="..\push\HttpPush.cpp" />
     <ClCompile Include="..\push\Push.cpp" />
+    <ClCompile Include="..\push\WebsocketPush.cpp" />
     <ClCompile Include="..\smtpclient\SMTPClient.cpp" />
     <ClCompile Include="..\sqlite\sqlite3.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
@@ -863,6 +867,8 @@
     <ClCompile Include="..\webserver\request_handler.cpp" />
     <ClCompile Include="..\webserver\request_parser.cpp" />
     <ClCompile Include="..\webserver\server.cpp" />
+    <ClCompile Include="..\webserver\WebsocketHandler.cpp" />
+    <ClCompile Include="..\webserver\Websockets.cpp" />
     <ClCompile Include="WindowsHelper.cpp" />
     <ClCompile Include="..\hardware\YouLess.cpp" />
   </ItemGroup>
