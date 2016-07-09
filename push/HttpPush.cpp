@@ -1,12 +1,11 @@
 #include "stdafx.h"
 #include "HttpPush.h"
-#include "Helper.h"
+#include "../main/Helper.h"
 #include "../httpclient/HTTPClient.h"
-#include "Logger.h"
+#include "../main/Logger.h"
 #include "../hardware/hardwaretypes.h"
-#include "RFXtrx.h"
-#include "SQLHelper.h"
-#include <boost/date_time/c_local_time_adjustor.hpp>
+#include "../main/RFXtrx.h"
+#include "../main/SQLHelper.h"
 #include "../webserver/Base64.h"
 #include "../main/localtime_r.h"
 #include "../main/WebServer.h"
@@ -17,25 +16,6 @@
 #ifndef WIN32
 	#include <unistd.h> //gethostbyname
 #endif
-
-typedef struct _STR_TABLE_ID1_ID2 {
-	unsigned long    id1;
-	unsigned long    id2;
-	const char   *str1;
-} STR_TABLE_ID1_ID2;
-
-static boost::posix_time::time_duration get_utc_offset() {
-	using namespace boost::posix_time;
-
-	// boost::date_time::c_local_adjustor uses the C-API to adjust a
-	// moment given in utc to the same moment in the local time zone.
-	typedef boost::date_time::c_local_adjustor<ptime> local_adj;
-
-	const ptime utc_now = second_clock::universal_time();
-	const ptime now = local_adj::utc_to_local(utc_now);
-
-	return now - utc_now;
-}
 
 CHttpPush::CHttpPush()
 {
@@ -113,8 +93,6 @@ void CHttpPush::DoHttpPush()
 			int delpos = atoi(sd[1].c_str());
 			int dType = atoi(sd[3].c_str());
 			int dSubType = atoi(sd[4].c_str());
-			std::string lType = sd[3].c_str();
-			std::string lSubType = sd[4].c_str();
 			int nValue = atoi(sd[5].c_str());
 			std::string sValue = sd[6].c_str();
 			int targetType = atoi(sd[7].c_str());
@@ -124,16 +102,12 @@ void CHttpPush::DoHttpPush()
 			int includeUnit = atoi(sd[11].c_str());
 			int metertype = atoi(sd[12].c_str());
 			int lastUpdate = atoi(sd[13].c_str());
-			std::string lstatus="";
-			std::string lunit = "";
 			std::string ltargetVariable = sd[8].c_str();
 			std::string ltargetDeviceId = sd[9].c_str();
 			std::string lname = sd[14].c_str();
 			sendValue = sValue;
 
-			// Compute tz
-			boost::posix_time::time_duration uoffset = get_utc_offset();
-			unsigned long tzoffset = (int)((double)(uoffset.ticks() / 3600000000LL) * 3600);
+			unsigned long tzoffset = get_tzoffset();
 
 #ifdef WIN32
 			unsigned __int64 localTime = lastUpdate;
@@ -152,18 +126,7 @@ void CHttpPush::DoHttpPush()
 			char szLocalTimeUtcMs[16];
 			sprintf(szLocalTimeUtcMs, "%llu", localTimeUtc * 1000);
 
-			// RFC3339 time format
-			time_t tmpT = localTimeUtc;
-			struct tm* timeinfo = gmtime(&tmpT);
-
-			char llastUpdate[255];
-#if !defined WIN32
-			snprintf(llastUpdate, sizeof(llastUpdate), "%04d-%02d-%02dT%02d:%02d:%02dZ",
-				timeinfo->tm_year + 1900, timeinfo->tm_mon + 1, timeinfo->tm_mday, timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
-#else
-			sprintf_s(llastUpdate, sizeof(llastUpdate), "%04d-%02d-%02dT%02d:%02d:%02dZ",
-				timeinfo->tm_year + 1900, timeinfo->tm_mon + 1, timeinfo->tm_mday, timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
-#endif
+			std::string llastUpdate = get_lastUpdate(localTimeUtc);
 
 			// Replace keywords
 			/*
@@ -182,9 +145,9 @@ void CHttpPush::DoHttpPush()
 			%h : hostname
 			*/
 
-			lunit = getUnit(delpos, metertype);			
-			lType = RFX_Type_Desc(dType,1);
-			lSubType = RFX_Type_SubType_Desc(dType,dSubType);
+			std::string lunit = getUnit(delpos, metertype);
+			std::string lType = RFX_Type_Desc(dType,1);
+			std::string lSubType = RFX_Type_SubType_Desc(dType,dSubType);
 			
 			char hostname[256];
 			gethostname(hostname, sizeof(hostname));
@@ -214,8 +177,8 @@ void CHttpPush::DoHttpPush()
 			replaceAll(httpUrl, "%t1", std::string(szLocalTimeMs));
 			replaceAll(httpUrl, "%t2", std::string(szLocalTimeUtc));
 			replaceAll(httpUrl, "%t3", std::string(szLocalTimeUtcMs));
-			replaceAll(httpUrl, "%t4", std::string(llastUpdate));
-			replaceAll(httpUrl, "%n", std::string(lname));
+			replaceAll(httpUrl, "%t4", llastUpdate);
+			replaceAll(httpUrl, "%n", lname);
 			replaceAll(httpUrl, "%T0", lType);
 			replaceAll(httpUrl, "%T1", lSubType);
 			replaceAll(httpUrl, "%h", std::string(hostname));
@@ -228,8 +191,8 @@ void CHttpPush::DoHttpPush()
 			replaceAll(httpData, "%t1", std::string(szLocalTimeMs));
 			replaceAll(httpData, "%t2", std::string(szLocalTimeUtc));
 			replaceAll(httpData, "%t3", std::string(szLocalTimeUtcMs));
-			replaceAll(httpData, "%t4", std::string(llastUpdate));
-			replaceAll(httpData, "%n", std::string(lname));
+			replaceAll(httpData, "%t4", llastUpdate);
+			replaceAll(httpData, "%n", lname);
 			replaceAll(httpData, "%T0", lType);
 			replaceAll(httpData, "%T1", lSubType);
 			replaceAll(httpData, "%h", std::string(hostname));

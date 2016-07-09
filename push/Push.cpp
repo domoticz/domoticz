@@ -1,15 +1,60 @@
 #include "stdafx.h"
 #include "Push.h"
-#include "Logger.h"
 #include "../hardware/hardwaretypes.h"
-#include "RFXtrx.h"
-#include "SQLHelper.h"
-#include "Helper.h"
+#include <boost/date_time/c_local_time_adjustor.hpp>
+#include "../main/Logger.h"
+#include "../main/RFXtrx.h"
+#include "../main/SQLHelper.h"
+#include "../main/Helper.h"
 
 CPush::CPush()
 {
 	m_bLinkActive = false;
 	m_DeviceRowIdx = -1;
+}
+
+// STATIC
+static boost::posix_time::time_duration get_utc_offset() {
+	using namespace boost::posix_time;
+
+	// boost::date_time::c_local_adjustor uses the C-API to adjust a
+	// moment given in utc to the same moment in the local time zone.
+	typedef boost::date_time::c_local_adjustor<ptime> local_adj;
+
+	const ptime utc_now = second_clock::universal_time();
+	const ptime now = local_adj::utc_to_local(utc_now);
+
+	return now - utc_now;
+}
+
+unsigned long CPush::get_tzoffset()
+{
+	// Compute tz
+	boost::posix_time::time_duration uoffset = get_utc_offset();
+	unsigned long tzoffset = (int)((double)(uoffset.ticks() / 3600000000LL) * 3600);
+	return tzoffset;
+}
+
+#ifdef WIN32
+std::string CPush::get_lastUpdate(unsigned __int64 localTimeUtc)
+#else
+std::string CPush::get_lastUpdate(unsigned long long int localTimeUtc)
+#endif
+{
+	// RFC3339 time format
+	time_t tmpT = localTimeUtc;
+	struct tm* timeinfo = gmtime(&tmpT);
+
+	char llastUpdate[255];
+#if !defined WIN32
+	snprintf(llastUpdate, sizeof(llastUpdate), "%04d-%02d-%02dT%02d:%02d:%02dZ",
+		timeinfo->tm_year + 1900, timeinfo->tm_mon + 1, timeinfo->tm_mday, timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
+#else
+	sprintf_s(llastUpdate, sizeof(llastUpdate), "%04d-%02d-%02dT%02d:%02d:%02dZ",
+		timeinfo->tm_year + 1900, timeinfo->tm_mon + 1, timeinfo->tm_mday, timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
+#endif
+
+	return std::string(llastUpdate);
 }
 
 // STATIC
@@ -187,7 +232,7 @@ std::string CPush::ProcessSendValue(const std::string &rawsendValue, const int d
 	}
 	else if (vType == "Status")
 	{
-		sprintf(szData,"Not supported yet");
+		sprintf(szData, "%d", nValue);
 	}	
 	else if ((vType == "Current 1") || (vType == "Current 2") || (vType == "Current 3"))
 	{
