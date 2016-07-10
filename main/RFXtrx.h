@@ -436,6 +436,7 @@ SDK version 4.9
 #define sTypeHEU 0x1
 #define sTypeANSLUT 0x2
 #define sTypeKambrook 0x03
+#define sTypeNodon 0x4
 
 #define light2_sOff 0x0
 #define light2_sOn 0x1

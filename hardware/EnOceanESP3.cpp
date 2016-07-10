@@ -228,6 +228,21 @@ typedef enum
 #define S_RPS_RPC 0x0F
 #define S_RPS_RPC_SHIFT 0
 /*@}*/
+
+#define F60201_R1_MASK 0xE0
+#define F60201_R1_SHIFT 5
+#define F60201_EB_MASK 0x10
+#define F60201_EB_SHIFT 4
+#define F60201_R2_MASK 0x0E
+#define F60201_R2_SHIFT 1
+#define F60201_SA_MASK 0x01
+#define F60201_SA_SHIFT 0
+
+#define F60201_BUTTON_A1 0
+#define F60201_BUTTON_A0 1
+#define F60201_BUTTON_B1 2
+#define F60201_BUTTON_B0 3
+
 /**
  * @defgroup status_rpc Status of telegram (for 1BS, 4BS, HRC or 6DT telegrams)
  * Bitmasks for the status-field, if ORG = 1BS, 4BS, HRC or 6DT.
@@ -486,6 +501,18 @@ void CEnOceanESP3::Do_Work()
 
 void CEnOceanESP3::Add2SendQueue(const char* pData, const size_t length)
 {
+#ifdef ENABLE_LOGGING
+	std::stringstream sstr;
+
+	for (int idx=0;idx<length;idx++)
+	{
+		sstr << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (((unsigned int)pData[idx]) & 0xFF);
+		if (idx!=length-1)
+			sstr << " ";
+	}
+	_log.Log(LOG_STATUS,"EnOcean Send: %s",sstr.str().c_str());	
+#endif
+
 	std::string sBytes;
 	sBytes.insert(0,pData,length);
 	boost::lock_guard<boost::mutex> l(m_sendMutex);
@@ -620,23 +647,9 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 	unsigned long sID=(tsen->LIGHTING2.id1<<24)|(tsen->LIGHTING2.id2<<16)|(tsen->LIGHTING2.id3<<8)|tsen->LIGHTING2.id4;
 	if ((sID<m_id_base)||(sID>m_id_base+129))
 	{
-		_log.Log(LOG_ERROR,"EnOcean: Can not switch with this DeviceID, use a switch created with our id_base!...");
+		_log.Log(LOG_ERROR,"(1) EnOcean: Can not switch with this DeviceID, use a switch created with our id_base!...");
 		return false;
 	}
-
-	unsigned char buf[100];
-	buf[0]=0xa5;
-	buf[1]=0x2;
-	buf[2]=100;	//level
-	buf[3]=1;	//speed
-	buf[4]=0x09; // Dim Off
-
-	buf[5]=(sID >> 24) & 0xff;
-	buf[6]=(sID >> 16) & 0xff;
-	buf[7]=(sID >> 8) & 0xff;
-	buf[8]=sID & 0xff;
-
-	buf[9]=0x30; // status
 
 	unsigned char RockerID=0;
 	unsigned char Pressed=1;
@@ -690,41 +703,124 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 		cmnd=light2_sSetLevel;
 	}
 
-	if (cmnd!=light2_sSetLevel)
+	//char buff[512];
+	//sprintf(buff,"cmnd: %d, level: %d, orgcmd: %d",cmnd, iLevel, orgcmd);
+	//_log.Log(LOG_ERROR,buff);
+	unsigned char buf[100];
+	unsigned char optbuf[100];
+
+	if(!bIsDimmer)
 	{
-		//On/Off
+		// on/off switch without dimming capability: Profile F6-02-01
+		// cf. EnOcean Equipment Profiles v2.6.5 page 11 (RPS format) & 14
 		unsigned char UpDown = 1;
-		UpDown = ((cmnd != light2_sOff) && (cmnd != light2_sGroupOff));
 
+		buf[0] = RORG_RPS;
 
-		buf[1] = (RockerID<<DB3_RPS_NU_RID_SHIFT) | (UpDown<<DB3_RPS_NU_UD_SHIFT) | (Pressed<<DB3_RPS_NU_PR_SHIFT);//0x30;
-		buf[9] = 0x30;
+		UpDown = ((orgcmd != light2_sOff) && (orgcmd != light2_sGroupOff));
 
-		sendFrameQueue(PACKET_RADIO,buf,10,NULL,0);
+		switch(RockerID)
+		{
+			case 0:	// Button A
+						if(UpDown)
+							buf[1] = F60201_BUTTON_A1 << F60201_R1_SHIFT;
+						else
+							buf[1] = F60201_BUTTON_A0 << F60201_R1_SHIFT;
+						break;
+
+			case 1:	// Button B
+						if(UpDown)
+							buf[1] = F60201_BUTTON_B1 << F60201_R1_SHIFT;
+						else
+							buf[1] = F60201_BUTTON_B0 << F60201_R1_SHIFT;
+						break;
+
+			default:
+						return false;	// not supported
+		}
+
+		buf[1] |= F60201_EB_MASK;		// button is pressed
+
+		buf[2]=(sID >> 24) & 0xff;		// Sender ID
+		buf[3]=(sID >> 16) & 0xff;
+		buf[4]=(sID >> 8) & 0xff;
+		buf[5]=sID & 0xff;
+
+		buf[6] = S_RPS_T21|S_RPS_NU;	// press button			// b5=T21, b4=NU, b3-b0= RepeaterCount
+
+		//char buff[512];
+		//sprintf(buff,"%02X %02X %02X %02X %02X %02X %02X",buf[0],buf[1],buf[2],buf[3],buf[4],buf[5],buf[6]);
+		//_log.Log(LOG_ERROR,buff);
+
+		sendFrameQueue(PACKET_RADIO,buf,7,NULL,0);
 
 		//Next command is send a bit later (button release)
-		buf[1] = 0;
-		buf[9] = 0x20;
-		sendFrameQueue(PACKET_RADIO,buf,10,NULL,0);
+		buf[1] = 0;				// no button press
+		buf[6] = S_RPS_T21;	// release button			// b5=T21, b4=NU, b3-b0= RepeaterCount
+		//sprintf(buff,"%02X %02X %02X %02X %02X %02X %02X",buf[0],buf[1],buf[2],buf[3],buf[4],buf[5],buf[6]);
+		//_log.Log(LOG_ERROR,buff);
+
+		sendFrameQueue(PACKET_RADIO,buf,7,NULL,0);
 	}
 	else
 	{
-		//Send dim value
+		// on/off switch with dimming capability: Profile A5-38-02
+		// cf. EnOcean Equipment Profiles v2.6.5 page 12 (4BS format) & 103
+		buf[0]=0xa5;
+		buf[1]=0x2;
+		buf[2]=100;	//level
+		buf[3]=1;	//speed
+		buf[4]=0x09; // Dim Off
 
-		//Dim On DATA_BYTE0 = 0x09
-		//Dim Off DATA_BYTE0 = 0x08
+		buf[5]=(sID >> 24) & 0xff;
+		buf[6]=(sID >> 16) & 0xff;
+		buf[7]=(sID >> 8) & 0xff;
+		buf[8]=sID & 0xff;
 
-		buf[1]=2;
-		buf[2]=iLevel;
-		buf[3]=1;//very fast dimming
+		buf[9]=0x30; // status
 
-		if ((iLevel==0)||(orgcmd==light2_sOff))
-			buf[4]=0x08; //Dim Off
+		if (cmnd!=light2_sSetLevel)
+		{
+			//On/Off
+			unsigned char UpDown = 1;
+			UpDown = ((cmnd != light2_sOff) && (cmnd != light2_sGroupOff));
+
+			buf[1] = (RockerID<<DB3_RPS_NU_RID_SHIFT) | (UpDown<<DB3_RPS_NU_UD_SHIFT) | (Pressed<<DB3_RPS_NU_PR_SHIFT);//0x30;
+			buf[9] = 0x30;
+
+			sendFrameQueue(PACKET_RADIO,buf,10,NULL,0);
+
+			//char buff[512];
+			//sprintf(buff,"%02X %02X %02X %02X %02X %02X %02X %02X %02X %02X",buf[0],buf[1],buf[2],buf[3],buf[4],buf[5],buf[6],buf[7],buf[8],buf[9]);
+			//_log.Log(LOG_ERROR,buff);
+
+			//Next command is send a bit later (button release)
+			buf[1] = 0;
+			buf[9] = 0x20;
+			//sprintf(buff,"%02X %02X %02X %02X %02X %02X %02X %02X %02X %02X",buf[0],buf[1],buf[2],buf[3],buf[4],buf[5],buf[6],buf[7],buf[8],buf[9]);
+			//_log.Log(LOG_ERROR,buff);
+			sendFrameQueue(PACKET_RADIO,buf,10,NULL,0);
+		}
 		else
-			buf[4]=0x09;//Dim On
+		{
+			//Send dim value
 
-		sendFrameQueue(PACKET_RADIO,buf,10,NULL,0);
+			//Dim On DATA_BYTE0 = 0x09
+			//Dim Off DATA_BYTE0 = 0x08
+
+			buf[1]=2;
+			buf[2]=iLevel;
+			buf[3]=1;//very fast dimming
+
+			if ((iLevel==0)||(orgcmd==light2_sOff))
+				buf[4]=0x08; //Dim Off
+			else
+				buf[4]=0x09;//Dim On
+
+			sendFrameQueue(PACKET_RADIO,buf,10,NULL,0);
+		}
 	}
+
 	return true;
 }
 
@@ -739,7 +835,7 @@ void CEnOceanESP3::SendDimmerTeachIn(const char *pdata, const unsigned char leng
 		unsigned long sID = (tsen->LIGHTING2.id1 << 24) | (tsen->LIGHTING2.id2 << 16) | (tsen->LIGHTING2.id3 << 8) | tsen->LIGHTING2.id4;
 		if ((sID<m_id_base) || (sID>m_id_base + 129))
 		{
-			_log.Log(LOG_ERROR, "EnOcean: Can not switch with this DeviceID, use a switch created with our id_base!...");
+			_log.Log(LOG_ERROR, "(2) EnOcean: Can not switch with this DeviceID, use a switch created with our id_base!...");
 			return;
 		}
 
@@ -1710,6 +1806,66 @@ void CEnOceanESP3::ParseRadioDatagram()
 				}
 			}
 			break;
+		case RORG_VLD:
+			{
+				unsigned char DATA_BYTE3=m_buffer[1];
+				unsigned char func = m_buffer[1];
+				unsigned char type = m_buffer[2];
+
+				if(func == 0x04)
+				{
+					// D2-04
+					switch((type & 0xE0) >> 5)
+					{
+						case 3:
+									// Nodon wall module event notification
+									{
+										unsigned char channel = type & 0x1F;
+
+										unsigned char dim_power = m_buffer[3] & 0x7F;		// 0=off, 0x64=100%
+
+										unsigned char ID_BYTE3=m_buffer[4];
+										unsigned char ID_BYTE2=m_buffer[5];
+										unsigned char ID_BYTE1=m_buffer[6];
+										unsigned char ID_BYTE0=m_buffer[7];
+										long id = (ID_BYTE3 << 24) + (ID_BYTE2 << 16) + (ID_BYTE1 << 8) + ID_BYTE0;
+										
+										// m_buffer[8] = 00 ?
+										// m_buffer[9] = 01 ?
+										RBUF tsen;
+										memset(&tsen,0,sizeof(RBUF));
+										tsen.LIGHTING2.packetlength=sizeof(tsen.LIGHTING2)-1;
+										tsen.LIGHTING2.packettype=pTypeLighting2;
+										tsen.LIGHTING2.subtype=sTypeNodon;
+										tsen.LIGHTING2.seqnbr=0;
+
+										tsen.LIGHTING2.id1=(BYTE)ID_BYTE3;
+										tsen.LIGHTING2.id2=(BYTE)ID_BYTE2;
+										tsen.LIGHTING2.id3=(BYTE)ID_BYTE1;
+										tsen.LIGHTING2.id4=(BYTE)ID_BYTE0;
+										tsen.LIGHTING2.level=dim_power;
+										tsen.LIGHTING2.rssi=12;
+
+										tsen.LIGHTING2.unitcode = channel + 1;
+										tsen.LIGHTING2.cmnd     = (dim_power>0) ? light2_sOn : light2_sOff;								
+
+#ifdef ENOCEAN_BUTTON_DEBUG						
+										_log.Log(LOG_NORM, "EnOcean message: 0x%02X Node 0x%08x UnitID: %02X cmd: %02X ",
+											DATA_BYTE3,
+											id,
+											tsen.LIGHTING2.unitcode,
+											tsen.LIGHTING2.cmnd
+										);
+#endif //ENOCEAN_BUTTON_DEBUG
+
+										sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, NULL, 255);
+										return;
+									}
+									break;
+					}
+				}
+			}
+
 		default:
 			_log.Log(LOG_NORM, "EnOcean: Unhandled RORG (%02x)", m_buffer[0]);
 			break;

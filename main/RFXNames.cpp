@@ -549,6 +549,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLighting2, sTypeAC, "AC" },
 		{ pTypeLighting2, sTypeHEU, "HomeEasy EU" },
 		{ pTypeLighting2, sTypeANSLUT, "Anslut" },
+		{ pTypeLighting2, sTypeNodon, "Nodon" },
 
 		{ pTypeLighting3, sTypeKoppla, "Ikea Koppla" },
 
