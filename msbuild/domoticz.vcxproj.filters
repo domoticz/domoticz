@@ -1879,6 +1879,9 @@
     <ClInclude Include="..\webserver\Websockets.hpp">
       <Filter>Webserver</Filter>
     </ClInclude>
+    <ClInclude Include="..\notifications\NotificationBrowser.h">
+      <Filter>Notifications</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2462,6 +2465,9 @@
     </ClCompile>
     <ClCompile Include="..\webserver\Websockets.cpp">
       <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="..\notifications\NotificationBrowser.cpp">
+      <Filter>Notifications</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

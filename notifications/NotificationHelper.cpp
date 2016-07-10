@@ -16,7 +16,7 @@
 #include "NotificationKodi.h"
 #include "NotificationLogitechMediaServer.h"
 #include "NotificationGCM.h"
-
+#include "NotificationBrowser.h"
 
 #include <boost/lexical_cast.hpp>
 #include <map>
@@ -45,6 +45,7 @@ CNotificationHelper::CNotificationHelper()
 	AddNotifier(new CNotificationKodi());
 	AddNotifier(new CNotificationLogitechMediaServer());
 	AddNotifier(new CNotificationGCM());
+	AddNotifier(new CNotificationBrowser());
 }
 
 CNotificationHelper::~CNotificationHelper()

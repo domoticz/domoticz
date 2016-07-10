@@ -3,6 +3,9 @@
 #include "../webserver/Websockets.hpp"
 #include "../main/mainworker.h"
 
+boost::signals2::signal<void(const std::string &Subject, const std::string &Text, const std::string &ExtraData, const bool bFromNotification)> sOnNotificationReceived;
+
+
 CWebSocketPush::CWebSocketPush(http::server::CWebsocket *sock)
 {
 	listenRoomplan = false;
@@ -18,6 +21,7 @@ void CWebSocketPush::Start()
 	}
 	isStarted = true;
 	m_sConnection = m_mainworker.sOnDeviceReceived.connect(boost::bind(&CWebSocketPush::OnDeviceReceived, this, _1, _2, _3, _4));
+	m_sNotification = sOnNotificationReceived.connect(boost::bind(&CWebSocketPush::OnNotificationReceived, this, _1, _2, _3, _4));
 }
 
 void CWebSocketPush::Stop()
@@ -27,8 +31,12 @@ void CWebSocketPush::Stop()
 	}
 	isStarted = false;
 	ClearListenTable();
-	if (m_sConnection.connected())
+	if (m_sConnection.connected()) {
 		m_sConnection.disconnect();
+	}
+	if (m_sNotification.connected()) {
+		m_sNotification.disconnect();
+	}
 }
 
 void CWebSocketPush::ListenTo(const unsigned long long DeviceRowIdx)
@@ -98,4 +106,9 @@ void CWebSocketPush::OnDeviceReceived(const int m_HwdID, const unsigned long lon
 	if (WeListenTo(DeviceRowIdx)) {
 		// push notification to web socket
 	}
+}
+
+void CWebSocketPush::OnNotificationReceived(const std::string & Subject, const std::string & Text, const std::string & ExtraData, const bool bFromNotification)
+{
+	// push message to websocket
 }
