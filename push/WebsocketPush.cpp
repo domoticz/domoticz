@@ -111,4 +111,5 @@ void CWebSocketPush::OnDeviceReceived(const int m_HwdID, const unsigned long lon
 void CWebSocketPush::OnNotificationReceived(const std::string & Subject, const std::string & Text, const std::string & ExtraData, const int Priority, const std::string & Sound, const bool bFromNotification)
 {
 	// push message to websocket
+	m_sock->OnMessage(Subject, Text, ExtraData, Priority, Sound, bFromNotification);
 }

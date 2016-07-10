@@ -1,6 +1,7 @@
 define(['app'], function (app) {
-	app.controller('TemperatureController', [ '$scope', '$rootScope', '$location', '$http', '$interval', 'permissions', function($scope,$rootScope,$location,$http,$interval,permissions) {
-
+    app.controller('TemperatureController', ['$scope', '$rootScope', '$location', '$http', '$interval', 'permissions', 'livesocket', function ($scope, $rootScope, $location, $http, $interval, permissions, livesocket) {
+        livesocket.Init();
+        livesocket.getJson("json.htm?type=devices&filter=temp&used=true&order=Name");
 		MakeFavorite = function(id,isfavorite)
 		{
 			if (!permissions.hasPermission("Admin")) {
@@ -1030,7 +1031,7 @@ define(['app'], function (app) {
 				  if (item.Notifications == "true")
 					xhtm+='<a class="btnsmall-sel" onclick="ShowNotifications(' + item.idx + ',\'' + escape(item.Name) + '\', \'#tempcontent\', \'ShowTemps\');" data-i18n="Notifications">Notifications</a>';
 				  else
-					xhtm+='<a class="btnsmall" onclick="ShowNotifications(' + item.idx + ',\'' + escape(item.Name) + '\', \'#tempcontent\', \'ShowTemps\');" data-i18n="Notifications">Notifications</a>';
+				      xhtm += '<a class="btnsmall" onclick="ShowNotifications(' + item.idx + ',\'' + escape(item.Name) + '\', \'#tempcontent\', \'ShowTemps\');" data-i18n="Notifications">Notifications</a>';
 				}
 				if (typeof item.forecast_url != 'undefined') {
 					xhtm+='&nbsp;<a class="btnsmall" onclick="ShowForecast(\'' + atob(item.forecast_url) + '\',\'' + escape(item.Name) + '\', \'#tempcontent\', \'ShowTemps\');" data-i18n="Forecast">Forecast</a>';

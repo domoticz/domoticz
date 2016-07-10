@@ -61,6 +61,7 @@ namespace http {
 			void SendPing();
 			void store_session_id(const request &req, const reply &rep);
 			void OnDeviceChanged(const unsigned long long DeviceRowIdx);
+			void OnMessage(const std::string & Subject, const std::string & Text, const std::string & ExtraData, const int Priority, const std::string & Sound, const bool bFromNotification);
 		private:
 			void OnReceiveText(const std::string &packet_data);
 			void OnReceiveBinary(const std::string &packet_data);

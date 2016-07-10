@@ -5,45 +5,45 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 #include "../push/WebsocketPush.h"
+#include "../json/json.h"
 // debug
 #include "../main/Logger.h"
 
 namespace http {
 	namespace server {
 
-std::string CreateFrame(opcodes opcode, const std::string &payload)
-{
-	// note: we dont do masking nor fragmentation
-	const unsigned char FIN_MASK = 0x80;
-	const unsigned char OPCODE_MASK = 0x0f;
-	size_t_t payloadlen = payload.size();
-	std::string res = "";
-	res += ((unsigned char)(FIN_MASK + (((unsigned char)opcode) & OPCODE_MASK)));
-	if (payloadlen <= 125) {
-		res += (unsigned char)payloadlen;
-	}
-	else {
-		if (payloadlen <= 0xffff) {
-			res += (unsigned char)126;
-			int bits = 16;
-			while (bits) {
-				bits -= 8;
-				res += (unsigned char)((payloadlen >> bits) & 0xff);
+		std::string CreateFrame(opcodes opcode, const std::string &payload)
+		{
+			// note: we dont do masking nor fragmentation
+			const unsigned char FIN_MASK = 0x80;
+			const unsigned char OPCODE_MASK = 0x0f;
+			size_t_t payloadlen = payload.size();
+			std::string res = "";
+			res += ((unsigned char)(FIN_MASK + (((unsigned char)opcode) & OPCODE_MASK)));
+			if (payloadlen < 126) {
+				res += (unsigned char)payloadlen;
 			}
-		}
-		else {
-			res += (unsigned char)127;
-			int bits = 64;
-			while (bits) {
-				bits -= 8;
-				unsigned char ch = (unsigned char)((size_t_t)(payloadlen >> bits) & 0xff);
-				res += (unsigned char)((size_t_t)(payloadlen >> bits) & 0xff);
+			else {
+				if (payloadlen <= 0xffff) {
+					res += (unsigned char)126;
+					int bits = 16;
+					while (bits) {
+						bits -= 8;
+						res += (unsigned char)((payloadlen >> bits) & 0xff);
+					}
+				}
+				else {
+					res += (unsigned char)127;
+					int bits = 64;
+					while (bits) {
+						bits -= 8;
+						res += (unsigned char)((payloadlen >> bits) & 0xff);
+					}
+				}
 			}
+			res += payload;
+			return res;
 		}
-	}
-	res += payload;
-	return res;
-}
 
 CWebsocketFrame::CWebsocketFrame() { };
 CWebsocketFrame::~CWebsocketFrame() {};
@@ -387,6 +387,18 @@ void CWebsocket::OnDeviceChanged(const unsigned long long DeviceRowIdx)
 	std::string query = "type=devices&rid=" + boost::lexical_cast<std::string>(DeviceRowIdx);
 	std::string packet = "\"-1/" + query + "\"";
 	OnReceiveText(packet);
+}
+
+void CWebsocket::OnMessage(const std::string & Subject, const std::string & Text, const std::string & ExtraData, const int Priority, const std::string & Sound, const bool bFromNotification)
+{
+	Json::Value json;
+
+	json["event"] = "notification";
+	json["Text"] = Text;
+	// todo: other parameters
+	std::string response = json.toStyledString();
+	std::string frame = CreateFrame(opcode_text, response);
+	conn->MyWrite(frame);
 }
 
 }

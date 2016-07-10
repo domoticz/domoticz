@@ -1277,6 +1277,9 @@
     <None Include="..\www\views\floorplans.html">
       <Filter>www\views</Filter>
     </None>
+    <None Include="..\www\js\angular-websocket.js">
+      <Filter>www\js</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\webserver\Base64.h">

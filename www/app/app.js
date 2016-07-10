@@ -1,4 +1,31 @@
-define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-flexible-height', 'highcharts-ng', 'angular-tree-control','ngDraggable','ngSanitize','angular-md5','ui.bootstrap','angular.directives-round-progress','angular.scrollglue', 'angular-websocket'], function (angularAMD) {
+// request permission on page load
+document.addEventListener('DOMContentLoaded', function () {
+    if (Notification.permission !== "granted")
+        Notification.requestPermission();
+});
+
+function notifyMe(title, body) {
+    if (!Notification) {
+        alert('Desktop notifications not available in your browser. Try Chromium.');
+        return;
+    }
+
+    if (Notification.permission !== "granted")
+        Notification.requestPermission();
+    else {
+        var notification = new Notification(title, {
+            //icon: 'http://cdn.sstatic.net/stackexchange/img/logos/so/so-icon.png',
+            body: body,
+        });
+
+        notification.onclick = function () {
+            window.open("http://stackoverflow.com/a/13328397/1269037");
+        };
+
+    }
+
+}
+define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-flexible-height', 'highcharts-ng', 'angular-tree-control', 'ngDraggable', 'ngSanitize', 'angular-md5', 'ui.bootstrap', 'angular.directives-round-progress', 'angular.scrollglue', 'angular-websocket'], function (angularAMD) {
 	var app = angular.module('domoticz', ['ngRoute','ngAnimate','ngGrid','highcharts-ng', 'treeControl','ngDraggable','ngSanitize','angular-md5','ui.bootstrap','angular.directives-round-progress','angular.directives-round-progress','angular.scrollglue', 'ngWebsocket']);
 
 		isOnline=false;
@@ -106,7 +133,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 	  };
 	});
 
-		app.service('livesocket', [ '$websocket', '$http', '$rootScope', function ($websocket, $http, $rootScope) {
+	app.service('livesocket', ['$websocket', '$http', '$rootScope', function ($websocket, $http, $rootScope) {
 			return {
 				initialised: false,
 				getJson: function(url, callback_fn) {
@@ -118,7 +145,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 						var use_http = !(url.substr(0, 9) == "json.htm?"); // && url.match(/type=devices/));
 						if (use_http) {
 							// get via json get
-							url = "http://192.168.33.11:8080/" + url; // todo, test
+							url = "http://localhost:8080/" + url; // todo, test
 							$http.get(url).success(callback_fn);
 						}
 						else {
@@ -131,9 +158,9 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 						}
 					},
 				Init: function () {
-					if (this.initialised) {
+				    if (this.initialised) {
 						return;
-					}
+				    }
 					this.initialised = true;
 					var loc = window.location, ws_uri;
 					if (loc.protocol === "https:") {
@@ -153,13 +180,19 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 					});
 					this.websocket.callbackqueue = [];
 					this.websocket.$on('$open', function () {
-						// alert("websocket opened");
+					    // alert("websocket opened");
 					});
 					this.websocket.$on('$close', function () {
+					    // alert("websocket closed");
 					});
 					this.websocket.$on('$message', function (msg) {
-						msg = JSON.parse(msg);
-						var requestid = msg.requestid;
+					    msg = JSON.parse(msg);
+					    switch (msg.event) {
+					        case "notification":
+					            notifyMe('From Domoticz', msg.Text);
+					            return;
+                        }
+					    var requestid = msg.requestid;
 						if (requestid >= 0) {
 							var callback_obj = this.callbackqueue[requestid];
 							var settings = callback_obj.settings;
@@ -492,7 +525,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				isloggedin: false,
 				rights: -1
 		};
-		permissions.setPermissions(permissionList);					
+		permissions.setPermissions(permissionList);
 
 		$rootScope.MakeGlobalConfig = function()
 		{
@@ -779,7 +812,12 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			}
 		};
 
-		app.run(function () { app.run(function ($livesocket) { $livesocket.Init(); })});
+        /* this doesnt run, for some reason */
+		app.run(function (livesocket) {
+		    console.log(livesocket);
+		    //alert('run');
+		    livesocket.Init();
+		});
 			/*
 			var oAjax = $.ajax;
 			$.ajax = function (settings) {

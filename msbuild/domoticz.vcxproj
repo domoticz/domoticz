@@ -256,6 +256,7 @@
     <None Include="..\www\js\angular-sanitize.min.js.gz" />
     <None Include="..\www\js\angular-scrollglue.js.gz" />
     <None Include="..\www\js\angular-tree-control.js.gz" />
+    <None Include="..\www\js\angular-websocket.js" />
     <None Include="..\www\js\angular.min.js.gz" />
     <None Include="..\www\js\angularAMD.min.js.gz" />
     <None Include="..\www\js\blockly_compressed.js.gz" />

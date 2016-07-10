@@ -1,6 +1,7 @@
 define(['app'], function (app) {
     app.controller('LightsController', ['$scope', '$rootScope', '$location', '$http', '$interval', 'permissions', 'livesocket', function ($scope, $rootScope, $location, $http, $interval, permissions, livesocket) {
 
+        livesocket.Init();
         DeleteTimer = function (idx) {
             bootbox.confirm($.t("Are you sure to delete this timers?\n\nThis action can not be undone..."), function (result) {
                 if (result == true) {
