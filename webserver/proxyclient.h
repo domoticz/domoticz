@@ -15,6 +15,7 @@
 #include "connection_manager.hpp"
 #include "../main/Logger.h"
 #include "../hardware/DomoticzTCP.h"
+#include "WebsocketHandler.h"
 
 namespace tcp {
 	namespace server {
@@ -65,6 +66,7 @@ namespace http {
 			std::string compute_accept_header(const std::string &websocket_key);
 			std::string SockWriteBuf;
 			void MyWrite(pdu_type type, CValueLengthPart &parameters);
+			void WS_Write(const std::string &packet_data);
 			void SocketWrite(ProxyPdu *pdu);
 			/// make sure we only write one packet at a time
 			boost::mutex writeMutex;
@@ -81,7 +83,8 @@ namespace http {
 			PDUPROTO(PDU_SERV_RECEIVE)
 			PDUPROTO(PDU_SERV_SEND)
 			PDUPROTO(PDU_SERV_ROSTERIND)
-			void GetRequest(const std::string &originatingip, boost::asio::mutable_buffers_1 _buf, http::server::reply &reply_);
+			PDUPROTO(PDU_WS_RECEIVE)
+				void GetRequest(const std::string &originatingip, boost::asio::mutable_buffers_1 _buf, http::server::reply &reply_);
 			void SendServDisconnect(const std::string &token, int reason);
 
 			void PduHandler(ProxyPdu &pdu);
@@ -110,6 +113,8 @@ namespace http {
 
 			// is protected by writeMutex
 			std::queue<ProxyPdu *> writeQ;
+			/// websocket stuff
+			CWebsocketHandler *websocket_handler;
 		};
 
 		class CProxyManager {

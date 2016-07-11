@@ -9,7 +9,6 @@
 #include "../webserver/Base64.h"
 #include "../tcpserver/TCPServer.h"
 #include "sha1.hpp"
-#include "Websockets.hpp"
 
 extern std::string szAppVersion;
 
@@ -37,7 +36,7 @@ namespace http {
 			timeout_(TIMEOUT),
 			timer_(io_service, boost::posix_time::seconds(TIMEOUT)),
 			write_in_progress(false)
-		{
+			{
 			_allowed_subsystems = 0;
 			m_sql.GetPreferencesVar("MyDomoticzUserId", _apikey);
 			m_sql.GetPreferencesVar("MyDomoticzPassword", _password);
@@ -51,6 +50,7 @@ namespace http {
 			}
 			m_pWebEm = webEm;
 			m_pDomServ = NULL;
+			websocket_handler = NULL;
 		}
 
 		void CProxyClient::WriteSlaveData(const std::string &token, const char *pData, size_t Length)
@@ -180,6 +180,13 @@ namespace http {
 			boost::asio::async_write(_socket, boost::asio::buffer(SockWriteBuf), boost::bind(&CProxyClient::handle_write, shared_from_this(), boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
 		}
 
+		void CProxyClient::WS_Write(const std::string &packet_data)
+		{
+			CValueLengthPart parameters;
+			ADDPDUSTRINGBINARY(packet_data);
+			MyWrite(PDU_WS_SEND, parameters);
+		}
+
 		void CProxyClient::MyWrite(pdu_type type, CValueLengthPart &parameters)
 		{
 			boost::unique_lock<boost::mutex>(writeMutex);
@@ -243,7 +250,7 @@ namespace http {
 				random[i] = rand();
 			}
 			websocket_key = base64_encode(random, sizeof(random));
-			SockWriteBuf = "GET /json HTTP/1.1\r\nHost: my.domoticz.com\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nOrigin: Domoticz\r\nSec-Websocket-Version: 13\r\nSec-Websocket-Protocol: MyDomoticz\r\nSec-Websocket-Key: " + websocket_key + "\r\n\r\n";
+			SockWriteBuf = "GET /proxyrequest HTTP/1.1\r\nHost: my.domoticz.com\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nOrigin: Domoticz\r\nSec-Websocket-Version: 13\r\nSec-Websocket-Protocol: MyDomoticz\r\nSec-Websocket-Key: " + websocket_key + "\r\n\r\n";
 			boost::asio::async_write(_socket, boost::asio::buffer(SockWriteBuf), boost::bind(&CProxyClient::handle_write, shared_from_this(), boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
 		}
 
@@ -535,6 +542,19 @@ namespace http {
 			}
 		}
 
+		PDUFUNCTION(PDU_WS_RECEIVE)
+		{
+			GETPDUSTRING(packet_data);
+
+			if (!websocket_handler) {
+				websocket_handler = new CWebsocketHandler(boost::bind(&CProxyClient::WS_Write, this, _1));
+			}
+			boost::tribool result = websocket_handler->Handle(packet_data);
+			if (result) {
+				// todo: write response
+			}
+		}
+
 		void CProxyClient::PduHandler(ProxyPdu &pdu)
 		{
 			CValueLengthPart part(pdu);
@@ -550,6 +570,7 @@ namespace http {
 			ONPDU(PDU_SERV_RECEIVE)
 			ONPDU(PDU_SERV_SEND)
 			ONPDU(PDU_SERV_ROSTERIND)
+			ONPDU(PDU_WS_RECEIVE)
 			default:
 				_log.Log(LOG_ERROR, "PROXY: pdu type: %d not expected.", pdu._type);
 				break;
@@ -648,6 +669,9 @@ namespace http {
 
 		CProxyClient::~CProxyClient()
 		{
+			if (websocket_handler) {
+				delete websocket_handler;
+			}
 		}
 
 		CProxyManager::CProxyManager(const std::string& doc_root, http::server::cWebem *webEm, tcp::server::CTCPServer *domServ)

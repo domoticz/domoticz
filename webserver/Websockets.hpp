@@ -2,8 +2,7 @@
 #include <boost/logic/tribool.hpp>
 #include <string>
 #include "../push/WebsocketPush.h"
-#include "request.hpp"
-#include "reply.hpp"
+#include "WebsocketHandler.h"
 
 #define size_t_t long long
 
@@ -54,12 +53,11 @@ namespace http {
 
 		class CWebsocket {
 		public:
-			CWebsocket(connection *pConn, cWebem *pWebEm);
+			CWebsocket(boost::function<void(const std::string &packet_data)> _MyWrite, CWebsocketHandler *handler);
 			~CWebsocket();
 			boost::tribool parse(const unsigned char *begin, size_t_t size, size_t_t &bytes_consumed, bool &keep_alive);
 			void SendClose(const std::string &packet_data);
 			void SendPing();
-			void store_session_id(const request &req, const reply &rep);
 			void OnDeviceChanged(const unsigned long long DeviceRowIdx);
 			void OnMessage(const std::string & Subject, const std::string & Text, const std::string & ExtraData, const int Priority, const std::string & Sound, const bool bFromNotification);
 		private:
@@ -70,11 +68,10 @@ namespace http {
 			std::string packet_data;
 			bool start_new_packet;
 			opcodes last_opcode;
-			connection *conn;
 			const char *OUR_PING_ID = "fd";
-			std::string sessionid;
-			cWebem* myWebem;
 			CWebSocketPush m_Push;
+			CWebsocketHandler *handler;
+			boost::function<void(const std::string &packet_data)> MyWrite;
 		};
 
 	}

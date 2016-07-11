@@ -1,11 +1,6 @@
 #include "stdafx.h"
 #include "Websockets.hpp"
-#include "connection.hpp"
-#include "cWebem.h"
-#include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
-#include "../push/WebsocketPush.h"
-#include "../json/json.h"
 // debug
 #include "../main/Logger.h"
 
@@ -173,11 +168,10 @@ opcodes CWebsocketFrame::Opcode() {
 	return opcode;
 };
 
-CWebsocket::CWebsocket(connection *pConn, cWebem *pWebEm) : m_Push(this)
+CWebsocket::CWebsocket(boost::function<void(const std::string &packet_data)> _MyWrite, CWebsocketHandler *handler) : m_Push(this)
 {
 	start_new_packet = true;
-	conn = pConn;
-	myWebem = pWebEm;
+	MyWrite = _MyWrite;
 }
 
 CWebsocket::~CWebsocket()
@@ -242,41 +236,7 @@ boost::tribool CWebsocket::parse(const unsigned char *begin, size_t_t size, size
 //       if everything works. We need a proper implementation here.
 void CWebsocket::OnReceiveText(const std::string &packet_data)
 {
-	request req;
-	reply rep;
-	// todo: we now assume the session (still) exists
-	WebEmSession session;
-	std::map<std::string, WebEmSession>::iterator itt = myWebem->m_sessions.find(session.id);
-	if (itt != myWebem->m_sessions.end()) {
-		session = itt->second;
-	}
-	if (session.rights <= 0) {
-		// of course we wont want this in the production code
-		session.rights = 1;
-	}
-	req.method = "GET";
-	// Expected format of packet_data: "requestid/query-string" (including the quotes)
-	std::string data = packet_data.substr(1, packet_data.length() - 2); // json-decode, todo: include json.h
-	size_t_t pos = data.find("/");
-	std::string requestid = data.substr(0, pos);
-	std::string querystring = data.substr(pos + 1);
-	req.uri = "/json.htm?" + querystring;
-	req.http_version_major = 1;
-	req.http_version_minor = 1;
-	req.headers.resize(0); // todo: do we need any headers?
-	req.content.clear();
-	if (myWebem->CheckForPageOverride(session, req, rep)) {
-		if (rep.status == reply::ok) {
-			// todo: json_encode
-			std::string response = "{ \"event\": \"response\", \"requestid\": " + requestid + ", \"data\": " + rep.content + " }";
-			std::string frame = CreateFrame(opcode_text, response);
-			conn->MyWrite(frame);
-			return;
-		}
-	}
-	std::string response = "0" + requestid + "/{ \"error\": \"Internal Server Error!!!\" }";
-	std::string frame = CreateFrame(opcode_text, response);
-	conn->MyWrite(frame);
+	boost::tribool result = handler->Handle(packet_data);
 }
 
 void CWebsocket::OnReceiveBinary(const std::string &packet_data)
@@ -291,7 +251,7 @@ void CWebsocket::SendPing()
 {
 	// todo: set the ping timer
 	std::string frame = CreateFrame(opcode_ping, OUR_PING_ID);
-	conn->MyWrite(frame);
+	MyWrite(frame);
 }
 
 void CWebsocket::OnPong(const std::string &packet_data)
@@ -304,82 +264,13 @@ void CWebsocket::OnPong(const std::string &packet_data)
 void CWebsocket::SendPong(const std::string &packet_data)
 {
 	std::string frame = CreateFrame(opcode_pong, packet_data);
-	conn->MyWrite(frame);
+	MyWrite(frame);
 }
 
 void CWebsocket::SendClose(const std::string &packet_data)
 {
 	std::string frame = CreateFrame(opcode_close, packet_data);
-	conn->MyWrite(frame);
-}
-
-// todo: move this function to websocket handler
-void CWebsocket::store_session_id(const request &req, const reply &rep)
-{
-	//Check cookie if still valid
-	const char* cookie_header = request::get_req_header(&req, "Cookie");
-	if (cookie_header != NULL)
-	{
-		std::string sSID;
-		std::string sAuthToken;
-		std::string szTime;
-
-		// Parse session id and its expiration date
-		std::string scookie = cookie_header;
-		int fpos = scookie.find("SID=");
-		if (fpos != std::string::npos)
-		{
-			scookie = scookie.substr(fpos);
-			fpos = 0;
-			size_t_t epos = scookie.find(';');
-			if (epos != std::string::npos)
-			{
-				scookie = scookie.substr(0, epos);
-			}
-		}
-		int upos = scookie.find("_", fpos);
-		int ppos = scookie.find(".", upos);
-
-		if ((fpos != std::string::npos) && (upos != std::string::npos) && (ppos != std::string::npos))
-		{
-			sSID = scookie.substr(fpos + 4, upos - fpos - 4);
-			sAuthToken = scookie.substr(upos + 1, ppos - upos - 1);
-			szTime = scookie.substr(ppos + 1);
-
-			sessionid = sSID;
-		}
-
-		if (sessionid.empty()) {
-			for (unsigned int i = 0; i < rep.headers.size(); i++) {
-				if (boost::iequals(rep.headers[i].name, "Set-Cookie")) {
-					// Parse session id and its expiration date
-					scookie = rep.headers[i].value;
-					int fpos = scookie.find("SID=");
-					if (fpos != std::string::npos)
-					{
-						scookie = scookie.substr(fpos);
-						fpos = 0;
-						size_t_t epos = scookie.find(';');
-						if (epos != std::string::npos)
-						{
-							scookie = scookie.substr(0, epos);
-						}
-					}
-					int upos = scookie.find("_", fpos);
-					int ppos = scookie.find(".", upos);
-
-					if ((fpos != std::string::npos) && (upos != std::string::npos) && (ppos != std::string::npos))
-					{
-						sSID = scookie.substr(fpos + 4, upos - fpos - 4);
-						sAuthToken = scookie.substr(upos + 1, ppos - upos - 1);
-						szTime = scookie.substr(ppos + 1);
-
-						sessionid = sSID;
-					}
-				}
-			}
-		}
-	}
+	MyWrite(frame);
 }
 
 void CWebsocket::OnDeviceChanged(const unsigned long long DeviceRowIdx)
@@ -391,6 +282,7 @@ void CWebsocket::OnDeviceChanged(const unsigned long long DeviceRowIdx)
 
 void CWebsocket::OnMessage(const std::string & Subject, const std::string & Text, const std::string & ExtraData, const int Priority, const std::string & Sound, const bool bFromNotification)
 {
+# if 0
 	Json::Value json;
 
 	json["event"] = "notification";
@@ -398,7 +290,8 @@ void CWebsocket::OnMessage(const std::string & Subject, const std::string & Text
 	// todo: other parameters
 	std::string response = json.toStyledString();
 	std::string frame = CreateFrame(opcode_text, response);
-	conn->MyWrite(frame);
+	MyWrite(frame);
+#endif
 }
 
 }

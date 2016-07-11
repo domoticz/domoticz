@@ -30,7 +30,7 @@ connection::connection(boost::asio::io_service& io_service,
 				request_handler_(handler),
 				read_timeout_(read_timeout),
 				read_timer_(io_service, boost::posix_time::seconds(read_timeout)),
-				websocket_handler(this, request_handler_.Get_myWebem()),
+				websocket_handler(boost::bind(&connection::MyWrite, this, _1), new CWebsocketHandler(boost::bind(&connection::MyWrite, this, _1))),
 				status_(INITIALIZING),
 				default_abandoned_timeout_(20*60), // 20mn before stopping abandoned connection
 				abandoned_timer_(io_service, boost::posix_time::seconds(default_abandoned_timeout_)),
@@ -54,7 +54,7 @@ connection::connection(boost::asio::io_service& io_service,
 				request_handler_(handler),
 				read_timeout_(read_timeout),
 				read_timer_(io_service, boost::posix_time::seconds(read_timeout)),
-				websocket_handler(this, request_handler_.Get_myWebem()),
+				websocket_handler(boost::bind(&connection::MyWrite, this, _1), new CWebsocketHandler(boost::bind(&connection::MyWrite, this, _1))),
 				status_(INITIALIZING),
 				default_abandoned_timeout_(20*60), // 20mn before stopping abandoned connection
 				abandoned_timer_(io_service, boost::posix_time::seconds(default_abandoned_timeout_)),
@@ -317,7 +317,7 @@ void connection::handle_read(const boost::system::error_code& error, std::size_t
 						// from now on we are a persistant connection
 						keepalive_ = true;
 						// keep sessionid to access our session during websockets requests
-						websocket_handler.store_session_id(request_, reply_);
+						// todo: websocket_handler.store_session_id(request_, reply_);
 						// todo: check if multiple connection from the same client in CONNECTING state?
 				}
 				if (keepalive_) {
