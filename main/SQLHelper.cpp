@@ -505,6 +505,18 @@ const char *sqlCreateHttpLink =
 	"[Enabled] INTEGER DEFAULT 1, "
 	"[IncludeUnit] INTEGER default 0); ";
 
+const char *sqlCreateGooglePubSubLink =
+"CREATE TABLE IF NOT EXISTS [GooglePubSubLink] ("
+"[ID] INTEGER PRIMARY KEY, "
+"[DeviceID]  BIGINT NOT NULL, "
+"[DelimitedValue] INTEGER DEFAULT 0, "
+"[TargetType] INTEGER DEFAULT 0, "
+"[TargetVariable] VARCHAR(100), "
+"[TargetDeviceID] INTEGER, "
+"[TargetProperty] VARCHAR(100), "
+"[Enabled] INTEGER DEFAULT 1, "
+"[IncludeUnit] INTEGER default 0); ";
+
 const char *sqlCreateFibaroLink =
 "CREATE TABLE IF NOT EXISTS [FibaroLink] ("
 "[ID] INTEGER PRIMARY KEY, "
@@ -714,6 +726,7 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateEnoceanSensors);
 	query(sqlCreateFibaroLink);
 	query(sqlCreateHttpLink);
+	query(sqlCreateGooglePubSubLink);
 	query(sqlCreateUserVariables);
 	query(sqlCreateFloorplans);
 	query(sqlCreateFloorplanOrderTrigger);
@@ -1913,6 +1926,7 @@ bool CSQLHelper::OpenDatabase()
 				<< "([Type] = " << HTYPE_TOONTHERMOSTAT << ") OR "
 				<< "([Type] = " << HTYPE_Wunderground << ") OR "
 				<< "([Type] = " << HTYPE_ForecastIO << ") OR "
+				<< "([Type] = " << HTYPE_AccuWeather << ") OR "
 				<< "([Type] = " << HTYPE_RazberryZWave << ") OR "
 				<< "([Type] = " << HTYPE_OpenZWave << ")"
 				<< ")";
@@ -4017,11 +4031,8 @@ void CSQLHelper::UpdateRainLog()
 			if (splitresults.size()<2)
 				continue; //impossible
 
-			float total=0;
-			int rate=0;
-
-			rate=atoi(splitresults[0].c_str());
-			total = static_cast<float>(atof(splitresults[1].c_str()));
+			int rate=atoi(splitresults[0].c_str());
+			float total = static_cast<float>(atof(splitresults[1].c_str()));
 
 			//insert record
 			safe_query(

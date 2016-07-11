@@ -158,6 +158,8 @@ enum _eHardwareTypes {
 	HTYPE_RAVEn,	    		//76
 	HTYPE_S0SmartMeterTCP,		//77
 	HTYPE_DenkoviSmartdenLan,	//78
+	HTYPE_AccuWeather,			//79
+	HTYPE_Comm5Serial,          //80
 	HTYPE_END
 };
 

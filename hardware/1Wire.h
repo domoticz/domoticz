@@ -26,7 +26,6 @@ private:
 	int m_switchThreadPeriod; // milliseconds
 	const std::string &m_path;
 
-	static void LogSystem();
 	void DetectSystem();
 	bool StartHardware();
 	bool StopHardware();

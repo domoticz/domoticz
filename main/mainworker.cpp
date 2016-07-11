@@ -82,6 +82,7 @@
 #include "../hardware/SatelIntegra.h"
 #include "../hardware/LogitechMediaServer.h"
 #include "../hardware/Comm5TCP.h"
+#include "../hardware/Comm5Serial.h"
 #include "../hardware/CurrentCostMeterSerial.h"
 #include "../hardware/CurrentCostMeterTCP.h"
 #include "../hardware/SolarEdgeAPI.h"
@@ -94,6 +95,7 @@
 #include "../hardware/Fitbit.h"
 #include "../hardware/RAVEn.h"
 #include "../hardware/DenkoviSmartdenLan.h"
+#include "../hardware/AccuWeather.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -648,6 +650,9 @@ bool MainWorker::AddHardwareFromParams(
     case HTYPE_RAVEn:
 		pHardware = new RAVEn(ID, SerialPort);
 		break;
+	case HTYPE_Comm5Serial:
+		pHardware = new Comm5Serial(ID, SerialPort);
+		break;
 	case HTYPE_RFXLAN:
 		//LAN
 		pHardware = new RFXComTCP(ID, Address, Port);
@@ -787,6 +792,9 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_ForecastIO:
 		pHardware = new CForecastIO(ID,Username,Password);
 		break;
+	case HTYPE_AccuWeather:
+		pHardware = new CAccuWeather(ID, Username, Password);
+		break;
 	case HTYPE_SolarEdgeAPI:
 		pHardware = new SolarEdgeAPI(ID, Mode1, Username, Password);
 		break;
@@ -893,6 +901,7 @@ bool MainWorker::Start()
 	AddAllDomoticzHardware();
 	m_datapush.Start();
 	m_httppush.Start();
+	m_googlepubsubpush.Start();
 #ifdef PARSE_RFXCOM_DEVICE_LOG
 	if (m_bStartHardware==false)
 		m_bStartHardware=true;
@@ -924,6 +933,7 @@ bool MainWorker::Stop()
 		m_eventsystem.StopEventSystem();
 		m_datapush.Stop();
 		m_httppush.Stop();
+		m_googlepubsubpush.Stop();
 
 		//    m_cameras.StopCameraGrabber();
 
@@ -2750,8 +2760,44 @@ void MainWorker::decode_Rain(const int HwdID, const _eHardwareTypes HwdType, con
 	unsigned char cmnd=0;
 	unsigned char SignalLevel=pResponse->RAIN.rssi;
 	unsigned char BatteryLevel = get_BateryLevel(HwdType,pResponse->RAIN.subtype==sTypeRAIN1, pResponse->RAIN.battery_level & 0x0F);
-	int Rainrate=(pResponse->RAIN.rainrateh * 256) + pResponse->RAIN.rainratel;
+	
+	int Rainrate = (pResponse->RAIN.rainrateh * 256) + pResponse->RAIN.rainratel;
+	
 	float TotalRain=float((pResponse->RAIN.raintotal1 * 65535) + (pResponse->RAIN.raintotal2 * 256) + pResponse->RAIN.raintotal3) / 10.0f;
+
+	if (subType != sTypeRAINWU)
+	{
+		Rainrate = 0;
+		//Calculate our own rainrate
+		std::vector<std::vector<std::string> > result;
+
+		//Get our index
+		result = m_sql.safe_query(
+			"SELECT ID FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", HwdID, ID.c_str(), Unit, devType, subType);
+		if (result.size() != 0)
+		{
+			unsigned long long ulID;
+			std::stringstream s_str(result[0][0]);
+			s_str >> ulID;
+
+			//Get Counter from one Hour ago
+			time_t now = mytime(NULL);
+			now -= 3600; //subtract one hour
+			struct tm ltime;
+			localtime_r(&now, &ltime);
+
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query(
+				"SELECT MIN(Total) FROM Rain WHERE (DeviceRowID=%lld AND Date>='%04d-%02d-%02d %02d:%02d:%02d')",
+				ulID, ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
+			if (result.size() == 1)
+			{
+				float totalRainFallLastHour = TotalRain - static_cast<float>(atof(result[0][0].c_str()));
+				Rainrate = round(totalRainFallLastHour*100.0f);
+			}
+		}
+	}
+
 	sprintf(szTmp,"%d;%.1f",Rainrate,TotalRain);
 	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp, procResult.DeviceName);
 	if (DevRowIdx == -1)
@@ -2898,7 +2944,7 @@ void MainWorker::decode_Wind(const int HwdID, const _eHardwareTypes HwdType, con
 		{
 			temp=-(float(((pResponse->WIND.temperatureh & 0x7F) * 256) + pResponse->WIND.temperaturel) / 10.0f);
 		}
-		if ((temp<-60)||(temp>380))
+		if ((temp<-200)||(temp>380))
 		{
 			WriteMessage(" Invalid Temperature");
 			return;
@@ -2936,7 +2982,7 @@ void MainWorker::decode_Wind(const int HwdID, const _eHardwareTypes HwdType, con
 		{
 			temp=-(float(((pResponse->WIND.temperatureh & 0x7F) * 256) + pResponse->WIND.temperaturel) / 10.0f);
 		}
-		if ((temp<-60)||(temp>380))
+		if ((temp<-200)||(temp>380))
 		{
 			WriteMessage(" Invalid Temperature");
 			return;
@@ -3086,7 +3132,7 @@ void MainWorker::decode_Temp(const int HwdID, const _eHardwareTypes HwdType, con
 	{
 		temp=-(float(((pResponse->TEMP.temperatureh & 0x7F) * 256) + pResponse->TEMP.temperaturel) / 10.0f);
 	}
-	if ((temp<-60)||(temp>380))
+	if ((temp<-200)||(temp>380))
 	{
 		WriteMessage(" Invalid Temperature");
 		return;
@@ -3382,7 +3428,7 @@ void MainWorker::decode_TempHum(const int HwdID, const _eHardwareTypes HwdType, 
 	{
 		temp=-(float(((pResponse->TEMP_HUM.temperatureh & 0x7F) * 256) + pResponse->TEMP_HUM.temperaturel) / 10.0f);
 	}
-	if ((temp<-60)||(temp>380))
+	if ((temp<-200)||(temp>380))
 	{
 		WriteMessage(" Invalid Temperature");
 		return;
@@ -3577,7 +3623,7 @@ void MainWorker::decode_TempHumBaro(const int HwdID, const _eHardwareTypes HwdTy
 	{
 		temp=-(float(((pResponse->TEMP_HUM_BARO.temperatureh & 0x7F) * 256) + pResponse->TEMP_HUM_BARO.temperaturel) / 10.0f);
 	}
-	if ((temp<-60)||(temp>380))
+	if ((temp<-200)||(temp>380))
 	{
 		WriteMessage(" Invalid Temperature");
 		return;
@@ -3746,7 +3792,7 @@ void MainWorker::decode_TempBaro(const int HwdID, const _eHardwareTypes HwdType,
 	BatteryLevel=100;
 
 	float temp=pTempBaro->temp;
-	if ((temp<-60)||(temp>380))
+	if ((temp<-200)||(temp>380))
 	{
 		WriteMessage(" Invalid Temperature");
 		return;
@@ -3857,7 +3903,7 @@ void MainWorker::decode_TempRain(const int HwdID, const _eHardwareTypes HwdType,
 	m_sql.GetAddjustment(HwdID, ID.c_str(),Unit,pTypeTEMP,sTypeTEMP3,AddjValue,AddjMulti);
 	temp+=AddjValue;
 
-	if ((temp<-60)||(temp>380))
+	if ((temp<-200)||(temp>380))
 	{
 		WriteMessage(" Invalid Temperature");
 		return;
@@ -3942,7 +3988,7 @@ void MainWorker::decode_UV(const int HwdID, const _eHardwareTypes HwdType, const
 		{
 			temp = -(float(((pResponse->UV.temperatureh & 0x7F) * 256) + pResponse->UV.temperaturel) / 10.0f);
 		}
-		if ((temp<-60)||(temp>380))
+		if ((temp<-200)||(temp>380))
 		{
 			WriteMessage(" Invalid Temperature");
 			return;
@@ -6108,7 +6154,9 @@ void MainWorker::decode_evohome3(const int HwdID, const _eHardwareTypes HwdType,
 	unsigned char cmnd=(pEvo->EVOHOME3.demand>0)?light1_sOn:light1_sOff;
 	sprintf(szTmp, "%d", pEvo->EVOHOME3.demand);
 	std::string szDemand(szTmp);
-	
+	unsigned char SignalLevel = 255;//Unknown
+	unsigned char BatteryLevel = 255;//Unknown
+
 	if(Unit==0xFF && nDevID==0)
 		return;
 	//Get Device details (devno or devid not available)
@@ -6116,12 +6164,12 @@ void MainWorker::decode_evohome3(const int HwdID, const _eHardwareTypes HwdType,
 	std::vector<std::vector<std::string> > result;
 	if(Unit==0xFF)
 		result = m_sql.safe_query(
-			"SELECT HardwareID,DeviceID,Unit,Type,SubType,nValue,sValue "
+			"SELECT HardwareID,DeviceID,Unit,Type,SubType,nValue,sValue,BatteryLevel "
 			"FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == '%q')",
 			HwdID, ID.c_str());
 	else
 		result = m_sql.safe_query(
-			"SELECT HardwareID,DeviceID,Unit,Type,SubType,nValue,sValue "
+			"SELECT HardwareID,DeviceID,Unit,Type,SubType,nValue,sValue,BatteryLevel "
 			"FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit == '%d') AND (Type==%d) AND (DeviceID == '%q')",
 			HwdID, (int) Unit, (int) pEvo->EVOHOME3.type, ID.c_str());
 	if (result.size()>0)
@@ -6129,6 +6177,7 @@ void MainWorker::decode_evohome3(const int HwdID, const _eHardwareTypes HwdType,
 		if(pEvo->EVOHOME3.demand==0xFF)//we sometimes get a 0418 message after the initial device creation but it will mess up the logging as we don't have a demand
 			return;
 		unsigned char cur_cmnd=atoi(result[0][5].c_str());
+		BatteryLevel = atoi(result[0][7].c_str());
 		if(Unit==0xFF)
 		{
 			Unit=atoi(result[0][2].c_str());
@@ -6150,8 +6199,8 @@ void MainWorker::decode_evohome3(const int HwdID, const _eHardwareTypes HwdType,
 			szDemand="0";
 	}
 
-	unsigned char SignalLevel=255;//Unknown
-	unsigned char BatteryLevel = 255;//Unknown
+	if (pEvo->EVOHOME3.updatetype == CEvohome::updBattery)
+		BatteryLevel = pEvo->EVOHOME3.battery_level;
 
 	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szDemand.c_str(), procResult.DeviceName);
 	if (DevRowIdx == -1)

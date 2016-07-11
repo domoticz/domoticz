@@ -407,9 +407,11 @@
     <ClInclude Include="..\hardware\1Wire\1WireSystem.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="..\hardware\AccuWeather.h" />
     <ClInclude Include="..\hardware\AnnaThermostat.h" />
     <ClInclude Include="..\hardware\ASyncTCP.h" />
     <ClInclude Include="..\hardware\AtagOne.h" />
+    <ClInclude Include="..\hardware\Comm5Serial.h" />
     <ClInclude Include="..\hardware\Comm5TCP.h" />
     <ClInclude Include="..\hardware\csocket.h" />
     <ClInclude Include="..\hardware\CurrentCostMeterBase.h" />
@@ -500,11 +502,9 @@
     <ClInclude Include="..\hardware\DomoticzTCP.h" />
     <ClInclude Include="..\hardware\hardwaretypes.h" />
     <ClInclude Include="..\main\concurrent_queue.h" />
-    <ClInclude Include="..\main\DataPush.h" />
     <ClInclude Include="..\main\dirent_windows.h" />
     <ClInclude Include="..\main\EventSystem.h" />
     <ClInclude Include="..\main\GZipHelper.h" />
-    <ClInclude Include="..\main\HttpPush.h" />
     <ClInclude Include="..\main\localtime_r.h" />
     <ClInclude Include="..\hardware\P1MeterBase.h" />
     <ClInclude Include="..\hardware\P1MeterSerial.h" />
@@ -512,7 +512,6 @@
     <ClInclude Include="..\main\Logger.h" />
     <ClInclude Include="..\main\LuaHandler.h" />
     <ClInclude Include="..\main\mainstructs.h" />
-    <ClInclude Include="..\main\Push.h" />
     <ClInclude Include="..\main\unzip.h" />
     <ClInclude Include="..\main\unzip_iterator.h" />
     <ClInclude Include="..\main\unzip_stream.h" />
@@ -552,6 +551,10 @@
     <ClInclude Include="..\notifications\NotificationPushbullet.h" />
     <ClInclude Include="..\notifications\NotificationPushover.h" />
     <ClInclude Include="..\notifications\NotificationSMS.h" />
+    <ClInclude Include="..\push\DataPush.h" />
+    <ClInclude Include="..\push\GooglePubSubPush.h" />
+    <ClInclude Include="..\push\HttpPush.h" />
+    <ClInclude Include="..\push\Push.h" />
     <ClInclude Include="..\webserver\fastcgi.hpp" />
     <ClInclude Include="..\webserver\GZipHelper.h" />
     <ClInclude Include="..\webserver\proxyclient.h" />
@@ -613,10 +616,12 @@
     <ClCompile Include="..\hardware\1Wire\1WireForWindows.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\hardware\AccuWeather.cpp" />
     <ClCompile Include="..\hardware\AnnaThermostat.cpp" />
     <ClCompile Include="..\hardware\ASyncSerial.cpp" />
     <ClCompile Include="..\hardware\ASyncTCP.cpp" />
     <ClCompile Include="..\hardware\AtagOne.cpp" />
+    <ClCompile Include="..\hardware\Comm5Serial.cpp" />
     <ClCompile Include="..\hardware\Comm5TCP.cpp" />
     <ClCompile Include="..\hardware\csocket.cpp" />
     <ClCompile Include="..\hardware\CurrentCostMeterBase.cpp" />
@@ -707,16 +712,13 @@
     <ClCompile Include="..\hardware\DomoticzHardware.cpp" />
     <ClCompile Include="..\hardware\DomoticzInternal.cpp" />
     <ClCompile Include="..\hardware\DomoticzTCP.cpp" />
-    <ClCompile Include="..\main\DataPush.cpp" />
     <ClCompile Include="..\main\EventSystem.cpp" />
-    <ClCompile Include="..\main\HttpPush.cpp" />
     <ClCompile Include="..\main\localtime_r.cpp" />
     <ClCompile Include="..\hardware\P1MeterBase.cpp" />
     <ClCompile Include="..\hardware\P1MeterSerial.cpp" />
     <ClCompile Include="..\hardware\P1MeterTCP.cpp" />
     <ClCompile Include="..\main\Logger.cpp" />
     <ClCompile Include="..\main\LuaHandler.cpp" />
-    <ClCompile Include="..\main\Push.cpp" />
     <ClCompile Include="..\main\Scheduler.cpp" />
     <ClCompile Include="..\main\SQLHelper.cpp" />
     <ClCompile Include="..\main\Helper.cpp" />
@@ -820,6 +822,10 @@
     <ClCompile Include="..\notifications\NotificationPushbullet.cpp" />
     <ClCompile Include="..\notifications\NotificationPushover.cpp" />
     <ClCompile Include="..\notifications\NotificationSMS.cpp" />
+    <ClCompile Include="..\push\DataPush.cpp" />
+    <ClCompile Include="..\push\GooglePubSubPush.cpp" />
+    <ClCompile Include="..\push\HttpPush.cpp" />
+    <ClCompile Include="..\push\Push.cpp" />
     <ClCompile Include="..\smtpclient\SMTPClient.cpp" />
     <ClCompile Include="..\sqlite\sqlite3.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>

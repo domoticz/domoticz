@@ -424,6 +424,19 @@ void MySensorsBase::UpdateNodeBatteryLevel(const int nodeID, const int Level)
 	{
 		itt->hasBattery = true;
 		itt->batValue = Level;
+
+		//Uncomment the below to for a sensor update
+/*
+		std::map<_eSetType, _tMySensorValue>::const_iterator itt2;
+		for (itt2 = itt->values.begin(); itt2 != itt->values.end(); ++itt2)
+		{
+			if (itt2->second.bValidValue)
+			{
+				_eSetType vType = itt2->first;
+				SendSensor2Domoticz(pNode, &(*itt), vType);
+			}
+		}
+*/
 	}
 }
 
@@ -525,7 +538,7 @@ void MySensorsBase::MakeAndSendWindSensor(const int nodeID, const std::string &s
 		}
 	}
 	int cNode = (nodeID << 8) | ChildID;
-	SendWind(cNode, iBatteryLevel, float(iDirection), fWind, fGust, fTemp, fChill, bHaveTemp, sname);
+	SendWind(cNode, iBatteryLevel, iDirection, fWind, fGust, fTemp, fChill, bHaveTemp, sname);
 }
 
 void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *pChild, const _eSetType vType)

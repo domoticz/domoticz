@@ -19,6 +19,7 @@
 #include "../hardware/EnOceanESP3.h"
 #include "../hardware/Wunderground.h"
 #include "../hardware/ForecastIO.h"
+#include "../hardware/AccuWeather.h"
 #include "../hardware/Kodi.h"
 #include "../hardware/LogitechMediaServer.h"
 #include "../hardware/MySensorsBase.h"
@@ -405,6 +406,13 @@ namespace http {
 			RegisterCommandCode("gethttplinks", boost::bind(&CWebServer::Cmd_GetHttpLinks, this, _1, _2, _3));
 			RegisterCommandCode("savehttplink", boost::bind(&CWebServer::Cmd_SaveHttpLink, this, _1, _2, _3));
 			RegisterCommandCode("deletehttplink", boost::bind(&CWebServer::Cmd_DeleteHttpLink, this, _1, _2, _3));
+
+			RegisterCommandCode("savegooglepubsublinkconfig", boost::bind(&CWebServer::Cmd_SaveGooglePubSubLinkConfig, this, _1, _2, _3));
+			RegisterCommandCode("getgooglepubsublinkconfig", boost::bind(&CWebServer::Cmd_GetGooglePubSubLinkConfig, this, _1, _2, _3));
+			RegisterCommandCode("getgooglepubsublinks", boost::bind(&CWebServer::Cmd_GetGooglePubSubLinks, this, _1, _2, _3));
+			RegisterCommandCode("savegooglepubsublink", boost::bind(&CWebServer::Cmd_SaveGooglePubSubLink, this, _1, _2, _3));
+			RegisterCommandCode("deletegooglepubsublink", boost::bind(&CWebServer::Cmd_DeleteGooglePubSubLink, this, _1, _2, _3));
+
 			RegisterCommandCode("getdevicevalueoptions", boost::bind(&CWebServer::Cmd_GetDeviceValueOptions, this, _1, _2, _3));
 			RegisterCommandCode("getdevicevalueoptionwording", boost::bind(&CWebServer::Cmd_GetDeviceValueOptionWording, this, _1, _2, _3));
 
@@ -1070,6 +1078,7 @@ namespace http {
 			else if (
 				(htype == HTYPE_Wunderground) ||
 				(htype == HTYPE_ForecastIO) ||
+				(htype == HTYPE_AccuWeather) ||
 				(htype == HTYPE_ICYTHERMOSTAT) ||
 				(htype == HTYPE_TOONTHERMOSTAT) ||
 				(htype == HTYPE_AtagOne) ||
@@ -1322,6 +1331,7 @@ namespace http {
 			else if (
 				(htype == HTYPE_Wunderground) ||
 				(htype == HTYPE_ForecastIO) ||
+				(htype == HTYPE_AccuWeather) ||
 				(htype == HTYPE_ICYTHERMOSTAT) ||
 				(htype == HTYPE_TOONTHERMOSTAT) ||
 				(htype == HTYPE_AtagOne) ||
@@ -4359,6 +4369,7 @@ namespace http {
 				m_sql.safe_query(
 					"UPDATE DeviceStatus SET Used=1, Name='%q', SwitchType=%d WHERE (ID == '%q')",
 					name.c_str(), switchtype, ID.c_str());
+				m_mainworker.m_eventsystem.GetCurrentStates();
 
 				//Set device options
 				m_sql.SetDeviceOptions(atoi(ID.c_str()), m_sql.BuildDeviceOptions(deviceoptions, false));
@@ -6734,7 +6745,18 @@ namespace http {
 			bool Enabled;
 		} tHardwareList;
 
-		void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, const std::string &rfilter, const std::string &order, const std::string &rowid, const std::string &planID, const std::string &floorID, const bool bDisplayHidden, const time_t LastUpdate, const std::string &username)
+		void CWebServer::GetJSonDevices(
+			Json::Value &root, 
+			const std::string &rused, 
+			const std::string &rfilter, 
+			const std::string &order, 
+			const std::string &rowid, 
+			const std::string &planID, 
+			const std::string &floorID, 
+			const bool bDisplayHidden, 
+			const bool bFetchFavorites,
+			const time_t LastUpdate, 
+			const std::string &username)
 		{
 			std::vector<std::vector<std::string> > result;
 
@@ -6871,6 +6893,12 @@ namespace http {
 						for (itt = result.begin(); itt != result.end(); ++itt)
 						{
 							std::vector<std::string> sd = *itt;
+
+							unsigned char favorite = atoi(sd[4].c_str());
+							//Check if we only want favorite devices
+							if ((bFetchFavorites) && (!favorite))
+								continue;
+
 							std::string sLastUpdate = sd[3];
 
 							if (iLastUpdate != 0)
@@ -6888,7 +6916,7 @@ namespace http {
 							}
 
 							int nValue = atoi(sd[2].c_str());
-							unsigned char favorite = atoi(sd[4].c_str());
+
 							unsigned char scenetype = atoi(sd[5].c_str());
 							int iProtected = atoi(sd[6].c_str());
 
@@ -7155,6 +7183,15 @@ namespace http {
 				for (itt = result.begin(); itt != result.end(); ++itt)
 				{
 					std::vector<std::string> sd = *itt;
+
+					unsigned char favorite = atoi(sd[12].c_str());
+					if ((planID != "") && (planID != "0"))
+						favorite = 1;
+
+					//Check if we only want favorite devices
+					if ((bFetchFavorites) && (!favorite))
+						continue;
+
 					std::string sDeviceName = sd[3];
 
 					if (!bDisplayHidden)
@@ -7204,9 +7241,6 @@ namespace http {
 							continue;
 					}
 
-					unsigned char favorite = atoi(sd[12].c_str());
-					if ((planID != "") && (planID != "0"))
-						favorite = 1;
 					_eSwitchType switchtype = (_eSwitchType)atoi(sd[13].c_str());
 					_eMeterType metertype = (_eMeterType)switchtype;
 					double AddjValue = atof(sd[15].c_str());
@@ -7431,6 +7465,15 @@ namespace http {
 						else if (pHardware->HwdType == HTYPE_ForecastIO)
 						{
 							CForecastIO *pWHardware = reinterpret_cast<CForecastIO*>(pHardware);
+							std::string forecast_url = pWHardware->GetForecastURL();
+							if (forecast_url != "")
+							{
+								root["result"][ii]["forecast_url"] = base64_encode((const unsigned char*)forecast_url.c_str(), forecast_url.size());
+							}
+						}
+						else if (pHardware->HwdType == HTYPE_AccuWeather)
+						{
+							CAccuWeather *pWHardware = reinterpret_cast<CAccuWeather*>(pHardware);
 							std::string forecast_url = pWHardware->GetForecastURL();
 							if (forecast_url != "")
 							{
@@ -7866,10 +7909,14 @@ namespace http {
 							}
 							if (dType == pTypeEvohomeZone)
 							{
-								if (strarray.size()>=4)
-									sprintf(szData,"%.1f %c, (%.1f %c), %s until %s", temp,tempsign,tempSetPoint,tempsign,strstatus.c_str(),strarray[3].c_str());
+								if (tempCelcius == 325.1)
+									sprintf(szTmp, "Off");
 								else
-									sprintf(szData,"%.1f %c, (%.1f %c), %s", temp,tempsign,tempSetPoint,tempsign,strstatus.c_str());
+									sprintf(szTmp, "%.1f %c", tempSetPoint, tempsign);
+								if (strarray.size()>=4)
+									sprintf(szData,"%.1f %c, (%s), %s until %s", temp,tempsign,szTmp,strstatus.c_str(),strarray[3].c_str());
+								else
+									sprintf(szData,"%.1f %c, (%s), %s", temp,tempsign,szTmp,strstatus.c_str());
 							}
 							else
 								if (strarray.size()>=4)
@@ -8116,14 +8163,12 @@ namespace http {
 							if (dSubType != sTypeRAINWU)
 							{
 								result2 = m_sql.safe_query(
-									"SELECT MIN(Total), MAX(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID='%q' AND Date>='%q')",
-									sd[0].c_str(), szDate);
+									"SELECT MIN(Total), MAX(Total) FROM Rain WHERE (DeviceRowID='%q' AND Date>='%q')", sd[0].c_str(), szDate);
 							}
 							else
 							{
 								result2 = m_sql.safe_query(
-									"SELECT Total, Total, Rate FROM Rain WHERE (DeviceRowID='%q' AND Date>='%q') ORDER BY ROWID DESC LIMIT 1",
-									sd[0].c_str(), szDate);
+									"SELECT Total, Total FROM Rain WHERE (DeviceRowID='%q' AND Date>='%q') ORDER BY ROWID DESC LIMIT 1", sd[0].c_str(), szDate);
 							}
 							if (result2.size() > 0)
 							{
@@ -8134,24 +8179,18 @@ namespace http {
 								{
 									float total_min = static_cast<float>(atof(sd2[0].c_str()));
 									float total_max = static_cast<float>(atof(strarray[1].c_str()));
-									rate = static_cast<float>(atof(sd2[2].c_str()));
-									if (dSubType == sTypeRAIN2)
-										rate /= 100.0f;
 									total_real = total_max - total_min;
 								}
 								else
 								{
-									rate = static_cast<float>(atof(sd2[2].c_str()));
 									total_real = atof(sd2[1].c_str());
 								}
 								total_real *= AddjMulti;
+								rate = static_cast<float>(atof(strarray[0].c_str()))/100.0f;
 
 								sprintf(szTmp, "%.1f", total_real);
 								root["result"][ii]["Rain"] = szTmp;
-								if (dSubType != sTypeRAIN2)
-									sprintf(szTmp, "%.1f", rate);
-								else
-									sprintf(szTmp, "%.2f", rate);
+								sprintf(szTmp, "%.1f", rate);
 								root["result"][ii]["RainRate"] = szTmp;
 								root["result"][ii]["Data"] = sValue;
 								root["result"][ii]["HaveTimeout"] = bHaveTimeout;
@@ -9069,7 +9108,6 @@ namespace http {
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 							root["result"][ii]["Image"] = "Fan";
 							root["result"][ii]["TypeImg"] = "Fan";
-							root["result"][ii]["Type"] = "Speaker";
 						}
 						else if (dSubType == sTypeSoundLevel)
 						{
@@ -9864,7 +9902,9 @@ namespace http {
 			std::string planid = request::findValue(&req, "plan");
 			std::string floorid = request::findValue(&req, "floor");
 			std::string sDisplayHidden = request::findValue(&req, "displayhidden");
+			std::string sFetchFavorites = request::findValue(&req, "favorite");
 			bool bDisplayHidden = (sDisplayHidden == "1");
+			bool bFetchFavorites = (sFetchFavorites == "1");
 			std::string sLastUpdate = request::findValue(&req, "lastupdate");
 
 			time_t LastUpdate = 0;
@@ -9878,7 +9918,7 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "Devices";
 
-			GetJSonDevices(root, rused, rfilter, order, rid, planid, floorid, bDisplayHidden, LastUpdate, session.username);
+			GetJSonDevices(root, rused, rfilter, order, rid, planid, floorid, bDisplayHidden, bFetchFavorites, LastUpdate, session.username);
 		}
 
 		void CWebServer::RType_Users(WebEmSession & session, const request& req, Json::Value &root)

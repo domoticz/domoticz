@@ -51,3 +51,4 @@ bool CNotificationLogitechMediaServer::IsConfigured()
 {
 	return (!_PlayerMac.empty());
 }
+

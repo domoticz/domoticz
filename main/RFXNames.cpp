@@ -212,6 +212,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_RFXtrx868, "RFXCOM - RFXtrx868 USB 868MHz Transceiver" },
 		{ HTYPE_RFLINKTCP, "RFLink Gateway with LAN interface" },
 		{ HTYPE_Comm5TCP, "Comm5 MA-5XXX with LAN interface" },
+		{ HTYPE_Comm5Serial, "Comm5 MA-4XXX/MI-XXXX Serial/USB interface" },
 		{ HTYPE_SolarEdgeAPI , "SolarEdge via Web API" },
 		{ HTYPE_CurrentCostMeter, "CurrentCost Meter USB" },
 		{ HTYPE_CurrentCostMeterLAN, "CurrentCost Meter with LAN interface" },
@@ -226,6 +227,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_RAVEn, "Rainforest RAVEn USB" },
 		{ HTYPE_S0SmartMeterTCP, "S0 Meter with LAN interface" },
 		{ HTYPE_DenkoviSmartdenLan, "Denkovi Smartden with LAN interface" },
+		{ HTYPE_AccuWeather, "AccuWeather (Weather Lookup)" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -3327,13 +3329,31 @@ const char *Get_Alert_Desc(const int level)
 
 bool IsSerialDevice(const _eHardwareTypes htype)
 {
-	return (
-		(htype == HTYPE_RFXtrx315) || (htype == HTYPE_RFXtrx433) || (htype == HTYPE_RFXtrx868) ||
-		(htype == HTYPE_P1SmartMeter) || (htype == HTYPE_Rego6XX) || (htype == HTYPE_DavisVantage) || (htype == HTYPE_S0SmartMeterUSB) || (htype == HTYPE_OpenThermGateway) ||
-		(htype == HTYPE_TeleinfoMeter) || (htype == HTYPE_OpenZWave) || (htype == HTYPE_EnOceanESP2) || (htype == HTYPE_EnOceanESP3) || (htype == HTYPE_Meteostick) ||
-		(htype == HTYPE_MySensorsUSB) || (htype == HTYPE_RFLINKUSB) || (htype == HTYPE_KMTronicUSB) || (htype == HTYPE_KMTronic433) || (htype == HTYPE_CurrentCostMeter) ||
-        (htype == HTYPE_RAVEn)
-		);
+	switch (htype) {
+	case HTYPE_RFXtrx315:
+	case HTYPE_RFXtrx433:
+	case HTYPE_RFXtrx868:
+	case HTYPE_P1SmartMeter:
+	case HTYPE_Rego6XX:
+	case HTYPE_DavisVantage:
+	case HTYPE_S0SmartMeterUSB:
+	case HTYPE_OpenThermGateway:
+	case HTYPE_TeleinfoMeter:
+	case HTYPE_OpenZWave:
+	case HTYPE_EnOceanESP2:
+	case HTYPE_EnOceanESP3:
+	case HTYPE_Meteostick:
+	case HTYPE_MySensorsUSB:
+	case HTYPE_RFLINKUSB:
+	case HTYPE_KMTronicUSB:
+	case HTYPE_KMTronic433:
+	case HTYPE_CurrentCostMeter:
+	case HTYPE_RAVEn:
+	case HTYPE_Comm5Serial:
+		return true;
+	default:
+		return false;
+	}
 }
 
 void ConvertToGeneralSwitchType(std::string &devid, int &dtype, int &subtype)

@@ -108,15 +108,16 @@
 
 	<!-- Association Groups -->
 	<CommandClass id="133">
-		<Associations num_groups="8">
+		<Associations num_groups="9">
 			<Group index="1" max_associations="1"  label="Lifeline"/>
-			<Group index="2" max_associations="16" label="basic on/off (triggered at change of the output Q state and reflecting its state)" />
-			<Group index="3" max_associations="16" label="basic on/off (triggered at change of the input I2 state and reflecting its state)" />
-			<Group index="4" max_associations="16" label="Notification report (triggered at change of the input I2 state and reflecting its state)" />
-			<Group index="5" max_associations="16" label="Binary sensor (triggered at change of the input I2 state and reflecting its state)" />
-			<Group index="6" max_associations="16" label="basic on/off (triggered at change of the input I3 state and reflecting its state)" />
-			<Group index="7" max_associations="16" label="notification report (triggered at change of the input I3 state and reflecting its state)" />
-			<Group index="8" max_associations="16" label="binary sensor report (triggered at change of the input I3 state and reflecting its state)" />
+			<Group index="2" max_associations="16" label="basic on/off (Output Q)" />
+			<Group index="3" max_associations="16" label="Input I2 basic report" />
+			<Group index="4" max_associations="16" label="Input I2 notification report" />
+			<Group index="5" max_associations="16" label="Input I2 binary sensor report" />
+			<Group index="6" max_associations="16" label="Input I3 basic report" />
+			<Group index="7" max_associations="16" label="Input I3 notification report" />
+			<Group index="8" max_associations="16" label="Input I3 binary sensor report" />
+			<Group index="9" max_associations="16" label="Multilevel sensor report" />
 		</Associations>
 	</CommandClass>
 

@@ -79,6 +79,7 @@ public:
 	void WWWUpdateSecurityState(int securityStatus);
 	void WWWGetItemStates(std::vector<_tDeviceStatus> &iStates);
 	void SetEnabled(const bool bEnabled);
+	void GetCurrentStates();
 private:
 	//lua_State	*m_pLUA;
 	bool m_bEnabled;
@@ -96,7 +97,6 @@ private:
 	//our thread
 	void Do_Work();
 	void ProcessMinute();
-	void GetCurrentStates();
 	void GetCurrentMeasurementStates();
 	void GetCurrentUserVariables();
 	void GetCurrentScenesGroups();
