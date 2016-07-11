@@ -53,13 +53,15 @@ namespace http {
 
 		class CWebsocket {
 		public:
-			CWebsocket(boost::function<void(const std::string &packet_data)> _MyWrite, CWebsocketHandler *handler);
+			CWebsocket(boost::function<void(const std::string &packet_data)> _MyWrite, CWebsocketHandler *_handler);
 			~CWebsocket();
 			boost::tribool parse(const unsigned char *begin, size_t_t size, size_t_t &bytes_consumed, bool &keep_alive);
 			void SendClose(const std::string &packet_data);
 			void SendPing();
 			void OnDeviceChanged(const unsigned long long DeviceRowIdx);
 			void OnMessage(const std::string & Subject, const std::string & Text, const std::string & ExtraData, const int Priority, const std::string & Sound, const bool bFromNotification);
+			void Start();
+			void Stop();
 		private:
 			void OnReceiveText(const std::string &packet_data);
 			void OnReceiveBinary(const std::string &packet_data);

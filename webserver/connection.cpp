@@ -30,7 +30,7 @@ connection::connection(boost::asio::io_service& io_service,
 				request_handler_(handler),
 				read_timeout_(read_timeout),
 				read_timer_(io_service, boost::posix_time::seconds(read_timeout)),
-				websocket_handler(boost::bind(&connection::MyWrite, this, _1), new CWebsocketHandler(boost::bind(&connection::MyWrite, this, _1))),
+				websocket_handler(boost::bind(&connection::MyWrite, this, _1), new CWebsocketHandler(handler.Get_myWebem(), boost::bind(&connection::MyWrite, this, _1))),
 				status_(INITIALIZING),
 				default_abandoned_timeout_(20*60), // 20mn before stopping abandoned connection
 				abandoned_timer_(io_service, boost::posix_time::seconds(default_abandoned_timeout_)),
@@ -54,7 +54,7 @@ connection::connection(boost::asio::io_service& io_service,
 				request_handler_(handler),
 				read_timeout_(read_timeout),
 				read_timer_(io_service, boost::posix_time::seconds(read_timeout)),
-				websocket_handler(boost::bind(&connection::MyWrite, this, _1), new CWebsocketHandler(boost::bind(&connection::MyWrite, this, _1))),
+				websocket_handler(boost::bind(&connection::MyWrite, this, _1), new CWebsocketHandler(handler.Get_myWebem(), boost::bind(&connection::MyWrite, this, _1))),
 				status_(INITIALIZING),
 				default_abandoned_timeout_(20*60), // 20mn before stopping abandoned connection
 				abandoned_timer_(io_service, boost::posix_time::seconds(default_abandoned_timeout_)),
@@ -125,6 +125,7 @@ void connection::stop()
 	switch (connection_type) {
 	case connection_websocket:
 		// todo: send close frame and wait for writeQ to flush
+		websocket_handler.Stop();
 		websocket_handler.SendClose("");
 		break;
 	case connection_closing:
@@ -246,7 +247,7 @@ void connection::MyWrite(const std::string &buf)
 		}
 		else {
 			SocketWrite(buf);
-}
+		}
 		break;
 	}
 }
@@ -310,15 +311,16 @@ void connection::handle_read(const boost::system::error_code& error, std::size_t
 					request_.host_address = request_.host_address.substr(7);
 				}
 				request_handler_.handle_request(request_, reply_);
-					MyWrite(reply_.to_string(request_.method));
-					if (reply_.status == reply::switching_protocols) {
-						// this was an upgrade request
-						connection_type = connection_websocket;
-						// from now on we are a persistant connection
-						keepalive_ = true;
-						// keep sessionid to access our session during websockets requests
-						// todo: websocket_handler.store_session_id(request_, reply_);
-						// todo: check if multiple connection from the same client in CONNECTING state?
+				MyWrite(reply_.to_string(request_.method));
+				if (reply_.status == reply::switching_protocols) {
+					// this was an upgrade request
+					connection_type = connection_websocket;
+					// from now on we are a persistant connection
+					keepalive_ = true;
+					websocket_handler.Start();
+					// keep sessionid to access our session during websockets requests
+					// todo: websocket_handler.store_session_id(request_, reply_);
+					// todo: check if multiple connection from the same client in CONNECTING state?
 				}
 				if (keepalive_) {
 					read_more();

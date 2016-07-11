@@ -547,7 +547,8 @@ namespace http {
 			GETPDUSTRING(packet_data);
 
 			if (!websocket_handler) {
-				websocket_handler = new CWebsocketHandler(boost::bind(&CProxyClient::WS_Write, this, _1));
+				// open new virtual websocket connection
+				websocket_handler = new CWebsocketHandler(m_pWebEm, boost::bind(&CProxyClient::WS_Write, this, _1));
 			}
 			boost::tribool result = websocket_handler->Handle(packet_data);
 			if (result) {

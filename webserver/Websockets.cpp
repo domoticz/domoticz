@@ -3,6 +3,7 @@
 #include <boost/lexical_cast.hpp>
 // debug
 #include "../main/Logger.h"
+#include "../json/json.h"
 
 namespace http {
 	namespace server {
@@ -168,10 +169,11 @@ opcodes CWebsocketFrame::Opcode() {
 	return opcode;
 };
 
-CWebsocket::CWebsocket(boost::function<void(const std::string &packet_data)> _MyWrite, CWebsocketHandler *handler) : m_Push(this)
+CWebsocket::CWebsocket(boost::function<void(const std::string &packet_data)> _MyWrite, CWebsocketHandler *_handler) : m_Push(this)
 {
 	start_new_packet = true;
 	MyWrite = _MyWrite;
+	handler = _handler;
 }
 
 CWebsocket::~CWebsocket()
@@ -192,7 +194,6 @@ boost::tribool CWebsocket::parse(const unsigned char *begin, size_t_t size, size
 		last_opcode = frame.Opcode();
 	}
 	packet_data += frame.Payload();
-	m_Push.Start();
 	if (frame.isFinal()) {
 		// packet is ready for packet handler
 		start_new_packet = true;
@@ -282,7 +283,7 @@ void CWebsocket::OnDeviceChanged(const unsigned long long DeviceRowIdx)
 
 void CWebsocket::OnMessage(const std::string & Subject, const std::string & Text, const std::string & ExtraData, const int Priority, const std::string & Sound, const bool bFromNotification)
 {
-# if 0
+#if 1
 	Json::Value json;
 
 	json["event"] = "notification";
@@ -292,6 +293,16 @@ void CWebsocket::OnMessage(const std::string & Subject, const std::string & Text
 	std::string frame = CreateFrame(opcode_text, response);
 	MyWrite(frame);
 #endif
+}
+
+void CWebsocket::Start()
+{
+	m_Push.Start();
+}
+
+void CWebsocket::Stop()
+{
+	m_Push.Stop();
 }
 
 }

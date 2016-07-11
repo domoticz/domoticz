@@ -11,7 +11,7 @@ namespace http {
 
 		class CWebsocketHandler {
 		public:
-			CWebsocketHandler(boost::function<void(const std::string &packet_data)> _MyWrite);
+			CWebsocketHandler(cWebem *m_pWebem, boost::function<void(const std::string &packet_data)> _MyWrite);
 			~CWebsocketHandler();
 			virtual boost::tribool Handle(const std::string &packet_data);
 		protected:

@@ -9,9 +9,10 @@
 namespace http {
 	namespace server {
 
-		CWebsocketHandler::CWebsocketHandler(boost::function<void(const std::string &packet_data)> _MyWrite)
+		CWebsocketHandler::CWebsocketHandler(cWebem *m_pWebem, boost::function<void(const std::string &packet_data)> _MyWrite)
 		{
 			MyWrite = _MyWrite;
+			myWebem = m_pWebem;
 		}
 
 		CWebsocketHandler::~CWebsocketHandler()
