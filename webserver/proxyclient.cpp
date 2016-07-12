@@ -50,7 +50,6 @@ namespace http {
 			}
 			m_pWebEm = webEm;
 			m_pDomServ = NULL;
-			websocket_handler = NULL;
 		}
 
 		void CProxyClient::WriteSlaveData(const std::string &token, const char *pData, size_t Length)
@@ -180,10 +179,11 @@ namespace http {
 			boost::asio::async_write(_socket, boost::asio::buffer(SockWriteBuf), boost::bind(&CProxyClient::handle_write, shared_from_this(), boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
 		}
 
-		void CProxyClient::WS_Write(const std::string &packet_data)
+		void CProxyClient::WS_Write(long requestid, const std::string &packet_data)
 		{
 			CValueLengthPart parameters;
 			ADDPDUSTRINGBINARY(packet_data);
+			ADDPDULONG(requestid);
 			MyWrite(PDU_WS_SEND, parameters);
 		}
 
@@ -542,17 +542,38 @@ namespace http {
 			}
 		}
 
+		PDUFUNCTION(PDU_WS_OPEN)
+		{
+			// todo: make a map of websocket connections. There can be more than one.
+			GETPDUSTRING(request_url);
+			GETPDULONG(requestid);
+
+			// open new virtual websocket connection
+			// todo: different request_url's can have different websocket handlers
+			websocket_handlers[requestid] = new CWebsocketHandler(m_pWebEm, boost::bind(&CProxyClient::WS_Write, this, requestid, _1));
+			websocket_handlers[requestid]->Start();
+		}
+
+		PDUFUNCTION(PDU_WS_CLOSE)
+		{
+			GETPDULONG(requestid);
+
+			CWebsocketHandler *handler = websocket_handlers[requestid];
+			if (handler) {
+				handler->Stop();
+				delete handler;
+				websocket_handlers.erase(requestid);
+			}
+		}
+
 		PDUFUNCTION(PDU_WS_RECEIVE)
 		{
 			GETPDUSTRING(packet_data);
+			GETPDULONG(requestid);
 
-			if (!websocket_handler) {
-				// open new virtual websocket connection
-				websocket_handler = new CWebsocketHandler(m_pWebEm, boost::bind(&CProxyClient::WS_Write, this, _1));
-			}
-			boost::tribool result = websocket_handler->Handle(packet_data);
-			if (result) {
-				// todo: write response
+			CWebsocketHandler *handler = websocket_handlers[requestid];
+			if (handler) {
+				boost::tribool result = handler->Handle(packet_data);
 			}
 		}
 
@@ -571,6 +592,8 @@ namespace http {
 			ONPDU(PDU_SERV_RECEIVE)
 			ONPDU(PDU_SERV_SEND)
 			ONPDU(PDU_SERV_ROSTERIND)
+			ONPDU(PDU_WS_OPEN)
+			ONPDU(PDU_WS_CLOSE)
 			ONPDU(PDU_WS_RECEIVE)
 			default:
 				_log.Log(LOG_ERROR, "PROXY: pdu type: %d not expected.", pdu._type);
@@ -657,6 +680,7 @@ namespace http {
 				we_locked_prefs_mutex = false;
 				sharedData.UnlockPrefsMutex();
 			}
+			// todo: close and delete all websocket handlers
 
 			doStop = true;
 			// signal end of WriteThread
@@ -670,9 +694,6 @@ namespace http {
 
 		CProxyClient::~CProxyClient()
 		{
-			if (websocket_handler) {
-				delete websocket_handler;
-			}
 		}
 
 		CProxyManager::CProxyManager(const std::string& doc_root, http::server::cWebem *webEm, tcp::server::CTCPServer *domServ)

@@ -64,6 +64,8 @@ public:
   /// Last user interaction
   time_t m_lastresponse;
 
+  // send packet over websocket
+  void WS_Write(long requestid, const std::string &packet_data);
   /// Add content to write buffer
   void MyWrite(const std::string &buf);
   /// Timer handlers
@@ -161,7 +163,7 @@ private:
 #endif
 
   /// websocket stuff
-  CWebsocket websocket_handler;
+  CWebsocket websocket_parser;
   enum {
 	  connection_http,
 	  connection_websocket,

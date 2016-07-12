@@ -4,14 +4,14 @@
 
 namespace http {
 	namespace server {
-		class CWebsocket;
+		class CWebsocketHandler;
 	}
 }
 
 class CWebSocketPush : public CPush
 {
 public:
-	CWebSocketPush(http::server::CWebsocket *sock);
+	CWebSocketPush(http::server::CWebsocketHandler *sock);
 	void Start();
 	void Stop();
 	void ListenTo(const unsigned long long DeviceRowIdx);
@@ -32,7 +32,7 @@ private:
 	bool listenDeviceTable;
 	std::vector<unsigned long long> listenIdxs;
 	boost::mutex listenMutex;
-	http::server::CWebsocket *m_sock;
+	http::server::CWebsocketHandler *m_sock;
 	bool isStarted;
 };
 

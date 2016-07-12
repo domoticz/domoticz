@@ -30,7 +30,7 @@ connection::connection(boost::asio::io_service& io_service,
 				request_handler_(handler),
 				read_timeout_(read_timeout),
 				read_timer_(io_service, boost::posix_time::seconds(read_timeout)),
-				websocket_handler(boost::bind(&connection::MyWrite, this, _1), new CWebsocketHandler(handler.Get_myWebem(), boost::bind(&connection::MyWrite, this, _1))),
+				websocket_parser(boost::bind(&connection::WS_Write, this, 0, _1), new CWebsocketHandler(handler.Get_myWebem(), boost::bind(&connection::WS_Write, this, 0, _1))),
 				status_(INITIALIZING),
 				default_abandoned_timeout_(20*60), // 20mn before stopping abandoned connection
 				abandoned_timer_(io_service, boost::posix_time::seconds(default_abandoned_timeout_)),
@@ -54,7 +54,7 @@ connection::connection(boost::asio::io_service& io_service,
 				request_handler_(handler),
 				read_timeout_(read_timeout),
 				read_timer_(io_service, boost::posix_time::seconds(read_timeout)),
-				websocket_handler(boost::bind(&connection::MyWrite, this, _1), new CWebsocketHandler(handler.Get_myWebem(), boost::bind(&connection::MyWrite, this, _1))),
+				websocket_parser(boost::bind(&connection::WS_Write, this, 0, _1), new CWebsocketHandler(handler.Get_myWebem(), boost::bind(&connection::WS_Write, this, 0, _1))),
 				status_(INITIALIZING),
 				default_abandoned_timeout_(20*60), // 20mn before stopping abandoned connection
 				abandoned_timer_(io_service, boost::posix_time::seconds(default_abandoned_timeout_)),
@@ -125,8 +125,8 @@ void connection::stop()
 	switch (connection_type) {
 	case connection_websocket:
 		// todo: send close frame and wait for writeQ to flush
-		websocket_handler.Stop();
-		websocket_handler.SendClose("");
+		websocket_parser.Stop();
+		websocket_parser.SendClose("");
 		break;
 	case connection_closing:
 		// todo: wait for writeQ to flush, so client can receive the close frame
@@ -163,7 +163,7 @@ void connection::handle_timeout(const boost::system::error_code& error)
 	}
 				break;
 			case connection_websocket:
-				websocket_handler.SendPing();
+				websocket_parser.SendPing();
 				break;
 			}
 		}
@@ -232,6 +232,11 @@ void connection::SocketWrite(const std::string &buf)
 		boost::asio::async_write(*socket_, boost::asio::buffer(write_buffer), boost::bind(&connection::handle_write, shared_from_this(), boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
 	}
 
+}
+
+void connection::WS_Write(long requestid, const std::string &packet_data)
+{
+	MyWrite(CWebsocketFrame::Create(opcode_text, packet_data, false));
 }
 
 void connection::MyWrite(const std::string &buf)
@@ -317,7 +322,7 @@ void connection::handle_read(const boost::system::error_code& error, std::size_t
 					connection_type = connection_websocket;
 					// from now on we are a persistant connection
 					keepalive_ = true;
-					websocket_handler.Start();
+					websocket_parser.Start();
 					// keep sessionid to access our session during websockets requests
 					// todo: websocket_handler.store_session_id(request_, reply_);
 					// todo: check if multiple connection from the same client in CONNECTING state?
@@ -344,7 +349,7 @@ void connection::handle_read(const boost::system::error_code& error, std::size_t
 		case connection_websocket:
 		case connection_closing:
 			begin = boost::asio::buffer_cast<const char*>(_buf.data());
-			result = websocket_handler.parse((const unsigned char *)begin, _buf.size(), bytes_consumed, keepalive_);
+			result = websocket_parser.parse((const unsigned char *)begin, _buf.size(), bytes_consumed, keepalive_);
 			_buf.consume(bytes_consumed);
 			if (result) {
 				// we received a complete packet (that was handled already)

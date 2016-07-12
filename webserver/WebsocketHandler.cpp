@@ -9,7 +9,10 @@
 namespace http {
 	namespace server {
 
-		CWebsocketHandler::CWebsocketHandler(cWebem *m_pWebem, boost::function<void(const std::string &packet_data)> _MyWrite)
+		// forward declaration
+		std::string CreateFrame(opcodes opcode, const std::string &payload);
+
+		CWebsocketHandler::CWebsocketHandler(cWebem *m_pWebem, boost::function<void(const std::string &packet_data)> _MyWrite) : m_Push(this)
 		{
 			MyWrite = _MyWrite;
 			myWebem = m_pWebem;
@@ -17,6 +20,7 @@ namespace http {
 
 		CWebsocketHandler::~CWebsocketHandler()
 		{
+			m_Push.Stop();
 		}
 
 		boost::tribool CWebsocketHandler::Handle(const std::string &packet_data)
@@ -52,9 +56,19 @@ namespace http {
 					return true;
 				}
 			}
-			std::string response = "0" + requestid + "/{ \"error\": \"Internal Server Error!!!\" }";
-			MyWrite(packet_data); // todo
+			std::string response = "/{ \"error\": \"Internal Server Error!!!\" }";
+			MyWrite(response);
 			return true;
+		}
+
+		void CWebsocketHandler::Start()
+		{
+			m_Push.Start();
+		}
+
+		void CWebsocketHandler::Stop()
+		{
+			m_Push.Stop();
 		}
 
 
@@ -125,6 +139,26 @@ namespace http {
 					}
 				}
 			}
+		}
+
+		void CWebsocketHandler::OnDeviceChanged(const unsigned long long DeviceRowIdx)
+		{
+#if 0
+			std::string query = "type=devices&rid=" + boost::lexical_cast<std::string>(DeviceRowIdx);
+			std::string packet = "\"-1/" + query + "\"";
+			Handle(packet);
+#endif
+		}
+
+		void CWebsocketHandler::OnMessage(const std::string & Subject, const std::string & Text, const std::string & ExtraData, const int Priority, const std::string & Sound, const bool bFromNotification)
+		{
+			Json::Value json;
+
+			json["event"] = "notification";
+			json["Text"] = Text;
+			// todo: other parameters
+			std::string response = json.toStyledString();
+			MyWrite(response);
 		}
 
 	}

@@ -16,6 +16,9 @@
 namespace http {
 	namespace server {
 
+#if 1
+#define CreateFrame(opcode, payload) CWebsocketFrame::Create(opcode, payload, false)
+#else
 		std::string CreateFrame(opcodes opcode, const std::string &payload)
 		{
 			// note: we dont do masking nor fragmentation
@@ -46,6 +49,7 @@ namespace http {
 			res += payload;
 			return res;
 		}
+#endif
 
 CWebsocketFrame::CWebsocketFrame() { };
 CWebsocketFrame::~CWebsocketFrame() {};
@@ -59,18 +63,19 @@ std::string CWebsocketFrame::unmask(const unsigned char *mask, const unsigned ch
 	return result;
 }
 
-std::string CWebsocketFrame::Create(opcodes opcode, const std::string &payload)
+std::string CWebsocketFrame::Create(opcodes opcode, const std::string &payload, bool domasking)
 {
+	unsigned char masking_key[4];
 	size_t_t payloadlen = payload.length();
 	std::string res;
 	// byte 0
 	res += ((unsigned char)opcode | FIN_MASK);
 	if (payloadlen < 126) {
-		res += (unsigned char)payloadlen | MASKING_MASK;
+		res += (unsigned char)payloadlen | (domasking ? MASKING_MASK : 0);
 	}
 	else {
 		if (payloadlen <= 0xffff) {
-			res += (unsigned char)126 | MASKING_MASK;
+			res += (unsigned char)126 | (domasking ? MASKING_MASK : 0);
 			int bits = 16;
 			while (bits) {
 				bits -= 8;
@@ -78,7 +83,7 @@ std::string CWebsocketFrame::Create(opcodes opcode, const std::string &payload)
 			}
 		}
 		else {
-			res += (unsigned char)127 | MASKING_MASK;
+			res += (unsigned char)127 | (domasking ? MASKING_MASK : 0);
 			int bits = 64;
 			while (bits) {
 				bits -= 8;
@@ -87,16 +92,22 @@ std::string CWebsocketFrame::Create(opcodes opcode, const std::string &payload)
 			}
 		}
 	}
-	// masking key
-	for (unsigned i = 0; i < 4; i++) {
-		masking_key[i] = rand();
-		res += masking_key[i];
+	if (domasking) {
+		// masking key
+		for (unsigned i = 0; i < 4; i++) {
+			masking_key[i] = rand();
+			res += masking_key[i];
+		}
+		res += unmask(masking_key, (const unsigned char *)payload.c_str(), payloadlen);
 	}
-	res += unmask(masking_key, (const unsigned char *)payload.c_str(), payloadlen);
+	else {
+		res += payload;
+	}
 	return res;
 }
 
 bool CWebsocketFrame::Parse(const unsigned char *bytes, size_t_t size) {
+	unsigned char masking_key[4];
 	size_t_t remaining = size;
 	bytes_consumed = 0;
 	if (remaining < 2) {
@@ -175,7 +186,7 @@ opcodes CWebsocketFrame::Opcode() {
 	return opcode;
 };
 
-CWebsocket::CWebsocket(boost::function<void(const std::string &packet_data)> _MyWrite, CWebsocketHandler *_handler) : m_Push(this)
+CWebsocket::CWebsocket(boost::function<void(const std::string &packet_data)> _MyWrite, CWebsocketHandler *_handler)
 {
 	start_new_packet = true;
 	MyWrite = _MyWrite;
@@ -185,7 +196,6 @@ CWebsocket::CWebsocket(boost::function<void(const std::string &packet_data)> _My
 
 CWebsocket::~CWebsocket()
 {
-	m_Push.Stop();
 }
 
 boost::tribool CWebsocket::parse(const unsigned char *begin, size_t_t size, size_t_t &bytes_consumed, bool &keep_alive)
@@ -281,35 +291,14 @@ void CWebsocket::SendClose(const std::string &packet_data)
 	MyWrite(frame);
 }
 
-void CWebsocket::OnDeviceChanged(const unsigned long long DeviceRowIdx)
-{
-	std::string query = "type=devices&rid=" + boost::lexical_cast<std::string>(DeviceRowIdx);
-	std::string packet = "\"-1/" + query + "\"";
-	OnReceiveText(packet);
-}
-
-void CWebsocket::OnMessage(const std::string & Subject, const std::string & Text, const std::string & ExtraData, const int Priority, const std::string & Sound, const bool bFromNotification)
-{
-#if 1
-	Json::Value json;
-
-	json["event"] = "notification";
-	json["Text"] = Text;
-	// todo: other parameters
-	std::string response = json.toStyledString();
-	std::string frame = CreateFrame(opcode_text, response);
-	MyWrite(frame);
-#endif
-}
-
 void CWebsocket::Start()
 {
-	m_Push.Start();
+	handler->Start();
 }
 
 void CWebsocket::Stop()
 {
-	m_Push.Stop();
+	handler->Stop();
 }
 
 }

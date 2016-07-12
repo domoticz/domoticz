@@ -186,6 +186,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 					    // alert("websocket closed");
 					});
 					this.websocket.$on('$message', function (msg) {
+					    console.log(msg);
 					    msg = JSON.parse(msg);
 					    switch (msg.event) {
 					        case "notification":

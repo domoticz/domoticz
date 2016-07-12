@@ -1,7 +1,6 @@
 #pragma once
 #include <boost/logic/tribool.hpp>
 #include <string>
-#include "../push/WebsocketPush.h"
 #include "WebsocketHandler.h"
 
 #define size_t_t long long
@@ -30,9 +29,9 @@ namespace http {
 			bool isFinal();
 			size_t_t Consumed();
 			opcodes Opcode();
-			std::string Create(opcodes opcode, const std::string &payload);
+			static std::string Create(opcodes opcode, const std::string &payload, bool domasking = true);
 		private:
-			std::string unmask(const unsigned char *mask, const unsigned char *bytes, size_t_t payloadlen);
+			static std::string unmask(const unsigned char *mask, const unsigned char *bytes, size_t_t payloadlen);
 			bool fin;
 			bool rsvi1;
 			bool rsvi2;
@@ -40,7 +39,6 @@ namespace http {
 			opcodes opcode;
 			bool masking;
 			size_t_t payloadlen, bytes_consumed;
-			unsigned char masking_key[4];
 			std::string payload;
 		};
 
@@ -51,8 +49,6 @@ namespace http {
 			boost::tribool parse(const unsigned char *begin, size_t_t size, size_t_t &bytes_consumed, bool &keep_alive);
 			void SendClose(const std::string &packet_data);
 			void SendPing();
-			void OnDeviceChanged(const unsigned long long DeviceRowIdx);
-			void OnMessage(const std::string & Subject, const std::string & Text, const std::string & ExtraData, const int Priority, const std::string & Sound, const bool bFromNotification);
 			void Start();
 			void Stop();
 		private:
@@ -64,7 +60,6 @@ namespace http {
 			bool start_new_packet;
 			opcodes last_opcode;
 			const char *OUR_PING_ID;
-			CWebSocketPush m_Push;
 			CWebsocketHandler *handler;
 			boost::function<void(const std::string &packet_data)> MyWrite;
 		};
