@@ -33,13 +33,6 @@ namespace http {
 			std::string Create(opcodes opcode, const std::string &payload);
 		private:
 			std::string unmask(const unsigned char *mask, const unsigned char *bytes, size_t_t payloadlen);
-			const unsigned char FIN_MASK = 0x80;
-			const unsigned char RSVI1_MASK = 0x40;
-			const unsigned char RSVI2_MASK = 0x20;
-			const unsigned char RSVI3_MASK = 0x10;
-			const unsigned char OPCODE_MASK = 0x0f;
-			const unsigned char MASKING_MASK = 0x80;
-			const unsigned char PAYLOADLEN_MASK = 0x7f;
 			bool fin;
 			bool rsvi1;
 			bool rsvi2;
@@ -70,7 +63,7 @@ namespace http {
 			std::string packet_data;
 			bool start_new_packet;
 			opcodes last_opcode;
-			const char *OUR_PING_ID = "fd";
+			const char *OUR_PING_ID;
 			CWebSocketPush m_Push;
 			CWebsocketHandler *handler;
 			boost::function<void(const std::string &packet_data)> MyWrite;

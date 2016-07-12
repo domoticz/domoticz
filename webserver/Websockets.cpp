@@ -5,14 +5,20 @@
 #include "../main/Logger.h"
 #include "../json/json.h"
 
+#define FIN_MASK 0x80
+#define RSVI1_MASK 0x40
+#define RSVI2_MASK 0x20
+#define RSVI3_MASK 0x10
+#define OPCODE_MASK 0x0f
+#define MASKING_MASK 0x80
+#define PAYLOADLEN_MASK 0x7f
+
 namespace http {
 	namespace server {
 
 		std::string CreateFrame(opcodes opcode, const std::string &payload)
 		{
 			// note: we dont do masking nor fragmentation
-			const unsigned char FIN_MASK = 0x80;
-			const unsigned char OPCODE_MASK = 0x0f;
 			size_t_t payloadlen = payload.size();
 			std::string res = "";
 			res += ((unsigned char)(FIN_MASK + (((unsigned char)opcode) & OPCODE_MASK)));
@@ -174,6 +180,7 @@ CWebsocket::CWebsocket(boost::function<void(const std::string &packet_data)> _My
 	start_new_packet = true;
 	MyWrite = _MyWrite;
 	handler = _handler;
+	OUR_PING_ID = "fd";
 }
 
 CWebsocket::~CWebsocket()
