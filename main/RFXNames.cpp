@@ -228,6 +228,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_S0SmartMeterTCP, "S0 Meter with LAN interface" },
 		{ HTYPE_DenkoviSmartdenLan, "Denkovi Smartden with LAN interface" },
 		{ HTYPE_AccuWeather, "AccuWeather (Weather Lookup)" },
+		{ HTYPE_BleBox, "BleBox devices" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);

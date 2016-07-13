@@ -562,6 +562,7 @@
     <ClInclude Include="..\zip\ioapi.h" />
     <ClInclude Include="..\zip\unzip.h" />
     <ClInclude Include="..\zip\zip.h" />
+    <ClInclude Include="..\hardware\BleBox.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="..\main\Scheduler.h" />
     <ClInclude Include="..\main\SQLHelper.h" />
@@ -863,6 +864,7 @@
     <ClCompile Include="..\webserver\request_handler.cpp" />
     <ClCompile Include="..\webserver\request_parser.cpp" />
     <ClCompile Include="..\webserver\server.cpp" />
+    <ClCompile Include="..\hardware\BleBox.cpp" />
     <ClCompile Include="WindowsHelper.cpp" />
     <ClCompile Include="..\hardware\YouLess.cpp" />
   </ItemGroup>

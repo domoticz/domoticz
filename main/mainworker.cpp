@@ -96,6 +96,7 @@
 #include "../hardware/RAVEn.h"
 #include "../hardware/DenkoviSmartdenLan.h"
 #include "../hardware/AccuWeather.h"
+#include "../hardware/BleBox.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -872,6 +873,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_OpenWebNet:
 		pHardware = new COpenWebNet(ID, Address, Port);
+		break;
+	case HTYPE_BleBox:
+		pHardware = new BleBox(ID, Mode1, Mode2);
 		break;
 	}
 

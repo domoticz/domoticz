@@ -423,6 +423,9 @@
     <Filter Include="Pushers\FibaroLink">
       <UniqueIdentifier>{b108db7e-5f5a-44df-8dfd-bea4d48f48b4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\BleBox">
+      <UniqueIdentifier>{8dce5b0e-b964-4c67-9bf8-1922df7c8f70}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -1867,6 +1870,9 @@
     <ClInclude Include="..\push\Push.h">
       <Filter>Pushers\PushBase</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\BleBox.h">
+      <Filter>Devices\BleBox</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2441,6 +2447,9 @@
     </ClCompile>
     <ClCompile Include="..\push\Push.cpp">
       <Filter>Pushers\PushBase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\BleBox.cpp">
+      <Filter>Devices\BleBox</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

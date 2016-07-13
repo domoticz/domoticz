@@ -243,6 +243,12 @@ private:
 	void Cmd_AddMobileDevice(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DeleteMobileDevice(WebEmSession & session, const request& req, Json::Value &root);
 
+	void Cmd_BleBoxSetMode(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_BleBoxGetNodes(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_BleBoxAddNode(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_BleBoxUpdateNode(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_BleBoxRemoveNode(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_BleBoxClearNodes(WebEmSession & session, const request& req, Json::Value &root);
 
 	//RTypes
 	void RType_HandleGraph(WebEmSession & session, const request& req, Json::Value &root);
