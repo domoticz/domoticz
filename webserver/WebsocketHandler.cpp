@@ -20,7 +20,7 @@ namespace http {
 
 		CWebsocketHandler::~CWebsocketHandler()
 		{
-			m_Push.Stop();
+			Stop();
 		}
 
 		boost::tribool CWebsocketHandler::Handle(const std::string &packet_data)
