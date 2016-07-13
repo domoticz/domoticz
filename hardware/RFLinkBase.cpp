@@ -295,6 +295,7 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 		//_log.Log(LOG_ERROR, "RFLink: unit: %d", pLed->dunit);			// unit 0=All, 1=Group1,2=Group2,3=Group3,4=Group4
 		//_log.Log(LOG_ERROR, "RFLink: command: %d", pLed->command);		// command
 		//_log.Log(LOG_ERROR, "RFLink: value: %d", pLed->value);			// brightness/color value
+		bool bSendOn = false; 
 
 		const int m_LEDType = pLed->type;
 		std::string switchtype = GetGeneralRFLinkFromInt(rfswitches, 0x57);
@@ -313,13 +314,16 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 			m_colorbright = m_colorbright & 0xff;
 			m_colorbright = (((unsigned char)pLed->value) << 8) + m_colorbright;
 			switchcmnd = "COLOR";
-			}
+			bSendOn = true;
+		    }
 			break;
 		case Limitless_DiscoSpeedSlower:
 			switchcmnd = "DISCO-";
+			bSendOn = true;
 			break;
 		case Limitless_DiscoSpeedFaster:
 			switchcmnd = "DISCO+";
+			bSendOn = true;
 			break;
 		case Limitless_DiscoMode:
 			switchcmnd = "MODE";
@@ -336,29 +340,59 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 			m_colorbright = m_colorbright & 0xff00;
 			m_colorbright = m_colorbright + (unsigned char)m_brightness;
 			switchcmnd = "BRIGHT";
-			}
+			bSendOn = true;
+		    }
 			break;
 
 		// need work:
 		case Limitless_SetBrightUp:
 			switchcmnd = "BRIGHT";
+			bSendOn = true;
 			break;
 		case Limitless_SetBrightDown:
 			switchcmnd = "BRIGHT";
+			bSendOn = true;
 			break;
 		case Limitless_DiscoSpeedFasterLong:
 			switchcmnd = "DISCO+";
+			bSendOn = true;
 			break;
 		case Limitless_RGBDiscoNext:
 			switchcmnd = "DISCO+";
+			bSendOn = true;
 			break;
 		case Limitless_RGBDiscoPrevious:
 			switchcmnd = "DISCO-";
+			bSendOn = true;
 			break;
 		default: 
 			_log.Log(LOG_ERROR, "RFLink: trying to send unknown led switch command: %d", pLed->command);
 			return false;
 		}
+
+		// --- Sending first an "ON command" needed
+		if (bSendOn == true) {
+			std::string tswitchcmnd = "ON";
+			//Build send string
+			std::stringstream sstr;
+			sstr << "10;" << switchtype << ";" << std::hex << std::nouppercase << std::setw(4) << std::setfill('0') << pLed->id << ";" << std::setw(2) << std::setfill('0') << int(pLed->dunit) << ";" << std::hex << std::nouppercase << std::setw(4) << m_colorbright << ";" << tswitchcmnd;
+			_log.Log(LOG_STATUS, "RFLink Sending: %s", sstr.str().c_str());
+			sstr << "\n";
+			m_bTXokay = false; // clear OK flag
+			WriteInt(sstr.str());
+			time_t atime = mytime(NULL);
+			time_t btime = mytime(NULL);
+
+			// Wait for an OK response from RFLink to make sure the command was executed
+			while (m_bTXokay == false) {
+				if (btime - atime > 4) {
+					_log.Log(LOG_ERROR, "RFLink: TX time out...");
+					return false;
+				}
+				btime = mytime(NULL);
+			}
+		} 
+		// ---
 
 		//Build send string
 		std::stringstream sstr;
@@ -399,7 +433,7 @@ bool CRFLinkBase::SendSwitchInt(const int ID, const int switchunit, const int Ba
 
 	int svalue=level;
 	if (cmnd==-1) {
-		if (switchcmd.compare(0, 9, "SET_LEVEL=") == 0 ){
+		if (switchcmd.compare(0, 10, "SET_LEVEL=") == 0 ){
 			cmnd=gswitch_sSetLevel;
 			std::string str2 = switchcmd.substr(10);
 			svalue=atoi(str2.c_str()); 
