@@ -680,7 +680,12 @@ namespace http {
 				we_locked_prefs_mutex = false;
 				sharedData.UnlockPrefsMutex();
 			}
-			// todo: close and delete all websocket handlers
+			// stop and destroy all open websocket handlers
+			for (std::map<long, CWebsocketHandler *>::iterator it = websocket_handlers.begin(); it != websocket_handlers.end(); ++it) {
+				it->second->Stop();
+				delete it->second;
+			}
+			websocket_handlers.clear();
 
 			doStop = true;
 			// signal end of WriteThread
