@@ -32,7 +32,7 @@ private:
 	bool StopHardware();
 	void Do_Work();
 
-	std::string BleBox::IdentifyDevice(const std::string &IPAddress);
+	std::string IdentifyDevice(const std::string &IPAddress);
 
 	void ReloadNodes();
 	void UnloadNodes();
