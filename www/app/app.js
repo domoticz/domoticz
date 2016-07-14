@@ -299,6 +299,11 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				controller: 'TemperatureCustomLogController',
 				controllerAs: 'ctrl'
 			})).
+			when('/Temperature/:idx/Log', angularAMD.route({
+				templateUrl: 'views/temperature_log.html',
+				controller: 'TemperatureLogController',
+				controllerAs: 'ctrl'
+			})).
 			  when('/Update', angularAMD.route({
 				templateUrl: 'views/update.html',
 				controller: 'UpdateController',

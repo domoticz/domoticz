@@ -38,7 +38,7 @@
                     <img ng-show="ctrl.item.Favorite == 0" src="images/nofavorite.png" ng-click="ctrl.MakeFavorite(1)" class="lcursor" data-i18n="[title]Add to Dashboard" title="Add to Dashboard">
                     <img ng-show="ctrl.item.Favorite != 0" src="images/favorite.png" ng-click="ctrl.MakeFavorite(0)" class="lcursor" data-i18n="[title]Remove from Dashboard" title="Remove from Dashboard">
                     &nbsp;&nbsp;
-                    <a class="btnsmall" ng-click="ctrl.ShowTempLog('#tempcontent','ShowTemps')" data-i18n="Log">Log</a>
+                    <a class="btnsmall" ng-href="#/Temperature/{{ctrl.item.idx}}/Log" data-i18n="Log">Log</a>
 
                     <span has-permission="Admin">
                         <a ng-show="ctrl.item.Type=='Humidity'" class="btnsmall" ng-click="ctrl.EditTempDeviceSmall()" data-i18n="Edit">Edit</a>

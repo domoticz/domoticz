@@ -702,12 +702,6 @@ define(['app'], function (app) {
 						return MakeFavorite(ctrl.item.idx,n);
 					};
 					
-					ctrl.ShowTempLog = function(divId, fn) {
-						$('#tempwidgets').hide(); // TODO delete when multiple views implemented
-						$('#temptophtm').hide();
-						return ShowTempLog(divId, fn, ctrl.item.idx, escape(ctrl.item.Name));
-					};
-
 					ctrl.EditTempDeviceSmall = function () {
 						return EditTempDeviceSmall(ctrl.item.idx,escape(ctrl.item.Name),escape(ctrl.item.Description),ctrl.item.AddjValue);
 					};
