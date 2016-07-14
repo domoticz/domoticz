@@ -429,6 +429,9 @@
     <Filter Include="Devices\BleBox">
       <UniqueIdentifier>{8dce5b0e-b964-4c67-9bf8-1922df7c8f70}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\OpenWeatherMap">
+      <UniqueIdentifier>{db1e850c-e0ec-47fc-84cd-6528ce21f0aa}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -1879,6 +1882,9 @@
     <ClInclude Include="..\hardware\BleBox.h">
       <Filter>Devices\BleBox</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\OpenWeatherMap.h">
+      <Filter>Devices\OpenWeatherMap</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2459,6 +2465,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\BleBox.cpp">
       <Filter>Devices\BleBox</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\OpenWeatherMap.cpp">
+      <Filter>Devices\OpenWeatherMap</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -162,6 +162,7 @@ enum _eHardwareTypes {
 	HTYPE_Comm5Serial,          //80
 	HTYPE_Ec3kMeterTCP,			//81
 	HTYPE_BleBox,          		//82
+	HTYPE_OpenWeatherMap,  		//83
 	HTYPE_END
 };
 
