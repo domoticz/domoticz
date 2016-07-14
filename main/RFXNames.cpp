@@ -229,6 +229,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_DenkoviSmartdenLan, "Denkovi Smartden with LAN interface" },
 		{ HTYPE_AccuWeather, "AccuWeather (Weather Lookup)" },
 		{ HTYPE_BleBox, "BleBox devices" },
+		{ HTYPE_Ec3kMeterTCP, "Energy Count 3000/ NETBSEM4/ La Crosse RT-10 LAN" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);

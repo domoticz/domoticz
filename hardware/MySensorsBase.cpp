@@ -1104,7 +1104,10 @@ void MySensorsBase::UpdateSwitch(const _eSetType vType, const unsigned char Idx,
 	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, szIdx, SubUnit, int(pTypeLighting2), int(sTypeAC));
 	if (!result.empty())
 	{
-		if ((vType != V_TRIPPED) || (!bOn))
+		if (
+			(((vType != V_TRIPPED) || (!bOn))) &&
+			((vType != V_SCENE_OFF) && (vType != V_SCENE_ON))
+			)
 		{
 			//check if we have a change, if not do not update it
 			int nvalue = atoi(result[0][1].c_str());
