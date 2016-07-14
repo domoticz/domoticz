@@ -421,6 +421,7 @@
     <ClInclude Include="..\hardware\DavisLoggerSerial.h" />
     <ClInclude Include="..\hardware\DenkoviSmartdenLan.h" />
     <ClInclude Include="..\hardware\Dummy.h" />
+    <ClInclude Include="..\hardware\Ec3kMeterTCP.h" />
     <ClInclude Include="..\hardware\EcoDevices.h" />
     <ClInclude Include="..\hardware\EnOceanESP2.h" />
     <ClInclude Include="..\hardware\EnOceanESP3.h" />
@@ -567,6 +568,7 @@
     <ClInclude Include="..\zip\ioapi.h" />
     <ClInclude Include="..\zip\unzip.h" />
     <ClInclude Include="..\zip\zip.h" />
+    <ClInclude Include="..\hardware\BleBox.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="..\main\Scheduler.h" />
     <ClInclude Include="..\main\SQLHelper.h" />
@@ -635,6 +637,7 @@
     <ClCompile Include="..\hardware\DavisLoggerSerial.cpp" />
     <ClCompile Include="..\hardware\DenkoviSmartdenLan.cpp" />
     <ClCompile Include="..\hardware\Dummy.cpp" />
+    <ClCompile Include="..\hardware\Ec3kMeterTCP.cpp" />
     <ClCompile Include="..\hardware\EcoDevices.cpp" />
     <ClCompile Include="..\hardware\EnOceanESP2.cpp" />
     <ClCompile Include="..\hardware\EnOceanESP3.cpp" />
@@ -872,6 +875,7 @@
     <ClCompile Include="..\webserver\server.cpp" />
     <ClCompile Include="..\webserver\WebsocketHandler.cpp" />
     <ClCompile Include="..\webserver\Websockets.cpp" />
+    <ClCompile Include="..\hardware\BleBox.cpp" />
     <ClCompile Include="WindowsHelper.cpp" />
     <ClCompile Include="..\hardware\YouLess.cpp" />
   </ItemGroup>

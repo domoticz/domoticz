@@ -129,6 +129,9 @@
     <Filter Include="Devices\Toon Thermostat">
       <UniqueIdentifier>{61053137-fc80-420f-aee4-7a6a9cdc8923}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\Ec3kMeterTCP">
+      <UniqueIdentifier>{c01f3b60-befb-4d22-9437-ee414b097389}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Devices\EcoDevices">
       <UniqueIdentifier>{45784bef-128b-4ccf-8425-dd83aca6d9c9}</UniqueIdentifier>
     </Filter>
@@ -425,6 +428,9 @@
     </Filter>
     <Filter Include="Pushers\Gui">
       <UniqueIdentifier>{8c91c3b7-d417-45a9-ba1d-b6c20bc7d16b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\BleBox">
+      <UniqueIdentifier>{8dce5b0e-b964-4c67-9bf8-1922df7c8f70}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -1540,6 +1546,9 @@
     <ClInclude Include="..\hardware\ToonThermostat.h">
       <Filter>Devices\Toon Thermostat</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\Ec3kMeterTCP.h">
+      <Filter>Devices\Ec3kMeterTCP</Filter>
+    </ClInclude>
     <ClInclude Include="..\hardware\EcoDevices.h">
       <Filter>Devices\EcoDevices</Filter>
     </ClInclude>
@@ -1885,6 +1894,9 @@
     <ClInclude Include="..\notifications\NotificationBrowser.h">
       <Filter>Notifications</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\BleBox.h">
+      <Filter>Devices\BleBox</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2111,6 +2123,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\ToonThermostat.cpp">
       <Filter>Devices\Toon Thermostat</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\Ec3kMeterTCP.cpp">
+      <Filter>Devices\Ec3kMeterTCP</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\EcoDevices.cpp">
       <Filter>Devices\EcoDevices</Filter>
@@ -2471,6 +2486,9 @@
     </ClCompile>
     <ClCompile Include="..\notifications\NotificationBrowser.cpp">
       <Filter>Notifications</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\BleBox.cpp">
+      <Filter>Devices\BleBox</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
