@@ -285,8 +285,8 @@ void CEvohome::Do_Work()
 	bool startup = true;
 	std::vector<std::vector<std::string> > result;
 	//int CMDID = 0x139b32;
-	int CMDID = 0x7871;
-	int itemp = -2000;
+	//int CMDID = 0x1161;
+	//int itemp = -2000;
 
 	while (!m_stoprequested)
 	{
@@ -358,12 +358,12 @@ void CEvohome::Do_Work()
 						else
 							startup = false;
 					}
-					else//Request each individual zone temperature every 300s as the controller omits multi-room zones
-					{
-						uint8_t nZoneCount = GetZoneCount();
-						for (uint8_t i = 0; i < nZoneCount; i++)
-							RequestZoneTemp(i);		
-					}
+					//else//Request each individual zone temperature every 300s as the controller omits multi-room zones
+					//{
+					//	uint8_t nZoneCount = GetZoneCount();
+					//	for (uint8_t i = 0; i < nZoneCount; i++)
+					//		RequestZoneTemp(i);		
+					//}
 					if (AllSensors == false) // Check whether individual zone sensors has been activated 
 					{
 						result = m_sql.safe_query("SELECT HardwareID, DeviceID FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) AND (Unit >= 13) AND (Unit <= 24)", m_HwdID, (int)pTypeEvohomeZone);						
@@ -374,11 +374,11 @@ void CEvohome::Do_Work()
 						if (result.size() != 0)
 							m_sql.safe_query("DELETE FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='FFFFFF' AND (Type==%d) AND (Unit == 13))", m_HwdID, (int)pTypeEvohomeZone);
 					}
-					if (CMDID >= 0x31)
-					{
-						RequestSysInfoZ(CMDID);
-						CMDID -= 0x30;
-					}
+					//if (CMDID >= 0x31)
+					//{
+					//	RequestSysInfoZ(CMDID);
+					//	CMDID -= 0x30;
+					//}
 
 					nStartup = 0;
 				}
