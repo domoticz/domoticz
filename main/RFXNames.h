@@ -160,7 +160,8 @@ enum _eHardwareTypes {
 	HTYPE_DenkoviSmartdenLan,	//78
 	HTYPE_AccuWeather,			//79
 	HTYPE_Comm5Serial,          //80
-	HTYPE_Ec3kMeterTCP,		//81
+	HTYPE_Ec3kMeterTCP,			//81
+	HTYPE_BleBox,          		//82
 	HTYPE_END
 };
 

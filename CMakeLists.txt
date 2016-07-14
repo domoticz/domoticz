@@ -227,6 +227,7 @@ hardware/AnnaThermostat.cpp
 hardware/ASyncSerial.cpp
 hardware/ASyncTCP.cpp
 hardware/AtagOne.cpp
+hardware/BleBox.cpp
 hardware/Comm5TCP.cpp
 hardware/Comm5Serial.cpp
 hardware/csocket.cpp
