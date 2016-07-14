@@ -7,7 +7,7 @@
 class P1MeterTCP: public P1MeterBase
 {
 public:
-	P1MeterTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort);
+	P1MeterTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const bool disable_crc);
 	~P1MeterTCP(void);
 
 	void write(const char *data, size_t size);

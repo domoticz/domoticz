@@ -25,7 +25,11 @@ easy-server --host=0.0.0.0 --serial=XXXX --access-key=XXXX --password=XXXX
 After this you should be able to connect to port 3000
 */
 
-//#define DEBUG_NefitEasyW
+#ifdef _DEBUG
+	//#define DEBUG_NefitEasyW
+	//#define DEBUG_NefitEasyR
+#endif
+
 #ifdef DEBUG_NefitEasyW
 void SaveString2Disk(std::string str, std::string filename)
 {
@@ -68,6 +72,8 @@ std::string ReadFile(std::string filename)
 #define NEFITEASY_SET_TEMP_OVERRIDE "/heatingCircuits/hc1/manualTempOverride/status"
 #define NEFITEASY_SET_TEMP_OVERRIDE_TEMP "/heatingCircuits/hc1/manualTempOverride/temperature"
 #define NEFITEASY_SET_USER_MODE "/heatingCircuits/hc1/usermode"
+#define NEFITEASY_SET_HOT_WATER_MANUAL_MODE "/dhwCircuits/dhwA/dhwOperationManualMode"
+#define NEFITEASY_SET_HOT_WATER_CLOCK_MODE "/dhwCircuits/dhwA/dhwOperationClockMode"
 #define NEFITEASY_LOCATION_LATITUDE "/system/location/latitude"
 #define NEFITEASY_LOCATION_LONGITUDE "/system/location/longitude"
 
@@ -107,6 +113,7 @@ m_szIPAddress(IPAddress)
 	m_usIPPort = usIPPort;
 	m_bDoLogin = true;
 	m_lastgasusage = 0;
+	m_bClockMode = false;
 /*
 	// Generate some commonly used properties.
 	m_ConnectionPassword = NEFITEASY_ACCESSKEY_PREFIX + m_AccessKey;
@@ -140,6 +147,7 @@ void CNefitEasy::Logout()
 void CNefitEasy::Init()
 {
 	m_lastgasusage = 0;
+	m_bClockMode = false;
 }
 
 bool CNefitEasy::StartHardware()
@@ -219,7 +227,14 @@ void CNefitEasy::Do_Work()
 		}
 		if (sec_counter % NEFIT_GAS_INTERVAL == 0)
 		{
-			ret = GetGasUsage();
+			try
+			{
+				ret = GetGasUsage();
+			}
+			catch (...)
+			{
+				_log.Log(LOG_ERROR, "NefitEasy: Error getting/processing gas result...");
+			}
 		}
 		bFirstTime = false;
 	}
@@ -238,6 +253,12 @@ bool CNefitEasy::WriteToHardware(const char *pdata, const unsigned char length)
 		{
 			//User Mode Switch Clock/Manual
 			SetUserMode(bIsOn);
+			return true;
+		}
+		else if (node_id == 2)
+		{
+			//Hot Water Switch
+			SetHotWaterMode(bIsOn);
 			return true;
 		}
 	}
@@ -259,6 +280,42 @@ void CNefitEasy::SetUserMode(bool bSetUserModeClock)
 	{
 
 		szURL << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << NEFITEASY_SET_USER_MODE;
+		if (!HTTPClient::POST(szURL.str(), root.toStyledString(), ExtraHeaders, sResult))
+		{
+			_log.Log(LOG_ERROR, "NefitEasy: Error setting User Mode!");
+			return;
+		}
+		GetStatusDetails();
+	}
+	catch (...)
+	{
+		_log.Log(LOG_ERROR, "NefitEasy: Error setting User Mode!");
+		return;
+	}
+}
+
+void CNefitEasy::SetHotWaterMode(bool bTurnOn)
+{
+	Json::Value root;
+	root["value"] = (bTurnOn == true) ? "on" : "off";
+
+	std::stringstream szURL;
+	std::string sResult;
+	std::vector<std::string> ExtraHeaders;
+	//ExtraHeaders.push_back("User-Agent: NefitEasy");
+	ExtraHeaders.push_back("Content-Type: application/json");
+
+	try
+	{
+		//szURL << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << (m_bClockMode == true) ? NEFITEASY_SET_HOT_WATER_CLOCK_MODE : NEFITEASY_SET_HOT_WATER_MANUAL_MODE;
+		//Set Both modes
+		szURL << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << NEFITEASY_SET_HOT_WATER_CLOCK_MODE;
+		if (!HTTPClient::POST(szURL.str(), root.toStyledString(), ExtraHeaders, sResult))
+		{
+			_log.Log(LOG_ERROR, "NefitEasy: Error setting User Mode!");
+			return;
+		}
+		szURL << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << NEFITEASY_SET_HOT_WATER_MANUAL_MODE;
 		if (!HTTPClient::POST(szURL.str(), root.toStyledString(), ExtraHeaders, sResult))
 		{
 			_log.Log(LOG_ERROR, "NefitEasy: Error setting User Mode!");
@@ -327,37 +384,37 @@ bool CNefitEasy::GetStatusDetails()
 		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received (main)");
 		return false;
 	}
-/*
-Status output:
-ARS -> '?' string
-BAI -> 'boiler indicator' ('CH' = 'central heating', 'HW' = 'hot water', 'No' = 'off' ) string
-BBE -> 'boiler block' bool
-BLE -> 'boiler lock' bool
-BMR -> 'boiler maintainance' bool
-CPM -> 'clock program' string (auto)
-CSP -> 'current switchpoint' string float
-CTD -> 'current time/date' string
-CTR -> 'control' string (room)
-DAS -> '?' on/off
-DHW -> '?Domestic Hot Water' on/off
-ESI -> 'powersave active' on/off
-FPA -> 'fireplace mode active, continue heating even when maximum setpoint temperature reached' string
-HED_DB -> '?'
-HED_DEV -> 'hed device at home' bool
-HED_EN -> 'hed enabled' bool
-HMD -> 'holiday mode' on/off
-IHS -> 'in house status' string (ok)
-IHT -> 'in house temp' string float
-MMT -> 'temp manual setpoint' string float
-PMR -> '?' bool
-RS -> '?' on/off
-TAS -> '?' on/off
-TOD -> 'temp override duration' string integer?
-TOR -> 'temp override' on/off
-TOT -> 'temp override temp setpoint' string float
-TSP -> 'temp setpoint' string float
-UMD -> 'user mode' string (clock)
-*/
+	/*
+	Status output:
+	ARS -> '?' string
+	BAI -> 'boiler indicator' ('CH' = 'central heating', 'HW' = 'hot water', 'No' = 'off' ) string
+	BBE -> 'boiler block' bool
+	BLE -> 'boiler lock' bool
+	BMR -> 'boiler maintainance' bool
+	CPM -> 'clock program' string (auto)
+	CSP -> 'current switchpoint' string float
+	CTD -> 'current time/date' string
+	CTR -> 'control' string (room)
+	DAS -> '?' on/off
+	DHW -> 'Domestic Hot Water' on/off
+	ESI -> 'powersave active' on/off
+	FPA -> 'fireplace mode active, continue heating even when maximum setpoint temperature reached' string
+	HED_DB -> '?'
+	HED_DEV -> 'hed device at home' bool
+	HED_EN -> 'hed enabled' bool
+	HMD -> 'holiday mode' on/off
+	IHS -> 'in house status' string (ok)
+	IHT -> 'in house temp' string float
+	MMT -> 'temp manual setpoint' string float
+	PMR -> '?' bool
+	RS -> '?' on/off
+	TAS -> '?' on/off
+	TOD -> 'temp override duration' string integer?
+	TOR -> 'temp override' on/off
+	TOT -> 'temp override temp setpoint' string float
+	TSP -> 'temp setpoint' string float
+	UMD -> 'user mode' string (clock)
+	*/
 	std::string tmpstr;
 	if (!root2["TSP"].empty())
 	{
@@ -402,8 +459,14 @@ UMD -> 'user mode' string (clock)
 	if (!root2["UMD"].empty())
 	{
 		tmpstr = root2["UMD"].asString();
-		bool bIsClockMode = (tmpstr == "clock");
-		SendSwitch(1, 1, -1, bIsClockMode, 0, "Clock Mode");
+		m_bClockMode = (tmpstr == "clock");
+		SendSwitch(1, 1, -1, m_bClockMode, 0, "Clock Mode");
+	}
+	if (!root2["DHW"].empty())
+	{
+		tmpstr = root2["DHW"].asString();
+		bool bIsOn = (tmpstr != "off");
+		SendSwitch(2, 1, -1, bIsOn, 0, "Hot Water");
 	}
 
 	return true;

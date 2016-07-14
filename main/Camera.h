@@ -5,14 +5,14 @@
 
 struct cameraActiveDevice
 {
-	unsigned long long ID;
-	unsigned long long DevSceneRowID;
+	uint64_t ID;
+	uint64_t DevSceneRowID;
 	unsigned char DevSceneType;
 };
 
 struct cameraDevice
 {
-	unsigned long long ID;
+	uint64_t ID;
 	std::string Name;
     std::string Address;
 	std::string Username;
@@ -30,19 +30,19 @@ public:
 
     void ReloadCameras();
 
-	bool TakeSnapshot(const unsigned long long CamID, std::vector<unsigned char> &camimage);
+	bool TakeSnapshot(const uint64_t CamID, std::vector<unsigned char> &camimage);
 	bool TakeSnapshot(const std::string &CamID, std::vector<unsigned char> &camimage);
 	bool TakeRaspberrySnapshot(std::vector<unsigned char> &camimage);
-	bool TakeUVCSnapshot(std::vector<unsigned char> &camimage);
-	cameraDevice* GetCamera(const unsigned long long CamID);
+	bool TakeUVCSnapshot(const std::string &device, std::vector<unsigned char> &camimage);
+	cameraDevice* GetCamera(const uint64_t CamID);
 	cameraDevice* GetCamera(const std::string &CamID);
-	unsigned long long IsDevSceneInCamera(const unsigned char DevSceneType, const unsigned long long DevSceneID);
-	unsigned long long IsDevSceneInCamera(const unsigned char DevSceneType, const std::string &DevSceneID);
+	uint64_t IsDevSceneInCamera(const unsigned char DevSceneType, const uint64_t DevSceneID);
+	uint64_t IsDevSceneInCamera(const unsigned char DevSceneType, const std::string &DevSceneID);
 
 	bool EmailCameraSnapshot(const std::string &CamIdx, const std::string &subject);
 	std::string GetCameraURL(cameraDevice *pCamera);
 	std::string GetCameraURL(const std::string &CamID);
-	std::string GetCameraURL(const unsigned long long CamID);
+	std::string GetCameraURL(const uint64_t CamID);
 private:
 	void ReloadCameraActiveDevices(const std::string &CamID);
 

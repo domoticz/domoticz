@@ -400,12 +400,12 @@ void CKodiNode::handleMessage(std::string& pMessage)
 								bCanShutdown = root["result"]["canshutdown"].asBool();
 								if (bCanShutdown) sAction = "Shutdown";
 							}
-							if (root["result"].isMember("canhibernate"))
+							if (root["result"].isMember("canhibernate") && sAction != "Nothing")
 							{
 								bCanHibernate = root["result"]["canhibernate"].asBool();
 								if (bCanHibernate) sAction = "Hibernate";
 							}
-							if (root["result"].isMember("cansuspend"))
+							if (root["result"].isMember("cansuspend")&& sAction != "Nothing")
 							{
 								bCanSuspend = root["result"]["cansuspend"].asBool();
 								if (bCanSuspend) sAction = "Suspend";
@@ -1176,7 +1176,7 @@ void CKodi::UnloadNodes()
 	m_ios.stop();	// stop the service if it is running
 	sleep_milliseconds(100);
 
-	while ((!m_pNodes.empty()) || (!m_ios.stopped()) && (iRetryCounter < 15))
+	while (((!m_pNodes.empty()) || (!m_ios.stopped())) && (iRetryCounter < 15))
 	{
 		std::vector<boost::shared_ptr<CKodiNode> >::iterator itt;
 		for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)

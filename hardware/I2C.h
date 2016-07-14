@@ -5,7 +5,7 @@
 class I2C : public CDomoticzHardwareBase
 {
 public:
-	explicit I2C(const int ID, const int Mode1);
+	explicit I2C(const int ID, const int Mode1, const int Port);
 	~I2C();
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 private:
@@ -20,6 +20,7 @@ private:
 
 	std::string m_ActI2CBus;
 	std::string device;
+
 
 	bool i2c_test(const char *I2CBusName);
 	int i2c_Open(const char *I2CBusName);
@@ -65,4 +66,19 @@ private:
 	int HTU21D_checkCRC8(uint16_t data);
 	int HTU21D_GetHumidity(int fd, float *Pres);
 	int HTU21D_GetTemperature(int fd, float *Temp);
+
+	// TSL2561 stuff
+	void TSL2561_ReadSensorDetails();
+	void TSL2561_Init();
+	
+	// PCF8574
+	unsigned char	i2c_addr;
+	void			PCF8574_ReadChipDetails();
+	char			PCF8574_get_pin_number_from_Unit(unsigned char unit);
+	char			PCF8574_get_i2c_addr_from_Unit(unsigned char unit);
+	int				PCF8574_create_DeviceID(unsigned char i2c_address,unsigned char pin_mask);
+	unsigned char	PCF8574_create_Unit(unsigned char i2c_address, char pin);
+	char			PCF8574_WritePin(char pin_number,char  value);
+	char 			readByteI2C(int fd, char *byte, char i2c_addr);
+	char 			writeByteI2C(int fd, char byte, char i2c_addr);
 };
