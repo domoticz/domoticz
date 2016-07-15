@@ -52,7 +52,7 @@ namespace http {
 				if (rep.status == reply::ok) {
 					// todo: json_encode
 					std::string response = "{ \"event\": \"response\", \"requestid\": " + requestid + ", \"data\": " + rep.content + " }";
-					MyWrite(response); // opcode_text!!
+					MyWrite(response);
 					return true;
 				}
 			}

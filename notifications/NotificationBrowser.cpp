@@ -13,7 +13,7 @@ CNotificationBrowser::~CNotificationBrowser()
 
 bool CNotificationBrowser::IsConfigured()
 {
-	return true;
+	return !sOnNotificationReceived.empty();
 }
 
 bool CNotificationBrowser::SendMessageImplementation(const std::string & Subject, const std::string & Text, const std::string & ExtraData, const int Priority, const std::string & Sound, const bool bFromNotification)
