@@ -1,6 +1,6 @@
 #pragma once
 
-// implememtation for weather : http://openweathermap.org/
+// implememtation for weather with free api key : http://openweathermap.org/
 // by Fantom (szczukot@poczta.onet.pl)
 
 #include "DomoticzHardware.h"
@@ -16,12 +16,11 @@ public:
 private:
 	std::string m_APIKey;
 	std::string m_Location;
-	std::string m_LocationKey;
 	std::string m_ForecastURL;
+	std::string m_Language;
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;
 
-	void Init();
 	bool StartHardware();
 	bool StopHardware();
 	void Do_Work();
