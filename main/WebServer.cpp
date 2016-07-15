@@ -7338,7 +7338,6 @@ namespace http {
 								(dType != pTypeEvohomeZone) &&
 								(dType != pTypeEvohomeWater) &&
 								(!((dType == pTypeWIND) && (dSubType == sTypeWIND4))) &&
-								(!((dType == pTypeWIND) && (dSubType == sTypeWINDNoTemp))) &&
 								(!((dType == pTypeUV) && (dSubType == sTypeUV3))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeSystemTemp))) &&
 								(dType != pTypeThermostat1) &&
