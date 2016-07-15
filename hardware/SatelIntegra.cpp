@@ -491,33 +491,37 @@ bool SatelIntegra::ReadTemperatures(const bool firstTime)
 			{
 				uint16_t temp = buffer[2] * 256 + buffer[3];
 
-				if (firstTime)
+				if (temp != 0 && temp != 65535) // -55oC and undetermined
 				{
-					m_LastHeartbeat = mytime(NULL);
-
-					unsigned char buffer[21];
-#ifdef DEBUG_SatelIntegra
-					_log.Log(LOG_STATUS, "Satel Integra: Reading temperature zone %d name", index + 1);
-#endif
-					unsigned char cmd[3];
-					cmd[0] = 0xEE;
-					cmd[1] = 0x05;
-					cmd[2] = (unsigned char)(index + 1);
-					if (SendCommand(cmd, 3, buffer) > 0)
+					if (firstTime)
 					{
-						ReportTemperature(index + 1, temp);
-						UpdateTempName(index + 1, &buffer[4], 0);
+						m_LastHeartbeat = mytime(NULL);
+
+						unsigned char buffer[21];
+#ifdef DEBUG_SatelIntegra
+						_log.Log(LOG_STATUS, "Satel Integra: Reading temperature zone %d name", index + 1);
+#endif
+						unsigned char cmd[3];
+						cmd[0] = 0xEE;
+						cmd[1] = 0x05;
+						cmd[2] = (unsigned char)(index + 1);
+						if (SendCommand(cmd, 3, buffer) > 0)
+						{
+							ReportTemperature(index + 1, temp);
+							UpdateTempName(index + 1, &buffer[4], 0);
+						}
+						else
+						{
+							_log.Log(LOG_ERROR, "Satel Integra: Receive info about zone %d failed", index + 1);
+						}
 					}
 					else
 					{
-						_log.Log(LOG_ERROR, "Satel Integra: Receive info about zone %d failed", index + 1);
+						ReportTemperature(index + 1, temp);
 					}
 				}
-				else
-				{
-					ReportTemperature(index + 1, temp);
-				}
 			}
+
 			else
 			{
 				_log.Log(LOG_ERROR, "Satel Integra: Send 'Read Temperature' failed");

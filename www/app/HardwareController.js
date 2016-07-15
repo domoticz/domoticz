@@ -410,7 +410,7 @@ define(['app'], function (app) {
                     }
                 });
             }
-            else if ((text.indexOf("Underground") >= 0)||(text.indexOf("Forecast") >= 0)||(text.indexOf("AccuWeather") >= 0))
+            else if ((text.indexOf("Underground") >= 0) || (text.indexOf("Forecast") >= 0) || (text.indexOf("AccuWeather") >= 0) || (text.indexOf("Open Weather Map") >= 0))
             {
                 var apikey=$("#hardwarecontent #divunderground #apikey").val();
                 if (apikey=="")
@@ -1010,7 +1010,7 @@ define(['app'], function (app) {
                      }
                 });
             }
-            else if ((text.indexOf("Underground") >= 0)||(text.indexOf("Forecast") >= 0)||(text.indexOf("AccuWeather") >= 0))
+            else if ((text.indexOf("Underground") >= 0) || (text.indexOf("Forecast") >= 0) || (text.indexOf("AccuWeather") >= 0) || (text.indexOf("Open Weather Map") >= 0))
             {
                 var apikey=$("#hardwarecontent #divunderground #apikey").val();
                 if (apikey=="")
@@ -4365,7 +4365,7 @@ define(['app'], function (app) {
                             $("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
                             $("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
                         }
-                        else if ((data["Type"].indexOf("Underground") >= 0)||(data["Type"].indexOf("Forecast") >= 0)||(data["Type"].indexOf("AccuWeather") >= 0)) {
+                        else if ((data["Type"].indexOf("Underground") >= 0) || (data["Type"].indexOf("Forecast") >= 0) || (data["Type"].indexOf("AccuWeather") >= 0) || (data["Type"].indexOf("Open Weather Map") >= 0)) {
                             $("#hardwarecontent #hardwareparamsunderground #apikey").val(data["Username"]);
                             $("#hardwarecontent #hardwareparamsunderground #location").val(data["Password"]);
                         }
@@ -4593,7 +4593,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divhttppoller").show();
                 $("#hardwarecontent #hardwareparamshttp #refresh").val(300);
             }
-            else if ((text.indexOf("Underground") >= 0)||(text.indexOf("Forecast") >= 0)||(text.indexOf("AccuWeather") >= 0))
+            else if ((text.indexOf("Underground") >= 0) || (text.indexOf("Forecast") >= 0) || (text.indexOf("AccuWeather") >= 0) || (text.indexOf("Open Weather Map") >= 0))
             {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").hide();

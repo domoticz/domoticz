@@ -332,8 +332,18 @@ void BleBox::AddNode(const std::string &Name, const std::string &IPAddress)
 			"VALUES (%d, '%q', 1, %d, %d, %d, 1, 12, 255, '%q', 0, 'Unavailable')",
 			m_HwdID, IPAddress.c_str(), int(pTypeLimitlessLights), int(sTypeLimitlessRGBW), int(STYPE_Dimmer), Name.c_str());
 
-		ReloadNodes();
 	}
+	else
+		if (deviceType == "wSwitchBox")
+		{
+			m_sql.safe_query(
+				"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue) "
+				"VALUES (%d, '%q', 1, %d, %d, %d, 1, 12, 255, '%q', 0, 'Unavailable')",
+				m_HwdID, IPAddress.c_str(), int(pTypeGeneralSwitch), int(sSwitchTypeAC), int(STYPE_OnOff), Name.c_str());
+
+		}
+
+	ReloadNodes();
 }
 
 bool BleBox::UpdateNode(const int ID, const std::string &Name, const std::string &IPAddress)
