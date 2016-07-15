@@ -816,7 +816,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CICYThermostat(ID,Username,Password);
 		break;
 	case HTYPE_TOONTHERMOSTAT:
-		pHardware = new CToonThermostat(ID, Username, Password);
+		pHardware = new CToonThermostat(ID, Username, Password, Mode1);
 		break;
 	case HTYPE_AtagOne:
 		pHardware = new CAtagOne(ID, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);

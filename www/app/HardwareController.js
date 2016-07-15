@@ -509,9 +509,32 @@ define(['app'], function (app) {
                      }
                 });
             }
+            else if (text.indexOf("Toon") >= 0)  
+            {
+                var username = $("#hardwarecontent #divlogin #username").val();
+                var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
+                var agreement = $("#hardwarecontent #divenecotoon #agreement").val();
+                $.ajax({
+                    url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+                       "&username=" + encodeURIComponent(username) +
+                       "&password=" + encodeURIComponent(password) +
+                       "&name=" + encodeURIComponent(name) +
+                       "&enabled=" + bEnabled +
+                       "&idx=" + idx +
+                       "&datatimeout=" + datatimeout +
+                       "&Mode1=" + agreement,
+                    async: false,
+                    dataType: 'json',
+                    success: function (data) {
+                        RefreshHardwareTable();
+                    },
+                    error: function () {
+                        ShowNotify($.t('Problem updating hardware!'), 2500, true);
+                    }
+                });
+            }
             else if (
 				(text.indexOf("ICY") >= 0) ||
-				(text.indexOf("Toon") >= 0) ||
 				(text.indexOf("Atag") >= 0) ||
 				(text.indexOf("Nest Th") >= 0) ||
 				(text.indexOf("PVOutput") >= 0) ||
@@ -1157,9 +1180,31 @@ define(['app'], function (app) {
                      }
                 });
             }
+            else if (text.indexOf("Toon") >= 0) 
+	     {
+                var username=$("#hardwarecontent #divlogin #username").val();
+                var password=encodeURIComponent($("#hardwarecontent #divlogin #password").val());
+                var agreement=encodeURIComponent($("#hardwarecontent #divenecotoon #agreement").val());
+                $.ajax({
+                     url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
+                     "&username=" + encodeURIComponent(username) +
+                     "&password=" + encodeURIComponent(password) +
+                     "&name=" + encodeURIComponent(name) +
+                     "&enabled=" + bEnabled +
+                     "&datatimeout=" + datatimeout+
+                     "&Mode1=" + agreement,
+                     async: false,
+                     dataType: 'json',
+                     success: function(data) {
+                        RefreshHardwareTable();
+                     },
+                     error: function(){
+                            ShowNotify($.t('Problem adding hardware!'), 2500, true);
+                     }
+                });
+	    }
             else if (
 				(text.indexOf("ICY") >= 0) ||
-				(text.indexOf("Toon") >= 0) ||
 				(text.indexOf("Atag") >= 0) ||
 				(text.indexOf("Nest Th") >= 0) ||
 				(text.indexOf("PVOutput") >= 0) ||
@@ -4382,6 +4427,9 @@ define(['app'], function (app) {
                             $("#hardwarecontent #hardwareparamssolaredgeapi #serial").val(data["Username"]);
                             $("#hardwarecontent #hardwareparamssolaredgeapi #apikey").val(data["Password"]);
                         }
+                        else if (data["Type"].indexOf("Toon") >= 0) {
+                            $("#hardwarecontent #hardwareparamsenecotoon #agreement").val(data["Mode1"]);
+                        }
                         else if (data["Type"].indexOf("Philips Hue") >= 0) {
                             $("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
                             $("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
@@ -4399,8 +4447,8 @@ define(['app'], function (app) {
                         if (
                             (data["Type"].indexOf("Domoticz") >= 0)||
                             (data["Type"].indexOf("ICY") >= 0) ||
+                            (data["Type"].indexOf("Toon") >= 0) ||
                             (data["Type"].indexOf("Harmony") >= 0)||
-                            (data["Type"].indexOf("Toon") >= 0)||
                             (data["Type"].indexOf("Atag") >= 0)||
                             (data["Type"].indexOf("Nest Th") >= 0)||
                             (data["Type"].indexOf("PVOutput") >= 0)||
@@ -4483,6 +4531,7 @@ define(['app'], function (app) {
             $("#hardwarecontent #divwinddelen").hide();
             $("#hardwarecontent #divmqtt").hide();
             $("#hardwarecontent #divsolaredgeapi").hide();
+            $("#hardwarecontent #divenecotoon").hide();
             $("#hardwarecontent #div1wire").hide();
 
             if ((text.indexOf("TE923") >= 0)||
@@ -4558,6 +4607,15 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
             }
+            else if (text.indexOf("Toon") >= 0)
+            {
+		$("#hardwarecontent #divlogin").show();
+		$("#hardwarecontent #divenecotoon").show();
+                $("#hardwarecontent #divremote").hide();
+                $("#hardwarecontent #divserial").hide();
+                $("#hardwarecontent #divunderground").hide();
+                $("#hardwarecontent #divhttppoller").hide();
+            }
             else if (text.indexOf("SBFSpot") >= 0)
             {
                 $("#hardwarecontent #divlocation").show();
@@ -4571,7 +4629,6 @@ define(['app'], function (app) {
             }
             else if (
 				(text.indexOf("ICY") >= 0) ||
-				(text.indexOf("Toon") >= 0) ||
 				(text.indexOf("Atag") >= 0) ||
 				(text.indexOf("Nest Th") >= 0) ||
 				(text.indexOf("PVOutput") >= 0) ||
