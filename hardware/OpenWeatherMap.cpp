@@ -9,30 +9,33 @@
 #include "../json/json.h"
 #include "../main/RFXtrx.h"
 #include "../main/mainworker.h"
+#include "../main/SQLHelper.h"
 
 #define round(a) ( int ) ( a + .5 )
 
 COpenWeatherMap::COpenWeatherMap(const int ID, const std::string &APIKey, const std::string &Location) :
 	m_APIKey(APIKey),
 	m_Location(Location),
-	m_LocationKey("")
+	m_Language("en")
 {
+	_log.Log(LOG_STATUS, "OpenWeatherMap: Create instance");
 	m_HwdID=ID;
 	m_stoprequested=false;
-	Init();
+
+	std::string sValue;
+	if (m_sql.GetPreferencesVar("Language", sValue))
+	{
+		m_Language = sValue;
+	}
 }
 
 COpenWeatherMap::~COpenWeatherMap(void)
 {
-}
-
-void COpenWeatherMap::Init()
-{
+	_log.Log(LOG_STATUS, "OpenWeatherMap: Destroy instance");
 }
 
 bool COpenWeatherMap::StartHardware()
 {
-	Init();
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&COpenWeatherMap::Do_Work, this)));
 	m_bIsStarted=true;
 	sOnConnected(this);
@@ -41,10 +44,10 @@ bool COpenWeatherMap::StartHardware()
 
 bool COpenWeatherMap::StopHardware()
 {
+	m_stoprequested = true;
 	if (m_thread!=NULL)
 	{
 		assert(m_thread);
-		m_stoprequested = true;
 		m_thread->join();
 	}
     m_bIsStarted=false;
@@ -63,16 +66,10 @@ void COpenWeatherMap::Do_Work()
 		}
 		if (sec_counter % 600 == 0)
 		{
-			//if (m_LocationKey.empty())
-			//{
-			//	m_LocationKey = GetLocationKey();
-			//	if (m_LocationKey.empty())
-			//		continue;
-			//}
 			GetMeterDetails();
 		}
 	}
-	_log.Log(LOG_STATUS,"OpenWeatherMap Worker stopped...");
+	_log.Log(LOG_STATUS,"OpenWeatherMap: Worker stopped...");
 }
 
 bool COpenWeatherMap::WriteToHardware(const char *pdata, const unsigned char length)
@@ -88,14 +85,9 @@ std::string COpenWeatherMap::GetForecastURL()
 void COpenWeatherMap::GetMeterDetails()
 {
 	std::string sResult;
-
 	std::stringstream sURL;
-	std::string szLoc = CURLEncode::URLEncode(m_LocationKey);
 
-	// TODO
-	// use szloc
-	// unit lang mode
-	sURL << "http://api.openweathermap.org/data/2.5/weather?lat=35&lon=139&APPID=" << m_APIKey;
+	sURL << "http://api.openweathermap.org/data/2.5/weather?" << m_Location << "&APPID=" << m_APIKey << "&units=metric" << "&lang=" << m_Language;
 	try
 	{
 		bool bret;
@@ -126,6 +118,12 @@ void COpenWeatherMap::GetMeterDetails()
 	if (root.size() < 1)
 	{
 		_log.Log(LOG_ERROR, "OpenWeatherMap: Invalid data received!");
+		return;
+	}
+
+	if (root["cod"].asString() != "200")
+	{
+		_log.Log(LOG_ERROR, "OpenWeatherMap: Invalid cod received!");
 		return;
 	}
 
@@ -176,7 +174,7 @@ void COpenWeatherMap::GetMeterDetails()
 	//Wind
 	if (!root["wind"].empty())
 	{
-		int wind_degrees = -1;
+		int wind_degrees = 0;
 		float windspeed_ms = 0;
 
 		if (!root["wind"]["deg"].empty())
@@ -185,12 +183,10 @@ void COpenWeatherMap::GetMeterDetails()
 		}
 		if (!root["wind"]["speed"].empty())
 		{
-			windspeed_ms = root["wind"]["speed"].asFloat() / 3.6f;
+			windspeed_ms = root["wind"]["speed"].asFloat();
 		}
-		if (wind_degrees != -1)
-		{
-			SendWind(1, 255, wind_degrees, windspeed_ms, 0, 0, 0, true, "Wind");
-		}
+
+		SendWind(1, 255, wind_degrees, windspeed_ms, 0, 0, 0, false, "Wind");
 	}
 
 	//Rain
@@ -218,7 +214,7 @@ void COpenWeatherMap::GetMeterDetails()
 				tr10-=(tsen.RAIN.raintotal2*256);
 				tsen.RAIN.raintotal3=(BYTE)(tr10);
 
-				sDecodeRXMessage(this, (const unsigned char *)&tsen.RAIN, NULL, 255);
+				sDecodeRXMessage(this, (const unsigned char *)&tsen.RAIN, "Rain", 255);
 			}
 	}
 
@@ -231,10 +227,11 @@ void COpenWeatherMap::GetMeterDetails()
 			_tGeneralDevice gdevice;
 			gdevice.subtype = sTypeVisibility;
 			gdevice.floatval1 = visibility;
-			sDecodeRXMessage(this, (const unsigned char *)&gdevice, NULL, 255);
+			sDecodeRXMessage(this, (const unsigned char *)&gdevice, "Visibility", 255);
 		}
 	}
 
+	// TODO - not working on this moment on www site
 	//Forecast URL
 	//if (!root["Link"].empty())
 	//{

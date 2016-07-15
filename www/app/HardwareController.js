@@ -4600,6 +4600,10 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divlogin").hide();
                 $("#hardwarecontent #divunderground").show();
                 $("#hardwarecontent #divhttppoller").hide();
+                if (text.indexOf("Open Weather Map") >= 0)
+                {
+                    $("#hardwarecontent #hardwareparamsunderground #location").val("lat=53.40&lon=14.58");
+                }
             }
             else if (text.indexOf("Philips Hue") >= 0)
             {
