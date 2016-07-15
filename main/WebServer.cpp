@@ -20,6 +20,7 @@
 #include "../hardware/Wunderground.h"
 #include "../hardware/ForecastIO.h"
 #include "../hardware/AccuWeather.h"
+#include "../hardware/OpenWeatherMap.h"
 #include "../hardware/Kodi.h"
 #include "../hardware/LogitechMediaServer.h"
 #include "../hardware/MySensorsBase.h"
@@ -1089,6 +1090,7 @@ namespace http {
 				(htype == HTYPE_Wunderground) ||
 				(htype == HTYPE_ForecastIO) ||
 				(htype == HTYPE_AccuWeather) ||
+				(htype == HTYPE_OpenWeatherMap) ||
 				(htype == HTYPE_ICYTHERMOSTAT) ||
 				(htype == HTYPE_TOONTHERMOSTAT) ||
 				(htype == HTYPE_AtagOne) ||
@@ -1345,6 +1347,7 @@ namespace http {
 				(htype == HTYPE_Wunderground) ||
 				(htype == HTYPE_ForecastIO) ||
 				(htype == HTYPE_AccuWeather) ||
+				(htype == HTYPE_OpenWeatherMap) ||
 				(htype == HTYPE_ICYTHERMOSTAT) ||
 				(htype == HTYPE_TOONTHERMOSTAT) ||
 				(htype == HTYPE_AtagOne) ||
@@ -7487,6 +7490,15 @@ namespace http {
 						else if (pHardware->HwdType == HTYPE_AccuWeather)
 						{
 							CAccuWeather *pWHardware = reinterpret_cast<CAccuWeather*>(pHardware);
+							std::string forecast_url = pWHardware->GetForecastURL();
+							if (forecast_url != "")
+							{
+								root["result"][ii]["forecast_url"] = base64_encode((const unsigned char*)forecast_url.c_str(), forecast_url.size());
+							}
+						}
+						else if (pHardware->HwdType == HTYPE_OpenWeatherMap)
+						{
+							COpenWeatherMap *pWHardware = reinterpret_cast<COpenWeatherMap*>(pHardware);
 							std::string forecast_url = pWHardware->GetForecastURL();
 							if (forecast_url != "")
 							{
