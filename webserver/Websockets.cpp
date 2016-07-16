@@ -16,41 +16,6 @@
 namespace http {
 	namespace server {
 
-#if 1
-#define CreateFrame(opcode, payload) CWebsocketFrame::Create(opcode, payload, false)
-#else
-		std::string CreateFrame(opcodes opcode, const std::string &payload)
-		{
-			// note: we dont do masking nor fragmentation
-			size_t_t payloadlen = payload.size();
-			std::string res = "";
-			res += ((unsigned char)(FIN_MASK + (((unsigned char)opcode) & OPCODE_MASK)));
-			if (payloadlen < 126) {
-				res += (unsigned char)payloadlen;
-			}
-			else {
-				if (payloadlen <= 0xffff) {
-					res += (unsigned char)126;
-					int bits = 16;
-					while (bits) {
-						bits -= 8;
-						res += (unsigned char)((payloadlen >> bits) & 0xff);
-					}
-				}
-				else {
-					res += (unsigned char)127;
-					int bits = 64;
-					while (bits) {
-						bits -= 8;
-						res += (unsigned char)((payloadlen >> bits) & 0xff);
-					}
-				}
-			}
-			res += payload;
-			return res;
-		}
-#endif
-
 CWebsocketFrame::CWebsocketFrame() { };
 CWebsocketFrame::~CWebsocketFrame() {};
 
@@ -268,7 +233,7 @@ void CWebsocket::OnReceiveBinary(const std::string &packet_data)
 void CWebsocket::SendPing()
 {
 	// todo: set the ping timer
-	std::string frame = CreateFrame(opcode_ping, OUR_PING_ID);
+	std::string frame = CWebsocketFrame::Create(opcode_ping, OUR_PING_ID, false);
 	MyWrite(frame);
 }
 
@@ -281,13 +246,13 @@ void CWebsocket::OnPong(const std::string &packet_data)
 
 void CWebsocket::SendPong(const std::string &packet_data)
 {
-	std::string frame = CreateFrame(opcode_pong, packet_data);
+	std::string frame = CWebsocketFrame::Create(opcode_pong, packet_data, false);
 	MyWrite(frame);
 }
 
 void CWebsocket::SendClose(const std::string &packet_data)
 {
-	std::string frame = CreateFrame(opcode_close, packet_data);
+	std::string frame = CWebsocketFrame::Create(opcode_close, packet_data, false);
 	MyWrite(frame);
 }
 

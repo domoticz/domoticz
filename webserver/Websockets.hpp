@@ -29,7 +29,7 @@ namespace http {
 			bool isFinal();
 			size_t_t Consumed();
 			opcodes Opcode();
-			static std::string Create(opcodes opcode, const std::string &payload, bool domasking = true);
+			static std::string Create(opcodes opcode, const std::string &payload, bool domasking);
 		private:
 			static std::string unmask(const unsigned char *mask, const unsigned char *bytes, size_t_t payloadlen);
 			bool fin;

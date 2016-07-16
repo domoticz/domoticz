@@ -174,7 +174,7 @@ namespace http {
 			}
 			write_in_progress = true;
 			CWebsocketFrame frame;
-			SockWriteBuf = frame.Create(opcode_binary, std::string((char *)pdu->content(), pdu->length()));
+			SockWriteBuf = frame.Create(opcode_binary, std::string((char *)pdu->content(), pdu->length()), true);
 			delete pdu;
 			boost::asio::async_write(_socket, boost::asio::buffer(SockWriteBuf), boost::bind(&CProxyClient::handle_write, shared_from_this(), boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
 		}
