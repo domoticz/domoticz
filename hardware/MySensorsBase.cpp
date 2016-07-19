@@ -1894,7 +1894,6 @@ void MySensorsBase::ParseLine()
 			break;
 		case V_CUSTOM:
 			//Request for a sensor state
-		{
 			if (!payload.empty())
 			{
 				unsigned long long idx = boost::lexical_cast<unsigned long long>(payload);
@@ -1909,7 +1908,9 @@ void MySensorsBase::ParseLine()
 					SendNodeCommand(node_id, child_sensor_id, message_type, sub_type, sPayload);
 				}
 			}
-		}
+			break;
+		case V_RAINRATE:
+			//not needed, this is now calculated by domoticz for any type of rain sensor
 			break;
 		default:
 			if (sub_type > V_CURRENT)

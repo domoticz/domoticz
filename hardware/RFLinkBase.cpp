@@ -330,6 +330,7 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 			break;
 		case Limitless_SetColorToWhite:
 			switchcmnd = "ALLON";
+			bSendOn = true;
 			break;
 		case Limitless_SetBrightnessLevel:
 			{
