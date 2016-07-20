@@ -84,8 +84,6 @@ std::string COpenWeatherMap::GetForecastURL()
 
 void COpenWeatherMap::GetMeterDetails()
 {
-	_log.Log(LOG_STATUS, "OpenWeatherMap: fetching data");
-
 	std::string sResult;
 	std::stringstream sURL;
 
