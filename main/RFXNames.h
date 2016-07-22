@@ -163,6 +163,7 @@ enum _eHardwareTypes {
 	HTYPE_Ec3kMeterTCP,			//81
 	HTYPE_BleBox,          		//82
 	HTYPE_OpenWeatherMap,  		//83
+	HTYPE_GoodweAPI,		//84
 	HTYPE_END
 };
 

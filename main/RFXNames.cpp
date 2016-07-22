@@ -231,6 +231,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_BleBox, "BleBox devices" },
 		{ HTYPE_Ec3kMeterTCP, "Energy Count 3000/ NETBSEM4/ La Crosse RT-10 LAN" },
 		{ HTYPE_OpenWeatherMap, "Open Weather Map" },
+		{ HTYPE_GoodweAPI, "Goodwe solar inverter via Web API" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
