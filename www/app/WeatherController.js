@@ -166,42 +166,31 @@ define(['app'], function (app) {
 		  
 			$rootScope.RefreshTimeAndSun();
 
-			if ($scope.config.AllowWidgetOrdering==true) {
-				if (permissions.hasPermission("Admin")) {
-					if (window.myglobals.ismobileint==false) {
-						$("#weathercontent .span4").draggable({
-								drag: function() {
-									if (typeof $scope.mytimer != 'undefined') {
-										$interval.cancel($scope.mytimer);
-										$scope.mytimer = undefined;
-									}
-									$.devIdx=$(this).attr("id");
-									$(this).css("z-index", 2);
-								},
-								revert: true
-						});
-						$("#weathercontent .span4").droppable({
-								drop: function() {
-									var myid=$(this).attr("id");
-									$.devIdx.split(' ');
-									$.ajax({
-										 url: "json.htm?type=command&param=switchdeviceorder&idx1=" + myid + "&idx2=" + $.devIdx,
-										 async: false, 
-										 dataType: 'json',
-										 success: function(data) {
-												ShowWeathers();
-										 }
-									});
-								}
-						});
-					}
-				}
-			}
 			$scope.mytimer=$interval(function() {
 				RefreshWeathers();
 			}, 10000);
 		  return false;
 		}
+
+		$scope.DragWidget = function (idx) {
+			if (typeof $scope.mytimer != 'undefined') {
+				$interval.cancel($scope.mytimer);
+				$scope.mytimer = undefined;
+			}
+			$.devIdx = idx;
+		};
+		$scope.DropWidget = function (idx) {
+			var myid = idx;
+			$.devIdx.split(' ');
+			$.ajax({
+				url: "json.htm?type=command&param=switchdeviceorder&idx1=" + myid + "&idx2=" + $.devIdx,
+				async: false,
+				dataType: 'json',
+				success: function (data) {
+					ShowWeathers();
+				}
+			});
+		};
 
 		init();
 
@@ -474,10 +463,10 @@ define(['app'], function (app) {
 				bindToController: {
 					item: '=',
 					tempsign: '=',
-					windsign: '='
-					// ordering: '=',
-					// dragwidget: '&',
-					// dropwidget: '&'
+					windsign: '=',
+					ordering: '=',
+					dragwidget: '&',
+					dropwidget: '&'
 				},
 				require : 'permissions',
 				controllerAs: 'ctrl',
@@ -624,6 +613,25 @@ define(['app'], function (app) {
 					};
 
 					$element.i18n();
+
+					if (ctrl.ordering==true) {
+						if (permissions.hasPermission("Admin")) {
+							if (window.myglobals.ismobileint==false) {
+								$element.draggable({
+									drag: function() {
+										ctrl.dragwidget({idx:ctrl.item.idx});
+										$element.css("z-index", 2);
+									},
+									revert: true
+								});
+								$element.droppable({
+									drop: function() {
+										ctrl.dropwidget({idx:ctrl.item.idx});
+									}
+								});
+							}
+						}
+					}
 
 				}
 			};
