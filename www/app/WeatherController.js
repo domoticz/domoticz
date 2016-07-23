@@ -141,23 +141,6 @@ define(['app'], function (app) {
 			}
 		  $('#modal').show();
 		  
-		  var htmlcontent = '';
-		  var bHaveAddedDevider = false;
-		  var tophtm=
-				'\t<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
-				'\t<tr>\n' +
-				'\t  <td align="left" valign="top" id="timesun"></td>\n';
-		  if ($scope.config.Latitude!="") {
-			tophtm+=
-				'\t  <td style="width: 150px;" align="right">\n' +
-				'\t    <a id="Forecast" class="btnstyle" onclick="ShowForecast();" data-i18n="Forecast">Forecast</a>\n' +
-				'\t  </td>\n';
-		  }
-		  tophtm+=
-				'\t</tr>\n' +
-				'\t</table>\n';
-		  
-
 		  $.ajax({
 			 url: "json.htm?type=devices&filter=weather&used=true&order=Name", 
 			 async: false, 
@@ -174,10 +157,12 @@ define(['app'], function (app) {
 			 }
 		  });
 		  $('#modal').hide();
-		  $('#weathercontent').html(tophtm);
+		  $('#weathercontent').html("");
 		  $('#weathercontent').i18n();
 			$('#weatherwidgets').show();
 			$('#weatherwidgets').i18n();
+			$('#weathertophtm').show();
+			$('#weathertophtm').i18n();
 		  
 			$rootScope.RefreshTimeAndSun();
 
@@ -591,6 +576,7 @@ define(['app'], function (app) {
 
 					ctrl.ShowLog = function() {
 						$('#weatherwidgets').hide(); // TODO delete when multiple views implemented
+						$('#weathertophtm').hide();
 						if (typeof item.Barometer != 'undefined') {
 							return ShowBaroLog('#weathercontent', 'ShowWeathers', item.idx, escape(item.Name));
 						}
@@ -627,11 +613,13 @@ define(['app'], function (app) {
 
 					ctrl.ShowNotifications = function() {
 						$('#weatherwidgets').hide(); // TODO delete when multiple views implemented
+						$('#weathertophtm').hide();
 						return ShowNotifications(item.idx, escape(item.Name), '#weathercontent', 'ShowWeathers');
 					};
 
 					ctrl.ShowForecast = function() {
 						$('#weatherwidgets').hide(); // TODO delete when multiple views implemented
+						$('#weathertophtm').hide();
 						return ShowForecast(atob(item.forecast_url), escape(item.Name), escape(item.Description), '#weathercontent', 'ShowWeathers');
 					};
 
