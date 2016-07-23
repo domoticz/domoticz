@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 1270
+# ref 1271
 
 CACHE:
 # CSS
@@ -587,6 +587,7 @@ views/update.html
 views/users.html
 views/utility.html
 views/weather.html
+views/weather_widget.html
 eventsframe.html
 zwavetopology.html
 secpanel/index.html
