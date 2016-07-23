@@ -277,5 +277,13 @@
 		</table>
     </form>
 </div>
-<div id="weathercontent" class="container">
+<div class="container">
+
+	<div id="weathercontent"></div>
+
+	<div id="weatherwidgets" class="row divider">
+		<h2 ng-show="ctrl.items.length == 0" data-i18n="No Weather sensors found or added in the system...">No Weather sensors found or added in the system...</h2>
+		<dzweatherwidget ng-repeat="t in ctrl.items" class="span4" id="{{t.idx}}" item="t" tempsign="config.TempSign" windsign="config.WindSign"></dzweatherwidget>
+	</div>
+
 </div>
