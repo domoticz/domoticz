@@ -742,8 +742,6 @@ void SatelIntegra::ReportAlarm(const bool isAlarm)
 {
 	m_alarmLast = isAlarm;
 
-	char szTmp[8];
-	sprintf(szTmp, "%06X", (unsigned int)2);
 	std::string devname;
 
 	m_sql.UpdateValue(m_HwdID, "Alarm", 2, pTypeGeneral, sTypeAlert, 12, 255, isAlarm ? 4 : 1, isAlarm ? "Alarm !" : "Normal", devname);

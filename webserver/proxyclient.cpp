@@ -36,7 +36,7 @@ namespace http {
 			timeout_(TIMEOUT),
 			timer_(io_service, boost::posix_time::seconds(TIMEOUT)),
 			write_in_progress(false)
-			{
+		{
 			_allowed_subsystems = 0;
 			m_sql.GetPreferencesVar("MyDomoticzUserId", _apikey);
 			m_sql.GetPreferencesVar("MyDomoticzPassword", _password);
@@ -77,7 +77,7 @@ namespace http {
 		void CProxyClient::Reconnect()
 		{
 
-			std::string address = "localhost"; //  "my.domoticz.com";
+			std::string address = "my.domoticz.com";
 			std::string port = "443";
 
 			if (we_locked_prefs_mutex) {
@@ -230,6 +230,7 @@ namespace http {
 				we_locked_prefs_mutex = true;
 				connection_status = status_httpmode;
 				WebsocketGetRequest();
+				LoginToService();
 			}
 			else
 			{
@@ -526,9 +527,11 @@ namespace http {
 		{
 			// get auth response (0 or 1)
 
-			// unlock prefs mutex
-			we_locked_prefs_mutex = false;
-			sharedData.UnlockPrefsMutex();
+			if (we_locked_prefs_mutex) {
+				// unlock prefs mutex
+				we_locked_prefs_mutex = false;
+				sharedData.UnlockPrefsMutex();
+			}
 
 			GETPDULONG(auth);
 			GETPDUSTRING(reason);
@@ -538,7 +541,6 @@ namespace http {
 			}
 			else {
 				Stop();
-				return;
 			}
 		}
 
@@ -582,19 +584,19 @@ namespace http {
 			CValueLengthPart part(pdu);
 
 			switch (pdu._type) {
-			ONPDU(PDU_REQUEST)
-			ONPDU(PDU_ASSIGNKEY)
-			ONPDU(PDU_ENQUIRE)
-			ONPDU(PDU_AUTHRESP)
-			ONPDU(PDU_SERV_CONNECT)
-			ONPDU(PDU_SERV_DISCONNECT)
-			ONPDU(PDU_SERV_CONNECTRESP)
-			ONPDU(PDU_SERV_RECEIVE)
-			ONPDU(PDU_SERV_SEND)
-			ONPDU(PDU_SERV_ROSTERIND)
-			ONPDU(PDU_WS_OPEN)
-			ONPDU(PDU_WS_CLOSE)
-			ONPDU(PDU_WS_RECEIVE)
+				ONPDU(PDU_REQUEST)
+					ONPDU(PDU_ASSIGNKEY)
+					ONPDU(PDU_ENQUIRE)
+					ONPDU(PDU_AUTHRESP)
+					ONPDU(PDU_SERV_CONNECT)
+					ONPDU(PDU_SERV_DISCONNECT)
+					ONPDU(PDU_SERV_CONNECTRESP)
+					ONPDU(PDU_SERV_RECEIVE)
+					ONPDU(PDU_SERV_SEND)
+					ONPDU(PDU_SERV_ROSTERIND)
+					ONPDU(PDU_WS_OPEN)
+					ONPDU(PDU_WS_CLOSE)
+					ONPDU(PDU_WS_RECEIVE)
 			default:
 				_log.Log(LOG_ERROR, "PROXY: pdu type: %d not expected.", pdu._type);
 				break;
