@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 2.8.4)
 
 project (MQTT C)
 
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 SET(MQTT_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}")
 SET(MQTT_LIBRARIES mqtt)
 
@@ -34,3 +33,6 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 ADD_LIBRARY(mqtt STATIC ${LIB} ${CORE})
+
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
+link_directories("${CMAKE_CURRENT_SOURCE_DIR}")
