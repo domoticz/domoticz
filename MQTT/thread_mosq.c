@@ -14,25 +14,28 @@ Contributors:
    Roger Light - initial implementation and documentation.
 */
 
-#include "config.h"
+#include <config.h>
 
 #ifndef WIN32
 #include <unistd.h>
 #endif
 
-#include "mosquitto_internal.h"
-#include "net_mosq.h"
+#include <mosquitto_internal.h>
+#include <net_mosq.h>
 
 void *_mosquitto_thread_main(void *obj);
 
 int mosquitto_loop_start(struct mosquitto *mosq)
 {
 #ifdef WITH_THREADING
-	if(!mosq || mosq->threaded) return MOSQ_ERR_INVAL;
+	if(!mosq || mosq->threaded != mosq_ts_none) return MOSQ_ERR_INVAL;
 
-	mosq->threaded = true;
-	pthread_create(&mosq->thread_id, NULL, _mosquitto_thread_main, mosq);
-	return MOSQ_ERR_SUCCESS;
+	mosq->threaded = mosq_ts_self;
+	if(!pthread_create(&mosq->thread_id, NULL, _mosquitto_thread_main, mosq)){
+		return MOSQ_ERR_SUCCESS;
+	}else{
+		return MOSQ_ERR_ERRNO;
+	}
 #else
 	return MOSQ_ERR_NOT_SUPPORTED;
 #endif
@@ -45,7 +48,7 @@ int mosquitto_loop_stop(struct mosquitto *mosq, bool force)
 	char sockpair_data = 0;
 #  endif
 
-	if(!mosq || !mosq->threaded) return MOSQ_ERR_INVAL;
+	if(!mosq || mosq->threaded != mosq_ts_self) return MOSQ_ERR_INVAL;
 
 
 	/* Write a single byte to sockpairW (connected to sockpairR) to break out
@@ -64,7 +67,7 @@ int mosquitto_loop_stop(struct mosquitto *mosq, bool force)
 	}
 	pthread_join(mosq->thread_id, NULL);
 	mosq->thread_id = pthread_self();
-	mosq->threaded = false;
+	mosq->threaded = mosq_ts_none;
 
 	return MOSQ_ERR_SUCCESS;
 #else
@@ -89,7 +92,7 @@ void *_mosquitto_thread_main(void *obj)
 
 	if(!mosq->keepalive){
 		/* Sleep for a day if keepalive disabled. */
-		mosquitto_loop_forever(mosq, mosq->keepalive*1000*86400, 1);
+		mosquitto_loop_forever(mosq, 1000*86400, 1);
 	}else{
 		/* Sleep for our keepalive value. publish() etc. will wake us up. */
 		mosquitto_loop_forever(mosq, mosq->keepalive*1000, 1);
@@ -103,7 +106,11 @@ int mosquitto_threaded_set(struct mosquitto *mosq, bool threaded)
 {
 	if(!mosq) return MOSQ_ERR_INVAL;
 
-	mosq->threaded = threaded;
+	if(threaded){
+		mosq->threaded = mosq_ts_external;
+	}else{
+		mosq->threaded = mosq_ts_none;
+	}
 
 	return MOSQ_ERR_SUCCESS;
 }
