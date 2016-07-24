@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 2.8.4)
 
 project (MQTT C)
 
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 SET(MQTT_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}")
 SET(MQTT_LIBRARIES mqtt)
 
