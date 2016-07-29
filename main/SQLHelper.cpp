@@ -3109,7 +3109,7 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 	bool bDeviceUsed = false;
 	bool bSameDeviceStatusValue = false;
 	std::vector<std::vector<std::string> > result;
-	result = safe_query("SELECT ID,Name, Used, SwitchType, nValue, sValue FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID, unit, devType, subType);
+	result = safe_query("SELECT ID,Name, Used, SwitchType, nValue, sValue, LastUpdate, Options FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID, unit, devType, subType);
 	if (result.size()==0)
 	{
 		//Insert
@@ -3146,17 +3146,38 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 		//Update
 		std::stringstream s_str( result[0][0] );
 		s_str >> ulID;
-
+		std::string sOption=result[0][7];
 		devname=result[0][1];
 		bDeviceUsed= atoi(result[0][2].c_str())!=0;
 		_eSwitchType stype = (_eSwitchType)atoi(result[0][3].c_str());
 		int old_nValue = atoi(result[0][4].c_str());
 		std::string old_sValue = result[0][5];
-
 		time_t now = time(0);
 		struct tm ltime;
 		localtime_r(&now,&ltime);
-
+		//Commit: If Option 1: energy is computed as usage*time
+		//Default is option 0, read from device
+		if (sOption == "1" && devType == pTypeGeneral && subType == sTypeKwh) {
+			std::vector<std::string> parts;
+			struct tm ntime;
+			double interval;
+			float nEnergy;
+			char sCompValue[100];
+			std::string sLastUpdate=result[0][6];
+			ntime.tm_isdst=ltime.tm_isdst;
+			ntime.tm_year=atoi(sLastUpdate.substr(0,4).c_str())-1900;
+			ntime.tm_mon=atoi(sLastUpdate.substr(5,2).c_str())-1;
+			ntime.tm_mday=atoi(sLastUpdate.substr(8,2).c_str());
+			ntime.tm_hour=atoi(sLastUpdate.substr(11,2).c_str());
+			ntime.tm_min=atoi(sLastUpdate.substr(14,2).c_str());
+			ntime.tm_sec=atoi(sLastUpdate.substr(17,2).c_str());
+			interval = now - mktime(&ntime);
+			StringSplit(result[0][5].c_str(), ";", parts);
+			nEnergy = strtof(parts[0].c_str(),NULL)*interval/3600 + strtof(parts[1].c_str(), NULL);
+			StringSplit(sValue, ";", parts);
+			sprintf(sCompValue, "%s;%.0f", parts[0].c_str(),nEnergy);
+			sValue = sCompValue;
+			}
         //~ use different update queries based on the device type
         if (devType == pTypeGeneral && subType == sTypeCounterIncremental)
         {
@@ -7334,4 +7355,3 @@ bool CSQLHelper::SetDeviceOptions(const unsigned long long idx, const std::map<s
 	}
 	return true;
 }
-
