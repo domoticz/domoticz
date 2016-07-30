@@ -125,11 +125,11 @@ void BleBox::GetDevicesState()
 
 std::string BleBox::GetDeviceIP(const tRBUF *id)
 {
-	std::string id1 = std::to_string(id->LIGHTING2.id1);
-	std::string id2 = std::to_string(id->LIGHTING2.id2);
-	std::string id3 = std::to_string(id->LIGHTING2.id3);
-	std::string id4 = std::to_string(id->LIGHTING2.id4);
-	return id1 + "." + id2 + "." + id3 + "." + id4;
+	char ip[20];
+
+	sprintf(ip, "%d.%d.%d.%d", id->LIGHTING2.id1, id->LIGHTING2.id2, id->LIGHTING2.id3, id->LIGHTING2.id4);
+	return ip;
+
 }
 
 std::string BleBox::GetDeviceIP(const std::string id)
