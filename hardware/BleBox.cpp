@@ -26,7 +26,7 @@ int BleBox::GetDeviceTypeByApiName(const std::string apiName)
 			return DevicesType[i].unit;
 		}
 	}
-	_log.Log(LOG_ERROR, "BleBox: unknown device api name({0})", apiName);
+	_log.Log(LOG_ERROR, "BleBox: unknown device api name({0})", apiName.c_str());
 	return -1;
 }
 
@@ -410,7 +410,7 @@ Json::Value BleBox::SendCommand(const std::string IPAddress, const std::string c
 	std::string sURL = sstr.str();
 	if (!HTTPClient::GET(sURL, extraHeaders, result))
 	{
-		_log.Log(LOG_ERROR, "BleBox: send '%s'command to %s failed!", command, IPAddress);
+		_log.Log(LOG_ERROR, "BleBox: send '%s'command to %s failed!", command.c_str(), IPAddress.c_str());
 		return "";
 	}
 

@@ -4,7 +4,7 @@
 // by Fantom (szczukot@poczta.onet.pl)
 
 #include "DomoticzHardware.h"
-#include "../../main/RFXtrx.h"
+#include "../main/RFXtrx.h"
 #include "../json/json.h"
 
 typedef struct _STR_DEVICE {
