@@ -182,8 +182,6 @@ namespace http {
 			std::string instanceid = sharedData.GetInstanceId();
 			const long protocol_version = 2;
 
-			// start read thread
-			ReadMore();
 			// send authenticate pdu
 			CValueLengthPart parameters;
 
@@ -205,6 +203,8 @@ namespace http {
 				sharedData.LockPrefsMutex();
 				b_Connected = true;
 				we_locked_prefs_mutex = true;
+				// start read thread
+				ReadMore();
 				LoginToService();
 			}
 			else
@@ -488,9 +488,11 @@ namespace http {
 		{
 			// get auth response (0 or 1)
 
-			// unlock prefs mutex
-			we_locked_prefs_mutex = false;
-			sharedData.UnlockPrefsMutex();
+			if (we_locked_prefs_mutex) {
+				// unlock prefs mutex
+				we_locked_prefs_mutex = false;
+				sharedData.UnlockPrefsMutex();
+			}
 
 			GETPDULONG(auth);
 			GETPDUSTRING(reason);
@@ -500,7 +502,6 @@ namespace http {
 			}
 			else {
 				Stop();
-				return;
 			}
 		}
 
@@ -535,7 +536,6 @@ namespace http {
 				const char *data = boost::asio::buffer_cast<const char*>(_readbuf.data());
 				ProxyPdu pdu(data, _readbuf.size());
 				if (pdu.Disconnected()) {
-					// todo
 					ReadMore();
 					return;
 				}

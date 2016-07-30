@@ -1274,7 +1274,7 @@ namespace http {
 				(htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MQTT) || (htype == HTYPE_FRITZBOX) || (htype == HTYPE_ETH8020) || (htype == HTYPE_Sterbox) ||
 				(htype == HTYPE_KMTronicTCP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_RFLINKTCP) ||
 				(htype == HTYPE_Comm5TCP || (htype == HTYPE_CurrentCostMeterLAN)) ||
-				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviSmartdenLan) || (htype = HTYPE_Ec3kMeterTCP)
+				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviSmartdenLan) || (htype == HTYPE_Ec3kMeterTCP)
 				){
 				//Lan
 				if (address == "")
@@ -8948,7 +8948,7 @@ namespace http {
 							}
 							root["result"][ii]["TypeImg"] = "current";
 							root["result"][ii]["SwitchTypeVal"] = switchtype; //MTYPE_ENERGY
-
+							root["result"][ii]["Options"] = sOptions;  //for alternate Energy Reading
 						}
 					}
 					else if (dType == pTypeAirQuality)

@@ -107,9 +107,8 @@
 
 	<div id="tempwidgets" class="row divider">
 		<h2 ng-show="ctrl.temperatures.length == 0" data-i18n="No Temperature sensors found or added in the system...">No Temperature sensors found or added in the system...</h2>
-		<div ng-repeat="t in ctrl.temperatures track by t.idx">
-			<dztemperaturewidget class="span4" id="{{t.idx}}" item="t" tempsign="config.TempSign" windsign="config.WindSign" ordering="config.AllowWidgetOrdering" dragwidget="DragWidget(idx)" dropwidget="DropWidget(idx)"></dztemperaturewidget>
-		</div>
+		<div ng-repeat-start="t in ctrl.temperatures" class="clearfix" ng-if="$index % 3 == 0 && !$first"></div>
+		<dztemperaturewidget ng-repeat-end class="span4" id="{{t.idx}}" item="t" tempsign="config.TempSign" windsign="config.WindSign" ordering="config.AllowWidgetOrdering" dragwidget="DragWidget(idx)" dropwidget="DropWidget(idx)"></dztemperaturewidget>
 	</div>
 
 </div>
