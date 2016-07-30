@@ -278,7 +278,7 @@ int CTE923Tool::decode_te923_data( unsigned char buf[], Te923DataSet_t *data )
 	//don't know to find out it sensor link missing, but is no problem, because the counter is inside
 	//the station, not in the sensor.
 	data->_RainCount = 0;
-	data->RainCount = ( int )( buf[31] * 0x100 + buf[30] );
+	data->RainCount = ( int )(( buf[31] * 0x100 + buf[30] )/2);
 	return 0;
 }
 
@@ -522,19 +522,19 @@ void CTE923Tool::GetPrintData( Te923DataSet_t *data, char *szOutputBuffer)
 	strcat(szOutputBuffer,szTmp);
 
 	if ( data->_forecast == 0 ) 
-		sprintf(szTmp, "%d:", data->forecast );
+		sprintf(szTmp, "%d:", (int)data->forecast );
 	else
 		sprintf(szTmp, "%s:", iText );
 	strcat(szOutputBuffer,szTmp);
 
 	if ( data->_storm == 0 ) 
-		sprintf(szTmp, "%d:", data->storm );
+		sprintf(szTmp, "%d:", (int)data->storm );
 	else 
 		sprintf(szTmp, "%s:", iText );
 	strcat(szOutputBuffer,szTmp);
 
 	if ( data->_wDir == 0 ) 
-		sprintf(szTmp, "%d:", data->wDir );
+		sprintf(szTmp, "%d:", (int)data->wDir );
 	else 
 		sprintf(szTmp, "%s:", iText );
 	strcat(szOutputBuffer,szTmp);

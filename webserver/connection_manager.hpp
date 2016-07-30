@@ -7,7 +7,7 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
-
+#pragma once
 #ifndef HTTP_CONNECTION_MANAGER_HPP
 #define HTTP_CONNECTION_MANAGER_HPP
 
@@ -25,16 +25,13 @@ class connection_manager
 {
 public:
   /// Add the specified connection to the manager and start it.
-  void start(connection_ptr c);
+  void start(const connection_ptr c);
 
   /// Stop the specified connection.
-  void stop(connection_ptr c);
+  void stop(const connection_ptr c);
 
   /// Stop all connections.
   void stop_all();
-
-  /// Check for timeouts
-  void check_timeouts();
 
 private:
   /// The managed connections.

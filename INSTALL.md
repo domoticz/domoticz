@@ -123,11 +123,12 @@ All: (Assuming domoticz development is in a subfolder of the user)
 If you need support for Open-ZWave (for example if you want to use an Aeon USB V2 zwave adapter),
 you need to compile open zwave
 
-- Compile OpenZWave (http://code.google.com/p/open-zwave/)
+- Compile OpenZWave (https://github.com/OpenZWave/open-zwave)
 (On non-darwin install libudev-dev (`sudo apt-get install libudev-dev`)
 ```
-svn co http://open-zwave.googlecode.com/svn/trunk/ open-zwave-read-only
-cd open-zwave-read-only
+git clone https://github.com/OpenZWave/open-zwave.git
+cd open-zwave
+make
 ```
 
 ### Tellstick support

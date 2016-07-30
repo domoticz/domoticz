@@ -17,7 +17,6 @@ CSBFSpot::CSBFSpot(const int ID, const std::string &SMAConfigFile)
 {
 	std::vector<std::string> results;
 	
-	m_SBFInverter="";
 	m_HwdID=ID;
 #ifdef WIN32
 	StringSplit(SMAConfigFile, ";", results);
@@ -161,8 +160,6 @@ char *strftime_t (const char *format, const time_t rawtime)
 
 void CSBFSpot::SendMeter(const unsigned char ID1,const unsigned char ID2, const double musage, const double mtotal, const std::string &defaultname)
 {
-	int Idx=(ID1 * 256) + ID2;
-
 	RBUF tsen;
 	memset(&tsen,0,sizeof(RBUF));
 
@@ -204,7 +201,6 @@ void CSBFSpot::SendMeter(const unsigned char ID1,const unsigned char ID2, const 
 bool CSBFSpot::GetMeter(const unsigned char ID1,const unsigned char ID2, double &musage, double &mtotal)
 {
 	int Idx=(ID1 * 256) + ID2;
-	bool bDeviceExits=true;
 	std::vector<std::vector<std::string> > result;
 	result=m_sql.safe_query("SELECT Name, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
 		m_HwdID, int(Idx), int(pTypeENERGY), int(sTypeELEC2));
@@ -327,13 +323,11 @@ void CSBFSpot::ImportOldMonthData(const unsigned long long DevID, const int Year
 				char szDate[40];
 				sprintf(szDate, "%04d-%02d-%02d", year, month, day);
 
-				result = m_sql.safe_query("SELECT Value FROM Meter_Calendar WHERE (DeviceRowID==%llu) AND (Date=='%q')",
-					DevID, szDate);
+				result = m_sql.safe_query("SELECT Value FROM Meter_Calendar WHERE (DeviceRowID==%llu) AND (Date=='%q')", DevID, szDate);
 				if (result.size() == 0)
 				{
 					//Insert value into our database
-					result = m_sql.safe_query("INSERT INTO Meter_Calendar (DeviceRowID, Value, Date) VALUES ('%llu', '%llu', '%q')",
-						DevID, ulCounter, szDate);
+					m_sql.safe_query("INSERT INTO Meter_Calendar (DeviceRowID, Value, Date) VALUES ('%llu', '%llu', '%q')", DevID, ulCounter, szDate);
 					_log.Log(LOG_STATUS, "SBFSpot Import Old Month Data: Inserting %s",szDate);
 				}
 
@@ -421,6 +415,31 @@ void CSBFSpot::ImportOldMonthData(const unsigned long long DevID, const int Year
 	infile.close();
 }
 
+int CSBFSpot::getSunRiseSunSetMinutes(const bool bGetSunRise)
+{
+	std::vector<std::string> strarray;
+	std::vector<std::string> sunRisearray;
+	std::vector<std::string> sunSetarray;
+
+	if (!m_mainworker.m_LastSunriseSet.empty())
+	{
+		StringSplit(m_mainworker.m_LastSunriseSet, ";", strarray);
+		StringSplit(strarray[0], ":", sunRisearray);
+		StringSplit(strarray[1], ":", sunSetarray);
+
+		int sunRiseInMinutes = (atoi(sunRisearray[0].c_str()) * 60) + atoi(sunRisearray[1].c_str());
+		int sunSetInMinutes = (atoi(sunSetarray[0].c_str()) * 60) + atoi(sunSetarray[1].c_str());
+
+		if (bGetSunRise) {
+			return sunRiseInMinutes;
+		}
+		else {
+			return sunSetInMinutes;
+		}
+	}
+	return 0;
+}
+
 void CSBFSpot::GetMeterDetails()
 {
 	if (m_SBFDataPath.size() == 0)
@@ -435,6 +454,20 @@ void CSBFSpot::GetMeterDetails()
 	}
 
 	time_t atime = time(NULL);
+	struct tm ltime;
+	localtime_r(&atime, &ltime);
+
+	int ActHourMin = (ltime.tm_hour * 60) + ltime.tm_min;
+
+	int sunRise = getSunRiseSunSetMinutes(true);
+	int sunSet = getSunRiseSunSetMinutes(false);
+
+	//We only poll one hour before sunrise till one hour after sunset
+	if (ActHourMin + 120 < sunRise)
+		return;
+	if (ActHourMin - 120 > sunSet)
+		return;
+
 	char szLogFile[256];
 	char szDateStr[50];
 	strcpy(szDateStr, strftime_t("%Y%m%d", atime));
@@ -451,7 +484,10 @@ void CSBFSpot::GetMeterDetails()
 	infile.open(szLogFile);
 	if (!infile.is_open())
 	{
-		_log.Log(LOG_ERROR, "SBFSpot: Could not open spot file: %s", szLogFile);
+		if ((ActHourMin > sunRise) && (ActHourMin < sunSet))
+		{
+			_log.Log(LOG_ERROR, "SBFSpot: Could not open spot file: %s", szLogFile);
+		}
 		return;
 	}
 	while (!infile.eof())
@@ -620,7 +656,7 @@ namespace http {
 			{
 				if (pHardware->HwdType == HTYPE_SBFSpot)
 				{
-					CSBFSpot *pSBFSpot = (CSBFSpot *)pHardware;
+					CSBFSpot *pSBFSpot = reinterpret_cast<CSBFSpot *>(pHardware);
 					pSBFSpot->ImportOldMonthData();
 				}
 			}

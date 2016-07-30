@@ -17,15 +17,16 @@ extern CSQLHelper m_sql;
 
 #define SM_DEST_ADDRESS 0x01
 
-SolarMaxTCP::SolarMaxTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort)
+SolarMaxTCP::SolarMaxTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort) :
+m_szIPAddress(IPAddress)
 {
 	m_HwdID=ID;
 	m_bDoRestart=false;
 	m_stoprequested=false;
-	m_szIPAddress=IPAddress;
 	m_usIPPort=usIPPort;
 	m_socket = INVALID_SOCKET;
 	m_bufferpos = 0;
+	m_retrycntr = RETRY_DELAY;
 }
 
 static int SolarMaxCalcChecksum(const unsigned char *pData, const int Len)
@@ -90,7 +91,7 @@ bool SolarMaxTCP::StartHardware()
 
 	char szIP[20];
 	unsigned char *pAddress = (unsigned char *)&m_addr.sin_addr;
-	sprintf(szIP, "%d.%d.%d.%d", pAddress[0], pAddress[1], pAddress[2], pAddress[3]);
+	sprintf(szIP, "%d.%d.%d.%d", (int)pAddress[0], (int)pAddress[1], (int)pAddress[2], (int)pAddress[3]);
 	m_endpoint = szIP;
 
 	m_retrycntr = RETRY_DELAY; //will force reconnect first thing
@@ -382,7 +383,7 @@ void SolarMaxTCP::ParseLine()
 		else if (sLabel == "PIN")
 		{
 			//Power installed [mW] (PIN)
-			float power_installed = (float)SolarMaxGetHexStringValue(sVal);
+			//float power_installed = (float)SolarMaxGetHexStringValue(sVal);
 		}
 		else if (sLabel == "PRL")
 		{

@@ -23,6 +23,9 @@ KMTronicSerial::KMTronicSerial(const int ID, const std::string& devname)
 	m_szSerialPort=devname;
 	m_iBaudRate = 9600;
 	m_stoprequested = false;
+	m_iQueryState = 0;
+	m_retrycntr = RETRY_DELAY - 2;
+	m_bHaveReceived = false;
 }
 
 KMTronicSerial::~KMTronicSerial()
@@ -199,7 +202,7 @@ void KMTronicSerial::GetRelayStates()
 					std::stringstream sstr;
 					int iRelay = (iBoard * 8) + ii + 1;
 					sstr << "Board" << int(iBoard + 1) << " - " << int(ii + 1);
-					SendSwitch(iRelay, 1, 255, bIsOn, (bIsOn) ? 100 : 0, sstr.str());
+					SendSwitch(iRelay, 1, 255, bIsOn, 0, sstr.str());
 					_log.Log(LOG_STATUS, "KMTronic: %s = %s", sstr.str().c_str(), (bIsOn) ? "On" : "Off");
 					if (iRelay > m_TotRelais)
 						m_TotRelais = iRelay;
@@ -235,7 +238,7 @@ void KMTronicSerial::GetRelayStates()
 			std::stringstream sstr;
 			int iRelay = (ii + 1);
 			sstr << "Relay " << iRelay;
-			SendSwitch(iRelay, 1, 255, bIsOn, (bIsOn) ? 100 : 0, sstr.str());
+			SendSwitch(iRelay, 1, 255, bIsOn, 0, sstr.str());
 			_log.Log(LOG_STATUS, "KMTronic: %s = %s", sstr.str().c_str(), (bIsOn) ? "On" : "Off");
 			if (iRelay > m_TotRelais)
 				m_TotRelais = iRelay;
@@ -263,7 +266,7 @@ void KMTronicSerial::GetRelayStates()
 					std::stringstream sstr;
 					int iRelay = ii + 1;
 					sstr << "Relay " << iRelay;
-					SendSwitch(iRelay, 1, 255, bIsOn, (bIsOn) ? 100 : 0, sstr.str());
+					SendSwitch(iRelay, 1, 255, bIsOn, 0, sstr.str());
 					_log.Log(LOG_STATUS, "KMTronic: %s = %s", sstr.str().c_str(), (bIsOn) ? "On" : "Off");
 					if (iRelay > m_TotRelais)
 						m_TotRelais = iRelay;

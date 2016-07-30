@@ -74,10 +74,10 @@ void KMTronicTCP::Do_Work()
 
 bool KMTronicTCP::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	tRBUF *pSen = (tRBUF*)pdata;
+	const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
 
 	unsigned char packettype = pSen->ICMND.packettype;
-	unsigned char subtype = pSen->ICMND.subtype;
+	//unsigned char subtype = pSen->ICMND.subtype;
 
 	if (packettype == pTypeLighting2)
 	{
@@ -173,7 +173,7 @@ void KMTronicTCP::GetMeterDetails()
 				std::stringstream sstr;
 				int iRelay = (jj + 1);
 				sstr << "Relay " << iRelay;
-				SendSwitch(iRelay, 1, 255, bIsOn, (bIsOn) ? 100 : 0, sstr.str());
+				SendSwitch(iRelay, 1, 255, bIsOn, 0, sstr.str());
 				if (iRelay > m_TotRelais)
 					m_TotRelais = iRelay;
 			}

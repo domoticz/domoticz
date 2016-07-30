@@ -36,13 +36,15 @@ datum;DISCONNECT;ConnectionID;dauerInSekunden;
 
 */
 
-FritzboxTCP::FritzboxTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort)
+FritzboxTCP::FritzboxTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort) :
+m_szIPAddress(IPAddress)
 {
 	m_HwdID=ID;
 	m_bDoRestart=false;
 	m_stoprequested=false;
-	m_szIPAddress=IPAddress;
 	m_usIPPort=usIPPort;
+	m_retrycntr = RETRY_DELAY;
+	m_bufferpos = 0;
 }
 
 FritzboxTCP::~FritzboxTCP(void)
@@ -218,7 +220,6 @@ void FritzboxTCP::ParseData(const unsigned char *pData, int Len)
 
 void FritzboxTCP::UpdateSwitch(const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname)
 {
-	bool bDeviceExits = true;
 	double rlevel = (15.0 / 100)*Level;
 	int level = int(rlevel);
 
@@ -226,11 +227,7 @@ void FritzboxTCP::UpdateSwitch(const unsigned char Idx, const int SubUnit, const
 	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit ==%d)", m_HwdID, szIdx, SubUnit);
-	if (result.size() < 1)
-	{
-		bDeviceExits = false;
-	}
-	else
+	if (!result.empty())
 	{
 		//check if we have a change, if not do not update it
 		int nvalue = atoi(result[0][1].c_str());
@@ -286,8 +283,6 @@ void FritzboxTCP::ParseLine()
 	std::string Cmd = results[1];
 	std::stringstream sstr;
 	std::string devname;
-	unsigned long long devIdx;
-	std::vector<std::vector<std::string> > result;
 	if (Cmd == "CALL")
 	{
 		//Outgoing
@@ -295,7 +290,7 @@ void FritzboxTCP::ParseLine()
 		if (results.size() < 6)
 			return;
 		sstr << "Call From: " << results[4] << " to: " << results[5];
-		devIdx = m_sql.UpdateValue(m_HwdID, "1", 1, pTypeGeneral, sTypeTextStatus, 12, 255, 0, sstr.str().c_str(), devname);
+		m_sql.UpdateValue(m_HwdID, "1", 1, pTypeGeneral, sTypeTextStatus, 12, 255, 0, sstr.str().c_str(), devname);
 	}
 	else if (Cmd == "RING")
 	{
@@ -304,7 +299,7 @@ void FritzboxTCP::ParseLine()
 		if (results.size() < 5)
 			return;
 		sstr << "Received From: " << results[3] << " to: " << results[4];
-		devIdx=m_sql.UpdateValue(m_HwdID, "1", 1, pTypeGeneral, sTypeTextStatus, 12, 255, 0, sstr.str().c_str(), devname);
+		m_sql.UpdateValue(m_HwdID, "1", 1, pTypeGeneral, sTypeTextStatus, 12, 255, 0, sstr.str().c_str(), devname);
 	}
 	else if (Cmd == "CONNECT")
 	{
@@ -316,7 +311,7 @@ void FritzboxTCP::ParseLine()
 		UpdateSwitch(1, 1, true, 100, "Call");
 
 		sstr << "Connected ID: " << results[2] << " Number: " << results[4];
-		devIdx = m_sql.UpdateValue(m_HwdID, "1", 1, pTypeGeneral, sTypeTextStatus, 12, 255, 0, sstr.str().c_str(), devname);
+		m_sql.UpdateValue(m_HwdID, "1", 1, pTypeGeneral, sTypeTextStatus, 12, 255, 0, sstr.str().c_str(), devname);
 		//result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, int(pTypeGeneral), int(sTypeTextStatus));
 		//if (!result.empty())
 		//{
@@ -334,7 +329,7 @@ void FritzboxTCP::ParseLine()
 		UpdateSwitch(1, 1, false, 100, "Call");
 
 		sstr << "Disconnect ID: " << results[2] << " Duration: " << results[3] << " seconds";
-		devIdx = m_sql.UpdateValue(m_HwdID, "1", 1, pTypeGeneral, sTypeTextStatus, 12, 255, 0, sstr.str().c_str(), devname);
+		m_sql.UpdateValue(m_HwdID, "1", 1, pTypeGeneral, sTypeTextStatus, 12, 255, 0, sstr.str().c_str(), devname);
 		//result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, int(pTypeGeneral), int(sTypeTextStatus));
 		//if (!result.empty())
 		//{

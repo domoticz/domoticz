@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 1218
+# ref 1272
 
 CACHE:
 # CSS
@@ -133,6 +133,9 @@ images/csv.png
 images/csv_hover.png
 images/current.png
 images/current48.png
+images/Custom.png
+images/Custom48_Off.png
+images/Custom48_On.png
 images/customicons.png
 images/delete.png
 images/demand.png
@@ -382,9 +385,12 @@ images/startup/apple-touch-startup-image-1242x2148.png
 images/startup/apple-touch-startup-image-2208x1182.png
 media/1x1.gif
 media/handclosed.cur
+media/handdelete.cur
 media/handopen.cur
 media/quote0.png
 media/quote1.png
+media/sprites.png
+media/sprites.svg
 media/trashbody.png
 media/trashlid.png
 media/tree.png
@@ -393,8 +399,11 @@ media/swf/copy_csv_xls_pdf.swf
 secpanel/bg.jpg
 
 # Audio
+media/click.mp3
 media/click.wav
+media/delete.mp3
 media/delete.wav
+media/disconnect.wav
 secpanel/media/arm.aac
 secpanel/media/arm.mp3
 secpanel/media/arm.ogg
@@ -447,6 +456,8 @@ app/DashboardController.js
 app/DevicesController.js
 app/DPFibaroController.js
 app/DPHttpController.js
+app/DPGooglePubSubController.js
+app/DummyController.js
 app/EventsController.js
 app/FloorplanController.js
 app/FloorplanEditController.js
@@ -466,6 +477,9 @@ app/RoomplanController.js
 app/ScenesController.js
 app/SetupController.js
 app/TemperatureController.js
+app/TemperatureCustomLogController.js
+app/TemperatureLogController.js
+app/TemperatureNotificationsController.js
 app/UpdateController.js
 app/UsersController.js
 app/UserVariablesController.js
@@ -482,6 +496,7 @@ js/angular-tree-control.js
 js/angular.min.js
 js/angularAMD.min.js
 js/blockly_compressed.js
+js/blocks_compressed.js
 js/bootbox.min.js
 js/bootstrap.min.js
 js/colpick.js
@@ -523,6 +538,7 @@ js/noty/themes/default.js
 js/require.js
 js/respond.min.js
 js/themes/dark-blue.js
+js/themes/dark-ucust.js
 js/ui-bootstrap.min.js
 js/wow.min.js
 js/ZeroClipboard.js
@@ -547,6 +563,7 @@ views/dashboard.html
 views/devices.html
 views/dpfibaro.html
 views/dphttp.html
+views/dpgooglepubsub.html
 views/events.html
 views/frontpage_example.html
 views/floorplanedit.html
@@ -562,10 +579,15 @@ views/roomplan.html
 views/scenes.html
 views/setup.html
 views/temperature.html
+views/temperature_custom_temp_log.html
+views/temperature_log.html
+views/temperature_notifications.html
+views/temperatures/temperatureWidget.html
 views/update.html
 views/users.html
 views/utility.html
 views/weather.html
+views/weather_widget.html
 eventsframe.html
 zwavetopology.html
 secpanel/index.html

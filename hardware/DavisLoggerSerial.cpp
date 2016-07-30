@@ -24,12 +24,15 @@
 
 #define round(a) ( int ) ( a + .5 )
 
-CDavisLoggerSerial::CDavisLoggerSerial(const int ID, const std::string& devname, unsigned int baud_rate)
+CDavisLoggerSerial::CDavisLoggerSerial(const int ID, const std::string& devname, unsigned int baud_rate) :
+m_szSerialPort(devname)
 {
 	m_HwdID=ID;
-	m_szSerialPort=devname;
 	m_iBaudRate=baud_rate;
 	m_stoprequested=false;
+	m_retrycntr = RETRY_DELAY;
+	m_statecounter = 0;
+	m_state = DSTATE_WAKEUP;
 }
 
 CDavisLoggerSerial::~CDavisLoggerSerial(void)
@@ -218,7 +221,7 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 		(data[97]!=0x0d)
 		)
 		return false;
-	bool bIsRevA = (data[4]=='P');
+	//bool bIsRevA = (data[4]=='P');
 #else
 //	FILE *fOut=fopen("davisrob.bin","wb+");
 //	fwrite(data,1,len,fOut);
@@ -484,18 +487,7 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 	}
 	if (bUVValid)
 	{
-		RBUF tsen;
-		memset(&tsen,0,sizeof(RBUF));
-		tsen.UV.packetlength=sizeof(tsen.UV)-1;
-		tsen.UV.packettype=pTypeUV;
-		tsen.UV.subtype=sTypeUV1;
-		tsen.UV.battery_level=9;
-		tsen.UV.rssi=12;
-		tsen.UV.id1=0;
-		tsen.UV.id2=1;
-
-		tsen.UV.uv=(BYTE)round(UV*10);
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.UV, NULL, 255);
+		SendUVSensor(0, 1, 255, UV, "UV");
 	}
 	
 	//Rain Rate

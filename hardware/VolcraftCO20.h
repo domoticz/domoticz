@@ -8,7 +8,7 @@
 class CVolcraftCO20 : public CDomoticzHardwareBase
 {
 public:
-	CVolcraftCO20(const int ID);
+	explicit CVolcraftCO20(const int ID);
 	~CVolcraftCO20(void);
 
 	bool WriteToHardware(const char *pdata, const unsigned char length);

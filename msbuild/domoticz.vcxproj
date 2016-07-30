@@ -55,8 +55,8 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;PTW32_STATIC_LIB;WITH_OPENZWAVE;OPENZWAVE_USEDLL;_CONSOLE;NS_ENABLE_SSL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>./Windows Libraries/Boost/boost_1_59_0;./libusb;..\hardware\openzwave;./Windows Libraries/openssl;./Windows Libraries/Curl;./Windows Libraries/pthread;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;PTW32_STATIC_LIB;WITH_OPENZWAVE;OPENZWAVE_USEDLL;WWW_ENABLE_SSL;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>./Windows Libraries/Boost/boost_1_59_0;./libusb;../MQTT;..\hardware\openzwave;./Windows Libraries/openssl;./Windows Libraries/Curl;./Windows Libraries/pthread;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -81,8 +81,8 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;PTW32_STATIC_LIB;WITH_OPENZWAVE;_CONSOLE;NS_ENABLE_SSL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>./Windows Libraries/Boost/boost_1_59_0;./libusb;..\hardware\openzwave;./Windows Libraries/openssl;./Windows Libraries/Curl;./Windows Libraries/pthread;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;PTW32_STATIC_LIB;WITH_OPENZWAVE;_CONSOLE;WWW_ENABLE_SSL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>./Windows Libraries/Boost/boost_1_59_0;./libusb;../MQTT;..\hardware\openzwave;./Windows Libraries/openssl;./Windows Libraries/Curl;./Windows Libraries/pthread;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -407,26 +407,33 @@
     <ClInclude Include="..\hardware\1Wire\1WireSystem.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="..\hardware\AccuWeather.h" />
     <ClInclude Include="..\hardware\AnnaThermostat.h" />
     <ClInclude Include="..\hardware\ASyncTCP.h" />
-    <ClInclude Include="..\hardware\BMP085.h" />
+    <ClInclude Include="..\hardware\AtagOne.h" />
+    <ClInclude Include="..\hardware\Comm5Serial.h" />
     <ClInclude Include="..\hardware\Comm5TCP.h" />
     <ClInclude Include="..\hardware\csocket.h" />
     <ClInclude Include="..\hardware\CurrentCostMeterBase.h" />
     <ClInclude Include="..\hardware\CurrentCostMeterSerial.h" />
     <ClInclude Include="..\hardware\CurrentCostMeterTCP.h" />
     <ClInclude Include="..\hardware\DavisLoggerSerial.h" />
+    <ClInclude Include="..\hardware\DenkoviSmartdenLan.h" />
     <ClInclude Include="..\hardware\Dummy.h" />
+    <ClInclude Include="..\hardware\Ec3kMeterTCP.h" />
     <ClInclude Include="..\hardware\EcoDevices.h" />
     <ClInclude Include="..\hardware\EnOceanESP2.h" />
     <ClInclude Include="..\hardware\EnOceanESP3.h" />
     <ClInclude Include="..\hardware\ETH8020.h" />
     <ClInclude Include="..\hardware\evohome.h" />
+    <ClInclude Include="..\hardware\Fitbit.h" />
     <ClInclude Include="..\hardware\ForecastIO.h" />
     <ClInclude Include="..\hardware\FritzboxTCP.h" />
     <ClInclude Include="..\hardware\Gpio.h" />
     <ClInclude Include="..\hardware\GpioPin.h" />
     <ClInclude Include="..\hardware\HarmonyHub.h" />
+    <ClInclude Include="..\hardware\HttpPoller.h" />
+    <ClInclude Include="..\hardware\I2C.h" />
     <ClInclude Include="..\hardware\ICYThermostat.h" />
     <ClInclude Include="..\hardware\KMTronic433.h" />
     <ClInclude Include="..\hardware\KMTronicBase.h" />
@@ -445,6 +452,9 @@
     <ClInclude Include="..\hardware\NefitEasy.h" />
     <ClInclude Include="..\hardware\Nest.h" />
     <ClInclude Include="..\hardware\Netatmo.h" />
+    <ClInclude Include="..\hardware\OpenWeatherMap.h" />
+    <ClInclude Include="..\hardware\OpenWebNet.h" />
+    <ClInclude Include="..\hardware\openwebnet\bt_openwebnet.h" />
     <ClInclude Include="..\hardware\OpenZWave.h" />
     <ClInclude Include="..\hardware\openzwave\control_panel\ozwcp.h" />
     <ClInclude Include="..\hardware\OTGWBase.h" />
@@ -455,20 +465,22 @@
     <ClInclude Include="..\hardware\PiFace.h" />
     <ClInclude Include="..\hardware\Pinger.h" />
     <ClInclude Include="..\hardware\PVOutput_Input.h" />
+    <ClInclude Include="..\hardware\RAVEn.h" />
     <ClInclude Include="..\hardware\Razberry.h" />
     <ClInclude Include="..\hardware\Rego6XXSerial.h" />
     <ClInclude Include="..\hardware\RFLinkBase.h" />
     <ClInclude Include="..\hardware\RFLinkSerial.h" />
     <ClInclude Include="..\hardware\RFLinkTCP.h" />
+    <ClInclude Include="..\hardware\RFXBase.h" />
     <ClInclude Include="..\hardware\S0MeterBase.h" />
     <ClInclude Include="..\hardware\S0MeterSerial.h" />
+    <ClInclude Include="..\hardware\S0MeterTCP.h" />
     <ClInclude Include="..\hardware\SatelIntegra.h" />
     <ClInclude Include="..\hardware\SBFSpot.h" />
     <ClInclude Include="..\hardware\serial\serial.h" />
     <ClInclude Include="..\hardware\SolarEdgeAPI.h" />
-    <ClInclude Include="..\hardware\SolarEdgeBase.h" />
-    <ClInclude Include="..\hardware\SolarEdgeTCP.h" />
     <ClInclude Include="..\hardware\SolarMaxTCP.h" />
+    <ClInclude Include="..\hardware\Sterbox.h" />
     <ClInclude Include="..\hardware\TCPProxy\tcpproxy_server.h" />
     <ClInclude Include="..\hardware\TE923.h" />
     <ClInclude Include="..\hardware\TE923Tool.h" />
@@ -492,18 +504,16 @@
     <ClInclude Include="..\hardware\DomoticzTCP.h" />
     <ClInclude Include="..\hardware\hardwaretypes.h" />
     <ClInclude Include="..\main\concurrent_queue.h" />
-    <ClInclude Include="..\main\DataPush.h" />
     <ClInclude Include="..\main\dirent_windows.h" />
     <ClInclude Include="..\main\EventSystem.h" />
     <ClInclude Include="..\main\GZipHelper.h" />
-    <ClInclude Include="..\main\HttpPush.h" />
     <ClInclude Include="..\main\localtime_r.h" />
     <ClInclude Include="..\hardware\P1MeterBase.h" />
     <ClInclude Include="..\hardware\P1MeterSerial.h" />
     <ClInclude Include="..\hardware\P1MeterTCP.h" />
     <ClInclude Include="..\main\Logger.h" />
+    <ClInclude Include="..\main\LuaHandler.h" />
     <ClInclude Include="..\main\mainstructs.h" />
-    <ClInclude Include="..\main\Push.h" />
     <ClInclude Include="..\main\unzip.h" />
     <ClInclude Include="..\main\unzip_iterator.h" />
     <ClInclude Include="..\main\unzip_stream.h" />
@@ -543,12 +553,18 @@
     <ClInclude Include="..\notifications\NotificationPushbullet.h" />
     <ClInclude Include="..\notifications\NotificationPushover.h" />
     <ClInclude Include="..\notifications\NotificationSMS.h" />
+    <ClInclude Include="..\push\DataPush.h" />
+    <ClInclude Include="..\push\GooglePubSubPush.h" />
+    <ClInclude Include="..\push\HttpPush.h" />
+    <ClInclude Include="..\push\Push.h" />
+    <ClInclude Include="..\webserver\fastcgi.hpp" />
     <ClInclude Include="..\webserver\GZipHelper.h" />
     <ClInclude Include="..\webserver\proxyclient.h" />
     <ClInclude Include="..\webserver\proxycommon.h" />
     <ClInclude Include="..\zip\ioapi.h" />
     <ClInclude Include="..\zip\unzip.h" />
     <ClInclude Include="..\zip\zip.h" />
+    <ClInclude Include="..\hardware\BleBox.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="..\main\Scheduler.h" />
     <ClInclude Include="..\main\SQLHelper.h" />
@@ -580,6 +596,7 @@
     <ClInclude Include="..\webserver\request_handler.hpp" />
     <ClInclude Include="..\webserver\request_parser.hpp" />
     <ClInclude Include="..\webserver\server.hpp" />
+    <ClInclude Include="..\webserver\server_settings.hpp" />
     <ClInclude Include="..\webserver\utf.hpp" />
     <ClInclude Include="WindowsHelper.h" />
     <ClInclude Include="..\hardware\YouLess.h" />
@@ -602,27 +619,34 @@
     <ClCompile Include="..\hardware\1Wire\1WireForWindows.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\hardware\AccuWeather.cpp" />
     <ClCompile Include="..\hardware\AnnaThermostat.cpp" />
     <ClCompile Include="..\hardware\ASyncSerial.cpp" />
     <ClCompile Include="..\hardware\ASyncTCP.cpp" />
-    <ClCompile Include="..\hardware\BMP085.cpp" />
+    <ClCompile Include="..\hardware\AtagOne.cpp" />
+    <ClCompile Include="..\hardware\Comm5Serial.cpp" />
     <ClCompile Include="..\hardware\Comm5TCP.cpp" />
     <ClCompile Include="..\hardware\csocket.cpp" />
     <ClCompile Include="..\hardware\CurrentCostMeterBase.cpp" />
     <ClCompile Include="..\hardware\CurrentCostMeterSerial.cpp" />
     <ClCompile Include="..\hardware\CurrentCostMeterTCP.cpp" />
     <ClCompile Include="..\hardware\DavisLoggerSerial.cpp" />
+    <ClCompile Include="..\hardware\DenkoviSmartdenLan.cpp" />
     <ClCompile Include="..\hardware\Dummy.cpp" />
+    <ClCompile Include="..\hardware\Ec3kMeterTCP.cpp" />
     <ClCompile Include="..\hardware\EcoDevices.cpp" />
     <ClCompile Include="..\hardware\EnOceanESP2.cpp" />
     <ClCompile Include="..\hardware\EnOceanESP3.cpp" />
     <ClCompile Include="..\hardware\ETH8020.cpp" />
     <ClCompile Include="..\hardware\evohome.cpp" />
+    <ClCompile Include="..\hardware\Fitbit.cpp" />
     <ClCompile Include="..\hardware\ForecastIO.cpp" />
     <ClCompile Include="..\hardware\FritzboxTCP.cpp" />
     <ClCompile Include="..\hardware\Gpio.cpp" />
     <ClCompile Include="..\hardware\GpioPin.cpp" />
     <ClCompile Include="..\hardware\HarmonyHub.cpp" />
+    <ClCompile Include="..\hardware\HttpPoller.cpp" />
+    <ClCompile Include="..\hardware\I2C.cpp" />
     <ClCompile Include="..\hardware\ICYThermostat.cpp" />
     <ClCompile Include="..\hardware\KMTronic433.cpp" />
     <ClCompile Include="..\hardware\KMTronicBase.cpp" />
@@ -641,6 +665,12 @@
     <ClCompile Include="..\hardware\NefitEasy.cpp" />
     <ClCompile Include="..\hardware\Nest.cpp" />
     <ClCompile Include="..\hardware\Netatmo.cpp" />
+    <ClCompile Include="..\hardware\OpenWeatherMap.cpp" />
+    <ClCompile Include="..\hardware\OpenWebNet.cpp" />
+    <ClCompile Include="..\hardware\openwebnet\bt_openwebnet.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="..\hardware\OpenZWave.cpp" />
     <ClCompile Include="..\hardware\openzwave\control_panel\ozwcp.cpp" />
     <ClCompile Include="..\hardware\openzwave\control_panel\zwavelib.cpp" />
@@ -652,20 +682,22 @@
     <ClCompile Include="..\hardware\PiFace.cpp" />
     <ClCompile Include="..\hardware\Pinger.cpp" />
     <ClCompile Include="..\hardware\PVOutput_Input.cpp" />
+    <ClCompile Include="..\hardware\RAVEn.cpp" />
     <ClCompile Include="..\hardware\Razberry.cpp" />
     <ClCompile Include="..\hardware\RFLinkBase.cpp" />
     <ClCompile Include="..\hardware\RFLinkSerial.cpp" />
     <ClCompile Include="..\hardware\RFLinkTCP.cpp" />
+    <ClCompile Include="..\hardware\RFXBase.cpp" />
     <ClCompile Include="..\hardware\S0MeterBase.cpp" />
     <ClCompile Include="..\hardware\S0MeterSerial.cpp" />
+    <ClCompile Include="..\hardware\S0MeterTCP.cpp" />
     <ClCompile Include="..\hardware\SatelIntegra.cpp" />
     <ClCompile Include="..\hardware\SBFSpot.cpp" />
     <ClCompile Include="..\hardware\serial\impl\win.cpp" />
     <ClCompile Include="..\hardware\serial\serial.cpp" />
     <ClCompile Include="..\hardware\SolarEdgeAPI.cpp" />
-    <ClCompile Include="..\hardware\SolarEdgeBase.cpp" />
-    <ClCompile Include="..\hardware\SolarEdgeTCP.cpp" />
     <ClCompile Include="..\hardware\SolarMaxTCP.cpp" />
+    <ClCompile Include="..\hardware\Sterbox.cpp" />
     <ClCompile Include="..\hardware\TCPProxy\tcpproxy_server.cpp" />
     <ClCompile Include="..\hardware\TE923.cpp" />
     <ClCompile Include="..\hardware\TE923Tool.cpp" />
@@ -685,15 +717,13 @@
     <ClCompile Include="..\hardware\DomoticzHardware.cpp" />
     <ClCompile Include="..\hardware\DomoticzInternal.cpp" />
     <ClCompile Include="..\hardware\DomoticzTCP.cpp" />
-    <ClCompile Include="..\main\DataPush.cpp" />
     <ClCompile Include="..\main\EventSystem.cpp" />
-    <ClCompile Include="..\main\HttpPush.cpp" />
     <ClCompile Include="..\main\localtime_r.cpp" />
     <ClCompile Include="..\hardware\P1MeterBase.cpp" />
     <ClCompile Include="..\hardware\P1MeterSerial.cpp" />
     <ClCompile Include="..\hardware\P1MeterTCP.cpp" />
     <ClCompile Include="..\main\Logger.cpp" />
-    <ClCompile Include="..\main\Push.cpp" />
+    <ClCompile Include="..\main\LuaHandler.cpp" />
     <ClCompile Include="..\main\Scheduler.cpp" />
     <ClCompile Include="..\main\SQLHelper.cpp" />
     <ClCompile Include="..\main\Helper.cpp" />
@@ -797,6 +827,10 @@
     <ClCompile Include="..\notifications\NotificationPushbullet.cpp" />
     <ClCompile Include="..\notifications\NotificationPushover.cpp" />
     <ClCompile Include="..\notifications\NotificationSMS.cpp" />
+    <ClCompile Include="..\push\DataPush.cpp" />
+    <ClCompile Include="..\push\GooglePubSubPush.cpp" />
+    <ClCompile Include="..\push\HttpPush.cpp" />
+    <ClCompile Include="..\push\Push.cpp" />
     <ClCompile Include="..\smtpclient\SMTPClient.cpp" />
     <ClCompile Include="..\sqlite\sqlite3.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
@@ -826,6 +860,7 @@
     <ClCompile Include="..\webserver\connection.cpp" />
     <ClCompile Include="..\webserver\connection_manager.cpp" />
     <ClCompile Include="..\webserver\cWebem.cpp" />
+    <ClCompile Include="..\webserver\fastcgi.cpp" />
     <ClCompile Include="..\webserver\mime_types.cpp" />
     <ClCompile Include="..\webserver\proxyclient.cpp" />
     <ClCompile Include="..\webserver\proxycommon.cpp" />
@@ -833,6 +868,7 @@
     <ClCompile Include="..\webserver\request_handler.cpp" />
     <ClCompile Include="..\webserver\request_parser.cpp" />
     <ClCompile Include="..\webserver\server.cpp" />
+    <ClCompile Include="..\hardware\BleBox.cpp" />
     <ClCompile Include="WindowsHelper.cpp" />
     <ClCompile Include="..\hardware\YouLess.cpp" />
   </ItemGroup>

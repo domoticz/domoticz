@@ -4,7 +4,7 @@
  *  Created on: 10 févr. 2016
  *      Author: gaudryc
  */
-
+#pragma once
 #ifndef WEBSERVER_UTF_HPP_
 #define WEBSERVER_UTF_HPP_
 
@@ -32,7 +32,7 @@ class cUTF
 	char * myString8;			///< string in UTF-6
 public:
 	/// Construct from UTF-16
-	cUTF( const wchar_t * ws ) {
+	explicit cUTF( const wchar_t * ws ) {
 		std::string dest;
 		std::wstring src=ws;
 		for (size_t i = 0; i < src.size(); i++)
@@ -52,7 +52,7 @@ public:
 			else
 				dest.push_back('?');
 		}
-		int len=dest.size();
+		size_t len=dest.size();
 		myString8 = (char * ) malloc( len + 1 );
 		if (myString8)
 		{
@@ -61,7 +61,7 @@ public:
 		}
 	}
 	///  Construct from UTF8
-	cUTF( const char * s );
+	explicit cUTF( const char * s );
 	// copy constructor
 	cUTF() {
 		myString8 = NULL;

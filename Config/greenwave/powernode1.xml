@@ -3,10 +3,13 @@
 
   <!-- Configuration -->
   <CommandClass id="112">
+    <Value type="byte" genre="config" instance="1" index="0" label="Power delta" units="%" min="1" max="100" value="10">
+      <Help>Consumer variation required to send notification.
+        From 1 to 100, default 10</Help>
+    </Value>
     <Value type="byte" genre="config" instance="1" index="1" label="No communication light" min="1" max="255" value="2">
       <Help>After how many minutes the GreenWave device should start flashing if the controller didn't communicate with this device</Help>
     </Value>
-
     <Value type="list" genre="config" instance="1" index="2" label="Room color" read_only="true" size="1">
       <Help>The room color (Corner wheel color) on the GreenWave device</Help>
       <Item label="Black (empty)" value="128" />
@@ -20,6 +23,17 @@
       <Item label="Pink (8)" value="136" />
       <Item label="Locked" value="137" />
     </Value>
+    <Value type="list" genre="config" instance="1" index="3" label="Power on relay" size="1" min="0" max="2" value="2">
+      <Help>Relais state after a power loss</Help>
+      <Item label="All OFF" value="0" />
+      <Item label="Remember last state" value="1" />
+      <Item label="All ON" value="2" />
+    </Value>
+    <Value type="list" genre="config" instance="1" index="4" label="LED on network error" size="1" min="0" max="1" value="1">
+      <Help>Enable/Disable the LED on network error</Help>
+      <Item label="Disable" value="0" />
+      <Item label="Enable" value="1" />
+    </Value>
   </CommandClass>
 
   <!-- COMMAND_CLASS_ALARM. This class is in the list reported by the GreenWave PowerNode 1, but it does not respond to requests -->
@@ -30,10 +44,10 @@
   <!-- Association Groups -->
   <CommandClass id="133">
     <Associations num_groups="4">
-        <Group index="1" max_associations="1" label="Group1" />
-        <Group index="2" max_associations="1" label="Group2"/>
-        <Group index="3" max_associations="1" label="Group3" auto="true"/>
-        <Group index="4" max_associations="1" label="Group4"/>
+      <Group index="1" max_associations="1" label="Wheel"/>
+      <Group index="2" max_associations="1" label="Relay health"/>
+      <Group index="3" max_associations="1" label="Power level" auto="true"/>
+      <Group index="4" max_associations="1" label="Overcurrent protection"/>
     </Associations>
   </CommandClass>
 

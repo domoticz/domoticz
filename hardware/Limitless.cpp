@@ -110,10 +110,10 @@ const unsigned char WhiteWarmer[3] = { 0x3E, 0x0, 0x55 };
 const unsigned char WhiteCooler[3] = { 0x3F, 0x0, 0x55 };
 
 
-CLimitLess::CLimitLess(const int ID, const int LedType, const std::string &IPAddress, const unsigned short usIPPort)
+CLimitLess::CLimitLess(const int ID, const int LedType, const std::string &IPAddress, const unsigned short usIPPort) :
+m_szIPAddress(IPAddress)
 {
 	m_HwdID=ID;
-	m_szIPAddress=IPAddress;
 	m_usIPPort=usIPPort;
 	m_stoprequested=false;
 	m_RemoteSocket=INVALID_SOCKET;
@@ -171,8 +171,8 @@ bool CLimitLess::StartHardware()
 	}
 
 	memset(&m_stRemoteDestAddr,0,sizeof(m_stRemoteDestAddr));
-	m_stRemoteDestAddr.sin_family = AF_UNSPEC;
-	m_stRemoteDestAddr.sin_family = PF_INET; 
+	//m_stRemoteDestAddr.sin_family = AF_UNSPEC;
+	//m_stRemoteDestAddr.sin_family = PF_INET; 
 	m_stRemoteDestAddr.sin_family = AF_INET;     // host byte order
 	m_stRemoteDestAddr.sin_port = htons(m_usIPPort); // short, network byte order
 	m_stRemoteDestAddr.sin_addr = *((struct in_addr *)he->h_addr);

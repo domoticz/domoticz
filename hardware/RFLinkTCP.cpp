@@ -14,6 +14,7 @@ CRFLinkTCP::CRFLinkTCP(const int ID, const std::string &IPAddress, const unsigne
 	m_bDoRestart=false;
 	m_stoprequested=false;
 	m_usIPPort=usIPPort;
+	m_retrycntr = RFLINK_RETRY_DELAY;
 }
 
 CRFLinkTCP::~CRFLinkTCP(void)
@@ -130,14 +131,14 @@ void CRFLinkTCP::Do_Work()
 					//Don't throw from a Stop command
 				}
 			}
-			_log.Log(LOG_ERROR, "RFLink: trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+			_log.Log(LOG_STATUS, "RFLink: trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 			connect(m_szIPAddress,m_usIPPort);
 		}
 		else
 		{
 			if ((m_bDoRestart) && (sec_counter % 30 == 0))
 			{
-				_log.Log(LOG_ERROR, "RFLink: trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+				_log.Log(LOG_STATUS, "RFLink: trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 				connect(m_szIPAddress,m_usIPPort);
 			}
 			update();
@@ -167,7 +168,7 @@ void CRFLinkTCP::OnError(const boost::system::error_code& error)
 		(error == boost::asio::error::timed_out)
 		)
 	{
-		_log.Log(LOG_STATUS, "RFLink: Can not connect to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+		_log.Log(LOG_ERROR, "RFLink: Can not connect to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
 	}
 	else if (
 		(error == boost::asio::error::eof) ||

@@ -14,6 +14,7 @@ OTGWTCP::OTGWTCP(const int ID, const std::string &IPAddress, const unsigned shor
 	m_bDoRestart=false;
 	m_stoprequested=false;
 	m_usIPPort=usIPPort;
+	m_retrycntr = RETRY_DELAY;
 	SetModes(Mode1,Mode2,Mode3,Mode4,Mode5,Mode6);
 }
 

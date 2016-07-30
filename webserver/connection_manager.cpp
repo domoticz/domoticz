@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <boost/bind.hpp>
 #include <iostream>
+#include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "../main/localtime_r.h"
 
@@ -54,24 +55,11 @@ void connection_manager::stop(connection_ptr c)
 
 void connection_manager::stop_all()
 {
-  std::for_each(connections_.begin(), connections_.end(),
-      boost::bind(&connection::stop, _1));
-  connections_.clear();
+	std::for_each(connections_.begin(), connections_.end(),
+			boost::bind(&connection::stop, _1));
+	connections_.clear();
 }
 
-void connection_manager::check_timeouts()
-{
-	time_t atime=mytime(NULL);
-	std::set<connection_ptr>::const_iterator itt;
-	for (itt=connections_.begin(); itt!=connections_.end(); ++itt)
-	{
-		if (atime-(*itt)->m_lastresponse>20*60)
-		{
-			stop(*itt);
-			itt=connections_.begin();
-		}
-	}
-}
 
 } // namespace server
 } // namespace http

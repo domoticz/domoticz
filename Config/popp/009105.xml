@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<!-- Popp 009105 Wall Plug Switch Schuko (IP44) -->
+
+	<!-- Configuration  -->
+	<CommandClass id="112">
+		<Value type="list" genre="config" instance="1" index="1" label="LED indication mode" size="1" value="1">
+			<Help>Set LED indication mode</Help>
+			<Item label="Disable" value="0" />
+			<Item label="Show switch (default)" value="1" />
+			<Item label="Operated by Indicator Command Class" value="2" />
+		</Value>
+	
+		<Value type="short" genre="config" instance="1" index="2" label="Automatically switch Off" size="2" units="seconds" min="0" max="65535" value="0">
+			<Help>
+			If not zero, automatically switch device off after an user defined time.
+			0 -> Disabled (default)
+			1-65535 -> Enabled time in seconds.
+			</Help>
+		</Value>
+
+		<Value type="list" genre="config" instance="1" index="3" label="Behaviour for a RF Off-Command" size="1" value="0">
+			<Help>
+			Defines how to interpret RF Off-Command. 
+			Ignore - to switch on the light by motion detectors and switch it off after some amount of time;
+			in case of multiple motion detectors each would try to switch the light off that would break logics;
+			Switch on - to switch on the light on both On and Off paddle press on the remote and switch it off after some amount of time.
+			Button off click will still work (if button operations are not disabled).
+			</Help>
+			<Item label="Switch off (default)" value="0" />
+			<Item label="Ignore" value="1" />
+			<Item label="Switch on" value="2" />
+			<Item label="Switch on if load is off else switch off" value="3" />
+		</Value>
+
+		<Value type="list" genre="config" instance="1" index="5" label="Restore switch state after power cycle" size="1" value="1">
+			<Help>Defines if the switch should restore switch state to the last prior to device power off (power cycle).</Help>
+			<Item label="No, turn off" value="0" />
+			<Item label="Yes (default)" value="1" />
+		</Value>
+		
+		<Value type="short" genre="config" instance="1" index="20" label="Energy consumption" size="2" units="Watts" min="0" max="3500" value="0">
+			<Help>
+			Specify the consumption of the load in Watts, for the calculation of power.
+			0 -> Disabled (default)
+			1 - 3500 -> Watts
+			</Help>
+		</Value>
+
+		<Value type="list" genre="config" instance="1" index="21" label="LED OFF color" size="1" value="0">
+			<Help>Color for OFF state</Help>
+			<Item label="Off (default)" value="0" />
+			<Item label="Red" value="1" />
+			<Item label="Green" value="2" />
+			<Item label="Blue" value="3" />
+			<Item label="Yellow" value="4" />
+		</Value>
+
+		<Value type="list" genre="config" instance="1" index="22" label="LED ON color" size="1" value="3">
+			<Help>Color for ON state</Help>
+			<Item label="Off" value="0" />
+			<Item label="Red" value="1" />
+			<Item label="Green" value="2" />
+			<Item label="Blue (default)" value="3" />
+			<Item label="Yellow" value="4" />
+		</Value>
+	</CommandClass>
+
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="2">
+			<Group index="1" max_associations="5" label="Lifeline"/>
+			<Group index="2" max_associations="5" label="Controlled by buttons" />
+		</Associations>
+	</CommandClass>
+
+</Product>

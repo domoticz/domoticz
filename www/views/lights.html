@@ -18,24 +18,6 @@
 				<td>
 					<select id="comboswitchicon" style="width:200px" class="combobox ui-corner-all">
 					</select>
-					<!--
-					  <ui-select ng-model="customimagesel" theme="select2" style="min-width: 320px;" title="Choose a Icon">
-						<ui-select-match placeholder="Select a icon in the list or use the search function...">
-							<div class="iconlistitem">
-								<img ng-src="{{$select.selected.imageSrc}}" />
-								<h3>{{$select.selected.text}}</h3>
-								<p>{{$select.selected.description}}</p>
-							 </div>
-						</ui-select-match>
-						<ui-select-choices repeat="item in CustomImages | propsFilter: {text: $select.search, description: $select.search}">
-							<div class="iconlistitem">
-								<img ng-src="{{item.imageSrc}}" />
-								<h3>{{item.text}}</h3>
-								<p>{{item.description}}</p>
-							 </div>
-						</ui-select-choices>
-					  </ui-select>
-					  -->
             	</td>
 			</tr>
 			<tr id="MotionDiv">
@@ -260,9 +242,9 @@
 						<option value="22">ANSLUT</option>
 						<option value="50">LightwaveRF</option>
 						<option value="51">EMW100 GAO/Everflourish</option>
-						<option value="50">LightwaveRF</option>
 						<option value="55">Livolo</option>
 						<option value="57">Aoke</option>
+						<option value="59">IT</option>
 						<option value="60">Blyss</option>
 						<option value="70">EnOcean</option>
 						<option value="68">GPIO</option>
@@ -279,10 +261,12 @@
 						<option value="209">Blinds T9 Sunpery</option>
 						<option value="210">Blinds T10 Dolat DLM-1</option>
 						<option value="211">Blinds T11 ASP</option>
+						<option value="212">Blinds T12</option>
 						<option value="301">Smartwares Radiator</option>
 						<option value="302">Home Confort TEL-010</option>
 						<option value="303">Selector Switch</option>
 						<option value="304">Itho CVE RFT</option>
+                        <option value="305">Blinds OpenWebNet</option>
 			</select>
 			</td>
 		  </tr>
@@ -433,6 +417,18 @@
 						<select id="combocmd2" style="width:60px" class="combobox ui-corner-all"></select>
 						<select id="combocmd3" style="width:60px" class="combobox ui-corner-all"></select>
 					</td>
+				</tr>
+			</table>
+		</div>
+		<div id="openwebnetparams">
+			<table class="display" border="0" cellpadding="0" cellspacing="20">
+				<tr id="openwebnet_room">
+					<td align="right"><label><span data-i18n="Room">Room</span>:</label></td>
+					<td><select id="combocmd1" style="width:60px" class="combobox ui-corner-all"></select></td>
+				</tr>
+				<tr id="openwebnet_pl">
+					<td align="right"><label><span data-i18n="Point of Load">Point of Load</span>:</label></td>
+					<td><select id="combocmd2" style="width:60px" class="combobox ui-corner-all"></select></td>
 				</tr>
 			</table>
 		</div>

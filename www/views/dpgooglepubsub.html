@@ -1,0 +1,108 @@
+<div id="googlepubsubmain" class="container">
+    <table class="display" id="linkgooglepubsubtable" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <thead>
+            <tr>
+				<th width="120" align="left" data-i18n="Device name">Device name</th>
+				<th width="60" align="left" data-i18n="Value to send">Value to send</th>
+				<th width="120" align="left" data-i18n="Target type">Target type</th>
+				<th width="120" align="left" data-i18n="Target variable">Target variable</th>
+				<th width="60" align="left" data-i18n="Target device id">Target id</th>
+				<th width="120" align="left" data-i18n="Target property">Target property</th>
+				<th width="60" align="left" data-i18n="Include unit">Include unit</th>				
+				<th width="60" align="left" data-i18n="Enabled">Enabled</th>
+            </tr>
+        </thead>		
+    </table>
+	<p>
+	<table width="100%">
+	<tr>
+	<td valign="top" >
+	<h2 data-i18n="Edit link">Edit link</h2><br>
+	<table class="display" id="linkgooglepubsubparamstable" border="0" cellpadding="0" cellspacing="20">
+		<tr>
+			<td align="right" style="width:110px"><label for="combotargettype"><span data-i18n="Target type"></span>:</label></td>
+			<td><select id="combotargettype" style="width:160px" onchange="TargetTypeUpdate();" class="combobox ui-corner-all">
+					<option value="0" data-i18n="Global variable">Global variable</option>
+					<option value="1" data-i18n="Virtual device">Virtual device</option>
+				</select>
+			</td>
+		</tr>
+		<tr id="targetdevicename">
+			<td align="right" style="width:110px"><label for="devicename"><span data-i18n="Device name"></span>:</label></td>
+			<td><select id="devicename" style="width:280px" class="combobox ui-corner-all" onchange="ValueSelectorUpdate();"></select></td>
+		</tr>
+		<tr id="targetonoffdevicename" style="display:none;">
+			<td align="right" style="width:110px"><label for="onoffdevicename"><span data-i18n="Device name"></span>:</label></td>
+			<td><select id="onoffdevicename" style="width:280px" class="combobox ui-corner-all" onchange="ValueSelectorUpdate();"></select></td>
+		</tr>
+		<tr id="variabletosend">
+			<td align="right" style="width:110px"><label for="name"><span data-i18n="Value to send"></span>:</label></td>
+			<!--<td><input type="text" id="valuetosend" value="0" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> (<span data-i18n="0 = nvalue, 1 = svalue field 1, 2 = svalue field 2, etc."></span>)</td>-->
+			<td><select id="combosendvalue" style="width:160px" class="combobox ui-corner-all"></select></td>
+		</tr>
+		<tr id="scenevariabletosend" style="display:none;">
+			<td align="right" style="width:110px"><label for="sendvaluescene"><span data-i18n="Start scene on"></span>:</label></td>
+			<td><select id="sendvaluescene" style="width:160px" class="combobox ui-corner-all">
+					<option value="0" data-i18n="Off">Off</option>
+					<option value="1" data-i18n="On">On</option>
+				</select>
+			</td>
+		</tr>	
+		<tr id="rebootvariabletosend" style="display:none;">
+			<td align="right" style="width:110px"><label for="sendvaluereboot"><span data-i18n="Start on"></span>:</label></td>
+			<td><select id="sendvaluereboot" style="width:160px" class="combobox ui-corner-all">
+					<option value="0" data-i18n="Off">Off</option>
+					<option value="1" data-i18n="On">On</option>
+				</select>
+			</td>
+		</tr>	
+		<tr id="targetvariablerow">
+			<td align="right" style="width:110px"><label for="targetvariable"><span data-i18n="Target variable"></span>:</label></td>
+			<td><input type="text" id="targetvariable" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>	
+		<tr id="targetdeviceidrow" style="display:none;">
+			<td align="right" style="width:110px"><label for="targetdeviceid"><span data-i18n="Target device/scene id"></span>:</label></td>
+			<td><input type="text" id="targetdeviceid" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>		
+		<tr id="targetpropertyrow" style="display:none;">
+			<td align="right" style="width:110px"><label for="targetproperty"><span data-i18n="Target property"></span>:</label></td>
+			<td><input type="text" id="targetproperty" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>
+		<tr id="targetincludeunit">
+			<td align="right" style="width:80px"><label for="includeunit"><span data-i18n="Include unit"></span>:</label></td>
+			<td><input type="checkbox" id="includeunit" checked></td>
+		</tr>		
+		<tr id="targetlinkenabled">
+			<td align="right" style="width:80px"><label for="linkenabled"><span data-i18n="Link active"></span>:</label></td>
+			<td><input type="checkbox" id="linkenabled" checked></td>
+		</tr>
+		<tr>
+			<td colspan="2">
+				<a class="btnstyle3" onclick="AddLink('a');" data-i18n="Add">Add</a>
+				<a class="btnstyle3-dis" id="linkupdate" data-i18n="Update">Update</a>&nbsp;&nbsp;&nbsp;
+				<a class="btnstyle3-dis" id="linkdelete" data-i18n="Delete">Delete</a>
+			</td>
+		</tr>	
+	</table>
+	</td>
+	<td valign="top" >
+	<h2 data-i18n="General settings">General settings</h2><br>
+		<table class="display" id="googlepubsubremote" border="0" cellpadding="0" cellspacing="20">
+		<tr>
+			<td align="right" style="width:110px"><label id="lblremotedata" for="name"><span data-i18n="Data">Data</span>:</label></td>
+			<td><textarea id="data" rows="4" style="width: 450px; padding: .2em;" class="text ui-widget-content ui-corner-all"></textarea></td>
+		</tr>
+		<tr>
+			<td align="right" style="width:80px"><label for="googlepubsublinkenabled"><span data-i18n="Active">Active</span>:</label></td>
+			<td><input type="checkbox" id="googlepubsublinkenabled" checked></td>
+		</tr>
+		<tr>
+			<td align="right" style="width:80px"><label for="debugenabled"><span data-i18n="Debug to logfile"></span>:</label></td>
+			<td><input type="checkbox" id="debugenabled" checked></td>
+		</tr>
+	</table>
+	<a class="btnstyle3" onclick="SaveConfiguration();" data-i18n="Save">Save</a>
+	</td>
+	</tr>
+</table>
+</div>

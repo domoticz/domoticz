@@ -161,13 +161,13 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_DavisVantage, "Davis Vantage Weather Station USB" },
 		{ HTYPE_VOLCRAFTCO20, "Volcraft CO-20 USB air quality sensor" },
 		{ HTYPE_1WIRE, "1-Wire (System)" },
-		{ HTYPE_RaspberryBMP085, "BMP085/180 Temp+Baro I2C sensor" },
+		{ HTYPE_RaspberryBMP085, "I2C sensor BMP085/180 Temp+Baro" },
 		{ HTYPE_Wunderground, "Weather Underground" },
 		{ HTYPE_ForecastIO, "Forecast IO (Weather Lookup)" },
 		{ HTYPE_Dummy, "Dummy (Does nothing, use for virtual switches only)" },
 		{ HTYPE_Tellstick, "Tellstick" },
 		{ HTYPE_PiFace, "PiFace - Raspberry Pi IO expansion board" },
-		{ HTYPE_S0SmartMeter, "S0 Meter USB" },
+		{ HTYPE_S0SmartMeterUSB, "S0 Meter USB" },
 		{ HTYPE_OpenThermGateway, "OpenTherm Gateway USB" },
 		{ HTYPE_TeleinfoMeter, "Teleinfo EDF USB" },
 		{ HTYPE_OpenThermGatewayTCP, "OpenTherm Gateway with LAN interface" },
@@ -212,11 +212,25 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_RFXtrx868, "RFXCOM - RFXtrx868 USB 868MHz Transceiver" },
 		{ HTYPE_RFLINKTCP, "RFLink Gateway with LAN interface" },
 		{ HTYPE_Comm5TCP, "Comm5 MA-5XXX with LAN interface" },
+		{ HTYPE_Comm5Serial, "Comm5 MA-4XXX/MI-XXXX Serial/USB interface" },
 		{ HTYPE_SolarEdgeAPI , "SolarEdge via Web API" },
 		{ HTYPE_CurrentCostMeter, "CurrentCost Meter USB" },
 		{ HTYPE_CurrentCostMeterLAN, "CurrentCost Meter with LAN interface" },
 		{ HTYPE_DomoticzInternal, "Domoticz Internal interface" },
 		{ HTYPE_NefitEastLAN, "Nefit Easy HTTP server over LAN interface" },
+		{ HTYPE_OpenWebNet, "MyHome OpenWebNet" },
+		{ HTYPE_RaspberryHTU21D, "I2C sensor HTU21D(F)/SI702x Humidity+Temp" },
+		{ HTYPE_AtagOne, "Atag One Thermostat" },
+		{ HTYPE_Sterbox, "Sterbox v2-3 PLC with LAN interface" },
+		{ HTYPE_HTTPPOLLER, "HTTP/HTTPS poller" },
+		{ HTYPE_FITBIT, "Fitbit" },
+		{ HTYPE_RAVEn, "Rainforest RAVEn USB" },
+		{ HTYPE_S0SmartMeterTCP, "S0 Meter with LAN interface" },
+		{ HTYPE_DenkoviSmartdenLan, "Denkovi Smartden with LAN interface" },
+		{ HTYPE_AccuWeather, "AccuWeather (Weather Lookup)" },
+		{ HTYPE_BleBox, "BleBox devices" },
+		{ HTYPE_Ec3kMeterTCP, "Energy Count 3000/ NETBSEM4/ La Crosse RT-10 LAN" },
+		{ HTYPE_OpenWeatherMap, "Open Weather Map" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -558,6 +572,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLighting5, sTypeMDREMOTE107, "MDRemote 107" },
 		{ pTypeLighting5, sTypeLegrandCAD, "Legrand CAD" },
 		{ pTypeLighting5, sTypeAvantek, "Avantek" },
+		{ pTypeLighting5, sTypeIT, "Intertek,FA500,PROmax" },
 
 		{ pTypeLighting6, sTypeBlyss, "Blyss" },
 
@@ -577,6 +592,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeBlinds, sTypeBlindsT9, "Sunpery" },
 		{ pTypeBlinds, sTypeBlindsT10, "Dolat DLM-1" },
 		{ pTypeBlinds, sTypeBlindsT11, "ASP" },
+		{ pTypeBlinds, sTypeBlindsT12, "Confexx" },
 
 		{ pTypeSecurity1, sTypeSecX10, "X10 security" },
 		{ pTypeSecurity1, sTypeSecX10M, "X10 security motion" },
@@ -668,10 +684,12 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneral, sTypeZWaveThermostatFanMode, "Thermostat Fan Mode" },
 		{ pTypeGeneral, sTypeAlert, "Alert" },
 		{ pTypeGeneral, sTypeSoundLevel, "Sound Level" },
+		{ pTypeGeneral, sTypeUV, "UV" },
 		{ pTypeGeneral, sTypeDistance, "Distance" },
 		{ pTypeGeneral, sTypeCounterIncremental, "Counter Incremental" },
 		{ pTypeGeneral, sTypeKwh, "kWh" },
 		{ pTypeGeneral, sTypeWaterflow, "Waterflow" },
+		{ pTypeGeneral, sTypeCustom, "Custom Sensor" },
 
 		{ pTypeThermostat, sTypeThermSetpoint, "SetPoint" },
 		{ pTypeThermostat, sTypeThermTemperature, "Temperature" },
@@ -758,7 +776,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchTypeBrel, "BrelMotor" },
 		{ pTypeGeneralSwitch, sSwitchTypeRTS, "RTS" },
 		{ pTypeGeneralSwitch, sSwitchTypeElroDB, "ElroDB" },
-		{ pTypeGeneralSwitch, sSwitchTypeAOK, "AOK" },
+		{ pTypeGeneralSwitch, sSwitchTypeDooya, "Dooya" },
 		{ pTypeGeneralSwitch, sSwitchTypeUnitec, "Unitec" },
 		{ pTypeGeneralSwitch, sSwitchTypeSelector, "Selector Switch" },
 		{ pTypeGeneralSwitch, sSwitchTypeMaclean, "Maclean" },
@@ -777,6 +795,16 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchTypeFunkbus, "Funkbus" },
 		{ pTypeGeneralSwitch, sSwitchTypeNice, "Nice" },
 		{ pTypeGeneralSwitch, sSwitchTypeForest, "Forest" },
+		{ pTypeGeneralSwitch, sSwitchBlindsT1, "Legrand MyHome" },
+		{ pTypeGeneralSwitch, sSwitchMC145026, "MC145026" },
+		{ pTypeGeneralSwitch, sSwitchLobeco, "Lobeco" },
+		{ pTypeGeneralSwitch, sSwitchFriedland, "Friedland" },
+		{ pTypeGeneralSwitch, sSwitchBFT, "BFT" },
+		{ pTypeGeneralSwitch, sSwitchNovatys, "Novatys" },
+		{ pTypeGeneralSwitch, sSwitchHalemeier, "Halemeier" },
+		{ pTypeGeneralSwitch, sSwitchGaposa, "Gaposa" },
+		{ pTypeGeneralSwitch, sSwitchMiLightv1, "MiLightv1" },
+		{ pTypeGeneralSwitch, sSwitchMiLightv2, "MiLightv2" },
 		{  0,0,NULL }
 	};
 	return findTableID1ID2(Table, dType, sType);
@@ -881,6 +909,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeLighting5, sTypeMDREMOTE107, "Status" },
 		{ pTypeLighting5, sTypeLegrandCAD, "Status" },
 		{ pTypeLighting5, sTypeAvantek, "Status" },
+		{ pTypeLighting5, sTypeIT, "Status" },
 
 		{ pTypeLighting6, sTypeBlyss, "Status" },
 
@@ -900,6 +929,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeBlinds, sTypeBlindsT9, "Status" },
 		{ pTypeBlinds, sTypeBlindsT10, "Status" },
 		{ pTypeBlinds, sTypeBlindsT11, "Status" },
+		{ pTypeBlinds, sTypeBlindsT12, "Status" },
 
 		{ pTypeSecurity1, sTypeSecX10, "Status" },
 		{ pTypeSecurity1, sTypeSecX10M, "Status" },
@@ -990,10 +1020,12 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeGeneral, sTypeZWaveThermostatFanMode, "Thermostat Fan Mode" },
 		{ pTypeGeneral, sTypeAlert, "Alert" },
 		{ pTypeGeneral, sTypeSoundLevel, "Sound Level" },
+		{ pTypeGeneral, sTypeUV, "UV,Temperature" },
 		{ pTypeGeneral, sTypeDistance, "Distance" },
 		{ pTypeGeneral, sTypeCounterIncremental, "Counter Incremental" },
 		{ pTypeGeneral, sTypeKwh, "Instant,Usage" },
 		{ pTypeGeneral, sTypeWaterflow, "Percentage" },
+		{ pTypeGeneral, sTypeCustom, "Percentage" },
 
 		{ pTypeThermostat, sTypeThermSetpoint, "Temperature" },
 		{ pTypeThermostat, sTypeThermTemperature, "Temperature" },
@@ -1078,7 +1110,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeGeneralSwitch, sSwitchTypeBrel, "Status" },
 		{ pTypeGeneralSwitch, sSwitchTypeRTS, "Status" },
 		{ pTypeGeneralSwitch, sSwitchTypeElroDB, "Status" },
-		{ pTypeGeneralSwitch, sSwitchTypeAOK, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeDooya, "Status" },
 		{ pTypeGeneralSwitch, sSwitchTypeUnitec, "Status" },
 		{ pTypeGeneralSwitch, sSwitchTypeSelector, "Status" },
 		{ pTypeGeneralSwitch, sSwitchTypeMaclean, "Status" },
@@ -1137,7 +1169,7 @@ const char *ZWave_Clock_Days(const unsigned char Day)
 	};
 	return findTableIDSingle1(Table, Day);
 }
-
+/*
 const char *ZWave_Thermostat_Modes[] =
 {
 	"Off",
@@ -1157,7 +1189,7 @@ const char *ZWave_Thermostat_Modes[] =
 	"Unknown",
 	NULL
 };
-
+*/
 const char *ZWave_Thermostat_Fan_Modes[] =
 {
 	"Auto Low",
@@ -1171,15 +1203,14 @@ const char *ZWave_Thermostat_Fan_Modes[] =
 	NULL
 };
 
-int Lookup_ZWave_Thermostat_Modes(const std::string &sMode)
+int Lookup_ZWave_Thermostat_Modes(const std::vector<std::string> &Modes, const std::string &sMode)
 {
 	int ii = 0;
-	while (ZWave_Thermostat_Modes[ii]!=NULL)
+	std::vector<std::string>::const_iterator itt;
+	for (itt = Modes.begin(); itt != Modes.end(); ++itt)
 	{
-		if (ZWave_Thermostat_Modes[ii] == sMode)
-		{
+		if (*itt == sMode)
 			return ii;
-		}
 		ii++;
 	}
 	return -1;
@@ -1361,7 +1392,8 @@ void GetLightStatus(
 		case sTypeLightwaveRF:
 			bHaveGroupCmd=true;
 			bHaveDimmer=true;
-			maxDimLevel=32;
+			maxDimLevel = 32;
+			llevel = (int)float((100.0f / float(maxDimLevel))*atof(sValue.c_str()));
 			switch (nValue)
 			{
 			case light5_sOff:
@@ -1543,6 +1575,32 @@ void GetLightStatus(
 				break;
 			case light5_sGroupOn:
 				lstatus = "Group On";
+				break;
+			}
+			break;
+		case sTypeIT:
+			maxDimLevel = 9;
+			llevel = (int)float((100.0f / float(maxDimLevel))*atof(sValue.c_str()));
+			switch (nValue)
+			{
+			case light5_sOff:
+				lstatus = "Off";
+				break;
+			case light5_sOn:
+				lstatus = "On";
+				break;
+			case light5_sGroupOff:
+				lstatus = "Group Off";
+				break;
+			case light5_sGroupOn:
+				lstatus = "Group On";
+				break;
+			case light5_sSetLevel:
+				sprintf(szTmp, "Set Level: %d %%", llevel);
+				if (sValue != "0")
+					lstatus = szTmp;
+				else
+					lstatus = "Off";
 				break;
 			}
 			break;
@@ -2342,22 +2400,23 @@ bool GetLightCommand(
 				return true;
 			}
 		}
-		else if (dSubType!=sTypeLightwaveRF)
+		else if ((dSubType != sTypeLightwaveRF) && (dSubType != sTypeIT))
 		{
-			//Only LightwaveRF devices have a set-level
- 			if (switchcmd=="Set Level")
- 				switchcmd="On";
- 		}
-			// The LightwaveRF inline relay has to be controlled by Venetian blinds logic as it has a stop setting
-		else if ((dSubType==sTypeLightwaveRF)&&(switchtype==STYPE_VenetianBlindsEU)){
-				if (switchcmd=="On")
-					switchcmd="Close inline relay";
-				else if (switchcmd=="Off")
-					switchcmd="Open inline relay";
-				else if (switchcmd=="Stop")
-					switchcmd="Stop inline relay";
+			//Only LightwaveRF/IT devices have a set-level
+			if (switchcmd == "Set Level")
+				switchcmd = "On";
 		}
- 
+		else if ((dSubType == sTypeLightwaveRF) && (switchtype == STYPE_VenetianBlindsEU))
+		{
+			// The LightwaveRF inline relay has to be controlled by Venetian blinds logic as it has a stop setting
+			if (switchcmd == "On")
+				switchcmd = "Close inline relay";
+			else if (switchcmd == "Off")
+				switchcmd = "Open inline relay";
+			else if (switchcmd == "Stop")
+				switchcmd = "Stop inline relay";
+		}
+
  		if (switchtype==STYPE_Doorbell)
  		{
 			if ((switchcmd=="On")||(switchcmd=="Group On"))
@@ -3273,12 +3332,31 @@ const char *Get_Alert_Desc(const int level)
 
 bool IsSerialDevice(const _eHardwareTypes htype)
 {
-	return (
-		(htype == HTYPE_RFXtrx315) || (htype == HTYPE_RFXtrx433) || (htype == HTYPE_RFXtrx868) ||
-		(htype == HTYPE_P1SmartMeter) || (htype == HTYPE_Rego6XX) || (htype == HTYPE_DavisVantage) || (htype == HTYPE_S0SmartMeter) || (htype == HTYPE_OpenThermGateway) ||
-		(htype == HTYPE_TeleinfoMeter) || (htype == HTYPE_OpenZWave) || (htype == HTYPE_EnOceanESP2) || (htype == HTYPE_EnOceanESP3) || (htype == HTYPE_Meteostick) ||
-		(htype == HTYPE_MySensorsUSB) || (htype == HTYPE_RFLINKUSB) || (htype == HTYPE_KMTronicUSB) || (htype == HTYPE_KMTronic433) || (htype == HTYPE_CurrentCostMeter)
-		);
+	switch (htype) {
+	case HTYPE_RFXtrx315:
+	case HTYPE_RFXtrx433:
+	case HTYPE_RFXtrx868:
+	case HTYPE_P1SmartMeter:
+	case HTYPE_Rego6XX:
+	case HTYPE_DavisVantage:
+	case HTYPE_S0SmartMeterUSB:
+	case HTYPE_OpenThermGateway:
+	case HTYPE_TeleinfoMeter:
+	case HTYPE_OpenZWave:
+	case HTYPE_EnOceanESP2:
+	case HTYPE_EnOceanESP3:
+	case HTYPE_Meteostick:
+	case HTYPE_MySensorsUSB:
+	case HTYPE_RFLINKUSB:
+	case HTYPE_KMTronicUSB:
+	case HTYPE_KMTronic433:
+	case HTYPE_CurrentCostMeter:
+	case HTYPE_RAVEn:
+	case HTYPE_Comm5Serial:
+		return true;
+	default:
+		return false;
+	}
 }
 
 void ConvertToGeneralSwitchType(std::string &devid, int &dtype, int &subtype)
@@ -3341,10 +3419,10 @@ void ConvertToGeneralSwitchType(std::string &devid, int &dtype, int &subtype)
 		dtype = pTypeGeneralSwitch;
 		if (subtype == sTypeBlindsT5) subtype = sSwitchTypeBofu;
 		else if (subtype == sTypeBlindsT6) subtype = sSwitchTypeBrel;
-		else if (subtype == sTypeBlindsT7) subtype = sSwitchTypeAOK;
+		else if (subtype == sTypeBlindsT7) subtype = sSwitchTypeDooya;
 		else if (subtype == sTypeBlindsT8) subtype = sSwitchTypeBofu;
 		else if (subtype == sTypeBlindsT9) subtype = sSwitchTypeBrel;
-		else if (subtype == sTypeBlindsT10) subtype = sSwitchTypeAOK;
+		else if (subtype == sTypeBlindsT10) subtype = sSwitchTypeDooya;
 		std::stringstream s_strid;
 		s_strid << std::hex << strtoul(devid.c_str(), NULL, 16);
 		unsigned long deviceid = 0;
@@ -3360,4 +3438,3 @@ void ConvertToGeneralSwitchType(std::string &devid, int &dtype, int &subtype)
 		subtype = sSwitchTypeRTS;
 	}
 }
-

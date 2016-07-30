@@ -269,6 +269,14 @@ define(['app'], function (app) {
 									else {
 													itemImage='<img src="images/push.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',ShowDevices);" class="lcursor">';
 									}
+				  } else if (item.SubType === "Selector Switch") {
+					var imagePath; 
+					if (item.CustomImage !== 0) {
+						imagePath = (this.levelName === "Off") ? "images/" + item.Image + "48_Off.png" : "images/" + item.Image + "48_On.png";
+					} else {
+						imagePath = (this.levelName === "Off") ? "images/" + item.TypeImg + "48_Off.png" : "images/" + item.TypeImg + "48_On.png";
+					}
+					itemImage = '<img src="' + imagePath + '" width="16" height="16">';
 				  }
 				  if ((item.Type == "Group")||(item.Type == "Scene")) {
 					itemSubIcons+='&nbsp;<img src="images/empty16.png">';
@@ -312,6 +320,12 @@ define(['app'], function (app) {
 				  else if (item.SubType=="Current") {
 					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowGeneralGraph(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal +', \'CurrentGeneral\');">';
 				  }
+				  else if (item.SubType=="Pressure") {
+					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowGeneralGraph(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal +', \'Pressure\');">';
+				  }
+				  else if (item.SubType=="Custom Sensor") {
+					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowGeneralGraph(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.SensorUnit) +'\', \'' + item.SubType + '\');">';
+				  }
 				  else if (item.SubType == "Percentage") {
 					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowPercentageLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\');">';
 				  }
@@ -321,6 +335,9 @@ define(['app'], function (app) {
 				  else if (typeof item.Counter != 'undefined') {
 					  if ((item.Type == "P1 Smart Meter")&&(item.SubType=="Energy")) {
 						itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowSmartLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');">';
+					  }
+					  else if ((item.Type == "YouLess Meter")&&(item.SwitchTypeVal==0 || item.SwitchTypeVal==4)) {
+						itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowCounterLogSpline(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');">';
 					  }
 					  else {
 						itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowCounterLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');">';

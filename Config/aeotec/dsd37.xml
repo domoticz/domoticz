@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+Aeotec DSD37-ZWUS Repeater 
+https://aeotec.freshdesk.com/helpdesk/attachments/6009584515
+-->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+    <!-- Configuration -->
+    <CommandClass id="112">
+		<Value type="list" index="200" genre="config" label="Partner ID" size="1" max="1" min="0" value="0">
+			<Help>Partner ID</Help>
+			<Item value="0" label="Aeon Labs Standard (Default)"/>
+			<Item value="1" label="Others"/>
+		</Value>
+        <Value type="short" index="254" genre="config" label="Device Tag" min="0" max="255" value="0">
+			<Help>Device Tag</Help>
+		</Value>
+		<Value type="button" index="255" genre="config" label="Reset configuration settings to factory defaults" write_only="true" value="0" >
+			<Help>Reset to factory defaults.</Help>
+		</Value>
+    </CommandClass>
+    <!-- Association Groups -->
+    <CommandClass id="133">
+      <Associations num_groups="1">
+        <Group index="1" max_associations="5" label="LifeLine"/>      
+      </Associations>
+    </CommandClass>    
+</Product>

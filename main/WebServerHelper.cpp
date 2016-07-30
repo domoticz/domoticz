@@ -13,7 +13,7 @@ namespace http {
 
 		CWebServerHelper::CWebServerHelper()
 		{
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 			secureServer_ = NULL;
 #endif
 			plainServer_ = NULL;
@@ -23,39 +23,28 @@ namespace http {
 
 		CWebServerHelper::~CWebServerHelper()
 		{
-#ifdef NS_ENABLE_SSL
-			if (secureServer_) delete secureServer_;
-#endif
-			if (plainServer_) delete plainServer_;
-
-#ifndef NOCLOUD
-			for (proxy_iterator it = proxymanagerCollection.begin(); it != proxymanagerCollection.end(); ++it) {
-				delete (*it);
-			}
-#endif
+			StopServers();
 		}
-
-		bool CWebServerHelper::StartServers(const std::string &listenaddress, const std::string &listenport, const std::string &secure_listenport, const std::string &serverpath, const std::string &secure_cert_file, const std::string &secure_cert_passphrase, const bool bIgnoreUsernamePassword, tcp::server::CTCPServer *sharedServer)
+#ifdef WWW_ENABLE_SSL
+		bool CWebServerHelper::StartServers(server_settings & web_settings, ssl_server_settings & secure_web_settings, const std::string &serverpath, const bool bIgnoreUsernamePassword, tcp::server::CTCPServer *sharedServer)
+#else
+		bool CWebServerHelper::StartServers(server_settings & web_settings, const std::string &serverpath, const bool bIgnoreUsernamePassword, tcp::server::CTCPServer *sharedServer)
+#endif
 		{
 			bool bRet = false;
 
 			m_pDomServ = sharedServer;
 
-#ifdef NS_ENABLE_SSL
-			SSL_library_init();
-			serverCollection.resize(secure_listenport.empty() ? 1 : 2);
-#else
-			serverCollection.resize(1);
-#endif
 			our_serverpath = serverpath;
 			plainServer_ = new CWebServer();
-			serverCollection[0] = plainServer_;
-			bRet |= plainServer_->StartServer(listenaddress, listenport, serverpath, bIgnoreUsernamePassword);
-#ifdef NS_ENABLE_SSL
-			if (!secure_listenport.empty()) {
+			serverCollection.push_back(plainServer_);
+			bRet |= plainServer_->StartServer(web_settings, serverpath, bIgnoreUsernamePassword);
+#ifdef WWW_ENABLE_SSL
+			if (secure_web_settings.is_enabled()) {
+				SSL_library_init();
 				secureServer_ = new CWebServer();
-				bRet |= secureServer_->StartServer(listenaddress, secure_listenport, serverpath, bIgnoreUsernamePassword, secure_cert_file, secure_cert_passphrase);
-				serverCollection[1] = secureServer_;
+				bRet |= secureServer_->StartServer(secure_web_settings, serverpath, bIgnoreUsernamePassword);
+				serverCollection.push_back(secureServer_);
 			}
 #endif
 
@@ -70,12 +59,21 @@ namespace http {
 		void CWebServerHelper::StopServers()
 		{
 			for (server_iterator it = serverCollection.begin(); it != serverCollection.end(); ++it) {
-				(*it)->StopServer();
+				((CWebServer*) *it)->StopServer();
+				if (*it) delete (*it);
 			}
+			serverCollection.clear();
+			plainServer_ = NULL; // avoid double free
+#ifdef WWW_ENABLE_SSL
+			secureServer_ = NULL; // avoid double free
+#endif
+
 #ifndef NOCLOUD
 			for (proxy_iterator it = proxymanagerCollection.begin(); it != proxymanagerCollection.end(); ++it) {
-				(*it)->Stop();
+				((CProxyManager*) *it)->Stop();
+				if (*it) delete (*it);
 			}
+			proxymanagerCollection.clear();
 #endif
 		}
 
@@ -84,9 +82,7 @@ namespace http {
 			sharedData.StopTCPClients();
 			for (proxy_iterator it = proxymanagerCollection.begin(); it != proxymanagerCollection.end(); ++it) {
 				(*it)->Stop();
-				// todo: This seems to crash on a Pi (fatal signal 6). Windows goes fine.
-				// stop old threads first
-				//delete (*it);
+				delete (*it);
 			}
 
 			// restart threads
@@ -99,14 +95,14 @@ namespace http {
 			_log.Log(LOG_STATUS, "Proxymanager started.");
 		}
 
-		CProxyClient *CWebServerHelper::GetProxyForMaster(DomoticzTCP *master) {
+		boost::shared_ptr<CProxyClient> CWebServerHelper::GetProxyForMaster(DomoticzTCP *master) {
 			if (proxymanagerCollection.size() > 0) {
 				// todo: make this a random connection?
 				return proxymanagerCollection[0]->GetProxyForMaster(master);
 			}
 			// we are not connected yet. save this master and connect later.
 			sharedData.AddTCPClient(master);
-			return NULL;
+			return boost::shared_ptr<CProxyClient>();
 		}
 
 		void CWebServerHelper::RemoveMaster(DomoticzTCP *master) {
@@ -143,14 +139,25 @@ namespace http {
 		}
 
 		//JSon
-		void CWebServerHelper::	GetJSonDevices(Json::Value &root, const std::string &rused, const std::string &rfilter, const std::string &order, const std::string &rowid, const std::string &planID, const std::string &floorID, const bool bDisplayHidden, const time_t LastUpdate, const std::string &username)
+		void CWebServerHelper::	GetJSonDevices(
+			Json::Value &root,
+			const std::string &rused,
+			const std::string &rfilter,
+			const std::string &order,
+			const std::string &rowid,
+			const std::string &planID,
+			const std::string &floorID,
+			const bool bDisplayHidden,
+			const bool bFetchFavorites,
+			const time_t LastUpdate,
+			const std::string &username)
 		{
 			if (plainServer_) { // assert
-				plainServer_->GetJSonDevices(root, rused, rfilter, order, rowid, planID, floorID, bDisplayHidden, LastUpdate, username);
+				plainServer_->GetJSonDevices(root, rused, rfilter, order, rowid, planID, floorID, bDisplayHidden, bFetchFavorites, LastUpdate, username);
 			}
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 			else if (secureServer_) {
-				secureServer_->GetJSonDevices(root, rused, rfilter, order, rowid, planID, floorID, bDisplayHidden, LastUpdate, username);
+				secureServer_->GetJSonDevices(root, rused, rfilter, order, rowid, planID, floorID, bDisplayHidden, bFetchFavorites, LastUpdate, username);
 			}
 #endif
 		}

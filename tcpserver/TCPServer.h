@@ -18,10 +18,22 @@ struct _tRemoteShareUser
 	std::vector<unsigned long long> Devices;
 };
 
+#define RemoteMessage_id_Low 0xE2
+#define RemoteMessage_id_High 0x2E
+
+
+struct _tRemoteMessage
+{
+	uint8_t ID_Low;
+	uint8_t ID_High;
+	int		Original_Hardware_ID;
+	//data
+};
+
 class CTCPServerIntBase
 {
 public:
-	CTCPServerIntBase(CTCPServer *pRoot);
+	explicit CTCPServerIntBase(CTCPServer *pRoot);
 	~CTCPServerIntBase(void);
 
 	virtual void start() = 0;
@@ -29,7 +41,7 @@ public:
 	virtual void stopClient(CTCPClient_ptr c) = 0;
 	virtual void stopAllClients();
 
-	void SendToAll(const unsigned long long DeviceRowID, const char *pData, size_t Length, const CTCPClientBase* pClient2Ignore);
+	void SendToAll(const int HardwareID, const unsigned long long DeviceRowID, const char *pData, size_t Length, const CTCPClientBase* pClient2Ignore);
 
 	void SetRemoteUsers(const std::vector<_tRemoteShareUser> &users);
 	std::vector<_tRemoteShareUser> GetRemoteUsers();
@@ -77,7 +89,7 @@ private:
 #ifndef NOCLOUD
 class CTCPServerProxied : public CTCPServerIntBase {
 public:
-	CTCPServerProxied(CTCPServer *pRoot, http::server::CProxyClient *proxy);
+	CTCPServerProxied(CTCPServer *pRoot, boost::shared_ptr<http::server::CProxyClient> proxy);
 	~CTCPServerProxied(void);
 	virtual void start();
 	virtual void stop();
@@ -89,7 +101,7 @@ public:
 	bool OnIncomingData(const std::string &token, const unsigned char *data, size_t bytes_transferred);
 	CSharedClient *FindClient(const std::string &token);
 private:
-	http::server::CProxyClient *m_pProxyClient;
+	boost::shared_ptr<http::server::CProxyClient> m_pProxyClient;
 };
 #endif
 
@@ -97,15 +109,15 @@ class CTCPServer : public CDomoticzHardwareBase
 {
 public:
 	CTCPServer();
-	CTCPServer(const int ID);
+	explicit CTCPServer(const int ID);
 	~CTCPServer(void);
 
 	bool StartServer(const std::string &address, const std::string &port);
 #ifndef NOCLOUD
-	bool StartServer(http::server::CProxyClient *proxy);
+	bool StartServer(boost::shared_ptr<http::server::CProxyClient> proxy);
 #endif
 	void StopServer();
-	void SendToAll(const unsigned long long DeviceRowID, const char *pData, size_t Length, const CTCPClientBase* pClient2Ignore);
+	void SendToAll(const int HardwareID, const unsigned long long DeviceRowID, const char *pData, size_t Length, const CTCPClientBase* pClient2Ignore);
 	void SetRemoteUsers(const std::vector<_tRemoteShareUser> &users);
 	unsigned int GetUserDevicesCount(const std::string &username);
 	void stopAllClients();

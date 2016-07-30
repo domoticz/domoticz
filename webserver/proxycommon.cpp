@@ -221,6 +221,7 @@ int CValueLengthPart::GetNextLong(long &value)
 
 ProxyPdu::ProxyPdu(pdu_type type, CValueLengthPart *part)
 {
+	socket = NULL;
 	char *data;
 	size_t theLength;
 	part->GetPdu((void **)&data, &theLength);
@@ -229,6 +230,7 @@ ProxyPdu::ProxyPdu(pdu_type type, CValueLengthPart *part)
 
 ProxyPdu::ProxyPdu(const char *data, size_t theLength)
 {
+	socket = NULL;
 	verbose = 1;
 	_content = pdudata = NULL;
 	sprintf(signature, "RKDM");
@@ -238,6 +240,7 @@ ProxyPdu::ProxyPdu(const char *data, size_t theLength)
 
 ProxyPdu::ProxyPdu(pdu_type type, const char *data, size_t theLength)
 {
+	socket = NULL;
 	InitPdu(type, data, theLength);
 }
 
@@ -285,7 +288,6 @@ void *ProxyPdu::content()
 
 int ProxyPdu::ReadPdu(const char *buffer, size_t buflen)
 {
-	unsigned char buf;
 	int datacounter = 0;
 	int mult = 1;
 	unsigned int lencounter = 0;
@@ -307,7 +309,7 @@ int ProxyPdu::ReadPdu(const char *buffer, size_t buflen)
 		if (readlen >= buflen) {
 			return 1;
 		}
-		buf = buffer[readlen++];
+		unsigned char buf = buffer[readlen++];
 		switch (state) {
 		case STATE_SIGNATURE1:
 			if (buf == signature[0]) {

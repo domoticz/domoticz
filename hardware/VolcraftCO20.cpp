@@ -160,7 +160,7 @@ static int read_one_sensor (struct usb_device *dev, uint16_t &value)
 		| ((unsigned char *)usb_io_buf)[2] << 0;
 
 	/* Dummy read.  */
-	ret = usb_interrupt_read(devh, 0x0081/*endpoint*/,
+	usb_interrupt_read(devh, 0x0081/*endpoint*/,
 		usb_io_buf, 0x10/*len*/, 1000/*msec*/);
 out_unlock:
 	ret = usb_release_interface(devh, 0/*intrf*/);
@@ -213,14 +213,7 @@ void CVolcraftCO20::GetSensorDetails()
 				_log.Log(LOG_ERROR, "Voltcraft CO-20: Sensor data out of range!!");
 				return;
 			}
-			//got the data
-			_tAirQualityMeter meter;
-			meter.len=sizeof(_tAirQualityMeter)-1;
-			meter.type=pTypeAirQuality;
-			meter.subtype=sTypeVoltcraft;
-			meter.airquality=voc;
-			meter.id1=1;
-			sDecodeRXMessage(this, (const unsigned char *)&meter, NULL, 255);
+			SendAirQualitySensor(1, 1, 255, voc, "Air Quality");
 		}
 	}
 	catch (...)

@@ -46,11 +46,11 @@ std::string ReadFile(std::string filename)
 }
 #endif
 
-CWunderground::CWunderground(const int ID, const std::string &APIKey, const std::string &Location)
+CWunderground::CWunderground(const int ID, const std::string &APIKey, const std::string &Location) :
+m_APIKey(APIKey),
+m_Location(Location)
 {
 	m_HwdID=ID;
-	m_APIKey=APIKey;
-	m_Location=Location;
 	m_stoprequested=false;
 	Init();
 }
@@ -191,7 +191,6 @@ void CWunderground::GetMeterDetails()
 	*/
 
 	std::string tmpstr;
-	int pos;
 	float temp;
 	int humidity=0;
 	int barometric=0;
@@ -203,7 +202,7 @@ void CWunderground::GetMeterDetails()
 	if (root["current_observation"]["relative_humidity"].empty()==false)
 	{
 		tmpstr=root["current_observation"]["relative_humidity"].asString();
-		pos=tmpstr.find("%");
+		size_t pos=tmpstr.find("%");
 		if (pos==std::string::npos)
 		{
 			_log.Log(LOG_ERROR,"WUnderground: Invalid data received!");
@@ -372,18 +371,7 @@ void CWunderground::GetMeterDetails()
 				float UV = static_cast<float>(atof(root["current_observation"]["UV"].asString().c_str()));
 				if ((UV < 16) && (UV >= 0))
 				{
-					RBUF tsen;
-					memset(&tsen, 0, sizeof(RBUF));
-					tsen.UV.packetlength = sizeof(tsen.UV) - 1;
-					tsen.UV.packettype = pTypeUV;
-					tsen.UV.subtype = sTypeUV1;
-					tsen.UV.battery_level = 9;
-					tsen.UV.rssi = 12;
-					tsen.UV.id1 = 0;
-					tsen.UV.id2 = 1;
-
-					tsen.UV.uv = (BYTE)round(UV * 10);
-					sDecodeRXMessage(this, (const unsigned char *)&tsen.UV, NULL, 255);
+					SendUVSensor(0, 1, 255, UV, "UV");
 				}
 			}
 		}

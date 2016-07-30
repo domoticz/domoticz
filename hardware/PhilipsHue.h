@@ -20,7 +20,7 @@ class CPhilipsHue : public CDomoticzHardwareBase
 	};
 	struct _tHueLight
 	{
-		int cmd;
+		bool on;
 		int level;
 		int sat;
 		int hue;

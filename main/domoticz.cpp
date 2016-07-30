@@ -73,10 +73,13 @@ const char *szHelp=
 	"Usage: Domoticz -www port -verbose x\n"
 	"\t-www port (for example -www 8080, or -www 0 to disable http)\n"
 	"\t-wwwbind address (for example -wwwbind 0.0.0.0 or -wwwbind 192.168.0.20)\n"
-#ifdef NS_ENABLE_SSL
+#ifdef WWW_ENABLE_SSL
 	"\t-sslwww port (for example -sslwww 443, or -sslwww 0 to disable https)\n"
 	"\t-sslcert file_path (for example /opt/domoticz/server_cert.pem)\n"
-	"\t-sslpass passphrase for private key in certificate\n"
+	"\t-sslpass passphrase (to access to server private key in certificate)\n"
+	"\t-sslmethod method (for SSL method)\n"
+	"\t-ssloptions options (for SSL options, default is 'default_workarounds,no_sslv2,single_dh_use')\n"
+	"\t-ssldhparam file_path (for SSL DH parameters)\n"
 #endif
 #if defined WIN32
 	"\t-wwwroot file_path (for example D:\\www)\n"
@@ -102,13 +105,35 @@ const char *szHelp=
 #endif
 	"\t-loglevel (0=All, 1=Status+Error, 2=Error)\n"
 	"\t-notimestamps (do not prepend timestamps to logs; useful with syslog, etc.)\n"
+	"\t-php_cgi_path (for example /usr/bin/php-cgi)\n"
 #ifndef WIN32
 	"\t-daemon (run as background daemon)\n"
 	"\t-pidfile pid file location (for example /var/run/domoticz.pid)\n"
-	"\t-syslog (use syslog as log output)\n"
+	"\t-syslog [user|daemon|local0 .. local7] (use syslog as log output, defaults to facility 'user')\n"
 #endif
 	"";
 
+#ifndef WIN32
+struct _facilities {
+	const char* facname;
+	const int   facvalue;
+};
+
+static const _facilities facilities[] =
+{
+	{ "daemon", LOG_DAEMON },
+	{ "user",   LOG_USER },
+	{ "local0", LOG_LOCAL0 },
+	{ "local1", LOG_LOCAL1 },
+	{ "local2", LOG_LOCAL2 },
+	{ "local3", LOG_LOCAL3 },
+	{ "local4", LOG_LOCAL4 },
+	{ "local5", LOG_LOCAL5 },
+	{ "local6", LOG_LOCAL6 },
+	{ "local7", LOG_LOCAL7 }
+}; 
+std::string logfacname = "user";
+#endif
 std::string szStartupFolder;
 std::string szUserDataFolder;
 std::string szWWWFolder;
@@ -318,7 +343,7 @@ void daemonize(const char *rundir, const char *pidfile)
 	}
 
 	int cdret = chdir(rundir); /* change running directory */
-	if (dret == -1)
+	if (cdret == -1)
 	{
 		_log.Log(LOG_ERROR, "Could not change running directory !");
 	}
@@ -585,6 +610,7 @@ int main(int argc, char**argv)
 		sleep_seconds(DelaySeconds);
 	}
 
+	http::server::server_settings webserver_settings;
 	if (cmdLine.HasSwitch("-wwwbind"))
 	{
 		if (cmdLine.GetArgumentCount("-wwwbind") != 1)
@@ -592,8 +618,7 @@ int main(int argc, char**argv)
 			_log.Log(LOG_ERROR, "Please specify an address");
 			return 1;
 		}
-		std::string wwwbind = cmdLine.GetSafeArgument("-wwwbind", 0, "0.0.0.0");
-		m_mainworker.SetWebserverAddress(wwwbind);
+		webserver_settings.listening_address = cmdLine.GetSafeArgument("-wwwbind", 0, "0.0.0.0");
 	}
 
 	if (cmdLine.HasSwitch("-www"))
@@ -603,12 +628,34 @@ int main(int argc, char**argv)
 			_log.Log(LOG_ERROR, "Please specify a port");
 			return 1;
 		}
-		std::string wwwport = cmdLine.GetSafeArgument("-www", 0, "8080");
-		if (wwwport == "0")
-			wwwport.clear();//HTTP server disabled
-		m_mainworker.SetWebserverPort(wwwport);
+		std::string wwwport = cmdLine.GetSafeArgument("-www", 0, "");
+		webserver_settings.listening_port = wwwport;
 	}
-#ifdef NS_ENABLE_SSL
+
+	if (cmdLine.HasSwitch("-php_cgi_path"))
+	{
+		if (cmdLine.GetArgumentCount("-php_cgi_path") != 1)
+		{
+			_log.Log(LOG_ERROR, "Please specify the path to the php-cgi command");
+			return 1;
+		}
+		webserver_settings.php_cgi_path = cmdLine.GetSafeArgument("-php_cgi_path", 0, "");
+	}
+	if (cmdLine.HasSwitch("-wwwroot"))
+	{
+		if (cmdLine.GetArgumentCount("-wwwroot") != 1)
+		{
+			_log.Log(LOG_ERROR, "Please specify a WWW root path");
+			return 1;
+		}
+		std::string szroot = cmdLine.GetSafeArgument("-wwwroot", 0, "");
+		if (szroot.size() != 0)
+			szWWWFolder = szroot;
+	}
+	webserver_settings.www_root = szWWWFolder;
+	m_mainworker.SetWebserverSettings(webserver_settings);
+#ifdef WWW_ENABLE_SSL
+	http::server::ssl_server_settings secure_webserver_settings;
 	if (cmdLine.HasSwitch("-sslwww"))
 	{
 		if (cmdLine.GetArgumentCount("-sslwww") != 1)
@@ -616,31 +663,69 @@ int main(int argc, char**argv)
 			_log.Log(LOG_ERROR, "Please specify a port");
 			return 1;
 		}
-		std::string wwwport = cmdLine.GetSafeArgument("-sslwww", 0, "443");
-		if (wwwport == "0")
-			wwwport.clear();//HTTPS server disabled
-		m_mainworker.SetSecureWebserverPort(wwwport);
+		std::string wwwport = cmdLine.GetSafeArgument("-sslwww", 0, "");
+		secure_webserver_settings.listening_port = wwwport;
+	}
+	if (!webserver_settings.listening_address.empty()) {
+		// Secure listening address has to be equal
+		secure_webserver_settings.listening_address = webserver_settings.listening_address;
 	}
 	if (cmdLine.HasSwitch("-sslcert"))
 	{
 		if (cmdLine.GetArgumentCount("-sslcert") != 1)
 		{
-			_log.Log(LOG_ERROR, "Please specify the file path");
+			_log.Log(LOG_ERROR, "Please specify a file path for your server certificate file");
 			return 1;
 		}
-		std::string ca_cert = cmdLine.GetSafeArgument("-sslcert", 0, "./server_cert.pem");
-		m_mainworker.SetSecureWebserverCert(ca_cert);
+		secure_webserver_settings.cert_file_path = cmdLine.GetSafeArgument("-sslcert", 0, "");
 	}
 	if (cmdLine.HasSwitch("-sslpass"))
 	{
 		if (cmdLine.GetArgumentCount("-sslpass") != 1)
 		{
-			_log.Log(LOG_ERROR, "Please specify a passphrase for your certificate file");
+			_log.Log(LOG_ERROR, "Please specify a passphrase to access to your server private key in certificate file");
 			return 1;
 		}
-		std::string ca_passphrase = cmdLine.GetSafeArgument("-sslpass", 0, "");
-		m_mainworker.SetSecureWebserverPass(ca_passphrase);
+		secure_webserver_settings.private_key_pass_phrase = cmdLine.GetSafeArgument("-sslpass", 0, "");
 	}
+	if (cmdLine.HasSwitch("-sslmethod"))
+	{
+		if (cmdLine.GetArgumentCount("-sslmethod") != 1)
+		{
+			_log.Log(LOG_ERROR, "Please specify a SSL method");
+			return 1;
+		}
+		secure_webserver_settings.ssl_method = cmdLine.GetSafeArgument("-sslmethod", 0, "");
+	}
+	if (cmdLine.HasSwitch("-ssloptions"))
+	{
+		if (cmdLine.GetArgumentCount("-ssloptions") != 1)
+		{
+			_log.Log(LOG_ERROR, "Please specify SSL options");
+			return 1;
+		}
+		secure_webserver_settings.options = cmdLine.GetSafeArgument("-ssloptions", 0, "");
+	}
+	if (cmdLine.HasSwitch("-ssldhparam"))
+	{
+		if (cmdLine.GetArgumentCount("-ssldhparam") != 1)
+		{
+			_log.Log(LOG_ERROR, "Please specify a file path for the SSL DH parameters file");
+			return 1;
+		}
+		secure_webserver_settings.tmp_dh_file_path = cmdLine.GetSafeArgument("-ssldhparam", 0, "");
+	}
+	if (cmdLine.HasSwitch("-php_cgi_path"))
+	{
+		if (cmdLine.GetArgumentCount("-php_cgi_path") != 1)
+		{
+			_log.Log(LOG_ERROR, "Please specify the path to the php-cgi command");
+			return 1;
+		}
+		secure_webserver_settings.php_cgi_path = cmdLine.GetSafeArgument("-php_cgi_path", 0, "");
+	}
+	secure_webserver_settings.www_root = szWWWFolder;
+	m_mainworker.SetSecureWebserverSettings(secure_webserver_settings);
 #endif
 	if (cmdLine.HasSwitch("-nowwwpwd"))
 	{
@@ -688,18 +773,6 @@ int main(int argc, char**argv)
 		dbasefile = cmdLine.GetSafeArgument("-dbase", 0, "domoticz.db");
 	}
 	m_sql.SetDatabaseName(dbasefile);
-
-	if (cmdLine.HasSwitch("-wwwroot"))
-	{
-		if (cmdLine.GetArgumentCount("-wwwroot") != 1)
-		{
-			_log.Log(LOG_ERROR, "Please specify a WWW root path");
-			return 1;
-		}
-		std::string szroot = cmdLine.GetSafeArgument("-wwwroot", 0, "");
-		if (szroot.size() != 0)
-			szWWWFolder = szroot;
-	}
 
 	if (cmdLine.HasSwitch("-webroot"))
 	{
@@ -764,10 +837,37 @@ int main(int argc, char**argv)
 		pidfile = cmdLine.GetSafeArgument("-pidfile", 0, PID_FILE);
 	}
 
+	if (cmdLine.HasSwitch("-syslog"))
+	{
+		g_bUseSyslog = true;
+		logfacname = cmdLine.GetSafeArgument("-syslog", 0, "");
+		if ( logfacname.length() == 0 ) 
+		{
+			logfacname = "user";
+		}
+	}
+
 	if ((g_bRunAsDaemon)||(g_bUseSyslog))
 	{
+		int idx, logfacility = 0;
+
+		for ( idx = 0; idx < sizeof(facilities)/sizeof(facilities[0]); idx++ ) 
+		{
+			if (strcmp(facilities[idx].facname, logfacname.c_str()) == 0) 
+			{
+				logfacility = facilities[idx].facvalue;
+				break;
+			}
+		} 
+		if ( logfacility == 0 ) 
+		{
+			_log.Log(LOG_ERROR, "%s is an unknown syslog facility", logfacname.c_str());
+			return 1;
+		}
+
+		// _log.Log(LOG_STATUS, "syslog to %s (%x)", logfacname.c_str(), logfacility);
 		setlogmask(LOG_UPTO(LOG_INFO));
-		openlog(daemonname.c_str(), LOG_CONS | LOG_PERROR, LOG_USER);
+		openlog(daemonname.c_str(), LOG_CONS | LOG_PERROR, logfacility);
 
 		syslog(LOG_INFO, "Domoticz is starting up....");
 	}

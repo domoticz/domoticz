@@ -147,7 +147,7 @@ unsigned int CTCPServerIntBase::GetUserDevicesCount(const std::string &username)
 	return (unsigned int) pUser->Devices.size();
 }
 
-void CTCPServerIntBase::SendToAll(const unsigned long long DeviceRowID, const char *pData, size_t Length, const CTCPClientBase* pClient2Ignore)
+void CTCPServerIntBase::SendToAll(const int HardwareID, const unsigned long long DeviceRowID, const char *pData, size_t Length, const CTCPClientBase* pClient2Ignore)
 {
 	boost::lock_guard<boost::mutex> l(connectionMutex);
 
@@ -222,7 +222,7 @@ CTCPServerInt::~CTCPServerInt(void)
 
 #ifndef NOCLOUD
 // our proxied server
-CTCPServerProxied::CTCPServerProxied(CTCPServer *pRoot, http::server::CProxyClient *proxy) : CTCPServerIntBase(pRoot)
+CTCPServerProxied::CTCPServerProxied(CTCPServer *pRoot, boost::shared_ptr<http::server::CProxyClient> proxy) : CTCPServerIntBase(pRoot)
 {
 	m_pProxyClient = proxy;
 }
@@ -370,7 +370,7 @@ bool CTCPServer::StartServer(const std::string &address, const std::string &port
 }
 
 #ifndef NOCLOUD
-bool CTCPServer::StartServer(http::server::CProxyClient *proxy)
+bool CTCPServer::StartServer(boost::shared_ptr<http::server::CProxyClient> proxy)
 {
 	_log.Log(LOG_NORM, "Accepting shared server connections via MyDomotiz (see settings menu).");
 	m_pProxyServer = new CTCPServerProxied(this, proxy);
@@ -416,14 +416,14 @@ void CTCPServer::Do_Work()
 	}
 }
 
-void CTCPServer::SendToAll(const unsigned long long DeviceRowID, const char *pData, size_t Length, const CTCPClientBase* pClient2Ignore)
+void CTCPServer::SendToAll(const int HardwareID, const unsigned long long DeviceRowID, const char *pData, size_t Length, const CTCPClientBase* pClient2Ignore)
 {
 	boost::lock_guard<boost::mutex> l(m_server_mutex);
 	if (m_pTCPServer)
-		m_pTCPServer->SendToAll(DeviceRowID, pData, Length, pClient2Ignore);
+		m_pTCPServer->SendToAll(HardwareID, DeviceRowID, pData, Length, pClient2Ignore);
 #ifndef NOCLOUD
 	if (m_pProxyServer)
-		m_pProxyServer->SendToAll(DeviceRowID, pData, Length, pClient2Ignore);
+		m_pProxyServer->SendToAll(HardwareID, DeviceRowID, pData, Length, pClient2Ignore);
 #endif
 }
 

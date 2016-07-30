@@ -41,6 +41,8 @@ m_szIPAddress(IPAddress)
 	m_usIPPort=usIPPort;
 	lastKnownSensorState = 0;
 	initSensorData = true;
+	notificationEnabled = false;
+	m_bReceiverStarted = false;
 }
 
 bool Comm5TCP::StartHardware()
@@ -92,6 +94,7 @@ void Comm5TCP::OnDisconnect()
 void Comm5TCP::Do_Work()
 {
 	bool bFirstTime = true;
+	int count = 0;
 	while (!m_stoprequested)
 	{
 		m_LastHeartbeat = mytime(NULL);
@@ -108,6 +111,10 @@ void Comm5TCP::Do_Work()
 		{
 			sleep_milliseconds(40);
 			update();
+			if (count++ >= 100) {
+				count = 0;
+				querySensorState();
+			}
 		}
 	}
 	_log.Log(LOG_STATUS, "Comm5 MA-5XXX: TCP/IP Worker stopped...");
@@ -123,12 +130,11 @@ void Comm5TCP::processSensorData(const std::string& line)
 	for (int i = 0; i < 16; ++i) {
 		bool on = (sensorbitfield & (1 << i)) != 0 ? true : false;
 		if ((lastKnownSensorState & (1 << i) ^ (sensorbitfield & (1 << i))) || initSensorData) {
-			SendSwitch((i + 1) << 8, 1, 255, on, on ? 100 : 0, "Sensor " + boost::lexical_cast<std::string>(i + 1));
+			SendSwitch((i + 1) << 8, 1, 255, on, 0, "Sensor " + boost::lexical_cast<std::string>(i + 1));
 		}
 	}
 	lastKnownSensorState = sensorbitfield;
 	initSensorData = false;
-	reqState = Idle;
 }
 
 void Comm5TCP::ParseData(const unsigned char* data, const size_t len)
@@ -148,15 +154,10 @@ void Comm5TCP::ParseData(const unsigned char* data, const size_t len)
 			unsigned int relaybitfield = ::strtol(tokens[1].c_str(), 0, 16);
 			for (int i = 0; i < 16; ++i) {
 				bool on = (relaybitfield & (1 << i)) != 0 ? true : false;
-				SendSwitch(i + 1, 1, 255, on, on ? 100 : 0, "Relay " + boost::lexical_cast<std::string>(i + 1));
+				SendSwitch(i + 1, 1, 255, on, 0, "Relay " + boost::lexical_cast<std::string>(i + 1));
 			}
-			reqState = Idle;
-		} else if (reqState == QuerySensorState && startsWith(line, "210")) {
-			processSensorData(line);
-		} else if (startsWith(line, "210 OK")) {
-			// Command executed
-			reqState = Idle;
-		} else if (notificationEnabled && startsWith(line, "210")) {
+		}
+		else if (startsWith(line, "210") && (!startsWith(line, "210 OK"))) {
 			processSensorData(line);
 		} 
 	}
@@ -168,13 +169,11 @@ void Comm5TCP::ParseData(const unsigned char* data, const size_t len)
 void Comm5TCP::queryRelayState()
 {
 	write("OUTPUTS\n");
-	reqState = QueryRelayState;
 }
 
 void Comm5TCP::querySensorState()
 {
 	write("QUERY\n");
-	reqState = QuerySensorState;
 }
 
 void Comm5TCP::enableNotifications()
@@ -185,10 +184,10 @@ void Comm5TCP::enableNotifications()
 
 bool Comm5TCP::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	tRBUF *pSen = (tRBUF*)pdata;
+	const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
 
 	unsigned char packettype = pSen->ICMND.packettype;
-	unsigned char subtype = pSen->ICMND.subtype;
+	//unsigned char subtype = pSen->ICMND.subtype;
 
 	if (!mIsConnected)
 		return false;

@@ -7,7 +7,7 @@ namespace tcp {
 namespace server {
 
 CTCPClientBase::CTCPClientBase(CTCPServerIntBase *pManager)
-	: pConnectionManager(pManager), m_username("")
+	: pConnectionManager(pManager)
 {
 	socket_ = NULL;
 	m_bIsLoggedIn = false;
@@ -107,7 +107,7 @@ void CTCPClient::handleWrite(const boost::system::error_code& error)
 
 #ifndef NOCLOUD
 /* shared server via proxy client class */
-CSharedClient::CSharedClient(CTCPServerIntBase *pManager, http::server::CProxyClient *proxy, const std::string &token, const std::string &username) : CTCPClientBase(pManager)
+CSharedClient::CSharedClient(CTCPServerIntBase *pManager, boost::shared_ptr<http::server::CProxyClient> proxy, const std::string &token, const std::string &username) : CTCPClientBase(pManager)
 {
 	m_pProxyClient = proxy;
 	m_username = username;

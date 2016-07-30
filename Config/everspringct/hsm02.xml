@@ -77,7 +77,7 @@
 
   <!-- COMMAND_CLASS_ASSOCIATION. Groups -->
 	<CommandClass id="133">
-		<Associations num_groups="1">
+		<Associations num_groups="2">
 			<Group index="1" max_associations="1" label="Alarm Reports" >
 <!-- Once the power has been applied, Alarm Report Command will be sent to Nodes in Grouping 1 to confirm the power applied status for HSM02. -->
 			</Group>

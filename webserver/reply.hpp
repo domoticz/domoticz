@@ -7,7 +7,7 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
-
+#pragma once
 #ifndef HTTP_REPLY_HPP
 #define HTTP_REPLY_HPP
 
@@ -57,10 +57,11 @@ struct reply
   std::vector<boost::asio::const_buffer> header_to_buffers();
   std::vector<boost::asio::const_buffer> to_buffers(const std::string &method);
   static void add_header(reply *rep, const std::string &name, const std::string &value, bool replace = true);
+  static void add_header_if_absent(reply *rep, const std::string &name, const std::string &value);
   static void set_content(reply *rep, const std::string & content);
   static void set_content(reply *rep, const std::wstring & content_w);
-  static void set_content_from_file(reply *rep, const std::string & file_path);
-  static void set_content_from_file(reply *rep, const std::string & file_path, const std::string & attachment, bool set_content_type = false);
+  static bool set_content_from_file(reply *rep, const std::string & file_path);
+  static bool set_content_from_file(reply *rep, const std::string & file_path, const std::string & attachment, bool set_content_type = false);
   static void add_header_attachment(reply *rep, const std::string & attachment);
   static void add_header_content_type(reply *rep, const std::string & content_type);
 

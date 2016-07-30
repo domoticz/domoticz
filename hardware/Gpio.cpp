@@ -235,7 +235,7 @@ bool CGpio::StopHardware()
 bool CGpio::WriteToHardware(const char *pdata, const unsigned char length)
 {
 #ifndef WIN32
-	tRBUF *pCmd=(tRBUF*) pdata;
+	const tRBUF *pCmd = reinterpret_cast<const tRBUF*>(pdata);
 
 	if ((pCmd->LIGHTING1.packettype == pTypeLighting1) && (pCmd->LIGHTING1.subtype == sTypeIMPULS)) {
 		unsigned char housecode = (pCmd->LIGHTING1.housecode);
