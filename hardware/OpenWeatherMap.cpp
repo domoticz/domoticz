@@ -11,6 +11,10 @@
 #include "../main/mainworker.h"
 #include "../main/SQLHelper.h"
 
+#ifdef _DEBUG
+	#define DEBUG_OPENWEATHERMAP
+#endif
+
 #define round(a) ( int ) ( a + .5 )
 
 COpenWeatherMap::COpenWeatherMap(const int ID, const std::string &APIKey, const std::string &Location) :
@@ -26,6 +30,9 @@ COpenWeatherMap::COpenWeatherMap(const int ID, const std::string &APIKey, const 
 	if (m_sql.GetPreferencesVar("Language", sValue))
 	{
 		m_Language = sValue;
+#ifdef DEBUG_OPENWEATHERMAP
+		_log.Log(LOG_STATUS, "OpenWeatherMap: Language set to %s", sValue.c_str());
+#endif
 	}
 }
 
@@ -88,6 +95,11 @@ void COpenWeatherMap::GetMeterDetails()
 	std::stringstream sURL;
 
 	sURL << "http://api.openweathermap.org/data/2.5/weather?" << m_Location << "&APPID=" << m_APIKey << "&units=metric" << "&lang=" << m_Language;
+	
+#ifdef DEBUG_OPENWEATHERMAP
+	_log.Log(LOG_STATUS, "OpenWeatherMap: Get data from %s", sURL);
+#endif
+
 	try
 	{
 		bool bret;
@@ -104,6 +116,10 @@ void COpenWeatherMap::GetMeterDetails()
 		_log.Log(LOG_ERROR, "OpenWeatherMap: Error getting http data!");
 		return;
 	}
+
+#ifdef DEBUG_OPENWEATHERMAP
+	_log.Log(LOG_STATUS, "OpenWeatherMap: Parsing json");
+#endif
 
 	Json::Value root;
 
