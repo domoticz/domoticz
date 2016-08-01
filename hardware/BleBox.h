@@ -42,11 +42,11 @@ private:
 	bool StopHardware();
 	void Do_Work();
 
-	std::string IdentifyDevice(const std::string IPAddress);
-	int GetDeviceTypeByApiName(const std::string apiname);
+	std::string IdentifyDevice(const std::string &IPAddress);
+	int GetDeviceTypeByApiName(const std::string &apiName);
 	std::string GetDeviceIP(const tRBUF *id);
-	std::string GetDeviceIP(const std::string id);
-	Json::Value SendCommand(const std::string IPAddress, const std::string command);
+	std::string GetDeviceIP(const std::string &id);
+	Json::Value SendCommand(const std::string &IPAddress, const std::string &command);
 	void GetDevicesState();
 
 	void ReloadNodes();

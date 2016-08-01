@@ -17,7 +17,7 @@ const _STR_DEVICE DevicesType[TOT_TYPE] =
 	{ 1, "wLightBox", "Light Box", int(pTypeLimitlessLights), int(sTypeLimitlessRGBW), int(STYPE_Dimmer) }
 };
 
-int BleBox::GetDeviceTypeByApiName(const std::string apiName)
+int BleBox::GetDeviceTypeByApiName(const std::string &apiName)
 {
 	for (unsigned int i = 0; i < TOT_TYPE; ++i)
 	{
@@ -132,7 +132,7 @@ std::string BleBox::GetDeviceIP(const tRBUF *id)
 
 }
 
-std::string BleBox::GetDeviceIP(const std::string id)
+std::string BleBox::GetDeviceIP(const std::string &id)
 {
 	const char *pos = id.c_str();
 	BYTE id1, id2, id3, id4;
@@ -399,7 +399,7 @@ namespace http {
 	}
 }
 
-Json::Value BleBox::SendCommand(const std::string IPAddress, const std::string command)
+Json::Value BleBox::SendCommand(const std::string &IPAddress, const std::string &command)
 {
 	std::vector<std::string> extraHeaders;
 	std::string result;
@@ -434,7 +434,7 @@ Json::Value BleBox::SendCommand(const std::string IPAddress, const std::string c
 	return root;
 }
 
-std::string BleBox::IdentifyDevice(const std::string IPAddress)
+std::string BleBox::IdentifyDevice(const std::string &IPAddress)
 {
 	Json::Value root = SendCommand(IPAddress, "/api/device/state");
 	if (root == "")
@@ -523,7 +523,7 @@ bool BleBox::LoadNodes()
 		std::vector<std::vector<std::string> >::const_iterator itt;
 		for (itt = result.begin(); itt != result.end(); ++itt)
 		{
-			std::vector<std::string> sd = *itt;
+			const std::vector<std::string> &sd = *itt;
 			std::string addressIP = GetDeviceIP(sd[1]);
 			int type = atoi(sd[2].c_str());
 			m_devices.insert(std::pair<const std::string, const int>(addressIP, type));
