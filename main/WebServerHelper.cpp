@@ -60,7 +60,8 @@ namespace http {
 		{
 			for (server_iterator it = serverCollection.begin(); it != serverCollection.end(); ++it) {
 				((CWebServer*) *it)->StopServer();
-				if (*it) delete (*it);
+				// todo: we need to thread-join first
+				// if (*it) delete (*it);
 			}
 			serverCollection.clear();
 			plainServer_ = NULL; // avoid double free
