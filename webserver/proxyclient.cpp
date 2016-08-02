@@ -85,15 +85,13 @@ namespace http {
 			if (doStop) {
 				return;
 			}
-			int wait = 1;
 			if (_socket->lowest_layer().is_open()) {
-				wait = 15;
 				boost::system::error_code ec;
 				_socket->lowest_layer().cancel(ec);
 				_socket->lowest_layer().shutdown(boost::asio::socket_base::shutdown_both, ec);
 				_socket->lowest_layer().close(ec);
 			}
-			timer_.expires_from_now(boost::posix_time::seconds(wait));
+			timer_.expires_from_now(boost::posix_time::seconds(15));
 			timer_.async_wait(boost::bind(&CProxyClient::ContinueConnect, shared_from_this(), boost::asio::placeholders::error));
 		}
 
