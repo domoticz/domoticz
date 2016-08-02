@@ -39,6 +39,7 @@ namespace http {
 			~CProxyClient();
 
 			void Reconnect();
+			void ContinueConnect(const boost::system::error_code& error);
 			void Stop();
 			void WriteMasterData(const std::string &token, const char *pData, size_t Length);
 			void WriteSlaveData(const std::string &token, const char *pData, size_t Length);
@@ -94,11 +95,12 @@ namespace http {
 
 			int _allowed_subsystems;
 			std::string GetResponseHeaders(const http::server::reply &reply_);
-			boost::asio::ssl::stream<boost::asio::ip::tcp::socket> _socket;
+			boost::shared_ptr<boost::asio::ssl::stream<boost::asio::ip::tcp::socket>> _socket;
 			std::string _apikey;
 			std::string _password;
 			boost::asio::streambuf _readbuf;
 			boost::asio::io_service& _io_service;
+			boost::asio::ssl::context& _context;
 			bool doStop;
 			http::server::cWebem *m_pWebEm;
 			tcp::server::CTCPServerProxied *m_pDomServ;
@@ -120,7 +122,7 @@ namespace http {
 			std::map<long, CWebsocketHandler *> websocket_handlers;
 		};
 
-		class CProxyManager {
+		class CProxyManager : public boost::enable_shared_from_this<CProxyManager> {
 		public:
 			CProxyManager(const std::string& doc_root, http::server::cWebem *webEm, tcp::server::CTCPServer *domServ);
 			~CProxyManager();
@@ -132,6 +134,7 @@ namespace http {
 			boost::asio::io_service io_service;
 			boost::shared_ptr<CProxyClient> proxyclient;
 			boost::thread* m_thread;
+			std::string m_pDocRoot;
 			http::server::cWebem *m_pWebEm;
 			tcp::server::CTCPServer *m_pDomServ;
 			bool _first;
