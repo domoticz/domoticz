@@ -705,12 +705,12 @@ namespace http {
 		void CProxySharedData::LockPrefsMutex()
 		{
 			// todo: make this a boost::condition?
-			// prefs_mutex.lock();
+			prefs_mutex.lock();
 		}
 
 		void CProxySharedData::UnlockPrefsMutex()
 		{
-			// prefs_mutex.unlock();
+			prefs_mutex.unlock();
 		}
 
 		bool CProxySharedData::AddConnectedIp(std::string ip)
