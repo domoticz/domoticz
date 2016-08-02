@@ -7,7 +7,7 @@ namespace http {
 
 		typedef std::vector<CWebServer*>::iterator server_iterator;
 #ifndef NOCLOUD
-		typedef std::vector<boost::shared_ptr<CProxyManager>>::iterator proxy_iterator;
+		typedef std::vector<boost::shared_ptr<CProxyManager> >::iterator proxy_iterator;
 		extern CProxySharedData sharedData;
 #endif
 
