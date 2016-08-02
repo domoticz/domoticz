@@ -85,7 +85,7 @@ namespace http {
 
 			int _allowed_subsystems;
 			std::string GetResponseHeaders(const http::server::reply &reply_);
-			boost::shared_ptr<boost::asio::ssl::stream<boost::asio::ip::tcp::socket>> _socket;
+			boost::shared_ptr<boost::asio::ssl::stream<boost::asio::ip::tcp::socket> > _socket;
 			std::string _apikey;
 			std::string _password;
 			boost::asio::streambuf _readbuf;
