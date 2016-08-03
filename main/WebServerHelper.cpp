@@ -5,7 +5,7 @@
 namespace http {
 	namespace server {
 
-		typedef std::vector<CWebServer*>::iterator server_iterator;
+		typedef std::vector<boost::shared_ptr<CWebServer> >::iterator server_iterator;
 #ifndef NOCLOUD
 		typedef std::vector<boost::shared_ptr<CProxyManager> >::iterator proxy_iterator;
 		extern CProxySharedData sharedData;
@@ -13,11 +13,6 @@ namespace http {
 
 		CWebServerHelper::CWebServerHelper()
 		{
-#ifdef WWW_ENABLE_SSL
-			secureServer_ = NULL;
-#endif
-			plainServer_ = NULL;
-
 			m_pDomServ = NULL;
 		}
 
@@ -36,13 +31,13 @@ namespace http {
 			m_pDomServ = sharedServer;
 
 			our_serverpath = serverpath;
-			plainServer_ = new CWebServer();
+			plainServer_.reset(new CWebServer());
 			serverCollection.push_back(plainServer_);
 			bRet |= plainServer_->StartServer(web_settings, serverpath, bIgnoreUsernamePassword);
 #ifdef WWW_ENABLE_SSL
 			if (secure_web_settings.is_enabled()) {
 				SSL_library_init();
-				secureServer_ = new CWebServer();
+				secureServer_.reset(new CWebServer());
 				bRet |= secureServer_->StartServer(secure_web_settings, serverpath, bIgnoreUsernamePassword);
 				serverCollection.push_back(secureServer_);
 			}
@@ -59,13 +54,12 @@ namespace http {
 		void CWebServerHelper::StopServers()
 		{
 			for (server_iterator it = serverCollection.begin(); it != serverCollection.end(); ++it) {
-				((CWebServer*) *it)->StopServer();
-				if (*it) delete (*it);
+				(*it)->StopServer();
 			}
 			serverCollection.clear();
-			plainServer_ = NULL; // avoid double free
+			plainServer_.reset();
 #ifdef WWW_ENABLE_SSL
-			secureServer_ = NULL; // avoid double free
+			secureServer_.reset();
 #endif
 
 #ifndef NOCLOUD
