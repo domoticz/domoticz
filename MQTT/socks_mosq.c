@@ -352,13 +352,6 @@ int mosquitto__socks5_read(struct mosquitto *mosq)
 				_mosquitto_packet_cleanup(&mosq->in_packet);
 				return MOSQ_ERR_NOMEM;
 			}
-			payload = _mosquitto_realloc(mosq->in_packet.payload, mosq->in_packet.packet_length);
-			if(payload){
-				mosq->in_packet.payload = payload;
-			}else{
-				_mosquitto_packet_cleanup(&mosq->in_packet);
-				return MOSQ_ERR_NOMEM;
-			}
 			return MOSQ_ERR_SUCCESS;
 		}
 

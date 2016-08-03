@@ -56,7 +56,7 @@ namespace http {
 
 			std::string our_serverpath;
 #ifndef NOCLOUD
-			std::vector<CProxyManager*> proxymanagerCollection;
+			std::vector<boost::shared_ptr<CProxyManager> > proxymanagerCollection;
 			int GetNrMyDomoticzThreads();
 
 #endif

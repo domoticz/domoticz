@@ -66,7 +66,7 @@
 					+ '<br>On node ' + getNodeName(node)), function(result) {
 				if (result==true) {
 					$.ajax({
-						 url: "json.htm?type=command&param=zwaveremovegroupnode&idx=" + hwid + "&node=" + node.nodeID + "&group=" + group.id + "&removeNode=" + removeNode,
+						 url: "json.htm?type=command&param=zwaveremovegroupnode&idx=" + hwid + "&node=" + node.nodeID + "&group=" + group.id + "&removenode=" + removeNodeId,
 						 async: false, 
 						 dataType: 'json',
 						 success: function(data) {

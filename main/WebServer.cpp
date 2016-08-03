@@ -8957,7 +8957,7 @@ namespace http {
 							}
 							root["result"][ii]["TypeImg"] = "current";
 							root["result"][ii]["SwitchTypeVal"] = switchtype; //MTYPE_ENERGY
-
+							root["result"][ii]["Options"] = sOptions;  //for alternate Energy Reading
 						}
 					}
 					else if (dType == pTypeAirQuality)
