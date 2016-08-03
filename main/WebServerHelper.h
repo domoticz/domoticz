@@ -47,12 +47,12 @@ namespace http {
 			// called from CSQLHelper
 			void ReloadCustomSwitchIcons();
 		private:
-			CWebServer *plainServer_;
+			boost::shared_ptr<CWebServer> plainServer_;
 #ifdef WWW_ENABLE_SSL
-			CWebServer *secureServer_;
+			boost::shared_ptr<CWebServer> secureServer_;
 #endif
 			tcp::server::CTCPServer *m_pDomServ;
-			std::vector<CWebServer*> serverCollection;
+			std::vector<boost::shared_ptr<CWebServer> > serverCollection;
 
 			std::string our_serverpath;
 #ifndef NOCLOUD
