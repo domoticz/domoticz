@@ -877,7 +877,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new COpenWebNet(ID, Address, Port);
 		break;
 	case HTYPE_BleBox:
-		pHardware = new BleBox(ID, Mode1, Mode2);
+		pHardware = new BleBox(ID, Mode1);
 		break;
 	case HTYPE_OpenWeatherMap:
 		pHardware = new COpenWeatherMap(ID, Username, Password);

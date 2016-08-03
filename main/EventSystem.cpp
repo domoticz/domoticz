@@ -2237,7 +2237,8 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 		else
 			_log.Log(LOG_ERROR, "%s",formatted_str.c_str());
 	}
-	fclose(PythonScriptFile);
+	if (PythonScriptFile!=NULL)
+		fclose(PythonScriptFile);
 	//Py_Finalize();
 }
 #endif // ENABLE_PYTHON

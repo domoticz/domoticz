@@ -400,12 +400,12 @@ void CKodiNode::handleMessage(std::string& pMessage)
 								bCanShutdown = root["result"]["canshutdown"].asBool();
 								if (bCanShutdown) sAction = "Shutdown";
 							}
-							if (root["result"].isMember("canhibernate"))
+							if (root["result"].isMember("canhibernate") && sAction != "Nothing")
 							{
 								bCanHibernate = root["result"]["canhibernate"].asBool();
 								if (bCanHibernate) sAction = "Hibernate";
 							}
-							if (root["result"].isMember("cansuspend"))
+							if (root["result"].isMember("cansuspend")&& sAction != "Nothing")
 							{
 								bCanSuspend = root["result"]["cansuspend"].asBool();
 								if (bCanSuspend) sAction = "Suspend";
