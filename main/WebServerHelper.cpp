@@ -7,7 +7,7 @@ namespace http {
 
 		typedef std::vector<CWebServer*>::iterator server_iterator;
 #ifndef NOCLOUD
-		typedef std::vector<CProxyManager*>::iterator proxy_iterator;
+		typedef std::vector<boost::shared_ptr<CProxyManager> >::iterator proxy_iterator;
 		extern CProxySharedData sharedData;
 #endif
 
@@ -70,8 +70,7 @@ namespace http {
 
 #ifndef NOCLOUD
 			for (proxy_iterator it = proxymanagerCollection.begin(); it != proxymanagerCollection.end(); ++it) {
-				((CProxyManager*) *it)->Stop();
-				if (*it) delete (*it);
+				(*it)->Stop();
 			}
 			proxymanagerCollection.clear();
 #endif
@@ -82,14 +81,13 @@ namespace http {
 			sharedData.StopTCPClients();
 			for (proxy_iterator it = proxymanagerCollection.begin(); it != proxymanagerCollection.end(); ++it) {
 				(*it)->Stop();
-				delete (*it);
 			}
 
 			// restart threads
 			const unsigned int connections = GetNrMyDomoticzThreads();
-			proxymanagerCollection.resize(connections);
+			proxymanagerCollection.clear();
 			for (unsigned int i = 0; i < connections; i++) {
-				proxymanagerCollection[i] = new CProxyManager(our_serverpath, plainServer_->m_pWebEm, m_pDomServ);
+				proxymanagerCollection.push_back(boost::shared_ptr<CProxyManager>(new CProxyManager(our_serverpath, plainServer_->m_pWebEm, m_pDomServ)));
 				proxymanagerCollection[i]->Start(i == 0);
 			}
 			_log.Log(LOG_STATUS, "Proxymanager started.");
