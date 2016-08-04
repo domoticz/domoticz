@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include <stdio.h>
 #include "GoodweAPI.h"
 #include "../main/Helper.h"
 #include "../main/Logger.h"
@@ -9,6 +10,12 @@
 #include "../json/json.h"
 #include "../main/RFXtrx.h"
 #include "../main/mainworker.h"
+#if defined(_WIN32) || defined(_WIN64) 
+#define strcasecmp _stricmp
+#else
+#include <strings.h>
+#endif
+
 
 //#define DEBUG_GoodweAPI 1
 
@@ -168,33 +175,16 @@ int GoodweAPI::hash(std::string str)
 	return (int)hash;
 }
 
-static bool icompare_pred(const unsigned char a, const unsigned char b)
-{
-    return std::tolower(a) == std::tolower(b);
-}
-
-static bool icompare(std::string const& a, std::string const& b)
-{
-    if (a.length()==b.length()) {
-        return std::equal(b.begin(), b.end(),
-                           a.begin(), icompare_pred);
-    }
-    else {
-        return false;
-    }
-}
-
 float GoodweAPI::getPowerWatt(const std::string str)
 {
-	std::size_t processed;
-	float result = std::stof(str, &processed);
-	std::string units = str.substr(processed, str.npos);
-	if (icompare(units, "Kw"))
+	char *units;
+	float result = strtof(str.c_str(), &units);
+	if (strcasecmp(units, "Kw") == 0)
 		result = result * 1000;
-	else if (icompare(units, "W")) {
+	else if (strcasecmp(units, "W") == 0) {
 		// nothing to do here
 	} else {
-		_log.Log(LOG_ERROR, "Unknown power unit: %s", units.c_str());
+		_log.Log(LOG_ERROR, "Unknown power unit: %s", units);
 		result = 0;
 	}
 	return result;
@@ -203,15 +193,14 @@ float GoodweAPI::getPowerWatt(const std::string str)
 		
 float GoodweAPI::getEnergyWh(const std::string str)
 {
-	std::size_t processed;
-	float result = std::stof(str, &processed);
-	std::string units = str.substr(processed, str.npos);
-	if (icompare(units, "Kwh"))
+	char *units;
+	float result = strtof(str.c_str(), &units);
+	if (strcasecmp(units, "Kwh") == 0)
 		result = result * 1000;
-	else if (icompare(units, "Wh")) {
+	else if (strcasecmp(units, "Wh") == 0) {
 		// nothing to do here
 	} else {
-		_log.Log(LOG_ERROR, "Unknown power unit: %s", units.c_str());
+		_log.Log(LOG_ERROR, "Unknown power unit: %s", units);
 		result = 0;
 	}
 	return result;
@@ -265,7 +254,7 @@ void GoodweAPI::GetMeterDetails()
 		_log.Log(LOG_ERROR,"GoodweAPI: Invalid user data received, or invalid username");
 		return;
 	}
-	for (int i = 0; i < root.size(); i++)
+	for (unsigned int i = 0; i < root.size(); i++)
 	{
 		// We use the received data only to retrieve station-id and station-name
 
@@ -391,7 +380,7 @@ void GoodweAPI::ParseDeviceList(const std::string sStationId, const std::string 
                 _log.Log(LOG_STATUS,"GoodweAPI: List if devices / devices is empty!");
                 return;
         }
-        for (int i = 0; i < root.size(); i++)
+        for (unsigned int i = 0; i < root.size(); i++)
         {
 		ParseDevice(root[i], sStationId, sStationName);
 	}
