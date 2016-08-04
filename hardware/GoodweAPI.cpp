@@ -200,7 +200,7 @@ float GoodweAPI::getEnergyWh(const std::string str)
 	else if (strcasecmp(units, "Wh") == 0) {
 		// nothing to do here
 	} else {
-		_log.Log(LOG_ERROR, "Unknown power unit: %s", units);
+		_log.Log(LOG_ERROR, "Unknown energy unit: %s", units);
 		result = 0;
 	}
 	return result;
