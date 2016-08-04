@@ -117,6 +117,8 @@ namespace http {
 
 		CWebServer::~CWebServer(void)
 		{
+			// RK, todo: Instead of deleting m_pWebEm, we should just call StopServer().
+			// deleting the object just like that is not a good idea and is bound to crash if the Do_Work() thread is still running
 			if (m_pWebEm != NULL)
 			{
 				delete m_pWebEm;
