@@ -616,7 +616,10 @@ namespace http {
 				m_pWebEm->Stop();
 				if (m_thread != NULL) {
 					m_thread->join();
+					m_thread.reset();
 				}
+				delete m_pWebEm;
+				m_pWebEm = NULL;
 			}
 			catch (...)
 			{
