@@ -133,6 +133,8 @@ void connection::stop()
 		break;
 	}
 	// Cancel timers
+	cancel_abandoned_timeout();
+	cancel_read_timeout();
 
 	// Initiate graceful connection closure.
 	boost::system::error_code ignored_ec;

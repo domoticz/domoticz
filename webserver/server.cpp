@@ -86,7 +86,6 @@ void server_base::stop() {
 		handle_stop();
 	}
 
-	return;
 	// Wait for acceptor and connections to stop
 	int timeout = 15; // force stop after 15 seconds
 	time_t start = mytime(NULL);

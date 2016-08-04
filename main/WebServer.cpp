@@ -614,12 +614,9 @@ namespace http {
 				if (m_pWebEm == NULL)
 					return;
 				m_pWebEm->Stop();
-#if 0
-				// todo: there's a bug, the server's ioservice queue never gets empty, so the Do_Work thread never exits
 				if (m_thread != NULL) {
 					m_thread->join();
 				}
-#endif
 			}
 			catch (...)
 			{
