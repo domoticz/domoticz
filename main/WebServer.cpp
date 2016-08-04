@@ -117,11 +117,8 @@ namespace http {
 
 		CWebServer::~CWebServer(void)
 		{
-			if (m_pWebEm != NULL)
-			{
-				delete m_pWebEm;
-				m_pWebEm = NULL;
-			}
+			// RK, we call StopServer() instead of just deleting m_pWebEm. The Do_Work thread might still be accessing that object
+			StopServer();
 		}
 
 		void CWebServer::Do_Work()
