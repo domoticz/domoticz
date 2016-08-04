@@ -614,6 +614,9 @@ namespace http {
 				if (m_pWebEm == NULL)
 					return;
 				m_pWebEm->Stop();
+				if (m_thread != NULL) {
+					m_thread->join();
+				}
 			}
 			catch (...)
 			{
