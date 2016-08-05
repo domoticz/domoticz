@@ -182,7 +182,7 @@ float GoodweAPI::getPowerWatt(const std::string str)
 	std::stringstream input;
 	input << str;
 	if (!(input >> result >> units)) {
-		_log.Log(LOG_ERROR, "Error parsing %s for power!", str);
+		_log.Log(LOG_ERROR, "Error parsing %s for power!", str.c_str());
 		result = 0;
 	} else if (units == "W") {
 		/* nothing to do here */
@@ -203,7 +203,7 @@ float GoodweAPI::getEnergyWh(const std::string str)
 	std::stringstream input;
 	input << str;
 	if (!(input >> result >> units)) {
-		_log.Log(LOG_ERROR, "Error parsing %s for energy!", str);
+		_log.Log(LOG_ERROR, "Error parsing %s for energy!", str.c_str());
 		result = 0;
 	} else if (units == "Wh") {
 		/* nothing to do here */
