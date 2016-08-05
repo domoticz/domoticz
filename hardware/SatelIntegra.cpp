@@ -14,7 +14,7 @@
 	#define DEBUG_SatelIntegra
 #endif
 
-#define SATEL_POLL_INTERVAL 2
+#define SATEL_POLL_INTERVAL 1
 #define SATEL_TEMP_POLL_INTERVAL 120
 
 #define round(a) ( int ) ( a + .5 )
@@ -166,7 +166,7 @@ void SatelIntegra::Do_Work()
 
 		UpdateAlarmAndArmName();
 
-		int sec_counter = SATEL_POLL_INTERVAL - 2;
+		int sec_counter = SATEL_POLL_INTERVAL;
 
 		while (!m_stoprequested)
 		{
@@ -785,6 +785,7 @@ bool SatelIntegra::ArmPartitions(const int partition, const int mode)
 		return false;
 	}
 
+	m_armLastState[partition - 1] = true;
 	_log.Log(LOG_STATUS, "Satel Integra: Partition %d armed", partition);
 	return true;
 }
@@ -815,6 +816,7 @@ bool SatelIntegra::DisarmPartitions(const int partition)
 		return false;
 	}
 
+	m_armLastState[partition - 1] = false;
 	_log.Log(LOG_STATUS, "Satel Integra: Partition %d disarmed", partition);
 	return true;
 }
@@ -863,6 +865,7 @@ bool SatelIntegra::WriteToHardware(const char *pdata, const unsigned char length
 
 			if (SendCommand(cmd, 41, buffer) != -1)
 			{
+				m_outputsLastState[general->id - 1] = gswitch_sOn ? true : false;
 				_log.Log(LOG_STATUS, "Satel Integra: switched output %d to %s", general->id, general->cmnd == gswitch_sOn ? "on" : "off");
 				return true;
 			}
