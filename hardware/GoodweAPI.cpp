@@ -177,37 +177,44 @@ int GoodweAPI::hash(std::string str)
 
 float GoodweAPI::getPowerWatt(const std::string str)
 {
-	char *units;
-	float result = strtof(str.c_str(), &units);
-	if (strcasecmp(units, "Kw") == 0)
-		result = result * 1000;
-	else if (strcasecmp(units, "W") == 0) {
-		// nothing to do here
-	} else {
-		_log.Log(LOG_ERROR, "Unknown power unit: %s", units);
+	float result;
+	std::string units;
+	std::stringstream input;
+	input << str;
+	if (!(input >> result >> units)) {
+		_log.Log(LOG_ERROR, "Error parsing %s for power!", str);
 		result = 0;
-	}
+	} else if (units == "W") {
+		/* nothing to do here */
+	} else if (units == "kW") {
+		result = result * 1000;
+	} else {
+		_log.Log(LOG_ERROR, "Invalid power units in %s", str.c_str());
+		result = 0;
+	}	
 	return result;
 }
 
 		
 float GoodweAPI::getEnergyWh(const std::string str)
 {
-	char *units;
-	float result = strtof(str.c_str(), &units);
-	if (strcasecmp(units, "Kwh") == 0)
-		result = result * 1000;
-	else if (strcasecmp(units, "Wh") == 0) {
-		// nothing to do here
-	} else {
-		_log.Log(LOG_ERROR, "Unknown energy unit: %s", units);
+	float result;
+	std::string units;
+	std::stringstream input;
+	input << str;
+	if (!(input >> result >> units)) {
+		_log.Log(LOG_ERROR, "Error parsing %s for energy!", str);
 		result = 0;
-	}
+	} else if (units == "Wh") {
+		/* nothing to do here */
+	} else if (units == "kWh") {
+		result = result * 1000;
+	} else {
+		_log.Log(LOG_ERROR, "Invalid energy units in %s", str.c_str());
+		result = 0;
+	}	
 	return result;
 }
-
-		
-
 
 void GoodweAPI::GetMeterDetails()
 {
@@ -254,7 +261,7 @@ void GoodweAPI::GetMeterDetails()
 		_log.Log(LOG_ERROR,"GoodweAPI: Invalid user data received, or invalid username");
 		return;
 	}
-	for (unsigned int i = 0; i < root.size(); i++)
+	for (Json::ArrayIndex i = 0; i < root.size(); i++)
 	{
 		// We use the received data only to retrieve station-id and station-name
 
@@ -380,7 +387,7 @@ void GoodweAPI::ParseDeviceList(const std::string sStationId, const std::string 
                 _log.Log(LOG_STATUS,"GoodweAPI: List if devices / devices is empty!");
                 return;
         }
-        for (unsigned int i = 0; i < root.size(); i++)
+        for (Json::ArrayIndex i = 0; i < root.size(); i++)
         {
 		ParseDevice(root[i], sStationId, sStationName);
 	}
