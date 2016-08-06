@@ -41,27 +41,24 @@ https://aeotec.freshdesk.com/helpdesk/attachments/6009584697
               Default setting: 86640
             </Help>
         </Value>
-        <Value type="int" genre="config" instance="1" index="121" label="Report Type to Send" min="0" max="256" value="256">
-            <Help>To set which command will be sent to the associated nodes 
-            when the magnet switch is triggered.
-            	Bitsets:
-                4 -> Sensor Binary
-                8 -> Basic Set
-              Default setting: 0x100 (Basic Set)
-              OZW Ideal Setting: 0x10 (Sensor Binary Report)
-            </Help>
+        <Value type="list" genre="config" instance="1" index="121" label="Report Type" size="4" value="256">
+            <Help>Configure which sensor report will be sent when the sensor is Opened/Closed</Help>
+            <Item label="Disabled" value="0"/>
+            <Item label="Basic Set" value="256"/>
+            <Item label="Sensor Binary Report" value="16"/>
+            <Item label="Basic Set and Sensor Binary Report" value="272"/>
         </Value>
-	<Value type="list" genre="config" index="252" label="Lock/Unlock Configuration" min="0" max="1" value="0">
-		<Help>Lock/ unlock all configuration parameters</Help>
-		<Item label="Unlock" value="0"/>
-		<Item label="Lock" value="1"/>
-	</Value>
+        <Value type="list" genre="config" index="252" label="Lock/Unlock Configuration" min="0" max="1" value="0">
+		    <Help>Lock/ unlock all configuration parameters</Help>
+		    <Item label="Unlock" value="0"/>
+		    <Item label="Lock" value="1"/>
+	    </Value>
         <Value type="short" index="254" genre="config" label="Device Tag" units="" min="0" max="65535" value="0">
 			<Help>Device Tag</Help>
 		</Value>
-	<Value type="button" index="255" genre="config" label="Reset To Factory Defaults" write_only="true" value="0" >
-		<Help>Reset to factory defaults.</Help>
-	</Value>
+	    <Value type="button" index="255" genre="config" label="Reset To Factory Defaults" write_only="true" value="0" >
+		    <Help>Reset to factory defaults.</Help>
+	    </Value>
     </CommandClass>
 	<!-- Basic set as report-->
     <CommandClass id="32" setasreport="true"/>

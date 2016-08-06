@@ -38,9 +38,7 @@ https://aeotec.freshdesk.com/helpdesk/attachments/6009584702
     	<Item label="When the state of the Switch changes, the LED will follow the status (on/off) of its load, but the LED will turn off after 5 seconds." value="1"/> 
     </Value>
     <Value type="bool" index="90" genre="config" label="Enables/disables parameter 91/92" units="" value="0">
-      <Help>
-	Enable/disable Wattage threshold and percent.
-      </Help>
+      <Help>Enable/disable Wattage threshold and percent.</Help>
     </Value>
     <Value type="short" index="91" genre="config" label="Minimum Change to send Report (Watt)" units="watts" min="0" max="32000" size="2" value="25">
       <Help>The value represents the minimum change in wattage for a Report to be sent (default 25 W)</Help>
@@ -49,95 +47,70 @@ https://aeotec.freshdesk.com/helpdesk/attachments/6009584702
       <Help>The value represents the minimum percentage change in wattage for a Report to be sent (Default 5)</Help>
     </Value>
     <Value type="button" index="100" genre="config" label="Default Group Reports" units="" write_only="true" affects="101,102,103">
-      <Help>
-	Set report types for groups 1, 2 and 3 to default.
-      </Help>
+      <Help>Set report types for groups 1, 2 and 3 to default.</Help>
     </Value>
     <Value type="int" index="101" genre="config" label="Report type sent in Reporting Group 1" units="" value="4">
       <Help>
-	Defines the type of report sent for reporting group 1. 2 is multisensor report. 4 is meter report for watts. 8 is meter report for kilowatts.
+          Defines the type of report sent for reporting group 1.
+          1 is meter report for voltage.
+          2 is meter report for current.
+          4 is meter report for watts.
+          8 is meter report for kilowatts.
 	 Value 1 (msb) Reserved
 	 Value 2 Reserved
 	 Value 3 Reserved
 	 Value 4 (lsb) bits 7-4 reserved
-                     bit 3 MRC(KWH)
-		     bit 2 MRC(watt)
-		     bit 1 MSRC
-		     bit 0 reserved
-
-	The MRC(KWH) flag signals that Report Group 1 send(1) or don't send(0)
-	Meter Report Command(KWh) automatically.
-
-	The MRC(Watt) flag signals that Report Group 1 send(1) or don't send(0)
-	Meter Report Command(wattage) automatically.
-
-	The MSRC flag signals that Report Group 1 send(1) or don't send(0)
-	Multilevel Sensor Report Command(wattage) automatically.
+          bit 3 kWh
+          bit 2 watt
+          bit 1 current
+          bit 0 voltage
       </Help>
     </Value>
     <Value type="int" index="102" genre="config" label="Report type sent in Reporting Group 2" units="" value="8">
       <Help>
-	Defines the type of report sent for reporting group 2. 2 is multisensor report. 4 is meter report for watts. 8 is meter report for kilowatts.
+          Defines the type of report sent for reporting group 2.
+          1 is meter report for voltage.
+          2 is meter report for current.
+          4 is meter report for watts.
+          8 is meter report for kilowatts.
 	 Value 1 (msb) Reserved
 	 Value 2 Reserved
 	 Value 3 Reserved
 	 Value 4 (lsb) bits 7-4 reserved
-                     bit 3 MRC(KWH)
-		     bit 2 MRC(watt)
-		     bit 1 MSRC
-		     bit 0 reserved
-
-	The MRC(KWH) flag signals that Report Group 1 send(1) or don't send(0)
-	Meter Report Command(KWh) automatically.
-
-	The MRC(Watt) flag signals that Report Group 1 send(1) or don't send(0)
-	Meter Report Command(wattage) automatically.
-
-	The MSRC flag signals that Report Group 1 send(1) or don't send(0)
-	Multilevel Sensor Report Command(wattage) automatically.
+          bit 3 kWh
+          bit 2 watt
+          bit 1 current
+          bit 0 voltage
       </Help>
     </Value>
     <Value type="int" index="103" genre="config" label="Report type sent in Reporting Group 3" units="" value="0">
       <Help>
-	Defines the type of report sent for reporting group 3. 2 is multisensor report. 4 is meter report for watts. 8 is meter report for kilowatts.
+          Defines the type of report sent for reporting group 3.
+          1 is meter report for voltage.
+          2 is meter report for current.
+          4 is meter report for watts.
+          8 is meter report for kilowatts.
 	 Value 1 (msb) Reserved
 	 Value 2 Reserved
 	 Value 3 Reserved
 	 Value 4 (lsb) bits 7-4 reserved
-                     bit 3 MRC(KWH)
-		     bit 2 MRC(watt)
-		     bit 1 MSRC
-		     bit 0 reserved
-
-	The MRC(KWH) flag signals that Report Group 1 send(1) or don't send(0)
-	Meter Report Command(KWh) automatically.
-
-	The MRC(Watt) flag signals that Report Group 1 send(1) or don't send(0)
-	Meter Report Command(wattage) automatically.
-
-	The MSRC flag signals that Report Group 1 send(1) or don't send(0)
-	Multilevel Sensor Report Command(wattage) automatically.
+          bit 3 kWh
+          bit 2 watt
+          bit 1 current
+          bit 0 voltage
       </Help>
     </Value>
     <Value type="button" index="110" genre="config" label="Set 111-113 to default" units="" write_only="true" value="0" affects="111,112,113">
-      <Help>
-	Set time interval for sending reports for groups 1, 2 and 3 to default.
-      </Help>
+      <Help>Set time interval for sending reports for groups 1, 2 and 3 to default.</Help>
     </Value>
     <Value type="int" index="111" genre="config" label="Send Interval for Reporting Group 1" units="seconds" min="0" max="65535" value="600">
-      <Help>
-	Defines the time interval when the defined report for group 1 is sent.
-      </Help>
+      <Help>Defines the time interval when the defined report for group 1 is sent.</Help>
     </Value>
     <Value type="int" index="112" genre="config" label="Send Interval for Reporting Group 2" units="seconds" min="0" max="65535" value="600">
-      <Help>
-	Defines the time interval when the defined report for group 2 is sent.
-      </Help>
+      <Help>Defines the time interval when the defined report for group 2 is sent.</Help>
     </Value>
     <Value type="int" index="113" genre="config" label="Send Interval for Reporting Group 3" units="seconds" min="0" max="65535" value="600">
-      <Help>
-	Defines the time interval when the defined report for group 3 is sent.
-      </Help>
+      <Help>Defines the time interval when the defined report for group 3 is sent.</Help>
     </Value>
     <Value type="list" index="200" genre="config" label="Partner ID" units="" min="0" max="1" size="1" value="0">
       <Help>Partner ID</Help>
@@ -150,14 +123,10 @@ https://aeotec.freshdesk.com/helpdesk/attachments/6009584702
       <Item label="Enable" value="1"/>
     </Value>
     <Value type="short" index="254" genre="config" label="Device tag" units="" min="0" max="65535" value="0">
-      <Help>
-	Device tag.
-      </Help>
+      <Help>Device tag.</Help>
     </Value>
     <Value type="button" index="255" genre="config" label="Reset device" units="" write_only="true">
-      <Help>
-	Reset to the default configuration.
-      </Help>
+      <Help>Reset to the default configuration.</Help>
     </Value>
   </CommandClass>
 
