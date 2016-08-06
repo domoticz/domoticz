@@ -596,91 +596,91 @@
     <None Include="..\www\css\ui-darkness\jquery-ui.min.css">
       <Filter>www\css\ui-darkness</Filter>
     </None>
-    <None Include="..\www\i18n\domoticz-ca.json">
+    <None Include="..\www\i18n\domoticz-ca.json.gz">
       <Filter>www\i18n</Filter>
     </None>
-    <None Include="..\www\i18n\domoticz-cs.json">
+    <None Include="..\www\i18n\domoticz-cs.json.gz">
       <Filter>www\i18n</Filter>
     </None>
-    <None Include="..\www\i18n\domoticz-da.json">
+    <None Include="..\www\i18n\domoticz-da.json.gz">
       <Filter>www\i18n</Filter>
     </None>
-    <None Include="..\www\i18n\domoticz-de.json">
+    <None Include="..\www\i18n\domoticz-de.json.gz">
       <Filter>www\i18n</Filter>
     </None>
-    <None Include="..\www\i18n\domoticz-el.json">
+    <None Include="..\www\i18n\domoticz-el.json.gz">
       <Filter>www\i18n</Filter>
     </None>
-    <None Include="..\www\i18n\domoticz-en.json">
+    <None Include="..\www\i18n\domoticz-en.json.gz">
       <Filter>www\i18n</Filter>
     </None>
-    <None Include="..\www\i18n\domoticz-es.json">
+    <None Include="..\www\i18n\domoticz-es.json.gz">
       <Filter>www\i18n</Filter>
     </None>
-    <None Include="..\www\i18n\domoticz-fi.json">
+    <None Include="..\www\i18n\domoticz-fi.json.gz">
       <Filter>www\i18n</Filter>
     </None>
-    <None Include="..\www\i18n\domoticz-fr.json">
+    <None Include="..\www\i18n\domoticz-fr.json.gz">
       <Filter>www\i18n</Filter>
     </None>
-    <None Include="..\www\i18n\domoticz-he.json">
+    <None Include="..\www\i18n\domoticz-he.json.gz">
       <Filter>www\i18n</Filter>
     </None>
-    <None Include="..\www\i18n\domoticz-hu.json">
+    <None Include="..\www\i18n\domoticz-hu.json.gz">
       <Filter>www\i18n</Filter>
     </None>
-    <None Include="..\www\i18n\domoticz-is.json">
+    <None Include="..\www\i18n\domoticz-is.json.gz">
       <Filter>www\i18n</Filter>
     </None>
-    <None Include="..\www\i18n\domoticz-it.json">
+    <None Include="..\www\i18n\domoticz-it.json.gz">
       <Filter>www\i18n</Filter>
     </None>
-    <None Include="..\www\i18n\domoticz-lt.json">
+    <None Include="..\www\i18n\domoticz-lt.json.gz">
       <Filter>www\i18n</Filter>
     </None>
-    <None Include="..\www\i18n\domoticz-mk.json">
+    <None Include="..\www\i18n\domoticz-mk.json.gz">
       <Filter>www\i18n</Filter>
     </None>
-    <None Include="..\www\i18n\domoticz-nl.json">
+    <None Include="..\www\i18n\domoticz-nl.json.gz">
       <Filter>www\i18n</Filter>
     </None>
-    <None Include="..\www\i18n\domoticz-no.json">
+    <None Include="..\www\i18n\domoticz-no.json.gz">
       <Filter>www\i18n</Filter>
     </None>
-    <None Include="..\www\i18n\domoticz-pl.json">
+    <None Include="..\www\i18n\domoticz-pl.json.gz">
       <Filter>www\i18n</Filter>
     </None>
-    <None Include="..\www\i18n\domoticz-pt.json">
+    <None Include="..\www\i18n\domoticz-pt.json.gz">
       <Filter>www\i18n</Filter>
     </None>
-    <None Include="..\www\i18n\domoticz-ru.json">
+    <None Include="..\www\i18n\domoticz-ru.json.gz">
       <Filter>www\i18n</Filter>
     </None>
-    <None Include="..\www\i18n\domoticz-sk.json">
+    <None Include="..\www\i18n\domoticz-sk.json.gz">
       <Filter>www\i18n</Filter>
     </None>
-    <None Include="..\www\i18n\domoticz-sl.json">
+    <None Include="..\www\i18n\domoticz-sl.json.gz">
       <Filter>www\i18n</Filter>
     </None>
-    <None Include="..\www\i18n\domoticz-sr.json">
+    <None Include="..\www\i18n\domoticz-sr.json.gz">
       <Filter>www\i18n</Filter>
     </None>
-    <None Include="..\www\i18n\domoticz-sv.json">
+    <None Include="..\www\i18n\domoticz-sv.json.gz">
       <Filter>www\i18n</Filter>
     </None>
-    <None Include="..\www\i18n\domoticz-th.json">
+    <None Include="..\www\i18n\domoticz-th.json.gz">
       <Filter>www\i18n</Filter>
     </None>
-    <None Include="..\www\i18n\domoticz-tr.json">
+    <None Include="..\www\i18n\domoticz-tr.json.gz">
       <Filter>www\i18n</Filter>
     </None>
-    <None Include="..\www\i18n\domoticz-uk.json">
+    <None Include="..\www\i18n\domoticz-uk.json.gz">
       <Filter>www\i18n</Filter>
     </None>
-    <None Include="..\www\i18n\domoticz-ar.json">
+    <None Include="..\www\i18n\domoticz-ar.json.gz">
       <Filter>www\i18n</Filter>
     </None>
-    <None Include="..\www\i18n\domoticz-bg.json">
+    <None Include="..\www\i18n\domoticz-bg.json.gz">
       <Filter>www\i18n</Filter>
     </None>
     <None Include="..\www\js\ZeroClipboard.js">
