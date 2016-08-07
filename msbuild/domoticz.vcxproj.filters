@@ -686,154 +686,154 @@
     <None Include="..\www\i18n\domoticz-bg.json.gz">
       <Filter>www\i18n</Filter>
     </None>
-    <None Include="..\www\js\ZeroClipboard.js.gz">
+    <None Include="..\www\js\ZeroClipboard.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\js\angular.min.js.gz">
+    <None Include="..\www\js\angular.min.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\js\angularAMD.min.js.gz">
+    <None Include="..\www\js\angularAMD.min.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\js\angular-animate.min.js.gz">
+    <None Include="..\www\js\angular-animate.min.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\js\angular-md5-min.js.gz">
+    <None Include="..\www\js\angular-md5-min.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\js\angular-round-progress-directive.js.gz">
+    <None Include="..\www\js\angular-round-progress-directive.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\js\angular-route.min.js.gz">
+    <None Include="..\www\js\angular-route.min.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\js\angular-sanitize.min.js.gz">
+    <None Include="..\www\js\angular-sanitize.min.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\js\angular-scrollglue.js.gz">
+    <None Include="..\www\js\angular-scrollglue.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\js\angular-tree-control.js.gz">
+    <None Include="..\www\js\angular-tree-control.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\js\blockly_compressed.js.gz">
+    <None Include="..\www\js\blockly_compressed.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\js\bootbox.min.js.gz">
+    <None Include="..\www\js\bootbox.min.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\js\bootstrap.min.js.gz">
+    <None Include="..\www\js\bootstrap.min.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\js\colpick.js.gz">
+    <None Include="..\www\js\colpick.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\js\d3.min.js.gz">
+    <None Include="..\www\js\d3.min.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\js\dataTables.tableTools.min.js.gz">
+    <None Include="..\www\js\dataTables.tableTools.min.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\js\date.format.js.gz">
+    <None Include="..\www\js\date.format.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\js\domoticz.js.gz">
+    <None Include="..\www\js\domoticz.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\js\domoticzblocks.js.gz">
+    <None Include="..\www\js\domoticzblocks.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\js\domoticzblocks_messages_en.js.gz">
+    <None Include="..\www\js\domoticzblocks_messages_en.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\js\domoticzdevices.js.gz">
+    <None Include="..\www\js\domoticzdevices.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\js\en_compressed.js.gz">
+    <None Include="..\www\js\en_compressed.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\js\export-csv.js.gz">
+    <None Include="..\www\js\export-csv.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\js\FileSaver.js.gz">
+    <None Include="..\www\js\FileSaver.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\js\highcharts.js.gz">
+    <None Include="..\www\js\highcharts.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\js\highcharts-more.js.gz">
+    <None Include="..\www\js\highcharts-more.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\js\highcharts-ng.min.js.gz">
+    <None Include="..\www\js\highcharts-ng.min.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\js\html5shiv.js.gz">
+    <None Include="..\www\js\html5shiv.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\js\i18next-1.8.0.min.js.gz">
+    <None Include="..\www\js\i18next-1.8.0.min.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\js\jquery.dataTables.min.js.gz">
+    <None Include="..\www\js\jquery.dataTables.min.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\js\jquery.ddslick.min.js.gz">
+    <None Include="..\www\js\jquery.ddslick.min.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\js\jquery.isotope.min.js.gz">
+    <None Include="..\www\js\jquery.isotope.min.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\js\jquery.jeditable.mini.js.gz">
+    <None Include="..\www\js\jquery.jeditable.mini.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\js\jquery.ui.touch-punch.min.js.gz">
+    <None Include="..\www\js\jquery.ui.touch-punch.min.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\js\jquery.uix.multiselect.min.js.gz">
+    <None Include="..\www\js\jquery.uix.multiselect.min.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\js\jquery-1.12.0.min.js.gz">
+    <None Include="..\www\js\jquery-1.12.0.min.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\js\jquery-migrate-1.2.1.min.js.gz">
+    <None Include="..\www\js\jquery-migrate-1.2.1.min.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\js\jquery-ui.min.js.gz">
+    <None Include="..\www\js\jquery-ui.min.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\js\jquery-ui-timepicker-addon.js.gz">
+    <None Include="..\www\js\jquery-ui-timepicker-addon.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\js\md5.js.gz">
+    <None Include="..\www\js\md5.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\js\ngDraggable.js.gz">
+    <None Include="..\www\js\ngDraggable.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\js\ng-grid.min.js.gz">
+    <None Include="..\www\js\ng-grid.min.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\js\ng-grid-flexible-height.js.gz">
+    <None Include="..\www\js\ng-grid-flexible-height.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\js\ngload.min.js.gz">
+    <None Include="..\www\js\ngload.min.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\js\require.js.gz">
+    <None Include="..\www\js\require.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\js\respond.min.js.gz">
+    <None Include="..\www\js\respond.min.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\js\ui-bootstrap.min.js.gz">
+    <None Include="..\www\js\ui-bootstrap.min.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\js\wow.min.js.gz">
+    <None Include="..\www\js\wow.min.js">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\js\ace\worker-lua.js.gz">
+    <None Include="..\www\js\ace\worker-lua.js">
       <Filter>www\js\ace</Filter>
     </None>
-    <None Include="..\www\js\ace\ace.js.gz">
+    <None Include="..\www\js\ace\ace.js">
       <Filter>www\js\ace</Filter>
     </None>
     <None Include="..\www\js\ace\ext-beautify.js">
@@ -854,7 +854,7 @@
     <None Include="..\www\js\ace\ext-keybinding_menu.js">
       <Filter>www\js\ace</Filter>
     </None>
-    <None Include="..\www\js\ace\ext-language_tools.js.gz">
+    <None Include="..\www\js\ace\ext-language_tools.js">
       <Filter>www\js\ace</Filter>
     </None>
     <None Include="..\www\js\ace\ext-linking.js">
@@ -1022,67 +1022,67 @@
     <None Include="..\www\js\ace\snippets\text.js">
       <Filter>www\js\ace\snippets</Filter>
     </None>
-    <None Include="..\www\js\modules\exporting.js.gz">
+    <None Include="..\www\js\modules\exporting.js">
       <Filter>www\js\modules</Filter>
     </None>
-    <None Include="..\www\js\themes\grid.js.gz">
+    <None Include="..\www\js\themes\grid.js">
       <Filter>www\js\themes</Filter>
     </None>
-    <None Include="..\www\js\themes\skies.js.gz">
+    <None Include="..\www\js\themes\skies.js">
       <Filter>www\js\themes</Filter>
     </None>
-    <None Include="..\www\js\themes\dark-blue.js.gz">
+    <None Include="..\www\js\themes\dark-blue.js">
       <Filter>www\js\themes</Filter>
     </None>
-    <None Include="..\www\js\themes\dark-green.js.gz">
+    <None Include="..\www\js\themes\dark-green.js">
       <Filter>www\js\themes</Filter>
     </None>
-    <None Include="..\www\js\themes\gray.js.gz">
+    <None Include="..\www\js\themes\gray.js">
       <Filter>www\js\themes</Filter>
     </None>
-    <None Include="..\www\js\noty\promise.js.gz">
+    <None Include="..\www\js\noty\promise.js">
       <Filter>www\js\noty</Filter>
     </None>
-    <None Include="..\www\js\noty\jquery.noty.js.gz">
+    <None Include="..\www\js\noty\jquery.noty.js">
       <Filter>www\js\noty</Filter>
     </None>
-    <None Include="..\www\js\noty\layouts\bottom.js.gz">
+    <None Include="..\www\js\noty\layouts\bottom.js">
       <Filter>www\js\noty\layouts</Filter>
     </None>
-    <None Include="..\www\js\noty\layouts\bottomCenter.js.gz">
+    <None Include="..\www\js\noty\layouts\bottomCenter.js">
       <Filter>www\js\noty\layouts</Filter>
     </None>
-    <None Include="..\www\js\noty\layouts\bottomLeft.js.gz">
+    <None Include="..\www\js\noty\layouts\bottomLeft.js">
       <Filter>www\js\noty\layouts</Filter>
     </None>
-    <None Include="..\www\js\noty\layouts\bottomRight.js.gz">
+    <None Include="..\www\js\noty\layouts\bottomRight.js">
       <Filter>www\js\noty\layouts</Filter>
     </None>
-    <None Include="..\www\js\noty\layouts\center.js.gz">
+    <None Include="..\www\js\noty\layouts\center.js">
       <Filter>www\js\noty\layouts</Filter>
     </None>
-    <None Include="..\www\js\noty\layouts\centerLeft.js.gz">
+    <None Include="..\www\js\noty\layouts\centerLeft.js">
       <Filter>www\js\noty\layouts</Filter>
     </None>
-    <None Include="..\www\js\noty\layouts\centerRight.js.gz">
+    <None Include="..\www\js\noty\layouts\centerRight.js">
       <Filter>www\js\noty\layouts</Filter>
     </None>
-    <None Include="..\www\js\noty\layouts\inline.js.gz">
+    <None Include="..\www\js\noty\layouts\inline.js">
       <Filter>www\js\noty\layouts</Filter>
     </None>
-    <None Include="..\www\js\noty\layouts\top.js.gz">
+    <None Include="..\www\js\noty\layouts\top.js">
       <Filter>www\js\noty\layouts</Filter>
     </None>
-    <None Include="..\www\js\noty\layouts\topCenter.js.gz">
+    <None Include="..\www\js\noty\layouts\topCenter.js">
       <Filter>www\js\noty\layouts</Filter>
     </None>
-    <None Include="..\www\js\noty\layouts\topLeft.js.gz">
+    <None Include="..\www\js\noty\layouts\topLeft.js">
       <Filter>www\js\noty\layouts</Filter>
     </None>
-    <None Include="..\www\js\noty\layouts\topRight.js.gz">
+    <None Include="..\www\js\noty\layouts\topRight.js">
       <Filter>www\js\noty\layouts</Filter>
     </None>
-    <None Include="..\www\js\noty\themes\default.js.gz">
+    <None Include="..\www\js\noty\themes\default.js">
       <Filter>www\js\noty\themes</Filter>
     </None>
     <None Include="..\www\media\handclosed.cur">
@@ -1136,10 +1136,10 @@
     <None Include="..\www\secpanel\font\Digital.woff">
       <Filter>www\secpanel\font</Filter>
     </None>
-    <None Include="..\www\secpanel\js\ion.sound.min.js.gz">
+    <None Include="..\www\secpanel\js\ion.sound.min.js">
       <Filter>www\secpanel\js</Filter>
     </None>
-    <None Include="..\www\secpanel\js\less.js.gz">
+    <None Include="..\www\secpanel\js\less.js">
       <Filter>www\secpanel\js</Filter>
     </None>
     <None Include="..\www\secpanel\media\arm.aac">
