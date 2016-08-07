@@ -1,8 +1,9 @@
-Version 3.xxxx (June xx 2016)
+Version 3.xxxx (August xx 2016)
 - Implemented: AccuWeather support
 - Implemented: Atag One Thermostat support
 - Implemented: Blockly/Lua Camera device, to send camera snapshots with subject after xx seconds
 - Implemented: Blockly upgraded to latest version (fixed and cleaned some code as well), this fixes problem with long sensor lists
+- Implemented: Blockly, option to excecute a script in the DO statement
 - Implemented: Custom Sensor
 - Implemented: Denkovi Smartden with LAN Interface
 - Implemented: Devices Tab, Log icon for Pressure
@@ -32,6 +33,8 @@ Version 3.xxxx (June xx 2016)
 - Fixed: Manual Light/Switch, when created, Add it to the EventSystem
 - Fixed: Wind Speed/Gust graph, Plotbands
 - Fixed: Added grid lines to percentage/lux/general graphs
+- Updated: AngularJS 1.5.8
+- Updated: Highcharts 4.2.6
 - Updated: SQLite3 v3.13.0
 
 Version 3.4834 (March 2nd 2016)

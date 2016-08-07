@@ -2007,6 +2007,25 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 					OpenURL(doWhat);
 					actionsDone = true;
 				}
+				else if (devNameNoQuotes == "StartScript") {
+					if (doWhat.empty())
+					{
+						//Invalid
+						_log.Log(LOG_ERROR, "EventSystem: StartScript, not enough parameters!");
+						return false;
+					}
+					std::string sPath = doWhat;
+					std::string sParam = "";
+					size_t tpos = sPath.find('$');
+					if (tpos != std::string::npos)
+					{
+						sPath = sPath.substr(0, tpos);
+						sParam = doWhat.substr(tpos + 1);
+						sParam = ParseBlocklyString(sParam);
+					}
+					m_sql.AddTaskItem(_tTaskItem::ExecuteScript(1, sPath, sParam));
+					actionsDone = true;
+				}
 				else if (devNameNoQuotes.find("WriteToLog") == 0) {
 					WriteToLog(devNameNoQuotes,doWhat);
 					actionsDone = true;

@@ -458,6 +458,18 @@
 	        	var setString = 'commandArray["SendSMS"]="'+sSubject+'"';
 	        	setArray.push(setString);		      	
 		    }
+		    else if ($(this).attr('type') == 'start_script') {
+				var pathBlock = $(this).children("field[name='TextPath']")[0];
+				var sPath = $(pathBlock).text().replace(/\,/g, ' ');
+
+				var paramBlock = $(this).children("field[name='TextParam']")[0];
+				var sParam = $(paramBlock).text().replace(/\,/g, ' ');
+
+				// message separator here cannot be # like in scripts, changed to $..
+				// also removed commas as we need to separate commandArray later.
+				var setString = 'commandArray["StartScript"]="'+sPath+'$'+sParam+'"';
+				setArray.push(setString);		      	
+		    }
 		    else if ($(this).attr('type') == 'open_url') {
 		    	var urlBlock = $(this).find("value[name='urlToOpen']")[0];
 		    	var urlText = $(urlBlock).find("field[name='TEXT']")[0];
@@ -881,7 +893,7 @@
    			<block type="text"></block>
    			<block type="open_url"></block>
    			<block type="url_text"></block>
-   	
+   			<block type="start_script"></block>
    		</category>
    		<category name="Security">
    			<block type="security_status"></block>
