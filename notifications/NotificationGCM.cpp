@@ -70,10 +70,14 @@ bool CNotificationGCM::SendMessageImplementation(const std::string &Subject, con
 		_log.Log(LOG_ERROR, "GCM: Can not connect to GCM API URL");
 		return false;
 	}
-	bool bSuccess = root["success"].asInt() == 1;
-	if (!bSuccess)
-		_log.Log(LOG_ERROR, "GCM: %s", root["error"].asString().c_str());
-	return bSuccess;
+	return true;
+/*
+//silence the errors, we should change this system anyway
+bool bSuccess = root["success"].asInt() == 1;
+if (!bSuccess)
+_log.Log(LOG_ERROR, "GCM: %s", root["error"].asString().c_str());
+return bSuccess;
+*/
 }
 
 bool CNotificationGCM::IsConfigured()
