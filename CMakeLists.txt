@@ -249,6 +249,7 @@ hardware/ETH8020.cpp
 hardware/Fitbit.cpp
 hardware/ForecastIO.cpp
 hardware/FritzboxTCP.cpp
+hardware/GoodweAPI.cpp
 hardware/Gpio.cpp
 hardware/GpioPin.cpp
 hardware/HardwareMonitor.cpp

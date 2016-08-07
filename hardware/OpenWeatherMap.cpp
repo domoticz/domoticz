@@ -133,7 +133,7 @@ void COpenWeatherMap::GetMeterDetails()
 
 	if (root.size() < 1)
 	{
-		_log.Log(LOG_ERROR, "OpenWeatherMap: Invalid data received!");
+		_log.Log(LOG_ERROR, "OpenWeatherMap: Empty data received!");
 		return;
 	}
 

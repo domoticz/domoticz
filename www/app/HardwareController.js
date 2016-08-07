@@ -636,7 +636,7 @@ define(['app'], function (app) {
                      }
                 });
             }
-			else if (text.indexOf("MyHome OpenWebNet") >= 0)
+	    else if (text.indexOf("MyHome OpenWebNet") >= 0)
             {
 				var address=$("#hardwarecontent #divremote #tcpaddress").val();
                 if (address=="")
@@ -662,6 +662,33 @@ define(['app'], function (app) {
                         "&port=" + port +
                         //"&username=" + encodeURIComponent(username) +
                         "&name=" + encodeURIComponent(name) +
+                        "&enabled=" + bEnabled +
+                        "&idx=" + idx +
+                        "&datatimeout=" + datatimeout +
+                        "&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
+                     async: false,
+                     dataType: 'json',
+                     success: function(data) {
+                        RefreshHardwareTable();
+                     },
+                    error: function(){
+                            ShowNotify($.t('Problem updating hardware!'), 2500, true);
+                     }
+                });
+            }
+	    else if (text.indexOf("Goodwe solar inverter via Web") >= 0)
+            {
+		var username=$("#hardwarecontent #divgoodweweb #username").val();
+                if (username=="")
+                {
+                    ShowNotify($.t('Please enter your Goodwe username!'), 2500, true);
+                    return;
+                }
+
+                $.ajax({
+                     url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+                        "&username=" + encodeURIComponent(username) +
+			"&name=" + encodeURIComponent(name) +
                         "&enabled=" + bEnabled +
                         "&idx=" + idx +
                         "&datatimeout=" + datatimeout +
@@ -1232,7 +1259,7 @@ define(['app'], function (app) {
                      }
                 });
             }
-			else if (text.indexOf("MyHome OpenWebNet") >= 0)
+	    else if (text.indexOf("MyHome OpenWebNet") >= 0)
             {
                 var address=$("#hardwarecontent #divremote #tcpaddress").val();
                 if (address=="")
@@ -1261,6 +1288,29 @@ define(['app'], function (app) {
                 $.ajax({
                      url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port +
 					 //"&username=" + encodeURIComponent(username) +
+					 "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
+                     async: false,
+                     dataType: 'json',
+                     success: function(data) {
+                        RefreshHardwareTable();
+                     },
+                     error: function(){
+                            ShowNotify($.t('Problem adding hardware!'), 2500, true);
+                     }
+                });
+            }
+	    else if (text.indexOf("Goodwe solar inverter via Web") >= 0)
+            {
+                var username=$("#hardwarecontent #divgoodweweb #username").val();
+
+                if (username == "") {
+                    ShowNotify($.t('Please enter your Goodwe username!'), 2500, true);
+                    return;
+                }
+
+                $.ajax({
+                     url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
+					 "&username=" + encodeURIComponent(username) +
 					 "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
                      async: false,
                      dataType: 'json',
@@ -4439,7 +4489,9 @@ define(['app'], function (app) {
                             $("#hardwarecontent #hardwareparamswinddelen #combomillselect").val(data["Mode1"]);
                             $("#hardwarecontent #hardwareparamswinddelen #nrofwinddelen").val(data["Port"]);
                         }
-
+			else if (data["Type"].indexOf("Goodwe solar inverter via Web") >= 0) {
+			    $("#hardwarecontent #hardwareparamsgoodweweb #username").val(data["Username"]);
+			}
                         if (data["Type"].indexOf("MQTT") >= 0) {
                             $("#hardwarecontent #hardwareparamsmqtt #filename").val(data["Extra"]);
                             $("#hardwarecontent #hardwareparamsmqtt #combotopicselect").val(data["Mode1"]);
@@ -4533,6 +4585,7 @@ define(['app'], function (app) {
             $("#hardwarecontent #divsolaredgeapi").hide();
             $("#hardwarecontent #divenecotoon").hide();
             $("#hardwarecontent #div1wire").hide();
+            $("#hardwarecontent #divgoodweweb").hide();
 
             if ((text.indexOf("TE923") >= 0)||
                (text.indexOf("Volcraft") >= 0)||
@@ -4690,7 +4743,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divlogin").show();
                 $("#hardwarecontent #hardwareparamsremote #tcpport").val(9000);
             }
-			else if (text.indexOf("MyHome OpenWebNet") >= 0)
+	    else if (text.indexOf("MyHome OpenWebNet") >= 0)
             {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").show();
@@ -4699,15 +4752,26 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divhttppoller").hide();
                 $("#hardwarecontent #hardwareparamsremote #tcpport").val(20000);
             }
-			else if (text.indexOf("1-Wire") >= 0)
+	    else if (text.indexOf("1-Wire") >= 0)
             {
-	            $("#hardwarecontent #div1wire").show();
+	        $("#hardwarecontent #div1wire").show();
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").hide();
                 $("#hardwarecontent #divlogin").hide();
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
             }
+	    else if (text.indexOf("Goodwe solar inverter via Web") >= 0)
+            {
+	        $("#hardwarecontent #divgoodweweb").show();
+	        $("#hardwarecontent #div1wire").hide();
+                $("#hardwarecontent #divserial").hide();
+                $("#hardwarecontent #divremote").hide();
+                $("#hardwarecontent #divlogin").hide();
+                $("#hardwarecontent #divunderground").hide();
+                $("#hardwarecontent #divhttppoller").hide();
+            }
+	    
             else
             {
                 $("#hardwarecontent #divserial").hide();

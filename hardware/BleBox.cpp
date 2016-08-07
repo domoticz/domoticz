@@ -115,6 +115,7 @@ void BleBox::GetDevicesState()
 					bool state = root["state"].asBool();
 
 					SendSwitch(node, itt->second, 255, state, 0, DevicesType[i].name);
+					SetHeartbeatReceived(); //TODO - another place
 				}
 			}
 		}

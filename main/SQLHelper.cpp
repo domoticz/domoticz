@@ -3157,27 +3157,28 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 		localtime_r(&now,&ltime);
 		//Commit: If Option 1: energy is computed as usage*time
 		//Default is option 0, read from device
-		if (sOption == "1" && devType == pTypeGeneral && subType == sTypeKwh) {
+		if (sOption == "1" && devType == pTypeGeneral && subType == sTypeKwh)
+		{
 			std::vector<std::string> parts;
 			struct tm ntime;
 			double interval;
 			float nEnergy;
 			char sCompValue[100];
-			std::string sLastUpdate=result[0][6];
-			ntime.tm_isdst=ltime.tm_isdst;
-			ntime.tm_year=atoi(sLastUpdate.substr(0,4).c_str())-1900;
-			ntime.tm_mon=atoi(sLastUpdate.substr(5,2).c_str())-1;
-			ntime.tm_mday=atoi(sLastUpdate.substr(8,2).c_str());
-			ntime.tm_hour=atoi(sLastUpdate.substr(11,2).c_str());
-			ntime.tm_min=atoi(sLastUpdate.substr(14,2).c_str());
-			ntime.tm_sec=atoi(sLastUpdate.substr(17,2).c_str());
-			interval = now - mktime(&ntime);
+			std::string sLastUpdate = result[0][6];
+			ntime.tm_isdst = ltime.tm_isdst;
+			ntime.tm_year = atoi(sLastUpdate.substr(0, 4).c_str()) - 1900;
+			ntime.tm_mon = atoi(sLastUpdate.substr(5, 2).c_str()) - 1;
+			ntime.tm_mday = atoi(sLastUpdate.substr(8, 2).c_str());
+			ntime.tm_hour = atoi(sLastUpdate.substr(11, 2).c_str());
+			ntime.tm_min = atoi(sLastUpdate.substr(14, 2).c_str());
+			ntime.tm_sec = atoi(sLastUpdate.substr(17, 2).c_str());
+			interval = static_cast<double>(now - mktime(&ntime)); //Rob: Why a double ?
 			StringSplit(result[0][5].c_str(), ";", parts);
-			nEnergy = strtof(parts[0].c_str(),NULL)*interval/3600 + strtof(parts[1].c_str(), NULL);
+			nEnergy = static_cast<float>(strtof(parts[0].c_str(), NULL)*interval / 3600 + strtof(parts[1].c_str(), NULL)); //Rob: whats happening here... strtof ?
 			StringSplit(sValue, ";", parts);
-			sprintf(sCompValue, "%s;%.0f", parts[0].c_str(),nEnergy);
+			sprintf(sCompValue, "%s;%.0f", parts[0].c_str(), nEnergy);
 			sValue = sCompValue;
-			}
+		}
         //~ use different update queries based on the device type
         if (devType == pTypeGeneral && subType == sTypeCounterIncremental)
         {

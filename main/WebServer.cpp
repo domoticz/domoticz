@@ -117,13 +117,8 @@ namespace http {
 
 		CWebServer::~CWebServer(void)
 		{
-			// RK, todo: Instead of deleting m_pWebEm, we should just call StopServer().
-			// deleting the object just like that is not a good idea and is bound to crash if the Do_Work() thread is still running
-			if (m_pWebEm != NULL)
-			{
-				delete m_pWebEm;
-				m_pWebEm = NULL;
-			}
+			// RK, we call StopServer() instead of just deleting m_pWebEm. The Do_Work thread might still be accessing that object
+			StopServer();
 		}
 
 		void CWebServer::Do_Work()
@@ -1165,6 +1160,10 @@ namespace http {
 			else if (htype == HTYPE_OpenWebNet) {
 				//All fine here
 			}
+			else if (htype == HTYPE_GoodweAPI) {
+				if (username == "")
+					return;
+			}
 			else
 				return;
 
@@ -1409,9 +1408,14 @@ namespace http {
 			else if (htype == HTYPE_OpenWebNet) {
 				//All fine here
 			}
+			else if (htype == HTYPE_GoodweAPI) {
+					if (username == "") {
+						return;
+					}
+			}
 			else
 				return;
-
+			
 			int mode1 = atoi(request::findValue(&req, "Mode1").c_str());
 			int mode2 = atoi(request::findValue(&req, "Mode2").c_str());
 			int mode3 = atoi(request::findValue(&req, "Mode3").c_str());
