@@ -13965,6 +13965,17 @@ namespace http {
 									strcpy(szTmp, "0");
 								}
 								root["result"][ii]["c1"] = szTmp;
+
+								if (counter_2 != 0)
+								{
+									sprintf(szTmp, "%.3f", (counter_2 - fDeliv_1) / EnergyDivider);
+								}
+								else
+								{
+									strcpy(szTmp, "0");
+								}
+								root["result"][ii]["c2"] = szTmp;
+
 								if (counter_3 != 0)
 								{
 									sprintf(szTmp, "%.3f", (counter_3 - fUsage_2) / EnergyDivider);
@@ -13974,6 +13985,17 @@ namespace http {
 									strcpy(szTmp, "0");
 								}
 								root["result"][ii]["c3"] = szTmp;
+
+								if (counter_4 != 0)
+								{
+									sprintf(szTmp, "%.3f", (counter_4 - fDeliv_2) / EnergyDivider);
+								}
+								else
+								{
+									strcpy(szTmp, "0");
+								}
+								root["result"][ii]["c4"] = szTmp;
+
 								ii++;
 							}
 							if (bHaveDeliverd)
