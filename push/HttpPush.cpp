@@ -13,10 +13,6 @@
 #include "../main/mainworker.h"
 #include "../json/json.h"
 
-#ifndef WIN32
-	#include <unistd.h> //gethostbyname
-#endif
-
 CHttpPush::CHttpPush()
 {
 	m_bLinkActive = false;

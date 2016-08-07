@@ -24,10 +24,6 @@
 #include "../main/localtime_r.h"
 #include "../main/Logger.h"
 
-#ifndef WIN32
-	#include <unistd.h> //gethostbyname
-#endif
-
 //10 minutes
 #define SESSION_TIMEOUT 600
 

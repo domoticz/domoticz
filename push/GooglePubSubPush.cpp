@@ -12,10 +12,6 @@
 #include "../webserver/Base64.h"
 #include "../webserver/cWebem.h"
 
-#ifndef WIN32
-	#include <unistd.h> //gethostbyname
-#endif
-
 #ifdef ENABLE_PYTHON
 extern "C" {
 #include <Python.h>
