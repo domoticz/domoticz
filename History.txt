@@ -8,12 +8,13 @@ Version 3.xxxx (August xx 2016)
 - Implemented: Denkovi Smartden with LAN Interface
 - Implemented: Devices Tab, Log icon for Pressure
 - Implemented: Dust Sensor (ug/m3)
+- Implemented: Hourly rainrate for all rain sensors
 - Implemented: MySensors, Implemented Acknowledge Timeout per Child sensor
 - Implemented: Nefit Easy, User Mode (as switch, On=Clock, Off=Manual), Flow Temperature
 - Implemented: OpenZWave, Aeotec ZWave+ USB Controller, Enable/Disable blinking mode (@Schmart, Thanks for the magic codes!)
 - Implemented: OpenZWave, Node table, now also displays Manufacturer, Product ID and Product Type
 - Implemented: OpenZWave, When including Thermostat Setpoints, the zwave Label will be used as Name by default
-- Implemented: Hourly rainrate for all rain sensors
+- Implemented: P1 Electra Report, Now also displaying the counters for Return
 - Implemented: RFLink: Displaying firmware version in the hardware setup
 - Implemented: RFXCom, Blinds T12 (Confexx)
 - Implemented: S0 Meter TCP
