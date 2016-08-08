@@ -14,6 +14,7 @@ typedef struct _STR_DEVICE {
 	int			deviceID;
 	int			subType;
 	int			switchType;
+	std::string api_state;
 } STR_DEVICE;
 
 class BleBox : public CDomoticzHardwareBase
@@ -46,6 +47,7 @@ private:
 	int GetDeviceTypeByApiName(const std::string &apiName);
 	std::string GetDeviceIP(const tRBUF *id);
 	std::string GetDeviceIP(const std::string &id);
+	std::string IPToHex(const std::string &IPAddress);
 	Json::Value SendCommand(const std::string &IPAddress, const std::string &command);
 	void GetDevicesState();
 
