@@ -706,7 +706,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 	else if (pDevice->devType == ZDTYPE_SENSOR_MOISTURE)
 	{
 		uint16_t NodeID = (ID3 << 8) | ID4;
-		SendMoistureSensor(NodeID, BatLevel, round(pDevice->floatValue), "Moisture");
+		SendPercentageSensor((int)(ID1 << 24) | (ID2 << 16) | (ID3 << 8) | ID4, 0, BatLevel, pDevice->floatValue, "Moisture");
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_TANK_CAPACITY)
 	{
