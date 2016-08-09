@@ -200,7 +200,7 @@ std::string BleBox::IPToHex(const std::string &IPAddress)
 	std::vector<std::string> strarray;
 	boost::split(strarray, IPAddress, boost::is_any_of("."));
 	if (strarray.size() != 4)
-		return false;
+		return "";
 
 	char szIdx[10];
 	sprintf(szIdx, "%02X%02X%02X%02X", atoi(strarray[0].data()), atoi(strarray[1].data()), atoi(strarray[2].data()), atoi(strarray[3].data()));
