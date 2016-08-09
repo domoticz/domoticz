@@ -635,10 +635,20 @@ void BleBox::AddNode(const std::string &name, const std::string &IPAddress)
 
 bool BleBox::UpdateNode(const int id, const std::string &name, const std::string &IPAddress)
 {
+	std::string deviceApiName = IdentifyDevice(IPAddress);
+	if (deviceApiName.empty())
+		return;
+
+	int deviceTypeID = GetDeviceTypeByApiName(deviceApiName);
+	if (deviceTypeID == -1)
+		return;
+
+	STR_DEVICE deviceType = DevicesType[deviceTypeID];
+
 	std::string szIdx = IPToHex(IPAddress);
 
-	m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', DeviceID='%q' WHERE (HardwareID==%d) AND (ID=='%d')", 
-		name.c_str(), szIdx.c_str(), m_HwdID, id);
+	m_sql.safe_query("UPDATE DeviceStatus SET DeviceID='%q', Unit='%d', Type='%d', SubType='%d', SwitchType='%d', Name='%q' WHERE (HardwareID=='%d') AND (ID=='%d')", 
+		szIdx.c_str(), deviceType.unit, deviceType.deviceID, deviceType.subType, deviceType.switchType, name.c_str(), m_HwdID, id);
 
 	ReloadNodes();
 	return true;
