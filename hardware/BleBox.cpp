@@ -198,7 +198,7 @@ std::string BleBox::GetDeviceIP(const std::string &id)
 std::string BleBox::IPToHex(const std::string &IPAddress)
 {
 	std::vector<std::string> strarray;
-	boost::split(strarray, IPAddress, boost::is_any_of("."));
+	StringSplit(IPAddress, ".", strarray);
 	if (strarray.size() != 4)
 		return "";
 
@@ -637,11 +637,11 @@ bool BleBox::UpdateNode(const int id, const std::string &name, const std::string
 {
 	std::string deviceApiName = IdentifyDevice(IPAddress);
 	if (deviceApiName.empty())
-		return;
+		return false;
 
 	int deviceTypeID = GetDeviceTypeByApiName(deviceApiName);
 	if (deviceTypeID == -1)
-		return;
+		return false;
 
 	STR_DEVICE deviceType = DevicesType[deviceTypeID];
 
