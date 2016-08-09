@@ -118,7 +118,7 @@ void BleBox::GetDevicesState()
 			switch (itt->second)
 			{
 			case 0:
-				SendSwitch(node, itt->second, 255, (bool)state, 0, DevicesType[itt->second].name);
+				SendSwitch(node, itt->second, 255, state!=0, 0, DevicesType[itt->second].name);
 				break;
 			case 1:
 				bool opened = true;
@@ -168,7 +168,7 @@ std::string BleBox::IPToHex(const std::string &IPAddress)
 	std::vector<std::string> strarray;
 	boost::split(strarray, IPAddress, boost::is_any_of("."));
 	if (strarray.size() != 4)
-		return false;
+		return "0.0.0.0";
 
 	char szIdx[10];
 	sprintf(szIdx, "%02X%02X%02X%02X", atoi(strarray[0].data()), atoi(strarray[1].data()), atoi(strarray[2].data()), atoi(strarray[3].data()));
