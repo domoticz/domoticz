@@ -280,7 +280,7 @@ int I2C::WriteCmd(int fd, uint8_t devAction)
 		{ BMPx8x_I2CADDR, 0, 2, datatosend }
 	};
 	struct i2c_msg htu_write_reg[1] = {
-		{ HTU21D_ADDRESS, 0, 2, datatosend }
+		{ HTU21D_ADDRESS, 0, 1, datatosend }
 	};
 
 	if (device == "BMP085")
