@@ -14,7 +14,7 @@
 const _STR_DEVICE DevicesType[TOT_TYPE] =
 { 
 	{ 0, "switchBox", "Switch Box",int(pTypeLighting2), int(sTypeAC), int(STYPE_OnOff), "relay" },
-	{ 1, "shutterBox", "Shutter Box", int(pTypeLighting2), int(sTypeAC), int(STYPE_BlindsPercentage), "shutter" },
+	{ 1, "shutterBox", "Shutter Box", int(pTypeLighting2), int(sTypeAC), int(STYPE_BlindsPercentageInverted), "shutter" },
 	{ 2, "wLightBoxS", "Light Box S", int(pTypeLighting2), int(sTypeAC), int(STYPE_Dimmer), "light" }
 //	{ 1, "wLightBox", "Light Box", int(pTypeLimitlessLights), int(sTypeLimitlessRGBW), int(STYPE_Dimmer) }
 };
@@ -134,13 +134,13 @@ void BleBox::GetDevicesState()
 				}
 				const int state = root["state"].asInt();
 
-				bool opened = true;
-				if (state == 3)
-					opened = false;
-
 				const int currentPos = root["currentPos"].asInt();
 				//	const int desiredPos = root["desiredPos"].asInt();
 				const int pos = currentPos;
+
+				bool opened = true;
+				if ((state == 2 && pos == 100) || (state == 3))
+					opened = false;
 
 				SendSwitch(node, itt->second, 255, opened, pos, DevicesType[itt->second].name);
 				break;
@@ -214,6 +214,9 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 
 	if (output->ICMND.packettype == pTypeLighting2 && output->LIGHTING2.subtype == sTypeAC)
 	{
+
+		std::string IPAddress = GetDeviceIP(output);
+
 		switch (output->LIGHTING2.unitcode)
 		{
 		case 0:
@@ -227,8 +230,6 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 			{
 				state = "0";
 			}
-
-			std::string IPAddress = GetDeviceIP(output);
 
 			Json::Value root = SendCommand(IPAddress, "/s/" + state);
 			if (root == "")
@@ -253,20 +254,18 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 			std::string state;
 			if (output->LIGHTING2.cmnd == light2_sOn)
 			{
-				state = "d";
+				state = "u";
 			}
 			else
 				if (output->LIGHTING2.cmnd == light2_sOff)
 				{
-					state = "u";
+					state = "d";
 				}
 				else
 				{
 					int percentage = output->LIGHTING2.level * 100 / 15;
 					state = boost::to_string(percentage);
 				}
-
-			std::string IPAddress = GetDeviceIP(output);
 
 			Json::Value root = SendCommand(IPAddress, "/s/" + state);
 			if (root == "")
@@ -305,8 +304,6 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 					sprintf(value, "%x", percentage);
 					level = value;
 				}
-
-			std::string IPAddress = GetDeviceIP(output);
 
 			Json::Value root = SendCommand(IPAddress, "/s/" + level);
 			if (root == "")
