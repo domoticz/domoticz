@@ -19,6 +19,7 @@ Version 3.xxxx (August xx 2016)
 - Implemented: RFLink: Displaying firmware version in the hardware setup
 - Implemented: RFXCom, Blinds T12 (Confexx)
 - Implemented: S0 Meter TCP
+- Changed: Local I2C sensors grouping (ldrolez)
 - Changed: ETH-8020, ignoring return message as it always returns (no more Success message)
 - Changed: EventSystem, weather/rain value is now the rain-rate
 - Changed: OpenZWave, Better support for Thermostat Modes
