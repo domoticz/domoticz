@@ -8307,7 +8307,7 @@ namespace http {
 							s_str2 >> total_max;
 							total_real = total_max - total_min;
 							sprintf(szTmp, "%llu", total_real);
-
+							
 							float musage = 0;
 							switch (metertype)
 							{
@@ -8329,33 +8329,36 @@ namespace http {
 								break;
 							}
 						}
-						root["result"][ii]["Counter"] = sValue;
 						root["result"][ii]["CounterToday"] = szTmp;
+
 						root["result"][ii]["SwitchTypeVal"] = metertype;
 						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 						root["result"][ii]["ValueQuantity"] = "";
 						root["result"][ii]["ValueUnits"] = "";
+
+						double meteroffset = AddjValue;
 						float fvalue = static_cast<float>(atof(sValue.c_str()));
+
 						switch (metertype)
 						{
 						case MTYPE_ENERGY:
 						case MTYPE_ENERGY_GENERATED:
-							sprintf(szTmp, "%.03f kWh", fvalue / EnergyDivider);
+							sprintf(szTmp, "%.03f kWh", meteroffset + (fvalue / EnergyDivider));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_GAS:
-							sprintf(szTmp, "%.03f m3", fvalue / GasDivider);
+							sprintf(szTmp, "%.03f m3", meteroffset + (fvalue / GasDivider));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_WATER:
-							sprintf(szTmp, "%.03f m3", fvalue / WaterDivider);
+							sprintf(szTmp, "%.03f m3", meteroffset + (fvalue / WaterDivider));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_COUNTER:
-							sprintf(szTmp, "%.0f %s", fvalue, ValueUnits.c_str());
+							sprintf(szTmp, "%.0f %s", meteroffset + fvalue, ValueUnits.c_str());
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							root["result"][ii]["ValueQuantity"] = ValueQuantity;
@@ -14436,13 +14439,13 @@ namespace http {
 							{
 							case MTYPE_ENERGY:
 							case MTYPE_ENERGY_GENERATED:
-								sprintf(szTmp, "%.3f", fvalue / EnergyDivider);
+								sprintf(szTmp, "%.3f", AddjValue + (fvalue / EnergyDivider));
 								break;
 							case MTYPE_GAS:
-								sprintf(szTmp, "%.2f", fvalue / GasDivider);
+								sprintf(szTmp, "%.2f", AddjValue + (fvalue / GasDivider));
 								break;
 							case MTYPE_WATER:
-								sprintf(szTmp, "%.3f", fvalue / WaterDivider);
+								sprintf(szTmp, "%.3f", AddjValue + (fvalue / WaterDivider));
 								break;
 							default:
 								strcpy(szTmp, "");
@@ -14505,7 +14508,7 @@ namespace http {
 									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
 									root["result"][ii]["v"] = szTmp;
 									if (fcounter != 0)
-										sprintf(szTmp, "%.3f", (fcounter - atof(szValue.c_str())) / EnergyDivider);
+										sprintf(szTmp, "%.3f", AddjValue + ((fcounter - atof(szValue.c_str())) / EnergyDivider));
 									else
 										strcpy(szTmp, "0");
 									root["result"][ii]["c"] = szTmp;
@@ -14514,7 +14517,7 @@ namespace http {
 									sprintf(szTmp, "%.2f", atof(szValue.c_str()) / GasDivider);
 									root["result"][ii]["v"] = szTmp;
 									if (fcounter != 0)
-										sprintf(szTmp, "%.2f", (fcounter - atof(szValue.c_str())) / GasDivider);
+										sprintf(szTmp, "%.2f", AddjValue + ((fcounter - atof(szValue.c_str())) / GasDivider));
 									else
 										strcpy(szTmp, "0");
 									root["result"][ii]["c"] = szTmp;
@@ -14523,7 +14526,7 @@ namespace http {
 									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / WaterDivider);
 									root["result"][ii]["v"] = szTmp;
 									if (fcounter != 0)
-										sprintf(szTmp, "%.3f", (fcounter - atof(szValue.c_str())) / WaterDivider);
+										sprintf(szTmp, "%.3f", AddjValue + ((fcounter - atof(szValue.c_str())) / WaterDivider));
 									else
 										strcpy(szTmp, "0");
 									root["result"][ii]["c"] = szTmp;
@@ -14532,7 +14535,7 @@ namespace http {
 									sprintf(szTmp, "%.0f", atof(szValue.c_str()));
 									root["result"][ii]["v"] = szTmp;
 									if (fcounter != 0)
-										sprintf(szTmp, "%.0f", (fcounter - atof(szValue.c_str())));
+										sprintf(szTmp, "%.0f", AddjValue + ((fcounter - atof(szValue.c_str()))));
 									else
 										strcpy(szTmp, "0");
 									root["result"][ii]["c"] = szTmp;
@@ -14830,28 +14833,28 @@ namespace http {
 										sValue = mresults[1];
 									}
 									if (dType == pTypeENERGY)
-										sprintf(szTmp, "%.3f", ((atof(sValue.c_str())*100.0f) - atof(szValue.c_str())) / EnergyDivider);
+										sprintf(szTmp, "%.3f", AddjValue + (((atof(sValue.c_str())*100.0f) - atof(szValue.c_str())) / EnergyDivider));
 									else
-										sprintf(szTmp, "%.3f", (atof(sValue.c_str()) - atof(szValue.c_str())) / EnergyDivider);
+										sprintf(szTmp, "%.3f", AddjValue + ((atof(sValue.c_str()) - atof(szValue.c_str())) / EnergyDivider));
 									root["result"][ii]["c"] = szTmp;
 								}
 								break;
 							case MTYPE_GAS:
 								sprintf(szTmp, "%.2f", atof(szValue.c_str()) / GasDivider);
 								root["result"][ii]["v"] = szTmp;
-								sprintf(szTmp, "%.2f", (atof(sValue.c_str()) - atof(szValue.c_str())) / GasDivider);
+								sprintf(szTmp, "%.2f", AddjValue + ((atof(sValue.c_str()) - atof(szValue.c_str())) / GasDivider));
 								root["result"][ii]["c"] = szTmp;
 								break;
 							case MTYPE_WATER:
 								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / WaterDivider);
 								root["result"][ii]["v"] = szTmp;
-								sprintf(szTmp, "%.3f", (atof(sValue.c_str()) - atof(szValue.c_str())) / WaterDivider);
+								sprintf(szTmp, "%.3f", AddjValue + ((atof(sValue.c_str()) - atof(szValue.c_str())) / WaterDivider));
 								root["result"][ii]["c"] = szTmp;
 								break;
 							case MTYPE_COUNTER:
 								sprintf(szTmp, "%.0f", atof(szValue.c_str()));
 								root["result"][ii]["v"] = szTmp;
-								sprintf(szTmp, "%.0f", (atof(sValue.c_str()) - atof(szValue.c_str())));
+								sprintf(szTmp, "%.0f", AddjValue + ((atof(sValue.c_str()) - atof(szValue.c_str()))));
 								root["result"][ii]["c"] = szTmp;
 								break;
 							}
