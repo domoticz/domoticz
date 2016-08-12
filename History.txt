@@ -1,4 +1,5 @@
 Version 3.xxxx (August xx 2016)
+- Implemented: TSL2561 illuminance I2C sensor (ldrolez)
 - Implemented: AccuWeather support
 - Implemented: Atag One Thermostat support
 - Implemented: Blockly/Lua Camera device, to send camera snapshots with subject after xx seconds

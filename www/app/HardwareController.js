@@ -76,6 +76,7 @@ define(['app'], function (app) {
 				(text.indexOf("GPIO") >= 0) ||
 				(text.indexOf("BMP085") >= 0) ||
 				(text.indexOf("HTU21D") >= 0) ||
+				(text.indexOf("TSL2561") >= 0) ||
 				(text.indexOf("Dummy") >= 0) ||
 				(text.indexOf("System Alive") >= 0) ||
 				(text.indexOf("PiFace") >= 0) ||
@@ -814,7 +815,8 @@ define(['app'], function (app) {
 				(text.indexOf("TE923") >= 0) ||
 				(text.indexOf("Volcraft") >= 0) ||
 				(text.indexOf("BMP085") >= 0) ||
-                (text.indexOf("HTU21D") >= 0) ||
+				(text.indexOf("HTU21D") >= 0) ||
+				(text.indexOf("TSL2561") >= 0) ||
 				(text.indexOf("Dummy") >= 0) ||
 				(text.indexOf("System Alive") >= 0) ||
 				(text.indexOf("Kodi") >= 0) ||
@@ -4191,7 +4193,7 @@ define(['app'], function (app) {
                     {
                         SerialName="USB";
                     }
-                    else if ((item.Type == 13)||(item.Type == 71))
+                    else if ((item.Type == 13)||(item.Type == 71)||(item.Type == 85))
                     {
                         SerialName="I2C";
                     }
@@ -4428,6 +4430,7 @@ define(['app'], function (app) {
                            (data["Type"].indexOf("Volcraft") >= 0)||
                            (data["Type"].indexOf("BMP085") >= 0)||
                            (data["Type"].indexOf("HTU21D") >= 0)||
+                           (data["Type"].indexOf("TSL2561") >= 0)||
                            (data["Type"].indexOf("Dummy") >= 0)||
                            (data["Type"].indexOf("System Alive") >= 0)||
                            (data["Type"].indexOf("PiFace") >= 0)||
@@ -4591,6 +4594,7 @@ define(['app'], function (app) {
                (text.indexOf("Volcraft") >= 0)||
                (text.indexOf("BMP085") >= 0)||
                (text.indexOf("HTU21D") >= 0)||
+               (text.indexOf("TSL2561") >= 0)||
                (text.indexOf("Dummy") >= 0)||
                (text.indexOf("System Alive") >= 0)||
                (text.indexOf("PiFace") >= 0))
