@@ -469,7 +469,7 @@ void I2C::TSL2561_Init()
 
 void I2C::TSL2561_ReadSensorDetails()
 {
-	float lux;
+	float lux, ch0, ch1, ratio;
 	uint8_t rValues[2];
 
 #ifndef __arm__
@@ -481,12 +481,34 @@ void I2C::TSL2561_ReadSensorDetails()
 		return;
 	}
 	if (ReadInt(fd, rValues, TSL2561_Channel0, 2) != 0) {
-		_log.Log(LOG_ERROR, "%s: Error reading lux!...", device.c_str());
+		_log.Log(LOG_ERROR, "%s: Error reading ch0!...", device.c_str());
+		close(fd);
+		return;
+	}
+	ch0 = rValues[1] * 256.0 + rValues[0];
+	if (ReadInt(fd, rValues, TSL2561_Channel1, 2) != 0) {
+		_log.Log(LOG_ERROR, "%s: Error reading ch1!...", device.c_str());
 		close(fd);
 		return;
 	}
 	close(fd);
-	lux = rValues[1] * 256.0 + rValues[0];
+	ch1 = rValues[1] * 256.0 + rValues[0];
+
+	// Real Lux calculation for T,FN and CL packages
+	ratio = 0;
+	if (ch0 != 0) ratio = ch1/ch0;
+	if (ratio >= 0 && ratio < 0.50)
+	  lux = ch0 * (0.0304 - 0.062 * ((ch1/ch0)**1.4));
+	else if (ratio >= 0.5 && ratio < 0.61)
+	  lux = 0.0224*ch0 - 0.031*ch1;
+	else if (ratio >= 0.61 && ratio < 0.8)
+	  lux = 0.0128*ch0 - 0.0153*ch1;
+	else if (ratio >= 0.8 && ratio < 1.3)
+	  lux = 0.00146*ch0 - 0.00112*ch1;
+	else
+	  lux = 0;
+	// final scaling with default gain
+	lux *= 16;
 #endif
 	SendLuxSensor(0, 0, 255, lux, "Lux");
 }
