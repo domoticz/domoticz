@@ -74,7 +74,7 @@ define(['app'], function (app) {
 				(text.indexOf("TE923") >= 0) ||
 				(text.indexOf("Volcraft") >= 0) ||
 				(text.indexOf("GPIO") >= 0) ||
-				(text.indexOf("Raspberry I2C sensor") >= 0) ||
+				(text.indexOf("Local I2C sensor") >= 0) ||
 				(text.indexOf("Dummy") >= 0) ||
 				(text.indexOf("System Alive") >= 0) ||
 				(text.indexOf("PiFace") >= 0) ||
@@ -839,7 +839,7 @@ define(['app'], function (app) {
                      }
                 });
             }
-	    else if (text.indexOf("Raspberry I2C sensor") >= 0)
+	    else if (text.indexOf("Local I2C sensor") >= 0)
 	    {
                 hardwaretype = $("#hardwareparamsi2clocal #comboi2clocal").find('option:selected').val();
 		
@@ -4438,7 +4438,7 @@ define(['app'], function (app) {
                         $('#hardwarecontent #hardwareparamstable #enabled').prop('checked',(data["Enabled"]=="true"));
                         $('#hardwarecontent #hardwareparamstable #combodatatimeout').val(data["DataTimeout"]);
 
-			if (data["Type"].indexOf("Raspberry I2C sensor") >= 0) {
+			if (data["Type"].indexOf("Local I2C sensor") >= 0) {
                             $("#hardwarecontent #hardwareparamstable #combotype").val(1000);
                         }
 
@@ -4459,7 +4459,7 @@ define(['app'], function (app) {
                             $("#hardwarecontent #hardwareparams1wire #OneWireSensorPollPeriod").val(data["Mode1"]);
                             $("#hardwarecontent #hardwareparams1wire #OneWireSwitchPollPeriod").val(data["Mode2"]);
                         }
-                        else if (data["Type"].indexOf("Raspberry I2C sensor") >= 0) {
+                        else if (data["Type"].indexOf("Local I2C sensor") >= 0) {
                             $("#hardwareparamsi2clocal #comboi2clocal").val(jQuery.inArray(data["Type"], $.myglobals.HardwareI2CStr));
                         }			
                         else if (data["Type"].indexOf("USB") >= 0) {
@@ -4622,7 +4622,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
             }
-	    else if (text.indexOf("Raspberry I2C sensor") >= 0)
+	    else if (text.indexOf("Local I2C sensor") >= 0)
 	    {
                 $("#hardwarecontent #divi2clocal").show();
                 $("#hardwarecontent #divserial").hide();
@@ -4884,7 +4884,7 @@ define(['app'], function (app) {
 			$.each(data.result, function(i,item) {
 			    $.myglobals.HardwareTypesStr[item.idx] = item.name;
 			    // Don't show I2C sensors
-			    if (item.name.indexOf("Raspberry I2C sensor") != -1) {
+			    if (item.name.indexOf("Local I2C sensor") != -1) {
 				$.myglobals.HardwareI2CStr[item.idx] = item.name;
 				return true;
 			    }
@@ -4895,7 +4895,7 @@ define(['app'], function (app) {
 			});
 			// regroup local I2C sensors under index 1000
                         var option = $('<option />');
-                        option.attr('value', 1000).text("Raspberry I2C sensors");
+                        option.attr('value', 1000).text("Local I2C sensors");
                         $("#hardwareparamstable #combotype").append(option);
                     }
              }
