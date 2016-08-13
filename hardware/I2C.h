@@ -65,4 +65,8 @@ private:
 	int HTU21D_checkCRC8(uint16_t data);
 	int HTU21D_GetHumidity(int fd, float *Pres);
 	int HTU21D_GetTemperature(int fd, float *Temp);
+
+	// TSL2561 stuff
+	void TSL2561_ReadSensorDetails();
+	void TSL2561_Init();
 };

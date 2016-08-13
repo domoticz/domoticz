@@ -902,7 +902,8 @@ namespace http {
 #ifdef WIN32
 				if (
 					(ii == HTYPE_RaspberryBMP085) ||
-					(ii == HTYPE_RaspberryHTU21D)
+					(ii == HTYPE_RaspberryHTU21D) ||
+					(ii == HTYPE_RaspberryTSL2561)
 					)
 				{
 					bDoAdd = false;
@@ -1069,6 +1070,9 @@ namespace http {
 				//all fine here!
 			}
 			else if (htype == HTYPE_RaspberryHTU21D) {
+				//all fine here!
+			}
+			else if (htype == HTYPE_RaspberryTSL2561) {
 				//all fine here!
 			}
 			else if (htype == HTYPE_Dummy) {
@@ -1333,6 +1337,9 @@ namespace http {
 				//All fine here
 			}
 			else if (htype == HTYPE_RaspberryHTU21D) {
+				//All fine here
+			}
+			else if (htype == HTYPE_RaspberryTSL2561) {
 				//All fine here
 			}
 			else if (htype == HTYPE_Dummy) {
