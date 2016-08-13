@@ -2023,6 +2023,11 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 						sParam = doWhat.substr(tpos + 1);
 						sParam = ParseBlocklyString(sParam);
 					}
+#if !defined WIN32
+					if (sPath.find("/") != 0)
+						sPath = szUserDataFolder + "scripts/" + sPath;
+#endif
+
 					m_sql.AddTaskItem(_tTaskItem::ExecuteScript(1, sPath, sParam));
 					actionsDone = true;
 				}

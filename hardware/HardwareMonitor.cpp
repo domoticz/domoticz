@@ -475,7 +475,11 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 
 	float GetMemUsageLinux()
 	{
+#if defined(__FreeBSD__)
+		std::ifstream mfile("/compat/linux/proc/meminfo");
+#else	// Linux
 		std::ifstream mfile("/proc/meminfo");
+#endif
 		if (!mfile.is_open())
 			return -1;
 		unsigned long MemTotal = -1;
@@ -530,7 +534,11 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 			m_lastquerytime = time_so_far();
 			int actload1,actload2,actload3;
 			int totcpu=-1;
+#if defined(__FreeBSD__)
+			FILE *fIn = fopen("/compat/linux/proc/stat", "r");
+#else	// Linux
 			FILE *fIn = fopen("/proc/stat", "r");
+#endif
 			if (fIn!=NULL)
 			{
 				bool bFirstLine=true;
@@ -557,7 +565,11 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 		{
 			double acttime = time_so_far();
 			int actload1,actload2,actload3;
+#if defined(__FreeBSD__)
+			FILE *fIn = fopen("/compat/linux/proc/stat", "r");
+#else	// Linux
 			FILE *fIn = fopen("/proc/stat", "r");
+#endif
 			if (fIn!=NULL)
 			{
 				int ret=fscanf(fIn, "%s\t%d\t%d\t%d\n", cname, &actload1, &actload2, &actload3);
