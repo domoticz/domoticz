@@ -24,6 +24,7 @@ Version 3.xxxx (August xx 2016)
 - Changed: OpenZWave, Better support for Thermostat Modes
 - Changed: Stable ID generation for Philips Hue scenes (you need to delete all scenes and restart the hue hardware or domoticz)
 - Changed: TE923, Rain counter devided by 2
+- Changed: Waterflow sensor, now uses Node+Child as ID (for example 0x0801)
 - Changed: Wind Direction graph (now does not display directions when speed was equal to zero)
 - Fixed: Better handling of white listed commands/urls
 - Fixed: Database backup is now only possible for admin users

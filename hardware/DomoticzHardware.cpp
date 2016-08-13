@@ -676,7 +676,7 @@ void CDomoticzHardwareBase::SendWaterflowSensor(const int NodeID, const int Chil
 	_tGeneralDevice gDevice;
 	gDevice.subtype = sTypeWaterflow;
 	gDevice.id = ChildID;
-	gDevice.intval1 = NodeID;
+	gDevice.intval1 = (NodeID << 8) | ChildID;
 	gDevice.floatval1 = LPM;
 	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), BatteryLevel);
 }
