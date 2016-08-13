@@ -504,7 +504,7 @@ void I2C::TSL2561_ReadSensorDetails()
 	else if (ratio >= 0.61 && ratio < 0.8)
 		lux = 0.0128*ch0 - 0.0153*ch1;
 	else if (ratio >= 0.8 && ratio < 1.3)
-		lux = 0.00146*ch0 - 0.00112*ch1;;
+		lux = 0.00146*ch0 - 0.00112*ch1;
 	else
 		lux = 0;
 	// final scaling with default gain
