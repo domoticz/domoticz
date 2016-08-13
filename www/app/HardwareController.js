@@ -25,7 +25,7 @@ define(['app'], function (app) {
             });
         }
 
-        UpdateHardware= function(idx,Mode1,Mode2,Mode3,Mode4,Mode5,Mode6)
+        UpdateHardware = function(idx,Mode1,Mode2,Mode3,Mode4,Mode5,Mode6)
         {
             var name=$("#hardwarecontent #hardwareparamstable #hardwarename").val();
             if (name=="")
@@ -70,13 +70,11 @@ define(['app'], function (app) {
             }
             else if (
 				(text.indexOf("Panasonic") >= 0) ||
-                (text.indexOf("BleBox") >= 0) ||
+				(text.indexOf("BleBox") >= 0) ||
 				(text.indexOf("TE923") >= 0) ||
 				(text.indexOf("Volcraft") >= 0) ||
 				(text.indexOf("GPIO") >= 0) ||
-				(text.indexOf("BMP085") >= 0) ||
-				(text.indexOf("HTU21D") >= 0) ||
-				(text.indexOf("TSL2561") >= 0) ||
+				(text.indexOf("Local I2C sensor") >= 0) ||
 				(text.indexOf("Dummy") >= 0) ||
 				(text.indexOf("System Alive") >= 0) ||
 				(text.indexOf("PiFace") >= 0) ||
@@ -85,6 +83,11 @@ define(['app'], function (app) {
 				(text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0)
 				)
             {
+		// if hardwaretype == 1000 => I2C sensors grouping
+		if (hardwaretype == 1000) {
+                    hardwaretype = $("#hardwareparamsi2clocal #comboi2clocal").find('option:selected').val();
+		}
+
                 $.ajax({
                      url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
                         "&name=" + encodeURIComponent(name) +
@@ -811,12 +814,9 @@ define(['app'], function (app) {
             }
             else if (
 				(text.indexOf("Panasonic") >= 0) ||
-                (text.indexOf("BleBox") >= 0) ||
+				(text.indexOf("BleBox") >= 0) ||
 				(text.indexOf("TE923") >= 0) ||
 				(text.indexOf("Volcraft") >= 0) ||
-				(text.indexOf("BMP085") >= 0) ||
-				(text.indexOf("HTU21D") >= 0) ||
-				(text.indexOf("TSL2561") >= 0) ||
 				(text.indexOf("Dummy") >= 0) ||
 				(text.indexOf("System Alive") >= 0) ||
 				(text.indexOf("Kodi") >= 0) ||
@@ -839,6 +839,22 @@ define(['app'], function (app) {
                      }
                 });
             }
+	    else if (text.indexOf("Local I2C sensor") >= 0)
+	    {
+                hardwaretype = $("#hardwareparamsi2clocal #comboi2clocal").find('option:selected').val();
+		
+                $.ajax({
+                     url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
+                     async: false,
+                     dataType: 'json',
+                     success: function(data) {
+                        RefreshHardwareTable();
+                     },
+                     error: function(){
+                            ShowNotify($.t('Problem adding hardware!'), 2500, true);
+                     }
+                });		
+	    }
             else if (text.indexOf("USB") >= 0)
             {
                 var Mode1 = "0";
@@ -4422,15 +4438,15 @@ define(['app'], function (app) {
                         $('#hardwarecontent #hardwareparamstable #enabled').prop('checked',(data["Enabled"]=="true"));
                         $('#hardwarecontent #hardwareparamstable #combodatatimeout').val(data["DataTimeout"]);
 
-						$.devExtra=data["Extra"];
+			if (data["Type"].indexOf("Local I2C sensor") >= 0) {
+                            $("#hardwarecontent #hardwareparamstable #combotype").val(1000);
+                        }
 
-						UpdateHardwareParamControls();
+			$.devExtra=data["Extra"];
+			UpdateHardwareParamControls();
 
                         if ((data["Type"].indexOf("TE923") >= 0)||
                            (data["Type"].indexOf("Volcraft") >= 0)||
-                           (data["Type"].indexOf("BMP085") >= 0)||
-                           (data["Type"].indexOf("HTU21D") >= 0)||
-                           (data["Type"].indexOf("TSL2561") >= 0)||
                            (data["Type"].indexOf("Dummy") >= 0)||
                            (data["Type"].indexOf("System Alive") >= 0)||
                            (data["Type"].indexOf("PiFace") >= 0)||
@@ -4443,6 +4459,9 @@ define(['app'], function (app) {
                             $("#hardwarecontent #hardwareparams1wire #OneWireSensorPollPeriod").val(data["Mode1"]);
                             $("#hardwarecontent #hardwareparams1wire #OneWireSwitchPollPeriod").val(data["Mode2"]);
                         }
+                        else if (data["Type"].indexOf("Local I2C sensor") >= 0) {
+                            $("#hardwareparamsi2clocal #comboi2clocal").val(jQuery.inArray(data["Type"], $.myglobals.HardwareI2CStr));
+                        }			
                         else if (data["Type"].indexOf("USB") >= 0) {
                             $("#hardwarecontent #hardwareparamsserial #comboserialport").val(data["IntPort"]);
                             if (data["Type"].indexOf("MySensors") >= 0)
@@ -4589,12 +4608,10 @@ define(['app'], function (app) {
             $("#hardwarecontent #divenecotoon").hide();
             $("#hardwarecontent #div1wire").hide();
             $("#hardwarecontent #divgoodweweb").hide();
+            $("#hardwarecontent #divi2clocal").hide();
 
             if ((text.indexOf("TE923") >= 0)||
                (text.indexOf("Volcraft") >= 0)||
-               (text.indexOf("BMP085") >= 0)||
-               (text.indexOf("HTU21D") >= 0)||
-               (text.indexOf("TSL2561") >= 0)||
                (text.indexOf("Dummy") >= 0)||
                (text.indexOf("System Alive") >= 0)||
                (text.indexOf("PiFace") >= 0))
@@ -4605,6 +4622,15 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
             }
+	    else if (text.indexOf("Local I2C sensor") >= 0)
+	    {
+                $("#hardwarecontent #divi2clocal").show();
+                $("#hardwarecontent #divserial").hide();
+                $("#hardwarecontent #divremote").hide();
+                $("#hardwarecontent #divlogin").hide();
+                $("#hardwarecontent #divunderground").hide();
+                $("#hardwarecontent #divhttppoller").hide();
+	    }
             else if (text.indexOf("USB") >= 0)
             {
                 if (text.indexOf("MySensors") >= 0)
@@ -4841,6 +4867,7 @@ define(['app'], function (app) {
             $.devIdx=0;
             $.myglobals = {
                 HardwareTypesStr : [],
+		HardwareI2CStr : [],
                 SelectedHardwareIdx: 0
             };
             $scope.SerialPortStr=[];
@@ -4849,22 +4876,40 @@ define(['app'], function (app) {
             //Get hardware types
             $("#hardwareparamstable #combotype").html("");
             $.ajax({
-             url: "json.htm?type=command&param=gethardwaretypes",
-             async: false,
-             dataType: 'json',
-             success: function(data) {
-                if (typeof data.result != 'undefined') {
-                    $.each(data.result, function(i,item) {
+		url: "json.htm?type=command&param=gethardwaretypes",
+		async: false,
+		dataType: 'json',
+		success: function(data) {
+                    if (typeof data.result != 'undefined') {
+			$.each(data.result, function(i,item) {
+			    $.myglobals.HardwareTypesStr[item.idx] = item.name;
+			    // Don't show I2C sensors
+			    if (item.name.indexOf("Local I2C sensor") != -1) {
+				$.myglobals.HardwareI2CStr[item.idx] = item.name;
+				return true;
+			    }
+			    // Show other sensors
+                            var option = $('<option />');
+                            option.attr('value', item.idx).text(item.name);
+                            $("#hardwareparamstable #combotype").append(option);
+			});
+			// regroup local I2C sensors under index 1000
                         var option = $('<option />');
-                        option.attr('value', item.idx).text(item.name);
+                        option.attr('value', 1000).text("Local I2C sensors");
                         $("#hardwareparamstable #combotype").append(option);
-                    });
-                }
+                    }
              }
             });
-            $('#hardwareparamstable #combotype > option').each(function() {
-                 $.myglobals.HardwareTypesStr[$(this).val()]=$(this).text();
-            });
+
+	    //Build local I2C devices combo
+            $("#hardwareparamsi2clocal #comboi2clocal").html("");
+            $.each($.myglobals.HardwareI2CStr, function(idx,name) {
+		if (name) {
+                    var option = $('<option />');
+                    option.attr('value', idx).text(name);
+                    $("#hardwareparamsi2clocal #comboi2clocal").append(option);
+		}
+	    });
 
             //Get Serial devices
             $("#hardwareparamsserial #comboserialport").html("");
