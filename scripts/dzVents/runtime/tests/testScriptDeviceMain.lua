@@ -50,7 +50,7 @@ describe('script_time_main', function()
 
 	it("should do it's thing", function()
 		_G.commandArray = {}
-		local main = require('script_device_main')
+		local main = require('device_scripts_dispatcher')
 
 		assert.is_same({
 			{["onscript1"]="Off"},
