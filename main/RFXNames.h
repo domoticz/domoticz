@@ -164,6 +164,7 @@ enum _eHardwareTypes {
 	HTYPE_BleBox,          		//82
 	HTYPE_OpenWeatherMap,  		//83
 	HTYPE_GoodweAPI,		//84
+	HTYPE_RaspberryTSL2561,		//85
 	HTYPE_END
 };
 

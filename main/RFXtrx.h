@@ -27,6 +27,13 @@ portions of this file.
 */
 
 /*
+SDK version 9.09
+	SEAV remote added
+
+SDK version 9.08
+	CARTELECTRONIC TIC and Encoder added
+	Lighting5 - Livolo dim/scene added
+
 SDK version 9.07
 	Lighting5 IT added
 	BlindsT12 Confexx added
@@ -515,15 +522,16 @@ SDK version 4.9
 #define light5_sModeMin 0xA
 #define light5_sLivoloAllOff 0x00
 #define light5_sLivoloGang1Toggle 0x01
-#define light5_sLivoloGang2Toggle 0x02	//dim+ for dimmer
-#define light5_sLivoloGang3Toggle 0x03	//dim- for dimmer
-#define light5_sLivoloGang4Toggle 0x04
-#define light5_sLivoloGang5Toggle 0x05
-#define light5_sLivoloGang6Toggle 0x06
-#define light5_sLivoloGang7Toggle 0x07
-#define light5_sLivoloGang8Toggle 0x08
-#define light5_sLivoloGang9Toggle 0x09
-#define light5_sLivoloGang10Toggle 0x0A
+#define light5_sLivoloGang2Toggle 0x02
+#define light5_sLivoloDimR1plus 0x02
+#define light5_sLivoloGang3Toggle 0x03
+#define light5_sLivoloDimR1min 0x03
+#define light5_sLivoloScene1R1 0x04
+#define light5_sLivoloScene2R1 0x05
+#define light5_sLivoloDimR2plus 0x06
+#define light5_sLivoloDimR2min 0x07
+#define light5_sLivoloScene1R2 0x08
+#define light5_sLivoloScene2R2 0x09
 #define light5_sRGBoff 0x00
 #define light5_sRGBon 0x01
 #define light5_sRGBbright 0x02
@@ -567,6 +575,7 @@ SDK version 4.9
 #define sTypeSiemensSF01 0x0
 #define sTypeItho 0x1
 #define sTypeLucciAir 0x2
+#define sTypeSeavTXS4 0x3
 #define fan_sTimer 0x1
 #define fan_sMin 0x2
 #define fan_sLearn 0x3
@@ -585,6 +594,10 @@ SDK version 4.9
 #define fan_LucciLow 0x3
 #define fan_LucciOff 0x4
 #define fan_LucciLight 0x5
+#define fan_T1 0x1
+#define fan_T2 0x2
+#define fan_T3 0x3
+#define fan_T4 0x4
 
 //types for Curtain
 #define pTypeCurtain 0x18
@@ -621,14 +634,14 @@ SDK version 4.9
 #define blinds_sLeft 0x8
 #define blinds_sRight 0x9
 #define blinds_s9ChangeDirection 0x6
-#define blinds_s9ImA = 0x7
-#define blinds_s9ImCenter = 0x8
-#define blinds_s9ImB = 0x9
-#define blinds_s9EraseCurrentCh = 0xA
-#define blinds_s9EraseAllCh = 0xB
-#define blinds_s10LearnMaster = 0x4
-#define blinds_s10EraseCurrentCh = 0x5
-#define blinds_s10ChangeDirection = 0x6
+#define blinds_s9ImA 0x7
+#define blinds_s9ImCenter 0x8
+#define blinds_s9ImB 0x9
+#define blinds_s9EraseCurrentCh 0xA
+#define blinds_s9EraseAllCh 0xB
+#define blinds_s10LearnMaster 0x4
+#define blinds_s10EraseCurrentCh 0x5
+#define blinds_s10ChangeDirection 0x6
 
 //types for RFY
 #define pTypeRFY 0x1A
@@ -900,6 +913,11 @@ SDK version 4.9
 
 //types for water
 #define pTypeWATER 0x5F
+
+//types for CARTELECTRONIC
+#define pTypeCARTELECTRONIC 0x60
+#define sTypeTIC 0x1
+#define sTypeCEencoder 0x2
 
 //RFXSensor
 #define pTypeRFXSensor 0x70
@@ -1903,6 +1921,64 @@ typedef union tRBUF {
 		BYTE	rssi : 4;
 #endif
 	} WEIGHT;
+
+	struct {
+		BYTE	packetlength;
+		BYTE	packettype;
+		BYTE	subtype;
+		BYTE	seqnbr;
+		BYTE	id1;
+		BYTE	id2;
+		BYTE	id3;
+		BYTE	id4;
+		BYTE	id5;
+		BYTE	contract_type;
+		BYTE	counter1_0;
+		BYTE	counter1_1;
+		BYTE	counter1_2;
+		BYTE	counter1_3;
+		BYTE	counter2_0;
+		BYTE	counter2_1;
+		BYTE	counter2_2;
+		BYTE	counter2_3;
+		BYTE	power_H;
+		BYTE	power_L;
+		BYTE	state;
+#ifdef IS_BIG_ENDIAN
+		BYTE	rssi : 4;
+		BYTE	battery_level : 4;
+#else
+		BYTE	battery_level : 4;
+		BYTE	rssi : 4;
+#endif
+	} TIC;
+
+	struct {
+		BYTE	packetlength;
+		BYTE	packettype;
+		BYTE	subtype;
+		BYTE	seqnbr;
+		BYTE	id1;
+		BYTE	id2;
+		BYTE	id3;
+		BYTE	id4;
+		BYTE	counter1_0;
+		BYTE	counter1_1;
+		BYTE	counter1_2;
+		BYTE	counter1_3;
+		BYTE	counter2_0;
+		BYTE	counter2_1;
+		BYTE	counter2_2;
+		BYTE	counter2_3;
+		BYTE	state;
+#ifdef IS_BIG_ENDIAN
+		BYTE	rssi : 4;
+		BYTE	battery_level : 4;
+#else
+		BYTE	battery_level : 4;
+		BYTE	rssi : 4;
+#endif
+	} CEENCODER;
 
 	struct {
 		BYTE	packetlength;

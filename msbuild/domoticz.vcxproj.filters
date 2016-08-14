@@ -33,9 +33,6 @@
     <Filter Include="Windows">
       <UniqueIdentifier>{b2fc9567-e487-4cee-b23e-9f6002b503b9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Devices\P1Smart Meter">
-      <UniqueIdentifier>{44ff1baf-dce6-4a20-b295-313ef10e0509}</UniqueIdentifier>
-    </Filter>
     <Filter Include="SMTP">
       <UniqueIdentifier>{acc2dd9a-c3ba-4abc-9dd5-a6871fd4d465}</UniqueIdentifier>
     </Filter>
@@ -437,6 +434,9 @@
     </Filter>
     <Filter Include="Devices\OpenWeatherMap">
       <UniqueIdentifier>{db1e850c-e0ec-47fc-84cd-6528ce21f0aa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\P1 Smart Meter">
+      <UniqueIdentifier>{44ff1baf-dce6-4a20-b295-313ef10e0509}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -1334,7 +1334,7 @@
       <Filter>Devices\Domoticz</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\P1MeterBase.h">
-      <Filter>Devices\P1Smart Meter</Filter>
+      <Filter>Devices\P1 Smart Meter</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\YouLess.h">
       <Filter>Devices\YouLess</Filter>
@@ -1748,10 +1748,10 @@
       <Filter>Devices\RFXCom</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\P1MeterSerial.h">
-      <Filter>Devices\P1Smart Meter</Filter>
+      <Filter>Devices\P1 Smart Meter</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\P1MeterTCP.h">
-      <Filter>Devices\P1Smart Meter</Filter>
+      <Filter>Devices\P1 Smart Meter</Filter>
     </ClInclude>
     <ClInclude Include="..\webserver\GZipHelper.h">
       <Filter>Webserver</Filter>
@@ -1957,7 +1957,7 @@
       <Filter>Devices\Domoticz</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\P1MeterBase.cpp">
-      <Filter>Devices\P1Smart Meter</Filter>
+      <Filter>Devices\P1 Smart Meter</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\YouLess.cpp">
       <Filter>Devices\YouLess</Filter>
@@ -2302,10 +2302,10 @@
       <Filter>Devices\RFXCom</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\P1MeterSerial.cpp">
-      <Filter>Devices\P1Smart Meter</Filter>
+      <Filter>Devices\P1 Smart Meter</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\P1MeterTCP.cpp">
-      <Filter>Devices\P1Smart Meter</Filter>
+      <Filter>Devices\P1 Smart Meter</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\Kodi.cpp">
       <Filter>Devices\Kodi</Filter>

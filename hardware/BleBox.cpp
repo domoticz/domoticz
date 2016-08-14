@@ -9,12 +9,14 @@
 #include "../main/SQLHelper.h"
 #include "../httpclient/HTTPClient.h"
 
-#define TOT_TYPE 2
+#define TOT_TYPE 3
 
 const _STR_DEVICE DevicesType[TOT_TYPE] =
-{
-	{ 0, "switchBox", "Switch Box",int(pTypeLighting2), int(sTypeAC), int(STYPE_OnOff) },
-	{ 1, "wLightBox", "Light Box", int(pTypeLimitlessLights), int(sTypeLimitlessRGBW), int(STYPE_Dimmer) }
+{ 
+	{ 0, "switchBox", "Switch Box",int(pTypeLighting2), int(sTypeAC), int(STYPE_OnOff), "relay" },
+	{ 1, "shutterBox", "Shutter Box", int(pTypeLighting2), int(sTypeAC), int(STYPE_BlindsPercentageInverted), "shutter" },
+	{ 2, "wLightBoxS", "Light Box S", int(pTypeLighting2), int(sTypeAC), int(STYPE_Dimmer), "light" }
+//	{ 1, "wLightBox", "Light Box", int(pTypeLimitlessLights), int(sTypeLimitlessRGBW), int(STYPE_Dimmer) }
 };
 
 int BleBox::GetDeviceTypeByApiName(const std::string &apiName)
@@ -92,35 +94,78 @@ void BleBox::Do_Work()
 
 void BleBox::GetDevicesState()
 {
+	boost::lock_guard<boost::mutex> l(m_mutex);
+
 	std::map<const std::string, const int>::const_iterator itt;
 	for (itt = m_devices.begin(); itt != m_devices.end(); ++itt)
 	{
-		for (int i = 0; i < TOT_TYPE; ++i)
-		{
-			if (DevicesType[i].unit == itt->second)
-			{
-				Json::Value root = SendCommand(itt->first, "/api/relay/state");
-				if (root == "")
-					break;
+		std::stringstream sstr;
+		sstr << "/api/" << DevicesType[itt->second].api_state << "/state";
+		std::string command = sstr.str();
 
+		Json::Value root = SendCommand(itt->first, command);
+		if (root == "")
+			continue;
+
+
+		int node = IPToUInt(itt->first);
+		if (node != 0)
+		{
+			switch (itt->second)
+			{
+			case 0:
+			{
 				if (root["state"].empty() == true)
 				{
 					_log.Log(LOG_ERROR, "BleBox: node 'state' missing!");
 					break;
 				}
+				const bool state = root["state"].asBool();
 
-				int node = IPToUInt(itt->first);
-				if (node != 0)
-				{
-					bool state = root["state"].asBool();
-
-					SendSwitch(node, itt->second, 255, state, 0, DevicesType[i].name);
-					SetHeartbeatReceived(); //TODO - another place
-				}
+				SendSwitch(node, itt->second, 255, state, 0, DevicesType[itt->second].name);
+				break;
 			}
+			case 1:
+			{
+				if (root["state"].empty() == true)
+				{
+					_log.Log(LOG_ERROR, "BleBox: node 'state' missing!");
+					break;
+				}
+				const int state = root["state"].asInt();
+
+				const int currentPos = root["currentPos"].asInt();
+				//	const int desiredPos = root["desiredPos"].asInt();
+				const int pos = currentPos;
+
+				bool opened = true;
+				if ((state == 2 && pos == 100) || (state == 3))
+					opened = false;
+
+				SendSwitch(node, itt->second, 255, opened, pos, DevicesType[itt->second].name);
+				break;
+			}
+			case 2:
+				if (root["light"].empty() == true)
+				{
+					_log.Log(LOG_ERROR, "BleBox: node 'light' missing!");
+					break;
+				}
+				if (root["light"]["currentColor"].empty() == true)
+				{
+					_log.Log(LOG_ERROR, "BleBox: node 'currentColor' missing!");
+					break;
+				}
+				const std::string currentColor = root["light"]["currentColor"].asString();
+				int hexNumber;
+				sscanf(currentColor.c_str(), "%x", &hexNumber);
+				int level = hexNumber / (255.0 / 100.0);
+
+				SendSwitch(node, itt->second, 255, level > 0, level, DevicesType[itt->second].name);
+				break;
+			}
+			SetHeartbeatReceived();
 		}
-
-
 	}
 }
 
@@ -130,7 +175,6 @@ std::string BleBox::GetDeviceIP(const tRBUF *id)
 
 	sprintf(ip, "%d.%d.%d.%d", id->LIGHTING2.id1, id->LIGHTING2.id2, id->LIGHTING2.id3, id->LIGHTING2.id4);
 	return ip;
-
 }
 
 std::string BleBox::GetDeviceIP(const std::string &id)
@@ -151,46 +195,143 @@ std::string BleBox::GetDeviceIP(const std::string &id)
 	return ip;
 }
 
+std::string BleBox::IPToHex(const std::string &IPAddress)
+{
+	std::vector<std::string> strarray;
+	StringSplit(IPAddress, ".", strarray);
+	if (strarray.size() != 4)
+		return "";
+
+	char szIdx[10];
+	sprintf(szIdx, "%02X%02X%02X%02X", atoi(strarray[0].data()), atoi(strarray[1].data()), atoi(strarray[2].data()), atoi(strarray[3].data()));
+
+	return szIdx;
+}
 
 bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	const tRBUF *output = reinterpret_cast<const tRBUF*>(pdata);
 
-	if (output->ICMND.packettype == pTypeLighting2 && output->LIGHTING2.subtype == sTypeAC)  // switch box
+	if (output->ICMND.packettype == pTypeLighting2 && output->LIGHTING2.subtype == sTypeAC)
 	{
-		std::string state;
-		if (output->LIGHTING2.cmnd == light2_sOn)
-		{
-			state = "1";
-		}
-		else
-		{
-			state = "0";
-		}
 
 		std::string IPAddress = GetDeviceIP(output);
 
-		Json::Value root = SendCommand(IPAddress, "/s/" + state);
-		if (root == "")
-			return false;
-
-		if (root["state"].empty() == true)
+		switch (output->LIGHTING2.unitcode)
 		{
-			_log.Log(LOG_ERROR, "BleBox: node 'state' missing!");
-			return false;
+		case 0:
+		{
+			std::string state;
+			if (output->LIGHTING2.cmnd == light2_sOn)
+			{
+				state = "1";
+			}
+			else
+			{
+				state = "0";
+			}
+
+			Json::Value root = SendCommand(IPAddress, "/s/" + state);
+			if (root == "")
+				return false;
+
+			if (root["state"].empty() == true)
+			{
+				_log.Log(LOG_ERROR, "BleBox: node 'state' missing!");
+				return false;
+			}
+
+			if (root["state"].asString() != state)
+			{
+				_log.Log(LOG_ERROR, "BleBox: state not changed!");
+				return false;
+			}
+			break;
 		}
 
-		if (root["state"].asString() != state)
+		case 1:
 		{
-			_log.Log(LOG_ERROR, "BleBox: state not changed!");
-			return false;
+			std::string state;
+			if (output->LIGHTING2.cmnd == light2_sOn)
+			{
+				state = "u";
+			}
+			else
+				if (output->LIGHTING2.cmnd == light2_sOff)
+				{
+					state = "d";
+				}
+				else
+				{
+					int percentage = output->LIGHTING2.level * 100 / 15;
+					state = boost::to_string(percentage);
+				}
+
+			Json::Value root = SendCommand(IPAddress, "/s/" + state);
+			if (root == "")
+				return false;
+
+			if (root["state"].empty() == true)
+			{
+				_log.Log(LOG_ERROR, "BleBox: node 'state' missing!");
+				return false;
+			}
+
+			//if (root["state"].asString() != state)
+			//{
+			//	_log.Log(LOG_ERROR, "BleBox: state not changed!");
+			//	return false;
+			//}
+			break;
 		}
 
-		return true;
+		case 2:
+			std::string level;
+			if (output->LIGHTING2.cmnd == light2_sOn)
+			{
+				level = "ff";
+			}
+			else
+				if (output->LIGHTING2.cmnd == light2_sOff)
+				{
+					level = "00";
+				}
+				else
+				{
+					int percentage = output->LIGHTING2.level * 255 / 15;
 
+					char value[4];
+					sprintf(value, "%x", percentage);
+					level = value;
+				}
+
+			Json::Value root = SendCommand(IPAddress, "/s/" + level);
+			if (root == "")
+				return false;
+
+			if (root["light"].empty() == true)
+			{
+				_log.Log(LOG_ERROR, "BleBox: node 'light' missing!");
+				return false;
+			}
+			if (root["light"]["currentColor"].empty() == true)
+			{
+				_log.Log(LOG_ERROR, "BleBox: node 'currentColor' missing!");
+				return false;
+			}
+
+			if (root["light"]["currentColor"].asString() != level)
+			{
+				_log.Log(LOG_ERROR, "BleBox: state not changed!");
+				return false;
+			}
+
+			break;
+		}
+	
 	}
 
-	return false;
+	return true;
 }
 
 void BleBox::SetSettings(const int pollIntervalSec)
@@ -441,18 +582,30 @@ std::string BleBox::IdentifyDevice(const std::string &IPAddress)
 	if (root == "")
 		return "";
 
+	std::string result;
+
 	if (root["device"].empty() == true)
 	{
-		_log.Log(LOG_ERROR, "BleBox: Invalid data received!");
-		return "";
+		if (root["type"].empty() == true)
+		{
+			_log.Log(LOG_ERROR, "BleBox: Invalid data received!");
+			return "";
+		}
+		else
+		{
+			result = root["type"].asString();
+		}
 	}
-	if (root["device"]["type"].empty() == true)
+	else
 	{
-		_log.Log(LOG_ERROR, "BleBox: Invalid device type received!");
-		return "";
+		if (root["device"]["type"].empty() == true)
+		{
+			_log.Log(LOG_ERROR, "BleBox: Invalid device type received!");
+			return "";
+		}
+		result = root["device"]["type"].asString();
 	}
-
-	return root["device"]["type"].asString();
+	return result;
 }
 
 void BleBox::AddNode(const std::string &name, const std::string &IPAddress)
@@ -467,28 +620,32 @@ void BleBox::AddNode(const std::string &name, const std::string &IPAddress)
 
 	STR_DEVICE deviceType = DevicesType[deviceTypeID];
 
-	std::vector<std::string> strarray;
-	boost::split(strarray,IPAddress, boost::is_any_of("."));
-	if (strarray.size() != 4)
-		return;
-
-	char szIdx[10];
-	sprintf(szIdx, "%02X%02X%02X%02X", atoi(strarray[0].data()), atoi(strarray[1].data()), atoi(strarray[2].data()), atoi(strarray[3].data()));
+	std::string szIdx = IPToHex(IPAddress);
 
 	m_sql.safe_query(
 		"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue) "
 		"VALUES (%d, '%q', %d, %d, %d, %d, 1, 12, 255, '%q', 0, 'Unavailable')",
-		m_HwdID, szIdx, deviceType.unit, deviceType.deviceID, deviceType.subType, deviceType.switchType, name.c_str());
+		m_HwdID, szIdx.c_str(), deviceType.unit, deviceType.deviceID, deviceType.subType, deviceType.switchType, name.c_str());
 
 	ReloadNodes();
 }
 
 bool BleBox::UpdateNode(const int id, const std::string &name, const std::string &IPAddress)
 {
-	std::vector<std::vector<std::string> > result;
+	std::string deviceApiName = IdentifyDevice(IPAddress);
+	if (deviceApiName.empty())
+		return false;
 
-	m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', DeviceID='%q' WHERE (HardwareID==%d) AND (ID=='%d')", 
-		name.c_str(), IPAddress.c_str(), m_HwdID, id);
+	int deviceTypeID = GetDeviceTypeByApiName(deviceApiName);
+	if (deviceTypeID == -1)
+		return false;
+
+	STR_DEVICE deviceType = DevicesType[deviceTypeID];
+
+	std::string szIdx = IPToHex(IPAddress);
+
+	m_sql.safe_query("UPDATE DeviceStatus SET DeviceID='%q', Unit='%d', Type='%d', SubType='%d', SwitchType='%d', Name='%q' WHERE (HardwareID=='%d') AND (ID=='%d')", 
+		szIdx.c_str(), deviceType.unit, deviceType.deviceID, deviceType.subType, deviceType.switchType, name.c_str(), m_HwdID, id);
 
 	ReloadNodes();
 	return true;
@@ -496,6 +653,8 @@ bool BleBox::UpdateNode(const int id, const std::string &name, const std::string
 
 void BleBox::RemoveNode(const int id)
 {
+	boost::lock_guard<boost::mutex> l(m_mutex);
+
 	m_sql.safe_query("DELETE FROM DeviceStatus WHERE (HardwareID==%d) AND (ID=='%d')", m_HwdID, id);
 
 	ReloadNodes();

@@ -49,7 +49,7 @@
 
 
 #ifdef _DEBUG
-#define DEBUG_GoodweAPIW 1
+	//#define DEBUG_GoodweAPIW 1
 #endif
 
 

@@ -16,6 +16,7 @@
 
 //Hardware Devices
 #include "../hardware/hardwaretypes.h"
+#include "../hardware/RFXBase.h"
 #include "../hardware/RFXComSerial.h"
 #include "../hardware/RFXComTCP.h"
 #include "../hardware/DomoticzTCP.h"
@@ -787,6 +788,9 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_RaspberryHTU21D:
 		pHardware = new I2C(ID,2);
 		break;
+	case HTYPE_RaspberryTSL2561:
+		pHardware = new I2C(ID,3);
+		break;
 	case HTYPE_Wunderground:
 		pHardware = new CWunderground(ID,Username,Password);
 		break;
@@ -1294,9 +1298,16 @@ void MainWorker::ParseRFXLogFile()
 		}
 		if (ii==0)
 			continue;
-		pHardware->WriteToHardware((const char *)&rxbuffer,totbytes);
-		DecodeRXMessage(pHardware, (const unsigned char *)&rxbuffer, NULL, 255);
-		sleep_milliseconds(300);
+		if (CRFXBase::CheckValidRFXData((const uint8_t*)&rxbuffer))
+		{
+			pHardware->WriteToHardware((const char *)&rxbuffer, totbytes);
+			DecodeRXMessage(pHardware, (const unsigned char *)&rxbuffer, NULL, 255);
+			sleep_milliseconds(300);
+		}
+		else
+		{
+			_log.Log(LOG_ERROR, "Invalid data/length!");
+		}
 	}
 #endif
 }

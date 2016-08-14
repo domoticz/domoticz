@@ -703,6 +703,16 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 	{
 		SendAirQualitySensor(ID3, ID4, BatLevel, int(pDevice->floatValue), "CO2 Sensor");
 	}
+	else if (pDevice->devType == ZDTYPE_SENSOR_MOISTURE)
+	{
+		uint16_t NodeID = (ID3 << 8) | ID4;
+		SendPercentageSensor((int)(ID1 << 24) | (ID2 << 16) | (ID3 << 8) | ID4, 0, BatLevel, pDevice->floatValue, "Moisture");
+	}
+	else if (pDevice->devType == ZDTYPE_SENSOR_TANK_CAPACITY)
+	{
+		uint16_t NodeID = (ID3 << 8) | ID4;
+		SendCustomSensor(ID3, ID4, BatLevel, pDevice->floatValue, "Tank Capacity", "l");
+	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_SETPOINT)
 	{
 		_tThermostat tmeter;
