@@ -1,4 +1,0 @@
-runtime/tests/luacov.stats.out
-runtime/tests/luacov.report.out
-runtime/tests/scripts/storage/*
-/.idea/
