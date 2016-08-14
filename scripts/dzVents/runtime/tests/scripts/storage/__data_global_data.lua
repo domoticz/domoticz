@@ -3,7 +3,7 @@ local multiRefObjects = {
 
 } -- multiRefObjects
 local obj1 = {
-	["h"] = true;
 	["g"] = 666;
+	["h"] = true;
 }
 return obj1
