@@ -15748,5 +15748,19 @@ namespace http {
 					"DELETE FROM UserSessions WHERE ExpirationDate < datetime('now', 'localtime')");
 		}
 
+
+		CDomoticzHardwareBase* CWebServer::GetHardwareBase(const std::string &HwId, const int Type)
+		{
+			if (HwId == "")
+				return NULL;
+			int iHardwareID = atoi(HwId.c_str());
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(iHardwareID);
+			if (pHardware == NULL)
+				return NULL;
+			if (pHardware->HwdType != Type)
+				return NULL;
+			return pHardware;
+		}
+
 	} //server
 }//http

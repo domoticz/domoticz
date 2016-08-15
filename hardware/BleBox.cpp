@@ -422,20 +422,15 @@ namespace http {
 			}
 
 			std::string hwid = request::findValue(&req, "idx");
-			if (hwid == "")
-				return;
-			int iHardwareID = atoi(hwid.c_str());
-			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pHardware == NULL)
-				return;
-			if (pHardware->HwdType != HTYPE_BleBox)
+			CDomoticzHardwareBase *pBaseHardware = GetHardwareBase(hwid, HTYPE_BleBox);
+			if (pBaseHardware == NULL)
 				return;
 
 			root["status"] = "OK";
 			root["title"] = "BleBoxGetNodes";
 
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT ID,Name,DeviceID FROM DeviceStatus WHERE (HardwareID==%d)", iHardwareID);
+			result = m_sql.safe_query("SELECT ID,Name,DeviceID FROM DeviceStatus WHERE (HardwareID=='%d')", pBaseHardware->m_HwdID);
 			if (result.size() > 0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
@@ -469,11 +464,8 @@ namespace http {
 				(mode2 == "")
 				)
 				return;
-			int iHardwareID = atoi(hwid.c_str());
-			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
+			CDomoticzHardwareBase *pBaseHardware = GetHardwareBase(hwid, HTYPE_BleBox);
 			if (pBaseHardware == NULL)
-				return;
-			if (pBaseHardware->HwdType != HTYPE_BleBox)
 				return;
 			BleBox *pHardware = reinterpret_cast<BleBox*>(pBaseHardware);
 
@@ -505,11 +497,8 @@ namespace http {
 				(ip == "")
 				)
 				return;
-			int iHardwareID = atoi(hwid.c_str());
-			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
+			CDomoticzHardwareBase *pBaseHardware = GetHardwareBase(hwid, HTYPE_BleBox);
 			if (pBaseHardware == NULL)
-				return;
-			if (pBaseHardware->HwdType != HTYPE_BleBox)
 				return;
 			BleBox *pHardware = reinterpret_cast<BleBox*>(pBaseHardware);
 
@@ -536,11 +525,8 @@ namespace http {
 				(ip == "")
 				)
 				return;
-			int iHardwareID = atoi(hwid.c_str());
-			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
+			CDomoticzHardwareBase *pBaseHardware = GetHardwareBase(hwid, HTYPE_BleBox);
 			if (pBaseHardware == NULL)
-				return;
-			if (pBaseHardware->HwdType != HTYPE_BleBox)
 				return;
 			BleBox *pHardware = reinterpret_cast<BleBox*>(pBaseHardware);
 
@@ -564,11 +550,8 @@ namespace http {
 				(nodeid == "")
 				)
 				return;
-			int iHardwareID = atoi(hwid.c_str());
-			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
+			CDomoticzHardwareBase *pBaseHardware = GetHardwareBase(hwid, HTYPE_BleBox);
 			if (pBaseHardware == NULL)
-				return;
-			if (pBaseHardware->HwdType != HTYPE_BleBox)
 				return;
 			BleBox *pHardware = reinterpret_cast<BleBox*>(pBaseHardware);
 
@@ -586,13 +569,8 @@ namespace http {
 			}
 
 			std::string hwid = request::findValue(&req, "idx");
-			if (hwid == "")
-				return;
-			int iHardwareID = atoi(hwid.c_str());
-			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
+			CDomoticzHardwareBase *pBaseHardware = GetHardwareBase(hwid, HTYPE_BleBox);
 			if (pBaseHardware == NULL)
-				return;
-			if (pBaseHardware->HwdType != HTYPE_BleBox)
 				return;
 			BleBox *pHardware = reinterpret_cast<BleBox*>(pBaseHardware);
 

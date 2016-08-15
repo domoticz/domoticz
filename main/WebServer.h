@@ -5,6 +5,7 @@
 #include "../webserver/cWebem.h"
 #include "../webserver/request.hpp"
 #include "../webserver/session_store.hpp"
+#include "../DomoticzHardware.h"
 
 struct lua_State;
 struct lua_Debug;
@@ -61,6 +62,8 @@ public:
 	void RestoreDatabase(WebEmSession & session, const request& req, std::string & redirect_uri);
 	void SBFSpotImportOldData(WebEmSession & session, const request& req, std::string & redirect_uri);
 	void SetCurrentCostUSBType(WebEmSession & session, const request& req, std::string & redirect_uri);
+
+	CDomoticzHardwareBase* GetHardwareBase(const std::string &HwId, const int Type);
 
 	cWebem *m_pWebEm;
 
