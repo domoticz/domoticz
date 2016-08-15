@@ -208,16 +208,21 @@ return std::string(buf.data(), buf.size());
 
 void CEventSystem::StripQuotes(std::string &sString)
 {
-	if (sString.size() < 2)
+	if (sString.size() < 1)
 		return;
 
-	if (sString.find('"') != 0)
-		return;
-	if (sString[sString.size() - 1] != '"')
-		return;
+	size_t tpos = sString.find('"');
+	if (tpos==0) //strip first quote
+		sString = sString.substr(1);
 
-	//Strip quotes
-	sString = sString.substr(1, sString.size() - 2);
+	if (!sString.empty())
+	{
+		if (sString[sString.size() - 1] == '"')
+		{
+			//strip last quote
+			sString = sString.substr(0, sString.size() - 1);
+		}
+	}
 }
 
 struct _tHardwareListIntEV{
@@ -1922,6 +1927,7 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 					std::string newAction = doWhat.substr(0, aFind);
 					afterTimerSeconds = atoi(delayString.c_str());
 					doWhat = newAction;
+					StripQuotes(doWhat);
 				}
 				doWhat = ProcessVariableArgument(doWhat);
 				if (afterTimerSeconds == 0)

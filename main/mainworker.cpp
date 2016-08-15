@@ -16,6 +16,7 @@
 
 //Hardware Devices
 #include "../hardware/hardwaretypes.h"
+#include "../hardware/RFXBase.h"
 #include "../hardware/RFXComSerial.h"
 #include "../hardware/RFXComTCP.h"
 #include "../hardware/DomoticzTCP.h"
@@ -1297,9 +1298,16 @@ void MainWorker::ParseRFXLogFile()
 		}
 		if (ii==0)
 			continue;
-		pHardware->WriteToHardware((const char *)&rxbuffer,totbytes);
-		DecodeRXMessage(pHardware, (const unsigned char *)&rxbuffer, NULL, 255);
-		sleep_milliseconds(300);
+		if (CRFXBase::CheckValidRFXData((const uint8_t*)&rxbuffer))
+		{
+			pHardware->WriteToHardware((const char *)&rxbuffer, totbytes);
+			DecodeRXMessage(pHardware, (const unsigned char *)&rxbuffer, NULL, 255);
+			sleep_milliseconds(300);
+		}
+		else
+		{
+			_log.Log(LOG_ERROR, "Invalid data/length!");
+		}
 	}
 #endif
 }

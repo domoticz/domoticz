@@ -29,6 +29,7 @@ Version 3.xxxx (August xx 2016)
 - Changed: Waterflow sensor, now uses Node+Child as ID (for example 0x0801)
 - Changed: Wind Direction graph (now does not display directions when speed was equal to zero)
 - Fixed: Better handling of white listed commands/urls
+- Fixed: Blockly, fixed extra quote when setting a user variable string value
 - Fixed: Database backup is now only possible for admin users
 - Fixed: Double checking command rights
 - Fixed: Dummy, when new sensor is created, Add it to the EventSystem

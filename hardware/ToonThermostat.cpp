@@ -762,6 +762,15 @@ void CToonThermostat::GetMeterDetails()
 
 		m_p1power.usagecurrent = (unsigned long)(root["powerUsage"]["value"].asFloat());	//Watt
 		m_p1power.delivcurrent = (unsigned long)(root["powerUsage"]["valueProduced"].asFloat());	//Watt
+
+		if (root["powerUsage"]["valueSolar"].empty() == false)
+		{
+			float valueSolar = (float)(root["powerUsage"]["valueSolar"].asFloat());
+			if (valueSolar != 0)
+			{
+				SendWattMeter(1, 1, 255, valueSolar, "Solar");
+			}
+		}
 		
 	}
 

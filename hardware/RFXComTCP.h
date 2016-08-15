@@ -24,10 +24,6 @@ protected:
 	void OnData(const unsigned char *pData, size_t length);
 	void OnError(const std::exception e);
 	void OnError(const boost::system::error_code& error);
-	bool onInternalMessage(const unsigned char *pBuffer, const size_t Len);
 	void Do_Work();
-	boost::shared_ptr<boost::thread> m_thread;
-	volatile bool m_stoprequested;
-	bool m_bReceiverStarted;
 };
 

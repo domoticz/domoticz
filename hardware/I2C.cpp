@@ -498,7 +498,7 @@ void I2C::TSL2561_ReadSensorDetails()
 	ratio = 0;
 	if (ch0 != 0) ratio = ch1/ch0;
 	if (ratio >= 0 && ratio < 0.50)
-		lux = ch0 * (0.0304 - 0.062 * ((ch1 / ch0)*1.4));
+		lux = ch0 * (0.0304 - 0.062 * pow(ch1 / ch0, 1.4));
 	else if (ratio >= 0.5 && ratio < 0.61)
 		lux = 0.0224*ch0 - 0.031*ch1;
 	else if (ratio >= 0.61 && ratio < 0.8)
