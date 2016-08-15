@@ -9,14 +9,14 @@
 #include "../main/SQLHelper.h"
 #include "../httpclient/HTTPClient.h"
 
-#define TOT_TYPE 3
+#define TOT_TYPE 4
 
 const _STR_DEVICE DevicesType[TOT_TYPE] =
 { 
 	{ 0, "switchBox", "Switch Box",int(pTypeLighting2), int(sTypeAC), int(STYPE_OnOff), "relay" },
 	{ 1, "shutterBox", "Shutter Box", int(pTypeLighting2), int(sTypeAC), int(STYPE_BlindsPercentageInverted), "shutter" },
-	{ 2, "wLightBoxS", "Light Box S", int(pTypeLighting2), int(sTypeAC), int(STYPE_Dimmer), "light" }
-//	{ 1, "wLightBox", "Light Box", int(pTypeLimitlessLights), int(sTypeLimitlessRGBW), int(STYPE_Dimmer) }
+	{ 2, "wLightBoxS", "Light Box S", int(pTypeLighting2), int(sTypeAC), int(STYPE_Dimmer), "light" },
+	{ 3, "wLightBox", "Light Box", int(pTypeLimitlessLights), int(sTypeLimitlessRGBW), int(STYPE_Dimmer), "rgbw" }
 };
 
 int BleBox::GetDeviceTypeByApiName(const std::string &apiName)
@@ -113,56 +113,77 @@ void BleBox::GetDevicesState()
 		{
 			switch (itt->second)
 			{
-			case 0:
-			{
-				if (root["state"].empty() == true)
+				case 0:
 				{
-					_log.Log(LOG_ERROR, "BleBox: node 'state' missing!");
+					if (root["state"].empty() == true)
+					{
+						_log.Log(LOG_ERROR, "BleBox: node 'state' missing!");
+						break;
+					}
+					const bool state = root["state"].asBool();
+
+					SendSwitch(node, itt->second, 255, state, 0, DevicesType[itt->second].name);
 					break;
 				}
-				const bool state = root["state"].asBool();
-
-				SendSwitch(node, itt->second, 255, state, 0, DevicesType[itt->second].name);
-				break;
-			}
-			case 1:
-			{
-				if (root["state"].empty() == true)
+				case 1:
 				{
-					_log.Log(LOG_ERROR, "BleBox: node 'state' missing!");
+					if (root["state"].empty() == true)
+					{
+						_log.Log(LOG_ERROR, "BleBox: node 'state' missing!");
+						break;
+					}
+					const int state = root["state"].asInt();
+
+					const int currentPos = root["currentPos"].asInt();
+					//	const int desiredPos = root["desiredPos"].asInt();
+					const int pos = currentPos;
+
+					bool opened = true;
+					if ((state == 2 && pos == 100) || (state == 3))
+						opened = false;
+
+					SendSwitch(node, itt->second, 255, opened, pos, DevicesType[itt->second].name);
 					break;
 				}
-				const int state = root["state"].asInt();
-
-				const int currentPos = root["currentPos"].asInt();
-				//	const int desiredPos = root["desiredPos"].asInt();
-				const int pos = currentPos;
-
-				bool opened = true;
-				if ((state == 2 && pos == 100) || (state == 3))
-					opened = false;
-
-				SendSwitch(node, itt->second, 255, opened, pos, DevicesType[itt->second].name);
-				break;
-			}
-			case 2:
-				if (root["light"].empty() == true)
+				case 2:
 				{
-					_log.Log(LOG_ERROR, "BleBox: node 'light' missing!");
+					if (root["light"].empty() == true)
+					{
+						_log.Log(LOG_ERROR, "BleBox: node 'light' missing!");
+						break;
+					}
+					if (root["light"]["currentColor"].empty() == true)
+					{
+						_log.Log(LOG_ERROR, "BleBox: node 'currentColor' missing!");
+						break;
+					}
+					const std::string currentColor = root["light"]["currentColor"].asString();
+					int hexNumber;
+					sscanf(currentColor.c_str(), "%x", &hexNumber);
+					int level = hexNumber / (255.0 / 100.0);
+
+					SendSwitch(node, itt->second, 255, level > 0, level, DevicesType[itt->second].name);
 					break;
 				}
-				if (root["light"]["currentColor"].empty() == true)
+				case 3:
 				{
-					_log.Log(LOG_ERROR, "BleBox: node 'currentColor' missing!");
+					if (root["rgbw"].empty() == true)
+					{
+						_log.Log(LOG_ERROR, "BleBox: node 'rgbw' missing!");
+						break;
+					}
+					if (root["rgbw"]["currentColor"].empty() == true)
+					{
+						_log.Log(LOG_ERROR, "BleBox: node 'currentColor' missing!");
+						break;
+					}
+					const std::string currentColor = root["rgbw"]["currentColor"].asString();
+					int hexNumber;
+					sscanf(currentColor.c_str(), "%x", &hexNumber);
+
+					SendRGBWSwitch(node, itt->second, 255, hexNumber, true, DevicesType[itt->second].name);
 					break;
 				}
-				const std::string currentColor = root["light"]["currentColor"].asString();
-				int hexNumber;
-				sscanf(currentColor.c_str(), "%x", &hexNumber);
-				int level = hexNumber / (255.0 / 100.0);
-
-				SendSwitch(node, itt->second, 255, level > 0, level, DevicesType[itt->second].name);
-				break;
 			}
 			SetHeartbeatReceived();
 		}
@@ -174,6 +195,14 @@ std::string BleBox::GetDeviceIP(const tRBUF *id)
 	char ip[20];
 
 	sprintf(ip, "%d.%d.%d.%d", id->LIGHTING2.id1, id->LIGHTING2.id2, id->LIGHTING2.id3, id->LIGHTING2.id4);
+	return ip;
+}
+
+std::string BleBox::GetDeviceRevertIP(const tRBUF *id)
+{
+	char ip[20];
+
+	sprintf(ip, "%d.%d.%d.%d", id->LIGHTING2.id4, id->LIGHTING2.id3, id->LIGHTING2.id2, id->LIGHTING2.id1);
 	return ip;
 }
 
@@ -214,123 +243,157 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 
 	if (output->ICMND.packettype == pTypeLighting2 && output->LIGHTING2.subtype == sTypeAC)
 	{
-
 		std::string IPAddress = GetDeviceIP(output);
 
 		switch (output->LIGHTING2.unitcode)
 		{
-		case 0:
-		{
-			std::string state;
-			if (output->LIGHTING2.cmnd == light2_sOn)
+			case 0:
 			{
-				state = "1";
-			}
-			else
-			{
-				state = "0";
-			}
-
-			Json::Value root = SendCommand(IPAddress, "/s/" + state);
-			if (root == "")
-				return false;
-
-			if (root["state"].empty() == true)
-			{
-				_log.Log(LOG_ERROR, "BleBox: node 'state' missing!");
-				return false;
-			}
-
-			if (root["state"].asString() != state)
-			{
-				_log.Log(LOG_ERROR, "BleBox: state not changed!");
-				return false;
-			}
-			break;
-		}
-
-		case 1:
-		{
-			std::string state;
-			if (output->LIGHTING2.cmnd == light2_sOn)
-			{
-				state = "u";
-			}
-			else
-				if (output->LIGHTING2.cmnd == light2_sOff)
+				std::string state;
+				if (output->LIGHTING2.cmnd == light2_sOn)
 				{
-					state = "d";
+					state = "1";
 				}
 				else
 				{
-					int percentage = output->LIGHTING2.level * 100 / 15;
-					state = boost::to_string(percentage);
+					state = "0";
 				}
 
-			Json::Value root = SendCommand(IPAddress, "/s/" + state);
-			if (root == "")
-				return false;
+				Json::Value root = SendCommand(IPAddress, "/s/" + state);
+				if (root == "")
+					return false;
 
-			if (root["state"].empty() == true)
-			{
-				_log.Log(LOG_ERROR, "BleBox: node 'state' missing!");
-				return false;
-			}
-
-			//if (root["state"].asString() != state)
-			//{
-			//	_log.Log(LOG_ERROR, "BleBox: state not changed!");
-			//	return false;
-			//}
-			break;
-		}
-
-		case 2:
-			std::string level;
-			if (output->LIGHTING2.cmnd == light2_sOn)
-			{
-				level = "ff";
-			}
-			else
-				if (output->LIGHTING2.cmnd == light2_sOff)
+				if (root["state"].empty() == true)
 				{
-					level = "00";
+					_log.Log(LOG_ERROR, "BleBox: node 'state' missing!");
+					return false;
+				}
+
+				if (root["state"].asString() != state)
+				{
+					_log.Log(LOG_ERROR, "BleBox: state not changed!");
+					return false;
+				}
+				break;
+			}
+
+			case 1:
+			{
+				std::string state;
+				if (output->LIGHTING2.cmnd == light2_sOn)
+				{
+					state = "u";
 				}
 				else
-				{
-					int percentage = output->LIGHTING2.level * 255 / 15;
+					if (output->LIGHTING2.cmnd == light2_sOff)
+					{
+						state = "d";
+					}
+					else
+					{
+						int percentage = output->LIGHTING2.level * 100 / 15;
+						state = boost::to_string(percentage);
+					}
 
-					char value[4];
-					sprintf(value, "%x", percentage);
-					level = value;
+				Json::Value root = SendCommand(IPAddress, "/s/" + state);
+				if (root == "")
+					return false;
+
+				if (root["state"].empty() == true)
+				{
+					_log.Log(LOG_ERROR, "BleBox: node 'state' missing!");
+					return false;
 				}
 
-			Json::Value root = SendCommand(IPAddress, "/s/" + level);
-			if (root == "")
-				return false;
-
-			if (root["light"].empty() == true)
-			{
-				_log.Log(LOG_ERROR, "BleBox: node 'light' missing!");
-				return false;
-			}
-			if (root["light"]["currentColor"].empty() == true)
-			{
-				_log.Log(LOG_ERROR, "BleBox: node 'currentColor' missing!");
-				return false;
+				//if (root["state"].asString() != state)
+				//{
+				//	_log.Log(LOG_ERROR, "BleBox: state not changed!");
+				//	return false;
+				//}
+				break;
 			}
 
-			if (root["light"]["currentColor"].asString() != level)
+			case 2:
 			{
-				_log.Log(LOG_ERROR, "BleBox: state not changed!");
-				return false;
-			}
+				std::string level;
+				if (output->LIGHTING2.cmnd == light2_sOn)
+				{
+					level = "ff";
+				}
+				else
+					if (output->LIGHTING2.cmnd == light2_sOff)
+					{
+						level = "00";
+					}
+					else
+					{
+						int percentage = output->LIGHTING2.level * 255 / 15;
 
-			break;
+						char value[4];
+						sprintf(value, "%x", percentage);
+						level = value;
+					}
+
+				Json::Value root = SendCommand(IPAddress, "/s/" + level);
+				if (root == "")
+					return false;
+
+				if (root["light"].empty() == true)
+				{
+					_log.Log(LOG_ERROR, "BleBox: node 'light' missing!");
+					return false;
+				}
+				if (root["light"]["currentColor"].empty() == true)
+				{
+					_log.Log(LOG_ERROR, "BleBox: node 'currentColor' missing!");
+					return false;
+				}
+
+				if (root["light"]["currentColor"].asString() != level) // TODO or desiredcolor ??
+				{
+					_log.Log(LOG_ERROR, "BleBox: light not changed!");
+					return false;
+				}
+
+				break;
+			}
 		}
-	
 	}
+	if (output->ICMND.packettype == pTypeLimitlessLights && output->LIGHTING2.subtype == sTypeLimitlessRGBW)
+	{
+		std::string IPAddress = GetDeviceRevertIP(output);
 
+		const _tLimitlessLights *pLed = reinterpret_cast<const _tLimitlessLights *>(pdata);
+		int red, green, blue;
+		float cHue = (360.0f / 255.0f)*float(pLed->value);//hue given was in range of 0-255
+		hue2rgb(cHue, red, green, blue);
+
+		char level[10];
+		sprintf(level, "%02x%02x%02x%02x", red, green, blue, 255);
+		std::string state(level);
+
+		Json::Value root = SendCommand(IPAddress, "/s/" + state);
+		if (root == "")
+			return false;
+	
+		if (root["rgbw"].empty() == true)
+		{
+			_log.Log(LOG_ERROR, "BleBox: node 'rgbw' missing!");
+			return false;
+		}
+		if (root["rgbw"]["desiredColor"].empty() == true)
+		{
+			_log.Log(LOG_ERROR, "BleBox: node 'desiredColor' missing!");
+			return false;
+		}
+
+		if (root["rgbw"]["desiredColor"].asString() != state)
+		{
+			_log.Log(LOG_ERROR, "BleBox: rgbw not changed!");
+			return false;
+		}
+	}
+	
 	return true;
 }
 
@@ -653,8 +716,6 @@ bool BleBox::UpdateNode(const int id, const std::string &name, const std::string
 
 void BleBox::RemoveNode(const int id)
 {
-	boost::lock_guard<boost::mutex> l(m_mutex);
-
 	m_sql.safe_query("DELETE FROM DeviceStatus WHERE (HardwareID==%d) AND (ID=='%d')", m_HwdID, id);
 
 	ReloadNodes();
@@ -662,8 +723,6 @@ void BleBox::RemoveNode(const int id)
 
 void BleBox::RemoveAllNodes()
 {
-	boost::lock_guard<boost::mutex> l(m_mutex);
-
 	m_sql.safe_query("DELETE FROM DeviceStatus WHERE (HardwareID==%d)", m_HwdID);
 
 	UnloadNodes();
@@ -671,11 +730,15 @@ void BleBox::RemoveAllNodes()
 
 void BleBox::UnloadNodes()
 {
+	boost::lock_guard<boost::mutex> l(m_mutex);
+
 	m_devices.clear();
 }
 
 bool BleBox::LoadNodes()
 {
+	boost::lock_guard<boost::mutex> l(m_mutex);
+
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ID,DeviceID, Unit FROM DeviceStatus WHERE (HardwareID==%d)", m_HwdID);
 	if (result.size() > 0)
