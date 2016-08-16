@@ -35,6 +35,7 @@ Version 3.xxxx (August xx 2016)
 - Fixed: Dummy, when new sensor is created, Add it to the EventSystem
 - Fixed: Fix Off Delay not handled for Selector switch (#538).
 - Fixed: Fix On/Off delays not saved on the selector switch edit form (#532).
+- Fixed: Logitech Harmony, Ping request now working as well for firmware 4.10.30 (Herman)
 - Fixed: KMTronic, did not work in timers/groups/scenes
 - Fixed: Manual Light/Switch, when created, Add it to the EventSystem
 - Fixed: Wind Speed/Gust graph, Plotbands
