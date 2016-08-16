@@ -425,6 +425,19 @@ CDomoticzHardwareBase* MainWorker::GetHardware(int HwdId)
 	return NULL;
 }
 
+CDomoticzHardwareBase* MainWorker::GetHardwareBase(const std::string &HwId, const int Type)
+{
+	if (HwId == "")
+		return NULL;
+	int iHardwareID = atoi(HwId.c_str());
+	CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(iHardwareID);
+	if (pHardware == NULL)
+		return NULL;
+	if (pHardware->HwdType != Type)
+		return NULL;
+	return pHardware;
+}
+
 CDomoticzHardwareBase* MainWorker::GetHardwareByType(const _eHardwareTypes HWType)
 {
 	boost::lock_guard<boost::mutex> l(m_devicemutex);

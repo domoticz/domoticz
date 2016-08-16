@@ -40,6 +40,7 @@ public:
 	int FindDomoticzHardware(int HwdId);
 	int FindDomoticzHardwareByType(const _eHardwareTypes HWType);
 	CDomoticzHardwareBase* GetHardware(int HwdId);
+	CDomoticzHardwareBase* GetHardwareBase(const std::string &HwId, const int Type);
 	CDomoticzHardwareBase* GetHardwareByType(const _eHardwareTypes HWType);
 
 	void HeartbeatUpdate(const std::string &component);

@@ -422,7 +422,7 @@ namespace http {
 			}
 
 			std::string hwid = request::findValue(&req, "idx");
-			CDomoticzHardwareBase *pBaseHardware = GetHardwareBase(hwid, HTYPE_BleBox);
+			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareBase(hwid, HTYPE_BleBox);
 			if (pBaseHardware == NULL)
 				return;
 
@@ -464,7 +464,7 @@ namespace http {
 				(mode2 == "")
 				)
 				return;
-			CDomoticzHardwareBase *pBaseHardware = GetHardwareBase(hwid, HTYPE_BleBox);
+			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareBase(hwid, HTYPE_BleBox);
 			if (pBaseHardware == NULL)
 				return;
 			BleBox *pHardware = reinterpret_cast<BleBox*>(pBaseHardware);
@@ -497,7 +497,7 @@ namespace http {
 				(ip == "")
 				)
 				return;
-			CDomoticzHardwareBase *pBaseHardware = GetHardwareBase(hwid, HTYPE_BleBox);
+			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareBase(hwid, HTYPE_BleBox);
 			if (pBaseHardware == NULL)
 				return;
 			BleBox *pHardware = reinterpret_cast<BleBox*>(pBaseHardware);
@@ -525,7 +525,7 @@ namespace http {
 				(ip == "")
 				)
 				return;
-			CDomoticzHardwareBase *pBaseHardware = GetHardwareBase(hwid, HTYPE_BleBox);
+			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareBase(hwid, HTYPE_BleBox);
 			if (pBaseHardware == NULL)
 				return;
 			BleBox *pHardware = reinterpret_cast<BleBox*>(pBaseHardware);
@@ -550,7 +550,7 @@ namespace http {
 				(nodeid == "")
 				)
 				return;
-			CDomoticzHardwareBase *pBaseHardware = GetHardwareBase(hwid, HTYPE_BleBox);
+			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareBase(hwid, HTYPE_BleBox);
 			if (pBaseHardware == NULL)
 				return;
 			BleBox *pHardware = reinterpret_cast<BleBox*>(pBaseHardware);
@@ -569,7 +569,7 @@ namespace http {
 			}
 
 			std::string hwid = request::findValue(&req, "idx");
-			CDomoticzHardwareBase *pBaseHardware = GetHardwareBase(hwid, HTYPE_BleBox);
+			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareBase(hwid, HTYPE_BleBox);
 			if (pBaseHardware == NULL)
 				return;
 			BleBox *pHardware = reinterpret_cast<BleBox*>(pBaseHardware);
