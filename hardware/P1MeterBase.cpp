@@ -3,8 +3,6 @@
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 
-#include "Logger.h"
-
 typedef enum { 
 	ID=0, 
 	STD, 
