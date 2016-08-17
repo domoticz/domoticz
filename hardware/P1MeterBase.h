@@ -22,7 +22,7 @@ private:
 	unsigned char m_linecount;
 	unsigned char m_exclmarkfound;
 	void Init();
-	void MatchLine();
+	bool MatchLine();
 	void ParseData(const unsigned char *pData, int Len);
 	unsigned char m_buffer[1028];
 	int m_bufferpos;

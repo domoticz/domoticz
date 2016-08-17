@@ -12,16 +12,16 @@ typedef enum {
 } MatchType;
 
 #define P1_SMID			"/" // Smart Meter ID. Used to detect start of telegram.
-#define P1PU1			"1-0:1.8.1" // total power usage normal tariff
-#define P1PU2			"1-0:1.8.2" // total power usage low tariff
-#define P1PD1			"1-0:2.8.1" // total delivered power normal tariff
-#define P1PD2			"1-0:2.8.2" // total delivered power low tariff
+#define P1PU1			"1-0:1.8.1" // total power usage tariff 1
+#define P1PU2			"1-0:1.8.2" // total power usage tariff 2
+#define P1PD1			"1-0:2.8.1" // total delivered power tariff 1
+#define P1PD2			"1-0:2.8.2" // total delivered power tariff 2
 #define P1TIP			"0-0:96.14.0" // tariff indicator power
 #define P1PUC			"1-0:1.7.0" // current power usage
 #define P1PDC			"1-0:2.7.0" // current power delivery
 #define P1GTS			"0-1:24.3.0" // timestamp gas usage sample
-#define P1GTSDSMRv4		"0-1:24.2.1" // timestamp gas usage sample
-#define P1GTSGyrE350	"0-2:24.2.1" // timestamp gas usage sample
+#define P1GTSDSMRv4		"0-1:24.2.1" // gas usage sample
+#define P1GTSGyrE350		"0-2:24.2.1" // gas usage sample
 #define P1GTSME382		"0-2:24.3.0" // timestamp gas usage sample
 
 typedef enum {
@@ -103,10 +103,10 @@ void P1MeterBase::Init()
 	m_p1gas.ID = 1;
 }
 
-void P1MeterBase::MatchLine()
+bool P1MeterBase::MatchLine()
 {
 	if ((strlen((const char*)&m_buffer)<1)||(m_buffer[0]==0x0a))
-		return; //null value (startup)
+		return true; //null value (startup)
 	uint8_t i;
 	uint8_t found=0;
 	Match t;
@@ -186,83 +186,67 @@ void P1MeterBase::MatchLine()
 		}
 		else
 		{
+			vString=(const char*)&m_buffer+t.start;
+			int ePos=t.width;
 			if (t.matchtype==STD)
 			{
-				vString=(const char*)&m_buffer+t.start;
-				int ePos=vString.find_first_of("*");
-				if (ePos==std::string::npos)
-				{
-					ePos=vString.find_first_of(")");
-					if (ePos==std::string::npos)
-					{
-						strncpy(value, (const char*)&m_buffer+t.start, t.width);
-						value[t.width] = 0;
-					}
-					else
-					{
-						strcpy(value,vString.substr(0,ePos).c_str());
-					}
-				}
-				else
-				{
-					strcpy(value,vString.substr(0,ePos).c_str());
-				}
+				ePos=vString.find_first_of("*)");
 			}
 			else if (t.matchtype==LINE18)
 			{
-				vString=(const char*)&m_buffer+t.start;
-				int ePos=vString.find_first_of(")");
-				if (ePos==std::string::npos)
-				{
-					strncpy(value, (const char*)&m_buffer+t.start, t.width);
-					value[t.width] = 0;
-				}
-				else
-				{
-					strcpy(value,vString.substr(0,ePos).c_str());
-				}
+				ePos=vString.find_first_of(")");
 			}
-			else if (t.matchtype==ID)
+
+			if (ePos==std::string::npos)
 			{
-				//
+				// invalid message: value not delimited
+				return false;
 			}
-			else
+
+			if (ePos>19)
 			{
-				strncpy(value, (const char*)&m_buffer + t.start, t.width);
-				value[t.width] = 0;
+				// invalid message: line too long
+				return false;
+			}
+
+			if (ePos>0)
+			{
+				strcpy(value,vString.substr(0,ePos).c_str());
+				//_log.Log(LOG_NORM,"P1: Key: %s, Value: %s", t.topic,value);
 			}
 
 			unsigned long temp_usage = 0;
+			char *validate;
 
 			switch (t.type)
 			{
 			case P1TYPE_POWERUSAGE1:
-				temp_usage = (unsigned long)(atof(value)*1000.0f);
+				temp_usage = (unsigned long)(strtod(value,&validate)*1000.0f);
 				m_p1power.powerusage1 = temp_usage;
 				break;
 			case P1TYPE_POWERUSAGE2:
-				temp_usage = (unsigned long)(atof(value)*1000.0f);
+				temp_usage = (unsigned long)(strtod(value,&validate)*1000.0f);
 				m_p1power.powerusage2=temp_usage;
 				break;
 			case P1TYPE_POWERDELIV1:
-				temp_usage = (unsigned long)(atof(value)*1000.0f);
+				temp_usage = (unsigned long)(strtod(value,&validate)*1000.0f);
 				m_p1power.powerdeliv1=temp_usage;
 				break;
 			case P1TYPE_POWERDELIV2:
-				temp_usage = (unsigned long)(atof(value)*1000.0f);
+				temp_usage = (unsigned long)(strtod(value,&validate)*1000.0f);
 				m_p1power.powerdeliv2=temp_usage;
 				break;
 			case P1TYPE_TARIFF:
 				break;
 			case P1TYPE_USAGECURRENT:
-				temp_usage = (unsigned long)(atof(value)*1000.0f);	//Watt
+				temp_usage = (unsigned long)(strtod(value,&validate)*1000.0f);	//Watt
 				if (temp_usage < 17250)
 				{
 					m_p1power.usagecurrent = temp_usage;
 				}
 				break;
 			case P1TYPE_DELIVCURRENT:
-				temp_usage = (unsigned long)(atof(value)*1000.0f);	//Watt;
+				temp_usage = (unsigned long)(strtod(value,&validate)*1000.0f);	//Watt;
 				if (temp_usage < 17250)
 				{
 					m_p1power.delivcurrent = temp_usage;
@@ -274,16 +258,20 @@ void P1MeterBase::MatchLine()
 			case P1TYPE_GASUSAGE:
 			case P1TYPE_GASUSAGEDSMRv4:
 			case P1TYPE_GASUSAGEGyrE350:
-				temp_usage = (unsigned long)(atof(value)*1000.0f);
+				temp_usage = (unsigned long)(strtod(value,&validate)*1000.0f);
 				m_p1gas.gasusage = temp_usage;
 				break;
 			}
 
-			//_log.Log(LOG_NORM,"Key: %s, Value: %s", t.topic,value);
+			if ((temp_usage == 0) && (value == validate)) {
+				// invalid message: value is not a number
+				return false;
+			}
 
-			return;
+			return true;
 		}
 	}
+	return true;
 }
 
 void P1MeterBase::ParseData(const unsigned char *pData, int Len)
@@ -305,7 +293,10 @@ void P1MeterBase::ParseData(const unsigned char *pData, int Len)
 			m_linecount++;
 			if (m_bufferpos > 0) {
 				m_buffer[m_bufferpos] = 0;
-				MatchLine();
+				if (!MatchLine()) {
+					// discard message
+					ii=Len;
+				}
 			}
 			m_bufferpos = 0;
 		}
