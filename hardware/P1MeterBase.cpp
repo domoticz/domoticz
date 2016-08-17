@@ -14,10 +14,10 @@ typedef enum {
 } MatchType;
 
 #define P1_SMID			"/" // Smart Meter ID. Used to detect start of telegram.
-#define P1PU1			"1-0:1.8.1" // total power usage normal tariff
-#define P1PU2			"1-0:1.8.2" // total power usage day/high tariff
-#define P1PD1			"1-0:2.8.1" // total delivered power normal tariff
-#define P1PD2			"1-0:2.8.2" // total delivered power day/high tariff
+#define P1PU1			"1-0:1.8.1" // total power usage tariff 1
+#define P1PU2			"1-0:1.8.2" // total power usage tariff 2
+#define P1PD1			"1-0:2.8.1" // total delivered power tariff 1
+#define P1PD2			"1-0:2.8.2" // total delivered power tariff 2
 #define P1TIP			"0-0:96.14.0" // tariff indicator power
 #define P1PUC			"1-0:1.7.0" // current power usage
 #define P1PDC			"1-0:2.7.0" // current power delivery
