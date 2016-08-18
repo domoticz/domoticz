@@ -24,7 +24,7 @@ artifacts:
 test: off
 
 deploy:
-- provider: FTP
+- provider: FTPS
   host: 188.166.24.182
   folder: beta
   protocol: ftps
