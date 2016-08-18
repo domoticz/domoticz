@@ -4881,22 +4881,25 @@ define(['app'], function (app) {
 		dataType: 'json',
 		success: function(data) {
                     if (typeof data.result != 'undefined') {
+			var i2cidx = 0, idx = 0;
 			$.each(data.result, function(i,item) {
 			    $.myglobals.HardwareTypesStr[item.idx] = item.name;
 			    // Don't show I2C sensors
 			    if (item.name.indexOf("Local I2C sensor") != -1) {
 				$.myglobals.HardwareI2CStr[item.idx] = item.name;
+				i2cidx = idx;
 				return true;
 			    }
 			    // Show other sensors
                             var option = $('<option />');
                             option.attr('value', item.idx).text(item.name);
                             $("#hardwareparamstable #combotype").append(option);
+			    idx++;
 			});
 			// regroup local I2C sensors under index 1000
                         var option = $('<option />');
                         option.attr('value', 1000).text("Local I2C sensors");
-                        $("#hardwareparamstable #combotype").append(option);
+			option.insertAfter('#hardwareparamstable #combotype :nth-child(' + i2cidx + ')')
                     }
              }
             });
