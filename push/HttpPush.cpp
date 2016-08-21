@@ -212,19 +212,19 @@ void CHttpPush::DoHttpPush()
 				if (httpMethodInt == 0) {			// GET
 					if (!HTTPClient::GET(httpUrl, ExtraHeaders, sResult))
 					{
-						_log.Log(LOG_ERROR, "Error sending data to http with GET!");
+						_log.Log(LOG_ERROR, "HttpLink: Error sending data to http with GET!");
 					}
 				}
 				else if (httpMethodInt == 1) {		// POST
 					if (!HTTPClient::POST(httpUrl, httpData, ExtraHeaders, sResult))
 					{
-						_log.Log(LOG_ERROR, "Error sending data to http with POST!");
+						_log.Log(LOG_ERROR, "HttpLink: Error sending data to http with POST!");
 					}
 				}
 				else if(httpMethodInt == 2) {		// PUT
 					if (!HTTPClient::PUT(httpUrl, httpData, ExtraHeaders, sResult))
 					{
-						_log.Log(LOG_ERROR, "Error sending data to http with PUT!");
+						_log.Log(LOG_ERROR, "HttpLink: Error sending data to http with PUT!");
 					}
 				}
 
