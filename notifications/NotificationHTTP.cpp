@@ -18,6 +18,7 @@ CNotificationHTTP::CNotificationHTTP() : CNotificationBase(std::string("http"), 
 	SetupConfigBase64(std::string("HTTPTo"), _HTTPTo);
 	SetupConfigBase64(std::string("HTTPURL"), _HTTPURL);
 	SetupConfigBase64(std::string("HTTPPostData"), _HTTPPostData);
+	SetupConfigBase64(std::string("HTTPPostHeaders"), _HTTPPostHeaders);
 	SetupConfigBase64(std::string("HTTPPostContentType"), _HTTPPostContentType);
 }
 
@@ -50,6 +51,15 @@ bool CNotificationHTTP::SendMessageImplementation(const std::string &Subject, co
 		{
 			std::vector<std::string> ExtraHeaders;
 			ExtraHeaders.push_back("Content-type: " + _HTTPPostContentType);
+			if (_HTTPPostHeaders.length() > 0)
+			{
+				std::vector<std::string> ExtraHeaders2;
+				StringSplit(_HTTPPostHeaders, "\r\n", ExtraHeaders2);
+				for (size_t i = 0; i < ExtraHeaders2.size(); i++)
+				{
+					ExtraHeaders.push_back(ExtraHeaders2[i]);
+				}
+			}
 			std::string httpData = _HTTPPostData;
 			stdreplace(httpData, "#FIELD1", _HTTPField1);
 			stdreplace(httpData, "#FIELD2", _HTTPField2);

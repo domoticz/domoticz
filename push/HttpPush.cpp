@@ -51,6 +51,7 @@ void CHttpPush::DoHttpPush()
 {			
 	std::string httpUrl = "";
 	std::string httpData = "";
+	std::string httpHeaders= "";
 	int httpMethodInt = 0;
 	int httpAuthInt = 0;
 	std::string httpAuth = "";
@@ -80,6 +81,7 @@ void CHttpPush::DoHttpPush()
 		{
 			m_sql.GetPreferencesVar("HttpUrl", httpUrl);
 			m_sql.GetPreferencesVar("HttpData", httpData);
+			m_sql.GetPreferencesVar("HttpHeaders", httpHeaders);
 			if (httpUrl == "")
 				return;
 
@@ -216,6 +218,16 @@ void CHttpPush::DoHttpPush()
 					}
 				}
 				else if (httpMethodInt == 1) {		// POST
+					if (httpHeaders.size() > 0)
+					{
+						// Add additional headers
+						std::vector<std::string> ExtraHeaders2;
+						StringSplit(httpHeaders,"\r\n", ExtraHeaders2);
+						for (size_t i = 0; i < ExtraHeaders2.size(); i++)
+						{
+							ExtraHeaders.push_back(ExtraHeaders2[i]);
+						}
+					}
 					if (!HTTPClient::POST(httpUrl, httpData, ExtraHeaders, sResult))
 					{
 						_log.Log(LOG_ERROR, "HttpLink: Error sending data to http with POST!");
@@ -251,6 +263,7 @@ namespace http {
 			std::string url = request::findValue(&req, "url");
 			std::string method = request::findValue(&req, "method");
 			std::string data = request::findValue(&req, "data");
+			std::string headers = request::findValue(&req, "headers");
 			std::string linkactive = request::findValue(&req, "linkactive");
 			std::string debugenabled = request::findValue(&req, "debugenabled");
 			std::string auth = request::findValue(&req, "auth");
@@ -269,6 +282,7 @@ namespace http {
 			m_sql.UpdatePreferencesVar("HttpUrl", url.c_str());
 			m_sql.UpdatePreferencesVar("HttpMethod", atoi(method.c_str()));
 			m_sql.UpdatePreferencesVar("HttpData", data.c_str());
+			m_sql.UpdatePreferencesVar("HttpHeaders", headers.c_str());
 			m_sql.UpdatePreferencesVar("HttpActive", ilinkactive);
 			m_sql.UpdatePreferencesVar("HttpDebug", idebugenabled);
 			m_sql.UpdatePreferencesVar("HttpAuth", atoi(auth.c_str()));
@@ -305,6 +319,10 @@ namespace http {
 			if (m_sql.GetPreferencesVar("HttpData", sValue))
 			{
 				root["HttpData"] = sValue;
+			}
+			if (m_sql.GetPreferencesVar("HttpHeaders", sValue))
+			{
+				root["HttpHeaders"] = sValue;
 			}
 			if (m_sql.GetPreferencesVar("HttpMethod", nValue))
 			{

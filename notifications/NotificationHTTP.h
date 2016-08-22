@@ -17,4 +17,5 @@ private:
 	std::string _HTTPURL;
 	std::string _HTTPPostData;
 	std::string _HTTPPostContentType;
+	std::string _HTTPPostHeaders;
 };
