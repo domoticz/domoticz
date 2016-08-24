@@ -24,7 +24,7 @@ artifacts:
 test: off
 
 deploy:
-- provider: FTPS
+- provider: FTP
   host: $(FTP_HOST)
   folder: beta
   protocol: ftps
