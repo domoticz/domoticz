@@ -443,9 +443,10 @@ void GoodweAPI::ParseDevice(Json::Value device, std::string sStationId, std::str
 	int NodeID = hash(sStationId);
 	int ChildID = hash(sDeviceSerial);
 
-	// reserve childid below 10 for the station
-	if (ChildID < 10)
-		ChildID =+ 10;
+	// reserve childIDs  0 - 10 for the station
+	if ((ChildID >= 0) && (ChildID <= 10)) {
+		ChildID = ChildID + 10;
+	}
 
 	SendKwhMeter(NodeID, ChildID, 255, currentPowerW, totalEnergyKWh, sStationName + " " + sDeviceSerial + " Return");
 	SendTextSensor(NodeID, ChildID + 1 , 255, sStatus, sStationName + " " + sDeviceSerial + " status");
