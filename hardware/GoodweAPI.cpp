@@ -166,11 +166,12 @@ int GoodweAPI::hash(std::string str)
 
 	long hash = 5381;
 	int i = 0;
-	int c;
+	int c = str[i++];
 	
-	while(c = str[i++])
+	while(c)
 	{
 		hash = ((hash << 5) + hash) + c;
+		c = str[i++];
 	}
 	return (int)hash;
 }
