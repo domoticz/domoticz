@@ -1180,7 +1180,7 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const unsigned long 
 			closedir(lDir);
 		}
 		else {
-			_log.Log(LOG_ERROR, "EventSystem: Error accessing python script directory %s", lua_Dir.c_str());
+			_log.Log(LOG_ERROR, "EventSystem: Error accessing python script directory %s", python_Dir.c_str());
 		}
 	}
 	catch (...)
