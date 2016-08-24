@@ -324,6 +324,11 @@ unsigned char ZWaveBase::Convert_Battery_To_PercInt(const unsigned char level)
 
 void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 {
+	if (filterValue(pDevice) == true)
+	{
+		return;
+	}
+
 	unsigned char ID1=0;
 	unsigned char ID2=0;
 	unsigned char ID3=0;
@@ -1139,7 +1144,7 @@ void ZWaveBase::ForceUpdateForNodeDevices(const unsigned int homeID, const int n
 	{
 		if (itt->second.nodeID == nodeID)
 		{
-			itt->second.lastreceived = mytime(NULL)-1;
+			itt->second.lastreceived = mytime(NULL) - 1;
 
 			_tZWaveDevice zdevice = itt->second;
 
@@ -1166,5 +1171,22 @@ void ZWaveBase::ForceUpdateForNodeDevices(const unsigned int homeID, const int n
 
 		}
 	}
+}
+
+bool ZWaveBase::filterValue(const _tZWaveDevice *pDevice)
+{
+	bool ret = false;
+	if (
+		// Handle Qubino missing temperature sensor
+		(pDevice->Manufacturer_id == 0x0159) && (pDevice->Product_type == 0x0002) && (pDevice->Product_id == 0x0001) ||
+		(pDevice->Manufacturer_id == 0x0159) && (pDevice->Product_type == 0x0002) && (pDevice->Product_id == 0x0051) ||
+		(pDevice->Manufacturer_id == 0x0159) && (pDevice->Product_type == 0x0002) && (pDevice->Product_id == 0x0002) ||
+		(pDevice->Manufacturer_id == 0x0159) && (pDevice->Product_type == 0x0002) && (pDevice->Product_id == 0x0052) ||
+		(pDevice->Manufacturer_id == 0x0159) && (pDevice->Product_type == 0x0002) && (pDevice->Product_id == 0x0053)
+		)
+	{
+		ret = (pDevice->floatValue == -999.9);
+	}
+	return ret;
 }
 
