@@ -166,7 +166,7 @@ uint32_t GoodweAPI::hash(std::string str)
 	 */
 
 	long hash = 5381;
-	int i = 0;
+	size_t i = 0;
 	int c;
 	
 	for (i = 0; i < str.size(); i++)
