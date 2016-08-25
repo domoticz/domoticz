@@ -61,6 +61,13 @@ SET(EXECUTABLE_OUTPUT_PATH "" CACHE INTERNAL
   "Where to put the executables for Domoticz"
   )
 
+INCLUDE(CheckIncludeFile)
+CHECK_INCLUDE_FILE (execinfo.h HAVE_EXECINFO_H)
+
+IF(HAVE_EXECINFO_H)
+  ADD_DEFINITIONS(-DHAVE_EXECINFO_H)
+ENDIF(HAVE_EXECINFO_H)
+
 #set(CMAKE_EXE_LINKER_FLAGS "-static")
 
 # Macro for setting up precompiled headers. Usage:
