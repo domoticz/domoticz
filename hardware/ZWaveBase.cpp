@@ -1177,12 +1177,15 @@ bool ZWaveBase::filterValue(const _tZWaveDevice *pDevice)
 {
 	bool ret = false;
 	if (
-		// Handle Qubino missing temperature sensor
+		// Handle missing temperature sensor on Qubino devices based on sigma 300 zwave chip
+		(pDevice->Manufacturer_id == 0x0159) && (pDevice->Product_type == 0x0001) && (pDevice->Product_id == 0x0001) ||
 		(pDevice->Manufacturer_id == 0x0159) && (pDevice->Product_type == 0x0002) && (pDevice->Product_id == 0x0001) ||
-		(pDevice->Manufacturer_id == 0x0159) && (pDevice->Product_type == 0x0002) && (pDevice->Product_id == 0x0051) ||
 		(pDevice->Manufacturer_id == 0x0159) && (pDevice->Product_type == 0x0002) && (pDevice->Product_id == 0x0002) ||
 		(pDevice->Manufacturer_id == 0x0159) && (pDevice->Product_type == 0x0002) && (pDevice->Product_id == 0x0052) ||
-		(pDevice->Manufacturer_id == 0x0159) && (pDevice->Product_type == 0x0002) && (pDevice->Product_id == 0x0053)
+		(pDevice->Manufacturer_id == 0x0159) && (pDevice->Product_type == 0x0003) && (pDevice->Product_id == 0x0002) ||
+		(pDevice->Manufacturer_id == 0x0159) && (pDevice->Product_type == 0x0004) && (pDevice->Product_id == 0x0001) ||
+		(pDevice->Manufacturer_id == 0x0159) && (pDevice->Product_type == 0x0005) && (pDevice->Product_id == 0x0001) ||
+		(pDevice->Manufacturer_id == 0x0159) && (pDevice->Product_type == 0x0004) && (pDevice->Product_id == 0x0003)
 		)
 	{
 		ret = (pDevice->floatValue == -999.9);
