@@ -35,6 +35,9 @@ bool CNotificationHTTP::SendMessageImplementation(const std::string &Subject, co
 	if (uPos == std::string::npos)
 		return false;
 
+	char szPriority[64];
+	sprintf(szPriority, "%d", Priority);
+
 	if (destURL.find("http") == 0)
 	{
 		//HTTP/HTTPS
@@ -45,6 +48,7 @@ bool CNotificationHTTP::SendMessageImplementation(const std::string &Subject, co
 		stdreplace(destURL, "#TO", CURLEncode::URLEncode(_HTTPTo));
 		stdreplace(destURL, "#SUBJECT", CURLEncode::URLEncode(Subject));
 		stdreplace(destURL, "#MESSAGE", CURLEncode::URLEncode(Text));
+		stdreplace(destURL, "#PRIORITY", CURLEncode::URLEncode(std::string(szPriority)));
 
 		std::string sResult;
 		if (_HTTPPostData.length() > 0)
@@ -68,6 +72,7 @@ bool CNotificationHTTP::SendMessageImplementation(const std::string &Subject, co
 			stdreplace(httpData, "#TO", _HTTPTo);
 			stdreplace(httpData, "#SUBJECT", Subject);
 			stdreplace(httpData, "#MESSAGE", Text);
+			stdreplace(httpData, "#PRIORITY", std::string(szPriority));
 			bSuccess = HTTPClient::POST(destURL, httpData, ExtraHeaders, sResult);
 		}
 		else
