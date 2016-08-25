@@ -160,7 +160,7 @@ void BleBox::GetDevicesState()
 					const std::string currentColor = root["light"]["currentColor"].asString();
 					int hexNumber;
 					sscanf(currentColor.c_str(), "%x", &hexNumber);
-					int level = hexNumber / (255.0 / 100.0);
+					int level = (int)(hexNumber / (255.0 / 100.0));
 
 					SendSwitch(node, itt->second, 255, level > 0, level, DevicesType[itt->second].name);
 					break;
