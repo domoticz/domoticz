@@ -14,7 +14,9 @@
 #ifdef WIN32
 	#include <comdef.h>
 #elif defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__)
+#ifndef __FreeBSD__
 	#include <sys/sysinfo.h>
+#endif
 	#include <iostream>
 	#include <fstream>
 	#include <string>
@@ -513,6 +515,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 		char szTmp[300];
 		//Memory
 		float memusedpercentage = GetMemUsageLinux();
+#ifndef __FreeBSD__
 		if (memusedpercentage == -1)
 		{
 			//old (wrong) way
@@ -523,6 +526,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 			unsigned long usedram = mySysInfo.totalram - mySysInfo.freeram;
 			memusedpercentage = (100.0f / float(mySysInfo.totalram))*usedram;
 		}
+#endif
 		sprintf(szTmp,"%.2f",memusedpercentage);
 		UpdateSystemSensor("Load", 0, "Memory Usage", szTmp);
 
