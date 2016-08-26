@@ -423,7 +423,7 @@ int CNetatmo::GetBatteryLevel(const std::string &ModuleType, const int battery_v
 		3600 high
 		3300 medium
 		3000 low
-		/* below 3000: very low */
+		below 3000: very low */
 		if (battery_vp <= 3000)
 			batValue = 0;
 	}
