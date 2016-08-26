@@ -4906,8 +4906,18 @@ namespace http {
 				}
 				else
 				{
-					unsigned char twhen = (swhen == "0") ? '>' : '<';
-					sprintf(szTmp, "%s;%c;%s", ttype.c_str(), twhen, svalue.c_str());
+					std::string twhen;
+					if (swhen == "0")
+						twhen = ">";
+					if (swhen == "1")
+						twhen = "<";
+					if (swhen == "2")
+						twhen = ">=";
+					if (swhen == "3")
+						twhen = "<=";
+					if (swhen == "4")
+						twhen = "=";
+					sprintf(szTmp, "%s;%s;%s", ttype.c_str(), twhen.c_str(), svalue.c_str());
 				}
 				int priority = atoi(spriority.c_str());
 				bool bOK = m_notifications.AddNotification(idx, szTmp, scustommessage, sactivesystems, priority, (ssendalways == "true") ? true : false);
@@ -4959,8 +4969,18 @@ namespace http {
 				}
 				else
 				{
-					unsigned char twhen = (swhen == "0") ? '>' : '<';
-					sprintf(szTmp, "%s;%c;%s", ttype.c_str(), twhen, svalue.c_str());
+					std::string twhen;
+					if (swhen == "0")
+						twhen = ">";
+					if (swhen == "1")
+						twhen = "<";
+					if (swhen == "2")
+						twhen = ">=";
+					if (swhen == "3")
+						twhen = "<=";
+					if (swhen == "4")
+						twhen = "=";
+					sprintf(szTmp, "%s;%s;%s", ttype.c_str(), twhen.c_str(), svalue.c_str());
 				}
 				int priority = atoi(spriority.c_str());
 				m_notifications.AddNotification(devidx, szTmp, scustommessage, sactivesystems, priority, (ssendalways == "true") ? true : false);
