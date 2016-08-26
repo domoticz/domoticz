@@ -97,6 +97,19 @@ private:
 	std::map<unsigned long long, std::vector<_tNotification> > m_notifications;
 	int m_NotificationSensorInterval;
 	int m_NotificationSwitchInterval;
+
+	enum _eNotifOperators
+	{
+		NOTIF_greaterthan = 0x0,
+		NOTIF_greaterorequalthan = 0x1,
+		NOTIF_equal = 0x2,
+		NOTIF_lowerthan = 0x3,
+		NOTIF_lowerorequalthan = 0x4
+	};
+	CNotificationHelper::_eNotifOperators findOperator(const std::string& part);
+
+	bool executeOperator(CNotificationHelper::_eNotifOperators ope, int value, float svalue);
+	bool executeOperator(CNotificationHelper::_eNotifOperators ope, float value, float svalue);
 };
 
 extern CNotificationHelper m_notifications;

@@ -144,6 +144,88 @@ void CNotificationHelper::LoadConfig()
 	_log.Log(LOG_NORM, std::string(logline.str()).c_str());
 }
 
+CNotificationHelper::_eNotifOperators CNotificationHelper::findOperator(const std::string& part)
+{
+	_eNotifOperators ope = CNotificationHelper::NOTIF_greaterthan;
+	if (part == ">")
+	{
+		ope = CNotificationHelper::NOTIF_greaterthan;
+	}
+	if (part == ">=")
+	{
+		ope = CNotificationHelper::NOTIF_greaterorequalthan;
+	}
+	if (part == "=")
+	{
+		ope = CNotificationHelper::NOTIF_equal;
+	}
+	if (part == "<=")
+	{
+		ope = CNotificationHelper::NOTIF_lowerorequalthan;
+	}
+	if (part == "<")
+	{
+		ope = CNotificationHelper::NOTIF_lowerthan;
+	}
+	return ope;
+}
+
+bool CNotificationHelper::executeOperator(CNotificationHelper::_eNotifOperators ope, int value, float svalue)
+{
+	switch (ope)
+	{
+		case NOTIF_greaterthan:
+			if (value > svalue)
+				return true;
+			break;
+		case NOTIF_greaterorequalthan:
+			if (value >= svalue)
+				return true;
+			break;
+		case NOTIF_equal:
+			if (value == svalue)
+				return true;
+			break;
+		case NOTIF_lowerthan:
+			if (value < svalue)
+				return true;
+			break;
+		case NOTIF_lowerorequalthan:
+			if (value <= svalue)
+				return true;
+			break;
+	}
+	return false;
+}
+
+bool CNotificationHelper::executeOperator(CNotificationHelper::_eNotifOperators ope, float value, float svalue)
+{
+	switch (ope)
+	{
+	case NOTIF_greaterthan:
+		if (value > svalue)
+			return true;
+		break;
+	case NOTIF_greaterorequalthan:
+		if (value >= svalue)
+			return true;
+		break;
+	case NOTIF_equal:
+		if (value == svalue)
+			return true;
+		break;
+	case NOTIF_lowerthan:
+		if (value < svalue)
+			return true;
+		break;
+	case NOTIF_lowerorequalthan:
+		if (value <= svalue)
+			return true;
+		break;
+	}
+	return false;
+}
+
 bool CNotificationHelper::CheckAndHandleTempHumidityNotification(
 	const unsigned long long Idx,
 	const std::string &devicename,
@@ -181,7 +263,8 @@ bool CNotificationHelper::CheckAndHandleTempHumidityNotification(
 			if (splitresults.size() < 3)
 				continue; //impossible
 			std::string ntype = splitresults[0];
-			bool bWhenIsGreater = (splitresults[1] == ">");
+
+			_eNotifOperators ope = findOperator(splitresults[1]);
 			float svalue = static_cast<float>(atof(splitresults[2].c_str()));
 			if (m_sql.m_tempunit == TEMPUNIT_F)
 			{
@@ -201,46 +284,24 @@ bool CNotificationHelper::CheckAndHandleTempHumidityNotification(
 				else if (temp > 10.0) szExtraData += "Image=temp-10-15|";
 				else if (temp > 5.0) szExtraData += "Image=temp-5-10|";
 				else szExtraData += "Image=temp48|";
-				if (bWhenIsGreater)
+
+				bSendNotification = executeOperator(ope, temp, svalue);
+				if (bSendNotification)
 				{
-					if (temp > svalue)
-					{
-						bSendNotification = true;
-						sprintf(szTmp, "%s temperature is %.1f degrees", devicename.c_str(), temp);
-						msg = szTmp;
-					}
-				}
-				else
-				{
-					if (temp < svalue)
-					{
-						bSendNotification = true;
-						sprintf(szTmp, "%s temperature is %.1f degrees", devicename.c_str(), temp);
-						msg = szTmp;
-					}
+					sprintf(szTmp, "%s temperature is %.1f degrees", devicename.c_str(), temp);
+					msg = szTmp;
 				}
 			}
 			else if ((ntype == signhum) && (bHaveHumidity))
 			{
-				//humanity
+				//humidity
 				szExtraData += "Image=moisture48|";
-				if (bWhenIsGreater)
+
+				bSendNotification = executeOperator(ope, humidity, svalue);
+				if (bSendNotification)
 				{
-					if (humidity > svalue)
-					{
-						bSendNotification = true;
-						sprintf(szTmp, "%s Humidity is %d %%", devicename.c_str(), humidity);
-						msg = szTmp;
-					}
-				}
-				else
-				{
-					if (humidity < svalue)
-					{
-						bSendNotification = true;
-						sprintf(szTmp, "%s Humidity is %d %%", devicename.c_str(), humidity);
-						msg = szTmp;
-					}
+					sprintf(szTmp, "%s Humidity is %d %%", devicename.c_str(), humidity);
+					msg = szTmp;
 				}
 			}
 			if (bSendNotification)
@@ -349,7 +410,7 @@ bool CNotificationHelper::CheckAndHandleAmpere123Notification(
 			if (splitresults.size() < 3)
 				continue; //impossible
 			std::string ntype = splitresults[0];
-			bool bWhenIsGreater = (splitresults[1] == ">");
+			_eNotifOperators ope = findOperator(splitresults[1]);
 			float svalue = static_cast<float>(atof(splitresults[2].c_str()));
 
 			bool bSendNotification = false;
@@ -357,67 +418,31 @@ bool CNotificationHelper::CheckAndHandleAmpere123Notification(
 			if (ntype == signamp1)
 			{
 				//Ampere1
-				if (bWhenIsGreater)
+				bSendNotification = executeOperator(ope, Ampere1, svalue);
+				if (bSendNotification)
 				{
-					if (Ampere1 > svalue)
-					{
-						bSendNotification = true;
-						sprintf(szTmp, "%s Ampere1 is %.1f Ampere", devicename.c_str(), Ampere1);
-						msg = szTmp;
-					}
-				}
-				else
-				{
-					if (Ampere1 < svalue)
-					{
-						bSendNotification = true;
-						sprintf(szTmp, "%s Ampere1 is %.1f Ampere", devicename.c_str(), Ampere1);
-						msg = szTmp;
-					}
+					sprintf(szTmp, "%s Ampere1 is %.1f Ampere", devicename.c_str(), Ampere1);
+					msg = szTmp;
 				}
 			}
 			else if (ntype == signamp2)
 			{
 				//Ampere2
-				if (bWhenIsGreater)
+				bSendNotification = executeOperator(ope, Ampere2, svalue);
+				if (bSendNotification)
 				{
-					if (Ampere2 > svalue)
-					{
-						bSendNotification = true;
-						sprintf(szTmp, "%s Ampere2 is %.1f Ampere", devicename.c_str(), Ampere2);
-						msg = szTmp;
-					}
-				}
-				else
-				{
-					if (Ampere2 < svalue)
-					{
-						bSendNotification = true;
-						sprintf(szTmp, "%s Ampere2 is %.1f Ampere", devicename.c_str(), Ampere2);
-						msg = szTmp;
-					}
+					sprintf(szTmp, "%s Ampere2 is %.1f Ampere", devicename.c_str(), Ampere1);
+					msg = szTmp;
 				}
 			}
 			else if (ntype == signamp3)
 			{
 				//Ampere3
-				if (bWhenIsGreater)
+				bSendNotification = executeOperator(ope, Ampere3, svalue);
+				if (bSendNotification)
 				{
-					if (Ampere3 > svalue)
-					{
-						bSendNotification = true;
-						sprintf(szTmp, "%s Ampere3 is %.1f Ampere", devicename.c_str(), Ampere3);
-						msg = szTmp;
-					}
-				}
-				else
-				{
-					if (Ampere3 < svalue)
-					{
-						bSendNotification = true;
-						sprintf(szTmp, "%s Ampere3 is %.1f Ampere", devicename.c_str(), Ampere3);
-						msg = szTmp;
-					}
+					sprintf(szTmp, "%s Ampere3 is %.1f Ampere", devicename.c_str(), Ampere1);
+					msg = szTmp;
 				}
 			}
 			if (bSendNotification)
@@ -526,40 +551,23 @@ bool CNotificationHelper::CheckAndHandleNotification(
 			if (splitresults.size() < 3)
 				continue; //impossible
 			std::string ntype = splitresults[0];
-			bool bWhenIsGreater = (splitresults[1] == ">");
+			_eNotifOperators ope = findOperator(splitresults[1]);
 			float svalue = static_cast<float>(atof(splitresults[2].c_str()));
 
 			bool bSendNotification = false;
 
 			if (ntype == nsign)
 			{
-				if (bWhenIsGreater)
+				bSendNotification = executeOperator(ope, mvalue, svalue);
+				if (bSendNotification)
 				{
-					if (mvalue > svalue)
-					{
-						bSendNotification = true;
-						sprintf(szTmp, "%s %s is %s %s",
-							devicename.c_str(),
-							ltype.c_str(),
-							pvalue.c_str(),
-							label.c_str()
-							);
-						msg = szTmp;
-					}
-				}
-				else
-				{
-					if (mvalue < svalue)
-					{
-						bSendNotification = true;
-						sprintf(szTmp, "%s %s is %s %s",
-							devicename.c_str(),
-							ltype.c_str(),
-							pvalue.c_str(),
-							label.c_str()
-							);
-						msg = szTmp;
-					}
+					sprintf(szTmp, "%s %s is %s %s",
+						devicename.c_str(),
+						ltype.c_str(),
+						pvalue.c_str(),
+						label.c_str()
+						);
+					msg = szTmp;
 				}
 			}
 			if (bSendNotification)
