@@ -13513,8 +13513,8 @@ namespace http {
 					//add today (have to calculate it)
 					result = m_sql.safe_query(
 						"SELECT MIN(Temperature), MAX(Temperature),"
-						" MIN(Chill), MAX(Chill), MAX(Humidity),"
-						" MAX(Barometer), AVG(Temperature), MIN(SetPoint),"
+						" MIN(Chill), MAX(Chill), AVG(Humidity),"
+						" AVG(Barometer), AVG(Temperature), MIN(SetPoint),"
 						" MAX(SetPoint), AVG(SetPoint) "
 						"FROM Temperature WHERE (DeviceRowID==%llu"
 						" AND Date>='%q')",
@@ -15208,8 +15208,8 @@ namespace http {
 						//add today (have to calculate it)
 						result = m_sql.safe_query(
 							"SELECT MIN(Temperature), MAX(Temperature),"
-							" MIN(Chill), MAX(Chill), MAX(Humidity),"
-							" MAX(Barometer), MIN(DewPoint), AVG(Temperature),"
+							" MIN(Chill), MAX(Chill), AVG(Humidity),"
+							" AVG(Barometer), MIN(DewPoint), AVG(Temperature),"
 							" MIN(SetPoint), MAX(SetPoint), AVG(SetPoint) "
 							"FROM Temperature WHERE (DeviceRowID==%llu AND Date>='%q')",
 							idx, szDateEnd.c_str());
