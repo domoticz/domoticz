@@ -2923,6 +2923,8 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 			//Convert to celcius
 			fValue = float((fValue - 32)*(5.0 / 9.0));
 		}
+		if ((fValue < -200) || (fValue > 380))
+			return;
 		pDevice->bValidValue = (abs(pDevice->floatValue - fValue) < 10);
 		pDevice->floatValue = fValue;
 		break;
