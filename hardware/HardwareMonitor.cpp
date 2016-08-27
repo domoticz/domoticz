@@ -145,11 +145,17 @@ void CHardwareMonitor::Do_Work()
 
 			if (sec_counter%POLL_INTERVAL == 0)
 			{
-				FetchData();
+				try
+				{
+					FetchData();
+				}
+				catch (...)
+				{
+					_log.Log(LOG_STATUS, "Hardware Monitor: Error occurred while Fetching motherboard sensors!...");
+				}
 			}
 		}
 	}
-
 	_log.Log(LOG_STATUS,"Hardware Monitor: Stopped...");			
 }
 
