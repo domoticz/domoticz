@@ -14,6 +14,7 @@
 #include "../main/mainworker.h"
 #include "../main/SQLHelper.h"
 
+#include <cmath>
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
