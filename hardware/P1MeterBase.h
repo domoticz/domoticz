@@ -29,5 +29,6 @@ private:
 	unsigned char l_buffer[128];
 	int l_bufferpos;
 
+	bool CheckCRC();
 };
 
