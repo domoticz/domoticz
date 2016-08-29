@@ -274,10 +274,24 @@ bool P1MeterBase::MatchLine()
 	return true;
 }
 
+
+/*
+/ GB3:	ParseData() can be called with either a complete message (P1MeterTCP) or individual
+/	lines (P1MeterSerial).
+*/
+
 void P1MeterBase::ParseData(const unsigned char *pData, int Len)
 {
 	int ii=0;
-	while (ii<Len)
+
+	// reenable reading pData when a new message starts
+	if (pData[0]==0x2f) {
+		m_linecount = 1;
+		m_bufferpos = 0;
+	}
+
+	// read pData, ignore/stop if there is a message validation failure
+	while ((ii<Len) && (m_linecount>0))
 	{
 		const unsigned char c = pData[ii];
 		if(c == 0x0d)
@@ -295,7 +309,7 @@ void P1MeterBase::ParseData(const unsigned char *pData, int Len)
 				m_buffer[m_bufferpos] = 0;
 				if (!MatchLine()) {
 					// discard message
-					ii=Len;
+					m_linecount=0;
 				}
 			}
 			m_bufferpos = 0;
