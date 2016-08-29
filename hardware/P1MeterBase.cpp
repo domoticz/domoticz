@@ -216,7 +216,7 @@ bool P1MeterBase::MatchLine()
 			}
 
 			unsigned long temp_usage = 0;
-			char *validate;
+			char *validate=NULL;
 
 			switch (t.type)
 			{
