@@ -3,6 +3,9 @@
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 
+#define CRC16_ARC	0x8005
+#define CRC16_ARC_REFL	0xA001
+
 typedef enum { 
 	ID=0, 
 	STD, 
@@ -278,6 +281,51 @@ bool P1MeterBase::MatchLine()
 
 
 /*
+/ GB3:	DSMR 4.0 defines a CRC checksum at the end of the message, calculated from 
+/	and including the message starting character '/' upto and including the message
+/	end character '!'. According to the specs the CRC is a 16bit checksum using the
+/	polynomial x^16 + x^15 + x^2 + 1, however input/output are reflected.
+*/
+
+bool P1MeterBase::CheckCRC()
+{
+	// sanity checks
+	if (l_buffer[1]==0){
+		// always return true with pre DSMRv4 format message
+		return true;
+	}
+
+	if (l_buffer[5]!=0){
+		// trailing characters after CRC
+		return false;
+	}
+
+	// retrieve CRC from the current line
+	char crc_str[5];
+	strncpy(crc_str, (const char*)&l_buffer+1, 4);
+	crc_str[4]=0;
+	uint16_t m_crc16=strtol(crc_str,NULL,16);
+	int m_size=m_bufferpos;
+
+	// calculate CRC
+	const unsigned char* c_buffer=m_buffer;
+	uint8_t i;
+	uint16_t crc=0;
+	while (m_size--) {
+		crc = crc ^ *c_buffer++;
+		for (i=0;i<8;i++){
+			if ((crc & 0x0001)){
+				crc = (crc >> 1) ^ CRC16_ARC_REFL;
+			} else {
+				crc = crc >> 1;
+			}
+		}
+	}
+	return (crc==m_crc16);
+}
+
+
+/*
 / GB3:	ParseData() can be called with either a complete message (P1MeterTCP) or individual
 /	lines (P1MeterSerial).
 /
@@ -336,6 +384,12 @@ void P1MeterBase::ParseData(const unsigned char *pData, int Len)
 			if ((l_bufferpos>0) && (l_bufferpos<sizeof(l_buffer))) {
 				// don't try to match empty or oversized lines
 				l_buffer[l_bufferpos] = 0;
+				if(l_buffer[0]==0x21){
+					if (!CheckCRC()) {
+						m_linecount = 0;
+						return;
+					}
+				}
 				if (!MatchLine()) {
 					// discard message
 					m_linecount=0;
