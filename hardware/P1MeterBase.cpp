@@ -216,7 +216,7 @@ bool P1MeterBase::MatchLine()
 			}
 
 			unsigned long temp_usage = 0;
-			char *validate=NULL;
+			char *validate=value+ePos;
 
 			switch (t.type)
 			{
@@ -263,7 +263,7 @@ bool P1MeterBase::MatchLine()
 				break;
 			}
 
-			if ((temp_usage == 0) && (value == validate)) {
+			if (ePos>0 && ((validate - value) != ePos)) {
 				// invalid message: value is not a number
 				return false;
 			}
