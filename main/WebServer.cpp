@@ -6641,6 +6641,11 @@ namespace http {
 			int iShowUpdateEffect = (ShowUpdateEffect == "on" ? 1 : 0);
 			m_sql.UpdatePreferencesVar("ShowUpdateEffect", iShowUpdateEffect);
 
+			std::string SendErrorsAsNotification = request::findValue(&req, "SendErrorsAsNotification");
+			int iSendErrorsAsNotification = (SendErrorsAsNotification == "on" ? 1 : 0);
+			m_sql.UpdatePreferencesVar("SendErrorsAsNotification", iSendErrorsAsNotification);
+			_log.ForwardErrorsToNotificationSystem(iSendErrorsAsNotification != 0);
+
 			std::string DegreeDaysBaseTemperature = request::findValue(&req, "DegreeDaysBaseTemperature");
 			m_sql.UpdatePreferencesVar("DegreeDaysBaseTemperature", DegreeDaysBaseTemperature);
 
@@ -6747,6 +6752,8 @@ namespace http {
 #endif
 
 			m_sql.UpdatePreferencesVar("OneWireSensorPollPeriod", atoi(request::findValue(&req, "OneWireSensorPollPeriod").c_str()));
+			m_sql.UpdatePreferencesVar("OneWireSwitchPollPeriod", atoi(request::findValue(&req, "OneWireSwitchPollPeriod").c_str()));
+
 			m_sql.UpdatePreferencesVar("OneWireSwitchPollPeriod", atoi(request::findValue(&req, "OneWireSwitchPollPeriod").c_str()));
 
 			m_notifications.LoadConfig();
@@ -11401,6 +11408,9 @@ namespace http {
 #endif
 				else if (Key == "MyDomoticzSubsystems") {
 					root["MyDomoticzSubsystems"] = nValue;
+				}
+				else if (Key == "SendErrorsAsNotification") {
+					root["SendErrorsAsNotification"] = nValue;
 				}
 			}
 		}

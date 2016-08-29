@@ -579,6 +579,9 @@ define(['app'], function (app) {
 					$("#mydomoticztable #SubsystemShared").prop("checked", (data.MyDomoticzSubsystems & 2) > 0);
 					$("#mydomoticztable #SubsystemApps").prop("checked", (data.MyDomoticzSubsystems & 4) > 0);
 			  }
+			  if (typeof data.SendErrorsAsNotification != 'undefined') {
+				$("#emailtable #SendErrorsAsNotification").prop('checked',data.SendErrorsAsNotification==1);
+			  }
 			 }
 		  });
 		}

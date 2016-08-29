@@ -2186,6 +2186,10 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("UseEmailInNotifications", 1);
 	}
+	if (!GetPreferencesVar("SendErrorNotifications", nValue))
+	{
+		UpdatePreferencesVar("SendErrorNotifications", 0);
+	}
 	if ((!GetPreferencesVar("EmailPort", nValue)) || (nValue == 0))
 	{
 		UpdatePreferencesVar("EmailPort", 25);
@@ -2449,6 +2453,13 @@ bool CSQLHelper::OpenDatabase()
 		nValue = 5;
 		UpdatePreferencesVar("ShortLogInterval", nValue);
 	}
+	if (!GetPreferencesVar("SendErrorsAsNotification", nValue))
+	{
+		UpdatePreferencesVar("SendErrorsAsNotification", 0);
+		nValue = 0;
+	}
+	_log.ForwardErrorsToNotificationSystem(nValue != 0);
+
 	if (nValue < 1)
 		nValue = 5;
 	m_ShortLogInterval = nValue;

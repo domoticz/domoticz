@@ -2088,6 +2088,7 @@ void MySensorsBase::ParseLine()
 			//send back a previous stored custom variable
 			tmpstr = "";
 			GetVar(node_id, child_sensor_id, sub_type, tmpstr);
+			//SendNodeSetCommand(node_id, child_sensor_id, message_type, (_eSetType)sub_type, tmpstr, true, 1000);
 			SendNodeCommand(node_id, child_sensor_id, message_type, sub_type, tmpstr);
 			break;
 		case V_TEXT:

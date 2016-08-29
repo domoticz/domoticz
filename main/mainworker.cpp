@@ -195,6 +195,7 @@ MainWorker::MainWorker()
 	m_iRevision = 0;
 
 	m_rxMessageIdx = 1;
+	m_bForceLogNotificationCheck = false;
 }
 
 MainWorker::~MainWorker()
@@ -1448,6 +1449,14 @@ void MainWorker::Do_Work()
 					std::remove(szPwdResetFile.c_str());
 				}
 			}
+			if (_log.NotificationLogsEnabled())
+			{
+				if ((ltime.tm_min % 5 == 0)||(m_bForceLogNotificationCheck))
+				{
+					m_bForceLogNotificationCheck = false;
+					HandleLogNotifications();
+				}
+			}
 		}
 		if (ltime.tm_hour!=m_ScheduleLastHour)
 		{
@@ -1496,7 +1505,6 @@ void MainWorker::Do_Work()
 		if (ltime.tm_sec % 30 == 0)
 		{
 			HeartbeatCheck();
-
 		}
 	}
 	_log.Log(LOG_STATUS, "Mainworker Stopped...");
@@ -11993,6 +12001,39 @@ void MainWorker::UpdateDomoticzSecurityStatus(const int iSecStatus)
 	}
 }
 
+void MainWorker::ForceLogNotificationCheck()
+{
+	m_bForceLogNotificationCheck = true;
+}
+
+void MainWorker::HandleLogNotifications()
+{
+	std::list<CLogger::_tLogLineStruct> _loglines = _log.GetNotificationLogs();
+	if (_loglines.empty())
+		return;
+	//Assemble notification message
+
+	std::stringstream sstr;
+	std::list<CLogger::_tLogLineStruct>::const_iterator itt;
+	std::string sTopic;
+
+	if (_loglines.size() > 1)
+	{
+		sTopic = "Domoticz: Multiple errors received in the last 5 minutes";
+		sstr << "Multiple errors received in the last 5 minutes:<br><br>";
+	}
+	else
+	{
+		itt = _loglines.begin();
+		sTopic = "Domoticz: " + itt->logmessage;
+	}
+
+	for (itt = _loglines.begin(); itt != _loglines.end(); ++itt)
+	{
+		sstr << itt->logmessage << "<br>";
+	}
+	m_sql.AddTaskItem(_tTaskItem::SendEmail(1, sTopic, sstr.str()));
+}
 
 void MainWorker::HeartbeatUpdate(const std::string &component)
 {

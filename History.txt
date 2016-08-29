@@ -9,6 +9,7 @@ Version 3.xxxx (August xx 2016)
 - Implemented: Denkovi Smartden with LAN Interface
 - Implemented: Devices Tab, Log icon for Pressure
 - Implemented: Dust Sensor (ug/m3)
+- Implemented: Error Log, option to send error logs by email
 - Implemented: Hourly rainrate for all rain sensors
 - Implemented: MySensors, Implemented Acknowledge Timeout per Child sensor
 - Implemented: Nefit Easy, User Mode (as switch, On=Clock, Off=Manual), Flow Temperature
