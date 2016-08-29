@@ -235,7 +235,7 @@ void CTE923::GetSensorDetails()
 		{
 			tsen.WIND.tempsign=(data.wChill>=0)?0:1;
 			tsen.WIND.chillsign=(data.wChill>=0)?0:1;
-			int at10=round(abs(data.wChill*10.0f));
+			int at10=round(std::abs(data.wChill*10.0f));
 			tsen.WIND.temperatureh=(BYTE)(at10/256);
 			tsen.WIND.chillh=(BYTE)(at10/256);
 			at10-=(tsen.WIND.chillh*256);

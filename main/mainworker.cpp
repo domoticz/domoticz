@@ -9703,7 +9703,7 @@ void MainWorker::decode_BBQ(const int HwdID, const _eHardwareTypes HwdType, cons
 	tsen.TEMP.id2=1;
 
 	tsen.TEMP.tempsign=(temp1>=0)?0:1;
-	int at10=round(abs(temp1*10.0f));
+	int at10=round(std::abs(temp1*10.0f));
 	tsen.TEMP.temperatureh=(BYTE)(at10/256);
 	at10-=(tsen.TEMP.temperatureh*256);
 	tsen.TEMP.temperaturel=(BYTE)(at10);
@@ -9716,7 +9716,7 @@ void MainWorker::decode_BBQ(const int HwdID, const _eHardwareTypes HwdType, cons
 	tsen.TEMP.id2=2;
 
 	tsen.TEMP.tempsign=(temp2>=0)?0:1;
-	at10=round(abs(temp2*10.0f));
+	at10=round(std::abs(temp2*10.0f));
 	tsen.TEMP.temperatureh=(BYTE)(at10/256);
 	at10-=(tsen.TEMP.temperatureh*256);
 	tsen.TEMP.temperaturel=(BYTE)(at10);

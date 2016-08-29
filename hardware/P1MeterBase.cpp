@@ -165,7 +165,7 @@ bool P1MeterBase::MatchLine()
 			time_t atime=mytime(NULL);
 			sDecodeRXMessage(this, (const unsigned char *)&m_p1power, "Power", 255);
 			bool bSend2Shared=(atime-m_lastSharedSendElectra>59);
-			if (abs(double(m_lastelectrausage)-double(m_p1power.usagecurrent))>40)
+			if (std::abs(double(m_lastelectrausage)-double(m_p1power.usagecurrent))>40)
 				bSend2Shared=true;
 			if (bSend2Shared)
 			{

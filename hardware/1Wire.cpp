@@ -455,7 +455,7 @@ void C1Wire::ReportTemperature(const std::string& deviceId, const float temperat
 	tsen.TEMP.id2=(BYTE)deviceIdByteArray[1];
 
 	tsen.TEMP.tempsign=(temperature>=0)?0:1;
-	int at10=round(abs(temperature*10.0f));
+	int at10=round(std::abs(temperature*10.0f));
 	tsen.TEMP.temperatureh=(BYTE)(at10/256);
 	at10-=(tsen.TEMP.temperatureh*256);
 	tsen.TEMP.temperaturel=(BYTE)(at10);
