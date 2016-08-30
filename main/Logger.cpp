@@ -31,7 +31,7 @@ CLogger::CLogger(void)
 	m_bEnableLogTimestamps=true;
 	m_verbose_level=VBL_ALL;
 	m_bEnableErrorsToNotificationSystem = false;
-	m_LastLogNotificationAdded = 0;
+	m_LastLogNotificationsSend = 0;
 }
 
 CLogger::~CLogger(void)
@@ -155,9 +155,8 @@ void CLogger::Log(const _eLogLevel level, const char* logline, ...)
 			if (m_notification_log.size() >= MAX_LOG_LINE_BUFFER)
 				m_notification_log.erase(m_last_error_log.begin());
 			m_notification_log.push_back(_tLogLineStruct(level, sstr.str()));
-			if ((m_notification_log.size() == 1) && (mytime(NULL) - m_LastLogNotificationAdded >= 5))
+			if ((m_notification_log.size() == 1) && (mytime(NULL) - m_LastLogNotificationsSend >= 5))
 			{
-				m_LastLogNotificationAdded = mytime(NULL);
 				m_mainworker.ForceLogNotificationCheck();
 			}
 		}
@@ -244,9 +243,8 @@ void CLogger::LogNoLF(const _eLogLevel level, const char* logline, ...)
 			if (m_notification_log.size() >= MAX_LOG_LINE_BUFFER)
 				m_notification_log.erase(m_last_error_log.begin());
 			m_notification_log.push_back(_tLogLineStruct(level, message));
-			if ((m_notification_log.size() == 1) && (mytime(NULL) - m_LastLogNotificationAdded >= 5))
+			if ((m_notification_log.size() == 1) && (mytime(NULL) - m_LastLogNotificationsSend >= 5))
 			{
-				m_LastLogNotificationAdded = mytime(NULL);
 				m_mainworker.ForceLogNotificationCheck();
 			}
 		}
@@ -360,6 +358,8 @@ std::list<CLogger::_tLogLineStruct> CLogger::GetNotificationLogs()
 		mlist.push_back(*itt);
 	};
 	m_notification_log.clear();
+	if (!mlist.empty())
+		m_LastLogNotificationsSend = mytime(NULL);
 	return mlist;
 }
 

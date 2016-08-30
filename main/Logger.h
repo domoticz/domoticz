@@ -62,7 +62,7 @@ private:
 	bool m_bInSequenceMode;
 	bool m_bEnableLogTimestamps;
 	bool m_bEnableErrorsToNotificationSystem;
-	time_t m_LastLogNotificationAdded;
+	time_t m_LastLogNotificationsSend;
 	std::stringstream m_sequencestring;
 	_eLogFileVerboseLevel m_verbose_level;
 };

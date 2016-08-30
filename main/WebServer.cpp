@@ -14067,7 +14067,7 @@ namespace http {
 						root["status"] = "OK";
 						root["title"] = "Graph " + sensor + " " + srange;
 
-						result = m_sql.safe_query("SELECT Value1,Value2, Date FROM %s WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart, szDateEnd);
+						result = m_sql.safe_query("SELECT Value1,Value2,Value3,Date FROM %s WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (result.size() > 0)
 						{
 							std::vector<std::vector<std::string> >::const_iterator itt;
@@ -14075,9 +14075,24 @@ namespace http {
 							{
 								std::vector<std::string> sd = *itt;
 
-								root["result"][ii]["d"] = sd[2].substr(0, 16);
+								root["result"][ii]["d"] = sd[3].substr(0, 16);
 								root["result"][ii]["co2_min"] = sd[0];
 								root["result"][ii]["co2_max"] = sd[1];
+								root["result"][ii]["co2_avg"] = sd[2];
+								ii++;
+							}
+						}
+						result = m_sql.safe_query("SELECT Value2,Date FROM %s WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStartPrev, szDateEndPrev);
+						if (result.size() > 0)
+						{
+							ii = 0;
+							std::vector<std::vector<std::string> >::const_iterator itt;
+							for (itt = result.begin(); itt != result.end(); ++itt)
+							{
+								std::vector<std::string> sd = *itt;
+
+								root["resultprev"][ii]["d"] = sd[1].substr(0, 16);
+								root["resultprev"][ii]["co2_max"] = sd[0];
 								ii++;
 							}
 						}
@@ -14687,13 +14702,14 @@ namespace http {
 					else if (dType == pTypeAirQuality)
 					{
 						result = m_sql.safe_query(
-							"SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID==%llu AND Date>='%q')",
+							"SELECT MIN(Value), MAX(Value), AVG(Value) FROM Meter WHERE (DeviceRowID==%llu AND Date>='%q')",
 							idx, szDateEnd);
 						if (result.size() > 0)
 						{
 							root["result"][ii]["d"] = szDateEnd;
 							root["result"][ii]["co2_min"] = result[0][0];
 							root["result"][ii]["co2_max"] = result[0][1];
+							root["result"][ii]["co2_avg"] = result[0][2];
 							ii++;
 						}
 					}
