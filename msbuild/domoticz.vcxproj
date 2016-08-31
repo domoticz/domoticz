@@ -464,6 +464,7 @@
     <ClInclude Include="..\hardware\PhilipsHue.h" />
     <ClInclude Include="..\hardware\PiFace.h" />
     <ClInclude Include="..\hardware\Pinger.h" />
+    <ClInclude Include="..\hardware\plugins\PluginManager.h" />
     <ClInclude Include="..\hardware\PVOutput_Input.h" />
     <ClInclude Include="..\hardware\RAVEn.h" />
     <ClInclude Include="..\hardware\Razberry.h" />
@@ -681,6 +682,7 @@
     <ClCompile Include="..\hardware\PhilipsHue.cpp" />
     <ClCompile Include="..\hardware\PiFace.cpp" />
     <ClCompile Include="..\hardware\Pinger.cpp" />
+    <ClCompile Include="..\hardware\plugins\PluginManager.cpp" />
     <ClCompile Include="..\hardware\PVOutput_Input.cpp" />
     <ClCompile Include="..\hardware\RAVEn.cpp" />
     <ClCompile Include="..\hardware\Razberry.cpp" />

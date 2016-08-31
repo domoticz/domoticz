@@ -1,0 +1,99 @@
+<plugins name="My Plugins">
+	<plugin key="Denon4306" name="Denon 4306 Amplifier" author="dnpwwo" wikilink="http://www.domoticz.com/wiki/plugins/Denon.html" externallink="http://www.denon.co.uk/uk">
+		<transport type="tcp/ip" protocol="Line"/>
+		<params>
+			<param field="Address" label="IP Address" width="200px" required="true" default="127.0.0.1"/>
+			<param field="Port" label="Port" width="30px" required="true" default="22"/>
+			<param field="Mode6" label="Debug" width="75px">
+				<options>
+					<option label="True" value="1"/>
+					<option label="False" value="0"  default="true" />
+				</options>
+			</param>
+		</params>
+		<devices>
+			<device name="Source" unit="1" type="244" subtype="62" switchtype="18" icon="5"/>
+			<device name="Volume" unit="2" type="244" subtype="73" switchtype="7" icon="8"/>
+		</devices>
+	</plugin>
+	<plugin key="NetworkPresence" name="Network Device Presence" author="dnpwwo" wikilink="http://www.domoticz.com/wiki/plugins/NetworkPresence.html" externallink="">
+		<transport type="none" protocol="none"/>
+		<params>
+			<param field="Address" label="Remote Address" width="200px" required="true" default="127.0.0.1"/>
+			<param field="Mode1" label="Mac Address" width="150px" required="true" default="00:00:00:00:00:00:00:00"/>
+			<param field="Mode6" label="Debug" width="75px">
+				<options>
+					<option label="True" value="1"/>
+					<option label="False" value="0"  default="true" />
+				</options>
+			</param>
+		</params>
+		<devices>
+			<device name="Network Device" unit="1" type="17" subtype="0" switchtype="0" icon="17"/>
+		</devices>
+	</plugin>
+	<plugin key="Kodi" name="Kodi Players" author="dnpwwo" wikilink="http://www.domoticz.com/wiki/plugins/Kodi.html" externallink="https://kodi.tv/">
+		<transport type="tcp/ip" protocol="JSON" />
+		<params>
+			<param field="Address" label="IP Address" width="200px" required="true" default="127.0.0.1"/>
+			<param field="Port" label="Port" width="30px" required="true" default="9090"/>
+			<param field="Mode1" label="MAC Address" width="150px" required="false"/>
+			<param field="Mode2" label="Shutdown Command" width="100px">
+				<options>
+					<option label="Hibernate" value="Hibernate"/>
+					<option label="Suspend" value="Suspend"/>
+					<option label="Shutdown" value="Shutdown"/>
+					<option label="Ignore" value="Ignore" default="true" />
+				</options>
+			</param>
+			<param field="Mode6" label="Debug" width="75px">
+				<options>
+					<option label="True" value="1"/>
+					<option label="False" value="0"  default="true" />
+				</options>
+			</param>
+		</params>
+		<devices>
+			<device name="Status" unit="1" type="17" subtype="0" switchtype="17" icon=""/>
+			<device name="Source" unit="2" type="244" subtype="62" switchtype="18" icon="12"/>
+			<device name="Volume" unit="3" type="244" subtype="73" switchtype="7" icon="8"/>
+		</devices>
+	</plugin>
+	<plugin key="RAVEn" name="RAVEn Zigbee energy monitor" script="RAVEn.py" author="dnpwwo" wikilink="http://www.domoticz.com/wiki/plugins/RAVEn.html" externallink="https://rainforestautomation.com/rfa-z106-raven/">
+		<transport type="serial" protocol="XML"/>
+		<params>
+			<param field="SerialPort" label="Serial Port" width="150px" required="true" default="/dev/ttyRAVEn"/>
+			<param field="Mode6" label="Debug" width="75px">
+				<options>
+					<option label="True" value="1"/>
+					<option label="False" value="0"  default="true" />
+				</options>
+			</param>
+		</params>
+		<devices>
+			<device name="Usage" unit="1" type="243" subtype="29" switchtype="0" icon="0"/>
+			<device name="Total" unit="2" type="113" subtype="0" switchtype="0" icon="0"/>
+		</devices>
+	</plugin>
+	<plugin key="GC-100-12" name="Global Cache 100-12" author="dnpwwo" wikilink="http://www.domoticz.com/wiki/plugins/GC-100-12.html" externallink="http://www.globalcache.com/products/gc-100/models1/">
+		<transport type="serial" protocol="XML"/>
+		<params>
+			<param field="Address" label="IP Address" width="200px" required="true" default="127.0.0.1"/>
+			<param field="Port" label="Port" width="30px" required="true" default="80"/>
+			<param field="Mode6" label="Debug" width="75px">
+				<options>
+					<option label="True" value="1"/>
+					<option label="False" value="0"  default="true" />
+				</options>
+			</param>
+		</params>
+		<devices>
+			<device name="Switch 1" unit="1" type="244" subtype="73" switchtype="0" icon="0"/>
+			<device name="Sensor 1" unit="2" type="244" subtype="73" switchtype="2" icon="0"/>
+			<device name="Switch 2" unit="3" type="244" subtype="73" switchtype="0" icon="0"/>
+			<device name="Sensor 2" unit="4" type="244" subtype="73" switchtype="2" icon="0"/>
+			<device name="Switch 3" unit="5" type="244" subtype="73" switchtype="0" icon="0"/>
+			<device name="Sensor 3" unit="6" type="244" subtype="73" switchtype="2" icon="0"/>
+		</devices>
+	</plugin>
+</plugins>

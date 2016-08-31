@@ -99,6 +99,7 @@
 #include "../hardware/BleBox.h"
 #include "../hardware/Ec3kMeterTCP.h"
 #include "../hardware/OpenWeatherMap.h"
+#include "../hardware/plugins/PluginManager.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -884,6 +885,8 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_Ec3kMeterTCP:
 		pHardware = new Ec3kMeterTCP(ID, Address, Port);
+	case HTYPE_PythonPlugin:
+		pHardware = new Plugins::CPluginManager(ID, Name, Filename);
 	}
 
 	if (pHardware)
