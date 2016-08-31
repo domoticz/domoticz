@@ -2,6 +2,7 @@
 #include "P1MeterBase.h"
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
+#include "../main/Logger.h"
 
 #define CRC16_ARC	0x8005
 #define CRC16_ARC_REFL	0xA001
@@ -205,12 +206,14 @@ bool P1MeterBase::MatchLine()
 			if (ePos==std::string::npos)
 			{
 				// invalid message: value not delimited
+				_log.Log(LOG_STATUS,"P1: dismiss incoming - value is not delimited in line \"%s\"",l_buffer);
 				return false;
 			}
 
 			if (ePos>19)
 			{
 				// invalid message: line too long
+				_log.Log(LOG_STATUS,"P1: dismiss incoming - value in line \"%s\" is oversized",l_buffer);
 				return false;
 			}
 
@@ -270,6 +273,7 @@ bool P1MeterBase::MatchLine()
 
 			if (ePos>0 && ((validate - value) != ePos)) {
 				// invalid message: value is not a number
+				_log.Log(LOG_STATUS,"P1: dismiss incoming - value in line \"%s\" is not a number", l_buffer);
 				return false;
 			}
 
@@ -305,12 +309,12 @@ bool P1MeterBase::CheckCRC()
 	strncpy(crc_str, (const char*)&l_buffer+1, 4);
 	crc_str[4]=0;
 	uint16_t m_crc16=strtol(crc_str,NULL,16);
-	int m_size=m_bufferpos;
 
 	// calculate CRC
 	const unsigned char* c_buffer=m_buffer;
 	uint8_t i;
 	uint16_t crc=0;
+	int m_size=m_bufferpos;
 	while (m_size--) {
 		crc = crc ^ *c_buffer++;
 		for (i=0;i<8;i++){
@@ -320,6 +324,9 @@ bool P1MeterBase::CheckCRC()
 				crc = crc >> 1;
 			}
 		}
+	}
+	if (crc != m_crc16){
+		_log.Log(LOG_STATUS,"P1: dismiss incoming - CRC failed");
 	}
 	return (crc==m_crc16);
 }
