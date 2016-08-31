@@ -2,6 +2,10 @@
 #include "P1MeterBase.h"
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
+#include "../main/Logger.h"
+
+#define CRC16_ARC	0x8005
+#define CRC16_ARC_REFL	0xA001
 
 typedef enum { 
 	ID=0, 
@@ -82,12 +86,14 @@ void P1MeterBase::Init()
 	m_linecount=0;
 	m_exclmarkfound=0;
 	m_bufferpos=0;
+	l_bufferpos=0;
 	m_lastgasusage=0;
 	m_lastelectrausage=0;
 	m_lastSharedSendElectra=0;
 	m_lastSharedSendGas=0;
 
 	memset(&m_buffer,0,sizeof(m_buffer));
+	memset(&l_buffer,0,sizeof(l_buffer));
 
 	memset(&m_p1power,0,sizeof(m_p1power));
 	memset(&m_p1gas,0,sizeof(m_p1gas));
@@ -105,7 +111,7 @@ void P1MeterBase::Init()
 
 bool P1MeterBase::MatchLine()
 {
-	if ((strlen((const char*)&m_buffer)<1)||(m_buffer[0]==0x0a))
+	if ((strlen((const char*)&l_buffer)<1)||(l_buffer[0]==0x0a))
 		return true; //null value (startup)
 	uint8_t i;
 	uint8_t found=0;
@@ -119,7 +125,7 @@ bool P1MeterBase::MatchLine()
 		switch(t.matchtype)
 		{
 		case ID:
-			if(strncmp(t.key, (const char*)&m_buffer, strlen(t.key)) == 0) {
+			if(strncmp(t.key, (const char*)&l_buffer, strlen(t.key)) == 0) {
 				m_linecount=1;
 				found=1;
 			}
@@ -127,14 +133,14 @@ bool P1MeterBase::MatchLine()
 				continue;
 			break;
 		case STD:
-			if(strncmp(t.key, (const char*)&m_buffer, strlen(t.key)) == 0) {
+			if(strncmp(t.key, (const char*)&l_buffer, strlen(t.key)) == 0) {
 				found=1;
 			}
 			else 
 				continue;
 			break;
 		case LINE17:
-			if(strncmp(t.key, (const char*)&m_buffer, strlen(t.key)) == 0) {
+			if(strncmp(t.key, (const char*)&l_buffer, strlen(t.key)) == 0) {
 				m_linecount = 17;
 				found=1;
 			}
@@ -142,12 +148,12 @@ bool P1MeterBase::MatchLine()
 				continue;
 			break;
 		case LINE18:
-			if((m_linecount == 18)&&(strncmp(t.key, (const char*)&m_buffer, strlen(t.key)) == 0)) {
+			if((m_linecount == 18)&&(strncmp(t.key, (const char*)&l_buffer, strlen(t.key)) == 0)) {
 				found=1;
 			}
 			break;
 		case EXCLMARK:
-			if(strncmp(t.key, (const char*)&m_buffer, strlen(t.key)) == 0) {
+			if(strncmp(t.key, (const char*)&l_buffer, strlen(t.key)) == 0) {
 				m_exclmarkfound=1;
 				found=1;
 			}
@@ -186,7 +192,7 @@ bool P1MeterBase::MatchLine()
 		}
 		else
 		{
-			vString=(const char*)&m_buffer+t.start;
+			vString=(const char*)&l_buffer+t.start;
 			int ePos=t.width;
 			if (t.matchtype==STD)
 			{
@@ -200,12 +206,14 @@ bool P1MeterBase::MatchLine()
 			if (ePos==std::string::npos)
 			{
 				// invalid message: value not delimited
+				_log.Log(LOG_STATUS,"P1: dismiss incoming - value is not delimited in line \"%s\"",l_buffer);
 				return false;
 			}
 
 			if (ePos>19)
 			{
 				// invalid message: line too long
+				_log.Log(LOG_STATUS,"P1: dismiss incoming - value in line \"%s\" is oversized",l_buffer);
 				return false;
 			}
 
@@ -216,7 +224,7 @@ bool P1MeterBase::MatchLine()
 			}
 
 			unsigned long temp_usage = 0;
-			char *validate;
+			char *validate=value+ePos;
 
 			switch (t.type)
 			{
@@ -263,8 +271,9 @@ bool P1MeterBase::MatchLine()
 				break;
 			}
 
-			if ((temp_usage == 0) && (value == validate)) {
+			if (ePos>0 && ((validate - value) != ePos)) {
 				// invalid message: value is not a number
+				_log.Log(LOG_STATUS,"P1: dismiss incoming - value in line \"%s\" is not a number", l_buffer);
 				return false;
 			}
 
@@ -274,36 +283,130 @@ bool P1MeterBase::MatchLine()
 	return true;
 }
 
+
+/*
+/ GB3:	DSMR 4.0 defines a CRC checksum at the end of the message, calculated from 
+/	and including the message starting character '/' upto and including the message
+/	end character '!'. According to the specs the CRC is a 16bit checksum using the
+/	polynomial x^16 + x^15 + x^2 + 1, however input/output are reflected.
+*/
+
+bool P1MeterBase::CheckCRC()
+{
+	// sanity checks
+	if (l_buffer[1]==0){
+		// always return true with pre DSMRv4 format message
+		return true;
+	}
+
+	if (l_buffer[5]!=0){
+		// trailing characters after CRC
+		return false;
+	}
+
+	// retrieve CRC from the current line
+	char crc_str[5];
+	strncpy(crc_str, (const char*)&l_buffer+1, 4);
+	crc_str[4]=0;
+	uint16_t m_crc16=strtol(crc_str,NULL,16);
+
+	// calculate CRC
+	const unsigned char* c_buffer=m_buffer;
+	uint8_t i;
+	uint16_t crc=0;
+	int m_size=m_bufferpos;
+	while (m_size--) {
+		crc = crc ^ *c_buffer++;
+		for (i=0;i<8;i++){
+			if ((crc & 0x0001)){
+				crc = (crc >> 1) ^ CRC16_ARC_REFL;
+			} else {
+				crc = crc >> 1;
+			}
+		}
+	}
+	if (crc != m_crc16){
+		_log.Log(LOG_STATUS,"P1: dismiss incoming - CRC failed");
+	}
+	return (crc==m_crc16);
+}
+
+
+/*
+/ GB3:	ParseData() can be called with either a complete message (P1MeterTCP) or individual
+/	lines (P1MeterSerial).
+/
+/	While it is technically possible to do a CRC check line by line, we like to keep
+/	things organized and assemble the complete message before running that check. If the
+/	message is DSMR 4.0+ of course.
+/
+/	Because older DSMR standard does not contain a CRC we still need the validation rules
+/	in Matchline(). In fact, one of them is essential for keeping Domoticz from crashing
+/	in specific cases of bad data. In essence this means that a CRC check will only be
+/	done if the message passes all other validation rules
+*/
+
 void P1MeterBase::ParseData(const unsigned char *pData, int Len)
 {
 	int ii=0;
-	while (ii<Len)
+
+	// reenable reading pData when a new message starts, empty buffers
+	if (pData[0]==0x2f) {
+		m_linecount = 1;
+		l_bufferpos = 0;
+		m_bufferpos = 0;
+	}
+
+	// assemble complete message in message buffer
+	while ((ii<Len) && (m_linecount>0) && (m_bufferpos<sizeof(m_buffer))){
+		const unsigned char c = pData[ii];
+		m_buffer[m_bufferpos] = c;
+		m_bufferpos++;
+		if(c==0x21){
+			// stop reading at exclamation mark (do not include CRC)
+			ii=Len;
+		}else{
+			ii++;
+		}
+	}
+
+	if(m_bufferpos==sizeof(m_buffer)){
+		// discard oversized message
+		return;
+	}
+
+	// read pData, ignore/stop if there is a message validation failure
+	ii=0;
+	while ((ii<Len) && (m_linecount>0))
 	{
 		const unsigned char c = pData[ii];
-		if(c == 0x0d)
-		{
-			ii++;
+		ii++;
+		if (c==0x0d) {
 			continue;
 		}
 
-		m_buffer[m_bufferpos] = c;
-		if(c == 0x0a || m_bufferpos == sizeof(m_buffer) - 1)
-		{
-			// discard newline, close string, parse line and clear it.
+		if (c==0x0a) {
+			// close string, parse line and clear it.
 			m_linecount++;
-			if (m_bufferpos > 0) {
-				m_buffer[m_bufferpos] = 0;
+			if ((l_bufferpos>0) && (l_bufferpos<sizeof(l_buffer))) {
+				// don't try to match empty or oversized lines
+				l_buffer[l_bufferpos] = 0;
+				if(l_buffer[0]==0x21){
+					if (!CheckCRC()) {
+						m_linecount = 0;
+						return;
+					}
+				}
 				if (!MatchLine()) {
 					// discard message
-					ii=Len;
+					m_linecount=0;
 				}
 			}
-			m_bufferpos = 0;
+			l_bufferpos = 0;
 		}
-		else
-		{
-			m_bufferpos++;
+		else if (l_bufferpos<sizeof(l_buffer)) {
+			l_buffer[l_bufferpos] = c;
+			l_bufferpos++;
 		}
-		ii++;
 	}
 }

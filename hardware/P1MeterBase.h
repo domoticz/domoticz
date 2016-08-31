@@ -26,6 +26,9 @@ private:
 	void ParseData(const unsigned char *pData, int Len);
 	unsigned char m_buffer[1028];
 	int m_bufferpos;
+	unsigned char l_buffer[128];
+	int l_bufferpos;
 
+	bool CheckCRC();
 };
 
