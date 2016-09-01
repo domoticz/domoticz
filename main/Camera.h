@@ -18,6 +18,7 @@ struct cameraDevice
 	std::string Username;
 	std::string Password;
 	int Port;
+	int Protocol;				// 0 = HTTP, 1 == HTTPS
 	std::string ImageURL;
 	std::vector<cameraActiveDevice> mActiveDevices;
 };

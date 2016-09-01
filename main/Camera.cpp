@@ -34,7 +34,7 @@ void CCameraHandler::ReloadCameras()
 	std::vector<std::vector<std::string> > result;
 	std::vector<std::vector<std::string> >::const_iterator itt;
 
-	result=m_sql.safe_query("SELECT ID, Name, Address, Port, Username, Password, ImageURL FROM Cameras WHERE (Enabled == 1) ORDER BY ID");
+	result=m_sql.safe_query("SELECT ID, Name, Address, Port, Username, Password, ImageURL, Protocol FROM Cameras WHERE (Enabled == 1) ORDER BY ID");
 	if (result.size()>0)
 	{
 		_log.Log(LOG_STATUS,"Camera: settings (re)loaded");
@@ -51,6 +51,7 @@ void CCameraHandler::ReloadCameras()
 			citem.Username	= base64_decode(sd[4]);
 			citem.Password	= base64_decode(sd[5]);
 			citem.ImageURL	= sd[6];
+			citem.Protocol = atoi(sd[7].c_str());
 			m_cameradevices.push_back(citem);
 			_AddedCameras.push_back(sd[0]);
 		}
@@ -138,12 +139,18 @@ std::string CCameraHandler::GetCameraURL(cameraDevice *pCamera)
 {
 	std::stringstream s_str;
 
+	std::string protocolUrl = "http";
+	if (pCamera->Protocol == 1)
+	{
+		protocolUrl = "https";
+	}
+
 	bool bHaveUPinURL = (pCamera->ImageURL.find("#USERNAME") != std::string::npos) || (pCamera->ImageURL.find("#PASSWORD") != std::string::npos);
 
 	if ((!bHaveUPinURL)&&((pCamera->Username != "") || (pCamera->Password != "")))
-		s_str << "http://" << pCamera->Username << ":" << pCamera->Password << "@" << pCamera->Address << ":" << pCamera->Port;
+		s_str << protocolUrl << "://" << pCamera->Username << ":" << pCamera->Password << "@" << pCamera->Address << ":" << pCamera->Port;
 	else
-		s_str << "http://" << pCamera->Address << ":" << pCamera->Port;
+		s_str << protocolUrl << "://" << pCamera->Address << ":" << pCamera->Port;
 	return s_str.str();
 }
 
@@ -380,10 +387,10 @@ namespace http {
 
 			std::vector<std::vector<std::string> > result;
 			if (rused == "true") {
-				result = m_sql.safe_query("SELECT ID, Name, Enabled, Address, Port, Username, Password, ImageURL FROM Cameras WHERE (Enabled=='1') ORDER BY ID ASC");
+				result = m_sql.safe_query("SELECT ID, Name, Enabled, Address, Port, Username, Password, ImageURL, Protocol FROM Cameras WHERE (Enabled=='1') ORDER BY ID ASC");
 			}
 			else {
-				result = m_sql.safe_query("SELECT ID, Name, Enabled, Address, Port, Username, Password, ImageURL FROM Cameras ORDER BY ID ASC");
+				result = m_sql.safe_query("SELECT ID, Name, Enabled, Address, Port, Username, Password, ImageURL, Protocol FROM Cameras ORDER BY ID ASC");
 			}
 			if (result.size() > 0)
 			{
@@ -401,6 +408,7 @@ namespace http {
 					root["result"][ii]["Username"] = base64_decode(sd[5]);
 					root["result"][ii]["Password"] = base64_decode(sd[6]);
 					root["result"][ii]["ImageURL"] = sd[7];
+					root["result"][ii]["Protocol"] = atoi(sd[8].c_str());
 					ii++;
 				}
 			}
