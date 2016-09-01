@@ -31,7 +31,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 105
+#define DB_VERSION 106
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -296,7 +296,8 @@ const char *sqlCreateCameras =
 "[Port] INTEGER, "
 "[Username] VARCHAR(100) DEFAULT (''), "
 "[Password] VARCHAR(100) DEFAULT (''), "
-"[ImageURL] VARCHAR(200) DEFAULT (''));";
+"[ImageURL] VARCHAR(200) DEFAULT (''), "
+"[Protocol] INTEGER DEFAULT 0);";
 
 const char *sqlCreateCamerasActiveDevices =
 "CREATE TABLE IF NOT EXISTS [CamerasActiveDevices] ("
@@ -2060,6 +2061,11 @@ bool CSQLHelper::OpenDatabase()
 			{
 				query("ALTER TABLE MySensorsChilds ADD COLUMN [AckTimeout] INTEGER DEFAULT 1200");
 			}
+		}
+
+		if (dbversion < 106)
+		{
+			query("ALTER TABLE Cameras ADD COLUMN [Protocol] INTEGER default 0");
 		}
 	}
 	else if (bNewInstall)

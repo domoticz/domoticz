@@ -18,6 +18,15 @@
 						<td><input type="text" id="cameraaddress" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 					</tr>
 					<tr>
+						<td align="right" style="width:110px"><label for="cameraprotocol"><span data-i18n="Protocol">Protocol</span>:</label></td>
+						<td>
+							<select id="cameraprotocol" style="width:160px" class="combobox ui-corner-all">
+								<option value="0" data-i18n="HTTP">HTTP</option>
+								<option value="1" data-i18n="HTTPS">HTTPS</option>
+							</select>
+						</td>
+					</tr>
+					<tr>
 						<td align="right"><label for="cameraport"><span data-i18n="Port">Port</span>:</label></td>
 						<td><input type="text" id="cameraport" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="80"/></td>
 					</tr>
@@ -144,6 +153,14 @@ function AddCameraDevice()
 	$.count=0;
 	$.testcamfeed="";
 	$( "#dialog-add-edit-camera" ).i18n();
+	$("#dialog-add-edit-camera #cameraparamstable #cameraname").val("");
+	$("#dialog-add-edit-camera #cameraparamstable #cameraaddress").val("");
+	$("#dialog-add-edit-camera #cameraparamstable #cameraport").val("");
+	$("#dialog-add-edit-camera #cameraparamstable #cameraprotocol").val("0");
+	$('#dialog-add-edit-camera #cameraparamstable #enabled').prop('checked',true);
+	$("#dialog-add-edit-camera #cameraparamstable #username").val("");
+	$("#dialog-add-edit-camera #cameraparamstable #password").val("");
+	$("#dialog-add-edit-camera #cameraparamstable #imageurl").val("image.jpg");
 	$( "#dialog-add-edit-camera" ).dialog({
 		resizable: false,
 		width: 720,
@@ -255,6 +272,10 @@ function GetCameraSettings()
 	else {
 		csettings.port=80;
 	}
+	csettings.protocol=$('#dialog-add-edit-camera #cameraparamstable #cameraprotocol').val();
+	if (csettings.protocol=="")	{
+		csettings.protocol="0";
+	}
 	csettings.username=$('#dialog-add-edit-camera #cameraparamstable #username').val();
 	csettings.password=$('#dialog-add-edit-camera #cameraparamstable #password').val();
 
@@ -274,7 +295,7 @@ function TestCamFeed()
 	if (typeof csettings == 'undefined') {
 		return;
 	}
-	var feedsrc=GenerateCamImageURL(csettings.address,csettings.port,csettings.username,csettings.password,csettings.imageurl);
+	var feedsrc=GenerateCamImageURL(csettings.address,csettings.port,csettings.username,csettings.password,csettings.imageurl,csettings.protocol);
 	$.testcamfeed=feedsrc;
 	$.count=0;
 	$('#dialog-add-edit-camera #camfeed').attr("src", feedsrc);
@@ -291,7 +312,7 @@ function Updatecamera(idx)
 
 	$.ajax({
 		 url: "json.htm?type=command&param=updatecamera&address=" + csettings.address + 
-					"&port=" + csettings.port + "&name=" + encodeURIComponent(csettings.name) + "&enabled=" + csettings.bEnabled + "&idx=" + idx + 
+					"&protocol=" + csettings.protocol + "&port=" + csettings.port + "&name=" + encodeURIComponent(csettings.name) + "&enabled=" + csettings.bEnabled + "&idx=" + idx + 
 					"&username=" + encodeURIComponent(csettings.username) + "&password=" + encodeURIComponent(csettings.password) +
 					"&imageurl=" + encodeURIComponent(mimageurl),
 		 async: false, 
@@ -316,7 +337,7 @@ function Addcamera()
 
 	$.ajax({
 		 url: "json.htm?type=command&param=addcamera&address=" + csettings.address +
-					"&port=" + csettings.port + "&name=" + encodeURIComponent(csettings.name) + "&enabled=" + csettings.bEnabled +
+					"&protocol=" + csettings.protocol + "&port=" + csettings.port + "&name=" + encodeURIComponent(csettings.name) + "&enabled=" + csettings.bEnabled +
 					"&username=" + encodeURIComponent(csettings.username) + "&password=" + encodeURIComponent(csettings.password) +
 					"&imageurl=" + encodeURIComponent(mimageurl),
 		 async: false, 
@@ -379,6 +400,7 @@ function RefreshcameraTable()
 				"ImageURL": item.ImageURL,
 				"Enabled": item.Enabled,
 				"IntPort": item.Port,
+				"IntProtocol": item.Protocol,
 				"0": previewimg,
 				"1": item.Name,
 				"2": captureurl,
@@ -405,6 +427,7 @@ function RefreshcameraTable()
 			$("#dialog-add-edit-camera #cameraparamstable #cameraname").val("");
 			$("#dialog-add-edit-camera #cameraparamstable #cameraaddress").val("");
 			$("#dialog-add-edit-camera #cameraparamstable #cameraport").val("");
+			$("#dialog-add-edit-camera #cameraparamstable #cameraprotocol").val("0");
 			$('#dialog-add-edit-camera #cameraparamstable #enabled').prop('checked',true);
 			$("#dialog-add-edit-camera #cameraparamstable #username").val("");
 			$("#dialog-add-edit-camera #cameraparamstable #password").val("");
@@ -426,6 +449,7 @@ function RefreshcameraTable()
 				$("#dialog-add-edit-camera #cameraparamstable #cameraname").val(data["Name"]);
 				$("#dialog-add-edit-camera #cameraparamstable #cameraaddress").val(data["Address"]);
 				$("#dialog-add-edit-camera #cameraparamstable #cameraport").val(data["IntPort"]);
+				$("#dialog-add-edit-camera #cameraparamstable #cameraprotocol").val(data["IntProtocol"]);
 				$('#dialog-add-edit-camera #cameraparamstable #enabled').prop('checked',(data["Enabled"]=="true"));
 				$("#dialog-add-edit-camera #cameraparamstable #username").val(data["Username"]);
 				$("#dialog-add-edit-camera #cameraparamstable #password").val(data["Password"]);

@@ -5127,6 +5127,7 @@ namespace http {
 				std::string senabled = request::findValue(&req, "enabled");
 				std::string address = request::findValue(&req, "address");
 				std::string sport = request::findValue(&req, "port");
+				std::string sprotocol = request::findValue(&req, "protocol");
 				std::string username = request::findValue(&req, "username");
 				std::string password = request::findValue(&req, "password");
 				std::string timageurl = request::findValue(&req, "imageurl");
@@ -5143,10 +5144,11 @@ namespace http {
 					imageurl = base64_decode(imageurl);
 
 					int port = atoi(sport.c_str());
+					int protocol = atoi(sprotocol.c_str());
 					root["status"] = "OK";
 					root["title"] = "AddCamera";
 					m_sql.safe_query(
-						"INSERT INTO Cameras (Name, Enabled, Address, Port, Username, Password, ImageURL) VALUES ('%q',%d,'%q',%d,'%q','%q','%q')",
+						"INSERT INTO Cameras (Name, Enabled, Address, Port, Username, Password, ImageURL, Protocol) VALUES ('%q',%d,'%q',%d,'%q','%q','%q','%d')",
 						name.c_str(),
 						(senabled == "true") ? 1 : 0,
 						address.c_str(),
@@ -5170,6 +5172,7 @@ namespace http {
 				std::string senabled = request::findValue(&req, "enabled");
 				std::string address = request::findValue(&req, "address");
 				std::string sport = request::findValue(&req, "port");
+				std::string sprotocol = request::findValue(&req, "protocol");
 				std::string username = request::findValue(&req, "username");
 				std::string password = request::findValue(&req, "password");
 				std::string timageurl = request::findValue(&req, "imageurl");
@@ -5187,12 +5190,13 @@ namespace http {
 					imageurl = base64_decode(imageurl);
 
 					int port = atoi(sport.c_str());
+					int protocol = atoi(sprotocol.c_str());
 
 					root["status"] = "OK";
 					root["title"] = "UpdateCamera";
 
 					m_sql.safe_query(
-						"UPDATE Cameras SET Name='%q', Enabled=%d, Address='%q', Port=%d, Username='%q', Password='%q', ImageURL='%q' WHERE (ID == '%q')",
+						"UPDATE Cameras SET Name='%q', Enabled=%d, Address='%q', Port=%d, Username='%q', Password='%q', ImageURL='%q', Protocol='%d' WHERE (ID == '%q')",
 						name.c_str(),
 						(senabled == "true") ? 1 : 0,
 						address.c_str(),
@@ -5200,6 +5204,7 @@ namespace http {
 						base64_encode((const unsigned char*)username.c_str(), username.size()).c_str(),
 						base64_encode((const unsigned char*)password.c_str(), password.size()).c_str(),
 						imageurl.c_str(),
+						protocol,
 						idx.c_str()
 						);
 					m_mainworker.m_cameras.ReloadCameras();
