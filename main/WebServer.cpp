@@ -2066,9 +2066,6 @@ namespace http {
 			root["hash"] = szAppHash;
 			root["build_time"] = szAppDate;
 
-			int nValue = 1;
-			m_sql.GetPreferencesVar("UseAutoUpdate", nValue);
-
 			if (session.rights != 2)
 			{
 				//only admin users will receive the update notification
@@ -2708,14 +2705,17 @@ namespace http {
 			if (session.rights != 2)
 				return; //Only admin users may update
 
-			int nValue = 0;
-			m_sql.GetPreferencesVar("UseAutoUpdate", nValue);
-			if (nValue != 1)
-			{
-				return;
-			}
-
 			bool bIsForced = (request::findValue(&req, "forced") == "true");
+
+			if (!bIsForced)
+			{
+				int nValue = 0;
+				m_sql.GetPreferencesVar("UseAutoUpdate", nValue);
+				if (nValue != 1)
+				{
+					return;
+				}
+			}
 
 			root["HaveUpdate"] = m_mainworker.IsUpdateAvailable(bIsForced);
 			root["DomoticzUpdateURL"] = m_mainworker.m_szDomoticzUpdateURL;

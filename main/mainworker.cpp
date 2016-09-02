@@ -1040,11 +1040,14 @@ bool MainWorker::StartThread()
 
 bool MainWorker::IsUpdateAvailable(const bool bIsForced)
 {
-	int nValue = 0;
-	m_sql.GetPreferencesVar("UseAutoUpdate", nValue);
-	if (nValue != 1)
+	if (!bIsForced)
 	{
-		return false;
+		int nValue = 0;
+		m_sql.GetPreferencesVar("UseAutoUpdate", nValue);
+		if (nValue != 1)
+		{
+			return false;
+		}
 	}
 
 	utsname my_uname;
@@ -1081,6 +1084,7 @@ bool MainWorker::IsUpdateAvailable(const bool bIsForced)
 	}
 	m_LastUpdateCheck = atime;
 
+	int nValue;
 	m_sql.GetPreferencesVar("ReleaseChannel", nValue);
 	bool bIsBetaChannel = (nValue != 0);
 
