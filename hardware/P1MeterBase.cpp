@@ -346,7 +346,7 @@ bool P1MeterBase::CheckCRC()
 /	done if the message passes all other validation rules
 */
 
-void P1MeterBase::ParseData(const unsigned char *pData, int Len)
+void P1MeterBase::ParseData(const unsigned char *pData, int Len, unsigned char disable_crc)
 {
 	int ii=0;
 
@@ -391,7 +391,7 @@ void P1MeterBase::ParseData(const unsigned char *pData, int Len)
 			if ((l_bufferpos>0) && (l_bufferpos<sizeof(l_buffer))) {
 				// don't try to match empty or oversized lines
 				l_buffer[l_bufferpos] = 0;
-				if(l_buffer[0]==0x21){
+				if(l_buffer[0]==0x21 && !disable_crc){
 					if (!CheckCRC()) {
 						m_linecount = 0;
 						return;

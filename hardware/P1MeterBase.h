@@ -23,7 +23,7 @@ private:
 	unsigned char m_exclmarkfound;
 	void Init();
 	bool MatchLine();
-	void ParseData(const unsigned char *pData, int Len);
+	void ParseData(const unsigned char *pData, int Len, unsigned char disable_crc);
 	unsigned char m_buffer[1028];
 	int m_bufferpos;
 	unsigned char l_buffer[128];
