@@ -13,6 +13,12 @@ Version 3.xxxx (August xx 2016)
 - Implemented: Error Log, option to send error logs by email
 - Implemented: Hourly rainrate for all rain sensors
 - Implemented: MySensors, Implemented Acknowledge Timeout per Child sensor
+- Implemented: MySensors, S_WATER_QUALITY, water PH
+- Implemented: MySensors, S_WATER_QUALITY, water ORP redox potential in mV
+- Implemented: MySensors, S_WATER_QUALITY, water electric conductivity S/cm (microSiemens/cm)
+- Implemented: MySensors, S_POWER, Reactive power: volt-ampere reactive (var)
+- Implemented: MySensors, S_POWER, Apparent power: volt-ampere (VA)
+- Implemented: MySensors, S_POWER, Ratio of real power to apparent power: floating point value in the range [-1,..,1]
 - Implemented: Nefit Easy, User Mode (as switch, On=Clock, Off=Manual), Flow Temperature
 - Implemented: OpenZWave, Aeotec ZWave+ USB Controller, Enable/Disable blinking mode (@Schmart, Thanks for the magic codes!)
 - Implemented: OpenZWave, Node table, now also displays Manufacturer, Product ID and Product Type

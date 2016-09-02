@@ -123,6 +123,23 @@ std::string MySensorsBase::GetMySensorsValueTypeStr(const enum _eSetType vType)
 		return "V_TEXT";
 	case V_CUSTOM:
 		return "V_CUSTOM";
+	case V_POSITION:
+		return "V_POSITION";
+	case V_IR_RECORD:
+		return "V_IR_RECORD";
+	case V_PH:
+		return "V_PH";
+	case V_ORP:
+		return "V_ORP";
+	case V_EC:
+		return "V_EC";
+	case V_VAR:
+		return "V_VAR";
+	case V_VA:
+		return "V_VA";
+	case V_POWER_FACTOR:
+		return "V_POWER_FACTOR";
+
 	}
 	return "Unknown!";
 }
@@ -1005,6 +1022,26 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 			gswitch.seqnbr = 0;
 			sDecodeRXMessage(this, (const unsigned char *)&gswitch, (!pChild->childName.empty()) ? pChild->childName.c_str() : "IR Command", pChild->batValue);
 		}
+		break;
+	case V_PH:
+		if (pChild->GetValue(vType, floatValue))
+			SendCustomSensor(pChild->nodeID, pChild->childID, pChild->batValue, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Water Quality", "pH");
+		break;
+	case V_ORP:
+		if (pChild->GetValue(vType, floatValue))
+			SendCustomSensor(pChild->nodeID, pChild->childID, pChild->batValue, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Water Quality", "mV");
+		break;
+	case V_EC:
+		if (pChild->GetValue(vType, floatValue))
+			SendCustomSensor(pChild->nodeID, pChild->childID, pChild->batValue, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Water Quality", "S/cm");
+		break;
+	case V_VA:
+		if (pChild->GetValue(vType, floatValue))
+			SendCustomSensor(pChild->nodeID, pChild->childID, pChild->batValue, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Voltage Ampere", "VA");
+		break;
+	case V_POWER_FACTOR:
+		if (pChild->GetValue(vType, floatValue))
+			SendPercentageSensor(pChild->nodeID, pChild->childID, pChild->batValue, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Power Factor");
 		break;
 	}
 }
@@ -1911,6 +1948,15 @@ void MySensorsBase::ParseLine()
 			break;
 		case V_RAINRATE:
 			//not needed, this is now calculated by domoticz for any type of rain sensor
+			break;
+		case V_PH:
+		case V_ORP:
+		case V_EC:
+		case V_VAR:
+		case V_VA:
+		case V_POWER_FACTOR:
+			pChild->SetValue(vType, (float)atof(payload.c_str()));
+			bHaveValue = true;
 			break;
 		default:
 			if (sub_type > V_CURRENT)
