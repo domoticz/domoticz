@@ -1246,7 +1246,7 @@ bool COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 	OpenZWave::ValueID vID(0, 0, OpenZWave::ValueID::ValueGenre_Basic, 0, 0, 0, OpenZWave::ValueID::ValueType_Bool);
 	unsigned char svalue = (unsigned char)value;
 
-	if (pDevice->devType == ZWaveBase::ZDTYPE_SWITCH_NORMAL)
+	if ((pDevice->devType == ZWaveBase::ZDTYPE_SWITCH_NORMAL) || (svalue == 0) || (svalue == 255))
 	{
 		//On/Off device
 		bool bFound = (GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_SWITCH_BINARY, vID) == true);
@@ -1275,12 +1275,12 @@ bool COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 			{
 				if (svalue == 0) {
 					//Off
-					m_pManager->SetValue(vID, 0);
+					m_pManager->SetValue(vID, (uint8)0);
 					pDevice->intvalue = 0;
 				}
 				else {
 					//On
-					m_pManager->SetValue(vID, 255);
+					m_pManager->SetValue(vID, (uint8)255);
 					pDevice->intvalue = 255;
 				}
 			}
