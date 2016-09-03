@@ -8232,7 +8232,7 @@ namespace http {
 									total_real = atof(sd2[1].c_str());
 								}
 								total_real *= AddjMulti;
-								rate = static_cast<float>(atof(strarray[0].c_str()))/100.0f;
+								rate = (static_cast<float>(atof(strarray[0].c_str())) / 100.0f)*float(AddjMulti);
 
 								sprintf(szTmp, "%.1f", total_real);
 								root["result"][ii]["Rain"] = szTmp;
