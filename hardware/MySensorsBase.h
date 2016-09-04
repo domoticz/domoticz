@@ -177,6 +177,7 @@ public:
 	{
 		int nodeID;
 		int childID;
+		int groupID;
 
 		_ePresentationType presType;
 		std::string childName;
@@ -196,6 +197,7 @@ public:
 			lastreceived = 0;
 			nodeID = -1;
 			childID = 1;
+			groupID = 1;
 			hasBattery = false;
 			batValue = 255;
 			presType = S_UNKNOWN;
@@ -403,7 +405,7 @@ private:
 	_tMySensorNode* InsertNode(const int nodeID);
 	int FindNextNodeID();
 	_tMySensorChild* FindSensorWithPresentationType(const int nodeID, const _ePresentationType presType);
-	_tMySensorChild* FindChildWithValueType(const int nodeID, const _eSetType valType);
+	_tMySensorChild* FindChildWithValueType(const int nodeID, const _eSetType valType, const int groupID);
 	void InsertSensor(_tMySensorChild device);
 	void UpdateNodeBatteryLevel(const int nodeID, const int Level);
 	void UpdateNodeHeartbeat(const int nodeID);
