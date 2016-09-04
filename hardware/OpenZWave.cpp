@@ -1219,21 +1219,6 @@ bool COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 	}
 
 	_tZWaveDevice *pDevice = FindDevice(nodeID, instanceID, 0, ZWaveBase::ZDTYPE_SWITCH_DIMMER);
-	if (pDevice)
-	{
-		if (
-			((pDevice->Product_id == 0x0060) && (pDevice->Product_type == 0x0003)) ||
-			((pDevice->Product_id == 0x0060) && (pDevice->Product_type == 0x0103)) ||
-			((pDevice->Product_id == 0x0060) && (pDevice->Product_type == 0x0203))
-			)
-		{
-			//Special case for the Aeotec Smart Switch
-			if (commandClass == COMMAND_CLASS_SWITCH_MULTILEVEL)
-			{
-				pDevice = FindDevice(nodeID, instanceID, 0, COMMAND_CLASS_SWITCH_BINARY, ZWaveBase::ZDTYPE_SWITCH_NORMAL);
-			}
-		}
-	}
 	if (!pDevice)
 		pDevice = FindDevice(nodeID, instanceID, 0);
 	if (!pDevice)
@@ -1246,7 +1231,7 @@ bool COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 	OpenZWave::ValueID vID(0, 0, OpenZWave::ValueID::ValueGenre_Basic, 0, 0, 0, OpenZWave::ValueID::ValueType_Bool);
 	unsigned char svalue = (unsigned char)value;
 
-	if (pDevice->devType == ZWaveBase::ZDTYPE_SWITCH_NORMAL)
+	if ((pDevice->devType == ZWaveBase::ZDTYPE_SWITCH_NORMAL) || (svalue == 0) || (svalue == 255))
 	{
 		//On/Off device
 		bool bFound = (GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_SWITCH_BINARY, vID) == true);
@@ -1275,12 +1260,12 @@ bool COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 			{
 				if (svalue == 0) {
 					//Off
-					m_pManager->SetValue(vID, 0);
+					m_pManager->SetValue(vID, (uint8)0);
 					pDevice->intvalue = 0;
 				}
 				else {
 					//On
-					m_pManager->SetValue(vID, 255);
+					m_pManager->SetValue(vID, (uint8)255);
 					pDevice->intvalue = 255;
 				}
 			}
@@ -2923,7 +2908,9 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 			//Convert to celcius
 			fValue = float((fValue - 32)*(5.0 / 9.0));
 		}
-		pDevice->bValidValue = (abs(pDevice->floatValue - fValue) < 10);
+		if ((fValue < -200) || (fValue > 380))
+			return;
+		pDevice->bValidValue = (std::abs(pDevice->floatValue - fValue) < 10);
 		pDevice->floatValue = fValue;
 		break;
 	case ZDTYPE_SENSOR_HUMIDITY:
@@ -2995,7 +2982,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 			//Convert to celcius
 			fValue = float((fValue - 32)*(5.0 / 9.0));
 		}
-		pDevice->bValidValue = (abs(pDevice->floatValue - fValue) < 10);
+		pDevice->bValidValue = (std::abs(pDevice->floatValue - fValue) < 10);
 		pDevice->floatValue = fValue;
 		break;
 	case ZDTYPE_SENSOR_PERCENTAGE:

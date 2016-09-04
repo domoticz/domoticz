@@ -195,6 +195,7 @@ MainWorker::MainWorker()
 	m_iRevision = 0;
 
 	m_rxMessageIdx = 1;
+	m_bForceLogNotificationCheck = false;
 }
 
 MainWorker::~MainWorker()
@@ -612,7 +613,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new RFXComSerial(ID, SerialPort, 38400);
 		break;
 	case HTYPE_P1SmartMeter:
-		pHardware = new P1MeterSerial(ID,SerialPort, (Mode1==1) ? 115200 : 9600);
+		pHardware = new P1MeterSerial(ID,SerialPort, (Mode1==1) ? 115200 : 9600, Mode2);
 		break;
 	case HTYPE_Rego6XX:
 		pHardware = new CRego6XXSerial(ID,SerialPort, Mode1);
@@ -685,7 +686,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_P1SmartMeterLAN:
 		//LAN
-		pHardware = new P1MeterTCP(ID, Address, Port);
+		pHardware = new P1MeterTCP(ID, Address, Port, Mode2);
 		break;
 	case HTYPE_WOL:
 		//LAN
@@ -1039,11 +1040,14 @@ bool MainWorker::StartThread()
 
 bool MainWorker::IsUpdateAvailable(const bool bIsForced)
 {
-	int nValue = 0;
-	m_sql.GetPreferencesVar("UseAutoUpdate", nValue);
-	if (nValue != 1)
+	if (!bIsForced)
 	{
-		return false;
+		int nValue = 0;
+		m_sql.GetPreferencesVar("UseAutoUpdate", nValue);
+		if (nValue != 1)
+		{
+			return false;
+		}
 	}
 
 	utsname my_uname;
@@ -1080,6 +1084,7 @@ bool MainWorker::IsUpdateAvailable(const bool bIsForced)
 	}
 	m_LastUpdateCheck = atime;
 
+	int nValue;
 	m_sql.GetPreferencesVar("ReleaseChannel", nValue);
 	bool bIsBetaChannel = (nValue != 0);
 
@@ -1448,6 +1453,14 @@ void MainWorker::Do_Work()
 					std::remove(szPwdResetFile.c_str());
 				}
 			}
+			if (_log.NotificationLogsEnabled())
+			{
+				if ((ltime.tm_min % 5 == 0)||(m_bForceLogNotificationCheck))
+				{
+					m_bForceLogNotificationCheck = false;
+					HandleLogNotifications();
+				}
+			}
 		}
 		if (ltime.tm_hour!=m_ScheduleLastHour)
 		{
@@ -1496,7 +1509,6 @@ void MainWorker::Do_Work()
 		if (ltime.tm_sec % 30 == 0)
 		{
 			HeartbeatCheck();
-
 		}
 	}
 	_log.Log(LOG_STATUS, "Mainworker Stopped...");
@@ -9695,7 +9707,7 @@ void MainWorker::decode_BBQ(const int HwdID, const _eHardwareTypes HwdType, cons
 	tsen.TEMP.id2=1;
 
 	tsen.TEMP.tempsign=(temp1>=0)?0:1;
-	int at10=round(abs(temp1*10.0f));
+	int at10=round(std::abs(temp1*10.0f));
 	tsen.TEMP.temperatureh=(BYTE)(at10/256);
 	at10-=(tsen.TEMP.temperatureh*256);
 	tsen.TEMP.temperaturel=(BYTE)(at10);
@@ -9708,7 +9720,7 @@ void MainWorker::decode_BBQ(const int HwdID, const _eHardwareTypes HwdType, cons
 	tsen.TEMP.id2=2;
 
 	tsen.TEMP.tempsign=(temp2>=0)?0:1;
-	at10=round(abs(temp2*10.0f));
+	at10=round(std::abs(temp2*10.0f));
 	tsen.TEMP.temperatureh=(BYTE)(at10/256);
 	at10-=(tsen.TEMP.temperatureh*256);
 	tsen.TEMP.temperaturel=(BYTE)(at10);
@@ -11993,6 +12005,39 @@ void MainWorker::UpdateDomoticzSecurityStatus(const int iSecStatus)
 	}
 }
 
+void MainWorker::ForceLogNotificationCheck()
+{
+	m_bForceLogNotificationCheck = true;
+}
+
+void MainWorker::HandleLogNotifications()
+{
+	std::list<CLogger::_tLogLineStruct> _loglines = _log.GetNotificationLogs();
+	if (_loglines.empty())
+		return;
+	//Assemble notification message
+
+	std::stringstream sstr;
+	std::list<CLogger::_tLogLineStruct>::const_iterator itt;
+	std::string sTopic;
+
+	if (_loglines.size() > 1)
+	{
+		sTopic = "Domoticz: Multiple errors received in the last 5 minutes";
+		sstr << "Multiple errors received in the last 5 minutes:<br><br>";
+	}
+	else
+	{
+		itt = _loglines.begin();
+		sTopic = "Domoticz: " + itt->logmessage;
+	}
+
+	for (itt = _loglines.begin(); itt != _loglines.end(); ++itt)
+	{
+		sstr << itt->logmessage << "<br>";
+	}
+	m_sql.AddTaskItem(_tTaskItem::SendEmail(1, sTopic, sstr.str()));
+}
 
 void MainWorker::HeartbeatUpdate(const std::string &component)
 {

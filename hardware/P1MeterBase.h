@@ -22,10 +22,13 @@ private:
 	unsigned char m_linecount;
 	unsigned char m_exclmarkfound;
 	void Init();
-	void MatchLine();
-	void ParseData(const unsigned char *pData, int Len);
+	bool MatchLine();
+	void ParseData(const unsigned char *pData, int Len, unsigned char disable_crc);
 	unsigned char m_buffer[1028];
 	int m_bufferpos;
+	unsigned char l_buffer[128];
+	int l_bufferpos;
 
+	bool CheckCRC();
 };
 

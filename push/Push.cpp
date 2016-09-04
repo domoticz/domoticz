@@ -260,7 +260,7 @@ std::string CPush::ProcessSendValue(const std::string &rawsendValue, const int d
 	}
 	else if (vType == "Gas usage")
 	{
-		sprintf(szData,"Not supported yet");
+		sprintf(szData, "%.3f", atof(rawsendValue.c_str()) / 1000.0f);
 	}
 	else if (vType == "Weight")
 	{
