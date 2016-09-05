@@ -188,6 +188,7 @@ bool P1MeterBase::MatchLine()
 				m_lastgasusage=m_p1gas.gasusage;
 				sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, "Gas", 255);
 			}
+			m_linecount=0;
 			m_exclmarkfound=0;
 		}
 		else
@@ -350,8 +351,13 @@ void P1MeterBase::ParseData(const unsigned char *pData, int Len, unsigned char d
 {
 	int ii=0;
 
+	// a new message should not start with an empty line, but just in case it does (crude check is sufficient here)
+	while ((m_linecount==0) && (pData[ii]<0x10)){
+		ii++;
+	}
+
 	// reenable reading pData when a new message starts, empty buffers
-	if (pData[0]==0x2f) {
+	if (pData[ii]==0x2f) {
 		m_linecount = 1;
 		l_bufferpos = 0;
 		m_bufferpos = 0;
@@ -376,6 +382,7 @@ void P1MeterBase::ParseData(const unsigned char *pData, int Len, unsigned char d
 			// 400 is an arbitrary chosen number to differentiate between full messages and single line commits
 			_log.Log(LOG_STATUS,"P1: dismiss incoming - message oversized");
 		}
+		m_linecount = 0;
 		return;
 	}
 
