@@ -85,6 +85,7 @@ void P1MeterBase::Init()
 {
 	m_linecount=0;
 	m_exclmarkfound=0;
+	m_CRfound=0;
 	m_bufferpos=0;
 	l_bufferpos=0;
 	m_lastgasusage=0;
@@ -188,6 +189,7 @@ bool P1MeterBase::MatchLine()
 				m_lastgasusage=m_p1gas.gasusage;
 				sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, "Gas", 255);
 			}
+			m_linecount=0;
 			m_exclmarkfound=0;
 		}
 		else
@@ -301,7 +303,13 @@ bool P1MeterBase::CheckCRC()
 
 	if (l_buffer[5]!=0){
 		// trailing characters after CRC
+		_log.Log(LOG_STATUS,"P1: dismiss incoming - CRC value in message has trailing characters");
 		return false;
+	}
+
+	if (!m_CRfound){
+		_log.Log(LOG_STATUS,"P1: you appear to have middleware that changes the message content - skipping CRC validation");
+		return true;
 	}
 
 	// retrieve CRC from the current line
@@ -350,8 +358,13 @@ void P1MeterBase::ParseData(const unsigned char *pData, int Len, unsigned char d
 {
 	int ii=0;
 
+	// a new message should not start with an empty line, but just in case it does (crude check is sufficient here)
+	while ((m_linecount==0) && (pData[ii]<0x10)){
+		ii++;
+	}
+
 	// reenable reading pData when a new message starts, empty buffers
-	if (pData[0]==0x2f) {
+	if (pData[ii]==0x2f) {
 		m_linecount = 1;
 		l_bufferpos = 0;
 		m_bufferpos = 0;
@@ -372,6 +385,11 @@ void P1MeterBase::ParseData(const unsigned char *pData, int Len, unsigned char d
 
 	if(m_bufferpos==sizeof(m_buffer)){
 		// discard oversized message
+		if ((Len > 400) || (pData[0]==0x21)){
+			// 400 is an arbitrary chosen number to differentiate between full messages and single line commits
+			_log.Log(LOG_STATUS,"P1: dismiss incoming - message oversized");
+		}
+		m_linecount = 0;
 		return;
 	}
 
@@ -382,6 +400,7 @@ void P1MeterBase::ParseData(const unsigned char *pData, int Len, unsigned char d
 		const unsigned char c = pData[ii];
 		ii++;
 		if (c==0x0d) {
+			m_CRfound=1;
 			continue;
 		}
 

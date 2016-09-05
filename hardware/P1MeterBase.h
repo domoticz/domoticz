@@ -21,6 +21,7 @@ private:
 
 	unsigned char m_linecount;
 	unsigned char m_exclmarkfound;
+	unsigned char m_CRfound;
 	void Init();
 	bool MatchLine();
 	void ParseData(const unsigned char *pData, int Len, unsigned char disable_crc);
