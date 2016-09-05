@@ -372,6 +372,10 @@ void P1MeterBase::ParseData(const unsigned char *pData, int Len, unsigned char d
 
 	if(m_bufferpos==sizeof(m_buffer)){
 		// discard oversized message
+		if ((Len > 400) || (pData[0]==0x21)){
+			// 400 is an arbitrary chosen number to differentiate between full messages and single line commits
+			_log.Log(LOG_STATUS,"P1: dismiss incoming - message oversized");
+		}
 		return;
 	}
 
