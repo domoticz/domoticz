@@ -85,6 +85,7 @@ void P1MeterBase::Init()
 {
 	m_linecount=0;
 	m_exclmarkfound=0;
+	m_CRfound=0;
 	m_bufferpos=0;
 	l_bufferpos=0;
 	m_lastgasusage=0;
@@ -302,7 +303,13 @@ bool P1MeterBase::CheckCRC()
 
 	if (l_buffer[5]!=0){
 		// trailing characters after CRC
+		_log.Log(LOG_STATUS,"P1: dismiss incoming - CRC value in message has trailing characters");
 		return false;
+	}
+
+	if (!m_CRfound){
+		_log.Log(LOG_STATUS,"P1: you appear to have middleware that changes the message content - skipping CRC validation");
+		return true;
 	}
 
 	// retrieve CRC from the current line
@@ -393,6 +400,7 @@ void P1MeterBase::ParseData(const unsigned char *pData, int Len, unsigned char d
 		const unsigned char c = pData[ii];
 		ii++;
 		if (c==0x0d) {
+			m_CRfound=1;
 			continue;
 		}
 
