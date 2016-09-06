@@ -281,12 +281,15 @@ void MySensorsBase::LoadDevicesFromDatabase()
 					mSensor.childID = atoi(sd2[0].c_str());
 					mSensor.presType = (_ePresentationType)atoi(sd2[1].c_str());
 					std::vector<_tMySensorChild>::iterator itt3;
+					_log.Log(LOG_STATUS, "MySensors: Looking for groupID. Device nodeID %d childID %d (type %d : %s)", mSensor.nodeID, mSensor.childID, mSensor.presType, GetMySensorsPresentationTypeStr(mSensor.presType).c_str());
 					for (itt3 = mNode.m_childs.begin(); itt3 != mNode.m_childs.end(); ++itt3)
 					{
-						if ((itt3->presType == mSensor.presType) && (itt3->groupID == gID))
+						_log.Log(LOG_STATUS, "MySensors: ... checking nodeID %d childID %d (type %d : %s), groupID %d", itt3->nodeID, itt3->childID, itt3->presType, GetMySensorsPresentationTypeStr(itt3->presType).c_str(), itt3->groupID);
+						if ((itt3->nodeID == mSensor.nodeID) && (itt3->presType == mSensor.presType) && (itt3->groupID == gID))
 							gID++;
 					}
 					mSensor.groupID = gID;
+					_log.Log(LOG_STATUS, "MySensors: GroupID %d set for nodeID %d childID %d (type: %d %s)", mSensor.groupID, mSensor.nodeID, mSensor.childID, mSensor.presType, GetMySensorsPresentationTypeStr(mSensor.presType).c_str());
 					mSensor.childName = sd2[2];
 					mSensor.useAck = atoi(sd2[3].c_str()) != 0;
 					mSensor.ackTimeout = atoi(sd2[4].c_str());
@@ -422,6 +425,7 @@ MySensorsBase::_tMySensorChild* MySensorsBase::FindChildWithValueType(const int 
 		return NULL;
 	_tMySensorNode *pNode = &ittNode->second;
 	std::vector<_tMySensorChild>::iterator itt;
+	_log.Log(LOG_STATUS, "MySensors: FindChildWithValueType valType %s from nodeID %d and groupID %d", GetMySensorsValueTypeStr(valType).c_str(), nodeID, groupID);
 	for (itt = pNode->m_childs.begin(); itt != pNode->m_childs.end(); ++itt)
 	{
 		if ((itt->groupID == groupID) || (groupID == 0))
@@ -431,6 +435,7 @@ MySensorsBase::_tMySensorChild* MySensorsBase::FindChildWithValueType(const int 
 			{
 				if (itt2->first == valType)
 				{
+					_log.Log(LOG_STATUS, "MySensors: ... found childID %d (groupID %d presType %s) : %s", itt->childID, itt->groupID, GetMySensorsPresentationTypeStr(itt->presType).c_str(), GetMySensorsValueTypeStr(itt2->first).c_str());
 					if (!itt2->second.bValidValue)
 						return NULL;
 					return &*itt;
