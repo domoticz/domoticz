@@ -1220,7 +1220,7 @@ bool COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 
 	bool bHandleAsBinary = false;
 	_tZWaveDevice *pDevice = FindDevice(nodeID, instanceID, 0, ZWaveBase::ZDTYPE_SWITCH_DIMMER);
-/*
+
 	if (pDevice)
 	{
 		if (
@@ -1239,8 +1239,9 @@ bool COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 			}
 		}
 	}
-*/
-	bHandleAsBinary = ((value == 0) || (value == 255));
+
+	//bHandleAsBinary = ((value == 0) || (value == 255));
+
 	if (!pDevice)
 		pDevice = FindDevice(nodeID, instanceID, 0);
 	if (!pDevice)
