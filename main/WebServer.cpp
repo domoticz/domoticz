@@ -9655,7 +9655,7 @@ namespace http {
 			std::vector<std::vector<std::string> > result, result2, result3;
 
 			result = m_sql.safe_query("SELECT Key, nValue, sValue FROM Preferences WHERE Key LIKE 'Floorplan%%'");
-			if (result.size() < 0)
+			if (result.size() < 1)
 				return;
 
 			std::vector<std::vector<std::string> >::const_iterator itt;
@@ -11090,7 +11090,7 @@ namespace http {
 			char szTmp[100];
 
 			result = m_sql.safe_query("SELECT Key, nValue, sValue FROM Preferences");
-			if (result.size() < 0)
+			if (result.size() < 1)
 				return;
 			root["status"] = "OK";
 			root["title"] = "settings";
