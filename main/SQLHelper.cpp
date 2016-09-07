@@ -7331,7 +7331,7 @@ std::map<std::string, std::string> CSQLHelper::GetDeviceOptions(const std::strin
 }
 
 bool CSQLHelper::SetDeviceOptions(const unsigned long long idx, const std::map<std::string, std::string> & optionsMap) {
-	if (idx < 0) {
+	if (idx < 1) {
 		_log.Log(LOG_ERROR, "Cannot set options on device %llu", idx);
 		return false;
 	}
