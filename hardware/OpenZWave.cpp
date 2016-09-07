@@ -1218,30 +1218,22 @@ bool COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 		return false;
 	}
 
-	bool bHandleAsBinary = false;
 	_tZWaveDevice *pDevice = FindDevice(nodeID, instanceID, 0, ZWaveBase::ZDTYPE_SWITCH_DIMMER);
-
 	if (pDevice)
 	{
 		if (
-			(pDevice->Manufacturer_id == 0x0086) &&
-			(
 			((pDevice->Product_id == 0x0060) && (pDevice->Product_type == 0x0003)) ||
-				((pDevice->Product_id == 0x0060) && (pDevice->Product_type == 0x0103)) ||
-				((pDevice->Product_id == 0x0060) && (pDevice->Product_type == 0x0203))
-				)
+			((pDevice->Product_id == 0x0060) && (pDevice->Product_type == 0x0103)) ||
+			((pDevice->Product_id == 0x0060) && (pDevice->Product_type == 0x0203))
 			)
 		{
-			//Special case for the Aeotec Smart Switch 6
+			//Special case for the Aeotec Smart Switch
 			if (commandClass == COMMAND_CLASS_SWITCH_MULTILEVEL)
 			{
 				pDevice = FindDevice(nodeID, instanceID, 0, COMMAND_CLASS_SWITCH_BINARY, ZWaveBase::ZDTYPE_SWITCH_NORMAL);
 			}
 		}
 	}
-
-	//bHandleAsBinary = ((value == 0) || (value == 255));
-
 	if (!pDevice)
 		pDevice = FindDevice(nodeID, instanceID, 0);
 	if (!pDevice)
@@ -1254,7 +1246,7 @@ bool COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 	OpenZWave::ValueID vID(0, 0, OpenZWave::ValueID::ValueGenre_Basic, 0, 0, 0, OpenZWave::ValueID::ValueType_Bool);
 	unsigned char svalue = (unsigned char)value;
 
-	if ((pDevice->devType == ZWaveBase::ZDTYPE_SWITCH_NORMAL) || (bHandleAsBinary))
+	if (pDevice->devType == ZWaveBase::ZDTYPE_SWITCH_NORMAL)
 	{
 		//On/Off device
 		bool bFound = (GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_SWITCH_BINARY, vID) == true);
