@@ -85,6 +85,7 @@ void P1MeterBase::Init()
 {
 	m_linecount=0;
 	m_exclmarkfound=0;
+	l_exclmarkfound=0;
 	m_CRfound=0;
 	m_bufferpos=0;
 	l_bufferpos=0;
@@ -155,7 +156,7 @@ bool P1MeterBase::MatchLine()
 			break;
 		case EXCLMARK:
 			if(strncmp(t.key, (const char*)&l_buffer, strlen(t.key)) == 0) {
-				m_exclmarkfound=1;
+				l_exclmarkfound=1;
 				found=1;
 			}
 			else 
@@ -168,7 +169,7 @@ bool P1MeterBase::MatchLine()
 		if(!found)
 			continue;
 
-		if (m_exclmarkfound) {
+		if (l_exclmarkfound) {
 			time_t atime=mytime(NULL);
 			sDecodeRXMessage(this, (const unsigned char *)&m_p1power, "Power", 255);
 			bool bSend2Shared=(atime-m_lastSharedSendElectra>59);
@@ -190,7 +191,7 @@ bool P1MeterBase::MatchLine()
 				sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, "Gas", 255);
 			}
 			m_linecount=0;
-			m_exclmarkfound=0;
+			l_exclmarkfound=0;
 		}
 		else
 		{
@@ -368,16 +369,18 @@ void P1MeterBase::ParseData(const unsigned char *pData, int Len, unsigned char d
 		m_linecount = 1;
 		l_bufferpos = 0;
 		m_bufferpos = 0;
+		m_exclmarkfound = 0;
 	}
 
 	// assemble complete message in message buffer
-	while ((ii<Len) && (m_linecount>0) && (m_bufferpos<sizeof(m_buffer))){
+	while ((ii<Len) && (m_linecount>0) && (!m_exclmarkfound) && (m_bufferpos<sizeof(m_buffer))){
 		const unsigned char c = pData[ii];
 		m_buffer[m_bufferpos] = c;
 		m_bufferpos++;
 		if(c==0x21){
 			// stop reading at exclamation mark (do not include CRC)
 			ii=Len;
+			m_exclmarkfound = 1;
 		}else{
 			ii++;
 		}
