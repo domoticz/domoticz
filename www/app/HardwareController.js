@@ -2784,6 +2784,7 @@ define(['app'], function (app) {
             $('#updelclr #nodedelete').attr("class", "btnstyle3-dis");
             $("#hardwarecontent #bleboxnodeparamstable #nodename").val("");
             $("#hardwarecontent #bleboxnodeparamstable #nodeip").val("");
+			$("#hardwarecontent #bleboxnodeparamstable #type").val("");
 
             var oTable = $('#bleboxnodestable').dataTable();
             oTable.fnClearTable();
@@ -2801,7 +2802,8 @@ define(['app'], function (app) {
                                 "IP": item.IP,
                                 "0": item.idx,
                                 "1": item.Name,
-                                "2": item.IP
+                                "2": item.IP,
+								"3": item.Type
                             });
                         });
                     }
@@ -2817,6 +2819,7 @@ define(['app'], function (app) {
                     $('#updelclr #nodeupdate').attr("class", "btnstyle3-dis");
                     $("#hardwarecontent #bleboxnodeparamstable #nodename").val("");
                     $("#hardwarecontent #bleboxnodeparamstable #nodeip").val("");
+					$("#hardwarecontent #bleboxnodeparamstable #type").val("");
                 }
                 else {
                     var oTable = $('#bleboxnodestable').dataTable();
@@ -2832,6 +2835,7 @@ define(['app'], function (app) {
                         $("#updelclr #nodedelete").attr("href", "javascript:BleBoxDeleteNode(" + idx + ")");
                         $("#hardwarecontent #bleboxnodeparamstable #nodename").val(data["1"]);
                         $("#hardwarecontent #bleboxnodeparamstable #nodeip").val(data["2"]);
+						$("#hardwarecontent #bleboxnodeparamstable #type").val(data["3"]);
                     }
                 }
             });

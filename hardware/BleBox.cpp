@@ -208,19 +208,12 @@ std::string BleBox::GetDeviceRevertIP(const tRBUF *id)
 
 std::string BleBox::GetDeviceIP(const std::string &id)
 {
-	const char *pos = id.c_str();
 	BYTE id1, id2, id3, id4;
 	char ip[20];
 
-	sscanf(pos, "%2hhx", &id1);
-	pos += 2;
-	sscanf(pos, "%2hhx", &id2);
-	pos += 2;
-	sscanf(pos, "%2hhx", &id3);
-	pos += 2;
-	sscanf(pos, "%2hhx", &id4);
-
+	sscanf(id.c_str(), "%2hhx%2hhx%2hhx%2hhx", &id1, &id2, &id3, &id4);
 	sprintf(ip, "%d.%d.%d.%d", id1, id2, id3, id4);
+
 	return ip;
 }
 
@@ -430,7 +423,7 @@ namespace http {
 			root["title"] = "BleBoxGetNodes";
 
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT ID,Name,DeviceID FROM DeviceStatus WHERE (HardwareID=='%d')", pBaseHardware->m_HwdID);
+			result = m_sql.safe_query("SELECT ID,Name,DeviceID,Unit FROM DeviceStatus WHERE (HardwareID=='%d')", pBaseHardware->m_HwdID);
 			if (result.size() > 0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
@@ -439,9 +432,15 @@ namespace http {
 				{
 					std::vector<std::string> sd = *itt;
 
+					BYTE id1, id2, id3, id4;
+					char ip[20];
+					sscanf(sd[2].c_str(), "%2hhx%2hhx%2hhx%2hhx", &id1, &id2, &id3, &id4);
+					sprintf(ip, "%d.%d.%d.%d", id1, id2, id3, id4);
+
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
-					root["result"][ii]["IP"] = sd[2];
+					root["result"][ii]["IP"] = ip;
+					root["result"][ii]["Type"] = sd[3];
 					ii++;
 				}
 			}
