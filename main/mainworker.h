@@ -168,6 +168,7 @@ private:
 
 
 	boost::mutex m_devicemutex;
+	boost::mutex m_stoppinghardwaremutex;
 
 	std::string m_szDomoticzUpdateChecksumURL;
 	bool m_bDoDownloadDomoticzUpdate;
