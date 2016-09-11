@@ -10,6 +10,7 @@
 #include <boost/asio.hpp>
 #include <boost/array.hpp>
 #include <boost/enable_shared_from_this.hpp>
+#include "Include/Python.h"
 
 #define SSTR( x ) dynamic_cast< std::ostringstream & >(( std::ostringstream() << std::dec << x ) ).str()
 
@@ -75,29 +76,62 @@ namespace Plugins {
 		boost::array<char, 256> m_Buffer;
 	};
 
-	class CPluginManager : public CDomoticzHardwareBase
+	class CPlugin : public CDomoticzHardwareBase
 	{
 	private:
 		std::string			m_PluginKey;
-		std::string			m_ManifestFile;
-		std::string			m_ManifestEntry;
 
 		int					m_iPollInterval;
 		int					m_iPingTimeoutms;
 
 		CPluginBase*		m_pPluginDevice;
 
+		PyThreadState*		m_PyInterpreter;
+		PyObject*			m_PyModule;
+
 		bool StartHardware();
 		void Do_Work();
 		bool StopHardware();
 
 	public:
-		CPluginManager(const int HwdID, const std::string &Name, const std::string &PluginKey);
-		~CPluginManager(void);
+		CPlugin(const int HwdID, const std::string &Name, const std::string &PluginKey);
+		~CPlugin(void);
+
+		void HandleMessage(const CPluginMessage& Message);
 
 		bool WriteToHardware(const char *pdata, const unsigned char length);
 		void Restart();
 		void SendCommand(const int ID, const std::string &command);
+
+	protected:
+		bool			m_stoprequested;
+		bool			m_Busy;
+		bool			m_Stoppable;
+
+	private:
+		boost::mutex m_mutex;
+		boost::shared_ptr<boost::thread> m_thread;
+	};
+
+	class CPluginSystem
+	{
+	private:
+		bool	m_bEnabled;
+		bool	m_bAllPluginsStarted;
+		int		m_iPollInterval;
+
+		std::map<int, CPlugin*>	m_pPlugins;
+
+		void Do_Work();
+
+	public:
+		CPluginSystem();
+		~CPluginSystem(void);
+
+		bool StartPluginSystem();
+		CPlugin* RegisterPlugin(const int HwdID, const std::string &Name, const std::string &PluginKey);
+		bool StopPluginSystem();
+		void AllPluginsStarted() { m_bAllPluginsStarted = true; };
 
 	private:
 		boost::shared_ptr<boost::thread> m_thread;

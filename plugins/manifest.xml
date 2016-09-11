@@ -6,8 +6,8 @@
 			<param field="Port" label="Port" width="30px" required="true" default="22"/>
 			<param field="Mode6" label="Debug" width="75px">
 				<options>
-					<option label="True" value="1"/>
-					<option label="False" value="0"  default="true" />
+					<option label="True" value="Debug"/>
+					<option label="False" value="Normal"  default="true" />
 				</options>
 			</param>
 		</params>
@@ -23,8 +23,8 @@
 			<param field="Mode1" label="Mac Address" width="150px" required="true" default="00:00:00:00:00:00:00:00"/>
 			<param field="Mode6" label="Debug" width="75px">
 				<options>
-					<option label="True" value="1"/>
-					<option label="False" value="0"  default="true" />
+					<option label="True" value="Debug"/>
+					<option label="False" value="Normal"  default="true" />
 				</options>
 			</param>
 		</params>
@@ -48,8 +48,8 @@
 			</param>
 			<param field="Mode6" label="Debug" width="75px">
 				<options>
-					<option label="True" value="1"/>
-					<option label="False" value="0"  default="true" />
+					<option label="True" value="Debug"/>
+					<option label="False" value="Normal"  default="true" />
 				</options>
 			</param>
 		</params>
@@ -65,8 +65,8 @@
 			<param field="SerialPort" label="Serial Port" width="150px" required="true" default="/dev/ttyRAVEn"/>
 			<param field="Mode6" label="Debug" width="75px">
 				<options>
-					<option label="True" value="1"/>
-					<option label="False" value="0"  default="true" />
+					<option label="True" value="Debug"/>
+					<option label="False" value="Normal"  default="true" />
 				</options>
 			</param>
 		</params>
@@ -82,8 +82,8 @@
 			<param field="Port" label="Port" width="30px" required="true" default="80"/>
 			<param field="Mode6" label="Debug" width="75px">
 				<options>
-					<option label="True" value="1"/>
-					<option label="False" value="0"  default="true" />
+					<option label="True" value="Debug"/>
+					<option label="False" value="Normal"  default="true" />
 				</options>
 			</param>
 		</params>
