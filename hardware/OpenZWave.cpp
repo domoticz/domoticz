@@ -1242,11 +1242,26 @@ bool COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 		return false;
 	}
 
+	bool bHandleAsBinary = false;
+	if ((value == 0) || (value == 255))
+	{
+		if (pDevice->Manufacturer_id == 0x010f) 
+		{
+			if (
+				((pDevice->Product_id == 0x1000) && (pDevice->Product_type == 0x0203)) ||
+				((pDevice->Product_id == 0x1000) && (pDevice->Product_type == 0x0403))
+				)
+			{
+				//Special case for the Fibaro FGS213/223
+				bHandleAsBinary = true;
+			}
+		}
+	}
 
 	OpenZWave::ValueID vID(0, 0, OpenZWave::ValueID::ValueGenre_Basic, 0, 0, 0, OpenZWave::ValueID::ValueType_Bool);
 	unsigned char svalue = (unsigned char)value;
 
-	if (pDevice->devType == ZWaveBase::ZDTYPE_SWITCH_NORMAL)
+	if ((pDevice->devType == ZWaveBase::ZDTYPE_SWITCH_NORMAL) || (bHandleAsBinary))
 	{
 		//On/Off device
 		bool bFound = (GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_SWITCH_BINARY, vID) == true);
