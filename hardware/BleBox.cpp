@@ -9,14 +9,15 @@
 #include "../main/SQLHelper.h"
 #include "../httpclient/HTTPClient.h"
 
-#define TOT_TYPE 4
+#define TOT_TYPE 5
 
 const _STR_DEVICE DevicesType[TOT_TYPE] =
 { 
 	{ 0, "switchBox", "Switch Box",int(pTypeLighting2), int(sTypeAC), int(STYPE_OnOff), "relay" },
 	{ 1, "shutterBox", "Shutter Box", int(pTypeLighting2), int(sTypeAC), int(STYPE_BlindsPercentageInverted), "shutter" },
 	{ 2, "wLightBoxS", "Light Box S", int(pTypeLighting2), int(sTypeAC), int(STYPE_Dimmer), "light" },
-	{ 3, "wLightBox", "Light Box", int(pTypeLimitlessLights), int(sTypeLimitlessRGBW), int(STYPE_Dimmer), "rgbw" }
+	{ 3, "wLightBox", "Light Box", int(pTypeLimitlessLights), int(sTypeLimitlessRGBW), int(STYPE_Dimmer), "rgbw" },
+	{ 4, "gateBox", "Gate Box", int(pTypeLighting2), int(sTypeAC), int(STYPE_Dimmer), "gate" }
 };
 
 int BleBox::GetDeviceTypeByApiName(const std::string &apiName)
@@ -182,6 +183,19 @@ void BleBox::GetDevicesState()
 					sscanf(currentColor.c_str(), "%x", &hexNumber);
 
 					SendRGBWSwitch(node, itt->second, 255, hexNumber, true, DevicesType[itt->second].name);
+					break;
+				}
+				case 4:
+				{
+					if (root["currentPos"].empty() == true)
+					{
+						_log.Log(LOG_ERROR, "BleBox: node 'currentPos' missing!");
+						break;
+					}
+					const int currentPos = root["currentPos"].asInt();
+					int level = (int)(currentPos / (255.0 / 100.0));
+
+					SendSwitch(node, itt->second, 255, level > 0, level, DevicesType[itt->second].name);
 					break;
 				}
 			}
@@ -440,7 +454,7 @@ namespace http {
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
 					root["result"][ii]["IP"] = ip;
-					root["result"][ii]["Type"] = sd[3];
+					root["result"][ii]["Type"] = DevicesType[atoi(sd[3].c_str())].name;
 					ii++;
 				}
 			}
