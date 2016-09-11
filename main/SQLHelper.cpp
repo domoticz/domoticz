@@ -2453,6 +2453,10 @@ bool CSQLHelper::OpenDatabase()
 		nValue = 5;
 		UpdatePreferencesVar("ShortLogInterval", nValue);
 	}
+	if (nValue < 1)
+		nValue = 5;
+	m_ShortLogInterval = nValue;
+
 	if (!GetPreferencesVar("SendErrorsAsNotification", nValue))
 	{
 		UpdatePreferencesVar("SendErrorsAsNotification", 0);
@@ -2460,9 +2464,6 @@ bool CSQLHelper::OpenDatabase()
 	}
 	_log.ForwardErrorsToNotificationSystem(nValue != 0);
 
-	if (nValue < 1)
-		nValue = 5;
-	m_ShortLogInterval = nValue;
 	//Start background thread
 	if (!StartThread())
 		return false;
