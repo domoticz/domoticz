@@ -14,6 +14,7 @@
 #include "../push/GooglePubSubPush.h"
 #include "concurrent_queue.h"
 #include "../webserver/server_settings.hpp"
+#include "../hardware/plugins/PluginManager.h"
 
 enum eVerboseLevel
 {
@@ -115,6 +116,7 @@ public:
 
 	CScheduler m_scheduler;
 	CEventSystem m_eventsystem;
+	Plugins::CPluginSystem m_pluginsystem;
 	CDataPush m_datapush;
 	CCameraHandler m_cameras;
 	CHttpPush m_httppush;

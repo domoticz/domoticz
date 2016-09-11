@@ -886,7 +886,7 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_Ec3kMeterTCP:
 		pHardware = new Ec3kMeterTCP(ID, Address, Port);
 	case HTYPE_PythonPlugin:
-		pHardware = new Plugins::CPluginManager(ID, Name, Filename);
+		pHardware = m_pluginsystem.RegisterPlugin(ID, Name, Filename);
 	}
 
 	if (pHardware)
@@ -912,6 +912,7 @@ bool MainWorker::Start()
 	m_notifications.Init();
 	GetSunSettings();
 	GetAvailableWebThemes();
+	m_pluginsystem.StartPluginSystem();
 	AddAllDomoticzHardware();
 	m_datapush.Start();
 	m_httppush.Start();
@@ -948,6 +949,7 @@ bool MainWorker::Stop()
 		m_datapush.Stop();
 		m_httppush.Stop();
 		m_googlepubsubpush.Stop();
+		m_pluginsystem.StopPluginSystem();
 
 		//    m_cameras.StopCameraGrabber();
 
@@ -1360,6 +1362,7 @@ void MainWorker::Do_Work()
 			{
 				m_bStartHardware=false;
 				StartDomoticzHardware();
+				m_pluginsystem.AllPluginsStarted();
 				ParseRFXLogFile();
 				m_eventsystem.StartEventSystem();
 			}
