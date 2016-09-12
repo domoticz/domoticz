@@ -334,7 +334,7 @@ void CDaikin::GetSensorInfo()
 		{
 			htemp = static_cast<float>(atof(results2[1].c_str()));
 		}
-		if (results2[0] == "hhum")
+		else if (results2[0] == "hhum")
 		{
 			if (results2[1]!="-")
 				hhum = static_cast<int>(atoi(results2[1].c_str()));
