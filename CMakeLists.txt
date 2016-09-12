@@ -249,6 +249,7 @@ hardware/csocket.cpp
 hardware/CurrentCostMeterBase.cpp
 hardware/CurrentCostMeterSerial.cpp
 hardware/CurrentCostMeterTCP.cpp
+hardware/Daikin.cpp
 hardware/DavisLoggerSerial.cpp
 hardware/DenkoviSmartdenLan.cpp
 hardware/DomoticzHardware.cpp
