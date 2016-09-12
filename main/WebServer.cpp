@@ -1160,6 +1160,9 @@ namespace http {
 			else if (htype == HTYPE_OpenWebNet) {
 				//All fine here
 			}
+			else if (htype == HTYPE_Daikin) {
+				//All fine here
+			}
 			else if (htype == HTYPE_GoodweAPI) {
 				if (username == "")
 					return;
@@ -1394,6 +1397,9 @@ namespace http {
 					port = 80;
 			}
 			else if (htype == HTYPE_RaspberryGPIO) {
+				//all fine here!
+			}
+			else if (htype == HTYPE_Daikin) {
 				//all fine here!
 			}
 			else if (htype == HTYPE_SBFSpot) {
