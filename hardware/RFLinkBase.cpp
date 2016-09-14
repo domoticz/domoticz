@@ -105,6 +105,7 @@ const _tRFLinkStringIntHelper rfswitches[] =
 	{ "Gaposa", sSwitchGaposa },
 	{ "MiLightv1", sSwitchMiLightv1 },
 	{ "MiLightv2", sSwitchMiLightv2 },
+	{ "HT6P20", sSwitchHT6P20 },
 	{ "", -1 }
 };
 

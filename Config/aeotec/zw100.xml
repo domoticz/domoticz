@@ -12,7 +12,8 @@ https://aeotec.freshdesk.com/helpdesk/attachments/6009584695
 			<Item label="Yes" value="1" />
 		</Value>
 		<Value type="short" index="3" genre="config" label="On time" units="seconds" min="1" max="15300" value="240">
-			<Help>How long should the device associated to multi sensor keep state On before sending it Off command (if the value is bigger than 255, the value would be rounded to next integer in minutes)</Help>
+			<Help>Duration that the motion sensor must observe no motion before it will return to the no-motion state.
+			If value greater than 255, effective value is rounded up to the nearest minute (255 -> 255 seconds, 256 -> 300 seconds)</Help>
 		</Value>
 		<Value type="list" index="4" genre="config" label="Enable Motion Sensor" min="0" max="1" value="5" size="1">
 			<Help>Enable Motion Sensor</Help>
@@ -27,43 +28,44 @@ https://aeotec.freshdesk.com/helpdesk/attachments/6009584695
 			<Help>Which commands to send when PIR motion sensor triggered
 			OZW Ideal Value is Binary Sensor Report</Help>
 			<Item label="Basic Set (default) " value="1" />
-			<Item label="Binary Sensor Report" value="2" />  
+			<Item label="Binary Sensor Report" value="2" />
 		</Value>
 		<Value type="byte" index="39" genre="config" label="Low Battery" min="10" max="50" value="20" size="1">
 			<Help>Configure low battery value
 			Value=10 to 50.</Help>
 		</Value>
-		<Value type="list" index="40" genre="config" label="Reporting Threshold" min="0" max="1" value="0" size="1">
+		<Value type="list" index="40" genre="config" label="Report Only On Thresholds" min="0" max="1" value="0" size="1">
 			<Help>Enable/disable the selective reporting only when measurements reach a certain threshold or percentage 
 			set in the threshold settings.  This is used to reduce network
 			traffic.</Help>
 			<Item label="Disabled" value="0" />
-			<Item label="Enabled" value="1" /> 			
+			<Item label="Enabled" value="1" />
 		</Value>
 		<Value type="short" index="41" genre="config" label="Temperature Reporting Threshold" units="%" min="0" max="39321" value="20" size="2">
 			<Help>Threshold change in temperature to induce an automatic report.  
 			Note: 
-			1. When the unit is Celsius, threshold=Value. 
-			2. When the unit is Fahrenheit, threshold=Value*1.8. The accuracy is 0.1. 
-			3. The high byte is the part of integer, the low byte is the fractional part. 
+			1. The unit is Fahrenheit for US version, Celsius for EU/AU version.
+			2. The value contains one decimal point. E.g. if the value is set to 20, the threshold value = 2.0 C (EU/AU) or 2.0 F (US). When the temperature has changed by 2.0 (of the appropriate unit), a temperature report will be sent.
 			</Help>
 		</Value>
 		<Value type="byte" index="42" genre="config" label="Humidity Reporting Threshold" units="%" min="0" max="100" value="10" size="1">
 			<Help>Threshold change in humidity to induce an automatic report. 
 			Note: 
-			The default value is 10, which means that if the current humidity gap is more than 10%, it will send out a humidity report. 
+			1. The unit is %.
+			2. The default value is 10, which means that a 10% change in humidity will trigger a report.
 			</Help>
 		</Value>
 		<Value type="short" index="43" genre="config" label="Luminance Reporting Threshold" units="LUX" min="0" max="1000" value="100" size="2">
-			<Help>Threshold change in luminance to induce an automatic report. </Help>
+			<Help>Threshold change in luminance to induce an automatic report.</Help>
 		</Value>
 		<Value type="byte" index="44" genre="config" label="Battery Reporting Threshold" units="%" min="0" max="100" value="10" size="1">
 			<Help>Threshold change in battery level to induce an  automatic report. 
 			Note: 
-			The default value is 10, which means that if the current battery level gap is more than 10%, it will send out a battery report.  
+			1. The unit is %.
+			2. The default value is 10, which means that a 10% change in battery will trigger a report.
 			</Help>
 		</Value>
-        <Value type="byte" index="45" genre="config" label="UV Reporting Threshold" units="" min="0" max="255" value="2">
+		<Value type="byte" index="45" genre="config" label="UV Reporting Threshold" units="" min="0" max="255" value="2">
 			<Help>Threshold change in ultraviolet to induce an automatic report.
 			</Help>
 		</Value>
@@ -71,31 +73,65 @@ https://aeotec.freshdesk.com/helpdesk/attachments/6009584695
 			<Help>Enable/disable to send the alarm report of low temperature(Less than 15 Degress C)
 			</Help>
 			<Item label="Disabled" value="0" />
-			<Item label="Enabled" value="1" /> 			
+			<Item label="Enabled" value="1" />
 		</Value>
 		<Value type="button" index="100" genre="config" label="Reset Params 101-103 to Default" write_only="true" affects="101,102,103">
 			<Help>Reset The Reporting Group Configuration (101 to 103) to default</Help>
 		</Value>
 		<Value type="int" index="101" genre="config" label="Group 1 Reports" value="241">
-			<Help>Which reports need to send automatically in timing intervals for group 1. Bitsets: 0 -> Battery report, 4 -> Ultraviolet, 5 -> Temperature, 6 -> Humidity, 7 -> Luminosity</Help>
+			<Help>Which reports need to send automatically in timing intervals for group 1.
+				Bitmask:
+				10000000 - 128 - Luminance
+				01000000 - 64 - Humidity
+				00100000 - 32 - Temperature
+				00010000 - 16 - Ultraviolet
+				00000001 - 1 - Battery
+				10100000 - 160 - Luminance and Temperature (32+128)
+				11110001 - 241 - All (1+16+32+64+128)</Help>
 		</Value>
 		<Value type="int" index="102" genre="config" label="Group 2 Reports" value="0">
-			<Help>Which reports need to send automatically in timing intervals for group 2. Bitsets: 0 -> Battery report, 4 -> Ultraviolet, 5 -> Temperature, 6 -> Humidity, 7 -> Luminosity</Help>
+			<Help>Which reports need to send automatically in timing intervals for group 2.
+				Bitmask:
+				10000000 - 128 - Luminance
+				01000000 - 64 - Humidity
+				00100000 - 32 - Temperature
+				00010000 - 16 - Ultraviolet
+				00000001 - 1 - Battery
+				10100000 - 160 - Luminance and Temperature (32+128)
+				11110001 - 241 - All (1+16+32+64+128)</Help>
 		</Value>
 		<Value type="int" index="103" genre="config" label="Group 3 Reports" value="0">
-			<Help>Which reports need to send automatically in timing intervals for group 3. Bitsets: 0 -> Battery report, 4 -> Ultraviolet, 5 -> Temperature, 6 -> Humidity, 7 -> Luminosity</Help>
+			<Help>Which reports need to send automatically in timing intervals for group 3.
+				Bitmask:
+				10000000 - 128 - Luminance
+				01000000 - 64 - Humidity
+				00100000 - 32 - Temperature
+				00010000 - 16 - Ultraviolet
+				00000001 - 1 - Battery
+				10100000 - 160 - Luminance and Temperature (32+128)
+				11110001 - 241 - All (1+16+32+64+128)</Help>
 		</Value>
 		<Value type="button" index="110" genre="config" label="Reset Params 111-113 to Default" write_only="true" affects="111,112,113">
 			<Help>Reset The Reporting Group Interval Configuration (111 to 113) to default</Help>
 		</Value>
+		<!-- Applications can check IsNodeListeningDevice to determine if the device is on USB power (listening) or battery (not listening) -->
 		<Value type="int" index="111" genre="config" label="Group 1 Interval" units="seconds" min="1" max="2678400" value="3600">
-			<Help>The interval of sending report group 1. 1 to 2678400 seconds</Help>
+			<Help>The interval for sending reports for group 1.
+			The effective behavior of this setting depends on the device's power source:
+			- If the device is on USB power, it will send the reports at the configured interval; set it to something low (~15-60 seconds) to get frequent updates from a powered device.
+			- If the device is on battery, the sensor will never report in more often than its configured wake interval, regardless of what this setting is configured to; setting this to 3601 when the wake interval is 3600 would make this group report in every 7200 seconds. 240 seconds is the minimum wake interval, but will quickly use battery.</Help>
 		</Value>
 		<Value type="int" index="112" genre="config" label="Group 2 Interval" units="seconds" min="1" max="2678400" value="3600">
-			<Help>The interval of sending report group 2. 1 to 2678400 seconds</Help>
+			<Help>The interval for sending reports for group 2.
+			The effective behavior of this setting depends on the device's power source:
+			- If the device is on USB power, it will send the reports at the configured interval; set it to something low (~15-60 seconds) to get frequent updates from a powered device.
+			- If the device is on battery, the sensor will never report in more often than its configured wake interval, regardless of what this setting is configured to; setting this to 3601 when the wake interval is 3600 would make this group report in every 7200 seconds. 240 seconds is the minimum wake interval, but will quickly use battery.</Help>
 		</Value>
 		<Value type="int" index="113" genre="config" label="Group 3 Interval" units="seconds" min="1" max="2678400" value="3600">
-			<Help>The interval of sending report group 3. 1 to 2678400 seconds</Help>
+			<Help>The interval for sending reports for group 3.
+			The effective behavior of this setting depends on the device's power source:
+			- If the device is on USB power, it will send the reports at the configured interval; set it to something low (~15-60 seconds) to get frequent updates from a powered device.
+			- If the device is on battery, the sensor will never report in more often than its configured wake interval, regardless of what this setting is configured to; setting this to 3601 when the wake interval is 3600 would make this group report in every 7200 seconds. 240 seconds is the minimum wake interval, but will quickly use battery.</Help>
 		</Value>
 		<Value type="byte" index="201" genre="config" label="Temperature Calibration" min="0" max="255" value="0">
 			<Help>The calibration value = standard value - measure value. 

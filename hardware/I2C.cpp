@@ -92,6 +92,13 @@ const unsigned char BMPx8x_OverSampling = 3;
 #define HTU21D_TEMP_DELAY									70   /* Maximum required measuring time for a complete temperature read */
 #define HTU21D_HUM_DELAY										36   /* Maximum required measuring time for a complete humidity read */
 
+// TSL2561 registers
+#define TSL2561_ADDRESS		0x39    /* I2C address */
+#define TSL2561_INIT		0x03	/* start integrations */
+#define TSL2561_Channel0	0xAC	/* IR+Visible lux */
+#define TSL2561_Channel1	0xAE	/* IR only lux */
+
+
 I2C::I2C(const int ID, const int Mode1)
 {
 	switch (Mode1)
@@ -101,6 +108,9 @@ I2C::I2C(const int ID, const int Mode1)
 		break;
 	case 2:
 		device = "HTU21D";
+		break;
+	case 3:
+		device = "TSL2561";
 		break;
 	}
 
@@ -119,9 +129,6 @@ I2C::~I2C()
 
 bool I2C::StartHardware()
 {
-#ifndef __arm__
-	return false;
-#endif
 	m_stoprequested = false;
 	if (device == "BMP085")
 	{
@@ -158,6 +165,12 @@ void I2C::Do_Work()
 	int msec_counter = 0;
 	int sec_counter = I2C_READ_INTERVAL - 5;
 	_log.Log(LOG_STATUS, "%s: Worker started...", device.c_str());
+
+	if (device == "TSL2561")
+	{
+		TSL2561_Init();
+	}
+
 	while (!m_stoprequested)
 	{
 		sleep_milliseconds(500);
@@ -182,6 +195,10 @@ void I2C::Do_Work()
 					else if (device == "HTU21D")
 					{
 						HTU21D_ReadSensorDetails();
+					}
+					else if (device == "TSL2561")
+					{
+						TSL2561_ReadSensorDetails();
 					}
 				}
 				catch (...)
@@ -228,7 +245,7 @@ int I2C::i2c_Open(const char *I2CBusName)
 #endif
 }
 
-// BMP085 & BMP180 Specific code
+// BMP085, BMP180, HTU and TSL common code
 
 int I2C::ReadInt(int fd, uint8_t *devValues, uint8_t startReg, uint8_t bytesToRead)
 {
@@ -244,6 +261,10 @@ int I2C::ReadInt(int fd, uint8_t *devValues, uint8_t startReg, uint8_t bytesToRe
 	struct i2c_msg htu_read_reg[1] = {
 		{ HTU21D_ADDRESS, I2C_M_RD, bytesToRead, devValues }
 	};
+	struct i2c_msg tsl_read_reg[2] = {
+		{ TSL2561_ADDRESS, 0, 1, &startReg },
+		{ TSL2561_ADDRESS, I2C_M_RD, bytesToRead, devValues }
+	};
 
 	//Build a register read command
 	//Requires a one complete message containing a command
@@ -257,6 +278,11 @@ int I2C::ReadInt(int fd, uint8_t *devValues, uint8_t startReg, uint8_t bytesToRe
 	{
 		messagebuffer.nmsgs = 1;
 		messagebuffer.msgs = htu_read_reg;            //load the 'read__reg' message into the buffer
+	}
+	else if (device == "TSL2561")
+	{
+		messagebuffer.nmsgs = 2;
+		messagebuffer.msgs = tsl_read_reg;            //load the 'read__reg' message into the buffer
 	}
 
 	rc = ioctl(fd, I2C_RDWR, &messagebuffer); //Send the buffer to the bus and returns a send status
@@ -280,7 +306,10 @@ int I2C::WriteCmd(int fd, uint8_t devAction)
 		{ BMPx8x_I2CADDR, 0, 2, datatosend }
 	};
 	struct i2c_msg htu_write_reg[1] = {
-		{ HTU21D_ADDRESS, 0, 2, datatosend }
+		{ HTU21D_ADDRESS, 0, 1, datatosend }
+	};
+	struct i2c_msg tsl_write_reg[1] = {
+		{ TSL2561_ADDRESS, 0, 1, datatosend }
 	};
 
 	if (device == "BMP085")
@@ -297,6 +326,13 @@ int I2C::WriteCmd(int fd, uint8_t devAction)
 		//Build a register write command
 		//Requires one complete message containing a reg address and command
 		messagebuffer.msgs = htu_write_reg;           //load the 'write__reg' message into the buffer
+	}
+	else if (device == "TSL2561")
+	{
+		datatosend[0] = devAction;
+		//Build a register write command
+		//Requires one complete message containing a reg address and command
+		messagebuffer.msgs = tsl_write_reg;           //load the 'write__reg' message into the buffer
 	}
 
 	messagebuffer.nmsgs = 1;                  //One message/action
@@ -413,6 +449,67 @@ void I2C::HTU21D_ReadSensorDetails()
 #endif
 
 	SendTempHumSensor(1, 255, temperature, round(humidity), "TempHum");
+}
+
+// TSL2561 functions
+void I2C::TSL2561_Init()
+{
+#ifdef __arm__
+	int fd = i2c_Open(m_ActI2CBus.c_str());
+	if (fd < 0) {
+		_log.Log(LOG_ERROR, "%s: Error opening device!...", device.c_str());
+		return;
+	}
+	if (WriteCmd(fd, TSL2561_INIT) != 0) {
+		_log.Log(LOG_ERROR, "%s: Error initializing device!...", device.c_str());
+	}
+	close(fd);
+#endif
+}
+
+void I2C::TSL2561_ReadSensorDetails()
+{
+	float lux;
+#ifndef __arm__
+	lux = 1984;
+#else
+	uint8_t rValues[2];
+	int fd = i2c_Open(m_ActI2CBus.c_str());
+	if (fd < 0) {
+		_log.Log(LOG_ERROR, "%s: Error opening device!...", device.c_str());
+		return;
+	}
+	if (ReadInt(fd, rValues, TSL2561_Channel0, 2) != 0) {
+		_log.Log(LOG_ERROR, "%s: Error reading ch0!...", device.c_str());
+		close(fd);
+		return;
+	}
+	float ch0 = rValues[1] * 256.0 + rValues[0];
+	if (ReadInt(fd, rValues, TSL2561_Channel1, 2) != 0) {
+		_log.Log(LOG_ERROR, "%s: Error reading ch1!...", device.c_str());
+		close(fd);
+		return;
+	}
+	close(fd);
+	float ch1 = rValues[1] * 256.0 + rValues[0];
+
+	// Real Lux calculation for T,FN and CL packages
+	float ratio = 0;
+	if (ch0 != 0) ratio = ch1/ch0;
+	if (ratio >= 0 && ratio < 0.50)
+		lux = ch0 * (0.0304 - 0.062 * pow(ch1 / ch0, 1.4));
+	else if (ratio >= 0.5 && ratio < 0.61)
+		lux = 0.0224*ch0 - 0.031*ch1;
+	else if (ratio >= 0.61 && ratio < 0.8)
+		lux = 0.0128*ch0 - 0.0153*ch1;
+	else if (ratio >= 0.8 && ratio < 1.3)
+		lux = 0.00146*ch0 - 0.00112*ch1;
+	else
+		lux = 0;
+	// final scaling with default gain
+	lux *= 16;
+#endif
+	SendLuxSensor(0, 0, 255, lux, "Lux");
 }
 
 // BMP085 functions

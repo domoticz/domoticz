@@ -283,7 +283,7 @@ define(['app'], function (app) {
 					itemSubIcons+='<img src="images/rename.png" title="' + $.t('Rename Device') +'" onclick="RenameDevice(' + item.idx +',\'' + item.Type +'\',\'' + escape(item.Name) + '\')">';
 				  }
 				  else {
-					  if ((item.Used!=0)&&(item.Name.charAt(0)!="$")) {
+					  if (item.Used!=0) {
 						itemSubIcons+='<img src="images/remove.png" title="' + $.t('Set Unused') +'" onclick="SetUnused(' + item.idx +')">';
 						itemSubIcons+='<img src="images/rename.png" title="' + $.t('Rename Device') +'" onclick="RenameDevice(' + item.idx +',\'' + item.Type+'\',\'' + escape(item.Name) + '\')">';
 					  }

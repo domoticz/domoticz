@@ -352,7 +352,7 @@ bool CToonThermostat::Login()
 		_log.Log(LOG_ERROR, "ToonThermostat: Invalid data received, or invalid username/password!");
 		return false;
 	}
-	if (root["agreements"].size() < (m_Agreement+1))
+	if (root["agreements"].size() < (size_t)(m_Agreement+1))
 	{
 		_log.Log(LOG_ERROR, "ToonThermostat: Agreement not found, did you setup your toon correctly?");
 		return false;
@@ -762,6 +762,15 @@ void CToonThermostat::GetMeterDetails()
 
 		m_p1power.usagecurrent = (unsigned long)(root["powerUsage"]["value"].asFloat());	//Watt
 		m_p1power.delivcurrent = (unsigned long)(root["powerUsage"]["valueProduced"].asFloat());	//Watt
+
+		if (root["powerUsage"]["valueSolar"].empty() == false)
+		{
+			float valueSolar = (float)(root["powerUsage"]["valueSolar"].asFloat());
+			if (valueSolar != 0)
+			{
+				SendWattMeter(1, 1, 255, valueSolar, "Solar");
+			}
+		}
 		
 	}
 

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+  <!-- Configuration -->
+  <CommandClass id="112">
+    <Value type="list" genre="config" instance="1" index="9" label="Saving state before power failure" value="1" size="1">
+      <Help>Saving state before power failure</Help>
+      <Item label="State NOT saved at power failure, all outputs are set to OFF upon power restore" value="0"/>
+      <Item label="State saved at power failure, all outputs are set to previous state upon power restore" value="1"/>
+    </Value>
+	
+	<Value type="list" genre="config" instance="1" index="10" label="First channel - operating mode" value="0" size="1">
+      <Help>This parameter allows to choose operating for the 1st channel controlled by the S1 switch. </Help>
+      <Item label="Standard operation" value="0" />
+      <Item label="Delay On" value="1" />
+      <Item label="Delay Off" value="2" />
+      <Item label="Auto On" value="3" />
+      <Item label="Auto Off" value="4" />
+      <Item label="Flashing Mode" value="5" />
+    </Value>
+	
+	<Value type="list" genre="config" instance="1" index="11" label="First channel - reaction to switch for delay/auto ON/OFF modes" value="0" size="1">
+      <Help>This parameter determines how the device in timed mode reacts to pushing the switch connected to the S1 terminal</Help>
+      <Item label="Cancel mode and set target state" value="0" />
+      <Item label="No reaction to switch - mode runs until it ends" value="1" />
+      <Item label="Reset timer - start counting from the beginning" value="2" />
+    </Value>
+	
+	<Value type="short" genre="config" instance="1" index="12" label="First channel - time parameter for delay/auto ON/OFF modes" value="50" min="1" max="32000" size="2">
+      <Help>This parameter allows to set time parameter used in timed modes. (s)</Help>
+    </Value>
+	
+	<Value type="short" genre="config" instance="1" index="13" label="First channel - pulse time for flashing mode" value="50" min="1" max="32000" size="2">
+      <Help>This parameter allows to set time of switching to opposite state in flashing mode (s)</Help>
+    </Value>
+	
+	<Value type="list" genre="config" instance="1" index="15" label="Second channel - operating mode" value="0" size="1">
+      <Help>This parameter allows to choose operating for the 2st channel controlled by the S2 switch. </Help>
+      <Item label="Standard operation" value="0" />
+      <Item label="Delay On" value="1" />
+      <Item label="Delay Off" value="2" />
+      <Item label="Auto On" value="3" />
+      <Item label="Auto Off" value="4" />
+      <Item label="Flashing Mode" value="5" />
+    </Value>
+	
+	<Value type="list" genre="config" instance="1" index="16" label="Second channel - reaction to switch for delay/auto ON/OFF modes" value="0" size="1">
+      <Help>This parameter determines how the device in timed mode reacts to pushing the switch connected to the S2 terminal</Help>
+      <Item label="Cancel mode and set target state" value="0" />
+      <Item label="No reaction to switch - mode runs until it ends" value="1" />
+      <Item label="Reset timer - start counting from the beginning" value="2" />
+    </Value>
+	
+	<Value type="short" genre="config" instance="1" index="17" label="Second channel - time parameter for delay/auto ON/OFF modes" value="50" min="1" max="32000" size="2">
+      <Help>This parameter allows to set time parameter used in timed modes. (s)</Help>
+    </Value>
+	
+	<Value type="short" genre="config" instance="1" index="18" label="Second channel - pulse time for flashing mode" value="50" min="1" max="32000" size="2">
+      <Help>This parameter allows to set time of switching to opposite state in flashing mode (s)</Help>
+    </Value>
+  </CommandClass>
+  
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="5">
+      <Group index="1" max_associations="1" label="Lifeline"/>
+      <Group index="2" max_associations="16" label="On/Off  S1" />
+      <Group index="3" max_associations="16" label="Dimmer  S1" />
+      <Group index="4" max_associations="16" label="On/Off  S2" />
+      <Group index="5" max_associations="16" label="Dimmer  S2" />
+    </Associations>
+  </CommandClass>
+
+</Product>

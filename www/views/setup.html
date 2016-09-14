@@ -496,20 +496,26 @@
 										<td>
 											<textarea id="HTTPURL" name="HTTPURL" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all"></textarea><br>
 											<span data-i18n="(Should start with http:// or script://)">(Should start with http://, https:// or script://)</span><br>
-											<span data-i18n="(Optional)">(Optional)</span> #SUBJECT, #MESSAGE
+											<span data-i18n="(Optional)">(Optional)</span> #SUBJECT, #MESSAGE, #PRIORITY
 										</td>
 									</tr>
                                     <tr>
 										<td align="right"><label for="HTTPPostData">POST Data: </label></td>
 										<td>
 											<textarea id="HTTPPostData" name="HTTPPostData" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all"></textarea><br>
-											<span data-i18n="(Optional)">(Optional)</span> #SUBJECT, #MESSAGE
+											<span data-i18n="(Optional)">(Optional)</span> #SUBJECT, #MESSAGE, #PRIORITY
 										</td>
 									</tr>
                                     <tr>
 										<td align="right"><label for="HTTPPostContentType">POST Content-Type: </label></td>
 										<td>
                                             <input type="input" id="HTTPPostContentType" name="HTTPPostContentType" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('http')">Test</button><br>
+										</td>
+									</tr>
+                                    <tr>
+										<td align="right"><label for="HTTPPostHeaders">POST Headers: </label></td>
+										<td>
+											<textarea id="HTTPPostHeaders" name="HTTPPostHeaders" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all"></textarea><br>
 										</td>
 									</tr>
 									</table>
@@ -664,7 +670,7 @@
 							</tr>
 							<tr>
 								<td align="right" style="width:60px"><label><span data-i18n="To"></span>: </label></td>
-								<td><input type="email" id="EmailTo" name="EmailTo" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+								<td><input type="input" id="EmailTo" name="EmailTo" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 							</tr>
 							<tr>
 								<td></td>
@@ -693,6 +699,10 @@
 							<tr>
 								<td></td>
 								<td><input type="checkbox" id="EmailAsAttachment" name="EmailAsAttachment"/> <span data-i18n="Send Camera snapshots as Attachment (Gmail)"></span></td>
+							</tr>
+							<tr>
+								<td></td>
+								<td><input type="checkbox" id="SendErrorsAsNotification" name="SendErrorsAsNotification"/> <span data-i18n="Send Errors as Notification"></span></td>
 							</tr>
 							</table>
 						</section>

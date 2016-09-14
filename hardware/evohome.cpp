@@ -637,7 +637,7 @@ void CEvohome::SendZoneSensor()
 				tsen.EVOHOME2.type = pTypeEvohomeZone;
 				tsen.EVOHOME2.subtype = sTypeEvohomeZone;
 				tsen.EVOHOME2.zone = i;
-				tsen.EVOHOME2.temperature = dbTemp * 100;
+				tsen.EVOHOME2.temperature = static_cast<uint16_t>(dbTemp * 100);
 				RFX_SETID3(ID, tsen.EVOHOME2.id1, tsen.EVOHOME2.id2, tsen.EVOHOME2.id3);
 				sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME2, "Zone Temp", -1);
 			}

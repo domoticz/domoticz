@@ -2076,9 +2076,9 @@ define(['app'], function (app) {
 									}
 									else if (item.SwitchType == "Selector") {
 										xhtm += '<tr>';
-										xhtm += '<td colspan="2" style="border:0px solid red; padding-top:10px; padding-bottom:10px;">';
+										xhtm += '<td colspan="2" style="border:0px solid red; padding-top:4px; padding-bottom:4px;">';
 										if (item.SelectorStyle === 0) {
-											xhtm += '<div style="margin: -15px -4px -5px 24px;" class="selectorlevels">';
+											xhtm += '<div style="margin: -15px -4px -5px 24px; text-align: right;" class="selectorlevels">';
 											xhtm += '<div id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelname="' + escape(GetLightStatusText(item)) + '">';
 											var levelNames = item.LevelNames.split('|');
 											$.each(levelNames, function(index, levelName) {
@@ -2089,7 +2089,7 @@ define(['app'], function (app) {
 											});
 											xhtm += '</div>';
 										} else if (item.SelectorStyle === 1) {
-											xhtm += '<div style="margin: -15px 0px -8px 0px; text-align: center;" class="selectorlevels">';
+											xhtm += '<div style="margin: -15px 0px -8px 0px; text-align: right;" class="selectorlevels">';
 											xhtm += '<select id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelname="' + escape(GetLightStatusText(item)) + '">';
 											var levelNames = item.LevelNames.split('|');
 											$.each(levelNames, function(index, levelName) {

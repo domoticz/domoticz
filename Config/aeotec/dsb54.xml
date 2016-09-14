@@ -52,7 +52,7 @@ https://aeotec.freshdesk.com/helpdesk/attachments/6009584512
     <!-- Association Groups -->
     <CommandClass id="133">
       <Associations num_groups="2">
-        <Group index="1" max_associations="5" label="Report" />
+        <Group index="1" max_associations="5" label="Lifeline" />
         <Group index="2" max_associations="5" label="Low Battery Warning Report" />
       </Associations>
     </CommandClass>    

@@ -54,7 +54,9 @@ enum _eSensorScaleID
 	SCALEID_POWERFACTOR,
 	SCALEID_GAS,
 	SCALEID_CO2,
-	SCALEID_WATER
+	SCALEID_WATER,
+	SCALEID_MOISTRUE,
+	SCALEID_TANK_CAPACITY
 };
 
 struct _tAlarmNameToIndexMapping
@@ -1217,21 +1219,6 @@ bool COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 	}
 
 	_tZWaveDevice *pDevice = FindDevice(nodeID, instanceID, 0, ZWaveBase::ZDTYPE_SWITCH_DIMMER);
-	if (pDevice)
-	{
-		if (
-			((pDevice->Product_id == 0x0060) && (pDevice->Product_type == 0x0003)) ||
-			((pDevice->Product_id == 0x0060) && (pDevice->Product_type == 0x0103)) ||
-			((pDevice->Product_id == 0x0060) && (pDevice->Product_type == 0x0203))
-			)
-		{
-			//Special case for the Aeotec Smart Switch
-			if (commandClass == COMMAND_CLASS_SWITCH_MULTILEVEL)
-			{
-				pDevice = FindDevice(nodeID, instanceID, 0, COMMAND_CLASS_SWITCH_BINARY, ZWaveBase::ZDTYPE_SWITCH_NORMAL);
-			}
-		}
-	}
 	if (!pDevice)
 		pDevice = FindDevice(nodeID, instanceID, 0);
 	if (!pDevice)
@@ -1244,7 +1231,7 @@ bool COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 	OpenZWave::ValueID vID(0, 0, OpenZWave::ValueID::ValueGenre_Basic, 0, 0, 0, OpenZWave::ValueID::ValueType_Bool);
 	unsigned char svalue = (unsigned char)value;
 
-	if (pDevice->devType == ZWaveBase::ZDTYPE_SWITCH_NORMAL)
+	if ((pDevice->devType == ZWaveBase::ZDTYPE_SWITCH_NORMAL) || (svalue == 0) || (svalue == 255))
 	{
 		//On/Off device
 		bool bFound = (GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_SWITCH_BINARY, vID) == true);
@@ -1273,12 +1260,12 @@ bool COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 			{
 				if (svalue == 0) {
 					//Off
-					m_pManager->SetValue(vID, 0);
+					m_pManager->SetValue(vID, (uint8)0);
 					pDevice->intvalue = 0;
 				}
 				else {
 					//On
-					m_pManager->SetValue(vID, 255);
+					m_pManager->SetValue(vID, (uint8)255);
 					pDevice->intvalue = 255;
 				}
 			}
@@ -1982,6 +1969,34 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 				}
 			}
 		}
+		else if (vLabel == "Moisture")
+		{
+			if (vType == OpenZWave::ValueID::ValueType_Decimal)
+			{
+				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
+				{
+					_device.floatValue = fValue;
+					_device.scaleID = SCALEID_MOISTRUE;
+					_device.scaleMultiply = 1;
+					_device.devType = ZDTYPE_SENSOR_MOISTURE;
+					InsertDevice(_device);
+				}
+			}
+		}
+		else if (vLabel == "Tank Capacity")
+		{
+			if (vType == OpenZWave::ValueID::ValueType_Decimal)
+			{
+				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
+				{
+					_device.floatValue = fValue;
+					_device.scaleID = SCALEID_TANK_CAPACITY;
+					_device.scaleMultiply = 1;
+					_device.devType = ZDTYPE_SENSOR_TANK_CAPACITY;
+					InsertDevice(_device);
+				}
+			}
+		}
 		else if (vLabel == "General")
 		{
 			if (vType == OpenZWave::ValueID::ValueType_Decimal)
@@ -2449,7 +2464,9 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 		(vLabel == "Power Factor")||
 		(vLabel == "Gas")||
 		(vLabel == "CO2 Level")||
-		(vLabel == "Water")
+		(vLabel == "Water") ||
+		(vLabel == "Moisture") ||
+		(vLabel == "Tank Capacity")
 		)
 	{
 		int scaleID = 0;
@@ -2469,6 +2486,10 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 			scaleID = SCALEID_CO2;
 		else if (vLabel == "Water")
 			scaleID = SCALEID_WATER;
+		else if (vLabel == "Moisture")
+			scaleID = SCALEID_MOISTRUE;
+		else if (vLabel == "Tank Capacity")
+			scaleID = SCALEID_TANK_CAPACITY;
 
 		sstr << "." << scaleID;
 	}
@@ -2887,7 +2908,9 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 			//Convert to celcius
 			fValue = float((fValue - 32)*(5.0 / 9.0));
 		}
-		pDevice->bValidValue = (abs(pDevice->floatValue - fValue) < 10);
+		if ((fValue < -200) || (fValue > 380))
+			return;
+		pDevice->bValidValue = (std::abs(pDevice->floatValue - fValue) < 10);
 		pDevice->floatValue = fValue;
 		break;
 	case ZDTYPE_SENSOR_HUMIDITY:
@@ -2959,7 +2982,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 			//Convert to celcius
 			fValue = float((fValue - 32)*(5.0 / 9.0));
 		}
-		pDevice->bValidValue = (abs(pDevice->floatValue - fValue) < 10);
+		pDevice->bValidValue = (std::abs(pDevice->floatValue - fValue) < 10);
 		pDevice->floatValue = fValue;
 		break;
 	case ZDTYPE_SENSOR_PERCENTAGE:
@@ -2996,6 +3019,26 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
 			return;
 		if (vLabel != "Water")
+			return;
+		float oldvalue = pDevice->floatValue;
+		pDevice->floatValue = fValue; //always set the value
+	}
+	break;
+	case ZDTYPE_SENSOR_MOISTURE:
+	{
+		if (vType != OpenZWave::ValueID::ValueType_Decimal)
+			return;
+		if (vLabel != "Moisture")
+			return;
+		float oldvalue = pDevice->floatValue;
+		pDevice->floatValue = fValue; //always set the value
+	}
+	break;
+	case ZDTYPE_SENSOR_TANK_CAPACITY:
+	{
+		if (vType != OpenZWave::ValueID::ValueType_Decimal)
+			return;
+		if (vLabel != "Tank Capacity")
 			return;
 		float oldvalue = pDevice->floatValue;
 		pDevice->floatValue = fValue; //always set the value

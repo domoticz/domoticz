@@ -208,16 +208,21 @@ return std::string(buf.data(), buf.size());
 
 void CEventSystem::StripQuotes(std::string &sString)
 {
-	if (sString.size() < 2)
+	if (sString.size() < 1)
 		return;
 
-	if (sString.find('"') != 0)
-		return;
-	if (sString[sString.size() - 1] != '"')
-		return;
+	size_t tpos = sString.find('"');
+	if (tpos==0) //strip first quote
+		sString = sString.substr(1);
 
-	//Strip quotes
-	sString = sString.substr(1, sString.size() - 2);
+	if (!sString.empty())
+	{
+		if (sString[sString.size() - 1] == '"')
+		{
+			//strip last quote
+			sString = sString.substr(0, sString.size() - 1);
+		}
+	}
 }
 
 struct _tHardwareListIntEV{
@@ -1175,7 +1180,7 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const unsigned long 
 			closedir(lDir);
 		}
 		else {
-			_log.Log(LOG_ERROR, "EventSystem: Error accessing python script directory %s", lua_Dir.c_str());
+			_log.Log(LOG_ERROR, "EventSystem: Error accessing python script directory %s", python_Dir.c_str());
 		}
 	}
 	catch (...)
@@ -1922,6 +1927,7 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 					std::string newAction = doWhat.substr(0, aFind);
 					afterTimerSeconds = atoi(delayString.c_str());
 					doWhat = newAction;
+					StripQuotes(doWhat);
 				}
 				doWhat = ProcessVariableArgument(doWhat);
 				if (afterTimerSeconds == 0)
@@ -2005,6 +2011,30 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 				}
 				else if (devNameNoQuotes == "OpenURL") {
 					OpenURL(doWhat);
+					actionsDone = true;
+				}
+				else if (devNameNoQuotes == "StartScript") {
+					if (doWhat.empty())
+					{
+						//Invalid
+						_log.Log(LOG_ERROR, "EventSystem: StartScript, not enough parameters!");
+						return false;
+					}
+					std::string sPath = doWhat;
+					std::string sParam = "";
+					size_t tpos = sPath.find('$');
+					if (tpos != std::string::npos)
+					{
+						sPath = sPath.substr(0, tpos);
+						sParam = doWhat.substr(tpos + 1);
+						sParam = ParseBlocklyString(sParam);
+					}
+#if !defined WIN32
+					if (sPath.find("/") != 0)
+						sPath = szUserDataFolder + "scripts/" + sPath;
+#endif
+
+					m_sql.AddTaskItem(_tTaskItem::ExecuteScript(1, sPath, sParam));
 					actionsDone = true;
 				}
 				else if (devNameNoQuotes.find("WriteToLog") == 0) {

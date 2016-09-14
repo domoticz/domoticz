@@ -629,7 +629,7 @@ define(['app'], function (app) {
 					};
 					ctrl.imgHeat = function() {
 						if (ctrl.displayHeat()) {
-							return ctrl.sHeatMode() + (item.SubType == 'Hot Water' ) ? 'Inv' : '';
+							return ctrl.sHeatMode() + ((item.SubType == 'Hot Water' ) ? 'Inv' : '');
 						} else {
 							return undefined;
 						}

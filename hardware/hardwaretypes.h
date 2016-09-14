@@ -149,6 +149,7 @@
 #define sSwitchGaposa				0x56
 #define sSwitchMiLightv1			0x57
 #define sSwitchMiLightv2			0x58
+#define sSwitchHT6P20				0x59
 
 //Switch commands
 #define gswitch_sOff				0x00

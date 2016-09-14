@@ -2186,6 +2186,10 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("UseEmailInNotifications", 1);
 	}
+	if (!GetPreferencesVar("SendErrorNotifications", nValue))
+	{
+		UpdatePreferencesVar("SendErrorNotifications", 0);
+	}
 	if ((!GetPreferencesVar("EmailPort", nValue)) || (nValue == 0))
 	{
 		UpdatePreferencesVar("EmailPort", 25);
@@ -2437,7 +2441,8 @@ bool CSQLHelper::OpenDatabase()
 	if ((!GetPreferencesVar("HTTPPostContentType", sValue)) || (sValue.empty()))
 	{
 		sValue = "application/json";
-		UpdatePreferencesVar("HTTPPostContentType", sValue);
+		std::string sencoded = base64_encode((const unsigned char*)sValue.c_str(), sValue.size());
+		UpdatePreferencesVar("HTTPPostContentType", sencoded);
 	}
 	if (!GetPreferencesVar("ShowUpdateEffect", nValue))
 	{
@@ -2448,6 +2453,13 @@ bool CSQLHelper::OpenDatabase()
 		nValue = 5;
 		UpdatePreferencesVar("ShortLogInterval", nValue);
 	}
+	if (!GetPreferencesVar("SendErrorsAsNotification", nValue))
+	{
+		UpdatePreferencesVar("SendErrorsAsNotification", 0);
+		nValue = 0;
+	}
+	_log.ForwardErrorsToNotificationSystem(nValue != 0);
+
 	if (nValue < 1)
 		nValue = 5;
 	m_ShortLogInterval = nValue;
@@ -3157,27 +3169,28 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 		localtime_r(&now,&ltime);
 		//Commit: If Option 1: energy is computed as usage*time
 		//Default is option 0, read from device
-		if (sOption == "1" && devType == pTypeGeneral && subType == sTypeKwh) {
+		if (sOption == "1" && devType == pTypeGeneral && subType == sTypeKwh)
+		{
 			std::vector<std::string> parts;
 			struct tm ntime;
 			double interval;
 			float nEnergy;
 			char sCompValue[100];
-			std::string sLastUpdate=result[0][6];
-			ntime.tm_isdst=ltime.tm_isdst;
-			ntime.tm_year=atoi(sLastUpdate.substr(0,4).c_str())-1900;
-			ntime.tm_mon=atoi(sLastUpdate.substr(5,2).c_str())-1;
-			ntime.tm_mday=atoi(sLastUpdate.substr(8,2).c_str());
-			ntime.tm_hour=atoi(sLastUpdate.substr(11,2).c_str());
-			ntime.tm_min=atoi(sLastUpdate.substr(14,2).c_str());
-			ntime.tm_sec=atoi(sLastUpdate.substr(17,2).c_str());
-			interval = now - mktime(&ntime);
+			std::string sLastUpdate = result[0][6];
+			ntime.tm_isdst = ltime.tm_isdst;
+			ntime.tm_year = atoi(sLastUpdate.substr(0, 4).c_str()) - 1900;
+			ntime.tm_mon = atoi(sLastUpdate.substr(5, 2).c_str()) - 1;
+			ntime.tm_mday = atoi(sLastUpdate.substr(8, 2).c_str());
+			ntime.tm_hour = atoi(sLastUpdate.substr(11, 2).c_str());
+			ntime.tm_min = atoi(sLastUpdate.substr(14, 2).c_str());
+			ntime.tm_sec = atoi(sLastUpdate.substr(17, 2).c_str());
+			interval = static_cast<double>(now - mktime(&ntime)); //Rob: Why a double ?
 			StringSplit(result[0][5].c_str(), ";", parts);
-			nEnergy = strtof(parts[0].c_str(),NULL)*interval/3600 + strtof(parts[1].c_str(), NULL);
+			nEnergy = static_cast<float>(strtof(parts[0].c_str(), NULL)*interval / 3600 + strtof(parts[1].c_str(), NULL)); //Rob: whats happening here... strtof ?
 			StringSplit(sValue, ";", parts);
-			sprintf(sCompValue, "%s;%.0f", parts[0].c_str(),nEnergy);
+			sprintf(sCompValue, "%s;%.0f", parts[0].c_str(), nEnergy);
 			sValue = sCompValue;
-			}
+		}
         //~ use different update queries based on the device type
         if (devType == pTypeGeneral && subType == sTypeCounterIncremental)
         {
@@ -4783,7 +4796,7 @@ void CSQLHelper::AddCalendarTemperature()
 		std::stringstream s_str( sddev[0] );
 		s_str >> ID;
 
-		result=safe_query("SELECT MIN(Temperature), MAX(Temperature), AVG(Temperature), MIN(Chill), MAX(Chill), MAX(Humidity), MAX(Barometer), MIN(DewPoint), MIN(SetPoint), MAX(SetPoint), AVG(SetPoint) FROM Temperature WHERE (DeviceRowID='%llu' AND Date>='%q' AND Date<'%q')",
+		result=safe_query("SELECT MIN(Temperature), MAX(Temperature), AVG(Temperature), MIN(Chill), MAX(Chill), AVG(Humidity), AVG(Barometer), MIN(DewPoint), MIN(SetPoint), MAX(SetPoint), AVG(SetPoint) FROM Temperature WHERE (DeviceRowID='%llu' AND Date>='%q' AND Date<'%q')",
 			ID,
 			szDateStart,
 			szDateEnd

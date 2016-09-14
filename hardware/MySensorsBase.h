@@ -59,7 +59,8 @@ public:
 		S_MOISTURE = 35,				//Moisture sensor	V_LEVEL(water content or moisture in percentage ? ), V_TRIPPED, V_ARMED
 		S_INFO = 36,					// LCD text device / Simple information device on controller, V_TEXT
 		S_GAS = 37,						// Gas meter, V_FLOW, V_VOLUME
-
+		S_GPS = 38,						//!< GPS Sensor, V_POSITION
+		S_WATER_QUALITY = 39,			//!< V_TEMP, V_PH, V_ORP, V_EC, V_STATUS 
 		S_UNKNOWN = 200,				//No Type received
 	};
 
@@ -118,6 +119,12 @@ public:
 		V_CUSTOM = 48, 					// Custom messages used for controller/inter node specific commands, preferably using S_CUSTOM device type. 
 		V_POSITION = 49,				// GPS position and altitude. Payload: latitude;longitude;altitude(m). E.g. "55.722526;13.017972;18"
 		V_IR_RECORD = 50,				// Record IR codes S_IR for playback
+		V_PH = 51,						//!< S_WATER_QUALITY, water PH
+		V_ORP = 52,						//!< S_WATER_QUALITY, water ORP : redox potential in mV
+		V_EC = 53,						//!< S_WATER_QUALITY, water electric conductivity ?S/cm (microSiemens/cm)
+		V_VAR = 54,						//!< S_POWER, Reactive power: volt-ampere reactive (var)
+		V_VA = 55,						//!< S_POWER, Apparent power: volt-ampere (VA)
+		V_POWER_FACTOR = 56,			//!< S_POWER, Ratio of real power to apparent power: floating point value in the range [-1,..,1]
 		V_UNKNOWN = 200					//No value received
 	};
 

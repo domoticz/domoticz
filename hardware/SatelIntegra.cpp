@@ -82,7 +82,7 @@ SatelIntegra::SatelIntegra(const int ID, const std::string &IPAddress, const uns
 	errorCodes[6] = "telephone code already exists";
 	errorCodes[7] = "changed code is the same";
 	errorCodes[8] = "other error";
-	errorCodes[17] = "can not arm, but, but can use force arm";
+	errorCodes[17] = "can not arm, but can use force arm";
 	errorCodes[18] = "can not arm";
 
 	// decode user code from string to BCD
@@ -157,7 +157,6 @@ void SatelIntegra::Do_Work()
 
 	if (GetInfo())
 	{
-
 		ReadZonesState(true);
 		ReadAlarm(true);
 		ReadArmState(true);
@@ -356,32 +355,29 @@ bool SatelIntegra::GetInfo()
 
 					_log.Log(LOG_STATUS, "Satel Integra: ETHM-1 ver. %c.%c%c %c%c%c%c-%c%c-%c%c",
 						buffer[1], buffer[2], buffer[3], buffer[4], buffer[5], buffer[6], buffer[7], buffer[8], buffer[9], buffer[10], buffer[11]);
+					return true;
 				}
 				else
 				{
 					_log.Log(LOG_ERROR, "Satel Integra: unknown version of ETHM-1");
-					return false;
 				}
 			}
 			else
 			{
 				_log.Log(LOG_ERROR, "Satel Integra: Unknown basic status");
-				return false;
 			}
 		}
 		else
 		{
 			_log.Log(LOG_ERROR, "Satel Integra: Unknown model '%02x'", buffer[0]);
-			return false;
 		}
 	}
 	else
 	{
 		_log.Log(LOG_ERROR, "Satel Integra: Get info about Integra is failed");
-		return false;
 	}
 
-	return true;
+	return false;
 }
 
 bool SatelIntegra::ReadZonesState(const bool firstTime)
@@ -865,7 +861,7 @@ bool SatelIntegra::WriteToHardware(const char *pdata, const unsigned char length
 
 			if (SendCommand(cmd, 41, buffer) != -1)
 			{
-				m_outputsLastState[general->id - 1] = gswitch_sOn ? true : false;
+				m_outputsLastState[general->id - 1] = general->cmnd == gswitch_sOn ? true : false;
 				_log.Log(LOG_STATUS, "Satel Integra: switched output %d to %s", general->id, general->cmnd == gswitch_sOn ? "on" : "off");
 				return true;
 			}
