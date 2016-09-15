@@ -15,6 +15,8 @@
 
 #include <iostream>
 
+#define DEBUG_LOGGING true
+
 CHEOS::CHEOS(const int ID, const std::string &IPAddress, const int Port, const std::string &User, const std::string &Pwd, const int PollIntervalsec, const int PingTimeoutms) : 
 m_IP(IPAddress),
 m_User(User),
@@ -91,9 +93,10 @@ void CHEOS::handleMessage(std::string& pMessage)
 								if (root.isMember("payload"))
 								{
 									for( Json::ValueIterator itr = root["payload"].begin() ; itr != root["payload"].end() ; itr++ ) {
-										if (root["payload"][itr].isMember("name") && root["payload"][itr].isMember("pid"))
+										std::string key = itr.key().asString();
+										if (root["payload"][key].isMember("name") && root["payload"][key].isMember("pid"))
 										{
-											AddNode(root["payload"][itr]["name"], root["payload"][itr]["pid"]);
+											AddNode(root["payload"][key]["name"].asString(), root["payload"][key]["pid"].asString());
 										}
 										else
 										{
@@ -121,11 +124,13 @@ void CHEOS::handleMessage(std::string& pMessage)
 										std::string pid = SplitMessagePlayer[1];
 										std::string state = SplitMessageState[1];
 
-										if (sMode == "play") 
+										_eMediaStatus nStatus = MSTAT_UNKNOWN;
+
+										if (state == "play") 
 											nStatus = MSTAT_PLAYING;
-										else if (sMode == "pause")
+										else if (state == "pause")
 											nStatus = MSTAT_PAUSED;
-										else if (sMode == "stop")
+										else if (state == "stop")
 											nStatus = MSTAT_STOPPED;
 										else
 											nStatus = MSTAT_ON;
@@ -135,7 +140,7 @@ void CHEOS::handleMessage(std::string& pMessage)
 										UpdateNodeStatus(pid, nStatus, sStatus);
 										
 										/* If playing request now playing information */
-										if (sMode == "play") {
+										if (state == "play") {
 											int PlayerID = atoi(pid.c_str());
 											SendCommand("player/get_now_playing_media", PlayerID);
 										}
@@ -150,16 +155,17 @@ void CHEOS::handleMessage(std::string& pMessage)
 									StringSplit(root["heos"]["message"].asString(), "=", SplitMessage);
 									if (SplitMessage.size() > 0)
 									{
+										std::string sLabel = "";
+										std::string	sStatus = "";
+										std::string pid = SplitMessage[1];
+
 										if (root["heos"].isMember("payload"))
 										{
-											std::string pid = SplitMessage[1];
-											std::string	sStatus = "";
-											
+												
 											std::string	sTitle = "";
 											std::string	sAlbum = "";
 											std::string	sArtist = "";
 											std::string	sStation = "";
-											std::string sLabel = "";
 											
 											sTitle = root["payload"]["song"].asString();
 											sAlbum = root["payload"]["album"].asString();
@@ -218,17 +224,18 @@ void CHEOS::handleConnect()
 		if (!m_stoprequested && !m_Socket)
 		{
 			m_iMissedPongs = 0;
+			std::string sPort = std::to_string(m_Port);
 			boost::system::error_code ec;
 			boost::asio::ip::tcp::resolver resolver(*m_Ios);
-			boost::asio::ip::tcp::resolver::query query(m_IP, (m_Port[0] != '-' ? m_Port : m_Port.substr(1)));
+			boost::asio::ip::tcp::resolver::query query(m_IP, sPort);
 			boost::asio::ip::tcp::resolver::iterator iter = resolver.resolve(query);
 			boost::asio::ip::tcp::endpoint endpoint = *iter;
 			m_Socket = new boost::asio::ip::tcp::socket(*m_Ios);
 			m_Socket->connect(endpoint, ec);
 			if (!ec)
 			{
-				_log.Log(LOG_NORM, "HEOS by DENON: Connected to '%s:%s'.", m_IP.c_str(), (m_Port[0] != '-' ? m_Port.c_str() : m_Port.substr(1).c_str()));
-				m_Socket->async_read_some(boost::asio::buffer(m_Buffer, sizeof m_Buffer), boost::bind(&CHEOS::handleRead, shared_from_this(), boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
+				_log.Log(LOG_NORM, "HEOS by DENON: Connected to '%s:%s'.", m_IP.c_str(), sPort);
+				m_Socket->async_read_some(boost::asio::buffer(m_Buffer, sizeof m_Buffer), boost::bind(&CHEOS::handleRead, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
 				// Disable registration for change events following HEOS Controller advise
 				handleWrite(std::string("heos://system/register_for_change_events?enable=off"));
 			}
@@ -244,7 +251,7 @@ void CHEOS::handleConnect()
 						)
 					) // Connection failed due to no response, no route or active refusal
 				{
-					_log.Log(LOG_NORM, "HEOS by DENON: Connect to '%s:%s' failed: (%d) %s", m_IP.c_str(), (m_Port[0] != '-' ? m_Port.c_str() : m_Port.substr(1).c_str()), ec.value(), ec.message().c_str());
+					_log.Log(LOG_NORM, "HEOS by DENON: Connect to '%s:%s' failed: (%d) %s", m_IP.c_str(), sPort, ec.value(), ec.message().c_str());
 				}
 				delete m_Socket;
 				m_Socket = NULL;
@@ -289,7 +296,7 @@ void CHEOS::handleRead(const boost::system::error_code& e, std::size_t bytes_tra
 		if (!m_stoprequested && m_Socket)
 			m_Socket->async_read_some(	boost::asio::buffer(m_Buffer, sizeof m_Buffer),
 										boost::bind(&CHEOS::handleRead, 
-										shared_from_this(),
+										this,
 										boost::asio::placeholders::error,
 										boost::asio::placeholders::bytes_transferred));
 	}
@@ -715,7 +722,8 @@ void CHEOS::UpdateNodesStatus(const std::string &DevID, const std::string &sStat
 
 void CHEOS::AddNode(const std::string &Name, const std::string &PlayerID)
 {
-	//Check if exists
+	std::vector<std::vector<std::string> > result;
+
 	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, PlayerID.c_str());
 	if (result.size()>0) {
 		int ID = atoi(result[0][0].c_str());
@@ -754,6 +762,51 @@ void CHEOS::Restart()
 {
 	StopHardware();
 	StartHardware();
+}
+
+bool CHEOS::WriteToHardware(const char *pdata, const unsigned char length)
+{
+	const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
+
+	unsigned char packettype = pSen->ICMND.packettype;
+
+	if (packettype != pTypeLighting2)
+		return false;
+
+	long	DevID = (pSen->LIGHTING2.id3 << 8) | pSen->LIGHTING2.id4;
+	std::vector<HEOSNode>::const_iterator itt;
+	for (itt = m_nodes.begin(); itt != m_nodes.end(); ++itt)
+	{
+		if (itt->DevID == DevID)
+		{
+			int iParam = pSen->LIGHTING2.level;
+			std::string sParam;
+			switch (pSen->LIGHTING2.cmnd)
+			{
+			case light2_sOn:
+			case light2_sGroupOn:
+			case light2_sOff:
+			case light2_sGroupOff:
+			case gswitch_sPlay:
+				SendCommand("getNowPlaying", itt->DevID);
+				SendCommand("setPlayStatePlay", itt->DevID);
+				return true;
+			case gswitch_sPlayPlaylist:
+			case gswitch_sPlayFavorites:
+			case gswitch_sStop:
+				SendCommand("setPlayStateStop", itt->DevID);
+				return true;
+			case gswitch_sPause:
+				SendCommand("setPlayStatePause", itt->DevID);
+				return true;
+			case gswitch_sSetVolume:
+			default:
+				return true;
+			}
+		}
+	}
+
+	return false;
 }
 
 void CHEOS::ReloadNodes()
@@ -840,7 +893,7 @@ namespace http {
 			if (result.size() == 1)
 			{
 				_eSwitchType	sType = (_eSwitchType)atoi(result[0][0].c_str());
-				int PlayerID = atoi(result[0][1]..c_str());
+				int PlayerID = atoi(result[0][1].c_str());
 				_eHardwareTypes	hType = (_eHardwareTypes)atoi(result[0][2].c_str());
 				int HwID = atoi(result[0][3].c_str());
 				// Is the device a media Player?
@@ -849,7 +902,7 @@ namespace http {
 					switch (hType) {
 					case HTYPE_HEOS:
 						CHEOS HEOS(HwID);
-						HEOS.SendCommand(sAction, PlayerId);
+						HEOS.SendCommand(sAction, PlayerID);
 						break;
 						// put other players here ...
 					}

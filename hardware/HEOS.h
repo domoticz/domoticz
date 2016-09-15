@@ -7,7 +7,6 @@
 #include "../json/json.h"
 #include <boost/asio.hpp>
 #include <boost/array.hpp>
-#include <boost/enable_shared_from_this.hpp>
 
 #define SSTR( x ) dynamic_cast< std::ostringstream & >(( std::ostringstream() << std::dec << x ) ).str()
 
@@ -29,6 +28,7 @@ public:
 	CHEOS(const int ID, const std::string &IPAddress, const int Port, const std::string &User, const std::string &Pwd, const int PollIntervalsec, const int PingTimeoutms);
 	explicit CHEOS(const int ID);
 	~CHEOS(void);
+	bool	WriteToHardware(const char *pdata, const unsigned char length);
 	void 	SetSettings(const int PollIntervalsec, const int PingTimeoutms);
 	void 	Restart();
 	void	SendCommand(const std::string&);
@@ -52,6 +52,11 @@ private:
 	bool m_bShowedStartupMessage;
 	int m_iMissedQueries;
 	std::string m_RetainedData;
+	int				m_iMissedPongs;
+	std::string		m_sLastMessage;
+	boost::asio::io_service *m_Ios;
+	boost::asio::ip::tcp::socket *m_Socket;
+	boost::array<char, 256> m_Buffer;
 
 	boost::shared_ptr<boost::thread> m_thread;
 	volatile bool m_stoprequested;
@@ -68,9 +73,9 @@ private:
 	bool 	StopHardware();
 
 	void 	AddNode(const std::string &Name, const std::string &PlayerID);
-	bool 	UpdateNode(const int ID, const std::string &Name);
+	void 	UpdateNode(const int ID, const std::string &Name);
 	void	UpdateNodeStatus(const std::string &DevID, const _eMediaStatus nStatus, const std::string &sStatus);
-	void	UpdateNodeStatus(const std::string &DevID, const std::string &sStatus);
+	void	UpdateNodesStatus(const std::string &DevID, const std::string &sStatus);
 //	void 	RemoveNode(const int ID);
 	void 	ReloadNodes();
 
