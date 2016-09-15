@@ -4867,7 +4867,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").show();
                 $("#hardwarecontent #divlogin").show();
-                $("#hardwarecontent #hardwareparamsremote #tcpport").val(1522);
+                $("#hardwarecontent #hardwareparamsremote #tcpport").val(1255);
             }
 	    else if (text.indexOf("MyHome OpenWebNet") >= 0)
             {
