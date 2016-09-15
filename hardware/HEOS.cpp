@@ -106,7 +106,7 @@ void CHEOS::handleMessage(std::string& pMessage)
 									if (DEBUG_LOGGING) _log.Log(LOG_NORM, "DENON by HEOS: No players found (No Payload).");
 								}
 							}
-							else if (root["heos"]["command"] == "player/get_play_state")
+							else if (root["heos"]["command"] == "player/get_play_state" || root["heos"]["command"] == "player/set_play_state")
 							{
 								if (root["heos"].isMember("message"))
 								{
@@ -119,24 +119,71 @@ void CHEOS::handleMessage(std::string& pMessage)
 										std::vector<std::string> SplitMessageState;
 										StringSplit(SplitMessage[1], "=", SplitMessageState);
 										std::string pid = SplitMessagePlayer[1];
-										std::string state = SplitMessageState[1];										
+										std::string state = SplitMessageState[1];
+
+										if (sMode == "play") 
+											nStatus = MSTAT_PLAYING;
+										else if (sMode == "pause")
+											nStatus = MSTAT_PAUSED;
+										else if (sMode == "stop")
+											nStatus = MSTAT_STOPPED;
+										else
+											nStatus = MSTAT_ON;
+										
+										std::string	sStatus = "";
+										
+										UpdateNodeStatus(pid, nStatus, sStatus);
+										
+										/* If playing request now playing information */
+										if (sMode == "play") {
+											int PlayerID = atoi(pid.c_str());
+											SendCommand("player/get_now_playing_media", PlayerID);
+										}
 									}
 								}
 							}
-							else if (root["heos"]["command"] == "player/set_play_state")
+							else if (root["heos"]["command"] == "player/get_now_playing_media")
 							{
 								if (root["heos"].isMember("message"))
 								{
 									std::vector<std::string> SplitMessage;
-									StringSplit(root["heos"]["message"].asString(), "&", SplitMessage);
+									StringSplit(root["heos"]["message"].asString(), "=", SplitMessage);
 									if (SplitMessage.size() > 0)
 									{
-										std::vector<std::string> SplitMessagePlayer;
-										StringSplit(SplitMessage[0], "=", SplitMessagePlayer);
-										std::vector<std::string> SplitMessageState;
-										StringSplit(SplitMessage[1], "=", SplitMessageState);
-										std::string pid = SplitMessagePlayer[1];
-										std::string state = SplitMessageState[1];										
+										if (root["heos"].isMember("payload"))
+										{
+											std::string pid = SplitMessage[1];
+											std::string	sStatus = "";
+											
+											std::string	sTitle = "";
+											std::string	sAlbum = "";
+											std::string	sArtist = "";
+											std::string	sStation = "";
+											std::string sLabel = "";
+											
+											sTitle = root["payload"]["song"].asString();
+											sAlbum = root["payload"]["album"].asString();
+											sArtist = root["payload"]["artist"].asString();
+											sStation = root["payload"]["station"].asString();
+											
+											if(sStation != "")
+											{
+												sLabel = sArtist + " - " + sTitle + " - " + sStation;
+											}
+											else
+											{
+												sLabel = sArtist + " - " + sTitle;
+											}												
+										}
+										else
+										{
+											sLabel = "(empty playlist)";
+										}
+
+										
+										sStatus = sLabel;
+										
+										UpdateNodesStatus(pid, sStatus);										
 									}
 								}
 							}
@@ -181,12 +228,6 @@ void CHEOS::handleConnect()
 			if (!ec)
 			{
 				_log.Log(LOG_NORM, "HEOS by DENON: Connected to '%s:%s'.", m_IP.c_str(), (m_Port[0] != '-' ? m_Port.c_str() : m_Port.substr(1).c_str()));
-				if (m_CurrentStatus.Status() == MSTAT_OFF)
-				{
-					m_CurrentStatus.Clear();
-					m_CurrentStatus.Status(MSTAT_ON);
-					UpdateStatus();
-				}
 				m_Socket->async_read_some(boost::asio::buffer(m_Buffer, sizeof m_Buffer), boost::bind(&CHEOS::handleRead, shared_from_this(), boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
 				// Disable registration for change events following HEOS Controller advise
 				handleWrite(std::string("heos://system/register_for_change_events?enable=off"));
@@ -207,9 +248,6 @@ void CHEOS::handleConnect()
 				}
 				delete m_Socket;
 				m_Socket = NULL;
-				m_CurrentStatus.Clear();
-				m_CurrentStatus.Status(MSTAT_OFF);
-				UpdateStatus();
 			}
 		}
 	}
@@ -261,9 +299,6 @@ void CHEOS::handleRead(const boost::system::error_code& e, std::size_t bytes_tra
 		{
 			if ((e.value() != 2) && (e.value() != 121))	// Semaphore time-out expiry or end of file aka 'lost contact'
 				_log.Log(LOG_ERROR, "HEOS by DENON: Async Read Exception: %d, %s", e.value(), e.message().c_str());
-			m_CurrentStatus.Clear();
-			m_CurrentStatus.Status(MSTAT_OFF);
-			UpdateStatus();
 			handleDisconnect();
 		}
 	}
@@ -564,7 +599,7 @@ void CHEOS::Do_Work()
 					if (m_iThreadsRunning < 1000)
 					{
 						m_iThreadsRunning++;
-						SendCommand("getPlayState", *itt);
+						SendCommand("getPlayState", itt->DevID);
 					}
 				}
 			}
@@ -648,27 +683,34 @@ bool CHEOS::StopHardware()
 	return true;
 }
 
-void CHEOS::UpdateNodeStatus(const HEOSNode &Node, const _eMediaStatus nStatus, const std::string &sStatus)
+void CHEOS::UpdateNodeStatus(const std::string &DevID, const _eMediaStatus nStatus, const std::string &sStatus)
 {
-	//Find out node, and update it's status
-	std::vector<LogitechMediaServerNode>::iterator itt;
-	for (itt = m_nodes.begin(); itt != m_nodes.end(); ++itt)
-	{
-		if (itt->ID == Node.ID)
-		{
-			//Found it
-			time_t atime = mytime(NULL);
-			itt->LastOK = atime;
-			struct tm ltime;
-			localtime_r(&atime, &ltime);
-			char szLastUpdate[40];
-			sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
-			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d, sValue='%q', LastUpdate='%q' WHERE (HardwareID == %d) AND (DeviceID == '%q') AND (Unit == 1) AND (SwitchType == %d)",
+	std::vector<std::vector<std::string> > result;
 
-			break;
-		}
-	}
+	time_t now = time(0);
+	struct tm ltime;
+	localtime_r(&now, &ltime);
+
+	char szLastUpdate[40];
+	sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
+	
+	result = m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d, sValue='%q', LastUpdate='%q' WHERE (HardwareID == %d) AND (DeviceID == '%q') AND (Unit == 1) AND (SwitchType == %d)",
+		int(nStatus), sStatus.c_str(), szLastUpdate, m_HwdID, DevID.c_str(), STYPE_Media);
+}
+
+void CHEOS::UpdateNodesStatus(const std::string &DevID, const std::string &sStatus)
+{
+	std::vector<std::vector<std::string> > result;
+
+	time_t now = time(0);
+	struct tm ltime;
+	localtime_r(&now, &ltime);
+
+	char szLastUpdate[40];
+	sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
+	
+	result = m_sql.safe_query("UPDATE DeviceStatus SET sValue='%q', LastUpdate='%q' WHERE (HardwareID == %d) AND (DeviceID == '%q') AND (Unit == 1) AND (SwitchType == %d)",
+		sStatus.c_str(), szLastUpdate, m_HwdID, DevID.c_str(), STYPE_Media);
 }
 
 void CHEOS::AddNode(const std::string &Name, const std::string &PlayerID)

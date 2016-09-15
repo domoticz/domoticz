@@ -46,7 +46,7 @@ private:
 	int m_iPollInterval;
 	int m_iPingTimeoutms;
 	std::string	m_IP;
-	int		m_Port;
+	int	m_Port;
 	std::string m_User;
 	std::string m_Pwd;
 	bool m_bShowedStartupMessage;
@@ -69,7 +69,8 @@ private:
 
 	void 	AddNode(const std::string &Name, const std::string &PlayerID);
 	bool 	UpdateNode(const int ID, const std::string &Name);
-	void	UpdateNodeStatus(const HEOSNode &Node, const _eMediaStatus nStatus, const std::string &sStatus);
+	void	UpdateNodeStatus(const std::string &DevID, const _eMediaStatus nStatus, const std::string &sStatus);
+	void	UpdateNodeStatus(const std::string &DevID, const std::string &sStatus);
 //	void 	RemoveNode(const int ID);
 	void 	ReloadNodes();
 
