@@ -26,6 +26,7 @@
 #include "../hardware/MySensorsBase.h"
 #include "../hardware/RFXBase.h"
 #include "../hardware/RFLinkBase.h"
+#include "../hardware/HEOS.h"
 #ifdef WITH_GPIO
 #include "../hardware/Gpio.h"
 #include "../hardware/GpioPin.h"
@@ -388,6 +389,9 @@ namespace http {
 			RegisterCommandCode("panasonicclearnodes", boost::bind(&CWebServer::Cmd_PanasonicClearNodes, this, _1, _2, _3));
 			RegisterCommandCode("panasonicmediacommand", boost::bind(&CWebServer::Cmd_PanasonicMediaCommand, this, _1, _2, _3));
 
+			RegisterCommandCode("heossetmode", boost::bind(&CWebServer::Cmd_HEOSSetMode, this, _1, _2, _3));
+			RegisterCommandCode("heosmediacommand", boost::bind(&CWebServer::Cmd_HEOSMediaCommand, this, _1, _2, _3));
+			
 			RegisterCommandCode("bleboxsetmode", boost::bind(&CWebServer::Cmd_BleBoxSetMode, this, _1, _2, _3));
 			RegisterCommandCode("bleboxgetnodes", boost::bind(&CWebServer::Cmd_BleBoxGetNodes, this, _1, _2, _3));
 			RegisterCommandCode("bleboxaddnode", boost::bind(&CWebServer::Cmd_BleBoxAddNode, this, _1, _2, _3));
@@ -1089,6 +1093,9 @@ namespace http {
 			else if (htype == HTYPE_BleBox) {
 				//all fine here!
 			}
+			else if (htype == HTYPE_HEOS) {
+				//all fine here!
+			}
 			else if (
 				(htype == HTYPE_Wunderground) ||
 				(htype == HTYPE_ForecastIO) ||
@@ -1206,6 +1213,11 @@ namespace http {
 				mode1 = 30;
 				mode2 = 1000;
 			}
+			else if (htype == HTYPE_HEOS)
+			{
+				mode1 = 30;
+				mode2 = 1000;
+			}			
 
 			m_sql.safe_query(
 				"INSERT INTO Hardware (Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) VALUES ('%q',%d, %d,'%q',%d,'%q','%q','%q','%q',%d,%d,%d,%d,%d,%d,%d)",
@@ -1354,6 +1366,9 @@ namespace http {
 				//all fine here!
 			}
 			else if (htype == HTYPE_BleBox) {
+				//All fine here
+			}
+			else if (htype == HTYPE_HEOS) {
 				//All fine here
 			}
 			else if (
@@ -4525,6 +4540,16 @@ namespace http {
 									ii++;
 								}
 								if (type == HTYPE_LogitechMediaServer) {
+									root["result"][ii]["val"] = NTYPE_PLAYING;
+									root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_PLAYING, 0);
+									root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_PLAYING, 1);
+									ii++;
+									root["result"][ii]["val"] = NTYPE_STOPPED;
+									root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_STOPPED, 0);
+									root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_STOPPED, 1);
+									ii++;
+								}
+								if (type == HTYPE_HEOS) {
 									root["result"][ii]["val"] = NTYPE_PLAYING;
 									root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_PLAYING, 0);
 									root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_PLAYING, 1);
