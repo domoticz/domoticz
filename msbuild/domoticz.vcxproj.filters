@@ -438,6 +438,9 @@
     <Filter Include="Devices\Daikin">
       <UniqueIdentifier>{19bcf044-e47f-4459-a3e6-398c54c73413}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\HEOS">
+      <UniqueIdentifier>{43faa747-76f8-47a8-a90b-ebcb30a1f72e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -1897,6 +1900,9 @@
     <ClInclude Include="..\hardware\Daikin.h">
       <Filter>Devices\Daikin</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\HEOS.h">
+      <Filter>Devices\HEOS</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2486,6 +2492,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\Daikin.cpp">
       <Filter>Devices\Daikin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\HEOS.cpp">
+      <Filter>Devices\HEOS</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

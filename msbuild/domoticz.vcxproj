@@ -434,6 +434,7 @@
     <ClInclude Include="..\hardware\Gpio.h" />
     <ClInclude Include="..\hardware\GpioPin.h" />
     <ClInclude Include="..\hardware\HarmonyHub.h" />
+    <ClInclude Include="..\hardware\HEOS.h" />
     <ClInclude Include="..\hardware\HttpPoller.h" />
     <ClInclude Include="..\hardware\I2C.h" />
     <ClInclude Include="..\hardware\ICYThermostat.h" />
@@ -649,6 +650,7 @@
     <ClCompile Include="..\hardware\Gpio.cpp" />
     <ClCompile Include="..\hardware\GpioPin.cpp" />
     <ClCompile Include="..\hardware\HarmonyHub.cpp" />
+    <ClCompile Include="..\hardware\HEOS.cpp" />
     <ClCompile Include="..\hardware\HttpPoller.cpp" />
     <ClCompile Include="..\hardware\I2C.cpp" />
     <ClCompile Include="..\hardware\ICYThermostat.cpp" />
