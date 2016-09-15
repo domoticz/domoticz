@@ -653,7 +653,7 @@ define(['app'], function (app) {
                      }
                 });
             }
-			else if (text.indexOf("HEOS") >= 0)
+			else if (text.indexOf("HEOS by DENON") >= 0)
             {
                 var address=$("#hardwarecontent #divremote #tcpaddress").val();
                 if (address=="")
@@ -1088,7 +1088,7 @@ define(['app'], function (app) {
 				(text.indexOf("KMTronic") >= 0) ||
 				(text.indexOf("MQTT") >= 0) ||
 				(text.indexOf("Logitech Media Server") >= 0) ||
-				(text.indexOf("HEOS") >= 0) ||
+				(text.indexOf("HEOS by DENON") >= 0) ||
 				(text.indexOf("Razberry") >= 0)
 				)
             {
@@ -4365,8 +4365,8 @@ define(['app'], function (app) {
                     else if (HwTypeStr.indexOf("Logitech Media Server") >= 0) {
                         HwTypeStr += ' <span class="label label-info lcursor" onclick="EditLMS(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2 + ',' + item.Mode3 + ',' + item.Mode4 + ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Setup") + '</span>';
                     }
-                    else if (HwTypeStr.indexOf("HEOS") >= 0) {
-                        HwTypeStr += ' <span class="label label-info lcursor" onclick="EditHEOS(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2 + ',' + item.Mode3 + ',' + item.Mode4 + ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Setup") + '</span>';
+                    else if (HwTypeStr.indexOf("HEOS by DENON") >= 0) {
+                        HwTypeStr += ' <span class="label label-info lcursor" onclick="EditHEOS by DENON(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2 + ',' + item.Mode3 + ',' + item.Mode4 + ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Setup") + '</span>';
                     }
                     else if (HwTypeStr.indexOf("Dummy") >= 0) {
                         HwTypeStr+=' <span class="label label-info lcursor" onclick="CreateDummySensors(' + item.idx + ',\'' + item.Name + '\');">' + $.t("Create Virtual Sensors") + '</span>';
@@ -4558,7 +4558,7 @@ define(['app'], function (app) {
                                 $("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked",data["Mode2"]==0);
                             }
                         }
-                        else if (((data["Type"].indexOf("LAN") >= 0) && (data["Type"].indexOf("YouLess") >= 0)) || (data["Type"].indexOf("Domoticz") >= 0) || (data["Type"].indexOf("Denkovi") >= 0) ||(data["Type"].indexOf("Harmony") >= 0) ||(data["Type"].indexOf("Satel") >= 0) ||(data["Type"].indexOf("Logitech Media Server") >= 0)) ||(data["Type"].indexOf("HEOS") >= 0)) {
+                        else if (((data["Type"].indexOf("LAN") >= 0) && (data["Type"].indexOf("YouLess") >= 0)) || (data["Type"].indexOf("Domoticz") >= 0) || (data["Type"].indexOf("Denkovi") >= 0) ||(data["Type"].indexOf("Harmony") >= 0) ||(data["Type"].indexOf("Satel") >= 0) ||(data["Type"].indexOf("Logitech Media Server") >= 0)) ||(data["Type"].indexOf("HEOS by DENON") >= 0)) {
                             $("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
                             $("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
                             $("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
@@ -4618,7 +4618,7 @@ define(['app'], function (app) {
 							(data["Type"].indexOf("HTTP") >= 0)||
                             (data["Type"].indexOf("Thermosmart") >= 0) ||
 							(data["Type"].indexOf("Logitech Media Server") >= 0) ||
-							(data["Type"].indexOf("HEOS") >= 0) ||
+							(data["Type"].indexOf("HEOS by DENON") >= 0) ||
 							(data["Type"].indexOf("Razberry") >= 0) ||
 							(data["Type"].indexOf("Comm5") >= 0)
                             )
@@ -4862,7 +4862,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divlogin").show();
                 $("#hardwarecontent #hardwareparamsremote #tcpport").val(9000);
             }
-            else if (text.indexOf("HEOS") >= 0)
+            else if (text.indexOf("HEOS by DENON") >= 0)
             {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").show();
