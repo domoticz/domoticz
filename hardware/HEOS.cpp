@@ -836,19 +836,20 @@ namespace http {
 			root["title"] = "HEOSMediaCommand";
 
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT DS.SwitchType, H.Type, H.ID FROM DeviceStatus DS, Hardware H WHERE (DS.ID=='%q') AND (DS.HardwareID == H.ID)", sIdx.c_str());
+			result = m_sql.safe_query("SELECT DS.SwitchType, DS.DeviceID, H.Type, H.ID FROM DeviceStatus DS, Hardware H WHERE (DS.ID=='%q') AND (DS.HardwareID == H.ID)", sIdx.c_str());
 			if (result.size() == 1)
 			{
 				_eSwitchType	sType = (_eSwitchType)atoi(result[0][0].c_str());
-				_eHardwareTypes	hType = (_eHardwareTypes)atoi(result[0][1].c_str());
-				int HwID = atoi(result[0][2].c_str());
+				int PlayerID = atoi(result[0][1]..c_str());
+				_eHardwareTypes	hType = (_eHardwareTypes)atoi(result[0][2].c_str());
+				int HwID = atoi(result[0][3].c_str());
 				// Is the device a media Player?
 				if (sType == STYPE_Media)
 				{
 					switch (hType) {
 					case HTYPE_HEOS:
 						CHEOS HEOS(HwID);
-						HEOS.SendCommand(idx, sAction);
+						HEOS.SendCommand(sAction, PlayerId);
 						break;
 						// put other players here ...
 					}
