@@ -4558,7 +4558,7 @@ define(['app'], function (app) {
                                 $("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked",data["Mode2"]==0);
                             }
                         }
-                        else if (((data["Type"].indexOf("LAN") >= 0) && (data["Type"].indexOf("YouLess") >= 0)) || (data["Type"].indexOf("Domoticz") >= 0) || (data["Type"].indexOf("Denkovi") >= 0) ||(data["Type"].indexOf("Harmony") >= 0) ||(data["Type"].indexOf("Satel") >= 0) ||(data["Type"].indexOf("Logitech Media Server") >= 0)) ||(data["Type"].indexOf("HEOS by DENON") >= 0)) {
+                        else if (((data["Type"].indexOf("LAN") >= 0) && (data["Type"].indexOf("YouLess") >= 0)) || (data["Type"].indexOf("Domoticz") >= 0) || (data["Type"].indexOf("Denkovi") >= 0) ||(data["Type"].indexOf("Harmony") >= 0) ||(data["Type"].indexOf("Satel") >= 0) ||(data["Type"].indexOf("Logitech Media Server") >= 0) ||(data["Type"].indexOf("HEOS by DENON") >= 0)) {
                             $("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
                             $("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
                             $("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
