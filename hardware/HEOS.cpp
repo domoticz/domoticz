@@ -226,15 +226,16 @@ void CHEOS::handleConnect()
 			m_iMissedPongs = 0;
 			std::string sPort = std::to_string(m_Port);
 			boost::system::error_code ec;
-			boost::asio::ip::tcp::resolver resolver(*m_Ios);
+			boost::asio::io_service io_service;
+			boost::asio::ip::tcp::resolver resolver(io_service);
 			boost::asio::ip::tcp::resolver::query query(m_IP, sPort);
 			boost::asio::ip::tcp::resolver::iterator iter = resolver.resolve(query);
 			boost::asio::ip::tcp::endpoint endpoint = *iter;
-			m_Socket = new boost::asio::ip::tcp::socket(*m_Ios);
+			m_Socket = new boost::asio::ip::tcp::socket(io_service);
 			m_Socket->connect(endpoint, ec);
 			if (!ec)
 			{
-				_log.Log(LOG_NORM, "HEOS by DENON: Connected to '%s:%s'.", m_IP.c_str(), sPort);
+				_log.Log(LOG_NORM, "HEOS by DENON: Connected to '%s:%s'.", m_IP.c_str(), sPort.c_str());
 				m_Socket->async_read_some(boost::asio::buffer(m_Buffer, sizeof m_Buffer), boost::bind(&CHEOS::handleRead, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
 				// Disable registration for change events following HEOS Controller advise
 				handleWrite(std::string("heos://system/register_for_change_events?enable=off"));
@@ -256,7 +257,12 @@ void CHEOS::handleConnect()
 				delete m_Socket;
 				m_Socket = NULL;
 			}
+		} 
+		else
+		{
+			_log.Log(LOG_NORM, "HEOS by DENON: Handle Connect, not connected");
 		}
+
 	}
 	catch (std::exception& e)
 	{
@@ -657,6 +663,7 @@ bool CHEOS::StartHardware()
 
 	//Start worker thread
 	m_stoprequested = false;
+	m_Socket = NULL;
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CHEOS::Do_Work, this)));
 
 	return (m_thread != NULL);
