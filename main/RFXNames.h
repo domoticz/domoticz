@@ -166,6 +166,7 @@ enum _eHardwareTypes {
 	HTYPE_GoodweAPI,			//84
 	HTYPE_RaspberryTSL2561,		//85
 	HTYPE_Daikin,				//86
+	HTYPE_HEOS,					//87
 	HTYPE_END
 };
 
