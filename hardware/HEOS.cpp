@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "HEOS.h"
-#include <boost/lexical_cast.hpp>
 #include "../hardware/hardwaretypes.h"
 #include "../main/Helper.h"
 #include "../main/Logger.h"
@@ -11,67 +10,46 @@
 #include "../main/localtime_r.h"
 #include "../main/EventSystem.h"
 #include "../webserver/cWebem.h"
-#include <boost/algorithm/string.hpp>
 
 #include <iostream>
 
 #define DEBUG_LOGGING true
 
-CHEOS::CHEOS(const int ID, const std::string &IPAddress, const int Port, const std::string &User, const std::string &Pwd, const int PollIntervalsec, const int PingTimeoutms) : 
+CHEOS::CHEOS(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &User, const std::string &Pwd, const int PollIntervalsec, const int PingTimeoutms) : 
 m_IP(IPAddress),
 m_User(User),
-m_Pwd(Pwd),
-m_stoprequested(false),
-m_iThreadsRunning(0)
+m_Pwd(Pwd)
 {
 	m_HwdID = ID;
-	m_Port = Port;
-	m_bShowedStartupMessage = false;
-	m_iMissedQueries = 0;
+	m_bDoRestart = false;
+	m_stoprequested = false;
+	m_usIPPort = usIPPort;
+	m_retrycntr = RETRY_DELAY;
 	SetSettings(PollIntervalsec, PingTimeoutms);
-}
-
-CHEOS::CHEOS(const int ID) : m_stoprequested(false), m_iThreadsRunning(0)
-{
-	m_HwdID = ID;
-	m_IP = "";
-	m_Port = 0;
-	m_User = "";
-	m_Pwd = "";
-	m_bShowedStartupMessage = false;
-	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Address, Port, Username, Password FROM Hardware WHERE ID==%d", m_HwdID);
-
-	if (result.size() > 0)
-	{
-		m_IP = result[0][0];
-		m_Port = atoi(result[0][1].c_str());
-		m_User = result[0][2];
-		m_Pwd = result[0][3];
-	}
-
-	SetSettings(10, 3000);
 }
 
 CHEOS::~CHEOS(void)
 {
-	m_bIsStarted = false;
 }
 
-void CHEOS::handleMessage(std::string& pMessage)
+void CHEOS::ParseLine()
 {
+	if (m_bufferpos<2)
+		return;
+	std::string sLine((char*)&m_buffer);
+
 	try
 	{
 		Json::Reader jReader;
 		Json::Value root;
-		std::string	sMessage;
-		std::stringstream ssMessage;
 
-		if (DEBUG_LOGGING) _log.Log(LOG_NORM, "DENON by HEOS: Handling message: '%s'.", pMessage.c_str());
-		bool	bRetVal = jReader.parse(pMessage, root);
+		if (DEBUG_LOGGING) _log.Log(LOG_NORM, "DENON by HEOS: Handling message: '%s'.", sLine.c_str());
+		
+		bool bRetVal = jReader.parse(sLine, root);
+		
 		if (!bRetVal)
 		{
-			_log.Log(LOG_ERROR, "DENON by HEOS: PARSE ERROR: '%s'", pMessage.c_str());
+			_log.Log(LOG_ERROR, "DENON by HEOS: PARSE ERROR: '%s'", sLine.c_str());
 		}
 		else
 		{
@@ -217,135 +195,6 @@ void CHEOS::handleMessage(std::string& pMessage)
 	}
 }
 
-void CHEOS::handleConnect()
-{
-	try
-	{
-		if (!m_stoprequested && !m_Socket)
-		{
-			m_iMissedPongs = 0;
-			std::string sPort = std::to_string(m_Port);
-			boost::system::error_code ec;
-			boost::asio::io_service io_service;
-			boost::asio::ip::tcp::resolver resolver(io_service);
-			boost::asio::ip::tcp::resolver::query query(m_IP, sPort);
-			boost::asio::ip::tcp::resolver::iterator iter = resolver.resolve(query);
-			boost::asio::ip::tcp::endpoint endpoint = *iter;
-			m_Socket = new boost::asio::ip::tcp::socket(io_service);
-			m_Socket->connect(endpoint, ec);
-			if (!ec)
-			{
-				_log.Log(LOG_NORM, "HEOS by DENON: Connected to '%s:%s'.", m_IP.c_str(), sPort.c_str());
-				m_Socket->async_read_some(boost::asio::buffer(m_Buffer, sizeof m_Buffer), boost::bind(&CHEOS::handleRead, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
-				// Disable registration for change events following HEOS Controller advise
-				handleWrite(std::string("heos://system/register_for_change_events?enable=off"));
-			}
-			else
-			{
-				if ((DEBUG_LOGGING) ||
-					(
-						(ec.value() != 113) &&
-						(ec.value() != 111) &&
-						(ec.value() != 10060) &&
-						(ec.value() != 10061) &&
-						(ec.value() != 10064)
-						)
-					) // Connection failed due to no response, no route or active refusal
-				{
-					_log.Log(LOG_NORM, "HEOS by DENON: Connect to '%s:%s' failed: (%d) %s", m_IP.c_str(), sPort, ec.value(), ec.message().c_str());
-				}
-				delete m_Socket;
-				m_Socket = NULL;
-			}
-		} 
-		else
-		{
-			_log.Log(LOG_NORM, "HEOS by DENON: Handle Connect, not connected");
-		}
-
-	}
-	catch (std::exception& e)
-	{
-		_log.Log(LOG_ERROR, "HEOS by DENON: Exception: '%s' connecting to '%s'", e.what(), m_IP.c_str());
-	}
-}
-
-void CHEOS::handleRead(const boost::system::error_code& e, std::size_t bytes_transferred)
-{
-	if (!e)
-	{
-		//Start reading and processing the data
-		std::string sData(m_Buffer.begin(), bytes_transferred);
-		sData = m_RetainedData + sData;  // if there was some data left over from last time add it back in
-		int iPos = 1;
-		while (iPos) {
-			iPos = sData.find("}{", 0) + 1;		//  Look for message a separator in case there is more than one
-			if (!iPos) // no, just one or part of one
-			{
-				if ((sData.substr(sData.length()-1, 1) == "}") &&
-					(std::count(sData.begin(), sData.end(), '{') == std::count(sData.begin(), sData.end(), '}'))) // whole message so process
-				{
-					handleMessage(sData);
-					sData = "";
-				}
-			}
-			else  // more than one message so process the first one
-			{
-				std::string sMessage = sData.substr(0, iPos);
-				sData = sData.substr(iPos);
-				handleMessage(sMessage);
-			}
-		}
-		m_RetainedData = sData;
-
-		//ready for next read
-		if (!m_stoprequested && m_Socket)
-			m_Socket->async_read_some(	boost::asio::buffer(m_Buffer, sizeof m_Buffer),
-										boost::bind(&CHEOS::handleRead, 
-										this,
-										boost::asio::placeholders::error,
-										boost::asio::placeholders::bytes_transferred));
-	}
-	else
-	{
-		if (e.value() != 1236)		// Local disconnect caused by hardware reload
-		{
-			if ((e.value() != 2) && (e.value() != 121))	// Semaphore time-out expiry or end of file aka 'lost contact'
-				_log.Log(LOG_ERROR, "HEOS by DENON: Async Read Exception: %d, %s", e.value(), e.message().c_str());
-			handleDisconnect();
-		}
-	}
-}
-
-void CHEOS::handleWrite(std::string pMessage)
-{
-	if (!m_stoprequested) {
-		if (m_Socket)
-		{
-			if (DEBUG_LOGGING) _log.Log(LOG_NORM, "HEOS by DENON: Sending data: '%s'", pMessage.c_str());
-			m_Socket->write_some(boost::asio::buffer(pMessage.c_str(), pMessage.length()));
-			m_sLastMessage = pMessage;
-		}
-		else 
-		{
-			_log.Log(LOG_ERROR, "HEOS by DENON: Data not sent to NULL socket: '%s'", pMessage.c_str());
-		}
-	}
-}
-
-void CHEOS::handleDisconnect()
-{
-	if (m_Socket)
-	{
-		_log.Log(LOG_NORM, "HEOS by DENON: Disconnected");
-		boost::system::error_code	ec;
-		m_Socket->shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
-		m_Socket->close();
-		delete m_Socket;
-		m_Socket = NULL;
-	}
-}
-
 void CHEOS::SendCommand(const std::string &command)
 {
 	std::stringstream ssMessage;
@@ -395,9 +244,8 @@ void CHEOS::SendCommand(const std::string &command)
 	
 	if (sMessage.length())
 	{
-		if (m_Socket != NULL)
+		if (WriteInt((const unsigned char*)&sMessage, (const unsigned char)strlen(sMessage)))
 		{
-			handleWrite(sMessage);
 			if (systemCall)
 			{
 				if (DEBUG_LOGGING) _log.Log(LOG_NORM, "HEOS by DENON: Sent command: '%s'.", sMessage.c_str());	
@@ -405,11 +253,7 @@ void CHEOS::SendCommand(const std::string &command)
 			else
 			{
 				_log.Log(LOG_NORM, "HEOS by DENON: Sent command: '%s'.", sMessage.c_str());				
-			}				
-		}
-		else
-		{
-			_log.Log(LOG_NORM, "HEOS by DENON: Command not sent, HEOS is not connected: '%s'.", sMessage.c_str());
+			} 			
 		}
 	}
 	else
@@ -548,9 +392,8 @@ void CHEOS::SendCommand(const std::string &command, const int iValue)
 	
 	if (sMessage.length())
 	{
-		if (m_Socket != NULL)
+		if (WriteInt((const unsigned char*)&sMessage, (const unsigned char)strlen(sMessage)))
 		{
-			handleWrite(sMessage);
 			if (systemCall)
 			{
 				if (DEBUG_LOGGING) _log.Log(LOG_NORM, "HEOS by DENON: Sent command: '%s'.", sMessage.c_str());	
@@ -558,11 +401,7 @@ void CHEOS::SendCommand(const std::string &command, const int iValue)
 			else
 			{
 				_log.Log(LOG_NORM, "HEOS by DENON: Sent command: '%s'.", sMessage.c_str());				
-			}				
-		}
-		else
-		{
-			_log.Log(LOG_NORM, "HEOS by DENON: Command not sent, HEOS is not connected: '%s'.", sMessage.c_str());
+			} 			
 		}
 	}
 	else
@@ -573,67 +412,59 @@ void CHEOS::SendCommand(const std::string &command, const int iValue)
 
 void CHEOS::Do_Work()
 {
-	m_Busy = true;
-	int mcounter = 0;
-	int scounter = 0;
-	bool bFirstTime = true;
 
 	_log.Log(LOG_STATUS, "HEOS by DENON: Worker started...");
-
+	
 	ReloadNodes();
-
+	
+	bool bFirstTime=true;
+	int sec_counter = 25;
 	while (!m_stoprequested)
 	{
-		sleep_milliseconds(500);		
-		mcounter++;
+		sleep_seconds(1);
+		sec_counter++;
 
-		if (!m_Socket)
-		{
-			handleConnect();
+		if (sec_counter % 12 == 0) {
+			m_LastHeartbeat=mytime(NULL);
 		}
-		
-		if (mcounter == 2)
+
+		if (bFirstTime)
 		{
-			mcounter = 0;
-			scounter++;
-			if ((scounter >= m_iPollInterval) || (bFirstTime))
+			bFirstTime=false;
+			connect(m_IP,m_usIPPort);
+			if (mIsConnected)
 			{
-
-				scounter = 0;
-				bFirstTime = false;
-
 				SendCommand("getPlayers");
-
-				std::vector<HEOSNode>::const_iterator itt;
-				for (itt = m_nodes.begin(); itt != m_nodes.end(); ++itt)
+			}
+		}
+		else
+		{
+			if ((m_bDoRestart) && (sec_counter % 30 == 0))
+			{
+				connect(m_IP,m_usIPPort);
+			}
+			update();
+			if (mIsConnected)
+			{
+				if (sec_counter % 30 == 0)//updates every 30 seconds
 				{
-					if (m_stoprequested)
-						return;
-					if (m_iThreadsRunning < 1000)
+					bFirstTime=false;
+					std::vector<HEOSNode>::const_iterator itt;
+					for (itt = m_nodes.begin(); itt != m_nodes.end(); ++itt)
 					{
-						m_iThreadsRunning++;
-						SendCommand("getPlayState", itt->DevID);
+						if (m_stoprequested)
+							return;
+						if (m_iThreadsRunning < 1000)
+						{
+							m_iThreadsRunning++;
+							SendCommand("getPlayState", itt->DevID);
+						}
 					}
 				}
 			}
-			else
-			{
-				if(m_iMissedQueries > 5)
-				{
-						_log.Log(LOG_NORM, "HEOS by DENON Missed 5 commands, assumed off.");
-						boost::system::error_code	ec;
-						m_Socket->shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
-						continue;
-				};
-			}
-			
 		}
 	}
-
-	m_Busy = false;
-	delete m_Socket;
-	m_Socket = NULL;
-
+	
 	_log.Log(LOG_STATUS, "HEOS by DENON: Worker stopped...");
 	
 }
@@ -653,47 +484,129 @@ _eNotificationTypes	CHEOS::NotificationType(_eMediaStatus nStatus)
 
 bool CHEOS::StartHardware()
 {
-	StopHardware();
-	m_bIsStarted = true;
-	sOnConnected(this);
-	m_iThreadsRunning = 0;
-	m_bShowedStartupMessage = false;
+	m_stoprequested=false;
+	m_bDoRestart=false;
 
-	StartHeartbeatThread();
+	//force connect the next first time
+	m_retrycntr=RETRY_DELAY;
+	m_bIsStarted=true;
 
 	//Start worker thread
-	m_stoprequested = false;
-	m_Socket = NULL;
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CHEOS::Do_Work, this)));
-
-	return (m_thread != NULL);
+	return (m_thread!=NULL);
 }
 
 bool CHEOS::StopHardware()
 {
-	StopHeartbeatThread();
-
+	m_stoprequested=true;
+	if (isConnected())
+	{
+		try {
+			disconnect();
+		}
+		catch (...)
+		{
+			//Don't throw from a Stop command
+		}
+	}
 	try {
 		if (m_thread)
 		{
-			m_stoprequested = true;
 			m_thread->join();
-			m_thread.reset();
-
-			//Make sure all our background workers are stopped
-			int iRetryCounter = 0;
-			while ((m_iThreadsRunning > 0) && (iRetryCounter<15))
-			{
-				sleep_milliseconds(500);
-				iRetryCounter++;
-			}
 		}
 	}
 	catch (...)
 	{
 		//Don't throw from a Stop command
 	}
-	m_bIsStarted = false;
+	
+	m_bIsStarted=false;
+	return true;
+}
+
+void CHEOS::OnConnect()
+{
+	_log.Log(LOG_STATUS, "HEOS by DENON: Connected to: %s:%ld", m_IP.c_str(), m_usIPPort);
+	m_bDoRestart=false;
+	m_bIsStarted=true;
+	m_bufferpos=0;
+	sOnConnected(this);
+}
+
+void CHEOS::OnDisconnect()
+{
+	_log.Log(LOG_STATUS, "HEOS by DENON: Disconnected");
+}
+
+void CHEOS::OnData(const unsigned char *pData, size_t length)
+{
+	boost::lock_guard<boost::mutex> l(readQueueMutex);
+	ParseData(pData,length);
+}
+
+void CHEOS::OnError(const std::exception e)
+{
+	_log.Log(LOG_ERROR, "HEOS by DENON: Error: %s",e.what());
+}
+
+void CHEOS::OnError(const boost::system::error_code& error)
+{
+	if (
+		(error == boost::asio::error::address_in_use) ||
+		(error == boost::asio::error::connection_refused) ||
+		(error == boost::asio::error::access_denied) ||
+		(error == boost::asio::error::host_unreachable) ||
+		(error == boost::asio::error::timed_out)
+		)
+	{
+		_log.Log(LOG_ERROR, "HEOS by DENON: Can not connect to: %s:%ld", m_IP.c_str(), m_usIPPort);
+	}
+	else if (
+		(error == boost::asio::error::eof) ||
+		(error == boost::asio::error::connection_reset)
+		)
+	{
+		_log.Log(LOG_STATUS, "HEOS by DENON: Connection reset!");
+	}
+	else
+		_log.Log(LOG_ERROR, "HEOS by DENON: %s", error.message().c_str());
+}
+
+void CHEOS::ParseData(const unsigned char *pData, int Len)
+{
+	int ii=0;
+	while (ii<Len)
+	{
+		const unsigned char c = pData[ii];
+		if(c == 0x0d)
+		{
+			ii++;
+			continue;
+		}
+
+		if(c == 0x0a || m_bufferpos == sizeof(m_buffer) - 1)
+		{
+			// discard newline, close string, parse line and clear it.
+			if(m_bufferpos > 0) m_buffer[m_bufferpos] = 0;
+			ParseLine();
+			m_bufferpos = 0;
+		}
+		else
+		{
+			m_buffer[m_bufferpos] = c;
+			m_bufferpos++;
+		}
+		ii++;
+	}
+}
+
+bool CHEOS::WriteInt(const unsigned char *pData, const unsigned char Len)
+{
+	if (!mIsConnected)
+	{
+		return false;
+	}
+	write(pData, Len);
 	return true;
 }
 
@@ -763,12 +676,6 @@ void CHEOS::SetSettings(const int PollIntervalsec, const int PingTimeoutms)
 		m_iPollInterval = PollIntervalsec;
 	if ((PingTimeoutms / 1000 < m_iPollInterval) && (PingTimeoutms != 0))
 		m_iPingTimeoutms = PingTimeoutms;
-}
-
-void CHEOS::Restart()
-{
-	StopHardware();
-	StartHardware();
 }
 
 bool CHEOS::WriteToHardware(const char *pdata, const unsigned char length)
