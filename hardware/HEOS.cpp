@@ -13,7 +13,7 @@
 
 #include <iostream>
 
-#define DEBUG_LOGGING false
+#define DEBUG_LOGGING true
 #define RETRY_DELAY 30
 
 CHEOS::CHEOS(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &User, const std::string &Pwd, const int PollIntervalsec, const int PingTimeoutms) : 
@@ -161,7 +161,6 @@ void CHEOS::ParseLine()
 										std::string sLabel = "";
 										std::string	sStatus = "";
 										std::string pid = SplitMessage[1];
-										if (DEBUG_LOGGING) _log.Log(LOG_NORM, "DENON by HEOS: Debug: '%s'.", pid.c_str());
 
 										if (root.isMember("payload"))
 										{
@@ -308,19 +307,19 @@ void CHEOS::SendCommand(const std::string &command, const int iValue)
 		systemCall = true;
 	}
 	
-	if (command == "setPlayStatePlay")
+	if (command == "setPlayStatePlay" || command == "play")
 	{
 		ssMessage << "heos://player/set_play_state?pid=" << iValue << "&state=play";
 		sMessage = ssMessage.str();
 	}
 	
-	if (command == "setPlayStatePause")
+	if (command == "setPlayStatePause" || command == "pause")
 	{
 		ssMessage << "heos://player/set_play_state?pid=" << iValue << "&state=pause";
 		sMessage = ssMessage.str();
 	}
 	
-	if (command == "setPlayStateStop")
+	if (command == "setPlayStateStop" || command == "stop")
 	{
 		ssMessage << "heos://player/set_play_state?pid=" << iValue << "&state=stop";
 		sMessage = ssMessage.str();
@@ -415,7 +414,8 @@ void CHEOS::SendCommand(const std::string &command, const int iValue)
 	}
 	
 	/* Process */
-	
+	if (DEBUG_LOGGING) _log.Log(LOG_NORM, "DENON by HEOS: Debug: '%s'.", sMessage.c_str());
+
 	if (sMessage.length())
 	{
 		if (WriteInt(sMessage))
@@ -428,6 +428,10 @@ void CHEOS::SendCommand(const std::string &command, const int iValue)
 			{
 				_log.Log(LOG_NORM, "HEOS by DENON: Sent command: '%s'.", sMessage.c_str());				
 			} 			
+		}
+		else
+		{
+			if (DEBUG_LOGGING) _log.Log(LOG_NORM, "HEOS by DENON: Not Connected - Message not sent: '%s'.", sMessage.c_str());
 		}
 	}
 	else
@@ -837,6 +841,8 @@ namespace http {
 
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT DS.SwitchType, DS.DeviceID, H.Type, H.ID FROM DeviceStatus DS, Hardware H WHERE (DS.ID=='%q') AND (DS.HardwareID == H.ID)", sIdx.c_str());
+
+
 			if (result.size() == 1)
 			{
 				_eSwitchType	sType = (_eSwitchType)atoi(result[0][0].c_str());
@@ -848,8 +854,12 @@ namespace http {
 				{
 					switch (hType) {
 					case HTYPE_HEOS:
-						CHEOS HEOS(HwID);
-						HEOS.SendCommand(sAction, PlayerID);
+						CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByIDType(result[0][3].c_str(), HTYPE_HEOS);
+						if (pBaseHardware == NULL)
+							return;
+						CHEOS *pHEOS = reinterpret_cast<CHEOS*>(pBaseHardware);
+
+						pHEOS->SendCommand(sAction, PlayerID);
 						break;
 						// put other players here ...
 					}
