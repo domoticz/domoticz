@@ -13,7 +13,8 @@
 
 #include <iostream>
 
-#define DEBUG_LOGGING true
+#define DEBUG_LOGGING false
+#define RETRY_DELAY 30
 
 CHEOS::CHEOS(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &User, const std::string &Pwd, const int PollIntervalsec, const int PingTimeoutms) : 
 m_IP(IPAddress),
@@ -26,6 +27,27 @@ m_Pwd(Pwd)
 	m_usIPPort = usIPPort;
 	m_retrycntr = RETRY_DELAY;
 	SetSettings(PollIntervalsec, PingTimeoutms);
+}
+
+CHEOS::CHEOS(const int ID) : m_stoprequested(false)
+{
+	m_HwdID = ID;
+	m_IP = "";
+	m_usIPPort = 0;
+	m_User = "";
+	m_Pwd = "";
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT Address, Port, Username, Password FROM Hardware WHERE ID==%d", m_HwdID);
+
+	if (result.size() > 0)
+	{
+		m_IP = result[0][0];
+		m_usIPPort = atoi(result[0][1].c_str());
+		m_User = result[0][2];
+		m_Pwd = result[0][3];
+	}
+
+	SetSettings(10, 3000);
 }
 
 CHEOS::~CHEOS(void)
@@ -67,19 +89,22 @@ void CHEOS::ParseLine()
 								
 							}
 							else if (root["heos"]["command"] == "player/get_players")
-							{
+							{		
 								if (root.isMember("payload"))
 								{
-									for( Json::ValueIterator itr = root["payload"].begin() ; itr != root["payload"].end() ; itr++ ) {
-										std::string key = itr.key().asString();
+									int key = 0;
+									for( Json::ValueIterator itr = root["payload"].begin() ; itr != root["payload"].end() ; itr++ ) {		
+
 										if (root["payload"][key].isMember("name") && root["payload"][key].isMember("pid"))
 										{
-											AddNode(root["payload"][key]["name"].asString(), root["payload"][key]["pid"].asString());
+											std::string pid = std::to_string(root["payload"][key]["pid"].asInt());
+											AddNode(root["payload"][key]["name"].asCString(), pid);
 										}
 										else
 										{
 											if (DEBUG_LOGGING) _log.Log(LOG_NORM, "DENON by HEOS: No players found.");
 										}
+										key++;
 									}
 								}
 								else
@@ -120,7 +145,7 @@ void CHEOS::ParseLine()
 										/* If playing request now playing information */
 										if (state == "play") {
 											int PlayerID = atoi(pid.c_str());
-											SendCommand("player/get_now_playing_media", PlayerID);
+											SendCommand("getNowPlaying", PlayerID);
 										}
 									}
 								}
@@ -136,8 +161,9 @@ void CHEOS::ParseLine()
 										std::string sLabel = "";
 										std::string	sStatus = "";
 										std::string pid = SplitMessage[1];
+										if (DEBUG_LOGGING) _log.Log(LOG_NORM, "DENON by HEOS: Debug: '%s'.", pid.c_str());
 
-										if (root["heos"].isMember("payload"))
+										if (root.isMember("payload"))
 										{
 												
 											std::string	sTitle = "";
@@ -244,7 +270,7 @@ void CHEOS::SendCommand(const std::string &command)
 	
 	if (sMessage.length())
 	{
-		if (WriteInt((const unsigned char*)&sMessage, (const unsigned char)strlen(sMessage)))
+		if (WriteInt(sMessage))
 		{
 			if (systemCall)
 			{
@@ -392,7 +418,7 @@ void CHEOS::SendCommand(const std::string &command, const int iValue)
 	
 	if (sMessage.length())
 	{
-		if (WriteInt((const unsigned char*)&sMessage, (const unsigned char)strlen(sMessage)))
+		if (WriteInt(sMessage))
 		{
 			if (systemCall)
 			{
@@ -418,6 +444,7 @@ void CHEOS::Do_Work()
 	ReloadNodes();
 	
 	bool bFirstTime=true;
+	bool bCheckedForPlayers=false;
 	int sec_counter = 25;
 	while (!m_stoprequested)
 	{
@@ -432,10 +459,6 @@ void CHEOS::Do_Work()
 		{
 			bFirstTime=false;
 			connect(m_IP,m_usIPPort);
-			if (mIsConnected)
-			{
-				SendCommand("getPlayers");
-			}
 		}
 		else
 		{
@@ -446,19 +469,18 @@ void CHEOS::Do_Work()
 			update();
 			if (mIsConnected)
 			{
+				if (!bCheckedForPlayers)
+				{
+					SendCommand("getPlayers");
+					bCheckedForPlayers = true;
+				}
 				if (sec_counter % 30 == 0)//updates every 30 seconds
 				{
 					bFirstTime=false;
 					std::vector<HEOSNode>::const_iterator itt;
 					for (itt = m_nodes.begin(); itt != m_nodes.end(); ++itt)
 					{
-						if (m_stoprequested)
-							return;
-						if (m_iThreadsRunning < 1000)
-						{
-							m_iThreadsRunning++;
-							SendCommand("getPlayState", itt->DevID);
-						}
+						SendCommand("getPlayState", itt->DevID);
 					}
 				}
 			}
@@ -600,6 +622,7 @@ void CHEOS::ParseData(const unsigned char *pData, int Len)
 	}
 }
 
+/*
 bool CHEOS::WriteInt(const unsigned char *pData, const unsigned char Len)
 {
 	if (!mIsConnected)
@@ -607,6 +630,17 @@ bool CHEOS::WriteInt(const unsigned char *pData, const unsigned char Len)
 		return false;
 	}
 	write(pData, Len);
+	return true;
+}
+*/
+
+bool CHEOS::WriteInt(const std::string &sendStr)
+{
+	if (!mIsConnected)
+	{
+		return false;
+	}
+	write((const unsigned char*)sendStr.c_str(), sendStr.size());
 	return true;
 }
 
@@ -789,7 +823,6 @@ namespace http {
 
 			m_sql.safe_query("UPDATE Hardware SET Mode1=%d, Mode2=%d WHERE (ID == '%q')", iMode1, iMode2, hwid.c_str());
 			pHardware->SetSettings(iMode1, iMode2);
-			pHardware->Restart();
 		}
 	
 		void CWebServer::Cmd_HEOSMediaCommand(WebEmSession & session, const request& req, Json::Value &root)

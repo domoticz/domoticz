@@ -4,12 +4,12 @@
 
 #include <deque>
 #include <iostream>
-#include "ASyncTCP.h">
+#include "ASyncTCP.h"
 #include <string>
 #include <vector>
 #include "../json/json.h"
 
-class CHEOS : public CDomoticzHardwareBase
+class CHEOS : public CDomoticzHardwareBase, ASyncTCP
 {
 	struct HEOSNode
 	{
@@ -25,6 +25,7 @@ class CHEOS : public CDomoticzHardwareBase
 public:
 
 	CHEOS(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &User, const std::string &Pwd, const int PollIntervalsec, const int PingTimeoutms);
+	explicit CHEOS(const int ID);
 	~CHEOS(void);
 	
 	bool WriteToHardware(const char *pdata, const unsigned char length);
@@ -46,7 +47,14 @@ private:
 	int m_retrycntr;
 	bool StartHardware();
 	bool StopHardware();
-	bool WriteInt(const unsigned char *pData, const unsigned char Len);
+	//bool WriteInt(const unsigned char *pData, const unsigned char Len);
+	bool WriteInt(const std::string &sendStr);
+
+	int m_iPollInterval;
+	int m_iPingTimeoutms;
+	std::string	m_IP;
+	std::string m_User;
+	std::string m_Pwd;
 	
 protected:
 	std::string m_szIPAddress;
