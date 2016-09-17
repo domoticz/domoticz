@@ -76,7 +76,7 @@ void CHEOS::ParseLine()
 
 										if (root["payload"][key].isMember("name") && root["payload"][key].isMember("pid"))
 										{
-											std::string pid = std::to_string(root["payload"][key]["pid"].asInt());
+											std::string pid = boost::to_string(root["payload"][key]["pid"].asInt());
 											AddNode(root["payload"][key]["name"].asCString(), pid);
 										}
 										else
@@ -181,7 +181,7 @@ void CHEOS::ParseLine()
 					{
 						if (root["heos"].isMember("command"))
 						{
-							if (DEBUG_LOGGING) _log.Log(LOG_NORM, "DENON by HEOS: Failed: '%s'.", root["heos"]["command"]);	
+							if (DEBUG_LOGGING) _log.Log(LOG_NORM, "DENON by HEOS: Failed: '%s'.", root["heos"]["command"].asCString());
 						}	
 					}
 				}
