@@ -495,7 +495,7 @@ void CDomoticzHardwareBase::SendUsageSensor(const int NodeID, const int ChildID,
 	sDecodeRXMessage(this, (const unsigned char *)&umeter, defaultname.c_str(), BatteryLevel);
 }
 
-void CDomoticzHardwareBase::SendSwitchIfNotExists(const int NodeID, const int ChildID, const int BatteryLevel, const bool bOn, const unsigned char Level, const std::string &defaultname)
+void CDomoticzHardwareBase::SendSwitchIfNotExists(const int NodeID, const int ChildID, const int BatteryLevel, const bool bOn, const double Level, const std::string &defaultname)
 {
 	//make device ID
 	unsigned char ID1 = (unsigned char)((NodeID & 0xFF000000) >> 24);
@@ -514,8 +514,11 @@ void CDomoticzHardwareBase::SendSwitchIfNotExists(const int NodeID, const int Ch
 	}
 }
 
-void CDomoticzHardwareBase::SendSwitch(const int NodeID, const int ChildID, const int BatteryLevel, const bool bOn, const unsigned char Level, const std::string &defaultname)
+void CDomoticzHardwareBase::SendSwitch(const int NodeID, const int ChildID, const int BatteryLevel, const bool bOn, const double Level, const std::string &defaultname)
 {
+	double rlevel = (16.0 / 100.0)*Level;
+	int level = int(rlevel);
+
 	//make device ID
 	unsigned char ID1 = (unsigned char)((NodeID & 0xFF000000) >> 24);
 	unsigned char ID2 = (unsigned char)((NodeID & 0xFF0000) >> 16);
@@ -539,7 +542,7 @@ void CDomoticzHardwareBase::SendSwitch(const int NodeID, const int ChildID, cons
 		{
 			//Check Level
 			int slevel = atoi(result[0][2].c_str());
-			if (slevel == Level)
+			if (slevel == level)
 				return;
 		}
 	}
@@ -561,12 +564,12 @@ void CDomoticzHardwareBase::SendSwitch(const int NodeID, const int ChildID, cons
 	}
 	else
 	{
-		if (Level!=0)
+		if (level!=0)
 			lcmd.LIGHTING2.cmnd = light2_sSetLevel;
 		else
 			lcmd.LIGHTING2.cmnd = light2_sOn;
 	}
-	lcmd.LIGHTING2.level = Level;
+	lcmd.LIGHTING2.level = level;
 	lcmd.LIGHTING2.filler = 0;
 	lcmd.LIGHTING2.rssi = 12;
 	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), BatteryLevel);

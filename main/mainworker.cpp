@@ -10329,6 +10329,8 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 					level = (level > 100) ? 100 : level;
 				}
 			}
+			else
+				level = (level > 15) ? 15 : level;
 
 			lcmd.LIGHTING2.level=(unsigned char)level;
 			//Special Teach-In for EnOcean Dimmers
