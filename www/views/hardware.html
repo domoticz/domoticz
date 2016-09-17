@@ -730,6 +730,33 @@
     <input type="hidden" id="idx" name="idx" value="-1">
 </div>
 
+<div id="heos" style="display:none;">
+    <div class="page-header-small">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+            <tr>
+                <td>
+                    <h1 data-i18n="Settings">Settings</h1>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <table class="display" id="heossettingstable" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+            <td align="right" style="width:110px"><label for="pollinterval"><span data-i18n="Poll Interval"></span>:</label></td>
+            <td><input type="text" id="pollinterval" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;(<span data-i18n="Seconds">Seconds</span>)</td>
+        </tr>
+        <tr>
+            <td align="right" style="width:110px"><label for="pingtimeout"><span data-i18n="Ping Timeout"></span>:</label></td>
+            <td><input type="text" id="pingtimeout" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;(<span data-i18n="Milliseconds"></span>)</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><a class="btn-danger sub-tabs-apply" onclick="SetHEOSSettings();" data-i18n="Apply Settings">Apply Settings</a></td>
+        </tr>
+    </table>
+    <input type="hidden" id="idx" name="idx" value="-1">
+</div>
+
 <div id="rfxhardwaremode" style="display:none;">
 <center>
 <form id="settings">

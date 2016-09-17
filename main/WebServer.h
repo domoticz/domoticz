@@ -242,7 +242,9 @@ private:
 	void Cmd_PanasonicMediaCommand(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_AddMobileDevice(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DeleteMobileDevice(WebEmSession & session, const request& req, Json::Value &root);
-
+	void Cmd_HEOSSetMode(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_HEOSMediaCommand(WebEmSession & session, const request& req, Json::Value &root);
+	
 	void Cmd_BleBoxSetMode(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_BleBoxGetNodes(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_BleBoxAddNode(WebEmSession & session, const request& req, Json::Value &root);

@@ -102,6 +102,7 @@
 #include "../hardware/OpenWeatherMap.h"
 #include "../hardware/GoodweAPI.h"
 #include "../hardware/Daikin.h"
+#include "../hardware/HEOS.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -782,6 +783,10 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_DenkoviSmartdenLan:
 		//LAN
 		pHardware = new CDenkoviSmartdenLan(ID, Address, Port, Password);
+		break;
+	case HTYPE_HEOS:
+		//HEOS by DENON
+		pHardware = new CHEOS(ID, Address, Port, Username, Password, Mode1, Mode2);
 		break;
 #ifndef WIN32
 	case HTYPE_TE923:
