@@ -18,6 +18,7 @@ namespace Plugins {
 
 	enum ePluginMessageType {
 		PMT_Start = 0,
+		PMT_Directive,
 		PMT_Connected,
 		PMT_Read,
 		PMT_Write,
@@ -27,53 +28,25 @@ namespace Plugins {
 		PMT_Stop
 	};
 
+	enum ePluginDirectiveType {
+		PMT_Debug = 0,
+		PMT_Transport,
+		PMT_Protocol
+	};
+
 	class CPluginMessage
 	{
 	public:
 		CPluginMessage(ePluginMessageType Type, int HwdID, std::string& Message);
+		CPluginMessage(ePluginMessageType Type, ePluginDirectiveType dType, int HwdID, std::string& Message);
+		CPluginMessage(ePluginMessageType Type, ePluginDirectiveType dType, int HwdID);
 		CPluginMessage(ePluginMessageType Type, int HwdID);
 		~CPluginMessage(void) {};
 	
-		ePluginMessageType	m_Type;
-		int					m_HwdID;
-		std::string			m_Message;
-	};
-
-	class CPluginBase : public boost::enable_shared_from_this<CPluginBase>
-	{
-	private:
-		int				m_HwdID;
-
-	public:
-		CPluginBase(const int);
-		~CPluginBase(void);
-
-		int				m_ID;
-		int				m_DevID;
-
-	protected:
-		bool			m_stoprequested;
-		bool			m_Busy;
-		bool			m_Stoppable;
-
-	private:
-		void			handleConnect() {};
-		void			handleRead(const boost::system::error_code&, std::size_t) {};
-		void			handleWrite(std::string) {};
-		void			handleDisconnect() {};
-		void			handleMessage(std::string&) {};
-
-		char			m_szDevID[40];
-		std::string		m_IP;
-		std::string		m_Port;
-
-		int				m_iTimeoutCnt;
-		int				m_iPollIntSec;
-		int				m_iMissedPongs;
-		std::string		m_sLastMessage;
-		boost::asio::io_service *m_Ios;
-		boost::asio::ip::tcp::socket *m_Socket;
-		boost::array<char, 256> m_Buffer;
+		ePluginMessageType		m_Type;
+		ePluginDirectiveType	m_Directive;
+		int						m_HwdID;
+		std::string				m_Message;
 	};
 
 	class CPlugin : public CDomoticzHardwareBase
@@ -84,10 +57,10 @@ namespace Plugins {
 		int					m_iPollInterval;
 		int					m_iPingTimeoutms;
 
-		CPluginBase*		m_pPluginDevice;
-
 		PyThreadState*		m_PyInterpreter;
 		PyObject*			m_PyModule;
+
+		bool				m_bDebug;
 
 		bool StartHardware();
 		void Do_Work();

@@ -12,6 +12,7 @@
 #include "../hardware/hardwaretypes.h"
 #include <boost/algorithm/string.hpp>
 #include <iostream>
+#include "Include/structmember.h"
 
 #define MINIMUM_PYTHON_VERSION "3.5.1"
 
@@ -47,10 +48,6 @@
 
 extern std::string szUserDataFolder;
 
-struct module_state {
-	PyObject *error;
-};
-
 #define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
 
 namespace Plugins {
@@ -58,6 +55,10 @@ namespace Plugins {
 	boost::mutex PythonMutex;	// only used during startup when multiple threads could use Python
 	boost::mutex PluginMutex;	// controls accessto the message queue
 	std::queue<CPluginMessage>	PluginMessageQueue;
+
+	struct module_state {
+		PyObject *error;
+	};
 
 	static PyObject*	PyDomoticz_Log(PyObject *self, PyObject *args)
 	{
@@ -72,27 +73,51 @@ namespace Plugins {
 
 	static PyObject*	PyDomoticz_Debug(PyObject *self, PyObject *args)
 	{
-		int type;
-		if (!PyArg_ParseTuple(args, "i", &type))
+		int		HwdID;
+		int		type;
+		if (!PyArg_ParseTuple(args, "ii", &HwdID, &type))
 			return NULL;
+		CPluginMessage	Message(PMT_Directive, PMT_Debug, HwdID, std::string(type ? "true" : "false"));
+		{
+			boost::lock_guard<boost::mutex> l(PluginMutex);
+			PluginMessageQueue.push(Message);
+		}
 		Py_INCREF(Py_None);
 		return Py_None;
 	}
 
 	static PyObject*	PyDomoticz_Transport(PyObject *self, PyObject *args)
 	{
-		char* msg;
-		if (!PyArg_ParseTuple(args, "s", &msg))
+		int		HwdID;
+		char*	szTransport;
+		if (!PyArg_ParseTuple(args, "is", &HwdID, &szTransport))
 			return NULL;
+		//	Add start command to message queue
+		std::string	sTransport = szTransport;
+		CPluginMessage	Message(PMT_Directive, PMT_Transport, HwdID, sTransport);
+		{
+			boost::lock_guard<boost::mutex> l(PluginMutex);
+			PluginMessageQueue.push(Message);
+		}
+
 		Py_INCREF(Py_None);
 		return Py_None;
 	}
 
 	static PyObject*	PyDomoticz_Protocol(PyObject *self, PyObject *args)
 	{
-		char* msg;
-		if (!PyArg_ParseTuple(args, "s", &msg))
+		int		HwdID;
+		char*	szProtocol;
+		if (!PyArg_ParseTuple(args, "is", &HwdID, &szProtocol))
 			return NULL;
+		//	Add start command to message queue
+		std::string	sProtocol = szProtocol;
+		CPluginMessage	Message(PMT_Directive, PMT_Protocol, HwdID, sProtocol);
+		{
+			boost::lock_guard<boost::mutex> l(PluginMutex);
+			PluginMessageQueue.push(Message);
+		}
+
 		Py_INCREF(Py_None);
 		return Py_None;
 	}
@@ -132,6 +157,127 @@ namespace Plugins {
 		return PyModule_Create(&moduledef);
 	}
 
+	typedef struct {
+		PyObject_HEAD
+		int			ID;
+		PyObject*	Name;
+		int			nValue;
+		PyObject*	sValue;
+	} CDevice;
+
+	static void CDevice_dealloc(CDevice* self)
+	{
+		Py_XDECREF(self->Name);
+		Py_XDECREF(self->sValue);
+		Py_TYPE(self)->tp_free((PyObject*)self);
+	}
+
+	static PyObject* CDevice_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+	{
+		// Domoticz.Device objects should not be created in Python
+		return NULL;
+	}
+
+	static int CDevice_init(CDevice *self, PyObject *args, PyObject *kwds)
+	{
+		// Domoticz.Device objects should not be initialised in Python
+		return -1;
+	}
+
+	static PyMemberDef CDevice_members[] = {
+		{ "ID",		T_INT,		offsetof(CDevice, ID),		READONLY, "Domoticz internal ID" },
+		{ "Name",	T_OBJECT,	offsetof(CDevice, Name),	READONLY, "Name" },
+		{ "nValue", T_INT,		offsetof(CDevice, nValue), READONLY, "Numeric device value" },
+		{ "sValue", T_OBJECT,	offsetof(CDevice, sValue), READONLY, "String device value" },
+		{ NULL }  /* Sentinel */
+	};
+
+	static PyObject* CDevice_refresh(CDevice* self)
+	{
+		return NULL;
+	}
+
+	static PyObject* CDevice_str(CDevice* self)
+	{
+		PyObject*	pNameBytes = PyUnicode_AsASCIIString(self->Name);
+		PyObject*	pValueBytes = PyUnicode_AsASCIIString(self->sValue);
+		PyObject*	pRetVal = PyUnicode_FromFormat("ID: %d, Name: '%s', nValue: %d, sValue: '%s'", self->ID, PyBytes_AsString(pNameBytes), self->nValue, PyBytes_AsString(pValueBytes));
+		Py_DECREF(pNameBytes);
+		Py_DECREF(pValueBytes);
+		return pRetVal;
+	}
+
+	static PyMethodDef CDevice_methods[] = {
+		{ "Refresh", (PyCFunction)CDevice_refresh, METH_NOARGS, "Refresh details"},
+		{ NULL }  /* Sentinel */
+	};
+
+	static PyTypeObject CDeviceType = {
+		PyVarObject_HEAD_INIT(NULL, 0)
+		"Domoticz.Device",             /* tp_name */
+		sizeof(CDevice),             /* tp_basicsize */
+		0,                         /* tp_itemsize */
+		(destructor)CDevice_dealloc, /* tp_dealloc */
+		0,                         /* tp_print */
+		0,                         /* tp_getattr */
+		0,                         /* tp_setattr */
+		0,                         /* tp_reserved */
+		0,                         /* tp_repr */
+		0,                         /* tp_as_number */
+		0,                         /* tp_as_sequence */
+		0,                         /* tp_as_mapping */
+		0,                         /* tp_hash  */
+		0,                         /* tp_call */
+		(reprfunc)CDevice_str,     /* tp_str */
+		0,                         /* tp_getattro */
+		0,                         /* tp_setattro */
+		0,                         /* tp_as_buffer */
+		Py_TPFLAGS_DEFAULT |
+		Py_TPFLAGS_BASETYPE,   /* tp_flags */
+		"Domoticz Internal Device instance",           /* tp_doc */
+		0,                         /* tp_traverse */
+		0,                         /* tp_clear */
+		0,                         /* tp_richcompare */
+		0,                         /* tp_weaklistoffset */
+		0,                         /* tp_iter */
+		0,                         /* tp_iternext */
+		CDevice_methods,             /* tp_methods */
+		CDevice_members,             /* tp_members */
+		0,                         /* tp_getset */
+		0,                         /* tp_base */
+		0,                         /* tp_dict */
+		0,                         /* tp_descr_get */
+		0,                         /* tp_descr_set */
+		0,                         /* tp_dictoffset */
+		(initproc)CDevice_init,      /* tp_init */
+		0,                         /* tp_alloc */
+		CDevice_new,                 /* tp_new */
+	};
+
+	static PyModuleDef CDevice_module = {
+		PyModuleDef_HEAD_INIT,
+		"Device",
+		"Domoticz Device",
+		-1,
+		NULL, NULL, NULL, NULL, NULL
+	};
+
+	PyMODINIT_FUNC PyInit_CDevice(void)
+	{
+		PyObject* m;
+
+		if (PyType_Ready(&CDeviceType) < 0)
+			return NULL;
+
+		m = PyModule_Create(&CDevice_module);
+		if (m == NULL)
+			return NULL;
+
+		Py_INCREF(&CDeviceType);
+		PyModule_AddObject(m, "CDevice", (PyObject *)&CDeviceType);
+		return m;
+	}
+
 	CPluginMessage::CPluginMessage(ePluginMessageType Type, int HwdID, std::string & Message)
 	{
 		m_Type = Type;
@@ -139,25 +285,25 @@ namespace Plugins {
 		m_Message = Message;
 	}
 
+	CPluginMessage::CPluginMessage(ePluginMessageType Type, ePluginDirectiveType dType, int HwdID, std::string & Message)
+	{
+		m_Type = Type;
+		m_Directive = dType;
+		m_HwdID = HwdID;
+		m_Message = Message;
+	}
+
+	CPluginMessage::CPluginMessage(ePluginMessageType Type, ePluginDirectiveType dType, int HwdID)
+	{
+		m_Type = Type;
+		m_Directive = dType;
+		m_HwdID = HwdID;
+	}
+
 	CPluginMessage::CPluginMessage(ePluginMessageType Type, int HwdID)
 	{
 		m_Type = Type;
 		m_HwdID = HwdID;
-	}
-
-	CPluginBase::CPluginBase(const int HwdID)
-	{
-		m_stoprequested = false;
-		m_Busy = false;
-		m_Stoppable = false;
-
-		m_HwdID = HwdID;
-
-	}
-
-	CPluginBase::~CPluginBase(void)
-	{
-		handleDisconnect();
 	}
 
 	CPlugin::CPlugin(const int HwdID, const std::string &sName, const std::string &sPluginKey) : m_stoprequested(false)
@@ -168,8 +314,8 @@ namespace Plugins {
 
 		m_iPollInterval = 10;
 
-		m_pPluginDevice = NULL;
 		m_bIsStarted = false;
+		m_bDebug = false;
 
 		m_PyInterpreter = NULL;
 		m_PyModule = NULL;
@@ -196,7 +342,6 @@ namespace Plugins {
 		m_PyModule = PyImport_ImportModule(m_PluginKey.c_str());
 		if (!m_PyModule)
 		{
-			PyErr_Print();
 			_log.Log(LOG_ERROR, "CPlugin: Plugin: '%s' failed to load, Path '%S'.", m_PluginKey.c_str(), Py_GetPath());
 			return false;
 		}
@@ -242,12 +387,6 @@ namespace Plugins {
 				m_thread->join();
 				m_thread.reset();
 			}
-
-			if (m_pPluginDevice)
-			{
-				delete m_pPluginDevice;
-				m_pPluginDevice = NULL;
-			}
 		}
 		catch (...)
 		{
@@ -272,6 +411,13 @@ namespace Plugins {
 				_log.Log(LOG_ERROR, "CPlugin: Plugin: '%s' failed to add Parameters dictionary.", m_PluginKey.c_str());
 			}
 			Py_DECREF(pParamsDict);
+
+			PyObject*	pObj = Py_BuildValue("i", m_HwdID);
+			if (PyDict_SetItemString(pParamsDict, "HardwareID", pObj) == -1)
+			{
+				_log.Log(LOG_ERROR, "CPlugin: Plugin: '%s' failed to add key 'HardwareID', value '%s' to dictionary.", m_HwdID);
+			}
+			Py_DECREF(pObj);
 
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT Name, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6 FROM Hardware WHERE (ID==%d)", m_HwdID);
@@ -304,27 +450,38 @@ namespace Plugins {
 			}
 
 			// load associated devices to make them available to python
-//			std::vector<std::vector<std::string> > result2;
-//			result2 = m_sql.safe_query("SELECT ID, Unit, Name, Used, Type, SubType, SwitchType, nValue, sValue, LastUpdate, AddjValue, AddjMulti, AddjValue2, AddjMulti2, StrParam1, StrParam2, LastLevel FROM DeviceStatus WHERE (HardwareID==%d) ORDER BY Unit ASC", m_HwdID);
-//			if (result2.size() > 0)
-//			{
-				// create a vector to hold the nodes
-//				for (std::vector<std::vector<std::string> >::const_iterator itt = result2.begin(); itt != result2.end(); ++itt)
-//				{
-//					std::vector<std::string> sd = *itt;
-//					boost::shared_ptr<CKodiNode>	pNode = (boost::shared_ptr<CKodiNode>) new CKodiNode(&m_ios, m_HwdID, m_iPollInterval, m_iPingTimeoutms, sd[0], sd[1], sd[2], sd[3]);
-//					m_pNodes.push_back(pNode);
-//				}
-///			}
+			std::vector<std::vector<std::string> > result2;
+			result2 = m_sql.safe_query("SELECT Unit, ID, Name, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Used==1) ORDER BY Unit ASC", m_HwdID);
+			if (result2.size() > 0)
+			{
+				PyType_Ready(&CDeviceType);
+				// Add device objects into the device dictionary with Unit as the key
+				for (std::vector<std::vector<std::string> >::const_iterator itt = result2.begin(); itt != result2.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
+					CDevice* pDevice = (CDevice*)PyObject_New(CDevice, &CDeviceType);
+
+					PyObject*	pKey = PyLong_FromLong(atoi(sd[0].c_str()));
+					if (PyDict_SetItem(pDevicesDict, pKey, (PyObject*)pDevice) == -1)
+					{
+							_log.Log(LOG_ERROR, "CPlugin: Plugin: '%s' failed to add unit '%s' to device dictionary.", sd[0].c_str());
+					}
+					pDevice->ID = atoi(sd[1].c_str());
+					pDevice->Name = PyUnicode_FromString(sd[2].c_str());
+					pDevice->nValue = atoi(sd[3].c_str());
+					pDevice->sValue = PyUnicode_FromString(sd[4].c_str());
+					Py_DECREF(pDevice);
+				}
+			}
 
 			Py_DECREF(pDevicesDict);
 		}
 
 		//	Add start command to message queue
-		CPluginMessage	StartMessage(PMT_Start, m_HwdID);
+		CPluginMessage	Message(PMT_Start, m_HwdID);
 		{
 			boost::lock_guard<boost::mutex> l(PluginMutex);
-			PluginMessageQueue.push(StartMessage);
+			PluginMessageQueue.push(Message);
 		}
 
 		m_LastHeartbeat = mytime(NULL);
@@ -334,10 +491,10 @@ namespace Plugins {
 			if (scounter++ >= (m_iPollInterval * 2))
 			{
 				//	Add heartbeat to message queue
-				CPluginMessage	StartMessage(PMT_Heartbeat, m_HwdID);
+				CPluginMessage	Message(PMT_Heartbeat, m_HwdID);
 				{
 					boost::lock_guard<boost::mutex> l(PluginMutex);
-					PluginMessageQueue.push(StartMessage);
+					PluginMessageQueue.push(Message);
 				}
 				scounter = 0;
 
@@ -365,6 +522,23 @@ namespace Plugins {
 		case PMT_Start:
 			sHandler = "onStart";
 			break;
+		case PMT_Directive:
+			switch (Message.m_Directive)
+			{
+			case PMT_Debug:
+				(Message.m_Message == "true") ? m_bDebug = true : m_bDebug = false;
+				_log.Log(LOG_NORM, "Plugin: '%s': Debug log level set to: '%s'.", m_PluginKey.c_str(), Message.m_Message.c_str());
+				return;
+			case PMT_Transport:
+				if (m_bDebug) _log.Log(LOG_NORM, "Plugin: '%s': Transport set to: '%s'.", m_PluginKey.c_str(), Message.m_Message.c_str());
+				return;
+			case PMT_Protocol:
+				if (m_bDebug) _log.Log(LOG_NORM, "Plugin: '%s': Protocol set to: '%s'.", m_PluginKey.c_str(), Message.m_Message.c_str());
+				return;
+			default:
+				_log.Log(LOG_ERROR, "Plugin: '%s': Unknown directive type in message: %d.", m_PluginKey.c_str(), Message.m_Directive);
+				return;
+			}
 		case PMT_Connected:
 			sHandler = "onConnected";
 			break;
@@ -391,13 +565,26 @@ namespace Plugins {
 		PyObject*	pFunc = PyObject_GetAttrString(m_PyModule, sHandler.c_str());
 		if (pFunc && PyCallable_Check(pFunc))
 		{
-			_log.Log(LOG_NORM, "Plugin: '%s': Calling message handler '%s'.", m_PluginKey.c_str(), sHandler.c_str());
+			if (m_bDebug) _log.Log(LOG_NORM, "Plugin: '%s': Calling message handler '%s'.", m_PluginKey.c_str(), sHandler.c_str());
 
 			PyErr_Clear();
 			PyObject*	pValue = PyObject_CallFunction(pFunc, NULL);
 			if (!pValue)
 			{
-				_log.Log(LOG_ERROR, "Plugin: '%s': Call to message handler '%s' returned NULL (failure).", m_PluginKey.c_str(), sHandler.c_str());
+//				PyObject *ptype, *pvalue, *ptraceback;
+//				PyErr_Fetch(&ptype, &pvalue, &ptraceback);
+//				PyTracebackObject* traceback = ptraceback;
+//				PyFrame_GetLineNumber();  // need to iclude frameobject.h to get this
+//				if (pvalue)
+//				{
+//					Py_ssize_t size = PyBytes_Size(pvalue);
+//					char* msg = PyBytes_AsString(pvalue);
+//					_log.Log(LOG_ERROR, "Plugin: '%s': Call to message handler '%s' failed with error '%s'.", m_PluginKey.c_str(), sHandler.c_str(), msg);
+//				}
+//				else
+//				{
+					_log.Log(LOG_ERROR, "Plugin: '%s': Call to message handler '%s' failed.", m_PluginKey.c_str(), sHandler.c_str());
+//				}
 			}
 			else
 			{
@@ -587,8 +774,6 @@ namespace Plugins {
 		{
 			while (!PluginMessageQueue.empty())
 			{
-				boost::lock_guard<boost::mutex> l(PluginMutex);
-
 				CPluginMessage Message = PluginMessageQueue.front();
 				if (!m_pPlugins.count(Message.m_HwdID))
 				{
@@ -600,6 +785,7 @@ namespace Plugins {
 					pPlugin->HandleMessage(Message);
 				}
 
+				boost::lock_guard<boost::mutex> l(PluginMutex);
 				PluginMessageQueue.pop();
 			}
 			sleep_milliseconds(50);
