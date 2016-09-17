@@ -101,6 +101,7 @@
 #include "../hardware/Ec3kMeterTCP.h"
 #include "../hardware/OpenWeatherMap.h"
 #include "../hardware/GoodweAPI.h"
+#include "../hardware/Daikin.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -822,6 +823,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_Netatmo:
 		pHardware = new CNetatmo(ID,Username,Password);
+		break;
+	case HTYPE_Daikin:
+		pHardware = new CDaikin(ID, Address, Port, Username, Password);
 		break;
 #ifdef _DEBUG
 	case HTYPE_FITBIT:

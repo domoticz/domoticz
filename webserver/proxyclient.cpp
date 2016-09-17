@@ -97,7 +97,7 @@ namespace http {
 
 		void CProxyClient::ContinueConnect(const boost::system::error_code& error)
 		{
-			std::string address = "my.domoticz.com";
+			std::string address = "myproxy.domoticz.com";
 			std::string port = "9999";
 
 			_socket.reset(new boost::asio::ssl::stream<boost::asio::ip::tcp::socket>(_io_service, _context));

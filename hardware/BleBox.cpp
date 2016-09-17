@@ -9,14 +9,15 @@
 #include "../main/SQLHelper.h"
 #include "../httpclient/HTTPClient.h"
 
-#define TOT_TYPE 4
+#define TOT_TYPE 5
 
 const _STR_DEVICE DevicesType[TOT_TYPE] =
 { 
 	{ 0, "switchBox", "Switch Box",int(pTypeLighting2), int(sTypeAC), int(STYPE_OnOff), "relay" },
 	{ 1, "shutterBox", "Shutter Box", int(pTypeLighting2), int(sTypeAC), int(STYPE_BlindsPercentageInverted), "shutter" },
 	{ 2, "wLightBoxS", "Light Box S", int(pTypeLighting2), int(sTypeAC), int(STYPE_Dimmer), "light" },
-	{ 3, "wLightBox", "Light Box", int(pTypeLimitlessLights), int(sTypeLimitlessRGBW), int(STYPE_Dimmer), "rgbw" }
+	{ 3, "wLightBox", "Light Box", int(pTypeLimitlessLights), int(sTypeLimitlessRGBW), int(STYPE_Dimmer), "rgbw" },
+	{ 4, "gateBox", "Gate Box", int(pTypeLighting2), int(sTypeAC), int(STYPE_Dimmer), "gate" }
 };
 
 int BleBox::GetDeviceTypeByApiName(const std::string &apiName)
@@ -184,6 +185,19 @@ void BleBox::GetDevicesState()
 					SendRGBWSwitch(node, itt->second, 255, hexNumber, true, DevicesType[itt->second].name);
 					break;
 				}
+				case 4:
+				{
+					if (root["currentPos"].empty() == true)
+					{
+						_log.Log(LOG_ERROR, "BleBox: node 'currentPos' missing!");
+						break;
+					}
+					const int currentPos = root["currentPos"].asInt();
+					int level = (int)(currentPos / (255.0 / 100.0));
+
+					SendSwitch(node, itt->second, 255, level > 0, level, DevicesType[itt->second].name);
+					break;
+				}
 			}
 			SetHeartbeatReceived();
 		}
@@ -208,19 +222,12 @@ std::string BleBox::GetDeviceRevertIP(const tRBUF *id)
 
 std::string BleBox::GetDeviceIP(const std::string &id)
 {
-	const char *pos = id.c_str();
 	BYTE id1, id2, id3, id4;
 	char ip[20];
 
-	sscanf(pos, "%2hhx", &id1);
-	pos += 2;
-	sscanf(pos, "%2hhx", &id2);
-	pos += 2;
-	sscanf(pos, "%2hhx", &id3);
-	pos += 2;
-	sscanf(pos, "%2hhx", &id4);
-
+	sscanf(id.c_str(), "%2hhx%2hhx%2hhx%2hhx", &id1, &id2, &id3, &id4);
 	sprintf(ip, "%d.%d.%d.%d", id1, id2, id3, id4);
+
 	return ip;
 }
 
@@ -430,7 +437,7 @@ namespace http {
 			root["title"] = "BleBoxGetNodes";
 
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT ID,Name,DeviceID FROM DeviceStatus WHERE (HardwareID=='%d')", pBaseHardware->m_HwdID);
+			result = m_sql.safe_query("SELECT ID,Name,DeviceID,Unit FROM DeviceStatus WHERE (HardwareID=='%d')", pBaseHardware->m_HwdID);
 			if (result.size() > 0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
@@ -439,9 +446,15 @@ namespace http {
 				{
 					std::vector<std::string> sd = *itt;
 
+					BYTE id1, id2, id3, id4;
+					char ip[20];
+					sscanf(sd[2].c_str(), "%2hhx%2hhx%2hhx%2hhx", &id1, &id2, &id3, &id4);
+					sprintf(ip, "%d.%d.%d.%d", id1, id2, id3, id4);
+
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
-					root["result"][ii]["IP"] = sd[2];
+					root["result"][ii]["IP"] = ip;
+					root["result"][ii]["Type"] = DevicesType[atoi(sd[3].c_str())].name;
 					ii++;
 				}
 			}

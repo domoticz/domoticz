@@ -8,8 +8,8 @@
   <!-- COMMAND_CLASS_SENSOR_ALARM not supported -->
   <CommandClass id="156" action="remove" />
 
-  <!-- COMMAND_CLASS_SWITCH_ALL SwitchAllCmd_Get not supported -->
-  <CommandClass id="39" getsupported="false" />
+  <!-- COMMAND_CLASS_SWITCH_ALL not supported -->
+  <CommandClass id="39" action="remove" />
 
   <!-- Configuration -->
   <CommandClass id="112">
