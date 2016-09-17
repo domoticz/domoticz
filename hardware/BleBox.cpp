@@ -231,7 +231,7 @@ std::string BleBox::GetDeviceIP(const std::string &id)
 	return ip;
 }
 
-std::string BleBox::IPToHex(const std::string &IPAddress)
+std::string BleBox::IPToHex(const std::string &IPAddress, const int type)
 {
 	std::vector<std::string> strarray;
 	StringSplit(IPAddress, ".", strarray);
@@ -239,8 +239,15 @@ std::string BleBox::IPToHex(const std::string &IPAddress)
 		return "";
 
 	char szIdx[10];
-	sprintf(szIdx, "%02X%02X%02X%02X", atoi(strarray[0].data()), atoi(strarray[1].data()), atoi(strarray[2].data()), atoi(strarray[3].data()));
-
+	// because exists inconsistency when comparing deviceID in method decode_xxx in mainworker(Limitless uses small letter, lighting2 etc uses capital letter)
+	if (type != pTypeLimitlessLights)
+	{ 
+		sprintf(szIdx, "%02X%02X%02X%02X", atoi(strarray[0].data()), atoi(strarray[1].data()), atoi(strarray[2].data()), atoi(strarray[3].data()));
+	}
+	else
+	{
+		sprintf(szIdx, "%02x%02x%02x%02x", atoi(strarray[0].data()), atoi(strarray[1].data()), atoi(strarray[2].data()), atoi(strarray[3].data()));
+	}
 	return szIdx;
 }
 
@@ -736,7 +743,7 @@ void BleBox::AddNode(const std::string &name, const std::string &IPAddress)
 
 	STR_DEVICE deviceType = DevicesType[deviceTypeID];
 
-	std::string szIdx = IPToHex(IPAddress);
+	std::string szIdx = IPToHex(IPAddress, deviceType.deviceID);
 
 	m_sql.safe_query(
 		"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue) "
@@ -758,7 +765,7 @@ bool BleBox::UpdateNode(const int id, const std::string &name, const std::string
 
 	STR_DEVICE deviceType = DevicesType[deviceTypeID];
 
-	std::string szIdx = IPToHex(IPAddress);
+	std::string szIdx = IPToHex(IPAddress, deviceType.deviceID);
 
 	m_sql.safe_query("UPDATE DeviceStatus SET DeviceID='%q', Unit='%d', Type='%d', SubType='%d', SwitchType='%d', Name='%q' WHERE (HardwareID=='%d') AND (ID=='%d')", 
 		szIdx.c_str(), deviceType.unit, deviceType.deviceID, deviceType.subType, deviceType.switchType, name.c_str(), m_HwdID, id);

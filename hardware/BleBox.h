@@ -48,7 +48,7 @@ private:
 	std::string GetDeviceIP(const tRBUF *id);
 	std::string GetDeviceRevertIP(const tRBUF *id);
 	std::string GetDeviceIP(const std::string &id);
-	std::string IPToHex(const std::string &IPAddress);
+	std::string IPToHex(const std::string &IPAddress, const int type);
 	Json::Value SendCommand(const std::string &IPAddress, const std::string &command);
 	void GetDevicesState();
 
