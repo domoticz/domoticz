@@ -13,7 +13,7 @@
 
 #include <iostream>
 
-#define DEBUG_LOGGING true
+#define DEBUG_LOGGING false
 #define RETRY_DELAY 30
 
 CHEOS::CHEOS(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &User, const std::string &Pwd, const int PollIntervalsec, const int PingTimeoutms) : 
@@ -27,27 +27,6 @@ m_Pwd(Pwd)
 	m_usIPPort = usIPPort;
 	m_retrycntr = RETRY_DELAY;
 	SetSettings(PollIntervalsec, PingTimeoutms);
-}
-
-CHEOS::CHEOS(const int ID) : m_stoprequested(false)
-{
-	m_HwdID = ID;
-	m_IP = "";
-	m_usIPPort = 0;
-	m_User = "";
-	m_Pwd = "";
-	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Address, Port, Username, Password FROM Hardware WHERE ID==%d", m_HwdID);
-
-	if (result.size() > 0)
-	{
-		m_IP = result[0][0];
-		m_usIPPort = atoi(result[0][1].c_str());
-		m_User = result[0][2];
-		m_Pwd = result[0][3];
-	}
-
-	SetSettings(10, 3000);
 }
 
 CHEOS::~CHEOS(void)
@@ -235,7 +214,7 @@ void CHEOS::SendCommand(const std::string &command)
 	}
 	
 	// Unregister for change events
-	if (command == "registerForEvents")
+	if (command == "unRegisterForEvents")
 	{
 		ssMessage << "heos://system/register_for_change_events?enable=off";
 		sMessage = ssMessage.str();
@@ -347,7 +326,7 @@ void CHEOS::SendCommand(const std::string &command, const int iValue)
 	
 	if (command == "setVolumeDown")
 	{
-		ssMessage << "heos://player/volume_up?pid=" << iValue << "";
+		ssMessage << "heos://player/volume_down?pid=" << iValue << "";
 		sMessage = ssMessage.str();
 	}
 	
