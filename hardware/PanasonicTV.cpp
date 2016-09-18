@@ -338,7 +338,7 @@ int CPanasonicNode::handleMessage(std::string pMessage)
 	int iPosEnd = 0;
 	std::string begin(">");
 	std::string end("<");
-	//std::string ResponseOK("HTTP/1.1 200");
+	std::string ResponseOK("HTTP/1.1 200");
 	std::string ResponseOff("HTTP/1.1 400");
 
 	if (pMessage == "ERROR" || pMessage == "")
@@ -346,6 +346,15 @@ int CPanasonicNode::handleMessage(std::string pMessage)
 		_log.Log(LOG_ERROR, "Panasonic Plugin: (%s) handleMessage passed error or empty string!", m_Name.c_str());
 		return -1;
 	}
+
+	// Look for a 200 response as this indicates that the TV was ok with last command.
+	iPosBegin = pMessage.find(ResponseOK);
+	if (iPosBegin != std::string::npos)
+	{
+		if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Panasonic Plugin: (%s) Last command response OK", m_Name.c_str());
+	}
+
+	iPosBegin = 0;
 
 	// Look for a 400 response as this indicates that the TV supports powering on.
 	iPosBegin = pMessage.find(ResponseOff);
