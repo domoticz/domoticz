@@ -21,7 +21,7 @@ bool CNotificationPushsafer::SendMessageImplementation(const std::string &Subjec
 
 	bool bRet;
 	std::string sResult;
-	std::string sPostData;
+	std::stringstream sPostData;
 	std::vector<std::string> ExtraHeaders;
 	
 	sPostData << "k=" << _apikey << "&t=" << cSubject << "&m=" << Text;
@@ -29,7 +29,7 @@ bool CNotificationPushsafer::SendMessageImplementation(const std::string &Subjec
 	//Add the required Access Token and Content Type
 	ExtraHeaders.push_back("Content-Type: application/x-www-form-urlencoded");
 	
-	bRet = HTTPClient::POST("https://www.pushsafer.com/api",sPostData,ExtraHeaders,sResult);
+	bRet = HTTPClient::POST("https://www.pushsafer.com/api",sPostData.str(),ExtraHeaders,sResult);
 	bool bSuccess = (sResult.find("\"success\":") != std::string::npos);
 	if (!bSuccess)
 		_log.Log(LOG_ERROR, "Pushsafer: %s", sResult.c_str());
