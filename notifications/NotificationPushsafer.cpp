@@ -22,6 +22,7 @@ bool CNotificationPushsafer::SendMessageImplementation(const std::string &Subjec
 	bool bRet;
 	std::string sResult;
 	std::string sPostData;
+	std::vector<std::string> ExtraHeaders;
 	
 	sPostData << "k=" << _apikey << "&t=" << cSubject << "&m=" << Text;
 
