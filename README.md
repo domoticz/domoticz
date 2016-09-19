@@ -11,7 +11,7 @@ Compatible with all recent browsers
 Some Information
 - Hardware: RFXCOM Transciever, Z-Wave, P1 Smart Meter, YouLess Meter, Pulse Counters, 1-Wire, Philips Hue and a lot more....
 - Extended logging
-- iPhone / Android push notifications
+- iPhone / Android / Windows 10 (Phone & Desktop) push notifications
 - Auto Learning sensors/switches
 - Manual creation of switch codes
 - Share / Use external devices
