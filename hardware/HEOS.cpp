@@ -91,7 +91,7 @@ void CHEOS::ParseLine()
 									if (DEBUG_LOGGING) _log.Log(LOG_NORM, "DENON by HEOS: No players found (No Payload).");
 								}
 							}
-							else if (root["heos"]["command"] == "player/get_play_state" || root["heos"]["command"] == "player/set_play_state")
+							else if (root["heos"]["command"] == "player/get_play_state" || root["heos"]["command"] == "player/set_play_state" || root["heos"]["command"] == "event/player_state_changed")
 							{
 								if (root["heos"].isMember("message"))
 								{
@@ -126,6 +126,8 @@ void CHEOS::ParseLine()
 											int PlayerID = atoi(pid.c_str());
 											SendCommand("getNowPlaying", PlayerID);
 										}
+										
+										m_lastUpdate = 0;
 									}
 								}
 							}
@@ -171,9 +173,42 @@ void CHEOS::ParseLine()
 										
 										sStatus = sLabel;
 										
-										UpdateNodesStatus(pid, sStatus);										
+										UpdateNodesStatus(pid, sStatus);
+
+										m_lastUpdate = 0;
 									}
 								}
+							}
+							else if (root["heos"]["command"] == "event/players_changed")
+							{
+								SendCommand("getPlayers");
+							}
+							else if (root["heos"]["command"] == "event/groups_changed")
+							{
+								SendCommand("getPlayers");
+							}
+							else if (root["heos"]["command"] == "event/player_now_playing_changed")
+							{
+								std::vector<std::string> SplitMessage;
+								StringSplit(root["heos"]["message"].asString(), "=", SplitMessage);
+								if (SplitMessage.size() > 0)
+								{
+									std::string pid = SplitMessage[1];
+									int PlayerID = atoi(pid.c_str());
+									SendCommand("getPlayState", PlayerID);
+								}
+							}
+							else if (root["heos"]["command"] == "event/player_mute_changed")
+							{
+
+							}
+							else if (root["heos"]["command"] == "event/repeat_mode_changed")
+							{
+
+							}
+							else if (root["heos"]["command"] == "event/shuffle_mode_changed")
+							{
+
 							}
 						}
 					}
@@ -429,10 +464,13 @@ void CHEOS::Do_Work()
 	bool bFirstTime=true;
 	bool bCheckedForPlayers=false;
 	int sec_counter = 25;
+	m_lastUpdate = 25;
+
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
 		sec_counter++;
+		m_lastUpdate++;
 
 		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat=mytime(NULL);
@@ -454,10 +492,13 @@ void CHEOS::Do_Work()
 			{
 				if (!bCheckedForPlayers)
 				{
+					// Update all players and groups
 					SendCommand("getPlayers");
 					bCheckedForPlayers = true;
+					// Enable event changes
+					SendCommand("registerForEvents");
 				}
-				if (sec_counter % 30 == 0)//updates every 30 seconds
+				if (sec_counter % 30 == 0 && m_lastUpdate >= 30)//updates every 30 seconds
 				{
 					bFirstTime=false;
 					std::vector<HEOSNode>::const_iterator itt;
@@ -715,8 +756,12 @@ bool CHEOS::WriteToHardware(const char *pdata, const unsigned char length)
 			switch (pSen->LIGHTING2.cmnd)
 			{
 			case light2_sOn:
+				SendCommand("setPlayStatePlay", itt->DevID);
+				return true;
 			case light2_sGroupOn:
 			case light2_sOff:
+				SendCommand("setPlayStateStop", itt->DevID);
+				return true;
 			case light2_sGroupOff:
 			case gswitch_sPlay:
 				SendCommand("getNowPlaying", itt->DevID);
