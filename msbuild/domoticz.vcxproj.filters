@@ -441,6 +441,9 @@
     <Filter Include="Devices\HEOS">
       <UniqueIdentifier>{43faa747-76f8-47a8-a90b-ebcb30a1f72e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\MultiFun">
+      <UniqueIdentifier>{61f9e7d0-4204-474d-b953-b8d55b281296}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -1638,7 +1641,7 @@
     </ClInclude>
     <ClInclude Include="..\notifications\NotificationPushsafer.h">
       <Filter>Notifications</Filter>
-    </ClInclude>	
+    </ClInclude>
     <ClInclude Include="..\notifications\NotificationSMS.h">
       <Filter>Notifications</Filter>
     </ClInclude>
@@ -1905,6 +1908,9 @@
     </ClInclude>
     <ClInclude Include="..\hardware\HEOS.h">
       <Filter>Devices\HEOS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\MultiFun.h">
+      <Filter>Devices\MultiFun</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2201,7 +2207,7 @@
     </ClCompile>
     <ClCompile Include="..\notifications\NotificationPushsafer.cpp">
       <Filter>Notifications</Filter>
-    </ClCompile>	
+    </ClCompile>
     <ClCompile Include="..\notifications\NotificationSMS.cpp">
       <Filter>Notifications</Filter>
     </ClCompile>
@@ -2501,6 +2507,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\HEOS.cpp">
       <Filter>Devices\HEOS</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\MultiFun.cpp">
+      <Filter>Devices\MultiFun</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

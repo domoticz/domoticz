@@ -449,6 +449,7 @@
     <ClInclude Include="..\hardware\Meteostick.h" />
     <ClInclude Include="..\hardware\MochadTCP.h" />
     <ClInclude Include="..\hardware\MQTT.h" />
+    <ClInclude Include="..\hardware\MultiFun.h" />
     <ClInclude Include="..\hardware\MySensorsBase.h" />
     <ClInclude Include="..\hardware\MySensorsSerial.h" />
     <ClInclude Include="..\hardware\MySensorsTCP.h" />
@@ -555,7 +556,7 @@
     <ClInclude Include="..\notifications\NotificationPushalot.h" />
     <ClInclude Include="..\notifications\NotificationPushbullet.h" />
     <ClInclude Include="..\notifications\NotificationPushover.h" />
-	<ClInclude Include="..\notifications\NotificationPushsafer.h" />
+    <ClInclude Include="..\notifications\NotificationPushsafer.h" />
     <ClInclude Include="..\notifications\NotificationSMS.h" />
     <ClInclude Include="..\push\DataPush.h" />
     <ClInclude Include="..\push\GooglePubSubPush.h" />
@@ -666,6 +667,7 @@
     <ClCompile Include="..\hardware\Meteostick.cpp" />
     <ClCompile Include="..\hardware\MochadTCP.cpp" />
     <ClCompile Include="..\hardware\MQTT.cpp" />
+    <ClCompile Include="..\hardware\MultiFun.cpp" />
     <ClCompile Include="..\hardware\MySensorsBase.cpp" />
     <ClCompile Include="..\hardware\MySensorsSerial.cpp" />
     <ClCompile Include="..\hardware\MySensorsTCP.cpp" />
@@ -833,7 +835,7 @@
     <ClCompile Include="..\notifications\NotificationPushalot.cpp" />
     <ClCompile Include="..\notifications\NotificationPushbullet.cpp" />
     <ClCompile Include="..\notifications\NotificationPushover.cpp" />
-	<ClCompile Include="..\notifications\NotificationPushsafer.cpp" />
+    <ClCompile Include="..\notifications\NotificationPushsafer.cpp" />
     <ClCompile Include="..\notifications\NotificationSMS.cpp" />
     <ClCompile Include="..\push\DataPush.cpp" />
     <ClCompile Include="..\push\GooglePubSubPush.cpp" />
