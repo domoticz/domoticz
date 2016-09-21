@@ -555,6 +555,7 @@
     <ClInclude Include="..\notifications\NotificationPushalot.h" />
     <ClInclude Include="..\notifications\NotificationPushbullet.h" />
     <ClInclude Include="..\notifications\NotificationPushover.h" />
+	<ClInclude Include="..\notifications\NotificationPushsafer.h" />
     <ClInclude Include="..\notifications\NotificationSMS.h" />
     <ClInclude Include="..\push\DataPush.h" />
     <ClInclude Include="..\push\GooglePubSubPush.h" />
@@ -832,6 +833,7 @@
     <ClCompile Include="..\notifications\NotificationPushalot.cpp" />
     <ClCompile Include="..\notifications\NotificationPushbullet.cpp" />
     <ClCompile Include="..\notifications\NotificationPushover.cpp" />
+	<ClCompile Include="..\notifications\NotificationPushsafer.cpp" />
     <ClCompile Include="..\notifications\NotificationSMS.cpp" />
     <ClCompile Include="..\push\DataPush.cpp" />
     <ClCompile Include="..\push\GooglePubSubPush.cpp" />
