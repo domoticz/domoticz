@@ -91,7 +91,7 @@ void CHEOS::ParseLine()
 									if (DEBUG_LOGGING) _log.Log(LOG_NORM, "DENON by HEOS: No players found (No Payload).");
 								}
 							}
-							else if (root["heos"]["command"] == "player/get_play_state" || root["heos"]["command"] == "player/set_play_state" || root["heos"]["command"] == "event/player_state_changed")
+							else if (root["heos"]["command"] == "player/get_play_state" || root["heos"]["command"] == "player/set_play_state")
 							{
 								if (root["heos"].isMember("message"))
 								{
@@ -179,37 +179,6 @@ void CHEOS::ParseLine()
 									}
 								}
 							}
-							else if (root["heos"]["command"] == "event/players_changed")
-							{
-								SendCommand("getPlayers");
-							}
-							else if (root["heos"]["command"] == "event/groups_changed")
-							{
-								SendCommand("getPlayers");
-							}
-							else if (root["heos"]["command"] == "event/player_now_playing_changed")
-							{
-								std::vector<std::string> SplitMessage;
-								StringSplit(root["heos"]["message"].asString(), "=", SplitMessage);
-								if (SplitMessage.size() > 0)
-								{
-									std::string pid = SplitMessage[1];
-									int PlayerID = atoi(pid.c_str());
-									SendCommand("getPlayState", PlayerID);
-								}
-							}
-							else if (root["heos"]["command"] == "event/player_mute_changed")
-							{
-
-							}
-							else if (root["heos"]["command"] == "event/repeat_mode_changed")
-							{
-
-							}
-							else if (root["heos"]["command"] == "event/shuffle_mode_changed")
-							{
-
-							}
 						}
 					}
 					else
@@ -218,6 +187,83 @@ void CHEOS::ParseLine()
 						{
 							if (DEBUG_LOGGING) _log.Log(LOG_NORM, "DENON by HEOS: Failed: '%s'.", root["heos"]["command"].asCString());
 						}	
+					}
+				}
+				else
+				{
+					if (root["heos"].isMember("command"))
+					{
+						if (root["heos"]["command"] == "event/player_state_changed")
+						{
+							if (root["heos"].isMember("message"))
+							{
+								std::vector<std::string> SplitMessage;
+								StringSplit(root["heos"]["message"].asString(), "&", SplitMessage);
+								if (SplitMessage.size() > 0)
+								{
+									std::vector<std::string> SplitMessagePlayer;
+									StringSplit(SplitMessage[0], "=", SplitMessagePlayer);
+									std::vector<std::string> SplitMessageState;
+									StringSplit(SplitMessage[1], "=", SplitMessageState);
+									std::string pid = SplitMessagePlayer[1];
+									std::string state = SplitMessageState[1];
+
+									_eMediaStatus nStatus = MSTAT_UNKNOWN;
+
+									if (state == "play")
+										nStatus = MSTAT_PLAYING;
+									else if (state == "pause")
+										nStatus = MSTAT_PAUSED;
+									else if (state == "stop")
+										nStatus = MSTAT_STOPPED;
+									else
+										nStatus = MSTAT_ON;
+
+									std::string	sStatus = "";
+
+									UpdateNodeStatus(pid, nStatus, sStatus);
+
+									/* If playing request now playing information */
+									if (state == "play") {
+										int PlayerID = atoi(pid.c_str());
+										SendCommand("getNowPlaying", PlayerID);
+									}
+
+									m_lastUpdate = 0;
+								}
+							}
+						}
+						else if (root["heos"]["command"] == "event/players_changed")
+						{
+							SendCommand("getPlayers");
+						}
+						else if (root["heos"]["command"] == "event/groups_changed")
+						{
+							SendCommand("getPlayers");
+						}
+						else if (root["heos"]["command"] == "event/player_now_playing_changed")
+						{
+							std::vector<std::string> SplitMessage;
+							StringSplit(root["heos"]["message"].asString(), "=", SplitMessage);
+							if (SplitMessage.size() > 0)
+							{
+								std::string pid = SplitMessage[1];
+								int PlayerID = atoi(pid.c_str());
+								SendCommand("getPlayState", PlayerID);
+							}
+						}
+						else if (root["heos"]["command"] == "event/player_mute_changed")
+						{
+
+						}
+						else if (root["heos"]["command"] == "event/repeat_mode_changed")
+						{
+
+						}
+						else if (root["heos"]["command"] == "event/shuffle_mode_changed")
+						{
+
+						}
 					}
 				}
 			}
