@@ -234,6 +234,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_GoodweAPI, "Goodwe solar inverter via Web API" },
 		{ HTYPE_RaspberryTSL2561, "Local I2C sensor TSL2561 Illuminance" },
 		{ HTYPE_Daikin, "Daikin Airconditioning with LAN (HTTP) interface" },
+		{ HTYPE_HEOS, "HEOS by DENON" },
 		
 		{ 0, NULL, NULL }
 	};
