@@ -348,6 +348,14 @@ std::list<CLogger::_tLogLineStruct> CLogger::GetLog(const _eLogLevel lType)
 	return mlist;
 }
 
+void CLogger::ClearLog()
+{
+	boost::unique_lock< boost::mutex > lock(m_mutex);
+	m_lastlog.clear();
+	m_last_status_log.clear();
+	m_last_error_log.clear();
+}
+
 std::list<CLogger::_tLogLineStruct> CLogger::GetNotificationLogs()
 {
 	boost::unique_lock< boost::mutex > lock(m_mutex);
