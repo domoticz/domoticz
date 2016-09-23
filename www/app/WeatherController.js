@@ -1,6 +1,8 @@
 define(['app'], function (app) {
 	app.controller('WeatherController', [ '$scope', '$rootScope', '$location', '$http', '$interval', 'permissions', function($scope,$rootScope,$location,$http,$interval,permissions) {
 
+		var ctrl = this;
+
 		MakeFavorite = function(id,isfavorite)
 		{
 			if (!permissions.hasPermission("Admin")) {
@@ -104,122 +106,20 @@ define(['app'], function (app) {
 				if (typeof data.ActTime != 'undefined') {
 					$.LastUpdateTime=parseInt(data.ActTime);
 				}
-			  
-				$.each(data.result, function(i,item){
-				id="#weathercontent #" + item.idx;
-				var obj=$(id);
-				if (typeof obj != 'undefined') {
-					if ($(id + " #name").html()!=item.Name) {
-						$(id + " #name").html(item.Name);
-					}
 
-					var status="";
-					var img="";
-					var bigtext="";
-					if (typeof item.Barometer != 'undefined') {
-						img='<img src="images/baro48.png" height="48" width="48">';
-						bigtext=item.Barometer + ' hPa';
-						if (typeof item.ForecastStr != 'undefined') {
-							status=item.Barometer + ' hPa, ' + $.t('Prediction') + ': ' + $.t(item.ForecastStr);
-						}
-						else
-						{
-							status=item.Barometer + ' hPa';
-						}
-						if (typeof item.Altitude != 'undefined') {
-							status+=', Altitude: ' + item.Altitude + ' meter';
-						}
-					}
-					if (typeof item.Rain != 'undefined') {
-						img='<img src="images/rain48.png" height="48" width="48">';
-						status=item.Rain + ' mm';
-						bigtext=item.Rain + ' mm';
-						if (typeof item.RainRate != 'undefined') {
-							if (item.RainRate!=0) {
-								status+=', Rate: ' + item.RainRate + ' mm/h';
-							}
-						}
-					}
-					if (typeof item.Visibility != 'undefined') {
-						img='<img src="images/visibility48.png" height="48" width="48">';
-						status=item.Data;
-						bigtext=item.Data;
-					}
-					else if (typeof item.UVI != 'undefined') {
-						img='<img src="images/uv48.png" height="48" width="48">';
-						status=item.UVI + ' UVI';
-						bigtext=item.UVI + ' UVI';
-						if (typeof item.Temp!= 'undefined') {
-							status+=', ' + $.t('Temp') + ': ' + item.Temp + '\u00B0 ' + $scope.config.TempSign;
-						}
-					}
-					if (typeof item.Radiation != 'undefined') {
-						img='<img src="images/radiation48.png" height="48" width="48">';
-						status=item.Data;
-						bigtext=item.Data;
-					}
-					else if (typeof item.Direction != 'undefined') {
-						img='<img src="images/Wind' + item.DirectionStr + '.png" height="48" width="48">';
-						status=item.Direction + ' ' + item.DirectionStr;
-						if (typeof item.Speed != 'undefined') {
-							status+=', ' + $.t('Speed') +': ' + item.Speed + ' ' + $scope.config.WindSign;
-						}
-						if (typeof item.Gust != 'undefined') {
-							status+=', ' + $.t('Gust') + ': ' + item.Gust + ' ' + $scope.config.WindSign;
-						}
-						status+='<br>\n';
-						bigtext=item.DirectionStr;
-						if (typeof item.Speed != 'undefined') {
-							bigtext+=  ' / ' + item.Speed + ' ' + $scope.config.WindSign;
-						}
-						else if (typeof item.Gust != 'undefined') {
-							bigtext+=  ' / ' + item.Gust + ' ' + $scope.config.WindSign;
-						}
-						if ((typeof item.Temp != 'undefined')&&(typeof item.Chill != 'undefined')) {
-							status+=$.t('Temp') + ': ' + item.Temp + '\u00B0 ' +  $scope.config.TempSign + ', ';
-							status+=$.t('Chill') +': ' + item.Chill + '\u00B0 ' + $scope.config.TempSign;
-						}
-						else {
-							if (typeof item.Chill != 'undefined') {
-								status+=$.t('Chill') + ': ' + item.Chill + '\u00B0 ' + $scope.config.TempSign;
-							}
-						}
-					}
-								
-					var nbackcolor="#D4E1EE";
-					if (item.HaveTimeout==true) {
-						nbackcolor="#DF2D3A";
-					}
-					else {
-						var BatteryLevel=parseInt(item.BatteryLevel);
-						if (BatteryLevel!=255) {
-							if (BatteryLevel<=10) {
-								nbackcolor="#DDDF2D";
-							}
-						}
-					}
-					var obackcolor=rgb2hex($(id + " #name").css( "background-color" ));
-					if (obackcolor!=nbackcolor) {
-									$(id + " #name").css( "background-color", nbackcolor );
-					}
-								
-								if ($(id + " #img").html()!=img) {
-									$(id + " #img").html(img);
-								}
-								if ($(id + " #status").html()!=status) {
-									$(id + " #status").html(status);
-								}
-								if ($(id + " #bigtext").html()!=bigtext) {
-									$(id + " #bigtext").html(bigtext);
-								}
-								if ($(id + " #lastupdate").html()!=item.LastUpdate) {
-									$(id + " #lastupdate").html(item.LastUpdate);
-								}
-								if ($scope.config.ShowUpdatedEffect==true) {
-									$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
-								}
-							}
-				});
+				  // Change updated items in temperatures list
+				  // TODO is there a better way to do this ?
+				  data.result.forEach(function(newitem) {
+					  ctrl.items.forEach(function(olditem, oldindex, oldarray) {
+						  if (olditem.idx == newitem.idx) {
+							  oldarray[oldindex] = newitem;
+							  if ($scope.config.ShowUpdatedEffect==true) {
+								  $("#weatherwidgets #" + newitem.idx + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
+							  }
+						  }
+					  });
+				  });
+			  
 			  }
 			 }
 		  });
@@ -241,24 +141,6 @@ define(['app'], function (app) {
 			}
 		  $('#modal').show();
 		  
-		  var htmlcontent = '';
-		  var bHaveAddedDevider = false;
-		  var tophtm=
-				'\t<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
-				'\t<tr>\n' +
-				'\t  <td align="left" valign="top" id="timesun"></td>\n';
-		  if ($scope.config.Latitude!="") {
-			tophtm+=
-				'\t  <td style="width: 150px;" align="right">\n' +
-				'\t    <a id="Forecast" class="btnstyle" onclick="ShowForecast();" data-i18n="Forecast">Forecast</a>\n' +
-				'\t  </td>\n';
-		  }
-		  tophtm+=
-				'\t</tr>\n' +
-				'\t</table>\n';
-		  
-
-		  var i=0;
 		  $.ajax({
 			 url: "json.htm?type=devices&filter=weather&used=true&order=Name", 
 			 async: false, 
@@ -268,245 +150,47 @@ define(['app'], function (app) {
 				if (typeof data.ActTime != 'undefined') {
 					$.LastUpdateTime=parseInt(data.ActTime);
 				}
-				$.each(data.result, function(i,item){
-				  if (i % 3 == 0)
-				  {
-					//add devider
-					if (bHaveAddedDevider == true) {
-					  //close previous devider
-					  htmlcontent+='</div>\n';
-					}
-					htmlcontent+='<div class="row divider">\n';
-					bHaveAddedDevider=true;
-				  }
-				  var bHaveVisibility = false;
-				  var bHaveRain = false;
-				  var bHaveBaro = false;
-				  var bHaveUV = false;
-				  var bHaveRadiation = false;
-				  var bHaveWind = false;
-				  
-				  var xhtm=
-						'\t<div class="span4" id="' + item.idx + '">\n' +
-						'\t  <section>\n' +
-						'\t    <table id="itemtablenotype" border="0" cellpadding="0" cellspacing="0">\n' +
-						'\t    <tr>\n';
-							var nbackcolor="#D4E1EE";
-							if (item.HaveTimeout==true) {
-								nbackcolor="#DF2D3A";
-							}
-							else {
-								var BatteryLevel=parseInt(item.BatteryLevel);
-								if (BatteryLevel!=255) {
-									if (BatteryLevel<=10) {
-										nbackcolor="#DDDF2D";
-									}
-								}
-							}
-							xhtm+='\t      <td id="name" style="background-color: ' + nbackcolor + ';">' + item.Name + '</td>\n';
-							xhtm+='\t      <td id="bigtext">';
-							if (typeof item.Barometer != 'undefined') {
-								xhtm+=item.Barometer + ' hPa';
-							}
-							else if (typeof item.Rain != 'undefined') {
-								xhtm+=item.Rain + ' mm';
-							}
-							else if (typeof item.Visibility != 'undefined') {
-								xhtm+=item.Data;
-							}
-							else if (typeof item.UVI != 'undefined') {
-								xhtm+=item.UVI + ' UVI';
-							}
-							else if (typeof item.Radiation != 'undefined') {
-								xhtm+=item.Data;
-							}
-							else if (typeof item.Direction != 'undefined') {
-								xhtm+=item.DirectionStr;
-							}
-							if (typeof item.Speed != 'undefined') {
-								xhtm+=' / ' + item.Speed + ' ' + $scope.config.WindSign;
-							}
-							else if (typeof item.Gust != 'undefined') {
-								xhtm+=' / ' + item.Gust + ' ' + $scope.config.WindSign;
-							}
-							xhtm+='</td>\n';
-							xhtm+='\t      <td id="img"><img src="images/';
-							if (typeof item.Barometer != 'undefined') {
-								bHaveBaro=true;
-								xhtm+='baro48.png" height="48" width="48"></td>\n' +
-									  '\t      <td id="status">' + item.Barometer + ' hPa';
-								if (typeof item.ForecastStr != 'undefined') {
-									xhtm+=', ' + $.t('Prediction') + ': ' + $.t(item.ForecastStr);
-								}
-								if (typeof item.Altitude != 'undefined') {
-									xhtm+=', Altitude: ' + item.Altitude + ' meter';
-								}
-							}
-							else if (typeof item.Rain != 'undefined') {
-								bHaveRain=true;
-								xhtm+='rain48.png" height="48" width="48"></td>\n' +
-								'\t      <td  id="status">' + item.Rain + ' mm';
-								if (typeof item.RainRate != 'undefined') {
-									if (item.RainRate!=0) {
-										xhtm+=', Rate: ' + item.RainRate + ' mm/h';
-									}
-								}
-							}
-							else if (typeof item.Visibility != 'undefined') {
-								bHaveVisibility=true;
-								xhtm+='visibility48.png" height="48" width="48"></td>\n' +
-								'\t      <td  id="status">' + item.Data;
-							}
-							else if (typeof item.UVI != 'undefined') {
-								bHaveUV=true;
-								xhtm+='uv48.png" height="48" width="48"></td>\n' +
-								'\t      <td id="status">' + item.UVI + ' UVI';
-								if (typeof item.Temp!= 'undefined') {
-									xhtm+=', ' + $.t('Temp') +': ' + item.Temp + '\u00B0 ' + $scope.config.TempSign;
-								}
-							}
-							else if (typeof item.Radiation != 'undefined') {
-								bHaveRadiation=true;
-								xhtm+='radiation48.png" height="48" width="48"></td>\n' +
-								'\t      <td  id="status">' + item.Data;
-							}
-							else if (typeof item.Direction != 'undefined') {
-								bHaveWind=true;
-								xhtm+='Wind' + item.DirectionStr + '.png" height="48" width="48"></td>\n' +
-								'\t      <td id="status">' + item.Direction + ' ' + item.DirectionStr;
-								if (typeof item.Speed != 'undefined') {
-									xhtm+=', ' + $.t('Speed') + ': ' + item.Speed + ' ' + $scope.config.WindSign;
-								}
-								if (typeof item.Gust != 'undefined') {
-									xhtm+=', ' + $.t('Gust') + ': ' + item.Gust + ' ' + $scope.config.WindSign;
-								}
-								xhtm+='<br>\n';
-								if ((typeof item.Temp != 'undefined')&&(typeof item.Chill != 'undefined')) {
-									xhtm+=$.t('Temp') +': ' + item.Temp + '\u00B0 ' + $scope.config.TempSign + ', ';
-									xhtm+=$.t('Chill') +': ' + item.Chill + '\u00B0 ' + $scope.config.TempSign;
-								}
-								else  {
-									if (typeof item.Chill != 'undefined') {
-										xhtm+=$.t('Chill') +': ' + item.Chill + '\u00B0 ' + $scope.config.TempSign;
-									}
-								}
-							}
-							xhtm+=      
-									'</td>\n' +
-									'\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
-									'\t      <td>';
-				  if (item.Favorite == 0) {
-					xhtm+=      
-						  '<img src="images/nofavorite.png" title="' + $.t('Add to Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',1);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
-				  }
-				  else {
-					xhtm+=      
-						  '<img src="images/favorite.png" title="' + $.t('Remove from Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',0);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
-				  }
-
-				  if (typeof item.Barometer != 'undefined') {
-					xhtm+='<a class="btnsmall" onclick="ShowBaroLog(\'#weathercontent\',\'ShowWeathers\',' + item.idx + ',\'' + escape(item.Name) + '\');" data-i18n="Log">Log</a> ';
-				  }
-				  else if (typeof item.Rain != 'undefined') {
-					xhtm+='<a class="btnsmall" onclick="ShowRainLog(\'#weathercontent\',\'ShowWeathers\',' + item.idx + ',\'' + escape(item.Name) + '\');" data-i18n="Log">Log</a> ';
-				  }
-				  else if (typeof item.UVI != 'undefined') {
-					xhtm+='<a class="btnsmall" onclick="ShowUVLog(\'#weathercontent\',\'ShowWeathers\',' + item.idx + ',\'' + escape(item.Name) + '\');" data-i18n="Log">Log</a> ';
-				  }
-				  else if (typeof item.Direction != 'undefined') {
-					xhtm+='<a class="btnsmall" onclick="ShowWindLog(\'#weathercontent\',\'ShowWeathers\',' + item.idx + ',\'' + escape(item.Name) + '\');" data-i18n="Log">Log</a> ';
-				  }
-				  else if (typeof item.Visibility != 'undefined') {
-					xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(\'#weathercontent\',\'ShowWeathers\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal +', \'Visibility\');" data-i18n="Log">Log</a> ';
-				  }
-				  else if (typeof item.Radiation != 'undefined') {
-					xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(\'#weathercontent\',\'ShowWeathers\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal +', \'Radiation\');" data-i18n="Log">Log</a> ';
-				  }
-				  if (permissions.hasPermission("Admin")) {
-					  if (bHaveRain) {
-						xhtm+='<a class="btnsmall" onclick="EditRainDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\',' + item.AddjMulti +');" data-i18n="Edit">Edit</a> ';
-					  }
-					  else if (bHaveVisibility) {
-						xhtm+='<a class="btnsmall" onclick="EditVisibilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\',' + item.SwitchTypeVal +');" data-i18n="Edit">Edit</a> ';
-					  }
-					  else if (bHaveRadiation) {
-						xhtm+='<a class="btnsmall" onclick="EditWeatherDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
-					  }
-					  else if (bHaveBaro) {
-						xhtm+='<a class="btnsmall" onclick="EditBaroDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\',' + item.AddjValue2 +');" data-i18n="Edit">Edit</a> ';
-					  }
-					  else {
-						xhtm+='<a class="btnsmall" onclick="EditWeatherDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
-					  }
-					  if (item.Notifications == "true")
-						xhtm+='<a class="btnsmall-sel" onclick="ShowNotifications(' + item.idx + ',\'' + escape(item.Name) + '\', \'#weathercontent\', \'ShowWeathers\');" data-i18n="Notifications">Notifications</a>';
-					  else
-						xhtm+='<a class="btnsmall" onclick="ShowNotifications(' + item.idx + ',\'' + escape(item.Name) + '\', \'#weathercontent\', \'ShowWeathers\');" data-i18n="Notifications">Notifications</a>';
-						if (typeof item.forecast_url != 'undefined') {
-							xhtm+='&nbsp;<a class="btnsmall" onclick="ShowForecast(\'' + atob(item.forecast_url) + '\',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', \'#weathercontent\', \'ShowWeathers\');" data-i18n="Forecast">Forecast</a>';
-						}
-				  }
-				  xhtm+=      
-						'</td>\n' +
-						'\t    </tr>\n' +
-						'\t    </table>\n' +
-						'\t  </section>\n' +
-						'\t</div>\n';
-				  htmlcontent+=xhtm;
-				});
+				  ctrl.items = data.result;
+			  } else {
+				  ctrl.items = [];
 			  }
 			 }
 		  });
-		  if (bHaveAddedDevider == true) {
-			//close previous devider
-			htmlcontent+='</div>\n';
-		  }
-		  if (htmlcontent == '')
-		  {
-			htmlcontent='<h2>' + $.t('No Weather sensors found or added in the system...') + '</h2>';
-		  }
 		  $('#modal').hide();
-		  $('#weathercontent').html(tophtm+htmlcontent);
+		  $('#weathercontent').html("");
 		  $('#weathercontent').i18n();
+			$('#weatherwidgets').show();
+			$('#weatherwidgets').i18n();
+			$('#weathertophtm').show();
+			$('#weathertophtm').i18n();
 		  
 			$rootScope.RefreshTimeAndSun();
 
-			if ($scope.config.AllowWidgetOrdering==true) {
-				if (permissions.hasPermission("Admin")) {
-					if (window.myglobals.ismobileint==false) {
-						$("#weathercontent .span4").draggable({
-								drag: function() {
-									if (typeof $scope.mytimer != 'undefined') {
-										$interval.cancel($scope.mytimer);
-										$scope.mytimer = undefined;
-									}
-									$.devIdx=$(this).attr("id");
-									$(this).css("z-index", 2);
-								},
-								revert: true
-						});
-						$("#weathercontent .span4").droppable({
-								drop: function() {
-									var myid=$(this).attr("id");
-									$.devIdx.split(' ');
-									$.ajax({
-										 url: "json.htm?type=command&param=switchdeviceorder&idx1=" + myid + "&idx2=" + $.devIdx,
-										 async: false, 
-										 dataType: 'json',
-										 success: function(data) {
-												ShowWeathers();
-										 }
-									});
-								}
-						});
-					}
-				}
-			}
 			$scope.mytimer=$interval(function() {
 				RefreshWeathers();
 			}, 10000);
 		  return false;
 		}
+
+		$scope.DragWidget = function (idx) {
+			if (typeof $scope.mytimer != 'undefined') {
+				$interval.cancel($scope.mytimer);
+				$scope.mytimer = undefined;
+			}
+			$.devIdx = idx;
+		};
+		$scope.DropWidget = function (idx) {
+			var myid = idx;
+			$.devIdx.split(' ');
+			$.ajax({
+				url: "json.htm?type=command&param=switchdeviceorder&idx1=" + myid + "&idx2=" + $.devIdx,
+				async: false,
+				dataType: 'json',
+				success: function (data) {
+					ShowWeathers();
+				}
+			});
+		};
 
 		init();
 
@@ -769,5 +453,187 @@ define(['app'], function (app) {
 				$scope.mytimer = undefined;
 			}
 		}); 
-	} ]);
+	} ])
+		.directive('dzweatherwidget', function() {
+			return {
+				priority: 0,
+				restrict: 'E',
+				templateUrl: 'views/weather_widget.html',
+				scope: {},
+				bindToController: {
+					item: '=',
+					tempsign: '=',
+					windsign: '=',
+					ordering: '=',
+					dragwidget: '&',
+					dropwidget: '&'
+				},
+				require : 'permissions',
+				controllerAs: 'ctrl',
+				controller: function($scope, $element, $attrs, permissions) {
+					var ctrl = this;
+					var item = ctrl.item;
+
+					ctrl.nbackcolor = function() {
+						var nbackcolor="#D4E1EE";
+						if (item.HaveTimeout==true) {
+							nbackcolor="#DF2D3A";
+						}
+						else {
+							var BatteryLevel=parseInt(item.BatteryLevel);
+							if (BatteryLevel!=255) {
+								if (BatteryLevel<=10) {
+									nbackcolor="#DDDF2D";
+								}
+							}
+						}
+						return {'background-color': nbackcolor};
+					};
+
+					ctrl.displayBarometer = function() {
+						return typeof item.Barometer != 'undefined';
+					};
+					ctrl.displayForecast = function() {
+						return ctrl.displayBarometer() && typeof item.ForecastStr != 'undefined';
+					};
+					ctrl.displayAltitude = function() {
+						return ctrl.displayBarometer() && typeof item.Altitude != 'undefined';
+					};
+					ctrl.displayRain = function() {
+						return typeof item.Rain != 'undefined';
+					};
+					ctrl.displayRainRate = function() {
+						return ctrl.displayRain() && typeof item.RainRate != 'undefined';
+					};
+					ctrl.displayVisibility = function() {
+						return typeof item.Visibility != 'undefined';
+					};
+					ctrl.displayData = function() {
+						return ctrl.displayVisibility() || ctrl.displayRadiation();
+					};
+					ctrl.displayUVI = function() {
+						return typeof item.UVI != 'undefined';
+					};
+					ctrl.displayRadiation = function () {
+						return typeof item.Radiation != 'undefined';
+					};
+					ctrl.displayTemp = function() {
+						return ctrl.displayUVI() && typeof item.Temp!= 'undefined';
+					};
+					ctrl.displayDirection = function() {
+						return typeof item.Direction != 'undefined';
+					};
+					ctrl.displaySpeed = function() {
+						return typeof item.Speed != 'undefined';
+					};
+					ctrl.displayGust = function() {
+						return typeof item.Gust != 'undefined';
+					};
+					ctrl.displayTempChill = function() {
+						return ctrl.displayChill() && typeof item.Temp != 'undefined';
+					};
+					ctrl.displayChill = function() {
+						return ctrl.displayDirection() && typeof item.Chill != 'undefined';
+					};
+					ctrl.displayForecastAdmin = function() {
+						return typeof item.forecast_url != 'undefined';
+					};
+
+					ctrl.Forecast = function() {
+						return $.t(ctrl.item.ForecastStr);
+					};
+					
+					ctrl.image = function() {
+						if (typeof item.Barometer != 'undefined') {
+							return 'baro48.png';
+						} else if (typeof item.Rain != 'undefined') {
+							return 'rain48.png';
+						} else if (typeof item.Visibility != 'undefined') {
+							return 'visibility48.png';
+						} else if (typeof item.UVI != 'undefined') {
+							return 'uv48.png';
+						} else if (typeof item.Radiation != 'undefined') {
+							return 'radiation48.png';
+						} else if (typeof item.Direction != 'undefined') {
+							return 'Wind' + item.DirectionStr + '.png';
+						}
+					};
+
+					ctrl.MakeFavorite = function(n) {
+						return MakeFavorite(ctrl.item.idx,n);
+					};
+
+					ctrl.ShowLog = function() {
+						$('#weatherwidgets').hide(); // TODO delete when multiple views implemented
+						$('#weathertophtm').hide();
+						if (typeof item.Barometer != 'undefined') {
+							return ShowBaroLog('#weathercontent', 'ShowWeathers', item.idx, escape(item.Name));
+						}
+						else if (typeof item.Rain != 'undefined') {
+							return ShowRainLog('#weathercontent', 'ShowWeathers', item.idx, escape(item.Name));
+						}
+						else if (typeof item.UVI != 'undefined') {
+							return ShowUVLog('#weathercontent', 'ShowWeathers', item.idx, escape(item.Name));
+						}
+						else if (typeof item.Direction != 'undefined') {
+							return ShowWindLog('#weathercontent', 'ShowWeathers', item.idx, escape(item.Name));
+						}
+						else if (typeof item.Visibility != 'undefined') {
+							return ShowGeneralGraph('#weathercontent', 'ShowWeathers', item.idx, escape(item.Name), item.SwitchTypeVal, 'Visibility');
+						}
+						else if (typeof item.Radiation != 'undefined') {
+							return ShowGeneralGraph('#weathercontent', 'ShowWeathers', item.idx, escape(item.Name), item.SwitchTypeVal, 'Radiation');
+						}
+					};
+
+					ctrl.EditDevice = function() {
+						if (typeof item.Rain != 'undefined') {
+							return EditRainDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjMulti);
+						} else if (typeof item.Visibility != 'undefined') {
+							return EditVisibilityDevice(item.idx, escape(item.Name), escape(item.Description), item.SwitchTypeVal);
+						} else if (typeof item.Radiation != 'undefined') {
+							return EditWeatherDevice(item.idx, escape(item.Name), escape(item.Description));
+						} else if (typeof item.Barometer != 'undefined') {
+							return EditBaroDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjValue2);
+						} else {
+							return EditWeatherDevice(item.idx, escape(item.Name), escape(item.Description));
+						}
+					};
+
+					ctrl.ShowNotifications = function() {
+						$('#weatherwidgets').hide(); // TODO delete when multiple views implemented
+						$('#weathertophtm').hide();
+						return ShowNotifications(item.idx, escape(item.Name), '#weathercontent', 'ShowWeathers');
+					};
+
+					ctrl.ShowForecast = function() {
+						$('#weatherwidgets').hide(); // TODO delete when multiple views implemented
+						$('#weathertophtm').hide();
+						return ShowForecast(atob(item.forecast_url), escape(item.Name), escape(item.Description), '#weathercontent', 'ShowWeathers');
+					};
+
+					$element.i18n();
+
+					if (ctrl.ordering==true) {
+						if (permissions.hasPermission("Admin")) {
+							if (window.myglobals.ismobileint==false) {
+								$element.draggable({
+									drag: function() {
+										ctrl.dragwidget({idx:ctrl.item.idx});
+										$element.css("z-index", 2);
+									},
+									revert: true
+								});
+								$element.droppable({
+									drop: function() {
+										ctrl.dropwidget({idx:ctrl.item.idx});
+									}
+								});
+							}
+						}
+					}
+
+				}
+			};
+		});
 });

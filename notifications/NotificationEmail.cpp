@@ -2,6 +2,7 @@
 #include "NotificationEmail.h"
 #include "../smtpclient/SMTPClient.h"
 #include "../main/Helper.h"
+#include "../main/Logger.h"
 
 CNotificationEmail::CNotificationEmail() : CNotificationBase(std::string("email"), OPTIONS_HTML_BODY)
 {
@@ -41,6 +42,9 @@ bool CNotificationEmail::SendMessageImplementation(const std::string &Subject, c
 	sclient.SetSubject(Subject.c_str());
 	sclient.SetHTMLBody(HtmlBody.c_str());
 	bool bRet=sclient.SendEmail();
+	if (!bRet) {
+		_log.Log(LOG_ERROR, std::string("Failed to send email notification : ").c_str());
+	}
 	return bRet;
 }
 

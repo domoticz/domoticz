@@ -72,7 +72,7 @@ namespace OpenZWave
 			Type_NodeNew,						/**< A new node has been found (not already stored in zwcfg*.xml file) */
 			Type_NodeAdded,						/**< A new node has been added to OpenZWave's list.  This may be due to a device being added to the Z-Wave network, or because the application is initializing itself. */
 			Type_NodeRemoved,					/**< A node has been removed from OpenZWave's list.  This may be due to a device being removed from the Z-Wave network, or because the application is closing. */
-			Type_NodeProtocolInfo,					/**< Basic node information has been receievd, such as whether the node is a listening device, a routing device and its baud rate and basic, generic and specific types. It is after this notification that you can call Manager::GetNodeType to obtain a label containing the device description. */
+			Type_NodeProtocolInfo,					/**< Basic node information has been received, such as whether the node is a listening device, a routing device and its baud rate and basic, generic and specific types. It is after this notification that you can call Manager::GetNodeType to obtain a label containing the device description. */
 			Type_NodeNaming,					/**< One of the node names has changed (name, manufacturer, product). */
 			Type_NodeEvent,						/**< A node has triggered an event.  This is commonly caused when a node sends a Basic_Set command to the controller.  The event value is stored in the notification. */
 			Type_PollingDisabled,					/**< Polling of a node has been successfully turned off by a call to Manager::DisablePoll */
@@ -86,14 +86,14 @@ namespace OpenZWave
 			Type_DriverFailed,					/**< Driver failed to load */
 			Type_DriverReset,					/**< All nodes and values for this driver have been removed.  This is sent instead of potentially hundreds of individual node and value notifications. */
 			Type_EssentialNodeQueriesComplete,			/**< The queries on a node that are essential to its operation have been completed. The node can now handle incoming messages. */
-			Type_NodeQueriesComplete,				/**< All the initialisation queries on a node have been completed. */
+			Type_NodeQueriesComplete,				/**< All the initialization queries on a node have been completed. */
 			Type_AwakeNodesQueried,					/**< All awake nodes have been queried, so client application can expected complete data for these nodes. */
 			Type_AllNodesQueriedSomeDead,				/**< All nodes have been queried but some dead nodes found. */
 			Type_AllNodesQueried,					/**< All nodes have been queried, so client application can expected complete data. */
-			Type_Notification,					/**< An error has occured that we need to report. */
-			Type_DriverRemoved,					/**< The Driver is being removed. (either due to Error or by request) Do Not Call Any Driver Related Methods after recieving this call */
+			Type_Notification,					/**< An error has occurred that we need to report. */
+			Type_DriverRemoved,					/**< The Driver is being removed. (either due to Error or by request) Do Not Call Any Driver Related Methods after receiving this call */
 			Type_ControllerCommand,				/**< When Controller Commands are executed, Notifications of Success/Failure etc are communicated via this Notification
-												  * Notification::GetEvent returns Driver::ControllerCommand and Notification::GetNotification returns Driver::ControllerState */
+												  * Notification::GetEvent returns Driver::ControllerState and Notification::GetNotification returns Driver::ControllerError if there was a error */
 			Type_NodeReset						/**< The Device has been reset and thus removed from the NodeList in OZW */
 		};
 

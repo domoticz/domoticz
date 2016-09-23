@@ -164,7 +164,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 			return;
 		}
 	}
-	else if (szCommand == "switchscene")
+	else if ((szCommand == "switchscene") || (szCommand == "getsceneinfo"))
 	{
 		if (root["idx"].empty())
 			goto mqttinvaliddata;
@@ -226,7 +226,22 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		bool bParseTrigger = (bParseValue) ? root["parse"].asBool() : true;
 
 		int signallevel = 12;
+		bool b_signallevel = ! root["RSSI"].empty();
+		if (b_signallevel)
+		{
+			if (! root["RSSI"].isInt())
+				goto mqttinvaliddata;
+			signallevel = root["RSSI"].asInt();
+		}
+
 		int batterylevel = 255;
+		bool b_batterylevel = ! root["Battery"].empty();
+		if (b_batterylevel)
+		{
+			if (! root["Battery"].isInt())
+				goto mqttinvaliddata;
+			batterylevel = root["Battery"].asInt();
+		}
 
 		if (!m_mainworker.UpdateDevice(HardwareID, DeviceID, unit, devType, subType, nvalue, svalue, signallevel, batterylevel, bParseTrigger))
 		{
@@ -331,6 +346,10 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		int HardwareID = atoi(result[0][0].c_str());
 		SendDeviceInfo(HardwareID, idx, "request device", NULL);
 		return;
+	}
+	else if (szCommand == "getsceneinfo")
+	{
+		SendSceneInfo(idx, "request scene");
 	}
 	else
 	{
@@ -569,3 +588,63 @@ void MQTT::SendDeviceInfo(const int m_HwdID, const unsigned long long DeviceRowI
 	}
 }
 
+void MQTT::SendSceneInfo(const unsigned long long SceneIdx, const std::string &SceneName)
+{
+	std::vector<std::vector<std::string> > result, result2;
+	result = m_sql.safe_query("SELECT ID, Name, Activators, Favorite, nValue, SceneType, LastUpdate, Protected, OnAction, OffAction, Description FROM Scenes WHERE (ID==%llu) ORDER BY [Order]", SceneIdx);
+	if (result.empty())
+		return;
+	std::vector<std::vector<std::string> >::const_iterator itt;
+	std::vector<std::string> sd = result[0];
+
+	std::string sName = sd[1];
+	std::string sLastUpdate = sd[6].c_str();
+
+	unsigned char nValue = atoi(sd[4].c_str());
+	unsigned char scenetype = atoi(sd[5].c_str());
+	int iProtected = atoi(sd[7].c_str());
+
+	//std::string onaction = base64_encode((const unsigned char*)sd[8].c_str(), sd[8].size());
+	//std::string offaction = base64_encode((const unsigned char*)sd[9].c_str(), sd[9].size());
+
+	Json::Value root;
+
+	root["idx"] = sd[0];
+	root["Name"] = sName;
+	//root["Description"] = sd[10];
+	//root["Favorite"] = atoi(sd[3].c_str());
+	//root["Protected"] = (iProtected != 0);
+	//root["OnAction"] = onaction;
+	//root["OffAction"] = offaction;
+
+	if (scenetype == 0)
+	{
+		root["Type"] = "Scene";
+	}
+	else
+	{
+		root["Type"] = "Group";
+	}
+
+	root["LastUpdate"] = sLastUpdate;
+
+	if (nValue == 0)
+		root["Status"] = "Off";
+	else if (nValue == 1)
+		root["Status"] = "On";
+	else
+		root["Status"] = "Mixed";
+	root["Timers"] = (m_sql.HasSceneTimers(sd[0]) == true) ? "true" : "false";
+	unsigned long long camIDX = m_mainworker.m_cameras.IsDevSceneInCamera(1, sd[0]);
+	//root["UsedByCamera"] = (camIDX != 0) ? true : false;
+	if (camIDX != 0) {
+		std::stringstream scidx;
+		scidx << camIDX;
+		//root["CameraIdx"] = scidx.str();
+	}
+	std::string message = root.toStyledString();
+	if (m_publish_topics & PT_out)
+	{
+		SendMessage(TOPIC_OUT, message);
+	}
+}

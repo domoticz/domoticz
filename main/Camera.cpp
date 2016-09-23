@@ -216,13 +216,16 @@ bool CCameraHandler::TakeRaspberrySnapshot(std::vector<unsigned char> &camimage)
 	return false;
 }
 
-bool CCameraHandler::TakeUVCSnapshot(std::vector<unsigned char> &camimage)
+bool CCameraHandler::TakeUVCSnapshot(const std::string &device, std::vector<unsigned char> &camimage)
 {
 	std::string uvcparams="-S80 -B128 -C128 -G80 -x800 -y600 -q100";
 	m_sql.GetPreferencesVar("UVCParams", uvcparams);
 	
 	std::string OutputFileName = szUserDataFolder + "tempcam.jpg";
 	std::string nvcmd="uvccapture " + uvcparams+ " -o" + OutputFileName;
+	if (!device.empty()) {
+		nvcmd += " -d/dev/" + device;
+	}
 	std::remove(OutputFileName.c_str());
 
 	try
@@ -272,7 +275,7 @@ bool CCameraHandler::TakeSnapshot(const unsigned long long CamID, std::vector<un
 	if (pCamera->ImageURL=="raspberry.cgi")
 		return TakeRaspberrySnapshot(camimage);
 	else if (pCamera->ImageURL=="uvccapture.cgi")
-		return TakeUVCSnapshot(camimage);
+		return TakeUVCSnapshot(pCamera->Username, camimage);
 
 	std::vector<std::string> ExtraHeaders;
 	return HTTPClient::GETBinary(szURL,ExtraHeaders,camimage,5);
@@ -416,7 +419,7 @@ namespace http {
 			}
 			else
 			{
-				if (!m_mainworker.m_cameras.TakeUVCSnapshot(camimage)) {
+				if (!m_mainworker.m_cameras.TakeUVCSnapshot("", camimage)) {
 					return;
 				}
 			}

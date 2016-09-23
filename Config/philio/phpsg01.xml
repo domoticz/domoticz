@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Zipato: PH-PSG01 Smoke Sensor -->
+<Product xmlns="http://code.google.com/p/open-zwave/">
+    <!-- Configuration Parameters -->
+    <CommandClass id="112">
+        <Value type="byte" index="7" genre="config" label="Customer Function" min="0" max="127" value="4">
+            <Help>
+                Customer function switch, using bit control.
+                Bit0: Reserve.
+                Bit1: Reserve.
+                Bit2: Reserve => 1.
+                Bit4: Notification Type (0: Notification Report, 1: Sensor Binary Report).
+                Bit5: Reserve.
+                Bit6: Reserve.
+                Bit7: Reserve.
+            </Help>
+        </Value>
+        <Value type="byte" instance="1" index="10" genre="config" label="Auto Report Battery Time" units="30 min"
+               min="1" max="127" value="12">
+            <Help>
+                The interval time for auto report the battery level.
+                30 minutes per tick and minimum time is 30 minutes, default tick is 12 (6 hours)
+            </Help>
+        </Value>
+    </CommandClass>
+    <!-- Basic set as report -->
+    <CommandClass id="32" setasreport="true"/>
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="1">
+            <Group index="1" max_associations="8" label="Lifeline"/>
+        </Associations>
+    </CommandClass>
+</Product>

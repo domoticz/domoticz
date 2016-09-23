@@ -25,11 +25,11 @@ test: off
 
 deploy:
 - provider: FTP
-  host: 188.166.24.182
-  folder: beta
-  protocol: ftps
-  username: uploads@domoticz.com
+  protocol: sftp
+  host: $(FTP_HOST)
+  username: $(FTP_USER)
   password: $(FTP_PASSWORD)
+  folder: beta
   on:
     APPVEYOR_REPO_NAME: domoticz/domoticz
     APPVEYOR_REPO_BRANCH: master  

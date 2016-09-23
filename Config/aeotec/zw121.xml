@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Aeotec ZW121 LED Strip, base on Engineering Spec 5/20/2016
+-->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+    <!-- Configuration Parameters -->
+    <CommandClass id="112">
+        <Value type="list" genre="config" instance="1" index="20" label="Re-power On state" min="0" max="2" value="0" size="1">
+            <Help>The LED Strip state after re-power on it.</Help>
+            <Item label="The last state before re-power on" value="0"/>
+            <Item label="Always On" value="1"/>
+            <Item label="Always Off" value="2"/>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="32" label="Report when the color is changed" min="0" max="1" value="0" size="1">
+            <Help>Enable/disable to send out a report when the color is changed</Help>
+            <Item label="Disable" value="0"/>
+            <Item label="Hail CC" value="1"/>
+        </Value>
+        <Value type="int" index="33" genre="config" label="Get the LED Strip color value" units="" value="0" read_only="true">
+            <Help>
+                Get the LED Strip color value
+                Value 1: (msb) Reserved
+                Value 2: Red color value
+                Value 3: Green color value
+                Value 4: Blue color value
+            </Help>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="34" label="Restore last brightness level" min="0" max="1" value="0" size="1">
+            <Help>Enable/disable to turn on the last brightness level of the LED Strip when using the Color Switch Set CC to change its color</Help>
+            <Item label="Disable" value="0"/>
+            <Item label="Enable" value="1"/>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="35" label="Configure the display mode of Cold/Warm white" min="0" max="1" value="0" size="1">
+            <Help>Configure the display mode of Cold/Warm white</Help>
+            <Item label="Arbitrary combination" value="0"/>
+            <Item label="Complementary combination" value="1"/>
+        </Value>
+
+        <Value type="list" genre="config" instance="1" index="36" label="Colorful mode" min="0" max="3" value="0" size="1">
+            <Help>Reboot/save/exit Colorful mode</Help>
+            <Item label="Un-reboot" value="0"/>
+            <Item label="Reboot" value="1"/>
+            <Item label="Exit" value="2"/>
+            <Item label="Save and exit" value="3"/>
+        </Value>
+        <Value type="int" index="37" genre="config" label="Colorful mode configuration" units="" value="157483008">
+            <Help>
+                Will set the LED Strip into different modes.
+                See the table in documentation
+            </Help>
+        </Value>
+        <Value type="int" index="38" genre="config" label="Change speed" units="" value="50332416">
+            <Help>
+                Value 1: (msb) The speed from OFF to ON.
+                Value 2: The speed from ON to OFF.
+                Value 3: Pause time of ON.
+                Value 4: Pause time of OFF.
+            </Help>
+        </Value>
+        <Value type="int" index="39" genre="config" label="Color index configuration in Multi color mode" units="" value="805306368">
+            <Help>
+                Can be used to set the 8 color index when the Bulb is in Multi color mode.
+                See the table in documentation
+            </Help>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="40" label="Colorful mode" min="1" max="5" value="1" size="1">
+            <Help>Reboot/save/exit Colorful mode</Help>
+            <Item label="Rainbow mode" value="1"/>
+            <Item label="Mutil color mode" value="2"/>
+            <Item label="Fade out and fade in (Red)" value="3"/>
+            <Item label="Fade out and fade in (Green)" value="4"/>
+            <Item label="Fade out and fade in (Blue)" value="5"/>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="80" label="Send notifications Group 1" min="0" max="2" value="1" size="1">
+            <Help>Enable to send notifications to associated devices (Group 1) when the state of LED Strip is changedd</Help>
+            <Item label="Disable" value="0"/>
+            <Item label="Hail CC" value="1"/>
+            <Item label="Basic CC report" value="2"/>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="112" label="Dimmer mode" min="1" max="3" value="2" size="1">
+            <Help></Help>
+            <Item label="Parabolic curve" value="0"/>
+            <Item label="Index curve" value="1"/>
+            <Item label="(Parabolic + Index)/2" value="2"/>
+            <Item label="Linear" value="3"/>
+        </Value>
+        <Value type="list" index="252" genre="config" label="Configuration Locked" units="" min="0" max="1" size="1" value="0">
+            <Help>Enable/disable Configuration Locked</Help>
+            <Item label="Disable" value="0"/>
+            <Item label="Enable" value="1"/>
+        </Value>
+        <Value type="list" index="255" genre="config" label="Reset To Factory Defaults" size="4" value="1" write_only="true">
+            <Help>Reset to factory defaults</Help>
+            <Item label="Reset to factory default setting" value="0"/>
+            <Item label="Normal" value="1"/>
+            <Item label="Reset to factory default setting and removed from the z-wave network" value="1431655765"/>
+        </Value>
+    </CommandClass>
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="2">
+            <Group index="1" max_associations="5" label="Lifeline"/>
+            <Group index="2" max_associations="5" label="Retransmit"/>
+        </Associations>
+    </CommandClass>
+</Product>

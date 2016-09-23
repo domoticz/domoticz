@@ -9,6 +9,7 @@
 #include "NotificationNma.h"
 #include "NotificationPushbullet.h"
 #include "NotificationPushover.h"
+#include "NotificationPushsafer.h"
 #include "NotificationPushalot.h"
 #include "NotificationEmail.h"
 #include "NotificationSMS.h"
@@ -38,6 +39,7 @@ CNotificationHelper::CNotificationHelper()
 	AddNotifier(new CNotificationNma());
 	AddNotifier(new CNotificationPushbullet());
 	AddNotifier(new CNotificationPushover());
+	AddNotifier(new CNotificationPushsafer());
 	AddNotifier(new CNotificationPushalot());
 	AddNotifier(new CNotificationEmail());
 	AddNotifier(new CNotificationSMS());

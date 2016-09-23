@@ -32,7 +32,7 @@ csocket::csocket() : m_socketState(CLOSED),
 
 void csocket::close()
 {
-	 if ( m_socketState != csocket::CLOSED || m_socketState != csocket::ERRORED)
+	 if ( m_socketState != csocket::CLOSED && m_socketState != csocket::ERRORED)
     {
 #ifdef WIN32
         closesocket(m_socket);

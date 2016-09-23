@@ -155,7 +155,7 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 	}
 
 #else
-	//scan /dev for /dev/ttyUSB* or /dev/ttyS* or /dev/tty.usbserial* or /dev/ttyAMA*
+	//scan /dev for /dev/ttyUSB* or /dev/ttyS* or /dev/tty.usbserial* or /dev/ttyAMA* or /dev/ttySAC*
 
 	bool bHaveTtyAMAfree=false;
 	std::string sLine = "";
@@ -194,8 +194,18 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 				bUseDirectPath=true;
 				ret.push_back("/dev/" + fname);
 			}
+			else if (fname.find("ttySAC") != std::string::npos)
+			{
+				bUseDirectPath = true;
+				ret.push_back("/dev/" + fname);
+			}
 #ifdef __FreeBSD__            
 			else if (fname.find("ttyU")!=std::string::npos)
+			{
+				bUseDirectPath=true;
+				ret.push_back("/dev/" + fname);
+			}
+			else if (fname.find("cuaU")!=std::string::npos)
 			{
 				bUseDirectPath=true;
 				ret.push_back("/dev/" + fname);
@@ -586,7 +596,7 @@ void rgb2hsb(const int r, const int g, const int b, float hsbvals[3])
 bool is_number(const std::string& s)
 {
 	std::string::const_iterator it = s.begin();
-	while (it != s.end() && (isdigit(*it) || (*it == '.') || (*it == '-') || (*it == ' '))) ++it;
+	while (it != s.end() && (isdigit(*it) || (*it == '.') || (*it == '-') || (*it == ' ') || (*it == 0x00))) ++it;
 	return !s.empty() && it == s.end();
 }
 

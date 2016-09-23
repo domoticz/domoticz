@@ -28,15 +28,21 @@ define(['app'], function (app) {
 			switch(targetType) {
 			case "0":
 				$("#httpremote #lblremotedata").hide();
+				$("#httpremote #lblremoteheaders").hide();
 				$("#httpremote #data").hide();
+				$("#httpremote #headers").hide();
 				break;
 			case "1":
 				$("#httpremote #lblremotedata").show();
 				$("#httpremote #data").show();
+				$("#httpremote #lblremoteheaders").show();
+				$("#httpremote #headers").show();
 				break;
 			case "2":
 				$("#httpremote #lblremotedata").show();
 				$("#httpremote #data").show();
+				$("#httpremote #lblremoteheaders").show();
+				$("#httpremote #headers").show();
 				break;
 			default:
 				break;
@@ -100,6 +106,7 @@ define(['app'], function (app) {
 		{
 			var cleanurl = $('#httpremote #url').val();
 			var httpdata = $('#httpremote #data').val();
+			var httpheaders = $('#httpremote #headers').val();
 			var method = $('#httpremote #combomethod').val();
 			var linkactive = 0;	
 			if ($('#httpremote #httplinkenabled').is(":checked"))
@@ -117,7 +124,7 @@ define(['app'], function (app) {
 			var authbasicpassword = $('#httpremote #authBasicPassword').val();
 			$.ajax({
 				 url: "json.htm?type=command&param=savehttplinkconfig" +
-					"&url=" + encodeURIComponent(cleanurl) + "&method=" + method + "&data=" + encodeURIComponent(httpdata) + "&linkactive=" + linkactive + "&debugenabled=" + debugenabled + "&auth=" + auth + "&authbasiclogin=" + authbasiclogin + "&authbasicpassword=" + authbasicpassword,
+					"&url=" + encodeURIComponent(cleanurl) + "&method=" + method + "&headers=" + encodeURIComponent(httpheaders) + "&data=" + encodeURIComponent(httpdata) + "&linkactive=" + linkactive + "&debugenabled=" + debugenabled + "&auth=" + auth + "&authbasiclogin=" + authbasiclogin + "&authbasicpassword=" + authbasicpassword,
 				 async: false, 
 				 dataType: 'json',
 				 success: function(data) {
@@ -194,7 +201,7 @@ define(['app'], function (app) {
 					RefreshLinkTable();
 				 },
 				 error: function(){
-						ShowNotify($.t('Problem saving Htto link!'), 2500, true);
+						ShowNotify($.t('Problem saving Http link!'), 2500, true);
 				 }     
 			});
 		}
@@ -211,6 +218,7 @@ define(['app'], function (app) {
 							$('#httpremote #url').val(data.HttpUrl);
 							$('#httpremote #combomethod').val(data.HttpMethod);
 							$('#httpremote #data').val(data.HttpData);
+							$('#httpremote #headers').val(data.HttpHeaders);
 							$('#httpremote #httplinkenabled').prop('checked', false);
 							if (data.HttpActive) {
 								$('#httpremote #httplinkenabled').prop('checked', true);

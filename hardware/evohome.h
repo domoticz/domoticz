@@ -461,6 +461,7 @@ public:
 		updSetPoint,
 		updOverride,
 		updBattery,
+		updDemand,
 	};
 	static const uint8_t m_nMaxZones=12;
 	
@@ -534,6 +535,7 @@ private:
 	void RequestDeviceInfo(uint8_t nAddr);
 	
 	void SendExternalSensor();
+	void SendZoneSensor();
 	
 	void RXRelay(uint8_t nDevNo, uint8_t nDemand, int nID=0);
 	void SendRelayHeatDemand(uint8_t nDevNo, uint8_t nDemand);
@@ -563,7 +565,7 @@ private:
 	static const uint8_t m_dczToEvoZoneMode[3];
 	static const uint8_t m_dczToEvoControllerMode[6];
 	
-	template <typename RT> RT ConvertMode(RT* pArray, uint8_t nIdx){return pArray[(nIdx<sizeof(pArray))?nIdx:0];}
+	template <typename RT> RT ConvertMode(RT* pArray, uint8_t nIdx){return pArray[nIdx];}
 	
 	boost::shared_ptr<boost::thread> m_thread;
 	volatile bool m_stoprequested;
@@ -603,6 +605,10 @@ private:
 	unsigned char m_nBindIDType;//what type of device to bind
 	boost::mutex m_mtxBindNotify;
 	boost::condition_variable m_cndBindNotify;
+
+	unsigned int m_MaxDeviceID;
+
+	bool AllSensors;
 	
 	struct _tRelayCheck
 	{

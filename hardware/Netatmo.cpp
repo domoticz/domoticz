@@ -423,7 +423,7 @@ int CNetatmo::GetBatteryLevel(const std::string &ModuleType, const int battery_v
 		3600 high
 		3300 medium
 		3000 low
-		/* below 3000: very low */
+		below 3000: very low */
 		if (battery_vp <= 3000)
 			batValue = 0;
 	}
@@ -448,7 +448,7 @@ bool CNetatmo::ParseDashboard(const Json::Value &root, const int DevIdx, const i
 	float rain;
 	int sound;
 
-	float wind_angle = 0;
+	int wind_angle = 0;
 	int wind_gust_angle = 0;
 	float wind_strength = 0;
 	float wind_gust = 0;
@@ -485,6 +485,12 @@ bool CNetatmo::ParseDashboard(const Json::Value &root, const int DevIdx, const i
 		bHaveBaro = true;
 		baro = root["Pressure"].asFloat();
 	}
+/*
+	if (!root["AbsolutePressure"].empty())
+	{
+		float apressure = root["AbsolutePressure"].asFloat();
+	}
+*/
 	if (!root["Noise"].empty())
 	{
 		bHaveSound = true;
@@ -510,7 +516,7 @@ bool CNetatmo::ParseDashboard(const Json::Value &root, const int DevIdx, const i
 			)
 		{
 			bHaveWind = true;
-			wind_angle = float(root["WindAngle"].asInt())/16.0f;
+			wind_angle = root["WindAngle"].asInt();
 			wind_gust_angle = root["GustAngle"].asInt();
 			wind_strength = root["WindStrength"].asFloat()/ 3.6f;
 			wind_gust = root["GustStrength"].asFloat() / 3.6f;

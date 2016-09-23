@@ -59,7 +59,8 @@ public:
 		S_MOISTURE = 35,				//Moisture sensor	V_LEVEL(water content or moisture in percentage ? ), V_TRIPPED, V_ARMED
 		S_INFO = 36,					// LCD text device / Simple information device on controller, V_TEXT
 		S_GAS = 37,						// Gas meter, V_FLOW, V_VOLUME
-
+		S_GPS = 38,						//!< GPS Sensor, V_POSITION
+		S_WATER_QUALITY = 39,			//!< V_TEMP, V_PH, V_ORP, V_EC, V_STATUS 
 		S_UNKNOWN = 200,				//No Type received
 	};
 
@@ -118,6 +119,12 @@ public:
 		V_CUSTOM = 48, 					// Custom messages used for controller/inter node specific commands, preferably using S_CUSTOM device type. 
 		V_POSITION = 49,				// GPS position and altitude. Payload: latitude;longitude;altitude(m). E.g. "55.722526;13.017972;18"
 		V_IR_RECORD = 50,				// Record IR codes S_IR for playback
+		V_PH = 51,						//!< S_WATER_QUALITY, water PH
+		V_ORP = 52,						//!< S_WATER_QUALITY, water ORP : redox potential in mV
+		V_EC = 53,						//!< S_WATER_QUALITY, water electric conductivity ?S/cm (microSiemens/cm)
+		V_VAR = 54,						//!< S_POWER, Reactive power: volt-ampere reactive (var)
+		V_VA = 55,						//!< S_POWER, Apparent power: volt-ampere (VA)
+		V_POWER_FACTOR = 56,			//!< S_POWER, Ratio of real power to apparent power: floating point value in the range [-1,..,1]
 		V_UNKNOWN = 200					//No value received
 	};
 
@@ -170,10 +177,12 @@ public:
 	{
 		int nodeID;
 		int childID;
+		int groupID;
 
 		_ePresentationType presType;
 		std::string childName;
 		bool useAck;
+		int ackTimeout;
 
 		//values
 		std::map<_eSetType, _tMySensorValue> values;
@@ -188,6 +197,7 @@ public:
 			lastreceived = 0;
 			nodeID = -1;
 			childID = 1;
+			groupID = 1;
 			hasBattery = false;
 			batValue = 255;
 			presType = S_UNKNOWN;
@@ -356,7 +366,7 @@ public:
 	void UpdateNode(const int nodeID, const std::string &name);
 	void RemoveNode(const int nodeID);
 	void RemoveChild(const int nodeID, const int childID);
-	void UpdateChild(const int nodeID, const int childID, const bool UseAck);
+	void UpdateChild(const int nodeID, const int childID, const bool UseAck, const int AckTimeout);
 	static std::string GetMySensorsValueTypeStr(const enum _eSetType vType);
 	static std::string GetMySensorsPresentationTypeStr(const enum _ePresentationType pType);
 	std::string GetGatewayVersion();
@@ -369,7 +379,7 @@ private:
 	bool GetChildDBInfo(const int NodeID, const int ChildID, _ePresentationType &pType, std::string &Name, bool &UseAck);
 
 	void SendCommandInt(const int NodeID, const int ChildID, const _eMessageType messageType, const bool UseAck, const int SubType, const std::string &Payload);
-	bool SendNodeSetCommand(const int NodeID, const int ChildID, const _eMessageType messageType, const _eSetType SubType, const std::string &Payload, const bool bUseAck);
+	bool SendNodeSetCommand(const int NodeID, const int ChildID, const _eMessageType messageType, const _eSetType SubType, const std::string &Payload, const bool bUseAck, const int AckTimeout);
 	void SendNodeCommand(const int NodeID, const int ChildID, const _eMessageType messageType, const int SubType, const std::string &Payload);
 
 
@@ -395,7 +405,7 @@ private:
 	_tMySensorNode* InsertNode(const int nodeID);
 	int FindNextNodeID();
 	_tMySensorChild* FindSensorWithPresentationType(const int nodeID, const _ePresentationType presType);
-	_tMySensorChild* FindChildWithValueType(const int nodeID, const _eSetType valType);
+	_tMySensorChild* FindChildWithValueType(const int nodeID, const _eSetType valType, const int groupID);
 	void InsertSensor(_tMySensorChild device);
 	void UpdateNodeBatteryLevel(const int nodeID, const int Level);
 	void UpdateNodeHeartbeat(const int nodeID);
