@@ -10206,6 +10206,16 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			switchcmd="Off";
 	}
 
+	//
+	//	For plugins all the specific logic below is irrelevent
+	//	so just send the full details to the plugin so that it can take appropriate action
+	//
+	if (pHardware->HwdType == HTYPE_PythonPlugin)
+	{
+		((Plugins::CPlugin*)m_hardwaredevices[hindex])->SendCommand(Unit, switchcmd, level, hue);
+		return true;
+	}
+
 	switch (dType)
 	{
 	case pTypeLighting1:

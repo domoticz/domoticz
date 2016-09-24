@@ -1,6 +1,5 @@
 <plugins name="My Plugins">
 	<plugin key="Denon4306" name="Denon 4306 Amplifier" author="dnpwwo" wikilink="http://www.domoticz.com/wiki/plugins/Denon.html" externallink="http://www.denon.co.uk/uk">
-		<transport type="tcp/ip" protocol="Line"/>
 		<params>
 			<param field="Address" label="IP Address" width="200px" required="true" default="127.0.0.1"/>
 			<param field="Port" label="Port" width="30px" required="true" default="22"/>
@@ -17,7 +16,6 @@
 		</devices>
 	</plugin>
 	<plugin key="NetworkPresence" name="Network Device Presence" author="dnpwwo" wikilink="http://www.domoticz.com/wiki/plugins/NetworkPresence.html" externallink="">
-		<transport type="none" protocol="none"/>
 		<params>
 			<param field="Address" label="Remote Address" width="200px" required="true" default="127.0.0.1"/>
 			<param field="Mode1" label="Mac Address" width="150px" required="true" default="00:00:00:00:00:00:00:00"/>
@@ -33,7 +31,6 @@
 		</devices>
 	</plugin>
 	<plugin key="Kodi" name="Kodi Players" author="dnpwwo" wikilink="http://www.domoticz.com/wiki/plugins/Kodi.html" externallink="https://kodi.tv/">
-		<transport type="tcp/ip" protocol="JSON" />
 		<params>
 			<param field="Address" label="IP Address" width="200px" required="true" default="127.0.0.1"/>
 			<param field="Port" label="Port" width="30px" required="true" default="9090"/>
@@ -55,12 +52,11 @@
 		</params>
 		<devices>
 			<device name="Status" unit="1" type="17" subtype="0" switchtype="17" icon=""/>
-			<device name="Source" unit="2" type="244" subtype="62" switchtype="18" icon="12"/>
+			<device name="Source" unit="2" type="244" subtype="62" switchtype="18" icon="12" options="LevelActions:fHx8fA==;LevelNames:T2ZmfFZpZGVvfE11c2ljfFRWIFNob3dzfExpdmUgVFY=;LevelOffHidden:ZmFsc2U=;SelectorStyle:MA=="/>
 			<device name="Volume" unit="3" type="244" subtype="73" switchtype="7" icon="8"/>
 		</devices>
 	</plugin>
 	<plugin key="RAVEn" name="RAVEn Zigbee energy monitor" script="RAVEn.py" author="dnpwwo" wikilink="http://www.domoticz.com/wiki/plugins/RAVEn.html" externallink="https://rainforestautomation.com/rfa-z106-raven/">
-		<transport type="serial" protocol="XML"/>
 		<params>
 			<param field="SerialPort" label="Serial Port" width="150px" required="true" default="/dev/ttyRAVEn"/>
 			<param field="Mode6" label="Debug" width="75px">
@@ -76,7 +72,6 @@
 		</devices>
 	</plugin>
 	<plugin key="GC-100-12" name="Global Cache 100-12" author="dnpwwo" wikilink="http://www.domoticz.com/wiki/plugins/GC-100-12.html" externallink="http://www.globalcache.com/products/gc-100/models1/">
-		<transport type="serial" protocol="XML"/>
 		<params>
 			<param field="Address" label="IP Address" width="200px" required="true" default="127.0.0.1"/>
 			<param field="Port" label="Port" width="30px" required="true" default="80"/>
