@@ -250,6 +250,7 @@ hardware/CurrentCostMeterBase.cpp
 hardware/CurrentCostMeterSerial.cpp
 hardware/CurrentCostMeterTCP.cpp
 hardware/Daikin.cpp
+hardware/DarkSky.cpp
 hardware/DavisLoggerSerial.cpp
 hardware/DenkoviSmartdenLan.cpp
 hardware/DomoticzHardware.cpp
@@ -263,7 +264,6 @@ hardware/Ec3kMeterTCP.cpp
 hardware/evohome.cpp
 hardware/ETH8020.cpp
 hardware/Fitbit.cpp
-hardware/ForecastIO.cpp
 hardware/FritzboxTCP.cpp
 hardware/GoodweAPI.cpp
 hardware/Gpio.cpp

@@ -31,6 +31,7 @@ Version 3.xxxx (August xx 2016)
 - Changed: Local I2C sensors grouping (ldrolez)
 - Changed: ETH-8020, ignoring return message as it always returns (no more Success message)
 - Changed: EventSystem, weather/rain value is now the rain-rate
+- Changed: Forecast.io to DarkSky
 - Changed: OpenZWave, Better support for Thermostat Modes
 - Changed: Stable ID generation for Philips Hue scenes (you need to delete all scenes and restart the hue hardware or domoticz)
 - Changed: TE923, Rain counter devided by 2

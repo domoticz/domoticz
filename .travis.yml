@@ -59,11 +59,11 @@ matrix:
       - make
   # Apple OSX
   - os: osx
+    osx_image: xcode6.2
     compiler:
       - gcc
     env: TARGET_ARCHITECTURE=x86_64
     install:
-      - brew install cmake
       - brew install boost|| true
       - brew install boost-python|| true
       - brew install libusb
