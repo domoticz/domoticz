@@ -27,28 +27,32 @@ typedef struct sensorType {
 
 #define sensorsCount 12
 
+// ISO2UTF8
+// π        Ê       Í       ≥       Ò       Û       ú       ü       ø       •      ∆                £       —       ”       å       è       Ø
+// \xC4\x85\xC4\x87\xC4\x99\xC5\x82\xC5\x84\xC3\xB3\xC5\x9B\xC5\xBA\xC5\xBC\xC4\x84\xC4\x86\xC4\x98\xC5\x81\xC5\x83\xC3\x93\xC5\x9A\xC5\xB9\xC5\xBB
+
 static sensorType sensors[sensorsCount] =
 {
-	{ "Temperatura zewnÍtrzna", 10.0 },
+	{ "Temperatura zewnetrzna", 10.0 },
 	{ "Temperatura pokojowa 1", 10.0 },
 	{ "Temperatura pokojowa 2", 10.0 },
-	{ "Temperatura powrotu kot≥a", 10.0 },
+	{ "Temperatura powrotu kotla", 10.0 },
 	{ "Temperatura obiegu C.O.1", 10.0 },
 	{ "Temperatura obiegu C.O.2", 10.0 },
 	{ "Temperatura C.W.U.", 10.0 },
-	{ "Temperatura øaru", 1.0 },
+	{ "Temperatura zaru", 1.0 },
 	{ "Temperatura spalin", 10.0 },
-	{ "Temperatura modu≥u", 10.0 },
-	{ "Temperatura zasilania kot≥a", 10.0 },
+	{ "Temperatura modulu", 10.0 },
+	{ "Temperatura zasilania kotla", 10.0 },
 	{ "Temperatura podajnika", 10.0 }
 };
 
 static std::string errors[4] =
 {
-	{"B≥Ídny kod funkcji"},
-	{"B≥Ídny adres rejestru"},
-	{"B≥Ídna iloúÊ rejestrÛw"},
-	{"B≥πd serwera"}
+	{"Bledny kod funkcji"},
+	{"Bledny adres rejestru"},
+	{"Bledna ilosc rejestrow"},
+	{"Blad serwera"}
 };
 
 MultiFun::MultiFun(const int ID, const std::string &IPAddress, const unsigned short IPPort) :
