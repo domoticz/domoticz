@@ -6,6 +6,8 @@
 #include <map>
 #include "DomoticzHardware.h"
 
+class csocket;
+
 class MultiFun : public CDomoticzHardwareBase
 {
 public:
@@ -20,8 +22,18 @@ private:
 	const std::string m_IPAddress;
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;
+	csocket *m_socket;
+	sockaddr_in m_addr;
+	boost::mutex m_mutex;
 
 	bool StartHardware();
 	bool StopHardware();
 	void Do_Work();
+
+	bool ConnectToDevice();
+	void DestroySocket();
+
+	int SendCommand(const char* cmd, const unsigned int cmdLength, unsigned char *answer);
+
+	void GetTemperatures();
 };
