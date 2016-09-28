@@ -104,7 +104,7 @@ enum _eHardwareTypes {
 	HTYPE_LimitlessLights,		//22
 	HTYPE_System,				//23
 	HTYPE_EnOceanESP2,			//24
-	HTYPE_ForecastIO,			//25
+	HTYPE_DarkSky,				//25
 	HTYPE_SolarEdgeTCP,			//26
 	HTYPE_SBFSpot,				//27
 	HTYPE_ICYTHERMOSTAT,		//28

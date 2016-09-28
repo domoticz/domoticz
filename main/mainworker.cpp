@@ -37,7 +37,7 @@
 #include "../hardware/1Wire.h"
 #include "../hardware/I2C.h"
 #include "../hardware/Wunderground.h"
-#include "../hardware/ForecastIO.h"
+#include "../hardware/DarkSky.h"
 #include "../hardware/HardwareMonitor.h"
 #include "../hardware/Dummy.h"
 #include "../hardware/Tellstick.h"
@@ -822,8 +822,8 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_HTTPPOLLER:
 		pHardware = new CHttpPoller(ID, Username, Password, Address, Filename, Port);
 		break;
-	case HTYPE_ForecastIO:
-		pHardware = new CForecastIO(ID,Username,Password);
+	case HTYPE_DarkSky:
+		pHardware = new CDarkSky(ID,Username,Password);
 		break;
 	case HTYPE_AccuWeather:
 		pHardware = new CAccuWeather(ID, Username, Password);

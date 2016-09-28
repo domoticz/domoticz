@@ -163,7 +163,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_1WIRE, "1-Wire (System)" },
 		{ HTYPE_RaspberryBMP085, "Local I2C sensor BMP085/180 Temp+Baro" },
 		{ HTYPE_Wunderground, "Weather Underground" },
-		{ HTYPE_ForecastIO, "Forecast IO (Weather Lookup)" },
+		{ HTYPE_DarkSky, "DarkSky (Weather Lookup)" },
 		{ HTYPE_Dummy, "Dummy (Does nothing, use for virtual switches only)" },
 		{ HTYPE_Tellstick, "Tellstick" },
 		{ HTYPE_PiFace, "PiFace - Raspberry Pi IO expansion board" },

@@ -418,6 +418,7 @@
     <ClInclude Include="..\hardware\CurrentCostMeterSerial.h" />
     <ClInclude Include="..\hardware\CurrentCostMeterTCP.h" />
     <ClInclude Include="..\hardware\Daikin.h" />
+    <ClInclude Include="..\hardware\DarkSky.h" />
     <ClInclude Include="..\hardware\DavisLoggerSerial.h" />
     <ClInclude Include="..\hardware\DenkoviSmartdenLan.h" />
     <ClInclude Include="..\hardware\Dummy.h" />
@@ -428,7 +429,6 @@
     <ClInclude Include="..\hardware\ETH8020.h" />
     <ClInclude Include="..\hardware\evohome.h" />
     <ClInclude Include="..\hardware\Fitbit.h" />
-    <ClInclude Include="..\hardware\ForecastIO.h" />
     <ClInclude Include="..\hardware\GoodweAPI.h" />
     <ClInclude Include="..\hardware\FritzboxTCP.h" />
     <ClInclude Include="..\hardware\Gpio.h" />
@@ -636,6 +636,7 @@
     <ClCompile Include="..\hardware\CurrentCostMeterSerial.cpp" />
     <ClCompile Include="..\hardware\CurrentCostMeterTCP.cpp" />
     <ClCompile Include="..\hardware\Daikin.cpp" />
+    <ClCompile Include="..\hardware\DarkSky.cpp" />
     <ClCompile Include="..\hardware\DavisLoggerSerial.cpp" />
     <ClCompile Include="..\hardware\DenkoviSmartdenLan.cpp" />
     <ClCompile Include="..\hardware\Dummy.cpp" />
@@ -646,7 +647,6 @@
     <ClCompile Include="..\hardware\ETH8020.cpp" />
     <ClCompile Include="..\hardware\evohome.cpp" />
     <ClCompile Include="..\hardware\Fitbit.cpp" />
-    <ClCompile Include="..\hardware\ForecastIO.cpp" />
     <ClCompile Include="..\hardware\FritzboxTCP.cpp" />
     <ClCompile Include="..\hardware\GoodweAPI.cpp" />
     <ClCompile Include="..\hardware\Gpio.cpp" />

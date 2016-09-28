@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "ForecastIO.h"
+#include "DarkSky.h"
 #include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "../httpclient/UrlEncode.h"
@@ -12,9 +12,9 @@
 
 #define round(a) ( int ) ( a + .5 )
 
-//#define DEBUG_ForecastIO
+//#define DEBUG_DarkSky
 
-CForecastIO::CForecastIO(const int ID, const std::string &APIKey, const std::string &Location) :
+CDarkSky::CDarkSky(const int ID, const std::string &APIKey, const std::string &Location) :
 m_APIKey(APIKey),
 m_Location(Location)
 {
@@ -23,25 +23,25 @@ m_Location(Location)
 	Init();
 }
 
-CForecastIO::~CForecastIO(void)
+CDarkSky::~CDarkSky(void)
 {
 }
 
-void CForecastIO::Init()
+void CDarkSky::Init()
 {
 }
 
-bool CForecastIO::StartHardware()
+bool CDarkSky::StartHardware()
 {
 	Init();
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CForecastIO::Do_Work, this)));
+	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CDarkSky::Do_Work, this)));
 	m_bIsStarted=true;
 	sOnConnected(this);
 	return (m_thread!=NULL);
 }
 
-bool CForecastIO::StopHardware()
+bool CDarkSky::StopHardware()
 {
 	if (m_thread!=NULL)
 	{
@@ -53,7 +53,7 @@ bool CForecastIO::StopHardware()
     return true;
 }
 
-void CForecastIO::Do_Work()
+void CDarkSky::Do_Work()
 {
 	int sec_counter = 590;
 	while (!m_stoprequested)
@@ -68,15 +68,15 @@ void CForecastIO::Do_Work()
 			GetMeterDetails();
 		}
 	}
-	_log.Log(LOG_STATUS,"ForecastIO Worker stopped...");
+	_log.Log(LOG_STATUS,"DarkSky: Worker stopped...");
 }
 
-bool CForecastIO::WriteToHardware(const char *pdata, const unsigned char length)
+bool CDarkSky::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	return false;
 }
 
-static std::string readForecastIOTestFile( const char *path )
+static std::string readDarkSkyTestFile( const char *path )
 {
 	std::string text;
 	FILE *file = fopen( path, "rb" );
@@ -94,23 +94,23 @@ static std::string readForecastIOTestFile( const char *path )
 	return text;
 }
 
-std::string CForecastIO::GetForecastURL()
+std::string CDarkSky::GetForecastURL()
 {
 	std::stringstream sURL;
 	std::string szLoc = CURLEncode::URLEncode(m_Location);
-	sURL << "https://forecast.io/#/f/" << szLoc;
+	sURL << "https://darksky.net/#/f/" << szLoc;
 	return sURL.str();
 }
 
-void CForecastIO::GetMeterDetails()
+void CDarkSky::GetMeterDetails()
 {
 	std::string sResult;
-#ifdef DEBUG_ForecastIO
-	sResult=readForecastIOTestFile("E:\\forecastio.json");
+#ifdef DEBUG_DarkSky
+	sResult=readDarkSkyTestFile("E:\\DarkSky.json");
 #else
 	std::stringstream sURL;
 	std::string szLoc = CURLEncode::URLEncode(m_Location);
-	sURL << "https://api.forecast.io/forecast/" << m_APIKey << "/" << szLoc;
+	sURL << "https://api.darksky.net/forecast/" << m_APIKey << "/" << szLoc;
 	try
 	{
 		bool bret;
@@ -118,13 +118,13 @@ void CForecastIO::GetMeterDetails()
 		bret = HTTPClient::GET(szURL, sResult);
 		if (!bret)
 		{
-			_log.Log(LOG_ERROR, "ForecastIO: Error getting http data!");
+			_log.Log(LOG_ERROR, "DarkSky: Error getting http data!");
 			return;
 		}
 	}
 	catch (...)
 	{
-		_log.Log(LOG_ERROR, "ForecastIO: Error getting http data!");
+		_log.Log(LOG_ERROR, "DarkSky: Error getting http data!");
 		return;
 	}
 
@@ -135,17 +135,17 @@ void CForecastIO::GetMeterDetails()
 	bool ret=jReader.parse(sResult,root);
 	if (!ret)
 	{
-		_log.Log(LOG_ERROR,"ForecastIO: Invalid data received!");
+		_log.Log(LOG_ERROR,"DarkSky: Invalid data received!");
 		return;
 	}
 	if (root["currently"].empty()==true)
 	{
-		_log.Log(LOG_ERROR,"ForecastIO: Invalid data received, or unknown location!");
+		_log.Log(LOG_ERROR,"DarkSky: Invalid data received, or unknown location!");
 		return;
 	}
 	/*
 	std::string tmpstr2 = root.toStyledString();
-	FILE *fOut = fopen("E:\\forecastio.json", "wb+");
+	FILE *fOut = fopen("E:\\DarkSky.json", "wb+");
 	fwrite(tmpstr2.c_str(), 1, tmpstr2.size(), fOut);
 	fclose(fOut);
 	*/
