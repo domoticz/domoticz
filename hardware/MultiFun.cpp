@@ -10,6 +10,7 @@
 #include "../main/mainworker.h"
 #include "../main/SQLHelper.h"
 #include "csocket.h"
+#include <Boost\assign.hpp>
 
 #ifdef _DEBUG
 	#define DEBUG_MultiFun
@@ -34,52 +35,45 @@ typedef struct sensorType {
 
 typedef std::map<int, std::string> dictionary;
 
-static dictionary alarmsType =
-{
-	{ 0x0001, "STOP KOT£A – NIEUDANE ROZPALANIE" },
-	{ 0x0004, "PRZEGRZANIE KOT£A" },
-	{ 0x0010, "ZGAS£O W KOTLE" },
-	{ 0x0080, "USZKODZONY CZUJNIK KOT£A" },
-	{ 0x0100, "USZKODZONY CZUJNIK PODAJNIKA" },
-	{ 0x0200, "CZUJNIK SPALIN" },
-	{ 0x0400, "NIEPOWODZENIE – BLOKADA PRACY" }
-};
+static dictionary alarmsType = boost::assign::map_list_of
+(0x0001, "STOP KOT£A – NIEUDANE ROZPALANIE")
+(0x0004, "PRZEGRZANIE KOT£A")
+(0x0010, "ZGAS£O W KOTLE")
+(0x0080, "USZKODZONY CZUJNIK KOT£A")
+(0x0100, "USZKODZONY CZUJNIK PODAJNIKA")
+(0x0200, "CZUJNIK SPALIN")
+(0x0400, "NIEPOWODZENIE – BLOKADA PRACY");
 
-static dictionary warningsType =
-{
-	{ 0x0001, "Brak czujnika zewnêtrznego" },
-	{ 0x0002, "Bark czujnika pokojowego nr 1" },
-	{ 0x0004, "Niew³aœciwa wersja zasilacza" },
-	{ 0x0008, "Brak czujnika powrotu" },
-	{ 0x0010, "Barak czujnika pokojowego nr 2" },
-	{ 0x0020, "Otwarta klapa" },
-	{ 0x0040, "Zadzia³a³o zabezpieczenie termiczne(termik)" }
-};
 
-static dictionary devicesType =
-{
-	{ 0x0001, "Pompa C.O.1" },
-	{ 0x0002, "Pompa C.O.2" },
-	{ 0x0004, "Pompa przewa³owa" },
-	{ 0x0008, "Pompa C.W.U." },
-	{ 0x0010, "Pompa cyrkulacyjna" },
-	{ 0x0020, "Pompa bufora" },
-	{ 0x0040, "Mieszacz C.O.1 Zam." },
-	{ 0x0080, "Mieszacz C.O.1 Otw." },
-	{ 0x0100, "Mieszacz C.O.2 Zam." },
-	{ 0x0200, "Mieszacz C.O.2 Otw." }
+static dictionary warningsType = boost::assign::map_list_of
+(0x0001, "Brak czujnika zewnêtrznego")
+(0x0002, "Bark czujnika pokojowego nr 1")
+(0x0004, "Niew³aœciwa wersja zasilacza")
+(0x0008, "Brak czujnika powrotu")
+(0x0010, "Barak czujnika pokojowego nr 2")
+(0x0020, "Otwarta klapa")
+(0x0040, "Zadzia³a³o zabezpieczenie termiczne(termik)");
+
+static dictionary devicesType = boost::assign::map_list_of
+(0x0001, "Pompa C.O.1")
+(0x0002, "Pompa C.O.2")
+(0x0004, "Pompa przewa³owa")
+(0x0008, "Pompa C.W.U.")
+(0x0010, "Pompa cyrkulacyjna")
+(0x0020, "Pompa bufora")
+(0x0040, "Mieszacz C.O.1 Zam.")
+(0x0080, "Mieszacz C.O.1 Otw.")
+(0x0100, "Mieszacz C.O.2 Zam.")
+(0x0200, "Mieszacz C.O.2 Otw.");
 //Wentylator moc 6 bitów	MSB	Wartoœæ od 0 – 100 przesy³ana na	najstarszych 6 bitach
-};
 
-static dictionary statesType = 
-{
-	{ 0x0001, "Stop" },
-	{ 0x0002, "Rozpalanie" },
-	{ 0x0004, "Palenie" },
-	{ 0x0008, "Podtrzymanie" },
-	{ 0x0010, "Wygaszanie" }
+static dictionary statesType = boost::assign::map_list_of
+(0x0001, "Stop")
+(0x0002, "Rozpalanie")
+(0x0004, "Palenie")
+(0x0008, "Podtrzymanie")
+(0x0010, "Wygaszanie");
 	//Poziom paliwa 6 bitów	MSB	Wartoœæ od 0 – 100 przesy³ana na	najstarszych 6 bitach
-};
 
 static sensorType sensors[sensorsCount] =
 {
