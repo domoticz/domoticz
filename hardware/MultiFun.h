@@ -26,6 +26,11 @@ private:
 	sockaddr_in m_addr;
 	boost::mutex m_mutex;
 
+	int m_LastAlarms;
+	int m_LastWarnings;
+	int m_LastDevices;
+	int m_LastState;
+
 	bool StartHardware();
 	bool StopHardware();
 	void Do_Work();
@@ -36,4 +41,5 @@ private:
 	int SendCommand(const char* cmd, const unsigned int cmdLength, unsigned char *answer);
 
 	void GetTemperatures();
+	void GetRegisters();
 };
