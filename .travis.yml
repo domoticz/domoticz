@@ -59,6 +59,7 @@ matrix:
       - make
   # Apple OSX
   - os: osx
+    osx_image: xcode6.2
     compiler:
       - gcc
     env: TARGET_ARCHITECTURE=x86_64
