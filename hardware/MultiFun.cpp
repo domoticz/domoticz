@@ -254,8 +254,11 @@ void MultiFun::GetTemperatures()
 		{
 			for (int i = 0; i < sensorsCount; i++)
 			{
-				float temp = (buffer[i * 2 + 1] * 256 + buffer[i * 2 + 2]) / sensors[i].div;
-				SendTempSensor(i, 255, temp, sensors[i].name);
+				if (buffer[i * 2 + 1] != 254)
+				{
+					float temp = (buffer[i * 2 + 1] * 256 + buffer[i * 2 + 2]) / sensors[i].div;
+					SendTempSensor(i, 255, temp, sensors[i].name);
+				}
 			}
 		}
 
@@ -297,7 +300,7 @@ void MultiFun::GetRegisters()
 				int value = buffer[2 * i + 1] * 256 + buffer[2 * i + 2];
 				switch (i)
 				{
-				case 0:
+				case 0x00:
 				{
 					dictionary::iterator it = alarmsType.begin();
 					for (; it != alarmsType.end(); it++)
@@ -315,7 +318,7 @@ void MultiFun::GetRegisters()
 					m_LastAlarms = value;
 					break;
 				}
-				case 1: 
+				case 0x01: 
 				{
 					dictionary::iterator it = warningsType.begin();
 					for (; it != warningsType.end(); it++)
@@ -333,7 +336,7 @@ void MultiFun::GetRegisters()
 					m_LastWarnings = value;
 					break;
 				}
-				case 2:
+				case 0x02:
 				{
 					dictionary::iterator it = devicesType.begin();
 					for (; it != devicesType.end(); it++)
@@ -354,8 +357,8 @@ void MultiFun::GetRegisters()
 					SendPercentageSensor(2, 1, 255, level, "Fan power");
 					break;
 				}
-				case 3:
-				{
+				case 0x03:
+				{ // TODO - dla ostatnich dwoch urzadzen inaczej, bo to to samo tylko on/off
 					dictionary::iterator it = statesType.begin();
 					for (; it != statesType.end(); it++)
 					{
@@ -376,6 +379,25 @@ void MultiFun::GetRegisters()
 					break;
 				}
 
+				case 0x1C:
+				case 0x1D:
+				{
+					float temp = value;
+					if (value & 0x8000 == 0x8000)
+					{
+						temp = (value & 0x0FFF) * 0.2;
+					}
+					char name[20];
+					sprintf(name, "Temperatura CO %d", i - 0x1C + 1);
+					SendSetPointSensor(1, i, 1, temp, name);
+					break;
+				}
+
+				case 0x1E:
+				{
+					SendSetPointSensor(1, 0x1E, 1, value, "Temperatura CWU");
+					break;
+				}
 				default: break;
 				}
 			}
