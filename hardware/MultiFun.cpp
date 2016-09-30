@@ -10,7 +10,7 @@
 #include "../main/mainworker.h"
 #include "../main/SQLHelper.h"
 #include "csocket.h"
-#include <Boost/assign.hpp>
+#include <boost/assign.hpp>
 
 #ifdef _DEBUG
 	#define DEBUG_MultiFun
@@ -93,10 +93,10 @@ static sensorType sensors[sensorsCount] =
 
 static std::string errors[4] =
 {
-	{"Bledny kod funkcji"},
-	{"Bledny adres rejestru"},
-	{"Bledna ilosc rejestrow"},
-	{"Blad serwera"}
+	"Bledny kod funkcji",
+	"Bledny adres rejestru",
+	"Bledna ilosc rejestrow",
+	"Blad serwera"
 };
 
 MultiFun::MultiFun(const int ID, const std::string &IPAddress, const unsigned short IPPort) :
