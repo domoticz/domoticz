@@ -10,7 +10,7 @@
 #include "../main/mainworker.h"
 #include "../main/SQLHelper.h"
 #include "csocket.h"
-#include <Boost\assign.hpp>
+#include <Boost/assign.hpp>
 
 #ifdef _DEBUG
 	#define DEBUG_MultiFun
