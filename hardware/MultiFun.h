@@ -30,6 +30,7 @@ private:
 	int m_LastWarnings;
 	int m_LastDevices;
 	int m_LastState;
+	int m_LastQuickAccess;
 
 	bool StartHardware();
 	bool StopHardware();
@@ -38,8 +39,8 @@ private:
 	bool ConnectToDevice();
 	void DestroySocket();
 
-	int SendCommand(const char* cmd, const unsigned int cmdLength, unsigned char *answer);
+	int SendCommand(const unsigned char* cmd, const unsigned int cmdLength, unsigned char *answer);
 
 	void GetTemperatures();
-	void GetRegisters();
+	void GetRegisters(bool FirstTime);
 };

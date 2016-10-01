@@ -91,6 +91,13 @@ static sensorType sensors[sensorsCount] =
 	{ "Temperatura podajnika", 10.0 }
 };
 
+static dictionary quickAccessType = boost::assign::map_list_of
+	(0x0001, "Prysznic")
+	(0x0002, "Party")
+	(0x0004, "Komfort")
+	(0x0008, "Wietrzenie")
+	(0x0010, "Antyzamarzanie");
+
 static std::string errors[4] =
 {
 	"Bledny kod funkcji",
@@ -107,7 +114,8 @@ MultiFun::MultiFun(const int ID, const std::string &IPAddress, const unsigned sh
 	m_LastAlarms(0),
 	m_LastWarnings(0),
 	m_LastDevices(0),
-	m_LastState(0)
+	m_LastState(0),
+	m_LastQuickAccess(0)
 {
 	_log.Log(LOG_STATUS, "MultiFun: Create instance");
 	m_HwdID = ID;
@@ -157,6 +165,8 @@ void MultiFun::Do_Work()
 
 	int sec_counter = MULTIFUN_POLL_INTERVAL;
 
+	bool firstTime = true;
+
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
@@ -171,7 +181,8 @@ void MultiFun::Do_Work()
 		if (sec_counter % MULTIFUN_POLL_INTERVAL == 0)
 		{
 			GetTemperatures();
-			GetRegisters();
+			GetRegisters(firstTime);
+			firstTime = false;
 #ifdef DEBUG_MultiFun
 			_log.Log(LOG_STATUS, "MultiFun: fetching changed data");
 #endif
@@ -182,6 +193,33 @@ void MultiFun::Do_Work()
 bool MultiFun::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	const tRBUF *output = reinterpret_cast<const tRBUF*>(pdata);
+
+	if (output->ICMND.packettype == pTypeGeneralSwitch && output->LIGHTING2.subtype == sSwitchTypeAC)
+	{
+		const _tGeneralSwitch *general = reinterpret_cast<const _tGeneralSwitch*>(pdata);
+
+		if (general->id == 0x21)
+		{
+			unsigned char buffer[100];
+			unsigned char cmd[20];
+			cmd[0] = 0x01; // transaction id (2 bytes)
+			cmd[1] = 0x02;
+			cmd[2] = 0x00; // protocol id (2 bytes)
+			cmd[3] = 0x00;
+			cmd[4] = 0x00; // length (2 bytes)
+			cmd[5] = 0x08;
+			cmd[6] = 0xFF; // unit id
+			cmd[7] = 0x10; // function code 
+			cmd[8] = 0x00; // start address (2 bytes)
+			cmd[9] = 0x21;
+			cmd[10] = 0x00; // number of sensor (2 bytes)
+			cmd[11] = 0x01;
+			cmd[12] = 0x02;
+			cmd[13] = 0xFF & general->unitcode;
+
+			int ret = SendCommand(cmd, 14, buffer);
+		}
+	}
 
 	return false;
 }
@@ -229,7 +267,7 @@ void MultiFun::DestroySocket()
 void MultiFun::GetTemperatures()
 {
 	unsigned char buffer[50];
-	char cmd[12];
+	unsigned char cmd[12];
 	cmd[0] = 0x01; // transaction id (2 bytes)
 	cmd[1] = 0x02;
 	cmd[2] = 0x00; // protocol id (2 bytes)
@@ -269,10 +307,10 @@ void MultiFun::GetTemperatures()
 	}
 }
 
-void MultiFun::GetRegisters()
+void MultiFun::GetRegisters(bool firstTime)
 {
 	unsigned char buffer[100];
-	char cmd[12];
+	unsigned char cmd[12];
 	cmd[0] = 0x01; // transaction id (2 bytes)
 	cmd[1] = 0x02;
 	cmd[2] = 0x00; // protocol id (2 bytes)
@@ -343,12 +381,12 @@ void MultiFun::GetRegisters()
 					{
 						if (((*it).first & value) && !((*it).first & m_LastDevices))
 						{
-							SendGeneralSwitchSensor(1, 255, true, (*it).second.c_str(), (*it).first);
+							SendGeneralSwitchSensor(2, 255, true, (*it).second.c_str(), (*it).first);
 						}
 						else
 							if (!((*it).first & value) && ((*it).first & m_LastDevices))
 							{
-								SendGeneralSwitchSensor(1, 255, false, (*it).second.c_str(), (*it).first);
+								SendGeneralSwitchSensor(2, 255, false, (*it).second.c_str(), (*it).first);
 							}
 					}
 					m_LastDevices = value;
@@ -358,18 +396,18 @@ void MultiFun::GetRegisters()
 					break;
 				}
 				case 0x03:
-				{ // TODO - dla ostatnich dwoch urzadzen inaczej, bo to to samo tylko on/off
+				{ 
 					dictionary::iterator it = statesType.begin();
 					for (; it != statesType.end(); it++)
 					{
 						if (((*it).first & value) && !((*it).first & m_LastState))
 						{
-							SendTextSensor(1, 3, 255, (*it).second, "State");
+							SendTextSensor(3, 1, 255, (*it).second, "State");
 						}
 						else
 							if (!((*it).first & value) && ((*it).first & m_LastState))
 							{
-								SendTextSensor(1, 3, 255, "Koniec - " + (*it).second, "State");
+								SendTextSensor(3, 1, 255, "Koniec - " + (*it).second, "State");
 							}
 					}
 					m_LastState = value;
@@ -389,13 +427,32 @@ void MultiFun::GetRegisters()
 					}
 					char name[20];
 					sprintf(name, "Temperatura CO %d", i - 0x1C + 1);
-					SendSetPointSensor(1, i, 1, temp, name);
+					SendSetPointSensor(i, 1, 1, temp, name);
 					break;
 				}
 
 				case 0x1E:
 				{
-					SendSetPointSensor(1, 0x1E, 1, value, "Temperatura CWU");
+					SendSetPointSensor(0x1E, 1, 1, value, "Temperatura CWU");
+					break;
+				}
+
+				case 0x21:
+				{
+					dictionary::iterator it = quickAccessType.begin();
+					for (; it != quickAccessType.end(); it++)
+					{
+						if (((*it).first & value) && !((*it).first & m_LastQuickAccess))
+						{
+							SendGeneralSwitchSensor(0x21, 255, true, (*it).second.c_str(), (*it).first);
+						}
+						else
+							if ((!((*it).first & value) && ((*it).first & m_LastQuickAccess)) || firstTime)
+							{
+								SendGeneralSwitchSensor(0x21, 255, false, (*it).second.c_str(), (*it).first);
+							}
+					}
+					m_LastQuickAccess = value;
 					break;
 				}
 				default: break;
@@ -410,7 +467,7 @@ void MultiFun::GetRegisters()
 	}
 }
 
-int MultiFun::SendCommand(const char* cmd, const unsigned int cmdLength, unsigned char *answer)
+int MultiFun::SendCommand(const unsigned char* cmd, const unsigned int cmdLength, unsigned char *answer)
 {
 	if (!ConnectToDevice())
 	{
@@ -419,10 +476,10 @@ int MultiFun::SendCommand(const char* cmd, const unsigned int cmdLength, unsigne
 
 	boost::lock_guard<boost::mutex> lock(m_mutex);
 
-	char databuffer[BUFFER_LENGHT];
+	unsigned char databuffer[BUFFER_LENGHT];
 	int ret;
 
-	if (m_socket->write(cmd, cmdLength) != cmdLength)
+	if (m_socket->write((char*)cmd, cmdLength) != cmdLength)
 	{
 		_log.Log(LOG_ERROR, "MultiFun: Send command failed");
 		DestroySocket();
@@ -435,7 +492,7 @@ int MultiFun::SendCommand(const char* cmd, const unsigned int cmdLength, unsigne
 	{
 		if (memset(databuffer, 0, BUFFER_LENGHT) > 0)
 		{
-			ret = m_socket->read(databuffer, BUFFER_LENGHT, false);
+			ret = m_socket->read((char*)databuffer, BUFFER_LENGHT, false);
 		}
 	}
 
@@ -468,7 +525,7 @@ int MultiFun::SendCommand(const char* cmd, const unsigned int cmdLength, unsigne
 				}
 			}
 			else
-				if (cmd[0] + 0x80 == databuffer[7])
+				if (cmd[7] + 0x80 == databuffer[7])
 				{
 					if (databuffer[8] >= 1 && databuffer[8] <= 4)
 					{
