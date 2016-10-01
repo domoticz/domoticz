@@ -36,13 +36,13 @@ typedef struct sensorType {
 typedef std::map<int, std::string> dictionary;
 
 static dictionary alarmsType = boost::assign::map_list_of
-(0x0001, "STOP KOTLA – NIEUDANE ROZPALANIE")
+(0x0001, "STOP KOTLA - NIEUDANE ROZPALANIE")
 (0x0004, "PRZEGRZANIE KOTLA")
 (0x0010, "ZGASLO W KOTLE")
 (0x0080, "USZKODZONY CZUJNIK KOTLA")
 (0x0100, "USZKODZONY CZUJNIK PODAJNIKA")
 (0x0200, "CZUJNIK SPALIN")
-(0x0400, "NIEPOWODZENIE – BLOKADA PRACY");
+(0x0400, "NIEPOWODZENIE - BLOKADA PRACY");
 
 
 static dictionary warningsType = boost::assign::map_list_of
@@ -461,7 +461,7 @@ void MultiFun::GetRegisters(bool firstTime)
 				case 0x1D:
 				{
 					float temp = value;
-					if (value & 0x8000 == 0x8000)
+					if ((value & 0x8000) == 0x8000)
 					{
 						temp = (value & 0x0FFF) * 0.2;
 					}
