@@ -200,6 +200,16 @@ bool MultiFun::WriteToHardware(const char *pdata, const unsigned char length)
 
 		if (general->id == 0x21)
 		{
+			int change;
+			if (general->cmnd == gswitch_sOn)
+			{ 
+				change = m_LastQuickAccess | (1 << (general->unitcode - 1));
+			}
+			else
+			{ 
+				change = m_LastQuickAccess & ~(1 << (general->unitcode - 1));
+			}
+
 			unsigned char buffer[100];
 			unsigned char cmd[20];
 			cmd[0] = 0x01; // transaction id (2 bytes)
@@ -207,18 +217,48 @@ bool MultiFun::WriteToHardware(const char *pdata, const unsigned char length)
 			cmd[2] = 0x00; // protocol id (2 bytes)
 			cmd[3] = 0x00;
 			cmd[4] = 0x00; // length (2 bytes)
-			cmd[5] = 0x08;
+			cmd[5] = 0x09;
 			cmd[6] = 0xFF; // unit id
 			cmd[7] = 0x10; // function code 
 			cmd[8] = 0x00; // start address (2 bytes)
 			cmd[9] = 0x21;
 			cmd[10] = 0x00; // number of sensor (2 bytes)
 			cmd[11] = 0x01;
-			cmd[12] = 0x02;
-			cmd[13] = 0xFF & general->unitcode;
+			cmd[12] = 0x02; // number of bytes
+			cmd[13] = 0x00;
+			cmd[14] = change;
 
-			int ret = SendCommand(cmd, 14, buffer);
+			int ret = SendCommand(cmd, 15, buffer, true);
+			if (ret == 4)
+				return true;
 		}
+	}
+
+	if (output->ICMND.packettype == pTypeThermostat && output->LIGHTING2.subtype == sTypeThermSetpoint)
+	{
+		const _tThermostat *therm = reinterpret_cast<const _tThermostat*>(pdata);
+
+		unsigned char buffer[100];
+		unsigned char cmd[20];
+		cmd[0] = 0x01; // transaction id (2 bytes)
+		cmd[1] = 0x02;
+		cmd[2] = 0x00; // protocol id (2 bytes)
+		cmd[3] = 0x00;
+		cmd[4] = 0x00; // length (2 bytes)
+		cmd[5] = 0x09;
+		cmd[6] = 0xFF; // unit id
+		cmd[7] = 0x10; // function code 
+		cmd[8] = 0x00; // start address (2 bytes)
+		cmd[9] = therm->id2;
+		cmd[10] = 0x00; // number of sensor (2 bytes)
+		cmd[11] = 0x01; 
+		cmd[12] = 0x02; // number of bytes
+		cmd[13] = 0x00;
+		cmd[14] = therm->temp;
+
+		int ret = SendCommand(cmd, 15, buffer, true);
+		if (ret == 4)
+			return true;
 	}
 
 	return false;
@@ -281,7 +321,7 @@ void MultiFun::GetTemperatures()
 	cmd[10] = 0x00; // number of sensor (2 bytes)
 	cmd[11] = sensorsCount;
 
-	int ret = SendCommand(cmd, 12, buffer);
+	int ret = SendCommand(cmd, 12, buffer, false);
 	if (ret > 0)
 	{
 		if ((ret != 1 + sensorsCount * 2) || (buffer[0] != sensorsCount * 2))
@@ -324,7 +364,7 @@ void MultiFun::GetRegisters(bool firstTime)
 	cmd[10] = 0x00; // number of sensor (2 bytes)
 	cmd[11] = registersCount;
 
-	int ret = SendCommand(cmd, 12, buffer);
+	int ret = SendCommand(cmd, 12, buffer, false);
 	if (ret > 0)
 	{
 		if ((ret != 1 + registersCount * 2) || (buffer[0] != registersCount * 2))
@@ -467,7 +507,7 @@ void MultiFun::GetRegisters(bool firstTime)
 	}
 }
 
-int MultiFun::SendCommand(const unsigned char* cmd, const unsigned int cmdLength, unsigned char *answer)
+int MultiFun::SendCommand(const unsigned char* cmd, const unsigned int cmdLength, unsigned char *answer, bool write)
 {
 	if (!ConnectToDevice())
 	{
@@ -517,7 +557,21 @@ int MultiFun::SendCommand(const unsigned char* cmd, const unsigned int cmdLength
 
 				if ((int)databuffer[4] * 256 + (int)databuffer[5] == answerLength + 2)
 				{
-					return answerLength;
+					if (write)
+					{
+						if (cmd[8] == databuffer[8] && cmd[9] == databuffer[9] && cmd[10] == databuffer[10] && cmd[11] == databuffer[11])
+						{
+							return answerLength;
+						}
+						else
+						{
+							_log.Log(LOG_ERROR, "MultiFun: bad response after write");
+						}
+					}
+					else
+					{
+						return answerLength;
+					}
 				}
 				else
 				{

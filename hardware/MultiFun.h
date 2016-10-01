@@ -39,7 +39,7 @@ private:
 	bool ConnectToDevice();
 	void DestroySocket();
 
-	int SendCommand(const unsigned char* cmd, const unsigned int cmdLength, unsigned char *answer);
+	int SendCommand(const unsigned char* cmd, const unsigned int cmdLength, unsigned char *answer, bool write);
 
 	void GetTemperatures();
 	void GetRegisters(bool FirstTime);
