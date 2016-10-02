@@ -1018,7 +1018,7 @@ namespace http {
 				(htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) || (htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) ||
 				(htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_ECODEVICES) || (htype == HTYPE_Mochad) || (htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MQTT) || (htype == HTYPE_FRITZBOX) ||
 				(htype == HTYPE_ETH8020) || (htype == HTYPE_Sterbox) || (htype == HTYPE_KMTronicTCP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_RFLINKTCP) || (htype == HTYPE_Comm5TCP) || (htype == HTYPE_CurrentCostMeterLAN) ||
-				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviSmartdenLan) || (htype == HTYPE_Ec3kMeterTCP) || (htype == HTYPE_Yeelight)
+				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviSmartdenLan) || (htype == HTYPE_Ec3kMeterTCP)
 				) {
 				//Lan
 				if (address == "" || port == 0)
@@ -1096,6 +1096,9 @@ namespace http {
 				//all fine here!
 			}
 			else if (htype == HTYPE_HEOS) {
+				//all fine here!
+			}
+			else if (htype == HTYPE_Yeelight) {
 				//all fine here!
 			}
 			else if (
@@ -1181,13 +1184,7 @@ namespace http {
 			else if (htype == HTYPE_GoodweAPI) {
 				if (username == "")
 					return;
-			}
-			else if (htype == HTYPE_Yeelight) {
-				if (
-					(address == "")
-					)
-					return;				
-			}
+			}			
 			else
 				return;
 
@@ -1310,7 +1307,7 @@ namespace http {
 				(htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MQTT) || (htype == HTYPE_FRITZBOX) || (htype == HTYPE_ETH8020) || (htype == HTYPE_Sterbox) ||
 				(htype == HTYPE_KMTronicTCP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_RFLINKTCP) ||
 				(htype == HTYPE_Comm5TCP || (htype == HTYPE_CurrentCostMeterLAN)) ||
-				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviSmartdenLan) || (htype == HTYPE_Ec3kMeterTCP) || (htype == HTYPE_Yeelight)
+				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviSmartdenLan) || (htype == HTYPE_Ec3kMeterTCP)
 				){
 				//Lan
 				if (address == "")
@@ -1383,6 +1380,9 @@ namespace http {
 				//All fine here
 			}
 			else if (htype == HTYPE_HEOS) {
+				//All fine here
+			}
+			else if (htype == HTYPE_Yeelight) {
 				//All fine here
 			}
 			else if (
@@ -5659,9 +5659,7 @@ namespace http {
 						root["message"] = "WRONG CODE";
 						return;
 					}
-				}
-
-				_log.Log(LOG_STATUS, "User: %s initiated a switch command", Username.c_str());
+				}				
 
 				if (switchcmd == "Toggle") {
 					//Request current state of switch

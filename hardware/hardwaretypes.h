@@ -515,7 +515,7 @@ typedef struct _tYeelight {
 		command = 0;
 		value = 0;
 	}
-};
+} _tYeelight;
 
 #define Yeelight_LedOff 0
 #define Yeelight_LedOn 1

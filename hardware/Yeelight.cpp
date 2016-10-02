@@ -10,14 +10,11 @@
 #include "../webserver/cWebem.h"
 #include <sstream>
 
-Yeelight::Yeelight(const int ID, const std::string &IPAddress, const unsigned short usIPPort) :
-	m_szIPAddress(IPAddress)
+Yeelight::Yeelight(const int ID)
 {
 	m_HwdID = ID;
 	m_bDoRestart = false;
 	m_stoprequested = false;
-	m_usIPPort = usIPPort;
-	m_szIPAddress = IPAddress;
 }
 
 Yeelight::~Yeelight(void)
@@ -65,190 +62,42 @@ void Yeelight::Do_Work()
 		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat = mytime(NULL);
 		}
-		if (sec_counter % 2) //60 == 0) //wait 1 minute
-		{
-			DiscoverLights();
-			//ListenLights(); not working, it might need the discover message sent
-		}
+		if (sec_counter % 60 == 0) //60 == 0) //wait 1 minute
+		{			
+			DiscoverLights();			
+		}		
 	}
 	_log.Log(LOG_STATUS, "Yeelight Controller stopped...");
 }
 
-bool Yeelight::ListenLights() {
-
-	_log.Log(LOG_STATUS, "Yeelight ListenLights.");
-
-	int iResult = 0;
-
-	WSADATA wsaData;
-
-	SOCKET RecvSocket;
-	sockaddr_in RecvAddr;
-
-	unsigned short Port = 1982;
-
-	char RecvBuf[1024];
-	int BufLen = 1024;
-
-	sockaddr_in SenderAddr;
-	int SenderAddrSize = sizeof(SenderAddr);
-
-	//-----------------------------------------------
-	// Initialize Winsock
-	iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
-	if (iResult != NO_ERROR) {
-		_log.Log(LOG_STATUS, "WSAStartup() failed with error: %d\n", iResult);
-		//wprintf(L"WSAStartup failed with error %d\n", iResult);
-		return 1;
-	}
-	//-----------------------------------------------
-	// Create a receiver socket to receive datagrams
-	RecvSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-	if (RecvSocket == INVALID_SOCKET) {
-		_log.Log(LOG_STATUS, "socket failed with error %d\n", WSAGetLastError());
-		//wprintf(L"socket failed with error %d\n", WSAGetLastError());
-		return 1;
-	}
-	//-----------------------------------------------
-	// Bind the socket to any address and the specified port.
-	RecvAddr.sin_family = AF_INET;
-	RecvAddr.sin_port = htons(Port);
-	//RecvAddr.sin_addr.s_addr = htonl(INADDR_ANY);
-	RecvAddr.sin_addr.s_addr = inet_addr(m_szIPAddress.c_str());
-
-	iResult = bind(RecvSocket, (SOCKADDR *)& RecvAddr, sizeof(RecvAddr));
-	if (iResult != 0) {
-		_log.Log(LOG_STATUS, "bind failed with error %d\n", WSAGetLastError());
-		//wprintf(L"bind failed with error %d\n", WSAGetLastError());
-		return 1;
-	}
-	//-----------------------------------------------
-	// Call the recvfrom function to receive datagrams
-	// on the bound socket.
-	//wprintf(L"Receiving datagrams...\n");
-	_log.Log(LOG_STATUS, "Receiving datagrams...\n");
-	iResult = recvfrom(RecvSocket,
-		RecvBuf, BufLen, 0, (SOCKADDR *)& SenderAddr, &SenderAddrSize);
-	if (iResult == SOCKET_ERROR) {
-		_log.Log(LOG_STATUS, "recvfrom failed with error %d\n", WSAGetLastError());
-		//wprintf(L"recvfrom failed with error %d\n", WSAGetLastError());
-	}
-	_log.Log(LOG_STATUS, "recv: %s\n", RecvBuf);
-	//-----------------------------------------------
-	// Close the socket when finished receiving datagrams
-	//wprintf(L"Finished receiving. Closing socket.\n");
-	iResult = closesocket(RecvSocket);
-	if (iResult == SOCKET_ERROR) {
-		_log.Log(LOG_STATUS, "closesocket failed with error %d\n", WSAGetLastError());
-		//wprintf(L"closesocket failed with error %d\n", WSAGetLastError());
-		return false;
-	}
-
-	//-----------------------------------------------
-	// Clean up and exit.
-	_log.Log(LOG_STATUS, "Exiting.\n");
-	//wprintf(L"Exiting.\n");
-	WSACleanup();
-
-	/*
-	//----------------------
-	// Initialize Winsock
-	WSADATA wsaData;
-	int iResult = 0;
-
-	SOCKET ListenSocket = INVALID_SOCKET;
-	sockaddr_in service;
-
-	iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
-	if (iResult != NO_ERROR) {
-	_log.Log(LOG_STATUS, "WSAStartup() failed with error: %d\n", iResult);
-	//wprintf(L"WSAStartup() failed with error: %d\n", iResult);
-	return 1;
-	}
-	//udpSocket = socket(AF_INET, SOCK_DGRAM, 0);
-	//----------------------
-	// Create a SOCKET for listening for incoming connection requests.
-	ListenSocket = socket(AF_INET, SOCK_STREAM, 0); // IPPROTO_UDP);
-	if (ListenSocket == INVALID_SOCKET) {
-	_log.Log(LOG_STATUS, "socket function failed with error: %ld\n", WSAGetLastError());
-	//wprintf(L"socket function failed with error: %ld\n", WSAGetLastError());
-	WSACleanup();
-	return 1;
-	}
-	//----------------------
-	// The sockaddr_in structure specifies the address family,
-	// IP address, and port for the socket that is being bound.
-	service.sin_family = AF_INET;
-	service.sin_addr.s_addr = inet_addr(m_szIPAddress.c_str()); //inet_addr("127.0.0.1");
-	service.sin_port = htons(1982);
-
-	iResult = bind(ListenSocket, (SOCKADDR *)& service, sizeof(service));
-	if (iResult == SOCKET_ERROR) {
-	//wprintf(L"bind function failed with error %d\n", WSAGetLastError());
-	_log.Log(LOG_STATUS, "bind function failed with error %d\n", WSAGetLastError());
-	iResult = closesocket(ListenSocket);
-	if (iResult == SOCKET_ERROR)
-	_log.Log(LOG_STATUS, "closesocket function failed with error %d\n", WSAGetLastError());
-	//wprintf(L"closesocket function failed with error %d\n", WSAGetLastError());
-	WSACleanup();
-	return 1;
-	}
-	//----------------------
-	// Listen for incoming connection requests
-	// on the created socket
-	if (listen(ListenSocket, SOMAXCONN) == SOCKET_ERROR)
-	_log.Log(LOG_STATUS, "listen function failed with error: %d\n", WSAGetLastError());
-
-	//wprintf(L"listen function failed with error: %d\n", WSAGetLastError());
-
-	//wprintf(L"Listening on socket...\n");
-
-	iResult = closesocket(ListenSocket);
-	if (iResult == SOCKET_ERROR) {
-	//wprintf(L"closesocket function failed with error %d\n", WSAGetLastError());
-	_log.Log(LOG_STATUS, "closesocket function failed with error %d\n", WSAGetLastError());
-	WSACleanup();
-	return 1;
-	}
-
-	WSACleanup();
-
-	*/
-
-
-
-	return true;
-}
 
 bool Yeelight::DiscoverLights()
 {
 	//_log.Log(LOG_STATUS, "Starting Broadcast...");
 	int udpSocket;
-	struct sockaddr_in udpClient, udpServer;
+	struct sockaddr_in udpLocalSocket, udpRemoteSocket;
 	udpSocket = socket(AF_INET, SOCK_DGRAM, 0);
 	int broadcast = 1;
 	if (setsockopt(udpSocket, SOL_SOCKET, SO_BROADCAST, (const char*)&broadcast, sizeof(broadcast)) == -1)
 	{
+		_log.Log(LOG_ERROR, "SOCKET ERROR 1");
 		return false;
 	}
-	udpClient.sin_family = AF_INET;
-	//udpClient.sin_addr.s_addr = htonl(INADDR_ANY);
-	udpClient.sin_addr.s_addr = inet_addr(m_szIPAddress.c_str());
-	udpClient.sin_port = 0;
-	bind(udpSocket, (struct sockaddr*)&udpClient, sizeof(udpClient));
+	udpLocalSocket.sin_family = AF_INET;
+	udpLocalSocket.sin_addr.s_addr = INADDR_ANY;
+	udpLocalSocket.sin_port = 0;
+	bind(udpSocket, (struct sockaddr*)&udpLocalSocket, sizeof(udpLocalSocket));
 
-	udpServer.sin_family = AF_INET;
-	udpServer.sin_addr.s_addr = inet_addr("239.255.255.250");
-	udpServer.sin_port = htons(1982);
+	udpRemoteSocket.sin_family = AF_INET;
+	udpRemoteSocket.sin_addr.s_addr = inet_addr("239.255.255.250");
+	udpRemoteSocket.sin_port = htons(1982);
 	char *pPacket = "M-SEARCH * HTTP/1.1\r\n\HOST: 239.255.255.250:1982\r\n\MAN: \"ssdp:discover\"\r\n\ST: wifi_bulb";
-	/** send the packet **/
-	sendto(udpSocket, (const char*)pPacket, 102, 0, (struct sockaddr*)&udpServer, sizeof(udpServer));
+	sendto(udpSocket, (const char*)pPacket, 102, 0, (struct sockaddr*)&udpRemoteSocket, sizeof(udpRemoteSocket));
 
 	int limit = 100; //this will limit the number of lights discoverable
 	int i = 0;
 	DWORD timeout = 2 * 1000;
 
-	//_log.Log(LOG_STATUS, "Starting Listen...");
 	while (i < limit)
 	{
 		//_log.Log(LOG_STATUS, "loop...");
@@ -256,10 +105,11 @@ bool Yeelight::DiscoverLights()
 
 		char buf[10000];
 		unsigned slen = sizeof(sockaddr);
-		int recv_size = recvfrom(udpSocket, buf, sizeof(buf) - 1, 0, (sockaddr *)&udpServer, (int *)&slen);
+		int recv_size = recvfrom(udpSocket, buf, sizeof(buf) - 1, 0, (sockaddr *)&udpRemoteSocket, (int *)&slen);
 		if (recv_size == SOCKET_ERROR) {
-			//_log.Log(LOG_STATUS, "SOCKET ERROR");
+			//_log.Log(LOG_ERROR, "SOCKET ERROR 2");
 			closesocket(udpSocket);
+			return false;
 		}
 		else {
 
@@ -272,14 +122,8 @@ bool Yeelight::DiscoverLights()
 			std::string yeelightStatus;
 			std::string yeelightBright;
 			std::string yeelightHue;
-
-			//_log.Log(LOG_STATUS, "recv: %s\n", buf);
+		
 			std::string receivedString = buf;
-			endString = "name:";
-			//_log.Log(LOG_STATUS, "recv: %s\n", receivedString.c_str());
-
-
-			endString = ":55443\r\n";
 			std::size_t pos = receivedString.find(startString);
 			if (pos > 0) {
 				pos = pos + startString.length();
@@ -310,14 +154,7 @@ bool Yeelight::DiscoverLights()
 			pos = receivedString.find(startString);
 			pos1 = receivedString.substr(pos).find(endString);
 			dataString = receivedString.substr(pos, pos1);
-			yeelightStatus = dataString.c_str();
-			//_log.Log(LOG_STATUS, "Found Yeelight  %s %s %s", yeelightId.c_str(), yeelightModel.c_str(), yeelightStatus.c_str());
-
-			/*
-			rgb: 2464799
-			hue: 229
-			sat: 100
-			*/
+			yeelightStatus = dataString.c_str();							
 
 			startString = "bright: ";
 			pos = receivedString.find(startString);
@@ -337,25 +174,21 @@ bool Yeelight::DiscoverLights()
 			if (yeelightStatus == "power: on") {
 				bIsOn = true;
 			}
-			int sType = sTypeYeelightWhite; // sTypeLimitlessWhite;
+			int sType = sTypeYeelightWhite;
 
 			std::string yeelightName = "";
 			if (yeelightModel == "model: mono") {
-				yeelightName = "Yeelight LED (Mono)";
-				//InsertUpdateSwitch(yeelightId, yeelightName, sTypeLimitlessWhite, yeelightLocation, bIsOn, yeelightBright);
+				yeelightName = "Yeelight LED (Mono)";				
 			}
 			else if (yeelightModel == "model: color") {
 				yeelightName = "Yeelight LED (Color)";
-				sType = sTypeYeelightColor; // sTypeLimitlessRGBW;
-				//InsertUpdateSwitch(yeelightId, yeelightName, sTypeLimitlessRGBW, yeelightLocation, bIsOn, yeelightBright);
+				sType = sTypeYeelightColor;
 			}
 			InsertUpdateSwitch(yeelightId, yeelightName, sType, yeelightLocation, bIsOn, yeelightBright, yeelightHue);
 		}
-		i++;
-		//sleep_seconds(1);
+		i++;		
 	}
 	closesocket(udpSocket);
-
 	//_log.Log(LOG_STATUS, "Finished Listen...");
 	return true;
 }
@@ -391,7 +224,6 @@ void Yeelight::InsertUpdateSwitch(const std::string &nodeID, const std::string &
 				cmd = light1_sOff;
 				level = 0;
 			}
-
 			uint8_t unit = 0;
 			uint8_t dType = pTypeYeelight;
 
@@ -409,10 +241,8 @@ void Yeelight::InsertUpdateSwitch(const std::string &nodeID, const std::string &
 			
 			lcmd.value = value;
 			lcmd.command = cmd;
-			m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd, NULL, -1);
-			//add yeelightHue
+			m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd, NULL, -1);	
 			m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d, nValue=%d, sValue='', LastLevel=%d WHERE(HardwareID == %d) AND (DeviceID == '%q')", int(STYPE_Dimmer), int(cmd), value, m_HwdID, nodeID.c_str());		
-
 		}
 	}
 }
@@ -422,8 +252,7 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 	//_log.Log(LOG_STATUS, "Yeelight: WriteToHardware...............................");
 	std::string ipAddress = "192.168.0.1";
 	_tYeelight *pLed = (_tYeelight*)pdata;
-	uint8_t command = pLed->command;
-	//_log.Log(LOG_STATUS, "Yeelight: WriteToHardware command: %d", command);	
+	uint8_t command = pLed->command;	
 	std::vector<std::vector<std::string> > result;
 	char szTmp[300];
 	if (pLed->id == 1)
@@ -456,7 +285,6 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 		message = "{\"id\":1,\"method\":\"set_power\",\"params\":[\"off\", \"smooth\", 500]}\r\n";
 		break;
 	case Yeelight_SetColorToWhite:
-
 		message = "{\"id\":1,\"method\":\"set_power\",\"params\":[\"on\", \"smooth\", 500]}\r\n";
 		send(sd, message.c_str(), message.length(), 0);
 		sleep_milliseconds(200);
@@ -477,16 +305,14 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 		float cHue = (359.0f / 255.0f)*float(pLed->value);//hue given was in range of 0-255
 		message = "{\"id\":1,\"method\":\"set_hsv\",\"params\":[" + std::to_string(cHue) + ", 100, \"smooth\", 2000]}\r\n";
 	}
-		break;
+	break;
 	default:
 		_log.Log(LOG_STATUS, "Yeelight: Unhandled WriteToHardware command: %d", command);
 		break;
 	}
-	//_log.Log(LOG_STATUS, msg1.c_str());
 	send(sd, message.c_str(), message.length(), 0);
 	sleep_milliseconds(200);
-	closesocket(sd);
-	//_log.Log(LOG_STATUS, "Yeelight: WriteToHardware FINISHED");
+	closesocket(sd);	
 	return true;
 }
 

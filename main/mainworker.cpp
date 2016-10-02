@@ -918,7 +918,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new GoodweAPI(ID, Username);
 		break;
 	case HTYPE_Yeelight:
-		pHardware = new Yeelight(ID, Address, Port);
+		pHardware = new Yeelight(ID);
 		break;
 	}
 
@@ -5404,8 +5404,7 @@ void MainWorker::decode_LimitlessLights(const int HwdID, const _eHardwareTypes H
 }
 
 void MainWorker::decode_Yeelight(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
-{
-	//_log.Log(LOG_STATUS, "decode_Yeelight starting...");
+{	
 	char szTmp[300];
 	_tYeelight *pLed = (_tYeelight*)pResponse;
 	unsigned char devType = pTypeYeelight;
@@ -5417,21 +5416,14 @@ void MainWorker::decode_Yeelight(const int HwdID, const _eHardwareTypes HwdType,
 	std::string ID = szTmp;
 	unsigned char Unit = pLed->dunit;
 	unsigned char cmnd = pLed->command;
-	unsigned char value = pLed->value;
-	//_log.Log(LOG_STATUS, "decode_Yeelight value %q", value);
+	unsigned char value = pLed->value;	
 	unsigned long long DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, 12, -1, cmnd, procResult.DeviceName);
 	if (DevRowIdx == -1)
 		return;
-	CheckSceneCode(DevRowIdx, devType, subType, cmnd, szTmp);
-	//std::string message = "decode_Yeelight cmd is: ";
-	//message += cmnd;
-	//_log.Log(LOG_STATUS, message.c_str());
-	if (cmnd == light1_sOn) {
-
-		//_log.Log(LOG_STATUS, "Lights On");
+	CheckSceneCode(DevRowIdx, devType, subType, cmnd, szTmp);	
+	if (cmnd == light1_sOn) {		
 		WriteMessage("On");
-	}
-	//if (cmnd == Limitless_SetBrightnessLevel)
+	}	
 	if (cmnd == Yeelight_SetBrightnessLevel)
 	{
 		std::vector<std::vector<std::string> > result;
@@ -10709,8 +10701,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 		}
 		break;
 	case pTypeYeelight:
-	{
-		//_log.Log(LOG_STATUS, "case pTypeYeelight in mainworker.cpp");
+	{		
 		_tYeelight ycmd;
 		ycmd.len = sizeof(_tYeelight) - 1;
 		ycmd.type = dType;
@@ -10727,28 +10718,27 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 		{
 			if (hue != -1)
 			{
-				_tYeelight lcmd2;
-				lcmd2.len = sizeof(_tYeelight) - 1;
-				lcmd2.type = dType;
-				lcmd2.subtype = dSubType;
-				lcmd2.id = ID;
-				lcmd2.dunit = Unit;
+				_tYeelight ycmd2;
+				ycmd2.len = sizeof(_tYeelight) - 1;
+				ycmd2.type = dType;
+				ycmd2.subtype = dSubType;
+				ycmd2.id = ID;
+				ycmd2.dunit = Unit;
 				if (hue != 1000)
 				{
 					double dval;
 					dval = (255.0 / 360.0)*float(hue);
 					int ival;
 					ival = round(dval);
-					lcmd2.value = ival;
-					//lcmd2.command = Limitless_SetRGBColour;
-					lcmd2.command = Yeelight_SetBrightnessLevel;
+					ycmd2.value = ival;
+					//ycmd2.command = Limitless_SetRGBColour;
+					ycmd2.command = Yeelight_SetBrightnessLevel;
 				}
 				else
-				{
-					//lcmd2.command = Limitless_SetColorToWhite;
-					lcmd2.command = Yeelight_SetColorToWhite;
+				{					
+					ycmd2.command = Yeelight_SetColorToWhite;
 				}
-				if (!WriteToHardware(HardwareID, (const char*)&lcmd2, sizeof(_tYeelight)))
+				if (!WriteToHardware(HardwareID, (const char*)&ycmd2, sizeof(_tYeelight)))
 					return false;
 				sleep_milliseconds(100);
 			}
@@ -10766,10 +10756,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			//update the database to off...
 			return false;
 		}
-		if (!IsTesting) {
-			//_log.Log(LOG_STATUS, "CHECK THIS");
-			//_log.Log(LOG_STATUS, switchcmd.c_str());
-			//switchcmd
+		if (!IsTesting) {			
 			//send to internal for now (later we use the ACK)
 			PushAndWaitRxMessage(m_hardwaredevices[hindex], (const unsigned char *)&ycmd, NULL, -1);
 		}

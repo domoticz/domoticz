@@ -2804,17 +2804,17 @@ bool GetLightCommand(
 	case pTypeYeelight:
 		if (switchcmd == "Off")
 		{
-			cmd = Limitless_LedOff;
+			cmd = Yeelight_LedOff;
 			return true;
 		}
 		else if (switchcmd == "On")
 		{
-			cmd = Limitless_LedOn;
+			cmd = Yeelight_LedOn;
 			return true;
 		}
 		else if (switchcmd == "Set Color")
 		{
-			cmd = Limitless_SetRGBColour;
+			cmd = Yeelight_SetRGBColour;
 			return true;
 		}
 		else if (
@@ -2822,72 +2822,72 @@ bool GetLightCommand(
 			(switchcmd == "Set Level")
 			)
 		{
-			cmd = Limitless_SetBrightnessLevel;
+			cmd = Yeelight_SetBrightnessLevel;
 			return true;
 		}
 		else if (switchcmd == "Set White")
 		{
-			cmd = Limitless_SetColorToWhite;
+			cmd = Yeelight_SetColorToWhite;
 			return true;
 		}
 		else if (switchcmd == "Set Full")
 		{
-			cmd = Limitless_SetColorToWhite;
+			cmd = Yeelight_SetColorToWhite;
 			return true;
 		}
 		else if (switchcmd == "Set Night")
 		{
-			cmd = Limitless_NightMode;
+			cmd = Yeelight_NightMode;
 			return true;
 		}
 		else if (switchcmd == "Bright Up")
 		{
-			cmd = Limitless_SetBrightUp;
+			cmd = Yeelight_SetBrightUp;
 			return true;
 		}
 		else if (switchcmd == "Bright Down")
 		{
-			cmd = Limitless_SetBrightDown;
+			cmd = Yeelight_SetBrightDown;
 			return true;
 		}
 		else if (switchcmd == "Disco Mode")
 		{
-			cmd = Limitless_DiscoMode;
+			cmd = Yeelight_DiscoMode;
 			return true;
 		}
 		else if (switchcmd == "Disco Up")
 		{
-			cmd = Limitless_RGBDiscoNext;
+			cmd = Yeelight_RGBDiscoNext;
 			return true;
 		}
 		else if (switchcmd == "Disco Down")
 		{
-			cmd = Limitless_RGBDiscoPrevious;
+			cmd = Yeelight_RGBDiscoPrevious;
 			return true;
 		}
 		else if (switchcmd == "Speed Up")
 		{
-			cmd = Limitless_DiscoSpeedFaster;
+			cmd = Yeelight_DiscoSpeedFaster;
 			return true;
 		}
 		else if (switchcmd == "Speed Up Long")
 		{
-			cmd = Limitless_DiscoSpeedFasterLong;
+			cmd = Yeelight_DiscoSpeedFasterLong;
 			return true;
 		}
 		else if (switchcmd == "Speed Down")
 		{
-			cmd = Limitless_DiscoSpeedSlower;
+			cmd = Yeelight_DiscoSpeedSlower;
 			return true;
 		}
 		else if (switchcmd == "Warmer")
 		{
-			cmd = Limitless_WarmWhiteIncrease;
+			cmd = Yeelight_WarmWhiteIncrease;
 			return true;
 		}
 		else if (switchcmd == "Cooler")
 		{
-			cmd = Limitless_CoolWhiteIncrease;
+			cmd = Yeelight_CoolWhiteIncrease;
 			return true;
 		}
 		else
