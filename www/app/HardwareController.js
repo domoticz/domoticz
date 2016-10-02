@@ -735,7 +735,34 @@ define(['app'], function (app) {
                             ShowNotify($.t('Problem updating hardware!'), 2500, true);
                      }
                 });
-            }
+	    }
+	    else if (text.indexOf("Yeelight") >= 0) {
+	        ShowNotify($.t('HardwareController.js: Yeelight'), 2500, true);
+	        var address = $("#hardwarecontent #divremote #tcpaddress").val();
+	        if (address == "") {
+	            ShowNotify($.t('Please enter an Address!'), 2500, true);
+	            return;
+	        }	        
+
+	        $.ajax({
+	            url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+                   "&address=" + address +
+                   "&port=55443" +
+                   "&name=" + encodeURIComponent(name) +
+                   "&enabled=" + bEnabled +
+                   "&idx=" + idx +
+                   "&datatimeout=" + datatimeout +
+                   "&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
+	            async: false,
+	            dataType: 'json',
+	            success: function (data) {
+	                RefreshHardwareTable();
+	            },
+	            error: function () {
+	                ShowNotify($.t('Problem updating hardware!'), 2500, true);
+	            }
+	        });
+	    }
 	    else if (text.indexOf("Goodwe solar inverter via Web") >= 0)
             {
 		var username=$("#hardwarecontent #divgoodweweb #username").val();
@@ -1400,8 +1427,30 @@ define(['app'], function (app) {
                             ShowNotify($.t('Problem adding hardware!'), 2500, true);
                      }
                 });
-            }
+	    }
+	    else if (text.indexOf("Yeelight") >= 0) {	        
+	        var address = $("#hardwarecontent #divremote #tcpaddress").val();
+	        if (address == "") {
+	            ShowNotify($.t('Please enter an Address!'), 2500, true);
+	            return;
+	        }	        
+	        var port = 55443;
+	        $.ajax({
+	            url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port +
+                //"&username=" + encodeURIComponent(username) +
+                "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
+	            async: false,
+	            dataType: 'json',
+	            success: function (data) {
+	                RefreshHardwareTable();
+	            },
+	            error: function () {
+	                ShowNotify($.t('Problem adding hardware!'), 2500, true);
+	            }
+	        });
+	    }
         }
+
 
         EditRFXCOMMode = function(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5,Mode6)
         {
@@ -4563,6 +4612,9 @@ define(['app'], function (app) {
                             $("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
                             $("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
                         }
+                        else if ((data["Type"].indexOf("Yeelight") >= 0)) {
+                            $("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);                          
+                        }
                         else if ((data["Type"].indexOf("Underground") >= 0) || (data["Type"].indexOf("DarkSky") >= 0) || (data["Type"].indexOf("AccuWeather") >= 0) || (data["Type"].indexOf("Open Weather Map") >= 0)) {
                             $("#hardwarecontent #hardwareparamsunderground #apikey").val(data["Username"]);
                             $("#hardwarecontent #hardwareparamsunderground #location").val(data["Password"]);
@@ -4591,6 +4643,9 @@ define(['app'], function (app) {
                         else if (data["Type"].indexOf("Winddelen") >= 0) {
                             $("#hardwarecontent #hardwareparamswinddelen #combomillselect").val(data["Mode1"]);
                             $("#hardwarecontent #hardwareparamswinddelen #nrofwinddelen").val(data["Port"]);
+                        }
+                        else if (data["Type"].indexOf("Yeelight") >= 0) {
+                            $("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);                            
                         }
 			else if (data["Type"].indexOf("Goodwe solar inverter via Web") >= 0) {
 			    $("#hardwarecontent #hardwareparamsgoodweweb #username").val(data["Username"]);
@@ -4844,6 +4899,14 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divhttppoller").hide();
                 $("#hardwarecontent #hardwareparamsremote #tcpport").val(80);
             }
+            else if (text.indexOf("Yeelight") >= 0) {
+                $("#hardwarecontent #divserial").hide();
+                $("#hardwarecontent #divremote").show();
+                $("#hardwarecontent #divlogin").hide();            
+                $("#hardwarecontent #divunderground").hide();
+                $("#hardwarecontent #divhttppoller").hide();
+                $("#hardwarecontent #hardwareparamsremote #tcpport").val(55443);
+            }
             else if (text.indexOf("Winddelen") >= 0)
             {
                 $("#hardwarecontent #divserial").hide();
@@ -4922,6 +4985,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divmqtt").show();
             }
         }
+
 
         ShowHardware = function()
         {

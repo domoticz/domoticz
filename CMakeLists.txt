@@ -339,6 +339,7 @@ hardware/WOL.cpp
 hardware/Wunderground.cpp
 hardware/YouLess.cpp
 hardware/ZWaveBase.cpp
+hardware/Yeelight.cpp
 notifications/NotificationBase.cpp
 notifications/NotificationEmail.cpp
 notifications/NotificationGCM.cpp

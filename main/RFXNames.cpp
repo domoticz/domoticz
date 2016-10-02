@@ -235,7 +235,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_RaspberryTSL2561, "Local I2C sensor TSL2561 Illuminance" },
 		{ HTYPE_Daikin, "Daikin Airconditioning with LAN (HTTP) interface" },
 		{ HTYPE_HEOS, "HEOS by DENON" },
-		
+		{ HTYPE_Yeelight, "Yeelight LED" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -471,6 +471,7 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeEvohomeWater, "Heating" , "evohome" },
 		{ pTypeEvohomeRelay, "Heating" , "evohome" },
 		{ pTypeGeneralSwitch, "Light/Switch", "lightbulb" },
+		{ pTypeYeelight, "Light/Switch", "lightbulb" },
 		{ 0, NULL, NULL }
 	};
 	if (snum==1)
@@ -811,6 +812,8 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchMiLightv1, "MiLightv1" },
 		{ pTypeGeneralSwitch, sSwitchMiLightv2, "MiLightv2" },
 		{ pTypeGeneralSwitch, sSwitchHT6P20, "HT6P20" },
+		{ pTypeYeelight, sTypeYeelightColor, "RGBW" },	
+		{ pTypeYeelight, sTypeYeelightWhite, "White" },
 		{  0,0,NULL }
 	};
 	return findTableID1ID2(Table, dType, sType);
@@ -1051,6 +1054,9 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeLimitlessLights, sTypeLimitlessRGBW, "Status" },
 		{ pTypeLimitlessLights, sTypeLimitlessRGB, "Status" },
 		{ pTypeLimitlessLights, sTypeLimitlessWhite, "Status" },
+
+		{ pTypeYeelight, sTypeYeelightColor, "Status" },
+		{ pTypeYeelight, sTypeYeelightWhite, "Status" },	
 
 		{ pTypeRFY, sTypeRFY, "Status" },
 		{ pTypeRFY, sTypeRFYext, "Status" },
@@ -1757,6 +1763,22 @@ void GetLightStatus(
 			break;
 		case Limitless_SetBrightnessLevel:
 			lstatus="Set Level";
+			break;
+		}
+		break;
+	case pTypeYeelight:
+		bHaveDimmer = true;
+		maxDimLevel = 100;
+		switch (nValue)
+		{
+		case Yeelight_LedOff:
+			lstatus = "Off";
+			break;
+		case Yeelight_LedOn:
+			lstatus = "On";
+			break;
+		case Yeelight_SetBrightnessLevel:
+			lstatus = "Set Level";
 			break;
 		}
 		break;
@@ -2719,6 +2741,98 @@ bool GetLightCommand(
 		else if (switchcmd == "Set Full")
 		{
 			cmd=Limitless_SetColorToWhite;
+			return true;
+		}
+		else if (switchcmd == "Set Night")
+		{
+			cmd = Limitless_NightMode;
+			return true;
+		}
+		else if (switchcmd == "Bright Up")
+		{
+			cmd = Limitless_SetBrightUp;
+			return true;
+		}
+		else if (switchcmd == "Bright Down")
+		{
+			cmd = Limitless_SetBrightDown;
+			return true;
+		}
+		else if (switchcmd == "Disco Mode")
+		{
+			cmd = Limitless_DiscoMode;
+			return true;
+		}
+		else if (switchcmd == "Disco Up")
+		{
+			cmd = Limitless_RGBDiscoNext;
+			return true;
+		}
+		else if (switchcmd == "Disco Down")
+		{
+			cmd = Limitless_RGBDiscoPrevious;
+			return true;
+		}
+		else if (switchcmd == "Speed Up")
+		{
+			cmd = Limitless_DiscoSpeedFaster;
+			return true;
+		}
+		else if (switchcmd == "Speed Up Long")
+		{
+			cmd = Limitless_DiscoSpeedFasterLong;
+			return true;
+		}
+		else if (switchcmd == "Speed Down")
+		{
+			cmd = Limitless_DiscoSpeedSlower;
+			return true;
+		}
+		else if (switchcmd == "Warmer")
+		{
+			cmd = Limitless_WarmWhiteIncrease;
+			return true;
+		}
+		else if (switchcmd == "Cooler")
+		{
+			cmd = Limitless_CoolWhiteIncrease;
+			return true;
+		}
+		else
+			return false;
+		break;
+	case pTypeYeelight:
+		if (switchcmd == "Off")
+		{
+			cmd = Limitless_LedOff;
+			return true;
+		}
+		else if (switchcmd == "On")
+		{
+			cmd = Limitless_LedOn;
+			return true;
+		}
+		else if (switchcmd == "Set Color")
+		{
+			cmd = Limitless_SetRGBColour;
+			return true;
+		}
+		else if (
+			(switchcmd == "Set Brightness") ||
+			(switchcmd == "Set Level")
+			)
+		{
+			cmd = Limitless_SetBrightnessLevel;
+			return true;
+		}
+		else if (switchcmd == "Set White")
+		{
+			cmd = Limitless_SetColorToWhite;
+			return true;
+		}
+		else if (switchcmd == "Set Full")
+		{
+			cmd = Limitless_SetColorToWhite;
 			return true;
 		}
 		else if (switchcmd == "Set Night")

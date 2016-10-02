@@ -604,6 +604,7 @@
     <ClInclude Include="..\webserver\utf.hpp" />
     <ClInclude Include="WindowsHelper.h" />
     <ClInclude Include="..\hardware\YouLess.h" />
+    <ClInclude Include="..\hardware\Yeelight.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\hardware\1Wire.cpp">
@@ -879,6 +880,7 @@
     <ClCompile Include="..\hardware\BleBox.cpp" />
     <ClCompile Include="WindowsHelper.cpp" />
     <ClCompile Include="..\hardware\YouLess.cpp" />
+    <ClCompile Include="..\hardware\Yeelight.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="domoticz.rc" />

@@ -53,6 +53,7 @@ public:
 	void SetRego6XXType(WebEmSession & session, const request& req, std::string & redirect_uri);
 	void SetS0MeterType(WebEmSession & session, const request& req, std::string & redirect_uri);
 	void SetLimitlessType(WebEmSession & session, const request& req, std::string & redirect_uri);
+	void SetYeelightType(WebEmSession & session, const request & req, std::string & redirect_uri);
 
 	void SetOpenThermSettings(WebEmSession & session, const request& req, std::string & redirect_uri);
 	void Cmd_SendOpenThermCommand(WebEmSession & session, const request& req, Json::Value &root);

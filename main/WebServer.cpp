@@ -329,6 +329,7 @@ namespace http {
 			m_pWebEm->RegisterActionCode("setrego6xxtype", boost::bind(&CWebServer::SetRego6XXType, this, _1, _2, _3));
 			m_pWebEm->RegisterActionCode("sets0metertype", boost::bind(&CWebServer::SetS0MeterType, this, _1, _2, _3));
 			m_pWebEm->RegisterActionCode("setlimitlesstype", boost::bind(&CWebServer::SetLimitlessType, this, _1, _2, _3));
+			m_pWebEm->RegisterActionCode("setyeelighttype", boost::bind(&CWebServer::SetYeelightType, this, _1, _2, _3));
 
 			m_pWebEm->RegisterActionCode("setopenthermsettings", boost::bind(&CWebServer::SetOpenThermSettings, this, _1, _2, _3));
 			RegisterCommandCode("sendopenthermcommand", boost::bind(&CWebServer::Cmd_SendOpenThermCommand, this, _1, _2, _3), true);
@@ -1017,7 +1018,7 @@ namespace http {
 				(htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) || (htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) ||
 				(htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_ECODEVICES) || (htype == HTYPE_Mochad) || (htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MQTT) || (htype == HTYPE_FRITZBOX) ||
 				(htype == HTYPE_ETH8020) || (htype == HTYPE_Sterbox) || (htype == HTYPE_KMTronicTCP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_RFLINKTCP) || (htype == HTYPE_Comm5TCP) || (htype == HTYPE_CurrentCostMeterLAN) ||
-				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviSmartdenLan) || (htype == HTYPE_Ec3kMeterTCP)
+				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviSmartdenLan) || (htype == HTYPE_Ec3kMeterTCP) || (htype == HTYPE_Yeelight)
 				) {
 				//Lan
 				if (address == "" || port == 0)
@@ -1152,6 +1153,12 @@ namespace http {
 				if (port == 0)
 					port = 80;
 			}
+			else if (htype == HTYPE_Yeelight) {
+				if (
+					(address == "")
+					)
+					return;				
+			}
 			else if (htype == HTYPE_WINDDELEN) {
 					std::string mill_id = request::findValue(&req, "Mode1");
 					if (
@@ -1174,6 +1181,12 @@ namespace http {
 			else if (htype == HTYPE_GoodweAPI) {
 				if (username == "")
 					return;
+			}
+			else if (htype == HTYPE_Yeelight) {
+				if (
+					(address == "")
+					)
+					return;				
 			}
 			else
 				return;
@@ -1297,7 +1310,7 @@ namespace http {
 				(htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MQTT) || (htype == HTYPE_FRITZBOX) || (htype == HTYPE_ETH8020) || (htype == HTYPE_Sterbox) ||
 				(htype == HTYPE_KMTronicTCP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_RFLINKTCP) ||
 				(htype == HTYPE_Comm5TCP || (htype == HTYPE_CurrentCostMeterLAN)) ||
-				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviSmartdenLan) || (htype == HTYPE_Ec3kMeterTCP)
+				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviSmartdenLan) || (htype == HTYPE_Ec3kMeterTCP) || (htype == HTYPE_Yeelight)
 				){
 				//Lan
 				if (address == "")
@@ -3253,7 +3266,7 @@ namespace http {
 						case pTypeLighting5:
 						case pTypeLighting6:
 						case pTypeFan:
-						case pTypeLimitlessLights:
+						case pTypeLimitlessLights:			
 						case pTypeSecurity1:
 						case pTypeSecurity2:
 						case pTypeEvohome:
@@ -3268,6 +3281,7 @@ namespace http {
 						case pTypeRadiator1:
 						case pTypeGeneralSwitch:
 						case pTypeHomeConfort:
+						case pTypeYeelight:
 							bdoAdd = true;
 							if (!used)
 							{
@@ -3351,7 +3365,7 @@ namespace http {
 							case pTypeLighting5:
 							case pTypeLighting6:
 							case pTypeFan:
-							case pTypeLimitlessLights:
+							case pTypeLimitlessLights:						
 							case pTypeSecurity1:
 							case pTypeSecurity2:
 							case pTypeEvohome:
@@ -3365,6 +3379,7 @@ namespace http {
 							case pTypeRemote:
 							case pTypeGeneralSwitch:
 							case pTypeHomeConfort:
+							case pTypeYeelight:
 								root["result"][ii]["type"] = 0;
 								root["result"][ii]["idx"] = ID;
 								root["result"][ii]["Name"] = "[Light/Switch] " + Name;
@@ -4487,6 +4502,7 @@ namespace http {
 					(dType == pTypeLighting5) ||
 					(dType == pTypeLighting6) ||
 					(dType == pTypeLimitlessLights) ||
+					(dType == pTypeYeelight) ||
 					(dType == pTypeSecurity1) ||
 					(dType == pTypeSecurity2) ||
 					(dType == pTypeEvohome) ||
@@ -5391,6 +5407,7 @@ namespace http {
 					(dType != pTypeLighting6) &&
 					(dType != pTypeFan) &&
 					(dType != pTypeLimitlessLights) &&
+					(dType != pTypeYeelight) &&
 					(dType != pTypeSecurity1) &&
 					(dType != pTypeSecurity2) &&
 					(dType != pTypeEvohome) &&
@@ -7369,6 +7386,7 @@ namespace http {
 								(dType != pTypeLighting6) &&
 								(dType != pTypeFan) &&
 								(dType != pTypeLimitlessLights) &&
+								(dType != pTypeYeelight) &&
 								(dType != pTypeSecurity1) &&
 								(dType != pTypeSecurity2) &&
 								(dType != pTypeEvohome) &&
@@ -7636,6 +7654,7 @@ namespace http {
 						(dType == pTypeLighting6) ||
 						(dType == pTypeFan) ||
 						(dType == pTypeLimitlessLights) ||
+						(dType == pTypeYeelight) ||
 						(dType == pTypeCurtain) ||
 						(dType == pTypeBlinds) ||
 						(dType == pTypeRFY) ||
@@ -7695,7 +7714,7 @@ namespace http {
 							root["result"][ii]["Level"] = LastLevel;
 							int iLevel = round((float(maxDimLevel) / 100.0f)*LastLevel);
 							root["result"][ii]["LevelInt"] = iLevel;
-							if (dType == pTypeLimitlessLights)
+							if ((dType == pTypeLimitlessLights) || (dType == pTypeYeelight))
 							{
 								llevel = LastLevel;
 								if (lstatus == "Set Level")
@@ -11479,6 +11498,7 @@ namespace http {
 				(dType != pTypeLighting6) &&
 				(dType != pTypeFan) &&
 				(dType != pTypeLimitlessLights) &&
+				(dType != pTypeYeelight) &&
 				(dType != pTypeSecurity1) &&
 				(dType != pTypeSecurity2) &&
 				(dType != pTypeEvohome) &&

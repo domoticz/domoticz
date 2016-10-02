@@ -441,6 +441,9 @@
     <Filter Include="Devices\DarkSky">
       <UniqueIdentifier>{739f5460-5c88-47ba-8cd1-d94035c1819d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\Yeelight">
+      <UniqueIdentifier>{fef908b3-a4cb-49ab-b4b2-63f435ea6e41}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -1906,6 +1909,9 @@
     <ClInclude Include="..\hardware\DarkSky.h">
       <Filter>Devices\DarkSky</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\Yeelight.h">
+      <Filter>Devices\Yeelight</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2501,6 +2507,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\DarkSky.cpp">
       <Filter>Devices\DarkSky</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\Yeelight.cpp">
+      <Filter>Devices\Yeelight</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
