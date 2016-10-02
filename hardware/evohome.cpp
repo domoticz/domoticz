@@ -2001,7 +2001,7 @@ namespace http {
 			}
 			else if (type == "ZoneSensor")
 			{	
-				//get dev count
+				//Check whether any devices already exist
 				std::vector<std::vector<std::string> > result;
 				result = m_sql.safe_query("SELECT MAX(Unit) FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) AND (Unit>=40) AND (Unit<52)", HwdID,(int)pTypeEvohomeZone);
 				int nDevCount = 0;
@@ -2009,6 +2009,7 @@ namespace http {
 				{
 					nDevCount = atoi(result[0][0].c_str());
 				}
+				else nDevCount = 39;// If first device, assign Unit=40 (+1 below)
 
 				if (nDevCount == 51)// Allow a maximum of 12 sensors
 				{
