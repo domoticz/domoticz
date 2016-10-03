@@ -5612,13 +5612,15 @@ namespace http {
 					return;
 
 				result = m_sql.safe_query(
-					"SELECT [Protected] FROM DeviceStatus WHERE (ID = '%q')", idx.c_str());
+					"SELECT [Protected],[Name] FROM DeviceStatus WHERE (ID = '%q')", idx.c_str());
 				if (result.empty())
 				{
 					//Switch not found!
 					return;
 				}
 				bool bIsProtected = atoi(result[0][0].c_str()) != 0;
+				std::string sSwitchName  = result[0][1];
+
 				if (bIsProtected)
 				{
 					if (passcode.empty())
@@ -5644,7 +5646,7 @@ namespace http {
 					}
 				}
 
-				_log.Log(LOG_STATUS, "User: %s initiated a switch command", Username.c_str());
+				_log.Log(LOG_STATUS, "User: %s initiated a switch command (%s/%s/%s)", Username.c_str(), idx.c_str(), sSwitchName.c_str(), switchcmd.c_str());
 
 				if (switchcmd == "Toggle") {
 					//Request current state of switch
