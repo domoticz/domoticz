@@ -440,6 +440,7 @@
     </Filter>
     <Filter Include="Devices\MultiFun">
       <UniqueIdentifier>{61f9e7d0-4204-474d-b953-b8d55b281296}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Devices\DarkSky">
       <UniqueIdentifier>{739f5460-5c88-47ba-8cd1-d94035c1819d}</UniqueIdentifier>
     </Filter>
@@ -1907,6 +1908,7 @@
     </ClInclude>
     <ClInclude Include="..\hardware\MultiFun.h">
       <Filter>Devices\MultiFun</Filter>
+    </ClInclude>
     <ClInclude Include="..\hardware\DarkSky.h">
       <Filter>Devices\DarkSky</Filter>
     </ClInclude>
@@ -2505,6 +2507,7 @@
     </ClCompile>
     <ClCompile Include="..\hardware\MultiFun.cpp">
       <Filter>Devices\MultiFun</Filter>
+    </ClCompile>
     <ClCompile Include="..\hardware\DarkSky.cpp">
       <Filter>Devices\DarkSky</Filter>
     </ClCompile>
