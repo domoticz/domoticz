@@ -112,6 +112,9 @@ MultiFun::MultiFun(const int ID, const std::string &IPAddress, const unsigned sh
 {
 	_log.Log(LOG_STATUS, "MultiFun: Create instance");
 	m_HwdID = ID;
+
+	m_isSensorExists[0] = false;
+	m_isSensorExists[1] = false;
 }
 
 MultiFun::~MultiFun()
@@ -231,6 +234,14 @@ bool MultiFun::WriteToHardware(const char *pdata, const unsigned char length)
 	{
 		const _tThermostat *therm = reinterpret_cast<const _tThermostat*>(pdata);
 
+		int temp = therm->temp;
+
+		if (therm->id2 == 0x1F || therm->id2 == 0x20)
+		{
+			temp = temp * 5;
+			temp = temp | 0x8000;
+		}
+
 		unsigned char buffer[100];
 		unsigned char cmd[20];
 		cmd[0] = 0x01; // transaction id (2 bytes)
@@ -247,7 +258,7 @@ bool MultiFun::WriteToHardware(const char *pdata, const unsigned char length)
 		cmd[11] = 0x01; 
 		cmd[12] = 0x02; // number of bytes
 		cmd[13] = 0x00;
-		cmd[14] = therm->temp;
+		cmd[14] = temp;
 
 		int ret = SendCommand(cmd, 15, buffer, true);
 		if (ret == 4)
@@ -329,6 +340,10 @@ void MultiFun::GetTemperatures()
 				{
 					float temp = (buffer[i * 2 + 1] * 256 + buffer[i * 2 + 2]) / sensors[i].div;
 					SendTempSensor(i, 255, temp, sensors[i].name);
+				}
+				if ((i == 1) || (i == 2))
+				{
+					m_isSensorExists[i - 1] = (buffer[i * 2 + 1] != 254);
 				}
 			}
 		}
@@ -453,13 +468,14 @@ void MultiFun::GetRegisters(bool firstTime)
 				case 0x1C:
 				case 0x1D:
 				{
+					char name[20];
+					sprintf(name, "C.H. %d Temperature", i - 0x1C + 1);
+
 					float temp = value;
 					if ((value & 0x8000) == 0x8000)
 					{
 						temp = (value & 0x0FFF) * 0.2;
 					}
-					char name[20];
-					sprintf(name, "C.H. %d Temperature", i - 0x1C + 1);
 					SendSetPointSensor(i, 1, 1, temp, name);
 					break;
 				}
@@ -467,6 +483,24 @@ void MultiFun::GetRegisters(bool firstTime)
 				case 0x1E:
 				{
 					SendSetPointSensor(0x1E, 1, 1, value, "H.W.U. Temperature");
+					break;
+				}
+
+				case 0x1F:
+				case 0x20:
+				{
+					char name[20];
+					sprintf(name, "Lowering C.H. %d", i - 0x1F + 1);
+
+					if (m_isSensorExists[i - 0x1F])
+					{
+						float temp = (value & 0x0FFF) * 0.2;
+						SendSetPointSensor(i, 1, 1, temp, name);
+					}
+					else
+					{
+						//SendGeneralSwitchSensor(i, 255, value, name, 1); // TODO - send level (dimmer)
+					}					
 					break;
 				}
 

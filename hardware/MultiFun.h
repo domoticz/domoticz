@@ -31,6 +31,7 @@ private:
 	int m_LastDevices;
 	int m_LastState;
 	int m_LastQuickAccess;
+	bool m_isSensorExists[2]; 
 
 	bool StartHardware();
 	bool StopHardware();
