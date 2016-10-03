@@ -67,6 +67,8 @@ private:
 	bool ReadArmState(const bool firstTime = false);
 	// Read alarm
 	bool ReadAlarm(const bool firstTime = false);
+	// Read events
+	bool ReadEvents();
 	// Updates temperature name and type in database
 	void UpdateTempName(const int Idx, const unsigned char* name, const int partition);
 	// Updates zone name and type in database
