@@ -1155,13 +1155,7 @@ namespace http {
 					return;
 				if (port == 0)
 					port = 80;
-			}
-			else if (htype == HTYPE_Yeelight) {
-				if (
-					(address == "")
-					)
-					return;				
-			}
+			}			
 			else if (htype == HTYPE_WINDDELEN) {
 					std::string mill_id = request::findValue(&req, "Mode1");
 					if (
@@ -3365,7 +3359,7 @@ namespace http {
 							case pTypeLighting5:
 							case pTypeLighting6:
 							case pTypeFan:
-							case pTypeLimitlessLights:						
+							case pTypeLimitlessLights:
 							case pTypeSecurity1:
 							case pTypeSecurity2:
 							case pTypeEvohome:

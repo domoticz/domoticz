@@ -75,7 +75,7 @@ bool Yeelight::DiscoverLights()
 {
 	//_log.Log(LOG_STATUS, "Starting Broadcast...");
 	int udpSocket;
-	struct sockaddr_in udpLocalSocket, udpRemoteSocket;
+	struct sockaddr_in localAddress, remoteAddress;
 	udpSocket = socket(AF_INET, SOCK_DGRAM, 0);
 	int broadcast = 1;
 	if (setsockopt(udpSocket, SOL_SOCKET, SO_BROADCAST, (const char*)&broadcast, sizeof(broadcast)) == -1)
@@ -83,16 +83,16 @@ bool Yeelight::DiscoverLights()
 		_log.Log(LOG_ERROR, "SOCKET ERROR 1");
 		return false;
 	}
-	udpLocalSocket.sin_family = AF_INET;
-	udpLocalSocket.sin_addr.s_addr = INADDR_ANY;
-	udpLocalSocket.sin_port = 0;
-	bind(udpSocket, (struct sockaddr*)&udpLocalSocket, sizeof(udpLocalSocket));
+	localAddress.sin_family = AF_INET;
+	localAddress.sin_addr.s_addr = INADDR_ANY;
+	localAddress.sin_port = 0;
+	bind(udpSocket, (struct sockaddr*)&localAddress, sizeof(localAddress));
 
-	udpRemoteSocket.sin_family = AF_INET;
-	udpRemoteSocket.sin_addr.s_addr = inet_addr("239.255.255.250");
-	udpRemoteSocket.sin_port = htons(1982);
+	remoteAddress.sin_family = AF_INET;
+	remoteAddress.sin_addr.s_addr = inet_addr("239.255.255.250");
+	remoteAddress.sin_port = htons(1982);
 	char *pPacket = "M-SEARCH * HTTP/1.1\r\n\HOST: 239.255.255.250:1982\r\n\MAN: \"ssdp:discover\"\r\n\ST: wifi_bulb";
-	sendto(udpSocket, (const char*)pPacket, 102, 0, (struct sockaddr*)&udpRemoteSocket, sizeof(udpRemoteSocket));
+	sendto(udpSocket, (const char*)pPacket, 102, 0, (struct sockaddr*)&remoteAddress, sizeof(remoteAddress));
 
 	int limit = 100; //this will limit the number of lights discoverable
 	int i = 0;
@@ -105,7 +105,7 @@ bool Yeelight::DiscoverLights()
 
 		char buf[10000];
 		unsigned slen = sizeof(sockaddr);
-		int recv_size = recvfrom(udpSocket, buf, sizeof(buf) - 1, 0, (sockaddr *)&udpRemoteSocket, (int *)&slen);
+		int recv_size = recvfrom(udpSocket, buf, sizeof(buf) - 1, 0, (sockaddr *)&remoteAddress, (int *)&slen);
 		if (recv_size == SOCKET_ERROR) {
 			//_log.Log(LOG_ERROR, "SOCKET ERROR 2");
 			closesocket(udpSocket);
@@ -232,16 +232,16 @@ void Yeelight::InsertUpdateSwitch(const std::string &nodeID, const std::string &
 			s_strid1 << std::hex << nodeID.c_str();
 			s_strid1 >> ID1;
 
-			_tYeelight lcmd;
-			lcmd.len = sizeof(_tYeelight) - 1;
-			lcmd.type = dType;
-			lcmd.subtype = YeeType;
-			lcmd.id = ID1;
-			lcmd.dunit = unit;
+			_tYeelight ycmd;
+			ycmd.len = sizeof(_tYeelight) - 1;
+			ycmd.type = dType;
+			ycmd.subtype = YeeType;
+			ycmd.id = ID1;
+			ycmd.dunit = unit;
 			
-			lcmd.value = value;
-			lcmd.command = cmd;
-			m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd, NULL, -1);	
+			ycmd.value = value;
+			ycmd.command = cmd;
+			m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&ycmd, NULL, -1);	
 			m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d, nValue=%d, sValue='', LastLevel=%d WHERE(HardwareID == %d) AND (DeviceID == '%q')", int(STYPE_Dimmer), int(cmd), value, m_HwdID, nodeID.c_str());		
 		}
 	}
