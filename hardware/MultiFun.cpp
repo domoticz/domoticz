@@ -17,7 +17,7 @@
 #endif
 
 #define BUFFER_LENGHT 100
-#define MULTIFUN_POLL_INTERVAL 10
+#define MULTIFUN_POLL_INTERVAL 10 //TODO - to settings on www
 
 #define round(a) ( int ) ( a + .5 )
 
@@ -26,7 +26,7 @@ typedef struct sensorType {
 	float div;
 } Model;
 
-#define sensorsCount 12
+#define sensorsCount 16
 #define registersCount 34
 
 typedef std::map<int, std::string> dictionary;
@@ -81,7 +81,11 @@ static sensorType sensors[sensorsCount] =
 	{ "Flue gas", 10.0 },
 	{ "Module", 10.0 },
 	{ "Boiler", 10.0 },
-	{ "Feeder", 10.0 }
+	{ "Feeder", 10.0 },
+	{ "Calculated Boiler", 10.0 },
+	{ "Calculated H.W.U.", 10.0 },
+	{ "Calculated C.H.1", 10.0 },
+	{ "Calculated C.H.1", 10.0 }
 };
 
 static dictionary quickAccessType = boost::assign::map_list_of
@@ -336,7 +340,7 @@ void MultiFun::GetTemperatures()
 		{
 			for (int i = 0; i < sensorsCount; i++)
 			{
-				if (buffer[i * 2 + 1] != 254)
+				if (buffer[i * 2 + 1] != 254) //TODO - wrong temperatures
 				{
 					float temp = (buffer[i * 2 + 1] * 256 + buffer[i * 2 + 2]) / sensors[i].div;
 					SendTempSensor(i, 255, temp, sensors[i].name);
