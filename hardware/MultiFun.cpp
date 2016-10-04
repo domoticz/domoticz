@@ -129,7 +129,7 @@ MultiFun::~MultiFun()
 bool MultiFun::StartHardware()
 {
 #ifdef DEBUG_MultiFun
-	_log.Log(LOG_STATUS, "MultiFuna: Start hardware");
+	_log.Log(LOG_STATUS, "MultiFun: Start hardware");
 #endif
 
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&MultiFun::Do_Work, this)));
@@ -340,14 +340,17 @@ void MultiFun::GetTemperatures()
 		{
 			for (int i = 0; i < sensorsCount; i++)
 			{
-				if (buffer[i * 2 + 1] != 254) //TODO - wrong temperatures
-				{
-					float temp = (buffer[i * 2 + 1] * 256 + buffer[i * 2 + 2]) / sensors[i].div;
+				unsigned int val = (buffer[i * 2 + 1] & 127) * 256 + buffer[i * 2 + 2];
+				int signedVal = (((buffer[i * 2 + 1] & 128) >> 7) * -32768) + val;
+				float temp = signedVal / sensors[i].div;
+
+				if ((temp > -39) && (temp < 1000))
+				{			
 					SendTempSensor(i, 255, temp, sensors[i].name);
 				}
 				if ((i == 1) || (i == 2))
 				{
-					m_isSensorExists[i - 1] = (buffer[i * 2 + 1] != 254);
+					m_isSensorExists[i - 1] = ((temp > -39) && (temp < 1000));
 				}
 			}
 		}
