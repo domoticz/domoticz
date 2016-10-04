@@ -1411,6 +1411,7 @@ bool CSQLHelper::OpenDatabase()
 			UpdatePreferencesVar("ProwlEnabled", 1);
 			UpdatePreferencesVar("PushALotEnabled", 1);
 			UpdatePreferencesVar("PushoverEnabled", 1);
+			UpdatePreferencesVar("PushsaferEnabled", 1);
 			UpdatePreferencesVar("ClickatellEnabled", 1);
 		}
 		if (dbversion < 68)
@@ -1925,7 +1926,7 @@ bool CSQLHelper::OpenDatabase()
 				<< "([Type] = " << HTYPE_TE923 << ") OR "
 				<< "([Type] = " << HTYPE_TOONTHERMOSTAT << ") OR "
 				<< "([Type] = " << HTYPE_Wunderground << ") OR "
-				<< "([Type] = " << HTYPE_ForecastIO << ") OR "
+				<< "([Type] = " << HTYPE_DarkSky << ") OR "
 				<< "([Type] = " << HTYPE_AccuWeather << ") OR "
 				<< "([Type] = " << HTYPE_RazberryZWave << ") OR "
 				<< "([Type] = " << HTYPE_OpenZWave << ")"
@@ -2186,6 +2187,10 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("UseEmailInNotifications", 1);
 	}
+	if (!GetPreferencesVar("SendErrorNotifications", nValue))
+	{
+		UpdatePreferencesVar("SendErrorNotifications", 0);
+	}
 	if ((!GetPreferencesVar("EmailPort", nValue)) || (nValue == 0))
 	{
 		UpdatePreferencesVar("EmailPort", 25);
@@ -2437,7 +2442,8 @@ bool CSQLHelper::OpenDatabase()
 	if ((!GetPreferencesVar("HTTPPostContentType", sValue)) || (sValue.empty()))
 	{
 		sValue = "application/json";
-		UpdatePreferencesVar("HTTPPostContentType", sValue);
+		std::string sencoded = base64_encode((const unsigned char*)sValue.c_str(), sValue.size());
+		UpdatePreferencesVar("HTTPPostContentType", sencoded);
 	}
 	if (!GetPreferencesVar("ShowUpdateEffect", nValue))
 	{
@@ -2451,6 +2457,14 @@ bool CSQLHelper::OpenDatabase()
 	if (nValue < 1)
 		nValue = 5;
 	m_ShortLogInterval = nValue;
+
+	if (!GetPreferencesVar("SendErrorsAsNotification", nValue))
+	{
+		UpdatePreferencesVar("SendErrorsAsNotification", 0);
+		nValue = 0;
+	}
+	_log.ForwardErrorsToNotificationSystem(nValue != 0);
+
 	//Start background thread
 	if (!StartThread())
 		return false;
@@ -3109,7 +3123,7 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 	bool bDeviceUsed = false;
 	bool bSameDeviceStatusValue = false;
 	std::vector<std::vector<std::string> > result;
-	result = safe_query("SELECT ID,Name, Used, SwitchType, nValue, sValue FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID, unit, devType, subType);
+	result = safe_query("SELECT ID,Name, Used, SwitchType, nValue, sValue, LastUpdate, Options FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID, unit, devType, subType);
 	if (result.size()==0)
 	{
 		//Insert
@@ -3146,17 +3160,39 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 		//Update
 		std::stringstream s_str( result[0][0] );
 		s_str >> ulID;
-
+		std::string sOption=result[0][7];
 		devname=result[0][1];
 		bDeviceUsed= atoi(result[0][2].c_str())!=0;
 		_eSwitchType stype = (_eSwitchType)atoi(result[0][3].c_str());
 		int old_nValue = atoi(result[0][4].c_str());
 		std::string old_sValue = result[0][5];
-
 		time_t now = time(0);
 		struct tm ltime;
 		localtime_r(&now,&ltime);
-
+		//Commit: If Option 1: energy is computed as usage*time
+		//Default is option 0, read from device
+		if (sOption == "1" && devType == pTypeGeneral && subType == sTypeKwh)
+		{
+			std::vector<std::string> parts;
+			struct tm ntime;
+			double interval;
+			float nEnergy;
+			char sCompValue[100];
+			std::string sLastUpdate = result[0][6];
+			ntime.tm_isdst = ltime.tm_isdst;
+			ntime.tm_year = atoi(sLastUpdate.substr(0, 4).c_str()) - 1900;
+			ntime.tm_mon = atoi(sLastUpdate.substr(5, 2).c_str()) - 1;
+			ntime.tm_mday = atoi(sLastUpdate.substr(8, 2).c_str());
+			ntime.tm_hour = atoi(sLastUpdate.substr(11, 2).c_str());
+			ntime.tm_min = atoi(sLastUpdate.substr(14, 2).c_str());
+			ntime.tm_sec = atoi(sLastUpdate.substr(17, 2).c_str());
+			interval = static_cast<double>(now - mktime(&ntime)); //Rob: Why a double ?
+			StringSplit(result[0][5].c_str(), ";", parts);
+			nEnergy = static_cast<float>(strtof(parts[0].c_str(), NULL)*interval / 3600 + strtof(parts[1].c_str(), NULL)); //Rob: whats happening here... strtof ?
+			StringSplit(sValue, ";", parts);
+			sprintf(sCompValue, "%s;%.0f", parts[0].c_str(), nEnergy);
+			sValue = sCompValue;
+		}
         //~ use different update queries based on the device type
         if (devType == pTypeGeneral && subType == sTypeCounterIncremental)
         {
@@ -4762,7 +4798,7 @@ void CSQLHelper::AddCalendarTemperature()
 		std::stringstream s_str( sddev[0] );
 		s_str >> ID;
 
-		result=safe_query("SELECT MIN(Temperature), MAX(Temperature), AVG(Temperature), MIN(Chill), MAX(Chill), MAX(Humidity), MAX(Barometer), MIN(DewPoint), MIN(SetPoint), MAX(SetPoint), AVG(SetPoint) FROM Temperature WHERE (DeviceRowID='%llu' AND Date>='%q' AND Date<'%q')",
+		result=safe_query("SELECT MIN(Temperature), MAX(Temperature), AVG(Temperature), MIN(Chill), MAX(Chill), AVG(Humidity), AVG(Barometer), MIN(DewPoint), MIN(SetPoint), MAX(SetPoint), AVG(SetPoint) FROM Temperature WHERE (DeviceRowID='%llu' AND Date>='%q' AND Date<'%q')",
 			ID,
 			szDateStart,
 			szDateEnd
@@ -7297,7 +7333,7 @@ std::map<std::string, std::string> CSQLHelper::GetDeviceOptions(const std::strin
 }
 
 bool CSQLHelper::SetDeviceOptions(const unsigned long long idx, const std::map<std::string, std::string> & optionsMap) {
-	if (idx < 0) {
+	if (idx < 1) {
 		_log.Log(LOG_ERROR, "Cannot set options on device %llu", idx);
 		return false;
 	}
@@ -7334,4 +7370,3 @@ bool CSQLHelper::SetDeviceOptions(const unsigned long long idx, const std::map<s
 	}
 	return true;
 }
-

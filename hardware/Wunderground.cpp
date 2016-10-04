@@ -347,13 +347,13 @@ void CWunderground::GetMeterDetails()
 		tsen.WIND.temperaturel=0;
 
 		tsen.WIND.tempsign=(wind_temp>=0)?0:1;
-		int at10=round(abs(wind_temp*10.0f));
+		int at10=round(std::abs(wind_temp*10.0f));
 		tsen.WIND.temperatureh=(BYTE)(at10/256);
 		at10-=(tsen.WIND.temperatureh*256);
 		tsen.WIND.temperaturel=(BYTE)(at10);
 
 		tsen.WIND.chillsign=(wind_temp>=0)?0:1;
-		at10=round(abs(wind_chill*10.0f));
+		at10=round(std::abs(wind_chill*10.0f));
 		tsen.WIND.chillh=(BYTE)(at10/256);
 		at10-=(tsen.WIND.chillh*256);
 		tsen.WIND.chilll=(BYTE)(at10);
@@ -405,7 +405,7 @@ void CWunderground::GetMeterDetails()
 						float rainrateph = static_cast<float>(atof(root["current_observation"]["precip_1hr_metric"].asString().c_str()));
 						if (rainrateph != -9999.00f)
 						{
-							int at10 = round(abs(rainrateph*10.0f));
+							int at10 = round(std::abs(rainrateph*10.0f));
 							tsen.RAIN.rainrateh = (BYTE)(at10 / 256);
 							at10 -= (tsen.RAIN.rainrateh * 256);
 							tsen.RAIN.rainratel = (BYTE)(at10);

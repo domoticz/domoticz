@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 1266
+# ref 1299
 
 CACHE:
 # CSS
@@ -477,6 +477,9 @@ app/RoomplanController.js
 app/ScenesController.js
 app/SetupController.js
 app/TemperatureController.js
+app/TemperatureCustomLogController.js
+app/TemperatureLogController.js
+app/TemperatureNotificationsController.js
 app/UpdateController.js
 app/UsersController.js
 app/UserVariablesController.js
@@ -576,10 +579,15 @@ views/roomplan.html
 views/scenes.html
 views/setup.html
 views/temperature.html
+views/temperature_custom_temp_log.html
+views/temperature_log.html
+views/temperature_notifications.html
+views/temperatures/temperatureWidget.html
 views/update.html
 views/users.html
 views/utility.html
 views/weather.html
+views/weather_widget.html
 eventsframe.html
 zwavetopology.html
 secpanel/index.html

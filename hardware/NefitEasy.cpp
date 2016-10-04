@@ -219,7 +219,14 @@ void CNefitEasy::Do_Work()
 		}
 		if (sec_counter % NEFIT_GAS_INTERVAL == 0)
 		{
-			ret = GetGasUsage();
+			try
+			{
+				ret = GetGasUsage();
+			}
+			catch (...)
+			{
+				_log.Log(LOG_ERROR, "NefitEasy: Error getting/processing gas result...");
+			}
 		}
 		bFirstTime = false;
 	}

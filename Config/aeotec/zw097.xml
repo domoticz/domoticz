@@ -37,19 +37,12 @@ https://aeotec.freshdesk.com/helpdesk/attachments/6009584692
         2, if the current battery report falls below the low battery value (configurable parameter 39), it will send battery report=0xFF.
       </Help>
     </Value>
-    <Value type="int" genre="config" instance="1" index="121" label="Report type" min="0" max="65535" value="256" size="4">
-      <Help>
-        Defines the type of report sent.
-        Value 1 (msb) Reserved
-        Value 2 Reserved
-        Value 3 bits 7-1 reserved
-        bits 0 - Basic Report
-        Value 4 (lsb) bits 7-4 reserved
-        bit 3 Sensor Binary
-        bit 2-0 reserved
-        Default setting: 0x00000100 (Basic Set).
-        Ideal Setting for OZW is 16 (Sensor Binary).
-      </Help>
+    <Value type="list" genre="config" instance="1" index="121" label="Report Type" size="4" min="0" max="65535" value="256">
+      <Help>Configure which sensor report will be sent when the sensor is Opened/Closed</Help>
+      <Item label="Disabled" value="0"/>
+      <Item label="Basic Set" value="256"/>
+      <Item label="Sensor Binary Report" value="16"/>
+      <Item label="Basic Set and Sensor Binary Report" value="272"/>
     </Value>
     <Value type="list" index="255" genre="config" label="Reset To Factory Defaults" size="4" value="1" write_only="true">
       <Help>Reset to factory defaults</Help>

@@ -40,6 +40,7 @@ public:
 	int FindDomoticzHardware(int HwdId);
 	int FindDomoticzHardwareByType(const _eHardwareTypes HWType);
 	CDomoticzHardwareBase* GetHardware(int HwdId);
+	CDomoticzHardwareBase* GetHardwareByIDType(const std::string &HwdId, const _eHardwareTypes HWType);
 	CDomoticzHardwareBase* GetHardwareByType(const _eHardwareTypes HWType);
 
 	void HeartbeatUpdate(const std::string &component);
@@ -84,6 +85,8 @@ public:
 
 	bool GetSunSettings();
 	void LoadSharedUsers();
+
+	void ForceLogNotificationCheck();
 
 	bool RestartHardware(const std::string &idx);
 
@@ -143,12 +146,15 @@ public:
 private:
 	void HandleAutomaticBackups();
 	unsigned long long PerformRealActionFromDomoticzClient(const unsigned char *pRXCommand, CDomoticzHardwareBase **pOriginalHardware);
+	void HandleLogNotifications();
 	std::map<std::string, time_t > m_componentheartbeats;
 	boost::mutex m_heartbeatmutex;
 
 	boost::mutex m_decodeRXMessageMutex;
 
 	std::vector<int> m_devicestorestart;
+
+	bool m_bForceLogNotificationCheck;
 
 	int m_SecCountdown;
 	int m_SecStatus;

@@ -2,6 +2,10 @@
 #include "P1MeterBase.h"
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
+#include "../main/Logger.h"
+
+#define CRC16_ARC	0x8005
+#define CRC16_ARC_REFL	0xA001
 
 typedef enum { 
 	ID=0, 
@@ -12,16 +16,16 @@ typedef enum {
 } MatchType;
 
 #define P1_SMID			"/" // Smart Meter ID. Used to detect start of telegram.
-#define P1PU1			"1-0:1.8.1" // total power usage normal tariff
-#define P1PU2			"1-0:1.8.2" // total power usage low tariff
-#define P1PD1			"1-0:2.8.1" // total delivered power normal tariff
-#define P1PD2			"1-0:2.8.2" // total delivered power low tariff
+#define P1PU1			"1-0:1.8.1" // total power usage tariff 1
+#define P1PU2			"1-0:1.8.2" // total power usage tariff 2
+#define P1PD1			"1-0:2.8.1" // total delivered power tariff 1
+#define P1PD2			"1-0:2.8.2" // total delivered power tariff 2
 #define P1TIP			"0-0:96.14.0" // tariff indicator power
 #define P1PUC			"1-0:1.7.0" // current power usage
 #define P1PDC			"1-0:2.7.0" // current power delivery
 #define P1GTS			"0-1:24.3.0" // timestamp gas usage sample
-#define P1GTSDSMRv4		"0-1:24.2.1" // timestamp gas usage sample
-#define P1GTSGyrE350	"0-2:24.2.1" // timestamp gas usage sample
+#define P1GTSDSMRv4		"0-1:24.2.1" // gas usage sample
+#define P1GTSGyrE350		"0-2:24.2.1" // gas usage sample
 #define P1GTSME382		"0-2:24.3.0" // timestamp gas usage sample
 
 typedef enum {
@@ -81,13 +85,17 @@ void P1MeterBase::Init()
 {
 	m_linecount=0;
 	m_exclmarkfound=0;
+	l_exclmarkfound=0;
+	m_CRfound=0;
 	m_bufferpos=0;
+	l_bufferpos=0;
 	m_lastgasusage=0;
 	m_lastelectrausage=0;
 	m_lastSharedSendElectra=0;
 	m_lastSharedSendGas=0;
 
 	memset(&m_buffer,0,sizeof(m_buffer));
+	memset(&l_buffer,0,sizeof(l_buffer));
 
 	memset(&m_p1power,0,sizeof(m_p1power));
 	memset(&m_p1gas,0,sizeof(m_p1gas));
@@ -103,10 +111,10 @@ void P1MeterBase::Init()
 	m_p1gas.ID = 1;
 }
 
-void P1MeterBase::MatchLine()
+bool P1MeterBase::MatchLine()
 {
-	if ((strlen((const char*)&m_buffer)<1)||(m_buffer[0]==0x0a))
-		return; //null value (startup)
+	if ((strlen((const char*)&l_buffer)<1)||(l_buffer[0]==0x0a))
+		return true; //null value (startup)
 	uint8_t i;
 	uint8_t found=0;
 	Match t;
@@ -119,7 +127,7 @@ void P1MeterBase::MatchLine()
 		switch(t.matchtype)
 		{
 		case ID:
-			if(strncmp(t.key, (const char*)&m_buffer, strlen(t.key)) == 0) {
+			if(strncmp(t.key, (const char*)&l_buffer, strlen(t.key)) == 0) {
 				m_linecount=1;
 				found=1;
 			}
@@ -127,14 +135,14 @@ void P1MeterBase::MatchLine()
 				continue;
 			break;
 		case STD:
-			if(strncmp(t.key, (const char*)&m_buffer, strlen(t.key)) == 0) {
+			if(strncmp(t.key, (const char*)&l_buffer, strlen(t.key)) == 0) {
 				found=1;
 			}
 			else 
 				continue;
 			break;
 		case LINE17:
-			if(strncmp(t.key, (const char*)&m_buffer, strlen(t.key)) == 0) {
+			if(strncmp(t.key, (const char*)&l_buffer, strlen(t.key)) == 0) {
 				m_linecount = 17;
 				found=1;
 			}
@@ -142,13 +150,13 @@ void P1MeterBase::MatchLine()
 				continue;
 			break;
 		case LINE18:
-			if((m_linecount == 18)&&(strncmp(t.key, (const char*)&m_buffer, strlen(t.key)) == 0)) {
+			if((m_linecount == 18)&&(strncmp(t.key, (const char*)&l_buffer, strlen(t.key)) == 0)) {
 				found=1;
 			}
 			break;
 		case EXCLMARK:
-			if(strncmp(t.key, (const char*)&m_buffer, strlen(t.key)) == 0) {
-				m_exclmarkfound=1;
+			if(strncmp(t.key, (const char*)&l_buffer, strlen(t.key)) == 0) {
+				l_exclmarkfound=1;
 				found=1;
 			}
 			else 
@@ -161,11 +169,11 @@ void P1MeterBase::MatchLine()
 		if(!found)
 			continue;
 
-		if (m_exclmarkfound) {
+		if (l_exclmarkfound) {
 			time_t atime=mytime(NULL);
 			sDecodeRXMessage(this, (const unsigned char *)&m_p1power, "Power", 255);
 			bool bSend2Shared=(atime-m_lastSharedSendElectra>59);
-			if (abs(double(m_lastelectrausage)-double(m_p1power.usagecurrent))>40)
+			if (std::abs(double(m_lastelectrausage)-double(m_p1power.usagecurrent))>40)
 				bSend2Shared=true;
 			if (bSend2Shared)
 			{
@@ -182,87 +190,74 @@ void P1MeterBase::MatchLine()
 				m_lastgasusage=m_p1gas.gasusage;
 				sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, "Gas", 255);
 			}
-			m_exclmarkfound=0;
+			m_linecount=0;
+			l_exclmarkfound=0;
 		}
 		else
 		{
+			vString=(const char*)&l_buffer+t.start;
+			int ePos=t.width;
 			if (t.matchtype==STD)
 			{
-				vString=(const char*)&m_buffer+t.start;
-				int ePos=vString.find_first_of("*");
-				if (ePos==std::string::npos)
-				{
-					ePos=vString.find_first_of(")");
-					if (ePos==std::string::npos)
-					{
-						strncpy(value, (const char*)&m_buffer+t.start, t.width);
-						value[t.width] = 0;
-					}
-					else
-					{
-						strcpy(value,vString.substr(0,ePos).c_str());
-					}
-				}
-				else
-				{
-					strcpy(value,vString.substr(0,ePos).c_str());
-				}
+				ePos=vString.find_first_of("*)");
 			}
 			else if (t.matchtype==LINE18)
 			{
-				vString=(const char*)&m_buffer+t.start;
-				int ePos=vString.find_first_of(")");
-				if (ePos==std::string::npos)
-				{
-					strncpy(value, (const char*)&m_buffer+t.start, t.width);
-					value[t.width] = 0;
-				}
-				else
-				{
-					strcpy(value,vString.substr(0,ePos).c_str());
-				}
+				ePos=vString.find_first_of(")");
 			}
-			else if (t.matchtype==ID)
+
+			if (ePos==std::string::npos)
 			{
-				//
+				// invalid message: value not delimited
+				_log.Log(LOG_STATUS,"P1: dismiss incoming - value is not delimited in line \"%s\"",l_buffer);
+				return false;
 			}
-			else
+
+			if (ePos>19)
 			{
-				strncpy(value, (const char*)&m_buffer + t.start, t.width);
-				value[t.width] = 0;
+				// invalid message: line too long
+				_log.Log(LOG_STATUS,"P1: dismiss incoming - value in line \"%s\" is oversized",l_buffer);
+				return false;
+			}
+
+			if (ePos>0)
+			{
+				strcpy(value,vString.substr(0,ePos).c_str());
+				//_log.Log(LOG_NORM,"P1: Key: %s, Value: %s", t.topic,value);
 			}
 
 			unsigned long temp_usage = 0;
+			char *validate=value+ePos;
 
 			switch (t.type)
 			{
 			case P1TYPE_POWERUSAGE1:
-				temp_usage = (unsigned long)(atof(value)*1000.0f);
+				temp_usage = (unsigned long)(strtod(value,&validate)*1000.0f);
 				m_p1power.powerusage1 = temp_usage;
 				break;
 			case P1TYPE_POWERUSAGE2:
-				temp_usage = (unsigned long)(atof(value)*1000.0f);
+				temp_usage = (unsigned long)(strtod(value,&validate)*1000.0f);
 				m_p1power.powerusage2=temp_usage;
 				break;
 			case P1TYPE_POWERDELIV1:
-				temp_usage = (unsigned long)(atof(value)*1000.0f);
+				temp_usage = (unsigned long)(strtod(value,&validate)*1000.0f);
 				m_p1power.powerdeliv1=temp_usage;
 				break;
 			case P1TYPE_POWERDELIV2:
-				temp_usage = (unsigned long)(atof(value)*1000.0f);
+				temp_usage = (unsigned long)(strtod(value,&validate)*1000.0f);
 				m_p1power.powerdeliv2=temp_usage;
 				break;
 			case P1TYPE_TARIFF:
 				break;
 			case P1TYPE_USAGECURRENT:
-				temp_usage = (unsigned long)(atof(value)*1000.0f);	//Watt
+				temp_usage = (unsigned long)(strtod(value,&validate)*1000.0f);	//Watt
 				if (temp_usage < 17250)
 				{
 					m_p1power.usagecurrent = temp_usage;
 				}
 				break;
 			case P1TYPE_DELIVCURRENT:
-				temp_usage = (unsigned long)(atof(value)*1000.0f);	//Watt;
+				temp_usage = (unsigned long)(strtod(value,&validate)*1000.0f);	//Watt;
 				if (temp_usage < 17250)
 				{
 					m_p1power.delivcurrent = temp_usage;
@@ -274,45 +269,184 @@ void P1MeterBase::MatchLine()
 			case P1TYPE_GASUSAGE:
 			case P1TYPE_GASUSAGEDSMRv4:
 			case P1TYPE_GASUSAGEGyrE350:
-				temp_usage = (unsigned long)(atof(value)*1000.0f);
+				temp_usage = (unsigned long)(strtod(value,&validate)*1000.0f);
 				m_p1gas.gasusage = temp_usage;
 				break;
 			}
 
-			//_log.Log(LOG_NORM,"Key: %s, Value: %s", t.topic,value);
+			if (ePos>0 && ((validate - value) != ePos)) {
+				// invalid message: value is not a number
+				_log.Log(LOG_STATUS,"P1: dismiss incoming - value in line \"%s\" is not a number", l_buffer);
+				return false;
+			}
 
-			return;
+			return true;
 		}
 	}
+	return true;
 }
 
-void P1MeterBase::ParseData(const unsigned char *pData, int Len)
+
+/*
+/ GB3:	DSMR 4.0 defines a CRC checksum at the end of the message, calculated from 
+/	and including the message starting character '/' upto and including the message
+/	end character '!'. According to the specs the CRC is a 16bit checksum using the
+/	polynomial x^16 + x^15 + x^2 + 1, however input/output are reflected.
+*/
+
+bool P1MeterBase::CheckCRC()
+{
+	// sanity checks
+	if (l_buffer[1]==0){
+		// always return true with pre DSMRv4 format message
+		return true;
+	}
+
+	if (l_buffer[5]!=0){
+		// trailing characters after CRC
+		_log.Log(LOG_STATUS,"P1: dismiss incoming - CRC value in message has trailing characters");
+		return false;
+	}
+
+	if (!m_CRfound){
+		_log.Log(LOG_STATUS,"P1: you appear to have middleware that changes the message content - skipping CRC validation");
+		return true;
+	}
+
+	// retrieve CRC from the current line
+	char crc_str[5];
+	strncpy(crc_str, (const char*)&l_buffer+1, 4);
+	crc_str[4]=0;
+	uint16_t m_crc16=(uint16_t)strtoul(crc_str,NULL,16);
+
+	// calculate CRC
+	const unsigned char* c_buffer=m_buffer;
+	uint8_t i;
+	uint16_t crc=0;
+	int m_size=m_bufferpos;
+	while (m_size--) {
+		crc = crc ^ *c_buffer++;
+		for (i=0;i<8;i++){
+			if ((crc & 0x0001)){
+				crc = (crc >> 1) ^ CRC16_ARC_REFL;
+			} else {
+				crc = crc >> 1;
+			}
+		}
+	}
+	if (crc != m_crc16){
+		_log.Log(LOG_STATUS,"P1: dismiss incoming - CRC failed");
+	}
+	return (crc==m_crc16);
+}
+
+
+/*
+/ GB3:	ParseData() can be called with either a complete message (P1MeterTCP) or individual
+/	lines (P1MeterSerial).
+/
+/	While it is technically possible to do a CRC check line by line, we like to keep
+/	things organized and assemble the complete message before running that check. If the
+/	message is DSMR 4.0+ of course.
+/
+/	Because older DSMR standard does not contain a CRC we still need the validation rules
+/	in Matchline(). In fact, one of them is essential for keeping Domoticz from crashing
+/	in specific cases of bad data. In essence this means that a CRC check will only be
+/	done if the message passes all other validation rules
+*/
+
+void P1MeterBase::ParseData(const unsigned char *pData, int Len, unsigned char disable_crc)
 {
 	int ii=0;
-	while (ii<Len)
+
+	// a new message should not start with an empty line, but just in case it does (crude check is sufficient here)
+	while ((m_linecount==0) && (pData[ii]<0x10)){
+		ii++;
+	}
+
+	// reenable reading pData when a new message starts, empty buffers
+	if (pData[ii]==0x2f) {
+/*
+/	Debug entry for open ended messages: start
+/
+/	P1 Wifi Gateway sends open ended messages which used to pass silently as delayed messages in
+/	Domoticz prior to v3.5592. With the introduction of the P1 message CRC validation this became
+/	an illegal procedure. Enclosed code re-enables the possibility to commit delayed data while
+/	printing a warning in the log file.
+*/
+		if ((l_buffer[0]==0x21) && !l_exclmarkfound && (m_linecount>0)) {
+			_log.Log(LOG_STATUS,"P1: WARNING: got new message but buffer still contains unprocessed data from previous message.");
+			l_buffer[l_bufferpos] = 0;
+			if (disable_crc || CheckCRC()) {
+				MatchLine();
+			}
+		}
+/*
+/	Debug entry for open ended messages: end
+*/
+		m_linecount = 1;
+		l_bufferpos = 0;
+		m_bufferpos = 0;
+		m_exclmarkfound = 0;
+	}
+
+	// assemble complete message in message buffer
+	while ((ii<Len) && (m_linecount>0) && (!m_exclmarkfound) && (m_bufferpos<sizeof(m_buffer))){
+		const unsigned char c = pData[ii];
+		m_buffer[m_bufferpos] = c;
+		m_bufferpos++;
+		if(c==0x21){
+			// stop reading at exclamation mark (do not include CRC)
+			ii=Len;
+			m_exclmarkfound = 1;
+		}else{
+			ii++;
+		}
+	}
+
+	if(m_bufferpos==sizeof(m_buffer)){
+		// discard oversized message
+		if ((Len > 400) || (pData[0]==0x21)){
+			// 400 is an arbitrary chosen number to differentiate between full messages and single line commits
+			_log.Log(LOG_STATUS,"P1: dismiss incoming - message oversized");
+		}
+		m_linecount = 0;
+		return;
+	}
+
+	// read pData, ignore/stop if there is a message validation failure
+	ii=0;
+	while ((ii<Len) && (m_linecount>0))
 	{
 		const unsigned char c = pData[ii];
-		if(c == 0x0d)
-		{
-			ii++;
+		ii++;
+		if (c==0x0d) {
+			m_CRfound=1;
 			continue;
 		}
 
-		m_buffer[m_bufferpos] = c;
-		if(c == 0x0a || m_bufferpos == sizeof(m_buffer) - 1)
-		{
-			// discard newline, close string, parse line and clear it.
+		if (c==0x0a) {
+			// close string, parse line and clear it.
 			m_linecount++;
-			if (m_bufferpos > 0) {
-				m_buffer[m_bufferpos] = 0;
-				MatchLine();
+			if ((l_bufferpos>0) && (l_bufferpos<sizeof(l_buffer))) {
+				// don't try to match empty or oversized lines
+				l_buffer[l_bufferpos] = 0;
+				if(l_buffer[0]==0x21 && !disable_crc){
+					if (!CheckCRC()) {
+						m_linecount = 0;
+						return;
+					}
+				}
+				if (!MatchLine()) {
+					// discard message
+					m_linecount=0;
+				}
 			}
-			m_bufferpos = 0;
+			l_bufferpos = 0;
 		}
-		else
-		{
-			m_bufferpos++;
+		else if (l_bufferpos<sizeof(l_buffer)) {
+			l_buffer[l_bufferpos] = c;
+			l_bufferpos++;
 		}
-		ii++;
 	}
 }

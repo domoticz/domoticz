@@ -139,7 +139,15 @@ void CRFLinkTCP::Do_Work()
 			if ((m_bDoRestart) && (sec_counter % 30 == 0))
 			{
 				_log.Log(LOG_STATUS, "RFLink: trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
-				connect(m_szIPAddress,m_usIPPort);
+				try {
+					disconnect();
+					close();
+				}
+				catch (...)
+				{
+					//Don't throw from a Stop command
+				}
+				connect(m_szIPAddress, m_usIPPort);
 			}
 			update();
 		}

@@ -18,7 +18,7 @@ namespace http {
 	namespace server {
 		class cWebem;
 		struct _tWebUserPassword;
-class CWebServer : public session_store
+class CWebServer : public session_store, public boost::enable_shared_from_this<CWebServer>
 {
 	typedef boost::function< void(WebEmSession & session, const request& req, Json::Value &root) > webserver_response_function;
 public:
@@ -151,6 +151,7 @@ private:
 	void Cmd_GetUserVariable(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_AllowNewHardware(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetLog(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_ClearLog(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_AddPlan(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_UpdatePlan(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DeletePlan(WebEmSession & session, const request& req, Json::Value &root);
@@ -242,7 +243,15 @@ private:
 	void Cmd_PanasonicMediaCommand(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_AddMobileDevice(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DeleteMobileDevice(WebEmSession & session, const request& req, Json::Value &root);
-
+	void Cmd_HEOSSetMode(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_HEOSMediaCommand(WebEmSession & session, const request& req, Json::Value &root);
+	
+	void Cmd_BleBoxSetMode(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_BleBoxGetNodes(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_BleBoxAddNode(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_BleBoxUpdateNode(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_BleBoxRemoveNode(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_BleBoxClearNodes(WebEmSession & session, const request& req, Json::Value &root);
 
 	//RTypes
 	void RType_HandleGraph(WebEmSession & session, const request& req, Json::Value &root);

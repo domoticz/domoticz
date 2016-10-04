@@ -7,7 +7,7 @@
 class CToonThermostat : public CDomoticzHardwareBase
 {
 public:
-	CToonThermostat(const int ID, const std::string &Username, const std::string &Password);
+	CToonThermostat(const int ID, const std::string &Username, const std::string &Password, const int &Agreement);
 	~CToonThermostat(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 	void SetSetpoint(const int idx, const float temp);
@@ -31,6 +31,7 @@ private:
 
 	std::string m_UserName;
 	std::string m_Password;
+	int m_Agreement;
 	std::string m_ClientID;
 	std::string m_ClientIDChecksum;
 	volatile bool m_stoprequested;
