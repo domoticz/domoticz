@@ -17,7 +17,7 @@
 #endif
 
 #define BUFFER_LENGHT 100
-#define MULTIFUN_POLL_INTERVAL 10
+#define MULTIFUN_POLL_INTERVAL 10 //TODO - to settings on www
 
 #define round(a) ( int ) ( a + .5 )
 
@@ -26,7 +26,7 @@ typedef struct sensorType {
 	float div;
 } Model;
 
-#define sensorsCount 12
+#define sensorsCount 16
 #define registersCount 34
 
 typedef std::map<int, std::string> dictionary;
@@ -81,7 +81,11 @@ static sensorType sensors[sensorsCount] =
 	{ "Flue gas", 10.0 },
 	{ "Module", 10.0 },
 	{ "Boiler", 10.0 },
-	{ "Feeder", 10.0 }
+	{ "Feeder", 10.0 },
+	{ "Calculated Boiler", 10.0 },
+	{ "Calculated H.W.U.", 10.0 },
+	{ "Calculated C.H.1", 10.0 },
+	{ "Calculated C.H.1", 10.0 }
 };
 
 static dictionary quickAccessType = boost::assign::map_list_of
@@ -125,7 +129,7 @@ MultiFun::~MultiFun()
 bool MultiFun::StartHardware()
 {
 #ifdef DEBUG_MultiFun
-	_log.Log(LOG_STATUS, "MultiFuna: Start hardware");
+	_log.Log(LOG_STATUS, "MultiFun: Start hardware");
 #endif
 
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&MultiFun::Do_Work, this)));
@@ -336,14 +340,17 @@ void MultiFun::GetTemperatures()
 		{
 			for (int i = 0; i < sensorsCount; i++)
 			{
-				if (buffer[i * 2 + 1] != 254)
-				{
-					float temp = (buffer[i * 2 + 1] * 256 + buffer[i * 2 + 2]) / sensors[i].div;
+				unsigned int val = (buffer[i * 2 + 1] & 127) * 256 + buffer[i * 2 + 2];
+				int signedVal = (((buffer[i * 2 + 1] & 128) >> 7) * -32768) + val;
+				float temp = signedVal / sensors[i].div;
+
+				if ((temp > -39) && (temp < 1000))
+				{			
 					SendTempSensor(i, 255, temp, sensors[i].name);
 				}
 				if ((i == 1) || (i == 2))
 				{
-					m_isSensorExists[i - 1] = (buffer[i * 2 + 1] != 254);
+					m_isSensorExists[i - 1] = ((temp > -39) && (temp < 1000));
 				}
 			}
 		}
