@@ -85,7 +85,7 @@ static sensorType sensors[sensorsCount] =
 	{ "Calculated Boiler", 10.0 },
 	{ "Calculated H.W.U.", 10.0 },
 	{ "Calculated C.H.1", 10.0 },
-	{ "Calculated C.H.1", 10.0 }
+	{ "Calculated C.H.2", 10.0 }
 };
 
 static dictionary quickAccessType = boost::assign::map_list_of
