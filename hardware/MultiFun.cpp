@@ -238,12 +238,12 @@ bool MultiFun::WriteToHardware(const char *pdata, const unsigned char length)
 	{
 		const _tThermostat *therm = reinterpret_cast<const _tThermostat*>(pdata);
 
-		int temp = therm->temp;
+		float temp = therm->temp;
 
 		if (therm->id2 == 0x1F || therm->id2 == 0x20)
 		{
 			temp = temp * 5;
-			temp = temp | 0x8000;
+			temp = (int)temp | 0x8000;
 		}
 
 		unsigned char buffer[100];
