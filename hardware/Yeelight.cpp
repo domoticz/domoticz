@@ -108,7 +108,8 @@ ST: wifi_bulb";
 		setsockopt(udpSocket, SOL_SOCKET, SO_RCVTIMEO, (char*)&timeout, sizeof(timeout));
 
 		char buf[10000];
-		unsigned int slen = sizeof(sockaddr);
+		//unsigned int slen = sizeof(sockaddr);
+		socklen_t slen = sizeof(sockaddr);
 		int recv_size = recvfrom(udpSocket, buf, sizeof(buf) - 1, 0, (sockaddr *)&remoteAddress, (int *)&slen);
 		if (recv_size == SOCKET_ERROR) {
 			//_log.Log(LOG_ERROR, "SOCKET ERROR 2");
