@@ -346,7 +346,7 @@ void MultiFun::GetTemperatures()
 
 				if ((temp > -39) && (temp < 1000))
 				{			
-					SendTempSensor(i, -1, temp, sensors[i].name);
+					SendTempSensor(i, 255, temp, sensors[i].name);
 				}
 				if ((i == 1) || (i == 2))
 				{
@@ -400,17 +400,17 @@ void MultiFun::GetRegisters(bool firstTime)
 					{
 						if (((*it).first & value) && !((*it).first & m_LastAlarms))
 						{
-							SendTextSensor(1, 0, -1, (*it).second, "Alarms");
+							SendTextSensor(1, 0, 255, (*it).second, "Alarms");
 						}
 						else
 							if (!((*it).first & value) && ((*it).first & m_LastAlarms))
 							{
-								SendTextSensor(1, 0, -1, "End - " + (*it).second, "Alarms");
+								SendTextSensor(1, 0, 255, "End - " + (*it).second, "Alarms");
 							}
 					}
 					if (((bool)m_LastAlarms != bool(value)) || firstTime)
 					{
-						SendAlertSensor(0, -1, value ? 4 : 1, "Alarm");
+						SendAlertSensor(0, 255, value ? 4 : 1, "Alarm");
 					}
 					m_LastAlarms = value;
 					break;
@@ -422,17 +422,17 @@ void MultiFun::GetRegisters(bool firstTime)
 					{
 						if (((*it).first & value) && !((*it).first & m_LastWarnings))
 						{
-							SendTextSensor(1, 1, -1, (*it).second, "Warnings");
+							SendTextSensor(1, 1, 255, (*it).second, "Warnings");
 						}
 						else
 							if (!((*it).first & value) && ((*it).first & m_LastWarnings))
 							{
-								SendTextSensor(1, 1, -1, "End - " + (*it).second, "Warnings");
+								SendTextSensor(1, 1, 255, "End - " + (*it).second, "Warnings");
 							}
 					}
 					if (((bool)m_LastWarnings != bool(value)) || firstTime)
 					{
-						SendAlertSensor(1, -1, value ? 3 : 1, "Warning");
+						SendAlertSensor(1, 255, value ? 3 : 1, "Warning");
 					}
 					m_LastWarnings = value;
 					break;
@@ -444,18 +444,18 @@ void MultiFun::GetRegisters(bool firstTime)
 					{
 						if (((*it).first & value) && !((*it).first & m_LastDevices))
 						{
-							SendGeneralSwitchSensor(2, -1, true, (*it).second.c_str(), (*it).first);
+							SendGeneralSwitchSensor(2, 255, true, (*it).second.c_str(), (*it).first);
 						}
 						else
 							if (!((*it).first & value) && ((*it).first & m_LastDevices))
 							{
-								SendGeneralSwitchSensor(2, -1, false, (*it).second.c_str(), (*it).first);
+								SendGeneralSwitchSensor(2, 255, false, (*it).second.c_str(), (*it).first);
 							}
 					}
 					m_LastDevices = value;
 
 					float level = (value & 0xFC00) >> 10;
-					SendPercentageSensor(2, 1, -1, level, "BLOWER POWER");
+					SendPercentageSensor(2, 1, 255, level, "BLOWER POWER");
 					break;
 				}
 				case 0x03:
@@ -465,18 +465,18 @@ void MultiFun::GetRegisters(bool firstTime)
 					{
 						if (((*it).first & value) && !((*it).first & m_LastState))
 						{
-							SendTextSensor(3, 1, -1, (*it).second, "State");
+							SendTextSensor(3, 1, 255, (*it).second, "State");
 						}
 						else
 							if (!((*it).first & value) && ((*it).first & m_LastState))
 							{
-								SendTextSensor(3, 1, -1, "End - " + (*it).second, "State");
+								SendTextSensor(3, 1, 255, "End - " + (*it).second, "State");
 							}
 					}
 					m_LastState = value;
 
 					float level = (value & 0xFC00) >> 10;
-					SendPercentageSensor(3, 1, -1, level, "Fuel Level");
+					SendPercentageSensor(3, 1, 255, level, "Fuel Level");
 					break;
 				}
 
@@ -514,7 +514,7 @@ void MultiFun::GetRegisters(bool firstTime)
 					}
 					else
 					{
-						//SendGeneralSwitchSensor(i, -1, value, name, 1); // TODO - send level (dimmer)
+						//SendGeneralSwitchSensor(i, 255, value, name, 1); // TODO - send level (dimmer)
 					}					
 					break;
 				}
@@ -526,12 +526,12 @@ void MultiFun::GetRegisters(bool firstTime)
 					{
 						if (((*it).first & value) && !((*it).first & m_LastQuickAccess))
 						{
-							SendGeneralSwitchSensor(0x21, -1, true, (*it).second.c_str(), (*it).first);
+							SendGeneralSwitchSensor(0x21, 255, true, (*it).second.c_str(), (*it).first);
 						}
 						else
 							if ((!((*it).first & value) && ((*it).first & m_LastQuickAccess)) || firstTime)
 							{
-								SendGeneralSwitchSensor(0x21, -1, false, (*it).second.c_str(), (*it).first);
+								SendGeneralSwitchSensor(0x21, 255, false, (*it).second.c_str(), (*it).first);
 							}
 					}
 					m_LastQuickAccess = value;
