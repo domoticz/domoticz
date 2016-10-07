@@ -92,7 +92,7 @@ bool Yeelight::DiscoverLights()
 	remoteAddress.sin_addr.s_addr = inet_addr("239.255.255.250");
 	remoteAddress.sin_port = htons(1982);
 	//char *pPacket = "M-SEARCH * HTTP/1.1\r\n\HOST: 239.255.255.250:1982\r\n\MAN: \"ssdp:discover\"\r\n\ST: wifi_bulb";
-	char *pPacket = "M-SEARCH * HTTP/1.1\r\n\
+	char const *pPacket = "M-SEARCH * HTTP/1.1\r\n\
 HOST: 239.255.255.250:1982\r\n\
 MAN: \"ssdp:discover\"\r\n\
 ST: wifi_bulb";
@@ -110,7 +110,8 @@ ST: wifi_bulb";
 		char buf[10000];
 		//unsigned int slen = sizeof(sockaddr);
 		socklen_t slen = sizeof(sockaddr);
-		int recv_size = recvfrom(udpSocket, buf, sizeof(buf) - 1, 0, (sockaddr *)&remoteAddress, (int *)&slen);
+		//int recv_size = recvfrom(udpSocket, buf, sizeof(buf) - 1, 0, (sockaddr *)&remoteAddress, (int *)&slen);
+		int recv_size = recvfrom(udpSocket, buf, sizeof(buf) - 1, 0, (sockaddr *)&remoteAddress, &slen);
 		if (recv_size == SOCKET_ERROR) {
 			//_log.Log(LOG_ERROR, "SOCKET ERROR 2");
 			closesocket(udpSocket);
