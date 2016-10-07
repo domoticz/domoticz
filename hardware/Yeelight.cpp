@@ -100,7 +100,7 @@ ST: wifi_bulb";
 
 	int limit = 100; //this will limit the number of lights discoverable
 	int i = 0;
-	DWORD timeout = 2 * 1000;
+	unsigned int timeout = 2 * 1000;
 
 	while (i < limit)
 	{
@@ -108,7 +108,7 @@ ST: wifi_bulb";
 		setsockopt(udpSocket, SOL_SOCKET, SO_RCVTIMEO, (char*)&timeout, sizeof(timeout));
 
 		char buf[10000];
-		unsigned slen = sizeof(sockaddr);
+		unsigned int slen = sizeof(sockaddr);
 		int recv_size = recvfrom(udpSocket, buf, sizeof(buf) - 1, 0, (sockaddr *)&remoteAddress, (int *)&slen);
 		if (recv_size == SOCKET_ERROR) {
 			//_log.Log(LOG_ERROR, "SOCKET ERROR 2");
