@@ -393,7 +393,7 @@ namespace http {
 
 			RegisterCommandCode("heossetmode", boost::bind(&CWebServer::Cmd_HEOSSetMode, this, _1, _2, _3));
 			RegisterCommandCode("heosmediacommand", boost::bind(&CWebServer::Cmd_HEOSMediaCommand, this, _1, _2, _3));
-			
+
 			RegisterCommandCode("bleboxsetmode", boost::bind(&CWebServer::Cmd_BleBoxSetMode, this, _1, _2, _3));
 			RegisterCommandCode("bleboxgetnodes", boost::bind(&CWebServer::Cmd_BleBoxGetNodes, this, _1, _2, _3));
 			RegisterCommandCode("bleboxaddnode", boost::bind(&CWebServer::Cmd_BleBoxAddNode, this, _1, _2, _3));
@@ -1155,7 +1155,7 @@ namespace http {
 					return;
 				if (port == 0)
 					port = 80;
-			}			
+			}
 			else if (htype == HTYPE_WINDDELEN) {
 					std::string mill_id = request::findValue(&req, "Mode1");
 					if (
@@ -1178,7 +1178,7 @@ namespace http {
 			else if (htype == HTYPE_GoodweAPI) {
 				if (username == "")
 					return;
-			}			
+			}
 			else
 				return;
 
@@ -1222,7 +1222,7 @@ namespace http {
 			{
 				mode1 = 30;
 				mode2 = 1000;
-			}			
+			}
 
 			m_sql.safe_query(
 				"INSERT INTO Hardware (Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) VALUES ('%q',%d, %d,'%q',%d,'%q','%q','%q','%q',%d,%d,%d,%d,%d,%d,%d)",
@@ -1447,7 +1447,7 @@ namespace http {
 			}
 			else
 				return;
-			
+
 			int mode1 = atoi(request::findValue(&req, "Mode1").c_str());
 			int mode2 = atoi(request::findValue(&req, "Mode2").c_str());
 			int mode3 = atoi(request::findValue(&req, "Mode3").c_str());
@@ -3260,7 +3260,7 @@ namespace http {
 						case pTypeLighting5:
 						case pTypeLighting6:
 						case pTypeFan:
-						case pTypeLimitlessLights:			
+						case pTypeLimitlessLights:
 						case pTypeSecurity1:
 						case pTypeSecurity2:
 						case pTypeEvohome:
@@ -5653,7 +5653,7 @@ namespace http {
 						root["message"] = "WRONG CODE";
 						return;
 					}
-				}				
+				}
 
 				if (switchcmd == "Toggle") {
 					//Request current state of switch
@@ -6832,16 +6832,16 @@ namespace http {
 		} tHardwareList;
 
 		void CWebServer::GetJSonDevices(
-			Json::Value &root, 
-			const std::string &rused, 
-			const std::string &rfilter, 
-			const std::string &order, 
-			const std::string &rowid, 
-			const std::string &planID, 
-			const std::string &floorID, 
-			const bool bDisplayHidden, 
+			Json::Value &root,
+			const std::string &rused,
+			const std::string &rfilter,
+			const std::string &order,
+			const std::string &rowid,
+			const std::string &planID,
+			const std::string &floorID,
+			const bool bDisplayHidden,
 			const bool bFetchFavorites,
-			const time_t LastUpdate, 
+			const time_t LastUpdate,
 			const std::string &username)
 		{
 			std::vector<std::vector<std::string> > result;
@@ -8360,7 +8360,7 @@ namespace http {
 							s_str2 >> total_max;
 							total_real = total_max - total_min;
 							sprintf(szTmp, "%llu", total_real);
-							
+
 							float musage = 0;
 							switch (metertype)
 							{

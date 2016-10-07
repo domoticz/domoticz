@@ -220,7 +220,7 @@ define(['app'], function (app) {
                 {
                     Mode2 = $("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked")?0:1;
                 }
- 
+
                 $.ajax({
                      url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
                         "&address=" + address +
@@ -527,7 +527,7 @@ define(['app'], function (app) {
                      }
                 });
             }
-            else if (text.indexOf("Toon") >= 0)  
+            else if (text.indexOf("Toon") >= 0)
             {
                 var username = $("#hardwarecontent #divlogin #username").val();
                 var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
@@ -736,7 +736,7 @@ define(['app'], function (app) {
                             ShowNotify($.t('Problem updating hardware!'), 2500, true);
                      }
                 });
-	    }	    
+	    }
 	    else if (text.indexOf("Goodwe solar inverter via Web") >= 0)
             {
 		var username=$("#hardwarecontent #divgoodweweb #username").val();
@@ -901,7 +901,6 @@ define(['app'], function (app) {
 	    else if (text.indexOf("Local I2C sensor") >= 0)
 	    {
                 hardwaretype = $("#hardwareparamsi2clocal #comboi2clocal").find('option:selected').val();
-		
                 $.ajax({
                      url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
                      async: false,
@@ -912,7 +911,7 @@ define(['app'], function (app) {
                      error: function(){
                             ShowNotify($.t('Problem adding hardware!'), 2500, true);
                      }
-                });		
+                });
 	    }
             else if (text.indexOf("USB") >= 0)
             {
@@ -1288,7 +1287,7 @@ define(['app'], function (app) {
                      }
                 });
             }
-            else if (text.indexOf("Toon") >= 0) 
+            else if (text.indexOf("Toon") >= 0)
 	     {
                 var username=$("#hardwarecontent #divlogin #username").val();
                 var password=encodeURIComponent($("#hardwarecontent #divlogin #password").val());
@@ -1402,7 +1401,7 @@ define(['app'], function (app) {
                             ShowNotify($.t('Problem adding hardware!'), 2500, true);
                      }
                 });
-	    }	    
+	    }
         }
 
 
@@ -4533,7 +4532,7 @@ define(['app'], function (app) {
                         }
                         else if (data["Type"].indexOf("Local I2C sensor") >= 0) {
                             $("#hardwareparamsi2clocal #comboi2clocal").val(jQuery.inArray(data["Type"], $.myglobals.HardwareI2CStr));
-                        }			
+                        }
                         else if (data["Type"].indexOf("USB") >= 0) {
                             $("#hardwarecontent #hardwareparamsserial #comboserialport").val(data["IntPort"]);
                             if (data["Type"].indexOf("MySensors") >= 0)
@@ -4566,7 +4565,7 @@ define(['app'], function (app) {
                             $("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
                             $("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
                             $("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
-                        }                        
+                        }
                         else if ((data["Type"].indexOf("Underground") >= 0) || (data["Type"].indexOf("DarkSky") >= 0) || (data["Type"].indexOf("AccuWeather") >= 0) || (data["Type"].indexOf("Open Weather Map") >= 0)) {
                             $("#hardwarecontent #hardwareparamsunderground #apikey").val(data["Username"]);
                             $("#hardwarecontent #hardwareparamsunderground #location").val(data["Password"]);
@@ -4852,9 +4851,9 @@ define(['app'], function (app) {
             else if (text.indexOf("Yeelight") >= 0) {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").hide();
-                $("#hardwarecontent #divlogin").hide();            
+                $("#hardwarecontent #divlogin").hide();
                 $("#hardwarecontent #divunderground").hide();
-                $("#hardwarecontent #divhttppoller").hide();                
+                $("#hardwarecontent #divhttppoller").hide();
             }
             else if (text.indexOf("Winddelen") >= 0)
             {
@@ -4909,7 +4908,6 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
             }
-	    
             else
             {
                 $("#hardwarecontent #divserial").hide();

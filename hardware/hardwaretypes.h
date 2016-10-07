@@ -501,13 +501,13 @@ typedef struct _tYeelight {
 	uint8_t len;
 	uint8_t type;
 	uint8_t subtype;
-	uint32_t id;	
+	uint32_t id;
 	uint8_t dunit;
 	uint8_t command;
 	uint8_t value;
 	_tYeelight()
 	{
-		id = 1;		
+		id = 1;
 		dunit = 1;
 		len = sizeof(_tYeelight) - 1;
 		type = pTypeYeelight;
