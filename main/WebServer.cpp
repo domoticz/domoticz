@@ -18,7 +18,7 @@
 #include "../hardware/EnOceanESP2.h"
 #include "../hardware/EnOceanESP3.h"
 #include "../hardware/Wunderground.h"
-#include "../hardware/ForecastIO.h"
+#include "../hardware/DarkSky.h"
 #include "../hardware/AccuWeather.h"
 #include "../hardware/OpenWeatherMap.h"
 #include "../hardware/Kodi.h"
@@ -26,6 +26,7 @@
 #include "../hardware/MySensorsBase.h"
 #include "../hardware/RFXBase.h"
 #include "../hardware/RFLinkBase.h"
+#include "../hardware/HEOS.h"
 #ifdef WITH_GPIO
 #include "../hardware/Gpio.h"
 #include "../hardware/GpioPin.h"
@@ -343,6 +344,7 @@ namespace http {
 			RegisterCommandCode("logincheck", boost::bind(&CWebServer::Cmd_LoginCheck, this, _1, _2, _3), true);
 			RegisterCommandCode("getversion", boost::bind(&CWebServer::Cmd_GetVersion, this, _1, _2, _3), true);
 			RegisterCommandCode("getlog", boost::bind(&CWebServer::Cmd_GetLog, this, _1, _2, _3));
+			RegisterCommandCode("clearlog", boost::bind(&CWebServer::Cmd_ClearLog, this, _1, _2, _3));
 			RegisterCommandCode("getauth", boost::bind(&CWebServer::Cmd_GetAuth, this, _1, _2, _3), true);
 			RegisterCommandCode("getuptime", boost::bind(&CWebServer::Cmd_GetUptime, this, _1, _2, _3), true);
 
@@ -388,6 +390,9 @@ namespace http {
 			RegisterCommandCode("panasonicclearnodes", boost::bind(&CWebServer::Cmd_PanasonicClearNodes, this, _1, _2, _3));
 			RegisterCommandCode("panasonicmediacommand", boost::bind(&CWebServer::Cmd_PanasonicMediaCommand, this, _1, _2, _3));
 
+			RegisterCommandCode("heossetmode", boost::bind(&CWebServer::Cmd_HEOSSetMode, this, _1, _2, _3));
+			RegisterCommandCode("heosmediacommand", boost::bind(&CWebServer::Cmd_HEOSMediaCommand, this, _1, _2, _3));
+			
 			RegisterCommandCode("bleboxsetmode", boost::bind(&CWebServer::Cmd_BleBoxSetMode, this, _1, _2, _3));
 			RegisterCommandCode("bleboxgetnodes", boost::bind(&CWebServer::Cmd_BleBoxGetNodes, this, _1, _2, _3));
 			RegisterCommandCode("bleboxaddnode", boost::bind(&CWebServer::Cmd_BleBoxAddNode, this, _1, _2, _3));
@@ -1012,7 +1017,7 @@ namespace http {
 				(htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) || (htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) ||
 				(htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_ECODEVICES) || (htype == HTYPE_Mochad) || (htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MQTT) || (htype == HTYPE_FRITZBOX) ||
 				(htype == HTYPE_ETH8020) || (htype == HTYPE_Sterbox) || (htype == HTYPE_KMTronicTCP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_RFLINKTCP) || (htype == HTYPE_Comm5TCP) || (htype == HTYPE_CurrentCostMeterLAN) ||
-				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviSmartdenLan) || (htype == HTYPE_Ec3kMeterTCP)
+				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviSmartdenLan) || (htype == HTYPE_Ec3kMeterTCP) || (htype == HTYPE_MultiFun)
 				) {
 				//Lan
 				if (address == "" || port == 0)
@@ -1089,9 +1094,12 @@ namespace http {
 			else if (htype == HTYPE_BleBox) {
 				//all fine here!
 			}
+			else if (htype == HTYPE_HEOS) {
+				//all fine here!
+			}
 			else if (
 				(htype == HTYPE_Wunderground) ||
-				(htype == HTYPE_ForecastIO) ||
+				(htype == HTYPE_DarkSky) ||
 				(htype == HTYPE_AccuWeather) ||
 				(htype == HTYPE_OpenWeatherMap) ||
 				(htype == HTYPE_ICYTHERMOSTAT) ||
@@ -1206,6 +1214,11 @@ namespace http {
 				mode1 = 30;
 				mode2 = 1000;
 			}
+			else if (htype == HTYPE_HEOS)
+			{
+				mode1 = 30;
+				mode2 = 1000;
+			}			
 
 			m_sql.safe_query(
 				"INSERT INTO Hardware (Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) VALUES ('%q',%d, %d,'%q',%d,'%q','%q','%q','%q',%d,%d,%d,%d,%d,%d,%d)",
@@ -1284,7 +1297,7 @@ namespace http {
 				(htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MQTT) || (htype == HTYPE_FRITZBOX) || (htype == HTYPE_ETH8020) || (htype == HTYPE_Sterbox) ||
 				(htype == HTYPE_KMTronicTCP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_RFLINKTCP) ||
 				(htype == HTYPE_Comm5TCP || (htype == HTYPE_CurrentCostMeterLAN)) ||
-				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviSmartdenLan) || (htype == HTYPE_Ec3kMeterTCP)
+				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviSmartdenLan) || (htype == HTYPE_Ec3kMeterTCP) || (htype == HTYPE_MultiFun)
 				){
 				//Lan
 				if (address == "")
@@ -1356,9 +1369,12 @@ namespace http {
 			else if (htype == HTYPE_BleBox) {
 				//All fine here
 			}
+			else if (htype == HTYPE_HEOS) {
+				//All fine here
+			}
 			else if (
 				(htype == HTYPE_Wunderground) ||
-				(htype == HTYPE_ForecastIO) ||
+				(htype == HTYPE_DarkSky) ||
 				(htype == HTYPE_AccuWeather) ||
 				(htype == HTYPE_OpenWeatherMap) ||
 				(htype == HTYPE_ICYTHERMOSTAT) ||
@@ -1702,6 +1718,13 @@ namespace http {
 					ii++;
 				}
 			}
+		}
+
+		void CWebServer::Cmd_ClearLog(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			root["status"] = "OK";
+			root["title"] = "ClearLog";
+			_log.ClearLog();
 		}
 
 		//Plan Functions
@@ -4534,6 +4557,16 @@ namespace http {
 									root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_STOPPED, 1);
 									ii++;
 								}
+								if (type == HTYPE_HEOS) {
+									root["result"][ii]["val"] = NTYPE_PLAYING;
+									root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_PLAYING, 0);
+									root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_PLAYING, 1);
+									ii++;
+									root["result"][ii]["val"] = NTYPE_STOPPED;
+									root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_STOPPED, 0);
+									root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_STOPPED, 1);
+									ii++;
+								}
 							}
 						}
 					}
@@ -5579,13 +5612,15 @@ namespace http {
 					return;
 
 				result = m_sql.safe_query(
-					"SELECT [Protected] FROM DeviceStatus WHERE (ID = '%q')", idx.c_str());
+					"SELECT [Protected],[Name] FROM DeviceStatus WHERE (ID = '%q')", idx.c_str());
 				if (result.empty())
 				{
 					//Switch not found!
 					return;
 				}
 				bool bIsProtected = atoi(result[0][0].c_str()) != 0;
+				std::string sSwitchName  = result[0][1];
+
 				if (bIsProtected)
 				{
 					if (passcode.empty())
@@ -5611,7 +5646,7 @@ namespace http {
 					}
 				}
 
-				_log.Log(LOG_STATUS, "User: %s initiated a switch command", Username.c_str());
+				_log.Log(LOG_STATUS, "User: %s initiated a switch command (%s/%s/%s)", Username.c_str(), idx.c_str(), sSwitchName.c_str(), switchcmd.c_str());
 
 				if (switchcmd == "Toggle") {
 					//Request current state of switch
@@ -7505,9 +7540,9 @@ namespace http {
 								root["result"][ii]["forecast_url"] = base64_encode((const unsigned char*)forecast_url.c_str(), forecast_url.size());
 							}
 						}
-						else if (pHardware->HwdType == HTYPE_ForecastIO)
+						else if (pHardware->HwdType == HTYPE_DarkSky)
 						{
-							CForecastIO *pWHardware = reinterpret_cast<CForecastIO*>(pHardware);
+							CDarkSky *pWHardware = reinterpret_cast<CDarkSky*>(pHardware);
 							std::string forecast_url = pWHardware->GetForecastURL();
 							if (forecast_url != "")
 							{

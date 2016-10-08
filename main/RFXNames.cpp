@@ -163,7 +163,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_1WIRE, "1-Wire (System)" },
 		{ HTYPE_RaspberryBMP085, "Local I2C sensor BMP085/180 Temp+Baro" },
 		{ HTYPE_Wunderground, "Weather Underground" },
-		{ HTYPE_ForecastIO, "Forecast IO (Weather Lookup)" },
+		{ HTYPE_DarkSky, "DarkSky (Weather Lookup)" },
 		{ HTYPE_Dummy, "Dummy (Does nothing, use for virtual switches only)" },
 		{ HTYPE_Tellstick, "Tellstick" },
 		{ HTYPE_PiFace, "PiFace - Raspberry Pi IO expansion board" },
@@ -234,6 +234,8 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_GoodweAPI, "Goodwe solar inverter via Web API" },
 		{ HTYPE_RaspberryTSL2561, "Local I2C sensor TSL2561 Illuminance" },
 		{ HTYPE_Daikin, "Daikin Airconditioning with LAN (HTTP) interface" },
+		{ HTYPE_HEOS, "HEOS by DENON" },
+		{ HTYPE_MultiFun, "MultiFun LAN" },
 		
 		{ 0, NULL, NULL }
 	};

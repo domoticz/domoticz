@@ -1411,6 +1411,7 @@ bool CSQLHelper::OpenDatabase()
 			UpdatePreferencesVar("ProwlEnabled", 1);
 			UpdatePreferencesVar("PushALotEnabled", 1);
 			UpdatePreferencesVar("PushoverEnabled", 1);
+			UpdatePreferencesVar("PushsaferEnabled", 1);
 			UpdatePreferencesVar("ClickatellEnabled", 1);
 		}
 		if (dbversion < 68)
@@ -1925,7 +1926,7 @@ bool CSQLHelper::OpenDatabase()
 				<< "([Type] = " << HTYPE_TE923 << ") OR "
 				<< "([Type] = " << HTYPE_TOONTHERMOSTAT << ") OR "
 				<< "([Type] = " << HTYPE_Wunderground << ") OR "
-				<< "([Type] = " << HTYPE_ForecastIO << ") OR "
+				<< "([Type] = " << HTYPE_DarkSky << ") OR "
 				<< "([Type] = " << HTYPE_AccuWeather << ") OR "
 				<< "([Type] = " << HTYPE_RazberryZWave << ") OR "
 				<< "([Type] = " << HTYPE_OpenZWave << ")"
