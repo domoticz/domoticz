@@ -625,7 +625,7 @@ int MultiFun::SendCommand(const unsigned char* cmd, const unsigned int cmdLength
 				{
 					if (databuffer[8] >= 1 && databuffer[8] <= 4)
 					{
-						_log.Log(LOG_ERROR, "MultiFun: Receive error (%s)", errors[databuffer[8]].c_str());
+						_log.Log(LOG_ERROR, "MultiFun: Receive error (%s)", errors[databuffer[8] - 1].c_str());
 					}
 					else
 					{
