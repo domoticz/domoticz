@@ -119,6 +119,8 @@ MultiFun::MultiFun(const int ID, const std::string &IPAddress, const unsigned sh
 
 	m_isSensorExists[0] = false;
 	m_isSensorExists[1] = false;
+	m_isWeatherWork[0] = false;
+	m_isWeatherWork[1] = false;
 }
 
 MultiFun::~MultiFun()
@@ -240,7 +242,8 @@ bool MultiFun::WriteToHardware(const char *pdata, const unsigned char length)
 
 		float temp = therm->temp;
 
-		if (therm->id2 == 0x1F || therm->id2 == 0x20)
+		if ((therm->id2 == 0x1F || therm->id2 == 0x20) ||
+			((therm->id2 == 0x1C || therm->id2 == 0x1D) && m_isWeatherWork[therm->id2 - 0x1C]))
 		{
 			temp = temp * 5;
 			temp = (int)temp | 0x8000;
@@ -491,6 +494,7 @@ void MultiFun::GetRegisters(bool firstTime)
 					{
 						temp = (value & 0x0FFF) * 0.2;
 					}
+					m_isWeatherWork[i - 0x1C] = (value & 0x8000) == 0x8000;
 					SendSetPointSensor(i, 1, 1, temp, name);
 					break;
 				}
