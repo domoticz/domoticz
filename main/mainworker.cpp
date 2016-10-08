@@ -103,6 +103,7 @@
 #include "../hardware/GoodweAPI.h"
 #include "../hardware/Daikin.h"
 #include "../hardware/HEOS.h"
+#include "../hardware/MultiFun.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -787,6 +788,10 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_HEOS:
 		//HEOS by DENON
 		pHardware = new CHEOS(ID, Address, Port, Username, Password, Mode1, Mode2);
+		break;
+	case HTYPE_MultiFun:
+		//MultiFun LAN
+		pHardware = new MultiFun(ID, Address, Port);
 		break;
 #ifndef WIN32
 	case HTYPE_TE923:
