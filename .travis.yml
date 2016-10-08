@@ -14,13 +14,6 @@ update-alternatives:
 sources:
   - trusty
 
-
-# Domoticz ftp server account & encrypted password
-env:
-  global:
-    - "FTP_HOST=188.166.24.182"
-    - "FTP_USER=uploads@domoticz.com"
-
 # What to install before the build
 before_install:
   # Domoticz needs the full history to be able to calculate the version string

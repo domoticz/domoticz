@@ -18,6 +18,7 @@ CNotificationHTTP::CNotificationHTTP() : CNotificationBase(std::string("http"), 
 	SetupConfigBase64(std::string("HTTPTo"), _HTTPTo);
 	SetupConfigBase64(std::string("HTTPURL"), _HTTPURL);
 	SetupConfigBase64(std::string("HTTPPostData"), _HTTPPostData);
+	SetupConfigBase64(std::string("HTTPPostHeaders"), _HTTPPostHeaders);
 	SetupConfigBase64(std::string("HTTPPostContentType"), _HTTPPostContentType);
 }
 
@@ -34,6 +35,9 @@ bool CNotificationHTTP::SendMessageImplementation(const std::string &Subject, co
 	if (uPos == std::string::npos)
 		return false;
 
+	char szPriority[64];
+	sprintf(szPriority, "%d", Priority);
+
 	if (destURL.find("http") == 0)
 	{
 		//HTTP/HTTPS
@@ -44,12 +48,22 @@ bool CNotificationHTTP::SendMessageImplementation(const std::string &Subject, co
 		stdreplace(destURL, "#TO", CURLEncode::URLEncode(_HTTPTo));
 		stdreplace(destURL, "#SUBJECT", CURLEncode::URLEncode(Subject));
 		stdreplace(destURL, "#MESSAGE", CURLEncode::URLEncode(Text));
+		stdreplace(destURL, "#PRIORITY", CURLEncode::URLEncode(std::string(szPriority)));
 
 		std::string sResult;
 		if (_HTTPPostData.length() > 0)
 		{
 			std::vector<std::string> ExtraHeaders;
 			ExtraHeaders.push_back("Content-type: " + _HTTPPostContentType);
+			if (_HTTPPostHeaders.length() > 0)
+			{
+				std::vector<std::string> ExtraHeaders2;
+				StringSplit(_HTTPPostHeaders, "\r\n", ExtraHeaders2);
+				for (size_t i = 0; i < ExtraHeaders2.size(); i++)
+				{
+					ExtraHeaders.push_back(ExtraHeaders2[i]);
+				}
+			}
 			std::string httpData = _HTTPPostData;
 			stdreplace(httpData, "#FIELD1", _HTTPField1);
 			stdreplace(httpData, "#FIELD2", _HTTPField2);
@@ -58,6 +72,7 @@ bool CNotificationHTTP::SendMessageImplementation(const std::string &Subject, co
 			stdreplace(httpData, "#TO", _HTTPTo);
 			stdreplace(httpData, "#SUBJECT", Subject);
 			stdreplace(httpData, "#MESSAGE", Text);
+			stdreplace(httpData, "#PRIORITY", std::string(szPriority));
 			bSuccess = HTTPClient::POST(destURL, httpData, ExtraHeaders, sResult);
 		}
 		else

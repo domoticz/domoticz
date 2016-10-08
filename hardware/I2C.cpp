@@ -469,12 +469,11 @@ void I2C::TSL2561_Init()
 
 void I2C::TSL2561_ReadSensorDetails()
 {
-	float lux, ch0, ch1, ratio;
-	uint8_t rValues[2];
-
+	float lux;
 #ifndef __arm__
 	lux = 1984;
 #else
+	uint8_t rValues[2];
 	int fd = i2c_Open(m_ActI2CBus.c_str());
 	if (fd < 0) {
 		_log.Log(LOG_ERROR, "%s: Error opening device!...", device.c_str());
@@ -485,17 +484,17 @@ void I2C::TSL2561_ReadSensorDetails()
 		close(fd);
 		return;
 	}
-	ch0 = rValues[1] * 256.0 + rValues[0];
+	float ch0 = rValues[1] * 256.0 + rValues[0];
 	if (ReadInt(fd, rValues, TSL2561_Channel1, 2) != 0) {
 		_log.Log(LOG_ERROR, "%s: Error reading ch1!...", device.c_str());
 		close(fd);
 		return;
 	}
 	close(fd);
-	ch1 = rValues[1] * 256.0 + rValues[0];
+	float ch1 = rValues[1] * 256.0 + rValues[0];
 
 	// Real Lux calculation for T,FN and CL packages
-	ratio = 0;
+	float ratio = 0;
 	if (ch0 != 0) ratio = ch1/ch0;
 	if (ratio >= 0 && ratio < 0.50)
 		lux = ch0 * (0.0304 - 0.062 * pow(ch1 / ch0, 1.4));

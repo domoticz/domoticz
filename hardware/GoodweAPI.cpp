@@ -152,7 +152,8 @@ int GoodweAPI::getSunRiseSunSetMinutes(const bool bGetSunRise)
 	return 0;
 }
 
-int GoodweAPI::hash(std::string str)
+
+uint32_t GoodweAPI::hash(std::string str)
 {
 	/* 
 	 * We need a way to generate the NoddeId from the stationID 
@@ -165,14 +166,15 @@ int GoodweAPI::hash(std::string str)
 	 */
 
 	long hash = 5381;
-	int i = 0;
+	size_t i = 0;
 	int c;
 	
-	while(c = str[i++])
+	for (i = 0; i < str.size(); i++)
 	{
+		c = str[i++];
 		hash = ((hash << 5) + hash) + c;
 	}
-	return (int)hash;
+	return (uint32_t)hash;
 }
 
 float GoodweAPI::getPowerWatt(const std::string str)
@@ -347,7 +349,7 @@ void GoodweAPI::ParseStation(const std::string sStationId, const std::string sSt
 
 	// Calcullate NodeID from stationId
 
-	int NodeID = hash(sStationId);
+	uint32_t NodeID = hash(sStationId);
 
 	// Use the station name from the Goodwe website as defaultname
 
@@ -439,12 +441,13 @@ void GoodweAPI::ParseDevice(Json::Value device, std::string sStationId, std::str
 
 	// Create NodeID and ChildID from station id and device serial 
 
-	int NodeID = hash(sStationId);
-	int ChildID = hash(sDeviceSerial);
+	uint32_t NodeID = hash(sStationId);
+	uint32_t ChildID = hash(sDeviceSerial);
 
-	// reserve childid below 10 for the station
-	if (ChildID < 10)
-		ChildID =+ 10;
+	// reserve childIDs  0 - 10 for the station
+	if (ChildID <= 10) {
+		ChildID = ChildID + 10;
+	}
 
 	SendKwhMeter(NodeID, ChildID, 255, currentPowerW, totalEnergyKWh, sStationName + " " + sDeviceSerial + " Return");
 	SendTextSensor(NodeID, ChildID + 1 , 255, sStatus, sStationName + " " + sDeviceSerial + " status");

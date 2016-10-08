@@ -438,6 +438,9 @@
     <Filter Include="Devices\P1 Smart Meter">
       <UniqueIdentifier>{44ff1baf-dce6-4a20-b295-313ef10e0509}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\Daikin">
+      <UniqueIdentifier>{19bcf044-e47f-4459-a3e6-398c54c73413}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -1909,6 +1912,9 @@
     <ClInclude Include="..\hardware\OpenWeatherMap.h">
       <Filter>Devices\OpenWeatherMap</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\Daikin.h">
+      <Filter>Devices\Daikin</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2507,6 +2513,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\OpenWeatherMap.cpp">
       <Filter>Devices\OpenWeatherMap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\Daikin.cpp">
+      <Filter>Devices\Daikin</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

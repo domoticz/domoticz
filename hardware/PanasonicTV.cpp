@@ -910,7 +910,7 @@ void CPanasonic::UnloadNodes()
 	m_ios.stop();	// stop the service if it is running
 	sleep_milliseconds(100);
 
-	while ((!m_pNodes.empty()) || (!m_ios.stopped()) && (iRetryCounter < 15))
+	while (((!m_pNodes.empty()) || (!m_ios.stopped())) && (iRetryCounter < 15))
 	{
 		std::vector<boost::shared_ptr<CPanasonicNode> >::iterator itt;
 		for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)

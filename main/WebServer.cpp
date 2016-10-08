@@ -928,12 +928,8 @@ namespace http {
 					bDoAdd = false;
 #endif
 #ifndef WITH_GPIO
-				if (
-					(ii == HTYPE_RaspberryGPIO)
-					)
-				{
+				if (ii == HTYPE_RaspberryGPIO)
 					bDoAdd = false;
-				}
 #endif
 				if ((ii == HTYPE_1WIRE) && (!C1Wire::Have1WireSystem()))
 					bDoAdd = false;
@@ -1162,6 +1158,9 @@ namespace http {
 				//all fine here!
 			}
 			else if (htype == HTYPE_OpenWebNet) {
+				//All fine here
+			}
+			else if (htype == HTYPE_Daikin) {
 				//All fine here
 			}
 			else if (htype == HTYPE_GoodweAPI) {
@@ -1398,6 +1397,9 @@ namespace http {
 					port = 80;
 			}
 			else if (htype == HTYPE_RaspberryGPIO) {
+				//all fine here!
+			}
+			else if (htype == HTYPE_Daikin) {
 				//all fine here!
 			}
 			else if (htype == HTYPE_SBFSpot) {
@@ -2070,9 +2072,6 @@ namespace http {
 			root["hash"] = szAppHash;
 			root["build_time"] = szAppDate;
 
-			int nValue = 1;
-			m_sql.GetPreferencesVar("UseAutoUpdate", nValue);
-
 			if (session.rights != 2)
 			{
 				//only admin users will receive the update notification
@@ -2712,14 +2711,17 @@ namespace http {
 			if (session.rights != 2)
 				return; //Only admin users may update
 
-			int nValue = 0;
-			m_sql.GetPreferencesVar("UseAutoUpdate", nValue);
-			if (nValue != 1)
-			{
-				return;
-			}
-
 			bool bIsForced = (request::findValue(&req, "forced") == "true");
+
+			if (!bIsForced)
+			{
+				int nValue = 0;
+				m_sql.GetPreferencesVar("UseAutoUpdate", nValue);
+				if (nValue != 1)
+				{
+					return;
+				}
+			}
 
 			root["HaveUpdate"] = m_mainworker.IsUpdateAvailable(bIsForced);
 			root["DomoticzUpdateURL"] = m_mainworker.m_szDomoticzUpdateURL;
@@ -4816,7 +4818,7 @@ namespace http {
 					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_TEMPERATURE, 1);
 					ii++;
 				}
-				if ((dType == pTypeEvohomeZone))
+				if (dType == pTypeEvohomeZone)
 				{
 					root["result"][ii]["val"]=NTYPE_TEMPERATURE;
 					root["result"][ii]["text"]=Notification_Type_Desc(NTYPE_SETPOINT,0); //FIXME NTYPE_SETPOINT implementation?
@@ -6641,6 +6643,11 @@ namespace http {
 			int iShowUpdateEffect = (ShowUpdateEffect == "on" ? 1 : 0);
 			m_sql.UpdatePreferencesVar("ShowUpdateEffect", iShowUpdateEffect);
 
+			std::string SendErrorsAsNotification = request::findValue(&req, "SendErrorsAsNotification");
+			int iSendErrorsAsNotification = (SendErrorsAsNotification == "on" ? 1 : 0);
+			m_sql.UpdatePreferencesVar("SendErrorsAsNotification", iSendErrorsAsNotification);
+			_log.ForwardErrorsToNotificationSystem(iSendErrorsAsNotification != 0);
+
 			std::string DegreeDaysBaseTemperature = request::findValue(&req, "DegreeDaysBaseTemperature");
 			m_sql.UpdatePreferencesVar("DegreeDaysBaseTemperature", DegreeDaysBaseTemperature);
 
@@ -6747,6 +6754,8 @@ namespace http {
 #endif
 
 			m_sql.UpdatePreferencesVar("OneWireSensorPollPeriod", atoi(request::findValue(&req, "OneWireSensorPollPeriod").c_str()));
+			m_sql.UpdatePreferencesVar("OneWireSwitchPollPeriod", atoi(request::findValue(&req, "OneWireSwitchPollPeriod").c_str()));
+
 			m_sql.UpdatePreferencesVar("OneWireSwitchPollPeriod", atoi(request::findValue(&req, "OneWireSwitchPollPeriod").c_str()));
 
 			m_notifications.LoadConfig();
@@ -8229,7 +8238,7 @@ namespace http {
 									total_real = atof(sd2[1].c_str());
 								}
 								total_real *= AddjMulti;
-								rate = static_cast<float>(atof(strarray[0].c_str()))/100.0f;
+								rate = (static_cast<float>(atof(strarray[0].c_str())) / 100.0f)*float(AddjMulti);
 
 								sprintf(szTmp, "%.1f", total_real);
 								root["result"][ii]["Rain"] = szTmp;
@@ -9652,7 +9661,7 @@ namespace http {
 			std::vector<std::vector<std::string> > result, result2, result3;
 
 			result = m_sql.safe_query("SELECT Key, nValue, sValue FROM Preferences WHERE Key LIKE 'Floorplan%%'");
-			if (result.size() < 0)
+			if (result.empty())
 				return;
 
 			std::vector<std::vector<std::string> >::const_iterator itt;
@@ -11087,7 +11096,7 @@ namespace http {
 			char szTmp[100];
 
 			result = m_sql.safe_query("SELECT Key, nValue, sValue FROM Preferences");
-			if (result.size() < 0)
+			if (result.empty())
 				return;
 			root["status"] = "OK";
 			root["title"] = "settings";
@@ -11401,6 +11410,9 @@ namespace http {
 #endif
 				else if (Key == "MyDomoticzSubsystems") {
 					root["MyDomoticzSubsystems"] = nValue;
+				}
+				else if (Key == "SendErrorsAsNotification") {
+					root["SendErrorsAsNotification"] = nValue;
 				}
 			}
 		}
@@ -13513,8 +13525,8 @@ namespace http {
 					//add today (have to calculate it)
 					result = m_sql.safe_query(
 						"SELECT MIN(Temperature), MAX(Temperature),"
-						" MIN(Chill), MAX(Chill), MAX(Humidity),"
-						" MAX(Barometer), AVG(Temperature), MIN(SetPoint),"
+						" MIN(Chill), MAX(Chill), AVG(Humidity),"
+						" AVG(Barometer), AVG(Temperature), MIN(SetPoint),"
 						" MAX(SetPoint), AVG(SetPoint) "
 						"FROM Temperature WHERE (DeviceRowID==%llu"
 						" AND Date>='%q')",
@@ -14061,7 +14073,7 @@ namespace http {
 						root["status"] = "OK";
 						root["title"] = "Graph " + sensor + " " + srange;
 
-						result = m_sql.safe_query("SELECT Value1,Value2, Date FROM %s WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart, szDateEnd);
+						result = m_sql.safe_query("SELECT Value1,Value2,Value3,Date FROM %s WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (result.size() > 0)
 						{
 							std::vector<std::vector<std::string> >::const_iterator itt;
@@ -14069,9 +14081,24 @@ namespace http {
 							{
 								std::vector<std::string> sd = *itt;
 
-								root["result"][ii]["d"] = sd[2].substr(0, 16);
+								root["result"][ii]["d"] = sd[3].substr(0, 16);
 								root["result"][ii]["co2_min"] = sd[0];
 								root["result"][ii]["co2_max"] = sd[1];
+								root["result"][ii]["co2_avg"] = sd[2];
+								ii++;
+							}
+						}
+						result = m_sql.safe_query("SELECT Value2,Date FROM %s WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStartPrev, szDateEndPrev);
+						if (result.size() > 0)
+						{
+							ii = 0;
+							std::vector<std::vector<std::string> >::const_iterator itt;
+							for (itt = result.begin(); itt != result.end(); ++itt)
+							{
+								std::vector<std::string> sd = *itt;
+
+								root["resultprev"][ii]["d"] = sd[1].substr(0, 16);
+								root["resultprev"][ii]["co2_max"] = sd[0];
 								ii++;
 							}
 						}
@@ -14170,7 +14197,7 @@ namespace http {
 						root["status"] = "OK";
 						root["title"] = "Graph " + sensor + " " + srange;
 
-						result = m_sql.safe_query("SELECT Value1,Value2, Date FROM %s WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart, szDateEnd);
+						result = m_sql.safe_query("SELECT Value1,Value2,Value3, Date FROM %s WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (result.size() > 0)
 						{
 							std::vector<std::vector<std::string> >::const_iterator itt;
@@ -14178,9 +14205,10 @@ namespace http {
 							{
 								std::vector<std::string> sd = *itt;
 
-								root["result"][ii]["d"] = sd[2].substr(0, 16);
+								root["result"][ii]["d"] = sd[3].substr(0, 16);
 								root["result"][ii]["lux_min"] = sd[0];
 								root["result"][ii]["lux_max"] = sd[1];
+								root["result"][ii]["lux_avg"] = sd[2];
 								ii++;
 							}
 						}
@@ -14681,13 +14709,14 @@ namespace http {
 					else if (dType == pTypeAirQuality)
 					{
 						result = m_sql.safe_query(
-							"SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID==%llu AND Date>='%q')",
+							"SELECT MIN(Value), MAX(Value), AVG(Value) FROM Meter WHERE (DeviceRowID==%llu AND Date>='%q')",
 							idx, szDateEnd);
 						if (result.size() > 0)
 						{
 							root["result"][ii]["d"] = szDateEnd;
 							root["result"][ii]["co2_min"] = result[0][0];
 							root["result"][ii]["co2_max"] = result[0][1];
+							root["result"][ii]["co2_avg"] = result[0][2];
 							ii++;
 						}
 					}
@@ -14760,13 +14789,14 @@ namespace http {
 					else if (dType == pTypeLux)
 					{
 						result = m_sql.safe_query(
-							"SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID==%llu AND Date>='%q')",
+							"SELECT MIN(Value), MAX(Value), AVG(Value) FROM Meter WHERE (DeviceRowID==%llu AND Date>='%q')",
 							idx, szDateEnd);
 						if (result.size() > 0)
 						{
 							root["result"][ii]["d"] = szDateEnd;
 							root["result"][ii]["lux_min"] = result[0][0];
 							root["result"][ii]["lux_max"] = result[0][1];
+							root["result"][ii]["lux_avg"] = result[0][2];
 							ii++;
 						}
 					}
@@ -15208,8 +15238,8 @@ namespace http {
 						//add today (have to calculate it)
 						result = m_sql.safe_query(
 							"SELECT MIN(Temperature), MAX(Temperature),"
-							" MIN(Chill), MAX(Chill), MAX(Humidity),"
-							" MAX(Barometer), MIN(DewPoint), AVG(Temperature),"
+							" MIN(Chill), MAX(Chill), AVG(Humidity),"
+							" AVG(Barometer), MIN(DewPoint), AVG(Temperature),"
 							" MIN(SetPoint), MAX(SetPoint), AVG(SetPoint) "
 							"FROM Temperature WHERE (DeviceRowID==%llu AND Date>='%q')",
 							idx, szDateEnd.c_str());
