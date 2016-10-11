@@ -44,5 +44,6 @@ private:
 	uint8_t m_QL_1;
 	uint8_t m_QL_2;
 	uint16_t m_Length;
+	bool m_bRFLinkOn;
 };
 

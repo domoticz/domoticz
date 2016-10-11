@@ -138,10 +138,9 @@ bool CZiBlueSerial::OpenSerialDevice()
 
 	setReadCallback(boost::bind(&CZiBlueSerial::readCallback, this, _1, _2));
 
-	WriteInt("ZIA++FORMAT BINARY");
-	WriteInt("ZIA++REPEATER OFF");
 	sOnConnected(this);
 
+	OnConnected();
 	return true;
 }
 
