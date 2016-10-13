@@ -46,6 +46,7 @@ private:
 	P1Gas	m_p1gas;
 
 	void SetUserMode(bool bSetUserModeClock);
+	void SetHotWaterMode(bool bTurnOn);
 
 	//XMPP stuff
 	bool ConnectToXMPP(const std::string &IPAddress, const int PortNumber);
