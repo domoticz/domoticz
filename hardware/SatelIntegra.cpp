@@ -759,7 +759,7 @@ void SatelIntegra::ReportOutputState(const int Idx, const bool state)
 {
 	m_outputsLastState[Idx - 1] = state;
 
-	if (m_isOutputSwitch[Idx - 1])
+	if ((Idx > 1024) || m_isOutputSwitch[Idx - 1])
 	{
 		SendGeneralSwitchSensor(Idx, 255, state ? gswitch_sOn : gswitch_sOff, NULL, 1);
 	}
@@ -1027,6 +1027,12 @@ void SatelIntegra::UpdateOutputName(const int Idx, const unsigned char* name, co
 	sprintf(szTmp, "%08X", (int)Idx);
 
 	std::string shortName((char*)name, 16);
+
+	if (Idx > 1024)
+	{
+		shortName = "Common " + shortName; // for common roller blind
+	}
+
 	std::string::size_type pos = shortName.find_last_not_of(' ');
 	shortName.erase(pos + 1);
 	shortName = ISO2UTF8(shortName);
