@@ -168,6 +168,8 @@ enum _eHardwareTypes {
 	HTYPE_Daikin,				//86
 	HTYPE_HEOS,					//87
 	HTYPE_MultiFun,				//88
+	HTYPE_ZIBLUEUSB,			//89
+	HTYPE_ZIBLUETCP,			//90
 	HTYPE_END
 };
 

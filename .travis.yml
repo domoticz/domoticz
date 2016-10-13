@@ -72,8 +72,8 @@ matrix:
       - brew install openssl
       - brew link openssl --force
       - brew install md5sha1sum
-      - export OPENSSL_INCLUDE_DIR=`brew --prefix openssl`/include
-      - export OPENSSL_LIB_DIR=`brew --prefix openssl`/lib      
+      - export LDFLAGS=-L/usr/local/opt/openssl/lib
+      - export CPPFLAGS=-I/usr/local/opt/openssl/include
     script:
       - cmake -DCMAKE_BUILD_TYPE=Release
       - make
