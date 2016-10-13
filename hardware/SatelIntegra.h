@@ -74,7 +74,7 @@ private:
 	// Updates zone name and type in database
 	void UpdateZoneName(const int Idx, const unsigned char* name, const int partition);
 	// Updates output name and type in database
-	void UpdateOutputName(const int Idx, const unsigned char* name, const bool switchable);
+	void UpdateOutputName(const int Idx, const unsigned char* name, const _eSwitchType switchType);
 	// Updates output name for virtual in/out (arming ald alarm)
 	void UpdateAlarmAndArmName();
 	// Reports zones states to domoticz
