@@ -599,8 +599,8 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 			// Used by  Scientific Oregon  protocol  ( Atmospheric  pressure  sensors)
 			if (dlen == sizeof(INCOMING_RF_INFOS_TYPE5))
 			{
-#ifdef DEBUG_ZIBLUE
 				INCOMING_RF_INFOS_TYPE5 *pSen = (INCOMING_RF_INFOS_TYPE5*)(data + 8);
+#ifdef DEBUG_ZIBLUE
 				_log.Log(LOG_NORM, "ZiBlue: subtype: %d, idPHY: %04X, idChannel: %04X, qualifier: %04X, temp: %.1f, hygro: %d, pressure: %d",
 					pSen->subtype,
 					pSen->idPHY,
