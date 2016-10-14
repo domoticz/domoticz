@@ -19,6 +19,7 @@ private:
 	bool StartHardware();
 	bool StopHardware();
 	bool WriteInt(const std::string &sendString);
+	bool WriteInt(const uint8_t *pData, const size_t length);
 protected:
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
