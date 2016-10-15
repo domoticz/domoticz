@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-Aeotec ZW130 WallMote Quad, base on Engineering Spec 7/29/2016 (Initial draft.)
+Aeotec ZW130 WallMote Quad, base on Engineering Spec 9/27/2016
 -->
 <Product xmlns='http://code.google.com/p/open-zwave/'>
+    <!-- COMMAND_CLASS_BASIC -->
+    <CommandClass id="32" getsupported="false"/>
+    <!-- COMMAND_CLASS_SWITCH_BINARY -->
+    <CommandClass id="37" getsupported="false"/>
+    <!-- COMMAND_CLASS_SWITCH_MULTILEVEL -->
+    <CommandClass id="38" getsupported="false"/>
     <!-- Configuration Parameters -->
     <CommandClass id="112">
         <Value type="list" genre="config" instance="1" index="1" label="Touch sound" min="0" max="1" value="1" size="1">
@@ -24,7 +30,7 @@ Aeotec ZW130 WallMote Quad, base on Engineering Spec 7/29/2016 (Initial draft.)
             <Help>To configure which report will be sent when pressing the buttons</Help>
             <Item label="Send nothing" value="0"/>
             <Item label="Send Central Scene Command Notification" value="1"/>
-            <Item label="Send Central Scene Command Notification and Configuration report" value="2"/>
+            <Item label="Send Central Scene Command Notification and Configuration report" value="3"/>
         </Value>
         <Value type="int" index="5" genre="config" label="Color when button is pressed" units="" value="65280" >
             <Help>
@@ -59,7 +65,7 @@ Aeotec ZW130 WallMote Quad, base on Engineering Spec 7/29/2016 (Initial draft.)
     <!-- Association Groups -->
     <CommandClass id="133">
         <Associations num_groups="9">
-            <Group index="1" max_associations="5" label="Lifeline"/>
+            <Group index="1" max_associations="1" label="Lifeline"/>
             <Group index="2" max_associations="5" label="Basic Set On/Off control via Button 1"/>
             <Group index="3" max_associations="5" label="Multilevel Switch Set Dimmer control via Button 1"/>
             <Group index="4" max_associations="5" label="Basic Set On/Off control via Button 2"/>
@@ -70,4 +76,5 @@ Aeotec ZW130 WallMote Quad, base on Engineering Spec 7/29/2016 (Initial draft.)
             <Group index="9" max_associations="5" label="Multilevel Switch Set Dimmer control via Button 4"/>
         </Associations>
     </CommandClass>
+    <CommandClass id="142" ForceInstances="true"/>
 </Product>

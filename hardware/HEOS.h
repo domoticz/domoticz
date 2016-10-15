@@ -49,6 +49,8 @@ private:
 	//bool WriteInt(const unsigned char *pData, const unsigned char Len);
 	bool WriteInt(const std::string &sendStr);
 
+	int m_lastUpdate;
+	
 	int m_iPollInterval;
 	int m_iPingTimeoutms;
 	std::string	m_IP;

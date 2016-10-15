@@ -283,6 +283,7 @@ hardware/LogitechMediaServer.cpp
 hardware/Meteostick.cpp
 hardware/MochadTCP.cpp
 hardware/MQTT.cpp
+hardware/MultiFun.cpp
 hardware/MySensorsBase.cpp
 hardware/MySensorsSerial.cpp
 hardware/MySensorsTCP.cpp
@@ -338,6 +339,9 @@ hardware/Winddelen.cpp
 hardware/WOL.cpp
 hardware/Wunderground.cpp
 hardware/YouLess.cpp
+hardware/ZiBlueBase.cpp
+hardware/ZiBlueSerial.cpp
+hardware/ZiBlueTCP.cpp
 hardware/ZWaveBase.cpp
 notifications/NotificationBase.cpp
 notifications/NotificationEmail.cpp

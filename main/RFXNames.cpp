@@ -235,7 +235,10 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_RaspberryTSL2561, "Local I2C sensor TSL2561 Illuminance" },
 		{ HTYPE_Daikin, "Daikin Airconditioning with LAN (HTTP) interface" },
 		{ HTYPE_HEOS, "HEOS by DENON" },
-		
+		{ HTYPE_MultiFun, "MultiFun LAN" },
+		{ HTYPE_ZIBLUEUSB, "ZiBlue RFPlayer USB" },
+		{ HTYPE_ZIBLUETCP, "ZiBlue RFPlayer with LAN interface" },
+
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -3354,6 +3357,7 @@ bool IsSerialDevice(const _eHardwareTypes htype)
 	case HTYPE_Meteostick:
 	case HTYPE_MySensorsUSB:
 	case HTYPE_RFLINKUSB:
+	case HTYPE_ZIBLUEUSB:
 	case HTYPE_KMTronicUSB:
 	case HTYPE_KMTronic433:
 	case HTYPE_CurrentCostMeter:

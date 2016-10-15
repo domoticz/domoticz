@@ -438,8 +438,14 @@
     <Filter Include="Devices\HEOS">
       <UniqueIdentifier>{43faa747-76f8-47a8-a90b-ebcb30a1f72e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\MultiFun">
+      <UniqueIdentifier>{61f9e7d0-4204-474d-b953-b8d55b281296}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Devices\DarkSky">
       <UniqueIdentifier>{739f5460-5c88-47ba-8cd1-d94035c1819d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\ZiBlue RFPlayer">
+      <UniqueIdentifier>{6d5aee6b-8dca-4b16-94fe-b4c8b48ccda2}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -1903,8 +1909,23 @@
     <ClInclude Include="..\hardware\HEOS.h">
       <Filter>Devices\HEOS</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\MultiFun.h">
+      <Filter>Devices\MultiFun</Filter>
+    </ClInclude>
     <ClInclude Include="..\hardware\DarkSky.h">
       <Filter>Devices\DarkSky</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\ZiBlueBase.h">
+      <Filter>Devices\ZiBlue RFPlayer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\ZiBlueSerial.h">
+      <Filter>Devices\ZiBlue RFPlayer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\ZiBlueTCP.h">
+      <Filter>Devices\ZiBlue RFPlayer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\ziblue_usb_frame_api.h">
+      <Filter>Devices\ZiBlue RFPlayer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2499,8 +2520,20 @@
     <ClCompile Include="..\hardware\HEOS.cpp">
       <Filter>Devices\HEOS</Filter>
     </ClCompile>
+    <ClCompile Include="..\hardware\MultiFun.cpp">
+      <Filter>Devices\MultiFun</Filter>
+    </ClCompile>
     <ClCompile Include="..\hardware\DarkSky.cpp">
       <Filter>Devices\DarkSky</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\ZiBlueBase.cpp">
+      <Filter>Devices\ZiBlue RFPlayer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\ZiBlueSerial.cpp">
+      <Filter>Devices\ZiBlue RFPlayer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\ZiBlueTCP.cpp">
+      <Filter>Devices\ZiBlue RFPlayer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

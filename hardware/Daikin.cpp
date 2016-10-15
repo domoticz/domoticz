@@ -11,11 +11,11 @@
 
 extern CSQLHelper m_sql;
 
-#define Daikin_POLL_INTERVAL 60
+#define Daikin_POLL_INTERVAL 300
 
 #ifdef _DEBUG
-	#define DEBUG_DaikinR
-	#define DEBUG_DaikinW
+	//#define DEBUG_DaikinR
+	//#define DEBUG_DaikinW
 #endif
 
 #ifdef DEBUG_DaikinW

@@ -449,6 +449,7 @@
     <ClInclude Include="..\hardware\Meteostick.h" />
     <ClInclude Include="..\hardware\MochadTCP.h" />
     <ClInclude Include="..\hardware\MQTT.h" />
+    <ClInclude Include="..\hardware\MultiFun.h" />
     <ClInclude Include="..\hardware\MySensorsBase.h" />
     <ClInclude Include="..\hardware\MySensorsSerial.h" />
     <ClInclude Include="..\hardware\MySensorsTCP.h" />
@@ -495,6 +496,10 @@
     <ClInclude Include="..\hardware\Winddelen.h" />
     <ClInclude Include="..\hardware\WOL.h" />
     <ClInclude Include="..\hardware\Wunderground.h" />
+    <ClInclude Include="..\hardware\ZiBlueBase.h" />
+    <ClInclude Include="..\hardware\ZiBlueSerial.h" />
+    <ClInclude Include="..\hardware\ZiBlueTCP.h" />
+    <ClInclude Include="..\hardware\ziblue_usb_frame_api.h" />
     <ClInclude Include="..\hardware\ZWaveBase.h" />
     <ClInclude Include="..\hardware\ZWaveCommands.h" />
     <ClInclude Include="..\httpclient\HTTPClient.h" />
@@ -666,6 +671,7 @@
     <ClCompile Include="..\hardware\Meteostick.cpp" />
     <ClCompile Include="..\hardware\MochadTCP.cpp" />
     <ClCompile Include="..\hardware\MQTT.cpp" />
+    <ClCompile Include="..\hardware\MultiFun.cpp" />
     <ClCompile Include="..\hardware\MySensorsBase.cpp" />
     <ClCompile Include="..\hardware\MySensorsSerial.cpp" />
     <ClCompile Include="..\hardware\MySensorsTCP.cpp" />
@@ -716,6 +722,9 @@
     <ClCompile Include="..\hardware\Winddelen.cpp" />
     <ClCompile Include="..\hardware\WOL.cpp" />
     <ClCompile Include="..\hardware\Wunderground.cpp" />
+    <ClCompile Include="..\hardware\ZiBlueBase.cpp" />
+    <ClCompile Include="..\hardware\ZiBlueSerial.cpp" />
+    <ClCompile Include="..\hardware\ZiBlueTCP.cpp" />
     <ClCompile Include="..\hardware\ZWaveBase.cpp" />
     <ClCompile Include="..\httpclient\HTTPClient.cpp" />
     <ClCompile Include="..\main\Camera.cpp" />

@@ -1017,7 +1017,7 @@ namespace http {
 				(htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) || (htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) ||
 				(htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_ECODEVICES) || (htype == HTYPE_Mochad) || (htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MQTT) || (htype == HTYPE_FRITZBOX) ||
 				(htype == HTYPE_ETH8020) || (htype == HTYPE_Sterbox) || (htype == HTYPE_KMTronicTCP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_RFLINKTCP) || (htype == HTYPE_Comm5TCP) || (htype == HTYPE_CurrentCostMeterLAN) ||
-				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviSmartdenLan) || (htype == HTYPE_Ec3kMeterTCP)
+				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviSmartdenLan) || (htype == HTYPE_Ec3kMeterTCP) || (htype == HTYPE_MultiFun) || (htype == HTYPE_ZIBLUETCP)
 				) {
 				//Lan
 				if (address == "" || port == 0)
@@ -1297,7 +1297,7 @@ namespace http {
 				(htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MQTT) || (htype == HTYPE_FRITZBOX) || (htype == HTYPE_ETH8020) || (htype == HTYPE_Sterbox) ||
 				(htype == HTYPE_KMTronicTCP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_RFLINKTCP) ||
 				(htype == HTYPE_Comm5TCP || (htype == HTYPE_CurrentCostMeterLAN)) ||
-				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviSmartdenLan) || (htype == HTYPE_Ec3kMeterTCP)
+				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviSmartdenLan) || (htype == HTYPE_Ec3kMeterTCP) || (htype == HTYPE_MultiFun) || (htype == HTYPE_ZIBLUETCP)
 				){
 				//Lan
 				if (address == "")
@@ -3186,6 +3186,8 @@ namespace http {
 						case HTYPE_RaspberryGPIO:
 						case HTYPE_RFLINKUSB:
 						case HTYPE_RFLINKTCP:
+						case HTYPE_ZIBLUEUSB:
+						case HTYPE_ZIBLUETCP:
 						case HTYPE_OpenWebNet:
 							root["result"][ii]["idx"] = ID;
 							root["result"][ii]["Name"] = Name;
@@ -4893,6 +4895,13 @@ namespace http {
 					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_RPM, 1);
 					ii++;
 				}
+				if ((dType == pTypeGeneral) && (dSubType == sTypeAlert))
+				{
+					root["result"][ii]["val"] = NTYPE_USAGE;
+					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_USAGE, 0);
+					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_USAGE, 1);
+					ii++;
+				}
 				if ((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXStatus))
 				{
 					root["result"][ii]["val"] = NTYPE_SWITCH_ON;
@@ -5612,13 +5621,15 @@ namespace http {
 					return;
 
 				result = m_sql.safe_query(
-					"SELECT [Protected] FROM DeviceStatus WHERE (ID = '%q')", idx.c_str());
+					"SELECT [Protected],[Name] FROM DeviceStatus WHERE (ID = '%q')", idx.c_str());
 				if (result.empty())
 				{
 					//Switch not found!
 					return;
 				}
 				bool bIsProtected = atoi(result[0][0].c_str()) != 0;
+				std::string sSwitchName  = result[0][1];
+
 				if (bIsProtected)
 				{
 					if (passcode.empty())
@@ -5644,7 +5655,7 @@ namespace http {
 					}
 				}
 
-				_log.Log(LOG_STATUS, "User: %s initiated a switch command", Username.c_str());
+				_log.Log(LOG_STATUS, "User: %s initiated a switch command (%s/%s/%s)", Username.c_str(), idx.c_str(), sSwitchName.c_str(), switchcmd.c_str());
 
 				if (switchcmd == "Toggle") {
 					//Request current state of switch
@@ -9238,7 +9249,6 @@ namespace http {
 							root["result"][ii]["TypeImg"] = "Alert";
 							root["result"][ii]["Level"] = nValue;
 							root["result"][ii]["HaveTimeout"] = false;
-							root["result"][ii]["ShowNotifications"] = false;
 						}
 						else if (dSubType == sTypePressure)
 						{

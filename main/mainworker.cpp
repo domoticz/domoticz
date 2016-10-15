@@ -103,6 +103,9 @@
 #include "../hardware/GoodweAPI.h"
 #include "../hardware/Daikin.h"
 #include "../hardware/HEOS.h"
+#include "../hardware/MultiFun.h"
+#include "../hardware/ZiBlueSerial.h"
+#include "../hardware/ZiBlueTCP.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -665,6 +668,9 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_RFLINKUSB:
 		pHardware = new CRFLinkSerial(ID, SerialPort);
 		break;
+	case HTYPE_ZIBLUEUSB:
+		pHardware = new CZiBlueSerial(ID, SerialPort);
+		break;
 	case HTYPE_CurrentCostMeter:
 		pHardware = new CurrentCostMeterSerial(ID, SerialPort, (Mode1 == 1) ? 57600 : 9600);
 		break;
@@ -705,6 +711,10 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_RFLINKTCP:
 		//LAN
 		pHardware = new CRFLinkTCP(ID, Address, Port);
+		break;
+	case HTYPE_ZIBLUETCP:
+		//LAN
+		pHardware = new CZiBlueTCP(ID, Address, Port);
 		break;
 	case HTYPE_MQTT:
 		//LAN
@@ -787,6 +797,10 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_HEOS:
 		//HEOS by DENON
 		pHardware = new CHEOS(ID, Address, Port, Username, Password, Mode1, Mode2);
+		break;
+	case HTYPE_MultiFun:
+		//MultiFun LAN
+		pHardware = new MultiFun(ID, Address, Port);
 		break;
 #ifndef WIN32
 	case HTYPE_TE923:
@@ -938,6 +952,7 @@ bool MainWorker::Start()
 	{
 		return false;
 	}
+	HTTPClient::SetUserAgent(GenerateUserAgent());
 	m_notifications.Init();
 	GetSunSettings();
 	GetAvailableWebThemes();
@@ -9477,6 +9492,7 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, pMeter->intval1, szTmp, procResult.DeviceName);
 		if (DevRowIdx == -1)
 			return;
+		m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_USAGE, static_cast<float>(pMeter->intval1));
 	}
 	else if (subType == sTypeCustom)
 	{
