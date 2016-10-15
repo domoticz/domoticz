@@ -167,6 +167,7 @@ void CToonThermostat::Init()
 
 
 	m_bDoLogin = true;
+	HTTPClient::SetUserAgent("chrome/1.0");
 }
 
 bool CToonThermostat::StartHardware()
@@ -327,19 +328,19 @@ bool CToonThermostat::Login()
 	Json::Reader jReader;
 	if (!jReader.parse(sResult, root))
 	{
-		_log.Log(LOG_ERROR, "ToonThermostat: Invalid data received, or invalid username/password!");
+		_log.Log(LOG_ERROR, "ToonThermostat: Invalid data received, or invalid username/password! Could not parse data.\n");
 		return false;
 	}
 
 	if (root["clientId"].empty() == true)
 	{
-		_log.Log(LOG_ERROR, "ToonThermostat: Invalid data received, or invalid username/password!");
+		_log.Log(LOG_ERROR, "ToonThermostat: Invalid data received, or invalid username/password! No clientId found.");
 		return false;
 	}
 	m_ClientID = root["clientId"].asString();
 	if (root["clientIdChecksum"].empty() == true)
 	{
-		_log.Log(LOG_ERROR, "ToonThermostat: Invalid data received, or invalid username/password!");
+		_log.Log(LOG_ERROR, "ToonThermostat: Invalid data received, or invalid username/password! No cliedIdChecksum found.");
 		return false;
 	}
 	m_ClientIDChecksum = root["clientIdChecksum"].asString();
@@ -349,7 +350,7 @@ bool CToonThermostat::Login()
 
 	if (root["agreements"].empty() == true)
 	{
-		_log.Log(LOG_ERROR, "ToonThermostat: Invalid data received, or invalid username/password!");
+		_log.Log(LOG_ERROR, "ToonThermostat: Invalid data received, or invalid username/password! No agreements found.");
 		return false;
 	}
 	if (root["agreements"].size() < (size_t)(m_Agreement+1))
