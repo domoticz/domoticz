@@ -31,9 +31,6 @@ class udp_server;
 #include <boost/thread.hpp>
 
 
-#define BUF_SIZE 500
-
-
 Yeelight::Yeelight(const int ID)
 {
 	m_HwdID = ID;
@@ -55,20 +52,6 @@ bool Yeelight::StartHardware()
 
 	//Start worker thread
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&Yeelight::Do_Work, this)));
-
-	for (int i = 0; i < 10; i++) {
-		try
-		{
-			boost::asio::io_service io_service;
-			udp_server server(io_service, m_HwdID);
-			io_service.run();
-		}
-		catch (std::exception& e)
-		{
-			std::cerr << e.what() << std::endl;
-		}
-		sleep_seconds(20);
-	}
 
 	return (m_thread != NULL);
 }
@@ -93,27 +76,24 @@ bool Yeelight::StopHardware()
 void Yeelight::Do_Work()
 {
 	sleep_seconds(1);
-	_log.Log(LOG_STATUS, ".");
-	_log.Log(LOG_STATUS, "Starting Yeelight Controller");
-
+	//_log.Log(LOG_STATUS, ".");
+	//_log.Log(LOG_STATUS, "Starting Yeelight");
+	unsigned int sec;
 	int sec_counter = 0;
-	//DiscoverLights();
-	// _log.Log(LOG_STATUS, "HERE                 ...");
 	while (!m_stoprequested)
 	{
-		sleep_seconds(1);
 		//_log.Log(LOG_STATUS, "Do_Work looping...");
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat = mytime(NULL);
 		}
-		if (sec_counter % 20 == 0) //60 == 0) //wait 1 minute
+		if (sec_counter % 60 == 0) //60 == 0) //wait 1 minute
 		{
-			//DiscoverLights();
-			//_log.Log(LOG_STATUS, "Do_Work looping...");
-		}
+			boost::asio::io_service io_service;
+			udp_server server(io_service, m_HwdID);
+			io_service.run();		}
 	}
-	_log.Log(LOG_STATUS, "Yeelight Controller stopped...");
+	//_log.Log(LOG_STATUS, "Yeelight stopped");
 }
 
 
@@ -220,7 +200,6 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 		message = "{\"id\":1,\"method\":\"set_power\",\"params\":[\"on\", \"smooth\", 500]}\r\n";
 		send(sd, message.c_str(), message.length(), 0);
 		sleep_milliseconds(200);
-		//message = "{\"id\":1,\"method\":\"set_bright\",\"params\":[" + std::to_string(value) + ", \"smooth\", 500]}\r\n";
 		std::stringstream ss;
 		ss << "{\"id\":1,\"method\":\"set_bright\",\"params\":[" << value << ", \"smooth\", 500]}\r\n";
 		message = ss.str();
@@ -301,7 +280,6 @@ Yeelight::udp_server::udp_server(boost::asio::io_service& io_service, int m_HwdI
 	// particular deadline here. Instead, the connect and input actors will
 	// update the deadline prior to each asynchronous operation.
 	deadline_.async_wait(boost::bind(&Yeelight::udp_server::check_deadline, this));
-
 }
 
 void Yeelight::udp_server::start_send()
