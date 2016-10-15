@@ -80,6 +80,11 @@ struct _t1WireDevice
    _e1WireFamilyType family;
    std::string devid;
    std::string filename;
+
+   bool operator<(_t1WireDevice other) const
+   {
+	   return devid > other.devid;
+   }
 };
 
 _e1WireFamilyType ToFamily(const std::string& str);

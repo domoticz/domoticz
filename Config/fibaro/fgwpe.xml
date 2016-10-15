@@ -8,8 +8,8 @@
   <!-- COMMAND_CLASS_SENSOR_ALARM not supported -->
   <CommandClass id="156" action="remove" />
 
-  <!-- COMMAND_CLASS_SWITCH_ALL SwitchAllCmd_Get not supported -->
-  <CommandClass id="39" getsupported="false" />
+  <!-- COMMAND_CLASS_SWITCH_ALL not supported -->
+  <CommandClass id="39" action="remove" />
 
   <!-- Configuration -->
   <CommandClass id="112">
@@ -147,9 +147,9 @@
   <!-- Association Groups -->
   <CommandClass id="133">
     <Associations num_groups="3">
-      <Group index="1" max_associations="16" label="Group 1" auto="false"/>
-      <Group index="2" max_associations="16" label="Group 2"  />
-      <Group index="3" max_associations="1" label="Send updates" auto="true"/>
+      <Group index="1" max_associations="16" label="Retransmit Switch status" auto="false"/>
+      <Group index="2" max_associations="16" label="Exceeding power"  />
+      <Group index="3" max_associations="1" label="Lifeline" auto="true"/>
     </Associations>
   </CommandClass>
 

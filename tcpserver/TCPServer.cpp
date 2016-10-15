@@ -147,7 +147,7 @@ unsigned int CTCPServerIntBase::GetUserDevicesCount(const std::string &username)
 	return (unsigned int) pUser->Devices.size();
 }
 
-void CTCPServerIntBase::SendToAll(const unsigned long long DeviceRowID, const char *pData, size_t Length, const CTCPClientBase* pClient2Ignore)
+void CTCPServerIntBase::SendToAll(const int HardwareID, const unsigned long long DeviceRowID, const char *pData, size_t Length, const CTCPClientBase* pClient2Ignore)
 {
 	boost::lock_guard<boost::mutex> l(connectionMutex);
 
@@ -416,14 +416,14 @@ void CTCPServer::Do_Work()
 	}
 }
 
-void CTCPServer::SendToAll(const unsigned long long DeviceRowID, const char *pData, size_t Length, const CTCPClientBase* pClient2Ignore)
+void CTCPServer::SendToAll(const int HardwareID, const unsigned long long DeviceRowID, const char *pData, size_t Length, const CTCPClientBase* pClient2Ignore)
 {
 	boost::lock_guard<boost::mutex> l(m_server_mutex);
 	if (m_pTCPServer)
-		m_pTCPServer->SendToAll(DeviceRowID, pData, Length, pClient2Ignore);
+		m_pTCPServer->SendToAll(HardwareID, DeviceRowID, pData, Length, pClient2Ignore);
 #ifndef NOCLOUD
 	if (m_pProxyServer)
-		m_pProxyServer->SendToAll(DeviceRowID, pData, Length, pClient2Ignore);
+		m_pProxyServer->SendToAll(HardwareID, DeviceRowID, pData, Length, pClient2Ignore);
 #endif
 }
 

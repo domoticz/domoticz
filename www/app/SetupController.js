@@ -17,7 +17,7 @@ define(['app'], function (app) {
 		{
 			$.ajax({
 				 url: "json.htm?type=command&param=allownewhardware&timeout=" + minutes,
-				 async: false, 
+				 async: false,
 				 dataType: 'json',
 				 success: function(data) {
 					SwitchLayout('Log');
@@ -49,12 +49,19 @@ define(['app'], function (app) {
 				var HTTPField3=encodeURIComponent($("#httptable #HTTPField3").val());
 				var HTTPField4=encodeURIComponent($("#httptable #HTTPField4").val());
 				var HTTPTo=encodeURIComponent($("#httptable #HTTPTo").val());
-				var HTTPURL=encodeURIComponent($("#httptable #HTTPURL").val());
+				var HTTPURL = encodeURIComponent($("#httptable #HTTPURL").val());
+				var HTTPPostData = encodeURIComponent($("#httptable #HTTPPostData").val());
+				var HTTPPostHeaders = encodeURIComponent($("#httptable #HTTPPostHeaders").val());
+				var HTTPPostContentType = encodeURIComponent($("#httptable #HTTPPostContentType").val());
+				if (HTTPPostData != "" && HTTPPostContentType=="") {
+				    ShowNotify($.t('Please specify the content type...'), 3500, true);
+				    return;
+				}
 				if (HTTPURL=="") {
 					ShowNotify($.t('Please specify the base URL!...'), 3500, true);
 					return;
 				}
-				extraparams = "HTTPField1=" + HTTPField1 + "&HTTPField2=" + HTTPField2 + "&HTTPField3=" + HTTPField3 + "&HTTPField4=" + HTTPField4 + "&HTTPTo=" + HTTPTo + "&HTTPURL=" + HTTPURL;
+				extraparams = "HTTPField1=" + HTTPField1 + "&HTTPField2=" + HTTPField2 + "&HTTPField3=" + HTTPField3 + "&HTTPField4=" + HTTPField4 + "&HTTPTo=" + HTTPTo + "&HTTPURL=" + HTTPURL + "&HTTPPostData=" + HTTPPostData + "&HTTPPostContentType=" + HTTPPostContentType + "&HTTPPostHeaders=" + HTTPPostHeaders;
 				break;
 			case "prowl":
 				var ProwlAPI=encodeURIComponent($("#prowltable #ProwlAPI").val());
@@ -80,6 +87,14 @@ define(['app'], function (app) {
 				}
 				extraparams = "PushbulletAPI=" + PushbulletAPI;
 				break;
+			case "pushsafer":
+				var PushsaferAPI=encodeURIComponent($("#pushsafertable #PushsaferAPI").val());
+				if (PushsaferAPI=="") {
+					ShowNotify($.t('Please enter the API key!...'), 3500, true);
+					return;
+				}
+				extraparams = "PushsaferAPI=" + PushsaferAPI;
+				break;				
 			case "pushover":
 				var POAPI=encodeURIComponent($("#pushovertable #PushoverAPI").val());
 				if (POAPI=="") {
@@ -186,7 +201,7 @@ define(['app'], function (app) {
 		  var sunSet="";
 		  $.ajax({
 			 url: "json.htm?type=command&param=getSunRiseSet",
-			 async: false, 
+			 async: false,
 			 dataType: 'json',
 			 success: function(data) {
 				if (typeof data.Sunrise != 'undefined') {
@@ -195,19 +210,19 @@ define(['app'], function (app) {
 				}
 			 }
 		  });
-		  
+
 			var suntext="";
 		  if (sunRise!="")
 		  {
 			suntext='<br>' + $.t('SunRise') + ': ' + sunRise + ', ' + $.t('SunSet') + ': ' + sunSet + '<br><br>\n';
 			$("#sunriseset").html(suntext);
 		  }
-		  
+
 		  //Get Themes
 		  var actTheme="default";
 		  $.ajax({
 			 url: "json.htm?type=command&param=getthemes",
-			 async: false, 
+			 async: false,
 			 dataType: 'json',
 			 success: function(data) {
 				if (typeof data.result != 'undefined') {
@@ -221,11 +236,11 @@ define(['app'], function (app) {
 				}
 			 }
 		  });
-		  
+
 
 		  $.ajax({
-			 url: "json.htm?type=settings", 
-			 async: false, 
+			 url: "json.htm?type=settings",
+			 async: false,
 			 dataType: 'json',
 			 success: function(data) {
 			  if (typeof data.Location != 'undefined') {
@@ -250,6 +265,12 @@ define(['app'], function (app) {
 			  if (typeof data.PushbulletAPI != 'undefined') {
 				$("#pushbullettable #PushbulletAPI").val(data.PushbulletAPI);
 			  }
+			  if (typeof data.PushsaferEnabled != 'undefined') {
+  				$("#pushsafertable #PushsaferEnabled").prop('checked',data.PushsaferEnabled==1);
+			  }			  
+			  if (typeof data.PushsaferAPI != 'undefined') {
+				$("#pushsafertable #PushsaferAPI").val(data.PushsaferAPI);
+			  }			  
 			  if (typeof data.PushoverEnabled != 'undefined') {
   				$("#pushovertable #PushoverEnabled").prop('checked',data.PushoverEnabled==1);
 			  }
@@ -283,7 +304,7 @@ define(['app'], function (app) {
 			  if (typeof data.ClickatellFrom != 'undefined') {
 				$("#smstable #ClickatellFrom").val(atob(data.ClickatellFrom));
 			  }
-			  
+
 			  if (typeof data.HTTPEnabled != 'undefined') {
   				$("#httptable #HTTPEnabled").prop('checked',data.HTTPEnabled==1);
 			  }
@@ -305,7 +326,16 @@ define(['app'], function (app) {
 			  if (typeof data.HTTPURL != 'undefined') {
 				$("#httptable #HTTPURL").val(atob(data.HTTPURL));
 			  }
-			  
+			  if (typeof data.HTTPPostData != 'undefined') {
+			      $("#httptable #HTTPPostData").val(atob(data.HTTPPostData));
+			  }
+			  if (typeof data.HTTPPostContentType != 'undefined') {
+			      $("#httptable #HTTPPostContentType").val(atob(data.HTTPPostContentType));
+			  }
+			  if (typeof data.HTTPPostHeaders != 'undefined') {
+			      $("#httptable #HTTPPostHeaders").val(atob(data.HTTPPostHeaders));
+			  }
+
 			  if (typeof data.KodiEnabled != 'undefined') {
   				$("#koditable #KodiEnabled").prop('checked',data.KodiEnabled==1);
 			  }
@@ -447,9 +477,6 @@ define(['app'], function (app) {
 			  if (typeof data.SmartMeterType != 'undefined') {
 				$("#p1metertable #comboP1MeterType").val(data.SmartMeterType);
 			  }
-			  if (typeof data.DisplayPowerUsageInkWhGraph != 'undefined') {
-				$("#kwhshortlogtable #combokWhShotlogDisplay").val(data.DisplayPowerUsageInkWhGraph);
-			  }
 			  if (typeof data.EnableTabFloorplans != 'undefined') {
 				$("#activemenustable #EnableTabFloorplans").prop('checked',data.EnableTabFloorplans==1);
 			  }
@@ -486,7 +513,7 @@ define(['app'], function (app) {
 			  if (typeof data.WebTheme != 'undefined') {
 				$("#settingscontent #combothemes").val(data.WebTheme);
 			  }
-			  
+
 			  if (typeof data.AuthenticationMethod != 'undefined') {
 				$("#webtable #comboauthmethod").val(data.AuthenticationMethod);
 			  }
@@ -512,6 +539,7 @@ define(['app'], function (app) {
 			  if (typeof data.DisableEventScriptSystem!= 'undefined') {
 				$("#eventsystemtable #DisableEventScriptSystem").prop('checked',data.DisableEventScriptSystem==1);
 			  }
+
 			  if (typeof data.FloorplanPopupDelay!= 'undefined') {
 				$("#floorplanoptionstable #FloorplanPopupDelay").val(data.FloorplanPopupDelay);
 			  }
@@ -539,7 +567,7 @@ define(['app'], function (app) {
 			  if (typeof data.FloorplanInactiveOpacity != 'undefined') {
 				$("#floorplancolourtable #FloorplanInactiveOpacity").val(data.FloorplanInactiveOpacity);
 			  }
-			  
+
 			  if (typeof data.AllowWidgetOrdering != 'undefined') {
 				$("#dashmodetable #AllowWidgetOrdering").prop('checked',data.AllowWidgetOrdering==1);
 			  }
@@ -565,6 +593,9 @@ define(['app'], function (app) {
 					$("#mydomoticztable #SubsystemShared").prop("checked", (data.MyDomoticzSubsystems & 2) > 0);
 					$("#mydomoticztable #SubsystemApps").prop("checked", (data.MyDomoticzSubsystems & 4) > 0);
 			  }
+			  if (typeof data.SendErrorsAsNotification != 'undefined') {
+				$("#emailtable #SendErrorsAsNotification").prop('checked',data.SendErrorsAsNotification==1);
+			  }
 			 }
 		  });
 		}
@@ -581,10 +612,10 @@ define(['app'], function (app) {
 			ShowNotify($.t('Invalid Location Settings...'), 2000, true);
 			return;
 		  }
-		  
+
 		  var secpanel=$("#sectable #SecPassword").val();
 		  var switchprotection=$("#protectiontable #ProtectionPassword").val();
-		  
+
 		  //Check email settings
 		  var EmailServer=$("#emailtable #EmailServer").val();
 		  if (EmailServer!="")
@@ -607,7 +638,7 @@ define(['app'], function (app) {
 				return;
 			}
 		  }
-		  
+
 		  var popupDelay=$("#floorplanoptionstable #FloorplanPopupDelay").val();
 		  if (popupDelay != "") {
 			if (!$.isNumeric(popupDelay)) {
@@ -615,7 +646,7 @@ define(['app'], function (app) {
 				return;
 			}
 		  }
-		  
+
 		  $.post("storesettings.webem", $("#settings").serialize(), function(data) {
 				$scope.$apply(function() {
 					$window.location = '/#Dashboard';
@@ -632,7 +663,7 @@ define(['app'], function (app) {
 				e.preventDefault();
 			});
 		}
-		
+
 		$scope.CleanupShortLog = function()
 		{
 			bootbox.confirm($.t("Are you sure to delete the Log?\n\nThis action can not be undone!"), function (result) {
@@ -711,7 +742,7 @@ define(['app'], function (app) {
 									}
 								});
 								return false;
-						} );              
+						} );
 				  },
 				  close: function() {
 					$( this ).dialog( "close" );

@@ -21,12 +21,13 @@
 //
 //Class P1MeterSerial
 //
-P1MeterSerial::P1MeterSerial(const int ID, const std::string& devname, unsigned int baud_rate):
+P1MeterSerial::P1MeterSerial(const int ID, const std::string& devname, unsigned int baud_rate, unsigned char disable_crc):
 m_szSerialPort(devname)
 {
 	m_HwdID=ID;
 	m_iBaudRate=baud_rate;
 	m_stoprequested = false;
+	m_DisableCRC = disable_crc;
 }
 
 P1MeterSerial::P1MeterSerial(const std::string& devname,
@@ -84,6 +85,9 @@ bool P1MeterSerial::StartHardware()
 				boost::asio::serial_port_base::parity::none),
 				boost::asio::serial_port_base::character_size(8)
 				);
+			if (m_DisableCRC) {
+				_log.Log(LOG_STATUS,"P1 Smart Meter: CRC validation disabled through hardware control");
+			}
 		}
 	}
 	catch (boost::exception & e)
@@ -120,6 +124,7 @@ bool P1MeterSerial::StopHardware()
 		sleep_milliseconds(10);
 	}
 	m_bIsStarted = false;
+    _log.Log(LOG_STATUS, "P1 Smart Meter: Serial Worker stopped...");
 	return true;
 }
 
@@ -131,7 +136,7 @@ void P1MeterSerial::readCallback(const char *data, size_t len)
 	if (!m_bEnableReceive)
 		return; //receiving not enabled
 
-	ParseData((const unsigned char*)data, static_cast<int>(len));
+	ParseData((const unsigned char*)data, static_cast<int>(len), m_DisableCRC);
 }
 
 bool P1MeterSerial::WriteToHardware(const char *pdata, const unsigned char length)
@@ -157,43 +162,6 @@ void P1MeterSerial::Do_Work()
 			if (sec_counter % 12 == 0) {
 				m_LastHeartbeat=mytime(NULL);
 			}
-		}
-	}
-}
-
-//Webserver helpers
-namespace http {
-	namespace server {
-		void CWebServer::SetP1USBType(WebEmSession & session, const request& req, std::string & redirect_uri)
-		{
-			redirect_uri = "/index.html";
-			if (session.rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
-
-			std::string idx = request::findValue(&req, "idx");
-			if (idx == "") {
-				return;
-			}
-
-			std::vector<std::vector<std::string> > result;
-
-			result = m_sql.safe_query("SELECT Mode1, Mode2, Mode3, Mode4, Mode5, Mode6 FROM Hardware WHERE (ID='%q')", idx.c_str());
-			if (result.size() < 1)
-				return;
-
-			int Mode1 = atoi(request::findValue(&req, "P1Baudrate").c_str());
-			int Mode2 = 0;
-			int Mode3 = 0;
-			int Mode4 = 0;
-			int Mode5 = 0;
-			int Mode6 = 0;
-			m_sql.UpdateRFXCOMHardwareDetails(atoi(idx.c_str()), Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
-
-			m_mainworker.RestartHardware(idx);
-
 		}
 	}
 }

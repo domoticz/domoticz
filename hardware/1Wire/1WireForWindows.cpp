@@ -194,6 +194,7 @@ C1WireForWindows::C1WireForWindows()
 {
    // Connect to service
    m_Socket = ConnectToService();
+   _log.Log(LOG_STATUS,"Using 1-Wire support (Windows)...");
 }
 
 C1WireForWindows::~C1WireForWindows()
@@ -201,7 +202,7 @@ C1WireForWindows::~C1WireForWindows()
    // Disconnect from service
    if (m_Socket==INVALID_SOCKET)
       return;
-      
+
    DisconnectFromService(m_Socket);
 }
 
@@ -230,7 +231,7 @@ void C1WireForWindows::GetDevices(/*out*/std::vector<_t1WireDevice>& devices) co
          ansRoot.get("Reason","unknown reason").asString());
       return;
    }
-   
+
    for ( Json::ArrayIndex itDevice = 0; itDevice<ansRoot["Devices"].size(); itDevice++)
    {
       _t1WireDevice device;
@@ -405,6 +406,10 @@ float C1WireForWindows::GetIlluminance(const _t1WireDevice& device) const
 	   return -1000.0;
    }
    return ansRoot.get("Illuminescence",0.0f).asFloat();
+}
+
+void C1WireForWindows::StartSimultaneousTemperatureRead()
+{
 }
 
 void C1WireForWindows::SetLightState(const std::string& sId,int unit,bool value)

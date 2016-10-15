@@ -56,7 +56,7 @@
 #define sTypeAlert					0x16
 #define sTypeCurrent				0x17
 #define sTypeSoundLevel				0x18
-//#define sTypeReservedForyou		0x19
+#define sTypeUV						0x19
 #define sTypeBaro					0x1A
 #define sTypeDistance				0x1B
 #define sTypeCounterIncremental		0x1C
@@ -146,6 +146,10 @@
 #define sSwitchBFT					0x53
 #define sSwitchNovatys				0x54
 #define sSwitchHalemeier			0x55
+#define sSwitchGaposa				0x56
+#define sSwitchMiLightv1			0x57
+#define sSwitchMiLightv2			0x58
+#define sSwitchHT6P20				0x59
 
 //Switch commands
 #define gswitch_sOff				0x00
@@ -173,6 +177,10 @@
 #define gswitch_sPlayPlaylist		0x16
 #define gswitch_sPlayFavorites		0x17
 #define gswitch_sExecute			0x18
+#define gswitch_sColor				0x19
+#define gswitch_sDiscop				0x1a
+#define gswitch_sDiscom				0x1b
+
 //--------------
 
 #define pTypeLux		0xF6
@@ -531,5 +539,7 @@ typedef union tREVOBUF {
 		uint8_t	id3;
 		uint8_t	devno;
 		uint8_t	demand;
+		uint8_t	updatetype;
+		uint8_t	battery_level;
 	} EVOHOME3;
 } REVOBUF;

@@ -73,7 +73,7 @@ namespace http {
 
 			if (result.size() > 0)
 			{
-				nid = atol(result[0][0].c_str());
+				nid = atol(result[0][0].c_str()) + 1;
 			}
 			nid += 82000;
 			char ID[40];
@@ -262,11 +262,11 @@ namespace http {
 				}
 				break;
 			case pTypeTEMP:
-				DeviceRowIdx=m_sql.UpdateValue(HwdID, ID, 1, pTypeTEMP, sTypeTEMP1, 12, 255, 0, "0.0", devname);
+				DeviceRowIdx=m_sql.UpdateValue(HwdID, ID, 1, pTypeTEMP, sTypeTEMP5, 12, 255, 0, "0.0", devname);
 				bCreated = true;
 				break;
 			case pTypeHUM:
-				DeviceRowIdx=m_sql.UpdateValue(HwdID, ID, 1, pTypeHUM, sTypeTEMP1, 12, 255, 50, "1", devname);
+				DeviceRowIdx=m_sql.UpdateValue(HwdID, ID, 1, pTypeHUM, sTypeHUM1, 12, 255, 50, "1", devname);
 				bCreated = true;
 				break;
 			case pTypeTEMP_HUM:
@@ -383,6 +383,7 @@ namespace http {
 			if (DeviceRowIdx != -1)
 			{
 				m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', Used=1 WHERE (ID==%llu)", ssensorname.c_str(), DeviceRowIdx);
+				m_mainworker.m_eventsystem.GetCurrentStates();
 			}
 		}
 	}

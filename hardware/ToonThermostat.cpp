@@ -83,9 +83,10 @@ const std::string TOON_SWITCH_ALL = "/toonMobileBackendWeb/client/auth/smartplug
 //	STATE_HOLIDAY	//4
 //};
 
-CToonThermostat::CToonThermostat(const int ID, const std::string &Username, const std::string &Password) :
+CToonThermostat::CToonThermostat(const int ID, const std::string &Username, const std::string &Password, const int &Agreement) :
 m_UserName(Username),
-m_Password(Password)
+m_Password(Password),
+m_Agreement(Agreement)
 {
 	m_HwdID=ID;
 
@@ -192,7 +193,7 @@ bool CToonThermostat::StopHardware()
     return true;
 }
 
-#define TOON_POLL_INTERVAL 30
+#define TOON_POLL_INTERVAL 300
 
 void CToonThermostat::Do_Work()
 {
@@ -351,13 +352,14 @@ bool CToonThermostat::Login()
 		_log.Log(LOG_ERROR, "ToonThermostat: Invalid data received, or invalid username/password!");
 		return false;
 	}
-	if (root["agreements"].size() < 1)
+	if (root["agreements"].size() < (size_t)(m_Agreement+1))
 	{
-		_log.Log(LOG_ERROR, "ToonThermostat: No agreements found, did you setup your toon correctly?");
+		_log.Log(LOG_ERROR, "ToonThermostat: Agreement not found, did you setup your toon correctly?");
 		return false;
 	}
-	agreementId = root["agreements"][0]["agreementId"].asString();
-	agreementIdChecksum = root["agreements"][0]["agreementIdChecksum"].asString();
+
+	agreementId = root["agreements"][m_Agreement]["agreementId"].asString();
+	agreementIdChecksum = root["agreements"][m_Agreement]["agreementIdChecksum"].asString();
 
 	std::stringstream sstr2;
 	sstr2 << "clientId=" << m_ClientID 
@@ -760,6 +762,15 @@ void CToonThermostat::GetMeterDetails()
 
 		m_p1power.usagecurrent = (unsigned long)(root["powerUsage"]["value"].asFloat());	//Watt
 		m_p1power.delivcurrent = (unsigned long)(root["powerUsage"]["valueProduced"].asFloat());	//Watt
+
+		if (root["powerUsage"]["valueSolar"].empty() == false)
+		{
+			float valueSolar = (float)(root["powerUsage"]["valueSolar"].asFloat());
+			if (valueSolar != 0)
+			{
+				SendWattMeter(1, 1, 255, valueSolar, "Solar");
+			}
+		}
 		
 	}
 

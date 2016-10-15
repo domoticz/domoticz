@@ -16,6 +16,7 @@
 
 //Hardware Devices
 #include "../hardware/hardwaretypes.h"
+#include "../hardware/RFXBase.h"
 #include "../hardware/RFXComSerial.h"
 #include "../hardware/RFXComTCP.h"
 #include "../hardware/DomoticzTCP.h"
@@ -36,15 +37,15 @@
 #include "../hardware/1Wire.h"
 #include "../hardware/I2C.h"
 #include "../hardware/Wunderground.h"
-#include "../hardware/ForecastIO.h"
+#include "../hardware/DarkSky.h"
 #include "../hardware/HardwareMonitor.h"
 #include "../hardware/Dummy.h"
 #include "../hardware/Tellstick.h"
 #include "../hardware/PiFace.h"
 #include "../hardware/S0MeterSerial.h"
+#include "../hardware/S0MeterTCP.h"
 #include "../hardware/OTGWSerial.h"
 #include "../hardware/OTGWTCP.h"
-//#include "../hardware/S0MeterTCP.h"
 #include "../hardware/Teleinfo.h"
 #include "../hardware/Limitless.h"
 #include "../hardware/MochadTCP.h"
@@ -76,11 +77,13 @@
 #include "../hardware/Thermosmart.h"
 #include "../hardware/Kodi.h"
 #include "../hardware/Netatmo.h"
+#include "../hardware/HttpPoller.h"
 #include "../hardware/AnnaThermostat.h"
 #include "../hardware/Winddelen.h"
 #include "../hardware/SatelIntegra.h"
 #include "../hardware/LogitechMediaServer.h"
 #include "../hardware/Comm5TCP.h"
+#include "../hardware/Comm5Serial.h"
 #include "../hardware/CurrentCostMeterSerial.h"
 #include "../hardware/CurrentCostMeterTCP.h"
 #include "../hardware/SolarEdgeAPI.h"
@@ -89,6 +92,20 @@
 #include "../hardware/PanasonicTV.h"
 #include "../hardware/OpenWebNet.h"
 #include "../hardware/AtagOne.h"
+#include "../hardware/Sterbox.h"
+#include "../hardware/Fitbit.h"
+#include "../hardware/RAVEn.h"
+#include "../hardware/DenkoviSmartdenLan.h"
+#include "../hardware/AccuWeather.h"
+#include "../hardware/BleBox.h"
+#include "../hardware/Ec3kMeterTCP.h"
+#include "../hardware/OpenWeatherMap.h"
+#include "../hardware/GoodweAPI.h"
+#include "../hardware/Daikin.h"
+#include "../hardware/HEOS.h"
+#include "../hardware/MultiFun.h"
+#include "../hardware/ZiBlueSerial.h"
+#include "../hardware/ZiBlueTCP.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -183,6 +200,7 @@ MainWorker::MainWorker()
 	m_iRevision = 0;
 
 	m_rxMessageIdx = 1;
+	m_bForceLogNotificationCheck = false;
 }
 
 MainWorker::~MainWorker()
@@ -413,6 +431,19 @@ CDomoticzHardwareBase* MainWorker::GetHardware(int HwdId)
 	return NULL;
 }
 
+CDomoticzHardwareBase* MainWorker::GetHardwareByIDType(const std::string &HwdId, const _eHardwareTypes HWType)
+{
+	if (HwdId == "")
+		return NULL;
+	int iHardwareID = atoi(HwdId.c_str());
+	CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(iHardwareID);
+	if (pHardware == NULL)
+		return NULL;
+	if (pHardware->HwdType != HWType)
+		return NULL;
+	return pHardware;
+}
+
 CDomoticzHardwareBase* MainWorker::GetHardwareByType(const _eHardwareTypes HWType)
 {
 	boost::lock_guard<boost::mutex> l(m_devicemutex);
@@ -584,108 +615,70 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_RFXtrx315:
 	case HTYPE_RFXtrx433:
 	case HTYPE_RFXtrx868:
+		pHardware = new RFXComSerial(ID, SerialPort, 38400);
+		break;
 	case HTYPE_P1SmartMeter:
+		pHardware = new P1MeterSerial(ID,SerialPort, (Mode1==1) ? 115200 : 9600, Mode2);
+		break;
 	case HTYPE_Rego6XX:
+		pHardware = new CRego6XXSerial(ID,SerialPort, Mode1);
+		break;
 	case HTYPE_DavisVantage:
-	case HTYPE_S0SmartMeter:
+		pHardware = new CDavisLoggerSerial(ID,SerialPort, 19200);
+		break;
+	case HTYPE_S0SmartMeterUSB:
+		pHardware = new S0MeterSerial(ID,SerialPort, 9600);
+		break;
+	case HTYPE_S0SmartMeterTCP:
+		//LAN
+		pHardware = new S0MeterTCP(ID, Address, Port);
+		break;
 	case HTYPE_OpenThermGateway:
+		pHardware = new OTGWSerial(ID,SerialPort, 9600, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
+		break;
 	case HTYPE_TeleinfoMeter:
+		pHardware = new Teleinfo(ID, SerialPort);
+		break;
 	case HTYPE_MySensorsUSB:
+		pHardware = new MySensorsSerial(ID, SerialPort, Mode1);
+		break;
 	case HTYPE_KMTronicUSB:
+		pHardware = new KMTronicSerial(ID, SerialPort);
+		break;
 	case HTYPE_KMTronic433:
+		pHardware = new KMTronic433(ID, SerialPort);
+		break;
 	case HTYPE_OpenZWave:
+#ifdef WITH_OPENZWAVE
+			pHardware = new COpenZWave(ID, SerialPort);
+#endif
+			break;
 	case HTYPE_EnOceanESP2:
+		pHardware = new CEnOceanESP2(ID,SerialPort, Mode1);
+		break;
 	case HTYPE_EnOceanESP3:
+		pHardware = new CEnOceanESP3(ID,SerialPort, Mode1);
+		break;
 	case HTYPE_Meteostick:
+		pHardware = new Meteostick(ID, SerialPort, 115200);
+		break;
 	case HTYPE_EVOHOME_SERIAL:
+		pHardware = new CEvohome(ID,SerialPort);
+		break;
 	case HTYPE_RFLINKUSB:
+		pHardware = new CRFLinkSerial(ID, SerialPort);
+		break;
+	case HTYPE_ZIBLUEUSB:
+		pHardware = new CZiBlueSerial(ID, SerialPort);
+		break;
 	case HTYPE_CurrentCostMeter:
-	{
-			//USB/Serial
-			if (
-				(Type == HTYPE_RFXtrx315) ||
-				(Type == HTYPE_RFXtrx433) ||
-				(Type == HTYPE_RFXtrx868)
-				)
-			{
-				pHardware = new RFXComSerial(ID, SerialPort, 38400);
-			}
-			else if (Type==HTYPE_P1SmartMeter)
-			{
-				int baudrate=9600;
-				if (Mode1==1)
-					baudrate=115200;
-				pHardware = new P1MeterSerial(ID,SerialPort,baudrate);
-			}
-			else if (Type==HTYPE_Rego6XX)
-			{
-				pHardware = new CRego6XXSerial(ID,SerialPort, Mode1);
-			}
-			else if (Type==HTYPE_DavisVantage)
-			{
-				pHardware = new CDavisLoggerSerial(ID,SerialPort, 19200);
-			}
-			else if (Type==HTYPE_S0SmartMeter)
-			{
-				int baudrate=9600;
-				pHardware = new S0MeterSerial(ID,SerialPort, baudrate, Address);
-			}
-			else if (Type == HTYPE_Meteostick)
-			{
-				pHardware = new Meteostick(ID, SerialPort, 115200);
-			}
-			else if (Type == HTYPE_OpenThermGateway)
-			{
-				pHardware = new OTGWSerial(ID,SerialPort, 9600, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
-			}
-			else if (Type==HTYPE_TeleinfoMeter)
-			{
-				pHardware = new Teleinfo(ID, SerialPort);
-			}
-			else if (Type == HTYPE_MySensorsUSB)
-			{
-				pHardware = new MySensorsSerial(ID, SerialPort, Mode1);
-			}
-			else if (Type == HTYPE_KMTronicUSB)
-			{
-				pHardware = new KMTronicSerial(ID, SerialPort);
-			}
-			else if (Type == HTYPE_KMTronic433)
-			{
-				pHardware = new KMTronic433(ID, SerialPort);
-			}
-			else if (Type == HTYPE_OpenZWave)
-			{
-	#ifdef WITH_OPENZWAVE
-				pHardware = new COpenZWave(ID, SerialPort);
-	#endif
-			}
-			else if (Type==HTYPE_EnOceanESP2)
-			{
-				pHardware = new CEnOceanESP2(ID,SerialPort, Mode1);
-			}
-			else if (Type==HTYPE_EnOceanESP3)
-			{
-				pHardware = new CEnOceanESP3(ID,SerialPort, Mode1);
-			}
-			else if (Type==HTYPE_EVOHOME_SERIAL)
-			{
-				pHardware = new CEvohome(ID,SerialPort);
-			}
-			else if (Type == HTYPE_RFLINKUSB)
-			{
-				pHardware = new CRFLinkSerial(ID, SerialPort);
-			}
-			else if (Type == HTYPE_CurrentCostMeter)
-			{
-				unsigned int baudRate(9600);
-				if (Mode1 == 1)
-				{
-					baudRate = 57600;
-				}
-				pHardware = new CurrentCostMeterSerial(ID, SerialPort, baudRate);
-			}
-		}
+		pHardware = new CurrentCostMeterSerial(ID, SerialPort, (Mode1 == 1) ? 57600 : 9600);
+		break;
+    case HTYPE_RAVEn:
+		pHardware = new RAVEn(ID, SerialPort);
+		break;
+	case HTYPE_Comm5Serial:
+		pHardware = new Comm5Serial(ID, SerialPort);
 		break;
 	case HTYPE_RFXLAN:
 		//LAN
@@ -701,7 +694,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_P1SmartMeterLAN:
 		//LAN
-		pHardware = new P1MeterTCP(ID, Address, Port);
+		pHardware = new P1MeterTCP(ID, Address, Port, Mode2);
 		break;
 	case HTYPE_WOL:
 		//LAN
@@ -718,6 +711,10 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_RFLINKTCP:
 		//LAN
 		pHardware = new CRFLinkTCP(ID, Address, Port);
+		break;
+	case HTYPE_ZIBLUETCP:
+		//LAN
+		pHardware = new CZiBlueTCP(ID, Address, Port);
 		break;
 	case HTYPE_MQTT:
 		//LAN
@@ -764,7 +761,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_1WIRE:
 		//1-Wire file system
-		pHardware = new C1Wire(ID);
+		pHardware = new C1Wire(ID, Mode1, Mode2, Filename);
 		break;
 	case HTYPE_Pinger:
 		//System Alive Checker (Ping)
@@ -789,6 +786,22 @@ bool MainWorker::AddHardwareFromParams(
 		//Logitech Media Server
 		pHardware = new CLogitechMediaServer(ID, Address, Port, Username, Password, Mode1, Mode2);
 		break;
+	case HTYPE_Sterbox:
+		//LAN
+		pHardware = new CSterbox(ID, Address, Port, Username, Password);
+		break;
+	case HTYPE_DenkoviSmartdenLan:
+		//LAN
+		pHardware = new CDenkoviSmartdenLan(ID, Address, Port, Password);
+		break;
+	case HTYPE_HEOS:
+		//HEOS by DENON
+		pHardware = new CHEOS(ID, Address, Port, Username, Password, Mode1, Mode2);
+		break;
+	case HTYPE_MultiFun:
+		//MultiFun LAN
+		pHardware = new MultiFun(ID, Address, Port);
+		break;
 #ifndef WIN32
 	case HTYPE_TE923:
 		//TE923 compatible weather station
@@ -809,11 +822,20 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_RaspberryHTU21D:
 		pHardware = new I2C(ID,2);
 		break;
+	case HTYPE_RaspberryTSL2561:
+		pHardware = new I2C(ID,3);
+		break;
 	case HTYPE_Wunderground:
 		pHardware = new CWunderground(ID,Username,Password);
 		break;
-	case HTYPE_ForecastIO:
-		pHardware = new CForecastIO(ID,Username,Password);
+	case HTYPE_HTTPPOLLER:
+		pHardware = new CHttpPoller(ID, Username, Password, Address, Filename, Port);
+		break;
+	case HTYPE_DarkSky:
+		pHardware = new CDarkSky(ID,Username,Password);
+		break;
+	case HTYPE_AccuWeather:
+		pHardware = new CAccuWeather(ID, Username, Password);
 		break;
 	case HTYPE_SolarEdgeAPI:
 		pHardware = new SolarEdgeAPI(ID, Mode1, Username, Password);
@@ -821,6 +843,14 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_Netatmo:
 		pHardware = new CNetatmo(ID,Username,Password);
 		break;
+	case HTYPE_Daikin:
+		pHardware = new CDaikin(ID, Address, Port, Username, Password);
+		break;
+#ifdef _DEBUG
+	case HTYPE_FITBIT:
+		pHardware = new CFitbit(ID, Username, Password);
+		break;
+#endif
 	case HTYPE_SBFSpot:
 		pHardware = new CSBFSpot(ID,Username);
 		break;
@@ -828,7 +858,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CICYThermostat(ID,Username,Password);
 		break;
 	case HTYPE_TOONTHERMOSTAT:
-		pHardware = new CToonThermostat(ID, Username, Password);
+		pHardware = new CToonThermostat(ID, Username, Password, Mode1);
 		break;
 	case HTYPE_AtagOne:
 		pHardware = new CAtagOne(ID, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
@@ -888,6 +918,18 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_OpenWebNet:
 		pHardware = new COpenWebNet(ID, Address, Port);
 		break;
+	case HTYPE_BleBox:
+		pHardware = new BleBox(ID, Mode1);
+		break;
+	case HTYPE_OpenWeatherMap:
+		pHardware = new COpenWeatherMap(ID, Username, Password);
+		break;
+	case HTYPE_Ec3kMeterTCP:
+		pHardware = new Ec3kMeterTCP(ID, Address, Port);
+		break;
+	case HTYPE_GoodweAPI:
+		pHardware = new GoodweAPI(ID, Username);
+		break;
 	}
 
 	if (pHardware)
@@ -910,12 +952,14 @@ bool MainWorker::Start()
 	{
 		return false;
 	}
+	HTTPClient::SetUserAgent(GenerateUserAgent());
 	m_notifications.Init();
 	GetSunSettings();
 	GetAvailableWebThemes();
 	AddAllDomoticzHardware();
 	m_datapush.Start();
 	m_httppush.Start();
+	m_googlepubsubpush.Start();
 #ifdef PARSE_RFXCOM_DEVICE_LOG
 	if (m_bStartHardware==false)
 		m_bStartHardware=true;
@@ -947,6 +991,7 @@ bool MainWorker::Stop()
 		m_eventsystem.StopEventSystem();
 		m_datapush.Stop();
 		m_httppush.Stop();
+		m_googlepubsubpush.Stop();
 
 		//    m_cameras.StopCameraGrabber();
 
@@ -1019,11 +1064,14 @@ bool MainWorker::StartThread()
 
 bool MainWorker::IsUpdateAvailable(const bool bIsForced)
 {
-	int nValue = 0;
-	m_sql.GetPreferencesVar("UseAutoUpdate", nValue);
-	if (nValue != 1)
+	if (!bIsForced)
 	{
-		return false;
+		int nValue = 0;
+		m_sql.GetPreferencesVar("UseAutoUpdate", nValue);
+		if (nValue != 1)
+		{
+			return false;
+		}
 	}
 
 	utsname my_uname;
@@ -1060,6 +1108,7 @@ bool MainWorker::IsUpdateAvailable(const bool bIsForced)
 	}
 	m_LastUpdateCheck = atime;
 
+	int nValue;
 	m_sql.GetPreferencesVar("ReleaseChannel", nValue);
 	bool bIsBetaChannel = (nValue != 0);
 
@@ -1291,9 +1340,16 @@ void MainWorker::ParseRFXLogFile()
 		}
 		if (ii==0)
 			continue;
-		pHardware->WriteToHardware((const char *)&rxbuffer,totbytes);
-		DecodeRXMessage(pHardware, (const unsigned char *)&rxbuffer, NULL, 255);
-		sleep_milliseconds(300);
+		if (CRFXBase::CheckValidRFXData((const uint8_t*)&rxbuffer))
+		{
+			pHardware->WriteToHardware((const char *)&rxbuffer, totbytes);
+			DecodeRXMessage(pHardware, (const unsigned char *)&rxbuffer, NULL, 255);
+			sleep_milliseconds(300);
+		}
+		else
+		{
+			_log.Log(LOG_ERROR, "Invalid data/length!");
+		}
 	}
 #endif
 }
@@ -1421,6 +1477,14 @@ void MainWorker::Do_Work()
 					std::remove(szPwdResetFile.c_str());
 				}
 			}
+			if (_log.NotificationLogsEnabled())
+			{
+				if ((ltime.tm_min % 5 == 0)||(m_bForceLogNotificationCheck))
+				{
+					m_bForceLogNotificationCheck = false;
+					HandleLogNotifications();
+				}
+			}
 		}
 		if (ltime.tm_hour!=m_ScheduleLastHour)
 		{
@@ -1469,7 +1533,6 @@ void MainWorker::Do_Work()
 		if (ltime.tm_sec % 30 == 0)
 		{
 			HeartbeatCheck();
-
 		}
 	}
 	_log.Log(LOG_STATUS, "Mainworker Stopped...");
@@ -2217,7 +2280,7 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const 
 	}
 
 	//Send to connected Sharing Users
-	m_sharedserver.SendToAll(DeviceRowIdx, (const char*)pRXCommand, pRXCommand[0] + 1, pClient2Ignore);
+	m_sharedserver.SendToAll(pHardware->m_HwdID, DeviceRowIdx, (const char*)pRXCommand, pRXCommand[0] + 1, pClient2Ignore);
 
 	sOnDeviceReceived(pHardware->m_HwdID, DeviceRowIdx, DeviceName, pRXCommand);
 }
@@ -2351,31 +2414,40 @@ void MainWorker::decode_InterfaceMessage(const int HwdID, const _eHardwareTypes 
 						else
 							FWType = 3; //Ext
 					}
-
 					sprintf(szTmp,"Firmware version  = %d", FWVersion);
 					WriteMessage(szTmp);
 					WriteMessage( "Firmware type     = ",false);
 					switch (FWType)
 					{
 					case 0:
-						WriteMessage("Type1 Receive only");
+						strcpy(szTmp, "Type1 RX");
 						break;
 					case 1:
-						WriteMessage("Type1");
+						strcpy(szTmp, "Type1");
 						break;
 					case 2:
-						WriteMessage("Type2");
+						strcpy(szTmp, "Type2");
 						break;
 					case 3:
-						WriteMessage("Ext");
+						strcpy(szTmp, "Ext");
 						break;
 					case 4:
-						WriteMessage("Ext2");
+						strcpy(szTmp, "Ext2");
 						break;
 					default:
-						WriteMessage("?");
+						strcpy(szTmp, "?");
 						break;
 					}
+					WriteMessage(szTmp);
+
+					CRFXBase *pMyHardware = reinterpret_cast<CRFXBase*>(GetHardware(HwdID));
+					if (pMyHardware)
+					{
+						std::stringstream sstr;
+						sstr << szTmp << "/" << FWVersion;
+						pMyHardware->m_Version = sstr.str();
+					}
+
 
 					sprintf(szTmp,"Hardware version  = %d.%d",pResponse->IRESPONSE.msg7,pResponse->IRESPONSE.msg8);
 					WriteMessage(szTmp);
@@ -2764,8 +2836,44 @@ void MainWorker::decode_Rain(const int HwdID, const _eHardwareTypes HwdType, con
 	unsigned char cmnd=0;
 	unsigned char SignalLevel=pResponse->RAIN.rssi;
 	unsigned char BatteryLevel = get_BateryLevel(HwdType,pResponse->RAIN.subtype==sTypeRAIN1, pResponse->RAIN.battery_level & 0x0F);
-	int Rainrate=(pResponse->RAIN.rainrateh * 256) + pResponse->RAIN.rainratel;
+	
+	int Rainrate = (pResponse->RAIN.rainrateh * 256) + pResponse->RAIN.rainratel;
+	
 	float TotalRain=float((pResponse->RAIN.raintotal1 * 65535) + (pResponse->RAIN.raintotal2 * 256) + pResponse->RAIN.raintotal3) / 10.0f;
+
+	if (subType != sTypeRAINWU)
+	{
+		Rainrate = 0;
+		//Calculate our own rainrate
+		std::vector<std::vector<std::string> > result;
+
+		//Get our index
+		result = m_sql.safe_query(
+			"SELECT ID FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", HwdID, ID.c_str(), Unit, devType, subType);
+		if (result.size() != 0)
+		{
+			unsigned long long ulID;
+			std::stringstream s_str(result[0][0]);
+			s_str >> ulID;
+
+			//Get Counter from one Hour ago
+			time_t now = mytime(NULL);
+			now -= 3600; //subtract one hour
+			struct tm ltime;
+			localtime_r(&now, &ltime);
+
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query(
+				"SELECT MIN(Total) FROM Rain WHERE (DeviceRowID=%lld AND Date>='%04d-%02d-%02d %02d:%02d:%02d')",
+				ulID, ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
+			if (result.size() == 1)
+			{
+				float totalRainFallLastHour = TotalRain - static_cast<float>(atof(result[0][0].c_str()));
+				Rainrate = round(totalRainFallLastHour*100.0f);
+			}
+		}
+	}
+
 	sprintf(szTmp,"%d;%.1f",Rainrate,TotalRain);
 	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp, procResult.DeviceName);
 	if (DevRowIdx == -1)
@@ -2912,7 +3020,7 @@ void MainWorker::decode_Wind(const int HwdID, const _eHardwareTypes HwdType, con
 		{
 			temp=-(float(((pResponse->WIND.temperatureh & 0x7F) * 256) + pResponse->WIND.temperaturel) / 10.0f);
 		}
-		if ((temp<-60)||(temp>380))
+		if ((temp<-200)||(temp>380))
 		{
 			WriteMessage(" Invalid Temperature");
 			return;
@@ -2950,7 +3058,7 @@ void MainWorker::decode_Wind(const int HwdID, const _eHardwareTypes HwdType, con
 		{
 			temp=-(float(((pResponse->WIND.temperatureh & 0x7F) * 256) + pResponse->WIND.temperaturel) / 10.0f);
 		}
-		if ((temp<-60)||(temp>380))
+		if ((temp<-200)||(temp>380))
 		{
 			WriteMessage(" Invalid Temperature");
 			return;
@@ -3100,7 +3208,7 @@ void MainWorker::decode_Temp(const int HwdID, const _eHardwareTypes HwdType, con
 	{
 		temp=-(float(((pResponse->TEMP.temperatureh & 0x7F) * 256) + pResponse->TEMP.temperaturel) / 10.0f);
 	}
-	if ((temp<-60)||(temp>380))
+	if ((temp<-200)||(temp>380))
 	{
 		WriteMessage(" Invalid Temperature");
 		return;
@@ -3396,7 +3504,7 @@ void MainWorker::decode_TempHum(const int HwdID, const _eHardwareTypes HwdType, 
 	{
 		temp=-(float(((pResponse->TEMP_HUM.temperatureh & 0x7F) * 256) + pResponse->TEMP_HUM.temperaturel) / 10.0f);
 	}
-	if ((temp<-60)||(temp>380))
+	if ((temp<-200)||(temp>380))
 	{
 		WriteMessage(" Invalid Temperature");
 		return;
@@ -3591,7 +3699,7 @@ void MainWorker::decode_TempHumBaro(const int HwdID, const _eHardwareTypes HwdTy
 	{
 		temp=-(float(((pResponse->TEMP_HUM_BARO.temperatureh & 0x7F) * 256) + pResponse->TEMP_HUM_BARO.temperaturel) / 10.0f);
 	}
-	if ((temp<-60)||(temp>380))
+	if ((temp<-200)||(temp>380))
 	{
 		WriteMessage(" Invalid Temperature");
 		return;
@@ -3760,7 +3868,7 @@ void MainWorker::decode_TempBaro(const int HwdID, const _eHardwareTypes HwdType,
 	BatteryLevel=100;
 
 	float temp=pTempBaro->temp;
-	if ((temp<-60)||(temp>380))
+	if ((temp<-200)||(temp>380))
 	{
 		WriteMessage(" Invalid Temperature");
 		return;
@@ -3871,7 +3979,7 @@ void MainWorker::decode_TempRain(const int HwdID, const _eHardwareTypes HwdType,
 	m_sql.GetAddjustment(HwdID, ID.c_str(),Unit,pTypeTEMP,sTypeTEMP3,AddjValue,AddjMulti);
 	temp+=AddjValue;
 
-	if ((temp<-60)||(temp>380))
+	if ((temp<-200)||(temp>380))
 	{
 		WriteMessage(" Invalid Temperature");
 		return;
@@ -3956,7 +4064,7 @@ void MainWorker::decode_UV(const int HwdID, const _eHardwareTypes HwdType, const
 		{
 			temp = -(float(((pResponse->UV.temperatureh & 0x7F) * 256) + pResponse->UV.temperaturel) / 10.0f);
 		}
-		if ((temp<-60)||(temp>380))
+		if ((temp<-200)||(temp>380))
 		{
 			WriteMessage(" Invalid Temperature");
 			return;
@@ -5899,7 +6007,14 @@ void MainWorker::decode_evohome2(const int HwdID, const _eHardwareTypes HwdType,
 
 	//Get Device details
 	std::vector<std::vector<std::string> > result;
-	if(pEvo->EVOHOME2.zone)//if unit number is available the id3 will be the controller device id
+	if (pEvo->EVOHOME2.type == pTypeEvohomeZone && pEvo->EVOHOME2.zone > 12) //Allow for additional Zone Temp devices which require DeviceID
+	{
+		result = m_sql.safe_query(
+			"SELECT HardwareID, DeviceID,Unit,Type,SubType,sValue,BatteryLevel "
+			"FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == '%x') AND (Type==%d)",
+			HwdID, (int)RFX_GETID3(pEvo->EVOHOME2.id1, pEvo->EVOHOME2.id2, pEvo->EVOHOME2.id3), (int)pEvo->EVOHOME2.type);
+	}
+	else if (pEvo->EVOHOME2.zone)//if unit number is available the id3 will be the controller device id
 	{
 		result = m_sql.safe_query(
 			"SELECT HardwareID, DeviceID,Unit,Type,SubType,sValue,BatteryLevel "
@@ -5910,14 +6025,15 @@ void MainWorker::decode_evohome2(const int HwdID, const _eHardwareTypes HwdType,
 	{
 		result = m_sql.safe_query(
 			"SELECT HardwareID, DeviceID,Unit,Type,SubType,sValue,BatteryLevel "
-			"FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == '%x')",
-			HwdID, (int)RFX_GETID3(pEvo->EVOHOME2.id1,pEvo->EVOHOME2.id2,pEvo->EVOHOME2.id3));
+			"FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == '%x') AND (Type==%d)",
+			HwdID, (int)RFX_GETID3(pEvo->EVOHOME2.id1,pEvo->EVOHOME2.id2,pEvo->EVOHOME2.id3), (int)pEvo->EVOHOME2.type);
 	}
 	if (result.size()<1 && !pEvo->EVOHOME2.zone)
 		return;
 
 	bool bNewDev=false;
 	std::string name,szDevID;
+	std::stringstream szID;
 	unsigned char Unit;
 	unsigned char dType;
 	unsigned char dSubType;
@@ -5939,11 +6055,16 @@ void MainWorker::decode_evohome2(const int HwdID, const _eHardwareTypes HwdType,
 		dType=pEvo->EVOHOME2.type;
 		dSubType=pEvo->EVOHOME2.subtype;
 
+		szID << std::hex << (int)RFX_GETID3(pEvo->EVOHOME2.id1, pEvo->EVOHOME2.id2, pEvo->EVOHOME2.id3);
+		szDevID = szID.str();
+
 		CEvohome *pEvoHW = reinterpret_cast<CEvohome*>(GetHardware(HwdID));
 		if(!pEvoHW)
 			return;
 		if(dType==pTypeEvohomeWater)
 			name="Hot Water";
+		else if (dType == pTypeEvohomeZone && !szDevID.empty())
+			name = "Zone Temp";
 		else
 			name=pEvoHW->GetZoneName(Unit-1);
 		if(name.empty())
@@ -5998,7 +6119,7 @@ void MainWorker::decode_evohome2(const int HwdID, const _eHardwareTypes HwdType,
 			else
 				strarray[0]=szTmp;
 			szUpdateStat=boost::algorithm::join(strarray, ";");
-		}
+		}		
 	}
 	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, szDevID.c_str(),Unit,dType,dSubType,SignalLevel,BatteryLevel,cmnd,szUpdateStat.c_str(), procResult.DeviceName);
 	if (DevRowIdx == -1)
@@ -6106,9 +6227,11 @@ void MainWorker::decode_evohome3(const int HwdID, const _eHardwareTypes HwdType,
 	szID << std::hex << nDevID;
 	std::string ID(szID.str());
 	unsigned char Unit=pEvo->EVOHOME3.devno;
-	unsigned char cmnd=(pEvo->EVOHOME3.demand==200)?light1_sOn:light1_sOff;
+	unsigned char cmnd=(pEvo->EVOHOME3.demand>0)?light1_sOn:light1_sOff;
 	sprintf(szTmp, "%d", pEvo->EVOHOME3.demand);
 	std::string szDemand(szTmp);
+	unsigned char SignalLevel = 255;//Unknown
+	unsigned char BatteryLevel = 255;//Unknown
 
 	if(Unit==0xFF && nDevID==0)
 		return;
@@ -6117,19 +6240,20 @@ void MainWorker::decode_evohome3(const int HwdID, const _eHardwareTypes HwdType,
 	std::vector<std::vector<std::string> > result;
 	if(Unit==0xFF)
 		result = m_sql.safe_query(
-			"SELECT HardwareID,DeviceID,Unit,Type,SubType,nValue,sValue "
+			"SELECT HardwareID,DeviceID,Unit,Type,SubType,nValue,sValue,BatteryLevel "
 			"FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == '%q')",
 			HwdID, ID.c_str());
 	else
 		result = m_sql.safe_query(
-			"SELECT HardwareID,DeviceID,Unit,Type,SubType,nValue,sValue "
-			"FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit == '%d') AND (Type==%d)",
-			HwdID, (int) Unit, (int) pEvo->EVOHOME3.type);
+			"SELECT HardwareID,DeviceID,Unit,Type,SubType,nValue,sValue,BatteryLevel "
+			"FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit == '%d') AND (Type==%d) AND (DeviceID == '%q')",
+			HwdID, (int) Unit, (int) pEvo->EVOHOME3.type, ID.c_str());
 	if (result.size()>0)
 	{
 		if(pEvo->EVOHOME3.demand==0xFF)//we sometimes get a 0418 message after the initial device creation but it will mess up the logging as we don't have a demand
 			return;
 		unsigned char cur_cmnd=atoi(result[0][5].c_str());
+		BatteryLevel = atoi(result[0][7].c_str());
 		if(Unit==0xFF)
 		{
 			Unit=atoi(result[0][2].c_str());
@@ -6140,33 +6264,25 @@ void MainWorker::decode_evohome3(const int HwdID, const _eHardwareTypes HwdType,
 		else if(nDevID==0)
 		{
 			ID=result[0][1];
-			cmnd=cur_cmnd;
-			if(szDemand==result[0][6])
-				return;
-		}
-		else //we have all info (calls from frontend/API)
-		{
-			if(cmnd==cur_cmnd && szDemand==result[0][6])
-				return;
 		}
 	}
 	else
 	{
-		if(Unit==0xFF || nDevID==0)
+		if(Unit==0xFF || (nDevID==0 && Unit > 12))
 			return;
 		bNewDev=true;
 		if(pEvo->EVOHOME3.demand==0xFF)//0418 allows us to associate unit and deviceid but no state information other messages only contain one or the other
 			szDemand="0";
 	}
 
-	unsigned char SignalLevel=255;//Unknown
-	unsigned char BatteryLevel = 255;//Unknown
+	if (pEvo->EVOHOME3.updatetype == CEvohome::updBattery)
+		BatteryLevel = pEvo->EVOHOME3.battery_level;
 
 	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szDemand.c_str(), procResult.DeviceName);
 	if (DevRowIdx == -1)
 		return;
 
-	if(bNewDev && (Unit==0xF9 || Unit==0xFA || Unit==0xFC))
+	if(bNewDev && (Unit==0xF9 || Unit==0xFA || Unit==0xFC || Unit <=12))
 	{
 		if(Unit==0xF9)
 			procResult.DeviceName = "CH Valve";
@@ -6174,6 +6290,8 @@ void MainWorker::decode_evohome3(const int HwdID, const _eHardwareTypes HwdType,
 			procResult.DeviceName = "DHW Valve";
 		else if(Unit==0xFC)
 			procResult.DeviceName = "Boiler";
+		else if (Unit <= 12)
+			procResult.DeviceName = "Zone";
 		std::vector<std::vector<std::string> > result;
 		result = m_sql.safe_query(
 			"UPDATE DeviceStatus SET Name='%q' WHERE (ID == %llu)",
@@ -9374,6 +9492,7 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, pMeter->intval1, szTmp, procResult.DeviceName);
 		if (DevRowIdx == -1)
 			return;
+		m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_USAGE, static_cast<float>(pMeter->intval1));
 	}
 	else if (subType == sTypeCustom)
 	{
@@ -9457,7 +9576,8 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 			break;
 		case sTypeZWaveThermostatMode:
 			WriteMessage("subtype       = Thermostat Mode");
-			sprintf(szTmp, "Mode = %d (%s)", pMeter->intval2, ZWave_Thermostat_Modes[pMeter->intval2]);
+			//sprintf(szTmp, "Mode = %d (%s)", pMeter->intval2, ZWave_Thermostat_Modes[pMeter->intval2]);
+			sprintf(szTmp, "Mode = %d", pMeter->intval2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeZWaveThermostatFanMode:
@@ -9612,7 +9732,7 @@ void MainWorker::decode_BBQ(const int HwdID, const _eHardwareTypes HwdType, cons
 	tsen.TEMP.id2=1;
 
 	tsen.TEMP.tempsign=(temp1>=0)?0:1;
-	int at10=round(abs(temp1*10.0f));
+	int at10=round(std::abs(temp1*10.0f));
 	tsen.TEMP.temperatureh=(BYTE)(at10/256);
 	at10-=(tsen.TEMP.temperatureh*256);
 	tsen.TEMP.temperaturel=(BYTE)(at10);
@@ -9625,7 +9745,7 @@ void MainWorker::decode_BBQ(const int HwdID, const _eHardwareTypes HwdType, cons
 	tsen.TEMP.id2=2;
 
 	tsen.TEMP.tempsign=(temp2>=0)?0:1;
-	at10=round(abs(temp2*10.0f));
+	at10=round(std::abs(temp2*10.0f));
 	tsen.TEMP.temperatureh=(BYTE)(at10/256);
 	at10-=(tsen.TEMP.temperatureh*256);
 	tsen.TEMP.temperaturel=(BYTE)(at10);
@@ -11165,6 +11285,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		(pHardware->HwdType == HTYPE_EVOHOME_SCRIPT) ||
 		(pHardware->HwdType == HTYPE_EVOHOME_SERIAL) ||
 		(pHardware->HwdType == HTYPE_Netatmo) ||
+		(pHardware->HwdType == HTYPE_FITBIT) ||
 		(pHardware->HwdType == HTYPE_NefitEastLAN)
 		)
 	{
@@ -11909,6 +12030,39 @@ void MainWorker::UpdateDomoticzSecurityStatus(const int iSecStatus)
 	}
 }
 
+void MainWorker::ForceLogNotificationCheck()
+{
+	m_bForceLogNotificationCheck = true;
+}
+
+void MainWorker::HandleLogNotifications()
+{
+	std::list<CLogger::_tLogLineStruct> _loglines = _log.GetNotificationLogs();
+	if (_loglines.empty())
+		return;
+	//Assemble notification message
+
+	std::stringstream sstr;
+	std::list<CLogger::_tLogLineStruct>::const_iterator itt;
+	std::string sTopic;
+
+	if (_loglines.size() > 1)
+	{
+		sTopic = "Domoticz: Multiple errors received in the last 5 minutes";
+		sstr << "Multiple errors received in the last 5 minutes:<br><br>";
+	}
+	else
+	{
+		itt = _loglines.begin();
+		sTopic = "Domoticz: " + itt->logmessage;
+	}
+
+	for (itt = _loglines.begin(); itt != _loglines.end(); ++itt)
+	{
+		sstr << itt->logmessage << "<br>";
+	}
+	m_sql.AddTaskItem(_tTaskItem::SendEmail(1, sTopic, sstr.str()));
+}
 
 void MainWorker::HeartbeatUpdate(const std::string &component)
 {
@@ -12045,6 +12199,24 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 
 	if (pHardware)
 	{
+		std::vector<std::vector<std::string> > result;
+		result = m_sql.safe_query(
+			"SELECT ID,Name FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",
+			HardwareID, DeviceID.c_str(), unit, devType, subType);
+
+		unsigned long long dID = 0;
+		std::string dName = "";
+
+		if (!result.empty())
+		{
+			std::vector<std::string> sd = result[0];
+			std::stringstream s_strid;
+			s_strid << sd[0];
+			s_strid >> dID;
+			unsigned long long dID = 0;
+			std::string dName = sd[1];
+		}
+
 		if (devType == pTypeLighting2)
 		{
 			//Update as Lighting 2
@@ -12080,6 +12252,16 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 			{
 				_tGeneralDevice gDevice;
 				gDevice.subtype = sTypePercentage;
+				gDevice.id = unit;
+				gDevice.floatval1 = (float)atof(sValue.c_str());
+				gDevice.intval1 = static_cast<int>(ID);
+				DecodeRXMessage(pHardware, (const unsigned char *)&gDevice, NULL, batterylevel);
+				return true;
+			}
+			else if (subType == sTypeVoltage)
+			{
+				_tGeneralDevice gDevice;
+				gDevice.subtype = sTypeVoltage;
 				gDevice.id = unit;
 				gDevice.floatval1 = (float)atof(sValue.c_str());
 				gDevice.intval1 = static_cast<int>(ID);
@@ -12123,20 +12305,13 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 		}
 		else if ((devType == pTypeAirQuality) && (subType == sTypeVoltcraft))
 		{
-			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query(
-				"SELECT ID,Name FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",
-				HardwareID, DeviceID.c_str(), unit, devType, subType);
-			if (!result.empty())
-			{
-				std::vector<std::string> sd = result[0];
-				unsigned long long dID = 0;
-				std::stringstream s_strid;
-				s_strid << sd[0];
-				s_strid >> dID;
-
-				m_notifications.CheckAndHandleNotification(dID, sd[1], devType, subType, NTYPE_USAGE, (const float)nValue);
-			}
+			if (dID != 0)
+				m_notifications.CheckAndHandleNotification(dID, dName, devType, subType, NTYPE_USAGE, (const float)nValue);
+		}
+		else if (devType == pTypeTEMP)
+		{
+			if (dID != 0)
+				m_notifications.CheckAndHandleNotification(dID, dName, devType, subType, NTYPE_TEMPERATURE, (float)atof(sValue.c_str()));
 		}
 	}
 
@@ -12153,12 +12328,12 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 		sValue.c_str(),
 		devname,
 		false
-		);
+	);
 	if (devidx == -1)
 		return false;
 
 	// signal connected devices (MQTT, fibaro, http push ... ) about the web update
-	if ((pHardware)&&(parseTrigger))
+	if ((pHardware) && (parseTrigger))
 	{
 		sOnDeviceReceived(pHardware->m_HwdID, devidx, devname, NULL);
 	}

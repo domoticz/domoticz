@@ -1,4 +1,4 @@
-﻿namespace OneWireDomoticzService.Properties {
+namespace OneWireDomoticzService.Properties {
     
     
     // Cette classe vous permet de gérer des événements spécifiques dans la classe de paramètres :

@@ -50,11 +50,11 @@ Contributors:
 #include <netinet/in.h>
 #endif
 
-#ifdef WWW_ENABLE_SSL
+#ifdef WITH_TLS
 #include <openssl/conf.h>
 #include <openssl/engine.h>
 #include <openssl/err.h>
-#include "tls_mosq.h"
+#include <tls_mosq.h>
 #endif
 
 #ifdef WITH_BROKER
@@ -71,27 +71,34 @@ Contributors:
 #    include <libwebsockets.h>
 #  endif
 #else
-#  include "read_handle.h"
+#  include <read_handle.h>
 #endif
 
-#include "logging_mosq.h"
-#include "memory_mosq.h"
-#include "mqtt3_protocol.h"
-#include "net_mosq.h"
-#include "time_mosq.h"
-#include "util_mosq.h"
+#include <logging_mosq.h>
+#include <memory_mosq.h>
+#include <mqtt3_protocol.h>
+#include <net_mosq.h>
+#include <time_mosq.h>
+#include <util_mosq.h>
 
-#ifdef WWW_ENABLE_SSL
+#include "config.h"
+
+#ifdef WITH_TLS
 int tls_ex_index_mosq = -1;
 #endif
 
 void _mosquitto_net_init(void)
 {
+#ifdef WIN32
+	WSADATA wsaData;
+	WSAStartup(MAKEWORD(2,2), &wsaData);
+#endif
+
 #ifdef WITH_SRV
 	ares_library_init(ARES_LIB_INIT_ALL);
 #endif
 
-#ifdef WWW_ENABLE_SSL
+#ifdef WITH_TLS
 	SSL_load_error_strings();
 	SSL_library_init();
 	OpenSSL_add_all_algorithms();
@@ -103,7 +110,7 @@ void _mosquitto_net_init(void)
 
 void _mosquitto_net_cleanup(void)
 {
-#ifdef WWW_ENABLE_SSL
+#ifdef WITH_TLS
 	ERR_remove_state(0);
 	ENGINE_cleanup();
 	CONF_modules_unload(1);
@@ -114,6 +121,10 @@ void _mosquitto_net_cleanup(void)
 
 #ifdef WITH_SRV
 	ares_library_cleanup();
+#endif
+
+#ifdef WIN32
+	WSACleanup();
 #endif
 }
 
@@ -176,7 +187,7 @@ int _mosquitto_packet_queue(struct mosquitto *mosq, struct _mosquitto_packet *pa
 #endif
 	}
 
-	if(mosq->in_callback == false && mosq->threaded == false){
+	if(mosq->in_callback == false && mosq->threaded == mosq_ts_none){
 		return _mosquitto_packet_write(mosq);
 	}else{
 		return MOSQ_ERR_SUCCESS;
@@ -197,7 +208,7 @@ int _mosquitto_socket_close(struct mosquitto *mosq)
 	int rc = 0;
 
 	assert(mosq);
-#ifdef WWW_ENABLE_SSL
+#ifdef WITH_TLS
 	if(mosq->ssl){
 		SSL_shutdown(mosq->ssl);
 		SSL_free(mosq->ssl);
@@ -270,7 +281,7 @@ int _mosquitto_try_connect(struct mosquitto *mosq, const char *host, uint16_t po
 
 	*sock = INVALID_SOCKET;
 	memset(&hints, 0, sizeof(struct addrinfo));
-#ifdef WWW_ENABLE_SSL
+#ifdef WITH_TLS
 	if(mosq->tls_cafile || mosq->tls_capath || mosq->tls_psk){
 		hints.ai_family = PF_INET;
 	}else
@@ -361,18 +372,23 @@ int _mosquitto_try_connect(struct mosquitto *mosq, const char *host, uint16_t po
 	return rc;
 }
 
-#ifdef WWW_ENABLE_SSL
+#ifdef WITH_TLS
 int mosquitto__socket_connect_tls(struct mosquitto *mosq)
 {
-	int ret;
-
+	int ret, err;
 	ret = SSL_connect(mosq->ssl);
-	if(ret != 1){
-		ret = SSL_get_error(mosq->ssl, ret);
-		if(ret == SSL_ERROR_WANT_READ){
+	if(ret != 1) {
+		err = SSL_get_error(mosq->ssl, ret);
+#ifdef WIN32
+		if (err == SSL_ERROR_SYSCALL) {
+			mosq->want_connect = true;
+			return MOSQ_ERR_SUCCESS;
+		}
+#endif
+		if(err == SSL_ERROR_WANT_READ){
 			mosq->want_connect = true;
 			/* We always try to read anyway */
-		}else if(ret == SSL_ERROR_WANT_WRITE){
+		}else if(err == SSL_ERROR_WANT_WRITE){
 			mosq->want_write = true;
 			mosq->want_connect = true;
 		}else{
@@ -395,7 +411,7 @@ int _mosquitto_socket_connect(struct mosquitto *mosq, const char *host, uint16_t
 {
 	mosq_sock_t sock = INVALID_SOCKET;
 	int rc;
-#ifdef WWW_ENABLE_SSL
+#ifdef WITH_TLS
 	int ret;
 	BIO *bio;
 #endif
@@ -405,7 +421,7 @@ int _mosquitto_socket_connect(struct mosquitto *mosq, const char *host, uint16_t
 	rc = _mosquitto_try_connect(mosq, host, port, &sock, bind_address, blocking);
 	if(rc > 0) return rc;
 
-#ifdef WWW_ENABLE_SSL
+#ifdef WITH_TLS
 	if(mosq->tls_cafile || mosq->tls_capath || mosq->tls_psk){
 #if OPENSSL_VERSION_NUMBER >= 0x10001000L
 		if(!mosq->tls_version || !strcmp(mosq->tls_version, "tlsv1.2")){
@@ -642,7 +658,7 @@ void _mosquitto_write_uint16(struct _mosquitto_packet *packet, uint16_t word)
 
 ssize_t _mosquitto_net_read(struct mosquitto *mosq, void *buf, size_t count)
 {
-#ifdef WWW_ENABLE_SSL
+#ifdef WITH_TLS
 	int ret;
 	int err;
 	char ebuf[256];
@@ -650,7 +666,7 @@ ssize_t _mosquitto_net_read(struct mosquitto *mosq, void *buf, size_t count)
 #endif
 	assert(mosq);
 	errno = 0;
-#ifdef WWW_ENABLE_SSL
+#ifdef WITH_TLS
 	if(mosq->ssl){
 		ret = SSL_read(mosq->ssl, buf, count);
 		if(ret <= 0){
@@ -683,14 +699,14 @@ ssize_t _mosquitto_net_read(struct mosquitto *mosq, void *buf, size_t count)
 	return recv(mosq->sock, buf, count, 0);
 #endif
 
-#ifdef WWW_ENABLE_SSL
+#ifdef WITH_TLS
 	}
 #endif
 }
 
 ssize_t _mosquitto_net_write(struct mosquitto *mosq, void *buf, size_t count)
 {
-#ifdef WWW_ENABLE_SSL
+#ifdef WITH_TLS
 	int ret;
 	int err;
 	char ebuf[256];
@@ -699,8 +715,9 @@ ssize_t _mosquitto_net_write(struct mosquitto *mosq, void *buf, size_t count)
 	assert(mosq);
 
 	errno = 0;
-#ifdef WWW_ENABLE_SSL
+#ifdef WITH_TLS
 	if(mosq->ssl){
+		mosq->want_write = false;
 		ret = SSL_write(mosq->ssl, buf, count);
 		if(ret < 0){
 			err = SSL_get_error(mosq->ssl, ret);
@@ -731,7 +748,7 @@ ssize_t _mosquitto_net_write(struct mosquitto *mosq, void *buf, size_t count)
 	return send(mosq->sock, buf, count, 0);
 #endif
 
-#ifdef WWW_ENABLE_SSL
+#ifdef WITH_TLS
 	}
 #endif
 }
@@ -829,7 +846,7 @@ int _mosquitto_packet_write(struct mosquitto *mosq)
 			_mosquitto_free(packet);
 
 			pthread_mutex_lock(&mosq->msgtime_mutex);
-			mosq->last_msg_out = mosquitto_time();
+			mosq->next_msg_out = mosquitto_time() + mosq->keepalive;
 			pthread_mutex_unlock(&mosq->msgtime_mutex);
 			/* End of duplicate, possibly unnecessary code */
 
@@ -860,7 +877,7 @@ int _mosquitto_packet_write(struct mosquitto *mosq)
 		_mosquitto_free(packet);
 
 		pthread_mutex_lock(&mosq->msgtime_mutex);
-		mosq->last_msg_out = mosquitto_time();
+		mosq->next_msg_out = mosquitto_time() + mosq->keepalive;
 		pthread_mutex_unlock(&mosq->msgtime_mutex);
 	}
 	pthread_mutex_unlock(&mosq->current_out_packet_mutex);
@@ -1114,10 +1131,6 @@ int _mosquitto_socketpair(mosq_sock_t *pairR, mosq_sock_t *pairW)
 			continue;
 		}
 
-		if(_mosquitto_socket_nonblock(listensock)){
-			continue;
-		}
-
 		if(family[i] == AF_INET){
 			sa->sin_family = family[i];
 			sa->sin_addr.s_addr = htonl(INADDR_LOOPBACK);
@@ -1134,6 +1147,7 @@ int _mosquitto_socketpair(mosq_sock_t *pairR, mosq_sock_t *pairW)
 			continue;
 		}
 		if(_mosquitto_socket_nonblock(spR)){
+			COMPAT_CLOSE(spR);
 			COMPAT_CLOSE(listensock);
 			continue;
 		}
@@ -1161,6 +1175,7 @@ int _mosquitto_socketpair(mosq_sock_t *pairR, mosq_sock_t *pairW)
 
 		if(_mosquitto_socket_nonblock(spW)){
 			COMPAT_CLOSE(spR);
+			COMPAT_CLOSE(spW);
 			COMPAT_CLOSE(listensock);
 			continue;
 		}

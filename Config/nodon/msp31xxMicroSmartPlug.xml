@@ -1,0 +1,109 @@
+<Product xmlns="http://code.google.com/p/open-zwave/">
+    <!-- NodOn MSP-3-1-XX Micro Smart Plug Z-Wave+ -->
+    <!-- Configuration Parameters -->
+    <CommandClass id="112">
+        <Value type="list" index="1" genre="config" label="Default State" min="0" max="2" size="1" value="2">
+            <Help>After Power-On-Reset of the device, the Channel Output State is set in Default State</Help>
+            <Item label="Channel output state OFF" value="0"/>
+            <Item label="Channel output state ON" value="1"/>
+            <Item label="Channel output state remembers previous state" value="2"/>
+        </Value>
+        <Value type="byte" index="3" genre="config" label="Follow State" size="1" min="0" max="3" value="3">
+            <Help>
+                This parameter allows Basic Set Commands to be sent when the channel output state changes (ON or OFF). Only the two least significant bits can be addressed.
+                Bit 0: Enable or disable Basic Set Commands sent to associated nodes of Group 2, when Channel Output State changes.
+                Bit 1: Enable or disable Basic Set Commands sent to associated nodes of Group 3, when Channel Output State changes.
+            </Help>
+        </Value>
+        <Value type="list" index="4" genre="config" label="Always ON" size="1" min="0" max="1" value="0">
+            <Help>This parameter forces the channel output state to be always ON. It is not possible to turn OFF the channel output, which means that:
+                * All Switch OFF Command is rejected
+                * Basic Set OFF Command is rejected
+                * Binary Switch OFF Command is rejected
+                * Local Control does not toggle channel output state
+                * Product cannot be triggered by unsolicited Notification Report Command and enters in Alarm Mode</Help>
+            <Item label="Channel output state always ON disable" value="0"/>
+            <Item label="Channel output state always ON enable" value="1"/>
+        </Value>
+        <Value type="short" index="5" genre="config" label="Parameter Alarm 1" size="2" min="0" max="65535" value="0">
+            <Help>Go to www.nodon.fr/support/msp3/alarm to configure alarm</Help>
+        </Value>
+        <Value type="int" index="6" genre="config" label="Parameter Alarm 1 behavior" value="0">
+            <Help>Go to www.nodon.fr/support/msp3/alarm to configure alarm</Help>
+        </Value>
+        <Value type="short" index="7" genre="config" label="Parameter Alarm 2" size="2" min="0" max="65535" value="0">
+            <Help>Go to www.nodon.fr/support/msp3/alarm to configure alarm</Help>
+        </Value>
+        <Value type="int" index="8" genre="config" label="Parameter Alarm 2 behavior" value="0">
+            <Help>Go to www.nodon.fr/support/msp3/alarm to configure alarm</Help>
+        </Value>
+        <Value type="short" index="9" genre="config" label="Parameter Alarm 3" size="2" min="0" max="65535" value="0">
+            <Help>Go to www.nodon.fr/support/msp3/alarm to configure alarm</Help>
+        </Value>
+        <Value type="int" index="10" genre="config" label="Parameter Alarm 3 behavior" value="0">
+            <Help>Go to www.nodon.fr/support/msp3/alarm to configure alarm</Help>
+        </Value>
+        <Value type="short" index="11" genre="config" label="Parameter Alarm 4" size="2" min="0" max="65535" value="0">
+            <Help>Go to www.nodon.fr/support/msp3/alarm to configure alarm</Help>
+        </Value>
+        <Value type="int" index="12" genre="config" label="Parameter Alarm 4 behavior" value="0">
+            <Help>Go to www.nodon.fr/support/msp3/alarm to configure alarm</Help>
+        </Value>
+        <Value type="short" index="13" genre="config" label="Parameter Alarm 5" size="2" min="0" max="65535" value="0">
+            <Help>Go to www.nodon.fr/support/msp3/alarm to configure alarm</Help>
+        </Value>
+        <Value type="int" index="14" genre="config" label="Parameter Alarm 5 behavior" value="0">
+            <Help>Go to www.nodon.fr/support/msp3/alarm to configure alarm</Help>
+        </Value>
+        <Value type="short" index="15" genre="config" label="Parameter Alarm 6" size="2" min="0" max="65535" value="0">
+            <Help>Go to www.nodon.fr/support/msp3/alarm to configure alarm</Help>
+        </Value>
+        <Value type="int" index="16" genre="config" label="Parameter Alarm 6 behavior" value="0">
+            <Help>Go to www.nodon.fr/support/msp3/alarm to configure alarm</Help>
+        </Value>
+        <Value type="short" index="17" genre="config" label="Parameter Alarm 7" size="2" min="0" max="65535" value="0">
+            <Help>Go to www.nodon.fr/support/msp3/alarm to configure alarm</Help>
+        </Value>
+        <Value type="int" index="18" genre="config" label="Parameter Alarm 7 behavior" value="0">
+            <Help>Go to www.nodon.fr/support/msp3/alarm to configure alarm</Help>
+        </Value>
+        <Value type="short" index="19" genre="config" label="Parameter Alarm 8" size="2" min="0" max="65535" value="0">
+            <Help>Go to www.nodon.fr/support/msp3/alarm to configure alarm</Help>
+        </Value>
+        <Value type="int" index="20" genre="config" label="Parameter Alarm 8 behavior" value="0">
+            <Help>Go to www.nodon.fr/support/msp3/alarm to configure alarm</Help>
+        </Value>
+        <Value type="byte" index="21" genre="config" label="Auto Power Report" size="1" min="0" max="100" value="10">
+            <Help>0 is disabled. 1-100 sends report on x% variation</Help>
+        </Value>
+		<Value type="short" index="22" genre="config" label="Overload Report" size="2" min="0" max="4000" value="2000">
+            <Help>0 is disabled. 1-4000 sends report on x W overload</Help>
+        </Value>
+        <Value type="short" index="23" genre="config" label="Auto Energy Report" size="2" min="0" max="65535" value="1000">
+            <Help>0 is disabled. 1-65535 sends report every x seconds</Help>
+        </Value>
+        <Value type="short" index="24" genre="config" label="Metering Heartbeat" size="2" min="0" max="65535" value="3600">
+            <Help>0 is disabled. 1-65535 sends report every x seconds</Help>
+        </Value>
+        <Value type="short" index="25" genre="config" label="Power High Treshold" size="2" min="0" max="65535" value="20">
+            <Help>0 is disabled. 1-65535 x W</Help>
+        </Value>
+        <Value type="short" index="26" genre="config" label="Power Low Treshold" size="2" min="0" max="65535" value="5">
+            <Help>0 is disabled. 1-65535 x W</Help>
+        </Value>
+        <Value type="byte" index="27" genre="config" label="Power Low Treshold" size="1" min="0" max="255" value="7">
+            <Help>0 disbaled. 1 Send Off to group 4. 3 Send On to group 4. 4 Send Off to group 5. 12 Send On to group 5. Values can be summed</Help>
+        </Value>
+    </CommandClass>
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="6">
+            <Group index="1" max_associations="5" label="Lifeline"/>
+            <Group index="2" max_associations="5" label="Follow State"/>
+            <Group index="3" max_associations="5" label="Follow Complementary State"/>
+            <Group index="4" max_associations="5" label="Metering High"/>
+            <Group index="5" max_associations="5" label="Metering Low"/>
+            <Group index="6" max_associations="5" label="Metering Report" auto="true"/>
+        </Associations>
+    </CommandClass>
+</Product>

@@ -641,7 +641,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 				return;
 			tsen.WIND.tempsign = (pTempDevice->floatValue >= 0) ? 0 : 1;
 			tsen.WIND.chillsign = (pTempDevice->floatValue >= 0) ? 0 : 1;
-			int at10 = round(abs(pTempDevice->floatValue*10.0f));
+			int at10 = round(std::abs(pTempDevice->floatValue*10.0f));
 			tsen.WIND.temperatureh = (BYTE)(at10 / 256);
 			tsen.WIND.chillh = (BYTE)(at10 / 256);
 			at10 -= (tsen.WIND.chillh * 256);
@@ -703,6 +703,16 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 	{
 		SendAirQualitySensor(ID3, ID4, BatLevel, int(pDevice->floatValue), "CO2 Sensor");
 	}
+	else if (pDevice->devType == ZDTYPE_SENSOR_MOISTURE)
+	{
+		uint16_t NodeID = (ID3 << 8) | ID4;
+		SendPercentageSensor((int)(ID1 << 24) | (ID2 << 16) | (ID3 << 8) | ID4, 0, BatLevel, pDevice->floatValue, "Moisture");
+	}
+	else if (pDevice->devType == ZDTYPE_SENSOR_TANK_CAPACITY)
+	{
+		uint16_t NodeID = (ID3 << 8) | ID4;
+		SendCustomSensor(ID3, ID4, BatLevel, pDevice->floatValue, "Tank Capacity", "l");
+	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_SETPOINT)
 	{
 		_tThermostat tmeter;
@@ -714,7 +724,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		tmeter.dunit=1;
 		tmeter.battery_level= BatLevel;
 		tmeter.temp=pDevice->floatValue;
-		sDecodeRXMessage(this, (const unsigned char *)&tmeter, NULL, BatLevel);
+		sDecodeRXMessage(this, (const unsigned char *)&tmeter, (!pDevice->label.empty()) ? pDevice->label.c_str() : NULL, BatLevel);
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_THERMOSTAT_CLOCK)
 	{
@@ -723,7 +733,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		gDevice.id = ID4;
 		gDevice.intval1 = (int)(ID1 << 24) | (ID2 << 16) | (ID3 << 8) | ID4;
 		gDevice.intval2 = pDevice->intvalue;
-		sDecodeRXMessage(this, (const unsigned char *)&gDevice, NULL, BatLevel);
+		sDecodeRXMessage(this, (const unsigned char *)&gDevice, "Thermostat Clock", BatLevel);
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_THERMOSTAT_MODE)
 	{
@@ -732,7 +742,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		gDevice.id = ID4;
 		gDevice.intval1 = (int)(ID1 << 24) | (ID2 << 16) | (ID3 << 8) | ID4;
 		gDevice.intval2 = pDevice->intvalue;
-		sDecodeRXMessage(this, (const unsigned char *)&gDevice, NULL, BatLevel);
+		sDecodeRXMessage(this, (const unsigned char *)&gDevice, "Thermostat Mode", BatLevel);
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_THERMOSTAT_FAN_MODE)
 	{
@@ -741,7 +751,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		gDevice.id = ID4;
 		gDevice.intval1 = (int)(ID1 << 24) | (ID2 << 16) | (ID3 << 8) | ID4;
 		gDevice.intval2 = pDevice->intvalue;
-		sDecodeRXMessage(this, (const unsigned char *)&gDevice, NULL, BatLevel);
+		sDecodeRXMessage(this, (const unsigned char *)&gDevice, "Thermostat Fan Mode", BatLevel);
 	}
 }
 

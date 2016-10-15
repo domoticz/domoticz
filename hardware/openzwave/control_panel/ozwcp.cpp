@@ -229,6 +229,9 @@ void MyNode::saveValue (ValueID id)
  */
 void MyNode::newGroup (uint8 node)
 {
+	if (Manager::Get() == NULL)
+		return;
+
   int n = Manager::Get()->GetNumGroups(homeId, node);
   for (int i = 1; i <= n; i++) {
     MyGroup *p = new MyGroup();
@@ -960,6 +963,9 @@ void COpenZWaveControlPanel::web_get_groups(int n, TiXmlElement *ep)
 */
 void COpenZWaveControlPanel::web_get_values(int i, TiXmlElement *ep)
 {
+	if (Manager::Get() == NULL)
+		return;
+
 	int32 idcnt = nodes[i]->getValueCount();
 
 	for (int j = 0; j < idcnt; j++) {
@@ -1343,6 +1349,19 @@ std::string COpenZWaveControlPanel::DoNodeChange(const std::string &fun, const i
 	}
 	return "OK";
 }
+
+std::string COpenZWaveControlPanel::UpdateGroup(const std::string &fun, const int node_id, const int group_id, const std::string &gList)
+{
+	if ((node_id == 0) || (node_id > 254))
+		return "ERR";
+	if (nodes[node_id] == NULL)
+		return "ERR";
+	char *szGList = strdup(gList.c_str());
+	nodes[node_id]->updateGroup(node_id, group_id, szGList);
+	free(szGList);
+	return "OK";
+}
+
 
 std::string COpenZWaveControlPanel::SaveConfig()
 {

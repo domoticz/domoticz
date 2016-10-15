@@ -38,7 +38,9 @@ class ZWaveBase : public CDomoticzHardwareBase
 		ZDTYPE_SENSOR_DEWPOINT,
 		ZDTYPE_SENSOR_CO2,
 		ZDTYPE_SENSOR_UV,
-		ZDTYPE_SENSOR_WATER
+		ZDTYPE_SENSOR_WATER,
+		ZDTYPE_SENSOR_MOISTURE,
+		ZDTYPE_SENSOR_TANK_CAPACITY
 	};
 	struct _tZWaveDevice
 	{
@@ -152,7 +154,6 @@ private:
 	virtual void SetClock(const int nodeID, const int instanceID, const int commandClass, const int day, const int hour, const int minute)=0;
 	virtual void SetThermostatMode(const int nodeID, const int instanceID, const int commandClass, const int tMode) = 0;
 	virtual void SetThermostatFanMode(const int nodeID, const int instanceID, const int commandClass, const int fMode) = 0;
-	virtual std::string GetSupportedThermostatModes(const unsigned long ID) = 0;
 	virtual std::string GetSupportedThermostatFanModes(const unsigned long ID) = 0;
 	virtual void StopHardwareIntern() = 0;
 	virtual bool IncludeDevice(const bool bSecure) = 0;

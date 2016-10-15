@@ -21,9 +21,10 @@ SOFTWARE.
 Original source code from: http://sourceforge.net/projects/harmonyhubcontrol/
 Intergration in Domoticz done by: Jan ten Hove
 Cleanup and changes: GizMoCuz
+History:
+ 16 August 2016:
+ - Fixed: Logitech Harmony, Ping request now working as well for firmware 4.10.30 (Herman)
 */
-
-
 
 #include "stdafx.h"
 #include "HarmonyHub.h"
@@ -684,6 +685,7 @@ bool CHarmonyHub::SwapAuthorizationToken(csocket* authorizationcsocket, std::str
 
 bool CHarmonyHub::SendPing()
 {
+	int res;
 	boost::lock_guard<boost::mutex> lock(m_mutex);
 	if (m_commandcsocket == NULL || m_szAuthorizationToken.size() == 0)
 	{
@@ -703,24 +705,47 @@ bool CHarmonyHub::SendPing()
 
 
 	bool bIsDataReadable = true;
-	m_commandcsocket->canRead(&bIsDataReadable, 5.0f);
-	while (bIsDataReadable)
+	memset(m_databuffer, 0, BUFFER_SIZE);
+	res= m_commandcsocket->read(m_databuffer, BUFFER_SIZE, false);
+	if (res <= 0)
 	{
-		if (memset(m_databuffer, 0, BUFFER_SIZE) > 0)
-		{
-			m_commandcsocket->read(m_databuffer, BUFFER_SIZE, false);
-			std::string szNewData = std::string(m_databuffer);
-			if (!szNewData.empty())
-			{
-				strData.append(m_databuffer);
-				m_commandcsocket->canRead(&bIsDataReadable, 0.4f);
-			}
-			else
-				bIsDataReadable = false;
-		}
-		else
-			bIsDataReadable = false;
+		/* there should be some bytes received so <= 0 is not good */
+		return false;
 	}
+	strData = m_databuffer; 
+	if(strData.compare("<iq/>") == 0)
+	{
+		/* must be new SW version 4.10.30+ so read ping confirmation */
+		memset(m_databuffer, 0, BUFFER_SIZE);
+		res= m_commandcsocket->read(m_databuffer, BUFFER_SIZE, false);
+		if (res <= 0)
+		{
+			/* there should be some bytes received so <= 0 is not good */
+			return false;
+		}
+	}
+	strData = m_databuffer; /* <- Expect: strData  == 200 */
+
+/*											*/
+/*	m_commandcsocket->canRead(&bIsDataReadable, 5.0f);				*/
+/*	while (bIsDataReadable)								*/
+/*	{										*/
+/*		if (memset(m_databuffer, 0, BUFFER_SIZE) > 0)				*/
+/*		{									*/
+/*			m_commandcsocket->read(m_databuffer, BUFFER_SIZE, false);	*/
+/*			std::string szNewData = std::string(m_databuffer);		*/
+/*			if (!szNewData.empty())						*/
+/*			{								*/
+/*				strData.append(m_databuffer);				*/
+/*				m_commandcsocket->canRead(&bIsDataReadable, 0.4f);	*/
+/*			}								*/
+/*			else								*/
+/*				bIsDataReadable = false;				*/
+/*		}									*/
+/*		else									*/
+/*			bIsDataReadable = false;					*/
+/*	}										*/
+/*											*/
 	if (strData.empty())
 		return false;
 	CheckIfChanging(strData);
