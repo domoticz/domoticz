@@ -16,8 +16,6 @@ extern http::server::CWebServerHelper m_webservers;
 
 //Inspidred by https://github.com/kozmoz/atag-one-api
 
-#define USER_AGENT_ATAG "Mozilla/5.0 (iPad; CPU OS 9_2 like Mac OSX) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13A452 Safari/601.1"
-
 #define ATAGONE_URL_LOGIN "https://portal.atag-one.com/Account/Login"
 #define ATAGONE_URL_DEVICE_HOME "https://portal.atag-one.com/Home/Index/{0}"
 #define ATAGONE_URL_DIAGNOSTICS "https://portal.atag-one.com/Device/LatestReport"
@@ -146,7 +144,6 @@ std::string CAtagOne::GetRequestVerificationToken(const std::string &url)
 	std::string sURL = url;
 	stdreplace(sURL,"{0}", m_ThermostatID);
 
-	HTTPClient::SetUserAgent(USER_AGENT_ATAG);
 	if (!HTTPClient::GET(sURL, sResult))
 	{
 		_log.Log(LOG_ERROR, "AtagOne: Error requesting token!");
@@ -219,7 +216,6 @@ bool CAtagOne::Login()
 	//# 1. Login
 	std::string sURL;
 	sURL = ATAGONE_URL_LOGIN;
-	HTTPClient::SetUserAgent(USER_AGENT_ATAG);
 	if (!HTTPClient::POST(sURL, szPostdata, ExtraHeaders, sResult))
 	{
 		_log.Log(LOG_ERROR, "AtagOne: Error login!");
@@ -377,7 +373,6 @@ void CAtagOne::GetMeterDetails()
 	sResult = ReadFile("E:\\AtagOne_getdiag.txt");
 #else
 	std::string sURL = std::string(ATAGONE_URL_DIAGNOSTICS) + "?deviceId=" + CURLEncode::URLEncode(m_ThermostatID);
-	HTTPClient::SetUserAgent(USER_AGENT_ATAG);
 	if (!HTTPClient::GET(sURL, sResult))
 	{
 		_log.Log(LOG_ERROR, "AtagOne: Error getting thermostat data!");
@@ -420,7 +415,6 @@ void CAtagOne::GetMeterDetails()
 	// We have to do an extra call to get the target temperature.
 	sURL = ATAGONE_URL_UPDATE_DEVICE_CONTROL;
 	stdreplace(sURL, "{0}", CURLEncode::URLEncode(m_ThermostatID));
-	HTTPClient::SetUserAgent(USER_AGENT_ATAG);
 	if (!HTTPClient::GET(sURL, sResult))
 	{
 		_log.Log(LOG_ERROR, "AtagOne: Error getting target setpoint data!");
@@ -544,7 +538,6 @@ void CAtagOne::SetSetpoint(const int idx, const float temp)
 	std::string szPostdata = sstr.str();
 	std::vector<std::string> ExtraHeaders;
 	std::string sResult;
-	HTTPClient::SetUserAgent(USER_AGENT_ATAG);
 	if (!HTTPClient::POST(sURL, szPostdata, ExtraHeaders, sResult))
 	{
 		_log.Log(LOG_ERROR, "AtagOne: Error setting Setpoint!");
