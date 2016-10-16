@@ -100,8 +100,8 @@ namespace http {
 
 		void CProxyClient::ContinueConnect(const boost::system::error_code& error)
 		{
-			std::string address = "my.domoticz.com";
-			std::string port = "443";
+			std::string address = "myproxy.domoticz.com";
+			std::string port = "4443";
 
 			_socket.reset(new boost::asio::ssl::stream<boost::asio::ip::tcp::socket>(_io_service, _context));
 			// set timeout timer
@@ -760,7 +760,8 @@ namespace http {
 		void CProxyManager::StartThread()
 		{
 			try {
-				boost::asio::ssl::context ctx(io_service, boost::asio::ssl::context::tlsv12_client);
+				//boost::asio::ssl::context ctx(io_service, boost::asio::ssl::context::tlsv12_client);
+				boost::asio::ssl::context ctx(io_service, boost::asio::ssl::context::sslv23);
 				ctx.set_verify_mode(boost::asio::ssl::verify_none);
 
 				proxyclient.reset(new CProxyClient(io_service, ctx, m_pWebEm));
