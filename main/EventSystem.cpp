@@ -2709,6 +2709,17 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 	}
 	lua_setglobal(lua_state, "otherdevices_scenesgroups");
 
+	lua_createtable(lua_state, (int)m_scenesgroups.size(), 0);
+	typedef std::map<unsigned long long, _tScenesGroups>::iterator it_scgr;
+	for (it_scgr iterator = m_scenesgroups.begin(); iterator != m_scenesgroups.end(); ++iterator)
+	{
+		_tScenesGroups sgitem = iterator->second;
+		lua_pushstring(lua_state, sgitem.scenesgroupName.c_str());
+		lua_pushnumber(lua_state, (lua_Number)sgitem.ID);
+		lua_rawset(lua_state, -3);
+	}
+	lua_setglobal(lua_state, "otherdevices_scenesgroups_idx");
+	
 	lua_createtable(lua_state, (int)m_uservariables.size(), 0);
 
 	typedef std::map<unsigned long long, _tUserVariable>::iterator it_var;
