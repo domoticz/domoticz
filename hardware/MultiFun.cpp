@@ -119,6 +119,8 @@ MultiFun::MultiFun(const int ID, const std::string &IPAddress, const unsigned sh
 
 	m_isSensorExists[0] = false;
 	m_isSensorExists[1] = false;
+	m_isWeatherWork[0] = false;
+	m_isWeatherWork[1] = false;
 }
 
 MultiFun::~MultiFun()
@@ -239,11 +241,13 @@ bool MultiFun::WriteToHardware(const char *pdata, const unsigned char length)
 		const _tThermostat *therm = reinterpret_cast<const _tThermostat*>(pdata);
 
 		float temp = therm->temp;
+		int calculatedTemp = (int)temp;
 
-		if (therm->id2 == 0x1F || therm->id2 == 0x20)
+		if ((therm->id2 == 0x1F || therm->id2 == 0x20) ||
+			((therm->id2 == 0x1C || therm->id2 == 0x1D) && m_isWeatherWork[therm->id2 - 0x1C]))
 		{
-			temp = temp * 5;
-			temp = (int)temp | 0x8000;
+			calculatedTemp = (int)(temp * 5);
+			calculatedTemp = calculatedTemp | 0x8000;
 		}
 
 		unsigned char buffer[100];
@@ -262,7 +266,7 @@ bool MultiFun::WriteToHardware(const char *pdata, const unsigned char length)
 		cmd[11] = 0x01; 
 		cmd[12] = 0x02; // number of bytes
 		cmd[13] = 0x00;
-		cmd[14] = temp;
+		cmd[14] = calculatedTemp;
 
 		int ret = SendCommand(cmd, 15, buffer, true);
 		if (ret == 4)
@@ -346,7 +350,7 @@ void MultiFun::GetTemperatures()
 
 				if ((temp > -39) && (temp < 1000))
 				{			
-					SendTempSensor(i, -1, temp, sensors[i].name);
+					SendTempSensor(i, 255, temp, sensors[i].name);
 				}
 				if ((i == 1) || (i == 2))
 				{
@@ -400,17 +404,17 @@ void MultiFun::GetRegisters(bool firstTime)
 					{
 						if (((*it).first & value) && !((*it).first & m_LastAlarms))
 						{
-							SendTextSensor(1, 0, -1, (*it).second, "Alarms");
+							SendTextSensor(1, 0, 255, (*it).second, "Alarms");
 						}
 						else
 							if (!((*it).first & value) && ((*it).first & m_LastAlarms))
 							{
-								SendTextSensor(1, 0, -1, "End - " + (*it).second, "Alarms");
+								SendTextSensor(1, 0, 255, "End - " + (*it).second, "Alarms");
 							}
 					}
-					if (((bool)m_LastAlarms != bool(value)) || firstTime)
+					if (((m_LastAlarms != 0) != (value != 0)) || firstTime)
 					{
-						SendAlertSensor(0, -1, value ? 4 : 1, "Alarm");
+						SendAlertSensor(0, 255, value ? 4 : 1, "Alarm");
 					}
 					m_LastAlarms = value;
 					break;
@@ -422,17 +426,17 @@ void MultiFun::GetRegisters(bool firstTime)
 					{
 						if (((*it).first & value) && !((*it).first & m_LastWarnings))
 						{
-							SendTextSensor(1, 1, -1, (*it).second, "Warnings");
+							SendTextSensor(1, 1, 255, (*it).second, "Warnings");
 						}
 						else
 							if (!((*it).first & value) && ((*it).first & m_LastWarnings))
 							{
-								SendTextSensor(1, 1, -1, "End - " + (*it).second, "Warnings");
+								SendTextSensor(1, 1, 255, "End - " + (*it).second, "Warnings");
 							}
 					}
-					if (((bool)m_LastWarnings != bool(value)) || firstTime)
+					if (((m_LastWarnings != 0) != (value != 0)) || firstTime)
 					{
-						SendAlertSensor(1, -1, value ? 3 : 1, "Warning");
+						SendAlertSensor(1, 255, value ? 3 : 1, "Warning");
 					}
 					m_LastWarnings = value;
 					break;
@@ -444,18 +448,18 @@ void MultiFun::GetRegisters(bool firstTime)
 					{
 						if (((*it).first & value) && !((*it).first & m_LastDevices))
 						{
-							SendGeneralSwitchSensor(2, -1, true, (*it).second.c_str(), (*it).first);
+							SendGeneralSwitchSensor(2, 255, true, (*it).second.c_str(), (*it).first);
 						}
 						else
 							if (!((*it).first & value) && ((*it).first & m_LastDevices))
 							{
-								SendGeneralSwitchSensor(2, -1, false, (*it).second.c_str(), (*it).first);
+								SendGeneralSwitchSensor(2, 255, false, (*it).second.c_str(), (*it).first);
 							}
 					}
 					m_LastDevices = value;
 
-					float level = (value & 0xFC00) >> 10;
-					SendPercentageSensor(2, 1, -1, level, "BLOWER POWER");
+					float level = (float)((value & 0xFC00) >> 10);
+					SendPercentageSensor(2, 1, 255, level, "BLOWER POWER");
 					break;
 				}
 				case 0x03:
@@ -465,18 +469,18 @@ void MultiFun::GetRegisters(bool firstTime)
 					{
 						if (((*it).first & value) && !((*it).first & m_LastState))
 						{
-							SendTextSensor(3, 1, -1, (*it).second, "State");
+							SendTextSensor(3, 1, 255, (*it).second, "State");
 						}
 						else
 							if (!((*it).first & value) && ((*it).first & m_LastState))
 							{
-								SendTextSensor(3, 1, -1, "End - " + (*it).second, "State");
+								SendTextSensor(3, 1, 255, "End - " + (*it).second, "State");
 							}
 					}
 					m_LastState = value;
 
-					float level = (value & 0xFC00) >> 10;
-					SendPercentageSensor(3, 1, -1, level, "Fuel Level");
+					float level = (float)((value & 0xFC00) >> 10);
+					SendPercentageSensor(3, 1, 255, level, "Fuel Level");
 					break;
 				}
 
@@ -486,18 +490,19 @@ void MultiFun::GetRegisters(bool firstTime)
 					char name[20];
 					sprintf(name, "C.H. %d Temperature", i - 0x1C + 1);
 
-					float temp = value;
+					float temp = (float)value;
 					if ((value & 0x8000) == 0x8000)
 					{
-						temp = (value & 0x0FFF) * 0.2;
+						temp = (float)((value & 0x0FFF) * 0.2);
 					}
+					m_isWeatherWork[i - 0x1C] = (value & 0x8000) == 0x8000;
 					SendSetPointSensor(i, 1, 1, temp, name);
 					break;
 				}
 
 				case 0x1E:
 				{
-					SendSetPointSensor(0x1E, 1, 1, value, "H.W.U. Temperature");
+					SendSetPointSensor(0x1E, 1, 1, (float)value, "H.W.U. Temperature");
 					break;
 				}
 
@@ -509,12 +514,12 @@ void MultiFun::GetRegisters(bool firstTime)
 
 					if (m_isSensorExists[i - 0x1F])
 					{
-						float temp = (value & 0x0FFF) * 0.2;
+						float temp = (float)((value & 0x0FFF) * 0.2);
 						SendSetPointSensor(i, 1, 1, temp, name);
 					}
 					else
 					{
-						//SendGeneralSwitchSensor(i, -1, value, name, 1); // TODO - send level (dimmer)
+						//SendGeneralSwitchSensor(i, 255, value, name, 1); // TODO - send level (dimmer)
 					}					
 					break;
 				}
@@ -526,12 +531,12 @@ void MultiFun::GetRegisters(bool firstTime)
 					{
 						if (((*it).first & value) && !((*it).first & m_LastQuickAccess))
 						{
-							SendGeneralSwitchSensor(0x21, -1, true, (*it).second.c_str(), (*it).first);
+							SendGeneralSwitchSensor(0x21, 255, true, (*it).second.c_str(), (*it).first);
 						}
 						else
 							if ((!((*it).first & value) && ((*it).first & m_LastQuickAccess)) || firstTime)
 							{
-								SendGeneralSwitchSensor(0x21, -1, false, (*it).second.c_str(), (*it).first);
+								SendGeneralSwitchSensor(0x21, 255, false, (*it).second.c_str(), (*it).first);
 							}
 					}
 					m_LastQuickAccess = value;
@@ -625,7 +630,7 @@ int MultiFun::SendCommand(const unsigned char* cmd, const unsigned int cmdLength
 				{
 					if (databuffer[8] >= 1 && databuffer[8] <= 4)
 					{
-						_log.Log(LOG_ERROR, "MultiFun: Receive error (%s)", errors[databuffer[8]].c_str());
+						_log.Log(LOG_ERROR, "MultiFun: Receive error (%s)", errors[databuffer[8] - 1].c_str());
 					}
 					else
 					{
