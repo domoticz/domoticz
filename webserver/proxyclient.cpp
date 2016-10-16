@@ -760,7 +760,7 @@ namespace http {
 		void CProxyManager::StartThread()
 		{
 			try {
-				boost::asio::ssl::context ctx(io_service, boost::asio::ssl::context::sslv23);
+				boost::asio::ssl::context ctx(io_service, boost::asio::ssl::context::tlsv12_client);
 				ctx.set_verify_mode(boost::asio::ssl::verify_none);
 
 				proxyclient.reset(new CProxyClient(io_service, ctx, m_pWebEm));
