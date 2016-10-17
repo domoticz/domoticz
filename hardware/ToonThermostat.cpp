@@ -193,7 +193,7 @@ bool CToonThermostat::StopHardware()
     return true;
 }
 
-#define TOON_POLL_INTERVAL 30
+#define TOON_POLL_INTERVAL 300
 
 void CToonThermostat::Do_Work()
 {

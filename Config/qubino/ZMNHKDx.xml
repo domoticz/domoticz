@@ -1,23 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-Qubino: ZMNHIDx Flush On Off thermostat Z-Wave+
-ZMNHID1 868,4 MHz
-ZMNHID2 921,4 MHz
-ZMNHID3 908,4 MHz
-ZMNHID4 869,0 MHz
-ZMNHID5 916,0 MHz
+Qubino: ZMNHKDx Flush Heat Cool thermostat Z-Wave+
+ZMNHKD1 868,4 MHz
+ZMNHKD2 921,4 MHz
+ZMNHKD3 908,4 MHz
+ZMNHKD4 869,0 MHz
+ZMNHKD5 916,0 MHz
 
-ref: http://qubino.com/download/1506/
+ref: http://qubino.com/products/flush-heat-cool-thermostat/
 -->
 <Product xmlns='http://code.google.com/p/open-zwave/'>
-
-    <!-- The thermostat does not properly report its operating modes -->
-	<CommandClass id="64">
-   		<SupportedModes>
-     		<Mode index="0" label="Off" />
-     		<Mode index="1" label="Heat" />
-   		</SupportedModes>
-	</CommandClass>
 
     <!-- This thermostat's setpoint descriptions are 0 based, not 1 -->
     <CommandClass id="67"  base="0" override_precision="2"  />
@@ -34,22 +26,12 @@ ref: http://qubino.com/download/1506/
             <Item label="Mono-stable" value="0"/>
             <Item label="Bi-stable" value="1"/>
         </Value>
-        <Value type="list" genre="config" instance="1" index="3" label="Input I3 switch type" size="1" min="0" max="1" value="0">
-            <Help/>
-            <Item label="Mono-stable" value="0"/>
-            <Item label="Bi-stable" value="1"/>
-        </Value>
         <Value type="list" genre="config" instance="1" index="4" label="Input 1 contact type" size="1" min="0" max="1" value="0">
             <Help/>
             <Item label="NO (normally open) input type" value="0"/>
             <Item label="NC (normally close) input type" value="1"/>
         </Value>
         <Value type="list" genre="config" instance="1" index="5" label="Input 2 contact type" size="1" min="0" max="1" value="0">
-            <Help/>
-            <Item label="NO (normally open) input type" value="0"/>
-            <Item label="NC (normally close) input type" value="1"/>
-        </Value>
-        <Value type="list" genre="config" instance="1" index="6" label="Input 3 contact type" size="1" min="0" max="1" value="0">
             <Help/>
             <Item label="NO (normally open) input type" value="0"/>
             <Item label="NC (normally close) input type" value="1"/>
@@ -61,56 +43,58 @@ ref: http://qubino.com/download/1506/
             <Item label="ALL ON is not active ALL OFF active" value="1" />
             <Item label="ALL ON active ALL OFF is not active" value="2" />
         </Value>
-        <Value type="short" genre="config" instance="1" index="11" label="Set point set by I1" size="2" min="0" max="65535" value="1">
+        <Value type="short" genre="config" instance="1" index="11" label="I1 Functionality selection" size="2" min="0" max="65535" value="1">
             <Help>
-                When I1 is pressed set point will be set according to the value of this parameter.
                 Default value 1.
-                32767 - input I1 does not influence on the set point
-                From 0 to 990 - set point from 0.0 C to 99.0 C
-                From 1001 to 1150 - set point from -0.1 C to -15.0 C
+                32767 - input I1 does not influence on the Heat and Cool process
+                1 - Input I1 changes the mode of the thermostat between Off and Auto. In this case, function on window sensor is disabled.
+                2 - Input I1 influences on cooling and heating valves according to status of window sensor. In this case, function of Off and Auto selection bi I1 us disabled.
             </Help>
         </Value>
-        <Value type="short" genre="config" instance="1" index="12" label="Set point set by I2" size="2" min="0" max="65535" value="32767">
+        <Value type="short" genre="config" instance="1" index="12" label="I2 Functionality selection" size="2" min="0" max="65535" value="32767">
             <Help>
-                When I3 is pressed set point will be set according to the value of this parameter.
                 Default value 32767.
-                32767 - input I2 does not influence on the set point
+                32767 - input I2 does not influence on the Heat and Cool process
                 From 0 to 990 - set point from 0.0 C to 99.0 C
                 From 1001 to 1150 - set point from -0.1 C to -15.0 C
-            </Help>
-        </Value>
-        <Value type="short" genre="config" instance="1" index="13" label="Set point set by I3" size="2" min="0" max="65535" value="32767">
-            <Help>
-                When I3 is pressed set point will be set according to the value of this parameter.
-                Default value 32767.
-                32767 - input I3 does not influence on the set point
-                From 0 to 990 - set point from 0.0 C to 99.0 C
-                From 1001 to 1150 - set point from -0.1 C to -15.0 C
+                2000 - Input I2 influences on the cooling valve according to status of condense sensor
             </Help>
         </Value>
         <Value type="byte" genre="config" instance="1" index="40" label="Power reporting in Watts on power change" size="1" min="0" max="100" value="0">
             <Help>Set value from 0 - 100 (0% - 100%). 0 - Reporting Disabled. 1 - 100 = 1% - 100% Reporting enabled. Power report is send (push) only when actual power in Watts in real time change for more than set percentage comparing to previous actual power in Watts, step is 1%. Default value 0</Help>
         </Value>
-        <Value type="short" genre="config" instance="1" index="42" label="Power reporting in Watts by time interval" min="0" max="65535" value="0">
-            <Help>Set value means time interval (0 - 65535) in seconds, when power report is send. 0 - Reporting Disabled.
-                1 - 65535 = 1 second - 65535 seconds.
+        <Value type="short" genre="config" instance="1" index="42" label="Power reporting in Watts by time interval" min="0" max="32767" value="0">
+            <Help>Set value means time interval (0 - 32767) in seconds, when power report is send. 0 - Reporting Disabled.
+                1 - 32767 = 1 second - 32767 seconds.
                 Reporting enabled.
                 Power report is send with time interval set by entered value.
                 Default value 0</Help>
         </Value>
-        <Value type="short" genre="config" instance="1" index="43" label="Hysteresis On" size="2" min="0" max="1127" value="1005">
+        <Value type="short" genre="config" instance="1" index="43" label="Hysteresis Heating On" size="2" min="0" max="1127" value="1010">
             <Help>This parameter defines temperature min difference between real measured temperature and set-point temperature to turn heating on.
                 The parameter can be set from 0 to 1127 where 0 to 127 means from 0.0 C to 12.7 C and from 1001 to 1127 means from - 0.1 C to -12.7 C.
-                Default value 132 (-0.5 C)
+                Default value 1010 (-1.0 C)
             </Help>
         </Value>
-        <Value type="short" genre="config" instance="1" index="44" label="Hysteresis Off" size="2" min="0" max="1127" value="5">
+        <Value type="short" genre="config" instance="1" index="44" label="Hysteresis Heating Off" size="2" min="0" max="1127" value="2">
             <Help>This parameter defines temperature min difference between real measured temperature and set-point temperature to turn heating off.
                 The parameter can be set from 0 to 1127 where 0 to 127 means from 0.0 C to 12.7 C and from 1001 to 1127 means from - 0.1 C to -12.7 C.
-                Default value 5 (+0.5 C)
+                Default value 2 (+0.2 C)
             </Help>
         </Value>
-        <Value type="short" genre="config" instance="1" index="45" label="Antifreeze" size="2" min="0" max="1127" value="50">
+        <Value type="short" genre="config" instance="1" index="45" label="Hysteresis Cooling On" size="2" min="0" max="1127" value="5">
+            <Help>This parameter defines temperature min difference between real measured temperature and set-point temperature to turn cooling on.
+                The parameter can be set from 0 to 1127 where 0 to 127 means from 0.0 C to 12.7 C and from 1001 to 1127 means from - 0.1 C to -12.7 C.
+                Default value 5 (0.5 C)
+            </Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="46" label="Hysteresis Cooling Off" size="2" min="0" max="1127" value="1002">
+            <Help>This parameter defines temperature min difference between real measured temperature and set-point temperature to turn cooling off.
+                The parameter can be set from 0 to 1127 where 0 to 127 means from 0.0 C to 12.7 C and from 1001 to 1127 means from - 0.1 C to -12.7 C.
+                Default value 1002 (-0.2 C)
+            </Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="47" label="Antifreeze" size="2" min="0" max="1127" value="50">
             <Help>Set value means at which temperature the device will be turned on even if the thermostat was manually set to off.
                 0 - 127 = 0.0C - 12.7 C.
                 1001 - 1127 = -0.1C - 12.6 C.
@@ -133,8 +117,17 @@ ref: http://qubino.com/download/1506/
                 Too high temperature limit is set by entered value. In case is set value out of this range, module is changing automatically set value to default value.
             </Help>
         </Value>
-        <Value type="list" genre="config" instance="1" index="63" label="Switch selection" size="1" min="0" max="1" value="0">
-            <Help>Set value means the type of the device that is connected to the relay output. The device type can be normally open (NO) or normally close (NC).
+        <Value type="list" genre="config" instance="1" index="64" label="Output Switch Selection Q1" size="1" min="0" max="1" value="0">
+            <Help>Set value means the type of the device that is connected to the Q1 output. The device type can be normally open (NO) or normally close (NC).
+                Available config. parameters (data type is 1 Byte DEC):
+                default value 0
+                0 - When system is turned off the output is 0 V.
+                1 - When system is turned off the output is 230 V.</Help>
+            <Item label="0V" value="0"/>
+            <Item label="230V" value="1"/>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="65" label="Output Switch Selection Q2" size="1" min="0" max="1" value="0">
+            <Help>Set value means the type of the device that is connected to the Q2 output. The device type can be normally open (NO) or normally close (NC).
                 Available config. parameters (data type is 1 Byte DEC):
                 default value 0
                 0 - When system is turned off the output is 0 V.
@@ -174,22 +167,6 @@ ref: http://qubino.com/download/1506/
                 This parameter has influence only when the condense sensor functionality is selected by the parameter no. 12.
             </Help>
         </Value>
-        <Value type="short" genre="config" instance="1" index="74" label="Input 3 status on delay" size="2" min="0" max="32000" value="0">
-            <Help>
-                Default value 0
-                1 - 32000 seconds
-                If the value of the parameter is different to 0, means that the influence of this input to heating or cooling will react after inserted time.
-                This parameter has influence only when the flood sensor functionality is selected by the parameter no. 13.
-            </Help>
-        </Value>
-        <Value type="short" genre="config" instance="1" index="75" label="Input 3 status off delay" size="2" min="0" max="32000" value="0">
-            <Help>
-                Default value 0
-                1 - 32000 seconds
-                If the value of the parameter is different to 0, means that the influence of this input to heating or cooling will react after inserted time.
-                This parameter has influence only when the flood sensor functionality is selected by the parameter no. 13.
-            </Help>
-        </Value>
         <Value type="list" genre="config" instance="1" index="100" label="Enable / Disable Endpoints I1 or select notification type and event" size="1" min="0" max="9" value="0">
             <Help>
                 Enabling I1 means that Endpoint (I1) will be present on UI.
@@ -210,23 +187,6 @@ ref: http://qubino.com/download/1506/
         <Value type="list" genre="config" instance="1" index="101" label="Enable / Disable Endpoints I2 or select notification type and event" size="1" min="0" max="9" value="0">
             <Help>
                 Enabling I2 means that Endpoint (I2) will be present on UI.
-                Disabling it will result in hiding the endpoint according to the parameter set value.
-                Additionally, a Notification Type and Event can be selected for the endpoint.
-                NOTE 1: After parameter change, first exclude module (without setting parameters to default value) and then re include the module!
-                NOTE 2: When the parameter is set to value 9 the notifications are send for Home Security.
-            </Help>
-            <Item label="Disabled" value="0" />
-            <Item label="Home Security; Motion Detection" value="1" />
-            <Item label="Carbon Monoxide; Carbon Monoxide detected" value="2" />
-            <Item label="Carbon Dioxide; Carbon Dioxide detected" value="3" />
-            <Item label="Water Alarm; Water Leak detected" value="4" />
-            <Item label="Heat Alarm; Overheat detected" value="5" />
-            <Item label="Smoke Alarm; Smoke detected" value="6" />
-            <Item label="Sensor binary" value="9" />
-        </Value>
-        <Value type="list" genre="config" instance="1" index="102" label="Enable / Disable Endpoints I3 or select notification type and event" size="1" min="0" max="9" value="0">
-            <Help>
-                Enabling I3 means that Endpoint (I3) will be present on UI.
                 Disabling it will result in hiding the endpoint according to the parameter set value.
                 Additionally, a Notification Type and Event can be selected for the endpoint.
                 NOTE 1: After parameter change, first exclude module (without setting parameters to default value) and then re include the module!
@@ -276,15 +236,14 @@ ref: http://qubino.com/download/1506/
     </CommandClass>
     <!-- Association Groups -->
     <CommandClass id="133">
-        <Associations num_groups="9">
+        <Associations num_groups="8">
             <Group index="1" max_associations="1" label="Lifeline" />
-            <Group index="2" max_associations="16" label="Basic on/off (triggered at change of the output Q state and reflecting its state) up to 16 nodes" />
+            <Group index="2" max_associations="16" label="Basic on/off (triggered at change of the output Q1 or Q2 state and reflecting its state) up to 16 nodes" />
             <Group index="3" max_associations="16" label="SENSOR_MULTILEVEL_GET (triggered once per minute if Parameter 121 is not 0) up to 16 nodes" />
             <Group index="4" max_associations="16" label="Basic on/off (triggered by Too high temperature limit, it send FF) up to 16 nodes" />
             <Group index="5" max_associations="16" label="THERMOSTAT_SETPOINT_GET (triggered once per minute if Parameter 121 is not 0) up to 16 nodes" />
             <Group index="6" max_associations="16" label="Basic on/off (trigged by change of I1) up to 16 nodes" />
             <Group index="7" max_associations="16" label="Basic on/off (trigged by change of I2) up to 16 nodes" />
-            <Group index="8" max_associations="16" label="Basic on/off (trigged by change of I3) up to 16 nodes" />
             <Group index="9" max_associations="16" label="Sensor multilevel (trigged by change of temperature)" />
         </Associations>
     </CommandClass>

@@ -41,6 +41,7 @@ Version 3.xxxx (October xx 2016)
 - Fixed: Blockly, fixed extra quote when setting a user variable string value
 - Fixed: Database backup is now only possible for admin users
 - Fixed: Double checking command rights
+- Fixed: Dummy, Creating a new sensor always used the same id
 - Fixed: Dummy, when new sensor is created, Add it to the EventSystem
 - Fixed: Fix Off Delay not handled for Selector switch (#538).
 - Fixed: Fix On/Off delays not saved on the selector switch edit form (#532).

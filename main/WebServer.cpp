@@ -4895,6 +4895,13 @@ namespace http {
 					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_RPM, 1);
 					ii++;
 				}
+				if ((dType == pTypeGeneral) && (dSubType == sTypeAlert))
+				{
+					root["result"][ii]["val"] = NTYPE_USAGE;
+					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_USAGE, 0);
+					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_USAGE, 1);
+					ii++;
+				}
 				if ((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXStatus))
 				{
 					root["result"][ii]["val"] = NTYPE_SWITCH_ON;
@@ -9242,7 +9249,6 @@ namespace http {
 							root["result"][ii]["TypeImg"] = "Alert";
 							root["result"][ii]["Level"] = nValue;
 							root["result"][ii]["HaveTimeout"] = false;
-							root["result"][ii]["ShowNotifications"] = false;
 						}
 						else if (dSubType == sTypePressure)
 						{

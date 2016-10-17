@@ -241,12 +241,13 @@ bool MultiFun::WriteToHardware(const char *pdata, const unsigned char length)
 		const _tThermostat *therm = reinterpret_cast<const _tThermostat*>(pdata);
 
 		float temp = therm->temp;
+		int calculatedTemp = (int)temp;
 
 		if ((therm->id2 == 0x1F || therm->id2 == 0x20) ||
 			((therm->id2 == 0x1C || therm->id2 == 0x1D) && m_isWeatherWork[therm->id2 - 0x1C]))
 		{
-			temp = temp * 5;
-			temp = (int)temp | 0x8000;
+			calculatedTemp = (int)(temp * 5);
+			calculatedTemp = calculatedTemp | 0x8000;
 		}
 
 		unsigned char buffer[100];
@@ -265,7 +266,7 @@ bool MultiFun::WriteToHardware(const char *pdata, const unsigned char length)
 		cmd[11] = 0x01; 
 		cmd[12] = 0x02; // number of bytes
 		cmd[13] = 0x00;
-		cmd[14] = temp;
+		cmd[14] = calculatedTemp;
 
 		int ret = SendCommand(cmd, 15, buffer, true);
 		if (ret == 4)
@@ -411,7 +412,7 @@ void MultiFun::GetRegisters(bool firstTime)
 								SendTextSensor(1, 0, 255, "End - " + (*it).second, "Alarms");
 							}
 					}
-					if (((bool)m_LastAlarms != bool(value)) || firstTime)
+					if (((m_LastAlarms != 0) != (value != 0)) || firstTime)
 					{
 						SendAlertSensor(0, 255, value ? 4 : 1, "Alarm");
 					}
@@ -433,7 +434,7 @@ void MultiFun::GetRegisters(bool firstTime)
 								SendTextSensor(1, 1, 255, "End - " + (*it).second, "Warnings");
 							}
 					}
-					if (((bool)m_LastWarnings != bool(value)) || firstTime)
+					if (((m_LastWarnings != 0) != (value != 0)) || firstTime)
 					{
 						SendAlertSensor(1, 255, value ? 3 : 1, "Warning");
 					}
@@ -457,7 +458,7 @@ void MultiFun::GetRegisters(bool firstTime)
 					}
 					m_LastDevices = value;
 
-					float level = (value & 0xFC00) >> 10;
+					float level = (float)((value & 0xFC00) >> 10);
 					SendPercentageSensor(2, 1, 255, level, "BLOWER POWER");
 					break;
 				}
@@ -478,7 +479,7 @@ void MultiFun::GetRegisters(bool firstTime)
 					}
 					m_LastState = value;
 
-					float level = (value & 0xFC00) >> 10;
+					float level = (float)((value & 0xFC00) >> 10);
 					SendPercentageSensor(3, 1, 255, level, "Fuel Level");
 					break;
 				}
@@ -489,10 +490,10 @@ void MultiFun::GetRegisters(bool firstTime)
 					char name[20];
 					sprintf(name, "C.H. %d Temperature", i - 0x1C + 1);
 
-					float temp = value;
+					float temp = (float)value;
 					if ((value & 0x8000) == 0x8000)
 					{
-						temp = (value & 0x0FFF) * 0.2;
+						temp = (float)((value & 0x0FFF) * 0.2);
 					}
 					m_isWeatherWork[i - 0x1C] = (value & 0x8000) == 0x8000;
 					SendSetPointSensor(i, 1, 1, temp, name);
@@ -501,7 +502,7 @@ void MultiFun::GetRegisters(bool firstTime)
 
 				case 0x1E:
 				{
-					SendSetPointSensor(0x1E, 1, 1, value, "H.W.U. Temperature");
+					SendSetPointSensor(0x1E, 1, 1, (float)value, "H.W.U. Temperature");
 					break;
 				}
 
@@ -513,7 +514,7 @@ void MultiFun::GetRegisters(bool firstTime)
 
 					if (m_isSensorExists[i - 0x1F])
 					{
-						float temp = (value & 0x0FFF) * 0.2;
+						float temp = (float)((value & 0x0FFF) * 0.2);
 						SendSetPointSensor(i, 1, 1, temp, name);
 					}
 					else
