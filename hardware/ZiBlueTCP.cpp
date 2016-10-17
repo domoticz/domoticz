@@ -199,3 +199,13 @@ bool CZiBlueTCP::WriteInt(const std::string &sendString)
 	write(sendString);
 	return true;
 }
+
+bool CZiBlueTCP::WriteInt(const uint8_t *pData, const size_t length)
+{
+	if (!mIsConnected)
+	{
+		return false;
+	}
+	write(pData, length);
+	return true;
+}

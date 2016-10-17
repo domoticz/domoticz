@@ -84,6 +84,7 @@ const _tZiBlueStringIntHelper ziblue_switches[] =
 {
 	{ "X10", sSwitchTypeX10 },
 	//{ "Kaku", sSwitchTypeARC },
+	{ "AC", sSwitchTypeAC },
 	{ "Blyss", sSwitchTypeBlyss },
 	{ "RTS", sSwitchTypeRTS },
 	{ "", -1 }
@@ -93,7 +94,10 @@ const _tZiBlueStringIntHelper rfswitchcommands[] =
 {
 	{ "ON", gswitch_sOn },
 	{ "OFF", gswitch_sOff },
+	{ "ALLON", gswitch_sGroupOn },
+	{ "ALLOFF", gswitch_sGroupOff },
 	{ "DIM", gswitch_sDim },
+	{ "BRIGHT", gswitch_sBright },
 	{ "", -1 }
 };
 
@@ -153,10 +157,10 @@ void CZiBlueBase::Init()
 void CZiBlueBase::OnConnected()
 {
 	Init();
-	WriteInt("ZIA++FORMAT BINARY");
-	//WriteInt("ZIA++FORMAT RFLINK BINARY");
-	//m_bRFLinkOn = true;
-	WriteInt("ZIA++REPEATER OFF");
+	WriteInt("ZIA++FORMAT BINARY\r");
+	WriteInt("ZIA++FORMAT RFLINK BINARY\r");
+	m_bRFLinkOn = true;
+	WriteInt("ZIA++REPEATER OFF\r");
 }
 
 void CZiBlueBase::OnDisconnected()
@@ -169,6 +173,117 @@ void CZiBlueBase::OnDisconnected()
 
 bool CZiBlueBase::WriteToHardware(const char *pdata, const unsigned char length)
 {
+	const _tGeneralSwitch *pSwitch = reinterpret_cast<const _tGeneralSwitch*>(pdata);
+
+	if (pSwitch->type != pTypeGeneralSwitch)
+		return false;
+	std::string switchtype = GetGeneralZiBlueFromInt(ziblue_switches, pSwitch->subtype);
+	if (switchtype.empty())
+	{
+		_log.Log(LOG_ERROR, "ZiBlue: trying to send unknown switch type: %d", pSwitch->subtype);
+		return false;
+	}
+
+	if (pSwitch->type == pTypeGeneralSwitch)
+	{
+		std::string switchcmnd = GetGeneralZiBlueFromInt(rfswitchcommands, pSwitch->cmnd);
+
+		// check setlevel command
+		if (pSwitch->cmnd == gswitch_sSetLevel) {
+			// Get device level to set
+			float fvalue = (15.0f / 100.0f)*float(pSwitch->level);
+			if (fvalue > 15.0f)
+				fvalue = 15.0f; //99 is fully on
+			int svalue = round(fvalue);
+			//_log.Log(LOG_ERROR, "RFLink: level: %d", svalue);
+			char buffer[50] = { 0 };
+			sprintf(buffer, "%d", svalue);
+			switchcmnd = buffer;
+		}
+
+		if (switchcmnd.empty()) {
+			_log.Log(LOG_ERROR, "ZiBlue: trying to send unknown switch command: %d", pSwitch->cmnd);
+			return false;
+		}
+
+		struct _tOutgoingFrame
+		{
+			//struct  MESSAGE_CONTAINER_HEADER
+			unsigned char Sync1;
+			unsigned char Sync2;
+			unsigned char SourceDestQualifier;
+			unsigned char QualifierOrLen_lsb;
+			unsigned char QualifierOrLen_msb;
+
+			//struct REGULAR_INCOMING_BINARY_USB_FRAME
+			unsigned char frameType;
+			unsigned char cluster; // set 0 by default. Cluster destination.
+			unsigned char protocol;
+			unsigned char action;
+			unsigned char ID_1;
+			unsigned char ID_2;
+			unsigned char ID_3;
+			unsigned char ID_4;
+			unsigned char dimValue;
+			unsigned char burst;
+			unsigned char qualifier;
+			unsigned char reserved2; // set 0
+			_tOutgoingFrame()
+			{
+				memset(this, 0, sizeof(_tOutgoingFrame));
+				Sync1 = SYNC1_CONTAINER_CONSTANT;
+				Sync2 = SYNC2_CONTAINER_CONSTANT;
+				SourceDestQualifier = 1;
+				QualifierOrLen_lsb = sizeof(REGULAR_INCOMING_BINARY_USB_FRAME) & 0xFF;
+				QualifierOrLen_msb = (sizeof(REGULAR_INCOMING_BINARY_USB_FRAME) & 0xFF00) >> 8;
+			}
+		};
+		_tOutgoingFrame oFrame;
+
+		std::stringstream sstr;
+		if (switchtype == "X10")
+		{
+			oFrame.protocol = SEND_X10_PROTOCOL_433;
+			oFrame.ID_1 = ((pSwitch->id << 4) + pSwitch->unitcode);
+		}
+		else if (switchtype == "AC")
+		{
+			oFrame.protocol = SEND_CHACON_PROTOCOL_433;
+			oFrame.ID_1 = (uint8_t)((pSwitch->id & 0xFF000000) >> 24);
+			oFrame.ID_2 = (uint8_t)((pSwitch->id & 0x00FF0000) >> 16);
+			oFrame.ID_3 = (uint8_t)((pSwitch->id & 0x0000FF00) >> 8);
+			oFrame.ID_4 = (uint8_t)((pSwitch->id & 0x000000FF));
+		}
+		else
+		{
+			_log.Log(LOG_ERROR, "ZiBlue: unsupported switch protocol");
+			return false;
+		}
+		switch (pSwitch->cmnd)
+		{
+		case gswitch_sOff:
+			oFrame.action = SEND_ACTION_OFF;
+			break;
+		case gswitch_sOn:
+			oFrame.action = SEND_ACTION_ON;
+			break;
+		case gswitch_sDim:
+			oFrame.action = SEND_ACTION_DIM;
+			break;
+		case gswitch_sBright:
+			oFrame.action = SEND_ACTION_BRIGHT;
+			break;
+		case gswitch_sGroupOff:
+			oFrame.action = SEND_ACTION_ALL_OFF;
+			break;
+		case gswitch_sGroupOn:
+			oFrame.action = SEND_ACTION_ALL_ON;
+			break;
+		}
+
+		WriteInt((const uint8_t*)&oFrame, sizeof(_tOutgoingFrame));
+		return true;
+	}
 	return false;
 }
 
@@ -240,15 +355,30 @@ void CZiBlueBase::ParseData(const char *data, size_t len)
 		case ZIBLUE_STATE_QL_2:
 			m_QL_2 = data[ii];
 			m_Length = (m_QL_2 << 8) + m_QL_1;
-			if (m_Length >= 1000)
+			if (m_SDQ != 'A')
 			{
-				m_State = ZIBLUE_STATE_ZI_1;
+				//Binair
+				if (m_Length >= 1000)
+				{
+					m_State = ZIBLUE_STATE_ZI_1;
+					break;
+				}
+				m_State = ZIBLUE_STATE_DATA;
 			}
 			else
 			{
-				m_rfbufferpos = 0;
-				m_State = ZIBLUE_STATE_DATA;
+				//Ascii, only accept JSON
+				if (
+					(m_QL_1 != '3') ||
+					(m_QL_2 != '3')
+					)
+				{
+					m_State = ZIBLUE_STATE_ZI_1;
+					break;
+				}
+				m_State = ZIBLUE_STATE_DATA_ASCII;
 			}
+			m_rfbufferpos = 0;
 			break;
 		case ZIBLUE_STATE_DATA:
 			m_rfbuffer[m_rfbufferpos++] = data[ii];
@@ -258,6 +388,25 @@ void CZiBlueBase::ParseData(const char *data, size_t len)
 				m_State = ZIBLUE_STATE_ZI_1;
 			}
 			else if (m_rfbufferpos >= m_Length)
+			{
+				m_State = ZIBLUE_STATE_ZI_1;
+			}
+			break;
+		case ZIBLUE_STATE_DATA_ASCII:
+			if (len > 1)
+			{
+				if (
+					(data[ii] == '\n') &&
+					(data[ii + 1] == '\r')
+					)
+				{
+					//Frame done
+					ParseBinary(m_SDQ, (const uint8_t*)&m_rfbuffer, m_rfbufferpos);
+					m_State = ZIBLUE_STATE_ZI_1;
+				}
+			}
+			m_rfbuffer[m_rfbufferpos++] = data[ii];
+			if (m_rfbufferpos>= ZiBlue_READ_BUFFER_SIZE)
 			{
 				m_State = ZIBLUE_STATE_ZI_1;
 			}
@@ -285,32 +434,32 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 	//0 = MUX Management
 	//1 = 433 / 868
 
-	if (m_bRFLinkOn)
+	uint8_t FrameType = data[0];
+
+	if (FrameType==1)
 	{
-		if (len < 17)
+		//RFLink
+		if (len < 24)
 			return false;
 		const uint8_t *pData = (const uint8_t*)data;
 
-		uint8_t FrameType = pData[0];
-		pData++;
-		uint32_t frequency = (uint32_t)(pData[0] << 24) + (uint32_t)(pData[1]) + (uint32_t)(pData[2]) + (uint32_t)pData[3];
-		pData += 16;
-		int8_t RFLevel = pData[0];
-		int8_t FloorNoise = pData[1];
-		uint8_t PulseElementSize = pData[2];
-		uint16_t number = (pData[3] << 8) + pData[4];
-		uint8_t Repeats = pData[5];
-		uint8_t Delay = pData[6];
-		uint8_t Multiply = pData[7];
-		pData += 8;
-		uint32_t Time = (uint32_t)(pData[0] << 24) + (uint32_t)(pData[1]) + (uint32_t)(pData[2]) + (uint32_t)pData[3];
-		pData += 16;
+		FrameType = pData[0];
+		uint32_t frequency = (uint32_t)(pData[4] << 24) + (uint32_t)(pData[3]<<16) + (uint32_t)(pData[2]<<8) + (uint32_t)pData[1];
+		int8_t RFLevel = pData[5];
+		int8_t FloorNoise = pData[6];
+		uint8_t PulseElementSize = pData[7];
+		uint16_t number = (pData[9] << 8) + pData[8];
+		uint8_t Repeats = pData[10];
+		uint8_t Delay = pData[11];
+		uint8_t Multiply = pData[12];
+		uint32_t Time = (uint32_t)(pData[16] << 24) + (uint32_t)(pData[15]<<16) + (uint32_t)(pData[14]<<8) + (uint32_t)pData[13];
 		_log.Log(LOG_NORM, "ZiBlue: frameType: %d, frequency: %d kHz", FrameType, frequency);
 		_log.Log(LOG_NORM, "ZiBlue: rfLevel: %d dBm, floorNoise: %d dBm, PulseElementSize: %d", RFLevel, FloorNoise, PulseElementSize);
 		_log.Log(LOG_NORM, "ZiBlue: number: %d, Repeats: %d, Delay: %d, Multiply: %d", number, Repeats, Delay, Multiply);
 	}
-	else
+	else if (FrameType==0)
 	{
+		//Normal RF
 		int dlen = len - 8;
 		REGULAR_INCOMING_RF_TO_BINARY_USB_FRAME_HEADER *pIncomming = (REGULAR_INCOMING_RF_TO_BINARY_USB_FRAME_HEADER*)data;
 #ifdef DEBUG_ZIBLUE
@@ -327,19 +476,67 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 				INCOMING_RF_INFOS_TYPE0 *pSen = (INCOMING_RF_INFOS_TYPE0*)(data + 8);
 				uint8_t houseCode = (pSen->id & 0xF0) >> 4;;
 				uint8_t dev = pSen->id & 0x0F;
+				std::string switchCmd = "";
+				switch (pSen->subtype)
+				{
+				case SEND_ACTION_OFF:
+					switchCmd = "OFF";
+					break;
+				case SEND_ACTION_ON:
+					switchCmd = "ON";
+					break;
+				case SEND_ACTION_BRIGHT:
+					switchCmd = "BRIGHT";
+					break;
+				case SEND_ACTION_DIM:
+					switchCmd = "DIM";
+					break;
+				case SEND_ACTION_ALL_ON:
+					switchCmd = "ALLON";
+					break;
+				case SEND_ACTION_ALL_OFF:
+					switchCmd = "ALLOFF";
+					break;
+				}
+				SendSwitchInt(houseCode, dev, 255, "X10", switchCmd, 0);
 #ifdef DEBUG_ZIBLUE
-				_log.Log(LOG_NORM, "ZiBlue: subtype: %d, houseCode: %c, dev: %d", 'A' + houseCode, dev + 1);
+				_log.Log(LOG_NORM, "ZiBlue: subtype: %d (%s), houseCode: %c, dev: %d", pSen->subtype, switchCmd.c_str(), (uint8_t)('A' + houseCode), dev + 1);
 #endif
 			}
 			break;
 		case INFOS_TYPE1:
-			// Used by X10 (32 bits ID) and CHACON
+			// Used by X10 (24/32 bits ID),  CHACON , KD101, BLYSS
 			if (dlen == sizeof(INCOMING_RF_INFOS_TYPE1))
 			{
 				INCOMING_RF_INFOS_TYPE1 *pSen = (INCOMING_RF_INFOS_TYPE1*)(data + 8);
 				int DevID = (pSen->idMsb << 16) + pSen->idLsb;
+				std::string switchCmd = "";
+				switch (pSen->subtype)
+				{
+				case SEND_ACTION_OFF:
+					switchCmd = "OFF";
+					break;
+				case SEND_ACTION_ON:
+					switchCmd = "ON";
+					break;
+/*
+				case SEND_ACTION_BRIGHT:
+					switchCmd = "BRIGHT";
+					break;
+				case SEND_ACTION_DIM:
+					switchCmd = "DIM";
+					break;
+				case SEND_ACTION_ALL_ON:
+					switchCmd = "ALLON";
+					break;
+				case SEND_ACTION_ALL_OFF:
+					switchCmd = "ALLOFF";
+					break;
+*/
+				}
+				SendSwitchInt(DevID, 1, 255, "AC", switchCmd, 0);
 #ifdef DEBUG_ZIBLUE
-				_log.Log(LOG_NORM, "ZiBlue: subtype: %d, DevID: %04X", pSen->subtype, DevID);
+				_log.Log(LOG_NORM, "ZiBlue: subtype: %d (%s), DevID: %04X", pSen->subtype, switchCmd.c_str(), DevID);
 #endif
 			}
 			break;
@@ -383,6 +580,15 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 			if (dlen == sizeof(INCOMING_RF_INFOS_TYPE4))
 			{
 				INCOMING_RF_INFOS_TYPE4 *pSen = (INCOMING_RF_INFOS_TYPE4*)(data + 8);
+#ifdef DEBUG_ZIBLUE
+				_log.Log(LOG_NORM, "ZiBlue: subtype: %d, idPHY: %04X, idChannel: %04X, qualifier: %04X, temp: %.1f, hygro: %d",
+					pSen->subtype,
+					pSen->idPHY,
+					pSen->idChannel,
+					pSen->qualifier,
+					float(pSen->temp) / 10.0f,
+					pSen->hygro);
+#endif
 				if (pSen->hygro > 0)
 					SendTempHumSensor(pSen->idPHY, (pSen->qualifier & 0x01) ? 0 : 100, float(pSen->temp) / 10.0f, pSen->hygro, "Temp+Hum");
 				else
@@ -394,6 +600,17 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 			if (dlen == sizeof(INCOMING_RF_INFOS_TYPE5))
 			{
 				INCOMING_RF_INFOS_TYPE5 *pSen = (INCOMING_RF_INFOS_TYPE5*)(data + 8);
+#ifdef DEBUG_ZIBLUE
+				_log.Log(LOG_NORM, "ZiBlue: subtype: %d, idPHY: %04X, idChannel: %04X, qualifier: %04X, temp: %.1f, hygro: %d, pressure: %d",
+					pSen->subtype,
+					pSen->idPHY,
+					pSen->idChannel,
+					pSen->qualifier,
+					float(pSen->temp) / 10.0f,
+					pSen->hygro,
+					pSen->pressure
+					);
+#endif
 				SendTempHumBaroSensor(pSen->idPHY, (pSen->qualifier & 0x01) ? 0 : 100, float(pSen->temp) / 10.0f, pSen->hygro, pSen->pressure, 0, "Temp+Hum+Baro");
 			}
 			break;
@@ -419,6 +636,10 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 			// deprecated // Used by  DIGIMAX TS10 protocol
 			break;
 		}
+	}
+	else
+	{
+		_log.Log(LOG_ERROR, "ZiBlue: Unknown Frametype received: %d", FrameType);
 	}
 #ifdef DEBUG_ZIBLUE
 	_log.Log(LOG_NORM, "ZiBlue: ----------------");

@@ -17,13 +17,15 @@ enum _eZiBlueState
 	ZIBLUE_STATE_SDQ,
 	ZIBLUE_STATE_QL_1,
 	ZIBLUE_STATE_QL_2,
-	ZIBLUE_STATE_DATA
+	ZIBLUE_STATE_DATA,
+	ZIBLUE_STATE_DATA_ASCII
 };
 public:
 	CZiBlueBase();
     ~CZiBlueBase();
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 	virtual bool WriteInt(const std::string &sendString) = 0;
+	virtual bool WriteInt(const uint8_t *pData, const size_t length) = 0;
 	bool m_bTXokay;
 	std::string m_Version;
 private:
