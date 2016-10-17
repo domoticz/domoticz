@@ -170,6 +170,7 @@ enum _eHardwareTypes {
 	HTYPE_MultiFun,				//88
 	HTYPE_ZIBLUEUSB,			//89
 	HTYPE_ZIBLUETCP,			//90
+	HTYPE_Yeelight,				//91
 	HTYPE_END
 };
 
