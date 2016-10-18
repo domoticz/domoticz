@@ -9,7 +9,7 @@
 class SatelIntegra : public CDomoticzHardwareBase
 {
 public:
-	SatelIntegra(const int ID, const std::string &IPAddress, const unsigned short IPPort, const std::string& userCode);
+	SatelIntegra(const int ID, const std::string &IPAddress, const unsigned short IPPort, const std::string& userCode, const int pollInterval);
 	virtual ~SatelIntegra();
 
 	bool WriteToHardware(const char *pdata, const unsigned char length);
@@ -22,6 +22,7 @@ private:
 	int m_socket;
 	const unsigned short m_IPPort;
 	const std::string m_IPAddress;
+	int m_pollInterval;
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;
 	std::map<unsigned int, const char*> errorCodes;

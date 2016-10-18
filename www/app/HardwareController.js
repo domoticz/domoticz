@@ -182,7 +182,7 @@ define(['app'], function (app) {
 					(text.indexOf("LAN") >= 0 &&
 					text.indexOf("YouLess") == -1 &&
 					text.indexOf("Denkovi") == -1 &&
-					text.indexOf("Integra") == -1 &&
+					text.indexOf("Satel Integra") == -1 &&
 					text.indexOf("ETH8020") == -1 &&
 					text.indexOf("Daikin") == -1 &&
 					text.indexOf("Sterbox") == -1 &&
@@ -243,7 +243,7 @@ define(['app'], function (app) {
             }
             else if (
 				(text.indexOf("LAN") >= 0 && ((text.indexOf("YouLess") >= 0)||(text.indexOf("Denkovi") >= 0)) ) ||
-				(text.indexOf("Integra") >= 0)
+				(text.indexOf("Satel Integra") >= 0)
 				)
             {
                 var address=$("#hardwarecontent #divremote #tcpaddress").val();
@@ -262,6 +262,17 @@ define(['app'], function (app) {
                 if(!intRegex.test(port)) {
                     ShowNotify($.t('Please enter an Valid Port!'), 2500, true);
                     return;
+                }
+				
+				if (text.indexOf("Satel Integra") >= 0)
+                {
+					var pollinterval=$("#hardwarecontent #hardwareparamspollinterval #pollinterval").val();
+                    if (pollinterval=="")
+                    {
+                        ShowNotify($.t('Please enter poll interval!'), 2500, true);
+                        return;
+                    }
+                    Mode1 = pollinterval;
                 }
                 var password=encodeURIComponent($("#hardwarecontent #divlogin #password").val());
                 $.ajax({
@@ -836,7 +847,7 @@ define(['app'], function (app) {
 					text.indexOf("Anna") == -1 &&
 					text.indexOf("KMTronic") == -1
 					&& text.indexOf("MQTT") == -1 &&
-					text.indexOf("Integra") == -1 &&
+					text.indexOf("Satel Integra") == -1 &&
 					text.indexOf("Razberry") == -1
 					)
 				)
@@ -974,7 +985,7 @@ define(['app'], function (app) {
 					text.indexOf("Anna") == -1 &&
 					text.indexOf("KMTronic") == -1
 					&& text.indexOf("MQTT") == -1 &&
-					text.indexOf("Integra") == -1 &&
+					text.indexOf("Satel Integra") == -1 &&
 					text.indexOf("Razberry") == -1
 					)
 				)
@@ -1010,7 +1021,7 @@ define(['app'], function (app) {
             }
             else if (
 				(text.indexOf("LAN") >= 0 && ((text.indexOf("YouLess") >= 0) || (text.indexOf("Denkovi") >= 0) )) ||
-				(text.indexOf("Integra") >= 0)
+				(text.indexOf("Satel Integra") >= 0)
 				)
             {
                 var address=$("#hardwarecontent #divremote #tcpaddress").val();
@@ -1030,9 +1041,19 @@ define(['app'], function (app) {
                     ShowNotify($.t('Please enter an Valid Port!'), 2500, true);
                     return;
                 }
+				if (text.indexOf("Satel Integra") >= 0)
+                {
+					var pollinterval=$("#hardwarecontent #hardwareparamspollinterval #pollinterval").val();
+                    if (pollinterval=="")
+                    {
+                        ShowNotify($.t('Please enter poll interval!'), 2500, true);
+                        return;
+                    }
+                    Mode1 = pollinterval;
+                }
                 var password=encodeURIComponent($("#hardwarecontent #divlogin #password").val());
                 $.ajax({
-                     url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&name=" + encodeURIComponent(name) + "&password=" + encodeURIComponent(password) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
+                     url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&name=" + encodeURIComponent(name) + "&password=" + encodeURIComponent(password) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout + "&Mode1=" + Mode1,
                      async: false,
                      dataType: 'json',
                      success: function(data) {
@@ -4553,7 +4574,7 @@ define(['app'], function (app) {
                                 }
                             }
                         }
-                        else if (((data["Type"].indexOf("LAN") >= 0) && (data["Type"].indexOf("YouLess") == -1) && (data["Type"].indexOf("Denkovi") == -1) && (data["Type"].indexOf("Satel") == -1)) ||(data["Type"].indexOf("Domoticz") >= 0) ||(data["Type"].indexOf("Harmony") >= 0)) {
+                        else if (((data["Type"].indexOf("LAN") >= 0) && (data["Type"].indexOf("YouLess") == -1) && (data["Type"].indexOf("Denkovi") == -1) && (data["Type"].indexOf("Satel Integra") == -1)) ||(data["Type"].indexOf("Domoticz") >= 0) ||(data["Type"].indexOf("Harmony") >= 0)) {
                             $("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
                             $("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
                             if (data["Type"].indexOf("P1 Smart Meter") >= 0)
@@ -4561,11 +4582,15 @@ define(['app'], function (app) {
                                 $("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked",data["Mode2"]==0);
                             }
                         }
-                        else if (((data["Type"].indexOf("LAN") >= 0) && (data["Type"].indexOf("YouLess") >= 0)) || (data["Type"].indexOf("Domoticz") >= 0) || (data["Type"].indexOf("Denkovi") >= 0) ||(data["Type"].indexOf("Harmony") >= 0) ||(data["Type"].indexOf("Satel") >= 0) ||(data["Type"].indexOf("Logitech Media Server") >= 0) ||(data["Type"].indexOf("HEOS by DENON") >= 0)) {
+                        else if (((data["Type"].indexOf("LAN") >= 0) && (data["Type"].indexOf("YouLess") >= 0)) || (data["Type"].indexOf("Domoticz") >= 0) || (data["Type"].indexOf("Denkovi") >= 0) ||(data["Type"].indexOf("Harmony") >= 0) ||(data["Type"].indexOf("Satel Integra") >= 0) ||(data["Type"].indexOf("Logitech Media Server") >= 0) ||(data["Type"].indexOf("HEOS by DENON") >= 0)) {
                             $("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
                             $("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
                             $("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
-                        }
+                            if (data["Type"].indexOf("Satel Integra") >= 0)
+                            {
+                                $("#hardwarecontent #hardwareparamspollinterval #pollinterval").val(data["Mode1"]);
+                            }
+						}
                         else if ((data["Type"].indexOf("Underground") >= 0) || (data["Type"].indexOf("DarkSky") >= 0) || (data["Type"].indexOf("AccuWeather") >= 0) || (data["Type"].indexOf("Open Weather Map") >= 0)) {
                             $("#hardwarecontent #hardwareparamsunderground #apikey").val(data["Username"]);
                             $("#hardwarecontent #hardwareparamsunderground #location").val(data["Password"]);
@@ -4585,6 +4610,9 @@ define(['app'], function (app) {
                         }
                         else if (data["Type"].indexOf("Toon") >= 0) {
                             $("#hardwarecontent #hardwareparamsenecotoon #agreement").val(data["Mode1"]);
+                        }
+						else if (data["Type"].indexOf("Satel Integra") >= 0) {
+                            $("#hardwarecontent #hardwareparamspollinterval #pollinterval").val(data["Mode1"]);
                         }
                         else if (data["Type"].indexOf("Philips Hue") >= 0) {
                             $("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
@@ -4696,6 +4724,7 @@ define(['app'], function (app) {
             $("#hardwarecontent #div1wire").hide();
             $("#hardwarecontent #divgoodweweb").hide();
             $("#hardwarecontent #divi2clocal").hide();
+			$("#hardwarecontent #divpollinterval").hide();
 
             if ((text.indexOf("TE923") >= 0)||
                (text.indexOf("Volcraft") >= 0)||
@@ -4736,7 +4765,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
             }
-            else if (text.indexOf("LAN") >= 0 && text.indexOf("YouLess") == -1 && text.indexOf("Denkovi") == -1 && text.indexOf("Integra") == -1)
+            else if (text.indexOf("LAN") >= 0 && text.indexOf("YouLess") == -1 && text.indexOf("Denkovi") == -1 && text.indexOf("Satel Integra") == -1)
             {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").show();
@@ -4748,7 +4777,7 @@ define(['app'], function (app) {
                     $("#hardwarecontent #divcrcp1").show();
                 }
             }
-            else if (text.indexOf("LAN") >= 0 && (text.indexOf("YouLess") >= 0 || text.indexOf("Denkovi") >= 0 || text.indexOf("Integra") >= 0))
+            else if (text.indexOf("LAN") >= 0 && (text.indexOf("YouLess") >= 0 || text.indexOf("Denkovi") >= 0 || text.indexOf("Satel Integra") >= 0))
             {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").show();
@@ -4757,6 +4786,11 @@ define(['app'], function (app) {
                 $("#hardwarecontent #lblusername").hide();
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
+				if (text.indexOf("Satel Integra") >= 0)
+                {
+                    $("#hardwarecontent #divpollinterval").show();
+					$("#hardwarecontent #hardwareparamspollinterval #pollinterval").val(1000);
+                }
             }
             else if (text.indexOf("Domoticz") >= 0)
             {
