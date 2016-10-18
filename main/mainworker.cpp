@@ -780,7 +780,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new MochadTCP(ID, Address, Port);
 		break;
 	case HTYPE_SatelIntegra:
-		pHardware = new SatelIntegra(ID, Address, Port, Password);
+		pHardware = new SatelIntegra(ID, Address, Port, Password, Mode1);
 		break;
 	case HTYPE_LogitechMediaServer:
 		//Logitech Media Server
