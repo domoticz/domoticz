@@ -7642,6 +7642,8 @@ namespace http {
 					root["result"][ii]["AddjMulti"] = AddjMulti;
 					root["result"][ii]["AddjValue2"] = AddjValue2;
 					root["result"][ii]["AddjMulti2"] = AddjMulti2;
+					if (sValue.size()>sizeof(szData)-10)
+						continue; //invalid sValue
 					sprintf(szData, "%d, %s", nValue, sValue.c_str());
 					root["result"][ii]["Data"] = szData;
 
