@@ -22,6 +22,9 @@
 //	#define DEBUG_ToonThermostatW
 #endif
 
+#define TOON_POLL_INTERVAL 300
+#define TOON_POLL_INTERVAL_SHORT 30
+
 #ifdef DEBUG_ToonThermostatW
 void SaveString2Disk(std::string str, std::string filename)
 {
@@ -127,6 +130,8 @@ m_Agreement(Agreement)
 	m_OffsetDeliv2 = 0;
 
 	m_bDoLogin = true;
+	m_poll_counter = 5;
+	m_retry_counter = 0;
 }
 
 CToonThermostat::~CToonThermostat(void)
@@ -170,6 +175,8 @@ void CToonThermostat::Init()
 		}
 	}
 	m_bDoLogin = true;
+	m_poll_counter = 5;
+	m_retry_counter = 0;
 }
 
 bool CToonThermostat::StartHardware()
@@ -196,22 +203,28 @@ bool CToonThermostat::StopHardware()
     return true;
 }
 
-#define TOON_POLL_INTERVAL 300
-
 void CToonThermostat::Do_Work()
 {
 	_log.Log(LOG_STATUS,"ToonThermostat: Worker started...");
-	int sec_counter = TOON_POLL_INTERVAL - 5;
+	int sec_counter = 1;
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
+		m_poll_counter--;
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
 			mytime(&m_LastHeartbeat);
 		}
-		if (sec_counter % TOON_POLL_INTERVAL == 0)
+		if (m_poll_counter<=0)
 		{
+			m_poll_counter = TOON_POLL_INTERVAL;
 			GetMeterDetails();
+			if (m_retry_counter >= 3)
+			{
+				m_bDoLogin = true;
+				m_retry_counter = 0;
+				_log.Log(LOG_ERROR, "ToonThermostat: retrieveToonState request not successful, restarting..!");
+			}
 		}
 	}
 	_log.Log(LOG_STATUS,"ToonThermostat: Worker stopped...");
@@ -599,75 +612,66 @@ void CToonThermostat::GetMeterDetails()
 	Json::Value root;
 
 	bool bIsValid = false;
-	int retry_count = 0;
-	while ((!bIsValid)&&(retry_count<3))
-	{
-		std::stringstream sstr2;
-		sstr2 << "?clientId=" << m_ClientID
-			<< "&clientIdChecksum=" << m_ClientIDChecksum
-			<< "&random=" << GetRandom();
-		std::string szPostdata = sstr2.str();
-		//Get Data
+	std::stringstream sstr2;
+	sstr2 << "?clientId=" << m_ClientID
+		<< "&clientIdChecksum=" << m_ClientIDChecksum
+		<< "&random=" << GetRandom();
+	std::string szPostdata = sstr2.str();
+	//Get Data
 
 #ifdef DEBUG_ToonThermostat
-		sResult = ReadFile("E:\\toonresult_001.txt");
+	sResult = ReadFile("E:\\toonresult_001.txt");
 #else
-		std::string sURL = TOON_HOST + TOON_UPDATE_PATH + szPostdata;
-		if (!HTTPClient::GET(sURL, ExtraHeaders, sResult))
-		{
-			_log.Log(LOG_ERROR, "ToonThermostat: Error getting current state!");
-			m_bDoLogin = true;
-			return;
-		}
+	std::string sURL = TOON_HOST + TOON_UPDATE_PATH + szPostdata;
+	if (!HTTPClient::GET(sURL, ExtraHeaders, sResult))
+	{
+		_log.Log(LOG_ERROR, "ToonThermostat: Error getting current state!");
+		m_bDoLogin = true;
+		return;
+	}
 #endif
 #ifdef DEBUG_ToonThermostatW
-		char szFileName[MAX_PATH];
-		static int sNum = 1;
-		sprintf_s(szFileName, "E:\\toonresult_%03d.txt", sNum++);
-		SaveString2Disk(sResult, szFileName);
+	char szFileName[MAX_PATH];
+	static int sNum = 1;
+	sprintf_s(szFileName, "E:\\toonresult_%03d.txt", sNum++);
+	SaveString2Disk(sResult, szFileName);
 #endif
 
-		Json::Reader jReader;
-		if (!jReader.parse(sResult, root))
-		{
-			_log.Log(LOG_ERROR, "ToonThermostat: Invalid data received!");
-			m_bDoLogin = true;
-			return;
-		}
-		if (root["success"].empty() == true)
-		{
-			_log.Log(LOG_ERROR, "ToonThermostat: ToonState request not successful, restarting..!");
-			m_bDoLogin = true;
-			return;
-		}
-		if (root["success"].asBool() == false)
-		{
-			_log.Log(LOG_ERROR, "ToonThermostat: ToonState request not successful, restarting..!");
-			m_bDoLogin = true;
-			return;
-		}
+	Json::Reader jReader;
+	if (!jReader.parse(sResult, root))
+	{
+		_log.Log(LOG_ERROR, "ToonThermostat: Invalid data received!");
+		m_bDoLogin = true;
+		return;
+	}
+	if (root["success"].empty() == true)
+	{
+		_log.Log(LOG_ERROR, "ToonThermostat: ToonState request not successful, restarting..!");
+		m_bDoLogin = true;
+		return;
+	}
+	if (root["success"].asBool() == false)
+	{
+		_log.Log(LOG_ERROR, "ToonThermostat: ToonState request not successful, restarting..!");
+		m_bDoLogin = true;
+		return;
+	}
 
-		//check if we have all required data fields, if not retry with a shorter interval
-		if (root["thermostatInfo"].empty() == false)
+	//check if we have all required data fields, if not retry with a shorter interval
+	if (root["thermostatInfo"].empty() == false)
+	{
+		if (root["powerUsage"].empty() == false)
 		{
-			if (root["powerUsage"].empty() == false)
+			if (root["gasUsage"].empty() == false)
 			{
-				if (root["gasUsage"].empty() == false)
-				{
-					bIsValid = true;
-				}
+				bIsValid = true;
 			}
-		}
-		if (!bIsValid)
-		{
-			retry_count++;
-			sleep_seconds(1);
-			continue;
 		}
 	}
 	if (!bIsValid)
 	{
-		m_bDoLogin = true;
+		m_retry_counter++;
+		m_poll_counter = TOON_POLL_INTERVAL_SHORT;
 		return;
 	}
 	time_t atime = mytime(NULL);
