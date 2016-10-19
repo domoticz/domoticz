@@ -11,13 +11,18 @@
 #include "../main/mainworker.h"
 #include "../json/json.h"
 
+#include <boost/uuid/uuid.hpp>            // uuid class
+#include <boost/uuid/uuid_generators.hpp> // generators
+#include <boost/uuid/uuid_io.hpp>         // streaming operators etc.
+
 #define round(a) ( int ) ( a + .5 )
 
 #ifdef _DEBUG
 //	#define DEBUG_ToonThermostat
+//	#define DEBUG_ToonThermostatW
 #endif
 
-#ifdef DEBUG_ToonThermostat2
+#ifdef DEBUG_ToonThermostatW
 void SaveString2Disk(std::string str, std::string filename)
 {
 	FILE *fOut = fopen(filename.c_str(), "wb+");
@@ -164,8 +169,6 @@ void CToonThermostat::Init()
 			m_OffsetDeliv2 = (unsigned long)atol(sd[3].c_str());
 		}
 	}
-
-
 	m_bDoLogin = true;
 }
 
@@ -197,8 +200,8 @@ bool CToonThermostat::StopHardware()
 
 void CToonThermostat::Do_Work()
 {
-	int sec_counter = TOON_POLL_INTERVAL-5;
 	_log.Log(LOG_STATUS,"ToonThermostat: Worker started...");
+	int sec_counter = TOON_POLL_INTERVAL - 5;
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
@@ -278,6 +281,11 @@ void CToonThermostat::UpdateSwitch(const unsigned char Idx, const bool bOn, cons
 
 std::string CToonThermostat::GetRandom()
 {
+	boost::uuids::uuid uuid = boost::uuids::random_generator()();
+	std::string suuid = boost::uuids::to_string(uuid);
+	return suuid;
+/*
+	srand((unsigned int)time(NULL));
 	//5BA37E41-B5C8-4C19-AA81-9EA82430D7EA
 	char szTmp[100];
 	sprintf(szTmp,"%04x%04x-%04x-%04x-%04x-%04x%04x%04x",
@@ -301,6 +309,7 @@ std::string CToonThermostat::GetRandom()
 		);
 	std::string ret=szTmp;
 	return ret;
+*/
 }
 
 bool CToonThermostat::Login()
@@ -322,6 +331,13 @@ bool CToonThermostat::Login()
 		_log.Log(LOG_ERROR,"ToonThermostat: Error login!");
 		return false;
 	}
+
+#ifdef DEBUG_ToonThermostatW
+	char szFileName[MAX_PATH];
+	static int lNum = 1;
+	sprintf_s(szFileName, "E:\\toonlogin_%03d.txt", lNum++);
+	SaveString2Disk(sResult, szFileName);
+#endif
 
 	Json::Value root;
 	Json::Reader jReader;
@@ -376,6 +392,13 @@ bool CToonThermostat::Login()
 		_log.Log(LOG_ERROR, "ToonThermostat: Error login!");
 		return false;
 	}
+#ifdef DEBUG_ToonThermostatW
+	char szFileName2[MAX_PATH];
+	static int l2Num = 1;
+	sprintf_s(szFileName2, "E:\\toonlogin_authstart_%03d.txt", l2Num++);
+	SaveString2Disk(sResult, szFileName2);
+#endif
+
 	root.clear();
 	if (!jReader.parse(sResult, root))
 	{
@@ -573,54 +596,81 @@ void CToonThermostat::GetMeterDetails()
 		return;
 	}
 	std::vector<std::string> ExtraHeaders;
+	Json::Value root;
 
-	std::stringstream sstr2;
-	sstr2 << "?clientId=" << m_ClientID
-		<< "&clientIdChecksum=" << m_ClientIDChecksum
-		<< "&random=" << GetRandom();
-	std::string szPostdata = sstr2.str();
-	//Get Data
+	bool bIsValid = false;
+	int retry_count = 0;
+	while ((!bIsValid)&&(retry_count<3))
+	{
+		std::stringstream sstr2;
+		sstr2 << "?clientId=" << m_ClientID
+			<< "&clientIdChecksum=" << m_ClientIDChecksum
+			<< "&random=" << GetRandom();
+		std::string szPostdata = sstr2.str();
+		//Get Data
 
 #ifdef DEBUG_ToonThermostat
-	sResult = ReadFile("E:\\toonresult_001.txt");
+		sResult = ReadFile("E:\\toonresult_001.txt");
 #else
-	std::string sURL = TOON_HOST + TOON_UPDATE_PATH + szPostdata;
-	if (!HTTPClient::GET(sURL, ExtraHeaders, sResult))
+		std::string sURL = TOON_HOST + TOON_UPDATE_PATH + szPostdata;
+		if (!HTTPClient::GET(sURL, ExtraHeaders, sResult))
+		{
+			_log.Log(LOG_ERROR, "ToonThermostat: Error getting current state!");
+			m_bDoLogin = true;
+			return;
+		}
+#endif
+#ifdef DEBUG_ToonThermostatW
+		char szFileName[MAX_PATH];
+		static int sNum = 1;
+		sprintf_s(szFileName, "E:\\toonresult_%03d.txt", sNum++);
+		SaveString2Disk(sResult, szFileName);
+#endif
+
+		Json::Reader jReader;
+		if (!jReader.parse(sResult, root))
+		{
+			_log.Log(LOG_ERROR, "ToonThermostat: Invalid data received!");
+			m_bDoLogin = true;
+			return;
+		}
+		if (root["success"].empty() == true)
+		{
+			_log.Log(LOG_ERROR, "ToonThermostat: ToonState request not successful, restarting..!");
+			m_bDoLogin = true;
+			return;
+		}
+		if (root["success"].asBool() == false)
+		{
+			_log.Log(LOG_ERROR, "ToonThermostat: ToonState request not successful, restarting..!");
+			m_bDoLogin = true;
+			return;
+		}
+
+		//check if we have all required data fields, if not retry with a shorter interval
+		if (root["thermostatInfo"].empty() == false)
+		{
+			if (root["powerUsage"].empty() == false)
+			{
+				if (root["gasUsage"].empty() == false)
+				{
+					bIsValid = true;
+				}
+			}
+		}
+		if (!bIsValid)
+		{
+			retry_count++;
+			sleep_seconds(1);
+			continue;
+		}
+	}
+	if (!bIsValid)
 	{
-		_log.Log(LOG_ERROR, "ToonThermostat: Error getting current state!");
 		m_bDoLogin = true;
 		return;
 	}
-#endif
 	time_t atime = mytime(NULL);
-
-#ifdef DEBUG_ToonThermostat2
-	char szFileName[MAX_PATH];
-	static int sNum = 1;
-	sprintf_s(szFileName, "E:\\toonresult_%03d.txt", sNum++);
-	SaveString2Disk(sResult, szFileName);
-#endif
-
-	Json::Value root;
-	Json::Reader jReader;
-	if (!jReader.parse(sResult, root))
-	{
-		_log.Log(LOG_ERROR, "ToonThermostat: Invalid data received!");
-		m_bDoLogin = true;
-		return;
-	}
-	if (root["success"].empty() == true)
-	{
-		_log.Log(LOG_ERROR, "ToonThermostat: ToonState request not successful, restarting..!");
-		m_bDoLogin = true;
-		return;
-	}
-	if (root["success"] == false)
-	{
-		_log.Log(LOG_ERROR, "ToonThermostat: ToonState request not successful, restarting..!");
-		m_bDoLogin = true;
-		return;
-	}
 
 	//ZWave Devices
 	if (root["deviceStatusInfo"].empty() == false)
@@ -722,8 +772,21 @@ void CToonThermostat::GetMeterDetails()
 	if (root["gasUsage"].empty() == false)
 	{
 		m_p1gas.gasusage = (unsigned long)(root["gasUsage"]["meterReading"].asFloat());
-	}
 
+		//Send GAS if the value changed, or at least every 5 minutes
+		if (
+			(m_p1gas.gasusage != m_lastgasusage) ||
+			(atime - m_lastSharedSendGas >= 300)
+			)
+		{
+			if (m_p1gas.gasusage != 0)
+			{
+				m_lastSharedSendGas = atime;
+				m_lastgasusage = m_p1gas.gasusage;
+				sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, NULL, 255);
+			}
+		}
+	}
 	if (root["powerUsage"].empty() == false)
 	{
 		m_p1power.powerusage1 = (unsigned long)(root["powerUsage"]["meterReadingLow"].asFloat());
@@ -772,35 +835,20 @@ void CToonThermostat::GetMeterDetails()
 			}
 		}
 		
-	}
-
-	//Send Electra if value changed, or at least every 5 minutes
-	if (
-		(m_p1power.usagecurrent != m_lastelectrausage) ||
-		(m_p1power.delivcurrent != m_lastelectradeliv) ||
-		(atime - m_lastSharedSendElectra >= 300)
-		)
-	{
-		if ((m_p1power.powerusage1 != 0) || (m_p1power.powerusage2 != 0) || (m_p1power.powerdeliv1 != 0) || (m_p1power.powerdeliv2 != 0))
+		//Send Electra if value changed, or at least every 5 minutes
+		if (
+			(m_p1power.usagecurrent != m_lastelectrausage) ||
+			(m_p1power.delivcurrent != m_lastelectradeliv) ||
+			(atime - m_lastSharedSendElectra >= 300)
+			)
 		{
-			m_lastSharedSendElectra = atime;
-			m_lastelectrausage = m_p1power.usagecurrent;
-			m_lastelectradeliv = m_p1power.delivcurrent;
-			sDecodeRXMessage(this, (const unsigned char *)&m_p1power, NULL, 255);
-		}
-	}
-	
-	//Send GAS if the value changed, or at least every 5 minutes
-	if (
-		(m_p1gas.gasusage != m_lastgasusage) ||
-		(atime - m_lastSharedSendGas >= 300)
-		)
-	{
-		if (m_p1gas.gasusage != 0)
-		{
-			m_lastSharedSendGas = atime;
-			m_lastgasusage = m_p1gas.gasusage;
-			sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, NULL, 255);
+			if ((m_p1power.powerusage1 != 0) || (m_p1power.powerusage2 != 0) || (m_p1power.powerdeliv1 != 0) || (m_p1power.powerdeliv2 != 0))
+			{
+				m_lastSharedSendElectra = atime;
+				m_lastelectrausage = m_p1power.usagecurrent;
+				m_lastelectradeliv = m_p1power.delivcurrent;
+				sDecodeRXMessage(this, (const unsigned char *)&m_p1power, NULL, 255);
+			}
 		}
 	}
 }
