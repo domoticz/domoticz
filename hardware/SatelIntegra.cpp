@@ -14,8 +14,8 @@
 	#define DEBUG_SatelIntegra
 #endif
 
-#define SATEL_POLL_INTERVAL 1
-#define SATEL_TEMP_POLL_INTERVAL 120
+#define SATEL_TEMP_POLL_INTERVAL_MS 120*1000 // 120 sec
+#define HEARTBEAT_INTERVAL_MS 12*1000 // 12 sec
 
 #define round(a) ( int ) ( a + .5 )
 
@@ -45,13 +45,14 @@ static Model models[TOT_MODELS] =
 
 #define MAX_LENGTH_OF_ANSWER 63 * 2 + 4 + 1
 
-SatelIntegra::SatelIntegra(const int ID, const std::string &IPAddress, const unsigned short IPPort, const std::string& userCode) :
+SatelIntegra::SatelIntegra(const int ID, const std::string &IPAddress, const unsigned short IPPort, const std::string& userCode, const int pollInterval) :
 	m_modelIndex(-1),
 	m_data32(false),
 	m_socket(INVALID_SOCKET),
 	m_IPPort(IPPort),
 	m_IPAddress(IPAddress),
-	m_stoprequested(false)
+	m_stoprequested(false),
+	m_pollInterval(pollInterval)
 {
 	_log.Log(LOG_STATUS, "Satel Integra: Create instance");
 	m_HwdID = ID;
@@ -104,6 +105,11 @@ SatelIntegra::SatelIntegra(const int ID, const std::string &IPAddress, const uns
 	{
 		unsigned int c = (unsigned int)(result >> ((7 - i) * 8));
 		m_userCode[i] = c;
+	}
+
+	if (m_pollInterval < 500)
+	{
+		m_pollInterval = 500;
 	}
 
 }
@@ -165,21 +171,30 @@ void SatelIntegra::Do_Work()
 
 		UpdateAlarmAndArmName();
 
-		int sec_counter = SATEL_POLL_INTERVAL;
+		int heartbeatInterval = 0;
+		long msec_poll_counter = 0;
+		long msec_temp_counter = 0;
+		long interval = m_pollInterval;
+		if (interval > HEARTBEAT_INTERVAL_MS)
+			interval = HEARTBEAT_INTERVAL_MS;
 
 		while (!m_stoprequested)
 		{
-			sleep_seconds(1);
+			sleep_milliseconds(interval);
 			if (m_stoprequested)
 				break;
-			sec_counter++;
+			msec_poll_counter += interval;
+			msec_temp_counter += interval;
+			heartbeatInterval += interval;
 
-			if (sec_counter % 12 == 0) {
+			if (heartbeatInterval >= HEARTBEAT_INTERVAL_MS) {
 				m_LastHeartbeat = mytime(NULL);
+				heartbeatInterval = 0;
 			}
 
-			if (sec_counter % SATEL_POLL_INTERVAL == 0)
+			if (msec_poll_counter >= m_pollInterval)
 			{
+				msec_poll_counter = 0;
 #ifdef DEBUG_SatelIntegra
 	_log.Log(LOG_STATUS, "Satel Integra: fetching changed data");
 #endif
@@ -208,8 +223,9 @@ void SatelIntegra::Do_Work()
 			//	ReadEvents();
 			}
 
-			if (sec_counter % SATEL_TEMP_POLL_INTERVAL == 0)
+			if (msec_temp_counter >= SATEL_TEMP_POLL_INTERVAL_MS)
 			{
+				msec_temp_counter = 0;
 #ifdef DEBUG_SatelIntegra
 				_log.Log(LOG_STATUS, "Satel Integra: fetching temperature");
 #endif
