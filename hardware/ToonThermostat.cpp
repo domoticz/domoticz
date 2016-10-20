@@ -492,6 +492,14 @@ bool CToonThermostat::SwitchLight(const std::string &UUID, const int SwitchState
 		_log.Log(LOG_ERROR, "ToonThermostat: Invalid data received!");
 		return false;
 	}
+/*
+	int Idx=0;
+	if (GetUUIDIdx(UUID, Idx))
+	{
+		UpdateSwitch(Idx, SwitchState != 0, "");
+	}
+*/
+	m_retry_counter = 0;
 	m_poll_counter = TOON_POLL_INTERVAL_SHORT;
 	return (root["success"] == true);
 }
@@ -527,6 +535,7 @@ bool CToonThermostat::SwitchAll(const int SwitchState)
 		_log.Log(LOG_ERROR, "ToonThermostat: Invalid data received!");
 		return false;
 	}
+	m_retry_counter = 0;
 	m_poll_counter = TOON_POLL_INTERVAL_SHORT;
 	return (root["success"] == true);
 }
@@ -907,6 +916,7 @@ void CToonThermostat::SetSetpoint(const int idx, const float temp)
 			return;
 		}
 		SendSetPointSensor(idx, temp, "Room Setpoint");
+		m_retry_counter = 0;
 		m_poll_counter = TOON_POLL_INTERVAL_SHORT;
 	}
 }
@@ -962,5 +972,6 @@ void CToonThermostat::SetProgramState(const int newState)
 		m_bDoLogin = true;
 		return;
 	}
+	m_retry_counter = 0;
 	m_poll_counter = TOON_POLL_INTERVAL_SHORT;
 }
