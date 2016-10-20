@@ -297,32 +297,6 @@ std::string CToonThermostat::GetRandom()
 	boost::uuids::uuid uuid = boost::uuids::random_generator()();
 	std::string suuid = boost::uuids::to_string(uuid);
 	return suuid;
-/*
-	srand((unsigned int)time(NULL));
-	//5BA37E41-B5C8-4C19-AA81-9EA82430D7EA
-	char szTmp[100];
-	sprintf(szTmp,"%04x%04x-%04x-%04x-%04x-%04x%04x%04x",
-		// 32 bits for "time_low"
-		rand() % 0xFFFF, rand() % 0xFFFF,
-
-		// 16 bits for "time_mid"
-		rand() % 0xFFFF,
-
-		// 16 bits for "time_hi_and_version",
-		// four most significant bits holds version number 4
-		rand() % 0xFFFF | 0x4000,
-
-		// 16 bits, 8 bits for "clk_seq_hi_res",
-		// 8 bits for "clk_seq_low",
-		// two most significant bits holds zero and one for variant DCE1.1
-		rand() % 0xFFFF | 0x8000,
-
-		// 48 bits for "node"
-		rand() % 0xFFFF, rand() % 0xFFFF, rand() % 0xFFFF
-		);
-	std::string ret=szTmp;
-	return ret;
-*/
 }
 
 bool CToonThermostat::Login()
@@ -518,6 +492,7 @@ bool CToonThermostat::SwitchLight(const std::string &UUID, const int SwitchState
 		_log.Log(LOG_ERROR, "ToonThermostat: Invalid data received!");
 		return false;
 	}
+	m_poll_counter = TOON_POLL_INTERVAL_SHORT;
 	return (root["success"] == true);
 }
 
@@ -552,6 +527,7 @@ bool CToonThermostat::SwitchAll(const int SwitchState)
 		_log.Log(LOG_ERROR, "ToonThermostat: Invalid data received!");
 		return false;
 	}
+	m_poll_counter = TOON_POLL_INTERVAL_SHORT;
 	return (root["success"] == true);
 }
 
@@ -917,6 +893,7 @@ void CToonThermostat::SetSetpoint(const int idx, const float temp)
 			m_bDoLogin = true;
 			return;
 		}
+		m_poll_counter = TOON_POLL_INTERVAL_SHORT;
 	}
 }
 
@@ -971,4 +948,5 @@ void CToonThermostat::SetProgramState(const int newState)
 		m_bDoLogin = true;
 		return;
 	}
+	m_poll_counter = TOON_POLL_INTERVAL_SHORT;
 }
