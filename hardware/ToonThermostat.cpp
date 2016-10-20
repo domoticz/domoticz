@@ -674,6 +674,7 @@ void CToonThermostat::GetMeterDetails()
 		m_poll_counter = TOON_POLL_INTERVAL_SHORT;
 		return;
 	}
+	m_retry_counter = 0;
 	time_t atime = mytime(NULL);
 
 	//ZWave Devices
