@@ -582,7 +582,7 @@ void CToonThermostat::GetMeterDetails()
 	if (m_bDoLogin)
 	{
 		if (!Login())
-		return;
+			return;
 	}
 	std::vector<std::string> ExtraHeaders;
 	Json::Value root;
@@ -770,34 +770,47 @@ void CToonThermostat::GetMeterDetails()
 	}
 	if (root["powerUsage"].empty() == false)
 	{
-		m_p1power.powerusage1 = (unsigned long)(root["powerUsage"]["meterReadingLow"].asFloat());
-		m_p1power.powerusage2 = (unsigned long)(root["powerUsage"]["meterReading"].asFloat());
+		unsigned long powerusage1 = (unsigned long)(root["powerUsage"]["meterReadingLow"].asFloat());
+		unsigned long powerusage2 = (unsigned long)(root["powerUsage"]["meterReading"].asFloat());
 
-		if ((m_p1power.powerusage1 == 0) && (m_p1power.powerusage2 == 0))
+		if ((powerusage1 == 0) && (powerusage2 == 0))
 		{
 			//New firmware does not provide meter readings anymore
-			unsigned long usage1 = (unsigned long)(root["powerUsage"]["dayUsage"].asFloat());
-			unsigned long usage2 = (unsigned long)(root["powerUsage"]["dayLowUsage"].asFloat());
-			if (usage1 < m_LastUsage1)
+			if (root["powerUsage"]["dayUsage"].empty() == false)
 			{
-				m_OffsetUsage1 += m_LastUsage1;
+				unsigned long usage1 = (unsigned long)(root["powerUsage"]["dayUsage"].asFloat());
+				unsigned long usage2 = (unsigned long)(root["powerUsage"]["dayLowUsage"].asFloat());
+				if (usage1 < m_LastUsage1)
+				{
+					m_OffsetUsage1 += m_LastUsage1;
+				}
+				if (usage2 < m_LastUsage2)
+				{
+					m_OffsetUsage2 += m_LastUsage2;
+				}
+				m_p1power.powerusage1 = m_OffsetUsage1 + usage1;
+				m_p1power.powerusage2 = m_OffsetUsage2 + usage2;
+				m_LastUsage1 = usage1;
+				m_LastUsage2 = usage2;
 			}
-			if (usage2 < m_LastUsage2)
-			{
-				m_OffsetUsage2 += m_LastUsage2;
-			}
-			m_p1power.powerusage1 = m_OffsetUsage1 + usage1;
-			m_p1power.powerusage2 = m_OffsetUsage2 + usage2;
-			m_LastUsage1 = usage1;
-			m_LastUsage2 = usage2;
+		}
+		else
+		{
+			m_p1power.powerusage1 = powerusage1;
+			m_p1power.powerusage2 = powerusage2;
 		}
 
 		if (root["powerUsage"]["meterReadingProdu"].empty() == false)
 		{
-			m_p1power.powerdeliv1 = (unsigned long)(root["powerUsage"]["meterReadingLowProdu"].asFloat());
-			m_p1power.powerdeliv2 = (unsigned long)(root["powerUsage"]["meterReadingProdu"].asFloat());
+			unsigned long powerdeliv1 = (unsigned long)(root["powerUsage"]["meterReadingLowProdu"].asFloat());
+			unsigned long powerdeliv2 = (unsigned long)(root["powerUsage"]["meterReadingProdu"].asFloat());
 
-			if ((m_p1power.powerdeliv1 == 0) && (m_p1power.powerdeliv2 == 0))
+			if ((powerdeliv1 != 0) || (powerdeliv2 != 0))
+			{
+				m_p1power.powerdeliv1 = powerdeliv1;
+				m_p1power.powerdeliv2 = powerdeliv2;
+			}
+			else
 			{
 				//Have not received an example from a user that has produced with the new firmware
 				//for now ignoring
