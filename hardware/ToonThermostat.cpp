@@ -906,6 +906,7 @@ void CToonThermostat::SetSetpoint(const int idx, const float temp)
 			m_bDoLogin = true;
 			return;
 		}
+		SendSetPointSensor(idx, temp, "Room Setpoint");
 		m_poll_counter = TOON_POLL_INTERVAL_SHORT;
 	}
 }
