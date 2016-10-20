@@ -14,23 +14,24 @@
 class CTellstick : public CDomoticzHardwareBase
 {
 public:
-    explicit CTellstick(const int ID);
+    explicit CTellstick(const int ID, int repeats, int repeatInterval);
+    void SetSettings(int repeats, int repeatInterval);
     bool WriteToHardware(const char *pdata, const unsigned char length);
 
 private:
     struct Command
     {
         Command()
-            : retry(0),
-              retryTimePoint(boost::get_system_time()) {}
+            : repeat(0),
+              repeatTimePoint(boost::get_system_time()) {}
         Command(_tGeneralSwitch genSwitch)
             : genSwitch(genSwitch),
-              retry(0),
-              retryTimePoint(boost::get_system_time()) {}
+              repeat(0),
+              repeatTimePoint(boost::get_system_time()) {}
 
         _tGeneralSwitch genSwitch;
-        int retry;
-        boost::system_time retryTimePoint;
+        int repeat;
+        boost::system_time repeatTimePoint;
     };
 
     void deviceEvent(int deviceId, int method, const char *data);
@@ -58,8 +59,8 @@ private:
     boost::mutex m_mutex;
     boost::condition_variable m_cond;
     std::map<int, Command> m_commands;
-    static int s_maxRetries;
-    static boost::posix_time::milliseconds s_retryDelay;
+    int m_numRepeats;
+    boost::posix_time::milliseconds m_repeatInterval;
 };
 
 #endif //WITH_TELLSTICK

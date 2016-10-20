@@ -13,17 +13,22 @@
 
 using namespace std;
 
-int CTellstick::s_maxRetries(5);
-boost::posix_time::milliseconds CTellstick::s_retryDelay(500);
-
-CTellstick::CTellstick(const int ID)
+CTellstick::CTellstick(const int ID, int repeats, int repeatInterval)
     : m_deviceEventId(-1),
       m_rawDeviceEventId(-1),
-      m_sensorEventId(-1)
+      m_sensorEventId(-1),
+      m_numRepeats(repeats),
+      m_repeatInterval(repeatInterval)
 
 {
     m_HwdID = ID;
     m_bSkipReceiveCheck = true;
+}
+
+void CTellstick::SetSettings(int repeats, int repeatInterval)
+{
+    m_numRepeats = repeats;
+    m_repeatInterval = boost::posix_time::milliseconds(repeatInterval);
 }
 
 bool CTellstick::WriteToHardware(const char *pdata, const unsigned char length)
@@ -143,8 +148,8 @@ void CTellstick::rawDeviceEventCallback(const char *data, int controllerId, int 
     }
 }
 
-void CTellstick::sensorEventCallback(const char *protocol, const char *model, int deviceId, int dataType, 
-                                     const char *value, int timestamp, int callbackId, void *context) 
+void CTellstick::sensorEventCallback(const char *protocol, const char *model, int deviceId, int dataType,
+                                     const char *value, int timestamp, int callbackId, void *context)
  {
     CTellstick *t = reinterpret_cast<CTellstick *>(context);
     if (t) 
@@ -231,26 +236,26 @@ void CTellstick::ThreadSendCommands()
     while (m_bIsStarted)
     {
         boost::system_time now = boost::get_system_time();
-        boost::system_time nextTime = now + s_retryDelay;
+        boost::system_time nextTime = now + m_repeatInterval;
         for (map<int, Command>::iterator it = m_commands.begin();
              it != m_commands.end();
              /* no increment */)
         {
-            if (it->second.retryTimePoint > now)
+            if (it->second.repeatTimePoint > now)
             {
                 ++it;
                 continue;
             }
 
             SendCommand(it->first, it->second.genSwitch);
-            ++it->second.retry;
-            if (it->second.retry >= s_maxRetries)
+            ++it->second.repeat;
+            if (it->second.repeat >= m_numRepeats)
                 m_commands.erase(it++);
             else
             {
-                it->second.retryTimePoint += s_retryDelay;
-                if (it->second.retryTimePoint < nextTime)
-                    nextTime = it->second.retryTimePoint;
+                it->second.repeatTimePoint += m_repeatInterval;
+                if (it->second.repeatTimePoint < nextTime)
+                    nextTime = it->second.repeatTimePoint;
                 ++it;
             }
         }
@@ -261,4 +266,41 @@ void CTellstick::ThreadSendCommands()
             m_cond.timed_wait(lock, nextTime);
     }
 }
+
+//Webserver helpers
+namespace http {
+    namespace server {
+        void CWebServer::Cmd_TellstickApplySettings(WebEmSession &session, const request &req, Json::Value &root)
+        {
+            if (session.rights != 2)
+            {
+                //No admin user, and not allowed to be here
+                return;
+            }
+
+            string hwIdStr = request::findValue(&req, "idx");
+            string repeatsStr = request::findValue(&req, "repeats");
+            string repeatIntervalStr = request::findValue(&req, "repeats");
+
+            if (hwIdStr.empty() || repeatsStr.empty() || repeatIntervalStr.empty())
+                return;
+
+            int hwID = atoi(hwIdStr.c_str());
+            int repeats = atoi(repeatsStr.c_str());
+            int repeatInterval = atoi(repeatIntervalStr.c_str());
+
+            m_sql.safe_query("UPDATE Hardware SET Mode1=%d, Mode2=%d WHERE (ID == %d)",
+                             repeats, repeatInterval, hwID);
+
+            CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(hwID);
+            if (pBaseHardware == NULL)
+                return;
+            if (pBaseHardware->HwdType != HTYPE_Tellstick)
+                return;
+            CTellstick *pTellstick = reinterpret_cast<CTellstick*>(pBaseHardware);
+            pTellstick->SetSettings(repeats, repeatInterval);
+        }
+    }
+}
+
 #endif //WITH_TELLDUSCORE

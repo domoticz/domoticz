@@ -31,6 +31,9 @@
 #include "../hardware/Gpio.h"
 #include "../hardware/GpioPin.h"
 #endif // WITH_GPIO
+#ifdef WITH_TELLDUSCORE
+#include "../hardware/Tellstick.h"
+#endif
 #include "../webserver/Base64.h"
 #include "../smtpclient/SMTPClient.h"
 #include "../json/json.h"
@@ -598,6 +601,10 @@ namespace http {
 			//scenepost.html
 			//thpost.html
 			RegisterRType("openzwavenodes", boost::bind(&CWebServer::RType_OpenZWaveNodes, this, _1, _2, _3));
+#endif
+
+#ifdef WITH_TELLDUSCORE
+            RegisterCommandCode("tellstickApplySettings", boost::bind(&CWebServer::Cmd_TellstickApplySettings, this, _1, _2, _3));
 #endif
 
 			m_pWebEm->RegisterWhitelistURLString("/html5.appcache");
@@ -1223,6 +1230,11 @@ namespace http {
 				mode1 = 30;
 				mode2 = 1000;
 			}			
+			else if (htype == HTYPE_Tellstick)
+			{
+				mode1 = 4;
+				mode2 = 500;
+			}
 
 			m_sql.safe_query(
 				"INSERT INTO Hardware (Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) VALUES ('%q',%d, %d,'%q',%d,'%q','%q','%q','%q',%d,%d,%d,%d,%d,%d,%d)",
