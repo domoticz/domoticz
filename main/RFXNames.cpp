@@ -818,6 +818,15 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchHT6P20, "HT6P20" },
 		{ pTypeYeelight, sTypeYeelightColor, "RGBW" },
 		{ pTypeYeelight, sTypeYeelightWhite, "White" },
+		{ pTypeGeneralSwitch, sSwitchTypeDoitrand, "Doitrand" },
+		{ pTypeGeneralSwitch, sSwitchTypeWarema, "Warema" },
+		{ pTypeGeneralSwitch, sSwitchTypeAnsluta, "Ansluta" },
+		{ pTypeGeneralSwitch, sSwitchTypeLivcol, "Livcol" },
+		{ pTypeGeneralSwitch, sSwitchTypeBosch, "Bosch" },
+		{ pTypeGeneralSwitch, sSwitchTypeNingbo, "Ningbo" },
+		{ pTypeGeneralSwitch, sSwitchTypeDitec, "Ditec" },
+		{ pTypeGeneralSwitch, sSwitchTypeSteffen, "Steffen" },
+		{ pTypeGeneralSwitch, sSwitchTypeAlectoSA, "AlectoSA" },
 		{  0,0,NULL }
 	};
 	return findTableID1ID2(Table, dType, sType);
