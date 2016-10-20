@@ -1253,7 +1253,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 							tsen.TEMP.rssi=(ID_BYTE0&0xF0)>>4;
 
 							tsen.TEMP.tempsign=(temp>=0)?0:1;
-							int at10=round(abs(temp*10.0f));
+							int at10=round(std::abs(temp*10.0f));
 							tsen.TEMP.temperatureh=(BYTE)(at10/256);
 							at10-=(tsen.TEMP.temperatureh*256);
 							tsen.TEMP.temperaturel=(BYTE)(at10);
@@ -1353,7 +1353,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 						tsen.TEMP.rssi=(ID_BYTE0&0xF0)>>4;
 
 						tsen.TEMP.tempsign=(temp>=0)?0:1;
-						int at10=round(abs(temp*10.0f));
+						int at10=round(std::abs(temp*10.0f));
 						tsen.TEMP.temperatureh=(BYTE)(at10/256);
 						at10-=(tsen.TEMP.temperatureh*256);
 						tsen.TEMP.temperaturel=(BYTE)(at10);
@@ -1380,7 +1380,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 						tsen.TEMP_HUM.id2=ID_BYTE1;
 						tsen.TEMP_HUM.battery_level=9;
 						tsen.TEMP_HUM.tempsign=(temp>=0)?0:1;
-						int at10=round(abs(temp*10.0f));
+						int at10=round(std::abs(temp*10.0f));
 						tsen.TEMP_HUM.temperatureh=(BYTE)(at10/256);
 						at10-=(tsen.TEMP_HUM.temperatureh*256);
 						tsen.TEMP_HUM.temperaturel=(BYTE)(at10);

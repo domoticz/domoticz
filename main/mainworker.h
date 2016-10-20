@@ -40,6 +40,7 @@ public:
 	int FindDomoticzHardware(int HwdId);
 	int FindDomoticzHardwareByType(const _eHardwareTypes HWType);
 	CDomoticzHardwareBase* GetHardware(int HwdId);
+	CDomoticzHardwareBase* GetHardwareByIDType(const std::string &HwdId, const _eHardwareTypes HWType);
 	CDomoticzHardwareBase* GetHardwareByType(const _eHardwareTypes HWType);
 
 	void HeartbeatUpdate(const std::string &component);
@@ -79,11 +80,13 @@ public:
 	bool SetZWaveThermostatFanModeInt(const std::vector<std::string> &sd, const int fMode);
 
 	bool SetRFXCOMHardwaremodes(const int HardwareID, const unsigned char Mode1, const unsigned char Mode2, const unsigned char Mode3, const unsigned char Mode4, const unsigned char Mode5, const unsigned char Mode6);
-	
+
 	bool SwitchModal(const std::string &idx, const std::string &status, const std::string &action, const std::string &ooc, const std::string &until);
 
 	bool GetSunSettings();
 	void LoadSharedUsers();
+
+	void ForceLogNotificationCheck();
 
 	bool RestartHardware(const std::string &idx);
 
@@ -93,7 +96,7 @@ public:
 				const bool Enabled,
 				const _eHardwareTypes Type,
 				const std::string &Address, const unsigned short Port, const std::string &SerialPort,
-				const std::string &Username, const std::string &Password, 
+				const std::string &Username, const std::string &Password,
 				const std::string &Filename,
 				const int Mode1,
 				const int Mode2,
@@ -143,12 +146,15 @@ public:
 private:
 	void HandleAutomaticBackups();
 	unsigned long long PerformRealActionFromDomoticzClient(const unsigned char *pRXCommand, CDomoticzHardwareBase **pOriginalHardware);
+	void HandleLogNotifications();
 	std::map<std::string, time_t > m_componentheartbeats;
 	boost::mutex m_heartbeatmutex;
 
 	boost::mutex m_decodeRXMessageMutex;
 
 	std::vector<int> m_devicestorestart;
+
+	bool m_bForceLogNotificationCheck;
 
 	int m_SecCountdown;
 	int m_SecStatus;
@@ -187,7 +193,7 @@ private:
 	void SendResetCommand(CDomoticzHardwareBase *pHardware);
 	void SendCommand(const int HwdID, unsigned char Cmd, const char *szMessage=NULL);
 	bool WriteToHardware(const int HwdID, const char *pdata, const unsigned char length);
-	
+
 	void OnHardwareConnected(CDomoticzHardwareBase *pHardware);
 
 	void WriteMessageStart();
@@ -287,6 +293,7 @@ private:
 	void decode_evohome1(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_evohome2(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_evohome3(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
+	void decode_Yeelight(const int HwdID, const _eHardwareTypes HwdType, const tRBUF * pResponse, _tRxMessageProcessingResult & procResult);
 };
 
 extern MainWorker m_mainworker;

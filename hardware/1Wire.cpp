@@ -14,6 +14,7 @@
 #include "../main/mainworker.h"
 #include "../main/SQLHelper.h"
 
+#include <cmath>
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -222,7 +223,9 @@ void C1Wire::BuildSensorList() {
 		return;
 
 	std::vector<_t1WireDevice> devices;
+#ifdef _DEBUG
 	_log.Log(LOG_STATUS, "1-Wire: Searching sensors");
+#endif
 	m_sensors.clear();
 	m_system->GetDevices(devices);
 
@@ -241,7 +244,7 @@ void C1Wire::BuildSensorList() {
 		case _4k_ram_with_counter:
 		case quad_ad_converter:
 		case smart_battery_monitor:
-			m_sensors.push_back(*device);
+			m_sensors.insert(*device);
 			break;
 
 		default:
@@ -263,7 +266,7 @@ void C1Wire::PollSensors()
 	}
 
 	// Parse our devices (have to test m_stoprequested because it can take some time in case of big networks)
-	std::vector<_t1WireDevice>::const_iterator itt;
+	std::set<_t1WireDevice>::const_iterator itt;
 	for (itt=m_sensors.begin(); itt!=m_sensors.end() && !m_stoprequested; ++itt)
 	{
 		const _t1WireDevice& device=*itt;
@@ -340,7 +343,9 @@ void C1Wire::BuildSwitchList() {
 		return;
 
 	std::vector<_t1WireDevice> devices;
+#ifdef _DEBUG
 	_log.Log(LOG_STATUS, "1-Wire: Searching switches");
+#endif
 	m_switches.clear();
 	m_system->GetDevices(devices);
 
@@ -356,7 +361,7 @@ void C1Wire::BuildSwitchList() {
 		case Temperature_IO:
 		case dual_channel_addressable_switch:
 		case _4k_EEPROM_with_PIO:
-			m_switches.push_back(*device);
+			m_switches.insert(*device);
 			break;
 
 		default:
@@ -373,7 +378,7 @@ void C1Wire::PollSwitches()
 		return;
 
 	// Parse our devices (have to test m_stoprequested because it can take some time in case of big networks)
-	std::vector<_t1WireDevice>::const_iterator itt;
+	std::set<_t1WireDevice>::const_iterator itt;
 	for (itt=m_switches.begin(); itt!=m_switches.end() && !m_stoprequested; ++itt)
 	{
 		const _t1WireDevice& device=*itt;
@@ -450,7 +455,7 @@ void C1Wire::ReportTemperature(const std::string& deviceId, const float temperat
 	tsen.TEMP.id2=(BYTE)deviceIdByteArray[1];
 
 	tsen.TEMP.tempsign=(temperature>=0)?0:1;
-	int at10=round(abs(temperature*10.0f));
+	int at10=round(std::abs(temperature*10.0f));
 	tsen.TEMP.temperatureh=(BYTE)(at10/256);
 	at10-=(tsen.TEMP.temperatureh*256);
 	tsen.TEMP.temperaturel=(BYTE)(at10);

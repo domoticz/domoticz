@@ -161,9 +161,9 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_DavisVantage, "Davis Vantage Weather Station USB" },
 		{ HTYPE_VOLCRAFTCO20, "Volcraft CO-20 USB air quality sensor" },
 		{ HTYPE_1WIRE, "1-Wire (System)" },
-		{ HTYPE_RaspberryBMP085, "I2C sensor BMP085/180 Temp+Baro" },
+		{ HTYPE_RaspberryBMP085, "Local I2C sensor BMP085/180 Temp+Baro" },
 		{ HTYPE_Wunderground, "Weather Underground" },
-		{ HTYPE_ForecastIO, "Forecast IO (Weather Lookup)" },
+		{ HTYPE_DarkSky, "DarkSky (Weather Lookup)" },
 		{ HTYPE_Dummy, "Dummy (Does nothing, use for virtual switches only)" },
 		{ HTYPE_Tellstick, "Tellstick" },
 		{ HTYPE_PiFace, "PiFace - Raspberry Pi IO expansion board" },
@@ -219,7 +219,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_DomoticzInternal, "Domoticz Internal interface" },
 		{ HTYPE_NefitEastLAN, "Nefit Easy HTTP server over LAN interface" },
 		{ HTYPE_OpenWebNet, "MyHome OpenWebNet" },
-		{ HTYPE_RaspberryHTU21D, "I2C sensor HTU21D(F)/SI702x Humidity+Temp" },
+		{ HTYPE_RaspberryHTU21D, "Local I2C sensor HTU21D(F)/SI702x Humidity+Temp" },
 		{ HTYPE_AtagOne, "Atag One Thermostat" },
 		{ HTYPE_Sterbox, "Sterbox v2-3 PLC with LAN interface" },
 		{ HTYPE_HTTPPOLLER, "HTTP/HTTPS poller" },
@@ -228,6 +228,18 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_S0SmartMeterTCP, "S0 Meter with LAN interface" },
 		{ HTYPE_DenkoviSmartdenLan, "Denkovi Smartden with LAN interface" },
 		{ HTYPE_AccuWeather, "AccuWeather (Weather Lookup)" },
+		{ HTYPE_BleBox, "BleBox devices" },
+		{ HTYPE_Ec3kMeterTCP, "Energy Count 3000/ NETBSEM4/ La Crosse RT-10 LAN" },
+		{ HTYPE_OpenWeatherMap, "Open Weather Map" },
+		{ HTYPE_GoodweAPI, "Goodwe solar inverter via Web API" },
+		{ HTYPE_RaspberryTSL2561, "Local I2C sensor TSL2561 Illuminance" },
+		{ HTYPE_Daikin, "Daikin Airconditioning with LAN (HTTP) interface" },
+		{ HTYPE_HEOS, "HEOS by DENON" },
+		{ HTYPE_MultiFun, "MultiFun LAN" },
+		{ HTYPE_ZIBLUEUSB, "ZiBlue RFPlayer USB" },
+		{ HTYPE_ZIBLUETCP, "ZiBlue RFPlayer with LAN interface" },
+		{ HTYPE_Yeelight, "Yeelight LED" },
+
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -463,6 +475,7 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeEvohomeWater, "Heating" , "evohome" },
 		{ pTypeEvohomeRelay, "Heating" , "evohome" },
 		{ pTypeGeneralSwitch, "Light/Switch", "lightbulb" },
+		{ pTypeYeelight, "Light/Switch", "lightbulb" },
 		{ 0, NULL, NULL }
 	};
 	if (snum==1)
@@ -802,6 +815,9 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchGaposa, "Gaposa" },
 		{ pTypeGeneralSwitch, sSwitchMiLightv1, "MiLightv1" },
 		{ pTypeGeneralSwitch, sSwitchMiLightv2, "MiLightv2" },
+		{ pTypeGeneralSwitch, sSwitchHT6P20, "HT6P20" },
+		{ pTypeYeelight, sTypeYeelightColor, "RGBW" },
+		{ pTypeYeelight, sTypeYeelightWhite, "White" },
 		{  0,0,NULL }
 	};
 	return findTableID1ID2(Table, dType, sType);
@@ -1042,6 +1058,9 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeLimitlessLights, sTypeLimitlessRGBW, "Status" },
 		{ pTypeLimitlessLights, sTypeLimitlessRGB, "Status" },
 		{ pTypeLimitlessLights, sTypeLimitlessWhite, "Status" },
+
+		{ pTypeYeelight, sTypeYeelightColor, "Status" },
+		{ pTypeYeelight, sTypeYeelightWhite, "Status" },
 
 		{ pTypeRFY, sTypeRFY, "Status" },
 		{ pTypeRFY, sTypeRFYext, "Status" },
@@ -1748,6 +1767,22 @@ void GetLightStatus(
 			break;
 		case Limitless_SetBrightnessLevel:
 			lstatus="Set Level";
+			break;
+		}
+		break;
+	case pTypeYeelight:
+		bHaveDimmer = true;
+		maxDimLevel = 100;
+		switch (nValue)
+		{
+		case Yeelight_LedOff:
+			lstatus = "Off";
+			break;
+		case Yeelight_LedOn:
+			lstatus = "On";
+			break;
+		case Yeelight_SetBrightnessLevel:
+			lstatus = "Set Level";
 			break;
 		}
 		break;
@@ -2770,6 +2805,98 @@ bool GetLightCommand(
 		else
 			return false;
 		break;
+	case pTypeYeelight:
+		if (switchcmd == "Off")
+		{
+			cmd = Yeelight_LedOff;
+			return true;
+		}
+		else if (switchcmd == "On")
+		{
+			cmd = Yeelight_LedOn;
+			return true;
+		}
+		else if (switchcmd == "Set Color")
+		{
+			cmd = Yeelight_SetRGBColour;
+			return true;
+		}
+		else if (
+			(switchcmd == "Set Brightness") ||
+			(switchcmd == "Set Level")
+			)
+		{
+			cmd = Yeelight_SetBrightnessLevel;
+			return true;
+		}
+		else if (switchcmd == "Set White")
+		{
+			cmd = Yeelight_SetColorToWhite;
+			return true;
+		}
+		else if (switchcmd == "Set Full")
+		{
+			cmd = Yeelight_SetColorToWhite;
+			return true;
+		}
+		else if (switchcmd == "Set Night")
+		{
+			cmd = Yeelight_NightMode;
+			return true;
+		}
+		else if (switchcmd == "Bright Up")
+		{
+			cmd = Yeelight_SetBrightUp;
+			return true;
+		}
+		else if (switchcmd == "Bright Down")
+		{
+			cmd = Yeelight_SetBrightDown;
+			return true;
+		}
+		else if (switchcmd == "Disco Mode")
+		{
+			cmd = Yeelight_DiscoMode;
+			return true;
+		}
+		else if (switchcmd == "Disco Up")
+		{
+			cmd = Yeelight_RGBDiscoNext;
+			return true;
+		}
+		else if (switchcmd == "Disco Down")
+		{
+			cmd = Yeelight_RGBDiscoPrevious;
+			return true;
+		}
+		else if (switchcmd == "Speed Up")
+		{
+			cmd = Yeelight_DiscoSpeedFaster;
+			return true;
+		}
+		else if (switchcmd == "Speed Up Long")
+		{
+			cmd = Yeelight_DiscoSpeedFasterLong;
+			return true;
+		}
+		else if (switchcmd == "Speed Down")
+		{
+			cmd = Yeelight_DiscoSpeedSlower;
+			return true;
+		}
+		else if (switchcmd == "Warmer")
+		{
+			cmd = Yeelight_WarmWhiteIncrease;
+			return true;
+		}
+		else if (switchcmd == "Cooler")
+		{
+			cmd = Yeelight_CoolWhiteIncrease;
+			return true;
+		}
+		else
+			return false;
+		break;
 	case pTypeSecurity1:
 		if (
 			(dSubType==sTypeKD101)||
@@ -3345,6 +3472,7 @@ bool IsSerialDevice(const _eHardwareTypes htype)
 	case HTYPE_Meteostick:
 	case HTYPE_MySensorsUSB:
 	case HTYPE_RFLINKUSB:
+	case HTYPE_ZIBLUEUSB:
 	case HTYPE_KMTronicUSB:
 	case HTYPE_KMTronic433:
 	case HTYPE_CurrentCostMeter:

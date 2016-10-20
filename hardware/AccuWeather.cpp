@@ -390,7 +390,7 @@ void CAccuWeather::GetMeterDetails()
 					float rainrateph = static_cast<float>(atof(root["PrecipitationSummary"]["PastHour"]["Metric"]["Value"].asString().c_str()));
 					if (rainrateph!=-9999.00f)
 					{
-						int at10=round(abs(rainrateph*10.0f));
+						int at10=round(std::abs(rainrateph*10.0f));
 						tsen.RAIN.rainrateh=(BYTE)(at10/256);
 						at10-=(tsen.RAIN.rainrateh*256);
 						tsen.RAIN.rainratel=(BYTE)(at10);

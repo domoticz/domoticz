@@ -21,12 +21,13 @@
 //
 //Class P1MeterSerial
 //
-P1MeterSerial::P1MeterSerial(const int ID, const std::string& devname, unsigned int baud_rate):
+P1MeterSerial::P1MeterSerial(const int ID, const std::string& devname, unsigned int baud_rate, unsigned char disable_crc):
 m_szSerialPort(devname)
 {
 	m_HwdID=ID;
 	m_iBaudRate=baud_rate;
 	m_stoprequested = false;
+	m_DisableCRC = disable_crc;
 }
 
 P1MeterSerial::P1MeterSerial(const std::string& devname,
@@ -84,6 +85,9 @@ bool P1MeterSerial::StartHardware()
 				boost::asio::serial_port_base::parity::none),
 				boost::asio::serial_port_base::character_size(8)
 				);
+			if (m_DisableCRC) {
+				_log.Log(LOG_STATUS,"P1 Smart Meter: CRC validation disabled through hardware control");
+			}
 		}
 	}
 	catch (boost::exception & e)
@@ -132,7 +136,7 @@ void P1MeterSerial::readCallback(const char *data, size_t len)
 	if (!m_bEnableReceive)
 		return; //receiving not enabled
 
-	ParseData((const unsigned char*)data, static_cast<int>(len));
+	ParseData((const unsigned char*)data, static_cast<int>(len), m_DisableCRC);
 }
 
 bool P1MeterSerial::WriteToHardware(const char *pdata, const unsigned char length)

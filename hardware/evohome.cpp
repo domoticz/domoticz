@@ -637,7 +637,7 @@ void CEvohome::SendZoneSensor()
 				tsen.EVOHOME2.type = pTypeEvohomeZone;
 				tsen.EVOHOME2.subtype = sTypeEvohomeZone;
 				tsen.EVOHOME2.zone = i;
-				tsen.EVOHOME2.temperature = dbTemp * 100;
+				tsen.EVOHOME2.temperature = static_cast<uint16_t>(dbTemp * 100);
 				RFX_SETID3(ID, tsen.EVOHOME2.id1, tsen.EVOHOME2.id2, tsen.EVOHOME2.id3);
 				sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME2, "Zone Temp", -1);
 			}
@@ -2001,7 +2001,7 @@ namespace http {
 			}
 			else if (type == "ZoneSensor")
 			{	
-				//get dev count
+				//Check whether any devices already exist
 				std::vector<std::vector<std::string> > result;
 				result = m_sql.safe_query("SELECT MAX(Unit) FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) AND (Unit>=40) AND (Unit<52)", HwdID,(int)pTypeEvohomeZone);
 				int nDevCount = 0;
@@ -2009,6 +2009,7 @@ namespace http {
 				{
 					nDevCount = atoi(result[0][0].c_str());
 				}
+				else nDevCount = 39;// If first device, assign Unit=40 (+1 below)
 
 				if (nDevCount == 51)// Allow a maximum of 12 sensors
 				{

@@ -135,6 +135,30 @@ define(['app'], function (app) {
 				});
 			}
 		}
+		
+		$scope.ClearLog = function ()
+		{
+			if (typeof $scope.mytimer != 'undefined') {
+				$interval.cancel($scope.mytimer);
+				$scope.mytimer = undefined;
+			}
+			$http({
+				url: "json.htm?type=command&param=clearlog",
+				async: false, 
+				dataType: 'json'
+			}).success(function(data) {
+				$scope.logitems = [];
+				$scope.logitems_error = [];
+				$scope.logitems_status = [];
+				$scope.mytimer=$interval(function() {
+					$scope.RefreshLog();
+				}, 5000);
+			}).error(function() {
+				$scope.mytimer=$interval(function() {
+					$scope.RefreshLog();
+				}, 5000);
+			});
+		}
 
 		$scope.ResizeLogWindow = function ()
 		{
