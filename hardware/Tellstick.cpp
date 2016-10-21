@@ -204,7 +204,9 @@ bool CTellstick::StopHardware()
     boost::unique_lock<boost::mutex> lock(m_mutex);
     m_bIsStarted = false;
     m_cond.notify_all();
-    m_thread.join();
+    lock.unlock();
+    if (m_thread.joinable())
+        m_thread.join();
     return true;
 }
 
