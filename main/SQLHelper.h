@@ -6,7 +6,7 @@
 #include "../httpclient/UrlEncode.h"
 #include <map>
 
-#define TASK_PROCESSOR_HZ 25
+#define timer_resolution_hz 25
 
 struct sqlite3;
 

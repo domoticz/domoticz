@@ -2505,12 +2505,12 @@ void CSQLHelper::Do_Work()
 
 	while (!m_stoprequested)
 	{
-		sleep_milliseconds(1000./TASK_PROCESSOR_HZ);
+		sleep_milliseconds(1000./timer_resolution_hz);
 
 		if (m_bAcceptHardwareTimerActive)
 		{
-			m_iAcceptHardwareTimerCounter -= (1./TASK_PROCESSOR_HZ);
-			if (m_iAcceptHardwareTimerCounter <= (1./TASK_PROCESSOR_HZ/2))
+			m_iAcceptHardwareTimerCounter -= (1./timer_resolution_hz);
+			if (m_iAcceptHardwareTimerCounter <= (1./timer_resolution_hz/2))
 			{
 				m_bAcceptHardwareTimerActive = false;
 				m_bAcceptNewHardware = m_bPreviousAcceptNewHardware;
@@ -2531,8 +2531,8 @@ void CSQLHelper::Do_Work()
 				std::vector<_tTaskItem>::iterator itt=m_background_task_queue.begin();
 				while (itt!=m_background_task_queue.end())
 				{
-					itt->_DelayTime -= (1./TASK_PROCESSOR_HZ);
-					if (itt->_DelayTime<=(1./TASK_PROCESSOR_HZ/2))
+					itt->_DelayTime -= (1./timer_resolution_hz);
+					if (itt->_DelayTime<=(1./timer_resolution_hz/2))
 					{
 						_items2do.push_back(*itt);
 						itt=m_background_task_queue.erase(itt);
@@ -6111,7 +6111,7 @@ void CSQLHelper::AddTaskItem(const _tTaskItem &tItem)
 			if (itt->_idx == tItem._idx && itt->_ItemType == tItem._ItemType)
 			{
 				float iDelayDiff = tItem._DelayTime - itt->_DelayTime;
-				if (iDelayDiff < (1./TASK_PROCESSOR_HZ/2))
+				if (iDelayDiff < (1./timer_resolution_hz/2))
 				{
 					// _log.Log(LOG_NORM, "=> Already present. Cancelling previous task item");
 					itt = m_background_task_queue.erase(itt);

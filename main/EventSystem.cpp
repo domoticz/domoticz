@@ -1930,7 +1930,7 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 					StripQuotes(doWhat);
 				}
 				doWhat = ProcessVariableArgument(doWhat);
-				if (afterTimerSeconds < (1./TASK_PROCESSOR_HZ/2))
+				if (afterTimerSeconds < (1./timer_resolution_hz/2))
 				{
 					std::vector<std::vector<std::string> > result;
 					result = m_sql.safe_query("SELECT Name, ValueType FROM UserVariables WHERE (ID == '%q')", variableNo.c_str());
@@ -2989,7 +2989,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 
 			variableValue = ProcessVariableArgument(variableValue);
 
-			if (afterTimerSeconds < (1./TASK_PROCESSOR_HZ/2))
+			if (afterTimerSeconds < (1./timer_resolution_hz/2))
 			{
 				std::string updateResult = m_sql.UpdateUserVariable(sd[0], variableName, sd[1], variableValue, false);
 				if (updateResult != "OK") {
@@ -3211,7 +3211,7 @@ bool CEventSystem::ScheduleEvent(std::string deviceName, const std::string &Acti
 
 
 		std::string subject = cAction;
-		if (delay < (1./TASK_PROCESSOR_HZ/2))
+		if (delay < (1./timer_resolution_hz/2))
 		{
 			m_mainworker.m_cameras.EmailCameraSnapshot(deviceName, subject);
 		}
@@ -3350,11 +3350,11 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 	}
 	float DelayTime = 0;
 
-	if (randomTimer > (1./TASK_PROCESSOR_HZ/2)) {
+	if (randomTimer > (1./timer_resolution_hz/2)) {
 		float rTime;
 		srand((unsigned int)mytime(NULL));
 		rTime = (float)rand()/(float)(RAND_MAX/randomTimer);
-		DelayTime = rTime + (1./TASK_PROCESSOR_HZ); //prevent it from running again immediately the next minute if blockly script doesn't handle that
+		DelayTime = rTime + (1./timer_resolution_hz); //prevent it from running again immediately the next minute if blockly script doesn't handle that
 		//alreadyScheduled = isEventscheduled(deviceID, randomTimer, isScene);
 	}
 	if (afterTimerSeconds > 0)
@@ -3403,9 +3403,9 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 	}
 	m_sql.AddTaskItem(tItem);
 
-	if (suspendTimer > (1./TASK_PROCESSOR_HZ/2))
+	if (suspendTimer > (1./timer_resolution_hz/2))
 	{
-		DelayTime = suspendTimer + (1./TASK_PROCESSOR_HZ); //prevent it from running again immediately the next minute if blockly script doesn't handle that
+		DelayTime = suspendTimer + (1./timer_resolution_hz); //prevent it from running again immediately the next minute if blockly script doesn't handle that
 		_tTaskItem delayedtItem;
 		if (isScene) {
 			if (Action == "On") {
