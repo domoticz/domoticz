@@ -1920,17 +1920,17 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 			}
 			else if (isVariable)
 			{
-				int afterTimerSeconds = 0;
+				float afterTimerSeconds = 0;
 				size_t aFind = doWhat.find(" AFTER ");
 				if ((aFind > 0) && (aFind != std::string::npos)) {
 					std::string delayString = doWhat.substr(aFind + 7);
 					std::string newAction = doWhat.substr(0, aFind);
-					afterTimerSeconds = atoi(delayString.c_str());
+					afterTimerSeconds = atof(delayString.c_str());
 					doWhat = newAction;
 					StripQuotes(doWhat);
 				}
 				doWhat = ProcessVariableArgument(doWhat);
-				if (afterTimerSeconds == 0)
+				if (afterTimerSeconds < (1./TASK_PROCESSOR_HZ/2))
 				{
 					std::vector<std::vector<std::string> > result;
 					result = m_sql.safe_query("SELECT Name, ValueType FROM UserVariables WHERE (ID == '%q')", variableNo.c_str());
@@ -1945,7 +1945,7 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 				}
 				else
 				{
-					int DelayTime = 1 + afterTimerSeconds;
+					float DelayTime = afterTimerSeconds;
 					_tTaskItem tItem;
 					tItem = _tTaskItem::SetVariable(DelayTime, (const unsigned long long)atol(variableNo.c_str()), doWhat, false);
 					m_sql.AddTaskItem(tItem);
@@ -2719,7 +2719,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 		lua_rawset(lua_state, -3);
 	}
 	lua_setglobal(lua_state, "otherdevices_scenesgroups_idx");
-	
+
 	lua_createtable(lua_state, (int)m_uservariables.size(), 0);
 
 	typedef std::map<unsigned long long, _tUserVariable>::iterator it_var;
@@ -2974,12 +2974,12 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 
 		std::vector<std::vector<std::string> > result;
 
-		int afterTimerSeconds = 0;
+		float afterTimerSeconds = 0;
 		size_t aFind = variableValue.find(" AFTER ");
 		if ((aFind > 0) && (aFind != std::string::npos)) {
 			std::string delayString = variableValue.substr(aFind + 7);
 			std::string newAction = variableValue.substr(0, aFind);
-			afterTimerSeconds = atoi(delayString.c_str());
+			afterTimerSeconds = atof(delayString.c_str());
 			variableValue = newAction;
 		}
 		result = m_sql.safe_query("SELECT ID, ValueType FROM UserVariables WHERE (Name == '%q')", variableName.c_str());
@@ -2989,7 +2989,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 
 			variableValue = ProcessVariableArgument(variableValue);
 
-			if (afterTimerSeconds == 0)
+			if (afterTimerSeconds < (1./TASK_PROCESSOR_HZ/2))
 			{
 				std::string updateResult = m_sql.UpdateUserVariable(sd[0], variableName, sd[1], variableValue, false);
 				if (updateResult != "OK") {
@@ -2998,7 +2998,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 			}
 			else
 			{
-				int DelayTime = 1 + afterTimerSeconds;
+				float DelayTime = afterTimerSeconds;
 				unsigned long long idx;
 				std::stringstream sstr;
 				sstr << sd[0];
@@ -3199,19 +3199,19 @@ bool CEventSystem::ScheduleEvent(std::string deviceName, const std::string &Acti
 			return false;
 
 		std::string cAction = Action;
-		int delay = 0;
+		float delay = 0;
 		size_t aFind = Action.find(" AFTER ");
 		if ((aFind > 0) && (aFind != std::string::npos)) {
 			std::string delayString = Action.substr(aFind + 7);
 			std::string newAction = Action.substr(0, aFind);
-			delay = atoi(delayString.c_str());
+			delay = atof(delayString.c_str());
 			cAction = newAction;
 		}
 		StripQuotes(cAction);
 
 
 		std::string subject = cAction;
-		if (delay == 0)
+		if (delay < (1./TASK_PROCESSOR_HZ/2))
 		{
 			m_mainworker.m_cameras.EmailCameraSnapshot(deviceName, subject);
 		}
@@ -3246,36 +3246,30 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 	unsigned char previousLevel = calculateDimLevel(deviceID, m_devicestates[deviceID].lastLevel);
 	devicestatesMutexLock.unlock();
 
-	int suspendTimer = 0;
-	int randomTimer = 0;
-	int afterTimerSeconds = 0;
+	float suspendTimer = 0;
+	float randomTimer = 0;
+	float afterTimerSeconds = 0;
 
 	size_t aFind = Action.find(" FOR ");
 	if ((aFind > 0) && (aFind != std::string::npos)) {
 		std::string delayString = Action.substr(aFind + 5);
 		std::string newAction = Action.substr(0, aFind);
-		suspendTimer = atoi(delayString.c_str());
-		if (suspendTimer > 0)
-		{
-			Action = newAction;
-		}
+		suspendTimer = atof(delayString.c_str());
+		Action = newAction;
 	}
 	size_t rFind = Action.find(" RANDOM ");
 	if ((rFind > 0) && (rFind != std::string::npos))
 	{
 		std::string delayString = Action.substr(rFind + 8);
 		std::string newAction = Action.substr(0, rFind);
-		randomTimer = atoi(delayString.c_str());
-		if (randomTimer > 0)
-		{
-			Action = newAction;
-		}
+		randomTimer = atof(delayString.c_str());
+		Action = newAction;
 	}
 	aFind = Action.find(" AFTER ");
 	if ((aFind > 0) && (aFind != std::string::npos)) {
 		std::string delayString = Action.substr(aFind + 7);
 		std::string newAction = Action.substr(0, aFind);
-		afterTimerSeconds = atoi(delayString.c_str());
+		afterTimerSeconds = atof(delayString.c_str());
 		Action = newAction;
 	}
 
@@ -3354,13 +3348,13 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 
 		Action = Action.substr(0, 7);
 	}
-	int DelayTime = 1;
+	float DelayTime = 0;
 
-	if (randomTimer > 0) {
-		int rTime;
+	if (randomTimer > (1./TASK_PROCESSOR_HZ/2)) {
+		float rTime;
 		srand((unsigned int)mytime(NULL));
-		rTime = rand() % randomTimer + 1;
-		DelayTime = (rTime * 60) + 5; //prevent it from running again immediately the next minute if blockly script doesn't handle that
+		rTime = (float)rand()/(float)(RAND_MAX/randomTimer);
+		DelayTime = rTime + (1./TASK_PROCESSOR_HZ); //prevent it from running again immediately the next minute if blockly script doesn't handle that
 		//alreadyScheduled = isEventscheduled(deviceID, randomTimer, isScene);
 	}
 	if (afterTimerSeconds > 0)
@@ -3409,9 +3403,9 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 	}
 	m_sql.AddTaskItem(tItem);
 
-	if (suspendTimer > 0)
+	if (suspendTimer > (1./TASK_PROCESSOR_HZ/2))
 	{
-		DelayTime = (suspendTimer * 60) + 5; //prevent it from running again immediately the next minute if blockly script doesn't handle that
+		DelayTime = suspendTimer + (1./TASK_PROCESSOR_HZ); //prevent it from running again immediately the next minute if blockly script doesn't handle that
 		_tTaskItem delayedtItem;
 		if (isScene) {
 			if (Action == "On") {

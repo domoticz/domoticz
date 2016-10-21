@@ -6,6 +6,8 @@
 #include "../httpclient/UrlEncode.h"
 #include <map>
 
+#define TASK_PROCESSOR_HZ 25
+
 struct sqlite3;
 
 enum _eWindUnit
@@ -40,7 +42,7 @@ enum _eTaskItemType
 struct _tTaskItem
 {
 	_eTaskItemType _ItemType;
-	int _DelayTime;
+	float _DelayTime;
 	int _HardwareID;
 	unsigned long long _idx;
 	std::string _ID;
@@ -56,7 +58,7 @@ struct _tTaskItem
     unsigned char _level;
 	int _Hue;
     std::string _relatedEvent;
-    
+
 	_tTaskItem()
 	{
 
@@ -146,7 +148,7 @@ struct _tTaskItem
 		tItem._idx=idx;
         tItem._command= Command;
         tItem._relatedEvent = eventName;
-        
+
 		return tItem;
 	}
 	static _tTaskItem GetHTTPPage(const int DelayTime, const std::string &URL, const std::string &eventName)
@@ -169,7 +171,7 @@ struct _tTaskItem
 		tItem._nValue = (eventtrigger==true)?1:0;
 		return tItem;
 	}
-	
+
 };
 
 class CSQLHelper
@@ -193,7 +195,7 @@ public:
 	unsigned long long UpdateValueHomeConfortGroupCmd(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, std::string &devname, const bool bUseOnOffAction = true);
 
 	bool GetLastValue(const int HardwareID, const char* DeviceID, const unsigned char unit, const unsigned char devType, const unsigned char subType, int &nvalue, std::string &sValue, struct tm &LastUpdateTime);
-	
+
 	void Lighting2GroupCmd(const std::string &ID, const unsigned char subType, const unsigned char GroupCmd);
 	void HomeConfortGroupCmd(const std::string &ID, const unsigned char subType, const unsigned char GroupCmd);
 	void GeneralSwitchGroupCmd(const std::string &ID, const unsigned char subType, const unsigned char GroupCmd);
@@ -234,13 +236,13 @@ public:
 	void VacuumDatabase();
 
 	void DeleteHardware(const std::string &idx);
-    
+
     void DeleteCamera(const std::string &idx);
 
     void DeletePlan(const std::string &idx);
 
     void DeleteEvent(const std::string &idx);
-    
+
 	void DeleteDevices(const std::string &idx);
 
 	void TransferDevice(const std::string &oldidx, const std::string &newidx);
@@ -248,9 +250,9 @@ public:
 	bool DoesSceneByNameExits(const std::string &SceneName);
 
 	void AddTaskItem(const _tTaskItem &tItem);
-    
+
     void EventsGetTaskItems(std::vector<_tTaskItem> &currentTasks);
-   
+
 	void SetUnitsAndScale();
 
 	void CheckDeviceTimeout();
@@ -297,7 +299,7 @@ private:
 	std::map<unsigned long long, int> m_timeoutlastsend;
 	std::map<unsigned long long, int> m_batterylowlastsend;
 	bool			m_bAcceptHardwareTimerActive;
-	int				m_iAcceptHardwareTimerCounter;
+	float			m_iAcceptHardwareTimerCounter;
 	bool			m_bPreviousAcceptNewHardware;
 
 	std::vector<_tTaskItem> m_background_task_queue;
