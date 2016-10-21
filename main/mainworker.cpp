@@ -887,7 +887,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 #ifdef WITH_TELLDUSCORE
 	case HTYPE_Tellstick:
-		pHardware = new CTellstick(ID);
+		pHardware = new CTellstick(ID, Mode1, Mode2);
 		break;
 #endif //WITH_TELLDUSCORE
 	case HTYPE_EVOHOME_SCRIPT:
