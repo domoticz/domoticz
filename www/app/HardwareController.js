@@ -1,4 +1,4 @@
-pdefine(['app'], function (app) {
+define(['app'], function (app) {
     app.controller('HardwareController', [ '$scope', '$rootScope', '$location', '$http', '$interval', function($scope,$rootScope,$location,$http,$interval) {
 
         $scope.SerialPortStr=[];
