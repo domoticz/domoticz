@@ -115,6 +115,7 @@ const _tRFLinkStringIntHelper rfswitches[] =
 	{ "Ditec", sSwitchTypeDitec },
 	{ "Steffen", sSwitchTypeSteffen },
 	{ "AlectoSA", sSwitchTypeAlectoSA },
+	{ "GPIOset", sSwitchTypeGPIOset },
 	{ "", -1 }
 };
 
