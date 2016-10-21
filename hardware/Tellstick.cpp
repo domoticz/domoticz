@@ -251,7 +251,7 @@ void CTellstick::ThreadSendCommands()
 
             SendCommand(it->first, it->second.genSwitch);
             ++it->second.repeat;
-            if (it->second.repeat >= m_numRepeats)
+            if (it->second.repeat > m_numRepeats)
                 m_commands.erase(it++);
             else
             {
@@ -282,7 +282,7 @@ namespace http {
 
             string hwIdStr = request::findValue(&req, "idx");
             string repeatsStr = request::findValue(&req, "repeats");
-            string repeatIntervalStr = request::findValue(&req, "repeats");
+            string repeatIntervalStr = request::findValue(&req, "repeatInterval");
 
             if (hwIdStr.empty() || repeatsStr.empty() || repeatIntervalStr.empty())
                 return;
