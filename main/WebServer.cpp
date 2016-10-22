@@ -396,7 +396,7 @@ namespace http {
 
 			RegisterCommandCode("heossetmode", boost::bind(&CWebServer::Cmd_HEOSSetMode, this, _1, _2, _3));
 			RegisterCommandCode("heosmediacommand", boost::bind(&CWebServer::Cmd_HEOSMediaCommand, this, _1, _2, _3));
-			
+
 			RegisterCommandCode("bleboxsetmode", boost::bind(&CWebServer::Cmd_BleBoxSetMode, this, _1, _2, _3));
 			RegisterCommandCode("bleboxgetnodes", boost::bind(&CWebServer::Cmd_BleBoxGetNodes, this, _1, _2, _3));
 			RegisterCommandCode("bleboxaddnode", boost::bind(&CWebServer::Cmd_BleBoxAddNode, this, _1, _2, _3));
@@ -1229,7 +1229,7 @@ namespace http {
 			{
 				mode1 = 30;
 				mode2 = 1000;
-			}			
+			}
 			else if (htype == HTYPE_Tellstick)
 			{
 				mode1 = 4;
@@ -1459,7 +1459,7 @@ namespace http {
 			}
 			else
 				return;
-			
+
 			int mode1 = atoi(request::findValue(&req, "Mode1").c_str());
 			int mode2 = atoi(request::findValue(&req, "Mode2").c_str());
 			int mode3 = atoi(request::findValue(&req, "Mode3").c_str());
@@ -6866,7 +6866,7 @@ namespace http {
 			const std::string &floorID, 
 			const bool bDisplayHidden, 
 			const bool bFetchFavorites,
-			const time_t LastUpdate, 
+			const time_t LastUpdate,
 			const std::string &username)
 		{
 			std::vector<std::vector<std::string> > result;
@@ -7778,12 +7778,12 @@ namespace http {
 						{
 							root["result"][ii]["TypeImg"] = "door";
 							bool bIsOn = IsLightSwitchOn(lstatus);
-							root["result"][ii]["InternalState"] = (bIsOn == true) ? "Open" : "Closed";
+							root["result"][ii]["InternalState"] = (bIsOn == true) ? "Closed" : "Open";
 							if (bIsOn) {
-								lstatus = "Open";
+								lstatus = "Closed";
 							}
 							else {
-								lstatus = "Closed";
+								lstatus = "Open";
 							}
 							root["result"][ii]["Status"] = lstatus;
 						}
@@ -8387,7 +8387,7 @@ namespace http {
 							s_str2 >> total_max;
 							total_real = total_max - total_min;
 							sprintf(szTmp, "%llu", total_real);
-							
+
 							float musage = 0;
 							switch (metertype)
 							{
