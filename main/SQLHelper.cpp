@@ -2449,9 +2449,9 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("ShowUpdateEffect", 0);
 	}
+	nValue = 5;
 	if (!GetPreferencesVar("ShortLogInterval", nValue))
 	{
-		nValue = 5;
 		UpdatePreferencesVar("ShortLogInterval", nValue);
 	}
 	if (nValue < 1)
