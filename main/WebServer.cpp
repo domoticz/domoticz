@@ -3087,6 +3087,12 @@ namespace http {
 						_eSwitchType switchtype=(_eSwitchType)atoi(sd[14].c_str());
 
 						unsigned char devType = atoi(sd[3].c_str());
+
+						//switchtype seemed not to be used down with the GetLightStatus command,
+						//causing RFY to go wrong, fixing here
+						if (devType != pTypeRFY)
+							switchtype = STYPE_OnOff;
+
 						unsigned char subType = atoi(sd[4].c_str());
 						unsigned char nValue = (unsigned char)atoi(sd[5].c_str());
 						std::string sValue = sd[6];
@@ -3098,7 +3104,7 @@ namespace http {
 						bool bHaveDimmer = false;
 						bool bHaveGroupCmd = false;
 						int maxDimLevel = 0;
-						GetLightStatus(devType, subType, STYPE_OnOff, command, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+						GetLightStatus(devType, subType, switchtype, command, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 						root["result"][ii]["Command"] = lstatus;
 						root["result"][ii]["Level"] = level;
 						root["result"][ii]["Hue"] = atoi(sd[11].c_str());

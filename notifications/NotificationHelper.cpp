@@ -608,10 +608,7 @@ bool CNotificationHelper::CheckAndHandleNotification(
 			{
 				if (!itt->CustomMessage.empty())
 				{
-					std::string notValue;
-					sprintf(szTmp, "%.1f", mvalue);
-					notValue = szTmp;
-					msg = ParseCustomMessage(itt->CustomMessage, devicename, notValue);
+					msg = ParseCustomMessage(itt->CustomMessage, devicename, pvalue);
 				}
 				SendMessageEx(itt->ActiveSystems, msg, msg, szExtraData, itt->Priority, std::string(""), true);
 				TouchNotification(itt->ID);

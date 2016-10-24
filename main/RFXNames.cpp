@@ -1969,6 +1969,9 @@ void GetLightStatus(
 			case rfy_sDown:
 				lstatus = "Off";
 				break;
+			case rfy_sStop:
+				lstatus = "Stop";
+				break;
 			}
 		}
 		else
