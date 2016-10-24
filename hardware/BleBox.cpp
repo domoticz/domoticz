@@ -9,7 +9,7 @@
 #include "../main/SQLHelper.h"
 #include "../httpclient/HTTPClient.h"
 
-#define TOT_TYPE 5
+#define TOT_TYPE 6
 
 const _STR_DEVICE DevicesType[TOT_TYPE] =
 { 
@@ -17,7 +17,8 @@ const _STR_DEVICE DevicesType[TOT_TYPE] =
 	{ 1, "shutterBox", "Shutter Box", int(pTypeLighting2), int(sTypeAC), int(STYPE_BlindsPercentageInverted), "shutter" },
 	{ 2, "wLightBoxS", "Light Box S", int(pTypeLighting2), int(sTypeAC), int(STYPE_Dimmer), "light" },
 	{ 3, "wLightBox", "Light Box", int(pTypeLimitlessLights), int(sTypeLimitlessRGBW), int(STYPE_Dimmer), "rgbw" },
-	{ 4, "gateBox", "Gate Box", int(pTypeLighting2), int(sTypeAC), int(STYPE_Dimmer), "gate" }
+	{ 4, "gateBox", "Gate Box", int(pTypeLighting2), int(sTypeAC), int(STYPE_Dimmer), "gate" },
+	{ 5, "dimmerBox", "Dimmer Box", int(pTypeLighting2), int(sTypeAC), int(STYPE_Dimmer), "dimmer" }
 };
 
 int BleBox::GetDeviceTypeByApiName(const std::string &apiName)
@@ -193,6 +194,19 @@ void BleBox::GetDevicesState()
 						break;
 					}
 					const int currentPos = root["currentPos"].asInt();
+					int level = (int)(currentPos / (255.0 / 100.0));
+
+					SendSwitch(node, itt->second, 255, level > 0, level, DevicesType[itt->second].name);
+					break;
+				}
+				case 5:
+				{
+					if (root["currentBrightness"].empty() == true)
+					{
+						_log.Log(LOG_ERROR, "BleBox: node 'currentBrightness' missing!");
+						break;
+					}
+					const int currentPos = root["currentBrightness"].asInt();
 					int level = (int)(currentPos / (255.0 / 100.0));
 
 					SendSwitch(node, itt->second, 255, level > 0, level, DevicesType[itt->second].name);
