@@ -775,6 +775,26 @@ define(['app'], function (app) {
                      }
                 });
             }
+	    else if (text.indexOf("Seahu PLC computer") >= 0)
+            {
+                var username=$("#hardwarecontent").val();
+                $.ajax({
+                     url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+                        "&name=" + encodeURIComponent(name) +
+                        "&enabled=" + bEnabled +
+                        "&idx=" + idx +
+                        "&datatimeout=" + datatimeout +
+                        "&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
+                     async: false,
+                     dataType: 'json',
+                     success: function(data) {
+                        RefreshHardwareTable();
+                     },
+                     error: function(){
+                            ShowNotify($.t('Problem updating hardware!'), 2500, true);
+                     }
+                });
+            }
         }
 
         AddHardware = function()
@@ -1413,6 +1433,22 @@ define(['app'], function (app) {
                 $.ajax({
                      url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
 					 "&username=" + encodeURIComponent(username) +
+					 "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
+                     async: false,
+                     dataType: 'json',
+                     success: function(data) {
+                        RefreshHardwareTable();
+                     },
+                     error: function(){
+                            ShowNotify($.t('Problem adding hardware!'), 2500, true);
+                     }
+                });
+            }
+ 	    else if (text.indexOf("Seahu PLC computer") >= 0)
+            {
+                var username=$("#hardwarecontent").val();
+                $.ajax({
+                     url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
 					 "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
                      async: false,
                      dataType: 'json',

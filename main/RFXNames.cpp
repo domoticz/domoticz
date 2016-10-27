@@ -239,6 +239,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_ZIBLUEUSB, "ZiBlue RFPlayer USB" },
 		{ HTYPE_ZIBLUETCP, "ZiBlue RFPlayer with LAN interface" },
 		{ HTYPE_Yeelight, "Yeelight LED" },
+		{ HTYPE_Seahu, "Seahu PLC computer" },
 
 		{ 0, NULL, NULL }
 	};

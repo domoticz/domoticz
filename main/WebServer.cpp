@@ -1108,6 +1108,9 @@ namespace http {
 			else if (htype == HTYPE_Yeelight) {
 				//all fine here!
 			}
+			else if (htype == HTYPE_Seahu) {
+				//All fine here
+			}
 			else if (
 				(htype == HTYPE_Wunderground) ||
 				(htype == HTYPE_DarkSky) ||
@@ -1390,6 +1393,9 @@ namespace http {
 			}
 			else if (htype == HTYPE_Yeelight) {
 				//All fine here
+			}
+			else if (htype == HTYPE_Seahu) {
+				//all fine here!
 			}
 			else if (
 				(htype == HTYPE_Wunderground) ||
