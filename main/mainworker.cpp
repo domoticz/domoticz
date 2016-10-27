@@ -935,9 +935,11 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_Yeelight:
 		pHardware = new Yeelight(ID);
 		break;
+#ifndef WIN32
 	case HTYPE_Seahu:
 		pHardware = new CSeahu(ID);
 		break;
+#endif
 	}
 
 	if (pHardware)

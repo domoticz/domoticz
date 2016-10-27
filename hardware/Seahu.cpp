@@ -1,3 +1,4 @@
+#ifndef WIN32
 #include "stdafx.h"
 #include "Seahu.h"
 #include "../main/Helper.h"
@@ -14,41 +15,24 @@
 #include <unistd.h>
 #include <sys/ioctl.h>
 #endif
-// not used include
-//#include "../json/json.h"
-//#include "../main/SQLHelper.h"
-//#include "../main/WebServer.h"
-//#include "../webserver/cWebem.h"
 
 #define I2C_READ_INTERVAL 1
 #define SEAHU_ID_ADD 0x4000   // base pseudorandom DeviceID for SEAHU devices
+
+// PCF8574 (8-bit I/O expaner for I2C bus)
+#define PCF8574_ADDRESS_1		0x20    /* I2C address for I/O expaner on base board - control relays and optical isolated input and output*/
+#define PCF8574_ADDRESS_2		0x24    /* I2C address for I/O expaner on display board - control LCD-light and keys*/
+#define SEAHU_I2C_BUS_PATH	"/dev/i2c-1"	/* path to kernel i2c bus. If use another version raspberrryPI tehn v3 may by must change to "/dev/i2c-0" */
+
 
 
 CSeahu::CSeahu(const int ID)
 {
 	m_HwdID=ID;
 	m_bSkipReceiveCheck = true;
-	/*
-	seahuPins[0]={ PCF8574_ADDRESS_1, 0x01 };
-	seahuPins[1]={ PCF8574_ADDRESS_1, 0x02 };
-	seahuPins[2]={ PCF8574_ADDRESS_1, 0x04 };
-	seahuPins[3]={ PCF8574_ADDRESS_1, 0x08 };
-	seahuPins[4]={ PCF8574_ADDRESS_1, 0x10 };
-	seahuPins[5]={ PCF8574_ADDRESS_1, 0x20 };
-	seahuPins[6]={ PCF8574_ADDRESS_1, 0x40 };
-	seahuPins[7]={ PCF8574_ADDRESS_1, 0x80 };
-	seahuPins[8]={ PCF8574_ADDRESS_2, 0x01 };
-	seahuPins[9]={ PCF8574_ADDRESS_2, 0x02 };
-	seahuPins[10]={ PCF8574_ADDRESS_2, 0x04 };
-	seahuPins[11]={ PCF8574_ADDRESS_2, 0x08 };
-	seahuPins[12]={ PCF8574_ADDRESS_2, 0x10 };
-	seahuPins[13]={ PCF8574_ADDRESS_2, 0x20 };
-	seahuPins[14]={ PCF8574_ADDRESS_2, 0x40 };
-	seahuPins[15]={ PCF8574_ADDRESS_2, 0x80 };
-	*/
 }
 
-CSeahu::~CSeahu()
+CSeahu::~CSeahu(void)
 {
 	m_bIsStarted=false;
 }
@@ -312,3 +296,4 @@ char CSeahu::writeByteI2C(int file, char byte, char i2c_addr)
 	return 1;
 #endif
 }
+#endif

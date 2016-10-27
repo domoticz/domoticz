@@ -1,12 +1,9 @@
 #pragma once
+#ifndef WIN32
 
 #include "DomoticzHardware.h"
 #include <iostream>
 
-// PCF8574 (8-bit I/O expaner for I2C bus)
-#define PCF8574_ADDRESS_1		0x20    /* I2C address for I/O expaner on base board - control relays and optical isolated input and output*/
-#define PCF8574_ADDRESS_2		0x24    /* I2C address for I/O expaner on display board - control LCD-light and keys*/
-#define SEAHU_I2C_BUS_PATH	"/dev/i2c-1"	/* path to kernel i2c bus. If use another version raspberrryPI tehn v3 may by must change to "/dev/i2c-0" */
 
 
 class CSeahu : public CDomoticzHardwareBase
@@ -16,8 +13,8 @@ class CSeahu : public CDomoticzHardwareBase
 		char mask;      /* 8-bit mask for select pin bit */
 	} SEAHU_I2C_PIN;
 public:
-	CSeahu(const int ID);
-	~CSeahu();
+	explicit CSeahu(const int ID);
+	~CSeahu(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 private:
 	void Init();
@@ -142,3 +139,5 @@ private:
 // 8. cmake -DCMAKE_BUILD_TYPE=Release
 // 9. make
 //
+
+#endif
