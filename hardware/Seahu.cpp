@@ -23,46 +23,54 @@
 #define I2C_READ_INTERVAL 1
 #define SEAHU_ID_ADD 0x4000   // base pseudorandom DeviceID for SEAHU devices
 
-// PCF8574 (8-bit I/O expaner for I2C bus)
-#define PCF8574_ADDRESS_1		0x20    /* I2C address for I/O expaner on base board - control relays and optical isolated input and output*/
-#define PCF8574_ADDRESS_2		0x24    /* I2C address for I/O expaner on display board - control LCD-light and keys*/
-#define SEAHU_I2C_BUS_PATH	"/dev/i2c-1"	/* path to kernel i2c bus. If use another version raspberrryPI tehn v3 may by must change to "/dev/i2c-0" */
-
-typedef struct {
-        char i2c_addr ; /* i2c address for PCF8574 chip */
-        char mask;      /* 8-bit mask for select pin bit */
-} SEAHU_I2C_PIN;
-
-SEAHU_I2C_PIN seahuPins[16]={
-	{ PCF8574_ADDRESS_1, 0x01 },
-	{ PCF8574_ADDRESS_1, 0x02 },
-	{ PCF8574_ADDRESS_1, 0x04 },
-	{ PCF8574_ADDRESS_1, 0x08 },
-	{ PCF8574_ADDRESS_1, 0x10 },
-	{ PCF8574_ADDRESS_1, 0x20 },
-	{ PCF8574_ADDRESS_1, 0x40 },
-	{ PCF8574_ADDRESS_1, 0x80 },
-	{ PCF8574_ADDRESS_2, 0x01 },
-	{ PCF8574_ADDRESS_2, 0x02 },
-	{ PCF8574_ADDRESS_2, 0x04 },
-	{ PCF8574_ADDRESS_2, 0x08 },
-	{ PCF8574_ADDRESS_2, 0x10 },
-	{ PCF8574_ADDRESS_2, 0x20 },
-	{ PCF8574_ADDRESS_2, 0x40 },
-	{ PCF8574_ADDRESS_2, 0x80 }
-};
 
 CSeahu::CSeahu(const int ID)
 {
 	m_HwdID=ID;
 	m_bSkipReceiveCheck = true;
-
+	/*
+	seahuPins[0]={ PCF8574_ADDRESS_1, 0x01 };
+	seahuPins[1]={ PCF8574_ADDRESS_1, 0x02 };
+	seahuPins[2]={ PCF8574_ADDRESS_1, 0x04 };
+	seahuPins[3]={ PCF8574_ADDRESS_1, 0x08 };
+	seahuPins[4]={ PCF8574_ADDRESS_1, 0x10 };
+	seahuPins[5]={ PCF8574_ADDRESS_1, 0x20 };
+	seahuPins[6]={ PCF8574_ADDRESS_1, 0x40 };
+	seahuPins[7]={ PCF8574_ADDRESS_1, 0x80 };
+	seahuPins[8]={ PCF8574_ADDRESS_2, 0x01 };
+	seahuPins[9]={ PCF8574_ADDRESS_2, 0x02 };
+	seahuPins[10]={ PCF8574_ADDRESS_2, 0x04 };
+	seahuPins[11]={ PCF8574_ADDRESS_2, 0x08 };
+	seahuPins[12]={ PCF8574_ADDRESS_2, 0x10 };
+	seahuPins[13]={ PCF8574_ADDRESS_2, 0x20 };
+	seahuPins[14]={ PCF8574_ADDRESS_2, 0x40 };
+	seahuPins[15]={ PCF8574_ADDRESS_2, 0x80 };
+	*/
 }
 
 CSeahu::~CSeahu()
 {
 	m_bIsStarted=false;
 }
+
+CSeahu::SEAHU_I2C_PIN	CSeahu::seahuPins[]={
+		{ PCF8574_ADDRESS_1, 0x01 },
+		{ PCF8574_ADDRESS_1, 0x02 },
+		{ PCF8574_ADDRESS_1, 0x04 },
+		{ PCF8574_ADDRESS_1, 0x08 },
+		{ PCF8574_ADDRESS_1, 0x10 },
+		{ PCF8574_ADDRESS_1, 0x20 },
+		{ PCF8574_ADDRESS_1, 0x40 },
+		{ PCF8574_ADDRESS_1, 0x80 },
+		{ PCF8574_ADDRESS_2, 0x01 },
+		{ PCF8574_ADDRESS_2, 0x02 },
+		{ PCF8574_ADDRESS_2, 0x04 },
+		{ PCF8574_ADDRESS_2, 0x08 },
+		{ PCF8574_ADDRESS_2, 0x10 },
+		{ PCF8574_ADDRESS_2, 0x20 },
+		{ PCF8574_ADDRESS_2, 0x40 },
+		{ PCF8574_ADDRESS_2, 0x80 }
+	};
 
 void CSeahu::Init()
 {

@@ -3,8 +3,18 @@
 #include "DomoticzHardware.h"
 #include <iostream>
 
+// PCF8574 (8-bit I/O expaner for I2C bus)
+#define PCF8574_ADDRESS_1		0x20    /* I2C address for I/O expaner on base board - control relays and optical isolated input and output*/
+#define PCF8574_ADDRESS_2		0x24    /* I2C address for I/O expaner on display board - control LCD-light and keys*/
+#define SEAHU_I2C_BUS_PATH	"/dev/i2c-1"	/* path to kernel i2c bus. If use another version raspberrryPI tehn v3 may by must change to "/dev/i2c-0" */
+
+
 class CSeahu : public CDomoticzHardwareBase
 {
+	typedef struct {
+		char i2c_addr ; /* i2c address for PCF8574 chip */
+		char mask;      /* 8-bit mask for select pin bit */
+	} SEAHU_I2C_PIN;
 public:
 	CSeahu(const int ID);
 	~CSeahu();
@@ -17,6 +27,7 @@ private:
 	void Do_Work();
 	boost::shared_ptr<boost::thread> m_thread;
 	volatile bool m_stoprequested;
+	static SEAHU_I2C_PIN seahuPins[];
 
 	std::string device;
 
