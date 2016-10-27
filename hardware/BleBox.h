@@ -48,9 +48,11 @@ private:
 	std::string GetDeviceIP(const tRBUF *id);
 	std::string GetDeviceRevertIP(const tRBUF *id);
 	std::string GetDeviceIP(const std::string &id);
-	std::string IPToHex(const std::string &IPAddress);
+	std::string IPToHex(const std::string &IPAddress, const int type);
 	Json::Value SendCommand(const std::string &IPAddress, const std::string &command);
 	void GetDevicesState();
+
+	void SendSwitch(const int NodeID, const int ChildID, const int BatteryLevel, const bool bOn, const double Level, const std::string &defaultname);
 
 	void ReloadNodes();
 	void UnloadNodes();

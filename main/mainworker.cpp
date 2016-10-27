@@ -37,7 +37,7 @@
 #include "../hardware/1Wire.h"
 #include "../hardware/I2C.h"
 #include "../hardware/Wunderground.h"
-#include "../hardware/ForecastIO.h"
+#include "../hardware/DarkSky.h"
 #include "../hardware/HardwareMonitor.h"
 #include "../hardware/Dummy.h"
 #include "../hardware/Tellstick.h"
@@ -101,6 +101,12 @@
 #include "../hardware/Ec3kMeterTCP.h"
 #include "../hardware/OpenWeatherMap.h"
 #include "../hardware/GoodweAPI.h"
+#include "../hardware/Daikin.h"
+#include "../hardware/HEOS.h"
+#include "../hardware/MultiFun.h"
+#include "../hardware/ZiBlueSerial.h"
+#include "../hardware/ZiBlueTCP.h"
+#include "../hardware/Yeelight.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -663,6 +669,9 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_RFLINKUSB:
 		pHardware = new CRFLinkSerial(ID, SerialPort);
 		break;
+	case HTYPE_ZIBLUEUSB:
+		pHardware = new CZiBlueSerial(ID, SerialPort);
+		break;
 	case HTYPE_CurrentCostMeter:
 		pHardware = new CurrentCostMeterSerial(ID, SerialPort, (Mode1 == 1) ? 57600 : 9600);
 		break;
@@ -703,6 +712,10 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_RFLINKTCP:
 		//LAN
 		pHardware = new CRFLinkTCP(ID, Address, Port);
+		break;
+	case HTYPE_ZIBLUETCP:
+		//LAN
+		pHardware = new CZiBlueTCP(ID, Address, Port);
 		break;
 	case HTYPE_MQTT:
 		//LAN
@@ -768,7 +781,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new MochadTCP(ID, Address, Port);
 		break;
 	case HTYPE_SatelIntegra:
-		pHardware = new SatelIntegra(ID, Address, Port, Password);
+		pHardware = new SatelIntegra(ID, Address, Port, Password, Mode1);
 		break;
 	case HTYPE_LogitechMediaServer:
 		//Logitech Media Server
@@ -781,6 +794,14 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_DenkoviSmartdenLan:
 		//LAN
 		pHardware = new CDenkoviSmartdenLan(ID, Address, Port, Password);
+		break;
+	case HTYPE_HEOS:
+		//HEOS by DENON
+		pHardware = new CHEOS(ID, Address, Port, Username, Password, Mode1, Mode2);
+		break;
+	case HTYPE_MultiFun:
+		//MultiFun LAN
+		pHardware = new MultiFun(ID, Address, Port);
 		break;
 #ifndef WIN32
 	case HTYPE_TE923:
@@ -811,8 +832,8 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_HTTPPOLLER:
 		pHardware = new CHttpPoller(ID, Username, Password, Address, Filename, Port);
 		break;
-	case HTYPE_ForecastIO:
-		pHardware = new CForecastIO(ID,Username,Password);
+	case HTYPE_DarkSky:
+		pHardware = new CDarkSky(ID,Username,Password);
 		break;
 	case HTYPE_AccuWeather:
 		pHardware = new CAccuWeather(ID, Username, Password);
@@ -822,6 +843,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_Netatmo:
 		pHardware = new CNetatmo(ID,Username,Password);
+		break;
+	case HTYPE_Daikin:
+		pHardware = new CDaikin(ID, Address, Port, Username, Password);
 		break;
 #ifdef _DEBUG
 	case HTYPE_FITBIT:
@@ -863,7 +887,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 #ifdef WITH_TELLDUSCORE
 	case HTYPE_Tellstick:
-		pHardware = new CTellstick(ID);
+		pHardware = new CTellstick(ID, Mode1, Mode2);
 		break;
 #endif //WITH_TELLDUSCORE
 	case HTYPE_EVOHOME_SCRIPT:
@@ -907,6 +931,9 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_GoodweAPI:
 		pHardware = new GoodweAPI(ID, Username);
 		break;
+	case HTYPE_Yeelight:
+		pHardware = new Yeelight(ID);
+		break;
 	}
 
 	if (pHardware)
@@ -929,6 +956,7 @@ bool MainWorker::Start()
 	{
 		return false;
 	}
+	HTTPClient::SetUserAgent(GenerateUserAgent());
 	m_notifications.Init();
 	GetSunSettings();
 	GetAvailableWebThemes();
@@ -2215,6 +2243,9 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const 
 		case pTypeHomeConfort:
 			decode_HomeConfort(HwdID, HwdType, reinterpret_cast<const tRBUF *>(pRXCommand), procResult);
 			break;
+		case pTypeYeelight:
+			decode_Yeelight(HwdID, HwdType, reinterpret_cast<const tRBUF *>(pRXCommand), procResult);
+			break;
 		default:
 			_log.Log(LOG_ERROR, "UNHANDLED PACKET TYPE:      FS20 %02X", pRXCommand[1]);
 			return;
@@ -2812,9 +2843,9 @@ void MainWorker::decode_Rain(const int HwdID, const _eHardwareTypes HwdType, con
 	unsigned char cmnd=0;
 	unsigned char SignalLevel=pResponse->RAIN.rssi;
 	unsigned char BatteryLevel = get_BateryLevel(HwdType,pResponse->RAIN.subtype==sTypeRAIN1, pResponse->RAIN.battery_level & 0x0F);
-	
+
 	int Rainrate = (pResponse->RAIN.rainrateh * 256) + pResponse->RAIN.rainratel;
-	
+
 	float TotalRain=float((pResponse->RAIN.raintotal1 * 65535) + (pResponse->RAIN.raintotal2 * 256) + pResponse->RAIN.raintotal3) / 10.0f;
 
 	if (subType != sTypeRAINWU)
@@ -5387,6 +5418,50 @@ void MainWorker::decode_LimitlessLights(const int HwdID, const _eHardwareTypes H
 	procResult.DeviceRowIdx = DevRowIdx;
 }
 
+void MainWorker::decode_Yeelight(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
+{
+	char szTmp[300];
+	_tYeelight *pLed = (_tYeelight*)pResponse;
+	unsigned char devType = pTypeYeelight;
+	unsigned char subType = pLed->subtype;
+	if (pLed->id == 1)
+		sprintf(szTmp, "%d", 1);
+	else
+		sprintf(szTmp, "%08x", (unsigned int)pLed->id);
+	std::string ID = szTmp;
+	unsigned char Unit = pLed->dunit;
+	unsigned char cmnd = pLed->command;
+	unsigned char value = pLed->value;
+	unsigned long long DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, 12, -1, cmnd, procResult.DeviceName);
+	if (DevRowIdx == -1)
+		return;
+	CheckSceneCode(DevRowIdx, devType, subType, cmnd, szTmp);
+	if (cmnd == light1_sOn) {
+		WriteMessage("On");
+	}
+	if (cmnd == Yeelight_SetBrightnessLevel)
+	{
+		std::vector<std::vector<std::string> > result;
+		result = m_sql.safe_query(
+			"SELECT ID,Name FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",
+			HwdID, ID.c_str(), Unit, devType, subType);
+		if (result.size() != 0)
+		{
+			unsigned long long ulID;
+			std::stringstream s_str(result[0][0]);
+			s_str >> ulID;
+
+			//store light level
+			m_sql.safe_query(
+				"UPDATE DeviceStatus SET LastLevel='%d' WHERE (ID = %llu)",
+				value,
+				ulID);
+			//_log.Log(LOG_STATUS, "UPDATE DeviceStatus SET LastLevel value: %d", value);
+		}
+	}
+	procResult.DeviceRowIdx = DevRowIdx;
+}
+
 void MainWorker::decode_Chime(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
 {
 	char szTmp[100];
@@ -6095,7 +6170,7 @@ void MainWorker::decode_evohome2(const int HwdID, const _eHardwareTypes HwdType,
 			else
 				strarray[0]=szTmp;
 			szUpdateStat=boost::algorithm::join(strarray, ";");
-		}		
+		}
 	}
 	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, szDevID.c_str(),Unit,dType,dSubType,SignalLevel,BatteryLevel,cmnd,szUpdateStat.c_str(), procResult.DeviceName);
 	if (DevRowIdx == -1)
@@ -9468,6 +9543,7 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, pMeter->intval1, szTmp, procResult.DeviceName);
 		if (DevRowIdx == -1)
 			return;
+		m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_USAGE, static_cast<float>(pMeter->intval1));
 	}
 	else if (subType == sTypeCustom)
 	{
@@ -10640,6 +10716,70 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			return true;
 		}
 		break;
+	case pTypeYeelight:
+	{
+		_tYeelight ycmd;
+		ycmd.len = sizeof(_tYeelight) - 1;
+		ycmd.type = dType;
+		ycmd.subtype = dSubType;
+		ycmd.id = ID;
+		ycmd.dunit = Unit;
+
+		unsigned long ID1;
+		std::stringstream s_strid1;
+		s_strid1 << std::hex << sd[1];
+		s_strid1 >> ID1;
+
+		if ((switchcmd == "On") || (switchcmd == "Set Level"))
+		{
+			if (hue != -1)
+			{
+				_tYeelight ycmd2;
+				ycmd2.len = sizeof(_tYeelight) - 1;
+				ycmd2.type = dType;
+				ycmd2.subtype = dSubType;
+				ycmd2.id = ID;
+				ycmd2.dunit = Unit;
+				if (hue != 1000)
+				{
+					double dval;
+					dval = (255.0 / 360.0)*float(hue);
+					int ival;
+					ival = round(dval);
+					ycmd2.value = ival;
+					//ycmd2.command = Limitless_SetRGBColour;
+					ycmd2.command = Yeelight_SetBrightnessLevel;
+				}
+				else
+				{
+					ycmd2.command = Yeelight_SetColorToWhite;
+				}
+				if (!WriteToHardware(HardwareID, (const char*)&ycmd2, sizeof(_tYeelight)))
+					return false;
+				sleep_milliseconds(100);
+			}
+		}
+
+		ycmd.value = level;
+		if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, ycmd.command, options)) {
+			_log.Log(LOG_STATUS, "GetLightCommand is false");
+			return false;
+		}
+		if (!WriteToHardware(HardwareID, (const char*)&ycmd, sizeof(_tYeelight)))
+		{
+			_log.Log(LOG_STATUS, "WriteToHardware is false");
+			//m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d, sValue='', LastLevel=%d WHERE(HardwareID == %d) AND (DeviceID == '%q')", int(light1_sOff), int(0), (int)HardwareID, (int)ID);
+			//update the database to off...
+			return false;
+		}
+		if (!IsTesting) {
+			//send to internal for now (later we use the ACK)
+			PushAndWaitRxMessage(m_hardwaredevices[hindex], (const unsigned char *)&ycmd, NULL, -1);
+		}
+		//_log.Log(LOG_STATUS, "case pTypeYeelight in mainworker.cpp FINISHED");
+		return true;
+	}
+	break;
 	case pTypeSecurity1:
 		{
 			tRBUF lcmd;

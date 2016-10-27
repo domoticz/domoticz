@@ -85,6 +85,8 @@ void P1MeterBase::Init()
 {
 	m_linecount=0;
 	m_exclmarkfound=0;
+	l_exclmarkfound=0;
+	m_CRfound=0;
 	m_bufferpos=0;
 	l_bufferpos=0;
 	m_lastgasusage=0;
@@ -154,7 +156,7 @@ bool P1MeterBase::MatchLine()
 			break;
 		case EXCLMARK:
 			if(strncmp(t.key, (const char*)&l_buffer, strlen(t.key)) == 0) {
-				m_exclmarkfound=1;
+				l_exclmarkfound=1;
 				found=1;
 			}
 			else 
@@ -167,7 +169,7 @@ bool P1MeterBase::MatchLine()
 		if(!found)
 			continue;
 
-		if (m_exclmarkfound) {
+		if (l_exclmarkfound) {
 			time_t atime=mytime(NULL);
 			sDecodeRXMessage(this, (const unsigned char *)&m_p1power, "Power", 255);
 			bool bSend2Shared=(atime-m_lastSharedSendElectra>59);
@@ -188,7 +190,8 @@ bool P1MeterBase::MatchLine()
 				m_lastgasusage=m_p1gas.gasusage;
 				sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, "Gas", 255);
 			}
-			m_exclmarkfound=0;
+			m_linecount=0;
+			l_exclmarkfound=0;
 		}
 		else
 		{
@@ -301,7 +304,13 @@ bool P1MeterBase::CheckCRC()
 
 	if (l_buffer[5]!=0){
 		// trailing characters after CRC
+		_log.Log(LOG_STATUS,"P1: dismiss incoming - CRC value in message has trailing characters");
 		return false;
+	}
+
+	if (!m_CRfound){
+		_log.Log(LOG_STATUS,"P1: you appear to have middleware that changes the message content - skipping CRC validation");
+		return true;
 	}
 
 	// retrieve CRC from the current line
@@ -350,21 +359,46 @@ void P1MeterBase::ParseData(const unsigned char *pData, int Len, unsigned char d
 {
 	int ii=0;
 
+	// a new message should not start with an empty line, but just in case it does (crude check is sufficient here)
+	while ((m_linecount==0) && (pData[ii]<0x10)){
+		ii++;
+	}
+
 	// reenable reading pData when a new message starts, empty buffers
-	if (pData[0]==0x2f) {
+	if (pData[ii]==0x2f) {
+/*
+/	Debug entry for open ended messages: start
+/
+/	P1 Wifi Gateway sends open ended messages which used to pass silently as delayed messages in
+/	Domoticz prior to v3.5592. With the introduction of the P1 message CRC validation this became
+/	an illegal procedure. Enclosed code re-enables the possibility to commit delayed data while
+/	printing a warning in the log file.
+*/
+		if ((l_buffer[0]==0x21) && !l_exclmarkfound && (m_linecount>0)) {
+			_log.Log(LOG_STATUS,"P1: WARNING: got new message but buffer still contains unprocessed data from previous message.");
+			l_buffer[l_bufferpos] = 0;
+			if (disable_crc || CheckCRC()) {
+				MatchLine();
+			}
+		}
+/*
+/	Debug entry for open ended messages: end
+*/
 		m_linecount = 1;
 		l_bufferpos = 0;
 		m_bufferpos = 0;
+		m_exclmarkfound = 0;
 	}
 
 	// assemble complete message in message buffer
-	while ((ii<Len) && (m_linecount>0) && (m_bufferpos<sizeof(m_buffer))){
+	while ((ii<Len) && (m_linecount>0) && (!m_exclmarkfound) && (m_bufferpos<sizeof(m_buffer))){
 		const unsigned char c = pData[ii];
 		m_buffer[m_bufferpos] = c;
 		m_bufferpos++;
 		if(c==0x21){
 			// stop reading at exclamation mark (do not include CRC)
 			ii=Len;
+			m_exclmarkfound = 1;
 		}else{
 			ii++;
 		}
@@ -372,6 +406,11 @@ void P1MeterBase::ParseData(const unsigned char *pData, int Len, unsigned char d
 
 	if(m_bufferpos==sizeof(m_buffer)){
 		// discard oversized message
+		if ((Len > 400) || (pData[0]==0x21)){
+			// 400 is an arbitrary chosen number to differentiate between full messages and single line commits
+			_log.Log(LOG_STATUS,"P1: dismiss incoming - message oversized");
+		}
+		m_linecount = 0;
 		return;
 	}
 
@@ -382,6 +421,7 @@ void P1MeterBase::ParseData(const unsigned char *pData, int Len, unsigned char d
 		const unsigned char c = pData[ii];
 		ii++;
 		if (c==0x0d) {
+			m_CRfound=1;
 			continue;
 		}
 

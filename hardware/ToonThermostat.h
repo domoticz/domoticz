@@ -55,6 +55,9 @@ private:
 	unsigned long m_lastelectrausage;
 	unsigned long m_lastelectradeliv;
 
+	int m_poll_counter;
+	int m_retry_counter;
+
 	std::map<int, double> m_LastElectricCounter;
 	std::map<int, double> m_OffsetElectricUsage;
 

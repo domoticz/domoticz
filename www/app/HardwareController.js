@@ -80,7 +80,8 @@ define(['app'], function (app) {
 				(text.indexOf("PiFace") >= 0) ||
 				(text.indexOf("Motherboard") >= 0) ||
 				(text.indexOf("Kodi") >= 0) ||
-				(text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0)
+				(text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0) ||
+                (text.indexOf("Yeelight") >= 0)
 				)
             {
 		// if hardwaretype == 1000 => I2C sensors grouping
@@ -181,8 +182,9 @@ define(['app'], function (app) {
 					(text.indexOf("LAN") >= 0 &&
 					text.indexOf("YouLess") == -1 &&
 					text.indexOf("Denkovi") == -1 &&
-					text.indexOf("Integra") == -1 &&
+					text.indexOf("Satel Integra") == -1 &&
 					text.indexOf("ETH8020") == -1 &&
+					text.indexOf("Daikin") == -1 &&
 					text.indexOf("Sterbox") == -1 &&
 					text.indexOf("Anna") == -1 &&
 					text.indexOf("KMTronic") == -1  &&
@@ -241,7 +243,7 @@ define(['app'], function (app) {
             }
             else if (
 				(text.indexOf("LAN") >= 0 && ((text.indexOf("YouLess") >= 0)||(text.indexOf("Denkovi") >= 0)) ) ||
-				(text.indexOf("Integra") >= 0)
+				(text.indexOf("Satel Integra") >= 0)
 				)
             {
                 var address=$("#hardwarecontent #divremote #tcpaddress").val();
@@ -260,6 +262,17 @@ define(['app'], function (app) {
                 if(!intRegex.test(port)) {
                     ShowNotify($.t('Please enter an Valid Port!'), 2500, true);
                     return;
+                }
+				
+				if (text.indexOf("Satel Integra") >= 0)
+                {
+					var pollinterval=$("#hardwarecontent #hardwareparamspollinterval #pollinterval").val();
+                    if (pollinterval=="")
+                    {
+                        ShowNotify($.t('Please enter poll interval!'), 2500, true);
+                        return;
+                    }
+                    Mode1 = pollinterval;
                 }
                 var password=encodeURIComponent($("#hardwarecontent #divlogin #password").val());
                 $.ajax({
@@ -286,6 +299,7 @@ define(['app'], function (app) {
 				(text.indexOf("Domoticz") >= 0) ||
 				(text.indexOf("Harmony") >= 0) ||
 				(text.indexOf("ETH8020") >= 0) ||
+				(text.indexOf("Daikin") >= 0) ||
 				(text.indexOf("Sterbox") >= 0) ||
 				(text.indexOf("Anna") >= 0) ||
 				(text.indexOf("KMTronic") >= 0) ||
@@ -425,7 +439,7 @@ define(['app'], function (app) {
                     }
                 });
             }
-            else if ((text.indexOf("Underground") >= 0) || (text.indexOf("Forecast") >= 0) || (text.indexOf("AccuWeather") >= 0) || (text.indexOf("Open Weather Map") >= 0))
+            else if ((text.indexOf("Underground") >= 0) || (text.indexOf("DarkSky") >= 0) || (text.indexOf("AccuWeather") >= 0) || (text.indexOf("Open Weather Map") >= 0))
             {
                 var apikey=$("#hardwarecontent #divunderground #apikey").val();
                 if (apikey=="")
@@ -651,6 +665,49 @@ define(['app'], function (app) {
                      }
                 });
             }
+			else if (text.indexOf("HEOS by DENON") >= 0)
+            {
+                var address=$("#hardwarecontent #divremote #tcpaddress").val();
+                if (address=="")
+                {
+                    ShowNotify($.t('Please enter an Address!'), 2500, true);
+                    return;
+                }
+                var port=$("#hardwarecontent #divremote #tcpport").val();
+                if (port=="")
+                {
+                    ShowNotify($.t('Please enter an Port!'), 2500, true);
+                    return;
+                }
+                var intRegex = /^\d+$/;
+                if(!intRegex.test(port)) {
+                    ShowNotify($.t('Please enter an Valid Port!'), 2500, true);
+                    return;
+                }
+                var username=$("#hardwarecontent #divlogin #username").val();
+                var password=$("#hardwarecontent #divlogin #password").val();
+
+                $.ajax({
+                     url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+                        "&address=" + address +
+                        "&port=" + port +
+                        "&username=" + encodeURIComponent(username) +
+                        "&password=" + encodeURIComponent(password) +
+                        "&name=" + encodeURIComponent(name) +
+                        "&enabled=" + bEnabled +
+                        "&idx=" + idx +
+                        "&datatimeout=" + datatimeout +
+                        "&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
+                     async: false,
+                     dataType: 'json',
+                     success: function(data) {
+                        RefreshHardwareTable();
+                     },
+                     error: function(){
+                            ShowNotify($.t('Problem updating hardware!'), 2500, true);
+                     }
+                });
+            }
 	    else if (text.indexOf("MyHome OpenWebNet") >= 0)
             {
 				var address=$("#hardwarecontent #divremote #tcpaddress").val();
@@ -785,11 +842,12 @@ define(['app'], function (app) {
 					text.indexOf("YouLess") == -1 &&
 					text.indexOf("Denkovi") == -1 &&
 					text.indexOf("ETH8020") == -1 &&
+					text.indexOf("Daikin") == -1 &&
 					text.indexOf("Sterbox") == -1 &&
 					text.indexOf("Anna") == -1 &&
 					text.indexOf("KMTronic") == -1
 					&& text.indexOf("MQTT") == -1 &&
-					text.indexOf("Integra") == -1 &&
+					text.indexOf("Satel Integra") == -1 &&
 					text.indexOf("Razberry") == -1
 					)
 				)
@@ -835,7 +893,8 @@ define(['app'], function (app) {
 				(text.indexOf("GPIO") >= 0) ||
 				(text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0) ||
 				(text.indexOf("Tellstick") >= 0) ||
-				(text.indexOf("Motherboard") >= 0)
+				(text.indexOf("Motherboard") >= 0) ||
+                (text.indexOf("Yeelight") >= 0)
 				)
             {
                 $.ajax({
@@ -921,11 +980,12 @@ define(['app'], function (app) {
 					text.indexOf("YouLess") == -1 &&
 					text.indexOf("Denkovi") == -1 &&
 					text.indexOf("ETH8020") == -1 &&
+					text.indexOf("Daikin") == -1 &&
 					text.indexOf("Sterbox") == -1 &&
 					text.indexOf("Anna") == -1 &&
 					text.indexOf("KMTronic") == -1
 					&& text.indexOf("MQTT") == -1 &&
-					text.indexOf("Integra") == -1 &&
+					text.indexOf("Satel Integra") == -1 &&
 					text.indexOf("Razberry") == -1
 					)
 				)
@@ -961,7 +1021,7 @@ define(['app'], function (app) {
             }
             else if (
 				(text.indexOf("LAN") >= 0 && ((text.indexOf("YouLess") >= 0) || (text.indexOf("Denkovi") >= 0) )) ||
-				(text.indexOf("Integra") >= 0)
+				(text.indexOf("Satel Integra") >= 0)
 				)
             {
                 var address=$("#hardwarecontent #divremote #tcpaddress").val();
@@ -981,9 +1041,19 @@ define(['app'], function (app) {
                     ShowNotify($.t('Please enter an Valid Port!'), 2500, true);
                     return;
                 }
+				if (text.indexOf("Satel Integra") >= 0)
+                {
+					var pollinterval=$("#hardwarecontent #hardwareparamspollinterval #pollinterval").val();
+                    if (pollinterval=="")
+                    {
+                        ShowNotify($.t('Please enter poll interval!'), 2500, true);
+                        return;
+                    }
+                    Mode1 = pollinterval;
+                }
                 var password=encodeURIComponent($("#hardwarecontent #divlogin #password").val());
                 $.ajax({
-                     url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&name=" + encodeURIComponent(name) + "&password=" + encodeURIComponent(password) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
+                     url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&name=" + encodeURIComponent(name) + "&password=" + encodeURIComponent(password) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout + "&Mode1=" + Mode1,
                      async: false,
                      dataType: 'json',
                      success: function(data) {
@@ -1035,11 +1105,13 @@ define(['app'], function (app) {
 				(text.indexOf("Domoticz") >= 0) ||
 				(text.indexOf("Harmony") >= 0) ||
 				(text.indexOf("ETH8020") >= 0) ||
+				(text.indexOf("Daikin") >= 0) ||
 				(text.indexOf("Sterbox") >= 0) ||
 				(text.indexOf("Anna") >= 0) ||
 				(text.indexOf("KMTronic") >= 0) ||
 				(text.indexOf("MQTT") >= 0) ||
 				(text.indexOf("Logitech Media Server") >= 0) ||
+				(text.indexOf("HEOS by DENON") >= 0) ||
 				(text.indexOf("Razberry") >= 0)
 				)
             {
@@ -1090,7 +1162,7 @@ define(['app'], function (app) {
                      }
                 });
             }
-            else if ((text.indexOf("Underground") >= 0) || (text.indexOf("Forecast") >= 0) || (text.indexOf("AccuWeather") >= 0) || (text.indexOf("Open Weather Map") >= 0))
+            else if ((text.indexOf("Underground") >= 0) || (text.indexOf("DarkSky") >= 0) || (text.indexOf("AccuWeather") >= 0) || (text.indexOf("Open Weather Map") >= 0))
             {
                 var apikey=$("#hardwarecontent #divunderground #apikey").val();
                 if (apikey=="")
@@ -4189,6 +4261,47 @@ define(['app'], function (app) {
           });
         }
 
+        TellstickSettings = function (idx, name, repeats, repeatInterval) {
+            $.idx = idx;
+            cursordefault();
+            var htmlcontent = '';
+            htmlcontent = '<p><center><h2><span data-i18n="Device"></span>: ' + name + '</h2></center></p>\n';
+            htmlcontent += $('#tellstick').html();
+            $('#hardwarecontent').html(GetBackbuttonHTMLTable('ShowHardware') + htmlcontent);
+            $('#hardwarecontent').i18n();
+
+            $('#hardwarecontent #idx').val(idx);
+            $("#hardwarecontent #tellstickSettingsTable #repeats").val(repeats);
+            $("#hardwarecontent #tellstickSettingsTable #repeatInterval").val(repeatInterval);
+        }
+
+        TellstickApplySettings = function () {
+            var repeats = parseInt($("#hardwarecontent #tellstickSettingsTable #repeats").val());
+            if (repeats < 0)
+                repeats = 0;
+            if (repeats > 10)
+                repeats = 10;
+            var repeatInterval = parseInt($("#hardwarecontent #tellstickSettingsTable #repeatInterval").val());
+            if (repeatInterval < 10)
+                repeatInterval = 10;
+            if (repeatInterval > 2000)
+                repeatInterval = 2000;
+            $.ajax({
+                url: "json.htm?type=command&param=tellstickApplySettings" +
+                   "&idx=" + $.idx +
+                   "&repeats=" + repeats +
+                   "&repeatInterval=" + repeatInterval,
+                async: false,
+                dataType: 'json',
+                success: function (data) {
+                    bootbox.alert($.t('Settings saved'));
+                },
+                error: function () {
+                    ShowNotify($.t('Failed saving settings'), 2500, true);
+                }
+            });
+        }
+
         RefreshHardwareTable = function()
         {
           $('#modal').show();
@@ -4316,6 +4429,9 @@ define(['app'], function (app) {
                     else if (HwTypeStr.indexOf("Logitech Media Server") >= 0) {
                         HwTypeStr += ' <span class="label label-info lcursor" onclick="EditLMS(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2 + ',' + item.Mode3 + ',' + item.Mode4 + ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Setup") + '</span>';
                     }
+                    else if (HwTypeStr.indexOf("HEOS by DENON") >= 0) {
+                        HwTypeStr += ' <span class="label label-info lcursor" onclick="EditHEOS by DENON(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2 + ',' + item.Mode3 + ',' + item.Mode4 + ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Setup") + '</span>';
+                    }
                     else if (HwTypeStr.indexOf("Dummy") >= 0) {
                         HwTypeStr+=' <span class="label label-info lcursor" onclick="CreateDummySensors(' + item.idx + ',\'' + item.Name + '\');">' + $.t("Create Virtual Sensors") + '</span>';
                     }
@@ -4359,6 +4475,9 @@ define(['app'], function (app) {
                     }
                     else if (HwTypeStr.indexOf("CurrentCost Meter USB") >= 0) {
                         HwTypeStr+=' <span class="label label-info lcursor" onclick="EditCCUSB(' + item.idx + ',\'' + item.Name + '\',\'' + item.Address + '\');">' + $.t("Set Mode") + '</span>';
+                    }
+                    else if (HwTypeStr.indexOf("Tellstick") >= 0) {
+                        HwTypeStr += ' <span class="label label-info lcursor" onclick="TellstickSettings(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2 + ');">' + $.t("Settings") + '</span>';
                     }
 
                     var sDataTimeout="";
@@ -4466,7 +4585,8 @@ define(['app'], function (app) {
                            (data["Type"].indexOf("Dummy") >= 0)||
                            (data["Type"].indexOf("System Alive") >= 0)||
                            (data["Type"].indexOf("PiFace") >= 0)||
-                           (data["Type"].indexOf("Tellstick") >= 0))
+                           (data["Type"].indexOf("Tellstick") >= 0) ||
+                           (data["Type"].indexOf("Yeelight") >= 0))
                         {
                             //nothing to be set
                         }
@@ -4498,7 +4618,7 @@ define(['app'], function (app) {
                                 }
                             }
                         }
-                        else if (((data["Type"].indexOf("LAN") >= 0) && (data["Type"].indexOf("YouLess") == -1) && (data["Type"].indexOf("Denkovi") == -1) && (data["Type"].indexOf("Satel") == -1)) ||(data["Type"].indexOf("Domoticz") >= 0) ||(data["Type"].indexOf("Harmony") >= 0)) {
+                        else if (((data["Type"].indexOf("LAN") >= 0) && (data["Type"].indexOf("YouLess") == -1) && (data["Type"].indexOf("Denkovi") == -1) && (data["Type"].indexOf("Satel Integra") == -1)) ||(data["Type"].indexOf("Domoticz") >= 0) ||(data["Type"].indexOf("Harmony") >= 0)) {
                             $("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
                             $("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
                             if (data["Type"].indexOf("P1 Smart Meter") >= 0)
@@ -4506,12 +4626,16 @@ define(['app'], function (app) {
                                 $("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked",data["Mode2"]==0);
                             }
                         }
-                        else if (((data["Type"].indexOf("LAN") >= 0) && (data["Type"].indexOf("YouLess") >= 0)) || (data["Type"].indexOf("Domoticz") >= 0) || (data["Type"].indexOf("Denkovi") >= 0) ||(data["Type"].indexOf("Harmony") >= 0) ||(data["Type"].indexOf("Satel") >= 0) ||(data["Type"].indexOf("Logitech Media Server") >= 0)) {
+                        else if (((data["Type"].indexOf("LAN") >= 0) && (data["Type"].indexOf("YouLess") >= 0)) || (data["Type"].indexOf("Domoticz") >= 0) || (data["Type"].indexOf("Denkovi") >= 0) ||(data["Type"].indexOf("Harmony") >= 0) ||(data["Type"].indexOf("Satel Integra") >= 0) ||(data["Type"].indexOf("Logitech Media Server") >= 0) ||(data["Type"].indexOf("HEOS by DENON") >= 0)) {
                             $("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
                             $("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
                             $("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
-                        }
-                        else if ((data["Type"].indexOf("Underground") >= 0) || (data["Type"].indexOf("Forecast") >= 0) || (data["Type"].indexOf("AccuWeather") >= 0) || (data["Type"].indexOf("Open Weather Map") >= 0)) {
+                            if (data["Type"].indexOf("Satel Integra") >= 0)
+                            {
+                                $("#hardwarecontent #hardwareparamspollinterval #pollinterval").val(data["Mode1"]);
+                            }
+						}
+                        else if ((data["Type"].indexOf("Underground") >= 0) || (data["Type"].indexOf("DarkSky") >= 0) || (data["Type"].indexOf("AccuWeather") >= 0) || (data["Type"].indexOf("Open Weather Map") >= 0)) {
                             $("#hardwarecontent #hardwareparamsunderground #apikey").val(data["Username"]);
                             $("#hardwarecontent #hardwareparamsunderground #location").val(data["Password"]);
                         }
@@ -4530,6 +4654,9 @@ define(['app'], function (app) {
                         }
                         else if (data["Type"].indexOf("Toon") >= 0) {
                             $("#hardwarecontent #hardwareparamsenecotoon #agreement").val(data["Mode1"]);
+                        }
+						else if (data["Type"].indexOf("Satel Integra") >= 0) {
+                            $("#hardwarecontent #hardwareparamspollinterval #pollinterval").val(data["Mode1"]);
                         }
                         else if (data["Type"].indexOf("Philips Hue") >= 0) {
                             $("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
@@ -4556,6 +4683,7 @@ define(['app'], function (app) {
                             (data["Type"].indexOf("Nest Th") >= 0)||
                             (data["Type"].indexOf("PVOutput") >= 0)||
                             (data["Type"].indexOf("ETH8020") >= 0)||
+                            (data["Type"].indexOf("Daikin") >= 0)||
                             (data["Type"].indexOf("Sterbox") >= 0)||
                             (data["Type"].indexOf("Anna") >= 0)||
                             (data["Type"].indexOf("KMTronic") >= 0)||
@@ -4565,6 +4693,7 @@ define(['app'], function (app) {
 							(data["Type"].indexOf("HTTP") >= 0)||
                             (data["Type"].indexOf("Thermosmart") >= 0) ||
 							(data["Type"].indexOf("Logitech Media Server") >= 0) ||
+							(data["Type"].indexOf("HEOS by DENON") >= 0) ||
 							(data["Type"].indexOf("Razberry") >= 0) ||
 							(data["Type"].indexOf("Comm5") >= 0)
                             )
@@ -4639,12 +4768,14 @@ define(['app'], function (app) {
             $("#hardwarecontent #div1wire").hide();
             $("#hardwarecontent #divgoodweweb").hide();
             $("#hardwarecontent #divi2clocal").hide();
+			$("#hardwarecontent #divpollinterval").hide();
 
             if ((text.indexOf("TE923") >= 0)||
                (text.indexOf("Volcraft") >= 0)||
                (text.indexOf("Dummy") >= 0)||
                (text.indexOf("System Alive") >= 0)||
-               (text.indexOf("PiFace") >= 0))
+               (text.indexOf("PiFace") >= 0) ||
+               (text.indexOf("Yeelight") >= 0))
             {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").hide();
@@ -4678,7 +4809,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
             }
-            else if (text.indexOf("LAN") >= 0 && text.indexOf("YouLess") == -1 && text.indexOf("Denkovi") == -1 && text.indexOf("Integra") == -1)
+            else if (text.indexOf("LAN") >= 0 && text.indexOf("YouLess") == -1 && text.indexOf("Denkovi") == -1 && text.indexOf("Satel Integra") == -1)
             {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").show();
@@ -4690,7 +4821,7 @@ define(['app'], function (app) {
                     $("#hardwarecontent #divcrcp1").show();
                 }
             }
-            else if (text.indexOf("LAN") >= 0 && (text.indexOf("YouLess") >= 0 || text.indexOf("Denkovi") >= 0 || text.indexOf("Integra") >= 0))
+            else if (text.indexOf("LAN") >= 0 && (text.indexOf("YouLess") >= 0 || text.indexOf("Denkovi") >= 0 || text.indexOf("Satel Integra") >= 0))
             {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").show();
@@ -4699,6 +4830,11 @@ define(['app'], function (app) {
                 $("#hardwarecontent #lblusername").hide();
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
+				if (text.indexOf("Satel Integra") >= 0)
+                {
+                    $("#hardwarecontent #divpollinterval").show();
+					$("#hardwarecontent #hardwareparamspollinterval #pollinterval").val(1000);
+                }
             }
             else if (text.indexOf("Domoticz") >= 0)
             {
@@ -4768,7 +4904,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divhttppoller").show();
                 $("#hardwarecontent #hardwareparamshttp #refresh").val(300);
             }
-            else if ((text.indexOf("Underground") >= 0) || (text.indexOf("Forecast") >= 0) || (text.indexOf("AccuWeather") >= 0) || (text.indexOf("Open Weather Map") >= 0))
+            else if ((text.indexOf("Underground") >= 0) || (text.indexOf("DarkSky") >= 0) || (text.indexOf("AccuWeather") >= 0) || (text.indexOf("Open Weather Map") >= 0))
             {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").hide();
@@ -4790,6 +4926,13 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divhttppoller").hide();
                 $("#hardwarecontent #hardwareparamsremote #tcpport").val(80);
             }
+            else if (text.indexOf("Yeelight") >= 0) {
+                $("#hardwarecontent #divserial").hide();
+                $("#hardwarecontent #divremote").hide();
+                $("#hardwarecontent #divlogin").hide();
+                $("#hardwarecontent #divunderground").hide();
+                $("#hardwarecontent #divhttppoller").hide();
+            }
             else if (text.indexOf("Winddelen") >= 0)
             {
                 $("#hardwarecontent #divserial").hide();
@@ -4807,6 +4950,13 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divremote").show();
                 $("#hardwarecontent #divlogin").show();
                 $("#hardwarecontent #hardwareparamsremote #tcpport").val(9000);
+            }
+            else if (text.indexOf("HEOS by DENON") >= 0)
+            {
+                $("#hardwarecontent #divserial").hide();
+                $("#hardwarecontent #divremote").show();
+                $("#hardwarecontent #divlogin").show();
+                $("#hardwarecontent #hardwareparamsremote #tcpport").val(1255);
             }
 	    else if (text.indexOf("MyHome OpenWebNet") >= 0)
             {
@@ -4847,6 +4997,7 @@ define(['app'], function (app) {
             }
             if (
 				(text.indexOf("ETH8020") >= 0) ||
+				(text.indexOf("Daikin") >= 0) ||
 				(text.indexOf("Sterbox") >= 0) ||
 				(text.indexOf("Anna") >= 0) ||
 				(text.indexOf("MQTT") >= 0) ||

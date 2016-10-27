@@ -224,7 +224,7 @@ int CLuaHandler::l_domoticz_updateDevice(lua_State* lua_state)
 
 			// Get the raw device parameters
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (DeviceID==%d)", ideviceId);
+			result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID==%d)", ideviceId);
 			if (result.empty())
 				return 0;
 			std::string hid = result[0][0];

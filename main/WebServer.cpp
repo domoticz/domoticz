@@ -18,7 +18,7 @@
 #include "../hardware/EnOceanESP2.h"
 #include "../hardware/EnOceanESP3.h"
 #include "../hardware/Wunderground.h"
-#include "../hardware/ForecastIO.h"
+#include "../hardware/DarkSky.h"
 #include "../hardware/AccuWeather.h"
 #include "../hardware/OpenWeatherMap.h"
 #include "../hardware/Kodi.h"
@@ -26,10 +26,14 @@
 #include "../hardware/MySensorsBase.h"
 #include "../hardware/RFXBase.h"
 #include "../hardware/RFLinkBase.h"
+#include "../hardware/HEOS.h"
 #ifdef WITH_GPIO
 #include "../hardware/Gpio.h"
 #include "../hardware/GpioPin.h"
 #endif // WITH_GPIO
+#ifdef WITH_TELLDUSCORE
+#include "../hardware/Tellstick.h"
+#endif
 #include "../webserver/Base64.h"
 #include "../smtpclient/SMTPClient.h"
 #include "../json/json.h"
@@ -328,6 +332,7 @@ namespace http {
 			m_pWebEm->RegisterActionCode("setrego6xxtype", boost::bind(&CWebServer::SetRego6XXType, this, _1, _2, _3));
 			m_pWebEm->RegisterActionCode("sets0metertype", boost::bind(&CWebServer::SetS0MeterType, this, _1, _2, _3));
 			m_pWebEm->RegisterActionCode("setlimitlesstype", boost::bind(&CWebServer::SetLimitlessType, this, _1, _2, _3));
+			m_pWebEm->RegisterActionCode("setyeelighttype", boost::bind(&CWebServer::SetYeelightType, this, _1, _2, _3));
 
 			m_pWebEm->RegisterActionCode("setopenthermsettings", boost::bind(&CWebServer::SetOpenThermSettings, this, _1, _2, _3));
 			RegisterCommandCode("sendopenthermcommand", boost::bind(&CWebServer::Cmd_SendOpenThermCommand, this, _1, _2, _3), true);
@@ -343,6 +348,7 @@ namespace http {
 			RegisterCommandCode("logincheck", boost::bind(&CWebServer::Cmd_LoginCheck, this, _1, _2, _3), true);
 			RegisterCommandCode("getversion", boost::bind(&CWebServer::Cmd_GetVersion, this, _1, _2, _3), true);
 			RegisterCommandCode("getlog", boost::bind(&CWebServer::Cmd_GetLog, this, _1, _2, _3));
+			RegisterCommandCode("clearlog", boost::bind(&CWebServer::Cmd_ClearLog, this, _1, _2, _3));
 			RegisterCommandCode("getauth", boost::bind(&CWebServer::Cmd_GetAuth, this, _1, _2, _3), true);
 			RegisterCommandCode("getuptime", boost::bind(&CWebServer::Cmd_GetUptime, this, _1, _2, _3), true);
 
@@ -388,6 +394,9 @@ namespace http {
 			RegisterCommandCode("panasonicclearnodes", boost::bind(&CWebServer::Cmd_PanasonicClearNodes, this, _1, _2, _3));
 			RegisterCommandCode("panasonicmediacommand", boost::bind(&CWebServer::Cmd_PanasonicMediaCommand, this, _1, _2, _3));
 
+			RegisterCommandCode("heossetmode", boost::bind(&CWebServer::Cmd_HEOSSetMode, this, _1, _2, _3));
+			RegisterCommandCode("heosmediacommand", boost::bind(&CWebServer::Cmd_HEOSMediaCommand, this, _1, _2, _3));
+			
 			RegisterCommandCode("bleboxsetmode", boost::bind(&CWebServer::Cmd_BleBoxSetMode, this, _1, _2, _3));
 			RegisterCommandCode("bleboxgetnodes", boost::bind(&CWebServer::Cmd_BleBoxGetNodes, this, _1, _2, _3));
 			RegisterCommandCode("bleboxaddnode", boost::bind(&CWebServer::Cmd_BleBoxAddNode, this, _1, _2, _3));
@@ -592,6 +601,10 @@ namespace http {
 			//scenepost.html
 			//thpost.html
 			RegisterRType("openzwavenodes", boost::bind(&CWebServer::RType_OpenZWaveNodes, this, _1, _2, _3));
+#endif
+
+#ifdef WITH_TELLDUSCORE
+            RegisterCommandCode("tellstickApplySettings", boost::bind(&CWebServer::Cmd_TellstickApplySettings, this, _1, _2, _3));
 #endif
 
 			m_pWebEm->RegisterWhitelistURLString("/html5.appcache");
@@ -1012,7 +1025,7 @@ namespace http {
 				(htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) || (htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) ||
 				(htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_ECODEVICES) || (htype == HTYPE_Mochad) || (htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MQTT) || (htype == HTYPE_FRITZBOX) ||
 				(htype == HTYPE_ETH8020) || (htype == HTYPE_Sterbox) || (htype == HTYPE_KMTronicTCP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_RFLINKTCP) || (htype == HTYPE_Comm5TCP) || (htype == HTYPE_CurrentCostMeterLAN) ||
-				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviSmartdenLan) || (htype == HTYPE_Ec3kMeterTCP)
+				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviSmartdenLan) || (htype == HTYPE_Ec3kMeterTCP) || (htype == HTYPE_MultiFun) || (htype == HTYPE_ZIBLUETCP)
 				) {
 				//Lan
 				if (address == "" || port == 0)
@@ -1089,9 +1102,15 @@ namespace http {
 			else if (htype == HTYPE_BleBox) {
 				//all fine here!
 			}
+			else if (htype == HTYPE_HEOS) {
+				//all fine here!
+			}
+			else if (htype == HTYPE_Yeelight) {
+				//all fine here!
+			}
 			else if (
 				(htype == HTYPE_Wunderground) ||
-				(htype == HTYPE_ForecastIO) ||
+				(htype == HTYPE_DarkSky) ||
 				(htype == HTYPE_AccuWeather) ||
 				(htype == HTYPE_OpenWeatherMap) ||
 				(htype == HTYPE_ICYTHERMOSTAT) ||
@@ -1160,6 +1179,9 @@ namespace http {
 			else if (htype == HTYPE_OpenWebNet) {
 				//All fine here
 			}
+			else if (htype == HTYPE_Daikin) {
+				//All fine here
+			}
 			else if (htype == HTYPE_GoodweAPI) {
 				if (username == "")
 					return;
@@ -1202,6 +1224,16 @@ namespace http {
 			{
 				mode1 = 30;
 				mode2 = 1000;
+			}
+			else if (htype == HTYPE_HEOS)
+			{
+				mode1 = 30;
+				mode2 = 1000;
+			}			
+			else if (htype == HTYPE_Tellstick)
+			{
+				mode1 = 4;
+				mode2 = 500;
 			}
 
 			m_sql.safe_query(
@@ -1281,7 +1313,7 @@ namespace http {
 				(htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MQTT) || (htype == HTYPE_FRITZBOX) || (htype == HTYPE_ETH8020) || (htype == HTYPE_Sterbox) ||
 				(htype == HTYPE_KMTronicTCP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_RFLINKTCP) ||
 				(htype == HTYPE_Comm5TCP || (htype == HTYPE_CurrentCostMeterLAN)) ||
-				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviSmartdenLan) || (htype == HTYPE_Ec3kMeterTCP)
+				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviSmartdenLan) || (htype == HTYPE_Ec3kMeterTCP) || (htype == HTYPE_MultiFun) || (htype == HTYPE_ZIBLUETCP)
 				){
 				//Lan
 				if (address == "")
@@ -1353,9 +1385,15 @@ namespace http {
 			else if (htype == HTYPE_BleBox) {
 				//All fine here
 			}
+			else if (htype == HTYPE_HEOS) {
+				//All fine here
+			}
+			else if (htype == HTYPE_Yeelight) {
+				//All fine here
+			}
 			else if (
 				(htype == HTYPE_Wunderground) ||
-				(htype == HTYPE_ForecastIO) ||
+				(htype == HTYPE_DarkSky) ||
 				(htype == HTYPE_AccuWeather) ||
 				(htype == HTYPE_OpenWeatherMap) ||
 				(htype == HTYPE_ICYTHERMOSTAT) ||
@@ -1394,6 +1432,9 @@ namespace http {
 					port = 80;
 			}
 			else if (htype == HTYPE_RaspberryGPIO) {
+				//all fine here!
+			}
+			else if (htype == HTYPE_Daikin) {
 				//all fine here!
 			}
 			else if (htype == HTYPE_SBFSpot) {
@@ -1696,6 +1737,13 @@ namespace http {
 					ii++;
 				}
 			}
+		}
+
+		void CWebServer::Cmd_ClearLog(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			root["status"] = "OK";
+			root["title"] = "ClearLog";
+			_log.ClearLog();
 		}
 
 		//Plan Functions
@@ -3039,6 +3087,12 @@ namespace http {
 						_eSwitchType switchtype=(_eSwitchType)atoi(sd[14].c_str());
 
 						unsigned char devType = atoi(sd[3].c_str());
+
+						//switchtype seemed not to be used down with the GetLightStatus command,
+						//causing RFY to go wrong, fixing here
+						if (devType != pTypeRFY)
+							switchtype = STYPE_OnOff;
+
 						unsigned char subType = atoi(sd[4].c_str());
 						unsigned char nValue = (unsigned char)atoi(sd[5].c_str());
 						std::string sValue = sd[6];
@@ -3050,7 +3104,7 @@ namespace http {
 						bool bHaveDimmer = false;
 						bool bHaveGroupCmd = false;
 						int maxDimLevel = 0;
-						GetLightStatus(devType, subType, STYPE_OnOff, command, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+						GetLightStatus(devType, subType, switchtype, command, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 						root["result"][ii]["Command"] = lstatus;
 						root["result"][ii]["Level"] = level;
 						root["result"][ii]["Hue"] = atoi(sd[11].c_str());
@@ -3157,6 +3211,8 @@ namespace http {
 						case HTYPE_RaspberryGPIO:
 						case HTYPE_RFLINKUSB:
 						case HTYPE_RFLINKTCP:
+						case HTYPE_ZIBLUEUSB:
+						case HTYPE_ZIBLUETCP:
 						case HTYPE_OpenWebNet:
 							root["result"][ii]["idx"] = ID;
 							root["result"][ii]["Name"] = Name;
@@ -3239,6 +3295,7 @@ namespace http {
 						case pTypeRadiator1:
 						case pTypeGeneralSwitch:
 						case pTypeHomeConfort:
+						case pTypeYeelight:
 							bdoAdd = true;
 							if (!used)
 							{
@@ -3336,6 +3393,7 @@ namespace http {
 							case pTypeRemote:
 							case pTypeGeneralSwitch:
 							case pTypeHomeConfort:
+							case pTypeYeelight:
 								root["result"][ii]["type"] = 0;
 								root["result"][ii]["idx"] = ID;
 								root["result"][ii]["Name"] = "[Light/Switch] " + Name;
@@ -4458,6 +4516,7 @@ namespace http {
 					(dType == pTypeLighting5) ||
 					(dType == pTypeLighting6) ||
 					(dType == pTypeLimitlessLights) ||
+					(dType == pTypeYeelight) ||
 					(dType == pTypeSecurity1) ||
 					(dType == pTypeSecurity2) ||
 					(dType == pTypeEvohome) ||
@@ -4519,6 +4578,16 @@ namespace http {
 									ii++;
 								}
 								if (type == HTYPE_LogitechMediaServer) {
+									root["result"][ii]["val"] = NTYPE_PLAYING;
+									root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_PLAYING, 0);
+									root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_PLAYING, 1);
+									ii++;
+									root["result"][ii]["val"] = NTYPE_STOPPED;
+									root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_STOPPED, 0);
+									root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_STOPPED, 1);
+									ii++;
+								}
+								if (type == HTYPE_HEOS) {
 									root["result"][ii]["val"] = NTYPE_PLAYING;
 									root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_PLAYING, 0);
 									root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_PLAYING, 1);
@@ -4852,6 +4921,13 @@ namespace http {
 					root["result"][ii]["val"] = NTYPE_RPM;
 					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_RPM, 0);
 					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_RPM, 1);
+					ii++;
+				}
+				if ((dType == pTypeGeneral) && (dSubType == sTypeAlert))
+				{
+					root["result"][ii]["val"] = NTYPE_USAGE;
+					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_USAGE, 0);
+					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_USAGE, 1);
 					ii++;
 				}
 				if ((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXStatus))
@@ -5352,6 +5428,7 @@ namespace http {
 					(dType != pTypeLighting6) &&
 					(dType != pTypeFan) &&
 					(dType != pTypeLimitlessLights) &&
+					(dType != pTypeYeelight) &&
 					(dType != pTypeSecurity1) &&
 					(dType != pTypeSecurity2) &&
 					(dType != pTypeEvohome) &&
@@ -5573,13 +5650,15 @@ namespace http {
 					return;
 
 				result = m_sql.safe_query(
-					"SELECT [Protected] FROM DeviceStatus WHERE (ID = '%q')", idx.c_str());
+					"SELECT [Protected],[Name] FROM DeviceStatus WHERE (ID = '%q')", idx.c_str());
 				if (result.empty())
 				{
 					//Switch not found!
 					return;
 				}
 				bool bIsProtected = atoi(result[0][0].c_str()) != 0;
+				std::string sSwitchName  = result[0][1];
+
 				if (bIsProtected)
 				{
 					if (passcode.empty())
@@ -5605,7 +5684,7 @@ namespace http {
 					}
 				}
 
-				_log.Log(LOG_STATUS, "User: %s initiated a switch command", Username.c_str());
+				_log.Log(LOG_STATUS, "User: %s initiated a switch command (%s/%s/%s)", Username.c_str(), idx.c_str(), sSwitchName.c_str(), switchcmd.c_str());
 
 				if (switchcmd == "Toggle") {
 					//Request current state of switch
@@ -7330,6 +7409,7 @@ namespace http {
 								(dType != pTypeLighting6) &&
 								(dType != pTypeFan) &&
 								(dType != pTypeLimitlessLights) &&
+								(dType != pTypeYeelight) &&
 								(dType != pTypeSecurity1) &&
 								(dType != pTypeSecurity2) &&
 								(dType != pTypeEvohome) &&
@@ -7499,9 +7579,9 @@ namespace http {
 								root["result"][ii]["forecast_url"] = base64_encode((const unsigned char*)forecast_url.c_str(), forecast_url.size());
 							}
 						}
-						else if (pHardware->HwdType == HTYPE_ForecastIO)
+						else if (pHardware->HwdType == HTYPE_DarkSky)
 						{
-							CForecastIO *pWHardware = reinterpret_cast<CForecastIO*>(pHardware);
+							CDarkSky *pWHardware = reinterpret_cast<CDarkSky*>(pHardware);
 							std::string forecast_url = pWHardware->GetForecastURL();
 							if (forecast_url != "")
 							{
@@ -7580,6 +7660,8 @@ namespace http {
 					root["result"][ii]["AddjMulti"] = AddjMulti;
 					root["result"][ii]["AddjValue2"] = AddjValue2;
 					root["result"][ii]["AddjMulti2"] = AddjMulti2;
+					if (sValue.size()>sizeof(szData)-10)
+						continue; //invalid sValue
 					sprintf(szData, "%d, %s", nValue, sValue.c_str());
 					root["result"][ii]["Data"] = szData;
 
@@ -7597,6 +7679,7 @@ namespace http {
 						(dType == pTypeLighting6) ||
 						(dType == pTypeFan) ||
 						(dType == pTypeLimitlessLights) ||
+						(dType == pTypeYeelight) ||
 						(dType == pTypeCurtain) ||
 						(dType == pTypeBlinds) ||
 						(dType == pTypeRFY) ||
@@ -7656,7 +7739,7 @@ namespace http {
 							root["result"][ii]["Level"] = LastLevel;
 							int iLevel = round((float(maxDimLevel) / 100.0f)*LastLevel);
 							root["result"][ii]["LevelInt"] = iLevel;
-							if (dType == pTypeLimitlessLights)
+							if ((dType == pTypeLimitlessLights) || (dType == pTypeYeelight))
 							{
 								llevel = LastLevel;
 								if (lstatus == "Set Level")
@@ -9199,7 +9282,6 @@ namespace http {
 							root["result"][ii]["TypeImg"] = "Alert";
 							root["result"][ii]["Level"] = nValue;
 							root["result"][ii]["HaveTimeout"] = false;
-							root["result"][ii]["ShowNotifications"] = false;
 						}
 						else if (dSubType == sTypePressure)
 						{
@@ -9655,7 +9737,7 @@ namespace http {
 			std::vector<std::vector<std::string> > result, result2, result3;
 
 			result = m_sql.safe_query("SELECT Key, nValue, sValue FROM Preferences WHERE Key LIKE 'Floorplan%%'");
-			if (result.size() < 0)
+			if (result.empty())
 				return;
 
 			std::vector<std::vector<std::string> >::const_iterator itt;
@@ -11090,7 +11172,7 @@ namespace http {
 			char szTmp[100];
 
 			result = m_sql.safe_query("SELECT Key, nValue, sValue FROM Preferences");
-			if (result.size() < 0)
+			if (result.empty())
 				return;
 			root["status"] = "OK";
 			root["title"] = "settings";
@@ -11440,6 +11522,7 @@ namespace http {
 				(dType != pTypeLighting6) &&
 				(dType != pTypeFan) &&
 				(dType != pTypeLimitlessLights) &&
+				(dType != pTypeYeelight) &&
 				(dType != pTypeSecurity1) &&
 				(dType != pTypeSecurity2) &&
 				(dType != pTypeEvohome) &&

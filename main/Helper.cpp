@@ -10,6 +10,7 @@
 #include <fstream>
 #include <math.h>
 #include <algorithm>
+#include <sstream>
 #include <openssl/md5.h>
 
 #if defined WIN32
@@ -596,7 +597,7 @@ void rgb2hsb(const int r, const int g, const int b, float hsbvals[3])
 bool is_number(const std::string& s)
 {
 	std::string::const_iterator it = s.begin();
-	while (it != s.end() && (isdigit(*it) || (*it == '.') || (*it == '-') || (*it == ' '))) ++it;
+	while (it != s.end() && (isdigit(*it) || (*it == '.') || (*it == '-') || (*it == ' ') || (*it == 0x00))) ++it;
 	return !s.empty() && it == s.end();
 }
 
@@ -695,4 +696,15 @@ bool dirent_is_file(std::string dir, struct dirent *ent)
 	}
 #endif
 	return false;
+}
+
+std::string GenerateUserAgent()
+{
+	srand((unsigned int)time(NULL));
+	int cversion = rand() % 0xFFFF;
+	int mversion = rand() % 3;
+	int sversion = rand() % 3;
+	std::stringstream sstr;
+	sstr << "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/" << (601 + sversion) << "." << (36+mversion) << " (KHTML, like Gecko) Chrome/" << (53 + mversion) << ".0." << cversion << ".0 Safari/" << (601 + sversion) << "." << (36+sversion);
+	return sstr.str();
 }

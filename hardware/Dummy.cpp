@@ -73,7 +73,7 @@ namespace http {
 
 			if (result.size() > 0)
 			{
-				nid = atol(result[0][0].c_str());
+				nid = atol(result[0][0].c_str()) + 1;
 			}
 			nid += 82000;
 			char ID[40];

@@ -9,6 +9,7 @@
 #include "NotificationNma.h"
 #include "NotificationPushbullet.h"
 #include "NotificationPushover.h"
+#include "NotificationPushsafer.h"
 #include "NotificationPushalot.h"
 #include "NotificationEmail.h"
 #include "NotificationSMS.h"
@@ -38,6 +39,7 @@ CNotificationHelper::CNotificationHelper()
 	AddNotifier(new CNotificationNma());
 	AddNotifier(new CNotificationPushbullet());
 	AddNotifier(new CNotificationPushover());
+	AddNotifier(new CNotificationPushsafer());
 	AddNotifier(new CNotificationPushalot());
 	AddNotifier(new CNotificationEmail());
 	AddNotifier(new CNotificationSMS());
@@ -144,6 +146,14 @@ void CNotificationHelper::LoadConfig()
 	_log.Log(LOG_NORM, std::string(logline.str()).c_str());
 }
 
+std::string CNotificationHelper::ParseCustomMessage(const std::string &cMessage, const std::string &sName, const std::string &sValue)
+{
+	std::string ret = cMessage;
+	stdreplace(ret, "$name", sName);
+	stdreplace(ret, "$value", sValue);
+	return ret;
+}
+
 bool CNotificationHelper::CheckAndHandleTempHumidityNotification(
 	const unsigned long long Idx,
 	const std::string &devicename,
@@ -157,6 +167,7 @@ bool CNotificationHelper::CheckAndHandleTempHumidityNotification(
 		return false;
 
 	char szTmp[600];
+	std::string notValue;
 
 	std::string szExtraData = "|Name=" + devicename + "|";
 
@@ -219,10 +230,15 @@ bool CNotificationHelper::CheckAndHandleTempHumidityNotification(
 						msg = szTmp;
 					}
 				}
+				if (bSendNotification)
+				{
+					sprintf(szTmp, "%.1f", temp);
+					notValue = szTmp;
+				}
 			}
 			else if ((ntype == signhum) && (bHaveHumidity))
 			{
-				//humanity
+				//humidity
 				szExtraData += "Image=moisture48|";
 				if (bWhenIsGreater)
 				{
@@ -242,11 +258,16 @@ bool CNotificationHelper::CheckAndHandleTempHumidityNotification(
 						msg = szTmp;
 					}
 				}
+				if (bSendNotification)
+				{
+					sprintf(szTmp, "%d", humidity);
+					notValue = szTmp;
+				}
 			}
 			if (bSendNotification)
 			{
 				if (!itt->CustomMessage.empty())
-					msg = itt->CustomMessage;
+					msg = ParseCustomMessage(itt->CustomMessage, devicename, notValue);
 				SendMessageEx(itt->ActiveSystems, msg, msg, szExtraData, itt->Priority, std::string(""), true);
 				TouchNotification(itt->ID);
 			}
@@ -267,6 +288,7 @@ bool CNotificationHelper::CheckAndHandleDewPointNotification(
 
 	char szTmp[600];
 	std::string szExtraData = "|Name=" + devicename + "|Image=temp-0-5|";
+	std::string notValue;
 
 	time_t atime = mytime(NULL);
 
@@ -299,12 +321,14 @@ bool CNotificationHelper::CheckAndHandleDewPointNotification(
 					bSendNotification = true;
 					sprintf(szTmp, "%s Dew Point reached (%.1f degrees)", devicename.c_str(), temp);
 					msg = szTmp;
+					sprintf(szTmp, "%.1f", temp);
+					notValue = szTmp;
 				}
 			}
 			if (bSendNotification)
 			{
 				if (!itt->CustomMessage.empty())
-					msg = itt->CustomMessage;
+					msg = ParseCustomMessage(itt->CustomMessage, devicename, notValue);
 				SendMessageEx(itt->ActiveSystems, msg, msg, szExtraData, itt->Priority, std::string(""), true);
 				TouchNotification(itt->ID);
 			}
@@ -334,6 +358,7 @@ bool CNotificationHelper::CheckAndHandleAmpere123Notification(
 	atime -= m_NotificationSensorInterval;
 
 	std::string msg = "";
+	std::string notValue;
 
 	std::string signamp1 = Notification_Type_Desc(NTYPE_AMPERE1, 1);
 	std::string signamp2 = Notification_Type_Desc(NTYPE_AMPERE2, 2);
@@ -375,6 +400,11 @@ bool CNotificationHelper::CheckAndHandleAmpere123Notification(
 						msg = szTmp;
 					}
 				}
+				if (bSendNotification)
+				{
+					sprintf(szTmp, "%.1f", Ampere1);
+					notValue = szTmp;
+				}
 			}
 			else if (ntype == signamp2)
 			{
@@ -396,6 +426,11 @@ bool CNotificationHelper::CheckAndHandleAmpere123Notification(
 						sprintf(szTmp, "%s Ampere2 is %.1f Ampere", devicename.c_str(), Ampere2);
 						msg = szTmp;
 					}
+				}
+				if (bSendNotification)
+				{
+					sprintf(szTmp, "%.1f", Ampere2);
+					notValue = szTmp;
 				}
 			}
 			else if (ntype == signamp3)
@@ -419,11 +454,16 @@ bool CNotificationHelper::CheckAndHandleAmpere123Notification(
 						msg = szTmp;
 					}
 				}
+				if (bSendNotification)
+				{
+					sprintf(szTmp, "%.1f", Ampere3);
+					notValue = szTmp;
+				}
 			}
 			if (bSendNotification)
 			{
 				if (!itt->CustomMessage.empty())
-					msg = itt->CustomMessage;
+					msg = ParseCustomMessage(itt->CustomMessage, devicename, notValue);
 				SendMessageEx(itt->ActiveSystems, msg, msg, szExtraData, itt->Priority, std::string(""), true);
 				TouchNotification(itt->ID);
 			}
@@ -446,7 +486,9 @@ bool CNotificationHelper::CheckAndHandleNotification(
 	result = m_sql.safe_query("SELECT SwitchType, CustomImage FROM DeviceStatus WHERE (ID=%llu)", Idx);
 	if (result.size() == 0)
 		return false;
+
 	std::string szExtraData = "|Name=" + devicename + "|SwitchType=" + result[0][0] + "|CustomImage=" + result[0][1] + "|";
+	std::string notValue;
 
 	time_t atime = mytime(NULL);
 
@@ -468,7 +510,7 @@ bool CNotificationHelper::CheckAndHandleNotification(
 			{
 				std::string msg = message;
 				if (!itt->CustomMessage.empty())
-					msg = itt->CustomMessage;
+					msg = ParseCustomMessage(itt->CustomMessage, devicename, notValue);
 				SendMessageEx(itt->ActiveSystems, msg, msg, szExtraData, itt->Priority, std::string(""), true);
 				TouchNotification(itt->ID);
 			}
@@ -565,7 +607,9 @@ bool CNotificationHelper::CheckAndHandleNotification(
 			if (bSendNotification)
 			{
 				if (!itt->CustomMessage.empty())
-					msg = itt->CustomMessage;
+				{
+					msg = ParseCustomMessage(itt->CustomMessage, devicename, pvalue);
+				}
 				SendMessageEx(itt->ActiveSystems, msg, msg, szExtraData, itt->Priority, std::string(""), true);
 				TouchNotification(itt->ID);
 			}
@@ -611,6 +655,7 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 			std::string atype = splitresults[0];
 
 			bool bSendNotification = false;
+			std::string notValue;
 
 			if (atype == ltype)
 			{
@@ -622,27 +667,26 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 					switch (switchtype)
 					{
 					case STYPE_Doorbell:
-						msg += " pressed";
+						notValue = "pressed";
 						break;
 					case STYPE_Contact:
-						msg += " Open";
+						notValue = "Open";
 						szExtraData += "Image=contact48_open|";
 						break;
 					case STYPE_DoorLock:
-						msg += " Open";
+						notValue = "Open";
 						szExtraData += "Image=door48open|";
 						break;
 					case STYPE_Motion:
-						msg += " movement detected";
+						notValue = "movement detected";
 						break;
 					case STYPE_SMOKEDETECTOR:
-						msg += " ALARM/FIRE !";
+						notValue = "ALARM/FIRE !";
 						break;
 					default:
-						msg += " >> ON";
+						notValue = ">> ON";
 						break;
 					}
-
 				}
 				else {
 					szExtraData += "Status=Off|";
@@ -650,18 +694,19 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 					{
 					case STYPE_DoorLock:
 					case STYPE_Contact:
-						msg += " Closed";
+						notValue = "Closed";
 						break;
 					default:
-						msg += " >> OFF";
+						notValue = ">> OFF";
 						break;
 					}
 				}
+				msg += " " + notValue;
 			}
 			if (bSendNotification)
 			{
 				if (!itt->CustomMessage.empty())
-					msg = itt->CustomMessage;
+					msg = ParseCustomMessage(itt->CustomMessage, devicename, notValue);
 				SendMessageEx(itt->ActiveSystems, msg, msg, szExtraData, itt->Priority, std::string(""), true);
 				TouchNotification(itt->ID);
 			}
@@ -708,6 +753,7 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 			std::string atype = splitresults[0];
 
 			bool bSendNotification = false;
+			std::string notValue;
 
 			if (atype == ltype)
 			{
@@ -734,9 +780,13 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 							std::vector<std::string> splitresults;
 							StringSplit(levelNames, "|", splitresults);
 							msg += " >> " + splitresults[(llevel / 10)];
+							notValue = ">> " + splitresults[(llevel / 10)];
 						}
 						else
+						{
 							msg += " >> LEVEL " + sLevel;
+							notValue = ">> LEVEL " + sLevel;
+						}
 					}
 				}
 				else 
@@ -744,12 +794,13 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 					bSendNotification = true;
 					szExtraData += "Status=Off|";
 					msg += " >> OFF";
+					notValue = ">> OFF";
 				}
 			}
 			if (bSendNotification)
 			{
 				if (!itt->CustomMessage.empty())
-					msg = itt->CustomMessage;
+					msg = ParseCustomMessage(itt->CustomMessage, devicename, notValue);
 				SendMessageEx(itt->ActiveSystems, msg, msg, szExtraData, itt->Priority, std::string(""), true);
 				TouchNotification(itt->ID);
 			}
