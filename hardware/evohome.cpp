@@ -1699,6 +1699,7 @@ void CEvohome::Do_Send()
 		{
 			std::string out(m_SendQueue.front().Encode()+"\r\n");
 			write(out.c_str(),out.length());
+			m_SendQueue.pop_front();
 		}
 	}
 }
