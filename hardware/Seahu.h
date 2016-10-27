@@ -6,7 +6,7 @@
 class CSeahu : public CDomoticzHardwareBase
 {
 public:
-	explicit CSeahu(const int ID);
+	CSeahu(const int ID);
 	~CSeahu();
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 private:
