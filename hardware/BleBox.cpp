@@ -201,12 +201,17 @@ void BleBox::GetDevicesState()
 				}
 				case 5:
 				{
-					if (root["currentBrightness"].empty() == true)
+					if (root["dimmer"].empty() == true)
+					{
+						_log.Log(LOG_ERROR, "BleBox: node 'dimmer' missing!");
+						break;
+					}
+					if (root["dimmer"]["currentBrightness"].empty() == true)
 					{
 						_log.Log(LOG_ERROR, "BleBox: node 'currentBrightness' missing!");
 						break;
 					}
-					const int currentPos = root["currentBrightness"].asInt();
+					const int currentPos = root["dimmer"]["currentBrightness"].asInt();
 					int level = (int)(currentPos / (255.0 / 100.0));
 
 					SendSwitch(node, itt->second, 255, level > 0, level, DevicesType[itt->second].name);
