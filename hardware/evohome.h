@@ -276,7 +276,8 @@ public:
 		flgts=flgpkt<<1,
 		flgcmd=flgts<<1,//not optional but we can signal if we read it at least
 		flgps=flgcmd<<1,//not optional but we can signal if we read it at least
-		flgpay=flgps<<1,//not optional but we can signal if we read it at least
+		flgpay=flgps<<1,//not optional but we can signal if we read it at least,
+		flgign=flgpay<<1,
 		flgvalid=flgid1|flgpkt|flgcmd|flgps|flgpay,
 	};
 	enum packettype{
@@ -325,8 +326,9 @@ public:
 			return false;
 		return true;
 	}
-	
+
 	bool IsValid() const {return ((flags&flgvalid)==flgvalid)&&(flags&(flgid2|flgid3));}
+	bool Ignore() const {return ((flags&flgign)!=0);}
 	bool DecodePacket(const char * rawmsg);
 
 	template<typename T> CEvohomeMsg& Add(const T &in){CEvohomeDataType::Add(in,payload,payloadsize);return *this;}
@@ -377,10 +379,10 @@ public:
 		SetFlag(flgid1<<idx);
 	}
 	bool BadMsg(){return (enccount>30);}
-	
+
 	static char const szPacketType[5][8];
 
-	unsigned char flags;
+	uint16_t flags;
 	packettype type;
 	CEvohomeID id[3];
 	unsigned char timestamp;

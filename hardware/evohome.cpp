@@ -717,6 +717,12 @@ bool CEvohomeMsg::DecodePacket(const char * rawmsg)
 		std::string tkn(tkns[i]);
 		if(i==0)//this is some sort of status or flags but not sure what exactly
 		{
+			if(tkn=="#")
+			{
+				SetFlag(flgign);
+				CEvohome::Log(true,LOG_STATUS,"evohome: ignored message: %s",rawmsg);
+				return false;
+			}
 		}
 		else if(i==1)
 		{
@@ -832,7 +838,7 @@ void CEvohome::ProcessMsg(const char * rawmsg)
 		else
 			DecodePayload(msg);
 	}
-	else
+	else if(!msg.Ignore())
 		Log(true,LOG_ERROR,"evohome: invalid message structure - possible corrupt message");
 }
 
