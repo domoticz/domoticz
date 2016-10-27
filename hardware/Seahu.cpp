@@ -8,12 +8,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <fcntl.h>
-//#ifdef __arm__
+#ifdef __arm__
 #include <linux/i2c-dev.h>
 #include <linux/i2c.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
-//#endif
+#endif
 // not used include
 //#include "../json/json.h"
 //#include "../main/SQLHelper.h"
@@ -289,7 +289,7 @@ char CSeahu::readByteI2C(int file, char *byte, char i2c_addr)
 char CSeahu::writeByteI2C(int file, char byte, char i2c_addr)
 {
 #ifndef __arm__
-	return false;
+	return -1;
 #else
 	// set I2C address to will be comunicate (frist addres = chip on base board)
 	if (ioctl(file, I2C_SLAVE_FORCE, i2c_addr) < 0) {

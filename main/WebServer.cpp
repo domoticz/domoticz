@@ -33,6 +33,7 @@
 #endif // WITH_GPIO
 #ifdef WITH_TELLDUSCORE
 #include "../hardware/Tellstick.h"
+#include "../hardware/Seahu.h"
 #endif
 #include "../webserver/Base64.h"
 #include "../smtpclient/SMTPClient.h"
