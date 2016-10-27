@@ -20,6 +20,7 @@ Version 3.xxxx (October xx 2016)
 - Implemented: MySensors, S_POWER, Apparent power: volt-ampere (VA)
 - Implemented: MySensors, S_POWER, Ratio of real power to apparent power: floating point value in the range [-1,..,1]
 - Implemented: Nefit Easy, User Mode (as switch, On=Clock, Off=Manual), Flow Temperature, Hot Water Mode
+- Implemented: Notifications, custom notification text helpers $name and $value
 - Implemented: OpenZWave, Aeotec ZWave+ USB Controller, Enable/Disable blinking mode (@Schmart, Thanks for the magic codes!)
 - Implemented: OpenZWave, Node table, now also displays Manufacturer, Product ID and Product Type
 - Implemented: OpenZWave, When including Thermostat Setpoints, the zwave Label will be used as Name by default

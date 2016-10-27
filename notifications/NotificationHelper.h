@@ -93,6 +93,7 @@ protected:
 	void SetConfigValue(const std::string &key, const std::string &value);
 private:
 	void AddNotifier(CNotificationBase *notifier);
+	std::string ParseCustomMessage(const std::string &cMessage, const std::string &sName, const std::string &sValue);
 	boost::mutex m_mutex;
 	std::map<unsigned long long, std::vector<_tNotification> > m_notifications;
 	int m_NotificationSensorInterval;

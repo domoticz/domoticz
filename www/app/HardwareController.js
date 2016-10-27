@@ -80,7 +80,8 @@ define(['app'], function (app) {
 				(text.indexOf("PiFace") >= 0) ||
 				(text.indexOf("Motherboard") >= 0) ||
 				(text.indexOf("Kodi") >= 0) ||
-				(text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0)
+				(text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0) ||
+                (text.indexOf("Yeelight") >= 0)
 				)
             {
 		// if hardwaretype == 1000 => I2C sensors grouping
@@ -892,7 +893,8 @@ define(['app'], function (app) {
 				(text.indexOf("GPIO") >= 0) ||
 				(text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0) ||
 				(text.indexOf("Tellstick") >= 0) ||
-				(text.indexOf("Motherboard") >= 0)
+				(text.indexOf("Motherboard") >= 0) ||
+                (text.indexOf("Yeelight") >= 0)
 				)
             {
                 $.ajax({
@@ -4259,6 +4261,47 @@ define(['app'], function (app) {
           });
         }
 
+        TellstickSettings = function (idx, name, repeats, repeatInterval) {
+            $.idx = idx;
+            cursordefault();
+            var htmlcontent = '';
+            htmlcontent = '<p><center><h2><span data-i18n="Device"></span>: ' + name + '</h2></center></p>\n';
+            htmlcontent += $('#tellstick').html();
+            $('#hardwarecontent').html(GetBackbuttonHTMLTable('ShowHardware') + htmlcontent);
+            $('#hardwarecontent').i18n();
+
+            $('#hardwarecontent #idx').val(idx);
+            $("#hardwarecontent #tellstickSettingsTable #repeats").val(repeats);
+            $("#hardwarecontent #tellstickSettingsTable #repeatInterval").val(repeatInterval);
+        }
+
+        TellstickApplySettings = function () {
+            var repeats = parseInt($("#hardwarecontent #tellstickSettingsTable #repeats").val());
+            if (repeats < 0)
+                repeats = 0;
+            if (repeats > 10)
+                repeats = 10;
+            var repeatInterval = parseInt($("#hardwarecontent #tellstickSettingsTable #repeatInterval").val());
+            if (repeatInterval < 10)
+                repeatInterval = 10;
+            if (repeatInterval > 2000)
+                repeatInterval = 2000;
+            $.ajax({
+                url: "json.htm?type=command&param=tellstickApplySettings" +
+                   "&idx=" + $.idx +
+                   "&repeats=" + repeats +
+                   "&repeatInterval=" + repeatInterval,
+                async: false,
+                dataType: 'json',
+                success: function (data) {
+                    bootbox.alert($.t('Settings saved'));
+                },
+                error: function () {
+                    ShowNotify($.t('Failed saving settings'), 2500, true);
+                }
+            });
+        }
+
         RefreshHardwareTable = function()
         {
           $('#modal').show();
@@ -4433,6 +4476,9 @@ define(['app'], function (app) {
                     else if (HwTypeStr.indexOf("CurrentCost Meter USB") >= 0) {
                         HwTypeStr+=' <span class="label label-info lcursor" onclick="EditCCUSB(' + item.idx + ',\'' + item.Name + '\',\'' + item.Address + '\');">' + $.t("Set Mode") + '</span>';
                     }
+                    else if (HwTypeStr.indexOf("Tellstick") >= 0) {
+                        HwTypeStr += ' <span class="label label-info lcursor" onclick="TellstickSettings(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2 + ');">' + $.t("Settings") + '</span>';
+                    }
 
                     var sDataTimeout="";
                     if (item.DataTimeout==0) {
@@ -4539,7 +4585,8 @@ define(['app'], function (app) {
                            (data["Type"].indexOf("Dummy") >= 0)||
                            (data["Type"].indexOf("System Alive") >= 0)||
                            (data["Type"].indexOf("PiFace") >= 0)||
-                           (data["Type"].indexOf("Tellstick") >= 0))
+                           (data["Type"].indexOf("Tellstick") >= 0) ||
+                           (data["Type"].indexOf("Yeelight") >= 0))
                         {
                             //nothing to be set
                         }
@@ -4727,7 +4774,8 @@ define(['app'], function (app) {
                (text.indexOf("Volcraft") >= 0)||
                (text.indexOf("Dummy") >= 0)||
                (text.indexOf("System Alive") >= 0)||
-               (text.indexOf("PiFace") >= 0))
+               (text.indexOf("PiFace") >= 0) ||
+               (text.indexOf("Yeelight") >= 0))
             {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").hide();
@@ -4877,6 +4925,13 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
                 $("#hardwarecontent #hardwareparamsremote #tcpport").val(80);
+            }
+            else if (text.indexOf("Yeelight") >= 0) {
+                $("#hardwarecontent #divserial").hide();
+                $("#hardwarecontent #divremote").hide();
+                $("#hardwarecontent #divlogin").hide();
+                $("#hardwarecontent #divunderground").hide();
+                $("#hardwarecontent #divhttppoller").hide();
             }
             else if (text.indexOf("Winddelen") >= 0)
             {
