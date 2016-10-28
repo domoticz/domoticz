@@ -11,7 +11,7 @@
 #include "../json/json.h"
 
 
-std::vector<boost::shared_ptr<Yeelight::YeelightTCP>> m_pNodes;
+std::vector<boost::shared_ptr<Yeelight::YeelightTCP> > m_pNodes;
 
 Yeelight::Yeelight(const int ID)
 {
