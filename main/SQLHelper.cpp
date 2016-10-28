@@ -2505,13 +2505,12 @@ void CSQLHelper::Do_Work()
 
 	while (!m_stoprequested)
 	{
-		//sleep 1 second
-		sleep_seconds(1);
+		sleep_milliseconds(1000./timer_resolution_hz);
 
 		if (m_bAcceptHardwareTimerActive)
 		{
-			m_iAcceptHardwareTimerCounter--;
-			if (m_iAcceptHardwareTimerCounter <= 0)
+			m_iAcceptHardwareTimerCounter -= (1./timer_resolution_hz);
+			if (m_iAcceptHardwareTimerCounter <= (1./timer_resolution_hz/2))
 			{
 				m_bAcceptHardwareTimerActive = false;
 				m_bAcceptNewHardware = m_bPreviousAcceptNewHardware;
@@ -2523,26 +2522,30 @@ void CSQLHelper::Do_Work()
 			}
 		}
 
-		if (m_background_task_queue.size()>0)
-		{
-			_items2do.clear();
+		{ // additional scope for lock (accessing size should be within lock too)
 			boost::lock_guard<boost::mutex> l(m_background_task_mutex);
-
-			std::vector<_tTaskItem>::iterator itt=m_background_task_queue.begin();
-			while (itt!=m_background_task_queue.end())
+			if (m_background_task_queue.size()>0)
 			{
-				itt->_DelayTime--;
-				if (itt->_DelayTime<=0)
+				_items2do.clear();
+
+				std::vector<_tTaskItem>::iterator itt=m_background_task_queue.begin();
+				while (itt!=m_background_task_queue.end())
 				{
-					_items2do.push_back(*itt);
-					itt=m_background_task_queue.erase(itt);
+					itt->_DelayTime -= (1./timer_resolution_hz);
+					if (itt->_DelayTime<=(1./timer_resolution_hz/2))
+					{
+						_items2do.push_back(*itt);
+						itt=m_background_task_queue.erase(itt);
+					}
+					else
+						++itt;
 				}
-				else
-					++itt;
 			}
 		}
-		if (_items2do.size()<1)
+
+		if (_items2do.size() < 1) {
 			continue;
+		}
 
 		std::vector<_tTaskItem>::iterator itt=_items2do.begin();
 		while (itt!=_items2do.end())
@@ -4176,7 +4179,7 @@ void CSQLHelper::UpdateUVLog()
 	GetPreferencesVar("SensorTimeout", SensorTimeOut);
 
 	std::vector<std::vector<std::string> > result;
-	result=safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d) OR (Type=%d AND SubType=%d)", 
+	result=safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d) OR (Type=%d AND SubType=%d)",
 		pTypeUV,
 		pTypeGeneral, sTypeUV
 	);
@@ -6107,8 +6110,8 @@ void CSQLHelper::AddTaskItem(const _tTaskItem &tItem)
 			// _log.Log(LOG_NORM, "Comparing with item in queue: idx=%llu, DelayTime=%d, Command='%s', Level=%d, Hue=%d, RelatedEvent='%s'", itt->_idx, itt->_DelayTime, itt->_command.c_str(), itt->_level, itt->_Hue, itt->_relatedEvent.c_str());
 			if (itt->_idx == tItem._idx && itt->_ItemType == tItem._ItemType)
 			{
-				int iDelayDiff = tItem._DelayTime - itt->_DelayTime;
-				if (iDelayDiff < 3)
+				float iDelayDiff = tItem._DelayTime - itt->_DelayTime;
+				if (iDelayDiff < (1./timer_resolution_hz/2))
 				{
 					// _log.Log(LOG_NORM, "=> Already present. Cancelling previous task item");
 					itt = m_background_task_queue.erase(itt);
