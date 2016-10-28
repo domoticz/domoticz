@@ -64,7 +64,7 @@ struct _tTaskItem
 
 	}
 
-	static _tTaskItem SwitchLight(const int DelayTime, const unsigned long long idx, const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const int switchtype, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue)
+	static _tTaskItem SwitchLight(const float DelayTime, const unsigned long long idx, const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const int switchtype, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue)
 	{
 		_tTaskItem tItem;
 		tItem._ItemType=TITEM_SWITCHCMD;
@@ -82,7 +82,7 @@ struct _tTaskItem
 		tItem._sValue=sValue;
 		return tItem;
 	}
-	static _tTaskItem ExecuteScript(const int DelayTime, const std::string &ScriptPath, const std::string &ScriptParams)
+	static _tTaskItem ExecuteScript(const float DelayTime, const std::string &ScriptPath, const std::string &ScriptParams)
 	{
 		_tTaskItem tItem;
 		tItem._ItemType=TITEM_EXECUTE_SCRIPT;
@@ -91,7 +91,7 @@ struct _tTaskItem
 		tItem._sValue=ScriptParams;
 		return tItem;
 	}
-	static _tTaskItem EmailCameraSnapshot(const int DelayTime, const std::string &CamIdx, const std::string &Subject)
+	static _tTaskItem EmailCameraSnapshot(const float DelayTime, const std::string &CamIdx, const std::string &Subject)
 	{
 		_tTaskItem tItem;
 		tItem._ItemType=TITEM_EMAIL_CAMERA_SNAPSHOT;
@@ -100,7 +100,7 @@ struct _tTaskItem
 		tItem._sValue=Subject;
 		return tItem;
 	}
-	static _tTaskItem SendEmail(const int DelayTime, const std::string &Subject, const std::string &Body)
+	static _tTaskItem SendEmail(const float DelayTime, const std::string &Subject, const std::string &Body)
 	{
 		_tTaskItem tItem;
 		tItem._ItemType=TITEM_SEND_EMAIL;
@@ -109,7 +109,7 @@ struct _tTaskItem
 		tItem._sValue=Body;
 		return tItem;
 	}
-	static _tTaskItem SendEmailTo(const int DelayTime, const std::string &Subject, const std::string &Body, const std::string &To)
+	static _tTaskItem SendEmailTo(const float DelayTime, const std::string &Subject, const std::string &Body, const std::string &To)
 	{
 		_tTaskItem tItem;
 		tItem._ItemType=TITEM_SEND_EMAIL_TO;
@@ -119,7 +119,7 @@ struct _tTaskItem
 		tItem._command=To;
 		return tItem;
 	}
-	static _tTaskItem SendSMS(const int DelayTime, const std::string &Subject)
+	static _tTaskItem SendSMS(const float DelayTime, const std::string &Subject)
 	{
 		_tTaskItem tItem;
 		tItem._ItemType = TITEM_SEND_SMS;
@@ -127,7 +127,7 @@ struct _tTaskItem
 		tItem._ID = Subject;
 		return tItem;
 	}
-	static _tTaskItem SwitchLightEvent(const int DelayTime, const unsigned long long idx, const std::string &Command, const unsigned char Level, const int Hue, const std::string &eventName)
+	static _tTaskItem SwitchLightEvent(const float DelayTime, const unsigned long long idx, const std::string &Command, const unsigned char Level, const int Hue, const std::string &eventName)
 	{
 		_tTaskItem tItem;
 		tItem._ItemType=TITEM_SWITCHCMD_EVENT;
@@ -140,7 +140,7 @@ struct _tTaskItem
 
 		return tItem;
 	}
-    static _tTaskItem SwitchSceneEvent(const int DelayTime, const unsigned long long idx, const std::string &Command, const std::string &eventName)
+    static _tTaskItem SwitchSceneEvent(const float DelayTime, const unsigned long long idx, const std::string &Command, const std::string &eventName)
 	{
 		_tTaskItem tItem;
 		tItem._ItemType=TITEM_SWITCHCMD_SCENE;
@@ -151,7 +151,7 @@ struct _tTaskItem
 
 		return tItem;
 	}
-	static _tTaskItem GetHTTPPage(const int DelayTime, const std::string &URL, const std::string &eventName)
+	static _tTaskItem GetHTTPPage(const float DelayTime, const std::string &URL, const std::string &eventName)
 	{
 		_tTaskItem tItem;
 		tItem._ItemType=TITEM_GETURL;
@@ -161,7 +161,7 @@ struct _tTaskItem
 
 		return tItem;
 	}
-	static _tTaskItem SetVariable(const int DelayTime, const unsigned long long idx, const std::string &varvalue, const bool eventtrigger)
+	static _tTaskItem SetVariable(const float DelayTime, const unsigned long long idx, const std::string &varvalue, const bool eventtrigger)
 	{
 		_tTaskItem tItem;
 		tItem._ItemType = TITEM_SET_VARIABLE;

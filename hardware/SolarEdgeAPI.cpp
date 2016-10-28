@@ -20,6 +20,7 @@
 
 #ifdef _DEBUG
 //	#define DEBUG_SolarEdgeAPIR
+#define DEBUG_SolarEdgeAPIW
 #endif
 
 #ifdef DEBUG_SolarEdgeAPIW

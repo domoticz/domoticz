@@ -2505,12 +2505,12 @@ void CSQLHelper::Do_Work()
 
 	while (!m_stoprequested)
 	{
-		sleep_milliseconds(1000./timer_resolution_hz);
+		sleep_milliseconds(static_cast<const long>(1000.0f/timer_resolution_hz));
 
 		if (m_bAcceptHardwareTimerActive)
 		{
-			m_iAcceptHardwareTimerCounter -= (1./timer_resolution_hz);
-			if (m_iAcceptHardwareTimerCounter <= (1./timer_resolution_hz/2))
+			m_iAcceptHardwareTimerCounter -= static_cast<float>(1./timer_resolution_hz);
+			if (m_iAcceptHardwareTimerCounter <= (1.0f/timer_resolution_hz/2))
 			{
 				m_bAcceptHardwareTimerActive = false;
 				m_bAcceptNewHardware = m_bPreviousAcceptNewHardware;
@@ -2531,7 +2531,7 @@ void CSQLHelper::Do_Work()
 				std::vector<_tTaskItem>::iterator itt=m_background_task_queue.begin();
 				while (itt!=m_background_task_queue.end())
 				{
-					itt->_DelayTime -= (1./timer_resolution_hz);
+					itt->_DelayTime -= static_cast<float>(1./timer_resolution_hz);
 					if (itt->_DelayTime<=(1./timer_resolution_hz/2))
 					{
 						_items2do.push_back(*itt);
@@ -3298,7 +3298,7 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 			std::vector<std::string> sd=result[0];
 			std::string Name=sd[0];
 			_eSwitchType switchtype=(_eSwitchType)atoi(sd[1].c_str());
-			int AddjValue=(int)atof(sd[2].c_str());
+			float AddjValue = static_cast<float>(atof(sd[2].c_str()));
 			GetLightStatus(devType, subType, switchtype,nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 
 			bool bIsLightSwitchOn=IsLightSwitchOn(lstatus);
@@ -3356,7 +3356,7 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 						{
 							std::vector<std::string> sd=*ittCam;
 							std::string camidx=sd[0];
-							int delay=atoi(sd[1].c_str());
+							float delay= static_cast<float>(atof(sd[1].c_str()));
 							std::string subject=Name + " Status: " + lstatus;
 							AddTaskItem(_tTaskItem::EmailCameraSnapshot(delay+1,camidx,subject));
 						}
@@ -3402,7 +3402,7 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 			}
 			if (bIsLightSwitchOn)
 			{
-				if (AddjValue!=0) //Off Delay
+				if ((int)AddjValue!=0) //Off Delay
 				{
 					bool bAdd2DelayQueue=false;
 					int cmd=0;
@@ -7058,7 +7058,7 @@ bool CSQLHelper::CheckTime(const std::string &sTime)
 
 void CSQLHelper::AllowNewHardwareTimer(const int iTotMinutes)
 {
-	m_iAcceptHardwareTimerCounter = iTotMinutes * 60;
+	m_iAcceptHardwareTimerCounter = iTotMinutes * 60.0f;
 	if (m_bAcceptHardwareTimerActive == false)
 	{
 		m_bPreviousAcceptNewHardware = m_bAcceptNewHardware;

@@ -1925,7 +1925,7 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 				if ((aFind > 0) && (aFind != std::string::npos)) {
 					std::string delayString = doWhat.substr(aFind + 7);
 					std::string newAction = doWhat.substr(0, aFind);
-					afterTimerSeconds = atof(delayString.c_str());
+					afterTimerSeconds = static_cast<float>(atof(delayString.c_str()));
 					doWhat = newAction;
 					StripQuotes(doWhat);
 				}
@@ -2979,7 +2979,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 		if ((aFind > 0) && (aFind != std::string::npos)) {
 			std::string delayString = variableValue.substr(aFind + 7);
 			std::string newAction = variableValue.substr(0, aFind);
-			afterTimerSeconds = atof(delayString.c_str());
+			afterTimerSeconds = static_cast<float>(atof(delayString.c_str()));
 			variableValue = newAction;
 		}
 		result = m_sql.safe_query("SELECT ID, ValueType FROM UserVariables WHERE (Name == '%q')", variableName.c_str());
@@ -3204,7 +3204,7 @@ bool CEventSystem::ScheduleEvent(std::string deviceName, const std::string &Acti
 		if ((aFind > 0) && (aFind != std::string::npos)) {
 			std::string delayString = Action.substr(aFind + 7);
 			std::string newAction = Action.substr(0, aFind);
-			delay = atof(delayString.c_str());
+			delay = static_cast<float>(atof(delayString.c_str()));
 			cAction = newAction;
 		}
 		StripQuotes(cAction);
@@ -3254,7 +3254,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 	if ((aFind > 0) && (aFind != std::string::npos)) {
 		std::string delayString = Action.substr(aFind + 5);
 		std::string newAction = Action.substr(0, aFind);
-		suspendTimer = atof(delayString.c_str());
+		suspendTimer = static_cast<float>(atof(delayString.c_str()));
 		Action = newAction;
 	}
 	size_t rFind = Action.find(" RANDOM ");
@@ -3262,14 +3262,14 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 	{
 		std::string delayString = Action.substr(rFind + 8);
 		std::string newAction = Action.substr(0, rFind);
-		randomTimer = atof(delayString.c_str());
+		randomTimer = static_cast<float>(atof(delayString.c_str()));
 		Action = newAction;
 	}
 	aFind = Action.find(" AFTER ");
 	if ((aFind > 0) && (aFind != std::string::npos)) {
 		std::string delayString = Action.substr(aFind + 7);
 		std::string newAction = Action.substr(0, aFind);
-		afterTimerSeconds = atof(delayString.c_str());
+		afterTimerSeconds = static_cast<float>(atof(delayString.c_str()));
 		Action = newAction;
 	}
 
@@ -3354,7 +3354,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 		float rTime;
 		srand((unsigned int)mytime(NULL));
 		rTime = (float)rand()/(float)(RAND_MAX/randomTimer);
-		DelayTime = rTime + (1./timer_resolution_hz); //prevent it from running again immediately the next minute if blockly script doesn't handle that
+		DelayTime = static_cast<float>(rTime + (1. / timer_resolution_hz)); //prevent it from running again immediately the next minute if blockly script doesn't handle that
 		//alreadyScheduled = isEventscheduled(deviceID, randomTimer, isScene);
 	}
 	if (afterTimerSeconds > 0)
@@ -3405,7 +3405,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 
 	if (suspendTimer > (1./timer_resolution_hz/2))
 	{
-		DelayTime = suspendTimer + (1./timer_resolution_hz); //prevent it from running again immediately the next minute if blockly script doesn't handle that
+		DelayTime = static_cast<float>(suspendTimer + (1. / timer_resolution_hz)); //prevent it from running again immediately the next minute if blockly script doesn't handle that
 		_tTaskItem delayedtItem;
 		if (isScene) {
 			if (Action == "On") {
