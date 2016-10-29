@@ -63,13 +63,10 @@ void Yeelight::Do_Work()
 		std::vector<boost::shared_ptr<Yeelight::YeelightTCP> >::iterator itt;
 		for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
 		{
+			_log.Log(LOG_NORM, "Yeelight stopping device %s", (*itt)->m_szDeviceId.c_str());
 			(*itt)->Stop();
-			//if (!(*itt)->IsBusy())
-			//{
-				_log.Log(LOG_NORM, "Yeelight Removing device %s", (*itt)->m_szDeviceId);
-				m_pNodes.erase(itt);
-				break;
-			//}
+			m_pNodes.erase(itt);
+			break;
 		}
 		iRetryCounter++;
 		sleep_milliseconds(500);
@@ -81,22 +78,23 @@ void Yeelight::Do_Work()
 	if (result.size() < 1) {
 		//return false;
 	}
-	//int rowCnt = 0;
-	std::vector<std::vector<std::string> >::const_iterator itt;
-	for (itt = result.begin(); itt != result.end(); ++itt)
-	{
-		std::vector<std::string> sd = *itt;
-		std::string ipAddress = sd[0].c_str();
-		//_log.Log(LOG_STATUS, "Yeelight: found device in database %s %s", ipAddr.c_str(), sd[1].c_str());
-		boost::shared_ptr<Yeelight::YeelightTCP>	pNode = (boost::shared_ptr<Yeelight::YeelightTCP>) new Yeelight::YeelightTCP(sd[1].c_str(), ipAddress.c_str(), m_HwdID);
-		m_pNodes.push_back(pNode);
+	else {
+		std::vector<std::vector<std::string> >::const_iterator itt;
+		for (itt = result.begin(); itt != result.end(); ++itt)
+		{
+			std::vector<std::string> sd = *itt;
+			std::string ipAddress = sd[0].c_str();
+			//_log.Log(LOG_STATUS, "Yeelight: found device in database %s %s", ipAddr.c_str(), sd[1].c_str());
+			boost::shared_ptr<Yeelight::YeelightTCP>	pNode = (boost::shared_ptr<Yeelight::YeelightTCP>) new Yeelight::YeelightTCP(sd[1].c_str(), ipAddress.c_str(), m_HwdID);
+			m_pNodes.push_back(pNode);
+		}
+		for (std::vector<boost::shared_ptr<Yeelight::YeelightTCP> >::iterator itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
+		{
+			//_log.Log(LOG_NORM, "Yeelight: (%s) Starting thread.", (*itt)->m_szDeviceId.c_str());
+			(*itt)->Start();
+		}
 	}
 
-	for (std::vector<boost::shared_ptr<Yeelight::YeelightTCP> >::iterator itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
-	{
-		//_log.Log(LOG_NORM, "Yeelight: (%s) Starting thread.", (*itt)->m_szDeviceId.c_str());
-		(*itt)->Start();
-	}
 
 	sleep_seconds(5);
 	_log.Log(LOG_STATUS, "Yeelight: creating io_service");
