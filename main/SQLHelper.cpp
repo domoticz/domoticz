@@ -2712,6 +2712,14 @@ void CSQLHelper::Do_Work()
 					_log.Log(LOG_ERROR, "Variable not found!");
 				}
 			}
+			else if (itt->_ItemType == TITEM_SEND_NOTIFICATION)
+			{
+				std::vector<std::string> splitresults;
+				StringSplit(itt->_command, "!#", splitresults);
+				if (splitresults.size() != 4)
+					continue; //impossible
+				m_notifications.SendMessageEx(NOTIFYALL, splitresults[0], splitresults[1], splitresults[2], static_cast<int>(itt->_idx), splitresults[3], true);
+			}
 
 			++itt;
 		}

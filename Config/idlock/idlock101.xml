@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+<!-- Configuration Parameters -->
+
+<!--COMMAND_CLASS_CONFIGURATION-->
+<CommandClass id="112">
+    <Value type="list" index="1" genre="config" label="Door Lock Mode" units="" min="0" max="3" size="1">
+      <Help>
+        	Door Lock Mode
+		Autolock Mode, Manuallock mode, Activate Away Mode, Deactivate Away Mode.
+		Default Value : 1 ( Disable Away / Auto Lock Mode )
+      </Help>
+      	<Item label="Disable Away, Manual Lock" value="0" />
+      	<Item label="Disable Away, Auto Lock" value="1" />
+	<Item label="Enable Away, Manual Lock" value="2" />
+	<Item label="Enable Away, Auto Lock" value="3" />
+    </Value>
+	<Value type="list" index="2" genre="config" label="RFID Registration Configuration" units="" min="0" max="3" size="1">
+      <Help>
+		RFID Registration Configuration
+        	IDLocks can use up to 50 RFID cards. In order to use a RFID, RFID has to be registered by z-wave configuration command class. 
+		Configuration Set in case of starting to register from backend side ( Ex. App)
+      </Help>
+      		<Item label="Begin RFID Registering mode on the door lock" value="0x01" />
+      		<Item label="RFID Database clear" value="0x07" />
+		<Item label="RFID Registering mode stop" value="0x08" />
+	</Value>
+</CommandClass>
+
+	<!-- Association Groups -->
+<!--COMMAND_CLASS_ASSOCIATION-->
+            <CommandClass id="133">
+                <Instance index="1" />
+                <Associations num_groups="1">
+                    <Group index="1" max_associations="5" label="Lifeline">
+                     </Group>
+                </Associations>
+            </CommandClass>
+</Product>
