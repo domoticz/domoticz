@@ -95,7 +95,6 @@ void Yeelight::Do_Work()
 		}
 	}
 
-
 	sleep_seconds(5);
 	_log.Log(LOG_STATUS, "Yeelight: creating io_service");
 	boost::asio::io_service io_service;
@@ -379,7 +378,7 @@ void Yeelight::ParseData(const std::string & DeviceID, const char *pData, size_t
 	std::string endString = "}}\r\n";
 	std::string receivedString;
 	receivedString.assign((char *)pData, len);
-	_log.Log(LOG_STATUS, receivedString.c_str());
+	//_log.Log(LOG_STATUS, receivedString.c_str());
 	int pos = receivedString.find(startString);
 	int pos1;
 	std::string dataString;
@@ -391,8 +390,6 @@ void Yeelight::ParseData(const std::string & DeviceID, const char *pData, size_t
 		yeelightStatus = dataString.c_str();
 	}
 
-
-	//check for hue
 	startString = "{\"hue\":";
 	pos = receivedString.find(startString);
 	if (pos > 0) {
@@ -419,7 +416,6 @@ void Yeelight::ParseData(const std::string & DeviceID, const char *pData, size_t
 	if (yeelightStatus == "\"off\"") {
 		bIsOn = false;
 	}
-
 	UpdateSwitch(DeviceID, bIsOn, yeelightBright, yeelightHue);
 }
 
