@@ -80,9 +80,13 @@ void Yeelight::Do_Work()
 	}
 
 	sleep_seconds(5);
+	_log.Log(LOG_STATUS, "Yeelight: creating io_service");
 	boost::asio::io_service io_service;
+	_log.Log(LOG_STATUS, "Yeelight: creating YeelightUDP");
 	YeelightUDP yeelightUDP(io_service, m_HwdID);
+	_log.Log(LOG_STATUS, "Yeelight: calling YeelightUDP.start_send()");
 	yeelightUDP.start_send();
+	_log.Log(LOG_STATUS, "Yeelight: calling io_service.run()");
 	io_service.run();
 	int sec_counter = 0;
 	while (!m_stoprequested)
@@ -364,9 +368,6 @@ void Yeelight::ParseData(const std::string & DeviceID, const char *pData, size_t
 	std::string dataString;
 
 	if (pos > 0) {
-
-		_log.Log(LOG_STATUS, "Yeelight: pos is: %i", pos);
-
 		pos = pos + startString.length();
 		pos1 = receivedString.substr(pos).find(endString);
 		dataString = receivedString.substr(pos, pos1);
@@ -378,7 +379,6 @@ void Yeelight::ParseData(const std::string & DeviceID, const char *pData, size_t
 	startString = "{\"hue\":";
 	pos = receivedString.find(startString);
 	if (pos > 0) {
-		_log.Log(LOG_STATUS, "Yeelight: pos is: %i", pos);
 		pos = pos + startString.length();
 		pos1 = receivedString.substr(pos).find(endString);
 		dataString = receivedString.substr(pos, pos1);
@@ -388,22 +388,15 @@ void Yeelight::ParseData(const std::string & DeviceID, const char *pData, size_t
 	startString = "{\"bright\":";
 	pos = receivedString.find(startString);
 	if (pos > 0) {
-		_log.Log(LOG_STATUS, "Yeelight: pos is: %i", pos);
 		pos = pos + startString.length();
 		pos1 = receivedString.substr(pos).find(endString);
 		dataString = receivedString.substr(pos, pos1);
 		yeelightHue = dataString.c_str();
 	}
 
-
-	_log.Log(LOG_STATUS, "Yeelight::ParseData yeelightStatus: %s", yeelightStatus.c_str());
-	_log.Log(LOG_STATUS, "Yeelight::ParseData yeelightBright: %s", yeelightBright.c_str());
-	_log.Log(LOG_STATUS, "Yeelight::ParseData yeelightHue: %s", yeelightHue.c_str());
-
-	//std::string yeelightLocation;
-	//std::string yeelightId;
-	//std::string yeelightBright;
-	//std::string yeelightHue;
+	//_log.Log(LOG_STATUS, "Yeelight::ParseData yeelightStatus: %s", yeelightStatus.c_str());
+	//_log.Log(LOG_STATUS, "Yeelight::ParseData yeelightBright: %s", yeelightBright.c_str());
+	//_log.Log(LOG_STATUS, "Yeelight::ParseData yeelightHue: %s", yeelightHue.c_str());
 
 	bool bIsOn = true;
 	if (yeelightStatus == "\"off\"") {
@@ -411,7 +404,6 @@ void Yeelight::ParseData(const std::string & DeviceID, const char *pData, size_t
 	}
 
 	UpdateSwitch(DeviceID, bIsOn, yeelightBright, yeelightHue);
-	//_log.Log(LOG_STATUS, receivedString.c_str());
 }
 
 
@@ -427,10 +419,9 @@ Yeelight::YeelightUDP::YeelightUDP(boost::asio::io_service& io_service, int hard
 
 void Yeelight::YeelightUDP::start_send()
 {
-	std::string testMessage = "M-SEARCH * HTTP/1.1\r\nHOST: 239.255.255.250:1982\r\nMAN: \"ssdp:discover\"\r\nST: wifi_bulb";
+	std::string broadcastMessage = "M-SEARCH * HTTP/1.1\r\nHOST: 239.255.255.250:1982\r\nMAN: \"ssdp:discover\"\r\nST: wifi_bulb";
 	//_log.Log(LOG_STATUS, "start_send..................");
-	boost::shared_ptr<std::string> message(
-		new std::string(testMessage));
+	boost::shared_ptr<std::string> message(new std::string(broadcastMessage));
 	remote_endpoint_ = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string("239.255.255.250"), 1982);
 	socket_.send_to(boost::asio::buffer(*message), remote_endpoint_);
 	start_receive();
