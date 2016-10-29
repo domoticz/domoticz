@@ -43,6 +43,9 @@ private:
 	bool StopHardware();
 	void Do_Work();
 
+	bool IsNodeExists(const Json::Value root, const std::string node);
+	bool IsNodesExist(const Json::Value root, const std::string node, const std::string value);
+
 	std::string IdentifyDevice(const std::string &IPAddress);
 	int GetDeviceTypeByApiName(const std::string &apiName);
 	std::string GetDeviceIP(const tRBUF *id);
