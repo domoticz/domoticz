@@ -37,6 +37,7 @@ enum _eTaskItemType
 	TITEM_SEND_EMAIL_TO,
 	TITEM_SET_VARIABLE,
 	TITEM_SEND_SMS,
+	TITEM_SEND_NOTIFICATION,
 };
 
 struct _tTaskItem
@@ -169,6 +170,15 @@ struct _tTaskItem
 		tItem._idx = idx;
 		tItem._sValue = varvalue;
 		tItem._nValue = (eventtrigger==true)?1:0;
+		return tItem;
+	}
+	static _tTaskItem SendNotification(const float DelayTime, const std::string &Subject, const std::string &Body, const std::string &ExtraData, const int Priority, const std::string &Sound)
+	{
+		_tTaskItem tItem;
+		tItem._ItemType = TITEM_SEND_NOTIFICATION;
+		tItem._DelayTime = DelayTime;
+		tItem._idx = Priority;
+		tItem._command = Subject + "!#" + Body + "!#" + ExtraData + "!#" + Sound;
 		return tItem;
 	}
 
