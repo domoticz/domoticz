@@ -2092,6 +2092,8 @@ void CEventSystem::ParseActionString( const std::string &oAction_, _tActionParse
 			iLastTokenType = 3;
 		} else if ( strcasecmp( sToken, "REPEAT" ) == 0 ) {
 			iLastTokenType = 4;
+		} else if ( strcasecmp( sToken, "INTERVAL" ) == 0 ) {
+			iLastTokenType = 5;
 		} else if (
 			strcasecmp( sToken, "TURN" ) == 0
 			|| strcasecmp( sToken, "SET" ) == 0
@@ -2144,9 +2146,8 @@ void CEventSystem::ParseActionString( const std::string &oAction_, _tActionParse
 				case 3:
 					oResults_.fRandomSec = 60. * atof( sToken );
 					break;
-				case 4: // REPEAT recognized
+				case 4:
 					oResults_.iRepeat = atoi( sToken );
-					iLastTokenType = 5;
 					break;
 				case 5:
 					oResults_.fRepeatSec = 1. * atof( sToken );
