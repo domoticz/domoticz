@@ -57,6 +57,25 @@ bool Yeelight::StopHardware()
 
 void Yeelight::Do_Work()
 {
+	int iRetryCounter = 0;
+	while (!m_pNodes.empty() && (iRetryCounter < 15))
+	{
+		std::vector<boost::shared_ptr<Yeelight::YeelightTCP> >::iterator itt;
+		for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
+		{
+			(*itt)->Stop();
+			//if (!(*itt)->IsBusy())
+			//{
+				_log.Log(LOG_NORM, "Yeelight Removing device %s", (*itt)->m_szDeviceId);
+				m_pNodes.erase(itt);
+				break;
+			//}
+		}
+		iRetryCounter++;
+		sleep_milliseconds(500);
+	}
+	m_pNodes.clear();
+
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Options, DeviceID FROM DeviceStatus WHERE (Used=1) AND (Type==%d)", pTypeYeelight);
 	if (result.size() < 1) {
