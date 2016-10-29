@@ -16,9 +16,11 @@
 #include "WebServer.h"
 #include "../webserver/cWebem.h"
 #include "../json/json.h"
+#include <boost/tokenizer.hpp>
 
 #ifdef WIN32
 #include "dirent_windows.h"
+#define strcasecmp _stricmp
 #else
 #include <dirent.h>
 #endif
@@ -2048,6 +2050,98 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 	return actionsDone;
 }
 
+void CEventSystem::ParseActionString( const std::string &oAction_, _tActionParseResults &oResults_ ) {
+	int iLastTokenType = 0;
+
+	typedef boost::tokenizer<boost::char_separator<char> > tTokenizer;
+	boost::char_separator<char> fSep(" ");
+	tTokenizer oTokenizer(oAction_, fSep);
+	for ( tTokenizer::iterator oIterator = oTokenizer.begin(); oIterator != oTokenizer.end(); ++oIterator ) {
+
+		const char* sToken = (*oIterator).c_str();
+		if ( strcasecmp( sToken, "FOR" ) == 0 ) {
+			iLastTokenType = 1;
+		} else if ( strcasecmp( sToken, "AFTER" ) == 0 ) {
+			iLastTokenType = 2;
+		} else if ( strcasecmp( sToken, "RANDOM" ) == 0 ) {
+			iLastTokenType = 3;
+		} else if ( strcasecmp( sToken, "REPEAT" ) == 0 ) {
+			iLastTokenType = 4;
+		} else if (
+			strcasecmp( sToken, "TURN" ) == 0
+			|| strcasecmp( sToken, "SET" ) == 0
+			|| strcasecmp( sToken, "PLAY" ) == 0
+		) {
+			iLastTokenType = 0;
+		} else if (
+			strcasecmp( sToken, "SECOND" ) == 0
+			|| strcasecmp( sToken, "SECONDS" ) == 0
+		) {
+			switch( iLastTokenType ) {
+				case 1: oResults_.fForSec /= 60.; break;
+				case 3: oResults_.fRandomSec /= 60.; break;
+			}
+			iLastTokenType = 0;
+		} else if (
+			strcasecmp( sToken, "MINUTE" ) == 0
+			|| strcasecmp( sToken, "MINUTES" ) == 0
+		) {
+			switch( iLastTokenType ) {
+				case 2: oResults_.fAfterSec *= 60.; break;
+				case 5: oResults_.fRepeatSec *= 60.; break;
+			}
+			iLastTokenType = 0;
+		} else if (
+			strcasecmp( sToken, "HOUR" ) == 0
+			|| strcasecmp( sToken, "HOURS" ) == 0
+		) {
+			switch( iLastTokenType ) {
+				case 1: oResults_.fForSec *= 60.; break;
+				case 2: oResults_.fAfterSec *= 3600.; break;
+				case 3: oResults_.fRandomSec *= 60.; break;
+				case 5: oResults_.fRepeatSec *= 3600.; break;
+			}
+			iLastTokenType = 0;
+		} else {
+			switch( iLastTokenType ) {
+				case 0:
+					if ( oResults_.sCommand.length() > 0 ) {
+						oResults_.sCommand.append( " " );
+					}
+					oResults_.sCommand.append( sToken );
+					break;
+				case 1:
+					oResults_.fForSec = 60. * atof( sToken );
+					break;
+				case 2:
+					oResults_.fAfterSec = 1. * atof( sToken );
+					break;
+				case 3:
+					oResults_.fRandomSec = 60. * atof( sToken );
+					break;
+				case 4: // REPEAT recognized
+					oResults_.iRepeat = atoi( sToken );
+					iLastTokenType = 5;
+					break;
+				case 5:
+					oResults_.fRepeatSec = 1. * atof( sToken );
+					break;
+			}
+		}
+	}
+#ifdef _DEBUG
+	_log.Log(
+		LOG_NORM, "Command=%s, FOR=%.2f, AFTER=%.2f, RANDOM=%.2f, REPEAT=%d INTERVAL %.2f",
+		oResults_.sCommand.c_str(),
+		oResults_.fForSec,
+		oResults_.fAfterSec,
+		oResults_.fRandomSec,
+		oResults_.iRepeat,
+		oResults_.fRepeatSec
+	);
+#endif
+}
+
 #ifdef ENABLE_PYTHON
 
 void CEventSystem::EvaluatePython(const std::string &reason, const std::string &filename, const std::string &PyString, const unsigned long long varId)
@@ -3244,51 +3338,18 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 	std::string previousState = m_devicestates[deviceID].nValueWording;
 	unsigned char previousLevel = calculateDimLevel(deviceID, m_devicestates[deviceID].lastLevel);
+	unsigned char level = 0;
 	devicestatesMutexLock.unlock();
 
-	float suspendTimer = 0;
-	float randomTimer = 0;
-	float afterTimerSeconds = 0;
+	struct _tActionParseResults oParseResults = { "", 0, 0, 0, 1, 0 };
+	ParseActionString( Action, oParseResults );
 
-	size_t aFind = Action.find(" FOR ");
-	if ((aFind > 0) && (aFind != std::string::npos)) {
-		std::string delayString = Action.substr(aFind + 5);
-		std::string newAction = Action.substr(0, aFind);
-		suspendTimer = static_cast<float>(atof(delayString.c_str()));
-		Action = newAction;
-	}
-	size_t rFind = Action.find(" RANDOM ");
-	if ((rFind > 0) && (rFind != std::string::npos))
-	{
-		std::string delayString = Action.substr(rFind + 8);
-		std::string newAction = Action.substr(0, rFind);
-		randomTimer = static_cast<float>(atof(delayString.c_str()));
-		Action = newAction;
-	}
-	aFind = Action.find(" AFTER ");
-	if ((aFind > 0) && (aFind != std::string::npos)) {
-		std::string delayString = Action.substr(aFind + 7);
-		std::string newAction = Action.substr(0, aFind);
-		afterTimerSeconds = static_cast<float>(atof(delayString.c_str()));
-		Action = newAction;
-	}
-
-	unsigned char _level = 0;
-	if (Action.find("Set Level") == 0)
-	{
-		_level = calculateDimLevel(deviceID, atoi(Action.substr(10).c_str()));
-		Action = Action.substr(0, 9);
-	}
-
-	if (Action.find("Set Volume") == 0)
-	{
-		_level = atoi(Action.substr(11).c_str());
-		Action = Action.substr(0, 10);
-	}
-
-	if (Action.find("Play Playlist") == 0)
-	{
-		std::string	sParams = Action.substr(14);
+	if ( strcasecmp( oParseResults.sCommand.substr( 0, 5 ).c_str(), "Level" ) == 0 ) {
+		level = calculateDimLevel( deviceID, atoi( oParseResults.sCommand.substr( 6 ).c_str() ) );
+	} else if ( strcasecmp( oParseResults.sCommand.substr( 0, 6 ).c_str(), "Volume" ) == 0 ) {
+		level = atoi( oParseResults.sCommand.substr( 7 ).c_str() );
+	} else if ( strcasecmp( oParseResults.sCommand.substr( 0, 8 ).c_str(), "Playlist" ) == 0 ) {
+		std::string	sParams = oParseResults.sCommand.substr( 9 );
 		CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByType(HTYPE_Kodi);
 		if (pBaseHardware != NULL)
 		{
@@ -3299,7 +3360,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 			if (iLastSpace != std::string::npos)
 			{
 				sPlayList = sParams.substr(0, iLastSpace);
-				_level = atoi(sParams.substr(iLastSpace).c_str());
+				level = atoi(sParams.substr(iLastSpace).c_str());
 			}
 			if (!pHardware->SetPlaylist(deviceID, sPlayList.c_str()))
 			{
@@ -3313,112 +3374,109 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 			if (pBaseHardware == NULL) return false;
 			CLogitechMediaServer *pHardware = reinterpret_cast<CLogitechMediaServer*>(pBaseHardware);
 
-			int iPlaylistID = pHardware->GetPlaylistRefID(Action.substr(14).c_str());
+			int iPlaylistID = pHardware->GetPlaylistRefID(oParseResults.sCommand.substr( 9 ).c_str());
 			if (iPlaylistID == 0) return false;
 
-			_level = iPlaylistID;
+			level = iPlaylistID;
 		}
-
-		Action = Action.substr(0, 13);
-	}
-	if ((Action.find("Play Favorites") == 0) && (Action.length() > 14))
-	{
-		std::string	sParams = Action.substr(15);
+	} else if ( strcasecmp( oParseResults.sCommand.substr( 0, 9 ).c_str(), "Favorites" ) == 0 ) {
+		std::string	sParams = oParseResults.sCommand.substr( 10 );
 		CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByType(HTYPE_Kodi);
 		if (pBaseHardware != NULL)
 		{
 			CKodi			*pHardware = reinterpret_cast<CKodi*>(pBaseHardware);
 			if (sParams.length() > 0)
 			{
-				_level = atoi(sParams.c_str());
+				level = atoi(sParams.c_str());
 			}
 		}
-
-		Action = Action.substr(0, 14);
-	}
-	if (Action.find("Execute") == 0)
-	{
-		std::string	sParams = Action.substr(8);
+	} else if ( strcasecmp( oParseResults.sCommand.substr( 0, 7 ).c_str(), "Execute" ) == 0 ) {
+		std::string	sParams = oParseResults.sCommand.substr( 8 );
 		CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByType(HTYPE_Kodi);
 		if (pBaseHardware != NULL)
 		{
 			CKodi	*pHardware = reinterpret_cast<CKodi*>(pBaseHardware);
 			pHardware->SetExecuteCommand(deviceID, sParams);
 		}
-
-		Action = Action.substr(0, 7);
-	}
-	float DelayTime = 0;
-
-	if (randomTimer > (1./timer_resolution_hz/2)) {
-		float rTime;
-		srand((unsigned int)mytime(NULL));
-		rTime = (float)rand()/(float)(RAND_MAX/randomTimer);
-		DelayTime = static_cast<float>(rTime + (1. / timer_resolution_hz)); //prevent it from running again immediately the next minute if blockly script doesn't handle that
-		//alreadyScheduled = isEventscheduled(deviceID, randomTimer, isScene);
-	}
-	if (afterTimerSeconds > 0)
-	{
-		DelayTime += afterTimerSeconds;
 	}
 
-	_tTaskItem tItem;
+	float fPreviousRandomTime = 0;
+	for ( int iIndex = 0; iIndex < oParseResults.iRepeat; iIndex++ ) {
+		_tTaskItem tItem;
 
-	if (isScene) {
-		//Scenes
-		if ((Action == "On") || (Action == "Off")) {
-			tItem = _tTaskItem::SwitchSceneEvent(DelayTime, deviceID, Action, eventName);
+		float fRandomTime = 0;
+		if ( oParseResults.fRandomSec > (1./timer_resolution_hz/2) ) {
+			float rTime;
+			srand( (unsigned int)mytime( NULL ) + iIndex );
+			fRandomTime = (float)rand() / (float)( RAND_MAX / oParseResults.fRandomSec );
 		}
-		else if (Action == "Active") {
-			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("UPDATE SceneTimers SET Active=1 WHERE (SceneRowID == %d)", deviceID);
-			m_mainworker.m_scheduler.ReloadSchedules();
-		}
-		else if (Action == "Inactive") {
-			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("UPDATE SceneTimers SET Active=0 WHERE (SceneRowID == %d)", deviceID);
-			m_mainworker.m_scheduler.ReloadSchedules();
-		}
-	}
-	else {
-		//Lights/Switches
-		//Get Device details, check for switch global OnDelay/OffDelay (stored in AddjValue2/AddjValue)
-		std::vector<std::vector<std::string> > result;
-		result = m_sql.safe_query("SELECT SwitchType, AddjValue2 FROM DeviceStatus WHERE (ID == %d)", deviceID);
-		if (result.size() < 1)
-			return false;
 
-		std::vector<std::string> sd = result[0];
-		_eSwitchType switchtype = (_eSwitchType)atoi(sd[0].c_str());
-		int iOnDelay = atoi(sd[1].c_str());
+		float fDelayTime = oParseResults.fAfterSec + fPreviousRandomTime + fRandomTime + ( iIndex * oParseResults.fForSec ) + ( iIndex * oParseResults.fRepeatSec );
+		fPreviousRandomTime = fRandomTime;
 
-		bool bIsOn = IsLightSwitchOn(Action);
-		if (switchtype == STYPE_Selector) {
-			bIsOn = (_level > 0) ? true : false;
-		}
-		int iDelay = bIsOn ? iOnDelay : 0;
-		DelayTime += iDelay;
+		if ( isScene ) {
 
-		tItem = _tTaskItem::SwitchLightEvent(DelayTime, deviceID, Action, _level, -1, eventName);
-	}
-	m_sql.AddTaskItem(tItem);
-
-	if (suspendTimer > (1./timer_resolution_hz/2))
-	{
-		DelayTime = static_cast<float>(suspendTimer + (1. / timer_resolution_hz)); //prevent it from running again immediately the next minute if blockly script doesn't handle that
-		_tTaskItem delayedtItem;
-		if (isScene) {
-			if (Action == "On") {
-				delayedtItem = _tTaskItem::SwitchSceneEvent(DelayTime, deviceID, "Off", eventName);
+			if (
+				oParseResults.sCommand == "On"
+				|| oParseResults.sCommand == "Off"
+			) {
+				tItem = _tTaskItem::SwitchSceneEvent( fDelayTime, deviceID, oParseResults.sCommand, eventName );
+			} else if ( oParseResults.sCommand == "Active" ) {
+				std::vector<std::vector<std::string> > result;
+				result = m_sql.safe_query( "UPDATE SceneTimers SET Active=1 WHERE (SceneRowID == %d)", deviceID );
+				m_mainworker.m_scheduler.ReloadSchedules();
+			} else if ( oParseResults.sCommand == "Inactive" ) {
+				std::vector<std::vector<std::string> > result;
+				result = m_sql.safe_query( "UPDATE SceneTimers SET Active=0 WHERE (SceneRowID == %d)", deviceID );
+				m_mainworker.m_scheduler.ReloadSchedules();
 			}
-			else {
-				delayedtItem = _tTaskItem::SwitchSceneEvent(DelayTime, deviceID, "On", eventName);
+
+		} else {
+
+			// Get Device details, check for switch global OnDelay/OffDelay (stored in AddjValue2/AddjValue).
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query( "SELECT SwitchType, AddjValue2 FROM DeviceStatus WHERE (ID == %d)", deviceID );
+			if ( result.size() < 1 ) {
+				return false;
 			}
+
+			std::vector<std::string> sd = result[0];
+			_eSwitchType switchtype = (_eSwitchType)atoi(sd[0].c_str());
+			int iOnDelay = atoi(sd[1].c_str());
+
+			bool bIsOn = IsLightSwitchOn( oParseResults.sCommand );
+			if ( switchtype == STYPE_Selector ) {
+				bIsOn = ( level > 0 ) ? true : false;
+			}
+			int iDelay = bIsOn ? iOnDelay : 0;
+			tItem = _tTaskItem::SwitchLightEvent( fDelayTime + iDelay, deviceID, oParseResults.sCommand, level, -1, eventName );
+
 		}
-		else {
-			delayedtItem = _tTaskItem::SwitchLightEvent(DelayTime, deviceID, previousState, previousLevel, -1, eventName);
+
+		m_sql.AddTaskItem( tItem );
+#ifdef _DEBUG
+		_log.Log(LOG_STATUS, "EventSystem: Scheduled %s after %0.2f.", tItem._command.c_str(), tItem._DelayTime );
+#endif
+
+		if ( oParseResults.fForSec > (1./timer_resolution_hz/2) ) {
+			fDelayTime += oParseResults.fForSec;
+
+			_tTaskItem tDelayedtItem;
+			if ( isScene ) {
+				if ( oParseResults.sCommand == "On" ) {
+					tDelayedtItem = _tTaskItem::SwitchSceneEvent( fDelayTime, deviceID, "Off", eventName );
+				} else if ( oParseResults.sCommand == "Off" ) {
+					tDelayedtItem = _tTaskItem::SwitchSceneEvent( fDelayTime, deviceID, "On", eventName );
+				}
+			} else {
+				tDelayedtItem = _tTaskItem::SwitchLightEvent( fDelayTime, deviceID, previousState, previousLevel, -1, eventName );
+			}
+			m_sql.AddTaskItem( tDelayedtItem );
+#ifdef _DEBUG
+			_log.Log(LOG_STATUS, "EventSystem: Scheduled %s after %0.2f.", tDelayedtItem._command.c_str(), tDelayedtItem._DelayTime );
+#endif
 		}
-		m_sql.AddTaskItem(delayedtItem);
+
 	}
 
 	return true;
