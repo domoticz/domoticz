@@ -4,6 +4,11 @@
 #include <iostream>
 #include "hardwaretypes.h"
 
+namespace Json
+{
+	class Value;
+};
+
 class CToonThermostat : public CDomoticzHardwareBase
 {
 public:
@@ -13,6 +18,11 @@ public:
 	void SetSetpoint(const int idx, const float temp);
 	void SetProgramState(const int newState);
 private:
+	bool ParseThermostatData(const Json::Value &root);
+	bool ParseDeviceStatusData(const Json::Value &root);
+	bool ParsePowerUsage(const Json::Value &root);
+	bool ParseGasUsage(const Json::Value &root);
+
 	void SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname);
 	void UpdateSwitch(const unsigned char Idx, const bool bOn, const std::string &defaultname);
 

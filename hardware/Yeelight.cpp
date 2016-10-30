@@ -58,7 +58,6 @@ void Yeelight::Do_Work()
 	boost::asio::io_service io_service;
 	udp_server server(io_service, m_HwdID);
 	//_log.Log(LOG_STATUS, "Starting Yeelight");
-	unsigned int sec;
 	int sec_counter = 0;
 	while (!m_stoprequested)
 	{
