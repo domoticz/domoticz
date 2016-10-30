@@ -81,6 +81,11 @@ version 1.07
 			<Item label="Celsius" value="1" />
 			<Item label="Fahrenheit" value="2" />
 		</Value>
+                <Value type="list" index="81" genre="config" label="LED report" min="0" max="1" value="0" size="1">
+			<Help>LED when motion/vibration triggered</Help>
+			<Item label="Enable" value="0" />
+			<Item label="Disable" value="1" />
+		</Value>
 		<Value type="button" index="100" genre="config" label="Reset Params 101-103 to Default" write_only="true" affects="101,102,103">
 			<Help>Reset The Reporting Group Configuration (101 to 103) to default</Help>
 		</Value>

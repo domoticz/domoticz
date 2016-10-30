@@ -2328,15 +2328,22 @@ namespace http {
 					MySensorsBase::_tMySensorChild*  pChild = pNode->FindChild(ChildID);
 					if (pChild != NULL)
 					{
-						std::vector<MySensorsBase::_eSetType> cvalues = pChild->GetChildValueTypes();
-						std::vector<MySensorsBase::_eSetType>::const_iterator citt;
-						for (citt = cvalues.begin(); citt != cvalues.end(); ++citt)
+						std::vector<MySensorsBase::_eSetType> ctypes = pChild->GetChildValueTypes();
+						std::vector<std::string> cvalues = pChild->GetChildValues();
+						size_t iVal;
+						for (iVal = 0; iVal < ctypes.size(); iVal++)
 						{
 							if (!szValues.empty())
 								szValues += ", ";
-							szValues += MySensorsBase::GetMySensorsValueTypeStr(*citt);
+							szValues += MySensorsBase::GetMySensorsValueTypeStr(ctypes[iVal]);
+							szValues += " (";
+							szValues += cvalues[iVal];
+							szValues += ")";
 						}
-						szValues.insert(0, "#" + boost::lexical_cast<std::string>(pChild->groupID) + ". ");
+						if (!szValues.empty())
+						{
+							szValues.insert(0, "#" + boost::lexical_cast<std::string>(pChild->groupID) + ". ");
+						}
 						if (pChild->lastreceived != 0)
 						{
 							char szTmp[100];

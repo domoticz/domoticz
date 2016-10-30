@@ -1490,10 +1490,8 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 					lua_Number ruleTrue = lua_tonumber(lua_state, -1);
 					if (ruleTrue != 0)
 					{
-						if (parseBlocklyActions(it->Actions, it->Name, it->ID))
-						{
-							_log.Log(LOG_NORM, "EventSystem: Event triggered: %s", it->Name.c_str());
-						}
+						_log.Log(LOG_NORM, "EventSystem: Event triggered: %s", it->Name.c_str());
+						parseBlocklyActions(it->Actions, it->Name, it->ID);
 					}
 				}
 			}
@@ -1547,10 +1545,8 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 
 					if (ruleTrue != 0)
 					{
-						if (parseBlocklyActions(it->Actions, it->Name, it->ID))
-						{
-							_log.Log(LOG_NORM, "EventSystem: Event triggered: %s", it->Name.c_str());
-						}
+						_log.Log(LOG_NORM, "EventSystem: Event triggered: %s", it->Name.c_str());
+						parseBlocklyActions(it->Actions, it->Name, it->ID);
 					}
 				}
 			}
@@ -1599,10 +1595,8 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 						lua_Number ruleTrue = lua_tonumber(lua_state, -1);
 						if (ruleTrue != 0)
 						{
-							if (parseBlocklyActions(it->Actions, it->Name, it->ID))
-							{
-								_log.Log(LOG_NORM, "EventSystem: Event triggered: %s", it->Name.c_str());
-							}
+							_log.Log(LOG_NORM, "EventSystem: Event triggered: %s", it->Name.c_str());
+							parseBlocklyActions(it->Actions, it->Name, it->ID);
 						}
 					}
 				}
@@ -1655,10 +1649,8 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 
 					if (ruleTrue != 0)
 					{
-						if (parseBlocklyActions(it->Actions, it->Name, it->ID))
-						{
-							_log.Log(LOG_NORM, "EventSystem: Event triggered: %s", it->Name.c_str());
-						}
+						_log.Log(LOG_NORM, "EventSystem: Event triggered: %s", it->Name.c_str());
+						parseBlocklyActions(it->Actions, it->Name, it->ID);
 					}
 				}
 			}
@@ -1853,198 +1845,231 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 		//_log.Log(LOG_NORM,"Already scheduled this event, skipping");
 		return false;
 	}
-
-	std::istringstream ss(Actions);
-	std::string csubstr;
 	bool actionsDone = false;
-	while (!ss.eof()) {
-		getline(ss, csubstr, ',');
-		if ((csubstr.find_first_of("=") == std::string::npos) || (csubstr.find_first_of("[") == std::string::npos) || (csubstr.find_first_of("]") == std::string::npos)) {
+	std::string csubstr;
+	std::string tmpstr(Actions);
+	size_t sPos=0, ePos;
+	do 
+	{
+		ePos = tmpstr.find(",commandArray[");
+		if (ePos != std::string::npos)
+		{
+			csubstr = tmpstr.substr(0, ePos);
+			tmpstr = tmpstr.substr(ePos + 1);
+		}
+		else
+		{
+			csubstr = tmpstr;
+			tmpstr.clear();
+		}
+		sPos = csubstr.find_first_of("[");
+		ePos = csubstr.find_first_of("]");
+
+		if ((sPos == std::string::npos) || (ePos == std::string::npos))
+		{
 			_log.Log(LOG_ERROR, "EventSystem: Malformed action sequence!");
 			break;
 		}
-		size_t eQPos = csubstr.find_first_of("=") + 1;
-		std::string doWhat = csubstr.substr(eQPos);
+
+		size_t eQPos = csubstr.find_first_of("=");
+		if (eQPos == std::string::npos) {
+			_log.Log(LOG_ERROR, "EventSystem: Malformed action sequence!");
+			break;
+		}
+		std::string doWhat = csubstr.substr(eQPos + 1);
 		StripQuotes(doWhat);
 
-		size_t sPos = csubstr.find_first_of("[") + 1;
-		size_t ePos = csubstr.find_first_of("]");
+		std::string deviceName = csubstr.substr(sPos + 1, ePos - sPos - 1);
+		if (deviceName.empty())
+		{
+			_log.Log(LOG_ERROR, "EventSystem: Malformed action sequence!");
+			break;
+		}
 
-		size_t sDiff = ePos - sPos;
-		if (sDiff>0) {
-			int sceneType = 0;
-			std::string deviceName = csubstr.substr(sPos, sDiff);
-			std::string variableNo = "0";
-			bool isScene = false;
-			bool isVariable = false;
-			if ((deviceName.find("Scene:") == 0) || (deviceName.find("Group:") == 0))
-			{
-				isScene = true;
-				sceneType = 1;
-				if (deviceName.find("Group:") == 0) {
-					sceneType = 2;
-				}
-				deviceName = deviceName.substr(6);
-			}
-			else if (deviceName.find("Variable:") == 0)
-			{
-				isVariable = true;
-				variableNo = deviceName.substr(9);
-				deviceName = "0";
-			}
-			else if (deviceName.find("SendCamera:") == 0)
-			{
-				if (!atoi(deviceName.substr(11).c_str()))
-					return false;
-				ScheduleEvent(deviceName, doWhat, eventName);
-				return true;
-			}
-
-			int deviceNo = atoi(deviceName.c_str());
-			if (deviceNo && !isScene && !isVariable) {
-				boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
-				if (m_devicestates.count(deviceNo)) {
-					devicestatesMutexLock.unlock(); // Unlock to avoid recursive lock (because the ScheduleEvent function locks again)
-					if (ScheduleEvent(deviceNo, doWhat, isScene, eventName, sceneType)) {
-						actionsDone = true;
-					}
-				}
-				else {
-					reportMissingDevice(deviceNo, eventName, eventID);
-				}
-			}
-			else if (deviceNo && isScene) {
-				if (ScheduleEvent(deviceNo, doWhat, isScene, eventName, sceneType)) {
+		int deviceNo = atoi(deviceName.c_str());
+		if (deviceNo)
+		{
+			boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
+			if (m_devicestates.count(deviceNo)) {
+				devicestatesMutexLock.unlock(); // Unlock to avoid recursive lock (because the ScheduleEvent function locks again)
+				if (ScheduleEvent(deviceNo, doWhat, false, eventName, 0)) {
 					actionsDone = true;
-				}
-			}
-			else if (isVariable)
-			{
-				int afterTimerSeconds = 0;
-				size_t aFind = doWhat.find(" AFTER ");
-				if ((aFind > 0) && (aFind != std::string::npos)) {
-					std::string delayString = doWhat.substr(aFind + 7);
-					std::string newAction = doWhat.substr(0, aFind);
-					afterTimerSeconds = atoi(delayString.c_str());
-					doWhat = newAction;
-					StripQuotes(doWhat);
-				}
-				doWhat = ProcessVariableArgument(doWhat);
-				if (afterTimerSeconds == 0)
-				{
-					std::vector<std::vector<std::string> > result;
-					result = m_sql.safe_query("SELECT Name, ValueType FROM UserVariables WHERE (ID == '%q')", variableNo.c_str());
-					if (result.size() > 0)
-					{
-						std::vector<std::string> sd = result[0];
-						std::string updateResult = m_sql.UpdateUserVariable(variableNo, sd[0], sd[1], doWhat, false);
-						if (updateResult != "OK") {
-							_log.Log(LOG_ERROR, "EventSystem: Error updating variable %s: %s", sd[0].c_str(), updateResult.c_str());
-						}
-					}
-				}
-				else
-				{
-					int DelayTime = 1 + afterTimerSeconds;
-					_tTaskItem tItem;
-					tItem = _tTaskItem::SetVariable(DelayTime, (const unsigned long long)atol(variableNo.c_str()), doWhat, false);
-					m_sql.AddTaskItem(tItem);
 				}
 			}
 			else {
-				std::string devNameNoQuotes = deviceName.substr(1, deviceName.size() - 2);
-				if (devNameNoQuotes == "SendNotification") {
-					std::string subject, body, priority("0"), sound;
-					std::vector<std::string> aParam;
-					StringSplit(doWhat, "#", aParam);
-					subject = body = aParam[0];
-					if (aParam.size() > 1)
-					{
-						body = aParam[1];
-					}
+				reportMissingDevice(deviceNo, eventName, eventID);
+			}
+			continue;
+		}
 
-					StripQuotes(subject);
-					StripQuotes(body);
-
-					subject = ParseBlocklyString(ProcessVariableArgument(subject));
-					body = ParseBlocklyString(ProcessVariableArgument(body));
-
-					if (aParam.size() == 3)
-					{
-						priority = aParam[2];
-					}
-					else if (aParam.size() == 4)
-					{
-						priority = aParam[2];
-						sound = aParam[3];
-					}
-					SendEventNotification(subject, body, std::string(""), atoi(priority.c_str()), sound);
-					actionsDone = true;
-				}
-				else if (devNameNoQuotes == "SendEmail") {
-					std::string subject, body, to;
-					std::vector<std::string> aParam;
-					StringSplit(doWhat, "#", aParam);
-					if (aParam.size() !=3 )
-					{
-						//Invalid
-						_log.Log(LOG_ERROR, "EventSystem: SendEmail, not enough parameters!");
-						return false;
-					}
-					subject = ParseBlocklyString(aParam[0]);
-					body = ParseBlocklyString(aParam[1]);
-					stdreplace(body, "\\n", "<br>");
-					to = aParam[2];
-					m_sql.AddTaskItem(_tTaskItem::SendEmailTo(1, subject, body, to));
-					actionsDone = true;
-				}
-				else if (devNameNoQuotes == "SendSMS") {
-					if (doWhat.empty())
-					{
-						//Invalid
-						_log.Log(LOG_ERROR, "EventSystem: SendSMS, not enough parameters!");
-						return false;
-					}
-					doWhat = ParseBlocklyString(doWhat);
-					m_sql.AddTaskItem(_tTaskItem::SendSMS(1, doWhat));
-					actionsDone = true;
-				}
-				else if (devNameNoQuotes == "OpenURL") {
-					OpenURL(doWhat);
-					actionsDone = true;
-				}
-				else if (devNameNoQuotes == "StartScript") {
-					if (doWhat.empty())
-					{
-						//Invalid
-						_log.Log(LOG_ERROR, "EventSystem: StartScript, not enough parameters!");
-						return false;
-					}
-					std::string sPath = doWhat;
-					std::string sParam = "";
-					size_t tpos = sPath.find('$');
-					if (tpos != std::string::npos)
-					{
-						sPath = sPath.substr(0, tpos);
-						sParam = doWhat.substr(tpos + 1);
-						sParam = ParseBlocklyString(sParam);
-					}
-#if !defined WIN32
-					if (sPath.find("/") != 0)
-						sPath = szUserDataFolder + "scripts/" + sPath;
-#endif
-
-					m_sql.AddTaskItem(_tTaskItem::ExecuteScript(1, sPath, sParam));
-					actionsDone = true;
-				}
-				else if (devNameNoQuotes.find("WriteToLog") == 0) {
-					WriteToLog(devNameNoQuotes,doWhat);
+		if ((deviceName.find("Scene:") == 0) || (deviceName.find("Group:") == 0))
+		{
+			int sceneType = 1;
+			if (deviceName.find("Group:") == 0)
+			{
+				sceneType = 2;
+			}
+			deviceNo = atoi(deviceName.substr(6).c_str());
+			if (deviceNo) 
+			{
+				if (ScheduleEvent(deviceNo, doWhat, true, eventName, sceneType)) 
+				{
 					actionsDone = true;
 				}
 			}
-
+			continue;
 		}
-	}
+		else if (deviceName.find("Variable:") == 0)
+		{
+			std::string variableNo = deviceName.substr(9);
+			float afterTimerSeconds = 0;
+			size_t aFind = doWhat.find(" AFTER ");
+			if ((aFind > 0) && (aFind != std::string::npos)) {
+				std::string delayString = doWhat.substr(aFind + 7);
+				std::string newAction = doWhat.substr(0, aFind);
+				afterTimerSeconds = static_cast<float>(atof(delayString.c_str()));
+				doWhat = newAction;
+				StripQuotes(doWhat);
+			}
+			doWhat = ProcessVariableArgument(doWhat);
+			if (afterTimerSeconds < (1. / timer_resolution_hz / 2))
+			{
+				std::vector<std::vector<std::string> > result;
+				result = m_sql.safe_query("SELECT Name, ValueType FROM UserVariables WHERE (ID == '%q')", variableNo.c_str());
+				if (result.size() > 0)
+				{
+					std::vector<std::string> sd = result[0];
+					std::string updateResult = m_sql.UpdateUserVariable(variableNo, sd[0], sd[1], doWhat, false);
+					if (updateResult != "OK") {
+						_log.Log(LOG_ERROR, "EventSystem: Error updating variable %s: %s", sd[0].c_str(), updateResult.c_str());
+					}
+				}
+			}
+			else
+			{
+				float DelayTime = afterTimerSeconds;
+				_tTaskItem tItem;
+				tItem = _tTaskItem::SetVariable(DelayTime, (const unsigned long long)atol(variableNo.c_str()), doWhat, false);
+				m_sql.AddTaskItem(tItem);
+			}
+			actionsDone = true;
+			continue;
+		}
+		else if (deviceName.find("SendCamera:") == 0)
+		{
+			if (!atoi(deviceName.substr(11).c_str()))
+				continue;;
+			ScheduleEvent(deviceName, doWhat, eventName);
+			actionsDone = true;
+			continue;
+		}
+		else if (deviceName.find("SendEmail") != std::string::npos)
+		{
+			std::string subject, body, to;
+			std::vector<std::string> aParam;
+			StringSplit(doWhat, "#", aParam);
+			if (aParam.size() != 3)
+			{
+				//Invalid
+				_log.Log(LOG_ERROR, "EventSystem: SendEmail, not enough parameters!");
+				continue;;
+			}
+			subject = ParseBlocklyString(aParam[0]);
+			body = ParseBlocklyString(aParam[1]);
+			stdreplace(body, "\\n", "<br>");
+			to = aParam[2];
+			m_sql.AddTaskItem(_tTaskItem::SendEmailTo(1, subject, body, to));
+			actionsDone = true;
+			continue;
+		}
+		else if (deviceName.find("SendSMS") != std::string::npos)
+		{
+			if (doWhat.empty())
+			{
+				//Invalid
+				_log.Log(LOG_ERROR, "EventSystem: SendSMS, not enough parameters!");
+				continue;;
+			}
+			doWhat = ParseBlocklyString(doWhat);
+			m_sql.AddTaskItem(_tTaskItem::SendSMS(1, doWhat));
+			actionsDone = true;
+			continue;
+		}
+		else if (deviceName.find("OpenURL") != std::string::npos)
+		{
+			OpenURL(doWhat);
+			actionsDone = true;
+			continue;
+		}
+		else if (deviceName.find("StartScript") != std::string::npos)
+		{
+			if (doWhat.empty())
+			{
+				//Invalid
+				_log.Log(LOG_ERROR, "EventSystem: StartScript, not enough parameters!");
+				break;
+			}
+			std::string sPath = doWhat;
+			std::string sParam = "";
+			size_t tpos = sPath.find('$');
+			if (tpos != std::string::npos)
+			{
+				sPath = sPath.substr(0, tpos);
+				sParam = doWhat.substr(tpos + 1);
+				sParam = ParseBlocklyString(sParam);
+			}
+#if !defined WIN32
+			if (sPath.find("/") != 0)
+				sPath = szUserDataFolder + "scripts/" + sPath;
+#endif
+
+			m_sql.AddTaskItem(_tTaskItem::ExecuteScript(1, sPath, sParam));
+			actionsDone = true;
+			continue;
+		}
+		else if (deviceName.find("WriteToLog") != std::string::npos)
+		{
+			std::string devNameNoQuotes = deviceName.substr(1, deviceName.size() - 2);
+			WriteToLog(devNameNoQuotes, doWhat);
+			actionsDone = true;
+			continue;
+		}
+		else if (deviceName.find("SendNotification") != std::string::npos)
+		{
+			std::string subject, body, priority("0"), sound;
+			std::vector<std::string> aParam;
+			StringSplit(doWhat, "#", aParam);
+			subject = body = aParam[0];
+			if (aParam.size() > 1)
+			{
+				body = aParam[1];
+			}
+
+			StripQuotes(subject);
+			StripQuotes(body);
+
+			subject = ParseBlocklyString(ProcessVariableArgument(subject));
+			body = ParseBlocklyString(ProcessVariableArgument(body));
+
+			if (aParam.size() == 3)
+			{
+				priority = aParam[2];
+			}
+			else if (aParam.size() == 4)
+			{
+				priority = aParam[2];
+				sound = aParam[3];
+			}
+			m_sql.AddTaskItem(_tTaskItem::SendNotification(1, subject, body, std::string(""), atoi(priority.c_str()), sound));
+			actionsDone = true;
+			continue;
+		}
+		else
+		{
+			_log.Log(LOG_ERROR, "EventSystem: Unknown action sequence! (%s)", csubstr.c_str());
+			break;
+		}
+	} while ((sPos = tmpstr.find("commandArray[")) == 0);
 	return actionsDone;
 }
 
@@ -2719,7 +2744,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 		lua_rawset(lua_state, -3);
 	}
 	lua_setglobal(lua_state, "otherdevices_scenesgroups_idx");
-	
+
 	lua_createtable(lua_state, (int)m_uservariables.size(), 0);
 
 	typedef std::map<unsigned long long, _tUserVariable>::iterator it_var;
@@ -2903,8 +2928,7 @@ bool CEventSystem::iterateLuaTable(lua_State *lua_state, const int tIndex, const
 bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &filename)
 {
 	bool scriptTrue = false;
-	if (std::string(lua_tostring(lua_state, -2)) == "SendNotification")
-	{
+	if (std::string(lua_tostring(lua_state, -2)) == "SendNotification") {
 		std::string luaString = lua_tostring(lua_state, -1);
 		std::string subject, body, priority("0"), sound;
 		std::string extraData;
@@ -2923,7 +2947,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 		if (aParam.size() > 4) {
 			extraData = "|Device=" + aParam[4];
 		}
-		SendEventNotification(subject, body, extraData, atoi(priority.c_str()), sound);
+		m_sql.AddTaskItem(_tTaskItem::SendNotification(1, subject, body, std::string(""), atoi(priority.c_str()), sound));
 		scriptTrue = true;
 	}
 	else if (std::string(lua_tostring(lua_state, -2)) == "SendEmail") {
@@ -2974,12 +2998,12 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 
 		std::vector<std::vector<std::string> > result;
 
-		int afterTimerSeconds = 0;
+		float afterTimerSeconds = 0;
 		size_t aFind = variableValue.find(" AFTER ");
 		if ((aFind > 0) && (aFind != std::string::npos)) {
 			std::string delayString = variableValue.substr(aFind + 7);
 			std::string newAction = variableValue.substr(0, aFind);
-			afterTimerSeconds = atoi(delayString.c_str());
+			afterTimerSeconds = static_cast<float>(atof(delayString.c_str()));
 			variableValue = newAction;
 		}
 		result = m_sql.safe_query("SELECT ID, ValueType FROM UserVariables WHERE (Name == '%q')", variableName.c_str());
@@ -2989,7 +3013,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 
 			variableValue = ProcessVariableArgument(variableValue);
 
-			if (afterTimerSeconds == 0)
+			if (afterTimerSeconds < (1./timer_resolution_hz/2))
 			{
 				std::string updateResult = m_sql.UpdateUserVariable(sd[0], variableName, sd[1], variableValue, false);
 				if (updateResult != "OK") {
@@ -2998,7 +3022,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 			}
 			else
 			{
-				int DelayTime = 1 + afterTimerSeconds;
+				float DelayTime = afterTimerSeconds;
 				unsigned long long idx;
 				std::stringstream sstr;
 				sstr << sd[0];
@@ -3139,11 +3163,6 @@ void CEventSystem::UpdateDevice(const std::string &DevParams)
 	}
 }
 
-void CEventSystem::SendEventNotification(const std::string &Subject, const std::string &Body, const std::string &ExtraData, const int Priority, const std::string &Sound)
-{
-	m_notifications.SendMessageEx(NOTIFYALL, Subject, Body, ExtraData, Priority, Sound, true);
-}
-
 void CEventSystem::OpenURL(const std::string &URL)
 {
 	_log.Log(LOG_STATUS, "EventSystem: Fetching url...");
@@ -3199,19 +3218,19 @@ bool CEventSystem::ScheduleEvent(std::string deviceName, const std::string &Acti
 			return false;
 
 		std::string cAction = Action;
-		int delay = 0;
+		float delay = 0;
 		size_t aFind = Action.find(" AFTER ");
 		if ((aFind > 0) && (aFind != std::string::npos)) {
 			std::string delayString = Action.substr(aFind + 7);
 			std::string newAction = Action.substr(0, aFind);
-			delay = atoi(delayString.c_str());
+			delay = static_cast<float>(atof(delayString.c_str()));
 			cAction = newAction;
 		}
 		StripQuotes(cAction);
 
 
 		std::string subject = cAction;
-		if (delay == 0)
+		if (delay < (1./timer_resolution_hz/2))
 		{
 			m_mainworker.m_cameras.EmailCameraSnapshot(deviceName, subject);
 		}
@@ -3246,36 +3265,30 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 	unsigned char previousLevel = calculateDimLevel(deviceID, m_devicestates[deviceID].lastLevel);
 	devicestatesMutexLock.unlock();
 
-	int suspendTimer = 0;
-	int randomTimer = 0;
-	int afterTimerSeconds = 0;
+	float suspendTimer = 0;
+	float randomTimer = 0;
+	float afterTimerSeconds = 0;
 
 	size_t aFind = Action.find(" FOR ");
 	if ((aFind > 0) && (aFind != std::string::npos)) {
 		std::string delayString = Action.substr(aFind + 5);
 		std::string newAction = Action.substr(0, aFind);
-		suspendTimer = atoi(delayString.c_str());
-		if (suspendTimer > 0)
-		{
-			Action = newAction;
-		}
+		suspendTimer = static_cast<float>(atof(delayString.c_str()))*60.0f; //its in minutes
+		Action = newAction;
 	}
 	size_t rFind = Action.find(" RANDOM ");
 	if ((rFind > 0) && (rFind != std::string::npos))
 	{
 		std::string delayString = Action.substr(rFind + 8);
 		std::string newAction = Action.substr(0, rFind);
-		randomTimer = atoi(delayString.c_str());
-		if (randomTimer > 0)
-		{
-			Action = newAction;
-		}
+		randomTimer = static_cast<float>(atof(delayString.c_str()))*60.0f; //its in minutes
+		Action = newAction;
 	}
 	aFind = Action.find(" AFTER ");
 	if ((aFind > 0) && (aFind != std::string::npos)) {
 		std::string delayString = Action.substr(aFind + 7);
 		std::string newAction = Action.substr(0, aFind);
-		afterTimerSeconds = atoi(delayString.c_str());
+		afterTimerSeconds = static_cast<float>(atof(delayString.c_str()));
 		Action = newAction;
 	}
 
@@ -3285,14 +3298,12 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 		_level = calculateDimLevel(deviceID, atoi(Action.substr(10).c_str()));
 		Action = Action.substr(0, 9);
 	}
-
-	if (Action.find("Set Volume") == 0)
+	else if (Action.find("Set Volume") == 0)
 	{
 		_level = atoi(Action.substr(11).c_str());
 		Action = Action.substr(0, 10);
 	}
-
-	if (Action.find("Play Playlist") == 0)
+	else if (Action.find("Play Playlist") == 0)
 	{
 		std::string	sParams = Action.substr(14);
 		CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByType(HTYPE_Kodi);
@@ -3327,7 +3338,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 
 		Action = Action.substr(0, 13);
 	}
-	if ((Action.find("Play Favorites") == 0) && (Action.length() > 14))
+	else if ((Action.find("Play Favorites") == 0) && (Action.length() > 14))
 	{
 		std::string	sParams = Action.substr(15);
 		CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByType(HTYPE_Kodi);
@@ -3342,7 +3353,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 
 		Action = Action.substr(0, 14);
 	}
-	if (Action.find("Execute") == 0)
+	else if (Action.find("Execute") == 0)
 	{
 		std::string	sParams = Action.substr(8);
 		CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByType(HTYPE_Kodi);
@@ -3354,13 +3365,13 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 
 		Action = Action.substr(0, 7);
 	}
-	int DelayTime = 1;
+	float DelayTime = 0;
 
-	if (randomTimer > 0) {
-		int rTime;
+	if (randomTimer > (1./timer_resolution_hz/2)) {
+		float rTime;
 		srand((unsigned int)mytime(NULL));
-		rTime = rand() % randomTimer + 1;
-		DelayTime = (rTime * 60) + 5; //prevent it from running again immediately the next minute if blockly script doesn't handle that
+		rTime = (float)rand()/(float)(RAND_MAX/randomTimer);
+		DelayTime = static_cast<float>(rTime + (1. / timer_resolution_hz)); //prevent it from running again immediately the next minute if blockly script doesn't handle that
 		//alreadyScheduled = isEventscheduled(deviceID, randomTimer, isScene);
 	}
 	if (afterTimerSeconds > 0)
@@ -3409,9 +3420,9 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 	}
 	m_sql.AddTaskItem(tItem);
 
-	if (suspendTimer > 0)
+	if (suspendTimer > (1./timer_resolution_hz/2))
 	{
-		DelayTime = (suspendTimer * 60) + 5; //prevent it from running again immediately the next minute if blockly script doesn't handle that
+		DelayTime = static_cast<float>(suspendTimer + (1. / timer_resolution_hz)); //prevent it from running again immediately the next minute if blockly script doesn't handle that
 		_tTaskItem delayedtItem;
 		if (isScene) {
 			if (Action == "On") {
@@ -3562,22 +3573,31 @@ int CEventSystem::l_domoticz_print(lua_State* lua_state)
 
 void CEventSystem::reportMissingDevice(const int deviceID, const std::string &eventName, const unsigned long long eventID)
 {
-	_log.Log(LOG_ERROR, "EventSystem: Device no. '%d' used in event '%s' no longer exists, disabling event!", deviceID, eventName.c_str());
-
-
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT EventMaster.ID FROM EventMaster INNER JOIN EventRules ON EventRules.EMID=EventMaster.ID WHERE (EventRules.ID == '%llu')",
-		eventID);
-	if (result.size()>0)
+	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (ID == %d)", deviceID);
+	if (!result.empty())
 	{
+		_log.Log(LOG_ERROR, "EventSystem: Device ('%s', ID=%d) used in event '%s' not found, make sure that it's hardware is not disabled!", result[0][0].c_str(), deviceID, eventName.c_str());
+	}
+	else
+	{
+		_log.Log(LOG_ERROR, "EventSystem: Device no. '%d' used in event '%s' no longer exists, disabling event!", deviceID, eventName.c_str());
 
-		std::vector<std::vector<std::string> >::const_iterator itt;
-		for (itt = result.begin(); itt != result.end(); ++itt)
+
+		std::vector<std::vector<std::string> > result;
+		result = m_sql.safe_query("SELECT EventMaster.ID FROM EventMaster INNER JOIN EventRules ON EventRules.EMID=EventMaster.ID WHERE (EventRules.ID == '%llu')",
+			eventID);
+		if (result.size() > 0)
 		{
-			std::vector<std::string> sd = *itt;
-			int eventStatus = 2;
-			m_sql.safe_query("UPDATE EventMaster SET Status = %d WHERE (ID == '%q')",
-				eventStatus, sd[0].c_str());
+
+			std::vector<std::vector<std::string> >::const_iterator itt;
+			for (itt = result.begin(); itt != result.end(); ++itt)
+			{
+				std::vector<std::string> sd = *itt;
+				int eventStatus = 2;
+				m_sql.safe_query("UPDATE EventMaster SET Status = %d WHERE (ID == '%q')",
+					eventStatus, sd[0].c_str());
+			}
 		}
 	}
 }
