@@ -3273,7 +3273,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 	if ((aFind > 0) && (aFind != std::string::npos)) {
 		std::string delayString = Action.substr(aFind + 5);
 		std::string newAction = Action.substr(0, aFind);
-		suspendTimer = static_cast<float>(atof(delayString.c_str()));
+		suspendTimer = static_cast<float>(atof(delayString.c_str()))*60.0f; //its in minutes
 		Action = newAction;
 	}
 	size_t rFind = Action.find(" RANDOM ");
@@ -3281,7 +3281,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 	{
 		std::string delayString = Action.substr(rFind + 8);
 		std::string newAction = Action.substr(0, rFind);
-		randomTimer = static_cast<float>(atof(delayString.c_str()));
+		randomTimer = static_cast<float>(atof(delayString.c_str()))*60.0f; //its in minutes
 		Action = newAction;
 	}
 	aFind = Action.find(" AFTER ");
