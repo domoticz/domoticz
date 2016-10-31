@@ -106,6 +106,16 @@ const _tRFLinkStringIntHelper rfswitches[] =
 	{ "MiLightv1", sSwitchMiLightv1 },
 	{ "MiLightv2", sSwitchMiLightv2 },
 	{ "HT6P20", sSwitchHT6P20 },
+	{ "Doitrand", sSwitchTypeDoitrand },
+	{ "Warema", sSwitchTypeWarema },
+	{ "Ansluta", sSwitchTypeAnsluta },
+	{ "Livcol", sSwitchTypeLivcol },
+	{ "Bosch", sSwitchTypeBosch },
+	{ "Ningbo", sSwitchTypeNingbo },
+	{ "Ditec", sSwitchTypeDitec },
+	{ "Steffen", sSwitchTypeSteffen },
+	{ "AlectoSA", sSwitchTypeAlectoSA },
+	{ "GPIOset", sSwitchTypeGPIOset },
 	{ "", -1 }
 };
 

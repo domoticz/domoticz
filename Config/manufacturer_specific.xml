@@ -405,7 +405,8 @@
 		<Product type="0b00" id="4001" name="FGFS101 Flood Sensor" config="fibaro/fgfs101.xml" />
 		<Product type="0b00" id="1001" name="FGFS101 Flood Sensor" config="fibaro/fgfs101.xml" />
 		<Product type="0b00" id="9e00" name="FGFS101 Flood Sensor" config="fibaro/fgfs101.xml" />
-        <Product type="0b01" id="1002" name="FGFS101 Zwave+ Flood Sensor" config="fibaro/fgfs101zw5.xml" />
+                <Product type="0b01" id="1002" name="FGFS101 Zwave+ Flood Sensor" config="fibaro/fgfs101zw5.xml" />
+                <Product type="0b01" id="2002" name="FGFS101 Zwave+ Flood Sensor" config="fibaro/fgfs101zw5.xml" />
 		<Product type="0900" id="1000" name="FGRGBWM441 RGBW Controller" config="fibaro/fgrgbwm441.xml" />
 		<Product type="0900" id="2000" name="FGRGBWM441 RGBW Controller" config="fibaro/fgrgbwm441.xml"/>
 		<Product type="0900" id="4000" name="FGRGBWM441 RGBW Controller" config="fibaro/fgrgbwm441.xml" />
@@ -505,6 +506,9 @@
 		<Product type="0001" id="0001" name="I-Bridge Z-Wave Controller"/>
 	</Manufacturer>
 	<Manufacturer id="0011" name="iCOM Tech">
+	</Manufacturer>
+	<Manufacturer id="0230" name="ID Lock">
+		<Product type="0003" id="0001" name="ID Lock 101" config="idlock/idlock101.xml"/>
 	</Manufacturer>
 	<Manufacturer id="003a" name="Inlon Srl">
 	</Manufacturer>
@@ -759,8 +763,9 @@
 		<Product type="0000" id="531f" name="Z-URC" config="remotec/zurc.xml"/>
 		<Product type="0001" id="8380" name="ZRC-100"/>
 		<Product type="0101" id="8371" name="ZXT-310EU"/>
-		<Product type="0101" id="8377" name="ZXT-120" config="remotec/zxt-120.xml"/>
-		<Product type="0102" id="8377" name="ZXT-120" config="remotec/zxt-120.xml"/>
+		<Product type="0100" id="8377" name="ZXT-120US" config="remotec/zxt-120.xml"/>
+		<Product type="0101" id="8377" name="ZXT-120EU" config="remotec/zxt-120.xml"/>
+		<Product type="0102" id="8377" name="ZXT-120AU" config="remotec/zxt-120.xml"/>
 		<Product type="0001" id="8510" name="ZRC-90" config="remotec/zrc-90.xml"/>
 		<Product type="8201" id="8120" name="ZFM-X10EU Dual Mode Insert Module "/>
 		<Product type="8000" id="0002" name="ZFM-80" config="remotec/zfm-80.xml" />
@@ -825,6 +830,7 @@
 	<Manufacturer id="0012" name="Tell It Online">
 	</Manufacturer>
         <Manufacturer id="0176" name="Telldus">
+                <Product type="0003" id="0001" name="TZWP-100 Plug-in Switch"/>
                 <Product type="0005" id="0001" name="TZDW-100 Magnet Switch" config="telldus/tzdw100.xml"/>
         </Manufacturer>
 	<Manufacturer id="0048" name="Telsey">
@@ -977,6 +983,7 @@
 		<Product type="6131" id="4501" name="Zipato Mini Keypad" config="zipato/MiniKeypad.xml" />
 	</Manufacturer>
     <Manufacturer id="027a" name="Zooz">
+        <Product type="0003" id="0082" name="ZSE08 Contact Sensor" config="zooz/zse08.xml"/>
         <Product type="0003" id="0087" name="ZEN07 Mini Plug" config="zooz/zen07.xml"/>
     </Manufacturer>
 	<Manufacturer id="0021" name="Zykronix">

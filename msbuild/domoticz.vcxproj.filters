@@ -450,6 +450,9 @@
     <Filter Include="Devices\ZiBlue RFPlayer">
       <UniqueIdentifier>{6d5aee6b-8dca-4b16-94fe-b4c8b48ccda2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\YeeLight">
+      <UniqueIdentifier>{40997df4-ca83-46d7-ae42-d23049f98a0b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -1945,6 +1948,9 @@
     <ClInclude Include="..\hardware\ziblue_usb_frame_api.h">
       <Filter>Devices\ZiBlue RFPlayer</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\Yeelight.h">
+      <Filter>Devices\YeeLight</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2564,6 +2570,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\ZiBlueTCP.cpp">
       <Filter>Devices\ZiBlue RFPlayer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\Yeelight.cpp">
+      <Filter>Devices\YeeLight</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

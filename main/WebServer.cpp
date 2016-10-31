@@ -31,6 +31,9 @@
 #include "../hardware/Gpio.h"
 #include "../hardware/GpioPin.h"
 #endif // WITH_GPIO
+#ifdef WITH_TELLDUSCORE
+#include "../hardware/Tellstick.h"
+#endif
 #include "../webserver/Base64.h"
 #include "../smtpclient/SMTPClient.h"
 #include "../json/json.h"
@@ -329,6 +332,7 @@ namespace http {
 			m_pWebEm->RegisterActionCode("setrego6xxtype", boost::bind(&CWebServer::SetRego6XXType, this, _1, _2, _3));
 			m_pWebEm->RegisterActionCode("sets0metertype", boost::bind(&CWebServer::SetS0MeterType, this, _1, _2, _3));
 			m_pWebEm->RegisterActionCode("setlimitlesstype", boost::bind(&CWebServer::SetLimitlessType, this, _1, _2, _3));
+			m_pWebEm->RegisterActionCode("setyeelighttype", boost::bind(&CWebServer::SetYeelightType, this, _1, _2, _3));
 
 			m_pWebEm->RegisterActionCode("setopenthermsettings", boost::bind(&CWebServer::SetOpenThermSettings, this, _1, _2, _3));
 			RegisterCommandCode("sendopenthermcommand", boost::bind(&CWebServer::Cmd_SendOpenThermCommand, this, _1, _2, _3), true);
@@ -597,6 +601,10 @@ namespace http {
 			//scenepost.html
 			//thpost.html
 			RegisterRType("openzwavenodes", boost::bind(&CWebServer::RType_OpenZWaveNodes, this, _1, _2, _3));
+#endif
+
+#ifdef WITH_TELLDUSCORE
+            RegisterCommandCode("tellstickApplySettings", boost::bind(&CWebServer::Cmd_TellstickApplySettings, this, _1, _2, _3));
 #endif
 
 			m_pWebEm->RegisterWhitelistURLString("/html5.appcache");
@@ -1097,6 +1105,9 @@ namespace http {
 			else if (htype == HTYPE_HEOS) {
 				//all fine here!
 			}
+			else if (htype == HTYPE_Yeelight) {
+				//all fine here!
+			}
 			else if (
 				(htype == HTYPE_Wunderground) ||
 				(htype == HTYPE_DarkSky) ||
@@ -1219,6 +1230,11 @@ namespace http {
 				mode1 = 30;
 				mode2 = 1000;
 			}			
+			else if (htype == HTYPE_Tellstick)
+			{
+				mode1 = 4;
+				mode2 = 500;
+			}
 
 			m_sql.safe_query(
 				"INSERT INTO Hardware (Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) VALUES ('%q',%d, %d,'%q',%d,'%q','%q','%q','%q',%d,%d,%d,%d,%d,%d,%d)",
@@ -1370,6 +1386,9 @@ namespace http {
 				//All fine here
 			}
 			else if (htype == HTYPE_HEOS) {
+				//All fine here
+			}
+			else if (htype == HTYPE_Yeelight) {
 				//All fine here
 			}
 			else if (
@@ -3068,6 +3087,12 @@ namespace http {
 						_eSwitchType switchtype=(_eSwitchType)atoi(sd[14].c_str());
 
 						unsigned char devType = atoi(sd[3].c_str());
+
+						//switchtype seemed not to be used down with the GetLightStatus command,
+						//causing RFY to go wrong, fixing here
+						if (devType != pTypeRFY)
+							switchtype = STYPE_OnOff;
+
 						unsigned char subType = atoi(sd[4].c_str());
 						unsigned char nValue = (unsigned char)atoi(sd[5].c_str());
 						std::string sValue = sd[6];
@@ -3079,7 +3104,7 @@ namespace http {
 						bool bHaveDimmer = false;
 						bool bHaveGroupCmd = false;
 						int maxDimLevel = 0;
-						GetLightStatus(devType, subType, STYPE_OnOff, command, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+						GetLightStatus(devType, subType, switchtype, command, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 						root["result"][ii]["Command"] = lstatus;
 						root["result"][ii]["Level"] = level;
 						root["result"][ii]["Hue"] = atoi(sd[11].c_str());
@@ -3270,6 +3295,7 @@ namespace http {
 						case pTypeRadiator1:
 						case pTypeGeneralSwitch:
 						case pTypeHomeConfort:
+						case pTypeYeelight:
 							bdoAdd = true;
 							if (!used)
 							{
@@ -3367,6 +3393,7 @@ namespace http {
 							case pTypeRemote:
 							case pTypeGeneralSwitch:
 							case pTypeHomeConfort:
+							case pTypeYeelight:
 								root["result"][ii]["type"] = 0;
 								root["result"][ii]["idx"] = ID;
 								root["result"][ii]["Name"] = "[Light/Switch] " + Name;
@@ -4489,6 +4516,7 @@ namespace http {
 					(dType == pTypeLighting5) ||
 					(dType == pTypeLighting6) ||
 					(dType == pTypeLimitlessLights) ||
+					(dType == pTypeYeelight) ||
 					(dType == pTypeSecurity1) ||
 					(dType == pTypeSecurity2) ||
 					(dType == pTypeEvohome) ||
@@ -5400,6 +5428,7 @@ namespace http {
 					(dType != pTypeLighting6) &&
 					(dType != pTypeFan) &&
 					(dType != pTypeLimitlessLights) &&
+					(dType != pTypeYeelight) &&
 					(dType != pTypeSecurity1) &&
 					(dType != pTypeSecurity2) &&
 					(dType != pTypeEvohome) &&
@@ -7380,6 +7409,7 @@ namespace http {
 								(dType != pTypeLighting6) &&
 								(dType != pTypeFan) &&
 								(dType != pTypeLimitlessLights) &&
+								(dType != pTypeYeelight) &&
 								(dType != pTypeSecurity1) &&
 								(dType != pTypeSecurity2) &&
 								(dType != pTypeEvohome) &&
@@ -7630,6 +7660,8 @@ namespace http {
 					root["result"][ii]["AddjMulti"] = AddjMulti;
 					root["result"][ii]["AddjValue2"] = AddjValue2;
 					root["result"][ii]["AddjMulti2"] = AddjMulti2;
+					if (sValue.size()>sizeof(szData)-10)
+						continue; //invalid sValue
 					sprintf(szData, "%d, %s", nValue, sValue.c_str());
 					root["result"][ii]["Data"] = szData;
 
@@ -7647,6 +7679,7 @@ namespace http {
 						(dType == pTypeLighting6) ||
 						(dType == pTypeFan) ||
 						(dType == pTypeLimitlessLights) ||
+						(dType == pTypeYeelight) ||
 						(dType == pTypeCurtain) ||
 						(dType == pTypeBlinds) ||
 						(dType == pTypeRFY) ||
@@ -7706,7 +7739,7 @@ namespace http {
 							root["result"][ii]["Level"] = LastLevel;
 							int iLevel = round((float(maxDimLevel) / 100.0f)*LastLevel);
 							root["result"][ii]["LevelInt"] = iLevel;
-							if (dType == pTypeLimitlessLights)
+							if ((dType == pTypeLimitlessLights) || (dType == pTypeYeelight))
 							{
 								llevel = LastLevel;
 								if (lstatus == "Set Level")
@@ -11489,6 +11522,7 @@ namespace http {
 				(dType != pTypeLighting6) &&
 				(dType != pTypeFan) &&
 				(dType != pTypeLimitlessLights) &&
+				(dType != pTypeYeelight) &&
 				(dType != pTypeSecurity1) &&
 				(dType != pTypeSecurity2) &&
 				(dType != pTypeEvohome) &&

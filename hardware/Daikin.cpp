@@ -115,47 +115,49 @@ void CDaikin::Do_Work()
 bool CDaikin::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	return false;
-	const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
+}
 
-	unsigned char packettype = pSen->ICMND.packettype;
-	//unsigned char subtype = pSen->ICMND.subtype;
+void CDaikin::SetSetpoint(const int idx, const float temp)
+{
+/*
+	std::stringstream szURL;
 
-	if (packettype == pTypeLighting2)
+	if (m_Password.empty())
 	{
-		//light command
-
-		int Relay = pSen->LIGHTING2.unitcode;
-		if (Relay > 20)
-			return false;
-
-		std::stringstream szURL;
-
-		if (m_Password.empty())
-		{
-			szURL << "http://" << m_szIPAddress << ":" << m_usIPPort;
-		}
-		else
-		{
-			szURL << "http://" << m_Username << ":" << m_Password << "@" << m_szIPAddress << ":" << m_usIPPort;
-		}
-
-		if (pSen->LIGHTING2.cmnd == light2_sOff)
-		{
-			szURL << "/io.cgi?DOI" << Relay << "=0";
-		}
-		else
-		{
-			szURL << "/io.cgi?DOA" << Relay << "=0";
-		}
-		std::string sResult;
-		if (!HTTPClient::GET(szURL.str(), sResult))
-		{
-			_log.Log(LOG_ERROR, "Daikin: Error sending relay command to: %s", m_szIPAddress.c_str());
-			return false;
-		}
-		return true;
+		szURL << "http://" << m_szIPAddress << ":" << m_usIPPort;
 	}
-	return false;
+	else
+	{
+		szURL << "http://" << m_Username << ":" << m_Password << "@" << m_szIPAddress << ":" << m_usIPPort;
+	}
+
+	szURL << "api.php";
+
+	//{pow: "0", mode: "2", stemp: "M", shum: "0", f_rate: "A", f_dir: "0"}
+
+	var temp = minimize_opt(control_response);
+	temp.stemp = (parseInt(control_response.stemp) + inc).toString();
+	send_control(temp);
+
+	std::string sPostData;
+	std::vector<std::string> ExtraHeaders;
+	std::string sResult;
+
+	if (!HTTPClient::POST(szURL.str(), sPostData, ExtraHeaders, sResult))
+	{
+		_log.Log(LOG_ERROR, "Daikin: Error setting current state!");
+		return;
+	}
+
+#ifdef DEBUG_DaikinW
+	SaveString2Disk(sResult, "E:\\Daikin_set_setpoint.txt");
+#endif
+	if (sResult.find("ret=OK") == std::string::npos)
+	{
+		_log.Log(LOG_ERROR, "Daikin: Invalid response");
+		return;
+	}
+*/
 }
 
 void CDaikin::UpdateSwitch(const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname)
