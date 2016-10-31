@@ -2718,7 +2718,7 @@ void CSQLHelper::Do_Work()
 				StringSplit(itt->_command, "!#", splitresults);
 				if (splitresults.size() != 4)
 					continue; //impossible
-				m_notifications.SendMessageEx(NOTIFYALL, splitresults[0], splitresults[1], splitresults[2], static_cast<int>(itt->_idx), splitresults[3], true);
+				m_notifications.SendMessageEx(NOTIFYALL, stdstring_trim(splitresults[0]), stdstring_trim(splitresults[1]), stdstring_trim(splitresults[2]), static_cast<int>(itt->_idx), stdstring_trim(splitresults[3]), true);
 			}
 
 			++itt;

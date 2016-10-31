@@ -178,7 +178,11 @@ struct _tTaskItem
 		tItem._ItemType = TITEM_SEND_NOTIFICATION;
 		tItem._DelayTime = DelayTime;
 		tItem._idx = Priority;
-		tItem._command = Subject + "!#" + Body + "!#" + ExtraData + "!#" + Sound;
+		std::string tSubject((!Subject.empty()) ? Subject : " ");
+		std::string tBody((!Body.empty()) ? Body : " ");
+		std::string tExtraData((!ExtraData.empty()) ? ExtraData : " ");
+		std::string tSound((!Sound.empty()) ? Sound : " ");
+		tItem._command = tSubject + "!#" + tBody + "!#" + tExtraData + "!#" + tSound;
 		return tItem;
 	}
 

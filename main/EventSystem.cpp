@@ -2930,7 +2930,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 	bool scriptTrue = false;
 	if (std::string(lua_tostring(lua_state, -2)) == "SendNotification") {
 		std::string luaString = lua_tostring(lua_state, -1);
-		std::string subject, body, priority("0"), sound;
+		std::string subject(" "), body(" "), priority("0"), sound;
 		std::string extraData;
 		std::vector<std::string> aParam;
 		StringSplit(luaString, "#", aParam);
