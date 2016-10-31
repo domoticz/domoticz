@@ -238,6 +238,7 @@ void CEventSystem::GetCurrentStates()
 
 	_log.Log(LOG_STATUS, "EventSystem: reset all device statuses...");
 	m_devicestates.clear();
+	m_IsDevicesLoaded = false;
 
 	result = m_sql.safe_query(
 		"SELECT A.HardwareID, A.ID, A.Name, A.nValue, A.sValue, A.Type, A.SubType, A.SwitchType, A.LastUpdate, A.LastLevel, A.Options "
@@ -339,33 +340,36 @@ void CEventSystem::GetCurrentScenesGroups()
 	}
 }
 
-void CEventSystem::GetCurrentMeasurementStates()
+void CEventSystem::GetCurrentMeasurementStates(const unsigned long long DeviceID)
 {
-	m_tempValuesByName.clear();
-	m_dewValuesByName.clear();
-	m_humValuesByName.clear();
-	m_baroValuesByName.clear();
-	m_utilityValuesByName.clear();
-	m_rainValuesByName.clear();
-	m_rainLastHourValuesByName.clear();
-	m_uvValuesByName.clear();
-	m_weatherValuesByName.clear();
-	m_winddirValuesByName.clear();
-	m_windspeedValuesByName.clear();
-	m_windgustValuesByName.clear();
+	if (!m_IsDevicesLoaded)
+	{
+		m_tempValuesByName.clear();
+		m_dewValuesByName.clear();
+		m_humValuesByName.clear();
+		m_baroValuesByName.clear();
+		m_utilityValuesByName.clear();
+		m_rainValuesByName.clear();
+		m_rainLastHourValuesByName.clear();
+		m_uvValuesByName.clear();
+		m_weatherValuesByName.clear();
+		m_winddirValuesByName.clear();
+		m_windspeedValuesByName.clear();
+		m_windgustValuesByName.clear();
 
-	m_tempValuesByID.clear();
-	m_dewValuesByID.clear();
-	m_humValuesByID.clear();
-	m_baroValuesByID.clear();
-	m_utilityValuesByID.clear();
-	m_rainValuesByID.clear();
-	m_rainLastHourValuesByID.clear();
-	m_uvValuesByID.clear();
-	m_weatherValuesByID.clear();
-	m_winddirValuesByID.clear();
-	m_windspeedValuesByID.clear();
-	m_windgustValuesByID.clear();
+		m_tempValuesByID.clear();
+		m_dewValuesByID.clear();
+		m_humValuesByID.clear();
+		m_baroValuesByID.clear();
+		m_utilityValuesByID.clear();
+		m_rainValuesByID.clear();
+		m_rainLastHourValuesByID.clear();
+		m_uvValuesByID.clear();
+		m_weatherValuesByID.clear();
+		m_winddirValuesByID.clear();
+		m_windspeedValuesByID.clear();
+		m_windgustValuesByID.clear();
+	}
 
 	std::stringstream szQuery;
 
@@ -392,6 +396,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 
 	typedef std::map<unsigned long long, _tDeviceStatus>::iterator it_type;
 	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
+		if (!m_IsDevicesLoaded || (DeviceID == iterator->first))
 	{
 		_tDeviceStatus sitem = iterator->second;
 		std::vector<std::string> splitresults;
@@ -942,6 +947,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 			m_windgustValuesByID[sitem.ID] = windgust;
 		}
 	}
+	m_IsDevicesLoaded = true;
 }
 
 void CEventSystem::RemoveSingleState(int ulDevID)
@@ -953,7 +959,7 @@ void CEventSystem::RemoveSingleState(int ulDevID)
 
 	//_log.Log(LOG_STATUS,"EventSystem: deleted device %d",ulDevID);
 	m_devicestates.erase(ulDevID);
-
+	m_IsDevicesLoaded = false;
 }
 
 void CEventSystem::WWWUpdateSingleState(const unsigned long long ulDevID, const std::string &devname)
@@ -1024,6 +1030,7 @@ std::string CEventSystem::UpdateSingleState(const unsigned long long ulDevID, co
 		newitem.lastLevel = lastLevel;
 		m_devicestates[newitem.ID] = newitem;
 	}
+	m_IsDevicesLoaded = false;
 	return nValueWording;
 }
 
@@ -1223,7 +1230,7 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const unsigned long 
 	}
 }
 
-lua_State *CEventSystem::CreateBlocklyLuaState()
+lua_State *CEventSystem::CreateBlocklyLuaState(const unsigned long long DeviceID)
 {
 	lua_State *lua_state = luaL_newstate();
 	if (lua_state == NULL)
@@ -1296,7 +1303,9 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 	lua_setglobal(lua_state, "variable");
 
 	boost::lock_guard<boost::mutex> measurementStatesMutexLock(m_measurementStatesMutex);
-	GetCurrentMeasurementStates();
+
+	if (DeviceID > 0)
+		GetCurrentMeasurementStates(DeviceID);
 
 	if (m_tempValuesByID.size() > 0) {
 		lua_createtable(lua_state, (int)m_tempValuesByID.size(), 0);
@@ -1475,7 +1484,7 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 
 				if (lua_state == NULL)
 				{
-					lua_state = CreateBlocklyLuaState();
+					lua_state = CreateBlocklyLuaState(DeviceID);
 					if (lua_state == NULL)
 						return;
 				}
@@ -1530,7 +1539,7 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 
 				if (lua_state == NULL)
 				{
-					lua_state = CreateBlocklyLuaState();
+					lua_state = CreateBlocklyLuaState(0);
 					if (lua_state == NULL)
 						return;
 				}
@@ -1581,7 +1590,7 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 
 					if (lua_state == NULL)
 					{
-						lua_state = CreateBlocklyLuaState();
+						lua_state = CreateBlocklyLuaState(0);
 						if (lua_state == NULL)
 							return;
 					}
@@ -1634,7 +1643,7 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 
 				if (lua_state == NULL)
 				{
-					lua_state = CreateBlocklyLuaState();
+					lua_state = CreateBlocklyLuaState(0);
 					if (lua_state == NULL)
 						return;
 				}
@@ -2380,7 +2389,9 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 
 	{
 		boost::lock_guard<boost::mutex> measurementStatesMutexLock(m_measurementStatesMutex);
-		GetCurrentMeasurementStates();
+
+		if (DeviceID > 0)
+			GetCurrentMeasurementStates(DeviceID);
 
 		float thisDeviceTemp = 0;
 		float thisDeviceDew = 0;
