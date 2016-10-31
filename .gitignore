@@ -18,6 +18,7 @@ CMakeFiles
 *.tlog
 CMakeCache.txt
 domoticz
+!scripts/logrotate/domoticz
 stdafx.h.gch
 .DS_Store
 .AppleDouble

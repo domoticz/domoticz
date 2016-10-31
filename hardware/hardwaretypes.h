@@ -150,6 +150,16 @@
 #define sSwitchMiLightv1			0x57
 #define sSwitchMiLightv2			0x58
 #define sSwitchHT6P20				0x59
+#define sSwitchTypeDoitrand			0x5a
+#define sSwitchTypeWarema			0x5b
+#define sSwitchTypeAnsluta			0x5c
+#define sSwitchTypeLivcol			0x5d
+#define sSwitchTypeBosch			0x5e
+#define sSwitchTypeNingbo			0x5f
+#define sSwitchTypeDitec			0x60
+#define sSwitchTypeSteffen			0x61
+#define sSwitchTypeAlectoSA			0x62
+#define sSwitchTypeGPIOset			0x63
 
 //Switch commands
 #define gswitch_sOff				0x00
