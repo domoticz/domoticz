@@ -2094,11 +2094,7 @@ void CEventSystem::ParseActionString( const std::string &oAction_, _tActionParse
 			iLastTokenType = 4;
 		} else if ( strcasecmp( sToken, "INTERVAL" ) == 0 ) {
 			iLastTokenType = 5;
-		} else if (
-			strcasecmp( sToken, "TURN" ) == 0
-			|| strcasecmp( sToken, "SET" ) == 0
-			|| strcasecmp( sToken, "PLAY" ) == 0
-		) {
+		} else if ( strcasecmp( sToken, "TURN" ) == 0 ) {
 			iLastTokenType = 0;
 		} else if (
 			strcasecmp( sToken, "SECOND" ) == 0
@@ -3364,12 +3360,15 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 	struct _tActionParseResults oParseResults = { "", 0, 0, 0, 1, 0 };
 	ParseActionString( Action, oParseResults );
 
-	if ( strcasecmp( oParseResults.sCommand.substr( 0, 5 ).c_str(), "Level" ) == 0 ) {
-		level = calculateDimLevel( deviceID, atoi( oParseResults.sCommand.substr( 6 ).c_str() ) );
-	} else if ( strcasecmp( oParseResults.sCommand.substr( 0, 6 ).c_str(), "Volume" ) == 0 ) {
-		level = atoi( oParseResults.sCommand.substr( 7 ).c_str() );
-	} else if ( strcasecmp( oParseResults.sCommand.substr( 0, 8 ).c_str(), "Playlist" ) == 0 ) {
-		std::string	sParams = oParseResults.sCommand.substr( 9 );
+	if ( strcasecmp( oParseResults.sCommand.substr( 0, 9 ).c_str(), "Set Level" ) == 0 ) {
+		level = calculateDimLevel( deviceID, atoi( oParseResults.sCommand.substr( 10 ).c_str() ) );
+		oParseResults.sCommand = oParseResults.sCommand.substr(0, 9);
+	} else if ( strcasecmp( oParseResults.sCommand.substr( 0, 10 ).c_str(), "Set Volume" ) == 0 ) {
+		level = atoi( oParseResults.sCommand.substr( 11 ).c_str() );
+		oParseResults.sCommand = oParseResults.sCommand.substr(0, 10);
+	} else if ( strcasecmp( oParseResults.sCommand.substr( 0, 13 ).c_str(), "Play Playlist" ) == 0 ) {
+		std::string	sParams = oParseResults.sCommand.substr( 14 );
+
 		CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByType(HTYPE_Kodi);
 		if (pBaseHardware != NULL)
 		{
@@ -3394,13 +3393,14 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 			if (pBaseHardware == NULL) return false;
 			CLogitechMediaServer *pHardware = reinterpret_cast<CLogitechMediaServer*>(pBaseHardware);
 
-			int iPlaylistID = pHardware->GetPlaylistRefID(oParseResults.sCommand.substr( 9 ).c_str());
+			int iPlaylistID = pHardware->GetPlaylistRefID(oParseResults.sCommand.substr( 14 ).c_str());
 			if (iPlaylistID == 0) return false;
 
 			level = iPlaylistID;
 		}
-	} else if ( strcasecmp( oParseResults.sCommand.substr( 0, 9 ).c_str(), "Favorites" ) == 0 ) {
-		std::string	sParams = oParseResults.sCommand.substr( 10 );
+		oParseResults.sCommand = oParseResults.sCommand.substr(0, 13);
+	} else if ( strcasecmp( oParseResults.sCommand.substr( 0, 14 ).c_str(), "Play Favorites" ) == 0 ) {
+		std::string	sParams = oParseResults.sCommand.substr( 15 );
 		CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByType(HTYPE_Kodi);
 		if (pBaseHardware != NULL)
 		{
@@ -3410,6 +3410,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 				level = atoi(sParams.c_str());
 			}
 		}
+		oParseResults.sCommand = oParseResults.sCommand.substr(0, 14);
 	} else if ( strcasecmp( oParseResults.sCommand.substr( 0, 7 ).c_str(), "Execute" ) == 0 ) {
 		std::string	sParams = oParseResults.sCommand.substr( 8 );
 		CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByType(HTYPE_Kodi);
@@ -3419,6 +3420,27 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 			pHardware->SetExecuteCommand(deviceID, sParams);
 		}
 	}
+
+	int iDeviceDelay = 0;
+	if ( ! isScene ) {
+		// Get Device details, check for switch global OnDelay/OffDelay (stored in AddjValue2/AddjValue).
+		std::vector<std::vector<std::string> > result;
+		result = m_sql.safe_query( "SELECT SwitchType, AddjValue2 FROM DeviceStatus WHERE (ID == %d)", deviceID );
+		if ( result.size() < 1 ) {
+			return false;
+		}
+
+		std::vector<std::string> sd = result[0];
+		_eSwitchType switchtype = (_eSwitchType)atoi(sd[0].c_str());
+		int iOnDelay = atoi(sd[1].c_str());
+
+		bool bIsOn = IsLightSwitchOn( oParseResults.sCommand );
+		if ( switchtype == STYPE_Selector ) {
+			bIsOn = ( level > 0 ) ? true : false;
+		}
+		iDeviceDelay = bIsOn ? iOnDelay : 0;
+	}
+
 
 	float fPreviousRandomTime = 0;
 	for ( int iIndex = 0; iIndex < oParseResults.iRepeat; iIndex++ ) {
@@ -3431,7 +3453,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 			fRandomTime = (float)rand() / (float)( RAND_MAX / oParseResults.fRandomSec );
 		}
 
-		float fDelayTime = oParseResults.fAfterSec + fPreviousRandomTime + fRandomTime + ( iIndex * oParseResults.fForSec ) + ( iIndex * oParseResults.fRepeatSec );
+		float fDelayTime = oParseResults.fAfterSec + fPreviousRandomTime + fRandomTime + iDeviceDelay + ( iIndex * oParseResults.fForSec ) + ( iIndex * oParseResults.fRepeatSec );
 		fPreviousRandomTime = fRandomTime;
 
 		if ( isScene ) {
@@ -3452,25 +3474,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 			}
 
 		} else {
-
-			// Get Device details, check for switch global OnDelay/OffDelay (stored in AddjValue2/AddjValue).
-			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query( "SELECT SwitchType, AddjValue2 FROM DeviceStatus WHERE (ID == %d)", deviceID );
-			if ( result.size() < 1 ) {
-				return false;
-			}
-
-			std::vector<std::string> sd = result[0];
-			_eSwitchType switchtype = (_eSwitchType)atoi(sd[0].c_str());
-			int iOnDelay = atoi(sd[1].c_str());
-
-			bool bIsOn = IsLightSwitchOn( oParseResults.sCommand );
-			if ( switchtype == STYPE_Selector ) {
-				bIsOn = ( level > 0 ) ? true : false;
-			}
-			int iDelay = bIsOn ? iOnDelay : 0;
-			tItem = _tTaskItem::SwitchLightEvent( fDelayTime + iDelay, deviceID, oParseResults.sCommand, level, -1, eventName );
-
+			tItem = _tTaskItem::SwitchLightEvent( fDelayTime, deviceID, oParseResults.sCommand, level, -1, eventName );
 		}
 
 		m_sql.AddTaskItem( tItem );
