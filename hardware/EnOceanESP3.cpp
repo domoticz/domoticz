@@ -648,7 +648,7 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 	unsigned long sID=(tsen->LIGHTING2.id1<<24)|(tsen->LIGHTING2.id2<<16)|(tsen->LIGHTING2.id3<<8)|tsen->LIGHTING2.id4;
 	if ((sID<m_id_base)||(sID>m_id_base+129))
 	{
-		_log.Log(LOG_ERROR,"(1) EnOcean: Can not switch with this DeviceID, use a switch created with our id_base!...");
+		_log.Log(LOG_ERROR,"EnOcean (1): Can not switch with this DeviceID, use a switch created with our id_base!...");
 		return false;
 	}
 
@@ -836,7 +836,7 @@ void CEnOceanESP3::SendDimmerTeachIn(const char *pdata, const unsigned char leng
 		unsigned long sID = (tsen->LIGHTING2.id1 << 24) | (tsen->LIGHTING2.id2 << 16) | (tsen->LIGHTING2.id3 << 8) | tsen->LIGHTING2.id4;
 		if ((sID<m_id_base) || (sID>m_id_base + 129))
 		{
-			_log.Log(LOG_ERROR, "(2) EnOcean: Can not switch with this DeviceID, use a switch created with our id_base!...");
+			_log.Log(LOG_ERROR, "EnOcean (2): Can not switch with this DeviceID, use a switch created with our id_base!...");
 			return;
 		}
 
@@ -1651,6 +1651,25 @@ void CEnOceanESP3::ParseRadioDatagram()
 				long id = (ID_BYTE3 << 24) + (ID_BYTE2 << 16) + (ID_BYTE1 << 8) + ID_BYTE0;
 				char szDeviceID[20];
 				sprintf(szDeviceID,"%08X",(unsigned int)id);
+
+				// if a button is attached to a module, we should ignore it else its datagram will conflict with status reported by the module using VLD datagram
+				std::vector<std::vector<std::string> > result;
+				result = m_sql.safe_query("SELECT ID, Profile, [Type] FROM EnoceanSensors WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, szDeviceID);
+				if (result.size() == 1)
+				{
+					// hardware device was already teached-in
+					int Profile=atoi(result[0][1].c_str());
+					int iType=atoi(result[0][2].c_str());
+					if( (Profile == 0x01) &&						// profile 1 (D2-01) is Electronic switches and dimmers with Energy Measurement and Local Control
+						 ((iType == 0x0F) || (iType == 0x12))	// type 0F and 12 have external switch/push button control, it means they also act as rocker
+						)
+					{
+#ifdef ENOCEAN_BUTTON_DEBUG
+						_log.Log(LOG_STATUS,"EnOcean: %s, ignore button press", szDeviceID);
+#endif // ENOCEAN_BUTTON_DEBUG
+						break;
+					}
+				}
 
 				// Whether we use the ButtonID reporting with ON/OFF
 				bool useButtonIDs = true;
