@@ -63,6 +63,8 @@ public:
 	void SBFSpotImportOldData(WebEmSession & session, const request& req, std::string & redirect_uri);
 	void SetCurrentCostUSBType(WebEmSession & session, const request& req, std::string & redirect_uri);
 
+	void EventCreate(WebEmSession & session, const request& req, std::string & redirect_uri);
+
 	cWebem *m_pWebEm;
 
 	void ReloadCustomSwitchIcons();

@@ -10,6 +10,7 @@
 #include "../hardware/LogitechMediaServer.h"
 #include <iostream>
 #include "../httpclient/HTTPClient.h"
+#include "../httpclient/UrlEncode.h"
 #include "localtime_r.h"
 #include "SQLHelper.h"
 #include "../notifications/NotificationHelper.h"
@@ -3718,6 +3719,118 @@ namespace http {
 			std::string ID;
 			std::string eventstatus;
 		};
+
+		void CWebServer::EventCreate(WebEmSession & session, const request& req, std::string & redirect_uri)
+		{
+			Json::Value root;
+			root["title"] = "CreateEvent";
+			root["status"] = "ERR";
+
+			redirect_uri = root.toStyledString();
+			if (session.rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string eventname = CURLEncode::URLDecode(request::findValue(&req, "name"));
+			if (eventname == "")
+				return;
+
+			std::string interpreter = CURLEncode::URLDecode(request::findValue(&req, "interpreter"));
+			if (interpreter == "")
+				return;
+
+			std::string eventtype = CURLEncode::URLDecode(request::findValue(&req, "eventtype"));
+			if (eventtype == "")
+				return;
+
+			std::string eventxml = CURLEncode::URLDecode(request::findValue(&req, "xml"));
+			if (eventxml == "")
+				return;
+
+			std::string eventactive = CURLEncode::URLDecode(request::findValue(&req, "eventstatus"));
+			if (eventactive == "")
+				return;
+
+			std::string eventid = CURLEncode::URLDecode(request::findValue(&req, "eventid"));
+
+
+			std::string eventlogic = CURLEncode::URLDecode(request::findValue(&req, "logicarray"));
+			if ((interpreter == "Blockly") && (eventlogic == ""))
+				return;
+
+			int eventStatus = atoi(eventactive.c_str());
+
+			bool parsingSuccessful = eventxml.length() > 0;
+			Json::Value jsonRoot;
+			if (interpreter == "Blockly") {
+				Json::Reader reader;
+				std::stringstream ssel(eventlogic);
+				parsingSuccessful = reader.parse(ssel, jsonRoot);
+			}
+
+			if (!parsingSuccessful)
+			{
+				_log.Log(LOG_ERROR, "Webserver event parser: Invalid data received!");
+			}
+			else {
+				if (eventid == "") {
+					std::vector<std::vector<std::string> > result;
+					m_sql.safe_query("INSERT INTO EventMaster (Name, Interpreter, Type, XMLStatement, Status) VALUES ('%q','%q','%q','%q','%d')",
+						eventname.c_str(), interpreter.c_str(), eventtype.c_str(), eventxml.c_str(), eventStatus);
+					result = m_sql.safe_query("SELECT ID FROM EventMaster WHERE (Name == '%q')",
+						eventname.c_str());
+					if (result.size() > 0)
+					{
+						std::vector<std::string> sd = result[0];
+						eventid = sd[0];
+					}
+				}
+				else {
+					m_sql.safe_query("UPDATE EventMaster SET Name='%q', Interpreter='%q', Type='%q', XMLStatement ='%q', Status ='%d' WHERE (ID == '%q')",
+						eventname.c_str(), interpreter.c_str(), eventtype.c_str(), eventxml.c_str(), eventStatus, eventid.c_str());
+					m_sql.safe_query("DELETE FROM EventRules WHERE (EMID == '%q')",
+						eventid.c_str());
+				}
+
+				if (eventid == "")
+				{
+					//eventid should now never be empty!
+					_log.Log(LOG_ERROR, "Error writing event actions to database!");
+				}
+				else {
+					std::string sNewEditorTheme = CURLEncode::URLDecode(request::findValue(&req, "editortheme"));
+					std::string sOldEditorTheme = "ace/theme/xcode";
+					m_sql.GetPreferencesVar("ScriptEditorTheme", sOldEditorTheme);
+					if (sNewEditorTheme.length() && (sNewEditorTheme != sOldEditorTheme))
+					{
+						m_sql.UpdatePreferencesVar("ScriptEditorTheme", sNewEditorTheme);
+					}
+
+					if (interpreter == "Blockly") {
+						const Json::Value array = jsonRoot["eventlogic"];
+						for (int index = 0; index < (int)array.size(); ++index)
+						{
+							std::string conditions = array[index].get("conditions", "").asString();
+							std::string actions = array[index].get("actions", "").asString();
+
+							if ((actions.find("SendNotification") != std::string::npos) || (actions.find("SendEmail") != std::string::npos) || (actions.find("SendSMS") != std::string::npos))
+							{
+								stdreplace(actions, "$", "#");
+							}
+							int sequenceNo = index + 1;
+							m_sql.safe_query("INSERT INTO EventRules (EMID, Conditions, Actions, SequenceNo) VALUES ('%q','%q','%q','%d')",
+								eventid.c_str(), conditions.c_str(), actions.c_str(), sequenceNo);
+						}
+					}
+
+					m_mainworker.m_eventsystem.LoadEvents();
+					root["status"] = "OK";
+				}
+			}
+			redirect_uri = root.toStyledString();
+		}
 
 		void CWebServer::RType_Events(WebEmSession & session, const request& req, Json::Value &root)
 		{
