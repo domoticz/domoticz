@@ -2872,7 +2872,7 @@ void CEventSystem::luaThread(lua_State *lua_state, const std::string &filename)
 	}
 	else
 	{
-		if (status == 0)
+		if (status == 0 && filename.find("_donotlog_") == std::string::npos)
 		{
 			_log.Log(LOG_ERROR, "EventSystem: Lua script %s did not return a commandArray", filename.c_str());
 		}
