@@ -3421,6 +3421,12 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 		}
 	}
 
+	if ( strcasecmp( previousState.substr( 0, 9 ).c_str(), "Set Level" ) == 0 ) {
+		previousState = previousState.substr(0, 9);
+	} else if ( strcasecmp( previousState.substr( 0, 10 ).c_str(), "Set Volume" ) == 0 ) {
+		previousState = previousState.substr(0, 10);
+	}
+
 	int iDeviceDelay = 0;
 	if ( ! isScene ) {
 		// Get Device details, check for switch global OnDelay/OffDelay (stored in AddjValue2/AddjValue).
@@ -3443,7 +3449,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 
 
 	float fPreviousRandomTime = 0;
-	for ( int iIndex = 0; iIndex < oParseResults.iRepeat; iIndex++ ) {
+	for ( int iIndex = 0; iIndex < abs(oParseResults.iRepeat); iIndex++ ) {
 		_tTaskItem tItem;
 
 		float fRandomTime = 0;
@@ -3482,7 +3488,13 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 		_log.Log(LOG_STATUS, "EventSystem: Scheduled %s after %0.2f.", tItem._command.c_str(), tItem._DelayTime );
 #endif
 
-		if ( oParseResults.fForSec > (1./timer_resolution_hz/2) ) {
+		if (
+			oParseResults.fForSec > (1./timer_resolution_hz/2)
+			&& (
+				oParseResults.iRepeat > 0
+				|| iIndex < abs(oParseResults.iRepeat)-1
+			)
+		) {
 			fDelayTime += oParseResults.fForSec;
 
 			_tTaskItem tDelayedtItem;
