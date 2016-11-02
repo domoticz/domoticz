@@ -7,9 +7,16 @@
 #include "../hardware/hardwaretypes.h"
 #include "../main/mainworker.h"
 #include "../main/WebServer.h"
+
+/*
+Yeelight (Mi Light) is a company that created White and RGBW lights
+You can buy them on AliExpress or Ebay or other storers
+Price is around 20 euro
+Protocol if WiFi, the light needs to connect to your wireless network
+Domoticz and the lights need to be in the same network/subnet
+*/
+
 class udp_server;
-
-
 
 Yeelight::Yeelight(const int ID)
 {
@@ -53,12 +60,15 @@ bool Yeelight::StopHardware()
 	return true;
 }
 
+#define YEELIGHT_POLL_INTERVAL 60
+
 void Yeelight::Do_Work()
 {
+	_log.Log(LOG_STATUS, "YeeLight Worker started...");
+
 	boost::asio::io_service io_service;
 	udp_server server(io_service, m_HwdID);
-	//_log.Log(LOG_STATUS, "Starting Yeelight");
-	int sec_counter = 0;
+	int sec_counter = YEELIGHT_POLL_INTERVAL-5;
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
@@ -66,13 +76,13 @@ void Yeelight::Do_Work()
 		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat = mytime(NULL);
 		}
-		if (sec_counter % 60 == 0) //poll yeelights every minute
+		if (sec_counter % 60 == 0) //poll YeeLights every minute
 		{
 			server.start_send();
 			io_service.run();
 		}
 	}
-	//_log.Log(LOG_STATUS, "Yeelight stopped");
+	_log.Log(LOG_STATUS, "YeeLight stopped");
 }
 
 
@@ -85,7 +95,7 @@ void Yeelight::InsertUpdateSwitch(const std::string &nodeID, const std::string &
 	result = m_sql.safe_query("SELECT nValue, LastLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (SubType==%d)", m_HwdID, nodeID.c_str(), pTypeYeelight, YeeType);
 	if (result.size() < 1)
 	{
-		_log.Log(LOG_STATUS, "Yeelight: New %s Found", lightName.c_str());
+		_log.Log(LOG_STATUS, "YeeLight: New %s Found", lightName.c_str());
 		m_sql.safe_query(
 			"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SwitchType, SubType, SignalLevel, BatteryLevel, Name, nValue, sValue, Options) "
 			"VALUES (%d,'%q', %d, %d, %d, %d, 12,255,'%q',0,' ','%q')",
@@ -131,7 +141,7 @@ void Yeelight::InsertUpdateSwitch(const std::string &nodeID, const std::string &
 
 bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	//_log.Log(LOG_STATUS, "Yeelight: WriteToHardware...............................");
+	//_log.Log(LOG_STATUS, "YeeLight: WriteToHardware...............................");
 	std::string ipAddress = "192.168.0.1";
 	_tYeelight *pLed = (_tYeelight*)pdata;
 	uint8_t command = pLed->command;
@@ -201,7 +211,7 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 	}
 								break;
 	default:
-		_log.Log(LOG_STATUS, "Yeelight: Unhandled WriteToHardware command: %d", command);
+		_log.Log(LOG_STATUS, "YeeLight: Unhandled WriteToHardware command: %d", command);
 		break;
 	}
 
@@ -311,10 +321,10 @@ void Yeelight::udp_server::start_receive()
 
 		std::string yeelightName = "";
 		if (yeelightModel == "model: mono") {
-			yeelightName = "Yeelight LED (Mono)";
+			yeelightName = "YeeLight LED (Mono)";
 		}
 		else if (yeelightModel == "model: color") {
-			yeelightName = "Yeelight LED (Color)";
+			yeelightName = "YeeLight LED (Color)";
 			sType = sTypeYeelightColor;
 		}
 		Yeelight yeelight(hardwareId);
