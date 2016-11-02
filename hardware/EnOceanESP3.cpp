@@ -505,10 +505,10 @@ void CEnOceanESP3::Add2SendQueue(const char* pData, const size_t length)
 #ifdef ENABLE_LOGGING
 	std::stringstream sstr;
 
-	for (int idx=0;idx<length;idx++)
+	for (size_t idx = 0; idx < length; idx++)
 	{
 		sstr << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << (((unsigned int)pData[idx]) & 0xFF);
-		if (idx!=length-1)
+		if (idx != length - 1)
 			sstr << " ";
 	}
 	_log.Log(LOG_STATUS,"EnOcean Send: %s",sstr.str().c_str());	
