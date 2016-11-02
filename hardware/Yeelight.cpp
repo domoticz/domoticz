@@ -211,7 +211,7 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 	unsigned char ID4 = (unsigned char)((lID & 0x000000FF));
 
 	//IP Address
-	sprintf_s(szTmp, "%d.%d.%d.%d", ID1, ID2, ID3, ID4);
+	sprintf(szTmp, "%d.%d.%d.%d", ID1, ID2, ID3, ID4);
 
 	boost::asio::io_service io_service;
 	boost::asio::ip::tcp::socket sendSocket(io_service);
