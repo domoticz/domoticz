@@ -3414,7 +3414,7 @@ define(['app'], function (app) {
                     var id = $(this).prop("id");      // get id
                     var value = encodeURIComponent(btoa($(this).prop("value")));      // get value
 
-                    valueList+=id+"_"+value+"_";
+                    valueList+=id+"_"+value+"__";
                 });
             }
 
@@ -3426,7 +3426,7 @@ define(['app'], function (app) {
                 $list.each( function() {
                     var id = $(this).prop("id");      // get id
                     var value = encodeURIComponent(btoa($(this).find(":selected").text()));      // get value
-                    valueList+=id+"_"+value+"_";
+                    valueList+=id+"_"+value+"__";
                 });
             }
 
