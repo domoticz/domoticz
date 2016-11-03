@@ -2863,12 +2863,13 @@ void CEventSystem::luaThread(lua_State *lua_state, const std::string &filename)
 	status = lua_pcall(lua_state, 0, LUA_MULTRET, 0);
 	report_errors(lua_state, status, filename);
 
-	bool scriptTrue = false;
+	std::pair<bool, bool> scriptResult;
+
 	lua_getglobal(lua_state, "commandArray");
 	if (lua_istable(lua_state, -1))
 	{
 		int tIndex = lua_gettop(lua_state);
-		scriptTrue = iterateLuaTable(lua_state, tIndex, filename);
+		scriptResult = iterateLuaTable(lua_state, tIndex, filename);
 	}
 	else
 	{
@@ -2878,7 +2879,10 @@ void CEventSystem::luaThread(lua_State *lua_state, const std::string &filename)
 		}
 	}
 
-	if (scriptTrue)
+	bool scriptTrue = scriptResult.first;
+	bool performLogging = scriptResult.second;
+
+	if (scriptTrue && performLogging)
 	{
 		_log.Log(LOG_STATUS, "EventSystem: Script event triggered: %s", filename.c_str());
 	}
@@ -2899,20 +2903,38 @@ void CEventSystem::luaStop(lua_State *L, lua_Debug *ar)
 	}
 }
 
-bool CEventSystem::iterateLuaTable(lua_State *lua_state, const int tIndex, const std::string &filename)
+std::pair<bool, bool> CEventSystem::iterateLuaTable(lua_State *lua_state, const int tIndex, const std::string &filename)
 {
 	bool scriptTrue = false;
+
+	//Perform logging by default
+	bool performLogging = true;
 
 	lua_pushnil(lua_state); // first key
 	while (lua_next(lua_state, tIndex) != 0)
 	{
 		if ((std::string(luaL_typename(lua_state, -2)) == "string") && (std::string(luaL_typename(lua_state, -1))) == "string")
 		{
-			scriptTrue = processLuaCommand(lua_state, filename);
+			//Check if no logging should be performed
+			if (std::string(lua_tostring(lua_state, -2)) == "DoNotLogExecution")
+			{
+				scriptTrue = true;
+				performLogging = std::string(lua_tostring(lua_state, -1)) == "0";
+			}
+			else
+			{
+				scriptTrue = processLuaCommand(lua_state, filename);
+			}
 		}
 		else if ((std::string(luaL_typename(lua_state, -2)) == "number") && lua_istable(lua_state, -1))
 		{
-			scriptTrue = iterateLuaTable(lua_state, tIndex + 2, filename);
+			std::pair<bool, bool> localResult = iterateLuaTable(lua_state, tIndex + 2, filename);
+			scriptTrue = localResult.first;
+
+			//Only update performLogging when it set to the default value (true). Avoid unexpected overwriting.
+			if (performLogging) {
+				performLogging = localResult.second;
+			}
 		}
 		else
 		{
@@ -2922,8 +2944,7 @@ bool CEventSystem::iterateLuaTable(lua_State *lua_state, const int tIndex, const
 		lua_pop(lua_state, 1);
 	}
 
-	return scriptTrue;
-
+	return std::make_pair(scriptTrue, performLogging);
 }
 
 bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &filename)
