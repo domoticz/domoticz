@@ -21,6 +21,7 @@ public:
 private:
 	bool StartHardware();
 	bool StopHardware();
+
 protected:
 	bool m_bDoRestart;
 	void Do_Work();
@@ -37,7 +38,6 @@ protected:
 
 	private:
 		void start_receive();
-		bool HandleIncoming(const std::string &szData);
 	};
 
 };
