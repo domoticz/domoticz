@@ -1467,6 +1467,8 @@ void MainWorker::Do_Work()
 				m_ScheduleLastMinuteTime = atime;
 				m_ScheduleLastMinute = ltime.tm_min;
 
+				tzset(); //this because localtime_r/localtime_s does not update for DST
+
 				//check for 5 minute schedule
 				if (ltime.tm_min % m_sql.m_ShortLogInterval == 0)
 				{
