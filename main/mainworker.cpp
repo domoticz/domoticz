@@ -2243,6 +2243,9 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const 
 		case pTypeHomeConfort:
 			decode_HomeConfort(HwdID, HwdType, reinterpret_cast<const tRBUF *>(pRXCommand), procResult);
 			break;
+		case pTypeYeelight:
+			decode_Yeelight(HwdID, HwdType, reinterpret_cast<const tRBUF *>(pRXCommand), procResult);
+			break;
 		default:
 			_log.Log(LOG_ERROR, "UNHANDLED PACKET TYPE:      FS20 %02X", pRXCommand[1]);
 			return;
@@ -5380,7 +5383,7 @@ void MainWorker::decode_LimitlessLights(const int HwdID, const _eHardwareTypes H
 	if (pLed->id==1)
 		sprintf(szTmp,"%d", 1);
 	else
-		sprintf(szTmp, "%08X", (unsigned int)pLed->id);
+		sprintf(szTmp, "%08x", (unsigned int)pLed->id);
 	std::string ID = szTmp;
 	unsigned char Unit=pLed->dunit;
 	unsigned char cmnd=pLed->command;
@@ -5412,6 +5415,50 @@ void MainWorker::decode_LimitlessLights(const int HwdID, const _eHardwareTypes H
 
 	}
 
+	procResult.DeviceRowIdx = DevRowIdx;
+}
+
+void MainWorker::decode_Yeelight(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
+{
+	char szTmp[300];
+	_tYeelight *pLed = (_tYeelight*)pResponse;
+	unsigned char devType = pTypeYeelight;
+	unsigned char subType = pLed->subtype;
+	if (pLed->id == 1)
+		sprintf(szTmp, "%d", 1);
+	else
+		sprintf(szTmp, "%08x", (unsigned int)pLed->id);
+	std::string ID = szTmp;
+	unsigned char Unit = pLed->dunit;
+	unsigned char cmnd = pLed->command;
+	unsigned char value = pLed->value;
+	unsigned long long DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, 12, -1, cmnd, procResult.DeviceName);
+	if (DevRowIdx == -1)
+		return;
+	CheckSceneCode(DevRowIdx, devType, subType, cmnd, szTmp);
+	if (cmnd == light1_sOn) {
+		WriteMessage("On");
+	}
+	if (cmnd == Yeelight_SetBrightnessLevel)
+	{
+		std::vector<std::vector<std::string> > result;
+		result = m_sql.safe_query(
+			"SELECT ID,Name FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",
+			HwdID, ID.c_str(), Unit, devType, subType);
+		if (result.size() != 0)
+		{
+			unsigned long long ulID;
+			std::stringstream s_str(result[0][0]);
+			s_str >> ulID;
+
+			//store light level
+			m_sql.safe_query(
+				"UPDATE DeviceStatus SET LastLevel='%d' WHERE (ID = %llu)",
+				value,
+				ulID);
+			//_log.Log(LOG_STATUS, "UPDATE DeviceStatus SET LastLevel value: %d", value);
+		}
+	}
 	procResult.DeviceRowIdx = DevRowIdx;
 }
 
@@ -10669,6 +10716,70 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			return true;
 		}
 		break;
+	case pTypeYeelight:
+	{
+		_tYeelight ycmd;
+		ycmd.len = sizeof(_tYeelight) - 1;
+		ycmd.type = dType;
+		ycmd.subtype = dSubType;
+		ycmd.id = ID;
+		ycmd.dunit = Unit;
+
+		unsigned long ID1;
+		std::stringstream s_strid1;
+		s_strid1 << std::hex << sd[1];
+		s_strid1 >> ID1;
+
+		if ((switchcmd == "On") || (switchcmd == "Set Level"))
+		{
+			if (hue != -1)
+			{
+				_tYeelight ycmd2;
+				ycmd2.len = sizeof(_tYeelight) - 1;
+				ycmd2.type = dType;
+				ycmd2.subtype = dSubType;
+				ycmd2.id = ID;
+				ycmd2.dunit = Unit;
+				if (hue != 1000)
+				{
+					double dval;
+					dval = (255.0 / 360.0)*float(hue);
+					int ival;
+					ival = round(dval);
+					ycmd2.value = ival;
+					//ycmd2.command = Limitless_SetRGBColour;
+					ycmd2.command = Yeelight_SetBrightnessLevel;
+				}
+				else
+				{
+					ycmd2.command = Yeelight_SetColorToWhite;
+				}
+				if (!WriteToHardware(HardwareID, (const char*)&ycmd2, sizeof(_tYeelight)))
+					return false;
+				sleep_milliseconds(100);
+			}
+		}
+
+		ycmd.value = level;
+		if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, ycmd.command, options)) {
+			_log.Log(LOG_STATUS, "GetLightCommand is false");
+			return false;
+		}
+		if (!WriteToHardware(HardwareID, (const char*)&ycmd, sizeof(_tYeelight)))
+		{
+			_log.Log(LOG_STATUS, "WriteToHardware is false");
+			//m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d, sValue='', LastLevel=%d WHERE(HardwareID == %d) AND (DeviceID == '%q')", int(light1_sOff), int(0), (int)HardwareID, (int)ID);
+			//update the database to off...
+			return false;
+		}
+		if (!IsTesting) {
+			//send to internal for now (later we use the ACK)
+			PushAndWaitRxMessage(m_hardwaredevices[hindex], (const unsigned char *)&ycmd, NULL, -1);
+		}
+		//_log.Log(LOG_STATUS, "case pTypeYeelight in mainworker.cpp FINISHED");
+		return true;
+	}
+	break;
 	case pTypeSecurity1:
 		{
 			tRBUF lcmd;

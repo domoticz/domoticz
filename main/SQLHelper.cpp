@@ -31,7 +31,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 106
+#define DB_VERSION 105
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -2062,37 +2062,6 @@ bool CSQLHelper::OpenDatabase()
 				query("ALTER TABLE MySensorsChilds ADD COLUMN [AckTimeout] INTEGER DEFAULT 1200");
 			}
 		}
-		if (dbversion < 106)
-		{
-			//Adjust Limited device id's to uppercase HEX
-			std::stringstream szQuery2;
-			std::vector<std::vector<std::string> > result;
-			szQuery2 << "SELECT ID, DeviceID FROM DeviceStatus WHERE([Type]==" << pTypeLimitlessLights << ")";
-			result = query(szQuery2.str());
-			if (result.size() > 0)
-			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
-				for (itt = result.begin(); itt != result.end(); ++itt)
-				{
-					std::vector<std::string> sd = *itt;
-					szQuery2.clear();
-					szQuery2.str("");
-					uint32_t lID;
-					std::stringstream s_strid;
-					s_strid << std::hex << sd[1];
-					s_strid >> lID;
-
-					if (lID > 9)
-					{
-						char szTmp[10];
-						sprintf(szTmp, "%08X", lID);
-						szQuery2 << "UPDATE DeviceStatus SET DeviceID='" << szTmp << "' WHERE (ID=" << sd[0] << ")";
-						query(szQuery2.str());
-					}
-				}
-			}
-
-		}
 	}
 	else if (bNewInstall)
 	{
@@ -2747,9 +2716,9 @@ void CSQLHelper::Do_Work()
 			{
 				std::vector<std::string> splitresults;
 				StringSplit(itt->_command, "!#", splitresults);
-				if (splitresults.size() == 4) {
-					m_notifications.SendMessageEx(NOTIFYALL, splitresults[0], splitresults[1], splitresults[2], static_cast<int>(itt->_idx), splitresults[3], true);
-				}
+				if (splitresults.size() != 4)
+					continue; //impossible
+				m_notifications.SendMessageEx(NOTIFYALL, stdstring_trim(splitresults[0]), stdstring_trim(splitresults[1]), stdstring_trim(splitresults[2]), static_cast<int>(itt->_idx), stdstring_trim(splitresults[3]), true);
 			}
 
 			++itt;
