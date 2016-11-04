@@ -7,6 +7,8 @@
 #include "../hardware/hardwaretypes.h"
 #include "../main/mainworker.h"
 #include "../main/WebServer.h"
+#include "../webserver/cWebem.h"
+#include "../json/json.h"
 
 /*
 Yeelight (Mi Light) is a company that created White and RGBW lights
@@ -156,7 +158,7 @@ void Yeelight::InsertUpdateSwitch(const std::string &nodeID, const std::string &
 		ycmd.value = value;
 		ycmd.command = cmd;
 		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&ycmd, NULL, -1);
-		m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d, LastLevel=%d WHERE(HardwareID == %d) AND (DeviceID == '%q')", int(STYPE_Dimmer), value, m_HwdID, szDeviceID);
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, LastLevel=%d WHERE(HardwareID == %d) AND (DeviceID == '%q')", lightName.c_str(), (STYPE_Dimmer), value, m_HwdID, szDeviceID);
 	}
 	else {
 
@@ -218,7 +220,14 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 	boost::asio::ip::tcp::resolver resolver(io_service);
 	boost::asio::ip::tcp::resolver::query query(boost::asio::ip::tcp::v4(), szTmp, "55443");
 	boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
-	boost::asio::connect(sendSocket, iterator);
+	try
+	{
+		boost::asio::connect(sendSocket, iterator);
+	}
+	catch (const std::exception &e)
+	{
+		_log.Log(LOG_ERROR, "YeeLight: Exception: %s", e.what());
+	}
 
 	std::string message = "{\"id\":1,\"method\":\"toggle\",\"params\":[]}\r\n";
 
@@ -395,3 +404,33 @@ bool Yeelight::udp_server::HandleIncoming(const std::string &szData)
 	yeelight.InsertUpdateSwitch(yeelightId, yeelightName, sType, yeelightLocation, bIsOn, yeelightBright, yeelightHue);
 	return true;
 }
+
+//Webserver helpers
+namespace http {
+	namespace server {
+		void CWebServer::Cmd_AddYeeLight(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			root["title"] = "AddYeeLight";
+
+			std::string idx = request::findValue(&req, "idx");
+			std::string sname = request::findValue(&req, "name");
+			std::string sipaddress = request::findValue(&req, "ipaddress");
+			std::string stype = request::findValue(&req, "stype");
+			if (
+				(idx.empty()) ||
+				(sname.empty()) ||
+				(sipaddress.empty()) ||
+				(stype.empty())
+				)
+				return;
+			root["status"] = "OK";
+
+			int HwdID = atoi(idx.c_str());
+
+			Yeelight yeelight(HwdID);
+			yeelight.InsertUpdateSwitch("123", sname, (stype=="0")? sTypeLimitlessWhite:sTypeLimitlessRGBW, sipaddress, false, "0", "0");
+		}
+	}
+}
+
+
