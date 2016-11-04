@@ -303,7 +303,15 @@ void CNefitEasy::SetHotWaterMode(bool bTurnOn)
 
 	try
 	{
-		szURL << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << (m_bClockMode == true) ? NEFITEASY_SET_HOT_WATER_CLOCK_MODE : NEFITEASY_SET_HOT_WATER_MANUAL_MODE;
+		//szURL << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << (m_bClockMode == true) ? NEFITEASY_SET_HOT_WATER_CLOCK_MODE : NEFITEASY_SET_HOT_WATER_MANUAL_MODE;
+		//Set Both modes
+		szURL << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << NEFITEASY_SET_HOT_WATER_CLOCK_MODE;
+		if (!HTTPClient::POST(szURL.str(), root.toStyledString(), ExtraHeaders, sResult))
+		{
+			_log.Log(LOG_ERROR, "NefitEasy: Error setting User Mode!");
+			return;
+		}
+		szURL << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << NEFITEASY_SET_HOT_WATER_MANUAL_MODE;
 		if (!HTTPClient::POST(szURL.str(), root.toStyledString(), ExtraHeaders, sResult))
 		{
 			_log.Log(LOG_ERROR, "NefitEasy: Error setting User Mode!");
