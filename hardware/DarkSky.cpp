@@ -55,6 +55,8 @@ bool CDarkSky::StopHardware()
 
 void CDarkSky::Do_Work()
 {
+	_log.Log(LOG_STATUS, "DarkSky: Started...");
+
 	int sec_counter = 590;
 	while (!m_stoprequested)
 	{
@@ -109,7 +111,7 @@ void CDarkSky::GetMeterDetails()
 	sResult=readDarkSkyTestFile("E:\\DarkSky.json");
 #else
 	std::stringstream sURL;
-	std::string szLoc = CURLEncode::URLEncode(m_Location);
+	std::string szLoc = m_Location;
 	sURL << "https://api.darksky.net/forecast/" << m_APIKey << "/" << szLoc;
 	try
 	{
@@ -118,7 +120,7 @@ void CDarkSky::GetMeterDetails()
 		bret = HTTPClient::GET(szURL, sResult);
 		if (!bret)
 		{
-			_log.Log(LOG_ERROR, "DarkSky: Error getting http data!");
+			_log.Log(LOG_ERROR, "DarkSky: Error getting http data!.");
 			return;
 		}
 	}
@@ -135,7 +137,7 @@ void CDarkSky::GetMeterDetails()
 	bool ret=jReader.parse(sResult,root);
 	if (!ret)
 	{
-		_log.Log(LOG_ERROR,"DarkSky: Invalid data received!");
+		_log.Log(LOG_ERROR,"DarkSky: Invalid data received! Check Location, use a City or GPS Coordinates (xx.yyyy,xx.yyyyy)");
 		return;
 	}
 	if (root["currently"].empty()==true)

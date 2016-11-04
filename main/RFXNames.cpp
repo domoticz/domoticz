@@ -475,7 +475,6 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeEvohomeWater, "Heating" , "evohome" },
 		{ pTypeEvohomeRelay, "Heating" , "evohome" },
 		{ pTypeGeneralSwitch, "Light/Switch", "lightbulb" },
-		{ pTypeYeelight, "Light/Switch", "lightbulb" },
 		{ 0, NULL, NULL }
 	};
 	if (snum==1)
@@ -816,8 +815,6 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchMiLightv1, "MiLightv1" },
 		{ pTypeGeneralSwitch, sSwitchMiLightv2, "MiLightv2" },
 		{ pTypeGeneralSwitch, sSwitchHT6P20, "HT6P20" },
-		{ pTypeYeelight, sTypeYeelightColor, "RGBW" },
-		{ pTypeYeelight, sTypeYeelightWhite, "White" },
 		{ pTypeGeneralSwitch, sSwitchTypeDoitrand, "Doitrand" },
 		{ pTypeGeneralSwitch, sSwitchTypeWarema, "Warema" },
 		{ pTypeGeneralSwitch, sSwitchTypeAnsluta, "Ansluta" },
@@ -1068,9 +1065,6 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeLimitlessLights, sTypeLimitlessRGBW, "Status" },
 		{ pTypeLimitlessLights, sTypeLimitlessRGB, "Status" },
 		{ pTypeLimitlessLights, sTypeLimitlessWhite, "Status" },
-
-		{ pTypeYeelight, sTypeYeelightColor, "Status" },
-		{ pTypeYeelight, sTypeYeelightWhite, "Status" },
 
 		{ pTypeRFY, sTypeRFY, "Status" },
 		{ pTypeRFY, sTypeRFYext, "Status" },
@@ -1777,22 +1771,6 @@ void GetLightStatus(
 			break;
 		case Limitless_SetBrightnessLevel:
 			lstatus="Set Level";
-			break;
-		}
-		break;
-	case pTypeYeelight:
-		bHaveDimmer = true;
-		maxDimLevel = 100;
-		switch (nValue)
-		{
-		case Yeelight_LedOff:
-			lstatus = "Off";
-			break;
-		case Yeelight_LedOn:
-			lstatus = "On";
-			break;
-		case Yeelight_SetBrightnessLevel:
-			lstatus = "Set Level";
 			break;
 		}
 		break;
@@ -2813,98 +2791,6 @@ bool GetLightCommand(
 		else if (switchcmd == "Cooler")
 		{
 			cmd = Limitless_CoolWhiteIncrease;
-			return true;
-		}
-		else
-			return false;
-		break;
-	case pTypeYeelight:
-		if (switchcmd == "Off")
-		{
-			cmd = Yeelight_LedOff;
-			return true;
-		}
-		else if (switchcmd == "On")
-		{
-			cmd = Yeelight_LedOn;
-			return true;
-		}
-		else if (switchcmd == "Set Color")
-		{
-			cmd = Yeelight_SetRGBColour;
-			return true;
-		}
-		else if (
-			(switchcmd == "Set Brightness") ||
-			(switchcmd == "Set Level")
-			)
-		{
-			cmd = Yeelight_SetBrightnessLevel;
-			return true;
-		}
-		else if (switchcmd == "Set White")
-		{
-			cmd = Yeelight_SetColorToWhite;
-			return true;
-		}
-		else if (switchcmd == "Set Full")
-		{
-			cmd = Yeelight_SetColorToWhite;
-			return true;
-		}
-		else if (switchcmd == "Set Night")
-		{
-			cmd = Yeelight_NightMode;
-			return true;
-		}
-		else if (switchcmd == "Bright Up")
-		{
-			cmd = Yeelight_SetBrightUp;
-			return true;
-		}
-		else if (switchcmd == "Bright Down")
-		{
-			cmd = Yeelight_SetBrightDown;
-			return true;
-		}
-		else if (switchcmd == "Disco Mode")
-		{
-			cmd = Yeelight_DiscoMode;
-			return true;
-		}
-		else if (switchcmd == "Disco Up")
-		{
-			cmd = Yeelight_RGBDiscoNext;
-			return true;
-		}
-		else if (switchcmd == "Disco Down")
-		{
-			cmd = Yeelight_RGBDiscoPrevious;
-			return true;
-		}
-		else if (switchcmd == "Speed Up")
-		{
-			cmd = Yeelight_DiscoSpeedFaster;
-			return true;
-		}
-		else if (switchcmd == "Speed Up Long")
-		{
-			cmd = Yeelight_DiscoSpeedFasterLong;
-			return true;
-		}
-		else if (switchcmd == "Speed Down")
-		{
-			cmd = Yeelight_DiscoSpeedSlower;
-			return true;
-		}
-		else if (switchcmd == "Warmer")
-		{
-			cmd = Yeelight_WarmWhiteIncrease;
-			return true;
-		}
-		else if (switchcmd == "Cooler")
-		{
-			cmd = Yeelight_CoolWhiteIncrease;
 			return true;
 		}
 		else

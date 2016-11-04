@@ -719,6 +719,85 @@
 
 				var isActive = 0;
 				if ($('#eventActive').is(':checked')) {isActive = 1};
+/*				
+				$http({
+					method: 'POST',
+					url: 'event_create.webem',
+					headers: {
+						'Content-Type': 'multipart/form-data'
+					},
+					data: {
+						name: encodeURIComponent(eventName),
+						interpreter: encodeURIComponent($("#interpreter").val()),
+						eventtype: encodeURIComponent($("#eventType").val()),
+						xml: encodeURIComponent(blockXml),
+						logicarray: encodeURIComponent(logicArray),
+						eventid: id,
+						eventstatus: isActive+editorTheme
+					},
+					transformRequest: function (data, headersGetter) {
+						var formData = new FormData();
+						angular.forEach(data, function (value, key) {
+							formData.append(key, value);
+						});
+						var headers = headersGetter();
+						delete headers['Content-Type'];
+						return formData;
+					}
+				})
+				.success(function (data) {
+					alert(data);
+					if (typeof data != 'undefined') {
+						if (data.status=="OK") {
+							generate_noty('information', '<b>Event saved:<br>'+eventName, 2000);
+						}
+						if (data.status=="ERR") {
+							generate_noty('warning', '<b>Error while saving:<br>'+eventName, 2000);
+						}
+						load_blocks();
+						var selIndex = 0;
+						$('#savedEvents option').each(function(){
+							if (this.text == eventName)
+								$("#savedEvents").prop("selectedIndex",selIndex);
+							selIndex++;
+						});
+						selIndex = 0;
+						$('#interpreter option').each(function(){
+							if (this.text == eventInterpreter)
+								$("#interpreter").prop("selectedIndex",selIndex);
+							selIndex++;
+						});
+					}
+				})
+				.error(function (data, status) {
+					bootbox.alert("Save aborted!")
+				});
+*/
+				var pdata="name="+encodeURIComponent(eventName)+"&interpreter="+encodeURIComponent($("#interpreter").val())+"&eventtype="+encodeURIComponent($("#eventType").val())+"&xml="+encodeURIComponent(blockXml)+"&logicarray="+encodeURIComponent(logicArray)+"&eventid="+id+"&eventstatus="+isActive+editorTheme;
+				$.post("event_create.webem", pdata, function(data) {
+					if (typeof data != 'undefined') {
+						if (data.status=="OK") {
+							generate_noty('information', '<b>Event saved:<br>'+eventName, 2000);
+						}
+						if (data.status=="ERR") {
+							generate_noty('warning', '<b>Error while saving:<br>'+eventName, 2000);
+						}
+						load_blocks();
+						var selIndex = 0;
+						$('#savedEvents option').each(function(){
+							if (this.text == eventName)
+								$("#savedEvents").prop("selectedIndex",selIndex);
+							selIndex++;
+						});
+						selIndex = 0;
+						$('#interpreter option').each(function(){
+							if (this.text == eventInterpreter)
+								$("#interpreter").prop("selectedIndex",selIndex);
+							selIndex++;
+						});
+					}
+				})				
+/*				
 				$.ajax({
 					url : "json.htm?type=events&param=create&name="+encodeURIComponent(eventName)+"&interpreter="+encodeURIComponent($("#interpreter").val())+"&eventtype="+encodeURIComponent($("#eventType").val())+"&xml="+encodeURIComponent(blockXml)+"&logicarray="+encodeURIComponent(logicArray)+"&eventid="+id+"&eventstatus="+isActive+editorTheme, 
 					async: false, 
@@ -747,6 +826,7 @@
 						}
 					}
 				});
+*/				
 			}
 			else {
 				bootbox.alert("Save aborted!")
