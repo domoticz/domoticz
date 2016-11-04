@@ -17,7 +17,6 @@
 #include "WebServer.h"
 #include "../webserver/cWebem.h"
 #include "../json/json.h"
-#include <boost/tokenizer.hpp>
 
 #ifdef WIN32
 #include "dirent_windows.h"
@@ -2079,10 +2078,9 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 void CEventSystem::ParseActionString( const std::string &oAction_, _tActionParseResults &oResults_ ) {
 	int iLastTokenType = 0;
 
-	typedef boost::tokenizer<boost::char_separator<char> > tTokenizer;
-	boost::char_separator<char> fSep(" ");
-	tTokenizer oTokenizer(oAction_, fSep);
-	for ( tTokenizer::iterator oIterator = oTokenizer.begin(); oIterator != oTokenizer.end(); ++oIterator ) {
+	std::vector<std::string> oSplitResults;
+	StringSplit( oAction_, " ", oSplitResults );
+	for( std::vector<std::string>::const_iterator oIterator = oSplitResults.begin(); oIterator != oSplitResults.end(); ++oIterator ) {
 
 		const char* sToken = (*oIterator).c_str();
 		if ( strcasecmp( sToken, "FOR" ) == 0 ) {
