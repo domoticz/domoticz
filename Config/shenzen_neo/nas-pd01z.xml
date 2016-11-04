@@ -51,7 +51,7 @@
     </Value>
     
      <Value type="list" genre="config" instance="1" index="10" label="LED Blink Enable" value="1" size="1">
-      <Help>This parameter defines the LED status. If this parameter is set to ‘1’, the LED blink will be enabled, the LED will blink once when motion sensor detect a movement. Otherwhise, the led will be turned off always.
+      <Help>This parameter defines the LED status. If this parameter is set to ‘1’, the LED blink will be enabled, the LED will blink once when motion sensor detect a movement. Otherwhise, the LED will be turned off always.
 	    </Help>
       <Item label="Disable" value="0" />
       <Item label="Enable" value="1" />
