@@ -25,7 +25,11 @@ easy-server --host=0.0.0.0 --serial=XXXX --access-key=XXXX --password=XXXX
 After this you should be able to connect to port 3000
 */
 
-//#define DEBUG_NefitEasyW
+#ifdef _DEBUG
+	//#define DEBUG_NefitEasyW
+	#define DEBUG_NefitEasyR
+#endif
+
 #ifdef DEBUG_NefitEasyW
 void SaveString2Disk(std::string str, std::string filename)
 {
@@ -461,7 +465,7 @@ bool CNefitEasy::GetStatusDetails()
 	if (!root2["DHW"].empty())
 	{
 		tmpstr = root2["DHW"].asString();
-		bool bIsOn = (tmpstr != "no");
+		bool bIsOn = (tmpstr != "off");
 		SendSwitch(2, 1, -1, bIsOn, 0, "Hot Water");
 	}
 
