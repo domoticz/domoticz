@@ -2080,42 +2080,32 @@ void CEventSystem::ParseActionString( const std::string &oAction_, _tActionParse
 	std::vector<std::string> oSplitResults;
 	StringSplit( oAction_, " ", oSplitResults );
 	for( std::vector<std::string>::const_iterator oIterator = oSplitResults.begin(); oIterator != oSplitResults.end(); ++oIterator ) {
-
-		const char* sToken = (*oIterator).c_str();
-		if ( strcmp( sToken, "FOR" ) == 0 ) {
+		std::string sToken = *oIterator;
+		if ( sToken == "FOR" ) {
 			iLastTokenType = 1;
-		} else if ( strcmp( sToken, "AFTER" ) == 0 ) {
+		} else if ( sToken == "AFTER" ) {
 			iLastTokenType = 2;
-		} else if ( strcmp( sToken, "RANDOM" ) == 0 ) {
+		} else if ( sToken == "RANDOM" ) {
 			iLastTokenType = 3;
-		} else if ( strcmp( sToken, "REPEAT" ) == 0 ) {
+		} else if ( sToken == "REPEAT" ) {
 			iLastTokenType = 4;
-		} else if ( strcmp( sToken, "INTERVAL" ) == 0 ) {
+		} else if ( sToken == "INTERVAL" ) {
 			iLastTokenType = 5;
-		} else if ( strcmp( sToken, "TURN" ) == 0 ) {
+		} else if ( sToken == "TURN" ) {
 			iLastTokenType = 0;
-		} else if (
-			strcmp( sToken, "SECOND" ) == 0
-			|| strcmp( sToken, "SECONDS" ) == 0
-		) {
+		} else if ( sToken.find( "SECOND" ) != std::string::npos ) {
 			switch( iLastTokenType ) {
 				case 1: oResults_.fForSec /= 60.; break;
 				case 3: oResults_.fRandomSec /= 60.; break;
 			}
 			iLastTokenType = 0;
-		} else if (
-			strcmp( sToken, "MINUTE" ) == 0
-			|| strcmp( sToken, "MINUTES" ) == 0
-		) {
+		} else if ( sToken.find( "MINUTE" ) != std::string::npos ) {
 			switch( iLastTokenType ) {
 				case 2: oResults_.fAfterSec *= 60.; break;
 				case 5: oResults_.fRepeatSec *= 60.; break;
 			}
 			iLastTokenType = 0;
-		} else if (
-			strcmp( sToken, "HOUR" ) == 0
-			|| strcmp( sToken, "HOURS" ) == 0
-		) {
+		} else if ( sToken.find( "HOUR" ) != std::string::npos ) {
 			switch( iLastTokenType ) {
 				case 1: oResults_.fForSec *= 60.; break;
 				case 2: oResults_.fAfterSec *= 3600.; break;
@@ -2132,19 +2122,19 @@ void CEventSystem::ParseActionString( const std::string &oAction_, _tActionParse
 					oResults_.sCommand.append( sToken );
 					break;
 				case 1:
-					oResults_.fForSec = 60. * atof( sToken );
+					oResults_.fForSec = 60. * atof( sToken.c_str() );
 					break;
 				case 2:
-					oResults_.fAfterSec = 1. * atof( sToken );
+					oResults_.fAfterSec = 1. * atof( sToken.c_str() );
 					break;
 				case 3:
-					oResults_.fRandomSec = 60. * atof( sToken );
+					oResults_.fRandomSec = 60. * atof( sToken.c_str() );
 					break;
 				case 4:
-					oResults_.iRepeat = atoi( sToken );
+					oResults_.iRepeat = atoi( sToken.c_str() );
 					break;
 				case 5:
-					oResults_.fRepeatSec = 1. * atof( sToken );
+					oResults_.fRepeatSec = 1. * atof( sToken.c_str() );
 					break;
 			}
 		}
@@ -3358,13 +3348,13 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 	struct _tActionParseResults oParseResults = { "", 0, 0, 0, 1, 0 };
 	ParseActionString( Action, oParseResults );
 
-	if ( strcmp( oParseResults.sCommand.substr( 0, 9 ).c_str(), "Set Level" ) == 0 ) {
+	if ( oParseResults.sCommand.substr( 0, 9 ) == "Set Level" ) {
 		level = calculateDimLevel( deviceID, atoi( oParseResults.sCommand.substr( 10 ).c_str() ) );
 		oParseResults.sCommand = oParseResults.sCommand.substr(0, 9);
-	} else if ( strcmp( oParseResults.sCommand.substr( 0, 10 ).c_str(), "Set Volume" ) == 0 ) {
+	} else if ( oParseResults.sCommand.substr( 0, 10 ) == "Set Volume" ) {
 		level = atoi( oParseResults.sCommand.substr( 11 ).c_str() );
 		oParseResults.sCommand = oParseResults.sCommand.substr(0, 10);
-	} else if ( strcmp( oParseResults.sCommand.substr( 0, 13 ).c_str(), "Play Playlist" ) == 0 ) {
+	} else if ( oParseResults.sCommand.substr( 0, 13 ) == "Play Playlist" ) {
 		std::string	sParams = oParseResults.sCommand.substr( 14 );
 
 		CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByType(HTYPE_Kodi);
@@ -3397,7 +3387,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 			level = iPlaylistID;
 		}
 		oParseResults.sCommand = oParseResults.sCommand.substr(0, 13);
-	} else if ( strcmp( oParseResults.sCommand.substr( 0, 14 ).c_str(), "Play Favorites" ) == 0 ) {
+	} else if ( oParseResults.sCommand.substr( 0, 14 ) == "Play Favorites" ) {
 		std::string	sParams = oParseResults.sCommand.substr( 15 );
 		CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByType(HTYPE_Kodi);
 		if (pBaseHardware != NULL)
@@ -3409,7 +3399,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 			}
 		}
 		oParseResults.sCommand = oParseResults.sCommand.substr(0, 14);
-	} else if ( strcmp( oParseResults.sCommand.substr( 0, 7 ).c_str(), "Execute" ) == 0 ) {
+	} else if ( oParseResults.sCommand.substr( 0, 7 ) == "Execute" ) {
 		std::string	sParams = oParseResults.sCommand.substr( 8 );
 		CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByType(HTYPE_Kodi);
 		if (pBaseHardware != NULL)
@@ -3419,9 +3409,9 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 		}
 	}
 
-	if ( strcmp( previousState.substr( 0, 9 ).c_str(), "Set Level" ) == 0 ) {
+	if ( previousState.substr( 0, 9 ) == "Set Level" ) {
 		previousState = previousState.substr(0, 9);
-	} else if ( strcmp( previousState.substr( 0, 10 ).c_str(), "Set Volume" ) == 0 ) {
+	} else if ( previousState.substr( 0, 10 ) == "Set Volume" ) {
 		previousState = previousState.substr(0, 10);
 	}
 
