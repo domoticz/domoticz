@@ -27,7 +27,7 @@ After this you should be able to connect to port 3000
 
 #ifdef _DEBUG
 	//#define DEBUG_NefitEasyW
-	#define DEBUG_NefitEasyR
+	//#define DEBUG_NefitEasyR
 #endif
 
 #ifdef DEBUG_NefitEasyW
