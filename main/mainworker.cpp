@@ -107,6 +107,7 @@
 #include "../hardware/ZiBlueSerial.h"
 #include "../hardware/ZiBlueTCP.h"
 #include "../hardware/Yeelight.h"
+#include "../hardware/Seahu.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -934,6 +935,11 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_Yeelight:
 		pHardware = new Yeelight(ID);
 		break;
+#ifndef WIN32
+	case HTYPE_Seahu:
+		pHardware = new CSeahu(ID);
+		break;
+#endif
 	}
 
 	if (pHardware)

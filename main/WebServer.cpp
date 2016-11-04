@@ -33,6 +33,7 @@
 #endif // WITH_GPIO
 #ifdef WITH_TELLDUSCORE
 #include "../hardware/Tellstick.h"
+#include "../hardware/Seahu.h"
 #endif
 #include "../webserver/Base64.h"
 #include "../smtpclient/SMTPClient.h"
@@ -1110,6 +1111,9 @@ namespace http {
 			else if (htype == HTYPE_Yeelight) {
 				//all fine here!
 			}
+			else if (htype == HTYPE_Seahu) {
+				//All fine here
+			}
 			else if (
 				(htype == HTYPE_Wunderground) ||
 				(htype == HTYPE_DarkSky) ||
@@ -1392,6 +1396,9 @@ namespace http {
 			}
 			else if (htype == HTYPE_Yeelight) {
 				//All fine here
+			}
+			else if (htype == HTYPE_Seahu) {
+				//all fine here!
 			}
 			else if (
 				(htype == HTYPE_Wunderground) ||

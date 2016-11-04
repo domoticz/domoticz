@@ -171,6 +171,7 @@ enum _eHardwareTypes {
 	HTYPE_ZIBLUEUSB,			//89
 	HTYPE_ZIBLUETCP,			//90
 	HTYPE_Yeelight,				//91
+	HTYPE_Seahu,				//92
 	HTYPE_END
 };
 
