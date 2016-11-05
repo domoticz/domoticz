@@ -81,13 +81,13 @@ define(['app'], function (app) {
 				(text.indexOf("Motherboard") >= 0) ||
 				(text.indexOf("Kodi") >= 0) ||
 				(text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0) ||
-                (text.indexOf("Yeelight") >= 0)
+                (text.indexOf("YeeLight") >= 0)
 				)
             {
-		// if hardwaretype == 1000 => I2C sensors grouping
-		if (hardwaretype == 1000) {
-                    hardwaretype = $("#hardwareparamsi2clocal #comboi2clocal").find('option:selected').val();
-		}
+				// if hardwaretype == 1000 => I2C sensors grouping
+				if (hardwaretype == 1000) {
+							hardwaretype = $("#hardwareparamsi2clocal #comboi2clocal").find('option:selected').val();
+				}
 
                 $.ajax({
                      url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
@@ -894,7 +894,7 @@ define(['app'], function (app) {
 				(text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0) ||
 				(text.indexOf("Tellstick") >= 0) ||
 				(text.indexOf("Motherboard") >= 0) ||
-                (text.indexOf("Yeelight") >= 0)
+                (text.indexOf("YeeLight") >= 0)
 				)
             {
                 $.ajax({
