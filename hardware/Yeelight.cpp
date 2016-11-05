@@ -19,8 +19,8 @@ Domoticz and the lights need to be in the same network/subnet
 */
 
 #ifdef _DEBUG
-	//#define DEBUG_YeeLightR
-	//#define DEBUG_YeeLightW
+//#define DEBUG_YeeLightR
+//#define DEBUG_YeeLightW
 #endif
 
 #ifdef DEBUG_YeeLightW
@@ -100,7 +100,7 @@ void Yeelight::Do_Work()
 
 	boost::asio::io_service io_service;
 	udp_server server(io_service, m_HwdID);
-	int sec_counter = Limitless_POLL_INTERVAL-5;
+	int sec_counter = Limitless_POLL_INTERVAL - 5;
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
@@ -194,6 +194,7 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 	_tLimitlessLights *pLed = (_tLimitlessLights*)pdata;
 	uint8_t command = pLed->command;
 	std::vector<std::vector<std::string> > result;
+	bool sendOnFirst = false;
 	unsigned long lID;
 	char szTmp[50];
 
@@ -229,7 +230,7 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 		_log.Log(LOG_ERROR, "YeeLight: Exception: %s", e.what());
 	}
 
-	std::string message = "{\"id\":1,\"method\":\"toggle\",\"params\":[]}\r\n";
+	std::string message = "";
 
 	char request[1024];
 	size_t request_length;
@@ -242,53 +243,96 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 	case Limitless_LedOff:
 		message = "{\"id\":1,\"method\":\"set_power\",\"params\":[\"off\", \"smooth\", 500]}\r\n";
 		break;
+	case Limitless_LedNight:
+		message = "{\"id\":1,\"method\":\"set_bright\",\"params\":[1, \"smooth\", 500]}\r\n";
+		break;
+	case Limitless_LedFull:
+		message = "{\"id\":1,\"method\":\"set_bright\",\"params\":[100, \"smooth\", 500]}\r\n";
+		break;
+	case Limitless_BrightnessUp:
+		message = "{\"id\":1,\"method\":\"set_adjust\",\"params\":[\"increase\", \"bright\"]}\r\n";
+		break;
+	case Limitless_BrightnessDown:
+		message = "{\"id\":1,\"method\":\"set_adjust\",\"params\":[\"decrease\", \"bright\"]}\r\n";
+		break;
+	case Limitless_ColorTempUp:
+		message = "{\"id\":1,\"method\":\"set_adjust\",\"params\":[\"increase\", \"ct\"]}\r\n";
+		break;
+	case Limitless_ColorTempDown:
+		message = "{\"id\":1,\"method\":\"set_adjust\",\"params\":[\"decrease\", \"ct\"]}\r\n";
+		break;
 	case Limitless_SetColorToWhite:
-		message = "{\"id\":1,\"method\":\"set_power\",\"params\":[\"on\", \"smooth\", 500]}\r\n";
-		strcpy(request, message.c_str());
-		request_length = strlen(request);
-		boost::asio::write(sendSocket, boost::asio::buffer(request, request_length));
-		sleep_milliseconds(200);
+		sendOnFirst = true;
 		message = "{\"id\":1,\"method\":\"set_rgb\",\"params\":[16777215, \"smooth\", 500]}\r\n";
 		break;
 	case Limitless_SetBrightnessLevel:
-		{
-			message = "{\"id\":1,\"method\":\"set_power\",\"params\":[\"on\", \"smooth\", 500]}\r\n";
-			strcpy(request, message.c_str());
-			request_length = strlen(request);
-			boost::asio::write(sendSocket, boost::asio::buffer(request, request_length));
-			sleep_milliseconds(200);
-			std::stringstream ss;
-			ss << "{\"id\":1,\"method\":\"set_bright\",\"params\":[" << int(pLed->value) << ", \"smooth\", 500]}\r\n";
-			message = ss.str();
-		}
-		break;
+	{
+		sendOnFirst = true;
+		std::stringstream ss;
+		ss << "{\"id\":1,\"method\":\"set_bright\",\"params\":[" << int(pLed->value) << ", \"smooth\", 500]}\r\n";
+		message = ss.str();
+	}
+	break;
 	case Limitless_SetRGBColour:
-		{
-			message = "{\"id\":1,\"method\":\"set_power\",\"params\":[\"on\", \"smooth\", 500]}\r\n";
-			strcpy(request, message.c_str());
-			request_length = strlen(request);
-			boost::asio::write(sendSocket, boost::asio::buffer(request, request_length));
-			sleep_milliseconds(200);
-			float cHue = (359.0f / 255.0f)*float(pLed->value);//hue given was in range of 0-255
-			//message = "{\"id\":1,\"method\":\"set_hsv\",\"params\":[" + std::to_string(cHue) + ", 100, \"smooth\", 2000]}\r\n";
-			std::stringstream ss;
-			ss << "{\"id\":1,\"method\":\"set_hsv\",\"params\":[" << cHue << ", 100, \"smooth\", 2000]}\r\n";
-			message = ss.str();
-		}
+	{
+		sendOnFirst = true;
+		float cHue = (359.0f / 255.0f)*float(pLed->value);//hue given was in range of 0-255
+		std::stringstream ss;
+		ss << "{\"id\":1,\"method\":\"set_hsv\",\"params\":[" << cHue << ", 100, \"smooth\", 2000]}\r\n";
+		message = ss.str();
+	}
+	break;
+	case Limitless_SetBrightUp:
+		message = "{\"id\":1,\"method\":\"set_adjust\",\"params\":[\"increase\", \"bright\"]}\r\n";
+		break;
+	case Limitless_SetBrightDown:
+		message = "{\"id\":1,\"method\":\"set_adjust\",\"params\":[\"decrease\", \"bright\"]}\r\n";
+		break;
+	//case Limitless_WarmWhiteIncrease:
+		//message = "{\"id\":1,\"method\":\"set_adjust\",\"params\":[\"increase\", \"bright\"]}\r\n";
+		//break;
+	//case Limitless_CoolWhiteIncrease:
+		//message = "{\"id\":1,\"method\":\"set_adjust\",\"params\":[\"decrease\", \"bright\"]}\r\n";
+		//break;
+	case Limitless_NightMode:
+		message = "{\"id\":1,\"method\":\"set_bright\",\"params\":[1, \"smooth\", 500]}\r\n";
+		break;
+	case Limitless_FullBrightness: {
+		sendOnFirst = true;
+		int value = pLed->value;
+		std::stringstream ss;
+		ss << "{\"id\":1,\"method\":\"set_bright\",\"params\":[100, \"smooth\", 500]}\r\n";
+		message = ss.str();
+	}
+	case Limitless_DiscoMode: {
+		sendOnFirst = true;
+		// simulate strobe effect - at time of writing, minimum timing allowed by Yeelight is 50ms
+		// placeholder waiting on a proper disco light sequence
+		message = "{\"id\":1,\"method\":\"start_cf\",\"params\":[ 50, 0, \"";
+		message += "50, 2, 5000, 100, ";
+		message += "50, 2, 5000, 1\"]}\r\n";
+	}
 		break;
 	default:
 		_log.Log(LOG_STATUS, "YeeLight: Unhandled WriteToHardware command: %d", command);
 		break;
 	}
+	_log.Log(LOG_STATUS, "YeeLight: Sending command: %s", message.c_str());
+	if (sendOnFirst) {
+		std::string onmessage = "{\"id\":1,\"method\":\"set_power\",\"params\":[\"on\", \"smooth\", 500]}\r\n";
+		strcpy(request, onmessage.c_str());
+		request_length = strlen(request);
+		boost::asio::write(sendSocket, boost::asio::buffer(request, request_length));
+		sleep_milliseconds(100);
+	}
 
-
-	strcpy(request, message.c_str());
-	request_length = strlen(request);
-	boost::asio::write(sendSocket, boost::asio::buffer(request, request_length));
-
-	//_log.Log(LOG_STATUS, "message is sent..................");
-	sleep_milliseconds(200);
-
+	if (message != "") {
+		strcpy(request, message.c_str());
+		request_length = strlen(request);
+		boost::asio::write(sendSocket, boost::asio::buffer(request, request_length));
+		//_log.Log(LOG_STATUS, "message is sent..................");
+		sleep_milliseconds(100);
+	}
 	return true;
 }
 
@@ -428,7 +472,7 @@ namespace http {
 			int HwdID = atoi(idx.c_str());
 
 			Yeelight yeelight(HwdID);
-			yeelight.InsertUpdateSwitch("123", sname, (stype=="0")? sTypeLimitlessWhite:sTypeLimitlessRGBW, sipaddress, false, "0", "0");
+			yeelight.InsertUpdateSwitch("123", sname, (stype == "0") ? sTypeLimitlessWhite : sTypeLimitlessRGBW, sipaddress, false, "0", "0");
 		}
 	}
 }
