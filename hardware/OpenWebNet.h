@@ -42,6 +42,11 @@ public:
 		AUTOMATION_WHAT_DOWN = 2
 	};
 
+	enum _eLightWhat {
+		LIGHT_WHAT_OFF = 0,
+		LIGHT_WHAT_ON = 1
+	};
+
 	bool isStatusSocketConnected();
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 
