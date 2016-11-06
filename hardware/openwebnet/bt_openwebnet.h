@@ -21,7 +21,7 @@ class bt_openwebnet {
 
 private:
 
-  // costanti varie
+  // various constants
   const static int MAX_LENGTH_OPEN  = 1024;
   const static int ERROR_FRAME      = 1;
   const static int NULL_FRAME       = 2;
@@ -34,36 +34,36 @@ private:
   const static int PWD_FRAME        = 9;
 
 
-  // assign who what where and when for normal frame
-  void Assegna_chi_cosa_dove_quando();
-  // assign who where and dimension for dimension frame request
-  void Assegna_chi_dove_grandezza();
+  // assign who, what, where and when for normal frame
+  void Set_who_what_where_when();
+  // assign who, where, and dimension for dimension frame request
+  void Set_who_where_dimension();
   // assign who and where for request state frame
-  void Assegna_chi_dove();
-  // assign who where dimension and value for write dimension frame
-  void Assegna_chi_dove_grandezza_valori();
+  void Set_who_where();
+  // assign who, where, dimension and value for write dimension frame
+  void Set_who_where_dimension_value();
   // assign who for frame result of elaborate password
-  void Assegna_chi();
+  void Set_who();
   // assign level, interface for extended frame
-  void Assegna_livello_interfaccia();
+  void Set_level_interface();
   // assign address
-  void Assegna_indirizzo();
+  void Set_address();
   // check frame syntax
   void IsCorrect();
 
-  string EliminoCaratteriControllo(string in_frame);
+  string DeleteControlCharacters(string in_frame);
   string FirstToken(string text, string delimiter);
 
   // contents of normal frame
-  string chi;
-  vector<string> indirizzo;
-  string cosa;
-  string dove;
-  string livello;
-  string interfaccia;
-  string quando;
-  string grandezza;
-  vector<string> valori;
+  string who;
+  vector<string> address;
+  string what;
+  string where;
+  string level;
+  string sInterface;
+  string when;
+  string dimension;
+  vector<string> value;
 
   // frame length
   int length_frame_open;
