@@ -36,6 +36,8 @@ License: Public domain
 #define OPENWEBNET_LIGHT "LIGHT"
 #define OPENWEBNET_TEMPERATURE "TEMPERATURE"
 
+#define OPENWEBNET_DEVICE_ID "00000000"
+
 /**
     Create new hardware OpenWebNet instance
 **/
@@ -197,14 +199,134 @@ void COpenWebNet::MonitorFrames()
 					if (iter->IsNormalFrame()) {
 						AddDeviceIfNotExits(iter->Extract_who(), iter->Extract_where());
 					}
+                    UpdateDeviceValue(iter->Extract_who(), iter->Extract_where(), iter->Extract_what());
 					_log.Log(LOG_STATUS, "COpenWebNet: received=%s", frameToString(*iter).c_str());
 				}
-
 			}
 		}
 	}
 	_log.Log(LOG_STATUS, "COpenWebNet: TCP/IP monitor worker stopped...");
 }
+
+void COpenWebNet::UpdateBlinds(const int ptype, const int subtype, const int SubUnit, const int bOn, const int BatLevel)
+{
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT Name,nValue,sValue,ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, OPENWEBNET_DEVICE_ID, SubUnit, int(ptype), int(subtype));
+	if (!result.empty())
+	{
+        //check if we have a change, if not do not update it
+        int nvalue = atoi(result[0][1].c_str());
+        if (subtype == sSwitchBlindsT1)
+        {
+            if (bOn == nvalue) return;
+
+            //Send as Lighting 2
+            tRBUF lcmd;
+            memset(&lcmd, 0, sizeof(RBUF));
+            lcmd.LIGHTING2.packetlength = sizeof(lcmd.LIGHTING2) - 1;
+            lcmd.LIGHTING2.packettype = ptype;
+            lcmd.LIGHTING2.subtype = subtype;
+            lcmd.LIGHTING2.id1 = 0;
+            lcmd.LIGHTING2.id2 = 0;
+            lcmd.LIGHTING2.id3 = 0;
+            lcmd.LIGHTING2.id4 = 0;
+            lcmd.LIGHTING2.unitcode = SubUnit;
+            lcmd.LIGHTING2.cmnd = bOn;
+            lcmd.LIGHTING2.level = 0;
+            lcmd.LIGHTING2.filler = 0;
+            lcmd.LIGHTING2.rssi = 12;
+            sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, result[0][0].c_str(), BatLevel);
+        }
+	}
+}
+
+void COpenWebNet::UpdateSwitch(const int ptype, const int subtype, const int SubUnit, const int bOn, const double Level, const int BatLevel)
+{
+    double rlevel = (15.0 / 100)*Level;
+	int level = int(rlevel);
+
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT Name,nValue,sValue,ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, OPENWEBNET_DEVICE_ID, SubUnit, int(ptype), int(subtype));
+	if (!result.empty())
+	{
+        //check if we have a change, if not do not update it
+        int nvalue = atoi(result[0][1].c_str());
+        if (subtype == sSwitchLightT1)
+        {
+            if (bOn == nvalue) return;
+
+             //Send as Lighting 2
+            tRBUF lcmd;
+            memset(&lcmd, 0, sizeof(RBUF));
+            lcmd.LIGHTING2.packetlength = sizeof(lcmd.LIGHTING2) - 1;
+            lcmd.LIGHTING2.packettype = ptype;
+            lcmd.LIGHTING2.subtype = subtype;
+            lcmd.LIGHTING2.id1 = 0;
+            lcmd.LIGHTING2.id2 = 0;
+            lcmd.LIGHTING2.id3 = 0;
+            lcmd.LIGHTING2.id4 = 0;
+            lcmd.LIGHTING2.unitcode = SubUnit;
+            lcmd.LIGHTING2.cmnd = bOn;
+            lcmd.LIGHTING2.level = level;
+            lcmd.LIGHTING2.filler = 0;
+            lcmd.LIGHTING2.rssi = 12;
+            sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, result[0][0].c_str(), BatLevel);
+        }
+	}
+}
+
+void COpenWebNet::UpdateDeviceValue(string who, string where, string what)
+{
+    switch (atoi(who.c_str())) {
+        case WHO_LIGHTING:                              // 1
+            UpdateSwitch(pTypeGeneralSwitch, sSwitchLightT1, atoi(where.c_str()), atoi(what.c_str()) ? gswitch_sOn : gswitch_sOff, 100., 100);
+            break;
+        case WHO_AUTOMATION:
+            int value;
+            switch(atoi(what.c_str()))
+            {
+            case AUTOMATION_WHAT_STOP:  // 0
+                value = gswitch_sStop;
+                break;
+            case AUTOMATION_WHAT_UP:    // 1
+                value = gswitch_sOff;
+                break;
+            case AUTOMATION_WHAT_DOWN:  // 2
+                value = gswitch_sOn;
+                break;
+            default:
+                return;
+            }
+            UpdateBlinds(pTypeGeneralSwitch, sSwitchBlindsT1, atoi(where.c_str()), value, 100);                       // 2
+            break;
+        case WHO_SCENARIO:                              // 0
+        case WHO_LOAD_CONTROL:                          // 3
+        case WHO_TEMPERATURE_CONTROL:                   // 4
+        case WHO_BURGLAR_ALARM:                         // 5
+        case WHO_DOOR_ENTRY_SYSTEM:                     // 6
+        case WHO_MULTIMEDIA:                            // 7
+        case WHO_AUXILIARY:                             // 9
+        case WHO_GATEWAY_INTERFACES_MANAGEMENT:         // 13
+        case WHO_LIGHT_SHUTTER_ACTUATOR_LOCK:           // 14
+        case WHO_SCENARIO_SCHEDULER_SWITCH:             // 15
+        case WHO_AUDIO:                                 // 16
+        case WHO_SCENARIO_PROGRAMMING:                  // 17
+        case WHO_ENERGY_MANAGEMENT:                     // 18
+        case WHO_LIHGTING_MANAGEMENT:                   // 24
+        case WHO_SCENARIO_SCHEDULER_BUTTONS:            // 25
+        case WHO_DIAGNOSTIC:                            // 1000
+        case WHO_AUTOMATIC_DIAGNOSTIC:                  // 1001
+        case WHO_THERMOREGULATION_DIAGNOSTIC_FAILURES:  // 1004
+        case WHO_DEVICE_DIAGNOSTIC:                     // 1013
+            _log.Log(LOG_ERROR, "COpenWebNet: Who=%s not yet supported!");
+            return;
+    default:
+            _log.Log(LOG_ERROR, "COpenWebNet: ERROR Who=%s not exist!");
+        return;
+    }
+
+}
+
 
 /**
    Convert domoticz command in a OpenWebNet command, then send it to device
@@ -230,7 +352,7 @@ bool COpenWebNet:: WriteToHardware(const char *pdata, const unsigned char length
                 case sSwitchBlindsT1:
                     //Blinds/Window command
                     who = WHO_AUTOMATION;
-                                where = (int)pCmd->unitcode;
+                    where = (int)pCmd->unitcode;
 
                     if (pCmd->cmnd == gswitch_sOff)
                     {
@@ -407,73 +529,72 @@ bool COpenWebNet::AddDeviceIfNotExits(string who, string where)
 		return false; //We do not allow new devices
 	}
 
-    int devType = -1;
-    int subType = -1;
-    int switchType = -1;
-    string devname;
-
-    switch (atoi(who.c_str())) {
-        case WHO_LIGHTING:                              // 1
-            devType = pTypeGeneralSwitch;
-            subType = sSwitchLightT1;
-            switchType = STYPE_OnOff;
-            devname = OPENWEBNET_LIGHT;
-            devname += " " + where;
-            break;
-        case WHO_AUTOMATION:                            // 2
-            devType = pTypeGeneralSwitch;
-            subType = sSwitchBlindsT1;
-            switchType = STYPE_Blinds;
-            devname = OPENWEBNET_AUTOMATION;
-            devname += " " + where;
-            break;
-
-        case WHO_SCENARIO:                              // 0
-        case WHO_LOAD_CONTROL:                          // 3
-        case WHO_TEMPERATURE_CONTROL:                   // 4
-        case WHO_BURGLAR_ALARM:                         // 5
-        case WHO_DOOR_ENTRY_SYSTEM:                     // 6
-        case WHO_MULTIMEDIA:                            // 7
-        case WHO_AUXILIARY:                             // 9
-        case WHO_GATEWAY_INTERFACES_MANAGEMENT:         // 13
-        case WHO_LIGHT_SHUTTER_ACTUATOR_LOCK:           // 14
-        case WHO_SCENARIO_SCHEDULER_SWITCH:             // 15
-        case WHO_AUDIO:                                 // 16
-        case WHO_SCENARIO_PROGRAMMING:                  // 17
-        case WHO_ENERGY_MANAGEMENT:                     // 18
-        case WHO_LIHGTING_MANAGEMENT:                   // 24
-        case WHO_SCENARIO_SCHEDULER_BUTTONS:            // 25
-        case WHO_DIAGNOSTIC:                            // 1000
-        case WHO_AUTOMATIC_DIAGNOSTIC:                  // 1001
-        case WHO_THERMOREGULATION_DIAGNOSTIC_FAILURES:  // 1004
-        case WHO_DEVICE_DIAGNOSTIC:                     // 1013
-            _log.Log(LOG_ERROR, "COpenWebNet: Who=%s not yet supported!");
-            return false;
-    default:
-            _log.Log(LOG_ERROR, "COpenWebNet: ERROR Who=%s not exist!");
-        return false;
-    }
-
-
-	if (!FindDevice(atoi(who.c_str()), atoi(where.c_str()), NULL))
+    if (!FindDevice(atoi(who.c_str()), atoi(where.c_str()), NULL))
 	{
+        int devType = -1;
+        int subType = -1;
+        int switchType = -1;
+        string devname;
+
+        switch (atoi(who.c_str())) {
+            case WHO_LIGHTING:                              // 1
+                devType = pTypeGeneralSwitch;
+                subType = sSwitchLightT1;
+                switchType = STYPE_OnOff;
+                devname = OPENWEBNET_LIGHT;
+                devname += " " + where;
+                break;
+            case WHO_AUTOMATION:                            // 2
+                devType = pTypeGeneralSwitch;
+                subType = sSwitchBlindsT1;
+                switchType = STYPE_Blinds;
+                devname = OPENWEBNET_AUTOMATION;
+                devname += " " + where;
+                break;
+
+            case WHO_SCENARIO:                              // 0
+            case WHO_LOAD_CONTROL:                          // 3
+            case WHO_TEMPERATURE_CONTROL:                   // 4
+            case WHO_BURGLAR_ALARM:                         // 5
+            case WHO_DOOR_ENTRY_SYSTEM:                     // 6
+            case WHO_MULTIMEDIA:                            // 7
+            case WHO_AUXILIARY:                             // 9
+            case WHO_GATEWAY_INTERFACES_MANAGEMENT:         // 13
+            case WHO_LIGHT_SHUTTER_ACTUATOR_LOCK:           // 14
+            case WHO_SCENARIO_SCHEDULER_SWITCH:             // 15
+            case WHO_AUDIO:                                 // 16
+            case WHO_SCENARIO_PROGRAMMING:                  // 17
+            case WHO_ENERGY_MANAGEMENT:                     // 18
+            case WHO_LIHGTING_MANAGEMENT:                   // 24
+            case WHO_SCENARIO_SCHEDULER_BUTTONS:            // 25
+            case WHO_DIAGNOSTIC:                            // 1000
+            case WHO_AUTOMATIC_DIAGNOSTIC:                  // 1001
+            case WHO_THERMOREGULATION_DIAGNOSTIC_FAILURES:  // 1004
+            case WHO_DEVICE_DIAGNOSTIC:                     // 1013
+                _log.Log(LOG_ERROR, "COpenWebNet: Who=%s not yet supported!");
+                return false;
+        default:
+                _log.Log(LOG_ERROR, "COpenWebNet: ERROR Who=%s not exist!");
+            return false;
+        }
+
 		//Insert
 		m_sql.safe_query(
 			"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Name, Used) "
-			"VALUES (%d,'OpenWebNet',%q,%d,%d,%d,'%q',0)",
-			m_HwdID, where.c_str(), devType, subType, switchType, devname.c_str());
+			"VALUES (%d,'%q','%q',%d,%d,%d,'%q',0)",
+			m_HwdID, OPENWEBNET_DEVICE_ID, where.c_str(), devType, subType, switchType, devname.c_str());
 
 		//Get new ID
 		vector<vector<string> > result = m_sql.safe_query(
 			"SELECT ID FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit='%q' AND Type=%d AND SubType=%d)",
-			m_HwdID, "OpenWebNet", where.c_str(), devType, subType);
+			m_HwdID, OPENWEBNET_DEVICE_ID, where.c_str(), devType, subType);
 		if (result.size() == 0)
 		{
 			_log.Log(LOG_ERROR, "Serious database error, problem getting ID from DeviceStatus!");
 			return false;
 		}
-		std::stringstream s_str(result[0][0]);
 
+		std::stringstream s_str(result[0][0]);
 		m_sql.m_LastSwitchID = "OpenWebNet";
 		s_str >> m_sql.m_LastSwitchRowID;
 
@@ -482,24 +603,10 @@ bool COpenWebNet::AddDeviceIfNotExits(string who, string where)
 
 		return true;
 	}
-	else
-    {
-        // Update
-        std::vector<std::vector<std::string> > result;
-        result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, "OpenWebNet", where.c_str(), devType, subType);
-        if (result.size() < 1)
-            return false; //not found!
-        time_t now = time(0);
-        struct tm ltime;
-        localtime_r(&now, &ltime);
-        char szLastUpdate[40];
-        sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
-        m_sql.safe_query("UPDATE DeviceStatus SET LastUpdate='%q' WHERE (ID = '%q')", szLastUpdate, result[0][0].c_str());
 
-
-    }
 	return false;
 }
+
 
 /**
    Find OpenWebNetDevice in DB
@@ -539,7 +646,7 @@ bool COpenWebNet::FindDevice(int who, int where, int* used)
 		case WHO_THERMOREGULATION_DIAGNOSTIC_FAILURES:  // 1004
 		case WHO_DEVICE_DIAGNOSTIC:                     // 1013
 	default:
-			return "";
+			return false;
 	}
 
 	if (used != NULL) {

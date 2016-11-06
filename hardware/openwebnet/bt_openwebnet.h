@@ -60,7 +60,7 @@ private:
   string what;
   string where;
   string level;
-  string interface;
+  string sInterface;
   string when;
   string dimension;
   vector<string> value;

@@ -365,8 +365,8 @@ void bt_openwebnet::Set_level_interface()
     if(sup.find('#') != string::npos)
     {
       level = FirstToken(sup, "#");
-      interface = orig.substr(where.length()+1+level.length()+1);
-      if(interface.length() == 0)
+      sInterface = orig.substr(where.length()+1+level.length()+1);
+      if(sInterface.length() == 0)
         frame_type = ERROR_FRAME;
     }
     else
@@ -561,7 +561,7 @@ void bt_openwebnet::CreateNullMsgOpen()
   what = "";
   where = "";
   level = "";
-  interface = "";
+  sInterface = "";
   when = "";
   dimension = "";
   value.clear();
@@ -792,7 +792,7 @@ bool bt_openwebnet::IsEqual(bt_openwebnet msg_to_compare)
         (msg_to_compare.Extract_what().compare(what) == 0) &&
         (msg_to_compare.Extract_where().compare(where) == 0) &&
         (msg_to_compare.Extract_level().compare(level) == 0) &&
-        (msg_to_compare.Extract_interface().compare(interface) == 0) &&
+        (msg_to_compare.Extract_interface().compare(sInterface) == 0) &&
         (msg_to_compare.Extract_when().compare(when) == 0) &&
         (msg_to_compare.Extract_dimension().compare(dimension) == 0))
       return true;
@@ -807,7 +807,7 @@ string bt_openwebnet::Extract_address(unsigned int i) { if (i >= 0 && i < addres
 string bt_openwebnet::Extract_what(){return what;}
 string bt_openwebnet::Extract_where(){return where;}
 string bt_openwebnet::Extract_level(){return level;}
-string bt_openwebnet::Extract_interface(){return interface;}
+string bt_openwebnet::Extract_interface(){return sInterface;}
 string bt_openwebnet::Extract_when(){return when;}
 string bt_openwebnet::Extract_dimension(){return dimension;}
 string bt_openwebnet::Extract_value(unsigned int i){ if (i >= 0 && i < value.size()) return value.at(i); return "";
