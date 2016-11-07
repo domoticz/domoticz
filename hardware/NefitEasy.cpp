@@ -396,7 +396,7 @@ bool CNefitEasy::GetStatusDetails()
 	CTD -> 'current time/date' string
 	CTR -> 'control' string (room)
 	DAS -> '?' on/off
-	DHW -> '?Domestic Hot Water' on/off
+	DHW -> 'Domestic Hot Water' on/off
 	ESI -> 'powersave active' on/off
 	FPA -> 'fireplace mode active, continue heating even when maximum setpoint temperature reached' string
 	HED_DB -> '?'
