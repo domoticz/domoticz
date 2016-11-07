@@ -1707,7 +1707,7 @@ unsigned long long MainWorker::PerformRealActionFromDomoticzClient(const unsigne
 		const _tThermostat *pMeter = reinterpret_cast<const _tThermostat*>(pResponse);
 		sprintf(szTmp, "%X%02X%02X%02X", pMeter->id1, pMeter->id2, pMeter->id3, pMeter->id4);
 		ID = szTmp;
-		Unit = 0;
+		Unit = pMeter->dunit;
 	}
 	else if (devType == pTypeThermostat2)
 	{
@@ -11913,7 +11913,7 @@ void MainWorker::CheckSceneCode(const unsigned long long DevRowIdx, const unsign
 					GetLightStatus(dType, dSubType, STYPE_OnOff, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 					std::string switchcmd = (IsLightSwitchOn(lstatus) == true) ? "On" : "Off";
 
-					m_sql.AddTaskItem(_tTaskItem::SwitchSceneEvent(1, ID, switchcmd, "SceneTrigger"));
+					m_sql.AddTaskItem(_tTaskItem::SwitchSceneEvent(0.3f, ID, switchcmd, "SceneTrigger"));
 				}
 			}
 		}

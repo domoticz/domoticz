@@ -92,12 +92,12 @@ private:
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;
 	int m_SecStatus;
-
+	bool m_IsDevicesLoaded;
 
 	//our thread
 	void Do_Work();
 	void ProcessMinute();
-	void GetCurrentMeasurementStates();
+	void GetCurrentMeasurementStates(const unsigned long long DeviceID);
 	void GetCurrentUserVariables();
 	void GetCurrentScenesGroups();
 	std::string UpdateSingleState(const unsigned long long ulDevID, const std::string &devname, const int nValue, const char* sValue, const unsigned char devType, const unsigned char subType, const _eSwitchType switchType, const std::string &lastUpdate, const unsigned char lastLevel, const std::map<std::string, std::string> & options);
@@ -124,7 +124,7 @@ private:
 	bool ScheduleEvent(int deviceID, std::string Action, bool isScene, const std::string &eventName, int sceneType);
 	bool ScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName);
 	void UpdateDevice(const std::string &DevParams);
-	lua_State *CreateBlocklyLuaState();
+	lua_State *CreateBlocklyLuaState(const unsigned long long DeviceID);
 
 	std::string ParseBlocklyString(const std::string &oString);
 

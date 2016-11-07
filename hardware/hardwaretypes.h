@@ -160,6 +160,7 @@
 #define sSwitchTypeSteffen			0x61
 #define sSwitchTypeAlectoSA			0x62
 #define sSwitchTypeGPIOset			0x63
+#define sSwitchLightT1				0x64
 
 //Switch commands
 #define gswitch_sOff				0x00
