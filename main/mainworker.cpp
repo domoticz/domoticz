@@ -1707,7 +1707,7 @@ unsigned long long MainWorker::PerformRealActionFromDomoticzClient(const unsigne
 		const _tThermostat *pMeter = reinterpret_cast<const _tThermostat*>(pResponse);
 		sprintf(szTmp, "%X%02X%02X%02X", pMeter->id1, pMeter->id2, pMeter->id3, pMeter->id4);
 		ID = szTmp;
-		Unit = 0;
+		Unit = pMeter->dunit;
 	}
 	else if (devType == pTypeThermostat2)
 	{
