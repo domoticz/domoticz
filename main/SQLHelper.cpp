@@ -3937,6 +3937,7 @@ void CSQLHelper::UpdateTemperatureLog()
 			if (dType != pTypeRadiator1)
 			{
 				//do not include sensors that have no reading within an hour (except for devices that do not provide feedback, like the smartware radiator)
+//GB3
 				std::string sLastUpdate = sd[5];
 				struct tm ntime;
 				time_t checktime;
@@ -4640,8 +4641,6 @@ void CSQLHelper::UpdateMultiMeter()
 			ntime.tm_sec=atoi(sLastUpdate.substr(17,2).c_str());
 			checktime=mktime(&ntime);
 */
-			ParseSQLdatetime(checktime, ntime, sLastUpdate, tm1.tm_isdst);
-
 //GB3: Unsafe to assume time_t format is seconds
 //			if (now-checktime>=SensorTimeOut*60)
 			if (difftime(now,checktime) >= SensorTimeOut * 60)
@@ -4773,8 +4772,6 @@ void CSQLHelper::UpdatePercentageLog()
 			ntime.tm_sec=atoi(sLastUpdate.substr(17,2).c_str());
 			checktime=mktime(&ntime);
 */
-			ParseSQLdatetime(checktime, ntime, sLastUpdate, tm1.tm_isdst);
-
 //GB3: Unsafe to assume time_t format is seconds
 //			if (now-checktime>=SensorTimeOut*60)
 			if (difftime(now,checktime) >= SensorTimeOut * 60)
@@ -4843,8 +4840,6 @@ void CSQLHelper::UpdateFanLog()
 			ntime.tm_sec=atoi(sLastUpdate.substr(17,2).c_str());
 			checktime=mktime(&ntime);
 */
-			ParseSQLdatetime(checktime, ntime, sLastUpdate, tm1.tm_isdst);
-
 //GB3: Unsafe to assume time_t format is seconds
 //			if (now-checktime>=SensorTimeOut*60)
 			if (difftime(now,checktime) >= SensorTimeOut * 60)

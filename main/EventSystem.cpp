@@ -2196,7 +2196,26 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 		time_t now = time(0);
 		struct tm ltime;
 		localtime_r(&now, &ltime);
-		int minutesSinceMidnight = (ltime.tm_hour * 60) + ltime.tm_min;
+//GB3:	No - must determine the actual time
+//		int minutesSinceMidnight = (ltime.tm_hour * 60) + ltime.tm_min;
+		struct tm mtime;
+		time_t tmidnight;
+		int isdst = ltime.tm_isdst;
+		bool goodtime = false;
+		while (!goodtime) {
+			mtime.tm_isdst = isdst;
+			mtime.tm_year = ltime.tm_year;
+			mtime.tm_mon = ltime.tm_mon;
+			mtime.tm_mday = ltime.tm_mday;
+			mtime.tm_hour = 0;
+			mtime.tm_min = 0;
+			mtime.tm_sec = 0;
+			tmidnight = mktime(&mtime);
+			goodtime = (mtime.tm_isdst == isdst);
+			isdst = mtime.tm_isdst;
+		}
+		int minutesSinceMidnight = (int)(difftime(now,tmidnight) / 60);
+	
 		bool dayTimeBool = false;
 		bool nightTimeBool = false;
 		if ((minutesSinceMidnight > intRise) && (minutesSinceMidnight < intSet)) {
@@ -2354,7 +2373,25 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 	time_t now = time(0);
 	struct tm ltime;
 	localtime_r(&now, &ltime);
-	int minutesSinceMidnight = (ltime.tm_hour * 60) + ltime.tm_min;
+//GB3:	No - must determine the actual time
+//	int minutesSinceMidnight = (ltime.tm_hour * 60) + ltime.tm_min;
+	struct tm mtime;
+	time_t tmidnight;
+	int isdst = ltime.tm_isdst;
+	bool goodtime = false;
+	while (!goodtime) {
+		mtime.tm_isdst = isdst;
+		mtime.tm_year = ltime.tm_year;
+		mtime.tm_mon = ltime.tm_mon;
+		mtime.tm_mday = ltime.tm_mday;
+		mtime.tm_hour = 0;
+		mtime.tm_min = 0;
+		mtime.tm_sec = 0;
+		tmidnight = mktime(&mtime);
+		goodtime = (mtime.tm_isdst == isdst);
+		isdst = mtime.tm_isdst;
+	}
+	int minutesSinceMidnight = (int)(difftime(now,tmidnight) / 60);
 	bool dayTimeBool = false;
 	bool nightTimeBool = false;
 	if ((minutesSinceMidnight > intRise) && (minutesSinceMidnight < intSet)) {
