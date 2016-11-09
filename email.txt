@@ -1,0 +1,67 @@
+MIME-Version: 1.0
+From: "United Airlines, Inc."
+ <unitedairlines@united.com>
+To: fons@q-ry.nl
+X-Priority: 1
+Priority: urgent
+Importance: high
+Date: 8 Nov 2016 14:56:16 -0500
+Subject: Boarding passes for confirmation KYRW5P
+Content-Type: multipart/mixed;
+ boundary=--boundary_352_231265dd-6910-4f1d-af89-61db1949e198
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFjrPLMWRmVeSWpSXmKPExsXC9SKVVfeBrlKEweEuM4vlR/4zOzB6rH/v
+	EcAYxWWTkpqTWZZapG+XwJWxf+J81oIP7WwVtw5rNTDuecfaxcjJISFgIrHs6Q/2LkYuDiGB
+	fYwSVw+1sYAkeAUEJU7OfAJkcwDZBhJzrxuAhNkErCXmPL8HViIiICCx6n8DO8QcXokpc0+C
+	2QJA8ekLL4PZnED2r/ZZYPUsAvISn+ZOZAaxhYFGNk//CGYzC8RKrPy+jX0CI88sJJtnIUlB
+	2IkSB15+Yoaw1SX+zLsEZWtLLFv4GsqOlnj+/zAbhG0uMWFvCyuErSgxpfsh1Bx5ic1L7jIt
+	YORcxShellycm2xUVJCbXmxgpJecn5hZBCRzNzGCgvbDWf0djNNmehxiFOBgVOLhzXioGCHE
+	mlhWXJl7iFEFaNKjDasvMEqx5OXnpSqJ8M7UUYoQ4k1JrKxKLcqPLyrNSS0+xCjNwaIkzmu+
+	RCJCSCA9sSQ1OzW1ILUIJsvEwSnVwOj/JSXv4oJ/18R3+Xz+kOvNu8Z62c35b8Lenei7osjr
+	75hZeNl9Z7NYQs4n8xfrZ90V+j6te7/4yg+lF75lrtE+wr79senzy6v2FVY3zI9M4mII2L3v
+	/Zw1PeVnOw2KlmXkrP78saqrK7SA4w1vqPWaXPWVGzbtmf36yYMXcWK2ydwf5Ns2HChXYinO
+	SDTUYi4qTgQAGgTxe2ICAAA=
+
+
+----boundary_352_231265dd-6910-4f1d-af89-61db1949e198
+Content-Type: multipart/alternative; boundary=--boundary_351_9e8d5efe-6773-4b3a-ac46-aa395db0d7bc
+
+
+----boundary_351_9e8d5efe-6773-4b3a-ac46-aa395db0d7bc
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+=0D=0A=0D=0ABoarding documents for the following traveler(s) are =
+included with this email:=0D=0A=0D=0A	ALFONS ACHTERBERGH=0D=0A=0D=0A=
+Please use one of the following options to retrieve your boarding=
+ documents:=0D=0A=0D=0AOption 1: Use your mobile boarding passes=0D=0A=
+<b>Flight UA3583</b>=0D=0AAustin (AUS) to Houston-Bush Intl (IAH)=
+ =0D=0A=0D=0AFor ALFONS ACHTERBERGH=0D=0Ahttps://mobile.united.co=
+m/CheckIn/MobileCheckInShortCut?txtInput=3DKYRW5P&eBP=3D1&origin=3D=
+bC7zYXGOHR78uIYSlPj8skYkWQ0IVxZa=0D=0A=0D=0A<b>Flight UA20</b>=0D=0A=
+Houston-Bush Intl (IAH) to Amsterdam (AMS) =0D=0A=0D=0AFor ALFONS=
+ ACHTERBERGH=0D=0Ahttps://mobile.united.com/CheckIn/MobileCheckIn=
+ShortCut?txtInput=3DKYRW5P&eBP=3D1&origin=3DbC7zYXGOHR78uIYSlPj8s=
+qbNYEHKYj9B=0D=0A=0D=0AOption 2: Print the attached boarding pass=
+es=0D=0A=0D=0AOption 3: Print your boarding documents from united=
+..com or at an airport kiosk=0D=0A=0D=0ATaking high tech to new al=
+titudes=0D=0A=0D=0AMake the United app your on-the-go travel cent=
+er. You can =0D=0Abook any flight, check in, and see your flight =
+status all with the touch of a finger. Download today at http://u=
+nited.com/mobile=0D=0A=0D=0ATo change your seat assignment, switc=
+h flights and more, you can use the United app or return to the c=
+heck-in page http://checkin.united.com. Enter your confirmation n=
+umber to get started.=0D=0A=0D=0AIf your travel plans change, ple=
+ase go to united.com or the United app, use an airport kiosk, spe=
+ak to a United representative at the airport or call 1-800-UNITED=
+-1 (1-800-864-8331) for assistance.=0D=0A=0D=0APlease note: Minim=
+um required check-in and boarding times vary by airport. If you a=
+re not in the immediate boarding area at the required minimum tim=
+e before departure, your reservations are subject to cancellation=
+ and you may not be eligible for denied boarding compensation. Re=
+view minimum required check-in and boarding times at http://unite=
+d.com/web/en-US/content/travel/airport/process/default.aspx
+----boundary_351_9e8d5efe-6773-4b3a-ac46-aa395db0d7bc--
+
+----boundary_352_231265dd-6910-4f1d-af89-61db1949e198--
+
+
