@@ -7046,14 +7046,18 @@ namespace http {
 
 							if (iLastUpdate != 0)
 							{
-								tLastUpdate.tm_isdst = tm1.tm_isdst;
+								time_t cLastUpdate;
+//GB3: replace with DST safe function
+/*								tLastUpdate.tm_isdst = tm1.tm_isdst;
 								tLastUpdate.tm_year = atoi(sLastUpdate.substr(0, 4).c_str()) - 1900;
 								tLastUpdate.tm_mon = atoi(sLastUpdate.substr(5, 2).c_str()) - 1;
 								tLastUpdate.tm_mday = atoi(sLastUpdate.substr(8, 2).c_str());
 								tLastUpdate.tm_hour = atoi(sLastUpdate.substr(11, 2).c_str());
 								tLastUpdate.tm_min = atoi(sLastUpdate.substr(14, 2).c_str());
 								tLastUpdate.tm_sec = atoi(sLastUpdate.substr(17, 2).c_str());
-								time_t cLastUpdate = mktime(&tLastUpdate);
+								cLastUpdate = mktime(&tLastUpdate);
+*/
+								ParseSQLdatetime(cLastUpdate, tLastUpdate, sLastUpdate, tm1.tm_isdst);
 								if (cLastUpdate <= iLastUpdate)
 									continue;
 							}
@@ -7372,14 +7376,18 @@ namespace http {
 
 					if (iLastUpdate != 0)
 					{
-						tLastUpdate.tm_isdst = tm1.tm_isdst;
+						time_t cLastUpdate;
+//GB3: replace with DST safe function
+/*						tLastUpdate.tm_isdst = tm1.tm_isdst;
 						tLastUpdate.tm_year = atoi(sLastUpdate.substr(0, 4).c_str()) - 1900;
 						tLastUpdate.tm_mon = atoi(sLastUpdate.substr(5, 2).c_str()) - 1;
 						tLastUpdate.tm_mday = atoi(sLastUpdate.substr(8, 2).c_str());
 						tLastUpdate.tm_hour = atoi(sLastUpdate.substr(11, 2).c_str());
 						tLastUpdate.tm_min = atoi(sLastUpdate.substr(14, 2).c_str());
 						tLastUpdate.tm_sec = atoi(sLastUpdate.substr(17, 2).c_str());
-						time_t cLastUpdate = mktime(&tLastUpdate);
+						cLastUpdate = mktime(&tLastUpdate);
+*/
+						ParseSQLdatetime(cLastUpdate, tLastUpdate, sLastUpdate, tm1.tm_isdst);
 						if (cLastUpdate <= iLastUpdate)
 							continue;
 					}
@@ -7401,14 +7409,18 @@ namespace http {
 					std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sOptions);
 
 					struct tm ntime;
-					ntime.tm_isdst = tm1.tm_isdst;
+					time_t checktime;
+//GB3: replace with DST safe function
+/*					ntime.tm_isdst = tm1.tm_isdst;
 					ntime.tm_year = atoi(sLastUpdate.substr(0, 4).c_str()) - 1900;
 					ntime.tm_mon = atoi(sLastUpdate.substr(5, 2).c_str()) - 1;
 					ntime.tm_mday = atoi(sLastUpdate.substr(8, 2).c_str());
 					ntime.tm_hour = atoi(sLastUpdate.substr(11, 2).c_str());
 					ntime.tm_min = atoi(sLastUpdate.substr(14, 2).c_str());
 					ntime.tm_sec = atoi(sLastUpdate.substr(17, 2).c_str());
-					time_t checktime = mktime(&ntime);
+					checktime = mktime(&ntime);
+*/
+					ParseSQLdatetime(checktime, ntime, sLastUpdate, tm1.tm_isdst);
 					bool bHaveTimeout = (now - checktime >= SensorTimeOut * 60);
 
 					if (dType == pTypeTEMP_RAIN)
@@ -9884,14 +9896,18 @@ namespace http {
 					std::string sLastUpdate = sd[6].c_str();
 					if (LastUpdate != 0)
 					{
-						tLastUpdate.tm_isdst = tm1.tm_isdst;
+						time_t cLastUpdate;
+//GB3: replace with DST safe function
+/*						tLastUpdate.tm_isdst = tm1.tm_isdst;
 						tLastUpdate.tm_year = atoi(sLastUpdate.substr(0, 4).c_str()) - 1900;
 						tLastUpdate.tm_mon = atoi(sLastUpdate.substr(5, 2).c_str()) - 1;
 						tLastUpdate.tm_mday = atoi(sLastUpdate.substr(8, 2).c_str());
 						tLastUpdate.tm_hour = atoi(sLastUpdate.substr(11, 2).c_str());
 						tLastUpdate.tm_min = atoi(sLastUpdate.substr(14, 2).c_str());
 						tLastUpdate.tm_sec = atoi(sLastUpdate.substr(17, 2).c_str());
-						time_t cLastUpdate = mktime(&tLastUpdate);
+						cLastUpdate = mktime(&tLastUpdate);
+*/
+						ParseSQLdatetime(cLastUpdate, tLastUpdate, sLastUpdate, tm1.tm_isdst);
 						if (cLastUpdate <= LastUpdate)
 							continue;
 					}
@@ -10761,7 +10777,8 @@ namespace http {
 			std::string sLastUpdate_A = result[0][0];
 			std::string sLastUpdate_B = result[0][1];
 
-			LastUpdateTime_A.tm_isdst = tm1.tm_isdst;
+//GB3: replace with DST safe function
+/*			LastUpdateTime_A.tm_isdst = tm1.tm_isdst;
 			LastUpdateTime_A.tm_year = atoi(sLastUpdate_A.substr(0, 4).c_str()) - 1900;
 			LastUpdateTime_A.tm_mon = atoi(sLastUpdate_A.substr(5, 2).c_str()) - 1;
 			LastUpdateTime_A.tm_mday = atoi(sLastUpdate_A.substr(8, 2).c_str());
@@ -10779,6 +10796,10 @@ namespace http {
 
 			time_t timeA = mktime(&LastUpdateTime_A);
 			time_t timeB = mktime(&LastUpdateTime_B);
+*/
+			time_t timeA, timeB;
+			ParseSQLdatetime(timeA, LastUpdateTime_A, sLastUpdate_A, tm1.tm_isdst);
+			ParseSQLdatetime(timeB, LastUpdateTime_B, sLastUpdate_B, tm1.tm_isdst);
 
 			if (timeA < timeB)
 			{
@@ -11990,7 +12011,8 @@ namespace http {
 									std::string stime = sd[6];
 									struct tm ntime;
 									time_t atime;
-									ntime.tm_isdst = -1;
+//GB3: replace with DST safe function
+/*									ntime.tm_isdst = -1;
 									ntime.tm_year = atoi(stime.substr(0, 4).c_str()) - 1900;
 									ntime.tm_mon = atoi(stime.substr(5, 2).c_str()) - 1;
 									ntime.tm_mday = atoi(stime.substr(8, 2).c_str());
@@ -11998,7 +12020,8 @@ namespace http {
 									ntime.tm_min = atoi(stime.substr(14, 2).c_str());
 									ntime.tm_sec = atoi(stime.substr(17, 2).c_str());
 									atime = mktime(&ntime);
-
+*/
+									ParseSQLdatetime(atime, ntime, stime, -1);
 									if (lastDay != ntime.tm_mday)
 									{
 										lastDay = ntime.tm_mday;
@@ -12024,7 +12047,9 @@ namespace http {
 										if ((curDeliv2 < 0) || (curDeliv2>100000))
 											curDeliv2 = 0;
 
-										time_t tdiff = atime - lastTime;
+//GB3: Unsafe to assume time_t format is seconds
+//										time_t tdiff = atime - lastTime;
+										time_t tdiff = difftime(atime,lastTime);
 										if (tdiff == 0)
 											tdiff = 1;
 										float tlaps = 3600.0f / tdiff;
@@ -12684,9 +12709,12 @@ namespace http {
 											ntime.tm_hour = atoi(actDateTimeHour.substr(11, 2).c_str());
 											ntime.tm_min = 0;
 											ntime.tm_sec = 0;
+//GB3: Unsafe to assume time_t format is seconds
+//											atime = mktime(&ntime);
+//											atime -= 3600; //subtract one hour
+//											localtime_r(&atime, &ntime);
+											ntime.tm_hour -= 1;
 											atime = mktime(&ntime);
-											atime -= 3600; //subtract one hour
-											localtime_r(&atime, &ntime);
 											char szTime[50];
 											sprintf(szTime, "%04d-%02d-%02d %02d:00", ntime.tm_year + 1900, ntime.tm_mon + 1, ntime.tm_mday, ntime.tm_hour);
 											root["result"][ii]["d"] = szTime;
@@ -12736,7 +12764,8 @@ namespace http {
 									std::string stime = sd[1];
 									struct tm ntime;
 									time_t atime;
-									ntime.tm_isdst = -1;
+//GB3: replace with DST safe function
+/*									ntime.tm_isdst = -1;
 									ntime.tm_year = atoi(stime.substr(0, 4).c_str()) - 1900;
 									ntime.tm_mon = atoi(stime.substr(5, 2).c_str()) - 1;
 									ntime.tm_mday = atoi(stime.substr(8, 2).c_str());
@@ -12744,12 +12773,15 @@ namespace http {
 									ntime.tm_min = atoi(stime.substr(14, 2).c_str());
 									ntime.tm_sec = atoi(stime.substr(17, 2).c_str());
 									atime = mktime(&ntime);
-
+*/
+									ParseSQLdatetime(atime, ntime, stime, -1);
 									if (bHaveFirstRealValue)
 									{
 										long long curValue = actValue - ulLastValue;
 
-										time_t tdiff = atime - lastTime;
+//GB3: Unsafe to assume time_t format is seconds
+//										time_t tdiff = atime - lastTime;
+										time_t tdiff = difftime(atime,lastTime);
 										if (tdiff == 0)
 											tdiff = 1;
 										float tlaps = 3600.0f / tdiff;
@@ -13149,7 +13181,10 @@ namespace http {
 
 					struct tm ltime;
 					ltime.tm_isdst = tm1.tm_isdst;
-					ltime.tm_hour = 0;
+//GB3:	Using zero hour may cause us to go eight days back if there was a DST jump
+//	Choose a safe time during daytime instead
+//					ltime.tm_hour = 0;
+					ltime.tm_hour = 14;
 					ltime.tm_min = 0;
 					ltime.tm_sec = 0;
 					ltime.tm_year = tm1.tm_year;
@@ -13256,7 +13291,10 @@ namespace http {
 
 					struct tm ltime;
 					ltime.tm_isdst = tm1.tm_isdst;
-					ltime.tm_hour = 0;
+//GB3:	Using zero hour may cause us to go eight days back if there was a DST jump
+//	Choose a safe time during daytime instead
+//					ltime.tm_hour = 0;
+					ltime.tm_hour = 14;
 					ltime.tm_min = 0;
 					ltime.tm_sec = 0;
 					ltime.tm_year = tm1.tm_year;
@@ -13493,7 +13531,10 @@ namespace http {
 				{
 					struct tm ltime;
 					ltime.tm_isdst = tm1.tm_isdst;
-					ltime.tm_hour = 0;
+//GB3:	Using zero hour may cause us to go two days back if there was a DST jump
+//	Choose a safe time during daytime instead
+//					ltime.tm_hour = 0;
+					ltime.tm_hour = 14;
 					ltime.tm_min = 0;
 					ltime.tm_sec = 0;
 					ltime.tm_year = tm1.tm_year;
@@ -15802,7 +15843,8 @@ namespace http {
 					struct tm tm1;
 					localtime_r(&now, &tm1);
 					struct tm tExpirationDate;
-					tExpirationDate.tm_isdst = tm1.tm_isdst;
+//GB3: replace with DST safe function
+/*					tExpirationDate.tm_isdst = tm1.tm_isdst;
 					tExpirationDate.tm_year = atoi(sExpirationDate.substr(0, 4).c_str()) - 1900;
 					tExpirationDate.tm_mon = atoi(sExpirationDate.substr(5, 2).c_str()) - 1;
 					tExpirationDate.tm_mday = atoi(sExpirationDate.substr(8, 2).c_str());
@@ -15810,7 +15852,8 @@ namespace http {
 					tExpirationDate.tm_min = atoi(sExpirationDate.substr(14, 2).c_str());
 					tExpirationDate.tm_sec = atoi(sExpirationDate.substr(17, 2).c_str());
 					session.expires = mktime(&tExpirationDate);
-
+*/
+					ParseSQLdatetime(session.expires, tExpirationDate, sExpirationDate, tm1.tm_isdst);
 					// RemoteHost is not used to restore the session
 					// LastUpdate is not used to restore the session
 				}
@@ -15880,3 +15923,4 @@ namespace http {
 
 	} //server
 }//http
+
