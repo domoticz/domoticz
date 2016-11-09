@@ -11913,7 +11913,7 @@ void MainWorker::CheckSceneCode(const unsigned long long DevRowIdx, const unsign
 					GetLightStatus(dType, dSubType, STYPE_OnOff, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 					std::string switchcmd = (IsLightSwitchOn(lstatus) == true) ? "On" : "Off";
 
-					m_sql.AddTaskItem(_tTaskItem::SwitchSceneEvent(0.3f, ID, switchcmd, "SceneTrigger"));
+					m_sql.AddTaskItem(_tTaskItem::SwitchSceneEvent(0.2f, ID, switchcmd, "SceneTrigger"));
 				}
 			}
 		}
