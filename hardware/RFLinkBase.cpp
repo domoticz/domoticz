@@ -289,7 +289,9 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
     
 		// Wait for an OK response from RFLink to make sure the command was executed
 		while (m_bTXokay == false) {
-			if (btime-atime > 4) {
+//GB3: Unsafe to assume time_t format is seconds
+//			if (btime-atime > 4) {
+			if (difftime(btime,atime) > 4) {
 				_log.Log(LOG_ERROR, "RFLink: TX time out...");
 				return false;
 			}
@@ -397,7 +399,9 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 
 			// Wait for an OK response from RFLink to make sure the command was executed
 			while (m_bTXokay == false) {
-				if (btime - atime > 4) {
+//GB3: Unsafe to assume time_t format is seconds
+//				if (btime - atime > 4) {
+				if (difftime(btime,atime) > 4) {
 					_log.Log(LOG_ERROR, "RFLink: TX time out...");
 					return false;
 				}
@@ -422,7 +426,9 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 
 		// Wait for an OK response from RFLink to make sure the command was executed
 		while (m_bTXokay == false) {
-			if (btime - atime > 4) {
+//GB3: Unsafe to assume time_t format is seconds
+//			if (btime - atime > 4) {
+			if (difftime(btime,atime) > 4) {
 				_log.Log(LOG_ERROR, "RFLink: TX time out...");
 				return false;
 			}
@@ -1027,7 +1033,9 @@ namespace http {
 
 			// Wait for an OK response from RFLink to make sure the command was executed
 			while (pRFLINK->m_bTXokay == false) {
-				if (btime - atime > 4) {
+//GB3: Unsafe to assume time_t format is seconds
+//				if (btime - atime > 4) {
+				if (difftime(btime,atime) > 4) {
 					_log.Log(LOG_ERROR, "RFLink: TX time out...");
 					bCreated = false;
 					break;
