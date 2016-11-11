@@ -44,6 +44,7 @@
     <LinkIncremental>true</LinkIncremental>
     <IntDir>$(Configuration)_Build\</IntDir>
     <PreBuildEventUseInBuild>true</PreBuildEventUseInBuild>
+    <IncludePath>$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>true</LinkIncremental>
@@ -453,6 +454,7 @@
     <ClInclude Include="..\hardware\MySensorsBase.h" />
     <ClInclude Include="..\hardware\MySensorsSerial.h" />
     <ClInclude Include="..\hardware\MySensorsTCP.h" />
+    <ClInclude Include="..\hardware\MySensorsMQTT.h" />
     <ClInclude Include="..\hardware\NefitEasy.h" />
     <ClInclude Include="..\hardware\Nest.h" />
     <ClInclude Include="..\hardware\Netatmo.h" />
@@ -676,6 +678,7 @@
     <ClCompile Include="..\hardware\MySensorsBase.cpp" />
     <ClCompile Include="..\hardware\MySensorsSerial.cpp" />
     <ClCompile Include="..\hardware\MySensorsTCP.cpp" />
+    <ClCompile Include="..\hardware\MySensorsMQTT.cpp" />
     <ClCompile Include="..\hardware\NefitEasy.cpp" />
     <ClCompile Include="..\hardware\Nest.cpp" />
     <ClCompile Include="..\hardware\Netatmo.cpp" />
