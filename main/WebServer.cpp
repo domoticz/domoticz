@@ -6938,7 +6938,6 @@ namespace http {
 
 			root["ActTime"] = static_cast<int>(now);
 
-			char szData[250];
 			char szTmp[300];
 
 			if (!m_mainworker.m_LastSunriseSet.empty())
@@ -7125,6 +7124,7 @@ namespace http {
 				}
 			}
 
+			char szData[250];
 			if (totUserDevices == 0)
 			{
 				//All
@@ -9317,16 +9317,20 @@ namespace http {
 						}
 						else if (dSubType == sTypeBaro)
 						{
-							sprintf(szData, "%.1f hPa", atof(sValue.c_str()));
+							std::vector<std::string> tstrarray;
+							StringSplit(sValue, ";", tstrarray);
+							if (tstrarray.empty())
+								continue;
+							float fbaro = atof(tstrarray[0].c_str());
+							//if (fbaro != fbaro)
+							//		fbaro = 0;
+							sprintf(szData, "%.1f hPa", fbaro);
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["TypeImg"] = "gauge";
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-
-							std::vector<std::string> tstrarray;
-							StringSplit(sValue, ";", tstrarray);
 							if (tstrarray.size() > 1)
 							{
-								root["result"][ii]["Barometer"] = atof(tstrarray[0].c_str());
+								root["result"][ii]["Barometer"] = fbaro;
 								int forecast = atoi(tstrarray[1].c_str());
 								root["result"][ii]["Forecast"] = forecast;
 								root["result"][ii]["ForecastStr"] = BMP_Forecast_Desc(forecast);
