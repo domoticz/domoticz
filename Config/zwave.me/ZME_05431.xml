@@ -35,7 +35,7 @@
 			<Item label="No" value="0" />
 			<Item label="Yes (default)" value="1" />
 		</Value>
-		<Value type="list" index="5" genre="config" label="Restore switch state after power cycle" value="1">
+		<Value type="list" index="5" genre="config" label="Restore switch state after power cycle" size="1" value="1">
 			<Help>Defines if the switch should restore switch state to the last state prior to device power off (power cycle).</Help>
                         <Item label="No, turn OFF" value="0" />
                         <Item label="Yes (default)" value="1" />

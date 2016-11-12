@@ -13,7 +13,7 @@
 
   <!-- Configuration Parameters -->
   <CommandClass id="112">
-    <Value type="list" instance="1" index="1" genre="config" label="Temperature Scale" value="0">
+    <Value type="list" instance="1" index="1" genre="config" label="Temperature Scale" size="1" value="0">
       <Help>Controls the temperature sensor scale</Help>
       <Item label="Celsius" value="1"/>
       <Item label="Fahrenheit" value="128"/>

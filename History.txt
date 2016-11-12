@@ -1,3 +1,10 @@
+Version 3.xxxx (November xxth 2016)
+- Fixed: JSon float/nan value, solved by upgrading JSonCPP
+- Implemented: Blockly/Lua Set SetPoint option
+
+Version 3.5878 (November 10th 2016)
+- Fixes and various improvements
+
 Version 3.5837 (October 30th 2016)
 - Fixed: Blockly/Lua, FOR and RANDOM are now again in minutes
 - Changed: Shortlog charts for Temperature, Current and Smartlog are now using a spline

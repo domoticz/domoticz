@@ -581,7 +581,7 @@ bool CPhilipsHue::GetLights(const Json::Value &root)
 	if (root["lights"].empty())
 		return false;
 
-	for (Json::Value::iterator iLight = root["lights"].begin(); iLight != root["lights"].end(); ++iLight)
+	for (Json::Value::const_iterator iLight = root["lights"].begin(); iLight != root["lights"].end(); ++iLight)
 	{
 		Json::Value light = *iLight;
 		if (light.isObject())
@@ -648,7 +648,7 @@ bool CPhilipsHue::GetGroups(const Json::Value &root)
 
 	_eHueLightType LType;
 
-	for (Json::Value::iterator iGroup = root["groups"].begin(); iGroup != root["groups"].end(); ++iGroup)
+	for (Json::Value::const_iterator iGroup = root["groups"].begin(); iGroup != root["groups"].end(); ++iGroup)
 	{
 		Json::Value group = *iGroup;
 		if (group.isObject())
@@ -797,7 +797,7 @@ bool CPhilipsHue::GetScenes(const Json::Value &root)
 	if (root["scenes"].empty())
 		return false;
 
-	for (Json::Value::iterator iScene = root["scenes"].begin(); iScene != root["scenes"].end(); ++iScene)
+	for (Json::Value::const_iterator iScene = root["scenes"].begin(); iScene != root["scenes"].end(); ++iScene)
 	{
 		Json::Value scene = *iScene;
 		if (scene.isObject())

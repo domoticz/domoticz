@@ -606,7 +606,6 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& r
 		}
 		catch (...)
 		{
-			
 		}
 
 		std::string attachment;
