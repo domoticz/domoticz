@@ -125,6 +125,7 @@
 #endif
 
 #include "mainstructs.h"
+#include <unistd.h>
 
 #ifdef _DEBUG
 	//#define PARSE_RFXCOM_DEVICE_LOG
@@ -144,6 +145,8 @@ extern std::string szUserDataFolder;
 extern std::string szWWWFolder;
 extern std::string szAppVersion;
 extern std::string szWebRoot;
+extern std::string szBackupDir;
+extern std::string szBackupLatest;
 
 extern http::server::CWebServerHelper m_webservers;
 
@@ -1184,13 +1187,13 @@ void MainWorker::HandleAutomaticBackups()
 	std::stringstream backup_DirM;
 
 #ifdef WIN32
-	backup_DirH << szUserDataFolder << "backups\\hourly\\";
-	backup_DirD << szUserDataFolder << "backups\\daily\\";
-	backup_DirM << szUserDataFolder << "backups\\monthly\\";
+	backup_DirH << szBackupDir << "hourly\\";
+	backup_DirD << szBackupDir << "daily\\";
+	backup_DirM << szBackupDir << "monthly\\";
 #else
-	backup_DirH << szUserDataFolder << "backups/hourly/";
-	backup_DirD << szUserDataFolder << "backups/daily/";
-	backup_DirM << szUserDataFolder << "backups/monthly/";
+	backup_DirH << szBackupDir << "hourly/";
+	backup_DirD << szBackupDir << "daily/";
+	backup_DirM << szBackupDir << "monthly/";
 #endif
 
 	std::string sbackup_DirH = backup_DirH.str();
@@ -1198,6 +1201,7 @@ void MainWorker::HandleAutomaticBackups()
 	std::string sbackup_DirM = backup_DirM.str();
 
 	//create folders if they not exists
+	mkdir_deep(szBackupDir.c_str(), 0755);
 	mkdir_deep(sbackup_DirH.c_str(), 0755);
 	mkdir_deep(sbackup_DirD.c_str(), 0755);
 	mkdir_deep(sbackup_DirM.c_str(), 0755);
@@ -1217,18 +1221,26 @@ void MainWorker::HandleAutomaticBackups()
 	m_sql.GetLastBackupNo("Day", lastDayBackup);
 	m_sql.GetLastBackupNo("Month", lastMonthBackup);
 
+	int latestLinked = 0;
+
 	DIR *lDir;
 	//struct dirent *ent;
+
 	if ((lastHourBackup == -1)||(lastHourBackup !=hour)) {
 
 		if ((lDir = opendir(sbackup_DirH.c_str())) != NULL)
 		{
 			std::stringstream sTmp;
-			sTmp << "backup-hour-" << hour << ".db";
+			sTmp << "backup-hour-" << std::setw(2) << std::setfill('0') << hour << ".db";
 
 			std::string OutputFileName=sbackup_DirH + sTmp.str();
 			if (m_sql.BackupDatabase(OutputFileName)) {
 				m_sql.SetLastBackupNo("Hour", hour);
+#ifndef WIN32
+				remove(szBackupLatest.c_str());
+				if (symlink(OutputFileName.c_str(), szBackupLatest.c_str()) == 0 )
+					latestLinked=1;
+#endif
 			}
 			else {
 				_log.Log(LOG_ERROR,"Error writing automatic hourly backup file");
@@ -1244,7 +1256,7 @@ void MainWorker::HandleAutomaticBackups()
 		if ((lDir = opendir(sbackup_DirD.c_str())) != NULL)
 		{
 			std::stringstream sTmp;
-			sTmp << "backup-day-" << day << ".db";
+			sTmp << "backup-day-" << std::setw(2) << std::setfill('0') << day << ".db";
 
 			std::string OutputFileName=sbackup_DirD + sTmp.str();
 			if (m_sql.BackupDatabase(OutputFileName)) {
@@ -1263,7 +1275,7 @@ void MainWorker::HandleAutomaticBackups()
 		if ((lDir = opendir(sbackup_DirM.c_str())) != NULL)
 		{
 			std::stringstream sTmp;
-			sTmp << "backup-month-" << month+1 << ".db";
+			sTmp << "backup-month-" << std::setw(2) << std::setfill('0') << month+1 << ".db";
 
 			std::string OutputFileName=sbackup_DirM + sTmp.str();
 			if (m_sql.BackupDatabase(OutputFileName)) {
@@ -1277,6 +1289,18 @@ void MainWorker::HandleAutomaticBackups()
 		else {
 			_log.Log(LOG_ERROR,"Error accessing automatic backup directories");
 		}
+	}
+	if (!latestLinked && (lDir = opendir(szBackupDir.c_str())) != NULL)
+	{
+
+		remove(szBackupLatest.c_str());
+		if (!m_sql.BackupDatabase(szBackupLatest)) {
+			_log.Log(LOG_ERROR,"Error writing automatic \"latest\" backup file");
+		}
+		closedir(lDir);
+	}
+	else {
+		_log.Log(LOG_ERROR,"Error accessing automatic backup directories");
 	}
 	_log.Log(LOG_STATUS, "Ending automatic database backup procedure...");
 }
@@ -1541,6 +1565,7 @@ void MainWorker::Do_Work()
 			HeartbeatCheck();
 		}
 	}
+      HandleAutomaticBackups();
 	_log.Log(LOG_STATUS, "Mainworker Stopped...");
 }
 

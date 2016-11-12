@@ -23,6 +23,7 @@
 #include <sys/types.h>
 #include <signal.h>
 #include <iostream>
+#include <fstream>
 #include "CmdLine.h"
 #include "Logger.h"
 #include "Helper.h"
@@ -110,6 +111,7 @@ const char *szHelp=
 	"\t-daemon (run as background daemon)\n"
 	"\t-pidfile pid file location (for example /var/run/domoticz.pid)\n"
 	"\t-syslog [user|daemon|local0 .. local7] (use syslog as log output, defaults to facility 'user')\n"
+	"\t-autorestore restore dbfile if it does not exist but AutoBackup was enabled\n"
 #endif
 	"";
 
@@ -138,6 +140,8 @@ std::string szStartupFolder;
 std::string szUserDataFolder;
 std::string szWWWFolder;
 std::string szWebRoot;
+std::string szBackupDir;
+std::string szBackupLatest;
 
 bool bHasInternalTemperature=false;
 std::string szInternalTemperatureCommand = "/opt/vc/bin/vcgencmd measure_temp";
@@ -602,6 +606,13 @@ int main(int argc, char**argv)
 			szUserDataFolder = szroot;
 	}
 
+#ifdef WIN32
+	szBackupDir = szUserDataFolder + "backups\\";
+#else
+	szBackupDir = szUserDataFolder + "backups/";
+#endif
+	szBackupLatest = szBackupDir + "backup-latest.db";
+
 	if (cmdLine.HasSwitch("-startupdelay"))
 	{
 		if (cmdLine.GetArgumentCount("-startupdelay") != 1)
@@ -776,6 +787,43 @@ int main(int argc, char**argv)
 		}
 		dbasefile = cmdLine.GetSafeArgument("-dbase", 0, "domoticz.db");
 	}
+
+	if (! file_exist(dbasefile.c_str()) and file_exist(szBackupLatest.c_str()) and cmdLine.HasSwitch("-autorestore"))
+	{
+		_log.Log(LOG_STATUS, "DB file does not exist, restoring from latest backup...");
+		std::ifstream  src(szBackupLatest.c_str() , std::ios::binary);
+		if (src.good())
+		{
+			std::ofstream  dst(dbasefile.c_str(),       std::ios::binary);
+			if (dst.good())
+			{
+				dst << src.rdbuf();
+
+				size_t src_size = (size_t)src.tellg();
+				std::ifstream  dst(szBackupLatest.c_str(),  std::ifstream::ate | std::ios::binary);
+
+				if (src_size != dst.tellg())
+				{
+					_log.Log(LOG_ERROR, "Can't write backup to '%s' (disk full?)", dbasefile.c_str());
+					std::remove(dbasefile.c_str());
+					return 1;
+				}
+
+			}
+			else
+			{
+				_log.Log(LOG_ERROR, "Can't create '%s'", dbasefile.c_str());
+				return 1;
+			}
+		}
+		else
+		{
+			_log.Log(LOG_ERROR, "Can't read %s", szBackupLatest.c_str());
+			return 1;
+		}
+
+	}
+
 	m_sql.SetDatabaseName(dbasefile);
 
 	if (cmdLine.HasSwitch("-webroot"))
