@@ -1294,6 +1294,9 @@ void MainWorker::HandleAutomaticBackups()
 	}
 	if (!latestLinked && (lDir = opendir(szBackupDir.c_str())) != NULL)
 	{
+#ifndef WIN32
+		remove(szBackupLatest.c_str());
+#endif
 		if (!m_sql.BackupDatabase(szBackupLatest)) {
 			_log.Log(LOG_ERROR,"Error writing automatic \"latest\" backup file");
 		}
