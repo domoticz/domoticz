@@ -9,6 +9,8 @@
 #include "../main/WebServer.h"
 #include "../webserver/cWebem.h"
 #include "../json/json.h"
+#include "../hardware/ASyncTCP.h"
+
 
 /*
 Yeelight (Mi Light) is a company that created White and RGBW lights
@@ -48,7 +50,8 @@ std::string ReadFile(std::string filename)
 }
 #endif
 
-class udp_server;
+std::vector<boost::shared_ptr<Yeelight::YeelightTCP> > m_pNodes;
+
 
 Yeelight::Yeelight(const int ID)
 {
@@ -92,14 +95,54 @@ bool Yeelight::StopHardware()
 	return true;
 }
 
-#define Limitless_POLL_INTERVAL 60
+#define Limitless_POLL_INTERVAL 900 // 60
 
 void Yeelight::Do_Work()
 {
 	_log.Log(LOG_STATUS, "YeeLight Worker started...");
+	int iRetryCounter = 0;
+	while (!m_pNodes.empty() && (iRetryCounter < 15))
+	{
+		std::vector<boost::shared_ptr<Yeelight::YeelightTCP> >::iterator itt;
+		for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
+		{
+			_log.Log(LOG_NORM, "Yeelight stopping device %s", (*itt)->m_szDeviceId.c_str());
+			(*itt)->Stop();
+			m_pNodes.erase(itt);
+			break;
+		}
+		iRetryCounter++;
+		sleep_milliseconds(500);
+	}
+	m_pNodes.clear();
+
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT d.DeviceID, d.SubType FROM DeviceStatus d INNER JOIN Hardware h ON d.HardwareID=h.ID WHERE (d.Used=1) AND (h.Type==%d)", HTYPE_Yeelight);
+	if (result.size() < 1) {
+		//return false;
+		//_log.Log(LOG_STATUS, "Yeelight: no devices in DB");
+	}
+	else {
+		//_log.Log(LOG_STATUS, "Yeelight: FOUND STUFF IN DB");
+		std::vector<std::vector<std::string> >::const_iterator itt;
+		for (itt = result.begin(); itt != result.end(); ++itt)
+		{
+			std::vector<std::string> sd = *itt;
+			std::string ipAddress = sd[0].c_str();
+			_log.Log(LOG_STATUS, "Yeelight: found device in database %s", sd[0].c_str());
+			boost::shared_ptr<Yeelight::YeelightTCP>	pNode = (boost::shared_ptr<Yeelight::YeelightTCP>) new Yeelight::YeelightTCP(sd[0].c_str(), m_HwdID, atoi(sd[1].c_str()));
+			m_pNodes.push_back(pNode);
+		}
+		for (std::vector<boost::shared_ptr<Yeelight::YeelightTCP> >::iterator itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
+		{
+			//_log.Log(LOG_NORM, "Yeelight: (%s) Starting thread.", (*itt)->m_szDeviceId.c_str());
+			(*itt)->Start();
+		}
+	}
+
 
 	boost::asio::io_service io_service;
-	udp_server server(io_service, m_HwdID);
+	YeelightUDP server(io_service, m_HwdID);
 	int sec_counter = Limitless_POLL_INTERVAL - 5;
 	while (!m_stoprequested)
 	{
@@ -108,7 +151,7 @@ void Yeelight::Do_Work()
 		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat = mytime(NULL);
 		}
-		if (sec_counter % 60 == 0) //poll YeeLights every minute
+		if (sec_counter % 900 == 0) //poll YeeLights every minute
 		{
 			server.start_send();
 			io_service.run();
@@ -117,8 +160,80 @@ void Yeelight::Do_Work()
 	_log.Log(LOG_STATUS, "YeeLight stopped");
 }
 
+void Yeelight::UpdateSwitch(const int &YeeType, const std::string &Location, const bool bIsOn, const std::string &yeelightBright, const std::string &yeelightHue, const std::string &yeelightRgb)
+{
+	std::vector<std::string> ipaddress;
+	StringSplit(Location, ".", ipaddress);
+	if (ipaddress.size() != 4)
+	{
+		_log.Log(LOG_STATUS, "YeeLight: Invalid location received! (No IP Address)");
+		return;
+	}
+	uint32_t sID = (uint32_t)(atoi(ipaddress[0].c_str()) << 24) | (uint32_t)(atoi(ipaddress[1].c_str()) << 16) | (atoi(ipaddress[2].c_str()) << 8) | atoi(ipaddress[3].c_str());
+	char szDeviceID[20];
+	if (sID == 1)
+		sprintf(szDeviceID, "%d", 1);
+	else
+		sprintf(szDeviceID, "%08X", (unsigned int)sID);
 
-void Yeelight::InsertUpdateSwitch(const std::string &nodeID, const std::string &lightName, const int &YeeType, const std::string &Location, const bool bIsOn, const std::string &yeelightBright, const std::string &yeelightHue)
+	int lastLevel = 0;
+	int nvalue = 0;
+	bool tIsOn = !(bIsOn);
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT nValue, LastLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (SubType==%d)", m_HwdID, szDeviceID, pTypeLimitlessLights, YeeType);
+	if (result.size() > 0)
+	{
+		nvalue = atoi(result[0][0].c_str());
+		tIsOn = (nvalue != 0);
+		lastLevel = atoi(result[0][1].c_str());
+		int value = 0;
+
+		//check for yeelightHue and yeelightRgb
+		if ((bIsOn != tIsOn) || (value != lastLevel))
+		{
+			int cmd = light1_sOn;
+			int level = 100;
+			if (!bIsOn) {
+				cmd = light1_sOff;
+				level = 0;
+			}
+			else {
+				if (yeelightBright != "") {
+					value = atoi(yeelightBright.c_str());
+					cmd = Limitless_SetBrightnessLevel;
+				}
+				else if (yeelightHue != "") {
+					value = atoi(yeelightHue.c_str());
+					cmd = Limitless_SetRGBColour;
+				}
+				else if (yeelightRgb != "") {
+					value = atoi(yeelightRgb.c_str());
+					cmd = Limitless_SetRGBColour;
+				}
+			}
+			_tLimitlessLights ycmd;
+			ycmd.len = sizeof(_tLimitlessLights) - 1;
+			ycmd.type = pTypeLimitlessLights;
+			ycmd.subtype = YeeType;
+			ycmd.id = sID;
+			ycmd.dunit = 0;
+			ycmd.value = value;
+			ycmd.command = cmd;
+			//_log.Log(LOG_STATUS, "YeeLight: ycmd.command %d", ycmd.command);
+			m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&ycmd, NULL, -1);
+
+			if (bIsOn != tIsOn) {
+				if (bIsOn) {
+					ycmd.command = light1_sOn;
+					m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&ycmd, NULL, -1);
+				}
+			}
+		}
+	}
+}
+
+
+void Yeelight::InsertUpdateSwitch(const std::string &lightName, const int &YeeType, const std::string &Location, const bool bIsOn, const std::string &yeelightBright, const std::string &yeelightHue)
 {
 	std::vector<std::string> ipaddress;
 	StringSplit(Location, ".", ipaddress);
@@ -188,47 +303,18 @@ void Yeelight::InsertUpdateSwitch(const std::string &nodeID, const std::string &
 }
 
 
+
 bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	//_log.Log(LOG_STATUS, "YeeLight: WriteToHardware...............................");
 	_tLimitlessLights *pLed = (_tLimitlessLights*)pdata;
 	uint8_t command = pLed->command;
-	std::vector<std::vector<std::string> > result;
 	bool sendOnFirst = false;
-	unsigned long lID;
 	char szTmp[50];
-
 	if (pLed->id == 1)
 		sprintf(szTmp, "%d", 1);
 	else
 		sprintf(szTmp, "%08X", (unsigned int)pLed->id);
 	std::string ID = szTmp;
-
-	std::stringstream s_strid;
-	s_strid << std::hex << ID;
-	s_strid >> lID;
-
-	unsigned char ID1 = (unsigned char)((lID & 0xFF000000) >> 24);
-	unsigned char ID2 = (unsigned char)((lID & 0x00FF0000) >> 16);
-	unsigned char ID3 = (unsigned char)((lID & 0x0000FF00) >> 8);
-	unsigned char ID4 = (unsigned char)((lID & 0x000000FF));
-
-	//IP Address
-	sprintf(szTmp, "%d.%d.%d.%d", ID1, ID2, ID3, ID4);
-
-	boost::asio::io_service io_service;
-	boost::asio::ip::tcp::socket sendSocket(io_service);
-	boost::asio::ip::tcp::resolver resolver(io_service);
-	boost::asio::ip::tcp::resolver::query query(boost::asio::ip::tcp::v4(), szTmp, "55443");
-	boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
-	try
-	{
-		boost::asio::connect(sendSocket, iterator);
-	}
-	catch (const std::exception &e)
-	{
-		_log.Log(LOG_ERROR, "YeeLight: Exception: %s", e.what());
-	}
 
 	std::string message = "";
 
@@ -288,10 +374,10 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 	case Limitless_SetBrightDown:
 		message = "{\"id\":1,\"method\":\"set_adjust\",\"params\":[\"decrease\", \"bright\"]}\r\n";
 		break;
-	//case Limitless_WarmWhiteIncrease:
+		//case Limitless_WarmWhiteIncrease:
 		//message = "{\"id\":1,\"method\":\"set_adjust\",\"params\":[\"increase\", \"bright\"]}\r\n";
 		//break;
-	//case Limitless_CoolWhiteIncrease:
+		//case Limitless_CoolWhiteIncrease:
 		//message = "{\"id\":1,\"method\":\"set_adjust\",\"params\":[\"decrease\", \"bright\"]}\r\n";
 		//break;
 	case Limitless_NightMode:
@@ -312,43 +398,40 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 		message += "50, 2, 5000, 100, ";
 		message += "50, 2, 5000, 1\"]}\r\n";
 	}
-		break;
+							  break;
 	default:
 		_log.Log(LOG_STATUS, "YeeLight: Unhandled WriteToHardware command: %d", command);
 		break;
 	}
-	_log.Log(LOG_STATUS, "YeeLight: Sending command: %s", message.c_str());
-	if (sendOnFirst) {
-		std::string onmessage = "{\"id\":1,\"method\":\"set_power\",\"params\":[\"on\", \"smooth\", 500]}\r\n";
-		strcpy(request, onmessage.c_str());
-		request_length = strlen(request);
-		boost::asio::write(sendSocket, boost::asio::buffer(request, request_length));
-		sleep_milliseconds(100);
-	}
 
-	if (message != "") {
-		strcpy(request, message.c_str());
-		request_length = strlen(request);
-		boost::asio::write(sendSocket, boost::asio::buffer(request, request_length));
-		//_log.Log(LOG_STATUS, "message is sent..................");
-		sleep_milliseconds(100);
+	std::vector<boost::shared_ptr<Yeelight::YeelightTCP> >::iterator itt;
+	for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
+	{
+		if ((*itt)->m_szDeviceId == ID)
+		{
+			if (sendOnFirst) {
+				(*itt)->WriteInt("{\"id\":1,\"method\":\"set_power\",\"params\":[\"on\", \"smooth\", 500]}\r\n");
+				sleep_milliseconds(100);
+			}
+			return (*itt)->WriteInt(message.c_str());
+			//return true;
+		}
 	}
 	return true;
 }
 
 
-boost::array<char, 4096> recv_buffer_;
-int hardwareId;
+boost::array<char, 1024> recv_buffer_;
 
-Yeelight::udp_server::udp_server(boost::asio::io_service& io_service, int m_HwdID)
+Yeelight::YeelightUDP::YeelightUDP(boost::asio::io_service& io_service, int HardwareID)
 	: socket_(io_service, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 1982))
 {
 	socket_.set_option(boost::asio::ip::udp::socket::reuse_address(true));
 	socket_.set_option(boost::asio::socket_base::broadcast(true));
-	hardwareId = m_HwdID;
+	m_HwdID = HardwareID;
 }
 
-void Yeelight::udp_server::start_send()
+void Yeelight::YeelightUDP::start_send()
 {
 	std::string testMessage = "M-SEARCH * HTTP/1.1\r\nHOST: 239.255.255.250:1982\r\nMAN: \"ssdp:discover\"\r\nST: wifi_bulb";
 	//_log.Log(LOG_STATUS, "start_send..................");
@@ -360,7 +443,7 @@ void Yeelight::udp_server::start_send()
 	start_receive();
 }
 
-void Yeelight::udp_server::start_receive()
+void Yeelight::YeelightUDP::start_receive()
 {
 #ifdef DEBUG_YeeLightR
 	std::string szData = ReadFile("E:\\YeeLight_receive.txt");
@@ -386,7 +469,26 @@ bool YeeLightGetTag(const std::string &InputString, const std::string &Tag, std:
 	return true;
 }
 
-bool Yeelight::udp_server::HandleIncoming(const std::string &szData)
+bool YeeLightGetTagTCP(const std::string &InputString, const std::string &Tag, std::string &Value)
+{
+	std::size_t pos = InputString.find(Tag);
+	if (pos == std::string::npos)
+		return false; //not found
+	std::string szValue = InputString.substr(pos + Tag.size());
+	pos = szValue.find("}}");
+	if (pos == std::string::npos)
+		return false; //not found
+	Value = szValue.substr(0, pos);
+
+	Value.erase(
+		remove(Value.begin(), Value.end(), '\"'),
+		Value.end()
+	);
+	return true;
+}
+
+
+bool Yeelight::YeelightUDP::HandleIncoming(const std::string &szData)
 {
 	std::string receivedString(szData);
 	//_log.Log(LOG_STATUS, receivedString.c_str());
@@ -444,8 +546,8 @@ bool Yeelight::udp_server::HandleIncoming(const std::string &szData)
 		yeelightName = "YeeLight LED (Color)";
 		sType = sTypeLimitlessRGBW;
 	}
-	Yeelight yeelight(hardwareId);
-	yeelight.InsertUpdateSwitch(yeelightId, yeelightName, sType, yeelightLocation, bIsOn, yeelightBright, yeelightHue);
+	Yeelight yeelight(m_HwdID);
+	yeelight.InsertUpdateSwitch(yeelightName, sType, yeelightLocation, bIsOn, yeelightBright, yeelightHue);
 	return true;
 }
 
@@ -472,9 +574,265 @@ namespace http {
 			int HwdID = atoi(idx.c_str());
 
 			Yeelight yeelight(HwdID);
-			yeelight.InsertUpdateSwitch("123", sname, (stype == "0") ? sTypeLimitlessWhite : sTypeLimitlessRGBW, sipaddress, false, "0", "0");
+			yeelight.InsertUpdateSwitch(sname, (stype == "0") ? sTypeLimitlessWhite : sTypeLimitlessRGBW, sipaddress, false, "0", "0");
 		}
 	}
 }
 
+Yeelight::YeelightTCP::YeelightTCP(const std::string DeviceID, const int HardwareID, const int YeeType)
+{
+	//deviceid is the ip address....
+	m_szDeviceId = DeviceID;
+	m_HwdID = HardwareID;
+	m_Type = YeeType;
 
+	unsigned long lID;
+	char szTmp[50];
+	std::string ID = m_szDeviceId.c_str();
+
+	std::stringstream s_strid;
+	s_strid << std::hex << ID;
+	s_strid >> lID;
+
+	unsigned char ID1 = (unsigned char)((lID & 0xFF000000) >> 24);
+	unsigned char ID2 = (unsigned char)((lID & 0x00FF0000) >> 16);
+	unsigned char ID3 = (unsigned char)((lID & 0x0000FF00) >> 8);
+	unsigned char ID4 = (unsigned char)((lID & 0x000000FF));
+
+	sprintf(szTmp, "%d.%d.%d.%d", ID1, ID2, ID3, ID4);
+
+	m_szIPAddress = szTmp;
+	m_bDoRestart = false;
+	m_stoprequested = false;
+	m_usIPPort = 55443;
+}
+
+Yeelight::YeelightTCP::~YeelightTCP(void)
+{
+}
+
+bool Yeelight::YeelightTCP::WriteInt(const std::string & sendString)
+{
+	if (!mIsConnected)
+	{
+		_log.Log(LOG_STATUS, "Yeelight: Cannot send command - %s disconnected", m_szIPAddress.c_str());
+		return false;
+	}
+	write(sendString);
+	return true;
+}
+
+bool Yeelight::YeelightTCP::WriteInt(const uint8_t * pData, const size_t length)
+{
+	if (!mIsConnected)
+	{
+		_log.Log(LOG_STATUS, "Yeelight: Cannot send command - %s disconnected", m_szIPAddress.c_str());
+		return false;
+	}
+	write(pData, length);
+	return true;
+}
+
+bool Yeelight::YeelightTCP::Start()
+{
+	m_stoprequested = false;
+	m_bDoRestart = false;
+	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&YeelightTCP::Do_Work, this)));
+	return (m_thread != NULL);
+}
+
+bool Yeelight::YeelightTCP::Stop()
+{
+	m_stoprequested = true;
+	if (isConnected())
+	{
+		try {
+			disconnect();
+			close();
+		}
+		catch (...)
+		{
+			//Don't throw from a Stop command
+		}
+	}
+	try {
+		if (m_thread)
+		{
+			m_thread->join();
+			m_thread.reset();
+		}
+	}
+	catch (...)
+	{
+		//Don't throw from a Stop command
+	}
+	//m_bIsStarted = false;
+	return true;
+}
+
+void Yeelight::YeelightTCP::Do_Work()
+{
+	bool bFirstTime = true;
+	int sec_counter = 0;
+	while (!m_stoprequested)
+	{
+		sleep_seconds(1);
+		sec_counter++;
+		if (bFirstTime)
+		{
+			bFirstTime = false;
+			if (mIsConnected)
+			{
+				try {
+					disconnect();
+					close();
+				}
+				catch (...)
+				{
+					//Don't throw from a Stop command
+				}
+			}
+			_log.Log(LOG_STATUS, "YeelightTCP: trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+			connect(m_szIPAddress, m_usIPPort);
+		}
+		else
+		{
+			if ((m_bDoRestart) && (sec_counter % 30 == 0))
+			{
+				_log.Log(LOG_STATUS, "YeelightTCP: trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+				try {
+					disconnect();
+					close();
+				}
+				catch (...)
+				{
+					//Don't throw from a Stop command
+				}
+				connect(m_szIPAddress, m_usIPPort);
+			}
+			update();
+		}
+	}
+	_log.Log(LOG_STATUS, "YeelightTCP: TCP/IP Worker stopped...");
+}
+
+void Yeelight::YeelightTCP::OnConnect()
+{
+	_log.Log(LOG_STATUS, "Yeelight: connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+	m_bDoRestart = false;
+}
+
+void Yeelight::YeelightTCP::OnDisconnect()
+{
+	_log.Log(LOG_STATUS, "Yeelight: %s disconnected", m_szIPAddress.c_str());
+	m_bDoRestart = true;
+}
+
+void Yeelight::YeelightTCP::OnData(const unsigned char * pData, size_t length)
+{
+	/*
+	turn on: {"method":"props","params":{"power":"on"}}
+	turn off: {"method":"props","params":{"power":"off"}}
+	Set to Hue {"method":"props","params":{"color_mode":1}}
+	set to White: {"method":"props","params":{"color_mode":2}}
+	set to Flow: {"method":"props","params":{"flow_params":"0,0,2000,1,13902592,78,2000,1,11654144,78,2000,1,54413,78,2000,1,6947028,78"}}
+	night mode {"method":"props","params":{"bright":1,"rgb":16750848}}
+	happy birthday  {"method":"props","params":{"flowing":1}}  {"method":"props","params":{"flow_params":"0,1,2000,1,14438425,80,2000,1,14448670,80,2000,1,11153940,80"}}
+	movie {"method":"props","params":{"flowing":0}}  {"method":"props","params":{"bright":50,"rgb":1315890}}
+	change brightness {"method":"props","params":{"bright":2}}
+	change colour {"method":"props","params":{"rgb":1468928}}
+	*/
+
+	std::string receivedString;
+	receivedString.assign((char *)pData, length);
+#ifdef DEBUG_YeeLightW
+	SaveString2Disk(receivedString, "E:\\YeeLightTCP_receive.txt");
+#endif
+
+	Json::Value root;
+	Json::Reader reader;
+	if (!reader.parse(receivedString, root))
+		return;
+
+	std::string yeelightStatus = "";
+	std::string yeelightBright = "";
+	std::string yeelightHue = "";
+	std::string yeelightRgb = "";
+	std::string yeelightFlowing = "";
+
+	bool foundParam = false;
+	if (root.isMember("params")) {
+		if (root["params"].isMember("power"))
+		{
+			yeelightStatus = root["params"]["power"].asCString();
+			foundParam = true;
+		}
+		if (root["params"].isMember("bright"))
+		{
+			yeelightBright = std::to_string(root["params"]["bright"].asInt());
+			foundParam = true;
+		}
+		if (root["params"].isMember("hue"))
+		{
+			float cHue = (359.0f / 255.0f)*float(root["params"]["hue"].asInt());
+			yeelightHue = std::to_string(cHue);
+			foundParam = true;
+		}
+		if (root["params"].isMember("rgb"))
+		{
+			yeelightRgb = std::to_string(root["params"]["rgb"].asInt());
+			float cRgb = (359.0f / 255.0f)*float(root["params"]["rgb"].asInt());
+			yeelightHue = std::to_string(cRgb);
+			foundParam = true;
+		}
+		if (root["params"].isMember("flowing"))
+		{
+			yeelightFlowing = std::to_string(root["params"]["flowing"].asInt());
+			foundParam = true;
+		}
+	}
+	else if (root.isMember("id")) {
+		foundParam = true;
+	}
+	if (foundParam) {
+		bool bIsOn = true;
+		if (yeelightStatus == "off") {
+			bIsOn = false;
+		}
+		Yeelight yeelight(m_HwdID);
+		yeelight.UpdateSwitch(m_Type, m_szIPAddress, bIsOn, yeelightBright, yeelightHue, yeelightRgb);
+	}
+	else {
+		if (!root.isMember("id")) {
+			_log.Log(LOG_STATUS, "Yeelight: unhandled data: %s", receivedString.c_str());
+		}
+	}
+}
+
+void Yeelight::YeelightTCP::OnError(const std::exception e)
+{
+	_log.Log(LOG_ERROR, "Yeelight: Error: %s", e.what());
+}
+
+void Yeelight::YeelightTCP::OnError(const boost::system::error_code & error)
+{
+	if (
+		(error == boost::asio::error::address_in_use) ||
+		(error == boost::asio::error::connection_refused) ||
+		(error == boost::asio::error::access_denied) ||
+		(error == boost::asio::error::host_unreachable) ||
+		(error == boost::asio::error::timed_out)
+		)
+	{
+		_log.Log(LOG_ERROR, "Yeelight: Cannot connect to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+	}
+	else if (
+		(error == boost::asio::error::eof) ||
+		(error == boost::asio::error::connection_reset)
+		)
+	{
+		_log.Log(LOG_STATUS, "Yeelight: Connection reset!");
+	}
+	else
+		_log.Log(LOG_ERROR, "Yeelight: %s", error.message().c_str());
+}
