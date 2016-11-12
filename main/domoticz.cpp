@@ -788,7 +788,7 @@ int main(int argc, char**argv)
 		dbasefile = cmdLine.GetSafeArgument("-dbase", 0, "domoticz.db");
 	}
 
-	if (! file_exist(dbasefile.c_str()) and file_exist(szBackupLatest.c_str()) and cmdLine.HasSwitch("-autorestore"))
+	if (! file_exist(dbasefile.c_str()) && file_exist(szBackupLatest.c_str()) && cmdLine.HasSwitch("-autorestore"))
 	{
 		_log.Log(LOG_STATUS, "DB file does not exist, restoring from latest backup...");
 		std::ifstream  src(szBackupLatest.c_str() , std::ios::binary);
