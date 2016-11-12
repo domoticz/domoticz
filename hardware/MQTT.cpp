@@ -514,7 +514,7 @@ void MQTT::SendDeviceInfo(const int m_HwdID, const uint64_t DeviceRowIdx, const 
 	if (!m_IsConnected)
 		return;
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT DeviceID, Unit, Name, [Type], SubType, nValue, sValue, SwitchType, SignalLevel, BatteryLevel, Options FROM DeviceStatus WHERE (HardwareID==%d) AND (ID==%" PRIu64 ")", m_HwdID, DeviceRowIdx);
+	result = m_sql.safe_query("SELECT DeviceID, Unit, Name, [Type], SubType, nValue, sValue, SwitchType, SignalLevel, BatteryLevel, Options, Description FROM DeviceStatus WHERE (HardwareID==%d) AND (ID==%" PRIu64 ")", m_HwdID, DeviceRowIdx);
 	if (result.size() > 0)
 	{
 		std::vector<std::string> sd = result[0];
@@ -529,6 +529,7 @@ void MQTT::SendDeviceInfo(const int m_HwdID, const uint64_t DeviceRowIdx, const 
 		int RSSI = atoi(sd[8].c_str());
 		int BatteryLevel = atoi(sd[9].c_str());
 		std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sd[10]);
+		std::string description = sd[11];
 
 		Json::Value root;
 
@@ -554,6 +555,7 @@ void MQTT::SendDeviceInfo(const int m_HwdID, const uint64_t DeviceRowIdx, const 
 		root["RSSI"] = RSSI;
 		root["Battery"] = BatteryLevel;
 		root["nvalue"] = nvalue;
+		root["description"] = description;
 
 		//give all svalues separate
 		std::vector<std::string> strarray;
