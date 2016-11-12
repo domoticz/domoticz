@@ -10,6 +10,7 @@
 #include "../main/SQLHelper.h"
 #include "../main/WebServer.h"
 #include "../webserver/cWebem.h"
+#include <inttypes.h>
 
 typedef struct _STR_TABLE_ID1_ID2 {
 	unsigned long    id1;
@@ -51,7 +52,7 @@ void CDataPush::UpdateActive()
 	m_bLinkActive = (fActive == 1);
 }
 
-void CDataPush::OnDeviceReceived(const int m_HwdID, const unsigned long long DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
+void CDataPush::OnDeviceReceived(const int m_HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
 {
 	m_DeviceRowIdx = DeviceRowIdx;
 	if (m_bLinkActive)
@@ -89,7 +90,7 @@ void CDataPush::DoFibaroPush()
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query(
 		"SELECT A.DeviceID, A.DelimitedValue, B.ID, B.Type, B.SubType, B.nValue, B.sValue, A.TargetType, A.TargetVariable, A.TargetDeviceID, A.TargetProperty, A.IncludeUnit, B.SwitchType FROM FibaroLink as A, DeviceStatus as B "
-		"WHERE (A.DeviceID == '%llu' AND A.Enabled = '1' AND A.DeviceID==B.ID)",
+		"WHERE (A.DeviceID == '%" PRIu64 "' AND A.Enabled = '1' AND A.DeviceID==B.ID)",
 		m_DeviceRowIdx);
 	if (result.size()>0)
 	{

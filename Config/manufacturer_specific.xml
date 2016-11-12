@@ -234,6 +234,7 @@
 	</Manufacturer>
 	<Manufacturer id="0002" name="Danfoss">
 		<Product type="0003" id="8010" name="RS Room Sensor" config="danfoss/rsroom.xml"/>
+		<Product type="8003" id="8001" name="RS Room Sensor" config="danfoss/rsroom.xml"/>
 		<Product type="0005" id="0175" name="Devolo Home Control Radiator Thermostat" config="danfoss/z.xml"/>
 		<Product type="0005" id="0003" name="Z Thermostat" config="danfoss/z.xml"/>
 		<Product type="0005" id="0004" name="Z Thermostat 014G0013" config="danfoss/z.xml"/>
@@ -268,9 +269,9 @@
 		<Product type="0001" id="0001" name="Switchkeeper Plug-in Appliance Module"/>
 	</Manufacturer>
 	<Manufacturer id="014a" name="Ecolink">
-		<Product type="0001" id="0001" name="PIR Motion Sensor"/>
-		<Product type="0001" id="0002" name="Door/Window Sensor"/>
-		<Product type="0001" id="0003" name="Garage Door Sensor"/>
+		<Product type="0001" id="0001" name="PIR Motion Sensor" config="ecolink/sensor.xml"/>
+		<Product type="0001" id="0002" name="Door/Window Sensor" config="ecolink/sensor.xml"/>
+		<Product type="0001" id="0003" name="Garage Door Sensor" config="ecolink/sensor.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0087" name="Eka Systems">
 	</Manufacturer>

@@ -7,6 +7,7 @@
 #include "../webserver/cWebem.h"
 #include "../json/json.h"
 #include "hardwaretypes.h"
+#include <inttypes.h>
 
 CDummy::CDummy(const int ID)
 {
@@ -83,7 +84,7 @@ namespace http {
 
 			bool bPrevAcceptNewHardware = m_sql.m_bAcceptNewHardware;
 			m_sql.m_bAcceptNewHardware = true;
-			unsigned long long DeviceRowIdx = -1;
+			uint64_t DeviceRowIdx = -1;
 			switch (iSensorType)
 			{
 			case 1:
@@ -256,7 +257,7 @@ namespace http {
 					if (DeviceRowIdx != -1)
 					{
 						//Set switch type to dimmer
-						m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (ID==%llu)", STYPE_Dimmer, DeviceRowIdx);
+						m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (ID==%" PRIu64 ")", STYPE_Dimmer, DeviceRowIdx);
 					}
 					bCreated = true;
 				}
@@ -335,7 +336,7 @@ namespace http {
 					if (DeviceRowIdx != -1)
 					{
 						//Set switch type to selector
-						m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (ID==%llu)", STYPE_Selector, DeviceRowIdx);
+						m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (ID==%" PRIu64 ")", STYPE_Selector, DeviceRowIdx);
 						//Set default device options
 						m_sql.SetDeviceOptions(DeviceRowIdx, m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Level1|Level2|Level3", false));
 					}
@@ -351,7 +352,7 @@ namespace http {
 					if (DeviceRowIdx != -1)
 					{
 						//Set switch type to dimmer
-						m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (ID==%llu)", STYPE_Dimmer, DeviceRowIdx);
+						m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (ID==%" PRIu64 ")", STYPE_Dimmer, DeviceRowIdx);
 					}
 					bCreated = true;
 				}
@@ -366,7 +367,7 @@ namespace http {
 					if (DeviceRowIdx != -1)
 					{
 						//Set the Label
-						m_sql.safe_query("UPDATE DeviceStatus SET Options='%q' WHERE (ID==%llu)", soptions.c_str(), DeviceRowIdx);
+						m_sql.safe_query("UPDATE DeviceStatus SET Options='%q' WHERE (ID==%" PRIu64 ")", soptions.c_str(), DeviceRowIdx);
 					}
 					bCreated = true;
 				}
@@ -382,7 +383,7 @@ namespace http {
 			}
 			if (DeviceRowIdx != -1)
 			{
-				m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', Used=1 WHERE (ID==%llu)", ssensorname.c_str(), DeviceRowIdx);
+				m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', Used=1 WHERE (ID==%" PRIu64 ")", ssensorname.c_str(), DeviceRowIdx);
 				m_mainworker.m_eventsystem.GetCurrentStates();
 			}
 		}
