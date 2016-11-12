@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Dummy.h"
 #include "../main/Helper.h"
+#include "../main/Logger.h"
 #include "../main/SQLHelper.h"
 #include "../main/mainworker.h"
 #include "../main/WebServer.h"
@@ -41,6 +42,18 @@ bool CDummy::StopHardware()
 
 bool CDummy::WriteToHardware(const char *pdata, const unsigned char length)
 {
+#ifdef _DEBUG
+	if (length < 2)
+		return false;
+	std::stringstream sTmp;
+	std::string sdevicetype = RFX_Type_Desc(pdata[1], 1);
+	if (pdata[1] == pTypeGeneral)
+	{
+		const _tGeneralDevice *pMeter = reinterpret_cast<const _tGeneralDevice*>(pdata);
+		sdevicetype += "/" + std::string(RFX_Type_SubType_Desc(pMeter->type, pMeter->subtype));
+	}
+	_log.Log(LOG_STATUS, "Dummy: Received null operation for %s", sdevicetype.c_str());
+#endif
 	return true;
 }
 

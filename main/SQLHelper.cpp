@@ -2744,6 +2744,14 @@ void CSQLHelper::Do_Work()
 					_log.Log(LOG_ERROR, "Variable not found!");
 				}
 			}
+			else if (itt->_ItemType == TITEM_SET_SETPOINT)
+			{
+				std::stringstream sstr;
+				sstr << itt->_idx;
+				std::string idx = sstr.str();
+				float fValue = (float)atof(itt->_sValue.c_str());
+				m_mainworker.SetSetPoint(idx, fValue);
+			}
 			else if (itt->_ItemType == TITEM_SEND_NOTIFICATION)
 			{
 				std::vector<std::string> splitresults;

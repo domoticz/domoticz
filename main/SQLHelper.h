@@ -38,6 +38,7 @@ enum _eTaskItemType
 	TITEM_SET_VARIABLE,
 	TITEM_SEND_SMS,
 	TITEM_SEND_NOTIFICATION,
+	TITEM_SET_SETPOINT,
 };
 
 struct _tTaskItem
@@ -185,7 +186,15 @@ struct _tTaskItem
 		tItem._command = tSubject + "!#" + tBody + "!#" + tExtraData + "!#" + tSound;
 		return tItem;
 	}
-
+	static _tTaskItem SetSetPoint(const float DelayTime, const uint64_t idx, const std::string &varvalue)
+	{
+		_tTaskItem tItem;
+		tItem._ItemType = TITEM_SET_SETPOINT;
+		tItem._DelayTime = DelayTime;
+		tItem._idx = idx;
+		tItem._sValue = varvalue;
+		return tItem;
+	}
 };
 
 class CSQLHelper

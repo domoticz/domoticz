@@ -1961,8 +1961,15 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 		else if (deviceName.find("SendCamera:") == 0)
 		{
 			if (!atoi(deviceName.substr(11).c_str()))
-				continue;;
+				continue;
 			ScheduleEvent(deviceName, doWhat, eventName);
+			actionsDone = true;
+			continue;
+		}
+		else if (deviceName.find("SetSetpoint:") == 0)
+		{
+			int idx = atoi(deviceName.substr(12).c_str());
+			m_sql.AddTaskItem(_tTaskItem::SetSetPoint(0.5f, idx, doWhat));
 			actionsDone = true;
 			continue;
 		}
