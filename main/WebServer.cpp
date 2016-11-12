@@ -9329,7 +9329,7 @@ namespace http {
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 							if (tstrarray.size() > 1)
 							{
-								root["result"][ii]["Barometer"] = szData;
+								root["result"][ii]["Barometer"] = atof(tstrarray[0].c_str());
 								int forecast = atoi(tstrarray[1].c_str());
 								root["result"][ii]["Forecast"] = forecast;
 								root["result"][ii]["ForecastStr"] = BMP_Forecast_Desc(forecast);
