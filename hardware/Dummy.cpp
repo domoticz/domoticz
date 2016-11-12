@@ -7,6 +7,7 @@
 #include "../webserver/cWebem.h"
 #include "../json/json.h"
 #include "hardwaretypes.h"
+#define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
 CDummy::CDummy(const int ID)

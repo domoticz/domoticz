@@ -52,6 +52,7 @@
 #include "../main/LuaHandler.h"
 
 #include "mainstructs.h"
+#define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
 #define round(a) ( int ) ( a + .5 )

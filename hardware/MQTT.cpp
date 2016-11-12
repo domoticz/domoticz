@@ -8,6 +8,7 @@
 #include "../main/SQLHelper.h"
 #include "../json/json.h"
 #include "../notifications/NotificationHelper.h"
+#define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
 #define RETRY_DELAY 30

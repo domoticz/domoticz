@@ -17,6 +17,7 @@
 #include "NotificationKodi.h"
 #include "NotificationLogitechMediaServer.h"
 #include "NotificationGCM.h"
+#define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
 #include <boost/lexical_cast.hpp>

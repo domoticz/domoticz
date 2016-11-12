@@ -12,6 +12,7 @@
 #include "../webserver/cWebem.h"
 #include "../main/mainworker.h"
 #include "../json/json.h"
+#define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
 CHttpPush::CHttpPush()

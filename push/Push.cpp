@@ -6,6 +6,7 @@
 #include "../main/RFXtrx.h"
 #include "../main/SQLHelper.h"
 #include "../main/Helper.h"
+#define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
 CPush::CPush()

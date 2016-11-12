@@ -11,6 +11,7 @@
 #include "../main/WebServer.h"
 #include "../webserver/Base64.h"
 #include "../webserver/cWebem.h"
+#define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
 #ifdef ENABLE_PYTHON

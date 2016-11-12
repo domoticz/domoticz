@@ -10,6 +10,7 @@
 #include "../main/SQLHelper.h"
 #include "../main/WebServer.h"
 #include "../webserver/cWebem.h"
+#define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
 typedef struct _STR_TABLE_ID1_ID2 {

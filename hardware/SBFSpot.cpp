@@ -10,6 +10,7 @@
 #include "../webserver/cWebem.h"
 #include "../json/json.h"
 #include "hardwaretypes.h"
+#define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
 #define round(a) ( int ) ( a + .5 )

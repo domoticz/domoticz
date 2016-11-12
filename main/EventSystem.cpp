@@ -17,6 +17,7 @@
 #include "WebServer.h"
 #include "../webserver/cWebem.h"
 #include "../json/json.h"
+#define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
 #ifdef WIN32

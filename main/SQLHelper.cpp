@@ -30,6 +30,7 @@
 #else
 	#include "../msbuild/WindowsHelper.h"
 #endif
+#define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
 #define DB_VERSION 106
