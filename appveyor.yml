@@ -3,7 +3,7 @@ os: Visual Studio 2015
 
 before_build:
 - ps: >-
-    nuget install Tools.InnoSetup -Version 5.5.6
+    nuget install Tools.InnoSetup
 
 build_script:
 - cd msbuild
