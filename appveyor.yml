@@ -1,8 +1,9 @@
 version: 1.0.{build}
 os: Visual Studio 2015
 
-install:
-- choco install -y InnoSetup
+before_build:
+- ps: >-
+    nuget install Tools.InnoSetup -Version 5.5.6
 
 build_script:
 - cd msbuild
