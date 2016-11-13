@@ -12,8 +12,6 @@ public:
 public:
 	void on_message(const struct mosquitto_message *message);
 	void on_connect(int rc);
-
-	bool AddDevice(const std::string &topicIn, const std::string &topicOut);
 private:
 	std::string m_TopicInWithoutHash;
 	void ProcessMySensorsMessage(const std::string &MySensorsMessage);
