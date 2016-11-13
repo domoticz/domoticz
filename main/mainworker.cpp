@@ -714,7 +714,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_MySensorsMQTT:
 		//LAN
-		pHardware = new MySensorsMQTT(ID, Address, Port, Username, Password, Filename, Mode1);
+		pHardware = new MySensorsMQTT(ID, Address, Port, Username, Password, Filename);
 		break;
 	case HTYPE_RFLINKTCP:
 		//LAN
