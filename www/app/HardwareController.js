@@ -327,8 +327,11 @@ define(['app'], function (app) {
                 var username=$("#hardwarecontent #divlogin #username").val();
                 var password=$("#hardwarecontent #divlogin #password").val();
                 var extra="";
-                var Mode1="";
-                if ((text.indexOf("MQTT") >= 0)) {
+                var Mode1 = "";
+                if ((text.indexOf("MySensors Gateway with MQTT") >= 0)) {
+                    extra = $("#hardwarecontent #divmysensorsmqtt #filename").val();
+                }
+                else if ((text.indexOf("MQTT") >= 0)) {
 					extra=$("#hardwarecontent #divmqtt #filename").val();
 					Mode1 = $("#hardwarecontent #divmqtt #combotopicselect").val();
 				}
@@ -1136,10 +1139,13 @@ define(['app'], function (app) {
                 var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
                 var extra = "";
                 var mode1 = "";
-				if (text.indexOf("MQTT") >= 0) {
-					extra = encodeURIComponent($("#hardwarecontent #divmqtt #filename").val());
-					mode1 = $("#hardwarecontent #divmqtt #combotopicselect").val();
-				}
+                if (text.indexOf("MySensors Gateway with MQTT") >= 0) {
+                    extra = encodeURIComponent($("#hardwarecontent #divmysensorsmqtt #filename").val());
+                }
+                else if (text.indexOf("MQTT") >= 0) {
+                    extra = encodeURIComponent($("#hardwarecontent #divmqtt #filename").val());
+                    mode1 = $("#hardwarecontent #divmqtt #combotopicselect").val();
+                }
                 if ((text.indexOf("Harmony") >= 0) && (username == "")) {
                     ShowNotify($.t('Please enter a username!'), 2500, true);
                     return;
@@ -4395,7 +4401,7 @@ define(['app'], function (app) {
 
                     var SerialName="Unknown!?";
                     var intport=0;
-                    if ((HwTypeStr.indexOf("LAN") >= 0)||(HwTypeStr.indexOf("Domoticz") >= 0) ||(HwTypeStr.indexOf("Harmony") >= 0)||(HwTypeStr.indexOf("Philips Hue") >= 0))
+                    if ((HwTypeStr.indexOf("LAN") >= 0)||(HwTypeStr.indexOf("MySensors Gateway with MQTT") >= 0)||(HwTypeStr.indexOf("Domoticz") >= 0) ||(HwTypeStr.indexOf("Harmony") >= 0)||(HwTypeStr.indexOf("Philips Hue") >= 0))
                     {
                         SerialName=item.Port;
                     }
@@ -4686,7 +4692,7 @@ define(['app'], function (app) {
                                 }
                             }
                         }
-                        else if (((data["Type"].indexOf("LAN") >= 0) && (data["Type"].indexOf("YouLess") == -1) && (data["Type"].indexOf("Denkovi") == -1) && (data["Type"].indexOf("Satel Integra") == -1)) ||(data["Type"].indexOf("Domoticz") >= 0) ||(data["Type"].indexOf("Harmony") >= 0)) {
+                        else if ((((data["Type"].indexOf("LAN") >= 0) || data["Type"].indexOf("MySensors Gateway with MQTT") >= 0) && (data["Type"].indexOf("YouLess") == -1) && (data["Type"].indexOf("Denkovi") == -1) && (data["Type"].indexOf("Satel Integra") == -1)) || (data["Type"].indexOf("Domoticz") >= 0) || (data["Type"].indexOf("Harmony") >= 0)) {
                             $("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
                             $("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
                             if (data["Type"].indexOf("P1 Smart Meter") >= 0)
@@ -4694,7 +4700,7 @@ define(['app'], function (app) {
                                 $("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked",data["Mode2"]==0);
                             }
                         }
-                        else if (((data["Type"].indexOf("LAN") >= 0) && (data["Type"].indexOf("YouLess") >= 0)) || (data["Type"].indexOf("Domoticz") >= 0) || (data["Type"].indexOf("Denkovi") >= 0) ||(data["Type"].indexOf("Harmony") >= 0) ||(data["Type"].indexOf("Satel Integra") >= 0) ||(data["Type"].indexOf("Logitech Media Server") >= 0) ||(data["Type"].indexOf("HEOS by DENON") >= 0)) {
+                        else if ((((data["Type"].indexOf("LAN") >= 0) || data["Type"].indexOf("MySensors Gateway with MQTT") >= 0) && (data["Type"].indexOf("YouLess") >= 0)) || (data["Type"].indexOf("Domoticz") >= 0) || (data["Type"].indexOf("Denkovi") >= 0) || (data["Type"].indexOf("Harmony") >= 0) || (data["Type"].indexOf("Satel Integra") >= 0) || (data["Type"].indexOf("Logitech Media Server") >= 0) || (data["Type"].indexOf("HEOS by DENON") >= 0)) {
                             $("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
                             $("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
                             $("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
@@ -4738,7 +4744,10 @@ define(['app'], function (app) {
 			else if (data["Type"].indexOf("Goodwe solar inverter via Web") >= 0) {
 			    $("#hardwarecontent #hardwareparamsgoodweweb #username").val(data["Username"]);
 			}
-                        if (data["Type"].indexOf("MQTT") >= 0) {
+                        if (data["Type"].indexOf("MySensors Gateway with MQTT") >= 0) {
+                            $("#hardwarecontent #hardwareparamsmysensorsmqtt #filename").val(data["Extra"]);
+                        }
+                        else if (data["Type"].indexOf("MQTT") >= 0) {
                             $("#hardwarecontent #hardwareparamsmqtt #filename").val(data["Extra"]);
                             $("#hardwarecontent #hardwareparamsmqtt #combotopicselect").val(data["Mode1"]);
                         }
@@ -4755,8 +4764,8 @@ define(['app'], function (app) {
                             (data["Type"].indexOf("Sterbox") >= 0)||
                             (data["Type"].indexOf("Anna") >= 0)||
                             (data["Type"].indexOf("KMTronic") >= 0)||
-                            (data["Type"].indexOf("MQTT") >= 0)||
-                            (data["Type"].indexOf("Netatmo") >= 0)||
+                            (data["Type"].indexOf("MQTT") >= 0) ||
+                            (data["Type"].indexOf("Netatmo") >= 0) ||
                             (data["Type"].indexOf("Fitbit") >= 0)||
 							(data["Type"].indexOf("HTTP") >= 0)||
                             (data["Type"].indexOf("Thermosmart") >= 0) ||
@@ -4831,6 +4840,7 @@ define(['app'], function (app) {
             $("#hardwarecontent #divphilipshue").hide();
             $("#hardwarecontent #divwinddelen").hide();
             $("#hardwarecontent #divmqtt").hide();
+            $("#hardwarecontent #divmysensorsmqtt").hide();
             $("#hardwarecontent #divsolaredgeapi").hide();
             $("#hardwarecontent #divenecotoon").hide();
             $("#hardwarecontent #div1wire").hide();
@@ -4877,7 +4887,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
             }
-            else if (text.indexOf("LAN") >= 0 && text.indexOf("YouLess") == -1 && text.indexOf("Denkovi") == -1 && text.indexOf("Satel Integra") == -1)
+            else if ((text.indexOf("LAN") >= 0 || text.indexOf("MySensors Gateway with MQTT") >= 0) && text.indexOf("YouLess") == -1 && text.indexOf("Denkovi") == -1 && text.indexOf("Satel Integra") == -1)
             {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").show();
@@ -4889,7 +4899,7 @@ define(['app'], function (app) {
                     $("#hardwarecontent #divcrcp1").show();
                 }
             }
-            else if (text.indexOf("LAN") >= 0 && (text.indexOf("YouLess") >= 0 || text.indexOf("Denkovi") >= 0 || text.indexOf("Satel Integra") >= 0))
+            else if ((text.indexOf("LAN") >= 0 || text.indexOf("MySensors Gateway with MQTT") >= 0) && (text.indexOf("YouLess") >= 0 || text.indexOf("Denkovi") >= 0 || text.indexOf("Satel Integra") >= 0))
             {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").show();
@@ -5074,7 +5084,11 @@ define(['app'], function (app) {
 				) {
                 $("#hardwarecontent #divlogin").show();
             }
-            if (text.indexOf("MQTT") >= 0)
+            if (text.indexOf("MySensors Gateway with MQTT") >= 0)
+            {
+                $("#hardwarecontent #divmysensorsmqtt").show();
+            }
+            else if (text.indexOf("MQTT") >= 0)
             {
                 $("#hardwarecontent #divmqtt").show();
             }
