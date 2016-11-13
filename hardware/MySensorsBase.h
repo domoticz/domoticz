@@ -153,7 +153,12 @@ public:
 		I_DISCOVER = 20,
 		I_DISCOVER_RESPONSE = 21,
 		I_HEARTBEAT_RESPONSE = 22,
-		I_LOCKED = 23					//!< Node is locked (reason in string-payload)
+		I_LOCKED = 23,					//!< Node is locked (reason in string-payload)
+		I_PING = 24,	//!< Ping sent to node, payload incremental hop counter
+		I_PONG = 25,	//!< In return to ping, sent back to sender, payload incremental hop counter
+		I_REGISTRATION_REQUEST = 26,	//!< Register request to GW
+		I_REGISTRATION_RESPONSE = 27,	//!< Register response from GW
+		I_DEBUG = 28	//!< Debug message
 	};
 
 	struct _tMySensorValue
