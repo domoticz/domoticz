@@ -2,7 +2,7 @@ version: 1.0.{build}
 os: Visual Studio 2015
 
 install:
-- ps: cinst innosetup
+- choco install -y InnoSetup
 
 build_script:
 - cd msbuild
@@ -12,8 +12,7 @@ build_script:
 - msbuild msbuild\domoticz.sln /p:Configuration=Release /verbosity:minimal /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 - ps: cp appversion.h version_windows_x86.h
 - ps: cp History.txt history_windows_x86.txt
-- '"C:\Program Files (x86)\Inno Setup 5\ISCC.exe" msbuild\WindowsInstaller\DomoticzSetup.iss'
-- msbuild msbuild\package.proj
+- iscc msbuild\WindowsInstaller\DomoticzSetup.iss'
 
 artifacts:
 - path: domoticz_windows_x86.zip
