@@ -234,6 +234,7 @@
 	</Manufacturer>
 	<Manufacturer id="0002" name="Danfoss">
 		<Product type="0003" id="8010" name="RS Room Sensor" config="danfoss/rsroom.xml"/>
+		<Product type="8003" id="8001" name="RS Room Sensor" config="danfoss/rsroom.xml"/>
 		<Product type="0005" id="0175" name="Devolo Home Control Radiator Thermostat" config="danfoss/z.xml"/>
 		<Product type="0005" id="0003" name="Z Thermostat" config="danfoss/z.xml"/>
 		<Product type="0005" id="0004" name="Z Thermostat 014G0013" config="danfoss/z.xml"/>
@@ -268,9 +269,9 @@
 		<Product type="0001" id="0001" name="Switchkeeper Plug-in Appliance Module"/>
 	</Manufacturer>
 	<Manufacturer id="014a" name="Ecolink">
-		<Product type="0001" id="0001" name="PIR Motion Sensor"/>
-		<Product type="0001" id="0002" name="Door/Window Sensor"/>
-		<Product type="0001" id="0003" name="Garage Door Sensor"/>
+		<Product type="0001" id="0001" name="PIR Motion Sensor" config="ecolink/sensor.xml"/>
+		<Product type="0001" id="0002" name="Door/Window Sensor" config="ecolink/sensor.xml"/>
+		<Product type="0001" id="0003" name="Garage Door Sensor" config="ecolink/sensor.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0087" name="Eka Systems">
 	</Manufacturer>
@@ -457,6 +458,7 @@
 		<Product type="4952" id="3031" name="12721 Lighting Control Duplex Receptacle" config="ge/receptacle.xml"/>
 		<Product type="4952" id="3032" name="12722 On/Off Relay Switch" config="ge/relay.xml"/>
 		<Product type="4952" id="3033" name="12727 In-Wall Smart Switch (Toggle)"/>
+  	<Product type="4953" id="3032" name="32563 Hinge Pin Smart Door Sensor" config="ge/hinge-pin.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0099" name="GreenWave">
 		<Product type="0001" id="0002" name="One Gateway"/>
@@ -575,6 +577,7 @@
         <Product type="4450" id="3030" name="PD300Z-2 Plug-in Dimmer Module" config="linear/PD300Z-2.xml"/>
         <Product type="4457" id="3034" name="WD500Z-1 Wall Dimmer Switch" config="linear/WD500Z-1.xml"/>
         <Product type="4457" id="3331" name="WD1000Z-1 Wall Dimmer Switch"/>
+        <Product type="5343" id="3132" name="WA00Z-1 Scene Switch" config="linear/WA00Z-1.xml"/>
         <Product type="5246" id="3133" name="FS20Z Isolated Contact Fixture Module"/>
         <Product type="5250" id="3030" name="PS15Z-2 Plug-in Appliance Module"/>
         <Product type="5252" id="3530" name="WO15Z-1 Single Wall Outlet"/>
@@ -746,8 +749,9 @@
 		<Product type="0004" id="0001" name="ZMNHJA2 Flush Dimmer Pilot Wire" config="qubino/ZMNHJA2.xml"/>
 		<Product type="0004" id="0051" name="ZMNHJD1 Flush Dimmer Pilot Wire" config="qubino/ZMNHJD1.xml"/>
 		<Product type="0004" id="0052" name="ZMNHUD1 DIN Pilot Wire" config="qubino/ZMNHUD1.xml"/>
-		<Product type="0005" id="0001" name="ZMNHIA2 Flush on/off thermostat" config="qubino/ZMNHIA2.xml"/>
-		<Product type="0005" id="0051" name="ZMNHIDx Flush on/off thermostat" config="qubino/ZMNHIDx.xml"/>
+		<Product type="0005" id="0001" name="ZMNHIA2 Flush on/off thermostat" config="qubino/ZMNHIA2.xml"/>		
+		<Product type="0005" id="0051" name="ZMNHIDx Flush on/off thermostat (H1S1P1)" config="qubino/ZMNHIDxS1.xml"/>
+		<!--<Product type="0005" id="0051" name="ZMNHIDx Flush on/off thermostat (H1S2P1)" config="qubino/ZMNHIDxS2.xml"/>-->		
 		<Product type="0005" id="0052" name="ZMNHKDx Flush Heat and Cool thermostat" config="qubino/ZMNHKDx.xml"/>
 		<Product type="0005" id="0053" name="ZMNHLDx Flush PWM thermostat" config="qubino/ZMNHLDx.xml"/>
 		<Product type="0005" id="0003" name="ZMNHLA2 Flush PWM thermostat" config="qubino/ZMNHLAx.xml"/>
@@ -904,6 +908,7 @@
 		<Product type="2014" id="1401" name="ZL7101 Plug-in Dimmer Module"/>
 		<Product type="2017" id="1717" name="ZL7432 In-Wall Switch, Dual Relay"/>
 		<Product type="201f" id="1f10" name="ZD2201 Multisensor 4in1" config="vision/zd2201.xml"/>
+		<Product type="201f" id="1f20" name="ZD2301 Multisensor 4in1" config="vision/zd2301.xml"/>
 		<Product type="2021" id="2101" name="ZP3111 Multisensor 4in1" config="vision/zp3111.xml"/>
 		<Product type="3001" id="0104" name="ZM1602 Main Operated Siren"/>
 	</Manufacturer>
@@ -984,6 +989,7 @@
 	</Manufacturer>
     <Manufacturer id="027a" name="Zooz">
         <Product type="0003" id="0082" name="ZSE08 Contact Sensor" config="zooz/zse08.xml"/>
+        <Product type="0003" id="0083" name="ZSE09 Mini Sensor" config="zooz/zse09.xml"/>        
         <Product type="0003" id="0087" name="ZEN07 Mini Plug" config="zooz/zen07.xml"/>
     </Manufacturer>
 	<Manufacturer id="0021" name="Zykronix">

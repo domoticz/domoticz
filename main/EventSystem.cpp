@@ -17,6 +17,8 @@
 #include "WebServer.h"
 #include "../webserver/cWebem.h"
 #include "../json/json.h"
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
 
 #ifdef WIN32
 #include "dirent_windows.h"
@@ -239,7 +241,6 @@ void CEventSystem::GetCurrentStates()
 
 	_log.Log(LOG_STATUS, "EventSystem: reset all device statuses...");
 	m_devicestates.clear();
-	m_IsDevicesLoaded = false;
 
 	result = m_sql.safe_query(
 		"SELECT A.HardwareID, A.ID, A.Name, A.nValue, A.sValue, A.Type, A.SubType, A.SwitchType, A.LastUpdate, A.LastLevel, A.Options "
@@ -341,36 +342,33 @@ void CEventSystem::GetCurrentScenesGroups()
 	}
 }
 
-void CEventSystem::GetCurrentMeasurementStates(const unsigned long long DeviceID)
+void CEventSystem::GetCurrentMeasurementStates()
 {
-	if (!m_IsDevicesLoaded)
-	{
-		m_tempValuesByName.clear();
-		m_dewValuesByName.clear();
-		m_humValuesByName.clear();
-		m_baroValuesByName.clear();
-		m_utilityValuesByName.clear();
-		m_rainValuesByName.clear();
-		m_rainLastHourValuesByName.clear();
-		m_uvValuesByName.clear();
-		m_weatherValuesByName.clear();
-		m_winddirValuesByName.clear();
-		m_windspeedValuesByName.clear();
-		m_windgustValuesByName.clear();
+	m_tempValuesByName.clear();
+	m_dewValuesByName.clear();
+	m_humValuesByName.clear();
+	m_baroValuesByName.clear();
+	m_utilityValuesByName.clear();
+	m_rainValuesByName.clear();
+	m_rainLastHourValuesByName.clear();
+	m_uvValuesByName.clear();
+	m_weatherValuesByName.clear();
+	m_winddirValuesByName.clear();
+	m_windspeedValuesByName.clear();
+	m_windgustValuesByName.clear();
 
-		m_tempValuesByID.clear();
-		m_dewValuesByID.clear();
-		m_humValuesByID.clear();
-		m_baroValuesByID.clear();
-		m_utilityValuesByID.clear();
-		m_rainValuesByID.clear();
-		m_rainLastHourValuesByID.clear();
-		m_uvValuesByID.clear();
-		m_weatherValuesByID.clear();
-		m_winddirValuesByID.clear();
-		m_windspeedValuesByID.clear();
-		m_windgustValuesByID.clear();
-	}
+	m_tempValuesByID.clear();
+	m_dewValuesByID.clear();
+	m_humValuesByID.clear();
+	m_baroValuesByID.clear();
+	m_utilityValuesByID.clear();
+	m_rainValuesByID.clear();
+	m_rainLastHourValuesByID.clear();
+	m_uvValuesByID.clear();
+	m_weatherValuesByID.clear();
+	m_winddirValuesByID.clear();
+	m_windspeedValuesByID.clear();
+	m_windgustValuesByID.clear();
 
 	std::stringstream szQuery;
 
@@ -395,9 +393,8 @@ void CEventSystem::GetCurrentMeasurementStates(const unsigned long long DeviceID
 
 	//char szTmp[300];
 
-	typedef std::map<unsigned long long, _tDeviceStatus>::iterator it_type;
+	typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
 	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
-		if (!m_IsDevicesLoaded || (DeviceID == iterator->first))
 	{
 		_tDeviceStatus sitem = iterator->second;
 		std::vector<std::string> splitresults;
@@ -485,7 +482,7 @@ void CEventSystem::GetCurrentMeasurementStates(const unsigned long long DeviceID
 			break;
 		case pTypeTEMP_HUM_BARO:
 			if (splitresults.size() < 5) {
-				_log.Log(LOG_ERROR, "TEMP_HUM_BARO missing values : ID=%llu, sValue=%s", sitem.ID, sitem.sValue.c_str());
+				_log.Log(LOG_ERROR, "TEMP_HUM_BARO missing values : ID=%" PRIu64 ", sValue=%s", sitem.ID, sitem.sValue.c_str());
 				continue;
 			}
 			temp = static_cast<float>(atof(splitresults[0].c_str()));
@@ -687,7 +684,7 @@ void CEventSystem::GetCurrentMeasurementStates(const unsigned long long DeviceID
 					sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
 
 					std::vector<std::vector<std::string> > result2;
-					result2 = m_sql.safe_query("SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=%llu AND Date>='%q')",
+					result2 = m_sql.safe_query("SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
 						sitem.ID, szDate);
 					if (result2.size() > 0)
 					{
@@ -759,13 +756,13 @@ void CEventSystem::GetCurrentMeasurementStates(const unsigned long long DeviceID
 				if (sitem.subType != sTypeRAINWU)
 				{
 					result2 = m_sql.safe_query(
-						"SELECT MIN(Total), MAX(Total) FROM Rain WHERE (DeviceRowID=%llu AND Date>='%q')",
+						"SELECT MIN(Total), MAX(Total) FROM Rain WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
 						sitem.ID, szDate);
 				}
 				else
 				{
 					result2 = m_sql.safe_query(
-						"SELECT Total, Total FROM Rain WHERE (DeviceRowID=%llu AND Date>='%q') ORDER BY ROWID DESC LIMIT 1",
+						"SELECT Total, Total FROM Rain WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q') ORDER BY ROWID DESC LIMIT 1",
 						sitem.ID, szDate);
 				}
 				if (result2.size()>0)
@@ -811,7 +808,7 @@ void CEventSystem::GetCurrentMeasurementStates(const unsigned long long DeviceID
 				sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
 
 				std::vector<std::vector<std::string> > result2;
-				result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID=%llu AND Date>='%q')",
+				result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
 					sitem.ID, szDate);
 				if (result2.size()>0)
 				{
@@ -851,7 +848,7 @@ void CEventSystem::GetCurrentMeasurementStates(const unsigned long long DeviceID
 				sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
 
 				std::vector<std::vector<std::string> > result2;
-				result2 = m_sql.safe_query("SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=%llu AND Date>='%q')",
+				result2 = m_sql.safe_query("SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
 					sitem.ID, szDate);
 				if (result2.size()>0)
 				{
@@ -948,7 +945,6 @@ void CEventSystem::GetCurrentMeasurementStates(const unsigned long long DeviceID
 			m_windgustValuesByID[sitem.ID] = windgust;
 		}
 	}
-	m_IsDevicesLoaded = true;
 }
 
 void CEventSystem::RemoveSingleState(int ulDevID)
@@ -960,19 +956,19 @@ void CEventSystem::RemoveSingleState(int ulDevID)
 
 	//_log.Log(LOG_STATUS,"EventSystem: deleted device %d",ulDevID);
 	m_devicestates.erase(ulDevID);
-	m_IsDevicesLoaded = false;
+
 }
 
-void CEventSystem::WWWUpdateSingleState(const unsigned long long ulDevID, const std::string &devname)
+void CEventSystem::WWWUpdateSingleState(const uint64_t ulDevID, const std::string &devname)
 {
 	if (!m_bEnabled)
 		return;
 
 	boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 
-	std::map<unsigned long long, _tDeviceStatus>::iterator itt = m_devicestates.find(ulDevID);
+	std::map<uint64_t, _tDeviceStatus>::iterator itt = m_devicestates.find(ulDevID);
 	if (itt != m_devicestates.end()) {
-		//_log.Log(LOG_STATUS,"EventSystem: www update device %llu",ulDevID);
+		//_log.Log(LOG_STATUS,"EventSystem: www update device %" PRIu64 "",ulDevID);
 
 		// Fix string capacity to avoid map entry resizing
 		std::string l_deviceName;		l_deviceName.reserve(100);		l_deviceName.assign(devname);
@@ -993,7 +989,7 @@ void CEventSystem::WWWUpdateSecurityState(int securityStatus)
 	EvaluateEvent("security");
 }
 
-std::string CEventSystem::UpdateSingleState(const unsigned long long ulDevID, const std::string &devname, const int nValue, const char* sValue, const unsigned char devType, const unsigned char subType, const _eSwitchType switchType, const std::string &lastUpdate, const unsigned char lastLevel, const std::map<std::string, std::string> & options)
+std::string CEventSystem::UpdateSingleState(const uint64_t ulDevID, const std::string &devname, const int nValue, const char* sValue, const unsigned char devType, const unsigned char subType, const _eSwitchType switchType, const std::string &lastUpdate, const unsigned char lastLevel, const std::map<std::string, std::string> & options)
 {
 	std::string nValueWording = nValueToWording(devType, subType, switchType, nValue, sValue, options);
 
@@ -1005,9 +1001,9 @@ std::string CEventSystem::UpdateSingleState(const unsigned long long ulDevID, co
 
 	boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 
-	std::map<unsigned long long, _tDeviceStatus>::iterator itt = m_devicestates.find(ulDevID);
+	std::map<uint64_t, _tDeviceStatus>::iterator itt = m_devicestates.find(ulDevID);
 	if (itt != m_devicestates.end()) {
-		//_log.Log(LOG_STATUS,"EventSystem: update device %llu",ulDevID);
+		//_log.Log(LOG_STATUS,"EventSystem: update device %" PRIu64 "",ulDevID);
 		_tDeviceStatus replaceitem = itt->second;
 		replaceitem.deviceName = l_deviceName;
 		replaceitem.nValue = nValue;
@@ -1017,7 +1013,7 @@ std::string CEventSystem::UpdateSingleState(const unsigned long long ulDevID, co
 		replaceitem.lastLevel = lastLevel;
 		itt->second = replaceitem;
 	} else {
-		//_log.Log(LOG_STATUS,"EventSystem: insert device %llu",ulDevID);
+		//_log.Log(LOG_STATUS,"EventSystem: insert device %" PRIu64 "",ulDevID);
 		_tDeviceStatus newitem;
 		newitem.devType = devType;
 		newitem.subType = subType;
@@ -1031,12 +1027,11 @@ std::string CEventSystem::UpdateSingleState(const unsigned long long ulDevID, co
 		newitem.lastLevel = lastLevel;
 		m_devicestates[newitem.ID] = newitem;
 	}
-	m_IsDevicesLoaded = false;
 	return nValueWording;
 }
 
 
-void CEventSystem::ProcessDevice(const int HardwareID, const unsigned long long ulDevID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, const std::string &devname, const int varId)
+void CEventSystem::ProcessDevice(const int HardwareID, const uint64_t ulDevID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, const std::string &devname, const int varId)
 {
 	if (!m_bEnabled)
 		return;
@@ -1066,7 +1061,7 @@ void CEventSystem::ProcessMinute()
 	EvaluateEvent("time");
 }
 
-void CEventSystem::ProcessUserVariable(const unsigned long long varId)
+void CEventSystem::ProcessUserVariable(const uint64_t varId)
 {
 	if (!m_bEnabled)
 		return;
@@ -1079,12 +1074,12 @@ void CEventSystem::EvaluateEvent(const std::string &reason)
 	EvaluateEvent(reason, 0, "", 0, "", "", 0);
 }
 
-void CEventSystem::EvaluateEvent(const std::string &reason, const unsigned long long varId)
+void CEventSystem::EvaluateEvent(const std::string &reason, const uint64_t varId)
 {
 	EvaluateEvent(reason, 0, "", 0, "", "", varId);
 }
 
-void CEventSystem::EvaluateEvent(const std::string &reason, const unsigned long long DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const unsigned long long varId)
+void CEventSystem::EvaluateEvent(const std::string &reason, const uint64_t DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const uint64_t varId)
 {
 	if (!m_bEnabled)
 		return;
@@ -1231,7 +1226,7 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const unsigned long 
 	}
 }
 
-lua_State *CEventSystem::CreateBlocklyLuaState(const unsigned long long DeviceID)
+lua_State *CEventSystem::CreateBlocklyLuaState()
 {
 	lua_State *lua_state = luaL_newstate();
 	if (lua_state == NULL)
@@ -1267,7 +1262,7 @@ lua_State *CEventSystem::CreateBlocklyLuaState(const unsigned long long DeviceID
 	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 	lua_createtable(lua_state, (int)m_devicestates.size(), 0);
 
-	typedef std::map<unsigned long long, _tDeviceStatus>::iterator it_type;
+	typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
 	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator) {
 		_tDeviceStatus sitem = iterator->second;
 		lua_pushnumber(lua_state, (lua_Number)sitem.ID);
@@ -1279,7 +1274,7 @@ lua_State *CEventSystem::CreateBlocklyLuaState(const unsigned long long DeviceID
 
 	lua_createtable(lua_state, (int)m_uservariables.size(), 0);
 
-	typedef std::map<unsigned long long, _tUserVariable>::iterator it_var;
+	typedef std::map<uint64_t, _tUserVariable>::iterator it_var;
 	for (it_var iterator = m_uservariables.begin(); iterator != m_uservariables.end(); ++iterator) {
 		_tUserVariable uvitem = iterator->second;
 		if (uvitem.variableType == 0) {
@@ -1304,13 +1299,11 @@ lua_State *CEventSystem::CreateBlocklyLuaState(const unsigned long long DeviceID
 	lua_setglobal(lua_state, "variable");
 
 	boost::lock_guard<boost::mutex> measurementStatesMutexLock(m_measurementStatesMutex);
-
-	if (DeviceID > 0)
-		GetCurrentMeasurementStates(DeviceID);
+	GetCurrentMeasurementStates();
 
 	if (m_tempValuesByID.size() > 0) {
 		lua_createtable(lua_state, (int)m_tempValuesByID.size(), 0);
-		std::map<unsigned long long, float>::iterator p;
+		std::map<uint64_t, float>::iterator p;
 		for (p = m_tempValuesByID.begin(); p != m_tempValuesByID.end(); ++p)
 		{
 			lua_pushnumber(lua_state, (lua_Number)p->first);
@@ -1321,7 +1314,7 @@ lua_State *CEventSystem::CreateBlocklyLuaState(const unsigned long long DeviceID
 	}
 	if (m_dewValuesByID.size() > 0) {
 		lua_createtable(lua_state, (int)m_dewValuesByID.size(), 0);
-		std::map<unsigned long long, float>::iterator p;
+		std::map<uint64_t, float>::iterator p;
 		for (p = m_dewValuesByID.begin(); p != m_dewValuesByID.end(); ++p)
 		{
 			lua_pushnumber(lua_state, (lua_Number)p->first);
@@ -1332,7 +1325,7 @@ lua_State *CEventSystem::CreateBlocklyLuaState(const unsigned long long DeviceID
 	}
 	if (m_humValuesByID.size() > 0) {
 		lua_createtable(lua_state, (int)m_humValuesByID.size(), 0);
-		std::map<unsigned long long, int>::iterator p;
+		std::map<uint64_t, int>::iterator p;
 		for (p = m_humValuesByID.begin(); p != m_humValuesByID.end(); ++p)
 		{
 			lua_pushnumber(lua_state, (lua_Number)p->first);
@@ -1343,7 +1336,7 @@ lua_State *CEventSystem::CreateBlocklyLuaState(const unsigned long long DeviceID
 	}
 	if (m_baroValuesByID.size() > 0) {
 		lua_createtable(lua_state, (int)m_baroValuesByID.size(), 0);
-		std::map<unsigned long long, float>::iterator p;
+		std::map<uint64_t, float>::iterator p;
 		for (p = m_baroValuesByID.begin(); p != m_baroValuesByID.end(); ++p)
 		{
 			lua_pushnumber(lua_state, (lua_Number)p->first);
@@ -1354,7 +1347,7 @@ lua_State *CEventSystem::CreateBlocklyLuaState(const unsigned long long DeviceID
 	}
 	if (m_utilityValuesByID.size() > 0) {
 		lua_createtable(lua_state, (int)m_utilityValuesByID.size(), 0);
-		std::map<unsigned long long, float>::iterator p;
+		std::map<uint64_t, float>::iterator p;
 		for (p = m_utilityValuesByID.begin(); p != m_utilityValuesByID.end(); ++p)
 		{
 			lua_pushnumber(lua_state, (lua_Number)p->first);
@@ -1365,7 +1358,7 @@ lua_State *CEventSystem::CreateBlocklyLuaState(const unsigned long long DeviceID
 	}
 	if (m_weatherValuesByID.size() > 0) {
 		lua_createtable(lua_state, (int)m_weatherValuesByID.size(), 0);
-		std::map<unsigned long long, float>::iterator p;
+		std::map<uint64_t, float>::iterator p;
 		for (p = m_weatherValuesByID.begin(); p != m_weatherValuesByID.end(); ++p)
 		{
 			lua_pushnumber(lua_state, (lua_Number)p->first);
@@ -1376,7 +1369,7 @@ lua_State *CEventSystem::CreateBlocklyLuaState(const unsigned long long DeviceID
 	}
 	if (m_rainValuesByID.size() > 0) {
 		lua_createtable(lua_state, (int)m_rainValuesByID.size(), 0);
-		std::map<unsigned long long, float>::iterator p;
+		std::map<uint64_t, float>::iterator p;
 		for (p = m_rainValuesByID.begin(); p != m_rainValuesByID.end(); ++p)
 		{
 			lua_pushnumber(lua_state, (lua_Number)p->first);
@@ -1387,7 +1380,7 @@ lua_State *CEventSystem::CreateBlocklyLuaState(const unsigned long long DeviceID
 	}
 	if (m_rainLastHourValuesByID.size() > 0) {
 		lua_createtable(lua_state, (int)m_rainLastHourValuesByID.size(), 0);
-		std::map<unsigned long long, float>::iterator p;
+		std::map<uint64_t, float>::iterator p;
 		for (p = m_rainLastHourValuesByID.begin(); p != m_rainLastHourValuesByID.end(); ++p)
 		{
 			lua_pushnumber(lua_state, (lua_Number)p->first);
@@ -1398,7 +1391,7 @@ lua_State *CEventSystem::CreateBlocklyLuaState(const unsigned long long DeviceID
 	}
 	if (m_uvValuesByID.size() > 0) {
 		lua_createtable(lua_state, (int)m_uvValuesByID.size(), 0);
-		std::map<unsigned long long, float>::iterator p;
+		std::map<uint64_t, float>::iterator p;
 		for (p = m_uvValuesByID.begin(); p != m_uvValuesByID.end(); ++p)
 		{
 			lua_pushnumber(lua_state, (lua_Number)p->first);
@@ -1409,7 +1402,7 @@ lua_State *CEventSystem::CreateBlocklyLuaState(const unsigned long long DeviceID
 	}
 	if (m_winddirValuesByID.size() > 0) {
 		lua_createtable(lua_state, (int)m_winddirValuesByID.size(), 0);
-		std::map<unsigned long long, float>::iterator p;
+		std::map<uint64_t, float>::iterator p;
 		for (p = m_winddirValuesByID.begin(); p != m_winddirValuesByID.end(); ++p)
 		{
 			lua_pushnumber(lua_state, (lua_Number)p->first);
@@ -1420,7 +1413,7 @@ lua_State *CEventSystem::CreateBlocklyLuaState(const unsigned long long DeviceID
 	}
 	if (m_windspeedValuesByID.size() > 0) {
 		lua_createtable(lua_state, (int)m_windspeedValuesByID.size(), 0);
-		std::map<unsigned long long, float>::iterator p;
+		std::map<uint64_t, float>::iterator p;
 		for (p = m_windspeedValuesByID.begin(); p != m_windspeedValuesByID.end(); ++p)
 		{
 			lua_pushnumber(lua_state, (lua_Number)p->first);
@@ -1431,7 +1424,7 @@ lua_State *CEventSystem::CreateBlocklyLuaState(const unsigned long long DeviceID
 	}
 	if (m_windgustValuesByID.size() > 0) {
 		lua_createtable(lua_state, (int)m_windgustValuesByID.size(), 0);
-		std::map<unsigned long long, float>::iterator p;
+		std::map<uint64_t, float>::iterator p;
 		for (p = m_windgustValuesByID.begin(); p != m_windgustValuesByID.end(); ++p)
 		{
 			lua_pushnumber(lua_state, (lua_Number)p->first);
@@ -1447,7 +1440,7 @@ lua_State *CEventSystem::CreateBlocklyLuaState(const unsigned long long DeviceID
 	return lua_state;
 }
 
-void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned long long DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const unsigned long long varId)
+void CEventSystem::EvaluateBlockly(const std::string &reason, const uint64_t DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const uint64_t varId)
 {
 //#ifdef _DEBUG
 	//    _log.Log(LOG_STATUS,"EventSystem: blockly %s trigger",reason.c_str());
@@ -1485,7 +1478,7 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 
 				if (lua_state == NULL)
 				{
-					lua_state = CreateBlocklyLuaState(DeviceID);
+					lua_state = CreateBlocklyLuaState();
 					if (lua_state == NULL)
 						return;
 				}
@@ -1540,7 +1533,7 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 
 				if (lua_state == NULL)
 				{
-					lua_state = CreateBlocklyLuaState(0);
+					lua_state = CreateBlocklyLuaState();
 					if (lua_state == NULL)
 						return;
 				}
@@ -1591,7 +1584,7 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 
 					if (lua_state == NULL)
 					{
-						lua_state = CreateBlocklyLuaState(0);
+						lua_state = CreateBlocklyLuaState();
 						if (lua_state == NULL)
 							return;
 					}
@@ -1644,7 +1637,7 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 
 				if (lua_state == NULL)
 				{
-					lua_state = CreateBlocklyLuaState(0);
+					lua_state = CreateBlocklyLuaState();
 					if (lua_state == NULL)
 						return;
 				}
@@ -1695,7 +1688,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 
 	if (Argument.find("temperaturedevice") == 0)
 	{
-		std::map<unsigned long long, float>::const_iterator itt = m_tempValuesByID.find(dindex);
+		std::map<uint64_t, float>::const_iterator itt = m_tempValuesByID.find(dindex);
 		if (itt != m_tempValuesByID.end())
 		{
 			std::stringstream sstr;
@@ -1705,7 +1698,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 	}
 	else if (Argument.find("dewpointdevice") == 0)
 	{
-		std::map<unsigned long long, float>::const_iterator itt = m_dewValuesByID.find(dindex);
+		std::map<uint64_t, float>::const_iterator itt = m_dewValuesByID.find(dindex);
 		if (itt != m_dewValuesByID.end())
 		{
 			std::stringstream sstr;
@@ -1715,7 +1708,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 	}
 	else if (Argument.find("humiditydevice") == 0)
 	{
-		std::map<unsigned long long, int>::const_iterator itt = m_humValuesByID.find(dindex);
+		std::map<uint64_t, int>::const_iterator itt = m_humValuesByID.find(dindex);
 		if (itt != m_humValuesByID.end())
 		{
 			std::stringstream sstr;
@@ -1725,7 +1718,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 	}
 	else if (Argument.find("barometerdevice") == 0)
 	{
-		std::map<unsigned long long, float>::const_iterator itt = m_baroValuesByID.find(dindex);
+		std::map<uint64_t, float>::const_iterator itt = m_baroValuesByID.find(dindex);
 		if (itt != m_baroValuesByID.end())
 		{
 			std::stringstream sstr;
@@ -1735,7 +1728,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 	}
 	else if (Argument.find("utilitydevice") == 0)
 	{
-		std::map<unsigned long long, float>::const_iterator itt = m_utilityValuesByID.find(dindex);
+		std::map<uint64_t, float>::const_iterator itt = m_utilityValuesByID.find(dindex);
 		if (itt != m_utilityValuesByID.end())
 		{
 			std::stringstream sstr;
@@ -1745,7 +1738,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 	}
 	else if (Argument.find("weatherdevice") == 0)
 	{
-		std::map<unsigned long long, float>::const_iterator itt = m_weatherValuesByID.find(dindex);
+		std::map<uint64_t, float>::const_iterator itt = m_weatherValuesByID.find(dindex);
 		if (itt != m_weatherValuesByID.end())
 		{
 			std::stringstream sstr;
@@ -1755,7 +1748,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 	}
 	else if (Argument.find("raindevice") == 0)
 	{
-		std::map<unsigned long long, float>::const_iterator itt = m_rainValuesByID.find(dindex);
+		std::map<uint64_t, float>::const_iterator itt = m_rainValuesByID.find(dindex);
 		if (itt != m_rainValuesByID.end())
 		{
 			std::stringstream sstr;
@@ -1765,7 +1758,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 	}
 	else if (Argument.find("rainlasthourdevice") == 0)
 	{
-		std::map<unsigned long long, float>::const_iterator itt = m_rainLastHourValuesByID.find(dindex);
+		std::map<uint64_t, float>::const_iterator itt = m_rainLastHourValuesByID.find(dindex);
 		if (itt != m_rainLastHourValuesByID.end())
 		{
 			std::stringstream sstr;
@@ -1775,7 +1768,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 	}
 	else if (Argument.find("uvdevice") == 0)
 	{
-		std::map<unsigned long long, float>::const_iterator itt = m_uvValuesByID.find(dindex);
+		std::map<uint64_t, float>::const_iterator itt = m_uvValuesByID.find(dindex);
 		if (itt != m_uvValuesByID.end())
 		{
 			std::stringstream sstr;
@@ -1785,7 +1778,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 	}
 	else if (Argument.find("winddirdevice") == 0)
 	{
-		std::map<unsigned long long, float>::const_iterator itt = m_winddirValuesByID.find(dindex);
+		std::map<uint64_t, float>::const_iterator itt = m_winddirValuesByID.find(dindex);
 		if (itt != m_winddirValuesByID.end())
 		{
 			std::stringstream sstr;
@@ -1795,7 +1788,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 	}
 	else if (Argument.find("windspeeddevice") == 0)
 	{
-		std::map<unsigned long long, float>::const_iterator itt = m_windspeedValuesByID.find(dindex);
+		std::map<uint64_t, float>::const_iterator itt = m_windspeedValuesByID.find(dindex);
 		if (itt != m_windspeedValuesByID.end())
 		{
 			std::stringstream sstr;
@@ -1805,7 +1798,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 	}
 	else if (Argument.find("windgustdevice") == 0)
 	{
-		std::map<unsigned long long, float>::const_iterator itt = m_windgustValuesByID.find(dindex);
+		std::map<uint64_t, float>::const_iterator itt = m_windgustValuesByID.find(dindex);
 		if (itt != m_windgustValuesByID.end())
 		{
 			std::stringstream sstr;
@@ -1815,7 +1808,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 	}
 	else if (Argument.find("variable") == 0)
 	{
-		std::map<unsigned long long, _tUserVariable>::const_iterator itt = m_uservariables.find(dindex);
+		std::map<uint64_t, _tUserVariable>::const_iterator itt = m_uservariables.find(dindex);
 		if (itt != m_uservariables.end())
 		{
 			return itt->second.variableValue;
@@ -1848,7 +1841,7 @@ std::string CEventSystem::ParseBlocklyString(const std::string &oString)
 	return retString;
 }
 
-bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::string &eventName, const unsigned long long eventID)
+bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::string &eventName, const uint64_t eventID)
 {
 	if (isEventscheduled(eventName))
 	{
@@ -1959,7 +1952,7 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 			{
 				float DelayTime = afterTimerSeconds;
 				_tTaskItem tItem;
-				tItem = _tTaskItem::SetVariable(DelayTime, (const unsigned long long)atol(variableNo.c_str()), doWhat, false);
+				tItem = _tTaskItem::SetVariable(DelayTime, (const uint64_t)atol(variableNo.c_str()), doWhat, false);
 				m_sql.AddTaskItem(tItem);
 			}
 			actionsDone = true;
@@ -1968,8 +1961,15 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 		else if (deviceName.find("SendCamera:") == 0)
 		{
 			if (!atoi(deviceName.substr(11).c_str()))
-				continue;;
+				continue;
 			ScheduleEvent(deviceName, doWhat, eventName);
+			actionsDone = true;
+			continue;
+		}
+		else if (deviceName.find("SetSetpoint:") == 0)
+		{
+			int idx = atoi(deviceName.substr(12).c_str());
+			m_sql.AddTaskItem(_tTaskItem::SetSetPoint(0.5f, idx, doWhat));
 			actionsDone = true;
 			continue;
 		}
@@ -2085,7 +2085,7 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 
 #ifdef ENABLE_PYTHON
 
-void CEventSystem::EvaluatePython(const std::string &reason, const std::string &filename, const std::string &PyString, const unsigned long long varId)
+void CEventSystem::EvaluatePython(const std::string &reason, const std::string &filename, const std::string &PyString, const uint64_t varId)
 {
 	EvaluatePython(reason, filename, PyString, 0, "", 0, "", "", varId);
 }
@@ -2134,7 +2134,7 @@ boost::python::dict toPythonDict(std::map<K, V> map) {
 // this should be filled in by the preprocessor
 const char * Python_exe = "PYTHON_EXE";
 
-void CEventSystem::EvaluatePython(const std::string &reason, const std::string &filename, const std::string &PyString, const unsigned long long DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const unsigned long long varId)
+void CEventSystem::EvaluatePython(const std::string &reason, const std::string &filename, const std::string &PyString, const uint64_t DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const uint64_t varId)
 {
 	//_log.Log(LOG_NORM, "EventSystem: Already scheduled this event, skipping");
 	//_log.Log(LOG_STATUS, "EventSystem: script %s trigger, file: %s, deviceName: %s" , reason.c_str(), filename.c_str(), devname.c_str());
@@ -2182,7 +2182,7 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 		domoticz_namespace["changed_device_name"] = str(devname);
 
 		boost::shared_lock<boost::shared_mutex> devicestatesMutexLock1(m_devicestatesMutex);
-		typedef std::map<unsigned long long, _tDeviceStatus>::iterator it_type;
+		typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
 		for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
 		{
 			_tDeviceStatus sitem = iterator->second;
@@ -2243,7 +2243,7 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 		// put variables in user_variables dict, but also in the namespace
 		object user_variables = dict();
 		{
-			typedef std::map<unsigned long long, _tUserVariable>::iterator it_var;
+			typedef std::map<uint64_t, _tUserVariable>::iterator it_var;
 			for (it_var iterator = m_uservariables.begin(); iterator != m_uservariables.end(); ++iterator) {
 				_tUserVariable uvitem = iterator->second;
 				//user_variables[uvitem.variableName] = uvitem;
@@ -2308,7 +2308,7 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 }
 #endif // ENABLE_PYTHON
 
-void CEventSystem::EvaluateLua(const std::string &reason, const std::string &filename, const std::string &LuaString, const unsigned long long varId)
+void CEventSystem::EvaluateLua(const std::string &reason, const std::string &filename, const std::string &LuaString, const uint64_t varId)
 {
 	EvaluateLua(reason, filename, LuaString, 0, "", 0, "", "", varId);
 }
@@ -2318,7 +2318,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 	EvaluateLua(reason, filename, LuaString, 0, "", 0, "", "", 0);
 }
 
-void CEventSystem::EvaluateLua(const std::string &reason, const std::string &filename, const std::string &LuaString, const unsigned long long DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const unsigned long long varId)
+void CEventSystem::EvaluateLua(const std::string &reason, const std::string &filename, const std::string &LuaString, const uint64_t DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const uint64_t varId)
 {
 	boost::lock_guard<boost::mutex> l(luaMutex);
 
@@ -2390,9 +2390,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 
 	{
 		boost::lock_guard<boost::mutex> measurementStatesMutexLock(m_measurementStatesMutex);
-
-		if (DeviceID > 0)
-			GetCurrentMeasurementStates(DeviceID);
+		GetCurrentMeasurementStates();
 
 		float thisDeviceTemp = 0;
 		float thisDeviceDew = 0;
@@ -2668,7 +2666,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 
 	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock2(m_devicestatesMutex);
 	lua_createtable(lua_state, (int)m_devicestates.size(), 0);
-	typedef std::map<unsigned long long, _tDeviceStatus>::iterator it_type;
+	typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
 	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
 	{
 		_tDeviceStatus sitem = iterator->second;
@@ -2679,7 +2677,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 	lua_setglobal(lua_state, "otherdevices");
 
 	lua_createtable(lua_state, (int)m_devicestates.size(), 0);
-	typedef std::map<unsigned long long, _tDeviceStatus>::iterator it_type;
+	typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
 	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
 	{
 		_tDeviceStatus sitem = iterator->second;
@@ -2690,7 +2688,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 	lua_setglobal(lua_state, "otherdevices_lastupdate");
 
 	lua_createtable(lua_state, (int)m_devicestates.size(), 0);
-	typedef std::map<unsigned long long, _tDeviceStatus>::iterator it_type;
+	typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
 	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
 	{
 		_tDeviceStatus sitem = iterator->second;
@@ -2700,7 +2698,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 	}
 	lua_setglobal(lua_state, "otherdevices_svalues");
 	lua_createtable(lua_state, (int)m_devicestates.size(), 0);
-	typedef std::map<unsigned long long, _tDeviceStatus>::iterator it_type;
+	typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
 	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
 	{
 		_tDeviceStatus sitem = iterator->second;
@@ -2712,7 +2710,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 	devicestatesMutexLock2.unlock();
 	lua_createtable(lua_state, (int)m_uservariables.size(), 0);
 
-	typedef std::map<unsigned long long, _tUserVariable>::iterator it_var;
+	typedef std::map<uint64_t, _tUserVariable>::iterator it_var;
 	for (it_var iterator = m_uservariables.begin(); iterator != m_uservariables.end(); ++iterator) {
 		_tUserVariable uvitem = iterator->second;
 		if (uvitem.variableType == 0)  {
@@ -2737,7 +2735,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 	lua_setglobal(lua_state, "uservariables");
 
 	lua_createtable(lua_state, (int)m_scenesgroups.size(), 0);
-	typedef std::map<unsigned long long, _tScenesGroups>::iterator it_scgr;
+	typedef std::map<uint64_t, _tScenesGroups>::iterator it_scgr;
 	for (it_scgr iterator = m_scenesgroups.begin(); iterator != m_scenesgroups.end(); ++iterator) {
 		_tScenesGroups sgitem = iterator->second;
 		lua_pushstring(lua_state, sgitem.scenesgroupName.c_str());
@@ -2747,7 +2745,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 	lua_setglobal(lua_state, "otherdevices_scenesgroups");
 
 	lua_createtable(lua_state, (int)m_scenesgroups.size(), 0);
-	typedef std::map<unsigned long long, _tScenesGroups>::iterator it_scgr;
+	typedef std::map<uint64_t, _tScenesGroups>::iterator it_scgr;
 	for (it_scgr iterator = m_scenesgroups.begin(); iterator != m_scenesgroups.end(); ++iterator)
 	{
 		_tScenesGroups sgitem = iterator->second;
@@ -2759,7 +2757,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 
 	lua_createtable(lua_state, (int)m_uservariables.size(), 0);
 
-	typedef std::map<unsigned long long, _tUserVariable>::iterator it_var;
+	typedef std::map<uint64_t, _tUserVariable>::iterator it_var;
 	for (it_var iterator = m_uservariables.begin(); iterator != m_uservariables.end(); ++iterator) {
 		_tUserVariable uvitem = iterator->second;
 		lua_pushstring(lua_state, uvitem.variableName.c_str());
@@ -2770,7 +2768,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 
 	if (reason == "uservariable") {
 		if (varId > 0) {
-			typedef std::map<unsigned long long, _tUserVariable>::iterator it_cvar;
+			typedef std::map<uint64_t, _tUserVariable>::iterator it_cvar;
 			for (it_cvar iterator = m_uservariables.begin(); iterator != m_uservariables.end(); ++iterator) {
 				_tUserVariable uvitem = iterator->second;
 				if (uvitem.ID == varId) {
@@ -3035,7 +3033,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 			else
 			{
 				float DelayTime = afterTimerSeconds;
-				unsigned long long idx;
+				uint64_t idx;
 				std::stringstream sstr;
 				sstr << sd[0];
 				sstr >> idx;
@@ -3102,7 +3100,7 @@ void CEventSystem::UpdateDevice(const std::string &DevParams)
 			nvalue.c_str(), svalue.c_str(), szLastUpdate, idx.c_str());
 
 
-		unsigned long long ulIdx = 0;
+		uint64_t ulIdx = 0;
 		std::stringstream s_str(idx);
 		s_str >> ulIdx;
 
@@ -3149,7 +3147,7 @@ void CEventSystem::UpdateDevice(const std::string &DevParams)
 			if ((devType == pTypeRadiator1) && (subType != sTypeSmartwaresSwitchRadiator))
 				break;
 			//Add Lighting log
-			m_sql.safe_query("INSERT INTO LightingLog (DeviceRowID, nValue, sValue) VALUES ('%llu', '%d', '%q')", ulIdx, atoi(nvalue.c_str()), svalue.c_str());
+			m_sql.safe_query("INSERT INTO LightingLog (DeviceRowID, nValue, sValue) VALUES ('%" PRIu64 "', '%d', '%q')", ulIdx, atoi(nvalue.c_str()), svalue.c_str());
 			break;
 		}
 
@@ -3583,7 +3581,7 @@ int CEventSystem::l_domoticz_print(lua_State* lua_state)
 	return 0;
 }
 
-void CEventSystem::reportMissingDevice(const int deviceID, const std::string &eventName, const unsigned long long eventID)
+void CEventSystem::reportMissingDevice(const int deviceID, const std::string &eventName, const uint64_t eventID)
 {
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (ID == %d)", deviceID);
@@ -3597,7 +3595,7 @@ void CEventSystem::reportMissingDevice(const int deviceID, const std::string &ev
 
 
 		std::vector<std::vector<std::string> > result;
-		result = m_sql.safe_query("SELECT EventMaster.ID FROM EventMaster INNER JOIN EventRules ON EventRules.EMID=EventMaster.ID WHERE (EventRules.ID == '%llu')",
+		result = m_sql.safe_query("SELECT EventMaster.ID FROM EventMaster INNER JOIN EventRules ON EventRules.EMID=EventMaster.ID WHERE (EventRules.ID == '%" PRIu64 "')",
 			eventID);
 		if (result.size() > 0)
 		{
@@ -3622,7 +3620,7 @@ void CEventSystem::WWWGetItemStates(std::vector<_tDeviceStatus> &iStates)
 	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 
 	iStates.clear();
-	typedef std::map<unsigned long long, _tDeviceStatus>::iterator it_type;
+	typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
 	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
 	{
 		iStates.push_back(iterator->second);

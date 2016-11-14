@@ -708,7 +708,7 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 	//sprintf(buff,"cmnd: %d, level: %d, orgcmd: %d",cmnd, iLevel, orgcmd);
 	//_log.Log(LOG_ERROR,buff);
 	unsigned char buf[100];
-	unsigned char optbuf[100];
+	//unsigned char optbuf[100];
 
 	if(!bIsDimmer)
 	{

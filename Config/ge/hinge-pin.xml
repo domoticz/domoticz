@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<!-- Configuration Parameters -->
+	<CommandClass id="112">
+		<Value type="list" index="20" genre="config" label="Change Open/Close Report Method" size="1" value="1">
+			<Item label="Notification" value="1" />
+			<Item label="Basic Set" value="2" />
+			<Item label="Basic Report" value="3" />
+		</Value>
+	</CommandClass>
+</Product>
+

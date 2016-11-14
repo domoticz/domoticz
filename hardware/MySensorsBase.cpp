@@ -962,9 +962,7 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 		break;
 	case V_WEIGHT:
 		if (pChild->GetValue(vType, floatValue))
-		{
-			while (1 == 0);
-		}
+			SendCustomSensor(pChild->nodeID, pChild->childID, pChild->batValue, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Weight", "g");
 		break;
 	case V_CURRENT:
 		if (pChild->GetValue(vType, floatValue))
@@ -1944,7 +1942,7 @@ void MySensorsBase::ParseLine()
 			//Request for a sensor state
 			if (!payload.empty())
 			{
-				unsigned long long idx = boost::lexical_cast<unsigned long long>(payload);
+				uint64_t idx = boost::lexical_cast<uint64_t>(payload);
 				int nValue;
 				std::string sValue;
 				if (m_mainworker.GetSensorData(idx, nValue, sValue))
