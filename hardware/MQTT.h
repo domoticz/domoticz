@@ -38,8 +38,8 @@ private:
 	bool ConnectIntEx();
 	void WriteInt(const std::string &sendStr);
 	void ProcessMySensorsMessage(const std::string &MySensorsMessage);
-	void SendDeviceInfo(const int m_HwdID, const unsigned long long DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand);
-	void SendSceneInfo(const unsigned long long SceneIdx, const std::string &SceneName);
+	void SendDeviceInfo(const int m_HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand);
+	void SendSceneInfo(const uint64_t SceneIdx, const std::string &SceneName);
 protected:
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;

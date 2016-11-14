@@ -3,11 +3,11 @@
 #include "DomoticzHardware.h"
 #include <iostream>
 
-class CForecastIO : public CDomoticzHardwareBase
+class CDarkSky : public CDomoticzHardwareBase
 {
 public:
-	CForecastIO(const int ID, const std::string &APIKey, const std::string &Location);
-	~CForecastIO(void);
+	CDarkSky(const int ID, const std::string &APIKey, const std::string &Location);
+	~CDarkSky(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 	std::string GetForecastURL();
 private:

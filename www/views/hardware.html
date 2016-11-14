@@ -333,7 +333,6 @@
 	</div>
 	<input type="hidden" id="idx" name="idx" value="-1">
 </div>
-
 <div id="wakeonlan" style="display:none;">
 	<div class="page-header-small">
 		<table border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -381,7 +380,6 @@
 		</tr>
 	</table>
 </div>
-
 <div id="pinger" style="display:none;">
 	<div class="page-header-small">
 		<table border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -649,7 +647,8 @@
             <tr>
                 <th width="70" align="center" data-i18n="ID">ID</th>
                 <th width="250" align="left" data-i18n="Name">Name</th>
-                <th align="left" data-i18n="IP Address">IP Address</th>
+                <th width="150" align="left" data-i18n="IP Address">IP Address</th>
+				<th align="left" data-i18n="Type">Type</th>
             </tr>
         </thead>
     </table>
@@ -725,6 +724,33 @@
                 <th width="120" align="left" data-i18n="Mac Address">Mac Address</th>
             </tr>
         </thead>
+    </table>
+    <input type="hidden" id="idx" name="idx" value="-1">
+</div>
+
+<div id="heos" style="display:none;">
+    <div class="page-header-small">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+            <tr>
+                <td>
+                    <h1 data-i18n="Settings">Settings</h1>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <table class="display" id="heossettingstable" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+            <td align="right" style="width:110px"><label for="pollinterval"><span data-i18n="Poll Interval"></span>:</label></td>
+            <td><input type="text" id="pollinterval" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;(<span data-i18n="Seconds">Seconds</span>)</td>
+        </tr>
+        <tr>
+            <td align="right" style="width:110px"><label for="pingtimeout"><span data-i18n="Ping Timeout"></span>:</label></td>
+            <td><input type="text" id="pingtimeout" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;(<span data-i18n="Milliseconds"></span>)</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><a class="btn-danger sub-tabs-apply" onclick="SetHEOSSettings();" data-i18n="Apply Settings">Apply Settings</a></td>
+        </tr>
     </table>
     <input type="hidden" id="idx" name="idx" value="-1">
 </div>
@@ -1172,6 +1198,15 @@
 				</tr>
 			</table>
 		</div>
+		<div id="divpollinterval">
+			<br>
+			<table class="display" id="hardwareparamspollinterval" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="Refresh"></span>(ms):</label></td>
+					<td><input type="text" id="pollinterval" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+			</table>
+		</div>
 		<div id="divunderground">
 			<br>
 			<table class="display" id="hardwareparamsunderground" border="0" cellpadding="0" cellspacing="20">
@@ -1241,7 +1276,11 @@
 			<table class="display" id="hardwareparamsphilipshue" border="0" cellpadding="0" cellspacing="20">
 				<tr>
 					<td align="right" style="width:110px"><label id="lblusername" for="name"><span data-i18n="Username"></span>:</label></td>
-					<td><input type="text" id="username" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+					<td>
+						<input type="text" id="username" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+						<br />
+						<span data-i18n="Leave the username empty and press the LINK button on the Philips Hue bridge. Then press the 'Register on Bridge' button.">Leave the username empty and press the LINK button on the Philips Hue bridge. Then press the 'Register on Bridge' button.</span>
+					</td>
 				</tr>
 				<tr>
 					<td></td>
@@ -1378,6 +1417,29 @@
 			</table>
 		</form>
 </div>
+<div id="dialog-addyeelight" title="Add YeeLight Light" style="display:none;">
+		<form>
+			<table border="0" cellpadding="0" cellspacing="10">
+			<tr>
+				<td align="right" style="width:200px"><label for="name"><span data-i18n="Name"></span>:</label></td>
+				<td><input type="text" id="name" style="width: 240px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+			</tr>
+			<tr>
+				<td align="right"><label for="ipaddress"><span data-i18n="IP Address"></span>:</label></td>
+				<td><input type="text" id="ipaddress" style="width: 140px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+			</tr>
+			<tr>
+				<td align="right" ><label for="lighttype"><span data-i18n="Light Type">Light Type</span>: </label></td>
+				<td>
+				<select id="lighttype" style="width:150px" class="combobox ui-corner-all">
+					<option value="0" data-i18n="Mono">Mono</option>
+					<option value="1" data-i18n="RGBW">RGBW</option>
+				</select>
+				</td>
+			</tr>
+			</table>
+		</form>
+</div>
 <div id="dialog-createevohomesensor" title="Create evohome device" style="display:none;">
 		<form>
 				<label for="sensortype"><span data-i18n="Devices"></span>: </label>
@@ -1394,3 +1456,29 @@
 				<input type="text" id="sensorname" style="width: 240px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
 		</form>
 </div>
+<div id="tellstick" style="display:none;">
+    <div class="page-header-small">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+            <tr>
+                <td>
+                    <h1 data-i18n="Settings">Settings</h1>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <table class="display" id="tellstickSettingsTable" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+            <td align="right" style="width:110px"><label for="repeats"><span data-i18n="Repeats">Repeats</span>:</label></td>
+            <td><input type="text" id="repeats" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all"</td>
+        </tr>
+        <tr>
+            <td align="right" style="width:110px"><label for="repeatInterval"><span data-i18n="Repeat Interval">Repeat Interval</span>:</label></td>
+            <td><input type="text" id="repeatInterval" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;(<span data-i18n="Milliseconds"></span>)</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><a class="btn-danger sub-tabs-apply" onclick="TellstickApplySettings();" data-i18n="Apply Settings"></a></td>
+        </tr>
+    </table>
+</div>
+    

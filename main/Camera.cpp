@@ -90,15 +90,15 @@ void CCameraHandler::ReloadCameraActiveDevices(const std::string &CamID)
 }
 
 //Return 0 if NO, otherwise Cam IDX
-unsigned long long CCameraHandler::IsDevSceneInCamera(const unsigned char DevSceneType, const std::string &DevSceneID)
+uint64_t CCameraHandler::IsDevSceneInCamera(const unsigned char DevSceneType, const std::string &DevSceneID)
 {
-	unsigned long long ulID;
+	uint64_t ulID;
 	std::stringstream s_str( DevSceneID );
 	s_str >> ulID;
 	return IsDevSceneInCamera(DevSceneType,ulID);
 }
 
-unsigned long long CCameraHandler::IsDevSceneInCamera(const unsigned char DevSceneType, const unsigned long long DevSceneID)
+uint64_t CCameraHandler::IsDevSceneInCamera(const unsigned char DevSceneType, const uint64_t DevSceneID)
 {
 	boost::lock_guard<boost::mutex> l(m_mutex);
 	std::vector<cameraDevice>::iterator itt;
@@ -126,7 +126,7 @@ std::string CCameraHandler::GetCameraURL(const std::string &CamID)
 	return GetCameraURL(pCamera);
 }
 
-std::string CCameraHandler::GetCameraURL(const unsigned long long CamID)
+std::string CCameraHandler::GetCameraURL(const uint64_t CamID)
 {
 	cameraDevice* pCamera=GetCamera(CamID);
 	if (pCamera==NULL)
@@ -149,13 +149,13 @@ std::string CCameraHandler::GetCameraURL(cameraDevice *pCamera)
 
 cameraDevice* CCameraHandler::GetCamera(const std::string &CamID)
 {
-	unsigned long long ulID;
+	uint64_t ulID;
 	std::stringstream s_str( CamID );
 	s_str >> ulID;
 	return GetCamera(ulID);
 }
 
-cameraDevice* CCameraHandler::GetCamera(const unsigned long long CamID)
+cameraDevice* CCameraHandler::GetCamera(const uint64_t CamID)
 {
 	std::vector<cameraDevice>::iterator itt;
 	for (itt=m_cameradevices.begin(); itt!=m_cameradevices.end(); ++itt)
@@ -168,7 +168,7 @@ cameraDevice* CCameraHandler::GetCamera(const unsigned long long CamID)
 
 bool CCameraHandler::TakeSnapshot(const std::string &CamID, std::vector<unsigned char> &camimage)
 {
-	unsigned long long ulID;
+	uint64_t ulID;
 	std::stringstream s_str( CamID );
 	s_str >> ulID;
 	return TakeSnapshot(ulID,camimage);
@@ -259,7 +259,7 @@ bool CCameraHandler::TakeUVCSnapshot(const std::string &device, std::vector<unsi
 	return false;
 }
 
-bool CCameraHandler::TakeSnapshot(const unsigned long long CamID, std::vector<unsigned char> &camimage)
+bool CCameraHandler::TakeSnapshot(const uint64_t CamID, std::vector<unsigned char> &camimage)
 {
 	boost::lock_guard<boost::mutex> l(m_mutex);
 

@@ -1218,29 +1218,22 @@ bool COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 		return false;
 	}
 
-	bool bHandleAsBinary = false;
 	_tZWaveDevice *pDevice = FindDevice(nodeID, instanceID, 0, ZWaveBase::ZDTYPE_SWITCH_DIMMER);
-/*
 	if (pDevice)
 	{
 		if (
-			(pDevice->Manufacturer_id == 0x0086) &&
-			(
 			((pDevice->Product_id == 0x0060) && (pDevice->Product_type == 0x0003)) ||
-				((pDevice->Product_id == 0x0060) && (pDevice->Product_type == 0x0103)) ||
-				((pDevice->Product_id == 0x0060) && (pDevice->Product_type == 0x0203))
-				)
+			((pDevice->Product_id == 0x0060) && (pDevice->Product_type == 0x0103)) ||
+			((pDevice->Product_id == 0x0060) && (pDevice->Product_type == 0x0203))
 			)
 		{
-			//Special case for the Aeotec Smart Switch 6
+			//Special case for the Aeotec Smart Switch
 			if (commandClass == COMMAND_CLASS_SWITCH_MULTILEVEL)
 			{
 				pDevice = FindDevice(nodeID, instanceID, 0, COMMAND_CLASS_SWITCH_BINARY, ZWaveBase::ZDTYPE_SWITCH_NORMAL);
 			}
 		}
 	}
-*/
-	bHandleAsBinary = ((value == 0) || (value == 255));
 	if (!pDevice)
 		pDevice = FindDevice(nodeID, instanceID, 0);
 	if (!pDevice)
@@ -1249,6 +1242,21 @@ bool COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 		return false;
 	}
 
+	bool bHandleAsBinary = false;
+	if ((value == 0) || (value == 255))
+	{
+		if (pDevice->Manufacturer_id == 0x010f) 
+		{
+			if (
+				((pDevice->Product_id == 0x1000) && (pDevice->Product_type == 0x0203)) ||
+				((pDevice->Product_id == 0x1000) && (pDevice->Product_type == 0x0403))
+				)
+			{
+				//Special case for the Fibaro FGS213/223
+				bHandleAsBinary = true;
+			}
+		}
+	}
 
 	OpenZWave::ValueID vID(0, 0, OpenZWave::ValueID::ValueGenre_Basic, 0, 0, 0, OpenZWave::ValueID::ValueType_Bool);
 	unsigned char svalue = (unsigned char)value;
@@ -4119,7 +4127,7 @@ bool COpenZWave::ApplyNodeConfig(const unsigned int homeID, const int nodeID, co
 
 	std::vector<std::string> results;
 	StringSplit(svaluelist, "_", results);
-	if (results.size() < 1)
+	if (results.size() % 2 != 0)
 		return false;
 
 	bool bRestartOpenZWave = false;

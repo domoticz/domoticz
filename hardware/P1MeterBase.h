@@ -29,6 +29,7 @@ private:
 	int m_bufferpos;
 	unsigned char l_buffer[128];
 	int l_bufferpos;
+	unsigned char l_exclmarkfound;
 
 	bool CheckCRC();
 };

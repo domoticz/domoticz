@@ -11,13 +11,21 @@
 #include "../main/mainworker.h"
 #include "../json/json.h"
 
+#include <boost/uuid/uuid.hpp>            // uuid class
+#include <boost/uuid/uuid_generators.hpp> // generators
+#include <boost/uuid/uuid_io.hpp>         // streaming operators etc.
+
 #define round(a) ( int ) ( a + .5 )
 
 #ifdef _DEBUG
 //	#define DEBUG_ToonThermostat
+//	#define DEBUG_ToonThermostatW
 #endif
 
-#ifdef DEBUG_ToonThermostat2
+#define TOON_POLL_INTERVAL 300
+#define TOON_POLL_INTERVAL_SHORT 30
+
+#ifdef DEBUG_ToonThermostatW
 void SaveString2Disk(std::string str, std::string filename)
 {
 	FILE *fOut = fopen(filename.c_str(), "wb+");
@@ -122,6 +130,8 @@ m_Agreement(Agreement)
 	m_OffsetDeliv2 = 0;
 
 	m_bDoLogin = true;
+	m_poll_counter = 5;
+	m_retry_counter = 0;
 }
 
 CToonThermostat::~CToonThermostat(void)
@@ -164,9 +174,9 @@ void CToonThermostat::Init()
 			m_OffsetDeliv2 = (unsigned long)atol(sd[3].c_str());
 		}
 	}
-
-
 	m_bDoLogin = true;
+	m_poll_counter = 5;
+	m_retry_counter = 0;
 }
 
 bool CToonThermostat::StartHardware()
@@ -193,22 +203,28 @@ bool CToonThermostat::StopHardware()
     return true;
 }
 
-#define TOON_POLL_INTERVAL 30
-
 void CToonThermostat::Do_Work()
 {
-	int sec_counter = TOON_POLL_INTERVAL-5;
 	_log.Log(LOG_STATUS,"ToonThermostat: Worker started...");
+	int sec_counter = 1;
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
+		m_poll_counter--;
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
 			mytime(&m_LastHeartbeat);
 		}
-		if (sec_counter % TOON_POLL_INTERVAL == 0)
+		if (m_poll_counter<=0)
 		{
+			m_poll_counter = TOON_POLL_INTERVAL;
 			GetMeterDetails();
+			if (m_retry_counter >= 3)
+			{
+				m_bDoLogin = true;
+				m_retry_counter = 0;
+				_log.Log(LOG_ERROR, "ToonThermostat: retrieveToonState request not successful, restarting..!");
+			}
 		}
 	}
 	_log.Log(LOG_STATUS,"ToonThermostat: Worker stopped...");
@@ -278,29 +294,9 @@ void CToonThermostat::UpdateSwitch(const unsigned char Idx, const bool bOn, cons
 
 std::string CToonThermostat::GetRandom()
 {
-	//5BA37E41-B5C8-4C19-AA81-9EA82430D7EA
-	char szTmp[100];
-	sprintf(szTmp,"%04x%04x-%04x-%04x-%04x-%04x%04x%04x",
-		// 32 bits for "time_low"
-		rand() % 0xFFFF, rand() % 0xFFFF,
-
-		// 16 bits for "time_mid"
-		rand() % 0xFFFF,
-
-		// 16 bits for "time_hi_and_version",
-		// four most significant bits holds version number 4
-		rand() % 0xFFFF | 0x4000,
-
-		// 16 bits, 8 bits for "clk_seq_hi_res",
-		// 8 bits for "clk_seq_low",
-		// two most significant bits holds zero and one for variant DCE1.1
-		rand() % 0xFFFF | 0x8000,
-
-		// 48 bits for "node"
-		rand() % 0xFFFF, rand() % 0xFFFF, rand() % 0xFFFF
-		);
-	std::string ret=szTmp;
-	return ret;
+	boost::uuids::uuid uuid = boost::uuids::random_generator()();
+	std::string suuid = boost::uuids::to_string(uuid);
+	return suuid;
 }
 
 bool CToonThermostat::Login()
@@ -322,6 +318,13 @@ bool CToonThermostat::Login()
 		_log.Log(LOG_ERROR,"ToonThermostat: Error login!");
 		return false;
 	}
+
+#ifdef DEBUG_ToonThermostatW
+	char szFileName[MAX_PATH];
+	static int lNum = 1;
+	sprintf_s(szFileName, "E:\\toonlogin_%03d.txt", lNum++);
+	SaveString2Disk(sResult, szFileName);
+#endif
 
 	Json::Value root;
 	Json::Reader jReader;
@@ -376,6 +379,13 @@ bool CToonThermostat::Login()
 		_log.Log(LOG_ERROR, "ToonThermostat: Error login!");
 		return false;
 	}
+#ifdef DEBUG_ToonThermostatW
+	char szFileName2[MAX_PATH];
+	static int l2Num = 1;
+	sprintf_s(szFileName2, "E:\\toonlogin_authstart_%03d.txt", l2Num++);
+	SaveString2Disk(sResult, szFileName2);
+#endif
+
 	root.clear();
 	if (!jReader.parse(sResult, root))
 	{
@@ -482,6 +492,15 @@ bool CToonThermostat::SwitchLight(const std::string &UUID, const int SwitchState
 		_log.Log(LOG_ERROR, "ToonThermostat: Invalid data received!");
 		return false;
 	}
+/*
+	int Idx=0;
+	if (GetUUIDIdx(UUID, Idx))
+	{
+		UpdateSwitch(Idx, SwitchState != 0, "");
+	}
+*/
+	m_retry_counter = 0;
+	m_poll_counter = TOON_POLL_INTERVAL_SHORT;
 	return (root["success"] == true);
 }
 
@@ -516,6 +535,8 @@ bool CToonThermostat::SwitchAll(const int SwitchState)
 		_log.Log(LOG_ERROR, "ToonThermostat: Invalid data received!");
 		return false;
 	}
+	m_retry_counter = 0;
+	m_poll_counter = TOON_POLL_INTERVAL_SHORT;
 	return (root["success"] == true);
 }
 
@@ -570,10 +591,12 @@ void CToonThermostat::GetMeterDetails()
 	if (m_bDoLogin)
 	{
 		if (!Login())
-		return;
+			return;
 	}
 	std::vector<std::string> ExtraHeaders;
+	Json::Value root;
 
+	bool bIsValid = false;
 	std::stringstream sstr2;
 	sstr2 << "?clientId=" << m_ClientID
 		<< "&clientIdChecksum=" << m_ClientIDChecksum
@@ -592,16 +615,13 @@ void CToonThermostat::GetMeterDetails()
 		return;
 	}
 #endif
-	time_t atime = mytime(NULL);
-
-#ifdef DEBUG_ToonThermostat2
+#ifdef DEBUG_ToonThermostatW
 	char szFileName[MAX_PATH];
 	static int sNum = 1;
 	sprintf_s(szFileName, "E:\\toonresult_%03d.txt", sNum++);
 	SaveString2Disk(sResult, szFileName);
 #endif
 
-	Json::Value root;
 	Json::Reader jReader;
 	if (!jReader.parse(sResult, root))
 	{
@@ -615,123 +635,53 @@ void CToonThermostat::GetMeterDetails()
 		m_bDoLogin = true;
 		return;
 	}
-	if (root["success"] == false)
+	if (root["success"].asBool() == false)
 	{
 		_log.Log(LOG_ERROR, "ToonThermostat: ToonState request not successful, restarting..!");
 		m_bDoLogin = true;
 		return;
 	}
 
-	//ZWave Devices
-	if (root["deviceStatusInfo"].empty() == false)
-	{
-		if (root["deviceStatusInfo"]["device"].empty() == false)
-		{
-			int totDevices = root["deviceStatusInfo"]["device"].size();
-			for (int ii = 0; ii < totDevices; ii++)
-			{
-				std::string deviceName = root["deviceStatusInfo"]["device"][ii]["name"].asString();
-				std::string uuid = root["deviceStatusInfo"]["device"][ii]["devUUID"].asString();
-				int state = root["deviceStatusInfo"]["device"][ii]["currentState"].asInt();
-
-				int Idx;
-				if (!GetUUIDIdx(uuid, Idx))
-				{
-					if (!AddUUID(uuid, Idx))
-					{
-						_log.Log(LOG_ERROR, "ToonThermostat: Error adding UUID to database?! Uuid=%s", uuid.c_str());
-						return;
-					}
-				}
-				UpdateSwitch(Idx, state != 0, deviceName);
-
-				if (root["deviceStatusInfo"]["device"][ii]["currentUsage"].empty() == false)
-				{
-					double currentUsage = root["deviceStatusInfo"]["device"][ii]["currentUsage"].asDouble();
-					double DayCounter = root["deviceStatusInfo"]["device"][ii]["dayUsage"].asDouble();
-
-					//double ElecOffset = GetElectricOffset(Idx, DayCounter);
-					double OldDayCounter = m_LastElectricCounter[Idx];
-					if (DayCounter < OldDayCounter)
-					{
-						//daily counter went to zero
-						m_OffsetElectricUsage[Idx] += OldDayCounter;
-					}
-					m_LastElectricCounter[Idx] = DayCounter;
-					SendKwhMeterOldWay(Idx, 1, 255, currentUsage/1000.0, (m_OffsetElectricUsage[Idx] + m_LastElectricCounter[Idx])/1000.0, deviceName);
-				}
-			}
-		}
-	}
-
-	//thermostatInfo
+	//check if we have all required data fields, if not retry with a shorter interval
 	if (root["thermostatInfo"].empty() == false)
 	{
-		float currentTemp = root["thermostatInfo"]["currentTemp"].asFloat() / 100.0f;
-		float currentSetpoint = root["thermostatInfo"]["currentSetpoint"].asFloat() / 100.0f;
-		SendSetPointSensor(1, currentSetpoint, "Room Setpoint");
-		SendTempSensor(1, 255, currentTemp, "Room Temperature");
-
-		//int programState = root["thermostatInfo"]["programState"].asInt();
-		//int activeState = root["thermostatInfo"]["activeState"].asInt();
-
-		if (root["thermostatInfo"]["burnerInfo"].empty() == false)
+		if (root["powerUsage"].empty() == false)
 		{
-			//burnerinfo
-			//0=off
-			//1=heating
-			//2=hot water
-			//3=pre-heating
-			int burnerInfo = 0;
-
-			if (root["thermostatInfo"]["burnerInfo"].isString())
+			if (root["gasUsage"].empty() == false)
 			{
-				burnerInfo = atoi(root["thermostatInfo"]["burnerInfo"].asString().c_str());
-			}
-			else if (root["thermostatInfo"]["burnerInfo"].isInt())
-			{
-				burnerInfo = root["thermostatInfo"]["burnerInfo"].asInt();
-			}
-			if (burnerInfo == 1)
-			{
-				UpdateSwitch(113, true, "HeatingOn");
-				UpdateSwitch(114, false, "TapwaterOn");
-				UpdateSwitch(115, false, "PreheatOn");
-			}
-			else if (burnerInfo == 2)
-			{
-				UpdateSwitch(113, false, "HeatingOn");
-				UpdateSwitch(114, true, "TapwaterOn");
-				UpdateSwitch(115, false, "PreheatOn");
-			}
-			else if (burnerInfo == 3)
-			{
-				UpdateSwitch(113, false, "HeatingOn");
-				UpdateSwitch(114, false, "TapwaterOn");
-				UpdateSwitch(115, true, "PreheatOn");
-			}
-			else
-			{
-				UpdateSwitch(113, false, "HeatingOn");
-				UpdateSwitch(114, false, "TapwaterOn");
-				UpdateSwitch(115, false, "PreheatOn");
+				bIsValid = true;
 			}
 		}
 	}
-
-	if (root["gasUsage"].empty() == false)
+	if (!bIsValid)
 	{
-		m_p1gas.gasusage = (unsigned long)(root["gasUsage"]["meterReading"].asFloat());
+		m_retry_counter++;
+		m_poll_counter = TOON_POLL_INTERVAL_SHORT;
+		return;
 	}
+	m_retry_counter = 0;
 
-	if (root["powerUsage"].empty() == false)
+	ParseThermostatData(root);
+	ParsePowerUsage(root);
+	ParseGasUsage(root);
+	ParseDeviceStatusData(root);
+}
+
+bool CToonThermostat::ParsePowerUsage(const Json::Value &root)
+{
+	if (root["powerUsage"].empty())
+		return false;
+
+	time_t atime = mytime(NULL);
+
+	unsigned long powerusage1 = (unsigned long)(root["powerUsage"]["meterReadingLow"].asFloat());
+	unsigned long powerusage2 = (unsigned long)(root["powerUsage"]["meterReading"].asFloat());
+
+	if ((powerusage1 == 0) && (powerusage2 == 0))
 	{
-		m_p1power.powerusage1 = (unsigned long)(root["powerUsage"]["meterReadingLow"].asFloat());
-		m_p1power.powerusage2 = (unsigned long)(root["powerUsage"]["meterReading"].asFloat());
-
-		if ((m_p1power.powerusage1 == 0) && (m_p1power.powerusage2 == 0))
+		//New firmware does not provide meter readings anymore
+		if (root["powerUsage"]["dayUsage"].empty() == false)
 		{
-			//New firmware does not provide meter readings anymore
 			unsigned long usage1 = (unsigned long)(root["powerUsage"]["dayUsage"].asFloat());
 			unsigned long usage2 = (unsigned long)(root["powerUsage"]["dayLowUsage"].asFloat());
 			if (usage1 < m_LastUsage1)
@@ -747,31 +697,40 @@ void CToonThermostat::GetMeterDetails()
 			m_LastUsage1 = usage1;
 			m_LastUsage2 = usage2;
 		}
+	}
+	else
+	{
+		m_p1power.powerusage1 = powerusage1;
+		m_p1power.powerusage2 = powerusage2;
+	}
 
-		if (root["powerUsage"]["meterReadingProdu"].empty() == false)
+	if (root["powerUsage"]["meterReadingProdu"].empty() == false)
+	{
+		unsigned long powerdeliv1 = (unsigned long)(root["powerUsage"]["meterReadingLowProdu"].asFloat());
+		unsigned long powerdeliv2 = (unsigned long)(root["powerUsage"]["meterReadingProdu"].asFloat());
+
+		if ((powerdeliv1 != 0) || (powerdeliv2 != 0))
 		{
-			m_p1power.powerdeliv1 = (unsigned long)(root["powerUsage"]["meterReadingLowProdu"].asFloat());
-			m_p1power.powerdeliv2 = (unsigned long)(root["powerUsage"]["meterReadingProdu"].asFloat());
-
-			if ((m_p1power.powerdeliv1 == 0) && (m_p1power.powerdeliv2 == 0))
-			{
-				//Have not received an example from a user that has produced with the new firmware
-				//for now ignoring
-			}
+			m_p1power.powerdeliv1 = powerdeliv1;
+			m_p1power.powerdeliv2 = powerdeliv2;
 		}
-
-		m_p1power.usagecurrent = (unsigned long)(root["powerUsage"]["value"].asFloat());	//Watt
-		m_p1power.delivcurrent = (unsigned long)(root["powerUsage"]["valueProduced"].asFloat());	//Watt
-
-		if (root["powerUsage"]["valueSolar"].empty() == false)
+		else
 		{
-			float valueSolar = (float)(root["powerUsage"]["valueSolar"].asFloat());
-			if (valueSolar != 0)
-			{
-				SendWattMeter(1, 1, 255, valueSolar, "Solar");
-			}
+			//Have not received an example from a user that has produced with the new firmware
+			//for now ignoring
 		}
-		
+	}
+
+	m_p1power.usagecurrent = (unsigned long)(root["powerUsage"]["value"].asFloat());	//Watt
+	m_p1power.delivcurrent = (unsigned long)(root["powerUsage"]["valueProduced"].asFloat());	//Watt
+
+	if (root["powerUsage"]["valueSolar"].empty() == false)
+	{
+		float valueSolar = (float)(root["powerUsage"]["valueSolar"].asFloat());
+		if (valueSolar != 0)
+		{
+			SendWattMeter(1, 1, 255, valueSolar, "Solar");
+		}
 	}
 
 	//Send Electra if value changed, or at least every 5 minutes
@@ -789,7 +748,17 @@ void CToonThermostat::GetMeterDetails()
 			sDecodeRXMessage(this, (const unsigned char *)&m_p1power, NULL, 255);
 		}
 	}
-	
+	return true;
+}
+
+bool CToonThermostat::ParseGasUsage(const Json::Value &root)
+{
+	if (root["gasUsage"].empty())
+		return false;
+	time_t atime = mytime(NULL);
+
+	m_p1gas.gasusage = (unsigned long)(root["gasUsage"]["meterReading"].asFloat());
+
 	//Send GAS if the value changed, or at least every 5 minutes
 	if (
 		(m_p1gas.gasusage != m_lastgasusage) ||
@@ -803,6 +772,112 @@ void CToonThermostat::GetMeterDetails()
 			sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, NULL, 255);
 		}
 	}
+	return true;
+}
+
+bool CToonThermostat::ParseDeviceStatusData(const Json::Value &root)
+{
+	//ZWave Devices
+	if (root["deviceStatusInfo"].empty())
+		return false;
+
+	if (root["deviceStatusInfo"]["device"].empty())
+		return false;
+
+	int totDevices = root["deviceStatusInfo"]["device"].size();
+	for (int ii = 0; ii < totDevices; ii++)
+	{
+		std::string deviceName = root["deviceStatusInfo"]["device"][ii]["name"].asString();
+		std::string uuid = root["deviceStatusInfo"]["device"][ii]["devUUID"].asString();
+		int state = root["deviceStatusInfo"]["device"][ii]["currentState"].asInt();
+
+		int Idx;
+		if (!GetUUIDIdx(uuid, Idx))
+		{
+			if (!AddUUID(uuid, Idx))
+			{
+				_log.Log(LOG_ERROR, "ToonThermostat: Error adding UUID to database?! Uuid=%s", uuid.c_str());
+				return false;
+			}
+		}
+		UpdateSwitch(Idx, state != 0, deviceName);
+
+		if (root["deviceStatusInfo"]["device"][ii]["currentUsage"].empty() == false)
+		{
+			double currentUsage = root["deviceStatusInfo"]["device"][ii]["currentUsage"].asDouble();
+			double DayCounter = root["deviceStatusInfo"]["device"][ii]["dayUsage"].asDouble();
+
+			//double ElecOffset = GetElectricOffset(Idx, DayCounter);
+			double OldDayCounter = m_LastElectricCounter[Idx];
+			if (DayCounter < OldDayCounter)
+			{
+				//daily counter went to zero
+				m_OffsetElectricUsage[Idx] += OldDayCounter;
+			}
+			m_LastElectricCounter[Idx] = DayCounter;
+			SendKwhMeterOldWay(Idx, 1, 255, currentUsage / 1000.0, (m_OffsetElectricUsage[Idx] + m_LastElectricCounter[Idx]) / 1000.0, deviceName);
+		}
+	}
+	return true;
+}
+
+bool CToonThermostat::ParseThermostatData(const Json::Value &root)
+{
+	//thermostatInfo
+	if (root["thermostatInfo"].empty())
+		return false;
+
+	float currentTemp = root["thermostatInfo"]["currentTemp"].asFloat() / 100.0f;
+	float currentSetpoint = root["thermostatInfo"]["currentSetpoint"].asFloat() / 100.0f;
+	SendSetPointSensor(1, currentSetpoint, "Room Setpoint");
+	SendTempSensor(1, 255, currentTemp, "Room Temperature");
+
+	//int programState = root["thermostatInfo"]["programState"].asInt();
+	//int activeState = root["thermostatInfo"]["activeState"].asInt();
+
+	if (root["thermostatInfo"]["burnerInfo"].empty() == false)
+	{
+		//burnerinfo
+		//0=off
+		//1=heating
+		//2=hot water
+		//3=pre-heating
+		int burnerInfo = 0;
+
+		if (root["thermostatInfo"]["burnerInfo"].isString())
+		{
+			burnerInfo = atoi(root["thermostatInfo"]["burnerInfo"].asString().c_str());
+		}
+		else if (root["thermostatInfo"]["burnerInfo"].isInt())
+		{
+			burnerInfo = root["thermostatInfo"]["burnerInfo"].asInt();
+		}
+		if (burnerInfo == 1)
+		{
+			UpdateSwitch(113, true, "HeatingOn");
+			UpdateSwitch(114, false, "TapwaterOn");
+			UpdateSwitch(115, false, "PreheatOn");
+		}
+		else if (burnerInfo == 2)
+		{
+			UpdateSwitch(113, false, "HeatingOn");
+			UpdateSwitch(114, true, "TapwaterOn");
+			UpdateSwitch(115, false, "PreheatOn");
+		}
+		else if (burnerInfo == 3)
+		{
+			UpdateSwitch(113, false, "HeatingOn");
+			UpdateSwitch(114, false, "TapwaterOn");
+			UpdateSwitch(115, true, "PreheatOn");
+		}
+		else
+		{
+			UpdateSwitch(113, false, "HeatingOn");
+			UpdateSwitch(114, false, "TapwaterOn");
+			UpdateSwitch(115, false, "PreheatOn");
+		}
+	}
+	return true;
 }
 
 void CToonThermostat::SetSetpoint(const int idx, const float temp)
@@ -864,6 +939,9 @@ void CToonThermostat::SetSetpoint(const int idx, const float temp)
 			m_bDoLogin = true;
 			return;
 		}
+		SendSetPointSensor(idx, temp, "Room Setpoint");
+		m_retry_counter = 0;
+		m_poll_counter = TOON_POLL_INTERVAL_SHORT;
 	}
 }
 
@@ -918,4 +996,6 @@ void CToonThermostat::SetProgramState(const int newState)
 		m_bDoLogin = true;
 		return;
 	}
+	m_retry_counter = 0;
+	m_poll_counter = TOON_POLL_INTERVAL_SHORT;
 }

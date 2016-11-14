@@ -68,6 +68,7 @@ namespace OpenZWave
 		friend class Association;
 		friend class Basic;
 		friend class ManufacturerSpecific;
+		friend class MultiInstanceAssociation;
 		friend class NodeNaming;
 		friend class NoOperation;
 		friend class SceneActivation;

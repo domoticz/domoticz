@@ -145,7 +145,7 @@ https://aeotec.freshdesk.com/helpdesk/attachments/6009584687
             <Item label="Start the pairing of Sensor" value="1431655681"/>
             <Item label="Pairing is successful" value="511"/>
 		</Value>
-		<Value type="list" genre="config" index="252" label="Lock/Unlock Configuration" min="0" max="1" value="0">
+		<Value type="list" genre="config" index="252" label="Lock/Unlock Configuration" min="0" max="1" size="1" value="0">
 			<Help>Lock/ unlock all configuration parameters</Help>
 			<Item label="Unlock" value="0"/>
 			<Item label="Lock" value="1"/>

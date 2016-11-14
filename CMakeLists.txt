@@ -249,6 +249,8 @@ hardware/csocket.cpp
 hardware/CurrentCostMeterBase.cpp
 hardware/CurrentCostMeterSerial.cpp
 hardware/CurrentCostMeterTCP.cpp
+hardware/Daikin.cpp
+hardware/DarkSky.cpp
 hardware/DavisLoggerSerial.cpp
 hardware/DenkoviSmartdenLan.cpp
 hardware/DomoticzHardware.cpp
@@ -262,13 +264,13 @@ hardware/Ec3kMeterTCP.cpp
 hardware/evohome.cpp
 hardware/ETH8020.cpp
 hardware/Fitbit.cpp
-hardware/ForecastIO.cpp
 hardware/FritzboxTCP.cpp
 hardware/GoodweAPI.cpp
 hardware/Gpio.cpp
 hardware/GpioPin.cpp
 hardware/HardwareMonitor.cpp
 hardware/HarmonyHub.cpp
+hardware/HEOS.cpp
 hardware/I2C.cpp
 hardware/ICYThermostat.cpp
 hardware/KMTronicBase.cpp
@@ -281,6 +283,7 @@ hardware/LogitechMediaServer.cpp
 hardware/Meteostick.cpp
 hardware/MochadTCP.cpp
 hardware/MQTT.cpp
+hardware/MultiFun.cpp
 hardware/MySensorsBase.cpp
 hardware/MySensorsSerial.cpp
 hardware/MySensorsTCP.cpp
@@ -336,7 +339,11 @@ hardware/Winddelen.cpp
 hardware/WOL.cpp
 hardware/Wunderground.cpp
 hardware/YouLess.cpp
+hardware/ZiBlueBase.cpp
+hardware/ZiBlueSerial.cpp
+hardware/ZiBlueTCP.cpp
 hardware/ZWaveBase.cpp
+hardware/Yeelight.cpp
 notifications/NotificationBase.cpp
 notifications/NotificationEmail.cpp
 notifications/NotificationGCM.cpp
@@ -348,6 +355,7 @@ notifications/NotificationNma.cpp
 notifications/NotificationPushbullet.cpp
 notifications/NotificationProwl.cpp
 notifications/NotificationPushover.cpp
+notifications/NotificationPushsafer.cpp
 notifications/NotificationPushalot.cpp
 notifications/NotificationSMS.cpp
 smtpclient/SMTPClient.cpp
@@ -649,6 +657,7 @@ install(TARGETS domoticz DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/www DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/License.txt DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/History.txt DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/server_cert.pem DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/scripts DESTINATION ${CMAKE_INSTALL_PREFIX} USE_SOURCE_PERMISSIONS)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Config DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/updatedomo DESTINATION ${CMAKE_INSTALL_PREFIX} PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ)

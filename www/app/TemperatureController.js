@@ -51,14 +51,14 @@ define(['app'], function (app) {
 			$("#dialog-edittempdevicesmall" ).i18n();
 			$("#dialog-edittempdevicesmall" ).dialog( "open" );
 		}
-		
+
 		//evohome
 		//FIXME some of this functionality would be good in a shared js / class library
 		//as we might like to use it from the dashboard or in scenes at some point
 		MakePerm = function(idt){
 			$(idt).val('');return false;
 		}
-		
+
 		EditSetPoint = function(idx,name,description,setpoint,mode,until,callback)
 		{
 			//HeatingOff does not apply to dhw
@@ -134,7 +134,7 @@ define(['app'], function (app) {
 				strstatus="Heating Off";
 			return strstatus;
 		}
-		
+
 		AddTempDevice = function()
 		{
 		  bootbox.alert($.t('Please use the devices tab for this.'));
@@ -155,7 +155,7 @@ define(['app'], function (app) {
 				if (typeof data.ServerTime != 'undefined') {
 					$rootScope.SetTimeAndSun(data.Sunrise,data.Sunset,data.ServerTime);
 				}
-				
+
 			  if (typeof data.result != 'undefined') {
 				if (typeof data.ActTime != 'undefined') {
 					$.LastUpdateTime=parseInt(data.ActTime);
@@ -176,7 +176,7 @@ define(['app'], function (app) {
 			  }
 			 }
 		  });
-		  
+
 			$scope.mytimer=$interval(function() {
 				RefreshTemps();
 			}, 10000);
@@ -263,9 +263,9 @@ define(['app'], function (app) {
 			//global var
 			$.devIdx=0;
 			$.LastUpdateTime=parseInt(0);
-			
+
 			$scope.MakeGlobalConfig();
-			
+
 			var dialog_edittempdevice_buttons = {};
 			dialog_edittempdevice_buttons[$.t("Update")]=function() {
 				  var bValid = true;
@@ -274,10 +274,10 @@ define(['app'], function (app) {
 					  $( this ).dialog( "close" );
 					  var aValue=$("#dialog-edittempdevice #edittable #adjustment").val();
 					  $.ajax({
-						 url: "json.htm?type=setused&idx=" + $.devIdx + 
-							'&name=' + encodeURIComponent($("#dialog-edittempdevice #devicename").val()) + 
-							'&description=' + encodeURIComponent($("#dialog-edittempdevice #devicedescription").val()) + 
-							'&addjvalue=' + aValue + 
+						 url: "json.htm?type=setused&idx=" + $.devIdx +
+							'&name=' + encodeURIComponent($("#dialog-edittempdevice #devicename").val()) +
+							'&description=' + encodeURIComponent($("#dialog-edittempdevice #devicedescription").val()) +
+							'&addjvalue=' + aValue +
 							'&used=true',
 						 async: false,
 						 dataType: 'json',
@@ -325,7 +325,7 @@ define(['app'], function (app) {
 					$( this ).dialog( "close" );
 				  }
 			});
-			
+
 			var dialog_editsetpoint_buttons = {};
 			dialog_editsetpoint_buttons[$.t("Set")]=function() {
 				  var bValid = true;
@@ -347,12 +347,12 @@ define(['app'], function (app) {
 				  }
 				  if ( bValid ) {
 					  $( this ).dialog( "close" );
-					 
+
 					  $.ajax({
 						 url: "json.htm?type=setused&idx=" + $.devIdx +
-							'&name=' + encodeURIComponent($("#dialog-editsetpoint #devicename").val()) + 
-							'&description=' + encodeURIComponent($("#dialog-editsetpoint #devicedescription").val()) + 
-							'&setpoint=' + setpoint + 
+							'&name=' + encodeURIComponent($("#dialog-editsetpoint #devicename").val()) +
+							'&description=' + encodeURIComponent($("#dialog-editsetpoint #devicedescription").val()) +
+							'&setpoint=' + setpoint +
 							'&mode='+((tUntil!="")?'TemporaryOverride':'PermanentOverride') +
 							'&until='+tUntil +
 							'&used=true',
@@ -377,7 +377,7 @@ define(['app'], function (app) {
 						 url: "json.htm?type=setused&idx=" + $.devIdx +
 							'&name=' + encodeURIComponent($("#dialog-editsetpoint #devicename").val()) +
 							'&description=' + encodeURIComponent($("#dialog-editsetpoint #devicedescription").val()) +
-							'&setpoint=' + aValue + 
+							'&setpoint=' + aValue +
 							'&mode=Auto&used=true',
 						 async: false,
 						 dataType: 'json',
@@ -392,7 +392,7 @@ define(['app'], function (app) {
 				$( this ).dialog( "close" );
 				ShowTemps();//going into the dialog removes the background timer refresh (see EditSetPoint)
 			};
-			  
+
 			$( "#dialog-editsetpoint" ).dialog({
 				  autoOpen: false,
 				  width: 'auto',
@@ -406,7 +406,7 @@ define(['app'], function (app) {
 					ShowTemps();//going into the dialog removes the background timer refresh (see EditSetPoint)
 				  }
 			});
-			
+
 			var dialog_editstate_buttons = {};
 
 			dialog_editstate_buttons[$.t("Set")]=function() {
@@ -419,10 +419,10 @@ define(['app'], function (app) {
 				  if($("#dialog-editstate #edittable #until_state").val()!="")
 					tUntil=$("#dialog-editstate #edittable #until_state").datetimepicker('getDate').toISOString();
 				  $.ajax({
-					 url: "json.htm?type=setused&idx=" + $.devIdx + 
-						'&name=' + encodeURIComponent($("#dialog-editstate #devicename").val()) + 
-						'&description=' + encodeURIComponent($("#dialog-editstate #devicedescription").val()) + 
-						'&state=' + aValue + 
+					 url: "json.htm?type=setused&idx=" + $.devIdx +
+						'&name=' + encodeURIComponent($("#dialog-editstate #devicename").val()) +
+						'&description=' + encodeURIComponent($("#dialog-editstate #devicedescription").val()) +
+						'&state=' + aValue +
 						'&mode='+((tUntil!="")?'TemporaryOverride':'PermanentOverride') +
 						'&until='+tUntil +
 						'&used=true',
@@ -439,7 +439,7 @@ define(['app'], function (app) {
 				$( this ).dialog( "close" );
 				ShowTemps();//going into the dialog removes the background timer refresh (see EditSetPoint)
 			};
-			
+
 			$( "#dialog-editstate" ).dialog({
 				  autoOpen: false,
 				  width: 'auto',
@@ -453,7 +453,7 @@ define(['app'], function (app) {
 					ShowTemps();//going into the dialog removes the background timer refresh (see EditState)
 				  }
 			});
-			
+
 			var dialog_edittempdevicesmall_buttons = {};
 			dialog_edittempdevicesmall_buttons[$.t("Update")]=function() {
 				  var bValid = true;
@@ -461,9 +461,9 @@ define(['app'], function (app) {
 				  if ( bValid ) {
 					  $( this ).dialog( "close" );
 					  $.ajax({
-						 url: "json.htm?type=setused&idx=" + $.devIdx + 
-							'&name=' + encodeURIComponent($("#dialog-edittempdevicesmall #devicename").val()) + 
-							'&description=' + encodeURIComponent($("#dialog-edittempdevicesmall #devicedescription").val()) + 
+						 url: "json.htm?type=setused&idx=" + $.devIdx +
+							'&name=' + encodeURIComponent($("#dialog-edittempdevicesmall #devicename").val()) +
+							'&description=' + encodeURIComponent($("#dialog-edittempdevicesmall #devicedescription").val()) +
 							'&used=true',
 						 async: false,
 						 dataType: 'json',
@@ -479,9 +479,9 @@ define(['app'], function (app) {
 				bootbox.confirm($.t("Are you sure to remove this Device?"), function(result) {
 					if (result==true) {
 					  $.ajax({
-						 url: "json.htm?type=setused&idx=" + $.devIdx + 
-							'&name=' + encodeURIComponent($("#dialog-edittempdevicesmall #devicename").val()) + 
-							'&description=' + encodeURIComponent($("#dialog-edittempdevicesmall #devicedescription").val()) + 
+						 url: "json.htm?type=setused&idx=" + $.devIdx +
+							'&name=' + encodeURIComponent($("#dialog-edittempdevicesmall #devicename").val()) +
+							'&description=' + encodeURIComponent($("#dialog-edittempdevicesmall #devicedescription").val()) +
 							'&used=false',
 						 async: false,
 						 dataType: 'json',
@@ -513,7 +513,7 @@ define(['app'], function (app) {
 			});
 
 		  ShowTemps();
-			
+
 			$( "#dialog-edittempdevice" ).keydown(function (event) {
 				if (event.keyCode == 13) {
 					$(this).siblings('.ui-dialog-buttonpane').find('button:eq(0)').trigger("click");
@@ -566,7 +566,7 @@ define(['app'], function (app) {
 		};
 
 	} ])
-		.directive('dztemperaturewidget', function() {
+		.directive('dztemperaturewidget', [ '$location', function($location) {
 			return {
 				priority: 0,
 				restrict: 'E',
@@ -701,7 +701,7 @@ define(['app'], function (app) {
 					ctrl.MakeFavorite = function(n) {
 						return MakeFavorite(ctrl.item.idx,n);
 					};
-					
+
 					ctrl.EditTempDeviceSmall = function () {
 						return EditTempDeviceSmall(ctrl.item.idx,escape(ctrl.item.Name),escape(ctrl.item.Description),ctrl.item.AddjValue);
 					};
@@ -722,6 +722,14 @@ define(['app'], function (app) {
 
 					ctrl.EditState = function(fn) {
 						return EditState(ctrl.item.idx, escape(ctrl.item.Name), escape(ctrl.item.Description), ctrl.item.State, ctrl.item.Status, ctrl.tUntil, fn);
+					};
+
+					ctrl.ShowLog = function() {
+						$location.url( '/Temperature/' + ctrl.item.idx + '/Log' );
+					};
+
+					ctrl.ShowNotifications = function() {
+						$location.url( '/Temperature/' + ctrl.item.idx + '/Notifications' );
 					};
 
 					$element.i18n();
@@ -747,5 +755,5 @@ define(['app'], function (app) {
 
 				}
 			};
-		});
+		}]);
 });

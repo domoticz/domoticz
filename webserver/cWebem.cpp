@@ -606,7 +606,6 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& r
 		}
 		catch (...)
 		{
-			
 		}
 
 		std::string attachment;
@@ -1611,6 +1610,19 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 			return;
 		}
 		myWebem->CheckForAction(session, requestCopy);
+		if (!requestCopy.uri.empty())
+		{
+			if ((requestCopy.method == "POST") && (requestCopy.uri[0] != '/'))
+			{
+				//Send back as data instead of a redirect uri
+				rep.status = reply::ok;
+				rep.content = requestCopy.uri;
+				reply::add_header(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
+				reply::add_header(&rep, "Last-Modified", make_web_time(mytime(NULL)), true);
+				reply::add_header(&rep, "Content-Type", "application/json;charset=UTF-8");
+				return;
+			}
+		}
 	}
 
 	modify_info mInfo;

@@ -9,14 +9,16 @@
 #include "../main/SQLHelper.h"
 #include "../httpclient/HTTPClient.h"
 
-#define TOT_TYPE 4
+#define TOT_TYPE 6
 
 const _STR_DEVICE DevicesType[TOT_TYPE] =
 { 
 	{ 0, "switchBox", "Switch Box",int(pTypeLighting2), int(sTypeAC), int(STYPE_OnOff), "relay" },
 	{ 1, "shutterBox", "Shutter Box", int(pTypeLighting2), int(sTypeAC), int(STYPE_BlindsPercentageInverted), "shutter" },
 	{ 2, "wLightBoxS", "Light Box S", int(pTypeLighting2), int(sTypeAC), int(STYPE_Dimmer), "light" },
-	{ 3, "wLightBox", "Light Box", int(pTypeLimitlessLights), int(sTypeLimitlessRGBW), int(STYPE_Dimmer), "rgbw" }
+	{ 3, "wLightBox", "Light Box", int(pTypeLimitlessLights), int(sTypeLimitlessRGBW), int(STYPE_Dimmer), "rgbw" },
+	{ 4, "gateBox", "Gate Box", int(pTypeLighting2), int(sTypeAC), int(STYPE_Dimmer), "gate" },
+	{ 5, "dimmerBox", "Dimmer Box", int(pTypeLighting2), int(sTypeAC), int(STYPE_Dimmer), "dimmer" }
 };
 
 int BleBox::GetDeviceTypeByApiName(const std::string &apiName)
@@ -115,11 +117,9 @@ void BleBox::GetDevicesState()
 			{
 				case 0:
 				{
-					if (root["state"].empty() == true)
-					{
-						_log.Log(LOG_ERROR, "BleBox: node 'state' missing!");
+					if (IsNodeExists(root, "state") == false)
 						break;
-					}
+					
 					const bool state = root["state"].asBool();
 
 					SendSwitch(node, itt->second, 255, state, 0, DevicesType[itt->second].name);
@@ -127,11 +127,9 @@ void BleBox::GetDevicesState()
 				}
 				case 1:
 				{
-					if (root["state"].empty() == true)
-					{
-						_log.Log(LOG_ERROR, "BleBox: node 'state' missing!");
+					if (IsNodeExists(root, "state") == false)
 						break;
-					}
+
 					const int state = root["state"].asInt();
 
 					const int currentPos = root["currentPos"].asInt();
@@ -147,16 +145,9 @@ void BleBox::GetDevicesState()
 				}
 				case 2:
 				{
-					if (root["light"].empty() == true)
-					{
-						_log.Log(LOG_ERROR, "BleBox: node 'light' missing!");
+					if (IsNodesExist(root, "light", "currentColor") == false)
 						break;
-					}
-					if (root["light"]["currentColor"].empty() == true)
-					{
-						_log.Log(LOG_ERROR, "BleBox: node 'currentColor' missing!");
-						break;
-					}
+
 					const std::string currentColor = root["light"]["currentColor"].asString();
 					int hexNumber;
 					sscanf(currentColor.c_str(), "%x", &hexNumber);
@@ -167,21 +158,36 @@ void BleBox::GetDevicesState()
 				}
 				case 3:
 				{
-					if (root["rgbw"].empty() == true)
-					{
-						_log.Log(LOG_ERROR, "BleBox: node 'rgbw' missing!");
+					if (IsNodesExist(root, "rgbw", "currentColor") == false)
 						break;
-					}
-					if (root["rgbw"]["currentColor"].empty() == true)
-					{
-						_log.Log(LOG_ERROR, "BleBox: node 'currentColor' missing!");
-						break;
-					}
+
 					const std::string currentColor = root["rgbw"]["currentColor"].asString();
 					int hexNumber;
 					sscanf(currentColor.c_str(), "%x", &hexNumber);
 
 					SendRGBWSwitch(node, itt->second, 255, hexNumber, true, DevicesType[itt->second].name);
+					break;
+				}
+				case 4:
+				{
+					if (IsNodeExists(root, "currentPos") == false)
+						break;
+
+					const int currentPos = root["currentPos"].asInt();
+					int level = (int)(currentPos / (255.0 / 100.0));
+
+					SendSwitch(node, itt->second, 255, level > 0, level, DevicesType[itt->second].name);
+					break;
+				}
+				case 5:
+				{
+					if (IsNodesExist(root, "dimmer", "currentBrightness") == false)
+						break;
+
+					const int currentPos = root["dimmer"]["currentBrightness"].asInt();
+					int level = (int)(currentPos / (255.0 / 100.0));
+
+					SendSwitch(node, itt->second, 255, level > 0, level, DevicesType[itt->second].name);
 					break;
 				}
 			}
@@ -208,23 +214,16 @@ std::string BleBox::GetDeviceRevertIP(const tRBUF *id)
 
 std::string BleBox::GetDeviceIP(const std::string &id)
 {
-	const char *pos = id.c_str();
 	BYTE id1, id2, id3, id4;
 	char ip[20];
 
-	sscanf(pos, "%2hhx", &id1);
-	pos += 2;
-	sscanf(pos, "%2hhx", &id2);
-	pos += 2;
-	sscanf(pos, "%2hhx", &id3);
-	pos += 2;
-	sscanf(pos, "%2hhx", &id4);
-
+	sscanf(id.c_str(), "%2hhx%2hhx%2hhx%2hhx", &id1, &id2, &id3, &id4);
 	sprintf(ip, "%d.%d.%d.%d", id1, id2, id3, id4);
+
 	return ip;
 }
 
-std::string BleBox::IPToHex(const std::string &IPAddress)
+std::string BleBox::IPToHex(const std::string &IPAddress, const int type)
 {
 	std::vector<std::string> strarray;
 	StringSplit(IPAddress, ".", strarray);
@@ -232,8 +231,15 @@ std::string BleBox::IPToHex(const std::string &IPAddress)
 		return "";
 
 	char szIdx[10];
-	sprintf(szIdx, "%02X%02X%02X%02X", atoi(strarray[0].data()), atoi(strarray[1].data()), atoi(strarray[2].data()), atoi(strarray[3].data()));
-
+	// because exists inconsistency when comparing deviceID in method decode_xxx in mainworker(Limitless uses small letter, lighting2 etc uses capital letter)
+	if (type != pTypeLimitlessLights)
+	{ 
+		sprintf(szIdx, "%02X%02X%02X%02X", atoi(strarray[0].data()), atoi(strarray[1].data()), atoi(strarray[2].data()), atoi(strarray[3].data()));
+	}
+	else
+	{
+		sprintf(szIdx, "%02x%02x%02x%02x", atoi(strarray[0].data()), atoi(strarray[1].data()), atoi(strarray[2].data()), atoi(strarray[3].data()));
+	}
 	return szIdx;
 }
 
@@ -263,11 +269,8 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 				if (root == "")
 					return false;
 
-				if (root["state"].empty() == true)
-				{
-					_log.Log(LOG_ERROR, "BleBox: node 'state' missing!");
+				if (IsNodeExists(root, "state") == false)
 					return false;
-				}
 
 				if (root["state"].asString() != state)
 				{
@@ -299,11 +302,8 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 				if (root == "")
 					return false;
 
-				if (root["state"].empty() == true)
-				{
-					_log.Log(LOG_ERROR, "BleBox: node 'state' missing!");
+				if (IsNodeExists(root, "state") == false)
 					return false;
-				}
 
 				//if (root["state"].asString() != state)
 				//{
@@ -338,16 +338,8 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 				if (root == "")
 					return false;
 
-				if (root["light"].empty() == true)
-				{
-					_log.Log(LOG_ERROR, "BleBox: node 'light' missing!");
+				if (IsNodesExist(root, "light", "currentColor") == false)
 					return false;
-				}
-				if (root["light"]["currentColor"].empty() == true)
-				{
-					_log.Log(LOG_ERROR, "BleBox: node 'currentColor' missing!");
-					return false;
-				}
 
 				if (root["light"]["currentColor"].asString() != level) // TODO or desiredcolor ??
 				{
@@ -376,16 +368,8 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 		if (root == "")
 			return false;
 	
-		if (root["rgbw"].empty() == true)
-		{
-			_log.Log(LOG_ERROR, "BleBox: node 'rgbw' missing!");
+		if (IsNodesExist(root, "rgbw", "desiredColor") == false)
 			return false;
-		}
-		if (root["rgbw"]["desiredColor"].empty() == true)
-		{
-			_log.Log(LOG_ERROR, "BleBox: node 'desiredColor' missing!");
-			return false;
-		}
 
 		if (root["rgbw"]["desiredColor"].asString() != state)
 		{
@@ -394,6 +378,29 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 		}
 	}
 	
+	return true;
+}
+
+bool BleBox::IsNodeExists(const Json::Value root, const std::string node)
+{
+	if (root[node].empty() == true)
+	{
+		_log.Log(LOG_ERROR, "BleBox: node '%s' missing!", node.c_str());
+		return false;
+	}
+	return true;
+}
+
+bool BleBox::IsNodesExist(const Json::Value root, const std::string node, const std::string value)
+{
+	if (IsNodeExists(root, node) == false)
+		return false;
+
+	if (root[node][value].empty() == true)
+	{
+		_log.Log(LOG_ERROR, "BleBox: value '%s' missing!", value.c_str());
+		return false;
+	}
 	return true;
 }
 
@@ -410,6 +417,68 @@ void BleBox::Restart()
 	StopHardware();
 	StartHardware();
 }
+
+void BleBox::SendSwitch(const int NodeID, const int ChildID, const int BatteryLevel, const bool bOn, const double Level, const std::string &defaultname)
+{ //TODO - remove this method, when in DomoticzHardware bug is fix (15 instead 16)
+	double rlevel = (15.0 / 100.0)*Level;
+	int level = int(rlevel);
+
+	//make device ID
+	unsigned char ID1 = (unsigned char)((NodeID & 0xFF000000) >> 24);
+	unsigned char ID2 = (unsigned char)((NodeID & 0xFF0000) >> 16);
+	unsigned char ID3 = (unsigned char)((NodeID & 0xFF00) >> 8);
+	unsigned char ID4 = (unsigned char)NodeID & 0xFF;
+
+	char szIdx[10];
+	sprintf(szIdx, "%X%02X%02X%02X", ID1, ID2, ID3, ID4);
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)",
+		m_HwdID, szIdx, ChildID, int(pTypeLighting2), int(sTypeAC));
+	if (!result.empty())
+	{
+		//check if we have a change, if not do not update it
+		int nvalue = atoi(result[0][1].c_str());
+		if ((!bOn) && (nvalue == light2_sOff))
+			return;
+		if (bOn && (nvalue == light2_sOn))
+			return;
+		if ((bOn && (nvalue != light2_sOff)))
+		{
+			//Check Level
+			int slevel = atoi(result[0][2].c_str());
+			if (slevel == level)
+				return;
+		}
+	}
+
+	//Send as Lighting 2
+	tRBUF lcmd;
+	memset(&lcmd, 0, sizeof(RBUF));
+	lcmd.LIGHTING2.packetlength = sizeof(lcmd.LIGHTING2) - 1;
+	lcmd.LIGHTING2.packettype = pTypeLighting2;
+	lcmd.LIGHTING2.subtype = sTypeAC;
+	lcmd.LIGHTING2.id1 = ID1;
+	lcmd.LIGHTING2.id2 = ID2;
+	lcmd.LIGHTING2.id3 = ID3;
+	lcmd.LIGHTING2.id4 = ID4;
+	lcmd.LIGHTING2.unitcode = ChildID;
+	if (!bOn)
+	{
+		lcmd.LIGHTING2.cmnd = light2_sOff;
+	}
+	else
+	{
+		if (level != 0)
+			lcmd.LIGHTING2.cmnd = light2_sSetLevel;
+		else
+			lcmd.LIGHTING2.cmnd = light2_sOn;
+	}
+	lcmd.LIGHTING2.level = level;
+	lcmd.LIGHTING2.filler = 0;
+	lcmd.LIGHTING2.rssi = 12;
+	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), BatteryLevel);
+}
+
 
 //Webserver helpers
 namespace http {
@@ -430,7 +499,7 @@ namespace http {
 			root["title"] = "BleBoxGetNodes";
 
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT ID,Name,DeviceID FROM DeviceStatus WHERE (HardwareID=='%d')", pBaseHardware->m_HwdID);
+			result = m_sql.safe_query("SELECT ID,Name,DeviceID,Unit FROM DeviceStatus WHERE (HardwareID=='%d')", pBaseHardware->m_HwdID);
 			if (result.size() > 0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
@@ -439,9 +508,15 @@ namespace http {
 				{
 					std::vector<std::string> sd = *itt;
 
+					BYTE id1, id2, id3, id4;
+					char ip[20];
+					sscanf(sd[2].c_str(), "%2hhx%2hhx%2hhx%2hhx", &id1, &id2, &id3, &id4);
+					sprintf(ip, "%d.%d.%d.%d", id1, id2, id3, id4);
+
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
-					root["result"][ii]["IP"] = sd[2];
+					root["result"][ii]["IP"] = ip;
+					root["result"][ii]["Type"] = DevicesType[atoi(sd[3].c_str())].name;
 					ii++;
 				}
 			}
@@ -627,15 +702,10 @@ std::string BleBox::IdentifyDevice(const std::string &IPAddress)
 
 	if (root["device"].empty() == true)
 	{
-		if (root["type"].empty() == true)
-		{
-			_log.Log(LOG_ERROR, "BleBox: Invalid data received!");
+		if (IsNodeExists(root, "type") == false)
 			return "";
-		}
 		else
-		{
 			result = root["type"].asString();
-		}
 	}
 	else
 	{
@@ -661,7 +731,7 @@ void BleBox::AddNode(const std::string &name, const std::string &IPAddress)
 
 	STR_DEVICE deviceType = DevicesType[deviceTypeID];
 
-	std::string szIdx = IPToHex(IPAddress);
+	std::string szIdx = IPToHex(IPAddress, deviceType.deviceID);
 
 	m_sql.safe_query(
 		"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue) "
@@ -683,7 +753,7 @@ bool BleBox::UpdateNode(const int id, const std::string &name, const std::string
 
 	STR_DEVICE deviceType = DevicesType[deviceTypeID];
 
-	std::string szIdx = IPToHex(IPAddress);
+	std::string szIdx = IPToHex(IPAddress, deviceType.deviceID);
 
 	m_sql.safe_query("UPDATE DeviceStatus SET DeviceID='%q', Unit='%d', Type='%d', SubType='%d', SwitchType='%d', Name='%q' WHERE (HardwareID=='%d') AND (ID=='%d')", 
 		szIdx.c_str(), deviceType.unit, deviceType.deviceID, deviceType.subType, deviceType.switchType, name.c_str(), m_HwdID, id);

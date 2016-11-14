@@ -7,12 +7,12 @@ class CPush
 public:
 	CPush();
 
-	std::vector<std::string> DropdownOptions(const unsigned long long DeviceRowIdxIn);
-	std::string DropdownOptionsValue(const unsigned long long DeviceRowIdxIn, const int pos);
+	std::vector<std::string> DropdownOptions(const uint64_t DeviceRowIdxIn);
+	std::string DropdownOptionsValue(const uint64_t DeviceRowIdxIn, const int pos);
 
 protected:
 	bool m_bLinkActive;
-	unsigned long long m_DeviceRowIdx;
+	uint64_t m_DeviceRowIdx;
 	boost::signals2::connection m_sConnection;
 
 	std::string ProcessSendValue(const std::string &rawsendValue, const int delpos, const int nValue, const int includeUnit, const int metertype);

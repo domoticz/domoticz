@@ -417,6 +417,8 @@
     <ClInclude Include="..\hardware\CurrentCostMeterBase.h" />
     <ClInclude Include="..\hardware\CurrentCostMeterSerial.h" />
     <ClInclude Include="..\hardware\CurrentCostMeterTCP.h" />
+    <ClInclude Include="..\hardware\Daikin.h" />
+    <ClInclude Include="..\hardware\DarkSky.h" />
     <ClInclude Include="..\hardware\DavisLoggerSerial.h" />
     <ClInclude Include="..\hardware\DenkoviSmartdenLan.h" />
     <ClInclude Include="..\hardware\Dummy.h" />
@@ -427,12 +429,12 @@
     <ClInclude Include="..\hardware\ETH8020.h" />
     <ClInclude Include="..\hardware\evohome.h" />
     <ClInclude Include="..\hardware\Fitbit.h" />
-    <ClInclude Include="..\hardware\ForecastIO.h" />
     <ClInclude Include="..\hardware\GoodweAPI.h" />
     <ClInclude Include="..\hardware\FritzboxTCP.h" />
     <ClInclude Include="..\hardware\Gpio.h" />
     <ClInclude Include="..\hardware\GpioPin.h" />
     <ClInclude Include="..\hardware\HarmonyHub.h" />
+    <ClInclude Include="..\hardware\HEOS.h" />
     <ClInclude Include="..\hardware\HttpPoller.h" />
     <ClInclude Include="..\hardware\I2C.h" />
     <ClInclude Include="..\hardware\ICYThermostat.h" />
@@ -447,6 +449,7 @@
     <ClInclude Include="..\hardware\Meteostick.h" />
     <ClInclude Include="..\hardware\MochadTCP.h" />
     <ClInclude Include="..\hardware\MQTT.h" />
+    <ClInclude Include="..\hardware\MultiFun.h" />
     <ClInclude Include="..\hardware\MySensorsBase.h" />
     <ClInclude Include="..\hardware\MySensorsSerial.h" />
     <ClInclude Include="..\hardware\MySensorsTCP.h" />
@@ -493,6 +496,11 @@
     <ClInclude Include="..\hardware\Winddelen.h" />
     <ClInclude Include="..\hardware\WOL.h" />
     <ClInclude Include="..\hardware\Wunderground.h" />
+    <ClInclude Include="..\hardware\Yeelight.h" />
+    <ClInclude Include="..\hardware\ZiBlueBase.h" />
+    <ClInclude Include="..\hardware\ZiBlueSerial.h" />
+    <ClInclude Include="..\hardware\ZiBlueTCP.h" />
+    <ClInclude Include="..\hardware\ziblue_usb_frame_api.h" />
     <ClInclude Include="..\hardware\ZWaveBase.h" />
     <ClInclude Include="..\hardware\ZWaveCommands.h" />
     <ClInclude Include="..\httpclient\HTTPClient.h" />
@@ -553,6 +561,7 @@
     <ClInclude Include="..\notifications\NotificationPushalot.h" />
     <ClInclude Include="..\notifications\NotificationPushbullet.h" />
     <ClInclude Include="..\notifications\NotificationPushover.h" />
+    <ClInclude Include="..\notifications\NotificationPushsafer.h" />
     <ClInclude Include="..\notifications\NotificationSMS.h" />
     <ClInclude Include="..\push\DataPush.h" />
     <ClInclude Include="..\push\GooglePubSubPush.h" />
@@ -631,6 +640,8 @@
     <ClCompile Include="..\hardware\CurrentCostMeterBase.cpp" />
     <ClCompile Include="..\hardware\CurrentCostMeterSerial.cpp" />
     <ClCompile Include="..\hardware\CurrentCostMeterTCP.cpp" />
+    <ClCompile Include="..\hardware\Daikin.cpp" />
+    <ClCompile Include="..\hardware\DarkSky.cpp" />
     <ClCompile Include="..\hardware\DavisLoggerSerial.cpp" />
     <ClCompile Include="..\hardware\DenkoviSmartdenLan.cpp" />
     <ClCompile Include="..\hardware\Dummy.cpp" />
@@ -641,12 +652,12 @@
     <ClCompile Include="..\hardware\ETH8020.cpp" />
     <ClCompile Include="..\hardware\evohome.cpp" />
     <ClCompile Include="..\hardware\Fitbit.cpp" />
-    <ClCompile Include="..\hardware\ForecastIO.cpp" />
     <ClCompile Include="..\hardware\FritzboxTCP.cpp" />
     <ClCompile Include="..\hardware\GoodweAPI.cpp" />
     <ClCompile Include="..\hardware\Gpio.cpp" />
     <ClCompile Include="..\hardware\GpioPin.cpp" />
     <ClCompile Include="..\hardware\HarmonyHub.cpp" />
+    <ClCompile Include="..\hardware\HEOS.cpp" />
     <ClCompile Include="..\hardware\HttpPoller.cpp" />
     <ClCompile Include="..\hardware\I2C.cpp" />
     <ClCompile Include="..\hardware\ICYThermostat.cpp" />
@@ -661,6 +672,7 @@
     <ClCompile Include="..\hardware\Meteostick.cpp" />
     <ClCompile Include="..\hardware\MochadTCP.cpp" />
     <ClCompile Include="..\hardware\MQTT.cpp" />
+    <ClCompile Include="..\hardware\MultiFun.cpp" />
     <ClCompile Include="..\hardware\MySensorsBase.cpp" />
     <ClCompile Include="..\hardware\MySensorsSerial.cpp" />
     <ClCompile Include="..\hardware\MySensorsTCP.cpp" />
@@ -711,6 +723,10 @@
     <ClCompile Include="..\hardware\Winddelen.cpp" />
     <ClCompile Include="..\hardware\WOL.cpp" />
     <ClCompile Include="..\hardware\Wunderground.cpp" />
+    <ClCompile Include="..\hardware\Yeelight.cpp" />
+    <ClCompile Include="..\hardware\ZiBlueBase.cpp" />
+    <ClCompile Include="..\hardware\ZiBlueSerial.cpp" />
+    <ClCompile Include="..\hardware\ZiBlueTCP.cpp" />
     <ClCompile Include="..\hardware\ZWaveBase.cpp" />
     <ClCompile Include="..\httpclient\HTTPClient.cpp" />
     <ClCompile Include="..\main\Camera.cpp" />
@@ -828,6 +844,7 @@
     <ClCompile Include="..\notifications\NotificationPushalot.cpp" />
     <ClCompile Include="..\notifications\NotificationPushbullet.cpp" />
     <ClCompile Include="..\notifications\NotificationPushover.cpp" />
+    <ClCompile Include="..\notifications\NotificationPushsafer.cpp" />
     <ClCompile Include="..\notifications\NotificationSMS.cpp" />
     <ClCompile Include="..\push\DataPush.cpp" />
     <ClCompile Include="..\push\GooglePubSubPush.cpp" />
@@ -1275,4 +1292,3 @@
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
 </Project>
-

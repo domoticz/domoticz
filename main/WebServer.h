@@ -62,6 +62,8 @@ public:
 	void SBFSpotImportOldData(WebEmSession & session, const request& req, std::string & redirect_uri);
 	void SetCurrentCostUSBType(WebEmSession & session, const request& req, std::string & redirect_uri);
 
+	void EventCreate(WebEmSession & session, const request& req, std::string & redirect_uri);
+
 	cWebem *m_pWebEm;
 
 	void ReloadCustomSwitchIcons();
@@ -152,6 +154,7 @@ private:
 	void Cmd_GetUserVariable(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_AllowNewHardware(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetLog(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_ClearLog(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_AddPlan(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_UpdatePlan(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DeletePlan(WebEmSession & session, const request& req, Json::Value &root);
@@ -243,6 +246,9 @@ private:
 	void Cmd_PanasonicMediaCommand(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_AddMobileDevice(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DeleteMobileDevice(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_HEOSSetMode(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_HEOSMediaCommand(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_AddYeeLight(WebEmSession & session, const request& req, Json::Value &root);
 
 	void Cmd_BleBoxSetMode(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_BleBoxGetNodes(WebEmSession & session, const request& req, Json::Value &root);
@@ -327,6 +333,9 @@ private:
 	//RTypes
 	void RType_OpenZWaveNodes(WebEmSession & session, const request& req, Json::Value &root);
 	int m_ZW_Hwidx;
+#endif
+#ifdef WITH_TELLDUSCORE
+    void Cmd_TellstickApplySettings(WebEmSession &session, const request &req, Json::Value &root);
 #endif
 	boost::shared_ptr<boost::thread> m_thread;
 
