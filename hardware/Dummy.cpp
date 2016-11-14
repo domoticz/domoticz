@@ -7,6 +7,7 @@
 #include "../webserver/cWebem.h"
 #include "../json/json.h"
 #include "hardwaretypes.h"
+#include <boost/lexical_cast.hpp>
 
 CDummy::CDummy(const int ID)
 {
@@ -73,8 +74,9 @@ namespace http {
 
 			if (result.size() > 0)
 			{
-				nid = atol(result[0][0].c_str());
+				nid = atol(result[0][0].c_str())+1; // OTO avoid second if same hwid, type subtype etc, to be rejected because of dup ID, as MAX(1) == 1, not 2 :)
 			}
+			unsigned long vs_idx = nid; // OTO keep idx to be returned before masking
 			nid += 82000;
 			char ID[40];
 			sprintf(ID, "%lu", nid);
@@ -379,10 +381,11 @@ namespace http {
 			{
 				root["status"] = "OK";
 				root["title"] = "CreateVirtualSensor";
+				root["idx"] = boost::lexical_cast<std::string>(vs_idx).c_str(); // OTO output the created ID for easier management on the caller side (if automated), generate a bit of unreclaimed memory dust
 			}
 			if (DeviceRowIdx != -1)
 			{
-				m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', Used=1 WHERE (ID==%llu)", ssensorname.c_str(), DeviceRowIdx);
+				m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', Options='%q', Used=1 WHERE (ID==%llu)", ssensorname.c_str(), soptions.c_str(), DeviceRowIdx);
 				m_mainworker.m_eventsystem.GetCurrentStates();
 			}
 		}

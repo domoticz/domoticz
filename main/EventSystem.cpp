@@ -2626,6 +2626,30 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 				lua_rawset(lua_state, -3);
 			}
 			lua_setglobal(lua_state, "devicechanged");
+
+
+			// BEGIN OTO: populate changed info
+			lua_createtable(lua_state, 3, 0);
+			lua_pushstring(lua_state, "idx");
+			lua_pushnumber(lua_state, DeviceID);
+			lua_rawset(lua_state, -3);
+
+			lua_pushstring(lua_state, "svalue");
+			lua_pushstring(lua_state, sValue);
+			lua_rawset(lua_state, -3);
+			
+			lua_pushstring(lua_state, "nvalue");
+			lua_pushnumber(lua_state, nValue);
+			lua_rawset(lua_state, -3);
+
+			/* USELESS, WE HAVE THE DEVICE INDEX
+			// replace devicechanged => 
+			lua_pushstring(lua_state, "name"); 
+			lua_pushnumber(lua_state, nValue);
+			lua_rawset(lua_state, -3);
+			*/
+			lua_setglobal(lua_state, "devicechanged_ext");
+			// END OTO
 		}
 	}
 

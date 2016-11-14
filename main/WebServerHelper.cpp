@@ -142,14 +142,15 @@ namespace http {
 			const bool bDisplayHidden,
 			const bool bFetchFavorites,
 			const time_t LastUpdate,
-			const std::string &username)
+			const std::string &username,
+			const std::string &hardwareid) // OTO
 		{
 			if (plainServer_) { // assert
-				plainServer_->GetJSonDevices(root, rused, rfilter, order, rowid, planID, floorID, bDisplayHidden, bFetchFavorites, LastUpdate, username);
+				plainServer_->GetJSonDevices(root, rused, rfilter, order, rowid, planID, floorID, bDisplayHidden, bFetchFavorites, LastUpdate, username, hardwareid);
 			}
 #ifdef WWW_ENABLE_SSL
 			else if (secureServer_) {
-				secureServer_->GetJSonDevices(root, rused, rfilter, order, rowid, planID, floorID, bDisplayHidden, bFetchFavorites, LastUpdate, username);
+				secureServer_->GetJSonDevices(root, rused, rfilter, order, rowid, planID, floorID, bDisplayHidden, bFetchFavorites, LastUpdate, username, hardwareid);
 			}
 #endif
 		}
