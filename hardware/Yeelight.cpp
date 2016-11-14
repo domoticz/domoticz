@@ -95,11 +95,12 @@ bool Yeelight::StopHardware()
 	return true;
 }
 
-#define Limitless_POLL_INTERVAL 900 // 60
+#define Limitless_POLL_INTERVAL 60 // 60
 
 void Yeelight::Do_Work()
 {
 	_log.Log(LOG_STATUS, "YeeLight Worker started...");
+
 	int iRetryCounter = 0;
 	while (!m_pNodes.empty() && (iRetryCounter < 15))
 	{
@@ -128,21 +129,22 @@ void Yeelight::Do_Work()
 		for (itt = result.begin(); itt != result.end(); ++itt)
 		{
 			std::vector<std::string> sd = *itt;
-			std::string ipAddress = sd[0].c_str();
 			_log.Log(LOG_STATUS, "Yeelight: found device in database %s", sd[0].c_str());
 			boost::shared_ptr<Yeelight::YeelightTCP>	pNode = (boost::shared_ptr<Yeelight::YeelightTCP>) new Yeelight::YeelightTCP(sd[0].c_str(), m_HwdID, atoi(sd[1].c_str()));
 			m_pNodes.push_back(pNode);
 		}
 		for (std::vector<boost::shared_ptr<Yeelight::YeelightTCP> >::iterator itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
 		{
-			//_log.Log(LOG_NORM, "Yeelight: (%s) Starting thread.", (*itt)->m_szDeviceId.c_str());
+			_log.Log(LOG_NORM, "Yeelight: (%s) Starting thread.", (*itt)->m_szDeviceId.c_str());
 			(*itt)->Start();
 		}
 	}
 
-
 	boost::asio::io_service io_service;
 	YeelightUDP server(io_service, m_HwdID);
+	server.start_send();
+	io_service.run();
+	sleep_seconds(10);
 	int sec_counter = Limitless_POLL_INTERVAL - 5;
 	while (!m_stoprequested)
 	{
@@ -151,7 +153,7 @@ void Yeelight::Do_Work()
 		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat = mytime(NULL);
 		}
-		if (sec_counter % 900 == 0) //poll YeeLights every minute
+		if (sec_counter % 60 == 0) //poll YeeLights every minute
 		{
 			server.start_send();
 			io_service.run();
@@ -272,8 +274,10 @@ void Yeelight::InsertUpdateSwitch(const std::string &lightName, const int &YeeTy
 		ycmd.dunit = 0;
 		ycmd.value = value;
 		ycmd.command = cmd;
+		_log.Log(LOG_STATUS, "YeeLight: 0");
 		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&ycmd, NULL, -1);
 		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, LastLevel=%d WHERE(HardwareID == %d) AND (DeviceID == '%q')", lightName.c_str(), (STYPE_Dimmer), value, m_HwdID, szDeviceID);
+
 	}
 	else {
 
@@ -417,7 +421,8 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 			//return true;
 		}
 	}
-	return true;
+	return false;
+	//return true;
 }
 
 
@@ -536,13 +541,15 @@ bool Yeelight::YeelightUDP::HandleIncoming(const std::string &szData)
 	if (yeelightStatus == "on") {
 		bIsOn = true;
 	}
-	int sType = sTypeLimitlessWhite;
+	//set to RGBW by default
+	int sType = sTypeLimitlessRGBW;
+	std::string yeelightName = "YeeLight LED (Color)";
 
-	std::string yeelightName = "";
 	if (yeelightModel == "mono") {
 		yeelightName = "YeeLight LED (Mono)";
+		sType = sTypeLimitlessWhite;
 	}
-	else if (yeelightModel == "color") {
+	else if ((yeelightModel == "color") || (yeelightModel == "stripe")) {
 		yeelightName = "YeeLight LED (Color)";
 		sType = sTypeLimitlessRGBW;
 	}
@@ -551,33 +558,6 @@ bool Yeelight::YeelightUDP::HandleIncoming(const std::string &szData)
 	return true;
 }
 
-//Webserver helpers
-namespace http {
-	namespace server {
-		void CWebServer::Cmd_AddYeeLight(WebEmSession & session, const request& req, Json::Value &root)
-		{
-			root["title"] = "AddYeeLight";
-
-			std::string idx = request::findValue(&req, "idx");
-			std::string sname = request::findValue(&req, "name");
-			std::string sipaddress = request::findValue(&req, "ipaddress");
-			std::string stype = request::findValue(&req, "stype");
-			if (
-				(idx.empty()) ||
-				(sname.empty()) ||
-				(sipaddress.empty()) ||
-				(stype.empty())
-				)
-				return;
-			root["status"] = "OK";
-
-			int HwdID = atoi(idx.c_str());
-
-			Yeelight yeelight(HwdID);
-			yeelight.InsertUpdateSwitch(sname, (stype == "0") ? sTypeLimitlessWhite : sTypeLimitlessRGBW, sipaddress, false, "0", "0");
-		}
-	}
-}
 
 Yeelight::YeelightTCP::YeelightTCP(const std::string DeviceID, const int HardwareID, const int YeeType)
 {
@@ -835,4 +815,34 @@ void Yeelight::YeelightTCP::OnError(const boost::system::error_code & error)
 	}
 	else
 		_log.Log(LOG_ERROR, "Yeelight: %s", error.message().c_str());
+}
+
+
+//Webserver helpers
+namespace http {
+	namespace server {
+		void CWebServer::Cmd_AddYeeLight(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			root["title"] = "AddYeeLight";
+
+			std::string idx = request::findValue(&req, "idx");
+			std::string sname = request::findValue(&req, "name");
+			std::string sipaddress = request::findValue(&req, "ipaddress");
+			std::string stype = request::findValue(&req, "stype");
+			if (
+				(idx.empty()) ||
+				(sname.empty()) ||
+				(sipaddress.empty()) ||
+				(stype.empty())
+				)
+				return;
+			root["status"] = "OK";
+
+			int HwdID = atoi(idx.c_str());
+
+			Yeelight yeelight(HwdID);
+			yeelight.InsertUpdateSwitch(sname, (stype == "0") ? sTypeLimitlessWhite : sTypeLimitlessRGBW, sipaddress, false, "0", "0");
+
+		}
+	}
 }
