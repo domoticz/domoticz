@@ -48,10 +48,11 @@ std::string ReadFile(std::string filename)
 
 CWunderground::CWunderground(const int ID, const std::string &APIKey, const std::string &Location) :
 m_APIKey(APIKey),
-m_Location(Location)
+m_Location(Location),
+m_bForceSingleStation(true)
 {
-	m_HwdID=ID;
-	m_stoprequested=false;
+	m_HwdID = ID;
+	m_stoprequested = false;
 	Init();
 }
 
@@ -175,6 +176,14 @@ void CWunderground::GetMeterDetails()
 		return;
 	}
 	else if (root["current_observation"]["temp_c"].empty() == true)
+	{
+		bValid = false;
+	}
+	else if (m_bForceSingleStation && root["current_observation"]["station_id"].empty())
+	{
+		bValid = false;
+	}
+	else if (m_bForceSingleStation && m_Location.find(root["current_observation"]["station_id"].asString()) == std::string::npos)
 	{
 		bValid = false;
 	}

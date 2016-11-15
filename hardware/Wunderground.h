@@ -11,6 +11,7 @@ public:
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 	std::string GetForecastURL();
 private:
+	bool m_bForceSingleStation;
 	std::string m_APIKey;
 	std::string m_Location;
 	volatile bool m_stoprequested;
