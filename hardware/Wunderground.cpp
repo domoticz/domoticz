@@ -246,6 +246,10 @@ void CWunderground::GetMeterDetails()
 			{
 				barometric_forcast=baroForecastSunny;
 			}
+			else if (forcasticon=="clear")
+			{
+				barometric_forcast=baroForecastSunny;
+			}			
 			else if (forcasticon=="rain")
 			{
 				barometric_forcast=baroForecastRain;
