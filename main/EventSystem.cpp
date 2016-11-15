@@ -2131,19 +2131,19 @@ void CEventSystem::ParseActionString( const std::string &oAction_, _tActionParse
 					oResults_.sCommand.append( sToken );
 					break;
 				case 1:
-					oResults_.fForSec = 60. * atof( sToken.c_str() );
+					oResults_.fForSec = 60.f * static_cast<float>(atof(sToken.c_str()));
 					break;
 				case 2:
-					oResults_.fAfterSec = 1. * atof( sToken.c_str() );
+					oResults_.fAfterSec = 1.f * static_cast<float>(atof(sToken.c_str()));
 					break;
 				case 3:
-					oResults_.fRandomSec = 60. * atof( sToken.c_str() );
+					oResults_.fRandomSec = 60.f * static_cast<float>(atof(sToken.c_str()));
 					break;
 				case 4:
 					oResults_.iRepeat = atoi( sToken.c_str() );
 					break;
 				case 5:
-					oResults_.fRepeatSec = 1. * atof( sToken.c_str() );
+					oResults_.fRepeatSec = 1.f * static_cast<float>(atof(sToken.c_str()));
 					break;
 			}
 		}
@@ -3451,7 +3451,6 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 
 		float fRandomTime = 0;
 		if ( oParseResults.fRandomSec > (1./timer_resolution_hz/2) ) {
-			float rTime;
 			srand( (unsigned int)mytime( NULL ) + iIndex );
 			fRandomTime = (float)rand() / (float)( RAND_MAX / oParseResults.fRandomSec );
 		}
