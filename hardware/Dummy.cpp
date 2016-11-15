@@ -10,7 +10,7 @@
 #include "hardwaretypes.h"
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
-#include <boost/lexical_cast.hpp>
+#include <sstream>
 
 CDummy::CDummy(const int ID)
 {
@@ -396,11 +396,13 @@ namespace http {
 			{
 				root["status"] = "OK";
 				root["title"] = "CreateVirtualSensor";
-				root["idx"] = boost::lexical_cast<std::string>(vs_idx).c_str(); // OTO output the created ID for easier management on the caller side (if automated), generate a bit of unreclaimed memory dust
+				std::stringstream ss;
+				ss << vs_idx;
+				root["idx"] = ss.str().c_str();
 			}
 			if (DeviceRowIdx != -1)
 			{
-				m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', Options='%q', Used=1 WHERE (ID==%llu)", ssensorname.c_str(), soptions.c_str(), DeviceRowIdx);
+				m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', Options='%q', Used=1 WHERE (ID==%" PRIu64 ")", ssensorname.c_str(), soptions.c_str(), DeviceRowIdx);
 				m_mainworker.m_eventsystem.GetCurrentStates();
 			}
 		}
