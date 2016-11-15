@@ -51,8 +51,6 @@
 #include "../notifications/NotificationHelper.h"
 #include "../main/LuaHandler.h"
 
-#include <boost/lexical_cast.hpp>
-
 #include "mainstructs.h"
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
@@ -7610,7 +7608,6 @@ namespace http {
 					}
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Protected"] = (iProtected != 0);
-					root["result"][ii]["Options"] = sOptions.c_str(); // OTO: output options for all sensors, overriden afterwards depending on sensor type
 
 					CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hardwareID);
 					if (pHardware != NULL)

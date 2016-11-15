@@ -402,7 +402,7 @@ namespace http {
 			}
 			if (DeviceRowIdx != -1)
 			{
-				m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', Options='%q', Used=1 WHERE (ID==%" PRIu64 ")", ssensorname.c_str(), soptions.c_str(), DeviceRowIdx);
+				m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', Used=1 WHERE (ID==%" PRIu64 ")", ssensorname.c_str(), DeviceRowIdx);
 				m_mainworker.m_eventsystem.GetCurrentStates();
 			}
 		}
