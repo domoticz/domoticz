@@ -10,6 +10,7 @@
 #include "hardwaretypes.h"
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
+#include <sstream>
 
 CDummy::CDummy(const int ID)
 {
@@ -90,6 +91,7 @@ namespace http {
 			{
 				nid = atol(result[0][0].c_str()) + 1;
 			}
+			unsigned long vs_idx = nid; // OTO keep idx to be returned before masking
 			nid += 82000;
 			char ID[40];
 			sprintf(ID, "%lu", nid);
@@ -394,6 +396,9 @@ namespace http {
 			{
 				root["status"] = "OK";
 				root["title"] = "CreateVirtualSensor";
+				std::stringstream ss;
+				ss << vs_idx;
+				root["idx"] = ss.str().c_str();
 			}
 			if (DeviceRowIdx != -1)
 			{

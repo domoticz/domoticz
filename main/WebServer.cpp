@@ -1265,6 +1265,8 @@ namespace http {
 				std::vector<std::string> sd = result[0];
 				int ID = atoi(sd[0].c_str());
 
+				root["idx"] = sd[0].c_str(); // OTO output the created ID for easier management on the caller side (if automated)
+
 				m_mainworker.AddHardwareFromParams(ID, name, (senabled == "true") ? true : false, htype, address, port, sport, username, password, extra, mode1, mode2, mode3, mode4, mode5, mode6, iDataTimeout, true);
 			}
 		}
@@ -6900,8 +6902,9 @@ namespace http {
 			const std::string &floorID,
 			const bool bDisplayHidden,
 			const bool bFetchFavorites,
-			const time_t LastUpdate,
-			const std::string &username)
+			const time_t LastUpdate, 
+			const std::string &username,
+			const std::string &hardwareid)
 		{
 			std::vector<std::vector<std::string> > result;
 
@@ -7206,18 +7209,35 @@ namespace http {
 						sprintf(szOrderBy, "A.[Order],A.%s ASC", order.c_str());
 					}
 					//_log.Log(LOG_STATUS, "Getting all devices: order by %s ", szOrderBy);
-					result = m_sql.safe_query(
-						"SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used,A.Type, A.SubType,"
-						" A.SignalLevel, A.BatteryLevel, A.nValue, A.sValue,"
-						" A.LastUpdate, A.Favorite, A.SwitchType, A.HardwareID,"
-						" A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2,"
-						" A.LastLevel, A.CustomImage, A.StrParam1, A.StrParam2,"
-						" A.Protected, IFNULL(B.XOffset,0), IFNULL(B.YOffset,0), IFNULL(B.PlanID,0), A.Description,"
-						" A.Options "
-						"FROM DeviceStatus as A LEFT OUTER JOIN DeviceToPlansMap as B "
-						"ON (B.DeviceRowID==a.ID) AND (B.DevSceneType==0) "
-						"ORDER BY %q",
-						szOrderBy);
+					if(hardwareid != "") {
+	 					result = m_sql.safe_query(
+							"SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used,A.Type, A.SubType,"
+							" A.SignalLevel, A.BatteryLevel, A.nValue, A.sValue,"
+							" A.LastUpdate, A.Favorite, A.SwitchType, A.HardwareID,"
+							" A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2,"
+							" A.LastLevel, A.CustomImage, A.StrParam1, A.StrParam2,"
+							" A.Protected, IFNULL(B.XOffset,0), IFNULL(B.YOffset,0), IFNULL(B.PlanID,0), A.Description,"
+							" A.Options "
+							"FROM DeviceStatus as A LEFT OUTER JOIN DeviceToPlansMap as B "
+							"ON (B.DeviceRowID==a.ID) AND (B.DevSceneType==0) "
+							"WHERE (A.HardwareID == %q) "
+							"ORDER BY %q",
+							hardwareid.c_str(), szOrderBy);
+					}
+					else {
+	 					result = m_sql.safe_query(
+							"SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used,A.Type, A.SubType,"
+							" A.SignalLevel, A.BatteryLevel, A.nValue, A.sValue,"
+							" A.LastUpdate, A.Favorite, A.SwitchType, A.HardwareID,"
+							" A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2,"
+							" A.LastLevel, A.CustomImage, A.StrParam1, A.StrParam2,"
+							" A.Protected, IFNULL(B.XOffset,0), IFNULL(B.YOffset,0), IFNULL(B.PlanID,0), A.Description,"
+							" A.Options "
+							"FROM DeviceStatus as A LEFT OUTER JOIN DeviceToPlansMap as B "
+							"ON (B.DeviceRowID==a.ID) AND (B.DevSceneType==0) "
+							"ORDER BY %q",
+							szOrderBy);
+ 					}
 				}
 			}
 			else
@@ -7363,9 +7383,9 @@ namespace http {
 						}
 					}
 
-					unsigned char dType = atoi(sd[5].c_str());
-					unsigned char dSubType = atoi(sd[6].c_str());
-					unsigned char used = atoi(sd[4].c_str());
+					unsigned int dType = atoi(sd[5].c_str());
+					unsigned int dSubType = atoi(sd[6].c_str());
+					unsigned int used = atoi(sd[4].c_str());
 					int nValue = atoi(sd[9].c_str());
 					std::string sValue = sd[10];
 					std::string sLastUpdate = sd[11];
@@ -10064,6 +10084,7 @@ namespace http {
 			bool bDisplayHidden = (sDisplayHidden == "1");
 			bool bFetchFavorites = (sFetchFavorites == "1");
 			std::string sLastUpdate = request::findValue(&req, "lastupdate");
+			std::string hwidx = request::findValue(&req, "hwidx"); // OTO
 
 			time_t LastUpdate = 0;
 			if (sLastUpdate != "")
@@ -10076,7 +10097,7 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "Devices";
 
-			GetJSonDevices(root, rused, rfilter, order, rid, planid, floorid, bDisplayHidden, bFetchFavorites, LastUpdate, session.username);
+			GetJSonDevices(root, rused, rfilter, order, rid, planid, floorid, bDisplayHidden, bFetchFavorites, LastUpdate, session.username, hwidx);
 		}
 
 		void CWebServer::RType_Users(WebEmSession & session, const request& req, Json::Value &root)
