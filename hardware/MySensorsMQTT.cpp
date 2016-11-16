@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "MQTT.h"
 #include "MySensorsMQTT.h"
 #include "../main/Logger.h"
 #include "../main/Helper.h"
@@ -10,7 +11,7 @@
 #define TOPIC_OUT	"domoticz/out/MyMQTT"
 
 MySensorsMQTT::MySensorsMQTT(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &Username, const std::string &Password, const std::string &CAfilename) :
-	MQTT(ID, IPAddress, usIPPort, Username, Password, CAfilename, _ePublishTopics::PT_out)
+	MQTT(ID, IPAddress, usIPPort, Username, Password, CAfilename, MQTT::_ePublishTopics::PT_out)
 {
 	m_TopicInWithoutHash = TOPIC_IN;
 	m_TopicIn = m_TopicInWithoutHash + "/#";
