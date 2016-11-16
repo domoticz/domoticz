@@ -187,6 +187,19 @@ void CWunderground::GetMeterDetails()
 	{
 		bValid = false;
 	}
+	else if (root["current_observation"]["observation_epoch"].empty() == true)
+	{
+		bValid = false;
+	}
+	else if (root["current_observation"]["local_epoch"].empty() == true)
+	{
+		bValid = false;
+	}
+	else if (difftime(root["current_observation"]["local_epoch"].asUInt(), root["current_observation"]["observation_epoch"].asUInt()) >= 1800)
+	{
+		//When we don't get any valid data in 30 minuted, we also stop using the values
+		bValid = false;
+	}
 	if (!bValid)
 	{
 		_log.Log(LOG_ERROR, "WUnderground: Invalid data received, or no data returned!");
