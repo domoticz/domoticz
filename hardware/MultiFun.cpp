@@ -17,7 +17,7 @@
 #endif
 
 #define BUFFER_LENGHT 100
-#define MULTIFUN_POLL_INTERVAL 10
+#define MULTIFUN_POLL_INTERVAL 10 //TODO - to settings on www
 
 #define round(a) ( int ) ( a + .5 )
 
@@ -26,84 +26,81 @@ typedef struct sensorType {
 	float div;
 } Model;
 
-#define sensorsCount 12
+#define sensorsCount 16
 #define registersCount 34
-
-// ISO2UTF8
-// π        Ê       Í       ≥       Ò       Û       ú       ü       ø       •      ∆                £       —       ”       å       è       Ø
-// \xC4\x85\xC4\x87\xC4\x99\xC5\x82\xC5\x84\xC3\xB3\xC5\x9B\xC5\xBA\xC5\xBC\xC4\x84\xC4\x86\xC4\x98\xC5\x81\xC5\x83\xC3\x93\xC5\x9A\xC5\xB9\xC5\xBB
 
 typedef std::map<int, std::string> dictionary;
 
 static dictionary alarmsType = boost::assign::map_list_of
-(0x0001, "STOP KOTLA - NIEUDANE ROZPALANIE")
-(0x0004, "PRZEGRZANIE KOTLA")
-(0x0010, "ZGASLO W KOTLE")
-(0x0080, "USZKODZONY CZUJNIK KOTLA")
-(0x0100, "USZKODZONY CZUJNIK PODAJNIKA")
-(0x0200, "CZUJNIK SPALIN")
-(0x0400, "NIEPOWODZENIE - BLOKADA PRACY");
-
+(0x0001, "BOILER STOP - FIRING FAILURE")
+(0x0004, "BOILER OVERHEATING")
+(0x0010, "EXTINUISHED BOILER")
+(0x0080, "DAMAGED SENSOR BOILER")
+(0x0100, "DAMAGED SENSOR FEEDER")
+(0x0200, "FLUE GAS SENSOR")
+(0x0400, "FAILURE - LOCK WORKS");
 
 static dictionary warningsType = boost::assign::map_list_of
-(0x0001, "Brak czujnika zewnetrznego")
-(0x0002, "Brak czujnika pokojowego nr 1")
-(0x0004, "Niewlasciwa wersja zasilacza")
-(0x0008, "Brak czujnika powrotu")
-(0x0010, "Brak czujnika pokojowego nr 2")
-(0x0020, "Otwarta klapa")
-(0x0040, "Zadzialalo zabezpieczenie termiczne(termik)");
+(0x0001, "No external sensor")
+(0x0002, "No room sensor 1")
+(0x0004, "Wrong version supply module program")
+(0x0008, "No return sensor")
+(0x0010, "No room sensor 2")
+(0x0020, "Open flap")
+(0x0040, "Thermal protection has tripped");
 
 static dictionary devicesType = boost::assign::map_list_of
-(0x0001, "Pompa C.O.1")
-(0x0002, "Pompa C.O.2")
-(0x0004, "Pompa przewalowa")
-(0x0008, "Pompa C.W.U.")
-(0x0010, "Pompa cyrkulacyjna")
-(0x0020, "Pompa bufora")
-(0x0040, "Mieszacz C.O.1 Zam.")
-(0x0080, "Mieszacz C.O.1 Otw.")
-(0x0100, "Mieszacz C.O.2 Zam.")
-(0x0200, "Mieszacz C.O.2 Otw.");
-//Wentylator moc 6 bitÛw	MSB	WartoúÊ od 0 ñ 100 przesy≥ana na	najstarszych 6 bitach
+(0x0001, "C.H.1 PUMP")
+(0x0002, "C.H.2 PUMP")
+(0x0004, "RESERVE PUMP")
+(0x0008, "H.W.U.PUMP")
+(0x0010, "CIRCULATION PUMP")
+(0x0020, "PUFFER PUMP")
+(0x0040, "MIXER C.H.1 Close")
+(0x0080, "MIXER C.H.1 Open")
+(0x0100, "MIXER C.H.2 Close")
+(0x0200, "MIXER C.H.2 Open");
 
 static dictionary statesType = boost::assign::map_list_of
-(0x0001, "Stop")
-(0x0002, "Rozpalanie")
-(0x0004, "Palenie")
-(0x0008, "Podtrzymanie")
-(0x0010, "Wygaszanie");
-//Poziom paliwa 6 bitÛw	MSB	WartoúÊ od 0 ñ 100 przesy≥ana na	najstarszych 6 bitach
+(0x0001, "STOP")
+(0x0002, "Firing")
+(0x0004, "Heating")
+(0x0008, "Maintain")
+(0x0010, "Blanking");
 
 static sensorType sensors[sensorsCount] =
 {
-	{ "Temperatura zewnetrzna", 10.0 },
-	{ "Temperatura pokojowa 1", 10.0 },
-	{ "Temperatura pokojowa 2", 10.0 },
-	{ "Temperatura powrotu kotla", 10.0 },
-	{ "Temperatura obiegu C.O.1", 10.0 },
-	{ "Temperatura obiegu C.O.2", 10.0 },
-	{ "Temperatura C.W.U.", 10.0 },
-	{ "Temperatura zaru", 1.0 },
-	{ "Temperatura spalin", 10.0 },
-	{ "Temperatura modulu", 10.0 },
-	{ "Temperatura zasilania kotla", 10.0 },
-	{ "Temperatura podajnika", 10.0 }
+	{ "External", 10.0 },
+	{ "Room 1", 10.0 },
+	{ "Room 2", 10.0 },
+	{ "Return", 10.0 },
+	{ "C.H.1", 10.0 },
+	{ "C.H.2", 10.0 },
+	{ "H.W.U.", 10.0 },
+	{ "Heat", 1.0 },
+	{ "Flue gas", 10.0 },
+	{ "Module", 10.0 },
+	{ "Boiler", 10.0 },
+	{ "Feeder", 10.0 },
+	{ "Calculated Boiler", 10.0 },
+	{ "Calculated H.W.U.", 10.0 },
+	{ "Calculated C.H.1", 10.0 },
+	{ "Calculated C.H.2", 10.0 }
 };
 
 static dictionary quickAccessType = boost::assign::map_list_of
-	(0x0001, "Prysznic")
+	(0x0001, "Shower")
 	(0x0002, "Party")
-	(0x0004, "Komfort")
-	(0x0008, "Wietrzenie")
-	(0x0010, "Antyzamarzanie");
+	(0x0004, "Comfort")
+	(0x0008, "Airing")
+	(0x0010, "Frost protection");
 
 static std::string errors[4] =
 {
-	"Bledny kod funkcji",
-	"Bledny adres rejestru",
-	"Bledna ilosc rejestrow",
-	"Blad serwera"
+	"Incorrect function code",
+	"Incorrect register address",
+	"Incorrect number of registers",
+	"Server error"
 };
 
 MultiFun::MultiFun(const int ID, const std::string &IPAddress, const unsigned short IPPort) :
@@ -119,6 +116,9 @@ MultiFun::MultiFun(const int ID, const std::string &IPAddress, const unsigned sh
 {
 	_log.Log(LOG_STATUS, "MultiFun: Create instance");
 	m_HwdID = ID;
+
+	m_isSensorExists[0] = false;
+	m_isSensorExists[1] = false;
 }
 
 MultiFun::~MultiFun()
@@ -129,7 +129,7 @@ MultiFun::~MultiFun()
 bool MultiFun::StartHardware()
 {
 #ifdef DEBUG_MultiFun
-	_log.Log(LOG_STATUS, "MultiFuna: Start hardware");
+	_log.Log(LOG_STATUS, "MultiFun: Start hardware");
 #endif
 
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&MultiFun::Do_Work, this)));
@@ -238,6 +238,14 @@ bool MultiFun::WriteToHardware(const char *pdata, const unsigned char length)
 	{
 		const _tThermostat *therm = reinterpret_cast<const _tThermostat*>(pdata);
 
+		float temp = therm->temp;
+
+		if (therm->id2 == 0x1F || therm->id2 == 0x20)
+		{
+			temp = temp * 5;
+			temp = (int)temp | 0x8000;
+		}
+
 		unsigned char buffer[100];
 		unsigned char cmd[20];
 		cmd[0] = 0x01; // transaction id (2 bytes)
@@ -254,7 +262,7 @@ bool MultiFun::WriteToHardware(const char *pdata, const unsigned char length)
 		cmd[11] = 0x01; 
 		cmd[12] = 0x02; // number of bytes
 		cmd[13] = 0x00;
-		cmd[14] = therm->temp;
+		cmd[14] = temp;
 
 		int ret = SendCommand(cmd, 15, buffer, true);
 		if (ret == 4)
@@ -332,10 +340,17 @@ void MultiFun::GetTemperatures()
 		{
 			for (int i = 0; i < sensorsCount; i++)
 			{
-				if (buffer[i * 2 + 1] != 254)
+				unsigned int val = (buffer[i * 2 + 1] & 127) * 256 + buffer[i * 2 + 2];
+				int signedVal = (((buffer[i * 2 + 1] & 128) >> 7) * -32768) + val;
+				float temp = signedVal / sensors[i].div;
+
+				if ((temp > -39) && (temp < 1000))
+				{			
+					SendTempSensor(i, -1, temp, sensors[i].name);
+				}
+				if ((i == 1) || (i == 2))
 				{
-					float temp = (buffer[i * 2 + 1] * 256 + buffer[i * 2 + 2]) / sensors[i].div;
-					SendTempSensor(i, 255, temp, sensors[i].name);
+					m_isSensorExists[i - 1] = ((temp > -39) && (temp < 1000));
 				}
 			}
 		}
@@ -385,13 +400,17 @@ void MultiFun::GetRegisters(bool firstTime)
 					{
 						if (((*it).first & value) && !((*it).first & m_LastAlarms))
 						{
-							SendTextSensor(1, 0, 255, (*it).second, "Alarms");
+							SendTextSensor(1, 0, -1, (*it).second, "Alarms");
 						}
 						else
 							if (!((*it).first & value) && ((*it).first & m_LastAlarms))
 							{
-								SendTextSensor(1, 0, 255, "Koniec - " + (*it).second, "Alarms");
+								SendTextSensor(1, 0, -1, "End - " + (*it).second, "Alarms");
 							}
+					}
+					if (((bool)m_LastAlarms != bool(value)) || firstTime)
+					{
+						SendAlertSensor(0, -1, value ? 4 : 1, "Alarm");
 					}
 					m_LastAlarms = value;
 					break;
@@ -403,13 +422,17 @@ void MultiFun::GetRegisters(bool firstTime)
 					{
 						if (((*it).first & value) && !((*it).first & m_LastWarnings))
 						{
-							SendTextSensor(1, 1, 255, (*it).second, "Warnings");
+							SendTextSensor(1, 1, -1, (*it).second, "Warnings");
 						}
 						else
 							if (!((*it).first & value) && ((*it).first & m_LastWarnings))
 							{
-								SendTextSensor(1, 1, 255, "Koniec - " + (*it).second, "Warnings");
+								SendTextSensor(1, 1, -1, "End - " + (*it).second, "Warnings");
 							}
+					}
+					if (((bool)m_LastWarnings != bool(value)) || firstTime)
+					{
+						SendAlertSensor(1, -1, value ? 3 : 1, "Warning");
 					}
 					m_LastWarnings = value;
 					break;
@@ -421,18 +444,18 @@ void MultiFun::GetRegisters(bool firstTime)
 					{
 						if (((*it).first & value) && !((*it).first & m_LastDevices))
 						{
-							SendGeneralSwitchSensor(2, 255, true, (*it).second.c_str(), (*it).first);
+							SendGeneralSwitchSensor(2, -1, true, (*it).second.c_str(), (*it).first);
 						}
 						else
 							if (!((*it).first & value) && ((*it).first & m_LastDevices))
 							{
-								SendGeneralSwitchSensor(2, 255, false, (*it).second.c_str(), (*it).first);
+								SendGeneralSwitchSensor(2, -1, false, (*it).second.c_str(), (*it).first);
 							}
 					}
 					m_LastDevices = value;
 
 					float level = (value & 0xFC00) >> 10;
-					SendPercentageSensor(2, 1, 255, level, "Fan power");
+					SendPercentageSensor(2, 1, -1, level, "BLOWER POWER");
 					break;
 				}
 				case 0x03:
@@ -442,38 +465,57 @@ void MultiFun::GetRegisters(bool firstTime)
 					{
 						if (((*it).first & value) && !((*it).first & m_LastState))
 						{
-							SendTextSensor(3, 1, 255, (*it).second, "State");
+							SendTextSensor(3, 1, -1, (*it).second, "State");
 						}
 						else
 							if (!((*it).first & value) && ((*it).first & m_LastState))
 							{
-								SendTextSensor(3, 1, 255, "Koniec - " + (*it).second, "State");
+								SendTextSensor(3, 1, -1, "End - " + (*it).second, "State");
 							}
 					}
 					m_LastState = value;
 
 					float level = (value & 0xFC00) >> 10;
-					SendPercentageSensor(3, 1, 255, level, "Level");
+					SendPercentageSensor(3, 1, -1, level, "Fuel Level");
 					break;
 				}
 
 				case 0x1C:
 				case 0x1D:
 				{
+					char name[20];
+					sprintf(name, "C.H. %d Temperature", i - 0x1C + 1);
+
 					float temp = value;
 					if ((value & 0x8000) == 0x8000)
 					{
 						temp = (value & 0x0FFF) * 0.2;
 					}
-					char name[20];
-					sprintf(name, "Temperatura CO %d", i - 0x1C + 1);
 					SendSetPointSensor(i, 1, 1, temp, name);
 					break;
 				}
 
 				case 0x1E:
 				{
-					SendSetPointSensor(0x1E, 1, 1, value, "Temperatura CWU");
+					SendSetPointSensor(0x1E, 1, 1, value, "H.W.U. Temperature");
+					break;
+				}
+
+				case 0x1F:
+				case 0x20:
+				{
+					char name[20];
+					sprintf(name, "Lowering C.H. %d", i - 0x1F + 1);
+
+					if (m_isSensorExists[i - 0x1F])
+					{
+						float temp = (value & 0x0FFF) * 0.2;
+						SendSetPointSensor(i, 1, 1, temp, name);
+					}
+					else
+					{
+						//SendGeneralSwitchSensor(i, -1, value, name, 1); // TODO - send level (dimmer)
+					}					
 					break;
 				}
 
@@ -484,12 +526,12 @@ void MultiFun::GetRegisters(bool firstTime)
 					{
 						if (((*it).first & value) && !((*it).first & m_LastQuickAccess))
 						{
-							SendGeneralSwitchSensor(0x21, 255, true, (*it).second.c_str(), (*it).first);
+							SendGeneralSwitchSensor(0x21, -1, true, (*it).second.c_str(), (*it).first);
 						}
 						else
 							if ((!((*it).first & value) && ((*it).first & m_LastQuickAccess)) || firstTime)
 							{
-								SendGeneralSwitchSensor(0x21, 255, false, (*it).second.c_str(), (*it).first);
+								SendGeneralSwitchSensor(0x21, -1, false, (*it).second.c_str(), (*it).first);
 							}
 					}
 					m_LastQuickAccess = value;

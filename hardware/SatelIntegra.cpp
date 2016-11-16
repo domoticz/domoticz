@@ -205,6 +205,7 @@ void SatelIntegra::Do_Work()
 						ReadOutputsState();
 					}
 				}
+			//	ReadEvents();
 			}
 
 			if (sec_counter % SATEL_TEMP_POLL_INTERVAL == 0)
@@ -695,6 +696,39 @@ bool SatelIntegra::ReadAlarm(const bool firstTime)
 	}
 
 	return true;
+}
+
+bool SatelIntegra::ReadEvents()
+{
+#ifdef DEBUG_SatelIntegra
+	_log.Log(LOG_STATUS, "Satel Integra: Read events");
+#endif
+	unsigned char buffer[15];
+
+	unsigned char cmd[4];
+	cmd[0] = 0x8C; // read events
+	cmd[1] = 0xFF;
+	cmd[2] = 0xFF;
+	cmd[3] = 0xFF;
+	if (SendCommand(cmd, 4, buffer) > 0)
+	{
+		while (buffer[1] & 32)
+		{
+			cmd[1] = buffer[9];
+			cmd[2] = buffer[10];
+			cmd[3] = buffer[11];
+			int ret = SendCommand(cmd, 4, buffer);
+			if (ret > 0)
+			{
+				std::string val(1,buffer[6]);
+				SendTextSensor(1, 1, 255, val, "Events");
+			}
+			else
+				return false;
+		}
+		return true;
+	}
+	return false;
 }
 
 void SatelIntegra::ReportZonesViolation(const int Idx, const bool violation)

@@ -594,7 +594,7 @@ bool CPhilipsHue::GetLights(const Json::Value &root)
 			tlight.hue = 0; // Philips 0 - 65535, should be converted to 0 - 255 ?
 			tlight.on = light["state"]["on"].asBool();
 			bool bDoSend = true;
-			_eHueLightType LType = HLTYPE_NORMAL;
+			_eHueLightType LType = HLTYPE_RGBW;// HLTYPE_NORMAL;
 	
 			if (!light["state"]["bri"].empty())
 			{
@@ -608,7 +608,7 @@ bool CPhilipsHue::GetLights(const Json::Value &root)
 			if ((!light["state"]["sat"].empty()) && (!light["state"]["hue"].empty()))
 			{
 				//Lamp with hue/sat control
-				LType = HLTYPE_RGBW;
+				//LType = HLTYPE_RGBW;
 				tlight.sat = light["state"]["sat"].asInt();
 				tlight.hue = light["state"]["hue"].asInt();
 			}
