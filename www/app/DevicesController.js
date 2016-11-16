@@ -417,6 +417,9 @@ define(['app'], function (app) {
 				});
 				mTable.fnDraw();
 			  }
+			 },
+			 error: function(xhr, ajaxOptions, thrownError) {
+				alert("Problem retrieving devices!");
 			 }
 		  });
 		}

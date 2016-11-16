@@ -10,6 +10,8 @@
 #include "../webserver/cWebem.h"
 #include "../json/json.h"
 #include "hardwaretypes.h"
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
 
 #define round(a) ( int ) ( a + .5 )
 
@@ -237,7 +239,7 @@ void CSBFSpot::ImportOldMonthData()
 			return;
 		}
 	}
-	unsigned long long ulID;
+	uint64_t ulID;
 	std::stringstream s_str(result[0][0]);
 	s_str >> ulID;
 
@@ -259,7 +261,7 @@ void CSBFSpot::ImportOldMonthData()
 	_log.Log(LOG_STATUS, "SBFSpot Import Old Month Data: Complete");
 }
 
-void CSBFSpot::ImportOldMonthData(const unsigned long long DevID, const int Year, const int Month)
+void CSBFSpot::ImportOldMonthData(const uint64_t DevID, const int Year, const int Month)
 {
 	if (m_SBFDataPath.size() == 0)
 		return;
@@ -323,11 +325,11 @@ void CSBFSpot::ImportOldMonthData(const unsigned long long DevID, const int Year
 				char szDate[40];
 				sprintf(szDate, "%04d-%02d-%02d", year, month, day);
 
-				result = m_sql.safe_query("SELECT Value FROM Meter_Calendar WHERE (DeviceRowID==%llu) AND (Date=='%q')", DevID, szDate);
+				result = m_sql.safe_query("SELECT Value FROM Meter_Calendar WHERE (DeviceRowID==%" PRIu64 ") AND (Date=='%q')", DevID, szDate);
 				if (result.size() == 0)
 				{
 					//Insert value into our database
-					m_sql.safe_query("INSERT INTO Meter_Calendar (DeviceRowID, Value, Date) VALUES ('%llu', '%llu', '%q')", DevID, ulCounter, szDate);
+					m_sql.safe_query("INSERT INTO Meter_Calendar (DeviceRowID, Value, Date) VALUES ('%" PRIu64 "', '%llu', '%q')", DevID, ulCounter, szDate);
 					_log.Log(LOG_STATUS, "SBFSpot Import Old Month Data: Inserting %s",szDate);
 				}
 
@@ -389,12 +391,12 @@ void CSBFSpot::ImportOldMonthData(const unsigned long long DevID, const int Year
 						char szDate[40];
 						sprintf(szDate, "%04d-%02d-%02d", year, month, day);
 
-						result = m_sql.safe_query("SELECT Value FROM Meter_Calendar WHERE (DeviceRowID==%llu) AND (Date=='%q')",
+						result = m_sql.safe_query("SELECT Value FROM Meter_Calendar WHERE (DeviceRowID==%" PRIu64 ") AND (Date=='%q')",
 							DevID, szDate);
 						if (result.size() == 0)
 						{
 							//Insert value into our database
-							m_sql.safe_query("INSERT INTO Meter_Calendar (DeviceRowID, Value, Date) VALUES ('%llu', '%llu', '%q')",
+							m_sql.safe_query("INSERT INTO Meter_Calendar (DeviceRowID, Value, Date) VALUES ('%" PRIu64 "', '%llu', '%q')",
 								DevID, ulCounter, szDate);
 							_log.Log(LOG_STATUS, "SBFSpot Import Old Month Data: Inserting %s", szDate);
 						}

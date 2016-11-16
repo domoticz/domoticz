@@ -48,10 +48,11 @@ std::string ReadFile(std::string filename)
 
 CWunderground::CWunderground(const int ID, const std::string &APIKey, const std::string &Location) :
 m_APIKey(APIKey),
-m_Location(Location)
+m_Location(Location),
+m_bForceSingleStation(true)
 {
-	m_HwdID=ID;
-	m_stoprequested=false;
+	m_HwdID = ID;
+	m_stoprequested = false;
 	Init();
 }
 
@@ -178,6 +179,27 @@ void CWunderground::GetMeterDetails()
 	{
 		bValid = false;
 	}
+	else if (m_bForceSingleStation && root["current_observation"]["station_id"].empty())
+	{
+		bValid = false;
+	}
+	else if (m_bForceSingleStation && m_Location.find(root["current_observation"]["station_id"].asString()) == std::string::npos)
+	{
+		bValid = false;
+	}
+	else if (root["current_observation"]["observation_epoch"].empty() == true)
+	{
+		bValid = false;
+	}
+	else if (root["current_observation"]["local_epoch"].empty() == true)
+	{
+		bValid = false;
+	}
+	else if (difftime(root["current_observation"]["local_epoch"].asUInt(), root["current_observation"]["observation_epoch"].asUInt()) >= 1800)
+	{
+		//When we don't get any valid data in 30 minuted, we also stop using the values
+		bValid = false;
+	}
 	if (!bValid)
 	{
 		_log.Log(LOG_ERROR, "WUnderground: Invalid data received, or no data returned!");
@@ -237,6 +259,10 @@ void CWunderground::GetMeterDetails()
 			{
 				barometric_forcast=baroForecastSunny;
 			}
+			else if (forcasticon=="clear")
+			{
+				barometric_forcast=baroForecastSunny;
+			}			
 			else if (forcasticon=="rain")
 			{
 				barometric_forcast=baroForecastRain;

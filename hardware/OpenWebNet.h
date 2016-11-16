@@ -42,6 +42,11 @@ public:
 		AUTOMATION_WHAT_DOWN = 2
 	};
 
+	enum _eLightWhat {
+		LIGHT_WHAT_OFF = 0,
+		LIGHT_WHAT_ON = 1
+	};
+
 	bool isStatusSocketConnected();
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 
@@ -50,8 +55,8 @@ public:
 
 protected:
 	bool StartHardware();
-	bool StopHardware(); 
-	
+	bool StopHardware();
+
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
 
@@ -60,7 +65,7 @@ protected:
 	boost::shared_ptr<boost::thread> m_monitorThread;
 	boost::shared_ptr<boost::thread> m_heartbeatThread;
 	volatile bool m_stoprequested;
-	
+
 	bool connectStatusSocket();
 	int m_heartbeatcntr;
 	csocket* m_pStatusSocket;
@@ -70,6 +75,11 @@ protected:
 	bool ParseData(char* data, int length, vector<bt_openwebnet>& messages);
 	bool FindDevice(int who, int where, int *used);
 	bool AddDeviceIfNotExits(string who, string where);
+	void UpdateLastView(const std::string id, const int value);
+    void UpdateSwitch(const int ptype, const int subtype, const int SubUnit, const int bOn, const double Level, const int BatLevel);
+    void UpdateBlinds(const int ptype, const int subtype, const int SubUnit, const int bOn, const int BatLevel);
+    void UpdateDeviceValue(string who, string where, string what);
+
 	string frameToString(bt_openwebnet& frame);
 	string getWhoDescription(string who);
 	string getWhatDescription(string who, string what);

@@ -18,6 +18,8 @@
 #include "NotificationLogitechMediaServer.h"
 #include "NotificationGCM.h"
 #include "NotificationBrowser.h"
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
 
 #include <boost/lexical_cast.hpp>
 #include <map>
@@ -156,7 +158,7 @@ std::string CNotificationHelper::ParseCustomMessage(const std::string &cMessage,
 }
 
 bool CNotificationHelper::CheckAndHandleTempHumidityNotification(
-	const unsigned long long Idx,
+	const uint64_t Idx,
 	const std::string &devicename,
 	const float temp,
 	const int humidity,
@@ -278,7 +280,7 @@ bool CNotificationHelper::CheckAndHandleTempHumidityNotification(
 }
 
 bool CNotificationHelper::CheckAndHandleDewPointNotification(
-	const unsigned long long Idx,
+	const uint64_t Idx,
 	const std::string &devicename,
 	const float temp,
 	const float dewpoint)
@@ -339,7 +341,7 @@ bool CNotificationHelper::CheckAndHandleDewPointNotification(
 }
 
 bool CNotificationHelper::CheckAndHandleAmpere123Notification(
-	const unsigned long long Idx,
+	const uint64_t Idx,
 	const std::string &devicename,
 	const float Ampere1,
 	const float Ampere2,
@@ -474,7 +476,7 @@ bool CNotificationHelper::CheckAndHandleAmpere123Notification(
 }
 
 bool CNotificationHelper::CheckAndHandleNotification(
-	const unsigned long long Idx,
+	const uint64_t Idx,
 	const std::string &devicename,
 	const _eNotificationTypes ntype,
 	const std::string &message)
@@ -484,7 +486,7 @@ bool CNotificationHelper::CheckAndHandleNotification(
 		return false;
 
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT SwitchType, CustomImage FROM DeviceStatus WHERE (ID=%llu)", Idx);
+	result = m_sql.safe_query("SELECT SwitchType, CustomImage FROM DeviceStatus WHERE (ID=%" PRIu64 ")", Idx);
 	if (result.size() == 0)
 		return false;
 
@@ -521,7 +523,7 @@ bool CNotificationHelper::CheckAndHandleNotification(
 }
 
 bool CNotificationHelper::CheckAndHandleNotification(
-	const unsigned long long Idx,
+	const uint64_t Idx,
 	const std::string &devicename,
 	const unsigned char devType,
 	const unsigned char subType,
@@ -543,7 +545,7 @@ bool CNotificationHelper::CheckAndHandleNotification(
 	pvalue = szTmp;
 
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT SwitchType FROM DeviceStatus WHERE (ID=%llu)", Idx);
+	result = m_sql.safe_query("SELECT SwitchType FROM DeviceStatus WHERE (ID=%" PRIu64 ")", Idx);
 	if (result.size() == 0)
 		return false;
 	std::string szExtraData = "|Name=" + devicename + "|SwitchType=" + result[0][0] + "|";
@@ -620,7 +622,7 @@ bool CNotificationHelper::CheckAndHandleNotification(
 }
 
 bool CNotificationHelper::CheckAndHandleSwitchNotification(
-	const unsigned long long Idx,
+	const uint64_t Idx,
 	const std::string &devicename,
 	const _eNotificationTypes ntype)
 {
@@ -630,7 +632,7 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 
 	std::vector<std::vector<std::string> > result;
 
-	result = m_sql.safe_query("SELECT SwitchType, CustomImage FROM DeviceStatus WHERE (ID=%llu)",
+	result = m_sql.safe_query("SELECT SwitchType, CustomImage FROM DeviceStatus WHERE (ID=%" PRIu64 ")",
 		Idx);
 	if (result.size() == 0)
 		return false;
@@ -717,7 +719,7 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 }
 
 bool CNotificationHelper::CheckAndHandleSwitchNotification(
-	const unsigned long long Idx,
+	const uint64_t Idx,
 	const std::string &devicename,
 	const _eNotificationTypes ntype,
 	const int llevel)
@@ -727,7 +729,7 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 		return false;
 	std::vector<std::vector<std::string> > result;
 
-	result = m_sql.safe_query("SELECT SwitchType, CustomImage, Options FROM DeviceStatus WHERE (ID=%llu)",
+	result = m_sql.safe_query("SELECT SwitchType, CustomImage, Options FROM DeviceStatus WHERE (ID=%" PRIu64 ")",
 		Idx);
 	if (result.size() == 0)
 		return false;
@@ -811,7 +813,7 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 }
 
 bool CNotificationHelper::CheckAndHandleRainNotification(
-	const unsigned long long Idx,
+	const uint64_t Idx,
 	const std::string &devicename,
 	const unsigned char devType,
 	const unsigned char subType,
@@ -820,7 +822,7 @@ bool CNotificationHelper::CheckAndHandleRainNotification(
 {
 	std::vector<std::vector<std::string> > result;
 
-	result = m_sql.safe_query("SELECT AddjValue,AddjMulti FROM DeviceStatus WHERE (ID=%llu)",
+	result = m_sql.safe_query("SELECT AddjValue,AddjMulti FROM DeviceStatus WHERE (ID=%" PRIu64 ")",
 		Idx);
 	if (result.size() == 0)
 		return false;
@@ -844,7 +846,7 @@ bool CNotificationHelper::CheckAndHandleRainNotification(
 
 	if (subType != sTypeRAINWU)
 	{
-		result = m_sql.safe_query("SELECT MIN(Total) FROM Rain WHERE (DeviceRowID=%llu AND Date>='%q')",
+		result = m_sql.safe_query("SELECT MIN(Total) FROM Rain WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
 			Idx, szDateEnd);
 		if (result.size() > 0)
 		{
@@ -867,7 +869,7 @@ bool CNotificationHelper::CheckAndHandleRainNotification(
 	return false;
 }
 
-void CNotificationHelper::TouchNotification(const unsigned long long ID)
+void CNotificationHelper::TouchNotification(const uint64_t ID)
 {
 	char szDate[50];
 	time_t atime = mytime(NULL);
@@ -876,13 +878,13 @@ void CNotificationHelper::TouchNotification(const unsigned long long ID)
 	sprintf(szDate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
 
 	//Set LastSend date
-	m_sql.safe_query("UPDATE Notifications SET LastSend='%q' WHERE (ID=%llu)",
+	m_sql.safe_query("UPDATE Notifications SET LastSend='%q' WHERE (ID=%" PRIu64 ")",
 		szDate, ID);
 
 	//Also touch it internally
 	boost::lock_guard<boost::mutex> l(m_mutex);
 
-	std::map<unsigned long long, std::vector<_tNotification> >::iterator itt;
+	std::map<uint64_t, std::vector<_tNotification> >::iterator itt;
 	for (itt = m_notifications.begin(); itt != m_notifications.end(); ++itt)
 	{
 		std::vector<_tNotification>::iterator itt2;
@@ -933,16 +935,16 @@ bool CNotificationHelper::RemoveNotification(const std::string &ID)
 std::vector<_tNotification> CNotificationHelper::GetNotifications(const std::string &DevIdx)
 {
 	std::stringstream s_str(DevIdx);
-	unsigned long long idxll;
+	uint64_t idxll;
 	s_str >> idxll;
 	return GetNotifications(idxll);
 }
 
-std::vector<_tNotification> CNotificationHelper::GetNotifications(const unsigned long long DevIdx)
+std::vector<_tNotification> CNotificationHelper::GetNotifications(const uint64_t DevIdx)
 {
 	boost::lock_guard<boost::mutex> l(m_mutex);
 	std::vector<_tNotification> ret;
-	std::map<unsigned long long, std::vector<_tNotification> >::const_iterator itt = m_notifications.find(DevIdx);
+	std::map<uint64_t, std::vector<_tNotification> >::const_iterator itt = m_notifications.find(DevIdx);
 	if (itt != m_notifications.end())
 	{
 		ret = itt->second;
@@ -953,12 +955,12 @@ std::vector<_tNotification> CNotificationHelper::GetNotifications(const unsigned
 bool CNotificationHelper::HasNotifications(const std::string &DevIdx)
 {
 	std::stringstream s_str(DevIdx);
-	unsigned long long idxll;
+	uint64_t idxll;
 	s_str >> idxll;
 	return HasNotifications(idxll);
 }
 
-bool CNotificationHelper::HasNotifications(const unsigned long long DevIdx)
+bool CNotificationHelper::HasNotifications(const uint64_t DevIdx)
 {
 	boost::lock_guard<boost::mutex> l(m_mutex);
 	return (m_notifications.find(DevIdx) != m_notifications.end());
@@ -990,7 +992,7 @@ void CNotificationHelper::ReloadNotifications()
 		std::vector<std::string> sd = *itt;
 
 		_tNotification notification;
-		unsigned long long Idx;
+		uint64_t Idx;
 
 		sstr.clear();
 		sstr.str("");

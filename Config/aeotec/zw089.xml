@@ -8,20 +8,20 @@ https://aeotec.freshdesk.com/helpdesk/attachments/6009584697
     <!-- Alarm CC isn't supported on this device -->
     <CommandClass id="113" action="remove"/>
     <CommandClass id="112">
-        <Value type="list" genre="config" instance="1" index="1" label="Sensor Binary Report Toggle" min="0" max="1" value="0">
+        <Value type="list" genre="config" instance="1" index="1" label="Sensor Binary Report Toggle" min="0" max="1" size="1" value="0">
             <Help>Which value of the Sensor Binary Report will be sent when 
             the magnet switch to open/close.</Help>
             <Item label="Normal" value="0"/>
             <Item label="Inverse" value="1"/>
         </Value>
-        <Value type="list" genre="config" instance="1" index="3" label="Basic Set Toggle" min="0" max="1" value="0">
+        <Value type="list" genre="config" instance="1" index="3" label="Basic Set Toggle" min="0" max="1" size="1" value="0">
             <Help>Which value of the Basic Set will be sent when the magnet 
             switch to open/close.
             </Help>
             <Item label="Normal" value="0"/>
             <Item label="Inverse" value="1"/>
         </Value>
-        <Value type="list" genre="config" instance="1" index="101" label="Low Battery Check Enable" min="0" max="1" value="0">
+        <Value type="list" genre="config" instance="1" index="101" label="Low Battery Check Enable" min="0" max="1" size="1" value="0">
             <Help>Enable/disable the function of low battery checking, when 
             the current voltage is less than the warning voltage, it will 
             send the Battery Low Warning Report. 
@@ -48,7 +48,7 @@ https://aeotec.freshdesk.com/helpdesk/attachments/6009584697
             <Item label="Sensor Binary Report" value="16"/>
             <Item label="Basic Set and Sensor Binary Report" value="272"/>
         </Value>
-        <Value type="list" genre="config" index="252" label="Lock/Unlock Configuration" min="0" max="1" value="0">
+        <Value type="list" genre="config" index="252" label="Lock/Unlock Configuration" min="0" max="1" size="1" value="0">
 		    <Help>Lock/ unlock all configuration parameters</Help>
 		    <Item label="Unlock" value="0"/>
 		    <Item label="Lock" value="1"/>

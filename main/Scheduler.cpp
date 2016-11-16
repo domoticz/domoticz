@@ -10,6 +10,8 @@
 #include "../webserver/cWebem.h"
 #include "../json/json.h"
 #include "boost/date_time/gregorian/gregorian.hpp"
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
 
 CScheduler::CScheduler(void)
 {
@@ -727,11 +729,11 @@ void CScheduler::CheckSchedules()
 				strftime(ltimeBuf, sizeof(ltimeBuf), "%Y-%m-%d %H:%M:%S", &ltime);
 
 				if (itt->bIsScene == true)
-					_log.Log(LOG_STATUS, "Schedule item started! Name: %s, Type: %s, SceneID: %llu, Time: %s", itt->DeviceName.c_str(), Timer_Type_Desc(itt->timerType), itt->RowID, ltimeBuf);
+					_log.Log(LOG_STATUS, "Schedule item started! Name: %s, Type: %s, SceneID: %" PRIu64 ", Time: %s", itt->DeviceName.c_str(), Timer_Type_Desc(itt->timerType), itt->RowID, ltimeBuf);
 				else if (itt->bIsThermostat == true)
-					_log.Log(LOG_STATUS, "Schedule item started! Name: %s, Type: %s, ThermostatID: %llu, Time: %s", itt->DeviceName.c_str(), Timer_Type_Desc(itt->timerType), itt->RowID, ltimeBuf);
+					_log.Log(LOG_STATUS, "Schedule item started! Name: %s, Type: %s, ThermostatID: %" PRIu64 ", Time: %s", itt->DeviceName.c_str(), Timer_Type_Desc(itt->timerType), itt->RowID, ltimeBuf);
 				else
-					_log.Log(LOG_STATUS, "Schedule item started! Name: %s, Type: %s, DevID: %llu, Time: %s", itt->DeviceName.c_str(), Timer_Type_Desc(itt->timerType), itt->RowID, ltimeBuf);
+					_log.Log(LOG_STATUS, "Schedule item started! Name: %s, Type: %s, DevID: %" PRIu64 ", Time: %s", itt->DeviceName.c_str(), Timer_Type_Desc(itt->timerType), itt->RowID, ltimeBuf);
 				std::string switchcmd = "";
 				if (itt->timerCmd == TCMD_ON)
 					switchcmd = "On";
@@ -758,7 +760,7 @@ void CScheduler::CheckSchedules()
 */
 						if (!m_mainworker.SwitchScene(itt->RowID, switchcmd))
 						{
-							_log.Log(LOG_ERROR, "Error switching Scene command, SceneID: %llu, Time: %s", itt->RowID, ltimeBuf);
+							_log.Log(LOG_ERROR, "Error switching Scene command, SceneID: %" PRIu64 ", Time: %s", itt->RowID, ltimeBuf);
 						}
 					}
 					else if (itt->bIsThermostat == true)
@@ -767,14 +769,14 @@ void CScheduler::CheckSchedules()
 						sstr << itt->RowID;
 						if (!m_mainworker.SetSetPoint(sstr.str(), itt->Temperature))
 						{
-							_log.Log(LOG_ERROR, "Error setting thermostat setpoint, ThermostatID: %llu, Time: %s", itt->RowID, ltimeBuf);
+							_log.Log(LOG_ERROR, "Error setting thermostat setpoint, ThermostatID: %" PRIu64 ", Time: %s", itt->RowID, ltimeBuf);
 						}
 					}
 					else
 					{
 						//Get SwitchType
 						std::vector<std::vector<std::string> > result;
-						result = m_sql.safe_query("SELECT Type,SubType,SwitchType FROM DeviceStatus WHERE (ID == %llu)",
+						result = m_sql.safe_query("SELECT Type,SubType,SwitchType FROM DeviceStatus WHERE (ID == %" PRIu64 ")",
 							itt->RowID);
 						if (result.size() > 0)
 						{
@@ -811,7 +813,7 @@ void CScheduler::CheckSchedules()
 							}
 							if (!m_mainworker.SwitchLight(itt->RowID, switchcmd, ilevel, itt->Hue,false,0))
 							{
-								_log.Log(LOG_ERROR, "Error sending switch command, DevID: %llu, Time: %s", itt->RowID, ltimeBuf);
+								_log.Log(LOG_ERROR, "Error sending switch command, DevID: %" PRIu64 ", Time: %s", itt->RowID, ltimeBuf);
 							}
 						}
 					}
@@ -1024,7 +1026,7 @@ namespace http {
 		}
 		void CWebServer::RType_Timers(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			unsigned long long idx = 0;
+			uint64_t idx = 0;
 			if (request::findValue(&req, "idx") != "")
 			{
 				std::stringstream s_str(request::findValue(&req, "idx"));
@@ -1037,7 +1039,7 @@ namespace http {
 			char szTmp[50];
 
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT ID, Active, [Date], Time, Type, Cmd, Level, Hue, Days, UseRandomness, MDay, Month, Occurence FROM Timers WHERE (DeviceRowID==%llu) AND (TimerPlan==%d) ORDER BY ID",
+			result = m_sql.safe_query("SELECT ID, Active, [Date], Time, Type, Cmd, Level, Hue, Days, UseRandomness, MDay, Month, Occurence FROM Timers WHERE (DeviceRowID==%" PRIu64 ") AND (TimerPlan==%d) ORDER BY ID",
 				idx, m_sql.m_ActiveTimerPlan);
 			if (result.size() > 0)
 			{
@@ -1396,7 +1398,7 @@ namespace http {
 
 		void CWebServer::RType_SetpointTimers(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			unsigned long long idx = 0;
+			uint64_t idx = 0;
 			if (request::findValue(&req, "idx") != "")
 			{
 				std::stringstream s_str(request::findValue(&req, "idx"));
@@ -1409,7 +1411,7 @@ namespace http {
 			char szTmp[50];
 
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT ID, Active, [Date], Time, Type, Temperature, Days, MDay, Month, Occurence FROM SetpointTimers WHERE (DeviceRowID=%llu) AND (TimerPlan==%d) ORDER BY ID",
+			result = m_sql.safe_query("SELECT ID, Active, [Date], Time, Type, Temperature, Days, MDay, Month, Occurence FROM SetpointTimers WHERE (DeviceRowID=%" PRIu64 ") AND (TimerPlan==%d) ORDER BY ID",
 				idx, m_sql.m_ActiveTimerPlan);
 			if (result.size() > 0)
 			{
@@ -1719,7 +1721,7 @@ namespace http {
 
 		void CWebServer::RType_SceneTimers(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			unsigned long long idx = 0;
+			uint64_t idx = 0;
 			if (request::findValue(&req, "idx") != "")
 			{
 				std::stringstream s_str(request::findValue(&req, "idx"));
@@ -1733,7 +1735,7 @@ namespace http {
 			char szTmp[40];
 
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT ID, Active, [Date], Time, Type, Cmd, Level, Hue, Days, UseRandomness, MDay, Month, Occurence FROM SceneTimers WHERE (SceneRowID==%llu) AND (TimerPlan==%d) ORDER BY ID",
+			result = m_sql.safe_query("SELECT ID, Active, [Date], Time, Type, Cmd, Level, Hue, Days, UseRandomness, MDay, Month, Occurence FROM SceneTimers WHERE (SceneRowID==%" PRIu64 ") AND (TimerPlan==%d) ORDER BY ID",
 				idx, m_sql.m_ActiveTimerPlan);
 			if (result.size() > 0)
 			{
