@@ -733,8 +733,22 @@ void CNetatmo::SetSetpoint(const int idx, const float temp)
 		tempDest = (tempDest - 32.0f) / 1.8f;
 	}
 
-	time_t end_time = time(NULL);
-	end_time += 3600; //One hour
+	time_t now = mytime(NULL);
+	struct tm etime;
+	localtime_r(&now, &etime);
+	time_t end_time;
+	int isdst = etime.tm_isdst;
+	bool goodtime = false;
+	while (!goodtime) {
+		etime.tm_isdst = isdst;
+		etime.tm_hour += 1;
+		end_time = mktime(&etime);
+		goodtime = (etime.tm_isdst == isdst);
+		isdst = etime.tm_isdst;
+		if (!goodtime) {
+			localtime_r(&now, &etime);
+		}
+	}
 
 	std::stringstream sstr;
 	sstr << "access_token=" << m_accessToken;

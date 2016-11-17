@@ -170,9 +170,23 @@ void SolarEdgeAPI::GetMeterDetails()
 	if (ActHourMin - 60 > sunSet)
 		return;
 
-	time_t atime_min5 = atime - 600; //minus 10 minutes
 	struct tm ltime_min5;
-	localtime_r(&atime_min5, &ltime_min5);
+ 	time_t atime_min5;
+	int isdst = ltime.tm_isdst;
+	bool goodtime = false;
+	while (!goodtime) {
+		ltime_min5.tm_isdst = isdst;
+		ltime_min5.tm_year = ltime.tm_year;
+		ltime_min5.tm_mon = ltime.tm_mon;
+		ltime_min5.tm_mday = ltime.tm_mday;
+		ltime_min5.tm_hour = ltime.tm_hour;
+		ltime_min5.tm_min = ltime.tm_min - 60;
+		ltime_min5.tm_sec = ltime.tm_sec;
+		atime_min5 = mktime(&ltime_min5);
+		goodtime = (ltime_min5.tm_isdst == isdst);
+		isdst = ltime_min5.tm_isdst;
+	}
+
 
 	char szTmp[100];
 	sprintf(szTmp, "%04d-%02d-%02d %02d:%02d:%02d", ltime_min5.tm_year + 1900, ltime_min5.tm_mon + 1, ltime_min5.tm_mday, ltime_min5.tm_hour, ltime_min5.tm_min, ltime_min5.tm_sec);
