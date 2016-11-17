@@ -834,7 +834,8 @@ bool CNotificationHelper::CheckAndHandleRainNotification(
 	localtime_r(&now, &tm1);
 	struct tm ltime;
 	ltime.tm_isdst = tm1.tm_isdst;
-	ltime.tm_hour = 0;
+//GB3:	Use a midday hour to avoid a clash with possible DST jump
+	ltime.tm_hour=14;
 	ltime.tm_min = 0;
 	ltime.tm_sec = 0;
 	ltime.tm_year = tm1.tm_year;
@@ -1018,14 +1019,7 @@ void CNotificationHelper::ReloadNotifications()
 		else
 		{
 			struct tm ntime;
-			ntime.tm_isdst = atime.tm_isdst;
-			ntime.tm_year = atoi(stime.substr(0, 4).c_str()) - 1900;
-			ntime.tm_mon = atoi(stime.substr(5, 2).c_str()) - 1;
-			ntime.tm_mday = atoi(stime.substr(8, 2).c_str());
-			ntime.tm_hour = atoi(stime.substr(11, 2).c_str());
-			ntime.tm_min = atoi(stime.substr(14, 2).c_str());
-			ntime.tm_sec = atoi(stime.substr(17, 2).c_str());
-			notification.LastSend = mktime(&ntime);
+			ParseSQLdatetime(notification.LastSend, ntime, stime, atime.tm_isdst);
 		}
 
 		m_notifications[Idx].push_back(notification);
