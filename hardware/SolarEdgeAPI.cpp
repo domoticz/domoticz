@@ -170,10 +170,7 @@ void SolarEdgeAPI::GetMeterDetails()
 	if (ActHourMin - 60 > sunSet)
 		return;
 
-//GB3: Unsafe to assume time_t format is seconds
-// 	time_t atime_min5 = atime - 600; //minus 10 minutes
 	struct tm ltime_min5;
-//	localtime_r(&atime_min5, &ltime_min5);
  	time_t atime_min5;
 	int isdst = ltime.tm_isdst;
 	bool goodtime = false;

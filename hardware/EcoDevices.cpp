@@ -145,8 +145,6 @@ void CEcoDevices::GetMeterDetails()
 	//Send Electra if value changed, or at least every 5 minutes
 	if (
 		(m_p1power.usagecurrent != m_lastelectrausage) ||
-//GB3: Unsafe to assume time_t format is seconds
-//		(atime - m_lastSharedSendElectra >= 300)
 		(difftime(atime,m_lastSharedSendElectra) >= 300)
 		)
 	{

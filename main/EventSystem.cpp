@@ -2196,8 +2196,9 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 		time_t now = time(0);
 		struct tm ltime;
 		localtime_r(&now, &ltime);
-//GB3:	No - must determine the actual time
-//		int minutesSinceMidnight = (ltime.tm_hour * 60) + ltime.tm_min;
+//GB3:	number of hours since midnight may be different from ltime.tm_hour
+//	determine the correct time_t value for midnight and use difftime()
+//	to find the correct number of minutes since midnight.
 		struct tm mtime;
 		time_t tmidnight;
 		int isdst = ltime.tm_isdst;
@@ -2373,8 +2374,6 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 	time_t now = time(0);
 	struct tm ltime;
 	localtime_r(&now, &ltime);
-//GB3:	No - must determine the actual time
-//	int minutesSinceMidnight = (ltime.tm_hour * 60) + ltime.tm_min;
 	struct tm mtime;
 	time_t tmidnight;
 	int isdst = ltime.tm_isdst;

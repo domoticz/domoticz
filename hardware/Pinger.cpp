@@ -358,8 +358,6 @@ void CPinger::UpdateNodeStatus(const PingNode &Node, const bool bPingOK)
 			}
 			else
 			{
-//GB3: Unsafe to assume time_t format is seconds
-//				if (atime - itt->LastOK >= Node.SensorTimeoutSec)
 				if (difftime(atime,itt->LastOK) >= Node.SensorTimeoutSec)
 				{
 					itt->LastOK = atime;

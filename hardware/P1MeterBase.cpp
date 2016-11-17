@@ -172,8 +172,6 @@ bool P1MeterBase::MatchLine()
 		if (l_exclmarkfound) {
 			time_t atime=mytime(NULL);
 			sDecodeRXMessage(this, (const unsigned char *)&m_p1power, "Power", 255);
-//GB3: Unsafe to assume time_t format is seconds
-//			bool bSend2Shared=(atime-m_lastSharedSendElectra>59);
 			bool bSend2Shared=(difftime(atime,m_lastSharedSendElectra)>59);
 			if (std::abs(double(m_lastelectrausage)-double(m_p1power.usagecurrent))>40)
 				bSend2Shared=true;
@@ -184,8 +182,6 @@ bool P1MeterBase::MatchLine()
 			}
 			if (
 				(m_p1gas.gasusage!=m_lastgasusage)||
-//GB3: Unsafe to assume time_t format is seconds
-//				(atime-m_lastSharedSendGas>=300)
 				(difftime(atime,m_lastSharedSendGas)>=300)
 				)
 			{

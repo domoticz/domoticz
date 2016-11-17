@@ -96,8 +96,6 @@ void CRFLinkSerial::Do_Work()
 					time_t atime = mytime(NULL);
 					//Send ping (keep alive)
 					//_log.Log(LOG_STATUS, "RFLink: t1=%d t3=%d", atime, m_LastReceivedTime);
-//GB3: Unsafe to assume time_t format is seconds
-//					if (atime - m_LastReceivedTime > 50) {
 					if (difftime(atime,m_LastReceivedTime) > 50) {
 						//Receive Timeout
 						//_log.Log(LOG_STATUS, "RFLink: ping50...");
@@ -105,8 +103,6 @@ void CRFLinkSerial::Do_Work()
 						m_retrycntr = 0;
 						m_LastReceivedTime = atime;
 					} else {
-//GB3: Unsafe to assume time_t format is seconds
-//						if (atime - m_LastReceivedTime > 25) {
 						if (difftime(atime,m_LastReceivedTime) > 25) {
 						   //_log.Log(LOG_STATUS, "RFLink: ping25...");
 						   write("10;PING;\n");

@@ -108,8 +108,6 @@ void ZWaveBase::Do_Work()
 			if (m_bControllerCommandInProgress==true)
 			{
 				time_t atime=mytime(NULL);
-//GB3: Unsafe to assume time_t format is seconds
-//				time_t tdiff=atime-m_ControllerCommandStartTime;
 				time_t tdiff=difftime(atime,m_ControllerCommandStartTime);
 				if (tdiff>=CONTROLLER_COMMAND_TIMEOUT)
 				{

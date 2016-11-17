@@ -3221,20 +3221,9 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 			float nEnergy;
 			char sCompValue[100];
 			std::string sLastUpdate = result[0][6];
-//GB3: replace with DST safe function
-/*			ntime.tm_isdst = ltime.tm_isdst;
-			ntime.tm_year = atoi(sLastUpdate.substr(0, 4).c_str()) - 1900;
-			ntime.tm_mon = atoi(sLastUpdate.substr(5, 2).c_str()) - 1;
-			ntime.tm_mday = atoi(sLastUpdate.substr(8, 2).c_str());
-			ntime.tm_hour = atoi(sLastUpdate.substr(11, 2).c_str());
-			ntime.tm_min = atoi(sLastUpdate.substr(14, 2).c_str());
-			ntime.tm_sec = atoi(sLastUpdate.substr(17, 2).c_str());
-*/
 			time_t lutime;
 			ParseSQLdatetime(lutime, ntime, sLastUpdate, ltime.tm_isdst);
 
-//GB3: Unsafe to assume time_t format is seconds
-//			interval = static_cast<double>(now - mktime(&ntime)); //Rob: Why a double ?
 			interval = difftime(now,lutime);
 			StringSplit(result[0][5].c_str(), ";", parts);
 			nEnergy = static_cast<float>(strtof(parts[0].c_str(), NULL)*interval / 3600 + strtof(parts[1].c_str(), NULL)); //Rob: whats happening here... strtof ?
@@ -3566,12 +3555,6 @@ bool CSQLHelper::GetLastValue(const int HardwareID, const char* DeviceID, const 
 	std::string sLastUpdate;
 	//std::string sValue;
 	//struct tm LastUpdateTime;
-//GB3: redundant code
-/*
-	time_t now = mytime(NULL);
-	struct tm tm1;
-	localtime_r(&now,&tm1);
-*/
 	sqlresult=safe_query(
 		"SELECT nValue,sValue,LastUpdate FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d) order by LastUpdate desc limit 1",
 		HardwareID,DeviceID,unit,devType,subType);
@@ -3582,15 +3565,6 @@ bool CSQLHelper::GetLastValue(const int HardwareID, const char* DeviceID, const 
 		sValue=sqlresult[0][1];
 		sLastUpdate=sqlresult[0][2];
 
-//GB3: replace with DST safe function
-/*		LastUpdateTime.tm_isdst=tm1.tm_isdst;
-		LastUpdateTime.tm_year=atoi(sLastUpdate.substr(0,4).c_str())-1900;
-		LastUpdateTime.tm_mon=atoi(sLastUpdate.substr(5,2).c_str())-1;
-		LastUpdateTime.tm_mday=atoi(sLastUpdate.substr(8,2).c_str());
-		LastUpdateTime.tm_hour=atoi(sLastUpdate.substr(11,2).c_str());
-		LastUpdateTime.tm_min=atoi(sLastUpdate.substr(14,2).c_str());
-		LastUpdateTime.tm_sec=atoi(sLastUpdate.substr(17,2).c_str());
-*/
 		time_t lutime;
 		ParseSQLdatetime(lutime, LastUpdateTime, sLastUpdate);
 
@@ -3940,20 +3914,8 @@ void CSQLHelper::UpdateTemperatureLog()
 				std::string sLastUpdate = sd[5];
 				struct tm ntime;
 				time_t checktime;
-//GB3: replace with DST safe function
-/*				ntime.tm_isdst = tm1.tm_isdst;
-				ntime.tm_year = atoi(sLastUpdate.substr(0, 4).c_str()) - 1900;
-				ntime.tm_mon = atoi(sLastUpdate.substr(5, 2).c_str()) - 1;
-				ntime.tm_mday = atoi(sLastUpdate.substr(8, 2).c_str());
-				ntime.tm_hour = atoi(sLastUpdate.substr(11, 2).c_str());
-				ntime.tm_min = atoi(sLastUpdate.substr(14, 2).c_str());
-				ntime.tm_sec = atoi(sLastUpdate.substr(17, 2).c_str());
-				checktime = mktime(&ntime);
-*/
 				ParseSQLdatetime(checktime, ntime, sLastUpdate, tm1.tm_isdst);
 
-//GB3: Unsafe to assume time_t format is seconds
-//				if (now - checktime >= SensorTimeOut * 60)
 				if (difftime(now,checktime) >= SensorTimeOut * 60)
 					continue;
 			}
@@ -4114,20 +4076,8 @@ void CSQLHelper::UpdateRainLog()
 			std::string sLastUpdate=sd[5];
 			struct tm ntime;
 			time_t checktime;
-//GB3: replace with DST safe function
-/*			ntime.tm_isdst=tm1.tm_isdst;
-			ntime.tm_year=atoi(sLastUpdate.substr(0,4).c_str())-1900;
-			ntime.tm_mon=atoi(sLastUpdate.substr(5,2).c_str())-1;
-			ntime.tm_mday=atoi(sLastUpdate.substr(8,2).c_str());
-			ntime.tm_hour=atoi(sLastUpdate.substr(11,2).c_str());
-			ntime.tm_min=atoi(sLastUpdate.substr(14,2).c_str());
-			ntime.tm_sec=atoi(sLastUpdate.substr(17,2).c_str());
-			checktime=mktime(&ntime);
-*/
 			ParseSQLdatetime(checktime, ntime, sLastUpdate, tm1.tm_isdst);
 
-//GB3: Unsafe to assume time_t format is seconds
-//			if (now-checktime>=SensorTimeOut*60)
 			if (difftime(now,checktime) >= SensorTimeOut * 60)
 				continue;
 
@@ -4188,20 +4138,8 @@ void CSQLHelper::UpdateWindLog()
 			std::string sLastUpdate=sd[6];
 			struct tm ntime;
 			time_t checktime;
-//GB3: replace with DST safe function
-/*			ntime.tm_isdst=tm1.tm_isdst;
-			ntime.tm_year=atoi(sLastUpdate.substr(0,4).c_str())-1900;
-			ntime.tm_mon=atoi(sLastUpdate.substr(5,2).c_str())-1;
-			ntime.tm_mday=atoi(sLastUpdate.substr(8,2).c_str());
-			ntime.tm_hour=atoi(sLastUpdate.substr(11,2).c_str());
-			ntime.tm_min=atoi(sLastUpdate.substr(14,2).c_str());
-			ntime.tm_sec=atoi(sLastUpdate.substr(17,2).c_str());
-			checktime=mktime(&ntime);
-*/
 			ParseSQLdatetime(checktime, ntime, sLastUpdate, tm1.tm_isdst);
 
-//GB3: Unsafe to assume time_t format is seconds
-//			if (now-checktime>=SensorTimeOut*60)
 			if (difftime(now,checktime) >= SensorTimeOut * 60)
 				continue;
 
@@ -4275,20 +4213,8 @@ void CSQLHelper::UpdateUVLog()
 			std::string sLastUpdate=sd[5];
 			struct tm ntime;
 			time_t checktime;
-//GB3: replace with DST safe function
-/*			ntime.tm_isdst=tm1.tm_isdst;
-			ntime.tm_year=atoi(sLastUpdate.substr(0,4).c_str())-1900;
-			ntime.tm_mon=atoi(sLastUpdate.substr(5,2).c_str())-1;
-			ntime.tm_mday=atoi(sLastUpdate.substr(8,2).c_str());
-			ntime.tm_hour=atoi(sLastUpdate.substr(11,2).c_str());
-			ntime.tm_min=atoi(sLastUpdate.substr(14,2).c_str());
-			ntime.tm_sec=atoi(sLastUpdate.substr(17,2).c_str());
-			checktime=mktime(&ntime);
-*/
 			ParseSQLdatetime(checktime, ntime, sLastUpdate, tm1.tm_isdst);
 
-//GB3: Unsafe to assume time_t format is seconds
-//			if (now-checktime>=SensorTimeOut*60)
 			if (difftime(now,checktime) >= SensorTimeOut * 60)
 				continue;
 
@@ -4318,19 +4244,6 @@ void CSQLHelper::UpdateMeter()
 	struct tm tm1;
 	localtime_r(&now,&tm1);
 
-//GB3: obsolete code?
-/*
-	struct tm ltime;
-	ltime.tm_isdst=tm1.tm_isdst;
-	ltime.tm_hour=0;
-	ltime.tm_min=0;
-	ltime.tm_sec=0;
-	ltime.tm_year=tm1.tm_year;
-	ltime.tm_mon=tm1.tm_mon;
-	ltime.tm_mday=tm1.tm_mday;
-	char szDateToday[100];
-	sprintf(szDateToday,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
-*/
 	int SensorTimeOut=60;
 	GetPreferencesVar("SensorTimeout", SensorTimeOut);
 
@@ -4414,32 +4327,18 @@ void CSQLHelper::UpdateMeter()
 			//do not include sensors that have no reading within an hour
 			struct tm ntime;
 			time_t checktime;
-//GB3: replace with DST safe function
-/*			ntime.tm_isdst=tm1.tm_isdst;
-			ntime.tm_year=atoi(sLastUpdate.substr(0,4).c_str())-1900;
-			ntime.tm_mon=atoi(sLastUpdate.substr(5,2).c_str())-1;
-			ntime.tm_mday=atoi(sLastUpdate.substr(8,2).c_str());
-			ntime.tm_hour=atoi(sLastUpdate.substr(11,2).c_str());
-			ntime.tm_min=atoi(sLastUpdate.substr(14,2).c_str());
-			ntime.tm_sec=atoi(sLastUpdate.substr(17,2).c_str());
-			checktime=mktime(&ntime);
-*/
 			ParseSQLdatetime(checktime, ntime, sLastUpdate, tm1.tm_isdst);
 
 
 			//Check for timeout, if timeout then dont add value
 			if (dType!=pTypeP1Gas)
 			{
-//GB3: Unsafe to assume time_t format is seconds
-//				if (now-checktime>=SensorTimeOut*60)
 				if (difftime(now,checktime) >= SensorTimeOut * 60)
 					continue;
 			}
 			else
 			{
 				//P1 Gas meter transmits results every 1 a 2 hours
-//GB3: Unsafe to assume time_t format is seconds
-//				if (now-checktime>=3*3600)
 				if (difftime(now,checktime) >= 3 * 3600)
 					continue;
 			}
@@ -4630,20 +4529,8 @@ void CSQLHelper::UpdateMultiMeter()
 			std::string sLastUpdate=sd[5];
 			struct tm ntime;
 			time_t checktime;
-//GB3: replace with DST safe function
-/*			ntime.tm_isdst=tm1.tm_isdst;
-			ntime.tm_year=atoi(sLastUpdate.substr(0,4).c_str())-1900;
-			ntime.tm_mon=atoi(sLastUpdate.substr(5,2).c_str())-1;
-			ntime.tm_mday=atoi(sLastUpdate.substr(8,2).c_str());
-			ntime.tm_hour=atoi(sLastUpdate.substr(11,2).c_str());
-			ntime.tm_min=atoi(sLastUpdate.substr(14,2).c_str());
-			ntime.tm_sec=atoi(sLastUpdate.substr(17,2).c_str());
-			checktime=mktime(&ntime);
-*/
 			ParseSQLdatetime(checktime, ntime, sLastUpdate, tm1.tm_isdst);
 
-//GB3: Unsafe to assume time_t format is seconds
-//			if (now-checktime>=SensorTimeOut*60)
 			if (difftime(now,checktime) >= SensorTimeOut * 60)
 				continue;
 			std::vector<std::string> splitresults;
@@ -4763,20 +4650,8 @@ void CSQLHelper::UpdatePercentageLog()
 			std::string sLastUpdate=sd[5];
 			struct tm ntime;
 			time_t checktime;
-//GB3: replace with DST safe function
-/*			ntime.tm_isdst=tm1.tm_isdst;
-			ntime.tm_year=atoi(sLastUpdate.substr(0,4).c_str())-1900;
-			ntime.tm_mon=atoi(sLastUpdate.substr(5,2).c_str())-1;
-			ntime.tm_mday=atoi(sLastUpdate.substr(8,2).c_str());
-			ntime.tm_hour=atoi(sLastUpdate.substr(11,2).c_str());
-			ntime.tm_min=atoi(sLastUpdate.substr(14,2).c_str());
-			ntime.tm_sec=atoi(sLastUpdate.substr(17,2).c_str());
-			checktime=mktime(&ntime);
-*/
 			ParseSQLdatetime(checktime, ntime, sLastUpdate, tm1.tm_isdst);
 
-//GB3: Unsafe to assume time_t format is seconds
-//			if (now-checktime>=SensorTimeOut*60)
 			if (difftime(now,checktime) >= SensorTimeOut * 60)
 				continue;
 
@@ -4833,20 +4708,8 @@ void CSQLHelper::UpdateFanLog()
 			std::string sLastUpdate=sd[5];
 			struct tm ntime;
 			time_t checktime;
-//GB3: replace with DST safe function
-/*			ntime.tm_isdst=tm1.tm_isdst;
-			ntime.tm_year=atoi(sLastUpdate.substr(0,4).c_str())-1900;
-			ntime.tm_mon=atoi(sLastUpdate.substr(5,2).c_str())-1;
-			ntime.tm_mday=atoi(sLastUpdate.substr(8,2).c_str());
-			ntime.tm_hour=atoi(sLastUpdate.substr(11,2).c_str());
-			ntime.tm_min=atoi(sLastUpdate.substr(14,2).c_str());
-			ntime.tm_sec=atoi(sLastUpdate.substr(17,2).c_str());
-			checktime=mktime(&ntime);
-*/
 			ParseSQLdatetime(checktime, ntime, sLastUpdate, tm1.tm_isdst);
 
-//GB3: Unsafe to assume time_t format is seconds
-//			if (now-checktime>=SensorTimeOut*60)
 			if (difftime(now,checktime) >= SensorTimeOut * 60)
 				continue;
 
@@ -4886,9 +4749,7 @@ void CSQLHelper::AddCalendarTemperature()
 
 	struct tm ltime;
 	ltime.tm_isdst=tm1.tm_isdst;
-//GB3:	Using zero hour may cause us to go two days back if there was a DST jump
-//	Choose a safe time during daytime instead
-//	ltime.tm_hour=0;
+//GB3:	Use a midday hour to avoid a clash with possible DST jump
 	ltime.tm_hour=14;
 	ltime.tm_min=0;
 	ltime.tm_sec=0;
@@ -4975,9 +4836,7 @@ void CSQLHelper::AddCalendarUpdateRain()
 
 	struct tm ltime;
 	ltime.tm_isdst=tm1.tm_isdst;
-//GB3:	Using zero hour may cause us to go two days back if there was a DST jump
-//	Choose a safe time during daytime instead
-//	ltime.tm_hour=0;
+//GB3:	Use a midday hour to avoid a clash with possible DST jump
 	ltime.tm_hour=14;
 	ltime.tm_min=0;
 	ltime.tm_sec=0;
@@ -5100,9 +4959,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 
 	struct tm ltime;
 	ltime.tm_isdst=tm1.tm_isdst;
-//GB3:	Using zero hour may cause us to go two days back if there was a DST jump
-//	Choose a safe time during daytime instead
-//	ltime.tm_hour=0;
+//GB3:	Use a midday hour to avoid a clash with possible DST jump
 	ltime.tm_hour=14;
 	ltime.tm_min=0;
 	ltime.tm_sec=0;
@@ -5110,8 +4967,6 @@ void CSQLHelper::AddCalendarUpdateMeter()
 	ltime.tm_mon=tm1.tm_mon;
 	ltime.tm_mday=tm1.tm_mday;
 
-//GB3:	Why use variables to which we just assigned static values?
-//	sprintf(szDateEnd,"%04d-%02d-%02d %02d:%02d:%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday,ltime.tm_hour,ltime.tm_min,ltime.tm_sec);
 	sprintf(szDateEnd,"%04d-%02d-%02d 00:00:00",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
 
 	//Subtract one day
@@ -5308,9 +5163,7 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 
 	struct tm ltime;
 	ltime.tm_isdst=tm1.tm_isdst;
-//GB3:	Using zero hour may cause us to go two days back if there was a DST jump
-//	Choose a safe time during daytime instead
-//	ltime.tm_hour=0;
+//GB3:	Use a midday hour to avoid a clash with possible DST jump
 	ltime.tm_hour=14;
 	ltime.tm_min=0;
 	ltime.tm_sec=0;
@@ -5318,8 +5171,6 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 	ltime.tm_mon=tm1.tm_mon;
 	ltime.tm_mday=tm1.tm_mday;
 
-//GB3:	Why use variables to which we just assigned static values?
-//	sprintf(szDateEnd,"%04d-%02d-%02d %02d:%02d:%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday,ltime.tm_hour,ltime.tm_min,ltime.tm_sec);
 	sprintf(szDateEnd,"%04d-%02d-%02d 00:00:00",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
 
 	//Subtract one day
@@ -5453,9 +5304,7 @@ void CSQLHelper::AddCalendarUpdateWind()
 
 	struct tm ltime;
 	ltime.tm_isdst=tm1.tm_isdst;
-//GB3:	Using zero hour may cause us to go two days back if there was a DST jump
-//	Choose a safe time during daytime instead
-//	ltime.tm_hour=0;
+//GB3:	Use a midday hour to avoid a clash with possible DST jump
 	ltime.tm_hour=14;
 	ltime.tm_min=0;
 	ltime.tm_sec=0;
@@ -5531,9 +5380,7 @@ void CSQLHelper::AddCalendarUpdateUV()
 
 	struct tm ltime;
 	ltime.tm_isdst=tm1.tm_isdst;
-//GB3:	Using zero hour may cause us to go two days back if there was a DST jump
-//	Choose a safe time during daytime instead
-//	ltime.tm_hour=0;
+//GB3:	Use a midday hour to avoid a clash with possible DST jump
 	ltime.tm_hour=14;
 	ltime.tm_min=0;
 	ltime.tm_sec=0;
@@ -5601,9 +5448,7 @@ void CSQLHelper::AddCalendarUpdatePercentage()
 
 	struct tm ltime;
 	ltime.tm_isdst=tm1.tm_isdst;
-//GB3:	Using zero hour may cause us to go two days back if there was a DST jump
-//	Choose a safe time during daytime instead
-//	ltime.tm_hour=0;
+//GB3:	Use a midday hour to avoid a clash with possible DST jump
 	ltime.tm_hour=14;
 	ltime.tm_min=0;
 	ltime.tm_sec=0;
@@ -5675,9 +5520,7 @@ void CSQLHelper::AddCalendarUpdateFan()
 
 	struct tm ltime;
 	ltime.tm_isdst=tm1.tm_isdst;
-//GB3:	Using zero hour may cause us to go two days back if there was a DST jump
-//	Choose a safe time during daytime instead
-//	ltime.tm_hour=0;
+//GB3:	Use a midday hour to avoid a clash with possible DST jump
 	ltime.tm_hour=14;
 	ltime.tm_min=0;
 	ltime.tm_sec=0;
@@ -6198,16 +6041,6 @@ void CSQLHelper::DeleteDataPoint(const char *ID, const std::string &Date)
 		struct tm tLastUpdate;
 		localtime_r(&now, &tLastUpdate);
 
-//GB3:	Replace with DST safe function
-/*		tLastUpdate.tm_year = atoi(Date.substr(0, 4).c_str()) - 1900;
-		tLastUpdate.tm_mon = atoi(Date.substr(5, 2).c_str()) - 1;
-		tLastUpdate.tm_mday = atoi(Date.substr(8, 2).c_str());
-		tLastUpdate.tm_hour = atoi(Date.substr(11, 2).c_str());
-		tLastUpdate.tm_min = atoi(Date.substr(14, 2).c_str());
-		tLastUpdate.tm_sec = atoi(Date.substr(17, 2).c_str());
-		time_t cEndTime = mktime(&tLastUpdate) + (2*60); //=time + 2 minutes
-		localtime_r(&cEndTime, &tLastUpdate);
-*/
 		time_t cEndTime;
 		ParseSQLdatetime(cEndTime, tLastUpdate, Date, tLastUpdate.tm_isdst);
 		tLastUpdate.tm_min += 2;

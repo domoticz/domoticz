@@ -733,9 +733,6 @@ void CNetatmo::SetSetpoint(const int idx, const float temp)
 		tempDest = (tempDest - 32.0f) / 1.8f;
 	}
 
-//GB3: Unsafe to assume time_t format is seconds
-//	time_t end_time = time(NULL);
-//	end_time += 3600; //One hour
 	time_t now = mytime(NULL);
 	struct tm etime;
 	localtime_r(&now, &etime);

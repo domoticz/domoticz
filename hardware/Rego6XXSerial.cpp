@@ -384,8 +384,6 @@ bool CRego6XXSerial::ParseData()
 					m_Rego6XXTemp.temperature =  (float)(data * 0.1);
                     if((m_Rego6XXTemp.temperature >= -48.2) && // -48.3 means no sensor.
                         ((fabs(m_Rego6XXTemp.temperature - g_allRegisters[m_pollcntr].lastTemp) > 0.09) || // Only send changes.
-//GB3: Unsafe to assume time_t format is seconds
-//                         (atime - g_allRegisters[m_pollcntr].lastSent >= 300))) // Send at least every 5 minutes
 			 (difftime(atime,g_allRegisters[m_pollcntr].lastSent) >= 300))) // Send at least every 5 minutes
                     {
                         g_allRegisters[m_pollcntr].lastSent = atime;
@@ -399,8 +397,6 @@ bool CRego6XXSerial::ParseData()
 					m_Rego6XXValue.value = data; 
                 	m_Rego6XXValue.subtype=sTypeRego6XXStatus;
                     if((m_Rego6XXValue.value != g_allRegisters[m_pollcntr].lastValue) || // Only send changes.
-//GB3: Unsafe to assume time_t format is seconds
-//                       (atime - g_allRegisters[m_pollcntr].lastSent >= (3600 * 23))) // Send at least every 23 hours
 			(difftime(atime,g_allRegisters[m_pollcntr].lastSent) >= (3600 * 23))) // Send at least every 23 hours
                     {
                         g_allRegisters[m_pollcntr].lastSent = atime;
@@ -414,8 +410,6 @@ bool CRego6XXSerial::ParseData()
 					m_Rego6XXValue.value = data; 
                 	m_Rego6XXValue.subtype=sTypeRego6XXCounter;
                     if((m_Rego6XXValue.value != g_allRegisters[m_pollcntr].lastValue) || // Only send changes.
-//GB3: Unsafe to assume time_t format is seconds
-//                       (atime - g_allRegisters[m_pollcntr].lastSent >= 3000)) // Send at least every 50 minutes
 			(difftime(atime,g_allRegisters[m_pollcntr].lastSent) >= 3000)) // Send at least every 50 minutes
                     {
                         g_allRegisters[m_pollcntr].lastSent = atime;
