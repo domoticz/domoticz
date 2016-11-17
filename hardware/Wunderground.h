@@ -12,6 +12,7 @@ public:
 	std::string GetForecastURL();
 private:
 	bool m_bForceSingleStation;
+	bool m_bFirstTime;
 	std::string m_APIKey;
 	std::string m_Location;
 	volatile bool m_stoprequested;
