@@ -2242,7 +2242,8 @@ namespace http {
 				return;
 			if (
 				(pHardware->HwdType != HTYPE_MySensorsUSB)&&
-				(pHardware->HwdType != HTYPE_MySensorsTCP)
+				(pHardware->HwdType != HTYPE_MySensorsTCP)&&
+				(pHardware->HwdType != HTYPE_MySensorsMQTT)
 				)
 				return;
 			MySensorsBase *pMySensorsHardware = reinterpret_cast<MySensorsBase*>(pHardware);
@@ -2317,7 +2318,8 @@ namespace http {
 				return;
 			if (
 				(pHardware->HwdType != HTYPE_MySensorsUSB) &&
-				(pHardware->HwdType != HTYPE_MySensorsTCP)
+				(pHardware->HwdType != HTYPE_MySensorsTCP) &&
+				(pHardware->HwdType != HTYPE_MySensorsMQTT)
 				)
 				return;
 			MySensorsBase *pMySensorsHardware = reinterpret_cast<MySensorsBase*>(pHardware);
@@ -2400,7 +2402,8 @@ namespace http {
 				return;
 			if (
 				(pBaseHardware->HwdType != HTYPE_MySensorsUSB) &&
-				(pBaseHardware->HwdType != HTYPE_MySensorsTCP)
+				(pBaseHardware->HwdType != HTYPE_MySensorsTCP) &&
+				(pBaseHardware->HwdType != HTYPE_MySensorsMQTT)
 				)
 				return;
 			MySensorsBase *pMySensorsHardware = reinterpret_cast<MySensorsBase*>(pBaseHardware);
@@ -2430,7 +2433,8 @@ namespace http {
 				return;
 			if (
 				(pBaseHardware->HwdType != HTYPE_MySensorsUSB) &&
-				(pBaseHardware->HwdType != HTYPE_MySensorsTCP)
+				(pBaseHardware->HwdType != HTYPE_MySensorsTCP) &&
+				(pBaseHardware->HwdType != HTYPE_MySensorsMQTT)
 				)
 				return;
 			MySensorsBase *pMySensorsHardware = reinterpret_cast<MySensorsBase*>(pBaseHardware);
@@ -2462,7 +2466,8 @@ namespace http {
 				return;
 			if (
 				(pBaseHardware->HwdType != HTYPE_MySensorsUSB) &&
-				(pBaseHardware->HwdType != HTYPE_MySensorsTCP)
+				(pBaseHardware->HwdType != HTYPE_MySensorsTCP) &&
+				(pBaseHardware->HwdType != HTYPE_MySensorsMQTT)
 				)
 				return;
 			MySensorsBase *pMySensorsHardware = reinterpret_cast<MySensorsBase*>(pBaseHardware);
@@ -2499,7 +2504,8 @@ namespace http {
 				return;
 			if (
 				(pBaseHardware->HwdType != HTYPE_MySensorsUSB) &&
-				(pBaseHardware->HwdType != HTYPE_MySensorsTCP)
+				(pBaseHardware->HwdType != HTYPE_MySensorsTCP) &&
+				(pBaseHardware->HwdType != HTYPE_MySensorsMQTT)
 				)
 				return;
 			MySensorsBase *pMySensorsHardware = reinterpret_cast<MySensorsBase*>(pBaseHardware);

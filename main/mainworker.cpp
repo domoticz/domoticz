@@ -63,6 +63,7 @@
 #include "../hardware/evohome.h"
 #include "../hardware/MySensorsSerial.h"
 #include "../hardware/MySensorsTCP.h"
+#include "../hardware/MySensorsMQTT.h"
 #include "../hardware/MQTT.h"
 #include "../hardware/FritzboxTCP.h"
 #include "../hardware/ETH8020.h"
@@ -710,6 +711,10 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_MySensorsTCP:
 		//LAN
 		pHardware = new MySensorsTCP(ID, Address, Port);
+		break;
+	case HTYPE_MySensorsMQTT:
+		//LAN
+		pHardware = new MySensorsMQTT(ID, Address, Port, Username, Password, Filename);
 		break;
 	case HTYPE_RFLINKTCP:
 		//LAN
