@@ -179,6 +179,7 @@ void CWunderground::GetMeterDetails()
 	{
 		bValid = false;
 	}
+/*
 	else if (m_bForceSingleStation && root["current_observation"]["station_id"].empty())
 	{
 		bValid = false;
@@ -200,6 +201,7 @@ void CWunderground::GetMeterDetails()
 		//When we don't get any valid data in 30 minuted, we also stop using the values
 		bValid = false;
 	}
+*/
 	if (!bValid)
 	{
 		_log.Log(LOG_ERROR, "WUnderground: Invalid data received, or no data returned!");
