@@ -626,6 +626,7 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 			//schedule for next year
 			boost::gregorian::year_iterator m_itr(boost::gregorian::date(ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday));
 			++m_itr;
+			goodtime = false;
 			while (!goodtime) {
 				ltime.tm_isdst = isdst;
 				ltime.tm_year = m_itr->year() - 1900;
