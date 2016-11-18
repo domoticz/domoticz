@@ -445,6 +445,7 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 		(pItem->timerType == TTYPE_WEEKSODD) ||
 		(pItem->timerType == TTYPE_WEEKSEVEN))
 	{
+		goodtime = false;
 		while (!goodtime) {
 			ltime.tm_isdst = isdst;
 			ltime.tm_hour = pItem->startHour;
@@ -460,6 +461,7 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 	}
 	else if (pItem->timerType == TTYPE_FIXEDDATETIME)
 	{
+		goodtime = false;
 		while (!goodtime) {
 			ltime.tm_isdst = isdst;
 			ltime.tm_year = pItem->startYear - 1900;
@@ -503,6 +505,7 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 	}
 	else if (pItem->timerType == TTYPE_MONTHLY)
 	{
+		goodtime = false;
 		while (!goodtime) {
 			ltime.tm_isdst = isdst;
 			ltime.tm_mday = pItem->MDay;
@@ -561,6 +564,7 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 		nth_dow ndm(Occurence, Day, Month);
 		boost::gregorian::date d = ndm.get_date(ltime.tm_year + 1900);
 
+		goodtime = false;
 		while (!goodtime) {
 			ltime.tm_isdst = isdst;
 			ltime.tm_mday = d.day();
@@ -604,6 +608,7 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 	}
 	else if (pItem->timerType == TTYPE_YEARLY)
 	{
+		goodtime = false;
 		while (!goodtime) {
 			ltime.tm_isdst = isdst;
 			ltime.tm_mon = pItem->Month - 1;
@@ -669,6 +674,7 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 		nth_dow ndm(Occurence, Day, Month);
 		boost::gregorian::date d = ndm.get_date(ltime.tm_year + 1900);
 
+		goodtime = false;
 		while (!goodtime) {
 			ltime.tm_isdst = isdst;
 			ltime.tm_mon = pItem->Month - 1;
@@ -688,6 +694,7 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 		{
 			//schedule for next year
 			boost::gregorian::date d = ndm.get_date(ltime.tm_year + 1901);
+			goodtime = false;
 			while (!goodtime) {
 				ltime.tm_isdst = isdst;
 				ltime.tm_year++;
