@@ -408,7 +408,6 @@ bool Yeelight::udp_server::HandleIncoming(const std::string &szData)
 
 	std::string yeelightLocation = dataString.c_str();
 	//_log.Log(LOG_STATUS, "LLocation: %s",yeelightLocation.c_str());
-
 	std::string yeelightId;
 	if (!YeeLightGetTag(szData, "id: ", yeelightId))
 		return false;
