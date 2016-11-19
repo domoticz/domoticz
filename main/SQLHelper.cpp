@@ -4753,27 +4753,13 @@ void CSQLHelper::AddCalendarTemperature()
 	char szDateEnd[40];
 
 	time_t now = mytime(NULL);
-	struct tm tm1;
-	localtime_r(&now,&tm1);
-
 	struct tm ltime;
-	ltime.tm_isdst=tm1.tm_isdst;
-//GB3:	Use a midday hour to avoid a clash with possible DST jump
-	ltime.tm_hour=14;
-	ltime.tm_min=0;
-	ltime.tm_sec=0;
-	ltime.tm_year=tm1.tm_year;
-	ltime.tm_mon=tm1.tm_mon;
-	ltime.tm_mday=tm1.tm_mday;
-
+	localtime_r(&now,&ltime);
 	sprintf(szDateEnd,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
 
-	//Subtract one day
-
-	ltime.tm_mday -= 1;
-	time_t later = mktime(&ltime);
+	time_t yesterday;
 	struct tm tm2;
-	localtime_r(&later,&tm2);
+	getNoon(yesterday,tm2,ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday-1); // we only want the date
 	sprintf(szDateStart,"%04d-%02d-%02d",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday);
 
 	std::vector<std::vector<std::string> > result;
@@ -4840,27 +4826,13 @@ void CSQLHelper::AddCalendarUpdateRain()
 	char szDateEnd[40];
 
 	time_t now = mytime(NULL);
-	struct tm tm1;
-	localtime_r(&now,&tm1);
-
 	struct tm ltime;
-	ltime.tm_isdst=tm1.tm_isdst;
-//GB3:	Use a midday hour to avoid a clash with possible DST jump
-	ltime.tm_hour=14;
-	ltime.tm_min=0;
-	ltime.tm_sec=0;
-	ltime.tm_year=tm1.tm_year;
-	ltime.tm_mon=tm1.tm_mon;
-	ltime.tm_mday=tm1.tm_mday;
-
+	localtime_r(&now,&ltime);
 	sprintf(szDateEnd,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
 
-	//Subtract one day
-
-	ltime.tm_mday -= 1;
-	time_t later = mktime(&ltime);
+	time_t yesterday;
 	struct tm tm2;
-	localtime_r(&later,&tm2);
+	getNoon(yesterday,tm2,ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday-1); // we only want the date
 	sprintf(szDateStart,"%04d-%02d-%02d",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday);
 
 	std::vector<std::vector<std::string> > result;
@@ -4963,26 +4935,13 @@ void CSQLHelper::AddCalendarUpdateMeter()
 	char szDateEnd[40];
 
 	time_t now = mytime(NULL);
-	struct tm tm1;
-	localtime_r(&now,&tm1);
-
 	struct tm ltime;
-	ltime.tm_isdst=tm1.tm_isdst;
-//GB3:	Use a midday hour to avoid a clash with possible DST jump
-	ltime.tm_hour=14;
-	ltime.tm_min=0;
-	ltime.tm_sec=0;
-	ltime.tm_year=tm1.tm_year;
-	ltime.tm_mon=tm1.tm_mon;
-	ltime.tm_mday=tm1.tm_mday;
+	localtime_r(&now,&ltime);
+	sprintf(szDateEnd,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
 
-	sprintf(szDateEnd,"%04d-%02d-%02d 00:00:00",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
-
-	//Subtract one day
-	ltime.tm_mday -= 1;
-	time_t later = mktime(&ltime);
+	time_t yesterday;
 	struct tm tm2;
-	localtime_r(&later,&tm2);
+	getNoon(yesterday,tm2,ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday-1); // we only want the date
 	sprintf(szDateStart,"%04d-%02d-%02d",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday);
 
 	std::vector<std::vector<std::string> > result;
@@ -5167,26 +5126,13 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 	char szDateEnd[40];
 
 	time_t now = mytime(NULL);
-	struct tm tm1;
-	localtime_r(&now,&tm1);
-
 	struct tm ltime;
-	ltime.tm_isdst=tm1.tm_isdst;
-//GB3:	Use a midday hour to avoid a clash with possible DST jump
-	ltime.tm_hour=14;
-	ltime.tm_min=0;
-	ltime.tm_sec=0;
-	ltime.tm_year=tm1.tm_year;
-	ltime.tm_mon=tm1.tm_mon;
-	ltime.tm_mday=tm1.tm_mday;
+	localtime_r(&now,&ltime);
+	sprintf(szDateEnd,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
 
-	sprintf(szDateEnd,"%04d-%02d-%02d 00:00:00",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
-
-	//Subtract one day
-	ltime.tm_mday -= 1;
-	time_t later = mktime(&ltime);
+	time_t yesterday;
 	struct tm tm2;
-	localtime_r(&later,&tm2);
+	getNoon(yesterday,tm2,ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday-1); // we only want the date
 	sprintf(szDateStart,"%04d-%02d-%02d",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday);
 
 	std::vector<std::vector<std::string> > result;
@@ -5308,27 +5254,13 @@ void CSQLHelper::AddCalendarUpdateWind()
 	char szDateEnd[40];
 
 	time_t now = mytime(NULL);
-	struct tm tm1;
-	localtime_r(&now,&tm1);
-
 	struct tm ltime;
-	ltime.tm_isdst=tm1.tm_isdst;
-//GB3:	Use a midday hour to avoid a clash with possible DST jump
-	ltime.tm_hour=14;
-	ltime.tm_min=0;
-	ltime.tm_sec=0;
-	ltime.tm_year=tm1.tm_year;
-	ltime.tm_mon=tm1.tm_mon;
-	ltime.tm_mday=tm1.tm_mday;
-
+	localtime_r(&now,&ltime);
 	sprintf(szDateEnd,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
 
-	//Subtract one day
-
-	ltime.tm_mday -= 1;
-	time_t later = mktime(&ltime);
+	time_t yesterday;
 	struct tm tm2;
-	localtime_r(&later,&tm2);
+	getNoon(yesterday,tm2,ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday-1); // we only want the date
 	sprintf(szDateStart,"%04d-%02d-%02d",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday);
 
 	std::vector<std::vector<std::string> > result;
@@ -5384,27 +5316,13 @@ void CSQLHelper::AddCalendarUpdateUV()
 	char szDateEnd[40];
 
 	time_t now = mytime(NULL);
-	struct tm tm1;
-	localtime_r(&now,&tm1);
-
 	struct tm ltime;
-	ltime.tm_isdst=tm1.tm_isdst;
-//GB3:	Use a midday hour to avoid a clash with possible DST jump
-	ltime.tm_hour=14;
-	ltime.tm_min=0;
-	ltime.tm_sec=0;
-	ltime.tm_year=tm1.tm_year;
-	ltime.tm_mon=tm1.tm_mon;
-	ltime.tm_mday=tm1.tm_mday;
-
+	localtime_r(&now,&ltime);
 	sprintf(szDateEnd,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
 
-	//Subtract one day
-
-	ltime.tm_mday -= 1;
-	time_t later = mktime(&ltime);
+	time_t yesterday;
 	struct tm tm2;
-	localtime_r(&later,&tm2);
+	getNoon(yesterday,tm2,ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday-1); // we only want the date
 	sprintf(szDateStart,"%04d-%02d-%02d",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday);
 
 	std::vector<std::vector<std::string> > result;
@@ -5452,27 +5370,13 @@ void CSQLHelper::AddCalendarUpdatePercentage()
 	char szDateEnd[40];
 
 	time_t now = mytime(NULL);
-	struct tm tm1;
-	localtime_r(&now,&tm1);
-
 	struct tm ltime;
-	ltime.tm_isdst=tm1.tm_isdst;
-//GB3:	Use a midday hour to avoid a clash with possible DST jump
-	ltime.tm_hour=14;
-	ltime.tm_min=0;
-	ltime.tm_sec=0;
-	ltime.tm_year=tm1.tm_year;
-	ltime.tm_mon=tm1.tm_mon;
-	ltime.tm_mday=tm1.tm_mday;
-
+	localtime_r(&now,&ltime);
 	sprintf(szDateEnd,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
 
-	//Subtract one day
-
-	ltime.tm_mday -= 1;
-	time_t later = mktime(&ltime);
+	time_t yesterday;
 	struct tm tm2;
-	localtime_r(&later,&tm2);
+	getNoon(yesterday,tm2,ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday-1); // we only want the date
 	sprintf(szDateStart,"%04d-%02d-%02d",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday);
 
 	std::vector<std::vector<std::string> > result;
@@ -5524,27 +5428,13 @@ void CSQLHelper::AddCalendarUpdateFan()
 	char szDateEnd[40];
 
 	time_t now = mytime(NULL);
-	struct tm tm1;
-	localtime_r(&now,&tm1);
-
 	struct tm ltime;
-	ltime.tm_isdst=tm1.tm_isdst;
-//GB3:	Use a midday hour to avoid a clash with possible DST jump
-	ltime.tm_hour=14;
-	ltime.tm_min=0;
-	ltime.tm_sec=0;
-	ltime.tm_year=tm1.tm_year;
-	ltime.tm_mon=tm1.tm_mon;
-	ltime.tm_mday=tm1.tm_mday;
-
+	localtime_r(&now,&ltime);
 	sprintf(szDateEnd,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
 
-	//Subtract one day
-
-	ltime.tm_mday -= 1;
-	time_t later = mktime(&ltime);
+	time_t yesterday;
 	struct tm tm2;
-	localtime_r(&later,&tm2);
+	getNoon(yesterday,tm2,ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday-1); // we only want the date
 	sprintf(szDateStart,"%04d-%02d-%02d",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday);
 
 	std::vector<std::vector<std::string> > result;
@@ -5899,21 +5789,11 @@ void CSQLHelper::CleanupLightSceneLog()
 	struct tm tm1;
 	localtime_r(&now,&tm1);
 
-//GB3:	No need to address DST jumps here
-	struct tm ltime;
-	ltime.tm_isdst=tm1.tm_isdst;
-	ltime.tm_hour=tm1.tm_hour;
-	ltime.tm_min=tm1.tm_min;
-	ltime.tm_sec=tm1.tm_sec;
-	ltime.tm_year=tm1.tm_year;
-	ltime.tm_mon=tm1.tm_mon;
-	ltime.tm_mday=tm1.tm_mday;
-	//subtract one day
-	ltime.tm_mday -= nMaxDays;
-	time_t daybefore = mktime(&ltime);
+	time_t daybefore;
 	struct tm tm2;
-	localtime_r(&daybefore,&tm2);
+	constructTime(daybefore,tm2,tm1.tm_year+1900,tm1.tm_mon+1,tm1.tm_mday-nMaxDays,tm1.tm_hour,tm1.tm_min,0,tm1.tm_isdst);
 	sprintf(szDateEnd,"%04d-%02d-%02d %02d:%02d:00",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday,tm2.tm_hour,tm2.tm_min);
+
 
 	safe_query("DELETE FROM LightingLog WHERE (Date<'%q')", szDateEnd);
 	safe_query("DELETE FROM SceneLog WHERE (Date<'%q')", szDateEnd);
@@ -6391,7 +6271,7 @@ void CSQLHelper::SetUnitsAndScale()
 	if (m_tempunit==TEMPUNIT_F)
 	{
 		m_tempsign="F";
-		m_tempscale=1.0f; //*1.8 + 32
+		m_tempscale=1.0f; // *1.8 + 32
 	}
 }
 
