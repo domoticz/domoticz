@@ -19,8 +19,8 @@ Domoticz and the lights need to be in the same network/subnet
 */
 
 #ifdef _DEBUG
-//#define DEBUG_YeeLightR
-//#define DEBUG_YeeLightW
+	//#define DEBUG_YeeLightR
+	//#define DEBUG_YeeLightW
 #endif
 
 #ifdef DEBUG_YeeLightW
@@ -100,7 +100,7 @@ void Yeelight::Do_Work()
 
 	boost::asio::io_service io_service;
 	udp_server server(io_service, m_HwdID);
-	int sec_counter = Limitless_POLL_INTERVAL - 5;
+	int sec_counter = Limitless_POLL_INTERVAL-5;
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
@@ -168,8 +168,6 @@ void Yeelight::InsertUpdateSwitch(const std::string &nodeID, const std::string &
 		int value = atoi(yeelightBright.c_str());
 		if ((bIsOn != tIsOn) || (value != lastLevel))
 		{
-			_log.Log(LOG_STATUS, "YeeLight:Updating due to  (%d/%d)", bIsOn, tIsOn);
-			_log.Log(LOG_STATUS, "YeeLight:or  due to  (%d/%d)", value, lastLevel);
 			int cmd = light1_sOn;
 			int level = 100;
 			if (!bIsOn) {
