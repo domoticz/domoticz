@@ -33,7 +33,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 106
+#define DB_VERSION 107
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -98,6 +98,7 @@ const char *sqlCreateLightingLog =
 "[DeviceRowID] BIGINT(10) NOT NULL, "
 "[nValue] INTEGER DEFAULT 0, "
 "[sValue] VARCHAR(200), "
+"[User] VARCHAR(100) DEFAULT (''), "
 "[Date] DATETIME DEFAULT (datetime('now','localtime')));";
 
 const char *sqlCreateSceneLog =
@@ -2092,7 +2093,13 @@ bool CSQLHelper::OpenDatabase()
 					}
 				}
 			}
-
+		}
+		if (dbversion < 107)
+		{
+			if (!DoesColumnExistsInTable("User", "LightingLog"))
+			{
+				query("ALTER TABLE LightingLog ADD COLUMN [User] VARCHAR(100) DEFAULT ('')");
+			}
 		}
 	}
 	else if (bNewInstall)

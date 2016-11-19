@@ -884,7 +884,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CPhilipsHue(ID, Address, Port, Username);
 		break;
 	case HTYPE_HARMONY_HUB:
-		pHardware = new CHarmonyHub(ID, Address, Port, Username, Password);
+		pHardware = new CHarmonyHub(ID, Address, Port);
 		break;
 	case HTYPE_PVOUTPUT_INPUT:
 		pHardware = new CPVOutputInput(ID,Username,Password);

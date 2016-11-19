@@ -108,7 +108,7 @@ void ZWaveBase::Do_Work()
 			if (m_bControllerCommandInProgress==true)
 			{
 				time_t atime=mytime(NULL);
-				time_t tdiff=difftime(atime,m_ControllerCommandStartTime);
+				double tdiff=difftime(atime,m_ControllerCommandStartTime);
 				if (tdiff>=CONTROLLER_COMMAND_TIMEOUT)
 				{
 					_log.Log(LOG_STATUS,"ZWave: Stopping Controller command (Timeout!)");

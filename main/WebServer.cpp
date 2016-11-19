@@ -1155,8 +1155,6 @@ namespace http {
 			}
 			else if (htype == HTYPE_HARMONY_HUB) {
 				if (
-					(username == "") ||
-					(password == "") ||
 					(address == "" || port == 0)
 					)
 					return;
@@ -1425,8 +1423,6 @@ namespace http {
 			}
 			else if (htype == HTYPE_HARMONY_HUB) {
 				if (
-					(username == "") ||
-					(password == "") ||
 					(address == "")
 					)
 					return;
@@ -12001,7 +11997,7 @@ namespace http {
 										if ((curDeliv2 < 0) || (curDeliv2>100000))
 											curDeliv2 = 0;
 
-										time_t tdiff = difftime(atime,lastTime);
+										float tdiff = static_cast<float>(difftime(atime,lastTime));
 										if (tdiff == 0)
 											tdiff = 1;
 										float tlaps = 3600.0f / tdiff;
@@ -12717,7 +12713,7 @@ namespace http {
 									{
 										long long curValue = actValue - ulLastValue;
 
-										time_t tdiff = difftime(atime,lastTime);
+										float tdiff = static_cast<float>(difftime(atime,lastTime));
 										if (tdiff == 0)
 											tdiff = 1;
 										float tlaps = 3600.0f / tdiff;
