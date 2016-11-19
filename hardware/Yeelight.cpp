@@ -245,7 +245,7 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 		break;
 	case Limitless_LedNight:
 		// message = "{\"id\":1,\"method\":\"set_bright\",\"params\":[1, \"smooth\", 500]}\r\n";
-		message = "{\"id\":1,\"method\":\"set_scene\", \"params\": [\"color\", 16750848, 1]}";
+		message = "{\"id\":1,\"method\":\"set_scene\", \"params\": [\"color\", 16750848, 1]\r\n}";
 		break;
 	case Limitless_LedFull:
 		message = "{\"id\":1,\"method\":\"set_bright\",\"params\":[100, \"smooth\", 500]}\r\n";
@@ -297,7 +297,7 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 		//break;
 	case Limitless_NightMode:
 		// message = "{\"id\":1,\"method\":\"set_bright\",\"params\":[1, \"smooth\", 500]}\r\n";
-		message = "{\"id\":1,\"method\":\"set_scene\", \"params\": [\"color\", 16750848, 1]}";
+		message = "{\"id\":1,\"method\":\"set_scene\", \"params\": [\"color\", 16750848, 1]}\r\n";
 		break;
 	case Limitless_FullBrightness: {
 		sendOnFirst = true;
@@ -435,15 +435,15 @@ bool Yeelight::udp_server::HandleIncoming(const std::string &szData)
 	if (yeelightStatus == "on") {
 		bIsOn = true;
 	}
-	//set light type to RGBW by default
-	int sType = sTypeLimitlessRGBW;
+	int sType = sTypeLimitlessWhite;
+
 	std::string yeelightName = "";
 	if (yeelightModel == "mono") {
 		yeelightName = "YeeLight LED (Mono)";
-		sType = sTypeLimitlessWhite;
 	}
-	else if (yeelightModel == "color") {
+	else if ((yeelightModel == "color") || (yeelightModel == "stripe")) {
 		yeelightName = "YeeLight LED (Color)";
+		sType = sTypeLimitlessRGBW;
 	}
 	Yeelight yeelight(hardwareId);
 	yeelight.InsertUpdateSwitch(yeelightId, yeelightName, sType, yeelightLocation, bIsOn, yeelightBright, yeelightHue);
