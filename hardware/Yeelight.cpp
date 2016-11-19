@@ -477,4 +477,3 @@ namespace http {
 		}
 	}
 }
-
