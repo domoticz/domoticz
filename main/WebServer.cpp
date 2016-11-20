@@ -8296,18 +8296,8 @@ namespace http {
 						{
 							//get lowest value of today, and max rate
 							time_t now = mytime(NULL);
-							struct tm tm1;
-							localtime_r(&now, &tm1);
-
 							struct tm ltime;
-							ltime.tm_isdst = tm1.tm_isdst;
-							ltime.tm_hour = 0;
-							ltime.tm_min = 0;
-							ltime.tm_sec = 0;
-							ltime.tm_year = tm1.tm_year;
-							ltime.tm_mon = tm1.tm_mon;
-							ltime.tm_mday = tm1.tm_mday;
-
+							localtime_r(&now, &ltime);
 							char szDate[40];
 							sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
 
@@ -8386,18 +8376,8 @@ namespace http {
 
 						//get value of today
 						time_t now = mytime(NULL);
-						struct tm tm1;
-						localtime_r(&now, &tm1);
-
 						struct tm ltime;
-						ltime.tm_isdst = tm1.tm_isdst;
-						ltime.tm_hour = 0;
-						ltime.tm_min = 0;
-						ltime.tm_sec = 0;
-						ltime.tm_year = tm1.tm_year;
-						ltime.tm_mon = tm1.tm_mon;
-						ltime.tm_mday = tm1.tm_mday;
-
+						localtime_r(&now, &ltime);
 						char szDate[40];
 						sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
 
@@ -8505,18 +8485,8 @@ namespace http {
 
                         //get value of today
                         time_t now = mytime(NULL);
-                        struct tm tm1;
-                        localtime_r(&now, &tm1);
-
-                        struct tm ltime;
-                        ltime.tm_isdst = tm1.tm_isdst;
-                        ltime.tm_hour = 0;
-                        ltime.tm_min = 0;
-                        ltime.tm_sec = 0;
-                        ltime.tm_year = tm1.tm_year;
-                        ltime.tm_mon = tm1.tm_mon;
-                        ltime.tm_mday = tm1.tm_mday;
-
+			struct tm ltime;
+			localtime_r(&now, &ltime);
                         char szDate[40];
                         sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
 
@@ -8623,18 +8593,8 @@ namespace http {
 
 						//get value of today
 						time_t now = mytime(NULL);
-						struct tm tm1;
-						localtime_r(&now, &tm1);
-
 						struct tm ltime;
-						ltime.tm_isdst = tm1.tm_isdst;
-						ltime.tm_hour = 0;
-						ltime.tm_min = 0;
-						ltime.tm_sec = 0;
-						ltime.tm_year = tm1.tm_year;
-						ltime.tm_mon = tm1.tm_mon;
-						ltime.tm_mday = tm1.tm_mday;
-
+						localtime_r(&now, &ltime);
 						char szDate[40];
 						sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
 
@@ -8820,18 +8780,8 @@ namespace http {
 
 						//get value of today
 						time_t now = mytime(NULL);
-						struct tm tm1;
-						localtime_r(&now, &tm1);
-
 						struct tm ltime;
-						ltime.tm_isdst = tm1.tm_isdst;
-						ltime.tm_hour = 0;
-						ltime.tm_min = 0;
-						ltime.tm_sec = 0;
-						ltime.tm_year = tm1.tm_year;
-						ltime.tm_mon = tm1.tm_mon;
-						ltime.tm_mday = tm1.tm_mday;
-
+						localtime_r(&now, &ltime);
 						char szDate[40];
 						sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
 
@@ -8877,18 +8827,8 @@ namespace http {
 						float GasDivider = 1000.0f;
 						//get lowest value of today
 						time_t now = mytime(NULL);
-						struct tm tm1;
-						localtime_r(&now, &tm1);
-
 						struct tm ltime;
-						ltime.tm_isdst = tm1.tm_isdst;
-						ltime.tm_hour = 0;
-						ltime.tm_min = 0;
-						ltime.tm_sec = 0;
-						ltime.tm_year = tm1.tm_year;
-						ltime.tm_mon = tm1.tm_mon;
-						ltime.tm_mday = tm1.tm_mday;
-
+						localtime_r(&now, &ltime);
 						char szDate[40];
 						sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
 
@@ -9012,18 +8952,8 @@ namespace http {
 							double total = atof(strarray[1].c_str()) / 1000;
 
 							time_t now = mytime(NULL);
-							struct tm tm1;
-							localtime_r(&now, &tm1);
-
 							struct tm ltime;
-							ltime.tm_isdst = tm1.tm_isdst;
-							ltime.tm_hour = 0;
-							ltime.tm_min = 0;
-							ltime.tm_sec = 0;
-							ltime.tm_year = tm1.tm_year;
-							ltime.tm_mon = tm1.tm_mon;
-							ltime.tm_mday = tm1.tm_mday;
-
+							localtime_r(&now, &ltime);
 							char szDate[40];
 							sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
 
@@ -9522,18 +9452,8 @@ namespace http {
 						{
 							//get value of today
 							time_t now = mytime(NULL);
-							struct tm tm1;
-							localtime_r(&now, &tm1);
-
 							struct tm ltime;
-							ltime.tm_isdst = tm1.tm_isdst;
-							ltime.tm_hour = 0;
-							ltime.tm_min = 0;
-							ltime.tm_sec = 0;
-							ltime.tm_year = tm1.tm_year;
-							ltime.tm_mon = tm1.tm_mon;
-							ltime.tm_mday = tm1.tm_mday;
-
+							localtime_r(&now, &ltime);
 							char szDate[40];
 							sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
 
@@ -10650,7 +10570,7 @@ namespace http {
 			else
 			{
 				//Update
-				time_t now = time(0);
+				time_t now = mytime(NULL);
 				struct tm ltime;
 				localtime_r(&now, &ltime);
 				m_sql.safe_query("UPDATE MobileDevices SET SenderID='%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (UUID == '%q')",
@@ -12040,9 +11960,9 @@ namespace http {
 										bHaveFirstValue = true;
 										if ((ntime.tm_hour != 0) && (ntime.tm_min != 0))
 										{
-											atime -= 24 * 60 * 60;
 											struct tm ltime;
-											localtime_r(&atime, &ltime);
+											localtime_r(&atime, &tm1);
+											getNoon(atime,ltime,ntime.tm_year+1900,ntime.tm_mon+1,ntime.tm_mday-1); // We're only interested in finding the date
 											int year = ltime.tm_year+1900;
 											int mon = ltime.tm_mon+1;
 											int day = ltime.tm_mday;
@@ -12650,15 +12570,13 @@ namespace http {
 										{
 											struct tm ntime;
 											time_t atime;
-											ntime.tm_isdst = -1;
-											ntime.tm_year = atoi(actDateTimeHour.substr(0, 4).c_str()) - 1900;
-											ntime.tm_mon = atoi(actDateTimeHour.substr(5, 2).c_str()) - 1;
-											ntime.tm_mday = atoi(actDateTimeHour.substr(8, 2).c_str());
-											ntime.tm_hour = atoi(actDateTimeHour.substr(11, 2).c_str());
-											ntime.tm_min = 0;
-											ntime.tm_sec = 0;
-											ntime.tm_hour -= 1;
-											atime = mktime(&ntime);
+											constructTime(atime,ntime,
+												atoi(actDateTimeHour.substr(0, 4).c_str())-1900,
+												atoi(actDateTimeHour.substr(5, 2).c_str())-1,
+												atoi(actDateTimeHour.substr(8, 2).c_str()),
+												atoi(actDateTimeHour.substr(11, 2).c_str())-1,
+												0,0,-1);
+
 											char szTime[50];
 											sprintf(szTime, "%04d-%02d-%02d %02d:00", ntime.tm_year + 1900, ntime.tm_mon + 1, ntime.tm_mday, ntime.tm_hour);
 											root["result"][ii]["d"] = szTime;
@@ -13110,26 +13028,12 @@ namespace http {
 
 					char szDateStart[40];
 					char szDateEnd[40];
-
-					struct tm ltime;
-					ltime.tm_isdst = tm1.tm_isdst;
-//GB3:	Use a midday hour to avoid a clash with possible DST jump
-					ltime.tm_hour = 14;
-					ltime.tm_min = 0;
-					ltime.tm_sec = 0;
-					ltime.tm_year = tm1.tm_year;
-					ltime.tm_mon = tm1.tm_mon;
-					ltime.tm_mday = tm1.tm_mday;
-
-					sprintf(szDateEnd, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
+					sprintf(szDateEnd, "%04d-%02d-%02d", tm1.tm_year + 1900, tm1.tm_mon + 1, tm1.tm_mday);
 
 					//Subtract one week
-
-					ltime.tm_mday -= 7;
-					time_t later = mktime(&ltime);
+					time_t weekbefore;
 					struct tm tm2;
-					localtime_r(&later, &tm2);
-
+					getNoon(weekbefore,tm2,tm1.tm_year+1900, tm1.tm_mon+1,tm1.tm_mday-7); // We only want the date
 					sprintf(szDateStart, "%04d-%02d-%02d", tm2.tm_year + 1900, tm2.tm_mon + 1, tm2.tm_mday);
 
 					result = m_sql.safe_query("SELECT Total, Rate, Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart, szDateEnd);
@@ -13218,25 +13122,12 @@ namespace http {
 
 					char szDateStart[40];
 					char szDateEnd[40];
-
-					struct tm ltime;
-					ltime.tm_isdst = tm1.tm_isdst;
-//GB3:	Use a midday hour to avoid a clash with possible DST jump
-					ltime.tm_hour = 14;
-					ltime.tm_min = 0;
-					ltime.tm_sec = 0;
-					ltime.tm_year = tm1.tm_year;
-					ltime.tm_mon = tm1.tm_mon;
-					ltime.tm_mday = tm1.tm_mday;
-
-					sprintf(szDateEnd, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
+					sprintf(szDateEnd, "%04d-%02d-%02d", tm1.tm_year + 1900, tm1.tm_mon + 1, tm1.tm_mday);
 
 					//Subtract one week
-
-					ltime.tm_mday -= 7;
-					time_t later = mktime(&ltime);
+					time_t weekbefore;
 					struct tm tm2;
-					localtime_r(&later, &tm2);
+					getNoon(weekbefore,tm2,tm1.tm_year+1900, tm1.tm_mon+1,tm1.tm_mday-7); // We only want the date
 					sprintf(szDateStart, "%04d-%02d-%02d", tm2.tm_year + 1900, tm2.tm_mon + 1, tm2.tm_mday);
 
 					int ii = 0;
@@ -13457,33 +13348,22 @@ namespace http {
 				}
 				else
 				{
-					struct tm ltime;
-					ltime.tm_isdst = tm1.tm_isdst;
-//GB3:	Use a midday hour to avoid a clash with possible DST jump
-					ltime.tm_hour = 14;
-					ltime.tm_min = 0;
-					ltime.tm_sec = 0;
-					ltime.tm_year = tm1.tm_year;
-					ltime.tm_mon = tm1.tm_mon;
-					ltime.tm_mday = tm1.tm_mday;
+					sprintf(szDateEnd, "%04d-%02d-%02d", tm1.tm_year + 1900, tm1.tm_mon + 1, tm1.tm_mday);
+					sprintf(szDateEndPrev, "%04d-%02d-%02d", tm1.tm_year + 1900 - 1, tm1.tm_mon + 1, tm1.tm_mday);
 
-					sprintf(szDateEnd, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
-					sprintf(szDateEndPrev, "%04d-%02d-%02d", ltime.tm_year + 1900 - 1, ltime.tm_mon + 1, ltime.tm_mday);
-
+					struct tm tm2;
 					if (srange == "month")
 					{
 						//Subtract one month
-						ltime.tm_mon -= 1;
+						time_t monthbefore;
+						getNoon(monthbefore,tm2,tm1.tm_year+1900,tm1.tm_mon,tm1.tm_mday);
 					}
 					else
 					{
 						//Subtract one year
-						ltime.tm_year -= 1;
+						time_t yearbefore;
+						getNoon(yearbefore,tm2,tm1.tm_year+1900-1,tm1.tm_mon+1,tm1.tm_mday);
 					}
-
-					time_t later = mktime(&ltime);
-					struct tm tm2;
-					localtime_r(&later, &tm2);
 
 					sprintf(szDateStart, "%04d-%02d-%02d", tm2.tm_year + 1900, tm2.tm_mon + 1, tm2.tm_mday);
 					sprintf(szDateStartPrev, "%04d-%02d-%02d", tm2.tm_year + 1900 - 1, tm2.tm_mon + 1, tm2.tm_mday);
@@ -15766,10 +15646,8 @@ namespace http {
 
 					std::string sExpirationDate = result[0][3];
 					time_t now = mytime(NULL);
-					struct tm tm1;
-					localtime_r(&now, &tm1);
 					struct tm tExpirationDate;
-					ParseSQLdatetime(session.expires, tExpirationDate, sExpirationDate, tm1.tm_isdst);
+					ParseSQLdatetime(session.expires, tExpirationDate, sExpirationDate);
 					// RemoteHost is not used to restore the session
 					// LastUpdate is not used to restore the session
 				}
