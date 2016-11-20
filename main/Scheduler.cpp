@@ -370,7 +370,7 @@ void CScheduler::SetSunRiseSetTimers(const std::string &sSunRise, const std::str
 		sec = atoi(sSunRise.substr(6, 2).c_str());
 
 		struct tm tm1;
-		constructTime(temptime,tm1,ltime.tm_year,ltime.tm_mon,ltime.tm_mday,hour,min,sec,ltime.tm_isdst);
+		constructTime(temptime,tm1,ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday,hour,min,sec,ltime.tm_isdst);
 		if ((m_tSunRise != temptime) && (temptime != 0))
 		{
 			if (m_tSunRise == 0)
@@ -382,7 +382,7 @@ void CScheduler::SetSunRiseSetTimers(const std::string &sSunRise, const std::str
 		min = atoi(sSunSet.substr(3, 2).c_str());
 		sec = atoi(sSunSet.substr(6, 2).c_str());
 
-		constructTime(temptime,tm1,ltime.tm_year,ltime.tm_mon,ltime.tm_mday,hour,min,sec,ltime.tm_isdst);
+		constructTime(temptime,tm1,ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday,hour,min,sec,ltime.tm_isdst);
 		if ((m_tSunSet != temptime) && (temptime != 0))
 		{
 			if (m_tSunSet == 0)
