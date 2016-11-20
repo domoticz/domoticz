@@ -14,6 +14,8 @@ public:
 	P1Power	m_p1power;
 	P1Gas	m_p1gas;
 private:
+	bool m_bDisableCRC;
+
 	unsigned long m_lastgasusage;
 	unsigned long m_lastelectrausage;
 	time_t m_lastSharedSendElectra;
@@ -24,8 +26,8 @@ private:
 	unsigned char m_CRfound;
 	void Init();
 	bool MatchLine();
-	void ParseData(const unsigned char *pData, int Len, unsigned char disable_crc);
-	unsigned char m_buffer[1028];
+	void ParseData(const unsigned char *pData, const int Len, const bool disable_crc);
+	unsigned char m_buffer[1400];
 	int m_bufferpos;
 	unsigned char l_buffer[128];
 	int l_bufferpos;

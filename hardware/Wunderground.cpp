@@ -13,10 +13,11 @@
 #define round(a) ( int ) ( a + .5 )
 
 #ifdef _DEBUG
-	//#define DEBUG_WUNDERGROUND
+	//#define DEBUG_WUNDERGROUNDR
+	//#define DEBUG_WUNDERGROUNDW
 #endif
 
-#ifdef DEBUG_WUNDERGROUND2
+#ifdef DEBUG_WUNDERGROUNDW
 void SaveString2Disk(std::string str, std::string filename)
 {
 	FILE *fOut = fopen(filename.c_str(), "wb+");
@@ -27,7 +28,7 @@ void SaveString2Disk(std::string str, std::string filename)
 	}
 }
 #endif
-#ifdef DEBUG_WUNDERGROUND
+#ifdef DEBUG_WUNDERGROUNDR
 std::string ReadFile(std::string filename)
 {
 	std::ifstream file;
@@ -49,7 +50,8 @@ std::string ReadFile(std::string filename)
 CWunderground::CWunderground(const int ID, const std::string &APIKey, const std::string &Location) :
 m_APIKey(APIKey),
 m_Location(Location),
-m_bForceSingleStation(true)
+m_bForceSingleStation(false),
+m_bFirstTime(true)
 {
 	m_HwdID = ID;
 	m_stoprequested = false;
@@ -62,6 +64,7 @@ CWunderground::~CWunderground(void)
 
 void CWunderground::Init()
 {
+	m_bFirstTime = true;
 }
 
 bool CWunderground::StartHardware()
@@ -100,7 +103,7 @@ void CWunderground::Do_Work()
 		if (sec_counter % 10 == 0) {
 			m_LastHeartbeat=mytime(NULL);
 		}
-#ifdef DEBUG_WUNDERGROUND
+#ifdef DEBUG_WUNDERGROUNDR
 		if (sec_counter % 10 == 0)
 #else
 		if (sec_counter % 600 == 0)
@@ -128,7 +131,7 @@ std::string CWunderground::GetForecastURL()
 void CWunderground::GetMeterDetails()
 {
 	std::string sResult;
-#ifdef DEBUG_WUNDERGROUND
+#ifdef DEBUG_WUNDERGROUNDR
 	sResult= ReadFile("E:\\wu.json");
 #else
 	std::stringstream sURL;
@@ -142,7 +145,7 @@ void CWunderground::GetMeterDetails()
 		_log.Log(LOG_ERROR,"Wunderground: Error getting http data!");
 		return;
 	}
-#ifdef DEBUG_WUNDERGROUND2
+#ifdef DEBUG_WUNDERGROUNDW
 	SaveString2Disk(sResult, "E:\\wu.json");
 #endif
 #endif
@@ -195,22 +198,25 @@ void CWunderground::GetMeterDetails()
 	{
 		bValid = false;
 	}
-	else if (difftime(root["current_observation"]["local_epoch"].asUInt(), root["current_observation"]["observation_epoch"].asUInt()) >= 1800)
+	else
 	{
-		//When we don't get any valid data in 30 minuted, we also stop using the values
-		bValid = false;
+		if (!m_bFirstTime)
+		{
+			time_t tlocal = static_cast<time_t>(atoll(root["current_observation"]["local_epoch"].asString().c_str()));
+			time_t tobserver = static_cast<time_t>(atoll(root["current_observation"]["observation_epoch"].asString().c_str()));
+			if (difftime(tlocal, tobserver) >= 1800)
+			{
+				//When we don't get any valid data in 30 minuted, we also stop using the values
+				bValid = false;
+			}
+		}
+		m_bFirstTime = false;
 	}
 	if (!bValid)
 	{
 		_log.Log(LOG_ERROR, "WUnderground: Invalid data received, or no data returned!");
 		return;
 	}
-	/*
-	std::string tmpstr2 = root.toStyledString();
-	FILE *fOut = fopen("E:\\underground.json", "wb+");
-	fwrite(tmpstr2.c_str(), 1, tmpstr2.size(), fOut);
-	fclose(fOut);
-	*/
 
 	std::string tmpstr;
 	float temp;

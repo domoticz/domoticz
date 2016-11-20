@@ -736,7 +736,7 @@ bool CToonThermostat::ParsePowerUsage(const Json::Value &root)
 	if (
 		(m_p1power.usagecurrent != m_lastelectrausage) ||
 		(m_p1power.delivcurrent != m_lastelectradeliv) ||
-		(atime - m_lastSharedSendElectra >= 300)
+		(difftime(atime,m_lastSharedSendElectra) >= 300)
 		)
 	{
 		if ((m_p1power.powerusage1 != 0) || (m_p1power.powerusage2 != 0) || (m_p1power.powerdeliv1 != 0) || (m_p1power.powerdeliv2 != 0))
@@ -761,7 +761,7 @@ bool CToonThermostat::ParseGasUsage(const Json::Value &root)
 	//Send GAS if the value changed, or at least every 5 minutes
 	if (
 		(m_p1gas.gasusage != m_lastgasusage) ||
-		(atime - m_lastSharedSendGas >= 300)
+		(difftime(atime,m_lastSharedSendGas) >= 300)
 		)
 	{
 		if (m_p1gas.gasusage != 0)
