@@ -3814,6 +3814,9 @@ bool CSQLHelper::HasSceneTimers(const std::string &Idx)
 
 void CSQLHelper::ScheduleShortlog()
 {
+#ifdef _DEBUG
+	//return;
+#endif
 	if (!m_dbase)
 		return;
 
@@ -3836,7 +3839,7 @@ void CSQLHelper::ScheduleShortlog()
 	}
 	catch (boost::exception & e)
 	{
-		_log.Log(LOG_ERROR, "Domoticz: Error running the 5 minute schedule script!");
+		_log.Log(LOG_ERROR, "Domoticz: Error running the shortlog schedule script!");
 #ifdef _DEBUG
 		_log.Log(LOG_ERROR, "-----------------\n%s\n----------------", boost::diagnostic_information(e).c_str());
 #else
@@ -3868,7 +3871,7 @@ void CSQLHelper::ScheduleDay()
 	}
 	catch (boost::exception & e)
 	{
-		_log.Log(LOG_ERROR, "Domoticz: Error running the daily minute schedule script!");
+		_log.Log(LOG_ERROR, "Domoticz: Error running the daily schedule script!");
 #ifdef _DEBUG
 		_log.Log(LOG_ERROR, "-----------------\n%s\n----------------", boost::diagnostic_information(e).c_str());
 #else
