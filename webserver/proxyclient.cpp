@@ -100,8 +100,6 @@ namespace http {
 
 		void CProxyClient::ContinueConnect(const boost::system::error_code& error)
 		{
-			try
-			{
 				std::string address = "myproxy.domoticz.com";
 				std::string port = "4443";
 
@@ -117,12 +115,6 @@ namespace http {
 					boost::bind(&CProxyClient::handle_connect, shared_from_this(),
 						boost::asio::placeholders::error, iterator));
 			}
-			catch (std::exception& e)
-			{
-				_log.Log(LOG_ERROR, "PROXY: Connect failed, reconnecting: %s", e.what());
-				Reconnect();
-			}
-		}
 
 		void CProxyClient::handle_connect(const boost::system::error_code& error, boost::asio::ip::tcp::resolver::iterator endpoint_iterator)
 		{
@@ -182,17 +174,17 @@ namespace http {
 				if (bytes_transferred < SockWriteBuf.length()) {
 					_log.Log(LOG_ERROR, "PROXY: Only wrote %ld of %ld bytes.", bytes_transferred, SockWriteBuf.length());
 				}
-				if (error) {
-					_log.Log(LOG_ERROR, "PROXY: Write failed, code = %d, %s", error.value(), error.message().c_str());
-				}
-				write_in_progress = false;
-				if (!writeQ.empty()) {
-					pdu = writeQ.front();
-					writeQ.pop();
-					SocketWrite(pdu);
-				}
-				break;
+			if (error) {
+				_log.Log(LOG_ERROR, "PROXY: Write failed, code = %d, %s", error.value(), error.message().c_str());
 			}
+				write_in_progress = false;
+			if (!writeQ.empty()) {
+					pdu = writeQ.front();
+				writeQ.pop();
+					SocketWrite(pdu);
+			}
+				break;
+		}
 		}
 
 		void CProxyClient::SocketWrite(ProxyPdu *pdu)
@@ -617,16 +609,16 @@ namespace http {
 			CValueLengthPart part(pdu);
 
 			switch (pdu._type) {
-				ONPDU(PDU_REQUEST)
-					ONPDU(PDU_ASSIGNKEY)
-					ONPDU(PDU_ENQUIRE)
-					ONPDU(PDU_AUTHRESP)
-					ONPDU(PDU_SERV_CONNECT)
-					ONPDU(PDU_SERV_DISCONNECT)
-					ONPDU(PDU_SERV_CONNECTRESP)
-					ONPDU(PDU_SERV_RECEIVE)
-					ONPDU(PDU_SERV_SEND)
-					ONPDU(PDU_SERV_ROSTERIND)
+			ONPDU(PDU_REQUEST)
+			ONPDU(PDU_ASSIGNKEY)
+			ONPDU(PDU_ENQUIRE)
+			ONPDU(PDU_AUTHRESP)
+			ONPDU(PDU_SERV_CONNECT)
+			ONPDU(PDU_SERV_DISCONNECT)
+			ONPDU(PDU_SERV_CONNECTRESP)
+			ONPDU(PDU_SERV_RECEIVE)
+			ONPDU(PDU_SERV_SEND)
+			ONPDU(PDU_SERV_ROSTERIND)
 					ONPDU(PDU_WS_OPEN)
 					ONPDU(PDU_WS_CLOSE)
 					ONPDU(PDU_WS_RECEIVE)
@@ -681,7 +673,7 @@ namespace http {
 						_readbuf.consume(_readbuf.size());
 						connection_status = status_connected;
 						LoginToService();
-					}
+				}
 					break;
 				case status_connected:
 					data = boost::asio::buffer_cast<const char*>(_readbuf.data());
@@ -689,7 +681,7 @@ namespace http {
 					if (frame.Parse((const unsigned char *)data, _readbuf.size())) {
 						ProxyPdu pdu(frame.Payload().c_str(), frame.Payload().length());
 						if (!pdu.Disconnected()) {
-							PduHandler(pdu);
+				PduHandler(pdu);
 							_readbuf.consume(frame.Consumed());
 						}
 					}

@@ -125,7 +125,7 @@ bool getMidnight(time_t &time, struct tm &result) {
 	time_t now = mytime(NULL);
 	struct tm ltime;
 	localtime_r(&now,&ltime);
-	return constructTime(time, result, ltime.tm_year, ltime.tm_mon, ltime.tm_mday, 0, 0, 0, ltime.tm_isdst);
+	return constructTime(time, result, ltime.tm_year+1900, ltime.tm_mon+1, ltime.tm_mday, 0, 0, 0, ltime.tm_isdst);
 }
 
 bool getMidnight(time_t &time, struct tm &result, int year, int month, int day) {
@@ -143,7 +143,7 @@ bool getNoon(time_t &time, struct tm &result) {
 	time_t now = mytime(NULL);
 	struct tm ltime;
 	localtime_r(&now,&ltime);
-	return constructTime(time, result, ltime.tm_year, ltime.tm_mon, ltime.tm_mday, 12, 0, 0, ltime.tm_isdst);
+	return constructTime(time, result, ltime.tm_year+1900, ltime.tm_mon+1, ltime.tm_mday, 12, 0, 0, ltime.tm_isdst);
 }
 
 bool getNoon(time_t &time, struct tm &result, int year, int month, int day) {
