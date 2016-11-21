@@ -172,7 +172,7 @@ void SolarEdgeAPI::GetMeterDetails()
 
 	struct tm ltime_min10;
  	time_t atime_min10;
-	constructTime(atime_min10,ltime_min10,ltime.tm_year,ltime.tm_mon,ltime.tm_mday,ltime.tm_hour,ltime.tm_min-10,ltime.tm_sec,ltime.tm_isdst);
+	constructTime(atime_min10,ltime_min10,ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday,ltime.tm_hour,ltime.tm_min-10,ltime.tm_sec,ltime.tm_isdst);
 
 	char szTmp[100];
 	sprintf(szTmp, "%04d-%02d-%02d %02d:%02d:%02d", ltime_min10.tm_year + 1900, ltime_min10.tm_mon + 1, ltime_min10.tm_mday, ltime_min10.tm_hour, ltime_min10.tm_min, ltime_min10.tm_sec);
