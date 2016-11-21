@@ -99,7 +99,7 @@ const unsigned char BMPx8x_OverSampling = 3;
 #define TSL2561_Channel1	0xAE	/* IR only lux */
 
 
-I2C::I2C(const int ID, const int Mode1)
+I2C::I2C(const int ID, const int Mode1, const int i2c_addr)
 {
 	switch (Mode1)
 	{
@@ -111,6 +111,10 @@ I2C::I2C(const int ID, const int Mode1)
 		break;
 	case 3:
 		device = "TSL2561";
+		break;
+	}
+	case 4:
+		device = "PCF8574";
 		break;
 	}
 
@@ -245,6 +249,130 @@ int I2C::i2c_Open(const char *I2CBusName)
 #endif
 }
 
+void I2C::Read_PCF8574()
+{	
+	char buf = 0;
+	int fd = i2c_Open(m_ActI2CBus.c_str());
+	if (fd < 0) {
+		_log.Log(LOG_ERROR, "%s: Error opening device!...", device.c_str());
+		return;
+	}
+	// for otimalize i2c comunitation, select only used custom type hardware and serve status all sitches on chip (i2c address of chip is stored into Unit record in DeviceStatus table)
+	bool find;
+	std::vector<char> i2c_address; //list served i2c addressies of PCF8574 chips
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT DeviceID, Unit, Name FROM Hardware, DeviceStatus WHERE Hardware.ID=DeviceStatus.HardwareID AND Hardware.Type==%d AND DeviceStatus.Used==1", type_PCF8574);
+	if (!result.empty())
+	{
+		std::vector<std::vector<std::string> >::const_iterator itt;
+		for (itt=result.begin(); itt!=result.end(); ++itt)
+		{
+			std::vector<std::string> sd=*itt;
+
+			std::stringstream DeviceID( sd[0] );
+
+			char Unit;
+			std::stringstream s_str( sd[1] );
+			s_str >> Unit;
+			std::stringstream Name( sd[2] );
+
+			// check if chips (all 8xswitch was already servered)
+			char i2c_addr=get_i2c_addr(Unit);
+			find=false;
+			for (char i=0; i<i2c_address.size(); i++){
+				if (i2c_address[i]==i2c_addr){
+					find=true; // chip with i2c_addr is was already serverd
+					break;
+				}
+			}
+			if (find==flase){ // serve PCF8574 chip (all 8x switch)
+				i2c_address.push_back(i2c_addr); // add i2c addres into list readed chip
+				if ( readByteI2C(fd, &buf, i2c_addr) < 0 ) return; // buf get 8-bit status of 8xswitchs
+				for (char mask_pin=0; mask_pin<8; mask_pin++){
+					int DeviceID=PCF8574_create_DeviceID(i2c_addres,char pin_mask);
+					Unit= Unit & 0xF8 | mask_pin;
+					bool value=(buf & mask_pin);
+					SendSwitch(DeviceID, Unit, 255, value, 0, ""); // update switch
+					// paramers of function SendSwitch: 
+					//	( NodeID , ChildID , BatteryLevel , bOn , Level , defaultname )
+					// eqivalent structure LIGHTING2 :
+					//	( NodeID->id1,id2,id3,id4 , ChildID->unitcode , BatteryLevel->? , bOn->cmd , Level , defaultname->? , packettype=pTypeLighting2 , subtype=sTypeAC )
+					// eqivalent DB cloumb in DeviceStatus table:
+					//	( NodeID->DeviceID , ChildID->Unit , BatteryLevel->BatteryLevel, bOn->nValue , Level->?LastLevel, defaultname->Name , Type=pTypeLighting2 , SubType=sTypeAC )
+					// my human name parametrs of function SendSwitch:
+					//	( DeviceID, Unit , BatteryLevel, on-off , ?level? , name )
+					// send new value to switch records
+				}
+			}
+		}
+	}
+	close(fd);
+}
+
+char I2C::get_pin_mask(char unit){
+	// unit from list devices contain numner of reading bit and i2c address of chip
+	// bit0-3 -> number of reding bit
+	return unit & 0x07;
+}
+
+char I2C::get_i2c_addr(char unit){
+	// unit from list devices contain numner of reading bit and i2c address of chip
+	// bit4-6 -> contain A0,A1,A2 part of 7-bit i2c address ->	0|1|0|0|A2|A1|A0 for type PCF8574
+	//								0|1|1|1|A2|A1|A0 for type PCF8574A
+	// bit 7 -> type of chip 0 = PCF8574, 1 = PCF8574A (different fixed pard of i2c address)
+	char i2c_addr= (unit >> 4) & 0x3
+	if ((unit & 0x80)==0)	i2c_addr=0x20 |i2c_addr // addr = 00100XXX (XXX is |A2|A1|A0|)
+	else			i2c_addr=0x38 |i2c_addr // addr = 00111XXX (XXX is |A2|A1|A0|)
+	return i2c_addr;
+}
+
+int I2C::PCF8574_create_DeviceID(char i2c_addres,char pin_mask)
+{
+	return SEAHU_ID_ADD+i2c_addres*256+pin_mask;
+}
+
+char CSeahu::ReadPin(char unit, char *buf)
+{	
+	char pin_mask=get_pin_mask(unit);
+	char i2c_addr=get_i2c_addr(unit);
+	int fd = i2c_Open(m_ActI2CBus.c_str());
+	if (fd < 0) {
+		_log.Log(LOG_ERROR, "%s: Error opening device!...", device.c_str());
+		return;
+	}
+	if ( readByteI2C(fd, buf, i2c_addr) < 0 ) return -2;
+	if ( *buf & pin_mask ) *buf=1;
+	else *buf=0;
+	close(fd);
+	return *buf;
+}
+
+char CSeahu::WritePin(char unit,char  value)
+{	
+	//_log.Log(LOG_ERROR, "WRITE SEAHU DEVICE n.%d value %d", gpioId, value);
+	char pin_mask=get_pin_mask(unit);
+	char i2c_addr=get_i2c_addr(unit);
+	char buf = 0;	
+	int fd = i2c_Open(m_ActI2CBus.c_str());
+	if (fd < 0) {
+		_log.Log(LOG_ERROR, "%s: Error opening device!...", device.c_str());
+		return;
+	}
+	if ( readByteI2C(fd, &buf, i2c_addr) < 0 ) return -2;
+	lseek(fd,0,SEEK_SET); // jen pro zkouseni pri zapisu do souboru (protoze pri ceteni se posune kurzor, tak ho vratim zpatky)
+	_log.Log(LOG_ERROR, "actual value byte %d", buf);
+	if (value==1) buf = buf | pin_mask;	//prepare new value by combinate curent value, mask and new value
+	else buf = buf & ~pin_mask;
+	//_log.Log(LOG_ERROR, "new value byte %d", buf);
+	if (writeByteI2C(fd, buf, i2c_addr) < 0 ) {
+		_log.Log(LOG_ERROR, "%s: Error write to device!...", device.c_str());
+		return -3;
+	}
+	close(fd);
+	//_log.Log(LOG_ERROR, "WRITE ON SEAHU DEVICE n.%d value %d is OK", gpioId, value);
+	return 1;
+}
+
 // BMP085, BMP180, HTU and TSL common code
 
 int I2C::ReadInt(int fd, uint8_t *devValues, uint8_t startReg, uint8_t bytesToRead)
@@ -343,6 +471,45 @@ int I2C::WriteCmd(int fd, uint8_t devAction)
 	return 0;
 #endif
 }
+
+char I2C::readByteI2C(int fd, char *byte, char i2c_addr)
+{
+#ifndef __arm__
+	return -1;
+#else
+	// set I2C address to will be comunicate (frist addres = chip on base board)
+	if (ioctl(fd, I2C_SLAVE_FORCE, i2c_addr) < 0) {
+		_log.Log(LOG_ERROR, "%s: Failed to acquire bus access and/or talk to slave with address %d", device.c_str(), i2c_addr);
+		return -1;
+	}
+	//read from I2C device
+	if (read(fd,byte,1) != 1) {
+		_log.Log(LOG_ERROR, "%s: Failed to read from the i2c bus with address %d", device.c_str(), i2c_addr);
+		return -2;
+	}
+	return 1;
+#endif
+}
+
+char I2C::writeByteI2C(int fd, char byte, char i2c_addr)
+{
+#ifndef __arm__
+	return -1;
+#else
+	// set I2C address to will be comunicate (frist addres = chip on base board)
+	if (ioctl(fd, I2C_SLAVE_FORCE, i2c_addr) < 0) {
+		_log.Log(LOG_ERROR, "%s: Failed to acquire bus access and/or talk to slave with address %d", device.c_str(), i2c_addr);
+		return -1;
+	}
+	//write to I2C device
+	if (write(fd,&byte,1) != 1) {
+		_log.Log(LOG_ERROR, "%s: Failed write to the i2c bus with address %d", device.c_str(), i2c_addr);
+		return -2;
+	}
+	return 1;
+#endif
+}
+
 
 // HTU21D functions
 int I2C::HTU21D_checkCRC8(uint16_t data)
