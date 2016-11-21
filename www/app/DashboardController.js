@@ -3373,7 +3373,7 @@ define(['app'], function (app) {
 								(item.SubType=="Sound Level")||
 								(item.SubType == "Waterflow")||
 								(item.Type == "Current")||
-								(item.SybType == "Custom Sensor")
+								(item.SubType == "Custom Sensor")
 							) {
 							xhtm+=item.Data;
 						}

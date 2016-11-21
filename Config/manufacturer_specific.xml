@@ -406,8 +406,8 @@
 		<Product type="0b00" id="4001" name="FGFS101 Flood Sensor" config="fibaro/fgfs101.xml" />
 		<Product type="0b00" id="1001" name="FGFS101 Flood Sensor" config="fibaro/fgfs101.xml" />
 		<Product type="0b00" id="9e00" name="FGFS101 Flood Sensor" config="fibaro/fgfs101.xml" />
-                <Product type="0b01" id="1002" name="FGFS101 Zwave+ Flood Sensor" config="fibaro/fgfs101zw5.xml" />
-                <Product type="0b01" id="2002" name="FGFS101 Zwave+ Flood Sensor" config="fibaro/fgfs101zw5.xml" />
+		<Product type="0b01" id="1002" name="FGFS101 Zwave+ Flood Sensor" config="fibaro/fgfs101zw5.xml" />
+		<Product type="0b01" id="2002" name="FGFS101 Zwave+ Flood Sensor" config="fibaro/fgfs101zw5.xml" />
 		<Product type="0900" id="1000" name="FGRGBWM441 RGBW Controller" config="fibaro/fgrgbwm441.xml" />
 		<Product type="0900" id="2000" name="FGRGBWM441 RGBW Controller" config="fibaro/fgrgbwm441.xml"/>
 		<Product type="0900" id="4000" name="FGRGBWM441 RGBW Controller" config="fibaro/fgrgbwm441.xml" />
@@ -574,17 +574,18 @@
 		<Product type="1a02" id="0334" name="DZPA1-1LW Plug-In Appliance Module"/>
 	</Manufacturer>
 	<Manufacturer id="014f" name="Linear">
-        <Product type="4450" id="3030" name="PD300Z-2 Plug-in Dimmer Module" config="linear/PD300Z-2.xml"/>
-        <Product type="4457" id="3034" name="WD500Z-1 Wall Dimmer Switch" config="linear/WD500Z-1.xml"/>
-        <Product type="4457" id="3331" name="WD1000Z-1 Wall Dimmer Switch"/>
-        <Product type="5343" id="3132" name="WA00Z-1 Scene Switch" config="linear/WA00Z-1.xml"/>
-        <Product type="5246" id="3133" name="FS20Z Isolated Contact Fixture Module"/>
-        <Product type="5250" id="3030" name="PS15Z-2 Plug-in Appliance Module"/>
-        <Product type="5252" id="3530" name="WO15Z-1 Single Wall Outlet"/>
-        <Product type="5257" id="3533" name="WS15Z-1"/>
-        <Product type="5457" id="3033" name="WT00Z-1 3-Way wall Accessory Switch"/>
-        <Product type="4754" id="3038" name="LB60Z-1 Dimmable LED Light Bulb" config="linear/LB60Z-1.xml"/>
-        </Manufacturer>
+		<Product type="2002" id="0203" name="WAPIRZ-1 Motion Sensor" config="linear/WAPIRZ-1.xml"/>
+		<Product type="4450" id="3030" name="PD300Z-2 Plug-in Dimmer Module" config="linear/PD300Z-2.xml"/>
+		<Product type="4457" id="3034" name="WD500Z-1 Wall Dimmer Switch" config="linear/WD500Z-1.xml"/>
+		<Product type="4457" id="3331" name="WD1000Z-1 Wall Dimmer Switch"/>
+		<Product type="4754" id="3038" name="LB60Z-1 Dimmable LED Light Bulb" config="linear/LB60Z-1.xml"/>
+		<Product type="5246" id="3133" name="FS20Z Isolated Contact Fixture Module"/>
+		<Product type="5250" id="3030" name="PS15Z-2 Plug-in Appliance Module"/>
+		<Product type="5252" id="3530" name="WO15Z-1 Single Wall Outlet"/>
+		<Product type="5257" id="3533" name="WS15Z-1"/>
+		<Product type="5343" id="3132" name="WA00Z-1 Scene Switch" config="linear/WA00Z-1.xml"/>
+		<Product type="5457" id="3033" name="WT00Z-1 3-Way wall Accessory Switch"/>
+	</Manufacturer>
 	<Manufacturer id="015e" name="Locstar">
         <Product type="8015" id="0001" name="LS-8015-ZW Single Latch Door Lock"/>
 	</Manufacturer>
@@ -986,6 +987,7 @@
 	<Manufacturer id="0131" name="Zipato">
 		<Product type="0002" id="0002" name="RGBW LED Bulb" config="zipato/RGBBulb.xml" />
 		<Product type="6131" id="4501" name="Zipato Mini Keypad" config="zipato/MiniKeypad.xml" />
+		<Product type="2001" id="0106" name="VS-ZD2102 Door/Window Sensor" config="zipato/vszd2102.xml" />
 	</Manufacturer>
     <Manufacturer id="027a" name="Zooz">
         <Product type="0003" id="0082" name="ZSE08 Contact Sensor" config="zooz/zse08.xml"/>

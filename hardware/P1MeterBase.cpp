@@ -172,7 +172,7 @@ bool P1MeterBase::MatchLine()
 		if (l_exclmarkfound) {
 			time_t atime=mytime(NULL);
 			sDecodeRXMessage(this, (const unsigned char *)&m_p1power, "Power", 255);
-			bool bSend2Shared=(atime-m_lastSharedSendElectra>59);
+			bool bSend2Shared=(difftime(atime,m_lastSharedSendElectra)>59);
 			if (std::abs(double(m_lastelectrausage)-double(m_p1power.usagecurrent))>40)
 				bSend2Shared=true;
 			if (bSend2Shared)
@@ -182,7 +182,7 @@ bool P1MeterBase::MatchLine()
 			}
 			if (
 				(m_p1gas.gasusage!=m_lastgasusage)||
-				(atime-m_lastSharedSendGas>=300)
+				(difftime(atime,m_lastSharedSendGas)>=300)
 				)
 			{
 				//only update gas when there is a new value, or 5 minutes are passed
@@ -355,7 +355,7 @@ bool P1MeterBase::CheckCRC()
 /	done if the message passes all other validation rules
 */
 
-void P1MeterBase::ParseData(const unsigned char *pData, int Len, unsigned char disable_crc)
+void P1MeterBase::ParseData(const unsigned char *pData, const int Len, const bool disable_crc)
 {
 	int ii=0;
 
@@ -364,16 +364,9 @@ void P1MeterBase::ParseData(const unsigned char *pData, int Len, unsigned char d
 		ii++;
 	}
 
-	// reenable reading pData when a new message starts, empty buffers
-	if (pData[ii]==0x2f) {
-/*
-/	Debug entry for open ended messages: start
-/
-/	P1 Wifi Gateway sends open ended messages which used to pass silently as delayed messages in
-/	Domoticz prior to v3.5592. With the introduction of the P1 message CRC validation this became
-/	an illegal procedure. Enclosed code re-enables the possibility to commit delayed data while
-/	printing a warning in the log file.
-*/
+	// re enable reading pData when a new message starts, empty buffers
+	if (pData[ii]==0x2f)
+	{
 		if ((l_buffer[0]==0x21) && !l_exclmarkfound && (m_linecount>0)) {
 			_log.Log(LOG_STATUS,"P1: WARNING: got new message but buffer still contains unprocessed data from previous message.");
 			l_buffer[l_bufferpos] = 0;
@@ -381,9 +374,6 @@ void P1MeterBase::ParseData(const unsigned char *pData, int Len, unsigned char d
 				MatchLine();
 			}
 		}
-/*
-/	Debug entry for open ended messages: end
-*/
 		m_linecount = 1;
 		l_bufferpos = 0;
 		m_bufferpos = 0;

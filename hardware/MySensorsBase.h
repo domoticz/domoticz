@@ -7,6 +7,7 @@ class MySensorsBase : public CDomoticzHardwareBase
 {
 	friend class MySensorsSerial;
 	friend class MySensorsTCP;
+	friend class MySensorsMQTT;
 	friend class MQTT;
 public:
 	enum _eMessageType

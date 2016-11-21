@@ -32,6 +32,16 @@ class CEventSystem
 
 	};
 
+	struct _tActionParseResults
+	{
+		std::string sCommand;
+		float fForSec;
+		float fAfterSec;
+		float fRandomSec;
+		int iRepeat;
+		float fRepeatSec;
+	};
+
 public:
 	struct _tDeviceStatus
 	{
@@ -127,6 +137,7 @@ private:
 	lua_State *CreateBlocklyLuaState();
 
 	std::string ParseBlocklyString(const std::string &oString);
+	void ParseActionString( const std::string &oAction_, _tActionParseResults &oResults_ );
 
 	//std::string reciprocalAction (std::string Action);
 	std::vector<_tEventItem> m_events;

@@ -1,4 +1,5 @@
-Version 3.xxxx (November xxth 2016)
+Version 3.xxxx (November xth 2016)
+- Fixed: Camera Editor, will now always refresh thumbnail in table
 - Fixed: JSon float/nan value, solved by upgrading JSonCPP
 - Implemented: Blockly/Lua Set SetPoint option
 

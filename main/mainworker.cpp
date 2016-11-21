@@ -63,6 +63,7 @@
 #include "../hardware/evohome.h"
 #include "../hardware/MySensorsSerial.h"
 #include "../hardware/MySensorsTCP.h"
+#include "../hardware/MySensorsMQTT.h"
 #include "../hardware/MQTT.h"
 #include "../hardware/FritzboxTCP.h"
 #include "../hardware/ETH8020.h"
@@ -624,7 +625,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new RFXComSerial(ID, SerialPort, 38400);
 		break;
 	case HTYPE_P1SmartMeter:
-		pHardware = new P1MeterSerial(ID,SerialPort, (Mode1==1) ? 115200 : 9600, Mode2);
+		pHardware = new P1MeterSerial(ID, SerialPort, (Mode1 == 1) ? 115200 : 9600, (Mode2 != 0));
 		break;
 	case HTYPE_Rego6XX:
 		pHardware = new CRego6XXSerial(ID,SerialPort, Mode1);
@@ -700,7 +701,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_P1SmartMeterLAN:
 		//LAN
-		pHardware = new P1MeterTCP(ID, Address, Port, Mode2);
+		pHardware = new P1MeterTCP(ID, Address, Port, (Mode2 != 0));
 		break;
 	case HTYPE_WOL:
 		//LAN
@@ -713,6 +714,10 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_MySensorsTCP:
 		//LAN
 		pHardware = new MySensorsTCP(ID, Address, Port);
+		break;
+	case HTYPE_MySensorsMQTT:
+		//LAN
+		pHardware = new MySensorsMQTT(ID, Address, Port, Username, Password, Filename);
 		break;
 	case HTYPE_RFLINKTCP:
 		//LAN
@@ -882,7 +887,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CPhilipsHue(ID, Address, Port, Username);
 		break;
 	case HTYPE_HARMONY_HUB:
-		pHardware = new CHarmonyHub(ID, Address, Port, Username, Password);
+		pHardware = new CHarmonyHub(ID, Address, Port);
 		break;
 	case HTYPE_PVOUTPUT_INPUT:
 		pHardware = new CPVOutputInput(ID,Username,Password);
@@ -1489,7 +1494,7 @@ void MainWorker::Do_Work()
 
 		if (ltime.tm_min!=m_ScheduleLastMinute)
 		{
-			if (atime - m_ScheduleLastMinuteTime > 30) //avoid RTC/NTP clock drifts
+			if (difftime(atime,m_ScheduleLastMinuteTime) > 30) //avoid RTC/NTP clock drifts
 			{
 				m_ScheduleLastMinuteTime = atime;
 				m_ScheduleLastMinute = ltime.tm_min;
@@ -1521,7 +1526,7 @@ void MainWorker::Do_Work()
 		}
 		if (ltime.tm_hour!=m_ScheduleLastHour)
 		{
-			if (atime - m_ScheduleLastHourTime > 30 * 60) //avoid RTC/NTP clock drifts
+			if (difftime(atime,m_ScheduleLastHourTime) > 30 * 60) //avoid RTC/NTP clock drifts
 			{
 				m_ScheduleLastHourTime = atime;
 				m_ScheduleLastHour = ltime.tm_hour;

@@ -192,6 +192,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_EVOHOME_SCRIPT, "Evohome via script" },
 		{ HTYPE_MySensorsUSB, "MySensors Gateway USB" },
 		{ HTYPE_MySensorsTCP, "MySensors Gateway with LAN interface" },
+		{ HTYPE_MySensorsMQTT, "MySensors Gateway with MQTT interface" },
 		{ HTYPE_MQTT, "MQTT Client Gateway with LAN interface" },
 		{ HTYPE_FRITZBOX, "Fritzbox Callmonitor via LAN interface" },
 		{ HTYPE_ETH8020, "ETH8020 Relay board with LAN interface" },
