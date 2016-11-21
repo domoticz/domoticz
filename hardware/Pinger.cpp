@@ -10,7 +10,11 @@
 #include "../webserver/cWebem.h"
 #include "../json/json.h"
 
+#ifndef WITH_LIBOPING
 #include <boost/asio.hpp>
+#else // WITH_LIBOPING
+#include <oping.h>
+#endif // WITH_LIBOPING
 #include <boost/enable_shared_from_this.hpp>
 
 #include "pinger/icmp_header.h"
@@ -18,6 +22,7 @@
 
 #include <iostream>
 
+#ifndef WITH_LIBOPING
 class pinger
 	: private boost::noncopyable
 {
@@ -134,6 +139,7 @@ private:
 	boost::posix_time::ptime time_sent_;
 	boost::asio::streambuf reply_buffer_;
 };
+#endif // WITH_LIBOPING
 
 CPinger::CPinger(const int ID, const int PollIntervalsec, const int PingTimeoutms):
 m_stoprequested(false),
@@ -163,7 +169,11 @@ bool CPinger::StartHardware()
 	//Start worker thread
 	m_stoprequested = false;
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CPinger::Do_Work, this)));
+#ifndef WITH_LIBOPING
 	_log.Log(LOG_STATUS,"Pinger: Started");
+#else // WITH_LIBOPING
+	_log.Log(LOG_STATUS,"Pinger: Started (using liboping)");
+#endif // WITH_LIBOPING
 
 	return true;
 }
@@ -312,6 +322,7 @@ void CPinger::ReloadNodes()
 void CPinger::Do_Ping_Worker(const PingNode &Node)
 {
 	bool bPingOK = false;
+#ifndef WITH_LIBOPING
 	boost::asio::io_service io_service;
 	try
 	{
@@ -331,6 +342,43 @@ void CPinger::Do_Ping_Worker(const PingNode &Node)
 	{
 		bPingOK = false;
 	}
+#else // WITH_LIBOPING
+	pingobj_t* p = NULL;
+
+	do {
+		const char* host = Node.IP.c_str();
+
+		p = ping_construct();
+		if (p == NULL) {
+			_log.Log(LOG_ERROR, "Pinger: Can't construct liboping object.");
+			break;
+		}
+
+		double timeout = m_iPingTimeoutms / 1000;
+		if (ping_setopt(p, PING_OPT_TIMEOUT, &timeout) != 0) {
+			_log.Log(LOG_ERROR, "Pinger: Can't set timeout.");
+			break;
+		}
+
+		if (ping_host_add(p, host) != 0) {
+			_log.Log(LOG_ERROR, "Pinger: Can't add host ", host, ": ", ping_get_error(p));
+			break;
+		}
+
+		const int r = ping_send(p);
+		if (r < 0) {
+			_log.Log(LOG_ERROR, "Pinger: Can't ping host ", host, ": ", ping_get_error(p));
+			break;
+		} else if (r > 0) {
+			bPingOK = true;
+		}
+
+	} while (false);
+
+	if (p != NULL) {
+		ping_destroy(p);
+	}
+#endif // WITH_LIBOPING
 	UpdateNodeStatus(Node, bPingOK);
 	if (m_iThreadsRunning > 0) m_iThreadsRunning--;
 }
