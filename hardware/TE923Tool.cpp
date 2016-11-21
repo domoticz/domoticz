@@ -469,8 +469,8 @@ int CTE923Tool::get_te923_memdata( Te923DataSet_t *data )
 */
 	time_t timestamp;
 	constructTime(timestamp,newtime,year+1900,mon,day,hour,minute,0,-1);
-	data->timestamp = (unsigned long)timestamp
-;
+	data->timestamp = (unsigned long)timestamp;
+
 	memcpy( databuf, buf + 5, 11 );
 	adr += 0x10;
 	readretries=0;
