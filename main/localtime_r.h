@@ -14,3 +14,13 @@ time_t mytime(time_t * _Time);
 bool ParseSQLdatetime(time_t &time, struct tm &result, const std::string szSQLdate);
 bool ParseSQLdatetime(time_t &time, struct tm &result, const std::string szSQLdate, int isdst);
 
+
+// DST safe datetime constructors
+bool getMidnight(time_t &time, struct tm &result);
+bool getMidnight(time_t &time, struct tm &result, int year, int month, int day);
+
+bool getNoon(time_t &time, struct tm &result);
+bool getNoon(time_t &time, struct tm &result, int year, int month, int day);
+
+bool constructTime(time_t &time, struct tm &result, int year, int month, int day, int hour, int minute, int second);
+bool constructTime(time_t &time, struct tm &result, int year, int month, int day, int hour, int minute, int second, int isdst);

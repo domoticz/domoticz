@@ -170,26 +170,12 @@ void SolarEdgeAPI::GetMeterDetails()
 	if (ActHourMin - 60 > sunSet)
 		return;
 
-	struct tm ltime_min5;
- 	time_t atime_min5;
-	int isdst = ltime.tm_isdst;
-	bool goodtime = false;
-	while (!goodtime) {
-		ltime_min5.tm_isdst = isdst;
-		ltime_min5.tm_year = ltime.tm_year;
-		ltime_min5.tm_mon = ltime.tm_mon;
-		ltime_min5.tm_mday = ltime.tm_mday;
-		ltime_min5.tm_hour = ltime.tm_hour;
-		ltime_min5.tm_min = ltime.tm_min - 60;
-		ltime_min5.tm_sec = ltime.tm_sec;
-		atime_min5 = mktime(&ltime_min5);
-		goodtime = (ltime_min5.tm_isdst == isdst);
-		isdst = ltime_min5.tm_isdst;
-	}
-
+	struct tm ltime_min10;
+ 	time_t atime_min10;
+	constructTime(atime_min10,ltime_min10,ltime.tm_year,ltime.tm_mon,ltime.tm_mday,ltime.tm_hour,ltime.tm_min-10,ltime.tm_sec,ltime.tm_isdst);
 
 	char szTmp[100];
-	sprintf(szTmp, "%04d-%02d-%02d %02d:%02d:%02d", ltime_min5.tm_year + 1900, ltime_min5.tm_mon + 1, ltime_min5.tm_mday, ltime_min5.tm_hour, ltime_min5.tm_min, ltime_min5.tm_sec);
+	sprintf(szTmp, "%04d-%02d-%02d %02d:%02d:%02d", ltime_min10.tm_year + 1900, ltime_min10.tm_mon + 1, ltime_min10.tm_mday, ltime_min10.tm_hour, ltime_min10.tm_min, ltime_min10.tm_sec);
 	std::string startDate= CURLEncode::URLEncode(szTmp);
 
 	sprintf(szTmp, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
