@@ -36,6 +36,7 @@
 #if defined WIN32
 	#include "../msbuild/WindowsHelper.h"
 	#include <Shlobj.h>
+	#include "dirent_windows.h"
 #else
 	#include <sys/stat.h>
 	#include <unistd.h>
@@ -43,6 +44,8 @@
 	#include <errno.h>
 	#include <fcntl.h>
 	#include <string.h> 
+	#include <sys/utsname.h>
+	#include <dirent.h>
 #endif
 
 #ifdef HAVE_EXECINFO_H
@@ -111,7 +114,8 @@ const char *szHelp=
 	"\t-daemon (run as background daemon)\n"
 	"\t-pidfile pid file location (for example /var/run/domoticz.pid)\n"
 	"\t-syslog [user|daemon|local0 .. local7] (use syslog as log output, defaults to facility 'user')\n"
-	"\t-autorestore restore dbfile if it does not exist but AutoBackup was enabled\n"
+	"\t-ssd-mode reduce amount of writes by periodically syncing dbase file to hdd (warning you can lose up to 59minutes of data in case of reboot!)\n"
+	"\t-temp_folder ram drive folder which would be used as temporary storage in ssd-mode\n"
 #endif
 	"";
 
@@ -140,8 +144,9 @@ std::string szStartupFolder;
 std::string szUserDataFolder;
 std::string szWWWFolder;
 std::string szWebRoot;
-std::string szBackupDir;
-std::string szBackupLatest;
+char szSsdMode;
+std::string szSsdModePermanentDb;
+std::string szTmpFolder;
 
 bool bHasInternalTemperature=false;
 std::string szInternalTemperatureCommand = "/opt/vc/bin/vcgencmd measure_temp";
@@ -606,13 +611,6 @@ int main(int argc, char**argv)
 			szUserDataFolder = szroot;
 	}
 
-#ifdef WIN32
-	szBackupDir = szUserDataFolder + "backups\\";
-#else
-	szBackupDir = szUserDataFolder + "backups/";
-#endif
-	szBackupLatest = szBackupDir + "backup-latest.db";
-
 	if (cmdLine.HasSwitch("-startupdelay"))
 	{
 		if (cmdLine.GetArgumentCount("-startupdelay") != 1)
@@ -788,39 +786,69 @@ int main(int argc, char**argv)
 		dbasefile = cmdLine.GetSafeArgument("-dbase", 0, "domoticz.db");
 	}
 
-	if (! file_exist(dbasefile.c_str()) && file_exist(szBackupLatest.c_str()) && cmdLine.HasSwitch("-autorestore"))
+	if (cmdLine.HasSwitch("-temp_folder"))
 	{
-		_log.Log(LOG_STATUS, "DB file does not exist, restoring from latest backup...");
-		std::ifstream  src(szBackupLatest.c_str() , std::ios::binary);
-		if (src.good())
+		if (cmdLine.GetArgumentCount("-temp_folder") != 1)
 		{
-			std::ofstream  dst(dbasefile.c_str(),       std::ios::binary);
-			if (dst.good())
+			_log.Log(LOG_ERROR, "Please specify the path to ram drive (tmpfs) which will keep temporary database file");
+			return 1;
+		}
+		szTmpFolder = cmdLine.GetSafeArgument("-temp_folder", 0, "");
+		DIR *tmpDir;
+		if ((tmpDir = opendir(szTmpFolder.c_str())) == NULL){
+			_log.Log(LOG_ERROR,"Error accessing temp_folder");
+			return 1;
+		}
+		closedir(tmpDir);
+	}
+
+	if (cmdLine.HasSwitch("-ssd-mode")){
+		szSsdMode=1;
+		szSsdModePermanentDb = dbasefile;
+		dbasefile=szTmpFolder + "domoticz.db";
+		if ( !file_exist(dbasefile.c_str()) && file_exist(szSsdModePermanentDb.c_str()))
+		{
+			_log.Log(LOG_STATUS, "SSD-MODE: temporary database will be located at %s, permanent file %s", dbasefile.c_str(), szSsdModePermanentDb.c_str());
+			std::ifstream  src(szSsdModePermanentDb.c_str() , std::ios::binary);
+			if (src.good())
 			{
-				dst << src.rdbuf();
-
-				size_t src_size = (size_t)src.tellg();
-				std::ifstream  dst(szBackupLatest.c_str(),  std::ifstream::ate | std::ios::binary);
-
-				if (src_size != dst.tellg())
+				std::ofstream  dst(dbasefile.c_str(),       std::ios::binary);
+				if (dst.good())
 				{
-					_log.Log(LOG_ERROR, "Can't write backup to '%s' (disk full?)", dbasefile.c_str());
-					std::remove(dbasefile.c_str());
+					dst << src.rdbuf();
+
+					size_t src_size = (size_t)src.tellg();
+					std::ifstream  dst(dbasefile.c_str(),  std::ifstream::ate | std::ios::binary);
+
+					if (src_size != dst.tellg())
+					{
+						_log.Log(LOG_ERROR, "Can't store temporary database at '%s' (disk full?)", dbasefile.c_str());
+						std::remove(dbasefile.c_str());
+						return 1;
+					}
+
+				}
+				else
+				{
+					_log.Log(LOG_ERROR, "Can't create '%s'", dbasefile.c_str());
 					return 1;
 				}
-
 			}
 			else
 			{
-				_log.Log(LOG_ERROR, "Can't create '%s'", dbasefile.c_str());
+				_log.Log(LOG_ERROR, "Can't read %s", szSsdModePermanentDb.c_str());
 				return 1;
 			}
+
 		}
 		else
 		{
-			_log.Log(LOG_ERROR, "Can't read %s", szBackupLatest.c_str());
-			return 1;
+			_log.Log(LOG_STATUS, "SSD-MODE: temporary database found at %s", dbasefile.c_str());
 		}
+	}
+	else
+	{
+
 
 	}
 
