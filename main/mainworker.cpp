@@ -108,6 +108,7 @@
 #include "../hardware/ZiBlueSerial.h"
 #include "../hardware/ZiBlueTCP.h"
 #include "../hardware/Yeelight.h"
+#include "../hardware/IHCSerial.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -940,6 +941,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_Yeelight:
 		pHardware = new Yeelight(ID);
+		break;
+	case HTYPE_IHCSerial:
+		pHardware = new CIHCSerial(ID, SerialPort);
 		break;
 	}
 
@@ -10295,6 +10299,35 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 
 			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.LIGHTING1.cmnd, options))
 				return false;
+
+			//START Special Teach-In for IHCSerial
+			if ((pHardware->HwdType == HTYPE_IHCSerial))
+			{
+				if (lcmd.LIGHTING1.unitcode < 9) {
+					CIHCSerial::ihcCmd_t OnOff;
+					if (lcmd.LIGHTING1.cmnd == light1_sOff) {
+						OnOff = CIHCSerial::ihcCmd_t::OFF;
+					}
+					else {
+						OnOff = CIHCSerial::ihcCmd_t::ON;
+					}
+					int ihcport = (lcmd.LIGHTING1.housecode - 65) * 10 + lcmd.LIGHTING1.unitcode;
+					CIHCSerial *pIHC = reinterpret_cast<CIHCSerial*>(pHardware);
+					pIHC->SendCommand(OnOff, ihcport);
+
+					if (!IsTesting) {
+						//send to internal for now (later we use the ACK)
+						PushAndWaitRxMessage(m_hardwaredevices[hindex], (const unsigned char *)&lcmd, NULL, -1);
+					}
+
+					return true;
+				}
+				else {
+					return false;
+				}
+			}
+			//END Special Teach-In for IHCSerial
+
 			if (switchtype==STYPE_Doorbell)
 			{
 				int rnvalue=0;
