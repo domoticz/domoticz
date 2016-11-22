@@ -2,6 +2,7 @@ Version 3.xxxx (November xth 2016)
 - Fixed: Camera Editor, will now always refresh thumbnail in table
 - Fixed: JSon float/nan value, solved by upgrading JSonCPP
 - Implemented: Blockly/Lua Set SetPoint option
+- Implemented: Option to replace an Meter device
 
 Version 3.5878 (November 10th 2016)
 - Fixes and various improvements
