@@ -12571,6 +12571,8 @@ namespace http {
 										{
 											struct tm ntime;
 											time_t atime;
+											if (actDateTimeHour.size() == 10)
+												actDateTimeHour += " 00";
 											constructTime(atime,ntime,
 												atoi(actDateTimeHour.substr(0, 4).c_str()),
 												atoi(actDateTimeHour.substr(5, 2).c_str()),

@@ -604,10 +604,12 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& r
 		{
 			pfun->second(session, req, rep);
 		}
-		catch (...)
-		{
+		catch (std::exception& e) {
+			_log.Log(LOG_ERROR, "WebServer PO exception occurred : '%s'", e.what());
 		}
-
+		catch (...) {
+			_log.Log(LOG_ERROR, "WebServer PO unknown exception occurred");
+		}
 		std::string attachment;
 		size_t num = rep.headers.size();
 		for (size_t h = 0; h < num; h++) {
