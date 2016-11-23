@@ -397,6 +397,7 @@
 		<Product type="0202" id="3002" name="FGS222 Double Relay Switch 2x1.5kW" config="fibaro/fgs222.xml" />
 		<Product type="0203" id="1000" name="FGS223 Double Relay" config="fibaro/fgs223.xml"/>
 		<Product type="0600" id="1000" name="FGWPE Wall Plug" config="fibaro/fgwpe.xml" />
+		<Product type="0602" id="1001" name="FGWPE Wall Plug" config="fibaro/fgwpe.xml" />
 		<Product type="0800" id="1001" name="FGMS001 Motion Sensor" config="fibaro/fgms.xml" />
 		<Product type="0800" id="2001" name="FGMS001 Motion Sensor" config="fibaro/fgms.xml" />
 		<Product type="0800" id="4001" name="FGMS001 Motion Sensor" config="fibaro/fgms.xml" />
@@ -450,6 +451,7 @@
 		<Product type="4450" id="3030" name="45602 Lamp Dimmer Module" config="ge/dimmer_module.xml"/>
 		<Product type="4457" id="3230" name="45606 2-Way Dimmer Switch" config="ge/dimmer.xml"/>
 		<Product type="4944" id="3031" name="12724 3-Way Dimmer Switch" config="ge/12724-dimmer.xml"/>
+                <Product type="4944" id="3034" name="12730 Fan Control Switch" config="ge/12724-dimmer.xml"/>
 		<Product type="5250" id="3030" name="45603 Plugin Appliance Module"/>
 		<Product type="5250" id="3130" name="45604 Outdoor Module"/>
 		<Product type="5252" id="3530" name="45605 Duplex Receptacle"/>
@@ -706,6 +708,7 @@
 		<Product type="1100" id="0002" name="123580 Plug-in Dimmer" config="popp/123580.xml" />
 		<Product type="0001" id="0001" name="123658 Plug-in Switch plus Power Meter" config="popp/123658.xml" />
 		<Product type="0003" id="0001" name="009105 Wall Plug Switch Schuko (IP44)" config="popp/009105.xml" />
+		<Product type="0005" id="0001" name="012501 Strike Lock Control" config="popp/012501.xml" />
 	</Manufacturer>
 	<Manufacturer id="0169" name="Popp">
 		<Product type="0001" id="0001" name="ZWeather" config="popp/zweather.xml" />
