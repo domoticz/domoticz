@@ -100,8 +100,8 @@ namespace http {
 
 		void CProxyClient::ContinueConnect(const boost::system::error_code& error)
 		{
-				std::string address = "myproxy.domoticz.com";
-				std::string port = "4443";
+				std::string address = "domoproxy.domoticz.com";
+				std::string port = "443";
 
 				_socket.reset(new boost::asio::ssl::stream<boost::asio::ip::tcp::socket>(_io_service, _context));
 				// set timeout timer
