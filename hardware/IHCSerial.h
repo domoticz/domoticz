@@ -5,55 +5,7 @@
 
 #define IHC_READ_BUFFER_SIZE 32
 
-typedef struct _tIHCTemp {
-	unsigned char len;
-	unsigned char type;
-	unsigned char subtype;
-	char          ID[25];
-	float         temperature;
-} IHCTemp;
 
-typedef struct _tIHCStatus {
-	unsigned char   len;
-	unsigned char   type;
-	unsigned char   subtype;
-	char            ID[25];
-	int             value;
-} IHCStatus;
-
-// Packet format
-//
-// STX + ID + Type + Data + ETB + Checksum
-//
-// Checksum = (STX + ID + Type + Data + ETB) & 0xFF
-//
-
-namespace IHCDefs {
-	// Transmission bytes
-	const unsigned char PKT_SOH = 0x01;
-	const unsigned char PKT_STX = 0x02;
-	const unsigned char PKT_ACK = 0x06;
-	const unsigned char PKT_ETB = 0x17;
-
-	// Commands
-	const unsigned char PKT_DATA_READY = 0x30;
-	const unsigned char PKT_SET_OUTPUT = 0x7A;
-	const unsigned char PKT_GET_OUTPUTS = 0x82;
-	const unsigned char PKT_OUTP_STATE = 0x83;
-	const unsigned char PKT_GET_INPUTS = 0x86;
-	const unsigned char PKT_INP_STATE = 0x87;
-	const unsigned char PKT_ACT_INPUT = 0x88;
-
-	// Receiver IDs
-	const unsigned char ID_DISPLAY = 0x09;
-	const unsigned char ID_MODEM = 0x0A;
-	const unsigned char ID_IHC = 0x12;
-	const unsigned char ID_AC = 0x1B;
-	const unsigned char ID_PC = 0x1C;
-	const unsigned char ID_PC2 = 0x1D;
-};
-
-class UART;
 
 class CIHCSerial: public AsyncSerial, public CDomoticzHardwareBase
 {
@@ -61,24 +13,10 @@ class CIHCSerial: public AsyncSerial, public CDomoticzHardwareBase
 	// ============= PUBLIC===============
 	// ===================================
 public:
-    /**
-    * Opens a serial device.
-    * \param devname serial device name, example "/dev/ttyS0" or "COM1"
-    * \param baud_rate serial baud rate
-    * \param opt_parity serial parity, default even
-    * \param opt_csize serial character size, default 7bit
-    * \param opt_flow serial flow control, default none
-    * \param opt_stop serial stop bits, default 1
-    * \throws boost::system::system_error if cannot open the
-    * serial device
-    */
 	CIHCSerial(const int ID, const std::string& devname, unsigned int baudRate = 19200);
 
     ~CIHCSerial();
 	std::string m_szSerialPort;
-
-	IHCTemp	    m_IHCTemp;
-	IHCStatus	m_IHCValue;
 
 	char   m_currStatus[2 + 130] = "o ";        // Last output status information read from IHC
 	char   m_inpStatus[2 + 130] = "i ";        // Status information for inputs
@@ -293,11 +231,6 @@ private:
     int m_regoType;
     unsigned int m_errorcntr;
 
-	// Create a circular buffer.
-    char m_readBuffer[IHC_READ_BUFFER_SIZE];
-	volatile unsigned char m_readBufferHead;
-	volatile unsigned char m_readBufferTail;
-
 	/**
      * Read callback, stores data in the buffer
      */
@@ -305,10 +238,7 @@ private:
 
 	void UpdateSwitch();
 
-	//IHCRS485Packet getPacket(UART& uart, int ID = IHCDefs::ID_PC, bool useTimeout = true) throw (bool);
-
 	// HANDLER
-	//static const ihcCmd_t_Build LAST_COMMAND = B_STATUS_INPUT;
 	static const ihcCmd_t LAST_COMMAND = STATUS_INPUT;
 	static const int MAX_OUTPUT_DEVS = 16;
 
@@ -319,7 +249,6 @@ private:
 	unsigned int packetCount;         // Used to make sure InputStates are read most often and OutputStates not as often
 	unsigned int lastCmd;
 	ihcCmd_t command;                 // Comand to be sent next to ihc
-	ihcCmd_t command2;                 // Comand to be sent next to ihc
 
 	// Private methods
 	void AddQueue(ihcCmd_t cmd);                               // Add command to queue
@@ -354,7 +283,6 @@ private:
 	static const char   CHAR_END = '\x17';
 
 	static const int dataSectionBegin = 3;
-	//static const int BUFFER_SIZE = 255;
 #define IHC_BUFFER_SIZE 255 
 
 	char buff[IHC_BUFFER_SIZE];      // Buffer to hold incoming chars from IHC
@@ -381,138 +309,3 @@ private:
 };
 
 
-// Class IHCRS485Packet 
-//
-//
-class IHCRS485Packet {
-public:
-	IHCRS485Packet(unsigned char id,
-		unsigned char dataType,
-		const std::vector<unsigned char>* data = NULL) :
-		m_id(id),
-		m_dataType(dataType),
-		m_isComplete(false)
-	{
-		m_packet.push_back(IHCDefs::PKT_STX);
-		m_packet.push_back(id);
-		m_packet.push_back(dataType);
-		if (data != NULL) {
-			for (unsigned int j = 0; j < data->size(); j++) {
-				m_packet.push_back((*data)[j]);
-				m_data.push_back((*data)[j]);
-			}
-		}
-		m_packet.push_back(IHCDefs::PKT_ETB);
-		unsigned int crc = 0;
-		for (unsigned int j = 0; j < m_packet.size(); j++) {
-			crc += m_packet[j];
-		}
-		m_packet.push_back((unsigned char)(crc & 0xFF));
-		m_isComplete = true;
-	};
-
-	IHCRS485Packet(const std::vector<unsigned char>& data) :
-		m_isComplete(false)
-	{
-		unsigned char crc = 0;
-		if (data.size() > 2 && data[0] == IHCDefs::PKT_STX) {
-			m_id = data[1];
-			m_dataType = data[2];
-			crc += data[0];
-			crc += data[1];
-			crc += data[2];
-			m_packet.push_back(data[0]);
-			m_packet.push_back(data[1]);
-			m_packet.push_back(data[2]);
-			for (unsigned int j = 3; j < data.size(); j++) {
-				m_packet.push_back(data[j]);
-				crc += data[j];
-				if (data[j] != IHCDefs::PKT_ETB) {
-					m_data.push_back(data[j]);
-				}
-				else if (data[j] == IHCDefs::PKT_ETB) {
-					if ((j + 1) == (data.size() - 1)) {
-						if (data[j + 1] == (unsigned char)(crc & 0xFF)) {
-							m_packet.push_back(data[j + 1]);
-							m_isComplete = true;
-							break;
-						}
-					}
-				}
-			}
-		}
-	};
-
-	void PrintVector(const std::vector<unsigned char>& data) {
-		for (unsigned int j = 0; j < data.size(); j++) {
-			printf("%.2X ", data[j]);
-		}
-		printf("\n");
-	};
-
-	void printTimeStamp(time_t t = 0) {
-		time_t now = (t == 0 ? time(NULL) : t);
-		struct tm* timeinfo;
-		timeinfo = localtime(&now);
-		printf("%.2i:%.2i:%.2i ", timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
-		return;
-	};
-
-	void print() {
-		printTimeStamp();
-		std::string receiver;
-		switch (m_id) {
-		case IHCDefs::ID_MODEM:
-			receiver = "MODEM";
-			break;
-		case IHCDefs::ID_DISPLAY:
-			receiver = "DISPLAY";
-			break;
-		case IHCDefs::ID_IHC:
-			receiver = "IHC";
-			break;
-		case IHCDefs::ID_AC:
-			receiver = "AC";
-			break;
-		case IHCDefs::ID_PC:
-			receiver = "PC";
-			break;
-		case IHCDefs::ID_PC2:
-			receiver = "PC2";
-			break;
-		default:
-			receiver = "UNKNOWN";
-			break;
-		}
-		printf("(%s) ", receiver.c_str());
-		PrintVector(m_packet);
-	};
-
-	~IHCRS485Packet() {
-	};
-
-	bool isComplete() { return m_isComplete; };
-
-	std::vector<unsigned char> getPacket() {
-		return m_packet;
-	};
-
-	std::vector<unsigned char> getData() {
-		return m_data;
-	};
-
-	unsigned char getID() {
-		return m_id;
-	};
-
-	unsigned char getDataType() {
-		return m_dataType;
-	};
-
-private:
-	unsigned char m_id;
-	unsigned char m_dataType;
-	bool m_isComplete;
-	std::vector<unsigned char> m_packet;
-	std::vector<unsigned char> m_data;
-};

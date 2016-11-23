@@ -8,8 +8,22 @@
 #include "../main/SQLHelper.h"
 #include "../webserver/cWebem.h"
 
-// This code is for the frist version of the IHC Controller, using the RS485 protocol (serial)
+// This code is for the first version of the IHC Controller, using the RS485 protocol (serial)
 // It has been tested with Simon VIS, a spanish version of the IHC controller
+//
+// Allmost all the code is based in the development made by Jouni Viikari
+// But I want also to thank to Thomas Bøjstrup Johansen for his help,
+// and also to Michael Odälv and Martin Hejnfelt for their code 
+// that allowed me to understand the IHC serial protocol
+//
+// https://en.wikipedia.org/wiki/Intelligent_Home_Control
+//
+// Packet format
+//
+// STX + ID + Type + Data + ETB + Checksum
+//
+// Checksum = (STX + ID + Type + Data + ETB) & 0xFF
+//
 
 #include <string>
 #include <algorithm>
@@ -23,79 +37,6 @@
 #define IHC_COMMAND_DELAY 5
 #define IHC_READ_BUFFER_MASK (IHC_READ_BUFFER_SIZE - 1)
 #define IHC_MAX_ERRORS_UNITL_RESTART 20
-
-typedef enum {
-	REGO_TYPE_NONE = 0,
-	REGO_TYPE_TEMP,
-	REGO_TYPE_STATUS,
-	REGO_TYPE_COUNTER,
-	REGO_TYPE_END
-} IHCRegType;
-
-typedef struct _tIHCRegisters
-{
-	char name[25];
-	unsigned short regNum_type1;
-	unsigned short regNum_type2;
-	unsigned short regNum_type3;
-	IHCRegType type;
-	float lastTemp;
-	int lastValue;
-	time_t lastSent;
-} IHCRegisters;
-
-typedef union _tIHCCommand
-{
-	unsigned char raw[9];
-	struct
-	{
-		unsigned char address;
-		unsigned char command;
-		unsigned char regNum[3];
-		unsigned char value[3];
-		unsigned char crc;
-	} data;
-} IHCCommand;
-
-typedef union _tRegoReply
-{
-	char raw[5];
-	struct
-	{
-		char address;
-		char value[3];
-		char crc;
-	} data;
-} RegoReply;
-
-IHCRegisters g_allRegisters[] = {
-	{ "GT1 Radiator",           0x0209,	0x020B,	0x020D,	REGO_TYPE_TEMP,         -50.0, -1, 0 },
-	{ "GT2 Out",		        0x020A,	0x020C,	0x020E,	REGO_TYPE_TEMP,         -50.0, -1, 0 },
-	{ "GT3 Hot water",	        0x020B,	0x020D,	0x020F,	REGO_TYPE_TEMP,         -50.0, -1, 0 },
-	{ "GT4 Forward",	        0x020C,	0x020E,	0x0210,	REGO_TYPE_TEMP,         -50.0, -1, 0 },
-	{ "GT5 Room",			    0x020D,	0x020F,	0x0211,	REGO_TYPE_TEMP,         -50.0, -1, 0 },
-	{ "GT6 Compressor",	        0x020E,	0x0210,	0x0212,	REGO_TYPE_TEMP,         -50.0, -1, 0 },
-	{ "GT8 Hot fluid out",      0x020F,	0x0211,	0x0213,	REGO_TYPE_TEMP,         -50.0, -1, 0 },
-	{ "GT9 Hot fluid in",		0x0210,	0x0212,	0x0214,	REGO_TYPE_TEMP,         -50.0, -1, 0 },
-	{ "GT10 Cold fluid in",		0x0211,	0x0213,	0x0215,	REGO_TYPE_TEMP,         -50.0, -1, 0 },
-	{ "GT11 Cold fluid out",	0x0212,	0x0214,	0x0216,	REGO_TYPE_TEMP,         -50.0, -1, 0 },
-	{ "GT3x Ext hot water",		0x0213, 0x0215, 0x0217,	REGO_TYPE_TEMP,         -50.0, -1, 0 },
-	{ "P3 Cold fluid",	    	0x01FD,	0x01FF,	0x0201,	REGO_TYPE_STATUS,       -50.0, -1, 0 },
-	{ "Compressor",				0x01FE,	0x0200,	0x0202,	REGO_TYPE_STATUS,       -50.0, -1, 0 },
-	{ "Add heat 1",     		0x01FF,	0x0201,	0x0203,	REGO_TYPE_STATUS,       -50.0, -1, 0 },
-	{ "Add heat 2",		        0x0200,	0x0202,	0x0204,	REGO_TYPE_STATUS,       -50.0, -1, 0 },
-	{ "P1 Radiator",    		0x0203,	0x0205,	0x0207,	REGO_TYPE_STATUS,       -50.0, -1, 0 },
-	{ "P2 Heat fluid",  		0x0204, 0x0206, 0x0208, REGO_TYPE_STATUS,       -50.0, -1, 0 },
-	{ "Three-way valve",        0x0205, 0x0207, 0x0209, REGO_TYPE_STATUS,       -50.0, -1, 0 },
-	{ "Alarm",                  0x0206, 0x0208, 0x020A, REGO_TYPE_STATUS,       -50.0, -1, 0 },
-	{ "Operating hours",        0x0046, 0x0048, 0x004A, REGO_TYPE_COUNTER,      -50.0, -1, 0 },
-	{ "Radiator hours",         0x0048, 0x004A, 0x004C, REGO_TYPE_COUNTER,      -50.0, -1, 0 },
-	{ "Hot water hours",        0x004A, 0x004C, 0x004E, REGO_TYPE_COUNTER,      -50.0, -1, 0 },
-	{ "GT1 Target",             0x006E,	0x006E,	0x006E,	REGO_TYPE_TEMP,         -50.0, -1, 0 },
-	{ "GT3 Target",             0x002B,	0x002B,	0x002B,	REGO_TYPE_TEMP,         -50.0, -1, 0 },
-	{ "GT4 Target",             0x006D,	0x006D,	0x006D,	REGO_TYPE_TEMP,         -50.0, -1, 0 },
-	{ "",                            0,      0,      0, REGO_TYPE_NONE,             0,  0, 0 }
-};
 
 
 //
@@ -111,13 +52,6 @@ CIHCSerial::CIHCSerial(const int ID, const std::string& devname, unsigned int ba
 	m_retrycntr = 0;
 	m_pollcntr = 0;
 	m_pollDelaycntr = 0;
-	m_readBufferHead = 0;
-	m_readBufferTail = 0;
-
-	m_IHCTemp.len=sizeof(IHCTemp)-1;
-
-	m_IHCValue.len=sizeof(IHCStatus)-1;
-	m_IHCValue.value=0;
 
 	// Init part from ihcHsg
 	buffLen = 0;
@@ -203,8 +137,6 @@ void CIHCSerial::Do_Work()
 				m_retrycntr=0;
 				m_pollcntr = 0;
 				m_pollDelaycntr = 0;
-				m_readBufferHead = 0;
-				m_readBufferTail = 0;
 				OpenSerialDevice();
 			}
 		}
@@ -219,8 +151,6 @@ void CIHCSerial::Do_Work()
 			m_retrycntr=0;
 			m_pollcntr = 0;
 			m_pollDelaycntr = 0;
-			m_readBufferHead = 0;
-			m_readBufferTail = 0;
             m_errorcntr = 0;
 
 		    OpenSerialDevice();
@@ -236,9 +166,6 @@ void CIHCSerial::Do_Work()
                 // of any problems even if it bypasses the circular buffer concept.
                 // There should not be any data left to recieve anyway since commands
                 // are sent with 5 seconds in between.
-				m_readBufferHead = 0;
-				m_readBufferTail = 0;
-
    				m_pollDelaycntr = 0;
 			}
 		}
@@ -290,9 +217,9 @@ void CIHCSerial::readCallback(const char *data, size_t len)
 	retVal = HandleChars(data, len);
 
 	if (retVal == IHC_READY) {
-		command2 = (CIHCSerial::ihcCmd_t)SendNextPacket();
+		command = (CIHCSerial::ihcCmd_t)SendNextPacket();
 
-		switch (command2) {
+		switch (command) {
 		case STATUS:
 			msgLen = BuildMsg(B_STATUS);
 			break;
@@ -320,7 +247,7 @@ void CIHCSerial::readCallback(const char *data, size_t len)
 			msgLen = 0;
 			break;
 		}
-		DelQueue(command2);
+		DelQueue(command);
 		//if (packetQueue.size() > 0) {
 		//	packetQueue.pop_front();
 		//}
@@ -469,7 +396,7 @@ port:     Port the command applies to
 ********************************************************/
 bool CIHCSerial::SendCommand(ihcCmd_t sendCmd, int cmdPort)
 {
-	_log.Log(LOG_STATUS, "SEND-COMMAND SEND-COMMAND SEND-COMMAND SEND-COMMAND SEND-COMMAND ");
+	_log.Log(LOG_STATUS, "SEND-COMMAND ");
 	switch (sendCmd) {
 	case ON:
 		ToglePort(cmdPort, portsON);
@@ -748,7 +675,7 @@ int CIHCSerial::BuildMsg(ihcCmd_t_Build cmd, const char * data)
 
 	case B_ON:
 		outBuff[outBuffLen++] = CHAR_SWITCH_ON;
-		_log.Log(LOG_STATUS, "ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON ON");
+		_log.Log(LOG_STATUS, "ON ");
 		if (data) {
 			memcpy(&outBuff[outBuffLen], data, 16);
 			outBuffLen += 16;
@@ -762,7 +689,7 @@ int CIHCSerial::BuildMsg(ihcCmd_t_Build cmd, const char * data)
 
 	case B_OFF:
 		outBuff[outBuffLen++] = CHAR_SWITCH_OFF;
-		_log.Log(LOG_STATUS, "OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF OFF");
+		_log.Log(LOG_STATUS, "OFF ");
 		if (data) {
 			memcpy(&outBuff[outBuffLen], data, 16);
 			//memset(&outBuff[outBuffLen], 255, 16); test purposes, switch off all outputs
