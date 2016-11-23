@@ -3,7 +3,7 @@
   <!-- Configuration Parameters -->
   <CommandClass id="112">
     <Value type="byte" genre="config" instance="1" index="1" label="Sensitivity Level Setting" value="12" min="8" max="255" size="1">
-      <Help>This parameter defines the sensitivity of PIR detector, it is recommended to test the detector with movements from a farthest end of the coverage area at first time of use. If movements cannot be detected sensitively, simply adjust the sensitivity level with this parameter. This Parameter can be configured with the value of 8 through 255, where 1 means high sensitivity and 255 means lowest sensitivity.
+      <Help>This parameter defines the sensitivity of PIR detector, it is recommended to test the detector with movements from a farthest end of the coverage area at first time of use. If movements cannot be detected sensitively, simply adjust the sensitivity level with this parameter. This Parameter can be configured with the value 8 trough 255, where 8 means high sensitivity and 255 means lowest sensitivity.
       </Help>
     </Value>
     
@@ -29,12 +29,12 @@
       </Help>
     </Value>
     
-    <Value type="short" genre="config" instance="1" index="6" label="Re-trigger Interval Setting" units="second" value="8" min="1" max="8" size="1">
+    <Value type="short" genre="config" instance="1" index="6" label="Re-trigger Interval Setting" units="second" value="8" min="5" max="600" size="2">
       <Help>This Parameter can be used to adjust the interval of being re-triggered after the PIR detector has been triggered. This Parameter value must be less than Parameter 2#. If user set this parameter to default by Configure CC, the parameter #2 will be set to default value.
       </Help>
     </Value>
     
-    <Value type="short" genre="config" instance="1" index="7" label="Light Sensor Polling Interval" units="second" value="180" min="60" max="36000" size="2">
+    <Value type="short" genre="config" instance="1" index="7" label="Light Sensor Polling Interval" units="second" value="180" min="60" max="29535" size="2">
       <Help>This Parameter can be set the light sensor measure ambient illumination level interval time. NOTE: This Value Must Be less than Wakeup Interval Time.
       </Help>
     </Value>
@@ -49,13 +49,13 @@
       <Help>Basic Set Command will be sent where contains a value when PIR detector is triggered, the receiver will take it for consideration; for instance, if a lamp module is received the Basic Set Command of which value is decisive as to how bright of dim level of lamp module shall be. This Parameter is used to some associated devices.
       </Help>
     </Value>
-    
-    <Value type="list" genre="config" instance="1" index="10" label="LED Blink Enable" value="1" size="1">
-      <Help>This parameter defines the LED status. If this parameter is set to ‘1’, the LED blink will be enabled, the LED will blink once when motion sensor detect a movement. Otherwhise, the led will be turned off always.
-	  </Help>
+	
+    <Value type="list" genre="config" instance="1" index="10" label="Led Blink Enable" value="1" size="1">
+      <Help>This parameter can enabled or disable the PIR led blinking function. </Help>
       <Item label="Disable" value="0" />
       <Item label="Enable" value="1" />
      </Value>
+ 
   </CommandClass>
   <!-- Association Groups -->
   <CommandClass id="133">

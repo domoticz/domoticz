@@ -11721,6 +11721,7 @@ namespace http {
 					return;
 			}
 			unsigned char tempsign = m_sql.m_tempsign[0];
+			int iPrev;
 
 			if (srange == "day")
 			{
@@ -12570,9 +12571,11 @@ namespace http {
 										{
 											struct tm ntime;
 											time_t atime;
+											if (actDateTimeHour.size() == 10)
+												actDateTimeHour += " 00";
 											constructTime(atime,ntime,
-												atoi(actDateTimeHour.substr(0, 4).c_str())-1900,
-												atoi(actDateTimeHour.substr(5, 2).c_str())-1,
+												atoi(actDateTimeHour.substr(0, 4).c_str()),
+												atoi(actDateTimeHour.substr(5, 2).c_str()),
 												atoi(actDateTimeHour.substr(8, 2).c_str()),
 												atoi(actDateTimeHour.substr(11, 2).c_str())-1,
 												0,0,-1);
@@ -13561,7 +13564,7 @@ namespace http {
 						dbasetable.c_str(), idx, szDateStartPrev, szDateEndPrev);
 					if (result.size() > 0)
 					{
-						int iPrev = 0;
+						iPrev = 0;
 						std::vector<std::vector<std::string> >::const_iterator itt;
 						for (itt = result.begin(); itt != result.end(); ++itt)
 						{
@@ -13748,7 +13751,7 @@ namespace http {
 					result = m_sql.safe_query("SELECT Level, Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStartPrev, szDateEndPrev);
 					if (result.size() > 0)
 					{
-						int iPrev = 0;
+						iPrev = 0;
 						std::vector<std::vector<std::string> >::const_iterator itt;
 						for (itt = result.begin(); itt != result.end(); ++itt)
 						{
@@ -13822,7 +13825,7 @@ namespace http {
 						"SELECT Total, Rate, Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStartPrev, szDateEndPrev);
 					if (result.size() > 0)
 					{
-						int iPrev = 0;
+						iPrev = 0;
 						std::vector<std::vector<std::string> >::const_iterator itt;
 						for (itt = result.begin(); itt != result.end(); ++itt)
 						{
@@ -13879,7 +13882,7 @@ namespace http {
 					//				EnergyDivider*=1000.0f;
 
 					int ii = 0;
-					int iPrev = 0;
+					iPrev = 0;
 					if (dType == pTypeP1Power)
 					{
 						//Actual Year
@@ -13980,6 +13983,7 @@ namespace http {
 						if (result.size() > 0)
 						{
 							bool bHaveDeliverd = false;
+							iPrev = 0;
 							std::vector<std::vector<std::string> >::const_iterator itt;
 							for (itt = result.begin(); itt != result.end(); ++itt)
 							{
@@ -14038,15 +14042,15 @@ namespace http {
 						result = m_sql.safe_query("SELECT Value2,Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStartPrev, szDateEndPrev);
 						if (result.size() > 0)
 						{
-							ii = 0;
+							iPrev = 0;
 							std::vector<std::vector<std::string> >::const_iterator itt;
 							for (itt = result.begin(); itt != result.end(); ++itt)
 							{
 								std::vector<std::string> sd = *itt;
 
-								root["resultprev"][ii]["d"] = sd[1].substr(0, 16);
-								root["resultprev"][ii]["co2_max"] = sd[0];
-								ii++;
+								root["resultprev"][iPrev]["d"] = sd[1].substr(0, 16);
+								root["resultprev"][iPrev]["co2_max"] = sd[0];
+								iPrev++;
 							}
 						}
 					}
@@ -14523,6 +14527,7 @@ namespace http {
 						result = m_sql.safe_query("SELECT Value, Date, Counter FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStartPrev, szDateEndPrev);
 						if (result.size() > 0)
 						{
+							iPrev = 0;
 							std::vector<std::vector<std::string> >::const_iterator itt;
 							for (itt = result.begin(); itt != result.end(); ++itt)
 							{
@@ -14916,7 +14921,6 @@ namespace http {
 						ii++;
 					}
 					//Previous Year
-					ii = 0;
 					result = m_sql.safe_query(
 						"SELECT Direction, Speed_Min, Speed_Max, Gust_Min,"
 						" Gust_Max, Date "
@@ -14925,33 +14929,34 @@ namespace http {
 						dbasetable.c_str(), idx, szDateStartPrev, szDateEndPrev);
 					if (result.size() > 0)
 					{
+						iPrev = 0;
 						std::vector<std::vector<std::string> >::const_iterator itt;
 						for (itt = result.begin(); itt != result.end(); ++itt)
 						{
 							std::vector<std::string> sd = *itt;
 
-							root["resultprev"][ii]["d"] = sd[5].substr(0, 16);
-							root["resultprev"][ii]["di"] = sd[0];
+							root["resultprev"][iPrev]["d"] = sd[5].substr(0, 16);
+							root["resultprev"][iPrev]["di"] = sd[0];
 
 							int intSpeed = atoi(sd[2].c_str());
 							int intGust = atoi(sd[4].c_str());
 							if (m_sql.m_windunit != WINDUNIT_Beaufort)
 							{
 								sprintf(szTmp, "%.1f", float(intSpeed) * m_sql.m_windscale);
-								root["resultprev"][ii]["sp"] = szTmp;
+								root["resultprev"][iPrev]["sp"] = szTmp;
 								sprintf(szTmp, "%.1f", float(intGust) * m_sql.m_windscale);
-								root["resultprev"][ii]["gu"] = szTmp;
+								root["resultprev"][iPrev]["gu"] = szTmp;
 							}
 							else
 							{
 								float windspeedms = float(intSpeed)*0.1f;
 								float windgustms = float(intGust)*0.1f;
 								sprintf(szTmp, "%d", MStoBeaufort(windspeedms));
-								root["resultprev"][ii]["sp"] = szTmp;
+								root["resultprev"][iPrev]["sp"] = szTmp;
 								sprintf(szTmp, "%d", MStoBeaufort(windgustms));
-								root["resultprev"][ii]["gu"] = szTmp;
+								root["resultprev"][iPrev]["gu"] = szTmp;
 							}
-							ii++;
+							iPrev++;
 						}
 					}
 				}
