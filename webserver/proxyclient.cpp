@@ -103,18 +103,18 @@ namespace http {
 				std::string address = "domoproxy.domoticz.com";
 				std::string port = "443";
 
-				_socket.reset(new boost::asio::ssl::stream<boost::asio::ip::tcp::socket>(_io_service, _context));
-				// set timeout timer
-				timer_.expires_from_now(boost::posix_time::seconds(timeout_));
-				timer_.async_wait(boost::bind(&CProxyClient::handle_timeout, shared_from_this(), boost::asio::placeholders::error));
-				boost::asio::ip::tcp::resolver resolver(_io_service);
-				boost::asio::ip::tcp::resolver::query query(address, port);
-				boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
-				boost::asio::ip::tcp::endpoint endpoint = *iterator;
-				_socket->lowest_layer().async_connect(endpoint,
-					boost::bind(&CProxyClient::handle_connect, shared_from_this(),
-						boost::asio::placeholders::error, iterator));
-			}
+			_socket.reset(new boost::asio::ssl::stream<boost::asio::ip::tcp::socket>(_io_service, _context));
+			// set timeout timer
+			timer_.expires_from_now(boost::posix_time::seconds(timeout_));
+			timer_.async_wait(boost::bind(&CProxyClient::handle_timeout, shared_from_this(), boost::asio::placeholders::error));
+			boost::asio::ip::tcp::resolver resolver(_io_service);
+			boost::asio::ip::tcp::resolver::query query(address, port);
+			boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
+			boost::asio::ip::tcp::endpoint endpoint = *iterator;
+			_socket->lowest_layer().async_connect(endpoint,
+				boost::bind(&CProxyClient::handle_connect, shared_from_this(),
+					boost::asio::placeholders::error, iterator));
+		}
 
 		void CProxyClient::handle_connect(const boost::system::error_code& error, boost::asio::ip::tcp::resolver::iterator endpoint_iterator)
 		{
