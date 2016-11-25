@@ -130,10 +130,10 @@ namespace http {
 		else if (endpoint_iterator != boost::asio::ip::tcp::resolver::iterator())
 			{
 				_socket->lowest_layer().close();
-				boost::asio::ip::tcp::endpoint endpoint = *endpoint_iterator;
+				boost::asio::ip::tcp::endpoint endpoint = *++endpoint_iterator;
 				_socket->lowest_layer().async_connect(endpoint,
 					boost::bind(&CProxyClient::handle_connect, shared_from_this(),
-						boost::asio::placeholders::error, ++endpoint_iterator));
+						boost::asio::placeholders::error, endpoint_iterator));
 			}
 			else
 			{
