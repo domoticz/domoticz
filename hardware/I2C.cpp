@@ -42,7 +42,7 @@ based on a 5 minute sample interval.  My method poles for conversion completion.
 and does not require smbus or wire libs
 
 */
-
+//tray change get to git
 #include "stdafx.h"
 #include "I2C.h"
 #include <stdio.h>
