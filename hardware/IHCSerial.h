@@ -18,9 +18,12 @@ public:
     ~CIHCSerial();
 	std::string m_szSerialPort;
 
-	char   m_currStatus[2 + 130] = "o ";        // Last output status information read from IHC
-	char   m_inpStatus[2 + 130] = "i ";        // Status information for inputs
-	char   m_lastStatus[2 + 130] = "o ";        // Last output status information read from IHC
+	//char   m_currStatus[2 + 130] = "o ";        // Last output status information read from IHC
+	//char   m_inpStatus[2 + 130] = "i ";        // Status information for inputs
+	//char   m_lastStatus[2 + 130] = "o ";        // Last output status information read from IHC
+	char   m_currStatus[2 + 130];        // Last output status information read from IHC
+	char   m_inpStatus[2 + 130];        // Status information for inputs
+	char   m_lastStatus[2 + 130];        // Last output status information read from IHC
 	bool   m_ihcChanged;                      // Has any output port on IHC changed in last poll
 
 	std::list<int> packetQueue;
