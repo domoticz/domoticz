@@ -10306,10 +10306,12 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 				if (lcmd.LIGHTING1.unitcode < 9) {
 					CIHCSerial::ihcCmd_t OnOff;
 					if (lcmd.LIGHTING1.cmnd == light1_sOff) {
-						OnOff = CIHCSerial::ihcCmd_t::OFF;
+						//OnOff = CIHCSerial::ihcCmd_t::OFF;
+						OnOff = CIHCSerial::OFF;
 					}
 					else {
-						OnOff = CIHCSerial::ihcCmd_t::ON;
+						//OnOff = CIHCSerial::ihcCmd_t::ON;
+						OnOff = CIHCSerial::ON;
 					}
 					int ihcport = (lcmd.LIGHTING1.housecode - 65) * 10 + lcmd.LIGHTING1.unitcode;
 					CIHCSerial *pIHC = reinterpret_cast<CIHCSerial*>(pHardware);

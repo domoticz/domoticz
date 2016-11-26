@@ -176,16 +176,24 @@ public:
 	inline unsigned long NrStatReq() const { return nrStatReq; }
 
 	// Command to passed in SendCommand
-#define bit(n) (1 << (n-1))
+//#define bit(n) (1 << (n-1))
+//	enum ihcCmd_t	 {
+//		STATUS = 0,
+//		ON = bit(1),
+//		OFF = bit(2),
+//		INPUT = bit(3),
+//		STATUS_INPUT = bit(4),
+//		SEND_AGAIN = bit(8)
+//	};
+//#undef bit
 	enum ihcCmd_t	 {
-		STATUS = 0,
-		ON = bit(1),
-		OFF = bit(2),
-		INPUT = bit(3),
-		STATUS_INPUT = bit(4),
-		SEND_AGAIN = bit(8)
+		STATUS,
+		ON,
+		OFF,
+		INPUT,
+		STATUS_INPUT,
+		SEND_AGAIN
 	};
-#undef bit
 
 	/*****************************************************
 
