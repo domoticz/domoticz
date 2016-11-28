@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 2.8.4)
 project(domoticz)
 
 ## required min. libBoost version
-SET(DOMO_MIN_LIBBOOST_VERSION 106200)
+SET(DOMO_MIN_LIBBOOST_VERSION 105500)
 ##
 
 option(USE_BUILTIN_LUA "Use builtin lua library" YES)
