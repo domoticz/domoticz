@@ -13,7 +13,7 @@
 
 extern CSQLHelper m_sql;
 
-#define STERBOX_POLL_INTERVAL 10
+#define STERBOX_POLL_INTERVAL 8
 
 CSterbox::CSterbox(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password) :
 m_szIPAddress(IPAddress),
