@@ -391,6 +391,9 @@ void MainWorker::RemoveDomoticzHardware(int HwdId)
 	if (dpos==-1)
 		return;
 	RemoveDomoticzHardware(m_hardwaredevices[dpos]);
+#ifdef USE_PYTHON_PLUGINS
+	m_pluginsystem.DeregisterPlugin(HwdId);
+#endif
 }
 
 int MainWorker::FindDomoticzHardware(int HwdId)
@@ -941,6 +944,11 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_Yeelight:
 		pHardware = new Yeelight(ID);
 		break;
+	case HTYPE_PythonPlugin:
+#ifdef USE_PYTHON_PLUGINS
+		pHardware = m_pluginsystem.RegisterPlugin(ID, Name, Filename);
+#endif
+		break;
 	}
 
 	if (pHardware)
@@ -967,6 +975,9 @@ bool MainWorker::Start()
 	m_notifications.Init();
 	GetSunSettings();
 	GetAvailableWebThemes();
+#ifdef USE_PYTHON_PLUGINS
+	m_pluginsystem.StartPluginSystem();
+#endif
 	AddAllDomoticzHardware();
 	m_datapush.Start();
 	m_httppush.Start();
@@ -1003,6 +1014,9 @@ bool MainWorker::Stop()
 		m_datapush.Stop();
 		m_httppush.Stop();
 		m_googlepubsubpush.Stop();
+#ifdef USE_PYTHON_PLUGINS
+		m_pluginsystem.StopPluginSystem();
+#endif
 
 		//    m_cameras.StopCameraGrabber();
 

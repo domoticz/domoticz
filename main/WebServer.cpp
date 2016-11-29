@@ -951,7 +951,7 @@ namespace http {
 				if (ii == HTYPE_RaspberryGPIO)
 					bDoAdd = false;
 #endif
-				if ((ii == HTYPE_1WIRE) && (!C1Wire::Have1WireSystem()))
+				if (((ii == HTYPE_1WIRE) && (!C1Wire::Have1WireSystem())) || (ii == HTYPE_PythonPlugin))
 					bDoAdd = false;
 				if (bDoAdd)
 					_htypes[Hardware_Type_Desc(ii)] = ii;
@@ -965,6 +965,11 @@ namespace http {
 				root["result"][ii]["name"] = itt->first;
 				ii++;
 			}
+
+#ifdef USE_PYTHON_PLUGINS
+			// Append Plugin list as well
+			PluginList(root["result"]);
+#endif
 		}
 
 		void CWebServer::Cmd_AddHardware(WebEmSession & session, const request& req, Json::Value &root)
@@ -1190,6 +1195,9 @@ namespace http {
 			else if (htype == HTYPE_GoodweAPI) {
 				if (username == "")
 					return;
+			}
+			else if (htype == HTYPE_PythonPlugin) {
+				//All fine here
 			}
 			else
 				return;
