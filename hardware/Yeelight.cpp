@@ -228,7 +228,6 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 	catch (const std::exception &e)
 	{
 		_log.Log(LOG_ERROR, "YeeLight: Exception: %s", e.what());
-		return false;
 	}
 
 	std::string message = "{\"id\":1,\"method\":\"toggle\",\"params\":[]}\r\n";
@@ -290,11 +289,11 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 	case Limitless_SetBrightDown:
 		message = "{\"id\":1,\"method\":\"set_adjust\",\"params\":[\"decrease\", \"bright\"]}\r\n";
 		break;
-	case Limitless_WarmWhiteIncrease:
+		case Limitless_WarmWhiteIncrease:
 		//message = "{\"id\":1,\"method\":\"set_adjust\",\"params\":[\"increase\", \"bright\"]}\r\n";
 		message = "{\"id\":1,\"method\":\"set_ct_abx\",\"params\":[3500, \"smooth\", 500]}\r\n";
 		break;
-	case Limitless_CoolWhiteIncrease:
+		case Limitless_CoolWhiteIncrease:
 		//message = "{\"id\":1,\"method\":\"set_adjust\",\"params\":[\"decrease\", \"bright\"]}\r\n";
 		message = "{\"id\":1,\"method\":\"set_ct_abx\",\"params\":[6000, \"smooth\", 500]}\r\n";
 		break;
