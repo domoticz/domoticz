@@ -1956,6 +1956,10 @@ define(['app'], function (app) {
 					}
 				});
 			};
+			dialog_editmeterdevice_buttons[$.t("Replace")]=function() {
+				  $( this ).dialog( "close" );
+				  ReplaceDevice($.devIdx,ShowUtilities);
+			};
 			dialog_editmeterdevice_buttons[$.t("Cancel")]=function() {
 			  $( this ).dialog( "close" );
 			};

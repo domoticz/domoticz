@@ -32,6 +32,8 @@ m_CAFilename(CAfilename)
 	m_stoprequested=false;
 	m_usIPPort=usIPPort;
 	m_publish_topics = (_ePublishTopics)Topics;
+	m_TopicIn = TOPIC_IN;
+	m_TopicOut = TOPIC_OUT;
 }
 
 MQTT::~MQTT(void)
@@ -106,7 +108,7 @@ void MQTT::on_connect(int rc)
 			sOnConnected(this);
 			m_sConnection = m_mainworker.sOnDeviceReceived.connect(boost::bind(&MQTT::SendDeviceInfo, this, _1, _2, _3, _4));
 		}
-		subscribe(NULL, TOPIC_IN);
+		subscribe(NULL, m_TopicIn.c_str());
 	}
 	else {
 		_log.Log(LOG_ERROR, "MQTT: Connection failed!, restarting (rc=%d)",rc);
@@ -124,14 +126,9 @@ void MQTT::on_message(const struct mosquitto_message *message)
 	if (qMessage.empty())
 		return;
 
-	if (topic.find("MyMQTT") != std::string::npos)
-	{
-		//MySensors message
-		ProcessMySensorsMessage(qMessage);
+	if (topic != m_TopicIn)
 		return;
-	}
-	else if (topic != TOPIC_IN)
-		return;
+
 	Json::Value root;
 	Json::Reader jReader;
 	std::string szCommand = "udevice";
@@ -468,10 +465,19 @@ void MQTT::Do_Work()
 					if (m_bDoReconnect)
 						ConnectIntEx();
 				}
+				if (isConnected() && sec_counter % 10 == 0)
+				{
+					SendHeartbeat();
+				}
 			}
 		}
 	}
 	_log.Log(LOG_STATUS,"MQTT: Worker stopped...");
+}
+
+void MQTT::SendHeartbeat()
+{
+	// not necessary for normal MQTT servers
 }
 
 void MQTT::SendMessage(const std::string &Topic, const std::string &Message)
@@ -496,16 +502,8 @@ void MQTT::WriteInt(const std::string &sendStr)
 	if (sendStr.size() < 2)
 		return;
 	//string the return and the end
-	std::string sMessage = std::string(sendStr.begin(), sendStr.begin() + sendStr.size()-1);
-	SendMessage("MyMQTT", sMessage);
-}
-
-void MQTT::ProcessMySensorsMessage(const std::string &MySensorsMessage)
-{
-	m_bufferpos = MySensorsMessage.size();
-	memcpy(&m_buffer, MySensorsMessage.c_str(), m_bufferpos);
-	m_buffer[m_bufferpos] = 0;
-	ParseLine();
+	std::string sMessage = std::string(sendStr.begin(), sendStr.begin() + sendStr.size());
+	SendMessage(m_TopicOut, sMessage);
 }
 
 void MQTT::SendDeviceInfo(const int m_HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
@@ -514,7 +512,7 @@ void MQTT::SendDeviceInfo(const int m_HwdID, const uint64_t DeviceRowIdx, const 
 	if (!m_IsConnected)
 		return;
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT DeviceID, Unit, Name, [Type], SubType, nValue, sValue, SwitchType, SignalLevel, BatteryLevel, Options FROM DeviceStatus WHERE (HardwareID==%d) AND (ID==%" PRIu64 ")", m_HwdID, DeviceRowIdx);
+	result = m_sql.safe_query("SELECT DeviceID, Unit, Name, [Type], SubType, nValue, sValue, SwitchType, SignalLevel, BatteryLevel, Options, Description FROM DeviceStatus WHERE (HardwareID==%d) AND (ID==%" PRIu64 ")", m_HwdID, DeviceRowIdx);
 	if (result.size() > 0)
 	{
 		std::vector<std::string> sd = result[0];
@@ -529,6 +527,7 @@ void MQTT::SendDeviceInfo(const int m_HwdID, const uint64_t DeviceRowIdx, const 
 		int RSSI = atoi(sd[8].c_str());
 		int BatteryLevel = atoi(sd[9].c_str());
 		std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sd[10]);
+		std::string description = sd[11];
 
 		Json::Value root;
 
@@ -554,6 +553,7 @@ void MQTT::SendDeviceInfo(const int m_HwdID, const uint64_t DeviceRowIdx, const 
 		root["RSSI"] = RSSI;
 		root["Battery"] = BatteryLevel;
 		root["nvalue"] = nvalue;
+		root["description"] = description;
 
 		//give all svalues separate
 		std::vector<std::string> strarray;

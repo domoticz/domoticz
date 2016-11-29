@@ -1709,6 +1709,26 @@ void MySensorsBase::ParseLine()
 			//Used between sensors when initiating signing.
 			while (1 == 0);
 			break;
+		case I_PING:
+			//Ping sent to node, payload incremental hop counter
+			while (1 == 0);
+			break;
+		case I_PONG:
+			//In return to ping, sent back to sender, payload incremental hop counter
+			while (1 == 0);
+			break;
+		case I_REGISTRATION_REQUEST:
+			//Register request to GW
+			while (1 == 0);
+			break;
+		case I_REGISTRATION_RESPONSE:
+			//Register response from GW
+			while (1 == 0);
+			break;
+		case I_DEBUG:
+			//Debug message
+			while (1 == 0);
+			break;
 		default:
 			while (1==0);
 			break;
@@ -2222,7 +2242,8 @@ namespace http {
 				return;
 			if (
 				(pHardware->HwdType != HTYPE_MySensorsUSB)&&
-				(pHardware->HwdType != HTYPE_MySensorsTCP)
+				(pHardware->HwdType != HTYPE_MySensorsTCP)&&
+				(pHardware->HwdType != HTYPE_MySensorsMQTT)
 				)
 				return;
 			MySensorsBase *pMySensorsHardware = reinterpret_cast<MySensorsBase*>(pHardware);
@@ -2297,7 +2318,8 @@ namespace http {
 				return;
 			if (
 				(pHardware->HwdType != HTYPE_MySensorsUSB) &&
-				(pHardware->HwdType != HTYPE_MySensorsTCP)
+				(pHardware->HwdType != HTYPE_MySensorsTCP) &&
+				(pHardware->HwdType != HTYPE_MySensorsMQTT)
 				)
 				return;
 			MySensorsBase *pMySensorsHardware = reinterpret_cast<MySensorsBase*>(pHardware);
@@ -2380,7 +2402,8 @@ namespace http {
 				return;
 			if (
 				(pBaseHardware->HwdType != HTYPE_MySensorsUSB) &&
-				(pBaseHardware->HwdType != HTYPE_MySensorsTCP)
+				(pBaseHardware->HwdType != HTYPE_MySensorsTCP) &&
+				(pBaseHardware->HwdType != HTYPE_MySensorsMQTT)
 				)
 				return;
 			MySensorsBase *pMySensorsHardware = reinterpret_cast<MySensorsBase*>(pBaseHardware);
@@ -2410,7 +2433,8 @@ namespace http {
 				return;
 			if (
 				(pBaseHardware->HwdType != HTYPE_MySensorsUSB) &&
-				(pBaseHardware->HwdType != HTYPE_MySensorsTCP)
+				(pBaseHardware->HwdType != HTYPE_MySensorsTCP) &&
+				(pBaseHardware->HwdType != HTYPE_MySensorsMQTT)
 				)
 				return;
 			MySensorsBase *pMySensorsHardware = reinterpret_cast<MySensorsBase*>(pBaseHardware);
@@ -2442,7 +2466,8 @@ namespace http {
 				return;
 			if (
 				(pBaseHardware->HwdType != HTYPE_MySensorsUSB) &&
-				(pBaseHardware->HwdType != HTYPE_MySensorsTCP)
+				(pBaseHardware->HwdType != HTYPE_MySensorsTCP) &&
+				(pBaseHardware->HwdType != HTYPE_MySensorsMQTT)
 				)
 				return;
 			MySensorsBase *pMySensorsHardware = reinterpret_cast<MySensorsBase*>(pBaseHardware);
@@ -2479,7 +2504,8 @@ namespace http {
 				return;
 			if (
 				(pBaseHardware->HwdType != HTYPE_MySensorsUSB) &&
-				(pBaseHardware->HwdType != HTYPE_MySensorsTCP)
+				(pBaseHardware->HwdType != HTYPE_MySensorsTCP) &&
+				(pBaseHardware->HwdType != HTYPE_MySensorsMQTT)
 				)
 				return;
 			MySensorsBase *pMySensorsHardware = reinterpret_cast<MySensorsBase*>(pBaseHardware);

@@ -33,7 +33,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 106
+#define DB_VERSION 107
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -98,6 +98,7 @@ const char *sqlCreateLightingLog =
 "[DeviceRowID] BIGINT(10) NOT NULL, "
 "[nValue] INTEGER DEFAULT 0, "
 "[sValue] VARCHAR(200), "
+"[User] VARCHAR(100) DEFAULT (''), "
 "[Date] DATETIME DEFAULT (datetime('now','localtime')));";
 
 const char *sqlCreateSceneLog =
@@ -2092,7 +2093,13 @@ bool CSQLHelper::OpenDatabase()
 					}
 				}
 			}
-
+		}
+		if (dbversion < 107)
+		{
+			if (!DoesColumnExistsInTable("User", "LightingLog"))
+			{
+				query("ALTER TABLE LightingLog ADD COLUMN [User] VARCHAR(100) DEFAULT ('')");
+			}
 		}
 	}
 	else if (bNewInstall)
@@ -3230,23 +3237,19 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 			float nEnergy;
 			char sCompValue[100];
 			std::string sLastUpdate = result[0][6];
-			ntime.tm_isdst = ltime.tm_isdst;
-			ntime.tm_year = atoi(sLastUpdate.substr(0, 4).c_str()) - 1900;
-			ntime.tm_mon = atoi(sLastUpdate.substr(5, 2).c_str()) - 1;
-			ntime.tm_mday = atoi(sLastUpdate.substr(8, 2).c_str());
-			ntime.tm_hour = atoi(sLastUpdate.substr(11, 2).c_str());
-			ntime.tm_min = atoi(sLastUpdate.substr(14, 2).c_str());
-			ntime.tm_sec = atoi(sLastUpdate.substr(17, 2).c_str());
-			interval = static_cast<double>(now - mktime(&ntime)); //Rob: Why a double ?
+			time_t lutime;
+			ParseSQLdatetime(lutime, ntime, sLastUpdate, ltime.tm_isdst);
+
+			interval = difftime(now,lutime);
 			StringSplit(result[0][5].c_str(), ";", parts);
 			nEnergy = static_cast<float>(strtof(parts[0].c_str(), NULL)*interval / 3600 + strtof(parts[1].c_str(), NULL)); //Rob: whats happening here... strtof ?
 			StringSplit(sValue, ";", parts);
 			sprintf(sCompValue, "%s;%.0f", parts[0].c_str(), nEnergy);
 			sValue = sCompValue;
 		}
-        //~ use different update queries based on the device type
-        if (devType == pTypeGeneral && subType == sTypeCounterIncremental)
-        {
+	        //~ use different update queries based on the device type
+	        if (devType == pTypeGeneral && subType == sTypeCounterIncremental)
+        	{
 			result = safe_query(
 				"UPDATE DeviceStatus SET SignalLevel=%d, BatteryLevel=%d, nValue= nValue + %d, sValue= sValue + '%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' "
 				"WHERE (ID = %" PRIu64 ")",
@@ -3254,7 +3257,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 				nValue,sValue,
 				ltime.tm_year+1900,ltime.tm_mon+1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
 				ulID);
-        }
+	        }
 		else
 		{
 			if (
@@ -3563,15 +3566,11 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 
 bool CSQLHelper::GetLastValue(const int HardwareID, const char* DeviceID, const unsigned char unit, const unsigned char devType, const unsigned char subType, int &nValue, std::string &sValue, struct tm &LastUpdateTime)
 {
-    bool result=false;
-    std::vector<std::vector<std::string> > sqlresult;
+	bool result=false;
+	std::vector<std::vector<std::string> > sqlresult;
 	std::string sLastUpdate;
 	//std::string sValue;
 	//struct tm LastUpdateTime;
-	time_t now = mytime(NULL);
-	struct tm tm1;
-	localtime_r(&now,&tm1);
-
 	sqlresult=safe_query(
 		"SELECT nValue,sValue,LastUpdate FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d) order by LastUpdate desc limit 1",
 		HardwareID,DeviceID,unit,devType,subType);
@@ -3580,15 +3579,10 @@ bool CSQLHelper::GetLastValue(const int HardwareID, const char* DeviceID, const 
 	{
 		nValue=(int)atoi(sqlresult[0][0].c_str());
 		sValue=sqlresult[0][1];
-	    sLastUpdate=sqlresult[0][2];
+		sLastUpdate=sqlresult[0][2];
 
-		LastUpdateTime.tm_isdst=tm1.tm_isdst;
-		LastUpdateTime.tm_year=atoi(sLastUpdate.substr(0,4).c_str())-1900;
-		LastUpdateTime.tm_mon=atoi(sLastUpdate.substr(5,2).c_str())-1;
-		LastUpdateTime.tm_mday=atoi(sLastUpdate.substr(8,2).c_str());
-		LastUpdateTime.tm_hour=atoi(sLastUpdate.substr(11,2).c_str());
-		LastUpdateTime.tm_min=atoi(sLastUpdate.substr(14,2).c_str());
-		LastUpdateTime.tm_sec=atoi(sLastUpdate.substr(17,2).c_str());
+		time_t lutime;
+		ParseSQLdatetime(lutime, LastUpdateTime, sLastUpdate);
 
 		result=true;
 	}
@@ -3820,6 +3814,9 @@ bool CSQLHelper::HasSceneTimers(const std::string &Idx)
 
 void CSQLHelper::ScheduleShortlog()
 {
+#ifdef _DEBUG
+	//return;
+#endif
 	if (!m_dbase)
 		return;
 
@@ -3842,7 +3839,7 @@ void CSQLHelper::ScheduleShortlog()
 	}
 	catch (boost::exception & e)
 	{
-		_log.Log(LOG_ERROR, "Domoticz: Error running the 5 minute schedule script!");
+		_log.Log(LOG_ERROR, "Domoticz: Error running the shortlog schedule script!");
 #ifdef _DEBUG
 		_log.Log(LOG_ERROR, "-----------------\n%s\n----------------", boost::diagnostic_information(e).c_str());
 #else
@@ -3874,7 +3871,7 @@ void CSQLHelper::ScheduleDay()
 	}
 	catch (boost::exception & e)
 	{
-		_log.Log(LOG_ERROR, "Domoticz: Error running the daily minute schedule script!");
+		_log.Log(LOG_ERROR, "Domoticz: Error running the daily schedule script!");
 #ifdef _DEBUG
 		_log.Log(LOG_ERROR, "-----------------\n%s\n----------------", boost::diagnostic_information(e).c_str());
 #else
@@ -3935,15 +3932,10 @@ void CSQLHelper::UpdateTemperatureLog()
 				//do not include sensors that have no reading within an hour (except for devices that do not provide feedback, like the smartware radiator)
 				std::string sLastUpdate = sd[5];
 				struct tm ntime;
-				ntime.tm_isdst = tm1.tm_isdst;
-				ntime.tm_year = atoi(sLastUpdate.substr(0, 4).c_str()) - 1900;
-				ntime.tm_mon = atoi(sLastUpdate.substr(5, 2).c_str()) - 1;
-				ntime.tm_mday = atoi(sLastUpdate.substr(8, 2).c_str());
-				ntime.tm_hour = atoi(sLastUpdate.substr(11, 2).c_str());
-				ntime.tm_min = atoi(sLastUpdate.substr(14, 2).c_str());
-				ntime.tm_sec = atoi(sLastUpdate.substr(17, 2).c_str());
-				time_t checktime = mktime(&ntime);
-				if (now - checktime >= SensorTimeOut * 60)
+				time_t checktime;
+				ParseSQLdatetime(checktime, ntime, sLastUpdate, tm1.tm_isdst);
+
+				if (difftime(now,checktime) >= SensorTimeOut * 60)
 					continue;
 			}
 
@@ -4102,15 +4094,10 @@ void CSQLHelper::UpdateRainLog()
 			//do not include sensors that have no reading within an hour
 			std::string sLastUpdate=sd[5];
 			struct tm ntime;
-			ntime.tm_isdst=tm1.tm_isdst;
-			ntime.tm_year=atoi(sLastUpdate.substr(0,4).c_str())-1900;
-			ntime.tm_mon=atoi(sLastUpdate.substr(5,2).c_str())-1;
-			ntime.tm_mday=atoi(sLastUpdate.substr(8,2).c_str());
-			ntime.tm_hour=atoi(sLastUpdate.substr(11,2).c_str());
-			ntime.tm_min=atoi(sLastUpdate.substr(14,2).c_str());
-			ntime.tm_sec=atoi(sLastUpdate.substr(17,2).c_str());
-			time_t checktime=mktime(&ntime);
-			if (now-checktime>=SensorTimeOut*60)
+			time_t checktime;
+			ParseSQLdatetime(checktime, ntime, sLastUpdate, tm1.tm_isdst);
+
+			if (difftime(now,checktime) >= SensorTimeOut * 60)
 				continue;
 
 			std::vector<std::string> splitresults;
@@ -4169,15 +4156,10 @@ void CSQLHelper::UpdateWindLog()
 			//do not include sensors that have no reading within an hour
 			std::string sLastUpdate=sd[6];
 			struct tm ntime;
-			ntime.tm_isdst=tm1.tm_isdst;
-			ntime.tm_year=atoi(sLastUpdate.substr(0,4).c_str())-1900;
-			ntime.tm_mon=atoi(sLastUpdate.substr(5,2).c_str())-1;
-			ntime.tm_mday=atoi(sLastUpdate.substr(8,2).c_str());
-			ntime.tm_hour=atoi(sLastUpdate.substr(11,2).c_str());
-			ntime.tm_min=atoi(sLastUpdate.substr(14,2).c_str());
-			ntime.tm_sec=atoi(sLastUpdate.substr(17,2).c_str());
-			time_t checktime=mktime(&ntime);
-			if (now-checktime>=SensorTimeOut*60)
+			time_t checktime;
+			ParseSQLdatetime(checktime, ntime, sLastUpdate, tm1.tm_isdst);
+
+			if (difftime(now,checktime) >= SensorTimeOut * 60)
 				continue;
 
 			std::vector<std::string> splitresults;
@@ -4249,15 +4231,10 @@ void CSQLHelper::UpdateUVLog()
 			//do not include sensors that have no reading within an hour
 			std::string sLastUpdate=sd[5];
 			struct tm ntime;
-			ntime.tm_isdst=tm1.tm_isdst;
-			ntime.tm_year=atoi(sLastUpdate.substr(0,4).c_str())-1900;
-			ntime.tm_mon=atoi(sLastUpdate.substr(5,2).c_str())-1;
-			ntime.tm_mday=atoi(sLastUpdate.substr(8,2).c_str());
-			ntime.tm_hour=atoi(sLastUpdate.substr(11,2).c_str());
-			ntime.tm_min=atoi(sLastUpdate.substr(14,2).c_str());
-			ntime.tm_sec=atoi(sLastUpdate.substr(17,2).c_str());
-			time_t checktime=mktime(&ntime);
-			if (now-checktime>=SensorTimeOut*60)
+			time_t checktime;
+			ParseSQLdatetime(checktime, ntime, sLastUpdate, tm1.tm_isdst);
+
+			if (difftime(now,checktime) >= SensorTimeOut * 60)
 				continue;
 
 			std::vector<std::string> splitresults;
@@ -4285,17 +4262,6 @@ void CSQLHelper::UpdateMeter()
 		return;
 	struct tm tm1;
 	localtime_r(&now,&tm1);
-
-	struct tm ltime;
-	ltime.tm_isdst=tm1.tm_isdst;
-	ltime.tm_hour=0;
-	ltime.tm_min=0;
-	ltime.tm_sec=0;
-	ltime.tm_year=tm1.tm_year;
-	ltime.tm_mon=tm1.tm_mon;
-	ltime.tm_mday=tm1.tm_mday;
-	char szDateToday[100];
-	sprintf(szDateToday,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
 
 	int SensorTimeOut=60;
 	GetPreferencesVar("SensorTimeout", SensorTimeOut);
@@ -4379,25 +4345,20 @@ void CSQLHelper::UpdateMeter()
 
 			//do not include sensors that have no reading within an hour
 			struct tm ntime;
-			ntime.tm_isdst=tm1.tm_isdst;
-			ntime.tm_year=atoi(sLastUpdate.substr(0,4).c_str())-1900;
-			ntime.tm_mon=atoi(sLastUpdate.substr(5,2).c_str())-1;
-			ntime.tm_mday=atoi(sLastUpdate.substr(8,2).c_str());
-			ntime.tm_hour=atoi(sLastUpdate.substr(11,2).c_str());
-			ntime.tm_min=atoi(sLastUpdate.substr(14,2).c_str());
-			ntime.tm_sec=atoi(sLastUpdate.substr(17,2).c_str());
-			time_t checktime=mktime(&ntime);
+			time_t checktime;
+			ParseSQLdatetime(checktime, ntime, sLastUpdate, tm1.tm_isdst);
+
 
 			//Check for timeout, if timeout then dont add value
 			if (dType!=pTypeP1Gas)
 			{
-				if (now-checktime>=SensorTimeOut*60)
+				if (difftime(now,checktime) >= SensorTimeOut * 60)
 					continue;
 			}
 			else
 			{
 				//P1 Gas meter transmits results every 1 a 2 hours
-				if (now-checktime>=3*3600)
+				if (difftime(now,checktime) >= 3 * 3600)
 					continue;
 			}
 
@@ -4586,15 +4547,10 @@ void CSQLHelper::UpdateMultiMeter()
 			//do not include sensors that have no reading within an hour
 			std::string sLastUpdate=sd[5];
 			struct tm ntime;
-			ntime.tm_isdst=tm1.tm_isdst;
-			ntime.tm_year=atoi(sLastUpdate.substr(0,4).c_str())-1900;
-			ntime.tm_mon=atoi(sLastUpdate.substr(5,2).c_str())-1;
-			ntime.tm_mday=atoi(sLastUpdate.substr(8,2).c_str());
-			ntime.tm_hour=atoi(sLastUpdate.substr(11,2).c_str());
-			ntime.tm_min=atoi(sLastUpdate.substr(14,2).c_str());
-			ntime.tm_sec=atoi(sLastUpdate.substr(17,2).c_str());
-			time_t checktime=mktime(&ntime);
-			if (now-checktime>=SensorTimeOut*60)
+			time_t checktime;
+			ParseSQLdatetime(checktime, ntime, sLastUpdate, tm1.tm_isdst);
+
+			if (difftime(now,checktime) >= SensorTimeOut * 60)
 				continue;
 			std::vector<std::string> splitresults;
 			StringSplit(sValue, ";", splitresults);
@@ -4712,15 +4668,10 @@ void CSQLHelper::UpdatePercentageLog()
 			//do not include sensors that have no reading within an hour
 			std::string sLastUpdate=sd[5];
 			struct tm ntime;
-			ntime.tm_isdst=tm1.tm_isdst;
-			ntime.tm_year=atoi(sLastUpdate.substr(0,4).c_str())-1900;
-			ntime.tm_mon=atoi(sLastUpdate.substr(5,2).c_str())-1;
-			ntime.tm_mday=atoi(sLastUpdate.substr(8,2).c_str());
-			ntime.tm_hour=atoi(sLastUpdate.substr(11,2).c_str());
-			ntime.tm_min=atoi(sLastUpdate.substr(14,2).c_str());
-			ntime.tm_sec=atoi(sLastUpdate.substr(17,2).c_str());
-			time_t checktime=mktime(&ntime);
-			if (now-checktime>=SensorTimeOut*60)
+			time_t checktime;
+			ParseSQLdatetime(checktime, ntime, sLastUpdate, tm1.tm_isdst);
+
+			if (difftime(now,checktime) >= SensorTimeOut * 60)
 				continue;
 
 			std::vector<std::string> splitresults;
@@ -4775,15 +4726,10 @@ void CSQLHelper::UpdateFanLog()
 			//do not include sensors that have no reading within an hour
 			std::string sLastUpdate=sd[5];
 			struct tm ntime;
-			ntime.tm_isdst=tm1.tm_isdst;
-			ntime.tm_year=atoi(sLastUpdate.substr(0,4).c_str())-1900;
-			ntime.tm_mon=atoi(sLastUpdate.substr(5,2).c_str())-1;
-			ntime.tm_mday=atoi(sLastUpdate.substr(8,2).c_str());
-			ntime.tm_hour=atoi(sLastUpdate.substr(11,2).c_str());
-			ntime.tm_min=atoi(sLastUpdate.substr(14,2).c_str());
-			ntime.tm_sec=atoi(sLastUpdate.substr(17,2).c_str());
-			time_t checktime=mktime(&ntime);
-			if (now-checktime>=SensorTimeOut*60)
+			time_t checktime;
+			ParseSQLdatetime(checktime, ntime, sLastUpdate, tm1.tm_isdst);
+
+			if (difftime(now,checktime) >= SensorTimeOut * 60)
 				continue;
 
 			std::vector<std::string> splitresults;
@@ -4817,26 +4763,13 @@ void CSQLHelper::AddCalendarTemperature()
 	char szDateEnd[40];
 
 	time_t now = mytime(NULL);
-	struct tm tm1;
-	localtime_r(&now,&tm1);
-
 	struct tm ltime;
-	ltime.tm_isdst=tm1.tm_isdst;
-	ltime.tm_hour=0;
-	ltime.tm_min=0;
-	ltime.tm_sec=0;
-	ltime.tm_year=tm1.tm_year;
-	ltime.tm_mon=tm1.tm_mon;
-	ltime.tm_mday=tm1.tm_mday;
-
+	localtime_r(&now,&ltime);
 	sprintf(szDateEnd,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
 
-	//Subtract one day
-
-	ltime.tm_mday -= 1;
-	time_t later = mktime(&ltime);
+	time_t yesterday;
 	struct tm tm2;
-	localtime_r(&later,&tm2);
+	getNoon(yesterday,tm2,ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday-1); // we only want the date
 	sprintf(szDateStart,"%04d-%02d-%02d",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday);
 
 	std::vector<std::vector<std::string> > result;
@@ -4903,26 +4836,13 @@ void CSQLHelper::AddCalendarUpdateRain()
 	char szDateEnd[40];
 
 	time_t now = mytime(NULL);
-	struct tm tm1;
-	localtime_r(&now,&tm1);
-
 	struct tm ltime;
-	ltime.tm_isdst=tm1.tm_isdst;
-	ltime.tm_hour=0;
-	ltime.tm_min=0;
-	ltime.tm_sec=0;
-	ltime.tm_year=tm1.tm_year;
-	ltime.tm_mon=tm1.tm_mon;
-	ltime.tm_mday=tm1.tm_mday;
-
+	localtime_r(&now,&ltime);
 	sprintf(szDateEnd,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
 
-	//Subtract one day
-
-	ltime.tm_mday -= 1;
-	time_t later = mktime(&ltime);
+	time_t yesterday;
 	struct tm tm2;
-	localtime_r(&later,&tm2);
+	getNoon(yesterday,tm2,ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday-1); // we only want the date
 	sprintf(szDateStart,"%04d-%02d-%02d",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday);
 
 	std::vector<std::vector<std::string> > result;
@@ -5025,25 +4945,13 @@ void CSQLHelper::AddCalendarUpdateMeter()
 	char szDateEnd[40];
 
 	time_t now = mytime(NULL);
-	struct tm tm1;
-	localtime_r(&now,&tm1);
-
 	struct tm ltime;
-	ltime.tm_isdst=tm1.tm_isdst;
-	ltime.tm_hour=0;
-	ltime.tm_min=0;
-	ltime.tm_sec=0;
-	ltime.tm_year=tm1.tm_year;
-	ltime.tm_mon=tm1.tm_mon;
-	ltime.tm_mday=tm1.tm_mday;
+	localtime_r(&now,&ltime);
+	sprintf(szDateEnd,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
 
-	sprintf(szDateEnd,"%04d-%02d-%02d %02d:%02d:%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday,ltime.tm_hour,ltime.tm_min,ltime.tm_sec);
-
-	//Subtract one day
-	ltime.tm_mday -= 1;
-	time_t later = mktime(&ltime);
+	time_t yesterday;
 	struct tm tm2;
-	localtime_r(&later,&tm2);
+	getNoon(yesterday,tm2,ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday-1); // we only want the date
 	sprintf(szDateStart,"%04d-%02d-%02d",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday);
 
 	std::vector<std::vector<std::string> > result;
@@ -5228,25 +5136,13 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 	char szDateEnd[40];
 
 	time_t now = mytime(NULL);
-	struct tm tm1;
-	localtime_r(&now,&tm1);
-
 	struct tm ltime;
-	ltime.tm_isdst=tm1.tm_isdst;
-	ltime.tm_hour=0;
-	ltime.tm_min=0;
-	ltime.tm_sec=0;
-	ltime.tm_year=tm1.tm_year;
-	ltime.tm_mon=tm1.tm_mon;
-	ltime.tm_mday=tm1.tm_mday;
+	localtime_r(&now,&ltime);
+	sprintf(szDateEnd,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
 
-	sprintf(szDateEnd,"%04d-%02d-%02d %02d:%02d:%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday,ltime.tm_hour,ltime.tm_min,ltime.tm_sec);
-
-	//Subtract one day
-	ltime.tm_mday -= 1;
-	time_t later = mktime(&ltime);
+	time_t yesterday;
 	struct tm tm2;
-	localtime_r(&later,&tm2);
+	getNoon(yesterday,tm2,ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday-1); // we only want the date
 	sprintf(szDateStart,"%04d-%02d-%02d",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday);
 
 	std::vector<std::vector<std::string> > result;
@@ -5368,26 +5264,13 @@ void CSQLHelper::AddCalendarUpdateWind()
 	char szDateEnd[40];
 
 	time_t now = mytime(NULL);
-	struct tm tm1;
-	localtime_r(&now,&tm1);
-
 	struct tm ltime;
-	ltime.tm_isdst=tm1.tm_isdst;
-	ltime.tm_hour=0;
-	ltime.tm_min=0;
-	ltime.tm_sec=0;
-	ltime.tm_year=tm1.tm_year;
-	ltime.tm_mon=tm1.tm_mon;
-	ltime.tm_mday=tm1.tm_mday;
-
+	localtime_r(&now,&ltime);
 	sprintf(szDateEnd,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
 
-	//Subtract one day
-
-	ltime.tm_mday -= 1;
-	time_t later = mktime(&ltime);
+	time_t yesterday;
 	struct tm tm2;
-	localtime_r(&later,&tm2);
+	getNoon(yesterday,tm2,ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday-1); // we only want the date
 	sprintf(szDateStart,"%04d-%02d-%02d",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday);
 
 	std::vector<std::vector<std::string> > result;
@@ -5443,26 +5326,13 @@ void CSQLHelper::AddCalendarUpdateUV()
 	char szDateEnd[40];
 
 	time_t now = mytime(NULL);
-	struct tm tm1;
-	localtime_r(&now,&tm1);
-
 	struct tm ltime;
-	ltime.tm_isdst=tm1.tm_isdst;
-	ltime.tm_hour=0;
-	ltime.tm_min=0;
-	ltime.tm_sec=0;
-	ltime.tm_year=tm1.tm_year;
-	ltime.tm_mon=tm1.tm_mon;
-	ltime.tm_mday=tm1.tm_mday;
-
+	localtime_r(&now,&ltime);
 	sprintf(szDateEnd,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
 
-	//Subtract one day
-
-	ltime.tm_mday -= 1;
-	time_t later = mktime(&ltime);
+	time_t yesterday;
 	struct tm tm2;
-	localtime_r(&later,&tm2);
+	getNoon(yesterday,tm2,ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday-1); // we only want the date
 	sprintf(szDateStart,"%04d-%02d-%02d",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday);
 
 	std::vector<std::vector<std::string> > result;
@@ -5510,26 +5380,13 @@ void CSQLHelper::AddCalendarUpdatePercentage()
 	char szDateEnd[40];
 
 	time_t now = mytime(NULL);
-	struct tm tm1;
-	localtime_r(&now,&tm1);
-
 	struct tm ltime;
-	ltime.tm_isdst=tm1.tm_isdst;
-	ltime.tm_hour=0;
-	ltime.tm_min=0;
-	ltime.tm_sec=0;
-	ltime.tm_year=tm1.tm_year;
-	ltime.tm_mon=tm1.tm_mon;
-	ltime.tm_mday=tm1.tm_mday;
-
+	localtime_r(&now,&ltime);
 	sprintf(szDateEnd,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
 
-	//Subtract one day
-
-	ltime.tm_mday -= 1;
-	time_t later = mktime(&ltime);
+	time_t yesterday;
 	struct tm tm2;
-	localtime_r(&later,&tm2);
+	getNoon(yesterday,tm2,ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday-1); // we only want the date
 	sprintf(szDateStart,"%04d-%02d-%02d",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday);
 
 	std::vector<std::vector<std::string> > result;
@@ -5581,26 +5438,13 @@ void CSQLHelper::AddCalendarUpdateFan()
 	char szDateEnd[40];
 
 	time_t now = mytime(NULL);
-	struct tm tm1;
-	localtime_r(&now,&tm1);
-
 	struct tm ltime;
-	ltime.tm_isdst=tm1.tm_isdst;
-	ltime.tm_hour=0;
-	ltime.tm_min=0;
-	ltime.tm_sec=0;
-	ltime.tm_year=tm1.tm_year;
-	ltime.tm_mon=tm1.tm_mon;
-	ltime.tm_mday=tm1.tm_mday;
-
+	localtime_r(&now,&ltime);
 	sprintf(szDateEnd,"%04d-%02d-%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday);
 
-	//Subtract one day
-
-	ltime.tm_mday -= 1;
-	time_t later = mktime(&ltime);
+	time_t yesterday;
 	struct tm tm2;
-	localtime_r(&later,&tm2);
+	getNoon(yesterday,tm2,ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday-1); // we only want the date
 	sprintf(szDateStart,"%04d-%02d-%02d",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday);
 
 	std::vector<std::vector<std::string> > result;
@@ -5955,20 +5799,11 @@ void CSQLHelper::CleanupLightSceneLog()
 	struct tm tm1;
 	localtime_r(&now,&tm1);
 
-	struct tm ltime;
-	ltime.tm_isdst=tm1.tm_isdst;
-	ltime.tm_hour=tm1.tm_hour;
-	ltime.tm_min=tm1.tm_min;
-	ltime.tm_sec=tm1.tm_sec;
-	ltime.tm_year=tm1.tm_year;
-	ltime.tm_mon=tm1.tm_mon;
-	ltime.tm_mday=tm1.tm_mday;
-	//subtract one day
-	ltime.tm_mday -= nMaxDays;
-	time_t daybefore = mktime(&ltime);
+	time_t daybefore;
 	struct tm tm2;
-	localtime_r(&daybefore,&tm2);
+	constructTime(daybefore,tm2,tm1.tm_year+1900,tm1.tm_mon+1,tm1.tm_mday-nMaxDays,tm1.tm_hour,tm1.tm_min,0,tm1.tm_isdst);
 	sprintf(szDateEnd,"%04d-%02d-%02d %02d:%02d:00",tm2.tm_year+1900,tm2.tm_mon+1,tm2.tm_mday,tm2.tm_hour,tm2.tm_min);
+
 
 	safe_query("DELETE FROM LightingLog WHERE (Date<'%q')", szDateEnd);
 	safe_query("DELETE FROM SceneLog WHERE (Date<'%q')", szDateEnd);
@@ -6105,14 +5940,13 @@ void CSQLHelper::DeleteDataPoint(const char *ID, const std::string &Date)
 		struct tm tLastUpdate;
 		localtime_r(&now, &tLastUpdate);
 
-		tLastUpdate.tm_year = atoi(Date.substr(0, 4).c_str()) - 1900;
-		tLastUpdate.tm_mon = atoi(Date.substr(5, 2).c_str()) - 1;
-		tLastUpdate.tm_mday = atoi(Date.substr(8, 2).c_str());
-		tLastUpdate.tm_hour = atoi(Date.substr(11, 2).c_str());
-		tLastUpdate.tm_min = atoi(Date.substr(14, 2).c_str());
-		tLastUpdate.tm_sec = atoi(Date.substr(17, 2).c_str());
-		time_t cEndTime = mktime(&tLastUpdate) + (2*60); //=time + 2 minutes
-		localtime_r(&cEndTime, &tLastUpdate);
+		time_t cEndTime;
+		ParseSQLdatetime(cEndTime, tLastUpdate, Date, tLastUpdate.tm_isdst);
+		tLastUpdate.tm_min += 2;
+		cEndTime = mktime(&tLastUpdate);
+
+//GB3:	ToDo: Database should know the difference between Summer and Winter time,
+//	or we'll be deleting both entries if the DataPoint is inside a DST jump
 
 		sprintf(szDateEnd, "%04d-%02d-%02d %02d:%02d:%02d", tLastUpdate.tm_year + 1900, tLastUpdate.tm_mon + 1, tLastUpdate.tm_mday, tLastUpdate.tm_hour, tLastUpdate.tm_min, tLastUpdate.tm_sec);
 		//Short log
@@ -6447,7 +6281,7 @@ void CSQLHelper::SetUnitsAndScale()
 	if (m_tempunit==TEMPUNIT_F)
 	{
 		m_tempsign="F";
-		m_tempscale=1.0f; //*1.8 + 32
+		m_tempscale=1.0f; // *1.8 + 32
 	}
 }
 
@@ -7421,3 +7255,4 @@ bool CSQLHelper::SetDeviceOptions(const uint64_t idx, const std::map<std::string
 	}
 	return true;
 }
+

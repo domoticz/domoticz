@@ -1852,7 +1852,7 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 	std::string csubstr;
 	std::string tmpstr(Actions);
 	size_t sPos=0, ePos;
-	do 
+	do
 	{
 		ePos = tmpstr.find(",commandArray[");
 		if (ePos != std::string::npos)
@@ -1913,9 +1913,9 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 				sceneType = 2;
 			}
 			deviceNo = atoi(deviceName.substr(6).c_str());
-			if (deviceNo) 
+			if (deviceNo)
 			{
-				if (ScheduleEvent(deviceNo, doWhat, true, eventName, sceneType)) 
+				if (ScheduleEvent(deviceNo, doWhat, true, eventName, sceneType))
 				{
 					actionsDone = true;
 				}
@@ -2083,6 +2083,84 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 	return actionsDone;
 }
 
+void CEventSystem::ParseActionString( const std::string &oAction_, _tActionParseResults &oResults_ ) {
+	int iLastTokenType = 0;
+
+	std::vector<std::string> oSplitResults;
+	StringSplit( oAction_, " ", oSplitResults );
+	for( std::vector<std::string>::const_iterator oIterator = oSplitResults.begin(); oIterator != oSplitResults.end(); ++oIterator ) {
+		std::string sToken = *oIterator;
+		if ( sToken == "FOR" ) {
+			iLastTokenType = 1;
+		} else if ( sToken == "AFTER" ) {
+			iLastTokenType = 2;
+		} else if ( sToken == "RANDOM" ) {
+			iLastTokenType = 3;
+		} else if ( sToken == "REPEAT" ) {
+			iLastTokenType = 4;
+		} else if ( sToken == "INTERVAL" ) {
+			iLastTokenType = 5;
+		} else if ( sToken == "TURN" ) {
+			iLastTokenType = 0;
+		} else if ( sToken.find( "SECOND" ) != std::string::npos ) {
+			switch( iLastTokenType ) {
+				case 1: oResults_.fForSec /= 60.; break;
+				case 3: oResults_.fRandomSec /= 60.; break;
+			}
+			iLastTokenType = 0;
+		} else if ( sToken.find( "MINUTE" ) != std::string::npos ) {
+			switch( iLastTokenType ) {
+				case 2: oResults_.fAfterSec *= 60.; break;
+				case 5: oResults_.fRepeatSec *= 60.; break;
+			}
+			iLastTokenType = 0;
+		} else if ( sToken.find( "HOUR" ) != std::string::npos ) {
+			switch( iLastTokenType ) {
+				case 1: oResults_.fForSec *= 60.; break;
+				case 2: oResults_.fAfterSec *= 3600.; break;
+				case 3: oResults_.fRandomSec *= 60.; break;
+				case 5: oResults_.fRepeatSec *= 3600.; break;
+			}
+			iLastTokenType = 0;
+		} else {
+			switch( iLastTokenType ) {
+				case 0:
+					if ( oResults_.sCommand.length() > 0 ) {
+						oResults_.sCommand.append( " " );
+					}
+					oResults_.sCommand.append( sToken );
+					break;
+				case 1:
+					oResults_.fForSec = 60.f * static_cast<float>(atof(sToken.c_str()));
+					break;
+				case 2:
+					oResults_.fAfterSec = 1.f * static_cast<float>(atof(sToken.c_str()));
+					break;
+				case 3:
+					oResults_.fRandomSec = 60.f * static_cast<float>(atof(sToken.c_str()));
+					break;
+				case 4:
+					oResults_.iRepeat = atoi( sToken.c_str() );
+					break;
+				case 5:
+					oResults_.fRepeatSec = 1.f * static_cast<float>(atof(sToken.c_str()));
+					break;
+			}
+		}
+	}
+#ifdef _DEBUG
+	_log.Log(
+		LOG_NORM, "Command=%s, FOR=%.2f, AFTER=%.2f, RANDOM=%.2f, REPEAT=%d INTERVAL %.2f",
+		oResults_.sCommand.c_str(),
+		oResults_.fForSec,
+		oResults_.fAfterSec,
+		oResults_.fRandomSec,
+		oResults_.iRepeat,
+		oResults_.fRepeatSec
+	);
+#endif
+}
+
 #ifdef ENABLE_PYTHON
 
 void CEventSystem::EvaluatePython(const std::string &reason, const std::string &filename, const std::string &PyString, const uint64_t varId)
@@ -2202,10 +2280,13 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 
 		int intRise = getSunRiseSunSetMinutes("Sunrise");
 		int intSet = getSunRiseSunSetMinutes("Sunset");
-		time_t now = time(0);
-		struct tm ltime;
-		localtime_r(&now, &ltime);
-		int minutesSinceMidnight = (ltime.tm_hour * 60) + ltime.tm_min;
+
+		time_t now = mytime(NULL);
+		struct tm mtime;
+		time_t tmidnight;
+		getMidnight(tmidnight,mtime);
+		int minutesSinceMidnight = (int)(difftime(now,tmidnight) / 60);
+	
 		bool dayTimeBool = false;
 		bool nightTimeBool = false;
 		if ((minutesSinceMidnight > intRise) && (minutesSinceMidnight < intSet)) {
@@ -2361,9 +2442,11 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 	int intRise = getSunRiseSunSetMinutes("Sunrise");
 	int intSet = getSunRiseSunSetMinutes("Sunset");
 	time_t now = time(0);
-	struct tm ltime;
-	localtime_r(&now, &ltime);
-	int minutesSinceMidnight = (ltime.tm_hour * 60) + ltime.tm_min;
+	struct tm mtime;
+	time_t tmidnight;
+	getMidnight(tmidnight,mtime);
+	int minutesSinceMidnight = (int)(difftime(now,tmidnight) / 60);
+
 	bool dayTimeBool = false;
 	bool nightTimeBool = false;
 	if ((minutesSinceMidnight > intRise) && (minutesSinceMidnight < intSet)) {
@@ -2661,6 +2744,30 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 				lua_rawset(lua_state, -3);
 			}
 			lua_setglobal(lua_state, "devicechanged");
+
+
+			// BEGIN OTO: populate changed info
+			lua_createtable(lua_state, 3, 0);
+			lua_pushstring(lua_state, "idx");
+			lua_pushnumber(lua_state, (lua_Number)DeviceID);
+			lua_rawset(lua_state, -3);
+
+			lua_pushstring(lua_state, "svalue");
+			lua_pushstring(lua_state, sValue);
+			lua_rawset(lua_state, -3);
+			
+			lua_pushstring(lua_state, "nvalue");
+			lua_pushnumber(lua_state, nValue);
+			lua_rawset(lua_state, -3);
+
+			/* USELESS, WE HAVE THE DEVICE INDEX
+			// replace devicechanged => 
+			lua_pushstring(lua_state, "name"); 
+			lua_pushnumber(lua_state, nValue);
+			lua_rawset(lua_state, -3);
+			*/
+			lua_setglobal(lua_state, "devicechanged_ext");
+			// END OTO
 		}
 	}
 
@@ -2938,7 +3045,8 @@ bool CEventSystem::iterateLuaTable(lua_State *lua_state, const int tIndex, const
 bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &filename)
 {
 	bool scriptTrue = false;
-	if (std::string(lua_tostring(lua_state, -2)) == "SendNotification") {
+	std::string lCommand = std::string(lua_tostring(lua_state, -2));
+	if (lCommand == "SendNotification") {
 		std::string luaString = lua_tostring(lua_state, -1);
 		std::string subject(" "), body(" "), priority("0"), sound;
 		std::string extraData;
@@ -2960,7 +3068,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 		m_sql.AddTaskItem(_tTaskItem::SendNotification(1, subject, body, std::string(""), atoi(priority.c_str()), sound));
 		scriptTrue = true;
 	}
-	else if (std::string(lua_tostring(lua_state, -2)) == "SendEmail") {
+	else if (lCommand == "SendEmail") {
 		std::string luaString = lua_tostring(lua_state, -1);
 		std::string subject, body, to;
 		std::vector<std::string> aParam;
@@ -2978,7 +3086,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 		m_sql.AddTaskItem(_tTaskItem::SendEmailTo(1, subject, body, to));
 		scriptTrue = true;
 	}
-	else if (std::string(lua_tostring(lua_state, -2)) == "SendSMS") {
+	else if (lCommand == "SendSMS") {
 		std::string luaString = lua_tostring(lua_state, -1);
 		if (luaString.empty())
 		{
@@ -2989,21 +3097,21 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 		m_sql.AddTaskItem(_tTaskItem::SendSMS(1, luaString));
 		scriptTrue = true;
 	}
-	else if (std::string(lua_tostring(lua_state, -2)) == "OpenURL")
+	else if (lCommand == "OpenURL")
 	{
 		std::string luaString = lua_tostring(lua_state, -1);
 		OpenURL(luaString);
 		scriptTrue = true;
 	}
-	else if (std::string(lua_tostring(lua_state, -2)) == "UpdateDevice")
+	else if (lCommand == "UpdateDevice")
 	{
 		std::string luaString = lua_tostring(lua_state, -1);
 		UpdateDevice(luaString);
 		scriptTrue = true;
 	}
-	else if (std::string(lua_tostring(lua_state, -2)).find("Variable:") == 0)
+	else if (lCommand.find("Variable:") == 0)
 	{
-		std::string variableName = std::string(lua_tostring(lua_state, -2)).substr(9);
+		std::string variableName = lCommand.substr(9);
 		std::string variableValue = lua_tostring(lua_state, -1);
 
 		std::vector<std::vector<std::string> > result;
@@ -3043,6 +3151,14 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 			}
 			scriptTrue = true;
 		}
+	}
+	else if (lCommand.find("SetSetPoint:") == 0)
+	{
+		std::string SetPointIdx = lCommand.substr(12);
+		std::string SetPointValue = lua_tostring(lua_state, -1);
+
+		int idx = atoi(SetPointIdx.c_str());
+		m_sql.AddTaskItem(_tTaskItem::SetSetPoint(0.5f, idx, SetPointValue));
 	}
 	else
 	{
@@ -3273,49 +3389,21 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 	std::string previousState = m_devicestates[deviceID].nValueWording;
 	unsigned char previousLevel = calculateDimLevel(deviceID, m_devicestates[deviceID].lastLevel);
+	unsigned char level = 0;
 	devicestatesMutexLock.unlock();
 
-	float suspendTimer = 0;
-	float randomTimer = 0;
-	float afterTimerSeconds = 0;
+	struct _tActionParseResults oParseResults = { "", 0, 0, 0, 1, 0 };
+	ParseActionString( Action, oParseResults );
 
-	size_t aFind = Action.find(" FOR ");
-	if ((aFind > 0) && (aFind != std::string::npos)) {
-		std::string delayString = Action.substr(aFind + 5);
-		std::string newAction = Action.substr(0, aFind);
-		suspendTimer = static_cast<float>(atof(delayString.c_str()))*60.0f; //its in minutes
-		Action = newAction;
-	}
-	size_t rFind = Action.find(" RANDOM ");
-	if ((rFind > 0) && (rFind != std::string::npos))
-	{
-		std::string delayString = Action.substr(rFind + 8);
-		std::string newAction = Action.substr(0, rFind);
-		randomTimer = static_cast<float>(atof(delayString.c_str()))*60.0f; //its in minutes
-		Action = newAction;
-	}
-	aFind = Action.find(" AFTER ");
-	if ((aFind > 0) && (aFind != std::string::npos)) {
-		std::string delayString = Action.substr(aFind + 7);
-		std::string newAction = Action.substr(0, aFind);
-		afterTimerSeconds = static_cast<float>(atof(delayString.c_str()));
-		Action = newAction;
-	}
+	if ( oParseResults.sCommand.substr( 0, 9 ) == "Set Level" ) {
+		level = calculateDimLevel( deviceID, atoi( oParseResults.sCommand.substr( 10 ).c_str() ) );
+		oParseResults.sCommand = oParseResults.sCommand.substr(0, 9);
+	} else if ( oParseResults.sCommand.substr( 0, 10 ) == "Set Volume" ) {
+		level = atoi( oParseResults.sCommand.substr( 11 ).c_str() );
+		oParseResults.sCommand = oParseResults.sCommand.substr(0, 10);
+	} else if ( oParseResults.sCommand.substr( 0, 13 ) == "Play Playlist" ) {
+		std::string	sParams = oParseResults.sCommand.substr( 14 );
 
-	unsigned char _level = 0;
-	if (Action.find("Set Level") == 0)
-	{
-		_level = calculateDimLevel(deviceID, atoi(Action.substr(10).c_str()));
-		Action = Action.substr(0, 9);
-	}
-	else if (Action.find("Set Volume") == 0)
-	{
-		_level = atoi(Action.substr(11).c_str());
-		Action = Action.substr(0, 10);
-	}
-	else if (Action.find("Play Playlist") == 0)
-	{
-		std::string	sParams = Action.substr(14);
 		CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByType(HTYPE_Kodi);
 		if (pBaseHardware != NULL)
 		{
@@ -3326,7 +3414,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 			if (iLastSpace != std::string::npos)
 			{
 				sPlayList = sParams.substr(0, iLastSpace);
-				_level = atoi(sParams.substr(iLastSpace).c_str());
+				level = atoi(sParams.substr(iLastSpace).c_str());
 			}
 			if (!pHardware->SetPlaylist(deviceID, sPlayList.c_str()))
 			{
@@ -3340,112 +3428,125 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 			if (pBaseHardware == NULL) return false;
 			CLogitechMediaServer *pHardware = reinterpret_cast<CLogitechMediaServer*>(pBaseHardware);
 
-			int iPlaylistID = pHardware->GetPlaylistRefID(Action.substr(14).c_str());
+			int iPlaylistID = pHardware->GetPlaylistRefID(oParseResults.sCommand.substr( 14 ).c_str());
 			if (iPlaylistID == 0) return false;
 
-			_level = iPlaylistID;
+			level = iPlaylistID;
 		}
-
-		Action = Action.substr(0, 13);
-	}
-	else if ((Action.find("Play Favorites") == 0) && (Action.length() > 14))
-	{
-		std::string	sParams = Action.substr(15);
+		oParseResults.sCommand = oParseResults.sCommand.substr(0, 13);
+	} else if ( oParseResults.sCommand.substr( 0, 14 ) == "Play Favorites" ) {
+		std::string	sParams = oParseResults.sCommand.substr( 15 );
 		CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByType(HTYPE_Kodi);
 		if (pBaseHardware != NULL)
 		{
 			CKodi			*pHardware = reinterpret_cast<CKodi*>(pBaseHardware);
 			if (sParams.length() > 0)
 			{
-				_level = atoi(sParams.c_str());
+				level = atoi(sParams.c_str());
 			}
 		}
-
-		Action = Action.substr(0, 14);
-	}
-	else if (Action.find("Execute") == 0)
-	{
-		std::string	sParams = Action.substr(8);
+		oParseResults.sCommand = oParseResults.sCommand.substr(0, 14);
+	} else if ( oParseResults.sCommand.substr( 0, 7 ) == "Execute" ) {
+		std::string	sParams = oParseResults.sCommand.substr( 8 );
 		CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByType(HTYPE_Kodi);
 		if (pBaseHardware != NULL)
 		{
 			CKodi	*pHardware = reinterpret_cast<CKodi*>(pBaseHardware);
 			pHardware->SetExecuteCommand(deviceID, sParams);
 		}
-
-		Action = Action.substr(0, 7);
-	}
-	float DelayTime = 0;
-
-	if (randomTimer > (1./timer_resolution_hz/2)) {
-		float rTime;
-		srand((unsigned int)mytime(NULL));
-		rTime = (float)rand()/(float)(RAND_MAX/randomTimer);
-		DelayTime = static_cast<float>(rTime + (1. / timer_resolution_hz)); //prevent it from running again immediately the next minute if blockly script doesn't handle that
-		//alreadyScheduled = isEventscheduled(deviceID, randomTimer, isScene);
-	}
-	if (afterTimerSeconds > 0)
-	{
-		DelayTime += afterTimerSeconds;
 	}
 
-	_tTaskItem tItem;
-
-	if (isScene) {
-		//Scenes
-		if ((Action == "On") || (Action == "Off")) {
-			tItem = _tTaskItem::SwitchSceneEvent(DelayTime, deviceID, Action, eventName);
-		}
-		else if (Action == "Active") {
-			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("UPDATE SceneTimers SET Active=1 WHERE (SceneRowID == %d)", deviceID);
-			m_mainworker.m_scheduler.ReloadSchedules();
-		}
-		else if (Action == "Inactive") {
-			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("UPDATE SceneTimers SET Active=0 WHERE (SceneRowID == %d)", deviceID);
-			m_mainworker.m_scheduler.ReloadSchedules();
-		}
+	if ( previousState.substr( 0, 9 ) == "Set Level" ) {
+		previousState = previousState.substr(0, 9);
+	} else if ( previousState.substr( 0, 10 ) == "Set Volume" ) {
+		previousState = previousState.substr(0, 10);
 	}
-	else {
-		//Lights/Switches
-		//Get Device details, check for switch global OnDelay/OffDelay (stored in AddjValue2/AddjValue)
+
+	int iDeviceDelay = 0;
+	if ( ! isScene ) {
+		// Get Device details, check for switch global OnDelay/OffDelay (stored in AddjValue2/AddjValue).
 		std::vector<std::vector<std::string> > result;
-		result = m_sql.safe_query("SELECT SwitchType, AddjValue2 FROM DeviceStatus WHERE (ID == %d)", deviceID);
-		if (result.size() < 1)
+		result = m_sql.safe_query( "SELECT SwitchType, AddjValue2 FROM DeviceStatus WHERE (ID == %d)", deviceID );
+		if ( result.size() < 1 ) {
 			return false;
+		}
 
 		std::vector<std::string> sd = result[0];
 		_eSwitchType switchtype = (_eSwitchType)atoi(sd[0].c_str());
 		int iOnDelay = atoi(sd[1].c_str());
 
-		bool bIsOn = IsLightSwitchOn(Action);
-		if (switchtype == STYPE_Selector) {
-			bIsOn = (_level > 0) ? true : false;
+		bool bIsOn = IsLightSwitchOn( oParseResults.sCommand );
+		if ( switchtype == STYPE_Selector ) {
+			bIsOn = ( level > 0 ) ? true : false;
 		}
-		int iDelay = bIsOn ? iOnDelay : 0;
-		DelayTime += iDelay;
-
-		tItem = _tTaskItem::SwitchLightEvent(DelayTime, deviceID, Action, _level, -1, eventName);
+		iDeviceDelay = bIsOn ? iOnDelay : 0;
 	}
-	m_sql.AddTaskItem(tItem);
 
-	if (suspendTimer > (1./timer_resolution_hz/2))
-	{
-		DelayTime = static_cast<float>(suspendTimer + (1. / timer_resolution_hz)); //prevent it from running again immediately the next minute if blockly script doesn't handle that
-		_tTaskItem delayedtItem;
-		if (isScene) {
-			if (Action == "On") {
-				delayedtItem = _tTaskItem::SwitchSceneEvent(DelayTime, deviceID, "Off", eventName);
-			}
-			else {
-				delayedtItem = _tTaskItem::SwitchSceneEvent(DelayTime, deviceID, "On", eventName);
-			}
+
+	float fPreviousRandomTime = 0;
+	for ( int iIndex = 0; iIndex < abs(oParseResults.iRepeat); iIndex++ ) {
+		_tTaskItem tItem;
+
+		float fRandomTime = 0;
+		if ( oParseResults.fRandomSec > (1./timer_resolution_hz/2) ) {
+			srand( (unsigned int)mytime( NULL ) + iIndex );
+			fRandomTime = (float)rand() / (float)( RAND_MAX / oParseResults.fRandomSec );
 		}
-		else {
-			delayedtItem = _tTaskItem::SwitchLightEvent(DelayTime, deviceID, previousState, previousLevel, -1, eventName);
+
+		float fDelayTime = oParseResults.fAfterSec + fPreviousRandomTime + fRandomTime + iDeviceDelay + ( iIndex * oParseResults.fForSec ) + ( iIndex * oParseResults.fRepeatSec );
+		fPreviousRandomTime = fRandomTime;
+
+		if ( isScene ) {
+
+			if (
+				oParseResults.sCommand == "On"
+				|| oParseResults.sCommand == "Off"
+			) {
+				tItem = _tTaskItem::SwitchSceneEvent( fDelayTime, deviceID, oParseResults.sCommand, eventName );
+			} else if ( oParseResults.sCommand == "Active" ) {
+				std::vector<std::vector<std::string> > result;
+				result = m_sql.safe_query( "UPDATE SceneTimers SET Active=1 WHERE (SceneRowID == %d)", deviceID );
+				m_mainworker.m_scheduler.ReloadSchedules();
+			} else if ( oParseResults.sCommand == "Inactive" ) {
+				std::vector<std::vector<std::string> > result;
+				result = m_sql.safe_query( "UPDATE SceneTimers SET Active=0 WHERE (SceneRowID == %d)", deviceID );
+				m_mainworker.m_scheduler.ReloadSchedules();
+			}
+
+		} else {
+			tItem = _tTaskItem::SwitchLightEvent( fDelayTime, deviceID, oParseResults.sCommand, level, -1, eventName );
 		}
-		m_sql.AddTaskItem(delayedtItem);
+
+		m_sql.AddTaskItem( tItem );
+#ifdef _DEBUG
+		_log.Log(LOG_STATUS, "EventSystem: Scheduled %s after %0.2f.", tItem._command.c_str(), tItem._DelayTime );
+#endif
+
+		if (
+			oParseResults.fForSec > (1./timer_resolution_hz/2)
+			&& (
+				oParseResults.iRepeat > 0
+				|| iIndex < abs(oParseResults.iRepeat)-1
+			)
+		) {
+			fDelayTime += oParseResults.fForSec;
+
+			_tTaskItem tDelayedtItem;
+			if ( isScene ) {
+				if ( oParseResults.sCommand == "On" ) {
+					tDelayedtItem = _tTaskItem::SwitchSceneEvent( fDelayTime, deviceID, "Off", eventName );
+				} else if ( oParseResults.sCommand == "Off" ) {
+					tDelayedtItem = _tTaskItem::SwitchSceneEvent( fDelayTime, deviceID, "On", eventName );
+				}
+			} else {
+				tDelayedtItem = _tTaskItem::SwitchLightEvent( fDelayTime, deviceID, previousState, previousLevel, -1, eventName );
+			}
+			m_sql.AddTaskItem( tDelayedtItem );
+#ifdef _DEBUG
+			_log.Log(LOG_STATUS, "EventSystem: Scheduled %s after %0.2f.", tDelayedtItem._command.c_str(), tDelayedtItem._DelayTime );
+#endif
+		}
+
 	}
 
 	return true;

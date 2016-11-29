@@ -355,7 +355,7 @@ function RefreshcameraTable()
 			}
 
 			var previewimg;
-			var imgsrc="camsnapshot.jpg?idx=" + item.idx;
+			var imgsrc="camsnapshot.jpg?idx=" + item.idx + "&dtime=" + Math.round(+new Date()/1000);
 			if (item.Enabled=="true") {
 				previewimg='<img src="' + imgsrc + '" height="40"> ';
 			}

@@ -358,7 +358,7 @@ void CScheduler::SetSunRiseSetTimers(const std::string &sSunRise, const std::str
 	bool bReloadSchedules = false;
 	{	//needed private scope for the lock
 		boost::lock_guard<boost::mutex> l(m_mutex);
-		unsigned char hour, min, sec;
+		int hour, min, sec;
 
 		time_t temptime;
 		time_t atime = mytime(NULL);
@@ -369,10 +369,8 @@ void CScheduler::SetSunRiseSetTimers(const std::string &sSunRise, const std::str
 		min = atoi(sSunRise.substr(3, 2).c_str());
 		sec = atoi(sSunRise.substr(6, 2).c_str());
 
-		ltime.tm_hour = hour;
-		ltime.tm_min = min;
-		ltime.tm_sec = sec;
-		temptime = mktime(&ltime);
+		struct tm tm1;
+		constructTime(temptime,tm1,ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday,hour,min,sec,ltime.tm_isdst);
 		if ((m_tSunRise != temptime) && (temptime != 0))
 		{
 			if (m_tSunRise == 0)
@@ -384,10 +382,7 @@ void CScheduler::SetSunRiseSetTimers(const std::string &sSunRise, const std::str
 		min = atoi(sSunSet.substr(3, 2).c_str());
 		sec = atoi(sSunSet.substr(6, 2).c_str());
 
-		ltime.tm_hour = hour;
-		ltime.tm_min = min;
-		ltime.tm_sec = sec;
-		temptime = mktime(&ltime);
+		constructTime(temptime,tm1,ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday,hour,min,sec,ltime.tm_isdst);
 		if ((m_tSunSet != temptime) && (temptime != 0))
 		{
 			if (m_tSunSet == 0)
@@ -405,7 +400,8 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 	time_t rtime = atime;
 	struct tm ltime;
 	localtime_r(&atime, &ltime);
-	ltime.tm_sec = 0;
+	int isdst = ltime.tm_isdst;
+	struct tm tm1;
 
 	unsigned long HourMinuteOffset = (pItem->startHour * 3600) + (pItem->startMin * 60);
 
@@ -431,18 +427,11 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 		(pItem->timerType == TTYPE_WEEKSODD) ||
 		(pItem->timerType == TTYPE_WEEKSEVEN))
 	{
-		ltime.tm_hour = pItem->startHour;
-		ltime.tm_min = pItem->startMin;
-		rtime = mktime(&ltime) + (roffset * 60);
+		constructTime(rtime,tm1,ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday,pItem->startHour,pItem->startMin,roffset*60,isdst);
 	}
 	else if (pItem->timerType == TTYPE_FIXEDDATETIME)
 	{
-		ltime.tm_year = pItem->startYear - 1900;
-		ltime.tm_mon = pItem->startMonth - 1;
-		ltime.tm_mday = pItem->startDay;
-		ltime.tm_hour = pItem->startHour;
-		ltime.tm_min = pItem->startMin;
-		rtime = mktime(&ltime) + (roffset * 60);
+		constructTime(rtime,tm1,pItem->startYear,pItem->startMonth,pItem->startDay,pItem->startHour,pItem->startMin,roffset*60,isdst);
 		if (rtime < atime)
 			return false; //past date/time
 		pItem->startTime = rtime;
@@ -474,38 +463,20 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 	}
 	else if (pItem->timerType == TTYPE_MONTHLY)
 	{
-		ltime.tm_mday = pItem->MDay;
-		ltime.tm_hour = pItem->startHour;
-		ltime.tm_min = pItem->startMin;
-		//if mday exceeds max days in month, find next month with this amount of days
-		while(ltime.tm_mday > boost::gregorian::gregorian_calendar::end_of_month_day(ltime.tm_year + 1900, ltime.tm_mon + 1))
+		constructTime(rtime,tm1,ltime.tm_year+1900,ltime.tm_mon+1,pItem->MDay,pItem->startHour,pItem->startMin,0,isdst);
+
+		while ( (rtime < atime) || (tm1.tm_mday != pItem->MDay) ) // past date/time OR mday exceeds max days in month
 		{
 			ltime.tm_mon++;
-			if (ltime.tm_mon > 11)
-			{
-				ltime.tm_mon = 0;
-				ltime.tm_year++;
-			}
-		}
-		rtime = mktime(&ltime) + (roffset * 60);
-		if (rtime < atime) //past date/time
-		{
-			//schedule for next month
-			boost::gregorian::month_iterator m_itr(boost::gregorian::date(ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday));
-			++m_itr;
-			ltime.tm_mon = m_itr->month() - 1;
-			ltime.tm_year = m_itr->year() - 1900;
-			rtime = mktime(&ltime) + (roffset * 60);
+			constructTime(rtime,tm1,ltime.tm_year+1900,ltime.tm_mon+1,pItem->MDay,pItem->startHour,pItem->startMin,0,isdst);
 		}
 
+		rtime += roffset * 60; // add randomness
 		pItem->startTime = rtime;
 		return true;
 	}
 	else if (pItem->timerType == TTYPE_MONTHLY_WD)
 	{
-		ltime.tm_hour = pItem->startHour;
-		ltime.tm_min = pItem->startMin;
-
 		//pItem->Days: mon=1 .. sat=32, sun=64
 		//convert to : sun=0, mon=1 .. sat=6
 		int daynum = (int)log2(pItem->Days) + 1;
@@ -519,53 +490,39 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 		nth_dow ndm(Occurence, Day, Month);
 		boost::gregorian::date d = ndm.get_date(ltime.tm_year + 1900);
 
-		ltime.tm_mday = d.day();
-		rtime = mktime(&ltime) + (roffset * 60);
+		constructTime(rtime,tm1,ltime.tm_year+1900,ltime.tm_mon+1,d.day(),pItem->startHour,pItem->startMin,0,isdst);
 
 		if (rtime < atime) //past date/time
 		{
 			//schedule for next month
-			ltime.tm_mon++;
-			Month = static_cast<boost::gregorian::months_of_year>(ltime.tm_mon + 1);
+			Month = static_cast<boost::gregorian::months_of_year>(ltime.tm_mon + 2);
 			nth_dow ndm(Occurence, Day, Month);
 			boost::gregorian::date d = ndm.get_date(ltime.tm_year + 1900);
-			ltime.tm_mday = d.day();
-			rtime = mktime(&ltime) + (roffset * 60);
+
+			constructTime(rtime,tm1,ltime.tm_year+1900,ltime.tm_mon+1,d.day(),pItem->startHour,pItem->startMin,0,isdst);
 		}
 
+		rtime += roffset * 60; // add randomness
 		pItem->startTime = rtime;
 		return true;
 	}
 	else if (pItem->timerType == TTYPE_YEARLY)
 	{
-		ltime.tm_mday = pItem->MDay;
-		ltime.tm_mon = pItem->Month - 1;
-		ltime.tm_hour = pItem->startHour;
-		ltime.tm_min = pItem->startMin;
-		//if mday exceeds max days in month, find next year with this amount of days
-		while (ltime.tm_mday > boost::gregorian::gregorian_calendar::end_of_month_day(ltime.tm_year + 1900, ltime.tm_mon + 1))
-		{
-			ltime.tm_year++;
-		}
-		rtime = mktime(&ltime) + (roffset * 60);
-		if (rtime < atime) //past date/time
+		constructTime(rtime,tm1,ltime.tm_year+1900,pItem->Month,pItem->MDay,pItem->startHour,pItem->startMin,0,isdst);
+
+		while ( (rtime < atime) || (tm1.tm_mday != pItem->MDay) ) // past date/time OR mday exceeds max days in month
 		{
 			//schedule for next year
-			boost::gregorian::year_iterator m_itr(boost::gregorian::date(ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday));
-			++m_itr;
-			ltime.tm_year = m_itr->year() - 1900;
-			rtime = mktime(&ltime) + (roffset * 60);
+			ltime.tm_year++;
+			constructTime(rtime,tm1,ltime.tm_year+1900,pItem->Month,pItem->MDay,pItem->startHour,pItem->startMin,0,isdst);
 		}
 
+		rtime += roffset * 60; // add randomness
 		pItem->startTime = rtime;
 		return true;
 	}
 	else if (pItem->timerType == TTYPE_YEARLY_WD)
 	{
-		ltime.tm_hour = pItem->startHour;
-		ltime.tm_min = pItem->startMin;
-		ltime.tm_mon = pItem->Month - 1;
-
 		//pItem->Days: mon=1 .. sat=32, sun=64
 		//convert to : sun=0, mon=1 .. sat=6
 		int daynum = (int)log2(pItem->Days) + 1;
@@ -579,18 +536,16 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 		nth_dow ndm(Occurence, Day, Month);
 		boost::gregorian::date d = ndm.get_date(ltime.tm_year + 1900);
 
-		ltime.tm_mday = d.day();
-		rtime = mktime(&ltime) + (roffset * 60);
+		constructTime(rtime,tm1,ltime.tm_year+1900,pItem->Month,d.day(),pItem->startHour,pItem->startMin,0,isdst);
 
 		if (rtime < atime) //past date/time
 		{
 			//schedule for next year
 			ltime.tm_year++;
-			boost::gregorian::date d = ndm.get_date(ltime.tm_year + 1900);
-			ltime.tm_mday = d.day();
-			rtime = mktime(&ltime) + (roffset * 60);
+			constructTime(rtime,tm1,ltime.tm_year+1900,pItem->Month,d.day(),pItem->startHour,pItem->startMin,0,isdst);
 		}
 
+		rtime += roffset * 60; // add randomness
 		pItem->startTime = rtime;
 		return true;
 	}

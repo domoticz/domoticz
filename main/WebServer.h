@@ -89,7 +89,8 @@ public:
 		const bool bDisplayHidden,
 		const bool bFetchFavorites,
 		const time_t LastUpdate,
-		const std::string &username);
+		const std::string &username,
+		const std::string &hardwareid = ""); // OTO
 
 	// SessionStore interface
 	const WebEmStoredSession GetSession(const std::string & sessionId);
