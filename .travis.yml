@@ -53,6 +53,7 @@ matrix:
           - libudev-dev
           - git
           - libdigest-sha-perl
+		  - python3-dev
     script:
       - (cd open-zwave-read-only; make)
       - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=open-zwave-read-only
