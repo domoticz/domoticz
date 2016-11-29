@@ -1440,6 +1440,9 @@ void MainWorker::Do_Work()
 			{
 				m_bStartHardware=false;
 				StartDomoticzHardware();
+#ifdef USE_PYTHON_PLUGINS
+				m_pluginsystem.AllPluginsStarted();
+#endif
 				ParseRFXLogFile();
 				m_eventsystem.StartEventSystem();
 			}
@@ -10291,6 +10294,18 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 		}
 		if (level==0)
 			switchcmd="Off";
+	}
+
+	//
+	//	For plugins all the specific logic below is irrelevent
+	//	so just send the full details to the plugin so that it can take appropriate action
+	//
+	if (pHardware->HwdType == HTYPE_PythonPlugin)
+	{
+#ifdef USE_PYTHON_PLUGINS
+		((Plugins::CPlugin*)m_hardwaredevices[hindex])->SendCommand(Unit, switchcmd, level, hue);
+#endif
+		return true;
 	}
 
 	switch (dType)

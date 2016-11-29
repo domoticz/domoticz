@@ -17,6 +17,10 @@
 #include "NotificationKodi.h"
 #include "NotificationLogitechMediaServer.h"
 #include "NotificationGCM.h"
+#ifdef USE_PYTHON_PLUGINS
+#	include "../hardware/plugins/PluginManager.h"
+#endif
+
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
@@ -97,6 +101,9 @@ bool CNotificationHelper::SendMessageEx(const std::string &subsystems, const std
 			bRet |= iter->second->SendMessageEx(Subject, Text, ExtraData, Priority, Sound, bFromNotification);
 		}
 	}
+#ifdef USE_PYTHON_PLUGINS
+	Plugins::CPluginSystem::SendNotification(Subject, Text, ExtraData, Priority, Sound);
+#endif
 	return bRet;
 }
 
