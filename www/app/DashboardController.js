@@ -100,9 +100,15 @@ define(['app'], function (app) {
 				$scope.mytimer = undefined;
 			}
 		  var id="";
-
+		  var bFavorites=1;
+		  if (typeof window.myglobals.LastPlanSelected!= 'undefined') {
+			if (window.myglobals.LastPlanSelected>0) {
+				bFavorites=0;
+			}
+		  }
+		  
 		  $.ajax({
-			 url: "json.htm?type=devices&filter=all&used=true&favorite=1&order=Name&plan="+window.myglobals.LastPlanSelected+"&lastupdate="+$scope.LastUpdateTime,
+			 url: "json.htm?type=devices&filter=all&used=true&favorite="+bFavorites+"&order=Name&plan="+window.myglobals.LastPlanSelected+"&lastupdate="+$scope.LastUpdateTime,
 			 async: false,
 			 dataType: 'json',
 			 success: function(data) {
@@ -116,7 +122,10 @@ define(['app'], function (app) {
 				}
 				$.each(data.result, function(i,item){
 								//Scenes
-								if (((item.Type.indexOf('Scene') == 0)||(item.Type.indexOf('Group') == 0))&&(item.Favorite!=0))
+								if (
+									(item.Type.indexOf('Scene') == 0)||
+									(item.Type.indexOf('Group') == 0)
+								   )
 								{
 									id="#dashcontent #scene_" + item.idx;
 									var obj=$(id);
@@ -1589,8 +1598,16 @@ define(['app'], function (app) {
 				}
 			 }
 		  });
+		  
+		  var bFavorites=1;
+		  if (typeof window.myglobals.LastPlanSelected!= 'undefined') {
+			if (window.myglobals.LastPlanSelected>0) {
+				bFavorites=0;
+			}
+		  }
+		  
 		  $.ajax({
-			 url: "json.htm?type=devices&filter=all&used=true&favorite=1&order=Name&plan="+window.myglobals.LastPlanSelected,
+			 url: "json.htm?type=devices&filter=all&used=true&favorite="+bFavorites+"&order=Name&plan="+window.myglobals.LastPlanSelected,
 			 async: false,
 			 dataType: 'json',
 			 success: function(data) {
@@ -1615,7 +1632,10 @@ define(['app'], function (app) {
 				bHaveAddedDevider = false;
 				$.each(data.result, function(i,item) {
 					//Scenes/Groups
-				  if (((item.Type.indexOf('Scene') == 0)||(item.Type.indexOf('Group') == 0))&&(item.Favorite!=0))
+				  if (
+					(item.Type.indexOf('Scene') == 0)||
+					(item.Type.indexOf('Group') == 0)
+					)
 				  {
 					totdevices+=1;
 					if (jj == 0)
