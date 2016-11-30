@@ -55,7 +55,7 @@ private:
 // cmake -DCMAKE_BUILD_TYPE=Release
 // make
 
-// navic uplne oddelene je potreba upravit javascript pro vyber noveho HW www/app/HardwareControler.js
+// navic uplne oddelene je potreba upravit javascript pro vyber noveho HW www/app/HardwareController.js
 //    v tomto js souboru je potreba pridat oddil pro novy hw a to oddelne pro upravu (function UpdateHardware)
 //    a oddelene pro pridani hw (function AddHardware) je to takova prasarna pre if a else if se testuji ne id ale vetsinou nazvy ze selektu
 //    a se nastavi ktere <div> budou viditelne a nasledne jsou radky pro kontrolu validace dat zadanych do formulare
@@ -110,9 +110,9 @@ private:
 // 1. v /main/RFXNames.h do strukury "enum _eHardwareTypes" pridat HTYPE_Seahu,
 // 2. v /main/RFXNames.cpp pridat popisku k HTYPE_MyName ve strukture "const char *Hardware_Type_Desc(int hType)..."
 // 3. v main/mainworker.cpp - je zapotrebi pridat odkaz na HTYPE_Seahu(ID) ve fci "MainWorker::AddHardwareFromParams" jinak se nemuze vybec modul spustit a na zacatku #include "../hardware/Seahu.h"
-// 4. v main/WebServer.cpp - je potreba pridat odkaz na pridani a update modulu HTYPE_Daikin a rovnez na zactku #include "../hardware/Seahu.h"
-//		ve vetsine pripdau kdy neni pri zavadeni nebo zmene noveho hw potreba nic delat, tak neni treba ze nic pridavat ani include
-//		nicmene jen tak z dodrzovani stabni kulturu je dobre pro myj typ vytvorit prazne else if (pokd pri tom nevolam svje funkce tak include neni zapotrebi)
+// 4. v main/WebServer.cpp - je potreba pridat ve funkcich Cmd_AddHardware a Cmd_UpdateHardware podminku pro testovani vstupnich udaju pro nove pridavany HTYPE_Seahu a rovnez na zactku #include "../hardware/Seahu.h"
+//		ve vetsine pripadu kdy neni pri zavadeni nebo zmene noveho hw potreba nic delat, staci prazdna podminka ale podminka pro dany HTYPE byt musi protoze pokud neni skonci zretezene podminky predcasnym returnem.
+//		(pokud pri tom nevolam svje funkce tak include neni zapotrebi)
 // 5. v www/app/HardwareControler.js - upravit javascript pro zobrazovani weboveho formulare noveho HW a jeho parametru
 //    		v tomto js souboru je potreba pridat oddil pro novy hw a to oddelne pro upravu (function UpdateHardware)
 //    		a oddelene pro pridani hw (function AddHardware) je to takova prasarna pre if a else if se testuji ne id ale vetsinou nazvy ze selektu

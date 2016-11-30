@@ -41,11 +41,11 @@ based on a 5 minute sample interval.  My method poles for conversion completion.
 
 and does not require smbus or wire libs
 
-
-Add suport for PCF8574 and PCF8574A chips (8-bit I/O expaner for I2C bus).
+----------------------------------------------------------------------------------------
+Add support for PCF8574 and PCF8574A chips (8-bit I/O expander for I2C bus).
 I use this chip in Seahu SH017 PLC computer based on raspberryPI (www.seahu.cz).
 
-Ondrej Lycka 2016-23-11
+Ondrej Lycka (ondrej.lycka@seznam.cz) 2016-23-11
 
 */
 //tray change get to git
@@ -70,6 +70,7 @@ Ondrej Lycka 2016-23-11
 
 #define round(a) ( int ) ( a + .5 )
 
+#define I2C_READ_INTERVAL 30
 #define I2C_SENSOR_READ_INTERVAL 30
 #define I2C_IO_EXPANDER_READ_INTERVAL 1
 
@@ -121,7 +122,6 @@ I2C::I2C(const int ID, const int Mode1, const int Port)
 	case 3:
 		device = "TSL2561";
 		break;
-	}
 	case 4:
 		device = "PCF8574";
 		i2c_addr = Port;
@@ -171,7 +171,7 @@ bool I2C::StopHardware()
 
 bool I2C::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	if device!="PCF8574" return false;	
+	if (device!="PCF8574") return false;
 	const tRBUF *pCmd = reinterpret_cast<const tRBUF*>(pdata);
 	if ((pCmd->LIGHTING2.packettype == pTypeLighting2)) {
 		_log.Log(LOG_NORM,"GPIO: packetlength %d", pCmd->LIGHTING2.packetlength);
@@ -190,22 +190,22 @@ bool I2C::WriteToHardware(const char *pdata, const unsigned char length)
 		unsigned char id3=pCmd->LIGHTING2.id3;
 		unsigned char id4=pCmd->LIGHTING2.id4;
 		int ID=(id1<<24)|(id2<<16)|(id3<<8)|id4;
-		_log.Log(LOG_NORM,"GPIO: ID %d", id);
 		unsigned char Unit = pCmd->LIGHTING2.unitcode;
 		unsigned char  value = pCmd->LIGHTING2.cmnd;
-		_log.Log(LOG_NORM,"GPIO: ID %d", id);
+		_log.Log(LOG_NORM,"GPIO: ID %d", ID);
 		_log.Log(LOG_NORM,"GPIO: Unit %d", Unit);
 		_log.Log(LOG_NORM,"GPIO: new value %d", value);
 		// check my serverd i2c_addr (form Unit I can get i2c_addres of switch)
 		unsigned char i2c_address=PCF8574_get_i2c_addr_from_Unit(Unit);
-		_log.Log(LOG_NORM,"GPIO: serve i2c address %d", i2c_addr);
+		_log.Log(LOG_NORM,"GPIO: my served i2c address %d", i2c_addr);
 		_log.Log(LOG_NORM,"GPIO: i2c address from Unit %d", i2c_address);
 		if (i2c_address != i2c_addr) return false; //actulaty is served PCF8574 with another i2c address
 		//check ID if is for PCF8574 (my rule, from Unit may get ID and reverse)
-		unsigned char pin_mask=PCF8574_get_pin_mask_from_Unit(Unit);
-		if ( (PCF8574_ID_ADD+i2c_address*256+pin_mask) != ID ) return false; //not for PCF8574
-		_log.Log(LOG_NORM,"GPIO: Write to pi %d value to pin %d: %d ,i2c address %d", value, pin_mask,i2c_addr );
-		if (PCF8574_WritePin( Unit, value)<0) return false; // goto relay exute write to switch (pin)
+		unsigned char pin_number=PCF8574_get_pin_number_from_Unit(Unit);
+		if ( (PCF8574_ID_ADD+i2c_address*256+pin_number) != ID ) return false; //not for PCF8574
+		_log.Log(LOG_NORM,"GPIO: Write value %d to pin %d ,i2c address %d", value, pin_number,i2c_addr );
+		value=~value&0x01; // inversion value domoticz on=1, off=0, bat I use PCF8574 pin active pin=0, no active pin=1
+		if (PCF8574_WritePin( pin_number, value)<0) return false; // goto relay exute write to switch (pin)
 		else return true;
 	}
 	else {
@@ -217,7 +217,7 @@ bool I2C::WriteToHardware(const char *pdata, const unsigned char length)
 void I2C::Do_Work()
 {
 	int msec_counter = 0;
-	int sec_counter = I2C_READ_INTERVAL - 5;
+	int sec_counter = 0;
 	_log.Log(LOG_STATUS, "%s: Worker started...", device.c_str());
 
 	if (device == "TSL2561")
@@ -261,10 +261,6 @@ void I2C::Do_Work()
 					else if (device == "TSL2561")
 					{
 						TSL2561_ReadSensorDetails();
-					}
-					else if (device == "PCF8574")
-					{
-						PCF8574_ReadChipDetails();
 					}
 				}
 			}
@@ -320,10 +316,12 @@ void I2C::PCF8574_ReadChipDetails()
 		return;
 	}
 	if ( readByteI2C(fd, &buf, i2c_addr) < 0 ) return; //read from i2c
-	for (char pin=0; pin<8; pin++){ // to process readed byte from i2c
-		int DeviceID = PCF8574_create_DeviceID(i2c_addres,char pin_mask);
-		unsigned char Unit = PCF8574_create_Unit(i2c_addr, pin);
-		bool value=(buf & pin);
+	buf=~buf; // I use inversion value for active pin (0=on, 1=off) beside domoticz (1=on, 0=off)
+	for (char pin_number=0; pin_number<8; pin_number++){ // to process readed byte from i2c
+		int DeviceID = PCF8574_create_DeviceID(i2c_addr, pin_number);
+		unsigned char Unit = PCF8574_create_Unit(i2c_addr, pin_number);
+		char pin_mask=0x01<<pin_number;
+		bool value=(buf & pin_mask);
 		SendSwitch(DeviceID, Unit, 255, value, 0, ""); // update switch
 		// paramers of function SendSwitch: 
 		//	( NodeID , ChildID , BatteryLevel , bOn , Level , defaultname )
@@ -338,7 +336,7 @@ void I2C::PCF8574_ReadChipDetails()
 	close(fd);
 }
 
-char I2C::PCF8574_get_pin_mask_from_Unit(unsigned char unit)
+char I2C::PCF8574_get_pin_number_from_Unit(unsigned char unit)
 {
 	// unit from list devices contain numner of reading bit and i2c address of chip
 	// bit0-3 -> number of reding bit
@@ -351,15 +349,15 @@ char I2C::PCF8574_get_i2c_addr_from_Unit(unsigned char unit)
 	// bit4-6 -> contain A0,A1,A2 part of 7-bit i2c address ->	0|1|0|0|A2|A1|A0 for type PCF8574
 	//								0|1|1|1|A2|A1|A0 for type PCF8574A
 	// bit 7 -> type of chip 0 = PCF8574, 1 = PCF8574A (different fixed pard of i2c address)
-	unsigned char i2c_address= (unit >> 4) & 0x3
+	unsigned char i2c_address= (unit >> 4) & 0x07;
 	if ((unit & 0x80)==0)	i2c_address=0x20 |i2c_address; // addr = 00100XXX (XXX is |A2|A1|A0|)
 	else			i2c_address=0x38 |i2c_address; // addr = 00111XXX (XXX is |A2|A1|A0|)
 	return i2c_address;
 }
 
-int I2C::PCF8574_create_DeviceID(unsigned char i2c_addres,unsigned char pin_mask)
+int I2C::PCF8574_create_DeviceID(unsigned char i2c_address,unsigned char pin_mask)
 {
-	return PCF8574_ID_ADD+i2c_addres*256+pin_mask;
+	return PCF8574_ID_ADD+i2c_address*256+pin_mask;
 }
 
 unsigned char I2C::PCF8574_create_Unit(unsigned char i2c_address, char pin)
@@ -376,27 +374,30 @@ unsigned char I2C::PCF8574_create_Unit(unsigned char i2c_address, char pin)
 	return ( fixed | volitale | pin );
 }
 
-char I2C::PCF8574_WritePin(unsigned char unit,char  value)
+char I2C::PCF8574_WritePin(char pin_number,char  value)
 {	
-	char pin_mask=PCF8574_get_pin_mask_from_Unit(unit);
-	char i2c_addr=PCF8574_get_i2c_addr_from_Unit(unit);
-	_log.Log(LOG_NORM, "WRITE TO PCF8574 pin:%d, value: %d, i2c_address:%d", pin_mask, value, i2c_addr);
-	char buf = 0;	
+	_log.Log(LOG_NORM, "GPIO: WRITE TO PCF8574 pin:%d, value: %d, i2c_address:%d", pin_number, value, i2c_addr);
+	char pin_mask=0x01<<pin_number; // create pin mask from pin number
+	char buf_act = 0;
+	char buf_new = 0;
 	int fd = i2c_Open(m_ActI2CBus.c_str());
 	if (fd < 0) {
-		_log.Log(LOG_ERROR, "%s: Error opening device!...", device.c_str());
-		return;
+		_log.Log(LOG_ERROR, "GPIO: %s: Error opening device!...", device.c_str());
+		return -1;
 	}
-	if ( readByteI2C(fd, &buf, i2c_addr) < 0 ) return -2;
+	if ( readByteI2C(fd, &buf_act, i2c_addr) < 0 ) return -2;
 	lseek(fd,0,SEEK_SET); // after read back file cursor to begin (prepare to write to begin)
-	_log.Log(LOG_ERROR, "actual value byte %d", buf);
-	if (value==1) buf = buf | pin_mask;	//prepare new value by combinate curent value, mask and new value
-	else buf = buf & ~pin_mask;
-	//_log.Log(LOG_NORM, "new value byte %d", buf);
-	if (writeByteI2C(fd, buf, i2c_addr) < 0 ) {
-		_log.Log(LOG_ERROR, "%s: Error write to device!...", device.c_str());
-		return -3;
+	_log.Log(LOG_NORM, "GPIO: actual value byte %d", buf_act);
+	if (value==1) buf_new = buf_act | pin_mask;	//prepare new value by combinate curent value, mask and new value
+	else buf_new = buf_act & ~pin_mask;
+	if (buf_new!=buf_act) { // value change
+		_log.Log(LOG_NORM, "GPIO: new value byte %d", buf_new);
+		if (writeByteI2C(fd, buf_new, i2c_addr) < 0 ) {
+			_log.Log(LOG_ERROR, "GPIO: %s: Error write to device!...", device.c_str());
+			return -3;
+		}
 	}
+	else _log.Log(LOG_NORM, "GPIO: No change");
 	close(fd);
 	//_log.Log(LOG_NORM, "WRITE ON SEAHU DEVICE n.%d value %d is OK", gpioId, value);
 	return 1;

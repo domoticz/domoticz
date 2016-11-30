@@ -74,10 +74,10 @@ define(['app'], function (app) {
 				(text.indexOf("TE923") >= 0) ||
 				(text.indexOf("Volcraft") >= 0) ||
 				(text.indexOf("GPIO") >= 0) ||
-				(text.indexOf("Local I2C sensor") >= 0) ||
 				(text.indexOf("Dummy") >= 0) ||
 				(text.indexOf("System Alive") >= 0) ||
 				(text.indexOf("PiFace") >= 0) ||
+				(text.indexOf("Local I2C ") >= 0) || 
 				(text.indexOf("Motherboard") >= 0) ||
 				(text.indexOf("Kodi") >= 0) ||
 				(text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0) ||
@@ -88,14 +88,20 @@ define(['app'], function (app) {
 				if (hardwaretype == 1000) {
 							hardwaretype = $("#hardwareparamsi2clocal #comboi2clocal").find('option:selected').val();
 				}
-
-                $.ajax({
+                var text1 = $("#hardwareparamsi2clocal #comboi2clocal").find('option:selected').text();
+                if (text1.indexOf("Local I2C PIO 8bit expander PCF8574") >= 0)
+                {
+                	var i2caddress=$("#hardwareparami2caddress #i2caddress").val();
+                	var port="&port=" + encodeURIComponent(i2caddress);
+                }
+            	$.ajax({
                      url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
                         "&name=" + encodeURIComponent(name) +
                         "&enabled=" + bEnabled +
                         "&idx=" + idx +
                         "&datatimeout=" + datatimeout +
-                        "&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
+                        "&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6 +
+                        port,
                      async: false,
                      dataType: 'json',
                      success: function(data) {
@@ -911,19 +917,26 @@ define(['app'], function (app) {
                      }
                 });
             }
-	    else if (text.indexOf("Local I2C sensor") >= 0)
+	    else if (text.indexOf("Local I2C ") >= 0 && text.indexOf("Local I2C PIO 8bit expander PCF8574") < 0)
 	    {
                 hardwaretype = $("#hardwareparamsi2clocal #comboi2clocal").find('option:selected').val();
+                var port="";
+                var text1 = $("#hardwareparamsi2clocal #comboi2clocal").find('option:selected').text();
+                if (text1.indexOf("Local I2C PIO 8bit expander PCF8574") >= 0)
+                {
+                	var i2caddress=$("#hardwareparami2caddress #i2caddress").val();
+                	var port="&port=" + encodeURIComponent(i2caddress);
+                }
 		
                 $.ajax({
-                     url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
+                     url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout + port,
                      async: false,
                      dataType: 'json',
                      success: function(data) {
                         RefreshHardwareTable();
                      },
                      error: function(){
-                            ShowNotify($.t('Problem adding hardware!'), 2500, true);
+                            ShowNotify($.t('Problem adding I2C hardware!'), 2500, true);
                      }
                 });		
 	    }
@@ -4427,6 +4440,10 @@ define(['app'], function (app) {
                         SerialName=item.SerialPort;
                         intport=jQuery.inArray(item.SerialPort, $scope.SerialPortStr);
                     }
+                    if (item.Type == 93)
+                    {
+                        SerialName="I2C-" + SerialName;
+                    }
 
                     var enabledstr=$.t("No");
                     if (item.Enabled=="true") {
@@ -4635,7 +4652,7 @@ define(['app'], function (app) {
                         $('#hardwarecontent #hardwareparamstable #enabled').prop('checked',(data["Enabled"]=="true"));
                         $('#hardwarecontent #hardwareparamstable #combodatatimeout').val(data["DataTimeout"]);
 
-			if (data["Type"].indexOf("Local I2C sensor") >= 0) {
+			if (data["Type"].indexOf("Local I2C ") >= 0) {
                             $("#hardwarecontent #hardwareparamstable #combotype").val(1000);
                         }
 
@@ -4657,8 +4674,11 @@ define(['app'], function (app) {
                             $("#hardwarecontent #hardwareparams1wire #OneWireSensorPollPeriod").val(data["Mode1"]);
                             $("#hardwarecontent #hardwareparams1wire #OneWireSwitchPollPeriod").val(data["Mode2"]);
                         }
-                        else if (data["Type"].indexOf("Local I2C sensor") >= 0) {
+                        else if (data["Type"].indexOf("Local I2C ") >= 0) {
                             $("#hardwareparamsi2clocal #comboi2clocal").val(jQuery.inArray(data["Type"], $.myglobals.HardwareI2CStr));
+                            if (data["Type"].indexOf("Local I2C PIO 8bit expander PCF8574") >= 0) {
+            					$("#hardwareparami2caddress #i2caddress").val(data["Port"].substring(4));		
+            				}
                         }			
                         else if (data["Type"].indexOf("USB") >= 0) {
                             $("#hardwarecontent #hardwareparamsserial #comboserialport").val(data["IntPort"]);
@@ -4765,6 +4785,7 @@ define(['app'], function (app) {
                             $("#hardwarecontent #hardwareparamslogin #username").val(data["Username"]);
                             $("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
                         }
+                        UpdateHardwareParamControls();
                     }
                 }
             });
@@ -4833,6 +4854,7 @@ define(['app'], function (app) {
             $("#hardwarecontent #div1wire").hide();
             $("#hardwarecontent #divgoodweweb").hide();
             $("#hardwarecontent #divi2clocal").hide();
+            $("#hardwarecontent #divi2caddress").hide();
 			$("#hardwarecontent #divpollinterval").hide();
 
             if ((text.indexOf("TE923") >= 0)||
@@ -4848,7 +4870,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
             }
-	    else if (text.indexOf("Local I2C sensor") >= 0)
+	    else if (text.indexOf("Local I2C ") >= 0)
 	    {
                 $("#hardwarecontent #divi2clocal").show();
                 $("#hardwarecontent #divserial").hide();
@@ -4856,6 +4878,12 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divlogin").hide();
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
+                $("#hardwarecontent #divi2caddress").hide();
+                var text1 = $("#hardwarecontent #divi2clocal #hardwareparamsi2clocal #comboi2clocal option:selected").text();
+                if (text1.indexOf("Local I2C PIO 8bit expander PCF8574") >= 0)
+                {
+                	$("#hardwarecontent #divi2caddress").show();
+                }
 	    }
             else if (text.indexOf("USB") >= 0)
             {
@@ -5101,6 +5129,11 @@ define(['app'], function (app) {
                 UpdateHardwareParamControls();
             });
 
+            $("#hardwarecontent #divi2clocal #hardwareparamsi2clocal #comboi2clocal").change(function() {
+                UpdateHardwareParamControls();
+            });
+
+            
             $("#hardwarecontent #divbaudratep1 #combobaudratep1").change(function() {
                 if ($("#hardwarecontent #divbaudratep1 #combobaudratep1 option:selected").val() == 0)
                 {
@@ -5145,7 +5178,7 @@ define(['app'], function (app) {
 			$.each(data.result, function(i,item) {
 			    $.myglobals.HardwareTypesStr[item.idx] = item.name;
 			    // Don't show I2C sensors
-			    if (item.name.indexOf("Local I2C sensor") != -1) {
+			    if (item.name.indexOf("Local I2C ") != -1) {
 				$.myglobals.HardwareI2CStr[item.idx] = item.name;
 				i2cidx = idx;
 				return true;
