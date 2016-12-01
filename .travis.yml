@@ -16,6 +16,7 @@ sources:
 
 # What to install before the build
 before_install:
+  - cmake --version
   # Domoticz needs the full history to be able to calculate the version string
   - git fetch --unshallow
   # OpenZWave
