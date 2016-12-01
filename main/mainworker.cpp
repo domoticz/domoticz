@@ -12344,6 +12344,16 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 				DecodeRXMessage(pHardware, (const unsigned char *)&gDevice, NULL, batterylevel);
 				return true;
 			}
+			else if (subType == sTypeSoilMoisture)
+			{
+				_tGeneralDevice gDevice;
+				gDevice.subtype = subType;
+				gDevice.id = unit;
+				gDevice.intval1 = static_cast<int>(ID);
+				gDevice.intval2 = nValue;
+				DecodeRXMessage(pHardware, (const unsigned char *)&gDevice, NULL, batterylevel);
+				return true;
+			}
 		}
 		else if ((devType == pTypeAirQuality) && (subType == sTypeVoltcraft))
 		{

@@ -1012,19 +1012,19 @@ namespace http {
 			}
 			modeStr = request::findValue(&req, "Mode3");
 			if (!modeStr.empty()) {
-				mode2 = atoi(modeStr.c_str());
+				mode3 = atoi(modeStr.c_str());
 			}
 			modeStr = request::findValue(&req, "Mode4");
 			if (!modeStr.empty()) {
-				mode2 = atoi(modeStr.c_str());
+				mode4 = atoi(modeStr.c_str());
 			}
 			modeStr = request::findValue(&req, "Mode5");
 			if (!modeStr.empty()) {
-				mode2 = atoi(modeStr.c_str());
+				mode5 = atoi(modeStr.c_str());
 			}
 			modeStr = request::findValue(&req, "Mode6");
 			if (!modeStr.empty()) {
-				mode2 = atoi(modeStr.c_str());
+				mode6 = atoi(modeStr.c_str());
 			}
 
 			if (IsSerialDevice(htype))
