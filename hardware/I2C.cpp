@@ -48,7 +48,7 @@ I use this chip in Seahu SH017 PLC computer based on raspberryPI (www.seahu.cz).
 Ondrej Lycka (ondrej.lycka@seznam.cz) 2016-23-11
 
 */
-//tray change get to git
+
 #include "stdafx.h"
 #include "I2C.h"
 #include <stdio.h>
