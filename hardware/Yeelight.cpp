@@ -373,7 +373,7 @@ void Yeelight::udp_server::start_send()
 		new std::string(testMessage));
 	remote_endpoint_ = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string("239.255.255.250"), 1982);
 	socket_.send_to(boost::asio::buffer(*message), remote_endpoint_);
-	sleep_milliseconds(250);
+	sleep_milliseconds(150);
 	start_receive();
 }
 
