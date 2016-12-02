@@ -3598,6 +3598,21 @@ void COpenZWave::EnableNodePoll(const unsigned int homeID, const int nodeID, con
 					if (!m_pManager->isPolled(*ittValue))
 						m_pManager->EnablePoll(*ittValue, 2);
 				}
+				else if (commandclass == COMMAND_CLASS_THERMOSTAT_SETPOINT)
+				{
+					if (!m_pManager->isPolled(*ittValue))
+						m_pManager->EnablePoll(*ittValue, 1);
+				}
+				else if (commandclass == COMMAND_CLASS_THERMOSTAT_FAN_MODE)
+				{
+					if (!m_pManager->isPolled(*ittValue))
+						m_pManager->EnablePoll(*ittValue, 1);
+				}
+				else if (commandclass == COMMAND_CLASS_THERMOSTAT_FAN_STATE)
+				{
+					if (!m_pManager->isPolled(*ittValue))
+						m_pManager->EnablePoll(*ittValue, 1);
+				}
 				else
 				{
 					m_pManager->DisablePoll(*ittValue);
@@ -4127,7 +4142,7 @@ bool COpenZWave::ApplyNodeConfig(const unsigned int homeID, const int nodeID, co
 
 	std::vector<std::string> results;
 	StringSplit(svaluelist, "_", results);
-	if (results.size() < 1)
+	if (results.size() % 2 != 0)
 		return false;
 
 	bool bRestartOpenZWave = false;

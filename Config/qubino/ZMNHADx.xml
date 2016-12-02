@@ -46,7 +46,7 @@
             <Help>0 - Auto OFF disabled. 1 - 32535  => 1 second (0,01s) - 32535 seconds (325,35s). Auto ON enabled with define time, step is 1s or 10ms according to parameter 15. Default value 0</Help>
         </Value>
 
-        <Value type="list" genre="config" instance="1" index="15" label="Automatic turning on/off seconds or milliseconds selection" min="0" max="1" value="0">
+        <Value type="list" genre="config" instance="1" index="15" label="Automatic turning on/off seconds or milliseconds selection" min="0" max="1" size="1" value="0">
 	        <Help/>
 	        <Item label="seconds" value="0" />
 	        <Item label="milliseconds" value="1" />

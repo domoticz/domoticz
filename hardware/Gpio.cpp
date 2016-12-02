@@ -361,14 +361,17 @@ bool CGpio::InitPins()
 		// 01234567890123456789
 
 		std::string exportLine(buf);
-		//std::cout << "Processing line: " << exportLine;
+		std::cout << "Processing line: " << exportLine;
 		std::vector<std::string> sresults;
-		StringSplit(exportLine, " :", sresults);
+		StringSplit(exportLine, ":", sresults);
 		if (sresults.empty())
 			continue;
-		if (sresults[0] == "GPIO")
+		//if (sresults[0] == "GPIO")
+		if (sresults[0] == "GPIO Pins exported")
 			continue;
-		if (sresults.size() >= 4)
+		std::cout << "results.size: " << sresults.size() << sresults[0];		
+		//if (sresults.size() >= 4)
+		if (sresults.size() >= 2)	
 		{
 			gpioNumber = atoi(sresults[0].c_str());
 			if ((gpioNumber >= 0) && (gpioNumber <= MAX_GPIO)) {
@@ -444,7 +447,7 @@ bool CGpio::InitPins()
 					_log.Log(LOG_NORM, "GPIO: Ignoring unsupported pin '%s'", fields[1].c_str());
 				}
 			}
-		} else if (fields.size() == 14) {
+		} else if (fields.size() == 15) {
 			// New style
 			if (fields[1].length() > 0) {
 				gpioNumber = atoi(fields[1].c_str());
@@ -456,13 +459,13 @@ bool CGpio::InitPins()
 				}
 			}
 
-			if (fields[12].length() > 0) {
-				gpioNumber = atoi(fields[12].c_str());
+			if (fields[13].length() > 0) {
+				gpioNumber = atoi(fields[13].c_str());
 				if ((gpioNumber >= 0) && (gpioNumber <= MAX_GPIO)) {
-					pins.push_back(CGpioPin(gpioNumber, "gpio" + fields[12] + " (" + fields[10] + ") on pin " + fields[7],
-							fields[9] == "IN", fields[9] == "OUT", exports[gpioNumber]));
+					pins.push_back(CGpioPin(gpioNumber, "gpio" + fields[13] + " (" + fields[11] + ") on pin " + fields[8],
+							fields[10] == "IN", fields[10] == "OUT", exports[gpioNumber]));
 				} else {
-					_log.Log(LOG_NORM, "GPIO: Ignoring unsupported pin '%s'", fields[12].c_str());
+					_log.Log(LOG_NORM, "GPIO: Ignoring unsupported pin '%s'", fields[13].c_str());
 				}
 			}
 		}
