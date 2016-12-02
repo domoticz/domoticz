@@ -794,7 +794,7 @@ namespace Plugins {
 	{
 		PyObject*	pNameBytes = pythonLib->PyUnicode_AsASCIIString(self->Name);
 		PyObject*	pValueBytes = pythonLib->PyUnicode_AsASCIIString(self->sValue);
-		PyObject*	pRetVal = PyUnicode_FromFormat("ID: %d, Name: '%s', nValue: %d, sValue: '%s'", self->ID, PyBytes_AsString(pNameBytes), self->nValue, PyBytes_AsString(pValueBytes));
+		PyObject*	pRetVal = pythonLib->PyUnicode_FromFormat("ID: %d, Name: '%s', nValue: %d, sValue: '%s'", self->ID, PyBytes_AsString(pNameBytes), self->nValue, PyBytes_AsString(pValueBytes));
 		Py_DECREF(pNameBytes);
 		Py_DECREF(pValueBytes);
 		return pRetVal;

@@ -169,9 +169,10 @@ namespace Plugins {
 #define	PyObject_GetAttrString	pythonLib->PyObject_GetAttrString
 #define	PyObject_HasAttrString	pythonLib->PyObject_HasAttrString
 #define	PyBytes_AsString		pythonLib->PyBytes_AsString
-//#define	PyUnicode_AsASCIIString pythonLib->PyUnicode_AsASCIIString
+// Python 3.2.3 has defined these as macros so we can't redefine them here
+//#define PyUnicode_AsASCIIString pythonLib->PyUnicode_AsASCIIString
 //#define PyUnicode_FromString	pythonLib->PyUnicode_FromString
-#define PyUnicode_FromFormat	pythonLib->PyUnicode_FromFormat
+//#define PyUnicode_FromFormat	pythonLib->PyUnicode_FromFormat
 #define PyLong_FromLong			pythonLib->PyLong_FromLong
 #define PyLong_AsLongLong		pythonLib->PyLong_AsLongLong
 #define PyModule_GetDict		pythonLib->PyModule_GetDict
