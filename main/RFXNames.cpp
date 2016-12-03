@@ -240,6 +240,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_ZIBLUEUSB, "ZiBlue RFPlayer USB" },
 		{ HTYPE_ZIBLUETCP, "ZiBlue RFPlayer with LAN interface" },
 		{ HTYPE_Yeelight, "YeeLight LED" },
+		{ HTYPE_IHCSerial, "IHC Serial/USB/RS485 Controller" },
 
 		{ 0, NULL, NULL }
 	};
@@ -3379,6 +3380,7 @@ bool IsSerialDevice(const _eHardwareTypes htype)
 	case HTYPE_CurrentCostMeter:
 	case HTYPE_RAVEn:
 	case HTYPE_Comm5Serial:
+	case HTYPE_IHCSerial:
 		return true;
 	default:
 		return false;

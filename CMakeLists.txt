@@ -349,6 +349,7 @@ hardware/ZiBlueSerial.cpp
 hardware/ZiBlueTCP.cpp
 hardware/ZWaveBase.cpp
 hardware/Yeelight.cpp
+hardware/IHCSerial.cpp
 notifications/NotificationBase.cpp
 notifications/NotificationEmail.cpp
 notifications/NotificationGCM.cpp
