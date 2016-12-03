@@ -240,7 +240,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_ZIBLUEUSB, "ZiBlue RFPlayer USB" },
 		{ HTYPE_ZIBLUETCP, "ZiBlue RFPlayer with LAN interface" },
 		{ HTYPE_Yeelight, "YeeLight LED" },
-
+		{ HTYPE_RaspberryPCF8574, "Local I2C PIO 8bit expander PCF8574 or PCF8574A" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
