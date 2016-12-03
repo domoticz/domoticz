@@ -924,7 +924,7 @@ namespace http {
 					(ii == HTYPE_RaspberryBMP085) ||
 					(ii == HTYPE_RaspberryHTU21D) ||
 					(ii == HTYPE_RaspberryTSL2561) ||
-					(ii == HTYPE_PCF8574)
+					(ii == HTYPE_RaspberryPCF8574)
 					)
 				{
 					bDoAdd = false;
@@ -1192,7 +1192,7 @@ namespace http {
 				if (username == "")
 					return;
 			}
-			else if (htype == HTYPE_PCF8574) {
+			else if (htype == HTYPE_RaspberryPCF8574) {
 				//All fine here
 			}
 			else
@@ -1466,7 +1466,7 @@ namespace http {
 						return;
 					}
 			}
-			else if (htype == HTYPE_PCF8574) {
+			else if (htype == HTYPE_RaspberryPCF8574) {
 				//All fine here
 			}
 			else

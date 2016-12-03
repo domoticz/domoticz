@@ -173,7 +173,7 @@ enum _eHardwareTypes {
 	HTYPE_ZIBLUETCP,			//90
 	HTYPE_Yeelight,				//91
 	HTYPE_MySensorsMQTT,		//92
-	HTYPE_PCF8574,				//93
+	HTYPE_RaspberryPCF8574,				//93
 	HTYPE_END
 };
 

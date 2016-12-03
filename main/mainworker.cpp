@@ -833,7 +833,7 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_RaspberryTSL2561:
 		pHardware = new I2C(ID,3,0);
 		break;
-	case HTYPE_PCF8574:
+	case HTYPE_RaspberryPCF8574:
 		pHardware = new I2C(ID,4,Port);
 		break;
 	case HTYPE_Wunderground:
