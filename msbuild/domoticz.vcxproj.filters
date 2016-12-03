@@ -1945,6 +1945,9 @@
     <ClInclude Include="..\hardware\plugins\DelayedLink.h">
       <Filter>Devices\Python Plugins</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\plugins\Plugins.h">
+      <Filter>Devices\Python Plugins</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">

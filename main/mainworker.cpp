@@ -108,6 +108,7 @@
 #include "../hardware/ZiBlueSerial.h"
 #include "../hardware/ZiBlueTCP.h"
 #include "../hardware/Yeelight.h"
+#include "../hardware/plugins/Plugins.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"

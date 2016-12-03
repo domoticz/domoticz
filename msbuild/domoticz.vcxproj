@@ -472,6 +472,7 @@
     <ClInclude Include="..\hardware\Pinger.h" />
     <ClInclude Include="..\hardware\plugins\DelayedLink.h" />
     <ClInclude Include="..\hardware\plugins\PluginManager.h" />
+    <ClInclude Include="..\hardware\plugins\Plugins.h" />
     <ClInclude Include="..\hardware\PVOutput_Input.h" />
     <ClInclude Include="..\hardware\RAVEn.h" />
     <ClInclude Include="..\hardware\Razberry.h" />

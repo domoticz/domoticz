@@ -6,6 +6,7 @@
 #ifdef USE_PYTHON_PLUGINS
 
 #include "PluginManager.h"
+#include "Plugins.h"
 #include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "../main/SQLHelper.h"
@@ -19,8 +20,6 @@
 #include "../json/json.h"
 #include "../tinyxpath/tinyxml.h"
 #include "../main/localtime_r.h"
-#include "../ASyncSerial.h"
-#include "../ASyncSerial.h"
 
 #ifdef WIN32
 #	define MS_NO_COREDLL 1
@@ -1753,7 +1752,7 @@ namespace Plugins {
 		}
 	}
 
-	std::map<int, CPlugin*>	CPluginSystem::m_pPlugins;
+	std::map<int, CDomoticzHardwareBase*>	CPluginSystem::m_pPlugins;
 
 	CPluginSystem::CPluginSystem() : m_stoprequested(false)
 	{
@@ -1897,7 +1896,7 @@ namespace Plugins {
 		}
 	}
 
-	CPlugin* CPluginSystem::RegisterPlugin(const int HwdID, const std::string & Name, const std::string & PluginKey)
+	CDomoticzHardwareBase* CPluginSystem::RegisterPlugin(const int HwdID, const std::string & Name, const std::string & PluginKey)
 	{
 		CPlugin*	pPlugin = NULL;
 		if (m_bEnabled)
@@ -1910,7 +1909,7 @@ namespace Plugins {
 		{
 			_log.Log(LOG_STATUS, "PluginSystem: '%s' Registration ignored, Plugins are not enabled.", Name.c_str());
 		}
-		return pPlugin;
+		return (CDomoticzHardwareBase*)pPlugin;
 	}
 
 	void CPluginSystem::DeregisterPlugin(const int HwdID)
@@ -1938,9 +1937,10 @@ namespace Plugins {
 			if (ios.stopped())  // make sure that there is a boost thread to service i/o operations if there are any transports
 			{
 				bool bIos_required = false;
-				for (std::map<int, CPlugin*>::iterator itt = m_pPlugins.begin(); itt != m_pPlugins.end(); itt++)
+				for (std::map<int, CDomoticzHardwareBase*>::iterator itt = m_pPlugins.begin(); itt != m_pPlugins.end(); itt++)
 				{
-					if ((itt->second->m_pTransport) && (itt->second->m_pTransport->IsConnected()))
+					CPlugin*	pPlugin = (CPlugin*)itt->second;
+					if ((pPlugin->m_pTransport) && (pPlugin->m_pTransport->IsConnected()))
 					{
 						bIos_required = true;
 						break;
@@ -1969,7 +1969,7 @@ namespace Plugins {
 				}
 				else
 				{
-					CPlugin*	pPlugin = m_pPlugins[Message.m_HwdID];
+					CPlugin*	pPlugin = (CPlugin*)m_pPlugins[Message.m_HwdID];
 					pPlugin->HandleMessage(Message);
 				}
 
@@ -2016,7 +2016,7 @@ namespace Plugins {
 		std::stringstream ssMessage;
 		ssMessage << "|Subject=" << Subject << "|Text=" << Text << ExtraData << "Priority=" << Priority << "|Sound=" << Sound << "|";
 		boost::lock_guard<boost::mutex> l(PluginMutex);
-		for (std::map<int, CPlugin*>::iterator itt = m_pPlugins.begin(); itt != m_pPlugins.end(); itt++)
+		for (std::map<int, CDomoticzHardwareBase*>::iterator itt = m_pPlugins.begin(); itt != m_pPlugins.end(); itt++)
 		{
 			CPluginMessage	Message(PMT_Notification, itt->second->m_HwdID, ssMessage.str());
 			PluginMessageQueue.push(Message);
