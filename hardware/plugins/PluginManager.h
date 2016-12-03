@@ -5,7 +5,7 @@
 //
 
 #include "../DomoticzHardware.h"
-#include "../ASyncSerial.h"
+#include <boost/asio.hpp>
 
 namespace Plugins {
 
@@ -163,7 +163,7 @@ namespace Plugins {
 	{
 	private:
 		int					m_Baud;
-		AsyncSerial			m_Serial;
+		void*				m_AsyncSerial;
 	public:
 		CPluginTransportSerial(int HwdID, const std::string& Port, int Baud) : CPluginTransport(HwdID), m_Baud(Baud) { m_Port = Port; };
 		~CPluginTransportSerial(void);

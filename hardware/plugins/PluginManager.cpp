@@ -19,6 +19,8 @@
 #include "../json/json.h"
 #include "../tinyxpath/tinyxml.h"
 #include "../main/localtime_r.h"
+#include "../ASyncSerial.h"
+#include "../ASyncSerial.h"
 
 #ifdef WIN32
 #	define MS_NO_COREDLL 1
