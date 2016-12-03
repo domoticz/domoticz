@@ -54,7 +54,7 @@ Ondrej Lycka (ondrej.lycka@seznam.cz) 2016-23-11
 #include <stdio.h>
 #include <fcntl.h>
 #include <stdlib.h>
-#ifndef __arm__
+#ifdef __arm__
 #include <linux/i2c-dev.h>
 #include <linux/i2c.h>
 #include <unistd.h>
@@ -282,7 +282,7 @@ void I2C::Do_Work()
 //returns true if it could be opened
 bool I2C::i2c_test(const char *I2CBusName)
 {
-#ifdef __arm__
+#ifndef __arm__
 	return false;
 #else
 	int fd;
@@ -297,7 +297,7 @@ bool I2C::i2c_test(const char *I2CBusName)
 // Returns a file id for the port/bus
 int I2C::i2c_Open(const char *I2CBusName)
 {
-#ifdef __arm__
+#ifndef __arm__
 	return -1;
 #else
 	int fd;
@@ -317,8 +317,8 @@ int I2C::i2c_Open(const char *I2CBusName)
 
 void I2C::PCF8574_ReadChipDetails()
 {	
-#ifdef __arm__
-	return -1;
+#ifndef __arm__
+	return;
 #else
 	char buf = 0;
 	int fd = i2c_Open(m_ActI2CBus.c_str()); // open i2c
@@ -388,7 +388,7 @@ unsigned char I2C::PCF8574_create_Unit(unsigned char i2c_address, char pin)
 
 char I2C::PCF8574_WritePin(char pin_number,char  value)
 {	
-#ifdef __arm__
+#ifndef __arm__
 	return -1;
 #else
 	_log.Log(LOG_NORM, "GPIO: WRITE TO PCF8574 pin:%d, value: %d, i2c_address:%d", pin_number, value, i2c_addr);
@@ -423,7 +423,7 @@ char I2C::PCF8574_WritePin(char pin_number,char  value)
 
 int I2C::ReadInt(int fd, uint8_t *devValues, uint8_t startReg, uint8_t bytesToRead)
 {
-#ifdef __arm__
+#ifndef __arm__
 	return -1;
 #else
 	int rc;
@@ -470,7 +470,7 @@ int I2C::ReadInt(int fd, uint8_t *devValues, uint8_t startReg, uint8_t bytesToRe
 
 int I2C::WriteCmd(int fd, uint8_t devAction)
 {
-#ifdef __arm__
+#ifndef __arm__
 	return -1;
 #else
 	int rc;
@@ -520,7 +520,7 @@ int I2C::WriteCmd(int fd, uint8_t devAction)
 
 char I2C::readByteI2C(int fd, char *byte, char i2c_addr)
 {
-#ifdef __arm__
+#ifndef __arm__
 	return -1;
 #else
 	// set I2C address to will be comunicate (frist addres = chip on base board)
@@ -539,7 +539,7 @@ char I2C::readByteI2C(int fd, char *byte, char i2c_addr)
 
 char I2C::writeByteI2C(int fd, char byte, char i2c_addr)
 {
-#ifdef __arm__
+#ifndef __arm__
 	return -1;
 #else
 	// set I2C address to will be comunicate (frist addres = chip on base board)
@@ -578,7 +578,7 @@ int I2C::HTU21D_checkCRC8(uint16_t data)
 
 int I2C::HTU21D_GetHumidity(int fd, float *Hum)
 {
-#ifdef __arm__
+#ifndef __arm__
 	return -1;
 #else
 	uint16_t rawHumidity;
@@ -605,7 +605,7 @@ int I2C::HTU21D_GetHumidity(int fd, float *Hum)
 
 int I2C::HTU21D_GetTemperature(int fd, float *Temp)
 {
-#ifdef __arm__
+#ifndef __arm__
 	return -1;
 #else
 	uint16_t rawTemperature;
@@ -637,7 +637,7 @@ void I2C::HTU21D_ReadSensorDetails()
 {
 	float temperature, humidity;
 
-#ifdef __arm__
+#ifndef __arm__
 	temperature = 21.3f;
 	humidity = 45;
 #else
@@ -683,7 +683,7 @@ void I2C::TSL2561_Init()
 void I2C::TSL2561_ReadSensorDetails()
 {
 	float lux;
-#ifdef __arm__
+#ifndef __arm__
 	lux = 1984;
 #else
 	uint8_t rValues[2];
@@ -783,7 +783,7 @@ int I2C::bmp_WaitForConversion(int fd)
 // Value returned will be in hPa
 int I2C::bmp_GetPressure(int fd, double *Pres)
 {
-#ifdef __arm__
+#ifndef __arm__
 	return -1;
 #else
 	unsigned int up;
@@ -837,7 +837,7 @@ int I2C::bmp_GetPressure(int fd, double *Pres)
 // Value returned will be in units of 0.1 deg C
 int I2C::bmp_GetTemperature(int fd, double *Temp)
 {
-#ifdef __arm__
+#ifndef __arm__
 	return -1;
 #else
 	unsigned int ut;
@@ -993,7 +993,7 @@ void I2C::bmp_ReadSensorDetails()
 	double temperature, pressure;
 	double altitude;
 
-#ifdef __arm__
+#ifndef __arm__
 	temperature = 21.3;
 	pressure = 1021.22;
 	altitude = 10.0;
