@@ -174,6 +174,7 @@ bool I2C::WriteToHardware(const char *pdata, const unsigned char length)
 	if (device!="PCF8574") return false;
 	const tRBUF *pCmd = reinterpret_cast<const tRBUF*>(pdata);
 	if ((pCmd->LIGHTING2.packettype == pTypeLighting2)) {
+		/*
 		_log.Log(LOG_NORM,"GPIO: packetlength %d", pCmd->LIGHTING2.packetlength);
 		_log.Log(LOG_NORM,"GPIO: packettype %d", pCmd->LIGHTING2.packettype);
 		_log.Log(LOG_NORM,"GPIO: subtype %d", pCmd->LIGHTING2.subtype);
@@ -185,6 +186,7 @@ bool I2C::WriteToHardware(const char *pdata, const unsigned char length)
 		_log.Log(LOG_NORM,"GPIO: unitcode %d", pCmd->LIGHTING2.unitcode); // in DB columb "Unit" used for identify number switch on board
 		_log.Log(LOG_NORM,"GPIO: cmnd %d", pCmd->LIGHTING2.cmnd);
 		_log.Log(LOG_NORM,"GPIO: level %d", pCmd->LIGHTING2.level);
+		*/
 		unsigned char id1=pCmd->LIGHTING2.id1;
 		unsigned char id2=pCmd->LIGHTING2.id2;
 		unsigned char id3=pCmd->LIGHTING2.id3;
@@ -192,18 +194,22 @@ bool I2C::WriteToHardware(const char *pdata, const unsigned char length)
 		int ID=(id1<<24)|(id2<<16)|(id3<<8)|id4;
 		unsigned char Unit = pCmd->LIGHTING2.unitcode;
 		unsigned char  value = pCmd->LIGHTING2.cmnd;
+		/*
 		_log.Log(LOG_NORM,"GPIO: ID %d", ID);
 		_log.Log(LOG_NORM,"GPIO: Unit %d", Unit);
 		_log.Log(LOG_NORM,"GPIO: new value %d", value);
+		*/
 		// check my serverd i2c_addr (form Unit I can get i2c_addres of switch)
 		unsigned char i2c_address=PCF8574_get_i2c_addr_from_Unit(Unit);
+		/*
 		_log.Log(LOG_NORM,"GPIO: my served i2c address %d", i2c_addr);
 		_log.Log(LOG_NORM,"GPIO: i2c address from Unit %d", i2c_address);
+		*/
 		if (i2c_address != i2c_addr) return false; //actulaty is served PCF8574 with another i2c address
 		//check ID if is for PCF8574 (my rule, from Unit may get ID and reverse)
 		unsigned char pin_number=PCF8574_get_pin_number_from_Unit(Unit);
 		if ( (PCF8574_ID_ADD+i2c_address*256+pin_number) != ID ) return false; //not for PCF8574
-		_log.Log(LOG_NORM,"GPIO: Write value %d to pin %d ,i2c address %d", value, pin_number,i2c_addr );
+		/* _log.Log(LOG_NORM,"GPIO: Write value %d to pin %d ,i2c address %d", value, pin_number,i2c_addr ); */
 		value=~value&0x01; // inversion value domoticz on=1, off=0, bat I use PCF8574 pin active pin=0, no active pin=1
 		if (PCF8574_WritePin( pin_number, value)<0) return false; // goto relay exute write to switch (pin)
 		else return true;
@@ -307,6 +313,8 @@ int I2C::i2c_Open(const char *I2CBusName)
 #endif
 }
 
+// PCF8574 and PCF8574A
+
 void I2C::PCF8574_ReadChipDetails()
 {	
 #ifdef __arm__
@@ -394,17 +402,17 @@ char I2C::PCF8574_WritePin(char pin_number,char  value)
 	}
 	if ( readByteI2C(fd, &buf_act, i2c_addr) < 0 ) return -2;
 	lseek(fd,0,SEEK_SET); // after read back file cursor to begin (prepare to write to begin)
-	_log.Log(LOG_NORM, "GPIO: actual value byte %d", buf_act);
+	//_log.Log(LOG_NORM, "GPIO: actual value byte %d", buf_act);
 	if (value==1) buf_new = buf_act | pin_mask;	//prepare new value by combinate curent value, mask and new value
 	else buf_new = buf_act & ~pin_mask;
 	if (buf_new!=buf_act) { // value change
-		_log.Log(LOG_NORM, "GPIO: new value byte %d", buf_new);
+		//_log.Log(LOG_NORM, "GPIO: new value byte %d", buf_new);
 		if (writeByteI2C(fd, buf_new, i2c_addr) < 0 ) {
 			_log.Log(LOG_ERROR, "GPIO: %s: Error write to device!...", device.c_str());
 			return -3;
 		}
 	}
-	else _log.Log(LOG_NORM, "GPIO: No change");
+	//else _log.Log(LOG_NORM, "GPIO: No change");
 	close(fd);
 	//_log.Log(LOG_NORM, "WRITE ON SEAHU DEVICE n.%d value %d is OK", gpioId, value);
 	return 1;
