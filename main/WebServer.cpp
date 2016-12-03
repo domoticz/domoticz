@@ -9975,7 +9975,7 @@ namespace http {
 
 			int HideDisabledHardwareSensors = 0;
 			m_sql.GetPreferencesVar("HideDisabledHardwareSensors", HideDisabledHardwareSensors);
-			bool bDisabledDisabled = (HideDisabledHardwareSensors != 0);
+			bool bDisabledDisabled = (HideDisabledHardwareSensors == 0);
 			if (sDisplayDisabled == "1")
 				bDisabledDisabled = true;
 
