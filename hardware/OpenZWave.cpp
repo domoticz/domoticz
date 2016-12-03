@@ -2669,7 +2669,31 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 		}
 	}
 	if (pDevice == NULL)
-		return;
+	{
+		//New device, let's add it
+		COpenZWave::NodeInfo *pNode = GetNodeInfo(HomeID, NodeID);
+		if (!pNode)
+			return;
+		AddValue(vID, pNode);
+		for (itt = m_devices.begin(); itt != m_devices.end(); ++itt)
+		{
+			std::string dstring = itt->second.string_id;
+			if (dstring == path) {
+				pDevice = &itt->second;
+				break;
+			}
+			else {
+				size_t loc = dstring.find(path_plus);
+				if (loc != std::string::npos)
+				{
+					pDevice = &itt->second;
+					break;
+				}
+			}
+		}
+		if (pDevice == NULL)
+			return;
+	}
 
 	pDevice->bValidValue = true;
 	pDevice->orgInstanceID = vOrgInstance;
