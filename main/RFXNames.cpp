@@ -583,6 +583,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLighting5, sTypeLegrandCAD, "Legrand CAD" },
 		{ pTypeLighting5, sTypeAvantek, "Avantek" },
 		{ pTypeLighting5, sTypeIT, "Intertek,FA500,PROmax" },
+		{ pTypeLighting5, sTypeMDREMOTE108, "MDRemote 108" },
 
 		{ pTypeLighting6, sTypeBlyss, "Blyss" },
 
@@ -932,6 +933,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeLighting5, sTypeLegrandCAD, "Status" },
 		{ pTypeLighting5, sTypeAvantek, "Status" },
 		{ pTypeLighting5, sTypeIT, "Status" },
+		{ pTypeLighting5, sTypeMDREMOTE108, "Status" },
 
 		{ pTypeLighting6, sTypeBlyss, "Status" },
 
