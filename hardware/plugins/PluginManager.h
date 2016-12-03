@@ -6,7 +6,6 @@
 
 #include "../DomoticzHardware.h"
 #include "../ASyncSerial.h"
-#include <boost/asio.hpp>
 
 namespace Plugins {
 
