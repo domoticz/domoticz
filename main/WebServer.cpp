@@ -9962,12 +9962,22 @@ namespace http {
 					root["result"][ii]["Username"] = sd[7];
 					root["result"][ii]["Password"] = sd[8];
 					root["result"][ii]["Extra"] = sd[9];
-					root["result"][ii]["Mode1"] = atoi(sd[10].c_str());
-					root["result"][ii]["Mode2"] = atoi(sd[11].c_str());
-					root["result"][ii]["Mode3"] = atoi(sd[12].c_str());
-					root["result"][ii]["Mode4"] = atoi(sd[13].c_str());
-					root["result"][ii]["Mode5"] = atoi(sd[14].c_str());
-					root["result"][ii]["Mode6"] = atoi(sd[15].c_str());
+					if (hType == HTYPE_PythonPlugin) {
+						root["result"][ii]["Mode1"] = sd[10];  // Plugins can have non-numeric values in the Mode fields
+						root["result"][ii]["Mode2"] = sd[11];
+						root["result"][ii]["Mode3"] = sd[12];
+						root["result"][ii]["Mode4"] = sd[13];
+						root["result"][ii]["Mode5"] = sd[14];
+						root["result"][ii]["Mode6"] = sd[15];
+					}
+					else {
+						root["result"][ii]["Mode1"] = atoi(sd[10].c_str());
+						root["result"][ii]["Mode2"] = atoi(sd[11].c_str());
+						root["result"][ii]["Mode3"] = atoi(sd[12].c_str());
+						root["result"][ii]["Mode4"] = atoi(sd[13].c_str());
+						root["result"][ii]["Mode5"] = atoi(sd[14].c_str());
+						root["result"][ii]["Mode6"] = atoi(sd[15].c_str());
+					}
 					root["result"][ii]["DataTimeout"] = atoi(sd[16].c_str());
 
 					//Special case for openzwave (status for nodes queried)
