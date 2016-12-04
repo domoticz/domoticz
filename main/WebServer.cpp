@@ -923,7 +923,8 @@ namespace http {
 				if (
 					(ii == HTYPE_RaspberryBMP085) ||
 					(ii == HTYPE_RaspberryHTU21D) ||
-					(ii == HTYPE_RaspberryTSL2561)
+					(ii == HTYPE_RaspberryTSL2561) ||
+					(ii == HTYPE_RaspberryPCF8574)
 					)
 				{
 					bDoAdd = false;
@@ -1190,6 +1191,9 @@ namespace http {
 			else if (htype == HTYPE_GoodweAPI) {
 				if (username == "")
 					return;
+			}
+			else if (htype == HTYPE_RaspberryPCF8574) {
+				//All fine here
 			}
 			else
 				return;
@@ -1461,6 +1465,9 @@ namespace http {
 					if (username == "") {
 						return;
 					}
+			}
+			else if (htype == HTYPE_RaspberryPCF8574) {
+				//All fine here
 			}
 			else
 				return;
