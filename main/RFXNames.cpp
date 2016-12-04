@@ -240,7 +240,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_ZIBLUEUSB, "ZiBlue RFPlayer USB" },
 		{ HTYPE_ZIBLUETCP, "ZiBlue RFPlayer with LAN interface" },
 		{ HTYPE_Yeelight, "YeeLight LED" },
-
+		{ HTYPE_RaspberryPCF8574, "Local I2C PIO 8bit expander PCF8574 or PCF8574A" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -583,6 +583,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLighting5, sTypeLegrandCAD, "Legrand CAD" },
 		{ pTypeLighting5, sTypeAvantek, "Avantek" },
 		{ pTypeLighting5, sTypeIT, "Intertek,FA500,PROmax" },
+		{ pTypeLighting5, sTypeMDREMOTE108, "MDRemote 108" },
 
 		{ pTypeLighting6, sTypeBlyss, "Blyss" },
 
@@ -932,6 +933,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeLighting5, sTypeLegrandCAD, "Status" },
 		{ pTypeLighting5, sTypeAvantek, "Status" },
 		{ pTypeLighting5, sTypeIT, "Status" },
+		{ pTypeLighting5, sTypeMDREMOTE108, "Status" },
 
 		{ pTypeLighting6, sTypeBlyss, "Status" },
 
