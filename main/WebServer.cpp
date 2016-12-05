@@ -923,7 +923,8 @@ namespace http {
 				if (
 					(ii == HTYPE_RaspberryBMP085) ||
 					(ii == HTYPE_RaspberryHTU21D) ||
-					(ii == HTYPE_RaspberryTSL2561)
+					(ii == HTYPE_RaspberryTSL2561) ||
+					(ii == HTYPE_RaspberryPCF8574)
 					)
 				{
 					bDoAdd = false;
@@ -1190,6 +1191,9 @@ namespace http {
 			else if (htype == HTYPE_GoodweAPI) {
 				if (username == "")
 					return;
+			}
+			else if (htype == HTYPE_RaspberryPCF8574) {
+				//All fine here
 			}
 			else
 				return;
@@ -1461,6 +1465,9 @@ namespace http {
 					if (username == "") {
 						return;
 					}
+			}
+			else if (htype == HTYPE_RaspberryPCF8574) {
+				//All fine here
 			}
 			else
 				return;
@@ -3713,7 +3720,7 @@ namespace http {
 						return;
 					devid = id;
 				}
-				else if (lighttype < 60)
+				else if (lighttype < 70)
 				{
 					dtype = pTypeLighting5;
 					subtype = lighttype - 50;
@@ -3730,22 +3737,6 @@ namespace http {
 						devid = "00" + id;
 					else
 						devid = id;
-				}
-				else if (lighttype < 70)
-				{
-					//Blyss
-					dtype = pTypeLighting6;
-					subtype = lighttype - 60;
-					std::string sgroupcode = request::findValue(&req, "groupcode");
-					sunitcode = request::findValue(&req, "unitcode");
-					std::string id = request::findValue(&req, "id");
-					if (
-						(sgroupcode == "") ||
-						(sunitcode == "") ||
-						(id == "")
-						)
-						return;
-					devid = id + sgroupcode;
 				}
 				else
 				{
@@ -3864,6 +3855,22 @@ namespace http {
 							)
 							return;
 						devid = id;
+					}
+					else if (lighttype == 106)
+					{
+						//Blyss
+						dtype = pTypeLighting6;
+						subtype = lighttype - 60;
+						std::string sgroupcode = request::findValue(&req, "groupcode");
+						sunitcode = request::findValue(&req, "unitcode");
+						std::string id = request::findValue(&req, "id");
+						if (
+							(sgroupcode == "") ||
+							(sunitcode == "") ||
+							(id == "")
+							)
+							return;
+						devid = id + sgroupcode;
 					}
 					else if ((lighttype >= 200) && (lighttype < 300))
 					{
@@ -4135,7 +4142,7 @@ namespace http {
 						return;
 					devid = id;
 				}
-				else if (lighttype < 60)
+				else if (lighttype < 70)
 				{
 					dtype = pTypeLighting5;
 					subtype = lighttype - 50;
@@ -4152,22 +4159,6 @@ namespace http {
 						devid = "00" + id;
 					else
 						devid = id;
-				}
-				else if (lighttype < 70)
-				{
-					//Blyss
-					dtype = pTypeLighting6;
-					subtype = lighttype - 60;
-					std::string sgroupcode = request::findValue(&req, "groupcode");
-					sunitcode = request::findValue(&req, "unitcode");
-					std::string id = request::findValue(&req, "id");
-					if (
-						(sgroupcode == "") ||
-						(sunitcode == "") ||
-						(id == "")
-						)
-						return;
-					devid = id + sgroupcode;
 				}
 				else if (lighttype == 101)
 				{
@@ -4240,6 +4231,22 @@ namespace http {
 						)
 						return;
 					devid = id;
+				}
+				else if (lighttype == 106)
+				{
+					//Blyss
+					dtype = pTypeLighting6;
+					subtype = lighttype - 60;
+					std::string sgroupcode = request::findValue(&req, "groupcode");
+					sunitcode = request::findValue(&req, "unitcode");
+					std::string id = request::findValue(&req, "id");
+					if (
+						(sgroupcode == "") ||
+						(sunitcode == "") ||
+						(id == "")
+						)
+						return;
+					devid = id + sgroupcode;
 				}
 				else
 				{
