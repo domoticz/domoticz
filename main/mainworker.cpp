@@ -6275,6 +6275,7 @@ void MainWorker::decode_evohome3(const int HwdID, const _eHardwareTypes HwdType,
 		{
 			BatteryLevel = pEvo->EVOHOME3.battery_level;
 			szDemand = result[0][6];
+			cmnd=(atoi(szDemand.c_str())>0)?light1_sOn:light1_sOff;
 		}
 		if(Unit==0xFF)
 		{
