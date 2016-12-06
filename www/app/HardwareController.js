@@ -447,8 +447,24 @@ define(['app'], function (app) {
                     }
                 });
             }
-            else if ((text.indexOf("Underground") >= 0) || (text.indexOf("DarkSky") >= 0) || (text.indexOf("AccuWeather") >= 0) || (text.indexOf("Open Weather Map") >= 0))
-            {
+			else if ((text.indexOf("Regulator") >= 0)) {
+				$.ajax({
+					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+						 "&enabled=" + bEnabled +
+						 "&name=" + encodeURIComponent(name) +
+						 "&idx=" + idx +
+						 "&datatimeout=" + datatimeout,
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+						RefreshHardwareTable();
+					},
+					error: function () {
+						ShowNotify($.t('Problem updating hardware!'), 2500, true);
+					}
+				});
+			}
+			else if ((text.indexOf("Underground") >= 0) || (text.indexOf("DarkSky") >= 0) || (text.indexOf("AccuWeather") >= 0) || (text.indexOf("Open Weather Map") >= 0)) {
                 var apikey=$("#hardwarecontent #divunderground #apikey").val();
                 if (apikey=="")
                 {
@@ -1225,8 +1241,20 @@ define(['app'], function (app) {
                     }
                 });
             }
-            else if (text.indexOf("SBFSpot") >= 0)
-            {
+			else if ((text.indexOf("Regulator") >= 0)) {
+				$.ajax({
+					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+						RefreshHardwareTable();
+					},
+					error: function () {
+						ShowNotify($.t('Problem adding hardware!'), 2500, true);
+					}
+				});
+			}
+			else if (text.indexOf("SBFSpot") >= 0) {
                 var configlocation=$("#hardwarecontent #divlocation #location").val();
                 if (configlocation=="")
                 {
@@ -4261,6 +4289,167 @@ define(['app'], function (app) {
             OnDummySensorTypeChange();
         }
 
+		AssociateDevices = function (hardwareidx, name) {
+			$.devIdx = hardwareidx;
+
+			$("#dialog-associatedevices").dialog({
+				autoOpen: false,
+				width: 650,
+				height: 550,
+				modal: true,
+				resizable: true,
+				buttons: {
+					"Close": function () {
+						$(this).dialog("close");
+					}
+				},
+				open: function (event, ui) {
+					// fill temperature, setpoint and switch devices combos
+					AssociateDevices_fillcombos();
+
+					// load the current associations (from table "Regulators")
+					AssociateDevices_refreshtable($.devIdx);
+
+					// set callback for button "add"
+					$('#dialog-associatedevices #submitbuttonAddRegulation').off('click');
+					$('#dialog-associatedevices #submitbuttonAddRegulation').click(function (e) {
+						var tempid = $("#dialog-associatedevices #tempdevice").val();
+						var switchid = $("#dialog-associatedevices #switchdevice").val();
+						var setpointid = $("#dialog-associatedevices #setpointdevice").val();
+						AssociateDevices_add($.devIdx, tempid, switchid, setpointid);
+						e.preventDefault();
+					});
+
+					// action on "delete" -- set up in function AssociateDevices_refreshtable
+				},
+				close: function () {
+					$(this).dialog("close");
+				}
+			});
+
+			$("#dialog-associatedevices").i18n();
+			$("#dialog-associatedevices").dialog("open");
+
+		}
+		
+		function AssociateDevices_fillcombos() {
+			// populate list of temperature devices
+			$.ajax({
+				url: "json.htm?type=devices&filter=temp&used=true&order=Name",
+				dataType: 'json',
+				success: function (data) {
+					$("#dialog-associatedevices #tempdevice option").remove();
+					if (data.status == 'OK') {
+						$.each(data.result, function (idx, obj) {
+							$("#dialog-associatedevices #tempdevice").append($('<option>', { value: obj.idx, text: obj.Name }));
+						});
+					}
+					else {
+						ShowNotify($.t('Problem loading temperature devices!'), 2500, true);
+					}
+				},
+				error: function () {
+					HideNotify();
+					ShowNotify($.t('Problem loading temperature devices!'), 2500, true);
+				}
+			});
+			// populate list of switch devices
+			$.ajax({
+				url: "json.htm?type=devices&filter=light&used=true&order=Name",
+				dataType: 'json',
+				success: function (data) {
+					$("#dialog-associatedevices #switchdevice option").remove();
+					if (data.status == 'OK') {
+						$.each(data.result, function (idx, obj) {
+							$("#dialog-associatedevices #switchdevice").append($('<option>', { value: obj.idx, text: obj.Name }));
+						});
+					}
+					else {
+						ShowNotify($.t('Problem loading switch devices!'), 2500, true);
+					}
+				},
+				error: function () {
+					HideNotify();
+					ShowNotify($.t('Problem loading switch devices!'), 2500, true);
+				}
+			});
+			// populate list of thermostat setpoint
+			$.ajax({
+				url: "json.htm?type=devices&filter=utility&used=true&order=Name",
+				dataType: 'json',
+				success: function (data) {
+					$("#dialog-associatedevices #setpointdevice option").remove();
+					if (data.status == 'OK') {
+						$.each(data.result, function (idx, obj) {
+							$("#dialog-associatedevices #setpointdevice").append($('<option>', { value: obj.idx, text: obj.Name }));
+						});
+					}
+					else {
+						ShowNotify($.t('Problem loading setpoint devices!'), 2500, true);
+					}
+				},
+				error: function () {
+					HideNotify();
+					ShowNotify($.t('Problem loading setpoint devices!'), 2500, true);
+				}
+			});
+		}
+
+		function AssociateDevices_refreshtable(hardwareidx) {
+			// populate list of actual associations (temp + switch + setpoint)
+			$.ajax({
+				url: "json.htm?type=regulator&command=list&hwidx=" + hardwareidx,
+				dataType: 'json',
+				success: function (data) {
+					$('#dialog-associatedevices #associations tbody tr').remove();
+					if (data.status == 'OK') {
+						$.each(data.result, function (idx, obj) {
+							var newrow = '<tr rowid=' + obj.ID + '><td><img src=images/delete.png class=dialog-associatedevices-clicimg></td><td>' + obj.ID + '</td><td>' + obj.TemperatureDeviceName + '</td><td>' + obj.SwitchDeviceName + '</td><td>' + obj.SetpointDeviceName + '</td></tr>';
+							$("#dialog-associatedevices #associations").append(newrow);
+						});
+
+						$('#dialog-associatedevices #associations .dialog-associatedevices-clicimg').click(function (evt, ui) {
+							var row = $(evt.currentTarget).closest('tr');
+							var rowid = row.attr('rowid');
+							AssociateDevices_del($.devIdx, rowid, row);
+						});
+					}
+					else {
+						ShowNotify($.t('Problem loading devices associations!'), 2500, true);
+					}
+				},
+				error: function () {
+					ShowNotify($.t('Problem loading devices associations!'), 2500, true);
+				}
+			});
+		}
+
+		function AssociateDevices_add(hardwareidx, tempid, switchid, setpointid) {
+			$.ajax({
+				url: "json.htm?type=regulator&command=add&hwidx=" + hardwareidx + "&tempid=" + tempid + "&setpointid=" + setpointid + "&switchid=" + switchid,
+				dataType: 'json',
+				success: function (data) {
+					AssociateDevices_refreshtable(hardwareidx);
+				},
+				error: function () {
+					ShowNotify($.t('Problem adding new association!'), 2500, true);
+				}
+			});
+		}
+
+		function AssociateDevices_del(hardwareidx, rowid, tr_to_remove) {
+			$.ajax({
+				url: "json.htm?type=regulator&command=del&hwidx=" + hardwareidx + "&rowid=" + rowid,
+				dataType: 'json',
+				success: function (data) {
+					tr_to_remove.remove();
+				},
+				error: function () {
+					ShowNotify($.t('Problem deleting association!'), 2500, true);
+				}
+			});
+		}
+
         AddYeeLight = function(idx,name)
         {
 			$.devIdx=idx;
@@ -4520,6 +4709,9 @@ define(['app'], function (app) {
                     else if (HwTypeStr.indexOf("HTTP/HTTPS") >= 0) {
                         HwTypeStr+=' <span class="label label-info lcursor" onclick="CreateDummySensors(' + item.idx + ',\'' + item.Name + '\');">' + $.t("Create Virtual Sensors") + '</span>';
                     }
+					else if (HwTypeStr.indexOf("Regulator") >= 0) {
+						HwTypeStr += ' <span class="label label-info lcursor" onclick="AssociateDevices(' + item.idx + ',\'' + item.Name + '\');">' + $.t("Associate Devices") + '</span>';
+					}
                     else if (HwTypeStr.indexOf("RFLink") >= 0) {
                         HwTypeStr+='<br>Version: ' + item.version;
                         HwTypeStr+=' <span class="label label-info lcursor" onclick="CreateRFLinkDevices(' + item.idx + ',\'' + item.Name + '\');">' + $.t("Create RFLink Devices") + '</span>';
@@ -4869,6 +5061,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divlogin").hide();
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
+				$("#hardwarecontent #divregulator").hide();
             }
 	    else if (text.indexOf("Local I2C ") >= 0)
 	    {
@@ -4884,6 +5077,7 @@ define(['app'], function (app) {
                 {
                 	$("#hardwarecontent #divi2caddress").show();
                 }
+				$("#hardwarecontent #divregulator").hide();
 	    }
             else if (text.indexOf("USB") >= 0)
             {
@@ -4901,6 +5095,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divlogin").hide();
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
+				$("#hardwarecontent #divregulator").hide();
             }
             else if ((text.indexOf("LAN") >= 0 || text.indexOf("Harmony") >= 0 || text.indexOf("MySensors Gateway with MQTT") >= 0) && text.indexOf("YouLess") == -1 && text.indexOf("Denkovi") == -1 && text.indexOf("Satel Integra") == -1)
             {
@@ -4923,8 +5118,8 @@ define(['app'], function (app) {
                 $("#hardwarecontent #lblusername").hide();
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
-				if (text.indexOf("Satel Integra") >= 0)
-                {
+				$("#hardwarecontent #divregulator").hide();
+				if (text.indexOf("Satel Integra") >= 0) {
                     $("#hardwarecontent #divpollinterval").show();
 					$("#hardwarecontent #hardwareparamspollinterval #pollinterval").val(1000);
                 }
@@ -4936,6 +5131,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divlogin").show();
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
+				$("#hardwarecontent #divregulator").hide();
                 $("#hardwarecontent #hardwareparamsremote #tcpport").val(6144);
             }
             else if (text.indexOf("SolarEdge via") >= 0)
@@ -4945,6 +5141,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
+				$("#hardwarecontent #divregulator").hide();
             }
             else if (text.indexOf("Toon") >= 0)
             {
@@ -4954,6 +5151,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
+				$("#hardwarecontent #divregulator").hide();
             }
             else if (text.indexOf("SBFSpot") >= 0)
             {
@@ -4963,6 +5161,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divlogin").hide();
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
+				$("#hardwarecontent #divregulator").hide();
                 $("#hardwarecontent #username").hide();
                 $("#hardwarecontent #lblusername").hide();
             }
@@ -4987,7 +5186,16 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divlogin").show();
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").show();
+				$("#hardwarecontent #divregulator").hide();
                 $("#hardwarecontent #hardwareparamshttp #refresh").val(300);
+            }
+			else if (text.indexOf("Regulator") >= 0) {
+				$("#hardwarecontent #divserial").hide();
+				$("#hardwarecontent #divremote").hide();
+				$("#hardwarecontent #divlogin").hide();
+				$("#hardwarecontent #divunderground").hide();
+				$("#hardwarecontent #divhttppoller").hide();
+				$("#hardwarecontent #divregulator").show();
             }
             else if ((text.indexOf("Underground") >= 0) || (text.indexOf("DarkSky") >= 0) || (text.indexOf("AccuWeather") >= 0) || (text.indexOf("Open Weather Map") >= 0))
             {
@@ -4996,8 +5204,8 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divlogin").hide();
                 $("#hardwarecontent #divunderground").show();
                 $("#hardwarecontent #divhttppoller").hide();
-                if (text.indexOf("Open Weather Map") >= 0)
-                {
+				$("#hardwarecontent #divregulator").hide();
+				if (text.indexOf("Open Weather Map") >= 0) {
                     $("#hardwarecontent #hardwareparamsunderground #location").val("lat=53.40&lon=14.58");
                 }
             }
@@ -5017,6 +5225,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divlogin").hide();
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
+				$("#hardwarecontent #divregulator").hide();
             }
             else if (text.indexOf("Winddelen") >= 0)
             {
@@ -5027,6 +5236,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #lblusername").hide();
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
+				$("#hardwarecontent #divregulator").hide();
                 $("#hardwarecontent #divwinddelen").show();
             }
             else if (text.indexOf("Logitech Media Server") >= 0)
@@ -5050,6 +5260,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divlogin").hide();
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
+				$("#hardwarecontent #divregulator").hide();
                 $("#hardwarecontent #hardwareparamsremote #tcpport").val(20000);
             }
 	    else if (text.indexOf("1-Wire") >= 0)
@@ -5059,6 +5270,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divremote").hide();
                 $("#hardwarecontent #divlogin").hide();
                 $("#hardwarecontent #divunderground").hide();
+				$("#hardwarecontent #divregulator").hide();
                 $("#hardwarecontent #divhttppoller").hide();
             }
 	    else if (text.indexOf("Goodwe solar inverter via Web") >= 0)
@@ -5069,6 +5281,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divremote").hide();
                 $("#hardwarecontent #divlogin").hide();
                 $("#hardwarecontent #divunderground").hide();
+				$("#hardwarecontent #divregulator").hide();
                 $("#hardwarecontent #divhttppoller").hide();
             }
 	    
@@ -5078,6 +5291,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divremote").hide();
                 $("#hardwarecontent #divlogin").hide();
                 $("#hardwarecontent #divunderground").hide();
+				$("#hardwarecontent #divregulator").hide();
                 $("#hardwarecontent #divhttppoller").hide();
             }
             if (

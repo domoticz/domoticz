@@ -450,6 +450,9 @@
     <Filter Include="Devices\YeeLight">
       <UniqueIdentifier>{40997df4-ca83-46d7-ae42-d23049f98a0b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\Regulator">
+      <UniqueIdentifier>{28bc3cf8-70c5-4615-a396-13084c0a0b88}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -1936,6 +1939,12 @@
     <ClInclude Include="..\hardware\MySensorsMQTT.h">
       <Filter>Devices\MySensors</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\RegDevice.h">
+      <Filter>Devices\Regulator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\Regulator.h">
+      <Filter>Devices\Regulator</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2549,6 +2558,12 @@
     </ClCompile>
     <ClCompile Include="..\hardware\MySensorsMQTT.cpp">
       <Filter>Devices\MySensors</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\Regulator.cpp">
+      <Filter>Devices\Regulator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\RegDevice.cpp">
+      <Filter>Devices\Regulator</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

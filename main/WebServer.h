@@ -267,6 +267,7 @@ private:
 	void RType_Events(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_Hardware(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_Devices(WebEmSession & session, const request& req, Json::Value &root);
+	void RType_Regulator(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_Cameras(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_Users(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_Timers(WebEmSession & session, const request& req, Json::Value &root);

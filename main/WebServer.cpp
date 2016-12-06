@@ -559,6 +559,7 @@ namespace http {
 			RegisterRType("custom_light_icons", boost::bind(&CWebServer::RType_CustomLightIcons, this, _1, _2, _3));
 			RegisterRType("plans", boost::bind(&CWebServer::RType_Plans, this, _1, _2, _3));
 			RegisterRType("floorplans", boost::bind(&CWebServer::RType_FloorPlans, this, _1, _2, _3));
+			RegisterRType("regulator", boost::bind(&CWebServer::RType_Regulator, this, _1, _2, _3));
 #ifdef WITH_OPENZWAVE
 			//ZWave
 			RegisterCommandCode("updatezwavenode", boost::bind(&CWebServer::Cmd_ZWaveUpdateNode, this, _1, _2, _3));
@@ -1107,6 +1108,9 @@ namespace http {
 			else if (htype == HTYPE_HTTPPOLLER) {
 				//all fine here!
 			}
+			else if (htype == HTYPE_REGULATOR) {
+				//all fine here!
+			}
 			else if (htype == HTYPE_BleBox) {
 				//all fine here!
 			}
@@ -1391,6 +1395,9 @@ namespace http {
 				//All fine here
 			}
 			else if (htype == HTYPE_HTTPPOLLER) {
+				//all fine here!
+			}
+			else if (htype == HTYPE_REGULATOR) {
 				//all fine here!
 			}
 			else if (htype == HTYPE_BleBox) {
@@ -10002,6 +10009,87 @@ namespace http {
 
 			GetJSonDevices(root, rused, rfilter, order, rid, planid, floorid, bDisplayHidden, bDisabledDisabled, bFetchFavorites, LastUpdate, session.username, hwidx);
 		}
+
+		void CWebServer::RType_Regulator(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			std::string rhwidx = request::findValue(&req, "hwidx");	 // ID of the regulator
+			std::string rcommand = request::findValue(&req, "command");	// "add" or "del" or "list"
+			std::string rowid = request::findValue(&req, "rowid"); // when command=="del" the ID of the row in table Regulators  / else not needed
+			std::string rtempid = request::findValue(&req, "tempid");	// when command=="add" the temperature device id
+			std::string rsetpoint = request::findValue(&req, "setpointid"); // when command=="add" the temperature device id
+			std::string rswitchid = request::findValue(&req, "switchid"); // when command=="add" the temperature device id
+
+			root["title"] = "Regulations";
+
+			// add or del ?
+			if (rcommand == "add")
+			{
+				// check parameters
+				if (rhwidx != "" && rtempid != "" && rswitchid != "" && rsetpoint != "" && rowid == "")
+				{
+					m_sql.safe_query("INSERT INTO Regulators (RegulatorHardwareID,TemperatureDeviceID,SwitchDeviceID,SetpointDeviceID) VALUES ('%q','%q','%q','%q')",
+						rhwidx.c_str(), rtempid.c_str(), rswitchid.c_str(), rsetpoint.c_str());
+					root["status"] = "OK";
+				}
+				else {
+					_log.Log(LOG_ERROR, "incorrect 'add' params : need hwidx,tempid,setpointid,switchid");
+					root["status"] = "ERR";
+				}
+			}
+			else if (rcommand == "del")
+			{
+				if (rhwidx != "" && rtempid == "" && rswitchid == "" && rsetpoint == "" && rowid != "")
+				{
+					m_sql.safe_query("DELETE FROM Regulators WHERE (ID == '%q')", rowid.c_str());
+					root["status"] = "OK";
+				}
+				else {
+					_log.Log(LOG_ERROR, "incorrect 'del' params : need hwidx,rowid");
+					root["status"] = "ERR";
+				}
+			}
+			else if (rcommand == "list" && rhwidx != "")
+			{
+				std::vector<std::vector<std::string> > result;
+				result = m_sql.safe_query("SELECT R.ID, R.RegulatorHardwareID, "
+					"R.TemperatureDeviceID, TMP.Name,"
+					"R.SwitchDeviceID, SWI.Name,"
+					"R.SetpointDeviceID, STP.Name "
+					"FROM Regulators as R "
+					"LEFT OUTER JOIN DeviceStatus as TMP on (R.TemperatureDeviceID==TMP.ID) "
+					"LEFT OUTER JOIN DeviceStatus as SWI on (R.SwitchDeviceID==SWI.ID) "
+					"LEFT OUTER JOIN DeviceStatus as STP on (R.SetpointDeviceID==STP.ID) "
+					"WHERE (R.RegulatorHardwareID==%q) ORDER BY R.ID ASC", rhwidx.c_str());
+				if (result.size() > 0)
+				{
+					std::vector<std::vector<std::string> >::const_iterator itt;
+					int ii = 0;
+					for (itt = result.begin(); itt != result.end(); ++itt)
+					{
+						std::vector<std::string> sd = *itt;
+
+						root["result"][ii]["ID"] = sd[0];
+						root["result"][ii]["RegulatorHardwareID"] = sd[1];
+						root["result"][ii]["TemperatureDeviceID"] = sd[2];
+						root["result"][ii]["TemperatureDeviceName"] = sd[3];
+						root["result"][ii]["SwitchDeviceID"] = sd[4];
+						root["result"][ii]["SwitchDeviceName"] = sd[5];
+						root["result"][ii]["SetpointDeviceID"] = sd[6];
+						root["result"][ii]["SetpointDeviceName"] = sd[7];
+						ii++;
+					}
+				}
+
+				root["status"] = "OK";
+			}
+			else
+			{
+				_log.Log(LOG_ERROR, "incorrect command verb");
+				root["status"] = "ERR";
+			}
+
+		}
+		
 
 		void CWebServer::RType_Users(WebEmSession & session, const request& req, Json::Value &root)
 		{
