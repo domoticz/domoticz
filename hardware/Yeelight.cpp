@@ -108,7 +108,7 @@ void Yeelight::Do_Work()
 		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat = mytime(NULL);
 		}
-		if (sec_counter % 60 == 0) //poll YeeLights every minute
+		if (sec_counter % 10 == 0) //poll YeeLights every minute
 		{
 			server.start_send();
 			io_service.run();
@@ -344,6 +344,9 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 		boost::asio::write(sendSocket, boost::asio::buffer(request, request_length));
 		sleep_milliseconds(50);
 	}
+
+	_log.Log(LOG_STATUS, "command %i ", pLed->command);
+	_log.Log(LOG_STATUS, message.c_str());
 
 	strcpy(request, message.c_str());
 	request_length = strlen(request);
