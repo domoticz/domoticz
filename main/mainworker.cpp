@@ -825,13 +825,16 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 #endif
 	case HTYPE_RaspberryBMP085:
-		pHardware = new I2C(ID,1);
+		pHardware = new I2C(ID,1,0);
 		break;
 	case HTYPE_RaspberryHTU21D:
-		pHardware = new I2C(ID,2);
+		pHardware = new I2C(ID,2,0);
 		break;
 	case HTYPE_RaspberryTSL2561:
-		pHardware = new I2C(ID,3);
+		pHardware = new I2C(ID,3,0);
+		break;
+	case HTYPE_RaspberryPCF8574:
+		pHardware = new I2C(ID,4,Port);
 		break;
 	case HTYPE_Wunderground:
 		pHardware = new CWunderground(ID,Username,Password);
@@ -12312,6 +12315,16 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 				gDevice.id = unit;
 				gDevice.floatval1 = (float)atof(sValue.c_str());
 				gDevice.intval1 = static_cast<int>(ID);
+				DecodeRXMessage(pHardware, (const unsigned char *)&gDevice, NULL, batterylevel);
+				return true;
+			}
+			else if (subType == sTypeSoilMoisture)
+			{
+				_tGeneralDevice gDevice;
+				gDevice.subtype = subType;
+				gDevice.id = unit;
+				gDevice.intval1 = static_cast<int>(ID);
+				gDevice.intval2 = nValue;
 				DecodeRXMessage(pHardware, (const unsigned char *)&gDevice, NULL, batterylevel);
 				return true;
 			}
