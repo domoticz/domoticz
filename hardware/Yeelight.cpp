@@ -109,7 +109,7 @@ void Yeelight::Do_Work()
 		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat = mytime(NULL);
 		}
-		if (sec_counter % 10 == 0) //poll YeeLights every minute
+		if (sec_counter % 60 == 0) //poll YeeLights every minute
 		{
 			server.start_send();
 			io_service.run();
