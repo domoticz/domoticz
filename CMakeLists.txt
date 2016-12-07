@@ -3,6 +3,10 @@ cmake_minimum_required(VERSION 2.8.4)
 
 project(domoticz)
 
+## required min. libBoost version
+SET(DOMO_MIN_LIBBOOST_VERSION 105500)
+##
+
 option(USE_BUILTIN_LUA "Use builtin lua library" YES)
 IF(USE_BUILTIN_LUA)
   add_subdirectory (lua)
@@ -452,6 +456,12 @@ if(USE_STATIC_BOOST)
 else(USE_STATIC_BOOST)
    message(STATUS "Linking against boost dynamic libraries")
 endif(USE_STATIC_BOOST)
+
+# compare found vs required libBoost version
+if(Boost_VERSION VERSION_LESS DOMO_MIN_LIBBOOST_VERSION)
+   message(FATAL_ERROR "Found libBoost version ${Boost_VERSION}, ${DOMO_MIN_LIBBOOST_VERSION} or newer required")
+endif(Boost_VERSION VERSION_LESS DOMO_MIN_LIBBOOST_VERSION)
+
 include_directories(${Boost_INCLUDE_DIRS})
 
 
