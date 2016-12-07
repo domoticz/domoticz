@@ -1084,6 +1084,7 @@ void CNetatmo::GetMeterDetails()
 			}
 		}
 	}
+	m_bFirstTimeWeatherData = false;
 }
 
 void CNetatmo::GetThermostatDetails()
