@@ -498,6 +498,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeTEMP, sTypeTEMP9, "RUBiCSON" },
 		{ pTypeTEMP, sTypeTEMP10, "TFA 30.3133" },
 		{ pTypeTEMP, sTypeTEMP11, "WT0122 Pool sensor" },
+		{ pTypeTEMP, sTypeTEMP12, "Legrand MyHome Temp" },
 		{ pTypeTEMP, sTypeTEMP_SYSTEM, "System" },
 
 		{ pTypeHUM, sTypeHUM1, "LaCrosse TX3" },
@@ -846,6 +847,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeTEMP, sTypeTEMP9, "Temperature" },
 		{ pTypeTEMP, sTypeTEMP10, "Temperature" },
 		{ pTypeTEMP, sTypeTEMP11, "Temperature" },
+		{ pTypeTEMP, sTypeTEMP12, "Temperature" },
 		{ pTypeTEMP, sTypeTEMP_SYSTEM, "Temperature" },
 
 		{ pTypeHUM, sTypeHUM1, "Humidity,Humidity Status" },

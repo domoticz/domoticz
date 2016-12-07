@@ -8,11 +8,11 @@
 //
 
 /*
-                                                                   
+
 Copyright 2011-2016, RFXCOM
 
 ALL RIGHTS RESERVED. This code is owned by RFXCOM, and is protected under
-Netherlands Copyright Laws and Treaties and shall be subject to the 
+Netherlands Copyright Laws and Treaties and shall be subject to the
 exclusive jurisdiction of the Netherlands Courts. The information from this
 file may freely be used to create programs to exclusively interface with
 RFXCOM products only. Any other use or unauthorized reprint of this material
@@ -225,7 +225,7 @@ SDK version 5.00
 		cmdENABLEALL 0x04, cmdUNDEC 0x05
 		cmdDISX10 0x10   to    cmdDISFS20 0x1C
 	CM180i CURRENT_ENERGY - ELEC4 added
-	code for pTypeGAS and pTypeWATER changed (not yet used) 
+	code for pTypeGAS and pTypeWATER changed (not yet used)
 
 SDK version 4.36
 	security - #define sStatusIRbeam 0x8 added
@@ -813,6 +813,7 @@ SDK version 4.9
 #define sTypeTEMP9 0x9  //RUBiCSON
 #define sTypeTEMP10 0xA  //TFA 30.3133
 #define sTypeTEMP11 0xB  //WT0122
+#define sTypeTEMP12 0xC  //Legrand MyHome Temp
 
 //types for humidity
 #define pTypeHUM 0x51
@@ -1598,7 +1599,7 @@ typedef union tRBUF {
 		BYTE	seqnbr;
 		BYTE	id1;
 		BYTE	id2;
-		BYTE	humidity; 
+		BYTE	humidity;
 		BYTE	humidity_status;
 #ifdef IS_BIG_ENDIAN
 		BYTE	rssi : 4;
@@ -1621,7 +1622,7 @@ typedef union tRBUF {
 		BYTE	temperatureh : 7;
 
 		BYTE	temperaturel;
-		BYTE	humidity; 
+		BYTE	humidity;
 		BYTE	humidity_status;
 
 		BYTE	rssi : 4;
@@ -1631,7 +1632,7 @@ typedef union tRBUF {
 		BYTE	tempsign : 1;
 
 		BYTE	temperaturel;
-		BYTE	humidity; 
+		BYTE	humidity;
 		BYTE	humidity_status;
 
 		BYTE	battery_level : 4;
@@ -1673,7 +1674,7 @@ typedef union tRBUF {
 		BYTE	tempsign : 1;
 #endif
 		BYTE	temperaturel;
-		BYTE	humidity; 
+		BYTE	humidity;
 		BYTE	humidity_status;
 		BYTE	baroh;
 		BYTE	barol;

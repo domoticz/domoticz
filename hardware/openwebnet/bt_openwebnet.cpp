@@ -357,7 +357,7 @@ void bt_openwebnet::Set_level_interface()
   {
     extended = true;
     if(orig.at(0) == '#')
-      where, "#" +  FirstToken(sup, "#");
+      where = "#" +  FirstToken(sup, "#");
     else
       where = FirstToken(sup, "#");
     // LEVEL + INTERFACE
