@@ -9,6 +9,7 @@
 #include "../main/WebServer.h"
 #include "../webserver/cWebem.h"
 #include "../json/json.h"
+#include "XiaomiGateway.h"
 
 /*
 Yeelight (Mi Light) is a company that created White and RGBW lights
@@ -394,6 +395,7 @@ void Yeelight::udp_server::start_receive()
 		HandleIncoming(recv_buffer_.data(), receivedip);
 	}
 }
+
 
 bool YeeLightGetTag(const std::string &InputString, const std::string &Tag, std::string &Value)
 {

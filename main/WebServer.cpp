@@ -521,7 +521,6 @@ namespace http {
 
 			RegisterCommandCode("addyeelight", boost::bind(&CWebServer::Cmd_AddYeeLight, this, _1, _2, _3));
 
-
 			RegisterRType("graph", boost::bind(&CWebServer::RType_HandleGraph, this, _1, _2, _3));
 			RegisterRType("lightlog", boost::bind(&CWebServer::RType_LightLog, this, _1, _2, _3));
 			RegisterRType("textlog", boost::bind(&CWebServer::RType_TextLog, this, _1, _2, _3));
@@ -1116,6 +1115,9 @@ namespace http {
 			else if (htype == HTYPE_Yeelight) {
 				//all fine here!
 			}
+			else if (htype == HTYPE_XiaomiGateway) {
+				//all fine here!
+			}
 			else if (
 				(htype == HTYPE_Wunderground) ||
 				(htype == HTYPE_DarkSky) ||
@@ -1400,6 +1402,9 @@ namespace http {
 				//All fine here
 			}
 			else if (htype == HTYPE_Yeelight) {
+				//All fine here
+			}
+			else if (htype == HTYPE_XiaomiGateway) {
 				//All fine here
 			}
 			else if (
@@ -6906,7 +6911,7 @@ namespace http {
 			const bool bDisplayHidden,
 			const bool bDisplayDisabled,
 			const bool bFetchFavorites,
-			const time_t LastUpdate, 
+			const time_t LastUpdate,
 			const std::string &username,
 			const std::string &hardwareid)
 		{

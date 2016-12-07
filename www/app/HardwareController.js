@@ -10,16 +10,16 @@ define(['app'], function (app) {
             bootbox.confirm($.t("Are you sure to delete this Hardware?\n\nThis action can not be undone...\nAll Devices attached will be removed!"), function(result) {
                 if (result==true) {
                     $.ajax({
-                         url: "json.htm?type=command&param=deletehardware&idx=" + idx,
-                         async: false,
-                         dataType: 'json',
-                         success: function(data) {
+                        url: "json.htm?type=command&param=deletehardware&idx=" + idx,
+                        async: false,
+                        dataType: 'json',
+                        success: function(data) {
                             RefreshHardwareTable();
-                         },
-                         error: function(){
-                                HideNotify();
-                                ShowNotify($.t('Problem deleting hardware!'), 2500, true);
-                         }
+                        },
+                        error: function(){
+                            HideNotify();
+                            ShowNotify($.t('Problem deleting hardware!'), 2500, true);
+                        }
                     });
                 }
             });
@@ -47,26 +47,26 @@ define(['app'], function (app) {
 
             if (text.indexOf("1-Wire") >= 0)
             {
-    			var extra=$("#hardwarecontent #div1wire #owfspath").val();
-    			var Mode1 = $("#hardwarecontent #div1wire #OneWireSensorPollPeriod").val();
-    			var Mode2 = $("#hardwarecontent #div1wire #OneWireSwitchPollPeriod").val();
-    			$.ajax({
-    				url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+                var extra=$("#hardwarecontent #div1wire #owfspath").val();
+                var Mode1 = $("#hardwarecontent #div1wire #OneWireSensorPollPeriod").val();
+                var Mode2 = $("#hardwarecontent #div1wire #OneWireSwitchPollPeriod").val();
+                $.ajax({
+                    url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
     				"&extra=" + encodeURIComponent(extra) +
     				"&name=" + encodeURIComponent(name) +
     				"&enabled=" + bEnabled +
     				"&idx=" + idx +
     				"&datatimeout=" + datatimeout +
     				"&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
-    				async: false,
-    				dataType: 'json',
-    				success: function(data) {
-    					RefreshHardwareTable();
-    				},
-    				error: function(){
-    					ShowNotify($.t('Problem updating hardware!'), 2500, true);
-    				}
-    			});
+                    async: false,
+                    dataType: 'json',
+                    success: function(data) {
+                        RefreshHardwareTable();
+                    },
+                    error: function(){
+                        ShowNotify($.t('Problem updating hardware!'), 2500, true);
+                    }
+                });
             }
             else if (
 				(text.indexOf("Panasonic") >= 0) ||
@@ -77,39 +77,40 @@ define(['app'], function (app) {
 				(text.indexOf("Dummy") >= 0) ||
 				(text.indexOf("System Alive") >= 0) ||
 				(text.indexOf("PiFace") >= 0) ||
-				(text.indexOf("Local I2C ") >= 0) || 
+				(text.indexOf("Local I2C ") >= 0) ||
 				(text.indexOf("Motherboard") >= 0) ||
 				(text.indexOf("Kodi") >= 0) ||
 				(text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0) ||
-                (text.indexOf("YeeLight") >= 0)
+                (text.indexOf("YeeLight") >= 0) ||
+                (text.indexOf("Xiaomi Gateway") >= 0)
 				)
             {
-				// if hardwaretype == 1000 => I2C sensors grouping
-				if (hardwaretype == 1000) {
-							hardwaretype = $("#hardwareparamsi2clocal #comboi2clocal").find('option:selected').val();
-				}
+                // if hardwaretype == 1000 => I2C sensors grouping
+                if (hardwaretype == 1000) {
+                    hardwaretype = $("#hardwareparamsi2clocal #comboi2clocal").find('option:selected').val();
+                }
                 var text1 = $("#hardwareparamsi2clocal #comboi2clocal").find('option:selected').text();
                 if (text1.indexOf("Local I2C PIO 8bit expander PCF8574") >= 0)
                 {
-                	var i2caddress=$("#hardwareparami2caddress #i2caddress").val();
-                	var port="&port=" + encodeURIComponent(i2caddress);
+                    var i2caddress=$("#hardwareparami2caddress #i2caddress").val();
+                    var port="&port=" + encodeURIComponent(i2caddress);
                 }
-            	$.ajax({
-                     url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
-                        "&name=" + encodeURIComponent(name) +
-                        "&enabled=" + bEnabled +
-                        "&idx=" + idx +
-                        "&datatimeout=" + datatimeout +
-                        "&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6 +
-                        port,
-                     async: false,
-                     dataType: 'json',
-                     success: function(data) {
+                $.ajax({
+                    url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+                       "&name=" + encodeURIComponent(name) +
+                       "&enabled=" + bEnabled +
+                       "&idx=" + idx +
+                       "&datatimeout=" + datatimeout +
+                       "&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6 +
+                       port,
+                    async: false,
+                    dataType: 'json',
+                    success: function(data) {
                         RefreshHardwareTable();
-                     },
-                     error: function(){
-                            ShowNotify($.t('Problem updating hardware!'), 2500, true);
-                     }
+                    },
+                    error: function(){
+                        ShowNotify($.t('Problem updating hardware!'), 2500, true);
+                    }
                 });
             }
             else if (text.indexOf("USB") >= 0)
@@ -157,7 +158,7 @@ define(['app'], function (app) {
                 var extra="";
                 if (text.indexOf("S0 Meter") >= 0)
                 {
-					extra = $.devExtra;
+                    extra = $.devExtra;
                 }
 
                 if (text.indexOf("P1 Smart Meter") >= 0)
@@ -166,22 +167,22 @@ define(['app'], function (app) {
                 }
 
                 $.ajax({
-                     url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
-                        "&port=" + encodeURIComponent(serialport) +
-                        "&extra=" + extra +
-                        "&name=" + encodeURIComponent(name) +
-                        "&enabled=" + bEnabled +
-                        "&idx=" + idx +
-                        "&datatimeout=" + datatimeout +
-                        "&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
-                     async: false,
-                     dataType: 'json',
-                     success: function(data) {
+                    url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+                       "&port=" + encodeURIComponent(serialport) +
+                       "&extra=" + extra +
+                       "&name=" + encodeURIComponent(name) +
+                       "&enabled=" + bEnabled +
+                       "&idx=" + idx +
+                       "&datatimeout=" + datatimeout +
+                       "&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
+                    async: false,
+                    dataType: 'json',
+                    success: function(data) {
                         RefreshHardwareTable();
-                     },
-                     error: function(){
-                            ShowNotify($.t('Problem updating hardware!'), 2500, true);
-                     }
+                    },
+                    error: function(){
+                        ShowNotify($.t('Problem updating hardware!'), 2500, true);
+                    }
                 });
             }
             else if (
@@ -219,32 +220,32 @@ define(['app'], function (app) {
                 var extra="";
                 if (text.indexOf("S0 Meter") >= 0)
                 {
-					extra = $.devExtra;
+                    extra = $.devExtra;
                 }
 
                 if (text.indexOf("P1 Smart Meter") >= 0)
                 {
                     Mode2 = $("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked")?0:1;
                 }
- 
+
                 $.ajax({
-                     url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
-                        "&address=" + address +
-                        "&port=" + port +
-                        "&extra=" + extra +
-                        "&name=" + encodeURIComponent(name) +
-                        "&enabled=" + bEnabled +
-                        "&idx=" + idx +
-                        "&datatimeout=" + datatimeout +
-                        "&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
-                     async: false,
-                     dataType: 'json',
-                     success: function(data) {
+                    url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+                       "&address=" + address +
+                       "&port=" + port +
+                       "&extra=" + extra +
+                       "&name=" + encodeURIComponent(name) +
+                       "&enabled=" + bEnabled +
+                       "&idx=" + idx +
+                       "&datatimeout=" + datatimeout +
+                       "&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
+                    async: false,
+                    dataType: 'json',
+                    success: function(data) {
                         RefreshHardwareTable();
-                     },
-                     error: function(){
-                            ShowNotify($.t('Problem updating hardware!'), 2500, true);
-                     }
+                    },
+                    error: function(){
+                        ShowNotify($.t('Problem updating hardware!'), 2500, true);
+                    }
                 });
             }
             else if (
@@ -269,10 +270,10 @@ define(['app'], function (app) {
                     ShowNotify($.t('Please enter an Valid Port!'), 2500, true);
                     return;
                 }
-				
-				if (text.indexOf("Satel Integra") >= 0)
+
+                if (text.indexOf("Satel Integra") >= 0)
                 {
-					var pollinterval=$("#hardwarecontent #hardwareparamspollinterval #pollinterval").val();
+                    var pollinterval=$("#hardwarecontent #hardwareparamspollinterval #pollinterval").val();
                     if (pollinterval=="")
                     {
                         ShowNotify($.t('Please enter poll interval!'), 2500, true);
@@ -282,23 +283,23 @@ define(['app'], function (app) {
                 }
                 var password=encodeURIComponent($("#hardwarecontent #divlogin #password").val());
                 $.ajax({
-                     url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
-                        "&address=" + address +
-                        "&port=" + port +
-                        "&name=" + encodeURIComponent(name) +
-                        "&password=" + encodeURIComponent(password) +
-                        "&enabled=" + bEnabled +
-                        "&idx=" + idx +
-                        "&datatimeout=" + datatimeout +
-                        "&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
-                     async: false,
-                     dataType: 'json',
-                     success: function(data) {
+                    url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+                       "&address=" + address +
+                       "&port=" + port +
+                       "&name=" + encodeURIComponent(name) +
+                       "&password=" + encodeURIComponent(password) +
+                       "&enabled=" + bEnabled +
+                       "&idx=" + idx +
+                       "&datatimeout=" + datatimeout +
+                       "&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
+                    async: false,
+                    dataType: 'json',
+                    success: function(data) {
                         RefreshHardwareTable();
-                     },
-                     error: function(){
-                            ShowNotify($.t('Problem updating hardware!'), 2500, true);
-                     }
+                    },
+                    error: function(){
+                        ShowNotify($.t('Problem updating hardware!'), 2500, true);
+                    }
                 });
             }
             else if (
@@ -337,29 +338,29 @@ define(['app'], function (app) {
                     extra = $("#hardwarecontent #divmysensorsmqtt #filename").val();
                 }
                 else if ((text.indexOf("MQTT") >= 0)) {
-					extra=$("#hardwarecontent #divmqtt #filename").val();
-					Mode1 = $("#hardwarecontent #divmqtt #combotopicselect").val();
-				}
+                    extra=$("#hardwarecontent #divmqtt #filename").val();
+                    Mode1 = $("#hardwarecontent #divmqtt #combotopicselect").val();
+                }
                 $.ajax({
-                     url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
-                        "&address=" + address +
-                        "&port=" + port +
-                        "&username=" + encodeURIComponent(username) +
-                        "&password=" + encodeURIComponent(password) +
-                        "&extra=" + encodeURIComponent(extra) +
-                        "&name=" + encodeURIComponent(name) +
-                        "&enabled=" + bEnabled +
-                        "&idx=" + idx +
-                        "&datatimeout=" + datatimeout +
-                        "&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
-                     async: false,
-                     dataType: 'json',
-                     success: function(data) {
+                    url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+                       "&address=" + address +
+                       "&port=" + port +
+                       "&username=" + encodeURIComponent(username) +
+                       "&password=" + encodeURIComponent(password) +
+                       "&extra=" + encodeURIComponent(extra) +
+                       "&name=" + encodeURIComponent(name) +
+                       "&enabled=" + bEnabled +
+                       "&idx=" + idx +
+                       "&datatimeout=" + datatimeout +
+                       "&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
+                    async: false,
+                    dataType: 'json',
+                    success: function(data) {
                         RefreshHardwareTable();
-                     },
-                     error: function(){
-                            ShowNotify($.t('Problem updating hardware!'), 2500, true);
-                     }
+                    },
+                    error: function(){
+                        ShowNotify($.t('Problem updating hardware!'), 2500, true);
+                    }
                 });
             }
             else if (text.indexOf("Philips Hue") >= 0)
@@ -388,23 +389,23 @@ define(['app'], function (app) {
                 }
 
                 $.ajax({
-                     url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
-                        "&address=" + address +
-                        "&port=" + port +
-                        "&username=" + encodeURIComponent(username) +
-                        "&name=" + encodeURIComponent(name) +
-                        "&enabled=" + bEnabled +
-                        "&idx=" + idx +
-                        "&datatimeout=" + datatimeout +
-                        "&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
-                     async: false,
-                     dataType: 'json',
-                     success: function(data) {
+                    url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+                       "&address=" + address +
+                       "&port=" + port +
+                       "&username=" + encodeURIComponent(username) +
+                       "&name=" + encodeURIComponent(name) +
+                       "&enabled=" + bEnabled +
+                       "&idx=" + idx +
+                       "&datatimeout=" + datatimeout +
+                       "&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
+                    async: false,
+                    dataType: 'json',
+                    success: function(data) {
                         RefreshHardwareTable();
-                     },
-                     error: function(){
-                            ShowNotify($.t('Problem updating hardware!'), 2500, true);
-                     }
+                    },
+                    error: function(){
+                        ShowNotify($.t('Problem updating hardware!'), 2500, true);
+                    }
                 });
             }
             else if ((text.indexOf("HTTP/HTTPS") >= 0)) {
@@ -462,22 +463,22 @@ define(['app'], function (app) {
                     return;
                 }
                 $.ajax({
-                     url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
-                        "&username=" + encodeURIComponent(apikey) +
-                        "&password=" + encodeURIComponent(location) +
-                        "&name=" + encodeURIComponent(name) +
-                        "&enabled=" + bEnabled +
-                        "&idx=" + idx +
-                        "&datatimeout=" + datatimeout +
-                        "&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
-                     async: false,
-                     dataType: 'json',
-                     success: function(data) {
+                    url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+                       "&username=" + encodeURIComponent(apikey) +
+                       "&password=" + encodeURIComponent(location) +
+                       "&name=" + encodeURIComponent(name) +
+                       "&enabled=" + bEnabled +
+                       "&idx=" + idx +
+                       "&datatimeout=" + datatimeout +
+                       "&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
+                    async: false,
+                    dataType: 'json',
+                    success: function(data) {
                         RefreshHardwareTable();
-                     },
-                     error: function(){
-                            ShowNotify($.t('Problem updating hardware!'), 2500, true);
-                     }
+                    },
+                    error: function(){
+                        ShowNotify($.t('Problem updating hardware!'), 2500, true);
+                    }
                 });
             }
             else if (text.indexOf("SolarEdge via Web") >= 0)
@@ -502,22 +503,22 @@ define(['app'], function (app) {
                 }
 
                 $.ajax({
-                     url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
-                        "&username=" + encodeURIComponent(serial) +
-                        "&password=" + encodeURIComponent(apikey) +
-                        "&name=" + encodeURIComponent(name) +
-                        "&enabled=" + bEnabled +
-                        "&idx=" + idx +
-                        "&datatimeout=" + datatimeout +
-                        "&Mode1=" + siteid,
-                     async: false,
-                     dataType: 'json',
-                     success: function(data) {
+                    url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+                       "&username=" + encodeURIComponent(serial) +
+                       "&password=" + encodeURIComponent(apikey) +
+                       "&name=" + encodeURIComponent(name) +
+                       "&enabled=" + bEnabled +
+                       "&idx=" + idx +
+                       "&datatimeout=" + datatimeout +
+                       "&Mode1=" + siteid,
+                    async: false,
+                    dataType: 'json',
+                    success: function(data) {
                         RefreshHardwareTable();
-                     },
-                     error: function(){
-                            ShowNotify($.t('Problem updating hardware!'), 2500, true);
-                     }
+                    },
+                    error: function(){
+                        ShowNotify($.t('Problem updating hardware!'), 2500, true);
+                    }
                 });
             }
             else if (text.indexOf("SBFSpot") >= 0)
@@ -529,24 +530,24 @@ define(['app'], function (app) {
                     return;
                 }
                 $.ajax({
-                     url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
-                        "&username=" + encodeURIComponent(configlocation) +
-                        "&name=" + encodeURIComponent(name) +
-                        "&enabled=" + bEnabled +
-                        "&idx=" + idx +
-                        "&datatimeout=" + datatimeout +
-                        "&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
-                     async: false,
-                     dataType: 'json',
-                     success: function(data) {
+                    url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+                       "&username=" + encodeURIComponent(configlocation) +
+                       "&name=" + encodeURIComponent(name) +
+                       "&enabled=" + bEnabled +
+                       "&idx=" + idx +
+                       "&datatimeout=" + datatimeout +
+                       "&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
+                    async: false,
+                    dataType: 'json',
+                    success: function(data) {
                         RefreshHardwareTable();
-                     },
-                     error: function(){
-                            ShowNotify($.t('Problem updating hardware!'), 2500, true);
-                     }
+                    },
+                    error: function(){
+                        ShowNotify($.t('Problem updating hardware!'), 2500, true);
+                    }
                 });
             }
-            else if (text.indexOf("Toon") >= 0)  
+            else if (text.indexOf("Toon") >= 0)
             {
                 var username = $("#hardwarecontent #divlogin #username").val();
                 var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
@@ -611,23 +612,23 @@ define(['app'], function (app) {
                     return;
                 }
                 $.ajax({
-                     url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
-                       "&name=" + encodeURIComponent(name) +
-                       "&address=" + encodeURIComponent(mill_name) +
-                       "&port=" + encodeURIComponent(nrofwinddelen) +
-                       "&Mode1=" + encodeURIComponent(mill_id) +
-                       "&enabled=" + bEnabled +
-                       "&idx=" + idx +
-                       "&datatimeout=" + datatimeout +
-                       "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
-                     async: false,
-                     dataType: 'json',
-                     success: function(data) {
+                    url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+                      "&name=" + encodeURIComponent(name) +
+                      "&address=" + encodeURIComponent(mill_name) +
+                      "&port=" + encodeURIComponent(nrofwinddelen) +
+                      "&Mode1=" + encodeURIComponent(mill_id) +
+                      "&enabled=" + bEnabled +
+                      "&idx=" + idx +
+                      "&datatimeout=" + datatimeout +
+                      "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
+                    async: false,
+                    dataType: 'json',
+                    success: function(data) {
                         RefreshHardwareTable();
-                     },
-                     error: function(){
-                            ShowNotify($.t('Problem updating hardware!'), 2500, true);
-                     }
+                    },
+                    error: function(){
+                        ShowNotify($.t('Problem updating hardware!'), 2500, true);
+                    }
                 });
             }
             else if (text.indexOf("Logitech Media Server") >= 0)
@@ -653,27 +654,27 @@ define(['app'], function (app) {
                 var password=$("#hardwarecontent #divlogin #password").val();
 
                 $.ajax({
-                     url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
-                        "&address=" + address +
-                        "&port=" + port +
-                        "&username=" + encodeURIComponent(username) +
-                        "&password=" + encodeURIComponent(password) +
-                        "&name=" + encodeURIComponent(name) +
-                        "&enabled=" + bEnabled +
-                        "&idx=" + idx +
-                        "&datatimeout=" + datatimeout +
-                        "&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
-                     async: false,
-                     dataType: 'json',
-                     success: function(data) {
+                    url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+                       "&address=" + address +
+                       "&port=" + port +
+                       "&username=" + encodeURIComponent(username) +
+                       "&password=" + encodeURIComponent(password) +
+                       "&name=" + encodeURIComponent(name) +
+                       "&enabled=" + bEnabled +
+                       "&idx=" + idx +
+                       "&datatimeout=" + datatimeout +
+                       "&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
+                    async: false,
+                    dataType: 'json',
+                    success: function(data) {
                         RefreshHardwareTable();
-                     },
-                     error: function(){
-                            ShowNotify($.t('Problem updating hardware!'), 2500, true);
-                     }
+                    },
+                    error: function(){
+                        ShowNotify($.t('Problem updating hardware!'), 2500, true);
+                    }
                 });
             }
-			else if (text.indexOf("HEOS by DENON") >= 0)
+            else if (text.indexOf("HEOS by DENON") >= 0)
             {
                 var address=$("#hardwarecontent #divremote #tcpaddress").val();
                 if (address=="")
@@ -696,29 +697,29 @@ define(['app'], function (app) {
                 var password=$("#hardwarecontent #divlogin #password").val();
 
                 $.ajax({
-                     url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
-                        "&address=" + address +
-                        "&port=" + port +
-                        "&username=" + encodeURIComponent(username) +
-                        "&password=" + encodeURIComponent(password) +
-                        "&name=" + encodeURIComponent(name) +
-                        "&enabled=" + bEnabled +
-                        "&idx=" + idx +
-                        "&datatimeout=" + datatimeout +
-                        "&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
-                     async: false,
-                     dataType: 'json',
-                     success: function(data) {
+                    url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+                       "&address=" + address +
+                       "&port=" + port +
+                       "&username=" + encodeURIComponent(username) +
+                       "&password=" + encodeURIComponent(password) +
+                       "&name=" + encodeURIComponent(name) +
+                       "&enabled=" + bEnabled +
+                       "&idx=" + idx +
+                       "&datatimeout=" + datatimeout +
+                       "&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
+                    async: false,
+                    dataType: 'json',
+                    success: function(data) {
                         RefreshHardwareTable();
-                     },
-                     error: function(){
-                            ShowNotify($.t('Problem updating hardware!'), 2500, true);
-                     }
+                    },
+                    error: function(){
+                        ShowNotify($.t('Problem updating hardware!'), 2500, true);
+                    }
                 });
             }
-	    else if (text.indexOf("MyHome OpenWebNet") >= 0)
+            else if (text.indexOf("MyHome OpenWebNet") >= 0)
             {
-				var address=$("#hardwarecontent #divremote #tcpaddress").val();
+                var address=$("#hardwarecontent #divremote #tcpaddress").val();
                 if (address=="")
                 {
                     ShowNotify($.t('Please enter an Address!'), 2500, true);
@@ -737,28 +738,28 @@ define(['app'], function (app) {
                 }
 
                 $.ajax({
-                     url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
-                        "&address=" + address +
-                        "&port=" + port +
-                        //"&username=" + encodeURIComponent(username) +
-                        "&name=" + encodeURIComponent(name) +
-                        "&enabled=" + bEnabled +
-                        "&idx=" + idx +
-                        "&datatimeout=" + datatimeout +
-                        "&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
-                     async: false,
-                     dataType: 'json',
-                     success: function(data) {
+                    url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+                       "&address=" + address +
+                       "&port=" + port +
+                       //"&username=" + encodeURIComponent(username) +
+                       "&name=" + encodeURIComponent(name) +
+                       "&enabled=" + bEnabled +
+                       "&idx=" + idx +
+                       "&datatimeout=" + datatimeout +
+                       "&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
+                    async: false,
+                    dataType: 'json',
+                    success: function(data) {
                         RefreshHardwareTable();
-                     },
+                    },
                     error: function(){
-                            ShowNotify($.t('Problem updating hardware!'), 2500, true);
-                     }
+                        ShowNotify($.t('Problem updating hardware!'), 2500, true);
+                    }
                 });
             }
-	    else if (text.indexOf("Goodwe solar inverter via Web") >= 0)
+            else if (text.indexOf("Goodwe solar inverter via Web") >= 0)
             {
-		var username=$("#hardwarecontent #divgoodweweb #username").val();
+                var username=$("#hardwarecontent #divgoodweweb #username").val();
                 if (username=="")
                 {
                     ShowNotify($.t('Please enter your Goodwe username!'), 2500, true);
@@ -766,21 +767,21 @@ define(['app'], function (app) {
                 }
 
                 $.ajax({
-                     url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
-                        "&username=" + encodeURIComponent(username) +
-			"&name=" + encodeURIComponent(name) +
-                        "&enabled=" + bEnabled +
-                        "&idx=" + idx +
-                        "&datatimeout=" + datatimeout +
-                        "&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
-                     async: false,
-                     dataType: 'json',
-                     success: function(data) {
+                    url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+                       "&username=" + encodeURIComponent(username) +
+           "&name=" + encodeURIComponent(name) +
+                       "&enabled=" + bEnabled +
+                       "&idx=" + idx +
+                       "&datatimeout=" + datatimeout +
+                       "&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
+                    async: false,
+                    dataType: 'json',
+                    success: function(data) {
                         RefreshHardwareTable();
-                     },
-                     error: function(){
-                            ShowNotify($.t('Problem updating hardware!'), 2500, true);
-                     }
+                    },
+                    error: function(){
+                        ShowNotify($.t('Problem updating hardware!'), 2500, true);
+                    }
                 });
             }
         }
@@ -832,19 +833,19 @@ define(['app'], function (app) {
                 }
 
                 $.ajax({
-                	url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&extra=" + encodeURIComponent(owfspath) +
+                    url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&extra=" + encodeURIComponent(owfspath) +
                     	"&Mode1=" + oneWireSensorPollPeriod + "&Mode2=" + oneWireSwitchPollPeriod + "&name=" + encodeURIComponent(name) +
                     	"&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
                     async: false,
                     dataType: 'json',
                     success: function(data) {
-                    	RefreshHardwareTable();
+                        RefreshHardwareTable();
                     },
                     error: function(){
                         ShowNotify($.t('Problem adding hardware!'), 2500, true);
                     }
                 });
-           }
+            }
             else if (
 					(text.indexOf("LAN") >= 0 &&
 					text.indexOf("YouLess") == -1 &&
@@ -878,15 +879,15 @@ define(['app'], function (app) {
                     return;
                 }
                 $.ajax({
-                     url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
-                     async: false,
-                     dataType: 'json',
-                     success: function(data) {
+                    url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
+                    async: false,
+                    dataType: 'json',
+                    success: function(data) {
                         RefreshHardwareTable();
-                     },
-                     error: function(){
-                            ShowNotify($.t('Problem adding hardware!'), 2500, true);
-                     }
+                    },
+                    error: function(){
+                        ShowNotify($.t('Problem adding hardware!'), 2500, true);
+                    }
                 });
             }
             else if (
@@ -902,7 +903,8 @@ define(['app'], function (app) {
 				(text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0) ||
 				(text.indexOf("Tellstick") >= 0) ||
 				(text.indexOf("Motherboard") >= 0) ||
-                (text.indexOf("YeeLight") >= 0)
+                (text.indexOf("YeeLight") >= 0) ||
+                (text.indexOf("Xiaomi Gateway") >= 0)
 				)
             {
                 $.ajax({
@@ -927,7 +929,7 @@ define(['app'], function (app) {
                 	var i2caddress=$("#hardwareparami2caddress #i2caddress").val();
                 	var port="&port=" + encodeURIComponent(i2caddress);
                 }
-		
+
                 $.ajax({
                      url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout + port,
                      async: false,
@@ -938,7 +940,7 @@ define(['app'], function (app) {
                      error: function(){
                             ShowNotify($.t('Problem adding I2C hardware!'), 2500, true);
                      }
-                });		
+                });
 	    }
             else if (text.indexOf("USB") >= 0)
             {
@@ -1316,7 +1318,7 @@ define(['app'], function (app) {
                      }
                 });
             }
-            else if (text.indexOf("Toon") >= 0) 
+            else if (text.indexOf("Toon") >= 0)
 	     {
                 var username=$("#hardwarecontent #divlogin #username").val();
                 var password=encodeURIComponent($("#hardwarecontent #divlogin #password").val());
@@ -4665,7 +4667,8 @@ define(['app'], function (app) {
                            (data["Type"].indexOf("System Alive") >= 0)||
                            (data["Type"].indexOf("PiFace") >= 0)||
                            (data["Type"].indexOf("Tellstick") >= 0) ||
-                           (data["Type"].indexOf("Yeelight") >= 0))
+                           (data["Type"].indexOf("Yeelight") >= 0) ||
+                           (data["Type"].indexOf("Xiaomi Gateway") >= 0))
                         {
                             //nothing to be set
                         }
@@ -4677,9 +4680,9 @@ define(['app'], function (app) {
                         else if (data["Type"].indexOf("Local I2C ") >= 0) {
                             $("#hardwareparamsi2clocal #comboi2clocal").val(jQuery.inArray(data["Type"], $.myglobals.HardwareI2CStr));
                             if (data["Type"].indexOf("Local I2C PIO 8bit expander PCF8574") >= 0) {
-            					$("#hardwareparami2caddress #i2caddress").val(data["Port"].substring(4));		
+            					$("#hardwareparami2caddress #i2caddress").val(data["Port"].substring(4));
             				}
-                        }			
+                        }
                         else if (data["Type"].indexOf("USB") >= 0) {
                             $("#hardwarecontent #hardwareparamsserial #comboserialport").val(data["IntPort"]);
                             if (data["Type"].indexOf("MySensors") >= 0)
@@ -4862,7 +4865,8 @@ define(['app'], function (app) {
                (text.indexOf("Dummy") >= 0)||
                (text.indexOf("System Alive") >= 0)||
                (text.indexOf("PiFace") >= 0) ||
-               (text.indexOf("Yeelight") >= 0))
+               (text.indexOf("Yeelight") >= 0) ||
+                (text.indexOf("Xiaomi Gateway") >= 0))
             {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").hide();
@@ -5018,6 +5022,13 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
             }
+            else if (text.indexOf("Xiaomi Gateway") >= 0) {
+                $("#hardwarecontent #divserial").hide();
+                $("#hardwarecontent #divremote").hide();
+                $("#hardwarecontent #divlogin").hide();
+                $("#hardwarecontent #divunderground").hide();
+                $("#hardwarecontent #divhttppoller").hide();
+            }
             else if (text.indexOf("Winddelen") >= 0)
             {
                 $("#hardwarecontent #divserial").hide();
@@ -5071,7 +5082,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
             }
-	    
+
             else
             {
                 $("#hardwarecontent #divserial").hide();
@@ -5133,7 +5144,7 @@ define(['app'], function (app) {
                 UpdateHardwareParamControls();
             });
 
-            
+
             $("#hardwarecontent #divbaudratep1 #combobaudratep1").change(function() {
                 if ($("#hardwarecontent #divbaudratep1 #combobaudratep1 option:selected").val() == 0)
                 {
