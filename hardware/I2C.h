@@ -5,7 +5,16 @@
 class I2C : public CDomoticzHardwareBase
 {
 public:
-	explicit I2C(const int ID, const int Mode1, const int Port);
+	enum _eI2CType
+	{
+		I2CTYPE_UNKNOWN = 0,
+		I2CTYPE_BMP085,
+		I2CTYPE_HTU21D,
+		I2CTYPE_TSL2561,
+		I2CTYPE_PCF8574
+	};
+
+	explicit I2C(const int ID, const _eI2CType DevType, const int Port);
 	~I2C();
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 private:
@@ -19,7 +28,7 @@ private:
 	volatile bool m_stoprequested;
 
 	std::string m_ActI2CBus;
-	std::string device;
+	_eI2CType m_dev_type;
 
 
 	bool i2c_test(const char *I2CBusName);

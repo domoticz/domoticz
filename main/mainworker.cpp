@@ -818,23 +818,23 @@ bool MainWorker::AddHardwareFromParams(
 #endif
 		break;
 	case HTYPE_VOLCRAFTCO20:
-		//Voltcrafr CO-20 Air Quality
+		//Voltcraft CO-20 Air Quality
 #ifdef WITH_LIBUSB
 		pHardware = new CVolcraftCO20(ID);
 #endif
 		break;
 #endif
 	case HTYPE_RaspberryBMP085:
-		pHardware = new I2C(ID,1,0);
+		pHardware = new I2C(ID, I2C::_eI2CType::I2CTYPE_BMP085, 0);
 		break;
 	case HTYPE_RaspberryHTU21D:
-		pHardware = new I2C(ID,2,0);
+		pHardware = new I2C(ID, I2C::_eI2CType::I2CTYPE_HTU21D, 0);
 		break;
 	case HTYPE_RaspberryTSL2561:
-		pHardware = new I2C(ID,3,0);
+		pHardware = new I2C(ID, I2C::_eI2CType::I2CTYPE_TSL2561, 0);
 		break;
 	case HTYPE_RaspberryPCF8574:
-		pHardware = new I2C(ID,4,Port);
+		pHardware = new I2C(ID, I2C::_eI2CType::I2CTYPE_PCF8574, Port);
 		break; 
 	case HTYPE_Wunderground:
 		pHardware = new CWunderground(ID,Username,Password);
