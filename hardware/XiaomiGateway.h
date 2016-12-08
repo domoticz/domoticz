@@ -12,7 +12,7 @@ public:
 	XiaomiGateway(const int ID);
 	~XiaomiGateway(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length);
-	void InsertUpdateSwitch(const std::string &nodeid, const std::string &Name, bool bIsOn);
+	void InsertUpdateSwitch(const std::string &nodeid, const std::string &Name, bool bIsOn, _eSwitchType type);
 
 private:
 	bool StartHardware();
@@ -32,7 +32,7 @@ private:
 	private:
 		enum { max_length = 1024 };
 		char data_[max_length];
-		boost::array<char, 1024> recv_buffer1_;
+		//boost::array<char, 1024> recv_buffer_;
 		int m_HardwareID;
 		void start_receive();
 		void handle_receive(const boost::system::error_code& error, std::size_t /*bytes_transferred*/);

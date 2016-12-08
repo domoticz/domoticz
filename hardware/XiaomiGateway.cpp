@@ -23,10 +23,11 @@ XiaomiGateway::~XiaomiGateway(void)
 
 bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char length)
 {
-	return false;
+	//no need to send
+	return true;
 }
 
-void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::string &Name, bool bIsOn)
+void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::string &Name, bool bIsOn, _eSwitchType type)
 {
 	// Make sure the ID supplied fits with what is expected ie 158d0000fd32c2
 	if (nodeid.length() < 14) {
@@ -39,19 +40,50 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 	ss << std::hex << str.c_str();
 	ss >> sID;
 	//_log.Log(LOG_STATUS, "sID: %d", sID);
+	char szTmp[300];
+	if (sID == 1)
+		sprintf(szTmp, "%d", 1);
+	else
+		sprintf(szTmp, "%08X", (unsigned int)sID);
+	std::string ID = szTmp;
 
 	_tGeneralSwitch xcmd;
 	xcmd.len = sizeof(_tGeneralSwitch) - 1;
 	xcmd.id = sID;
 	xcmd.type = pTypeGeneralSwitch;
-	xcmd.subtype = sSwitchGeneralSwitch; // STYPE_Motion; //0
+	xcmd.subtype = sSwitchGeneralSwitch;
 	if (bIsOn) {
 		xcmd.cmnd = gswitch_sOn;
 	}
 	else {
 		xcmd.cmnd = gswitch_sOff;
 	}
-	m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, NULL, -1);
+
+	//check if this switch is already in the database
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) ", m_HwdID, ID.c_str(), pTypeGeneralSwitch);
+	if (result.size() < 1)
+	{
+		_log.Log(LOG_STATUS, "XiaomiGateway: New Device Found (%s)", str.c_str());
+		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, NULL, -1);
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d WHERE(HardwareID == %d) AND (DeviceID == '%q')", Name.c_str(), (type), m_HwdID, ID.c_str());
+	}
+	else {
+		//already in the database
+		if (type == STYPE_PushOn) {
+			//just toggle the last state.
+			int nvalue = atoi(result[0][0].c_str());
+			//_log.Log(LOG_STATUS, "XiaomiGateway: nvalue (%d)", nvalue);
+			bIsOn = (nvalue == 0);
+			if (bIsOn) {
+				xcmd.cmnd = gswitch_sOn;
+			}
+			else {
+				xcmd.cmnd = gswitch_sOff;
+			}
+		}
+		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, NULL, -1);
+	}
 }
 
 bool XiaomiGateway::StartHardware()
@@ -109,9 +141,6 @@ void XiaomiGateway::Do_Work()
 	_log.Log(LOG_STATUS, "XiaomiGateway stopped");
 }
 
-
-
-
 XiaomiGateway::xiaomi_udp_server::xiaomi_udp_server(boost::asio::io_service& io_service, int m_HwdID)
 	: socket_(io_service, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 9898))
 {
@@ -120,7 +149,6 @@ XiaomiGateway::xiaomi_udp_server::xiaomi_udp_server(boost::asio::io_service& io_
 	m_HardwareID = m_HwdID;
 	start_receive();
 }
-
 
 void XiaomiGateway::xiaomi_udp_server::start_receive()
 {
@@ -143,39 +171,46 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 		}
 		else {
 			std::string cmd = root["cmd"].asString();
-			//_log.Log(LOG_STATUS, cmd.c_str());
-
 			std::string model = root["model"].asString();
-			//_log.Log(LOG_STATUS, model.c_str());
-
 			std::string sid = root["sid"].asString();
-			//_log.Log(LOG_STATUS, sid.c_str());
-
 			std::string data = root["data"].asString();
-			//_log.Log(LOG_STATUS, data.c_str());
-
-			if (model == "motion") {
-				//get the status
+			if (cmd == "report") {
+				//_log.Log(LOG_STATUS, "XiaomiGateway report for %s", model.c_str());
 				Json::Value root2;
 				ret = jReader.parse(data.c_str(), root2);
 				if (ret) {
-					std::string status = root2["status"].asString();
-					//_log.Log(LOG_STATUS, status.c_str());
-					if (status == "motion") {
-						_log.Log(LOG_STATUS, "Xiaomi motion detected from %s", sid.c_str());
-						//update domoticz
-						XiaomiGateway xiaomiGateway(m_HardwareID);
-						xiaomiGateway.InsertUpdateSwitch(sid.c_str(), "name", true);
+					_eSwitchType type = STYPE_END;
+					std::string name = "Xiaomi Switch";
+					if (model == "motion") {
+						type = STYPE_Motion;
+						name = "Xiaomi Motion Sensor";
 					}
-					else if (status == "no_motion") {
-						_log.Log(LOG_STATUS, "Xiaomi NO motion detected from %s", sid.c_str());
-						//update domoticz
-						XiaomiGateway xiaomiGateway(m_HardwareID);
-						xiaomiGateway.InsertUpdateSwitch(sid.c_str(), "name", false);
+					else if (model == "switch") {
+						type = STYPE_PushOn;
+						name = "Xiaomi Wireless Switch";
 					}
-					//}
-					//else {
-					//	_log.Log(LOG_STATUS, data.c_str());
+					else if (model == "magnet") {
+						type = STYPE_Contact;
+						name = "Xiaomi Door Sensor";
+					}
+					if (type != STYPE_END) {
+						std::string status = root2["status"].asString();
+						bool on = false;
+						if ((status == "motion") || (status == "open")) {
+							on = true;
+						}
+						else if ((status == "no_motion") || (status == "close")) {
+							on = false;
+						}
+						//else if ((status == "click")) { // double_click long_click_press long_click_release
+							//on = true;
+						//}
+						XiaomiGateway xiaomiGateway(m_HardwareID);
+						xiaomiGateway.InsertUpdateSwitch(sid.c_str(), name, on, type);
+					}
+					else {
+						_log.Log(LOG_STATUS, "XiaomiGateway unhandled model: %s", model.c_str());
+					}
 				}
 			}
 		}
