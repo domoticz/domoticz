@@ -10,6 +10,15 @@
 #include "../json/json.h"
 #include "XiaomiGateway.h"
 
+/*
+Xiaomi (Aqara) makes a smart home gateway/hub that has support
+for a variety of Xiaomi sensors.
+They can be purchased on AliExpress or other stores at very
+competitive prices.
+Protocol is Zigbee and WiFi, and the gateway and
+Domoticz need to be in the same network/subnet
+*/
+
 XiaomiGateway::XiaomiGateway(const int ID)
 {
 	m_HwdID = ID;

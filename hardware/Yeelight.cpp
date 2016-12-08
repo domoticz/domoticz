@@ -117,7 +117,6 @@ void Yeelight::Do_Work()
 	_log.Log(LOG_STATUS, "YeeLight stopped");
 }
 
-
 void Yeelight::InsertUpdateSwitch(const std::string &nodeID, const std::string &lightName, const int &YeeType, const std::string &Location, const bool bIsOn, const std::string &yeelightBright, const std::string &yeelightHue)
 {
 	std::vector<std::string> ipaddress;
@@ -187,7 +186,6 @@ void Yeelight::InsertUpdateSwitch(const std::string &nodeID, const std::string &
 		}
 	}
 }
-
 
 bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 {
@@ -345,16 +343,12 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 		sleep_milliseconds(50);
 	}
 
-	_log.Log(LOG_STATUS, "command %i ", pLed->command);
-	_log.Log(LOG_STATUS, message.c_str());
-
 	strcpy(request, message.c_str());
 	request_length = strlen(request);
 	boost::asio::write(sendSocket, boost::asio::buffer(request, request_length));
 	sleep_milliseconds(50);
 	return true;
 }
-
 
 boost::array<char, 1024> recv_buffer_;
 int hardwareId;
@@ -366,7 +360,6 @@ Yeelight::udp_server::udp_server(boost::asio::io_service& io_service, int m_HwdI
 	socket_.set_option(boost::asio::socket_base::broadcast(true));
 	hardwareId = m_HwdID;
 }
-
 
 void Yeelight::udp_server::start_send()
 {
@@ -395,7 +388,6 @@ void Yeelight::udp_server::start_receive()
 	}
 }
 
-
 bool YeeLightGetTag(const std::string &InputString, const std::string &Tag, std::string &Value)
 {
 	std::size_t pos = InputString.find(Tag);
@@ -408,7 +400,6 @@ bool YeeLightGetTag(const std::string &InputString, const std::string &Tag, std:
 	Value = szValue.substr(0, pos);
 	return true;
 }
-
 
 bool Yeelight::udp_server::HandleIncoming(const std::string &szData, std::vector<std::string> &receivedip)
 {
