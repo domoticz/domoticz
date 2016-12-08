@@ -825,16 +825,16 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 #endif
 	case HTYPE_RaspberryBMP085:
-		pHardware = new I2C(ID, I2C::_eI2CType::I2CTYPE_BMP085, 0);
+		pHardware = new I2C(ID, I2C::I2CTYPE_BMP085, 0);
 		break;
 	case HTYPE_RaspberryHTU21D:
-		pHardware = new I2C(ID, I2C::_eI2CType::I2CTYPE_HTU21D, 0);
+		pHardware = new I2C(ID, I2C::I2CTYPE_HTU21D, 0);
 		break;
 	case HTYPE_RaspberryTSL2561:
-		pHardware = new I2C(ID, I2C::_eI2CType::I2CTYPE_TSL2561, 0);
+		pHardware = new I2C(ID, I2C::I2CTYPE_TSL2561, 0);
 		break;
 	case HTYPE_RaspberryPCF8574:
-		pHardware = new I2C(ID, I2C::_eI2CType::I2CTYPE_PCF8574, Port);
+		pHardware = new I2C(ID, I2C::I2CTYPE_PCF8574, Port);
 		break; 
 	case HTYPE_Wunderground:
 		pHardware = new CWunderground(ID,Username,Password);

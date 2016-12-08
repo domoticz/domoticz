@@ -298,7 +298,7 @@ void I2C::PCF8574_ReadChipDetails()
 		int DeviceID = PCF8574_create_DeviceID(i2c_addr, pin_number);
 		unsigned char Unit = PCF8574_create_Unit(i2c_addr, pin_number);
 		char pin_mask=0x01<<pin_number;
-		bool value=(buf & pin_mask);
+		bool value = (buf & pin_mask) != 0;
 		SendSwitch(DeviceID, Unit, 255, value, 0, ""); // update switch
 		// parameters of function SendSwitch: 
 		//	( NodeID , ChildID , BatteryLevel , bOn , Level , default name )
@@ -606,6 +606,12 @@ void I2C::HTU21D_ReadSensorDetails()
 #ifndef __arm__
 	temperature = 21.3f;
 	humidity = 45;
+#ifndef _DEBUG
+	_log.Log(LOG_ERROR, "%s: Only supported on ARM architecture!...", szI2CTypeNames[m_dev_type]);
+	return;
+#else
+	_log.Log(LOG_ERROR, "%s: Only supported on ARM architecture!... Debug: just adding a value", szI2CTypeNames[m_dev_type]);
+#endif
 #else
 	int fd = i2c_Open(m_ActI2CBus.c_str());
 	if (fd < 0) {
@@ -651,6 +657,12 @@ void I2C::TSL2561_ReadSensorDetails()
 	float lux;
 #ifndef __arm__
 	lux = 1984;
+#ifndef _DEBUG
+	_log.Log(LOG_ERROR, "%s: Only supported on ARM architecture!...", szI2CTypeNames[m_dev_type]);
+	return;
+#else
+	_log.Log(LOG_ERROR, "%s: Only supported on ARM architecture!... Debug: just adding a value", szI2CTypeNames[m_dev_type]);
+#endif
 #else
 	uint8_t rValues[2];
 	int fd = i2c_Open(m_ActI2CBus.c_str());
@@ -960,6 +972,12 @@ void I2C::bmp_ReadSensorDetails()
 	double altitude;
 
 #ifndef __arm__
+#ifndef _DEBUG
+	_log.Log(LOG_ERROR, "%s: Only supported on ARM architecture!...", szI2CTypeNames[m_dev_type]);
+	return;
+#else
+	_log.Log(LOG_ERROR, "%s: Only supported on ARM architecture!... Debug: just adding a value", szI2CTypeNames[m_dev_type]);
+#endif
 	temperature = 21.3;
 	pressure = 1021.22;
 	altitude = 10.0;
