@@ -1933,6 +1933,9 @@
     <ClInclude Include="..\hardware\Yeelight.h">
       <Filter>Devices\YeeLight</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\MySensorsMQTT.h">
+      <Filter>Devices\MySensors</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2543,6 +2546,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\Yeelight.cpp">
       <Filter>Devices\YeeLight</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\MySensorsMQTT.cpp">
+      <Filter>Devices\MySensors</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

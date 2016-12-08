@@ -11,6 +11,8 @@
 #include "../main/WebServer.h"
 #include "../webserver/Base64.h"
 #include "../webserver/cWebem.h"
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
 
 #ifdef ENABLE_PYTHON
 extern "C" {
@@ -50,7 +52,7 @@ void CGooglePubSubPush::UpdateActive()
 	m_bLinkActive = (fActive == 1);
 }
 
-void CGooglePubSubPush::OnDeviceReceived(const int m_HwdID, const unsigned long long DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
+void CGooglePubSubPush::OnDeviceReceived(const int m_HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
 {
 	m_DeviceRowIdx = DeviceRowIdx;
 	if (m_bLinkActive)
@@ -109,7 +111,7 @@ void CGooglePubSubPush::DoGooglePubSubPush()
 	std::vector<std::vector<std::string> > result;
 	result=m_sql.safe_query(
 		"SELECT A.DeviceID, A.DelimitedValue, B.ID, B.Type, B.SubType, B.nValue, B.sValue, A.TargetType, A.TargetVariable, A.TargetDeviceID, A.TargetProperty, A.IncludeUnit, B.SwitchType, strftime('%%s', B.LastUpdate), B.Name FROM GooglePubSubLink as A, DeviceStatus as B "
-		"WHERE (A.DeviceID == '%llu' AND A.Enabled = '1' AND A.DeviceID==B.ID)",
+		"WHERE (A.DeviceID == '%" PRIu64 "' AND A.Enabled = '1' AND A.DeviceID==B.ID)",
 		m_DeviceRowIdx);
 	if (result.size()>0)
 	{
