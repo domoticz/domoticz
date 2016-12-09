@@ -77,7 +77,7 @@ define(['app'], function (app) {
 				(text.indexOf("Dummy") >= 0) ||
 				(text.indexOf("System Alive") >= 0) ||
 				(text.indexOf("PiFace") >= 0) ||
-				(text.indexOf("I2C ") >= 0) ||
+				(text.indexOf("I2C ") >= 0) || 
 				(text.indexOf("Motherboard") >= 0) ||
 				(text.indexOf("Kodi") >= 0) ||
 				(text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0) ||
@@ -226,7 +226,7 @@ define(['app'], function (app) {
                 {
                     Mode2 = $("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked")?0:1;
                 }
-
+ 
                 $.ajax({
                      url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
                         "&address=" + address +
@@ -269,7 +269,7 @@ define(['app'], function (app) {
                     ShowNotify($.t('Please enter an Valid Port!'), 2500, true);
                     return;
                 }
-
+				
 				if (text.indexOf("Satel Integra") >= 0)
                 {
 					var pollinterval=$("#hardwarecontent #hardwareparamspollinterval #pollinterval").val();
@@ -546,7 +546,7 @@ define(['app'], function (app) {
                      }
                 });
             }
-            else if (text.indexOf("Toon") >= 0)
+            else if (text.indexOf("Toon") >= 0)  
             {
                 var username = $("#hardwarecontent #divlogin #username").val();
                 var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
@@ -927,7 +927,7 @@ define(['app'], function (app) {
                 	var i2caddress=$("#hardwareparami2caddress #i2caddress").val();
                 	var port="&port=" + encodeURIComponent(i2caddress);
                 }
-
+		
                 $.ajax({
                      url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout + port,
                      async: false,
@@ -938,7 +938,7 @@ define(['app'], function (app) {
                      error: function(){
                             ShowNotify($.t('Problem adding I2C hardware!'), 2500, true);
                      }
-                });
+                });		
 	    }
             else if (text.indexOf("USB") >= 0)
             {
@@ -1316,7 +1316,7 @@ define(['app'], function (app) {
                      }
                 });
             }
-            else if (text.indexOf("Toon") >= 0)
+            else if (text.indexOf("Toon") >= 0) 
 	     {
                 var username=$("#hardwarecontent #divlogin #username").val();
                 var password=encodeURIComponent($("#hardwarecontent #divlogin #password").val());
@@ -4677,9 +4677,9 @@ define(['app'], function (app) {
                         else if (data["Type"].indexOf("I2C ") >= 0) {
                             $("#hardwareparamsi2clocal #comboi2clocal").val(jQuery.inArray(data["Type"], $.myglobals.HardwareI2CStr));
                             if (data["Type"].indexOf("I2C PIO 8bit expander PCF8574") >= 0) {
-            					$("#hardwareparami2caddress #i2caddress").val(data["Port"].substring(4));
+            					$("#hardwareparami2caddress #i2caddress").val(data["Port"].substring(4));		
             				}
-                        }
+                        }			
                         else if (data["Type"].indexOf("USB") >= 0) {
                             $("#hardwarecontent #hardwareparamsserial #comboserialport").val(data["IntPort"]);
                             if (data["Type"].indexOf("MySensors") >= 0)
@@ -5071,7 +5071,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
             }
-
+	    
             else
             {
                 $("#hardwarecontent #divserial").hide();
@@ -5133,7 +5133,7 @@ define(['app'], function (app) {
                 UpdateHardwareParamControls();
             });
 
-
+            
             $("#hardwarecontent #divbaudratep1 #combobaudratep1").change(function() {
                 if ($("#hardwarecontent #divbaudratep1 #combobaudratep1 option:selected").val() == 0)
                 {
