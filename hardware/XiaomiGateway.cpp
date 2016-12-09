@@ -202,6 +202,10 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						type = STYPE_Contact;
 						name = "Xiaomi Door Sensor";
 					}
+					else if (model == "plug") {
+						type = STYPE_Contact; //need smart plug type
+						name = "Xiaomi Smart Plug";
+					}
 					if (type != STYPE_END) {
 						std::string status = root2["status"].asString();
 						bool on = false;
