@@ -122,7 +122,7 @@ define(['app'], function (app) {
 				(text.indexOf("Dummy") >= 0) ||
 				(text.indexOf("System Alive") >= 0) ||
 				(text.indexOf("PiFace") >= 0) ||
-				(text.indexOf("Local I2C ") >= 0) || 
+				(text.indexOf("I2C ") >= 0) || 
 				(text.indexOf("Motherboard") >= 0) ||
 				(text.indexOf("Kodi Media") >= 0) ||
 				(text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0) ||
@@ -134,7 +134,7 @@ define(['app'], function (app) {
 							hardwaretype = $("#hardwareparamsi2clocal #comboi2clocal").find('option:selected').val();
 				}
                 var text1 = $("#hardwareparamsi2clocal #comboi2clocal").find('option:selected').text();
-                if (text1.indexOf("Local I2C PIO 8bit expander PCF8574") >= 0)
+                if (text1.indexOf("I2C PIO 8bit expander PCF8574") >= 0)
                 {
                 	var i2caddress=$("#hardwareparami2caddress #i2caddress").val();
                 	var port="&port=" + encodeURIComponent(i2caddress);
@@ -1007,12 +1007,12 @@ define(['app'], function (app) {
                      }
                 });
             }
-	    else if (text.indexOf("Local I2C ") >= 0 && text.indexOf("Local I2C PIO 8bit expander PCF8574") < 0)
+	    else if (text.indexOf("I2C ") >= 0 && text.indexOf("I2C PIO 8bit expander PCF8574") < 0)
 	    {
                 hardwaretype = $("#hardwareparamsi2clocal #comboi2clocal").find('option:selected').val();
                 var port="";
                 var text1 = $("#hardwareparamsi2clocal #comboi2clocal").find('option:selected').text();
-                if (text1.indexOf("Local I2C PIO 8bit expander PCF8574") >= 0)
+                if (text1.indexOf("I2C PIO 8bit expander PCF8574") >= 0)
                 {
                 	var i2caddress=$("#hardwareparami2caddress #i2caddress").val();
                 	var port="&port=" + encodeURIComponent(i2caddress);
@@ -4757,7 +4757,7 @@ define(['app'], function (app) {
                         $('#hardwarecontent #hardwareparamstable #enabled').prop('checked',(data["Enabled"]=="true"));
                         $('#hardwarecontent #hardwareparamstable #combodatatimeout').val(data["DataTimeout"]);
 
-			if (data["Type"].indexOf("Local I2C ") >= 0) {
+			if (data["Type"].indexOf("I2C ") >= 0) {
                             $("#hardwarecontent #hardwareparamstable #combotype").val(1000);
                         }
 
@@ -4779,9 +4779,9 @@ define(['app'], function (app) {
                             $("#hardwarecontent #hardwareparams1wire #OneWireSensorPollPeriod").val(data["Mode1"]);
                             $("#hardwarecontent #hardwareparams1wire #OneWireSwitchPollPeriod").val(data["Mode2"]);
                         }
-                        else if (data["Type"].indexOf("Local I2C ") >= 0) {
+                        else if (data["Type"].indexOf("I2C ") >= 0) {
                             $("#hardwareparamsi2clocal #comboi2clocal").val(jQuery.inArray(data["Type"], $.myglobals.HardwareI2CStr));
-                            if (data["Type"].indexOf("Local I2C PIO 8bit expander PCF8574") >= 0) {
+                            if (data["Type"].indexOf("I2C PIO 8bit expander PCF8574") >= 0) {
             					$("#hardwareparami2caddress #i2caddress").val(data["Port"].substring(4));		
             				}
                         }			
@@ -4992,7 +4992,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
             }
-	    else if (text.indexOf("Local I2C ") >= 0)
+	    else if (text.indexOf("I2C ") >= 0)
 	    {
                 $("#hardwarecontent #divi2clocal").show();
                 $("#hardwarecontent #divserial").hide();
@@ -5002,7 +5002,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divhttppoller").hide();
                 $("#hardwarecontent #divi2caddress").hide();
                 var text1 = $("#hardwarecontent #divi2clocal #hardwareparamsi2clocal #comboi2clocal option:selected").text();
-                if (text1.indexOf("Local I2C PIO 8bit expander PCF8574") >= 0)
+                if (text1.indexOf("I2C PIO 8bit expander PCF8574") >= 0)
                 {
                 	$("#hardwarecontent #divi2caddress").show();
                 }
@@ -5335,7 +5335,7 @@ define(['app'], function (app) {
 						$.each(data.result, function(i,item) {
 							$.myglobals.HardwareTypesStr[item.idx] = item.name;
 							// Don't show I2C sensors
-							if (item.name.indexOf("Local I2C sensor") != -1) {
+							if (item.name.indexOf("I2C sensor") != -1) {
 								$.myglobals.HardwareI2CStr[item.idx] = item.name;
 								i2cidx = idx;
 								return true;
@@ -5391,15 +5391,15 @@ define(['app'], function (app) {
 							$("#hardwareparamstable #combotype").append(option);
 							idx++;
 						});
-						// regroup local I2C sensors under index 1000
+						// regroup I2C sensors under index 1000
 						var option = $('<option />');
-						option.attr('value', 1000).text("Local I2C sensors");
+						option.attr('value', 1000).text("I2C sensors");
 						option.insertAfter('#hardwareparamstable #combotype :nth-child(' + i2cidx + ')')
                     }
 				}
 			});
 
-			//Build local I2C devices combo
+			//Build I2C devices combo
             $("#hardwareparamsi2clocal #comboi2clocal").html("");
             $.each($.myglobals.HardwareI2CStr, function(idx,name) {
 		if (name) {

@@ -1606,9 +1606,11 @@ bool CEvohome::DecodeBatteryInfo(CEvohomeMsg &msg)
 	RFX_SETID3(msg.GetID(0),tsen.EVOHOME2.id1,tsen.EVOHOME2.id2,tsen.EVOHOME2.id3)
 	tsen.EVOHOME2.updatetype = updBattery;
 	
-	double dbCharge=0;
-	if(nBattery!=0xFF)
-		dbCharge=(double)nBattery/2.0; //Presumed to be the charge level where sent
+	if (nBattery == 0xFF)
+		nBattery = 100; // recode full battery (0xFF) to 100 for consistency across device types
+	else
+		nBattery = nBattery / 2;  // recode battery level values to 0-100 from original 0-200 values
+
 	if(nLowBat==0)
 		nBattery=0;
 	tsen.EVOHOME2.battery_level=nBattery;
@@ -1659,7 +1661,7 @@ bool CEvohome::DecodeBatteryInfo(CEvohomeMsg &msg)
 		tsen.EVOHOME2.zone=nDevNo;
 		sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME2, NULL, nBattery);
 	}
-	Log(true,LOG_STATUS,"evohome: %s: %s=%d charge=%d (%.1f %%) level=%d (%s)",tag,szType.c_str(),nDevNo,nBattery,dbCharge,nLowBat,(nLowBat==0)?"Low":"OK");
+	Log(true,LOG_STATUS,"evohome: %s: %s=%d charge=%d(%%) level=%d (%s)",tag,szType.c_str(),nDevNo,nBattery,nLowBat,(nLowBat==0)?"Low":"OK");
 	
 	return true;
 }
@@ -1864,8 +1866,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string idx = request::findValue(&req, "idx");
@@ -1946,8 +1948,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string idx = request::findValue(&req, "idx");

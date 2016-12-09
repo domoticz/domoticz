@@ -1,4 +1,4 @@
-Version 3.xxxx (November xth 2016)
+Version 3.xxxx (December xth 2016)
 - Fixed: Camera Editor, will now always refresh thumbnail in table
 - Fixed: JSon float/nan value, solved by upgrading JSonCPP
 - Fixed: OZW, when a value is updated and the sensor did not exists before (for example a kWh sensor), it is created (saves a restart)
@@ -46,7 +46,7 @@ Version 3.5834 (October 29th 2016)
 - Implemented: RFLink: Displaying firmware version in the hardware setup
 - Implemented: RFXCom, Blinds T12 (Confexx)
 - Implemented: S0 Meter TCP
-- Changed: Local I2C sensors grouping (ldrolez)
+- Changed: I2C sensors grouping (ldrolez)
 - Changed: ETH-8020, ignoring return message as it always returns (no more Success message)
 - Changed: EventSystem, weather/rain value is now the rain-rate
 - Changed: Forecast.io to DarkSky

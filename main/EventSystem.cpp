@@ -3839,8 +3839,8 @@ namespace http {
 			redirect_uri = root.toStyledString();
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string eventname = CURLEncode::URLDecode(request::findValue(&req, "name"));

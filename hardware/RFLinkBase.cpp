@@ -991,7 +991,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				return;									//No admin user, and not allowed to be here
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string idx = request::findValue(&req, "idx");
