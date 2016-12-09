@@ -77,7 +77,8 @@ define(['app'], function (app) {
 				(text.indexOf("Motherboard") >= 0) ||
 				(text.indexOf("Kodi") >= 0) ||
 				(text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0) ||
-                (text.indexOf("YeeLight") >= 0)
+                (text.indexOf("YeeLight") >= 0) ||
+                (text.indexOf("Xiaomi Gateway") >= 0)
 				) {
                 // if hardwaretype == 1000 => I2C sensors grouping
                 if (hardwaretype == 1000) {
@@ -842,7 +843,8 @@ define(['app'], function (app) {
 				(text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0) ||
 				(text.indexOf("Tellstick") >= 0) ||
 				(text.indexOf("Motherboard") >= 0) ||
-                (text.indexOf("YeeLight") >= 0)
+                (text.indexOf("YeeLight") >= 0) ||
+                (text.indexOf("Xiaomi Gateway") >= 0)
 				) {
                 $.ajax({
                     url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
@@ -4468,7 +4470,8 @@ define(['app'], function (app) {
                            (data["Type"].indexOf("System Alive") >= 0) ||
                            (data["Type"].indexOf("PiFace") >= 0) ||
                            (data["Type"].indexOf("Tellstick") >= 0) ||
-                           (data["Type"].indexOf("Yeelight") >= 0)) {
+                           (data["Type"].indexOf("Yeelight") >= 0) ||
+                           (data["Type"].indexOf("Xiaomi Gateway") >= 0)) {
                             //nothing to be set
                         }
                         else if (data["Type"].indexOf("1-Wire") >= 0) {
@@ -4653,7 +4656,8 @@ define(['app'], function (app) {
                (text.indexOf("Dummy") >= 0) ||
                (text.indexOf("System Alive") >= 0) ||
                (text.indexOf("PiFace") >= 0) ||
-               (text.indexOf("Yeelight") >= 0)) {
+               (text.indexOf("Yeelight") >= 0) ||
+               (text.indexOf("Xiaomi Gateway") >= 0)) {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").hide();
                 $("#hardwarecontent #divlogin").hide();
@@ -4786,6 +4790,13 @@ define(['app'], function (app) {
                 $("#hardwarecontent #hardwareparamsremote #tcpport").val(80);
             }
             else if (text.indexOf("Yeelight") >= 0) {
+                $("#hardwarecontent #divserial").hide();
+                $("#hardwarecontent #divremote").hide();
+                $("#hardwarecontent #divlogin").hide();
+                $("#hardwarecontent #divunderground").hide();
+                $("#hardwarecontent #divhttppoller").hide();
+            }
+            else if (text.indexOf("Xiaomi Gateway") >= 0) {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").hide();
                 $("#hardwarecontent #divlogin").hide();
