@@ -79,6 +79,7 @@
 #include "../hardware/Kodi.h"
 #include "../hardware/Netatmo.h"
 #include "../hardware/HttpPoller.h"
+#include "../hardware/Regulator.h"
 #include "../hardware/AnnaThermostat.h"
 #include "../hardware/Winddelen.h"
 #include "../hardware/SatelIntegra.h"
@@ -841,6 +842,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_HTTPPOLLER:
 		pHardware = new CHttpPoller(ID, Username, Password, Address, Filename, Port);
+		break;
+	case HTYPE_REGULATOR:
+		pHardware = new CRegulator(ID, 30/*default refresh*/);
 		break;
 	case HTYPE_DarkSky:
 		pHardware = new CDarkSky(ID,Username,Password);

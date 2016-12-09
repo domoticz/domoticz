@@ -473,7 +473,9 @@
     <ClInclude Include="..\hardware\PVOutput_Input.h" />
     <ClInclude Include="..\hardware\RAVEn.h" />
     <ClInclude Include="..\hardware\Razberry.h" />
+    <ClInclude Include="..\hardware\RegDevice.h" />
     <ClInclude Include="..\hardware\Rego6XXSerial.h" />
+    <ClInclude Include="..\hardware\Regulator.h" />
     <ClInclude Include="..\hardware\RFLinkBase.h" />
     <ClInclude Include="..\hardware\RFLinkSerial.h" />
     <ClInclude Include="..\hardware\RFLinkTCP.h" />
@@ -701,6 +703,8 @@
     <ClCompile Include="..\hardware\PVOutput_Input.cpp" />
     <ClCompile Include="..\hardware\RAVEn.cpp" />
     <ClCompile Include="..\hardware\Razberry.cpp" />
+    <ClCompile Include="..\hardware\RegDevice.cpp" />
+    <ClCompile Include="..\hardware\Regulator.cpp" />
     <ClCompile Include="..\hardware\RFLinkBase.cpp" />
     <ClCompile Include="..\hardware\RFLinkSerial.cpp" />
     <ClCompile Include="..\hardware\RFLinkTCP.cpp" />

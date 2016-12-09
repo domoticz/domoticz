@@ -1207,6 +1207,14 @@
 				</tr>
 			</table>
 		</div>
+		<div id="divregulator">
+			<br>
+			<table class="display" id="hardwareparamsregulator" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+				<!-- todo -->
+				</tr>
+			</table>
+		</div>
 		<div id="divpollinterval">
 			<br>
 			<table class="display" id="hardwareparamspollinterval" border="0" cellpadding="0" cellspacing="20">
@@ -1456,6 +1464,53 @@
 			</tr>
 			</table>
 		</form>
+</div>
+<div id="dialog-associatedevices" title="Associate Devices" style="display:none;">
+	<form>
+		<table border="0" cellpadding="0" cellspacing="10">
+			<tr>
+				<td align="right"><label for="tempdevice"><span data-i18n="Temperature"></span>: </label></td>
+				<td>
+					<select id="tempdevice" style="width:250px" class="combobox ui-corner-all">
+						<option value="9" data-i18n="Ampere (3 Phase)">Ampere (3 Phase)"</option>
+					</select>
+				</td>
+			</tr>
+
+			<tr>
+				<td align="right"><label for="switchdevice"><span data-i18n="Switch"></span>: </label></td>
+				<td>
+					<select id="switchdevice" style="width:250px" class="combobox ui-corner-all">
+						<option value="11" data-i18n="Barometer">Barometer</option>
+					</select>
+				</td>
+			</tr>
+
+			<tr>
+				<td align="right"><label for="setpointdevice"><span data-i18n="Thermostat Setpoint"></span>: </label></td>
+				<td>
+					<select id="setpointdevice" style="width:250px" class="combobox ui-corner-all">
+						<option value="249" data-i18n="Air Quality">Air Quality</option>
+					</select>
+				</td>
+			</tr>
+
+		</table>
+		<button class="btn btn-default" id="submitbuttonAddRegulation">Add</button>
+	</form>
+
+	<table id="associations" border="0" width=100%>
+		<thead>
+			<tr role="row">
+				<th width=30 align="left"></th>
+				<th width=40 align="left">ID</th>
+				<th align="left" style="padding-right:30px">Temperature</th>
+				<th align="left" style="padding-right:30px">Switch</th>
+				<th align="left" style="padding-right:30px">Setpoint</th></tr>
+		</thead>
+		<tbody></tbody>
+	</table>
+
 </div>
 <div id="dialog-createevohomesensor" title="Create evohome device" style="display:none;">
 		<form>

@@ -296,6 +296,8 @@ hardware/NefitEasy.cpp
 hardware/Nest.cpp
 hardware/Netatmo.cpp
 hardware/HttpPoller.cpp
+hardware/Regulator.cpp
+hardware/RegDevice.cpp
 hardware/OpenWeatherMap.cpp
 hardware/OpenWebNet.cpp
 hardware/openwebnet/bt_openwebnet.cpp

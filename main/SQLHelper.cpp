@@ -260,6 +260,14 @@ const char *sqlCreateHardware =
 "[Mode6] CHAR DEFAULT 0, "
 "[DataTimeout] INTEGER DEFAULT 0);";
 
+const char *sqlCreateRegulators =
+"CREATE TABLE IF NOT EXISTS [Regulators] ("
+"[ID] INTEGER PRIMARY KEY, "
+"[RegulatorHardwareID] INTEGER NOT NULL, "
+"[TemperatureDeviceID] VARCHAR(25) NOT NULL, "
+"[SwitchDeviceID] VARCHAR(25) NOT NULL, "
+"[SetpointDeviceID] VARCHAR(25) NOT NULL);";
+
 const char *sqlCreateUsers =
 "CREATE TABLE IF NOT EXISTS [Users] ("
 "[ID] INTEGER PRIMARY KEY, "
@@ -740,6 +748,7 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateToonDevices);
 	query(sqlCreateUserSessions);
 	query(sqlCreateMobileDevices);
+	query(sqlCreateRegulators);
 	//Add indexes to log tables
 	query("create index if not exists ds_hduts_idx    on DeviceStatus(HardwareID, DeviceID, Unit, Type, SubType);");
 	query("create index if not exists f_id_idx        on Fan(DeviceRowID);");
@@ -5575,6 +5584,7 @@ void CSQLHelper::DeleteHardware(const std::string &idx)
 	safe_query("DELETE FROM EnoceanSensors WHERE (HardwareID== '%q')", idx.c_str());
 	safe_query("DELETE FROM MySensors WHERE (HardwareID== '%q')", idx.c_str());
 	safe_query("DELETE FROM WOLNodes WHERE (HardwareID == '%q')",idx.c_str());
+	safe_query("DELETE FROM Regulators WHERE (RegulatorHardwareID == '%q')", idx.c_str());
 }
 
 void CSQLHelper::DeleteCamera(const std::string &idx)
