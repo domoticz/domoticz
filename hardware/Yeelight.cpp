@@ -117,6 +117,7 @@ void Yeelight::Do_Work()
 	_log.Log(LOG_STATUS, "YeeLight stopped");
 }
 
+
 void Yeelight::InsertUpdateSwitch(const std::string &nodeID, const std::string &lightName, const int &YeeType, const std::string &Location, const bool bIsOn, const std::string &yeelightBright, const std::string &yeelightHue)
 {
 	std::vector<std::string> ipaddress;
@@ -186,6 +187,7 @@ void Yeelight::InsertUpdateSwitch(const std::string &nodeID, const std::string &
 		}
 	}
 }
+
 
 bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 {
@@ -281,12 +283,12 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 		message = ss.str();
 		break;
 	case Limitless_SetRGBColour: {
-			sendOnFirst = true;
-			float cHue = (359.0f / 255.0f)*float(pLed->value); // hue given was in range of 0-255
-			ss << "{\"id\":1,\"method\":\"set_hsv\",\"params\":[" << cHue << ", 100, \"smooth\", 2000]}\r\n";
-			message = ss.str();
-		}
-		break;
+		sendOnFirst = true;
+		float cHue = (359.0f / 255.0f)*float(pLed->value); // hue given was in range of 0-255
+		ss << "{\"id\":1,\"method\":\"set_hsv\",\"params\":[" << cHue << ", 100, \"smooth\", 2000]}\r\n";
+		message = ss.str();
+	}
+								 break;
 	case Limitless_SetBrightUp:
 		message = "{\"id\":1,\"method\":\"set_adjust\",\"params\":[\"increase\", \"bright\"]}\r\n";
 		break;
@@ -310,12 +312,12 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 		}
 		break;
 	case Limitless_FullBrightness: {
-			sendOnFirst = true;
-			int value = pLed->value;
-			ss << "{\"id\":1,\"method\":\"set_bright\",\"params\":[100, \"smooth\", 500]}\r\n";
-			message = ss.str();
-		}
-		break;
+		sendOnFirst = true;
+		int value = pLed->value;
+		ss << "{\"id\":1,\"method\":\"set_bright\",\"params\":[100, \"smooth\", 500]}\r\n";
+		message = ss.str();
+	}
+								   break;
 	case Limitless_DiscoMode:
 		sendOnFirst = true;
 		// simulate strobe effect - at time of writing, minimum timing allowed by Yeelight is 50ms
@@ -350,6 +352,7 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 	return true;
 }
 
+
 boost::array<char, 1024> recv_buffer_;
 int hardwareId;
 
@@ -360,6 +363,7 @@ Yeelight::udp_server::udp_server(boost::asio::io_service& io_service, int m_HwdI
 	socket_.set_option(boost::asio::socket_base::broadcast(true));
 	hardwareId = m_HwdID;
 }
+
 
 void Yeelight::udp_server::start_send()
 {
@@ -400,6 +404,7 @@ bool YeeLightGetTag(const std::string &InputString, const std::string &Tag, std:
 	Value = szValue.substr(0, pos);
 	return true;
 }
+
 
 bool Yeelight::udp_server::HandleIncoming(const std::string &szData, std::vector<std::string> &receivedip)
 {
