@@ -495,11 +495,17 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 		if (rtime < atime) //past date/time
 		{
 			//schedule for next month
-			Month = static_cast<boost::gregorian::months_of_year>(ltime.tm_mon + 2);
+			ltime.tm_mon++;
+			if (ltime.tm_mon == 12) // fix for roll over to next year
+			{
+				ltime.tm_mon = 0;
+				ltime.tm_year++;
+			}
+			Month = static_cast<boost::gregorian::months_of_year>(ltime.tm_mon + 1);
 			nth_dow ndm(Occurence, Day, Month);
 			boost::gregorian::date d = ndm.get_date(ltime.tm_year + 1900);
 
-			constructTime(rtime,tm1,ltime.tm_year+1900,ltime.tm_mon+1,d.day(),pItem->startHour,pItem->startMin,0,isdst);
+			constructTime(rtime,tm1,ltime.tm_year+1900,ltime.tm_mon,d.day(),pItem->startHour,pItem->startMin,0,isdst);
 		}
 
 		rtime += roffset * 60; // add randomness
