@@ -911,7 +911,7 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::unauthorized;
+				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
 
@@ -975,7 +975,7 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::unauthorized;
+				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
 
@@ -1283,7 +1283,7 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::unauthorized;
+				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
 
@@ -1535,7 +1535,7 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::unauthorized;
+				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
 			std::string idx = request::findValue(&req, "idx");
@@ -1567,7 +1567,7 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::unauthorized;
+				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
 			std::string idx = request::findValue(&req, "idx");
@@ -1586,7 +1586,7 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::unauthorized;
+				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
 			std::string idx = request::findValue(&req, "idx");
@@ -1601,7 +1601,7 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::unauthorized;
+				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
 			std::string variablename = request::findValue(&req, "vname");
@@ -1618,7 +1618,7 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::unauthorized;
+				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
 			std::string idx = request::findValue(&req, "idx");
@@ -1705,7 +1705,7 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::unauthorized;
+				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
 			std::string sTimeout = request::findValue(&req, "timeout");
@@ -1722,7 +1722,7 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::unauthorized;
+				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
 
@@ -1793,7 +1793,7 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::unauthorized;
+				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
 
@@ -1810,7 +1810,7 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::unauthorized;
+				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
 
@@ -1837,7 +1837,7 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::unauthorized;
+				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
 
@@ -1925,7 +1925,7 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::unauthorized;
+				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
 
@@ -2020,7 +2020,7 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::unauthorized;
+				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
 			std::string idx = request::findValue(&req, "idx");
@@ -2052,7 +2052,7 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::unauthorized;
+				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
 			std::string idx = request::findValue(&req, "idx");
@@ -2304,7 +2304,7 @@ namespace http {
 		{
 			if (session.rights == -1)
 			{
-				session.reply_status = reply::unauthorized;
+				session.reply_status = reply::forbidden;
 				return;//Only auth user allowed
 			}
 
@@ -2491,7 +2491,7 @@ namespace http {
 		{
 			if (session.rights < 1)
 			{
-				session.reply_status = reply::unauthorized;
+				session.reply_status = reply::forbidden;
 				return; //only user or higher allowed
 			}
 
@@ -2636,7 +2636,7 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::unauthorized;
+				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
 #ifdef WIN32
@@ -2657,7 +2657,7 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::unauthorized;
+				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
 #ifdef WIN32
@@ -2825,7 +2825,7 @@ namespace http {
 
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::unauthorized;
+				session.reply_status = reply::forbidden;
 				return; //Only admin users may update
 			}
 
@@ -2902,7 +2902,7 @@ namespace http {
 			{
 				if (session.rights < 2)
 				{
-					session.reply_status = reply::unauthorized;
+					session.reply_status = reply::forbidden;
 					return; //Only admin user allowed
 				}
 
@@ -2917,7 +2917,7 @@ namespace http {
 			{
 				if (session.rights < 2)
 				{
-					session.reply_status = reply::unauthorized;
+					session.reply_status = reply::forbidden;
 					return; //Only admin user allowed
 				}
 
@@ -2932,7 +2932,7 @@ namespace http {
 			{
 				if (session.rights < 2)
 				{
-					session.reply_status = reply::unauthorized;
+					session.reply_status = reply::forbidden;
 					return; //Only admin user allowed
 				}
 
@@ -2962,7 +2962,7 @@ namespace http {
 			{
 				if (session.rights < 2)
 				{
-					session.reply_status = reply::unauthorized;
+					session.reply_status = reply::forbidden;
 					return; //Only admin user allowed
 				}
 
@@ -3068,7 +3068,7 @@ namespace http {
 			{
 				if (session.rights < 2)
 				{
-					session.reply_status = reply::unauthorized;
+					session.reply_status = reply::forbidden;
 					return; //Only admin user allowed
 				}
 
@@ -3108,7 +3108,7 @@ namespace http {
 			{
 				if (session.rights < 2)
 				{
-					session.reply_status = reply::unauthorized;
+					session.reply_status = reply::forbidden;
 					return; //Only admin user allowed
 				}
 
@@ -3212,7 +3212,7 @@ namespace http {
 			{
 				if (session.rights < 2)
 				{
-					session.reply_status = reply::unauthorized;
+					session.reply_status = reply::forbidden;
 					return; //Only admin user allowed
 				}
 
@@ -3268,7 +3268,7 @@ namespace http {
 			{
 				if (session.rights < 2)
 				{
-					session.reply_status = reply::unauthorized;
+					session.reply_status = reply::forbidden;
 					return; //Only admin user allowed
 				}
 
@@ -3593,7 +3593,7 @@ namespace http {
 			{
 				if (session.rights < 2)
 				{
-					session.reply_status = reply::unauthorized;
+					session.reply_status = reply::forbidden;
 					return; //Only admin user allowed
 				}
 
@@ -3644,7 +3644,7 @@ namespace http {
 			{
 				if (session.rights < 2)
 				{
-					session.reply_status = reply::unauthorized;
+					session.reply_status = reply::forbidden;
 					return; //Only admin user allowed
 				}
 
@@ -3660,7 +3660,7 @@ namespace http {
 			{
 				if (session.rights < 2)
 				{
-					session.reply_status = reply::unauthorized;
+					session.reply_status = reply::forbidden;
 					return; //Only admin user allowed
 				}
 
@@ -3676,7 +3676,7 @@ namespace http {
 			{
 				if (session.rights < 2)
 				{
-					session.reply_status = reply::unauthorized;
+					session.reply_status = reply::forbidden;
 					return; //Only admin user allowed
 				}
 
@@ -3695,7 +3695,7 @@ namespace http {
 			{
 				if (session.rights < 2)
 				{
-					session.reply_status = reply::unauthorized;
+					session.reply_status = reply::forbidden;
 					return; //Only admin user allowed
 				}
 
@@ -4122,7 +4122,7 @@ namespace http {
 			{
 				if (session.rights < 2)
 				{
-					session.reply_status = reply::unauthorized;
+					session.reply_status = reply::forbidden;
 					return; //Only admin user allowed
 				}
 
@@ -4632,7 +4632,7 @@ namespace http {
 			{
 				if (session.rights < 2)
 				{
-					session.reply_status = reply::unauthorized;
+					session.reply_status = reply::forbidden;
 					return; //Only admin user allowed
 				}
 
@@ -5089,7 +5089,7 @@ namespace http {
 			{
 				if (session.rights < 2)
 				{
-					session.reply_status = reply::unauthorized;
+					session.reply_status = reply::forbidden;
 					return; //Only admin user allowed
 				}
 
@@ -5138,7 +5138,7 @@ namespace http {
 			{
 				if (session.rights < 2)
 				{
-					session.reply_status = reply::unauthorized;
+					session.reply_status = reply::forbidden;
 					return; //Only admin user allowed
 				}
 
@@ -5190,7 +5190,7 @@ namespace http {
 			{
 				if (session.rights < 2)
 				{
-					session.reply_status = reply::unauthorized;
+					session.reply_status = reply::forbidden;
 					return; //Only admin user allowed
 				}
 
@@ -5207,7 +5207,7 @@ namespace http {
 			{
 				if (session.rights < 2)
 				{
-					session.reply_status = reply::unauthorized;
+					session.reply_status = reply::forbidden;
 					return; //Only admin user allowed
 				}
 
@@ -5295,7 +5295,7 @@ namespace http {
 			{
 				if (session.rights < 2)
 				{
-					session.reply_status = reply::unauthorized;
+					session.reply_status = reply::forbidden;
 					return; //Only admin user allowed
 				}
 
@@ -5342,7 +5342,7 @@ namespace http {
 			{
 				if (session.rights < 2)
 				{
-					session.reply_status = reply::unauthorized;
+					session.reply_status = reply::forbidden;
 					return; //Only admin user allowed
 				}
 
@@ -5359,7 +5359,7 @@ namespace http {
 			{
 				if (session.rights < 2)
 				{
-					session.reply_status = reply::unauthorized;
+					session.reply_status = reply::forbidden;
 					return; //Only admin user allowed
 				}
 
@@ -5402,7 +5402,7 @@ namespace http {
 			{
 				if (session.rights < 2)
 				{
-					session.reply_status = reply::unauthorized;
+					session.reply_status = reply::forbidden;
 					return; //Only admin user allowed
 				}
 
@@ -5452,7 +5452,7 @@ namespace http {
 			{
 				if (session.rights < 2)
 				{
-					session.reply_status = reply::unauthorized;
+					session.reply_status = reply::forbidden;
 					return; //Only admin user allowed
 				}
 
@@ -5469,7 +5469,7 @@ namespace http {
 			{
 				if (session.rights < 2)
 				{
-					session.reply_status = reply::unauthorized;
+					session.reply_status = reply::forbidden;
 					return; //Only admin user allowed
 				}
 
@@ -5514,7 +5514,7 @@ namespace http {
 			{
 				if (session.rights < 2)
 				{
-					session.reply_status = reply::unauthorized;
+					session.reply_status = reply::forbidden;
 					return; //Only admin user allowed
 				}
 
@@ -5564,7 +5564,7 @@ namespace http {
 			{
 				if (session.rights < 2)
 				{
-					session.reply_status = reply::unauthorized;
+					session.reply_status = reply::forbidden;
 					return; //Only admin user allowed
 				}
 
@@ -5585,7 +5585,7 @@ namespace http {
 			{
 				if (session.rights < 2)
 				{
-					session.reply_status = reply::unauthorized;
+					session.reply_status = reply::forbidden;
 					return; //Only admin user allowed
 				}
 
@@ -5638,7 +5638,7 @@ namespace http {
 			{
 				if (session.rights < 2)
 				{
-					session.reply_status = reply::unauthorized;
+					session.reply_status = reply::forbidden;
 					return; //Only admin user allowed
 				}
 
@@ -5654,7 +5654,7 @@ namespace http {
 			{
 				if (session.rights < 2)
 				{
-					session.reply_status = reply::unauthorized;
+					session.reply_status = reply::forbidden;
 					return; //Only admin user allowed
 				}
 
@@ -5697,7 +5697,7 @@ namespace http {
 			{
 				if (session.rights < 2)
 				{
-					session.reply_status = reply::unauthorized;
+					session.reply_status = reply::forbidden;
 					return; //Only admin user allowed
 				}
 
@@ -5715,7 +5715,7 @@ namespace http {
 			{
 				if (session.rights < 2)
 				{
-					session.reply_status = reply::unauthorized;
+					session.reply_status = reply::forbidden;
 					return; //Only admin user allowed
 				}
 
@@ -5830,7 +5830,7 @@ namespace http {
 			{
 				if (session.rights < 1)
 				{
-					session.reply_status = reply::unauthorized;
+					session.reply_status = reply::forbidden;
 					return; //Only user/admin allowed
 				}
 				std::string Username = "Admin";
@@ -5918,7 +5918,7 @@ namespace http {
 			{
 				if (session.rights < 1)
 				{
-					session.reply_status = reply::unauthorized;
+					session.reply_status = reply::forbidden;
 					return; //Only user/admin allowed
 				}
 				std::string Username = "Admin";
@@ -6331,7 +6331,7 @@ namespace http {
 			{
 				if (session.rights < 2)
 				{
-					session.reply_status = reply::unauthorized;
+					session.reply_status = reply::forbidden;
 					return; //Only admin user allowed
 				}
 
@@ -6359,7 +6359,7 @@ namespace http {
 			{
 				if (session.rights < 2)
 				{
-					session.reply_status = reply::unauthorized;
+					session.reply_status = reply::forbidden;
 					return; //Only admin user allowed
 				}
 
@@ -6391,7 +6391,7 @@ namespace http {
 			{
 				if (session.rights < 2)
 				{
-					session.reply_status = reply::unauthorized;
+					session.reply_status = reply::forbidden;
 					return; //Only admin user allowed
 				}
 
@@ -6420,7 +6420,7 @@ namespace http {
 			{
 				if (session.rights < 2)
 				{
-					session.reply_status = reply::unauthorized;
+					session.reply_status = reply::forbidden;
 					return; //Only admin user allowed
 				}
 
@@ -6474,7 +6474,7 @@ namespace http {
 			{
 				if (session.rights < 2)
 				{
-					session.reply_status = reply::unauthorized;
+					session.reply_status = reply::forbidden;
 					return; //Only admin user allowed
 				}
 
@@ -6526,7 +6526,7 @@ namespace http {
 			{
 				if (session.rights < 2)
 				{
-					session.reply_status = reply::unauthorized;
+					session.reply_status = reply::forbidden;
 					return; //Only admin user allowed
 				}
 
@@ -6551,7 +6551,7 @@ namespace http {
 			{
 				if (session.rights < 2)
 				{
-					session.reply_status = reply::unauthorized;
+					session.reply_status = reply::forbidden;
 					return; //Only admin user allowed
 				}
 
@@ -6573,7 +6573,7 @@ namespace http {
 			{
 				if (session.rights < 2)
 				{
-					session.reply_status = reply::unauthorized;
+					session.reply_status = reply::forbidden;
 					return; //Only admin user allowed
 				}
 
@@ -6748,7 +6748,7 @@ namespace http {
 
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::unauthorized;
+				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
 
@@ -7063,7 +7063,7 @@ namespace http {
 			redirect_uri = "/index.html";
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::unauthorized;
+				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
 
@@ -9686,7 +9686,7 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::unauthorized;
+				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
 #ifdef WIN32
@@ -9704,7 +9704,7 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::unauthorized;
+				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
 
@@ -9722,7 +9722,7 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::unauthorized;
+				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
 
@@ -9759,7 +9759,7 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::unauthorized;
+				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
 
@@ -9778,7 +9778,7 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::unauthorized;
+				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
 
@@ -10282,7 +10282,7 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::unauthorized;
+				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
 
@@ -10357,7 +10357,7 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::unauthorized;
+				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
 
@@ -10424,7 +10424,7 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::unauthorized;
+				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
 
@@ -10501,7 +10501,7 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::unauthorized;
+				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
 
@@ -10586,7 +10586,7 @@ namespace http {
 			//Only admin user allowed
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::unauthorized;
+				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
 			std::string zipfile = request::findValue(&req, "file");
@@ -10641,7 +10641,7 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::unauthorized;
+				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
 
@@ -10676,7 +10676,7 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::unauthorized;
+				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
 
@@ -10702,7 +10702,7 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::unauthorized;
+				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
 
@@ -10724,7 +10724,7 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::unauthorized;
+				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
 
@@ -10746,7 +10746,7 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::unauthorized;
+				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
 
@@ -10774,7 +10774,7 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::unauthorized;
+				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
 			root["status"] = "OK";
@@ -10791,7 +10791,7 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::unauthorized;
+				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
 			root["status"] = "OK";
@@ -10837,7 +10837,7 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::unauthorized;
+				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
 			std::string suuid = request::findValue(&req, "uuid");
@@ -11057,7 +11057,7 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::unauthorized;
+				session.reply_status = reply::forbidden;
 				return; //Only admin user allowed
 			}
 
