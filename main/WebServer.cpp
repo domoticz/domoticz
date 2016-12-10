@@ -1127,6 +1127,9 @@ namespace http {
 			else if (htype == HTYPE_Yeelight) {
 				//all fine here!
 			}
+			else if (htype == HTYPE_XiaomiGateway) {
+				//all fine here!
+			}
 			else if (
 				(htype == HTYPE_Wunderground) ||
 				(htype == HTYPE_DarkSky) ||
@@ -1436,6 +1439,9 @@ namespace http {
 				//All fine here
 			}
 			else if (htype == HTYPE_Yeelight) {
+				//All fine here
+			}
+			else if (htype == HTYPE_XiaomiGateway) {
 				//All fine here
 			}
 			else if (
@@ -7152,7 +7158,7 @@ namespace http {
 			const bool bDisplayHidden,
 			const bool bDisplayDisabled,
 			const bool bFetchFavorites,
-			const time_t LastUpdate, 
+			const time_t LastUpdate,
 			const std::string &username,
 			const std::string &hardwareid)
 		{
