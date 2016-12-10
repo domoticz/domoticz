@@ -77,9 +77,15 @@ matrix:
       - brew link openssl --force
       - brew install md5sha1sum
       - brew install python3
+      - brew linkapps python3
       - export OPENSSL_ROOT_DIR=/usr/local/opt/openssl
     script:
-      - cmake -DCMAKE_BUILD_TYPE=Release -DPYTHON_INCLUDE_DIR=/usr/local/Cellar/python3/3.5.2_3/Frameworks/Python.framework/Version/3.5/Headers -DPYTHON_LIBRARY=/usr/local/Cellar/python3/3.5.2_3/Frameworks/Python.framework/Version/3.5/lib/libpython3.5.dylib
+      - which python3
+      - ls -d /usr/local/Cellar/python3/3.*/Frameworks/Python.framework/Versions/3.5/include/
+      - ls -d /usr/local/Cellar/python3/3.*/Frameworks/Python.framework/Version/3.5/include/
+      - ls -d /usr/local/Cellar/python3/3.*/Frameworks/Python.framework/Versions/3.5/Headers/
+      - ls -d /usr/local/Cellar/python3/3.*/Frameworks/Python.framework/Version/3.5/Headers/
+      - cmake -DCMAKE_BUILD_TYPE=Release -DPYTHON_INCLUDE_DIR=/usr/local/Cellar/python3/3.5.2_3/Frameworks/Python.framework/Version/3.5/include -DPYTHON_LIBRARY=/usr/local/Cellar/python3/3.5.2_3/Frameworks/Python.framework/Version/3.5/lib/libpython3.5.dylib
       - make
 
 
