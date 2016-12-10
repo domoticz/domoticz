@@ -12693,9 +12693,7 @@ namespace http {
 
 											float TotalValue = float(actValue - ulFirstValue);
 
-											//~ BETA: fix bar graphs not showing zeros; issues #958, #1017
 											//~ if (TotalValue != 0)
-											if (1 == 1)
 											{
 												switch (metertype)
 												{
@@ -12761,9 +12759,7 @@ namespace http {
 
 										float TotalValue = float(curValue);
 
-										//~ BETA: fix bar graphs not showing zeros; issues #958, #1017
 										//~ if (TotalValue != 0)
-										if (1 == 1)
 										{
 											switch (metertype)
 											{
@@ -12802,9 +12798,7 @@ namespace http {
 
 							float TotalValue = float(ulTotalValue);
 
-							//~ BETA: fix bar graphs not showing zeros; issues #958, #1017
 							//~ if (TotalValue != 0)
-							if (1 == 1)
 							{
 								switch (metertype)
 								{
