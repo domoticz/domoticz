@@ -453,6 +453,9 @@
     <Filter Include="Devices\Python Plugins">
       <UniqueIdentifier>{71bf66bf-20b6-4786-b8ff-f394e16d2d84}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\Xiaomi Gateway">
+      <UniqueIdentifier>{5f68f493-7523-43aa-95db-f23ecc307771}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -1948,6 +1951,9 @@
     <ClInclude Include="..\hardware\plugins\Plugins.h">
       <Filter>Devices\Python Plugins</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\XiaomiGateway.h">
+      <Filter>Devices\Xiaomi Gateway</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2564,6 +2570,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\plugins\PluginManager.cpp">
       <Filter>Devices\Python Plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\XiaomiGateway.cpp">
+      <Filter>Devices\Xiaomi Gateway</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

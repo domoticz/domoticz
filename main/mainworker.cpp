@@ -108,6 +108,7 @@
 #include "../hardware/ZiBlueSerial.h"
 #include "../hardware/ZiBlueTCP.h"
 #include "../hardware/Yeelight.h"
+#include "../hardware/XiaomiGateway.h"
 #include "../hardware/plugins/Plugins.h"
 
 // load notifications configuration
@@ -952,6 +953,9 @@ bool MainWorker::AddHardwareFromParams(
 #ifdef USE_PYTHON_PLUGINS
 		pHardware = m_pluginsystem.RegisterPlugin(ID, Name, Filename);
 #endif
+    break;
+	case HTYPE_XiaomiGateway:
+		pHardware = new XiaomiGateway(ID);
 		break;
 	}
 
