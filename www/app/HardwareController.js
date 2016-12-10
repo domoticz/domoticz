@@ -4525,7 +4525,7 @@ define(['app'], function (app) {
                         intport = item.Port;
                         SerialName = "";
                     }
-					else if (item.Type == 93) // For Python plugins show the actual plug description
+					else if (item.Type == 94) // For Python plugins show the actual plug description
 					{
 						HwTypeStr = eval('$("#'+item.Extra+'").text()')
 						HwTypeStrOrg = "PLUGIN";
