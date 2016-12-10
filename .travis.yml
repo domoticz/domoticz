@@ -82,7 +82,7 @@ matrix:
     script:
       - which python3
       - ls -d /usr/local/Cellar/python3/3.*/Frameworks/Python.framework/Versions/3.5/Headers/Python.h
-      - cmake -DCMAKE_BUILD_TYPE=Release -DPYTHON_INCLUDE_DIR=/usr/local/Cellar/python3/3.*/Frameworks/Python.framework/Versions/3.5/Headers -DPYTHON_LIBRARY=/usr/local/Cellar/python3/3.5.2_3/Frameworks/Python.framework/Versions/3.5/lib/libpython3.5.dylib
+      - cmake -DCMAKE_BUILD_TYPE=Release -DPYTHON_INCLUDE_DIR=/usr/local/Cellar/python3/3.5.2_3/Frameworks/Python.framework/Versions/3.5/Headers -DPYTHON_LIBRARY=/usr/local/Cellar/python3/3.5.2_3/Frameworks/Python.framework/Versions/3.5/lib/libpython3.5.dylib
       - make
 
 
