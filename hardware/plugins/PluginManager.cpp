@@ -256,11 +256,8 @@ namespace Plugins {
 			}
 			else
 			{
-				CPluginMessage	Message(PMT_Directive, PDT_Debug, pModState->pPlugin->m_HwdID, std::string(type ? "true" : "false"));
-				{
-					boost::lock_guard<boost::mutex> l(PluginMutex);
-					PluginMessageQueue.push(Message);
-				}
+				type ? pModState->pPlugin->m_bDebug = true : pModState->pPlugin->m_bDebug = false;
+				_log.Log(LOG_NORM, "(%s) Debug log level set to: '%s'.", pModState->pPlugin->Name.c_str(), (type ? "true" : "false"));
 			}
 		}
 
@@ -287,6 +284,7 @@ namespace Plugins {
 			int		iBaud = 0;
 			if (!PyArg_ParseTuple(args, "sss", &szTransport, &szAddress, &szPort))
 			{
+				PyErr_Clear();
 				if (!PyArg_ParseTuple(args, "ssi", &szTransport, &szPort, &iBaud))
 				{
 					_log.Log(LOG_ERROR, "(%s) failed to parse parameters. Expected: Transport, IP Address, Port (sss) or Transport, SerialPort, Baud (ssi).", pModState->pPlugin->Name.c_str());
@@ -902,6 +900,7 @@ namespace Plugins {
 				PluginMessageQueue.push(Message);
 			}
 
+			if (sData[iPos + 1] == '\n') iPos++;				//  Handle \r\n 
 			sData = sData.substr(iPos+1);
 			iPos = sData.find_first_of('\r');
 		}
@@ -947,6 +946,61 @@ namespace Plugins {
 		m_sRetainedData = sData; // retain any residual for next time
 	}
 
+	void CPluginProtocolXML::ProcessMessage(const int HwdID, std::string & ReadData)
+	{
+		//
+		//	Only returns whole XML messages, strips out spurious spaces and characters
+		//	Does not handle <tag /> as the top level tag
+		//
+		//	Handles the cases where a read contains a partial message or multiple messages
+		//
+		std::string	sData = m_sRetainedData + ReadData;  // if there was some data left over from last time add it back in
+
+		while (true)
+		{
+			//
+			//	Find the top level tag name if it is not set
+			//
+			if (!m_Tag.length())
+			{
+				int iStart = sData.find_first_of('<');
+				int iEnd = sData.find_first_of(" >");
+				if ((iStart != std::string::npos) && (iEnd != std::string::npos))
+				{
+					m_Tag = sData.substr(++iStart, (iEnd - iStart));
+					sData = sData.substr(--iStart);					// remove any leading data
+				}
+			}
+
+			int	iEnd = sData.find("/" + m_Tag);
+			if (iEnd != std::string::npos)
+			{
+				CPluginMessage	Message(PMT_Message, HwdID, sData.substr(0, iEnd + m_Tag.length()+2));
+				{
+					boost::lock_guard<boost::mutex> l(PluginMutex);
+					PluginMessageQueue.push(Message);
+				}
+
+				sData = sData.substr(iEnd + m_Tag.length() + 2);
+				m_Tag = "";
+			}
+			else
+				break;
+		}
+
+		m_sRetainedData = sData; // retain any residual for next time
+	}
+
+
+	void CPluginTransport::handleRead(const boost::system::error_code& e, std::size_t bytes_transferred)
+	{
+		_log.Log(LOG_ERROR, "CPluginTransport: Base handleRead invoked for Hardware %d", m_HwdID);
+	}
+
+	void CPluginTransport::handleRead(const char *data, std::size_t bytes_transferred)
+	{
+		_log.Log(LOG_ERROR, "CPluginTransport: Base handleRead invoked for Hardware %d", m_HwdID);
+	}
 
 	bool CPluginTransportTCP::handleConnect()
 	{
@@ -1110,6 +1164,10 @@ namespace Plugins {
 		return true;
 	}
 
+	CPluginTransportSerial::CPluginTransportSerial(int HwdID, const std::string & Port, int Baud) : CPluginTransport(HwdID), m_Baud(Baud)
+	{
+		m_Port = Port;
+	}
 
 	CPluginTransportSerial::~CPluginTransportSerial(void)
 	{
@@ -1117,20 +1175,76 @@ namespace Plugins {
 
 	bool CPluginTransportSerial::handleConnect()
 	{
-		return false;
+		try
+		{
+			if (!isOpen())
+			{
+				m_bConnected = false;
+				openOnlyBaud(m_Port, m_Baud);
+				m_bConnected = isOpen();
+
+				CPluginMessage	Message(PMT_Connected, m_HwdID);
+				if (m_bConnected)
+				{
+					Message.m_Message = "SerialPort " + m_Port + " opened successfully.";
+					Message.m_iValue = 0;
+					setReadCallback(boost::bind(&CPluginTransportSerial::handleRead, this, _1, _2));
+				}
+				else
+				{
+					Message.m_Message = "SerialPort " + m_Port + " open failed, check log for details.";
+					Message.m_iValue = -1;
+				}
+				boost::lock_guard<boost::mutex> l(PluginMutex);
+				PluginMessageQueue.push(Message);
+			}
+		}
+		catch (std::exception& e)
+		{
+			CPluginMessage	Message(PMT_Connected, m_HwdID, std::string(e.what()));
+			Message.m_iValue = -1;
+			boost::lock_guard<boost::mutex> l(PluginMutex);
+			PluginMessageQueue.push(Message);
+			return false;
+		}
+
+		return m_bConnected;
 	}
 
-	void CPluginTransportSerial::handleRead(const boost::system::error_code & e, std::size_t bytes_transferred)
+	void CPluginTransportSerial::handleRead(const char *data, std::size_t bytes_transferred)
 	{
+		if (bytes_transferred)
+		{
+			CPluginMessage	Message(PMT_Read, m_HwdID, std::string(data, bytes_transferred));
+			{
+				boost::lock_guard<boost::mutex> l(PluginMutex);
+				PluginMessageQueue.push(Message);
+			}
+
+			m_iTotalBytes += bytes_transferred;
+		}
+		else
+		{
+			_log.Log(LOG_ERROR, "CPluginTransportSerial: handleRead called with no data.");
+		}
 	}
 
-	void CPluginTransportSerial::handleWrite(const std::string &)
+	void CPluginTransportSerial::handleWrite(const std::string & data)
 	{
+		writeString(data);
 	}
 
 	bool CPluginTransportSerial::handleDisconnect()
 	{
-		return false;
+		if (m_bConnected)
+		{
+			if (isOpen())
+			{
+				terminate();
+			}
+			m_bConnected = false;
+		}
+		return true;
 	}
 
 
@@ -1435,10 +1549,6 @@ namespace Plugins {
 		case PMT_Directive:
 			switch (Message.m_Directive)
 			{
-			case PDT_Debug:
-				(Message.m_Message == "true") ? m_bDebug = true : m_bDebug = false;
-				_log.Log(LOG_NORM, "(%s) Debug log level set to: '%s'.", Name.c_str(), Message.m_Message.c_str());
-				return;
 			case PDT_Transport:
 				if (m_pTransport && m_pTransport->IsConnected())
 				{
@@ -1463,7 +1573,7 @@ namespace Plugins {
 				}
 				else if (Message.m_Message == "Serial")
 				{
-					if (m_bDebug) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s.", Name.c_str(), Message.m_Message.c_str(), Message.m_Port.c_str());
+					if (m_bDebug) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s, %d.", Name.c_str(), Message.m_Message.c_str(), Message.m_Port.c_str(), Message.m_iValue);
 					m_pTransport = (CPluginTransport*) new CPluginTransportSerial(m_HwdID, Message.m_Port, Message.m_iValue);
 				}
 				else
@@ -1934,13 +2044,13 @@ namespace Plugins {
 		boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
 		while (!m_stoprequested)
 		{
-			if (ios.stopped())  // make sure that there is a boost thread to service i/o operations if there are any transports
+			if (ios.stopped())  // make sure that there is a boost thread to service i/o operations if there are any transports that need it
 			{
 				bool bIos_required = false;
 				for (std::map<int, CDomoticzHardwareBase*>::iterator itt = m_pPlugins.begin(); itt != m_pPlugins.end(); itt++)
 				{
 					CPlugin*	pPlugin = (CPlugin*)itt->second;
-					if ((pPlugin->m_pTransport) && (pPlugin->m_pTransport->IsConnected()))
+					if ((pPlugin->m_pTransport) && (pPlugin->m_pTransport->IsConnected()) && (pPlugin->m_pTransport->ThreadPoolRequired()))
 					{
 						bIos_required = true;
 						break;

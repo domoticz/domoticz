@@ -21,8 +21,7 @@ namespace Plugins {
 	};
 
 	enum ePluginDirectiveType {
-		PDT_Debug = 0,
-		PDT_PollInterval,
+		PDT_PollInterval = 0,
 		PDT_Transport,
 		PDT_Protocol,
 		PDT_Connect,
@@ -82,8 +81,13 @@ namespace Plugins {
 		virtual void	ProcessMessage(const int HwdID, std::string& ReadData);
 	};
 
-
-	class CPluginProtocolXML : CPluginProtocol {};
+	class CPluginProtocolXML : CPluginProtocol
+	{
+	private:
+		std::string		m_Tag;
+	public:
+		virtual void	ProcessMessage(const int HwdID, std::string& ReadData);
+	};
 
 	class CPluginProtocolJSON : CPluginProtocol
 	{
@@ -108,12 +112,14 @@ namespace Plugins {
 	public:
 		CPluginTransport(int HwdID) : m_HwdID(HwdID), m_bConnected(false), m_iTotalBytes(0) {};
 		virtual	bool		handleConnect() { return false; };
-		virtual void		handleRead(const boost::system::error_code& e, std::size_t bytes_transferred) = 0;
+		virtual void		handleRead(const boost::system::error_code& e, std::size_t bytes_transferred);
+		virtual void		handleRead(const char *data, std::size_t bytes_transferred);
 		virtual void		handleWrite(const std::string&) = 0;
 		virtual	bool		handleDisconnect() { return false; };
 		~CPluginTransport() {}
 
 		bool				IsConnected() { return m_bConnected; };
+		virtual bool		ThreadPoolRequired() { return false; };
 		long				TotalBytes() { return m_iTotalBytes; };
 	};
 
@@ -134,6 +140,7 @@ namespace Plugins {
 			}
 			if (m_Resolver) delete m_Resolver;
 		}
+		virtual bool		ThreadPoolRequired() { return true; };
 	};
 
 	class CPluginTransportTCP : public CPluginTransportIP, boost::enable_shared_from_this<CPluginTransportTCP>
@@ -156,16 +163,15 @@ namespace Plugins {
 		virtual void		handleWrite(const std::string&) {};
 	};
 
-	class CPluginTransportSerial : CPluginTransport
+	class CPluginTransportSerial : CPluginTransport, AsyncSerial
 	{
 	private:
 		int					m_Baud;
-		AsyncSerial*		m_AsyncSerial;
 	public:
-		CPluginTransportSerial(int HwdID, const std::string& Port, int Baud) : CPluginTransport(HwdID), m_Baud(Baud) { m_Port = Port; };
+		CPluginTransportSerial(int HwdID, const std::string& Port, int Baud);
 		~CPluginTransportSerial(void);
 		virtual	bool		handleConnect();
-		virtual void		handleRead(const boost::system::error_code& e, std::size_t bytes_transferred);
+		virtual void		handleRead(const char *data, std::size_t bytes_transferred);
 		virtual void		handleWrite(const std::string&);
 		virtual	bool		handleDisconnect();
 	};
