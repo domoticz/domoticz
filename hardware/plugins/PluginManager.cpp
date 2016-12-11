@@ -1877,8 +1877,6 @@ namespace Plugins {
 
 	bool CPluginSystem::StartPluginSystem()
 	{
-		if (pythonLib == nullptr)
-			return false;
 		// Flush the message queue (should already be empty)
 		boost::lock_guard<boost::mutex> l(PluginMutex);
 		while (!PluginMessageQueue.empty())
