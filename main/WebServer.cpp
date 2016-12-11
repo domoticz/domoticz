@@ -955,7 +955,7 @@ namespace http {
 				if (ii == HTYPE_RaspberryGPIO)
 					bDoAdd = false;
 #endif
-				if ((ii == HTYPE_1WIRE) && (!C1Wire::Have1WireSystem()))
+				if (((ii == HTYPE_1WIRE) && (!C1Wire::Have1WireSystem())) || (ii == HTYPE_PythonPlugin))
 					bDoAdd = false;
 				if (bDoAdd)
 					_htypes[Hardware_Type_Desc(ii)] = ii;
@@ -969,6 +969,11 @@ namespace http {
 				root["result"][ii]["name"] = itt->first;
 				ii++;
 			}
+
+#ifdef USE_PYTHON_PLUGINS
+			// Append Plugin list as well
+			PluginList(root["result"]);
+#endif
 		}
 
 		void CWebServer::Cmd_AddHardware(WebEmSession & session, const request& req, Json::Value &root)
@@ -1004,29 +1009,29 @@ namespace http {
 			int mode5 = 0;
 			int mode6 = 0;
 			int port = atoi(sport.c_str());
-			std::string modeStr = request::findValue(&req, "Mode1");
-			if (!modeStr.empty()) {
-				mode1 = atoi(modeStr.c_str());
+			std::string mode1Str = request::findValue(&req, "Mode1");
+			if (!mode1Str.empty()) {
+				mode1 = atoi(mode1Str.c_str());
 			}
-			modeStr = request::findValue(&req, "Mode2");
-			if (!modeStr.empty()) {
-				mode2 = atoi(modeStr.c_str());
+			std::string mode2Str = request::findValue(&req, "Mode2");
+			if (!mode2Str.empty()) {
+				mode2 = atoi(mode2Str.c_str());
 			}
-			modeStr = request::findValue(&req, "Mode3");
-			if (!modeStr.empty()) {
-				mode3 = atoi(modeStr.c_str());
+			std::string mode3Str = request::findValue(&req, "Mode3");
+			if (!mode3Str.empty()) {
+				mode3 = atoi(mode3Str.c_str());
 			}
-			modeStr = request::findValue(&req, "Mode4");
-			if (!modeStr.empty()) {
-				mode4 = atoi(modeStr.c_str());
+			std::string mode4Str = request::findValue(&req, "Mode4");
+			if (!mode4Str.empty()) {
+				mode4 = atoi(mode4Str.c_str());
 			}
-			modeStr = request::findValue(&req, "Mode5");
-			if (!modeStr.empty()) {
-				mode5 = atoi(modeStr.c_str());
+			std::string mode5Str = request::findValue(&req, "Mode5");
+			if (!mode5Str.empty()) {
+				mode5 = atoi(mode5Str.c_str());
 			}
-			modeStr = request::findValue(&req, "Mode6");
-			if (!modeStr.empty()) {
-				mode6 = atoi(modeStr.c_str());
+			std::string mode6Str = request::findValue(&req, "Mode6");
+			if (!mode6Str.empty()) {
+				mode6 = atoi(mode6Str.c_str());
 			}
 
 			if (IsSerialDevice(htype))
@@ -1201,6 +1206,9 @@ namespace http {
 				if (username == "")
 					return;
 			}
+			else if (htype == HTYPE_PythonPlugin) {
+				//All fine here
+			}
 			else if (htype == HTYPE_RaspberryPCF8574) {
 				//All fine here
 			}
@@ -1254,20 +1262,39 @@ namespace http {
 				mode2 = 500;
 			}
 
-			m_sql.safe_query(
-				"INSERT INTO Hardware (Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) VALUES ('%q',%d, %d,'%q',%d,'%q','%q','%q','%q',%d,%d,%d,%d,%d,%d,%d)",
-				name.c_str(),
-				(senabled == "true") ? 1 : 0,
-				htype,
-				address.c_str(),
-				port,
-				sport.c_str(),
-				username.c_str(),
-				password.c_str(),
-				extra.c_str(),
-				mode1, mode2, mode3, mode4, mode5, mode6,
-				iDataTimeout
+			if (htype == HTYPE_PythonPlugin) {
+				sport = request::findValue(&req, "serialport");
+				m_sql.safe_query(
+					"INSERT INTO Hardware (Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) VALUES ('%q',%d, %d,'%q',%d,'%q','%q','%q','%q','%q','%q', '%q', '%q', '%q', '%q', %d)",
+					name.c_str(),
+					(senabled == "true") ? 1 : 0,
+					htype,
+					address.c_str(),
+					port,
+					sport.c_str(),
+					username.c_str(),
+					password.c_str(),
+					extra.c_str(),
+					mode1Str.c_str(), mode2Str.c_str(), mode3Str.c_str(), mode4Str.c_str(), mode5Str.c_str(), mode6Str.c_str(),
+					iDataTimeout
 				);
+			}
+			else {
+				m_sql.safe_query(
+					"INSERT INTO Hardware (Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) VALUES ('%q',%d, %d,'%q',%d,'%q','%q','%q','%q',%d,%d,%d,%d,%d,%d,%d)",
+					name.c_str(),
+					(senabled == "true") ? 1 : 0,
+					htype,
+					address.c_str(),
+					port,
+					sport.c_str(),
+					username.c_str(),
+					password.c_str(),
+					extra.c_str(),
+					mode1, mode2, mode3, mode4, mode5, mode6,
+					iDataTimeout
+				);
+			}
 
 			//add the device for real in our system
 			result = m_sql.safe_query("SELECT MAX(ID) FROM Hardware");
@@ -1476,6 +1503,9 @@ namespace http {
 			else if (htype == HTYPE_OpenWebNet) {
 				//All fine here
 			}
+			else if (htype == HTYPE_PythonPlugin) {
+				//All fine here
+			}
 			else if (htype == HTYPE_GoodweAPI) {
 					if (username == "") {
 						return;
@@ -1515,21 +1545,47 @@ namespace http {
 			}
 			else
 			{
-				m_sql.safe_query(
-					"UPDATE Hardware SET Name='%q', Enabled=%d, Type=%d, Address='%q', Port=%d, SerialPort='%q', Username='%q', Password='%q', Extra='%q', Mode1=%d, Mode2=%d, Mode3=%d, Mode4=%d, Mode5=%d, Mode6=%d, DataTimeout=%d WHERE (ID == '%q')",
-					name.c_str(),
-					(bEnabled == true) ? 1 : 0,
-					htype,
-					address.c_str(),
-					port,
-					sport.c_str(),
-					username.c_str(),
-					password.c_str(),
-					extra.c_str(),
-					mode1, mode2, mode3, mode4, mode5, mode6,
-					iDataTimeout,
-					idx.c_str()
+				if (htype == HTYPE_PythonPlugin) {
+					std::string mode1Str = request::findValue(&req, "Mode1");
+					std::string mode2Str = request::findValue(&req, "Mode2");
+					std::string mode3Str = request::findValue(&req, "Mode3");
+					std::string mode4Str = request::findValue(&req, "Mode4");
+					std::string mode5Str = request::findValue(&req, "Mode5");
+					std::string mode6Str = request::findValue(&req, "Mode6");
+					sport = request::findValue(&req, "serialport");
+					m_sql.safe_query(
+						"UPDATE Hardware SET Name='%q', Enabled=%d, Type=%d, Address='%q', Port=%d, SerialPort='%q', Username='%q', Password='%q', Extra='%q', Mode1='%q', Mode2='%q', Mode3='%q', Mode4='%q', Mode5='%q', Mode6='%q', DataTimeout=%d WHERE (ID == '%q')",
+						name.c_str(),
+						(senabled == "true") ? 1 : 0,
+						htype,
+						address.c_str(),
+						port,
+						sport.c_str(),
+						username.c_str(),
+						password.c_str(),
+						extra.c_str(),
+						mode1Str.c_str(), mode2Str.c_str(), mode3Str.c_str(), mode4Str.c_str(), mode5Str.c_str(), mode6Str.c_str(),
+						iDataTimeout,
+						idx.c_str()
 					);
+				}
+				else {
+					m_sql.safe_query(
+						"UPDATE Hardware SET Name='%q', Enabled=%d, Type=%d, Address='%q', Port=%d, SerialPort='%q', Username='%q', Password='%q', Extra='%q', Mode1=%d, Mode2=%d, Mode3=%d, Mode4=%d, Mode5=%d, Mode6=%d, DataTimeout=%d WHERE (ID == '%q')",
+						name.c_str(),
+						(bEnabled == true) ? 1 : 0,
+						htype,
+						address.c_str(),
+						port,
+						sport.c_str(),
+						username.c_str(),
+						password.c_str(),
+						extra.c_str(),
+						mode1, mode2, mode3, mode4, mode5, mode6,
+						iDataTimeout,
+						idx.c_str()
+					);
+				}
 			}
 
 			//re-add the device in our system
@@ -10120,12 +10176,22 @@ namespace http {
 					root["result"][ii]["Username"] = sd[7];
 					root["result"][ii]["Password"] = sd[8];
 					root["result"][ii]["Extra"] = sd[9];
-					root["result"][ii]["Mode1"] = atoi(sd[10].c_str());
-					root["result"][ii]["Mode2"] = atoi(sd[11].c_str());
-					root["result"][ii]["Mode3"] = atoi(sd[12].c_str());
-					root["result"][ii]["Mode4"] = atoi(sd[13].c_str());
-					root["result"][ii]["Mode5"] = atoi(sd[14].c_str());
-					root["result"][ii]["Mode6"] = atoi(sd[15].c_str());
+					if (hType == HTYPE_PythonPlugin) {
+						root["result"][ii]["Mode1"] = sd[10];  // Plugins can have non-numeric values in the Mode fields
+						root["result"][ii]["Mode2"] = sd[11];
+						root["result"][ii]["Mode3"] = sd[12];
+						root["result"][ii]["Mode4"] = sd[13];
+						root["result"][ii]["Mode5"] = sd[14];
+						root["result"][ii]["Mode6"] = sd[15];
+					}
+					else {
+						root["result"][ii]["Mode1"] = atoi(sd[10].c_str());
+						root["result"][ii]["Mode2"] = atoi(sd[11].c_str());
+						root["result"][ii]["Mode3"] = atoi(sd[12].c_str());
+						root["result"][ii]["Mode4"] = atoi(sd[13].c_str());
+						root["result"][ii]["Mode5"] = atoi(sd[14].c_str());
+						root["result"][ii]["Mode6"] = atoi(sd[15].c_str());
+					}
 					root["result"][ii]["DataTimeout"] = atoi(sd[16].c_str());
 
 					//Special case for openzwave (status for nodes queried)

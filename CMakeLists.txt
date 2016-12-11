@@ -61,6 +61,18 @@ ELSE(USE_BUILTIN_SQLITE)
   ENDIF(SQLite_FOUND)
 ENDIF(USE_BUILTIN_SQLITE)
 
+option(USE_PYTHON_PLUGINS "Use Python Plugins" YES)
+IF(USE_PYTHON_PLUGINS)
+  find_package(PythonLibs 3.2)
+  IF(PYTHONLIBS_FOUND)
+    MESSAGE(STATUS "Python3 includes found at: ${PYTHON_INCLUDE_PATH}")
+    INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
+    add_definitions(-DUSE_PYTHON_PLUGINS)
+  ELSE(PYTHONLIBS_FOUND)
+    MESSAGE(FATAL_ERROR "Python3 not found on your system, use USE_PYTHON_PLUGINS=NO or sudo apt-get install python3-dev)")
+  ENDIF(PYTHONLIBS_FOUND)
+ENDIF(USE_PYTHON_PLUGINS)
+
 SET(EXECUTABLE_OUTPUT_PATH "" CACHE INTERNAL
   "Where to put the executables for Domoticz"
   )
@@ -350,6 +362,7 @@ hardware/ZiBlueTCP.cpp
 hardware/ZWaveBase.cpp
 hardware/Yeelight.cpp
 hardware/XiaomiGateway.cpp
+hardware/plugins/PluginManager.cpp
 notifications/NotificationBase.cpp
 notifications/NotificationEmail.cpp
 notifications/NotificationGCM.cpp

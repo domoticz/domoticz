@@ -14,6 +14,9 @@
 #include "../push/GooglePubSubPush.h"
 #include "concurrent_queue.h"
 #include "../webserver/server_settings.hpp"
+#ifdef USE_PYTHON_PLUGINS
+#	include "../hardware/plugins/PluginManager.h"
+#endif
 
 enum eVerboseLevel
 {
@@ -118,6 +121,9 @@ public:
 
 	CScheduler m_scheduler;
 	CEventSystem m_eventsystem;
+#ifdef USE_PYTHON_PLUGINS
+	Plugins::CPluginSystem m_pluginsystem;
+#endif
 	CDataPush m_datapush;
 	CCameraHandler m_cameras;
 	CHttpPush m_httppush;

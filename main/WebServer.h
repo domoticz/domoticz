@@ -258,6 +258,8 @@ private:
 	void Cmd_BleBoxRemoveNode(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_BleBoxClearNodes(WebEmSession & session, const request& req, Json::Value &root);
 
+	void PluginList(Json::Value &root);
+
 	//RTypes
 	void RType_HandleGraph(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_LightLog(WebEmSession & session, const request& req, Json::Value &root);

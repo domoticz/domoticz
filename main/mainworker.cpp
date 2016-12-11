@@ -109,6 +109,7 @@
 #include "../hardware/ZiBlueTCP.h"
 #include "../hardware/Yeelight.h"
 #include "../hardware/XiaomiGateway.h"
+#include "../hardware/plugins/Plugins.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -392,6 +393,9 @@ void MainWorker::RemoveDomoticzHardware(int HwdId)
 	if (dpos==-1)
 		return;
 	RemoveDomoticzHardware(m_hardwaredevices[dpos]);
+#ifdef USE_PYTHON_PLUGINS
+	m_pluginsystem.DeregisterPlugin(HwdId);
+#endif
 }
 
 int MainWorker::FindDomoticzHardware(int HwdId)
@@ -945,6 +949,11 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_Yeelight:
 		pHardware = new Yeelight(ID);
 		break;
+	case HTYPE_PythonPlugin:
+#ifdef USE_PYTHON_PLUGINS
+		pHardware = m_pluginsystem.RegisterPlugin(ID, Name, Filename);
+#endif
+    break;
 	case HTYPE_XiaomiGateway:
 		pHardware = new XiaomiGateway(ID);
 		break;
@@ -974,6 +983,9 @@ bool MainWorker::Start()
 	m_notifications.Init();
 	GetSunSettings();
 	GetAvailableWebThemes();
+#ifdef USE_PYTHON_PLUGINS
+	m_pluginsystem.StartPluginSystem();
+#endif
 	AddAllDomoticzHardware();
 	m_datapush.Start();
 	m_httppush.Start();
@@ -1010,6 +1022,9 @@ bool MainWorker::Stop()
 		m_datapush.Stop();
 		m_httppush.Stop();
 		m_googlepubsubpush.Stop();
+#ifdef USE_PYTHON_PLUGINS
+		m_pluginsystem.StopPluginSystem();
+#endif
 
 		//    m_cameras.StopCameraGrabber();
 
@@ -1433,6 +1448,9 @@ void MainWorker::Do_Work()
 			{
 				m_bStartHardware=false;
 				StartDomoticzHardware();
+#ifdef USE_PYTHON_PLUGINS
+				m_pluginsystem.AllPluginsStarted();
+#endif
 				ParseRFXLogFile();
 				m_eventsystem.StartEventSystem();
 			}
@@ -10290,6 +10308,18 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 		}
 		if (level==0)
 			switchcmd="Off";
+	}
+
+	//
+	//	For plugins all the specific logic below is irrelevent
+	//	so just send the full details to the plugin so that it can take appropriate action
+	//
+	if (pHardware->HwdType == HTYPE_PythonPlugin)
+	{
+#ifdef USE_PYTHON_PLUGINS
+		((Plugins::CPlugin*)m_hardwaredevices[hindex])->SendCommand(Unit, switchcmd, level, hue);
+#endif
+		return true;
 	}
 
 	switch (dType)
