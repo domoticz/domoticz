@@ -2094,9 +2094,6 @@ namespace Plugins {
 
 	bool CPluginSystem::StopPluginSystem()
 	{
-		if (pythonLib == nullptr)
-			return true;
-
 		m_bAllPluginsStarted = false;
 
 		if (m_thread)
