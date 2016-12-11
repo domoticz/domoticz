@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
 //
-//	Domotoicz Plugin System - Dnpwwo, 2016
+//	Domoticz Plugin System - Dnpwwo, 2016
 //
 #ifdef USE_PYTHON_PLUGINS
 
