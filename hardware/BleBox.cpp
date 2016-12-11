@@ -487,7 +487,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string hwid = request::findValue(&req, "idx");
@@ -527,7 +528,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string hwid = request::findValue(&req, "idx");
@@ -560,7 +562,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string hwid = request::findValue(&req, "idx");
@@ -586,7 +589,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string hwid = request::findValue(&req, "idx");
@@ -615,7 +619,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string hwid = request::findValue(&req, "idx");
@@ -640,7 +645,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string hwid = request::findValue(&req, "idx");

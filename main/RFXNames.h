@@ -174,6 +174,7 @@ enum _eHardwareTypes {
 	HTYPE_Yeelight,				//91
 	HTYPE_MySensorsMQTT,		//92
 	HTYPE_RaspberryPCF8574,				//93
+	HTYPE_XiaomiGateway,		//94
 	HTYPE_END
 };
 
