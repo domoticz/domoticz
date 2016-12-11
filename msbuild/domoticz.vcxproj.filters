@@ -450,6 +450,9 @@
     <Filter Include="Devices\YeeLight">
       <UniqueIdentifier>{40997df4-ca83-46d7-ae42-d23049f98a0b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\Xiaomi Gateway">
+      <UniqueIdentifier>{5f68f493-7523-43aa-95db-f23ecc307771}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -1936,6 +1939,9 @@
     <ClInclude Include="..\hardware\MySensorsMQTT.h">
       <Filter>Devices\MySensors</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\XiaomiGateway.h">
+      <Filter>Devices\Xiaomi Gateway</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2549,6 +2555,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\MySensorsMQTT.cpp">
       <Filter>Devices\MySensors</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\XiaomiGateway.cpp">
+      <Filter>Devices\Xiaomi Gateway</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
