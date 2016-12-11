@@ -238,24 +238,8 @@ void COpenWebNet::MonitorFrames()
 **/
 void COpenWebNet::UpdateTemp(const int who, const int where, float fval, const int BatteryLevel, const char *devname)
 {
-    unsigned char ID1 = (unsigned char)(((who & 0xF) << 4) | ((where >> 12) & 0xf));
-    unsigned char ID2 = (unsigned char)(where & 0xFF);
-
-    RBUF tsen;
-    memset(&tsen, 0, sizeof(RBUF));
-    tsen.TEMP.packetlength = sizeof(tsen.TEMP) - 1;
-    tsen.TEMP.packettype = pTypeTEMP;
-    tsen.TEMP.subtype = sTypeTEMP12;
-    tsen.TEMP.battery_level = BatteryLevel;
-    tsen.TEMP.rssi = 12;
-    tsen.TEMP.id1 = ID1;
-    tsen.TEMP.id2 = ID2;
-    tsen.TEMP.tempsign = (fval >= 0) ? 0 : 1;
-    int at10 = round(std::abs(fval*10.0f));
-    tsen.TEMP.temperatureh = (BYTE)(at10 / 256);
-    at10 -= (tsen.TEMP.temperatureh * 256);
-    tsen.TEMP.temperaturel = (BYTE)(at10);
-    sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, devname, BatteryLevel);
+    int cnode =  ((who << 12) & 0xF000) | (where & 0xFFF);
+    SendTempSensor(cnode, BatteryLevel, fval, devname);
 }
 
 
@@ -441,7 +425,6 @@ void COpenWebNet::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
 **/
 bool COpenWebNet:: WriteToHardware(const char *pdata, const unsigned char length)
 {
-#if 1
 	_tGeneralSwitch *pCmd = (_tGeneralSwitch*)pdata;
 
 	unsigned char packetlength = pCmd->len;
@@ -511,78 +494,6 @@ bool COpenWebNet:: WriteToHardware(const char *pdata, const unsigned char length
 		return false;
 	}
 
-#else
-	tRBUF *pCmd = (tRBUF*)pdata;
-
-	unsigned char packetlength = pCmd->UNDECODED.packetlength;
-	unsigned char packettype = pCmd->UNDECODED.packettype;
-	unsigned char subtype = pCmd->UNDECODED.subtype;
-
-
-	int who = 0;
-	int what = 0;
-	int where = 0;
-
-    // Test packet type
-	switch(packettype){
-        case pTypeGeneralSwitchpTypeBlinds:
-            // Test general switch subtype
-            if(subtype == sTypeBlindsT13)
-            {
-                //Blinds/Window command
-                who = WHO_AUTOMATION;
-                where = ((int)(pCmd->BLINDS1.id2 << 8) & 0xFF00) +  ((int)pCmd->BLINDS1.id3 & 0xFF);
-
-                _log.Log(LOG_STATUS, "COpenWebNet : packettype=%d, subtype=%d, who=%d, where=%d", packettype, subtype, who, where);
-
-                if (pCmd->BLINDS1.cmnd == gswitch_sOff)
-                {
-                    what = AUTOMATION_WHAT_UP;
-                }
-                else if (pCmd->BLINDS1.cmnd == gswitch_sOn)
-                {
-                    what = AUTOMATION_WHAT_DOWN;
-                }
-                else if (pCmd->BLINDS1.cmnd == gswitch_sStop)
-                {
-                    what = AUTOMATION_WHAT_STOP;
-                }
-            }
-            break;
-
-        case pTypeLighting2:
-            if (subtype == sTypeLightMyHome)
-            {
-                //Light/Switch command
-                who = WHO_LIGHTING;
-                where = ((int)(pCmd->LIGHTING2.id3 << 8) & 0xFF00) +  ((int)pCmd->LIGHTING2.id4 & 0xFF);
-                _log.Log(LOG_STATUS, "COpenWebNet : packettype=%d, subtype=%d, who=%d, where=%d", packettype, subtype, who, where);
-                if (pCmd->LIGHTING2.cmnd == light2_sOff)
-                {
-                    what = LIGHT_WHAT_OFF;
-                }
-                else if (pCmd->LIGHTING2.cmnd == light2_sOn)
-                {
-                    what = LIGHT_WHAT_ON;
-                }
-            }
-            break;
-        case pTypeThermostat:
-            // Test Thermostat subtype
-            switch(subtype){
-                case sTypeThermSetpoint:
-                case sTypeThermTemperature:
-                    break;
-                default:
-                    break;
-            }
-            break;
-
-        default:
-            _log.Log(LOG_STATUS, "COpenWebNet unknown command: packettype=%d subtype=%d", packettype, subtype);
-            return false;
-	}
-#endif
 	int used = 1;
 	if (!FindDevice(who, where, &used)) {
 		_log.Log(LOG_ERROR, "COpenWebNet: command received for unknown device : %d/%d", who, where);
@@ -791,8 +702,8 @@ bool COpenWebNet::FindDevice(int who, int where, int* used)
             sprintf(szIdx, "%02X%02X%02X%02X", ID1, ID2, ID3, ID4);
             break;
         case WHO_TEMPERATURE_CONTROL:                   // 4
-            //devType = pTypeTEMP;
-            //subType = sTypeTEMP12;
+            //devType = pTypeGeneral;
+            //subType = sTypeTemperature;
             //subUnit = where;
             //printf(szIdx, "%02X%02X", who, where);
             //break;
