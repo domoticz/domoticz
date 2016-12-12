@@ -167,16 +167,13 @@
 		</Value>
 	</CommandClass>
 
-	<!-- Basic set as report -->
-	<CommandClass id="32" setasreport="true"/>
-
 	<!-- Association Groups -->
 	<CommandClass id="133">
 		<Associations num_groups="5">
 			<Group index="1" max_associations="1" label="Lifeline"/>
 			<Group index="2" max_associations="5" label="Control BASIC SET reports" />
 			<Group index="3" max_associations="5" label="Alarm reports"/>
-			<Group index="4" max_associations="5" label="Sensor ZW3 BASIC SET reports"/>
+			<Group index="4" max_associations="5" label="Sensor ZW3 BASIC SET reports" auto="true"/>
 			<Group index="5" max_associations="5" label="Tamper ZW3 tamper alarm"/>
 		</Associations>
 	</CommandClass>

@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
 //
-//	Domotoicz Plugin System - Dnpwwo, 2016
+//	Domoticz Plugin System - Dnpwwo, 2016
 //
 #ifdef USE_PYTHON_PLUGINS
 
@@ -1754,7 +1754,7 @@ namespace Plugins {
 			boost::lock_guard<boost::mutex> l(PluginMutex);
 			PluginMessageQueue.push(Message);
 		}
-		_log.Log(LOG_STATUS, "(%s) initialised", Name.c_str());
+		_log.Log(LOG_STATUS, "(%s) initialized", Name.c_str());
 
 		return true;
 	}
@@ -2105,10 +2105,6 @@ namespace Plugins {
 
 	bool CPluginSystem::StopPluginSystem()
 	{
-		if (Py_IsInitialized()) {
-			Py_Finalize();
-		}
-
 		m_bAllPluginsStarted = false;
 
 		if (m_thread)
@@ -2118,6 +2114,12 @@ namespace Plugins {
 			m_thread = NULL;
 		}
 
+		if (Py_LoadLibrary())
+		{
+			if (Py_IsInitialized()) {
+				Py_Finalize();
+			}
+		}
 		// Hardware should already be stopped to just flush the queue (should already be empty)
 		boost::lock_guard<boost::mutex> l(PluginMutex);
 		while (!PluginMessageQueue.empty())
