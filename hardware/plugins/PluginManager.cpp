@@ -20,6 +20,11 @@
 #include "../json/json.h"
 #include "../tinyxpath/tinyxml.h"
 #include "../main/localtime_r.h"
+#ifdef WIN32
+#	include <direct.h>
+#else
+#	include <sys/stat.h>
+#endif
 
 #ifdef WIN32
 #	define MS_NO_COREDLL 1
@@ -949,9 +954,7 @@ namespace Plugins {
 	void CPluginProtocolXML::ProcessMessage(const int HwdID, std::string & ReadData)
 	{
 		//
-		//	Only returns whole XML messages, strips out spurious spaces and characters
-		//	Does not handle <tag /> as the top level tag
-		//
+		//	Only returns whole XML messages. Does not handle <tag /> as the top level tag
 		//	Handles the cases where a read contains a partial message or multiple messages
 		//
 		std::string	sData = m_sRetainedData + ReadData;  // if there was some data left over from last time add it back in
@@ -1231,7 +1234,7 @@ namespace Plugins {
 
 	void CPluginTransportSerial::handleWrite(const std::string & data)
 	{
-		writeString(data);
+		write(data.c_str(), data.length());
 	}
 
 	bool CPluginTransportSerial::handleDisconnect()
@@ -1950,10 +1953,19 @@ namespace Plugins {
 		std::stringstream plugin_DirT;
 #ifdef WIN32
 		plugin_DirT << szUserDataFolder << "plugins\\";
+		std::string plugin_Dir = plugin_DirT.str();
+		if (!mkdir(plugin_Dir.c_str()))
+		{
+			_log.Log(LOG_NORM, "BuildManifest: Created directory %s", plugin_Dir.c_str());
+		}
 #else
 		plugin_DirT << szUserDataFolder << "plugins/";
-#endif
 		std::string plugin_Dir = plugin_DirT.str();
+		if (!mkdir(plugin_Dir.c_str(), ACCESSPERMS))
+		{
+			_log.Log(LOG_NORM, "BuildManifest: Created directory %s", plugin_Dir.c_str());
+		}
+#endif
 		DIR *lDir;
 		struct dirent *ent;
 		if ((lDir = opendir(plugin_Dir.c_str())) != NULL)
@@ -1974,7 +1986,6 @@ namespace Plugins {
 						{
 							std::stringstream	FileName;
 							FileName << plugin_DirT.str() << filename;
-//							_log.Log(LOG_NORM, "BuildManifest: Loading plugin manifest: '%s'", FileName.str().c_str());
 							std::string line;
 							std::ifstream readFile(FileName.str().c_str());
 							bool pluginFound = false;
