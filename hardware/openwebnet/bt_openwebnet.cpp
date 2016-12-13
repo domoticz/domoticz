@@ -6,7 +6,6 @@
 #include <iostream>
 #include <string>
 #include "bt_openwebnet.h"
-
 // private methods ......
 
 string bt_openwebnet::FirstToken(string myText, string delimiters)
@@ -119,6 +118,7 @@ void bt_openwebnet::IsCorrect()
   {
     //frame measurement request ...
     //*#who*where*dimension## or *#who*where*dimension*valueN##
+    //or *#who**dimension*value1*value2*value3*value4## example: *#13**0*01*40*07*001##
     if(sup[1] != '#')
     {
       frame_type = MEASURE_FRAME;
@@ -344,8 +344,10 @@ void bt_openwebnet::Set_who()
 //assign level interface for extended frame
 void bt_openwebnet::Set_level_interface()
 {
-	string sup;
+  string sup;
   string orig;
+
+  if (!where.length()) return;
 
   // WHERE
   if (where.at(0) == '#')
@@ -357,7 +359,7 @@ void bt_openwebnet::Set_level_interface()
   {
     extended = true;
     if(orig.at(0) == '#')
-      where, "#" +  FirstToken(sup, "#");
+      where = "#" +  FirstToken(sup, "#");
     else
       where = FirstToken(sup, "#");
     // LEVEL + INTERFACE
@@ -618,6 +620,22 @@ void bt_openwebnet::CreateStateMsgOpen(string who, string where, string lev, str
   frame << "#"; frame << interf;
   frame << "##";
 
+  frame_open = DeleteControlCharacters(frame.str());
+  length_frame_open = frame_open.length();
+
+  // checks for correct syntax ...
+  IsCorrect();
+}
+
+//creates the OPEN message *#who*where#level#interface##
+void bt_openwebnet::CreateTimeReqMsgOpen()
+{
+	//call CreateNullMsgOpen function
+  CreateNullMsgOpen();
+
+  stringstream frame;
+
+  frame << "*#13**0##";
   frame_open = DeleteControlCharacters(frame.str());
   length_frame_open = frame_open.length();
 
