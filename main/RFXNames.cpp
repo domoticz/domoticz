@@ -1076,7 +1076,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeEvohome, sTypeEvohome, "Status" },
 		{ pTypeEvohomeZone, sTypeEvohomeZone, "Temperature,Set point,Status" },
 		{ pTypeEvohomeWater, sTypeEvohomeWater, "Temperature,State,Status" },
-		{ pTypeEvohomeRelay, sTypeEvohomeRelay, "Status,Value" },
+		{ pTypeEvohomeRelay, sTypeEvohomeRelay, "Status" },
 
 		{ pTypeGeneralSwitch, sSwitchTypeX10, "Status" },
 

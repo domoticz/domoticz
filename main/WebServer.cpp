@@ -1531,7 +1531,7 @@ namespace http {
 				return;
 			std::vector<std::string> result;
 			result = m_mainworker.m_datapush.DropdownOptions(atoi(idx.c_str()));
-			if ((result.size() == 1) && result[0] == "Status") {  //FIXME??
+			if ((result.size() == 1) && result[0] == "Status") {
 				root["result"][0]["Value"] = 0;
 				root["result"][0]["Wording"] = result[0];
 			}
@@ -10350,7 +10350,7 @@ namespace http {
 					int dType = atoi(sd[2].c_str());
 					int dSubType = atoi(sd[3].c_str());
 					std::string sOptions = RFX_Type_SubType_Values(dType, dSubType);
-					if (strstr(sOptions.c_str(), "Status") != NULL)
+					if (sOptions == "Status")
 					{
 						root["result"][ii]["name"] = sd[1];
 						root["result"][ii]["value"] = sd[0];
