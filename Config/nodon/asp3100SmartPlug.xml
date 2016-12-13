@@ -93,10 +93,10 @@
             <Group index="2" max_associations="5" label="Follow State" />
             <Group index="3" max_associations="5" label="Follow Complementary State" />
             <Group index="4" max_associations="5" label="Power Failure Notification" auto="true"/>
-            <Group index="5" max_associations="5" label="Power Failure Set On" />
-            <Group index="6" max_associations="5" label="Power Failure Set Off" />
-            <Group index="7" max_associations="5" label="Power Recover Set On" />
-            <Group index="8" max_associations="5" label="Power Recover Set Off" />
+            <Group index="5" max_associations="5" label="Power Failure – Set On" />
+            <Group index="6" max_associations="5" label="Power Failure – Set Off" />
+            <Group index="7" max_associations="5" label="Power Recover – Set On" />
+            <Group index="8" max_associations="5" label="Power Recover – Set Off" />
         </Associations>
     </CommandClass>
 </Product>

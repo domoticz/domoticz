@@ -86,10 +86,10 @@
 	<CommandClass id="133">
         <Associations num_groups="5">
             <Group index="1" max_associations="10" label="Life line"/>
-            <Group index="2" max_associations="10" label="Group A"/>
-            <Group index="3" max_associations="10" label="Group B"/>
-            <Group index="4" max_associations="10" label="Group C"/>
-            <Group index="5" max_associations="10" label="Group D"/>
+            <Group index="2" max_associations="10" label="Group A" />
+            <Group index="3" max_associations="10" label="Group B" />
+            <Group index="4" max_associations="10" label="Group C" />
+            <Group index="5" max_associations="10" label="Group D" />
         </Associations>
 	</CommandClass>
 

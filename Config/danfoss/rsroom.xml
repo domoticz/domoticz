@@ -62,7 +62,7 @@
        Number of led flashes (duration)
       </Help>
     </Value>
-	<Value type="list" index="11" genre="config" label="Led Color" size="1" value="1">
+	<Value type="list" index="11" genre="config" label="Led Color" value="1">
       <Help>
        Led Color
       </Help>

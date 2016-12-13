@@ -4,7 +4,7 @@
 	<CommandClass id="112">
 		<Value type="byte" index="2" genre="config" label="Clear Pulse Meter Counts" units="" min="0" max="255" value="0">
 			<Help>
-				Clear Pulse Meter Counts (actual value is dont care; count gets reset whenever
+				Clear Pulse Meter Counts (actual value is “don’t care”; count gets reset whenever
 				this command is received regardless of value). This parameter is for SIG1 only.
 			</Help>
 		</Value>
@@ -38,17 +38,17 @@
 				Must be greater than Lower Threshold High and less than Upper Threshold High.
 			</Help>
 		</Value>
-		<Value type="list" index="8" genre="config" label="Input Flags" min="0" max="3" size="1" value="3">
+		<Value type="list" index="8" genre="config" label="Input Flags" min="0" max="3" value="3">
 			<Help>
 				Bits 7 - 2 are ignored and should be set to 0
 
 				Bit1 : Digital-Configuration flag
-					1=Set Trigger levels for this channel to digital thresholds (approx. 1V); Default
+					1=Set Trigger levels for this channel to ‘digital’ thresholds (approx. 1V); Default
 					0=Set Trigger levels to analog thresholds (see parameters 4 through 7)
 
 				Bit0 : Trigger-Between-Thresholds flag (see below)
-					1 = Set to triggered when input falls between thresholds; Default
-					0 = Set to triggered when input falls outside of thresholds
+					1 = Set to ‘triggered’ when input falls between thresholds; Default
+					0 = Set to ‘triggered’ when input falls outside of thresholds	
 			</Help>
 			<Item label="Trigger outside thresholds, analog trigger thresholds" value="0"/>
 			<Item label="Trigger between thresholds, analog trigger thresholds" value="1"/>
@@ -75,10 +75,10 @@
 	<CommandClass id="133">
 		<Associations num_groups="5">
 			<Group index="1" max_associations="2" label="When the input is triggered or untriggered, the MIMOlite will automatically send a Basic Set command to turn on or off the device(s) associated with this group." auto="false"/>
-			<Group index="2" max_associations="2" label="The MIMOlite will periodically (see Parameter 9 of Configuration Command Class below) send a MultiLevel Sensor report indicating the input analog voltage level." auto="true"/>
-			<Group index="3" max_associations="2" label="If a power dropout occurs, the MIMOlite will send an Alarm Command Class report (if there is enough available residual power)"/>
-			<Group index="4" max_associations="2" label="When the input is triggered or untriggered, the MIMOlite will automatically send a Binary Sensor report to this group associated device(s)." auto="true"/>
-			<Group index="5" max_associations="2" label="Pulse meter counts will be sent to this group associated device(s). This will be sent periodically at the same intervals as Association Group 2, MLS Report except that if the pulse meter count is unchanged the report will not be sent."/>
+			<Group index="2" max_associations="2" label="The MIMOlite will periodically (see Parameter 9 of Configuration Command Class below) send a MultiLevel Sensor report indicating the input’s analog voltage level." auto="true"/>
+			<Group index="3" max_associations="2" label="If a power dropout occurs, the MIMOlite will send an Alarm Command Class report (if there is enough available residual power)" />
+			<Group index="4" max_associations="2" label="When the input is triggered or untriggered, the MIMOlite will automatically send a Binary Sensor report to this group’s associated device(s)." auto="true"/>
+			<Group index="5" max_associations="2" label="Pulse meter counts will be sent to this group’s associated device(s). This will be sent periodically at the same intervals as Association Group 2, MLS Report except that if the pulse meter count is unchanged the report will not be sent." />
 		</Associations>
 	</CommandClass>
 </Product>

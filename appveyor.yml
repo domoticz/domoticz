@@ -1,9 +1,8 @@
 version: 1.0.{build}
 os: Visual Studio 2015
 
-before_build:
-- ps: >-
-    nuget install Tools.InnoSetup
+install:
+- ps: cinst innosetup
 
 build_script:
 - cd msbuild
@@ -13,7 +12,7 @@ build_script:
 - msbuild msbuild\domoticz.sln /p:Configuration=Release /verbosity:minimal /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 - ps: cp appversion.h version_windows_x86.h
 - ps: cp History.txt history_windows_x86.txt
-- Tools.InnoSetup.5.5.9\tools\ISCC msbuild\WindowsInstaller\DomoticzSetup.iss
+- '"C:\Program Files (x86)\Inno Setup 5\ISCC.exe" msbuild\WindowsInstaller\DomoticzSetup.iss'
 - msbuild msbuild\package.proj
 
 artifacts:
@@ -26,11 +25,11 @@ test: off
 
 deploy:
 - provider: FTP
-  protocol: sftp
-  host: $(FTP_HOST)
-  username: $(FTP_USER)
-  password: $(FTP_PASSWORD)
+  host: 188.166.24.182
   folder: beta
+  protocol: ftps
+  username: uploads@domoticz.com
+  password: $(FTP_PASSWORD)
   on:
     APPVEYOR_REPO_NAME: domoticz/domoticz
     APPVEYOR_REPO_BRANCH: master  

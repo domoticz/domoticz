@@ -5,7 +5,7 @@
   <!-- Configuration -->
   <CommandClass id="112">
     <Value type="list" genre="config" instance="1" index="1" label="Enable/Disable ALL ON/OFF" size="1" value="255">
-      <Help>Enable/Disable ALL ON/OFF. Default 255.</Help>
+      <Help>Activate/Deactive ALL ON/OFF. Default 255.</Help>
       <Item label="ALL ON active / ALL OFF active" value="255" />
       <Item label="ALL ON disabled/ ALL OFF disabled" value="0" />
       <Item label="ALL ON disabled/ ALL OFF active" value="1" />
@@ -54,8 +54,8 @@
       <Item label="Disable double click" value="0"/>
       <Item label="Enable double click" value="1"/>
     </Value>
-    <Value type="list" genre="config" instance="1" index="16" label="Saving state before power failure" size="1" value="1">
-      <Help>Saving state before power failure. Default 1.</Help>
+    <Value type="list" genre="config" instance="1" index="16" label="Saving state before power faillure" size="1" value="1">
+      <Help>Saving state before power faillure. Default 1.</Help>
       <Item label="State NOT saved at power failure, all outputs are set to OFF upon power restore" value="0"/>
       <Item label="State saved at power failure, all outputs are set to previous state upon power restore" value="1"/>
     </Value>
@@ -101,9 +101,9 @@
   <!-- Association Groups -->
   <CommandClass id="133">
     <Associations num_groups="3">
-      <Group index="1" max_associations="5" label="Key no 1" auto="false"/>
-      <Group index="2" max_associations="5" label="Key no 2"/>
-      <Group index="3" max_associations="1" label="Lifeline" auto="true"/>
+      <Group index="1" max_associations="5" label="Group 1" auto="false"/>
+      <Group index="2" max_associations="5" label="Group 2" />
+      <Group index="3" max_associations="1" label="Controller Updates" auto="true"/>
     </Associations>
   </CommandClass>
 

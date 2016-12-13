@@ -3,12 +3,12 @@
 <Product xmlns='http://code.google.com/p/open-zwave/'>
   <!-- Configuration Parameters -->
   <CommandClass id="112">
-    <Value type="list" instance="1" index="1" genre="config" label="Enable Fails Safe Timer" size="1" value="0">
+    <Value type="list" instance="1" index="1" genre="config" label="Enable Fails Safe Timer" value="0">
       <Help>Enables or not the Fails Safe Timer</Help>
       <Item label="Disabled" value="0" />
 	  <Item label="Enabled" value="255" />
     </Value>
-    <Value type="list" instance="1" index="2" genre="config" label="Temperature Scale" size="1" value="0">
+    <Value type="list" instance="1" index="2" genre="config" label="Temperature Scale" value="0">
       <Help>Controls the temperature sensor scale</Help>
       <Item label="Celsius" value="0" />
 	  <Item label="Fahrenheit" value="255" />

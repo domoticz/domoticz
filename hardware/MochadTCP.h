@@ -34,9 +34,12 @@ protected:
 	void setSecID(unsigned char *p);
 
 	void Do_Work();
+	bool ConnectInternal();
 	boost::shared_ptr<boost::thread> m_thread;
 	volatile bool m_stoprequested;
-	bool m_bDoRestart;
+	sockaddr_in m_addr;
+	int m_socket;
+
 	int selected[17][17];
 	int currentHouse;
 	int currentUnit;

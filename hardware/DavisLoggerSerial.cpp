@@ -467,7 +467,7 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 		{
 			tsen.WIND.tempsign=(OutsideTemperature>=0)?0:1;
 			tsen.WIND.chillsign=(OutsideTemperature>=0)?0:1;
-			int at10=round(std::abs(OutsideTemperature*10.0f));
+			int at10=round(abs(OutsideTemperature*10.0f));
 			tsen.WIND.temperatureh=(BYTE)(at10/256);
 			tsen.WIND.chillh=(BYTE)(at10/256);
 			at10-=(tsen.WIND.chillh*256);
@@ -487,7 +487,18 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 	}
 	if (bUVValid)
 	{
-		SendUVSensor(0, 1, 255, UV, "UV");
+		RBUF tsen;
+		memset(&tsen,0,sizeof(RBUF));
+		tsen.UV.packetlength=sizeof(tsen.UV)-1;
+		tsen.UV.packettype=pTypeUV;
+		tsen.UV.subtype=sTypeUV1;
+		tsen.UV.battery_level=9;
+		tsen.UV.rssi=12;
+		tsen.UV.id1=0;
+		tsen.UV.id2=1;
+
+		tsen.UV.uv=(BYTE)round(UV*10);
+		sDecodeRXMessage(this, (const unsigned char *)&tsen.UV, NULL, 255);
 	}
 	
 	//Rain Rate

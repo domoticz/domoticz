@@ -33,8 +33,8 @@
     <Value type="byte" size="2" genre="config" instance="1" index="8" label="Time of a dimming step at manual control" min="0" max="255" units="sec" value="5">
       <Help>Available settings: 0-255 (0s - 2,55s) Default setting: 1</Help>
     </Value>
-    <Value type="list" genre="config" instance="1" index="9" label="Saving state before power failure" size="1" value="1">
-      <Help>Saving state before power failure. Default 1.</Help>
+    <Value type="list" genre="config" instance="1" index="9" label="Saving state before power faillure" size="1" value="1">
+      <Help>Saving state before power faillure. Default 1.</Help>
       <Item label="State NOT saved at power failure, all outputs are set to OFF upon power restore" value="0"/>
       <Item label="State saved at power failure, all outputs are set to previous state upon power restore" value="1"/>
     </Value>
@@ -43,7 +43,7 @@
     </Value>
     <!-- size of two and max 255 seems off -->
     <Value type="list" genre="config" instance="1" index="11" label="Enable/Disable ALL ON/OFF" size="2" value="255">
-      <Help>Enable/Disable ALL ON/OFF. Default 255.</Help>
+      <Help>Activate/Deactive ALL ON/OFF. Default 255.</Help>
       <Item label="ALL ON active / ALL OFF active" value="255" />
       <Item label="ALL ON disabled/ ALL OFF disabled" value="0" />
       <Item label="ALL ON disabled/ ALL OFF active" value="1" />
@@ -138,7 +138,7 @@ Default setting: 15</Help>
       <Item label="S1 operates as S2, S2 operates as S1" value="1"/>      
     </Value>
     <Value type="list" genre="config" instance="1" index="30" label="Load control mode" size="1" value="2">
-      <Help>Forced auto-calibration will set this parameter value to 2.</Help>
+      <Help>Forced auto-calibration will set this parameter’s value to 2.</Help>
       <Item label="forced leading edge control" value="0"/>
       <Item label="forced trailing edge control" value="1"/>      
       <Item label="control mode selected automatically (based on auto-calibration)" value="2"/>      
@@ -178,7 +178,7 @@ Default setting: 15</Help>
       <Item label="device permanently disabled until re-enabling by comand or external switch" value="0" />
       <Item label="three atempts to turn on the load" value="1" />
     </Value>
-	<Value type="short" genre="config" instance="1" index="39" label="Power limit - OVERLOAD" min="1" max="350" units="Watt" value="250">
+	<Value type="byte" size="2" genre="config" instance="1" index="39" label="Power limit - OVERLOAD" min="1" max="350" units="Watt" value="250">
       <Help>Reaching the defined value will result in turning off the load. Additional apparent power limit of 350VA is active by default. Available settings: 0 - functionality disabled; 1-350 - 1W-350W; Default setting: 250</Help>
     </Value>
     <Value type="list" genre="config" instance="1" index="40" label="Response to General Purpose Alarm" size="1" value="3">

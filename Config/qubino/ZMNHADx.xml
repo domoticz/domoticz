@@ -30,7 +30,7 @@
 			<Item label="NC (normaly close) input type" value="1"/>
 		</Value>
 
-		<Value type="list" genre="config" instance="1" index="10" label="Activate / deactivate functions ALL ON/ALL OFF" size="2" min="0" max="255" value="255">
+		<Value type="list" genre="config" instance="1" index="10" label="Activate / deactivate functions ALL ON/ALL OFF" size="1" min="0" max="255" value="255">
 			<Help>Flush 1 relay module responds to commands ALL ON / ALL OFF that may be sent by the main controller or by other controller belonging to the system.</Help>
 			<Item label="ALL ON active, ALL OFF active" value="255" />
 			<Item label="ALL ON is not active ALL OFF is not active" value="0" />
@@ -46,7 +46,7 @@
             <Help>0 - Auto OFF disabled. 1 - 32535  => 1 second (0,01s) - 32535 seconds (325,35s). Auto ON enabled with define time, step is 1s or 10ms according to parameter 15. Default value 0</Help>
         </Value>
 
-        <Value type="list" genre="config" instance="1" index="15" label="Automatic turning on/off seconds or milliseconds selection" min="0" max="1" size="1" value="0">
+        <Value type="list" genre="config" instance="1" index="15" label="Automatic turning on/off seconds or milliseconds selection" min="0" max="1" value="0">
 	        <Help/>
 	        <Item label="seconds" value="0" />
 	        <Item label="milliseconds" value="1" />
@@ -108,16 +108,15 @@
 
 	<!-- Association Groups -->
 	<CommandClass id="133">
-		<Associations num_groups="9">
+		<Associations num_groups="8">
 			<Group index="1" max_associations="1"  label="Lifeline"/>
-			<Group index="2" max_associations="16" label="basic on/off (Output Q)" />
-			<Group index="3" max_associations="16" label="Input I2 basic report" />
-			<Group index="4" max_associations="16" label="Input I2 notification report" />
-			<Group index="5" max_associations="16" label="Input I2 binary sensor report" />
-			<Group index="6" max_associations="16" label="Input I3 basic report" />
-			<Group index="7" max_associations="16" label="Input I3 notification report" />
-			<Group index="8" max_associations="16" label="Input I3 binary sensor report" />
-			<Group index="9" max_associations="16" label="Multilevel sensor report" />
+			<Group index="2" max_associations="16" label="basic on/off (triggered at change of the output Q state and reflecting its state)" />
+			<Group index="3" max_associations="16" label="basic on/off (triggered at change of the input I2 state and reflecting its state)" />
+			<Group index="4" max_associations="16" label="Notification report (triggered at change of the input I2 state and reflecting its state)" />
+			<Group index="5" max_associations="16" label="Binary sensor (triggered at change of the input I2 state and reflecting its state)" />
+			<Group index="6" max_associations="16" label="basic on/off (triggered at change of the input I3 state and reflecting its state)" />
+			<Group index="7" max_associations="16" label="notification report (triggered at change of the input I3 state and reflecting its state)" />
+			<Group index="8" max_associations="16" label="binary sensor report (triggered at change of the input I3 state and reflecting its state)" />
 		</Associations>
 	</CommandClass>
 

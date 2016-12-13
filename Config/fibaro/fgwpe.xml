@@ -8,8 +8,8 @@
   <!-- COMMAND_CLASS_SENSOR_ALARM not supported -->
   <CommandClass id="156" action="remove" />
 
-  <!-- COMMAND_CLASS_SWITCH_ALL not supported -->
-  <CommandClass id="39" action="remove" />
+  <!-- COMMAND_CLASS_SWITCH_ALL SwitchAllCmd_Get not supported -->
+  <CommandClass id="39" getsupported="false" />
 
   <!-- Configuration -->
   <CommandClass id="112">
@@ -107,7 +107,7 @@
        <Item label="Green illumination" value="4" />
        <Item label="Blue illumination" value="5" />
        <Item label="Yellow illumination" value="6" />
-       <Item label="Cyan illumination" value="7" />
+       <Item label="Cyan illuminatio" value="7" />
        <Item label="Magenta illumination" value="8" />
        <Item label="illumination turned off completely" value="9" />
     </Value>
@@ -120,7 +120,7 @@
        <Item label="Green illumination" value="3" />
        <Item label="Blue illumination" value="4" />
        <Item label="Yellow illumination" value="5" />
-       <Item label="Cyan illumination" value="6" />
+       <Item label="Cyan illuminatio" value="6" />
        <Item label="Magenta illumination" value="7" />
        <Item label="illumination turned off completely" value="8" />
     </Value>
@@ -134,7 +134,7 @@
       <Item label="Green illumination" value="4" />
       <Item label="Blue illumination" value="5" />
       <Item label="Yellow illumination" value="6" />
-      <Item label="Cyan illumination" value="7" />
+      <Item label="Cyan illuminatio" value="7" />
       <Item label="Magenta illumination" value="8" />
       <Item label="illumination turned off completely" value="9" />
     </Value>
@@ -147,9 +147,9 @@
   <!-- Association Groups -->
   <CommandClass id="133">
     <Associations num_groups="3">
-      <Group index="1" max_associations="16" label="Retransmit Switch status" auto="false"/>
-      <Group index="2" max_associations="16" label="Exceeding power"  />
-      <Group index="3" max_associations="1" label="Lifeline" auto="true"/>
+      <Group index="1" max_associations="16" label="Group 1" auto="false"/>
+      <Group index="2" max_associations="16" label="Group 2"  />
+      <Group index="3" max_associations="1" label="Send updates" auto="true"/>
     </Associations>
   </CommandClass>
 

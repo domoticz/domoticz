@@ -14,27 +14,27 @@
     </Value>
 
     <Value type="byte" genre="config" instance="1" index="3" label="T room update difference" value="1" size="1">
-      <Help>The value that the room temperature must differ (compared to his previous send value) before an unsolicited room temperature report is send to the associated node. Value in 0.1C. </Help>
+      <Help>The value that the room temperature must differ (compared to his previous send value) before an unsolicited room temperature report is send to the associated node. Value in 0.1 °C. </Help>
     </Value>
 
     <Value type="byte" genre="config" instance="1" index="4" label="T setpoint update difference" value="5" size="1">
-      <Help>The value that the temperature setpoint must differ (compared to his previous send value) before an unsolicited temperature setpoint report is send to the associated node. Value in 0.1C .</Help>
+      <Help>The value that the temperature setpoint must differ (compared to his previous send value) before an unsolicited temperature setpoint report is send to the associated node. Value in 0.1 °C .</Help>
     </Value>
 
-    <Value type="list" genre="config" instance="1" index="5" label="Unsolicited CRC" size="1" value="1">
+    <Value type="list" genre="config" instance="1" index="5" label="Unsolicited CRC" value="1">
       <Help>TConfigure if the unsolicited reports are send with the CRC-16 encapsulation. Not that the receiving node should support this encapsulation to parse the Z-Wave frame!</Help>
       <Item label="0x00 (disabled)" value="0"/>
-      <Item label="0x01 to 0xFF: enabled" value="1"/>
+      <Item label="0x01 – 0xFF: enabled" value="1"/>
     </Value>
 
-    <Value type="list" genre="config" instance="1" index="6" label="Type of 'special' thermostat" size="1" value="0">
+    <Value type="list" genre="config" instance="1" index="6" label="Type of 'special' thermostat" value="0">
       <Help>Type of 'special' thermostat: NOTE: when remeha Celcia 20 support is set then any other thermostat can not be set (!) NOTE2: when Remeha Celcia 20 gives 'Fout 203' send cfg value again</Help>
     <Item label="0x00: No special" value="0"/>
     <Item label="0x01: Remeha Celcia 20" value="1"/>
     <Item label="0x02: Honeywell (rounded temperatures)" value="2"/>
     </Value>
     
-     <Value type="list" genre="config" instance="1" index="9" label="Enable/Disable thermostat schedule" size="1" value="0">
+     <Value type="list" genre="config" instance="1" index="9" label="Enable/Disable thermostat schedule" value="0">
       <Help>Enable/Disable thermostat schedule inside the heatingcontroller.</Help>
       <Item label="0x00: Disable thermostat schedule" value="0"/>
       <Item label="0x01 - OFF: Enable thermostat schedule" value="1"/>

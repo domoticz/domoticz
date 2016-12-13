@@ -13,7 +13,7 @@
 
 	<!-- Configuration -->
 	<CommandClass id="112">
-	<Value type="list" genre="config" instance="1" index="10" label="Activate / deactivate functions ALL ON/ALL OFF" size="2" min="0" max="255" value="255">
+	<Value type="list" genre="config" instance="1" index="10" label="Activate / deactivate functions ALL ON/ALL OFF" size="1" min="0" max="255" value="255">
 		<Help>Flush 1 relay module responds to commands ALL ON / ALL OFF that may be sent by the main controller or by other controller belonging to the system.</Help>
 		<Item label="ALL ON active, ALL OFF active" value="255" />
 		<Item label="ALL ON is not active ALL OFF is not active" value="0" />
@@ -44,7 +44,7 @@
 				</Help>
 		</Value>
 
-		<Value type="list" genre="config" instance="1" index="73" label="Slats position" min="0" max="1" size="1" value="1">
+		<Value type="list" genre="config" instance="1" index="73" label="Slats position" min="0" max="1" value="1">
 			<Help>This parameter defines slats position after up/down movement through Z-wave or push-buttons
 				Slats return to previously set position only in case of
 				</Help>
@@ -116,7 +116,7 @@
 	<!-- Association Groups -->
 	<CommandClass id="133">
 		<Associations num_groups="9">
-			<Group index="1" max_associations="1"  label="Lifeline"/>
+			<Group index="1" max_associations="1"  label="Lifeline" />
 			<Group index="2" max_associations="16" label="basic on/off (triggered at change of the input I1 state and reflecting its state)" />
 			<Group index="3" max_associations="16" label="basic on/off (triggered at change of the input I2 state and reflecting its state)" />
 			<Group index="4" max_associations="16" label="basic on/off (triggered at sensing moving direction of roller: up=FF, down=0)" />

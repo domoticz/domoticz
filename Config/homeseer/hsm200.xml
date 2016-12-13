@@ -29,7 +29,7 @@
 				OnLevel is the value sent by the Z-Wave BASIC_SET command to all Association Group 2 nodes when motion is detected. 
 				A value of 0 will turn the lights off (not recommended).
 				A value between 1 and 99 will set the dim level to between 1% and 99% (99% is full on).
-				A value of -1 will turn the light on which depends on the device but most will set the dim level to the last dim setting.
+				A value of -1 will turn the light “on” which depends on the device but most will set the dim level to the last dim setting.
 			</Help>
 		</Value>
 		<Value type="byte" index="3" genre="config" label="Lite Minutes" min="0" max="255" value="5">

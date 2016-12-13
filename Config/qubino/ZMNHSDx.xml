@@ -20,11 +20,12 @@ ZMNHSD5 916,0 MHz
 	
 		<Value type="list" genre="config" instance="1" index="5" label="Working mode" size="1" min="0" max="1" value="0">
 			<Help>Default value 0</Help>
-			<Item label="Dimmer" value="0"/>
-			<Item label="Switch" value="1"/>
+			<Item label="D
+				immer mode" value="0"/>
+			<Item label="Switch mode" value="1"/>
 		</Value> 
 	
-		<Value type="list" genre="config" instance="1" index="10" label="Activate / deactivate functions ALL ON/ALL OFF" size="2" min="0" max="255" value="255">
+		<Value type="list" genre="config" instance="1" index="10" label="Activate / deactivate functions ALL ON/ALL OFF" size="1" min="0" max="255" value="255">
 			<Help>Flush dimmer module responds to commands ALL ON / ALL OFF that may be sent by the main controller or by other controller belonging to the system.
 			Default value 255.</Help>
 			<Item label="ALL ON active, ALL OFF active" value="255" />
@@ -135,7 +136,7 @@ ZMNHSD5 916,0 MHz
 	<!-- Association Groups -->
 	<CommandClass id="133">
 		<Associations num_groups="5">
-			<Group index="1" max_associations="1" label="Lifeline"/>
+			<Group index="1" max_associations="1" label="Lifeline" />
 			<Group index="2" max_associations="16" label="Basic on/off"/>
 			<Group index="3" max_associations="16" label="Start level change/stop level change"/>
 			<Group index="4" max_associations="16" label="Multilevel set Flush dimmer"/>

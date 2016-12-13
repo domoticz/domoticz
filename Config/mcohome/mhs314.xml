@@ -23,7 +23,7 @@
       <Group index="2" max_associations="5" label="Button2" />
       <Group index="3" max_associations="5" label="Button3" />
       <Group index="4" max_associations="5" label="Button4" />
-	  <Group index="5" max_associations="1" label="Lifeline" auto="true"/>
+      <Group index="5" max_associations="1" label="Lifeline" auto="true"/>
     </Associations>
   </CommandClass>
 </Product>

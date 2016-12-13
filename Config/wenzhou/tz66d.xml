@@ -25,7 +25,7 @@
 		  <Help>The TZ66-D will flicker its LED when it is transmitting to any of its 4 groups. This flickering can be set to not flicker at all (set to 0), to flicker the entire time it is transmitting (set to 1), or to flicker for only 1 second when it begins transmitting (set to 2). By default, the TZ66D is set to flicker for only 1 second.</Help>
 		</Value>
 		<Value type="byte" genre="config" instance="1" index="20" label="Poll Group 2 Interval (minutes)" min="1" max="255" value="2">
-		  <Help>Defines the poll interval in minutes for group 2 if polling is activated.</Help>
+		  <Help>The TZ66D can operate shade control devices via its Group 3 if this configuration parameter is set to 1.</Help>
 		</Value>
 		<Value type="byte" genre="config" instance="1" index="22" label="Poll Group 2" min="0" max="1" value="1">
 		  <Help>If value is 0, the TZ66D will not poll Group 2. If value is 1, the TZ66D will poll Group 2 at the interval set in Configuration Parameter 20.</Help>

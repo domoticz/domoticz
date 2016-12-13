@@ -7,7 +7,7 @@
 	<!-- Configuration Parameters -->
 	<CommandClass id="112">
 		<Value type="byte" index="10" genre="config" label="Typical click timeout" units="x 10 milliseconds" min="1" max="100" value="50">
-			<Help>Typical time used to differentiate click, hold, double and triple clicks Values: 1 to 100 in 10 ms units (default is 50, that is equivalent to 500 ms)</Help>
+			<Help>Typical time used to differentiate click, hold, double and triple clicks Values: 1 – 100 in 10 ms units (default is 50, that is equivalent to 500 ms)</Help>
 		</Value>
 		<Value type="list" index="11" genre="config" label="Invert buttons" units="" min="0" max="1" size="1">
 			<Item label="No (default)" value="0" />

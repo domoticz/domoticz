@@ -14,6 +14,13 @@ update-alternatives:
 sources:
   - trusty
 
+
+# Domoticz ftp server account & encrypted password
+env:
+  global:
+    - "FTP_HOST=188.166.24.182"
+    - "FTP_USER=uploads@domoticz.com"
+
 # What to install before the build
 before_install:
   # Domoticz needs the full history to be able to calculate the version string
@@ -59,11 +66,11 @@ matrix:
       - make
   # Apple OSX
   - os: osx
-    osx_image: xcode6.2
     compiler:
       - gcc
     env: TARGET_ARCHITECTURE=x86_64
     install:
+      - brew install cmake
       - brew install boost|| true
       - brew install boost-python|| true
       - brew install libusb
@@ -72,7 +79,8 @@ matrix:
       - brew install openssl
       - brew link openssl --force
       - brew install md5sha1sum
-      - export OPENSSL_ROOT_DIR=/usr/local/opt/openssl
+      - export LDFLAGS=-L/usr/local/opt/openssl/lib
+      - export CPPFLAGS=-I/usr/local/opt/openssl/include
     script:
       - cmake -DCMAKE_BUILD_TYPE=Release
       - make

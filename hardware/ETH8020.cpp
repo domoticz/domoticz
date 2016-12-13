@@ -117,13 +117,11 @@ bool CETH8020::WriteToHardware(const char *pdata, const unsigned char length)
 			_log.Log(LOG_ERROR, "ETH8020: Error sending relay command to: %s", m_szIPAddress.c_str());
 			return false;
 		}
-/*
 		if (sResult.find("Success") == std::string::npos)
 		{
 			_log.Log(LOG_ERROR, "ETH8020: Error sending relay command to: %s", m_szIPAddress.c_str());
 			return false;
 		}
-*/
 		return true;
 	}
 	return false;

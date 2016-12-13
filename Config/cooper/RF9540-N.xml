@@ -22,7 +22,7 @@
 		  Setting this to anything other than 0 will cause the value to be transmitted to devices in the association group when the switch is triggered. A setting other than 0 will likely result in undesired operation
 		  </Help>
 		</Value>
-		<Value type="list" index="5" genre="config" label="Power Up State" units="" min="1" max="3" size="1" value="3">
+		<Value type="list" index="5" genre="config" label="Power Up State" units="" min="1" max="3" value="3">
 		  <Help>
 		    Power up state of the device
 		  </Help>
@@ -30,7 +30,7 @@
 		  <Item label="ON" value="2"/>
 		  <Item label="Last state" value="3"/>
 		</Value>
-		<Value type="list" index="6" genre="config" label="Panic mode enable" units="" min="1" max="2" size="1" value="1">
+		<Value type="list" index="6" genre="config" label="Panic mode enable" units="" min="1" max="2" value="1">
 		  <Help>
 		    Enables this switch to participate in panic mode
 		  </Help>
@@ -42,7 +42,7 @@
 		  The amount of time in seconds the switch will take to reach the desired dim level.  The configuration value is a signed single byte number. This value may represent a value with no units or may represent a value such as time. 0 to 127 (decimal) represents 0 to 127 seconds of time. -128 to -1 (negative decimal numbers) represents 128 to 255 seconds as calculated by this formula.  Config value = desired time in seconds (or desired value) -256 For an example of 172 seconds: config value = 172 - 256 = -84 (decimal) or 0xAC (hex) 
 		  </Help>
 		</Value>
-		<Value type="list" index="8" genre="config" label="Kickstart / Rapid Start" units="" min="0" max="1" size="1" value="0">
+		<Value type="list" index="8" genre="config" label="Kickstart / Rapid Start" units="" min="0" max="1" value="0">
 		  <Help>
 		  	Ensures that LED / CFL bulbs turn on when the preset dim level is low.  Enabling this feature may cause the lights brightness to momentarily be bright when the switch is turned on before reducing in brightness to desired level
 		  </Help>

@@ -24,7 +24,7 @@
 
     <Value type="byte" genre="config" instance="1" index="7" label="Forced Level of Dimming group 1" min="1" max="255" value="255">
       <Help>Value of the parameter specifying the forced level of dimming / opening sun blinds when comes "switch on" / "open" command to devices from association group no. 1.
-In the case of alarm frames the alarm priority is specified. Possible parameter settings: (1 to 99) and 255. Value of 255 makes it possible to activate the device when using the Dimmer module it means activating the device and setting it to the previous stored condition, e.g. when Dimmer is set to 30%, then deactivated, and then reactivated using command 255, it will automatically be set to the previous condition, i.e. 30%.</Help>
+In the case of alarm frames the alarm priority is specified. Possible parameter settings: (1 – 99) and 255. Value of 255 makes it possible to activate the device when using the Dimmer module it means activating the device and setting it to the previous stored condition, e.g. when Dimmer is set to 30%, then deactivated, and then reactivated using command 255, it will automatically be set to the previous condition, i.e. 30%.</Help>
     </Value>
 
     <Value type="list" genre="config" instance="1" index="9" label="Deactivate transmission of frame cancelling alarm" value="1" size="1">
@@ -39,7 +39,7 @@ In the case of alarm frames the alarm priority is specified. Possible parameter 
 
     <Value type="short" genre="config" instance="1" index="12" label="Insensitiveness to temperature changes." min="1" max="1000" value="50">
       <Help>Insensitiveness to temperature changes. This is the maximum acceptable difference between the last reported temperature and the current temperature taken from the sensor. If the temperatures differ by the set value or more, then a report with the current temperature value is sent to the device assigned to association group no. 3. Intervals between taking readings from sensors are specified by parameter no. 10.
-Possible parameter settings:1 to 1000 [each 0.01oC] [0.01oC to 10.00oC].</Help>
+Possible parameter settings:1 – 1000 [each 0.01oC] [0.01oC – 10.00oC].</Help>
     </Value>
 
     <Value type="list" genre="config" instance="1" index="13" label="Transmitting the alarm or control frame broadcast mode" value="0" size="1">
@@ -52,12 +52,12 @@ Possible parameter settings:1 to 1000 [each 0.01oC] [0.01oC to 10.00oC].</Help>
 
     <Value type="short" genre="config" instance="1" index="50" label="Low temperature alarm threshold." min="-10000" max="10000" value="1500">
       <Help>The parameter stores a temperature value, below which LED indicator blinks with a colour determined by Parameter 61 settings. By default the LED indicator blinks blue. 
-Possible parameter settings:-10000 to 10000 [each 0.01oC] [-100oC to 100oC].</Help>
+Possible parameter settings:-10000 – 10000 [each 0.01oC] [-100oC – 100oC].</Help>
     </Value>
 
     <Value type="short" genre="config" instance="1" index="51" label="High temperature alarm threshold." min="-10000" max="10000" value="3500">
       <Help>The parameter stores a temperature value, above which LED indicator blinks with a colour determined by Parameter 62 settings. By default the LED indicator blinks red. 
-Possible parameter settings:-10000 to 10000 [each 0.01oC] [-100oC to 100oC].</Help>
+Possible parameter settings:-10000 – 10000 [each 0.01oC] [-100oC – 100oC].</Help>
     </Value>
 
     <Value type="int" genre="config" instance="1" index="61" label="Low temperature alarm indicator colour." min="0" max="16777215" value="255">
@@ -77,7 +77,7 @@ Possible parameter settings:-10000 to 10000 [each 0.01oC] [-100oC to 100oC].</He
 
     <Value type="short" genre="config" instance="1" index="73" label="Temperature measurement compensation." min="-10000" max="10000" value="0">
       <Help>Parameter stores a temperature value to be added to or deducted from the current temperature measured by the internal temperature sensor in order to compensate the difference between air temperature and the temperature at floor level.
-Possible parameter settings:-10000 to 10000 [each 0.01oC] [-100oC to 100oC].</Help>
+Possible parameter settings:-10000 – 10000 [each 0.01oC] [-100oC – 100oC].</Help>
     </Value>
 
     <Value type="list" genre="config" instance="1" index="74" label="Alarm frame sent to group 2 (tamper/tilt)." value="2" size="1">
@@ -111,9 +111,9 @@ Value of 0 cancels an alarm frame retransmission.</Help>
   <!-- Association Groups -->
   <CommandClass id="133">
     <Associations num_groups="3">
-      <Group index="1" max_associations="5" label="Flood Alarm" auto="false"/>
-      <Group index="2" max_associations="5" label="Tamper Alarm" />
-      <Group index="3" max_associations="1" label="Lifeline" auto="true"/>
+      <Group index="1" max_associations="5" label="Flood Alarm" />
+      <Group index="2" max_associations="5" label="Tamper Alarm" auto="true" />
+      <Group index="3" max_associations="1" label="Device Status" auto="true"/>
     </Associations>
   </CommandClass>
 

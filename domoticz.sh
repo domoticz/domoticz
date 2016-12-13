@@ -37,17 +37,6 @@ DAEMON_ARGS="$DAEMON_ARGS -sslwww 443"
 # and status_of_proc is working.
 . /lib/lsb/init-functions
 
-pidof_domoticz() {
-    # if there is actually a domoticz process whose pid is in PIDFILE,
-    # print it and return 0.
-    if [ -e "$PIDFILE" ]; then
-        if pidof domoticz | tr ' ' '\n' | grep -w $(cat $PIDFILE); then
-            return 0
-        fi
-    fi
-    return 1
-}
-
 #
 # Function that starts the daemon/service
 #
@@ -109,13 +98,6 @@ case "$1" in
         ;;
   status)
         status_of_proc "$DAEMON" "$NAME" && exit 0 || exit $?
-        ;;
-  reload)
-        log_daemon_msg "Reloading $DESC" "$NAME"
-        PID=$(pidof_domoticz) || true
-        if [ "${PID}" ]; then
-                kill -HUP $PID
-        fi
         ;;
   restart)
         log_daemon_msg "Restarting $DESC" "$NAME"

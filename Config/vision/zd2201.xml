@@ -30,12 +30,6 @@
 	<!-- COMMAND_CLASS_BASIC -->
 	<CommandClass id="32" setasreport="true"/>
 
-    <!-- COMMAND_CLASS_ALARM AlarmCmd_Get responds with an undocumented value -->
-    <CommandClass id="113" getsupported="false" />
-
-    <!-- COMMAND_CLASS_SENSOR_BINARY Get responds with an undocumented value -->
-    <CommandClass id="30" getsupported="false" />
-
 	<!-- COMMAND_CLASS_ASSOCIATION -->
 	<CommandClass id="133">
 		<Associations num_groups="1">

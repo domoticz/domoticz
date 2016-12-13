@@ -333,7 +333,7 @@
     <Associations num_groups="3">
       <Group index="1" max_associations="5" label="Basic Report"/>
       <Group index="2" max_associations="5" label="Tamper Alarm"/>
-      <Group index="3" max_associations="1" label="Lifeline" auto="true"/>
+      <Group index="3" max_associations="1" label="Device Status" auto="true"/>
     </Associations>
   </CommandClass>
 

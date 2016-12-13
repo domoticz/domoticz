@@ -43,13 +43,13 @@
 			<Item label="on On (default)" value="0" />
 			<Item label="on Off" value="1" />
 		</Value>
-		<Value type="list" index="8" genre="config" label="Stop or Revert if opposite button is pressed" units="" min="0" max="2" size="1" value="0">
+		<Value type="list" index="8" genre="config" label="Stop or Revert if opposite button is pressed" units="" min="0" max="2" value="0">
 			<Help>Defines behaviour on open press while closing and vice versa. To allow Stop behavior when switched by remote, use Stop by Basic</Help>
 			<Item label="Stop (by buttons and Binary) (Default)" value="0" />
 			<Item label="Stop (by buttons, Binary and Basic)" value="1" />
 			<Item label="Revert" value="2" />
 		</Value>
-		<Value type="list" index="9" genre="config" label="Invert open and close relays" units="" min="0" max="1" size="1" value="0">
+		<Value type="list" index="9" genre="config" label="Invert open and close relays" units="" min="0" max="1" value="0">
 			<Help>Allow exchanging open and close relays if blind control is wired to the motor incorrectly</Help>
 			<Item label="No (default)" value="0" />
 			<Item label="Yes" value="1" />
@@ -91,7 +91,7 @@
 		<Associations num_groups="3">
 			<Group index="1" max_associations="8" label="Group 1" auto="false"/>
 			<Group index="2" max_associations="8" label="Group 2" />
-			<Group index="3" max_associations="8" label="Lifeline" auto="true"/>
+			<Group index="3" max_associations="8" label="Send updates" auto="true"/>
 		</Associations>
 	</CommandClass>
 </Product>

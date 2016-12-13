@@ -194,7 +194,6 @@ C1WireForWindows::C1WireForWindows()
 {
    // Connect to service
    m_Socket = ConnectToService();
-   _log.Log(LOG_STATUS,"Using 1-Wire support (Windows)...");
 }
 
 C1WireForWindows::~C1WireForWindows()

@@ -160,10 +160,16 @@ void KMTronicTCP::GetMeterDetails()
 		if (tmpstr.find("Status:") != std::string::npos)
 		{
 			tmpstr = tmpstr.substr(strlen("Status:"));
-			stdreplace(tmpstr, " ", "");
-			for (jj = 0; jj < tmpstr.size(); jj++)
+			std::vector<std::string> results2;
+			StringSplit(tmpstr, " ", results2);
+			if (results2.size() < 2)
 			{
-				bool bIsOn = (tmpstr[jj] != '0');
+				_log.Log(LOG_ERROR, "KMTronic: Invalid data received");
+				return;
+			}
+			for (jj = 0; jj < results2.size(); jj++)
+			{
+				bool bIsOn = (results2[jj] != "0");
 				std::stringstream sstr;
 				int iRelay = (jj + 1);
 				sstr << "Relay " << iRelay;

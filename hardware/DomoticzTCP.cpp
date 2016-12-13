@@ -461,4 +461,3 @@ void DomoticzTCP::SetConnected(bool connected)
 	}
 }
 #endif
-

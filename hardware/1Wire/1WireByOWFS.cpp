@@ -21,8 +21,6 @@ C1WireByOWFS::C1WireByOWFS(const std::string& path) :
 
 	m_simultaneousTemperaturePath = m_path;
 	m_simultaneousTemperaturePath.append("/simultaneous/temperature");
-
-   _log.Log(LOG_STATUS,"Using 1-Wire support (OWFS)...");
 }
 
 bool C1WireByOWFS::FindDevice(const std::string &sID, /*out*/_t1WireDevice& device) const

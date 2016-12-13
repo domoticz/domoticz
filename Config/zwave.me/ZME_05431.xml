@@ -35,7 +35,7 @@
 			<Item label="No" value="0" />
 			<Item label="Yes (default)" value="1" />
 		</Value>
-		<Value type="list" index="5" genre="config" label="Restore switch state after power cycle" size="1" value="1">
+		<Value type="list" index="5" genre="config" label="Restore switch state after power cycle" value="1">
 			<Help>Defines if the switch should restore switch state to the last state prior to device power off (power cycle).</Help>
                         <Item label="No, turn OFF" value="0" />
                         <Item label="Yes (default)" value="1" />
@@ -89,7 +89,7 @@
 		<Associations num_groups="3">
 			<Group index="1" max_associations="8" label="Group 1 Single press and hold of up/down buttons" auto="false"/>
 			<Group index="2" max_associations="8" label="Group 2 Double press and press-hold of up/down buttons"  />
-			<Group index="3" max_associations="8" label="Lifeline" auto="true"/>
+			<Group index="3" max_associations="8" label="Group 3 Send Reports on switch state change" auto="true"/>
 		</Associations>
 	</CommandClass>
 </Product>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Product xmlns='http://code.google.com/p/open-zwave/'>
 	<CommandClass id="112">
-		<Value type="list" genre="config" index="3" label="Beeper" min="0" max="255" size="1" value="255">
+		<Value type="list" genre="config" index="3" label="Beeper" min="0" max="255" value="255">
 			<Help>
 				Enable or disable the beeper.
 			</Help>
@@ -9,7 +9,7 @@
 			<Item label="Enable Beeper" value="255" />
 
 		</Value>
-		<Value type="list" genre="config" index="4" label="Vacation Mode" min="0" max="255" size="1" value="0">
+		<Value type="list" genre="config" index="4" label="Vacation Mode" min="0" max="255" value="0">
 			<Help>
 				Prevents all user codes from unlocking the deadbolt.
 				Enable for extra security while you are away for
@@ -18,7 +18,7 @@
 			<Item label="Disable Vacation Mode" value="0" />
 			<Item label="Enable Vacation Mode" value="255" />
 		</Value>
-		<Value type="list" genre="config" index="5" label="Lock &amp; Leave" units="" min="0" max="255" size="1" value="255">
+		<Value type="list" genre="config" index="5" label="Lock &amp; Leave" units="" min="0" max="255" value="255">
 			<Help>
 				When enabled: Press the Outside Schlage Button to lock the
 				deadbolt. (Default setting).
@@ -28,14 +28,14 @@
 			<Item label="Disable Lock &amp; Leave" value="0" />
 			<Item label="Enable Lock &amp; Leave" value="255" />
 		</Value>
-		<Value type="list" genre="config" index="7" label="Lock Alarm Mode" size="1" value="0">
+		<Value type="list" genre="config" index="7" label="Lock Alarm Mode" value="0">
 			<Help>
 				The alarm is turned off by default. After installation,
-				you will need to turn on your alarm.
+				you’ll need to turn on your alarm.
 
 				Activity
 				 Alarms when the door opens or closes.
-				 Perfect for monitoring doors while you re at home.
+				 Perfect for monitoring doors while you’re at home.
 				 After the alarm is triggered, there is a built-in 3-second
 				 delay for it to reset.
 				 Sounds two short beeps.
@@ -48,8 +48,8 @@
 				Forced Entry
 				 Alarms when significant force pushes against the
 				 door, while locked. Perfect for nighttime or
-				 when you re away from home.
-				   Least sensitive mode
+				 when you’re away from home.
+				  • Least sensitive mode
 				 Sounds three-minute shrill, steady alarm (90 dB)
 			</Help>
 			<Item label="Alarm Off" value="0" />
@@ -57,7 +57,7 @@
 			<Item label="Tamper" value="2" />
 			<Item label="Forced Entry" value="3" />
 		</Value>
-		<Value type="list" genre="config" index="8" label="Activity Alarm Sensitivity" size="1" value="3">
+		<Value type="list" genre="config" index="8" label="Activity Alarm Sensitivity" value="3">
 			<Help>
 				Each alarm mode is preset to a sensitivity level of three.
 				If your alarm is sounding too frequently, or not frequently enough,
@@ -71,7 +71,7 @@
 			<Item label="Medium/low Sensitivity" value="4" />
 			<Item label="Least Sensitivity" value="5" />
 		</Value>
-		<Value type="list" genre="config" index="9" label="Tamper Alarm Sensitivity" size="1" value="3">
+		<Value type="list" genre="config" index="9" label="Tamper Alarm Sensitivity" value="3">
 			<Help>
 				Each alarm mode is preset to a sensitivity level of three.
 				If your alarm is sounding too frequently, or not frequently enough,
@@ -85,7 +85,7 @@
 			<Item label="Medium/low Sensitivity" value="4" />
 			<Item label="Least Sensitivity" value="5" />
 		</Value>
-		<Value type="list" genre="config" index="10" label="Forced Entry Alarm Sensitivity" size="1" value="3">
+		<Value type="list" genre="config" index="10" label="Forced Entry Alarm Sensitivity" value="3">
 			<Help>
 				Each alarm mode is preset to a sensitivity level of three.
 				If your alarm is sounding too frequently, or not frequently enough,
@@ -99,7 +99,7 @@
 			<Item label="Medium/low Sensitivity" value="4" />
 			<Item label="Least Sensitivity" value="5" />
 		</Value>
-		<Value type="list" genre="config" index="11" label="Disable Local Alarm Controls" size="1" value="255">
+		<Value type="list" genre="config" index="11" label="Disable Local Alarm Controls" value="255">
 			<Help>
 				Enables/Disables local alarm on/off, mode change, sensitivity changes
 			</Help>
@@ -113,7 +113,7 @@
 				Each failed electronic attempt increments this count by one.
 			</Help>
 		</Value>
-		<Value type="list" genre="config" index="15" label="Auto lock" size="1" value="0">
+		<Value type="list" genre="config" index="15" label="Auto lock" value="0">
 			<Help>
 				When enabled, the lock will automatically relock 30 seconds
 				after unlocking. (Disabled by default.)

@@ -19,14 +19,11 @@ SOFTWARE.
 
 ===========
 Original source code from: http://sourceforge.net/projects/harmonyhubcontrol/
-Integration in Domoticz done by: Jan ten Hove
+Intergration in Domoticz done by: Jan ten Hove
 Cleanup and changes: GizMoCuz
-History:
- 16 August 2016:
- - Fixed: Logitech Harmony, Ping request now working as well for firmware 4.10.30 (Herman)
- 19 November 2016:
- - Removed: Need to login remotely with username/password
 */
+
+
 
 #include "stdafx.h"
 #include "HarmonyHub.h"
@@ -41,7 +38,13 @@ History:
 #include "csocket.h"
 #include "../json/json.h"
 
-#define CONNECTION_ID								"21345678-1234-5678-1234-123456789012-1"
+#define HARMONY_COMMUNICATION_PORT					5222
+#define TEMP_AUTH_TOKEN								"TEMP_AUT_TOKEN"
+#define LOGITECH_AUTH_URL							"http://svcs.myharmony.com/CompositeSecurityServices/Security.svc/json/GetUserAuthToken"
+#define LOGITECH_AUTH_HOSTNAME						"svcs.myharmony.com"
+#define LOGITECH_AUTH_PATH							"/CompositeSecurityServices/Security.svc/json/GetUserAuthToken"
+#define HARMONY_HUB_AUTHORIZATION_TOKEN_FILENAME	"HarmonyHub.AuthorizationToken"
+#define CONNECTION_ID								"12345678-1234-5678-1234-123456789012-1"
 #define GET_CONFIG_COMMAND							"get_config"
 #define GET_CONFIG_COMMAND_RAW						"get_config_raw"
 #define START_ACTIVITY_COMMAND						"start_activity"
@@ -52,7 +55,9 @@ History:
 
 #define MAX_MISS_COMMANDS							5	//max commands to miss (when executing a command, the harmony commands may fail)
 
-CHarmonyHub::CHarmonyHub(const int ID, const std::string &IPAddress, const unsigned int port):
+CHarmonyHub::CHarmonyHub(const int ID, const std::string &IPAddress, const unsigned int port, const std::string &username, const std::string &password):
+m_username(username),
+m_password(password),
 m_harmonyAddress(IPAddress)
 {
 	m_usIPPort = port;
@@ -60,6 +65,8 @@ m_harmonyAddress(IPAddress)
 	m_commandcsocket=NULL;
 	Init();
 }
+
+
 
 CHarmonyHub::~CHarmonyHub(void)
 {
@@ -139,6 +146,7 @@ bool CHarmonyHub::StopHardware()
 void CHarmonyHub::Do_Work()
 {
 	_log.Log(LOG_STATUS,"Harmony Hub: Worker thread started..."); 
+	//start with getting the activities
 
 	int scounter = 0;
 	int mcounter = 0;
@@ -231,17 +239,58 @@ void CHarmonyHub::Do_Work()
 
 bool CHarmonyHub::Login()
 {
+	// Read the token
+	if (!m_szAuthorizationToken.empty())
+	{
+
+		//printf("\nLogin Authorization Token is: %s\n\n", m_szAuthorizationToken.c_str());
+		if(m_szAuthorizationToken.size() > 0)
+		{
+			csocket authorizationcsocket;
+			if(!ConnectToHarmony(m_harmonyAddress, m_usIPPort, &authorizationcsocket))
+			{
+				_log.Log(LOG_ERROR,"Harmony Hub: Cannot connect to Harmony Hub");
+				//printf("ERROR : %s\n", errorString.c_str());
+				return false;
+			}
+
+			if(SwapAuthorizationToken(&authorizationcsocket, m_szAuthorizationToken)==true)
+			{
+				// Authorization Token found worked.  
+				// Bypass authorization through Logitech's servers.
+				_log.Log(LOG_STATUS,"Harmony Hub: Authentication successful");
+				return true;
+			}
+
+		}
+	}
+
+	// Log into the Logitech Web Service to retrieve the login authorization token
+	if(!HarmonyWebServiceLogin(m_username, m_password, m_szAuthorizationToken))
+	{
+		_log.Log(LOG_ERROR,"Harmony Hub: Logitech web service login failed.");
+		return false;
+	}
+	_log.Log(LOG_STATUS,"Harmony Hub: Logged in to the Logitech web service");
+
+	//printf("\nLogin Authorization Token is: %s\n\n", m_szAuthorizationToken.c_str());
+
 	csocket authorizationcsocket;
 	if(!ConnectToHarmony(m_harmonyAddress, m_usIPPort, &authorizationcsocket))
 	{
-		_log.Log(LOG_ERROR,"Harmony Hub: Cannot connect to Harmony Hub. Check IP/Port.");
+		_log.Log(LOG_ERROR,"Harmony Hub: Cannot connect to Harmony Hub");
+		//printf("ERROR : %s\n", errorString.c_str());
 		return false;
 	}
-	if(GetAuthorizationToken(&authorizationcsocket)==true)
+
+	if(SwapAuthorizationToken(&authorizationcsocket, m_szAuthorizationToken)==true)
 	{
+		// Authorization Token found worked.  
+		// Bypass authorization through Logitech's servers.
 		_log.Log(LOG_STATUS,"Harmony Hub: Authentication successful");
 		return true;
 	}
+	_log.Log(LOG_ERROR, "Harmony Hub: Authentication unsuccessful");
 	return false;
 }
 
@@ -348,7 +397,7 @@ bool CHarmonyHub::UpdateCurrentActivity()
 
 void CHarmonyHub::CheckSetActivity(const std::string &activityID, const bool on)
 {
-	//get the device id from the db (if already inserted)
+	//get the device id from the db (if alread inserted)
 	int actId=atoi(activityID.c_str());
 	std::stringstream hexId ;
 	hexId << std::setw(7)  << std::hex << std::setfill('0') << std::uppercase << (int)( actId) ;
@@ -365,6 +414,8 @@ void CHarmonyHub::UpdateSwitch(unsigned char idx,const char * realID, const bool
 {
 	std::stringstream hexId ;
 	hexId << std::setw(7) << std::setfill('0') << std::hex << std::uppercase << (int)( atoi(realID) );
+	//char szIdx[10];
+	//sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, idx);
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, hexId.str().c_str());
 	if (!result.empty())
@@ -406,20 +457,115 @@ void CHarmonyHub::UpdateSwitch(unsigned char idx,const char * realID, const bool
 	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255);
 }
 
+//  Logs into the Logitech Harmony web service
+//  Returns a base64-encoded string containing a 48-byte Login Token in the third parameter
+bool CHarmonyHub::HarmonyWebServiceLogin(const std::string &strUserEmail, const std::string &strPassword, std::string& m_szAuthorizationToken )
+{
+	if(strUserEmail.size() == 0 || strPassword.size() == 0)
+	{
+		//errorString = "HarmonyWebServiceLogin : Empty email or password provided";
+		return false;
+	} 
+
+	Json::Value root;
+
+	root["email"] = strUserEmail;
+	root["password"] = strPassword;
+
+	std::string jsonString = root.toStyledString();
+
+	std::string strHttpPayloadText;
+
+	csocket authcsocket;
+	authcsocket.connect(LOGITECH_AUTH_HOSTNAME, 80);
+
+	if (authcsocket.getState() != csocket::CONNECTED)
+	{
+		//errorString = "HarmonyWebServiceLogin : Unable to connect to Logitech server";
+		return false;
+	}
+
+	char contentLength[10];
+	sprintf(contentLength, "%d", (int)jsonString.size());
+
+	std::string strHttpRequestText;
+
+	strHttpRequestText = "POST ";
+	strHttpRequestText.append(LOGITECH_AUTH_URL);
+	strHttpRequestText.append(" HTTP/1.1\r\nHost: ");
+	strHttpRequestText.append(LOGITECH_AUTH_HOSTNAME);
+	strHttpRequestText.append("\r\nAccept-Encoding: identity\r\nContent-Length: ");
+	strHttpRequestText.append(contentLength);
+	strHttpRequestText.append("\r\ncontent-type: application/json;charset=utf-8\r\n\r\n");
+
+	authcsocket.write(strHttpRequestText.c_str(), strHttpRequestText.size());
+	authcsocket.write(jsonString.c_str(), jsonString.size());
+
+	memset(m_databuffer, 0, BUFFER_SIZE);
+	authcsocket.read(m_databuffer, BUFFER_SIZE, false);
+	strHttpPayloadText = m_databuffer;/* <- Expect: 0x00def280 "HTTP/1.1 200 OK Server: nginx/1.2.4 Date: Wed, 05 Feb 2014 17:52:13 GMT Content-Type: application/json; charset=utf-8 Content-Length: 127 Connection: keep-alive Cache-Control: private X-AspNet-Version: 4.0.30319 X-Powered-By: ASP.NET  {"GetUserAuthTokenResult":{"AccountId":0,"UserAuthToken":"KsRE6VVA3xrhtbqFbh0jWn8YTestDeB\/b94Qeqf3ofWGM79zLSr62XQh8geJxw\/V"}}"*/
+
+	if (strHttpPayloadText.find("HTTP/1.1 200") == std::string::npos)
+	{
+		//Error returned
+		return false;
+	}
+
+	size_t payloadPos = strHttpPayloadText.find("\r\n\r\n");
+	if (payloadPos == std::string::npos)
+	{
+		//No payload returned
+		return false;
+	}
+	strHttpPayloadText = strHttpPayloadText.substr(payloadPos + 4);
+
+	Json::Reader jReader;
+	bool ret = jReader.parse(strHttpPayloadText, root);
+	if (!ret)
+	{
+		_log.Log(LOG_ERROR, "Harmony Hub: Invalid data received!");
+		return false;
+	}
+
+	if (root["GetUserAuthTokenResult"].empty() == true)
+	{
+		//No Authentication token received
+		return false;
+	}
+	if (root["GetUserAuthTokenResult"]["UserAuthToken"].empty() == true)
+	{
+		//No Authentication token received
+		return false;
+	}
+
+	m_szAuthorizationToken = root["GetUserAuthTokenResult"]["UserAuthToken"].asString();
+	return true;
+}
+
 bool CHarmonyHub::ConnectToHarmony(const std::string &strHarmonyIPAddress, const int harmonyPortNumber, csocket* harmonyCommunicationcsocket)
 {
 	if(strHarmonyIPAddress.size() == 0 || harmonyPortNumber == 0 || harmonyPortNumber > 65535)
+	{
+		//errorString = "ConnectToHarmony : Empty Harmony IP Address or Port";
 		return false;
+	}
 
 	harmonyCommunicationcsocket->connect(strHarmonyIPAddress.c_str(), harmonyPortNumber);
 
-	return (harmonyCommunicationcsocket->getState() == csocket::CONNECTED);
+	if (harmonyCommunicationcsocket->getState() != csocket::CONNECTED)
+	{
+		//errorString = "ConnectToHarmony : Unable to connect to specified IP Address on specified Port";
+		return false;
+	}
+
+	return true;
 }
 
 bool CHarmonyHub::StartCommunication(csocket* communicationcsocket, const std::string &strUserName, const std::string &strPassword)
 {
 	if(communicationcsocket == NULL || strUserName.size() == 0 || strPassword.size() == 0)
 	{
+		//errorString = "StartCommunication : Invalid communication parameter(s) provided";
 		return false;
 	} 
 
@@ -461,8 +607,14 @@ bool CHarmonyHub::StartCommunication(csocket* communicationcsocket, const std::s
 	return true;
 }
 
-bool CHarmonyHub::GetAuthorizationToken(csocket* authorizationcsocket)
+bool CHarmonyHub::SwapAuthorizationToken(csocket* authorizationcsocket, std::string& m_szAuthorizationToken)
 {
+	if(authorizationcsocket == NULL || m_szAuthorizationToken.size() == 0)
+	{
+		//errorString = "SwapAuthorizationToken : NULL csocket or empty authorization token provided";
+		return false;
+	}
+
 	if(!StartCommunication(authorizationcsocket, "guest", "gatorade."))
 	{
 		//errorString = "SwapAuthorizationToken : Communication failure";
@@ -472,10 +624,12 @@ bool CHarmonyHub::GetAuthorizationToken(csocket* authorizationcsocket)
 	std::string strData;
 	std::string sendData;
 
+	// GENERATE A LOGIN ID REQUEST USING THE HARMONY ID AND LOGIN AUTHORIZATION TOKEN 
 	sendData = "<iq type=\"get\" id=\"";
 	sendData.append(CONNECTION_ID);
-	sendData.append("\"><oa xmlns=\"connect.logitech.com\" mime=\"vnd.logitech.connect/vnd.logitech.pair\">method=pair");
-	sendData.append(":name=domoticz#iOS10.1.0#iPhone</oa></iq>");
+	sendData.append("\"><oa xmlns=\"connect.logitech.com\" mime=\"vnd.logitech.connect/vnd.logitech.pair\">token=");
+	sendData.append(m_szAuthorizationToken.c_str());
+	sendData.append(":name=foo#iOS8.3.0#iPhone</oa></iq>");
 
 	authorizationcsocket->write(sendData.c_str(), sendData.size());
 
@@ -530,7 +684,6 @@ bool CHarmonyHub::GetAuthorizationToken(csocket* authorizationcsocket)
 
 bool CHarmonyHub::SendPing()
 {
-	int res;
 	boost::lock_guard<boost::mutex> lock(m_mutex);
 	if (m_commandcsocket == NULL || m_szAuthorizationToken.size() == 0)
 	{
@@ -544,32 +697,30 @@ bool CHarmonyHub::SendPing()
 	sendData.append(CONNECTION_ID);
 	sendData.append("\"><oa xmlns=\"connect.logitech.com\" mime=\"vnd.logitech.connect/vnd.logitech.ping\">token=");
 	sendData.append(m_szAuthorizationToken.c_str());
-	sendData.append(":name=domoticz#iOS10.1.0#iPhone</oa></iq>");
+	sendData.append(":name=foo#iOS8.3.0#iPhone</oa></iq>");
 
 	m_commandcsocket->write(sendData.c_str(), sendData.size());
 
 
 	bool bIsDataReadable = true;
-	memset(m_databuffer, 0, BUFFER_SIZE);
-	res= m_commandcsocket->read(m_databuffer, BUFFER_SIZE, false);
-	if (res <= 0)
+	m_commandcsocket->canRead(&bIsDataReadable, 5.0f);
+	while (bIsDataReadable)
 	{
-		/* there should be some bytes received so <= 0 is not good */
-		return false;
-	}
-	strData = m_databuffer; 
-	if(strData.compare("<iq/>") == 0)
-	{
-		/* must be new SW version 4.10.30+ so read ping confirmation */
-		memset(m_databuffer, 0, BUFFER_SIZE);
-		res= m_commandcsocket->read(m_databuffer, BUFFER_SIZE, false);
-		if (res <= 0)
+		if (memset(m_databuffer, 0, BUFFER_SIZE) > 0)
 		{
-			/* there should be some bytes received so <= 0 is not good */
-			return false;
+			m_commandcsocket->read(m_databuffer, BUFFER_SIZE, false);
+			std::string szNewData = std::string(m_databuffer);
+			if (!szNewData.empty())
+			{
+				strData.append(m_databuffer);
+				m_commandcsocket->canRead(&bIsDataReadable, 0.4f);
+			}
+			else
+				bIsDataReadable = false;
 		}
+		else
+			bIsDataReadable = false;
 	}
-	strData = m_databuffer; /* <- Expect: strData  == 200 */
 	if (strData.empty())
 		return false;
 	CheckIfChanging(strData);
@@ -679,6 +830,11 @@ bool CHarmonyHub::SubmitCommand(const std::string &strCommand, const std::string
 	else if (strCommand == GET_CONFIG_COMMAND || strCommand == GET_CONFIG_COMMAND_RAW)
 	{
 		m_commandcsocket->canRead(&bIsDataReadable, 2.0f);
+
+		//#ifndef WIN32
+		//		bIsDataReadable = true;
+		//#endif
+		//
 		while(bIsDataReadable)
 		{
 			memset(m_databuffer, 0, BUFFER_SIZE);

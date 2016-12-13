@@ -71,13 +71,6 @@
 
 	</CommandClass>
 
-	<CommandClass id="37">
-		<TriggerRefreshValue Genre="user" Index="0" Instance="1">
-			<RefreshClassValue CommandClass="37" RequestFlags="0" Index="0" Instance="2" />
-			<RefreshClassValue CommandClass="37" RequestFlags="0" Index="0" Instance="3" />
-		</TriggerRefreshValue>
-	</CommandClass>
-
 	<!-- Association Groups -->
 	<CommandClass id="133">
 		<Associations num_groups="3">
@@ -89,5 +82,8 @@
 
 	<!-- Remove COMMAND_CLASS_BASIC -->
 	<CommandClass id="32" action="remove" />
+
+	<!-- Map endpoints to instances -->
+	<CommandClass id="96" mapping="endpoints" />
 
 </Product>

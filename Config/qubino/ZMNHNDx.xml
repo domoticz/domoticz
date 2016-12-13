@@ -21,26 +21,26 @@
 			<Item label="NO (normaly open) input type" value="0"/>
 			<Item label="NC (normaly close) input type" value="1"/>
 		</Value> 
-		<Value type="list" genre="config" instance="1" index="10" label="Activate / deactivate functions ALL ON/ALL OFF" size="2" min="0" max="255" value="255">
+		<Value type="list" genre="config" instance="1" index="10" label="Activate / deactivate functions ALL ON/ALL OFF" size="1" min="0" max="255" value="255">
 			<Help>Flush 1 relay module responds to commands ALL ON / ALL OFF that may be sent by the main controller or by other controller belonging to the system</Help>
 			<Item label="ALL ON active, ALL OFF active" value="255" />
 			<Item label="ALL ON is not active ALL OFF is not active" value="0" />
 			<Item label="ALL ON is not active ALL OFF active" value="1" />
 			<Item label="ALL ON active ALL OFF is not active" value="2" />
 		</Value> 		
-		<Value type="short" genre="config" instance="1" index="11" label="Automatic turning off relay after set time" size="2" min="0" max="32535" value="0">
+		<Value type="short" genre="config" instance="1" index="11" label="Automatic turning off relay after set time" min="0" max="32535" value="0">
 			<Help>
 			0 => Auto OFF disabled. 
 			1 - 32535  => 1 second (0,01s) - 32535 seconds (325,35s). 
 			Auto OFF enabled with define time, step is 1s or 10ms according to parameter 15. Default value 0</Help>
 		</Value>		
-        <Value type="short" genre="config" instance="1" index="12" label="Automatic turning on relay after set time" size="2" min="0" max="32535" value="0">
+        <Value type="short" genre="config" instance="1" index="12" label="Automatic turning on relay after set time" min="0" max="32535" value="0">
             <Help>
 			0 - Auto OFF disabled. 
 			1 - 32535  => 1 second (0,01s) - 32535 seconds (325,35s).
 			Auto ON enabled with define time, step is 1s or 10ms according to parameter 15. Default value 0</Help>
         </Value>
-        <Value type="list" genre="config" instance="1" index="15" label="Automatic turning on/off seconds or milliseconds selection" size="1" min="0" max="1" value="0">
+        <Value type="list" genre="config" instance="1" index="15" label="Automatic turning on/off seconds or milliseconds selection" min="0" max="1" value="0">
             <Help/>
             <Item label="seconds" value="0" />
             <Item label="milliseconds" value="1" />
@@ -55,15 +55,6 @@
             <Item label="When system is turned off the output is 0V (NC)" value="0" />
             <Item label="When system is turned off the output is 230V or 24V (NO)" value="1" />
         </Value>
-		<Value type="list" genre="config" instance="1" index="80" label="Reporting to controller" size="1" min="0" max="1" value="1">
-            <Help>
-			Available from SW version S1 Only 
-			This parameter defines if reporting regarding power level, multilevel, etc, are reported to controller or not. 
-			NOTE: Disabling reporting is recommended in case Z-wave modules communicate in association groups without using main controller.
-			</Help>
-            <Item label="Disabled" value="0" />
-            <Item label="Enabled" value="1" />
-        </Value>
 		<Value type="list" genre="config" instance="1" index="100" label="Enable / Disable Endpoints I2 or select notification type and event" size="1" min="0" max="9" value="1">
             <Help/>
             <Item label="Endpoint, I2 disabled" value="0" />
@@ -75,7 +66,7 @@
 			<Item label="Smoke Alarm; Smoke detected, unknown location" value="6" />
 			<Item label="Sensor binary" value="9" />
         </Value>
-		<Value type="short" genre="config" instance="1" index="110" label="Temperature sensor offset settings" size="2" min="0" max="32535" value="32535">
+		<Value type="short" genre="config" instance="1" index="110" label="Temperature sensor offset settings" min="0" max="32535" value="32535">
             <Help>Set value is added or subtracted to actual measured value by sensor. 
 			Available configuration parameters : default value 32536. 32536  offset is 0.0C. 
 			From 1 to 100 = value from 0.1C to 10.0C is added to actual measured temperature.
@@ -90,11 +81,11 @@
 	<!-- Association Groups -->
 	<CommandClass id="133">
 		<Associations num_groups="5">
-			<Group index="1" max_associations="1" label="Lifeline"/>
-			<Group index="2" max_associations="16" label="Basic on/off of the output state"/>
+			<Group index="1" max_associations="1" label="Lifeline" />
+			<Group index="2" max_associations="16" label="Basic on/off of the output state" />
 			<Group index="3" max_associations="16" label="Basic on/off of the input I2 state"/>		  
-			<Group index="4" max_associations="16" label="Binary Sensor Report of the input I2 state"/>
-			<Group index="5" max_associations="16" label="Notification Report of the input I2 state"/>
+			<Group index="4" max_associations="16" label="Binary Sensor Report of the input I2 state" />
+			<Group index="5" max_associations="16" label="Notification Report of the input I2 state" /> 
 		</Associations>
 	</CommandClass>
 

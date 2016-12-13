@@ -36,7 +36,7 @@ ZMNHDD5 916,0 MHz
 			<Item label="NC (normally close)" value="1"/>
 		</Value> 
 	
-		<Value type="list" genre="config" instance="1" index="10" label="Activate / deactivate functions ALL ON/ALL OFF" size="2" min="0" max="255" value="255">
+		<Value type="list" genre="config" instance="1" index="10" label="Activate / deactivate functions ALL ON/ALL OFF" size="1" min="0" max="255" value="255">
 			<Help>Flush dimmer module responds to commands ALL ON / ALL OFF that may be sent by the main controller or by other controller belonging to the system.
 			Default value 255.</Help>
 			<Item label="ALL ON active, ALL OFF active" value="255" />

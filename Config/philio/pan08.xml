@@ -30,7 +30,7 @@
 	</CommandClass>
 	<CommandClass id="133">
 		<Associations num_groups="1">
-			<Group index="1" max_associations="1" label="Lifeline" />
+			<Group index="1" max_associations="1" label="Group 1" />
 		</Associations>
 	</CommandClass>
 

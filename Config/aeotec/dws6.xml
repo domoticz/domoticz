@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Aeon Labs Door/Window Sensor 6 -->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<!-- Alarm CC isn't supported on this device-->
+    <CommandClass id="113" action="remove"/>
+	<!-- Configuration Parameters -->
+	<CommandClass id="112">
+		<Value type="list" genre="config" instance="1" index="1" label="Value when the Magnet is triggered" min="0" max="1" value="0" size="1">
+			<Help>Which value of the Sensor Binary Report or Basic Set will be sent when the door is Opened/Closed</Help>
+			<Item label="Open: 0xFF, Close: 0x00" value="0"/>
+			<Item label="Open: 0x00, Close: 0xFF" value="1"/>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="39" label="Set the low battery value" min="10" max="50" value="20" size="1">
+			<Help>10% to 50%</Help>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="101" label="Low Battery Check" min="0" max="1" value="0">
+            <Help>Enable/disable the low battery checking</Help>
+            <Item label="Disabled" value="0"/>
+            <Item label="Enabled" value="1"/>
+        </Value>
+		<Value type="int" genre="config" instance="1" index="111" label="Interval time of low battery checking" size="4" min="0" max="2147483647" value="86640">
+            <Help>
+				The minimum interval is 4 minutes
+			</Help>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="121" label="Report Type to Send" size="1" min="0" max="3" value="256">
+            <Help>
+                Configure which sensor report will be sent when the door is Opened/Closed
+            </Help>
+            <Item label="Disabled" value="0"/>
+            <Item label="Basic Set" value="1"/>
+            <Item label="Sensor Binary Report" value="2"/>
+            <Item label="Basic Set and Sensor Binary Report" value="3"/>
+        </Value>
+		<Value type="list" genre="config" index="252" label="Lock/Unlock Configuration" min="0" max="1" value="0">
+			<Help>Lock/ unlock all configuration parameters</Help>
+			<Item label="Unlock" value="0"/>
+			<Item label="Lock" value="1"/>
+		</Value>
+		<Value type="list" index="255" genre="config" label="Reset To Factory Defaults" size="4" value="1" >
+			<Help>Reset to factory defaults</Help>
+            <Item label="Reset to factory default setting" value="0"/>
+			<Item label="Normal" value="1"/>
+            <Item label="Reset to factory default setting and removed from the z-wave network" value="1431655765"/>
+		</Value>
+	</CommandClass>
+	<!-- Basic set as report-->
+	<CommandClass id="32" setasreport="true"/>
+	<!-- Association Groups -->
+	<CommandClass id="133">		
+		<Associations num_groups="1">
+			<Group index="1" max_associations="5" label="Lifeline" />
+		</Associations>
+	</CommandClass>
+
+</Product>

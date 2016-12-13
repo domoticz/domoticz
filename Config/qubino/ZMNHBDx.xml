@@ -18,7 +18,7 @@
 			<Item label="Bi-stable switch type" value="1" />
 		</Value>
 
-		<Value type="list" genre="config" instance="1" index="10" label="Activate / deactivate functions ALL ON/ALL OFF" size="2" min="0" max="255" value="255">
+		<Value type="list" genre="config" instance="1" index="10" label="Activate / deactivate functions ALL ON/ALL OFF" size="1" min="0" max="255" value="255">
 			<Help>Flush 2 relays module responds to commands ALL ON / ALL OFF that may be sent by the main controller or by other controller belonging to the system.</Help>
 			<Item label="ALL ON active, ALL OFF active" value="255" />
 			<Item label="ALL ON is not active ALL OFF is not active" value="0" />
@@ -92,13 +92,6 @@
 
 	</CommandClass>
 
-	<CommandClass id="37">
-		<TriggerRefreshValue Genre="user" Index="0" Instance="1">
-			<RefreshClassValue CommandClass="37" RequestFlags="0" Index="0" Instance="2" />
-			<RefreshClassValue CommandClass="37" RequestFlags="0" Index="0" Instance="3" />
-		</TriggerRefreshValue>
-	</CommandClass>
-
 	<!-- Association Groups -->
 	<CommandClass id="133">
 		<Associations num_groups="8">
@@ -114,7 +107,9 @@
 	</CommandClass>
 
 	<!-- Remove COMMAND_CLASS_BASIC -->
-	<CommandClass id="32" action="remove"/>
-
+	<CommandClass id="32" action="remove" />		
+	
+	<!-- Map endpoints to instances -->
+	<CommandClass id="96" mapping="endpoints" /> 
 
 </Product>

@@ -27,7 +27,6 @@ C1WireByKernel::C1WireByKernel() :
    m_AllDevicesInitialized(false)
 {
    m_Thread = new boost::thread(&C1WireByKernel::ThreadFunction,this);
-   _log.Log(LOG_STATUS,"Using 1-Wire support (kernel W1 module)...");
 }
 
 C1WireByKernel::~C1WireByKernel()

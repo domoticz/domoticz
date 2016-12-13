@@ -91,18 +91,6 @@
 				NB! According to the manual, the value should not be set between 101-254 (inclusive).
 			</Help>
 		</Value>
-		<Value type="byte" index="7" genre="config" label="TempAdj" units="" min="0" max="255" value="0">
-			<Help>
-				TempAdj is a twos-complement number that is used to adjust the temperature reading to make it more accurate.
-				The value programmed is in tenths of degree Fahrenheit.
-				The temperature reading can be adjusted up to +12.7F to -12.8F.
-				A value of 1 will adjust the temperature reading by +0.1F.
-				A value of -1 will adjust the temperature by -0.1F.
-				A value of 123 will adjust the temperature by +12.3F.
-				TempAdj is NOT changed when Excluded (reset) from the Z- Wave network.
-			</Help>
-		</Value>
-
 	</CommandClass>
 
     <!-- add Basic set CC to raise a node_event -->

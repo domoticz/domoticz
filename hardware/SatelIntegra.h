@@ -9,7 +9,7 @@
 class SatelIntegra : public CDomoticzHardwareBase
 {
 public:
-	SatelIntegra(const int ID, const std::string &IPAddress, const unsigned short IPPort, const std::string& userCode, const int pollInterval);
+	SatelIntegra(const int ID, const std::string &IPAddress, const unsigned short IPPort, const std::string& userCode);
 	virtual ~SatelIntegra();
 
 	bool WriteToHardware(const char *pdata, const unsigned char length);
@@ -22,7 +22,6 @@ private:
 	int m_socket;
 	const unsigned short m_IPPort;
 	const std::string m_IPAddress;
-	int m_pollInterval;
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;
 	std::map<unsigned int, const char*> errorCodes;
@@ -68,14 +67,12 @@ private:
 	bool ReadArmState(const bool firstTime = false);
 	// Read alarm
 	bool ReadAlarm(const bool firstTime = false);
-	// Read events
-	bool ReadEvents();
 	// Updates temperature name and type in database
 	void UpdateTempName(const int Idx, const unsigned char* name, const int partition);
 	// Updates zone name and type in database
 	void UpdateZoneName(const int Idx, const unsigned char* name, const int partition);
 	// Updates output name and type in database
-	void UpdateOutputName(const int Idx, const unsigned char* name, const _eSwitchType switchType);
+	void UpdateOutputName(const int Idx, const unsigned char* name, const bool switchable);
 	// Updates output name for virtual in/out (arming ald alarm)
 	void UpdateAlarmAndArmName();
 	// Reports zones states to domoticz
@@ -97,5 +94,5 @@ private:
 	std::string ISO2UTF8(const std::string &name);
 
 	std::pair<unsigned char*, unsigned int> getFullFrame(const unsigned char* pCmd, const unsigned int cmdLength);
-	int SendCommand(const unsigned char* cmd, const unsigned int cmdLength, unsigned char *answer, const unsigned int expectedLength1, const unsigned int expectedLength2 = -1);
+	int SendCommand(const unsigned char* cmd, const unsigned int cmdLength, unsigned char *answer);
 };

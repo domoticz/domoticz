@@ -4,7 +4,7 @@
     <!-- Configuration -->
     <CommandClass id="112">
         <Value type="list" genre="config" instance="1" index="1" label="Switch All" min="0" max="255" value="255" size="1">
-            <Help>Enable/Disable ALL ON/OFF</Help>
+            <Help>Activate/Deactive ALL ON/OFF</Help>
             <Item label="Disabled" value="0" />
             <Item label="Enabled" value="255" />
         </Value>

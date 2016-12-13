@@ -5,7 +5,7 @@
 
 	<!-- Configuration  -->
 	<CommandClass id="112">
-	<Value type="list" genre="config" instance="1" index="10" label="Activate / deactivate functions ALL ON/ALL OFF" size="2" min="0" max="255" value="255">
+	<Value type="list" genre="config" instance="1" index="10" label="Activate / deactivate functions ALL ON/ALL OFF" size="1" min="0" max="255" value="255">
 		<Help>Flush 1 relay module responds to commands ALL ON / ALL OFF that may be sent by the main controller or by other controller belonging to the system.</Help>
 		<Item label="ALL ON active, ALL OFF active" value="255" />
 		<Item label="ALL ON is not active ALL OFF is not active" value="0" />
@@ -14,7 +14,7 @@
 		</Value>
 
 		<Value type="byte" genre="config" instance="1" index="40" label="Power reporting in Watts on power change for Q1 or Q2" size="1" min="0" max="100" value="1">
-			<Help>Set value from 0 - 100 (0% - 100%). 0 - Reporting Disabled. 1 to 100 = 1% to 100% Reporting enabled. Power report is send (push) only when actual power (in Watts) in real time changes for more than set percentage comparing to previous actual power in Watts, step is 1%. Default value 1</Help>
+			<Help>Set value from 0 - 100 (0% - 100%). 0 - Reporting Disabled. 1 – 100 = 1% – 100% Reporting enabled. Power report is send (push) only when actual power (in Watts) in real time changes for more than set percentage comparing to previous actual power in Watts, step is 1%. Default value 1</Help>
 		</Value>
 	
 		<Value type="short" genre="config" instance="1" index="42" label="Power reporting in Watts by time interval for Q1 or Q2" min="0" max="65535" value="300">
@@ -32,7 +32,7 @@
 			<Item label="Venetian mode" value="1" />
 		</Value>
 		<Value type="short" genre="config" instance="1" index="72" label="Slats tilting full turn time" min="0" max="32767" value="150">
-			<Help>This parameter defines the time necessary for slats to make a full turn (180 degrees). 0 tilting time disabled. Values range from 1 to 32767 = 0,01 seconds to 327,67 seconds. Default value 150. NOTE: If the time is set too high the shutter will move the slats up or down until the duration is reached.</Help>
+			<Help>This parameter defines the time necessary for slats to make a full turn (180 degrees). 0 – tilting time disabled. Values range from 1 – 32767 = 0,01 seconds – 327,67 seconds. Default value 150. NOTE: If the time is set too high the shutter will move the slats up or down until the duration is reached.</Help>
 		</Value>
 		<Value type="list" genre="config" instance="1" index="73" label="Slats position" size="1" min="0" max="2" value="2">
 			<Help>This parameter defines slat position after up/down movement through UI or push button.</Help>
@@ -41,11 +41,11 @@
 			<Item label="Slats return to previously set position in case of UI control, push button, when the limit switch is reached or when receiving a Multilevel Switch Stop Level Change command." value="2" />
 		</Value>
 		<Value type="short" genre="config" instance="1" index="74" label="Motor moving up/down time" min="0" max="65535" value="0">
-			<Help>This parameter defines shutter motor moving time of complete opening or complete closing. 0 moving time disabled (working with limit switches). 1 to 65535 = 0,1seconds to 6553,5 seconds After that time motor is stopped (relay goes to off state). Default value 0</Help>
+			<Help>This parameter defines shutter motor moving time of complete opening or complete closing. 0 – moving time disabled (working with limit switches). 1 – 65535 = 0,1seconds – 6553,5 seconds After that time motor is stopped (relay goes to off state). Default value 0</Help>
 		</Value>
 
 		<Value type="byte" genre="config" instance="1" index="76" label="Motor operation detection" min="0" max="127" value="10">
-			<Help>Power threshold to be interpreted when motor reach the limit switch. Available settings: 0 to 127 (0-127 W). The value 0 means reaching a limit switch will not be detected. Default value: 10 (10W).</Help>
+			<Help>Power threshold to be interpreted when motor reach the limit switch. Available settings: 0 – 127 (0-127 W). The value 0 means reaching a limit switch will not be detected. Default value: 10 (10W).</Help>
 		</Value>
 
 		<Value type="list" genre="config" instance="1" index="78" label="Forced Shutter calibration" size="1" min="0" max="1" value="0">
@@ -63,9 +63,12 @@
 
 	<!-- Association Groups -->
 	<CommandClass id="133">
-		<Associations num_groups="2">
-			<Group index="1" max_associations="16" label="Multilevel" auto="false"/>
-			<Group index="2" max_associations="1" label="Lifeline" auto="true"/>
+		<Associations num_groups="5">
+			<Group index="1" max_associations="16" label="Basic Set On/Off reflecting input I1 state." />
+			<Group index="2" max_associations="16" label="Basic Set On/Off reflecting input I2 state." />
+			<Group index="3" max_associations="16" label="Multilevel Set triggered at shutter position changes." />
+			<Group index="4" max_associations="16" label="Multilevel Set triggered at changes of slat tilting position." />
+			<Group index="5" max_associations="1" label="Default reporting group" auto="true"/>
 		</Associations>
 	</CommandClass>
 

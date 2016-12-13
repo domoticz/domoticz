@@ -20,7 +20,7 @@
       <Item label="Dimming enabled." value="2"/>
     </Value>
 
-    <Value type="short" genre="config" instance="1" index="6" label="Maximum Power load" value="125" size="2">
+    <Value type="byte" genre="config" instance="1" index="6" label="Maximum Power load" value="125" size="2">
       <Help>The maximum power load in watts when light is turned on, when measured higher then this value the Inline Dimmer is automatically turned off.</Help>
     </Value>
 

@@ -11,8 +11,8 @@
   <!-- Fibaro Devices with firmware prior to 25.25 have a bug in the Report
   message -->
   <CommandClass id="51" coloridxbug="true" >
-	 <!--  The Fibaro doesn't report immediate color values, so we need to verify the value -->
-  	<Value type="string" genre="user" instance="1" index="0" label="Color" units="#RRGGBBWW" verify_changes="false" value="#00000000" />
+	 <!--  The Fibaro doesn't report imediate color values, so we need to verify the value -->
+  	<Value type="string" genre="user" instance="1" index="0" label="Color" units="#RRGGBBWW" verify_changes="true" value="#00000000" />
   </CommandClass>
   <!-- Fibaro devices refuse to send a Report message when color changes are done.. so manually trigger a refresh -->
   <CommandClass id="38">
@@ -39,7 +39,7 @@
   <!-- Configuration -->
   <CommandClass id="112">
     <Value type="list" genre="config" instance="1" index="1" label="Enable/Disable ALL ON/OFF" size="1" value="255">
-      <Help>Enable/Disable ALL ON/OFF</Help>
+      <Help>Activate/Deactive ALL ON/OFF</Help>
       <Item label="ALL ON disabled/ ALL OFF disabled" value="0" />
       <Item label="ALL ON disabled/ ALL OFF active" value="1" />
       <Item label="ALL ON active / ALL OFF disabled" value="2" />
@@ -132,11 +132,11 @@
   <!-- Association Groups -->
   <CommandClass id="133">
     <Associations num_groups="5">
-      <Group index="1" max_associations="5" label="Input 1" auto="false"/>
+      <Group index="1" max_associations="5" label="Input 1"/>
       <Group index="2" max_associations="5" label="Input 2"/>
       <Group index="3" max_associations="5" label="Input 3"/>
       <Group index="4" max_associations="5" label="Input 4"/>
-      <Group index="5" max_associations="1" label="Lifeline" auto="true"/>
+      <Group index="5" max_associations="1" label="Controller Updates" auto="true"/>
     </Associations>
   </CommandClass>
 

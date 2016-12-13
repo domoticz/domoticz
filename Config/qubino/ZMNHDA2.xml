@@ -23,7 +23,7 @@
 			<Item label="NC (normaly close) input type" value="1"/>
 		</Value> 
 	
-		<Value type="list" genre="config" instance="1" index="10" label="Activate / deactivate functions ALL ON/ALL OFF" size="2" min="0" max="255" value="0">
+		<Value type="list" genre="config" instance="1" index="10" label="Activate / deactivate functions ALL ON/ALL OFF" size="1" min="0" max="255" value="0">
 			<Help>Flush 1 relay module responds to commands ALL ON / ALL OFF that may be sent by the main controller or by other controller belonging to the system. Default value 0.</Help>
 			<Item label="ALL ON active, ALL OFF active" value="255" />
 			<Item label="ALL ON is not active ALL OFF is not active" value="0" />
@@ -67,8 +67,8 @@
 	<CommandClass id="133">
 		<Associations num_groups="4">
 			<Group index="1" max_associations="16" label="Multilevel Switch Set reflecting the state/value of the Flush Dimmer" />
-			<Group index="2" max_associations="16" label="Basic Set On/Off reflecting the input I2 state" />
-			<Group index="3" max_associations="16" label="Basic Set On/Off reflecting the input I3 state" />
+			<Group index="2" max_associations="16" label="Basic Set On/Off reflecting the input I2 state" auto="true"/>
+			<Group index="3" max_associations="16" label="Basic Set On/Off reflecting the input I3 state" auto="true"/>		
 			<Group index="4" max_associations="1" label="Default controller reporting group" auto="true"/>
 		</Associations>
 	</CommandClass>

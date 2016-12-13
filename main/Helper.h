@@ -46,5 +46,3 @@ int MStoBeaufort(const float ms);
 struct dirent;
 bool dirent_is_directory(std::string dir, struct dirent *ent);
 bool dirent_is_file(std::string dir, struct dirent *ent);
-
-std::string GenerateUserAgent();

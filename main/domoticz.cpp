@@ -44,7 +44,7 @@
 	#include <string.h> 
 #endif
 
-#ifdef HAVE_EXECINFO_H
+#ifdef __gnu_linux__
 #include <execinfo.h>
 static void dumpstack(void) {
 	// Notes :
@@ -529,11 +529,7 @@ int main(int argc, char**argv)
 	std::string sLine = "";
 	std::ifstream infile;
 
-#if defined(__FreeBSD__)
-	infile.open("/compat/linux/proc/cpuinfo");
-#else
 	infile.open("/proc/cpuinfo");
-#endif
 	if (infile.is_open())
 	{
 		while (!infile.eof())
