@@ -65,8 +65,9 @@ protected:
 	boost::shared_ptr<boost::thread> m_monitorThread;
 	boost::shared_ptr<boost::thread> m_heartbeatThread;
 	volatile bool m_stoprequested;
-
-	bool connectStatusSocket();
+    volatile bool firstscan;
+	bool connectGwOwn();
+	void disconnect();
 	int m_heartbeatcntr;
 	csocket* m_pStatusSocket;
 
@@ -74,11 +75,14 @@ protected:
 	bool sendCommand(bt_openwebnet& command, vector<bt_openwebnet>& response, int waitForResponse = 0, bool silent=false);
 	bool ParseData(char* data, int length, vector<bt_openwebnet>& messages);
 	bool FindDevice(int who, int where, int *used);
-	bool AddDeviceIfNotExits(string who, string where);
-	void UpdateLastView(const std::string id, const int value);
-    void UpdateSwitch(const int ptype, const int subtype, const int SubUnit, const int bOn, const double Level, const int BatLevel);
-    void UpdateBlinds(const int ptype, const int subtype, const int SubUnit, const int bOn, const int BatLevel);
-    void UpdateDeviceValue(string who, string where, string what);
+    void UpdateSwitch(const int who, const int where, const int bOn, const double Level, const int BatteryLevel,const char *devname);
+    void UpdateBlinds(const int who, const int where, const int Command, const int BatteryLevel, const char *devname);
+    void UpdateTemp(const int who, const int where, float fval, const int BatteryLevel, const char *devname);
+    void UpdateDeviceValue(vector<bt_openwebnet>::iterator iter);
+    void scan_automation_lighting();
+    void scan_temperature_control();
+    void scan_device();
+    void requestTime();
 
 	string frameToString(bt_openwebnet& frame);
 	string getWhoDescription(string who);
