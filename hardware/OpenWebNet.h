@@ -82,6 +82,7 @@ protected:
     void scan_automation_lighting();
     void scan_temperature_control();
     void scan_device();
+    void requestTime();
 
 	string frameToString(bt_openwebnet& frame);
 	string getWhoDescription(string who);

@@ -72,7 +72,7 @@ bool COpenWebNet::StartHardware()
 		m_heartbeatThread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&COpenWebNet::Do_Work, this)));
 	}
 
-	return (m_monitorThread!=NULL && m_heartbeatThread != NULL);
+	return (m_monitorThread!=NULL && m_heartbeatThread!=NULL);
 }
 
 /**
@@ -82,6 +82,7 @@ bool COpenWebNet::StopHardware()
 {
 	m_stoprequested = true;
 
+    _log.Log(LOG_STATUS, "COpenWebNet: StopHardware");
     if (isStatusSocketConnected())
 	{
 		try {
@@ -625,9 +626,23 @@ void COpenWebNet::scan_temperature_control()
         sendCommand(request, responses, 0, true);
     }
 }
+/**
+    Request time to gateway
+**/
+void COpenWebNet::requestTime()
+{
+    _log.Log(LOG_STATUS, "COpenWebNet: request time...");
+    bt_openwebnet request;
+    vector<bt_openwebnet> responses;
+    request.CreateTimeReqMsgOpen();
+    sendCommand(request, responses, 0, true);
+}
 
 void COpenWebNet::scan_device()
 {
+    /* uncomment the line below to enable the time request to the gateway.
+    Note that this is only for debugging, the answer to who = 13 is not yet supported */
+    //requestTime();
     _log.Log(LOG_STATUS, "COpenWebNet: scanning automation/lighting...");
     scan_automation_lighting();
     _log.Log(LOG_STATUS, "COpenWebNet: scanning temperature control...");
