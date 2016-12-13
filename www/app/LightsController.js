@@ -3482,13 +3482,21 @@ define(['app'], function (app) {
 					$("#dialog-addmanuallightdevice #fanparams #combocmd3 option:selected").text();
 				mParams+="&id="+ID;
 			}
-			else if ((lighttype==305) || (lighttype==306)) {
-				//OpenWebNet Blinds/light
-				var ID="OpenWebNet";
-				var unitcode=
-					$("#dialog-addmanuallightdevice #openwebnetparams #combocmd1 option:selected").val()+
-					$("#dialog-addmanuallightdevice #openwebnetparams #combocmd2 option:selected").val();
-				mParams+="&id="+ID+"&unitcode="+unitcode;
+			else if (lighttype==305) {
+				//OpenWebNet Blinds
+				var appID= parseInt($("#dialog-addmanuallightdevice #openwebnetparams #combocmd1 option:selected").val()+
+					$("#dialog-addmanuallightdevice #openwebnetparams #combocmd2 option:selected").val());
+                var ID = ("0002" + ("0000" + appID.toString(16)).slice(-4)); // WHO_AUTOMATION
+				var unitcode= "0";
+				mParams+="&id="+ID.toUpperCase()+"&unitcode="+unitcode;
+			}
+			else if (lighttype==306) {
+				//OpenWebNet light
+				var appID= parseInt($("#dialog-addmanuallightdevice #openwebnetparams #combocmd1 option:selected").val()+
+					$("#dialog-addmanuallightdevice #openwebnetparams #combocmd2 option:selected").val());
+                var ID = ("0001" + ("0000" + appID.toString(16)).slice(-4)); // WHO_LIGHTING
+                var unitcode= "0";
+				mParams+="&id="+ID.toUpperCase()+"&unitcode="+unitcode;
 			}
 			else {
 				//AC

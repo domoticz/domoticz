@@ -98,6 +98,9 @@ public:
   //dimension write
   void CreateWrDimensionMsgOpen(string who, string where, string dimension, vector<string> value);
   void CreateWrDimensionMsgOpen(string who, string where,  string lev, string strInterface,  string dimension, vector<string> value);
+
+  void CreateTimeReqMsgOpen();
+
   //general message
   void CreateMsgOpen(string message);
 
