@@ -23,8 +23,26 @@ public:
 	CNotificationHelper();
 	~CNotificationHelper();
 	void Init();
-	bool SendMessage(const std::string &subsystems, const std::string &Subject, const std::string &Text, const std::string &ExtraData, const bool bFromNotification);
-	bool SendMessageEx(const std::string &subsystems, const std::string &Subject, const std::string &Text, const std::string &ExtraData, int Priority, const std::string &Sound, const bool bFromNotification);
+	bool SendMessage(
+		const uint64_t Idx,
+		const std::string &Name,
+		const std::string &Subsystems,
+		const std::string &Subject,
+		const std::string &Text,
+		const std::string &ExtraData,
+		const int Priority,
+		const std::string &Sound,
+		const bool bFromNotification);
+	bool SendMessageEx(
+		const uint64_t Idx,
+		const std::string &Name,
+		const std::string &Subsystems,
+		const std::string &Subject,
+		const std::string &Text,
+		const std::string &ExtraData,
+		const int Priority,
+		const std::string &Sound,
+		const bool bFromNotification);
 	void LoadConfig();
 	void ConfigFromGetvars(const request& req, const bool save);
 	bool IsInConfig(const std::string &Key);
@@ -42,47 +60,47 @@ public:
 
 	bool CheckAndHandleTempHumidityNotification(
 		const uint64_t Idx,
-		const std::string &devicename,
+		const std::string &DeviceName,
 		const float temp,
 		const int humidity,
 		const bool bHaveTemp,
 		const bool bHaveHumidity);
 	bool CheckAndHandleDewPointNotification(
 		const uint64_t Idx,
-		const std::string &devicename,
+		const std::string &DeviceName,
 		const float temp,
 		const float dewpoint);
 	bool CheckAndHandleNotification(
 		const uint64_t Idx,
-		const std::string &devicename,
+		const std::string &DeviceName,
 		const unsigned char devType,
 		const unsigned char subType,
 		const _eNotificationTypes ntype,
 		const float mvalue);
 	bool CheckAndHandleNotification(
 		const uint64_t Idx,
-		const std::string &devicename,
+		const std::string &DeviceName,
 		const _eNotificationTypes ntype,
 		const std::string &message);
 	bool CheckAndHandleSwitchNotification(
 		const uint64_t Idx,
-		const std::string &devicename,
+		const std::string &DeviceName,
 		const _eNotificationTypes ntype);
 	bool CheckAndHandleSwitchNotification(
 		const uint64_t Idx, 
-		const std::string & devicename, 
+		const std::string & DeviceName, 
 		const _eNotificationTypes ntype, 
 		const int llevel);
 	bool CheckAndHandleRainNotification(
 		const uint64_t Idx,
-		const std::string &devicename,
+		const std::string &DeviceName,
 		const unsigned char devType,
 		const unsigned char subType,
 		const _eNotificationTypes ntype,
 		const float mvalue);
 	bool CheckAndHandleAmpere123Notification(
 		const uint64_t Idx,
-		const std::string &devicename,
+		const std::string &DeviceName,
 		const float Ampere1,
 		const float Ampere2,
 		const float Ampere3

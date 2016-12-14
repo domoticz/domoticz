@@ -2715,7 +2715,7 @@ void CSQLHelper::Do_Work()
 			}
 			else if (itt->_ItemType == TITEM_SEND_SMS)
 			{
-				m_notifications.SendMessage("clickatell", itt->_ID, itt->_ID, "", false);
+				m_notifications.SendMessage(0, std::string(""), "clickatell", itt->_ID, itt->_ID, std::string(""), 1, std::string(""), false);
 			}
             else if (itt->_ItemType == TITEM_SWITCHCMD_EVENT)
             {
@@ -2764,7 +2764,7 @@ void CSQLHelper::Do_Work()
 				std::vector<std::string> splitresults;
 				StringSplit(itt->_command, "!#", splitresults);
 				if (splitresults.size() == 4) {
-					m_notifications.SendMessageEx(NOTIFYALL, splitresults[0], splitresults[1], splitresults[2], static_cast<int>(itt->_idx), splitresults[3], true);
+					m_notifications.SendMessageEx(0, std::string(""), NOTIFYALL, splitresults[0], splitresults[1], splitresults[2], static_cast<int>(itt->_idx), splitresults[3], true);
 				}
 			}
 
@@ -6394,7 +6394,7 @@ void CSQLHelper::CheckBatteryLow()
 				sprintf(szTmp, "Battery Low: %s (Level: Low)", sd[1].c_str());
 			else
 				sprintf(szTmp, "Battery Low: %s (Level: %d %%)", sd[1].c_str(), batlevel);
-			m_notifications.SendMessageEx(NOTIFYALL, szTmp, szTmp, std::string(""), 1, std::string(""), true);
+			m_notifications.SendMessageEx(0, std::string(""), NOTIFYALL, szTmp, szTmp, std::string(""), 1, std::string(""), true);
 			m_batterylowlastsend[ulID] = stoday.tm_mday;
 		}
 	}
@@ -6469,7 +6469,7 @@ void CSQLHelper::CheckDeviceTimeout()
 		{
 			char szTmp[300];
 			sprintf(szTmp,"Sensor Timeout: %s, Last Received: %s",sd[1].c_str(),sd[2].c_str());
-			m_notifications.SendMessageEx(NOTIFYALL, szTmp, szTmp, std::string(""), 1, std::string(""), true);
+			m_notifications.SendMessageEx(0, std::string(""), NOTIFYALL, szTmp, szTmp, std::string(""), 1, std::string(""), true);
 			m_timeoutlastsend[ulID]=stoday.tm_mday;
 		}
 	}

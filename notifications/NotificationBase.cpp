@@ -70,12 +70,26 @@ void CNotificationBase::LoadConfig()
 	}
 }
 
-bool CNotificationBase::SendMessage(const std::string &Subject, const std::string &Text, const std::string &ExtraData, const bool bFromNotification)
+bool CNotificationBase::SendMessage(
+	const uint64_t Idx,
+	const std::string &Name,
+	const std::string &Subject,
+	const std::string &Text,
+	const std::string &ExtraData,
+	const bool bFromNotification)
 {
-	return SendMessageEx(Subject, Text, std::string(""), 0, std::string(""), bFromNotification);
+	return SendMessageEx(Idx, Name, Subject, Text, std::string(""), 0, std::string(""), bFromNotification);
 }
 
-bool CNotificationBase::SendMessageEx(const std::string &Subject, const std::string &Text, const std::string &ExtraData, const int Priority, const std::string &Sound, const bool bFromNotification)
+bool CNotificationBase::SendMessageEx(
+	const uint64_t Idx,
+	const std::string &Name,
+	const std::string &Subject,
+	const std::string &Text,
+	const std::string &ExtraData,
+	const int Priority,
+	const std::string &Sound,
+	const bool bFromNotification)
 {
 	if (!IsConfigured()) {
 		// subsystem not configured, skip
@@ -103,7 +117,7 @@ bool CNotificationBase::SendMessageEx(const std::string &Subject, const std::str
 		fText = CURLEncode::URLEncode(fText);
 	}
 	
-	bool bRet = SendMessageImplementation(fSubject, fText, ExtraData, Priority, Sound, bFromNotification);
+	bool bRet = SendMessageImplementation(Idx, Name, fSubject, fText, ExtraData, Priority, Sound, bFromNotification);
 	if (_subsystemid != "gcm")
 	{
 		if (bRet) {

@@ -335,7 +335,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 				goto mqttinvaliddata;
 			sound = root["sound"].asString();
 		}
-		m_notifications.SendMessageEx(NOTIFYALL, subject, body, "", priority, sound, true);
+		m_notifications.SendMessageEx(0, std::string(""), NOTIFYALL, subject, body, std::string(""), priority, sound, true);
 		std::string varvalue = root["value"].asString();
 		m_sql.SetUserVariable(idx, varvalue, true);
 		return;

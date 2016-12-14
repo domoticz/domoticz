@@ -2528,7 +2528,7 @@ namespace http {
 				)
 				return;
 			//Add to queue
-			if (m_notifications.SendMessage(NOTIFYALL, subject, body, std::string(""), false)) {
+			if (m_notifications.SendMessage(0, std::string(""), NOTIFYALL, subject, body, std::string(""), 1, std::string(""), false)) {
 				root["status"] = "OK";
 			}
 			root["title"] = "SendNotification";
@@ -3747,7 +3747,7 @@ namespace http {
 				std::string subsystem = request::findValue(&req, "subsystem");
 
 				m_notifications.ConfigFromGetvars(req, false);
-				if (m_notifications.SendMessage(subsystem, notification_Title, notification_Message, std::string(""), false)) {
+				if (m_notifications.SendMessage(0, std::string(""), subsystem, notification_Title, notification_Message, std::string(""), 1, std::string(""), false)) {
 					root["status"] = "OK";
 				}
 				/* we need to reload the config, because the values that were set were only for testing */
