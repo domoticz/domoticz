@@ -1961,7 +1961,7 @@ namespace Plugins {
 #else
 		plugin_DirT << szUserDataFolder << "plugins/";
 		std::string plugin_Dir = plugin_DirT.str();
-		if (!mkdir(plugin_Dir.c_str(), ACCESSPERMS))
+		if (!mkdir(plugin_Dir.c_str(), 0755))
 		{
 			_log.Log(LOG_NORM, "BuildManifest: Created directory %s", plugin_Dir.c_str());
 		}
