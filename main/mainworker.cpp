@@ -6117,7 +6117,7 @@ void MainWorker::decode_evohome2(const int HwdID, const _eHardwareTypes HwdType,
 		if(dType==pTypeEvohomeWater && pEvo->EVOHOME2.updatetype==CEvohome::updSetPoint)
 			sprintf(szTmp,"%s",pEvo->EVOHOME2.temperature?"On":"Off");
 		else
-			sprintf(szTmp,"%.1f",pEvo->EVOHOME2.temperature/100.0f);
+			sprintf(szTmp,"%.2f",pEvo->EVOHOME2.temperature/100.0f);
 
 		std::vector<std::string> strarray;
 		StringSplit(szUpdateStat, ";", strarray);
