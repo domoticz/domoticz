@@ -3198,7 +3198,7 @@ define(['app'], function (app) {
 				bIsType5=1;
 				totunits=16;
 			}
-			else if (lighttype==59) {
+			else if (lighttype==65) {
 				//IT (Intertek,FA500,PROmax...)
 				bIsType5=1;
 				totunits=4;
@@ -3387,9 +3387,9 @@ define(['app'], function (app) {
 				}
 				else {
 					$("#dialog-addmanuallightdevice #lighting2params #combocmd1").hide();
-					if ((lighttype==55)||(lighttype==57)||(lighttype==59)||(lighttype==100)) {
+					if ((lighttype==55)||(lighttype==57)||(lighttype==65)||(lighttype==100)) {
 						$("#dialog-addmanuallightdevice #lighting2params #combocmd2").hide();
-						if ((lighttype!=59)&&(lighttype!=100)) {
+						if ((lighttype!=65)&&(lighttype!=100)) {
 							$("#dialog-addmanuallightdevice #lighting2paramsUnitCode").hide();
 						}
 					}
@@ -3506,7 +3506,7 @@ define(['app'], function (app) {
 					(lighttype==50)||
 					(lighttype==55)||
 					(lighttype==57)||
-					(lighttype==59)||
+					(lighttype==65)||
 					(lighttype==100)||
 					(lighttype==102)||
 					(lighttype==105)||
