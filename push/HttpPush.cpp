@@ -273,11 +273,12 @@ namespace http {
 			std::string authbasicpassword = request::findValue(&req, "authbasicpassword");
 			if (
 				(url == "") ||
-				(data == "") ||
 				(method == "") ||
 				(linkactive == "") ||
 				(debugenabled == "")
 				)
+				return;
+			if ((method != "0") && (data.empty())) //PUT/POST should have data
 				return;
 			int ilinkactive = atoi(linkactive.c_str());
 			int idebugenabled = atoi(debugenabled.c_str());
