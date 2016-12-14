@@ -2670,10 +2670,19 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 	}
 	if (pDevice == NULL)
 	{
+		//ignore the following command classes as they are not used in Domoticz at the moment
+		if (
+			(commandclass == COMMAND_CLASS_CLIMATE_CONTROL_SCHEDULE)
+			)
+		{
+			return;
+		}
+
 		//New device, let's add it
 		COpenZWave::NodeInfo *pNode = GetNodeInfo(HomeID, NodeID);
 		if (!pNode)
 			return;
+
 		AddValue(vID, pNode);
 		for (itt = m_devices.begin(); itt != m_devices.end(); ++itt)
 		{
