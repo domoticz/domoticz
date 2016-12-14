@@ -289,7 +289,7 @@ void CHEOS::SendCommand(const std::string &command)
 	// Register for change events
 	if (command == "registerForEvents")
 	{
-		ssMessage << "heos://system/register_for_change_events?enable=on";
+		ssMessage << "heos://system/register_for_change_events?enable=on\r\n";
 		sMessage = ssMessage.str();
 		systemCall = true;
 	}
@@ -297,21 +297,21 @@ void CHEOS::SendCommand(const std::string &command)
 	// Unregister for change events
 	if (command == "unRegisterForEvents")
 	{
-		ssMessage << "heos://system/register_for_change_events?enable=off";
+		ssMessage << "heos://system/register_for_change_events?enable=off\r\n";
 		sMessage = ssMessage.str();
 		systemCall = true;
 	}
 
 	if (command == "heartbeat")
 	{
-		ssMessage << "heos://system/heart_beat";
+		ssMessage << "heos://system/heart_beat\r\n";
 		sMessage = ssMessage.str();
 		systemCall = true;
 	}
 	
 	if (command == "getPlayers")
 	{
-		ssMessage << "heos://player/get_players";
+		ssMessage << "heos://player/get_players\r\n";
 		sMessage = ssMessage.str();
 		systemCall = true;
 	}
@@ -320,7 +320,7 @@ void CHEOS::SendCommand(const std::string &command)
 
 	if (command == "getGroups")
 	{
-		ssMessage << "heos://group/get_groups";
+		ssMessage << "heos://group/get_groups\r\n";
 		sMessage = ssMessage.str();
 		systemCall = true;
 	}
@@ -355,90 +355,90 @@ void CHEOS::SendCommand(const std::string &command, const int iValue)
 
 	if (command == "getPlayerInfo")
 	{
-		ssMessage << "heos://player/get_player_info?pid=" << iValue << "";
+		ssMessage << "heos://player/get_player_info?pid=" << iValue << "\r\n";
 		sMessage = ssMessage.str();
 		systemCall = true;
 	}
 	
 	if (command == "getPlayState")
 	{
-		ssMessage << "heos://player/get_play_state?pid=" << iValue << "";
+		ssMessage << "heos://player/get_play_state?pid=" << iValue << "\r\n";
 		sMessage = ssMessage.str();
 		systemCall = true;
 	}
 	
 	if (command == "setPlayStatePlay" || command == "play")
 	{
-		ssMessage << "heos://player/set_play_state?pid=" << iValue << "&state=play";
+		ssMessage << "heos://player/set_play_state?pid=" << iValue << "&state=play\r\n";
 		sMessage = ssMessage.str();
 	}
 	
 	if (command == "setPlayStatePause" || command == "pause")
 	{
-		ssMessage << "heos://player/set_play_state?pid=" << iValue << "&state=pause";
+		ssMessage << "heos://player/set_play_state?pid=" << iValue << "&state=pause\r\n";
 		sMessage = ssMessage.str();
 	}
 	
 	if (command == "setPlayStateStop" || command == "stop")
 	{
-		ssMessage << "heos://player/set_play_state?pid=" << iValue << "&state=stop";
+		ssMessage << "heos://player/set_play_state?pid=" << iValue << "&state=stop\r\n";
 		sMessage = ssMessage.str();
 	}
 	
 	if (command == "getNowPlaying")
 	{
-		ssMessage << "heos://player/get_now_playing_media?pid=" << iValue << "";
+		ssMessage << "heos://player/get_now_playing_media?pid=" << iValue << "\r\n";
 		sMessage = ssMessage.str();
 		systemCall = true;
 	}
 	
 	if (command == "getVolume")
 	{
-		ssMessage << "heos://player/get_volume?pid=" << iValue << "";
+		ssMessage << "heos://player/get_volume?pid=" << iValue << "\r\n";
 		sMessage = ssMessage.str();
 		systemCall = true;
 	}
 	
 	if (command == "setVolumeUp")
 	{
-		ssMessage << "heos://player/volume_up?pid=" << iValue << "";
+		ssMessage << "heos://player/volume_up?pid=" << iValue << "\r\n";
 		sMessage = ssMessage.str();
 	}
 	
 	if (command == "setVolumeDown")
 	{
-		ssMessage << "heos://player/volume_down?pid=" << iValue << "";
+		ssMessage << "heos://player/volume_down?pid=" << iValue << "\r\n";
 		sMessage = ssMessage.str();
 	}
 	
 	if (command == "getMute")
 	{
-		ssMessage << "heos://player/get_mute?pid=" << iValue << "";
+		ssMessage << "heos://player/get_mute?pid=" << iValue << "\r\n";
 		sMessage = ssMessage.str();
 		systemCall = true;
 	}
 	
 	if (command == "setMuteOn")
 	{
-		ssMessage << "heos://player/set_mute?pid=" << iValue << "&state=on";
+		ssMessage << "heos://player/set_mute?pid=" << iValue << "&state=on\r\n";
 		sMessage = ssMessage.str();
 	}
 
 	if (command == "setMuteOff")
 	{
-		ssMessage << "heos://player/set_mute?pid=" << iValue << "&state=off";
+		ssMessage << "heos://player/set_mute?pid=" << iValue << "&state=off\r\n";
 		sMessage = ssMessage.str();
 	}
 	
 	if (command == "toggleMute")
 	{
-		ssMessage << "heos://player/toggle_mute?pid=" << iValue << "";
+		ssMessage << "heos://player/toggle_mute?pid=" << iValue << "\r\n";
 		sMessage = ssMessage.str();
 	}
 
 	if (command == "getPlayMode")
 	{
-		ssMessage << "heos://player/get_play_mode?pid=" << iValue << "";
+		ssMessage << "heos://player/get_play_mode?pid=" << iValue << "\r\n";
 		sMessage = ssMessage.str();
 		systemCall = true;
 	}
@@ -456,20 +456,20 @@ void CHEOS::SendCommand(const std::string &command, const int iValue)
 	
 	if (command == "getQueue")
 	{
-		ssMessage << "heos://player/get_queue?pid=" << iValue << "";
+		ssMessage << "heos://player/get_queue?pid=" << iValue << "\r\n";
 		sMessage = ssMessage.str();
 		systemCall = true;
 	}
 
 	if (command == "playNext")
 	{
-		ssMessage << "heos://player/play_next?pid=" << iValue << "";
+		ssMessage << "heos://player/play_next?pid=" << iValue << "\r\n";
 		sMessage = ssMessage.str();
 	}
 	
 	if (command == "playPrev")
 	{
-		ssMessage << "heos://player/play_previous?pid=" << iValue << "";
+		ssMessage << "heos://player/play_previous?pid=" << iValue << "\r\n";
 		sMessage = ssMessage.str();
 	}
 	
