@@ -917,7 +917,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new DomoticzInternal(ID);
 		break;
 	case HTYPE_OpenWebNet:
-		pHardware = new COpenWebNet(ID, Address, Port);
+		pHardware = new COpenWebNet(ID, Address, Port, Password);
 		break;
 	case HTYPE_BleBox:
 		pHardware = new BleBox(ID, Mode1);
