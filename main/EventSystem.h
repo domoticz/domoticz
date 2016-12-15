@@ -175,7 +175,7 @@ private:
 	void reportMissingDevice(const int deviceID, const std::string &EventName, const uint64_t eventID);
 	int getSunRiseSunSetMinutes(const std::string &what);
 	bool isEventscheduled(const std::string &eventName);
-	bool iterateLuaTable(lua_State *lua_state, const int tIndex, const std::string &filename);
+	std::pair<bool, bool> iterateLuaTable(lua_State *lua_state, const int tIndex, const std::string &filename);
 	bool processLuaCommand(lua_State *lua_state, const std::string &filename);
 	void report_errors(lua_State *L, int status, std::string filename);
 	unsigned char calculateDimLevel(int deviceID, int percentageLevel);
