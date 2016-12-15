@@ -706,11 +706,18 @@ bool CHEOS::WriteInt(const unsigned char *pData, const unsigned char Len)
 
 bool CHEOS::WriteInt(const std::string &sendStr)
 {
+	std::stringstream ssSend;
+	std::string	sSend;
+
 	if (!mIsConnected)
 	{
 		return false;
 	}
-	write((const unsigned char*)sendStr.c_str(), sendStr.size());
+		
+	ssSend << sendStr << "\r\n";
+	sSend = ssSend.str();
+	
+	write((const unsigned char*)sSend.c_str(), sSend.size());
 	return true;
 }
 
