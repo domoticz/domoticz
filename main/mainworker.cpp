@@ -3078,13 +3078,6 @@ void MainWorker::decode_Wind(const int HwdID, const _eHardwareTypes HwdType, con
 			chill = -(float(((pResponse->WIND.chillh) & 0x7F) * 256 + pResponse->WIND.chilll) / 10.0f);
 		}
 		chill+=AddjValue;
-
-		float wspeedms=float(intSpeed)/10.0f;
-		if ((temp<10.0)&&(wspeedms>=1.4))
-		{
-			float chillJatTI = 13.12f+0.6215f*temp -11.37f*pow(wspeedms*3.6f,0.16f) + 0.3965f*temp*pow(wspeedms*3.6f,0.16f);
-			chill=chillJatTI;
-		}
 	}
 	else if (pResponse->WIND.subtype==sTypeWINDNoTemp)
 	{
@@ -3116,6 +3109,15 @@ void MainWorker::decode_Wind(const int HwdID, const _eHardwareTypes HwdType, con
 			chill = -(float(((pResponse->WIND.chillh) & 0x7F) * 256 + pResponse->WIND.chilll) / 10.0f);
 		}
 		chill+=AddjValue;
+	}
+	if (chill == 0)
+	{
+		float wspeedms = float(intSpeed) / 10.0f;
+		if ((temp < 10.0) && (wspeedms >= 1.4))
+		{
+			float chillJatTI = 13.12f + 0.6215f*temp - 11.37f*pow(wspeedms*3.6f, 0.16f) + 0.3965f*temp*pow(wspeedms*3.6f, 0.16f);
+			chill = chillJatTI;
+		}
 	}
 
 	sprintf(szTmp,"%.2f;%s;%d;%d;%.1f;%.1f",dDirection,strDirection.c_str(),intSpeed,intGust,temp,chill);

@@ -657,12 +657,12 @@ void I2C::TSL2561_ReadSensorDetails()
 	float lux;
 #ifndef __arm__
 	lux = 1984;
-#ifndef _DEBUG
-	_log.Log(LOG_ERROR, "%s: Only supported on ARM architecture!...", szI2CTypeNames[m_dev_type]);
-	return;
-#else
-	_log.Log(LOG_ERROR, "%s: Only supported on ARM architecture!... Debug: just adding a value", szI2CTypeNames[m_dev_type]);
-#endif
+	#ifndef _DEBUG
+		_log.Log(LOG_ERROR, "%s: Only supported on ARM architecture!...", szI2CTypeNames[m_dev_type]);
+		return;
+	#else
+		_log.Log(LOG_ERROR, "%s: Only supported on ARM architecture!... Debug: just adding a value", szI2CTypeNames[m_dev_type]);
+	#endif
 #else
 	uint8_t rValues[2];
 	int fd = i2c_Open(m_ActI2CBus.c_str());
