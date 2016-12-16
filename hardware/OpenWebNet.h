@@ -9,7 +9,7 @@ class bt_openwebnet;
 class COpenWebNet : public CDomoticzHardwareBase
 {
 public:
-	COpenWebNet(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &ownPassword);
+	COpenWebNet(const int ID, const std::string &IPAddress, const unsigned short usIPPort);
 	~COpenWebNet(void);
 
 	enum _eWho {
@@ -59,7 +59,6 @@ protected:
 
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
-    std::string m_ownPassword;
 
 	void Do_Work();
 	void MonitorFrames();
@@ -67,9 +66,7 @@ protected:
 	boost::shared_ptr<boost::thread> m_heartbeatThread;
 	volatile bool m_stoprequested;
     volatile bool firstscan;
-    uint32_t ownCalcPass(string password, string nonce);
-    bool nonceHashAuthentication(csocket *connectionSocket);
-	csocket* connectGwOwn(const char *connectionMode);
+	bool connectGwOwn();
 	void disconnect();
 	int m_heartbeatcntr;
 	csocket* m_pStatusSocket;

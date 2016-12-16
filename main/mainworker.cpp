@@ -840,7 +840,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_RaspberryPCF8574:
 		pHardware = new I2C(ID, I2C::I2CTYPE_PCF8574, Port);
-		break;
+		break; 
 	case HTYPE_Wunderground:
 		pHardware = new CWunderground(ID,Username,Password);
 		break;
@@ -932,7 +932,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new DomoticzInternal(ID);
 		break;
 	case HTYPE_OpenWebNet:
-		pHardware = new COpenWebNet(ID, Address, Port, Password);
+		pHardware = new COpenWebNet(ID, Address, Port);
 		break;
 	case HTYPE_BleBox:
 		pHardware = new BleBox(ID, Mode1);
@@ -6294,7 +6294,7 @@ void MainWorker::decode_evohome3(const int HwdID, const _eHardwareTypes HwdType,
 			return;
 		unsigned char cur_cmnd=atoi(result[0][5].c_str());
 		BatteryLevel = atoi(result[0][7].c_str());
-
+		
 		if (pEvo->EVOHOME3.updatetype == CEvohome::updBattery)
 		{
 			BatteryLevel = pEvo->EVOHOME3.battery_level;
