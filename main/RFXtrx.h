@@ -27,6 +27,9 @@ portions of this file.
 */
 
 /*
+SDK version 9.13
+	BlindsT13 - Screenline added
+
 SDK version 9.12
 	Thermostat4 updated
 
@@ -647,6 +650,7 @@ SDK version 4.9
 #define sTypeBlindsT10 0xA	//Dolat DLM-1
 #define sTypeBlindsT11 0xB	//ASP
 #define sTypeBlindsT12 0xC	//Confexx
+#define sTypeBlindsT13 0xD	//Screenline
 
 #define blinds_sOpen 0x0
 #define blinds_sClose 0x1

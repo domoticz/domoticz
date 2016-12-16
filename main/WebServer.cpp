@@ -2528,7 +2528,7 @@ namespace http {
 				)
 				return;
 			//Add to queue
-			if (m_notifications.SendMessage(NOTIFYALL, subject, body, std::string(""), false)) {
+			if (m_notifications.SendMessage(0, std::string(""), NOTIFYALL, subject, body, std::string(""), 1, std::string(""), false)) {
 				root["status"] = "OK";
 			}
 			root["title"] = "SendNotification";
@@ -3453,6 +3453,7 @@ namespace http {
 						case pTypeChime:
 						case pTypeThermostat2:
 						case pTypeThermostat3:
+						case pTypeThermostat4:
 						case pTypeRemote:
 						case pTypeRadiator1:
 						case pTypeGeneralSwitch:
@@ -3551,6 +3552,7 @@ namespace http {
 							case pTypeChime:
 							case pTypeThermostat2:
 							case pTypeThermostat3:
+							case pTypeThermostat4:
 							case pTypeRemote:
 							case pTypeGeneralSwitch:
 							case pTypeHomeConfort:
@@ -3747,7 +3749,7 @@ namespace http {
 				std::string subsystem = request::findValue(&req, "subsystem");
 
 				m_notifications.ConfigFromGetvars(req, false);
-				if (m_notifications.SendMessage(subsystem, notification_Title, notification_Message, std::string(""), false)) {
+				if (m_notifications.SendMessage(0, std::string(""), subsystem, notification_Title, notification_Message, std::string(""), 1, std::string(""), false)) {
 					root["status"] = "OK";
 				}
 				/* we need to reload the config, because the values that were set were only for testing */
@@ -4474,16 +4476,6 @@ namespace http {
 							)
 							return;
 						int iUnitCode = atoi(sunitcode.c_str());
-						if (
-							(lighttype == 205) ||
-							(lighttype == 210) ||
-							(lighttype == 211)||
-							(lighttype == 212)
-							)
-						{
-							id = id.substr(0, 6);
-							sunitcode = "0";
-						}
 						sprintf(szTmp, "%d", iUnitCode);
 						sunitcode = szTmp;
 						devid = id;
@@ -4732,6 +4724,7 @@ namespace http {
 					(dType == pTypeChime) ||
 					(dType == pTypeThermostat2) ||
 					(dType == pTypeThermostat3) ||
+					(dType == pTypeThermostat4) ||
 					(dType == pTypeRemote) ||
 					(dType == pTypeGeneralSwitch) ||
 					(dType == pTypeHomeConfort) ||
@@ -5682,6 +5675,7 @@ namespace http {
 					(dType != pTypeChime) &&
 					(dType != pTypeThermostat2) &&
 					(dType != pTypeThermostat3) &&
+					(dType != pTypeThermostat4) &&
 					(dType != pTypeRemote) &&
 					(dType != pTypeGeneralSwitch) &&
 					(dType != pTypeHomeConfort) &&
@@ -7700,6 +7694,7 @@ namespace http {
 								(dType != pTypeChime) &&
 								(dType != pTypeThermostat2) &&
 								(dType != pTypeThermostat3) &&
+								(dType != pTypeThermostat4) &&
 								(dType != pTypeRemote) &&
 								(dType != pTypeGeneralSwitch) &&
 								(dType != pTypeHomeConfort) &&
@@ -7965,6 +7960,7 @@ namespace http {
 						(dType == pTypeChime) ||
 						(dType == pTypeThermostat2) ||
 						(dType == pTypeThermostat3) ||
+						(dType == pTypeThermostat4) ||
 						(dType == pTypeRemote)||
 						(dType == pTypeGeneralSwitch) ||
 						(dType == pTypeHomeConfort) ||
@@ -11788,6 +11784,7 @@ namespace http {
 				(dType != pTypeChime) &&
 				(dType != pTypeThermostat2) &&
 				(dType != pTypeThermostat3) &&
+				(dType != pTypeThermostat4) &&
 				(dType != pTypeRemote)&&
 				(dType != pTypeGeneralSwitch) &&
 				(dType != pTypeHomeConfort) &&
@@ -13241,10 +13238,13 @@ namespace http {
 							if (fdirection >= 360)
 								fdirection = 0;
 							int direction = int(fdirection);
-							float speed = static_cast<float>(atof(sd[1].c_str())) * m_sql.m_windscale;
+							float speedOrg = static_cast<float>(atof(sd[1].c_str()));
 							float gustOrg = static_cast<float>(atof(sd[2].c_str()));
+							if ((gustOrg == 0) && (speedOrg != 0))
+								gustOrg = speedOrg;
 							if (gustOrg==0)
 								continue; //no direction if wind is still
+							float speed = speedOrg* m_sql.m_windscale;
 							float gust = gustOrg * m_sql.m_windscale;
 							int bucket = int(fdirection / 22.5f);
 

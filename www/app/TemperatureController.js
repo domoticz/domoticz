@@ -717,11 +717,11 @@ define(['app'], function (app) {
 					};
 
 					ctrl.EditSetPoint = function(fn) {
-						return EditSetPoint(ctrl.item.idx, escape(ctrl.item.Name), escape(ctrl.item.Description), ctrl.item.SetPoint, ctrl.item.Status, ctrl.tUntil, fn);
+						return EditSetPoint(ctrl.item.idx, escape(ctrl.item.Name), escape(ctrl.item.Description), ctrl.item.SetPoint, ctrl.item.Status, ctrl.item.Until, fn);
 					};
 
 					ctrl.EditState = function(fn) {
-						return EditState(ctrl.item.idx, escape(ctrl.item.Name), escape(ctrl.item.Description), ctrl.item.State, ctrl.item.Status, ctrl.tUntil, fn);
+						return EditState(ctrl.item.idx, escape(ctrl.item.Name), escape(ctrl.item.Description), ctrl.item.State, ctrl.item.Status, ctrl.item.Until, fn);
 					};
 
 					ctrl.ShowLog = function() {

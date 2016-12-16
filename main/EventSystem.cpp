@@ -3256,6 +3256,7 @@ void CEventSystem::UpdateDevice(const std::string &DevParams)
 		case pTypeChime:
 		case pTypeThermostat2:
 		case pTypeThermostat3:
+		case pTypeThermostat4:
 		case pTypeRemote:
 		case pTypeGeneralSwitch:
 		case pTypeHomeConfort:

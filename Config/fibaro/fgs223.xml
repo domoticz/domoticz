@@ -264,4 +264,5 @@
             <Group index="5" max_associations="16" label="Dimmer S2"/>
         </Associations>
     </CommandClass>
+    <CommandClass id="142" ForceInstances="true"/>
 </Product>
