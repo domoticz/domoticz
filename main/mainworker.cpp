@@ -132,7 +132,7 @@
 #include <inttypes.h>
 
 #ifdef _DEBUG
-	//#define PARSE_RFXCOM_DEVICE_LOG
+	#define PARSE_RFXCOM_DEVICE_LOG
 	//#define DEBUG_DOWNLOAD
 	//#define DEBUG_RXQUEUE
 #endif
@@ -5770,14 +5770,8 @@ void MainWorker::decode_BLINDS1(const int HwdID, const _eHardwareTypes HwdType, 
 	unsigned char devType=pTypeBlinds;
 	unsigned char subType=pResponse->BLINDS1.subtype;
 
-	if ((subType == sTypeBlindsT6) || (subType == sTypeBlindsT7) || (subType == sTypeBlindsT9) || (subType == sTypeBlindsT10))
-	{
-		sprintf(szTmp, "%02X%02X%02X%02X", pResponse->BLINDS1.id1, pResponse->BLINDS1.id2, pResponse->BLINDS1.id3, pResponse->BLINDS1.id4);
-	}
-	else
-	{
-		sprintf(szTmp, "%02X%02X%02X", pResponse->BLINDS1.id1, pResponse->BLINDS1.id2, pResponse->BLINDS1.id3);
-	}
+	sprintf(szTmp, "%02X%02X%02X%02X", pResponse->BLINDS1.id1, pResponse->BLINDS1.id2, pResponse->BLINDS1.id3, pResponse->BLINDS1.id4);
+
 	std::string ID = szTmp;
 	unsigned char Unit = pResponse->BLINDS1.unitcode;
 	unsigned char cmnd = pResponse->BLINDS1.cmnd;
@@ -5834,6 +5828,9 @@ void MainWorker::decode_BLINDS1(const int HwdID, const _eHardwareTypes HwdType, 
 		case sTypeBlindsT12:
 			WriteMessage("subtype       = Confexx");
 			break;
+		case sTypeBlindsT13:
+			WriteMessage("subtype       = Screenline");
+			break;
 		default:
 			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X:", pResponse->BLINDS1.packettype, pResponse->BLINDS1.subtype);
 			WriteMessage(szTmp);
@@ -5845,7 +5842,7 @@ void MainWorker::decode_BLINDS1(const int HwdID, const _eHardwareTypes HwdType, 
 		sprintf(szTmp,"id1-3         = %02X%02X%02X", pResponse->BLINDS1.id1, pResponse->BLINDS1.id2, pResponse->BLINDS1.id3);
 		WriteMessage(szTmp);
 
-		if (subType==sTypeBlindsT7)
+		if ((subType == sTypeBlindsT6)||(subType==sTypeBlindsT7))
 		{
 			sprintf(szTmp,"id4         = %02X", pResponse->BLINDS1.id4);
 			WriteMessage(szTmp);
@@ -10846,32 +10843,23 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			lcmd.BLINDS1.packettype=dType;
 			lcmd.BLINDS1.subtype=dSubType;
 			lcmd.BLINDS1.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
-
-			if ((dSubType == sTypeBlindsT6) || (dSubType == sTypeBlindsT7) || (dSubType == sTypeBlindsT9) || (dSubType == sTypeBlindsT10))
+			lcmd.BLINDS1.id1 = ID1;
+			lcmd.BLINDS1.id2 = ID2;
+			lcmd.BLINDS1.id3 = ID3;
+			lcmd.BLINDS1.id4 = 0;
+			if ((dSubType == sTypeBlindsT0) || (dSubType == sTypeBlindsT1) || (dSubType == sTypeBlindsT3) || (dSubType == sTypeBlindsT8) || (dSubType == sTypeBlindsT12) || (dSubType == sTypeBlindsT13))
 			{
-				lcmd.BLINDS1.id1 = ID1;
-				lcmd.BLINDS1.id2 = ID2;
-				lcmd.BLINDS1.id3 = ID3;
+				lcmd.BLINDS1.unitcode = Unit;
+			}
+			else if ((dSubType == sTypeBlindsT6) || (dSubType == sTypeBlindsT7) || (dSubType == sTypeBlindsT9))
+			{
+				lcmd.BLINDS1.unitcode = Unit;
 				lcmd.BLINDS1.id4 = ID4;
 			}
 			else
 			{
-				lcmd.BLINDS1.id1 = ID2;
-				lcmd.BLINDS1.id2 = ID3;
-				lcmd.BLINDS1.id3 = ID4;
-				lcmd.BLINDS1.id4 = 0;
-			}
-			switch (dSubType)
-			{
-			case sTypeBlindsT6:
-			case sTypeBlindsT7:
-			case sTypeBlindsT9:
-				lcmd.BLINDS1.unitcode = ((ID4 & 0x0F) << 4) + Unit;
-				break;
-			default:
-				lcmd.BLINDS1.unitcode = Unit;
-				break;
-			}
+				lcmd.BLINDS1.unitcode = 0;
+			}	
 			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.BLINDS1.cmnd, options))
 				return false;
 			level=15;

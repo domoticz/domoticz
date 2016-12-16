@@ -3,6 +3,9 @@ Version 3.xxxx (December xth 2016)
 - Fixed: JSon float/nan value, solved by upgrading JSonCPP
 - Fixed: OZW, when a value is updated and the sensor did not exists before (for example a kWh sensor), it is created (saves a restart)
 - Changed: Wind Direction Graph, if sensor does not supports 'Gust', the 'Speed' value is used
+- Changed: Blinds T5 till T13 new DeviceID generation, could cause new sensors
+- Implemented: Blinds T1 till T13 new supports the Stop button
+- Implemented: Devices, Log icon for Blinds
 - Implemented: Blockly/Lua Set SetPoint option
 - Implemented: Netatmo Home Coach support
 - Implemented: Notification for Dummy Soil/Moisture sensor
