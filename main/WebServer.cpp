@@ -3453,6 +3453,7 @@ namespace http {
 						case pTypeChime:
 						case pTypeThermostat2:
 						case pTypeThermostat3:
+						case pTypeThermostat4:
 						case pTypeRemote:
 						case pTypeRadiator1:
 						case pTypeGeneralSwitch:
@@ -3551,6 +3552,7 @@ namespace http {
 							case pTypeChime:
 							case pTypeThermostat2:
 							case pTypeThermostat3:
+							case pTypeThermostat4:
 							case pTypeRemote:
 							case pTypeGeneralSwitch:
 							case pTypeHomeConfort:
@@ -4722,6 +4724,7 @@ namespace http {
 					(dType == pTypeChime) ||
 					(dType == pTypeThermostat2) ||
 					(dType == pTypeThermostat3) ||
+					(dType == pTypeThermostat4) ||
 					(dType == pTypeRemote) ||
 					(dType == pTypeGeneralSwitch) ||
 					(dType == pTypeHomeConfort) ||
@@ -5672,6 +5675,7 @@ namespace http {
 					(dType != pTypeChime) &&
 					(dType != pTypeThermostat2) &&
 					(dType != pTypeThermostat3) &&
+					(dType != pTypeThermostat4) &&
 					(dType != pTypeRemote) &&
 					(dType != pTypeGeneralSwitch) &&
 					(dType != pTypeHomeConfort) &&
@@ -7690,6 +7694,7 @@ namespace http {
 								(dType != pTypeChime) &&
 								(dType != pTypeThermostat2) &&
 								(dType != pTypeThermostat3) &&
+								(dType != pTypeThermostat4) &&
 								(dType != pTypeRemote) &&
 								(dType != pTypeGeneralSwitch) &&
 								(dType != pTypeHomeConfort) &&
@@ -7955,6 +7960,7 @@ namespace http {
 						(dType == pTypeChime) ||
 						(dType == pTypeThermostat2) ||
 						(dType == pTypeThermostat3) ||
+						(dType == pTypeThermostat4) ||
 						(dType == pTypeRemote)||
 						(dType == pTypeGeneralSwitch) ||
 						(dType == pTypeHomeConfort) ||
@@ -11778,6 +11784,7 @@ namespace http {
 				(dType != pTypeChime) &&
 				(dType != pTypeThermostat2) &&
 				(dType != pTypeThermostat3) &&
+				(dType != pTypeThermostat4) &&
 				(dType != pTypeRemote)&&
 				(dType != pTypeGeneralSwitch) &&
 				(dType != pTypeHomeConfort) &&

@@ -132,7 +132,7 @@
 #include <inttypes.h>
 
 #ifdef _DEBUG
-	#define PARSE_RFXCOM_DEVICE_LOG
+	//#define PARSE_RFXCOM_DEVICE_LOG
 	//#define DEBUG_DOWNLOAD
 	//#define DEBUG_RXQUEUE
 #endif
@@ -1752,6 +1752,12 @@ uint64_t MainWorker::PerformRealActionFromDomoticzClient(const unsigned char *pR
 		ID = szTmp;
 		Unit=0;
 	}
+	else if (devType == pTypeThermostat4)
+	{
+		sprintf(szTmp, "%02X%02X%02X", pResponse->THERMOSTAT4.unitcode1, pResponse->THERMOSTAT4.unitcode2, pResponse->THERMOSTAT4.unitcode3);
+		ID = szTmp;
+		Unit = 0;
+	}
 	else if (devType == pTypeGeneralSwitch)
 	{
 		const _tGeneralSwitch *pSwitch = reinterpret_cast<const _tGeneralSwitch*>(pResponse);
@@ -2062,6 +2068,7 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const 
 			case pTypeThermostat:
 			case pTypeThermostat2:
 			case pTypeThermostat3:
+			case pTypeThermostat4:
 			case pTypeRadiator1:
 			case pTypeGeneralSwitch:
 			case pTypeHomeConfort:
@@ -2168,6 +2175,9 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const 
 			break;
 		case pTypeThermostat3:
 			decode_Thermostat3(HwdID, HwdType, reinterpret_cast<const tRBUF *>(pRXCommand), procResult);
+			break;
+		case pTypeThermostat4:
+			decode_Thermostat4(HwdID, HwdType, reinterpret_cast<const tRBUF *>(pRXCommand), procResult);
 			break;
 		case pTypeRadiator1:
 			decode_Radiator1(HwdID, HwdType, reinterpret_cast<const tRBUF *>(pRXCommand), procResult);
@@ -7980,6 +7990,108 @@ void MainWorker::decode_Thermostat3(const int HwdID, const _eHardwareTypes HwdTy
 	procResult.DeviceRowIdx = DevRowIdx;
 }
 
+void MainWorker::decode_Thermostat4(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
+{
+	char szTmp[100];
+	unsigned char devType = pTypeThermostat4;
+	unsigned char subType = pResponse->THERMOSTAT4.subtype;
+	std::string ID;
+	sprintf(szTmp, "%02X%02X%02X", pResponse->THERMOSTAT4.unitcode1, pResponse->THERMOSTAT4.unitcode2, pResponse->THERMOSTAT4.unitcode3);
+	ID = szTmp;
+	unsigned char Unit = 0;
+	unsigned char SignalLevel = pResponse->THERMOSTAT4.rssi;
+	unsigned char BatteryLevel = 255;
+	sprintf(szTmp, "%d;%d;%d;%d;%d;%d",
+		pResponse->THERMOSTAT4.beep,
+		pResponse->THERMOSTAT4.fan1_speed,
+		pResponse->THERMOSTAT4.fan2_speed,
+		pResponse->THERMOSTAT4.fan3_speed,
+		pResponse->THERMOSTAT4.flame_power,
+		pResponse->THERMOSTAT4.mode
+	);
+
+	uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, szTmp, procResult.DeviceName);
+	if (DevRowIdx == -1)
+		return;
+
+	if (m_verboselevel >= EVBL_ALL)
+	{
+		WriteMessageStart();
+		switch (pResponse->THERMOSTAT4.subtype)
+		{
+		case sTypeMCZ1:
+			WriteMessage("subtype       = MCZ pellet stove 1 fan model");
+			break;
+		case sTypeMCZ2:
+			WriteMessage("subtype       = MCZ pellet stove 2 fan model");
+			break;
+		case sTypeMCZ3:
+			WriteMessage("subtype       = MCZ pellet stove 3 fan model");
+			break;
+		default:
+			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->THERMOSTAT4.packettype, pResponse->THERMOSTAT4.subtype);
+			WriteMessage(szTmp);
+			break;
+		}
+
+		sprintf(szTmp, "Sequence nbr  = %d", pResponse->THERMOSTAT4.seqnbr);
+		WriteMessage(szTmp);
+
+		sprintf(szTmp, "ID            = 0x%02X%02X%02X", pResponse->THERMOSTAT4.unitcode1, pResponse->THERMOSTAT4.unitcode2, pResponse->THERMOSTAT4.unitcode3);
+		WriteMessage(szTmp);
+
+		if (pResponse->THERMOSTAT4.beep)
+			WriteMessage("Beep          = Yes");
+		else
+			WriteMessage("Beep          = No");
+
+		if (pResponse->THERMOSTAT4.fan1_speed == 6)
+			strcpy(szTmp, "Fan 1 Speed   = Auto");
+		else
+			sprintf(szTmp, "Fan 1 Speed   = %d", pResponse->THERMOSTAT4.fan1_speed);
+		WriteMessage(szTmp);
+
+		if (pResponse->THERMOSTAT4.fan2_speed == 6)
+			strcpy(szTmp, "Fan 2 Speed   = Auto");
+		else
+			sprintf(szTmp, "Fan 2 Speed   = %d", pResponse->THERMOSTAT4.fan2_speed);
+		WriteMessage(szTmp);
+
+		if (pResponse->THERMOSTAT4.fan3_speed == 6)
+			strcpy(szTmp, "Fan 3 Speed   = Auto");
+		else
+			sprintf(szTmp, "Fan 3 Speed   = %d", pResponse->THERMOSTAT4.fan3_speed);
+		WriteMessage(szTmp);
+
+		sprintf(szTmp, "Flame power   = %d", pResponse->THERMOSTAT4.flame_power);
+		WriteMessage(szTmp);
+
+		switch (pResponse->THERMOSTAT4.mode)
+		{
+		case thermostat4_sOff:
+			WriteMessage("Command       = Off");
+			break;
+		case thermostat4_sManual:
+			WriteMessage("Command       = Manual");
+			break;
+		case thermostat4_sAuto:
+			WriteMessage("Command       = Auto");
+			break;
+		case thermostat4_sEco:
+			WriteMessage("Command       = Eco");
+			break;
+		default:
+			WriteMessage("Command       = unknown");
+			break;
+		}
+
+		sprintf(szTmp, "Signal level  = %d", pResponse->THERMOSTAT3.rssi);
+		WriteMessage(szTmp);
+		WriteMessageEnd();
+	}
+	procResult.DeviceRowIdx = DevRowIdx;
+}
+
 void MainWorker::decode_Radiator1(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
 {
 	char szTmp[100];
@@ -10973,6 +11085,33 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 				//send to internal for now (later we use the ACK)
 				PushAndWaitRxMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd, NULL, -1);
 			}
+			return true;
+		}
+		break;
+	case pTypeThermostat4:
+		{
+			_log.Log(LOG_ERROR, "Thermostat 4 not implemented yet!");
+/*
+			tRBUF lcmd;
+			lcmd.THERMOSTAT4.packetlength = sizeof(lcmd.THERMOSTAT3) - 1;
+			lcmd.THERMOSTAT4.packettype = dType;
+			lcmd.THERMOSTAT4.subtype = dSubType;
+			lcmd.THERMOSTAT4.unitcode1 = ID2;
+			lcmd.THERMOSTAT4.unitcode2 = ID3;
+			lcmd.THERMOSTAT4.unitcode3 = ID4;
+			lcmd.THERMOSTAT4.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
+			if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.THERMOSTAT4.mode, options))
+				return false;
+			level = 15;
+			lcmd.THERMOSTAT4.filler = 0;
+			lcmd.THERMOSTAT4.rssi = 12;
+			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.THERMOSTAT4)))
+				return false;
+			if (!IsTesting) {
+				//send to internal for now (later we use the ACK)
+				PushAndWaitRxMessage(m_hardwaredevices[hindex], (const unsigned char *)&lcmd, NULL, -1);
+			}
+*/
 			return true;
 		}
 		break;

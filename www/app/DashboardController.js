@@ -271,7 +271,6 @@ define(['app'], function (app) {
                                                 (item.SubType.indexOf('Sunpery') == 0) ||
                                                 (item.SubType.indexOf('Dolat') == 0) ||
                                                 (item.SubType.indexOf('ASP') == 0) ||
-                                                (item.SubType.indexOf('Screenline') == 0) ||
                                                 (item.SubType == "Harrison") ||
                                                 (item.SubType.indexOf('RFY') == 0) ||
                                                 (item.SubType.indexOf('ASA') == 0) ||
@@ -316,7 +315,6 @@ define(['app'], function (app) {
                                                 (item.SubType.indexOf('Sunpery') == 0) ||
                                                 (item.SubType.indexOf('Dolat') == 0) ||
                                                 (item.SubType.indexOf('ASP') == 0) ||
-                                                (item.SubType.indexOf('Screenline') == 0) ||
                                                 (item.SubType == "Harrison") ||
                                                 (item.SubType.indexOf('RFY') == 0) ||
                                                 (item.SubType.indexOf('ASA') == 0) ||
@@ -594,7 +592,6 @@ define(['app'], function (app) {
                                                 (item.SubType.indexOf('Sunpery') == 0) ||
                                                 (item.SubType.indexOf('Dolat') == 0) ||
                                                 (item.SubType.indexOf('ASP') == 0) ||
-                                                (item.SubType.indexOf('Screenline') == 0) ||
                                                 (item.SubType == "Harrison") ||
                                                 (item.SubType.indexOf('RFY') == 0) ||
                                                 (item.SubType.indexOf('ASA') == 0) ||
@@ -633,7 +630,6 @@ define(['app'], function (app) {
                                                 (item.SubType.indexOf('Sunpery') == 0) ||
                                                 (item.SubType.indexOf('Dolat') == 0) ||
                                                 (item.SubType.indexOf('ASP') == 0) ||
-                                                (item.SubType.indexOf('Screenline') == 0) ||
                                                 (item.SubType == "Harrison") ||
                                                 (item.SubType.indexOf('RFY') == 0) ||
                                                 (item.SubType.indexOf('ASA') == 0) ||
@@ -1951,7 +1947,6 @@ define(['app'], function (app) {
                                             (item.SubType.indexOf('Sunpery') == 0) ||
                                             (item.SubType.indexOf('Dolat') == 0) ||
                                             (item.SubType.indexOf('ASP') == 0) ||
-                                            (item.SubType.indexOf('Screenline') == 0) ||
                                             (item.SubType == "Harrison") ||
                                             (item.SubType.indexOf('RFY') == 0) ||
                                             (item.SubType.indexOf('ASA') == 0) ||
@@ -1996,7 +1991,6 @@ define(['app'], function (app) {
                                             (item.SubType.indexOf('Sunpery') == 0) ||
                                             (item.SubType.indexOf('Dolat') == 0) ||
                                             (item.SubType.indexOf('ASP') == 0) ||
-                                            (item.SubType.indexOf('Screenline') == 0) ||
                                             (item.SubType == "Harrison") ||
                                             (item.SubType.indexOf('RFY') == 0) ||
                                             (item.SubType.indexOf('ASA') == 0) ||
@@ -2243,7 +2237,6 @@ define(['app'], function (app) {
                                             (item.SubType.indexOf('Sunpery') == 0) ||
                                             (item.SubType.indexOf('Dolat') == 0) ||
                                             (item.SubType.indexOf('ASP') == 0) ||
-                                            (item.SubType.indexOf('Screenline') == 0) ||
                                             (item.SubType == "Harrison") ||
                                             (item.SubType.indexOf('RFY') == 0) ||
                                             (item.SubType.indexOf('ASA') == 0) ||
@@ -2342,7 +2335,6 @@ define(['app'], function (app) {
                                             (item.SubType.indexOf('Sunpery') == 0) ||
                                             (item.SubType.indexOf('Dolat') == 0) ||
                                             (item.SubType.indexOf('ASP') == 0) ||
-                                            (item.SubType.indexOf('Screenline') == 0) ||
                                             (item.SubType == "Harrison") ||
                                             (item.SubType.indexOf('RFY') == 0) ||
                                             (item.SubType.indexOf('ASA') == 0) ||
@@ -2383,7 +2375,6 @@ define(['app'], function (app) {
                                             (item.SubType.indexOf('Sunpery') == 0) ||
                                             (item.SubType.indexOf('Dolat') == 0) ||
                                             (item.SubType.indexOf('ASP') == 0) ||
-                                            (item.SubType.indexOf('Screenline') == 0) ||
                                             (item.SubType == "Harrison") ||
                                             (item.SubType.indexOf('RFY') == 0) ||
                                             (item.SubType.indexOf('ASA') == 0) ||
