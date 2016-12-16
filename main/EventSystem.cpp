@@ -2389,6 +2389,54 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 }
 #endif // ENABLE_PYTHON
 
+void CEventSystem::exportDeviceStatesToLua(lua_State *lua_state)
+{
+	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock2(m_devicestatesMutex);
+	lua_createtable(lua_state, (int)m_devicestates.size(), 0);
+	typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
+	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
+	{
+		_tDeviceStatus sitem = iterator->second;
+		lua_pushstring(lua_state, sitem.deviceName.c_str());
+		lua_pushstring(lua_state, sitem.nValueWording.c_str());
+		lua_rawset(lua_state, -3);
+	}
+	lua_setglobal(lua_state, "otherdevices");
+
+	lua_createtable(lua_state, (int)m_devicestates.size(), 0);
+	typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
+	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
+	{
+		_tDeviceStatus sitem = iterator->second;
+		lua_pushstring(lua_state, sitem.deviceName.c_str());
+		lua_pushstring(lua_state, sitem.lastUpdate.c_str());
+		lua_rawset(lua_state, -3);
+	}
+	lua_setglobal(lua_state, "otherdevices_lastupdate");
+
+	lua_createtable(lua_state, (int)m_devicestates.size(), 0);
+	typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
+	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
+	{
+		_tDeviceStatus sitem = iterator->second;
+		lua_pushstring(lua_state, sitem.deviceName.c_str());
+		lua_pushstring(lua_state, sitem.sValue.c_str());
+		lua_rawset(lua_state, -3);
+	}
+	lua_setglobal(lua_state, "otherdevices_svalues");
+	lua_createtable(lua_state, (int)m_devicestates.size(), 0);
+	typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
+	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
+	{
+		_tDeviceStatus sitem = iterator->second;
+		lua_pushstring(lua_state, sitem.deviceName.c_str());
+		lua_pushnumber(lua_state, (lua_Number)sitem.ID);
+		lua_rawset(lua_state, -3);
+	}
+	lua_setglobal(lua_state, "otherdevices_idx");
+	devicestatesMutexLock2.unlock();
+}
+
 void CEventSystem::EvaluateLua(const std::string &reason, const std::string &filename, const std::string &LuaString, const uint64_t varId)
 {
 	EvaluateLua(reason, filename, LuaString, 0, "", 0, "", "", varId);
@@ -2771,50 +2819,8 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 		}
 	}
 
-	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock2(m_devicestatesMutex);
-	lua_createtable(lua_state, (int)m_devicestates.size(), 0);
-	typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
-	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
-	{
-		_tDeviceStatus sitem = iterator->second;
-		lua_pushstring(lua_state, sitem.deviceName.c_str());
-		lua_pushstring(lua_state, sitem.nValueWording.c_str());
-		lua_rawset(lua_state, -3);
-	}
-	lua_setglobal(lua_state, "otherdevices");
-
-	lua_createtable(lua_state, (int)m_devicestates.size(), 0);
-	typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
-	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
-	{
-		_tDeviceStatus sitem = iterator->second;
-		lua_pushstring(lua_state, sitem.deviceName.c_str());
-		lua_pushstring(lua_state, sitem.lastUpdate.c_str());
-		lua_rawset(lua_state, -3);
-	}
-	lua_setglobal(lua_state, "otherdevices_lastupdate");
-
-	lua_createtable(lua_state, (int)m_devicestates.size(), 0);
-	typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
-	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
-	{
-		_tDeviceStatus sitem = iterator->second;
-		lua_pushstring(lua_state, sitem.deviceName.c_str());
-		lua_pushstring(lua_state, sitem.sValue.c_str());
-		lua_rawset(lua_state, -3);
-	}
-	lua_setglobal(lua_state, "otherdevices_svalues");
-	lua_createtable(lua_state, (int)m_devicestates.size(), 0);
-	typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
-	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
-	{
-		_tDeviceStatus sitem = iterator->second;
-		lua_pushstring(lua_state, sitem.deviceName.c_str());
-		lua_pushnumber(lua_state, (lua_Number)sitem.ID);
-		lua_rawset(lua_state, -3);
-	}
-	lua_setglobal(lua_state, "otherdevices_idx");
-	devicestatesMutexLock2.unlock();
+	exportDeviceStatesToLua(lua_state);
+	
 	lua_createtable(lua_state, (int)m_uservariables.size(), 0);
 
 	typedef std::map<uint64_t, _tUserVariable>::iterator it_var;
