@@ -14,6 +14,9 @@
 #include "../push/GooglePubSubPush.h"
 #include "concurrent_queue.h"
 #include "../webserver/server_settings.hpp"
+#ifdef USE_PYTHON_PLUGINS
+#	include "../hardware/plugins/PluginManager.h"
+#endif
 
 enum eVerboseLevel
 {
@@ -60,13 +63,13 @@ public:
 	void PushAndWaitRxMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand, const char *defaultName, const int BatteryLevel);
 
 	bool SwitchLight(const std::string &idx, const std::string &switchcmd,const std::string &level, const std::string &hue, const std::string &ooc, const int ExtraDelay);
-	bool SwitchLight(const unsigned long long idx, const std::string &switchcmd, const int level, const int hue, const bool ooc, const int ExtraDelay);
+	bool SwitchLight(const uint64_t idx, const std::string &switchcmd, const int level, const int hue, const bool ooc, const int ExtraDelay);
 	bool SwitchLightInt(const std::vector<std::string> &sd, std::string switchcmd, int level, int hue, const bool IsTesting);
 
 	bool SwitchScene(const std::string &idx, const std::string &switchcmd);
-	bool SwitchScene(const unsigned long long idx, const std::string &switchcmd);
-	void CheckSceneCode(const unsigned long long DevRowIdx, const unsigned char dType, const unsigned char dSubType, const int nValue, const char* sValue);
-	bool DoesDeviceActiveAScene(const unsigned long long DevRowIdx, const int Cmnd);
+	bool SwitchScene(const uint64_t idx, const std::string &switchcmd);
+	void CheckSceneCode(const uint64_t DevRowIdx, const unsigned char dType, const unsigned char dSubType, const int nValue, const char* sValue);
+	bool DoesDeviceActiveAScene(const uint64_t DevRowIdx, const int Cmnd);
 
 	bool SetSetPoint(const std::string &idx, const float TempValue);
 	bool SetSetPoint(const std::string &idx, const float TempValue, const int newMode, const std::string &until);
@@ -110,14 +113,17 @@ public:
 
 	void UpdateDomoticzSecurityStatus(const int iSecStatus);
 	void SetInternalSecStatus();
-	bool GetSensorData(const unsigned long long idx, int &nValue, std::string &sValue);
+	bool GetSensorData(const uint64_t idx, int &nValue, std::string &sValue);
 
 	bool UpdateDevice(const int HardwareID, const std::string &DeviceID, const int unit, const int devType, const int subType, const int nValue, const std::string &sValue, const int signallevel, const int batterylevel, const bool parseTrigger = true);
 
-	boost::signals2::signal<void(const int m_HwdID, const unsigned long long DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)> sOnDeviceReceived;
+	boost::signals2::signal<void(const int m_HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)> sOnDeviceReceived;
 
 	CScheduler m_scheduler;
 	CEventSystem m_eventsystem;
+#ifdef USE_PYTHON_PLUGINS
+	Plugins::CPluginSystem m_pluginsystem;
+#endif
 	CDataPush m_datapush;
 	CCameraHandler m_cameras;
 	CHttpPush m_httppush;
@@ -145,7 +151,7 @@ public:
 
 private:
 	void HandleAutomaticBackups();
-	unsigned long long PerformRealActionFromDomoticzClient(const unsigned char *pRXCommand, CDomoticzHardwareBase **pOriginalHardware);
+	uint64_t PerformRealActionFromDomoticzClient(const unsigned char *pRXCommand, CDomoticzHardwareBase **pOriginalHardware);
 	void HandleLogNotifications();
 	std::map<std::string, time_t > m_componentheartbeats;
 	boost::mutex m_heartbeatmutex;
@@ -227,7 +233,7 @@ private:
 
 	struct _tRxMessageProcessingResult {
 		std::string DeviceName;
-		unsigned long long DeviceRowIdx;
+		uint64_t DeviceRowIdx;
 		bool bProcessBatteryValue;
 	};
 

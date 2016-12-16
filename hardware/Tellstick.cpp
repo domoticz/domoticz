@@ -77,6 +77,8 @@ void CTellstick::sensorEvent(int deviceId, const char *protocol, const char *mod
         SendHumiditySensor(deviceId, 255, atof(value), "Humid");
         break;
     case TELLSTICK_RAINRATE:
+        SendRainSensor(deviceId, 255, atof(value), "Rain");
+        break;
     case TELLSTICK_RAINTOTAL:
     case TELLSTICK_WINDDIRECTION:
     case TELLSTICK_WINDAVERAGE:
@@ -120,6 +122,40 @@ void CTellstick::deviceEvent(int deviceId, int method, const char *data)
 void CTellstick::rawDeviceEvent(int controllerId, const char *data)
 {
     _log.Log(LOG_NORM, "Tellstick: rawDeviceEvent %d: %s", controllerId, data);
+	
+    if (!data)
+        return;
+
+    std::string deviceId;
+    std::string winddirection;
+    std::string windaverage;
+    std::string windgust;
+
+    size_t prevPos;
+    std::string message = data;
+    size_t pos = message.find(";");
+
+    while(pos != std::string::npos) {
+        std::string param = message.substr(prevPos, pos-prevPos);
+        prevPos = pos+1;
+        size_t delim = param.find(":");
+        if (delim == std::string::npos) {
+            break;
+        }
+        if (param.substr(0, delim).compare("id") == 0) {
+            deviceId = param.substr(delim+1, param.length()-delim);
+        } else if (param.substr(0, delim).compare("winddirection") == 0) {
+            winddirection = param.substr(delim+1, param.length()-delim);
+        } else if (param.substr(0, delim).compare("windaverage") == 0) {
+            windaverage = param.substr(delim+1, param.length()-delim);
+        } else if (param.substr(0, delim).compare("windgust") == 0) {
+            windgust = param.substr(delim+1, param.length()-delim);
+        }
+        pos = message.find(";", pos+1);	
+    }
+    if (!deviceId.empty() && !winddirection.empty() && ! windaverage.empty() && ! windgust.empty()) {
+        SendWind(atoi(deviceId.c_str()), 255, atoi(winddirection.c_str()), atof(windaverage.c_str()), atof(windgust.c_str()), 0, 0, false, "Wind");
+    }
 }
 
 void CTellstick::deviceEventCallback(int deviceId, int method, const char *data, int callbackId, void *context)
@@ -275,10 +311,10 @@ namespace http {
         void CWebServer::Cmd_TellstickApplySettings(WebEmSession &session, const request &req, Json::Value &root)
         {
             if (session.rights != 2)
-            {
-                //No admin user, and not allowed to be here
-                return;
-            }
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 
             string hwIdStr = request::findValue(&req, "idx");
             string repeatsStr = request::findValue(&req, "repeats");

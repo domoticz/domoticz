@@ -387,7 +387,7 @@ void COpenWebNet::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
             {
                 devname = OPENWEBNET_TEMPERATURE;
                 devname += " " + where;
-                UpdateTemp(WHO_TEMPERATURE_CONTROL, atoi(where.c_str()), atof(value.c_str()) / 10., 100, devname.c_str());
+                UpdateTemp(WHO_TEMPERATURE_CONTROL, atoi(where.c_str()), static_cast<float>(atof(value.c_str()) / 10.), 100, devname.c_str());
             }
 
             else

@@ -1804,7 +1804,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * The Status of the Node Removal is communicated via Notifications. Specifically, you should
 		 * monitor ControllerCommand Notifications.
 		 *
-		 * Results of the AddNode Command will be send as a Notification with the Notification type as
+		 * Results of the RemoveNode Command will be send as a Notification with the Notification type as
 		 * Notification::Type_ControllerCommand
 		 *
 		 * \param _homeId The HomeID of the Z-Wave network where you want to remove the device
@@ -1821,7 +1821,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * The Status of the Node Removal is communicated via Notifications. Specifically, you should
 		 * monitor ControllerCommand Notifications.
 		 *
-		 * Results of the AddNode Command will be send as a Notification with the Notification type as
+		 * Results of the RemoveFailedNode Command will be send as a Notification with the Notification type as
 		 * Notification::Type_ControllerCommand
 		 *
 		 * \param _homeId The HomeID of the Z-Wave network where you want to remove the device
@@ -1837,7 +1837,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * our list of Failed Nodes, which might be different.
 		 * The Results will be communicated via Notifications. Specifically, you should monitor the ControllerCommand notifications
 		 *
-		 * Results of the AddNode Command will be send as a Notification with the Notification type as
+		 * Results of the HasNodeFailed Command will be send as a Notification with the Notification type as
 		 * Notification::Type_ControllerCommand
 		 *
 		 * \param _homeId The HomeID of the Z-Wave network where you want to test the device
@@ -1851,7 +1851,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \brief Ask a Node to update its Neighbor Tables
 		 * This command will ask a Node to update its Neighbor Tables.
 		 *
-		 * Results of the AddNode Command will be send as a Notification with the Notification type as
+		 * Results of the RequestNodeNeighborUpdate Command will be send as a Notification with the Notification type as
 		 * Notification::Type_ControllerCommand
 		 *
 		 * \param _homeId The HomeID of the Z-Wave network where you want to update the device
@@ -1865,7 +1865,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \brief Ask a Node to update its update its Return Route to the Controller
 		 * This command will ask a Node to update its Return Route to the Controller
 		 *
-		 * Results of the AddNode Command will be send as a Notification with the Notification type as
+		 * Results of the AssignReturnRoute Command will be send as a Notification with the Notification type as
 		 * Notification::Type_ControllerCommand
 		 *
 		 * \param _homeId The HomeID of the Z-Wave network where you want to update the device
@@ -1879,7 +1879,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \brief Ask a Node to delete all Return Route.
 		 * This command will ask a Node to delete all its return routes, and will rediscover when needed.
 		 *
-		 * Results of the AddNode Command will be send as a Notification with the Notification type as
+		 * Results of the DeleteAllReturnRoutes Command will be send as a Notification with the Notification type as
 		 * Notification::Type_ControllerCommand
 		 *
 		 * \param _homeId The HomeID of the Z-Wave network where you want to update the device
@@ -1892,9 +1892,6 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		/**
 		 * \brief Send a NIF frame from the Controller to a Node.
 		 * This command send a NIF frame from the Controller to a Node
-		 *
-		 * Results of the AddNode Command will be send as a Notification with the Notification type as
-		 * Notification::Type_ControllerCommand
 		 *
 		 * \param _homeId The HomeID of the Z-Wave network
 		 * \param _nodeId The NodeID of the Node to recieve the NIF

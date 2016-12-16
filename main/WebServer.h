@@ -87,9 +87,11 @@ public:
 		const std::string &planID,
 		const std::string &floorID,
 		const bool bDisplayHidden,
+		const bool bDisplayDisabled,
 		const bool bFetchFavorites,
 		const time_t LastUpdate,
-		const std::string &username);
+		const std::string &username,
+		const std::string &hardwareid = ""); // OTO
 
 	// SessionStore interface
 	const WebEmStoredSession GetSession(const std::string & sessionId);
@@ -255,6 +257,8 @@ private:
 	void Cmd_BleBoxUpdateNode(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_BleBoxRemoveNode(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_BleBoxClearNodes(WebEmSession & session, const request& req, Json::Value &root);
+
+	void PluginList(Json::Value &root);
 
 	//RTypes
 	void RType_HandleGraph(WebEmSession & session, const request& req, Json::Value &root);

@@ -195,7 +195,7 @@ define(['app'], function (app) {
 		  oTable.fnClearTable();
 		  
 		  $.ajax({
-			 url: "json.htm?type=devices&displayhidden=1&filter=all&used=" + ifilter, 
+			 url: "json.htm?type=devices&displayhidden=1&displaydisabled=1&filter=all&used=" + ifilter, 
 			 async: false, 
 			 dataType: 'json',
 			 success: function(data) {
@@ -417,6 +417,9 @@ define(['app'], function (app) {
 				});
 				mTable.fnDraw();
 			  }
+			 },
+			 error: function(xhr, ajaxOptions, thrownError) {
+				alert("Problem retrieving devices!");
 			 }
 		  });
 		}

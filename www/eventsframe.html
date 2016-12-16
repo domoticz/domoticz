@@ -300,11 +300,10 @@
       		var compareString = parseSecurityStatus(ifBlock);
       		boolString += compareString;
       	}      	
-
       	var setArray = [];
       	var doBlock = $($(xml).find("statement[name='DO"+pairId+"']")[0]);
  	      $(doBlock).find('block').each (function(){ 
-	      	if ($(this).attr('type') == 'logic_set') {
+			if ($(this).attr('type') == 'logic_set') {
 		   		var valueA = $(this).find("value[name='A']")[0];
 	        	var fieldA = $(valueA).find("field")[0];
 	        	var blockA = $(valueA).children("block:first");
@@ -331,6 +330,10 @@
 					else if ((blockB.attr("type")=="logic_setlevel") && ($(fieldB).attr("name") == "NUM")) {
 						setString += '="Set Level '+$(fieldB).text()+'"'; 
 						setArray.push(setString);
+					}
+					else {
+						//not handled
+						//alert('A Type: ' + blockA.attr("type") + ', B Type: ' + blockB.attr("type") + ', FieldB: ' + $(fieldB).attr("name"));
 					}
 					//else if ((blockB.attr("type")=="math_number") && ($(fieldB).attr("name") == "NUM")) {
 					//	setString += '="'+$(fieldB).text()+'"'; 
@@ -521,6 +524,13 @@
 			   	var fieldC = $(this).find("field[name='NUM']")[0];
 	        	var setString = "commandArray[SendCamera:"+$(fieldA).text()+"]";
 	        	setString += '="'+ $(fieldB).text()+'" AFTER ' + $(fieldC).text().replace(/\,/g, ' '); 
+	        	setArray.push(setString);
+		    }		    
+		    else if ($(this).attr('type') == 'setpointvariables') {
+			   	var fieldA = $(this).find("field[name='SetPoint']")[0];
+			   	var fieldB = $(this).find("field[name='NUM']")[0];
+	        	var setString = "commandArray[SetSetpoint:"+$(fieldA).text()+"]";
+	        	setString += '="'+$(fieldB).text()+'"'; 
 	        	setArray.push(setString);
 		    }		    
 		  });
@@ -1025,6 +1035,9 @@
 		   	</category>
 		   	<category name="Cameras">
 			   	<block type="cameravariables"></block>
+		   	</category>
+		   	<category name="SetPoints">
+			   	<block type="setpointvariables"></block>
 		   	</category>
 		</category>
     </xml>

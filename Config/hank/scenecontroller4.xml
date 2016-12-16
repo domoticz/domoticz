@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+
+    <!-- Configuration -->
+    <CommandClass id="112">
+        <Value type="list" genre="config" instance="1" index="254" label="Configuration Command" size="1" min="0" max="1" value="0">
+            <Help>Lock/unlock all configuration parameters</Help>
+            <Item label="Unlock" value="0"/>
+            <Item label="Lock" value="1"/>
+        </Value>
+    </CommandClass>
+
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="9">
+            <Group index="1" max_associations="5" label="Lifeline"/>
+            <Group index="2" max_associations="5" label="Basic Set button 1"/>
+            <Group index="3" max_associations="5" label="Multilevel Set button 1"/>
+            <Group index="4" max_associations="5" label="Basic Set button 2"/>
+            <Group index="5" max_associations="5" label="Multilevel Set button 2"/>
+            <Group index="6" max_associations="5" label="Basic Set button 3"/>
+            <Group index="7" max_associations="5" label="Multilevel Set button 3"/>
+            <Group index="8" max_associations="5" label="Basic Set button 4"/>
+            <Group index="9" max_associations="5" label="Multilevel Set button 4"/>
+        </Associations>
+    </CommandClass>
+
+</Product>

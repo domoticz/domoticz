@@ -16,7 +16,7 @@ enum _eSceneGroupType
 //Keep this consistant with the SQL DeviceStatus table
 struct _tDeviceSensor
 {
-	unsigned long long	Idx;	//Idx from database
+	uint64_t	Idx;	//Idx from database
 
 	int				HardwareID;
 	_eHardwareTypes	HdwType;

@@ -2203,7 +2203,7 @@ define(['app'], function (app) {
 						}
 					}
 					else if (item.SwitchType == "TPI") {
-						var RO=(item.Unit>0)?true:false;
+					    var RO = (item.Unit < 64 || item.Unit > 95) ? true : false;
 						isdimmer=true;
 						if (
 								(item.Status == 'On')
@@ -2749,7 +2749,7 @@ define(['app'], function (app) {
 									 }
 							}
 							else if (item.SwitchType == "TPI") {
-									var RO=(item.Unit>0)?true:false;
+							        var RO = (item.Unit < 64 || item.Unit > 95) ? true : false;
 									bIsDimmer=true;
 									if (item.Status == 'On')
 									{
@@ -2834,7 +2834,7 @@ define(['app'], function (app) {
 					}
 					else if (item.SwitchType == "TPI") {
 						xhtm+='<br><br><div style="margin-left:60px;" class="dimslider" id="slider" data-idx="' + item.idx + '" data-type="relay" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"';
-						if(item.Unit>0)
+						if (item.Unit < 64 || item.Unit > 95)
 							xhtm+=' data-disabled="true"';
 						xhtm+='></div>';
 					}
@@ -3198,7 +3198,7 @@ define(['app'], function (app) {
 				bIsType5=1;
 				totunits=16;
 			}
-			else if (lighttype==59) {
+			else if (lighttype==65) {
 				//IT (Intertek,FA500,PROmax...)
 				bIsType5=1;
 				totunits=4;
@@ -3387,9 +3387,9 @@ define(['app'], function (app) {
 				}
 				else {
 					$("#dialog-addmanuallightdevice #lighting2params #combocmd1").hide();
-					if ((lighttype==55)||(lighttype==57)||(lighttype==59)||(lighttype==100)) {
+					if ((lighttype==55)||(lighttype==57)||(lighttype==65)||(lighttype==100)) {
 						$("#dialog-addmanuallightdevice #lighting2params #combocmd2").hide();
-						if ((lighttype!=59)&&(lighttype!=100)) {
+						if ((lighttype!=65)&&(lighttype!=100)) {
 							$("#dialog-addmanuallightdevice #lighting2paramsUnitCode").hide();
 						}
 					}
@@ -3506,7 +3506,7 @@ define(['app'], function (app) {
 					(lighttype==50)||
 					(lighttype==55)||
 					(lighttype==57)||
-					(lighttype==59)||
+					(lighttype==65)||
 					(lighttype==100)||
 					(lighttype==102)||
 					(lighttype==105)||

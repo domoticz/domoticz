@@ -37,6 +37,7 @@ matrix:
     addons:
       apt:
         sources:
+          - george-edison55-precise-backports  # cmake
           - ubuntu-toolchain-r-test
           - boost-latest
         packages:
@@ -44,6 +45,7 @@ matrix:
           - g++-4.9
           - libboost1.55-all-dev
           - cmake
+          - cmake-data
           - libsqlite3-dev
           - curl
           - libcurl4-openssl-dev
@@ -53,6 +55,7 @@ matrix:
           - libudev-dev
           - git
           - libdigest-sha-perl
+          - python3-dev
     script:
       - (cd open-zwave-read-only; make)
       - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=open-zwave-read-only
@@ -72,9 +75,12 @@ matrix:
       - brew install openssl
       - brew link openssl --force
       - brew install md5sha1sum
+      - brew install python3
+      - brew linkapps python3
       - export OPENSSL_ROOT_DIR=/usr/local/opt/openssl
     script:
-      - cmake -DCMAKE_BUILD_TYPE=Release
+      - which python3
+      - cmake -DCMAKE_BUILD_TYPE=Release -DPYTHON_INCLUDE_DIR=/usr/local/Cellar/python3/3.5.2_3/Frameworks/Python.framework/Versions/3.5/Headers -DPYTHON_LIBRARY=/usr/local/Cellar/python3/3.5.2_3/Frameworks/Python.framework/Versions/3.5/lib/libpython3.5.dylib
       - make
 
 

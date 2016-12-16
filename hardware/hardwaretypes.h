@@ -161,6 +161,9 @@
 #define sSwitchTypeAlectoSA			0x62
 #define sSwitchTypeGPIOset			0x63
 #define sSwitchLightT1				0x64
+#define sSwitchTypeKonigSec			0x65
+#define sSwitchTypeRM174RF			0x66
+#define sSwitchTypeLiwin			0x67
 
 //Switch commands
 #define gswitch_sOff				0x00
