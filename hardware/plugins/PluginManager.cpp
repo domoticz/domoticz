@@ -38,12 +38,6 @@
 
 #define MINIMUM_PYTHON_VERSION "3.4.0"
 
-#ifdef WIN32
-#include "../../../domoticz/main/dirent_windows.h"
-#else
-#include <dirent.h>
-#endif
-
 #define ATTRIBUTE_VALUE(pElement, Name, Value) \
 		{	\
 			Value = ""; \
@@ -1891,7 +1885,7 @@ namespace Plugins {
 
 		if (!Py_LoadLibrary())
 		{
-			_log.Log(LOG_ERROR, "PluginSystem: Failed load '%s', Python probably not installed on system.", PYTHON_LIB);
+			_log.Log(LOG_STATUS, "PluginSystem: Failed dynamic library load, Python not found on your system.");
 			return false;
 		}
 
@@ -1912,7 +1906,7 @@ namespace Plugins {
 			sVersion = sVersion.substr(0, sVersion.find_first_of(' '));
 			if (sVersion < MINIMUM_PYTHON_VERSION)
 			{
-				_log.Log(LOG_ERROR, "PluginSystem: Invalid Python version '%s' found, '%s' or above required.", sVersion.c_str(), MINIMUM_PYTHON_VERSION);
+				_log.Log(LOG_STATUS, "PluginSystem: Invalid Python version '%s' found, '%s' or above required.", sVersion.c_str(), MINIMUM_PYTHON_VERSION);
 				return false;
 			}
 
