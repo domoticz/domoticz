@@ -1485,6 +1485,22 @@ bool CEvohome::DecodeHeatDemand(CEvohomeMsg &msg)
 			szSourceType="Controller";
 		else if(msg.GetID(0)==GetGatewayID())
 			szSourceType="Gateway";
+		else // separate zone sensor message which doesn't contain zone number so need to map from DeviceID
+		{
+			std::string zstrid(CEvohomeID::GetHexID(msg.GetID(0)));
+			szSourceType = "Zone";
+			std::vector<std::vector<std::string> > result;
+			// Check whether device alreay exists
+			result = m_sql.safe_query("SELECT Unit FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == '%q') AND (Type == %d)", m_HwdID, zstrid.c_str(), (int)pTypeEvohomeRelay);
+			if (result.size() == 0)
+			{
+				result = m_sql.safe_query("SELECT Unit FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == '%q') AND (Type == %d)", m_HwdID, zstrid.c_str(), (int)pTypeEvohomeZone);
+				if (result.size() != 0)
+					nDevNo = atoi(result[0][0].c_str()); // Get zone number from temp sensor
+			}
+			else
+				nDevNo = atoi(result[0][0].c_str());
+		}
 	}
 	else if(msg.command==0x3150) //heat demand for zone is also a % (as above) of the proportional band (a temperature difference) so if the proportional band is 2 degrees and we are 1 degree from set point the demand is 50%
 	{
@@ -1506,8 +1522,12 @@ bool CEvohome::DecodeHeatDemand(CEvohomeMsg &msg)
 	
 	Log(true,LOG_STATUS,"evohome: %s: %s (0x%x) DevNo 0x%02x %d (0x%x)", tag, szSourceType.c_str(), msg.GetID(0), nDevNo, nDemand, msg.command);
 
-	if(msg.command==0x0008)
-		RXRelay(static_cast<uint8_t>(nDevNo),static_cast<uint8_t>(nDemand), msg.GetID(0));
+	if (msg.command == 0x0008)
+	{
+		if (szSourceType == "Zone" && nDevNo == 0) // can't use value as don't have zone number yet
+			return true;
+		RXRelay(static_cast<uint8_t>(nDevNo), static_cast<uint8_t>(nDemand), msg.GetID(0));
+	}
 	return true;
 }
 
