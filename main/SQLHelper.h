@@ -314,6 +314,7 @@ public:
 	int			m_ActiveTimerPlan;
 	bool		m_bDisableEventSystem;
 	int			m_ShortLogInterval;
+	bool		m_bLogEventScriptTrigger;
 private:
 	boost::mutex	m_sqlQueryMutex;
 	sqlite3			*m_dbase;

@@ -1491,7 +1491,7 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const uint64_t Dev
 				else
 				{
 					lua_Number ruleTrue = lua_tonumber(lua_state, -1);
-					if (ruleTrue != 0)
+					if (ruleTrue != 0 && m_sql.m_bLogEventScriptTrigger)
 					{
 						_log.Log(LOG_NORM, "EventSystem: Event triggered: %s", it->Name.c_str());
 						parseBlocklyActions(it->Actions, it->Name, it->ID);
@@ -1546,7 +1546,7 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const uint64_t Dev
 				else {
 					lua_Number ruleTrue = lua_tonumber(lua_state, -1);
 
-					if (ruleTrue != 0)
+					if (ruleTrue != 0 && m_sql.m_bLogEventScriptTrigger)
 					{
 						_log.Log(LOG_NORM, "EventSystem: Event triggered: %s", it->Name.c_str());
 						parseBlocklyActions(it->Actions, it->Name, it->ID);
@@ -1596,7 +1596,7 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const uint64_t Dev
 					}
 					else {
 						lua_Number ruleTrue = lua_tonumber(lua_state, -1);
-						if (ruleTrue != 0)
+						if (ruleTrue != 0 && m_sql.m_bLogEventScriptTrigger)
 						{
 							_log.Log(LOG_NORM, "EventSystem: Event triggered: %s", it->Name.c_str());
 							parseBlocklyActions(it->Actions, it->Name, it->ID);
@@ -1650,7 +1650,7 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const uint64_t Dev
 				else {
 					lua_Number ruleTrue = lua_tonumber(lua_state, -1);
 
-					if (ruleTrue != 0)
+					if (ruleTrue != 0 && m_sql.m_bLogEventScriptTrigger)
 					{
 						_log.Log(LOG_NORM, "EventSystem: Event triggered: %s", it->Name.c_str());
 						parseBlocklyActions(it->Actions, it->Name, it->ID);
@@ -2994,7 +2994,7 @@ void CEventSystem::luaThread(lua_State *lua_state, const std::string &filename)
 		}
 	}
 
-	if (scriptTrue)
+	if (scriptTrue && m_sql.m_bLogEventScriptTrigger)
 	{
 		_log.Log(LOG_STATUS, "EventSystem: Script event triggered: %s", filename.c_str());
 	}

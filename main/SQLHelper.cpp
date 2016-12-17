@@ -2415,6 +2415,13 @@ bool CSQLHelper::OpenDatabase()
 	}
 	m_bDisableEventSystem = (nValue==1);
 
+	nValue = 1;
+	if (!GetPreferencesVar("LogEventScriptTrigger", nValue))
+	{
+		UpdatePreferencesVar("LogEventScriptTrigger", 1);
+	}
+	m_bLogEventScriptTrigger = (nValue != 0);
+
 	if ((!GetPreferencesVar("WebTheme", sValue)) || (sValue.empty()))
 	{
 		UpdatePreferencesVar("WebTheme", "default");
