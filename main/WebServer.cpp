@@ -7015,6 +7015,10 @@ namespace http {
 				m_mainworker.m_eventsystem.StartEventSystem();
 			}
 
+			std::string LogEventScriptTrigger = request::findValue(&req, "LogEventScriptTrigger");
+			m_sql.m_bLogEventScriptTrigger = (LogEventScriptTrigger == "on" ? 1 : 0);
+			m_sql.UpdatePreferencesVar("LogEventScriptTrigger", m_sql.m_bLogEventScriptTrigger);
+
 			std::string EnableWidgetOrdering = request::findValue(&req, "AllowWidgetOrdering");
 			int iEnableAllowWidgetOrdering = (EnableWidgetOrdering == "on" ? 1 : 0);
 			m_sql.UpdatePreferencesVar("AllowWidgetOrdering", iEnableAllowWidgetOrdering);
@@ -11656,6 +11660,10 @@ namespace http {
 				else if (Key == "DisableEventScriptSystem")
 				{
 					root["DisableEventScriptSystem"] = nValue;
+				}
+				else if (Key == "LogEventScriptTrigger")
+				{
+					root["LogEventScriptTrigger"] = nValue;
 				}
 				else if (Key == "(1WireSensorPollPeriod")
 				{
