@@ -40,11 +40,11 @@
 extern std::string szUserDataFolder;
 
 std::ofstream *CEvohome::m_pEvoLog=NULL;
-#ifdef _DEBUG
+//#ifdef _DEBUG
 bool CEvohome::m_bDebug=true;
-#else
-bool CEvohome::m_bDebug=false;
-#endif
+//#else
+//bool CEvohome::m_bDebug=false;
+//#endif
 
 const char CEvohome::m_szControllerMode[7][20]={"Normal","Economy","Away","Day Off","Custom","Heating Off","Unknown"};
 const char CEvohome::m_szWebAPIMode[7][20]={"Auto","AutoWithEco","Away","DayOff","Custom","HeatingOff","Unknown"};
