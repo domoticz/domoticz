@@ -7,6 +7,7 @@ Version 3.xxxx (December xth 2016)
 - Implemented: Blinds T1 till T13 new supports the Stop button
 - Implemented: Devices, Log icon for Blinds
 - Implemented: Blockly/Lua Set SetPoint option
+- Implemented: I2C BME280 sensor (temp+hum+baro)
 - Implemented: Netatmo Home Coach support
 - Implemented: Notification for Dummy Soil/Moisture sensor
 - Implemented: Option to replace an Meter device

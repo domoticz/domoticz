@@ -927,7 +927,8 @@ namespace http {
 					(ii == HTYPE_RaspberryBMP085) ||
 					(ii == HTYPE_RaspberryHTU21D) ||
 					(ii == HTYPE_RaspberryTSL2561) ||
-					(ii == HTYPE_RaspberryPCF8574)
+					(ii == HTYPE_RaspberryPCF8574) ||
+					(ii == HTYPE_RaspberryBME280)
 					)
 				{
 					bDoAdd = false;
@@ -1101,6 +1102,9 @@ namespace http {
 				//all fine here!
 			}
 			else if (htype == HTYPE_RaspberryTSL2561) {
+				//all fine here!
+			}
+			else if (htype == HTYPE_RaspberryBME280) {
 				//all fine here!
 			}
 			else if (htype == HTYPE_Dummy) {
@@ -1418,6 +1422,9 @@ namespace http {
 				//All fine here
 			}
 			else if (htype == HTYPE_RaspberryTSL2561) {
+				//All fine here
+			}
+			else if (htype == HTYPE_RaspberryBME280) {
 				//All fine here
 			}
 			else if (htype == HTYPE_Dummy) {

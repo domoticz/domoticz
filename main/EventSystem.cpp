@@ -482,7 +482,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 			break;
 		case pTypeTEMP_HUM_BARO:
 			if (splitresults.size() < 5) {
-				_log.Log(LOG_ERROR, "TEMP_HUM_BARO missing values : ID=%" PRIu64 ", sValue=%s", sitem.ID, sitem.sValue.c_str());
+				_log.Log(LOG_ERROR, "EventSystem: TEMP_HUM_BARO missing values : ID=%" PRIu64 ", sValue=%s", sitem.ID, sitem.sValue.c_str());
 				continue;
 			}
 			temp = static_cast<float>(atof(splitresults[0].c_str()));

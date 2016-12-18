@@ -243,6 +243,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_RaspberryPCF8574, "I2C PIO 8bit expander PCF8574 or PCF8574A" },
 		{ HTYPE_PythonPlugin, "Python Plugin System" },
 		{ HTYPE_XiaomiGateway, "Xiaomi Gateway" },
+		{ HTYPE_RaspberryBMP085, "I2C sensor BME280 Temp+Hum+Baro" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
