@@ -6,6 +6,7 @@
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 #include "../httpclient/HTTPClient.h"
+#include "../json/json.h"
 #include "../main/RFXtrx.h"
 #include "../main/mainworker.h"
 #include "../webserver/Base64.h"
@@ -55,53 +56,9 @@ std::string ReadFile(std::string filename)
 		sResult += sLine;
 	}
 	file.close();
-
 	return sResult;
 }
 #endif
-
-// Some convenience code, saves typing and duplication
-
-template<typename T>
-Json::Value JsonValue(const T& tValue)
-{
-	Json::Value jValue;
-	jValue["value"] = tValue;
-	return jValue;
-}
-
-class LogError
-{
-private:
-
-	char szErrorMessage[1024];
-
-public:
-
-	LogError(const char* szRequestUrl)
-	{
-		sprintf(szErrorMessage, "NefitEasy: (request=%s): ", szRequestUrl);
-	}
-	
-	bool operator()(const char* szErrorFormat, ...)
-	{
-		int iOffset = strlen(szErrorMessage);
-		
-		va_list args;
-		va_start(args, szErrorFormat);
-		vsnprintf(szErrorMessage + iOffset, 1024 - iOffset, szErrorFormat, args);
-		va_end(args);
-		
-		_log.Log(LOG_ERROR, szErrorMessage);
-		
-		return false;
-	}
-	
-	bool None()
-	{
-		return true;
-	}
-};
 
 #define NEFITEASY_HTTP_BRIDGE "/bridge"
 #define NEFITEASY_STATUS_URL "/ecus/rrc/uiStatus"
@@ -147,6 +104,11 @@ const uint8_t nmagic_alarm[] = {
 #define NEFITEASY_ACCESSKEY_PREFIX "Ct7ZR03b_"
 #define NEFITEASY_RRCCONTACT_PREFIX "rrccontact_"
 #define NEFITEASY_RRCGATEWAY_PREFIX "rrcgateway_"
+
+bool CheckId(const char* szUrlPath, const Json::Value& response)
+{
+	return (!response["id"].empty() && response["id"].asString() == szUrlPath);
+}
 
 CNefitEasy::CNefitEasy(const int ID, const std::string &IPAddress, const unsigned short usIPPort):
 m_szIPAddress(IPAddress)
@@ -207,9 +169,7 @@ bool CNefitEasy::StopHardware()
 {
 	if (m_thread!=NULL)
 	{
-		assert(m_thread);	//#define DEBUG_NefitEasyW
-	//#define DEBUG_NefitEasyR
-
+		assert(m_thread);
 		m_stoprequested = true;
 		m_thread->join();
 	}
@@ -310,147 +270,126 @@ bool CNefitEasy::WriteToHardware(const char *pdata, const unsigned char length)
 	return false;
 }
 
-std::string CNefitEasy::CmdUrl(const char* szUrlPath)
-{
-		std::stringstream szURL;
-		szURL << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << szUrlPath;
-		return szURL.str();
-}
-
-bool CNefitEasy::HttpPOST(const char* szUrlPath, const Json::Value& jValue, const char* szErrorMessage)
-{
-	LogError error(szUrlPath);
-	
-	try 
-	{
-		std::vector<std::string> vExtraHeaders;
-		//ExtraHeaders.push_back("User-Agent: NefitEasy");
-		vExtraHeaders.push_back("Content-Type: application/json");
-		std::string sResponse;
-
-		if (!HTTPClient::POST(CmdUrl(szUrlPath), jValue.toStyledString(), vExtraHeaders, sResponse))
-		{
-			return error(szErrorMessage);
-		}
-	}
-	catch(...)
-	{
-		return error(szErrorMessage);
-	}
-	
-	return error.None();
-}
-
-bool CNefitEasy::HttpGET(const char* szUrlPath, const char* szDebugFilePath, Json::Value& jValue)
-{
-	LogError error(szUrlPath);
-	
-	try 
-	{
-		std::string sResponse;
-#ifdef DEBUG_NefitEasyR
-		sResponse = ReadFile(szDebugFilePath);
-#else
-		if(!HTTPClient::GET(CmdUrl(szUrlPath), sResponse))
-		{
-			return error("Error GETting http data");
-		}
-#endif
-		Json::Reader jReader;
-		if(!jReader.parse(sResponse, jValue))
-		{
-			if (sResponse.find("Error: REQUEST_TIMEOUT") != std::string::npos)
-			{
-				return error("Request timeout!");
-			}
-			else
-			{
-				return error("Invalid json data received, unable to parse");
-			}
-		}
-		
-		// This is the kicker... It can happen that you receive the response to another
-		// request (e.g. receive gas usage response to a get status details request).
-		// Why this happens I don't know, but we can safeguard against it because each
-		// respons contains the type of request it is for in the 'id' key. 
-		if(jValue["id"].empty())
-		{
-			return error("Invalid json response received: no 'id' key found!");
-		}
-		
-		std::string sId(jValue["id"].asString());
-		if(sId != szUrlPath)
-		{
-			return error("Invalid response received: %s requested, %s received", szUrlPath, sId.c_str());
-		}
-		
-		if(jValue["value"].empty())
-		{
-			return error("Invalid data received: no 'value' key in response");
-		}
-		
-#ifdef DEBUG_NefitEasyW
-		SaveString2Disk(jValue.toStyledString(), szDebugFilePath);
-#endif
-
-		return error.None();
-	}
-	catch(...)	
-	{
-		return error("Error GETting http data");
-	}
-}
-
-bool CNefitEasy::HttpGET(const char* szUrlPath, const char* szDebugFilePath, float& fResult)
-{
-	Json::Value jValue;
-	bool bResult = HttpGET(szUrlPath, szDebugFilePath, jValue);
-	if(bResult) 
-	{
-		fResult = jValue["value"].asFloat();
-	}
-	return bResult;
-}
-
-bool CNefitEasy::HttpGET(const char* szUrlPath, const char* szDebugFilePath,  std::string& sResult)
-{
-	Json::Value jValue;
-	bool bResult = HttpGET(szUrlPath, szDebugFilePath, jValue);
-	if(bResult) 
-	{
-		sResult = jValue["value"].asString();
-	}
-	return bResult;
-}
-
 void CNefitEasy::SetUserMode(bool bSetUserModeClock)
 {
-	if(HttpPOST(NEFITEASY_SET_USER_MODE, JsonValue(bSetUserModeClock?"clock":"manual"), "Error setting User Mode"))
+	Json::Value root;
+	root["value"] = (bSetUserModeClock == true) ? "clock" : "manual";
+
+	std::stringstream szURL;
+	std::string sResult;
+	std::vector<std::string> ExtraHeaders;
+	//ExtraHeaders.push_back("User-Agent: NefitEasy");
+	ExtraHeaders.push_back("Content-Type: application/json");
+
+	try
 	{
+
+		szURL << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << NEFITEASY_SET_USER_MODE;
+		if (!HTTPClient::POST(szURL.str(), root.toStyledString(), ExtraHeaders, sResult))
+		{
+			_log.Log(LOG_ERROR, "NefitEasy: Error setting User Mode!");
+			return;
+		}
 		GetStatusDetails();
+	}
+	catch (...)
+	{
+		_log.Log(LOG_ERROR, "NefitEasy: Error setting User Mode!");
+		return;
 	}
 }
 
 void CNefitEasy::SetHotWaterMode(bool bTurnOn)
 {
-	Json::Value jValue = JsonValue(bTurnOn ? "on" : "off");
-	const char* szErrorMessage = "Error setting user mode";
-	if(HttpPOST(NEFITEASY_SET_HOT_WATER_CLOCK_MODE, jValue, szErrorMessage)
-	&& HttpPOST(NEFITEASY_SET_HOT_WATER_MANUAL_MODE, jValue, szErrorMessage))
+	Json::Value root;
+	root["value"] = (bTurnOn == true) ? "on" : "off";
+
+	std::stringstream szURL;
+	std::string sResult;
+	std::vector<std::string> ExtraHeaders;
+	//ExtraHeaders.push_back("User-Agent: NefitEasy");
+	ExtraHeaders.push_back("Content-Type: application/json");
+
+	try
 	{
+		//szURL << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << (m_bClockMode == true) ? NEFITEASY_SET_HOT_WATER_CLOCK_MODE : NEFITEASY_SET_HOT_WATER_MANUAL_MODE;
+		//Set Both modes
+		szURL << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << NEFITEASY_SET_HOT_WATER_CLOCK_MODE;
+		if (!HTTPClient::POST(szURL.str(), root.toStyledString(), ExtraHeaders, sResult))
+		{
+			_log.Log(LOG_ERROR, "NefitEasy: Error setting User Mode!");
+			return;
+		}
+		szURL << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << NEFITEASY_SET_HOT_WATER_MANUAL_MODE;
+		if (!HTTPClient::POST(szURL.str(), root.toStyledString(), ExtraHeaders, sResult))
+		{
+			_log.Log(LOG_ERROR, "NefitEasy: Error setting User Mode!");
+			return;
+		}
 		GetStatusDetails();
+	}
+	catch (...)
+	{
+		_log.Log(LOG_ERROR, "NefitEasy: Error setting User Mode!");
+		return;
 	}
 }
 
 bool CNefitEasy::GetStatusDetails()
 {
-	Json::Value jValue;
-	if(!HttpGET(NEFITEASY_STATUS_URL, "E:\\nefit_uistatus.json", jValue))
+	std::string sResult;
+
+	//Status
+#ifdef DEBUG_NefitEasyR
+	sResult = ReadFile("E:\\nefit_uistatus.json");
+#else
+	std::stringstream szURL;
+	szURL << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << NEFITEASY_STATUS_URL;
+	try
 	{
+		bool bret;
+		bret = HTTPClient::GET(szURL.str(), sResult);
+		if (!bret)
+		{
+			_log.Log(LOG_ERROR, "NefitEasy: Error getting http data!");
+			return false;
+		}
+	}
+	catch (...)
+	{
+		_log.Log(LOG_ERROR, "NefitEasy: Error getting http data!");
 		return false;
 	}
+#endif
 
-	Json::Value root2 = jValue["value"];
+#ifdef DEBUG_NefitEasyW
+	SaveString2Disk(sResult, "E:\\nefit_uistatus_prop.json");
+#endif
+	Json::Value root;
+	Json::Value root2;
+
+	Json::Reader jReader;
+	bool ret = jReader.parse(sResult, root);
+	if (!ret)
+	{
+		if (sResult.find("Error: REQUEST_TIMEOUT") != std::string::npos)
+			_log.Log(LOG_ERROR, "NefitEasy: Request Timeout !");
+		else
+			_log.Log(LOG_ERROR, "NefitEasy: Invalid data received (main)!");
+		return false;
+	}
+	if(!CheckId(NEFITEASY_STATUS_URL, root))
+	{
+		_log.Log(LOG_ERROR, "NefitEasy: Invalid response received (main)");
+		return false;
+	}
+	
+	if (root["value"].empty())
+	{
+		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received (main)");
+		return false;
+	}
+	root2 = root["value"];
 	if (root2["TOT"].empty())
 	{
 		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received (main)");
@@ -546,89 +485,256 @@ bool CNefitEasy::GetStatusDetails()
 
 bool CNefitEasy::GetOutdoorTemp()
 {
-	float fTemp;
-	if(!HttpGET(NEFITEASY_OUTDOORTEMP_URL, "E:\\nefit_outdoor.json", fTemp))
+	std::string sResult;
+	Json::Reader jReader;
+	Json::Value root;
+	bool ret;
+
+	//Outdoor Temperature
+#ifdef DEBUG_NefitEasyR
+	sResult = ReadFile("E:\\nefit_outdoor.json");
+#else
+	std::stringstream szURL2;
+	szURL2 << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << NEFITEASY_OUTDOORTEMP_URL;
+	try
 	{
+		ret = HTTPClient::GET(szURL2.str(), sResult);
+		if (!ret)
+		{
+			_log.Log(LOG_ERROR, "NefitEasy: Error getting http data!");
+			return false;
+		}
+	}
+	catch (...)
+	{
+		_log.Log(LOG_ERROR, "NefitEasy: Error getting http data!");
 		return false;
 	}
-	
-	SendTempSensor(2, -1, fTemp, "Outside Temperature");
+#endif
+
+#ifdef DEBUG_NefitEasyW
+	SaveString2Disk(sResult, "E:\\nefit_outdoor.json");
+#endif
+	ret = jReader.parse(sResult, root);
+	if (!ret)
+	{
+		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received! (ODT)");
+		return false;
+	}
+	if(!CheckId(NEFITEASY_OUTDOORTEMP_URL, root))
+	{
+		_log.Log(LOG_ERROR, "NefitEasy: Invalid response received! (ODT)");
+		return false;
+	}
+	if (root["value"].empty() == true)
+	{
+		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received (ODT)");
+		return false;
+	}
+
+	float temp = root["value"].asFloat();
+	SendTempSensor(2, -1, temp, "Outside Temperature");
 	return true;
 }
 
 bool CNefitEasy::GetFlowTemp()
 {
-	float fTemp;
-	if(!HttpGET(NEFITEASY_FLOWTEMP_URL, "E:\\nefit_flow.json", fTemp))
+	std::string sResult;
+	Json::Reader jReader;
+	Json::Value root;
+	bool ret;
+
+	//Flow Temperature
+#ifdef DEBUG_NefitEasyR
+	sResult = ReadFile("E:\\nefit_flow.json");
+#else
+	std::stringstream szURL2;
+	szURL2 << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << NEFITEASY_FLOWTEMP_URL;
+	try
 	{
+		ret = HTTPClient::GET(szURL2.str(), sResult);
+		if (!ret)
+		{
+			_log.Log(LOG_ERROR, "NefitEasy: Error getting http data!");
+			return false;
+		}
+	}
+	catch (...)
+	{
+		_log.Log(LOG_ERROR, "NefitEasy: Error getting http data!");
 		return false;
 	}
-	
-	SendTempSensor(3, -1, fTemp, "Flow Temperature");
+#endif
+
+#ifdef DEBUG_NefitEasyW
+	SaveString2Disk(sResult, "E:\\nefit_flow.json");
+#endif
+	ret = jReader.parse(sResult, root);
+	if (!ret)
+	{
+		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received! (FT)");
+		return false;
+	}
+	if(!CheckId(NEFITEASY_FLOWTEMP_URL, root))
+	{
+		_log.Log(LOG_ERROR, "NefitEasy: Invalid response received (FT)");
+		return false;
+	}
+	if (root["value"].empty() == true)
+	{
+		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received (FT)");
+		return false;
+	}
+
+	float temp = root["value"].asFloat();
+	SendTempSensor(3, -1, temp, "Flow Temperature");
 	return true;
 }
 
 bool CNefitEasy::GetPressure()
 {
-	float fPressure;
-	if(!HttpGET(NEFITEASY_PRESSURE_URL, "E:\\nefit_pressure.json", fPressure))
+	std::string sResult;
+	Json::Reader jReader;
+	Json::Value root;
+	bool ret;
+
+	//Status
+#ifdef DEBUG_NefitEasyR
+	sResult = ReadFile("E:\\nefit_pressure.json");
+#else
+	std::stringstream szURL;
+	szURL << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << NEFITEASY_PRESSURE_URL;
+	try
 	{
+		ret = HTTPClient::GET(szURL.str(), sResult);
+		if (!ret)
+		{
+			_log.Log(LOG_ERROR, "NefitEasy: Error getting http data!");
+			return false;
+		}
+	}
+	catch (...)
+	{
+		_log.Log(LOG_ERROR, "NefitEasy: Error getting http data!");
 		return false;
 	}
-	
-	SendPressureSensor(1, 1, -1, fPressure, "Pressure");
+#endif
+
+#ifdef DEBUG_NefitEasyW
+	SaveString2Disk(sResult, "E:\\nefit_uipres.json");
+#endif
+	ret = jReader.parse(sResult, root);
+	if (!ret)
+	{
+		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received! (Press)");
+		return false;
+	}
+	if(!CheckId(NEFITEASY_PRESSURE_URL, root))
+	{
+		_log.Log(LOG_ERROR, "NefitEasy: Invalid response received! (Press)");
+		return false;
+	}
+	if (root["value"].empty())
+	{
+		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received (Press)");
+		return false;
+	}
+	float pressure = root["value"].asFloat();
+	SendPressureSensor(1, 1, -1, pressure, "Pressure");
 	return true;
 }
 
 bool CNefitEasy::GetDisplayCode()
 {
-	std::string sDisplayCode;
-	if(!HttpGET(NEFITEASY_DISPLAYCODE_URL, "E:\\nefit_displaycode.json", sDisplayCode))
+	std::string sResult;
+	Json::Reader jReader;
+	Json::Value root;
+	bool ret;
+
+#ifdef DEBUG_NefitEasyR
+	sResult = ReadFile("E:\\nefit_displaycode.json");
+#else
+	std::stringstream szURL3;
+	szURL3 << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << NEFITEASY_DISPLAYCODE_URL;
+	try
 	{
+		ret = HTTPClient::GET(szURL3.str(), sResult);
+		if (!ret)
+		{
+			_log.Log(LOG_ERROR, "NefitEasy: Error getting http data!");
+			return false;
+		}
+	}
+	catch (...)
+	{
+		_log.Log(LOG_ERROR, "NefitEasy: Error getting http data!");
 		return false;
 	}
+#endif
+
+#ifdef DEBUG_NefitEasyW
+	SaveString2Disk(sResult, "E:\\nefit_displaycode.json");
+#endif
+	ret = jReader.parse(sResult, root);
+	if (!ret)
+	{
+		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received! (DP)");
+		return false;
+	}
+	if(!CheckId(NEFITEASY_DISPLAYCODE_URL, root))
+	{
+		_log.Log(LOG_ERROR, "NefitEasy: Invalid response received! (DP)");
+		return false;
+	}
+	if (root["value"].empty() == true)
+	{
+		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received (DP)");
+		return false;
+	}
+
+	std::string dcode = root["value"].asString();
 	std::string display_code = "Unknown";
-	if (sDisplayCode == "-H")
+	if (dcode == "-H")
 		display_code = "central heating active";
-	else if (sDisplayCode == "=H")
+	else if (dcode == "=H")
 		display_code = "hot water active";
-	else if (sDisplayCode == "0C")
+	else if (dcode == "0C")
 		display_code = "system starting";
-	else if (sDisplayCode == "0L")
+	else if (dcode == "0L")
 		display_code = "system starting";
-	else if (sDisplayCode == "0U")
+	else if (dcode == "0U")
 		display_code = "system starting";
-	else if (sDisplayCode == "0E")
+	else if (dcode == "0E")
 		display_code = "system waiting";
-	else if (sDisplayCode == "0H")
+	else if (dcode == "0H")
 		display_code = "system standby";
-	else if (sDisplayCode == "0A")
+	else if (dcode == "0A")
 		display_code = "system waiting (boiler cannot transfer heat to central heating)";
-	else if (sDisplayCode == "0Y")
+	else if (dcode == "0Y")
 		display_code = "system waiting (boiler cannot transfer heat to central heating)";
-	//else if (sDisplayCode == "0E")
+	//else if (dcode == "0E")
 	//display_code = "system waiting (boiler cannot transfer heat to central heating)";
-	else if (sDisplayCode == "2E")
+	else if (dcode == "2E")
 		display_code = "boiler water pressure too low";
-	else if (sDisplayCode == "H07")
+	else if (dcode == "H07")
 		display_code = "boiler water pressure too low";
-	else if (sDisplayCode == "2F")
+	else if (dcode == "2F")
 		display_code = "sensors measured abnormal temperature";
-	else if (sDisplayCode == "2L")
+	else if (dcode == "2L")
 		display_code = "sensors measured abnormal temperature";
-	else if (sDisplayCode == "2P")
+	else if (dcode == "2P")
 		display_code = "sensors measured abnormal temperature";
-	else if (sDisplayCode == "2U")
+	else if (dcode == "2U")
 		display_code = "sensors measured abnormal temperature";
-	else if (sDisplayCode == "4F")
+	else if (dcode == "4F")
 		display_code = "sensors measured abnormal temperature";
-	else if (sDisplayCode == "4L")
+	else if (dcode == "4L")
 		display_code = "sensors measured abnormal temperature";
-	else if (sDisplayCode == "6A")
+	else if (dcode == "6A")
 		display_code = "burner doesn't ignite";
-	else if (sDisplayCode == "6C")
+	else if (dcode == "6C")
 		display_code = "burner doesn't ignite";
-	else if (sDisplayCode == "rE")
+	else if (dcode == "rE")
 		display_code = "system restarting";
 
 	if (m_LastDisplayCode != display_code)
@@ -641,47 +747,121 @@ bool CNefitEasy::GetDisplayCode()
 
 bool CNefitEasy::GetGasUsage()
 {
-	float fYearGas;
-	if(!HttpGET(NEFITEASY_GAS_URL, "E:\\nefit_yearTotal.json", fYearGas))
+	std::string sResult;
+	Json::Reader jReader;
+	Json::Value root;
+	bool ret;
+
+	//Status
+#ifdef DEBUG_NefitEasyR
+	sResult = ReadFile("E:\\nefit_yearTotal.json");
+#else
+	std::stringstream szURL;
+	szURL << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << NEFITEASY_GAS_URL;
+	try
 	{
+		ret = HTTPClient::GET(szURL.str(), sResult);
+		if (!ret)
+		{
+			_log.Log(LOG_ERROR, "NefitEasy: Error getting http data!");
+			return false;
+		}
+	}
+	catch (...)
+	{
+		_log.Log(LOG_ERROR, "NefitEasy: Error getting http data!");
 		return false;
 	}
+#endif
 
+#ifdef DEBUG_NefitEasyW
+	SaveString2Disk(sResult, "E:\\nefit_yearTotal.json");
+#endif
+	ret = jReader.parse(sResult, root);
+	if (!ret)
+	{
+		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received! (Gas)");
+		return false;
+	}
+	if(!CheckId(NEFITEASY_GAS_URL, root))
+	{
+		_log.Log(LOG_ERROR, "NefitEasy: Invalid response received! (Gas)");
+		return false;
+	}
+	if (root["value"].empty())
+	{
+		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received (Gas)");
+		return false;
+	}
+	float yeargas = root["value"].asFloat();
 	//convert from kWh to m3
-	fYearGas *= (0.12307692f*1000.0f);
-	
-	m_p1gas.gasusage = (uint32_t)fYearGas;
+	yeargas *= (0.12307692f*1000.0f);
+	uint32_t gusage = (uint32_t)yeargas;
+	if (gusage < m_lastgasusage)
+	{
+
+	}
+	m_p1gas.gasusage = gusage;
 	sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, "Gas", 255);
 	return true;
 }
 
 void CNefitEasy::SetSetpoint(const int idx, const float temp)
 {
-	const char* szErrorMessage = "Error setting setpoint";
-	if(!HttpPOST(NEFITEASY_SET_TEMP_ROOM, JsonValue(temp), szErrorMessage))
+	Json::Value root;
+	root["value"] = temp;
+	std::stringstream szURL;
+	std::string sResult;
+	std::vector<std::string> ExtraHeaders;
+	//ExtraHeaders.push_back("User-Agent: NefitEasy");
+	ExtraHeaders.push_back("Content-Type: application/json");
+
+	try
 	{
+
+		szURL << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << NEFITEASY_SET_TEMP_ROOM;
+		if (!HTTPClient::POST(szURL.str(), root.toStyledString(), ExtraHeaders, sResult))
+		{
+			_log.Log(LOG_ERROR, "NefitEasy: Error setting setpoint!");
+			return;
+		}
+		szURL.clear();
+		szURL.str("");
+		if (temp != 0)
+		{
+			Json::Value root2;
+			root2["value"] = "on";
+			szURL << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << NEFITEASY_SET_TEMP_OVERRIDE;
+			if (!HTTPClient::POST(szURL.str(), root2.toStyledString(), ExtraHeaders, sResult))
+			{
+				_log.Log(LOG_ERROR, "NefitEasy: Error setting setpoint!");
+				return;
+			}
+			szURL.clear();
+			szURL.str("");
+			szURL << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << NEFITEASY_SET_TEMP_OVERRIDE_TEMP;
+			if (!HTTPClient::POST(szURL.str(), root.toStyledString(), ExtraHeaders, sResult))
+			{
+				_log.Log(LOG_ERROR, "NefitEasy: Error setting setpoint!");
+				return;
+			}
+		}
+		else
+		{
+			Json::Value root2;
+			root2["value"] = "off";
+			szURL << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << NEFITEASY_SET_TEMP_OVERRIDE;
+			if (!HTTPClient::POST(szURL.str(), root2.toStyledString(), ExtraHeaders, sResult))
+			{
+				_log.Log(LOG_ERROR, "NefitEasy: Error setting setpoint!");
+				return;
+			}
+		}
+	}
+	catch (...)
+	{
+		_log.Log(LOG_ERROR, "NefitEasy: Error setting Setpoint!");
 		return;
 	}
-	
-	if(temp)
-	{
-		if(!HttpPOST(NEFITEASY_SET_TEMP_OVERRIDE, JsonValue("on"), szErrorMessage))
-		{
-			return;
-		}
-		
-		if(!HttpPOST(NEFITEASY_SET_TEMP_OVERRIDE_TEMP, JsonValue(temp), szErrorMessage))
-		{
-			return;
-		}
-	}
-	else 
-	{
-		if(!HttpPOST(NEFITEASY_SET_TEMP_OVERRIDE, JsonValue("off"), szErrorMessage))
-		{
-			return;
-		}
-	}
-	
 	GetStatusDetails();
 }

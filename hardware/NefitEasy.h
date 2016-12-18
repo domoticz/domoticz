@@ -3,7 +3,6 @@
 #include "DomoticzHardware.h"
 #include <iostream>
 #include "hardwaretypes.h"
-#include "../json/json.h"
 
 class CNefitEasy : public CDomoticzHardwareBase
 {
@@ -49,14 +48,6 @@ private:
 
 	void SetUserMode(bool bSetUserModeClock);
 	void SetHotWaterMode(bool bTurnOn);
-
-	bool HttpGET(const char* szUrlPath, const char* szDebugFilePath, Json::Value& jResult);
-	bool HttpGET(const char* szUrlPath, const char* szDebugFilePath, float& fResult);
-	bool HttpGET(const char* szUrlPath, const char* szDebugFilePath, std::string& sResult);
-
-	bool HttpPOST(const char* szUrlPath, const Json::Value& jValue, const char* szErrorMessage);
-	std::string CmdUrl(const char* szUrlPath);
-
 
 	//XMPP stuff
 	bool ConnectToXMPP(const std::string &IPAddress, const int PortNumber);
