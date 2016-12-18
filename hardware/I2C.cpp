@@ -1308,5 +1308,5 @@ void I2C::bmp_Read_BME_SensorDetails()
 		break;
 	}
 
-	SendTempHumBaroSensorFloat(1, 255, temperature, humidity, pressure, forecast, "TempHumBaro");
+	SendTempHumBaroSensorFloat(1, 255, temperature, humidity, pressure, nforecast, "TempHumBaro");
 }
