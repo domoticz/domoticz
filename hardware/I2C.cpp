@@ -101,7 +101,7 @@ const char* szI2CTypeNames[] = {
 	"I2C_BMP085/180",
 	"I2C_HTU21D",
 	"I2C_TSL2561",
-	"I2C_PCF8574"
+	"I2C_PCF8574",
 	"I2C_BME280",
 };
 
