@@ -1276,5 +1276,37 @@ void I2C::bmp_Read_BME_SensorDetails()
 	close(fd);
 #endif
 	int forecast = CalculateForcast(((float)pressure) * 10.0f);
+	//We are using the TempHumBaro Float type now, convert the forecast
+	int nforecast = wsbaroforcast_some_clouds;
+	if (pressure <= 980)
+		nforecast = wsbaroforcast_heavy_rain;
+	else if (pressure <= 995)
+	{
+		if (temperature > 1)
+			nforecast = wsbaroforcast_rain;
+		else
+			nforecast = wsbaroforcast_snow;
+	}
+	else if (pressure >= 1029)
+		nforecast = wsbaroforcast_sunny;
+	switch (forecast)
+	{
+	case bmpbaroforecast_sunny:
+		nforecast = wsbaroforcast_sunny;
+		break;
+	case bmpbaroforecast_cloudy:
+		nforecast = wsbaroforcast_cloudy;
+		break;
+	case bmpbaroforecast_thunderstorm:
+		nforecast = wsbaroforcast_heavy_rain;
+		break;
+	case bmpbaroforecast_rain:
+		if (temperature > 1)
+			nforecast = wsbaroforcast_rain;
+		else
+			nforecast = wsbaroforcast_snow;
+		break;
+	}
+
 	SendTempHumBaroSensorFloat(1, 255, temperature, humidity, pressure, forecast, "TempHumBaro");
 }
