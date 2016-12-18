@@ -219,11 +219,6 @@ void CSterbox::GetMeterDetails()
 	std::string tmpstr2;
 	std::string tmpinp;
 	tmpstr = results[0];
-	if (tmpstr.find("<title>SterBox_State</title>") != std::string::npos)
-	{
-		_log.Log(LOG_ERROR, "Sterbox: Error getting status");
-		return;
-	}
 	size_t ii;
 	size_t jj;
 	int pos1;
