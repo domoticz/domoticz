@@ -1276,5 +1276,5 @@ void I2C::bmp_Read_BME_SensorDetails()
 	close(fd);
 #endif
 	int forecast = CalculateForcast(((float)pressure) * 10.0f);
-	SendTempHumBaroSensor(1, 255, temperature, humidity, pressure, forecast, "TempHumBaro");
+	SendTempHumBaroSensorFloat(1, 255, temperature, humidity, pressure, forecast, "TempHumBaro");
 }
