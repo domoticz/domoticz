@@ -952,37 +952,43 @@ namespace Plugins {
 		//	Handles the cases where a read contains a partial message or multiple messages
 		//
 		std::string	sData = m_sRetainedData + ReadData;  // if there was some data left over from last time add it back in
-
-		while (true)
+		try
 		{
-			//
-			//	Find the top level tag name if it is not set
-			//
-			if (!m_Tag.length())
+			while (true)
 			{
-				int iStart = sData.find_first_of('<');
-				int iEnd = sData.find_first_of(" >");
-				if ((iStart != std::string::npos) && (iEnd != std::string::npos))
+				//
+				//	Find the top level tag name if it is not set
+				//
+				if (!m_Tag.length())
 				{
-					m_Tag = sData.substr(++iStart, (iEnd - iStart));
-					sData = sData.substr(--iStart);					// remove any leading data
-				}
-			}
-
-			int	iEnd = sData.find("/" + m_Tag);
-			if (iEnd != std::string::npos)
-			{
-				CPluginMessage	Message(PMT_Message, HwdID, sData.substr(0, iEnd + m_Tag.length()+2));
-				{
-					boost::lock_guard<boost::mutex> l(PluginMutex);
-					PluginMessageQueue.push(Message);
+					int iStart = sData.find_first_of('<');
+					int iEnd = sData.find_first_of(" >");
+					if ((iStart != std::string::npos) && (iEnd != std::string::npos))
+					{
+						m_Tag = sData.substr(++iStart, (iEnd - iStart));
+						sData = sData.substr(--iStart);					// remove any leading data
+					}
 				}
 
-				sData = sData.substr(iEnd + m_Tag.length() + 2);
-				m_Tag = "";
+				int	iEnd = sData.find("/" + m_Tag);
+				if (iEnd != std::string::npos)
+				{
+					CPluginMessage	Message(PMT_Message, HwdID, sData.substr(0, iEnd + m_Tag.length() + 2));
+					{
+						boost::lock_guard<boost::mutex> l(PluginMutex);
+						PluginMessageQueue.push(Message);
+					}
+
+					sData = sData.substr(iEnd + m_Tag.length() + 2);
+					m_Tag = "";
+				}
+				else
+					break;
 			}
-			else
-				break;
+		}
+		catch (std::exception const &exc)
+		{
+			_log.Log(LOG_ERROR, "(CPluginProtocolXML::ProcessMessage) Unexpected exception thrown '%s', Data '%s'.", exc.what(), ReadData.c_str());
 		}
 
 		m_sRetainedData = sData; // retain any residual for next time
@@ -1177,7 +1183,12 @@ namespace Plugins {
 			if (!isOpen())
 			{
 				m_bConnected = false;
-				openOnlyBaud(m_Port, m_Baud);
+				open(m_Port, m_Baud,
+						boost::asio::serial_port_base::parity(boost::asio::serial_port_base::parity::none),
+						boost::asio::serial_port_base::character_size(8),
+						boost::asio::serial_port_base::flow_control(boost::asio::serial_port_base::flow_control::none),
+						boost::asio::serial_port_base::stop_bits(boost::asio::serial_port_base::stop_bits::one));
+
 				m_bConnected = isOpen();
 
 				CPluginMessage	Message(PMT_Connected, m_HwdID);
@@ -1570,7 +1581,7 @@ namespace Plugins {
 				}
 				else if (Message.m_Message == "Serial")
 				{
-					if (m_bDebug) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s, %d.", Name.c_str(), Message.m_Message.c_str(), Message.m_Port.c_str(), Message.m_iValue);
+					if (m_bDebug) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', '%s', %d.", Name.c_str(), Message.m_Message.c_str(), Message.m_Port.c_str(), Message.m_iValue);
 					m_pTransport = (CPluginTransport*) new CPluginTransportSerial(m_HwdID, Message.m_Port, Message.m_iValue);
 				}
 				else
