@@ -906,7 +906,6 @@ define(['app'], function (app) {
 				}
 				return;
 			}
-alert(text);
             if (text.indexOf("1-Wire") >= 0)
             {
                 var owfspath=$("#hardwarecontent #div1wire #owfspath").val();
