@@ -100,9 +100,15 @@ define(['app'], function (app) {
 				$scope.mytimer = undefined;
 			}
 		  var id="";
-
+		  var bFavorites=1;
+		  if (typeof window.myglobals.LastPlanSelected!= 'undefined') {
+			if (window.myglobals.LastPlanSelected>0) {
+				bFavorites=0;
+			}
+		  }
+		  
 		  $.ajax({
-			 url: "json.htm?type=devices&filter=all&used=true&favorite=1&order=Name&plan="+window.myglobals.LastPlanSelected+"&lastupdate="+$scope.LastUpdateTime,
+			 url: "json.htm?type=devices&filter=all&used=true&favorite="+bFavorites+"&order=Name&plan="+window.myglobals.LastPlanSelected+"&lastupdate="+$scope.LastUpdateTime,
 			 async: false,
 			 dataType: 'json',
 			 success: function(data) {
@@ -116,7 +122,10 @@ define(['app'], function (app) {
 				}
 				$.each(data.result, function(i,item){
 								//Scenes
-								if (((item.Type.indexOf('Scene') == 0)||(item.Type.indexOf('Group') == 0))&&(item.Favorite!=0))
+								if (
+									(item.Type.indexOf('Scene') == 0)||
+									(item.Type.indexOf('Group') == 0)
+								   )
 								{
 									id="#dashcontent #scene_" + item.idx;
 									var obj=$(id);
@@ -251,8 +260,24 @@ define(['app'], function (app) {
 												status='<button class="btn btn-mini btn-info" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.t("Open") +'</button>';
 											}
 										}
-										else if ((item.SwitchType == "Blinds")||(item.SwitchType.indexOf("Venetian Blinds") == 0)) {
-											if ((item.SubType=="RAEX")||(item.SubType.indexOf('A-OK') == 0)||(item.SubType.indexOf('RollerTrol') == 0)||(item.SubType=="Harrison")||(item.SubType.indexOf('RFY') == 0)||(item.SubType.indexOf('ASA') == 0)||(item.SubType.indexOf('T6 DC') == 0)||(item.SwitchType.indexOf("Venetian Blinds") == 0)) {
+										else if ((item.SwitchType == "Blinds") || (item.SwitchType.indexOf("Venetian Blinds") == 0)) {
+										    if (
+                                                (item.SubType == "RAEX") ||
+                                                (item.SubType.indexOf('A-OK') == 0) ||
+                                                (item.SubType.indexOf('Hasta') >= 0) ||
+                                                (item.SubType.indexOf('Media Mount') == 0) ||
+                                                (item.SubType.indexOf('Forest') == 0) ||
+                                                (item.SubType.indexOf('Chamberlain') == 0) ||
+                                                (item.SubType.indexOf('Sunpery') == 0) ||
+                                                (item.SubType.indexOf('Dolat') == 0) ||
+                                                (item.SubType.indexOf('ASP') == 0) ||
+                                                (item.SubType == "Harrison") ||
+                                                (item.SubType.indexOf('RFY') == 0) ||
+                                                (item.SubType.indexOf('ASA') == 0) ||
+                                                (item.SubType.indexOf('DC106') == 0) ||
+                                                (item.SubType.indexOf('Confexx') == 0) ||
+                                                (item.SwitchType.indexOf("Venetian Blinds") == 0)
+                                               ) {
 												if (item.Status == 'Closed') {
 												status=
 													'<button class="btn btn-mini" type="button" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected +');">' + $.t("Open") +'</button> ' +
@@ -280,7 +305,22 @@ define(['app'], function (app) {
 											}
 										}
 										else if (item.SwitchType == "Blinds Inverted") {
-											if ((item.SubType=="RAEX")||(item.SubType.indexOf('A-OK') == 0)||(item.SubType.indexOf('RollerTrol') == 0)||(item.SubType=="Harrison")||(item.SubType.indexOf('RFY') == 0)||(item.SubType.indexOf('ASA') == 0)||(item.SubType.indexOf('T6 DC') == 0)) {
+										    if (
+                                                (item.SubType == "RAEX") ||
+                                                (item.SubType.indexOf('A-OK') == 0) ||
+                                                (item.SubType.indexOf('Hasta') >= 0) ||
+                                                (item.SubType.indexOf('Media Mount') == 0) ||
+                                                (item.SubType.indexOf('Forest') == 0) ||
+                                                (item.SubType.indexOf('Chamberlain') == 0) ||
+                                                (item.SubType.indexOf('Sunpery') == 0) ||
+                                                (item.SubType.indexOf('Dolat') == 0) ||
+                                                (item.SubType.indexOf('ASP') == 0) ||
+                                                (item.SubType == "Harrison") ||
+                                                (item.SubType.indexOf('RFY') == 0) ||
+                                                (item.SubType.indexOf('ASA') == 0) ||
+                                                (item.SubType.indexOf('DC106') == 0) ||
+                                                (item.SubType.indexOf('Confexx') == 0)
+                                               ) {
 												if (item.Status == 'Closed') {
 													status=
 														'<button class="btn btn-mini" type="button" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected +');">' + $.t("Open") +'</button> ' +
@@ -353,7 +393,7 @@ define(['app'], function (app) {
 											}
 										}
 										else if (item.SwitchType == "TPI") {
-											var RO=(item.Unit>0)?true:false;
+											var RO=(item.Unit<64 || item.Unit>95)?true:false;
 											isdimmer=true;
 											var img="";
 											if (item.Status == 'On')
@@ -542,7 +582,23 @@ define(['app'], function (app) {
 											}
 										}
 										else if ((item.SwitchType == "Blinds")||(item.SwitchType.indexOf("Venetian Blinds") == 0)) {
-											if ((item.SubType=="RAEX")||(item.SubType.indexOf('A-OK') == 0)||(item.SubType.indexOf('RollerTrol') == 0)||(item.SubType=="Harrison")||(item.SubType.indexOf('RFY') == 0)||(item.SubType.indexOf('ASA') == 0)||(item.SubType.indexOf('T6 DC') == 0)||(item.SwitchType.indexOf("Venetian Blinds") == 0)) {
+										    if (
+                                                (item.SubType == "RAEX") ||
+                                                (item.SubType.indexOf('A-OK') == 0) ||
+                                                (item.SubType.indexOf('Hasta') >= 0) ||
+                                                (item.SubType.indexOf('Media Mount') == 0) ||
+                                                (item.SubType.indexOf('Forest') == 0) ||
+                                                (item.SubType.indexOf('Chamberlain') == 0) ||
+                                                (item.SubType.indexOf('Sunpery') == 0) ||
+                                                (item.SubType.indexOf('Dolat') == 0) ||
+                                                (item.SubType.indexOf('ASP') == 0) ||
+                                                (item.SubType == "Harrison") ||
+                                                (item.SubType.indexOf('RFY') == 0) ||
+                                                (item.SubType.indexOf('ASA') == 0) ||
+                                                (item.SubType.indexOf('DC106') == 0) ||
+                                                (item.SubType.indexOf('Confexx') == 0) ||
+                                                (item.SwitchType.indexOf("Venetian Blinds") == 0)
+                                               ) {
 												if (item.Status == 'Closed') {
 													img='<img src="images/blindsopen48.png" title="' + $.t("Open Blinds") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected +');" class="lcursor" height="40" width="40">';
 													img3='<img src="images/blinds48sel.png" title="' + $.t("Close Blinds") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected +');" class="lcursor" height="40" width="40">';
@@ -564,7 +620,22 @@ define(['app'], function (app) {
 											}
 										}
 										else if (item.SwitchType == "Blinds Inverted") {
-											if ((item.SubType=="RAEX")||(item.SubType.indexOf('A-OK') == 0)||(item.SubType.indexOf('RollerTrol') == 0)||(item.SubType=="Harrison")||(item.SubType.indexOf('RFY') == 0)||(item.SubType.indexOf('ASA') == 0)||(item.SubType.indexOf('T6 DC') == 0)) {
+										    if (
+                                                (item.SubType == "RAEX") ||
+                                                (item.SubType.indexOf('A-OK') == 0) ||
+                                                (item.SubType.indexOf('Hasta') >= 0) ||
+                                                (item.SubType.indexOf('Media Mount') == 0) ||
+                                                (item.SubType.indexOf('Forest') == 0) ||
+                                                (item.SubType.indexOf('Chamberlain') == 0) ||
+                                                (item.SubType.indexOf('Sunpery') == 0) ||
+                                                (item.SubType.indexOf('Dolat') == 0) ||
+                                                (item.SubType.indexOf('ASP') == 0) ||
+                                                (item.SubType == "Harrison") ||
+                                                (item.SubType.indexOf('RFY') == 0) ||
+                                                (item.SubType.indexOf('ASA') == 0) ||
+                                                (item.SubType.indexOf('DC106') == 0) ||
+                                                (item.SubType.indexOf('Confexx') == 0)
+                                               ) {
 												if (item.Status == 'Closed') {
 													img='<img src="images/blindsopen48.png" title="' + $.t("Open Blinds") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected +');" class="lcursor" height="40" width="40">';
 													img3='<img src="images/blinds48sel.png" title="' + $.t("Close Blinds") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected +');" class="lcursor" height="40" width="40">';
@@ -640,7 +711,7 @@ define(['app'], function (app) {
 											}
 										}
 										else if (item.SwitchType == "TPI") {
-											var RO=(item.Unit>0)?true:false;
+										    var RO = (item.Unit < 64 || item.Unit > 95) ? true : false;
 											isdimmer=true;
 											if (
 													(item.Status == 'On')
@@ -1589,8 +1660,16 @@ define(['app'], function (app) {
 				}
 			 }
 		  });
+		  
+		  var bFavorites=1;
+		  if (typeof window.myglobals.LastPlanSelected!= 'undefined') {
+			if (window.myglobals.LastPlanSelected>0) {
+				bFavorites=0;
+			}
+		  }
+		  
 		  $.ajax({
-			 url: "json.htm?type=devices&filter=all&used=true&favorite=1&order=Name&plan="+window.myglobals.LastPlanSelected,
+			 url: "json.htm?type=devices&filter=all&used=true&favorite="+bFavorites+"&order=Name&plan="+window.myglobals.LastPlanSelected,
 			 async: false,
 			 dataType: 'json',
 			 success: function(data) {
@@ -1615,7 +1694,10 @@ define(['app'], function (app) {
 				bHaveAddedDevider = false;
 				$.each(data.result, function(i,item) {
 					//Scenes/Groups
-				  if (((item.Type.indexOf('Scene') == 0)||(item.Type.indexOf('Group') == 0))&&(item.Favorite!=0))
+				  if (
+					(item.Type.indexOf('Scene') == 0)||
+					(item.Type.indexOf('Group') == 0)
+					)
 				  {
 					totdevices+=1;
 					if (jj == 0)
@@ -1855,7 +1937,23 @@ define(['app'], function (app) {
 											}
 										}
 									else if ((item.SwitchType == "Blinds") || (item.SwitchType.indexOf("Venetian Blinds") == 0)) {
-										if ((item.SubType=="RAEX")||(item.SubType.indexOf('A-OK') == 0)||(item.SubType.indexOf('RollerTrol') == 0)||(item.SubType=="Harrison")||(item.SubType.indexOf('RFY') == 0)||(item.SubType.indexOf('ASA') == 0)||(item.SubType.indexOf('T6 DC') == 0)||(item.SwitchType.indexOf("Venetian Blinds") == 0)) {
+									    if (
+                                            (item.SubType == "RAEX") ||
+                                            (item.SubType.indexOf('A-OK') == 0) ||
+                                            (item.SubType.indexOf('Hasta') >= 0) ||
+                                            (item.SubType.indexOf('Media Mount') == 0) ||
+                                            (item.SubType.indexOf('Forest') == 0) ||
+                                            (item.SubType.indexOf('Chamberlain') == 0) ||
+                                            (item.SubType.indexOf('Sunpery') == 0) ||
+                                            (item.SubType.indexOf('Dolat') == 0) ||
+                                            (item.SubType.indexOf('ASP') == 0) ||
+                                            (item.SubType == "Harrison") ||
+                                            (item.SubType.indexOf('RFY') == 0) ||
+                                            (item.SubType.indexOf('ASA') == 0) ||
+                                            (item.SubType.indexOf('DC106') == 0) ||
+                                            (item.SubType.indexOf('Confexx') == 0) ||
+                                            (item.SwitchType.indexOf("Venetian Blinds") == 0)
+                                           ) {
 											if (item.Status == 'Closed') {
 												status=
 													'<button class="btn btn-mini" type="button" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected +');">' + $.t("Open") +'</button> ' +
@@ -1883,7 +1981,22 @@ define(['app'], function (app) {
 										}
 									}
 									else if (item.SwitchType == "Blinds Inverted") {
-										if ((item.SubType=="RAEX")||(item.SubType.indexOf('A-OK') == 0)||(item.SubType.indexOf('RollerTrol') == 0)||(item.SubType=="Harrison")||(item.SubType.indexOf('RFY') == 0)||(item.SubType.indexOf('ASA') == 0)||(item.SubType.indexOf('T6 DC') == 0)) {
+									    if (
+                                            (item.SubType == "RAEX") ||
+                                            (item.SubType.indexOf('A-OK') == 0) ||
+                                            (item.SubType.indexOf('Hasta') >= 0) ||
+                                            (item.SubType.indexOf('Media Mount') == 0) ||
+                                            (item.SubType.indexOf('Forest') == 0) ||
+                                            (item.SubType.indexOf('Chamberlain') == 0) ||
+                                            (item.SubType.indexOf('Sunpery') == 0) ||
+                                            (item.SubType.indexOf('Dolat') == 0) ||
+                                            (item.SubType.indexOf('ASP') == 0) ||
+                                            (item.SubType == "Harrison") ||
+                                            (item.SubType.indexOf('RFY') == 0) ||
+                                            (item.SubType.indexOf('ASA') == 0) ||
+                                            (item.SubType.indexOf('DC106') == 0) ||
+                                            (item.SubType.indexOf('Confexx') == 0)
+                                           ) {
 											if (item.Status == 'Closed') {
 													status=
 														'<button class="btn btn-mini" type="button" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected +');">' + $.t("Open") +'</button> ' +
@@ -1954,7 +2067,7 @@ define(['app'], function (app) {
 										}
 									else if (item.SwitchType == "TPI") {
 										var img="";
-										var RO=(item.Unit>0)?true:false;
+										var RO = (item.Unit < 64 || item.Unit > 95) ? true : false;
 										if (item.Status == 'On')
 										{
 													status=
@@ -2057,11 +2170,11 @@ define(['app'], function (app) {
 										xhtm+='</tr>';
 									}
 									else if (item.SwitchType == "TPI") {
-										var RO=(item.Unit>0)?true:false;
+									    var RO = (item.Unit < 64 || item.Unit > 95) ? true : false;
 										xhtm+='<tr>';
 										xhtm+='<td colspan="2" style="border:0px solid red; padding-top:10px; padding-bottom:10px;">';
 										xhtm+='<div style="margin-top: -11px; margin-left: 24px;" class="dimslider dimslidernorm" id="light_' + item.idx +'_slider" data-idx="' + item.idx + '" data-type="relay" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"';
-										if(item.Unit>0)
+										if (item.Unit < 64 || item.Unit > 95)
 											xhtm+=' data-disabled="true"';
 										xhtm+='></div>';
 										xhtm+='</td>';
@@ -2114,7 +2227,23 @@ define(['app'], function (app) {
 									}
 									xhtm+='\t  <section>\n';
 									if ((item.Type.indexOf('Blind') == 0) || (item.SwitchType == "Blinds") || (item.SwitchType == "Blinds Inverted") || (item.SwitchType == "Blinds Percentage") || (item.SwitchType == "Blinds Percentage Inverted") || (item.SwitchType.indexOf("Venetian Blinds") == 0) || (item.SwitchType.indexOf("Media Player") == 0)) {
-										if ((item.SubType=="RAEX")||(item.SubType.indexOf('A-OK') == 0)||(item.SubType.indexOf('RollerTrol') == 0)||(item.SubType=="Harrison")||(item.SubType.indexOf('RFY') == 0)||(item.SubType.indexOf('ASA') == 0)||(item.SubType.indexOf('T6 DC') == 0)||(item.SwitchType.indexOf("Venetian Blinds") == 0)) {
+									    if (
+                                            (item.SubType == "RAEX") ||
+                                            (item.SubType.indexOf('A-OK') == 0) ||
+                                            (item.SubType.indexOf('Hasta') >= 0) ||
+                                            (item.SubType.indexOf('Media Mount') == 0) ||
+                                            (item.SubType.indexOf('Forest') == 0) ||
+                                            (item.SubType.indexOf('Chamberlain') == 0) ||
+                                            (item.SubType.indexOf('Sunpery') == 0) ||
+                                            (item.SubType.indexOf('Dolat') == 0) ||
+                                            (item.SubType.indexOf('ASP') == 0) ||
+                                            (item.SubType == "Harrison") ||
+                                            (item.SubType.indexOf('RFY') == 0) ||
+                                            (item.SubType.indexOf('ASA') == 0) ||
+                                            (item.SubType.indexOf('DC106') == 0) ||
+                                            (item.SubType.indexOf('Confexx') == 0) ||
+                                            (item.SwitchType.indexOf("Venetian Blinds") == 0)
+                                           ) {
 											xhtm+='\t    <table id="itemtablesmalltrippleicon" border="0" cellpadding="0" cellspacing="0">\n';
 										}
 										else {
@@ -2196,7 +2325,23 @@ define(['app'], function (app) {
 									    status = item.Data;
 									}
 									else if ((item.SwitchType == "Blinds") || (item.SwitchType.indexOf("Venetian Blinds") == 0)) {
-										if ((item.SubType=="RAEX")||(item.SubType.indexOf('A-OK') == 0)||(item.SubType.indexOf('RollerTrol') == 0)||(item.SubType=="Harrison")||(item.SubType.indexOf('RFY') == 0)||(item.SubType.indexOf('ASA') == 0)||(item.SubType.indexOf('T6 DC') == 0)||(item.SwitchType.indexOf("Venetian Blinds") == 0)) {
+									    if (
+                                            (item.SubType == "RAEX") ||
+                                            (item.SubType.indexOf('A-OK') == 0) ||
+                                            (item.SubType.indexOf('Hasta') >= 0) ||
+                                            (item.SubType.indexOf('Media Mount') == 0) ||
+                                            (item.SubType.indexOf('Forest') == 0) ||
+                                            (item.SubType.indexOf('Chamberlain') == 0) ||
+                                            (item.SubType.indexOf('Sunpery') == 0) ||
+                                            (item.SubType.indexOf('Dolat') == 0) ||
+                                            (item.SubType.indexOf('ASP') == 0) ||
+                                            (item.SubType == "Harrison") ||
+                                            (item.SubType.indexOf('RFY') == 0) ||
+                                            (item.SubType.indexOf('ASA') == 0) ||
+                                            (item.SubType.indexOf('DC106') == 0) ||
+                                            (item.SubType.indexOf('Confexx') == 0) ||
+                                            (item.SwitchType.indexOf("Venetian Blinds") == 0)
+                                           ) {
 											if (item.Status == 'Closed') {
 												xhtm+='\t      <td id="img"><img src="images/blindsopen48.png" title="' + $.t("Open Blinds") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected +');" class="lcursor" height="40" width="40"></td>\n';
 												xhtm+='\t      <td id="img2"><img src="images/blindsstop.png" title="' + $.t("Stop Blinds") +'" onclick="SwitchLight(' + item.idx + ',\'Stop\',RefreshFavorites,' + item.Protected +');" class="lcursor" height="40" width="24"></td>\n';
@@ -2220,7 +2365,22 @@ define(['app'], function (app) {
 										}
 									}
 									else if (item.SwitchType == "Blinds Inverted") {
-										if ((item.SubType=="RAEX")||(item.SubType.indexOf('A-OK') == 0)||(item.SubType.indexOf('RollerTrol') == 0)||(item.SubType=="Harrison")||(item.SubType.indexOf('RFY') == 0)||(item.SubType.indexOf('ASA') == 0)||(item.SubType.indexOf('T6 DC') == 0)) {
+									    if (
+                                            (item.SubType == "RAEX") ||
+                                            (item.SubType.indexOf('A-OK') == 0) ||
+                                            (item.SubType.indexOf('Hasta') >= 0) ||
+                                            (item.SubType.indexOf('Media Mount') == 0) ||
+                                            (item.SubType.indexOf('Forest') == 0) ||
+                                            (item.SubType.indexOf('Chamberlain') == 0) ||
+                                            (item.SubType.indexOf('Sunpery') == 0) ||
+                                            (item.SubType.indexOf('Dolat') == 0) ||
+                                            (item.SubType.indexOf('ASP') == 0) ||
+                                            (item.SubType == "Harrison") ||
+                                            (item.SubType.indexOf('RFY') == 0) ||
+                                            (item.SubType.indexOf('ASA') == 0) ||
+                                            (item.SubType.indexOf('DC106') == 0) ||
+                                            (item.SubType.indexOf('Confexx') == 0)
+                                           ) {
 											if (item.Status == 'Closed') {
 												xhtm+='\t      <td id="img"><img src="images/blindsopen48.png" title="' + $.t("Open Blinds") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected +');" class="lcursor" height="40" width="40"></td>\n';
 												xhtm+='\t      <td id="img2"><img src="images/blindsstop.png" title="' + $.t("Stop Blinds") +'" onclick="SwitchLight(' + item.idx + ',\'Stop\',RefreshFavorites,' + item.Protected +');" class="lcursor" height="40" width="24"></td>\n';
@@ -2295,7 +2455,7 @@ define(['app'], function (app) {
 										}
 									}
 									else if (item.SwitchType == "TPI") {
-										var RO=(item.Unit>0)?true:false;
+									    var RO = (item.Unit < 64 || item.Unit > 95) ? true : false;
 										if (item.Status == 'On')
 										{
 													xhtm+='\t      <td id="img"><img src="images/Fireplace48_On.png" title="' + $.t(RO?"On":"Turn Off") + (RO?'"':'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected +');" class="lcursor"') + ' height="40" width="40"></td>\n';
@@ -2386,7 +2546,7 @@ define(['app'], function (app) {
 									}
 									else if (item.SwitchType == "TPI") {
 										xhtm+='<td><div style="margin-left:50px; margin-top: 0.2em;" class="dimslider dimslidernorm" id="slider" data-idx="' + item.idx + '" data-type="relay" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"';
-										if(item.Unit>0)
+										if (item.Unit < 64 || item.Unit > 95)
 											xhtm+=' data-disabled="true"';
 										xhtm+='></div></td>';
 									}
@@ -3373,7 +3533,7 @@ define(['app'], function (app) {
 								(item.SubType=="Sound Level")||
 								(item.SubType == "Waterflow")||
 								(item.Type == "Current")||
-								(item.SybType == "Custom Sensor")
+								(item.SubType == "Custom Sensor")
 							) {
 							xhtm+=item.Data;
 						}

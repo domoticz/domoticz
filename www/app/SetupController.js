@@ -87,6 +87,14 @@ define(['app'], function (app) {
 				}
 				extraparams = "PushbulletAPI=" + PushbulletAPI;
 				break;
+			case "pushsafer":
+				var PushsaferAPI=encodeURIComponent($("#pushsafertable #PushsaferAPI").val());
+				if (PushsaferAPI=="") {
+					ShowNotify($.t('Please enter the API key!...'), 3500, true);
+					return;
+				}
+				extraparams = "PushsaferAPI=" + PushsaferAPI;
+				break;				
 			case "pushover":
 				var POAPI=encodeURIComponent($("#pushovertable #PushoverAPI").val());
 				if (POAPI=="") {
@@ -257,6 +265,12 @@ define(['app'], function (app) {
 			  if (typeof data.PushbulletAPI != 'undefined') {
 				$("#pushbullettable #PushbulletAPI").val(data.PushbulletAPI);
 			  }
+			  if (typeof data.PushsaferEnabled != 'undefined') {
+  				$("#pushsafertable #PushsaferEnabled").prop('checked',data.PushsaferEnabled==1);
+			  }			  
+			  if (typeof data.PushsaferAPI != 'undefined') {
+				$("#pushsafertable #PushsaferAPI").val(data.PushsaferAPI);
+			  }			  
 			  if (typeof data.PushoverEnabled != 'undefined') {
   				$("#pushovertable #PushoverEnabled").prop('checked',data.PushoverEnabled==1);
 			  }
@@ -524,6 +538,9 @@ define(['app'], function (app) {
 
 			  if (typeof data.DisableEventScriptSystem!= 'undefined') {
 				$("#eventsystemtable #DisableEventScriptSystem").prop('checked',data.DisableEventScriptSystem==1);
+			  }
+			  if (typeof data.LogEventScriptTrigger != 'undefined') {
+			    $("#eventsystemtable #LogEventScriptTrigger").prop('checked',data.LogEventScriptTrigger==1);
 			  }
 
 			  if (typeof data.FloorplanPopupDelay!= 'undefined') {

@@ -962,9 +962,7 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 		break;
 	case V_WEIGHT:
 		if (pChild->GetValue(vType, floatValue))
-		{
-			while (1 == 0);
-		}
+			SendCustomSensor(pChild->nodeID, pChild->childID, pChild->batValue, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Weight", "g");
 		break;
 	case V_CURRENT:
 		if (pChild->GetValue(vType, floatValue))
@@ -1711,6 +1709,26 @@ void MySensorsBase::ParseLine()
 			//Used between sensors when initiating signing.
 			while (1 == 0);
 			break;
+		case I_PING:
+			//Ping sent to node, payload incremental hop counter
+			while (1 == 0);
+			break;
+		case I_PONG:
+			//In return to ping, sent back to sender, payload incremental hop counter
+			while (1 == 0);
+			break;
+		case I_REGISTRATION_REQUEST:
+			//Register request to GW
+			while (1 == 0);
+			break;
+		case I_REGISTRATION_RESPONSE:
+			//Register response from GW
+			while (1 == 0);
+			break;
+		case I_DEBUG:
+			//Debug message
+			while (1 == 0);
+			break;
 		default:
 			while (1==0);
 			break;
@@ -1944,7 +1962,7 @@ void MySensorsBase::ParseLine()
 			//Request for a sensor state
 			if (!payload.empty())
 			{
-				unsigned long long idx = boost::lexical_cast<unsigned long long>(payload);
+				uint64_t idx = boost::lexical_cast<uint64_t>(payload);
 				int nValue;
 				std::string sValue;
 				if (m_mainworker.GetSensorData(idx, nValue, sValue))
@@ -2214,7 +2232,10 @@ namespace http {
 		void CWebServer::Cmd_MySensorsGetNodes(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 			std::string hwid = request::findValue(&req, "idx");
 			if (hwid == "")
 				return;
@@ -2224,7 +2245,8 @@ namespace http {
 				return;
 			if (
 				(pHardware->HwdType != HTYPE_MySensorsUSB)&&
-				(pHardware->HwdType != HTYPE_MySensorsTCP)
+				(pHardware->HwdType != HTYPE_MySensorsTCP)&&
+				(pHardware->HwdType != HTYPE_MySensorsMQTT)
 				)
 				return;
 			MySensorsBase *pMySensorsHardware = reinterpret_cast<MySensorsBase*>(pHardware);
@@ -2285,7 +2307,10 @@ namespace http {
 		void CWebServer::Cmd_MySensorsGetChilds(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 			std::string hwid = request::findValue(&req, "idx");
 			std::string nodeid = request::findValue(&req, "nodeid");
 			if (
@@ -2299,7 +2324,8 @@ namespace http {
 				return;
 			if (
 				(pHardware->HwdType != HTYPE_MySensorsUSB) &&
-				(pHardware->HwdType != HTYPE_MySensorsTCP)
+				(pHardware->HwdType != HTYPE_MySensorsTCP) &&
+				(pHardware->HwdType != HTYPE_MySensorsMQTT)
 				)
 				return;
 			MySensorsBase *pMySensorsHardware = reinterpret_cast<MySensorsBase*>(pHardware);
@@ -2328,15 +2354,22 @@ namespace http {
 					MySensorsBase::_tMySensorChild*  pChild = pNode->FindChild(ChildID);
 					if (pChild != NULL)
 					{
-						std::vector<MySensorsBase::_eSetType> cvalues = pChild->GetChildValueTypes();
-						std::vector<MySensorsBase::_eSetType>::const_iterator citt;
-						for (citt = cvalues.begin(); citt != cvalues.end(); ++citt)
+						std::vector<MySensorsBase::_eSetType> ctypes = pChild->GetChildValueTypes();
+						std::vector<std::string> cvalues = pChild->GetChildValues();
+						size_t iVal;
+						for (iVal = 0; iVal < ctypes.size(); iVal++)
 						{
 							if (!szValues.empty())
 								szValues += ", ";
-							szValues += MySensorsBase::GetMySensorsValueTypeStr(*citt);
+							szValues += MySensorsBase::GetMySensorsValueTypeStr(ctypes[iVal]);
+							szValues += " (";
+							szValues += cvalues[iVal];
+							szValues += ")";
 						}
-						szValues.insert(0, "#" + boost::lexical_cast<std::string>(pChild->groupID) + ". ");
+						if (!szValues.empty())
+						{
+							szValues.insert(0, "#" + boost::lexical_cast<std::string>(pChild->groupID) + ". ");
+						}
 						if (pChild->lastreceived != 0)
 						{
 							char szTmp[100];
@@ -2356,8 +2389,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string hwid = request::findValue(&req, "idx");
@@ -2375,7 +2408,8 @@ namespace http {
 				return;
 			if (
 				(pBaseHardware->HwdType != HTYPE_MySensorsUSB) &&
-				(pBaseHardware->HwdType != HTYPE_MySensorsTCP)
+				(pBaseHardware->HwdType != HTYPE_MySensorsTCP) &&
+				(pBaseHardware->HwdType != HTYPE_MySensorsMQTT)
 				)
 				return;
 			MySensorsBase *pMySensorsHardware = reinterpret_cast<MySensorsBase*>(pBaseHardware);
@@ -2388,8 +2422,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string hwid = request::findValue(&req, "idx");
@@ -2405,7 +2439,8 @@ namespace http {
 				return;
 			if (
 				(pBaseHardware->HwdType != HTYPE_MySensorsUSB) &&
-				(pBaseHardware->HwdType != HTYPE_MySensorsTCP)
+				(pBaseHardware->HwdType != HTYPE_MySensorsTCP) &&
+				(pBaseHardware->HwdType != HTYPE_MySensorsMQTT)
 				)
 				return;
 			MySensorsBase *pMySensorsHardware = reinterpret_cast<MySensorsBase*>(pBaseHardware);
@@ -2418,8 +2453,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string hwid = request::findValue(&req, "idx");
@@ -2437,7 +2472,8 @@ namespace http {
 				return;
 			if (
 				(pBaseHardware->HwdType != HTYPE_MySensorsUSB) &&
-				(pBaseHardware->HwdType != HTYPE_MySensorsTCP)
+				(pBaseHardware->HwdType != HTYPE_MySensorsTCP) &&
+				(pBaseHardware->HwdType != HTYPE_MySensorsMQTT)
 				)
 				return;
 			MySensorsBase *pMySensorsHardware = reinterpret_cast<MySensorsBase*>(pBaseHardware);
@@ -2451,8 +2487,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string hwid = request::findValue(&req, "idx");
@@ -2474,7 +2510,8 @@ namespace http {
 				return;
 			if (
 				(pBaseHardware->HwdType != HTYPE_MySensorsUSB) &&
-				(pBaseHardware->HwdType != HTYPE_MySensorsTCP)
+				(pBaseHardware->HwdType != HTYPE_MySensorsTCP) &&
+				(pBaseHardware->HwdType != HTYPE_MySensorsMQTT)
 				)
 				return;
 			MySensorsBase *pMySensorsHardware = reinterpret_cast<MySensorsBase*>(pBaseHardware);

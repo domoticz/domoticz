@@ -31,11 +31,12 @@ enum _eSwitchType
 
 enum _eMeterType
 {
-	MTYPE_ENERGY=0,
-	MTYPE_GAS,
-	MTYPE_WATER,
-    MTYPE_COUNTER,
-	MTYPE_ENERGY_GENERATED,
+	MTYPE_ENERGY=0,			//0
+	MTYPE_GAS,				//1
+	MTYPE_WATER,			//2
+    MTYPE_COUNTER,			//3
+	MTYPE_ENERGY_GENERATED,	//4
+	MTYPE_TIME,				//5
 	MTYPE_END
 };
 
@@ -104,7 +105,7 @@ enum _eHardwareTypes {
 	HTYPE_LimitlessLights,		//22
 	HTYPE_System,				//23
 	HTYPE_EnOceanESP2,			//24
-	HTYPE_ForecastIO,			//25
+	HTYPE_DarkSky,				//25
 	HTYPE_SolarEdgeTCP,			//26
 	HTYPE_SBFSpot,				//27
 	HTYPE_ICYTHERMOSTAT,		//28
@@ -166,6 +167,16 @@ enum _eHardwareTypes {
 	HTYPE_GoodweAPI,			//84
 	HTYPE_RaspberryTSL2561,		//85
 	HTYPE_Daikin,				//86
+	HTYPE_HEOS,					//87
+	HTYPE_MultiFun,				//88
+	HTYPE_ZIBLUEUSB,			//89
+	HTYPE_ZIBLUETCP,			//90
+	HTYPE_Yeelight,				//91
+	HTYPE_MySensorsMQTT,		//92
+	HTYPE_RaspberryPCF8574,		//93
+	HTYPE_PythonPlugin,			//94
+	HTYPE_XiaomiGateway,		//95
+	HTYPE_RaspberryBME280,		//96
 	HTYPE_END
 };
 

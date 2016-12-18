@@ -6,6 +6,7 @@
 #include "../main/RFXtrx.h"
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
+#include "../main/SQLHelper.h"
 
 #include "../main/mainworker.h"
 #include "../main/WebServer.h"
@@ -106,6 +107,19 @@ const _tRFLinkStringIntHelper rfswitches[] =
 	{ "MiLightv1", sSwitchMiLightv1 },
 	{ "MiLightv2", sSwitchMiLightv2 },
 	{ "HT6P20", sSwitchHT6P20 },
+	{ "Doitrand", sSwitchTypeDoitrand },
+	{ "Warema", sSwitchTypeWarema },
+	{ "Ansluta", sSwitchTypeAnsluta },
+	{ "Livcol", sSwitchTypeLivcol },
+	{ "Bosch", sSwitchTypeBosch },
+	{ "Ningbo", sSwitchTypeNingbo },
+	{ "Ditec", sSwitchTypeDitec },
+	{ "Steffen", sSwitchTypeSteffen },
+	{ "AlectoSA", sSwitchTypeAlectoSA },
+	{ "GPIOset", sSwitchTypeGPIOset },
+	{ "KonigSec", sSwitchTypeKonigSec },
+	{ "RM174RF", sSwitchTypeRM174RF },
+	{ "Liwin", sSwitchTypeLiwin },
 	{ "", -1 }
 };
 
@@ -226,6 +240,17 @@ void CRFLinkBase::ParseData(const char *data, size_t len)
 
 #define round(a) ( int ) ( a + .5 )
 
+void GetSwitchType(const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, int &switchType)
+{
+	switchType = 0;
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT SwitchType FROM DeviceStatus WHERE (DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", ID, unit, devType, subType);
+	if (result.size() != 0)
+	{
+		switchType = atoi(result[0][0].c_str());
+	}
+}
+
 bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	const _tGeneralSwitch *pSwitch = reinterpret_cast<const _tGeneralSwitch*>(pdata);
@@ -240,10 +265,29 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 		_log.Log(LOG_ERROR, "RFLink: trying to send unknown switch type: %d", pSwitch->subtype);
 		return false;
 	}
+	//_log.Log(LOG_ERROR, "RFLink: id: %d", pSwitch->id);
 	//_log.Log(LOG_ERROR, "RFLink: subtype: %d", pSwitch->subtype);
+
+	// get SwitchType from SQL table
+	int m_SwitchType = 0;
+	char szDeviceID[20];
+	sprintf(szDeviceID, "%08X", pSwitch->id);
+	std::string ID = szDeviceID;
+	GetSwitchType(ID.c_str(), pSwitch->unitcode, pSwitch->type, pSwitch->subtype, m_SwitchType);
+	//_log.Log(LOG_ERROR, "RFLink: switch type: %d", m_SwitchType);
 
 	if (pSwitch->type == pTypeGeneralSwitch) {
 		std::string switchcmnd = GetGeneralRFLinkFromInt(rfswitchcommands, pSwitch->cmnd);
+		
+		if ((m_SwitchType == STYPE_VenetianBlindsEU) || (m_SwitchType == STYPE_Blinds)) {
+			switchcmnd = GetGeneralRFLinkFromInt(rfblindcommands, pSwitch->cmnd);
+		} else
+			if ((m_SwitchType == STYPE_VenetianBlindsUS) || (m_SwitchType == STYPE_BlindsInverted)) {
+				switchcmnd = GetGeneralRFLinkFromInt(rfblindcommands, pSwitch->cmnd);
+				if (pSwitch->cmnd == blinds_sOpen) switchcmnd = GetGeneralRFLinkFromInt(rfblindcommands, blinds_sClose);
+				else if (pSwitch->cmnd == blinds_sClose) switchcmnd = GetGeneralRFLinkFromInt(rfblindcommands, blinds_sOpen);
+			}
+		//_log.Log(LOG_ERROR, "RFLink: switch command: %d", pSwitch->cmnd);
 
         // check setlevel command
         if (pSwitch->cmnd == gswitch_sSetLevel) {
@@ -279,7 +323,7 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
     
 		// Wait for an OK response from RFLink to make sure the command was executed
 		while (m_bTXokay == false) {
-			if (btime-atime > 4) {
+			if (difftime(btime,atime) > 4) {
 				_log.Log(LOG_ERROR, "RFLink: TX time out...");
 				return false;
 			}
@@ -387,7 +431,7 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 
 			// Wait for an OK response from RFLink to make sure the command was executed
 			while (m_bTXokay == false) {
-				if (btime - atime > 4) {
+				if (difftime(btime,atime) > 4) {
 					_log.Log(LOG_ERROR, "RFLink: TX time out...");
 					return false;
 				}
@@ -412,7 +456,7 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 
 		// Wait for an OK response from RFLink to make sure the command was executed
 		while (m_bTXokay == false) {
-			if (btime - atime > 4) {
+			if (difftime(btime,atime) > 4) {
 				_log.Log(LOG_ERROR, "RFLink: TX time out...");
 				return false;
 			}
@@ -981,7 +1025,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				return;									//No admin user, and not allowed to be here
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string idx = request::findValue(&req, "idx");
@@ -1017,7 +1062,7 @@ namespace http {
 
 			// Wait for an OK response from RFLink to make sure the command was executed
 			while (pRFLINK->m_bTXokay == false) {
-				if (btime - atime > 4) {
+				if (difftime(btime,atime) > 4) {
 					_log.Log(LOG_ERROR, "RFLink: TX time out...");
 					bCreated = false;
 					break;

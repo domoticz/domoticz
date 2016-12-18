@@ -3,6 +3,10 @@ cmake_minimum_required(VERSION 2.8.4)
 
 project(domoticz)
 
+## required min. libBoost version
+SET(DOMO_MIN_LIBBOOST_VERSION 105500)
+##
+
 option(USE_BUILTIN_LUA "Use builtin lua library" YES)
 IF(USE_BUILTIN_LUA)
   add_subdirectory (lua)
@@ -56,6 +60,18 @@ ELSE(USE_BUILTIN_SQLITE)
     MESSAGE(FATAL_ERROR "SQLite3 not found but USE_BUILTIN_SQLITE=NO")
   ENDIF(SQLite_FOUND)
 ENDIF(USE_BUILTIN_SQLITE)
+
+option(USE_PYTHON_PLUGINS "Use Python Plugins" YES)
+IF(USE_PYTHON_PLUGINS)
+  find_package(PythonLibs 3.2)
+  IF(PYTHONLIBS_FOUND)
+    MESSAGE(STATUS "Python3 includes found at: ${PYTHON_INCLUDE_PATH}")
+    INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
+    add_definitions(-DUSE_PYTHON_PLUGINS)
+  ELSE(PYTHONLIBS_FOUND)
+    MESSAGE(FATAL_ERROR "Python3 not found on your system, use USE_PYTHON_PLUGINS=NO or sudo apt-get install python3-dev)")
+  ENDIF(PYTHONLIBS_FOUND)
+ENDIF(USE_PYTHON_PLUGINS)
 
 SET(EXECUTABLE_OUTPUT_PATH "" CACHE INTERNAL
   "Where to put the executables for Domoticz"
@@ -250,6 +266,7 @@ hardware/CurrentCostMeterBase.cpp
 hardware/CurrentCostMeterSerial.cpp
 hardware/CurrentCostMeterTCP.cpp
 hardware/Daikin.cpp
+hardware/DarkSky.cpp
 hardware/DavisLoggerSerial.cpp
 hardware/DenkoviSmartdenLan.cpp
 hardware/DomoticzHardware.cpp
@@ -263,13 +280,13 @@ hardware/Ec3kMeterTCP.cpp
 hardware/evohome.cpp
 hardware/ETH8020.cpp
 hardware/Fitbit.cpp
-hardware/ForecastIO.cpp
 hardware/FritzboxTCP.cpp
 hardware/GoodweAPI.cpp
 hardware/Gpio.cpp
 hardware/GpioPin.cpp
 hardware/HardwareMonitor.cpp
 hardware/HarmonyHub.cpp
+hardware/HEOS.cpp
 hardware/I2C.cpp
 hardware/ICYThermostat.cpp
 hardware/KMTronicBase.cpp
@@ -282,9 +299,11 @@ hardware/LogitechMediaServer.cpp
 hardware/Meteostick.cpp
 hardware/MochadTCP.cpp
 hardware/MQTT.cpp
+hardware/MultiFun.cpp
 hardware/MySensorsBase.cpp
 hardware/MySensorsSerial.cpp
 hardware/MySensorsTCP.cpp
+hardware/MySensorsMQTT.cpp
 hardware/NefitEasy.cpp
 hardware/Nest.cpp
 hardware/Netatmo.cpp
@@ -337,7 +356,13 @@ hardware/Winddelen.cpp
 hardware/WOL.cpp
 hardware/Wunderground.cpp
 hardware/YouLess.cpp
+hardware/ZiBlueBase.cpp
+hardware/ZiBlueSerial.cpp
+hardware/ZiBlueTCP.cpp
 hardware/ZWaveBase.cpp
+hardware/Yeelight.cpp
+hardware/XiaomiGateway.cpp
+hardware/plugins/PluginManager.cpp
 notifications/NotificationBase.cpp
 notifications/NotificationEmail.cpp
 notifications/NotificationGCM.cpp
@@ -349,6 +374,7 @@ notifications/NotificationNma.cpp
 notifications/NotificationPushbullet.cpp
 notifications/NotificationProwl.cpp
 notifications/NotificationPushover.cpp
+notifications/NotificationPushsafer.cpp
 notifications/NotificationPushalot.cpp
 notifications/NotificationSMS.cpp
 smtpclient/SMTPClient.cpp
@@ -440,6 +466,12 @@ if(USE_STATIC_BOOST)
 else(USE_STATIC_BOOST)
    message(STATUS "Linking against boost dynamic libraries")
 endif(USE_STATIC_BOOST)
+
+# compare found vs required libBoost version
+if(Boost_VERSION VERSION_LESS DOMO_MIN_LIBBOOST_VERSION)
+   message(FATAL_ERROR "Found libBoost version ${Boost_VERSION}, ${DOMO_MIN_LIBBOOST_VERSION} or newer required")
+endif(Boost_VERSION VERSION_LESS DOMO_MIN_LIBBOOST_VERSION)
+
 include_directories(${Boost_INCLUDE_DIRS})
 
 

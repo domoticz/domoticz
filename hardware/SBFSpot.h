@@ -32,6 +32,6 @@ private:
 	void GetMeterDetails();
 	int getSunRiseSunSetMinutes(const bool bGetSunRise);
 
-	void ImportOldMonthData(const unsigned long long DevID, const int Year, const int Month);
+	void ImportOldMonthData(const uint64_t DevID, const int Year, const int Month);
 };
 

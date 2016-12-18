@@ -27,8 +27,22 @@ portions of this file.
 */
 
 /*
+SDK version 9.13
+	BlindsT13 - Screenline added
+
+SDK version 9.12
+	Thermostat4 updated
+
+SDK version 9.11
+	FAN - Westinghouse fan added
+	Security1 - RM174RF added
+	Thermostat4 added
+
+SDK version 9.10
+	FAN - SEAV remote added
+
 SDK version 9.09
-	SEAV remote added
+	Lighting5 - MDremote108 added
 
 SDK version 9.08
 	CARTELECTRONIC TIC and Encoder added
@@ -328,6 +342,9 @@ SDK version 4.9
 #define cmd835		0x59 // select 868.35MHz ASK in the 868 transceiver
 #define cmd835F		0x5A // select 868.35MHz FSK in the 868 transceiver
 #define cmd895		0x5B // select 868.95MHz in the 868 transceiver
+#define cmd830F_P	0x5C // select 868.30MHz FSK PKT in the 868 transceiver
+#define cmd835F_P	0x5D // select 868.35MHz FSK PKT in the 868 transceiver
+#define cmd840F_P	0x5E // select 868.40MHz FSK PKT in the 868 transceiver
 
 #define pTypeInterfaceMessage 0x01
 #define sTypeInterfaceResponse 0x00
@@ -348,6 +365,10 @@ SDK version 4.9
 #define recType86835 0x59
 #define recType86835FSK 0x5A
 #define recType86895 0x5B
+#define recType86830FSK_PKT 0x5C
+#define recType86835FSK_PKT 0x5D
+#define recType86840FSK_PKT 0x5E
+#define trxType43450 0x5F
 
 #define msg3_AE 0x01			//AE Blyss
 #define msg3_RUBICSON 0x02		//Rubicson,Lacrosse, Banggood
@@ -488,6 +509,7 @@ SDK version 4.9
 #define sTypeLegrandCAD 0x0D
 #define sTypeAvantek 0x0E
 #define sTypeIT 0x0F
+#define sTypeMDREMOTE108 0x10
 
 #define light5_sOff 0x0
 #define light5_sOn 0x1
@@ -576,6 +598,7 @@ SDK version 4.9
 #define sTypeItho 0x1
 #define sTypeLucciAir 0x2
 #define sTypeSeavTXS4 0x3
+#define sTypeWestinghouse 0x4
 #define fan_sTimer 0x1
 #define fan_sMin 0x2
 #define fan_sLearn 0x3
@@ -598,6 +621,11 @@ SDK version 4.9
 #define fan_T2 0x2
 #define fan_T3 0x3
 #define fan_T4 0x4
+#define fan_WestinghouseHi 0x1
+#define fan_WestinghouseMed 0x2
+#define fan_WestinghouseLow 0x3
+#define fan_WestinghouseOff 0x4
+#define fan_WestinghouseLight 0x5
 
 //types for Curtain
 #define pTypeCurtain 0x18
@@ -622,6 +650,7 @@ SDK version 4.9
 #define sTypeBlindsT10 0xA	//Dolat DLM-1
 #define sTypeBlindsT11 0xB	//ASP
 #define sTypeBlindsT12 0xC	//Confexx
+#define sTypeBlindsT13 0xD	//Screenline
 
 #define blinds_sOpen 0x0
 #define blinds_sClose 0x1
@@ -690,6 +719,7 @@ SDK version 4.9
 #define sTypePowercodeAux 0x07		//Visonic PowerCode sensor - auxiliary contact
 #define sTypeMeiantech 0x8			//Meiantech
 #define sTypeSA30 0x9				//SA30 smoke detector
+#define sTypeRM174RF 0xA			//RM174RF smoke detector
 
 //status security
 #define sStatusNormal 0x0
@@ -783,6 +813,15 @@ SDK version 4.9
 #define thermostat3_sRunDown 0x5
 #define thermostat3_On2nd 0x5
 #define thermostat3_sStop 0x6
+
+#define pTypeThermostat4 0x43
+#define sTypeMCZ1 0x0	//MCZ 1 fan model
+#define sTypeMCZ2 0x1	//MCZ 2 fan model
+#define sTypeMCZ3 0x2	//MCZ 3 fan model
+#define thermostat4_sOff 0x0
+#define thermostat4_sManual 0x1
+#define thermostat4_sAuto 0x2
+#define thermostat4_sEco 0x3
 
 //types for Radiator valve
 #define pTypeRadiator1 0x48
@@ -1492,6 +1531,34 @@ typedef union tRBUF {
 		BYTE	rssi : 4;
 #endif
 	} THERMOSTAT3;
+
+	struct {
+		BYTE	packetlength;
+		BYTE	packettype;
+		BYTE	subtype;
+		BYTE	seqnbr;
+		BYTE	unitcode1;
+		BYTE	unitcode2;
+		BYTE	unitcode3;
+		BYTE	beep;
+		BYTE	fan1_speed;
+#ifdef IS_BIG_ENDIAN
+		BYTE	fan3_speed : 4;
+		BYTE	fan2_speed : 4;
+#else
+		BYTE	fan2_speed : 4;
+		BYTE	fan3_speed : 4;
+#endif
+		BYTE	flame_power;
+		BYTE	mode;
+#ifdef IS_BIG_ENDIAN
+		BYTE	rssi : 4;
+		BYTE	filler : 4;
+#else
+		BYTE	filler : 4;
+		BYTE	rssi : 4;
+#endif
+	} THERMOSTAT4;
 
 	struct {
 		BYTE	packetlength;

@@ -1,4 +1,27 @@
-Version 3.xxxx (August xx 2016)
+Version 3.xxxx (December xth 2016)
+- Fixed: Camera Editor, will now always refresh thumbnail in table
+- Fixed: JSon float/nan value, solved by upgrading JSonCPP
+- Fixed: OZW, when a value is updated and the sensor did not exists before (for example a kWh sensor), it is created (saves a restart)
+- Changed: Wind Direction Graph, if sensor does not supports 'Gust', the 'Speed' value is used
+- Changed: Blinds T5 till T13 new DeviceID generation, could cause new sensors
+- Implemented: Blinds T1 till T13 new supports the Stop button
+- Implemented: Devices, Log icon for Blinds
+- Implemented: Blockly/Lua Set SetPoint option
+- Implemented: I2C BME280 sensor (temp+hum+baro)
+- Implemented: Netatmo Home Coach support
+- Implemented: Notification for Dummy Soil/Moisture sensor
+- Implemented: Option to replace an Meter device
+- Implemented: Added a new parameter to disable the logging of event script triggers 'Script event triggered: ...'
+
+Version 3.5878 (November 10th 2016)
+- Fixes and various improvements
+
+Version 3.5837 (October 30th 2016)
+- Fixed: Blockly/Lua, FOR and RANDOM are now again in minutes
+- Changed: Shortlog charts for Temperature, Current and Smartlog are now using a spline
+- Changed: Lua/Blockly, Notifications are now not blocking
+
+Version 3.5834 (October 29th 2016)
 - Implemented: TSL2561 illuminance I2C sensor (ldrolez)
 - Implemented: AccuWeather support
 - Implemented: Air Quality graph, Avarage and Previous month/year
@@ -19,7 +42,8 @@ Version 3.xxxx (August xx 2016)
 - Implemented: MySensors, S_POWER, Reactive power: volt-ampere reactive (var)
 - Implemented: MySensors, S_POWER, Apparent power: volt-ampere (VA)
 - Implemented: MySensors, S_POWER, Ratio of real power to apparent power: floating point value in the range [-1,..,1]
-- Implemented: Nefit Easy, User Mode (as switch, On=Clock, Off=Manual), Flow Temperature
+- Implemented: Nefit Easy, User Mode (as switch, On=Clock, Off=Manual), Flow Temperature, Hot Water Mode
+- Implemented: Notifications, custom notification text helpers $name and $value
 - Implemented: OpenZWave, Aeotec ZWave+ USB Controller, Enable/Disable blinking mode (@Schmart, Thanks for the magic codes!)
 - Implemented: OpenZWave, Node table, now also displays Manufacturer, Product ID and Product Type
 - Implemented: OpenZWave, When including Thermostat Setpoints, the zwave Label will be used as Name by default
@@ -28,9 +52,10 @@ Version 3.xxxx (August xx 2016)
 - Implemented: RFLink: Displaying firmware version in the hardware setup
 - Implemented: RFXCom, Blinds T12 (Confexx)
 - Implemented: S0 Meter TCP
-- Changed: Local I2C sensors grouping (ldrolez)
+- Changed: I2C sensors grouping (ldrolez)
 - Changed: ETH-8020, ignoring return message as it always returns (no more Success message)
 - Changed: EventSystem, weather/rain value is now the rain-rate
+- Changed: Forecast.io to DarkSky
 - Changed: OpenZWave, Better support for Thermostat Modes
 - Changed: Stable ID generation for Philips Hue scenes (you need to delete all scenes and restart the hue hardware or domoticz)
 - Changed: TE923, Rain counter devided by 2
@@ -40,6 +65,7 @@ Version 3.xxxx (August xx 2016)
 - Fixed: Blockly, fixed extra quote when setting a user variable string value
 - Fixed: Database backup is now only possible for admin users
 - Fixed: Double checking command rights
+- Fixed: Dummy, Creating a new sensor always used the same id
 - Fixed: Dummy, when new sensor is created, Add it to the EventSystem
 - Fixed: Fix Off Delay not handled for Selector switch (#538).
 - Fixed: Fix On/Off delays not saved on the selector switch edit form (#532).

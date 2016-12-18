@@ -10,6 +10,7 @@ public:
 	~CDaikin(void);
 
 	bool WriteToHardware(const char *pdata, const unsigned char length);
+	void SetSetpoint(const int idx, const float temp);
 private:
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
