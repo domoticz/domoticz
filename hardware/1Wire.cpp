@@ -86,6 +86,7 @@ bool C1Wire::StartHardware()
 	{
 		m_threadSwitches = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&C1Wire::SwitchThread, this)));
 	}
+	m_bFirstTime = true;
 	m_bIsStarted=true;
 	sOnConnected(this);
 	StartHeartbeatThread();
@@ -134,7 +135,8 @@ void C1Wire::SensorThread()
 		sleep_milliseconds(pollPeriod);
 		if (0 == iteration++ % pollIterations) // may glitch on overflow, not disastrous
 		{
-			if (m_sql.m_bAcceptNewHardware || 1 == iteration) {
+			if (m_bFirstTime || 1 == iteration) {
+				m_bFirstTime = false;
 				BuildSensorList();
 			}
 
@@ -163,8 +165,9 @@ void C1Wire::SwitchThread()
 
 		if (0 == iteration++ % rescanIterations) // may glitch on overflow, not disastrous
 		{
-			if (m_sql.m_bAcceptNewHardware || 1 == iteration)
+			if (m_bFirstTime || 1 == iteration)
 			{
+				m_bFirstTime = false;
 				BuildSwitchList();
 			}
 		}

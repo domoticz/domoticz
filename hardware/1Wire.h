@@ -27,6 +27,7 @@ private:
 	int m_sensorThreadPeriod; // milliseconds
 	int m_switchThreadPeriod; // milliseconds
 	const std::string &m_path;
+	bool m_bFirstTime;
 
 	void DetectSystem();
 	bool StartHardware();
