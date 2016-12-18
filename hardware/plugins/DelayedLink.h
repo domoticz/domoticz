@@ -187,7 +187,7 @@ namespace Plugins {
 							(filename.compare(filename.length() - 3, 3, ".so") == 0))
 						{
 							std::string sLibFile = szStartDir + filename;
-							_log.Log(LOG_NORM, "DelayedLink: Found %s", sLibFile.c_str());
+//							_log.Log(LOG_NORM, "DelayedLink: Found %s", sLibFile.c_str());
 							shared_lib_ = dlopen(sLibFile.c_str(), RTLD_LAZY | RTLD_GLOBAL);
 						}
 					}

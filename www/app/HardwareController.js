@@ -5394,7 +5394,7 @@ define(['app'], function (app) {
 									if (typeof(param.options) == "undefined") {
 										if (param.field == "SerialPort") {
 											PluginParams += '<td><select id="'+param.field+'" style="width:'+param.width+'" class="combobox ui-corner-all">';
-											$.each($("#hardwareparamsserial #comboserialport"), function(i,option){
+											$.each($("#hardwareparamsserial #comboserialport > option"), function(i,option){
 												PluginParams += '<option data-i18n="'+option.innerText+'" value="'+option.innerText+'"';
 												PluginParams += '>'+option.innerText+'</option>';
 											});
