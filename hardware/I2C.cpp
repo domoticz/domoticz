@@ -56,6 +56,22 @@ Authors:
 #define BMPx8x_RetryDelay        2     //min delay for temp 4+2=6ms, max 4+2*20=44ms for pressure
 //Will stop waiting if conversion is complete
 
+// BME280 Specific code
+#define BMEx8x_I2CADDR				0x76
+#define BMEx8x_ChipVersion			0xD0
+#define BMEx8x_Data					0xF7
+#define BMEx8x_CtrlMeas				0xF4
+#define BMEx8x_Config				0xF5
+
+#define BMEx8x_Hum_MSB				0xFD
+#define BMEx8x_Hum_LSB				0xFE
+
+#define BMEx8x_OverSampling_Temp	2
+#define BMEx8x_OverSampling_hum		3
+#define BMEx8x_OverSampling_Mode	1
+#define BMEx8x_OverSampling_Control	BMEx8x_OverSampling_Temp<<5 | BMEx8x_OverSampling_hum<<2 | BMEx8x_OverSampling_Mode
+
+
 const unsigned char BMPx8x_OverSampling = 3;
 // HTU21D registers
 #define HTU21D_ADDRESS							0x40	// I2C address
@@ -85,7 +101,8 @@ const char* szI2CTypeNames[] = {
 	"I2C_BMP085/180",
 	"I2C_HTU21D",
 	"I2C_TSL2561",
-	"I2C_PCF8574"
+	"I2C_PCF8574",
+	"I2C_BME280",
 };
 
 I2C::I2C(const int ID, const _eI2CType DevType, const int Port):
@@ -108,7 +125,7 @@ I2C::~I2C()
 bool I2C::StartHardware()
 {
 	m_stoprequested = false;
-	if (m_dev_type == I2CTYPE_BMP085)
+	if ((m_dev_type == I2CTYPE_BMP085)|| (m_dev_type == I2CTYPE_BME280))
 	{
 		m_minuteCount = 0;
 		m_firstRound = true;
@@ -224,7 +241,7 @@ void I2C::Do_Work()
 				{
 					if (m_dev_type == I2CTYPE_BMP085)
 					{
-						bmp_ReadSensorDetails();
+						bmp_Read_BMP_SensorDetails();
 					}
 					else if (m_dev_type == I2CTYPE_HTU21D)
 					{
@@ -233,6 +250,10 @@ void I2C::Do_Work()
 					else if (m_dev_type == I2CTYPE_TSL2561)
 					{
 						TSL2561_ReadSensorDetails();
+					}
+					else if (m_dev_type == I2CTYPE_BME280)
+					{
+						bmp_Read_BME_SensorDetails();
 					}
 				}
 			}
@@ -405,6 +426,10 @@ int I2C::ReadInt(int fd, uint8_t *devValues, uint8_t startReg, uint8_t bytesToRe
 		{ TSL2561_ADDRESS, 0, 1, &startReg },
 		{ TSL2561_ADDRESS, I2C_M_RD, bytesToRead, devValues }
 	};
+	struct i2c_msg bme_read_reg[2] = {
+		{ BMEx8x_I2CADDR, 0, 1, &startReg },
+		{ BMEx8x_I2CADDR, I2C_M_RD, bytesToRead, devValues }
+	};
 
 	//Build a register read command
 	//Requires a one complete message containing a command
@@ -423,6 +448,11 @@ int I2C::ReadInt(int fd, uint8_t *devValues, uint8_t startReg, uint8_t bytesToRe
 	{
 		messagebuffer.nmsgs = 2;
 		messagebuffer.msgs = tsl_read_reg;            //load the 'read__reg' message into the buffer
+	}
+	else if (m_dev_type == I2CTYPE_BME280)
+	{
+		messagebuffer.nmsgs = 2;                  //Two message/action
+		messagebuffer.msgs = bme_read_reg;            //load the 'read__reg' message into the buffer
 	}
 
 	rc = ioctl(fd, I2C_RDWR, &messagebuffer); //Send the buffer to the bus and returns a send status
@@ -451,6 +481,9 @@ int I2C::WriteCmd(int fd, uint8_t devAction)
 	struct i2c_msg tsl_write_reg[1] = {
 		{ TSL2561_ADDRESS, 0, 1, datatosend }
 	};
+	struct i2c_msg bme_write_reg[1] = {
+		{ BMEx8x_I2CADDR, 0, 2, datatosend }
+	};
 
 	if (m_dev_type == I2CTYPE_BMP085)
 	{
@@ -473,6 +506,14 @@ int I2C::WriteCmd(int fd, uint8_t devAction)
 		//Build a register write command
 		//Requires one complete message containing a reg address and command
 		messagebuffer.msgs = tsl_write_reg;           //load the 'write__reg' message into the buffer
+	}
+	else if (m_dev_type == I2CTYPE_BME280)
+	{
+		datatosend[0] = BMEx8x_CtrlMeas;
+		datatosend[1] = devAction;
+		//Build a register write command
+		//Requires one complete message containing a reg address and command
+		messagebuffer.msgs = bme_write_reg;           //load the 'write__reg' message into the buffer
 	}
 
 	messagebuffer.nmsgs = 1;                  //One message/action
@@ -966,7 +1007,54 @@ int I2C::bmp_CalculateForecast(const float pressure)
 		return FC_BMP085_UNKNOWN; // Unknown
 }
 
-void I2C::bmp_ReadSensorDetails()
+int I2C::CalculateForcast(const float pressure)
+{
+	int forecast = bmp_CalculateForecast(pressure);
+	if (forecast != m_LastForecast)
+	{
+		m_LastForecast = forecast;
+		switch (forecast)
+		{
+		case FC_BMP085_STABLE:			//Stable weather
+			if (m_LastForecast == bmpbaroforecast_unknown)
+				m_LastSendForecast = bmpbaroforecast_stable;
+			break;
+		case FC_BMP085_SUNNY:			//Slowly rising HP stable good weather (Clear/Sunny)
+			m_LastSendForecast = bmpbaroforecast_sunny;
+			break;
+		case FC_BMP085_CLOUDY_RAIN:		//Slowly falling Low Pressure System, stable rainy weather (Cloudy/Rain)
+			m_LastSendForecast = bmpbaroforecast_cloudy;
+			if (m_LastSendForecast == bmpbaroforecast_cloudy)
+			{
+				if (pressure < 1010)
+					m_LastSendForecast = bmpbaroforecast_rain;
+			}
+			break;
+		case FC_BMP085_UNSTABLE:		//Quickly rising HP, not stable weather
+			if (m_LastForecast == bmpbaroforecast_unknown)
+				m_LastSendForecast = bmpbaroforecast_unstable;
+			break;
+		case FC_BMP085_THUNDERSTORM:	//Quickly falling LP, Thunderstorm, not stable (Thunderstorm)
+			m_LastSendForecast = bmpbaroforecast_thunderstorm;
+			break;
+		case FC_BMP085_UNKNOWN:			//
+		{
+			int nforecast = bmpbaroforecast_cloudy;
+			if (pressure <= 980)
+				nforecast = bmpbaroforecast_thunderstorm;
+			else if (pressure <= 995)
+				nforecast = bmpbaroforecast_rain;
+			else if (pressure >= 1029)
+				nforecast = bmpbaroforecast_sunny;
+			m_LastSendForecast = nforecast;
+		}
+		break;
+		}
+	}
+	return m_LastSendForecast;
+}
+
+void I2C::bmp_Read_BMP_SensorDetails()
 {
 	double temperature, pressure;
 	double altitude;
@@ -1013,49 +1101,212 @@ void I2C::bmp_ReadSensorDetails()
 	//this is probably not good, need to take the rising/falling of the pressure into account?
 	//any help would be welcome!
 
-	int forecast = bmp_CalculateForecast(((float)pressure) * 10.0f);
-	if (forecast != m_LastForecast)
-	{
-		m_LastForecast = forecast;
-		switch (forecast)
-		{
-		case FC_BMP085_STABLE:			//Stable weather
-			if (m_LastForecast == bmpbaroforecast_unknown)
-				m_LastSendForecast = bmpbaroforecast_stable;
-			break;
-		case FC_BMP085_SUNNY:			//Slowly rising HP stable good weather (Clear/Sunny)
-			m_LastSendForecast = bmpbaroforecast_sunny;
-			break;
-		case FC_BMP085_CLOUDY_RAIN:		//Slowly falling Low Pressure System, stable rainy weather (Cloudy/Rain)
-			m_LastSendForecast = bmpbaroforecast_cloudy;
-			if (m_LastSendForecast == bmpbaroforecast_cloudy)
-			{
-				if (pressure < 1010)
-					m_LastSendForecast = bmpbaroforecast_rain;
-			}
-			break;
-		case FC_BMP085_UNSTABLE:		//Quickly rising HP, not stable weather
-			if (m_LastForecast == bmpbaroforecast_unknown)
-				m_LastSendForecast = bmpbaroforecast_unstable;
-			break;
-		case FC_BMP085_THUNDERSTORM:	//Quickly falling LP, Thunderstorm, not stable (Thunderstorm)
-			m_LastSendForecast = bmpbaroforecast_thunderstorm;
-			break;
-		case FC_BMP085_UNKNOWN:			//
-		{
-			int nforecast = bmpbaroforecast_cloudy;
-			if (pressure <= 980)
-				nforecast = bmpbaroforecast_thunderstorm;
-			else if (pressure <= 995)
-				nforecast = bmpbaroforecast_rain;
-			else if (pressure >= 1029)
-				nforecast = bmpbaroforecast_sunny;
-			m_LastSendForecast = nforecast;
-		}
-		break;
-		}
-	}
-	tsensor.forecast = m_LastSendForecast;
+	tsensor.forecast = CalculateForcast(((float)pressure) * 10.0f);
 	sDecodeRXMessage(this, (const unsigned char *)&tsensor, NULL, 255);
 }
 
+bool I2C::readBME280ID(const int fd, int &ChipID, int &Version)
+{
+	uint8_t rValues[2];
+	if (ReadInt(fd, rValues, BMEx8x_ChipVersion, 2) != 0) {
+		_log.Log(LOG_ERROR, "%s: Error reading BME ChipVersion", szI2CTypeNames[m_dev_type]);
+		return false;
+	}
+	ChipID = rValues[0];
+	Version = rValues[1];
+	return true;
+}
+
+int16_t getShort(uint8_t *data, int index)
+{
+	// return two bytes from data as a signed 16-bit value
+	return uint16_t((data[index + 1] << 8) + data[index]);
+}
+
+uint16_t getUShort(uint8_t *data, int index)
+{
+	//return two bytes from data as an unsigned 16-bit value
+	return uint16_t(data[index + 1] << 8) + data[index];
+}
+
+int8_t getChar(uint8_t *data, int index)
+{
+	// return one byte from data as a signed char
+	int result = data[index];
+	if (result > 127)
+		result -= 256;
+	return (int8_t)result;
+}
+
+uint8_t getUChar(uint8_t *data, int index)
+{
+	// return one byte from data as an unsigned char
+	return data[index];
+}
+
+bool I2C::readBME280All(const int fd, float &temp, float &pressure, int &humidity)
+{
+	if (WriteCmd(fd, BMEx8x_OverSampling_Control) != 0) {
+		_log.Log(LOG_ERROR, "%s: Error Writing to I2C register", szI2CTypeNames[m_dev_type]);
+		return false;
+	}
+
+	uint8_t cal1[24] = { 0 };
+	uint8_t cal2[1] = { 0 };
+	uint8_t cal3[7] = { 0 };
+	if (ReadInt(fd, cal1, 0x88, 24) != 0) {
+		_log.Log(LOG_ERROR, "%s: Error Reading calibration data 1", szI2CTypeNames[m_dev_type]);
+		return false;
+	}
+	if (ReadInt(fd, cal2, 0xA1, 1) != 0) {
+		_log.Log(LOG_ERROR, "%s: Error Reading calibration data 2", szI2CTypeNames[m_dev_type]);
+		return false;
+	}
+	if (ReadInt(fd, cal3, 0xE1, 7) != 0) {
+		_log.Log(LOG_ERROR, "%s: Error Reading calibration data 3", szI2CTypeNames[m_dev_type]);
+		return false;
+	}
+
+	// Convert byte data to word values
+	uint16_t dig_T1 = getUShort(cal1, 0);
+	int16_t dig_T2 = getShort(cal1, 2);
+	int16_t dig_T3 = getShort(cal1, 4);
+
+	uint16_t dig_P1 = getUShort(cal1, 6);
+	int16_t dig_P2 = getShort(cal1, 8);
+	int16_t dig_P3 = getShort(cal1, 10);
+	int16_t dig_P4 = getShort(cal1, 12);
+	int16_t dig_P5 = getShort(cal1, 14);
+	int16_t dig_P6 = getShort(cal1, 16);
+	int16_t dig_P7 = getShort(cal1, 18);
+	int16_t dig_P8 = getShort(cal1, 20);
+	int16_t dig_P9 = getShort(cal1, 22);
+
+	uint8_t dig_H1 = getUChar(cal2, 0);
+	int16_t dig_H2 = getShort(cal3, 0);
+	uint8_t dig_H3 = getUChar(cal3, 2);
+
+	int dig_H4 = getChar(cal3, 3);
+	dig_H4 = (dig_H4 << 24) >> 20;
+	dig_H4 = dig_H4 | (getChar(cal3, 4) & 0x0F);
+
+	int dig_H5 = getChar(cal3, 5);
+	dig_H5 = (dig_H5 << 24) >> 20;
+	dig_H5 = dig_H5 | (getUChar(cal3, 4) >> 4 & 0x0F);
+
+	int8_t dig_H6 = getChar(cal3, 6);
+
+	// Read temperature/pressure/humidity
+	uint8_t data[8] = { 0 };
+	if (ReadInt(fd, data, BMEx8x_Data, 8) != 0) {
+		_log.Log(LOG_ERROR, "%s: Error Reading sensor data", szI2CTypeNames[m_dev_type]);
+		return false;
+	}
+
+	int pres_raw = (data[0] << 12) | (data[1] << 4) | (data[2] >> 4);
+	int temp_raw = (data[3] << 12) | (data[4] << 4) | (data[5] >> 4);
+	int hum_raw = (data[6] << 8) | data[7];
+
+	// Refine temperature
+	double var1 = ((((temp_raw >> 3) - (dig_T1 << 1)))*(dig_T2)) >> 11;
+	double var2 = (((((temp_raw >> 4) - (dig_T1)) * ((temp_raw >> 4) - (dig_T1))) >> 12) * (dig_T3)) >> 14;
+	double t_fine = var1 + var2;
+	temp = float((int(t_fine * 5) + 128) >> 8);
+	temp /= 100.0f;
+
+	// Refine pressure and adjust for temperature
+	var1 = t_fine / 2.0 - 64000.0;
+	var2 = var1 * var1 * dig_P6 / 32768.0;
+	var2 = var2 + var1 * dig_P5 * 2.0;
+	var2 = var2 / 4.0 + dig_P4 * 65536.0;
+	var1 = (dig_P3 * var1 * var1 / 524288.0 + dig_P2 * var1) / 524288.0;
+	var1 = (1.0 + var1 / 32768.0) * dig_P1;
+	double dpressure;
+	if (var1 == 0)
+		dpressure = 0;
+	else
+	{
+		dpressure = 1048576.0 - pres_raw;
+		dpressure = ((dpressure - var2 / 4096.0) * 6250.0) / var1;
+		var1 = dig_P9 * dpressure * dpressure / 2147483648.0;
+		var2 = dpressure * dig_P8 / 32768.0;
+		dpressure = dpressure + (var1 + var2 + dig_P7) / 16.0;
+	}
+	pressure = float(dpressure) / 100.0f;
+
+	// Refine humidity
+	double dhumidity = t_fine - 76800.0;
+	dhumidity = (hum_raw - (dig_H4 * 64.0 + dig_H5 / 16384.0 * dhumidity)) * (dig_H2 / 65536.0 * (1.0 + dig_H6 / 67108864.0 * dhumidity * (1.0 + dig_H3 / 67108864.0 * dhumidity)));
+	dhumidity = dhumidity * (1.0 - dig_H1 * dhumidity / 524288.0);
+	if (dhumidity > 100)
+		dhumidity = 100;
+	else if (dhumidity < 0)
+		dhumidity = 0;
+	humidity = round(dhumidity);
+	return true;
+}
+
+void I2C::bmp_Read_BME_SensorDetails()
+{
+	float temperature, pressure;
+	int humidity;
+
+#ifndef __arm__
+#ifndef _DEBUG
+	_log.Log(LOG_ERROR, "%s: Only supported on ARM architecture!...", szI2CTypeNames[m_dev_type]);
+	return;
+#else
+	_log.Log(LOG_ERROR, "%s: Only supported on ARM architecture!... Debug: just adding a value", szI2CTypeNames[m_dev_type]);
+#endif
+	temperature = 21.3f;
+	pressure = 1021.22f;
+	humidity = 70;
+#else
+	int fd = i2c_Open(m_ActI2CBus.c_str()); // open i2c
+	if (fd < 0) {
+		_log.Log(LOG_ERROR, "%s: Error opening device!...", szI2CTypeNames[m_dev_type]);
+		return;
+	}
+
+	if (!readBME280All(fd, temperature, pressure, humidity))
+	{
+		close(fd);
+		return;
+	}
+	close(fd);
+#endif
+	int forecast = CalculateForcast(((float)pressure) * 10.0f);
+	//We are using the TempHumBaro Float type now, convert the forecast
+	int nforecast = wsbaroforcast_some_clouds;
+	if (pressure <= 980)
+		nforecast = wsbaroforcast_heavy_rain;
+	else if (pressure <= 995)
+	{
+		if (temperature > 1)
+			nforecast = wsbaroforcast_rain;
+		else
+			nforecast = wsbaroforcast_snow;
+	}
+	else if (pressure >= 1029)
+		nforecast = wsbaroforcast_sunny;
+	switch (forecast)
+	{
+	case bmpbaroforecast_sunny:
+		nforecast = wsbaroforcast_sunny;
+		break;
+	case bmpbaroforecast_cloudy:
+		nforecast = wsbaroforcast_cloudy;
+		break;
+	case bmpbaroforecast_thunderstorm:
+		nforecast = wsbaroforcast_heavy_rain;
+		break;
+	case bmpbaroforecast_rain:
+		if (temperature > 1)
+			nforecast = wsbaroforcast_rain;
+		else
+			nforecast = wsbaroforcast_snow;
+		break;
+	}
+
+	SendTempHumBaroSensorFloat(1, 255, temperature, humidity, pressure, nforecast, "TempHumBaro");
+}

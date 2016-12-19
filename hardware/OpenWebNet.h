@@ -78,7 +78,7 @@ protected:
 	bool sendCommand(bt_openwebnet& command, vector<bt_openwebnet>& response, int waitForResponse = 0, bool silent=false);
 	bool ParseData(char* data, int length, vector<bt_openwebnet>& messages);
 	bool FindDevice(int who, int where, int *used);
-    void UpdateSwitch(const int who, const int where, const int bOn, const double Level, const int BatteryLevel,const char *devname);
+    void UpdateSwitch(const int who, const int where, const int Level, const int BatteryLevel,const char *devname);
     void UpdateBlinds(const int who, const int where, const int Command, const int BatteryLevel, const char *devname);
     void UpdateTemp(const int who, const int where, float fval, const int BatteryLevel, const char *devname);
     void UpdateDeviceValue(vector<bt_openwebnet>::iterator iter);

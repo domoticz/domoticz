@@ -2419,6 +2419,7 @@ bool CSQLHelper::OpenDatabase()
 	if (!GetPreferencesVar("LogEventScriptTrigger", nValue))
 	{
 		UpdatePreferencesVar("LogEventScriptTrigger", 1);
+		nValue = 1;
 	}
 	m_bLogEventScriptTrigger = (nValue != 0);
 
