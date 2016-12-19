@@ -472,7 +472,7 @@ void COpenWebNet::UpdateBlinds(const int who, const int where, const int Command
 /**
     Insert/Update  switch device
 **/
-void COpenWebNet::UpdateSwitch(const int who, const int where, const int Command, const double Level, const int BatteryLevel, const char *devname)
+void COpenWebNet::UpdateSwitch(const int who, const int where, const int what, const int BatteryLevel, const char *devname)
 {
 
     //make device ID
@@ -484,26 +484,41 @@ void COpenWebNet::UpdateSwitch(const int who, const int where, const int Command
 	char szIdx[10];
 	sprintf(szIdx, "%02X%02X%02X%02X", ID1, ID2, ID3, ID4);
 
+	int level = 0;
 
-    double rlevel = (15.0 / 100)*Level;
-	int level = int(rlevel);
+    /* If Dimmer device, set level... */
+	if (what > 1) level = what * 10; // what=0 mean 0% OFF, what=2 to 10 mean 20% to 100% ON
 
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",
+	result = m_sql.safe_query("SELECT nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",
                             m_HwdID, szIdx, 0);
 	if (!result.empty())
 	{
         //check if we have a change, if not do not update it
-        int nvalue = atoi(result[0][0].c_str());
-        if (Command == nvalue) return;
-	}
+	    int nvalue = atoi(result[0][0].c_str());
+
+	    if ((what == 0) && (nvalue == gswitch_sOff)) return; // Already 0% OFF
+	    if ((what == 1) && (nvalue == gswitch_sOn)) return; // Already ON
+	    int slevel = atoi(result[0][1].c_str());
+        if ((what > 1) && (nvalue != gswitch_sOff) && (slevel == level)) return; // Already ON/LEVEL at x%
+    }
 
     _tGeneralSwitch gswitch;
     gswitch.subtype = sSwitchLightT1;
     gswitch.id = (int32_t) (((int32_t)ID1 << 24) & 0xFF000000) | (((int32_t)ID2 << 16) & 0xFF0000) | (((int32_t)ID3 << 8) & 0xFF00) | ((int32_t)ID4 & 0xFF);
     gswitch.unitcode = 0;
-    gswitch.cmnd = Command;
-    gswitch.level = 100;
+
+    if (what == 0)
+        gswitch.cmnd = gswitch_sOff;
+    else
+    {
+        if (what > 1)
+            gswitch.cmnd = gswitch_sSetLevel;
+        else
+            gswitch.cmnd = gswitch_sOn;
+    }
+
+    gswitch.level = level;
     gswitch.battery_level = BatteryLevel;
     gswitch.rssi = 12;
     gswitch.seqnbr = 0;
@@ -538,7 +553,7 @@ void COpenWebNet::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
                     _log.Log(LOG_ERROR, "COpenWebNet: Who=%s what=%s", who.c_str(), what.c_str());
             }
 
-            UpdateSwitch(WHO_LIGHTING, atoi(where.c_str()), atoi(what.c_str()) ? gswitch_sOn : gswitch_sOff, 100., 100, devname.c_str());
+            UpdateSwitch(WHO_LIGHTING, atoi(where.c_str()), atoi(what.c_str()), 100, devname.c_str());
             break;
         case WHO_AUTOMATION:
             if(!iter->IsNormalFrame())
@@ -664,6 +679,19 @@ bool COpenWebNet:: WriteToHardware(const char *pdata, const unsigned char length
                     {
                         what = LIGHT_WHAT_ON;
                     }
+                    else if (pCmd->cmnd == gswitch_sSetLevel)
+                    {
+                        // setting level of dimmer
+                        if (pCmd->level != 0)
+                        {
+                            if (pCmd->level < 20) pCmd->level = 20; // minimum value after 0
+                            what = int((pCmd->level + 5)/10);
+                        }
+                        else
+                        {
+                            what = LIGHT_WHAT_OFF;
+                        }
+                    }
                 default:
                     break;
             }
@@ -684,8 +712,8 @@ bool COpenWebNet:: WriteToHardware(const char *pdata, const unsigned char length
 		return false;
 	}
 
-	int used = 1;
-	if (!FindDevice(who, where, &used)) {
+	//int used = 1;
+	if (!FindDevice(who, where, NULL)) {
 		_log.Log(LOG_ERROR, "COpenWebNet: command received for unknown device : %d/%d", who, where);
 		return false;
 	}
