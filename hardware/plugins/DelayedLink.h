@@ -101,11 +101,11 @@ namespace Plugins {
 				if (!shared_lib_) libHandle = LoadLibrary("python32.dll");
 #	endif
 #else
-				FindLibrary("/usr/lib/python3.6/");
-				if (!shared_lib_) FindLibrary("/usr/lib/python3.5/");
-				if (!shared_lib_) FindLibrary("/usr/lib/python3.4/");
-				if (!shared_lib_) FindLibrary("/usr/lib/python3.3/");
-				if (!shared_lib_) FindLibrary("/usr/lib/python3.2/");
+				FindLibrary("python3.6", true);
+				if (!shared_lib_) FindLibrary("python3.5", true);
+				if (!shared_lib_) FindLibrary("python3.4", true);
+				if (!shared_lib_) FindLibrary("python3.3", true);
+				if (!shared_lib_) FindLibrary("python3.2", true);
 #endif
 				if (shared_lib_)
 				{
@@ -166,35 +166,76 @@ namespace Plugins {
 
 #ifndef WIN32
 		private:
-			void FindLibrary(const char * szStartDir)
-		{
-			DIR *lDir;
-			struct dirent *ent;
-			if ((lDir = opendir(szStartDir)) != NULL)
+			void FindLibrary(const char * szLibrary, bool bSimple = false)
 			{
-				while (!shared_lib_ && (ent = readdir(lDir)) != NULL)
+				if (bSimple)
 				{
-					std::string filename = ent->d_name;
-					if (dirent_is_directory(szStartDir, ent) && (filename.length() > 2))
+					// look in directories covered by ldconfig
+					if (!shared_lib_)
 					{
-						std::string	newDir = szStartDir +  filename + "/";
-						FindLibrary(newDir.c_str());
+						std::string sLibrary = "lib";
+						sLibrary += szLibrary;
+						sLibrary += ".so";
+						shared_lib_ = dlopen(sLibrary.c_str(), RTLD_LAZY | RTLD_GLOBAL);
+//						if (shared_lib_) _log.Log(LOG_STATUS, "(%s) Loaded.", sLibrary.c_str());
+
 					}
-					else
+					// look in directories covered by ldconfig but 'm' variant
+					if (!shared_lib_)
 					{
-						if ((filename.length() > 12) &&
-							(filename.compare(0, 11, "libpython3.") == 0) &&
-							(filename.compare(filename.length() - 3, 3, ".so") == 0))
-						{
-							std::string sLibFile = szStartDir + filename;
-//							_log.Log(LOG_NORM, "DelayedLink: Found %s", sLibFile.c_str());
-							shared_lib_ = dlopen(sLibFile.c_str(), RTLD_LAZY | RTLD_GLOBAL);
-						}
+						std::string sLibraryM = "lib";
+						sLibraryM += szLibrary;
+						sLibraryM += "m.so";
+						shared_lib_ = dlopen(sLibraryM.c_str(), RTLD_LAZY | RTLD_GLOBAL);
+//						if (shared_lib_) _log.Log(LOG_STATUS, "(%s) Loaded.", sLibraryM.c_str());
+					}
+					// look in /usr/lib directories
+					if (!shared_lib_)
+					{
+						std::string	sLibraryDir = "/usr/lib/";
+						sLibraryDir += szLibrary;
+						sLibraryDir += "/";
+						FindLibrary(sLibraryDir.c_str(), false);
+					}
+					// look in /usr/lib directories but 'm' variant
+					if (!shared_lib_)
+					{
+						std::string	sLibraryMDir = "/usr/lib/";
+						sLibraryMDir += szLibrary;
+						sLibraryMDir += "m/";
+						FindLibrary(sLibraryMDir.c_str(), false);
 					}
 				}
-				closedir(lDir);
+				else
+				{
+					DIR *lDir;
+					struct dirent *ent;
+					if ((lDir = opendir(szLibrary)) != NULL)
+					{
+						while (!shared_lib_ && (ent = readdir(lDir)) != NULL)
+						{
+							std::string filename = ent->d_name;
+							if (dirent_is_directory(szLibrary, ent) && (filename.length() > 2))
+							{
+								std::string	newDir = szLibrary + filename + "/";
+								FindLibrary(newDir.c_str());
+							}
+							else
+							{
+								if ((filename.length() > 12) &&
+									(filename.compare(0, 11, "libpython3.") == 0) &&
+									(filename.compare(filename.length() - 3, 3, ".so") == 0))
+								{
+									std::string sLibFile = szLibrary + filename;
+									shared_lib_ = dlopen(sLibFile.c_str(), RTLD_LAZY | RTLD_GLOBAL);
+//									_log.Log(LOG_STATUS, "(%s) Loaded.", sLibFile.c_str());
+								}
+							}
+						}
+						closedir(lDir);
+					}
+				}
 			}
-		}
 #endif
 	};
 
