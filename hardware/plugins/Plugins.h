@@ -74,6 +74,8 @@ namespace Plugins {
 
 	public:
 		virtual void	ProcessMessage(const int HwdID, std::string& ReadData);
+		virtual void	Flush(const int HwdID);
+		virtual int		Length() { return m_sRetainedData.length(); };
 	};
 
 	class CPluginProtocolLine : CPluginProtocol
