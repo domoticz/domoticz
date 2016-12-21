@@ -997,7 +997,14 @@ namespace Plugins {
 						PluginMessageQueue.push(Message);
 					}
 
-					sData = sData.substr(++iEnd);
+					if (iEnd == sData.length())
+					{
+						sData.clear();
+					}
+					else
+					{
+						sData = sData.substr(++iEnd);
+					}
 					m_Tag = "";
 				}
 				else
@@ -1006,10 +1013,8 @@ namespace Plugins {
 		}
 		catch (std::exception const &exc)
 		{
-			_log.Log(LOG_ERROR, "(CPluginProtocolXML::ProcessMessage) Unexpected exception thrown '%s', Data '%s'.", exc.what(), ReadData.c_str());
+			_log.Log(LOG_ERROR, "(CPluginProtocolXML::ProcessMessage) Unexpected exception thrown '%s', Data '%s'.", exc.what(), sData.c_str());
 		}
-
-//		_log.Log(LOG_NORM, "(CPluginProtocolXML::ProcessMessage) Tag '%s' , Data '%s'.", m_Tag.c_str(), sData.c_str());
 
 		m_sRetainedData = sData; // retain any residual for next time
 	}
