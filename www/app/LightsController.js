@@ -3235,15 +3235,14 @@ define(['app'], function (app) {
 				tothousecodes=4;
 				totunits=4;
 			}
-			else if (lighttype==305) {
-				//Openwebnet Blinds
+			else if ((lighttype==305) || (lighttype==306)) {
+				//Openwebnet Blinds/light
 				totrooms=10;
 				totpointofloads=10;
 			}
-			else if (lighttype==306) {
-				//Openwebnet light
+			else if (lighttype==307) {
+				//Openwebnet Auxiliary
 				totrooms=10;
-				totpointofloads=10;
 			}
 
 
@@ -3254,6 +3253,7 @@ define(['app'], function (app) {
 			$("#dialog-addmanuallightdevice #homeconfortparams").hide();
 			$("#dialog-addmanuallightdevice #fanparams").hide();
 			$("#dialog-addmanuallightdevice #openwebnetparams").hide();
+			$("#dialog-addmanuallightdevice #openwebnetparamsAUX").hide();
 
 			if (lighttype==104) {
 				//HE105
@@ -3358,6 +3358,18 @@ define(['app'], function (app) {
 				$("#dialog-addmanuallightdevice #lighting2params").hide();
 				$("#dialog-addmanuallightdevice #lighting3params").hide();
 				$("#dialog-addmanuallightdevice #openwebnetparams").show();
+			}
+			else if (lighttype==307) {
+				//Openwebnet Auxiliary
+				$("#dialog-addmanuallightdevice #openwebnetparamsAUX #combocmd1  >option").remove();
+				for (ii=1; ii<totrooms; ii++)
+				{
+					$('#dialog-addmanuallightdevice #openwebnetparamsAUX #combocmd1').append($('<option></option>').val(ii).html(ii));
+				}
+				$("#dialog-addmanuallightdevice #lighting1params").hide();
+				$("#dialog-addmanuallightdevice #lighting2params").hide();
+				$("#dialog-addmanuallightdevice #lighting3params").hide();
+				$("#dialog-addmanuallightdevice #openwebnetparamsAUX").show();
 			}
 			else if (bIsARCType==1) {
 				$('#dialog-addmanuallightdevice #lightparams1 #combohousecode >option').remove();
@@ -3495,6 +3507,13 @@ define(['app'], function (app) {
 				var appID= parseInt($("#dialog-addmanuallightdevice #openwebnetparams #combocmd1 option:selected").val()+
 					$("#dialog-addmanuallightdevice #openwebnetparams #combocmd2 option:selected").val());
                 var ID = ("0001" + ("0000" + appID.toString(16)).slice(-4)); // WHO_LIGHTING
+                var unitcode= "0";
+				mParams+="&id="+ID.toUpperCase()+"&unitcode="+unitcode;
+			}
+			else if (lighttype==307) {
+				//OpenWebNet auxiliary
+				var appID= parseInt($("#dialog-addmanuallightdevice #openwebnetparamsAUX #combocmd1 option:selected").val());
+                var ID = ("0009" + ("0000" + appID.toString(16)).slice(-4)); // WHO_AUXILIARY
                 var unitcode= "0";
 				mParams+="&id="+ID.toUpperCase()+"&unitcode="+unitcode;
 			}
