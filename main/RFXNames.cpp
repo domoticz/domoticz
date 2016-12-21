@@ -817,6 +817,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchTypeForest, "Forest" },
 		{ pTypeGeneralSwitch, sSwitchBlindsT1, "Legrand MyHome Blind" },
 		{ pTypeGeneralSwitch, sSwitchLightT1, "Legrand MyHome Light" },
+		{ pTypeGeneralSwitch, sSwitchAuxiliaryT1, "Legrand MyHome Auxiliary" },
 		{ pTypeGeneralSwitch, sSwitchMC145026, "MC145026" },
 		{ pTypeGeneralSwitch, sSwitchLobeco, "Lobeco" },
 		{ pTypeGeneralSwitch, sSwitchFriedland, "Friedland" },

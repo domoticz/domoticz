@@ -26,15 +26,17 @@ License: Public domain
 #include "../main/RFXNames.h"
 #include "../main/RFXtrx.h"
 
-#define OPENWEBNET_HEARTBEAT_DELAY 1
-#define OPENWEBNET_STATUS_NB_HEARTBEAT 600
-#define OPENWEBNET_RETRY_DELAY 30
-#define OPENWEBNET_POLL_INTERVAL 1000
-#define OPENWEBNET_BUFFER_SIZE 1024
-#define OPENWEBNET_SOCKET_SUCCESS 0
-#define OPENWEBNET_AUTOMATION "AUTOMATION"
-#define OPENWEBNET_LIGHT "LIGHT"
-#define OPENWEBNET_TEMPERATURE "TEMPERATURE"
+#define OPENWEBNET_HEARTBEAT_DELAY      1
+#define OPENWEBNET_STATUS_NB_HEARTBEAT  600
+#define OPENWEBNET_RETRY_DELAY          30
+#define OPENWEBNET_POLL_INTERVAL        1000
+#define OPENWEBNET_BUFFER_SIZE          1024
+#define OPENWEBNET_SOCKET_SUCCESS       0
+
+#define OPENWEBNET_AUTOMATION           "AUTOMATION"
+#define OPENWEBNET_LIGHT                "LIGHT"
+#define OPENWEBNET_TEMPERATURE          "TEMPERATURE"
+#define OPENWEBNET_AUXILIARY            "AUXILIARY"
 
 /**
     Create new hardware OpenWebNet instance
@@ -472,9 +474,8 @@ void COpenWebNet::UpdateBlinds(const int who, const int where, const int Command
 /**
     Insert/Update  switch device
 **/
-void COpenWebNet::UpdateSwitch(const int who, const int where, const int what, const int BatteryLevel, const char *devname)
+void COpenWebNet::UpdateSwitch(const int who, const int where, const int what, const int BatteryLevel, const char *devname, const int subtype)
 {
-
     //make device ID
 	unsigned char ID1 = (unsigned char)((who & 0xFF00) >> 8);
 	unsigned char ID2 = (unsigned char)(who & 0xFF);
@@ -504,7 +505,7 @@ void COpenWebNet::UpdateSwitch(const int who, const int where, const int what, c
     }
 
     _tGeneralSwitch gswitch;
-    gswitch.subtype = sSwitchLightT1;
+    gswitch.subtype = subtype;
     gswitch.id = (int32_t) (((int32_t)ID1 << 24) & 0xFF000000) | (((int32_t)ID2 << 16) & 0xFF0000) | (((int32_t)ID3 << 8) & 0xFF00) | ((int32_t)ID4 & 0xFF);
     gswitch.unitcode = 0;
 
@@ -543,7 +544,6 @@ void COpenWebNet::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
             }
             devname = OPENWEBNET_LIGHT;
             devname += " " + where;                            // 1
-			//pTypeGeneralSwitch, sSwitchLightT1
 
 			if (atoi(what.c_str()) == 1000) // What = 1000 (Command translation)
             {
@@ -553,7 +553,8 @@ void COpenWebNet::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
                     _log.Log(LOG_ERROR, "COpenWebNet: Who=%s what=%s", who.c_str(), what.c_str());
             }
 
-            UpdateSwitch(WHO_LIGHTING, atoi(where.c_str()), atoi(what.c_str()), 100, devname.c_str());
+            //pTypeGeneralSwitch, sSwitchLightT1
+            UpdateSwitch(WHO_LIGHTING, atoi(where.c_str()), atoi(what.c_str()), 100, devname.c_str(), sSwitchLightT1);
             break;
         case WHO_AUTOMATION:
             if(!iter->IsNormalFrame())
@@ -597,12 +598,79 @@ void COpenWebNet::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
             else
                 _log.Log(LOG_STATUS, "COpenWebNet: who=%s, where=%s, dimension=%s not yet supported", who.c_str(), where.c_str(), dimension.c_str());
             break;
+
+            case WHO_BURGLAR_ALARM:                         // 5
+            /**
+
+            Tables of what:
+            0 = system on maintenance
+            1 = system active
+
+            8 = system engaged
+            9 = system disengaged
+
+            4 = battery fault
+            5 = battery OK
+            10 = battery KO
+
+            6 = no network
+            7 = network OK
+
+            11 = zone N engaged
+            18 = zone N divided
+
+            15 = zone N Intrusion alarm
+            16 = zone N Tampering alarm
+            17 = zone N Anti-panic alarm
+
+            12 = aux N in technical alarm
+            31 = silent alarm from aux N
+
+            Example of burglar alarm status messages (Monitor session):
+            *5*1*##
+            *5*5*##
+            *5*7*##
+            *5*9*##
+            *5*11*#1##
+            *5*11*#2##
+            *5*11*#3##
+            *5*18*#4##
+            *5*18*#5##
+            *5*18*#6##
+            *5*18*#7##
+            *5*18*#8##
+
+            **/
+            break;
+
+
+        case WHO_AUXILIARY:                             // 9
+            /**
+                example:
+
+                *9*what*where##
+
+                what:   0 = OFF
+                        1 = ON
+                where:  1 to 9 (AUX channel)
+            **/
+            if(!iter->IsNormalFrame())
+            {
+                _log.Log(LOG_ERROR, "COpenWebNet: Who=%s frame error!", who.c_str());
+                return;
+            }
+
+            devname = OPENWEBNET_AUXILIARY;
+            devname += " " + where;
+
+			//pTypeGeneralSwitch, sSwitchAuxiliaryT1
+            UpdateSwitch(WHO_AUXILIARY, atoi(where.c_str()), atoi(what.c_str()), 100, devname.c_str(), sSwitchAuxiliaryT1);
+            break;
+
         case WHO_SCENARIO:                              // 0
         case WHO_LOAD_CONTROL:                          // 3
-        case WHO_BURGLAR_ALARM:                         // 5
         case WHO_DOOR_ENTRY_SYSTEM:                     // 6
         case WHO_MULTIMEDIA:                            // 7
-        case WHO_AUXILIARY:                             // 9
         case WHO_GATEWAY_INTERFACES_MANAGEMENT:         // 13
         case WHO_LIGHT_SHUTTER_ACTUATOR_LOCK:           // 14
         case WHO_SCENARIO_SCHEDULER_SWITCH:             // 15
@@ -648,9 +716,7 @@ bool COpenWebNet:: WriteToHardware(const char *pdata, const unsigned char length
                 case sSwitchBlindsT1:
                     //Blinds/Window command
                     who = WHO_AUTOMATION;
-                	//where = ((int)(pCmd->BLINDS1.id2 << 8) & 0xFF00) +  ((int)pCmd->BLINDS1.id3 & 0xFF);
                 	where = (int)(pCmd->id & 0xFFFF);
-
 
                     if (pCmd->cmnd == gswitch_sOff)
                     {
@@ -668,7 +734,6 @@ bool COpenWebNet:: WriteToHardware(const char *pdata, const unsigned char length
                 case sSwitchLightT1:
                     //Light/Switch command
                     who = WHO_LIGHTING;
-                	//where = ((int)(pCmd->LIGHTING2.id3 << 8) & 0xFF00) +  ((int)pCmd->LIGHTING2.id4 & 0xFF);
                 	where = (int)(pCmd->id & 0xFFFF);
 
                     if (pCmd->cmnd == gswitch_sOff)
@@ -692,6 +757,21 @@ bool COpenWebNet:: WriteToHardware(const char *pdata, const unsigned char length
                             what = LIGHT_WHAT_OFF;
                         }
                     }
+                    break;
+                case sSwitchAuxiliaryT1:
+                    //Auxiliary command
+                    who = WHO_AUXILIARY;
+                	where = (int)(pCmd->id & 0xFFFF);
+
+                    if (pCmd->cmnd == gswitch_sOff)
+                    {
+                        what = AUXILIARY_WHAT_OFF;
+                    }
+                    else if (pCmd->cmnd == gswitch_sOn)
+                    {
+                        what = AUXILIARY_WHAT_ON;
+                    }
+                    break;
                 default:
                     break;
             }
@@ -808,6 +888,22 @@ void COpenWebNet::scan_temperature_control()
         sendCommand(request, responses, 0, true);
     }
 }
+
+/**
+    request general burglar alarm status
+**/
+void COpenWebNet::requestBurglarAlarmStatus()
+{
+    bt_openwebnet request;
+    vector<bt_openwebnet> responses;
+    stringstream whoStr;
+    stringstream whereStr;
+	whoStr << WHO_BURGLAR_ALARM;
+    whereStr << 0;
+    request.CreateStateMsgOpen(whoStr.str(), whereStr.str());
+    sendCommand(request, responses, 0, false);
+}
+
 /**
     Request time to gateway
 **/
@@ -831,6 +927,9 @@ void COpenWebNet::scan_device()
     /** Scanning of temperature sensor is not necessary simpli wait an update **/
     //_log.Log(LOG_STATUS, "COpenWebNet: scanning temperature control...");
     //scan_temperature_control();
+
+    _log.Log(LOG_STATUS, "COpenWebNet: request burglar alarm status...");
+    requestBurglarAlarmStatus();
     _log.Log(LOG_STATUS, "COpenWebNet: scan device complete, wait all the update data..");
 }
 
@@ -888,15 +987,11 @@ bool COpenWebNet::FindDevice(int who, int where, int* used)
 	char szIdx[10];
 	switch (who) {
         case WHO_LIGHTING:                              // 1
-		    //devType = pTypeLighting2;
-			//subType = sTypeLightMyHome;
 			devType = pTypeGeneralSwitch;
 			subType = sSwitchLightT1;
 			sprintf(szIdx, "%02X%02X%02X%02X", ID1, ID2, ID3, ID4);
             break;
 		case WHO_AUTOMATION:                            // 2
-            //devType = pTypeBlinds;
-            //subType = sTypeBlindsT13;
 			devType = pTypeGeneralSwitch;
             subType = sSwitchBlindsT1;
             sprintf(szIdx, "%02X%02X%02X%02X", ID1, ID2, ID3, ID4);
@@ -908,12 +1003,16 @@ bool COpenWebNet::FindDevice(int who, int where, int* used)
             //printf(szIdx, "%02X%02X", who, where);
             //break;
 			return true; // device always present
+        case WHO_AUXILIARY:                             // 9
+			devType = pTypeGeneralSwitch;
+			subType = sSwitchAuxiliaryT1;
+			sprintf(szIdx, "%02X%02X%02X%02X", ID1, ID2, ID3, ID4);
+            break;
         case WHO_SCENARIO:                              // 0
 		case WHO_LOAD_CONTROL:                          // 3
 		case WHO_BURGLAR_ALARM:                         // 5
 		case WHO_DOOR_ENTRY_SYSTEM:                     // 6
 		case WHO_MULTIMEDIA:                            // 7
-		case WHO_AUXILIARY:                             // 9
 		case WHO_GATEWAY_INTERFACES_MANAGEMENT:         // 13
 		case WHO_LIGHT_SHUTTER_ACTUATOR_LOCK:           // 14
 		case WHO_SCENARIO_SCHEDULER_SWITCH:             // 15
@@ -930,7 +1029,7 @@ bool COpenWebNet::FindDevice(int who, int where, int* used)
 			return false;
 	}
 
-    if ((who == WHO_LIGHTING) || (who == WHO_AUTOMATION) || (who == WHO_TEMPERATURE_CONTROL))
+    if ((who == WHO_LIGHTING) || (who == WHO_AUTOMATION) || (who == WHO_TEMPERATURE_CONTROL) || (who == WHO_AUXILIARY))
     {
         if (used != NULL)
         {
