@@ -11,7 +11,8 @@ public:
 		I2CTYPE_BMP085,
 		I2CTYPE_HTU21D,
 		I2CTYPE_TSL2561,
-		I2CTYPE_PCF8574
+		I2CTYPE_PCF8574,
+		I2CTYPE_BME280
 	};
 
 	explicit I2C(const int ID, const _eI2CType DevType, const int Port);
@@ -21,7 +22,11 @@ private:
 	bool StartHardware();
 	bool StopHardware();
 	void HTU21D_ReadSensorDetails();
-	void bmp_ReadSensorDetails();
+	void bmp_Read_BMP_SensorDetails();
+	void bmp_Read_BME_SensorDetails();
+
+	bool readBME280ID(const int fd, int &ChipID, int &Version);
+	bool readBME280All(const int fd, float &temp, float &pressure, int &humidity);
 
 	void Do_Work();
 	boost::shared_ptr<boost::thread> m_thread;
@@ -40,6 +45,7 @@ private:
 	// BMP085 stuff
 	//Forecast
 	int bmp_CalculateForecast(const float pressure);
+	int CalculateForcast(const float pressure);
 	float m_LastPressure;
 	int m_LastMinute;
 	float m_pressureSamples[180];

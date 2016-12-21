@@ -240,8 +240,10 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_ZIBLUEUSB, "ZiBlue RFPlayer USB" },
 		{ HTYPE_ZIBLUETCP, "ZiBlue RFPlayer with LAN interface" },
 		{ HTYPE_Yeelight, "YeeLight LED" },
-		{ HTYPE_RaspberryPCF8574, "I2C PIO 8bit expander PCF8574 or PCF8574A" },
+		{ HTYPE_RaspberryPCF8574, "I2C sensor PIO 8bit expander PCF8574 or PCF8574A" },
+		{ HTYPE_PythonPlugin, "Python Plugin System" },
 		{ HTYPE_XiaomiGateway, "Xiaomi Gateway" },
+		{ HTYPE_RaspberryBME280, "I2C sensor BME280 Temp+Hum+Baro" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -436,6 +438,7 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeThermostat1, "Thermostat 1" , "temperature" },
 		{ pTypeThermostat2, "Thermostat 2" , "temperature" },
 		{ pTypeThermostat3, "Thermostat 3" , "temperature" },
+		{ pTypeThermostat4, "Thermostat 4" , "temperature" },
 		{ pTypeRadiator1, "Radiator 1", "temperature" },
 		{ pTypeTEMP, "Temp", "temperature" },
 		{ pTypeHUM, "Humidity" , "temperature" },
@@ -598,13 +601,14 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeBlinds, sTypeBlindsT3, "A-OK AC114" },
 		{ pTypeBlinds, sTypeBlindsT4, "RAEX" },
 		{ pTypeBlinds, sTypeBlindsT5, "Media Mount" },
-		{ pTypeBlinds, sTypeBlindsT6, "T6 DC106" },
+		{ pTypeBlinds, sTypeBlindsT6, "DC106" },
 		{ pTypeBlinds, sTypeBlindsT7, "Forest" },
 		{ pTypeBlinds, sTypeBlindsT8, "Chamberlain CS4330CN" },
 		{ pTypeBlinds, sTypeBlindsT9, "Sunpery" },
 		{ pTypeBlinds, sTypeBlindsT10, "Dolat DLM-1" },
 		{ pTypeBlinds, sTypeBlindsT11, "ASP" },
 		{ pTypeBlinds, sTypeBlindsT12, "Confexx" },
+		{ pTypeBlinds, sTypeBlindsT13, "Screenline" },
 
 		{ pTypeSecurity1, sTypeSecX10, "X10 security" },
 		{ pTypeSecurity1, sTypeSecX10M, "X10 security motion" },
@@ -638,6 +642,10 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeThermostat3, sTypeMertikG6RH4TB, "Mertik G6R-H4TB" },
 		{ pTypeThermostat3, sTypeMertikG6RH4TD, "Mertik G6R-H4TD" },
 		{ pTypeThermostat3, sTypeMertikG6RH4S, "Mertik G6R-H4S" },
+
+		{ pTypeThermostat4, sTypeMCZ1, "MCZ 1 fan model" },
+		{ pTypeThermostat4, sTypeMCZ2, "MCZ 2 fan model" },
+		{ pTypeThermostat4, sTypeMCZ3, "MCZ 3 fan model" },
 
 		{ pTypeRadiator1, sTypeSmartwares, "Smartwares" },
 		{ pTypeRadiator1, sTypeSmartwaresSwitchRadiator, "Smartwares Mode" },
@@ -959,6 +967,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeBlinds, sTypeBlindsT10, "Status" },
 		{ pTypeBlinds, sTypeBlindsT11, "Status" },
 		{ pTypeBlinds, sTypeBlindsT12, "Status" },
+		{ pTypeBlinds, sTypeBlindsT13, "Status" },
 
 		{ pTypeSecurity1, sTypeSecX10, "Status" },
 		{ pTypeSecurity1, sTypeSecX10M, "Status" },
@@ -991,6 +1000,10 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeThermostat3, sTypeMertikG6RH4T1, "Status" },
 		{ pTypeThermostat3, sTypeMertikG6RH4TB, "Status" },
 		{ pTypeThermostat3, sTypeMertikG6RH4TD, "Status" },
+
+		{ pTypeThermostat4, sTypeMCZ1, "Status,Mode" },
+		{ pTypeThermostat4, sTypeMCZ2, "Status,Mode" },
+		{ pTypeThermostat4, sTypeMCZ3, "Status,Mode" },
 
 		{ pTypeRadiator1, sTypeSmartwares, "Status" },
 		{ pTypeRadiator1, sTypeSmartwaresSwitchRadiator, "Status" },
@@ -2053,6 +2066,23 @@ void GetLightStatus(
 			break;
 		case thermostat3_sStop:
 			lstatus="Stop";
+			break;
+		}
+		break;
+	case pTypeThermostat4:
+		switch (nValue)
+		{
+		case thermostat4_sOff:
+			lstatus = "Off";
+			break;
+		case thermostat4_sManual:
+			lstatus = "Manual";
+			break;
+		case thermostat4_sAuto:
+			lstatus = "Auto";
+			break;
+		case thermostat4_sEco:
+			lstatus = "Eco";
 			break;
 		}
 		break;
@@ -3198,6 +3228,31 @@ bool GetLightCommand(
 			return true;
 		}
 		break;
+	case pTypeThermostat4:
+	{
+		if (switchcmd == "Off")
+		{
+			cmd = thermostat4_sOff;
+		}
+		else if (switchcmd == "Manual")
+		{
+			cmd = thermostat4_sManual;
+		}
+		else if (switchcmd == "Auto")
+		{
+			cmd = thermostat4_sAuto;
+		}
+		else if (switchcmd == "Eco")
+		{
+			cmd = thermostat4_sEco;
+		}
+		else
+		{
+			cmd = thermostat3_sOff;
+		}
+		return true;
+	}
+	break;
 	case pTypeRadiator1:
 	{
 		if (switchcmd == "On")

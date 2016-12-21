@@ -139,12 +139,18 @@ void MQTT::on_message(const struct mosquitto_message *message)
 	if (!ret)
 		goto mqttinvaliddata;
 
-
-	if (!root["command"].empty())
+	try
 	{
-		if (!root["command"].isString())
-			goto mqttinvaliddata;
-		szCommand = root["command"].asString();
+		if (!root["command"].empty())
+		{
+			if (!root["command"].isString())
+				goto mqttinvaliddata;
+			szCommand = root["command"].asString();
+		}
+	}
+	catch (const Json::LogicError&)
+	{
+		goto mqttinvaliddata;
 	}
 
 	if ((szCommand == "udevice") || (szCommand == "switchlight") || (szCommand == "getdeviceinfo"))

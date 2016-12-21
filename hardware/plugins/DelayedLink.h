@@ -1,5 +1,11 @@
 #pragma once
 
+#ifdef WIN32
+#	include "../../../domoticz/main/dirent_windows.h"
+#else
+#	include <dirent.h>
+#endif
+
 namespace Plugins {
 
 #ifdef WIN32
@@ -13,11 +19,15 @@ namespace Plugins {
 
 #define COMMA ,
 #define DECLARE_PYTHON_SYMBOL(type, symbol, params)	typedef type (PYTHON_CALL symbol##_t)(params); symbol##_t  symbol
-#define RESOLVE_PYTHON_SYMBOL(symbol)  symbol = (symbol##_t)RESOLVE_SYMBOL(libHandle, #symbol)
+#define RESOLVE_PYTHON_SYMBOL(symbol)  symbol = (symbol##_t)RESOLVE_SYMBOL(shared_lib_, #symbol)
 
 	struct SharedLibraryProxy
 	{
+#ifdef WIN32
+		HINSTANCE shared_lib_;
+#else
 		void* shared_lib_;
+#endif
 
 		// Shared library interface begin.
 		DECLARE_PYTHON_SYMBOL(const char*, Py_GetVersion, );
@@ -78,21 +88,26 @@ namespace Plugins {
 			if (!shared_lib_) {
 #ifdef WIN32
 #	ifdef DEBUG
-#		define	PYTHON_LIB "python35_d.dll"
-				HINSTANCE libHandle = LoadLibrary(PYTHON_LIB);
+				shared_lib_ = LoadLibrary("python36_d.dll");
+				if (!shared_lib_) shared_lib_ = LoadLibrary("python35_d.dll");
+				if (!shared_lib_) shared_lib_ = LoadLibrary("python34_d.dll");
+				if (!shared_lib_) shared_lib_ = LoadLibrary("python33_d.dll");
+				if (!shared_lib_) shared_lib_ = LoadLibrary("python32_d.dll");
 #	else
-#		define	PYTHON_LIB "python35.dll"
-				HINSTANCE libHandle = LoadLibrary(PYTHON_LIB);
+				HINSTANCE libHandle = LoadLibrary("python36.dll");
+				if (!shared_lib_) libHandle = LoadLibrary("python35.dll");
+				if (!shared_lib_) libHandle = LoadLibrary("python34.dll");
+				if (!shared_lib_) libHandle = LoadLibrary("python33.dll");
+				if (!shared_lib_) libHandle = LoadLibrary("python32.dll");
 #	endif
 #else
-				// On Ubuntu 16.04 was under: /usr/lib/python3.5/config-3.5m-i386-linux-gnu
-				// To find it on a system use: locate libpython3.5.so
-				// To look at symbols in the .so use: readelf -Ws /usr/lib/python3.5/config-3.5m-i386-linux-gnu/libpython3.5.so
-#		define	PYTHON_LIB "libpython3.5.so"
-				void* libHandle = dlopen(PYTHON_LIB, RTLD_LAZY | RTLD_GLOBAL);
+				FindLibrary("python3.6", true);
+				if (!shared_lib_) FindLibrary("python3.5", true);
+				if (!shared_lib_) FindLibrary("python3.4", true);
+				if (!shared_lib_) FindLibrary("python3.3", true);
+				if (!shared_lib_) FindLibrary("python3.2", true);
 #endif
-				shared_lib_ = libHandle;
-				if (libHandle)
+				if (shared_lib_)
 				{
 					RESOLVE_PYTHON_SYMBOL(Py_GetVersion);
 					RESOLVE_PYTHON_SYMBOL(Py_IsInitialized);
@@ -148,6 +163,80 @@ namespace Plugins {
 		~SharedLibraryProxy() {};
 
 		bool Py_LoadLibrary() { return (shared_lib_ != 0); };
+
+#ifndef WIN32
+		private:
+			void FindLibrary(const char * szLibrary, bool bSimple = false)
+			{
+				if (bSimple)
+				{
+					// look in directories covered by ldconfig
+					if (!shared_lib_)
+					{
+						std::string sLibrary = "lib";
+						sLibrary += szLibrary;
+						sLibrary += ".so";
+						shared_lib_ = dlopen(sLibrary.c_str(), RTLD_LAZY | RTLD_GLOBAL);
+//						if (shared_lib_) _log.Log(LOG_STATUS, "(%s) Loaded.", sLibrary.c_str());
+
+					}
+					// look in directories covered by ldconfig but 'm' variant
+					if (!shared_lib_)
+					{
+						std::string sLibraryM = "lib";
+						sLibraryM += szLibrary;
+						sLibraryM += "m.so";
+						shared_lib_ = dlopen(sLibraryM.c_str(), RTLD_LAZY | RTLD_GLOBAL);
+//						if (shared_lib_) _log.Log(LOG_STATUS, "(%s) Loaded.", sLibraryM.c_str());
+					}
+					// look in /usr/lib directories
+					if (!shared_lib_)
+					{
+						std::string	sLibraryDir = "/usr/lib/";
+						sLibraryDir += szLibrary;
+						sLibraryDir += "/";
+						FindLibrary(sLibraryDir.c_str(), false);
+					}
+					// look in /usr/lib directories but 'm' variant
+					if (!shared_lib_)
+					{
+						std::string	sLibraryMDir = "/usr/lib/";
+						sLibraryMDir += szLibrary;
+						sLibraryMDir += "m/";
+						FindLibrary(sLibraryMDir.c_str(), false);
+					}
+				}
+				else
+				{
+					DIR *lDir;
+					struct dirent *ent;
+					if ((lDir = opendir(szLibrary)) != NULL)
+					{
+						while (!shared_lib_ && (ent = readdir(lDir)) != NULL)
+						{
+							std::string filename = ent->d_name;
+							if (dirent_is_directory(szLibrary, ent) && (filename.length() > 2))
+							{
+								std::string	newDir = szLibrary + filename + "/";
+								FindLibrary(newDir.c_str());
+							}
+							else
+							{
+								if ((filename.length() > 12) &&
+									(filename.compare(0, 11, "libpython3.") == 0) &&
+									(filename.compare(filename.length() - 3, 3, ".so") == 0))
+								{
+									std::string sLibFile = szLibrary + filename;
+									shared_lib_ = dlopen(sLibFile.c_str(), RTLD_LAZY | RTLD_GLOBAL);
+//									_log.Log(LOG_STATUS, "(%s) Loaded.", sLibFile.c_str());
+								}
+							}
+						}
+						closedir(lDir);
+					}
+				}
+			}
+#endif
 	};
 
 	SharedLibraryProxy* pythonLib = new SharedLibraryProxy();
