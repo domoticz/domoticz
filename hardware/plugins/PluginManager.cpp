@@ -36,7 +36,7 @@
 #include <frameobject.h>
 #include "DelayedLink.h"
 
-#define MINIMUM_PYTHON_VERSION "3.4.0"
+#define MINIMUM_PYTHON_VERSION "3.2.0"
 
 #define ATTRIBUTE_VALUE(pElement, Name, Value) \
 		{	\
@@ -883,6 +883,17 @@ namespace Plugins {
 		}
 	}
 
+	void CPluginProtocol::Flush(const int HwdID)
+	{
+		// Forced buffer clear, make sure the plugin gets a look at the data in case it wants it
+		CPluginMessage	Message(PMT_Message, HwdID, m_sRetainedData);
+		{
+			boost::lock_guard<boost::mutex> l(PluginMutex);
+			PluginMessageQueue.push(Message);
+		}
+		m_sRetainedData.clear();
+	}
+
 	void CPluginProtocolLine::ProcessMessage(const int HwdID, std::string & ReadData)
 	{
 		//
@@ -962,24 +973,38 @@ namespace Plugins {
 				if (!m_Tag.length())
 				{
 					int iStart = sData.find_first_of('<');
-					int iEnd = sData.find_first_of(" >");
-					if ((iStart != std::string::npos) && (iEnd != std::string::npos))
+					if (iStart == std::string::npos)
 					{
-						m_Tag = sData.substr(++iStart, (iEnd - iStart));
-						sData = sData.substr(--iStart);					// remove any leading data
+						// start of a tag not found so discard
+						m_sRetainedData.clear();
+						break;
+					}
+					sData = sData.substr(iStart);					// remove any leading data
+					int iEnd = sData.find_first_of('>');
+					if (iEnd != std::string::npos)
+					{
+						m_Tag = sData.substr(1, (iEnd - 1));
 					}
 				}
 
-				int	iEnd = sData.find("/" + m_Tag);
-				if (iEnd != std::string::npos)
+				int	iPos = sData.find("</" + m_Tag + ">");
+				if (iPos != std::string::npos)
 				{
-					CPluginMessage	Message(PMT_Message, HwdID, sData.substr(0, iEnd + m_Tag.length() + 2));
+					int iEnd = iPos + m_Tag.length() + 3;
+					CPluginMessage	Message(PMT_Message, HwdID, sData.substr(0, iEnd));
 					{
 						boost::lock_guard<boost::mutex> l(PluginMutex);
 						PluginMessageQueue.push(Message);
 					}
 
-					sData = sData.substr(iEnd + m_Tag.length() + 2);
+					if (iEnd == sData.length())
+					{
+						sData.clear();
+					}
+					else
+					{
+						sData = sData.substr(++iEnd);
+					}
 					m_Tag = "";
 				}
 				else
@@ -988,7 +1013,7 @@ namespace Plugins {
 		}
 		catch (std::exception const &exc)
 		{
-			_log.Log(LOG_ERROR, "(CPluginProtocolXML::ProcessMessage) Unexpected exception thrown '%s', Data '%s'.", exc.what(), ReadData.c_str());
+			_log.Log(LOG_ERROR, "(CPluginProtocolXML::ProcessMessage) Unexpected exception thrown '%s', Data '%s'.", exc.what(), sData.c_str());
 		}
 
 		m_sRetainedData = sData; // retain any residual for next time
@@ -1635,6 +1660,10 @@ namespace Plugins {
 				if ((m_pTransport) && (m_pTransport->IsConnected()))
 				{
 					m_pTransport->handleDisconnect();
+				}
+				if (m_pProtocol)
+				{
+					m_pProtocol->Flush(m_HwdID);
 				}
 				break;
 			default:
