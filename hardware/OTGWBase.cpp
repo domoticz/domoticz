@@ -296,7 +296,7 @@ void OTGWBase::SetSetpoint(const int idx, const float temp)
 		_log.Log(LOG_STATUS, "OTGW: Setting Heating SetPoint to: %.1f", temp);
 		sprintf(szCmd, "SW=%.1f\r\n", temp);
 		WriteInt((const unsigned char*)&szCmd, (const unsigned char)strlen(szCmd));
-        UpdateSetPointSensor(idx, temp, "DHW Setpoint");
+		UpdateSetPointSensor(idx, temp, "DHW Setpoint");
 	}
 	else if (idx == 16)
 	{
@@ -396,9 +396,15 @@ void OTGWBase::ParseLine()
 		_status.DHW_setpoint_boundaries=results[idx++];
 		_status.Max_CH_setpoint_boundaries=results[idx++];
 		_status.DHW_setpoint = static_cast<float>(atof(results[idx++].c_str())); 
-		if(_status.DHW_setpoint!=0.0f) UpdateSetPointSensor(idx - 1, _status.DHW_setpoint, "DHW Setpoint");
+		if (_status.DHW_setpoint != 0.0f)
+		{
+			UpdateSetPointSensor(idx - 1, _status.DHW_setpoint, "DHW Setpoint");
+		}
 		_status.Max_CH_water_setpoint = static_cast<float>(atof(results[idx++].c_str()));		
-		if (_status.Max_CH_water_setpoint != 0.0f) UpdateSetPointSensor(idx - 1, _status.Max_CH_water_setpoint, "Max_CH Water Setpoint");
+		if (_status.Max_CH_water_setpoint != 0.0f)
+		{
+			UpdateSetPointSensor(idx - 1, _status.Max_CH_water_setpoint, "Max_CH Water Setpoint");
+		}
 		_status.Burner_starts=atol(results[idx++].c_str());
 		_status.CH_pump_starts=atol(results[idx++].c_str());
 		_status.DHW_pump_valve_starts=atol(results[idx++].c_str());
