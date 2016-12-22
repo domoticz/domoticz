@@ -625,7 +625,7 @@ define(['app'], function (app) {
 						return (item.SubType=='Zone' || item.SubType=='Hot Water') && typeof item.State != 'undefined';
 					};
 					ctrl.displayHeat = function() {
-						return (item.SubType=='Zone' || item.SubType=='Hot Water') && ctrl.sHeatMode() != 'Auto';
+						return (item.SubType=='Zone' || item.SubType=='Hot Water') && ctrl.sHeatMode() != 'Auto' && ctrl.sHeatMode() != 'FollowSchedule';
 					};
 					ctrl.imgHeat = function() {
 						if (ctrl.displayHeat()) {
