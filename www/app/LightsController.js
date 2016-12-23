@@ -2043,7 +2043,23 @@ define(['app'], function (app) {
 							}
 						}
 						else if ((item.SwitchType == "Blinds")||(item.SwitchType.indexOf("Venetian Blinds") == 0)) {
-							if ((item.SubType=="RAEX")||(item.SubType.indexOf('A-OK') == 0)||(item.SubType.indexOf('RollerTrol') == 0)||(item.SubType=="Harrison")||(item.SubType.indexOf('RFY') == 0)||(item.SubType.indexOf('ASA') == 0)||(item.SubType.indexOf('T6 DC') == 0)||(item.SwitchType.indexOf("Venetian Blinds") == 0)) {
+							if (
+								(item.SubType=="RAEX")||
+								(item.SubType.indexOf('A-OK') == 0)||
+								(item.SubType.indexOf('Hasta') >= 0)||
+                                (item.SubType.indexOf('Media Mount') == 0) ||
+                                (item.SubType.indexOf('Forest') == 0) ||
+                                (item.SubType.indexOf('Chamberlain') == 0) ||
+                                (item.SubType.indexOf('Sunpery') == 0) ||
+                                (item.SubType.indexOf('Dolat') == 0) ||
+                                (item.SubType.indexOf('ASP') == 0) ||
+								(item.SubType == "Harrison") ||
+								(item.SubType.indexOf('RFY') == 0)||
+								(item.SubType.indexOf('ASA') == 0)||
+								(item.SubType.indexOf('DC106') == 0)||
+								(item.SubType.indexOf('Confexx') == 0)||
+								(item.SwitchType.indexOf("Venetian Blinds") == 0)
+							   ) {
 								if (item.Status == 'Closed') {
 									img='<img src="images/blindsopen48.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
 									img3='<img src="images/blinds48sel.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
@@ -2065,7 +2081,22 @@ define(['app'], function (app) {
 							}
 						}
 						else if (item.SwitchType == "Blinds Inverted") {
-							if ((item.SubType=="RAEX")||(item.SubType.indexOf('A-OK') == 0)||(item.SubType.indexOf('RollerTrol') == 0)||(item.SubType=="Harrison")||(item.SubType.indexOf('RFY') == 0)||(item.SubType.indexOf('ASA') == 0)||(item.SubType.indexOf('T6 DC') == 0)) {
+							if (
+								(item.SubType=="RAEX")||
+								(item.SubType.indexOf('A-OK') == 0)||
+								(item.SubType.indexOf('Hasta') >= 0)||
+                                (item.SubType.indexOf('Media Mount') == 0) ||
+                                (item.SubType.indexOf('Forest') == 0) ||
+                                (item.SubType.indexOf('Chamberlain') == 0) ||
+                                (item.SubType.indexOf('Sunpery') == 0) ||
+                                (item.SubType.indexOf('Dolat') == 0) ||
+                                (item.SubType.indexOf('ASP') == 0) ||
+								(item.SubType == "Harrison") ||
+								(item.SubType.indexOf('RFY') == 0)||
+								(item.SubType.indexOf('ASA') == 0)||
+								(item.SubType.indexOf('DC106') == 0)||
+								(item.SubType.indexOf('Confexx') == 0)
+							   ) {
 								if (item.Status == 'Closed') {
 									img='<img src="images/blindsopen48.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
 									img3='<img src="images/blinds48sel.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
@@ -2480,7 +2511,23 @@ define(['app'], function (app) {
 						'\t<div class="span4" id="' + item.idx + '">\n' +
 						'\t  <section>\n';
 				  if ((item.SwitchType == "Blinds") || (item.SwitchType == "Blinds Inverted") || (item.SwitchType == "Blinds Percentage") || (item.SwitchType == "Blinds Percentage Inverted") || (item.SwitchType.indexOf("Venetian Blinds") == 0) || (item.SwitchType.indexOf("Media Player") == 0)) {
-						if ((item.SubType=="RAEX")||(item.SubType.indexOf('A-OK') == 0)||(item.SubType.indexOf('RollerTrol') == 0)||(item.SubType=="Harrison")||(item.SubType.indexOf('RFY') == 0)||(item.SubType.indexOf('ASA') == 0)||(item.SubType.indexOf('T6 DC') == 0)||(item.SwitchType.indexOf("Venetian Blinds") == 0)) {
+						if (
+							(item.SubType=="RAEX")||
+							(item.SubType.indexOf('A-OK') == 0)||
+							(item.SubType.indexOf('Hasta') >= 0)||
+                            (item.SubType.indexOf('Media Mount') == 0) ||
+                            (item.SubType.indexOf('Forest') == 0) ||
+                            (item.SubType.indexOf('Chamberlain') == 0) ||
+                            (item.SubType.indexOf('Sunpery') == 0) ||
+                            (item.SubType.indexOf('Dolat') == 0) ||
+                            (item.SubType.indexOf('ASP') == 0) ||
+							(item.SubType == "Harrison") ||
+							(item.SubType.indexOf('RFY') == 0)||
+							(item.SubType.indexOf('ASA') == 0)||
+							(item.SubType.indexOf('DC106') == 0)||
+							(item.SubType.indexOf('Confexx') == 0)||
+							(item.SwitchType.indexOf("Venetian Blinds") == 0)
+						   ) {
 							xhtm+='\t    <table id="itemtabletrippleicon" border="0" cellpadding="0" cellspacing="0">\n';
 						}
 						else {
@@ -2587,7 +2634,23 @@ define(['app'], function (app) {
 				      bAddTimer = false;
 				  }
 				  else if ((item.SwitchType == "Blinds") || (item.SwitchType.indexOf("Venetian Blinds") == 0)) {
-					if ((item.SubType=="RAEX")||(item.SubType.indexOf('A-OK') == 0)||(item.SubType.indexOf('RollerTrol') == 0)||(item.SubType=="Harrison")||(item.SubType.indexOf('RFY') == 0)||(item.SubType.indexOf('ASA') == 0)||(item.SubType.indexOf('T6 DC') == 0)||(item.SwitchType.indexOf("Venetian Blinds") == 0)) {
+					if (
+						(item.SubType=="RAEX")||
+						(item.SubType.indexOf('A-OK') == 0)||
+						(item.SubType.indexOf('Hasta') >= 0)||
+                        (item.SubType.indexOf('Media Mount') == 0) ||
+                        (item.SubType.indexOf('Forest') == 0) ||
+                        (item.SubType.indexOf('Chamberlain') == 0) ||
+                        (item.SubType.indexOf('Sunpery') == 0) ||
+                        (item.SubType.indexOf('Dolat') == 0) ||
+                        (item.SubType.indexOf('ASP') == 0) ||
+						(item.SubType == "Harrison") ||
+						(item.SubType.indexOf('RFY') == 0)||
+						(item.SubType.indexOf('ASA') == 0)||
+						(item.SubType.indexOf('DC106') == 0)||
+						(item.SubType.indexOf('Confexx') == 0)||
+						(item.SwitchType.indexOf("Venetian Blinds") == 0)
+					   ) {
 						if (item.Status == 'Closed') {
 							xhtm+='\t      <td id="img"><img src="images/blindsopen48.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48"></td>\n';
 							xhtm+='\t      <td id="img2"><img src="images/blindsstop.png" title="' + $.t("Stop Blinds") +'" onclick="SwitchLight(' + item.idx + ',\'Stop\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="24"></td>\n';
@@ -2611,7 +2674,22 @@ define(['app'], function (app) {
 					}
 				  }
 				  else if (item.SwitchType == "Blinds Inverted") {
-					if ((item.SubType=="RAEX")||(item.SubType.indexOf('A-OK') == 0)||(item.SubType.indexOf('RollerTrol') == 0)||(item.SubType=="Harrison")||(item.SubType.indexOf('RFY') == 0)||(item.SubType.indexOf('ASA') == 0)||(item.SubType.indexOf('T6 DC') == 0)) {
+					if (
+						(item.SubType=="RAEX")||
+						(item.SubType.indexOf('A-OK') == 0)||
+						(item.SubType.indexOf('Hasta') >= 0)||
+                        (item.SubType.indexOf('Media Mount') == 0) ||
+                        (item.SubType.indexOf('Forest') == 0) ||
+                        (item.SubType.indexOf('Chamberlain') == 0) ||
+                        (item.SubType.indexOf('Sunpery') == 0) ||
+                        (item.SubType.indexOf('Dolat') == 0) ||
+                        (item.SubType.indexOf('ASP') == 0) ||
+						(item.SubType == "Harrison") ||
+						(item.SubType.indexOf('RFY') == 0)||
+						(item.SubType.indexOf('ASA') == 0)||
+						(item.SubType.indexOf('DC106') == 0)||
+						(item.SubType.indexOf('Confexx') == 0)
+					   ) {
 						if (item.Status == 'Closed') {
 							xhtm+='\t      <td id="img"><img src="images/blindsopen48.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48"></td>\n';
 							xhtm+='\t      <td id="img2"><img src="images/blindsstop.png" title="' + $.t("Stop Blinds") +'" onclick="SwitchLight(' + item.idx + ',\'Stop\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="24"></td>\n';
@@ -3198,7 +3276,7 @@ define(['app'], function (app) {
 				bIsType5=1;
 				totunits=16;
 			}
-			else if (lighttype==59) {
+			else if (lighttype==65) {
 				//IT (Intertek,FA500,PROmax...)
 				bIsType5=1;
 				totunits=4;
@@ -3235,15 +3313,14 @@ define(['app'], function (app) {
 				tothousecodes=4;
 				totunits=4;
 			}
-			else if (lighttype==305) {
-				//Openwebnet Blinds
+			else if ((lighttype==305) || (lighttype==306)) {
+				//Openwebnet Blinds/light
 				totrooms=10;
 				totpointofloads=10;
 			}
-			else if (lighttype==306) {
-				//Openwebnet light
+			else if (lighttype==307) {
+				//Openwebnet Auxiliary
 				totrooms=10;
-				totpointofloads=10;
 			}
 
 
@@ -3254,6 +3331,7 @@ define(['app'], function (app) {
 			$("#dialog-addmanuallightdevice #homeconfortparams").hide();
 			$("#dialog-addmanuallightdevice #fanparams").hide();
 			$("#dialog-addmanuallightdevice #openwebnetparams").hide();
+			$("#dialog-addmanuallightdevice #openwebnetparamsAUX").hide();
 
 			if (lighttype==104) {
 				//HE105
@@ -3312,12 +3390,21 @@ define(['app'], function (app) {
 			else if ((lighttype>=200)&&(lighttype<300)) {
 				//Blinds
 				$("#dialog-addmanuallightdevice #blindsparams").show();
+				var bShow1 = (lighttype==205)||(lighttype==206)||(lighttype==207)||(lighttype==210)||(lighttype==211);
 				var bShow4 = (lighttype==206)||(lighttype==207)||(lighttype==209);
-				var bShowUnit = (lighttype==206)||(lighttype==207)||(lighttype==208)||(lighttype==209)||(lighttype==212);
+				var bShowUnit = (lighttype==206)||(lighttype==207)||(lighttype==208)||(lighttype==209)||(lighttype==212)||(lighttype==213);
+				if (bShow1)
+					$('#dialog-addmanuallightdevice #blindsparams #combocmd1').show();
+				else {
+					$('#dialog-addmanuallightdevice #blindsparams #combocmd1').hide();
+					$('#dialog-addmanuallightdevice #blindsparams #combocmd1').val(0);
+				}
 				if (bShow4)
 					$('#dialog-addmanuallightdevice #blindsparams #combocmd4').show();
-				else
+				else {
 					$('#dialog-addmanuallightdevice #blindsparams #combocmd4').hide();
+					$('#dialog-addmanuallightdevice #blindsparams #combocmd4').val(0);
+				}
 				if (bShowUnit)
 					$('#dialog-addmanuallightdevice #blindparamsUnitCode').show();
 				else
@@ -3359,6 +3446,18 @@ define(['app'], function (app) {
 				$("#dialog-addmanuallightdevice #lighting3params").hide();
 				$("#dialog-addmanuallightdevice #openwebnetparams").show();
 			}
+			else if (lighttype==307) {
+				//Openwebnet Auxiliary
+				$("#dialog-addmanuallightdevice #openwebnetparamsAUX #combocmd1  >option").remove();
+				for (ii=1; ii<totrooms; ii++)
+				{
+					$('#dialog-addmanuallightdevice #openwebnetparamsAUX #combocmd1').append($('<option></option>').val(ii).html(ii));
+				}
+				$("#dialog-addmanuallightdevice #lighting1params").hide();
+				$("#dialog-addmanuallightdevice #lighting2params").hide();
+				$("#dialog-addmanuallightdevice #lighting3params").hide();
+				$("#dialog-addmanuallightdevice #openwebnetparamsAUX").show();
+			}
 			else if (bIsARCType==1) {
 				$('#dialog-addmanuallightdevice #lightparams1 #combohousecode >option').remove();
 				$('#dialog-addmanuallightdevice #lightparams1 #combounitcode >option').remove();
@@ -3387,9 +3486,9 @@ define(['app'], function (app) {
 				}
 				else {
 					$("#dialog-addmanuallightdevice #lighting2params #combocmd1").hide();
-					if ((lighttype==55)||(lighttype==57)||(lighttype==59)||(lighttype==100)) {
+					if ((lighttype==55)||(lighttype==57)||(lighttype==65)||(lighttype==100)) {
 						$("#dialog-addmanuallightdevice #lighting2params #combocmd2").hide();
-						if ((lighttype!=59)&&(lighttype!=100)) {
+						if ((lighttype!=65)&&(lighttype!=100)) {
 							$("#dialog-addmanuallightdevice #lighting2paramsUnitCode").hide();
 						}
 					}
@@ -3482,13 +3581,28 @@ define(['app'], function (app) {
 					$("#dialog-addmanuallightdevice #fanparams #combocmd3 option:selected").text();
 				mParams+="&id="+ID;
 			}
-			else if ((lighttype==305) || (lighttype==306)) {
-				//OpenWebNet Blinds/light
-				var ID="OpenWebNet";
-				var unitcode=
-					$("#dialog-addmanuallightdevice #openwebnetparams #combocmd1 option:selected").val()+
-					$("#dialog-addmanuallightdevice #openwebnetparams #combocmd2 option:selected").val();
-				mParams+="&id="+ID+"&unitcode="+unitcode;
+			else if (lighttype==305) {
+				//OpenWebNet Blinds
+				var appID= parseInt($("#dialog-addmanuallightdevice #openwebnetparams #combocmd1 option:selected").val()+
+					$("#dialog-addmanuallightdevice #openwebnetparams #combocmd2 option:selected").val());
+                var ID = ("0002" + ("0000" + appID.toString(16)).slice(-4)); // WHO_AUTOMATION
+				var unitcode= "0";
+				mParams+="&id="+ID.toUpperCase()+"&unitcode="+unitcode;
+			}
+			else if (lighttype==306) {
+				//OpenWebNet light
+				var appID= parseInt($("#dialog-addmanuallightdevice #openwebnetparams #combocmd1 option:selected").val()+
+					$("#dialog-addmanuallightdevice #openwebnetparams #combocmd2 option:selected").val());
+                var ID = ("0001" + ("0000" + appID.toString(16)).slice(-4)); // WHO_LIGHTING
+                var unitcode= "0";
+				mParams+="&id="+ID.toUpperCase()+"&unitcode="+unitcode;
+			}
+			else if (lighttype==307) {
+				//OpenWebNet auxiliary
+				var appID= parseInt($("#dialog-addmanuallightdevice #openwebnetparamsAUX #combocmd1 option:selected").val());
+                var ID = ("0009" + ("0000" + appID.toString(16)).slice(-4)); // WHO_AUXILIARY
+                var unitcode= "0";
+				mParams+="&id="+ID.toUpperCase()+"&unitcode="+unitcode;
 			}
 			else {
 				//AC
@@ -3498,7 +3612,7 @@ define(['app'], function (app) {
 					(lighttype==50)||
 					(lighttype==55)||
 					(lighttype==57)||
-					(lighttype==59)||
+					(lighttype==65)||
 					(lighttype==100)||
 					(lighttype==102)||
 					(lighttype==105)||

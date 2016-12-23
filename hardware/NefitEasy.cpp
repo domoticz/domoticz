@@ -105,6 +105,11 @@ const uint8_t nmagic_alarm[] = {
 #define NEFITEASY_RRCCONTACT_PREFIX "rrccontact_"
 #define NEFITEASY_RRCGATEWAY_PREFIX "rrcgateway_"
 
+bool CheckId(const char* szUrlPath, const Json::Value& response)
+{
+	return (!response["id"].empty() && response["id"].asString() == szUrlPath);
+}
+
 CNefitEasy::CNefitEasy(const int ID, const std::string &IPAddress, const unsigned short usIPPort):
 m_szIPAddress(IPAddress)
 {
@@ -373,6 +378,12 @@ bool CNefitEasy::GetStatusDetails()
 			_log.Log(LOG_ERROR, "NefitEasy: Invalid data received (main)!");
 		return false;
 	}
+	if(!CheckId(NEFITEASY_STATUS_URL, root))
+	{
+		_log.Log(LOG_ERROR, "NefitEasy: Invalid response received (main)");
+		return false;
+	}
+	
 	if (root["value"].empty())
 	{
 		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received (main)");
@@ -510,6 +521,11 @@ bool CNefitEasy::GetOutdoorTemp()
 		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received! (ODT)");
 		return false;
 	}
+	if(!CheckId(NEFITEASY_OUTDOORTEMP_URL, root))
+	{
+		_log.Log(LOG_ERROR, "NefitEasy: Invalid response received! (ODT)");
+		return false;
+	}
 	if (root["value"].empty() == true)
 	{
 		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received (ODT)");
@@ -557,6 +573,11 @@ bool CNefitEasy::GetFlowTemp()
 	if (!ret)
 	{
 		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received! (FT)");
+		return false;
+	}
+	if(!CheckId(NEFITEASY_FLOWTEMP_URL, root))
+	{
+		_log.Log(LOG_ERROR, "NefitEasy: Invalid response received (FT)");
 		return false;
 	}
 	if (root["value"].empty() == true)
@@ -608,6 +629,11 @@ bool CNefitEasy::GetPressure()
 		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received! (Press)");
 		return false;
 	}
+	if(!CheckId(NEFITEASY_PRESSURE_URL, root))
+	{
+		_log.Log(LOG_ERROR, "NefitEasy: Invalid response received! (Press)");
+		return false;
+	}
 	if (root["value"].empty())
 	{
 		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received (Press)");
@@ -653,6 +679,11 @@ bool CNefitEasy::GetDisplayCode()
 	if (!ret)
 	{
 		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received! (DP)");
+		return false;
+	}
+	if(!CheckId(NEFITEASY_DISPLAYCODE_URL, root))
+	{
+		_log.Log(LOG_ERROR, "NefitEasy: Invalid response received! (DP)");
 		return false;
 	}
 	if (root["value"].empty() == true)
@@ -750,6 +781,11 @@ bool CNefitEasy::GetGasUsage()
 	if (!ret)
 	{
 		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received! (Gas)");
+		return false;
+	}
+	if(!CheckId(NEFITEASY_GAS_URL, root))
+	{
+		_log.Log(LOG_ERROR, "NefitEasy: Invalid response received! (Gas)");
 		return false;
 	}
 	if (root["value"].empty())

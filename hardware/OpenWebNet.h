@@ -9,7 +9,7 @@ class bt_openwebnet;
 class COpenWebNet : public CDomoticzHardwareBase
 {
 public:
-	COpenWebNet(const int ID, const std::string &IPAddress, const unsigned short usIPPort);
+	COpenWebNet(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &ownPassword);
 	~COpenWebNet(void);
 
 	enum _eWho {
@@ -47,6 +47,11 @@ public:
 		LIGHT_WHAT_ON = 1
 	};
 
+	enum _eAuxiliaryWhat {
+        AUXILIARY_WHAT_OFF = 0,
+        AUXILIARY_WHAT_ON = 1
+	};
+
 	bool isStatusSocketConnected();
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 
@@ -59,14 +64,18 @@ protected:
 
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
+    std::string m_ownPassword;
 
 	void Do_Work();
 	void MonitorFrames();
 	boost::shared_ptr<boost::thread> m_monitorThread;
 	boost::shared_ptr<boost::thread> m_heartbeatThread;
 	volatile bool m_stoprequested;
-
-	bool connectStatusSocket();
+    volatile bool firstscan;
+    uint32_t ownCalcPass(string password, string nonce);
+    bool nonceHashAuthentication(csocket *connectionSocket);
+	csocket* connectGwOwn(const char *connectionMode);
+	void disconnect();
 	int m_heartbeatcntr;
 	csocket* m_pStatusSocket;
 
@@ -74,11 +83,15 @@ protected:
 	bool sendCommand(bt_openwebnet& command, vector<bt_openwebnet>& response, int waitForResponse = 0, bool silent=false);
 	bool ParseData(char* data, int length, vector<bt_openwebnet>& messages);
 	bool FindDevice(int who, int where, int *used);
-	bool AddDeviceIfNotExits(string who, string where);
-	void UpdateLastView(const std::string id, const int value);
-    void UpdateSwitch(const int ptype, const int subtype, const int SubUnit, const int bOn, const double Level, const int BatLevel);
-    void UpdateBlinds(const int ptype, const int subtype, const int SubUnit, const int bOn, const int BatLevel);
-    void UpdateDeviceValue(string who, string where, string what);
+    void UpdateSwitch(const int who, const int where, const int Level, const int BatteryLevel,const char *devname, const int subtype);
+    void UpdateBlinds(const int who, const int where, const int Command, const int BatteryLevel, const char *devname);
+    void UpdateTemp(const int who, const int where, float fval, const int BatteryLevel, const char *devname);
+    void UpdateDeviceValue(vector<bt_openwebnet>::iterator iter);
+    void scan_automation_lighting();
+    void scan_temperature_control();
+    void scan_device();
+    void requestTime();
+    void requestBurglarAlarmStatus();
 
 	string frameToString(bt_openwebnet& frame);
 	string getWhoDescription(string who);

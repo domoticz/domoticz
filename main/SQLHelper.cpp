@@ -2415,6 +2415,14 @@ bool CSQLHelper::OpenDatabase()
 	}
 	m_bDisableEventSystem = (nValue==1);
 
+	nValue = 1;
+	if (!GetPreferencesVar("LogEventScriptTrigger", nValue))
+	{
+		UpdatePreferencesVar("LogEventScriptTrigger", 1);
+		nValue = 1;
+	}
+	m_bLogEventScriptTrigger = (nValue != 0);
+
 	if ((!GetPreferencesVar("WebTheme", sValue)) || (sValue.empty()))
 	{
 		UpdatePreferencesVar("WebTheme", "default");
@@ -2715,7 +2723,7 @@ void CSQLHelper::Do_Work()
 			}
 			else if (itt->_ItemType == TITEM_SEND_SMS)
 			{
-				m_notifications.SendMessage("clickatell", itt->_ID, itt->_ID, "", false);
+				m_notifications.SendMessage(0, std::string(""), "clickatell", itt->_ID, itt->_ID, std::string(""), 1, std::string(""), false);
 			}
             else if (itt->_ItemType == TITEM_SWITCHCMD_EVENT)
             {
@@ -2764,7 +2772,7 @@ void CSQLHelper::Do_Work()
 				std::vector<std::string> splitresults;
 				StringSplit(itt->_command, "!#", splitresults);
 				if (splitresults.size() == 4) {
-					m_notifications.SendMessageEx(NOTIFYALL, splitresults[0], splitresults[1], splitresults[2], static_cast<int>(itt->_idx), splitresults[3], true);
+					m_notifications.SendMessageEx(0, std::string(""), NOTIFYALL, splitresults[0], splitresults[1], splitresults[2], static_cast<int>(itt->_idx), splitresults[3], true);
 				}
 			}
 
@@ -3066,6 +3074,9 @@ uint64_t CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const uns
 					case pTypeThermostat3:
 						newnValue=thermostat3_sOff;
 						break;
+					case pTypeThermostat4:
+						newnValue = thermostat4_sOff;
+						break;
 					case pTypeRadiator1:
 						newnValue = Radiator1_sNight;
 						break;
@@ -3147,6 +3158,9 @@ uint64_t CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const uns
 				break;
 			case pTypeThermostat3:
 				newnValue=thermostat3_sOff;
+				break;
+			case pTypeThermostat4:
+				newnValue = thermostat4_sOff;
 				break;
 			case pTypeRadiator1:
 				newnValue = Radiator1_sNight;
@@ -3318,6 +3332,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 	case pTypeChime:
 	case pTypeThermostat2:
 	case pTypeThermostat3:
+	case pTypeThermostat4:
 	case pTypeRemote:
 	case pTypeGeneralSwitch:
 	case pTypeHomeConfort:
@@ -6394,7 +6409,7 @@ void CSQLHelper::CheckBatteryLow()
 				sprintf(szTmp, "Battery Low: %s (Level: Low)", sd[1].c_str());
 			else
 				sprintf(szTmp, "Battery Low: %s (Level: %d %%)", sd[1].c_str(), batlevel);
-			m_notifications.SendMessageEx(NOTIFYALL, szTmp, szTmp, std::string(""), 1, std::string(""), true);
+			m_notifications.SendMessageEx(0, std::string(""), NOTIFYALL, szTmp, szTmp, std::string(""), 1, std::string(""), true);
 			m_batterylowlastsend[ulID] = stoday.tm_mday;
 		}
 	}
@@ -6424,7 +6439,7 @@ void CSQLHelper::CheckDeviceTimeout()
 
 	std::vector<std::vector<std::string> > result;
 	result = safe_query(
-		"SELECT ID,Name,LastUpdate FROM DeviceStatus WHERE (Used!=0 AND LastUpdate<='%04d-%02d-%02d %02d:%02d:%02d' AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d) ORDER BY Name",
+		"SELECT ID,Name,LastUpdate FROM DeviceStatus WHERE (Used!=0 AND LastUpdate<='%04d-%02d-%02d %02d:%02d:%02d' AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d) ORDER BY Name",
 		ltime.tm_year+1900,ltime.tm_mon+1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
 		pTypeLighting1,
 		pTypeLighting2,
@@ -6442,6 +6457,7 @@ void CSQLHelper::CheckDeviceTimeout()
 		pTypeChime,
 		pTypeThermostat2,
 		pTypeThermostat3,
+		pTypeThermostat4,
 		pTypeRemote,
 		pTypeGeneralSwitch,
 		pTypeHomeConfort
@@ -6469,7 +6485,7 @@ void CSQLHelper::CheckDeviceTimeout()
 		{
 			char szTmp[300];
 			sprintf(szTmp,"Sensor Timeout: %s, Last Received: %s",sd[1].c_str(),sd[2].c_str());
-			m_notifications.SendMessageEx(NOTIFYALL, szTmp, szTmp, std::string(""), 1, std::string(""), true);
+			m_notifications.SendMessageEx(0, std::string(""), NOTIFYALL, szTmp, szTmp, std::string(""), 1, std::string(""), true);
 			m_timeoutlastsend[ulID]=stoday.tm_mday;
 		}
 	}

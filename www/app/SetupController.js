@@ -539,6 +539,9 @@ define(['app'], function (app) {
 			  if (typeof data.DisableEventScriptSystem!= 'undefined') {
 				$("#eventsystemtable #DisableEventScriptSystem").prop('checked',data.DisableEventScriptSystem==1);
 			  }
+			  if (typeof data.LogEventScriptTrigger != 'undefined') {
+			    $("#eventsystemtable #LogEventScriptTrigger").prop('checked',data.LogEventScriptTrigger==1);
+			  }
 
 			  if (typeof data.FloorplanPopupDelay!= 'undefined') {
 				$("#floorplanoptionstable #FloorplanPopupDelay").val(data.FloorplanPopupDelay);

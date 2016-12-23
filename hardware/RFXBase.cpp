@@ -102,6 +102,8 @@ bool CRFXBase::CheckValidRFXData(const uint8_t *pData)
 		return (pLen == 0x06);
 	case pTypeThermostat3:
 		return (pLen == 0x08);
+	case pTypeThermostat4:
+		return (pLen == 0x0C);
 	case pTypeRadiator1:
 		return (pLen == 0x0C);
 	case pTypeBBQ:

@@ -168,7 +168,7 @@ void cWebem::RegisterWhitelistURLString(const char* idname)
 	myWhitelistURLs.push_back(idname);
 }
 
-		/**
+/**
 
   Do not call from application code, used by server to include generated text.
 
@@ -617,11 +617,11 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& r
 			if (boost::iequals(rep.headers[h].name, "Content-Disposition")) {
 				attachment = rep.headers[h].value.substr(rep.headers[h].value.find("=") + 1);
 				std::size_t last_dot_pos = attachment.find_last_of(".");
-			if (last_dot_pos != std::string::npos)
-			{
+				if (last_dot_pos != std::string::npos)
+				{
 					extension = attachment.substr(last_dot_pos + 1);
-				strMimeType=mime_types::extension_to_type(extension);
-			}
+					strMimeType=mime_types::extension_to_type(extension);
+				}
 				break;
 			}
 		}
@@ -1683,6 +1683,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 	// Initialize session
 	WebEmSession session;
 	session.remote_host = req.host_address;
+	session.reply_status = reply::ok;
 	session.isnew = false;
 	session.forcelogin = false;
 	session.rememberme = false;
@@ -1767,6 +1768,11 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 	modify_info mInfo;
 	if (!myWebem->CheckForPageOverride(session, requestCopy, rep))
 	{
+		if (session.reply_status != reply::ok)
+		{
+			rep = reply::stock_reply(static_cast<reply::status_type>(session.reply_status));
+			return;
+		}
 		// do normal handling
 		try
 		{
@@ -1874,6 +1880,16 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 				return;
 			}
 		}
+	}
+	else
+	{
+		// RK todo: check this well, this else doesn't belong to is_upgrade_request()
+		if (session.reply_status != reply::ok)
+		{
+			rep = reply::stock_reply(static_cast<reply::status_type>(session.reply_status));
+			return;
+		}
+
 		if (!rep.bIsGZIP) {
 			CompressWebOutput(req, rep);
 		}
