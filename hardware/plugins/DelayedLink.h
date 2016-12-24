@@ -94,11 +94,11 @@ namespace Plugins {
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python33_d.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python32_d.dll");
 #	else
-				HINSTANCE libHandle = LoadLibrary("python36.dll");
-				if (!shared_lib_) libHandle = LoadLibrary("python35.dll");
-				if (!shared_lib_) libHandle = LoadLibrary("python34.dll");
-				if (!shared_lib_) libHandle = LoadLibrary("python33.dll");
-				if (!shared_lib_) libHandle = LoadLibrary("python32.dll");
+				shared_lib_ = LoadLibrary("python36.dll");
+				if (!shared_lib_) shared_lib_ = LoadLibrary("python35.dll");
+				if (!shared_lib_) shared_lib_ = LoadLibrary("python34.dll");
+				if (!shared_lib_) shared_lib_ = LoadLibrary("python33.dll");
+				if (!shared_lib_) shared_lib_ = LoadLibrary("python32.dll");
 #	endif
 #else
 				FindLibrary("python3.6", true);
