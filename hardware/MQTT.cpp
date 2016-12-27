@@ -321,11 +321,6 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		if (!m_mainworker.SwitchLight(idx, switchcmd, level, hue, isWhite, 0) == true)
 		{
 			_log.Log(LOG_ERROR, "MQTT: Error sending switch command!");
-			_log.Log(LOG_ERROR, "idx: %d", idx);
-			_log.Log(LOG_ERROR, "switchcmd: %s", switchcmd.c_str());
-			_log.Log(LOG_ERROR, "level: %d", level);
-			_log.Log(LOG_ERROR, "hue: %d", hue);
-			_log.Log(LOG_ERROR, "isWhite: %s", isWhite);
 		}
 		return;
 	}
