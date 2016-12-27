@@ -50,6 +50,9 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 	case gswitch_sOff:
 		command = "off";
 		break;
+	case gswitch_sOn:
+		command = "on";
+		break;
 	default:
 		_log.Log(LOG_STATUS, "Unknown command %d", xcmd->cmnd);
 		break;
