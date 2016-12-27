@@ -61,7 +61,7 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 	boost::asio::ip::udp::socket socket_(io_service, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 0));
 	boost::shared_ptr<std::string> message1(new std::string(message));
 	boost::asio::ip::udp::endpoint remote_endpoint_;
-	remote_endpoint_ = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string("192.168.5.15"), 9898);
+	remote_endpoint_ = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(m_GatewayIp), 9898);
 	socket_.send_to(boost::asio::buffer(*message1), remote_endpoint_);
 	sleep_milliseconds(150);
 	boost::array<char, 512> recv_buffer_;
@@ -199,7 +199,7 @@ bool XiaomiGateway::StartHardware()
 
 	//check there is only one instance of the Xiaomi Gateway
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Password FROM Hardware WHERE Type=%d", HTYPE_XiaomiGateway);
+	result = m_sql.safe_query("SELECT Password, Address FROM Hardware WHERE Type=%d", HTYPE_XiaomiGateway);
 	if (result.size() > 1)
 	{
 		_log.Log(LOG_ERROR, "XiaomiGateway: Only one Xiaomi Gateway is supported, please remove any duplicates from Hardware");
@@ -208,6 +208,7 @@ bool XiaomiGateway::StartHardware()
 	else {
 		//retrieve the gateway key
 		m_GatewayPassword = result[0][0].c_str();
+		m_GatewayIp = result[0][1].c_str();
 	}
 
 	//Start worker thread
