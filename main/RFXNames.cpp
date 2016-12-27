@@ -244,6 +244,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_PythonPlugin, "Python Plugin System" },
 		{ HTYPE_XiaomiGateway, "Xiaomi Gateway" },
 		{ HTYPE_RaspberryBME280, "I2C sensor BME280 Temp+Hum+Baro" },
+		{ HTYPE_Arilux, "Arilux AL-LC0x" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -2757,6 +2758,11 @@ bool GetLightCommand(
 		else if (switchcmd=="Set Color")
 		{
 			cmd=Limitless_SetRGBColour;
+			return true;
+		}
+		else if (switchcmd == "Set HexRGBColor")
+		{
+			cmd = Limitless_SetHEXColour;
 			return true;
 		}
 		else if (
