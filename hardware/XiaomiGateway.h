@@ -26,6 +26,7 @@ private:
 	boost::shared_ptr<boost::thread> m_thread;
 	boost::shared_ptr<boost::thread> m_udp_thread;
 	std::string GetGatewayKey();
+	std::string m_GatewayIp;
 	std::string m_GatewayPassword;
 	std::string m_token;
 	boost::mutex m_mutex;
