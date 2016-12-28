@@ -210,7 +210,7 @@ bool Arilux::SendTCPCommand(char ip[50],std::vector<unsigned char> &command)
 	
 	try
 	{
-		_log.Log(LOG_STATUS, "Arilux: Try connecting device.");
+		//_log.Log(LOG_STATUS, "Arilux: Try connecting device.");
 		boost::asio::connect(sendSocket, iterator);
 	}
 	catch (const std::exception &e)
@@ -219,11 +219,11 @@ bool Arilux::SendTCPCommand(char ip[50],std::vector<unsigned char> &command)
 		return false;
 	}
 
-	_log.Log(LOG_STATUS, "Arilux: Connection OK");
+	//_log.Log(LOG_STATUS, "Arilux: Connection OK");
 	sleep_milliseconds(50);
 	
 	boost::asio::write(sendSocket, boost::asio::buffer(command, command.size()));
-	_log.Log(LOG_STATUS, "Arilux: Command sent");
+	//_log.Log(LOG_STATUS, "Arilux: Command sent");
 	sleep_milliseconds(50);
 
 	/*sendSocket.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
@@ -304,25 +304,15 @@ bool Arilux::WriteToHardware(const char *pdata, const unsigned char length)
 		int red, green, blue;
 		float cHue = (360.0f / 255.0f)*float(pLed->value);//hue given was in range of 0-255
 		int Brightness = 100;
-		int dMax = round((255.0f / 100.0f)*float(Brightness));
+		int dMax = (int)(round((255.0f / 100.0f)*float(Brightness)));
 		hue2rgb(cHue, red, green, blue, dMax);
 
-		_log.Log(LOG_NORM, "Red: %03d, Green:%03d, Blue:%03d", red, green, blue);
+		//_log.Log(LOG_NORM, "Red: %03d, Green:%03d, Blue:%03d", red, green, blue);
 		
 
 		Arilux_RGBCommand_Command[2] = (unsigned char)red;
 		Arilux_RGBCommand_Command[3] = (unsigned char)green;
 		Arilux_RGBCommand_Command[4] = (unsigned char)blue;	
-
-		commandToSend = Arilux_RGBCommand_Command;
-	}
-								 
-	break;
-	case Limitless_SetHEXColour: {
-		int rgbColor = (int)pLed->value;
-		Arilux_RGBCommand_Command[2] = (rgbColor & 0xFF000000) >> 24;
-		Arilux_RGBCommand_Command[3] = (rgbColor & 0x00FF0000) >> 16;
-		Arilux_RGBCommand_Command[4] = (rgbColor & 0x0000FF00) >> 8;
 
 		commandToSend = Arilux_RGBCommand_Command;
 	}
