@@ -456,6 +456,9 @@
     <Filter Include="Devices\Xiaomi Gateway">
       <UniqueIdentifier>{5f68f493-7523-43aa-95db-f23ecc307771}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\Arilux">
+      <UniqueIdentifier>{f1bd7f3f-a032-4804-9b52-51c06399ca5e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -1501,9 +1504,6 @@
     <ClInclude Include="..\hardware\ZWaveCommands.h">
       <Filter>Devices\ZWave</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\Limitless.h">
-      <Filter>Devices\LimitlessLed</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\1Wire\1WireForWindows.h">
       <Filter>Devices\1-Wire</Filter>
     </ClInclude>
@@ -1954,6 +1954,12 @@
     <ClInclude Include="..\hardware\XiaomiGateway.h">
       <Filter>Devices\Xiaomi Gateway</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\Limitless.h">
+      <Filter>Devices\LimitlessLed</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\Arilux.h">
+      <Filter>Devices\Arilux</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2123,9 +2129,6 @@
     </ClCompile>
     <ClCompile Include="..\hardware\OpenZWave.cpp">
       <Filter>Devices\ZWave\OpenZWave</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\Limitless.cpp">
-      <Filter>Devices\LimitlessLed</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\1Wire\1WireForWindows.cpp">
       <Filter>Devices\1-Wire</Filter>
@@ -2573,6 +2576,12 @@
     </ClCompile>
     <ClCompile Include="..\hardware\XiaomiGateway.cpp">
       <Filter>Devices\Xiaomi Gateway</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\Limitless.cpp">
+      <Filter>Devices\LimitlessLed</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\Arilux.cpp">
+      <Filter>Devices\Arilux</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

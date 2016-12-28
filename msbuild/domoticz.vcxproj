@@ -410,6 +410,7 @@
     </ClInclude>
     <ClInclude Include="..\hardware\AccuWeather.h" />
     <ClInclude Include="..\hardware\AnnaThermostat.h" />
+    <ClInclude Include="..\hardware\Arilux.h" />
     <ClInclude Include="..\hardware\ASyncTCP.h" />
     <ClInclude Include="..\hardware\AtagOne.h" />
     <ClInclude Include="..\hardware\Comm5Serial.h" />
@@ -637,6 +638,7 @@
     </ClCompile>
     <ClCompile Include="..\hardware\AccuWeather.cpp" />
     <ClCompile Include="..\hardware\AnnaThermostat.cpp" />
+    <ClCompile Include="..\hardware\Arilux.cpp" />
     <ClCompile Include="..\hardware\ASyncSerial.cpp" />
     <ClCompile Include="..\hardware\ASyncTCP.cpp" />
     <ClCompile Include="..\hardware\AtagOne.cpp" />

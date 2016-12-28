@@ -244,6 +244,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_PythonPlugin, "Python Plugin System" },
 		{ HTYPE_XiaomiGateway, "Xiaomi Gateway" },
 		{ HTYPE_RaspberryBME280, "I2C sensor BME280 Temp+Hum+Baro" },
+		{ HTYPE_Arilux, "Arilux AL-LC0x" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
