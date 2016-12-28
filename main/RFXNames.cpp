@@ -2759,7 +2759,7 @@ bool GetLightCommand(
 		{
 			cmd=Limitless_SetRGBColour;
 			return true;
-		}	
+		}
 		else if (
 			(switchcmd=="Set Brightness")||
 			(switchcmd=="Set Level")
