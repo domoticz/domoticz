@@ -50,6 +50,9 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 	case gswitch_sOff:
 		command = "off";
 		break;
+	case gswitch_sOn:
+		command = "on";
+		break;
 	default:
 		_log.Log(LOG_STATUS, "Unknown command %d", xcmd->cmnd);
 		break;
@@ -61,7 +64,7 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 	boost::asio::ip::udp::socket socket_(io_service, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 0));
 	boost::shared_ptr<std::string> message1(new std::string(message));
 	boost::asio::ip::udp::endpoint remote_endpoint_;
-	remote_endpoint_ = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string("192.168.5.15"), 9898);
+	remote_endpoint_ = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(m_GatewayIp), 9898);
 	socket_.send_to(boost::asio::buffer(*message1), remote_endpoint_);
 	sleep_milliseconds(150);
 	boost::array<char, 512> recv_buffer_;
@@ -88,13 +91,24 @@ void XiaomiGateway::InsertUpdateTemperature(const std::string &nodeid, const std
 	ss << std::hex << str.c_str();
 	ss >> sID;
 
-	char szTmp[300];
-	if (sID == 1)
-		sprintf(szTmp, "%d", 1);
-	else
-		sprintf(szTmp, "%08X", (unsigned int)sID);
-	std::string ID = szTmp;
-	SendTempHumSensor(sID, 85, 30, 35, Name.c_str());
+	SendTempSensor(sID, 255, Temperature, Name.c_str());
+}
+
+void XiaomiGateway::InsertUpdateHumidity(const std::string &nodeid, const std::string &Name, const int Humidity)
+{
+	// Make sure the ID supplied fits with what is expected ie 158d0000fd32c2
+	if (nodeid.length() < 14) {
+		_log.Log(LOG_ERROR, "XiaomiGateway: Node ID %s is too short", nodeid.c_str());
+		return;
+	}
+	std::string str = nodeid.substr(6, 8);
+	_log.Log(LOG_STATUS, "XiaomiGateway: Humidity - nodeid: %s", nodeid.c_str());
+	unsigned int sID;
+	std::stringstream ss;
+	ss << std::hex << str.c_str();
+	ss >> sID;
+
+	SendHumiditySensor(sID, 255, Humidity, Name.c_str());
 }
 
 void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::string &Name, bool bIsOn, _eSwitchType subtype)
@@ -199,7 +213,7 @@ bool XiaomiGateway::StartHardware()
 
 	//check there is only one instance of the Xiaomi Gateway
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Password FROM Hardware WHERE Type=%d", HTYPE_XiaomiGateway);
+	result = m_sql.safe_query("SELECT Password, Address FROM Hardware WHERE Type=%d", HTYPE_XiaomiGateway);
 	if (result.size() > 1)
 	{
 		_log.Log(LOG_ERROR, "XiaomiGateway: Only one Xiaomi Gateway is supported, please remove any duplicates from Hardware");
@@ -208,6 +222,7 @@ bool XiaomiGateway::StartHardware()
 	else {
 		//retrieve the gateway key
 		m_GatewayPassword = result[0][0].c_str();
+		m_GatewayIp = result[0][1].c_str();
 	}
 
 	//Start worker thread
@@ -348,7 +363,6 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						name = "Xiaomi Smart Plug";
 					}
 					else if (model == "sensor_ht") {
-						//type = pTypeTEMP_HUM;
 						name = "Xiaomi Temperature/Humidity";
 					}
 					if (type != STYPE_END) {
@@ -366,6 +380,20 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						}
 						else {
 							m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, on, type);
+						}
+					}
+					else if (name == "Xiaomi Temperature/Humidity") {
+						std::string temperature = root2["temperature"].asString();
+						std::string humidity = root2["humidity"].asString();
+						if (temperature != "") {
+							float temp = (float)atoi(temperature.c_str());
+							temp = temp / 100;
+							m_XiaomiGateway->InsertUpdateTemperature(sid.c_str(), "Xiaomi Temperature", temp);
+						}
+						else if (humidity != "") {
+							int hum = atoi(humidity.c_str());
+							hum = hum / 100;
+							m_XiaomiGateway->InsertUpdateHumidity(sid.c_str(), "Xiaomi Humidity", hum);
 						}
 					}
 					else {
