@@ -16,6 +16,7 @@ public:
 	void InsertUpdateSwitch(const std::string &nodeid, const std::string &Name, bool bIsOn, _eSwitchType subtype);
 	void InsertUpdateVoltage(const std::string &nodeid, const std::string &Name, const int BatteryLevel);
 	void InsertUpdateTemperature(const std::string &nodeid, const std::string &Name, const float Temperature);
+	void InsertUpdateHumidity(const std::string &nodeid, const std::string &Name, const int Humidity);
 	void UpdateToken(const std::string &value);
 
 private:
@@ -26,6 +27,7 @@ private:
 	boost::shared_ptr<boost::thread> m_thread;
 	boost::shared_ptr<boost::thread> m_udp_thread;
 	std::string GetGatewayKey();
+	std::string m_GatewayIp;
 	std::string m_GatewayPassword;
 	std::string m_token;
 	boost::mutex m_mutex;
