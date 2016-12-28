@@ -34,7 +34,7 @@ private:
   const static int PWD_FRAME        = 9;
 
 
-  // assign who, what, where for normal frame
+  // assign who, what, where and when for normal frame
   void Set_who_what_where_when();
   // assign who, where, and dimension for dimension frame request
   void Set_who_where_dimension();
