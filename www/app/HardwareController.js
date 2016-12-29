@@ -5073,7 +5073,7 @@ define(['app'], function (app) {
                (text.indexOf("System Alive") >= 0)||
                (text.indexOf("PiFace") >= 0) ||
                (text.indexOf("Yeelight") >= 0) ||               
-               (text.indexOf("Arilux AL-LC0x") >= 0)))
+               (text.indexOf("Arilux AL-LC0x") >= 0))
             {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").hide();
