@@ -133,7 +133,7 @@ bool CNotificationEmail::SendMessageImplementation(
 	sclient.SetHTMLBody(HtmlBody.c_str());
 	bool bRet=sclient.SendEmail();
 	if (!bRet) {
-		_log.Log(LOG_ERROR, std::string("Failed to send email notification : ").c_str());
+		_log.Log(LOG_ERROR, "Failed to send Email notification!");
 	}
 	return bRet;
 }
