@@ -15,7 +15,8 @@ namespace Plugins {
 		bool	m_bAllPluginsStarted;
 		int		m_iPollInterval;
 
-		static std::map<int, CDomoticzHardwareBase*>	m_pPlugins;
+		static	std::map<int, CDomoticzHardwareBase*>	m_pPlugins;
+		static	std::map<std::string, std::string>		m_PluginXml;
 
 		boost::thread* m_thread;
 		volatile bool m_stoprequested;
@@ -29,6 +30,7 @@ namespace Plugins {
 
 		bool StartPluginSystem();
 		void BuildManifest();
+		std::map<std::string, std::string>* GetManifest() { return &m_PluginXml; };
 		CDomoticzHardwareBase* RegisterPlugin(const int HwdID, const std::string &Name, const std::string &PluginKey);
 		void	 DeregisterPlugin(const int HwdID);
 		bool StopPluginSystem();
