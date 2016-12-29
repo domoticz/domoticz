@@ -74,6 +74,7 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 		std::string receivedString(recv_buffer_.data());
 		_log.Log(LOG_STATUS, "XiaomiGateway: response %s", receivedString.c_str());
 	}
+	socket_.close();
 	return true;
 }
 
@@ -289,8 +290,8 @@ std::string XiaomiGateway::GetGatewayKey()
 		sprintf(&gatewaykey[i * 2], "%02X", ciphertext[i]);
 	}
 
-	EVP_cleanup();
-	ERR_free_strings();
+	//EVP_cleanup();
+	//ERR_free_strings();
 	return gatewaykey;
 }
 
