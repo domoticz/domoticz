@@ -126,8 +126,8 @@ define(['app'], function (app) {
 				(text.indexOf("Motherboard") >= 0) ||
 				(text.indexOf("Kodi Media") >= 0) ||
 				(text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0) ||
-                		(text.indexOf("YeeLight") >= 0) ||
-                                (text.indexOf("AriLux AL-LC0x") >= 0) 
+				(text.indexOf("YeeLight") >= 0) ||
+				(text.indexOf("AriLux AL-LC0x") >= 0) 
 				)
             {
 				// if hardwaretype == 1000 => I2C sensors grouping
@@ -1003,8 +1003,8 @@ define(['app'], function (app) {
 				(text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0) ||
 				(text.indexOf("Tellstick") >= 0) ||
 				(text.indexOf("Motherboard") >= 0) ||
-                		(text.indexOf("YeeLight") >= 0) ||               
-	                        (text.indexOf("Arilux AL-LC0x") >= 0) )
+				(text.indexOf("YeeLight") >= 0) ||               
+				(text.indexOf("Arilux AL-LC0x") >= 0)
 				)
             {
                 $.ajax({
@@ -4851,14 +4851,16 @@ define(['app'], function (app) {
 			$.devExtra=data["Extra"];
 			UpdateHardwareParamControls();
 
-                        if ((data["Type"].indexOf("TE923") >= 0)||
-                           (data["Type"].indexOf("Volcraft") >= 0)||
-                           (data["Type"].indexOf("Dummy") >= 0)||
-                           (data["Type"].indexOf("System Alive") >= 0)||
-                           (data["Type"].indexOf("PiFace") >= 0)||
-                           (data["Type"].indexOf("Tellstick") >= 0) ||
-                           (data["Type"].indexOf("Yeelight") >= 0) ||                          
-                           (data["Type"].indexOf("Arilux AL-LC0x") >= 0))
+                        if (
+							(data["Type"].indexOf("TE923") >= 0)||
+							(data["Type"].indexOf("Volcraft") >= 0)||
+							(data["Type"].indexOf("Dummy") >= 0)||
+							(data["Type"].indexOf("System Alive") >= 0)||
+							(data["Type"].indexOf("PiFace") >= 0)||
+							(data["Type"].indexOf("Tellstick") >= 0) ||
+							(data["Type"].indexOf("Yeelight") >= 0) ||                          
+							(data["Type"].indexOf("Arilux AL-LC0x") >= 0)
+                           )
                         {
                             //nothing to be set
                         }
@@ -5067,13 +5069,15 @@ define(['app'], function (app) {
 			$("#hardwarecontent #divpollinterval").hide();
             $("#hardwarecontent #divpythonplugin").hide();
 
-            if ((text.indexOf("TE923") >= 0)||
-               (text.indexOf("Volcraft") >= 0)||
-               (text.indexOf("Dummy") >= 0)||
-               (text.indexOf("System Alive") >= 0)||
-               (text.indexOf("PiFace") >= 0) ||
-               (text.indexOf("Yeelight") >= 0) ||               
-               (text.indexOf("Arilux AL-LC0x") >= 0)))
+            if (
+				(text.indexOf("TE923") >= 0)||
+				(text.indexOf("Volcraft") >= 0)||
+				(text.indexOf("Dummy") >= 0)||
+				(text.indexOf("System Alive") >= 0)||
+				(text.indexOf("PiFace") >= 0) ||
+				(text.indexOf("Yeelight") >= 0) ||               
+				(text.indexOf("Arilux AL-LC0x") >= 0)
+               )
             {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").hide();
