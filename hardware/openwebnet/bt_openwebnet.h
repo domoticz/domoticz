@@ -15,8 +15,6 @@
 #define OPENWEBNET_END_FRAME "##"
 #define OPENWEBNET_COMMAND_SOCKET_DURATION 30
 
-using namespace std;
-
 class bt_openwebnet {
 
 private:
@@ -57,29 +55,29 @@ private:
   void IsCorrect();
 
   //misc functions
-  string DeleteControlCharacters(string in_frame);
-  string FirstToken(string text, string delimiter);
-  static string vectorToString(vector<string>& strings);
-  void tokenize(string& strToTokenize, char token, string& firstToken, vector<string>& destination);
+  std::string DeleteControlCharacters(const std::string& in_frame);
+  std::string FirstToken(const std::string& text, const std::string& delimiter);
+  static std::string vectorToString(const std::vector<std::string>& strings);
+  void tokenize(const std::string& strToTokenize, const char token, std::string& out_firstToken, std::vector<std::string> out_otherTokens);
 
   //fields description
-  static string getDimensionsDescription(string& who, string& dimension, vector<string>& values);
-  static string getWhereDescription(string& who, string& where, vector<string>& whereParameters);
-  static string getWhatDescription(string& who, string& what, vector<string>& whatParameters);
-  static string getWhoDescription(string& who);
+  static std::string getDimensionsDescription(const std::string& who, const std::string& dimension, const std::vector<std::string>& values);
+  static std::string getWhereDescription(const std::string& who, const std::string& where, const std::vector<std::string>& whereParameters);
+  static std::string getWhatDescription(const std::string& who, const std::string& what, const std::vector<std::string>& whatParameters);
+  static std::string getWhoDescription(const std::string& who);
 
   // contents of normal frame
-  string who;
-  vector<string> addresses;
-  string what;
-  vector<string> whatParameters;
-  string where;
-  vector<string> whereParameters;
-  string level;
-  string sInterface;
-  string when;
-  string dimension;
-  vector<string> values;
+  std::string who;
+  std::vector<std::string> addresses;
+  std::string what;
+  std::vector<std::string> whatParameters;
+  std::string where;
+  std::vector<std::string> whereParameters;
+  std::string level;
+  std::string sInterface;
+  std::string when;
+  std::string dimension;
+  std::vector<std::string> values;
 
   // frame length
   int length_frame_open;
@@ -87,7 +85,7 @@ private:
 public:
 
   // frame
-  string frame_open;
+	std::string frame_open;
 
   // type of frame open
   int frame_type;
@@ -97,68 +95,68 @@ public:
 
   // constructors
   bt_openwebnet();
-  bt_openwebnet(string message);
+  bt_openwebnet(const std::string& message);
   bt_openwebnet(int who, int what, int where);
-  bt_openwebnet(string who, string what, string where, string when);
+  bt_openwebnet(const std::string& who, const std::string& what, const std::string& where, const std::string& when);
 
   void CreateNullMsgOpen();
   //normal open
-  void CreateMsgOpen(string who, string what, string where, string when);
-  void CreateMsgOpen(string who, string what,	string where, string lev, string strInterface, string when);
+  void CreateMsgOpen(const std::string& who, const std::string& what, const std::string& where, const std::string& when);
+  void CreateMsgOpen(const std::string& who, const std::string& what, const std::string& where, const std::string& lev, const std::string& strInterface, const std::string& when);
   //state request
-  void CreateStateMsgOpen(string who, string where);
-  void CreateStateMsgOpen(string who, string where,  string lev, string strInterface);
+  void CreateStateMsgOpen(const std::string& who, const std::string& where);
+  void CreateStateMsgOpen(const std::string& who, const std::string& where, const std::string& lev, const std::string& strInterface);
   //dimension request
-  void CreateDimensionMsgOpen(string who, string where,	string dimension);
-  void CreateDimensionMsgOpen(string who, string where,	string lev, string strInterface, string dimension);
+  void CreateDimensionMsgOpen(const std::string& who, const  std::string& where, const std::string& dimension);
+  void CreateDimensionMsgOpen(const std::string& who, const std::string& where, const std::string& lev, const std::string& strInterface, const std::string& dimension);
   //dimension write
-  void CreateWrDimensionMsgOpen(string who, string where, string dimension, vector<string> value);
-  void CreateWrDimensionMsgOpen(string who, string where,  string lev, string strInterface,  string dimension, vector<string> value);
+  void CreateWrDimensionMsgOpen(const std::string& who, const std::string& where, const std::string& dimension, const std::vector<std::string>& value);
+  void CreateWrDimensionMsgOpen(const std::string& who, const std::string& where, const std::string& lev, const std::string& strInterface, const std::string& dimension, const std::vector<std::string>& value);
 
   void CreateTimeReqMsgOpen();
 
   //general message
-  void CreateMsgOpen(string message);
+  void CreateMsgOpen(const std::string& message);
 
   // compares two open messages
-  bool IsEqual(bt_openwebnet msg_to_compare);
+  bool IsEqual(const bt_openwebnet& msg_to_compare);
 
   // frame type?
-  bool IsErrorFrame();
-  bool IsNullFrame();
-  bool IsNormalFrame();
-  bool IsMeasureFrame();
-  bool IsStateFrame();
-  bool IsWriteFrame();
-  bool IsPwdFrame();
-  bool IsOKFrame();
-  bool IsKOFrame();
+  bool IsErrorFrame() const;
+  bool IsNullFrame() const;
+  bool IsNormalFrame() const;
+  bool IsMeasureFrame() const;
+  bool IsStateFrame() const;
+  bool IsWriteFrame() const;
+  bool IsPwdFrame() const;
+  bool IsOKFrame() const;
+  bool IsKOFrame() const;
 
   //converts frame into string
-  static string frameToString(bt_openwebnet& frame);
+  static std::string frameToString(const bt_openwebnet& frame);
 
 
   // extract who, addresses, what, where, level, interface, when
   // dimensions and values of frame open
-  string Extract_who();
-  string Extract_address(unsigned int i);
-  string Extract_what();
-  string Extract_where();
-  string Extract_level();
-  string Extract_interface();
-  string Extract_when();
-  string Extract_dimension();
-  string Extract_value(unsigned int i);
+  std::string Extract_who() const;
+  std::string Extract_address(unsigned int i) const;
+  std::string Extract_what() const;
+  std::string Extract_where() const;
+  std::string Extract_level() const;
+  std::string Extract_interface() const;
+  std::string Extract_when() const;
+  std::string Extract_dimension() const;
+  std::string Extract_value(unsigned int i) const;
 
-  string Extract_OpenOK();
-  string Extract_OpenKO();
+  std::string Extract_OpenOK();
+  std::string Extract_OpenKO();
 
-  vector<string> Extract_addresses();
-  vector<string> Extract_whatParameters();
-  vector<string> Extract_whereParameters();
-  vector<string> Extract_values();
+  std::vector<std::string> Extract_addresses() const;
+  std::vector<std::string> Extract_whatParameters() const;
+  std::vector<std::string> Extract_whereParameters() const;
+  std::vector<std::string> Extract_values() const;
 
-  string Extract_frame() { return frame_open; };
+  std::string Extract_frame() const;
 
   // destructor
   ~bt_openwebnet();

@@ -9,7 +9,7 @@
 #include "bt_openwebnet.h"
 // private methods ......
 
-string bt_openwebnet::FirstToken(string myText, string delimiters)
+std::string bt_openwebnet::FirstToken(const std::string& myText, const std::string& delimiters)
 {
 	std::istringstream iss(myText);
 	std::string token;
@@ -25,8 +25,8 @@ string bt_openwebnet::FirstToken(string myText, string delimiters)
 void bt_openwebnet::IsCorrect()
 {
   int j  = 0;
-  string sup;
-  string field;
+  std::string sup;
+  std::string field;
 
   // if frame ACK -->
   if (frame_open.compare(OPENWEBNET_MSG_OPEN_OK) == 0)
@@ -84,7 +84,7 @@ void bt_openwebnet::IsCorrect()
 
   // frame password ...
   //*#pwd##
-  if(frame_open.find('*', 2) == string::npos)
+  if(frame_open.find('*', 2) == std::string::npos)
   {
     frame_type = PWD_FRAME;
     //I extract the who
@@ -155,7 +155,7 @@ void bt_openwebnet::IsCorrect()
 void bt_openwebnet::Set_who_where_dimension()
 {
   //DIMENSION REQUEST : *#WHO*WHERE*DIMENSION##
-  string sup;
+	std::string sup;
   size_t len = 0;
 
   // WHO
@@ -165,7 +165,7 @@ void bt_openwebnet::Set_who_where_dimension()
   }
   // WHERE
   sup = frame_open.substr(2 + who.length() + 1);
-  if(sup.find("*") == string::npos)
+  if(sup.find("*") == std::string::npos)
     where = sup.substr(0, sup.length()-2);
   else
   {
@@ -173,7 +173,7 @@ void bt_openwebnet::Set_who_where_dimension()
       where = FirstToken(sup, "*");
     // DIMENSION
     sup = frame_open.substr(2+who.length()+1+where.length()+1);
-    if(sup.find("*") == string::npos)
+    if(sup.find("*") == std::string::npos)
 		dimension = sup.substr(0, sup.length() - 2);
     else
     {
@@ -183,16 +183,16 @@ void bt_openwebnet::Set_who_where_dimension()
       // VALUES **##
       sup = frame_open.substr(2+ who.length() + 1 + where.length() + 1 +dimension.length()+1);
       len = 2 + who.length() + 1 + where.length() + 1 + dimension.length() + 1;
-      while ((sup.find("*") != string::npos) && (sup.at(0) != '*'))
+      while ((sup.find("*") != std::string::npos) && (sup.at(0) != '*'))
       {
-        string strValue = FirstToken(sup, "*");
+		std::string strValue = FirstToken(sup, "*");
 		values.push_back(strValue);
         len = len+ strValue.length()+1;
         sup = frame_open.substr(len);
       }
       if ((sup[0] != '*') && (sup[0] != '#'))
       {
-		  string strValue = sup.substr(0, sup.length()-2);
+		  std::string strValue = sup.substr(0, sup.length()-2);
 		  values.push_back(strValue);
       }
     }
@@ -207,7 +207,7 @@ void bt_openwebnet::Set_who_where_dimension()
 void bt_openwebnet::Set_who_where()
 {
   //STATUS REQEUST : *#WHO*WHERE##
-  string sup;
+  std::string sup;
 
   // WHO
   sup = frame_open.substr(2);
@@ -216,7 +216,7 @@ void bt_openwebnet::Set_who_where()
   }
   // WHERE
   sup = frame_open.substr(2 + who.length() + 1);
-  if (sup.find("*") == string::npos) {
+  if (sup.find("*") == std::string::npos) {
 	  where = sup.substr(0, sup.length() - 2);
   }
   else {
@@ -234,7 +234,7 @@ void bt_openwebnet::Set_who_where()
 void bt_openwebnet::Set_who_what_where_when()
 {
 	//NORMAL REQUEST : *WHO*WHAT*WHERE##
-	string sup;
+	std::string sup;
 
 	// who
 	sup = frame_open.substr(1);
@@ -243,7 +243,7 @@ void bt_openwebnet::Set_who_what_where_when()
 	}
 	// what
 	sup = frame_open.substr(1 + who.length() + 1);
-	if (sup.find("*") == string::npos) {
+	if (sup.find("*") == std::string::npos) {
 		what = sup.substr(0, sup.length() - 2);
 	}
 	else {
@@ -251,7 +251,7 @@ void bt_openwebnet::Set_who_what_where_when()
 			what = FirstToken(sup, "*");
 		// where
 		sup = frame_open.substr(1 + who.length() + 1 + what.length() + 1);
-		if (sup.find("*") == string::npos) {
+		if (sup.find("*") == std::string::npos) {
 			where = sup.substr(0, sup.length() - 2);
 		}
 		else
@@ -260,7 +260,7 @@ void bt_openwebnet::Set_who_what_where_when()
 				where = FirstToken(sup, "*");
 				// when
 				sup = frame_open.substr(1 + who.length() + 1 + what.length() + 1 + where.length() + 1);
-				if (sup.find("*") == string::npos) {
+				if (sup.find("*") == std::string::npos) {
 					when = sup.substr(0, sup.length() - 2);
 				}
 				else
@@ -278,7 +278,7 @@ void bt_openwebnet::Set_who_what_where_when()
 void bt_openwebnet::Set_who_where_dimension_values()
 {
   //DIMENSION WRITING : *#WHO*WHERE*#DIMENSION*VAL1*VAL2*...*VALn##
-  string sup;
+	std::string sup;
   int len = 0;
   int i = -1;
 
@@ -288,7 +288,7 @@ void bt_openwebnet::Set_who_where_dimension_values()
     who = FirstToken(sup, "*");
   // WHERE
   sup =  frame_open.substr(2+who.length()+1);
-  if(sup.find('*') == string::npos)
+  if(sup.find('*') == std::string::npos)
     where = sup.substr(0,sup.length()-2);
   else
   {
@@ -296,7 +296,7 @@ void bt_openwebnet::Set_who_where_dimension_values()
       where =FirstToken(sup, "*");
     // DIMENSION
     sup = frame_open.substr(2+who.length()+1+where.length()+2);
-    if(sup.find('*') == string::npos)
+    if(sup.find('*') == std::string::npos)
       frame_type = ERROR_FRAME;
     else
     {
@@ -305,9 +305,9 @@ void bt_openwebnet::Set_who_where_dimension_values()
       // VALUES
 	  len = 2 + who.length() + 1 + where.length() + 2 + dimension.length() + 1;
 	  sup = frame_open.substr(len);
-      while (sup.find('*') != string::npos && (sup.at(0) != '*'))
+      while (sup.find('*') != std::string::npos && (sup.at(0) != '*'))
       {
-		  string newValue = FirstToken(sup, "*");
+		  std::string newValue = FirstToken(sup, "*");
 		  values.push_back(newValue);
 			len = len+ newValue.length() +1;
 			sup = frame_open.substr(len);
@@ -335,7 +335,7 @@ void bt_openwebnet::Set_who_where_dimension_values()
 // assigns who for the frame processing password
 void bt_openwebnet::Set_who()
 {
-	string sup;
+	std::string sup;
 
 	// WHO
 	sup = frame_open.substr(2);
@@ -357,8 +357,8 @@ void bt_openwebnet::Set_who()
 //assign level interface for extended frame
 void bt_openwebnet::Set_level_interface()
 {
-  string sup;
-  string orig;
+	std::string sup;
+	std::string orig;
 
   if (!where.length()) return;
 
@@ -368,7 +368,7 @@ void bt_openwebnet::Set_level_interface()
   else
 	  sup = where;
   orig = where;
-  if(sup.find('#') != string::npos)
+  if(sup.find('#') != std::string::npos)
   {
     extended = true;
     if(orig.at(0) == '#')
@@ -377,7 +377,7 @@ void bt_openwebnet::Set_level_interface()
       where = FirstToken(sup, "#");
     // LEVEL + INTERFACE
     sup= orig.substr(where.length()+1);
-    if(sup.find('#') != string::npos)
+    if(sup.find('#') != std::string::npos)
     {
       level = FirstToken(sup, "#");
       sInterface = orig.substr(where.length()+1+level.length()+1);
@@ -396,21 +396,21 @@ void bt_openwebnet::Set_level_interface()
 // assign address
 void bt_openwebnet::Set_address()
 {
-	string sup;
-	string orig;
+	std::string sup;
+	std::string orig;
 	addresses.reserve(4);
 
 	// WHO
 	sup = who;
 	orig = who;
 
-	if (sup.find("#") != string::npos)
+	if (sup.find("#") != std::string::npos)
 	{
 		who = FirstToken(sup, "#");
 		// ADDRESS
 		addresses.clear();
 		sup = orig.substr(who.length() + 1);
-		if (sup.find('#') == string::npos)
+		if (sup.find('#') == std::string::npos)
 		{
 			// unique serial address
 			if (sup.length() != 0)
@@ -423,17 +423,17 @@ void bt_openwebnet::Set_address()
 		  // IP address
 		  addresses[0] = FirstToken(sup, "#");
 		  sup = orig.substr(who.length() + 1 + addresses[0].length() + 1);
-		  if(sup.find('#') != string::npos)
+		  if(sup.find('#') != std::string::npos)
 		  {
 			// IP address
 			addresses[1] = FirstToken(sup, "#");
 			sup = orig.substr(who.length() + 1 + addresses[0].length() + 1 + addresses[1].length() + 1);
-			if(sup.find('#') != string::npos)
+			if(sup.find('#') != std::string::npos)
 			{
 			  // IP address
 			  addresses[2] = FirstToken(sup, "#");
 			  sup = orig.substr(who.length() + 1 + addresses[0].length() + 1 + addresses[1].length() + 1 + addresses[2].length() + 1);
-			  if(sup.find('#') == string::npos)
+			  if(sup.find('#') == std::string::npos)
 			  {
 				// IP address
 				if(sup.length() != 0)
@@ -456,26 +456,26 @@ void bt_openwebnet::Set_address()
 }
 
 //extracts tokens into a vector
-void bt_openwebnet::tokenize(string& strToTokenize, char token, string& firstToken, vector<string>& destination)
+void bt_openwebnet::tokenize(const std::string& strToTokenize, const char token, std::string& out_firstToken, std::vector<std::string> out_otherTokens)
 {
-	string str = strToTokenize;
+	std::string str = strToTokenize;
 
-	if (strToTokenize.find(token) != string::npos)
+	if (strToTokenize.find(token) != std::string::npos)
 	{
-		firstToken = FirstToken(str, "#");
+		out_firstToken = FirstToken(str, "#");
 		// params
-		destination.clear();
-		str = str.substr(firstToken.length() + 1);
+		out_otherTokens.clear();
+		str = str.substr(out_firstToken.length() + 1);
 
 		do {
-			string token;
-			if (str.find('#') != string::npos) {
+			std::string token;
+			if (str.find('#') != std::string::npos) {
 				token = FirstToken(str, "#");
 			}
 			else {
 				token = str;
 			}
-			destination.push_back(token);
+			out_otherTokens.push_back(token);
 			if (token.length() < str.length()) {
 				str = str.substr(token.length() + 1);
 			}
@@ -510,7 +510,7 @@ bt_openwebnet::bt_openwebnet()
 }
 
 
-bt_openwebnet::bt_openwebnet(string message)
+bt_openwebnet::bt_openwebnet(const std::string& message)
 {
   //call CreateMsgOpen(string) function
   CreateMsgOpen(message);
@@ -518,19 +518,24 @@ bt_openwebnet::bt_openwebnet(string message)
 
 bt_openwebnet::bt_openwebnet(int who, int what, int where)
 {
-	stringstream whoStr;
-	stringstream whereStr;
-	stringstream whatStr;
+	std::stringstream whoStr;
+	std::stringstream whereStr;
+	std::stringstream whatStr;
 
 	whoStr << who;
 	whereStr << what;
 	whatStr << where;
 
-	CreateMsgOpen(whoStr.str().c_str(), whatStr.str().c_str(), whereStr.str().c_str(), "");
+	std::string sWho = whoStr.str();
+	std::string sWhere = whereStr.str();
+	std::string sWhat = whatStr.str();
+	std::string sWhen = "";
+
+	CreateMsgOpen(sWho, sWhat, sWhere, sWhen);
 }
 
 // creates the open message *who*what*where*when##
-bt_openwebnet::bt_openwebnet(string who, string what, string where, string when)
+bt_openwebnet::bt_openwebnet(const std::string& who, const std::string& what, const std::string& where, const std::string& when)
 {
 	//call CreateMsgOpen function
   CreateMsgOpen(who, what, where, when);
@@ -543,12 +548,12 @@ bt_openwebnet::~bt_openwebnet()
 }
 
 // creates the open message *who*what*where*when##
-void bt_openwebnet::CreateMsgOpen(string who, string what,	string where,	string when)
+void bt_openwebnet::CreateMsgOpen(const std::string& who, const std::string& what, const std::string& where, const std::string& when)
 {
 	//call CreateNullMsgOpen function
   CreateNullMsgOpen();
 
-  stringstream frame;
+  std::stringstream frame;
 
   // creates the open message
   frame << "*";
@@ -570,12 +575,12 @@ void bt_openwebnet::CreateMsgOpen(string who, string what,	string where,	string 
 }
 
 // creates the open message *who*what*where#level#interface*when##
-void bt_openwebnet::CreateMsgOpen(string who, string what, string where, string lev, string interf, string when)
+void bt_openwebnet::CreateMsgOpen(const std::string& who, const std::string& what, const std::string& where, const std::string& lev, const std::string& interf, const std::string& when)
 {
   //call CreateNullMsgOpen function
   CreateNullMsgOpen();
 
-  stringstream frame;
+  std::stringstream frame;
 
   // creates the open message
   frame << "*";
@@ -630,12 +635,12 @@ void bt_openwebnet::CreateNullMsgOpen()
 }
 
 //creates the OPEN message *#who*where##
-void bt_openwebnet::CreateStateMsgOpen(string who, string where)
+void bt_openwebnet::CreateStateMsgOpen(const std::string& who, const std::string& where)
 {
 	//call CreateNullMsgOpen function
   CreateNullMsgOpen();
 
-  stringstream frame;
+  std::stringstream frame;
 
   // creates the OPEN message
   frame << "*#";
@@ -649,9 +654,9 @@ void bt_openwebnet::CreateStateMsgOpen(string who, string where)
   IsCorrect();
 }
 
-string bt_openwebnet::DeleteControlCharacters(string in_frame)
+std::string bt_openwebnet::DeleteControlCharacters(const std::string& in_frame)
 {
-	string out_frame = in_frame;
+	std::string out_frame = in_frame;
 
 	// delete control characters ....
 	while ((out_frame.at(out_frame.length() - 1) == '\n') || ((out_frame.at(out_frame.length() - 1) == '\r')))
@@ -663,12 +668,12 @@ string bt_openwebnet::DeleteControlCharacters(string in_frame)
 }
 
 //creates the OPEN message *#who*where#level#interface##
-void bt_openwebnet::CreateStateMsgOpen(string who, string where, string lev, string interf)
+void bt_openwebnet::CreateStateMsgOpen(const std::string& who, const std::string& where, const std::string& lev, const std::string& interf)
 {
 	//call CreateNullMsgOpen function
   CreateNullMsgOpen();
 
-  stringstream frame;
+  std::stringstream frame;
 
   frame << "#";
   frame << who;  frame << "*";
@@ -693,7 +698,7 @@ void bt_openwebnet::CreateTimeReqMsgOpen()
 	//call CreateNullMsgOpen function
   CreateNullMsgOpen();
 
-  stringstream frame;
+  std::stringstream frame;
 
   frame << "*#13**0##";
   frame_open = DeleteControlCharacters(frame.str());
@@ -704,12 +709,12 @@ void bt_openwebnet::CreateTimeReqMsgOpen()
 }
 
 // creates the OPEN message *#who*where*dimension##
-void bt_openwebnet::CreateDimensionMsgOpen(string who, string where, string dimension)
+void bt_openwebnet::CreateDimensionMsgOpen(const std::string& who, const std::string& where, const std::string& dimension)
 {
 	//call CreateNullMsgOpen function
   CreateNullMsgOpen();
 
-  stringstream frame;
+  std::stringstream frame;
 
   // creates the OPEN message
   frame << "*#";
@@ -730,12 +735,12 @@ void bt_openwebnet::CreateDimensionMsgOpen(string who, string where, string dime
 }
 
 //creates the OPEN message *#who*where#level#interface*dimension##
-void bt_openwebnet::CreateDimensionMsgOpen(string who, string where, string lev, string interf, string dimension)
+void bt_openwebnet::CreateDimensionMsgOpen(const std::string& who, const std::string& where, const std::string& lev, const std::string& interf, const std::string& dimension)
 {
 	//call CreateNullMsgOpen function
   CreateNullMsgOpen();
 
-  stringstream frame;
+  std::stringstream frame;
 
   // creates the OPEN message
   frame << "*#";
@@ -760,19 +765,19 @@ void bt_openwebnet::CreateDimensionMsgOpen(string who, string where, string lev,
 }
 
 //creates the OPEN message *#who*where*#dimension*val_1*val_2*...val_n##
-void bt_openwebnet::CreateWrDimensionMsgOpen(string who, string where, string dimension, vector<string> value)
+void bt_openwebnet::CreateWrDimensionMsgOpen(const std::string& who, const std::string& where, const std::string& dimension, const std::vector<std::string>& value)
 {
 	//call CreateNullMsgOpen function
   CreateNullMsgOpen();
 
-  stringstream frame;
+  std::stringstream frame;
 
   // creates the OPEN message
   frame << "*#";
   frame << who;  frame << "*";
   frame << where; frame << "*#";
   frame << dimension;
-  for (vector<string>::iterator it = value.begin(); it != value.end(); it++)
+  for (std::vector<std::string>::const_iterator it = value.begin(); it != value.end(); it++)
   {
 	  frame << "*";
 	  frame << *it;
@@ -787,12 +792,12 @@ void bt_openwebnet::CreateWrDimensionMsgOpen(string who, string where, string di
 }
 
 //creates the OPEN message *#who*where#level#interface*#dimension*val_1*val_2*...val_n##
-void bt_openwebnet::CreateWrDimensionMsgOpen(string who, string where, string lev, string interf, string dimension, vector<string> value)
+void bt_openwebnet::CreateWrDimensionMsgOpen(const std::string& who, const std::string& where, const std::string& lev, const std::string& interf, const std::string& dimension, const std::vector<std::string>& value)
 {
 	//call CreateNullMsgOpen function
   CreateNullMsgOpen();
 
-  stringstream frame;
+  std::stringstream frame;
 
   // creates the OPEN message
   frame << "*#";
@@ -810,7 +815,7 @@ void bt_openwebnet::CreateWrDimensionMsgOpen(string who, string where, string le
 	  frame << "*";
 	  frame << dimension;
   }
-  for (vector<string>::iterator it = value.begin(); it != value.end(); it++)
+  for (std::vector<std::string>::const_iterator it = value.begin(); it != value.end(); it++)
   {
 	  frame << "*";
 	  frame << *it;
@@ -825,7 +830,7 @@ void bt_openwebnet::CreateWrDimensionMsgOpen(string who, string where, string le
 }
 
 
-void bt_openwebnet::CreateMsgOpen(string message)
+void bt_openwebnet::CreateMsgOpen(const std::string& message)
 {
 	//call CreateNullMsgOpen function
   CreateNullMsgOpen();
@@ -840,7 +845,7 @@ void bt_openwebnet::CreateMsgOpen(string message)
   IsCorrect();
 }
 
-bool bt_openwebnet::IsEqual(bt_openwebnet msg_to_compare)
+bool bt_openwebnet::IsEqual(const bt_openwebnet& msg_to_compare)
 {
 	// checks for correct syntax ...
   IsCorrect();
@@ -880,38 +885,138 @@ bool bt_openwebnet::IsEqual(bt_openwebnet msg_to_compare)
 }
 
   // extract who, addresses, what, where, level, interface, when, dimension and values of frame_open
-string bt_openwebnet::Extract_who(){return who;}
-string bt_openwebnet::Extract_address(unsigned int i) { if (i >= 0 && i < addresses.size()) return addresses.at(i); return ""; }
-string bt_openwebnet::Extract_what(){return what;}
-string bt_openwebnet::Extract_where(){return where;}
-string bt_openwebnet::Extract_level(){return level;}
-string bt_openwebnet::Extract_interface(){return sInterface;}
-string bt_openwebnet::Extract_when(){return when;}
-string bt_openwebnet::Extract_dimension(){return dimension;}
-string bt_openwebnet::Extract_value(unsigned int i){ if (i >= 0 && i < values.size()) return values.at(i); return "";}
+std::string bt_openwebnet::Extract_who() const
+{
+	return who;
+}
 
-vector<string>  bt_openwebnet::Extract_addresses() { return addresses; }
-vector<string> bt_openwebnet::Extract_whatParameters() { return whatParameters; }
-vector<string> bt_openwebnet::Extract_whereParameters() { return whereParameters; }
-vector<string> bt_openwebnet::Extract_values() { return values; }
+std::string bt_openwebnet::Extract_address(unsigned int i) const
+{ 
+	if (i >= 0 && i < addresses.size()) 
+		return addresses.at(i); 
+	return ""; 
+}
 
-string bt_openwebnet::Extract_OpenOK(){return OPENWEBNET_MSG_OPEN_OK;};
-string bt_openwebnet::Extract_OpenKO(){return OPENWEBNET_MSG_OPEN_KO;};
+std::string bt_openwebnet::Extract_what() const
+{
+	return what;
+}
 
+std::string bt_openwebnet::Extract_where() const
+{
+	return where;
+}
+
+std::string bt_openwebnet::Extract_level() const
+{
+	return level;
+}
+
+std::string bt_openwebnet::Extract_interface() const
+{
+	return sInterface;
+}
+
+std::string bt_openwebnet::Extract_when() const
+{
+	return when;
+}
+
+std::string bt_openwebnet::Extract_dimension() const
+{
+	return dimension;
+}
+
+std::string bt_openwebnet::Extract_value(unsigned int i) const
+{ 
+	if (i >= 0 && i < values.size()) 
+		return values.at(i); 
+	return "";
+}
+
+std::vector<std::string>  bt_openwebnet::Extract_addresses() const
+{
+	return addresses; 
+}
+
+std::vector<std::string> bt_openwebnet::Extract_whatParameters() const
+{
+	return whatParameters;
+}
+
+std::vector<std::string> bt_openwebnet::Extract_whereParameters() const
+{
+	return whereParameters;
+}
+
+std::vector<std::string> bt_openwebnet::Extract_values() const
+{
+	return values;
+}
+
+std::string bt_openwebnet::Extract_frame() const
+{
+	return frame_open;
+}
+
+std::string bt_openwebnet::Extract_OpenOK()
+{
+	return OPENWEBNET_MSG_OPEN_OK;
+}
+
+std::string bt_openwebnet::Extract_OpenKO()
+{
+	return OPENWEBNET_MSG_OPEN_KO;
+}
 
 // frame type?
 
-bool bt_openwebnet::IsErrorFrame(){return (frame_type == ERROR_FRAME);}
-bool bt_openwebnet::IsNullFrame(){return (frame_type == NULL_FRAME);}
-bool bt_openwebnet::IsNormalFrame(){return (frame_type == NORMAL_FRAME);}
-bool bt_openwebnet::IsMeasureFrame(){return (frame_type == MEASURE_FRAME);}
-bool bt_openwebnet::IsStateFrame(){return (frame_type == STATE_FRAME);}
-bool bt_openwebnet::IsWriteFrame(){return (frame_type == WRITE_FRAME);}
-bool bt_openwebnet::IsPwdFrame(){return (frame_type == PWD_FRAME);}
-bool bt_openwebnet::IsOKFrame(){return (frame_type == OK_FRAME);}
-bool bt_openwebnet::IsKOFrame(){return (frame_type == KO_FRAME);}
+bool bt_openwebnet::IsErrorFrame() const
+{
+	return (frame_type == ERROR_FRAME);
+}
 
-string bt_openwebnet::getWhoDescription(string& who)
+bool bt_openwebnet::IsNullFrame() const
+{
+	return (frame_type == NULL_FRAME);
+}
+
+bool bt_openwebnet::IsNormalFrame() const
+{
+	return (frame_type == NORMAL_FRAME);
+}
+
+bool bt_openwebnet::IsMeasureFrame() const
+{
+	return (frame_type == MEASURE_FRAME);
+}
+
+bool bt_openwebnet::IsStateFrame() const
+{
+	return (frame_type == STATE_FRAME);
+}
+
+bool bt_openwebnet::IsWriteFrame() const
+{
+	return (frame_type == WRITE_FRAME);
+}
+
+bool bt_openwebnet::IsPwdFrame() const
+{
+	return (frame_type == PWD_FRAME);
+}
+
+bool bt_openwebnet::IsOKFrame() const
+{
+	return (frame_type == OK_FRAME);
+}
+
+bool bt_openwebnet::IsKOFrame() const
+{
+	return (frame_type == KO_FRAME);
+}
+
+std::string bt_openwebnet::getWhoDescription(const std::string& who)
 {
 	if (who == "0") {
 		return "Scenario";
@@ -987,13 +1092,13 @@ string bt_openwebnet::getWhoDescription(string& who)
 }
 
 
-string bt_openwebnet::getWhatDescription(string& who, string& what, vector<string>& whatParameters)
+std::string bt_openwebnet::getWhatDescription(const std::string& who, const std::string& what, const std::vector<std::string>& whatParameters)
 {
 	if (who == "0") {
 		// "Scenario"
 		int scenNumber = atoi(what.c_str());
 		if (scenNumber >= 1 && scenNumber <= 32) {
-			stringstream sstr;
+			std::stringstream sstr;
 			sstr << "Scenario ";
 			sstr << scenNumber;
 			return sstr.str();
@@ -1182,7 +1287,7 @@ string bt_openwebnet::getWhatDescription(string& who, string& what, vector<strin
 	}
 	else if (who == "4") {
 		// "Temperature control";
-		//TODO : verify documentation
+		
 		if (what == "0") {
 			return "conditioning Mode";
 		}
@@ -1234,57 +1339,106 @@ string bt_openwebnet::getWhatDescription(string& who, string& what, vector<strin
 		else if (what == "315") {
 			return "holiday daily plan";
 		}
-		else if (what == "13xxx") {
-			return "Vacation scenario for xxx days – Heating mode(Xxx = 0…999)";
-		}
-		else if (what == "23xxx") {
-			return "acation scenario for xxx days – Conditioning mode(xxx = 0….999)";
-		}
-		else if (what == "33xxx") {
-			return "Vacation scenario for xxx days(xxx = 0….999)";
-		}
 		else if (what == "3000") {
 			return "Vacation scenario disabled";
 		}
-		else if (what == "11xx") {
-			return "Heating program x(x = 1…3)";
-		}
-		else if (what == "21xx") {
-			return "Conditioning program x(x = 1…3)";
-		}
-		else if (what == "31xx") {
-			return "Last activated program";
-		}
-
-		else if (what == "12xx") {
-			return "Scenario xx(xx = 1…16)";
-		}
-		else if (what == "22xx") {
-			return "Last activated scenario";
-		}
-		else if (what == "32xx") {
-			return "Heating program x(x = 1…3)";
+		else if (what == "3100") {
+			return "Last set up Weekly Program";
 		}
 		else if (what == "3200") {
-			return "Conditioning program x(x = 1…3)";
+			return "Last set up Scenario";
 		}
-		else if (what == "31xx") {
-			return "Last activated program";
+		else if (what == "20") {
+			return "Remote control disabled";
 		}
-
-		//	3100			Scenario xx(xx = 1…16)
-		//	12xx			Scenario xx(xx = 1...16)
-		//	22xx			Last activated scenario
-		//	32xx			Holiday scenario for xxx days – Heating mode(Xxx = 0…999)
-		//	3200			Holiday scenario for xxx days – Conditioning mode(xxx = 0….999)
-		//	20			Remote control disabled
-		//	21			Remote control enabled
-		//	22			At least one probe OFF
-		//	23		At least one probe in Anti Freeze
-		//	24			At least one probe in Manual
-		//	30			Failure discovered
-		//	31			Central Unit battery KO
-		//	40			Release of sensor local adjustment
+		else if (what == "21") {
+			return "Remote control enabled";
+		}
+		else if (what == "22") {
+			return "At least one probe OFF";
+		}
+		else if (what == "23") {
+			return "At least one probe in Anti Freeze";
+		}
+		else if (what == "24") {
+			return "At least one probe in Manual";
+		}
+		else if (what == "30") {
+			return "Failure discovered";
+		}
+		else if (what == "31") {
+			return "Central Unit battery KO";
+		}
+		else if (what == "40") {
+			return "Release of sensor local adjustment";
+		}
+		int iWhat = atoi(what.c_str());
+		if (iWhat >= 1100 && iWhat <= 1199) {
+			//Weekly Heating program x(x = 1…3)
+			std::stringstream sstr;
+			sstr << "Weekly Heating program ";
+			sstr << (iWhat - 1100);
+			return sstr.str();
+		}
+		else if (iWhat >= 1200 && iWhat <= 1299) {
+			//Heating Scenario xx(xx = 1…16)
+			std::stringstream sstr;
+			sstr << "Heating Scenario ";
+			sstr << (iWhat - 1200);
+			return sstr.str();
+		}
+		else if (iWhat >= 2100 && iWhat <= 2199) {
+			//Weekly Conditioning program x(x = 1…3)
+			std::stringstream sstr;
+			sstr << "Weekly Conditioning program ";
+			sstr << (iWhat - 2100);
+			return sstr.str();
+		}
+		else if (iWhat >= 2200 && iWhat <= 2299) {
+			//Conditionning Scenario xx(xx = 1…16)
+			std::stringstream sstr;
+			sstr << "Conditionning Scenario ";
+			sstr << (iWhat - 2200);
+			return sstr.str();
+		}
+		else if (iWhat >= 13000 && iWhat <= 13999) {
+			//"Vacation scenario for xxx days – Heating mode"
+			std::stringstream sstr;
+			sstr << "Vacation scenario for ";
+			sstr << (iWhat - 13000);
+			sstr << " days – Heating mode";
+			return sstr.str();
+		}
+		else if (iWhat >= 23000 && iWhat <= 23999) {
+			//Vacation scenario for xxx days – Conditioning mode(xxx = 0….999)
+			std::stringstream sstr;
+			sstr << "Vacation scenario for ";
+			sstr << (iWhat - 23000);
+			sstr << " days – Conditioning mode";
+			return sstr.str();
+		}
+		else if (iWhat >= 3100 && iWhat <= 3199) {
+			//Weekly Program x(x = 1…3)
+			std::stringstream sstr;
+			sstr << "Weekly Program ";
+			sstr << (iWhat - 3100);
+			return sstr.str();
+		}
+		else if (iWhat >= 3200 && iWhat <= 3299) {
+			//Scenario x(x = 1…16)
+			std::stringstream sstr;
+			sstr << "Scenario ";
+			sstr << (iWhat - 3200);
+			return sstr.str();
+		}
+		else if (iWhat >= 33000 && iWhat <= 33999) {
+			//Vacation scenario for xxx days(xxx = 0….999)
+			std::stringstream sstr;
+			sstr << "Vacation scenario for ";
+			sstr << (iWhat - 33000);
+			sstr << " days";
+			return sstr.str();
+		}
 	}
 	else if (who == "5") {
 		// "Burglar alarm";
@@ -1412,7 +1566,7 @@ string bt_openwebnet::getWhatDescription(string& who, string& what, vector<strin
 			if (iWhat >= 311 && iWhat <= 344) {
 				int iFirstDial = (iWhat - 300) / 10;
 				int iSecondDial = iWhat - 300 - 10 * iFirstDial;
-				stringstream sstr;
+				std::stringstream sstr;
 				sstr << "display DIAL " << iFirstDial << " - " << iSecondDial;
 				return sstr.str();
 			}
@@ -1459,7 +1613,7 @@ string bt_openwebnet::getWhatDescription(string& who, string& what, vector<strin
 	}
 	else if (who == "15") {
 		// "Scenario Scheduler Switch";
-		stringstream sstr;
+		std::stringstream sstr;
 
 		if (whatParameters.size() >= 1) {
 			if (whatParameters[0] == "0") {
@@ -1477,7 +1631,7 @@ string bt_openwebnet::getWhatDescription(string& who, string& what, vector<strin
 		if (iWhat >= 0 && iWhat <= 31) {
 			int iFirstDial = (iWhat - 300) / 10;
 			int iSecondDial = iWhat - 300 - 10 * iFirstDial;
-			stringstream sstr;
+			std::stringstream sstr;
 			sstr << "button number" << iWhat;
 		}
 
@@ -1536,31 +1690,31 @@ string bt_openwebnet::getWhatDescription(string& who, string& what, vector<strin
 
 		int iWhat = atoi(what.c_str());
 		if (iWhat >= 1001 && iWhat <= 1015) {
-			stringstream sstr;
+			std::stringstream sstr;
 			int iDeltaVolume = iWhat - 1000;
 			sstr << "delta volume : +" << iDeltaVolume;
 			return sstr.str();
 		}
 		else if (iWhat >= 1101 && iWhat <= 1115) {
-			stringstream sstr;
+			std::stringstream sstr;
 			int iDeltaVolume = iWhat - 1100;
 			sstr << "delta volume : -" << iDeltaVolume;
 			return sstr.str();
 		}
 		else if (iWhat >= 2001 && iWhat <= 2015) {
-			stringstream sstr;
+			std::stringstream sstr;
 			int iDeltaTone = iWhat - 2000;
 			sstr << "delta high tones : +" << iDeltaTone;
 			return sstr.str();
 		}
 		else if (iWhat >= 2101 && iWhat <= 2115) {
-			stringstream sstr;
+			std::stringstream sstr;
 			int iDeltaTone = iWhat - 2100;
 			sstr << "delta high tones : -" << iDeltaTone;
 			return sstr.str();
 		}
 		else if (iWhat >= 5001 && iWhat <= 5015) {
-			stringstream sstr;
+			std::stringstream sstr;
 			int iDeltaFreq = 5 * (iWhat - 5000);
 			sstr << "delta frequency : +0.";
 			sstr << std::setfill('0') << std::setw(2) << iDeltaFreq;
@@ -1568,20 +1722,20 @@ string bt_openwebnet::getWhatDescription(string& who, string& what, vector<strin
 			return sstr.str();
 		}
 		else if (iWhat >= 5101 && iWhat <= 5115) {
-			stringstream sstr;
+			std::stringstream sstr;
 			int iDeltaFreq = 5 * (iWhat - 5100);
 			sstr << "delta frequency : -0.";
 			sstr << std::setfill('0') << std::setw(2) << iDeltaFreq;
 			return sstr.str();
 		}
 		else if (iWhat >= 6001 && iWhat <= 6015) {
-			stringstream sstr;
+			std::stringstream sstr;
 			int iDeltaStation = iWhat - 6000;
 			sstr << "delta radio station or track: +" << iDeltaStation;
 			return sstr.str();
 		}
 		else if (iWhat >= 6101 && iWhat <= 6115) {
-			stringstream sstr;
+			std::stringstream sstr;
 			int iDeltaStation = iWhat - 6100;
 			sstr << "delta radio station or track: +" << iDeltaStation;
 			return sstr.str();
@@ -1722,7 +1876,7 @@ string bt_openwebnet::getWhatDescription(string& who, string& what, vector<strin
 	}
 	else if (who == "24") {
 		// "Lighting management";
-		stringstream sstr;
+		std::stringstream sstr;
 
 		if (what == "1") {
 			sstr << "profile id ";
@@ -1745,7 +1899,7 @@ string bt_openwebnet::getWhatDescription(string& who, string& what, vector<strin
 	}
 	else if (who == "25") {
 		// "Dry contact";
-		stringstream sstr;
+		std::stringstream sstr;
 
 		if (what == "31") {
 			sstr << "contact ON or IR detection";
@@ -1775,13 +1929,13 @@ string bt_openwebnet::getWhatDescription(string& who, string& what, vector<strin
 	return "Unknown what : " + what + vectorToString(whatParameters);
 }
 
-string bt_openwebnet::getWhereDescription(string& who, string& where, vector<string>& whereParameters)
+std::string bt_openwebnet::getWhereDescription(const std::string& who, const std::string& where, const std::vector<std::string>& whereParameters)
 {
 	if (!whereParameters.empty() && whereParameters[whereParameters.size() - 1] == "9") {
-		stringstream desc;
-		string addr;
-		string unit;
-		string macAddr;
+		std::stringstream desc;
+		std::string addr;
+		std::string unit;
+		std::string macAddr;
 
 		//Zigbee where
 		if (whereParameters.size() == 1) {
@@ -1851,35 +2005,44 @@ string bt_openwebnet::getWhereDescription(string& who, string& where, vector<str
 		}
 	}
 	else if (who == "4") {
-		// "Temperature control"
-		//0			General probes(all probes)
-		//	1			Zone 1 master probe ...
-		//	99			Zone 99 master probe
-		//	001			All probes(master and slave) belonging to Zone 1 ...
-		//			099			All probes(master and slave) belonging to Zone 99
-		//	101			Probe 1 of Zone 1 ...
-		// 801			Probe 8 of Zone 1
-		//	102 Probe 1 of Zone 2...
-		//899			Probe 8 of Zone 99
-		//	#0			Central Unit
-		//	#1			Zone 1 via Central Unit...
-		//#99			Zone 99 via Central Unit
-		//pour dim 22, Where= 3#<where actuators> avec actuators = Z#N = [0 - 99]#[1 - 9]
+		// "Temperature control" : TODO
+		//0 : General probes (all probes)
+		//1 : Zone 1 master probe ...
+		//99 : Zone 99 master probe
+		//001 : All probes(master and slave) belonging to Zone 1 ...
+		//099 : All probes(master and slave) belonging to Zone 99
+		//101 : Probe 1 of Zone 1 ...
+		//801 : Probe 8 of Zone 1
+		//102 : Probe 1 of Zone 2...
+		//899 : Probe 8 of Zone 99
+		//#0 : Central Unit
+		//#1 : Zone 1 via Central Unit...
+		//#99 : Zone 99 via Central Unit
+		//3#<where actuators> with actuators = Z#N belonging to [0 - 99]#[1 - 9] : Split Control actuator Z/N
 	}
 	else if (who == "5") {
-		// "Burglar alarm"
-		//1 CONTROL PANEL
-		//	#0..8 ZONE 0..8 CENTRAL
-		//	#1..9 			WHO = 9  			AUX1..9
-		//	01 INPUT ZONE : DEVICE 1 ...			0n INPUT ZONE : DEVICE n
-		//	11 ZONE 1 : SENSOR n°1 ..			1n ZONE 1 : SENSOR n°n
-		//	81 ZONE 8 : SENSOR n°1 ..	8n ZONE 8 : SENSOR n°n
-		//	#12 ZONE C / AUX C
-		//	#15 ZONE F / AUX F
+		// "Burglar alarm" : TODO
+		//1 : CONTROL PANEL
+		//#0 ... #8 : ZONE xx CENTRAL
+		//01 : INPUT ZONE DEVICE 1 ...
+		//0n : INPUT ZONE : DEVICE n
+		//11 :  ZONE 1, SENSOR 1 ...
+		//1n :  ZONE 1, SENSOR n
+		//81 :  ZONE 8, SENSOR 1 ...
+		//8n :  ZONE 8, SENSOR n
+		//#12 : ZONE C
+		//#15 : ZONE F
 	}
 	else if (who == "7") {
-		// "Video door entry system";
-		//4000			Camera 00.. 4099			Camera 99
+		// "Video door entry system" : TODO
+		//4000			Camera 00.. 
+		//4099			Camera 99
+	}
+	else if (who == "9") {
+		// "Auxiliary" : TODO
+		//#1 ... #9 : Aux xx
+		//#12 : AUX C
+		//#15 : AUX F
 	}
 	else if (who == "13") {
 		// "Gateway interfaces management" : TODO
@@ -1890,62 +2053,54 @@ string bt_openwebnet::getWhereDescription(string& who, string& where, vector<str
 		translateAmbPL = true;
 	}
 	else if (who == "15") {
-		// "Scenario Scheduler Switch" : TODO
+		// "Scenario Scheduler Switch"
 		translateAmbPL = true;
 	}
 	else if (who == "16") {
-		// "Audio" : old version, cf who 22
-		//0 General amplifiers #0 0 Environment amplifiers #1 1 Environment amplifiers #2 2 Environment amplifiers #3 3 Environment amplifiers #4 4 Environment amplifiers #5 5 Environment amplifiers #6 6 Environment amplifiers #7 7 Environment amplifiers #8 8 Environment amplifiers #9 9 Environment amplifiers 01 01 Amplifier …. …. 99 99 Amplifier 100 General source 101 1 Source 102 2 Source 103 3 Source 104 4 Source 105 5 Source 106 6 Source 107 7 Source 108 8 Source 109 9 Source
-
+		// "Audio" : old version, cf who 22 : TODO
+		//0 : Amplifiers general command
+		//#0 ... #9 : Amplifiers environment command xx
+		//01 ... 99 : Amplifiers point to point command xx
+		//100 : Sources general command
+		//101 ... 109 : Sources point to point command xx
 	}
 	else if (who == "17") {
-		// "Scenario programming";
+		// "Scenario programming" : TODO
 		//General 0
 		//Scene num
 		//If MH200N [1 - 300]
 		//If MH202 Numeric Value
 	}
 	else if (who == "18") {
-		// "Energy management";
+		// "Energy management" : TODO
 		//1N			N = [1 - 127]			Stop & Go
-		//	5N			N = [1 - 255]			Energy Management Central Unit, Pulse Counter, Power Meter : Bticino reference : F520, F523, 3522.			Legrand reference : 03555, 03557, 03554
-		//	7N#0			N = [1 - 255]			Energy Management Actuators : Bticino reference : F522, F523			Legrand reference : 03558, 03559
+		//5N			N = [1 - 255]			Energy Management Central Unit, Pulse Counter, Power Meter
+		//7N#0			N = [1 - 255]			Energy Management Actuators
 	}
 	else if (who == "22") {
-		// "Sound Diffusion"
-		//Source 2#sourceID
-		//	Speaker 3#area#point
-		//	Speaker Area 4#area
-		//	General 5#sender_address
-		//	All Source 6
+		// "Sound Diffusion" : TODO
+		//2#sourceID : Source 
+		//3#area#point : Speaker area/point
+		//4#area : Speaker Area
+		//5#sender_address : general
+		//6 : All Source 
 	}
 	else if (who == "24") {
-		// "Lighting management";
-		//RECIPIENT SENDER : 			LM_zone_num # dev_type & sys_addr #00# LM_zone_num # dev_type # sys_addr
-		//	LM_zone_num
-		//	Code Description
-		//	0 No zones
-		//	1000 + zone number Zone selection
-		//	1000 Every zones
-		//	dev_type
-		//	Code Description
-		//	1 BMNE500 / 002645 device
-		//	99991 Lighting Console
-		//	9991 Virtual Configurator
-		//	4 Broadcast
-		//	8 Unknown
-		//	sys_addr
-		//	From number 1 to 9
+		// "Lighting management" : TODO
+		//<LM_zone_num of recipient> # <dev_type of recipient concatenated with sys_addr of recipient> #00# <LM_zone_num of sender> # <dev_type of sender concatenated with sys_addr of sender>
+		//LM_zone_num is 0 : No zones, 1000 : every zones, 1000+x : zone x
+		//dev_type is 1 : BMNE500 / 002645 device, 99991 : Lighting Console, 9991 : Virtual Configurator, 4 : Broadcast, 8 : Unknown
+		//sys_addr is a number from 1 to 9
 	}
 	else if (who == "25") {
 		// "Dry contact";
 		if (where.length() >= 2 && where[0] == '3') {
-			string whereRight = where.substr(1);
+			std::string whereRight = where.substr(1);
 			int iWhere = atoi(whereRight.c_str());
 			if (iWhere > 10 && iWhere < 100) {
 				int iZ = iWhere / 10;
 				int iN = iWhere - 10 * iZ;
-				stringstream sstr;
+				std::stringstream sstr;
 				sstr << "automation " << whereRight << " or " << "alarm/IR Z=" << iZ << "/N=" << iN;
 				return sstr.str();
 			}
@@ -1955,9 +2110,14 @@ string bt_openwebnet::getWhereDescription(string& who, string& where, vector<str
 		}
 	}
 	else if (who == "1004") {
-		// "Thermoregulation diagnostic";
-		//1 Zone 1 master probe 2 Zone 2 master probe … … 99 Zone 99 master probe #0 Central unit #1 Zone 1 via central unit #2 Zone 2 via central unit … … #99 Zone 99 via central unit
-
+		// "Thermoregulation diagnostic" : TODO
+		//1 Zone 1 master probe 
+		//2 Zone 2 master probe … 
+		//99 Zone 99 master probe
+		//#0 Central unit 
+		//#1 Zone 1 via central unit 
+		//#2 Zone 2 via central unit … 
+		//#99 Zone 99 via central unit
 	}
 
 
@@ -1970,8 +2130,8 @@ string bt_openwebnet::getWhereDescription(string& who, string& where, vector<str
 			return "Group " + whereParameters[0];
 		}
 
-		string room;
-		string pointOfLight;
+		std::string room;
+		std::string pointOfLight;
 
 		if (where.length() == 2) {
 			//A = [1 - 9] , PL = [1 - 9]
@@ -1979,8 +2139,8 @@ string bt_openwebnet::getWhereDescription(string& who, string& where, vector<str
 			pointOfLight = where.substr(1, 1);
 		}
 		else if (where.length() == 4) {
-			string begin = where.substr(0, 2);
-			string end = where.substr(2, 2);
+			std::string begin = where.substr(0, 2);
+			std::string end = where.substr(2, 2);
 
 			if (begin == "00") {
 				//A=00 ,  PL=[01-15]
@@ -2010,9 +2170,9 @@ string bt_openwebnet::getWhereDescription(string& who, string& where, vector<str
 	return "Unknown where : " + where + vectorToString(whereParameters);
 }
 
-string bt_openwebnet::getDimensionsDescription(string& who, string& dimension, vector<string>& values)
+std::string bt_openwebnet::getDimensionsDescription(const std::string& who, const std::string& dimension, const std::vector<std::string>& values)
 {
-	string dimDescription;
+	std::string dimDescription;
 
 	if (who == "0") {
 		// "Scenario" : no dimension
@@ -2245,11 +2405,11 @@ string bt_openwebnet::getDimensionsDescription(string& who, string& dimension, v
 	return dimDescription + " : " + vectorToString(values);
 }
 
-string bt_openwebnet::vectorToString(vector<string>& strings)
+std::string bt_openwebnet::vectorToString(const std::vector<std::string>& strings)
 {
-	stringstream frameStr;
+	std::stringstream frameStr;
 	bool begin = true;
-	for (vector<string>::iterator it = strings.begin(); it != strings.end(); it++) {
+	for (std::vector<std::string>::const_iterator it = strings.begin(); it != strings.end(); it++) {
 		if (!begin) {
 			frameStr << ", ";
 		}
@@ -2259,9 +2419,9 @@ string bt_openwebnet::vectorToString(vector<string>& strings)
 	return frameStr.str();
 }
 
-string bt_openwebnet::frameToString(bt_openwebnet& frame)
+std::string bt_openwebnet::frameToString(const bt_openwebnet& frame)
 {
-	stringstream frameStr;
+	std::stringstream frameStr;
 
 	frameStr << frame.frame_open;
 	frameStr << " : ";
