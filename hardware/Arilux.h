@@ -22,6 +22,9 @@ private:
 	bool SendTCPCommand(char ip[50],std::vector<unsigned char> &command);
 	bool StartHardware();
 	bool StopHardware();
+	float cHue;
+	bool isWhite;
+	int brightness;
 protected:
 	bool m_bDoRestart;
 	void Do_Work();

@@ -15,54 +15,24 @@
 
 /*
 Arilux AL-C0x is a Wifi LED Controller based on ESP8266.
+Also compatible with Flux LED or any other LED strip controlled by Smart Home App
 Multiple version, RGB,RGBWW, with or witout remote controll
 Price is from 5 to 20 euro
-Protocol if WiFi and UDP datagram, the rgb controller needs to be connected to your wireless network
+Protocol if WiFi and TCP, the rgb controller needs to be connected to your wireless network
 Domoticz and the lights need to be in the same network/subnet
-Based on christianTF boblightwifi plugin for Arilux
+Based on christianTF boblightwifi plugin for Arilux and Belville Flux Led python plugin
 */
 
-#ifdef _DEBUG
-//#define DEBUG_AriluxR
-//#define DEBUG_AriluxW
-#endif
-
-
-
-
-
-#ifdef DEBUG_AriluxW
-void SaveString2Disk(std::string str, std::string filename)
-{
-	FILE *fOut = fopen(filename.c_str(), "wb+");
-	if (fOut)
-	{
-		fwrite(str.c_str(), 1, str.size(), fOut);
-		fclose(fOut);
-	}
-}
-#endif
-#ifdef DEBUG_AriluxR
-std::string ReadFile(std::string filename)
-{
-	std::string ret;
-	std::ifstream file(filename.c_str(), std::ios::in | std::ios::binary);
-	if (file)
-	{
-		ret.append((std::istreambuf_iterator<char>(file)),
-			(std::istreambuf_iterator<char>()));
-	}
-	return ret;
-}
-#endif
-
-#define RETRY_DELAY 10
 
 Arilux::Arilux(const int ID)
 {
 	m_HwdID = ID;
 	m_bDoRestart = false;
 	m_stoprequested = false;
+	cHue = 0.0;
+	brightness = 255;
+	isWhite = true;
+
 }
 
 Arilux::~Arilux(void)
@@ -268,7 +238,7 @@ bool Arilux::WriteToHardware(const char *pdata, const unsigned char length)
 	//Code for On/Off and RGB command
 	unsigned char Arilux_On_Command_Tab[] = { 0x71, 0x23, 0x0f };
 	unsigned char Arilux_Off_Command_Tab[] = { 0x71, 0x24, 0x0f };
-	unsigned char Arilux_RGBCommand_Command_Tab[] = { 0x31, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0f };
+	unsigned char Arilux_RGBCommand_Command_Tab[] = { 0x31, 0x00, 0x00, 0x00, 0x00, 0xf0, 0x0f };
 
 	//C++98 Vector Init
 	std::vector<unsigned char> Arilux_On_Command(Arilux_On_Command_Tab, Arilux_On_Command_Tab+sizeof(Arilux_On_Command_Tab)/sizeof(unsigned char));
@@ -293,35 +263,58 @@ bool Arilux::WriteToHardware(const char *pdata, const unsigned char length)
 	
 	case Limitless_SetColorToWhite:
 		sendOnFirst = true;
+		isWhite = true;
+		Arilux_RGBCommand_Command[1] = 0xff;
 		Arilux_RGBCommand_Command[2] = 0xff;
 		Arilux_RGBCommand_Command[3] = 0xff;
 		Arilux_RGBCommand_Command[4] = 0xff;
 		commandToSend = Arilux_RGBCommand_Command;
 		break;	
 	case Limitless_SetRGBColour: {
-		sendOnFirst = true;		
-		//Get Hue
-		int red, green, blue;
-		float cHue = (360.0f / 255.0f)*float(pLed->value);//hue given was in range of 0-255
-		int Brightness = 100;
-		int dMax = (int)(round((255.0f / 100.0f)*float(Brightness)));
-		hue2rgb(cHue, red, green, blue, dMax);
-
-		//_log.Log(LOG_NORM, "Red: %03d, Green:%03d, Blue:%03d", red, green, blue);
-		
-
-		Arilux_RGBCommand_Command[2] = (unsigned char)red;
-		Arilux_RGBCommand_Command[3] = (unsigned char)green;
-		Arilux_RGBCommand_Command[4] = (unsigned char)blue;	
-
-		commandToSend = Arilux_RGBCommand_Command;
+		isWhite = false;
+		cHue = (360.0f / 255.0f)*float(pLed->value);//hue given was in range of 0-255 - Store Hue value to object
+		//Sending is done by SetBrightnessLevel
 	}
     break;
 	case Limitless_SetBrightnessLevel: {
-		_log.Log(LOG_STATUS, "Arilux: Limitless_SetBrightnessLevel - This command is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum");
+
+		int red, green, blue;
+		int BrightnessBase = 100;
+		int dMax_convert = (int)(round((255.0f / 100.0f)*float(BrightnessBase)));
+		BrightnessBase = (int)pLed->value;
+		int dMax_Send = (int)(round((255.0f / 100.0f)*float(BrightnessBase)));
+		hue2rgb(cHue, red, green, blue, dMax_convert);
+
+
+		if (isWhite)
+		{
+			
+
+			Arilux_RGBCommand_Command[1] = (unsigned char)0xff;
+			Arilux_RGBCommand_Command[2] = (unsigned char)0xff;
+			Arilux_RGBCommand_Command[3] = (unsigned char)0xff;
+			Arilux_RGBCommand_Command[4] = (unsigned char)dMax_Send;
+
+			brightness = dMax_Send;
+
+			commandToSend = Arilux_RGBCommand_Command;
+		}
+		else 
+		{
+			//_log.Log(LOG_NORM, "Red: %03d, Green:%03d, Blue:%03d, Brightness:%03d", red, green, blue, dMax_Send);
+
+			Arilux_RGBCommand_Command[1] = (unsigned char)red;
+			Arilux_RGBCommand_Command[2] = (unsigned char)green;
+			Arilux_RGBCommand_Command[3] = (unsigned char)blue;
+			Arilux_RGBCommand_Command[4] = (unsigned char)dMax_Send;
+
+			brightness = dMax_Send;
+
+			commandToSend = Arilux_RGBCommand_Command;
+		}
 	}
 	break;
-	case Limitless_SetBrightUp:
+	case Limitless_SetBrightUp:	
 		_log.Log(LOG_STATUS, "Arilux: SetBrightUp - This command is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum");
 		break;
 	case Limitless_SetBrightDown:
