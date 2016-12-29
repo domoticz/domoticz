@@ -132,7 +132,13 @@ function load_testcam_video()
 function reload_testcam_image()
 {
 	var xx = new Image();
-	xx.src = $.testcamfeed+"&count="+$.count;
+	var src = $.testcamfeed;
+	if (src.indexOf("?")!=-1)
+		src+="&count=";
+	else
+		src+="?count=";
+	src+=$.count;
+	xx.src = src;
 	$.count++;
 	$('#dialog-add-edit-camera #camfeed').attr("src", xx.src);
 }
@@ -355,7 +361,7 @@ function RefreshcameraTable()
 			}
 
 			var previewimg;
-			var imgsrc="camsnapshot.jpg?idx=" + item.idx;
+			var imgsrc="camsnapshot.jpg?idx=" + item.idx + "&dtime=" + Math.round(+new Date()/1000);
 			if (item.Enabled=="true") {
 				previewimg='<img src="' + imgsrc + '" height="40"> ';
 			}

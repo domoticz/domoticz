@@ -18,6 +18,7 @@ CMakeFiles
 *.tlog
 CMakeCache.txt
 domoticz
+!scripts/logrotate/domoticz
 stdafx.h.gch
 .DS_Store
 .AppleDouble
@@ -28,3 +29,4 @@ domocookie.txt
 domoticz.exe
 /Config/zwcfg_*.xml
 /makebetarob
+/plugins/manifest.xml

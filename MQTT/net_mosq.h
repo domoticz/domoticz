@@ -23,8 +23,8 @@ Contributors:
 typedef int ssize_t;
 #endif
 
-#include "mosquitto_internal.h"
-#include "mosquitto.h"
+#include <mosquitto_internal.h>
+#include <mosquitto.h>
 
 #ifdef WITH_BROKER
 struct mosquitto_db;
@@ -84,7 +84,7 @@ int _mosquitto_packet_read(struct mosquitto_db *db, struct mosquitto *mosq);
 int _mosquitto_packet_read(struct mosquitto *mosq);
 #endif
 
-#ifdef WWW_ENABLE_SSL
+#ifdef WITH_TLS
 int _mosquitto_socket_apply_tls(struct mosquitto *mosq);
 int mosquitto__socket_connect_tls(struct mosquitto *mosq);
 #endif

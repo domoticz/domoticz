@@ -18,7 +18,15 @@ CNotificationGCM::~CNotificationGCM()
 {
 }
 
-bool CNotificationGCM::SendMessageImplementation(const std::string &Subject, const std::string &Text, const std::string &ExtraData, const int Priority, const std::string &Sound, const bool bFromNotification)
+bool CNotificationGCM::SendMessageImplementation(
+	const uint64_t Idx,
+	const std::string &Name,
+	const std::string &Subject,
+	const std::string &Text,
+	const std::string &ExtraData,
+	const int Priority,
+	const std::string &Sound,
+	const bool bFromNotification)
 {
 	//send message to GCM
 
@@ -70,10 +78,14 @@ bool CNotificationGCM::SendMessageImplementation(const std::string &Subject, con
 		_log.Log(LOG_ERROR, "GCM: Can not connect to GCM API URL");
 		return false;
 	}
-	bool bSuccess = root["success"].asInt() == 1;
-	if (!bSuccess)
-		_log.Log(LOG_ERROR, "GCM: %s", root["error"].asString().c_str());
-	return bSuccess;
+	return true;
+/*
+//silence the errors, we should change this system anyway
+bool bSuccess = root["success"].asInt() == 1;
+if (!bSuccess)
+_log.Log(LOG_ERROR, "GCM: %s", root["error"].asString().c_str());
+return bSuccess;
+*/
 }
 
 bool CNotificationGCM::IsConfigured()

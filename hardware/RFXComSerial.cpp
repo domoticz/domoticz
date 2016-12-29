@@ -786,58 +786,6 @@ void RFXComSerial::readCallback(const char *data, size_t len)
 	}
 }
 
-bool RFXComSerial::onInternalMessage(const unsigned char *pBuffer, const size_t Len)
-{
-	if (!m_bEnableReceive)
-		return true; //receiving not enabled
-
-	size_t ii = 0;
-	while (ii < Len)
-	{
-		if (m_rxbufferpos == 0)	//1st char of a packet received
-		{
-			if (pBuffer[ii] == 0) //ignore first char if 00
-				return true;
-		}
-		m_rxbuffer[m_rxbufferpos] = pBuffer[ii];
-		m_rxbufferpos++;
-		if (m_rxbufferpos >= sizeof(m_rxbuffer)-1)
-		{
-			//something is out of sync here!!
-			//restart
-			_log.Log(LOG_ERROR, "RFXCOM: input buffer out of sync, going to restart!....");
-			m_rxbufferpos = 0;
-			return false;
-		}
-		if (m_rxbufferpos > m_rxbuffer[0])
-		{
-/*
-			if (!m_bReceiverStarted)
-			{
-				if (m_rxbuffer[1] == pTypeInterfaceMessage)
-				{
-					const tRBUF *pResponse = (tRBUF *)&m_rxbuffer;
-					if (pResponse->IRESPONSE.subtype == cmdStartRec)
-					{
-						m_bReceiverStarted = strstr((char*)&pResponse->IRESPONSE.msg1, "Copyright RFXCOM") != NULL;
-					}
-					else
-					{
-						_log.Log(LOG_STATUS, "RFXCOM: Please upgrade your RFXTrx Firmware!...");
-						m_bReceiverStarted = true;
-					}
-				}
-			}
-			else
-*/
-				sDecodeRXMessage(this, (const unsigned char *)&m_rxbuffer, NULL, -1);
-			m_rxbufferpos = 0;    //set to zero to receive next message
-		}
-		ii++;
-	}
-	return true;
-}
-
 bool RFXComSerial::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	if (!isOpen())
@@ -856,8 +804,8 @@ namespace http {
 			redirect_uri = "/index.html";
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string hardwareid = request::findValue(&req, "hardwareid");
@@ -915,8 +863,8 @@ namespace http {
 
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string idx = request::findValue(&req, "idx");

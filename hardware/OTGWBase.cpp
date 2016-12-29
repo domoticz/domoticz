@@ -133,7 +133,7 @@ bool OTGWBase::GetOutsideTemperatureFromDomoticz(float &tvalue)
 	Json::Value tempjson;
 	std::stringstream sstr;
 	sstr << m_OutsideTemperatureIdx;
-	m_webservers.GetJSonDevices(tempjson, "", "temp", "ID", sstr.str(), "", "", true, 0, "");
+	m_webservers.GetJSonDevices(tempjson, "", "temp", "ID", sstr.str(), "", "", true, false, false, 0, "");
 
 	size_t tsize = tempjson.size();
 	if (tsize < 1)
@@ -295,6 +295,7 @@ void OTGWBase::SetSetpoint(const int idx, const float temp)
 		_log.Log(LOG_STATUS, "OTGW: Setting Room SetPoint to: %.1f", temp);
 		sprintf(szCmd, "TT=%.1f\r\n", temp);
 		WriteInt((const unsigned char*)&szCmd, (const unsigned char)strlen(szCmd));
+		UpdateSetPointSensor(idx, temp, "Room Setpoint");
 	}
 	else if (idx == 15)
 	{
@@ -302,6 +303,7 @@ void OTGWBase::SetSetpoint(const int idx, const float temp)
 		_log.Log(LOG_STATUS, "OTGW: Setting Heating SetPoint to: %.1f", temp);
 		sprintf(szCmd, "SW=%.1f\r\n", temp);
 		WriteInt((const unsigned char*)&szCmd, (const unsigned char)strlen(szCmd));
+		UpdateSetPointSensor(idx, temp, "DHW Setpoint");
 	}
 	else if (idx == 16)
 	{
@@ -309,6 +311,7 @@ void OTGWBase::SetSetpoint(const int idx, const float temp)
 		_log.Log(LOG_STATUS, "OTGW: Setting Max CH water SetPoint to: %.1f", temp);
 		sprintf(szCmd, "SH=%.1f\r\n", temp);
 		WriteInt((const unsigned char*)&szCmd, (const unsigned char)strlen(szCmd));
+		UpdateSetPointSensor(idx, temp, "Max_CH Water Setpoint");
 	}
 	GetGatewayDetails();
 }
@@ -399,8 +402,16 @@ void OTGWBase::ParseLine()
 		_status.Return_water_temperature = static_cast<float>(atof(results[idx++].c_str()));				SendTempSensor(idx - 1, 255, _status.Return_water_temperature, "Return Water Temperature");
 		_status.DHW_setpoint_boundaries=results[idx++];
 		_status.Max_CH_setpoint_boundaries=results[idx++];
-		_status.DHW_setpoint = static_cast<float>(atof(results[idx++].c_str()));							UpdateSetPointSensor(idx - 1, _status.DHW_setpoint, "DHW Setpoint");
-		_status.Max_CH_water_setpoint = static_cast<float>(atof(results[idx++].c_str()));					UpdateSetPointSensor(idx - 1, _status.Max_CH_water_setpoint, "Max_CH Water Setpoint");
+		_status.DHW_setpoint = static_cast<float>(atof(results[idx++].c_str())); 
+		if (_status.DHW_setpoint != 0.0f)
+		{
+			UpdateSetPointSensor(idx - 1, _status.DHW_setpoint, "DHW Setpoint");
+		}
+		_status.Max_CH_water_setpoint = static_cast<float>(atof(results[idx++].c_str()));		
+		if (_status.Max_CH_water_setpoint != 0.0f)
+		{
+			UpdateSetPointSensor(idx - 1, _status.Max_CH_water_setpoint, "Max_CH Water Setpoint");
+		}
 		_status.Burner_starts=atol(results[idx++].c_str());
 		_status.CH_pump_starts=atol(results[idx++].c_str());
 		_status.DHW_pump_valve_starts=atol(results[idx++].c_str());
@@ -492,8 +503,8 @@ namespace http {
 			redirect_uri = "/index.html";
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string idx = request::findValue(&req, "idx");
@@ -522,8 +533,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string idx = request::findValue(&req, "idx");

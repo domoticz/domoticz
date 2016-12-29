@@ -46,15 +46,24 @@ public:
 
 	void EnableLogTimestamps(const bool bEnableTimestamps);
 
+	void ForwardErrorsToNotificationSystem(const bool bDoForward);
+
 	std::list<_tLogLineStruct> GetLog(const _eLogLevel lType);
+	void ClearLog();
+
+	std::list<_tLogLineStruct> GetNotificationLogs();
+	bool NotificationLogsEnabled();
 private:
 	boost::mutex m_mutex;
 	std::ofstream m_outputfile;
 	std::deque<_tLogLineStruct> m_lastlog;
 	std::deque<_tLogLineStruct> m_last_status_log;
 	std::deque<_tLogLineStruct> m_last_error_log;
+	std::deque<_tLogLineStruct> m_notification_log;
 	bool m_bInSequenceMode;
 	bool m_bEnableLogTimestamps;
+	bool m_bEnableErrorsToNotificationSystem;
+	time_t m_LastLogNotificationsSend;
 	std::stringstream m_sequencestring;
 	_eLogFileVerboseLevel m_verbose_level;
 };

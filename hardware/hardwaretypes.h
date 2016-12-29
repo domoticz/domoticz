@@ -149,6 +149,22 @@
 #define sSwitchGaposa				0x56
 #define sSwitchMiLightv1			0x57
 #define sSwitchMiLightv2			0x58
+#define sSwitchHT6P20				0x59
+#define sSwitchTypeDoitrand			0x5a
+#define sSwitchTypeWarema			0x5b
+#define sSwitchTypeAnsluta			0x5c
+#define sSwitchTypeLivcol			0x5d
+#define sSwitchTypeBosch			0x5e
+#define sSwitchTypeNingbo			0x5f
+#define sSwitchTypeDitec			0x60
+#define sSwitchTypeSteffen			0x61
+#define sSwitchTypeAlectoSA			0x62
+#define sSwitchTypeGPIOset			0x63
+#define sSwitchLightT1				0x64
+#define sSwitchTypeKonigSec			0x65
+#define sSwitchTypeRM174RF			0x66
+#define sSwitchTypeLiwin			0x67
+#define sSwitchAuxiliaryT1			0x68
 
 //Switch commands
 #define gswitch_sOff				0x00
@@ -538,5 +554,7 @@ typedef union tREVOBUF {
 		uint8_t	id3;
 		uint8_t	devno;
 		uint8_t	demand;
+		uint8_t	updatetype;
+		uint8_t	battery_level;
 	} EVOHOME3;
 } REVOBUF;

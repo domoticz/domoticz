@@ -44,7 +44,7 @@
 	#include <string.h> 
 #endif
 
-#ifdef __gnu_linux__
+#ifdef HAVE_EXECINFO_H
 #include <execinfo.h>
 static void dumpstack(void) {
 	// Notes :
@@ -529,7 +529,11 @@ int main(int argc, char**argv)
 	std::string sLine = "";
 	std::ifstream infile;
 
+#if defined(__FreeBSD__)
+	infile.open("/compat/linux/proc/cpuinfo");
+#else
 	infile.open("/proc/cpuinfo");
+#endif
 	if (infile.is_open())
 	{
 		while (!infile.eof())
@@ -560,7 +564,7 @@ int main(int argc, char**argv)
 		else if (file_exist("/sys/devices/virtual/thermal/thermal_zone0/temp"))
 		{
 			//_log.Log(LOG_STATUS,"System: ODroid");
-			szInternalTemperatureCommand="cat /sys/devices/virtual/thermal/thermal_zone0/temp | awk '{ printf (\"temp=%0.2f\\n\",$1/1000); }'";
+			szInternalTemperatureCommand="cat /sys/devices/virtual/thermal/thermal_zone0/temp | awk '{ if ($1 < 100) printf(\"temp=%d\\n\",$1); else printf (\"temp=%0.2f\\n\",$1/1000); }'";
 			bHasInternalTemperature = true;
 		}
 	}

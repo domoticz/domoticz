@@ -52,7 +52,9 @@ void HTTPClient::Cleanup()
 void HTTPClient::SetGlobalOptions(void *curlobj)
 {
 	CURL *curl=(CURL *)curlobj;
+	curl_easy_setopt(curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC|CURLAUTH_DIGEST);
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_curl_data);
+	curl_easy_setopt(curl, CURLOPT_ACCEPT_ENCODING, "");
 	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
 	curl_easy_setopt(curl, CURLOPT_USERAGENT, m_sUserAgent.c_str());
 	curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, m_iConnectionTimeout);

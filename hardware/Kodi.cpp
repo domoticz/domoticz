@@ -400,12 +400,12 @@ void CKodiNode::handleMessage(std::string& pMessage)
 								bCanShutdown = root["result"]["canshutdown"].asBool();
 								if (bCanShutdown) sAction = "Shutdown";
 							}
-							if (root["result"].isMember("canhibernate"))
+							if (root["result"].isMember("canhibernate") && sAction != "Nothing")
 							{
 								bCanHibernate = root["result"]["canhibernate"].asBool();
 								if (bCanHibernate) sAction = "Hibernate";
 							}
-							if (root["result"].isMember("cansuspend"))
+							if (root["result"].isMember("cansuspend")&& sAction != "Nothing")
 							{
 								bCanSuspend = root["result"]["cansuspend"].asBool();
 								if (bCanSuspend) sAction = "Suspend";
@@ -1176,7 +1176,7 @@ void CKodi::UnloadNodes()
 	m_ios.stop();	// stop the service if it is running
 	sleep_milliseconds(100);
 
-	while ((!m_pNodes.empty()) || (!m_ios.stopped()) && (iRetryCounter < 15))
+	while (((!m_pNodes.empty()) || (!m_ios.stopped())) && (iRetryCounter < 15))
 	{
 		std::vector<boost::shared_ptr<CKodiNode> >::iterator itt;
 		for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
@@ -1244,7 +1244,10 @@ namespace http {
 		void CWebServer::Cmd_KodiGetNodes(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 			std::string hwid = request::findValue(&req, "idx");
 			if (hwid == "")
 				return;
@@ -1281,8 +1284,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 			std::string hwid = request::findValue(&req, "idx");
 			std::string mode1 = request::findValue(&req, "mode1");
@@ -1316,8 +1319,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string hwid = request::findValue(&req, "idx");
@@ -1348,8 +1351,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string hwid = request::findValue(&req, "idx");
@@ -1383,8 +1386,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string hwid = request::findValue(&req, "idx");
@@ -1412,8 +1415,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string hwid = request::findValue(&req, "idx");

@@ -5,21 +5,36 @@
 class I2C : public CDomoticzHardwareBase
 {
 public:
-	explicit I2C(const int ID, const int Mode1);
+	enum _eI2CType
+	{
+		I2CTYPE_UNKNOWN = 0,
+		I2CTYPE_BMP085,
+		I2CTYPE_HTU21D,
+		I2CTYPE_TSL2561,
+		I2CTYPE_PCF8574,
+		I2CTYPE_BME280
+	};
+
+	explicit I2C(const int ID, const _eI2CType DevType, const int Port);
 	~I2C();
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 private:
 	bool StartHardware();
 	bool StopHardware();
 	void HTU21D_ReadSensorDetails();
-	void bmp_ReadSensorDetails();
+	void bmp_Read_BMP_SensorDetails();
+	void bmp_Read_BME_SensorDetails();
+
+	bool readBME280ID(const int fd, int &ChipID, int &Version);
+	bool readBME280All(const int fd, float &temp, float &pressure, int &humidity);
 
 	void Do_Work();
 	boost::shared_ptr<boost::thread> m_thread;
 	volatile bool m_stoprequested;
 
 	std::string m_ActI2CBus;
-	std::string device;
+	_eI2CType m_dev_type;
+
 
 	bool i2c_test(const char *I2CBusName);
 	int i2c_Open(const char *I2CBusName);
@@ -30,6 +45,7 @@ private:
 	// BMP085 stuff
 	//Forecast
 	int bmp_CalculateForecast(const float pressure);
+	int CalculateForcast(const float pressure);
 	float m_LastPressure;
 	int m_LastMinute;
 	float m_pressureSamples[180];
@@ -65,4 +81,19 @@ private:
 	int HTU21D_checkCRC8(uint16_t data);
 	int HTU21D_GetHumidity(int fd, float *Pres);
 	int HTU21D_GetTemperature(int fd, float *Temp);
+
+	// TSL2561 stuff
+	void TSL2561_ReadSensorDetails();
+	void TSL2561_Init();
+	
+	// PCF8574
+	unsigned char	i2c_addr;
+	void			PCF8574_ReadChipDetails();
+	char			PCF8574_get_pin_number_from_Unit(unsigned char unit);
+	char			PCF8574_get_i2c_addr_from_Unit(unsigned char unit);
+	int				PCF8574_create_DeviceID(unsigned char i2c_address,unsigned char pin_mask);
+	unsigned char	PCF8574_create_Unit(unsigned char i2c_address, char pin);
+	char			PCF8574_WritePin(char pin_number,char  value);
+	char 			readByteI2C(int fd, char *byte, char i2c_addr);
+	char 			writeByteI2C(int fd, char byte, char i2c_addr);
 };

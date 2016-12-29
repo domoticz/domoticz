@@ -20,7 +20,7 @@ It must be installed beforehand following instructions at http://wiringpi.com/do
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
     MA 02110-1301 USA.
 
-This is a derivative work based on the samples included with wiringPi where distributed 
+This is a derivative work based on the samples included with wiringPi where distributed
 under the GNU Lesser General Public License version 3
 Source: http://wiringpi.com
 
@@ -39,7 +39,7 @@ Connection information:
 	- For input pins, 2 commands are needed (one to export as input, and one to trigger interrupts on both edges):
 	gpio export <pin> in
 	gpio edge <pin> both
-	
+
 	Note: If you wire a pull-up, make sure you use 3.3V from P1-01, NOT the 5V pin ! The inputs are 3.3V max !
 */
 #include "stdafx.h"
@@ -177,7 +177,7 @@ bool CGpio::StartHardware()
 				case 0:	wiringPiISR(0, INT_EDGE_SETUP, &interruptHandler0); break;
 				case 1: wiringPiISR(1, INT_EDGE_SETUP, &interruptHandler1); break;
 				case 2: wiringPiISR(2, INT_EDGE_SETUP, &interruptHandler2); break;
-				case 3: wiringPiISR(3, INT_EDGE_SETUP, &interruptHandler3); break;	
+				case 3: wiringPiISR(3, INT_EDGE_SETUP, &interruptHandler3); break;
 				case 4: wiringPiISR(4, INT_EDGE_SETUP, &interruptHandler4); break;
 
 				case 7: wiringPiISR(7, INT_EDGE_SETUP, &interruptHandler7); break;
@@ -271,6 +271,9 @@ void CGpio::ProcessInterrupt(int gpioId) {
 #ifndef WIN32
 	_log.Log(LOG_NORM, "GPIO: Processing interrupt for GPIO %d...", gpioId);
 
+	// Debounce reading
+	sleep_milliseconds(50);
+
 	// Read GPIO data
 	int value = digitalRead(gpioId);
 
@@ -288,7 +291,7 @@ void CGpio::ProcessInterrupt(int gpioId) {
 
 	sDecodeRXMessage(this, (const unsigned char *)&IOPinStatusPacket, NULL, 255);
 
-	_log.Log(LOG_NORM, "GPIO: Done processing interrupt for GPIO %d.", gpioId);
+	_log.Log(LOG_NORM, "GPIO: Done processing interrupt for GPIO %d (%s).", gpioId, (value != 0) ? "HIGH" : "LOW");
 #endif
 }
 
@@ -343,7 +346,7 @@ bool CGpio::InitPins()
 	bool exports[MAX_GPIO+1] = { false };
 	int gpioNumber;
 	FILE *cmd = NULL;
-	
+
 	// 1. List exports and parse the result
 #ifndef WIN32
 	cmd = popen("gpio exports", "r");
@@ -361,14 +364,17 @@ bool CGpio::InitPins()
 		// 01234567890123456789
 
 		std::string exportLine(buf);
-		//std::cout << "Processing line: " << exportLine;
+		std::cout << "Processing line: " << exportLine;
 		std::vector<std::string> sresults;
-		StringSplit(exportLine, " :", sresults);
+		StringSplit(exportLine, ":", sresults);
 		if (sresults.empty())
 			continue;
-		if (sresults[0] == "GPIO")
+		//if (sresults[0] == "GPIO")
+		if (sresults[0] == "GPIO Pins exported")
 			continue;
-		if (sresults.size() >= 4)
+		std::cout << "results.size: " << sresults.size() << sresults[0];
+		//if (sresults.size() >= 4)
+		if (sresults.size() >= 2)
 		{
 			gpioNumber = atoi(sresults[0].c_str());
 			if ((gpioNumber >= 0) && (gpioNumber <= MAX_GPIO)) {
@@ -419,14 +425,14 @@ bool CGpio::InitPins()
 
 		std::string line(buf);
 		std::vector<std::string> fields;
-		
+
 		//std::cout << "Processing line: " << line;
 		StringSplit(line, "|", fields);
 		if (fields.size()<7)
 			continue;
 
 		//std::cout << "# fields: " << fields.size() << std::endl;
-		
+
 		// trim each field
 		for (size_t i = 0; i < fields.size(); i++) {
 			fields[i]=stdstring_trim(fields[i]);
@@ -444,7 +450,7 @@ bool CGpio::InitPins()
 					_log.Log(LOG_NORM, "GPIO: Ignoring unsupported pin '%s'", fields[1].c_str());
 				}
 			}
-		} else if (fields.size() == 14) {
+		} else if (fields.size() == 15) {
 			// New style
 			if (fields[1].length() > 0) {
 				gpioNumber = atoi(fields[1].c_str());
@@ -456,13 +462,13 @@ bool CGpio::InitPins()
 				}
 			}
 
-			if (fields[12].length() > 0) {
-				gpioNumber = atoi(fields[12].c_str());
+			if (fields[13].length() > 0) {
+				gpioNumber = atoi(fields[13].c_str());
 				if ((gpioNumber >= 0) && (gpioNumber <= MAX_GPIO)) {
-					pins.push_back(CGpioPin(gpioNumber, "gpio" + fields[12] + " (" + fields[10] + ") on pin " + fields[7],
-							fields[9] == "IN", fields[9] == "OUT", exports[gpioNumber]));
+					pins.push_back(CGpioPin(gpioNumber, "gpio" + fields[13] + " (" + fields[11] + ") on pin " + fields[8],
+							fields[10] == "IN", fields[10] == "OUT", exports[gpioNumber]));
 				} else {
-					_log.Log(LOG_NORM, "GPIO: Ignoring unsupported pin '%s'", fields[12].c_str());
+					_log.Log(LOG_NORM, "GPIO: Ignoring unsupported pin '%s'", fields[13].c_str());
 				}
 			}
 		}

@@ -24,10 +24,6 @@
 #include "../main/localtime_r.h"
 #include "../main/Logger.h"
 
-#ifndef WIN32
-	#include <unistd.h> //gethostbyname
-#endif
-
 //10 minutes
 #define SESSION_TIMEOUT 600
 
@@ -608,11 +604,12 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& r
 		{
 			pfun->second(session, req, rep);
 		}
-		catch (...)
-		{
-			
+		catch (std::exception& e) {
+			_log.Log(LOG_ERROR, "WebServer PO exception occurred : '%s'", e.what());
 		}
-
+		catch (...) {
+			_log.Log(LOG_ERROR, "WebServer PO unknown exception occurred");
+		}
 		std::string attachment;
 		size_t num = rep.headers.size();
 		for (size_t h = 0; h < num; h++) {
@@ -1590,6 +1587,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 	// Initialize session
 	WebEmSession session;
 	session.remote_host = req.host_address;
+	session.reply_status = reply::ok;
 	session.isnew = false;
 	session.forcelogin = false;
 	session.rememberme = false;
@@ -1615,11 +1613,29 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 			return;
 		}
 		myWebem->CheckForAction(session, requestCopy);
+		if (!requestCopy.uri.empty())
+		{
+			if ((requestCopy.method == "POST") && (requestCopy.uri[0] != '/'))
+			{
+				//Send back as data instead of a redirect uri
+				rep.status = reply::ok;
+				rep.content = requestCopy.uri;
+				reply::add_header(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
+				reply::add_header(&rep, "Last-Modified", make_web_time(mytime(NULL)), true);
+				reply::add_header(&rep, "Content-Type", "application/json;charset=UTF-8");
+				return;
+			}
+		}
 	}
 
 	modify_info mInfo;
 	if (!myWebem->CheckForPageOverride(session, requestCopy, rep))
 	{
+		if (session.reply_status != reply::ok)
+		{
+			rep = reply::stock_reply(static_cast<reply::status_type>(session.reply_status));
+			return;
+		}
 		// do normal handling
 		try
 		{
@@ -1699,6 +1715,12 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 	}
 	else
 	{
+		if (session.reply_status != reply::ok)
+		{
+			rep = reply::stock_reply(static_cast<reply::status_type>(session.reply_status));
+			return;
+		}
+
 		if (!rep.bIsGZIP) {
 			CompressWebOutput(req, rep);
 		}

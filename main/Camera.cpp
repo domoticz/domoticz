@@ -90,15 +90,15 @@ void CCameraHandler::ReloadCameraActiveDevices(const std::string &CamID)
 }
 
 //Return 0 if NO, otherwise Cam IDX
-unsigned long long CCameraHandler::IsDevSceneInCamera(const unsigned char DevSceneType, const std::string &DevSceneID)
+uint64_t CCameraHandler::IsDevSceneInCamera(const unsigned char DevSceneType, const std::string &DevSceneID)
 {
-	unsigned long long ulID;
+	uint64_t ulID;
 	std::stringstream s_str( DevSceneID );
 	s_str >> ulID;
 	return IsDevSceneInCamera(DevSceneType,ulID);
 }
 
-unsigned long long CCameraHandler::IsDevSceneInCamera(const unsigned char DevSceneType, const unsigned long long DevSceneID)
+uint64_t CCameraHandler::IsDevSceneInCamera(const unsigned char DevSceneType, const uint64_t DevSceneID)
 {
 	boost::lock_guard<boost::mutex> l(m_mutex);
 	std::vector<cameraDevice>::iterator itt;
@@ -126,7 +126,7 @@ std::string CCameraHandler::GetCameraURL(const std::string &CamID)
 	return GetCameraURL(pCamera);
 }
 
-std::string CCameraHandler::GetCameraURL(const unsigned long long CamID)
+std::string CCameraHandler::GetCameraURL(const uint64_t CamID)
 {
 	cameraDevice* pCamera=GetCamera(CamID);
 	if (pCamera==NULL)
@@ -149,13 +149,13 @@ std::string CCameraHandler::GetCameraURL(cameraDevice *pCamera)
 
 cameraDevice* CCameraHandler::GetCamera(const std::string &CamID)
 {
-	unsigned long long ulID;
+	uint64_t ulID;
 	std::stringstream s_str( CamID );
 	s_str >> ulID;
 	return GetCamera(ulID);
 }
 
-cameraDevice* CCameraHandler::GetCamera(const unsigned long long CamID)
+cameraDevice* CCameraHandler::GetCamera(const uint64_t CamID)
 {
 	std::vector<cameraDevice>::iterator itt;
 	for (itt=m_cameradevices.begin(); itt!=m_cameradevices.end(); ++itt)
@@ -168,7 +168,7 @@ cameraDevice* CCameraHandler::GetCamera(const unsigned long long CamID)
 
 bool CCameraHandler::TakeSnapshot(const std::string &CamID, std::vector<unsigned char> &camimage)
 {
-	unsigned long long ulID;
+	uint64_t ulID;
 	std::stringstream s_str( CamID );
 	s_str >> ulID;
 	return TakeSnapshot(ulID,camimage);
@@ -216,13 +216,16 @@ bool CCameraHandler::TakeRaspberrySnapshot(std::vector<unsigned char> &camimage)
 	return false;
 }
 
-bool CCameraHandler::TakeUVCSnapshot(std::vector<unsigned char> &camimage)
+bool CCameraHandler::TakeUVCSnapshot(const std::string &device, std::vector<unsigned char> &camimage)
 {
 	std::string uvcparams="-S80 -B128 -C128 -G80 -x800 -y600 -q100";
 	m_sql.GetPreferencesVar("UVCParams", uvcparams);
 	
 	std::string OutputFileName = szUserDataFolder + "tempcam.jpg";
 	std::string nvcmd="uvccapture " + uvcparams+ " -o" + OutputFileName;
+	if (!device.empty()) {
+		nvcmd += " -d/dev/" + device;
+	}
 	std::remove(OutputFileName.c_str());
 
 	try
@@ -256,7 +259,7 @@ bool CCameraHandler::TakeUVCSnapshot(std::vector<unsigned char> &camimage)
 	return false;
 }
 
-bool CCameraHandler::TakeSnapshot(const unsigned long long CamID, std::vector<unsigned char> &camimage)
+bool CCameraHandler::TakeSnapshot(const uint64_t CamID, std::vector<unsigned char> &camimage)
 {
 	boost::lock_guard<boost::mutex> l(m_mutex);
 
@@ -272,7 +275,7 @@ bool CCameraHandler::TakeSnapshot(const unsigned long long CamID, std::vector<un
 	if (pCamera->ImageURL=="raspberry.cgi")
 		return TakeRaspberrySnapshot(camimage);
 	else if (pCamera->ImageURL=="uvccapture.cgi")
-		return TakeUVCSnapshot(camimage);
+		return TakeUVCSnapshot(pCamera->Username, camimage);
 
 	std::vector<std::string> ExtraHeaders;
 	return HTTPClient::GETBinary(szURL,ExtraHeaders,camimage,5);
@@ -368,7 +371,10 @@ namespace http {
 		void CWebServer::RType_Cameras(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights < 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 
 			std::string rused = request::findValue(&req, "used");
 
@@ -416,7 +422,7 @@ namespace http {
 			}
 			else
 			{
-				if (!m_mainworker.m_cameras.TakeUVCSnapshot(camimage)) {
+				if (!m_mainworker.m_cameras.TakeUVCSnapshot("", camimage)) {
 					return;
 				}
 			}

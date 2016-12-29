@@ -14,13 +14,6 @@ update-alternatives:
 sources:
   - trusty
 
-
-# Domoticz ftp server account & encrypted password
-env:
-  global:
-    - "FTP_HOST=188.166.24.182"
-    - "FTP_USER=uploads@domoticz.com"
-
 # What to install before the build
 before_install:
   # Domoticz needs the full history to be able to calculate the version string
@@ -44,6 +37,7 @@ matrix:
     addons:
       apt:
         sources:
+          - george-edison55-precise-backports  # cmake
           - ubuntu-toolchain-r-test
           - boost-latest
         packages:
@@ -51,6 +45,7 @@ matrix:
           - g++-4.9
           - libboost1.55-all-dev
           - cmake
+          - cmake-data
           - libsqlite3-dev
           - curl
           - libcurl4-openssl-dev
@@ -60,17 +55,18 @@ matrix:
           - libudev-dev
           - git
           - libdigest-sha-perl
+          - python3-dev
     script:
       - (cd open-zwave-read-only; make)
       - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=open-zwave-read-only
       - make
   # Apple OSX
   - os: osx
+    osx_image: xcode6.2
     compiler:
       - gcc
     env: TARGET_ARCHITECTURE=x86_64
     install:
-      - brew install cmake
       - brew install boost|| true
       - brew install boost-python|| true
       - brew install libusb
@@ -79,10 +75,12 @@ matrix:
       - brew install openssl
       - brew link openssl --force
       - brew install md5sha1sum
-      - export LDFLAGS=-L/usr/local/opt/openssl/lib
-      - export CPPFLAGS=-I/usr/local/opt/openssl/include
+      - brew install python3
+      - brew linkapps python3
+      - export OPENSSL_ROOT_DIR=/usr/local/opt/openssl
     script:
-      - cmake -DCMAKE_BUILD_TYPE=Release
+      - which python3
+      - cmake -DCMAKE_BUILD_TYPE=Release -DPYTHON_INCLUDE_DIR=/usr/local/Cellar/python3/3.5.2_3/Frameworks/Python.framework/Versions/3.5/Headers -DPYTHON_LIBRARY=/usr/local/Cellar/python3/3.5.2_3/Frameworks/Python.framework/Versions/3.5/lib/libpython3.5.dylib
       - make
 
 

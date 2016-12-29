@@ -163,7 +163,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_1WIRE, "1-Wire (System)" },
 		{ HTYPE_RaspberryBMP085, "I2C sensor BMP085/180 Temp+Baro" },
 		{ HTYPE_Wunderground, "Weather Underground" },
-		{ HTYPE_ForecastIO, "Forecast IO (Weather Lookup)" },
+		{ HTYPE_DarkSky, "DarkSky (Weather Lookup)" },
 		{ HTYPE_Dummy, "Dummy (Does nothing, use for virtual switches only)" },
 		{ HTYPE_Tellstick, "Tellstick" },
 		{ HTYPE_PiFace, "PiFace - Raspberry Pi IO expansion board" },
@@ -192,6 +192,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_EVOHOME_SCRIPT, "Evohome via script" },
 		{ HTYPE_MySensorsUSB, "MySensors Gateway USB" },
 		{ HTYPE_MySensorsTCP, "MySensors Gateway with LAN interface" },
+		{ HTYPE_MySensorsMQTT, "MySensors Gateway with MQTT interface" },
 		{ HTYPE_MQTT, "MQTT Client Gateway with LAN interface" },
 		{ HTYPE_FRITZBOX, "Fritzbox Callmonitor via LAN interface" },
 		{ HTYPE_ETH8020, "ETH8020 Relay board with LAN interface" },
@@ -212,6 +213,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_RFXtrx868, "RFXCOM - RFXtrx868 USB 868MHz Transceiver" },
 		{ HTYPE_RFLINKTCP, "RFLink Gateway with LAN interface" },
 		{ HTYPE_Comm5TCP, "Comm5 MA-5XXX with LAN interface" },
+		{ HTYPE_Comm5Serial, "Comm5 MA-4XXX/MI-XXXX Serial/USB interface" },
 		{ HTYPE_SolarEdgeAPI , "SolarEdge via Web API" },
 		{ HTYPE_CurrentCostMeter, "CurrentCost Meter USB" },
 		{ HTYPE_CurrentCostMeterLAN, "CurrentCost Meter with LAN interface" },
@@ -226,6 +228,23 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_RAVEn, "Rainforest RAVEn USB" },
 		{ HTYPE_S0SmartMeterTCP, "S0 Meter with LAN interface" },
 		{ HTYPE_DenkoviSmartdenLan, "Denkovi Smartden with LAN interface" },
+		{ HTYPE_AccuWeather, "AccuWeather (Weather Lookup)" },
+		{ HTYPE_BleBox, "BleBox devices" },
+		{ HTYPE_Ec3kMeterTCP, "Energy Count 3000/ NETBSEM4/ La Crosse RT-10 LAN" },
+		{ HTYPE_OpenWeatherMap, "Open Weather Map" },
+		{ HTYPE_GoodweAPI, "Goodwe solar inverter via Web API" },
+		{ HTYPE_RaspberryTSL2561, "I2C sensor TSL2561 Illuminance" },
+		{ HTYPE_Daikin, "Daikin Airconditioning with LAN (HTTP) interface" },
+		{ HTYPE_HEOS, "HEOS by DENON" },
+		{ HTYPE_MultiFun, "MultiFun LAN" },
+		{ HTYPE_ZIBLUEUSB, "ZiBlue RFPlayer USB" },
+		{ HTYPE_ZIBLUETCP, "ZiBlue RFPlayer with LAN interface" },
+		{ HTYPE_Yeelight, "YeeLight LED" },
+		{ HTYPE_RaspberryPCF8574, "I2C sensor PIO 8bit expander PCF8574 or PCF8574A" },
+		{ HTYPE_PythonPlugin, "Python Plugin System" },
+		{ HTYPE_XiaomiGateway, "Xiaomi Gateway" },
+		{ HTYPE_RaspberryBME280, "I2C sensor BME280 Temp+Hum+Baro" },
+		{ HTYPE_Arilux, "Arilux AL-LC0x" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -420,6 +439,7 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeThermostat1, "Thermostat 1" , "temperature" },
 		{ pTypeThermostat2, "Thermostat 2" , "temperature" },
 		{ pTypeThermostat3, "Thermostat 3" , "temperature" },
+		{ pTypeThermostat4, "Thermostat 4" , "temperature" },
 		{ pTypeRadiator1, "Radiator 1", "temperature" },
 		{ pTypeTEMP, "Temp", "temperature" },
 		{ pTypeHUM, "Humidity" , "temperature" },
@@ -568,6 +588,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLighting5, sTypeLegrandCAD, "Legrand CAD" },
 		{ pTypeLighting5, sTypeAvantek, "Avantek" },
 		{ pTypeLighting5, sTypeIT, "Intertek,FA500,PROmax" },
+		{ pTypeLighting5, sTypeMDREMOTE108, "MDRemote 108" },
 
 		{ pTypeLighting6, sTypeBlyss, "Blyss" },
 
@@ -581,13 +602,14 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeBlinds, sTypeBlindsT3, "A-OK AC114" },
 		{ pTypeBlinds, sTypeBlindsT4, "RAEX" },
 		{ pTypeBlinds, sTypeBlindsT5, "Media Mount" },
-		{ pTypeBlinds, sTypeBlindsT6, "T6 DC106" },
+		{ pTypeBlinds, sTypeBlindsT6, "DC106" },
 		{ pTypeBlinds, sTypeBlindsT7, "Forest" },
 		{ pTypeBlinds, sTypeBlindsT8, "Chamberlain CS4330CN" },
 		{ pTypeBlinds, sTypeBlindsT9, "Sunpery" },
 		{ pTypeBlinds, sTypeBlindsT10, "Dolat DLM-1" },
 		{ pTypeBlinds, sTypeBlindsT11, "ASP" },
 		{ pTypeBlinds, sTypeBlindsT12, "Confexx" },
+		{ pTypeBlinds, sTypeBlindsT13, "Screenline" },
 
 		{ pTypeSecurity1, sTypeSecX10, "X10 security" },
 		{ pTypeSecurity1, sTypeSecX10M, "X10 security motion" },
@@ -621,6 +643,10 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeThermostat3, sTypeMertikG6RH4TB, "Mertik G6R-H4TB" },
 		{ pTypeThermostat3, sTypeMertikG6RH4TD, "Mertik G6R-H4TD" },
 		{ pTypeThermostat3, sTypeMertikG6RH4S, "Mertik G6R-H4S" },
+
+		{ pTypeThermostat4, sTypeMCZ1, "MCZ 1 fan model" },
+		{ pTypeThermostat4, sTypeMCZ2, "MCZ 2 fan model" },
+		{ pTypeThermostat4, sTypeMCZ3, "MCZ 3 fan model" },
 
 		{ pTypeRadiator1, sTypeSmartwares, "Smartwares" },
 		{ pTypeRadiator1, sTypeSmartwaresSwitchRadiator, "Smartwares Mode" },
@@ -790,7 +816,9 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchTypeFunkbus, "Funkbus" },
 		{ pTypeGeneralSwitch, sSwitchTypeNice, "Nice" },
 		{ pTypeGeneralSwitch, sSwitchTypeForest, "Forest" },
-		{ pTypeGeneralSwitch, sSwitchBlindsT1, "Legrand MyHome" },
+		{ pTypeGeneralSwitch, sSwitchBlindsT1, "Legrand MyHome Blind" },
+		{ pTypeGeneralSwitch, sSwitchLightT1, "Legrand MyHome Light" },
+		{ pTypeGeneralSwitch, sSwitchAuxiliaryT1, "Legrand MyHome Auxiliary" },
 		{ pTypeGeneralSwitch, sSwitchMC145026, "MC145026" },
 		{ pTypeGeneralSwitch, sSwitchLobeco, "Lobeco" },
 		{ pTypeGeneralSwitch, sSwitchFriedland, "Friedland" },
@@ -800,6 +828,20 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchGaposa, "Gaposa" },
 		{ pTypeGeneralSwitch, sSwitchMiLightv1, "MiLightv1" },
 		{ pTypeGeneralSwitch, sSwitchMiLightv2, "MiLightv2" },
+		{ pTypeGeneralSwitch, sSwitchHT6P20, "HT6P20" },
+		{ pTypeGeneralSwitch, sSwitchTypeDoitrand, "Doitrand" },
+		{ pTypeGeneralSwitch, sSwitchTypeWarema, "Warema" },
+		{ pTypeGeneralSwitch, sSwitchTypeAnsluta, "Ansluta" },
+		{ pTypeGeneralSwitch, sSwitchTypeLivcol, "Livcol" },
+		{ pTypeGeneralSwitch, sSwitchTypeBosch, "Bosch" },
+		{ pTypeGeneralSwitch, sSwitchTypeNingbo, "Ningbo" },
+		{ pTypeGeneralSwitch, sSwitchTypeDitec, "Ditec" },
+		{ pTypeGeneralSwitch, sSwitchTypeSteffen, "Steffen" },
+		{ pTypeGeneralSwitch, sSwitchTypeAlectoSA, "AlectoSA" },
+		{ pTypeGeneralSwitch, sSwitchTypeGPIOset, "GPIOset" },
+		{ pTypeGeneralSwitch, sSwitchTypeKonigSec, "KonigSec" },
+		{ pTypeGeneralSwitch, sSwitchTypeRM174RF, "RM174RF" },
+		{ pTypeGeneralSwitch, sSwitchTypeLiwin, "Liwin" },
 		{  0,0,NULL }
 	};
 	return findTableID1ID2(Table, dType, sType);
@@ -905,6 +947,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeLighting5, sTypeLegrandCAD, "Status" },
 		{ pTypeLighting5, sTypeAvantek, "Status" },
 		{ pTypeLighting5, sTypeIT, "Status" },
+		{ pTypeLighting5, sTypeMDREMOTE108, "Status" },
 
 		{ pTypeLighting6, sTypeBlyss, "Status" },
 
@@ -925,6 +968,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeBlinds, sTypeBlindsT10, "Status" },
 		{ pTypeBlinds, sTypeBlindsT11, "Status" },
 		{ pTypeBlinds, sTypeBlindsT12, "Status" },
+		{ pTypeBlinds, sTypeBlindsT13, "Status" },
 
 		{ pTypeSecurity1, sTypeSecX10, "Status" },
 		{ pTypeSecurity1, sTypeSecX10M, "Status" },
@@ -957,6 +1001,10 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeThermostat3, sTypeMertikG6RH4T1, "Status" },
 		{ pTypeThermostat3, sTypeMertikG6RH4TB, "Status" },
 		{ pTypeThermostat3, sTypeMertikG6RH4TD, "Status" },
+
+		{ pTypeThermostat4, sTypeMCZ1, "Status,Mode" },
+		{ pTypeThermostat4, sTypeMCZ2, "Status,Mode" },
+		{ pTypeThermostat4, sTypeMCZ3, "Status,Mode" },
 
 		{ pTypeRadiator1, sTypeSmartwares, "Status" },
 		{ pTypeRadiator1, sTypeSmartwaresSwitchRadiator, "Status" },
@@ -1922,6 +1970,9 @@ void GetLightStatus(
 			case rfy_sDown:
 				lstatus = "Off";
 				break;
+			case rfy_sStop:
+				lstatus = "Stop";
+				break;
 			}
 		}
 		else
@@ -2016,6 +2067,23 @@ void GetLightStatus(
 			break;
 		case thermostat3_sStop:
 			lstatus="Stop";
+			break;
+		}
+		break;
+	case pTypeThermostat4:
+		switch (nValue)
+		{
+		case thermostat4_sOff:
+			lstatus = "Off";
+			break;
+		case thermostat4_sManual:
+			lstatus = "Manual";
+			break;
+		case thermostat4_sAuto:
+			lstatus = "Auto";
+			break;
+		case thermostat4_sEco:
+			lstatus = "Eco";
 			break;
 		}
 		break;
@@ -3161,6 +3229,31 @@ bool GetLightCommand(
 			return true;
 		}
 		break;
+	case pTypeThermostat4:
+	{
+		if (switchcmd == "Off")
+		{
+			cmd = thermostat4_sOff;
+		}
+		else if (switchcmd == "Manual")
+		{
+			cmd = thermostat4_sManual;
+		}
+		else if (switchcmd == "Auto")
+		{
+			cmd = thermostat4_sAuto;
+		}
+		else if (switchcmd == "Eco")
+		{
+			cmd = thermostat4_sEco;
+		}
+		else
+		{
+			cmd = thermostat3_sOff;
+		}
+		return true;
+	}
+	break;
 	case pTypeRadiator1:
 	{
 		if (switchcmd == "On")
@@ -3327,13 +3420,32 @@ const char *Get_Alert_Desc(const int level)
 
 bool IsSerialDevice(const _eHardwareTypes htype)
 {
-	return (
-		(htype == HTYPE_RFXtrx315) || (htype == HTYPE_RFXtrx433) || (htype == HTYPE_RFXtrx868) ||
-		(htype == HTYPE_P1SmartMeter) || (htype == HTYPE_Rego6XX) || (htype == HTYPE_DavisVantage) || (htype == HTYPE_S0SmartMeterUSB) || (htype == HTYPE_OpenThermGateway) ||
-		(htype == HTYPE_TeleinfoMeter) || (htype == HTYPE_OpenZWave) || (htype == HTYPE_EnOceanESP2) || (htype == HTYPE_EnOceanESP3) || (htype == HTYPE_Meteostick) ||
-		(htype == HTYPE_MySensorsUSB) || (htype == HTYPE_RFLINKUSB) || (htype == HTYPE_KMTronicUSB) || (htype == HTYPE_KMTronic433) || (htype == HTYPE_CurrentCostMeter) ||
-        (htype == HTYPE_RAVEn)
-		);
+	switch (htype) {
+	case HTYPE_RFXtrx315:
+	case HTYPE_RFXtrx433:
+	case HTYPE_RFXtrx868:
+	case HTYPE_P1SmartMeter:
+	case HTYPE_Rego6XX:
+	case HTYPE_DavisVantage:
+	case HTYPE_S0SmartMeterUSB:
+	case HTYPE_OpenThermGateway:
+	case HTYPE_TeleinfoMeter:
+	case HTYPE_OpenZWave:
+	case HTYPE_EnOceanESP2:
+	case HTYPE_EnOceanESP3:
+	case HTYPE_Meteostick:
+	case HTYPE_MySensorsUSB:
+	case HTYPE_RFLINKUSB:
+	case HTYPE_ZIBLUEUSB:
+	case HTYPE_KMTronicUSB:
+	case HTYPE_KMTronic433:
+	case HTYPE_CurrentCostMeter:
+	case HTYPE_RAVEn:
+	case HTYPE_Comm5Serial:
+		return true;
+	default:
+		return false;
+	}
 }
 
 void ConvertToGeneralSwitchType(std::string &devid, int &dtype, int &subtype)

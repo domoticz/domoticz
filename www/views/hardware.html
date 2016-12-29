@@ -149,24 +149,24 @@
 						<span class="caret"></span>
 					  </button>
 					  <ul class="dropdown-menu pull-right" role="menu" aria-labelledby="dropdownMenu1">
-						<li ><a href="javascript:ZWaveIncludeNode(false);" ><span data-i18n="Include Node" class="btn btn-primary">Include Node</span></a></li>
-						<li ><a href="javascript:ZWaveIncludeNode(true);" ><span data-i18n="Include Node Secure" class="btn btn-primary">Include Node Secure</span></a></li>
-						<li><a href="javascript:ZWaveExcludeNode();" ><span data-i18n="Exclude Node" class="btn btn-primary">Exclude Node</span></a></li>
-						<li><a href="javascript:ZWaveHealNetwork();" ><span data-i18n="Heal network" class="btn btn-warning">Heal network</span></a></li>
+						<li ><a href="javascript:ZWaveIncludeNode(false);" ><button type="button" data-i18n="Include Node" class="btn btn-primary">Include Node</button></a></li>
+						<li ><a href="javascript:ZWaveIncludeNode(true);" ><button type="button" data-i18n="Include Node Secure" class="btn btn-primary">Include Node Secure</button></a></li>
+						<li><a href="javascript:ZWaveExcludeNode();" ><button type="button" data-i18n="Exclude Node" class="btn btn-primary">Exclude Node</button></a></li>
+						<li><a href="javascript:ZWaveHealNetwork();" ><button type="button" data-i18n="Heal network" class="btn btn-warning">Heal network</button></a></li>
 						<li role="presentation" class="divider"></li>
-						<li><a href="javascript:ZWaveTopology();" ><span data-i18n="Groups & Network" class="btn btn-success">Groups & Network</span></a></li>
+						<li><a href="javascript:ZWaveTopology();" ><button type="button" data-i18n="Groups & Network" class="btn btn-success">Groups & Network</button></a></li>
 						<li role="presentation" class="divider"></li>
-						<li><a href="javascript:ZWaveSoftResetNode();" ><span data-i18n="Soft reset controller" class="btn btn-danger">Soft reset controller</span></a></li>
-						<li><a href="javascript:ZWaveHardResetNode();" ><span data-i18n="Hard reset controller" class="btn btn-danger">Hard reset controller</span></a></li>
-						<li><a href="javascript:ZWaveReceiveConfiguration();" ><span data-i18n="Receive configuration from other controller" class="btn btn-primary">Receive configuration from other controller</span></a></li>
-						<li><a href="javascript:ZWaveSendConfiguration();" ><span data-i18n="Send configuration to other controller" class="btn btn-primary">Send configuration to other controller</span></a></li>
-						<li><a href="javascript:ZWaveTransferPrimaryRole();" ><span data-i18n="Transfer primary role" class="btn btn-danger">Transfer primary role</span></a></li>
+						<li><a href="javascript:ZWaveSoftResetNode();" ><button type="button" data-i18n="Soft reset controller" class="btn btn-danger">Soft reset controller</button></a></li>
+						<li><a href="javascript:ZWaveHardResetNode();" ><button type="button" data-i18n="Hard reset controller" class="btn btn-danger">Hard reset controller</button></a></li>
+						<li><a href="javascript:ZWaveReceiveConfiguration();" ><button type="button" data-i18n="Receive configuration from other controller" class="btn btn-primary">Receive configuration from other controller</button></a></li>
+						<li><a href="javascript:ZWaveSendConfiguration();" ><button type="button" data-i18n="Send configuration to other controller" class="btn btn-primary">Send configuration to other controller</button></a></li>
+						<li><a href="javascript:ZWaveTransferPrimaryRole();" ><button type="button" data-i18n="Transfer primary role" class="btn btn-danger">Transfer primary role</button></a></li>
 						<li id="usercodegrp" role="presentation" class="divider"></li>
-						<li id="usercodegrp"><a href="javascript:ZWaveStartUserCodeEnrollment();" ><span data-i18n="Start User Code Enrollment" class="btn btn-primary">Start User Code Enrollment</span></a></li>
-						<li id="usercodegrp"><a id="zwavecodemanagement" href="javascript:ZWaveUserCodeManagement();" ><span data-i18n="User Code Management" class="btn btn-primary">User Code Management</span></a></li>
+						<li id="usercodegrp"><a href="javascript:ZWaveStartUserCodeEnrollment();" ><button type="button" data-i18n="Start User Code Enrollment" class="btn btn-primary">Start User Code Enrollment</button></a></li>
+						<li id="usercodegrp"><a id="zwavecodemanagement" href="javascript:ZWaveUserCodeManagement();" ><button type="button" data-i18n="User Code Management" class="btn btn-primary">User Code Management</button></a></li>
 						<li role="presentation" class="divider"></li>
-						<li><a id="zwave_configdownload" href="#" ><span data-i18n="Download Configuration File" class="btn btn-primary">Download Configuration File</span></a></li>
-						<li><a id="zwave_controlpabel" href="/ozwcp/cp.html" ><span data-i18n="Control Panel" class="btn btn-primary">Control Panel</span></a></li>
+						<li><a id="zwave_configdownload" href="#" ><button type="button" data-i18n="Download Configuration File" class="btn btn-primary">Download Configuration File</button></a></li>
+						<li><a id="zwave_controlpabel" href="./ozwcp/cp.html" ><button type="button" data-i18n="Control Panel" class="btn btn-primary">Control Panel</button></a></li>
 					  </ul>
 					</div>
 				</td>
@@ -333,7 +333,6 @@
 	</div>
 	<input type="hidden" id="idx" name="idx" value="-1">
 </div>
-
 <div id="wakeonlan" style="display:none;">
 	<div class="page-header-small">
 		<table border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -381,7 +380,6 @@
 		</tr>
 	</table>
 </div>
-
 <div id="pinger" style="display:none;">
 	<div class="page-header-small">
 		<table border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -611,6 +609,79 @@
 </div>
 
 
+<div id="blebox" style="display:none;">
+    <div class="page-header-small">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+            <tr>
+                <td>
+                    <h1 data-i18n="Settings">Settings</h1>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <table class="display" id="bleboxsettingstable" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+            <td align="right" style="width:110px"><label for="pollinterval"><span data-i18n="Poll Interval"></span>:</label></td>
+            <td><input type="text" id="pollinterval" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;(<span data-i18n="Seconds">Seconds</span>)</td>
+        </tr>
+        <tr>
+            <td align="right" style="width:110px"><label for="pingtimeout"><span data-i18n="Ping Timeout"></span>:</label></td>
+            <td><input type="text" id="pingtimeout" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;(<span data-i18n="Milliseconds"></span>)</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><a class="btn-danger sub-tabs-apply" onclick="SetBleBoxSettings();" data-i18n="Apply Settings">Apply Settings</a></td>
+        </tr>
+    </table>
+    <div class="page-header-small">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+            <tr>
+                <td>
+                    <h1 data-i18n="Nodes">Nodes</h1>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <table class="display" id="bleboxnodestable" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <thead>
+            <tr>
+                <th width="70" align="center" data-i18n="ID">ID</th>
+                <th width="250" align="left" data-i18n="Name">Name</th>
+                <th width="150" align="left" data-i18n="IP Address">IP Address</th>
+				<th align="left" data-i18n="Type">Type</th>
+            </tr>
+        </thead>
+    </table>
+    <input type="hidden" id="idx" name="idx" value="-1">
+    <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr>
+            <td>
+                <a class="btnstyle3-dis" id="nodeupdate" data-i18n="Update">Update</a>&nbsp;&nbsp;&nbsp;
+                <a class="btnstyle3-dis" id="nodedelete" data-i18n="Delete">Delete</a>
+            </td>
+            <td align="right">
+                <a class="btnstyle3" id="nodelistrefresh" data-i18n="Clear" onclick="BleBoxClearNodes();">Clear</a>
+            </td>
+        </tr>
+    </table>
+    <br>
+    <table class="display" id="bleboxnodeparamstable" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+            <td align="right" style="width:110px"><label for="nodename"><span data-i18n="Name"></span>:</label></td>
+            <td><input type="text" id="nodename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+        </tr>
+        <tr>
+            <td align="right" style="width:110px"><label for="nodeip"><span data-i18n="IP Address">IP Address</span>:</label></td>
+            <td><input type="text" id="nodeip" style="width: 350px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><a class="btnstyle3" onclick="BleBoxAddNode();" data-i18n="Add">Add</a></td>
+        </tr>
+    </table>
+</div>
+
+
 
 <div id="lms" style="display:none;">
     <div class="page-header-small">
@@ -653,6 +724,33 @@
                 <th width="120" align="left" data-i18n="Mac Address">Mac Address</th>
             </tr>
         </thead>
+    </table>
+    <input type="hidden" id="idx" name="idx" value="-1">
+</div>
+
+<div id="heos" style="display:none;">
+    <div class="page-header-small">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+            <tr>
+                <td>
+                    <h1 data-i18n="Settings">Settings</h1>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <table class="display" id="heossettingstable" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+            <td align="right" style="width:110px"><label for="pollinterval"><span data-i18n="Poll Interval"></span>:</label></td>
+            <td><input type="text" id="pollinterval" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;(<span data-i18n="Seconds">Seconds</span>)</td>
+        </tr>
+        <tr>
+            <td align="right" style="width:110px"><label for="pingtimeout"><span data-i18n="Ping Timeout"></span>:</label></td>
+            <td><input type="text" id="pingtimeout" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;(<span data-i18n="Milliseconds"></span>)</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><a class="btn-danger sub-tabs-apply" onclick="SetHEOSSettings();" data-i18n="Apply Settings">Apply Settings</a></td>
+        </tr>
     </table>
     <input type="hidden" id="idx" name="idx" value="-1">
 </div>
@@ -1023,6 +1121,24 @@
 				</tr>
 			</table>
 		</div>
+		<div id="divi2clocal">
+			<br>
+			<table class="display" id="hardwareparamsi2clocal" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label id="lbli2cname" for="name"><span data-i18n="SubType"></span>:</label></td>
+					<td><select id="comboi2clocal" style="width:410px" class="combobox ui-corner-all"></select></td>
+				</tr>
+			</table>
+		</div>
+		<div id="divi2caddress">
+			<br>
+			<table class="display" id="hardwareparami2caddress" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label id="lbli2caddress" for="name"><span data-i18n="I2C address"></span>I2C address:</label></td>
+					<td><input type="text" id="i2caddress" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+			</table>
+		</div>
     <div id="divbaudratemysensors">
       <table class="display" id="hardwareparamsbaudratemysensors" border="0" cellpadding="0" cellspacing="20">
         <tr>
@@ -1060,6 +1176,20 @@
 				</tr>
 			</table>
 		</div>
+		<div id="divcrcp1">
+			<table class="display" id="hardwareparamscrcp1" border="0" cellpadding="0" cellspacing="20">
+				<tr valign="top">
+					<td align="right" style="width:110px"><label id="lblcrcp1" for="name"><span data-i18n="CRC message validation">CRC message validation</span>: </label></td>
+					<td>
+						<input type="checkbox" id="disablecrcp1" checked="checked" name="disablecrcp1">
+						<br />
+						<span data-i18n="Using CRC message validation prevents incorrect data from entering the Domoticz database.">Using CRC message validation prevents incorrect data from entering the Domoticz database.</span>
+						<br />
+						<strong><font class="warning-text"><span data-i18n="Should normally not be disabled!"></span>Should normally not be disabled!</font></strong>
+					</td>
+				</tr>
+			</table>
+		</div>
 		<div id="divhttppoller">
 			<br>
 			<table class="display" id="hardwareparamshttp" border="0" cellpadding="0" cellspacing="20">
@@ -1074,6 +1204,15 @@
 				<tr>
 					<td align="right" style="width:110px"><label><span data-i18n="Refresh"></span>:</label></td>
 					<td><input type="text" id="refresh" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+			</table>
+		</div>
+		<div id="divpollinterval">
+			<br>
+			<table class="display" id="hardwareparamspollinterval" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="Refresh"></span>(ms):</label></td>
+					<td><input type="text" id="pollinterval" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 				</tr>
 			</table>
 		</div>
@@ -1107,6 +1246,18 @@
 				</tr>
 			</table>
 		</div>
+		<div id="divenecotoon">
+			<br>
+			<table class="display" id="hardwareparamsenecotoon" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="Agreement">Agreement</span>:</label></td>
+					<td><input type="text" id="agreement" value="0" style="width: 20px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+				<tr>    <td></td>
+					<td><span data-i18n="Toon Agreement">Change only to select another Toon when having multiple agreements</span></td>
+				</tr>
+			</table>
+		</div>
 		<div id="divlocation">
 			<br>
 			<table class="display" id="hardwareparamslocation" border="0" cellpadding="0" cellspacing="20">
@@ -1134,7 +1285,11 @@
 			<table class="display" id="hardwareparamsphilipshue" border="0" cellpadding="0" cellspacing="20">
 				<tr>
 					<td align="right" style="width:110px"><label id="lblusername" for="name"><span data-i18n="Username"></span>:</label></td>
-					<td><input type="text" id="username" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+					<td>
+						<input type="text" id="username" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+						<br />
+						<span data-i18n="Leave the username empty and press the LINK button on the Philips Hue bridge. Then press the 'Register on Bridge' button.">Leave the username empty and press the LINK button on the Philips Hue bridge. Then press the 'Register on Bridge' button.</span>
+					</td>
 				</tr>
 				<tr>
 					<td></td>
@@ -1157,6 +1312,7 @@
 						<option value="121">De Trouwe Wachter</option>
 						<option value="131">De Blauwe Reiger</option>
 						<option value="141">De Vier Winden</option>
+						<option value="191">De Boerenzwaluw</option>
 						</select>
 					</td>
 				</tr>
@@ -1166,6 +1322,16 @@
 				</tr>
 			</table>
 		</div>
+		<div id="divgoodweweb">
+                        <br>
+                        <table class="display" id="hardwareparamsgoodweweb" border="0" cellpadding="0" cellspacing="20">
+                                <tr>
+					<td align="right" style="width:110px"><label><span data-i18n="username">Goodwe-power Username</span>:</label></td>
+					<td><input type="text" id="username" style="width: 170px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+                                </tr>
+                        </table>
+                </div>
+		<div id="divpythonplugin"/>
 		<div id="divmqtt">
 			<br>
 			<table class="display" id="hardwareparamsmqtt" border="0" cellpadding="0" cellspacing="20">
@@ -1187,6 +1353,14 @@
 						Note that <b>Hierarchical</b> only reports sensor updates for sensors that are placed on a floorplan/plan.
 					</td>
 				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label id="lbfilename" for="filename"><span data-i18n="CA Filename">CA Filename</span>:</label></td>
+					<td><input type="text" id="filename" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+			</table>
+		</div>
+		<div id="divmysensorsmqtt">
+			<table class="display" id="hardwareparamsmysensorsmqtt" border="0" cellpadding="0" cellspacing="20">
 				<tr>
 					<td align="right" style="width:110px"><label id="lbfilename" for="filename"><span data-i18n="CA Filename">CA Filename</span>:</label></td>
 					<td><input type="text" id="filename" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
@@ -1261,6 +1435,52 @@
 			</table>
 		</form>
 </div>
+<div id="dialog-addyeelight" title="Add YeeLight Light" style="display: none;">
+    <form>
+        <table border="0" cellpadding="0" cellspacing="10">
+            <tr>
+                <td align="right" style="width: 200px"><label for="name"><span data-i18n="Name"></span>:</label></td>
+                <td><input type="text" id="name" style="width: 240px; padding: .2em;" class="text ui-widget-content ui-corner-all"/></td>
+            </tr>
+            <tr>
+                <td align="right"><label for="ipaddress"><span data-i18n="IP Address"></span>:</label></td>
+                <td><input type="text" id="ipaddress" style="width: 140px; padding: .2em;" class="text ui-widget-content ui-corner-all"/></td>
+            </tr>
+            <tr>
+                <td align="right"><label for="lighttype"><span data-i18n="Light Type">Light Type</span>: </label></td>
+                <td>
+                    <select id="lighttype" style="width: 150px" class="combobox ui-corner-all">
+                        <option value="0" data-i18n="Mono">Mono</option>
+                        <option value="1" data-i18n="RGBW">RGBW</option>
+                    </select>
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+<div id="dialog-addArilux" title="Add Arilux AL-C0x controller" style="display:none;">
+    <form>
+        <table border="0" cellpadding="0" cellspacing="10">
+            <tr>
+                <td align="right" style="width:200px"><label for="name"><span data-i18n="Name"></span>:</label></td>
+                <td><input type="text" id="name" style="width: 240px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+            </tr>
+            <tr>
+                <td align="right"><label for="ipaddress"><span data-i18n="IP Address"></span>:</label></td>
+                <td><input type="text" id="ipaddress" style="width: 140px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+            </tr>
+            <tr>
+                <td align="right"><label for="lighttype"><span data-i18n="Light Type">Light Type</span>: </label></td>
+                <td>
+                    <select id="lighttype" style="width:150px" class="combobox ui-corner-all">
+                        <option value="0" data-i18n="Mono">RGB</option>
+                        <option value="1" data-i18n="RGBW">RGBW</option>
+                    </select>
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
 <div id="dialog-createevohomesensor" title="Create evohome device" style="display:none;">
 		<form>
 				<label for="sensortype"><span data-i18n="Devices"></span>: </label>
@@ -1277,3 +1497,29 @@
 				<input type="text" id="sensorname" style="width: 240px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
 		</form>
 </div>
+<div id="tellstick" style="display:none;">
+    <div class="page-header-small">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+            <tr>
+                <td>
+                    <h1 data-i18n="Settings">Settings</h1>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <table class="display" id="tellstickSettingsTable" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+            <td align="right" style="width:110px"><label for="repeats"><span data-i18n="Repeats">Repeats</span>:</label></td>
+            <td><input type="text" id="repeats" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all"</td>
+        </tr>
+        <tr>
+            <td align="right" style="width:110px"><label for="repeatInterval"><span data-i18n="Repeat Interval">Repeat Interval</span>:</label></td>
+            <td><input type="text" id="repeatInterval" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;(<span data-i18n="Milliseconds"></span>)</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><a class="btn-danger sub-tabs-apply" onclick="TellstickApplySettings();" data-i18n="Apply Settings"></a></td>
+        </tr>
+    </table>
+</div>
+    

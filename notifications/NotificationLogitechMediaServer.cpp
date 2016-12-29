@@ -17,7 +17,15 @@ CNotificationLogitechMediaServer::~CNotificationLogitechMediaServer()
 {
 }
 
-bool CNotificationLogitechMediaServer::SendMessageImplementation(const std::string &Subject, const std::string &Text, const std::string &ExtraData, const int Priority, const std::string &Sound, const bool bFromNotification)
+bool CNotificationLogitechMediaServer::SendMessageImplementation(
+	const uint64_t Idx,
+	const std::string &Name,
+	const std::string &Subject,
+	const std::string &Text,
+	const std::string &ExtraData,
+	const int Priority,
+	const std::string &Sound,
+	const bool bFromNotification)
 {
 	std::string	sSubject("Domoticz");
 	if (Subject != Text)
@@ -51,3 +59,4 @@ bool CNotificationLogitechMediaServer::IsConfigured()
 {
 	return (!_PlayerMac.empty());
 }
+

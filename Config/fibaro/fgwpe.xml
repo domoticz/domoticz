@@ -8,8 +8,8 @@
   <!-- COMMAND_CLASS_SENSOR_ALARM not supported -->
   <CommandClass id="156" action="remove" />
 
-  <!-- COMMAND_CLASS_SWITCH_ALL SwitchAllCmd_Get not supported -->
-  <CommandClass id="39" getsupported="false" />
+  <!-- COMMAND_CLASS_SWITCH_ALL not supported -->
+  <CommandClass id="39" action="remove" />
 
   <!-- Configuration -->
   <CommandClass id="112">
@@ -107,7 +107,7 @@
        <Item label="Green illumination" value="4" />
        <Item label="Blue illumination" value="5" />
        <Item label="Yellow illumination" value="6" />
-       <Item label="Cyan illuminatio" value="7" />
+       <Item label="Cyan illumination" value="7" />
        <Item label="Magenta illumination" value="8" />
        <Item label="illumination turned off completely" value="9" />
     </Value>
@@ -120,7 +120,7 @@
        <Item label="Green illumination" value="3" />
        <Item label="Blue illumination" value="4" />
        <Item label="Yellow illumination" value="5" />
-       <Item label="Cyan illuminatio" value="6" />
+       <Item label="Cyan illumination" value="6" />
        <Item label="Magenta illumination" value="7" />
        <Item label="illumination turned off completely" value="8" />
     </Value>
@@ -134,7 +134,7 @@
       <Item label="Green illumination" value="4" />
       <Item label="Blue illumination" value="5" />
       <Item label="Yellow illumination" value="6" />
-      <Item label="Cyan illuminatio" value="7" />
+      <Item label="Cyan illumination" value="7" />
       <Item label="Magenta illumination" value="8" />
       <Item label="illumination turned off completely" value="9" />
     </Value>
