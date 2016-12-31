@@ -112,7 +112,7 @@ void XiaomiGateway::InsertUpdateHumidity(const std::string &nodeid, const std::s
 	SendHumiditySensor(sID, 255, Humidity, Name.c_str());
 }
 
-void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::string &Name, bool bIsOn, _eSwitchType subtype)
+void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::string &Name, bool bIsOn, _eSwitchType subtype, int level)
 {
 	// Make sure the ID supplied fits with what is expected ie 158d0000fd32c2
 	if (nodeid.length() < 14) {
@@ -140,6 +140,13 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 	xcmd.type = pTypeGeneralSwitch;
 	xcmd.subtype = sSwitchCustomSwitch;
 
+	if (subtype == STYPE_Selector) {
+		xcmd.subtype = sSwitchTypeSelector;
+		if (level > 0) {
+			xcmd.level = level;
+		}
+	}
+
 	if (bIsOn) {
 		xcmd.cmnd = gswitch_sOn;
 	}
@@ -157,8 +164,19 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 		int customimage = 0;
 		if (subtype == STYPE_OnOff) {
 			customimage = 1;
+		} else if (subtype == STYPE_Selector) {
+			customimage = 9;
 		}
 		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, CustomImage=%i WHERE(HardwareID == %d) AND (DeviceID == '%q')", Name.c_str(), (subtype), customimage, m_HwdID, ID.c_str());
+
+		if (subtype == STYPE_Selector) {
+			result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) ", m_HwdID, ID.c_str(), pTypeGeneralSwitch);
+			if (result.size() > 0)
+			{
+				std::string Idx = result[0][0];
+				m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Click|Long Click|Double Click", false));
+			}
+		}
 	}
 	else {
 		//already in the database
@@ -352,7 +370,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						name = "Xiaomi Motion Sensor";
 					}
 					else if (model == "switch") {
-						type = STYPE_PushOn;
+						type = STYPE_Selector;
 						name = "Xiaomi Wireless Switch";
 					}
 					else if (model == "magnet") {
@@ -369,18 +387,28 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 					if (type != STYPE_END) {
 						std::string status = root2["status"].asString();
 						bool on = false;
+						int level = 0;
 						if ((status == "motion") || (status == "open") || (status == "no_close") || (status == "on")) {
 							on = true;
 						}
 						else if ((status == "no_motion") || (status == "close") || (status == "off")) {
 							on = false;
 						}
+						else if ((status == "click")) {
+							level = 10;
+						}
+						else if ((status == "long_click_press") || (status == "long_click_release")) {
+							level = 20;
+						}
+						else if ((status == "double_click")) {
+							level = 30;
+						}
 						std::string battery = root2["battery"].asString();
 						if (battery != "") {
 							m_XiaomiGateway->InsertUpdateVoltage(sid.c_str(), name, atoi(battery.c_str()));
 						}
 						else {
-							m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, on, type);
+							m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, on, type, level);
 						}
 					}
 					else if (name == "Xiaomi Temperature/Humidity") {
