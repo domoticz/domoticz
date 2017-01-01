@@ -177,6 +177,7 @@ enum _eHardwareTypes {
 	HTYPE_PythonPlugin,			//94
 	HTYPE_XiaomiGateway,		//95
 	HTYPE_RaspberryBME280,		//96
+	HTYPE_Arilux,		//97
 	HTYPE_END
 };
 

@@ -126,8 +126,8 @@ define(['app'], function (app) {
 				(text.indexOf("Motherboard") >= 0) ||
 				(text.indexOf("Kodi Media") >= 0) ||
 				(text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0) ||
-                (text.indexOf("YeeLight") >= 0) ||
-                (text.indexOf("Xiaomi Gateway") >= 0)
+				(text.indexOf("YeeLight") >= 0) ||
+				(text.indexOf("AriLux AL-LC0x") >= 0) 
 				)
             {
 				// if hardwaretype == 1000 => I2C sensors grouping
@@ -294,8 +294,8 @@ define(['app'], function (app) {
                 });
             }
             else if (
-				(text.indexOf("LAN") >= 0 && ((text.indexOf("YouLess") >= 0)||(text.indexOf("Denkovi") >= 0)) ) ||
-				(text.indexOf("Satel Integra") >= 0) || (text.indexOf("Harmony") >= 0)
+					(text.indexOf("LAN") >= 0 && ((text.indexOf("YouLess") >= 0)||(text.indexOf("Denkovi") >= 0)) ) ||
+					(text.indexOf("Satel Integra") >= 0) || (text.indexOf("Harmony") >= 0) || (text.indexOf("Xiaomi Gateway") >= 0)
 				)
             {
                 var address=$("#hardwarecontent #divremote #tcpaddress").val();
@@ -1003,8 +1003,8 @@ define(['app'], function (app) {
 				(text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0) ||
 				(text.indexOf("Tellstick") >= 0) ||
 				(text.indexOf("Motherboard") >= 0) ||
-                (text.indexOf("YeeLight") >= 0) ||
-                (text.indexOf("Xiaomi Gateway") >= 0)
+				(text.indexOf("YeeLight") >= 0) ||               
+				(text.indexOf("Arilux AL-LC0x") >= 0)
 				)
             {
                 $.ajax({
@@ -1138,7 +1138,7 @@ define(['app'], function (app) {
             }
             else if (
 				(text.indexOf("LAN") >= 0 && ((text.indexOf("YouLess") >= 0) || (text.indexOf("Denkovi") >= 0) )) ||
-				(text.indexOf("Satel Integra") >= 0) || (text.indexOf("Harmony") >= 0)
+				(text.indexOf("Satel Integra") >= 0) || (text.indexOf("Harmony") >= 0) || (text.indexOf("Xiaomi Gateway") >= 0)
 				)
             {
                 var address=$("#hardwarecontent #divremote #tcpaddress").val();
@@ -4438,6 +4438,68 @@ define(['app'], function (app) {
             $( "#dialog-addyeelight" ).dialog( "open" );
         }
 
+        AddArilux = function (idx, name) {
+            $.devIdx = idx;
+
+            $("#dialog-addArilux").dialog({
+                autoOpen: false,
+                width: 420,
+                height: 250,
+                modal: true,
+                resizable: false,
+                buttons: {
+                    "OK": function () {
+                        var bValid = true;
+                        var SensorName = $("#dialog-addArilux #name").val();
+                        if (SensorName == "") {
+                            ShowNotify($.t('Please enter a Name!'), 2500, true);
+                            return;
+                        }
+                        var IPAddress = $("#dialog-addArilux #ipaddress").val();
+                        if (IPAddress == "") {
+                            ShowNotify($.t('Please enter a IP Address!'), 2500, true);
+                            return;
+                        }
+                        var SensorType = $("#dialog-addArilux #lighttype option:selected").val();
+                        if (typeof SensorType == 'undefined') {
+                            bootbox.alert($.t('No Light Type Selected!'));
+                            return;
+                        }
+                        $(this).dialog("close");
+                        $.ajax({
+                            url: "json.htm?type=command&param=addArilux&idx=" + $.devIdx +
+                               "&name=" + encodeURIComponent(SensorName) +
+                               "&ipaddress=" + encodeURIComponent(IPAddress) +
+                               "&stype=" + SensorType,
+                            async: false,
+                            dataType: 'json',
+                            success: function (data) {
+                                if (data.status == 'OK') {
+                                    ShowNotify($.t('Light created, and can be found in the devices tab!'), 2500);
+                                }
+                                else {
+                                    ShowNotify($.t('Problem adding Light!'), 2500, true);
+                                }
+                            },
+                            error: function () {
+                                HideNotify();
+                                ShowNotify($.t('Problem adding Light!'), 2500, true);
+                            }
+                        });
+                    },
+                    Cancel: function () {
+                        $(this).dialog("close");
+                    }
+                },
+                close: function () {
+                    $(this).dialog("close");
+                }
+            });
+
+            $("#dialog-addArilux").i18n();
+            $("#dialog-addArilux").dialog("open");
+        }
+
 		ReloadPiFace = function(idx,name)
         {
           $.post("reloadpiface.webem", { 'idx':idx }, function(data) {
@@ -4677,6 +4739,9 @@ define(['app'], function (app) {
                     else if (HwTypeStr.indexOf("Tellstick") >= 0) {
                         HwTypeStr += ' <span class="label label-info lcursor" onclick="TellstickSettings(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2 + ');">' + $.t("Settings") + '</span>';
                     }
+                    else if (HwTypeStr.indexOf("Arilux AL-LC0x") >= 0) {
+                        HwTypeStr += ' <span class="label label-info lcursor" onclick="AddArilux(' + item.idx + ',\'' + item.Name + '\');">' + $.t("Add Light") + '</span>';
+                    }
 
                     var sDataTimeout="";
                     if (item.DataTimeout==0) {
@@ -4786,14 +4851,16 @@ define(['app'], function (app) {
 			$.devExtra=data["Extra"];
 			UpdateHardwareParamControls();
 
-                        if ((data["Type"].indexOf("TE923") >= 0)||
-                           (data["Type"].indexOf("Volcraft") >= 0)||
-                           (data["Type"].indexOf("Dummy") >= 0)||
-                           (data["Type"].indexOf("System Alive") >= 0)||
-                           (data["Type"].indexOf("PiFace") >= 0)||
-                           (data["Type"].indexOf("Tellstick") >= 0) ||
-                           (data["Type"].indexOf("Yeelight") >= 0) ||
-                           (data["Type"].indexOf("Xiaomi Gateway") >= 0))
+                        if (
+							(data["Type"].indexOf("TE923") >= 0)||
+							(data["Type"].indexOf("Volcraft") >= 0)||
+							(data["Type"].indexOf("Dummy") >= 0)||
+							(data["Type"].indexOf("System Alive") >= 0)||
+							(data["Type"].indexOf("PiFace") >= 0)||
+							(data["Type"].indexOf("Tellstick") >= 0) ||
+							(data["Type"].indexOf("Yeelight") >= 0) ||                          
+							(data["Type"].indexOf("Arilux AL-LC0x") >= 0)
+                           )
                         {
                             //nothing to be set
                         }
@@ -4836,7 +4903,7 @@ define(['app'], function (app) {
                                 $("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked",data["Mode2"]==0);
                             }
                         }
-                        else if ((((data["Type"].indexOf("LAN") >= 0) || data["Type"].indexOf("MySensors Gateway with MQTT") >= 0) && (data["Type"].indexOf("YouLess") >= 0)) || (data["Type"].indexOf("Domoticz") >= 0) || (data["Type"].indexOf("Denkovi") >= 0) || (data["Type"].indexOf("Satel Integra") >= 0) || (data["Type"].indexOf("Logitech Media Server") >= 0) || (data["Type"].indexOf("HEOS by DENON") >= 0) ||(data["Type"].indexOf("MyHome OpenWebNet") >= 0)) {
+                                                else if ((((data["Type"].indexOf("LAN") >= 0) || data["Type"].indexOf("MySensors Gateway with MQTT") >= 0) && (data["Type"].indexOf("YouLess") >= 0)) || (data["Type"].indexOf("Domoticz") >= 0) || (data["Type"].indexOf("Denkovi") >= 0) || (data["Type"].indexOf("Satel Integra") >= 0) || (data["Type"].indexOf("Logitech Media Server") >= 0) || (data["Type"].indexOf("HEOS by DENON") >= 0) ||(data["Type"].indexOf("MyHome OpenWebNet") >= 0) || (data["Type"].indexOf("Xiaomi Gateway") >= 0)) {
                             $("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
                             $("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
                             $("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
@@ -5002,13 +5069,15 @@ define(['app'], function (app) {
 			$("#hardwarecontent #divpollinterval").hide();
             $("#hardwarecontent #divpythonplugin").hide();
 
-            if ((text.indexOf("TE923") >= 0)||
-               (text.indexOf("Volcraft") >= 0)||
-               (text.indexOf("Dummy") >= 0)||
-               (text.indexOf("System Alive") >= 0)||
-               (text.indexOf("PiFace") >= 0) ||
-               (text.indexOf("Yeelight") >= 0) ||
-               (text.indexOf("Xiaomi Gateway") >= 0))
+            if (
+				(text.indexOf("TE923") >= 0)||
+				(text.indexOf("Volcraft") >= 0)||
+				(text.indexOf("Dummy") >= 0)||
+				(text.indexOf("System Alive") >= 0)||
+				(text.indexOf("PiFace") >= 0) ||
+				(text.indexOf("Yeelight") >= 0) ||               
+				(text.indexOf("Arilux AL-LC0x") >= 0)
+               )
             {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").hide();
@@ -5060,7 +5129,7 @@ define(['app'], function (app) {
                     $("#hardwarecontent #divcrcp1").show();
                 }
             }
-            else if ((text.indexOf("LAN") >= 0 || text.indexOf("MySensors Gateway with MQTT") >= 0) && (text.indexOf("YouLess") >= 0 || text.indexOf("Denkovi") >= 0 || text.indexOf("Satel Integra") >= 0) )
+            else if ((text.indexOf("LAN") >= 0 || text.indexOf("MySensors Gateway with MQTT") >= 0) && (text.indexOf("YouLess") >= 0 || text.indexOf("Denkovi") >= 0 || text.indexOf("Satel Integra") >= 0) || (text.indexOf("Xiaomi Gateway") >= 0))
             {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").show();
@@ -5163,8 +5232,8 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divlogin").hide();
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
-            }
-            else if (text.indexOf("Xiaomi Gateway") >= 0) {
+            }            
+            else if (text.indexOf("Arilux AL-LC0x") >= 0) {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").hide();
                 $("#hardwarecontent #divlogin").hide();

@@ -125,6 +125,10 @@
 		<Product type="0002" id="0070" name="ZW112 Door Window Sensor 6" config="aeotec/zw112.xml" />
 		<Product type="0102" id="0070" name="ZW112 Door Window Sensor 6" config="aeotec/zw112.xml" />
 		<Product type="0202" id="0070" name="ZW112 Door Window Sensor 6" config="aeotec/zw112.xml" />
+		<Product type="0003" id="0074" name="ZW116 Nano Switch" config="aeotec/zw116.xml"/>
+		<Product type="0103" id="0074" name="ZW116 Nano Switch" config="aeotec/zw116.xml"/>
+		<Product type="0203" id="0074" name="ZW116 Nano Switch" config="aeotec/zw116.xml"/>
+		<Product type="1d03" id="0074" name="ZW116 Nano Switch" config="aeotec/zw116.xml"/>
 		<Product type="0004" id="0075" name="ZW117 Range Extender 6" config="aeotec/zw117.xml"/>
 		<Product type="0104" id="0075" name="ZW117 Range Extender 6" config="aeotec/zw117.xml"/>
 		<Product type="0204" id="0075" name="ZW117 Range Extender 6" config="aeotec/zw117.xml"/>
@@ -795,7 +799,7 @@
 		<Product type="0202" id="8031" name="ZTS-110" config="remotec/zts-110.xml" />
 	</Manufacturer>
 	<Manufacturer id="0010" name="RCS">
-        <Product type="0001" id="0002" name="TZ43 Thermostat" />
+        <Product type="0001" id="0002" name="TZ43 Thermostat" config="rcs/therm0009.xml" />
         <Product type="0001" id="0005" name="TZ43-IHD SMUD Thermostat" config="rcs/therm0005.xml" />
         <Product type="0001" id="0007" name="TZ45-IHD SMUD Thermostat" config="rcs/therm0007.xml" />
         <Product type="0001" id="0009" name="TZ45 Thermostat" config="rcs/therm0009.xml" />

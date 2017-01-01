@@ -244,6 +244,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_PythonPlugin, "Python Plugin System" },
 		{ HTYPE_XiaomiGateway, "Xiaomi Gateway" },
 		{ HTYPE_RaspberryBME280, "I2C sensor BME280 Temp+Hum+Baro" },
+		{ HTYPE_Arilux, "Arilux AL-LC0x" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -817,6 +818,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchTypeForest, "Forest" },
 		{ pTypeGeneralSwitch, sSwitchBlindsT1, "Legrand MyHome Blind" },
 		{ pTypeGeneralSwitch, sSwitchLightT1, "Legrand MyHome Light" },
+		{ pTypeGeneralSwitch, sSwitchAuxiliaryT1, "Legrand MyHome Auxiliary" },
 		{ pTypeGeneralSwitch, sSwitchMC145026, "MC145026" },
 		{ pTypeGeneralSwitch, sSwitchLobeco, "Lobeco" },
 		{ pTypeGeneralSwitch, sSwitchFriedland, "Friedland" },

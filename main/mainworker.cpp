@@ -110,6 +110,7 @@
 #include "../hardware/Yeelight.h"
 #include "../hardware/XiaomiGateway.h"
 #include "../hardware/plugins/Plugins.h"
+#include "../hardware/Arilux.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -840,7 +841,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_RaspberryPCF8574:
 		pHardware = new I2C(ID, I2C::I2CTYPE_PCF8574, Port);
-		break; 
+		break;
 	case HTYPE_RaspberryBME280:
 		pHardware = new I2C(ID, I2C::I2CTYPE_BME280, 0);
 		break;
@@ -960,6 +961,9 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_XiaomiGateway:
 		pHardware = new XiaomiGateway(ID);
 		break;
+	case HTYPE_Arilux:	
+		pHardware = new Arilux(ID);
+		break;	
 	}
 
 	if (pHardware)
@@ -6304,7 +6308,7 @@ void MainWorker::decode_evohome3(const int HwdID, const _eHardwareTypes HwdType,
 			return;
 		unsigned char cur_cmnd=atoi(result[0][5].c_str());
 		BatteryLevel = atoi(result[0][7].c_str());
-		
+
 		if (pEvo->EVOHOME3.updatetype == CEvohome::updBattery)
 		{
 			BatteryLevel = pEvo->EVOHOME3.battery_level;
@@ -10974,7 +10978,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			else
 			{
 				lcmd.BLINDS1.unitcode = 0;
-			}	
+			}
 			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.BLINDS1.cmnd, options))
 				return false;
 			level=15;

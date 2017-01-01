@@ -36,7 +36,7 @@
 #include <frameobject.h>
 #include "DelayedLink.h"
 
-#define MINIMUM_PYTHON_VERSION "3.4.0"
+#define MINIMUM_PYTHON_VERSION "3.2.0"
 
 #define ATTRIBUTE_VALUE(pElement, Name, Value) \
 		{	\
@@ -535,42 +535,58 @@ namespace Plugins {
 	{
 		CDevice *self = (CDevice *)type->tp_alloc(type, 0);
 
-		if (self != NULL) {
-			self->PluginKey = pythonLib->PyUnicode_FromString("");
-			if (self->PluginKey == NULL) {
-				Py_DECREF(self);
-				return NULL;
+		try
+		{
+			if (self == NULL) {
+				_log.Log(LOG_ERROR, "%s: Self is NULL.", __func__);
 			}
-			self->HwdID = -1;
-			self->DeviceID = pythonLib->PyUnicode_FromString("");
-			if (self->DeviceID == NULL) {
-				Py_DECREF(self);
-				return NULL;
+			else {
+//				_log.Log(LOG_NORM, "CPlugin:%s, calling PyUnicode_FromString.", __func__);
+				self->PluginKey = pythonLib->PyUnicode_FromString("");
+//				_log.Log(LOG_NORM, "CPlugin:%s, PyUnicode_FromString returned.", __func__);
+				if (self->PluginKey == NULL) {
+					Py_DECREF(self);
+					return NULL;
+				}
+				self->HwdID = -1;
+				self->DeviceID = pythonLib->PyUnicode_FromString("");
+				if (self->DeviceID == NULL) {
+					Py_DECREF(self);
+					return NULL;
+				}
+				self->Unit = -1;
+				self->Type = 0;
+				self->SubType = 0;
+				self->SwitchType = 0;
+				self->ID = -1;
+				self->LastLevel;
+				self->Name = pythonLib->PyUnicode_FromString("");
+				if (self->Name == NULL) {
+					Py_DECREF(self);
+					return NULL;
+				}
+				self->nValue = 0;
+				self->sValue = pythonLib->PyUnicode_FromString("");
+				if (self->sValue == NULL) {
+					Py_DECREF(self);
+					return NULL;
+				}
+				self->Options = pythonLib->PyUnicode_FromString("");
+				if (self->Options == NULL) {
+					Py_DECREF(self);
+					return NULL;
+				}
+				self->Image = 0;
+				self->pPlugin = NULL;
 			}
-			self->Unit = -1;
-			self->Type = 0;
-			self->SubType = 0;
-			self->SwitchType = 0;
-			self->ID = -1;
-			self->LastLevel;
-			self->Name = pythonLib->PyUnicode_FromString("");
-			if (self->Name == NULL) {
-				Py_DECREF(self);
-				return NULL;
-			}
-			self->nValue = 0;
-			self->sValue = pythonLib->PyUnicode_FromString("");
-			if (self->sValue == NULL) {
-				Py_DECREF(self);
-				return NULL;
-			}
-			self->Options = pythonLib->PyUnicode_FromString("");
-			if (self->Options == NULL) {
-				Py_DECREF(self);
-				return NULL;
-			}
-			self->Image = 0;
-			self->pPlugin = NULL;
+		}
+		catch (std::exception e)
+		{
+			_log.Log(LOG_ERROR, "%s: Execption thrown: %s", __func__, e.what());
+		}
+		catch (...)
+		{
+			_log.Log(LOG_ERROR, "%s: Unknown execption thrown", __func__);
 		}
 
 		return (PyObject *)self;
@@ -587,53 +603,64 @@ namespace Plugins {
 		char*		Options = NULL;
 		static char *kwlist[] = { "Name", "Unit", "Type", "Subtype", "Switchtype", "Image", "Options", NULL };
 
-		PyObject*	pModule = PyState_FindModule(&DomoticzModuleDef);
-		if (!pModule)
+		try
 		{
-			_log.Log(LOG_ERROR, "CPlugin:CDevice_init, unable to find module for current interpreter.");
-			return 0;
-		}
-
-		module_state*	pModState = ((struct module_state*)PyModule_GetState(pModule));
-		if (!pModState)
-		{
-			_log.Log(LOG_ERROR, "CPlugin:CDevice_init, unable to obtain module state.");
-			return 0;
-		}
-
-		if (!pModState->pPlugin)
-		{
-			_log.Log(LOG_ERROR, "CPlugin:CDevice_init, illegal operation, Plugin has not started yet.");
-			return 0;
-		}
-
-		if (PyArg_ParseTupleAndKeywords(args, kwds, "si|iiiis", kwlist, &Name, &Unit, &Type, &SubType, &SwitchType, &Image, &Options))
-		{
-			self->pPlugin = pModState->pPlugin;
-			self->PluginKey = pythonLib->PyUnicode_FromString(pModState->pPlugin->m_PluginKey.c_str());
-			self->HwdID = pModState->pPlugin->m_HwdID;
-			if (Name) {
-				Py_DECREF(self->Name);
-				self->Name = pythonLib->PyUnicode_FromString(Name);
+			PyObject*	pModule = PyState_FindModule(&DomoticzModuleDef);
+			if (!pModule)
+			{
+				_log.Log(LOG_ERROR, "CPlugin:%s, unable to find module for current interpreter.", __func__);
+				return 0;
 			}
-			if (Unit != -1) self->Unit = Unit;
-			if (Type != -1) self->Type = Type;
-			if (SubType != -1) self->SubType = SubType;
-			if (SwitchType != -1) self->SwitchType = SwitchType;
-			if (Image != -1) self->Image = Image;
-			if (Options) {
-				Py_DECREF(self->Options);
-				self->Options = pythonLib->PyUnicode_FromString(Options);
+
+			module_state*	pModState = ((struct module_state*)PyModule_GetState(pModule));
+			if (!pModState)
+			{
+				_log.Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);
+				return 0;
+			}
+
+			if (!pModState->pPlugin)
+			{
+				_log.Log(LOG_ERROR, "CPlugin:%s, illegal operation, Plugin has not started yet.", __func__);
+				return 0;
+			}
+
+			if (PyArg_ParseTupleAndKeywords(args, kwds, "si|iiiis", kwlist, &Name, &Unit, &Type, &SubType, &SwitchType, &Image, &Options))
+			{
+				self->pPlugin = pModState->pPlugin;
+				self->PluginKey = pythonLib->PyUnicode_FromString(pModState->pPlugin->m_PluginKey.c_str());
+				self->HwdID = pModState->pPlugin->m_HwdID;
+				if (Name) {
+					Py_DECREF(self->Name);
+					self->Name = pythonLib->PyUnicode_FromString(Name);
+				}
+				if (Unit != -1) self->Unit = Unit;
+				if (Type != -1) self->Type = Type;
+				if (SubType != -1) self->SubType = SubType;
+				if (SwitchType != -1) self->SwitchType = SwitchType;
+				if (Image != -1) self->Image = Image;
+				if (Options) {
+					Py_DECREF(self->Options);
+					self->Options = pythonLib->PyUnicode_FromString(Options);
+				}
+			}
+			else
+			{
+				CPlugin* pPlugin = NULL;
+				if (pModState) pPlugin = pModState->pPlugin;
+				LogPythonException(pPlugin, __func__);
+				_log.Log(LOG_ERROR, "Expected: myVar = Domoticz.Device(Name=\"myDevice\", Unit=0, Type=0, Subtype=0, Switchtype=0, Image=0, Options=\"\")");
 			}
 		}
-		else
+		catch (std::exception e)
 		{
-			CPlugin* pPlugin = NULL;
-			if (pModState) pPlugin = pModState->pPlugin;
-			LogPythonException(pPlugin, "CDevice_init");
-			_log.Log(LOG_ERROR, "Expected: myVar = Domoticz.Device(Name=\"myDevice\", Unit=0, Type=0, Subtype=0, Switchtype=0, Image=0, Options=\"\")");
-			
+			_log.Log(LOG_ERROR, "%s: Execption thrown: %s", __func__, e.what());
 		}
+		catch (...)
+		{
+			_log.Log(LOG_ERROR, "%s: Unknown execption thrown", __func__);
+		}
+
 		return 0;
 	}
 
@@ -722,7 +749,7 @@ namespace Plugins {
 			PyObject*	pNameBytes = pythonLib->PyUnicode_AsASCIIString(self->Name);
 			if (!PyArg_ParseTuple(args, "is", &nValue, &sValue))
 			{
-				_log.Log(LOG_ERROR, "(%s) CDevice_update: failed to parse parameters: integer, string expected.", PyBytes_AsString(pNameBytes));
+				_log.Log(LOG_ERROR, "(%s) %s: failed to parse parameters: integer, string expected.", __func__, PyBytes_AsString(pNameBytes));
 				Py_DECREF(pNameBytes);
 				return NULL;
 			}
@@ -883,6 +910,17 @@ namespace Plugins {
 		}
 	}
 
+	void CPluginProtocol::Flush(const int HwdID)
+	{
+		// Forced buffer clear, make sure the plugin gets a look at the data in case it wants it
+		CPluginMessage	Message(PMT_Message, HwdID, m_sRetainedData);
+		{
+			boost::lock_guard<boost::mutex> l(PluginMutex);
+			PluginMessageQueue.push(Message);
+		}
+		m_sRetainedData.clear();
+	}
+
 	void CPluginProtocolLine::ProcessMessage(const int HwdID, std::string & ReadData)
 	{
 		//
@@ -962,24 +1000,38 @@ namespace Plugins {
 				if (!m_Tag.length())
 				{
 					int iStart = sData.find_first_of('<');
-					int iEnd = sData.find_first_of(" >");
-					if ((iStart != std::string::npos) && (iEnd != std::string::npos))
+					if (iStart == std::string::npos)
 					{
-						m_Tag = sData.substr(++iStart, (iEnd - iStart));
-						sData = sData.substr(--iStart);					// remove any leading data
+						// start of a tag not found so discard
+						m_sRetainedData.clear();
+						break;
+					}
+					sData = sData.substr(iStart);					// remove any leading data
+					int iEnd = sData.find_first_of('>');
+					if (iEnd != std::string::npos)
+					{
+						m_Tag = sData.substr(1, (iEnd - 1));
 					}
 				}
 
-				int	iEnd = sData.find("/" + m_Tag);
-				if (iEnd != std::string::npos)
+				int	iPos = sData.find("</" + m_Tag + ">");
+				if (iPos != std::string::npos)
 				{
-					CPluginMessage	Message(PMT_Message, HwdID, sData.substr(0, iEnd + m_Tag.length() + 2));
+					int iEnd = iPos + m_Tag.length() + 3;
+					CPluginMessage	Message(PMT_Message, HwdID, sData.substr(0, iEnd));
 					{
 						boost::lock_guard<boost::mutex> l(PluginMutex);
 						PluginMessageQueue.push(Message);
 					}
 
-					sData = sData.substr(iEnd + m_Tag.length() + 2);
+					if (iEnd == sData.length())
+					{
+						sData.clear();
+					}
+					else
+					{
+						sData = sData.substr(++iEnd);
+					}
 					m_Tag = "";
 				}
 				else
@@ -988,7 +1040,7 @@ namespace Plugins {
 		}
 		catch (std::exception const &exc)
 		{
-			_log.Log(LOG_ERROR, "(CPluginProtocolXML::ProcessMessage) Unexpected exception thrown '%s', Data '%s'.", exc.what(), ReadData.c_str());
+			_log.Log(LOG_ERROR, "(CPluginProtocolXML::ProcessMessage) Unexpected exception thrown '%s', Data '%s'.", exc.what(), sData.c_str());
 		}
 
 		m_sRetainedData = sData; // retain any residual for next time
@@ -1636,6 +1688,10 @@ namespace Plugins {
 				{
 					m_pTransport->handleDisconnect();
 				}
+				if (m_pProtocol)
+				{
+					m_pProtocol->Flush(m_HwdID);
+				}
 				break;
 			default:
 				_log.Log(LOG_ERROR, "(%s) Unknown directive type in message: %d.", Name.c_str(), Message.m_Directive);
@@ -1681,24 +1737,35 @@ namespace Plugins {
 			return;
 		}
 
-		if (m_PyInterpreter) PyEval_RestoreThread((PyThreadState*)m_PyInterpreter);
-		if (m_PyModule && sHandler.length())
+		try
 		{
-			PyObject*	pFunc = PyObject_GetAttrString((PyObject*)m_PyModule, sHandler.c_str());
-			if (pFunc && PyCallable_Check(pFunc))
+			if (m_PyInterpreter) PyEval_RestoreThread((PyThreadState*)m_PyInterpreter);
+			if (m_PyModule && sHandler.length())
 			{
-				if (m_bDebug) _log.Log(LOG_NORM, "(%s) Calling message handler '%s'.", Name.c_str(), sHandler.c_str());
-
-				PyErr_Clear();
-				PyObject*	pReturnValue = PyObject_CallObject(pFunc, pParams);
-				if (!pReturnValue)
+				PyObject*	pFunc = PyObject_GetAttrString((PyObject*)m_PyModule, sHandler.c_str());
+				if (pFunc && PyCallable_Check(pFunc))
 				{
-					LogPythonException(sHandler);
+					if (m_bDebug) _log.Log(LOG_NORM, "(%s) Calling message handler '%s'.", Name.c_str(), sHandler.c_str());
+
+					PyErr_Clear();
+					PyObject*	pReturnValue = PyObject_CallObject(pFunc, pParams);
+					if (!pReturnValue)
+					{
+						LogPythonException(sHandler);
+					}
 				}
 			}
-		}
 
-		Py_XDECREF(pParams);
+			Py_XDECREF(pParams);
+		}
+		catch (std::exception e)
+		{
+			_log.Log(LOG_ERROR, "%s: Execption thrown: %s", __func__, e.what());
+		}
+		catch (...)
+		{
+			_log.Log(LOG_ERROR, "%s: Unknown execption thrown", __func__);
+		}
 
 		if (Message.m_Type == PMT_Stop)
 		{
@@ -1871,6 +1938,7 @@ namespace Plugins {
 	}
 
 	std::map<int, CDomoticzHardwareBase*>	CPluginSystem::m_pPlugins;
+	std::map<std::string, std::string>		CPluginSystem::m_PluginXml;
 
 	CPluginSystem::CPluginSystem() : m_stoprequested(false)
 	{
@@ -1896,7 +1964,7 @@ namespace Plugins {
 
 		if (!Py_LoadLibrary())
 		{
-			_log.Log(LOG_STATUS, "PluginSystem: Failed dynamic library load, Python not found on your system.");
+			_log.Log(LOG_STATUS, "PluginSystem: Failed dynamic library load, install the latest libpython3.x library that is available for your platform.");
 			return false;
 		}
 
@@ -1950,18 +2018,17 @@ namespace Plugins {
 
 	void CPluginSystem::BuildManifest()
 	{
-		Json::Value root;
 		//
 		//	Scan plugins folder and load XML plugin manifests
 		//
-		int		iPluginCnt = root.size();
+		m_PluginXml.clear();
 		std::stringstream plugin_DirT;
 #ifdef WIN32
 		plugin_DirT << szUserDataFolder << "plugins\\";
 		std::string plugin_Dir = plugin_DirT.str();
 		if (!mkdir(plugin_Dir.c_str()))
 		{
-			_log.Log(LOG_NORM, "BuildManifest: Created directory %s", plugin_Dir.c_str());
+			_log.Log(LOG_NORM, "%s: Created directory %s", __func__, plugin_Dir.c_str());
 		}
 #else
 		plugin_DirT << szUserDataFolder << "plugins/";
@@ -1976,10 +2043,6 @@ namespace Plugins {
 		if ((lDir = opendir(plugin_Dir.c_str())) != NULL)
 		{
 			std::stringstream	FileName;
-			std::ofstream writeFile;
-			FileName << plugin_DirT.str() << "manifest.xml";
-			writeFile.open(FileName.str().c_str(), std::ofstream::out | std::ofstream::trunc);
-			writeFile << "<plugins>" << std::endl;
 			while ((ent = readdir(lDir)) != NULL)
 			{
 				std::string filename = ent->d_name;
@@ -1989,6 +2052,7 @@ namespace Plugins {
 					{
 						try
 						{
+							std::string sXML;
 							std::stringstream	FileName;
 							FileName << plugin_DirT.str() << filename;
 							std::string line;
@@ -1999,26 +2063,25 @@ namespace Plugins {
 									pluginFound = true;
 								if (pluginFound)
 								{
-									writeFile << "\t" << line << std::endl;
+									sXML += line + "\n";
 								}
 								if (line.find("</plugin>") != std::string::npos)
 									break;
 							}
 							readFile.close();
+							m_PluginXml.insert(std::pair<std::string, std::string>(FileName.str(), sXML));
 						}
 						catch (...)
 						{
-							_log.Log(LOG_ERROR, "BuildManifest: Exception loading plugin file: '%s'", filename.c_str());
+							_log.Log(LOG_ERROR, "%s: Exception loading plugin file: '%s'", __func__, filename.c_str());
 						}
 					}
 				}
 			}
-			writeFile << "</plugins>" << std::endl;
-			writeFile.close();
 			closedir(lDir);
 		}
 		else {
-			_log.Log(LOG_ERROR, "BuildManifest: Error accessing plugins directory %s", plugin_Dir.c_str());
+			_log.Log(LOG_ERROR, "%s: Error accessing plugins directory %s", __func__, plugin_Dir.c_str());
 		}
 	}
 
@@ -2157,112 +2220,77 @@ namespace http {
 	namespace server {
 		void CWebServer::PluginList(Json::Value &root)
 		{
-			//
-			//	Scan plugins folder and load XML plugin manifests
-			//
 			int		iPluginCnt = root.size();
-			std::stringstream plugin_DirT;
-#ifdef WIN32
-			plugin_DirT << szUserDataFolder << "plugins\\";
-#else
-			plugin_DirT << szUserDataFolder << "plugins/";
-#endif
-			std::string plugin_Dir = plugin_DirT.str();
-			DIR *lDir;
-			struct dirent *ent;
-			if ((lDir = opendir(plugin_Dir.c_str())) != NULL)
+			Plugins::CPluginSystem Plugins;
+			std::map<std::string, std::string>*	PluginXml = Plugins.GetManifest();
+			for (std::map<std::string, std::string>::iterator it_type = PluginXml->begin(); it_type != PluginXml->end(); it_type++)
 			{
-				while ((ent = readdir(lDir)) != NULL)
+				TiXmlDocument	XmlDoc;
+				XmlDoc.Parse(it_type->second.c_str());
+				if (XmlDoc.Error())
 				{
-					std::string filename = ent->d_name;
-					if (dirent_is_file(plugin_Dir, ent))
+					_log.Log(LOG_ERROR, "%s: Error '%s' at line %d column %d in XML '%s'.", __func__, XmlDoc.ErrorDesc(), XmlDoc.ErrorRow(), XmlDoc.ErrorCol(), it_type->second.c_str());
+				}
+				else
+				{
+					TiXmlNode* pXmlNode = XmlDoc.FirstChild("plugin");
+					for (pXmlNode; pXmlNode; pXmlNode = pXmlNode->NextSiblingElement())
 					{
-						if (filename.find("manifest.xml") != std::string::npos) 
+						TiXmlElement* pXmlEle = pXmlNode->ToElement();
+						if (pXmlEle)
 						{
-							try
+							root[iPluginCnt]["idx"] = HTYPE_PythonPlugin;
+							ATTRIBUTE_VALUE(pXmlEle, "key", root[iPluginCnt]["key"]);
+							ATTRIBUTE_VALUE(pXmlEle, "name", root[iPluginCnt]["name"]);
+							ATTRIBUTE_VALUE(pXmlEle, "author", root[iPluginCnt]["author"]);
+							ATTRIBUTE_VALUE(pXmlEle, "wikilink", root[iPluginCnt]["wikiURL"]);
+							ATTRIBUTE_VALUE(pXmlEle, "externallink", root[iPluginCnt]["externalURL"]);
+
+							TiXmlNode* pXmlParamsNode = pXmlEle->FirstChild("params");
+							int	iParams = 0;
+							if (pXmlParamsNode) pXmlParamsNode = pXmlParamsNode->FirstChild("param");
+							for (pXmlParamsNode; pXmlParamsNode; pXmlParamsNode = pXmlParamsNode->NextSiblingElement())
 							{
-								std::stringstream	XmlDocName;
-								XmlDocName << plugin_DirT.str() << filename;
-								_log.Log(LOG_NORM, "Cmd_PluginList: Loading plugin manifest: '%s'", XmlDocName.str().c_str());
-								TiXmlDocument	XmlDoc = TiXmlDocument(XmlDocName.str().c_str());
-								if (!XmlDoc.LoadFile(TIXML_ENCODING_UNKNOWN))
+								// <params>
+								//		<param field = "Address" label = "IP/Address" width = "100px" required = "true" default = "127.0.0.1" / >
+								TiXmlElement* pXmlEle = pXmlParamsNode->ToElement();
+								if (pXmlEle)
 								{
-									_log.Log(LOG_ERROR, "Cmd_PluginList: Plugin manifest: '%s'. Error '%s' at line %d column %d.", XmlDocName.str().c_str(), XmlDoc.ErrorDesc(), XmlDoc.ErrorRow(), XmlDoc.ErrorCol());
-								}
-								else
-								{
-									TiXmlNode* pXmlNode = XmlDoc.FirstChild("plugins");
-									if (pXmlNode) pXmlNode = pXmlNode->FirstChild("plugin");
-									for (pXmlNode; pXmlNode; pXmlNode = pXmlNode->NextSiblingElement())
+									ATTRIBUTE_VALUE(pXmlEle, "field", root[iPluginCnt]["parameters"][iParams]["field"]);
+									ATTRIBUTE_VALUE(pXmlEle, "label", root[iPluginCnt]["parameters"][iParams]["label"]);
+									ATTRIBUTE_VALUE(pXmlEle, "width", root[iPluginCnt]["parameters"][iParams]["width"]);
+									ATTRIBUTE_VALUE(pXmlEle, "required", root[iPluginCnt]["parameters"][iParams]["required"]);
+									ATTRIBUTE_VALUE(pXmlEle, "default", root[iPluginCnt]["parameters"][iParams]["default"]);
+
+									TiXmlNode* pXmlOptionsNode = pXmlEle->FirstChild("options");
+									int	iOptions = 0;
+									if (pXmlOptionsNode) pXmlOptionsNode = pXmlOptionsNode->FirstChild("option");
+									for (pXmlOptionsNode; pXmlOptionsNode; pXmlOptionsNode = pXmlOptionsNode->NextSiblingElement())
 									{
-										TiXmlElement* pXmlEle = pXmlNode->ToElement();
+										// <options>
+										//		<option label="Hibernate" value="1" default="true" />
+										TiXmlElement* pXmlEle = pXmlOptionsNode->ToElement();
 										if (pXmlEle)
 										{
-											root[iPluginCnt]["idx"] = HTYPE_PythonPlugin;
-											ATTRIBUTE_VALUE(pXmlEle, "key", root[iPluginCnt]["key"]);
-											ATTRIBUTE_VALUE(pXmlEle, "name", root[iPluginCnt]["name"]);
-											ATTRIBUTE_VALUE(pXmlEle, "author", root[iPluginCnt]["author"]);
-											ATTRIBUTE_VALUE(pXmlEle, "wikilink", root[iPluginCnt]["wikiURL"]);
-											ATTRIBUTE_VALUE(pXmlEle, "externallink", root[iPluginCnt]["externalURL"]);
-
-											TiXmlNode* pXmlParamsNode = pXmlEle->FirstChild("params");
-											int	iParams = 0;
-											if (pXmlParamsNode) pXmlParamsNode = pXmlParamsNode->FirstChild("param");
-											for (pXmlParamsNode; pXmlParamsNode; pXmlParamsNode = pXmlParamsNode->NextSiblingElement())
+											std::string sDefault;
+											ATTRIBUTE_VALUE(pXmlEle, "label", root[iPluginCnt]["parameters"][iParams]["options"][iOptions]["label"]);
+											ATTRIBUTE_VALUE(pXmlEle, "value", root[iPluginCnt]["parameters"][iParams]["options"][iOptions]["value"]);
+											ATTRIBUTE_VALUE(pXmlEle, "default", sDefault);
+											if (sDefault == "true")
 											{
-												// <params>
-												//		<param field = "Address" label = "IP/Address" width = "100px" required = "true" default = "127.0.0.1" / >
-												TiXmlElement* pXmlEle = pXmlParamsNode->ToElement();
-												if (pXmlEle)
-												{
-													ATTRIBUTE_VALUE(pXmlEle, "field",    root[iPluginCnt]["parameters"][iParams]["field"]);
-													ATTRIBUTE_VALUE(pXmlEle, "label",    root[iPluginCnt]["parameters"][iParams]["label"]);
-													ATTRIBUTE_VALUE(pXmlEle, "width",    root[iPluginCnt]["parameters"][iParams]["width"]);
-													ATTRIBUTE_VALUE(pXmlEle, "required", root[iPluginCnt]["parameters"][iParams]["required"]);
-													ATTRIBUTE_VALUE(pXmlEle, "default",  root[iPluginCnt]["parameters"][iParams]["default"]);
-
-													TiXmlNode* pXmlOptionsNode = pXmlEle->FirstChild("options");
-													int	iOptions = 0;
-													if (pXmlOptionsNode) pXmlOptionsNode = pXmlOptionsNode->FirstChild("option");
-													for (pXmlOptionsNode; pXmlOptionsNode; pXmlOptionsNode = pXmlOptionsNode->NextSiblingElement())
-													{
-														// <options>
-														//		<option label="Hibernate" value="1" default="true" />
-														TiXmlElement* pXmlEle = pXmlOptionsNode->ToElement();
-														if (pXmlEle)
-														{
-															std::string sDefault;
-															ATTRIBUTE_VALUE(pXmlEle, "label", root[iPluginCnt]["parameters"][iParams]["options"][iOptions]["label"]);
-															ATTRIBUTE_VALUE(pXmlEle, "value", root[iPluginCnt]["parameters"][iParams]["options"][iOptions]["value"]);
-															ATTRIBUTE_VALUE(pXmlEle, "default", sDefault);
-															if (sDefault == "true")
-															{
-																root[iPluginCnt]["parameters"][iParams]["options"][iOptions]["default"] = sDefault;
-															}
-															iOptions++;
-														}
-													}
-													iParams++;
-												}
+												root[iPluginCnt]["parameters"][iParams]["options"][iOptions]["default"] = sDefault;
 											}
-											iPluginCnt++;
+											iOptions++;
 										}
 									}
+									iParams++;
 								}
 							}
-							catch (...)
-							{
-								_log.Log(LOG_ERROR, "Cmd_PluginList: Exeception loading plugin manifest: '%s'", filename.c_str());
-							}
-							break;
+							iPluginCnt++;
 						}
 					}
 				}
-				closedir(lDir);
-			}
-			else {
-				_log.Log(LOG_ERROR, "Cmd_PluginList: Error accessing plugins directory %s", plugin_Dir.c_str());
-			}
+			}  
 		}
 	}
 }

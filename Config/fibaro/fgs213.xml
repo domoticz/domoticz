@@ -159,6 +159,98 @@
       <Item label="Turn OFF" value="2"/>
       <Item label="Flash" value="3"/>
     </Value>
+    <Value type="list" genre="config" instance="1" index="41" label="Reaction to Flood Alarm" value="2" size="1">
+      <Help>This parameter determines how the device will react to Flood Alarm frame.</Help>
+      <Item label="Ignored" value="0"/>
+      <Item label="Turn On" value="1"/>
+      <Item label="Turn OFF" value="2"/>
+      <Item label="Flash" value="3"/>
+    </Value>
+    <Value type="list" genre="config" instance="1" index="42" label="Reaction to CO/CO2/Smoke Alarm" value="3" size="1">
+      <Help>This parameter determines how the device will react to CO/CO2/Smoke Alarm frame.</Help>
+      <Item label="Ignored" value="0"/>
+      <Item label="Turn On" value="1"/>
+      <Item label="Turn OFF" value="2"/>
+      <Item label="Flash" value="3"/>
+    </Value>
+    <Value type="list" genre="config" instance="1" index="43" label="Reaction to Heat Alarm" value="1" size="1">
+      <Help>This parameter determines how the device will react to Heat alarm frame.</Help>
+      <Item label="Ignored" value="0"/>
+      <Item label="Turn On" value="1"/>
+      <Item label="Turn OFF" value="2"/>
+      <Item label="Flash" value="3"/>
+    </Value>
+    <Value type="short" genre="config" instance="1" index="44" label="Flashing alarm duration" value="600" min="1" max="32000" size="2">
+      <Help>
+        This parameter allows to set duration of flashing alarm mode
+        1-32000 (0.1-32000s, 1s step) Default: 600 (10min)
+      </Help>
+    </Value>
+    <Value type="short" genre="config" instance="1" index="50" label="First channel - power reports" value="20" min="1" max="100" size="1">
+      <Help>
+        This parameter determines the minimum change in consumed power
+        that will result in sending new power report to the main controller.
+        1-100 (%) Default 20 (20%)
+      </Help>
+    </Value>
+    <Value type="short" genre="config" instance="1" index="51" label="First channel - minimal time between power reports" value="10" min="1" max="120" size="1">
+      <Help>
+        This parameter determines minimum time that has to elapse before
+        sending new power report to the main controller.
+        1-120 (s) Default 10 (10s)
+      </Help>
+    </Value>
+    <Value type="short" genre="config" instance="1" index="53" label="First channel - energy reports" value="100" min="1" max="32000" size="2">
+      <Help>
+        This parameter determines the minimum change in consumed energy
+        that will result in sending new energy report to the main controller
+        1-32000 (0.01-320 kWh) Default 100 (1kWh)
+      </Help>
+    </Value>
+    <Value type="short" genre="config" instance="1" index="54" label="Second Channel - power reports" value="20" min="1" max="100" size="1">
+      <Help>
+        This parameter determines the minimum change in consumed power
+        that will result in sending new power report to the main controller.
+        1-100 (%) Default 20 (20%)
+      </Help>
+    </Value>
+    <Value type="short" genre="config" instance="1" index="55" label="Second channel - minimal time between power reports" value="10" min="1" max="120" size="1">
+      <Help>
+        This parameter determines minimum time that has to elapse before
+        sending new power report to the main controller.
+        1-120 (s) Default 10 (10s)
+      </Help>
+    </Value>
+    <Value type="short" genre="config" instance="1" index="57" label="Second channel - energy reports" value="100" min="1" max="32000" size="2">
+      <Help>
+        This parameter determines the minimum change in consumed energy
+        that will result in sending new energy report to the main controller
+        1-32000 (0.01-320 kWh) Default 100 (1kWh)
+      </Help>
+    </Value>
+    <Value type="short" genre="config" instance="1" index="58" label="Periodic power reports" value="3600" min="1" max="32000" size="2">
+      <Help>
+        This parameter determines in what time interval the periodic
+        power reports are sent to the main controller.
+        1-32000 (s) Default 3600 (1h)
+      </Help>
+    </Value>
+    <Value type="short" genre="config" instance="1" index="59" label="Periodic energy reports" value="3600" min="1" max="32000" size="2">
+      <Help>
+        This parameter determines in what time interval the periodic
+        power reports are sent to the main controller.
+        1-32000 (s) Default 3600 (1h)
+      </Help>
+    </Value>
+    <Value type="list" genre="config" instance="1" index="60" label="Measuring energy consumed by the device itself" value="0" size="1">
+      <Help>
+        This parameter determines whether energy metering should include
+        the amount of energy consumed by the device itself. Results are
+        being added to energy reports for first endpoint.
+      </Help>
+      <Item label="function inactive" value="0"/>
+      <Item label="function active" value="1"/>
+    </Value>
   </CommandClass>
   <!-- -->
   <CommandClass id="96" mapping="endpoints"/>
