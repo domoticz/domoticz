@@ -3574,9 +3574,6 @@ std::string CEventSystem::nValueToWording(const unsigned char dType, const unsig
 	bool bHaveDimmer = false;
 	bool bHaveGroupCmd = false;
 	int maxDimLevel = 0;
-    	//OJO: added ss, temp  for set lstatus tu nValue in case lstatus empty
-    	std::stringstream ss;
-    	unsigned temp;
 	GetLightStatus(dType, dSubType, switchtype,nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 /*
 	if (lstatus.find("Set Level") == 0)
@@ -3672,12 +3669,12 @@ std::string CEventSystem::nValueToWording(const unsigned char dType, const unsig
 	else if (lstatus == "")
 	{
 		lstatus = sValue;
-	//OJO if lstatus  is still empty we use nValue for lstatus.
+		//OJO if lstatus  is still empty we use nValue for lstatus. ss for conversion
+		std::stringstream ss;
         	lstatus = sValue;
         	if (lstatus == "")
         	{
-           		temp = nValue;
-           		ss << temp;
+			ss << (unsigned int)nValue;
            		lstatus = ss.str();
         	}		
 	}
