@@ -33,6 +33,10 @@ XiaomiGateway::~XiaomiGateway(void)
 bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char length)
 {
 	_tGeneralSwitch *xcmd = (_tGeneralSwitch*)pdata;
+	if (xcmd->subtype == sSwitchTypeSelector) {
+		//_log.Log(LOG_STATUS, "WriteToHardware: Ignoring sSwitchTypeSelector");
+		return true;
+	}
 	char szTmp[50];
 	sprintf(szTmp, "%08X", (unsigned int)xcmd->id);
 	std::string ID = szTmp;
@@ -59,7 +63,6 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 	}
 	std::string gatewaykey = GetGatewayKey();
 	std::string message = "{\"cmd\":\"write\",\"model\":\"plug\",\"sid\":\"" + sid + "\",\"short_id\":9844,\"data\":\"{\\\"channel_0\\\":\\\"" + command + "\\\",\\\"key\\\":\\\"" + gatewaykey + "\\\"}\" }";
-
 	boost::asio::io_service io_service;
 	boost::asio::ip::udp::socket socket_(io_service, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 0));
 	boost::shared_ptr<std::string> message1(new std::string(message));
@@ -308,8 +311,6 @@ std::string XiaomiGateway::GetGatewayKey()
 		sprintf(&gatewaykey[i * 2], "%02X", ciphertext[i]);
 	}
 
-	//EVP_cleanup();
-	//ERR_free_strings();
 	return gatewaykey;
 }
 
