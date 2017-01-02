@@ -36,7 +36,7 @@
 #include <frameobject.h>
 #include "DelayedLink.h"
 
-#define MINIMUM_PYTHON_VERSION "3.2.0"
+#define MINIMUM_PYTHON_VERSION "3.4.0"
 
 #define ATTRIBUTE_VALUE(pElement, Name, Value) \
 		{	\
