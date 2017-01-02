@@ -8,6 +8,7 @@
 #include "../main/mainworker.h"
 #include "../main/RFXtrx.h"
 #include "../main/SQLHelper.h"
+#include "../webserver/Base64.h"
 #include "../main/WebServer.h"
 #include "../webserver/cWebem.h"
 #define __STDC_FORMAT_MACROS
@@ -147,10 +148,17 @@ void CDataPush::DoFibaroPush()
 				std::stringstream sPostData;
 				std::stringstream Url;
 				std::vector<std::string> ExtraHeaders;
-					sendValue = CURLEncode::URLEncode(sendValue);
+
+				// Create basic authentication header
+				std::stringstream sstr;
+				sstr << fibaroUsername << ":" << fibaroPassword;
+				std::string m_AccessToken = base64_encode((const unsigned char *)(sstr.str().c_str()), strlen(sstr.str().c_str()));
+				ExtraHeaders.push_back("Authorization:Basic " + m_AccessToken);
+
+				sendValue = CURLEncode::URLEncode(sendValue);
 					
 				if (targetType==0) {
-					Url << "http://" << fibaroUsername << ":" << fibaroPassword << "@" << fibaroIP << "/api/globalVariables";
+					Url << "http://" << fibaroIP << "/api/globalVariables";
 
 					if (bIsV4)
 						Url << "/" << targetVariable;
@@ -172,22 +180,22 @@ void CDataPush::DoFibaroPush()
 					}
 				}	
 				else if (targetType==1) {
-					Url << "http://" << fibaroUsername << ":" << fibaroPassword << "@" << fibaroIP << "/api/callAction?deviceid=" << targetDeviceID << "&name=setProperty&arg1=" << targetProperty << "&arg2=" << sendValue;
+					Url << "http://" << fibaroIP << "/api/callAction?deviceid=" << targetDeviceID << "&name=setProperty&arg1=" << targetProperty << "&arg2=" << sendValue;
 					if (fibaroDebugActive) {
 						_log.Log(LOG_NORM,"FibaroLink: sending value %s to property %s of virtual device id %d",sendValue.c_str(),targetProperty.c_str(),targetDeviceID);
 					}
-					if (!HTTPClient::GET(Url.str(),sResult))
+					if (!HTTPClient::GET(Url.str(), ExtraHeaders, sResult))
 					{
 						_log.Log(LOG_ERROR,"Error sending data to Fibaro!");
 					}
 				}
 				else if (targetType==2) {
 					if (((delpos==0)&&(lstatus=="Off"))||((delpos==1)&&(lstatus=="On"))) {
-						Url << "http://" << fibaroUsername << ":" << fibaroPassword << "@" << fibaroIP << "/api/sceneControl?id=" << targetDeviceID << "&action=start";
+						Url << "http://" << fibaroIP << "/api/sceneControl?id=" << targetDeviceID << "&action=start";
 						if (fibaroDebugActive) {
 							_log.Log(LOG_NORM,"FibaroLink: activating scene %d",targetDeviceID);
 						}
-						if (!HTTPClient::GET(Url.str(),sResult))
+						if (!HTTPClient::GET(Url.str(), ExtraHeaders, sResult))
 						{
 							_log.Log(LOG_ERROR,"Error sending data to Fibaro!");
 						}
@@ -195,7 +203,7 @@ void CDataPush::DoFibaroPush()
 				}
 				else if (targetType==3) {
 					if (((delpos==0)&&(lstatus=="Off"))||((delpos==1)&&(lstatus=="On"))) {
-						Url << "http://" << fibaroUsername << ":" << fibaroPassword << "@" << fibaroIP << "/api/settings/reboot";
+						Url << "http://" << fibaroIP << "/api/settings/reboot";
 						if (fibaroDebugActive) {
 							_log.Log(LOG_NORM,"FibaroLink: reboot");
 						}
