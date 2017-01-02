@@ -101,7 +101,7 @@ namespace Plugins {
 		}
 		if (pValue)
 		{
-			pErrBytes = (PyBytesObject*)pythonLib->PyUnicode_AsASCIIString(pValue);
+			pErrBytes = (PyBytesObject*)PyUnicode_AsASCIIString(pValue);
 		}
 		if (pTypeText && pErrBytes)
 		{
@@ -129,8 +129,8 @@ namespace Plugins {
 			{
 				int lineno = PyFrame_GetLineNumber(frame);
 				PyCodeObject*	pCode = frame->f_code;
-				PyBytesObject*	pFileBytes = (PyBytesObject*)pythonLib->PyUnicode_AsASCIIString(pCode->co_filename);
-				PyBytesObject*	pFuncBytes = (PyBytesObject*)pythonLib->PyUnicode_AsASCIIString(pCode->co_name);
+				PyBytesObject*	pFileBytes = (PyBytesObject*)PyUnicode_AsASCIIString(pCode->co_filename);
+				PyBytesObject*	pFuncBytes = (PyBytesObject*)PyUnicode_AsASCIIString(pCode->co_name);
 				_log.Log(LOG_ERROR, "(%s) ----> Line %d in %s, function %s", Name.c_str(), lineno, pFileBytes->ob_sval, pFuncBytes->ob_sval);
 				Py_XDECREF(pFileBytes);
 				Py_XDECREF(pFuncBytes);
@@ -541,15 +541,13 @@ namespace Plugins {
 				_log.Log(LOG_ERROR, "%s: Self is NULL.", __func__);
 			}
 			else {
-//				_log.Log(LOG_NORM, "CPlugin:%s, calling PyUnicode_FromString.", __func__);
-				self->PluginKey = pythonLib->PyUnicode_FromString("");
-//				_log.Log(LOG_NORM, "CPlugin:%s, PyUnicode_FromString returned.", __func__);
+				self->PluginKey = PyUnicode_FromString("");
 				if (self->PluginKey == NULL) {
 					Py_DECREF(self);
 					return NULL;
 				}
 				self->HwdID = -1;
-				self->DeviceID = pythonLib->PyUnicode_FromString("");
+				self->DeviceID = PyUnicode_FromString("");
 				if (self->DeviceID == NULL) {
 					Py_DECREF(self);
 					return NULL;
@@ -560,18 +558,18 @@ namespace Plugins {
 				self->SwitchType = 0;
 				self->ID = -1;
 				self->LastLevel;
-				self->Name = pythonLib->PyUnicode_FromString("");
+				self->Name = PyUnicode_FromString("");
 				if (self->Name == NULL) {
 					Py_DECREF(self);
 					return NULL;
 				}
 				self->nValue = 0;
-				self->sValue = pythonLib->PyUnicode_FromString("");
+				self->sValue = PyUnicode_FromString("");
 				if (self->sValue == NULL) {
 					Py_DECREF(self);
 					return NULL;
 				}
-				self->Options = pythonLib->PyUnicode_FromString("");
+				self->Options = PyUnicode_FromString("");
 				if (self->Options == NULL) {
 					Py_DECREF(self);
 					return NULL;
@@ -628,11 +626,11 @@ namespace Plugins {
 			if (PyArg_ParseTupleAndKeywords(args, kwds, "si|iiiis", kwlist, &Name, &Unit, &Type, &SubType, &SwitchType, &Image, &Options))
 			{
 				self->pPlugin = pModState->pPlugin;
-				self->PluginKey = pythonLib->PyUnicode_FromString(pModState->pPlugin->m_PluginKey.c_str());
+				self->PluginKey = PyUnicode_FromString(pModState->pPlugin->m_PluginKey.c_str());
 				self->HwdID = pModState->pPlugin->m_HwdID;
 				if (Name) {
 					Py_DECREF(self->Name);
-					self->Name = pythonLib->PyUnicode_FromString(Name);
+					self->Name = PyUnicode_FromString(Name);
 				}
 				if (Unit != -1) self->Unit = Unit;
 				if (Type != -1) self->Type = Type;
@@ -641,7 +639,7 @@ namespace Plugins {
 				if (Image != -1) self->Image = Image;
 				if (Options) {
 					Py_DECREF(self->Options);
-					self->Options = pythonLib->PyUnicode_FromString(Options);
+					self->Options = PyUnicode_FromString(Options);
 				}
 			}
 			else
@@ -682,7 +680,7 @@ namespace Plugins {
 	{
 		if (self->pPlugin)
 		{
-			PyObject*	pNameBytes = pythonLib->PyUnicode_AsASCIIString(self->Name);
+			PyObject*	pNameBytes = PyUnicode_AsASCIIString(self->Name);
 			if (self->ID == -1)
 			{
 				if (self->pPlugin->m_bDebug)
@@ -696,7 +694,7 @@ namespace Plugins {
 				{
 					char szID[40];
 					sprintf(szID, "%X%02X%02X%02X", 0, 0, (self->HwdID & 0xFF00) >> 8, self->HwdID & 0xFF);
-					PyObject*	pOptionBytes = pythonLib->PyUnicode_AsASCIIString(self->Options);
+					PyObject*	pOptionBytes = PyUnicode_AsASCIIString(self->Options);
 					std::string	sLongName = self->pPlugin->Name + " - " + PyBytes_AsString(pNameBytes);
 					m_sql.safe_query(
 						"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue, CustomImage, Options) "
@@ -746,7 +744,7 @@ namespace Plugins {
 		{
 			int			nValue;
 			char*		sValue;
-			PyObject*	pNameBytes = pythonLib->PyUnicode_AsASCIIString(self->Name);
+			PyObject*	pNameBytes = PyUnicode_AsASCIIString(self->Name);
 			if (!PyArg_ParseTuple(args, "is", &nValue, &sValue))
 			{
 				_log.Log(LOG_ERROR, "(%s) %s: failed to parse parameters: integer, string expected.", __func__, PyBytes_AsString(pNameBytes));
@@ -756,12 +754,12 @@ namespace Plugins {
 
 			if (self->pPlugin->m_bDebug)
 			{
-				PyObject*	pValueBytes = pythonLib->PyUnicode_AsASCIIString(self->sValue);
+				PyObject*	pValueBytes = PyUnicode_AsASCIIString(self->sValue);
 				_log.Log(LOG_NORM, "(%s) Updating device from %d:'%s' to have values %d:'%s'.",
 					std::string(PyBytes_AsString(pNameBytes)).c_str(), self->nValue, std::string(PyBytes_AsString(pValueBytes)).c_str(), nValue, sValue);
 				Py_DECREF(pValueBytes);
 			}
-			PyObject*	pDeviceBytes = pythonLib->PyUnicode_AsASCIIString(self->DeviceID);
+			PyObject*	pDeviceBytes = PyUnicode_AsASCIIString(self->DeviceID);
 			std::string	sName = PyBytes_AsString(pNameBytes);
 			m_sql.UpdateValue(self->HwdID, std::string(PyBytes_AsString(pDeviceBytes)).c_str(), (const unsigned char)self->Unit, (const unsigned char)self->Type, (const unsigned char)self->SubType, 100, 255, nValue, std::string(sValue).c_str(), sName, true);
 			Py_DECREF(pNameBytes);
@@ -769,11 +767,57 @@ namespace Plugins {
 
 			self->nValue = nValue;
 			Py_DECREF(self->sValue);
-			self->sValue = pythonLib->PyUnicode_FromString(sValue);
+			self->sValue = PyUnicode_FromString(sValue);
 		}
 		else
 		{
 			_log.Log(LOG_ERROR, "Device update failed, Device object is not associated with a plugin.");
+		}
+
+		Py_INCREF(Py_None);
+		return Py_None;
+	}
+
+	static PyObject* CDevice_delete(CDevice* self, PyObject *args)
+	{
+		if (self->pPlugin)
+		{
+			PyObject*	pNameBytes = PyUnicode_AsASCIIString(self->Name);
+			if (self->ID != -1)
+			{
+				if (self->pPlugin->m_bDebug)
+				{
+					_log.Log(LOG_NORM, "(%s) Deleting device '%s'.", self->pPlugin->Name.c_str(), std::string(PyBytes_AsString(pNameBytes)).c_str());
+				}
+
+				std::vector<std::vector<std::string> > result;
+				result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", self->HwdID, self->Unit);
+				if (result.size() != 0)
+				{
+					result = m_sql.safe_query("DELETE FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", self->HwdID, self->Unit);
+
+					PyObject*	pKey = PyLong_FromLong(self->Unit);
+					if (PyDict_DelItem((PyObject*)self->pPlugin->m_DeviceDict, pKey) == -1)
+					{
+						_log.Log(LOG_ERROR, "(%s) failed to delete unit '%d' from device dictionary.", self->pPlugin->Name.c_str(), self->Unit);
+						Py_INCREF(Py_None);
+						return Py_None;
+					}
+				}
+				else
+				{
+					_log.Log(LOG_ERROR, "(%s) Device deletion failed, Hardware/Unit combination (%d:%d) not found in Domoticz.", self->pPlugin->Name.c_str(), self->HwdID, self->Unit);
+				}
+			}
+			else
+			{
+				_log.Log(LOG_ERROR, "(%s) Device deletion failed, '%s' does not represent a device in Domoticz.", self->pPlugin->Name.c_str(), std::string(PyBytes_AsString(pNameBytes)).c_str());
+			}
+			Py_DECREF(pNameBytes);
+		}
+		else
+		{
+			_log.Log(LOG_ERROR, "Device deletion failed, Device object is not associated with a plugin.");
 		}
 
 		Py_INCREF(Py_None);
@@ -785,7 +829,7 @@ namespace Plugins {
 		if (self->pPlugin)
 		{
 			int			icon;
-			PyObject*	pNameBytes = pythonLib->PyUnicode_AsASCIIString(self->Name);
+			PyObject*	pNameBytes = PyUnicode_AsASCIIString(self->Name);
 			if (!PyArg_ParseTuple(args, "i", &icon))
 			{
 				_log.Log(LOG_ERROR, "(%s) CDevice_seticon: failed to parse parameters: integer expected.", PyBytes_AsString(pNameBytes));
@@ -817,9 +861,9 @@ namespace Plugins {
 
 	static PyObject* CDevice_str(CDevice* self)
 	{
-		PyObject*	pNameBytes = pythonLib->PyUnicode_AsASCIIString(self->Name);
-		PyObject*	pValueBytes = pythonLib->PyUnicode_AsASCIIString(self->sValue);
-		PyObject*	pRetVal = pythonLib->PyUnicode_FromFormat("ID: %d, Name: '%s', nValue: %d, sValue: '%s'", self->ID, PyBytes_AsString(pNameBytes), self->nValue, PyBytes_AsString(pValueBytes));
+		PyObject*	pNameBytes = PyUnicode_AsASCIIString(self->Name);
+		PyObject*	pValueBytes = PyUnicode_AsASCIIString(self->sValue);
+		PyObject*	pRetVal = PyUnicode_FromFormat("ID: %d, Name: '%s', nValue: %d, sValue: '%s'", self->ID, PyBytes_AsString(pNameBytes), self->nValue, PyBytes_AsString(pValueBytes));
 		Py_DECREF(pNameBytes);
 		Py_DECREF(pValueBytes);
 		return pRetVal;
@@ -827,8 +871,9 @@ namespace Plugins {
 
 	static PyMethodDef CDevice_methods[] = {
 		{ "Refresh", (PyCFunction)CDevice_refresh, METH_NOARGS, "Refresh device details"},
-		{ "Create", (PyCFunction)CDevice_insert, METH_NOARGS, "Create a device in Domoticz." },
+		{ "Create", (PyCFunction)CDevice_insert, METH_NOARGS, "Create the device in Domoticz." },
 		{ "Update", (PyCFunction)CDevice_update, METH_VARARGS, "Update the device values in Domoticz." },
+		{ "Delete", (PyCFunction)CDevice_delete, METH_NOARGS, "Delete the device in Domoticz." },
 		{ "Image", (PyCFunction)CDevice_seticon, METH_VARARGS, "Set the device image in Domoticz." },
 		{ NULL }  /* Sentinel */
 	};
@@ -1348,14 +1393,14 @@ namespace Plugins {
 		if (pValue)
 		{
 			std::string			sError;
-			pErrBytes = (PyBytesObject*)pythonLib->PyUnicode_AsASCIIString(pValue);	// Won't normally return text for Import related errors
+			pErrBytes = (PyBytesObject*)PyUnicode_AsASCIIString(pValue);	// Won't normally return text for Import related errors
 			if (!pErrBytes)
 			{
 				// ImportError has name and path attributes
 				if (PyObject_HasAttrString(pValue, "path"))
 				{
 					PyObject*		pString = PyObject_GetAttrString(pValue, "path");
-					PyBytesObject*	pBytes = (PyBytesObject*)pythonLib->PyUnicode_AsASCIIString(pString);
+					PyBytesObject*	pBytes = (PyBytesObject*)PyUnicode_AsASCIIString(pString);
 					if (pBytes)
 					{
 						sError += "Path: ";
@@ -1367,7 +1412,7 @@ namespace Plugins {
 				if (PyObject_HasAttrString(pValue, "name"))
 				{
 					PyObject*		pString = PyObject_GetAttrString(pValue, "name");
-					PyBytesObject*	pBytes = (PyBytesObject*)pythonLib->PyUnicode_AsASCIIString(pString);
+					PyBytesObject*	pBytes = (PyBytesObject*)PyUnicode_AsASCIIString(pString);
 					if (pBytes)
 					{
 						sError += " Name: ";
@@ -1386,7 +1431,7 @@ namespace Plugins {
 				if (PyObject_HasAttrString(pValue, "filename"))
 				{
 					PyObject*		pString = PyObject_GetAttrString(pValue, "filename");
-					PyBytesObject*	pBytes = (PyBytesObject*)pythonLib->PyUnicode_AsASCIIString(pString);
+					PyBytesObject*	pBytes = (PyBytesObject*)PyUnicode_AsASCIIString(pString);
 					sError += "File: ";
 					sError += pBytes->ob_sval;
 					Py_XDECREF(pString);
@@ -1416,7 +1461,7 @@ namespace Plugins {
 				if (PyObject_HasAttrString(pExcept, "text"))
 				{
 					PyObject*		pString = PyObject_GetAttrString(pValue, "text");
-					PyBytesObject*	pBytes = (PyBytesObject*)pythonLib->PyUnicode_AsASCIIString(pString);
+					PyBytesObject*	pBytes = (PyBytesObject*)PyUnicode_AsASCIIString(pString);
 					_log.Log(LOG_ERROR, "(%s) Error Line '%s'", Name.c_str(), pBytes->ob_sval);
 					Py_XDECREF(pString);
 					Py_XDECREF(pBytes);
@@ -1459,7 +1504,7 @@ namespace Plugins {
 		}
 		if (pValue)
 		{
-			pErrBytes = (PyBytesObject*)pythonLib->PyUnicode_AsASCIIString(pValue);
+			pErrBytes = (PyBytesObject*)PyUnicode_AsASCIIString(pValue);
 		}
 		if (pTypeText && pErrBytes)
 		{
@@ -1487,8 +1532,8 @@ namespace Plugins {
 			{
 				int lineno = PyFrame_GetLineNumber(frame);
 				PyCodeObject*	pCode = frame->f_code;
-				PyBytesObject*	pFileBytes = (PyBytesObject*)pythonLib->PyUnicode_AsASCIIString(pCode->co_filename);
-				PyBytesObject*	pFuncBytes = (PyBytesObject*)pythonLib->PyUnicode_AsASCIIString(pCode->co_name);
+				PyBytesObject*	pFileBytes = (PyBytesObject*)PyUnicode_AsASCIIString(pCode->co_filename);
+				PyBytesObject*	pFuncBytes = (PyBytesObject*)PyUnicode_AsASCIIString(pCode->co_name);
 				_log.Log(LOG_ERROR, "(%s) ----> Line %d in %s, function %s", Name.c_str(), lineno, pFileBytes->ob_sval, pFuncBytes->ob_sval);
 				Py_XDECREF(pFileBytes);
 				Py_XDECREF(pFuncBytes);
@@ -1900,14 +1945,14 @@ namespace Plugins {
 					return false;
 				}
 				pDevice->pPlugin = this;
-				pDevice->PluginKey = pythonLib->PyUnicode_FromString(m_PluginKey.c_str());
+				pDevice->PluginKey = PyUnicode_FromString(m_PluginKey.c_str());
 				pDevice->HwdID = m_HwdID;
 				pDevice->Unit = atoi(sd[0].c_str());
 				pDevice->ID = atoi(sd[1].c_str());
-				pDevice->Name = pythonLib->PyUnicode_FromString(sd[2].c_str());
+				pDevice->Name = PyUnicode_FromString(sd[2].c_str());
 				pDevice->nValue = atoi(sd[3].c_str());
-				pDevice->sValue = pythonLib->PyUnicode_FromString(sd[4].c_str());
-				pDevice->DeviceID = pythonLib->PyUnicode_FromString(sd[5].c_str());
+				pDevice->sValue = PyUnicode_FromString(sd[4].c_str());
+				pDevice->DeviceID = PyUnicode_FromString(sd[5].c_str());
 				pDevice->Type = atoi(sd[6].c_str());
 				pDevice->SubType = atoi(sd[7].c_str());
 				pDevice->SwitchType = atoi(sd[8].c_str());

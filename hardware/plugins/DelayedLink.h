@@ -54,6 +54,7 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyDict_New, );
 		DECLARE_PYTHON_SYMBOL(int, PyDict_SetItemString, PyObject* COMMA const char* COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(int, PyDict_SetItem, PyObject* COMMA PyObject* COMMA PyObject*);
+		DECLARE_PYTHON_SYMBOL(int, PyDict_DelItem, PyObject* COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(void*, PyModule_GetState, PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyState_FindModule, struct PyModuleDef*);
 		DECLARE_PYTHON_SYMBOL(void, PyErr_Clear, );
@@ -88,24 +89,18 @@ namespace Plugins {
 			if (!shared_lib_) {
 #ifdef WIN32
 #	ifdef DEBUG
-				shared_lib_ = LoadLibrary("python36_d.dll");
+				if (!shared_lib_) shared_lib_ = LoadLibrary("python36_d.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python35_d.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python34_d.dll");
-				if (!shared_lib_) shared_lib_ = LoadLibrary("python33_d.dll");
-				if (!shared_lib_) shared_lib_ = LoadLibrary("python32_d.dll");
 #	else
-				shared_lib_ = LoadLibrary("python36.dll");
+				if (!shared_lib_) shared_lib_ = LoadLibrary("python36.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python35.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python34.dll");
-				if (!shared_lib_) shared_lib_ = LoadLibrary("python33.dll");
-				if (!shared_lib_) shared_lib_ = LoadLibrary("python32.dll");
 #	endif
 #else
-				FindLibrary("python3.6", true);
+				if (!shared_lib_) FindLibrary("python3.6", true);
 				if (!shared_lib_) FindLibrary("python3.5", true);
 				if (!shared_lib_) FindLibrary("python3.4", true);
-				if (!shared_lib_) FindLibrary("python3.3", true);
-				if (!shared_lib_) FindLibrary("python3.2", true);
 #endif
 				if (shared_lib_)
 				{
@@ -133,6 +128,7 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyDict_New);
 					RESOLVE_PYTHON_SYMBOL(PyDict_SetItemString);
 					RESOLVE_PYTHON_SYMBOL(PyDict_SetItem);
+					RESOLVE_PYTHON_SYMBOL(PyDict_DelItem);
 					RESOLVE_PYTHON_SYMBOL(PyModule_GetState);
 					RESOLVE_PYTHON_SYMBOL(PyState_FindModule);
 					RESOLVE_PYTHON_SYMBOL(PyErr_Clear);
@@ -205,6 +201,22 @@ namespace Plugins {
 						sLibraryMDir += "m/";
 						FindLibrary(sLibraryMDir.c_str(), false);
 					}
+					// look in /usr/local/lib directories
+					if (!shared_lib_)
+					{
+						std::string	sLibraryDir = "/usr/local/lib/";
+						sLibraryDir += szLibrary;
+						sLibraryDir += "/";
+						FindLibrary(sLibraryDir.c_str(), false);
+					}
+					// look in /usr/local/lib directories but 'm' variant
+					if (!shared_lib_)
+					{
+						std::string	sLibraryMDir = "/usr/local/lib/";
+						sLibraryMDir += szLibrary;
+						sLibraryMDir += "m/";
+						FindLibrary(sLibraryMDir.c_str(), false);
+					}
 				}
 				else
 				{
@@ -258,16 +270,16 @@ namespace Plugins {
 #define	PyObject_GetAttrString	pythonLib->PyObject_GetAttrString
 #define	PyObject_HasAttrString	pythonLib->PyObject_HasAttrString
 #define	PyBytes_AsString		pythonLib->PyBytes_AsString
-// Python 3.2.3 has defined these as macros so we can't redefine them here
-//#define PyUnicode_AsASCIIString pythonLib->PyUnicode_AsASCIIString
-//#define PyUnicode_FromString	pythonLib->PyUnicode_FromString
-//#define PyUnicode_FromFormat	pythonLib->PyUnicode_FromFormat
+#define PyUnicode_AsASCIIString pythonLib->PyUnicode_AsASCIIString
+#define PyUnicode_FromString	pythonLib->PyUnicode_FromString
+#define PyUnicode_FromFormat	pythonLib->PyUnicode_FromFormat
 #define PyLong_FromLong			pythonLib->PyLong_FromLong
 #define PyLong_AsLongLong		pythonLib->PyLong_AsLongLong
 #define PyModule_GetDict		pythonLib->PyModule_GetDict
 #define PyDict_New				pythonLib->PyDict_New
 #define PyDict_SetItemString	pythonLib->PyDict_SetItemString
 #define PyDict_SetItem			pythonLib->PyDict_SetItem
+#define PyDict_DelItem			pythonLib->PyDict_DelItem
 #define PyModule_GetState		pythonLib->PyModule_GetState
 #define PyState_FindModule		pythonLib->PyState_FindModule
 #define PyErr_Clear				pythonLib->PyErr_Clear
