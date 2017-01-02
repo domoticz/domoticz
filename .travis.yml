@@ -31,6 +31,8 @@ matrix:
   include:
   # Linux x86_64
   - os: linux
+    dist: trusty
+    sudo: required
     compiler:
       - gcc
     env: TARGET_ARCHITECTURE=x86_64
