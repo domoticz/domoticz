@@ -3670,10 +3670,9 @@ std::string CEventSystem::nValueToWording(const unsigned char dType, const unsig
 	{
 		lstatus = sValue;
 		//OJO if lstatus  is still empty we use nValue for lstatus. ss for conversion
-		std::stringstream ss;
-        	lstatus = sValue;
         	if (lstatus == "")
         	{
+			std::stringstream ss;
 			ss << (unsigned int)nValue;
            		lstatus = ss.str();
         	}		
