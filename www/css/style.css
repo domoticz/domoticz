@@ -597,6 +597,7 @@ ul.style6 .first {
 	background: url(images/img09.png) no-repeat right top;
 }
 
+
 body table#itemtable,
 body table#itemtablenotype,
 body table#itemtablenostatus,
@@ -1078,7 +1079,6 @@ body table#itemtablesmall tbody tr:hover{
 body table#itemtablesmall tr:hover td:first-child{
 	border-color: #2B2C74;
 	color: #0D0D1F;
-	background-color: #D4D5EE;
 }
 
 /* Item Table Double Icon */
@@ -2782,3 +2782,8 @@ tspan{
 	font-size: 0.9em;
 }
 
+/* Item statuses */
+div.itemstatus_ok table tr td#name {background-color: #d4e1ee;}
+div.itemstatus_timeout table tr td#name {background-color: #df2d3a;}
+div.itemstatus_lowbattery table tr td#name {background-color: #dddf2d;}
+div.itemstatus_protected table tr td#name {background-color: #a4b1ee;}
