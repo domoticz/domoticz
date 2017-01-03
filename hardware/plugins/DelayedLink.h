@@ -48,6 +48,7 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(const char*, PyBytes_AsString, PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyUnicode_AsASCIIString, PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyUnicode_FromString, const char*);
+		DECLARE_PYTHON_SYMBOL(wchar_t*, PyUnicode_AsWideCharString, PyObject* COMMA Py_ssize_t*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyLong_FromLong, long);
 		DECLARE_PYTHON_SYMBOL(PY_LONG_LONG, PyLong_AsLongLong, PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyModule_GetDict, PyObject*);
@@ -75,6 +76,7 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(int, PyArg_ParseTupleAndKeywords, PyObject* COMMA PyObject* COMMA const char* COMMA char*[] COMMA ...);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyUnicode_FromFormat, const char* COMMA ...);
 		DECLARE_PYTHON_SYMBOL(PyObject*, Py_BuildValue, const char* COMMA ...);
+		DECLARE_PYTHON_SYMBOL(void, PyMem_Free, void*);
 
 #ifdef DEBUG
 		// In a debug build dealloc is a function but for release builds its a macro
@@ -122,6 +124,7 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyBytes_AsString);
 					RESOLVE_PYTHON_SYMBOL(PyUnicode_AsASCIIString);
 					RESOLVE_PYTHON_SYMBOL(PyUnicode_FromString);
+					RESOLVE_PYTHON_SYMBOL(PyUnicode_AsWideCharString);
 					RESOLVE_PYTHON_SYMBOL(PyLong_FromLong);
 					RESOLVE_PYTHON_SYMBOL(PyLong_AsLongLong);
 					RESOLVE_PYTHON_SYMBOL(PyModule_GetDict);
@@ -149,6 +152,7 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyArg_ParseTupleAndKeywords);
 					RESOLVE_PYTHON_SYMBOL(PyUnicode_FromFormat);
 					RESOLVE_PYTHON_SYMBOL(Py_BuildValue);
+					RESOLVE_PYTHON_SYMBOL(PyMem_Free);
 #ifdef DEBUG
 					RESOLVE_PYTHON_SYMBOL(_Py_Dealloc);
 #endif
@@ -173,7 +177,6 @@ namespace Plugins {
 						sLibrary += szLibrary;
 						sLibrary += ".so";
 						shared_lib_ = dlopen(sLibrary.c_str(), RTLD_LAZY | RTLD_GLOBAL);
-//						if (shared_lib_) _log.Log(LOG_STATUS, "(%s) Loaded.", sLibrary.c_str());
 
 					}
 					// look in directories covered by ldconfig but 'm' variant
@@ -183,7 +186,6 @@ namespace Plugins {
 						sLibraryM += szLibrary;
 						sLibraryM += "m.so";
 						shared_lib_ = dlopen(sLibraryM.c_str(), RTLD_LAZY | RTLD_GLOBAL);
-//						if (shared_lib_) _log.Log(LOG_STATUS, "(%s) Loaded.", sLibraryM.c_str());
 					}
 					// look in /usr/lib directories
 					if (!shared_lib_)
@@ -201,21 +203,22 @@ namespace Plugins {
 						sLibraryMDir += "m/";
 						FindLibrary(sLibraryMDir.c_str(), false);
 					}
-					// look in /usr/local/lib directories
+					// look in /usr/local/lib directory (handles build from source)
 					if (!shared_lib_)
 					{
-						std::string	sLibraryDir = "/usr/local/lib/";
-						sLibraryDir += szLibrary;
-						sLibraryDir += "/";
-						FindLibrary(sLibraryDir.c_str(), false);
+						std::string sLibrary = "/usr/local/lib/lib";
+						sLibrary += szLibrary;
+						sLibrary += ".so";
+						shared_lib_ = dlopen(sLibrary.c_str(), RTLD_LAZY | RTLD_GLOBAL);
+
 					}
-					// look in /usr/local/lib directories but 'm' variant
+					// look in /usr/local/lib directory (handles build from source) but 'm' variant
 					if (!shared_lib_)
 					{
-						std::string	sLibraryMDir = "/usr/local/lib/";
-						sLibraryMDir += szLibrary;
-						sLibraryMDir += "m/";
-						FindLibrary(sLibraryMDir.c_str(), false);
+						std::string sLibraryM = "/usr/local/lib/lib";
+						sLibraryM += szLibrary;
+						sLibraryM += "m.so";
+						shared_lib_ = dlopen(sLibraryM.c_str(), RTLD_LAZY | RTLD_GLOBAL);
 					}
 				}
 				else
@@ -240,7 +243,6 @@ namespace Plugins {
 								{
 									std::string sLibFile = szLibrary + filename;
 									shared_lib_ = dlopen(sLibFile.c_str(), RTLD_LAZY | RTLD_GLOBAL);
-//									_log.Log(LOG_STATUS, "(%s) Loaded.", sLibFile.c_str());
 								}
 							}
 						}
@@ -273,6 +275,7 @@ namespace Plugins {
 #define PyUnicode_AsASCIIString pythonLib->PyUnicode_AsASCIIString
 #define PyUnicode_FromString	pythonLib->PyUnicode_FromString
 #define PyUnicode_FromFormat	pythonLib->PyUnicode_FromFormat
+#define PyUnicode_AsWideCharString	pythonLib->PyUnicode_AsWideCharString
 #define PyLong_FromLong			pythonLib->PyLong_FromLong
 #define PyLong_AsLongLong		pythonLib->PyLong_AsLongLong
 #define PyModule_GetDict		pythonLib->PyModule_GetDict
@@ -292,6 +295,7 @@ namespace Plugins {
 #define _PyObject_New			pythonLib->_PyObject_New
 #define PyArg_ParseTuple		pythonLib->PyArg_ParseTuple
 #define Py_BuildValue			pythonLib->Py_BuildValue
+#define PyMem_Free				pythonLib->PyMem_Free
 #ifdef DEBUG
 #	define PyModule_Create2TraceRefs pythonLib->PyModule_Create2TraceRefs
 #else
