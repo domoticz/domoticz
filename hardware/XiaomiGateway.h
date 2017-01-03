@@ -42,7 +42,7 @@ private:
 	private:
 		boost::asio::ip::udp::socket socket_;
 		boost::asio::ip::udp::endpoint remote_endpoint_;
-		enum { max_length = 512 };
+		enum { max_length = 1024 };
 		char data_[max_length];
 		int m_HardwareID;
 		std::string m_gatewayip;
