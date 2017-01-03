@@ -348,7 +348,8 @@ void XiaomiGateway::xiaomi_udp_server::start_receive()
 
 void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error_code & error, std::size_t bytes_recvd)
 {
-	//_log.Log(LOG_STATUS, "handle_receive starting:");
+	_log.Log(LOG_STATUS, "handle_receive starting:");
+	_log.Log(LOG_STATUS, data_);
 	if (!error || error == boost::asio::error::message_size)
 	{
 		//_log.Log(LOG_STATUS, data_);
