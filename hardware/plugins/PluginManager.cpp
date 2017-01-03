@@ -754,10 +754,10 @@ namespace Plugins {
 
 			if (self->pPlugin->m_bDebug)
 			{
-				PyObject*	pValueBytes = PyUnicode_AsASCIIString(self->sValue);
-				_log.Log(LOG_NORM, "(%s) Updating device from %d:'%s' to have values %d:'%s'.",
-					std::string(PyBytes_AsString(pNameBytes)).c_str(), self->nValue, std::string(PyBytes_AsString(pValueBytes)).c_str(), nValue, sValue);
-				Py_DECREF(pValueBytes);
+				wchar_t*	pWideValue = PyUnicode_AsWideCharString(self->sValue, NULL);
+				_log.Log(LOG_NORM, "(%s) Updating device from %d:'%S' to have values %d:'%s'.",
+					std::string(PyBytes_AsString(pNameBytes)).c_str(), self->nValue, pWideValue, nValue, sValue);
+				PyMem_Free(pWideValue);
 			}
 			PyObject*	pDeviceBytes = PyUnicode_AsASCIIString(self->DeviceID);
 			std::string	sName = PyBytes_AsString(pNameBytes);
@@ -861,11 +861,7 @@ namespace Plugins {
 
 	static PyObject* CDevice_str(CDevice* self)
 	{
-		PyObject*	pNameBytes = PyUnicode_AsASCIIString(self->Name);
-		PyObject*	pValueBytes = PyUnicode_AsASCIIString(self->sValue);
-		PyObject*	pRetVal = PyUnicode_FromFormat("ID: %d, Name: '%s', nValue: %d, sValue: '%s'", self->ID, PyBytes_AsString(pNameBytes), self->nValue, PyBytes_AsString(pValueBytes));
-		Py_DECREF(pNameBytes);
-		Py_DECREF(pValueBytes);
+		PyObject*	pRetVal = PyUnicode_FromFormat("ID: %d, Name: '%U', nValue: %d, sValue: '%U'", self->ID, self->Name, self->nValue, self->sValue);
 		return pRetVal;
 	}
 
@@ -1361,7 +1357,8 @@ namespace Plugins {
 		m_iPollInterval(10),
 		m_bDebug(false),
 		m_PyInterpreter(NULL),
-		m_PyModule(NULL)
+		m_PyModule(NULL),
+		m_DeviceDict(NULL)
 	{
 		m_HwdID = HwdID;
 		Name = sName;
@@ -1569,19 +1566,14 @@ namespace Plugins {
 	{
 		try
 		{
+			m_stoprequested = true;
+
 			// Tell transport to disconnect if required
 			if ((m_pTransport) && (m_pTransport->IsConnected()))
 			{
 				CPluginMessage	DisconnectMessage(PMT_Directive, PDT_Disconnect, m_HwdID);
 				boost::lock_guard<boost::mutex> l(PluginMutex);
 				PluginMessageQueue.push(DisconnectMessage);
-			}
-
-			//	Add stop message to message queue to notify plugin
-			CPluginMessage	StopMessage(PMT_Stop, m_HwdID);
-			{
-				boost::lock_guard<boost::mutex> l(PluginMutex);
-				PluginMessageQueue.push(StopMessage);
 			}
 
 			// loop on stop to be processed
@@ -1593,7 +1585,6 @@ namespace Plugins {
 
 			if (m_thread)
 			{
-				m_stoprequested = true;
 				m_thread->join();
 				m_thread.reset();
 			}
@@ -1696,7 +1687,7 @@ namespace Plugins {
 				if (Message.m_Message == "Line") m_pProtocol = (CPluginProtocol*) new CPluginProtocolLine();
 				else if (Message.m_Message == "XML") m_pProtocol = (CPluginProtocol*) new CPluginProtocolXML();
 				else if (Message.m_Message == "JSON") m_pProtocol = (CPluginProtocol*) new CPluginProtocolJSON();
-				else if (Message.m_Message == "HTML") m_pProtocol = (CPluginProtocol*) new CPluginProtocolHTML();
+				else if (Message.m_Message == "HTTP") m_pProtocol = (CPluginProtocol*) new CPluginProtocolHTTP();
 				else m_pProtocol = new CPluginProtocol();
 				break;
 			case PDT_PollInterval:
@@ -1706,7 +1697,7 @@ namespace Plugins {
 			case PDT_Connect:
 				if (!m_pTransport)
 				{
-					_log.Log(LOG_ERROR, "(%s) No transport specified, directive ignored.", Name.c_str());
+					_log.Log(LOG_ERROR, "(%s) No transport specified, connect directive ignored.", Name.c_str());
 					return;
 				}
 				if (m_pTransport && m_pTransport->IsConnected())
@@ -1724,6 +1715,16 @@ namespace Plugins {
 				}
 				break;
 			case PDT_Write:
+				if (!m_pTransport)
+				{
+					_log.Log(LOG_ERROR, "(%s) No transport specified, write directive ignored.", Name.c_str());
+					return;
+				}
+				if (!m_pTransport->IsConnected())
+				{
+					_log.Log(LOG_ERROR, "(%s) Transport is not connected, write directive ignored.", Name.c_str());
+					return;
+				}
 				if (m_bDebug) _log.Log(LOG_NORM, "(%s) Sending data: '%s'.", Name.c_str(), Message.m_Message.c_str());
 				m_pTransport->handleWrite((std::string&)Message.m_Message);
 				break;
@@ -1757,8 +1758,11 @@ namespace Plugins {
 			m_pProtocol->ProcessMessage(Message.m_HwdID, (std::string&)Message.m_Message);
 			break;
 		case PMT_Message:
-			sHandler = "onMessage";
-			pParams = Py_BuildValue("(s)", Message.m_Message.c_str());  // parenthesis needed to force tuple
+			if (Message.m_Message.length())
+			{
+				sHandler = "onMessage";
+				pParams = Py_BuildValue("(s)", Message.m_Message.c_str());  // parenthesis needed to force tuple
+			}
 			break;
 		case PMT_Notification:
 			sHandler = "onNotification";
@@ -1769,6 +1773,14 @@ namespace Plugins {
 			break;
 		case PMT_Disconnect:
 			sHandler = "onDisconnect";
+			if (m_stoprequested) // Plugin exiting, forced stop
+			{
+				CPluginMessage	StopMessage(PMT_Stop, m_HwdID);
+				{
+					boost::lock_guard<boost::mutex> l(PluginMutex);
+					PluginMessageQueue.push(StopMessage);
+				}
+			}
 			break;
 		case PMT_Command:
 			sHandler = "onCommand";
@@ -1801,7 +1813,7 @@ namespace Plugins {
 				}
 			}
 
-			Py_XDECREF(pParams);
+			if (pParams) Py_XDECREF(pParams);
 		}
 		catch (std::exception e)
 		{
@@ -1815,7 +1827,7 @@ namespace Plugins {
 		if (Message.m_Type == PMT_Stop)
 		{
 			// Stop Python
-			Py_XDECREF(m_DeviceDict);
+			if (m_DeviceDict) Py_XDECREF(m_DeviceDict);
 			if (m_PyInterpreter) Py_EndInterpreter((PyThreadState*)m_PyInterpreter);
 			Py_XDECREF(m_PyModule);
 			m_PyModule = NULL;

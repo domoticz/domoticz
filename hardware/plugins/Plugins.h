@@ -96,7 +96,7 @@ namespace Plugins {
 		virtual void	ProcessMessage(const int HwdID, std::string& ReadData);
 	};
 
-	class CPluginProtocolHTML : CPluginProtocol {};
+	class CPluginProtocolHTTP : CPluginProtocol {};
 
 	class CPluginProtocolMQTT : CPluginProtocol {}; // Maybe?
 
