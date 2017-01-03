@@ -115,7 +115,7 @@ void XiaomiGateway::InsertUpdateHumidity(const std::string &nodeid, const std::s
 	SendHumiditySensor(sID, 255, Humidity, Name.c_str());
 }
 
-void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::string &Name, bool bIsOn, _eSwitchType subtype, int level)
+void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::string &Name, bool bIsOn, const _eSwitchType subtype, const int level)
 {
 	// Make sure the ID supplied fits with what is expected ie 158d0000fd32c2
 	if (nodeid.length() < 14) {
@@ -401,12 +401,15 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						}
 						else if ((status == "click")) {
 							level = 10;
+							on = true;
 						}
 						else if ((status == "long_click_press") || (status == "long_click_release")) {
 							level = 20;
+							on = true;
 						}
 						else if ((status == "double_click")) {
 							level = 30;
+							on = true;
 						}
 						std::string battery = root2["battery"].asString();
 						if (battery != "") {
