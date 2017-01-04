@@ -2025,7 +2025,7 @@ namespace Plugins {
 			return false;
 		}
 
-		// Pull UI elements from plugins and create manifest
+		// Pull UI elements from plugins and create manifest map in memory
 		BuildManifest();
 
 		m_thread = new boost::thread(boost::bind(&CPluginSystem::Do_Work, this));
@@ -2051,10 +2051,16 @@ namespace Plugins {
 
 			// Prepend 'plugins' directory to path so that our plugin files are found
 #ifdef WIN32
-			std::wstring	sPath = L"plugins\\;";
+			std::wstring	sSeparator = L";";
 #else
-			std::wstring	sPath = L"./plugins/:";
+			std::wstring	sSeparator = L":";
 #endif
+			std::wstringstream ssPath;
+			for (std::map<std::string, std::string>::iterator it_type = m_PluginXml.begin(); it_type != m_PluginXml.end(); it_type++)
+			{
+				ssPath << it_type->first.c_str() << sSeparator;
+			}
+			std::wstring	sPath = ssPath.str();
 			sPath += Py_GetPath();
 			Py_SetPath((wchar_t*)sPath.c_str());
 
@@ -2095,50 +2101,68 @@ namespace Plugins {
 			_log.Log(LOG_NORM, "BuildManifest: Created directory %s", plugin_Dir.c_str());
 		}
 #endif
+
 		DIR *lDir;
 		struct dirent *ent;
 		if ((lDir = opendir(plugin_Dir.c_str())) != NULL)
 		{
-			std::stringstream	FileName;
 			while ((ent = readdir(lDir)) != NULL)
 			{
-				std::string filename = ent->d_name;
-				if (dirent_is_file(plugin_Dir, ent))
+				std::string dirname = ent->d_name;
+				if ((dirent_is_directory(plugin_Dir, ent)) && (dirname.length() > 2) && (dirname != "examples"))
 				{
-					if ((filename.length() > 3) && (filename.compare(filename.length() - 3, 3, ".py") == 0))
+					DIR *lDir;
+					struct dirent *ent;
+#ifdef WIN32
+					dirname = plugin_Dir + dirname + "\\";
+#else
+					dirname = plugin_Dir + dirname + "/";
+#endif
+					if ((lDir = opendir(dirname.c_str())) != NULL)
 					{
-						try
+						while ((ent = readdir(lDir)) != NULL)
 						{
-							std::string sXML;
-							std::stringstream	FileName;
-							FileName << plugin_DirT.str() << filename;
-							std::string line;
-							std::ifstream readFile(FileName.str().c_str());
-							bool pluginFound = false;
-							while (getline(readFile, line)) {
-								if (!pluginFound && (line.find("<plugin") != std::string::npos))
-									pluginFound = true;
-								if (pluginFound)
+							std::string filename = ent->d_name;
+							if (dirent_is_file(dirname, ent))
+							{
+								if ((filename.length() > 3) && (filename.compare(filename.length() - 3, 3, ".py") == 0))
 								{
-									sXML += line + "\n";
+									try
+									{
+										std::string sXML;
+										std::stringstream	FileName;
+										FileName << dirname << filename;
+										std::string line;
+										std::ifstream readFile(FileName.str().c_str());
+										bool pluginFound = false;
+										while (getline(readFile, line)) {
+											if (!pluginFound && (line.find("<plugin") != std::string::npos))
+												pluginFound = true;
+											if (pluginFound)
+											{
+												sXML += line + "\n";
+											}
+											if (line.find("</plugin>") != std::string::npos)
+												break;
+										}
+										readFile.close();
+										m_PluginXml.insert(std::pair<std::string, std::string>(dirname, sXML));
+									}
+									catch (...)
+									{
+										_log.Log(LOG_ERROR, "%s: Exception loading plugin file: '%s'", __func__, filename.c_str());
+									}
 								}
-								if (line.find("</plugin>") != std::string::npos)
-									break;
 							}
-							readFile.close();
-							m_PluginXml.insert(std::pair<std::string, std::string>(FileName.str(), sXML));
 						}
-						catch (...)
-						{
-							_log.Log(LOG_ERROR, "%s: Exception loading plugin file: '%s'", __func__, filename.c_str());
-						}
+						closedir(lDir);
+					}
+					else
+					{
+						_log.Log(LOG_ERROR, "%s: Error accessing plugins directory %s", __func__, plugin_Dir.c_str());
 					}
 				}
 			}
-			closedir(lDir);
-		}
-		else {
-			_log.Log(LOG_ERROR, "%s: Error accessing plugins directory %s", __func__, plugin_Dir.c_str());
 		}
 	}
 
