@@ -418,10 +418,13 @@ namespace Plugins {
 		}
 		else
 		{
-			char*	szMessage;
-			if (!PyArg_ParseTuple(args, "s", &szMessage))
+			char*		szMessage = NULL;
+			char*		szVerb = NULL;
+			char*		szURL = NULL;
+			PyObject*	pHeaders = NULL;
+			if (!PyArg_ParseTuple(args, "s|ssO", &szMessage, &szVerb, &szURL, &pHeaders))
 			{
-				_log.Log(LOG_ERROR, "(%s) failed to parse parameters, string expected.", pModState->pPlugin->Name.c_str());
+				_log.Log(LOG_ERROR, "(%s) failed to parse parameters, Message or Message,Verb,URL,Headers expected.", pModState->pPlugin->Name.c_str());
 			}
 			else
 			{
@@ -429,6 +432,9 @@ namespace Plugins {
 				std::string	sMessage = szMessage;
 				CPluginMessage	Message(PMT_Directive, PDT_Write, pModState->pPlugin->m_HwdID, sMessage);
 				{
+					if (szURL) Message.m_Address = szURL;
+					if (szVerb) Message.m_Operation = szVerb;
+					if (pHeaders) Message.m_Object = pHeaders;
 					boost::lock_guard<boost::mutex> l(PluginMutex);
 					PluginMessageQueue.push(Message);
 				}
@@ -1215,9 +1221,10 @@ namespace Plugins {
 		{
 			if (e.value() != 1236)		// local disconnect cause by hardware reload
 			{
-				if ((e.value() != 2) && (e.value() != 121))	// Semaphore tmieout expiry or end of file aka 'lost contact'
+				if ((e.value() != 2) && (e.value() != 121))	// Semaphore timeout expiry or end of file aka 'lost contact'
 					_log.Log(LOG_ERROR, "Plugin: Async Read Exception: %d, %s", e.value(), e.message().c_str());
 			}
+			handleDisconnect();
 			CPluginMessage	Message(PMT_Disconnect, m_HwdID);
 			{
 				boost::lock_guard<boost::mutex> l(PluginMutex);
@@ -1849,7 +1856,29 @@ namespace Plugins {
 			return false;
 		}
 
-		m_PyModule = PyImport_ImportModule(m_PluginKey.c_str());
+		// Prepend plugin directory to path so that python will search it early when importing
+#ifdef WIN32
+		std::wstring	sSeparator = L";";
+#else
+		std::wstring	sSeparator = L":";
+#endif
+		std::wstringstream ssPath;
+		std::string		sFind = "key=\"" + m_PluginKey + "\"";
+		Plugins::CPluginSystem Plugins;
+		std::map<std::string, std::string>*	PluginXml = Plugins.GetManifest();
+		for (std::map<std::string, std::string>::iterator it_type = PluginXml->begin(); it_type != PluginXml->end(); it_type++)
+		{
+			if (it_type->second.find(sFind) != std::string::npos)
+			{
+				ssPath << it_type->first.c_str() << sSeparator;
+				break;
+			}
+		}
+		std::wstring	sPath = ssPath.str();
+		sPath += Py_GetPath();
+		PySys_SetPath((wchar_t*)sPath.c_str());
+
+		m_PyModule = PyImport_ImportModule("plugin");
 		if (!m_PyModule)
 		{
 			_log.Log(LOG_ERROR, "(%s) failed to load, Path '%S'.", m_PluginKey.c_str(), Py_GetPath());
@@ -2049,22 +2078,11 @@ namespace Plugins {
 			// Set program name, this prevents it being set to 'python'
 			Py_SetProgramName(Py_GetProgramFullPath());
 
-			// Prepend 'plugins' directory to path so that our plugin files are found
-#ifdef WIN32
-			std::wstring	sSeparator = L";";
-#else
-			std::wstring	sSeparator = L":";
-#endif
-			std::wstringstream ssPath;
-			for (std::map<std::string, std::string>::iterator it_type = m_PluginXml.begin(); it_type != m_PluginXml.end(); it_type++)
+			if (PyImport_AppendInittab("Domoticz", PyInit_Domoticz) == -1)
 			{
-				ssPath << it_type->first.c_str() << sSeparator;
+				_log.Log(LOG_ERROR, "PluginSystem: Failed to append 'Domoticz' to the existing table of built-in modules.");
+				return false;
 			}
-			std::wstring	sPath = ssPath.str();
-			sPath += Py_GetPath();
-			Py_SetPath((wchar_t*)sPath.c_str());
-
-			PyImport_AppendInittab("Domoticz", PyInit_Domoticz);
 
 			Py_Initialize();
 

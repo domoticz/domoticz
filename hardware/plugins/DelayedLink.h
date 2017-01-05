@@ -38,6 +38,7 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(void, Py_EndInterpreter, PyThreadState*);
 		DECLARE_PYTHON_SYMBOL(wchar_t*, Py_GetPath, );
 		DECLARE_PYTHON_SYMBOL(void, Py_SetPath, const wchar_t*);
+		DECLARE_PYTHON_SYMBOL(void, PySys_SetPath, const wchar_t*);
 		DECLARE_PYTHON_SYMBOL(void, Py_SetProgramName, wchar_t*);
 		DECLARE_PYTHON_SYMBOL(wchar_t*, Py_GetProgramFullPath, );
 		DECLARE_PYTHON_SYMBOL(int, PyImport_AppendInittab, const char* COMMA PyObject* (*initfunc)(void));
@@ -114,6 +115,7 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(Py_EndInterpreter);
 					RESOLVE_PYTHON_SYMBOL(Py_GetPath);
 					RESOLVE_PYTHON_SYMBOL(Py_SetPath);
+					RESOLVE_PYTHON_SYMBOL(PySys_SetPath);
 					RESOLVE_PYTHON_SYMBOL(Py_SetProgramName);
 					RESOLVE_PYTHON_SYMBOL(Py_GetProgramFullPath);
 					RESOLVE_PYTHON_SYMBOL(PyImport_AppendInittab);
@@ -263,6 +265,7 @@ namespace Plugins {
 #define	Py_NewInterpreter		pythonLib->Py_NewInterpreter
 #define	Py_EndInterpreter		pythonLib->Py_EndInterpreter
 #define	Py_SetPath				pythonLib->Py_SetPath
+#define	PySys_SetPath			pythonLib->PySys_SetPath
 #define	Py_GetPath				pythonLib->Py_GetPath
 #define	Py_SetProgramName		pythonLib->Py_SetProgramName
 #define	Py_GetProgramFullPath	pythonLib->Py_GetProgramFullPath

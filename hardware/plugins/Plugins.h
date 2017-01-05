@@ -32,13 +32,20 @@ namespace Plugins {
 	class CPluginMessage
 	{
 	public:
-		CPluginMessage() : m_Type(PMT_Start), m_HwdID(-1), m_Unit(-1), m_iLevel(-1), m_iHue(-1), m_iValue(-1), m_Message("") { };
-		CPluginMessage(ePluginMessageType Type, int HwdID, const std::string & Message) : m_Type(Type), m_HwdID(HwdID), m_Unit(-1), m_iLevel(-1), m_iHue(-1), m_iValue(-1), m_Message(Message) { };
-		CPluginMessage(ePluginMessageType Type, int HwdID, int Unit, const std::string & Message, const int level, const int hue) : m_Type(Type), m_HwdID(HwdID), m_Unit(Unit), m_iLevel(level), m_iHue(hue), m_iValue(-1), m_Message(Message) { };
-		CPluginMessage(ePluginMessageType Type, ePluginDirectiveType dType, int HwdID, const std::string & Message) : m_Type(Type), m_Directive(dType), m_HwdID(HwdID), m_Unit(-1), m_iLevel(-1), m_iHue(-1), m_iValue(-1), m_Message(Message) { };
-		CPluginMessage(ePluginMessageType Type, ePluginDirectiveType dType, int HwdID) : m_Type(Type), m_Directive(dType), m_HwdID(HwdID), m_Unit(-1), m_iLevel(-1), m_iHue(-1), m_iValue(-1) {};
-		CPluginMessage(ePluginMessageType Type, ePluginDirectiveType dType, int HwdID, int Value) : m_Type(Type), m_Directive(dType), m_HwdID(HwdID), m_Unit(-1), m_iLevel(-1), m_iHue(-1), m_iValue(Value) {};
-		CPluginMessage(ePluginMessageType Type, int HwdID) : m_Type(Type), m_HwdID(HwdID), m_Unit(-1), m_iLevel(-1), m_iHue(-1), m_iValue(-1) {	};
+		CPluginMessage() : 
+			m_Type(PMT_Start), m_HwdID(-1), m_Unit(-1), m_iLevel(-1), m_iHue(-1), m_iValue(-1), m_Message(""), m_Object(NULL) { };
+		CPluginMessage(ePluginMessageType Type, int HwdID, const std::string & Message) : 
+			m_Type(Type), m_HwdID(HwdID), m_Unit(-1), m_iLevel(-1), m_iHue(-1), m_iValue(-1), m_Message(Message), m_Object(NULL) { };
+		CPluginMessage(ePluginMessageType Type, int HwdID, int Unit, const std::string & Message, const int level, const int hue) : 
+			m_Type(Type), m_HwdID(HwdID), m_Unit(Unit), m_iLevel(level), m_iHue(hue), m_iValue(-1), m_Message(Message), m_Object(NULL) { };
+		CPluginMessage(ePluginMessageType Type, ePluginDirectiveType dType, int HwdID, const std::string & Message) : 
+			m_Type(Type), m_Directive(dType), m_HwdID(HwdID), m_Unit(-1), m_iLevel(-1), m_iHue(-1), m_iValue(-1), m_Message(Message), m_Object(NULL) { };
+		CPluginMessage(ePluginMessageType Type, ePluginDirectiveType dType, int HwdID) : 
+			m_Type(Type), m_Directive(dType), m_HwdID(HwdID), m_Unit(-1), m_iLevel(-1), m_iHue(-1), m_iValue(-1), m_Object(NULL) {};
+		CPluginMessage(ePluginMessageType Type, ePluginDirectiveType dType, int HwdID, int Value) : 
+			m_Type(Type), m_Directive(dType), m_HwdID(HwdID), m_Unit(-1), m_iLevel(-1), m_iHue(-1), m_iValue(Value), m_Object(NULL) {};
+		CPluginMessage(ePluginMessageType Type, int HwdID) : 
+			m_Type(Type), m_HwdID(HwdID), m_Unit(-1), m_iLevel(-1), m_iHue(-1), m_iValue(-1), m_Object(NULL) {	};
 		void operator=(const CPluginMessage& m)
 		{
 			m_Type = m.m_Type;
@@ -51,6 +58,8 @@ namespace Plugins {
 			m_iHue = m.m_iHue;
 			m_Address = m.m_Address;
 			m_Port = m.m_Port;
+			m_Operation = m.m_Operation;
+			m_Object = m.m_Object;
 		}
 
 		~CPluginMessage(void) {};
@@ -65,6 +74,8 @@ namespace Plugins {
 		int						m_iHue;
 		std::string				m_Address;
 		std::string				m_Port;
+		std::string				m_Operation;
+		void*					m_Object;
 	};
 
 	class CPluginProtocol
