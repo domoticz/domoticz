@@ -442,7 +442,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 				Json::Value root2;
 				ret = jReader.parse(data.c_str(), root2);
 				if (ret) {
-					for (int i = 0; i < root2.size(); i++) {
+					for (size_t i = 0; i < root2.size(); i++) {
 						std::string message = "{\"cmd\" : \"read\",\"sid\":\"";
 						message.append(root2[i].asString().c_str());
 						message.append("\"}");
