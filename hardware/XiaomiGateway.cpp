@@ -63,6 +63,11 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 	}
 	std::string gatewaykey = GetGatewayKey();
 	std::string message = "{\"cmd\":\"write\",\"model\":\"plug\",\"sid\":\"" + sid + "\",\"short_id\":9844,\"data\":\"{\\\"channel_0\\\":\\\"" + command + "\\\",\\\"key\\\":\\\"" + gatewaykey + "\\\"}\" }";
+	if (xcmd->subtype == sSwitchTypeSelector) {
+		//_log.Log(LOG_STATUS, "WriteToHardware: Ignoring sSwitchTypeSelector");
+		return true;
+	}
+	//{"cmd":"write","model":"gateway","sid":"6409802da2af","short_id":0,"key":"8","data":"{\"rgb\":4278255360}" }
 	boost::asio::io_service io_service;
 	boost::asio::ip::udp::socket socket_(io_service, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 0));
 	boost::shared_ptr<std::string> message1(new std::string(message));
@@ -442,6 +447,11 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						else if (status == "free_fall") {
 							level = 80;
 							on = true;
+						}
+						std::string rotate = root2["rotate"].asString();
+						if (rotate == "") {
+							_log.Log(LOG_STATUS, "XiaomiGateway: cube rotate not handled: %s", rotate.c_str());
+							return;
 						}
 						std::string battery = root2["battery"].asString();
 						if (battery != "") {
