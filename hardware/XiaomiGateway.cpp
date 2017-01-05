@@ -177,7 +177,13 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 			if (result.size() > 0)
 			{
 				std::string Idx = result[0][0];
-				m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Click|Long Click|Double Click", false));
+				if (Name == "Xiaomi Wireless Switch") {
+					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Click|Long Click|Double Click", false));
+				}
+				else if (Name == "Xiaomi Cube") {
+					// flip90/flip180/move/tap_twice/shake_air/swing/alert/free_fall
+					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|flip90|flip180|move|tap_twice|shake_air|swing|alert|free_fall", false));
+				}
 			}
 		}
 	}
@@ -392,6 +398,10 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 					else if (model == "sensor_ht") {
 						name = "Xiaomi Temperature/Humidity";
 					}
+					else if (model == "cube") {
+						name = "Xiaomi Cube";
+						type = STYPE_Selector;
+					}
 					if (type != STYPE_END) {
 						std::string status = root2["status"].asString();
 						bool on = false;
@@ -402,16 +412,36 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						else if ((status == "no_motion") || (status == "close") || (status == "off")) {
 							on = false;
 						}
-						else if ((status == "click")) {
+						else if ((status == "click") || (status == "flip90")) {
 							level = 10;
 							on = true;
 						}
-						else if ((status == "long_click_press") || (status == "long_click_release")) {
+						else if ((status == "long_click_press") || (status == "long_click_release") || (status == "flip180")) {
 							level = 20;
 							on = true;
 						}
-						else if ((status == "double_click")) {
+						else if ((status == "double_click") || (status == "move")) {
 							level = 30;
+							on = true;
+						}
+						else if (status == "tap_twice") {
+							level = 40;
+							on = true;
+						}
+						else if (status == "shake_air") {
+							level = 50;
+							on = true;
+						}
+						else if (status == "swing") {
+							level = 60;
+							on = true;
+						}
+						else if (status == "alert") {
+							level = 70;
+							on = true;
+						}
+						else if (status == "free_fall") {
+							level = 80;
 							on = true;
 						}
 						std::string battery = root2["battery"].asString();
