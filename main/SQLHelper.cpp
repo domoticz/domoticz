@@ -6332,6 +6332,8 @@ bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string &OnAction
 			{
 				AddTaskItem(_tTaskItem::ExecuteScript(1,scriptname,scriptparams));
 			}
+			else
+				_log.Log(LOG_ERROR, "SQLHelper: Error script not found '%s'", scriptname.c_str());
 		}
 	}
 	else
