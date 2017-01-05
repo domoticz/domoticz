@@ -450,15 +450,13 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						}
 						std::string rotate = root2["rotate"].asString();
 						if (rotate == "") {
-							_log.Log(LOG_STATUS, "XiaomiGateway: cube rotate not handled: %s", rotate.c_str());
-							return;
-						}
-						std::string battery = root2["battery"].asString();
-						if (battery != "") {
-							m_XiaomiGateway->InsertUpdateVoltage(sid.c_str(), name, atoi(battery.c_str()));
-						}
-						else {
-							m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, on, type, level);
+							std::string battery = root2["battery"].asString();
+							if (battery != "") {
+								m_XiaomiGateway->InsertUpdateVoltage(sid.c_str(), name, atoi(battery.c_str()));
+							}
+							else {
+								m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, on, type, level);
+							}
 						}
 					}
 					else if (name == "Xiaomi Temperature/Humidity") {
