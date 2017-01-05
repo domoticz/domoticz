@@ -418,10 +418,13 @@ namespace Plugins {
 		}
 		else
 		{
-			char*	szMessage;
-			if (!PyArg_ParseTuple(args, "s", &szMessage))
+			char*		szMessage = NULL;
+			char*		szVerb = NULL;
+			char*		szURL = NULL;
+			PyObject*	pHeaders = NULL;
+			if (!PyArg_ParseTuple(args, "s|ssO", &szMessage, &szVerb, &szURL, &pHeaders))
 			{
-				_log.Log(LOG_ERROR, "(%s) failed to parse parameters, string expected.", pModState->pPlugin->Name.c_str());
+				_log.Log(LOG_ERROR, "(%s) failed to parse parameters, Message or Message,Verb,URL,Headers expected.", pModState->pPlugin->Name.c_str());
 			}
 			else
 			{
@@ -429,6 +432,9 @@ namespace Plugins {
 				std::string	sMessage = szMessage;
 				CPluginMessage	Message(PMT_Directive, PDT_Write, pModState->pPlugin->m_HwdID, sMessage);
 				{
+					if (szURL) Message.m_Address = szURL;
+					if (szVerb) Message.m_Operation = szVerb;
+					if (pHeaders) Message.m_Object = pHeaders;
 					boost::lock_guard<boost::mutex> l(PluginMutex);
 					PluginMessageQueue.push(Message);
 				}
@@ -1215,9 +1221,10 @@ namespace Plugins {
 		{
 			if (e.value() != 1236)		// local disconnect cause by hardware reload
 			{
-				if ((e.value() != 2) && (e.value() != 121))	// Semaphore tmieout expiry or end of file aka 'lost contact'
+				if ((e.value() != 2) && (e.value() != 121))	// Semaphore timeout expiry or end of file aka 'lost contact'
 					_log.Log(LOG_ERROR, "Plugin: Async Read Exception: %d, %s", e.value(), e.message().c_str());
 			}
+			handleDisconnect();
 			CPluginMessage	Message(PMT_Disconnect, m_HwdID);
 			{
 				boost::lock_guard<boost::mutex> l(PluginMutex);
@@ -1849,7 +1856,29 @@ namespace Plugins {
 			return false;
 		}
 
-		m_PyModule = PyImport_ImportModule(m_PluginKey.c_str());
+		// Prepend plugin directory to path so that python will search it early when importing
+#ifdef WIN32
+		std::wstring	sSeparator = L";";
+#else
+		std::wstring	sSeparator = L":";
+#endif
+		std::wstringstream ssPath;
+		std::string		sFind = "key=\"" + m_PluginKey + "\"";
+		Plugins::CPluginSystem Plugins;
+		std::map<std::string, std::string>*	PluginXml = Plugins.GetManifest();
+		for (std::map<std::string, std::string>::iterator it_type = PluginXml->begin(); it_type != PluginXml->end(); it_type++)
+		{
+			if (it_type->second.find(sFind) != std::string::npos)
+			{
+				ssPath << it_type->first.c_str() << sSeparator;
+				break;
+			}
+		}
+		std::wstring	sPath = ssPath.str();
+		sPath += Py_GetPath();
+		PySys_SetPath((wchar_t*)sPath.c_str());
+
+		m_PyModule = PyImport_ImportModule("plugin");
 		if (!m_PyModule)
 		{
 			_log.Log(LOG_ERROR, "(%s) failed to load, Path '%S'.", m_PluginKey.c_str(), Py_GetPath());
@@ -2025,7 +2054,7 @@ namespace Plugins {
 			return false;
 		}
 
-		// Pull UI elements from plugins and create manifest
+		// Pull UI elements from plugins and create manifest map in memory
 		BuildManifest();
 
 		m_thread = new boost::thread(boost::bind(&CPluginSystem::Do_Work, this));
@@ -2049,16 +2078,11 @@ namespace Plugins {
 			// Set program name, this prevents it being set to 'python'
 			Py_SetProgramName(Py_GetProgramFullPath());
 
-			// Prepend 'plugins' directory to path so that our plugin files are found
-#ifdef WIN32
-			std::wstring	sPath = L"plugins\\;";
-#else
-			std::wstring	sPath = L"./plugins/:";
-#endif
-			sPath += Py_GetPath();
-			Py_SetPath((wchar_t*)sPath.c_str());
-
-			PyImport_AppendInittab("Domoticz", PyInit_Domoticz);
+			if (PyImport_AppendInittab("Domoticz", PyInit_Domoticz) == -1)
+			{
+				_log.Log(LOG_ERROR, "PluginSystem: Failed to append 'Domoticz' to the existing table of built-in modules.");
+				return false;
+			}
 
 			Py_Initialize();
 
@@ -2095,50 +2119,68 @@ namespace Plugins {
 			_log.Log(LOG_NORM, "BuildManifest: Created directory %s", plugin_Dir.c_str());
 		}
 #endif
+
 		DIR *lDir;
 		struct dirent *ent;
 		if ((lDir = opendir(plugin_Dir.c_str())) != NULL)
 		{
-			std::stringstream	FileName;
 			while ((ent = readdir(lDir)) != NULL)
 			{
-				std::string filename = ent->d_name;
-				if (dirent_is_file(plugin_Dir, ent))
+				std::string dirname = ent->d_name;
+				if ((dirent_is_directory(plugin_Dir, ent)) && (dirname.length() > 2) && (dirname != "examples"))
 				{
-					if ((filename.length() > 3) && (filename.compare(filename.length() - 3, 3, ".py") == 0))
+					DIR *lDir;
+					struct dirent *ent;
+#ifdef WIN32
+					dirname = plugin_Dir + dirname + "\\";
+#else
+					dirname = plugin_Dir + dirname + "/";
+#endif
+					if ((lDir = opendir(dirname.c_str())) != NULL)
 					{
-						try
+						while ((ent = readdir(lDir)) != NULL)
 						{
-							std::string sXML;
-							std::stringstream	FileName;
-							FileName << plugin_DirT.str() << filename;
-							std::string line;
-							std::ifstream readFile(FileName.str().c_str());
-							bool pluginFound = false;
-							while (getline(readFile, line)) {
-								if (!pluginFound && (line.find("<plugin") != std::string::npos))
-									pluginFound = true;
-								if (pluginFound)
+							std::string filename = ent->d_name;
+							if (dirent_is_file(dirname, ent))
+							{
+								if ((filename.length() > 3) && (filename.compare(filename.length() - 3, 3, ".py") == 0))
 								{
-									sXML += line + "\n";
+									try
+									{
+										std::string sXML;
+										std::stringstream	FileName;
+										FileName << dirname << filename;
+										std::string line;
+										std::ifstream readFile(FileName.str().c_str());
+										bool pluginFound = false;
+										while (getline(readFile, line)) {
+											if (!pluginFound && (line.find("<plugin") != std::string::npos))
+												pluginFound = true;
+											if (pluginFound)
+											{
+												sXML += line + "\n";
+											}
+											if (line.find("</plugin>") != std::string::npos)
+												break;
+										}
+										readFile.close();
+										m_PluginXml.insert(std::pair<std::string, std::string>(dirname, sXML));
+									}
+									catch (...)
+									{
+										_log.Log(LOG_ERROR, "%s: Exception loading plugin file: '%s'", __func__, filename.c_str());
+									}
 								}
-								if (line.find("</plugin>") != std::string::npos)
-									break;
 							}
-							readFile.close();
-							m_PluginXml.insert(std::pair<std::string, std::string>(FileName.str(), sXML));
 						}
-						catch (...)
-						{
-							_log.Log(LOG_ERROR, "%s: Exception loading plugin file: '%s'", __func__, filename.c_str());
-						}
+						closedir(lDir);
+					}
+					else
+					{
+						_log.Log(LOG_ERROR, "%s: Error accessing plugins directory %s", __func__, plugin_Dir.c_str());
 					}
 				}
 			}
-			closedir(lDir);
-		}
-		else {
-			_log.Log(LOG_ERROR, "%s: Error accessing plugins directory %s", __func__, plugin_Dir.c_str());
 		}
 	}
 
