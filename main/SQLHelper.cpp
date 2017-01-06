@@ -33,7 +33,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 109
+#define DB_VERSION 110
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -2124,7 +2124,7 @@ bool CSQLHelper::OpenDatabase()
 			query("INSERT INTO TimerPlans (ID, Name) VALUES (0, 'default')");
 			query("INSERT INTO TimerPlans (ID, Name) VALUES (1, 'Holiday')");
 		}
-		if (dbversion < 108)
+		if (dbversion < 110)
 		{
 			query("ALTER TABLE Hardware RENAME TO tmp_Hardware;");
 			query("CREATE TABLE IF NOT EXISTS [Hardware] ([ID] INTEGER PRIMARY KEY, [Name] VARCHAR(200) NOT NULL, [Enabled] INTEGER DEFAULT 1, [Type] INTEGER NOT NULL, [Address] VARCHAR(200), [Port] INTEGER, [SerialPort] VARCHAR(50) DEFAULT (''), [Username] VARCHAR(100), [Password] VARCHAR(100), [Extra] TEXT DEFAULT (''),[Mode1] CHAR DEFAULT 0, [Mode2] CHAR DEFAULT 0, [Mode3] CHAR DEFAULT 0, [Mode4] CHAR DEFAULT 0, [Mode5] CHAR DEFAULT 0, [Mode6] CHAR DEFAULT 0, [DataTimeout] INTEGER DEFAULT 0);");
