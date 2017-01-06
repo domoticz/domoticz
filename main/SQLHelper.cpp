@@ -33,7 +33,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 109
+#define DB_VERSION 110
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -2124,14 +2124,14 @@ bool CSQLHelper::OpenDatabase()
 			query("INSERT INTO TimerPlans (ID, Name) VALUES (0, 'default')");
 			query("INSERT INTO TimerPlans (ID, Name) VALUES (1, 'Holiday')");
 		}
-		if (dbversion < 108)
+		if (dbversion < 110)
 		{
 			query("ALTER TABLE Hardware RENAME TO tmp_Hardware;");
-			query("CREATE TABLE IF NOT EXISTS [Hardware] ([ID] INTEGER PRIMARY KEY, [Name] VARCHAR(200) NOT NULL, [Enabled] INTEGER DEFAULT 1, [Type] INTEGER NOT NULL, [Address] VARCHAR(200), [Port] INTEGER, [SerialPort] VARCHAR(50) DEFAULT (''), [Username] VARCHAR(100), [Password] VARCHAR(100), [Extra] TEXT DEFAULT (''),[Mode1] CHAR DEFAULT 0, [Mode2] CHAR DEFAULT 0, [Mode3] CHAR DEFAULT 0, [Mode4] CHAR DEFAULT 0, [Mode5] CHAR DEFAULT 0, [Mode6] CHAR DEFAULT 0, [DataTimeout] INTEGER DEFAULT 0);");
+			query(sqlCreateHardware);
 			query("INSERT INTO Hardware(ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) SELECT ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout FROM tmp_Hardware;");
 			query("DROP TABLE tmp_Hardware;");
 
-			result = query("SELECT ID, Extra FROM Hardware WHERE Type=74;");
+			result = safe_query("SELECT ID, Extra FROM Hardware WHERE Type=%d", HTYPE_HTTPPOLLER);
 			if (result.size() > 0)
 			{
 				std::stringstream szQuery2;

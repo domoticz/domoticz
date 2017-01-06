@@ -1295,6 +1295,7 @@ namespace http {
 
 				std::ostringstream szExtra;
 				szExtra << szScriptEncoded << "|" << szMethodEncoded << "|" << szszContentTypeEncoded << "|" << szszHeadersEncoded << "|" << szPostDataEncoded;
+				extra = szExtra.str().c_str();
 
 				m_sql.safe_query(
 					"INSERT INTO Hardware (Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) VALUES ('%q',%d, %d,'%q',%d,'%q','%q','%q','%q','%q','%q', '%q', '%q', '%q', '%q', %d)",
@@ -1306,7 +1307,7 @@ namespace http {
 					sport.c_str(),
 					username.c_str(),
 					password.c_str(),
-					szExtra.str().c_str(),
+					extra.c_str(),
 					mode1Str.c_str(), mode2Str.c_str(), mode3Str.c_str(), mode4Str.c_str(), mode5Str.c_str(), mode6Str.c_str(),
 					iDataTimeout
 				);
@@ -1626,6 +1627,7 @@ namespace http {
 
 					std::ostringstream szExtra;
 					szExtra << szScriptEncoded << "|" << szMethodEncoded << "|" << szszContentTypeEncoded << "|" << szszHeadersEncoded << "|" << szPostDataEncoded;
+					extra = szExtra.str().c_str();
 
 					m_sql.safe_query(
 						"UPDATE Hardware SET Name='%q', Enabled=%d, Type=%d, Address='%q', Port=%d, SerialPort='%q', Username='%q', Password='%q', Extra='%q', DataTimeout=%d WHERE (ID == '%q')",
@@ -1637,7 +1639,7 @@ namespace http {
 						sport.c_str(),
 						username.c_str(),
 						password.c_str(),
-						szExtra.str().c_str(),
+						extra.c_str(),
 						iDataTimeout,
 						idx.c_str()
 					);
