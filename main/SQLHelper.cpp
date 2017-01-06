@@ -251,7 +251,7 @@ const char *sqlCreateHardware =
 "[SerialPort] VARCHAR(50) DEFAULT (''), "
 "[Username] VARCHAR(100), "
 "[Password] VARCHAR(100), "
-"[Extra] VARCHAR(200) DEFAULT (''),"
+"[Extra] TEXT DEFAULT (''),"
 "[Mode1] CHAR DEFAULT 0, "
 "[Mode2] CHAR DEFAULT 0, "
 "[Mode3] CHAR DEFAULT 0, "
@@ -2123,6 +2123,31 @@ bool CSQLHelper::OpenDatabase()
 		{
 			query("INSERT INTO TimerPlans (ID, Name) VALUES (0, 'default')");
 			query("INSERT INTO TimerPlans (ID, Name) VALUES (1, 'Holiday')");
+		}
+		if (dbversion < 108)
+		{
+			query("ALTER TABLE Hardware RENAME TO tmp_Hardware;");
+			query("CREATE TABLE IF NOT EXISTS [Hardware] ([ID] INTEGER PRIMARY KEY, [Name] VARCHAR(200) NOT NULL, [Enabled] INTEGER DEFAULT 1, [Type] INTEGER NOT NULL, [Address] VARCHAR(200), [Port] INTEGER, [SerialPort] VARCHAR(50) DEFAULT (''), [Username] VARCHAR(100), [Password] VARCHAR(100), [Extra] TEXT DEFAULT (''),[Mode1] CHAR DEFAULT 0, [Mode2] CHAR DEFAULT 0, [Mode3] CHAR DEFAULT 0, [Mode4] CHAR DEFAULT 0, [Mode5] CHAR DEFAULT 0, [Mode6] CHAR DEFAULT 0, [DataTimeout] INTEGER DEFAULT 0);");
+			query("INSERT INTO Hardware(ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) SELECT ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout FROM tmp_Hardware;");
+			query("DROP TABLE tmp_Hardware;");
+
+			result = query("SELECT ID, Extra FROM Hardware WHERE Type=74;");
+			if (result.size() > 0)
+			{
+				std::stringstream szQuery2;
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
+					std::string id = sd[0];
+					std::string extra = sd[1];
+					std::string extraBase64=base64_encode((const unsigned char *)extra.c_str(), extra.length());
+					szQuery2.clear();
+					szQuery2.str("");
+					szQuery2 << "UPDATE Hardware SET Mode1=0, Extra='%s' WHERE (ID=" << id << ")";
+					safe_query(szQuery2.str().c_str(), extraBase64.c_str());
+				}
+			}
 		}
 	}
 	else if (bNewInstall)

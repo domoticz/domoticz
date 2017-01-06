@@ -471,6 +471,17 @@ define(['app'], function (app) {
                 }
                 var username = $("#hardwarecontent #divlogin #username").val();
                 var password = $("#hardwarecontent #divlogin #password").val();
+				var method = $("#hardwarecontent #divhttppoller #combomethod option:selected").val();
+				if (typeof method == 'undefined')
+				{
+					ShowNotify($.t('No HTTP method selected!'), 2500, true);
+					return;
+				}
+				var Mode1 = method;
+				var Mode2 = $("#hardwarecontent #divhttppoller #contenttype").val();
+				var Mode3 = $("#hardwarecontent #divhttppoller #headers").val();
+				var Mode4 = $("#hardwarecontent #divhttppoller #postdata").val();
+				
                 $.ajax({
                     url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
                        "&port=" + refresh +
@@ -482,7 +493,7 @@ define(['app'], function (app) {
                        "&datatimeout=" + datatimeout +
                        "&address=" + encodeURIComponent(url) +
                        "&extra=" + encodeURIComponent(script) +
-                       "&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
+                       "&Mode1=" + Mode1 + "&Mode2=" + encodeURIComponent(Mode2) + "&Mode3=" + encodeURIComponent(Mode3) + "&Mode4=" + encodeURIComponent(Mode4),
                     async: false,
                     dataType: 'json',
                     success: function (data) {
@@ -1315,8 +1326,19 @@ define(['app'], function (app) {
                 }
                 var username = $("#hardwarecontent #divlogin #username").val();
                 var password = $("#hardwarecontent #divlogin #password").val();
+				var method = $("#hardwarecontent #divhttppoller #combomethod option:selected").val();
+				if (typeof method == 'undefined')
+				{
+					ShowNotify($.t('No HTTP method selected!'), 2500, true);
+					return;
+				}
+				var Mode1 = method;
+				var Mode2 = $("#hardwarecontent #divhttppoller #contenttype").val();
+				var Mode3 = $("#hardwarecontent #divhttppoller #headers").val();
+				var Mode4 = $("#hardwarecontent #divhttppoller #postdata").val();
+				
                 $.ajax({
-                    url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&port=" + refresh + "&username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password) + "&name=" + encodeURIComponent(name) + "&address=" + encodeURIComponent(url) + "&extra=" + encodeURIComponent(script) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
+                    url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&port=" + refresh + "&username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password) + "&name=" + encodeURIComponent(name) + "&address=" + encodeURIComponent(url) + "&extra=" + encodeURIComponent(script) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout + "&Mode1=" + Mode1 + "&Mode2=" + encodeURIComponent(Mode2) + "&Mode3=" + encodeURIComponent(Mode3) + "&Mode4=" + encodeURIComponent(Mode4),
                     async: false,
                     dataType: 'json',
                     success: function (data) {
@@ -4828,7 +4850,7 @@ define(['app'], function (app) {
                     if ( anSelected.length !== 0 ) {
                         var data = oTable.fnGetData( anSelected[0] );
                         var idx= data["DT_RowId"];
-						if (data["Type"] != "PLUGIN") { // Plugins can have non-numeric Mode data
+						if (data["Type"] != "PLUGIN" && data["Type"] != "HTTP/HTTPS poller") { // Plugins can have non-numeric Mode data
 							$("#updelclr #hardwareupdate").attr("href", "javascript:UpdateHardware(" + idx + "," + data["Mode1"] + "," + data["Mode2"] + "," + data["Mode3"] + "," + data["Mode4"] + "," + data["Mode5"] + "," + data["Mode6"] + ")");
 						}
 						else {
@@ -4920,6 +4942,20 @@ define(['app'], function (app) {
                             $("#hardwarecontent #hardwareparamshttp #url").val(data["Address"]);
                             $("#hardwarecontent #hardwareparamshttp #script").val(data["Extra"]);
                             $("#hardwarecontent #hardwareparamshttp #refresh").val(data["IntPort"]);
+							$("#hardwarecontent #hardwareparamshttp #combomethod").val(data["Mode1"]);
+							if (data["Mode1"]==0)
+							{
+								$("#hardwarecontent #hardwareparamshttp #divpostdatalabel").hide();
+								$("#hardwarecontent #hardwareparamshttp #divpostdatatextarea").hide();
+							}
+							else
+							{
+								$("#hardwarecontent #hardwareparamshttp #divpostdatalabel").show();
+								$("#hardwarecontent #hardwareparamshttp #divpostdatatextarea").show();
+							}
+							$("#hardwarecontent #hardwareparamshttp #contenttype").val(data["Mode2"]);
+							$("#hardwarecontent #hardwareparamshttp #headers").val(data["Mode3"]);
+							$("#hardwarecontent #hardwareparamshttp #postdata").val(data["Mode4"]);
                         }
                         else if (data["Type"].indexOf("SBFSpot") >= 0) {
                             $("#hardwarecontent #hardwareparamslocation #location").val(data["Username"]);
@@ -5374,6 +5410,19 @@ define(['app'], function (app) {
                 {
                     $("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked",1);
                     $("#hardwarecontent #divcrcp1").show();
+                }
+            });
+			
+			$("#hardwarecontent #divhttppoller #combomethod").change(function() {
+                if ($("#hardwarecontent #divhttppoller #combomethod option:selected").val() == 0)
+                {
+                    $("#hardwarecontent #hardwareparamshttp #divpostdatalabel").hide();
+					$("#hardwarecontent #hardwareparamshttp #divpostdatatextarea").hide();
+                }
+                else
+                {
+                    $("#hardwarecontent #hardwareparamshttp #divpostdatalabel").show();
+					$("#hardwarecontent #hardwareparamshttp #divpostdatatextarea").show();
                 }
             });
 

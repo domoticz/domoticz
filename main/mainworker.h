@@ -107,6 +107,12 @@ public:
 				const int Mode4,
 				const int Mode5,
 				const int Mode6,
+				const std::string &Mode1Str,
+				const std::string &Mode2Str,
+				const std::string &Mode3Str,
+				const std::string &Mode4Str,
+				const std::string &Mode5Str,
+				const std::string &Mode6Str,
 				const int DataTimeout,
 				const bool bDoStart
 				);
