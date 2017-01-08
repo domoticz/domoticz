@@ -402,7 +402,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 					else if (model == "sensor_ht") {
 						name = "Xiaomi Temperature/Humidity";
 					}
-					else if (model == "cube") {
+					else if (model == "") { //(model == "cube") temp work around for model not being reported
 						name = "Xiaomi Cube";
 						type = STYPE_Selector;
 					}
@@ -482,7 +482,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 				Json::Value root2;
 				ret = jReader.parse(data.c_str(), root2);
 				if (ret) {
-					for (int i = 0; i < root2.size(); i++) {
+					for (int i = 0; i < (int)root2.size(); i++) {
 						std::string message = "{\"cmd\" : \"read\",\"sid\":\"";
 						message.append(root2[i].asString().c_str());
 						message.append("\"}");
