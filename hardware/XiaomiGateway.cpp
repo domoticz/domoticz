@@ -402,7 +402,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 					else if (model == "sensor_ht") {
 						name = "Xiaomi Temperature/Humidity";
 					}
-					else if (model == "") { //(model == "cube") temp work around for model not being reported
+					else if ((model == "") || (model == "cube")) { // temp work around for model not being reported
 						name = "Xiaomi Cube";
 						type = STYPE_Selector;
 					}
