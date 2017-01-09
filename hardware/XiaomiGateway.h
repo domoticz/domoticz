@@ -13,7 +13,7 @@ public:
 	XiaomiGateway(const int ID);
 	~XiaomiGateway(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length);
-	void InsertUpdateSwitch(const std::string &nodeid, const std::string &Name, bool bIsOn, const _eSwitchType subtype, const int level);
+	void InsertUpdateSwitch(const std::string &nodeid, const std::string &Name, const bool bIsOn, const _eSwitchType subtype, const int level);
 	void InsertUpdateVoltage(const std::string &nodeid, const std::string &Name, const int BatteryLevel);
 	void InsertUpdateTemperature(const std::string &nodeid, const std::string &Name, const float Temperature);
 	void InsertUpdateHumidity(const std::string &nodeid, const std::string &Name, const int Humidity);
@@ -42,7 +42,7 @@ private:
 	private:
 		boost::asio::ip::udp::socket socket_;
 		boost::asio::ip::udp::endpoint remote_endpoint_;
-		enum { max_length = 512 };
+		enum { max_length = 1024 };
 		char data_[max_length];
 		int m_HardwareID;
 		std::string m_gatewayip;
