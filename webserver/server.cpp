@@ -41,6 +41,8 @@ void server_base::init(init_connectionhandler_func init_connection_handler, acce
 	boost::asio::ip::tcp::endpoint endpoint = *resolver.resolve(query);
 	acceptor_.open(endpoint.protocol());
 	acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
+	// bind to both ipv6 and ipv4 sockets
+	acceptor_.set_option(boost::asio::ip::v6_only(false));
 	// bind to our port
 	acceptor_.bind(endpoint);
 	// listen for incoming requests
