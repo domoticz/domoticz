@@ -7475,7 +7475,7 @@ namespace http {
 						if (result.size() > 0)
 						{
 							std::string pID = result[0][0];
-							result = m_sql.safe_query("SELECT DeviceRowID FROM DeviceToPlansMap WHERE (PlanID=='%q')",
+							result = m_sql.safe_query("SELECT DeviceRowID FROM DeviceToPlansMap WHERE (PlanID=='%q') AND (DevSceneType==0)",
 								pID.c_str());
 							if (result.size() > 0)
 							{
@@ -7590,7 +7590,7 @@ namespace http {
 						if (result.size() > 0)
 						{
 							std::string pID = result[0][0];
-							result = m_sql.safe_query("SELECT DeviceRowID FROM DeviceToPlansMap WHERE (PlanID=='%q')",
+							result = m_sql.safe_query("SELECT DeviceRowID FROM DeviceToPlansMap WHERE (PlanID=='%q')  AND (DevSceneType==0)",
 								pID.c_str());
 							if (result.size() > 0)
 							{

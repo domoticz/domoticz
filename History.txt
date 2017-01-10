@@ -1,5 +1,6 @@
 Version 3.xxxx (December xth 2016)
 - Fixed: Camera Editor, will now always refresh thumbnail in table
+- Fixed: Devices could become invisible when a scene/group was added to the 'hidden devices' room plan with the same idx
 - Fixed: JSon float/nan value, solved by upgrading JSonCPP
 - Fixed: OZW, when a value is updated and the sensor did not exists before (for example a kWh sensor), it is created (saves a restart)
 - Changed: Wind Direction Graph, if sensor does not supports 'Gust', the 'Speed' value is used
