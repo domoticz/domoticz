@@ -27,67 +27,67 @@
 				Default: 3 All.
 			</Help>
 		</Value>
-		<Value type="list" genre="config" instance="1" index="10" label="Key Pressed 1 time – command sent to 2nd association group" value="3" size="1">
+		<Value type="list" genre="config" instance="1" index="10" label="Key Pressed 1 time - command sent to 2nd association group" value="3" size="1">
 			<Help>This parameter defines commands sent to devices associated in 2nd association group after a single click</Help>
 			<Item label="No action" value="0"/>
 			<Item label="Switch ON" value="1"/>
 			<Item label="Switch OFF" value="2"/>
 			<Item label="Switch ON/OFF - alternately" value="3"/>
 		</Value>
-		<Value type="short" genre="config" instance="1" index="11" label="Key Pressed 1 times – value of SWITCH ON command sent to 2nd association group" min="1" max="255" value="255">
+		<Value type="short" genre="config" instance="1" index="11" label="Key Pressed 1 times - value of SWITCH ON command sent to 2nd association group" min="1" max="255" value="255">
 			<Help>This parameter defines value of SWITCH ON command sent to devices in 2nd association group after a single click.</Help>
 		</Value>
-		<Value type="list" genre="config" instance="1" index="12" label="Key Pressed 2 time – command sent to 2nd association group" value="1" size="1">
+		<Value type="list" genre="config" instance="1" index="12" label="Key Pressed 2 time - command sent to 2nd association group" value="1" size="1">
 			<Help>This parameter defines commands sent to devices associated in 2nd association group after a double click</Help>
 			<Item label="No action" value="0"/>
 			<Item label="Switch ON" value="1"/>
 			<Item label="Switch OFF" value="2"/>
 			<Item label="Switch ON/OFF - alternately" value="3"/>
 		</Value>
-		<Value type="short" genre="config" instance="1" index="13" label="Key Pressed 2 times – value of SWITCH ON command sent to 2nd association group" min="1" max="255" value="99">
+		<Value type="short" genre="config" instance="1" index="13" label="Key Pressed 2 times - value of SWITCH ON command sent to 2nd association group" min="1" max="255" value="99">
 			<Help>This parameter defines value of SWITCH ON command sent to devices in 2nd association group after a double click.</Help>
 		</Value>
-		<Value type="list" genre="config" instance="1" index="14" label="Key Pressed 3 time – command sent to 2nd association group" value="0" size="1">
+		<Value type="list" genre="config" instance="1" index="14" label="Key Pressed 3 time - command sent to 2nd association group" value="0" size="1">
 			<Help>This parameter defines commands sent to devices associated in 2nd association group after a triple click</Help>
 			<Item label="No action" value="0"/>
 			<Item label="Switch ON" value="1"/>
 			<Item label="Switch OFF" value="2"/>
 			<Item label="Switch ON/OFF - alternately" value="3"/>
 		</Value>
-		<Value type="short" genre="config" instance="1" index="15" label="Key Pressed 3 times – value of SWITCH ON command sent to 2nd association group" min="1" max="255" value="255">
+		<Value type="short" genre="config" instance="1" index="15" label="Key Pressed 3 times - value of SWITCH ON command sent to 2nd association group" min="1" max="255" value="255">
 			<Help>This parameter defines value of SWITCH ON command sent to devices in 2nd association group after a triple click.</Help>
 		</Value>
-		<Value type="list" genre="config" instance="1" index="20" label="Key Pressed 1 time – command sent to 3rd association group" value="3" size="1">
+		<Value type="list" genre="config" instance="1" index="20" label="Key Pressed 1 time - command sent to 3rd association group" value="3" size="1">
 			<Help>This parameter defines commands sent to devices associated in 2nd association group after a single click</Help>
 			<Item label="No action" value="0"/>
 			<Item label="Switch ON" value="1"/>
 			<Item label="Switch OFF" value="2"/>
 			<Item label="Switch ON/OFF - alternately" value="3"/>
 		</Value>
-		<Value type="short" genre="config" instance="1" index="21" label="Key Pressed 1 times – value of SWITCH ON command sent to 3rd association group" min="1" max="255" value="255">
+		<Value type="short" genre="config" instance="1" index="21" label="Key Pressed 1 times - value of SWITCH ON command sent to 3rd association group" min="1" max="255" value="255">
 			<Help>This parameter defines value of SWITCH ON command sent to devices in 3rd association group after a single click.</Help>
 		</Value>
-		<Value type="list" genre="config" instance="1" index="22" label="Key Pressed 2 time – command sent to 3rd association group" value="1" size="1">
+		<Value type="list" genre="config" instance="1" index="22" label="Key Pressed 2 time - command sent to 3rd association group" value="1" size="1">
 			<Help>This parameter defines commands sent to devices associated in 3rd association group after a double click</Help>
 			<Item label="No action" value="0"/>
 			<Item label="Switch ON" value="1"/>
 			<Item label="Switch OFF" value="2"/>
 			<Item label="Switch ON/OFF - alternately" value="3"/>
 		</Value>
-		<Value type="short" genre="config" instance="1" index="23" label="Key Pressed 2 times – value of SWITCH ON command sent to 3rd association group" min="1" max="255" value="99">
+		<Value type="short" genre="config" instance="1" index="23" label="Key Pressed 2 times - value of SWITCH ON command sent to 3rd association group" min="1" max="255" value="99">
 			<Help>This parameter defines value of SWITCH ON command sent to devices in 3rd association group after a double click.</Help>
 		</Value>
-		<Value type="list" genre="config" instance="1" index="24" label="Key Pressed 3 time – command sent to 3rd association group" value="0" size="1">
+		<Value type="list" genre="config" instance="1" index="24" label="Key Pressed 3 time - command sent to 3rd association group" value="0" size="1">
 			<Help>This parameter defines commands sent to devices associated in 3rd association group after a triple click</Help>
 			<Item label="No action" value="0"/>
 			<Item label="Switch ON" value="1"/>
 			<Item label="Switch OFF" value="2"/>
 			<Item label="Switch ON/OFF - alternately" value="3"/>
 		</Value>
-		<Value type="short" genre="config" instance="1" index="25" label="Key Pressed 3 times – value of SWITCH ON command sent to 3rd association group" min="1" max="255" value="255">
+		<Value type="short" genre="config" instance="1" index="25" label="Key Pressed 3 times - value of SWITCH ON command sent to 3rd association group" min="1" max="255" value="255">
 			<Help>This parameter defines value of SWITCH ON command sent to devices in 3rd association group after a triple click.</Help>
 		</Value>
-		<Value type="list" genre="config" instance="1" index="29" label=" Key Held Down – command sent to 3rd association group" value="3" size="1">
+		<Value type="list" genre="config" instance="1" index="29" label=" Key Held Down - command sent to 3rd association group" value="3" size="1">
 			<Help>This parameter defines commands sent to devices associated in 3rd association group after holding the button down.</Help>
 			<Item label="No action" value="0"/>
 			<Item label="Brightening" value="1"/>

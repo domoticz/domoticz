@@ -98,7 +98,7 @@
 		<Value type="short" genre="config" instance="1" index="51" label="Temperature reports threshold" value="10" min="0" max="300" size="2">
 			<Help>This parameter defines the change of temperature in comparison with last reported, resulting in temperature report being sent to the main controller.
 				0 - temperature reports based on threshold disabled
-				1-300 - temperature threshold (0.1-30°C, 0.1°C step)		
+				1-300 - temperature threshold (0.1-30C, 0.1C step)		
 			</Help>
 		</Value>
 		<Value type="short" genre="config" instance="1" index="52" label="Interval of temperature reports" value="0" min="0" max="32400" size="2" units="seconds">
@@ -108,7 +108,7 @@
 			</Help>
 		</Value>
 		<Value type="int" genre="config" instance="1" index="53" label="Temperature offset" value="0" min="-1000" max="1000" size="4">
-			<Help>The value to be added to the actual temperature, measured by the sensor (temperature compensation). (0,1°C steps)		
+			<Help>The value to be added to the actual temperature, measured by the sensor (temperature compensation). (0,1C steps)		
 			</Help>
 		</Value>
 		<Value type="list" genre="config" instance="1" index="54" label="Temperature alarm reports" value="0" size="1">
@@ -121,12 +121,12 @@
 		</Value>
 		<Value type="short" genre="config" instance="1" index="55" label="High temperature alarm threshold" value="540" min="0" max="1000" size="2">
 			<Help>If temperature is higher than set value, overheat notification will be sent and high temperature scene will be triggered (if activated).
-				0-1000 (0-100°C, 0.1°C step).
+				0-1000 (0-100C, 0.1C step).
 			</Help>
 		</Value>
 		<Value type="short" genre="config" instance="1" index="56" label="Low temperature alarm threshold" value="40" min="-300" max="700" size="2">
 			<Help>If temperature is lower than the set value, underheat notification will be sent and low temperature scene will be triggered (if activated).
-				300-700 (-30-70°C, 0.1°C step)
+				300-700 (-30-70C, 0.1C step)
 			</Help>
 		</Value>
 		<Value type="short" genre="config" instance="1" index="70" label="Scene activation functionality" value="0" min="0" max="3903" size="2">
@@ -159,10 +159,10 @@
 			<Help>This parameter defines how commands are sent in specified association groups: as secure or non-secure. 
 				Parameter is active only in Z-Wave network security mode. It does not apply to 1st group Lifeline
 			0 - none of the groups sent as secure.
-			1 - 2nd group ”Control” sent as secure.
-			2 - 3rd group ”Alarm” sent as secure.
-			4 - 4th group “Sensor ZW3” sent as secure.
-			8 - 5th group “Tamper ZW3” sent as secure.
+			1 - 2nd group Control sent as secure.
+			2 - 3rd group Alarm sent as secure.
+			4 - 4th group Sensor ZW3 sent as secure.
+			8 - 5th group Tamper ZW3 sent as secure.
 			</Help>
 		</Value>
 	</CommandClass>
