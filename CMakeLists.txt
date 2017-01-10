@@ -310,6 +310,7 @@ hardware/Netatmo.cpp
 hardware/HttpPoller.cpp
 hardware/OpenWeatherMap.cpp
 hardware/OpenWebNet.cpp
+hardware/OpenWebNetUSB.cpp
 hardware/openwebnet/bt_openwebnet.cpp
 hardware/OpenZWave.cpp
 hardware/openzwave/control_panel/ozwcp.cpp

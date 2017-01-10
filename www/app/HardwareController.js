@@ -839,7 +839,7 @@ define(['app'], function (app) {
                             ShowNotify($.t('Problem updating hardware!'), 2500, true);
                      }
                 });
-            }
+	        }
         }
 
         AddHardware = function()
@@ -5110,7 +5110,8 @@ define(['app'], function (app) {
                 {
                     $("#hardwarecontent #divbaudratep1").show();
                     $("#hardwarecontent #divcrcp1").show();
-                 }
+                }
+
                 $("#hardwarecontent #divserial").show();
                 $("#hardwarecontent #divremote").hide();
                 $("#hardwarecontent #divlogin").hide();
