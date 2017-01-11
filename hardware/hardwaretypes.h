@@ -165,6 +165,8 @@
 #define sSwitchTypeRM174RF			0x66
 #define sSwitchTypeLiwin			0x67
 #define sSwitchAuxiliaryT1			0x68
+#define sSwitchBlindsT2				0x69
+#define sSwitchLightT2				0x70
 
 //Switch commands
 #define gswitch_sOff				0x00

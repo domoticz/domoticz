@@ -456,7 +456,7 @@ void bt_openwebnet::Set_address()
 }
 
 //extracts tokens into a vector
-void bt_openwebnet::tokenize(const std::string& strToTokenize, const char token, std::string& out_firstToken, std::vector<std::string> out_otherTokens)
+void bt_openwebnet::tokenize(const std::string& strToTokenize, const char token, std::string& out_firstToken, std::vector<std::string>& out_otherTokens)
 {
 	std::string str = strToTokenize;
 
