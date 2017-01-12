@@ -6,11 +6,11 @@
 using namespace std;
 class bt_openwebnet;
 
-class COpenWebNet : public CDomoticzHardwareBase
+class COpenWebNetTCP : public CDomoticzHardwareBase
 {
 public:
-	COpenWebNet(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &ownPassword);
-	~COpenWebNet(void);
+	COpenWebNetTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &ownPassword);
+	~COpenWebNetTCP(void);
 
 	enum _eWho {
 		WHO_SCENARIO = 0,
@@ -92,8 +92,4 @@ protected:
     void scan_device();
     void requestTime();
     void requestBurglarAlarmStatus();
-
-	string frameToString(bt_openwebnet& frame);
-	string getWhoDescription(string who);
-	string getWhatDescription(string who, string what);
 };

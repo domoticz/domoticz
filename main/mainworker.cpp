@@ -91,7 +91,7 @@
 #include "../hardware/DomoticzInternal.h"
 #include "../hardware/NefitEasy.h"
 #include "../hardware/PanasonicTV.h"
-#include "../hardware/OpenWebNet.h"
+#include "../hardware/OpenWebNetTCP.h"
 #include "../hardware/AtagOne.h"
 #include "../hardware/Sterbox.h"
 #include "../hardware/Fitbit.h"
@@ -936,8 +936,8 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_DomoticzInternal:
 		pHardware = new DomoticzInternal(ID);
 		break;
-	case HTYPE_OpenWebNet:
-		pHardware = new COpenWebNet(ID, Address, Port, Password);
+	case HTYPE_OpenWebNetTCP:
+		pHardware = new COpenWebNetTCP(ID, Address, Port, Password);
 		break;
 	case HTYPE_BleBox:
 		pHardware = new BleBox(ID, Mode1);
