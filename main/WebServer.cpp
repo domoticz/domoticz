@@ -2800,7 +2800,7 @@ namespace http {
 			else
 			{
 				//add script to background worker
-				m_sql.AddTaskItem(_tTaskItem::ExecuteScript(1, scriptname, strparm));
+				m_sql.AddTaskItem(_tTaskItem::ExecuteScript(0.2f, scriptname, strparm));
 			}
 			root["title"] = "ExecuteScript";
 			root["status"] = "OK";
