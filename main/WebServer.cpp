@@ -4062,6 +4062,20 @@ namespace http {
 							return;
 						devid = id + sgroupcode;
 					}
+					else if (lighttype == 107)
+					{
+						//RFY2
+						dtype = pTypeRFY;
+						subtype = sTypeRFY2;
+						std::string id = request::findValue(&req, "id");
+						sunitcode = request::findValue(&req, "unitcode");
+						if (
+							(id == "") ||
+							(sunitcode == "")
+							)
+							return;
+						devid = id;
+					}
 					else if ((lighttype >= 200) && (lighttype < 300))
 					{
 						dtype = pTypeBlinds;
@@ -4477,6 +4491,20 @@ namespace http {
 						)
 						return;
 					devid = id + sgroupcode;
+				}
+				else if (lighttype == 107)
+				{
+					//RFY2
+					dtype = pTypeRFY;
+					subtype = sTypeRFY2;
+					std::string id = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if (
+						(id == "") ||
+						(sunitcode == "")
+						)
+						return;
+					devid = id;
 				}
 				else
 				{
