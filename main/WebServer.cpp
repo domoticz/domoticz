@@ -1222,6 +1222,9 @@ namespace http {
 			else if (htype == HTYPE_RaspberryPCF8574) {
 				//All fine here
 			}
+			else if (htype == HTYPE_OpenWebNetUSB) {
+				//All fine here
+			}
 			else
 				return;
 
@@ -1528,6 +1531,9 @@ namespace http {
 					}
 			}
 			else if (htype == HTYPE_RaspberryPCF8574) {
+				//All fine here
+			}
+			else if (htype == HTYPE_OpenWebNetUSB) {
 				//All fine here
 			}
 			else
@@ -3392,6 +3398,7 @@ namespace http {
 						case HTYPE_ZIBLUEUSB:
 						case HTYPE_ZIBLUETCP:
 						case HTYPE_OpenWebNet:
+						case HTYPE_OpenWebNetUSB:
 							root["result"][ii]["idx"] = ID;
 							root["result"][ii]["Name"] = Name;
 							ii++;
@@ -4159,8 +4166,33 @@ namespace http {
 					}
 					else if (lighttype == 307)
 					{
-					    dtype = pTypeGeneralSwitch;
+						//Auxiliary Openwebnet
+						dtype = pTypeGeneralSwitch;
 						subtype = sSwitchAuxiliaryT1;
+						devid = request::findValue(&req, "id");
+						sunitcode = request::findValue(&req, "unitcode");
+						if (
+							(devid == "") ||
+							(sunitcode == "")
+							)
+							return;
+					}
+					else if (lighttype == 307) {
+						//Blinds Openwebnet Zigbee
+						dtype = pTypeGeneralSwitch;
+						subtype = sSwitchBlindsT2;
+						devid = request::findValue(&req, "id");
+						sunitcode = request::findValue(&req, "unitcode");
+						if (
+							(devid == "") ||
+							(sunitcode == "")
+							)
+							return;
+					}
+					else if (lighttype == 308) {
+						//Light Openwebnet Zigbee
+						dtype = pTypeGeneralSwitch;
+						subtype = sSwitchLightT2;
 						devid = request::findValue(&req, "id");
 						sunitcode = request::findValue(&req, "unitcode");
 						if (
@@ -4643,6 +4675,32 @@ namespace http {
 					    //Auxiliary Openwebnet
 					    dtype = pTypeGeneralSwitch;
 						subtype = sSwitchAuxiliaryT1;
+						devid = request::findValue(&req, "id");
+						sunitcode = request::findValue(&req, "unitcode");
+						if (
+							(devid == "") ||
+							(sunitcode == "")
+							)
+							return;
+					}
+					else if (lighttype == 308)
+					{
+						//Blinds Openwebnet Zigbee
+						dtype = pTypeGeneralSwitch;
+						subtype = sSwitchBlindsT2;
+						devid = request::findValue(&req, "id");
+						sunitcode = request::findValue(&req, "unitcode");
+						if (
+							(devid == "") ||
+							(sunitcode == "")
+							)
+							return;
+					}
+					else if (lighttype == 309)
+					{
+						//Light Openwebnet Zigbee
+						dtype = pTypeGeneralSwitch;
+						subtype = sSwitchLightT2;
 						devid = request::findValue(&req, "id");
 						sunitcode = request::findValue(&req, "unitcode");
 						if (

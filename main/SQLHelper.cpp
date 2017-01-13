@@ -33,7 +33,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 107
+#define DB_VERSION 108
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -2099,6 +2099,18 @@ bool CSQLHelper::OpenDatabase()
 			if (!DoesColumnExistsInTable("User", "LightingLog"))
 			{
 				query("ALTER TABLE LightingLog ADD COLUMN [User] VARCHAR(100) DEFAULT ('')");
+			}
+		}
+		if (dbversion < 108)
+		{
+			//Fix possible HTTP notifier problem
+			std::string sValue;
+			GetPreferencesVar("HTTPPostContentType", sValue);
+			if ((sValue.size()>100)||(sValue.empty()))
+			{
+				sValue = "application/json";
+				std::string sencoded = base64_encode((const unsigned char*)sValue.c_str(), sValue.size());
+				UpdatePreferencesVar("HTTPPostContentType", sencoded);
 			}
 		}
 	}

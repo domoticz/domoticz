@@ -1960,6 +1960,9 @@
     <ClInclude Include="..\hardware\Arilux.h">
       <Filter>Devices\Arilux</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\OpenWebNetUSB.h">
+      <Filter>Devices\OpenWebNet</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2582,6 +2585,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\Arilux.cpp">
       <Filter>Devices\Arilux</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\OpenWebNetUSB.cpp">
+      <Filter>Devices\OpenWebNet</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

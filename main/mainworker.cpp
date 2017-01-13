@@ -111,6 +111,7 @@
 #include "../hardware/XiaomiGateway.h"
 #include "../hardware/plugins/Plugins.h"
 #include "../hardware/Arilux.h"
+#include "../hardware/OpenWebNetUSB.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -964,6 +965,9 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_Arilux:	
 		pHardware = new Arilux(ID);
 		break;	
+	case HTYPE_OpenWebNetUSB:
+		pHardware = new COpenWebNetUSB(ID, SerialPort, 115200);
+		break;
 	}
 
 	if (pHardware)

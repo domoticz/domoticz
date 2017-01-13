@@ -430,7 +430,7 @@ void COpenWebNet::UpdateTemp(const int who, const int where, float fval, const i
 /**
     Insert/Update blinds device
 **/
-void COpenWebNet::UpdateBlinds(const int who, const int where, const int Command, const int BatteryLevel, const char *devname)
+void COpenWebNet::UpdateBlinds(const int who, const int where, const int Command, int iInterface, const int BatteryLevel, const char *devname)
 {
     //make device ID
     unsigned char ID1 = (unsigned char)((who & 0xFF00) >> 8);
@@ -438,12 +438,15 @@ void COpenWebNet::UpdateBlinds(const int who, const int where, const int Command
 	unsigned char ID3 = (unsigned char)((where & 0xFF00) >> 8);
 	unsigned char ID4 = (unsigned char)where & 0xFF;
 
+	//interface id (bus identifier)
+	int unit = iInterface;
+
     char szIdx[10];
 	sprintf(szIdx, "%02X%02X%02X%02X", ID1, ID2, ID3, ID4);
 
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",
-                           m_HwdID, szIdx, 0);
+                           m_HwdID, szIdx, unit);
 	if (!result.empty())
 	{
         //check if we have a change, if not do not update it
@@ -455,8 +458,8 @@ void COpenWebNet::UpdateBlinds(const int who, const int where, const int Command
         // Special insert to set SwitchType = STYPE_VenetianBlindsEU
         // so we have stop button!
         m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Name, Used) "
-                         "VALUES (%d,'%s',0,%d,%d,%d,'%q',0)",
-                         m_HwdID, szIdx, pTypeGeneralSwitch, sSwitchBlindsT1, STYPE_VenetianBlindsEU, devname);
+                         "VALUES (%d,'%s', %d,%d,%d,%d,'%q',0)",
+                         m_HwdID, szIdx, unit, pTypeGeneralSwitch, sSwitchBlindsT1, STYPE_VenetianBlindsEU, devname);
     }
 
     _tGeneralSwitch gswitch;
@@ -474,7 +477,7 @@ void COpenWebNet::UpdateBlinds(const int who, const int where, const int Command
 /**
     Insert/Update  switch device
 **/
-void COpenWebNet::UpdateSwitch(const int who, const int where, const int what, const int BatteryLevel, const char *devname, const int subtype)
+void COpenWebNet::UpdateSwitch(const int who, const int where, const int what, int iInterface, const int BatteryLevel, const char *devname, const int subtype)
 {
     //make device ID
 	unsigned char ID1 = (unsigned char)((who & 0xFF00) >> 8);
@@ -486,13 +489,14 @@ void COpenWebNet::UpdateSwitch(const int who, const int where, const int what, c
 	sprintf(szIdx, "%02X%02X%02X%02X", ID1, ID2, ID3, ID4);
 
 	int level = 0;
+	int unit = iInterface;
 
     /* If Dimmer device, set level... */
 	if (what > 1) level = what * 10; // what=0 mean 0% OFF, what=2 to 10 mean 20% to 100% ON
 
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",
-                            m_HwdID, szIdx, 0);
+                            m_HwdID, szIdx, unit);
 	if (!result.empty())
 	{
         //check if we have a change, if not do not update it
@@ -533,6 +537,7 @@ void COpenWebNet::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
     string what = iter->Extract_what();
     string dimension = iter->Extract_dimension();
     string value = iter->Extract_value(0);
+	string sInterface = iter->Extract_interface();
     string devname;
 
     switch (atoi(who.c_str())) {
@@ -554,7 +559,7 @@ void COpenWebNet::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
             }
 
             //pTypeGeneralSwitch, sSwitchLightT1
-            UpdateSwitch(WHO_LIGHTING, atoi(where.c_str()), atoi(what.c_str()), 100, devname.c_str(), sSwitchLightT1);
+            UpdateSwitch(WHO_LIGHTING, atoi(where.c_str()), atoi(what.c_str()), atoi(sInterface.c_str()), 100, devname.c_str(), sSwitchLightT1);
             break;
         case WHO_AUTOMATION:
             if(!iter->IsNormalFrame())
@@ -580,7 +585,7 @@ void COpenWebNet::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
             devname = OPENWEBNET_AUTOMATION;
             devname += " " + where;
 			//pTypeGeneralSwitch, sSwitchBlindsT1
-            UpdateBlinds(WHO_AUTOMATION, atoi(where.c_str()), app_value, 100, devname.c_str());                       // 2
+            UpdateBlinds(WHO_AUTOMATION, atoi(where.c_str()), app_value, atoi(sInterface.c_str()), 100, devname.c_str());                       // 2
             break;
         case WHO_TEMPERATURE_CONTROL:
             if(!iter->IsMeasureFrame())
@@ -664,7 +669,7 @@ void COpenWebNet::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
             devname += " " + where;
 
 			//pTypeGeneralSwitch, sSwitchAuxiliaryT1
-            UpdateSwitch(WHO_AUXILIARY, atoi(where.c_str()), atoi(what.c_str()), 100, devname.c_str(), sSwitchAuxiliaryT1);
+            UpdateSwitch(WHO_AUXILIARY, atoi(where.c_str()), atoi(what.c_str()), atoi(sInterface.c_str()), 100, devname.c_str(), sSwitchAuxiliaryT1);
             break;
 
         case WHO_SCENARIO:                              // 0
@@ -707,6 +712,7 @@ bool COpenWebNet:: WriteToHardware(const char *pdata, const unsigned char length
     int who = 0;
 	int what = 0;
 	int where = 0;
+	int iInterface = pCmd->unitcode;
 
 	// Test packet type
 	switch(packettype){
@@ -793,18 +799,53 @@ bool COpenWebNet:: WriteToHardware(const char *pdata, const unsigned char length
 	}
 
 	//int used = 1;
-	if (!FindDevice(who, where, NULL)) {
+	if (!FindDevice(who, where, iInterface, NULL)) {
 		_log.Log(LOG_ERROR, "COpenWebNet: command received for unknown device : %d/%d", who, where);
 		return false;
 	}
 
-	vector<bt_openwebnet> responses;
-	bt_openwebnet request(who, where, what);
-	if (sendCommand(request, responses))
-	{
-		if (responses.size() > 0)
+	if (iInterface==0) {
+		//local bus
+		vector<bt_openwebnet> responses;
+		bt_openwebnet request(who, where, what);
+		if (sendCommand(request, responses))
 		{
-			return responses.at(0).IsOKFrame();
+			if (responses.size() > 0)
+			{
+				return responses.at(0).IsOKFrame();
+			}
+		}
+	}
+	else {
+		vector<bt_openwebnet> responses;
+		bt_openwebnet request;
+		
+		std::stringstream whoStr;
+		whoStr << who;
+		std::string sWho = whoStr.str();
+
+		std::stringstream whatStr;
+		whatStr << where;
+		std::string sWhat = whatStr.str();
+
+		std::stringstream whereStr;
+		whereStr << what;
+		std::string sWhere = whereStr.str();
+
+		std::stringstream interfaceStr;
+		interfaceStr << iInterface;
+		std::string sInterface = interfaceStr.str();
+
+		std::string lev = "";
+		std::string when = "";
+		
+		request.CreateMsgOpen(sWho, sWhat, sWhere, lev, sInterface, when);
+		if (sendCommand(request, responses))
+		{
+			if (responses.size() > 0)
+			{
+				return responses.at(0).IsOKFrame();
+			}
 		}
 	}
 
@@ -971,12 +1012,12 @@ void COpenWebNet::Do_Work()
 /**
    Find OpenWebNetDevice in DB
 **/
-bool COpenWebNet::FindDevice(int who, int where, int* used)
+bool COpenWebNet::FindDevice(int who, int where, int iInterface, int* used)
 {
 	vector<vector<string> > result;
 	int devType = -1;
 	int subType = -1;
-	int subUnit = 0;
+	int subUnit = iInterface;
 
     		//make device ID
     unsigned char ID1 = (unsigned char)((who & 0xFF00) >> 8);
