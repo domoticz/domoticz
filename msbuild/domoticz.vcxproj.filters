@@ -1852,9 +1852,6 @@
     <ClInclude Include="..\hardware\openwebnet\bt_openwebnet.h">
       <Filter>Devices\OpenWebNet</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\OpenWebNet.h">
-      <Filter>Devices\OpenWebNet</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\I2C.h">
       <Filter>Devices\I2C</Filter>
     </ClInclude>
@@ -1961,6 +1958,9 @@
       <Filter>Devices\Arilux</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\OpenWebNetUSB.h">
+      <Filter>Devices\OpenWebNet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\OpenWebNetTCP.h">
       <Filter>Devices\OpenWebNet</Filter>
     </ClInclude>
   </ItemGroup>
@@ -2487,9 +2487,6 @@
     <ClCompile Include="..\hardware\openwebnet\bt_openwebnet.cpp">
       <Filter>Devices\OpenWebNet</Filter>
     </ClCompile>
-    <ClCompile Include="..\hardware\OpenWebNet.cpp">
-      <Filter>Devices\OpenWebNet</Filter>
-    </ClCompile>
     <ClCompile Include="..\hardware\I2C.cpp">
       <Filter>Devices\I2C</Filter>
     </ClCompile>
@@ -2587,6 +2584,9 @@
       <Filter>Devices\Arilux</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\OpenWebNetUSB.cpp">
+      <Filter>Devices\OpenWebNet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\OpenWebNetTCP.cpp">
       <Filter>Devices\OpenWebNet</Filter>
     </ClCompile>
   </ItemGroup>
