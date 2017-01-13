@@ -468,7 +468,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							}
 							on = true;
 						}
-						if (rotate == "") {
+						//if (rotate == "") {
 							std::string battery = root2["battery"].asString();
 							if (battery != "") {
 								m_XiaomiGateway->InsertUpdateVoltage(sid.c_str(), name, atoi(battery.c_str()));
@@ -476,7 +476,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							else {
 								m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, on, type, level);
 							}
-						}
+						//}
 					}
 					else if (name == "Xiaomi Temperature/Humidity") {
 						std::string temperature = root2["temperature"].asString();
