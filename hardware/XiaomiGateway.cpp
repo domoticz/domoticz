@@ -187,7 +187,7 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 				}
 				else if (Name == "Xiaomi Cube") {
 					// flip90/flip180/move/tap_twice/shake_air/swing/alert/free_fall
-					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|flip90|flip180|move|tap_twice|shake_air|swing|alert|free_fall", false));
+					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|flip90|flip180|move|tap_twice|shake_air|swing|alert|free_fall|clock_wise|anti_clock_wise", false));
 				}
 			}
 		}
@@ -402,7 +402,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 					else if (model == "sensor_ht") {
 						name = "Xiaomi Temperature/Humidity";
 					}
-					else if ((model == "") || (model == "cube")) { // temp work around for model not being reported
+					else if (model == "cube") {
 						name = "Xiaomi Cube";
 						type = STYPE_Selector;
 					}
@@ -448,7 +448,26 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							level = 80;
 							on = true;
 						}
+						std::string no_motion = root2["no_motion"].asString();
+						if (no_motion != "") {
+							on = false;
+						}
+						std::string no_close = root2["no_close"].asString();
+						if (no_close != "") {
+							on = true;
+						}
 						std::string rotate = root2["rotate"].asString();
+						if (rotate != "") {
+							//convert to int
+							int amount = atoi(rotate.c_str());
+							if (amount > 0) {
+								level = 90;
+							}
+							else {
+								level = 100;
+							}
+							on = true;
+						}
 						if (rotate == "") {
 							std::string battery = root2["battery"].asString();
 							if (battery != "") {
