@@ -1955,9 +1955,7 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 			else
 			{
 				float DelayTime = afterTimerSeconds;
-				_tTaskItem tItem;
-				tItem = _tTaskItem::SetVariable(DelayTime, (const uint64_t)atol(variableNo.c_str()), doWhat, false);
-				m_sql.AddTaskItem(tItem);
+				m_sql.AddTaskItem(_tTaskItem::SetVariable(DelayTime, (const uint64_t)atol(variableNo.c_str()), doWhat, false));
 			}
 			actionsDone = true;
 			continue;
@@ -2037,7 +2035,7 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 				sPath = szUserDataFolder + "scripts/" + sPath;
 #endif
 
-			m_sql.AddTaskItem(_tTaskItem::ExecuteScript(1, sPath, sParam));
+			m_sql.AddTaskItem(_tTaskItem::ExecuteScript(0.2f, sPath, sParam));
 			actionsDone = true;
 			continue;
 		}
@@ -3156,9 +3154,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 				std::stringstream sstr;
 				sstr << sd[0];
 				sstr >> idx;
-				_tTaskItem tItem;
-				tItem = _tTaskItem::SetVariable(DelayTime, idx, variableValue, false);
-				m_sql.AddTaskItem(tItem);
+				m_sql.AddTaskItem(_tTaskItem::SetVariable(DelayTime, idx, variableValue, false));
 			}
 			scriptTrue = true;
 		}
@@ -3304,9 +3300,7 @@ void CEventSystem::UpdateDevice(const std::string &DevParams)
 void CEventSystem::OpenURL(const std::string &URL)
 {
 	_log.Log(LOG_STATUS, "EventSystem: Fetching url...");
-	_tTaskItem tItem;
-	tItem = _tTaskItem::GetHTTPPage(1, URL, "OpenURL");
-	m_sql.AddTaskItem(tItem);
+	m_sql.AddTaskItem(_tTaskItem::GetHTTPPage(0.2f, URL, "OpenURL"));
 	// maybe do something with sResult in the future.
 }
 

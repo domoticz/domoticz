@@ -6320,9 +6320,7 @@ bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string &OnAction
 			return true;
 		if ((OnAction.find("http://") != std::string::npos) || (OnAction.find("https://") != std::string::npos))
 		{
-			_tTaskItem tItem;
-			tItem=_tTaskItem::GetHTTPPage(1,OnAction,"SwitchActionOn");
-			AddTaskItem(tItem);
+			AddTaskItem(_tTaskItem::GetHTTPPage(0.2f, OnAction, "SwitchActionOn"));
 		}
 		else if (OnAction.find("script://")!=std::string::npos)
 		{
@@ -6342,7 +6340,7 @@ bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string &OnAction
 			}
 			if (file_exist(scriptname.c_str()))
 			{
-				AddTaskItem(_tTaskItem::ExecuteScript(1,scriptname,scriptparams));
+				AddTaskItem(_tTaskItem::ExecuteScript(0.2f,scriptname,scriptparams));
 			}
 			else
 				_log.Log(LOG_ERROR, "SQLHelper: Error script not found '%s'", scriptname.c_str());
@@ -6354,9 +6352,7 @@ bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string &OnAction
 			return true;
 		if ((OffAction.find("http://") != std::string::npos) || (OffAction.find("https://") != std::string::npos))
 		{
-			_tTaskItem tItem;
-			tItem=_tTaskItem::GetHTTPPage(1,OffAction,"SwitchActionOff");
-			AddTaskItem(tItem);
+			AddTaskItem(_tTaskItem::GetHTTPPage(0.2f, OffAction, "SwitchActionOff"));
 		}
 		else if (OffAction.find("script://")!=std::string::npos)
 		{
@@ -6375,7 +6371,7 @@ bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string &OnAction
 			}
 			if (file_exist(scriptname.c_str()))
 			{
-				AddTaskItem(_tTaskItem::ExecuteScript(1,scriptname,scriptparams));
+				AddTaskItem(_tTaskItem::ExecuteScript(0.2f,scriptname,scriptparams));
 			}
 		}
 	}

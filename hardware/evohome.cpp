@@ -439,7 +439,7 @@ void CEvohome::RunScript(const char *pdata, const unsigned char length)
 			
 			if (file_exist(scriptname.c_str()))
 			{
-				m_sql.AddTaskItem(_tTaskItem::ExecuteScript(1,scriptname,scriptparams));
+				m_sql.AddTaskItem(_tTaskItem::ExecuteScript(0.2f,scriptname,scriptparams));
 			}
 			else
 				_log.Log(LOG_ERROR,"evohome: Error script not found '%s'",scriptname.c_str());
