@@ -3314,13 +3314,13 @@ define(['app'], function (app) {
 				totunits=4;
 			}
 			else if ((lighttype==305) || (lighttype==306)) {
-				//Openwebnet Blinds/light
+				//Openwebnet Blinds/light Bus
 			    totrooms = 11;//area, from 0 to 9 if physical configuration, 0 to 10 if virtual configuration
 			    totpointofloads = 16;//point of load, from 0 to 9 if physical configuration, 1 to 15 if virtual configuration
 				totbus = 10;//maximum 10 local buses
 			}
 			else if (lighttype==307) {
-				//Openwebnet Auxiliary
+				//Openwebnet Auxiliary Bus
 				totrooms=10;
 			}
 			else if ((lighttype == 308) || (lighttype == 309)) {
@@ -3334,7 +3334,7 @@ define(['app'], function (app) {
 			$("#dialog-addmanuallightdevice #lightingparams_gpio").hide();
 			$("#dialog-addmanuallightdevice #homeconfortparams").hide();
 			$("#dialog-addmanuallightdevice #fanparams").hide();
-			$("#dialog-addmanuallightdevice #openwebnetparams").hide();
+			$("#dialog-addmanuallightdevice #openwebnetparamsBus").hide();
 			$("#dialog-addmanuallightdevice #openwebnetparamsAUX").hide();
 			$("#dialog-addmanuallightdevice #openwebnetparamsZigbee").hide();
 
@@ -3434,30 +3434,30 @@ define(['app'], function (app) {
 				$("#dialog-addmanuallightdevice #fanparams").show();
 			}
 			else if((lighttype==305) || (lighttype==306)){
-				//Openwebnet Blinds/light
-				$("#dialog-addmanuallightdevice #openwebnetparams #combocmd1  >option").remove();
+				//Openwebnet Blinds/light Bus
+			    $("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd1  >option").remove();
 				for (ii=1; ii<totrooms; ii++)
 				{
-					$('#dialog-addmanuallightdevice #openwebnetparams #combocmd1').append($('<option></option>').val(ii).html(ii));
+				    $('#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd1').append($('<option></option>').val(ii).html(ii));
 				}
-				$("#dialog-addmanuallightdevice #openwebnetparams #combocmd2  >option").remove();
+				$("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd2  >option").remove();
 				for (ii=1; ii<totpointofloads; ii++)
 				{
-					$('#dialog-addmanuallightdevice #openwebnetparams #combocmd2').append($('<option></option>').val(ii).html(ii));
+				    $('#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd2').append($('<option></option>').val(ii).html(ii));
 				}
-				$("#dialog-addmanuallightdevice #openwebnetparams #combocmd3  >option").remove();
-				$("#dialog-addmanuallightdevice #openwebnetparams #combocmd3").append($('<option></option>').val(0).html("local bus"));
+				$("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd3  >option").remove();
+				$("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd3").append($('<option></option>').val(0).html("local bus"));
 				for (ii = 1; ii < totbus; ii++) {
-				    $("#dialog-addmanuallightdevice #openwebnetparams #combocmd3").append($('<option></option>').val(ii).html(ii));
+				    $("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd3").append($('<option></option>').val(ii).html(ii));
 				}
 
 				$("#dialog-addmanuallightdevice #lighting1params").hide();
 				$("#dialog-addmanuallightdevice #lighting2params").hide();
 				$("#dialog-addmanuallightdevice #lighting3params").hide();
-				$("#dialog-addmanuallightdevice #openwebnetparams").show();
+				$("#dialog-addmanuallightdevice #openwebnetparamsBus").show();
 			}
 			else if (lighttype==307) {
-				//Openwebnet Auxiliary
+				//Openwebnet Auxiliary Bus
 				$("#dialog-addmanuallightdevice #openwebnetparamsAUX #combocmd1  >option").remove();
 				for (ii=1; ii<totrooms; ii++)
 				{
@@ -3473,7 +3473,7 @@ define(['app'], function (app) {
 			    $("#dialog-addmanuallightdevice #lighting1params").hide();
 			    $("#dialog-addmanuallightdevice #lighting2params").hide();
 			    $("#dialog-addmanuallightdevice #lighting3params").hide();
-			    $("#dialog-addmanuallightdevice #openwebnetparams").hide();
+			    $("#dialog-addmanuallightdevice #openwebnetparamsBus").hide();
 			    $("#dialog-addmanuallightdevice #openwebnetparamsAUX").hide();
 			    $("#dialog-addmanuallightdevice #openwebnetparamsZigbee").show();
 			    $("#dialog-addmanuallightdevice #openwebnetparamsZigbee #combocmd2  >option").remove();
@@ -3605,19 +3605,19 @@ define(['app'], function (app) {
 				mParams+="&id="+ID;
 			}
 			else if (lighttype==305) {
-				//OpenWebNet Blinds
-				var appID= parseInt($("#dialog-addmanuallightdevice #openwebnetparams #combocmd1 option:selected").val()+
-					$("#dialog-addmanuallightdevice #openwebnetparams #combocmd2 option:selected").val());
+				//OpenWebNet Blinds Bus
+			    var appID = parseInt($("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd1 option:selected").val() +
+					$("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd2 option:selected").val());
                 var ID = ("0002" + ("0000" + appID.toString(16)).slice(-4)); // WHO_AUTOMATION
-                var unitcode = $("#dialog-addmanuallightdevice #openwebnetparams #combocmd3 option:selected").val();//TODO : handle bus id (interface) in hardware 
+                var unitcode = $("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd3 option:selected").val();//TODO : handle bus id (interface) in hardware 
 				mParams+="&id="+ID.toUpperCase()+"&unitcode="+unitcode;
 			}
 			else if (lighttype==306) {
-				//OpenWebNet light
-				var appID= parseInt($("#dialog-addmanuallightdevice #openwebnetparams #combocmd1 option:selected").val()+
-					$("#dialog-addmanuallightdevice #openwebnetparams #combocmd2 option:selected").val());
+				//OpenWebNet light Bus
+			    var appID = parseInt($("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd1 option:selected").val() +
+					$("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd2 option:selected").val());
                 var ID = ("0001" + ("0000" + appID.toString(16)).slice(-4)); // WHO_LIGHTING
-                var unitcode = $("#dialog-addmanuallightdevice #openwebnetparams #combocmd3 option:selected").val();//TODO : handle bus id (interface) in hardware 
+                var unitcode = $("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd3 option:selected").val();//TODO : handle bus id (interface) in hardware 
 				mParams+="&id="+ID.toUpperCase()+"&unitcode="+unitcode;
 			}
 			else if (lighttype==307) {

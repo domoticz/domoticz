@@ -1206,7 +1206,7 @@ namespace http {
 			else if (htype == HTYPE_RaspberryGPIO) {
 				//all fine here!
 			}
-			else if (htype == HTYPE_OpenWebNet) {
+			else if (htype == HTYPE_OpenWebNetTCP) {
 				//All fine here
 			}
 			else if (htype == HTYPE_Daikin) {
@@ -1519,7 +1519,7 @@ namespace http {
 				)
 					return;
 			}
-			else if (htype == HTYPE_OpenWebNet) {
+			else if (htype == HTYPE_OpenWebNetTCP) {
 				//All fine here
 			}
 			else if (htype == HTYPE_PythonPlugin) {
@@ -3397,7 +3397,7 @@ namespace http {
 						case HTYPE_RFLINKTCP:
 						case HTYPE_ZIBLUEUSB:
 						case HTYPE_ZIBLUETCP:
-						case HTYPE_OpenWebNet:
+						case HTYPE_OpenWebNetTCP:
 						case HTYPE_OpenWebNetUSB:
 							root["result"][ii]["idx"] = ID;
 							root["result"][ii]["Name"] = Name;
@@ -4155,7 +4155,7 @@ namespace http {
 						sunitcode = "0";
 					}
 					else if (lighttype == 305) {
-						//Blinds Openwebnet
+						//Blinds Openwebnet Bus
 						dtype = pTypeGeneralSwitch;
 						subtype = sSwitchBlindsT1;
 						devid = request::findValue(&req, "id");
@@ -4167,7 +4167,7 @@ namespace http {
 							return;
 					}
 					else if (lighttype == 306) {
-						//Light Openwebnet
+						//Light Openwebnet Bus
 						dtype = pTypeGeneralSwitch;
 						subtype = sSwitchLightT1;
 						devid = request::findValue(&req, "id");
@@ -4180,7 +4180,7 @@ namespace http {
 					}
 					else if (lighttype == 307)
 					{
-						//Auxiliary Openwebnet
+						//Auxiliary Openwebnet Bus
 						dtype = pTypeGeneralSwitch;
 						subtype = sSwitchAuxiliaryT1;
 						devid = request::findValue(&req, "id");
@@ -4674,7 +4674,7 @@ namespace http {
 					}
 					else if (lighttype == 305)
 					{
-						//Blinds Openwebnet
+						//Blinds Openwebnet Bus
 						dtype = pTypeGeneralSwitch;
 						subtype = sSwitchBlindsT1;
 						devid = request::findValue(&req, "id");
@@ -4687,7 +4687,7 @@ namespace http {
 					}
 					else if (lighttype == 306)
 					{
-						//Light Openwebnet
+						//Light Openwebnet Bus
 						dtype = pTypeGeneralSwitch;
 						subtype = sSwitchLightT1;
 						devid = request::findValue(&req, "id");
@@ -4700,7 +4700,7 @@ namespace http {
 					}
 					else if (lighttype == 307)
 					{
-					    //Auxiliary Openwebnet
+					    //Auxiliary Openwebnet Bus
 					    dtype = pTypeGeneralSwitch;
 						subtype = sSwitchAuxiliaryT1;
 						devid = request::findValue(&req, "id");
