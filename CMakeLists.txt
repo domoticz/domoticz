@@ -9,6 +9,9 @@ SET(DOMO_MIN_LIBBOOST_VERSION 105500)
 
 option(USE_BUILTIN_LUA "Use builtin lua library" YES)
 IF(USE_BUILTIN_LUA)
+  IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    add_definitions(-DLUA_USE_MACOSX)
+  ENDIF()
   add_subdirectory (lua)
   get_directory_property (LUA_LIBRARIES DIRECTORY lua
     DEFINITION LUA_LIBRARIES)
