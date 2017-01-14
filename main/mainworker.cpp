@@ -134,7 +134,7 @@
 #include <inttypes.h>
 
 #ifdef _DEBUG
-	//#define PARSE_RFXCOM_DEVICE_LOG
+	#define PARSE_RFXCOM_DEVICE_LOG
 	//#define DEBUG_DOWNLOAD
 	//#define DEBUG_RXQUEUE
 #endif
@@ -4718,7 +4718,7 @@ void MainWorker::decode_Lighting5(const int HwdID, const _eHardwareTypes HwdType
 	char szTmp[100];
 	unsigned char devType=pTypeLighting5;
 	unsigned char subType=pResponse->LIGHTING5.subtype;
-	if ((subType != sTypeEMW100) && (subType != sTypeLivolo) && (subType != sTypeLivoloAppliance) && (subType != sTypeRGB432W))
+	if ((subType != sTypeEMW100) && (subType != sTypeLivolo) && (subType != sTypeLivoloAppliance) && (subType != sTypeRGB432W) && (subType != sTypeKangtai))
 		sprintf(szTmp,"%02X%02X%02X", pResponse->LIGHTING5.id1, pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
 	else
 		sprintf(szTmp,"%02X%02X", pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
@@ -5159,6 +5159,34 @@ void MainWorker::decode_Lighting5(const int HwdID, const _eHardwareTypes HwdType
 			case light5_sSetLevel:
 				sprintf(szTmp, "Set dim level to: %.2f %%", flevel);
 				WriteMessage(szTmp);
+				break;
+			default:
+				WriteMessage("UNKNOWN");
+				break;
+			}
+			break;
+		case sTypeKangtai:
+			WriteMessage("subtype       = Kangtai / Cotech");
+			sprintf(szTmp, "Sequence nbr  = %d", pResponse->LIGHTING5.seqnbr);
+			WriteMessage(szTmp);
+			sprintf(szTmp, "ID            = %02X%02X%02X", pResponse->LIGHTING5.id1, pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
+			WriteMessage(szTmp);
+			sprintf(szTmp, "Unit          = %d", pResponse->LIGHTING5.unitcode);
+			WriteMessage(szTmp);
+			WriteMessage("Command       = ", false);
+			switch (pResponse->LIGHTING5.cmnd)
+			{
+			case light5_sOff:
+				WriteMessage("Off");
+				break;
+			case light5_sOn:
+				WriteMessage("On");
+				break;
+			case light5_sGroupOff:
+				WriteMessage("Group Off");
+				break;
+			case light5_sGroupOn:
+				WriteMessage("Group On");
 				break;
 			default:
 				WriteMessage("UNKNOWN");
@@ -5951,6 +5979,9 @@ void MainWorker::decode_RFY(const int HwdID, const _eHardwareTypes HwdType, cons
 		{
 		case sTypeRFY:
 			WriteMessage("subtype       = RFY");
+			break;
+		case sTypeRFY2:
+			WriteMessage("subtype       = RFY2");
 			break;
 		case sTypeRFYext:
 			WriteMessage("subtype       = RFY-Ext");
@@ -11008,6 +11039,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			lcmd.RFY.id3=ID4;
 			lcmd.RFY.seqnbr=m_hardwaredevices[hindex]->m_SeqNr++;
 			lcmd.RFY.unitcode=Unit;
+
 			if (IsTesting)
 			{
 				lcmd.RFY.cmnd = rfy_sProgram;
@@ -11017,6 +11049,17 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 				if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.RFY.cmnd, options))
 					return false;
 			}
+
+			if (lcmd.BLINDS1.subtype == sTypeRFY2)
+			{
+				//Special case for protocol version 2
+				lcmd.BLINDS1.subtype = sTypeRFY;
+				if (lcmd.RFY.cmnd == rfy_sUp)
+					lcmd.RFY.cmnd = rfy_s2SecUp;
+				else if (lcmd.RFY.cmnd == rfy_sDown)
+					lcmd.RFY.cmnd = rfy_s2SecDown;
+			}
+
 			level=15;
 			lcmd.RFY.filler=0;
 			lcmd.RFY.rssi=12;

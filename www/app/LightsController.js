@@ -3290,8 +3290,8 @@ define(['app'], function (app) {
 				bIsType5=1;
 				totunits=4;
 			}
-			else if (lighttype==102) {
-				//RFY
+			else if ((lighttype==102)||(lighttype==107)) {
+				//RFY/RFY2
 				bIsType5=1;
 				totunits=16;
 			}
@@ -3658,8 +3658,9 @@ define(['app'], function (app) {
 					(lighttype==65)||
 					(lighttype==100)||
 					(lighttype==102)||
+					(lighttype==103)||
 					(lighttype==105)||
-					(lighttype==103)
+					(lighttype==107)
 				) {
 					bIsType5=1;
 				}

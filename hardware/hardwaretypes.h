@@ -230,6 +230,9 @@
 #define sTypeRego6XXStatus   0x02
 #define sTypeRego6XXCounter  0x03
 
+//RFY2 (protocol v2)
+#define sTypeRFY2			0xFE
+
 //types for evohome
 #define pTypeEvohome 0x45
 #define sTypeEvohome 0x00 //Controller

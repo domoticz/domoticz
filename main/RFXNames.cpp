@@ -590,7 +590,8 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLighting5, sTypeAvantek, "Avantek" },
 		{ pTypeLighting5, sTypeIT, "Intertek,FA500,PROmax" },
 		{ pTypeLighting5, sTypeMDREMOTE108, "MDRemote 108" },
-
+		{ pTypeLighting5, sTypeKangtai, "Kangtai / Cotech" },
+		
 		{ pTypeLighting6, sTypeBlyss, "Blyss" },
 
 		{ pTypeHomeConfort, sTypeHomeConfortTEL010 , "TEL-010" },
@@ -737,6 +738,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLimitlessLights, sTypeLimitlessWhite, "White" },
 
 		{ pTypeRFY, sTypeRFY, "RFY" },
+		{ pTypeRFY, sTypeRFY2, "RFY2" },
 		{ pTypeRFY, sTypeRFYext, "RFY-Ext" },
 		{ pTypeRFY, sTypeASA, "ASA" },
 
@@ -951,6 +953,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeLighting5, sTypeAvantek, "Status" },
 		{ pTypeLighting5, sTypeIT, "Status" },
 		{ pTypeLighting5, sTypeMDREMOTE108, "Status" },
+		{ pTypeLighting5, sTypeKangtai, "Status" },		
 
 		{ pTypeLighting6, sTypeBlyss, "Status" },
 
@@ -1093,6 +1096,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeLimitlessLights, sTypeLimitlessWhite, "Status" },
 
 		{ pTypeRFY, sTypeRFY, "Status" },
+		{ pTypeRFY, sTypeRFY2, "Status" },
 		{ pTypeRFY, sTypeRFYext, "Status" },
 		{ pTypeRFY, sTypeASA, "Status" },
 		{ pTypeEvohome, sTypeEvohome, "Status" },
