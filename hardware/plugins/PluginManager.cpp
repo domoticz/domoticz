@@ -20,6 +20,7 @@
 #include "../json/json.h"
 #include "../tinyxpath/tinyxml.h"
 #include "../main/localtime_r.h"
+#include "../webserver/Base64.h"
 #ifdef WIN32
 #	include <direct.h>
 #else
@@ -600,12 +601,13 @@ namespace Plugins {
 	{
 		char*		Name = NULL;
 		int			Unit = -1;
+		char*		TypeName = NULL;
 		int			Type = -1;
 		int			SubType = -1;
 		int			SwitchType = -1;
 		int			Image = -1;
 		char*		Options = NULL;
-		static char *kwlist[] = { "Name", "Unit", "Type", "Subtype", "Switchtype", "Image", "Options", NULL };
+		static char *kwlist[] = { "Name", "Unit", "TypeName", "Type", "Subtype", "Switchtype", "Image", "Options", NULL };
 
 		try
 		{
@@ -629,7 +631,7 @@ namespace Plugins {
 				return 0;
 			}
 
-			if (PyArg_ParseTupleAndKeywords(args, kwds, "si|iiiis", kwlist, &Name, &Unit, &Type, &SubType, &SwitchType, &Image, &Options))
+			if (PyArg_ParseTupleAndKeywords(args, kwds, "si|siiiis", kwlist, &Name, &Unit, &TypeName, &Type, &SubType, &SwitchType, &Image, &Options))
 			{
 				self->pPlugin = pModState->pPlugin;
 				self->PluginKey = PyUnicode_FromString(pModState->pPlugin->m_PluginKey.c_str());
@@ -639,8 +641,102 @@ namespace Plugins {
 					self->Name = PyUnicode_FromString(Name);
 				}
 				if (Unit != -1) self->Unit = Unit;
-				if (Type != -1) self->Type = Type;
-				if (SubType != -1) self->SubType = SubType;
+				if (TypeName) {
+					std::string	sTypeName = TypeName;
+
+					self->Type = pTypeGeneral;
+
+					if (sTypeName == "Pressure")					self->SubType = sTypePressure;
+					else if (sTypeName == "Percentage")				self->SubType = sTypePercentage;
+					else if (sTypeName == "Gas")
+					{
+						self->Type = pTypeP1Gas;
+						self->SubType = sTypeP1Gas;
+					}
+					else if (sTypeName == "Voltage")				self->SubType = sTypeVoltage;
+					else if (sTypeName == "Text")					self->SubType = sTypeTextStatus;
+					else if (sTypeName == "Switch")					self->SubType = sSwitchGeneralSwitch;
+					else if (sTypeName == "Alert")					self->SubType = sTypeAlert;
+					else if (sTypeName == "Current/Ampere")	
+					{
+						self->Type = pTypeCURRENT;
+						self->SubType = sTypeELEC1;
+					}
+					else if (sTypeName == "Sound Level")			self->SubType = sTypeSoundLevel;
+					else if (sTypeName == "Barometer")				self->SubType = sTypeBaro;
+					else if (sTypeName == "Visibility")				self->SubType = sTypeVisibility;
+					else if (sTypeName == "Distance")				self->SubType = sTypeDistance;
+					else if (sTypeName == "Counter Incremental")	self->SubType = sTypeCounterIncremental;
+					else if (sTypeName == "Soil Moisture")			self->SubType = sTypeSoilMoisture;
+					else if (sTypeName == "Leaf Wetness")			self->SubType = sTypeLeafWetness;
+					else if (sTypeName == "kWh")					self->SubType = sTypeKwh;
+					else if (sTypeName == "Current (Single)")		self->SubType = sTypeCurrent;
+					else if (sTypeName == "Solar Radiation")		self->SubType = sTypeSolarRadiation;
+					else if (sTypeName == "Temperature")
+					{
+						self->Type = pTypeTEMP;
+						self->SubType = sTypeTEMP5;
+					}
+					else if (sTypeName == "Humidity")
+					{
+						self->Type = pTypeHUM;
+						self->SubType = sTypeHUM1;
+					}
+					else if (sTypeName == "Temp+Hum")
+					{
+						self->Type = pTypeTEMP_HUM;
+						self->SubType = sTypeTH1;
+					}
+					else if (sTypeName == "Temp+Hum+Baro")
+					{
+						self->Type = pTypeTEMP_HUM_BARO;
+						self->SubType = sTypeTHB1;
+					}
+					else if (sTypeName == "Wind")
+					{
+						self->Type = pTypeWIND;
+						self->SubType = sTypeWIND1;
+					}
+					else if (sTypeName == "Rain")
+					{
+						self->Type = pTypeRAIN;
+						self->SubType = sTypeRAIN3;
+					}
+					else if (sTypeName == "UV")
+					{
+						self->Type = pTypeUV;
+						self->SubType = sTypeUV1;
+					}
+					else if (sTypeName == "Air Quality")
+					{
+						self->Type = pTypeAirQuality;
+						self->SubType = sTypeVoltcraft;
+					}
+					else if (sTypeName == "Usage")
+					{
+						self->Type = pTypeUsage;
+						self->SubType = sTypeElectric;
+					}
+					else if (sTypeName == "Illumination")
+					{
+						self->Type = pTypeLux;
+						self->SubType = sTypeLux;
+					}
+					else if (sTypeName == "Waterflow")				self->SubType = sTypeWaterflow;
+					else if (sTypeName == "Wind+Temp+Chill")
+					{
+						self->Type = pTypeWIND;
+						self->SubType = sTypeWIND4;
+					}
+					else if (sTypeName == "Selector Switch")
+					{
+						self->Type = pTypeGeneralSwitch;
+						self->SubType = sSwitchTypeSelector;
+					}
+					else if (sTypeName == "Custom")					self->SubType = sTypeCustom;
+				}
+				if ((Type != -1) && Type) self->Type = Type;
+				if ((SubType != -1) && SubType) self->SubType = SubType;
 				if (SwitchType != -1) self->SwitchType = SwitchType;
 				if (Image != -1) self->Image = Image;
 				if (Options) {
@@ -653,7 +749,7 @@ namespace Plugins {
 				CPlugin* pPlugin = NULL;
 				if (pModState) pPlugin = pModState->pPlugin;
 				LogPythonException(pPlugin, __func__);
-				_log.Log(LOG_ERROR, "Expected: myVar = Domoticz.Device(Name=\"myDevice\", Unit=0, Type=0, Subtype=0, Switchtype=0, Image=0, Options=\"\")");
+				_log.Log(LOG_ERROR, "Expected: myVar = Domoticz.Device(Name=\"myDevice\", Unit=0, TypeName=\"\", Type=0, Subtype=0, Switchtype=0, Image=0, Options=\"\")");
 			}
 		}
 		catch (std::exception e)
@@ -679,7 +775,40 @@ namespace Plugins {
 
 	static PyObject* CDevice_refresh(CDevice* self)
 	{
-		return NULL;
+		if ((self->pPlugin) && (self->HwdID != -1) && (self->Unit != -1))
+		{
+			// load associated devices to make them available to python
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query("SELECT Unit, ID, Name, nValue, sValue, DeviceID, Type, SubType, SwitchType, LastLevel, CustomImage FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) ORDER BY Unit ASC", self->HwdID, self->Unit);
+			if (result.size() > 0)
+			{
+				for (std::vector<std::vector<std::string> >::const_iterator itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
+					self->Unit = atoi(sd[0].c_str());
+					self->ID = atoi(sd[1].c_str());
+					Py_DECREF(self->Name);
+					self->Name = PyUnicode_FromString(sd[2].c_str());
+					self->nValue = atoi(sd[3].c_str());
+					Py_DECREF(self->sValue);
+					self->sValue = PyUnicode_FromString(sd[4].c_str());
+					Py_DECREF(self->DeviceID);
+					self->DeviceID = PyUnicode_FromString(sd[5].c_str());
+					self->Type = atoi(sd[6].c_str());
+					self->SubType = atoi(sd[7].c_str());
+					self->SwitchType = atoi(sd[8].c_str());
+					self->LastLevel = atoi(sd[9].c_str());
+					self->Image = atoi(sd[10].c_str());
+				}
+			}
+		}
+		else
+		{
+			_log.Log(LOG_ERROR, "Device refresh failed, Device object is not associated with a plugin.");
+		}
+
+		Py_INCREF(Py_None);
+		return Py_None;
 	}
 
 	static PyObject* CDevice_insert(CDevice* self, PyObject *args)
@@ -718,6 +847,10 @@ namespace Plugins {
 							Py_INCREF(Py_None);
 							return Py_None;
 						}
+
+						// Refresh device data to ensure it is usable straight away
+						PyObject* pRetVal = CDevice_refresh(self);
+						Py_DECREF(pRetVal);
 					}
 					else
 					{
@@ -947,7 +1080,7 @@ namespace Plugins {
 	}
 
 
-	void CPluginProtocol::ProcessMessage(const int HwdID, std::string &ReadData)
+	void CPluginProtocol::ProcessInbound(const int HwdID, std::string &ReadData)
 	{
 		// Raw protocol is to just always dispatch data to plugin without interpretation
 		CPluginMessage	Message(PMT_Message, HwdID, ReadData);
@@ -968,7 +1101,7 @@ namespace Plugins {
 		m_sRetainedData.clear();
 	}
 
-	void CPluginProtocolLine::ProcessMessage(const int HwdID, std::string & ReadData)
+	void CPluginProtocolLine::ProcessInbound(const int HwdID, std::string & ReadData)
 	{
 		//
 		//	Handles the cases where a read contains a partial message or multiple messages
@@ -992,7 +1125,7 @@ namespace Plugins {
 		m_sRetainedData = sData; // retain any residual for next time
 	}
 
-	void CPluginProtocolJSON::ProcessMessage(const int HwdID, std::string & ReadData)
+	void CPluginProtocolJSON::ProcessInbound(const int HwdID, std::string & ReadData)
 	{
 		//
 		//	Handles the cases where a read contains a partial message or multiple messages
@@ -1030,7 +1163,7 @@ namespace Plugins {
 		m_sRetainedData = sData; // retain any residual for next time
 	}
 
-	void CPluginProtocolXML::ProcessMessage(const int HwdID, std::string & ReadData)
+	void CPluginProtocolXML::ProcessInbound(const int HwdID, std::string & ReadData)
 	{
 		//
 		//	Only returns whole XML messages. Does not handle <tag /> as the top level tag
@@ -1087,12 +1220,164 @@ namespace Plugins {
 		}
 		catch (std::exception const &exc)
 		{
-			_log.Log(LOG_ERROR, "(CPluginProtocolXML::ProcessMessage) Unexpected exception thrown '%s', Data '%s'.", exc.what(), sData.c_str());
+			_log.Log(LOG_ERROR, "(CPluginProtocolXML::ProcessInbound) Unexpected exception thrown '%s', Data '%s'.", exc.what(), sData.c_str());
 		}
 
 		m_sRetainedData = sData; // retain any residual for next time
 	}
 
+	void CPluginProtocolHTTP::ProcessInbound(const int HwdID, std::string& ReadData)
+	{
+		// HTTP/1.0 404 Not Found
+		// Content-Type: text/html; charset=UTF-8
+		// Content-Length: 1570
+		// Date: Thu, 05 Jan 2017 05:50:33 GMT
+		//
+		// <!DOCTYPE html>
+		// <html lang=en>
+		//   <meta charset=utf-8>
+		//   <meta name=viewport...
+
+		//
+		//	Handles the cases where a read contains a partial message
+		//
+		std::string	sData = m_sRetainedData + ReadData;  // if there was some data left over from last time add it back in
+
+		// is this the start of a response?
+		if (!m_Status)
+		{
+			std::string		sFirstLine = sData.substr(0,sData.find_first_of('\r'));
+			sFirstLine = sFirstLine.substr(sFirstLine.find_first_of(' ') + 1);
+			sFirstLine = sFirstLine.substr(0,sFirstLine.find_first_of(' '));
+			m_Status = atoi(sFirstLine.c_str());
+
+			sData = sData.substr(sData.find_first_of('\n') + 1);
+
+			// Remove headers
+			PyObject *pHeaderDict = PyDict_New();
+			while (sData.length() && (sData[0] != '\r'))
+			{
+				std::string		sHeaderLine = sData.substr(0, sData.find_first_of('\r'));
+				std::string		sHeaderName = sData.substr(0, sHeaderLine.find_first_of(':'));
+				std::string		sHeaderText = sHeaderLine.substr(sHeaderName.length()+2);
+				if (sHeaderName == "Content-Length")
+				{
+					m_ContentLength = atoi(sHeaderText.c_str());
+				}
+				PyObject*	pObj = Py_BuildValue("s", sHeaderText.c_str());
+				if (PyDict_SetItemString(pHeaderDict, sHeaderName.c_str(), pObj) == -1)
+				{
+					_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%s' to headers.", __func__, sHeaderName.c_str(), sHeaderText.c_str());
+				} 
+				Py_DECREF(pObj);
+				sData = sData.substr(sData.find_first_of('\n') + 1);
+			}
+			if (sData.length())
+			{
+				m_Headers = pHeaderDict;
+				sData = sData.substr(sData.find_first_of('\n') + 1);
+			}
+			else
+			{
+				// not enough data arrived to complete header processing
+				m_sRetainedData += ReadData; // retain any residual for next time
+				m_Status = 0;
+				m_ContentLength = 0;
+				Py_DECREF(pHeaderDict);
+				return;
+			}
+		}
+
+		// If full message then return it - Handles cases where Content-Length may no have been supplied
+		if ((m_ContentLength && (m_ContentLength == sData.length())) ||
+			(!m_ContentLength && (sData.find("</html>") != std::string::npos)) ||
+			(!m_ContentLength && (sData.find("</HTML>") != std::string::npos)))
+		{
+			CPluginMessage	Message(PMT_Message, HwdID, ReadData);
+			Message.m_iLevel = m_Status;
+			Message.m_Object = m_Headers;
+			boost::lock_guard<boost::mutex> l(PluginMutex);
+			PluginMessageQueue.push(Message);
+
+			m_Status = 0;
+			m_ContentLength = 0;
+			m_Headers = NULL;
+			m_sRetainedData = "";
+		}
+		else
+		{
+			m_sRetainedData = sData; // retain any residual for next time
+		}
+	}
+
+	std::string	CPluginProtocolHTTP::ProcessOutbound(const CPluginMessage & WriteMessage)
+	{
+		std::string	sHttpRequest = "GET ";
+		// Create first line of the request.
+		// GET /path/file.html HTTP/1.1
+		// Connection: "keep-alive"
+		// Accept: "text/html"
+		//
+		if (WriteMessage.m_Operation.length())
+		{
+			sHttpRequest = WriteMessage.m_Operation + " ";
+		}
+
+		if (WriteMessage.m_Address.length())
+		{
+			sHttpRequest += WriteMessage.m_Address + " ";
+		}
+		else
+		{
+			sHttpRequest = "/ ";
+		}
+		sHttpRequest += "HTTP/1.1\r\n";
+
+		// If username &/or password specified then add a basic auth header
+		std::string auth;
+		if (m_Username.length() > 0 || m_Password.length() > 0)
+		{
+			if (m_Username.length() > 0)
+			{
+				auth += m_Username;
+			}
+			auth += ":";
+			if (m_Password.length() > 0)
+			{
+				auth += m_Password;
+			}
+			std::string encodedAuth = base64_encode((const unsigned char *)auth.c_str(), auth.length());
+			sHttpRequest += "Authorization:Basic " + encodedAuth;
+		}
+
+		// Did we get headers to send?
+		if (WriteMessage.m_Object)
+		{
+			if ((((PyObject*)WriteMessage.m_Object)->ob_type->tp_flags & (Py_TPFLAGS_DICT_SUBCLASS)) != 0)
+			{
+				PyObject*	pHeaders = (PyObject*)WriteMessage.m_Object;
+				PyObject *key, *value;
+				Py_ssize_t pos = 0;
+				while (PyDict_Next(pHeaders, &pos, &key, &value))
+				{
+					PyObject*	pKeyBytes = PyUnicode_AsASCIIString(key);
+					std::string	sKey = PyBytes_AsString(pKeyBytes);
+					Py_DECREF(pKeyBytes);
+					PyObject*	pValueBytes = PyUnicode_AsASCIIString(value);
+					std::string	sValue = PyBytes_AsString(pValueBytes);
+					Py_DECREF(pValueBytes);
+					sHttpRequest += sKey + ": " + sValue + "\r\n";
+				}
+			}
+			else
+			{
+				_log.Log(LOG_ERROR, "(%s) HTTP Request header parameter was not a dictionary, ignored.", __func__);
+			}
+		}
+
+		sHttpRequest += "\r\n" + WriteMessage.m_Message;
+		return sHttpRequest;
+	}
 
 	void CPluginTransport::handleRead(const boost::system::error_code& e, std::size_t bytes_transferred)
 	{
@@ -1224,11 +1509,11 @@ namespace Plugins {
 				if ((e.value() != 2) && (e.value() != 121))	// Semaphore timeout expiry or end of file aka 'lost contact'
 					_log.Log(LOG_ERROR, "Plugin: Async Read Exception: %d, %s", e.value(), e.message().c_str());
 			}
-			handleDisconnect();
-			CPluginMessage	Message(PMT_Disconnect, m_HwdID);
+
+			CPluginMessage	DisconnectMessage(PMT_Directive, PDT_Disconnect, m_HwdID);
 			{
 				boost::lock_guard<boost::mutex> l(PluginMutex);
-				PluginMessageQueue.push(Message);
+				PluginMessageQueue.push(DisconnectMessage);
 			}
 		}
 	}
@@ -1582,6 +1867,15 @@ namespace Plugins {
 				boost::lock_guard<boost::mutex> l(PluginMutex);
 				PluginMessageQueue.push(DisconnectMessage);
 			}
+			else
+			{
+				// otherwise just signal stop
+				CPluginMessage	StopMessage(PMT_Stop, m_HwdID);
+				{
+					boost::lock_guard<boost::mutex> l(PluginMutex);
+					PluginMessageQueue.push(StopMessage);
+				}
+			}
 
 			// loop on stop to be processed
 			int scounter = 0;
@@ -1694,7 +1988,12 @@ namespace Plugins {
 				if (Message.m_Message == "Line") m_pProtocol = (CPluginProtocol*) new CPluginProtocolLine();
 				else if (Message.m_Message == "XML") m_pProtocol = (CPluginProtocol*) new CPluginProtocolXML();
 				else if (Message.m_Message == "JSON") m_pProtocol = (CPluginProtocol*) new CPluginProtocolJSON();
-				else if (Message.m_Message == "HTTP") m_pProtocol = (CPluginProtocol*) new CPluginProtocolHTTP();
+				else if (Message.m_Message == "HTTP")
+				{
+					CPluginProtocolHTTP*	pProtocol = new CPluginProtocolHTTP();
+					pProtocol->AuthenticationDetails(m_Username, m_Password);
+					m_pProtocol = (CPluginProtocol*)pProtocol;
+				}
 				else m_pProtocol = new CPluginProtocol();
 				break;
 			case PDT_PollInterval:
@@ -1722,28 +2021,36 @@ namespace Plugins {
 				}
 				break;
 			case PDT_Write:
-				if (!m_pTransport)
-				{
-					_log.Log(LOG_ERROR, "(%s) No transport specified, write directive ignored.", Name.c_str());
-					return;
-				}
-				if (!m_pTransport->IsConnected())
+				if (!m_pTransport || !m_pTransport->IsConnected())
 				{
 					_log.Log(LOG_ERROR, "(%s) Transport is not connected, write directive ignored.", Name.c_str());
 					return;
 				}
-				if (m_bDebug) _log.Log(LOG_NORM, "(%s) Sending data: '%s'.", Name.c_str(), Message.m_Message.c_str());
-				m_pTransport->handleWrite((std::string&)Message.m_Message);
+				else
+				{
+					if (!m_pProtocol)
+					{
+						if (m_bDebug) _log.Log(LOG_NORM, "(%s) Protocol not specified, 'None' assumed.", Name.c_str());
+						m_pProtocol = new CPluginProtocol();
+					}
+					std::string	sWriteData = m_pProtocol->ProcessOutbound(Message);
+					if (m_bDebug) _log.Log(LOG_NORM, "(%s) Sending data: '%s'.", Name.c_str(), sWriteData.c_str());
+					m_pTransport->handleWrite(sWriteData);
+				}
 				break;
 			case PDT_Disconnect:
-				if (m_bDebug) _log.Log(LOG_NORM, "(%s) Disconnect directive received.", Name.c_str());
-				if ((m_pTransport) && (m_pTransport->IsConnected()))
+				if (m_pTransport && (m_pTransport->IsConnected()))
 				{
+					if (m_bDebug) _log.Log(LOG_NORM, "(%s) Disconnect directive received.", Name.c_str());
 					m_pTransport->handleDisconnect();
-				}
-				if (m_pProtocol)
-				{
-					m_pProtocol->Flush(m_HwdID);
+					if (m_pProtocol)
+					{
+						m_pProtocol->Flush(m_HwdID);
+					}
+					// inform the plugin
+					CPluginMessage	DisconnectMessage(PMT_Disconnect, m_HwdID);
+					boost::lock_guard<boost::mutex> l(PluginMutex);
+					PluginMessageQueue.push(DisconnectMessage);
 				}
 				break;
 			default:
@@ -1758,17 +2065,26 @@ namespace Plugins {
 		case PMT_Read:
 			if (!m_pProtocol)
 			{
-				// If no protocol defined default to 'None'
-				if (m_bDebug) _log.Log(LOG_NORM, "(%s) Protocol not specified. Data received will be passed directly to plugin.", Name.c_str());
+				if (m_bDebug) _log.Log(LOG_NORM, "(%s) Protocol not specified, 'None' assumed.", Name.c_str());
 				m_pProtocol = new CPluginProtocol();
 			}
-			m_pProtocol->ProcessMessage(Message.m_HwdID, (std::string&)Message.m_Message);
+			m_pProtocol->ProcessInbound(Message.m_HwdID, (std::string&)Message.m_Message);
 			break;
 		case PMT_Message:
 			if (Message.m_Message.length())
 			{
 				sHandler = "onMessage";
-				pParams = Py_BuildValue("(s)", Message.m_Message.c_str());  // parenthesis needed to force tuple
+				if (Message.m_Object)
+				{
+					PyObject*	pHeaders = (PyObject*)Message.m_Object;
+					pParams = Py_BuildValue("siO", Message.m_Message.c_str(), Message.m_iLevel, pHeaders);
+					Py_XDECREF(pHeaders);
+				}
+				else
+				{
+					Py_INCREF(Py_None);
+					pParams = Py_BuildValue("siO", Message.m_Message.c_str(), Message.m_iLevel, Py_None);
+				}
 			}
 			break;
 		case PMT_Notification:
@@ -1958,6 +2274,10 @@ namespace Plugins {
 				ADD_STRING_TO_DICT(pParamsDict, "Mode4", sd[10]);
 				ADD_STRING_TO_DICT(pParamsDict, "Mode5", sd[11]);
 				ADD_STRING_TO_DICT(pParamsDict, "Mode6", sd[12]);
+
+				// Remember these for use with some protocols
+				m_Username = sd[4];
+				m_Password = sd[5];
 			}
 		}
 

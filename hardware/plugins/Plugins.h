@@ -84,14 +84,15 @@ namespace Plugins {
 		std::string		m_sRetainedData;
 
 	public:
-		virtual void	ProcessMessage(const int HwdID, std::string& ReadData);
-		virtual void	Flush(const int HwdID);
-		virtual int		Length() { return m_sRetainedData.length(); };
+		virtual void		ProcessInbound(const int HwdID, std::string& ReadData);
+		virtual std::string	ProcessOutbound(const CPluginMessage & WriteMessage) { return WriteMessage.m_Message; };
+		virtual void		Flush(const int HwdID);
+		virtual int			Length() { return m_sRetainedData.length(); };
 	};
 
 	class CPluginProtocolLine : CPluginProtocol
 	{
-		virtual void	ProcessMessage(const int HwdID, std::string& ReadData);
+		virtual void	ProcessInbound(const int HwdID, std::string& ReadData);
 	};
 
 	class CPluginProtocolXML : CPluginProtocol
@@ -99,15 +100,31 @@ namespace Plugins {
 	private:
 		std::string		m_Tag;
 	public:
-		virtual void	ProcessMessage(const int HwdID, std::string& ReadData);
+		virtual void	ProcessInbound(const int HwdID, std::string& ReadData);
 	};
 
 	class CPluginProtocolJSON : CPluginProtocol
 	{
-		virtual void	ProcessMessage(const int HwdID, std::string& ReadData);
+		virtual void	ProcessInbound(const int HwdID, std::string& ReadData);
 	};
 
-	class CPluginProtocolHTTP : CPluginProtocol {};
+	class CPluginProtocolHTTP : CPluginProtocol
+	{
+	private:
+		int				m_Status;
+		int				m_ContentLength;
+		void*			m_Headers;
+		std::string		m_Username;
+		std::string		m_Password;
+	public:
+		virtual void		ProcessInbound(const int HwdID, std::string& ReadData);
+		virtual std::string	ProcessOutbound(const CPluginMessage & WriteMessage);
+		void				AuthenticationDetails(std::string Username, std::string Password)
+		{
+			m_Username = Username;
+			m_Password = Password;
+		};
+	};
 
 	class CPluginProtocolMQTT : CPluginProtocol {}; // Maybe?
 
@@ -196,6 +213,9 @@ namespace Plugins {
 
 		void*			m_PyInterpreter;
 		void*			m_PyModule;
+
+		std::string		m_Username;
+		std::string		m_Password;
 
 		boost::shared_ptr<boost::thread> m_thread;
 
