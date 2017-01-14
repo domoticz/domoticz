@@ -92,6 +92,8 @@ IF(HAVE_EXECINFO_H)
   ENDIF()
 ENDIF(HAVE_EXECINFO_H)
 
+INCLUDE(CheckIncludeFiles)
+
 CHECK_INCLUDE_FILES ("sys/types.h;linux/i2c-dev.h;linux/i2c.h" HAVE_LINUX_I2C_H)
 IF (HAVE_LINUX_I2C_H)
     SET (HAVE_LINUX_I2C TRUE)
