@@ -7866,14 +7866,10 @@ namespace http {
 							}
 							if (dType == pTypeEvohomeZone)
 							{
-								if (tempCelcius == 325.1)
-									sprintf(szTmp, "Off");
-								else 
-									sprintf(szTmp, "%.1f %c", tempSetPoint, tempsign);
 								if (strarray.size()>=4)
-									sprintf(szData,"%.1f %c, (%s), %s until %s", temp,tempsign,szTmp,strstatus.c_str(),strarray[3].c_str());
+									sprintf(szData,"%.1f %c, (%.1f %c), %s until %s", temp,tempsign,tempSetPoint,tempsign,strstatus.c_str(),strarray[3].c_str());
 								else
-									sprintf(szData,"%.1f %c, (%s), %s", temp,tempsign,szTmp,strstatus.c_str());
+									sprintf(szData,"%.1f %c, (%.1f %c), %s", temp,tempsign,tempSetPoint,tempsign,strstatus.c_str());
 							}
 							else
 								if (strarray.size()>=4)

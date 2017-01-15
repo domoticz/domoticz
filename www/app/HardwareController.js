@@ -4557,6 +4557,7 @@ define(['app'], function (app) {
             $('#hardwareparamsserial #comboserialport > option').each(function () {
                 $scope.SerialPortStr.push($(this).text());
             });
+            ;
 
             ShowHardware();
         };
