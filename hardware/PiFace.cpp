@@ -37,7 +37,7 @@
 #include <errno.h>
 #include <string.h>
 #include <string>
-#ifdef __arm__
+#ifdef HAVE_LINUX_SPI
     #include <linux/ioctl.h>
     #include <linux/types.h>
     #include <linux/spi/spidev.h>
@@ -751,7 +751,7 @@ bool CPiFace::StopHardware()
             m_queue_thread.reset();
         }
     }
-#ifdef __arm__
+#ifdef HAVE_LINUX_SPI
     if (m_fd > 0) {
         close(m_fd);
         m_fd = 0;
@@ -890,7 +890,7 @@ int CPiFace::Init_SPI_Device(int Init)
     int           speed       = 4000000 ;
     
     _log.Log(LOG_STATUS,"PiFace: Starting PiFace_SPI_Start()");
-#ifdef __arm__
+#ifdef HAVE_LINUX_SPI
     // Open port for reading and writing
     if ((m_fd = open("/dev/spidev0.0", O_RDWR)) >= 0)
     {
@@ -923,7 +923,7 @@ int CPiFace::Init_SPI_Device(int Init)
     
     if (result == -1)
     {
-#ifdef __arm__
+#ifdef HAVE_LINUX_SPI
         close(m_fd);
 #endif
         return -1;
@@ -1018,7 +1018,7 @@ void CPiFace::GetAndSetInitialDeviceState(int devId)
 
 int CPiFace::Read_Write_SPI_Byte(unsigned char *data, int len)
 {
-#ifdef __arm__
+#ifdef HAVE_LINUX_SPI
     struct spi_ioc_transfer spi ;
     memset (&spi, 0, sizeof(spi));
     

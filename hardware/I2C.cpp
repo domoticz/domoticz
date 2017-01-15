@@ -25,7 +25,7 @@ Authors:
 #include <stdio.h>
 #include <fcntl.h>
 #include <stdlib.h>
-#ifdef __arm__
+#ifdef HAVE_LINUX_I2C
 #include <linux/i2c-dev.h>
 #include <linux/i2c.h>
 #include <unistd.h>
@@ -269,7 +269,7 @@ void I2C::Do_Work()
 //returns true if it could be opened
 bool I2C::i2c_test(const char *I2CBusName)
 {
-#ifndef __arm__
+#ifndef HAVE_LINUX_I2C
 	return false;
 #else
 	int fd;
@@ -284,7 +284,7 @@ bool I2C::i2c_test(const char *I2CBusName)
 // Returns a file id for the port/bus
 int I2C::i2c_Open(const char *I2CBusName)
 {
-#ifndef __arm__
+#ifndef HAVE_LINUX_I2C
 	return -1;
 #else
 	int fd;
@@ -304,7 +304,7 @@ int I2C::i2c_Open(const char *I2CBusName)
 
 void I2C::PCF8574_ReadChipDetails()
 {	
-#ifndef __arm__
+#ifndef HAVE_LINUX_I2C
 	return;
 #else
 	char buf = 0;
@@ -375,7 +375,7 @@ unsigned char I2C::PCF8574_create_Unit(unsigned char i2c_address, char pin)
 
 char I2C::PCF8574_WritePin(char pin_number,char  value)
 {	
-#ifndef __arm__
+#ifndef HAVE_LINUX_I2C
 	return -1;
 #else
 	_log.Log(LOG_NORM, "GPIO: WRITE TO PCF8574 pin:%d, value: %d, i2c_address:%d", pin_number, value, i2c_addr);
@@ -410,7 +410,7 @@ char I2C::PCF8574_WritePin(char pin_number,char  value)
 
 int I2C::ReadInt(int fd, uint8_t *devValues, uint8_t startReg, uint8_t bytesToRead)
 {
-#ifndef __arm__
+#ifndef HAVE_LINUX_I2C
 	return -1;
 #else
 	int rc;
@@ -466,7 +466,7 @@ int I2C::ReadInt(int fd, uint8_t *devValues, uint8_t startReg, uint8_t bytesToRe
 
 int I2C::WriteCmd(int fd, uint8_t devAction)
 {
-#ifndef __arm__
+#ifndef HAVE_LINUX_I2C
 	return -1;
 #else
 	int rc;
@@ -527,7 +527,7 @@ int I2C::WriteCmd(int fd, uint8_t devAction)
 
 char I2C::readByteI2C(int fd, char *byte, char i2c_addr)
 {
-#ifndef __arm__
+#ifndef HAVE_LINUX_I2C
 	return -1;
 #else
 	// set I2C address to will be communicate (first address = chip on base board)
@@ -546,7 +546,7 @@ char I2C::readByteI2C(int fd, char *byte, char i2c_addr)
 
 char I2C::writeByteI2C(int fd, char byte, char i2c_addr)
 {
-#ifndef __arm__
+#ifndef HAVE_LINUX_I2C
 	return -1;
 #else
 	// set I2C address to will be communicate (first address = chip on base board)
@@ -585,7 +585,7 @@ int I2C::HTU21D_checkCRC8(uint16_t data)
 
 int I2C::HTU21D_GetHumidity(int fd, float *Hum)
 {
-#ifndef __arm__
+#ifndef HAVE_LINUX_I2C
 	return -1;
 #else
 	uint16_t rawHumidity;
@@ -612,7 +612,7 @@ int I2C::HTU21D_GetHumidity(int fd, float *Hum)
 
 int I2C::HTU21D_GetTemperature(int fd, float *Temp)
 {
-#ifndef __arm__
+#ifndef HAVE_LINUX_I2C
 	return -1;
 #else
 	uint16_t rawTemperature;
@@ -644,14 +644,14 @@ void I2C::HTU21D_ReadSensorDetails()
 {
 	float temperature, humidity;
 
-#ifndef __arm__
+#ifndef HAVE_LINUX_I2C
 	temperature = 21.3f;
 	humidity = 45;
 #ifndef _DEBUG
-	_log.Log(LOG_ERROR, "%s: Only supported on ARM architecture!...", szI2CTypeNames[m_dev_type]);
+	_log.Log(LOG_ERROR, "%s: I2C is unsupported on this architecture!...", szI2CTypeNames[m_dev_type]);
 	return;
 #else
-	_log.Log(LOG_ERROR, "%s: Only supported on ARM architecture!... Debug: just adding a value", szI2CTypeNames[m_dev_type]);
+	_log.Log(LOG_ERROR, "%s: I2C is unsupported on this architecture!... Debug: just adding a value", szI2CTypeNames[m_dev_type]);
 #endif
 #else
 	int fd = i2c_Open(m_ActI2CBus.c_str());
@@ -680,7 +680,7 @@ void I2C::HTU21D_ReadSensorDetails()
 // TSL2561 functions
 void I2C::TSL2561_Init()
 {
-#ifdef __arm__
+#ifdef HAVE_LINUX_I2C
 	int fd = i2c_Open(m_ActI2CBus.c_str());
 	if (fd < 0) {
 		_log.Log(LOG_ERROR, "%s: Error opening device!...", szI2CTypeNames[m_dev_type]);
@@ -696,13 +696,13 @@ void I2C::TSL2561_Init()
 void I2C::TSL2561_ReadSensorDetails()
 {
 	float lux;
-#ifndef __arm__
+#ifndef HAVE_LINUX_I2C
 	lux = 1984;
 	#ifndef _DEBUG
-		_log.Log(LOG_ERROR, "%s: Only supported on ARM architecture!...", szI2CTypeNames[m_dev_type]);
+		_log.Log(LOG_ERROR, "%s: I2C is unsupported on this architecture!...", szI2CTypeNames[m_dev_type]);
 		return;
 	#else
-		_log.Log(LOG_ERROR, "%s: Only supported on ARM architecture!... Debug: just adding a value", szI2CTypeNames[m_dev_type]);
+		_log.Log(LOG_ERROR, "%s: I2C is unsupported on this architecture!... Debug: just adding a value", szI2CTypeNames[m_dev_type]);
 	#endif
 #else
 	uint8_t rValues[2];
@@ -747,7 +747,7 @@ void I2C::TSL2561_ReadSensorDetails()
 // BMP085 functions
 int I2C::bmp_Calibration(int fd)
 {
-#ifdef __arm__
+#ifdef HAVE_LINUX_I2C
 	uint8_t rValue[22];
 	//printf("Entering Calibration\n");
 	if (ReadInt(fd, rValue, 0xAA, 22) == 0)
@@ -784,7 +784,7 @@ int I2C::bmp_Calibration(int fd)
 
 int I2C::bmp_WaitForConversion(int fd)
 {
-#ifdef __arm__
+#ifdef HAVE_LINUX_I2C
 	uint8_t rValues[3];
 	int counter = 0;
 	//Delay can now be reduced by checking that bit 5 of Ctrl_Meas(0xF4) == 0
@@ -802,7 +802,7 @@ int I2C::bmp_WaitForConversion(int fd)
 // Value returned will be in hPa
 int I2C::bmp_GetPressure(int fd, double *Pres)
 {
-#ifndef __arm__
+#ifndef HAVE_LINUX_I2C
 	return -1;
 #else
 	unsigned int up;
@@ -856,7 +856,7 @@ int I2C::bmp_GetPressure(int fd, double *Pres)
 // Value returned will be in units of 0.1 deg C
 int I2C::bmp_GetTemperature(int fd, double *Temp)
 {
-#ifndef __arm__
+#ifndef HAVE_LINUX_I2C
 	return -1;
 #else
 	unsigned int ut;
@@ -1059,12 +1059,12 @@ void I2C::bmp_Read_BMP_SensorDetails()
 	double temperature, pressure;
 	double altitude;
 
-#ifndef __arm__
+#ifndef HAVE_LINUX_I2C
 #ifndef _DEBUG
-	_log.Log(LOG_ERROR, "%s: Only supported on ARM architecture!...", szI2CTypeNames[m_dev_type]);
+	_log.Log(LOG_ERROR, "%s: I2C is unsupported on this architecture!...", szI2CTypeNames[m_dev_type]);
 	return;
 #else
-	_log.Log(LOG_ERROR, "%s: Only supported on ARM architecture!... Debug: just adding a value", szI2CTypeNames[m_dev_type]);
+	_log.Log(LOG_ERROR, "%s: I2C is unsupported on this architecture!... Debug: just adding a value", szI2CTypeNames[m_dev_type]);
 #endif
 	temperature = 21.3;
 	pressure = 1021.22;
@@ -1251,12 +1251,12 @@ void I2C::bmp_Read_BME_SensorDetails()
 	float temperature, pressure;
 	int humidity;
 
-#ifndef __arm__
+#ifndef HAVE_LINUX_I2C
 #ifndef _DEBUG
-	_log.Log(LOG_ERROR, "%s: Only supported on ARM architecture!...", szI2CTypeNames[m_dev_type]);
+	_log.Log(LOG_ERROR, "%s: I2C is unsupported on this architecture!...", szI2CTypeNames[m_dev_type]);
 	return;
 #else
-	_log.Log(LOG_ERROR, "%s: Only supported on ARM architecture!... Debug: just adding a value", szI2CTypeNames[m_dev_type]);
+	_log.Log(LOG_ERROR, "%s: I2C is unsupported on this architecture!... Debug: just adding a value", szI2CTypeNames[m_dev_type]);
 #endif
 	temperature = 21.3f;
 	pressure = 1021.22f;

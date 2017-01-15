@@ -92,6 +92,18 @@ IF(HAVE_EXECINFO_H)
   ENDIF()
 ENDIF(HAVE_EXECINFO_H)
 
+INCLUDE(CheckIncludeFiles)
+
+CHECK_INCLUDE_FILES ("sys/types.h;linux/i2c-dev.h;linux/i2c.h" HAVE_LINUX_I2C_H)
+IF (HAVE_LINUX_I2C_H)
+    SET (HAVE_LINUX_I2C TRUE)
+ENDIF (HAVE_LINUX_I2C_H)
+
+CHECK_INCLUDE_FILES ("sys/types.h;linux/spi/spidev.h" HAVE_LINUX_SPI_H)
+IF (HAVE_LINUX_SPI_H)
+    SET (HAVE_LINUX_SPI TRUE)
+ENDIF (HAVE_LINUX_SPI_H)
+
 #set(CMAKE_EXE_LINKER_FLAGS "-static")
 
 # Macro for setting up precompiled headers. Usage:
