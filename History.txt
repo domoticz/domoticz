@@ -13,6 +13,7 @@ Version 3.xxxx (January xth 2017)
 - Implemented: I2C BME280 sensor (temp+hum+baro)
 - Implemented: Netatmo Home Coach support
 - Implemented: Notification for Dummy Soil/Moisture sensor
+- Implemented: Notification for Alert Sensor via udevice JSON call
 - Implemented: Option to replace an Meter device
 - Implemented: RFXtrx RFY2 protocol implemented
 - Implemented: RFXtrx Kangtai / Cotech implemented

@@ -134,7 +134,7 @@
 #include <inttypes.h>
 
 #ifdef _DEBUG
-	#define PARSE_RFXCOM_DEVICE_LOG
+	//#define PARSE_RFXCOM_DEVICE_LOG
 	//#define DEBUG_DOWNLOAD
 	//#define DEBUG_RXQUEUE
 #endif
@@ -12549,6 +12549,27 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 				gDevice.intval1 = static_cast<int>(ID);
 				gDevice.intval2 = nValue;
 				DecodeRXMessage(pHardware, (const unsigned char *)&gDevice, NULL, batterylevel);
+				return true;
+			}
+			else if (subType == sTypeAlert)
+			{
+				std::string devname = "Unknown";
+				uint64_t devidx = m_sql.UpdateValue(
+					HardwareID,
+					DeviceID.c_str(),
+					(const unsigned char)unit,
+					(const unsigned char)devType,
+					(const unsigned char)subType,
+					signallevel,//signal level,
+					batterylevel,//battery level
+					nValue,
+					sValue.c_str(),
+					devname,
+					false
+				);
+				if (devidx == -1)
+					return false;
+				m_notifications.CheckAndHandleNotification(devidx, devname, devType, subType, NTYPE_USAGE, static_cast<float>(nValue));
 				return true;
 			}
 		}
