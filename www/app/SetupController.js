@@ -246,6 +246,22 @@ define(['app'], function (app) {
 			 }
 		  });
 
+		  //Get Timer Plans
+		  $.ajax({
+			 url: "json.htm?type=command&param=gettimerplans",
+			 async: false,
+			 dataType: 'json',
+			 success: function(data) {
+				if (typeof data.result != 'undefined') {
+					$("#settingscontent #comboTimerplan").html("");
+					$.each(data.result, function(i,item) {
+						var option = $('<option />');
+						option.attr('value', item.idx).text(item.Name);
+						$("#settingscontent #comboTimerplan").append(option);
+					});
+				}
+			 }
+		  });
 
 		  $.ajax({
 			 url: "json.htm?type=settings",

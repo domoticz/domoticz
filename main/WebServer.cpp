@@ -453,6 +453,11 @@ namespace http {
 			RegisterCommandCode("changeplanorder", boost::bind(&CWebServer::Cmd_ChangePlanOrder, this, _1, _2, _3));
 			RegisterCommandCode("changeplandeviceorder", boost::bind(&CWebServer::Cmd_ChangePlanDeviceOrder, this, _1, _2, _3));
 
+			RegisterCommandCode("gettimerplans", boost::bind(&CWebServer::Cmd_GetTimerPlans, this, _1, _2, _3));
+			RegisterCommandCode("addtimerplan", boost::bind(&CWebServer::Cmd_AddTimerPlan, this, _1, _2, _3));
+			RegisterCommandCode("updatetimerplan", boost::bind(&CWebServer::Cmd_UpdateTimerPlan, this, _1, _2, _3));
+			RegisterCommandCode("deletetimerplan", boost::bind(&CWebServer::Cmd_DeleteTimerPlan, this, _1, _2, _3));
+
 			RegisterCommandCode("getactualhistory", boost::bind(&CWebServer::Cmd_GetActualHistory, this, _1, _2, _3));
 			RegisterCommandCode("getnewhistory", boost::bind(&CWebServer::Cmd_GetNewHistory, this, _1, _2, _3));
 
@@ -2255,6 +2260,97 @@ namespace http {
 				oOrder.c_str(), idx.c_str());
 			m_sql.safe_query("UPDATE DeviceToPlansMap SET [Order] = '%q' WHERE (ID='%q')",
 				aOrder.c_str(), oID.c_str());
+		}
+
+		void CWebServer::Cmd_GetTimerPlans(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+			root["status"] = "OK";
+			root["title"] = "GetTimerPlans";
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query("SELECT ID, Name FROM TimerPlans ORDER BY Name COLLATE NOCASE ASC");
+			if (result.size() > 0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				int ii = 0;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
+					root["result"][ii]["idx"] = sd[0];
+					root["result"][ii]["Name"] = sd[1];
+					ii++;
+				}
+			}
+		}
+
+		void CWebServer::Cmd_AddTimerPlan(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+
+			std::string name = request::findValue(&req, "name");
+			root["status"] = "OK";
+			root["title"] = "AddTimerPlan";
+			m_sql.safe_query("INSERT INTO TimerPlans (Name) VALUES ('%q')", name.c_str());
+		}
+
+		void CWebServer::Cmd_UpdateTimerPlan(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+
+			std::string idx = request::findValue(&req, "idx");
+			if (idx == "")
+				return;
+			std::string name = request::findValue(&req, "name");
+			if (
+				(name == "")
+				)
+				return;
+
+			root["status"] = "OK";
+			root["title"] = "UpdateTimerPlan";
+
+			m_sql.safe_query("UPDATE TimerPlans SET Name='%q' WHERE (ID == '%q')", name.c_str(), idx.c_str());
+		}
+
+		void CWebServer::Cmd_DeleteTimerPlan(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+
+			std::string idx = request::findValue(&req, "idx");
+			if (idx == "")
+				return;
+			int iPlan = atoi(idx.c_str());
+			if (iPlan < 1)
+				return;
+
+			root["status"] = "OK";
+			root["title"] = "DeletePlan";
+			m_sql.safe_query("DELETE FROM Timers WHERE (TimerPlan == '%q')", idx.c_str());
+			m_sql.safe_query("DELETE FROM TimerPlans WHERE (ID == '%q')", idx.c_str());
+
+			if (m_sql.m_ActiveTimerPlan == iPlan)
+			{
+				//Set active timer plan to default
+				m_sql.UpdatePreferencesVar("ActiveTimerPlan", 0);
+				m_sql.m_ActiveTimerPlan = 0;
+				m_mainworker.m_scheduler.ReloadSchedules();
+			}
 		}
 
 		void CWebServer::Cmd_GetVersion(WebEmSession & session, const request& req, Json::Value &root)
