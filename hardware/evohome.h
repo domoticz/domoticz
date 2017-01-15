@@ -449,6 +449,7 @@ public:
 		cmdExternalSensor=0x0002,
 		cmdDeviceInfo=0x0418,
 		cmdBatteryInfo=0x1060,
+		//0x2389 //ZONE_OFFSET sent by HCW82 thermostat and creates a setpoint offset managed by the controller
 		//0x10a0 //DHW settings sent between controller and DHW sensor can also be requested by the gateway <1:DevNo><2(uint16_t):SetPoint><1:Overrun?><2:Differential>
 		//0x1F09 //Unknown fixed message FF070D
 		//0x0005

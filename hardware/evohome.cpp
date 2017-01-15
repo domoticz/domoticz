@@ -1321,7 +1321,7 @@ bool CEvohome::DecodeZoneName(CEvohomeMsg &msg)
 	}
 	if(memcmp(&msg.payload[2],m_szNameErr,18)==0)
 	{
-		Log(true,LOG_STATUS,"evohome: %s: Warning zone name not set: %d", tag, msg.payload[0]);
+		Log(true,LOG_STATUS,"evohome: %s: Warning zone name not set: %d", tag, msg.payload[0]+1);
 		m_bStartup[0]=false;
 		return true;
 	}
