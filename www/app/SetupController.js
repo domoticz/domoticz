@@ -61,7 +61,16 @@ define(['app'], function (app) {
 					ShowNotify($.t('Please specify the base URL!...'), 3500, true);
 					return;
 				}
-				extraparams = "HTTPField1=" + HTTPField1 + "&HTTPField2=" + HTTPField2 + "&HTTPField3=" + HTTPField3 + "&HTTPField4=" + HTTPField4 + "&HTTPTo=" + HTTPTo + "&HTTPURL=" + HTTPURL + "&HTTPPostData=" + HTTPPostData + "&HTTPPostContentType=" + HTTPPostContentType + "&HTTPPostHeaders=" + HTTPPostHeaders;
+				extraparams =
+                    "HTTPField1=" + HTTPField1 +
+                    "&HTTPField2=" + HTTPField2 +
+                    "&HTTPField3=" + HTTPField3 +
+                    "&HTTPField4=" + HTTPField4 +
+                    "&HTTPTo=" + HTTPTo +
+                    "&HTTPURL=" + HTTPURL +
+                    "&HTTPPostData=" + HTTPPostData +
+                    "&HTTPPostContentType=" + HTTPPostContentType +
+                    "&HTTPPostHeaders=" + HTTPPostHeaders;
 				break;
 			case "prowl":
 				var ProwlAPI=encodeURIComponent($("#prowltable #ProwlAPI").val());
@@ -538,6 +547,9 @@ define(['app'], function (app) {
 
 			  if (typeof data.DisableEventScriptSystem!= 'undefined') {
 				$("#eventsystemtable #DisableEventScriptSystem").prop('checked',data.DisableEventScriptSystem==1);
+			  }
+			  if (typeof data.LogEventScriptTrigger != 'undefined') {
+			    $("#eventsystemtable #LogEventScriptTrigger").prop('checked',data.LogEventScriptTrigger==1);
 			  }
 
 			  if (typeof data.FloorplanPopupDelay!= 'undefined') {

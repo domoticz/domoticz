@@ -161,7 +161,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_DavisVantage, "Davis Vantage Weather Station USB" },
 		{ HTYPE_VOLCRAFTCO20, "Volcraft CO-20 USB air quality sensor" },
 		{ HTYPE_1WIRE, "1-Wire (System)" },
-		{ HTYPE_RaspberryBMP085, "Local I2C sensor BMP085/180 Temp+Baro" },
+		{ HTYPE_RaspberryBMP085, "I2C sensor BMP085/180 Temp+Baro" },
 		{ HTYPE_Wunderground, "Weather Underground" },
 		{ HTYPE_DarkSky, "DarkSky (Weather Lookup)" },
 		{ HTYPE_Dummy, "Dummy (Does nothing, use for virtual switches only)" },
@@ -192,6 +192,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_EVOHOME_SCRIPT, "Evohome via script" },
 		{ HTYPE_MySensorsUSB, "MySensors Gateway USB" },
 		{ HTYPE_MySensorsTCP, "MySensors Gateway with LAN interface" },
+		{ HTYPE_MySensorsMQTT, "MySensors Gateway with MQTT interface" },
 		{ HTYPE_MQTT, "MQTT Client Gateway with LAN interface" },
 		{ HTYPE_FRITZBOX, "Fritzbox Callmonitor via LAN interface" },
 		{ HTYPE_ETH8020, "ETH8020 Relay board with LAN interface" },
@@ -218,8 +219,8 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_CurrentCostMeterLAN, "CurrentCost Meter with LAN interface" },
 		{ HTYPE_DomoticzInternal, "Domoticz Internal interface" },
 		{ HTYPE_NefitEastLAN, "Nefit Easy HTTP server over LAN interface" },
-		{ HTYPE_OpenWebNet, "MyHome OpenWebNet" },
-		{ HTYPE_RaspberryHTU21D, "Local I2C sensor HTU21D(F)/SI702x Humidity+Temp" },
+		{ HTYPE_OpenWebNetTCP, "MyHome OpenWebNet with LAN interface" },
+		{ HTYPE_RaspberryHTU21D, "I2C sensor HTU21D(F)/SI702x Humidity+Temp" },
 		{ HTYPE_AtagOne, "Atag One Thermostat" },
 		{ HTYPE_Sterbox, "Sterbox v2-3 PLC with LAN interface" },
 		{ HTYPE_HTTPPOLLER, "HTTP/HTTPS poller" },
@@ -232,14 +233,19 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_Ec3kMeterTCP, "Energy Count 3000/ NETBSEM4/ La Crosse RT-10 LAN" },
 		{ HTYPE_OpenWeatherMap, "Open Weather Map" },
 		{ HTYPE_GoodweAPI, "Goodwe solar inverter via Web API" },
-		{ HTYPE_RaspberryTSL2561, "Local I2C sensor TSL2561 Illuminance" },
+		{ HTYPE_RaspberryTSL2561, "I2C sensor TSL2561 Illuminance" },
 		{ HTYPE_Daikin, "Daikin Airconditioning with LAN (HTTP) interface" },
 		{ HTYPE_HEOS, "HEOS by DENON" },
 		{ HTYPE_MultiFun, "MultiFun LAN" },
 		{ HTYPE_ZIBLUEUSB, "ZiBlue RFPlayer USB" },
 		{ HTYPE_ZIBLUETCP, "ZiBlue RFPlayer with LAN interface" },
-		{ HTYPE_Yeelight, "Yeelight LED" },
-
+		{ HTYPE_Yeelight, "YeeLight LED" },
+		{ HTYPE_RaspberryPCF8574, "I2C sensor PIO 8bit expander PCF8574 or PCF8574A" },
+		{ HTYPE_PythonPlugin, "Python Plugin System" },
+		{ HTYPE_XiaomiGateway, "Xiaomi Gateway" },
+		{ HTYPE_RaspberryBME280, "I2C sensor BME280 Temp+Hum+Baro" },
+		{ HTYPE_Arilux, "Arilux AL-LC0x" },
+		{ HTYPE_OpenWebNetUSB, "MyHome OpenWebNet USB" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -434,6 +440,7 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeThermostat1, "Thermostat 1" , "temperature" },
 		{ pTypeThermostat2, "Thermostat 2" , "temperature" },
 		{ pTypeThermostat3, "Thermostat 3" , "temperature" },
+		{ pTypeThermostat4, "Thermostat 4" , "temperature" },
 		{ pTypeRadiator1, "Radiator 1", "temperature" },
 		{ pTypeTEMP, "Temp", "temperature" },
 		{ pTypeHUM, "Humidity" , "temperature" },
@@ -475,7 +482,6 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeEvohomeWater, "Heating" , "evohome" },
 		{ pTypeEvohomeRelay, "Heating" , "evohome" },
 		{ pTypeGeneralSwitch, "Light/Switch", "lightbulb" },
-		{ pTypeYeelight, "Light/Switch", "lightbulb" },
 		{ 0, NULL, NULL }
 	};
 	if (snum==1)
@@ -583,7 +589,9 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLighting5, sTypeLegrandCAD, "Legrand CAD" },
 		{ pTypeLighting5, sTypeAvantek, "Avantek" },
 		{ pTypeLighting5, sTypeIT, "Intertek,FA500,PROmax" },
-
+		{ pTypeLighting5, sTypeMDREMOTE108, "MDRemote 108" },
+		{ pTypeLighting5, sTypeKangtai, "Kangtai / Cotech" },
+		
 		{ pTypeLighting6, sTypeBlyss, "Blyss" },
 
 		{ pTypeHomeConfort, sTypeHomeConfortTEL010 , "TEL-010" },
@@ -596,13 +604,14 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeBlinds, sTypeBlindsT3, "A-OK AC114" },
 		{ pTypeBlinds, sTypeBlindsT4, "RAEX" },
 		{ pTypeBlinds, sTypeBlindsT5, "Media Mount" },
-		{ pTypeBlinds, sTypeBlindsT6, "T6 DC106" },
+		{ pTypeBlinds, sTypeBlindsT6, "DC106" },
 		{ pTypeBlinds, sTypeBlindsT7, "Forest" },
 		{ pTypeBlinds, sTypeBlindsT8, "Chamberlain CS4330CN" },
 		{ pTypeBlinds, sTypeBlindsT9, "Sunpery" },
 		{ pTypeBlinds, sTypeBlindsT10, "Dolat DLM-1" },
 		{ pTypeBlinds, sTypeBlindsT11, "ASP" },
 		{ pTypeBlinds, sTypeBlindsT12, "Confexx" },
+		{ pTypeBlinds, sTypeBlindsT13, "Screenline" },
 
 		{ pTypeSecurity1, sTypeSecX10, "X10 security" },
 		{ pTypeSecurity1, sTypeSecX10M, "X10 security motion" },
@@ -636,6 +645,10 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeThermostat3, sTypeMertikG6RH4TB, "Mertik G6R-H4TB" },
 		{ pTypeThermostat3, sTypeMertikG6RH4TD, "Mertik G6R-H4TD" },
 		{ pTypeThermostat3, sTypeMertikG6RH4S, "Mertik G6R-H4S" },
+
+		{ pTypeThermostat4, sTypeMCZ1, "MCZ 1 fan model" },
+		{ pTypeThermostat4, sTypeMCZ2, "MCZ 2 fan model" },
+		{ pTypeThermostat4, sTypeMCZ3, "MCZ 3 fan model" },
 
 		{ pTypeRadiator1, sTypeSmartwares, "Smartwares" },
 		{ pTypeRadiator1, sTypeSmartwaresSwitchRadiator, "Smartwares Mode" },
@@ -725,6 +738,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLimitlessLights, sTypeLimitlessWhite, "White" },
 
 		{ pTypeRFY, sTypeRFY, "RFY" },
+		{ pTypeRFY, sTypeRFY2, "RFY2" },
 		{ pTypeRFY, sTypeRFYext, "RFY-Ext" },
 		{ pTypeRFY, sTypeASA, "ASA" },
 
@@ -805,7 +819,9 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchTypeFunkbus, "Funkbus" },
 		{ pTypeGeneralSwitch, sSwitchTypeNice, "Nice" },
 		{ pTypeGeneralSwitch, sSwitchTypeForest, "Forest" },
-		{ pTypeGeneralSwitch, sSwitchBlindsT1, "Legrand MyHome" },
+		{ pTypeGeneralSwitch, sSwitchBlindsT1, "Legrand MyHome Blind Bus" },
+		{ pTypeGeneralSwitch, sSwitchLightT1, "Legrand MyHome Light Bus" },
+		{ pTypeGeneralSwitch, sSwitchAuxiliaryT1, "Legrand MyHome Auxiliary Bus" },
 		{ pTypeGeneralSwitch, sSwitchMC145026, "MC145026" },
 		{ pTypeGeneralSwitch, sSwitchLobeco, "Lobeco" },
 		{ pTypeGeneralSwitch, sSwitchFriedland, "Friedland" },
@@ -816,8 +832,6 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchMiLightv1, "MiLightv1" },
 		{ pTypeGeneralSwitch, sSwitchMiLightv2, "MiLightv2" },
 		{ pTypeGeneralSwitch, sSwitchHT6P20, "HT6P20" },
-		{ pTypeYeelight, sTypeYeelightColor, "RGBW" },
-		{ pTypeYeelight, sTypeYeelightWhite, "White" },
 		{ pTypeGeneralSwitch, sSwitchTypeDoitrand, "Doitrand" },
 		{ pTypeGeneralSwitch, sSwitchTypeWarema, "Warema" },
 		{ pTypeGeneralSwitch, sSwitchTypeAnsluta, "Ansluta" },
@@ -828,6 +842,11 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchTypeSteffen, "Steffen" },
 		{ pTypeGeneralSwitch, sSwitchTypeAlectoSA, "AlectoSA" },
 		{ pTypeGeneralSwitch, sSwitchTypeGPIOset, "GPIOset" },
+		{ pTypeGeneralSwitch, sSwitchTypeKonigSec, "KonigSec" },
+		{ pTypeGeneralSwitch, sSwitchTypeRM174RF, "RM174RF" },
+		{ pTypeGeneralSwitch, sSwitchTypeLiwin, "Liwin" },
+		{ pTypeGeneralSwitch, sSwitchBlindsT2, "Legrand MyHome Blind Zigbee" },
+		{ pTypeGeneralSwitch, sSwitchLightT2, "Legrand MyHome Light Zigbee" },
 		{  0,0,NULL }
 	};
 	return findTableID1ID2(Table, dType, sType);
@@ -933,6 +952,8 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeLighting5, sTypeLegrandCAD, "Status" },
 		{ pTypeLighting5, sTypeAvantek, "Status" },
 		{ pTypeLighting5, sTypeIT, "Status" },
+		{ pTypeLighting5, sTypeMDREMOTE108, "Status" },
+		{ pTypeLighting5, sTypeKangtai, "Status" },		
 
 		{ pTypeLighting6, sTypeBlyss, "Status" },
 
@@ -953,6 +974,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeBlinds, sTypeBlindsT10, "Status" },
 		{ pTypeBlinds, sTypeBlindsT11, "Status" },
 		{ pTypeBlinds, sTypeBlindsT12, "Status" },
+		{ pTypeBlinds, sTypeBlindsT13, "Status" },
 
 		{ pTypeSecurity1, sTypeSecX10, "Status" },
 		{ pTypeSecurity1, sTypeSecX10M, "Status" },
@@ -985,6 +1007,10 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeThermostat3, sTypeMertikG6RH4T1, "Status" },
 		{ pTypeThermostat3, sTypeMertikG6RH4TB, "Status" },
 		{ pTypeThermostat3, sTypeMertikG6RH4TD, "Status" },
+
+		{ pTypeThermostat4, sTypeMCZ1, "Status,Mode" },
+		{ pTypeThermostat4, sTypeMCZ2, "Status,Mode" },
+		{ pTypeThermostat4, sTypeMCZ3, "Status,Mode" },
 
 		{ pTypeRadiator1, sTypeSmartwares, "Status" },
 		{ pTypeRadiator1, sTypeSmartwaresSwitchRadiator, "Status" },
@@ -1069,10 +1095,8 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeLimitlessLights, sTypeLimitlessRGB, "Status" },
 		{ pTypeLimitlessLights, sTypeLimitlessWhite, "Status" },
 
-		{ pTypeYeelight, sTypeYeelightColor, "Status" },
-		{ pTypeYeelight, sTypeYeelightWhite, "Status" },
-
 		{ pTypeRFY, sTypeRFY, "Status" },
+		{ pTypeRFY, sTypeRFY2, "Status" },
 		{ pTypeRFY, sTypeRFYext, "Status" },
 		{ pTypeRFY, sTypeASA, "Status" },
 		{ pTypeEvohome, sTypeEvohome, "Status" },
@@ -1489,6 +1513,7 @@ void GetLightStatus(
 			break;
 		case sTypeBBSB:
 		case sTypeRSL:
+		case sTypeKangtai:
 			bHaveGroupCmd=true;
 			switch (nValue)
 			{
@@ -1780,22 +1805,6 @@ void GetLightStatus(
 			break;
 		}
 		break;
-	case pTypeYeelight:
-		bHaveDimmer = true;
-		maxDimLevel = 100;
-		switch (nValue)
-		{
-		case Yeelight_LedOff:
-			lstatus = "Off";
-			break;
-		case Yeelight_LedOn:
-			lstatus = "On";
-			break;
-		case Yeelight_SetBrightnessLevel:
-			lstatus = "Set Level";
-			break;
-		}
-		break;
 	case pTypeSecurity1:
 		llevel=0;
 		switch (nValue)
@@ -2066,6 +2075,23 @@ void GetLightStatus(
 			break;
 		case thermostat3_sStop:
 			lstatus="Stop";
+			break;
+		}
+		break;
+	case pTypeThermostat4:
+		switch (nValue)
+		{
+		case thermostat4_sOff:
+			lstatus = "Off";
+			break;
+		case thermostat4_sManual:
+			lstatus = "Manual";
+			break;
+		case thermostat4_sAuto:
+			lstatus = "Auto";
+			break;
+		case thermostat4_sEco:
+			lstatus = "Eco";
 			break;
 		}
 		break;
@@ -2818,98 +2844,6 @@ bool GetLightCommand(
 		else
 			return false;
 		break;
-	case pTypeYeelight:
-		if (switchcmd == "Off")
-		{
-			cmd = Yeelight_LedOff;
-			return true;
-		}
-		else if (switchcmd == "On")
-		{
-			cmd = Yeelight_LedOn;
-			return true;
-		}
-		else if (switchcmd == "Set Color")
-		{
-			cmd = Yeelight_SetRGBColour;
-			return true;
-		}
-		else if (
-			(switchcmd == "Set Brightness") ||
-			(switchcmd == "Set Level")
-			)
-		{
-			cmd = Yeelight_SetBrightnessLevel;
-			return true;
-		}
-		else if (switchcmd == "Set White")
-		{
-			cmd = Yeelight_SetColorToWhite;
-			return true;
-		}
-		else if (switchcmd == "Set Full")
-		{
-			cmd = Yeelight_SetColorToWhite;
-			return true;
-		}
-		else if (switchcmd == "Set Night")
-		{
-			cmd = Yeelight_NightMode;
-			return true;
-		}
-		else if (switchcmd == "Bright Up")
-		{
-			cmd = Yeelight_SetBrightUp;
-			return true;
-		}
-		else if (switchcmd == "Bright Down")
-		{
-			cmd = Yeelight_SetBrightDown;
-			return true;
-		}
-		else if (switchcmd == "Disco Mode")
-		{
-			cmd = Yeelight_DiscoMode;
-			return true;
-		}
-		else if (switchcmd == "Disco Up")
-		{
-			cmd = Yeelight_RGBDiscoNext;
-			return true;
-		}
-		else if (switchcmd == "Disco Down")
-		{
-			cmd = Yeelight_RGBDiscoPrevious;
-			return true;
-		}
-		else if (switchcmd == "Speed Up")
-		{
-			cmd = Yeelight_DiscoSpeedFaster;
-			return true;
-		}
-		else if (switchcmd == "Speed Up Long")
-		{
-			cmd = Yeelight_DiscoSpeedFasterLong;
-			return true;
-		}
-		else if (switchcmd == "Speed Down")
-		{
-			cmd = Yeelight_DiscoSpeedSlower;
-			return true;
-		}
-		else if (switchcmd == "Warmer")
-		{
-			cmd = Yeelight_WarmWhiteIncrease;
-			return true;
-		}
-		else if (switchcmd == "Cooler")
-		{
-			cmd = Yeelight_CoolWhiteIncrease;
-			return true;
-		}
-		else
-			return false;
-		break;
 	case pTypeSecurity1:
 		if (
 			(dSubType==sTypeKD101)||
@@ -3303,6 +3237,31 @@ bool GetLightCommand(
 			return true;
 		}
 		break;
+	case pTypeThermostat4:
+	{
+		if (switchcmd == "Off")
+		{
+			cmd = thermostat4_sOff;
+		}
+		else if (switchcmd == "Manual")
+		{
+			cmd = thermostat4_sManual;
+		}
+		else if (switchcmd == "Auto")
+		{
+			cmd = thermostat4_sAuto;
+		}
+		else if (switchcmd == "Eco")
+		{
+			cmd = thermostat4_sEco;
+		}
+		else
+		{
+			cmd = thermostat3_sOff;
+		}
+		return true;
+	}
+	break;
 	case pTypeRadiator1:
 	{
 		if (switchcmd == "On")

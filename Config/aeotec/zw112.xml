@@ -16,7 +16,7 @@ https://aeotec.freshdesk.com/helpdesk/attachments/6014057567
 		<Value type="byte" genre="config" instance="1" index="39" label="Set the low battery value" min="10" max="50" value="20" size="1">
 			<Help>10% to 50%</Help>
 		</Value>
-		<Value type="list" genre="config" instance="1" index="101" label="Low Battery Check" min="0" max="1" value="0">
+		<Value type="list" genre="config" instance="1" index="101" label="Low Battery Check" min="0" max="1" size="1" value="0">
             <Help>Enable/disable the low battery checking</Help>
             <Item label="Disabled" value="0"/>
             <Item label="Enabled" value="1"/>
@@ -35,7 +35,7 @@ https://aeotec.freshdesk.com/helpdesk/attachments/6014057567
             <Item label="Sensor Binary Report" value="2"/>
             <Item label="Basic Set and Sensor Binary Report" value="3"/>
         </Value>
-		<Value type="list" genre="config" index="252" label="Lock/Unlock Configuration" min="0" max="1" value="0">
+		<Value type="list" genre="config" index="252" label="Lock/Unlock Configuration" min="0" max="1" size="1" value="0">
 			<Help>Lock/ unlock all configuration parameters</Help>
 			<Item label="Unlock" value="0"/>
 			<Item label="Lock" value="1"/>

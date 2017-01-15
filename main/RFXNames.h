@@ -31,11 +31,12 @@ enum _eSwitchType
 
 enum _eMeterType
 {
-	MTYPE_ENERGY=0,
-	MTYPE_GAS,
-	MTYPE_WATER,
-    MTYPE_COUNTER,
-	MTYPE_ENERGY_GENERATED,
+	MTYPE_ENERGY=0,			//0
+	MTYPE_GAS,				//1
+	MTYPE_WATER,			//2
+    MTYPE_COUNTER,			//3
+	MTYPE_ENERGY_GENERATED,	//4
+	MTYPE_TIME,				//5
 	MTYPE_END
 };
 
@@ -149,7 +150,7 @@ enum _eHardwareTypes {
 	HTYPE_DomoticzInternal,		//67
 	HTYPE_NefitEastLAN,			//68
 	HTYPE_PanasonicTV,			//69
-	HTYPE_OpenWebNet,			//70
+	HTYPE_OpenWebNetTCP,		//70
 	HTYPE_RaspberryHTU21D,		//71
 	HTYPE_AtagOne,				//72
 	HTYPE_Sterbox,				//73
@@ -171,6 +172,13 @@ enum _eHardwareTypes {
 	HTYPE_ZIBLUEUSB,			//89
 	HTYPE_ZIBLUETCP,			//90
 	HTYPE_Yeelight,				//91
+	HTYPE_MySensorsMQTT,		//92
+	HTYPE_RaspberryPCF8574,		//93
+	HTYPE_PythonPlugin,			//94
+	HTYPE_XiaomiGateway,		//95
+	HTYPE_RaspberryBME280,		//96
+	HTYPE_Arilux,				//97
+	HTYPE_OpenWebNetUSB,		//98
 	HTYPE_END
 };
 

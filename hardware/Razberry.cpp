@@ -193,7 +193,7 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 {
 	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
 
-	for (Json::Value::iterator itt=devroot.begin(); itt!=devroot.end(); ++itt)
+	for (Json::Value::const_iterator itt=devroot.begin(); itt!=devroot.end(); ++itt)
 	{
 		const std::string devID=itt.key().asString();
 
@@ -219,7 +219,7 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 		const Json::Value nodeInstances=node["instances"];
 		// For all instances
 		//bool haveMultipleInstance=(nodeInstances.size()>1);
-		for (Json::Value::iterator ittInstance=nodeInstances.begin(); ittInstance!=nodeInstances.end(); ++ittInstance)
+		for (Json::Value::const_iterator ittInstance=nodeInstances.begin(); ittInstance!=nodeInstances.end(); ++ittInstance)
 		{
 			_device.commandClassID=0;
 			_device.scaleID=-1;
@@ -270,7 +270,7 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 				else
 				{
 					const Json::Value inVal=instance["commandClasses"]["48"]["data"];
-					for (Json::Value::iterator itt2=inVal.begin(); itt2!=inVal.end(); ++itt2)
+					for (Json::Value::const_iterator itt2=inVal.begin(); itt2!=inVal.end(); ++itt2)
 					{
 						const std::string sKey=itt2.key().asString();
 						if (!isInt(sKey))
@@ -299,7 +299,7 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 				_device.commandClassID=49;
 				_device.scaleMultiply=1;
 				const Json::Value inVal=instance["commandClasses"]["49"]["data"];
-				for (Json::Value::iterator itt2=inVal.begin(); itt2!=inVal.end(); ++itt2)
+				for (Json::Value::const_iterator itt2=inVal.begin(); itt2!=inVal.end(); ++itt2)
 				{
 					const std::string sKey=itt2.key().asString();
 					if (!isInt(sKey))
@@ -346,7 +346,7 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 			{
 				//COMMAND_CLASS_METER
 				const Json::Value inVal=instance["commandClasses"]["50"]["data"];
-				for (Json::Value::iterator itt2=inVal.begin(); itt2!=inVal.end(); ++itt2)
+				for (Json::Value::const_iterator itt2=inVal.begin(); itt2!=inVal.end(); ++itt2)
 				{
 					const std::string sKey=itt2.key().asString();
 					if (!isInt(sKey))
@@ -396,7 +396,7 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 			{
 				//COMMAND_CLASS_METER
 				const Json::Value inVal=instance["commandClasses"]["50"]["data"];
-				for (Json::Value::iterator itt2=inVal.begin(); itt2!=inVal.end(); ++itt2)
+				for (Json::Value::const_iterator itt2=inVal.begin(); itt2!=inVal.end(); ++itt2)
 				{
 					const std::string sKey=itt2.key().asString();
 					if (!isInt(sKey))
@@ -455,7 +455,7 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 			{
 				//COMMAND_CLASS_THERMOSTAT_SETPOINT
 				const Json::Value inVal=instance["commandClasses"]["67"]["data"];
-				for (Json::Value::iterator itt2=inVal.begin(); itt2!=inVal.end(); ++itt2)
+				for (Json::Value::const_iterator itt2=inVal.begin(); itt2!=inVal.end(); ++itt2)
 				{
 					const std::string sKey=itt2.key().asString();
 					if (!isInt(sKey))
@@ -471,7 +471,7 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 			{
 				//COMMAND_CLASS_SENSOR_ALARM
 				const Json::Value inVal=instance["commandClasses"]["156"]["data"];
-				for (Json::Value::iterator itt2=inVal.begin(); itt2!=inVal.end(); ++itt2)
+				for (Json::Value::const_iterator itt2=inVal.begin(); itt2!=inVal.end(); ++itt2)
 				{
 					const std::string sKey=itt2.key().asString();
 					if (!isInt(sKey))

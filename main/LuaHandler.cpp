@@ -240,7 +240,7 @@ int CLuaHandler::l_domoticz_updateDevice(lua_State* lua_state)
 			int subType = atoi(dsubtype.c_str());
 
 			std::stringstream sstr;
-			unsigned long long ulIdx;
+			uint64_t ulIdx;
 			sstr << ideviceId;
 			sstr >> ulIdx;
 			m_mainworker.UpdateDevice(HardwareID, DeviceID, unit, devType, subType, invalue, svalue, signallevel, batterylevel);
@@ -349,6 +349,8 @@ bool CLuaHandler::executeLuaScript(const std::string &script, const std::string 
 	lua_pushstring(lua_state, content.c_str());
 	lua_rawset(lua_state, -3);
 	lua_setglobal(lua_state, "request");
+
+	m_mainworker.m_eventsystem.exportDeviceStatesToLua(lua_state);
 
 	// Push all url parameters as a map indexed by the parameter name
 	// Each entry will be uri[<param name>] = <param value>

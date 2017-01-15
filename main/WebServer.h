@@ -53,7 +53,6 @@ public:
 	void SetRego6XXType(WebEmSession & session, const request& req, std::string & redirect_uri);
 	void SetS0MeterType(WebEmSession & session, const request& req, std::string & redirect_uri);
 	void SetLimitlessType(WebEmSession & session, const request& req, std::string & redirect_uri);
-	void SetYeelightType(WebEmSession & session, const request & req, std::string & redirect_uri);
 
 	void SetOpenThermSettings(WebEmSession & session, const request& req, std::string & redirect_uri);
 	void Cmd_SendOpenThermCommand(WebEmSession & session, const request& req, Json::Value &root);
@@ -62,6 +61,8 @@ public:
 	void RestoreDatabase(WebEmSession & session, const request& req, std::string & redirect_uri);
 	void SBFSpotImportOldData(WebEmSession & session, const request& req, std::string & redirect_uri);
 	void SetCurrentCostUSBType(WebEmSession & session, const request& req, std::string & redirect_uri);
+
+	void EventCreate(WebEmSession & session, const request& req, std::string & redirect_uri);
 
 	cWebem *m_pWebEm;
 
@@ -86,9 +87,11 @@ public:
 		const std::string &planID,
 		const std::string &floorID,
 		const bool bDisplayHidden,
+		const bool bDisplayDisabled,
 		const bool bFetchFavorites,
 		const time_t LastUpdate,
-		const std::string &username);
+		const std::string &username,
+		const std::string &hardwareid = ""); // OTO
 
 	// SessionStore interface
 	const WebEmStoredSession GetSession(const std::string & sessionId);
@@ -246,6 +249,8 @@ private:
 	void Cmd_DeleteMobileDevice(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_HEOSSetMode(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_HEOSMediaCommand(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_AddYeeLight(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_AddArilux(WebEmSession & session, const request& req, Json::Value &root);
 
 	void Cmd_BleBoxSetMode(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_BleBoxGetNodes(WebEmSession & session, const request& req, Json::Value &root);
@@ -253,6 +258,8 @@ private:
 	void Cmd_BleBoxUpdateNode(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_BleBoxRemoveNode(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_BleBoxClearNodes(WebEmSession & session, const request& req, Json::Value &root);
+
+	void PluginList(Json::Value &root);
 
 	//RTypes
 	void RType_HandleGraph(WebEmSession & session, const request& req, Json::Value &root);

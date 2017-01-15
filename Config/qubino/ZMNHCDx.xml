@@ -44,7 +44,7 @@
 				</Help>
 		</Value>
 
-		<Value type="list" genre="config" instance="1" index="73" label="Slats position" min="0" max="1" value="1">
+		<Value type="list" genre="config" instance="1" index="73" label="Slats position" min="0" max="1" size="1" value="1">
 			<Help>This parameter defines slats position after up/down movement through Z-wave or push-buttons
 				Slats return to previously set position only in case of
 				</Help>

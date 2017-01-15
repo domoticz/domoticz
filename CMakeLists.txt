@@ -3,6 +3,10 @@ cmake_minimum_required(VERSION 2.8.4)
 
 project(domoticz)
 
+## required min. libBoost version
+SET(DOMO_MIN_LIBBOOST_VERSION 105500)
+##
+
 option(USE_BUILTIN_LUA "Use builtin lua library" YES)
 IF(USE_BUILTIN_LUA)
   add_subdirectory (lua)
@@ -57,6 +61,18 @@ ELSE(USE_BUILTIN_SQLITE)
   ENDIF(SQLite_FOUND)
 ENDIF(USE_BUILTIN_SQLITE)
 
+option(USE_PYTHON_PLUGINS "Use Python Plugins" YES)
+IF(USE_PYTHON_PLUGINS)
+  find_package(PythonLibs 3.4)
+  IF(PYTHONLIBS_FOUND)
+    MESSAGE(STATUS "Python3 includes found at: ${PYTHON_INCLUDE_PATH}")
+    INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
+    add_definitions(-DUSE_PYTHON_PLUGINS)
+  ELSE(PYTHONLIBS_FOUND)
+    MESSAGE(FATAL_ERROR "Python3 not found on your system, use USE_PYTHON_PLUGINS=NO or sudo apt-get install python3-dev)")
+  ENDIF(PYTHONLIBS_FOUND)
+ENDIF(USE_PYTHON_PLUGINS)
+
 SET(EXECUTABLE_OUTPUT_PATH "" CACHE INTERNAL
   "Where to put the executables for Domoticz"
   )
@@ -75,6 +91,18 @@ IF(HAVE_EXECINFO_H)
     ADD_DEFINITIONS(-DHAVE_EXECINFO_H)
   ENDIF()
 ENDIF(HAVE_EXECINFO_H)
+
+INCLUDE(CheckIncludeFiles)
+
+CHECK_INCLUDE_FILES ("sys/types.h;linux/i2c-dev.h;linux/i2c.h" HAVE_LINUX_I2C_H)
+IF (HAVE_LINUX_I2C_H)
+    SET (HAVE_LINUX_I2C TRUE)
+ENDIF (HAVE_LINUX_I2C_H)
+
+CHECK_INCLUDE_FILES ("sys/types.h;linux/spi/spidev.h" HAVE_LINUX_SPI_H)
+IF (HAVE_LINUX_SPI_H)
+    SET (HAVE_LINUX_SPI TRUE)
+ENDIF (HAVE_LINUX_SPI_H)
 
 #set(CMAKE_EXE_LINKER_FLAGS "-static")
 
@@ -287,12 +315,14 @@ hardware/MultiFun.cpp
 hardware/MySensorsBase.cpp
 hardware/MySensorsSerial.cpp
 hardware/MySensorsTCP.cpp
+hardware/MySensorsMQTT.cpp
 hardware/NefitEasy.cpp
 hardware/Nest.cpp
 hardware/Netatmo.cpp
 hardware/HttpPoller.cpp
 hardware/OpenWeatherMap.cpp
-hardware/OpenWebNet.cpp
+hardware/OpenWebNetTCP.cpp
+hardware/OpenWebNetUSB.cpp
 hardware/openwebnet/bt_openwebnet.cpp
 hardware/OpenZWave.cpp
 hardware/openzwave/control_panel/ozwcp.cpp
@@ -344,6 +374,9 @@ hardware/ZiBlueSerial.cpp
 hardware/ZiBlueTCP.cpp
 hardware/ZWaveBase.cpp
 hardware/Yeelight.cpp
+hardware/XiaomiGateway.cpp
+hardware/Arilux.cpp
+hardware/plugins/PluginManager.cpp
 notifications/NotificationBase.cpp
 notifications/NotificationEmail.cpp
 notifications/NotificationGCM.cpp
@@ -447,6 +480,12 @@ if(USE_STATIC_BOOST)
 else(USE_STATIC_BOOST)
    message(STATUS "Linking against boost dynamic libraries")
 endif(USE_STATIC_BOOST)
+
+# compare found vs required libBoost version
+if(Boost_VERSION VERSION_LESS DOMO_MIN_LIBBOOST_VERSION)
+   message(FATAL_ERROR "Found libBoost version ${Boost_VERSION}, ${DOMO_MIN_LIBBOOST_VERSION} or newer required")
+endif(Boost_VERSION VERSION_LESS DOMO_MIN_LIBBOOST_VERSION)
+
 include_directories(${Boost_INCLUDE_DIRS})
 
 
@@ -659,6 +698,7 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/License.txt DESTINATION ${CMAKE_INSTAL
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/History.txt DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/server_cert.pem DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/scripts DESTINATION ${CMAKE_INSTALL_PREFIX} USE_SOURCE_PERMISSIONS)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/plugins DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Config DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/updatedomo DESTINATION ${CMAKE_INSTALL_PREFIX} PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ)
 

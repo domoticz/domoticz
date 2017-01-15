@@ -38,7 +38,7 @@
 				Must be greater than Lower Threshold High and less than Upper Threshold High.
 			</Help>
 		</Value>
-		<Value type="list" index="8" genre="config" label="Input Flags" min="0" max="3" value="3">
+		<Value type="list" index="8" genre="config" label="Input Flags" min="0" max="3" size="1" value="3">
 			<Help>
 				Bits 7 - 2 are ignored and should be set to 0
 
