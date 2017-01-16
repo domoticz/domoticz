@@ -334,7 +334,7 @@ void CEvohome::Do_Work()
 									MultiControllerCount++;
 							if (MultiControllerCount > 1) // If multiple controllers detected then stop and user required to set controller ID on hardware settings page
 							{
-								_log.Log(LOG_ERROR, "evohome: Error multiple controllers detected (IDs:0x%x,0x%x,0x%x,0x%x,0x%x).  Please set controller ID in hardware settings.", MultiControllerID[0], MultiControllerID[1], MultiControllerID[2], MultiControllerID[3], MultiControllerID[4]);
+								_log.Log(LOG_ERROR, "evohome: Error multiple controllers detected.  Please set controller ID in hardware settings.");
 								StopHardware();
 							}
 							else if (MultiControllerCount == 1) // If only 1 controller detected then proceed, otherwise continue searching for controller
