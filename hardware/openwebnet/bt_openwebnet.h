@@ -58,7 +58,7 @@ private:
   std::string DeleteControlCharacters(const std::string& in_frame);
   std::string FirstToken(const std::string& text, const std::string& delimiter);
   static std::string vectorToString(const std::vector<std::string>& strings);
-  void tokenize(const std::string& strToTokenize, const char token, std::string& out_firstToken, std::vector<std::string> out_otherTokens);
+  void tokenize(const std::string& strToTokenize, const char token, std::string& out_firstToken, std::vector<std::string>& out_otherTokens);
 
   //fields description
   static std::string getDimensionsDescription(const std::string& who, const std::string& dimension, const std::vector<std::string>& values);

@@ -55,7 +55,7 @@ def onConnect(Status, Description):
         Domoticz.Debug("Failed to connect ("+str(Status)+") to: "+Parameters["SerialPort"]+" with error: "+Description)
     return True
 
-def onMessage(Data):
+def onMessage(Data, Status, Extra):
     global connectStatus, fScale, summation
     Domoticz.Debug(Data)
     xmltree = ET.fromstring(Data)
