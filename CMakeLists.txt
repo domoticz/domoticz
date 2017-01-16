@@ -96,11 +96,13 @@ INCLUDE(CheckIncludeFiles)
 
 CHECK_INCLUDE_FILES ("sys/types.h;linux/i2c-dev.h;linux/i2c.h" HAVE_LINUX_I2C_H)
 IF (HAVE_LINUX_I2C_H)
+	message(STATUS "Building with I2C support")
 	add_definitions(-DHAVE_LINUX_I2C)
 ENDIF (HAVE_LINUX_I2C_H)
 
 CHECK_INCLUDE_FILES ("sys/types.h;linux/spi/spidev.h" HAVE_LINUX_SPI_H)
 IF (HAVE_LINUX_SPI_H)
+	message(STATUS "Building with SPI support")
 	add_definitions(-DHAVE_LINUX_SPI)
 ENDIF (HAVE_LINUX_SPI_H)
 
