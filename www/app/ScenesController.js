@@ -583,11 +583,31 @@ define(['app'], function (app) {
 				if (bShowLevel==true) {
 					var levelDiv$ = $("#scenecontent #LevelDiv");
 					levelDiv$.find("option").show().end().show();
+
+					var dimmerValues = [];
+
 					if (dimmerLevels !== "all") {
-						levelDiv$.find("option").hide();
 						$.each(dimmerLevels.split(','), function(i, level) {
-							levelDiv$.find("option[value=\"" + level + "\"]").show();
+						    dimmerValues[i] = level;
 						});
+					}
+					else {
+					    for (var level = 0; level < 101; level++) {
+					        dimmerValues[level] = level;
+					    }
+					}
+					levelDiv$.find("option").hide();
+					for (var levelCounter = 0; levelCounter < dimmerValues.length; levelCounter++) {
+					    var comboLeveloption = levelDiv$.find("option[value=\"" + dimmerValues[levelCounter] + "\"]");
+
+					    if (comboLeveloption.length == 0) {
+					        var option = $('<option />');
+					        option.attr('value', dimmerValues[levelCounter]).text(dimmerValues[levelCounter] + "%");
+					        $("#scenecontent #combolevel").append(option);
+					    }
+					    else {
+					        comboLeveloption.show();
+					    }
 					}
 				}
 			}
