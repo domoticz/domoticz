@@ -660,11 +660,16 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 					}
 					else if (name == "Xiaomi RGB Gateway") {
 						std::string rgb = root2["rgb"].asString();
+						_log.Log(LOG_STATUS, "XiaomiGateway: rgb received value: %s", rgb.c_str());
 						bool on = false;
 						if (rgb != "0") {
 							on = true;
+							_log.Log(LOG_STATUS, "XiaomiGateway: setting on to true");
 						}
-						m_XiaomiGateway->InsertUpdateRGBGateway(sid.c_str(), name, on, "100", 255);
+						else {
+							_log.Log(LOG_STATUS, "XiaomiGateway: setting on to false");
+						}
+						m_XiaomiGateway->InsertUpdateRGBGateway(sid.c_str(), name, on, "100", 100);
 					}
 					else {
 						_log.Log(LOG_STATUS, "XiaomiGateway: unhandled model: %s", model.c_str());
@@ -689,8 +694,8 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 			}
 			else if (cmd == "iam") {
 				if (model == "gateway") {
-					_log.Log(LOG_STATUS, "XiaomiGateway: RGB Gateway Detected");
-					m_XiaomiGateway->InsertUpdateRGBGateway(sid.c_str(), "Xiaomi RGB Gateway", false, "0", 100);
+					//_log.Log(LOG_STATUS, "XiaomiGateway: RGB Gateway Detected");
+					//m_XiaomiGateway->InsertUpdateRGBGateway(sid.c_str(), "Xiaomi RGB Gateway", false, "0", 100);
 					m_gatewayip = root["ip"].asString();
 					//query for list of devices
 					std::string message = "{\"cmd\" : \"get_id_list\"}";
