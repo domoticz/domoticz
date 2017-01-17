@@ -58,7 +58,7 @@ Connection information:
 
 #define NO_INTERRUPT	-1
 #define MAX_GPIO	31
-#define MAX_PERIOD_US	50000
+#define MIN_PERIOD_US	50000
 
 bool m_bIsInitGPIOPins=false;
 bool interruptHigh[MAX_GPIO+1]={ false };
@@ -153,7 +153,7 @@ int timeval_subtract (struct timeval *result, struct timeval *x, struct timeval 
 	unsigned int diff = tvDiff[gpioId].tv_usec + tvDiff[gpioId].tv_sec * 1000000;
 	getclock(&tvBegin[gpioId]);
 	boost::mutex::scoped_lock lock(interruptQueueMutex);
-	if (diff>MAX_PERIOD_US) {
+	if (diff>MIN_PERIOD_US) {
 		interruptHigh[gpioId]=false;
 		if(std::find(gpioInterruptQueue.begin(), gpioInterruptQueue.end(), gpioId) != gpioInterruptQueue.end()) {
 			_log.Log(LOG_NORM, "GPIO: Interrupt for GPIO %d already queued. Ignoring...", gpioId);
@@ -232,11 +232,11 @@ bool CGpio::StartHardware()
 		if (it->GetIsExported() && it->GetIsInput()) {
 			_log.Log(LOG_NORM, "GPIO: Hooking interrupt handler for GPIO %d.", it->GetId());
 			switch (it->GetId()) {
-				case 0: wiringPiISR(0, INT_EDGE_SETUP, &interruptHandler0);	getclock(&tvBegin[0]); break;
-				case 1: wiringPiISR(1, INT_EDGE_SETUP, &interruptHandler1);	getclock(&tvBegin[1]); break;
-				case 2: wiringPiISR(2, INT_EDGE_SETUP, &interruptHandler2);	getclock(&tvBegin[2]); break;
-				case 3: wiringPiISR(3, INT_EDGE_SETUP, &interruptHandler3);	getclock(&tvBegin[3]); break;
-				case 4: wiringPiISR(4, INT_EDGE_SETUP, &interruptHandler4);	getclock(&tvBegin[4]); break;
+				case 0: wiringPiISR(0, INT_EDGE_SETUP, &interruptHandler0); getclock(&tvBegin[0]); break;
+				case 1: wiringPiISR(1, INT_EDGE_SETUP, &interruptHandler1); getclock(&tvBegin[1]); break;
+				case 2: wiringPiISR(2, INT_EDGE_SETUP, &interruptHandler2); getclock(&tvBegin[2]); break;
+				case 3: wiringPiISR(3, INT_EDGE_SETUP, &interruptHandler3); getclock(&tvBegin[3]); break;
+				case 4: wiringPiISR(4, INT_EDGE_SETUP, &interruptHandler4); getclock(&tvBegin[4]); break;
 				case 5: wiringPiISR(5, INT_EDGE_SETUP, &interruptHandler5); getclock(&tvBegin[5]); break;
 				case 6: wiringPiISR(6, INT_EDGE_SETUP, &interruptHandler6); getclock(&tvBegin[6]); break;
 				case 7: wiringPiISR(7, INT_EDGE_SETUP, &interruptHandler7); getclock(&tvBegin[7]); break;
