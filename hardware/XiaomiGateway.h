@@ -17,6 +17,7 @@ public:
 	void InsertUpdateVoltage(const std::string &nodeid, const std::string &Name, const int BatteryLevel);
 	void InsertUpdateTemperature(const std::string &nodeid, const std::string &Name, const float Temperature);
 	void InsertUpdateHumidity(const std::string &nodeid, const std::string &Name, const int Humidity);
+	void InsertUpdateRGBGateway(const std::string &nodeid, const std::string &Name, const bool bIsOn, const std::string &brightness, const int hue);
 	void UpdateToken(const std::string &value);
 
 private:
