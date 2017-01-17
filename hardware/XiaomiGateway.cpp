@@ -172,8 +172,7 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 		int customimage = 0;
 		if (subtype == STYPE_OnOff) {
 			customimage = 1;
-		}
-		else if (subtype == STYPE_Selector) {
+		} else if (subtype == STYPE_Selector) {
 			customimage = 9;
 		}
 		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, CustomImage=%i WHERE(HardwareID == %d) AND (DeviceID == '%q')", Name.c_str(), (subtype), customimage, m_HwdID, ID.c_str());
@@ -196,9 +195,9 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 				}
 				else if (Name == "Xiaomi Wired Wall Switch") {
 					//for Aqara wired switch, 2 buttons supported 
-					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Switch1 On|Switch1 Off|Switch2 On|Switch2 Off", false));
+					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Switch1 On|Switch1 Off|Switch2 On|Switch2 Off" , false));
 				}
-
+				
 			}
 		}
 	}
@@ -206,15 +205,15 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 		//already in the database
 		/*
 		if (subtype == STYPE_PushOn) {
-		//just toggle the last state for a wireless switch.
-		int nvalue = atoi(result[0][0].c_str());
-		bIsOn = (nvalue == 0);
-		if (bIsOn) {
-		xcmd.cmnd = gswitch_sOn;
-		}
-		else {
-		xcmd.cmnd = gswitch_sOff;
-		}
+			//just toggle the last state for a wireless switch.
+			int nvalue = atoi(result[0][0].c_str());
+			bIsOn = (nvalue == 0);
+			if (bIsOn) {
+				xcmd.cmnd = gswitch_sOn;
+			}
+			else {
+				xcmd.cmnd = gswitch_sOff;
+			}
 		}
 		*/
 		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, NULL, -1);
@@ -492,13 +491,13 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							on = true;
 						}
 						//if (rotate == "") {
-						std::string battery = root2["battery"].asString();
-						if (battery != "") {
-							m_XiaomiGateway->InsertUpdateVoltage(sid.c_str(), name, atoi(battery.c_str()));
-						}
-						else {
-							m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, on, type, level);
-						}
+							std::string battery = root2["battery"].asString();
+							if (battery != "") {
+								m_XiaomiGateway->InsertUpdateVoltage(sid.c_str(), name, atoi(battery.c_str()));
+							}
+							else {
+								m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, on, type, level);
+							}
 						//}
 					}
 					else if (name == "Xiaomi Temperature/Humidity") {
