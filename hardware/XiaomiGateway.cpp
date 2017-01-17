@@ -172,7 +172,8 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 		int customimage = 0;
 		if (subtype == STYPE_OnOff) {
 			customimage = 1;
-		} else if (subtype == STYPE_Selector) {
+		}
+		else if (subtype == STYPE_Selector) {
 			customimage = 9;
 		}
 		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, CustomImage=%i WHERE(HardwareID == %d) AND (DeviceID == '%q')", Name.c_str(), (subtype), customimage, m_HwdID, ID.c_str());
@@ -189,6 +190,15 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 					// flip90/flip180/move/tap_twice/shake_air/swing/alert/free_fall
 					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|flip90|flip180|move|tap_twice|shake_air|swing|alert|free_fall|clock_wise|anti_clock_wise", false));
 				}
+				else if (Name == "Xiaomi Wireless Wall Switch") {
+					//for Aqara wireless switch, 2 buttons supported 
+					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Switch 1|Switch 2", false));
+				}
+				else if (Name == "Xiaomi Wired Wall Switch") {
+					//for Aqara wired switch, 2 buttons supported 
+					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Switch1 On|Switch1 Off|Switch2 On|Switch2 Off", false));
+				}
+
 			}
 		}
 	}
@@ -196,15 +206,15 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 		//already in the database
 		/*
 		if (subtype == STYPE_PushOn) {
-			//just toggle the last state for a wireless switch.
-			int nvalue = atoi(result[0][0].c_str());
-			bIsOn = (nvalue == 0);
-			if (bIsOn) {
-				xcmd.cmnd = gswitch_sOn;
-			}
-			else {
-				xcmd.cmnd = gswitch_sOff;
-			}
+		//just toggle the last state for a wireless switch.
+		int nvalue = atoi(result[0][0].c_str());
+		bIsOn = (nvalue == 0);
+		if (bIsOn) {
+		xcmd.cmnd = gswitch_sOn;
+		}
+		else {
+		xcmd.cmnd = gswitch_sOff;
+		}
 		}
 		*/
 		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, NULL, -1);
@@ -406,8 +416,21 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						name = "Xiaomi Cube";
 						type = STYPE_Selector;
 					}
+					else if (model == "86sw2") {
+						name = "Xiaomi Wireless Wall Switch";
+						type = STYPE_Selector;
+					}
+					else if (model == "ctrl_neutral2") {
+						name = "Xiaomi Wired Wall Switch";
+						type = STYPE_Selector;
+					}
 					if (type != STYPE_END) {
 						std::string status = root2["status"].asString();
+						//Aqara's Wireless switch reports per channel
+						std::string aqara_wireless1 = root2["channel_0"].asString();
+						std::string aqara_wireless2 = root2["channel_1"].asString();
+						std::string aqara_wired1 = root2["channel_0"].asString();
+						std::string aqara_wired2 = root2["channel_1"].asString();
 						bool on = false;
 						int level = 0;
 						if ((status == "motion") || (status == "open") || (status == "no_close") || (status == "on")) {
@@ -416,19 +439,19 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						else if ((status == "no_motion") || (status == "close") || (status == "off")) {
 							on = false;
 						}
-						else if ((status == "click") || (status == "flip90")) {
+						else if ((status == "click") || (status == "flip90") || (aqara_wireless1 == "click") || (aqara_wired1 == "on")) {
 							level = 10;
 							on = true;
 						}
-						else if ((status == "long_click_press") || (status == "long_click_release") || (status == "flip180")) {
+						else if ((status == "long_click_press") || (status == "long_click_release") || (status == "flip180") || (aqara_wireless2 == "click") || (aqara_wired1 == "off")) {
 							level = 20;
 							on = true;
 						}
-						else if ((status == "double_click") || (status == "move")) {
+						else if ((status == "double_click") || (status == "move") || (aqara_wired2 == "on")) {
 							level = 30;
 							on = true;
 						}
-						else if (status == "tap_twice") {
+						else if ((status == "tap_twice") || (aqara_wired2 == "off")) {
 							level = 40;
 							on = true;
 						}
@@ -468,15 +491,15 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							}
 							on = true;
 						}
-						if (rotate == "") {
-							std::string battery = root2["battery"].asString();
-							if (battery != "") {
-								m_XiaomiGateway->InsertUpdateVoltage(sid.c_str(), name, atoi(battery.c_str()));
-							}
-							else {
-								m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, on, type, level);
-							}
+						//if (rotate == "") {
+						std::string battery = root2["battery"].asString();
+						if (battery != "") {
+							m_XiaomiGateway->InsertUpdateVoltage(sid.c_str(), name, atoi(battery.c_str()));
 						}
+						else {
+							m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, on, type, level);
+						}
+						//}
 					}
 					else if (name == "Xiaomi Temperature/Humidity") {
 						std::string temperature = root2["temperature"].asString();
