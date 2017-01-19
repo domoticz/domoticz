@@ -1355,7 +1355,7 @@ namespace http {
 
 				root["idx"] = sd[0].c_str(); // OTO output the created ID for easier management on the caller side (if automated)
 
-				m_mainworker.AddHardwareFromParams(ID, name, (senabled == "true") ? true : false, htype, address, port, sport, username, password, extra, mode1, mode2, mode3, mode4, mode5, mode6, mode1Str, mode2Str, mode3Str, mode4Str, mode5Str, mode6Str, iDataTimeout, true);
+				m_mainworker.AddHardwareFromParams(ID, name, (senabled == "true") ? true : false, htype, address, port, sport, username, password, extra, mode1, mode2, mode3, mode4, mode5, mode6, iDataTimeout, true);
 			}
 		}
 
@@ -1689,7 +1689,7 @@ namespace http {
 
 			//re-add the device in our system
 			int ID = atoi(idx.c_str());
-			m_mainworker.AddHardwareFromParams(ID, name, bEnabled, htype, address, port, sport, username, password, extra, mode1, mode2, mode3, mode4, mode5, mode6, mode1Str, mode2Str, mode3Str, mode4Str, mode5Str, mode6Str, iDataTimeout, true);
+			m_mainworker.AddHardwareFromParams(ID, name, bEnabled, htype, address, port, sport, username, password, extra, mode1, mode2, mode3, mode4, mode5, mode6, iDataTimeout, true);
 		}
 
 		void CWebServer::Cmd_GetDeviceValueOptions(WebEmSession & session, const request& req, Json::Value &root)
@@ -10483,7 +10483,7 @@ namespace http {
 					if (hType == HTYPE_HTTPPOLLER) {
 							std::vector<std::string> strextra;
 							StringSplit(sd[9], "|", strextra);
-							string script;
+							std::string script;
 							if (strextra.size() >= 1) {
 								std::string extraScript = base64_decode(strextra[0]);
 								root["result"][ii]["Extra"] = extraScript;

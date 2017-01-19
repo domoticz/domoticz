@@ -10,7 +10,7 @@ namespace Json
 class CHttpPoller : public CDomoticzHardwareBase
 {
 public:
-	CHttpPoller(const int ID, const std::string& username, const std::string& password, const std::string& url, const std::string& script, int method, const std::string& contenttype, const std::string& headers, const std::string& postdata, const unsigned short refresh);
+	CHttpPoller(const int ID, const std::string& username, const std::string& password, const std::string& url, const std::string& extradata, const unsigned short refresh);
 	~CHttpPoller(void);
 
 	bool WriteToHardware(const char *pdata, const unsigned char length);

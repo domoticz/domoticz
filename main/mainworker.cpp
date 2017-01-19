@@ -253,7 +253,7 @@ void MainWorker::AddAllDomoticzHardware()
 			std::string Mode4Str = sd[13].c_str();
 			std::string Mode5Str = sd[14].c_str();
 			std::string Mode6Str = sd[15].c_str();
-			AddHardwareFromParams(ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, mode1, mode2, mode3, mode4, mode5, mode6, Mode1Str, Mode2Str, Mode3Str, Mode4Str, Mode5Str, Mode6Str, DataTimeout, false);
+			AddHardwareFromParams(ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, mode1, mode2, mode3, mode4, mode5, mode6, DataTimeout, false);
 		}
 		m_hardwareStartCounter = 0;
 		m_bStartHardware = true;
@@ -605,7 +605,7 @@ bool MainWorker::RestartHardware(const std::string &idx)
 	std::string Mode5Str = sd[13].c_str();
 	std::string Mode6Str = sd[14].c_str();
 
-	return AddHardwareFromParams(atoi(idx.c_str()), Name, (senabled == "true") ? true : false, htype, address, port, serialport, username, password, extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, Mode1Str, Mode2Str, Mode3Str, Mode4Str, Mode5Str, Mode6Str, DataTimeout, true);
+	return AddHardwareFromParams(atoi(idx.c_str()), Name, (senabled == "true") ? true : false, htype, address, port, serialport, username, password, extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout, true);
 }
 
 bool MainWorker::AddHardwareFromParams(
@@ -622,12 +622,6 @@ bool MainWorker::AddHardwareFromParams(
 	const int Mode4,
 	const int Mode5,
 	const int Mode6,
-	const std::string &Mode1Str,
-	const std::string &Mode2Str,
-	const std::string &Mode3Str,
-	const std::string &Mode4Str,
-	const std::string &Mode5Str,
-	const std::string &Mode6Str,
 	const int DataTimeout,
 	const bool bDoStart
 	)
@@ -868,7 +862,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CWunderground(ID,Username,Password);
 		break;
 	case HTYPE_HTTPPOLLER:
-		pHardware = new CHttpPoller(ID, Username, Password, Address, Filename, Mode1, Mode2Str, Mode3Str, Mode4Str, Port);
+		pHardware = new CHttpPoller(ID, Username, Password, Address, Filename, Port);
 		break;
 	case HTYPE_DarkSky:
 		pHardware = new CDarkSky(ID,Username,Password);
