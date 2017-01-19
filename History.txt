@@ -15,6 +15,7 @@ Version 3.xxxx (January xth 2017)
 - Implemented: Notification for Dummy Soil/Moisture sensor
 - Implemented: Notification for Alert Sensor via udevice JSON call
 - Implemented: Option to replace an Meter device
+- Implemented: RFXtrx Lucci Fan implemented
 - Implemented: RFXtrx RFY2 protocol implemented
 - Implemented: RFXtrx Kangtai / Cotech implemented
 - Implemented: Timer Plan editor
