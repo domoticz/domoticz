@@ -2295,7 +2295,7 @@ define(['app'], function (app) {
 							img += '<img src="images/' + item.Image + '48_On.png" title="' + $.t("Turn Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48" width="48">';
 						}
 					}
-					else if (item.SubType.indexOf("Itho")==0) {
+					else if ((item.SubType.indexOf("Itho")==0)||(item.SubType.indexOf("Lucci")==0)) {
 						img=$(id + " #img").html();
 					}
 					else {
@@ -2874,6 +2874,10 @@ define(['app'], function (app) {
 								bAddTimer=false;
 								xhtm+='\t      <td id="img"><img src="images/Fan48_On.png" height="48" width="48" class="lcursor" onclick="ShowIthoPopup(event, ' + item.idx + ', ShowLights, ' + item.Protected +');"></td>\n';
 							}
+							else if (item.SubType.indexOf("Lucci")==0) {
+								bAddTimer=false;
+								xhtm+='\t      <td id="img"><img src="images/Fan48_On.png" height="48" width="48" class="lcursor" onclick="ShowLucciPopup(event, ' + item.idx + ', ShowLights, ' + item.Protected +');"></td>\n';
+							}
 						  else {
 							if (
 								(item.Status == 'On')||
@@ -3313,18 +3317,18 @@ define(['app'], function (app) {
 				tothousecodes=4;
 				totunits=4;
 			}
-			else if ((lighttype==305) || (lighttype==306)) {
-				//Openwebnet Blinds/light Bus
+			else if ((lighttype==400) || (lighttype==401)) {
+				//Openwebnet Bus Blinds/Lights
 			    totrooms = 11;//area, from 0 to 9 if physical configuration, 0 to 10 if virtual configuration
 			    totpointofloads = 16;//point of load, from 0 to 9 if physical configuration, 1 to 15 if virtual configuration
 				totbus = 10;//maximum 10 local buses
 			}
-			else if (lighttype==307) {
-				//Openwebnet Auxiliary Bus
+			else if (lighttype==402) {
+				//Openwebnet Bus Auxiliary
 				totrooms=10;
 			}
-			else if ((lighttype == 308) || (lighttype == 309)) {
-			    //Openwebnet Blinds/light Zigbee
+			else if ((lighttype==403) || (lighttype==404)) {
+			    //Openwebnet Zigbee Blinds/Lights
 			    totunits = 3;//unit number is the button number on the switch (e.g. light1/light2 on a light switch)
 			}
             
@@ -3433,8 +3437,15 @@ define(['app'], function (app) {
 				$("#dialog-addmanuallightdevice #lighting3params").hide();
 				$("#dialog-addmanuallightdevice #fanparams").show();
 			}
-			else if((lighttype==305) || (lighttype==306)){
-				//Openwebnet Blinds/light Bus
+			else if (lighttype==305) {
+				//Fan (Lucci Air)
+				$("#dialog-addmanuallightdevice #lighting1params").hide();
+				$("#dialog-addmanuallightdevice #lighting2params").hide();
+				$("#dialog-addmanuallightdevice #lighting3params").hide();
+				$("#dialog-addmanuallightdevice #fanparams").show();
+			}
+			else if((lighttype==400) || (lighttype==401)){
+				//Openwebnet Bus Blinds/Light
 			    $("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd1  >option").remove();
 				for (ii=1; ii<totrooms; ii++)
 				{
@@ -3456,8 +3467,8 @@ define(['app'], function (app) {
 				$("#dialog-addmanuallightdevice #lighting3params").hide();
 				$("#dialog-addmanuallightdevice #openwebnetparamsBus").show();
 			}
-			else if (lighttype==307) {
-				//Openwebnet Auxiliary Bus
+			else if (lighttype==402) {
+				//Openwebnet Bus Auxiliary
 				$("#dialog-addmanuallightdevice #openwebnetparamsAUX #combocmd1  >option").remove();
 				for (ii=1; ii<totrooms; ii++)
 				{
@@ -3468,8 +3479,8 @@ define(['app'], function (app) {
 				$("#dialog-addmanuallightdevice #lighting3params").hide();
 				$("#dialog-addmanuallightdevice #openwebnetparamsAUX").show();
 			}
-			else if ((lighttype == 308) || (lighttype == 309)) {
-			    //Openwebnet Blinds/light Zigbee
+			else if ((lighttype==403) || (lighttype==404)) {
+			    //Openwebnet Zigbee Blinds/Light
 			    $("#dialog-addmanuallightdevice #lighting1params").hide();
 			    $("#dialog-addmanuallightdevice #lighting2params").hide();
 			    $("#dialog-addmanuallightdevice #lighting3params").hide();
@@ -3605,30 +3616,38 @@ define(['app'], function (app) {
 				mParams+="&id="+ID;
 			}
 			else if (lighttype==305) {
-				//OpenWebNet Blinds Bus
+				//Fan (Lucci Air)
+				ID=
+					$("#dialog-addmanuallightdevice #fanparams #combocmd1 option:selected").text()+
+					$("#dialog-addmanuallightdevice #fanparams #combocmd2 option:selected").text()+
+					$("#dialog-addmanuallightdevice #fanparams #combocmd3 option:selected").text();
+				mParams+="&id="+ID;
+			}
+			else if (lighttype==400) {
+				//OpenWebNet Bus Blinds
 			    var appID = parseInt($("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd1 option:selected").val() +
 					$("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd2 option:selected").val());
                 var ID = ("0002" + ("0000" + appID.toString(16)).slice(-4)); // WHO_AUTOMATION
                 var unitcode = $("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd3 option:selected").val();//TODO : handle bus id (interface) in hardware 
 				mParams+="&id="+ID.toUpperCase()+"&unitcode="+unitcode;
 			}
-			else if (lighttype==306) {
-				//OpenWebNet light Bus
+			else if (lighttype==401) {
+				//OpenWebNet Bus Lights
 			    var appID = parseInt($("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd1 option:selected").val() +
 					$("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd2 option:selected").val());
                 var ID = ("0001" + ("0000" + appID.toString(16)).slice(-4)); // WHO_LIGHTING
                 var unitcode = $("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd3 option:selected").val();//TODO : handle bus id (interface) in hardware 
 				mParams+="&id="+ID.toUpperCase()+"&unitcode="+unitcode;
 			}
-			else if (lighttype==307) {
-				//OpenWebNet auxiliary
+			else if (lighttype==402) {
+				//OpenWebNet Bus Auxiliary
 				var appID= parseInt($("#dialog-addmanuallightdevice #openwebnetparamsAUX #combocmd1 option:selected").val());
                 var ID = ("0009" + ("0000" + appID.toString(16)).slice(-4)); // WHO_AUXILIARY
                 var unitcode= "0";
 				mParams+="&id="+ID.toUpperCase()+"&unitcode="+unitcode;
 			}
-			else if (lighttype == 308) {
-			    //OpenWebNet Blinds Zigbee
+			else if (lighttype == 403) {
+			    //OpenWebNet Zigbee Blinds
 			    var ID = $("#dialog-addmanuallightdevice #openwebnetparamsZigbee #inputcmd1").val();
 			    if (parseInt(ID) <= 0 || parseInt(ID) >= 0xFFFFFFFF) {
 			        ShowNotify($.t('Zigbee id is incorrect!'), 2500, true);
@@ -3637,8 +3656,8 @@ define(['app'], function (app) {
 			    var unitcode = $("#dialog-addmanuallightdevice #openwebnetparamsZigbee #combocmd2 option:selected").val();
 			    mParams += "&id=" + ID + "&unitcode=" + unitcode;
 			}
-			else if (lighttype == 309) {
-			    //OpenWebNet light Zigbee
+			else if (lighttype == 404) {
+			    //OpenWebNet Zigbee Light
 			    var ID = $("#dialog-addmanuallightdevice #openwebnetparamsZigbee #inputcmd1").val();
 			    if (parseInt(ID) <= 0 || parseInt(ID) >= 0xFFFFFFFF) {
 			        ShowNotify($.t('Zigbee id is incorrect!'), 2500, true);
