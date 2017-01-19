@@ -1230,6 +1230,9 @@ namespace http {
 			else if (htype == HTYPE_OpenWebNetUSB) {
 				//All fine here
 			}
+			else if (htype == HTYPE_IntergasInComfortLAN2RF) {
+				//All fine here
+			}
 			else
 				return;
 
@@ -1539,6 +1542,9 @@ namespace http {
 				//All fine here
 			}
 			else if (htype == HTYPE_OpenWebNetUSB) {
+				//All fine here
+			}
+			else if (htype == HTYPE_IntergasInComfortLAN2RF) {
 				//All fine here
 			}
 			else
