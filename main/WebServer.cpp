@@ -10481,7 +10481,7 @@ namespace http {
 					if (hType == HTYPE_HTTPPOLLER) {
 							std::vector<std::string> strextra;
 							StringSplit(sd[9], "|", strextra);
-							string script;
+							std::string script;
 							if (strextra.size() >= 1) {
 								std::string extraScript = base64_decode(strextra[0]);
 								root["result"][ii]["Extra"] = extraScript;
