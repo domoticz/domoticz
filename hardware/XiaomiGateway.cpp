@@ -39,7 +39,54 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 	if (packettype == pTypeGeneralSwitch) {
 		_tGeneralSwitch *xcmd = (_tGeneralSwitch*)pdata;
 		if (xcmd->subtype == sSwitchTypeSelector) {
-			//_log.Log(LOG_STATUS, "WriteToHardware: Ignoring sSwitchTypeSelector");
+			std::string gatewaykey = GetGatewayKey();
+			std::string message = "";
+			char szTmp[50];
+			sprintf(szTmp, "%08X", (unsigned int)xcmd->id);
+			std::string ID = szTmp;
+			std::stringstream s_strid2;
+			s_strid2 << std::hex << ID;
+			std::string sid = s_strid2.str();
+			std::transform(sid.begin(), sid.end(), sid.begin(), ::tolower);
+
+			//append 158d00 to the front 
+			//158d0001190076
+			sid.insert(0, "158d00");
+			std::string cmdchannel = "";
+			if (xcmd->level == 10) {
+				cmdchannel = "\\\"channel_0\\\":\\\"on";
+			}
+			else if (xcmd->level == 20) {
+				cmdchannel = "\\\"channel_0\\\":\\\"off";
+			}
+			else if (xcmd->level == 30) {
+				cmdchannel = "\\\"channel_1\\\":\\\"on";;
+			}
+			else if (xcmd->level == 40) {
+				cmdchannel = "\\\"channel_1\\\":\\\"off";;
+			}
+			//std::string message2 = "{\"cmd\":\"write\",\"model\":\"ctrl_neutral2\",\"sid\":\"" + sid + "\",\"short_id\":0,\"data\":\"{\\\"channel_0\\\":\\\"" + "on" + "\\\",\\\"key\\\":\\\"" + gatewaykey + "\\\"}\" }";
+
+			std::string message2 = "{\"cmd\":\"write\",\"model\":\"ctrl_neutral2\",\"sid\":\"" + sid + "\",\"short_id\":0,\"data\":\"{" + cmdchannel + "\\\",\\\"key\\\":\\\"" + gatewaykey + "\\\"}\" }";
+			if (message2 != "") {
+				boost::asio::io_service io_service;
+				boost::asio::ip::udp::socket socket_(io_service, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 0));
+				boost::shared_ptr<std::string> message1(new std::string(message2));
+				boost::asio::ip::udp::endpoint remote_endpoint_;
+				remote_endpoint_ = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(m_GatewayIp), 9898);
+				socket_.send_to(boost::asio::buffer(*message1), remote_endpoint_);
+				sleep_milliseconds(150);
+				boost::array<char, 512> recv_buffer_;
+				memset(&recv_buffer_[0], 0, sizeof(recv_buffer_));
+				while (socket_.available() > 0) {
+					socket_.receive_from(boost::asio::buffer(recv_buffer_), remote_endpoint_);
+					std::string receivedString(recv_buffer_.data());
+					_log.Log(LOG_STATUS, "mycommand: %s", message2.c_str());
+					_log.Log(LOG_STATUS, "XiaomiGateway: response %s", receivedString.c_str());
+				}
+				socket_.close();
+			}
+
 			return true;
 		}
 		char szTmp[50];
@@ -107,7 +154,8 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 
 		if (xcmd->command == Limitless_LedOn) {
 			message = "{\"cmd\":\"write\",\"model\":\"gateway\",\"sid\":\"" + sid + "\",\"short_id\":0,\"data\":\"{\\\"rgb\\\":4294967295,\\\"key\\\":\\\"" + gatewaykey + "\\\"}\" }";
-		} else if (xcmd->command == Limitless_LedOff) {
+		}
+		else if (xcmd->command == Limitless_LedOff) {
 			message = "{\"cmd\":\"write\",\"model\":\"gateway\",\"sid\":\"" + sid + "\",\"short_id\":0,\"data\":\"{\\\"rgb\\\":0,\\\"key\\\":\\\"" + gatewaykey + "\\\"}\" }";
 		}
 		else if (xcmd->command == Limitless_SetRGBColour) {
@@ -132,10 +180,12 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 			strstream >> rgbvalue;
 			_log.Log(LOG_STATUS, "XiaomiGateway: rgb %s", rgbvalue.c_str());
 			message = "{\"cmd\":\"write\",\"model\":\"gateway\",\"sid\":\"" + sid + "\",\"short_id\":0,\"data\":\"{\\\"rgb\\\":" + rgbvalue + ",\\\"key\\\":\\\"" + gatewaykey + "\\\"}\" }";
-		} else if (xcmd->command == Limitless_SetBrightnessLevel) {
+		}
+		else if (xcmd->command == Limitless_SetBrightnessLevel) {
 			message = "";
 			_log.Log(LOG_STATUS, "XiaomiGateway: Setting brightness not implemented, will try to fix this later");
-		} else {
+		}
+		else {
 			_log.Log(LOG_STATUS, "XiaomiGateway: Unknown command %d", xcmd->command);
 		}
 		if (message != "") {
@@ -323,8 +373,7 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 
 		if (subtype == STYPE_Selector) {
 			result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) ", m_HwdID, ID.c_str(), pTypeGeneralSwitch);
-			if (result.size() > 0)
-			{
+			if (result.size() > 0) {
 				std::string Idx = result[0][0];
 				if (Name == "Xiaomi Wireless Switch") {
 					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Click|Long Click|Double Click", false));
@@ -333,13 +382,21 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 					// flip90/flip180/move/tap_twice/shake_air/swing/alert/free_fall
 					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|flip90|flip180|move|tap_twice|shake_air|swing|alert|free_fall|clock_wise|anti_clock_wise", false));
 				}
-				else if (Name == "Xiaomi Wireless Wall Switch") {
-					//for Aqara wireless switch, 2 buttons supported
+				else if (Name == "Xiaomi Wireless Dual Wall Switch") {
+					//for Aqara wireless switch, 2 buttons support
 					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Switch 1|Switch 2", false));
 				}
-				else if (Name == "Xiaomi Wired Wall Switch") {
-					//for Aqara wired switch, 2 buttons supported
+				else if (Name == "Xiaomi Wired Dual Wall Switch") {
+					//for Aqara wired switch, 2 buttons support
 					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Switch1 On|Switch1 Off|Switch2 On|Switch2 Off", false));
+				}
+				else if (Name == "Xiaomi Wired Single Wall Switch") {
+					//for Aqara wired switch, single button support
+					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Switch1 On|Switch1 Off", false));
+				}
+				else if (Name == "Xiaomi Wireless Single Wall Switch") {
+					//for Aqara wireless switch, single button support
+					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Switch 1", false));
 				}
 			}
 		}
@@ -348,15 +405,15 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 		//already in the database
 		/*
 		if (subtype == STYPE_PushOn) {
-			//just toggle the last state for a wireless switch.
-			int nvalue = atoi(result[0][0].c_str());
-			bIsOn = (nvalue == 0);
-			if (bIsOn) {
-				xcmd.cmnd = gswitch_sOn;
-			}
-			else {
-				xcmd.cmnd = gswitch_sOff;
-			}
+		//just toggle the last state for a wireless switch.
+		int nvalue = atoi(result[0][0].c_str());
+		bIsOn = (nvalue == 0);
+		if (bIsOn) {
+		xcmd.cmnd = gswitch_sOn;
+		}
+		else {
+		xcmd.cmnd = gswitch_sOff;
+		}
 		}
 		*/
 		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, NULL, -1);
@@ -559,15 +616,23 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						type = STYPE_Selector;
 					}
 					else if (model == "86sw2") {
-						name = "Xiaomi Wireless Wall Switch";
+						name = "Xiaomi Wireless Dual Wall Switch";
 						type = STYPE_Selector;
 					}
 					else if (model == "ctrl_neutral2") {
-						name = "Xiaomi Wired Wall Switch";
+						name = "Xiaomi Wired Dual Wall Switch";
 						type = STYPE_Selector;
 					}
 					else if (model == "gateway") {
 						name = "Xiaomi RGB Gateway";
+					}
+					else if (model == "ctrl_neutral1") {
+						name = "Xiaomi Wired Single Wall Switch";
+						type = STYPE_Selector;
+					}
+					else if (model == "86sw1") {
+						name = "Xiaomi Wireless Single Wall Switch";
+						type = STYPE_Selector;
 					}
 					if (type != STYPE_END) {
 						std::string status = root2["status"].asString();
