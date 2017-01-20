@@ -306,19 +306,26 @@ bool CHarmonyHub::UpdateActivities()
 		return false;
 	}
 
-	int totActivities = (int)root["activity"].size();
-	for (int ii = 0; ii < totActivities; ii++)
+	try
 	{
-		std::string aID = root["activity"][ii]["id"].asString();
-		std::string aLabel = root["activity"][ii]["label"].asString();
-		mapActivities[aID] = aLabel;
-	}
+		int totActivities = (int)root["activity"].size();
+		for (int ii = 0; ii < totActivities; ii++)
+		{
+			std::string aID = root["activity"][ii]["id"].asString();
+			std::string aLabel = root["activity"][ii]["label"].asString();
+			mapActivities[aID] = aLabel;
+		}
 
-	std::map< std::string, std::string>::const_iterator itt;
-	int cnt = 0;
-	for (itt = mapActivities.begin(); itt != mapActivities.end(); ++itt)
+		std::map< std::string, std::string>::const_iterator itt;
+		int cnt = 0;
+		for (itt = mapActivities.begin(); itt != mapActivities.end(); ++itt)
+		{
+			UpdateSwitch(cnt++, itt->first.c_str(), (m_szCurActivityID == itt->first), itt->second);
+		}
+	}
+	catch (...)
 	{
-		UpdateSwitch(cnt++, itt->first.c_str(), (m_szCurActivityID == itt->first), itt->second);
+		_log.Log(LOG_ERROR, "Harmony Hub: Invalid data received! (Update Activities, JSon activity)");
 	}
 	return true;
 }
@@ -783,28 +790,35 @@ bool CHarmonyHub::CheckIfChanging(const std::string& strData)
 		if (root["activityStatus"].empty())
 			continue;
 
-		int activityStatus = root["activityStatus"].asInt();
-		if (!root["hubSwVersion"].empty())
+		try
 		{
-			std::string hubSwVersion = root["hubSwVersion"].asString();
-			if (hubSwVersion != m_hubSwVersion)
+			int activityStatus = root["activityStatus"].asInt();
+			if (!root["hubSwVersion"].empty())
 			{
-				m_hubSwVersion = hubSwVersion;
-				_log.Log(LOG_STATUS, "Harmony Hub: Software version: %s", m_hubSwVersion.c_str());
+				std::string hubSwVersion = root["hubSwVersion"].asString();
+				if (hubSwVersion != m_hubSwVersion)
+				{
+					m_hubSwVersion = hubSwVersion;
+					_log.Log(LOG_STATUS, "Harmony Hub: Software version: %s", m_hubSwVersion.c_str());
+				}
+			}
+			bIsChanging = (activityStatus == 1);
+			if (activityStatus == 2)
+			{
+				if (!root["activityId"].empty())
+				{
+					LastActivity = root["activityId"].asString();
+				}
+			}
+			else if (activityStatus == 3)
+			{
+				//Power Off
+				LastActivity = "-1";
 			}
 		}
-		bIsChanging = (activityStatus == 1);
-		if (activityStatus == 2)
+		catch (...)
 		{
-			if (!root["activityId"].empty())
-			{
-				LastActivity = root["activityId"].asString();
-			}
-		}
-		else if (activityStatus == 3)
-		{
-			//Power Off
-			LastActivity = "-1";
+			_log.Log(LOG_ERROR, "Harmony Hub: Invalid data received! (Check Activity change, JSon activity)");
 		}
 	}
 	

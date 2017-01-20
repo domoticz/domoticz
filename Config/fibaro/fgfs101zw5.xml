@@ -54,7 +54,7 @@
                 Possible parameter settings:-10000 to 10000 [each 0.01oC] [-100oC to 100oC].</Help>
         </Value>
         <Value type="list" genre="config" instance="1" index="74" label="Alarm frame sent to 1st and 4th Association Group activation." value="2" size="1">
-            <Help>The device is able to report tamper alarms resulting from sensor’s tilt/movement or TMP button state change.</Help>
+            <Help>The device is able to report tamper alarms resulting from sensor tilt/movement or TMP button state change.</Help>
             <Item label="Tamper alarms INACTIVE" value="0" />
             <Item label="Button tamper alarm ACTIVE" value="1" />
             <Item label="Movement tamper alarm ACTIVE" value="2" />

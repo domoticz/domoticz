@@ -8,6 +8,8 @@ ZMNHDD2 921,4 MHz
 ZMNHDD3 908,4 MHz
 ZMNHDD4 869,0 MHz
 ZMNHDD5 916,0 MHz
+
+http://qubino.com/download/990/
 -->
 
 	<!-- Configuration -->
@@ -55,15 +57,17 @@ ZMNHDD5 916,0 MHz
 			<Help>0 - Auto ON disabled.
 			1 second to 32535 seconds Auto ON enabled with defined time, step is 1 second.
 			Default value 0.</Help>
-		</Value> 
-	
-		<Value type="list" genre="config" instance="1" index="20" label="Enable/Disable 3-way switch" size="1" min="0" max="1" value="0">
+		</Value>
+
+		<Value type="list" genre="config" instance="1" index="20" label="Enable/Disable 3-way switch/additional switch" size="1" min="0" max="2" value="0">
 			<Help>Dimming is done by push button or switch connected to I1 (by default).
 				Enabling 3-way switch, dimming can be controlled by push button or switch connected to I1 and I2.
-				Default value 0. </Help>
+				Default value 0.
+			</Help>
 			<Item label="single push button (connected to I1)" value="0"/>
 			<Item label="3-way switch (connected to I1 and I2)" value="1"/>
-		</Value> 
+			<Item label="Additional switch (connected to I2)" value="2"/>
+		</Value>
 
 		<Value type="list" genre="config" instance="1" index="21" label="Enable/Disable Double click function" size="1" min="0" max="1" value="0">
 			<Help>If Double click function is enabled, a fast double click on the push button will set dimming power at maximum dimming value.

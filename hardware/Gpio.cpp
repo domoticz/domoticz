@@ -125,26 +125,28 @@ void interruptHandler1 (void) { pushInterrupt(1); }
 void interruptHandler2 (void) { pushInterrupt(2); }
 void interruptHandler3 (void) { pushInterrupt(3); }
 void interruptHandler4 (void) { pushInterrupt(4); }
-
+void interruptHandler5 (void) { pushInterrupt(5); }
+void interruptHandler6 (void) { pushInterrupt(6); }
 void interruptHandler7 (void) { pushInterrupt(7); }
 void interruptHandler8 (void) { pushInterrupt(8); }
 void interruptHandler9 (void) { pushInterrupt(9); }
 void interruptHandler10(void) { pushInterrupt(10); }
 void interruptHandler11(void) { pushInterrupt(11); }
-
+void interruptHandler12(void) { pushInterrupt(12); }
+void interruptHandler13(void) { pushInterrupt(13); }
 void interruptHandler14(void) { pushInterrupt(14); }
 void interruptHandler15(void) { pushInterrupt(15); }
-
+void interruptHandler16(void) { pushInterrupt(16); }
 void interruptHandler17(void) { pushInterrupt(17); }
 void interruptHandler18(void) { pushInterrupt(18); }
-
+void interruptHandler19(void) { pushInterrupt(19); }
 void interruptHandler20(void) { pushInterrupt(20); }
 void interruptHandler21(void) { pushInterrupt(21); }
 void interruptHandler22(void) { pushInterrupt(22); }
 void interruptHandler23(void) { pushInterrupt(23); }
 void interruptHandler24(void) { pushInterrupt(24); }
 void interruptHandler25(void) { pushInterrupt(25); }
-
+void interruptHandler26(void) { pushInterrupt(26); }
 void interruptHandler27(void) { pushInterrupt(27); }
 void interruptHandler28(void) { pushInterrupt(28); }
 void interruptHandler29(void) { pushInterrupt(29); }
@@ -179,26 +181,28 @@ bool CGpio::StartHardware()
 				case 2: wiringPiISR(2, INT_EDGE_SETUP, &interruptHandler2); break;
 				case 3: wiringPiISR(3, INT_EDGE_SETUP, &interruptHandler3); break;
 				case 4: wiringPiISR(4, INT_EDGE_SETUP, &interruptHandler4); break;
-
+				case 5: wiringPiISR(5, INT_EDGE_SETUP, &interruptHandler5); break;
+				case 6: wiringPiISR(6, INT_EDGE_SETUP, &interruptHandler6); break;				
 				case 7: wiringPiISR(7, INT_EDGE_SETUP, &interruptHandler7); break;
 				case 8: wiringPiISR(8, INT_EDGE_SETUP, &interruptHandler8); break;
 				case 9: wiringPiISR(9, INT_EDGE_SETUP, &interruptHandler9); break;
 				case 10: wiringPiISR(10, INT_EDGE_SETUP, &interruptHandler10); break;
 				case 11: wiringPiISR(11, INT_EDGE_SETUP, &interruptHandler11); break;
-
+				case 12: wiringPiISR(12, INT_EDGE_SETUP, &interruptHandler12); break;
+				case 13: wiringPiISR(13, INT_EDGE_SETUP, &interruptHandler13); break;
 				case 14: wiringPiISR(14, INT_EDGE_SETUP, &interruptHandler14); break;
 				case 15: wiringPiISR(15, INT_EDGE_SETUP, &interruptHandler15); break;
-
+				case 16: wiringPiISR(16, INT_EDGE_SETUP, &interruptHandler16); break;
 				case 17: wiringPiISR(17, INT_EDGE_SETUP, &interruptHandler17); break;
 				case 18: wiringPiISR(18, INT_EDGE_SETUP, &interruptHandler18); break;
-
+				case 19: wiringPiISR(19, INT_EDGE_SETUP, &interruptHandler19); break;
 				case 20: wiringPiISR(20, INT_EDGE_SETUP, &interruptHandler20); break;
 				case 21: wiringPiISR(21, INT_EDGE_SETUP, &interruptHandler21); break;
 				case 22: wiringPiISR(22, INT_EDGE_SETUP, &interruptHandler22); break;
 				case 23: wiringPiISR(23, INT_EDGE_SETUP, &interruptHandler23); break;
 				case 24: wiringPiISR(24, INT_EDGE_SETUP, &interruptHandler24); break;
 				case 25: wiringPiISR(25, INT_EDGE_SETUP, &interruptHandler25); break;
-
+				case 26: wiringPiISR(26, INT_EDGE_SETUP, &interruptHandler26); break;
 				case 27: wiringPiISR(27, INT_EDGE_SETUP, &interruptHandler27); break;
 				case 28: wiringPiISR(28, INT_EDGE_SETUP, &interruptHandler28); break;
 				case 29: wiringPiISR(29, INT_EDGE_SETUP, &interruptHandler29); break;
@@ -422,6 +426,19 @@ bool CGpio::InitPins()
 		//
 		// 0000000000111111111122222222223333333333444444444455555555556666666666777777777
 		// 0123456789012345678901234567890123456789012345678901234567890123456789012345678
+		//
+		// ODroid C2
+		// +------+-----+----------+------+ Model  ODROID-C2 +------+----------+-----+------+
+		// | GPIO | wPi |   Name   | Mode | V | Physical | V | Mode |   Name   | wPi | GPIO |
+		// +------+-----+----------+------+---+----++----+---+------+----------+-----+------+
+		// |      |     |     3.3v |      |   |  1 || 2  |   |      | 5v       |     |      |
+		// |      |   8 |    SDA.1 |      |   |  3 || 4  |   |      | 5V       |     |      |
+		// |      |   9 |    SCL.1 |      |   |  5 || 6  |   |      | 0v       |     |      |
+		// |  249 |   7 | GPIO.249 |   IN | 1 |  7 || 8  |   |      | TxD1     | 15  |      |
+		// ...
+		//
+		// 0000000000111111111122222222223333333333444444444455555555556666666666777777777788
+		// 0123456789012345678901234567890123456789012345678901234567890123456789012345678901
 
 		std::string line(buf);
 		std::vector<std::string> fields;
