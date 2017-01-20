@@ -1281,22 +1281,6 @@ namespace http {
 			}
 
 			if (htype == HTYPE_HTTPPOLLER) {
-				std::string mode1Str = request::findValue(&req, "Mode1");
-				std::string mode2Str = CURLEncode::URLDecode(request::findValue(&req, "Mode2"));
-				std::string mode3Str = CURLEncode::URLDecode(request::findValue(&req, "Mode3"));
-				std::string mode4Str = CURLEncode::URLDecode(request::findValue(&req, "Mode4"));
-				std::string mode5Str = CURLEncode::URLDecode(request::findValue(&req, "Mode5"));
-				std::string mode6Str = CURLEncode::URLDecode(request::findValue(&req, "Mode6"));
-				std::string szScriptEncoded = base64_encode((const unsigned char *)extra.c_str(), extra.length());
-				std::string szMethodEncoded = base64_encode((const unsigned char *)mode1Str.c_str(), mode1Str.length());
-				std::string szszContentTypeEncoded = base64_encode((const unsigned char *)mode2Str.c_str(), mode2Str.length());
-				std::string szszHeadersEncoded = base64_encode((const unsigned char *)mode3Str.c_str(), mode3Str.length());
-				std::string szPostDataEncoded = base64_encode((const unsigned char *)mode4Str.c_str(), mode4Str.length());
-
-				std::ostringstream szExtra;
-				szExtra << szScriptEncoded << "|" << szMethodEncoded << "|" << szszContentTypeEncoded << "|" << szszHeadersEncoded << "|" << szPostDataEncoded;
-				extra = szExtra.str().c_str();
-
 				m_sql.safe_query(
 					"INSERT INTO Hardware (Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) VALUES ('%q',%d, %d,'%q',%d,'%q','%q','%q','%q','%q','%q', '%q', '%q', '%q', '%q', %d)",
 					name.c_str(),
@@ -1613,22 +1597,6 @@ namespace http {
 			else
 			{
 				if (htype == HTYPE_HTTPPOLLER) {
-					mode1Str = request::findValue(&req, "Mode1");
-					mode2Str = CURLEncode::URLDecode(request::findValue(&req, "Mode2"));
-					mode3Str = CURLEncode::URLDecode(request::findValue(&req, "Mode3"));
-					mode4Str = CURLEncode::URLDecode(request::findValue(&req, "Mode4"));
-					mode5Str = CURLEncode::URLDecode(request::findValue(&req, "Mode5"));
-					mode6Str = CURLEncode::URLDecode(request::findValue(&req, "Mode6"));
-					std::string szScriptEncoded = base64_encode((const unsigned char *)extra.c_str(), extra.length());
-					std::string szMethodEncoded = base64_encode((const unsigned char *)mode1Str.c_str(), mode1Str.length());
-					std::string szszContentTypeEncoded = base64_encode((const unsigned char *)mode2Str.c_str(), mode2Str.length());
-					std::string szszHeadersEncoded = base64_encode((const unsigned char *)mode3Str.c_str(), mode3Str.length());
-					std::string szPostDataEncoded = base64_encode((const unsigned char *)mode4Str.c_str(), mode4Str.length());
-
-					std::ostringstream szExtra;
-					szExtra << szScriptEncoded << "|" << szMethodEncoded << "|" << szszContentTypeEncoded << "|" << szszHeadersEncoded << "|" << szPostDataEncoded;
-					extra = szExtra.str().c_str();
-
 					m_sql.safe_query(
 						"UPDATE Hardware SET Name='%q', Enabled=%d, Type=%d, Address='%q', Port=%d, SerialPort='%q', Username='%q', Password='%q', Extra='%q', DataTimeout=%d WHERE (ID == '%q')",
 						name.c_str(),
@@ -10480,29 +10448,8 @@ namespace http {
 					root["result"][ii]["Username"] = sd[7];
 					root["result"][ii]["Password"] = sd[8];
 					root["result"][ii]["Extra"] = sd[9];
-					if (hType == HTYPE_HTTPPOLLER) {
-							std::vector<std::string> strextra;
-							StringSplit(sd[9], "|", strextra);
-							std::string script;
-							if (strextra.size() >= 1) {
-								std::string extraScript = base64_decode(strextra[0]);
-								root["result"][ii]["Extra"] = extraScript;
-								if (strextra.size() >= 4) {
-									std::string extraMethod = base64_decode(strextra[1]);
-									root["result"][ii]["Mode1"] = extraMethod;
-									std::string extraContentType = base64_decode(strextra[2]);
-									root["result"][ii]["Mode2"] = extraContentType;
-									std::string extraHeaders = base64_decode(strextra[3]);
-									root["result"][ii]["Mode3"] = extraHeaders;
-									root["result"][ii]["Mode4"] = "";
-									if (strextra.size() == 5) {
-										std::string extraPostData = base64_decode(strextra[4]);
-										root["result"][ii]["Mode4"] = extraPostData;
-									}
-								}
-							}
-						}
-					else if (hType == HTYPE_PythonPlugin) {
+					
+					if (hType == HTYPE_PythonPlugin) {
 						root["result"][ii]["Mode1"] = sd[10];  // Plugins can have non-numeric values in the Mode fields
 						root["result"][ii]["Mode2"] = sd[11];
 						root["result"][ii]["Mode3"] = sd[12];
