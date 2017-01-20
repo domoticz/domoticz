@@ -19,6 +19,8 @@ Protocol is Zigbee and WiFi, and the gateway and
 Domoticz need to be in the same network/subnet
 */
 
+#define round(a) ( int ) ( a + .5 )
+
 XiaomiGateway::XiaomiGateway(const int ID)
 {
 	m_HwdID = ID;

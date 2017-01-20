@@ -1,5 +1,7 @@
 define(['app'], function (app) {
 	app.controller('LightsController', [ '$scope', '$rootScope', '$location', '$http', '$interval', 'permissions', function($scope,$rootScope,$location,$http,$interval,permissions) {
+	
+		$scope.HasInitializedAddManualDialog = false;
 
 		DeleteTimer = function(idx)
 		{
@@ -1813,6 +1815,89 @@ define(['app'], function (app) {
 					}
 				}, 200);
 			}, 600);
+		}
+		
+		ConfigureAddManualSettings = function()
+		{
+			if ($scope.HasInitializedAddManualDialog==true) {
+				return;
+			}
+			$scope.HasInitializedAddManualDialog=true;
+			$('#dialog-addmanuallightdevice #lightparams2 #combocmd2 >option').remove();
+			$('#dialog-addmanuallightdevice #lightparams2 #combocmd3 >option').remove();
+			$('#dialog-addmanuallightdevice #lightparams2 #combocmd4 >option').remove();
+			$('#dialog-addmanuallightdevice #lightparams3 #combocmd1 >option').remove();
+			$('#dialog-addmanuallightdevice #lightparams3 #combocmd2 >option').remove();
+			$('#dialog-addmanuallightdevice #blindsparams #combocmd1 >option').remove();
+			$('#dialog-addmanuallightdevice #blindsparams #combocmd2 >option').remove();
+			$('#dialog-addmanuallightdevice #blindsparams #combocmd3 >option').remove();
+			$('#dialog-addmanuallightdevice #homeconfortparams #combocmd2 >option').remove();
+			$('#dialog-addmanuallightdevice #homeconfortparams #combocmd3 >option').remove();
+			$('#dialog-addmanuallightdevice #fanparams #combocmd1 >option').remove();
+			$('#dialog-addmanuallightdevice #fanparams #combocmd2 >option').remove();
+			$('#dialog-addmanuallightdevice #fanparams #combocmd3 >option').remove();
+			for (ii=0; ii<256; ii++)
+			{
+				$('#dialog-addmanuallightdevice #lightparams2 #combocmd2').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
+				$('#dialog-addmanuallightdevice #lightparams2 #combocmd3').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
+				$('#dialog-addmanuallightdevice #lightparams2 #combocmd4').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
+				$('#dialog-addmanuallightdevice #lightparams3 #combocmd1').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
+				$('#dialog-addmanuallightdevice #lightparams3 #combocmd2').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
+				$('#dialog-addmanuallightdevice #blindsparams #combocmd1').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
+				$('#dialog-addmanuallightdevice #blindsparams #combocmd2').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
+				$('#dialog-addmanuallightdevice #blindsparams #combocmd3').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
+				$('#dialog-addmanuallightdevice #homeconfortparams #combocmd2').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
+				$('#dialog-addmanuallightdevice #homeconfortparams #combocmd3').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
+				$('#dialog-addmanuallightdevice #fanparams #combocmd1').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
+				$('#dialog-addmanuallightdevice #fanparams #combocmd2').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
+				$('#dialog-addmanuallightdevice #fanparams #combocmd3').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
+			}
+			$('#dialog-addmanuallightdevice #blindsparams #combocmd4 >option').remove();
+			$('#dialog-addmanuallightdevice #blindsparams #combounitcode >option').remove();
+			for (ii=0; ii<16; ii++)
+			{
+				$('#dialog-addmanuallightdevice #blindsparams #combocmd4').append($('<option></option>').val(ii).html(ii.toString(16).toUpperCase()));
+				$('#dialog-addmanuallightdevice #blindsparams #combounitcode').append($('<option></option>').val(ii).html(ii));
+			}
+			$('#dialog-addmanuallightdevice #lightparams2 #combounitcode >option').remove();
+			for (ii=1; ii<16+1; ii++)
+			{
+				$('#dialog-addmanuallightdevice #lightparams2 #combounitcode').append($('<option></option>').val(ii).html(ii));
+			}
+			$('#dialog-addmanuallightdevice #he105params #combounitcode >option').remove();
+			for (ii=0; ii<32; ii++)
+			{
+				$('#dialog-addmanuallightdevice #he105params #combounitcode').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
+			}
+			//Home confort
+			$('#dialog-addmanuallightdevice #homeconfortparams #combocmd1 >option').remove();
+			for (ii=0; ii<8; ii++)
+			{
+				$('#dialog-addmanuallightdevice #homeconfortparams #combocmd1').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
+			}
+			$('#dialog-addmanuallightdevice #homeconfortparams #combohousecode >option').remove();
+			$('#dialog-addmanuallightdevice #homeconfortparams #combounitcode >option').remove();
+			for (ii=0; ii<4; ii++)
+			{
+				$('#dialog-addmanuallightdevice #homeconfortparams #combohousecode').append($('<option></option>').val(65+ii).html(String.fromCharCode(65+ii)));
+				$('#dialog-addmanuallightdevice #homeconfortparams #combounitcode').append($('<option></option>').val((ii+1)).html((ii+1)));
+			}
+			
+			RefreshHardwareComboArray();
+			$("#dialog-addmanuallightdevice #lighttable #combohardware").html("");
+			$.each($.ComboHardware, function(i,item){
+				var option = $('<option />');
+				option.attr('value', item.idx).text(item.name);
+				$("#dialog-addmanuallightdevice #lighttable #combohardware").append(option);
+			});
+
+			RefreshGpioComboArray();
+			$("#combogpio").html("");
+			$.each($.ComboGpio, function(i,item){
+				var option = $('<option />');
+				option.attr('value', item.idx).text(item.name);
+				$("#combogpio").append(option);
+			});
 		}
 
 		RefreshHardwareComboArray = function()
@@ -3889,23 +3974,7 @@ define(['app'], function (app) {
   				  title: $.t("Add Manual Light/Switch Device"),
 				  buttons: dialog_addmanuallightdevice_buttons,
 				  open: function() {
-						RefreshHardwareComboArray();
-
-						$("#dialog-addmanuallightdevice #lighttable #combohardware").html("");
-						$.each($.ComboHardware, function(i,item){
-							var option = $('<option />');
-							option.attr('value', item.idx).text(item.name);
-							$("#dialog-addmanuallightdevice #lighttable #combohardware").append(option);
-						});
-
-						RefreshGpioComboArray();
-						$("#combogpio").html("");
-						$.each($.ComboGpio, function(i,item){
-							var option = $('<option />');
-							option.attr('value', item.idx).text(item.name);
-							$("#combogpio").append(option);
-						});
-
+						ConfigureAddManualSettings();
 						$("#dialog-addmanuallightdevice #lighttable #comboswitchtype").change(function() {
 							var switchtype=$("#dialog-addmanuallightdevice #lighttable #comboswitchtype option:selected").val(),
 								subtype = -1;
@@ -3943,51 +4012,6 @@ define(['app'], function (app) {
 			$("#dialog-addmanuallightdevice #howtable #how_2").click(function() {
 				EnableDisableSubDevices("#dialog-addmanuallightdevice #howtable #subdevice",true);
 			});
-
-			for (ii=0; ii<256; ii++)
-			{
-				$('#dialog-addmanuallightdevice #lightparams2 #combocmd2').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
-				$('#dialog-addmanuallightdevice #lightparams2 #combocmd3').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
-				$('#dialog-addmanuallightdevice #lightparams2 #combocmd4').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
-				$('#dialog-addmanuallightdevice #lightparams3 #combocmd1').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
-				$('#dialog-addmanuallightdevice #lightparams3 #combocmd2').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
-				$('#dialog-addmanuallightdevice #blindsparams #combocmd1').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
-				$('#dialog-addmanuallightdevice #blindsparams #combocmd2').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
-				$('#dialog-addmanuallightdevice #blindsparams #combocmd3').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
-				$('#dialog-addmanuallightdevice #homeconfortparams #combocmd2').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
-				$('#dialog-addmanuallightdevice #homeconfortparams #combocmd3').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
-				$('#dialog-addmanuallightdevice #fanparams #combocmd1').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
-				$('#dialog-addmanuallightdevice #fanparams #combocmd2').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
-				$('#dialog-addmanuallightdevice #fanparams #combocmd3').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
-			}
-			$('#dialog-addmanuallightdevice #blindsparams #combounitcode >option').remove();
-			for (ii=0; ii<16; ii++)
-			{
-				$('#dialog-addmanuallightdevice #blindsparams #combocmd4').append($('<option></option>').val(ii).html(ii.toString(16).toUpperCase()));
-				$('#dialog-addmanuallightdevice #blindsparams #combounitcode').append($('<option></option>').val(ii).html(ii));
-			}
-			$('#dialog-addmanuallightdevice #lightparams2 #combounitcode >option').remove();
-			for (ii=1; ii<16+1; ii++)
-			{
-				$('#dialog-addmanuallightdevice #lightparams2 #combounitcode').append($('<option></option>').val(ii).html(ii));
-			}
-			$('#dialog-addmanuallightdevice #he105params #combounitcode >option').remove();
-			for (ii=0; ii<32; ii++)
-			{
-				$('#dialog-addmanuallightdevice #he105params #combounitcode').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
-			}
-			//Home confort
-			for (ii=0; ii<8; ii++)
-			{
-				$('#dialog-addmanuallightdevice #homeconfortparams #combocmd1').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
-			}
-			$('#dialog-addmanuallightdevice #homeconfortparams #combohousecode >option').remove();
-			$('#dialog-addmanuallightdevice #homeconfortparams #combounitcode >option').remove();
-			for (ii=0; ii<4; ii++)
-			{
-				$('#dialog-addmanuallightdevice #homeconfortparams #combohousecode').append($('<option></option>').val(65+ii).html(String.fromCharCode(65+ii)));
-				$('#dialog-addmanuallightdevice #homeconfortparams #combounitcode').append($('<option></option>').val((ii+1)).html((ii+1)));
-			}
 
 			$.ddData=[];
 			$scope.CustomImages=[];
