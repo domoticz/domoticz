@@ -1057,8 +1057,13 @@ namespace http {
 			int rnvalue = 0;
 			m_sql.GetPreferencesVar("ActiveTimerPlan", rnOldvalue);
 			rnvalue = atoi(request::findValue(&req, "ActiveTimerPlan").c_str());
-			if ((rnOldvalue != rnvalue) && ((rnvalue==0) || (rnvalue==1)))
+			if (rnOldvalue != rnvalue)
 			{
+				std::vector<std::vector<std::string> > result;
+				result = m_sql.safe_query("SELECT Name FROM TimerPlans WHERE (ID == %d)", rnvalue);
+				if (result.empty())
+					return; //timerplan not found!
+				_log.Log(LOG_STATUS, "Scheduler Timerplan changed (%d - %s)", rnvalue, result[0][0].c_str());
 				m_sql.UpdatePreferencesVar("ActiveTimerPlan", rnvalue);
 				m_sql.m_ActiveTimerPlan = rnvalue;
 				m_mainworker.m_scheduler.ReloadSchedules();
