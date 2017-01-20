@@ -586,28 +586,15 @@ define(['app'], function (app) {
 
 					var dimmerValues = [];
 
-					if (dimmerLevels !== "all") {
-						$.each(dimmerLevels.split(','), function(i, level) {
-						    dimmerValues[i] = level;
-						});
-					}
-					else {
-					    for (var level = 0; level < 101; level++) {
-					        dimmerValues[level] = level;
-					    }
-					}
-					levelDiv$.find("option").hide();
-					for (var levelCounter = 0; levelCounter < dimmerValues.length; levelCounter++) {
-					    var comboLeveloption = levelDiv$.find("option[value=\"" + dimmerValues[levelCounter] + "\"]");
+					$.each(dimmerLevels.split(','), function(i, level) {
+						dimmerValues[i] = level;
+					});
 
-					    if (comboLeveloption.length == 0) {
-					        var option = $('<option />');
-					        option.attr('value', dimmerValues[levelCounter]).text(dimmerValues[levelCounter] + "%");
-					        $("#scenecontent #combolevel").append(option);
-					    }
-					    else {
-					        comboLeveloption.show();
-					    }
+					levelDiv$.find("option").remove();
+					for (var levelCounter = 0; levelCounter < dimmerValues.length; levelCounter++) {
+					    var option = $('<option />');
+					    option.attr('value', dimmerValues[levelCounter]).text(dimmerValues[levelCounter] + "%");
+					    $("#scenecontent #combolevel").append(option);
 					}
 				}
 			}
