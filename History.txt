@@ -6,6 +6,7 @@ Version 3.xxxx (January xth 2017)
 - Changed: Blinds T5 till T13 new DeviceID generation, could cause new sensors
 - Changed: Minimized On/Off/Script execution time
 - Changed: Wind Direction Graph, if sensor does not supports 'Gust', the 'Speed' value is used
+- Implemented: Support for the Intergas InComfort LAN2RF Gateway
 - Implemented: Added a new parameter to disable the logging of event script triggers 'Script event triggered: ...'
 - Implemented: Blinds T1 till T13 new supports the Stop button
 - Implemented: Devices, Log icon for Blinds
@@ -15,6 +16,7 @@ Version 3.xxxx (January xth 2017)
 - Implemented: Notification for Dummy Soil/Moisture sensor
 - Implemented: Notification for Alert Sensor via udevice JSON call
 - Implemented: Option to replace an Meter device
+- Implemented: RFXtrx Lucci Fan implemented
 - Implemented: RFXtrx RFY2 protocol implemented
 - Implemented: RFXtrx Kangtai / Cotech implemented
 - Implemented: Timer Plan editor

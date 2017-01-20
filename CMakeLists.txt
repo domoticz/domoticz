@@ -306,6 +306,7 @@ hardware/HarmonyHub.cpp
 hardware/HEOS.cpp
 hardware/I2C.cpp
 hardware/ICYThermostat.cpp
+hardware/InComfort.cpp
 hardware/KMTronicBase.cpp
 hardware/KMTronic433.cpp
 hardware/KMTronicSerial.cpp
