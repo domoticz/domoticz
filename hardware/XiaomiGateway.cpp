@@ -36,22 +36,22 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 	unsigned char packettype = pCmd->ICMND.packettype;
 	unsigned char subtype = pCmd->ICMND.subtype;
 
+	std::string message = "";
+	std::string gatewaykey = GetGatewayKey();
 	if (packettype == pTypeGeneralSwitch) {
 		_tGeneralSwitch *xcmd = (_tGeneralSwitch*)pdata;
-		if (xcmd->subtype == sSwitchTypeSelector) {
-			std::string gatewaykey = GetGatewayKey();
-			std::string message = "";
-			char szTmp[50];
-			sprintf(szTmp, "%08X", (unsigned int)xcmd->id);
-			std::string ID = szTmp;
-			std::stringstream s_strid2;
-			s_strid2 << std::hex << ID;
-			std::string sid = s_strid2.str();
-			std::transform(sid.begin(), sid.end(), sid.begin(), ::tolower);
+		char szTmp[50];
+		sprintf(szTmp, "%08X", (unsigned int)xcmd->id);
+		std::string ID = szTmp;
+		std::stringstream s_strid2;
+		s_strid2 << std::hex << ID;
+		std::string sid = s_strid2.str();
+		std::transform(sid.begin(), sid.end(), sid.begin(), ::tolower);
+		//append 158d00 to the front
+		//158d0001190076
+		sid.insert(0, "158d00");
 
-			//append 158d00 to the front 
-			//158d0001190076
-			sid.insert(0, "158d00");
+		if (xcmd->subtype == sSwitchTypeSelector) {
 			std::string cmdchannel = "";
 			if (xcmd->level == 10) {
 				cmdchannel = "\\\"channel_0\\\":\\\"on";
@@ -65,81 +65,27 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 			else if (xcmd->level == 40) {
 				cmdchannel = "\\\"channel_1\\\":\\\"off";;
 			}
-			//std::string message2 = "{\"cmd\":\"write\",\"model\":\"ctrl_neutral2\",\"sid\":\"" + sid + "\",\"short_id\":0,\"data\":\"{\\\"channel_0\\\":\\\"" + "on" + "\\\",\\\"key\\\":\\\"" + gatewaykey + "\\\"}\" }";
-
-			std::string message2 = "{\"cmd\":\"write\",\"model\":\"ctrl_neutral2\",\"sid\":\"" + sid + "\",\"short_id\":0,\"data\":\"{" + cmdchannel + "\\\",\\\"key\\\":\\\"" + gatewaykey + "\\\"}\" }";
-			if (message2 != "") {
-				boost::asio::io_service io_service;
-				boost::asio::ip::udp::socket socket_(io_service, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 0));
-				boost::shared_ptr<std::string> message1(new std::string(message2));
-				boost::asio::ip::udp::endpoint remote_endpoint_;
-				remote_endpoint_ = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(m_GatewayIp), 9898);
-				socket_.send_to(boost::asio::buffer(*message1), remote_endpoint_);
-				sleep_milliseconds(150);
-				boost::array<char, 512> recv_buffer_;
-				memset(&recv_buffer_[0], 0, sizeof(recv_buffer_));
-				while (socket_.available() > 0) {
-					socket_.receive_from(boost::asio::buffer(recv_buffer_), remote_endpoint_);
-					std::string receivedString(recv_buffer_.data());
-					_log.Log(LOG_STATUS, "mycommand: %s", message2.c_str());
-					_log.Log(LOG_STATUS, "XiaomiGateway: response %s", receivedString.c_str());
-				}
-				socket_.close();
+			message = "{\"cmd\":\"write\",\"model\":\"ctrl_neutral2\",\"sid\":\"" + sid + "\",\"short_id\":0,\"data\":\"{" + cmdchannel + "\\\",\\\"key\\\":\\\"" + gatewaykey + "\\\"}\" }";
+		}
+		else if (xcmd->subtype == sSwitchGeneralSwitch) {
+			std::string command = "on";
+			switch (xcmd->cmnd) {
+			case gswitch_sOff:
+				command = "off";
+				break;
+			case gswitch_sOn:
+				command = "on";
+				break;
+			default:
+				_log.Log(LOG_STATUS, "Unknown command %d", xcmd->cmnd);
+				break;
 			}
-
-			return true;
+			std::string gatewaykey = GetGatewayKey();
+			std::string message = "{\"cmd\":\"write\",\"model\":\"plug\",\"sid\":\"" + sid + "\",\"short_id\":9844,\"data\":\"{\\\"channel_0\\\":\\\"" + command + "\\\",\\\"key\\\":\\\"" + gatewaykey + "\\\"}\" }";
 		}
-		char szTmp[50];
-		sprintf(szTmp, "%08X", (unsigned int)xcmd->id);
-		std::string ID = szTmp;
-		_log.Log(LOG_STATUS, ID.c_str());
-		std::stringstream s_strid;
-		s_strid << std::hex << ID;
-
-		std::string sid = s_strid.str();
-		std::transform(sid.begin(), sid.end(), sid.begin(), ::tolower);
-		//append 158d00 to the front
-		sid.insert(0, "158d00");
-
-		std::string command = "on";
-		switch (xcmd->cmnd) {
-		case gswitch_sOff:
-			command = "off";
-			break;
-		case gswitch_sOn:
-			command = "on";
-			break;
-		default:
-			_log.Log(LOG_STATUS, "Unknown command %d", xcmd->cmnd);
-			break;
-		}
-		std::string gatewaykey = GetGatewayKey();
-		std::string message = "{\"cmd\":\"write\",\"model\":\"plug\",\"sid\":\"" + sid + "\",\"short_id\":9844,\"data\":\"{\\\"channel_0\\\":\\\"" + command + "\\\",\\\"key\\\":\\\"" + gatewaykey + "\\\"}\" }";
-		if (xcmd->subtype == sSwitchTypeSelector) {
-			//_log.Log(LOG_STATUS, "WriteToHardware: Ignoring sSwitchTypeSelector");
-			return true;
-		}
-		//{"cmd":"write","model":"gateway","sid":"6409802da2af","short_id":0,"key":"8","data":"{\"rgb\":4278255360}" }
-		boost::asio::io_service io_service;
-		boost::asio::ip::udp::socket socket_(io_service, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 0));
-		boost::shared_ptr<std::string> message1(new std::string(message));
-		boost::asio::ip::udp::endpoint remote_endpoint_;
-		remote_endpoint_ = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(m_GatewayIp), 9898);
-		socket_.send_to(boost::asio::buffer(*message1), remote_endpoint_);
-		sleep_milliseconds(150);
-		boost::array<char, 512> recv_buffer_;
-		memset(&recv_buffer_[0], 0, sizeof(recv_buffer_));
-		while (socket_.available() > 0) {
-			socket_.receive_from(boost::asio::buffer(recv_buffer_), remote_endpoint_);
-			std::string receivedString(recv_buffer_.data());
-			_log.Log(LOG_STATUS, "XiaomiGateway: response %s", receivedString.c_str());
-		}
-		socket_.close();
 	}
 	else if (packettype == pTypeLimitlessLights) {
 		//Gateway RGB Controller
-		std::string gatewaykey = GetGatewayKey();
-		std::string message = "";
 		_tLimitlessLights *xcmd = (_tLimitlessLights*)pdata;
 		char szTmp[50];
 		sprintf(szTmp, "%08X", (unsigned int)xcmd->id);
@@ -159,7 +105,7 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 			message = "{\"cmd\":\"write\",\"model\":\"gateway\",\"sid\":\"" + sid + "\",\"short_id\":0,\"data\":\"{\\\"rgb\\\":0,\\\"key\\\":\\\"" + gatewaykey + "\\\"}\" }";
 		}
 		else if (xcmd->command == Limitless_SetRGBColour) {
-			_log.Log(LOG_STATUS, "XiaomiGateway: hue %d", xcmd->value);
+			_log.Log(LOG_STATUS, ".............. Limitless_SetRGBColour: %d", xcmd->value);
 			int red, green, blue;
 			float cHue = (360.0f / 255.0f)*float(xcmd->value);//hue given was in range of 0-255
 			int Brightness = 100;
@@ -171,40 +117,54 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 				<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << blue;
 
 			std::string hexstring(sstr.str());
-			hexstring.insert(0, "FF");
-			unsigned long hexvalue = std::strtoul(hexstring.c_str(), 0, 16);
+			m_GatewayRgbHex = hexstring;
+			//_log.Log(LOG_STATUS, "XiaomiGateway: just updated m_GatewayRgbHex to %s", m_GatewayRgbHex.c_str());
+			_log.Log(LOG_STATUS, ".............. Limitless_SetRGBColour: finished");
+			_log.Log(LOG_STATUS, "");
+		}
+		else if (xcmd->command == Limitless_SetBrightnessLevel) {
+			_log.Log(LOG_STATUS, ".............. Limitless_SetBrightnessLevel: %d", xcmd->value);
+			//_log.Log(LOG_STATUS, "XiaomiGateway: brigtness %d", xcmd->value);
+			std::string brightnessAndRgbHex = m_GatewayRgbHex;
+			//add the brightness
+			int cBright = round((255.0f / 100.0f)*float(xcmd->value));
+			std::stringstream stream;
+			stream << std::uppercase << std::hex << cBright;
+			std::string brightnessHex(stream.str());
+			brightnessAndRgbHex.insert(0, brightnessHex.c_str());
+			_log.Log(LOG_STATUS, "XiaomiGateway: brightness and rgb hex %s", brightnessAndRgbHex.c_str());
+			unsigned long hexvalue = std::strtoul(brightnessAndRgbHex.c_str(), 0, 16);
 
 			std::string rgbvalue;
 			std::stringstream strstream;
 			strstream << hexvalue;
 			strstream >> rgbvalue;
-			_log.Log(LOG_STATUS, "XiaomiGateway: rgb %s", rgbvalue.c_str());
+
 			message = "{\"cmd\":\"write\",\"model\":\"gateway\",\"sid\":\"" + sid + "\",\"short_id\":0,\"data\":\"{\\\"rgb\\\":" + rgbvalue + ",\\\"key\\\":\\\"" + gatewaykey + "\\\"}\" }";
-		}
-		else if (xcmd->command == Limitless_SetBrightnessLevel) {
-			message = "";
-			_log.Log(LOG_STATUS, "XiaomiGateway: Setting brightness not implemented, will try to fix this later");
+			_log.Log(LOG_STATUS, ".............. Limitless_SetBrightnessLevel: finished");
+			_log.Log(LOG_STATUS, "");
 		}
 		else {
 			_log.Log(LOG_STATUS, "XiaomiGateway: Unknown command %d", xcmd->command);
 		}
-		if (message != "") {
-			boost::asio::io_service io_service;
-			boost::asio::ip::udp::socket socket_(io_service, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 0));
-			boost::shared_ptr<std::string> message1(new std::string(message));
-			boost::asio::ip::udp::endpoint remote_endpoint_;
-			remote_endpoint_ = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(m_GatewayIp), 9898);
-			socket_.send_to(boost::asio::buffer(*message1), remote_endpoint_);
-			sleep_milliseconds(150);
-			boost::array<char, 512> recv_buffer_;
-			memset(&recv_buffer_[0], 0, sizeof(recv_buffer_));
-			while (socket_.available() > 0) {
-				socket_.receive_from(boost::asio::buffer(recv_buffer_), remote_endpoint_);
-				std::string receivedString(recv_buffer_.data());
-				_log.Log(LOG_STATUS, "XiaomiGateway: response %s", receivedString.c_str());
-			}
-			socket_.close();
+	}
+	if (message != "") {
+		boost::asio::io_service io_service;
+		boost::asio::ip::udp::socket socket_(io_service, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 0));
+		boost::shared_ptr<std::string> message1(new std::string(message));
+		boost::asio::ip::udp::endpoint remote_endpoint_;
+		remote_endpoint_ = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(m_GatewayIp), 9898);
+		socket_.send_to(boost::asio::buffer(*message1), remote_endpoint_);
+		sleep_milliseconds(150);
+		boost::array<char, 512> recv_buffer_;
+		memset(&recv_buffer_[0], 0, sizeof(recv_buffer_));
+		while (socket_.available() > 0) {
+			socket_.receive_from(boost::asio::buffer(recv_buffer_), remote_endpoint_);
+			std::string receivedString(recv_buffer_.data());
+			//_log.Log(LOG_STATUS, "mycommand: %s", message.c_str());
+			//_log.Log(LOG_STATUS, "XiaomiGateway: response %s", receivedString.c_str());
 		}
+		socket_.close();
 	}
 	return true;
 }
@@ -289,7 +249,7 @@ void XiaomiGateway::InsertUpdateRGBGateway(const std::string & nodeid, const std
 		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, LastLevel=%d WHERE(HardwareID == %d) AND (DeviceID == '%s')", Name.c_str(), (STYPE_Dimmer), value, m_HwdID, szDeviceID);
 	}
 	else {
-		_log.Log(LOG_STATUS, "XiaomiGateway: Updating existing - nodeid: %s", nodeid.c_str());
+		//_log.Log(LOG_STATUS, "XiaomiGateway: Updating existing - nodeid: %s", nodeid.c_str());
 		nvalue = atoi(result[0][0].c_str());
 		tIsOn = (nvalue != 0);
 		lastLevel = atoi(result[0][1].c_str());
@@ -402,20 +362,6 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 		}
 	}
 	else {
-		//already in the database
-		/*
-		if (subtype == STYPE_PushOn) {
-		//just toggle the last state for a wireless switch.
-		int nvalue = atoi(result[0][0].c_str());
-		bIsOn = (nvalue == 0);
-		if (bIsOn) {
-		xcmd.cmnd = gswitch_sOn;
-		}
-		else {
-		xcmd.cmnd = gswitch_sOff;
-		}
-		}
-		*/
 		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, NULL, -1);
 	}
 }
@@ -574,7 +520,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 		//_log.Log(LOG_STATUS, data_);
 		Json::Value root;
 		Json::Reader jReader;
-		bool showmessage = true;
+		bool showmessage = false;
 		bool ret = jReader.parse(data_, root);
 		if (!ret) {
 			_log.Log(LOG_ERROR, "XiaomiGateway: invalid data received!");
@@ -725,14 +671,14 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 					}
 					else if (name == "Xiaomi RGB Gateway") {
 						std::string rgb = root2["rgb"].asString();
-						_log.Log(LOG_STATUS, "XiaomiGateway: rgb received value: %s", rgb.c_str());
+						//_log.Log(LOG_STATUS, "XiaomiGateway: rgb received value: %s", rgb.c_str());
 						bool on = false;
 						if (rgb != "0") {
 							on = true;
-							_log.Log(LOG_STATUS, "XiaomiGateway: setting on to true");
+							//_log.Log(LOG_STATUS, "XiaomiGateway: setting on to true");
 						}
 						else {
-							_log.Log(LOG_STATUS, "XiaomiGateway: setting on to false");
+							//_log.Log(LOG_STATUS, "XiaomiGateway: setting on to false");
 						}
 						m_XiaomiGateway->InsertUpdateRGBGateway(sid.c_str(), name, on, "100", 100);
 					}
