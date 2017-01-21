@@ -32,13 +32,6 @@ C1Wire::C1Wire(const int ID, const int sensorThreadPeriod, const int switchThrea
 {
 	m_HwdID = ID;
 
-	// Defaults for pre-existing 1wire instances
-	if (0 == m_sensorThreadPeriod)
-		m_sensorThreadPeriod = 5 * 60 * 1000;
-
-	if (0 == m_switchThreadPeriod)
-			m_switchThreadPeriod = 100;
-
 	DetectSystem();
 }
 
@@ -59,7 +52,7 @@ void C1Wire::DetectSystem()
 {
 #ifdef WIN32
 	if (!m_system && C1WireForWindows::IsAvailable())
-		m_system=new C1WireForWindows();
+		m_system = new C1WireForWindows();
 #else // WIN32
 
 	// Using the both systems at same time results in conflicts,
@@ -78,11 +71,11 @@ void C1Wire::DetectSystem()
 bool C1Wire::StartHardware()
 {
 	// Start worker thread
-	if (0 != m_sensorThreadPeriod)
+	if (-1 != m_sensorThreadPeriod)
 	{
 		m_threadSensors = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&C1Wire::SensorThread, this)));
 	}
-	if (0 != m_switchThreadPeriod)
+	if (-1 != m_switchThreadPeriod)
 	{
 		m_threadSwitches = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&C1Wire::SwitchThread, this)));
 	}
