@@ -1,6 +1,8 @@
 define(['app'], function (app) {
 	app.controller('UtilityController', [ '$scope', '$rootScope', '$location', '$http', '$interval', 'permissions', function($scope,$rootScope,$location,$http,$interval,permissions) {
 
+		$scope.HasInitializedEditCustomSensorDialog = false;
+
 		DeleteSetpointTimer = function(idx)
 		{
 			bootbox.confirm($.t("Are you sure to delete this timers?\n\nThis action can not be undone..."), function(result) {
@@ -683,27 +685,13 @@ define(['app'], function (app) {
 		  });
 		}
 
-		EditUtilityDevice = function(idx,name,description)
+		ConfigureEditCustomSensorDialog = function()
 		{
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
+			if ($scope.HasInitializedEditCustomSensorDialog==true) {
+				return;
 			}
-		  $.devIdx=idx;
-		  $("#dialog-editutilitydevice #devicename").val(unescape(name));
-		  $("#dialog-editutilitydevice #devicedescription").val(unescape(description));
-		  $("#dialog-editutilitydevice" ).i18n();
-		  $("#dialog-editutilitydevice" ).dialog( "open" );
-		}
-
-		EditCustomSensorDevice = function(idx,name,description,customimage,sensortype,axislabel)
-		{
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
-			}
+			$scope.HasInitializedEditCustomSensorDialog=true;
 			$.ddData=[];
-			$scope.CustomImages=[];
 			//Get Custom icons
 			$.ajax({
 			 url: "json.htm?type=custom_light_icons", 
@@ -731,15 +719,32 @@ define(['app'], function (app) {
 						}
 						img+="48_On.png";
 						$.ddData.push({ text: itext, value: item.idx, selected: bSelected, description: idescription, imageSrc: img });
-						$scope.CustomImages.push({ text: itext, value: item.idx, selected: bSelected, description: idescription, imageSrc: img });
 					});
-					if (totalItems>0) {
-						$scope.customimagesel=$scope.CustomImages[0];
-					}
 				}
 			 }
 			});
-			
+		}
+
+		EditUtilityDevice = function(idx,name,description)
+		{
+			if (typeof $scope.mytimer != 'undefined') {
+				$interval.cancel($scope.mytimer);
+				$scope.mytimer = undefined;
+			}
+		  $.devIdx=idx;
+		  $("#dialog-editutilitydevice #devicename").val(unescape(name));
+		  $("#dialog-editutilitydevice #devicedescription").val(unescape(description));
+		  $("#dialog-editutilitydevice" ).i18n();
+		  $("#dialog-editutilitydevice" ).dialog( "open" );
+		}
+
+		EditCustomSensorDevice = function(idx,name,description,customimage,sensortype,axislabel)
+		{
+			if (typeof $scope.mytimer != 'undefined') {
+				$interval.cancel($scope.mytimer);
+				$scope.mytimer = undefined;
+			}
+			ConfigureEditCustomSensorDialog();
 			$.devIdx=idx;
 			$.sensorType=sensortype;
 			$("#dialog-editcustomsensordevice #devicename").val(unescape(name));

@@ -453,6 +453,11 @@ namespace http {
 			RegisterCommandCode("changeplanorder", boost::bind(&CWebServer::Cmd_ChangePlanOrder, this, _1, _2, _3));
 			RegisterCommandCode("changeplandeviceorder", boost::bind(&CWebServer::Cmd_ChangePlanDeviceOrder, this, _1, _2, _3));
 
+			RegisterCommandCode("gettimerplans", boost::bind(&CWebServer::Cmd_GetTimerPlans, this, _1, _2, _3));
+			RegisterCommandCode("addtimerplan", boost::bind(&CWebServer::Cmd_AddTimerPlan, this, _1, _2, _3));
+			RegisterCommandCode("updatetimerplan", boost::bind(&CWebServer::Cmd_UpdateTimerPlan, this, _1, _2, _3));
+			RegisterCommandCode("deletetimerplan", boost::bind(&CWebServer::Cmd_DeleteTimerPlan, this, _1, _2, _3));
+
 			RegisterCommandCode("getactualhistory", boost::bind(&CWebServer::Cmd_GetActualHistory, this, _1, _2, _3));
 			RegisterCommandCode("getnewhistory", boost::bind(&CWebServer::Cmd_GetNewHistory, this, _1, _2, _3));
 
@@ -1225,6 +1230,9 @@ namespace http {
 			else if (htype == HTYPE_OpenWebNetUSB) {
 				//All fine here
 			}
+			else if (htype == HTYPE_IntergasInComfortLAN2RF) {
+				//All fine here
+			}
 			else
 				return;
 
@@ -1534,6 +1542,9 @@ namespace http {
 				//All fine here
 			}
 			else if (htype == HTYPE_OpenWebNetUSB) {
+				//All fine here
+			}
+			else if (htype == HTYPE_IntergasInComfortLAN2RF) {
 				//All fine here
 			}
 			else
@@ -2257,6 +2268,97 @@ namespace http {
 				aOrder.c_str(), oID.c_str());
 		}
 
+		void CWebServer::Cmd_GetTimerPlans(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+			root["status"] = "OK";
+			root["title"] = "GetTimerPlans";
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query("SELECT ID, Name FROM TimerPlans ORDER BY Name COLLATE NOCASE ASC");
+			if (result.size() > 0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				int ii = 0;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
+					root["result"][ii]["idx"] = sd[0];
+					root["result"][ii]["Name"] = sd[1];
+					ii++;
+				}
+			}
+		}
+
+		void CWebServer::Cmd_AddTimerPlan(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+
+			std::string name = request::findValue(&req, "name");
+			root["status"] = "OK";
+			root["title"] = "AddTimerPlan";
+			m_sql.safe_query("INSERT INTO TimerPlans (Name) VALUES ('%q')", name.c_str());
+		}
+
+		void CWebServer::Cmd_UpdateTimerPlan(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+
+			std::string idx = request::findValue(&req, "idx");
+			if (idx == "")
+				return;
+			std::string name = request::findValue(&req, "name");
+			if (
+				(name == "")
+				)
+				return;
+
+			root["status"] = "OK";
+			root["title"] = "UpdateTimerPlan";
+
+			m_sql.safe_query("UPDATE TimerPlans SET Name='%q' WHERE (ID == '%q')", name.c_str(), idx.c_str());
+		}
+
+		void CWebServer::Cmd_DeleteTimerPlan(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+
+			std::string idx = request::findValue(&req, "idx");
+			if (idx == "")
+				return;
+			int iPlan = atoi(idx.c_str());
+			if (iPlan < 1)
+				return;
+
+			root["status"] = "OK";
+			root["title"] = "DeletePlan";
+			m_sql.safe_query("DELETE FROM Timers WHERE (TimerPlan == '%q')", idx.c_str());
+			m_sql.safe_query("DELETE FROM TimerPlans WHERE (ID == '%q')", idx.c_str());
+
+			if (m_sql.m_ActiveTimerPlan == iPlan)
+			{
+				//Set active timer plan to default
+				m_sql.UpdatePreferencesVar("ActiveTimerPlan", 0);
+				m_sql.m_ActiveTimerPlan = 0;
+				m_mainworker.m_scheduler.ReloadSchedules();
+			}
+		}
+
 		void CWebServer::Cmd_GetVersion(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			root["status"] = "OK";
@@ -2553,13 +2655,15 @@ namespace http {
 		{
 			std::string subject = request::findValue(&req, "subject");
 			std::string body = request::findValue(&req, "body");
+			std::string subsystem = request::findValue(&req, "subsystem");
 			if (
 				(subject == "") ||
 				(body == "")
 				)
 				return;
+			if (subsystem == "") subsystem = NOTIFYALL;
 			//Add to queue
-			if (m_notifications.SendMessage(0, std::string(""), NOTIFYALL, subject, body, std::string(""), 1, std::string(""), false)) {
+			if (m_notifications.SendMessage(0, std::string(""), subsystem, subject, body, std::string(""), 1, std::string(""), false)) {
 				root["status"] = "OK";
 			}
 			root["title"] = "SendNotification";
@@ -4163,8 +4267,19 @@ namespace http {
 						devid = id;
 						sunitcode = "0";
 					}
-					else if (lighttype == 305) {
-						//Blinds Openwebnet Bus
+					else if (lighttype == 305)
+					{
+						//Lucci Air
+						dtype = pTypeFan;
+						subtype = sTypeLucciAir;
+						std::string id = request::findValue(&req, "id");
+						if (id.empty())
+							return;
+						devid = id;
+						sunitcode = "0";
+					}
+					else if (lighttype == 400) {
+						//Openwebnet Bus Blinds
 						dtype = pTypeGeneralSwitch;
 						subtype = sSwitchBlindsT1;
 						devid = request::findValue(&req, "id");
@@ -4175,8 +4290,8 @@ namespace http {
 							)
 							return;
 					}
-					else if (lighttype == 306) {
-						//Light Openwebnet Bus
+					else if (lighttype == 401) {
+						//Openwebnet Bus Lights
 						dtype = pTypeGeneralSwitch;
 						subtype = sSwitchLightT1;
 						devid = request::findValue(&req, "id");
@@ -4187,9 +4302,9 @@ namespace http {
 							)
 							return;
 					}
-					else if (lighttype == 307)
+					else if (lighttype == 402)
 					{
-						//Auxiliary Openwebnet Bus
+						//Openwebnet Bus Auxiliary
 						dtype = pTypeGeneralSwitch;
 						subtype = sSwitchAuxiliaryT1;
 						devid = request::findValue(&req, "id");
@@ -4200,8 +4315,8 @@ namespace http {
 							)
 							return;
 					}
-					else if (lighttype == 307) {
-						//Blinds Openwebnet Zigbee
+					else if (lighttype == 403) {
+						//Openwebnet Zigbee Blinds
 						dtype = pTypeGeneralSwitch;
 						subtype = sSwitchBlindsT2;
 						devid = request::findValue(&req, "id");
@@ -4212,7 +4327,7 @@ namespace http {
 							)
 							return;
 					}
-					else if (lighttype == 308) {
+					else if (lighttype == 404) {
 						//Light Openwebnet Zigbee
 						dtype = pTypeGeneralSwitch;
 						subtype = sSwitchLightT2;
@@ -4683,7 +4798,18 @@ namespace http {
 					}
 					else if (lighttype == 305)
 					{
-						//Blinds Openwebnet Bus
+						//Lucci Air
+						dtype = pTypeFan;
+						subtype = sTypeLucciAir;
+						std::string id = request::findValue(&req, "id");
+						if (id.empty())
+							return;
+						devid = id;
+						sunitcode = "0";
+					}
+					else if (lighttype == 400)
+					{
+						//Openwebnet Bus Blinds
 						dtype = pTypeGeneralSwitch;
 						subtype = sSwitchBlindsT1;
 						devid = request::findValue(&req, "id");
@@ -4694,9 +4820,9 @@ namespace http {
 							)
 							return;
 					}
-					else if (lighttype == 306)
+					else if (lighttype == 401)
 					{
-						//Light Openwebnet Bus
+						//Openwebnet Bus Lights
 						dtype = pTypeGeneralSwitch;
 						subtype = sSwitchLightT1;
 						devid = request::findValue(&req, "id");
@@ -4707,9 +4833,9 @@ namespace http {
 							)
 							return;
 					}
-					else if (lighttype == 307)
+					else if (lighttype == 402)
 					{
-					    //Auxiliary Openwebnet Bus
+					    //Openwebnet Bus Auxiliary
 					    dtype = pTypeGeneralSwitch;
 						subtype = sSwitchAuxiliaryT1;
 						devid = request::findValue(&req, "id");
@@ -4720,9 +4846,9 @@ namespace http {
 							)
 							return;
 					}
-					else if (lighttype == 308)
+					else if (lighttype == 403)
 					{
-						//Blinds Openwebnet Zigbee
+						//Openwebnet Zigbee Blinds
 						dtype = pTypeGeneralSwitch;
 						subtype = sSwitchBlindsT2;
 						devid = request::findValue(&req, "id");
@@ -4733,9 +4859,9 @@ namespace http {
 							)
 							return;
 					}
-					else if (lighttype == 309)
+					else if (lighttype == 404)
 					{
-						//Light Openwebnet Zigbee
+						//Openwebnet Zigbee Lights
 						dtype = pTypeGeneralSwitch;
 						subtype = sSwitchLightT2;
 						devid = request::findValue(&req, "id");

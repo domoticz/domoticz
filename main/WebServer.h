@@ -259,6 +259,11 @@ private:
 	void Cmd_BleBoxRemoveNode(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_BleBoxClearNodes(WebEmSession & session, const request& req, Json::Value &root);
 
+	void Cmd_GetTimerPlans(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_AddTimerPlan(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_UpdateTimerPlan(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_DeleteTimerPlan(WebEmSession & session, const request& req, Json::Value &root);
+
 	void PluginList(Json::Value &root);
 
 	//RTypes

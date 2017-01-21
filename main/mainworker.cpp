@@ -112,6 +112,7 @@
 #include "../hardware/plugins/Plugins.h"
 #include "../hardware/Arilux.h"
 #include "../hardware/OpenWebNetUSB.h"
+#include "../hardware/InComfort.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -958,7 +959,7 @@ bool MainWorker::AddHardwareFromParams(
 #ifdef USE_PYTHON_PLUGINS
 		pHardware = m_pluginsystem.RegisterPlugin(ID, Name, Filename);
 #endif
-    break;
+	    break;
 	case HTYPE_XiaomiGateway:
 		pHardware = new XiaomiGateway(ID);
 		break;
@@ -967,6 +968,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;	
 	case HTYPE_OpenWebNetUSB:
 		pHardware = new COpenWebNetUSB(ID, SerialPort, 115200);
+		break;
+	case HTYPE_IntergasInComfortLAN2RF:
+		pHardware = new CInComfort(ID, Address, Port);
 		break;
 	}
 
@@ -11525,7 +11529,8 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		(pHardware->HwdType == HTYPE_EVOHOME_SERIAL) ||
 		(pHardware->HwdType == HTYPE_Netatmo) ||
 		(pHardware->HwdType == HTYPE_FITBIT) ||
-		(pHardware->HwdType == HTYPE_NefitEastLAN)
+		(pHardware->HwdType == HTYPE_NefitEastLAN) ||
+		(pHardware->HwdType == HTYPE_IntergasInComfortLAN2RF)
 		)
 	{
 		if (pHardware->HwdType == HTYPE_OpenThermGateway)
@@ -11581,6 +11586,11 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		else if (pHardware->HwdType == HTYPE_EVOHOME_SCRIPT || pHardware->HwdType == HTYPE_EVOHOME_SERIAL)
 		{
 			SetSetPoint(sd[7], TempValue, CEvohome::zmPerm, "");
+		}
+		else if (pHardware->HwdType == HTYPE_IntergasInComfortLAN2RF)
+		{
+			CInComfort *pGateway = reinterpret_cast<CInComfort*>(pHardware);
+			pGateway->SetSetpoint(ID4, TempValue);
 		}
 	}
 	else
@@ -11844,6 +11854,12 @@ bool MainWorker::SetThermostatState(const std::string &idx, const int newState)
 		CNetatmo *pGateway = reinterpret_cast<CNetatmo *>(pHardware);
 		int tIndex = atoi(idx.c_str());
 		pGateway->SetProgramState(tIndex, newState);
+		return true;
+	}
+	else if (pHardware->HwdType == HTYPE_IntergasInComfortLAN2RF)
+	{
+		CInComfort *pGateway = reinterpret_cast<CInComfort*>(pHardware);
+		pGateway->SetProgramState(newState);
 		return true;
 	}
 	return false;
