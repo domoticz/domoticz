@@ -4296,7 +4296,7 @@ namespace http {
 							)
 							return;
 					}
-					else if (lighttype == 308) {
+					else if (lighttype == 307) {
 						//Blinds Openwebnet Zigbee
 						dtype = pTypeGeneralSwitch;
 						subtype = sSwitchBlindsT2;
@@ -4308,7 +4308,7 @@ namespace http {
 							)
 							return;
 					}
-					else if (lighttype == 309) {
+					else if (lighttype == 308) {
 						//Light Openwebnet Zigbee
 						dtype = pTypeGeneralSwitch;
 						subtype = sSwitchLightT2;
