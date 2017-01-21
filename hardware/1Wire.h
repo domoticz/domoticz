@@ -12,7 +12,6 @@ public:
 	explicit C1Wire(const int ID, const int sensorThreadPeriod, const int switchThreadPeriod, const std::string& path);
 	virtual ~C1Wire();
 
-	static bool Have1WireSystem();
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 
 private:
@@ -27,8 +26,6 @@ private:
 	int m_sensorThreadPeriod; // milliseconds
 	int m_switchThreadPeriod; // milliseconds
 	const std::string &m_path;
-	bool m_bSensorFirstTime;
-	bool m_bSwitchFirstTime;
 
 	void DetectSystem();
 	bool StartHardware();
