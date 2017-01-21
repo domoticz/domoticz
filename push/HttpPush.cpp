@@ -144,7 +144,7 @@ void CHttpPush::DoHttpPush()
 			%T0 : Type
 			%T1 : SubType
 			%h : hostname
-                        %idx : 'Original device' id (idx)
+			%idx : 'Original device' id (idx)
 			*/
 
 			std::string lunit = getUnit(delpos, metertype);
