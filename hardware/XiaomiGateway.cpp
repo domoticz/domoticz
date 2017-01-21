@@ -105,7 +105,6 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 			message = "{\"cmd\":\"write\",\"model\":\"gateway\",\"sid\":\"" + sid + "\",\"short_id\":0,\"data\":\"{\\\"rgb\\\":0,\\\"key\\\":\\\"" + gatewaykey + "\\\"}\" }";
 		}
 		else if (xcmd->command == Limitless_SetRGBColour) {
-			_log.Log(LOG_STATUS, ".............. Limitless_SetRGBColour: %d", xcmd->value);
 			int red, green, blue;
 			float cHue = (360.0f / 255.0f)*float(xcmd->value);//hue given was in range of 0-255
 			int Brightness = 100;
@@ -118,21 +117,17 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 
 			std::string hexstring(sstr.str());
 			m_GatewayRgbHex = hexstring;
-			//_log.Log(LOG_STATUS, "XiaomiGateway: just updated m_GatewayRgbHex to %s", m_GatewayRgbHex.c_str());
-			_log.Log(LOG_STATUS, ".............. Limitless_SetRGBColour: finished");
-			_log.Log(LOG_STATUS, "");
 		}
 		else if (xcmd->command == Limitless_SetBrightnessLevel) {
-			_log.Log(LOG_STATUS, ".............. Limitless_SetBrightnessLevel: %d", xcmd->value);
-			//_log.Log(LOG_STATUS, "XiaomiGateway: brigtness %d", xcmd->value);
 			std::string brightnessAndRgbHex = m_GatewayRgbHex;
 			//add the brightness
-			int cBright = round((255.0f / 100.0f)*float(xcmd->value));
+			//int cBright = round((255.0f / 100.0f)*float(xcmd->value));
 			std::stringstream stream;
-			stream << std::uppercase << std::hex << cBright;
-			std::string brightnessHex(stream.str());
+			stream << std::hex << (int)xcmd->value;
+			std::string brightnessHex = stream.str();
+
 			brightnessAndRgbHex.insert(0, brightnessHex.c_str());
-			_log.Log(LOG_STATUS, "XiaomiGateway: brightness and rgb hex %s", brightnessAndRgbHex.c_str());
+			//_log.Log(LOG_STATUS, "XiaomiGateway: brightness and rgb hex %s", brightnessAndRgbHex.c_str());
 			unsigned long hexvalue = std::strtoul(brightnessAndRgbHex.c_str(), 0, 16);
 
 			std::string rgbvalue;
@@ -141,8 +136,6 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 			strstream >> rgbvalue;
 
 			message = "{\"cmd\":\"write\",\"model\":\"gateway\",\"sid\":\"" + sid + "\",\"short_id\":0,\"data\":\"{\\\"rgb\\\":" + rgbvalue + ",\\\"key\\\":\\\"" + gatewaykey + "\\\"}\" }";
-			_log.Log(LOG_STATUS, ".............. Limitless_SetBrightnessLevel: finished");
-			_log.Log(LOG_STATUS, "");
 		}
 		else {
 			_log.Log(LOG_STATUS, "XiaomiGateway: Unknown command %d", xcmd->command);
@@ -203,7 +196,7 @@ void XiaomiGateway::InsertUpdateHumidity(const std::string &nodeid, const std::s
 	SendHumiditySensor(sID, 255, Humidity, Name.c_str());
 }
 
-void XiaomiGateway::InsertUpdateRGBGateway(const std::string & nodeid, const std::string & Name, const bool bIsOn, const std::string & brightness, const int hue)
+void XiaomiGateway::InsertUpdateRGBGateway(const std::string & nodeid, const std::string & Name, const bool bIsOn, const int brightness, const int hue)
 {
 	if (nodeid.length() < 12) {
 		_log.Log(LOG_ERROR, "XiaomiGateway: Node ID %s is too short", nodeid.c_str());
@@ -232,7 +225,7 @@ void XiaomiGateway::InsertUpdateRGBGateway(const std::string & nodeid, const std
 	{
 		_log.Log(LOG_STATUS, "XiaomiGateway: New Gateway Found (%s/%s)", str.c_str(), Name.c_str());
 		//int value = atoi(brightness.c_str());
-		int value = hue; // atoi(hue.c_str());
+		//int value = hue; // atoi(hue.c_str());
 		int cmd = light1_sOn;
 		if (!bIsOn) {
 			cmd = light1_sOff;
@@ -242,19 +235,19 @@ void XiaomiGateway::InsertUpdateRGBGateway(const std::string & nodeid, const std
 		ycmd.type = pTypeLimitlessLights;
 		ycmd.subtype = sTypeLimitlessRGBW;
 		ycmd.id = sID;
-		ycmd.dunit = 0;
-		ycmd.value = value;
+		//ycmd.dunit = 0;
+		ycmd.value = brightness;
 		ycmd.command = cmd;
 		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&ycmd, NULL, -1);
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, LastLevel=%d WHERE(HardwareID == %d) AND (DeviceID == '%s')", Name.c_str(), (STYPE_Dimmer), value, m_HwdID, szDeviceID);
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, LastLevel=%d WHERE(HardwareID == %d) AND (DeviceID == '%s')", Name.c_str(), (STYPE_Dimmer), brightness, m_HwdID, szDeviceID);
 	}
 	else {
 		//_log.Log(LOG_STATUS, "XiaomiGateway: Updating existing - nodeid: %s", nodeid.c_str());
 		nvalue = atoi(result[0][0].c_str());
 		tIsOn = (nvalue != 0);
 		lastLevel = atoi(result[0][1].c_str());
-		int value = atoi(brightness.c_str());
-		if ((bIsOn != tIsOn) || (value != lastLevel))
+		//int value = atoi(brightness.c_str());
+		if ((bIsOn != tIsOn) || (brightness != lastLevel))
 		{
 			int cmd = Limitless_LedOn;
 			if (!bIsOn) {
@@ -265,8 +258,8 @@ void XiaomiGateway::InsertUpdateRGBGateway(const std::string & nodeid, const std
 			ycmd.type = pTypeLimitlessLights;
 			ycmd.subtype = sTypeLimitlessRGBW;
 			ycmd.id = sID;
-			ycmd.dunit = 0;
-			ycmd.value = value;
+			//ycmd.dunit = 0;
+			ycmd.value = brightness;
 			ycmd.command = cmd;
 			m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&ycmd, NULL, -1);
 		}
@@ -413,6 +406,7 @@ bool XiaomiGateway::StartHardware()
 		//retrieve the gateway key
 		m_GatewayPassword = result[0][0].c_str();
 		m_GatewayIp = result[0][1].c_str();
+		m_GatewayRgbHex = "FFFFFF";
 	}
 
 	//Start worker thread
@@ -663,7 +657,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							temp = temp / 100;
 							m_XiaomiGateway->InsertUpdateTemperature(sid.c_str(), "Xiaomi Temperature", temp);
 						}
-						else if (humidity != "") {
+						if (humidity != "") {
 							int hum = atoi(humidity.c_str());
 							hum = hum / 100;
 							m_XiaomiGateway->InsertUpdateHumidity(sid.c_str(), "Xiaomi Humidity", hum);
@@ -671,7 +665,20 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 					}
 					else if (name == "Xiaomi RGB Gateway") {
 						std::string rgb = root2["rgb"].asString();
-						//_log.Log(LOG_STATUS, "XiaomiGateway: rgb received value: %s", rgb.c_str());
+						std::stringstream ss;
+						ss << std::hex << atoi(rgb.c_str());
+
+						std::string hexstring(ss.str());
+
+						if (hexstring.length() == 7) {
+							hexstring.insert(0, "0");
+						}
+
+						std::string bright_hex = hexstring.substr(0, 2);
+						std::stringstream ss2;
+						ss2 << std::hex << bright_hex.c_str();
+						int brightness = strtoul(bright_hex.c_str(), NULL, 16);
+
 						bool on = false;
 						if (rgb != "0") {
 							on = true;
@@ -680,7 +687,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						else {
 							//_log.Log(LOG_STATUS, "XiaomiGateway: setting on to false");
 						}
-						m_XiaomiGateway->InsertUpdateRGBGateway(sid.c_str(), name, on, "100", 100);
+						m_XiaomiGateway->InsertUpdateRGBGateway(sid.c_str(), name, on, brightness, 0);
 					}
 					else {
 						_log.Log(LOG_STATUS, "XiaomiGateway: unhandled model: %s", model.c_str());
