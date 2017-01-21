@@ -27,7 +27,7 @@ http://www.pepper1.net/zwavedb/device/911
     </Value> 
     <Value type="list" index="5" genre="config" label="Restore switch state mode" min="0" max="2" value="1" units="" size="1">
       <Help>
-          Whenever the AC power return from lost, Home Control Metering Plug will restore the switch state which could be SWITCH OFF、LAST SWITCH STATE、SWITCH ON. The default setting is LAST SWITCH STATE.
+          Whenever the AC power return from lost, Home Control Metering Plug will restore the switch state which could be SWITCH OFF, LAST SWITCH STATE, SWITCH ON. The default setting is LAST SWITCH STATE.
       </Help>
        <Item label="Switch off" value="0" />
        <Item label="Last switch state" value="1" />
@@ -44,7 +44,7 @@ http://www.pepper1.net/zwavedb/device/911
       <Help>
           LED indication mode
       </Help>
-       <Item label="Show Switch State：When switch is on, LED is on. When switch is off, LED is off." value="1" />
+       <Item label="Show Switch State:When switch is on, LED is on. When switch is off, LED is off." value="1" />
        <Item label="When switch is on, LED is off. When switch is off, LED is on." value="2" />
        <Item label="When the state of switch changes, LED will be on only one second, then LED keeps off." value="3" />
     </Value>  
@@ -55,7 +55,7 @@ http://www.pepper1.net/zwavedb/device/911
     </Value> 
     <Value type="list" index="9" genre="config" label="RF off command mode" min="0" max="3" value="0" units="" size="1">
       <Help>
-          Whenever a switch off command,BASIC_SET、 BINARY_SWITCH_SET、 SWITCH_ALL_OFF, is received, it could be interpreted as a variety of 4 commands.
+          Whenever a switch off command,BASIC_SET, BINARY_SWITCH_SET, SWITCH_ALL_OFF, is received, it could be interpreted as a variety of 4 commands.
       </Help>
            <Item label="It switches to OFF state." value="0" />
            <Item label="The switch off command will be ignored." value="1" />

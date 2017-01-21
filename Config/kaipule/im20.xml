@@ -7,7 +7,7 @@
 			<Help>Basic Set parameter setting, the receivers make relevant adjustment according to parameter value</Help>
 		</Value>		
 		<Value type="byte" genre="config" instance="1" index="2" label="Turn Off Light Time" size="1" min="1" max="255" units="10seconds" value="1">
-			<Help>When the device triggered and sends out “BASIC SET” to the lightings, the light turns on and off as the set time. 
+			<Help>When the device triggered and sends out BASIC SET to the lightings, the light turns on and off as the set time. 
 			The minimum value is 1, means the light bright time is 1*10s (10seconds), and turn off after 10 seconds, if the value is t, means the bright time is t*10s, turn off after t*10 seconds.</Help>
 		</Value>		
 		<Value type="list" size="1" genre="config" instance="1" index="3" label="Sensor alarm function" value="0">

@@ -459,6 +459,9 @@
     <Filter Include="Devices\Arilux">
       <UniqueIdentifier>{f1bd7f3f-a032-4804-9b52-51c06399ca5e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\InComfort">
+      <UniqueIdentifier>{bbff9485-9778-469f-9659-e3575b33a348}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -1852,9 +1855,6 @@
     <ClInclude Include="..\hardware\openwebnet\bt_openwebnet.h">
       <Filter>Devices\OpenWebNet</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\OpenWebNet.h">
-      <Filter>Devices\OpenWebNet</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\I2C.h">
       <Filter>Devices\I2C</Filter>
     </ClInclude>
@@ -1959,6 +1959,15 @@
     </ClInclude>
     <ClInclude Include="..\hardware\Arilux.h">
       <Filter>Devices\Arilux</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\OpenWebNetUSB.h">
+      <Filter>Devices\OpenWebNet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\OpenWebNetTCP.h">
+      <Filter>Devices\OpenWebNet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\InComfort.h">
+      <Filter>Devices\InComfort</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2484,9 +2493,6 @@
     <ClCompile Include="..\hardware\openwebnet\bt_openwebnet.cpp">
       <Filter>Devices\OpenWebNet</Filter>
     </ClCompile>
-    <ClCompile Include="..\hardware\OpenWebNet.cpp">
-      <Filter>Devices\OpenWebNet</Filter>
-    </ClCompile>
     <ClCompile Include="..\hardware\I2C.cpp">
       <Filter>Devices\I2C</Filter>
     </ClCompile>
@@ -2582,6 +2588,15 @@
     </ClCompile>
     <ClCompile Include="..\hardware\Arilux.cpp">
       <Filter>Devices\Arilux</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\OpenWebNetUSB.cpp">
+      <Filter>Devices\OpenWebNet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\OpenWebNetTCP.cpp">
+      <Filter>Devices\OpenWebNet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\InComfort.cpp">
+      <Filter>Devices\InComfort</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

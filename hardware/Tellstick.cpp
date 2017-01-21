@@ -131,7 +131,7 @@ void CTellstick::rawDeviceEvent(int controllerId, const char *data)
     std::string windaverage;
     std::string windgust;
 
-    size_t prevPos;
+    size_t prevPos = 0;
     std::string message = data;
     size_t pos = message.find(";");
 

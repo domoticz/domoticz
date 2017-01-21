@@ -19,7 +19,7 @@
             <Item label="Flashing Mode" value="5"/>
         </Value>
         <Value type="list" genre="config" instance="1" index="11" label="First channel - reaction to switch for delay/auto ON/OFF modes" value="0" size="1">
-            <Help>This parameter determines how the device in timed mode reacts to pushing the switch connected to the S1 terminal</Help>
+            <Help>This parameter determines how the device in timed mode reacts to pushing the switch connected to the S1 terminal.</Help>
             <Item label="Cancel mode and set target state" value="0"/>
             <Item label="No reaction to switch - mode runs until it ends" value="1"/>
             <Item label="Reset timer - start counting from the beginning" value="2"/>
@@ -43,7 +43,7 @@
             <Item label="Flashing Mode" value="5"/>
         </Value>
         <Value type="list" genre="config" instance="1" index="16" label="Second channel - reaction to switch for delay/auto ON/OFF modes" value="0" size="1">
-            <Help>This parameter determines how the device in timed mode reacts to pushing the switch connected to the S2 terminal</Help>
+            <Help>This parameter determines how the device in timed mode reacts to pushing the switch connected to the S2 terminal.</Help>
             <Item label="Cancel mode and set target state" value="0"/>
             <Item label="No reaction to switch - mode runs until it ends" value="1"/>
             <Item label="Reset timer - start counting from the beginning" value="2"/>
@@ -113,22 +113,22 @@
         </Value>
         <Value type="short" genre="config" instance="1" index="31" label="S1 Switch ON value sent to 2nd and 3rd association groups" value="255" min="0" max="255" size="2">
             <Help>
-                This parameter de nes value sent with Switch On command to devices associated in 2nd and 3rd association group.
+                This parameter determines value sent with Switch On command to devices associated in 2nd and 3rd association group.
             </Help>
         </Value>
         <Value type="short" genre="config" instance="1" index="32" label="S1 Switch OFF value sent to 2nd and 3rd association groups" value="0" min="0" max="255" size="2">
             <Help>
-                This parameter de nes value sent with Switch Off command to devices associated in 2nd and 3rd association group.
+                This parameter determines value sent with Switch Off command to devices associated in 2nd and 3rd association group.
             </Help>
         </Value>
         <Value type="short" genre="config" instance="1" index="33" label="S1 Switch Double Click value sent to 2nd and 3rd association groups" value="99" min="0" max="255" size="2">
             <Help>
-                This parameter de nes value sent with Double Click command to de- vices associated in 2nd and 3rd association group.
+                This parameter determines value sent with Double Click command to de- vices associated in 2nd and 3rd association group.
             </Help>
         </Value>
-        <Value type="byte" genre="config" instance="1" index="35" label="S2 associations sent to 4nd and 5rd association groups" value="0" min="0" max="15" size="1">
+        <Value type="byte" genre="config" instance="1" index="35" label="S2 associations sent to 4th and 5th association groups" value="0" min="0" max="15" size="1">
             <Help>
-                This parameter determines which actions are ignored when sending commands to devices associated in 4nd and 5rd association group.
+                This parameter determines which actions are ignored when sending commands to devices associated in 4th and 5th association group.
                 All actions are active by default.
                 1 - ignore turning On with 1 click of the switch.
                 2 - ignore turning OFF with 1 click of the switch.
@@ -137,19 +137,19 @@
                 Default setting: 0
             </Help>
         </Value>
-        <Value type="short" genre="config" instance="1" index="36" label="S2 Switch ON value sent to 4nd and 5rd association groups" value="255" min="0" max="255" size="2">
+        <Value type="short" genre="config" instance="1" index="36" label="S2 Switch ON value sent to 4th and 5th association groups" value="255" min="0" max="255" size="2">
             <Help>
-                This parameter de nes value sent with Switch On command to devices associated in 4nd and 5rd association group.
+                This parameter determines value sent with Switch On command to devices associated in 4th and 5th association group.
             </Help>
         </Value>
-        <Value type="short" genre="config" instance="1" index="37" label="S2 Switch OFF value sent to 4nd and 5rd association groups" value="0" min="0" max="255" size="2">
+        <Value type="short" genre="config" instance="1" index="37" label="S2 Switch OFF value sent to 4th and 5th association groups" value="0" min="0" max="255" size="2">
             <Help>
-                This parameter de nes value sent with Switch Off command to devices associated in 4nd and 5rd association group.
+                This parameter determines value sent with Switch Off command to devices associated in 4th and 5th association group.
             </Help>
         </Value>
-        <Value type="short" genre="config" instance="1" index="38" label="S2 Switch Double Click value sent to 4nd and 5rd association groups" value="99" min="0" max="255" size="2">
+        <Value type="short" genre="config" instance="1" index="38" label="S2 Switch Double Click value sent to 4th and 5th association groups" value="99" min="0" max="255" size="2">
             <Help>
-                This parameter de nes value sent with Double Click command to de- vices associated in 4nd and 5rd association group.
+                This parameter determines value sent with Double Click command to de- vices associated in 4th and 5th association group.
             </Help>
         </Value>
         <Value type="list" genre="config" instance="1" index="40" label="Reaction to General Alarm" value="3" size="1">
@@ -182,7 +182,7 @@
         </Value>
         <Value type="short" genre="config" instance="1" index="44" label="Flashing alarm duration" value="600" min="1" max="32000" size="2">
             <Help>
-                This parameter allows to set duration of flashing alarm mode
+                This parameter allows to set duration of flashing alarm mode.
                 1-32000 (0.1-32000s, 1s step) Default: 600 (10min)
             </Help>
         </Value>
@@ -203,7 +203,7 @@
         <Value type="short" genre="config" instance="1" index="53" label="First channel - energy reports" value="100" min="1" max="32000" size="2">
             <Help>
                 This parameter determines the minimum change in consumed energy
-                that will result in sending new energy report to the main controller
+                that will result in sending new energy report to the main controller.
                 1-32000 (0.01-320 kWh) Default 100 (1kWh)
             </Help>
         </Value>

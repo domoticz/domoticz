@@ -762,7 +762,7 @@ define(['app'], function (app) {
                      }
                 });
             }
-	    else if (text.indexOf("MyHome OpenWebNet") >= 0)
+			else if (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0)
             {
 				var address=$("#hardwarecontent #divremote #tcpaddress").val();
                 if (address=="")
@@ -839,7 +839,7 @@ define(['app'], function (app) {
                             ShowNotify($.t('Problem updating hardware!'), 2500, true);
                      }
                 });
-            }
+	        }
         }
 
         AddHardware = function()
@@ -1470,7 +1470,7 @@ define(['app'], function (app) {
                      }
                 });
             }
-	    else if (text.indexOf("MyHome OpenWebNet") >= 0)
+            else if (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0)
             {
                 var address=$("#hardwarecontent #divremote #tcpaddress").val();
                 if (address=="")
@@ -4903,7 +4903,7 @@ define(['app'], function (app) {
                                 $("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked",data["Mode2"]==0);
                             }
                         }
-                                                else if ((((data["Type"].indexOf("LAN") >= 0) || data["Type"].indexOf("MySensors Gateway with MQTT") >= 0) && (data["Type"].indexOf("YouLess") >= 0)) || (data["Type"].indexOf("Domoticz") >= 0) || (data["Type"].indexOf("Denkovi") >= 0) || (data["Type"].indexOf("Satel Integra") >= 0) || (data["Type"].indexOf("Logitech Media Server") >= 0) || (data["Type"].indexOf("HEOS by DENON") >= 0) ||(data["Type"].indexOf("MyHome OpenWebNet") >= 0) || (data["Type"].indexOf("Xiaomi Gateway") >= 0)) {
+                        else if ((((data["Type"].indexOf("LAN") >= 0) || data["Type"].indexOf("MySensors Gateway with MQTT") >= 0) && (data["Type"].indexOf("YouLess") >= 0)) || (data["Type"].indexOf("Domoticz") >= 0) || (data["Type"].indexOf("Denkovi") >= 0) || (data["Type"].indexOf("Satel Integra") >= 0) || (data["Type"].indexOf("Logitech Media Server") >= 0) || (data["Type"].indexOf("HEOS by DENON") >= 0) || (data["Type"].indexOf("Xiaomi Gateway") >= 0)) {
                             $("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
                             $("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
                             $("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
@@ -5110,7 +5110,8 @@ define(['app'], function (app) {
                 {
                     $("#hardwarecontent #divbaudratep1").show();
                     $("#hardwarecontent #divcrcp1").show();
-                 }
+                }
+
                 $("#hardwarecontent #divserial").show();
                 $("#hardwarecontent #divremote").hide();
                 $("#hardwarecontent #divlogin").hide();
@@ -5265,7 +5266,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divlogin").show();
                 $("#hardwarecontent #hardwareparamsremote #tcpport").val(1255);
             }
-	    else if (text.indexOf("MyHome OpenWebNet") >= 0)
+            else if (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0)
             {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").show();
@@ -5274,7 +5275,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divhttppoller").hide();
                 $("#hardwarecontent #hardwareparamsremote #tcpport").val(20000);
             }
-	    else if (text.indexOf("1-Wire") >= 0)
+	        else if (text.indexOf("1-Wire") >= 0)
             {
 	        $("#hardwarecontent #div1wire").show();
                 $("#hardwarecontent #divserial").hide();
@@ -5283,7 +5284,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
             }
-	    else if (text.indexOf("Goodwe solar inverter via Web") >= 0)
+	        else if (text.indexOf("Goodwe solar inverter via Web") >= 0)
             {
 	        $("#hardwarecontent #divgoodweweb").show();
 	        $("#hardwarecontent #div1wire").hide();

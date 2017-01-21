@@ -305,6 +305,7 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 				if (IsNodeExists(root, "state") == false)
 					return false;
 
+				// TODO - add check
 				//if (root["state"].asString() != state)
 				//{
 				//	_log.Log(LOG_ERROR, "BleBox: state not changed!");
@@ -338,10 +339,10 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 				if (root == "")
 					return false;
 
-				if (IsNodesExist(root, "light", "currentColor") == false)
+				if (IsNodesExist(root, "light", "desiredColor") == false)
 					return false;
 
-				if (root["light"]["currentColor"].asString() != level) // TODO or desiredcolor ??
+				if (root["light"]["desiredColor"].asString() != level)
 				{
 					_log.Log(LOG_ERROR, "BleBox: light not changed!");
 					return false;

@@ -440,6 +440,7 @@
     <ClInclude Include="..\hardware\HttpPoller.h" />
     <ClInclude Include="..\hardware\I2C.h" />
     <ClInclude Include="..\hardware\ICYThermostat.h" />
+    <ClInclude Include="..\hardware\InComfort.h" />
     <ClInclude Include="..\hardware\KMTronic433.h" />
     <ClInclude Include="..\hardware\KMTronicBase.h" />
     <ClInclude Include="..\hardware\KMTronicSerial.h" />
@@ -460,7 +461,8 @@
     <ClInclude Include="..\hardware\Nest.h" />
     <ClInclude Include="..\hardware\Netatmo.h" />
     <ClInclude Include="..\hardware\OpenWeatherMap.h" />
-    <ClInclude Include="..\hardware\OpenWebNet.h" />
+    <ClInclude Include="..\hardware\OpenWebNetTCP.h" />
+    <ClInclude Include="..\hardware\OpenWebNetUSB.h" />
     <ClInclude Include="..\hardware\openwebnet\bt_openwebnet.h" />
     <ClInclude Include="..\hardware\OpenZWave.h" />
     <ClInclude Include="..\hardware\openzwave\control_panel\ozwcp.h" />
@@ -669,6 +671,7 @@
     <ClCompile Include="..\hardware\HttpPoller.cpp" />
     <ClCompile Include="..\hardware\I2C.cpp" />
     <ClCompile Include="..\hardware\ICYThermostat.cpp" />
+    <ClCompile Include="..\hardware\InComfort.cpp" />
     <ClCompile Include="..\hardware\KMTronic433.cpp" />
     <ClCompile Include="..\hardware\KMTronicBase.cpp" />
     <ClCompile Include="..\hardware\KMTronicSerial.cpp" />
@@ -689,7 +692,8 @@
     <ClCompile Include="..\hardware\Nest.cpp" />
     <ClCompile Include="..\hardware\Netatmo.cpp" />
     <ClCompile Include="..\hardware\OpenWeatherMap.cpp" />
-    <ClCompile Include="..\hardware\OpenWebNet.cpp" />
+    <ClCompile Include="..\hardware\OpenWebNetTCP.cpp" />
+    <ClCompile Include="..\hardware\OpenWebNetUSB.cpp" />
     <ClCompile Include="..\hardware\openwebnet\bt_openwebnet.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>

@@ -73,7 +73,7 @@ Product Type ID: EU=0x00, US=0x01, AU=0x02 CN=0x1D
 			</Help>
 		</Value>
 		<Value type="list" index="90" genre="config" label="Enable/disable the parameter 91 and 92" units="" size="1" value="0">
-			<Help>If this parameter is set to 1 (Enable), the parameter 101 – 103 should be set to 0.</Help>
+			<Help>If this parameter is set to 1 (Enable), the parameter 101 - 103 should be set to 0.</Help>
 			<Item label="Disable" value="0" />
 			<Item label="Enable" value="1" />
 		</Value>
