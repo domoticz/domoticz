@@ -65,11 +65,11 @@ bool C1Wire::StartHardware()
 		return false;
 
 	// Start worker thread
-	if (-1 != m_sensorThreadPeriod)
+	if (0 != m_sensorThreadPeriod)
 	{
 		m_threadSensors = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&C1Wire::SensorThread, this)));
 	}
-	if (-1 != m_switchThreadPeriod)
+	if (0 != m_switchThreadPeriod)
 	{
 		m_threadSwitches = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&C1Wire::SwitchThread, this)));
 	}
