@@ -3074,7 +3074,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 		if (aParam.size() > 4) {
 			extraData = "|Device=" + aParam[4];
 		}
-		m_sql.AddTaskItem(_tTaskItem::SendNotification(1, subject, body, std::string(""), atoi(priority.c_str()), sound));
+		m_sql.AddTaskItem(_tTaskItem::SendNotification(1, subject, body, extraData, atoi(priority.c_str()), sound));
 		scriptTrue = true;
 	}
 	else if (lCommand == "SendEmail") {

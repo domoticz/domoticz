@@ -24,7 +24,8 @@ CInComfort::CInComfort(const int ID, const std::string &IPAddress, const unsigne
 	m_usIPPort = usIPPort;
 	m_stoprequested = false;
 
-	m_LastRoom1TemperatureUpdate = 0;
+	m_LastUpdateFrequentChangingValues = 0;
+	m_LastUpdateSlowChangingValues = 0;
 	m_LastRoom1Temperature = 0.0;
 	m_LastRoom2Temperature = 0.0;
 	m_LastRoom1SetTemperature = 0.0;
@@ -162,6 +163,7 @@ void CInComfort::ParseAndUpdateDevices(std::string jsonData)
 		_log.Log(LOG_ERROR, "InComfort: Invalid data received. Data is not json formatted.");
 		return;
 	}
+
 	if (root["nodenr"].empty() == true)
 	{
 		_log.Log(LOG_ERROR, "InComfort: Invalid data received. Nodenr not found.");
@@ -170,29 +172,23 @@ void CInComfort::ParseAndUpdateDevices(std::string jsonData)
 
 	float room1Temperature = (root["room_temp_1_lsb"].asInt() + root["room_temp_1_msb"].asInt() * 256) / 100.0f;
 	float room1SetTemperature = (root["room_temp_set_1_lsb"].asInt() + root["room_temp_set_1_msb"].asInt() * 256) / 100.0f;
+	float room1OverrideTemperature = (root["room_set_ovr_1_lsb"].asInt() + root["room_set_ovr_1_msb"].asInt() * 256) / 100.0f;
 	float room2Temperature = (root["room_temp_2_lsb"].asInt() + root["room_temp_2_msb"].asInt() * 256) / 100.0f;
 	float room2SetTemperature = (root["room_temp_set_2_lsb"].asInt() + root["room_temp_set_2_msb"].asInt() * 256) / 100.0f;
+	float room2OverrideTemperature = (root["room_set_ovr_2_lsb"].asInt() + root["room_set_ovr_2_msb"].asInt() * 256) / 100.0f;
+
 	int statusDisplayCode = root["displ_code"].asInt();
-	//std::string statusDisplayText = StatusDisplayCodeToText(StatusDisplayCode);
 	int rssi = root["rf_message_rssi"].asInt();
 	int rfStatusCounter = root["rfstatus_cntr"].asInt();
-
-	float room1OverrideTemperature = (root["room_set_ovr_1_lsb"].asInt() + root["room_set_ovr_1_msb"].asInt() * 256) / 100.0f;
-	float room2OverrideTemperature = (root["room_set_ovr_2_lsb"].asInt() + root["room_set_ovr_2_msb"].asInt() * 256) / 100.0f;
 
 	float centralHeatingTemperature = (root["ch_temp_lsb"].asInt() + root["ch_temp_msb"].asInt() * 256) / 100.0f;
 	float centralHeatingPressure = (root["ch_pressure_lsb"].asInt() + root["ch_pressure_msb"].asInt() * 256) / 100.0f;
 	float tapWaterTemperature = (root["tap_temp_lsb"].asInt() + root["tap_temp_msb"].asInt() * 256) / 100.0f;
 
 	int io = root["IO"].asInt();
-
 	bool lockout = (io & 0x01) > 0;
-	bool pumpActive = (io & 0x02) > 0;
-	bool tapFunctionActive = (io & 0x04) > 0;
-	bool burderActive = (io & 0x08) > 0;
 
 	std::string statusText;
-
 	if (lockout)
 	{
 		std::stringstream ss;
@@ -219,56 +215,70 @@ void CInComfort::ParseAndUpdateDevices(std::string jsonData)
 		default: statusText = "Unknown"; break;
 		}
 
-	// Update temperature on every change and at least every 5 minutes. 
+
+	// Compare the time of the last update to the current time. 
+	// For items changing frequently, update the value every 5 minutes, for all others update every 15 minutes
 	time_t currentTime = mytime(NULL);
-	if ((m_LastRoom1Temperature != room1Temperature) || ((currentTime - m_LastRoom1TemperatureUpdate) >= 300))
+	bool updateFrequentChangingValues = (currentTime - m_LastUpdateFrequentChangingValues) >= 300;
+	if (updateFrequentChangingValues)
+		m_LastUpdateFrequentChangingValues = currentTime;
+	bool updateSlowChangingValues = (currentTime - m_LastUpdateSlowChangingValues) >= 900;
+	if (updateSlowChangingValues)
+		m_LastUpdateSlowChangingValues = currentTime;
+
+	// Update all sensors, if they changed or if the need an update based on Time
+	if ((m_LastRoom1Temperature != room1Temperature) || updateFrequentChangingValues)
 	{
 		m_LastRoom1Temperature = room1Temperature;
-		m_LastRoom1TemperatureUpdate = currentTime;
 		SendTempSensor(0, 255, m_LastRoom1Temperature, "Room Temperature");
 	}
-	if ((m_LastRoom2Temperature != room2Temperature) && (room2Temperature < 100.0))
-	{
-		m_LastRoom2Temperature = room2Temperature;
-		SendTempSensor(1, 255, m_LastRoom2Temperature, "Room-2 Temperature");
-	}
-	if (m_LastRoom1SetTemperature != room1SetTemperature)
+	if ((m_LastRoom1SetTemperature != room1SetTemperature) || updateSlowChangingValues)
 	{
 		m_LastRoom1SetTemperature = room1SetTemperature;
 		SendTempSensor(2, 255, m_LastRoom1SetTemperature, "Room Thermostat Setpoint");
 	}
-	if (m_LastRoom1OverrideTemperature != room1OverrideTemperature)
+	if ((m_LastRoom1OverrideTemperature != room1OverrideTemperature) || updateSlowChangingValues)
 	{
 		m_LastRoom1OverrideTemperature = room1OverrideTemperature;
 		SendSetPointSensor(3, 1, 0, m_LastRoom1OverrideTemperature, "Room Override Setpoint");
 	}
-	if ((m_LastRoom2SetTemperature != room2SetTemperature) && (room2SetTemperature < 100.0))
+
+	// room2temperature is 300+ the room 2 is not configured/in use in the LAN2RF gateway.
+	if (room2Temperature < 100.0)
 	{
-		m_LastRoom2SetTemperature = room2SetTemperature;
-		SendTempSensor(4, 255, m_LastRoom2SetTemperature, "Room-2 Thermostat Setpoint");
+		if ((m_LastRoom2Temperature != room2Temperature) || updateFrequentChangingValues)
+		{
+			m_LastRoom2Temperature = room2Temperature;
+			SendTempSensor(1, 255, m_LastRoom2Temperature, "Room-2 Temperature");
+		}
+		if ((m_LastRoom2SetTemperature != room2SetTemperature) || updateSlowChangingValues)
+		{
+			m_LastRoom2SetTemperature = room2SetTemperature;
+			SendTempSensor(4, 255, m_LastRoom2SetTemperature, "Room-2 Thermostat Setpoint");
+		}
+		if ((m_LastRoom2OverrideTemperature != room2OverrideTemperature) || updateSlowChangingValues)
+		{
+			m_LastRoom2OverrideTemperature = room2OverrideTemperature;
+			SendSetPointSensor(5, 0, 3, m_LastRoom2OverrideTemperature, "Room-2 Override Setpoint");
+		}
 	}
-	if ((m_LastRoom2OverrideTemperature != room2OverrideTemperature) && (room2SetTemperature < 100.0))
-	{
-		m_LastRoom2OverrideTemperature = room2OverrideTemperature;
-		SendSetPointSensor(5, 0, 3, m_LastRoom2OverrideTemperature, "Room-2 Override Setpoint");
-	}
-	if (m_LastCentralHeatingTemperature != centralHeatingTemperature)
+
+	if ((m_LastCentralHeatingTemperature != centralHeatingTemperature) || updateFrequentChangingValues)
 	{
 		m_LastCentralHeatingTemperature = centralHeatingTemperature;
 		SendTempSensor(4, 255, m_LastCentralHeatingTemperature, "Central Heating Water Temperature");
 	}
-	if (m_LastCentralHeatingPressure != centralHeatingPressure)
+	if ((m_LastCentralHeatingPressure != centralHeatingPressure) || updateFrequentChangingValues)
 	{
 		m_LastCentralHeatingPressure = centralHeatingPressure;
 		SendPressureSensor(5, 0, 255, m_LastCentralHeatingPressure, "Central Heating Water Pressure");
 	}
-	if (m_LastTapWaterTemperature != tapWaterTemperature)
+	if ((m_LastTapWaterTemperature != tapWaterTemperature) || updateFrequentChangingValues)
 	{
 		m_LastTapWaterTemperature = tapWaterTemperature;
 		SendTempSensor(6, 255, m_LastTapWaterTemperature, "Tap Water Temperature");
 	}
-
-	if ((m_LastIO != io) || (m_LastStatusText != statusText))
+	if ((m_LastIO != io) || (m_LastStatusText != statusText) || updateFrequentChangingValues)
 	{
 		m_LastIO = io;
 		SendTextSensor(8, 0, 255, statusText, "Heater Status");
@@ -276,7 +286,7 @@ void CInComfort::ParseAndUpdateDevices(std::string jsonData)
 		bool tapFunctionActive = (io & 0x04) > 0;
 		bool burnerActive = (io & 0x08) > 0;
 		SendSwitch(8, 1, 255, pumpActive, 0, "Pump Active");
-		SendSwitch(8, 2, 255, pumpActive, 0, "Tap Function Active");
-		SendSwitch(8, 3, 255, pumpActive, 0, "Burner Active");
+		SendSwitch(8, 2, 255, tapFunctionActive, 0, "Tap Function Active");
+		SendSwitch(8, 3, 255, burnerActive, 0, "Burner Active");
 	}
 }
