@@ -3660,20 +3660,47 @@ namespace http {
 									(switchtype == STYPE_Selector)
 									);
 								root["result"][ii]["IsDimmer"] = bIsDimmer;
-								std::string dimmerLevels = bIsDimmer ? "all" : "none";
-								if (switchtype == STYPE_Selector) {
+
+								std::string dimmerLevels = "none";
+
+								if (bIsDimmer)
+								{
 									std::stringstream ss;
-									std::map<std::string, std::string> selectorStatuses;
-									GetSelectorSwitchStatuses(options, selectorStatuses);
-									bool levelOffHidden = options["LevelOffHidden"] == "true";
-									for(int i = 0; i < (int)selectorStatuses.size(); i++) {
-										if (levelOffHidden && (i == 0)) {
-											continue;
+
+									if (switchtype == STYPE_Selector) {
+										std::map<std::string, std::string> selectorStatuses;
+										GetSelectorSwitchStatuses(options, selectorStatuses);
+										bool levelOffHidden = options["LevelOffHidden"] == "true";
+										for (int i = 0; i < (int)selectorStatuses.size(); i++) {
+											if (levelOffHidden && (i == 0)) {
+												continue;
+											}
+											if ((levelOffHidden && (i > 1)) || (i > 0)) {
+												ss << ",";
+											}
+											ss << i * 10;
 										}
-										if((levelOffHidden && (i > 1)) || (i > 0)) {
-											ss << ",";
+									}
+									else
+									{
+										int nValue = 0;
+										std::string sValue = "";
+										std::string lstatus = "";
+										int llevel = 0;
+										bool bHaveDimmer = false;
+										int maxDimLevel = 0;
+										bool bHaveGroupCmd = false;
+
+										GetLightStatus(Type, SubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+
+										for (int i = 0; i <= maxDimLevel; i++)
+										{
+											if (i != 0)
+											{
+												ss << ",";
+											}
+											ss << (int)float((100.0f / float(maxDimLevel))*i);
 										}
-										ss << i * 10;
 									}
 									dimmerLevels = ss.str();
 								}
