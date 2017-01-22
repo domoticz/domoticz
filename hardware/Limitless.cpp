@@ -266,7 +266,7 @@ bool CLimitLess::GetV6BridgeID()
 	{
 		uint8_t rbuffer[1024];
 		sockaddr_in si_other;
-		int slen = sizeof(sockaddr_in);
+		socklen_t slen = sizeof(sockaddr_in);
 		int trecv = recvfrom(m_RemoteSocket, (char*)&rbuffer, sizeof(rbuffer), 0, (struct sockaddr*)&si_other, &slen);
 		if (trecv < 1)
 		{
@@ -324,7 +324,7 @@ bool CLimitLess::SendV6Command(const uint8_t *pCmd)
 	while (totRetries < 3)
 	{
 		sockaddr_in si_other;
-		int slen = sizeof(sockaddr_in);
+		socklen_t slen = sizeof(sockaddr_in);
 		int trecv = recvfrom(m_RemoteSocket, (char*)&OutBuffer, sizeof(OutBuffer), 0, (struct sockaddr*)&si_other, &slen);
 		if (trecv < 1)
 		{
