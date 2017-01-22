@@ -1283,7 +1283,23 @@ namespace http {
 				mode2 = 500;
 			}
 
-			if (htype == HTYPE_PythonPlugin) {
+			if (htype == HTYPE_HTTPPOLLER) {
+				m_sql.safe_query(
+					"INSERT INTO Hardware (Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) VALUES ('%q',%d, %d,'%q',%d,'%q','%q','%q','%q','%q','%q', '%q', '%q', '%q', '%q', %d)",
+					name.c_str(),
+					(senabled == "true") ? 1 : 0,
+					htype,
+					address.c_str(),
+					port,
+					sport.c_str(),
+					username.c_str(),
+					password.c_str(),
+					extra.c_str(),
+					mode1Str.c_str(), mode2Str.c_str(), mode3Str.c_str(), mode4Str.c_str(), mode5Str.c_str(), mode6Str.c_str(),
+					iDataTimeout
+				);
+			}
+			else if (htype == HTYPE_PythonPlugin) {
 				sport = request::findValue(&req, "serialport");
 				m_sql.safe_query(
 					"INSERT INTO Hardware (Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) VALUES ('%q',%d, %d,'%q',%d,'%q','%q','%q','%q','%q','%q', '%q', '%q', '%q', '%q', %d)",
@@ -1385,7 +1401,7 @@ namespace http {
 				(htype == HTYPE_KMTronicTCP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_RFLINKTCP) ||
 				(htype == HTYPE_Comm5TCP || (htype == HTYPE_CurrentCostMeterLAN)) ||
 				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviSmartdenLan) || (htype == HTYPE_Ec3kMeterTCP) || (htype == HTYPE_MultiFun) || (htype == HTYPE_ZIBLUETCP)
-				){
+				) {
 				//Lan
 				if (address == "")
 					return;
@@ -1522,9 +1538,9 @@ namespace http {
 			else if (htype == HTYPE_WINDDELEN) {
 				std::string mill_id = request::findValue(&req, "Mode1");
 				if (
-				  (mill_id == "") ||
-				  (sport == "")
-				)
+					(mill_id == "") ||
+					(sport == "")
+					)
 					return;
 			}
 			else if (htype == HTYPE_OpenWebNetTCP) {
@@ -1534,9 +1550,9 @@ namespace http {
 				//All fine here
 			}
 			else if (htype == HTYPE_GoodweAPI) {
-					if (username == "") {
-						return;
-					}
+				if (username == "") {
+					return;
+				}
 			}
 			else if (htype == HTYPE_RaspberryPCF8574) {
 				//All fine here
@@ -1556,6 +1572,14 @@ namespace http {
 			int mode4 = atoi(request::findValue(&req, "Mode4").c_str());
 			int mode5 = atoi(request::findValue(&req, "Mode5").c_str());
 			int mode6 = atoi(request::findValue(&req, "Mode6").c_str());
+
+			std::string mode1Str;
+			std::string mode2Str;
+			std::string mode3Str;
+			std::string mode4Str;
+			std::string mode5Str;
+			std::string mode6Str;
+
 			root["status"] = "OK";
 			root["title"] = "UpdateHardware";
 
@@ -1578,13 +1602,29 @@ namespace http {
 			}
 			else
 			{
-				if (htype == HTYPE_PythonPlugin) {
-					std::string mode1Str = request::findValue(&req, "Mode1");
-					std::string mode2Str = request::findValue(&req, "Mode2");
-					std::string mode3Str = request::findValue(&req, "Mode3");
-					std::string mode4Str = request::findValue(&req, "Mode4");
-					std::string mode5Str = request::findValue(&req, "Mode5");
-					std::string mode6Str = request::findValue(&req, "Mode6");
+				if (htype == HTYPE_HTTPPOLLER) {
+					m_sql.safe_query(
+						"UPDATE Hardware SET Name='%q', Enabled=%d, Type=%d, Address='%q', Port=%d, SerialPort='%q', Username='%q', Password='%q', Extra='%q', DataTimeout=%d WHERE (ID == '%q')",
+						name.c_str(),
+						(senabled == "true") ? 1 : 0,
+						htype,
+						address.c_str(),
+						port,
+						sport.c_str(),
+						username.c_str(),
+						password.c_str(),
+						extra.c_str(),
+						iDataTimeout,
+						idx.c_str()
+					);
+				}
+				else if (htype == HTYPE_PythonPlugin) {
+					mode1Str = request::findValue(&req, "Mode1");
+					mode2Str = request::findValue(&req, "Mode2");
+					mode3Str = request::findValue(&req, "Mode3");
+					mode4Str = request::findValue(&req, "Mode4");
+					mode5Str = request::findValue(&req, "Mode5");
+					mode6Str = request::findValue(&req, "Mode6");
 					sport = request::findValue(&req, "serialport");
 					m_sql.safe_query(
 						"UPDATE Hardware SET Name='%q', Enabled=%d, Type=%d, Address='%q', Port=%d, SerialPort='%q', Username='%q', Password='%q', Extra='%q', Mode1='%q', Mode2='%q', Mode3='%q', Mode4='%q', Mode5='%q', Mode6='%q', DataTimeout=%d WHERE (ID == '%q')",
@@ -10438,6 +10478,7 @@ namespace http {
 					root["result"][ii]["Username"] = sd[7];
 					root["result"][ii]["Password"] = sd[8];
 					root["result"][ii]["Extra"] = sd[9];
+					
 					if (hType == HTYPE_PythonPlugin) {
 						root["result"][ii]["Mode1"] = sd[10];  // Plugins can have non-numeric values in the Mode fields
 						root["result"][ii]["Mode2"] = sd[11];
