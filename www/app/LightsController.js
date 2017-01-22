@@ -3366,7 +3366,7 @@ define(['app'], function (app) {
 			}
 			else if (lighttype==9) {
 				tothousecodes=16;
-				totunits=4;
+				totunits=10;
 			}
 			else if (lighttype==10) {
 				tothousecodes=4;

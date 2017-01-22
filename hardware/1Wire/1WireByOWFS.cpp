@@ -16,9 +16,6 @@
 C1WireByOWFS::C1WireByOWFS(const std::string& path) :
 	m_path(path)
 {
-	if (m_path == "")
-		m_path = "/mnt/1wire";
-
 	m_simultaneousTemperaturePath = m_path;
 	m_simultaneousTemperaturePath.append("/simultaneous/temperature");
 

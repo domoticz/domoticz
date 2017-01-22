@@ -32,13 +32,6 @@ C1Wire::C1Wire(const int ID, const int sensorThreadPeriod, const int switchThrea
 {
 	m_HwdID = ID;
 
-	// Defaults for pre-existing 1wire instances
-	if (0 == m_sensorThreadPeriod)
-		m_sensorThreadPeriod = 5 * 60 * 1000;
-
-	if (0 == m_switchThreadPeriod)
-			m_switchThreadPeriod = 100;
-
 	DetectSystem();
 }
 
@@ -46,37 +39,31 @@ C1Wire::~C1Wire()
 {
 }
 
-bool C1Wire::Have1WireSystem()
-{
-#ifdef WIN32
-	return (C1WireForWindows::IsAvailable());
-#else // WIN32
-	return true;
-#endif // WIN32
-}
-
 void C1Wire::DetectSystem()
 {
-#ifdef WIN32
-	if (!m_system && C1WireForWindows::IsAvailable())
-		m_system=new C1WireForWindows();
-#else // WIN32
-
-	// Using the both systems at same time results in conflicts,
-	// see http://owfs.org/index.php?page=w1-project.
-	if (m_path.length() != 0) {
-		m_system=new C1WireByOWFS(m_path);
-	} else if (C1WireByKernel::IsAvailable()) {
-		m_system=new C1WireByKernel();
-	} else {
-		m_system=new C1WireByOWFS(m_path);
+	if (m_path.length() != 0) 
+	{
+		m_system = new C1WireByOWFS(m_path);
 	}
-
-#endif // WIN32
+	else
+	{
+		#ifdef WIN32
+		if (!m_system && C1WireForWindows::IsAvailable())
+			m_system = new C1WireForWindows();
+		#else // WIN32
+		// Using the both systems at same time results in conflicts,
+		// see http://owfs.org/index.php?page=w1-project.
+		if (C1WireByKernel::IsAvailable()) 
+			m_system=new C1WireByKernel();
+		#endif // WIN32
+	 }
 }
 
 bool C1Wire::StartHardware()
 {
+	if (m_system == NULL)
+		return false;
+
 	// Start worker thread
 	if (0 != m_sensorThreadPeriod)
 	{
@@ -129,19 +116,13 @@ void C1Wire::SensorThread()
 
 	int iteration = 0;
 
-	m_bSensorFirstTime = true;
+	BuildSensorList(); // load sensors list, only when module is starting
 
 	while (!m_stoprequested)
 	{
 		sleep_milliseconds(pollPeriod);
 		if (0 == iteration++ % pollIterations) // may glitch on overflow, not disastrous
 		{
-			if (m_bSensorFirstTime)
-			{
-				m_bSensorFirstTime = false;
-				BuildSensorList();
-			}
-
 			PollSensors();
 		}
 	}
@@ -152,31 +133,26 @@ void C1Wire::SensorThread()
 void C1Wire::SwitchThread()
 {
 	int pollPeriod = m_switchThreadPeriod;
+	int pollIterations = 1;
 
-	// Rescan the bus once every 10 seconds if requested
-#define HARDWARE_RESCAN_PERIOD 10000
-	int rescanIterations = HARDWARE_RESCAN_PERIOD / pollPeriod;
-	if (0 == rescanIterations)
-		rescanIterations = 1;
+	if (pollPeriod > 1000)
+	{
+		pollIterations = pollPeriod / 1000;
+		pollPeriod = 1000;
+	}
 
 	int iteration = 0;
 
-	m_bSwitchFirstTime = true;
+	BuildSwitchList();	 // load switches list, only when module is starting
 
 	while (!m_stoprequested)
 	{
 		sleep_milliseconds(pollPeriod);
 
-		if (0 == iteration++ % rescanIterations) // may glitch on overflow, not disastrous
+		if (0 == iteration++ % pollIterations) // may glitch on overflow, not disastrous
 		{
-			if (m_bSwitchFirstTime)
-			{
-				m_bSwitchFirstTime = false;
-				BuildSwitchList();
-			}
+			PollSwitches();
 		}
-
-		PollSwitches();
 	}
 
 	_log.Log(LOG_STATUS, "1-Wire: Switch thread terminating");
