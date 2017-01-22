@@ -1,8 +1,12 @@
 #pragma once
 
-// Intergas InComfort Domoticz driver v1.0.
+// Intergas InComfort Domoticz driver v1.0.1.
 // Tested with LAN2RF gateway WebInterface 1.1, Firmware IC3-ICN-V1.12
 // by Erik Tamminga (erik@etamminga.nl)
+//
+// 2017-01-17: v1.0.1 etamminga
+// - IO values did not get send to the correct sensor
+// - Slow changing values were not updated. Forcing an update every 15 minutes.
 
 #include "DomoticzHardware.h"
 #include <iostream>
@@ -25,7 +29,8 @@ private:
 	bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;
 
-	time_t m_LastRoom1TemperatureUpdate;
+	time_t m_LastUpdateFrequentChangingValues;
+	time_t m_LastUpdateSlowChangingValues;
 	float m_LastRoom1Temperature;
 	float m_LastRoom2Temperature;
 	float m_LastRoom1SetTemperature;

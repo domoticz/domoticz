@@ -2,6 +2,7 @@ define(['app'], function (app) {
 	app.controller('LightsController', [ '$scope', '$rootScope', '$location', '$http', '$interval', 'permissions', function($scope,$rootScope,$location,$http,$interval,permissions) {
 	
 		$scope.HasInitializedAddManualDialog = false;
+		$scope.HasInitializedEditLightDialog = false;
 
 		DeleteTimer = function(idx)
 		{
@@ -1458,6 +1459,51 @@ define(['app'], function (app) {
 			});
 		}
 
+		ConfigureEditLightSettings = function() {
+			if ($scope.HasInitializedEditLightDialog == true) {
+				return;
+			}
+			$scope.HasInitializedEditLightDialog=true;
+			//Get Custom icons
+			$.ddData=[];
+			$.ajax({
+			 url: "json.htm?type=custom_light_icons",
+			 async: false,
+			 dataType: 'json',
+			 success: function(data) {
+				if (typeof data.result != 'undefined') {
+					var totalItems=data.result.length;
+					$.each(data.result, function(i,item){
+						var bSelected=false;
+						if (i==0) {
+							bSelected=true;
+						}
+						var img="images/"+item.imageSrc+"48_On.png";
+						$.ddData.push({ text: item.text, value: item.idx, selected: bSelected, description: item.description, imageSrc: img });
+					});
+				}
+			 }
+		   });
+
+			$.LightsAndSwitches = [];
+			$.ajax({
+				url: "json.htm?type=command&param=getlightswitches",
+				async: false,
+				dataType: 'json',
+				success: function(data) {
+					if (typeof data.result != 'undefined') {
+						$.each(data.result, function(i,item) {
+							$.LightsAndSwitches.push({
+								idx: item.idx,
+								name: item.Name
+							});
+						});
+					}
+				}
+			});
+		   
+		}
+
 		EditLightDevice = function(idx,name,description,stype,switchtype,addjvalue,addjvalue2,isslave,customimage,devsubtype,strParam1,strParam2,bIsProtected,strUnit)
 		{
 			if (typeof $scope.mytimer != 'undefined') {
@@ -1470,6 +1516,8 @@ define(['app'], function (app) {
 			$.strUnit=strUnit;
 			$.bIsSelectorSwitch = (devsubtype === "Selector Switch");
 
+			ConfigureEditLightSettings();
+			
 			var oTable;
 
 			if ($.bIsSelectorSwitch) {
@@ -1931,26 +1979,6 @@ define(['app'], function (app) {
 					if (typeof data.result != 'undefined') {
 						$.each(data.result, function(i,item) {
 							$.ComboGpio.push({
-								idx: item.idx,
-								name: item.Name
-							});
-						});
-					}
-				}
-			});
-		}
-
-		RefreshLightSwitchesComboArray = function()
-		{
-			$.LightsAndSwitches = [];
-			$.ajax({
-				url: "json.htm?type=command&param=getlightswitches",
-				async: false,
-				dataType: 'json',
-				success: function(data) {
-					if (typeof data.result != 'undefined') {
-						$.each(data.result, function(i,item) {
-							$.LightsAndSwitches.push({
 								idx: item.idx,
 								name: item.Name
 							});
@@ -2496,8 +2524,6 @@ define(['app'], function (app) {
 				$scope.mytimer = undefined;
 			}
 		  $('#modal').show();
-
-		  RefreshLightSwitchesComboArray();
 
 		  var htmlcontent = '';
 			var bShowRoomplan=false;
@@ -4013,31 +4039,6 @@ define(['app'], function (app) {
 				EnableDisableSubDevices("#dialog-addmanuallightdevice #howtable #subdevice",true);
 			});
 
-			$.ddData=[];
-			$scope.CustomImages=[];
-			//Get Custom icons
-			$.ajax({
-			 url: "json.htm?type=custom_light_icons",
-			 async: false,
-			 dataType: 'json',
-			 success: function(data) {
-				if (typeof data.result != 'undefined') {
-					var totalItems=data.result.length;
-					$.each(data.result, function(i,item){
-						var bSelected=false;
-						if (i==0) {
-							bSelected=true;
-						}
-						var img="images/"+item.imageSrc+"48_On.png";
-						$.ddData.push({ text: item.text, value: item.idx, selected: bSelected, description: item.description, imageSrc: img });
-						$scope.CustomImages.push({ text: item.text, value: item.idx, selected: bSelected, description: item.description, imageSrc: img });
-					});
-					if (totalItems>0) {
-						$scope.customimagesel=$scope.CustomImages[0];
-					}
-				}
-			 }
-		   });
 			ShowLights();
 		};
 		$scope.$on('$destroy', function(){
