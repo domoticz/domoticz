@@ -762,7 +762,7 @@ bool MainWorker::AddHardwareFromParams(
 			int rmode1 = Mode1;
 			if (rmode1 == 0)
 				rmode1 = 1;
-			pHardware = new CLimitLess(ID, rmode1, Address, Port);
+			pHardware = new CLimitLess(ID, rmode1, Mode2, Address, Port);
 		}
 		break;
 	case HTYPE_YouLess:

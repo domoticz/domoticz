@@ -3276,6 +3276,7 @@ define(['app'], function (app) {
 
             $('#hardwarecontent #idx').val(idx);
             $('#hardwarecontent #combom1type').val(Mode1);
+            $('#hardwarecontent #CCBridgeType').val(Mode2);
         }
 
         EditCCUSB = function(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5,Mode6)
