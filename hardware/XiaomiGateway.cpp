@@ -572,7 +572,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 					}
 					else if (model == "86sw1") {
 						name = "Xiaomi Wireless Single Wall Switch";
-						type = STYPE_Selector;
+						type = STYPE_PushOn;
 					}
 					if (type != STYPE_END) {
 						std::string status = root2["status"].asString();
