@@ -37,7 +37,6 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 	unsigned char subtype = pCmd->ICMND.subtype;
 	bool result = true;
 	std::string message = "";
-	std::string gatewaykey = GetGatewayKey();
 	if (packettype == pTypeGeneralSwitch) {
 		_tGeneralSwitch *xcmd = (_tGeneralSwitch*)pdata;
 		char szTmp[50];
@@ -65,7 +64,7 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 			else if (xcmd->level == 40) {
 				cmdchannel = "\\\"channel_1\\\":\\\"off";;
 			}
-			message = "{\"cmd\":\"write\",\"model\":\"ctrl_neutral2\",\"sid\":\"" + sid + "\",\"short_id\":0,\"data\":\"{" + cmdchannel + "\\\",\\\"key\\\":\\\"" + gatewaykey + "\\\"}\" }";
+			message = "{\"cmd\":\"write\",\"model\":\"ctrl_neutral2\",\"sid\":\"" + sid + "\",\"short_id\":0,\"data\":\"{" + cmdchannel + "\\\",\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
 		}
 		else if (xcmd->subtype == sSwitchGeneralSwitch) {
 			std::string command = "on";
@@ -80,8 +79,7 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 				_log.Log(LOG_STATUS, "Unknown command %d", xcmd->cmnd);
 				break;
 			}
-			std::string gatewaykey = GetGatewayKey();
-			std::string message = "{\"cmd\":\"write\",\"model\":\"plug\",\"sid\":\"" + sid + "\",\"short_id\":9844,\"data\":\"{\\\"channel_0\\\":\\\"" + command + "\\\",\\\"key\\\":\\\"" + gatewaykey + "\\\"}\" }";
+			std::string message = "{\"cmd\":\"write\",\"model\":\"plug\",\"sid\":\"" + sid + "\",\"short_id\":9844,\"data\":\"{\\\"channel_0\\\":\\\"" + command + "\\\",\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
 		}
 	}
 	else if (packettype == pTypeLimitlessLights) {
@@ -99,17 +97,17 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 		sid.insert(0, "f0b4");
 
 		if (xcmd->command == Limitless_LedOn) {
-			message = "{\"cmd\":\"write\",\"model\":\"gateway\",\"sid\":\"" + sid + "\",\"short_id\":0,\"data\":\"{\\\"rgb\\\":4294967295,\\\"key\\\":\\\"" + gatewaykey + "\\\"}\" }";
+			m_GatewayBrightnessInt = 100;
+			message = "{\"cmd\":\"write\",\"model\":\"gateway\",\"sid\":\"" + sid + "\",\"short_id\":0,\"data\":\"{\\\"rgb\\\":4294967295,\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
 		}
 		else if (xcmd->command == Limitless_LedOff) {
-			message = "{\"cmd\":\"write\",\"model\":\"gateway\",\"sid\":\"" + sid + "\",\"short_id\":0,\"data\":\"{\\\"rgb\\\":0,\\\"key\\\":\\\"" + gatewaykey + "\\\"}\" }";
+			m_GatewayBrightnessInt = 0;
+			message = "{\"cmd\":\"write\",\"model\":\"gateway\",\"sid\":\"" + sid + "\",\"short_id\":0,\"data\":\"{\\\"rgb\\\":0,\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
 		}
 		else if (xcmd->command == Limitless_SetRGBColour) {
 			int red, green, blue;
 			float cHue = (360.0f / 255.0f)*float(xcmd->value);//hue given was in range of 0-255
-			int Brightness = 100;
-			int dMax = round((255.0f / 100.0f)*float(Brightness));
-			hue2rgb(cHue, red, green, blue, dMax);
+			hue2rgb(cHue, red, green, blue, 255);
 			std::stringstream sstr;
 			sstr << std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << red
 				<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << green
@@ -122,10 +120,10 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 			std::string brightnessAndRgbHex = m_GatewayRgbHex;
 			//add the brightness
 			if (xcmd->command == Limitless_SetBrightUp) {
-				m_GatewayBrightnessInt = min(m_GatewayBrightnessInt + 10, 100);
+				//m_GatewayBrightnessInt = std::min(m_GatewayBrightnessInt + 10, 100);
 			}
 			else if (xcmd->command == Limitless_SetBrightDown) {
-				m_GatewayBrightnessInt = max(m_GatewayBrightnessInt - 10, 0);
+				//m_GatewayBrightnessInt = std::max(m_GatewayBrightnessInt - 10, 0);
 			}
 			else {
 				m_GatewayBrightnessInt = (int)xcmd->value;
@@ -140,7 +138,7 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 			std::stringstream strstream;
 			strstream << hexvalue;
 			strstream >> rgbvalue;
-			message = "{\"cmd\":\"write\",\"model\":\"gateway\",\"sid\":\"" + sid + "\",\"short_id\":0,\"data\":\"{\\\"rgb\\\":" + rgbvalue + ",\\\"key\\\":\\\"" + gatewaykey + "\\\"}\" }";
+			message = "{\"cmd\":\"write\",\"model\":\"gateway\",\"sid\":\"" + sid + "\",\"short_id\":0,\"data\":\"{\\\"rgb\\\":" + rgbvalue + ",\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
 		}
 		else if (xcmd->command == Limitless_SetColorToWhite) {
 			//ignore Limitless_SetColorToWhite
@@ -152,6 +150,7 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 	if (message != "") {
 		boost::asio::io_service io_service;
 		boost::asio::ip::udp::socket socket_(io_service, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 0));
+		stdreplace(message, "@gatewaykey", GetGatewayKey());
 		boost::shared_ptr<std::string> message1(new std::string(message));
 		boost::asio::ip::udp::endpoint remote_endpoint_;
 		remote_endpoint_ = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(m_GatewayIp), 9898);
