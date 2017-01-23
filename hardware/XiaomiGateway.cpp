@@ -118,24 +118,32 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 			std::string hexstring(sstr.str());
 			m_GatewayRgbHex = hexstring;
 		}
-		else if (xcmd->command == Limitless_SetBrightnessLevel) {
+		else if ((xcmd->command == Limitless_SetBrightnessLevel) || (xcmd->command == Limitless_SetBrightUp) || (xcmd->command == Limitless_SetBrightDown)) {
 			std::string brightnessAndRgbHex = m_GatewayRgbHex;
 			//add the brightness
-			//int cBright = round((255.0f / 100.0f)*float(xcmd->value));
+			if (xcmd->command == Limitless_SetBrightUp) {
+				m_GatewayBrightnessInt = min(m_GatewayBrightnessInt + 10, 100);
+			}
+			else if (xcmd->command == Limitless_SetBrightDown) {
+				m_GatewayBrightnessInt = max(m_GatewayBrightnessInt - 10, 0);
+			}
+			else {
+				m_GatewayBrightnessInt = (int)xcmd->value;
+			}
 			std::stringstream stream;
-			stream << std::hex << (int)xcmd->value;
+			stream << std::hex << m_GatewayBrightnessInt;
 			std::string brightnessHex = stream.str();
-
 			brightnessAndRgbHex.insert(0, brightnessHex.c_str());
 			//_log.Log(LOG_STATUS, "XiaomiGateway: brightness and rgb hex %s", brightnessAndRgbHex.c_str());
 			unsigned long hexvalue = std::strtoul(brightnessAndRgbHex.c_str(), 0, 16);
-
 			std::string rgbvalue;
 			std::stringstream strstream;
 			strstream << hexvalue;
 			strstream >> rgbvalue;
-
 			message = "{\"cmd\":\"write\",\"model\":\"gateway\",\"sid\":\"" + sid + "\",\"short_id\":0,\"data\":\"{\\\"rgb\\\":" + rgbvalue + ",\\\"key\\\":\\\"" + gatewaykey + "\\\"}\" }";
+		}
+		else if (xcmd->command == Limitless_SetColorToWhite) {
+			//ignore Limitless_SetColorToWhite
 		}
 		else {
 			_log.Log(LOG_STATUS, "XiaomiGateway: Unknown command %d", xcmd->command);
@@ -412,6 +420,7 @@ bool XiaomiGateway::StartHardware()
 		m_GatewayPassword = result[0][0].c_str();
 		m_GatewayIp = result[0][1].c_str();
 		m_GatewayRgbHex = "FFFFFF";
+		m_GatewayBrightnessInt = 100;
 	}
 
 	//Start worker thread
