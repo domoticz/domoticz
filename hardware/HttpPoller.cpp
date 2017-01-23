@@ -24,15 +24,18 @@ m_refresh(refresh)
 	std::vector<std::string> strextra;
 	StringSplit(extradata, "|", strextra);
 	std::string script;
-	if (strextra.size() == 4 || strextra.size() == 5)
+	if (strextra.size() == 3 || strextra.size() == 4 || strextra.size() == 5)
 	{
 		m_script = base64_decode(strextra[0]);
 		m_method = atoi(base64_decode(strextra[1]).c_str());
 		m_contenttype = base64_decode(strextra[2]);
-		m_headers = base64_decode(strextra[3]);
-		if (strextra.size() == 5)
+		if (strextra.size() >= 4)
 		{
-			m_postdata = base64_decode(strextra[4]);
+			m_headers = base64_decode(strextra[3]);
+			if (strextra.size() == 5)
+			{
+				m_postdata = base64_decode(strextra[4]);
+			}
 		}
 	}
 
