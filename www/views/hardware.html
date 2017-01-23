@@ -1006,10 +1006,17 @@
 	<form id="limitform">
 		<br>
 		<center>
+			<label><span data-i18n="Bridge Type"></span>: </label>
+			<select id="CCBridgeType" name="CCBridgeType" style="width:100px" class="combobox ui-corner-all">
+				<option value="0">V4/V5</option>
+				<option value="2">V6</option>
+			</select>
+			<br><br>
 			<label><span data-i18n="Type"></span>: </label><select id="combom1type" name="LimitlessType" style="width:100px" class="combobox ui-corner-all">
 				<option value="1">RGBW</option>
 				<option value="2">RGB</option>
 				<option value="3">White</option>
+				<option value="4">RGBWW</option>
 			</select>
 			<br><br>
 			<input type="hidden" id="idx" name="idx" value="-1">
