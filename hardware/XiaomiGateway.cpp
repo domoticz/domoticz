@@ -35,7 +35,7 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 	const tRBUF *pCmd = reinterpret_cast<const tRBUF *>(pdata);
 	unsigned char packettype = pCmd->ICMND.packettype;
 	unsigned char subtype = pCmd->ICMND.subtype;
-
+	bool result = true;
 	std::string message = "";
 	std::string gatewaykey = GetGatewayKey();
 	if (packettype == pTypeGeneralSwitch) {
@@ -154,12 +154,17 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 		while (socket_.available() > 0) {
 			socket_.receive_from(boost::asio::buffer(recv_buffer_), remote_endpoint_);
 			std::string receivedString(recv_buffer_.data());
+			std::size_t found = receivedString.find("Invalid key");
+			if (found != std::string::npos) {
+				_log.Log(LOG_ERROR, "XiaomiGateway: unable to write command - Invalid Key");
+				result = false;
+			}
 			//_log.Log(LOG_STATUS, "mycommand: %s", message.c_str());
 			//_log.Log(LOG_STATUS, "XiaomiGateway: response %s", receivedString.c_str());
 		}
 		socket_.close();
 	}
-	return true;
+	return result;
 }
 
 void XiaomiGateway::InsertUpdateTemperature(const std::string &nodeid, const std::string &Name, const float Temperature)
@@ -337,7 +342,7 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 				}
 				else if (Name == "Xiaomi Wireless Dual Wall Switch") {
 					//for Aqara wireless switch, 2 buttons support
-					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Switch 1|Switch 2", false));
+					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Both Click|Switch 1|Switch 2", false));
 				}
 				else if (Name == "Xiaomi Wired Dual Wall Switch") {
 					//for Aqara wired switch, 2 buttons support
@@ -572,7 +577,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 					}
 					else if (model == "86sw1") {
 						name = "Xiaomi Wireless Single Wall Switch";
-						type = STYPE_Selector;
+						type = STYPE_PushOn;
 					}
 					if (type != STYPE_END) {
 						std::string status = root2["status"].asString();
