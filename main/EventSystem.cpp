@@ -2048,7 +2048,7 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 		}
 		else if (deviceName.find("SendNotification") != std::string::npos)
 		{
-			std::string subject, body, priority("0"), sound, subsystem("");
+			std::string subject, body, priority("0"), sound, subsystem;
 			std::vector<std::string> aParam;
 			StringSplit(doWhat, "#", aParam);
 			subject = body = aParam[0];
@@ -3061,7 +3061,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 	std::string lCommand = std::string(lua_tostring(lua_state, -2));
 	if (lCommand == "SendNotification") {
 		std::string luaString = lua_tostring(lua_state, -1);
-		std::string subject(" "), body(" "), priority("0"), sound, subsystem("");
+		std::string subject(" "), body(" "), priority("0"), sound, subsystem;
 		std::string extraData;
 		std::vector<std::string> aParam;
 		StringSplit(luaString, "#", aParam);
