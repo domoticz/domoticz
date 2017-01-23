@@ -140,7 +140,7 @@ void CHttpPush::DoHttpPush()
 			%D : Target Device id
 			%V : Target Variable
 			%u : Unit
-			%n : Name
+			%n : Device name
 			%T0 : Type
 			%T1 : SubType
 			%h : hostname
