@@ -2819,9 +2819,14 @@ void CSQLHelper::Do_Work()
 			{
 				std::vector<std::string> splitresults;
 				StringSplit(itt->_command, "!#", splitresults);
-				if (splitresults.size() == 4) {
-					m_notifications.SendMessageEx(0, std::string(""), NOTIFYALL, splitresults[0], splitresults[1], splitresults[2], static_cast<int>(itt->_idx), splitresults[3], true);
+				if (splitresults.size() == 5) {
+					std::string subsystem = splitresults[4];
+					if (subsystem.empty() || subsystem == " ") {
+						subsystem = NOTIFYALL;
+					}
+					m_notifications.SendMessageEx(0, std::string(""), subsystem, splitresults[0], splitresults[1], splitresults[2], static_cast<int>(itt->_idx), splitresults[3], true);
 				}
+
 			}
 
 			++itt;

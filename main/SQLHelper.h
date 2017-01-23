@@ -173,7 +173,7 @@ struct _tTaskItem
 		tItem._nValue = (eventtrigger==true)?1:0;
 		return tItem;
 	}
-	static _tTaskItem SendNotification(const float DelayTime, const std::string &Subject, const std::string &Body, const std::string &ExtraData, const int Priority, const std::string &Sound)
+	static _tTaskItem SendNotification(const float DelayTime, const std::string &Subject, const std::string &Body, const std::string &ExtraData, const int Priority, const std::string &Sound, const std::string &SubSystem)
 	{
 		_tTaskItem tItem;
 		tItem._ItemType = TITEM_SEND_NOTIFICATION;
@@ -183,7 +183,8 @@ struct _tTaskItem
 		std::string tBody((!Body.empty()) ? Body : " ");
 		std::string tExtraData((!ExtraData.empty()) ? ExtraData : " ");
 		std::string tSound((!Sound.empty()) ? Sound : " ");
-		tItem._command = tSubject + "!#" + tBody + "!#" + tExtraData + "!#" + tSound;
+		std::string tSubSystem((!SubSystem.empty()) ? SubSystem : " ");
+		tItem._command = tSubject + "!#" + tBody + "!#" + tExtraData + "!#" + tSound + "!#" + tSubSystem ;
 		return tItem;
 	}
 	static _tTaskItem SetSetPoint(const float DelayTime, const uint64_t idx, const std::string &varvalue)
