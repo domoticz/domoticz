@@ -1,6 +1,5 @@
 #pragma once
 #include "1WireSystem.h"
-#include <boost/atomic.hpp>
 
 class C1WireByKernel : public I_1WireSystem
 {
@@ -28,7 +27,7 @@ protected:
    void GetDevice(const std::string& deviceName, /*out*/_t1WireDevice& device) const;
 
    bool sendAndReceiveByRwFile(std::string path,const unsigned char * const cmd,size_t cmdSize,unsigned char * const answer,size_t answerSize) const;
-
+   void ReadStates();
 
    // Thread management
    boost::thread* m_Thread;
@@ -58,8 +57,6 @@ protected:
    protected:
       _t1WireDevice m_Device;
    };
-
-   boost::atomic<bool> m_AllDevicesInitialized;
 
    // Thread-shared data and lock methods
    boost::mutex m_Mutex;

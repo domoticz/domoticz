@@ -23,9 +23,10 @@
 #endif //_DEBUG
 
 
-C1WireByKernel::C1WireByKernel() :
-   m_AllDevicesInitialized(false)
+C1WireByKernel::C1WireByKernel()
 {
+   ThreadBuildDevicesList();
+   ReadStates();
    m_Thread = new boost::thread(&C1WireByKernel::ThreadFunction,this);
    _log.Log(LOG_STATUS,"Using 1-Wire support (kernel W1 module)...");
 }
@@ -54,70 +55,12 @@ bool C1WireByKernel::IsAvailable()
 
 void C1WireByKernel::ThreadFunction()
 {
-   ThreadBuildDevicesList();
    try
    {
       while (1)
       {
          // Read state of all devices
-         for(DeviceCollection::const_iterator it=m_Devices.begin();it!=m_Devices.end();++it)
-         {
-            // Next read one device state
-            try
-            {
-               // Priority to changes asked by Domoticz
-               ThreadProcessPendingChanges();
-
-               DeviceState* device=(*it).second;
-               switch(device->GetDevice().family)
-               {
-				case high_precision_digital_thermometer:
-				case programmable_resolution_digital_thermometer:
-                  {
-                     Locker l(m_Mutex);
-                     device->m_Temperature=ThreadReadRawDataHighPrecisionDigitalThermometer(device->GetDevice().filename);
-                     break;
-                  }
-               case dual_channel_addressable_switch:
-                  {
-                     unsigned char answer=ThreadReadRawDataDualChannelAddressableSwitch(device->GetDevice().filename);
-                     // Don't update if change is pending
-                     Locker l(m_Mutex);
-                     if (!GetDevicePendingState(device->GetDevice().devid))
-                     {
-                        // Caution : 0 means 'transistor active', we have to invert
-                        device->m_DigitalIo[0]=(answer&0x01)?false:true;
-                        device->m_DigitalIo[1]=(answer&0x04)?false:true;
-                     }
-                     break;
-                  }
-               case _8_channel_addressable_switch:
-                  {
-                     unsigned char answer=ThreadReadRawData8ChannelAddressableSwitch(device->GetDevice().filename);
-                     // Don't update if change is pending
-                     Locker l(m_Mutex);
-                     if (!GetDevicePendingState(device->GetDevice().devid))
-                     {
-                        for (unsigned int idxBit=0, mask=0x01;mask!=0x100;mask<<=1)
-                        {
-                           // Caution : 0 means 'transistor active', we have to invert
-                           device->m_DigitalIo[idxBit++]=(answer&mask)?false:true;
-                        }
-                     }
-                     break;
-                  }
-               default: // Device not supported in kernel mode (maybe later...), use OWFS solution.
-                  break;
-               }
-            }
-            catch(const OneWireReadErrorException& e)
-            {
-               _log.Log(LOG_ERROR,e.what());
-            }
-         }
-
-         // Needed at startup to not report wrong states
-         m_AllDevicesInitialized=true;
+		  ReadStates();
 
          // Wait only if no pending changes
          boost::mutex::scoped_lock lock(m_PendingChangesMutex);
@@ -132,6 +75,66 @@ void C1WireByKernel::ThreadFunction()
    m_PendingChanges.clear();
    for (DeviceCollection::iterator it=m_Devices.begin();it!=m_Devices.end();++it) {delete (*it).second;}
    m_Devices.clear();
+}
+
+void C1WireByKernel::ReadStates()
+{
+	for (DeviceCollection::const_iterator it = m_Devices.begin(); it != m_Devices.end(); ++it)
+	{
+		// Next read one device state
+		try
+		{
+			// Priority to changes asked by Domoticz
+			ThreadProcessPendingChanges();
+
+			DeviceState* device = (*it).second;
+			switch (device->GetDevice().family)
+			{
+			case high_precision_digital_thermometer:
+			case programmable_resolution_digital_thermometer:
+			{
+				Locker l(m_Mutex);
+				device->m_Temperature = ThreadReadRawDataHighPrecisionDigitalThermometer(device->GetDevice().filename);
+				break;
+			}
+			case dual_channel_addressable_switch:
+			{
+				unsigned char answer = ThreadReadRawDataDualChannelAddressableSwitch(device->GetDevice().filename);
+				// Don't update if change is pending
+				Locker l(m_Mutex);
+				if (!GetDevicePendingState(device->GetDevice().devid))
+				{
+					// Caution : 0 means 'transistor active', we have to invert
+					device->m_DigitalIo[0] = (answer & 0x01) ? false : true;
+					device->m_DigitalIo[1] = (answer & 0x04) ? false : true;
+				}
+				break;
+			}
+			case _8_channel_addressable_switch:
+			{
+				unsigned char answer = ThreadReadRawData8ChannelAddressableSwitch(device->GetDevice().filename);
+				// Don't update if change is pending
+				Locker l(m_Mutex);
+				if (!GetDevicePendingState(device->GetDevice().devid))
+				{
+					for (unsigned int idxBit = 0, mask = 0x01; mask != 0x100; mask <<= 1)
+					{
+						// Caution : 0 means 'transistor active', we have to invert
+						device->m_DigitalIo[idxBit++] = (answer&mask) ? false : true;
+					}
+				}
+				break;
+			}
+			default: // Device not supported in kernel mode (maybe later...), use OWFS solution.
+				break;
+			}
+		}
+		catch (const OneWireReadErrorException& e)
+		{
+			_log.Log(LOG_ERROR, e.what());
+		}
+	}
+
 }
 
 void C1WireByKernel::ThreadProcessPendingChanges()
@@ -205,11 +208,6 @@ void C1WireByKernel::ThreadBuildDevicesList()
          _t1WireDevice device;
          GetDevice(sLine, device);
 
-		 if (m_mainworker.GetVerboseLevel() == EVBL_DEBUG)
-		 {
-			 _log.Log(LOG_STATUS, "1Wire (Kernel): Add device %s", device.filename.c_str());
-		 }
-
          switch (device.family)
          {
 			case high_precision_digital_thermometer:
@@ -231,14 +229,6 @@ void C1WireByKernel::ThreadBuildDevicesList()
 
 void C1WireByKernel::GetDevices(/*out*/std::vector<_t1WireDevice>& devices) const
 {
-   // If devices not initialized (ie : at least one time read), return an empty list
-   // to not update Domoticz with inconsistent values
-
-	while (!m_AllDevicesInitialized)
-	{
-		sleep_seconds(1);
-	}
-
    Locker l(m_Mutex);
    for (DeviceCollection::const_iterator it=m_Devices.begin();it!=m_Devices.end();++it)
       devices.push_back(((*it).second)->GetDevice());
@@ -262,10 +252,6 @@ float C1WireByKernel::GetTemperature(const _t1WireDevice& device) const
       case programmable_resolution_digital_thermometer:
          {
             DeviceCollection::const_iterator devIt=m_Devices.find(device.devid);
-			if (m_mainworker.GetVerboseLevel() == EVBL_DEBUG)
-			{
-				_log.Log(LOG_STATUS, "1Wire (OWFS): Get Temperature from %s", device.filename.c_str());
-			}
             return (devIt==m_Devices.end())?-1000.0f:(*devIt).second->m_Temperature;
          }
       default: // Device not supported in kernel mode (maybe later...), use OWFS solution.
