@@ -8,6 +8,7 @@ Version 3.xxxx (January xth 2017)
 - Changed: Wind Direction Graph, if sensor does not supports 'Gust', the 'Speed' value is used
 - Implemented: Support for the Intergas InComfort LAN2RF Gateway
 - Implemented: Added a new parameter to disable the logging of event script triggers 'Script event triggered: ...'
+- Implemented: AppLamp/LimitLess bridge V6.0 RGBW/RGBWW
 - Implemented: Blinds T1 till T13 new supports the Stop button
 - Implemented: Devices, Log icon for Blinds
 - Implemented: Blockly/Lua Set SetPoint option

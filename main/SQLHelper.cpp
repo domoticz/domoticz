@@ -33,7 +33,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 109
+#define DB_VERSION 110
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -251,7 +251,7 @@ const char *sqlCreateHardware =
 "[SerialPort] VARCHAR(50) DEFAULT (''), "
 "[Username] VARCHAR(100), "
 "[Password] VARCHAR(100), "
-"[Extra] VARCHAR(200) DEFAULT (''),"
+"[Extra] TEXT DEFAULT (''),"
 "[Mode1] CHAR DEFAULT 0, "
 "[Mode2] CHAR DEFAULT 0, "
 "[Mode3] CHAR DEFAULT 0, "
@@ -2124,6 +2124,31 @@ bool CSQLHelper::OpenDatabase()
 			query("INSERT INTO TimerPlans (ID, Name) VALUES (0, 'default')");
 			query("INSERT INTO TimerPlans (ID, Name) VALUES (1, 'Holiday')");
 		}
+		if (dbversion < 110)
+		{
+			query("ALTER TABLE Hardware RENAME TO tmp_Hardware;");
+			query(sqlCreateHardware);
+			query("INSERT INTO Hardware(ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) SELECT ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout FROM tmp_Hardware;");
+			query("DROP TABLE tmp_Hardware;");
+
+			result = safe_query("SELECT ID, Extra FROM Hardware WHERE Type=%d", HTYPE_HTTPPOLLER);
+			if (result.size() > 0)
+			{
+				std::stringstream szQuery2;
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
+					std::string id = sd[0];
+					std::string extra = sd[1];
+					std::string extraBase64=base64_encode((const unsigned char *)extra.c_str(), extra.length());
+					szQuery2.clear();
+					szQuery2.str("");
+					szQuery2 << "UPDATE Hardware SET Mode1=0, Extra='%s' WHERE (ID=" << id << ")";
+					safe_query(szQuery2.str().c_str(), extraBase64.c_str());
+				}
+			}
+		}
 	}
 	else if (bNewInstall)
 	{
@@ -2794,9 +2819,14 @@ void CSQLHelper::Do_Work()
 			{
 				std::vector<std::string> splitresults;
 				StringSplit(itt->_command, "!#", splitresults);
-				if (splitresults.size() == 4) {
-					m_notifications.SendMessageEx(0, std::string(""), NOTIFYALL, splitresults[0], splitresults[1], splitresults[2], static_cast<int>(itt->_idx), splitresults[3], true);
+				if (splitresults.size() == 5) {
+					std::string subsystem = splitresults[4];
+					if (subsystem.empty() || subsystem == " ") {
+						subsystem = NOTIFYALL;
+					}
+					m_notifications.SendMessageEx(0, std::string(""), subsystem, splitresults[0], splitresults[1], splitresults[2], static_cast<int>(itt->_idx), splitresults[3], true);
 				}
+
 			}
 
 			++itt;
