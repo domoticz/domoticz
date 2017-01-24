@@ -145,35 +145,42 @@ int CLuaHandler::l_domoticz_applyJsonPath(lua_State* lua_state)
 				}
 			}
 
-			// Apply the JsonPath to the Json
-			Json::Path path(jsonpath, arg1, arg2, arg3, arg4, arg5);
-			Json::Value& node = path.make(root);
-
-			// Check if some data has been found
-			if (!node.isNull())
+			try
 			{
-				if (node.isDouble())
+				// Apply the JsonPath to the Json
+				Json::Path path(jsonpath, arg1, arg2, arg3, arg4, arg5);
+				Json::Value& node = path.make(root);
+
+				// Check if some data has been found
+				if (!node.isNull())
 				{
-					lua_pushnumber(lua_state, node.asDouble());
+					if (node.isDouble())
+					{
+						lua_pushnumber(lua_state, node.asDouble());
+						return 1;
+					}
+					if (node.isInt())
+					{
+						lua_pushnumber(lua_state, (double)node.asInt());
+						return 1;
+					}
+					if (node.isInt64())
+					{
+						lua_pushnumber(lua_state, (double)node.asInt64());
+						return 1;
+					}
+					if (node.isString())
+					{
+						lua_pushstring(lua_state, node.asCString());
+						return 1;
+					}
+					lua_pushnil(lua_state);
 					return 1;
 				}
-				if (node.isInt())
-				{
-					lua_pushnumber(lua_state, (double)node.asInt());
-					return 1;
-				}
-				if (node.isInt64())
-				{
-					lua_pushnumber(lua_state, (double)node.asInt64());
-					return 1;
-				}
-				if (node.isString())
-				{
-					lua_pushstring(lua_state, node.asCString());
-					return 1;
-				}
-				lua_pushnil(lua_state);
-				return 1;
+			}
+			catch (Json::LogicError& e)
+			{
+				_log.Log(LOG_ERROR, "CLuaHandler (applyJsonPath from LUA) : JsonError '%s'",e.what());
 			}
 		}
 		else
