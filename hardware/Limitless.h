@@ -19,6 +19,7 @@ private:
 	bool AddSwitchIfNotExits(const unsigned char Unit, const std::string& devname);
 	bool GetV6BridgeID();
 	bool SendV6Command(const uint8_t *pCmd);
+	bool IsDataAvailable(const SOCKET sock);
 	_eLimitlessBridgeType m_BridgeType;
 	unsigned char m_LEDType;
 
