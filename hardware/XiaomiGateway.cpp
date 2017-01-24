@@ -725,8 +725,8 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 			}
 			else if (cmd == "iam") {
 				if (model == "gateway") {
-					//_log.Log(LOG_STATUS, "XiaomiGateway: RGB Gateway Detected");
-					//m_XiaomiGateway->InsertUpdateRGBGateway(sid.c_str(), "Xiaomi RGB Gateway", false, "0", 100);
+					_log.Log(LOG_STATUS, "XiaomiGateway: RGB Gateway Detected");
+					m_XiaomiGateway->InsertUpdateRGBGateway(sid.c_str(), "Xiaomi RGB Gateway", false, 0, 100);
 					m_gatewayip = root["ip"].asString();
 					//query for list of devices
 					std::string message = "{\"cmd\" : \"get_id_list\"}";
