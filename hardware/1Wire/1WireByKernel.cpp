@@ -11,6 +11,7 @@
 #include <fstream>
 #include "../../main/Logger.h"
 #include "../../main/Helper.h"
+#include "../../main/mainworker.h"
 
 #ifdef _DEBUG
    #ifdef WIN32
