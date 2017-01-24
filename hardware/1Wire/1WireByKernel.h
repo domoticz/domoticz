@@ -1,5 +1,6 @@
 #pragma once
 #include "1WireSystem.h"
+#include <boost/atomic.hpp>
 
 class C1WireByKernel : public I_1WireSystem
 {
@@ -58,7 +59,7 @@ protected:
       _t1WireDevice m_Device;
    };
 
-   bool m_AllDevicesInitialized;
+   boost::atomic<bool> m_AllDevicesInitialized;
 
    // Thread-shared data and lock methods
    boost::mutex m_Mutex;

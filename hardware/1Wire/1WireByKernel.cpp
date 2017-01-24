@@ -233,8 +233,11 @@ void C1WireByKernel::GetDevices(/*out*/std::vector<_t1WireDevice>& devices) cons
 {
    // If devices not initialized (ie : at least one time read), return an empty list
    // to not update Domoticz with inconsistent values
-   if (!m_AllDevicesInitialized)
-      return;
+
+	while (!m_AllDevicesInitialized)
+	{
+		sleep_seconds(1);
+	}
 
    Locker l(m_Mutex);
    for (DeviceCollection::const_iterator it=m_Devices.begin();it!=m_Devices.end();++it)
