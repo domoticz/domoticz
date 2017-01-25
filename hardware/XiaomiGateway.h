@@ -3,8 +3,6 @@
 #include "DomoticzHardware.h"
 #include <deque>
 #include <iostream>
-#include <boost/asio.hpp>
-#include <boost/bind.hpp>
 
 class XiaomiGateway : public CDomoticzHardwareBase
 {
@@ -13,6 +11,7 @@ public:
 	~XiaomiGateway(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 	void InsertUpdateSwitch(const std::string &nodeid, const std::string &Name, const bool bIsOn, const _eSwitchType switchtype, const int level);
+	void InsertUpdateCubeText(const std::string &nodeid, const std::string &Name, const std::string &degrees);
 	void InsertUpdateVoltage(const std::string &nodeid, const std::string &Name, const int BatteryLevel);
 	void InsertUpdateTemperature(const std::string &nodeid, const std::string &Name, const float Temperature);
 	void InsertUpdateHumidity(const std::string &nodeid, const std::string &Name, const int Humidity);

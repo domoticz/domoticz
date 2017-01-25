@@ -10,6 +10,8 @@
 #include "../json/json.h"
 #include "XiaomiGateway.h"
 #include <openssl/aes.h>
+#include <boost/asio.hpp>
+#include <boost/bind.hpp>
 
 /*
 Xiaomi (Aqara) makes a smart home gateway/hub that has support
@@ -374,6 +376,32 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 	}
 }
 
+void XiaomiGateway::InsertUpdateCubeText(const std::string & nodeid, const std::string & Name, const std::string &degrees)
+{
+	// Make sure the ID supplied fits with what is expected ie 158d0000fd32c2
+	if (nodeid.length() < 14) {
+		_log.Log(LOG_ERROR, "XiaomiGateway: Node ID %s is too short", nodeid.c_str());
+		return;
+	}
+	std::string str = nodeid.substr(6, 8);
+
+	_log.Log(LOG_STATUS, "cube nodeid: %s", nodeid.c_str());
+	unsigned int sID;
+	std::stringstream ss;
+	ss << std::hex << str.c_str();
+	ss >> sID;
+	//_log.Log(LOG_STATUS, "sID: %d", sID);
+	char szTmp[300];
+	if (sID == 1)
+		sprintf(szTmp, "%d", 1);
+	else
+		sprintf(szTmp, "%08X", (unsigned int)sID);
+	std::string ID = szTmp;
+
+	SendTextSensor(sID, sID, 255, degrees.c_str(), Name.c_str());
+
+}
+
 void XiaomiGateway::InsertUpdateVoltage(const std::string & nodeid, const std::string & Name, const int BatteryLevel)
 {
 	if (nodeid.length() < 14) {
@@ -501,6 +529,9 @@ XiaomiGateway::xiaomi_udp_server::xiaomi_udp_server(boost::asio::io_service& io_
 	m_HardwareID = m_HwdID;
 	m_XiaomiGateway = parent;
 	m_gatewayip = "127.0.0.1";
+
+	//m_XiaomiGateway->InsertUpdateCubeText("158d0000fc421e", "cube testing from code", "25,500");
+
 	try {
 		socket_.set_option(boost::asio::ip::udp::socket::reuse_address(true));
 		socket_.bind(boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 9898));
@@ -650,7 +681,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						}
 						std::string rotate = root2["rotate"].asString();
 						if (rotate != "") {
-							//convert to int
+							/*
 							int amount = atoi(rotate.c_str());
 							if (amount > 0) {
 								level = 90;
@@ -659,13 +690,17 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 								level = 100;
 							}
 							on = true;
-						}
-						std::string battery = root2["battery"].asString();
-						if (battery != "") {
-							m_XiaomiGateway->InsertUpdateVoltage(sid.c_str(), name, atoi(battery.c_str()));
+							*/
+							m_XiaomiGateway->InsertUpdateCubeText(sid.c_str(), name, rotate.c_str());
 						}
 						else {
-							m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, on, type, level);
+							std::string battery = root2["battery"].asString();
+							if (battery != "") {
+								m_XiaomiGateway->InsertUpdateVoltage(sid.c_str(), name, atoi(battery.c_str()));
+							}
+							else {
+								m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, on, type, level);
+							}
 						}
 					}
 					else if (name == "Xiaomi Temperature/Humidity") {
