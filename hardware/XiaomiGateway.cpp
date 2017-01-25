@@ -527,7 +527,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 		//_log.Log(LOG_STATUS, data_);
 		Json::Value root;
 		Json::Reader jReader;
-		bool showmessage = false;
+		bool showmessage = true;
 		bool ret = jReader.parse(data_, root);
 		if (!ret) {
 			_log.Log(LOG_ERROR, "XiaomiGateway: invalid data received!");
