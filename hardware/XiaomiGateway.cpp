@@ -341,7 +341,7 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 			if (result.size() > 0) {
 				std::string Idx = result[0][0];
 				if (Name == "Xiaomi Wireless Switch") {
-					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Click|Long Click|Double Click", false));
+					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Click|Long Click|Long Click Release|Double Click", false));
 				}
 				else if (Name == "Xiaomi Cube") {
 					// flip90/flip180/move/tap_twice/shake_air/swing/alert/free_fall
@@ -606,15 +606,15 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							level = 10;
 							on = true;
 						}
-						else if ((status == "long_click_press") || (status == "long_click_release") || (status == "flip180") || (aqara_wireless2 == "click") || (aqara_wired1 == "off")) {
+						else if ((status == "long_click_press")  || (status == "flip180") || (aqara_wireless2 == "click") || (aqara_wired1 == "off")) {
 							level = 20;
 							on = true;
 						}
-						else if ((status == "double_click") || (status == "move") || (aqara_wired2 == "on")) {
+						else if ((status == "long_click_release") || (status == "move") || (aqara_wired2 == "on")) {
 							level = 30;
 							on = true;
 						}
-						else if ((status == "tap_twice") || (aqara_wired2 == "off")) {
+						else if ((status == "tap_twice") || (status == "double_click") || (aqara_wired2 == "off")) {
 							level = 40;
 							on = true;
 						}
