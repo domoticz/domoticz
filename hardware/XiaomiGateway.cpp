@@ -281,7 +281,7 @@ void XiaomiGateway::InsertUpdateRGBGateway(const std::string & nodeid, const std
 	}
 }
 
-void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::string &Name, const bool bIsOn, const _eSwitchType subtype, const int level)
+void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::string &Name, const bool bIsOn, const _eSwitchType switchtype, const int level)
 {
 	// Make sure the ID supplied fits with what is expected ie 158d0000fd32c2
 	if (nodeid.length() < 14) {
@@ -307,9 +307,9 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 	xcmd.len = sizeof(_tGeneralSwitch) - 1;
 	xcmd.id = sID;
 	xcmd.type = pTypeGeneralSwitch;
-	xcmd.subtype = sSwitchCustomSwitch;
+	xcmd.subtype = sSwitchGeneralSwitch;
 
-	if (subtype == STYPE_Selector) {
+	if (switchtype == STYPE_Selector) {
 		xcmd.subtype = sSwitchTypeSelector;
 		if (level > 0) {
 			xcmd.level = level;
@@ -331,15 +331,15 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 		_log.Log(LOG_STATUS, "XiaomiGateway: New Device Found (%s)", str.c_str());
 		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, NULL, -1);
 		int customimage = 0;
-		if (subtype == STYPE_OnOff) {
+		if (switchtype == STYPE_OnOff) {
 			customimage = 1;
 		}
-		else if (subtype == STYPE_Selector) {
+		else if (switchtype == STYPE_Selector) {
 			customimage = 9;
 		}
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, CustomImage=%i WHERE(HardwareID == %d) AND (DeviceID == '%q')", Name.c_str(), (subtype), customimage, m_HwdID, ID.c_str());
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, CustomImage=%i WHERE(HardwareID == %d) AND (DeviceID == '%q')", Name.c_str(), (switchtype), customimage, m_HwdID, ID.c_str());
 
-		if (subtype == STYPE_Selector) {
+		if (switchtype == STYPE_Selector) {
 			result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) ", m_HwdID, ID.c_str(), pTypeGeneralSwitch);
 			if (result.size() > 0) {
 				std::string Idx = result[0][0];
