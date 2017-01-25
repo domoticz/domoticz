@@ -69,7 +69,7 @@ def onConnect(Status, Description):
             UpdateDevice(Key, 0, Devices[Key].sValue)
     return True
 
-def onMessage(Data):
+def onMessage(Data, Status, Extra):
     global oustandingPings, isStarting
     global selectorMap, powerOn, mainSource, mainVolume1, zone2Source, zone2Volume, zone3Source, zone3Volume
 

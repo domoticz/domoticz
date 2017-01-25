@@ -6,11 +6,11 @@
 using namespace std;
 class bt_openwebnet;
 
-class COpenWebNet : public CDomoticzHardwareBase
+class COpenWebNetTCP : public CDomoticzHardwareBase
 {
 public:
-	COpenWebNet(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &ownPassword);
-	~COpenWebNet(void);
+	COpenWebNetTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &ownPassword);
+	~COpenWebNetTCP(void);
 
 	enum _eWho {
 		WHO_SCENARIO = 0,
@@ -82,9 +82,9 @@ protected:
 	bool write(const char *pdata, size_t size);
 	bool sendCommand(bt_openwebnet& command, vector<bt_openwebnet>& response, int waitForResponse = 0, bool silent=false);
 	bool ParseData(char* data, int length, vector<bt_openwebnet>& messages);
-	bool FindDevice(int who, int where, int *used);
-    void UpdateSwitch(const int who, const int where, const int Level, const int BatteryLevel,const char *devname, const int subtype);
-    void UpdateBlinds(const int who, const int where, const int Command, const int BatteryLevel, const char *devname);
+	bool FindDevice(int who, int where, int iInterface, int *used);
+    void UpdateSwitch(const int who, const int where, const int Level, int iInterface, const int BatteryLevel,const char *devname, const int subtype);
+    void UpdateBlinds(const int who, const int where, const int Command, int iInterface, const int BatteryLevel, const char *devname);
     void UpdateTemp(const int who, const int where, float fval, const int BatteryLevel, const char *devname);
     void UpdateDeviceValue(vector<bt_openwebnet>::iterator iter);
     void scan_automation_lighting();
@@ -92,8 +92,4 @@ protected:
     void scan_device();
     void requestTime();
     void requestBurglarAlarmStatus();
-
-	string frameToString(bt_openwebnet& frame);
-	string getWhoDescription(string who);
-	string getWhatDescription(string who, string what);
 };

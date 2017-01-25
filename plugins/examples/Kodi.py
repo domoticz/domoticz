@@ -3,7 +3,7 @@
 #           Author:     Dnpwwo, 2016
 #
 """
-<plugin key="Kodi" name="Kodi Players" author="dnpwwo" version="1.0.1" wikilink="http://www.domoticz.com/wiki/plugins/Kodi.html" externallink="https://kodi.tv/">
+<plugin key="Kodi" name="Kodi Players" author="dnpwwo" version="1.0.2" wikilink="http://www.domoticz.com/wiki/plugins/Kodi.html" externallink="https://kodi.tv/">
     <params>
         <param field="Address" label="IP Address" width="200px" required="true" default="127.0.0.1"/>
         <param field="Port" label="Port" width="30px" required="true" default="9090"/>
@@ -33,6 +33,7 @@
 """
 import Domoticz
 import json
+import base64
 
 isConnected = False
 nextConnect = 3
@@ -59,7 +60,8 @@ def onStart():
         Domoticz.Debugging(1)
     if (len(Devices) == 0):
         Domoticz.Device(Name="Status",  Unit=1, Type=17,  Switchtype=17).Create()
-        Domoticz.Device(Name="Source",  Unit=2, Type=244, Subtype=62, Switchtype=18, Image=12, Options="LevelActions:fHx8fA==;LevelNames:T2ZmfFZpZGVvfE11c2ljfFRWIFNob3dzfExpdmUgVFY=;LevelOffHidden:ZmFsc2U=;SelectorStyle:MA==").Create()
+        Options = "LevelActions:"+stringToBase64("||||")+";LevelNames:"+stringToBase64("Off|Video|Music|TV Shows|Live TV")+";LevelOffHidden:ZmFsc2U=;SelectorStyle:MA=="
+        Domoticz.Device(Name="Source",  Unit=2, Type=244, Subtype=62, Switchtype=18, Image=12, Options=Options).Create()
         Domoticz.Device(Name="Volume",  Unit=3, Type=244, Subtype=73, Switchtype=7,  Image=8).Create()
         Domoticz.Device(Name="Playing", Unit=4, Type=244, Subtype=73, Switchtype=7,  Image=12).Create()
         Domoticz.Log("Devices created.")
@@ -91,7 +93,7 @@ def onConnect(Status, Description):
             UpdateDevice(Key, 0, Devices[Key].sValue)
     return True
 
-def onMessage(Data):
+def onMessage(Data, Status, Extra):
     global oustandingPings
     global canShutdown, canSuspend, canHibernate
     global playerState, playerID, mediaLevel, mediaDescrption, percentComplete, playlistName, playlistPos
@@ -413,8 +415,6 @@ def onDisconnect():
     global isConnected
     isConnected = False
     Domoticz.Log("Device has disconnected")
-    for Key in Devices:
-        UpdateDevice(Key, 0, Devices[Key].sValue)
     return
 
 def onStop():
@@ -436,6 +436,9 @@ def DumpConfigToLog():
         Domoticz.Debug("Device LastLevel: " + str(Devices[x].LastLevel))
     return
 
+def stringToBase64(s):
+    return base64.b64encode(s.encode('utf-8')).decode("utf-8")
+  
 # Device specific functions
 def SyncDevices():
     global playerState, playerID, mediaLevel, mediaDescrption, percentComplete

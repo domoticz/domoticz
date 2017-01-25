@@ -219,7 +219,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_CurrentCostMeterLAN, "CurrentCost Meter with LAN interface" },
 		{ HTYPE_DomoticzInternal, "Domoticz Internal interface" },
 		{ HTYPE_NefitEastLAN, "Nefit Easy HTTP server over LAN interface" },
-		{ HTYPE_OpenWebNet, "MyHome OpenWebNet" },
+		{ HTYPE_OpenWebNetTCP, "MyHome OpenWebNet with LAN interface" },
 		{ HTYPE_RaspberryHTU21D, "I2C sensor HTU21D(F)/SI702x Humidity+Temp" },
 		{ HTYPE_AtagOne, "Atag One Thermostat" },
 		{ HTYPE_Sterbox, "Sterbox v2-3 PLC with LAN interface" },
@@ -244,6 +244,9 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_PythonPlugin, "Python Plugin System" },
 		{ HTYPE_XiaomiGateway, "Xiaomi Gateway" },
 		{ HTYPE_RaspberryBME280, "I2C sensor BME280 Temp+Hum+Baro" },
+		{ HTYPE_Arilux, "Arilux AL-LC0x" },
+		{ HTYPE_OpenWebNetUSB, "MyHome OpenWebNet USB" },
+		{ HTYPE_IntergasInComfortLAN2RF, "Intergas InComfort LAN2RF Gateway" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -588,7 +591,8 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLighting5, sTypeAvantek, "Avantek" },
 		{ pTypeLighting5, sTypeIT, "Intertek,FA500,PROmax" },
 		{ pTypeLighting5, sTypeMDREMOTE108, "MDRemote 108" },
-
+		{ pTypeLighting5, sTypeKangtai, "Kangtai / Cotech" },
+		
 		{ pTypeLighting6, sTypeBlyss, "Blyss" },
 
 		{ pTypeHomeConfort, sTypeHomeConfortTEL010 , "TEL-010" },
@@ -733,8 +737,10 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLimitlessLights, sTypeLimitlessRGBW, "RGBW" },
 		{ pTypeLimitlessLights, sTypeLimitlessRGB, "RGB" },
 		{ pTypeLimitlessLights, sTypeLimitlessWhite, "White" },
+		{ pTypeLimitlessLights, sTypeLimitlessRGBWW, "RGBWW" },
 
 		{ pTypeRFY, sTypeRFY, "RFY" },
+		{ pTypeRFY, sTypeRFY2, "RFY2" },
 		{ pTypeRFY, sTypeRFYext, "RFY-Ext" },
 		{ pTypeRFY, sTypeASA, "ASA" },
 
@@ -815,9 +821,9 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchTypeFunkbus, "Funkbus" },
 		{ pTypeGeneralSwitch, sSwitchTypeNice, "Nice" },
 		{ pTypeGeneralSwitch, sSwitchTypeForest, "Forest" },
-		{ pTypeGeneralSwitch, sSwitchBlindsT1, "Legrand MyHome Blind" },
-		{ pTypeGeneralSwitch, sSwitchLightT1, "Legrand MyHome Light" },
-		{ pTypeGeneralSwitch, sSwitchAuxiliaryT1, "Legrand MyHome Auxiliary" },
+		{ pTypeGeneralSwitch, sSwitchBlindsT1, "Legrand MyHome Blind Bus" },
+		{ pTypeGeneralSwitch, sSwitchLightT1, "Legrand MyHome Light Bus" },
+		{ pTypeGeneralSwitch, sSwitchAuxiliaryT1, "Legrand MyHome Auxiliary Bus" },
 		{ pTypeGeneralSwitch, sSwitchMC145026, "MC145026" },
 		{ pTypeGeneralSwitch, sSwitchLobeco, "Lobeco" },
 		{ pTypeGeneralSwitch, sSwitchFriedland, "Friedland" },
@@ -841,6 +847,8 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchTypeKonigSec, "KonigSec" },
 		{ pTypeGeneralSwitch, sSwitchTypeRM174RF, "RM174RF" },
 		{ pTypeGeneralSwitch, sSwitchTypeLiwin, "Liwin" },
+		{ pTypeGeneralSwitch, sSwitchBlindsT2, "Legrand MyHome Blind Zigbee" },
+		{ pTypeGeneralSwitch, sSwitchLightT2, "Legrand MyHome Light Zigbee" },
 		{  0,0,NULL }
 	};
 	return findTableID1ID2(Table, dType, sType);
@@ -947,6 +955,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeLighting5, sTypeAvantek, "Status" },
 		{ pTypeLighting5, sTypeIT, "Status" },
 		{ pTypeLighting5, sTypeMDREMOTE108, "Status" },
+		{ pTypeLighting5, sTypeKangtai, "Status" },		
 
 		{ pTypeLighting6, sTypeBlyss, "Status" },
 
@@ -1087,8 +1096,10 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeLimitlessLights, sTypeLimitlessRGBW, "Status" },
 		{ pTypeLimitlessLights, sTypeLimitlessRGB, "Status" },
 		{ pTypeLimitlessLights, sTypeLimitlessWhite, "Status" },
+		{ pTypeLimitlessLights, sTypeLimitlessRGBWW, "Status" },
 
 		{ pTypeRFY, sTypeRFY, "Status" },
+		{ pTypeRFY, sTypeRFY2, "Status" },
 		{ pTypeRFY, sTypeRFYext, "Status" },
 		{ pTypeRFY, sTypeASA, "Status" },
 		{ pTypeEvohome, sTypeEvohome, "Status" },
@@ -1505,6 +1516,7 @@ void GetLightStatus(
 			break;
 		case sTypeBBSB:
 		case sTypeRSL:
+		case sTypeKangtai:
 			bHaveGroupCmd=true;
 			switch (nValue)
 			{

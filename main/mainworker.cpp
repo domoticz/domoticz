@@ -91,7 +91,7 @@
 #include "../hardware/DomoticzInternal.h"
 #include "../hardware/NefitEasy.h"
 #include "../hardware/PanasonicTV.h"
-#include "../hardware/OpenWebNet.h"
+#include "../hardware/OpenWebNetTCP.h"
 #include "../hardware/AtagOne.h"
 #include "../hardware/Sterbox.h"
 #include "../hardware/Fitbit.h"
@@ -110,6 +110,9 @@
 #include "../hardware/Yeelight.h"
 #include "../hardware/XiaomiGateway.h"
 #include "../hardware/plugins/Plugins.h"
+#include "../hardware/Arilux.h"
+#include "../hardware/OpenWebNetUSB.h"
+#include "../hardware/InComfort.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -245,6 +248,12 @@ void MainWorker::AddAllDomoticzHardware()
 			int mode5 = atoi(sd[14].c_str());
 			int mode6 = atoi(sd[15].c_str());
 			int DataTimeout = atoi(sd[16].c_str());
+			std::string Mode1Str = sd[10].c_str();
+			std::string Mode2Str = sd[11].c_str();
+			std::string Mode3Str = sd[12].c_str();
+			std::string Mode4Str = sd[13].c_str();
+			std::string Mode5Str = sd[14].c_str();
+			std::string Mode6Str = sd[15].c_str();
 			AddHardwareFromParams(ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, mode1, mode2, mode3, mode4, mode5, mode6, DataTimeout, false);
 		}
 		m_hardwareStartCounter = 0;
@@ -590,6 +599,12 @@ bool MainWorker::RestartHardware(const std::string &idx)
 	int Mode5 = atoi(sd[13].c_str());
 	int Mode6 = atoi(sd[14].c_str());
 	int DataTimeout = atoi(sd[15].c_str());
+	std::string Mode1Str = sd[9].c_str();
+	std::string Mode2Str = sd[10].c_str();
+	std::string Mode3Str = sd[11].c_str();
+	std::string Mode4Str = sd[12].c_str();
+	std::string Mode5Str = sd[13].c_str();
+	std::string Mode6Str = sd[14].c_str();
 
 	return AddHardwareFromParams(atoi(idx.c_str()), Name, (senabled == "true") ? true : false, htype, address, port, serialport, username, password, extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout, true);
 }
@@ -747,7 +762,7 @@ bool MainWorker::AddHardwareFromParams(
 			int rmode1 = Mode1;
 			if (rmode1 == 0)
 				rmode1 = 1;
-			pHardware = new CLimitLess(ID, rmode1, Address, Port);
+			pHardware = new CLimitLess(ID, rmode1, Mode2, Address, Port);
 		}
 		break;
 	case HTYPE_YouLess:
@@ -934,8 +949,8 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_DomoticzInternal:
 		pHardware = new DomoticzInternal(ID);
 		break;
-	case HTYPE_OpenWebNet:
-		pHardware = new COpenWebNet(ID, Address, Port, Password);
+	case HTYPE_OpenWebNetTCP:
+		pHardware = new COpenWebNetTCP(ID, Address, Port, Password);
 		break;
 	case HTYPE_BleBox:
 		pHardware = new BleBox(ID, Mode1);
@@ -956,9 +971,18 @@ bool MainWorker::AddHardwareFromParams(
 #ifdef USE_PYTHON_PLUGINS
 		pHardware = m_pluginsystem.RegisterPlugin(ID, Name, Filename);
 #endif
-    break;
+	    break;
 	case HTYPE_XiaomiGateway:
 		pHardware = new XiaomiGateway(ID);
+		break;
+	case HTYPE_Arilux:	
+		pHardware = new Arilux(ID);
+		break;	
+	case HTYPE_OpenWebNetUSB:
+		pHardware = new COpenWebNetUSB(ID, SerialPort, 115200);
+		break;
+	case HTYPE_IntergasInComfortLAN2RF:
+		pHardware = new CInComfort(ID, Address, Port);
 		break;
 	}
 
@@ -4710,7 +4734,7 @@ void MainWorker::decode_Lighting5(const int HwdID, const _eHardwareTypes HwdType
 	char szTmp[100];
 	unsigned char devType=pTypeLighting5;
 	unsigned char subType=pResponse->LIGHTING5.subtype;
-	if ((subType != sTypeEMW100) && (subType != sTypeLivolo) && (subType != sTypeLivoloAppliance) && (subType != sTypeRGB432W))
+	if ((subType != sTypeEMW100) && (subType != sTypeLivolo) && (subType != sTypeLivoloAppliance) && (subType != sTypeRGB432W) && (subType != sTypeKangtai))
 		sprintf(szTmp,"%02X%02X%02X", pResponse->LIGHTING5.id1, pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
 	else
 		sprintf(szTmp,"%02X%02X", pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
@@ -5151,6 +5175,34 @@ void MainWorker::decode_Lighting5(const int HwdID, const _eHardwareTypes HwdType
 			case light5_sSetLevel:
 				sprintf(szTmp, "Set dim level to: %.2f %%", flevel);
 				WriteMessage(szTmp);
+				break;
+			default:
+				WriteMessage("UNKNOWN");
+				break;
+			}
+			break;
+		case sTypeKangtai:
+			WriteMessage("subtype       = Kangtai / Cotech");
+			sprintf(szTmp, "Sequence nbr  = %d", pResponse->LIGHTING5.seqnbr);
+			WriteMessage(szTmp);
+			sprintf(szTmp, "ID            = %02X%02X%02X", pResponse->LIGHTING5.id1, pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
+			WriteMessage(szTmp);
+			sprintf(szTmp, "Unit          = %d", pResponse->LIGHTING5.unitcode);
+			WriteMessage(szTmp);
+			WriteMessage("Command       = ", false);
+			switch (pResponse->LIGHTING5.cmnd)
+			{
+			case light5_sOff:
+				WriteMessage("Off");
+				break;
+			case light5_sOn:
+				WriteMessage("On");
+				break;
+			case light5_sGroupOff:
+				WriteMessage("Group Off");
+				break;
+			case light5_sGroupOn:
+				WriteMessage("Group On");
 				break;
 			default:
 				WriteMessage("UNKNOWN");
@@ -5943,6 +5995,9 @@ void MainWorker::decode_RFY(const int HwdID, const _eHardwareTypes HwdType, cons
 		{
 		case sTypeRFY:
 			WriteMessage("subtype       = RFY");
+			break;
+		case sTypeRFY2:
+			WriteMessage("subtype       = RFY2");
 			break;
 		case sTypeRFYext:
 			WriteMessage("subtype       = RFY-Ext");
@@ -11000,6 +11055,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			lcmd.RFY.id3=ID4;
 			lcmd.RFY.seqnbr=m_hardwaredevices[hindex]->m_SeqNr++;
 			lcmd.RFY.unitcode=Unit;
+
 			if (IsTesting)
 			{
 				lcmd.RFY.cmnd = rfy_sProgram;
@@ -11009,6 +11065,17 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 				if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.RFY.cmnd, options))
 					return false;
 			}
+
+			if (lcmd.BLINDS1.subtype == sTypeRFY2)
+			{
+				//Special case for protocol version 2
+				lcmd.BLINDS1.subtype = sTypeRFY;
+				if (lcmd.RFY.cmnd == rfy_sUp)
+					lcmd.RFY.cmnd = rfy_s2SecUp;
+				else if (lcmd.RFY.cmnd == rfy_sDown)
+					lcmd.RFY.cmnd = rfy_s2SecDown;
+			}
+
 			level=15;
 			lcmd.RFY.filler=0;
 			lcmd.RFY.rssi=12;
@@ -11474,7 +11541,8 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		(pHardware->HwdType == HTYPE_EVOHOME_SERIAL) ||
 		(pHardware->HwdType == HTYPE_Netatmo) ||
 		(pHardware->HwdType == HTYPE_FITBIT) ||
-		(pHardware->HwdType == HTYPE_NefitEastLAN)
+		(pHardware->HwdType == HTYPE_NefitEastLAN) ||
+		(pHardware->HwdType == HTYPE_IntergasInComfortLAN2RF)
 		)
 	{
 		if (pHardware->HwdType == HTYPE_OpenThermGateway)
@@ -11530,6 +11598,11 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		else if (pHardware->HwdType == HTYPE_EVOHOME_SCRIPT || pHardware->HwdType == HTYPE_EVOHOME_SERIAL)
 		{
 			SetSetPoint(sd[7], TempValue, CEvohome::zmPerm, "");
+		}
+		else if (pHardware->HwdType == HTYPE_IntergasInComfortLAN2RF)
+		{
+			CInComfort *pGateway = reinterpret_cast<CInComfort*>(pHardware);
+			pGateway->SetSetpoint(ID4, TempValue);
 		}
 	}
 	else
@@ -11793,6 +11866,12 @@ bool MainWorker::SetThermostatState(const std::string &idx, const int newState)
 		CNetatmo *pGateway = reinterpret_cast<CNetatmo *>(pHardware);
 		int tIndex = atoi(idx.c_str());
 		pGateway->SetProgramState(tIndex, newState);
+		return true;
+	}
+	else if (pHardware->HwdType == HTYPE_IntergasInComfortLAN2RF)
+	{
+		CInComfort *pGateway = reinterpret_cast<CInComfort*>(pHardware);
+		pGateway->SetProgramState(newState);
 		return true;
 	}
 	return false;
@@ -12498,6 +12577,27 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 				gDevice.intval1 = static_cast<int>(ID);
 				gDevice.intval2 = nValue;
 				DecodeRXMessage(pHardware, (const unsigned char *)&gDevice, NULL, batterylevel);
+				return true;
+			}
+			else if (subType == sTypeAlert)
+			{
+				std::string devname = "Unknown";
+				uint64_t devidx = m_sql.UpdateValue(
+					HardwareID,
+					DeviceID.c_str(),
+					(const unsigned char)unit,
+					(const unsigned char)devType,
+					(const unsigned char)subType,
+					signallevel,//signal level,
+					batterylevel,//battery level
+					nValue,
+					sValue.c_str(),
+					devname,
+					false
+				);
+				if (devidx == -1)
+					return false;
+				m_notifications.CheckAndHandleNotification(devidx, devname, devType, subType, NTYPE_USAGE, static_cast<float>(nValue));
 				return true;
 			}
 		}

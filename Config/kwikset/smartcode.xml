@@ -316,7 +316,16 @@ http://s7d5.scene7.com/is/content/BDHHI/z-wave-configuration
             <Item label="Do reset" value="1"/>
 			<Item label="Normal" value="0"/>
 		</Value>
-	</CommandClass>	
+	</CommandClass>
+	<CommandClass id="113">
+		<!-- These Door Locks don't send a DoorLockReport when the
+		Lock Status is Changed, but instead send a Alarm Message -
+		So we trigger a Refresh of the DoorLock Command Class when
+		we recieve a Alarm Message Instead -->
+		<TriggerRefreshValue Genre="user" Index="0" Instance="1">
+			<RefreshClassValue CommandClass="98" RequestFlags="0" Index="1" Instance="1"/>
+		</TriggerRefreshValue>
+	</CommandClass>
 	<!-- Association Groups -->
 	<CommandClass id="133">
 		<Associations num_groups="1">

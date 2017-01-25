@@ -31,6 +31,7 @@
 #define sTypeLimitlessRGBW		0x01
 #define sTypeLimitlessRGB		0x02
 #define sTypeLimitlessWhite		0x03
+#define sTypeLimitlessRGBWW		0x04
 
 #define pTypeThermostat			0xF2
 #define sTypeThermSetpoint		0x01
@@ -165,6 +166,8 @@
 #define sSwitchTypeRM174RF			0x66
 #define sSwitchTypeLiwin			0x67
 #define sSwitchAuxiliaryT1			0x68
+#define sSwitchBlindsT2				0x69
+#define sSwitchLightT2				0x70
 
 //Switch commands
 #define gswitch_sOff				0x00
@@ -227,6 +230,9 @@
 #define pTypeRego6XXValue    0xFE
 #define sTypeRego6XXStatus   0x02
 #define sTypeRego6XXCounter  0x03
+
+//RFY2 (protocol v2)
+#define sTypeRFY2			0xFE
 
 //types for evohome
 #define pTypeEvohome 0x45

@@ -58,8 +58,10 @@ Connection information:
 
 #define NO_INTERRUPT	-1
 #define MAX_GPIO	31
+#define MIN_PERIOD_US	50000
 
 bool m_bIsInitGPIOPins=false;
+bool interruptHigh[MAX_GPIO+1]={ false };
 
 // List of GPIO pin numbers, ordered as listed
 std::vector<CGpioPin> CGpio::pins;
@@ -70,6 +72,8 @@ std::vector<int> gpioInterruptQueue;
 boost::mutex interruptQueueMutex;
 boost::condition_variable interruptCondition;
 
+// struct timers for all GPIO pins
+struct timeval tvBegin[MAX_GPIO+1], tvEnd[MAX_GPIO+1], tvDiff[MAX_GPIO+1];
 
 /*
  * Direct GPIO implementation, inspired by other hardware implementations such as PiFace and EnOcean
@@ -98,53 +102,107 @@ CGpio::~CGpio(void)
 {
 }
 
+ /*
+  * interrupt timer functions:
+	*********************************************************************************
+  */
+int getclock(struct timeval *tv) {
+#ifdef CLOCK_MONOTONIC
+	struct timespec ts;
+		if (!clock_gettime(CLOCK_MONOTONIC, &ts)) {
+			tv->tv_sec = ts.tv_sec;
+			tv->tv_usec = ts.tv_nsec / 1000;
+			return 0;
+		}
+#endif
+	return gettimeofday(tv, NULL);
+}
+int timeval_subtract (struct timeval *result, struct timeval *x, struct timeval *y) {
+	/* Perform the carry for the later subtraction by updating y. */
+  if (x->tv_usec < y->tv_usec) {
+		int nsec = (y->tv_usec - x->tv_usec) / 1000000 + 1;
+    y->tv_usec -= 1000000 * nsec;
+    y->tv_sec += nsec;
+  }
+  if (x->tv_usec - y->tv_usec > 1000000) {
+    int nsec = (x->tv_usec - y->tv_usec) / 1000000;
+    y->tv_usec += 1000000 * nsec;
+    y->tv_sec -= nsec;
+  }
+
+  /* Compute the time remaining to wait.
+     tv_usec is certainly positive. */
+  result->tv_sec = x->tv_sec - y->tv_sec;
+  result->tv_usec = x->tv_usec - y->tv_usec;
+
+  /* Return 1 if result is negative. */
+  return x->tv_sec < y->tv_sec;
+}
+
 /*
  * interrupt handlers:
  *********************************************************************************
  */
 
  void pushInterrupt(int gpioId) {
+	getclock(&tvEnd[gpioId]);
+	if (timeval_subtract(&tvDiff[gpioId], &tvEnd[gpioId], &tvBegin[gpioId])) {
+		tvDiff[gpioId].tv_sec = 0;
+		tvDiff[gpioId].tv_usec = 0;
+	}
+	unsigned int diff = tvDiff[gpioId].tv_usec + tvDiff[gpioId].tv_sec * 1000000;
+	getclock(&tvBegin[gpioId]);
 	boost::mutex::scoped_lock lock(interruptQueueMutex);
-
-	if(std::find(gpioInterruptQueue.begin(), gpioInterruptQueue.end(), gpioId) != gpioInterruptQueue.end()) {
-		_log.Log(LOG_NORM, "GPIO: Interrupt for GPIO %d already queued. Ignoring...", gpioId);
-		interruptCondition.notify_one();
+	if (diff>MIN_PERIOD_US) {
+		interruptHigh[gpioId]=false;
+		if(std::find(gpioInterruptQueue.begin(), gpioInterruptQueue.end(), gpioId) != gpioInterruptQueue.end()) {
+			_log.Log(LOG_NORM, "GPIO: Interrupt for GPIO %d already queued. Ignoring...", gpioId);
+		}
+		else {
+			// Queue interrupt. Note that as we make sure it contains only unique numbers, it can never "overflow".
+			_log.Log(LOG_NORM, "GPIO: Queuing interrupt for GPIO %d.", gpioId);
+			gpioInterruptQueue.push_back(gpioId);
+		}
 	}
 	else {
-		// Queue interrupt. Note that as we make sure it contains only unique numbers, it can never "overflow".
-		_log.Log(LOG_NORM, "GPIO: Queuing interrupt for GPIO %d.", gpioId);
-		gpioInterruptQueue.push_back(gpioId);
+		if (!interruptHigh[gpioId]) {
+			_log.Log(LOG_NORM, "GPIO: Too many interrupts for GPIO %d. Ignoring..", gpioId);
+			interruptHigh[gpioId]=true;
+		}
 		interruptCondition.notify_one();
+		return;
 	}
+	interruptCondition.notify_one();
 	_log.Log(LOG_NORM, "GPIO: %d interrupts in queue.", gpioInterruptQueue.size());
 }
-
 
 void interruptHandler0 (void) { pushInterrupt(0); }
 void interruptHandler1 (void) { pushInterrupt(1); }
 void interruptHandler2 (void) { pushInterrupt(2); }
 void interruptHandler3 (void) { pushInterrupt(3); }
 void interruptHandler4 (void) { pushInterrupt(4); }
-
+void interruptHandler5 (void) { pushInterrupt(5); }
+void interruptHandler6 (void) { pushInterrupt(6); }
 void interruptHandler7 (void) { pushInterrupt(7); }
 void interruptHandler8 (void) { pushInterrupt(8); }
 void interruptHandler9 (void) { pushInterrupt(9); }
 void interruptHandler10(void) { pushInterrupt(10); }
 void interruptHandler11(void) { pushInterrupt(11); }
-
+void interruptHandler12(void) { pushInterrupt(12); }
+void interruptHandler13(void) { pushInterrupt(13); }
 void interruptHandler14(void) { pushInterrupt(14); }
 void interruptHandler15(void) { pushInterrupt(15); }
-
+void interruptHandler16(void) { pushInterrupt(16); }
 void interruptHandler17(void) { pushInterrupt(17); }
 void interruptHandler18(void) { pushInterrupt(18); }
-
+void interruptHandler19(void) { pushInterrupt(19); }
 void interruptHandler20(void) { pushInterrupt(20); }
 void interruptHandler21(void) { pushInterrupt(21); }
 void interruptHandler22(void) { pushInterrupt(22); }
 void interruptHandler23(void) { pushInterrupt(23); }
 void interruptHandler24(void) { pushInterrupt(24); }
 void interruptHandler25(void) { pushInterrupt(25); }
-
+void interruptHandler26(void) { pushInterrupt(26); }
 void interruptHandler27(void) { pushInterrupt(27); }
 void interruptHandler28(void) { pushInterrupt(28); }
 void interruptHandler29(void) { pushInterrupt(29); }
@@ -158,7 +216,7 @@ bool CGpio::StartHardware()
 	// TODO make sure the WIRINGPI_CODES environment variable is set, otherwise WiringPi makes the program exit upon error
 	// Note : We're using the wiringPiSetupSys variant as it does not require root privilege
 	if (wiringPiSetupSys() != 0) {
-		_log.Log(LOG_ERROR, "GPIO: Error initializing wiringPi !");
+		_log.Log(LOG_ERROR, "GPIO: Error initializing wiringPi!");
 		return false;
 	}
 #endif
@@ -174,37 +232,38 @@ bool CGpio::StartHardware()
 		if (it->GetIsExported() && it->GetIsInput()) {
 			_log.Log(LOG_NORM, "GPIO: Hooking interrupt handler for GPIO %d.", it->GetId());
 			switch (it->GetId()) {
-				case 0:	wiringPiISR(0, INT_EDGE_SETUP, &interruptHandler0); break;
-				case 1: wiringPiISR(1, INT_EDGE_SETUP, &interruptHandler1); break;
-				case 2: wiringPiISR(2, INT_EDGE_SETUP, &interruptHandler2); break;
-				case 3: wiringPiISR(3, INT_EDGE_SETUP, &interruptHandler3); break;
-				case 4: wiringPiISR(4, INT_EDGE_SETUP, &interruptHandler4); break;
-
-				case 7: wiringPiISR(7, INT_EDGE_SETUP, &interruptHandler7); break;
-				case 8: wiringPiISR(8, INT_EDGE_SETUP, &interruptHandler8); break;
-				case 9: wiringPiISR(9, INT_EDGE_SETUP, &interruptHandler9); break;
-				case 10: wiringPiISR(10, INT_EDGE_SETUP, &interruptHandler10); break;
-				case 11: wiringPiISR(11, INT_EDGE_SETUP, &interruptHandler11); break;
-
-				case 14: wiringPiISR(14, INT_EDGE_SETUP, &interruptHandler14); break;
-				case 15: wiringPiISR(15, INT_EDGE_SETUP, &interruptHandler15); break;
-
-				case 17: wiringPiISR(17, INT_EDGE_SETUP, &interruptHandler17); break;
-				case 18: wiringPiISR(18, INT_EDGE_SETUP, &interruptHandler18); break;
-
-				case 20: wiringPiISR(20, INT_EDGE_SETUP, &interruptHandler20); break;
-				case 21: wiringPiISR(21, INT_EDGE_SETUP, &interruptHandler21); break;
-				case 22: wiringPiISR(22, INT_EDGE_SETUP, &interruptHandler22); break;
-				case 23: wiringPiISR(23, INT_EDGE_SETUP, &interruptHandler23); break;
-				case 24: wiringPiISR(24, INT_EDGE_SETUP, &interruptHandler24); break;
-				case 25: wiringPiISR(25, INT_EDGE_SETUP, &interruptHandler25); break;
-
-				case 27: wiringPiISR(27, INT_EDGE_SETUP, &interruptHandler27); break;
-				case 28: wiringPiISR(28, INT_EDGE_SETUP, &interruptHandler28); break;
-				case 29: wiringPiISR(29, INT_EDGE_SETUP, &interruptHandler29); break;
-				case 30: wiringPiISR(30, INT_EDGE_SETUP, &interruptHandler30); break;
-				case 31: wiringPiISR(31, INT_EDGE_SETUP, &interruptHandler31); break;
-
+				case 0: wiringPiISR(0, INT_EDGE_SETUP, &interruptHandler0); getclock(&tvBegin[0]); break;
+				case 1: wiringPiISR(1, INT_EDGE_SETUP, &interruptHandler1); getclock(&tvBegin[1]); break;
+				case 2: wiringPiISR(2, INT_EDGE_SETUP, &interruptHandler2); getclock(&tvBegin[2]); break;
+				case 3: wiringPiISR(3, INT_EDGE_SETUP, &interruptHandler3); getclock(&tvBegin[3]); break;
+				case 4: wiringPiISR(4, INT_EDGE_SETUP, &interruptHandler4); getclock(&tvBegin[4]); break;
+				case 5: wiringPiISR(5, INT_EDGE_SETUP, &interruptHandler5); getclock(&tvBegin[5]); break;
+				case 6: wiringPiISR(6, INT_EDGE_SETUP, &interruptHandler6); getclock(&tvBegin[6]); break;
+				case 7: wiringPiISR(7, INT_EDGE_SETUP, &interruptHandler7); getclock(&tvBegin[7]); break;
+				case 8: wiringPiISR(8, INT_EDGE_SETUP, &interruptHandler8); getclock(&tvBegin[8]); break;
+				case 9: wiringPiISR(9, INT_EDGE_SETUP, &interruptHandler9); getclock(&tvBegin[9]); break;
+				case 10: wiringPiISR(10, INT_EDGE_SETUP, &interruptHandler10); getclock(&tvBegin[10]); break;
+				case 11: wiringPiISR(11, INT_EDGE_SETUP, &interruptHandler11); getclock(&tvBegin[11]); break;
+				case 12: wiringPiISR(12, INT_EDGE_SETUP, &interruptHandler12); getclock(&tvBegin[12]); break;
+				case 13: wiringPiISR(13, INT_EDGE_SETUP, &interruptHandler13); getclock(&tvBegin[13]); break;
+				case 14: wiringPiISR(14, INT_EDGE_SETUP, &interruptHandler14); getclock(&tvBegin[14]); break;
+				case 15: wiringPiISR(15, INT_EDGE_SETUP, &interruptHandler15); getclock(&tvBegin[15]); break;
+				case 16: wiringPiISR(16, INT_EDGE_SETUP, &interruptHandler16); getclock(&tvBegin[16]); break;
+				case 17: wiringPiISR(17, INT_EDGE_SETUP, &interruptHandler17); getclock(&tvBegin[17]); break;
+				case 18: wiringPiISR(18, INT_EDGE_SETUP, &interruptHandler18); getclock(&tvBegin[18]); break;
+				case 19: wiringPiISR(19, INT_EDGE_SETUP, &interruptHandler19); getclock(&tvBegin[19]); break;
+				case 20: wiringPiISR(20, INT_EDGE_SETUP, &interruptHandler20); getclock(&tvBegin[20]); break;
+				case 21: wiringPiISR(21, INT_EDGE_SETUP, &interruptHandler21); getclock(&tvBegin[21]); break;
+				case 22: wiringPiISR(22, INT_EDGE_SETUP, &interruptHandler22); getclock(&tvBegin[22]); break;
+				case 23: wiringPiISR(23, INT_EDGE_SETUP, &interruptHandler23); getclock(&tvBegin[23]); break;
+				case 24: wiringPiISR(24, INT_EDGE_SETUP, &interruptHandler24); getclock(&tvBegin[24]); break;
+				case 25: wiringPiISR(25, INT_EDGE_SETUP, &interruptHandler25); getclock(&tvBegin[25]); break;
+				case 26: wiringPiISR(26, INT_EDGE_SETUP, &interruptHandler26); getclock(&tvBegin[26]); break;
+				case 27: wiringPiISR(27, INT_EDGE_SETUP, &interruptHandler27); getclock(&tvBegin[27]); break;
+				case 28: wiringPiISR(28, INT_EDGE_SETUP, &interruptHandler28); getclock(&tvBegin[28]); break;
+				case 29: wiringPiISR(29, INT_EDGE_SETUP, &interruptHandler29); getclock(&tvBegin[29]); break;
+				case 30: wiringPiISR(30, INT_EDGE_SETUP, &interruptHandler30); getclock(&tvBegin[30]); break;
+				case 31: wiringPiISR(31, INT_EDGE_SETUP, &interruptHandler31); getclock(&tvBegin[31]); break;
 				default:
 					_log.Log(LOG_ERROR, "GPIO: Error hooking interrupt handler for unknown GPIO %d.", it->GetId());
 			}
@@ -422,6 +481,19 @@ bool CGpio::InitPins()
 		//
 		// 0000000000111111111122222222223333333333444444444455555555556666666666777777777
 		// 0123456789012345678901234567890123456789012345678901234567890123456789012345678
+		//
+		// ODroid C2
+		// +------+-----+----------+------+ Model  ODROID-C2 +------+----------+-----+------+
+		// | GPIO | wPi |   Name   | Mode | V | Physical | V | Mode |   Name   | wPi | GPIO |
+		// +------+-----+----------+------+---+----++----+---+------+----------+-----+------+
+		// |      |     |     3.3v |      |   |  1 || 2  |   |      | 5v       |     |      |
+		// |      |   8 |    SDA.1 |      |   |  3 || 4  |   |      | 5V       |     |      |
+		// |      |   9 |    SCL.1 |      |   |  5 || 6  |   |      | 0v       |     |      |
+		// |  249 |   7 | GPIO.249 |   IN | 1 |  7 || 8  |   |      | TxD1     | 15  |      |
+		// ...
+		//
+		// 0000000000111111111122222222223333333333444444444455555555556666666666777777777788
+		// 0123456789012345678901234567890123456789012345678901234567890123456789012345678901
 
 		std::string line(buf);
 		std::vector<std::string> fields;

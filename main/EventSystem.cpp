@@ -1491,9 +1491,10 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const uint64_t Dev
 				else
 				{
 					lua_Number ruleTrue = lua_tonumber(lua_state, -1);
-					if (ruleTrue != 0 && m_sql.m_bLogEventScriptTrigger)
+					if (ruleTrue != 0)
 					{
-						_log.Log(LOG_NORM, "EventSystem: Event triggered: %s", it->Name.c_str());
+						if (m_sql.m_bLogEventScriptTrigger)
+							_log.Log(LOG_NORM, "EventSystem: Event triggered: %s", it->Name.c_str());
 						parseBlocklyActions(it->Actions, it->Name, it->ID);
 					}
 				}
@@ -1546,9 +1547,10 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const uint64_t Dev
 				else {
 					lua_Number ruleTrue = lua_tonumber(lua_state, -1);
 
-					if (ruleTrue != 0 && m_sql.m_bLogEventScriptTrigger)
+					if (ruleTrue != 0)
 					{
-						_log.Log(LOG_NORM, "EventSystem: Event triggered: %s", it->Name.c_str());
+						if (m_sql.m_bLogEventScriptTrigger)
+							_log.Log(LOG_NORM, "EventSystem: Event triggered: %s", it->Name.c_str());
 						parseBlocklyActions(it->Actions, it->Name, it->ID);
 					}
 				}
@@ -1596,9 +1598,10 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const uint64_t Dev
 					}
 					else {
 						lua_Number ruleTrue = lua_tonumber(lua_state, -1);
-						if (ruleTrue != 0 && m_sql.m_bLogEventScriptTrigger)
+						if (ruleTrue != 0)
 						{
-							_log.Log(LOG_NORM, "EventSystem: Event triggered: %s", it->Name.c_str());
+							if (m_sql.m_bLogEventScriptTrigger)
+								_log.Log(LOG_NORM, "EventSystem: Event triggered: %s", it->Name.c_str());
 							parseBlocklyActions(it->Actions, it->Name, it->ID);
 						}
 					}
@@ -1650,9 +1653,10 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const uint64_t Dev
 				else {
 					lua_Number ruleTrue = lua_tonumber(lua_state, -1);
 
-					if (ruleTrue != 0 && m_sql.m_bLogEventScriptTrigger)
+					if (ruleTrue != 0)
 					{
-						_log.Log(LOG_NORM, "EventSystem: Event triggered: %s", it->Name.c_str());
+						if (m_sql.m_bLogEventScriptTrigger)
+							_log.Log(LOG_NORM, "EventSystem: Event triggered: %s", it->Name.c_str());
 						parseBlocklyActions(it->Actions, it->Name, it->ID);
 					}
 				}
@@ -1951,9 +1955,7 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 			else
 			{
 				float DelayTime = afterTimerSeconds;
-				_tTaskItem tItem;
-				tItem = _tTaskItem::SetVariable(DelayTime, (const uint64_t)atol(variableNo.c_str()), doWhat, false);
-				m_sql.AddTaskItem(tItem);
+				m_sql.AddTaskItem(_tTaskItem::SetVariable(DelayTime, (const uint64_t)atol(variableNo.c_str()), doWhat, false));
 			}
 			actionsDone = true;
 			continue;
@@ -2033,7 +2035,7 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 				sPath = szUserDataFolder + "scripts/" + sPath;
 #endif
 
-			m_sql.AddTaskItem(_tTaskItem::ExecuteScript(1, sPath, sParam));
+			m_sql.AddTaskItem(_tTaskItem::ExecuteScript(0.2f, sPath, sParam));
 			actionsDone = true;
 			continue;
 		}
@@ -2046,7 +2048,7 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 		}
 		else if (deviceName.find("SendNotification") != std::string::npos)
 		{
-			std::string subject, body, priority("0"), sound;
+			std::string subject, body, priority("0"), sound, subsystem;
 			std::vector<std::string> aParam;
 			StringSplit(doWhat, "#", aParam);
 			subject = body = aParam[0];
@@ -2070,7 +2072,11 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 				priority = aParam[2];
 				sound = aParam[3];
 			}
-			m_sql.AddTaskItem(_tTaskItem::SendNotification(1, subject, body, std::string(""), atoi(priority.c_str()), sound));
+			else if (aParam.size() == 5)
+                        {
+				subsystem = aParam[4];
+			}
+			m_sql.AddTaskItem(_tTaskItem::SendNotification(1, subject, body, std::string(""), atoi(priority.c_str()), sound, subsystem));
 			actionsDone = true;
 			continue;
 		}
@@ -3000,9 +3006,10 @@ void CEventSystem::luaThread(lua_State *lua_state, const std::string &filename)
 		}
 	}
 
-	if (scriptTrue && m_sql.m_bLogEventScriptTrigger)
+	if (scriptTrue)
 	{
-		_log.Log(LOG_STATUS, "EventSystem: Script event triggered: %s", filename.c_str());
+		if (m_sql.m_bLogEventScriptTrigger)
+			_log.Log(LOG_STATUS, "EventSystem: Script event triggered: %s", filename.c_str());
 	}
 
 	lua_close(lua_state);
@@ -3054,7 +3061,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 	std::string lCommand = std::string(lua_tostring(lua_state, -2));
 	if (lCommand == "SendNotification") {
 		std::string luaString = lua_tostring(lua_state, -1);
-		std::string subject(" "), body(" "), priority("0"), sound;
+		std::string subject(" "), body(" "), priority("0"), sound, subsystem;
 		std::string extraData;
 		std::vector<std::string> aParam;
 		StringSplit(luaString, "#", aParam);
@@ -3071,7 +3078,11 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 		if (aParam.size() > 4) {
 			extraData = "|Device=" + aParam[4];
 		}
-		m_sql.AddTaskItem(_tTaskItem::SendNotification(1, subject, body, std::string(""), atoi(priority.c_str()), sound));
+		if (aParam.size() > 5) {
+			subsystem = aParam[5];
+		}
+
+		m_sql.AddTaskItem(_tTaskItem::SendNotification(1, subject, body, extraData, atoi(priority.c_str()), sound, subsystem));
 		scriptTrue = true;
 	}
 	else if (lCommand == "SendEmail") {
@@ -3151,9 +3162,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 				std::stringstream sstr;
 				sstr << sd[0];
 				sstr >> idx;
-				_tTaskItem tItem;
-				tItem = _tTaskItem::SetVariable(DelayTime, idx, variableValue, false);
-				m_sql.AddTaskItem(tItem);
+				m_sql.AddTaskItem(_tTaskItem::SetVariable(DelayTime, idx, variableValue, false));
 			}
 			scriptTrue = true;
 		}
@@ -3299,9 +3308,7 @@ void CEventSystem::UpdateDevice(const std::string &DevParams)
 void CEventSystem::OpenURL(const std::string &URL)
 {
 	_log.Log(LOG_STATUS, "EventSystem: Fetching url...");
-	_tTaskItem tItem;
-	tItem = _tTaskItem::GetHTTPPage(1, URL, "OpenURL");
-	m_sql.AddTaskItem(tItem);
+	m_sql.AddTaskItem(_tTaskItem::GetHTTPPage(0.2f, URL, "OpenURL"));
 	// maybe do something with sResult in the future.
 }
 
@@ -3569,7 +3576,6 @@ std::string CEventSystem::nValueToWording(const unsigned char dType, const unsig
 	bool bHaveDimmer = false;
 	bool bHaveGroupCmd = false;
 	int maxDimLevel = 0;
-
 	GetLightStatus(dType, dSubType, switchtype,nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 /*
 	if (lstatus.find("Set Level") == 0)
@@ -3665,6 +3671,13 @@ std::string CEventSystem::nValueToWording(const unsigned char dType, const unsig
 	else if (lstatus == "")
 	{
 		lstatus = sValue;
+		//OJO if lstatus  is still empty we use nValue for lstatus. ss for conversion
+        	if (lstatus == "")
+        	{
+			std::stringstream ss;
+			ss << (unsigned int)nValue;
+           		lstatus = ss.str();
+        	}		
 	}
 	return lstatus;
 }

@@ -423,11 +423,11 @@ void CEvohome::RunScript(const char *pdata, const unsigned char length)
 			boost::replace_all(OnAction, "{state}", s_strid.str());
 			boost::replace_all(OnAction, "{until}", CEvohomeDateTime::GetISODate(tsen->EVOHOME2));
 			//Execute possible script
-			std::string scriptname;
-			if (OnAction.find("script:///") != std::string::npos)
-				scriptname = OnAction.substr(9);
-			else
-				scriptname = OnAction.substr(8);
+			std::string scriptname = OnAction.substr(9);
+#if !defined WIN32
+			if (scriptname.find("/") != 0)
+				scriptname = szUserDataFolder + "scripts/" + scriptname;
+#endif
 			std::string scriptparams="";
 			//Add parameters
 			int pindex=scriptname.find(' ');
@@ -439,7 +439,7 @@ void CEvohome::RunScript(const char *pdata, const unsigned char length)
 			
 			if (file_exist(scriptname.c_str()))
 			{
-				m_sql.AddTaskItem(_tTaskItem::ExecuteScript(1,scriptname,scriptparams));
+				m_sql.AddTaskItem(_tTaskItem::ExecuteScript(0.2f,scriptname,scriptparams));
 			}
 			else
 				_log.Log(LOG_ERROR,"evohome: Error script not found '%s'",scriptname.c_str());

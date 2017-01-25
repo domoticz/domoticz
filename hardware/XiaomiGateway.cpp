@@ -9,6 +9,7 @@
 #include "../webserver/cWebem.h"
 #include "../json/json.h"
 #include "XiaomiGateway.h"
+#include <openssl/aes.h>
 
 /*
 Xiaomi (Aqara) makes a smart home gateway/hub that has support
@@ -18,6 +19,8 @@ competitive prices.
 Protocol is Zigbee and WiFi, and the gateway and
 Domoticz need to be in the same network/subnet
 */
+
+#define round(a) ( int ) ( a + .5 )
 
 XiaomiGateway::XiaomiGateway(const int ID)
 {
@@ -471,6 +474,7 @@ void XiaomiGateway::Do_Work()
 
 std::string XiaomiGateway::GetGatewayKey()
 {
+#ifdef WWW_ENABLE_SSL
 	const unsigned char *key = (unsigned char *)m_GatewayPassword.c_str();
 	unsigned char iv[AES_BLOCK_SIZE] = { 0x17, 0x99, 0x6d, 0x09, 0x3d, 0x28, 0xdd, 0xb3, 0xba, 0x69, 0x5a, 0x2e, 0x6f, 0x58, 0x56, 0x2e };
 	unsigned char *plaintext = (unsigned char *)m_token.c_str();
@@ -485,8 +489,10 @@ std::string XiaomiGateway::GetGatewayKey()
 	{
 		sprintf(&gatewaykey[i * 2], "%02X", ciphertext[i]);
 	}
-
 	return gatewaykey;
+#else
+	return std::string("");
+#endif
 }
 
 XiaomiGateway::xiaomi_udp_server::xiaomi_udp_server(boost::asio::io_service& io_service, int m_HwdID, XiaomiGateway *parent)

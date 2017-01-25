@@ -275,18 +275,22 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 	std::string ID = szDeviceID;
 	GetSwitchType(ID.c_str(), pSwitch->unitcode, pSwitch->type, pSwitch->subtype, m_SwitchType);
 	//_log.Log(LOG_ERROR, "RFLink: switch type: %d", m_SwitchType);
+	//_log.Log(LOG_ERROR, "RFLink: switch cmd: %d", pSwitch->cmnd);
 
 	if (pSwitch->type == pTypeGeneralSwitch) {
 		std::string switchcmnd = GetGeneralRFLinkFromInt(rfswitchcommands, pSwitch->cmnd);
-		
-		if ((m_SwitchType == STYPE_VenetianBlindsEU) || (m_SwitchType == STYPE_Blinds)) {
-			switchcmnd = GetGeneralRFLinkFromInt(rfblindcommands, pSwitch->cmnd);
-		} else
-			if ((m_SwitchType == STYPE_VenetianBlindsUS) || (m_SwitchType == STYPE_BlindsInverted)) {
+		if (pSwitch->cmnd != gswitch_sStop) {
+			if ((m_SwitchType == STYPE_VenetianBlindsEU) || (m_SwitchType == STYPE_Blinds)) {
 				switchcmnd = GetGeneralRFLinkFromInt(rfblindcommands, pSwitch->cmnd);
-				if (pSwitch->cmnd == blinds_sOpen) switchcmnd = GetGeneralRFLinkFromInt(rfblindcommands, blinds_sClose);
-				else if (pSwitch->cmnd == blinds_sClose) switchcmnd = GetGeneralRFLinkFromInt(rfblindcommands, blinds_sOpen);
 			}
+			else {
+				if ((m_SwitchType == STYPE_VenetianBlindsUS) || (m_SwitchType == STYPE_BlindsInverted)) {
+					switchcmnd = GetGeneralRFLinkFromInt(rfblindcommands, pSwitch->cmnd);
+					if (pSwitch->cmnd == blinds_sOpen) switchcmnd = GetGeneralRFLinkFromInt(rfblindcommands, blinds_sClose);
+					else if (pSwitch->cmnd == blinds_sClose) switchcmnd = GetGeneralRFLinkFromInt(rfblindcommands, blinds_sOpen);
+				}
+			}
+		}
 		//_log.Log(LOG_ERROR, "RFLink: switch command: %d", pSwitch->cmnd);
 
         // check setlevel command
