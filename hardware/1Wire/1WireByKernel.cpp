@@ -25,8 +25,6 @@
 
 C1WireByKernel::C1WireByKernel()
 {
-   ThreadBuildDevicesList();
-   ReadStates();
    m_Thread = new boost::thread(&C1WireByKernel::ThreadFunction,this);
    _log.Log(LOG_STATUS,"Using 1-Wire support (kernel W1 module)...");
 }
@@ -315,6 +313,11 @@ void C1WireByKernel::StartSimultaneousTemperatureRead()
 {
 }
 
+void C1WireByKernel::PrepareDevices()
+{
+	ThreadBuildDevicesList();
+	ReadStates();
+}
 
 float C1WireByKernel::ThreadReadRawDataHighPrecisionDigitalThermometer(const std::string& deviceFileName) const
 {

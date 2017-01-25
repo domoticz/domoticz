@@ -23,6 +23,7 @@ public:
    virtual int GetVoltage(const _t1WireDevice& device,int unit) const;
    virtual float GetIlluminance(const _t1WireDevice& device) const;
    virtual void StartSimultaneousTemperatureRead();
+   virtual void PrepareDevices();
    // END : I_1WireSystem implementation
 
    static bool IsAvailable();

@@ -77,6 +77,7 @@ void C1Wire::DetectSystem()
 
 bool C1Wire::StartHardware()
 {
+	m_system->PrepareDevices();
 	// Start worker thread
 	if (0 != m_sensorThreadPeriod)
 	{
