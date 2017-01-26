@@ -5,7 +5,6 @@
 #include <iostream>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
-#include <openssl/aes.h>
 
 class XiaomiGateway : public CDomoticzHardwareBase
 {
