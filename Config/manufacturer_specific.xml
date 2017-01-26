@@ -410,8 +410,8 @@
 		<Product type="0202" id="1002" name="FGS222 Double Relay Switch 2x1.5kW" config="fibaro/fgs222.xml" />
 		<Product type="0202" id="3002" name="FGS222 Double Relay Switch 2x1.5kW" config="fibaro/fgs222.xml" />
 		<Product type="0203" id="1000" name="FGS223 Double Relay" config="fibaro/fgs223.xml"/>
-		<Product type="0600" id="1000" name="FGWPE Wall Plug" config="fibaro/fgwpe.xml" />
-		<Product type="0602" id="1001" name="FGWPF Wall Plug Gen5" config="fibaro/fgwpfzw5.xml" />
+		<Product type="0600" id="1000" name="FGWPE/F Wall Plug" config="fibaro/fgwpe.xml" />
+		<Product type="0602" id="1001" name="FGWPE/F Wall Plug Gen5" config="fibaro/fgwpfzw5.xml" />
 		<Product type="0800" id="1001" name="FGMS001 Motion Sensor" config="fibaro/fgms.xml" />
 		<Product type="0800" id="2001" name="FGMS001 Motion Sensor" config="fibaro/fgms.xml" />
 		<Product type="0800" id="4001" name="FGMS001 Motion Sensor" config="fibaro/fgms.xml" />
@@ -714,6 +714,7 @@
 		<Product type="0001" id="0004" name="PAN06-1 In Wall Dual Relay (1 Way) Switch Module"/>
 		<Product type="0001" id="0006" name="PAN08-1 In Wall Roller Shutter Controller" config="philio/pan08.xml"/>
 		<Product type="0001" id="000f" name="PAN03 Switch Module with meter 3 KW X1" config="philio/pan03.xml"/>
+		<Product type="0001" id="0011" name="PAN11 Smart Energy Plug In Switch" config="philio/pan11.xml"/>
 		<Product type="0001" id="0012" name="PAN04-1 Double Relay Switch 2x1.5kW with Power Measurement" config="philio/pan04.xml"/>
 		<Product type="0001" id="0015" name="PAN08-1 In Wall Roller Shutter Controller" config="philio/pan08.xml"/>
 		<Product type="0002" id="0002" name="PSM02-1 Slim Multi-Sensor" config="philio/psm02.xml"/>
@@ -969,14 +970,15 @@
 	</Manufacturer>
 	<Manufacturer id="0118" name="Wenzhou TKB Control System">
 		<Product type="0001" id="0001" name="TZ88 Smart Energy Plug-in Switch" config="wenzhou/tz88.xml"/>
- 		<Product type="0001" id="0011" name="TZ88E Smart Energy Plug-in Switch" config="wenzhou/tz88.xml"/>
+ 		<Product type="0001" id="0011" name="TZ88 Smart Energy Plug-in Switch" config="wenzhou/tz88.xml"/>
 		<Product type="0002" id="0001" name="SM103 Door/Window Sensor" config="wenzhou/sm103.xml"/>
 		<Product type="0002" id="0002" name="TSP01 3 in 1 PIR Motion Sensor" config="wenzhou/tsp01.xml" />
 		<Product type="0003" id="0002" name="TZ68 On/Off Switch Socket" config="wenzhou/tz68.xml"/>
 		<Product type="0003" id="0003" name="TZ56 Wall Switch On/Off" config="wenzhou/tz56.xml"/>
 		<Product type="0003" id="0004" name="TZ55 Wall Switch Dimmer" config="wenzhou/tz55.xml"/>
+		<Product type="0004" id="0002" name="TZ69 Smart energy plug in switch" config="wenzhou/tz69.xml"/>
 		<Product type="000b" id="0001" name="ST812 Flood Detector" config="everspring/st812.xml"/>
-		<Product type="0808" id="0808" name="TZ65D Dual Wall Dimmer" config="wenzhou/tz65d.xml"/>
+		<Product type="0808" id="0808" name="TZ65 Dual Wall Dimmer" config="wenzhou/tz65d.xml"/>
 		<Product type="0101" id="0103" name="TZ68 On/Off Switch Socket" config="wenzhou/tz68.xml"/>
 		<Product type="0102" id="1020" name="TZ66D Dual Wall Switch" config="wenzhou/tz66d.xml"/>
 		<Product type="0202" id="0611" name="TZ67 Wall Plug Dimmer" config="wenzhou/tz67.xml"/>
@@ -1038,6 +1040,7 @@
         <Product type="0003" id="0082" name="ZSE08 Contact Sensor" config="zooz/zse08.xml" />
         <Product type="0003" id="0083" name="ZSE09 Mini Sensor" config="zooz/zse09.xml" />        
         <Product type="0003" id="0087" name="ZEN07 Mini Plug" config="zooz/zen07.xml" />
+        <Product type="2021" id="2101" name="ZSE40 4-in-1 sensor" config="zooz/zse40.xml" />
     </Manufacturer>
     <Manufacturer id="015d" name="Zooz">
         <Product type="0651" id="f51c" name="ZEN20 Power Strip" />

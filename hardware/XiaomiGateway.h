@@ -5,7 +5,6 @@
 #include <iostream>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
-#include <openssl/aes.h>
 
 class XiaomiGateway : public CDomoticzHardwareBase
 {
@@ -17,7 +16,7 @@ public:
 	void InsertUpdateVoltage(const std::string &nodeid, const std::string &Name, const int BatteryLevel);
 	void InsertUpdateTemperature(const std::string &nodeid, const std::string &Name, const float Temperature);
 	void InsertUpdateHumidity(const std::string &nodeid, const std::string &Name, const int Humidity);
-	void InsertUpdateRGBGateway(const std::string &nodeid, const std::string &Name, const bool bIsOn, const std::string &brightness, const int hue);
+	void InsertUpdateRGBGateway(const std::string &nodeid, const std::string &Name, const bool bIsOn, const int brightness, const int hue);
 	void UpdateToken(const std::string &value);
 
 private:
@@ -28,6 +27,8 @@ private:
 	boost::shared_ptr<boost::thread> m_thread;
 	boost::shared_ptr<boost::thread> m_udp_thread;
 	std::string GetGatewayKey();
+	std::string m_GatewayRgbHex;
+	int m_GatewayBrightnessInt;
 	std::string m_GatewayIp;
 	std::string m_GatewayPassword;
 	std::string m_token;
