@@ -7,7 +7,8 @@
 namespace Plugins {
 
 	enum ePluginMessageType {
-		PMT_Initialise = 0,
+		PMT_NULL = 0,
+		PMT_Initialise,
 		PMT_Start,
 		PMT_Directive,
 		PMT_Connected,
@@ -33,25 +34,26 @@ namespace Plugins {
 	{
 	public:
 		CPluginMessage() : 
-			m_Type(PMT_Start), m_HwdID(-1), m_Unit(-1), m_iLevel(-1), m_iHue(-1), m_iValue(-1), m_Message(""), m_Object(NULL) { };
+			m_Type(PMT_NULL), m_HwdID(-1), m_Unit(-1), m_iLevel(-1), m_iHue(-1), m_iValue(-1), m_Message(""), m_Object(NULL) { m_When = time(0); };
 		CPluginMessage(ePluginMessageType Type, int HwdID, const std::string & Message) : 
-			m_Type(Type), m_HwdID(HwdID), m_Unit(-1), m_iLevel(-1), m_iHue(-1), m_iValue(-1), m_Message(Message), m_Object(NULL) { };
+			m_Type(Type), m_HwdID(HwdID), m_Unit(-1), m_iLevel(-1), m_iHue(-1), m_iValue(-1), m_Message(Message), m_Object(NULL) { m_When = time(0); };
 		CPluginMessage(ePluginMessageType Type, int HwdID, int Unit, const std::string & Message, const int level, const int hue) : 
-			m_Type(Type), m_HwdID(HwdID), m_Unit(Unit), m_iLevel(level), m_iHue(hue), m_iValue(-1), m_Message(Message), m_Object(NULL) { };
+			m_Type(Type), m_HwdID(HwdID), m_Unit(Unit), m_iLevel(level), m_iHue(hue), m_iValue(-1), m_Message(Message), m_Object(NULL) { m_When = time(0); };
 		CPluginMessage(ePluginMessageType Type, ePluginDirectiveType dType, int HwdID, const std::string & Message) : 
-			m_Type(Type), m_Directive(dType), m_HwdID(HwdID), m_Unit(-1), m_iLevel(-1), m_iHue(-1), m_iValue(-1), m_Message(Message), m_Object(NULL) { };
+			m_Type(Type), m_Directive(dType), m_HwdID(HwdID), m_Unit(-1), m_iLevel(-1), m_iHue(-1), m_iValue(-1), m_Message(Message), m_Object(NULL) { m_When = time(0); };
 		CPluginMessage(ePluginMessageType Type, ePluginDirectiveType dType, int HwdID) : 
-			m_Type(Type), m_Directive(dType), m_HwdID(HwdID), m_Unit(-1), m_iLevel(-1), m_iHue(-1), m_iValue(-1), m_Object(NULL) {};
+			m_Type(Type), m_Directive(dType), m_HwdID(HwdID), m_Unit(-1), m_iLevel(-1), m_iHue(-1), m_iValue(-1), m_Object(NULL) { m_When = time(0); };
 		CPluginMessage(ePluginMessageType Type, ePluginDirectiveType dType, int HwdID, int Value) : 
-			m_Type(Type), m_Directive(dType), m_HwdID(HwdID), m_Unit(-1), m_iLevel(-1), m_iHue(-1), m_iValue(Value), m_Object(NULL) {};
+			m_Type(Type), m_Directive(dType), m_HwdID(HwdID), m_Unit(-1), m_iLevel(-1), m_iHue(-1), m_iValue(Value), m_Object(NULL) { m_When = time(0); };
 		CPluginMessage(ePluginMessageType Type, int HwdID) : 
-			m_Type(Type), m_HwdID(HwdID), m_Unit(-1), m_iLevel(-1), m_iHue(-1), m_iValue(-1), m_Object(NULL) {	};
+			m_Type(Type), m_HwdID(HwdID), m_Unit(-1), m_iLevel(-1), m_iHue(-1), m_iValue(-1), m_Object(NULL) { m_When = time(0); };
 		void operator=(const CPluginMessage& m)
 		{
 			m_Type = m.m_Type;
 			m_Directive = m.m_Directive;
 			m_HwdID = m.m_HwdID;
 			m_Unit = m.m_Unit;
+			m_When = m.m_When;
 			m_Message = m.m_Message;
 			m_iValue = m.m_iValue;
 			m_iLevel = m.m_iLevel;
@@ -68,6 +70,7 @@ namespace Plugins {
 		ePluginDirectiveType	m_Directive;
 		int						m_HwdID;
 		int						m_Unit;
+		time_t					m_When;
 		std::string				m_Message;
 		int						m_iValue;
 		int						m_iLevel;
@@ -116,7 +119,10 @@ namespace Plugins {
 		void*			m_Headers;
 		std::string		m_Username;
 		std::string		m_Password;
+		bool			m_Chunked;
+		size_t			m_RemainingChunk;
 	public:
+		CPluginProtocolHTTP() : m_Status(0), m_ContentLength(0), m_Headers(NULL), m_Chunked(false) {};
 		virtual void		ProcessInbound(const int HwdID, std::string& ReadData);
 		virtual std::string	ProcessOutbound(const CPluginMessage & WriteMessage);
 		void				AuthenticationDetails(std::string Username, std::string Password)
@@ -227,9 +233,6 @@ namespace Plugins {
 		bool HandleInitialise();
 		bool HandleStart();
 
-	protected:
-		bool			m_stoprequested;
-
 	public:
 		CPlugin(const int HwdID, const std::string &Name, const std::string &PluginKey);
 		~CPlugin(void);
@@ -245,6 +248,7 @@ namespace Plugins {
 		CPluginTransport*	m_pTransport;
 		void*				m_DeviceDict;
 		bool				m_bDebug;
+		bool				m_stoprequested;
 	};
 
 }
