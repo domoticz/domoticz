@@ -249,7 +249,8 @@ namespace Plugins {
 							{
 								if ((filename.length() > 12) &&
 									(filename.compare(0, 11, "libpython3.") == 0) &&
-									(filename.compare(filename.length() - 3, 3, ".so") == 0))
+									((filename.compare(filename.length() - 3, 3, ".so") == 0) ||
+									(filename.compare(filename.length() - 6, 6, ".dylib") == 0)))
 								{
 									std::string sLibFile = szLibrary + filename;
 									shared_lib_ = dlopen(sLibFile.c_str(), RTLD_LAZY | RTLD_GLOBAL);

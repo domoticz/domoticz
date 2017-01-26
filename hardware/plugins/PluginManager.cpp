@@ -265,7 +265,7 @@ namespace Plugins {
 		return Py_None;
 	}
 
-	static PyObject*	PyDomoticz_Transport(PyObject *self, PyObject *args)
+	static PyObject*	PyDomoticz_Transport(PyObject *self, PyObject *args, PyObject *keywds)
 	{
 		module_state*	pModState = ((struct module_state*)PyModule_GetState(self));
 		if (!pModState)
@@ -276,21 +276,22 @@ namespace Plugins {
 		{
 			_log.Log(LOG_ERROR, "CPlugin:PyDomoticz_Transport, illegal operation, Plugin has not started yet.");
 		}
+		else if (pModState->pPlugin->m_stoprequested)
+		{
+			_log.Log(LOG_NORM, "%s, Transport set request from '%s' ignored. Plugin is stopping.", __func__, pModState->pPlugin->Name.c_str());
+		}
 		else
 		{
 			char*	szTransport;
 			char*	szAddress;
-			char*	szPort;
-			int		iBaud = 0;
-			if (!PyArg_ParseTuple(args, "sss", &szTransport, &szAddress, &szPort))
+			char*	szPort = NULL;
+			int		iBaud = 115200;
+			static char *kwlist[] = { "Transport", "Address", "Port", "Baud", NULL };
+			if (!PyArg_ParseTupleAndKeywords(args, keywds, "ss|si", kwlist, &szTransport, &szAddress, &szPort, &iBaud))
 			{
-				PyErr_Clear();
-				if (!PyArg_ParseTuple(args, "ssi", &szTransport, &szPort, &iBaud))
-				{
-					_log.Log(LOG_ERROR, "(%s) failed to parse parameters. Expected: Transport, IP Address, Port (sss) or Transport, SerialPort, Baud (ssi).", pModState->pPlugin->Name.c_str());
-					Py_INCREF(Py_None);
-					return Py_None;
-				}
+				_log.Log(LOG_ERROR, "(%s) failed to parse parameters. Expected: Transport, Address, Port or Transport, Address, Baud.", pModState->pPlugin->Name.c_str());
+				Py_INCREF(Py_None);
+				return Py_None;
 			}
 
 			//	Add start command to message queue
@@ -298,7 +299,7 @@ namespace Plugins {
 			CPluginMessage	Message(PMT_Directive, PDT_Transport, pModState->pPlugin->m_HwdID, sTransport);
 			{
 				Message.m_Address = szAddress;
-				Message.m_Port = szPort;
+				if (szPort) Message.m_Port = szPort;
 				Message.m_iValue = iBaud;
 				boost::lock_guard<boost::mutex> l(PluginMutex);
 				PluginMessageQueue.push(Message);
@@ -319,6 +320,10 @@ namespace Plugins {
 		else if (!pModState->pPlugin)
 		{
 			_log.Log(LOG_ERROR, "CPlugin:PyDomoticz_Protocol, illegal operation, Plugin has not started yet.");
+		}
+		else if (pModState->pPlugin->m_stoprequested)
+		{
+			_log.Log(LOG_NORM, "%s, protocol set request from '%s' ignored. Plugin is stopping.", __func__, pModState->pPlugin->Name.c_str());
 		}
 		else
 		{
@@ -390,23 +395,27 @@ namespace Plugins {
 		else
 		{
 			//	Add connect command to message queue unless already connected
-			if ((!pModState->pPlugin->m_pTransport) || (!pModState->pPlugin->m_pTransport->IsConnected()))
+			if (pModState->pPlugin->m_stoprequested)
 			{
-				CPluginMessage	Message(PMT_Directive, PDT_Connect, pModState->pPlugin->m_HwdID);
-				{
-					boost::lock_guard<boost::mutex> l(PluginMutex);
-					PluginMessageQueue.push(Message);
-				}
+				_log.Log(LOG_NORM, "%s, connection request from '%s' ignored. Plugin is stopping.", __func__, pModState->pPlugin->Name.c_str());
+			}
+			else if ((pModState->pPlugin->m_pTransport) && (pModState->pPlugin->m_pTransport->IsConnected()))
+			{
+				_log.Log(LOG_ERROR, "%s, connection request from '%s' ignored. Transport is already connected.", __func__, pModState->pPlugin->Name.c_str());
 			}
 			else
-				_log.Log(LOG_ERROR, "CPlugin:PyDomoticz_Connect, connection request from '%s' ignored. Transport is already connected.", pModState->pPlugin->Name.c_str());
+			{
+				CPluginMessage	Message(PMT_Directive, PDT_Connect, pModState->pPlugin->m_HwdID);
+				boost::lock_guard<boost::mutex> l(PluginMutex);
+				PluginMessageQueue.push(Message);
+			}
 		}
 
 		Py_INCREF(Py_None);
 		return Py_None;
 	}
 
-	static PyObject*	PyDomoticz_Send(PyObject *self, PyObject *args)
+	static PyObject*	PyDomoticz_Send(PyObject *self, PyObject *args, PyObject *keywds)
 	{
 		module_state*	pModState = ((struct module_state*)PyModule_GetState(self));
 		if (!pModState)
@@ -417,13 +426,19 @@ namespace Plugins {
 		{
 			_log.Log(LOG_ERROR, "CPlugin:PyDomoticz_Send, illegal operation, Plugin has not started yet.");
 		}
+		else if (pModState->pPlugin->m_stoprequested)
+		{
+			_log.Log(LOG_NORM, "%s, send request from '%s' ignored. Plugin is stopping.", __func__, pModState->pPlugin->Name.c_str());
+		}
 		else
 		{
 			char*		szMessage = NULL;
 			char*		szVerb = NULL;
 			char*		szURL = NULL;
 			PyObject*	pHeaders = NULL;
-			if (!PyArg_ParseTuple(args, "s|ssO", &szMessage, &szVerb, &szURL, &pHeaders))
+			int			iDelay = 0;
+			static char *kwlist[] = { "Message", "Verb", "TypeName", "URL", "Headers", "Delay", NULL };
+			if (!PyArg_ParseTupleAndKeywords(args, keywds, "s|ssOi", kwlist, &szMessage, &szVerb, &szURL, &pHeaders))
 			{
 				_log.Log(LOG_ERROR, "(%s) failed to parse parameters, Message or Message,Verb,URL,Headers expected.", pModState->pPlugin->Name.c_str());
 			}
@@ -435,7 +450,12 @@ namespace Plugins {
 				{
 					if (szURL) Message.m_Address = szURL;
 					if (szVerb) Message.m_Operation = szVerb;
-					if (pHeaders) Message.m_Object = pHeaders;
+					if (pHeaders)
+					{
+						Message.m_Object = pHeaders;
+						Py_INCREF(pHeaders);
+					}
+					if (iDelay) Message.m_When += iDelay;
 					boost::lock_guard<boost::mutex> l(PluginMutex);
 					PluginMessageQueue.push(Message);
 				}
@@ -456,6 +476,10 @@ namespace Plugins {
 		else if (!pModState->pPlugin)
 		{
 			_log.Log(LOG_ERROR, "CPlugin:PyDomoticz_Disconnect, illegal operation, Plugin has not started yet.");
+		}
+		else if (pModState->pPlugin->m_stoprequested)
+		{
+			_log.Log(LOG_NORM, "%s, disconnection request from '%s' ignored. Plugin is stopping.", __func__, pModState->pPlugin->Name.c_str());
 		}
 		else
 		{
@@ -481,11 +505,11 @@ namespace Plugins {
 		{ "Log", PyDomoticz_Log, METH_VARARGS, "Write message to Domoticz log." },
 		{ "Error", PyDomoticz_Error, METH_VARARGS, "Write error message to Domoticz log." },
 		{ "Debugging", PyDomoticz_Debugging, METH_VARARGS, "Set logging level. 1 set verbose logging, all other values use default level" },
-		{ "Transport", PyDomoticz_Transport, METH_VARARGS, "Set the communication transport: TCP/IP, Serial." },
-		{ "Protocol", PyDomoticz_Protocol, METH_VARARGS, "Set the protocol the messages will use: None, HTTP." },
+		{ "Transport", (PyCFunction)PyDomoticz_Transport, METH_VARARGS | METH_KEYWORDS, "Set the communication transport: TCP/IP, Serial." },
+		{ "Protocol", PyDomoticz_Protocol, METH_VARARGS, "Set the protocol the messages will use: None, line, JSON, XML, HTTP." },
 		{ "Heartbeat", PyDomoticz_Heartbeat, METH_VARARGS, "Set the heartbeat interval, default 10 seconds." },
 		{ "Connect", PyDomoticz_Connect, METH_NOARGS, "Connect to remote device using transport details." },
-		{ "Send", PyDomoticz_Send, METH_VARARGS, "Send the specified message to the remote device." },
+		{ "Send", (PyCFunction)PyDomoticz_Send, METH_VARARGS | METH_KEYWORDS, "Send the specified message to the remote device." },
 		{ "Disconnect", PyDomoticz_Disconnect, METH_NOARGS, "Disconnectfrom remote device." },
 		{ NULL, NULL, 0, NULL }
 	};
@@ -524,6 +548,7 @@ namespace Plugins {
 		int			ID;
 		int			LastLevel;
 		PyObject*	Name;
+		PyObject*	LastUpdate;
 		int			nValue;
 		PyObject*	sValue;
 		int			Image;
@@ -655,21 +680,42 @@ namespace Plugins {
 					}
 					else if (sTypeName == "Voltage")				self->SubType = sTypeVoltage;
 					else if (sTypeName == "Text")					self->SubType = sTypeTextStatus;
-					else if (sTypeName == "Switch")					self->SubType = sSwitchGeneralSwitch;
-					else if (sTypeName == "Alert")					self->SubType = sTypeAlert;
+					else if (sTypeName == "Switch")
+					{
+						self->Type = pTypeGeneralSwitch;
+						self->SubType = sSwitchGeneralSwitch;
+					}
+					else if (sTypeName == "Alert")
+					{
+						Py_DECREF(self->sValue);
+						self->sValue = PyUnicode_FromString("No Alert!");
+						self->SubType = sTypeAlert;
+					}
 					else if (sTypeName == "Current/Ampere")	
 					{
+						Py_DECREF(self->sValue);
+						self->sValue = PyUnicode_FromString("0.0;0.0;0.0");
 						self->Type = pTypeCURRENT;
 						self->SubType = sTypeELEC1;
 					}
 					else if (sTypeName == "Sound Level")			self->SubType = sTypeSoundLevel;
-					else if (sTypeName == "Barometer")				self->SubType = sTypeBaro;
+					else if (sTypeName == "Barometer")
+					{
+						Py_DECREF(self->sValue);
+						self->sValue = PyUnicode_FromString("1021.34;0");
+						self->SubType = sTypeBaro;
+					}
 					else if (sTypeName == "Visibility")				self->SubType = sTypeVisibility;
 					else if (sTypeName == "Distance")				self->SubType = sTypeDistance;
 					else if (sTypeName == "Counter Incremental")	self->SubType = sTypeCounterIncremental;
 					else if (sTypeName == "Soil Moisture")			self->SubType = sTypeSoilMoisture;
 					else if (sTypeName == "Leaf Wetness")			self->SubType = sTypeLeafWetness;
-					else if (sTypeName == "kWh")					self->SubType = sTypeKwh;
+					else if (sTypeName == "kWh")
+					{
+						Py_DECREF(self->sValue);
+						self->sValue = PyUnicode_FromString("0; 0.0");
+						self->SubType = sTypeKwh;
+					}
 					else if (sTypeName == "Current (Single)")		self->SubType = sTypeCurrent;
 					else if (sTypeName == "Solar Radiation")		self->SubType = sTypeSolarRadiation;
 					else if (sTypeName == "Temperature")
@@ -684,26 +730,36 @@ namespace Plugins {
 					}
 					else if (sTypeName == "Temp+Hum")
 					{
+						Py_DECREF(self->sValue);
+						self->sValue = PyUnicode_FromString("0.0;50;1");
 						self->Type = pTypeTEMP_HUM;
 						self->SubType = sTypeTH1;
 					}
 					else if (sTypeName == "Temp+Hum+Baro")
 					{
+						Py_DECREF(self->sValue);
+						self->sValue = PyUnicode_FromString("0.0;50;1;1010;1");
 						self->Type = pTypeTEMP_HUM_BARO;
 						self->SubType = sTypeTHB1;
 					}
 					else if (sTypeName == "Wind")
 					{
+						Py_DECREF(self->sValue);
+						self->sValue = PyUnicode_FromString("0;N;0;0;0;0");
 						self->Type = pTypeWIND;
 						self->SubType = sTypeWIND1;
 					}
 					else if (sTypeName == "Rain")
 					{
+						Py_DECREF(self->sValue);
+						self->sValue = PyUnicode_FromString("0;0");
 						self->Type = pTypeRAIN;
 						self->SubType = sTypeRAIN3;
 					}
 					else if (sTypeName == "UV")
 					{
+						Py_DECREF(self->sValue);
+						self->sValue = PyUnicode_FromString("0;0");
 						self->Type = pTypeUV;
 						self->SubType = sTypeUV1;
 					}
@@ -725,13 +781,18 @@ namespace Plugins {
 					else if (sTypeName == "Waterflow")				self->SubType = sTypeWaterflow;
 					else if (sTypeName == "Wind+Temp+Chill")
 					{
+						Py_DECREF(self->sValue);
+						self->sValue = PyUnicode_FromString("0;N;0;0;0;0");
 						self->Type = pTypeWIND;
 						self->SubType = sTypeWIND4;
 					}
 					else if (sTypeName == "Selector Switch")
 					{
+						Py_DECREF(self->Options);
+						self->Options = PyUnicode_FromString("LevelActions:fHx8;LevelNames:T2ZmfExldmVsMXxMZXZlbDJ8TGV2ZWwz;LevelOffHidden:ZmFsc2U=;SelectorStyle:MA==");
 						self->Type = pTypeGeneralSwitch;
 						self->SubType = sSwitchTypeSelector;
+						self->SwitchType = 18;
 					}
 					else if (sTypeName == "Custom")					self->SubType = sTypeCustom;
 				}
@@ -770,6 +831,7 @@ namespace Plugins {
 		{ "nValue", T_INT, offsetof(CDevice, nValue), READONLY, "Numeric device value" },
 		{ "sValue", T_OBJECT, offsetof(CDevice, sValue), READONLY, "String device value" },
 		{ "LastLevel", T_INT, offsetof(CDevice, LastLevel), READONLY, "Previous device level" },
+		{ "LastUpdate", T_OBJECT, offsetof(CDevice, LastUpdate), READONLY, "Last update timestamp" },
 		{ NULL }  /* Sentinel */
 	};
 
@@ -779,7 +841,7 @@ namespace Plugins {
 		{
 			// load associated devices to make them available to python
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT Unit, ID, Name, nValue, sValue, DeviceID, Type, SubType, SwitchType, LastLevel, CustomImage FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) ORDER BY Unit ASC", self->HwdID, self->Unit);
+			result = m_sql.safe_query("SELECT Unit, ID, Name, nValue, sValue, DeviceID, Type, SubType, SwitchType, LastLevel, CustomImage, LastUpdate FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) ORDER BY Unit ASC", self->HwdID, self->Unit);
 			if (result.size() > 0)
 			{
 				for (std::vector<std::vector<std::string> >::const_iterator itt = result.begin(); itt != result.end(); ++itt)
@@ -787,18 +849,20 @@ namespace Plugins {
 					std::vector<std::string> sd = *itt;
 					self->Unit = atoi(sd[0].c_str());
 					self->ID = atoi(sd[1].c_str());
-					Py_DECREF(self->Name);
+					Py_XDECREF(self->Name);
 					self->Name = PyUnicode_FromString(sd[2].c_str());
 					self->nValue = atoi(sd[3].c_str());
-					Py_DECREF(self->sValue);
+					Py_XDECREF(self->sValue);
 					self->sValue = PyUnicode_FromString(sd[4].c_str());
-					Py_DECREF(self->DeviceID);
+					Py_XDECREF(self->DeviceID);
 					self->DeviceID = PyUnicode_FromString(sd[5].c_str());
 					self->Type = atoi(sd[6].c_str());
 					self->SubType = atoi(sd[7].c_str());
 					self->SwitchType = atoi(sd[8].c_str());
 					self->LastLevel = atoi(sd[9].c_str());
 					self->Image = atoi(sd[10].c_str());
+					Py_XDECREF(self->LastUpdate);
+					self->LastUpdate = PyUnicode_FromString(sd[11].c_str());
 				}
 			}
 		}
@@ -830,12 +894,14 @@ namespace Plugins {
 					char szID[40];
 					sprintf(szID, "%X%02X%02X%02X", 0, 0, (self->HwdID & 0xFF00) >> 8, self->HwdID & 0xFF);
 					PyObject*	pOptionBytes = PyUnicode_AsASCIIString(self->Options);
+					PyObject*	pSValueBytes = PyUnicode_AsASCIIString(self->sValue);
 					std::string	sLongName = self->pPlugin->Name + " - " + PyBytes_AsString(pNameBytes);
 					m_sql.safe_query(
 						"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue, CustomImage, Options) "
-						"VALUES (%d, '%q', %d, %d, %d, %d, 1, 12, 255, '%q', 0, '', %d, '%q')",
-						self->HwdID, szID, self->Unit, self->Type, self->SubType, self->SwitchType, sLongName.c_str(), self->Image, std::string(PyBytes_AsString(pOptionBytes)).c_str());
+						"VALUES (%d, '%q', %d, %d, %d, %d, 1, 12, 255, '%q', 0, '%q', %d, '%q')",
+						self->HwdID, szID, self->Unit, self->Type, self->SubType, self->SwitchType, sLongName.c_str(), std::string(PyBytes_AsString(pSValueBytes)).c_str(), self->Image, std::string(PyBytes_AsString(pOptionBytes)).c_str());
 					Py_DECREF(pOptionBytes);
+					Py_DECREF(pSValueBytes);
 
 					result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", self->HwdID, self->Unit);
 					if (result.size())
@@ -904,9 +970,7 @@ namespace Plugins {
 			Py_DECREF(pNameBytes);
 			Py_DECREF(pDeviceBytes);
 
-			self->nValue = nValue;
-			Py_DECREF(self->sValue);
-			self->sValue = PyUnicode_FromString(sValue);
+			CDevice_refresh(self);
 		}
 		else
 		{
@@ -1238,19 +1302,33 @@ namespace Plugins {
 		//   <meta charset=utf-8>
 		//   <meta name=viewport...
 
+		// HTTP/1.1 200 OK
+		// Content-Type: text/html; charset=UTF-8
+		// Transfer-Encoding: chunked
+		// Date: Thu, 05 Jan 2017 05:50:33 GMT
 		//
-		//	Handles the cases where a read contains a partial message
-		//
-		std::string	sData = m_sRetainedData + ReadData;  // if there was some data left over from last time add it back in
+		// 40d
+		// <!DOCTYPE html>
+		// <html lang=en>
+		//   <meta charset=utf-8>
+		// ...
+		// </html>
+		// 0
 
 		// is this the start of a response?
 		if (!m_Status)
 		{
-			std::string		sFirstLine = sData.substr(0,sData.find_first_of('\r'));
-			sFirstLine = sFirstLine.substr(sFirstLine.find_first_of(' ') + 1);
-			sFirstLine = sFirstLine.substr(0,sFirstLine.find_first_of(' '));
-			m_Status = atoi(sFirstLine.c_str());
+			std::string	sData = m_sRetainedData + ReadData;  // if there was some data left over from last time add it back in
 
+			m_ContentLength = 0;
+			m_Chunked = false;
+			m_RemainingChunk = 0;
+
+			// Process response header (HTTP/1.1 200 OK)
+			std::string		sFirstLine = sData.substr(0, sData.find_first_of('\r'));
+			sFirstLine = sFirstLine.substr(sFirstLine.find_first_of(' ') + 1);
+			sFirstLine = sFirstLine.substr(0, sFirstLine.find_first_of(' '));
+			m_Status = atoi(sFirstLine.c_str());
 			sData = sData.substr(sData.find_first_of('\n') + 1);
 
 			// Remove headers
@@ -1259,54 +1337,106 @@ namespace Plugins {
 			{
 				std::string		sHeaderLine = sData.substr(0, sData.find_first_of('\r'));
 				std::string		sHeaderName = sData.substr(0, sHeaderLine.find_first_of(':'));
-				std::string		sHeaderText = sHeaderLine.substr(sHeaderName.length()+2);
+				std::string		sHeaderText = sHeaderLine.substr(sHeaderName.length() + 2);
 				if (sHeaderName == "Content-Length")
 				{
 					m_ContentLength = atoi(sHeaderText.c_str());
+				}
+				if ((sHeaderName == "Transfer-Encoding") && (sHeaderText == "chunked"))
+				{
+					m_Chunked = true;
 				}
 				PyObject*	pObj = Py_BuildValue("s", sHeaderText.c_str());
 				if (PyDict_SetItemString(pHeaderDict, sHeaderName.c_str(), pObj) == -1)
 				{
 					_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%s' to headers.", __func__, sHeaderName.c_str(), sHeaderText.c_str());
-				} 
+				}
 				Py_DECREF(pObj);
 				sData = sData.substr(sData.find_first_of('\n') + 1);
 			}
-			if (sData.length())
+
+			// not enough data arrived to complete header processing
+			if (!sData.length())
 			{
-				m_Headers = pHeaderDict;
-				sData = sData.substr(sData.find_first_of('\n') + 1);
-			}
-			else
-			{
-				// not enough data arrived to complete header processing
 				m_sRetainedData += ReadData; // retain any residual for next time
 				m_Status = 0;
 				m_ContentLength = 0;
 				Py_DECREF(pHeaderDict);
 				return;
 			}
+
+			m_Headers = pHeaderDict;
+			sData = sData.substr(sData.find_first_of('\n') + 1);		// skip over 2nd new line char
+			m_sRetainedData.clear();
+			ReadData = sData;
 		}
 
-		// If full message then return it - Handles cases where Content-Length may no have been supplied
-		if ((m_ContentLength && (m_ContentLength == sData.length())) ||
-			(!m_ContentLength && (sData.find("</html>") != std::string::npos)) ||
-			(!m_ContentLength && (sData.find("</HTML>") != std::string::npos)))
+		// Process the message body
+		if (m_Status)
 		{
-			CPluginMessage	Message(PMT_Message, HwdID, ReadData);
-			Message.m_iLevel = m_Status;
-			Message.m_Object = m_Headers;
-			boost::lock_guard<boost::mutex> l(PluginMutex);
-			PluginMessageQueue.push(Message);
+			if (!m_Chunked)
+			{
+				std::string	sData = m_sRetainedData + ReadData;  // if there was some data left over from last time add it back in
 
-			m_Status = 0;
-			m_ContentLength = 0;
-			m_Headers = NULL;
-			m_sRetainedData = "";
-		}
-		else
-		{
-			m_sRetainedData = sData; // retain any residual for next time
+				// If full message then return it
+				if (m_ContentLength == sData.length())
+				{
+					CPluginMessage	Message(PMT_Message, HwdID, sData);
+					Message.m_iLevel = m_Status;
+					Message.m_Object = m_Headers;
+					boost::lock_guard<boost::mutex> l(PluginMutex);
+					PluginMessageQueue.push(Message);
+
+					m_Status = 0;
+					m_ContentLength = 0;
+					m_Headers = NULL;
+					m_sRetainedData.clear();
+				}
+				else
+					m_sRetainedData += ReadData; // retain any residual for next time
+			}
+			else
+			{
+				// Process available chunks
+				while (ReadData.length() && (ReadData != "\r\n"))
+				{
+					if (!m_RemainingChunk)	// Not processing a chunk so we should be at the start of one
+					{
+						if (ReadData[0] == '\r')
+						{
+							ReadData = ReadData.substr(ReadData.find_first_of('\n') + 1);
+						}
+						std::string		sChunkLine = ReadData.substr(0, ReadData.find_first_of('\r'));
+						m_RemainingChunk = strtol(sChunkLine.c_str(), NULL, 16);
+						ReadData = ReadData.substr(ReadData.find_first_of('\n') + 1);
+						if (!m_RemainingChunk)	// last chunk is zero length
+						{
+							CPluginMessage	Message(PMT_Message, HwdID, m_sRetainedData);
+							Message.m_iLevel = m_Status;
+							Message.m_Object = m_Headers;
+							boost::lock_guard<boost::mutex> l(PluginMutex);
+							PluginMessageQueue.push(Message);
+
+							m_Status = 0;
+							m_ContentLength = 0;
+							m_Headers = NULL;
+							m_sRetainedData.clear();
+							break;
+						}
+					}
+
+					if (ReadData.length() <= m_RemainingChunk)		// Read data is just part of a chunk
+					{
+						m_sRetainedData += ReadData;
+						m_RemainingChunk -= ReadData.length();
+						break;
+					}
+
+					m_sRetainedData += ReadData.substr(0, m_RemainingChunk);
+					ReadData = ReadData.substr(m_RemainingChunk);
+					m_RemainingChunk = 0;
+				}
+			}
 		}
 	}
 
@@ -1318,6 +1448,15 @@ namespace Plugins {
 		// Connection: "keep-alive"
 		// Accept: "text/html"
 		//
+
+		// POST /path/test.cgi HTTP/1.1
+		// From: info@domoticz.com
+		// User-Agent: Domoticz/1.0
+		// Content-Type : application/x-www-form-urlencoded
+		// Content-Length : 32
+		//
+		// param1=value&param2=other+value
+
 		if (WriteMessage.m_Operation.length())
 		{
 			sHttpRequest = WriteMessage.m_Operation + " ";
@@ -1347,7 +1486,7 @@ namespace Plugins {
 				auth += m_Password;
 			}
 			std::string encodedAuth = base64_encode((const unsigned char *)auth.c_str(), auth.length());
-			sHttpRequest += "Authorization:Basic " + encodedAuth;
+			sHttpRequest += "Authorization:Basic " + encodedAuth + "\r\n";
 		}
 
 		// Did we get headers to send?
@@ -1970,8 +2109,8 @@ namespace Plugins {
 				}
 				else if (Message.m_Message == "Serial")
 				{
-					if (m_bDebug) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', '%s', %d.", Name.c_str(), Message.m_Message.c_str(), Message.m_Port.c_str(), Message.m_iValue);
-					m_pTransport = (CPluginTransport*) new CPluginTransportSerial(m_HwdID, Message.m_Port, Message.m_iValue);
+					if (m_bDebug) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', '%s', %d.", Name.c_str(), Message.m_Message.c_str(), Message.m_Address.c_str(), Message.m_iValue);
+					m_pTransport = (CPluginTransport*) new CPluginTransportSerial(m_HwdID, Message.m_Address, Message.m_iValue);
 				}
 				else
 				{
@@ -2036,6 +2175,11 @@ namespace Plugins {
 					std::string	sWriteData = m_pProtocol->ProcessOutbound(Message);
 					if (m_bDebug) _log.Log(LOG_NORM, "(%s) Sending data: '%s'.", Name.c_str(), sWriteData.c_str());
 					m_pTransport->handleWrite(sWriteData);
+					if (Message.m_Object)
+					{
+						PyObject*	pHeaders = (PyObject*)Message.m_Object;
+						Py_XDECREF(pHeaders);
+					}
 				}
 				break;
 			case PDT_Disconnect:
@@ -2077,13 +2221,18 @@ namespace Plugins {
 				if (Message.m_Object)
 				{
 					PyObject*	pHeaders = (PyObject*)Message.m_Object;
-					pParams = Py_BuildValue("siO", Message.m_Message.c_str(), Message.m_iLevel, pHeaders);
+					pParams = Py_BuildValue("yiO", (unsigned char*)(Message.m_Message.c_str()), Message.m_iLevel, pHeaders);
+					if (!pParams)
+					{
+						_log.Log(LOG_ERROR, "(%s) Failed to create parameters for inbound message: (%d) %s.", Name.c_str(), Message.m_Message.length(), Message.m_Message.c_str());
+						LogPythonException(sHandler);
+					}
 					Py_XDECREF(pHeaders);
 				}
 				else
 				{
 					Py_INCREF(Py_None);
-					pParams = Py_BuildValue("siO", Message.m_Message.c_str(), Message.m_iLevel, Py_None);
+					pParams = Py_BuildValue("yiO", Message.m_Message.c_str(), Message.m_iLevel, Py_None);
 				}
 			}
 			break;
@@ -2134,6 +2283,7 @@ namespace Plugins {
 						LogPythonException(sHandler);
 					}
 				}
+				else if (m_bDebug) _log.Log(LOG_NORM, "(%s) Message handler '%s' not callable, ignored.", Name.c_str(), sHandler.c_str());
 			}
 
 			if (pParams) Py_XDECREF(pParams);
@@ -2186,18 +2336,18 @@ namespace Plugins {
 		{
 			if (it_type->second.find(sFind) != std::string::npos)
 			{
-				ssPath << it_type->first.c_str() << sSeparator;
+				ssPath << it_type->first.c_str();
 				break;
 			}
 		}
-		std::wstring	sPath = ssPath.str();
+		std::wstring	sPath = ssPath.str() + sSeparator;
 		sPath += Py_GetPath();
 		PySys_SetPath((wchar_t*)sPath.c_str());
 
 		m_PyModule = PyImport_ImportModule("plugin");
 		if (!m_PyModule)
 		{
-			_log.Log(LOG_ERROR, "(%s) failed to load, Path '%S'.", m_PluginKey.c_str(), Py_GetPath());
+			_log.Log(LOG_ERROR, "(%s) failed to load 'plugin.py', Python Path used was '%S'.", m_PluginKey.c_str(), sPath.c_str());
 			LogPythonException();
 			return false;
 		}
@@ -2228,7 +2378,7 @@ namespace Plugins {
 			boost::lock_guard<boost::mutex> l(PluginMutex);
 			PluginMessageQueue.push(Message);
 		}
-		_log.Log(LOG_STATUS, "(%s) initialized", Name.c_str());
+		_log.Log(LOG_STATUS, "(%s) Initialized", Name.c_str());
 
 		return true;
 	}
@@ -2289,7 +2439,7 @@ namespace Plugins {
 		}
 
 		// load associated devices to make them available to python
-		result = m_sql.safe_query("SELECT Unit, ID, Name, nValue, sValue, DeviceID, Type, SubType, SwitchType, LastLevel, CustomImage FROM DeviceStatus WHERE (HardwareID==%d) AND (Used==1) ORDER BY Unit ASC", m_HwdID);
+		result = m_sql.safe_query("SELECT Unit, ID, Name, nValue, sValue, DeviceID, Type, SubType, SwitchType, LastLevel, CustomImage, LastUpdate FROM DeviceStatus WHERE (HardwareID==%d) AND (Used==1) ORDER BY Unit ASC", m_HwdID);
 		if (result.size() > 0)
 		{
 			PyType_Ready(&CDeviceType);
@@ -2319,6 +2469,7 @@ namespace Plugins {
 				pDevice->SwitchType = atoi(sd[8].c_str());
 				pDevice->LastLevel = atoi(sd[9].c_str());
 				pDevice->Image = atoi(sd[10].c_str());
+				pDevice->LastUpdate = PyUnicode_FromString(sd[11].c_str());
 
 				Py_DECREF(pDevice);
 			}
@@ -2463,7 +2614,7 @@ namespace Plugins {
 							std::string filename = ent->d_name;
 							if (dirent_is_file(dirname, ent))
 							{
-								if ((filename.length() > 3) && (filename.compare(filename.length() - 3, 3, ".py") == 0))
+								if (filename == "plugin.py")
 								{
 									try
 									{
@@ -2563,26 +2714,42 @@ namespace Plugins {
 				}
 			}
 
-			CPluginMessage Message;
-			while (!PluginMessageQueue.empty())
+			time_t	Now = time(0);
+			bool	bProcessed = true;
+			while (bProcessed)
 			{
+				CPluginMessage Message;
+				bProcessed = false;
+
+				// Cycle once through the queue looking for the 1st message that is ready to process
+				for (size_t i = 0; i < PluginMessageQueue.size(); i++)
 				{
 					boost::lock_guard<boost::mutex> l(PluginMutex);
 					CPluginMessage FrontMessage = PluginMessageQueue.front();
-					Message = FrontMessage;
-				}
-				if (!m_pPlugins.count(Message.m_HwdID))
-				{
-					_log.Log(LOG_ERROR, "PluginSystem: Unknown hardware in message: %d.", Message.m_HwdID);
-				}
-				else
-				{
-					CPlugin*	pPlugin = (CPlugin*)m_pPlugins[Message.m_HwdID];
-					pPlugin->HandleMessage(Message);
+					PluginMessageQueue.pop();
+					if (FrontMessage.m_When <= Now)
+					{
+						// Message is ready now or was already ready (this is the case for almost all messages)
+						Message = FrontMessage;
+						break;
+					}
+					// Message is for sometime in the future so requeue it (this happens when the 'Delay' parameter is used on a Send)
+					PluginMessageQueue.push(FrontMessage);
 				}
 
-				boost::lock_guard<boost::mutex> l(PluginMutex);
-				PluginMessageQueue.pop();
+				if (Message.m_Type != PMT_NULL)
+				{
+					bProcessed = true;
+					if (!m_pPlugins.count(Message.m_HwdID))
+					{
+						_log.Log(LOG_ERROR, "PluginSystem: Unknown hardware in message: %d.", Message.m_HwdID);
+					}
+					else
+					{
+						CPlugin*	pPlugin = (CPlugin*)m_pPlugins[Message.m_HwdID];
+						pPlugin->HandleMessage(Message);
+					}
+				}
 			}
 			sleep_milliseconds(50);
 		}
