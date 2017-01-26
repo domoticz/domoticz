@@ -99,7 +99,8 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 		std::string sid = s_strid.str();
 		std::transform(sid.begin(), sid.end(), sid.begin(), ::tolower);
 		//append f0b4 to the front
-		sid.insert(0, "f0b4");
+		//sid.insert(0, "f0b4");
+		sid.insert(0, m_GatewayPrefix);
 
 		if (xcmd->command == Limitless_LedOn) {
 			m_GatewayBrightnessInt = 100;
@@ -219,6 +220,7 @@ void XiaomiGateway::InsertUpdateRGBGateway(const std::string & nodeid, const std
 		_log.Log(LOG_ERROR, "XiaomiGateway: Node ID %s is too short", nodeid.c_str());
 		return;
 	}
+	m_GatewayPrefix = nodeid.substr(0, 4);
 	std::string str = nodeid.substr(4, 8);
 
 	unsigned int sID;
@@ -451,6 +453,7 @@ bool XiaomiGateway::StartHardware()
 		m_GatewayIp = result[0][1].c_str();
 		m_GatewayRgbHex = "FFFFFF";
 		m_GatewayBrightnessInt = 100;
+		m_GatewayPrefix = "f0b4";
 	}
 
 	//Start worker thread

@@ -28,6 +28,7 @@ private:
 	std::string GetGatewayKey();
 	std::string m_GatewayRgbHex;
 	int m_GatewayBrightnessInt;
+	std::string m_GatewayPrefix;
 	std::string m_GatewayIp;
 	std::string m_GatewayPassword;
 	std::string m_token;
