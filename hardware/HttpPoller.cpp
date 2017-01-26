@@ -14,13 +14,31 @@
 
 #define round(a) ( int ) ( a + .5 )
 
-CHttpPoller::CHttpPoller(const int ID, const std::string& username, const std::string& password, const std::string& url, const std::string& script, const unsigned short refresh) :
+CHttpPoller::CHttpPoller(const int ID, const std::string& username, const std::string& password, const std::string& url, const std::string& extradata, const unsigned short refresh) :
 m_username(CURLEncode::URLEncode(username)),
 m_password(CURLEncode::URLEncode(password)),
 m_url(url),
-m_script(script),
 m_refresh(refresh)
 {
+	// extract the data
+	std::vector<std::string> strextra;
+	StringSplit(extradata, "|", strextra);
+	std::string script;
+	if (strextra.size() == 3 || strextra.size() == 4 || strextra.size() == 5)
+	{
+		m_script = base64_decode(strextra[0]);
+		m_method = atoi(base64_decode(strextra[1]).c_str());
+		m_contenttype = base64_decode(strextra[2]);
+		if (strextra.size() >= 4)
+		{
+			m_headers = base64_decode(strextra[3]);
+			if (strextra.size() == 5)
+			{
+				m_postdata = base64_decode(strextra[4]);
+			}
+		}
+	}
+
 	m_HwdID=ID;
 
 	m_stoprequested=false;
@@ -87,6 +105,20 @@ void CHttpPoller::GetScript()
 	std::vector<std::string> ExtraHeaders;
 	std::string sResult;
 
+	if (m_contenttype.length() > 0) {
+		ExtraHeaders.push_back("Content-type: " + m_contenttype);
+	}
+
+	if (m_headers.length() > 0)
+	{
+		std::vector<std::string> ExtraHeaders2;
+		StringSplit(m_headers, "\n", ExtraHeaders2);
+		for (size_t i = 0; i < ExtraHeaders2.size(); i++)
+		{
+			ExtraHeaders.push_back(ExtraHeaders2[i]);
+		}
+	}
+
 	std::string auth;
 	if (m_username.length() > 0 || m_password.length() > 0)
 	{
@@ -102,11 +134,21 @@ void CHttpPoller::GetScript()
 		std::string encodedAuth = base64_encode((const unsigned char *)auth.c_str(), auth.length());
 		ExtraHeaders.push_back("Authorization:Basic " + encodedAuth);
 	}
-	if (!HTTPClient::GET(sURL, ExtraHeaders, sResult))
-	{
-		std::string err = "Http: Error getting data from url \"" + sURL + "\"";
-		_log.Log(LOG_ERROR, err.c_str());
-		return;
+
+	if (m_method == 0) {
+		if (!HTTPClient::GET(sURL, ExtraHeaders, sResult))
+		{
+			std::string err = "Http: Error getting data from url \"" + sURL + "\"";
+			_log.Log(LOG_ERROR, err.c_str());
+			return;
+		}
+	}
+	if (m_method == 1) {
+		if (!HTTPClient::POST(sURL, m_postdata, ExtraHeaders, sResult)) {
+			std::string err = "Http: Error getting data from url \"" + sURL + "\"";
+			_log.Log(LOG_ERROR, err.c_str());
+			return;
+		}
 	}
 
 	// Got some data, send them to the lua parsers for processing

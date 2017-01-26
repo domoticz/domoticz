@@ -2048,7 +2048,7 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 		}
 		else if (deviceName.find("SendNotification") != std::string::npos)
 		{
-			std::string subject, body, priority("0"), sound;
+			std::string subject, body, priority("0"), sound, subsystem;
 			std::vector<std::string> aParam;
 			StringSplit(doWhat, "#", aParam);
 			subject = body = aParam[0];
@@ -2072,7 +2072,11 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 				priority = aParam[2];
 				sound = aParam[3];
 			}
-			m_sql.AddTaskItem(_tTaskItem::SendNotification(1, subject, body, std::string(""), atoi(priority.c_str()), sound));
+			else if (aParam.size() == 5)
+                        {
+				subsystem = aParam[4];
+			}
+			m_sql.AddTaskItem(_tTaskItem::SendNotification(1, subject, body, std::string(""), atoi(priority.c_str()), sound, subsystem));
 			actionsDone = true;
 			continue;
 		}
@@ -3057,7 +3061,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 	std::string lCommand = std::string(lua_tostring(lua_state, -2));
 	if (lCommand == "SendNotification") {
 		std::string luaString = lua_tostring(lua_state, -1);
-		std::string subject(" "), body(" "), priority("0"), sound;
+		std::string subject(" "), body(" "), priority("0"), sound, subsystem;
 		std::string extraData;
 		std::vector<std::string> aParam;
 		StringSplit(luaString, "#", aParam);
@@ -3074,7 +3078,11 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 		if (aParam.size() > 4) {
 			extraData = "|Device=" + aParam[4];
 		}
-		m_sql.AddTaskItem(_tTaskItem::SendNotification(1, subject, body, std::string(""), atoi(priority.c_str()), sound));
+		if (aParam.size() > 5) {
+			subsystem = aParam[5];
+		}
+
+		m_sql.AddTaskItem(_tTaskItem::SendNotification(1, subject, body, extraData, atoi(priority.c_str()), sound, subsystem));
 		scriptTrue = true;
 	}
 	else if (lCommand == "SendEmail") {

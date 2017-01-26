@@ -399,7 +399,7 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
   reply::add_header(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
   reply::add_header(&rep, "Content-Type", mime_types::extension_to_type(extension));
   reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
-  if (bHaveLoadedgzip)
+  if (bHaveGZipSupport && bHaveLoadedgzip)
   {
 	reply::add_header(&rep, "Content-Encoding", "gzip");
   }

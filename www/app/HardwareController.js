@@ -230,6 +230,52 @@ define(['app'], function (app) {
                      }
                 });
             }
+            else if (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0) {
+                var address = $("#hardwarecontent #divremote #tcpaddress").val();
+                if (address == "") {
+                    ShowNotify($.t('Please enter an Address!'), 2500, true);
+                    return;
+                }
+                var port = $("#hardwarecontent #divremote #tcpport").val();
+                if (port == "") {
+                    ShowNotify($.t('Please enter an Port!'), 2500, true);
+                    return;
+                }
+                var intRegex = /^\d+$/;
+                if (!intRegex.test(port)) {
+                    ShowNotify($.t('Please enter an Valid Port!'), 2500, true);
+                    return;
+                }
+
+                var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
+                if (password != "") {
+                    if ((isNaN(password)) || (password.length < 5)) /* must be a number */ {
+                        ShowNotify($.t('Please enter a numeric password of at least 5 characters'), 2500, true);
+                        return;
+                    }
+                }
+
+                $.ajax({
+                    url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+                       "&address=" + address +
+                       "&port=" + port +
+                       //"&username=" + encodeURIComponent(username) +
+                       "&password=" + encodeURIComponent(password) +
+                       "&name=" + encodeURIComponent(name) +
+                       "&enabled=" + bEnabled +
+                       "&idx=" + idx +
+                       "&datatimeout=" + datatimeout +
+                       "&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
+                    async: false,
+                    dataType: 'json',
+                    success: function (data) {
+                        RefreshHardwareTable();
+                    },
+                    error: function () {
+                        ShowNotify($.t('Problem updating hardware!'), 2500, true);
+                    }
+                });
+            }
             else if (
 					(text.indexOf("LAN") >= 0 &&
 					text.indexOf("YouLess") == -1 &&
@@ -471,6 +517,21 @@ define(['app'], function (app) {
                 }
                 var username = $("#hardwarecontent #divlogin #username").val();
                 var password = $("#hardwarecontent #divlogin #password").val();
+				var method = $("#hardwarecontent #divhttppoller #combomethod option:selected").val();
+				if (typeof method == 'undefined')
+				{
+					ShowNotify($.t('No HTTP method selected!'), 2500, true);
+					return;
+				}
+				var contenttype = $("#hardwarecontent #divhttppoller #contenttype").val();
+				var headers = $("#hardwarecontent #divhttppoller #headers").val();
+				var postdata = $("#hardwarecontent #divhttppoller #postdata").val();
+				var extra = btoa(script)+"|"+btoa(method)+"|"+btoa(contenttype)+"|"+btoa(headers);
+				if (method == "1")
+				{
+					extra = extra + "|" + btoa(postdata);
+				}
+				
                 $.ajax({
                     url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
                        "&port=" + refresh +
@@ -481,8 +542,7 @@ define(['app'], function (app) {
                        "&idx=" + idx +
                        "&datatimeout=" + datatimeout +
                        "&address=" + encodeURIComponent(url) +
-                       "&extra=" + encodeURIComponent(script) +
-                       "&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
+                       "&extra=" + extra,
                     async: false,
                     dataType: 'json',
                     success: function (data) {
@@ -762,57 +822,6 @@ define(['app'], function (app) {
                      }
                 });
             }
-			else if (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0)
-            {
-				var address=$("#hardwarecontent #divremote #tcpaddress").val();
-                if (address=="")
-                {
-                    ShowNotify($.t('Please enter an Address!'), 2500, true);
-                    return;
-                }
-                var port=$("#hardwarecontent #divremote #tcpport").val();
-                if (port=="")
-                {
-                    ShowNotify($.t('Please enter an Port!'), 2500, true);
-                    return;
-                }
-                var intRegex = /^\d+$/;
-                if(!intRegex.test(port)) {
-                    ShowNotify($.t('Please enter an Valid Port!'), 2500, true);
-                    return;
-                }
-				
-				var password=encodeURIComponent($("#hardwarecontent #divlogin #password").val());
-                if (password != "")
-                {
-                   if ((isNaN(password)) || (password.length < 5)) /* must be a number */
-                   {
-                        ShowNotify($.t('Please enter a numeric password of at least 5 characters'), 2500, true);
-                        return;
-                   }
-                }
-				
-                $.ajax({
-                     url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
-                        "&address=" + address +
-                        "&port=" + port +
-                        //"&username=" + encodeURIComponent(username) +
-						"&password=" + encodeURIComponent(password) +
-                        "&name=" + encodeURIComponent(name) +
-                        "&enabled=" + bEnabled +
-                        "&idx=" + idx +
-                        "&datatimeout=" + datatimeout +
-                        "&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
-                     async: false,
-                     dataType: 'json',
-                     success: function(data) {
-                        RefreshHardwareTable();
-                     },
-                    error: function(){
-                            ShowNotify($.t('Problem updating hardware!'), 2500, true);
-                     }
-                });
-            }
 	    else if (text.indexOf("Goodwe solar inverter via Web") >= 0)
             {
 		var username=$("#hardwarecontent #divgoodweweb #username").val();
@@ -945,7 +954,52 @@ define(['app'], function (app) {
                         ShowNotify($.t('Problem adding hardware!'), 2500, true);
                     }
                 });
-           }
+            }
+            else if (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0) {
+                var address = $("#hardwarecontent #divremote #tcpaddress").val();
+                if (address == "") {
+                    ShowNotify($.t('Please enter an Address!'), 2500, true);
+                    return;
+                }
+                var port = $("#hardwarecontent #divremote #tcpport").val();
+                if (port == "") {
+                    ShowNotify($.t('Please enter an Port!'), 2500, true);
+                    return;
+                }
+                var intRegex = /^\d+$/;
+                if (!intRegex.test(port)) {
+                    ShowNotify($.t('Please enter an Valid Port!'), 2500, true);
+                    return;
+                }
+                /*var username=$("#hardwarecontent #hardwareparamsphilipshue #username").val();
+
+                if (username == "") {
+                    ShowNotify($.t('Please enter a username!'), 2500, true);
+                    return;
+                }*/
+                var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
+                if (password != "") {
+                    if ((isNaN(password)) || (password.length < 5)) /* must be a number */ {
+                        ShowNotify($.t('Please enter a numeric password of at least 5 characters'), 2500, true);
+                        return;
+                    }
+                }
+
+                $.ajax({
+                    url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port +
+                    //"&username=" + encodeURIComponent(username) +
+                    "&password=" + encodeURIComponent(password) +
+                    "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
+                    async: false,
+                    dataType: 'json',
+                    success: function (data) {
+                        RefreshHardwareTable();
+                    },
+                    error: function () {
+                        ShowNotify($.t('Problem adding hardware!'), 2500, true);
+                    }
+                });
+            }
             else if (
 					(text.indexOf("LAN") >= 0 &&
 					text.indexOf("YouLess") == -1 &&
@@ -1315,8 +1369,23 @@ define(['app'], function (app) {
                 }
                 var username = $("#hardwarecontent #divlogin #username").val();
                 var password = $("#hardwarecontent #divlogin #password").val();
+				var method = $("#hardwarecontent #divhttppoller #combomethod option:selected").val();
+				if (typeof method == 'undefined')
+				{
+					ShowNotify($.t('No HTTP method selected!'), 2500, true);
+					return;
+				}
+				var contenttype = $("#hardwarecontent #divhttppoller #contenttype").val();
+				var headers = $("#hardwarecontent #divhttppoller #headers").val();
+				var postdata = $("#hardwarecontent #divhttppoller #postdata").val();
+				
+				var extra = btoa(script) + "|" + btoa(method) + "|" + btoa(contenttype) + "|" + btoa(headers);
+				if (method == "1")
+				{
+					extra = extra + "|" + btoa(postdata);
+				}
                 $.ajax({
-                    url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&port=" + refresh + "&username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password) + "&name=" + encodeURIComponent(name) + "&address=" + encodeURIComponent(url) + "&extra=" + encodeURIComponent(script) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
+                    url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&port=" + refresh + "&username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password) + "&name=" + encodeURIComponent(name) + "&address=" + encodeURIComponent(url) + "&extra=" + extra + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
                     async: false,
                     dataType: 'json',
                     success: function (data) {
@@ -1460,56 +1529,6 @@ define(['app'], function (app) {
                      "&name=" + encodeURIComponent(name) +
                      "&enabled=" + bEnabled +
                      "&datatimeout=" + datatimeout,
-                     async: false,
-                     dataType: 'json',
-                     success: function(data) {
-                        RefreshHardwareTable();
-                     },
-                     error: function(){
-                            ShowNotify($.t('Problem adding hardware!'), 2500, true);
-                     }
-                });
-            }
-            else if (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0)
-            {
-                var address=$("#hardwarecontent #divremote #tcpaddress").val();
-                if (address=="")
-                {
-                    ShowNotify($.t('Please enter an Address!'), 2500, true);
-                    return;
-                }
-                var port=$("#hardwarecontent #divremote #tcpport").val();
-                if (port=="")
-                {
-                    ShowNotify($.t('Please enter an Port!'), 2500, true);
-                    return;
-                }
-                var intRegex = /^\d+$/;
-                if(!intRegex.test(port)) {
-                    ShowNotify($.t('Please enter an Valid Port!'), 2500, true);
-                    return;
-                }
-                /*var username=$("#hardwarecontent #hardwareparamsphilipshue #username").val();
-
-                if (username == "") {
-                    ShowNotify($.t('Please enter a username!'), 2500, true);
-                    return;
-                }*/
-				var password=encodeURIComponent($("#hardwarecontent #divlogin #password").val());
-                if (password != "")
-                {
-                   if ((isNaN(password)) || (password.length < 5)) /* must be a number */
-                   {
-                        ShowNotify($.t('Please enter a numeric password of at least 5 characters'), 2500, true);
-                        return;
-                   }
-                }
-
-                $.ajax({
-                     url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port +
-					 //"&username=" + encodeURIComponent(username) +
-					 "&password=" + encodeURIComponent(password) +
-					 "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
                      async: false,
                      dataType: 'json',
                      success: function(data) {
@@ -3271,6 +3290,7 @@ define(['app'], function (app) {
 
             $('#hardwarecontent #idx').val(idx);
             $('#hardwarecontent #combom1type').val(Mode1);
+            $('#hardwarecontent #CCBridgeType').val(Mode2);
         }
 
         EditCCUSB = function(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5,Mode6)
@@ -4918,7 +4938,29 @@ define(['app'], function (app) {
                         }
                         else if ((data["Type"].indexOf("HTTP/HTTPS") >= 0)) {
                             $("#hardwarecontent #hardwareparamshttp #url").val(data["Address"]);
-                            $("#hardwarecontent #hardwareparamshttp #script").val(data["Extra"]);
+							var tmp = data["Extra"];
+							var tmparray=tmp.split("|");
+							if (tmparray.length >= 4)
+							{
+								$("#hardwarecontent #hardwareparamshttp #script").val(atob(tmparray[0]));
+								$("#hardwarecontent #hardwareparamshttp #combomethod").val(atob(tmparray[1]));
+								$("#hardwarecontent #hardwareparamshttp #contenttype").val(atob(tmparray[2]));
+								$("#hardwarecontent #hardwareparamshttp #headers").val(atob(tmparray[3]));
+								if (tmparray.length >= 5)
+								{
+									$("#hardwarecontent #hardwareparamshttp #postdata").val(atob(tmparray[4]));
+								}
+								if (atob(tmparray[1])==1)
+								{
+									$("#hardwarecontent #hardwareparamshttp #divpostdatalabel").show();
+									$("#hardwarecontent #hardwareparamshttp #divpostdatatextarea").show();
+								}
+								else
+								{
+									$("#hardwarecontent #hardwareparamshttp #divpostdatalabel").hide();
+									$("#hardwarecontent #hardwareparamshttp #divpostdatatextarea").hide();
+								}
+							}
                             $("#hardwarecontent #hardwareparamshttp #refresh").val(data["IntPort"]);
                         }
                         else if (data["Type"].indexOf("SBFSpot") >= 0) {
@@ -5118,6 +5160,14 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
             }
+            else if (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0) {
+                $("#hardwarecontent #divserial").hide();
+                $("#hardwarecontent #divremote").show();
+                $("#hardwarecontent #divlogin").show();
+                $("#hardwarecontent #divunderground").hide();
+                $("#hardwarecontent #divhttppoller").hide();
+                $("#hardwarecontent #hardwareparamsremote #tcpport").val(20000);
+            }
             else if ((text.indexOf("LAN") >= 0 || text.indexOf("Harmony") >= 0 || text.indexOf("MySensors Gateway with MQTT") >= 0) && text.indexOf("YouLess") == -1 && text.indexOf("Denkovi") == -1 && text.indexOf("Satel Integra") == -1)
             {
                 $("#hardwarecontent #divserial").hide();
@@ -5204,6 +5254,18 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").show();
                 $("#hardwarecontent #hardwareparamshttp #refresh").val(300);
+				
+				var method = $("#hardwarecontent #divhttppoller #combomethod option:selected").val();
+				if (method == 0)
+				{
+					$("#hardwarecontent #hardwareparamshttp #divpostdatalabel").hide();
+					$("#hardwarecontent #hardwareparamshttp #divpostdatatextarea").hide();
+				}
+				else
+				{
+					$("#hardwarecontent #hardwareparamshttp #divpostdatalabel").show();
+					$("#hardwarecontent #hardwareparamshttp #divpostdatatextarea").show();
+				}
             }
             else if ((text.indexOf("Underground") >= 0) || (text.indexOf("DarkSky") >= 0) || (text.indexOf("AccuWeather") >= 0) || (text.indexOf("Open Weather Map") >= 0))
             {
@@ -5266,16 +5328,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divlogin").show();
                 $("#hardwarecontent #hardwareparamsremote #tcpport").val(1255);
             }
-            else if (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0)
-            {
-                $("#hardwarecontent #divserial").hide();
-                $("#hardwarecontent #divremote").show();
-                $("#hardwarecontent #divlogin").show();
-                $("#hardwarecontent #divunderground").hide();
-                $("#hardwarecontent #divhttppoller").hide();
-                $("#hardwarecontent #hardwareparamsremote #tcpport").val(20000);
-            }
-	        else if (text.indexOf("1-Wire") >= 0)
+            else if (text.indexOf("1-Wire") >= 0)
             {
 	        $("#hardwarecontent #div1wire").show();
                 $("#hardwarecontent #divserial").hide();
@@ -5374,6 +5427,19 @@ define(['app'], function (app) {
                 {
                     $("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked",1);
                     $("#hardwarecontent #divcrcp1").show();
+                }
+            });
+			
+			$("#hardwarecontent #divhttppoller #combomethod").change(function() {
+                if ($("#hardwarecontent #divhttppoller #combomethod option:selected").val() == 0)
+                {
+                    $("#hardwarecontent #hardwareparamshttp #divpostdatalabel").hide();
+					$("#hardwarecontent #hardwareparamshttp #divpostdatatextarea").hide();
+                }
+                else
+                {
+                    $("#hardwarecontent #hardwareparamshttp #divpostdatalabel").show();
+					$("#hardwarecontent #hardwareparamshttp #divpostdatatextarea").show();
                 }
             });
 
