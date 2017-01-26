@@ -163,6 +163,7 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 		sleep_milliseconds(150);
 		boost::array<char, 512> recv_buffer_;
 		memset(&recv_buffer_[0], 0, sizeof(recv_buffer_));
+		_log.Log(LOG_STATUS, "XiaomiGateway: request %s", message.c_str());
 		while (socket_.available() > 0) {
 			socket_.receive_from(boost::asio::buffer(recv_buffer_), remote_endpoint_);
 			std::string receivedString(recv_buffer_.data());
@@ -171,8 +172,7 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 				_log.Log(LOG_ERROR, "XiaomiGateway: unable to write command - Invalid Key");
 				result = false;
 			}
-			//_log.Log(LOG_STATUS, "mycommand: %s", message.c_str());
-			//_log.Log(LOG_STATUS, "XiaomiGateway: response %s", receivedString.c_str());
+			_log.Log(LOG_STATUS, "XiaomiGateway: response %s", receivedString.c_str());
 		}
 		socket_.close();
 	}
