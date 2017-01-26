@@ -246,6 +246,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_RaspberryBME280, "I2C sensor BME280 Temp+Hum+Baro" },
 		{ HTYPE_Arilux, "Arilux AL-LC0x" },
 		{ HTYPE_OpenWebNetUSB, "MyHome OpenWebNet USB" },
+		{ HTYPE_IntergasInComfortLAN2RF, "Intergas InComfort LAN2RF Gateway" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -736,6 +737,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLimitlessLights, sTypeLimitlessRGBW, "RGBW" },
 		{ pTypeLimitlessLights, sTypeLimitlessRGB, "RGB" },
 		{ pTypeLimitlessLights, sTypeLimitlessWhite, "White" },
+		{ pTypeLimitlessLights, sTypeLimitlessRGBWW, "RGBWW" },
 
 		{ pTypeRFY, sTypeRFY, "RFY" },
 		{ pTypeRFY, sTypeRFY2, "RFY2" },
@@ -1094,6 +1096,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeLimitlessLights, sTypeLimitlessRGBW, "Status" },
 		{ pTypeLimitlessLights, sTypeLimitlessRGB, "Status" },
 		{ pTypeLimitlessLights, sTypeLimitlessWhite, "Status" },
+		{ pTypeLimitlessLights, sTypeLimitlessRGBWW, "Status" },
 
 		{ pTypeRFY, sTypeRFY, "Status" },
 		{ pTypeRFY, sTypeRFY2, "Status" },

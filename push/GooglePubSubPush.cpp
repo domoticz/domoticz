@@ -125,6 +125,7 @@ void CGooglePubSubPush::DoGooglePubSubPush()
 
 			std::vector<std::string> sd=*itt;
 			unsigned int deviceId = atoi(sd[0].c_str());
+			std::string sdeviceId = sd[0].c_str();
 			std::string ldelpos = sd[1].c_str();
 			int delpos = atoi(sd[1].c_str());
 			int dType = atoi(sd[3].c_str());
@@ -175,10 +176,11 @@ void CGooglePubSubPush::DoGooglePubSubPush()
 			%D : Target Device id
 			%V : Target Variable
 			%u : Unit
-			%n : Name
+			%n : Device name
 			%T0 : Type
 			%T1 : SubType
 			%h : hostname
+			%idx : 'Original device' id (idx)
 			*/
 
 			std::string lunit = getUnit(delpos, metertype);
@@ -218,6 +220,7 @@ void CGooglePubSubPush::DoGooglePubSubPush()
 			replaceAll(googlePubSubData, "%T0", lType);
 			replaceAll(googlePubSubData, "%T1", lSubType);
 			replaceAll(googlePubSubData, "%h", std::string(hostname));
+			replaceAll(googlePubSubData, "%idx", sdeviceId);
 
 			if (sendValue != "") {
 				std::stringstream python_DirT;

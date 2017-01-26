@@ -112,6 +112,7 @@
 #include "../hardware/plugins/Plugins.h"
 #include "../hardware/Arilux.h"
 #include "../hardware/OpenWebNetUSB.h"
+#include "../hardware/InComfort.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -247,6 +248,12 @@ void MainWorker::AddAllDomoticzHardware()
 			int mode5 = atoi(sd[14].c_str());
 			int mode6 = atoi(sd[15].c_str());
 			int DataTimeout = atoi(sd[16].c_str());
+			std::string Mode1Str = sd[10].c_str();
+			std::string Mode2Str = sd[11].c_str();
+			std::string Mode3Str = sd[12].c_str();
+			std::string Mode4Str = sd[13].c_str();
+			std::string Mode5Str = sd[14].c_str();
+			std::string Mode6Str = sd[15].c_str();
 			AddHardwareFromParams(ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, mode1, mode2, mode3, mode4, mode5, mode6, DataTimeout, false);
 		}
 		m_hardwareStartCounter = 0;
@@ -592,6 +599,12 @@ bool MainWorker::RestartHardware(const std::string &idx)
 	int Mode5 = atoi(sd[13].c_str());
 	int Mode6 = atoi(sd[14].c_str());
 	int DataTimeout = atoi(sd[15].c_str());
+	std::string Mode1Str = sd[9].c_str();
+	std::string Mode2Str = sd[10].c_str();
+	std::string Mode3Str = sd[11].c_str();
+	std::string Mode4Str = sd[12].c_str();
+	std::string Mode5Str = sd[13].c_str();
+	std::string Mode6Str = sd[14].c_str();
 
 	return AddHardwareFromParams(atoi(idx.c_str()), Name, (senabled == "true") ? true : false, htype, address, port, serialport, username, password, extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout, true);
 }
@@ -749,7 +762,7 @@ bool MainWorker::AddHardwareFromParams(
 			int rmode1 = Mode1;
 			if (rmode1 == 0)
 				rmode1 = 1;
-			pHardware = new CLimitLess(ID, rmode1, Address, Port);
+			pHardware = new CLimitLess(ID, rmode1, Mode2, Address, Port);
 		}
 		break;
 	case HTYPE_YouLess:
@@ -958,7 +971,7 @@ bool MainWorker::AddHardwareFromParams(
 #ifdef USE_PYTHON_PLUGINS
 		pHardware = m_pluginsystem.RegisterPlugin(ID, Name, Filename);
 #endif
-    break;
+	    break;
 	case HTYPE_XiaomiGateway:
 		pHardware = new XiaomiGateway(ID);
 		break;
@@ -967,6 +980,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;	
 	case HTYPE_OpenWebNetUSB:
 		pHardware = new COpenWebNetUSB(ID, SerialPort, 115200);
+		break;
+	case HTYPE_IntergasInComfortLAN2RF:
+		pHardware = new CInComfort(ID, Address, Port);
 		break;
 	}
 
@@ -11525,7 +11541,8 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		(pHardware->HwdType == HTYPE_EVOHOME_SERIAL) ||
 		(pHardware->HwdType == HTYPE_Netatmo) ||
 		(pHardware->HwdType == HTYPE_FITBIT) ||
-		(pHardware->HwdType == HTYPE_NefitEastLAN)
+		(pHardware->HwdType == HTYPE_NefitEastLAN) ||
+		(pHardware->HwdType == HTYPE_IntergasInComfortLAN2RF)
 		)
 	{
 		if (pHardware->HwdType == HTYPE_OpenThermGateway)
@@ -11581,6 +11598,11 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		else if (pHardware->HwdType == HTYPE_EVOHOME_SCRIPT || pHardware->HwdType == HTYPE_EVOHOME_SERIAL)
 		{
 			SetSetPoint(sd[7], TempValue, CEvohome::zmPerm, "");
+		}
+		else if (pHardware->HwdType == HTYPE_IntergasInComfortLAN2RF)
+		{
+			CInComfort *pGateway = reinterpret_cast<CInComfort*>(pHardware);
+			pGateway->SetSetpoint(ID4, TempValue);
 		}
 	}
 	else
@@ -11844,6 +11866,12 @@ bool MainWorker::SetThermostatState(const std::string &idx, const int newState)
 		CNetatmo *pGateway = reinterpret_cast<CNetatmo *>(pHardware);
 		int tIndex = atoi(idx.c_str());
 		pGateway->SetProgramState(tIndex, newState);
+		return true;
+	}
+	else if (pHardware->HwdType == HTYPE_IntergasInComfortLAN2RF)
+	{
+		CInComfort *pGateway = reinterpret_cast<CInComfort*>(pHardware);
+		pGateway->SetProgramState(newState);
 		return true;
 	}
 	return false;

@@ -530,6 +530,24 @@ $(document).ready(function() {
 			</tr>
 		</table>
 	</div>
+	<div id="lucci_popup" class="ui-popup ui-body-b ui-overlay-shadow ui-corner-all pop">
+		<div class="ui-close" onclick="CloseLucciPopup()"></div>
+		<table class="display" border="0" cellpadding="0" cellspacing="0">
+			<tr>
+				<td>
+					<center>
+					<br><br>
+					<button class="btn btn-info" onclick="LucciSendCommand('hi')">Hi</button><br>
+					<button class="btn btn-info" onclick="LucciSendCommand('med')">Med</button><br>
+					<button class="btn btn-info" onclick="LucciSendCommand('low')">Low</button><br>
+					<button class="btn btn-info" onclick="LucciSendCommand('off')">Off</button><br>
+					<button data-i18n="Light" class="btn btn-info" onclick="LucciSendCommand('light')">Light</button><br>
+					</center>
+					<br>
+				</td>
+			</tr>
+		</table>
+	</div>
 	<div id="globaldaylog" style="display:none;">
 	  <h2 data-i18n="Day">Day</h2>
 	  <div id="globaldaygraph" style="height: 300px;"></div>
