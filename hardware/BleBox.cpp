@@ -548,8 +548,6 @@ void BleBox::SendSwitch(const int NodeID, const int ChildID, const int BatteryLe
 		int nvalue = atoi(result[0][1].c_str());
 		if ((!bOn) && (nvalue == light2_sOff))
 			return;
-		if (bOn && (nvalue == light2_sOn))
-			return;
 		if ((bOn && (nvalue != light2_sOff)))
 		{
 			//Check Level
