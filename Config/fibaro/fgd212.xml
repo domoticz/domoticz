@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <Product xmlns='http://code.google.com/p/open-zwave/'>
-
-  <!-- config based on FGD-212-EN-A-v1.01-3.2.pdf -->
-
+  <!-- 
+  Fibaro FGD-212
+  config based on http://manuals.fibaro.com/content/manuals/en/FGD-212/FGD-212-EN-T-v1.2.pdf
+  -->
   <!-- Configuration -->
   <CommandClass id="112">
     <Value type="byte" genre="config" instance="1" index="1" label="Minimum brightness level" min="1" max="98" units="%" value="1">
@@ -177,8 +178,11 @@ Default setting: 15</Help>
       <Help>Behaviour of the Dimmer after OVERCURRENT or SURGE</Help>
       <Item label="device permanently disabled until re-enabling by comand or external switch" value="0" />
       <Item label="three atempts to turn on the load" value="1" />
+    </Value>    
+    <Value type="short" genre="config" instance="1" index="38" label="Brightness level correction for flickering loads" min="0" max="255" value="255">
+      <Help>Correction reduces spontaneous flickering of some capacitive load (e.g. dimmable lEDs) at certain brightness levels in 2-wire installation. In countries using ripple-control, correction may cause changes in brightness. In this case it is necessary to disable correction or adjust time of correction for flickering loads. Available settings: 0 - automatic correction disabled 1-254 - duration of correction in seconds 255 - automatic correction always enabled Default setting: 255</Help>
     </Value>
-	<Value type="short" genre="config" instance="1" index="39" label="Power limit - OVERLOAD" min="1" max="350" units="Watt" value="250">
+    <Value type="short" genre="config" instance="1" index="39" label="Power limit - OVERLOAD" min="1" max="350" units="Watt" value="250">
       <Help>Reaching the defined value will result in turning off the load. Additional apparent power limit of 350VA is active by default. Available settings: 0 - functionality disabled; 1-350 - 1W-350W; Default setting: 250</Help>
     </Value>
     <Value type="list" genre="config" instance="1" index="40" label="Response to General Purpose Alarm" size="1" value="3">
