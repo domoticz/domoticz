@@ -9,7 +9,7 @@
 #include "../main/SQLHelper.h"
 #include "../httpclient/HTTPClient.h"
 
-#define TOT_TYPE 7
+#define TOT_TYPE 8
 
 const _STR_DEVICE DevicesType[TOT_TYPE] =
 { 
@@ -19,7 +19,8 @@ const _STR_DEVICE DevicesType[TOT_TYPE] =
 	{ 3, "wLightBox", "Light Box", int(pTypeLimitlessLights), int(sTypeLimitlessRGBW), int(STYPE_Dimmer), "rgbw" },
 	{ 4, "gateBox", "Gate Box", int(pTypeLighting2), int(sTypeAC), int(STYPE_Dimmer), "gate" },
 	{ 5, "dimmerBox", "Dimmer Box", int(pTypeLighting2), int(sTypeAC), int(STYPE_Dimmer), "dimmer" },
-	{ 6, "switchBoxD", "Switch Box D", int(pTypeLighting2), int(sTypeAC), int(STYPE_OnOff), "relay" } // unit 6 and 7
+	{ 6, "switchBoxD", "Switch Box D", int(pTypeLighting2), int(sTypeAC), int(STYPE_OnOff), "relay" }, // unit 6 - dual (0)
+	{ 7, "switchBoxD", "Switch Box D", int(pTypeLighting2), int(sTypeAC), int(STYPE_OnOff), "relay" }  // unit 7 - dual (1)
 	// {8, ....
 };
 
@@ -371,6 +372,48 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 
 				break;
 			}
+
+			case 5: // dimmerBox
+			{
+				std::string level;
+				if (output->LIGHTING2.cmnd == light2_sOn)
+				{
+					level = "ff";
+				}
+				else
+					if (output->LIGHTING2.cmnd == light2_sOff)
+					{
+						level = "0";
+					}
+					else
+					{
+						int percentage = output->LIGHTING2.level * 255 / 15;
+
+						char value[4];
+						sprintf(value, "%x", percentage);
+						level = value;
+					}
+
+				Json::Value root = SendCommand(IPAddress, "/s/" + level);
+				if (root == "")
+					return false;
+
+				if (IsNodesExist(root, "dimmer", "desiredBrightness") == false)
+					return false;
+
+				std::stringstream ss;
+				ss << std::hex << root["dimmer"]["desiredBrightness"].asInt();
+				std::string state = ss.str();
+
+				if (state != level)
+				{
+					_log.Log(LOG_ERROR, "BleBox: dimmer not changed!");
+					return false;
+				}
+
+				break;
+			}
+
 			case 6: //switchboxd - 0
 			case 7: //switchboxd - 1
 			{
@@ -504,8 +547,6 @@ void BleBox::SendSwitch(const int NodeID, const int ChildID, const int BatteryLe
 		//check if we have a change, if not do not update it
 		int nvalue = atoi(result[0][1].c_str());
 		if ((!bOn) && (nvalue == light2_sOff))
-			return;
-		if (bOn && (nvalue == light2_sOn))
 			return;
 		if ((bOn && (nvalue != light2_sOff)))
 		{
