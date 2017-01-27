@@ -125,6 +125,7 @@ void CGooglePubSubPush::DoGooglePubSubPush()
 
 			std::vector<std::string> sd=*itt;
 			unsigned int deviceId = atoi(sd[0].c_str());
+			std::string sdeviceId = sd[0].c_str();
 			std::string ldelpos = sd[1].c_str();
 			int delpos = atoi(sd[1].c_str());
 			int dType = atoi(sd[3].c_str());
@@ -175,10 +176,11 @@ void CGooglePubSubPush::DoGooglePubSubPush()
 			%D : Target Device id
 			%V : Target Variable
 			%u : Unit
-			%n : Name
+			%n : Device name
 			%T0 : Type
 			%T1 : SubType
 			%h : hostname
+			%idx : 'Original device' id (idx)
 			*/
 
 			std::string lunit = getUnit(delpos, metertype);
@@ -218,6 +220,7 @@ void CGooglePubSubPush::DoGooglePubSubPush()
 			replaceAll(googlePubSubData, "%T0", lType);
 			replaceAll(googlePubSubData, "%T1", lSubType);
 			replaceAll(googlePubSubData, "%h", std::string(hostname));
+			replaceAll(googlePubSubData, "%idx", sdeviceId);
 
 			if (sendValue != "") {
 				std::stringstream python_DirT;
@@ -297,8 +300,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string data = request::findValue(&req, "data");
@@ -324,7 +327,10 @@ namespace http {
 		void CWebServer::Cmd_GetGooglePubSubLinkConfig(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 			std::string sValue;
 			int nValue;
 			if (m_sql.GetPreferencesVar("GooglePubSubActive", nValue)) {
@@ -350,7 +356,10 @@ namespace http {
 		void CWebServer::Cmd_GetGooglePubSubLinks(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT A.ID,A.DeviceID,A.Delimitedvalue,A.TargetType,A.TargetVariable,A.TargetDeviceID,A.TargetProperty,A.Enabled, B.Name, A.IncludeUnit FROM GooglePubSubLink as A, DeviceStatus as B WHERE (A.DeviceID==B.ID)");
 			if (result.size() > 0)
@@ -380,7 +389,10 @@ namespace http {
 		void CWebServer::Cmd_SaveGooglePubSubLink(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 			std::string idx = request::findValue(&req, "idx");
 			std::string deviceid = request::findValue(&req, "deviceid");
 			int deviceidi = atoi(deviceid.c_str());
@@ -433,8 +445,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string idx = request::findValue(&req, "idx");

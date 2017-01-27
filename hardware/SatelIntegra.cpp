@@ -87,6 +87,11 @@ SatelIntegra::SatelIntegra(const int ID, const std::string &IPAddress, const uns
 	errorCodes[18] = "can not arm";
 
 	// decode user code from string to BCD
+	if (userCode.size() == 0)
+	{
+		_log.Log(LOG_STATUS, "Satel Integra: no user code was entered (arm/disarm/switching will not work)");
+	}
+
 	uint64_t result(0);
 	for (unsigned int i = 0; i < 16; ++i)
 	{
@@ -322,7 +327,7 @@ bool SatelIntegra::ReadNewData()
 {
 	unsigned char cmd[1];
 	cmd[0] = 0x7F; // list of new data
-	if (SendCommand(cmd, 1, m_newData) > 0)
+	if (SendCommand(cmd, 1, m_newData, 6, 7) > 0)
 	{
 		return true;
 	}
@@ -340,7 +345,7 @@ bool SatelIntegra::GetInfo()
 
 	unsigned char cmd[1];
 	cmd[0] = 0x7E; // Integra version
-	if (SendCommand(cmd, 1, buffer) > 0)
+	if (SendCommand(cmd, 1, buffer, 15) > 0)
 	{
 		for (unsigned int i = 0; i < TOT_MODELS; ++i)
 		{
@@ -356,14 +361,14 @@ bool SatelIntegra::GetInfo()
 
 			unsigned char cmd[1];
 			cmd[0] = 0x1A; // RTC
-			if (SendCommand(cmd, 1, buffer) > 0)
+			if (SendCommand(cmd, 1, buffer, 10) > 0)
 			{
 				_log.Log(LOG_STATUS, "Satel Integra: RTC %.2x%.2x-%.2x-%.2x %.2x:%.2x:%.2x",
 					buffer[1], buffer[2], buffer[3], buffer[4], buffer[5], buffer[6], buffer[7]);
 
 				unsigned char cmd[1];
 				cmd[0] = 0x7C; // INT-RS/ETHM version
-				if (SendCommand(cmd, 1, buffer) > 0)
+				if (SendCommand(cmd, 1, buffer, 13) > 0)
 				{
 					if (buffer[12] == 1)
 					{
@@ -417,7 +422,7 @@ bool SatelIntegra::ReadZonesState(const bool firstTime)
 
 	unsigned char cmd[1];
 	cmd[0] = 0x00; // read zones violation
-	if (SendCommand(cmd, 1, buffer) > 0)
+	if (SendCommand(cmd, 1, buffer, 17, 33) > 0)
 	{
 		bool violate;
 		unsigned int byteNumber;
@@ -443,7 +448,7 @@ bool SatelIntegra::ReadZonesState(const bool firstTime)
 					cmd[0] = 0xEE;
 					cmd[1] = 0x05;
 					cmd[2] = (unsigned char)(index + 1);
-					if (SendCommand(cmd, 3, buffer) > 0)
+					if (SendCommand(cmd, 3, buffer, 21) > 0)
 					{
 						m_isPartitions[buffer[20] - 1] = true;
 						ReportZonesViolation(index + 1, violate);
@@ -500,7 +505,7 @@ bool SatelIntegra::ReadTemperatures(const bool firstTime)
 			unsigned char cmd[2];
 			cmd[0] = 0x7D; // read zone temperature
 			cmd[1] = (index != 255) ? (index + 1) : 0;
-			if (SendCommand(cmd, 2, buffer) > 0)
+			if (SendCommand(cmd, 2, buffer, 4) > 0)
 			{
 				uint16_t temp = buffer[2] * 256 + buffer[3];
 
@@ -518,7 +523,7 @@ bool SatelIntegra::ReadTemperatures(const bool firstTime)
 						cmd[0] = 0xEE;
 						cmd[1] = 0x05;
 						cmd[2] = (unsigned char)(index + 1);
-						if (SendCommand(cmd, 3, buffer) > 0)
+						if (SendCommand(cmd, 3, buffer, 21) > 0)
 						{
 							ReportTemperature(index + 1, temp);
 							UpdateTempName(index + 1, &buffer[4], 0);
@@ -558,7 +563,7 @@ bool SatelIntegra::ReadOutputsState(const bool firstTime)
 
 	unsigned char cmd[1];
 	cmd[0] = 0x17; // read outputs state
-	if (SendCommand(cmd, 1, buffer) > 0)
+	if (SendCommand(cmd, 1, buffer, 17, 33) > 0)
 	{
 		bool findBlindOutput = false;
 		bool outputState;
@@ -589,7 +594,7 @@ bool SatelIntegra::ReadOutputsState(const bool firstTime)
 					cmd[0] = 0xEE;
 					cmd[1] = 0x04;
 					cmd[2] = (unsigned char)(index + 1);
-					if (SendCommand(cmd, 3, buffer) > 0)
+					if (SendCommand(cmd, 3, buffer, 20) > 0)
 					{
 						if (buffer[3] != 0x00)
 						{
@@ -649,7 +654,7 @@ bool SatelIntegra::ReadArmState(const bool firstTime)
 
 	unsigned char cmd[1];
 	cmd[0] = 0x0A; // read armed partition
-	if (SendCommand(cmd, 1, buffer) > 0)
+	if (SendCommand(cmd, 1, buffer, 5) > 0)
 	{
 		for (unsigned int index = 0; index < 32; ++index)
 		{
@@ -690,7 +695,7 @@ bool SatelIntegra::ReadAlarm(const bool firstTime)
 
 	unsigned char cmd[1];
 	cmd[0] = 0x13; // read partitions alarm
-	if (SendCommand(cmd, 1, buffer) > 0)
+	if (SendCommand(cmd, 1, buffer, 5) > 0)
 	{
 		bool alarm = false;
 
@@ -738,14 +743,14 @@ bool SatelIntegra::ReadEvents()
 	cmd[1] = 0xFF;
 	cmd[2] = 0xFF;
 	cmd[3] = 0xFF;
-	if (SendCommand(cmd, 4, buffer) > 0)
+	if (SendCommand(cmd, 4, buffer, 15) > 0)
 	{
 		while (buffer[1] & 32)
 		{
 			cmd[1] = buffer[9];
 			cmd[2] = buffer[10];
 			cmd[3] = buffer[11];
-			int ret = SendCommand(cmd, 4, buffer);
+			int ret = SendCommand(cmd, 4, buffer, 15);
 			if (ret > 0)
 			{
 				std::string val(1,buffer[6]);
@@ -837,7 +842,7 @@ bool SatelIntegra::ArmPartitions(const int partition, const int mode)
 
 	cmd[byteNumber + 9] = 0x01 << bitNumber;
 
-	if (SendCommand(cmd, 13, buffer) == -1) // arm
+	if (SendCommand(cmd, 13, buffer, 1) == -1) // arm
 	{
 		_log.Log(LOG_ERROR, "Satel Integra: Send 'Arm partition %d' failed", partition);
 		return false;
@@ -868,7 +873,7 @@ bool SatelIntegra::DisarmPartitions(const int partition)
 
 	cmd[byteNumber + 9] = 0x01 << bitNumber;
 
-	if (SendCommand(cmd, 13, buffer) == -1) // disarm
+	if (SendCommand(cmd, 13, buffer, 1) == -1) // disarm
 	{
 		_log.Log(LOG_ERROR, "Satel Integra: Send 'Disarm partition %d' failed", partition);
 		return false;
@@ -934,7 +939,7 @@ bool SatelIntegra::WriteToHardware(const char *pdata, const unsigned char length
 
 			cmd[byteNumber + 9] = 0x01 << bitNumber;
 
-			if (SendCommand(cmd, 41, buffer) != -1)
+			if (SendCommand(cmd, 41, buffer, 1) != -1)
 			{
 				if (general->id <= 1024)
 				{
@@ -1130,7 +1135,7 @@ void calculateCRC(const unsigned char* pCmd, unsigned int length, unsigned short
 	result = crc;
 }
 
-int SatelIntegra::SendCommand(const unsigned char* cmd, const unsigned int cmdLength, unsigned char *answer)
+int SatelIntegra::SendCommand(const unsigned char* cmd, const unsigned int cmdLength, unsigned char *answer, const unsigned int expectedLength1, const unsigned int expectedLength2)
 {
 	boost::lock_guard<boost::mutex> lock(m_mutex);
 
@@ -1171,9 +1176,9 @@ int SatelIntegra::SendCommand(const unsigned char* cmd, const unsigned int cmdLe
 
 	int ret = recv(m_socket, (char*)&buffer, MAX_LENGTH_OF_ANSWER, 0);
 
-	if ((ret <= 0) || (ret >= MAX_LENGTH_OF_ANSWER)) 
+	if ((ret <= 0) || (ret >= MAX_LENGTH_OF_ANSWER))
 	{
-		_log.Log(LOG_ERROR, "Satel Integra: bad data length received");
+		_log.Log(LOG_ERROR, "Satel Integra: bad data length received (-1)");
 		return -1;
 	}
 
@@ -1194,6 +1199,14 @@ int SatelIntegra::SendCommand(const unsigned char* cmd, const unsigned int cmdLe
 	{
 		if (buffer[0] == 0xFE && buffer[1] == 0xFE && buffer[ret - 1] == 0x0D && buffer[ret - 2] == 0xFE) // check prefix and sufix
 		{
+			if ( (buffer[2] != 0xEF) 
+		 	  && ((ret - 6) != expectedLength1) 
+			  && ((ret - 6) != expectedLength2))
+			{
+				_log.Log(LOG_ERROR, "Satel Integra: bad data length received");
+				return -1;
+			}
+
 			unsigned int answerLength = 0;
 			for (int i = 0; i < ret - 6; i++) // skip prefix, suffix and crc
 			{

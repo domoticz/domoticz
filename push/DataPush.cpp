@@ -8,6 +8,7 @@
 #include "../main/mainworker.h"
 #include "../main/RFXtrx.h"
 #include "../main/SQLHelper.h"
+#include "../webserver/Base64.h"
 #include "../main/WebServer.h"
 #include "../webserver/cWebem.h"
 #define __STDC_FORMAT_MACROS
@@ -147,10 +148,26 @@ void CDataPush::DoFibaroPush()
 				std::stringstream sPostData;
 				std::stringstream Url;
 				std::vector<std::string> ExtraHeaders;
-					sendValue = CURLEncode::URLEncode(sendValue);
-					
+
+				Url << "http://";
+
+				if (bIsV4) {
+					// Create basic authentication header
+					std::stringstream sstr;
+					sstr << fibaroUsername << ":" << fibaroPassword;
+					std::string m_AccessToken = base64_encode((const unsigned char *)(sstr.str().c_str()), strlen(sstr.str().c_str()));
+					ExtraHeaders.push_back("Authorization:Basic " + m_AccessToken);
+				} 
+				else {
+					Url << fibaroUsername << ":" << fibaroPassword << "@"; // Add user name in url for earlier than V4
+				}
+
+				Url << fibaroIP << "/";
+
+				sendValue = CURLEncode::URLEncode(sendValue);
+				
 				if (targetType==0) {
-					Url << "http://" << fibaroUsername << ":" << fibaroPassword << "@" << fibaroIP << "/api/globalVariables";
+					Url << "api/globalVariables";
 
 					if (bIsV4)
 						Url << "/" << targetVariable;
@@ -172,22 +189,22 @@ void CDataPush::DoFibaroPush()
 					}
 				}	
 				else if (targetType==1) {
-					Url << "http://" << fibaroUsername << ":" << fibaroPassword << "@" << fibaroIP << "/api/callAction?deviceid=" << targetDeviceID << "&name=setProperty&arg1=" << targetProperty << "&arg2=" << sendValue;
+					Url << "api/callAction?deviceid=" << targetDeviceID << "&name=setProperty&arg1=" << targetProperty << "&arg2=" << sendValue;
 					if (fibaroDebugActive) {
 						_log.Log(LOG_NORM,"FibaroLink: sending value %s to property %s of virtual device id %d",sendValue.c_str(),targetProperty.c_str(),targetDeviceID);
 					}
-					if (!HTTPClient::GET(Url.str(),sResult))
+					if (!HTTPClient::GET(Url.str(), ExtraHeaders, sResult))
 					{
 						_log.Log(LOG_ERROR,"Error sending data to Fibaro!");
 					}
 				}
 				else if (targetType==2) {
 					if (((delpos==0)&&(lstatus=="Off"))||((delpos==1)&&(lstatus=="On"))) {
-						Url << "http://" << fibaroUsername << ":" << fibaroPassword << "@" << fibaroIP << "/api/sceneControl?id=" << targetDeviceID << "&action=start";
+						Url << "api/sceneControl?id=" << targetDeviceID << "&action=start";
 						if (fibaroDebugActive) {
 							_log.Log(LOG_NORM,"FibaroLink: activating scene %d",targetDeviceID);
 						}
-						if (!HTTPClient::GET(Url.str(),sResult))
+						if (!HTTPClient::GET(Url.str(), ExtraHeaders, sResult))
 						{
 							_log.Log(LOG_ERROR,"Error sending data to Fibaro!");
 						}
@@ -195,7 +212,7 @@ void CDataPush::DoFibaroPush()
 				}
 				else if (targetType==3) {
 					if (((delpos==0)&&(lstatus=="Off"))||((delpos==1)&&(lstatus=="On"))) {
-						Url << "http://" << fibaroUsername << ":" << fibaroPassword << "@" << fibaroIP << "/api/settings/reboot";
+						Url << "api/settings/reboot";
 						if (fibaroDebugActive) {
 							_log.Log(LOG_NORM,"FibaroLink: reboot");
 						}
@@ -217,8 +234,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string remote = request::findValue(&req, "remote");
@@ -253,7 +270,10 @@ namespace http {
 		void CWebServer::Cmd_GetFibaroLinkConfig(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 			std::string sValue;
 			int nValue;
 			if (m_sql.GetPreferencesVar("FibaroActive", nValue)) {
@@ -293,7 +313,10 @@ namespace http {
 		void CWebServer::Cmd_GetFibaroLinks(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT A.ID,A.DeviceID,A.Delimitedvalue,A.TargetType,A.TargetVariable,A.TargetDeviceID,A.TargetProperty,A.Enabled, B.Name, A.IncludeUnit FROM FibaroLink as A, DeviceStatus as B WHERE (A.DeviceID==B.ID)");
 			if (result.size() > 0)
@@ -323,7 +346,10 @@ namespace http {
 		void CWebServer::Cmd_SaveFibaroLink(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 			std::string idx = request::findValue(&req, "idx");
 			std::string deviceid = request::findValue(&req, "deviceid");
 			int deviceidi = atoi(deviceid.c_str());
@@ -376,8 +402,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string idx = request::findValue(&req, "idx");

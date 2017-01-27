@@ -371,7 +371,10 @@ namespace http {
 		void CWebServer::RType_Cameras(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights < 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 
 			std::string rused = request::findValue(&req, "used");
 

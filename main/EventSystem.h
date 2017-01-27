@@ -90,6 +90,9 @@ public:
 	void WWWGetItemStates(std::vector<_tDeviceStatus> &iStates);
 	void SetEnabled(const bool bEnabled);
 	void GetCurrentStates();
+
+	void exportDeviceStatesToLua(lua_State *lua_state);
+
 private:
 	//lua_State	*m_pLUA;
 	bool m_bEnabled;

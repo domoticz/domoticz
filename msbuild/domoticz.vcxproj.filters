@@ -450,6 +450,18 @@
     <Filter Include="Devices\YeeLight">
       <UniqueIdentifier>{40997df4-ca83-46d7-ae42-d23049f98a0b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\Python Plugins">
+      <UniqueIdentifier>{71bf66bf-20b6-4786-b8ff-f394e16d2d84}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\Xiaomi Gateway">
+      <UniqueIdentifier>{5f68f493-7523-43aa-95db-f23ecc307771}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\Arilux">
+      <UniqueIdentifier>{f1bd7f3f-a032-4804-9b52-51c06399ca5e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\InComfort">
+      <UniqueIdentifier>{bbff9485-9778-469f-9659-e3575b33a348}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -1495,9 +1507,6 @@
     <ClInclude Include="..\hardware\ZWaveCommands.h">
       <Filter>Devices\ZWave</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\Limitless.h">
-      <Filter>Devices\LimitlessLed</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\1Wire\1WireForWindows.h">
       <Filter>Devices\1-Wire</Filter>
     </ClInclude>
@@ -1846,9 +1855,6 @@
     <ClInclude Include="..\hardware\openwebnet\bt_openwebnet.h">
       <Filter>Devices\OpenWebNet</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\OpenWebNet.h">
-      <Filter>Devices\OpenWebNet</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\I2C.h">
       <Filter>Devices\I2C</Filter>
     </ClInclude>
@@ -1935,6 +1941,33 @@
     </ClInclude>
     <ClInclude Include="..\hardware\MySensorsMQTT.h">
       <Filter>Devices\MySensors</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\plugins\PluginManager.h">
+      <Filter>Devices\Python Plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\plugins\DelayedLink.h">
+      <Filter>Devices\Python Plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\plugins\Plugins.h">
+      <Filter>Devices\Python Plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\XiaomiGateway.h">
+      <Filter>Devices\Xiaomi Gateway</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\Limitless.h">
+      <Filter>Devices\LimitlessLed</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\Arilux.h">
+      <Filter>Devices\Arilux</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\OpenWebNetUSB.h">
+      <Filter>Devices\OpenWebNet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\OpenWebNetTCP.h">
+      <Filter>Devices\OpenWebNet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\InComfort.h">
+      <Filter>Devices\InComfort</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2105,9 +2138,6 @@
     </ClCompile>
     <ClCompile Include="..\hardware\OpenZWave.cpp">
       <Filter>Devices\ZWave\OpenZWave</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\Limitless.cpp">
-      <Filter>Devices\LimitlessLed</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\1Wire\1WireForWindows.cpp">
       <Filter>Devices\1-Wire</Filter>
@@ -2463,9 +2493,6 @@
     <ClCompile Include="..\hardware\openwebnet\bt_openwebnet.cpp">
       <Filter>Devices\OpenWebNet</Filter>
     </ClCompile>
-    <ClCompile Include="..\hardware\OpenWebNet.cpp">
-      <Filter>Devices\OpenWebNet</Filter>
-    </ClCompile>
     <ClCompile Include="..\hardware\I2C.cpp">
       <Filter>Devices\I2C</Filter>
     </ClCompile>
@@ -2549,6 +2576,27 @@
     </ClCompile>
     <ClCompile Include="..\hardware\MySensorsMQTT.cpp">
       <Filter>Devices\MySensors</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\plugins\PluginManager.cpp">
+      <Filter>Devices\Python Plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\XiaomiGateway.cpp">
+      <Filter>Devices\Xiaomi Gateway</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\Limitless.cpp">
+      <Filter>Devices\LimitlessLed</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\Arilux.cpp">
+      <Filter>Devices\Arilux</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\OpenWebNetUSB.cpp">
+      <Filter>Devices\OpenWebNet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\OpenWebNetTCP.cpp">
+      <Filter>Devices\OpenWebNet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\InComfort.cpp">
+      <Filter>Devices\InComfort</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

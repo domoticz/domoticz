@@ -17,6 +17,10 @@
 #include "NotificationKodi.h"
 #include "NotificationLogitechMediaServer.h"
 #include "NotificationGCM.h"
+#ifdef USE_PYTHON_PLUGINS
+#	include "../hardware/plugins/PluginManager.h"
+#endif
+
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
@@ -67,12 +71,30 @@ void CNotificationHelper::AddNotifier(CNotificationBase *notifier)
 	m_notifiers[notifier->GetSubsystemId()] = notifier;
 }
 
-bool CNotificationHelper::SendMessage(const std::string &subsystems, const std::string &Subject, const std::string &Text, const std::string &ExtraData, const bool bFromNotification)
+bool CNotificationHelper::SendMessage(
+	const uint64_t Idx,
+	const std::string &Name,
+	const std::string &Subsystems,
+	const std::string &Subject,
+	const std::string &Text,
+	const std::string &ExtraData,
+	const int Priority,
+	const std::string &Sound,
+	const bool bFromNotification)
 {
-	return SendMessageEx(subsystems, Subject, Text, ExtraData, 0, std::string(""), bFromNotification);
+	return SendMessageEx(Idx, Name, Subsystems, Subject, Text, ExtraData, 0, std::string(""), bFromNotification);
 }
 
-bool CNotificationHelper::SendMessageEx(const std::string &subsystems, const std::string &Subject, const std::string &Text, const std::string &ExtraData, int Priority, const std::string &Sound, const bool bFromNotification)
+bool CNotificationHelper::SendMessageEx(
+	const uint64_t Idx,
+	const std::string &Name,
+	const std::string &Subsystems,
+	const std::string &Subject,
+	const std::string &Text,
+	const std::string &ExtraData,
+	const int Priority,
+	const std::string &Sound,
+	const bool bFromNotification)
 {
 	bool bRet = false;
 #if defined WIN32
@@ -80,7 +102,7 @@ bool CNotificationHelper::SendMessageEx(const std::string &subsystems, const std
 	ShowSystemTrayNotification(Subject.c_str());
 #endif
 	std::vector<std::string> sResult;
-	StringSplit(subsystems, ";", sResult);
+	StringSplit(Subsystems, ";", sResult);
 
 	std::map<std::string, int> ActiveSystems;
 
@@ -94,9 +116,12 @@ bool CNotificationHelper::SendMessageEx(const std::string &subsystems, const std
 		std::map<std::string, int>::const_iterator ittSystem = ActiveSystems.find(iter->first);
 		if (ActiveSystems.empty() || (ittSystem!=ActiveSystems.end() && iter->second->IsConfigured())) 
 		{
-			bRet |= iter->second->SendMessageEx(Subject, Text, ExtraData, Priority, Sound, bFromNotification);
+			bRet |= iter->second->SendMessageEx(Idx, Name, Subject, Text, ExtraData, Priority, Sound, bFromNotification);
 		}
 	}
+#ifdef USE_PYTHON_PLUGINS
+	Plugins::CPluginSystem::SendNotification(Subject, Text, ExtraData, Priority, Sound);
+#endif
 	return bRet;
 }
 
@@ -128,7 +153,7 @@ void CNotificationHelper::LoadConfig()
 {
 	int tot = 0, active = 0;
 	std::stringstream logline;
-	logline << "Active notification subsystems:";
+	logline << "Active notification Subsystems:";
 	for (it_noti_type iter = m_notifiers.begin(); iter != m_notifiers.end(); ++iter) {
 		tot++;
 		iter->second->LoadConfig();
@@ -269,7 +294,7 @@ bool CNotificationHelper::CheckAndHandleTempHumidityNotification(
 			{
 				if (!itt->CustomMessage.empty())
 					msg = ParseCustomMessage(itt->CustomMessage, devicename, notValue);
-				SendMessageEx(itt->ActiveSystems, msg, msg, szExtraData, itt->Priority, std::string(""), true);
+				SendMessageEx(Idx, devicename, itt->ActiveSystems, msg, msg, szExtraData, itt->Priority, std::string(""), true);
 				TouchNotification(itt->ID);
 			}
 		}
@@ -330,7 +355,7 @@ bool CNotificationHelper::CheckAndHandleDewPointNotification(
 			{
 				if (!itt->CustomMessage.empty())
 					msg = ParseCustomMessage(itt->CustomMessage, devicename, notValue);
-				SendMessageEx(itt->ActiveSystems, msg, msg, szExtraData, itt->Priority, std::string(""), true);
+				SendMessageEx(Idx, devicename, itt->ActiveSystems, msg, msg, szExtraData, itt->Priority, std::string(""), true);
 				TouchNotification(itt->ID);
 			}
 		}
@@ -465,7 +490,7 @@ bool CNotificationHelper::CheckAndHandleAmpere123Notification(
 			{
 				if (!itt->CustomMessage.empty())
 					msg = ParseCustomMessage(itt->CustomMessage, devicename, notValue);
-				SendMessageEx(itt->ActiveSystems, msg, msg, szExtraData, itt->Priority, std::string(""), true);
+				SendMessageEx(Idx, devicename, itt->ActiveSystems, msg, msg, szExtraData, itt->Priority, std::string(""), true);
 				TouchNotification(itt->ID);
 			}
 		}
@@ -512,7 +537,7 @@ bool CNotificationHelper::CheckAndHandleNotification(
 				std::string msg = message;
 				if (!itt->CustomMessage.empty())
 					msg = ParseCustomMessage(itt->CustomMessage, devicename, notValue);
-				SendMessageEx(itt->ActiveSystems, msg, msg, szExtraData, itt->Priority, std::string(""), true);
+				SendMessageEx(Idx, devicename, itt->ActiveSystems, msg, msg, szExtraData, itt->Priority, std::string(""), true);
 				TouchNotification(itt->ID);
 			}
 		}
@@ -611,7 +636,7 @@ bool CNotificationHelper::CheckAndHandleNotification(
 				{
 					msg = ParseCustomMessage(itt->CustomMessage, devicename, pvalue);
 				}
-				SendMessageEx(itt->ActiveSystems, msg, msg, szExtraData, itt->Priority, std::string(""), true);
+				SendMessageEx(Idx, devicename, itt->ActiveSystems, msg, msg, szExtraData, itt->Priority, std::string(""), true);
 				TouchNotification(itt->ID);
 			}
 		}
@@ -708,7 +733,7 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 			{
 				if (!itt->CustomMessage.empty())
 					msg = ParseCustomMessage(itt->CustomMessage, devicename, notValue);
-				SendMessageEx(itt->ActiveSystems, msg, msg, szExtraData, itt->Priority, std::string(""), true);
+				SendMessageEx(Idx, devicename, itt->ActiveSystems, msg, msg, szExtraData, itt->Priority, std::string(""), true);
 				TouchNotification(itt->ID);
 			}
 		}
@@ -802,7 +827,7 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 			{
 				if (!itt->CustomMessage.empty())
 					msg = ParseCustomMessage(itt->CustomMessage, devicename, notValue);
-				SendMessageEx(itt->ActiveSystems, msg, msg, szExtraData, itt->Priority, std::string(""), true);
+				SendMessageEx(Idx, devicename, itt->ActiveSystems, msg, msg, szExtraData, itt->Priority, std::string(""), true);
 				TouchNotification(itt->ID);
 			}
 		}

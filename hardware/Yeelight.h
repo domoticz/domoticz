@@ -37,7 +37,7 @@ protected:
 
 	private:
 		void start_receive();
-		bool HandleIncoming(const std::string &szData);
+		bool HandleIncoming(const std::string &szData, std::vector<std::string> &receivedip);
 	};
 
 };

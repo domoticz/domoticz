@@ -9,6 +9,9 @@ SET(DOMO_MIN_LIBBOOST_VERSION 105500)
 
 option(USE_BUILTIN_LUA "Use builtin lua library" YES)
 IF(USE_BUILTIN_LUA)
+  IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    add_definitions(-DLUA_USE_MACOSX)
+  ENDIF()
   add_subdirectory (lua)
   get_directory_property (LUA_LIBRARIES DIRECTORY lua
     DEFINITION LUA_LIBRARIES)
@@ -61,6 +64,18 @@ ELSE(USE_BUILTIN_SQLITE)
   ENDIF(SQLite_FOUND)
 ENDIF(USE_BUILTIN_SQLITE)
 
+option(USE_PYTHON_PLUGINS "Use Python Plugins" YES)
+IF(USE_PYTHON_PLUGINS)
+  find_package(PythonLibs 3.4)
+  IF(PYTHONLIBS_FOUND)
+    MESSAGE(STATUS "Python3 includes found at: ${PYTHON_INCLUDE_PATH}")
+    INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
+    add_definitions(-DUSE_PYTHON_PLUGINS)
+  ELSE(PYTHONLIBS_FOUND)
+    MESSAGE(FATAL_ERROR "Python3 not found on your system, use USE_PYTHON_PLUGINS=NO or sudo apt-get install python3-dev)")
+  ENDIF(PYTHONLIBS_FOUND)
+ENDIF(USE_PYTHON_PLUGINS)
+
 SET(EXECUTABLE_OUTPUT_PATH "" CACHE INTERNAL
   "Where to put the executables for Domoticz"
   )
@@ -79,6 +94,20 @@ IF(HAVE_EXECINFO_H)
     ADD_DEFINITIONS(-DHAVE_EXECINFO_H)
   ENDIF()
 ENDIF(HAVE_EXECINFO_H)
+
+INCLUDE(CheckIncludeFiles)
+
+CHECK_INCLUDE_FILES ("sys/types.h;linux/i2c-dev.h;linux/i2c.h" HAVE_LINUX_I2C_H)
+IF (HAVE_LINUX_I2C_H)
+	message(STATUS "Building with I2C support")
+	add_definitions(-DHAVE_LINUX_I2C)
+ENDIF (HAVE_LINUX_I2C_H)
+
+CHECK_INCLUDE_FILES ("sys/types.h;linux/spi/spidev.h" HAVE_LINUX_SPI_H)
+IF (HAVE_LINUX_SPI_H)
+	message(STATUS "Building with SPI support")
+	add_definitions(-DHAVE_LINUX_SPI)
+ENDIF (HAVE_LINUX_SPI_H)
 
 #set(CMAKE_EXE_LINKER_FLAGS "-static")
 
@@ -277,6 +306,7 @@ hardware/HarmonyHub.cpp
 hardware/HEOS.cpp
 hardware/I2C.cpp
 hardware/ICYThermostat.cpp
+hardware/InComfort.cpp
 hardware/KMTronicBase.cpp
 hardware/KMTronic433.cpp
 hardware/KMTronicSerial.cpp
@@ -297,7 +327,8 @@ hardware/Nest.cpp
 hardware/Netatmo.cpp
 hardware/HttpPoller.cpp
 hardware/OpenWeatherMap.cpp
-hardware/OpenWebNet.cpp
+hardware/OpenWebNetTCP.cpp
+hardware/OpenWebNetUSB.cpp
 hardware/openwebnet/bt_openwebnet.cpp
 hardware/OpenZWave.cpp
 hardware/openzwave/control_panel/ozwcp.cpp
@@ -349,6 +380,9 @@ hardware/ZiBlueSerial.cpp
 hardware/ZiBlueTCP.cpp
 hardware/ZWaveBase.cpp
 hardware/Yeelight.cpp
+hardware/XiaomiGateway.cpp
+hardware/Arilux.cpp
+hardware/plugins/PluginManager.cpp
 notifications/NotificationBase.cpp
 notifications/NotificationEmail.cpp
 notifications/NotificationGCM.cpp
@@ -670,6 +704,7 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/License.txt DESTINATION ${CMAKE_INSTAL
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/History.txt DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/server_cert.pem DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/scripts DESTINATION ${CMAKE_INSTALL_PREFIX} USE_SOURCE_PERMISSIONS)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/plugins DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Config DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/updatedomo DESTINATION ${CMAKE_INSTALL_PREFIX} PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ)
 

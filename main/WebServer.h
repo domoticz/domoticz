@@ -87,6 +87,7 @@ public:
 		const std::string &planID,
 		const std::string &floorID,
 		const bool bDisplayHidden,
+		const bool bDisplayDisabled,
 		const bool bFetchFavorites,
 		const time_t LastUpdate,
 		const std::string &username,
@@ -249,6 +250,7 @@ private:
 	void Cmd_HEOSSetMode(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_HEOSMediaCommand(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_AddYeeLight(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_AddArilux(WebEmSession & session, const request& req, Json::Value &root);
 
 	void Cmd_BleBoxSetMode(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_BleBoxGetNodes(WebEmSession & session, const request& req, Json::Value &root);
@@ -256,6 +258,13 @@ private:
 	void Cmd_BleBoxUpdateNode(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_BleBoxRemoveNode(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_BleBoxClearNodes(WebEmSession & session, const request& req, Json::Value &root);
+
+	void Cmd_GetTimerPlans(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_AddTimerPlan(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_UpdateTimerPlan(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_DeleteTimerPlan(WebEmSession & session, const request& req, Json::Value &root);
+
+	void PluginList(Json::Value &root);
 
 	//RTypes
 	void RType_HandleGraph(WebEmSession & session, const request& req, Json::Value &root);
