@@ -168,5 +168,8 @@
 			<Group index="3" max_associations="10" label="On/Off (power)"/>
 		</Associations>
 	</CommandClass>
-
+	
+	<!-- COMMAND_CLASS_BASIC supported -->
+	<CommandClass id="32" action="add" request_flags="5" />
+	
 </Product>

@@ -959,7 +959,7 @@ define(['app'], function (app) {
                         ShowNotify($.t('Problem adding hardware!'), 2500, true);
                     }
                 });
-           }
+            }
             else if (
 					(text.indexOf("LAN") >= 0 &&
 					text.indexOf("YouLess") == -1 &&
@@ -5328,7 +5328,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divlogin").show();
                 $("#hardwarecontent #hardwareparamsremote #tcpport").val(1255);
             }
-	        else if (text.indexOf("1-Wire") >= 0)
+            else if (text.indexOf("1-Wire") >= 0)
             {
 	        $("#hardwarecontent #div1wire").show();
                 $("#hardwarecontent #divserial").hide();
