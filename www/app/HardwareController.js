@@ -230,52 +230,6 @@ define(['app'], function (app) {
                      }
                 });
             }
-            else if (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0) {
-                var address = $("#hardwarecontent #divremote #tcpaddress").val();
-                if (address == "") {
-                    ShowNotify($.t('Please enter an Address!'), 2500, true);
-                    return;
-                }
-                var port = $("#hardwarecontent #divremote #tcpport").val();
-                if (port == "") {
-                    ShowNotify($.t('Please enter an Port!'), 2500, true);
-                    return;
-                }
-                var intRegex = /^\d+$/;
-                if (!intRegex.test(port)) {
-                    ShowNotify($.t('Please enter an Valid Port!'), 2500, true);
-                    return;
-                }
-
-                var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
-                if (password != "") {
-                    if ((isNaN(password)) || (password.length < 5)) /* must be a number */ {
-                        ShowNotify($.t('Please enter a numeric password of at least 5 characters'), 2500, true);
-                        return;
-                    }
-                }
-
-                $.ajax({
-                    url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
-                       "&address=" + address +
-                       "&port=" + port +
-                       //"&username=" + encodeURIComponent(username) +
-                       "&password=" + encodeURIComponent(password) +
-                       "&name=" + encodeURIComponent(name) +
-                       "&enabled=" + bEnabled +
-                       "&idx=" + idx +
-                       "&datatimeout=" + datatimeout +
-                       "&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
-                    async: false,
-                    dataType: 'json',
-                    success: function (data) {
-                        RefreshHardwareTable();
-                    },
-                    error: function () {
-                        ShowNotify($.t('Problem updating hardware!'), 2500, true);
-                    }
-                });
-            }
             else if (
 					(text.indexOf("LAN") >= 0 &&
 					text.indexOf("YouLess") == -1 &&
@@ -287,7 +241,8 @@ define(['app'], function (app) {
 					text.indexOf("Anna") == -1 &&
 					text.indexOf("KMTronic") == -1  &&
 					text.indexOf("MQTT") == -1 &&
-					text.indexOf("Razberry") == -1
+					text.indexOf("Razberry") == -1 && 
+                    text.indexOf("MyHome OpenWebNet with LAN interface") == -1
 					)
 				)
             {
@@ -822,6 +777,56 @@ define(['app'], function (app) {
                      }
                 });
             }
+			else if (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0)
+            {
+				var address=$("#hardwarecontent #divremote #tcpaddress").val();
+                if (address=="")
+                {
+                    ShowNotify($.t('Please enter an Address!'), 2500, true);
+                    return;
+                }
+                var port=$("#hardwarecontent #divremote #tcpport").val();
+                if (port=="")
+                {
+                    ShowNotify($.t('Please enter an Port!'), 2500, true);
+                    return;
+                }
+                var intRegex = /^\d+$/;
+                if(!intRegex.test(port)) {
+                    ShowNotify($.t('Please enter an Valid Port!'), 2500, true);
+                    return;
+                }
+				
+				var password=encodeURIComponent($("#hardwarecontent #divlogin #password").val());
+                if (password != "")
+                {
+                   if ((isNaN(password)) || (password.length < 5)) /* must be a number */
+                   {
+                        ShowNotify($.t('Please enter a numeric password of at least 5 characters'), 2500, true);
+                        return;
+                   }
+                }
+				
+                $.ajax({
+                     url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+                        "&address=" + address +
+                        "&port=" + port +
+						"&password=" + encodeURIComponent(password) +
+                        "&name=" + encodeURIComponent(name) +
+                        "&enabled=" + bEnabled +
+                        "&idx=" + idx +
+                        "&datatimeout=" + datatimeout +
+                        "&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
+                     async: false,
+                     dataType: 'json',
+                     success: function(data) {
+                        RefreshHardwareTable();
+                     },
+                    error: function(){
+                            ShowNotify($.t('Problem updating hardware!'), 2500, true);
+                     }
+                });
+            }
 	    else if (text.indexOf("Goodwe solar inverter via Web") >= 0)
             {
 		var username=$("#hardwarecontent #divgoodweweb #username").val();
@@ -951,51 +956,6 @@ define(['app'], function (app) {
                     	RefreshHardwareTable();
                     },
                     error: function(){
-                        ShowNotify($.t('Problem adding hardware!'), 2500, true);
-                    }
-                });
-            }
-            else if (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0) {
-                var address = $("#hardwarecontent #divremote #tcpaddress").val();
-                if (address == "") {
-                    ShowNotify($.t('Please enter an Address!'), 2500, true);
-                    return;
-                }
-                var port = $("#hardwarecontent #divremote #tcpport").val();
-                if (port == "") {
-                    ShowNotify($.t('Please enter an Port!'), 2500, true);
-                    return;
-                }
-                var intRegex = /^\d+$/;
-                if (!intRegex.test(port)) {
-                    ShowNotify($.t('Please enter an Valid Port!'), 2500, true);
-                    return;
-                }
-                /*var username=$("#hardwarecontent #hardwareparamsphilipshue #username").val();
-
-                if (username == "") {
-                    ShowNotify($.t('Please enter a username!'), 2500, true);
-                    return;
-                }*/
-                var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
-                if (password != "") {
-                    if ((isNaN(password)) || (password.length < 5)) /* must be a number */ {
-                        ShowNotify($.t('Please enter a numeric password of at least 5 characters'), 2500, true);
-                        return;
-                    }
-                }
-
-                $.ajax({
-                    url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port +
-                    //"&username=" + encodeURIComponent(username) +
-                    "&password=" + encodeURIComponent(password) +
-                    "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
-                    async: false,
-                    dataType: 'json',
-                    success: function (data) {
-                        RefreshHardwareTable();
-                    },
-                    error: function () {
                         ShowNotify($.t('Problem adding hardware!'), 2500, true);
                     }
                 });
@@ -1157,7 +1117,8 @@ define(['app'], function (app) {
 					text.indexOf("KMTronic") == -1
 					&& text.indexOf("MQTT") == -1 &&
 					text.indexOf("Satel Integra") == -1 &&
-					text.indexOf("Razberry") == -1
+					text.indexOf("Razberry") == -1 &&
+                    text.indexOf("MyHome OpenWebNet with LAN interface") == -1
 					)
 				)
             {
@@ -1529,6 +1490,49 @@ define(['app'], function (app) {
                      "&name=" + encodeURIComponent(name) +
                      "&enabled=" + bEnabled +
                      "&datatimeout=" + datatimeout,
+                     async: false,
+                     dataType: 'json',
+                     success: function(data) {
+                        RefreshHardwareTable();
+                     },
+                     error: function(){
+                            ShowNotify($.t('Problem adding hardware!'), 2500, true);
+                     }
+                });
+            }
+            else if (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0)
+            {
+                var address=$("#hardwarecontent #divremote #tcpaddress").val();
+                if (address=="")
+                {
+                    ShowNotify($.t('Please enter an Address!'), 2500, true);
+                    return;
+                }
+                var port=$("#hardwarecontent #divremote #tcpport").val();
+                if (port=="")
+                {
+                    ShowNotify($.t('Please enter an Port!'), 2500, true);
+                    return;
+                }
+                var intRegex = /^\d+$/;
+                if(!intRegex.test(port)) {
+                    ShowNotify($.t('Please enter an Valid Port!'), 2500, true);
+                    return;
+                }
+				var password=encodeURIComponent($("#hardwarecontent #divlogin #password").val());
+                if (password != "")
+                {
+                   if ((isNaN(password)) || (password.length < 5)) /* must be a number */
+                   {
+                        ShowNotify($.t('Please enter a numeric password of at least 5 characters'), 2500, true);
+                        return;
+                   }
+                }
+
+                $.ajax({
+                     url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port +
+					 "&password=" + encodeURIComponent(password) +
+					 "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
                      async: false,
                      dataType: 'json',
                      success: function(data) {
@@ -5160,15 +5164,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
             }
-            else if (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0) {
-                $("#hardwarecontent #divserial").hide();
-                $("#hardwarecontent #divremote").show();
-                $("#hardwarecontent #divlogin").show();
-                $("#hardwarecontent #divunderground").hide();
-                $("#hardwarecontent #divhttppoller").hide();
-                $("#hardwarecontent #hardwareparamsremote #tcpport").val(20000);
-            }
-            else if ((text.indexOf("LAN") >= 0 || text.indexOf("Harmony") >= 0 || text.indexOf("MySensors Gateway with MQTT") >= 0) && text.indexOf("YouLess") == -1 && text.indexOf("Denkovi") == -1 && text.indexOf("Satel Integra") == -1)
+            else if ((text.indexOf("LAN") >= 0 || text.indexOf("Harmony") >= 0 || text.indexOf("MySensors Gateway with MQTT") >= 0) && text.indexOf("YouLess") == -1 && text.indexOf("Denkovi") == -1 && text.indexOf("Satel Integra") == -1 && text.indexOf("MyHome OpenWebNet with LAN interface") == -1)
             {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").show();
@@ -5180,7 +5176,7 @@ define(['app'], function (app) {
                     $("#hardwarecontent #divcrcp1").show();
                 }
             }
-            else if ((text.indexOf("LAN") >= 0 || text.indexOf("MySensors Gateway with MQTT") >= 0) && (text.indexOf("YouLess") >= 0 || text.indexOf("Denkovi") >= 0 || text.indexOf("Satel Integra") >= 0) || (text.indexOf("Xiaomi Gateway") >= 0))
+            else if ((text.indexOf("LAN") >= 0 || text.indexOf("MySensors Gateway with MQTT") >= 0) && (text.indexOf("YouLess") >= 0 || text.indexOf("Denkovi") >= 0 || text.indexOf("Satel Integra") >= 0) || (text.indexOf("Xiaomi Gateway") >= 0) || text.indexOf("MyHome OpenWebNet with LAN interface") >= 0)
             {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").show();
@@ -5193,7 +5189,11 @@ define(['app'], function (app) {
                 {
                     $("#hardwarecontent #divpollinterval").show();
 					$("#hardwarecontent #hardwareparamspollinterval #pollinterval").val(1000);
-                }
+				}
+				if (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0)
+				{
+				    $("#hardwarecontent #hardwareparamsremote #tcpport").val(20000);
+				}
             }
             else if (text.indexOf("Domoticz") >= 0)
             {
