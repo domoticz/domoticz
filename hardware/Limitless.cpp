@@ -238,14 +238,16 @@ bool CLimitLess::StartHardware()
 				{
 					if (!AddSwitchIfNotExits(3, "AppLamp Group3"))
 					{
-						AddSwitchIfNotExits(4, "AppLamp Group4");
+						if (!AddSwitchIfNotExits(4, "AppLamp Group4"))
+						{
+							if (m_BridgeType == LBTYPE_V6)
+							{
+								AddSwitchIfNotExits(5, "AppLamp Bridge");
+							}
+						}
 					}
 				}
 			}
-		}
-		if (m_BridgeType == LBTYPE_V6)
-		{
-			AddSwitchIfNotExits(5, "AppLamp Bridge");
 		}
 	}
 	else {
@@ -263,18 +265,6 @@ bool CLimitLess::StartHardware()
 
 bool CLimitLess::IsDataAvailable(const SOCKET sock)
 {
-/*
-	int iret;
-	int msec;
-	struct pollfd sockpoll;
-
-	msec = 1000;
-
-	sockpoll.fd = sock;
-	sockpoll.events = POLLIN;
-
-	return poll(&sockpoll, 1, msec);
-*/
 	fd_set fds;
 	int n;
 	struct timeval tv;
@@ -296,6 +286,7 @@ bool CLimitLess::GetV6BridgeID()
 {
 	m_BridgeID_1 = m_BridgeID_2 = 0;
 	int totRetries = 0;
+
 	sendto(m_RemoteSocket, (const char*)&V6_GetSessionID, sizeof(V6_GetSessionID), 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 
 	while (totRetries < v6_repeats)
@@ -309,7 +300,9 @@ bool CLimitLess::GetV6BridgeID()
 		uint8_t rbuffer[1024];
 		sockaddr_in si_other;
 		socklen_t slen = sizeof(sockaddr_in);
+		sleep_milliseconds(200);
 		int trecv = recvfrom(m_RemoteSocket, (char*)&rbuffer, sizeof(rbuffer), 0, (struct sockaddr*)&si_other, &slen);
+
 		if (trecv < 1)
 		{
 			return false;
@@ -326,6 +319,7 @@ bool CLimitLess::GetV6BridgeID()
 		uint8_t mac_6 = rbuffer[0x0C];
 		m_BridgeID_1 = rbuffer[0x13];
 		m_BridgeID_2 = rbuffer[0x14];
+
 		return true;
 	}
 	return false;
@@ -340,6 +334,7 @@ bool CLimitLess::SendV6Command(const uint8_t *pCmd)
 			return false;
 	}
 	uint8_t OutBuffer[100];
+	uint8_t RBuffer[100];
 	int wPointer = 0;
 	memcpy(OutBuffer + wPointer, V6_PreAmble, sizeof(V6_PreAmble)); wPointer += sizeof(V6_PreAmble);
 	OutBuffer[wPointer++] = m_BridgeID_1;
@@ -360,6 +355,7 @@ bool CLimitLess::SendV6Command(const uint8_t *pCmd)
 	OutBuffer[wPointer++] = crc;
 
 	sendto(m_RemoteSocket, (const char*)&OutBuffer, wPointer, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+	sleep_milliseconds(200);
 //	return true;
 	int totRetries = 0;
 	while (totRetries < v6_repeats)
@@ -372,10 +368,16 @@ bool CLimitLess::SendV6Command(const uint8_t *pCmd)
 		}
 		sockaddr_in si_other;
 		socklen_t slen = sizeof(sockaddr_in);
-		int trecv = recvfrom(m_RemoteSocket, (char*)&OutBuffer, sizeof(OutBuffer), 0, (struct sockaddr*)&si_other, &slen);
+		int trecv = recvfrom(m_RemoteSocket, (char*)&RBuffer, sizeof(RBuffer), 0, (struct sockaddr*)&si_other, &slen);
+		//Hack to workaround other communication get from bridge, should solved more clear
+		//8000000015ACCF23F581D8050200340000000000000000000034
+		while ( (RBuffer[0x00] == 0x80) && (RBuffer[0x04] == 0x15) ){
+			int trecv = recvfrom(m_RemoteSocket, (char*)&RBuffer, sizeof(RBuffer), 0, (struct sockaddr*)&si_other, &slen);
+			continue;
+		}
 		if (trecv < 1)
 			return false;
-		if (OutBuffer[0x07] != 0x00)
+		if (RBuffer[0x07] != 0x00)
 		{
 			//Maybe the Bridge was turned off, try getting the ID again
 			if (GetV6BridgeID())
