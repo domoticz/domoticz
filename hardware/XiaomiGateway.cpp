@@ -47,7 +47,7 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 
 	if (packettype == pTypeGeneralSwitch) {
 		_tGeneralSwitch *xcmd = (_tGeneralSwitch*)pdata;
-			
+
 			char szTmp[50];
 			sprintf(szTmp, "%08X", (unsigned int)xcmd->id);
 			std::string ID = szTmp;
@@ -65,7 +65,7 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 				bool isctrl2 = false;
 				for (unsigned i = 0; i < arrAqara_Wired_ID.size(); i++) {
 					if (arrAqara_Wired_ID[i] == sid) {
-						//this device is ctrl2.. 
+						//this device is ctrl2..
 						isctrl2 = true;
 						isctrl = true;
 						if (xcmd->unitcode == 1) {
@@ -92,7 +92,7 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 			//"{\"cmd\":\"write\",\"model\":\"ctrl_neutral2\",\"sid\":\"" + sid + "\",\"short_id\":0,\"data\":\"{" + cmdchannel + cmdcommand + "\\\",\\\"key\\\":\\\"@gatewaykey\\\"}\" }"
 				//message = "{\"cmd\":\"write\",\"model\":\"ctrl_neutral2\",\"sid\":\"" + sid + "\",\"short_id\":0,\"data\":\"{" + cmdchannel + "\\\",\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
 
-		
+
 		/*if (xcmd->subtype == sSwitchTypeSelector) {
 			std::string cmdchannel = "";
 			if (xcmd->level == 10) {
@@ -723,7 +723,6 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						}
 						std::string rotate = root2["rotate"].asString();
 						if (rotate != "") {
-							/*
 							int amount = atoi(rotate.c_str());
 							if (amount > 0) {
 								level = 90;
@@ -732,8 +731,8 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 								level = 100;
 							}
 							on = true;
-							*/
 							m_XiaomiGateway->InsertUpdateCubeText(sid.c_str(), name, rotate.c_str());
+							m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, on, type, level);
 						}
 						else {
 							std::string battery = root2["battery"].asString();
@@ -755,9 +754,9 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						if ((aqara_wired1 == "on") || (aqara_wired2 =="on")) {
 							state = true;
 						}
-						
+
 						/*int level = 0; //no longer selector
-						
+
 						if (aqara_wired1 == "on") {
 							level = 10;
 						}
@@ -774,7 +773,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						for (unsigned i = 0; i < arrAqara_Wired_ID.size(); i++) {
 							if (arrAqara_Wired_ID[i] == sid) {
 								cid = true;
-							}		
+							}
 						}
 						if ((cid == false) || (arrAqara_Wired_ID.size() < 1)) {
 
