@@ -308,7 +308,13 @@ bool CLimitLess::GetV6BridgeID()
 			return false;
 		}
 		if (trecv != 0x16)
-			return false;
+			while ( (rbuffer[0x00] == 0x88) && (rbuffer[0x07] == 0x01) )
+			{
+				totRetries++;
+				int trecv = recvfrom(m_RemoteSocket, (char*)&rbuffer, sizeof(rbuffer), 0, (struct sockaddr*)&si_other, &slen);
+				continue;
+			}
+			//return false;
 		if ((rbuffer[0x00] != 0x28) || (rbuffer[0x15] != 0x00))
 			return false;
 		uint8_t mac_1 = rbuffer[0x07];
@@ -382,6 +388,8 @@ bool CLimitLess::SendV6Command(const uint8_t *pCmd)
 			//Maybe the Bridge was turned off, try getting the ID again
 			if (GetV6BridgeID())
 			{
+				OutBuffer[5]=m_BridgeID_1;
+				OutBuffer[6]=m_BridgeID_2;
 				sendto(m_RemoteSocket, (const char*)&OutBuffer, wPointer, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 				return (IsDataAvailable(m_RemoteSocket));
 			}
