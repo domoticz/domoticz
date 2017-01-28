@@ -7517,7 +7517,18 @@ namespace http {
 					tlist.Name = sd[1];
 					tlist.Enabled = (atoi(sd[2].c_str()) != 0);
 					tlist.HardwareTypeVal = atoi(sd[3].c_str());
+#ifndef USE_PYTHON_PLUGINS
 					tlist.HardwareType = Hardware_Type_Desc(tlist.HardwareTypeVal);
+#else
+					if (tlist.HardwareTypeVal != HTYPE_PythonPlugin)
+					{
+						tlist.HardwareType = Hardware_Type_Desc(tlist.HardwareTypeVal);
+					}
+					else
+					{
+						tlist.HardwareType = PluginHardwareDesc(ID);
+					}
+#endif
 					_hardwareNames[ID] = tlist;
 				}
 			}
