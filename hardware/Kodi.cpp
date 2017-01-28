@@ -1457,10 +1457,15 @@ namespace http {
 				{
 					switch (hType) {
 					case HTYPE_Kodi:
+					{
 						CKodi	Kodi(HwID);
 						Kodi.SendCommand(idx, sAction);
 						break;
-						// put other players here ...
+					}
+					case HTYPE_PythonPlugin:
+						Cmd_PluginCommand(session, req, root);
+						break;
+					// put other players here ...
 					}
 				}
 			}

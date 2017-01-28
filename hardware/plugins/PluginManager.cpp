@@ -437,8 +437,8 @@ namespace Plugins {
 			char*		szURL = NULL;
 			PyObject*	pHeaders = NULL;
 			int			iDelay = 0;
-			static char *kwlist[] = { "Message", "Verb", "TypeName", "URL", "Headers", "Delay", NULL };
-			if (!PyArg_ParseTupleAndKeywords(args, keywds, "s|ssOi", kwlist, &szMessage, &szVerb, &szURL, &pHeaders))
+			static char *kwlist[] = { "Message", "Verb", "URL", "Headers", "Delay", NULL };
+			if (!PyArg_ParseTupleAndKeywords(args, keywds, "s|ssOi", kwlist, &szMessage, &szVerb, &szURL, &pHeaders, &iDelay))
 			{
 				_log.Log(LOG_ERROR, "(%s) failed to parse parameters, Message or Message,Verb,URL,Headers expected.", pModState->pPlugin->Name.c_str());
 			}
@@ -2699,7 +2699,7 @@ namespace Plugins {
 				for (std::map<int, CDomoticzHardwareBase*>::iterator itt = m_pPlugins.begin(); itt != m_pPlugins.end(); itt++)
 				{
 					CPlugin*	pPlugin = (CPlugin*)itt->second;
-					if ((pPlugin->m_pTransport) && (pPlugin->m_pTransport->IsConnected()) && (pPlugin->m_pTransport->ThreadPoolRequired()))
+					if (pPlugin && pPlugin->m_pTransport && (pPlugin->m_pTransport->IsConnected()) && (pPlugin->m_pTransport->ThreadPoolRequired()))
 					{
 						bIos_required = true;
 						break;
@@ -2877,6 +2877,71 @@ namespace http {
 					}
 				}
 			}  
+		}
+
+		std::string CWebServer::PluginHardwareDesc(int HwdID)
+		{
+			Plugins::CPluginSystem Plugins;
+			std::map<int, CDomoticzHardwareBase*>*	PluginHwd = Plugins.GetHardware();
+			std::string		sRetVal = Hardware_Type_Desc(HTYPE_PythonPlugin);
+			Plugins::CPlugin*	pPlugin = (Plugins::CPlugin*)(*PluginHwd)[HwdID];
+
+			// Disabled plugins will not be in plugin hardware map
+			if (pPlugin)
+			{
+				std::string	sKey = "key=\"" + pPlugin->m_PluginKey + "\"";
+				std::map<std::string, std::string>*	PluginXml = Plugins.GetManifest();
+				for (std::map<std::string, std::string>::iterator it_type = PluginXml->begin(); it_type != PluginXml->end(); it_type++)
+				{
+					if (it_type->second.find(sKey) != std::string::npos)
+					{
+						TiXmlDocument	XmlDoc;
+						XmlDoc.Parse(it_type->second.c_str());
+						if (XmlDoc.Error())
+						{
+							_log.Log(LOG_ERROR, "%s: Error '%s' at line %d column %d in XML '%s'.", __func__, XmlDoc.ErrorDesc(), XmlDoc.ErrorRow(), XmlDoc.ErrorCol(), it_type->second.c_str());
+						}
+						else
+						{
+							TiXmlNode* pXmlNode = XmlDoc.FirstChild("plugin");
+							for (pXmlNode; pXmlNode; pXmlNode = pXmlNode->NextSiblingElement())
+							{
+								TiXmlElement* pXmlEle = pXmlNode->ToElement();
+								if (pXmlEle)
+								{
+									const char*	pAttributeValue = pXmlEle->Attribute("name");
+									if (pAttributeValue) sRetVal = pAttributeValue;
+								}
+							}
+						}
+						break;
+					}
+				}
+			}
+
+			return sRetVal;
+		}
+
+		void CWebServer::Cmd_PluginCommand(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			std::string sIdx = request::findValue(&req, "idx");
+			std::string sAction = request::findValue(&req, "action");
+			if (sIdx.empty())
+				return;
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query("SELECT HardwareID, Unit FROM DeviceStatus WHERE (ID=='%q') ", sIdx.c_str());
+			if (result.size() == 1)
+			{
+				int HwID = atoi(result[0][0].c_str());
+				int Unit = atoi(result[0][1].c_str());
+				Plugins::CPluginSystem Plugins;
+				std::map<int, CDomoticzHardwareBase*>*	PluginHwd = Plugins.GetHardware();
+				Plugins::CPlugin*	pPlugin = (Plugins::CPlugin*)(*PluginHwd)[HwID];
+				if (pPlugin)
+				{
+					pPlugin->SendCommand(Unit, sAction, 0, 0);
+				}
+			}
 		}
 	}
 }
