@@ -192,6 +192,7 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 		}
 	}
 	if (message != "") {
+		/*
 		boost::asio::io_service io_service;
 		boost::asio::ip::udp::socket socket_(io_service, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 0));
 		stdreplace(message, "@gatewaykey", GetGatewayKey());
@@ -209,12 +210,51 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 			std::size_t found = receivedString.find("Invalid key");
 			if (found != std::string::npos) {
 				_log.Log(LOG_ERROR, "XiaomiGateway: unable to write command - Invalid Key");
+				sleep_milliseconds(50);
+				//resend the command
+
 				result = false;
 			}
 			_log.Log(LOG_STATUS, "XiaomiGateway: response %s", receivedString.c_str());
 		}
 		socket_.close();
+		*/
+		result = SendMessageToGateway(message);
+		if (result == false) {
+			//send the message again
+			_log.Log(LOG_STATUS, "XiaomiGateway: SendMessageToGateway failed on first attempt, will try again");
+			sleep_milliseconds(100);
+			result = SendMessageToGateway(message);
+		}
 	}
+	return result;
+}
+
+bool XiaomiGateway::SendMessageToGateway(const std::string &controlmessage) {
+	std::string message = controlmessage;
+	bool result = true;
+	boost::asio::io_service io_service;
+	boost::asio::ip::udp::socket socket_(io_service, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 0));
+	stdreplace(message, "@gatewaykey", GetGatewayKey());
+	boost::shared_ptr<std::string> message1(new std::string(message));
+	boost::asio::ip::udp::endpoint remote_endpoint_;
+	remote_endpoint_ = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(m_GatewayIp), 9898);
+	socket_.send_to(boost::asio::buffer(*message1), remote_endpoint_);
+	sleep_milliseconds(150);
+	boost::array<char, 512> recv_buffer_;
+	memset(&recv_buffer_[0], 0, sizeof(recv_buffer_));
+	_log.Log(LOG_STATUS, "XiaomiGateway: request %s", message.c_str());
+	while (socket_.available() > 0) {
+		socket_.receive_from(boost::asio::buffer(recv_buffer_), remote_endpoint_);
+		std::string receivedString(recv_buffer_.data());
+		std::size_t found = receivedString.find("Invalid key");
+		if (found != std::string::npos) {
+			_log.Log(LOG_ERROR, "XiaomiGateway: unable to write command - Invalid Key");
+			result = false;
+		}
+		_log.Log(LOG_STATUS, "XiaomiGateway: response %s", receivedString.c_str());
+	}
+	socket_.close();
 	return result;
 }
 
