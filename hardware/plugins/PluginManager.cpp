@@ -437,8 +437,8 @@ namespace Plugins {
 			char*		szURL = NULL;
 			PyObject*	pHeaders = NULL;
 			int			iDelay = 0;
-			static char *kwlist[] = { "Message", "Verb", "TypeName", "URL", "Headers", "Delay", NULL };
-			if (!PyArg_ParseTupleAndKeywords(args, keywds, "s|ssOi", kwlist, &szMessage, &szVerb, &szURL, &pHeaders))
+			static char *kwlist[] = { "Message", "Verb", "URL", "Headers", "Delay", NULL };
+			if (!PyArg_ParseTupleAndKeywords(args, keywds, "s|ssOi", kwlist, &szMessage, &szVerb, &szURL, &pHeaders, &iDelay))
 			{
 				_log.Log(LOG_ERROR, "(%s) failed to parse parameters, Message or Message,Verb,URL,Headers expected.", pModState->pPlugin->Name.c_str());
 			}
