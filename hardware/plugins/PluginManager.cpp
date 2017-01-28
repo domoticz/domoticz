@@ -2330,13 +2330,15 @@ namespace Plugins {
 #endif
 		std::wstringstream ssPath;
 		std::string		sFind = "key=\"" + m_PluginKey + "\"";
-		Plugins::CPluginSystem Plugins;
-		std::map<std::string, std::string>*	PluginXml = Plugins.GetManifest();
-		for (std::map<std::string, std::string>::iterator it_type = PluginXml->begin(); it_type != PluginXml->end(); it_type++)
+		CPluginSystem Plugins;
+		std::map<std::string, std::string>*	mPluginXml = Plugins.GetManifest();
+		std::string		sPluginXML;
+		for (std::map<std::string, std::string>::iterator it_type = mPluginXml->begin(); it_type != mPluginXml->end(); it_type++)
 		{
 			if (it_type->second.find(sFind) != std::string::npos)
 			{
 				ssPath << it_type->first.c_str();
+				sPluginXML = it_type->second;
 				break;
 			}
 		}
@@ -2378,7 +2380,40 @@ namespace Plugins {
 			boost::lock_guard<boost::mutex> l(PluginMutex);
 			PluginMessageQueue.push(Message);
 		}
-		_log.Log(LOG_STATUS, "(%s) Initialized", Name.c_str());
+
+		std::string		sExtraDetail;
+		TiXmlDocument	XmlDoc;
+		XmlDoc.Parse(sPluginXML.c_str());
+		if (XmlDoc.Error())
+		{
+			_log.Log(LOG_ERROR, "%s: Error '%s' at line %d column %d in XML '%s'.", __func__, XmlDoc.ErrorDesc(), XmlDoc.ErrorRow(), XmlDoc.ErrorCol(), sPluginXML.c_str());
+		}
+		else
+		{
+			TiXmlNode* pXmlNode = XmlDoc.FirstChild("plugin");
+			for (pXmlNode; pXmlNode; pXmlNode = pXmlNode->NextSiblingElement())
+			{
+				TiXmlElement* pXmlEle = pXmlNode->ToElement();
+				if (pXmlEle)
+				{
+					const char*	pAttributeValue = pXmlEle->Attribute("version");
+					if (pAttributeValue)
+					{
+						sExtraDetail += "version ";
+						sExtraDetail += pAttributeValue;
+					}
+					pAttributeValue = pXmlEle->Attribute("author");
+					if (pAttributeValue)
+					{
+						if (sExtraDetail.length()) sExtraDetail += ", ";
+						sExtraDetail += "author '";
+						sExtraDetail += pAttributeValue;
+						sExtraDetail += "'";
+					}
+				}
+			}
+		}
+		_log.Log(LOG_STATUS, "(%s) Initialized %s", Name.c_str(), sExtraDetail.c_str());
 
 		return true;
 	}
