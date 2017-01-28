@@ -238,16 +238,14 @@ bool CLimitLess::StartHardware()
 				{
 					if (!AddSwitchIfNotExits(3, "AppLamp Group3"))
 					{
-						if (!AddSwitchIfNotExits(4, "AppLamp Group4"))
-						{
-							if (m_BridgeType == LBTYPE_V6)
-							{
-								AddSwitchIfNotExits(5, "AppLamp Bridge");
-							}
-						}
+						AddSwitchIfNotExits(4, "AppLamp Group4");
 					}
 				}
 			}
+		}
+		if (m_BridgeType == LBTYPE_V6)
+		{
+			AddSwitchIfNotExits(5, "AppLamp Bridge");
 		}
 	}
 	else {
@@ -265,6 +263,18 @@ bool CLimitLess::StartHardware()
 
 bool CLimitLess::IsDataAvailable(const SOCKET sock)
 {
+/*
+	int iret;
+	int msec;
+	struct pollfd sockpoll;
+
+	msec = 1000;
+
+	sockpoll.fd = sock;
+	sockpoll.events = POLLIN;
+
+	return poll(&sockpoll, 1, msec);
+*/
 	fd_set fds;
 	int n;
 	struct timeval tv;
@@ -278,7 +288,7 @@ bool CLimitLess::IsDataAvailable(const SOCKET sock)
 	tv.tv_usec = 0;
 
 	// Wait until timeout or data received.
-	n = select(m_RemoteSocket, &fds, NULL, NULL, &tv);
+	n = select(m_RemoteSocket+1, &fds, NULL, NULL, &tv);
 	return (n > 0);
 }
 
