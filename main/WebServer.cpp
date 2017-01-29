@@ -51,7 +51,6 @@
 #include "../notifications/NotificationHelper.h"
 #include "../main/LuaHandler.h"
 
-#include "mainstructs.h"
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
@@ -10960,32 +10959,6 @@ namespace http {
 					root["result"][ii]["name"] = sd[1];
 					root["result"][ii]["value"] = sd[0];
 					ii++;
-				}
-			}
-		}
-
-		void CWebServer::Cmd_GetDevicesListOnOff(WebEmSession & session, const request& req, Json::Value &root)
-		{
-			root["status"] = "OK";
-			root["title"] = "GetDevicesListOnOff";
-			int ii = 0;
-			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT ID, Name, Type, SubType FROM DeviceStatus WHERE (Used == 1) ORDER BY Name");
-			if (result.size() > 0)
-			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
-				for (itt = result.begin(); itt != result.end(); ++itt)
-				{
-					std::vector<std::string> sd = *itt;
-					int dType = atoi(sd[2].c_str());
-					int dSubType = atoi(sd[3].c_str());
-					std::string sOptions = RFX_Type_SubType_Values(dType, dSubType);
-					if (sOptions == "Status")
-					{
-						root["result"][ii]["name"] = sd[1];
-						root["result"][ii]["value"] = sd[0];
-						ii++;
-					}
 				}
 			}
 		}
