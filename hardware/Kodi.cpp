@@ -1462,10 +1462,12 @@ namespace http {
 						Kodi.SendCommand(idx, sAction);
 						break;
 					}
+#ifdef USE_PYTHON_PLUGINS
 					case HTYPE_PythonPlugin:
 						Cmd_PluginCommand(session, req, root);
 						break;
-					// put other players here ...
+#endif
+						// put other players here ...
 					}
 				}
 			}
