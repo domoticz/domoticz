@@ -288,7 +288,6 @@ bool CLimitLess::GetV6BridgeID()
 	int totRetries = 0;
 
 	sendto(m_RemoteSocket, (const char*)&V6_GetSessionID, sizeof(V6_GetSessionID), 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-
 	while (totRetries < v6_repeats)
 	{
 		if (!IsDataAvailable(m_RemoteSocket))
@@ -300,7 +299,7 @@ bool CLimitLess::GetV6BridgeID()
 		uint8_t rbuffer[1024];
 		sockaddr_in si_other;
 		socklen_t slen = sizeof(sockaddr_in);
-		sleep_milliseconds(200);
+		sleep_milliseconds(100);
 		int trecv = recvfrom(m_RemoteSocket, (char*)&rbuffer, sizeof(rbuffer), 0, (struct sockaddr*)&si_other, &slen);
 
 		if (trecv < 1)
@@ -325,7 +324,6 @@ bool CLimitLess::GetV6BridgeID()
 		uint8_t mac_6 = rbuffer[0x0C];
 		m_BridgeID_1 = rbuffer[0x13];
 		m_BridgeID_2 = rbuffer[0x14];
-
 		return true;
 	}
 	return false;
@@ -361,7 +359,7 @@ bool CLimitLess::SendV6Command(const uint8_t *pCmd)
 	OutBuffer[wPointer++] = crc;
 
 	sendto(m_RemoteSocket, (const char*)&OutBuffer, wPointer, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-	sleep_milliseconds(200);
+	sleep_milliseconds(100);
 //	return true;
 	int totRetries = 0;
 	while (totRetries < v6_repeats)
@@ -391,7 +389,14 @@ bool CLimitLess::SendV6Command(const uint8_t *pCmd)
 				OutBuffer[5]=m_BridgeID_1;
 				OutBuffer[6]=m_BridgeID_2;
 				sendto(m_RemoteSocket, (const char*)&OutBuffer, wPointer, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-				return (IsDataAvailable(m_RemoteSocket));
+				//Hack to flush buffer and see if command succeeded
+				recvfrom(m_RemoteSocket, (char*)&RBuffer, sizeof(RBuffer), 0, (struct sockaddr*)&si_other, &slen);
+				if (RBuffer[0x07] != 0x00)
+				{
+					_log.Log(LOG_ERROR, "AppLamp: Error sending command to Bridge!...");
+				}
+				else return true;
+				//return (IsDataAvailable(m_RemoteSocket));
 			}
 			else
 			{
