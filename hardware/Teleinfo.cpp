@@ -293,16 +293,9 @@ void Teleinfo::MatchLine()
 				m_p3power.powerusage1 = ulValue;
 			break;
 		case TELEINFO_TYPE_PTEC:
-			if (vString.substr (0,2) == "HC")
-                        {
-                                SendSwitch(5, 1, 255, true, 0, "Heures Creuses");
-                        }
-                        else if (vString.substr (0,2) == "HP")
-                        {
-                                SendSwitch(5, 1, 255, false, 0, "Heures Creuses");
-                        }
+			SendSwitch(5,1,255,(vString.substr (0,2) == "HC"),0,"Heures Creuses");
 
-			 if (vString.substr (2,2) == "JB")
+			if (vString.substr (2,2) == "JB")
                         {
                                 m_bLabel_PTEC_JB = true;
                                 m_bLabel_PTEC_JW = false;
