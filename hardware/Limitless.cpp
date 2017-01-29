@@ -238,16 +238,14 @@ bool CLimitLess::StartHardware()
 				{
 					if (!AddSwitchIfNotExits(3, "AppLamp Group3"))
 					{
-						if (!AddSwitchIfNotExits(4, "AppLamp Group4"))
-						{
-							if (m_BridgeType == LBTYPE_V6)
-							{
-								AddSwitchIfNotExits(5, "AppLamp Bridge");
-							}
-						}
+						AddSwitchIfNotExits(4, "AppLamp Group4");
 					}
 				}
 			}
+		}
+		if (m_BridgeType == LBTYPE_V6)
+		{
+			AddSwitchIfNotExits(5, "AppLamp Bridge");
 		}
 	}
 	else {
