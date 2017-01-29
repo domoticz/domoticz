@@ -665,7 +665,15 @@ namespace Plugins {
 					Py_DECREF(self->Name);
 					self->Name = PyUnicode_FromString(Name);
 				}
-				if (Unit != -1) self->Unit = Unit;
+				if ((Unit > 0) && (Unit < 256))
+				{
+					self->Unit = Unit;
+				}
+				else
+				{
+					_log.Log(LOG_ERROR, "CPlugin:%s, illegal Unit number (%d), valid values range from 1 to 255.", __func__, Unit);
+					return 0;
+				}
 				if (TypeName) {
 					std::string	sTypeName = TypeName;
 
