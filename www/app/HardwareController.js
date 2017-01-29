@@ -2955,6 +2955,41 @@ define(['app'], function (app) {
             });
         }
 
+        BleBoxAutoSearchingNodes = function () {
+
+            var ipmask = $("#hardwarecontent #bleboxsettingstable #ipmask").val();
+            if (ipmask == "") {
+                ShowNotify($.t('Please enter a mask!'), 2500, true);
+                return;
+            }
+
+            $.ajax({
+                url: "json.htm?type=command&param=bleboxautosearchingnodes" +
+                    "&idx=" + $.devIdx +
+                    "&ipmask=" + ipmask,
+                async: false,
+                dataType: 'json',
+                success: function (data) {
+                    RefreshBleBoxNodeTable();
+                }
+            });
+        }
+
+        BleBoxUpdateFirmware = function () {
+
+            ShowNotify($.t('Please wait. Updating ....!'), 2500, true);
+
+            $.ajax({
+                url: "json.htm?type=command&param=bleboxupdatefirmware" +
+                    "&idx=" + $.devIdx,
+                async: false,
+                dataType: 'json',
+                success: function (data) {
+                    RefreshBleBoxNodeTable();
+                }
+            });
+        }
+
         BleBoxUpdateNode = function (nodeid) {
             if ($('#updelclr #nodedelete').attr("class") == "btnstyle3-dis") {
                 return;
@@ -3087,6 +3122,7 @@ define(['app'], function (app) {
 
             $("#hardwarecontent #bleboxsettingstable #pollinterval").val(Mode1);
             $("#hardwarecontent #bleboxsettingstable #pingtimeout").val(Mode2);
+            $("#hardwarecontent #bleboxsettingstable #ipmask").val("192.168.1.*");
 
             var oTable = $('#bleboxnodestable').dataTable({
                 "sDom": '<"H"lfrC>t<"F"ip>',
@@ -5276,7 +5312,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divhttppoller").hide();
                 if (text.indexOf("Open Weather Map") >= 0)
                 {
-                    $("#hardwarecontent #hardwareparamsunderground #location").val("lat=53.40&lon=14.58");
+                    $("#hardwarecontent #hardwareparamsunderground #location").val(data["Password"]);
                 }
             }
             else if (text.indexOf("Philips Hue") >= 0)
