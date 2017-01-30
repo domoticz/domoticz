@@ -47,7 +47,7 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 
 	if (packettype == pTypeGeneralSwitch) {
 		_tGeneralSwitch *xcmd = (_tGeneralSwitch*)pdata;
-
+			
 			char szTmp[50];
 			sprintf(szTmp, "%08X", (unsigned int)xcmd->id);
 			std::string ID = szTmp;
@@ -65,7 +65,7 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 				bool isctrl2 = false;
 				for (unsigned i = 0; i < arrAqara_Wired_ID.size(); i++) {
 					if (arrAqara_Wired_ID[i] == sid) {
-						//this device is ctrl2..
+						//this device is ctrl2.. 
 						isctrl2 = true;
 						isctrl = true;
 						if (xcmd->unitcode == 1) {
@@ -92,7 +92,7 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 			//"{\"cmd\":\"write\",\"model\":\"ctrl_neutral2\",\"sid\":\"" + sid + "\",\"short_id\":0,\"data\":\"{" + cmdchannel + cmdcommand + "\\\",\\\"key\\\":\\\"@gatewaykey\\\"}\" }"
 				//message = "{\"cmd\":\"write\",\"model\":\"ctrl_neutral2\",\"sid\":\"" + sid + "\",\"short_id\":0,\"data\":\"{" + cmdchannel + "\\\",\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
 
-
+		
 		/*if (xcmd->subtype == sSwitchTypeSelector) {
 			std::string cmdchannel = "";
 			if (xcmd->level == 10) {
@@ -363,7 +363,7 @@ void XiaomiGateway::InsertUpdateRGBGateway(const std::string & nodeid, const std
 	}
 }
 
-void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::string &Name, const bool bIsOn, const _eSwitchType switchtype, const int level, const bool isctlr2)
+void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::string &Name, const bool bIsOn, const _eSwitchType switchtype, const int level, const bool isctlr2, const bool is2ndchannel)
 {
 	// Make sure the ID supplied fits with what is expected ie 158d0000fd32c2
 	if (nodeid.length() < 14) {
@@ -455,6 +455,9 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 		}
 	}
 	else {
+		if (is2ndchannel) {
+			xcmd.unitcode = 2;
+		}
 		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, NULL, -1);
 	}
 }
@@ -782,6 +785,36 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							else {
 								m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, on, type, level);
 							}
+						}
+					}
+					else if ((name == "Xiaomi Wired Dual Wall Switch") || (name == "Xiaomi Wired Single Wall Switch")) {
+						//aqara wired dual switch, bidirectional communiction support
+						type = STYPE_OnOff;
+						std::string aqara_wired1 = root2["channel_0"].asString();
+						std::string aqara_wired2 = root2["channel_1"].asString();
+						bool state = false;
+						bool xctrl = false;
+						if ((aqara_wired1 == "on") || (aqara_wired2 =="on")) {
+							state = true;
+						}
+						bool cid = false;
+						for (unsigned i = 0; i < arrAqara_Wired_ID.size(); i++) {
+							if (arrAqara_Wired_ID[i] == sid) {
+								cid = true;
+							}		
+						}
+						if ((cid == false) || (arrAqara_Wired_ID.size() < 1)) {
+
+							arrAqara_Wired_ID.push_back(sid);
+						}
+						if (name == "Xiaomi Wired Dual Wall Switch") {
+							xctrl = true;
+						}
+						if (aqara_wired1 != "") {
+							m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, state, type, 0, xctrl, false);
+						}
+						else if (aqara_wired2 != "") {
+							m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, state, type, 0, xctrl, true);
 						}
 					}
 					else if ((name == "Xiaomi Wired Dual Wall Switch") || (name == "Xiaomi Wired Single Wall Switch")) {
