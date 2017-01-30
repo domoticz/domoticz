@@ -437,8 +437,8 @@ namespace Plugins {
 			char*		szURL = NULL;
 			PyObject*	pHeaders = NULL;
 			int			iDelay = 0;
-			static char *kwlist[] = { "Message", "Verb", "TypeName", "URL", "Headers", "Delay", NULL };
-			if (!PyArg_ParseTupleAndKeywords(args, keywds, "s|ssOi", kwlist, &szMessage, &szVerb, &szURL, &pHeaders))
+			static char *kwlist[] = { "Message", "Verb", "URL", "Headers", "Delay", NULL };
+			if (!PyArg_ParseTupleAndKeywords(args, keywds, "s|ssOi", kwlist, &szMessage, &szVerb, &szURL, &pHeaders, &iDelay))
 			{
 				_log.Log(LOG_ERROR, "(%s) failed to parse parameters, Message or Message,Verb,URL,Headers expected.", pModState->pPlugin->Name.c_str());
 			}
@@ -665,7 +665,15 @@ namespace Plugins {
 					Py_DECREF(self->Name);
 					self->Name = PyUnicode_FromString(Name);
 				}
-				if (Unit != -1) self->Unit = Unit;
+				if ((Unit > 0) && (Unit < 256))
+				{
+					self->Unit = Unit;
+				}
+				else
+				{
+					_log.Log(LOG_ERROR, "CPlugin:%s, illegal Unit number (%d), valid values range from 1 to 255.", __func__, Unit);
+					return 0;
+				}
 				if (TypeName) {
 					std::string	sTypeName = TypeName;
 
@@ -2330,13 +2338,15 @@ namespace Plugins {
 #endif
 		std::wstringstream ssPath;
 		std::string		sFind = "key=\"" + m_PluginKey + "\"";
-		Plugins::CPluginSystem Plugins;
-		std::map<std::string, std::string>*	PluginXml = Plugins.GetManifest();
-		for (std::map<std::string, std::string>::iterator it_type = PluginXml->begin(); it_type != PluginXml->end(); it_type++)
+		CPluginSystem Plugins;
+		std::map<std::string, std::string>*	mPluginXml = Plugins.GetManifest();
+		std::string		sPluginXML;
+		for (std::map<std::string, std::string>::iterator it_type = mPluginXml->begin(); it_type != mPluginXml->end(); it_type++)
 		{
 			if (it_type->second.find(sFind) != std::string::npos)
 			{
 				ssPath << it_type->first.c_str();
+				sPluginXML = it_type->second;
 				break;
 			}
 		}
@@ -2378,7 +2388,40 @@ namespace Plugins {
 			boost::lock_guard<boost::mutex> l(PluginMutex);
 			PluginMessageQueue.push(Message);
 		}
-		_log.Log(LOG_STATUS, "(%s) Initialized", Name.c_str());
+
+		std::string		sExtraDetail;
+		TiXmlDocument	XmlDoc;
+		XmlDoc.Parse(sPluginXML.c_str());
+		if (XmlDoc.Error())
+		{
+			_log.Log(LOG_ERROR, "%s: Error '%s' at line %d column %d in XML '%s'.", __func__, XmlDoc.ErrorDesc(), XmlDoc.ErrorRow(), XmlDoc.ErrorCol(), sPluginXML.c_str());
+		}
+		else
+		{
+			TiXmlNode* pXmlNode = XmlDoc.FirstChild("plugin");
+			for (pXmlNode; pXmlNode; pXmlNode = pXmlNode->NextSiblingElement())
+			{
+				TiXmlElement* pXmlEle = pXmlNode->ToElement();
+				if (pXmlEle)
+				{
+					const char*	pAttributeValue = pXmlEle->Attribute("version");
+					if (pAttributeValue)
+					{
+						sExtraDetail += "version ";
+						sExtraDetail += pAttributeValue;
+					}
+					pAttributeValue = pXmlEle->Attribute("author");
+					if (pAttributeValue)
+					{
+						if (sExtraDetail.length()) sExtraDetail += ", ";
+						sExtraDetail += "author '";
+						sExtraDetail += pAttributeValue;
+						sExtraDetail += "'";
+					}
+				}
+			}
+		}
+		_log.Log(LOG_STATUS, "(%s) Initialized %s", Name.c_str(), sExtraDetail.c_str());
 
 		return true;
 	}
@@ -2699,7 +2742,7 @@ namespace Plugins {
 				for (std::map<int, CDomoticzHardwareBase*>::iterator itt = m_pPlugins.begin(); itt != m_pPlugins.end(); itt++)
 				{
 					CPlugin*	pPlugin = (CPlugin*)itt->second;
-					if ((pPlugin->m_pTransport) && (pPlugin->m_pTransport->IsConnected()) && (pPlugin->m_pTransport->ThreadPoolRequired()))
+					if (pPlugin && pPlugin->m_pTransport && (pPlugin->m_pTransport->IsConnected()) && (pPlugin->m_pTransport->ThreadPoolRequired()))
 					{
 						bIos_required = true;
 						break;
@@ -2877,6 +2920,71 @@ namespace http {
 					}
 				}
 			}  
+		}
+
+		std::string CWebServer::PluginHardwareDesc(int HwdID)
+		{
+			Plugins::CPluginSystem Plugins;
+			std::map<int, CDomoticzHardwareBase*>*	PluginHwd = Plugins.GetHardware();
+			std::string		sRetVal = Hardware_Type_Desc(HTYPE_PythonPlugin);
+			Plugins::CPlugin*	pPlugin = (Plugins::CPlugin*)(*PluginHwd)[HwdID];
+
+			// Disabled plugins will not be in plugin hardware map
+			if (pPlugin)
+			{
+				std::string	sKey = "key=\"" + pPlugin->m_PluginKey + "\"";
+				std::map<std::string, std::string>*	PluginXml = Plugins.GetManifest();
+				for (std::map<std::string, std::string>::iterator it_type = PluginXml->begin(); it_type != PluginXml->end(); it_type++)
+				{
+					if (it_type->second.find(sKey) != std::string::npos)
+					{
+						TiXmlDocument	XmlDoc;
+						XmlDoc.Parse(it_type->second.c_str());
+						if (XmlDoc.Error())
+						{
+							_log.Log(LOG_ERROR, "%s: Error '%s' at line %d column %d in XML '%s'.", __func__, XmlDoc.ErrorDesc(), XmlDoc.ErrorRow(), XmlDoc.ErrorCol(), it_type->second.c_str());
+						}
+						else
+						{
+							TiXmlNode* pXmlNode = XmlDoc.FirstChild("plugin");
+							for (pXmlNode; pXmlNode; pXmlNode = pXmlNode->NextSiblingElement())
+							{
+								TiXmlElement* pXmlEle = pXmlNode->ToElement();
+								if (pXmlEle)
+								{
+									const char*	pAttributeValue = pXmlEle->Attribute("name");
+									if (pAttributeValue) sRetVal = pAttributeValue;
+								}
+							}
+						}
+						break;
+					}
+				}
+			}
+
+			return sRetVal;
+		}
+
+		void CWebServer::Cmd_PluginCommand(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			std::string sIdx = request::findValue(&req, "idx");
+			std::string sAction = request::findValue(&req, "action");
+			if (sIdx.empty())
+				return;
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query("SELECT HardwareID, Unit FROM DeviceStatus WHERE (ID=='%q') ", sIdx.c_str());
+			if (result.size() == 1)
+			{
+				int HwID = atoi(result[0][0].c_str());
+				int Unit = atoi(result[0][1].c_str());
+				Plugins::CPluginSystem Plugins;
+				std::map<int, CDomoticzHardwareBase*>*	PluginHwd = Plugins.GetHardware();
+				Plugins::CPlugin*	pPlugin = (Plugins::CPlugin*)(*PluginHwd)[HwID];
+				if (pPlugin)
+				{
+					pPlugin->SendCommand(Unit, sAction, 0, 0);
+				}
+			}
 		}
 	}
 }

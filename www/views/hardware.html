@@ -632,6 +632,14 @@
             <td></td>
             <td><a class="btn-danger sub-tabs-apply" onclick="SetBleBoxSettings();" data-i18n="Apply Settings">Apply Settings</a></td>
         </tr>
+        <tr>
+            <td align="left" style="width:110px">
+                <a align="left" class="btnstyle3" id="autosearching" data-i18n="AutoSearching" onclick="BleBoxAutoSearchingNodes();">Auto Searching on:</a>
+            </td>
+            <td>
+                <input type="text" id="ipmask" style="width: 120px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+            </td>            
+        </tr>
     </table>
     <div class="page-header-small">
         <table border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -657,7 +665,10 @@
         <tr>
             <td>
                 <a class="btnstyle3-dis" id="nodeupdate" data-i18n="Update">Update</a>&nbsp;&nbsp;&nbsp;
-                <a class="btnstyle3-dis" id="nodedelete" data-i18n="Delete">Delete</a>
+                <a class="btnstyle3-dis" id="nodedelete" data-i18n="Delete">Delete</a>&nbsp;&nbsp;&nbsp;
+            </td>
+            <td align="right" style="width:200px">
+                <a align="left" class="btnstyle3" id="updatefirmware" data-i18n="Update devices firmware" onclick="BleBoxUpdateFirmware();">Update devices firmware</a>
             </td>
             <td align="right">
                 <a class="btnstyle3" id="nodelistrefresh" data-i18n="Clear" onclick="BleBoxClearNodes();">Clear</a>

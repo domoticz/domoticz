@@ -51,7 +51,6 @@
 #include "../notifications/NotificationHelper.h"
 #include "../main/LuaHandler.h"
 
-#include "mainstructs.h"
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
@@ -406,6 +405,8 @@ namespace http {
 			RegisterCommandCode("bleboxupdatenode", boost::bind(&CWebServer::Cmd_BleBoxUpdateNode, this, _1, _2, _3));
 			RegisterCommandCode("bleboxremovenode", boost::bind(&CWebServer::Cmd_BleBoxRemoveNode, this, _1, _2, _3));
 			RegisterCommandCode("bleboxclearnodes", boost::bind(&CWebServer::Cmd_BleBoxClearNodes, this, _1, _2, _3));
+			RegisterCommandCode("bleboxautosearchingnodes", boost::bind(&CWebServer::Cmd_BleBoxAutoSearchingNodes, this, _1, _2, _3));
+			RegisterCommandCode("bleboxupdatefirmware", boost::bind(&CWebServer::Cmd_BleBoxUpdateFirmware, this, _1, _2, _3));
 
 			RegisterCommandCode("lmssetmode", boost::bind(&CWebServer::Cmd_LMSSetMode, this, _1, _2, _3));
 			RegisterCommandCode("lmsgetnodes", boost::bind(&CWebServer::Cmd_LMSGetNodes, this, _1, _2, _3));
@@ -7517,7 +7518,18 @@ namespace http {
 					tlist.Name = sd[1];
 					tlist.Enabled = (atoi(sd[2].c_str()) != 0);
 					tlist.HardwareTypeVal = atoi(sd[3].c_str());
+#ifndef USE_PYTHON_PLUGINS
 					tlist.HardwareType = Hardware_Type_Desc(tlist.HardwareTypeVal);
+#else
+					if (tlist.HardwareTypeVal != HTYPE_PythonPlugin)
+					{
+						tlist.HardwareType = Hardware_Type_Desc(tlist.HardwareTypeVal);
+					}
+					else
+					{
+						tlist.HardwareType = PluginHardwareDesc(ID);
+					}
+#endif
 					_hardwareNames[ID] = tlist;
 				}
 			}
@@ -10949,32 +10961,6 @@ namespace http {
 					root["result"][ii]["name"] = sd[1];
 					root["result"][ii]["value"] = sd[0];
 					ii++;
-				}
-			}
-		}
-
-		void CWebServer::Cmd_GetDevicesListOnOff(WebEmSession & session, const request& req, Json::Value &root)
-		{
-			root["status"] = "OK";
-			root["title"] = "GetDevicesListOnOff";
-			int ii = 0;
-			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT ID, Name, Type, SubType FROM DeviceStatus WHERE (Used == 1) ORDER BY Name");
-			if (result.size() > 0)
-			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
-				for (itt = result.begin(); itt != result.end(); ++itt)
-				{
-					std::vector<std::string> sd = *itt;
-					int dType = atoi(sd[2].c_str());
-					int dSubType = atoi(sd[3].c_str());
-					std::string sOptions = RFX_Type_SubType_Values(dType, dSubType);
-					if (sOptions == "Status")
-					{
-						root["result"][ii]["name"] = sd[1];
-						root["result"][ii]["value"] = sd[0];
-						ii++;
-					}
 				}
 			}
 		}

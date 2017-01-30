@@ -78,7 +78,7 @@ const char *szHelp=
 	"\t-sslcert file_path (for example /opt/domoticz/server_cert.pem)\n"
 	"\t-sslpass passphrase (to access to server private key in certificate)\n"
 	"\t-sslmethod method (for SSL method)\n"
-	"\t-ssloptions options (for SSL options, default is 'default_workarounds,no_sslv2,single_dh_use')\n"
+	"\t-ssloptions options (for SSL options, default is 'default_workarounds,no_sslv2,no_sslv3,no_tlsv1,no_tlsv1_1,single_dh_use')\n"
 	"\t-ssldhparam file_path (for SSL DH parameters)\n"
 #endif
 #if defined WIN32
