@@ -184,7 +184,7 @@ MainWorker::MainWorker()
 	m_secure_webserver_settings.cert_file_path = m_secure_webserver_settings.certificate_chain_file_path;
 	m_secure_webserver_settings.private_key_file_path = m_secure_webserver_settings.certificate_chain_file_path;
 	m_secure_webserver_settings.private_key_pass_phrase = "";
-	m_secure_webserver_settings.options  = "default_workarounds,no_sslv2,single_dh_use";
+	m_secure_webserver_settings.options = "default_workarounds,no_sslv2,no_sslv3,no_tlsv1,no_tlsv1_1,single_dh_use";
 	m_secure_webserver_settings.tmp_dh_file_path = m_secure_webserver_settings.certificate_chain_file_path;
 	m_secure_webserver_settings.verify_peer = false;
 	m_secure_webserver_settings.verify_fail_if_no_peer_cert = false;
@@ -248,6 +248,12 @@ void MainWorker::AddAllDomoticzHardware()
 			int mode5 = atoi(sd[14].c_str());
 			int mode6 = atoi(sd[15].c_str());
 			int DataTimeout = atoi(sd[16].c_str());
+			std::string Mode1Str = sd[10].c_str();
+			std::string Mode2Str = sd[11].c_str();
+			std::string Mode3Str = sd[12].c_str();
+			std::string Mode4Str = sd[13].c_str();
+			std::string Mode5Str = sd[14].c_str();
+			std::string Mode6Str = sd[15].c_str();
 			AddHardwareFromParams(ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, mode1, mode2, mode3, mode4, mode5, mode6, DataTimeout, false);
 		}
 		m_hardwareStartCounter = 0;
@@ -593,6 +599,12 @@ bool MainWorker::RestartHardware(const std::string &idx)
 	int Mode5 = atoi(sd[13].c_str());
 	int Mode6 = atoi(sd[14].c_str());
 	int DataTimeout = atoi(sd[15].c_str());
+	std::string Mode1Str = sd[9].c_str();
+	std::string Mode2Str = sd[10].c_str();
+	std::string Mode3Str = sd[11].c_str();
+	std::string Mode4Str = sd[12].c_str();
+	std::string Mode5Str = sd[13].c_str();
+	std::string Mode6Str = sd[14].c_str();
 
 	return AddHardwareFromParams(atoi(idx.c_str()), Name, (senabled == "true") ? true : false, htype, address, port, serialport, username, password, extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout, true);
 }
@@ -750,7 +762,7 @@ bool MainWorker::AddHardwareFromParams(
 			int rmode1 = Mode1;
 			if (rmode1 == 0)
 				rmode1 = 1;
-			pHardware = new CLimitLess(ID, rmode1, Address, Port);
+			pHardware = new CLimitLess(ID, rmode1, Mode2, Address, Port);
 		}
 		break;
 	case HTYPE_YouLess:

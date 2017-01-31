@@ -16,7 +16,7 @@
 		</Value>
 		<Value type="byte" genre="config" instance="1" index="2" label="Motion detection - blind time" min="0" max="15" value="3">
 			<Help>
-				PIR sensor is blind (insensitive) to motion after last detection for the amount of time speci ed in this parameter.
+				PIR sensor is blind (insensitive) to motion after last detection for the amount of time specified in this parameter.
 				Shorter time periods allow to detect motion more frequently, but the battery will be drained faster.
 				Available settings: 0 - 15 (0.5-8 seconds).
 				Formula to calculate the time: time [s] = 0.5 x (value+1))

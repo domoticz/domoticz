@@ -51,7 +51,6 @@
 #include "../notifications/NotificationHelper.h"
 #include "../main/LuaHandler.h"
 
-#include "mainstructs.h"
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
@@ -406,6 +405,8 @@ namespace http {
 			RegisterCommandCode("bleboxupdatenode", boost::bind(&CWebServer::Cmd_BleBoxUpdateNode, this, _1, _2, _3));
 			RegisterCommandCode("bleboxremovenode", boost::bind(&CWebServer::Cmd_BleBoxRemoveNode, this, _1, _2, _3));
 			RegisterCommandCode("bleboxclearnodes", boost::bind(&CWebServer::Cmd_BleBoxClearNodes, this, _1, _2, _3));
+			RegisterCommandCode("bleboxautosearchingnodes", boost::bind(&CWebServer::Cmd_BleBoxAutoSearchingNodes, this, _1, _2, _3));
+			RegisterCommandCode("bleboxupdatefirmware", boost::bind(&CWebServer::Cmd_BleBoxUpdateFirmware, this, _1, _2, _3));
 
 			RegisterCommandCode("lmssetmode", boost::bind(&CWebServer::Cmd_LMSSetMode, this, _1, _2, _3));
 			RegisterCommandCode("lmsgetnodes", boost::bind(&CWebServer::Cmd_LMSGetNodes, this, _1, _2, _3));
@@ -1283,7 +1284,23 @@ namespace http {
 				mode2 = 500;
 			}
 
-			if (htype == HTYPE_PythonPlugin) {
+			if (htype == HTYPE_HTTPPOLLER) {
+				m_sql.safe_query(
+					"INSERT INTO Hardware (Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) VALUES ('%q',%d, %d,'%q',%d,'%q','%q','%q','%q','%q','%q', '%q', '%q', '%q', '%q', %d)",
+					name.c_str(),
+					(senabled == "true") ? 1 : 0,
+					htype,
+					address.c_str(),
+					port,
+					sport.c_str(),
+					username.c_str(),
+					password.c_str(),
+					extra.c_str(),
+					mode1Str.c_str(), mode2Str.c_str(), mode3Str.c_str(), mode4Str.c_str(), mode5Str.c_str(), mode6Str.c_str(),
+					iDataTimeout
+				);
+			}
+			else if (htype == HTYPE_PythonPlugin) {
 				sport = request::findValue(&req, "serialport");
 				m_sql.safe_query(
 					"INSERT INTO Hardware (Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) VALUES ('%q',%d, %d,'%q',%d,'%q','%q','%q','%q','%q','%q', '%q', '%q', '%q', '%q', %d)",
@@ -1385,7 +1402,7 @@ namespace http {
 				(htype == HTYPE_KMTronicTCP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_RFLINKTCP) ||
 				(htype == HTYPE_Comm5TCP || (htype == HTYPE_CurrentCostMeterLAN)) ||
 				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviSmartdenLan) || (htype == HTYPE_Ec3kMeterTCP) || (htype == HTYPE_MultiFun) || (htype == HTYPE_ZIBLUETCP)
-				){
+				) {
 				//Lan
 				if (address == "")
 					return;
@@ -1522,9 +1539,9 @@ namespace http {
 			else if (htype == HTYPE_WINDDELEN) {
 				std::string mill_id = request::findValue(&req, "Mode1");
 				if (
-				  (mill_id == "") ||
-				  (sport == "")
-				)
+					(mill_id == "") ||
+					(sport == "")
+					)
 					return;
 			}
 			else if (htype == HTYPE_OpenWebNetTCP) {
@@ -1534,9 +1551,9 @@ namespace http {
 				//All fine here
 			}
 			else if (htype == HTYPE_GoodweAPI) {
-					if (username == "") {
-						return;
-					}
+				if (username == "") {
+					return;
+				}
 			}
 			else if (htype == HTYPE_RaspberryPCF8574) {
 				//All fine here
@@ -1556,6 +1573,14 @@ namespace http {
 			int mode4 = atoi(request::findValue(&req, "Mode4").c_str());
 			int mode5 = atoi(request::findValue(&req, "Mode5").c_str());
 			int mode6 = atoi(request::findValue(&req, "Mode6").c_str());
+
+			std::string mode1Str;
+			std::string mode2Str;
+			std::string mode3Str;
+			std::string mode4Str;
+			std::string mode5Str;
+			std::string mode6Str;
+
 			root["status"] = "OK";
 			root["title"] = "UpdateHardware";
 
@@ -1578,13 +1603,29 @@ namespace http {
 			}
 			else
 			{
-				if (htype == HTYPE_PythonPlugin) {
-					std::string mode1Str = request::findValue(&req, "Mode1");
-					std::string mode2Str = request::findValue(&req, "Mode2");
-					std::string mode3Str = request::findValue(&req, "Mode3");
-					std::string mode4Str = request::findValue(&req, "Mode4");
-					std::string mode5Str = request::findValue(&req, "Mode5");
-					std::string mode6Str = request::findValue(&req, "Mode6");
+				if (htype == HTYPE_HTTPPOLLER) {
+					m_sql.safe_query(
+						"UPDATE Hardware SET Name='%q', Enabled=%d, Type=%d, Address='%q', Port=%d, SerialPort='%q', Username='%q', Password='%q', Extra='%q', DataTimeout=%d WHERE (ID == '%q')",
+						name.c_str(),
+						(senabled == "true") ? 1 : 0,
+						htype,
+						address.c_str(),
+						port,
+						sport.c_str(),
+						username.c_str(),
+						password.c_str(),
+						extra.c_str(),
+						iDataTimeout,
+						idx.c_str()
+					);
+				}
+				else if (htype == HTYPE_PythonPlugin) {
+					mode1Str = request::findValue(&req, "Mode1");
+					mode2Str = request::findValue(&req, "Mode2");
+					mode3Str = request::findValue(&req, "Mode3");
+					mode4Str = request::findValue(&req, "Mode4");
+					mode5Str = request::findValue(&req, "Mode5");
+					mode6Str = request::findValue(&req, "Mode6");
 					sport = request::findValue(&req, "serialport");
 					m_sql.safe_query(
 						"UPDATE Hardware SET Name='%q', Enabled=%d, Type=%d, Address='%q', Port=%d, SerialPort='%q', Username='%q', Password='%q', Extra='%q', Mode1='%q', Mode2='%q', Mode3='%q', Mode4='%q', Mode5='%q', Mode6='%q', DataTimeout=%d WHERE (ID == '%q')",
@@ -3620,20 +3661,47 @@ namespace http {
 									(switchtype == STYPE_Selector)
 									);
 								root["result"][ii]["IsDimmer"] = bIsDimmer;
-								std::string dimmerLevels = bIsDimmer ? "all" : "none";
-								if (switchtype == STYPE_Selector) {
+
+								std::string dimmerLevels = "none";
+
+								if (bIsDimmer)
+								{
 									std::stringstream ss;
-									std::map<std::string, std::string> selectorStatuses;
-									GetSelectorSwitchStatuses(options, selectorStatuses);
-									bool levelOffHidden = options["LevelOffHidden"] == "true";
-									for(int i = 0; i < (int)selectorStatuses.size(); i++) {
-										if (levelOffHidden && (i == 0)) {
-											continue;
+
+									if (switchtype == STYPE_Selector) {
+										std::map<std::string, std::string> selectorStatuses;
+										GetSelectorSwitchStatuses(options, selectorStatuses);
+										bool levelOffHidden = options["LevelOffHidden"] == "true";
+										for (int i = 0; i < (int)selectorStatuses.size(); i++) {
+											if (levelOffHidden && (i == 0)) {
+												continue;
+											}
+											if ((levelOffHidden && (i > 1)) || (i > 0)) {
+												ss << ",";
+											}
+											ss << i * 10;
 										}
-										if((levelOffHidden && (i > 1)) || (i > 0)) {
-											ss << ",";
+									}
+									else
+									{
+										int nValue = 0;
+										std::string sValue = "";
+										std::string lstatus = "";
+										int llevel = 0;
+										bool bHaveDimmer = false;
+										int maxDimLevel = 0;
+										bool bHaveGroupCmd = false;
+
+										GetLightStatus(Type, SubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+
+										for (int i = 0; i <= maxDimLevel; i++)
+										{
+											if (i != 0)
+											{
+												ss << ",";
+											}
+											ss << (int)float((100.0f / float(maxDimLevel))*i);
 										}
-										ss << i * 10;
 									}
 									dimmerLevels = ss.str();
 								}
@@ -7450,7 +7518,18 @@ namespace http {
 					tlist.Name = sd[1];
 					tlist.Enabled = (atoi(sd[2].c_str()) != 0);
 					tlist.HardwareTypeVal = atoi(sd[3].c_str());
+#ifndef USE_PYTHON_PLUGINS
 					tlist.HardwareType = Hardware_Type_Desc(tlist.HardwareTypeVal);
+#else
+					if (tlist.HardwareTypeVal != HTYPE_PythonPlugin)
+					{
+						tlist.HardwareType = Hardware_Type_Desc(tlist.HardwareTypeVal);
+					}
+					else
+					{
+						tlist.HardwareType = PluginHardwareDesc(ID);
+					}
+#endif
 					_hardwareNames[ID] = tlist;
 				}
 			}
@@ -9238,105 +9317,117 @@ namespace http {
 						std::vector<std::string> splitresults;
 						StringSplit(sValue, ";", splitresults);
 						if (splitresults.size() != 6)
-							continue; //impossible
-
-						float EnergyDivider = 1000.0f;
-						int tValue;
-						if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
 						{
-							EnergyDivider = float(tValue);
-						}
-
-						unsigned long long powerusage1;
-						unsigned long long powerusage2;
-						unsigned long long powerdeliv1;
-						unsigned long long powerdeliv2;
-						unsigned long long usagecurrent;
-						unsigned long long delivcurrent;
-
-						std::stringstream s_powerusage1(splitresults[0]);
-						std::stringstream s_powerusage2(splitresults[1]);
-						std::stringstream s_powerdeliv1(splitresults[2]);
-						std::stringstream s_powerdeliv2(splitresults[3]);
-						std::stringstream s_usagecurrent(splitresults[4]);
-						std::stringstream s_delivcurrent(splitresults[5]);
-
-						s_powerusage1 >> powerusage1;
-						s_powerusage2 >> powerusage2;
-						s_powerdeliv1 >> powerdeliv1;
-						s_powerdeliv2 >> powerdeliv2;
-						s_usagecurrent >> usagecurrent;
-						s_delivcurrent >> delivcurrent;
-
-						unsigned long long powerusage = powerusage1 + powerusage2;
-						unsigned long long powerdeliv = powerdeliv1 + powerdeliv2;
-						if (powerdeliv < 2)
-							powerdeliv = 0;
-
-						float musage = 0;
-
-						root["result"][ii]["SwitchTypeVal"] = MTYPE_ENERGY;
-						musage = float(powerusage) / EnergyDivider;
-						sprintf(szTmp, "%.03f", musage);
-						root["result"][ii]["Counter"] = szTmp;
-						musage = float(powerdeliv) / EnergyDivider;
-						sprintf(szTmp, "%.03f", musage);
-						root["result"][ii]["CounterDeliv"] = szTmp;
-
-						if (bHaveTimeout)
-						{
-							usagecurrent = 0;
-							delivcurrent = 0;
-						}
-						sprintf(szTmp, "%llu Watt", usagecurrent);
-						root["result"][ii]["Usage"] = szTmp;
-						sprintf(szTmp, "%llu Watt", delivcurrent);
-						root["result"][ii]["UsageDeliv"] = szTmp;
-						root["result"][ii]["Data"] = sValue;
-						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-
-						//get value of today
-						time_t now = mytime(NULL);
-						struct tm ltime;
-						localtime_r(&now, &ltime);
-						char szDate[40];
-						sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
-
-						std::vector<std::vector<std::string> > result2;
-						strcpy(szTmp, "0");
-						result2 = m_sql.safe_query("SELECT MIN(Value1), MIN(Value2), MIN(Value5), MIN(Value6) FROM MultiMeter WHERE (DeviceRowID='%q' AND Date>='%q')",
-							sd[0].c_str(), szDate);
-						if (result2.size() > 0)
-						{
-							std::vector<std::string> sd2 = result2[0];
-
-							unsigned long long total_min_usage_1, total_min_usage_2, total_real_usage;
-							unsigned long long total_min_deliv_1, total_min_deliv_2, total_real_deliv;
-
-							std::stringstream s_str1(sd2[0]);
-							s_str1 >> total_min_usage_1;
-							std::stringstream s_str2(sd2[1]);
-							s_str2 >> total_min_deliv_1;
-							std::stringstream s_str3(sd2[2]);
-							s_str3 >> total_min_usage_2;
-							std::stringstream s_str4(sd2[3]);
-							s_str4 >> total_min_deliv_2;
-
-							total_real_usage = powerusage - (total_min_usage_1 + total_min_usage_2);
-							total_real_deliv = powerdeliv - (total_min_deliv_1 + total_min_deliv_2);
-
-							musage = float(total_real_usage) / EnergyDivider;
-							sprintf(szTmp, "%.03f kWh", musage);
-							root["result"][ii]["CounterToday"] = szTmp;
-							musage = float(total_real_deliv) / EnergyDivider;
-							sprintf(szTmp, "%.03f kWh", musage);
-							root["result"][ii]["CounterDelivToday"] = szTmp;
+							root["result"][ii]["SwitchTypeVal"] = MTYPE_ENERGY;
+							root["result"][ii]["Counter"] = "0";
+							root["result"][ii]["CounterDeliv"] = "0";
+							root["result"][ii]["Usage"] = "Invalid";
+							root["result"][ii]["UsageDeliv"] = "Invalid";
+							root["result"][ii]["Data"] = "Invalid!: " + sValue;
+							root["result"][ii]["HaveTimeout"] = true;
+							root["result"][ii]["CounterToday"] = "Invalid";
+							root["result"][ii]["CounterDelivToday"] = "Invalid";
 						}
 						else
 						{
-							sprintf(szTmp, "%.03f kWh", 0.0f);
-							root["result"][ii]["CounterToday"] = szTmp;
-							root["result"][ii]["CounterDelivToday"] = szTmp;
+							float EnergyDivider = 1000.0f;
+							int tValue;
+							if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
+							{
+								EnergyDivider = float(tValue);
+							}
+
+							unsigned long long powerusage1;
+							unsigned long long powerusage2;
+							unsigned long long powerdeliv1;
+							unsigned long long powerdeliv2;
+							unsigned long long usagecurrent;
+							unsigned long long delivcurrent;
+
+							std::stringstream s_powerusage1(splitresults[0]);
+							std::stringstream s_powerusage2(splitresults[1]);
+							std::stringstream s_powerdeliv1(splitresults[2]);
+							std::stringstream s_powerdeliv2(splitresults[3]);
+							std::stringstream s_usagecurrent(splitresults[4]);
+							std::stringstream s_delivcurrent(splitresults[5]);
+
+							s_powerusage1 >> powerusage1;
+							s_powerusage2 >> powerusage2;
+							s_powerdeliv1 >> powerdeliv1;
+							s_powerdeliv2 >> powerdeliv2;
+							s_usagecurrent >> usagecurrent;
+							s_delivcurrent >> delivcurrent;
+
+							unsigned long long powerusage = powerusage1 + powerusage2;
+							unsigned long long powerdeliv = powerdeliv1 + powerdeliv2;
+							if (powerdeliv < 2)
+								powerdeliv = 0;
+
+							float musage = 0;
+
+							root["result"][ii]["SwitchTypeVal"] = MTYPE_ENERGY;
+							musage = float(powerusage) / EnergyDivider;
+							sprintf(szTmp, "%.03f", musage);
+							root["result"][ii]["Counter"] = szTmp;
+							musage = float(powerdeliv) / EnergyDivider;
+							sprintf(szTmp, "%.03f", musage);
+							root["result"][ii]["CounterDeliv"] = szTmp;
+
+							if (bHaveTimeout)
+							{
+								usagecurrent = 0;
+								delivcurrent = 0;
+							}
+							sprintf(szTmp, "%llu Watt", usagecurrent);
+							root["result"][ii]["Usage"] = szTmp;
+							sprintf(szTmp, "%llu Watt", delivcurrent);
+							root["result"][ii]["UsageDeliv"] = szTmp;
+							root["result"][ii]["Data"] = sValue;
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+
+							//get value of today
+							time_t now = mytime(NULL);
+							struct tm ltime;
+							localtime_r(&now, &ltime);
+							char szDate[40];
+							sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
+
+							std::vector<std::vector<std::string> > result2;
+							strcpy(szTmp, "0");
+							result2 = m_sql.safe_query("SELECT MIN(Value1), MIN(Value2), MIN(Value5), MIN(Value6) FROM MultiMeter WHERE (DeviceRowID='%q' AND Date>='%q')",
+								sd[0].c_str(), szDate);
+							if (result2.size() > 0)
+							{
+								std::vector<std::string> sd2 = result2[0];
+
+								unsigned long long total_min_usage_1, total_min_usage_2, total_real_usage;
+								unsigned long long total_min_deliv_1, total_min_deliv_2, total_real_deliv;
+
+								std::stringstream s_str1(sd2[0]);
+								s_str1 >> total_min_usage_1;
+								std::stringstream s_str2(sd2[1]);
+								s_str2 >> total_min_deliv_1;
+								std::stringstream s_str3(sd2[2]);
+								s_str3 >> total_min_usage_2;
+								std::stringstream s_str4(sd2[3]);
+								s_str4 >> total_min_deliv_2;
+
+								total_real_usage = powerusage - (total_min_usage_1 + total_min_usage_2);
+								total_real_deliv = powerdeliv - (total_min_deliv_1 + total_min_deliv_2);
+
+								musage = float(total_real_usage) / EnergyDivider;
+								sprintf(szTmp, "%.03f kWh", musage);
+								root["result"][ii]["CounterToday"] = szTmp;
+								musage = float(total_real_deliv) / EnergyDivider;
+								sprintf(szTmp, "%.03f kWh", musage);
+								root["result"][ii]["CounterDelivToday"] = szTmp;
+							}
+							else
+							{
+								sprintf(szTmp, "%.03f kWh", 0.0f);
+								root["result"][ii]["CounterToday"] = szTmp;
+								root["result"][ii]["CounterDelivToday"] = szTmp;
+							}
 						}
 					}
 					else if (dType == pTypeP1Gas)
@@ -10438,6 +10529,7 @@ namespace http {
 					root["result"][ii]["Username"] = sd[7];
 					root["result"][ii]["Password"] = sd[8];
 					root["result"][ii]["Extra"] = sd[9];
+					
 					if (hType == HTYPE_PythonPlugin) {
 						root["result"][ii]["Mode1"] = sd[10];  // Plugins can have non-numeric values in the Mode fields
 						root["result"][ii]["Mode2"] = sd[11];
@@ -10881,32 +10973,6 @@ namespace http {
 					root["result"][ii]["name"] = sd[1];
 					root["result"][ii]["value"] = sd[0];
 					ii++;
-				}
-			}
-		}
-
-		void CWebServer::Cmd_GetDevicesListOnOff(WebEmSession & session, const request& req, Json::Value &root)
-		{
-			root["status"] = "OK";
-			root["title"] = "GetDevicesListOnOff";
-			int ii = 0;
-			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT ID, Name, Type, SubType FROM DeviceStatus WHERE (Used == 1) ORDER BY Name");
-			if (result.size() > 0)
-			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
-				for (itt = result.begin(); itt != result.end(); ++itt)
-				{
-					std::vector<std::string> sd = *itt;
-					int dType = atoi(sd[2].c_str());
-					int dSubType = atoi(sd[3].c_str());
-					std::string sOptions = RFX_Type_SubType_Values(dType, dSubType);
-					if (sOptions == "Status")
-					{
-						root["result"][ii]["name"] = sd[1];
-						root["result"][ii]["value"] = sd[0];
-						ii++;
-					}
 				}
 			}
 		}

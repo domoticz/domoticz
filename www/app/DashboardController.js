@@ -720,7 +720,7 @@ define(['app'], function (app) {
 														if (item.SubType=="RGB") {
 															img='<img src="images/RGB48_On.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshFavorites\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="40" width="40">';
 														}
-														else if (item.SubType=="RGBW") {
+														else if (item.SubType.indexOf("RGBW") >= 0) {
 															img='<img src="images/RGB48_On.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshFavorites\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="40" width="40">';
 														}
 														else {
@@ -731,7 +731,7 @@ define(['app'], function (app) {
 														if (item.SubType=="RGB") {
 															img='<img src="images/RGB48_Off.png" onclick="ShowRGBWPopup(event, ' + item.idx + ',\'RefreshFavorites\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="40" width="40">';
 														}
-														else if (item.SubType=="RGBW") {
+														else if (item.SubType.indexOf("RGBW") >= 0) {
 															img='<img src="images/RGB48_Off.png" onclick="ShowRGBWPopup(event, ' + item.idx + ',\'RefreshFavorites\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="40" width="40">';
 														}
 														else {
@@ -2494,7 +2494,7 @@ define(['app'], function (app) {
 													if (item.SubType=="RGB") {
 														xhtm+='\t      <td id="img"><img src="images/RGB48_On.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshFavorites\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="40" width="40"></td>\n';
 													}
-													else if (item.SubType=="RGBW") {
+													else if (item.SubType.indexOf("RGBW") >= 0) {
 														xhtm+='\t      <td id="img"><img src="images/RGB48_On.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshFavorites\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="40" width="40"></td>\n';
 													}
 													else {
@@ -2505,7 +2505,7 @@ define(['app'], function (app) {
 													if (item.SubType=="RGB") {
 														xhtm+='\t      <td id="img"><img src="images/RGB48_Off.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshFavorites\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="40" width="40"></td>\n';
 													}
-													else if (item.SubType=="RGBW") {
+													else if (item.SubType.indexOf("RGBW") >= 0) {
 														xhtm+='\t      <td id="img"><img src="images/RGB48_Off.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshFavorites\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="40" width="40"></td>\n';
 													}
 													else {
@@ -2600,7 +2600,7 @@ define(['app'], function (app) {
 												'\t      <td id="status">' + status + '</td>\n' +
 												'\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n';
 									if (item.SwitchType == "Dimmer") {
-										if ((item.SubType=="RGBW")||(item.SubType=="RGB")) {
+										if ((item.SubType.indexOf("RGBW") >= 0)||(item.SubType=="RGB")) {
 										}
 										else {
 											xhtm+='<td><div style="margin-left:50px; margin-top: 0.2em;" class="dimslider dimslidernorm" id="slider" data-idx="' + item.idx + '" data-type="norm" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"></div></td>';

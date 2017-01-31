@@ -632,6 +632,14 @@
             <td></td>
             <td><a class="btn-danger sub-tabs-apply" onclick="SetBleBoxSettings();" data-i18n="Apply Settings">Apply Settings</a></td>
         </tr>
+        <tr>
+            <td align="left" style="width:110px">
+                <a align="left" class="btnstyle3" id="autosearching" data-i18n="AutoSearching" onclick="BleBoxAutoSearchingNodes();">Auto Searching on:</a>
+            </td>
+            <td>
+                <input type="text" id="ipmask" style="width: 120px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+            </td>            
+        </tr>
     </table>
     <div class="page-header-small">
         <table border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -657,7 +665,10 @@
         <tr>
             <td>
                 <a class="btnstyle3-dis" id="nodeupdate" data-i18n="Update">Update</a>&nbsp;&nbsp;&nbsp;
-                <a class="btnstyle3-dis" id="nodedelete" data-i18n="Delete">Delete</a>
+                <a class="btnstyle3-dis" id="nodedelete" data-i18n="Delete">Delete</a>&nbsp;&nbsp;&nbsp;
+            </td>
+            <td align="right" style="width:200px">
+                <a align="left" class="btnstyle3" id="updatefirmware" data-i18n="Update devices firmware" onclick="BleBoxUpdateFirmware();">Update devices firmware</a>
             </td>
             <td align="right">
                 <a class="btnstyle3" id="nodelistrefresh" data-i18n="Clear" onclick="BleBoxClearNodes();">Clear</a>
@@ -1006,10 +1017,17 @@
 	<form id="limitform">
 		<br>
 		<center>
+			<label><span data-i18n="Bridge Type"></span>: </label>
+			<select id="CCBridgeType" name="CCBridgeType" style="width:100px" class="combobox ui-corner-all">
+				<option value="0">V4/V5</option>
+				<option value="2">V6</option>
+			</select>
+			<br><br>
 			<label><span data-i18n="Type"></span>: </label><select id="combom1type" name="LimitlessType" style="width:100px" class="combobox ui-corner-all">
 				<option value="1">RGBW</option>
 				<option value="2">RGB</option>
 				<option value="3">White</option>
+				<option value="4">RGBWW</option>
 			</select>
 			<br><br>
 			<input type="hidden" id="idx" name="idx" value="-1">
@@ -1193,6 +1211,27 @@
 		<div id="divhttppoller">
 			<br>
 			<table class="display" id="hardwareparamshttp" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label id="lblmethod" for="name"><span data-i18n="Method">Method</span>: </label></td>
+					<td>
+						<select id="combomethod" style="width:100px" class="combobox ui-corner-all">
+						<option value="0">GET</option>
+						<option value="1">POST</option>
+						</select>
+					</td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label id="lblcontenttype" for="name"><span data-i18n="ContentType">Content Type</span>: </label></td>
+					<td><input type="text" id="contenttype" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label id="lblheaders" for="name"><span data-i18n="Headers">Headers</span>: </label></td>
+					<td align="left"><textarea id="headers" name="Headers" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all"></textarea></td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px" id="divpostdatalabel"><label id="lblpostdata" for="name"><span data-i18n="PostData">POST Data</span>: </label></td>
+					<td align="left" id="divpostdatatextarea"><textarea id="postdata" name="POST DATA" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all"></textarea></td>
+				</tr>
 				<tr>
 					<td align="right" style="width:110px"><label><span data-i18n="URL"></span>:</label></td>
 					<td><input type="text" id="url" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>

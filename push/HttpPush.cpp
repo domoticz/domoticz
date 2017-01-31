@@ -89,6 +89,7 @@ void CHttpPush::DoHttpPush()
 
 			std::vector<std::string> sd=*itt;
 			unsigned int deviceId = atoi(sd[0].c_str());
+			std::string sdeviceId = sd[0].c_str();
 			std::string ldelpos = sd[1].c_str();
 			int delpos = atoi(sd[1].c_str());
 			int dType = atoi(sd[3].c_str());
@@ -139,10 +140,11 @@ void CHttpPush::DoHttpPush()
 			%D : Target Device id
 			%V : Target Variable
 			%u : Unit
-			%n : Name
+			%n : Device name
 			%T0 : Type
 			%T1 : SubType
 			%h : hostname
+			%idx : 'Original device' id (idx)
 			*/
 
 			std::string lunit = getUnit(delpos, metertype);
@@ -182,6 +184,7 @@ void CHttpPush::DoHttpPush()
 			replaceAll(httpUrl, "%T0", lType);
 			replaceAll(httpUrl, "%T1", lSubType);
 			replaceAll(httpUrl, "%h", std::string(hostname));
+			replaceAll(httpUrl, "%idx", sdeviceId);
 
 			replaceAll(httpData, "%v", sendValue);
 			replaceAll(httpData, "%u", includeUnit ? lunit : "");
@@ -196,6 +199,7 @@ void CHttpPush::DoHttpPush()
 			replaceAll(httpData, "%T0", lType);
 			replaceAll(httpData, "%T1", lSubType);
 			replaceAll(httpData, "%h", std::string(hostname));
+			replaceAll(httpData, "%idx", sdeviceId);
 
 			if (sendValue != "") {
 				std::string sResult;

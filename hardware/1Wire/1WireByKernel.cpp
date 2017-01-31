@@ -11,6 +11,7 @@
 #include <fstream>
 #include "../../main/Logger.h"
 #include "../../main/Helper.h"
+#include "../../main/mainworker.h"
 
 #ifdef _DEBUG
    #ifdef WIN32
@@ -205,6 +206,11 @@ void C1WireByKernel::ThreadBuildDevicesList()
          _t1WireDevice device;
          GetDevice(sLine, device);
 
+		 if (m_mainworker.GetVerboseLevel() == EVBL_DEBUG)
+		 {
+			 _log.Log(LOG_STATUS, "1Wire (Kernel): Add device %s", device.filename.c_str());
+		 }
+
          switch (device.family)
          {
 			case high_precision_digital_thermometer:
@@ -254,6 +260,10 @@ float C1WireByKernel::GetTemperature(const _t1WireDevice& device) const
       case programmable_resolution_digital_thermometer:
          {
             DeviceCollection::const_iterator devIt=m_Devices.find(device.devid);
+			if (m_mainworker.GetVerboseLevel() == EVBL_DEBUG)
+			{
+				_log.Log(LOG_STATUS, "1Wire (OWFS): Get Temperature from %s", device.filename.c_str());
+			}
             return (devIt==m_Devices.end())?-1000.0f:(*devIt).second->m_Temperature;
          }
       default: // Device not supported in kernel mode (maybe later...), use OWFS solution.
