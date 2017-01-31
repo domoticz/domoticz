@@ -615,7 +615,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 			}
 			break;
 		case pTypeP1Power:
-			if (!splitresults.empty())
+			if (splitresults.size() == 6)
 			{
 				utilityval = static_cast<float>(atof(splitresults[4].c_str()));
 				isUtility = true;
