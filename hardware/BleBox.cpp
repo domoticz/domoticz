@@ -766,6 +766,50 @@ namespace http {
 			pHardware->RemoveAllNodes();
 		}
 
+		void CWebServer::Cmd_BleBoxAutoSearchingNodes(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+
+			std::string hwid = request::findValue(&req, "idx");
+			std::string ipmask = request::findValue(&req, "ipmask");
+			if (
+				(hwid == "") ||
+				(ipmask == "")
+				)
+				return;
+			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByIDType(hwid, HTYPE_BleBox);
+			if (pBaseHardware == NULL)
+				return;
+			BleBox *pHardware = reinterpret_cast<BleBox*>(pBaseHardware);
+
+			root["status"] = "OK";
+			root["title"] = "BleBoxAutoSearchingNodes";
+		/*	pHardware->xyz();*/ // TODO
+		}
+
+		void CWebServer::Cmd_BleBoxUpdateFirmware(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+
+			std::string hwid = request::findValue(&req, "idx");
+			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByIDType(hwid, HTYPE_BleBox);
+			if (pBaseHardware == NULL)
+				return;
+			BleBox *pHardware = reinterpret_cast<BleBox*>(pBaseHardware);
+
+			root["status"] = "OK";
+			root["title"] = "BleBoxUpdateFirmware";
+			pHardware->UpdateFirmware();
+		}
+
 	}
 }
 
@@ -924,5 +968,14 @@ void BleBox::ReloadNodes()
 {
 	UnloadNodes();
 	LoadNodes();
+}
+
+void BleBox::UpdateFirmware()
+{
+	std::map<const std::string, const int>::const_iterator itt;
+	for (itt = m_devices.begin(); itt != m_devices.end(); ++itt)
+	{
+		Json::Value root = SendCommand(itt->first, "/api/ota/update");
+	}
 }
 
