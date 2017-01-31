@@ -2307,10 +2307,21 @@ namespace Plugins {
 
 		if (Message.m_Type == PMT_Stop)
 		{
-			// Stop Python
-			if (m_DeviceDict) Py_XDECREF(m_DeviceDict);
-			if (m_PyInterpreter) Py_EndInterpreter((PyThreadState*)m_PyInterpreter);
-			Py_XDECREF(m_PyModule);
+			try
+			{
+				// Stop Python
+				if (m_DeviceDict) Py_XDECREF(m_DeviceDict);
+				if (m_PyInterpreter) Py_EndInterpreter((PyThreadState*)m_PyInterpreter);
+				Py_XDECREF(m_PyModule);
+			}
+			catch (std::exception e)
+			{
+				_log.Log(LOG_ERROR, "%s: Execption thrown releasing Interpreter: %s", __func__, e.what());
+			}
+			catch (...)
+			{
+				_log.Log(LOG_ERROR, "%s: Unknown execption thrown releasing Interpreter", __func__);
+			}
 			m_PyModule = NULL;
 			m_DeviceDict = NULL;
 			m_PyInterpreter = NULL;
@@ -2345,7 +2356,8 @@ namespace Plugins {
 		{
 			if (it_type->second.find(sFind) != std::string::npos)
 			{
-				ssPath << it_type->first.c_str();
+				m_HomeFolder = it_type->first;
+				ssPath << m_HomeFolder.c_str();
 				sPluginXML = it_type->second;
 				break;
 			}
@@ -2407,12 +2419,14 @@ namespace Plugins {
 					const char*	pAttributeValue = pXmlEle->Attribute("version");
 					if (pAttributeValue)
 					{
+						m_Version = pAttributeValue;
 						sExtraDetail += "version ";
 						sExtraDetail += pAttributeValue;
 					}
 					pAttributeValue = pXmlEle->Attribute("author");
 					if (pAttributeValue)
 					{
+						m_Author = pAttributeValue;
 						if (sExtraDetail.length()) sExtraDetail += ", ";
 						sExtraDetail += "author '";
 						sExtraDetail += pAttributeValue;
@@ -2454,6 +2468,9 @@ namespace Plugins {
 			{
 				std::vector<std::string> sd = *itt;
 				const char*	pChar = sd[0].c_str();
+				ADD_STRING_TO_DICT(pParamsDict, "HomeFolder", m_HomeFolder);
+				ADD_STRING_TO_DICT(pParamsDict, "Version", m_Version);
+				ADD_STRING_TO_DICT(pParamsDict, "Author", m_Author);
 				ADD_STRING_TO_DICT(pParamsDict, "Name", sd[0]);
 				ADD_STRING_TO_DICT(pParamsDict, "Address", sd[1]);
 				ADD_STRING_TO_DICT(pParamsDict, "Port", sd[2]);
@@ -2790,7 +2807,15 @@ namespace Plugins {
 					else
 					{
 						CPlugin*	pPlugin = (CPlugin*)m_pPlugins[Message.m_HwdID];
-						pPlugin->HandleMessage(Message);
+						if (pPlugin)
+						{
+							pPlugin->HandleMessage(Message);
+						}
+						else
+						{
+							_log.Log(LOG_ERROR, "PluginSystem: Plugin for Hardware %d not found in Plugins map.", Message.m_HwdID);
+						}
+
 					}
 				}
 			}
