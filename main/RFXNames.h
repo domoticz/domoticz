@@ -216,7 +216,6 @@ enum _eNotificationTypes
 
 const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum);
 const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char sType);
-const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned char sType);
 unsigned char Get_Humidity_Level(const unsigned char hlevel);
 const char *RFX_Humidity_Status_Desc(const unsigned char status);
 const char *Switch_Type_Desc(const _eSwitchType sType);

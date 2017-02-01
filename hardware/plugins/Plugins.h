@@ -222,6 +222,9 @@ namespace Plugins {
 
 		std::string		m_Username;
 		std::string		m_Password;
+		std::string		m_HomeFolder;
+		std::string		m_Version;
+		std::string		m_Author;
 
 		boost::shared_ptr<boost::thread> m_thread;
 
