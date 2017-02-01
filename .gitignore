@@ -30,3 +30,4 @@ domoticz.exe
 /Config/zwcfg_*.xml
 /makebetarob
 /plugins/manifest.xml
+server_cert.pem
