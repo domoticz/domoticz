@@ -486,6 +486,7 @@ void XiaomiGateway::UpdateToken(const std::string & value)
 {
 	boost::lock_guard<boost::mutex> lock(m_mutex);
 	m_token = value;
+	_log.Log(LOG_STATUS, "XiaomiGateway: Token Set - %s", m_token.c_str());
 }
 
 bool XiaomiGateway::StartHardware()
@@ -563,8 +564,10 @@ void XiaomiGateway::Do_Work()
 std::string XiaomiGateway::GetGatewayKey()
 {
 #ifdef WWW_ENABLE_SSL
+	_log.Log(LOG_STATUS, "XiaomiGateway: GetGatewayKey Password - %s", m_GatewayPassword.c_str());
 	const unsigned char *key = (unsigned char *)m_GatewayPassword.c_str();
 	unsigned char iv[AES_BLOCK_SIZE] = { 0x17, 0x99, 0x6d, 0x09, 0x3d, 0x28, 0xdd, 0xb3, 0xba, 0x69, 0x5a, 0x2e, 0x6f, 0x58, 0x56, 0x2e };
+	_log.Log(LOG_STATUS, "XiaomiGateway: GetGatewayKey Token - %s", m_token.c_str());
 	unsigned char *plaintext = (unsigned char *)m_token.c_str();
 	unsigned char ciphertext[128];
 
@@ -577,8 +580,10 @@ std::string XiaomiGateway::GetGatewayKey()
 	{
 		sprintf(&gatewaykey[i * 2], "%02X", ciphertext[i]);
 	}
+	_log.Log(LOG_STATUS, "XiaomiGateway: GetGatewayKey key - %s", gatewaykey);
 	return gatewaykey;
 #else
+	_log.Log(LOG_ERROR, "XiaomiGateway: GetGatewayKey NO SSL AVAILABLE");
 	return std::string("");
 #endif
 }
@@ -589,8 +594,6 @@ XiaomiGateway::xiaomi_udp_server::xiaomi_udp_server(boost::asio::io_service& io_
 	m_HardwareID = m_HwdID;
 	m_XiaomiGateway = parent;
 	m_gatewayip = "127.0.0.1";
-
-	//m_XiaomiGateway->InsertUpdateCubeText("158d0000fc421e", "cube testing from code", "25,500");
 
 	try {
 		socket_.set_option(boost::asio::ip::udp::socket::reuse_address(true));
@@ -777,7 +780,6 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							}
 						}
 						if ((cid == false) || (arrAqara_Wired_ID.size() < 1)) {
-
 							arrAqara_Wired_ID.push_back(sid);
 						}
 						if (name == "Xiaomi Wired Dual Wall Switch") {
@@ -823,10 +825,6 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						bool on = false;
 						if (rgb != "0") {
 							on = true;
-							//_log.Log(LOG_STATUS, "XiaomiGateway: setting on to true");
-						}
-						else {
-							//_log.Log(LOG_STATUS, "XiaomiGateway: setting on to false");
 						}
 						m_XiaomiGateway->InsertUpdateRGBGateway(sid.c_str(), name, on, brightness, 0);
 					}
@@ -867,9 +865,10 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 			}
 			else if (cmd == "heartbeat") {
 				//update the token and gateway ip address.
+				_log.Log(LOG_STATUS, "XiaomiGateway: Token Received - %s", root["token"].asString().c_str());
 				m_XiaomiGateway->UpdateToken(root["token"].asString());
 				m_gatewayip = root["ip"].asString();
-				showmessage = false;
+				showmessage = true;
 			}
 			else {
 				//unknown
