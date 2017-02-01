@@ -14,6 +14,7 @@ History :
 - 2016-02-05 : Fix bug power display with 'Tempo' contract (Anthony LAGUERRE)
 - 2016-02-11 : Fix power display when PAPP is missing (Anthony LAGUERRE)
 - 2016-02-17 : Fix bug power usage (Anthony LAGUERRE). Thanks to Multinet
+- 2017-01-28 : Add 'Heures Creuses' Switch (A.L)
 */
 
 #include "stdafx.h"
@@ -292,7 +293,9 @@ void Teleinfo::MatchLine()
 				m_p3power.powerusage1 = ulValue;
 			break;
 		case TELEINFO_TYPE_PTEC:
-			 if (vString.substr (2,2) == "JB")
+			SendSwitch(5,1,255,(vString.substr (0,2) == "HC"),0,"Heures Creuses");
+
+			if (vString.substr (2,2) == "JB")
                         {
                                 m_bLabel_PTEC_JB = true;
                                 m_bLabel_PTEC_JW = false;
