@@ -951,16 +951,20 @@ namespace Plugins {
 		return Py_None;
 	}
 
-	static PyObject* CDevice_update(CDevice* self, PyObject *args)
+	static PyObject* CDevice_update(CDevice *self, PyObject *args, PyObject *kwds)
 	{
 		if (self->pPlugin)
 		{
-			int			nValue;
-			char*		sValue;
+			int			nValue = 0;
+			char*		sValue = NULL;
+			int			iSignalLevel = 0;
+			int			iBatteryLevel = 0;
 			PyObject*	pNameBytes = PyUnicode_AsASCIIString(self->Name);
-			if (!PyArg_ParseTuple(args, "is", &nValue, &sValue))
+			static char *kwlist[] = { "nValue", "sValue", "SignalLevel", "BatteryLevel", NULL };
+
+			if (!PyArg_ParseTupleAndKeywords(args, kwds, "is|ii", kwlist, &nValue, &sValue, &iSignalLevel, &iBatteryLevel))
 			{
-				_log.Log(LOG_ERROR, "(%s) %s: failed to parse parameters: integer, string expected.", __func__, PyBytes_AsString(pNameBytes));
+				_log.Log(LOG_ERROR, "(%s) %s: Failed to parse parameters: 'nValue', 'sValue', 'SignalLevel' or 'BatteryLevel' expected.", __func__, PyBytes_AsString(pNameBytes));
 				Py_DECREF(pNameBytes);
 				return NULL;
 			}
@@ -974,7 +978,7 @@ namespace Plugins {
 			}
 			PyObject*	pDeviceBytes = PyUnicode_AsASCIIString(self->DeviceID);
 			std::string	sName = PyBytes_AsString(pNameBytes);
-			m_sql.UpdateValue(self->HwdID, std::string(PyBytes_AsString(pDeviceBytes)).c_str(), (const unsigned char)self->Unit, (const unsigned char)self->Type, (const unsigned char)self->SubType, 100, 255, nValue, std::string(sValue).c_str(), sName, true);
+			m_sql.UpdateValue(self->HwdID, std::string(PyBytes_AsString(pDeviceBytes)).c_str(), (const unsigned char)self->Unit, (const unsigned char)self->Type, (const unsigned char)self->SubType, iSignalLevel, iBatteryLevel, nValue, std::string(sValue).c_str(), sName, true);
 			Py_DECREF(pNameBytes);
 			Py_DECREF(pDeviceBytes);
 
@@ -1079,7 +1083,7 @@ namespace Plugins {
 	static PyMethodDef CDevice_methods[] = {
 		{ "Refresh", (PyCFunction)CDevice_refresh, METH_NOARGS, "Refresh device details"},
 		{ "Create", (PyCFunction)CDevice_insert, METH_NOARGS, "Create the device in Domoticz." },
-		{ "Update", (PyCFunction)CDevice_update, METH_VARARGS, "Update the device values in Domoticz." },
+		{ "Update", (PyCFunction)CDevice_update, METH_VARARGS | METH_KEYWORDS, "Update the device values in Domoticz." },
 		{ "Delete", (PyCFunction)CDevice_delete, METH_NOARGS, "Delete the device in Domoticz." },
 		{ "Image", (PyCFunction)CDevice_seticon, METH_VARARGS, "Set the device image in Domoticz." },
 		{ NULL }  /* Sentinel */
