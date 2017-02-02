@@ -883,7 +883,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 #endif
 				m_XiaomiGateway->UpdateToken(root["token"].asString());
 				m_gatewayip = root["ip"].asString();
-				showmessage = true;
+				showmessage = false;
 			}
 			else {
 				_log.Log(LOG_STATUS, "XiaomiGateway: unknown cmd received: %s", cmd.c_str());
