@@ -12,8 +12,8 @@
 #include "../main/SQLHelper.h"
 
 #ifdef _DEBUG
-	//	#define DEBUG_OPENWEATHERMAP
-	#define DEBUG_OPENWEATHERMAP_WRITE
+	//#define DEBUG_OPENWEATHERMAP
+	//#define DEBUG_OPENWEATHERMAP_WRITE
 #endif
 
 #ifdef DEBUG_OPENWEATHERMAP_WRITE
