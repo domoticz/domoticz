@@ -87,15 +87,17 @@ bool ParseSQLdatetime(time_t &time, struct tm &result, const std::string szSQLda
  * Returns false if no time can be created
  */
 
-bool constructTime(time_t &time, struct tm &result, int year, int month, int day, int hour, int minute, int second) {
+bool constructTime(time_t &time, struct tm &result, const int year, const int month, const int day, const int hour, const int minute, const int second) {
 	time_t now = mytime(NULL);
 	struct tm ltime;
 	localtime_r(&now,&ltime);
 	return constructTime(time, result, year, month, day, hour, minute, second, ltime.tm_isdst);
 }
 
-bool constructTime(time_t &time, struct tm &result, int year, int month, int day, int hour, int minute, int second, int isdst) {
+bool constructTime(time_t &time, struct tm &result, const int year, const int month, const int day, const int hour, const int minute, const int second, int isdst) {
 	bool goodtime = false;
+	int orgDst = isdst;
+	int lCount = 0;
 	while (!goodtime) {
 		result.tm_isdst = isdst;
 		result.tm_year = year - 1900;
@@ -105,12 +107,20 @@ bool constructTime(time_t &time, struct tm &result, int year, int month, int day
 		result.tm_min = minute;
 		result.tm_sec = second;
 		time = mktime(&result);
+		if (lCount == 3)
+			return false;
 		if (time == -1) {
 			if (isdst == 0) { return false; }
 			isdst = 0;
 		} else {
 			goodtime = ((result.tm_isdst == isdst) || (isdst == -1));
 			isdst = result.tm_isdst;
+		}
+		if (!goodtime)
+		{
+			lCount++;
+			if (lCount == 3)
+				isdst = orgDst;
 		}
 	}
 	return true;
