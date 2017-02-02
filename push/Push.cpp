@@ -226,7 +226,7 @@ std::string CPush::ProcessSendValue(const std::string &rawsendValue, const int d
 	}	
 	else if (vType == "Counter")
 	{
-		sprintf(szData,"%d", atoi(rawsendValue.c_str()));
+		strcpy(szData, rawsendValue.c_str())
 	}	
 	else if (vType == "Mode")
 	{
