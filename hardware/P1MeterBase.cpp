@@ -7,12 +7,12 @@
 #define CRC16_ARC	0x8005
 #define CRC16_ARC_REFL	0xA001
 
-typedef enum { 
-	ID=0, 
-	STD, 
-	LINE17, 
-	LINE18, 
-	EXCLMARK 
+typedef enum {
+	ID=0,
+	STD,
+	LINE17,
+	LINE18,
+	EXCLMARK
 } MatchType;
 
 #define P1_SMID			"/" // Smart Meter ID. Used to detect start of telegram.
@@ -131,14 +131,14 @@ bool P1MeterBase::MatchLine()
 				m_linecount=1;
 				found=1;
 			}
-			else 
+			else
 				continue;
 			break;
 		case STD:
 			if(strncmp(t.key, (const char*)&l_buffer, strlen(t.key)) == 0) {
 				found=1;
 			}
-			else 
+			else
 				continue;
 			break;
 		case LINE17:
@@ -146,7 +146,7 @@ bool P1MeterBase::MatchLine()
 				m_linecount = 17;
 				found=1;
 			}
-			else 
+			else
 				continue;
 			break;
 		case LINE18:
@@ -159,26 +159,25 @@ bool P1MeterBase::MatchLine()
 				l_exclmarkfound=1;
 				found=1;
 			}
-			else 
+			else
 				continue;
 			break;
 		default:
 			continue;
 		} //switch
-		
+
 		if(!found)
 			continue;
 
 		if (l_exclmarkfound) {
 			time_t atime=mytime(NULL);
-			sDecodeRXMessage(this, (const unsigned char *)&m_p1power, "Power", 255);
-			bool bSend2Shared=(difftime(atime,m_lastSharedSendElectra)>59);
-			if (std::abs(double(m_lastelectrausage)-double(m_p1power.usagecurrent))>40)
-				bSend2Shared=true;
-			if (bSend2Shared)
+			if (
+				(std::abs(double(m_lastelectrausage)-double(m_p1power.usagecurrent))>40)&&
+				(difftime(atime,m_lastSharedSendElectra)>9))
 			{
 				m_lastelectrausage=m_p1power.usagecurrent;
 				m_lastSharedSendElectra=atime;
+				sDecodeRXMessage(this, (const unsigned char *)&m_p1power, "Power", 255);
 			}
 			if (
 				(m_p1gas.gasusage!=m_lastgasusage)||
@@ -288,7 +287,7 @@ bool P1MeterBase::MatchLine()
 
 
 /*
-/ GB3:	DSMR 4.0 defines a CRC checksum at the end of the message, calculated from 
+/ GB3:	DSMR 4.0 defines a CRC checksum at the end of the message, calculated from
 /	and including the message starting character '/' upto and including the message
 /	end character '!'. According to the specs the CRC is a 16bit checksum using the
 /	polynomial x^16 + x^15 + x^2 + 1, however input/output are reflected.
