@@ -119,7 +119,7 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 				command = "on";
 				break;
 			default:
-				_log.Log(LOG_STATUS, "Unknown command %d", xcmd->cmnd);
+				_log.Log(LOG_STATUS, "XiaomiGateway: Unknown command %d", xcmd->cmnd);
 				break;
 			}
 			message = "{\"cmd\":\"write\",\"model\":\"plug\",\"sid\":\"" + sid + "\",\"short_id\":9844,\"data\":\"{\\\"channel_0\\\":\\\"" + command + "\\\",\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
@@ -216,7 +216,9 @@ bool XiaomiGateway::SendMessageToGateway(const std::string &controlmessage) {
 	sleep_milliseconds(150);
 	boost::array<char, 512> recv_buffer_;
 	memset(&recv_buffer_[0], 0, sizeof(recv_buffer_));
+#ifdef _DEBUG
 	_log.Log(LOG_STATUS, "XiaomiGateway: request %s", message.c_str());
+#endif
 	while (socket_.available() > 0) {
 		socket_.receive_from(boost::asio::buffer(recv_buffer_), remote_endpoint_);
 		std::string receivedString(recv_buffer_.data());
@@ -225,7 +227,9 @@ bool XiaomiGateway::SendMessageToGateway(const std::string &controlmessage) {
 			_log.Log(LOG_ERROR, "XiaomiGateway: unable to write command - Invalid Key");
 			result = false;
 		}
+#ifdef _DEBUG
 		_log.Log(LOG_STATUS, "XiaomiGateway: response %s", receivedString.c_str());
+#endif
 	}
 	socket_.close();
 	return result;
@@ -239,7 +243,9 @@ void XiaomiGateway::InsertUpdateTemperature(const std::string &nodeid, const std
 		return;
 	}
 	std::string str = nodeid.substr(6, 8);
+#ifdef _DEBUG
 	_log.Log(LOG_STATUS, "XiaomiGateway: Temperature - nodeid: %s", nodeid.c_str());
+#endif
 	unsigned int sID;
 	std::stringstream ss;
 	ss << std::hex << str.c_str();
@@ -256,7 +262,9 @@ void XiaomiGateway::InsertUpdateHumidity(const std::string &nodeid, const std::s
 		return;
 	}
 	std::string str = nodeid.substr(6, 8);
+#ifdef _DEBUG
 	_log.Log(LOG_STATUS, "XiaomiGateway: Humidity - nodeid: %s", nodeid.c_str());
+#endif
 	unsigned int sID;
 	std::stringstream ss;
 	ss << std::hex << str.c_str();
@@ -312,7 +320,6 @@ void XiaomiGateway::InsertUpdateRGBGateway(const std::string & nodeid, const std
 		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, LastLevel=%d WHERE(HardwareID == %d) AND (DeviceID == '%s')", Name.c_str(), (STYPE_Dimmer), brightness, m_HwdID, szDeviceID);
 	}
 	else {
-		//_log.Log(LOG_STATUS, "XiaomiGateway: Updating existing - nodeid: %s", nodeid.c_str());
 		nvalue = atoi(result[0][0].c_str());
 		tIsOn = (nvalue != 0);
 		lastLevel = atoi(result[0][1].c_str());
@@ -345,12 +352,11 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 	}
 	std::string str = nodeid.substr(6, 8);
 
-	//_log.Log(LOG_STATUS, "nodeid: %s", nodeid.c_str());
 	unsigned int sID;
 	std::stringstream ss;
 	ss << std::hex << str.c_str();
 	ss >> sID;
-	//_log.Log(LOG_STATUS, "sID: %d", sID);
+
 	char szTmp[300];
 	if (sID == 1)
 		sprintf(szTmp, "%d", 1);
@@ -443,13 +449,14 @@ void XiaomiGateway::InsertUpdateCubeText(const std::string & nodeid, const std::
 		return;
 	}
 	std::string str = nodeid.substr(6, 8);
-
-	_log.Log(LOG_STATUS, "cube nodeid: %s", nodeid.c_str());
+#ifdef _DEBUG
+	_log.Log(LOG_STATUS, "XiaomiGateway: cube nodeid: %s", nodeid.c_str());
+#endif
 	unsigned int sID;
 	std::stringstream ss;
 	ss << std::hex << str.c_str();
 	ss >> sID;
-	//_log.Log(LOG_STATUS, "sID: %d", sID);
+
 	char szTmp[300];
 	if (sID == 1)
 		sprintf(szTmp, "%d", 1);
@@ -486,7 +493,9 @@ void XiaomiGateway::UpdateToken(const std::string & value)
 {
 	boost::lock_guard<boost::mutex> lock(m_mutex);
 	m_token = value;
-	//_log.Log(LOG_STATUS, "XiaomiGateway: Token Set - %s", m_token.c_str());
+#ifdef _DEBUG
+	_log.Log(LOG_STATUS, "XiaomiGateway: Token Set - %s", m_token.c_str());
+#endif
 }
 
 bool XiaomiGateway::StartHardware()
@@ -564,10 +573,9 @@ void XiaomiGateway::Do_Work()
 std::string XiaomiGateway::GetGatewayKey()
 {
 #ifdef WWW_ENABLE_SSL
-	//_log.Log(LOG_STATUS, "XiaomiGateway: GetGatewayKey Password - %s", m_GatewayPassword.c_str());
+
 	const unsigned char *key = (unsigned char *)m_GatewayPassword.c_str();
 	unsigned char iv[AES_BLOCK_SIZE] = { 0x17, 0x99, 0x6d, 0x09, 0x3d, 0x28, 0xdd, 0xb3, 0xba, 0x69, 0x5a, 0x2e, 0x6f, 0x58, 0x56, 0x2e };
-	//_log.Log(LOG_STATUS, "XiaomiGateway: GetGatewayKey Token - %s", m_token.c_str());
 	unsigned char *plaintext = (unsigned char *)m_token.c_str();
 	unsigned char ciphertext[128];
 
@@ -580,7 +588,11 @@ std::string XiaomiGateway::GetGatewayKey()
 	{
 		sprintf(&gatewaykey[i * 2], "%02X", ciphertext[i]);
 	}
-	//_log.Log(LOG_STATUS, "XiaomiGateway: GetGatewayKey key - %s", gatewaykey);
+#ifdef _DEBUG
+	_log.Log(LOG_STATUS, "XiaomiGateway: GetGatewayKey Password - %s", m_GatewayPassword.c_str());
+	_log.Log(LOG_STATUS, "XiaomiGateway: GetGatewayKey Token - %s", m_token.c_str());
+	_log.Log(LOG_STATUS, "XiaomiGateway: GetGatewayKey key - %s", gatewaykey);
+#endif
 	return gatewaykey;
 #else
 	_log.Log(LOG_ERROR, "XiaomiGateway: GetGatewayKey NO SSL AVAILABLE");
@@ -621,10 +633,11 @@ void XiaomiGateway::xiaomi_udp_server::start_receive()
 
 void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error_code & error, std::size_t bytes_recvd)
 {
-	//_log.Log(LOG_STATUS, "handle_receive starting:");
 	if (!error || error == boost::asio::error::message_size)
 	{
-		//_log.Log(LOG_STATUS, data_);
+#ifdef _DEBUG
+		_log.Log(LOG_STATUS, data_);
+#endif
 		Json::Value root;
 		Json::Reader jReader;
 		bool showmessage = true;
@@ -865,13 +878,14 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 			}
 			else if (cmd == "heartbeat") {
 				//update the token and gateway ip address.
+#ifdef _DEBUG
 				_log.Log(LOG_STATUS, "XiaomiGateway: Token Received - %s", root["token"].asString().c_str());
+#endif
 				m_XiaomiGateway->UpdateToken(root["token"].asString());
 				m_gatewayip = root["ip"].asString();
 				showmessage = true;
 			}
 			else {
-				//unknown
 				_log.Log(LOG_STATUS, "XiaomiGateway: unknown cmd received: %s", cmd.c_str());
 			}
 		}
