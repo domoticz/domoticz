@@ -624,6 +624,7 @@ namespace http {
 					root["result"][ii]["Name"] = sd[1];
 					root["result"][ii]["IP"] = ip;
 					root["result"][ii]["Type"] = DevicesType[atoi(sd[3].c_str())].name;
+					//TODO: read more paramaters from devices (last visible, version fw, etc)
 					ii++;
 				}
 			}
