@@ -4829,12 +4829,12 @@ define(['app'], function (app) {
                         $('#hardwarecontent #hardwareparamstable #enabled').prop('checked',(data["Enabled"]=="true"));
                         $('#hardwarecontent #hardwareparamstable #combodatatimeout').val(data["DataTimeout"]);
 
-			if (data["Type"].indexOf("I2C ") >= 0) {
-                            $("#hardwarecontent #hardwareparamstable #combotype").val(1000);
-                        }
+						if (data["Type"].indexOf("I2C ") >= 0) {
+							$("#hardwarecontent #hardwareparamstable #combotype").val(1000);
+						}
 
-			$.devExtra=data["Extra"];
-			UpdateHardwareParamControls();
+						$.devExtra=data["Extra"];
+						UpdateHardwareParamControls();
 
                         if (
 							(data["Type"].indexOf("TE923") >= 0)||
@@ -5235,10 +5235,6 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divlogin").hide();
                 $("#hardwarecontent #divunderground").show();
                 $("#hardwarecontent #divhttppoller").hide();
-                if (text.indexOf("Open Weather Map") >= 0)
-                {
-                    $("#hardwarecontent #hardwareparamsunderground #location").val(data["Password"]);
-                }
             }
             else if (text.indexOf("Philips Hue") >= 0)
             {
