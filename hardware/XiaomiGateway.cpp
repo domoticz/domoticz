@@ -486,7 +486,7 @@ void XiaomiGateway::UpdateToken(const std::string & value)
 {
 	boost::lock_guard<boost::mutex> lock(m_mutex);
 	m_token = value;
-	_log.Log(LOG_STATUS, "XiaomiGateway: Token Set - %s", m_token.c_str());
+	//_log.Log(LOG_STATUS, "XiaomiGateway: Token Set - %s", m_token.c_str());
 }
 
 bool XiaomiGateway::StartHardware()
@@ -564,10 +564,10 @@ void XiaomiGateway::Do_Work()
 std::string XiaomiGateway::GetGatewayKey()
 {
 #ifdef WWW_ENABLE_SSL
-	_log.Log(LOG_STATUS, "XiaomiGateway: GetGatewayKey Password - %s", m_GatewayPassword.c_str());
+	//_log.Log(LOG_STATUS, "XiaomiGateway: GetGatewayKey Password - %s", m_GatewayPassword.c_str());
 	const unsigned char *key = (unsigned char *)m_GatewayPassword.c_str();
 	unsigned char iv[AES_BLOCK_SIZE] = { 0x17, 0x99, 0x6d, 0x09, 0x3d, 0x28, 0xdd, 0xb3, 0xba, 0x69, 0x5a, 0x2e, 0x6f, 0x58, 0x56, 0x2e };
-	_log.Log(LOG_STATUS, "XiaomiGateway: GetGatewayKey Token - %s", m_token.c_str());
+	//_log.Log(LOG_STATUS, "XiaomiGateway: GetGatewayKey Token - %s", m_token.c_str());
 	unsigned char *plaintext = (unsigned char *)m_token.c_str();
 	unsigned char ciphertext[128];
 
@@ -580,7 +580,7 @@ std::string XiaomiGateway::GetGatewayKey()
 	{
 		sprintf(&gatewaykey[i * 2], "%02X", ciphertext[i]);
 	}
-	_log.Log(LOG_STATUS, "XiaomiGateway: GetGatewayKey key - %s", gatewaykey);
+	//_log.Log(LOG_STATUS, "XiaomiGateway: GetGatewayKey key - %s", gatewaykey);
 	return gatewaykey;
 #else
 	_log.Log(LOG_ERROR, "XiaomiGateway: GetGatewayKey NO SSL AVAILABLE");
