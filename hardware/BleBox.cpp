@@ -788,7 +788,7 @@ namespace http {
 
 			root["status"] = "OK";
 			root["title"] = "BleBoxAutoSearchingNodes";
-		/*	pHardware->xyz();*/ // TODO
+			pHardware->SearchNodes(ipmask);
 		}
 
 		void CWebServer::Cmd_BleBoxUpdateFirmware(WebEmSession & session, const request& req, Json::Value &root)
@@ -979,3 +979,15 @@ void BleBox::UpdateFirmware()
 	}
 }
 
+void BleBox::SearchNodes(const std::string &ipmask)
+{ 
+	std::vector<std::string> strarray;
+	StringSplit(ipmask, ".", strarray); // ipmask - expected "x.y.z.*"
+	if (strarray.size() != 4)
+		return;
+	if (strarray[3] != "*")
+		return;
+	if (!isInt(strarray[0]) || !isInt(strarray[1]) || !isInt(strarray[2]))
+		return;
+	//TODO
+}

@@ -32,6 +32,7 @@ public:
 	void SetSettings(const int pollIntervalsec);
 	void Restart();
 	void UpdateFirmware();
+	void SearchNodes(const std::string &ipmask);
 
 private:
 	volatile bool m_stoprequested;
