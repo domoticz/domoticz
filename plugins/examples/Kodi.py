@@ -3,7 +3,7 @@
 #           Author:     Dnpwwo, 2016
 #
 """
-<plugin key="Kodi" name="Kodi Players" author="dnpwwo" version="1.0.2" wikilink="http://www.domoticz.com/wiki/plugins/Kodi.html" externallink="https://kodi.tv/">
+<plugin key="Kodi" name="Kodi Players" author="dnpwwo" version="1.1.0" wikilink="http://www.domoticz.com/wiki/plugins/Kodi.html" externallink="https://kodi.tv/">
     <params>
         <param field="Address" label="IP Address" width="200px" required="true" default="127.0.0.1"/>
         <param field="Port" label="Port" width="30px" required="true" default="9090"/>
@@ -61,15 +61,16 @@ def onStart():
     if (len(Devices) == 0):
         Domoticz.Device(Name="Status",  Unit=1, Type=17,  Switchtype=17).Create()
         Options = "LevelActions:"+stringToBase64("||||")+";LevelNames:"+stringToBase64("Off|Video|Music|TV Shows|Live TV")+";LevelOffHidden:ZmFsc2U=;SelectorStyle:MA=="
-        Domoticz.Device(Name="Source",  Unit=2, Type=244, Subtype=62, Switchtype=18, Image=12, Options=Options).Create()
-        Domoticz.Device(Name="Volume",  Unit=3, Type=244, Subtype=73, Switchtype=7,  Image=8).Create()
+        Domoticz.Device(Name="Source",  Unit=2, TypeName="Selector Switch", Switchtype=18, Image=12, Options=Options).Create()
+        Domoticz.Device(Name="Volume",  Unit=3, Type=244, Subtype=73, \
+                        Switchtype=7,  Image=8).Create()
         Domoticz.Device(Name="Playing", Unit=4, Type=244, Subtype=73, Switchtype=7,  Image=12).Create()
         Domoticz.Log("Devices created.")
     else:
         if (1 in Devices): playerState = Devices[1].nValue
         if (2 in Devices): mediaLevel = Devices[2].nValue
     DumpConfigToLog()
-    Domoticz.Transport("TCP/IP", Parameters["Address"], Parameters["Port"])
+    Domoticz.Transport(Transport="TCP/IP", Address=Parameters["Address"], Port=Parameters["Port"])
     Domoticz.Protocol("JSON")
     Domoticz.Heartbeat(10)
     Domoticz.Connect()
@@ -98,7 +99,8 @@ def onMessage(Data, Status, Extra):
     global canShutdown, canSuspend, canHibernate
     global playerState, playerID, mediaLevel, mediaDescrption, percentComplete, playlistName, playlistPos
     
-    Response = json.loads(Data)
+    strData = Data.decode("utf-8", "ignore")
+    Response = json.loads(strData)
     if ('error' in Response):
         # Kodi has signalled and error
         if (Response["id"] == 1010):
@@ -153,9 +155,9 @@ def onMessage(Data, Status, Extra):
             Domoticz.Debug("System.OnQuit recieved.")
             ClearDevices()
         else:
-            Domoticz.Debug("Unhandled unsolicited response: "+Data)
+            Domoticz.Debug("Unhandled unsolicited response: "+strData)
     else:
-        Domoticz.Debug(str(Response["id"])+" response received: "+Data)
+        Domoticz.Debug(str(Response["id"])+" response received: "+strData)
         # Responses to requests made by the plugin
         if (Response["id"] == 1001):    # PING call when nothing is playing
             if playerState == 0: playerState = 1
@@ -295,9 +297,9 @@ def onMessage(Data, Status, Extra):
             else:
                 Domoticz.Log("No Favourites returned.");
         elif (Response["id"] == 2101):
-            Domoticz.Log( "2101: To be handled: "+Data)
+            Domoticz.Log( "2101: To be handled: "+strData)
         else:
-            Domoticz.Debug("Unknown Response: "+Data)
+            Domoticz.Debug("Unknown Response: "+strData)
     SyncDevices()
     return True
 
@@ -305,7 +307,7 @@ def onCommand(Unit, Command, Level, Hue):
     global isConnected
     global playerID, mediaLevel, playlistName, playlistPos
 
-    Domoticz.Debug("onCommand called for Unit " + str(Unit) + ": Parameter '" + str(Command) + "', Level: " + str(Level) + ", Connected: " + str(isConnected))
+    Domoticz.Log("onCommand called for Unit " + str(Unit) + ": Parameter '" + str(Command) + "', Level: " + str(Level) + ", Connected: " + str(isConnected))
 
     Command = Command.strip()
     action, sep, params = Command.partition(' ')
@@ -337,6 +339,7 @@ def onCommand(Unit, Command, Level, Hue):
                     SyncDevices()
                 elif (Unit == 3):   # Volume control
                     Domoticz.Send('{"jsonrpc":"2.0","method":"Application.SetVolume","params":{"volume":' + str(Level) + '}}')
+                    Domoticz.Send('{"jsonrpc":"2.0","method":"Application.SetMute","params":{"mute":false}}')
                 elif (Unit == 4):   # Position control
                     Domoticz.Send('{"jsonrpc":"2.0","method":"Player.Seek","params":{"playerid":' + str(playerID) + ',"value":'+str(Level)+'}}')
                 else:
@@ -381,8 +384,19 @@ def onCommand(Unit, Command, Level, Hue):
                     Domoticz.Send('{"jsonrpc":"2.0","method":"Player.PlayPause","params":{"playerid":' + str(playerID) + ',"play":false}}')
             else:
                 Domoticz.Error( "Unknown Unit number in command "+str(Unit)+".")
+        elif (action == 'Home'):
+            Domoticz.Send('{"jsonrpc":"2.0","method":"Input.Home","params":{},"id":1006}')
+        elif (action == 'Up'):
+            Domoticz.Send('{"jsonrpc":"2.0","method":"Input.Up","params":{},"id":1006}')
+        elif (action == 'Down'):
+            Domoticz.Send('{"jsonrpc":"2.0","method":"Input.Down","params":{},"id":1006}')
+        elif (action == 'Left'):
+            Domoticz.Send('{"jsonrpc":"2.0","method":"Input.Left","params":{},"id":1006}')
+        elif (action == 'Right'):
+            Domoticz.Send('{"jsonrpc":"2.0","method":"Input.Right","params":{},"id":1006}')
         else:
-            Domoticz.Error("Unhandled action '"+action+"' ignored, options are On/Set/Play/Pause/Stop/Trigger/Run/Off")
+            # unknown so just assume its a keypress
+            Domoticz.Send('{"jsonrpc":"2.0","method":"Input.ExecuteAction","params":{"action":"'+action.lower()+'"},"id":1006}')
 
     return True
 
@@ -458,7 +472,7 @@ def UpdateDevice(Unit, nValue, sValue):
     # Make sure that the Domoticz device still exists (they can be deleted) before updating it 
     if (Unit in Devices):
         if (Devices[Unit].nValue != nValue) or (Devices[Unit].sValue != sValue):
-            Devices[Unit].Update(nValue, str(sValue))
+            Devices[Unit].Update(nValue=nValue, sValue=str(sValue))
             Domoticz.Log("Update "+str(nValue)+":'"+str(sValue)+"' ("+Devices[Unit].Name+")")
     return
 
