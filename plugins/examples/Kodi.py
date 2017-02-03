@@ -491,19 +491,19 @@ def TurnOn():
         Domoticz.Error("Kodi can not be turned on, No MAC address configured.")
     else:
         import struct, socket
-        # Sourced from: http://forum.kodi.tv/showthread.php?tid=3450&pid=16741#pid16741
-        addr_byte = Parameters["Mode1"].split(':')      # MAC Address expected '00:01:03:d8:7b:76'
-        hw_addr = struct.pack('bbbbbb', int(addr_byte[0],16),int(addr_byte[1],16),int(addr_byte[2],16),int(addr_byte[3],16),int(addr_byte[4],16),int(addr_byte[5],16))
-
-        # build the wake-on-lan "magic packet"...
-        msg = '\xff' * 6 + hw_addr * 16
-
-        # ...and send it to the broadcast address using udp
-        s = socket.socket(socket.af_inet, socket.sock_dgram)
-        s.setsockopt(socket.sol_socket, socket.so_broadcast, 1)
-        s.sendto(msg, ('<broadcast>', 7))
-        s.close()
-       
+        # Took some parts of: https://github.com/bentasker/Wake-On-Lan-Python/blob/master/wol.py for python3 support 
+        mac_address = Parameters["Mode1"].replace(':','')
+        # Pad the synchronization stream.
+        data = ''.join(['FFFFFFFFFFFF', mac_address * 20])
+        send_data = b''
+        # Split up the hex values and pack.
+        for i in range(0, len(data), 2):
+            send_data = b''.join([send_data, struct.pack('B', int(data[i: i + 2], 16))])
+            
+        # Broadcast it to the LAN.
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        s.sendto(send_data, ('<broadcast>', 7))
     return
 
 def TurnOff():
