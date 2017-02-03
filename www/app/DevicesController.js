@@ -195,7 +195,7 @@ define(['app'], function (app) {
 		  oTable.fnClearTable();
 		  
 		  $.ajax({
-			 url: "json.htm?type=devices&displayhidden=1&filter=all&used=" + ifilter, 
+			 url: "json.htm?type=devices&displayhidden=1&displaydisabled=1&filter=all&used=" + ifilter, 
 			 async: false, 
 			 dataType: 'json',
 			 success: function(data) {
@@ -283,7 +283,7 @@ define(['app'], function (app) {
 					itemSubIcons+='<img src="images/rename.png" title="' + $.t('Rename Device') +'" onclick="RenameDevice(' + item.idx +',\'' + item.Type +'\',\'' + escape(item.Name) + '\')">';
 				  }
 				  else {
-					  if ((item.Used!=0)&&(item.Name.charAt(0)!="$")) {
+					  if (item.Used!=0) {
 						itemSubIcons+='<img src="images/remove.png" title="' + $.t('Set Unused') +'" onclick="SetUnused(' + item.idx +')">';
 						itemSubIcons+='<img src="images/rename.png" title="' + $.t('Rename Device') +'" onclick="RenameDevice(' + item.idx +',\'' + item.Type+'\',\'' + escape(item.Name) + '\')">';
 					  }
@@ -417,6 +417,9 @@ define(['app'], function (app) {
 				});
 				mTable.fnDraw();
 			  }
+			 },
+			 error: function(xhr, ajaxOptions, thrownError) {
+				alert("Problem retrieving devices!");
 			 }
 		  });
 		}

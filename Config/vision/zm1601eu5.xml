@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Vision Security Battery Siren -->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+    <!-- Configuration -->
+    <CommandClass id="112">
+        <Value type="list" index="1" genre="config" label="Siren Strobe Mode" min="0" max="2" value="0" size="1">
+            <Help>Defines the reaction of the siren: turn either Siren sound, Strobe light, or both when triggered</Help>
+            <Item label="Strobe and Siren" value="0" />
+            <Item label="Siren Only" value="1" />
+            <Item label="Strobe Only" value="2" />
+        </Value>
+
+        <Value type="list" index="2" genre="config" label="Alarm Auto Stop" min="0" max="3" value="0" size="1">
+            <Help>Defines the auto time out of the alarm indication</Help>
+            <Item label="30 seconds" value="0" />
+            <Item label="60 seconds" value="1" />
+            <Item label="120 seconds" value="2" />
+            <Item label="Will Not Automatically Stop" value="3" />
+        </Value>
+    </CommandClass>
+    <!-- Basic set as report -->
+	<CommandClass id="32" setasreport="true"/>
+    <!--  Binary report value when the Magnet switch is opened/closed -->
+	<CommandClass id="37" setasreport="true"/>
+    <!--  Battery set as report -->
+	<CommandClass id="128" setasreport="true"/>
+</Product>

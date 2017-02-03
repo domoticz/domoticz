@@ -38,6 +38,7 @@
 #include <string.h>
 #include <string>
 #ifdef __arm__
+    #include <linux/ioctl.h>
     #include <linux/types.h>
     #include <linux/spi/spidev.h>
     #include <unistd.h>

@@ -1,0 +1,62 @@
+<div class="container">
+
+    <table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr>
+            <td>
+                <a class="btnstylerev" href="#/Temperature" data-i18n="Back">Back</a>
+            </td>
+        </tr>
+    </table>
+    <br>
+
+    <div id="customlog">
+        <table width="100%">
+            <tr>
+                <td width="75%"><div id="customgraph" style="height: 400px; vertical-align:top;"></div></td>
+                <td width="25%">
+                    <table>
+                        <tr><td style="margin-top:7px; padding-left:10px; vertical-align:top;">
+                            <span data-i18n="Select graph type"></span>:
+                            <select id="combocustomgraphtype" name="CustomGraphType" style="margin-top:3px; width:200px;" class="combobox ui-corner-all" onChange="ClearCustomGraph()">
+                                <option value="1" data-i18n="Short term (5 minute values)">Short term (5 minute values)</option>
+                                <option value="0" data-i18n="Long term (daily values)">Long term (daily values)</option>
+                            </select>
+                        </td></tr>
+                        <tr><td style="margin-top:7px; padding-left:10px; vertical-align:top;">
+                            <span data-i18n="Select device(s) to display"></span>:
+                            <div id="devicecontainer" style="margin-top:3px; background-color: #7D7E7D; background-image: -moz-linear-gradient(center top , #7D7E7D, #0E0E0E); border: 1px solid #616261; width:100%; height: 240px; overflow-y: scroll;"></div>
+                            <div id="controlbar" style="padding: 5px;" align="center">
+                                <table>
+                                    <tr>
+                                        <td align="left"><label for="graphfrom"><span data-i18n="From"></span>:</label></td>
+                                        <td><input type="text" style="width: 80px;" id="graphfrom" class="datepick" name="graphfrom" /></td>
+                                    </tr>
+                                    <tr>
+                                        <td align="left"><label for="graphto"><span data-i18n="TO1">To</span>:</label></td>
+                                        <td><input type="text" style="width: 80px;" id="graphto" class="datepick" name="graphto" /></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 2px;"><input type="checkbox" class="devicecheckbox" id="graphTemp" checked><span data-i18n="Temperature"></span></td>
+                                        <td style="padding: 2px;"><input type="checkbox" class="devicecheckbox" id="graphChill"><span data-i18n="Chill factor"></span></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 2px;"><input type="checkbox" class="devicecheckbox" id="graphHum"><span data-i18n="Humidity"></span></td>
+                                        <td style="padding: 2px;"><input type="checkbox" class="devicecheckbox" id="graphBaro"><span data-i18n="Barometer"></span></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 2px;"><input type="checkbox" class="devicecheckbox" id="graphDew"><span data-i18n="Dew Point"></span></td>
+                                        <td style="padding: 2px;">&nbsp;</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 2px;"><input type="checkbox" class="devicecheckbox" id="graphSet"><span data-i18n="Set point">Set point</span></td>
+                                        <td style="padding: 2px;">&nbsp;</td>
+                                    </tr>
+                                </table>
+                            </div></td></tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+</div>

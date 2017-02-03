@@ -17,7 +17,8 @@ endif()
 if(NOT OPENSSL_FOUND)
   message(STATUS "Failed to find the openssl library, no TLS support")
 else()
-  add_definitions(-DWWW_ENABLE_SSL)
+  add_definitions(-DWITH_TLS)
+  include_directories(${OPENSSL_INCLUDE_DIR})
 endif()
 
 SET(CORE mosquitto.c
@@ -32,3 +33,6 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 ADD_LIBRARY(mqtt STATIC ${LIB} ${CORE})
+
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
+link_directories("${CMAKE_CURRENT_SOURCE_DIR}")

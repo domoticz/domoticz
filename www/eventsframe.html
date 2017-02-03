@@ -300,11 +300,10 @@
       		var compareString = parseSecurityStatus(ifBlock);
       		boolString += compareString;
       	}      	
-
       	var setArray = [];
       	var doBlock = $($(xml).find("statement[name='DO"+pairId+"']")[0]);
  	      $(doBlock).find('block').each (function(){ 
-	      	if ($(this).attr('type') == 'logic_set') {
+			if ($(this).attr('type') == 'logic_set') {
 		   		var valueA = $(this).find("value[name='A']")[0];
 	        	var fieldA = $(valueA).find("field")[0];
 	        	var blockA = $(valueA).children("block:first");
@@ -331,6 +330,10 @@
 					else if ((blockB.attr("type")=="logic_setlevel") && ($(fieldB).attr("name") == "NUM")) {
 						setString += '="Set Level '+$(fieldB).text()+'"'; 
 						setArray.push(setString);
+					}
+					else {
+						//not handled
+						//alert('A Type: ' + blockA.attr("type") + ', B Type: ' + blockB.attr("type") + ', FieldB: ' + $(fieldB).attr("name"));
 					}
 					//else if ((blockB.attr("type")=="math_number") && ($(fieldB).attr("name") == "NUM")) {
 					//	setString += '="'+$(fieldB).text()+'"'; 
@@ -458,6 +461,18 @@
 	        	var setString = 'commandArray["SendSMS"]="'+sSubject+'"';
 	        	setArray.push(setString);		      	
 		    }
+		    else if ($(this).attr('type') == 'start_script') {
+				var pathBlock = $(this).children("field[name='TextPath']")[0];
+				var sPath = $(pathBlock).text().replace(/\,/g, ' ');
+
+				var paramBlock = $(this).children("field[name='TextParam']")[0];
+				var sParam = $(paramBlock).text().replace(/\,/g, ' ');
+
+				// message separator here cannot be # like in scripts, changed to $..
+				// also removed commas as we need to separate commandArray later.
+				var setString = 'commandArray["StartScript"]="'+sPath+'$'+sParam+'"';
+				setArray.push(setString);		      	
+		    }
 		    else if ($(this).attr('type') == 'open_url') {
 		    	var urlBlock = $(this).find("value[name='urlToOpen']")[0];
 		    	var urlText = $(urlBlock).find("field[name='TEXT']")[0];
@@ -509,6 +524,13 @@
 			   	var fieldC = $(this).find("field[name='NUM']")[0];
 	        	var setString = "commandArray[SendCamera:"+$(fieldA).text()+"]";
 	        	setString += '="'+ $(fieldB).text()+'" AFTER ' + $(fieldC).text().replace(/\,/g, ' '); 
+	        	setArray.push(setString);
+		    }		    
+		    else if ($(this).attr('type') == 'setpointvariables') {
+			   	var fieldA = $(this).find("field[name='SetPoint']")[0];
+			   	var fieldB = $(this).find("field[name='NUM']")[0];
+	        	var setString = "commandArray[SetSetpoint:"+$(fieldA).text()+"]";
+	        	setString += '="'+$(fieldB).text()+'"'; 
 	        	setArray.push(setString);
 		    }		    
 		  });
@@ -707,6 +729,85 @@
 
 				var isActive = 0;
 				if ($('#eventActive').is(':checked')) {isActive = 1};
+/*				
+				$http({
+					method: 'POST',
+					url: 'event_create.webem',
+					headers: {
+						'Content-Type': 'multipart/form-data'
+					},
+					data: {
+						name: encodeURIComponent(eventName),
+						interpreter: encodeURIComponent($("#interpreter").val()),
+						eventtype: encodeURIComponent($("#eventType").val()),
+						xml: encodeURIComponent(blockXml),
+						logicarray: encodeURIComponent(logicArray),
+						eventid: id,
+						eventstatus: isActive+editorTheme
+					},
+					transformRequest: function (data, headersGetter) {
+						var formData = new FormData();
+						angular.forEach(data, function (value, key) {
+							formData.append(key, value);
+						});
+						var headers = headersGetter();
+						delete headers['Content-Type'];
+						return formData;
+					}
+				})
+				.success(function (data) {
+					alert(data);
+					if (typeof data != 'undefined') {
+						if (data.status=="OK") {
+							generate_noty('information', '<b>Event saved:<br>'+eventName, 2000);
+						}
+						if (data.status=="ERR") {
+							generate_noty('warning', '<b>Error while saving:<br>'+eventName, 2000);
+						}
+						load_blocks();
+						var selIndex = 0;
+						$('#savedEvents option').each(function(){
+							if (this.text == eventName)
+								$("#savedEvents").prop("selectedIndex",selIndex);
+							selIndex++;
+						});
+						selIndex = 0;
+						$('#interpreter option').each(function(){
+							if (this.text == eventInterpreter)
+								$("#interpreter").prop("selectedIndex",selIndex);
+							selIndex++;
+						});
+					}
+				})
+				.error(function (data, status) {
+					bootbox.alert("Save aborted!")
+				});
+*/
+				var pdata="name="+encodeURIComponent(eventName)+"&interpreter="+encodeURIComponent($("#interpreter").val())+"&eventtype="+encodeURIComponent($("#eventType").val())+"&xml="+encodeURIComponent(blockXml)+"&logicarray="+encodeURIComponent(logicArray)+"&eventid="+id+"&eventstatus="+isActive+editorTheme;
+				$.post("event_create.webem", pdata, function(data) {
+					if (typeof data != 'undefined') {
+						if (data.status=="OK") {
+							generate_noty('information', '<b>Event saved:<br>'+eventName, 2000);
+						}
+						if (data.status=="ERR") {
+							generate_noty('warning', '<b>Error while saving:<br>'+eventName, 2000);
+						}
+						load_blocks();
+						var selIndex = 0;
+						$('#savedEvents option').each(function(){
+							if (this.text == eventName)
+								$("#savedEvents").prop("selectedIndex",selIndex);
+							selIndex++;
+						});
+						selIndex = 0;
+						$('#interpreter option').each(function(){
+							if (this.text == eventInterpreter)
+								$("#interpreter").prop("selectedIndex",selIndex);
+							selIndex++;
+						});
+					}
+				})				
+/*				
 				$.ajax({
 					url : "json.htm?type=events&param=create&name="+encodeURIComponent(eventName)+"&interpreter="+encodeURIComponent($("#interpreter").val())+"&eventtype="+encodeURIComponent($("#eventType").val())+"&xml="+encodeURIComponent(blockXml)+"&logicarray="+encodeURIComponent(logicArray)+"&eventid="+id+"&eventstatus="+isActive+editorTheme, 
 					async: false, 
@@ -735,6 +836,7 @@
 						}
 					}
 				});
+*/				
 			}
 			else {
 				bootbox.alert("Save aborted!")
@@ -881,7 +983,7 @@
    			<block type="text"></block>
    			<block type="open_url"></block>
    			<block type="url_text"></block>
-   	
+   			<block type="start_script"></block>
    		</category>
    		<category name="Security">
    			<block type="security_status"></block>
@@ -933,6 +1035,9 @@
 		   	</category>
 		   	<category name="Cameras">
 			   	<block type="cameravariables"></block>
+		   	</category>
+		   	<category name="SetPoints">
+			   	<block type="setpointvariables"></block>
 		   	</category>
 		</category>
     </xml>

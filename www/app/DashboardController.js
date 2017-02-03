@@ -100,9 +100,15 @@ define(['app'], function (app) {
 				$scope.mytimer = undefined;
 			}
 		  var id="";
-
+		  var bFavorites=1;
+		  if (typeof window.myglobals.LastPlanSelected!= 'undefined') {
+			if (window.myglobals.LastPlanSelected>0) {
+				bFavorites=0;
+			}
+		  }
+		  
 		  $.ajax({
-			 url: "json.htm?type=devices&filter=all&used=true&order=Name&plan="+window.myglobals.LastPlanSelected+"&lastupdate="+$scope.LastUpdateTime,
+			 url: "json.htm?type=devices&filter=all&used=true&favorite="+bFavorites+"&order=Name&plan="+window.myglobals.LastPlanSelected+"&lastupdate="+$scope.LastUpdateTime,
 			 async: false,
 			 dataType: 'json',
 			 success: function(data) {
@@ -116,7 +122,10 @@ define(['app'], function (app) {
 				}
 				$.each(data.result, function(i,item){
 								//Scenes
-								if (((item.Type.indexOf('Scene') == 0)||(item.Type.indexOf('Group') == 0))&&(item.Favorite!=0))
+								if (
+									(item.Type.indexOf('Scene') == 0)||
+									(item.Type.indexOf('Group') == 0)
+								   )
 								{
 									id="#dashcontent #scene_" + item.idx;
 									var obj=$(id);
@@ -353,7 +362,7 @@ define(['app'], function (app) {
 											}
 										}
 										else if (item.SwitchType == "TPI") {
-											var RO=(item.Unit>0)?true:false;
+											var RO=(item.Unit<64 || item.Unit>95)?true:false;
 											isdimmer=true;
 											var img="";
 											if (item.Status == 'On')
@@ -640,7 +649,7 @@ define(['app'], function (app) {
 											}
 										}
 										else if (item.SwitchType == "TPI") {
-											var RO=(item.Unit>0)?true:false;
+										    var RO = (item.Unit < 64 || item.Unit > 95) ? true : false;
 											isdimmer=true;
 											if (
 													(item.Status == 'On')
@@ -1589,8 +1598,16 @@ define(['app'], function (app) {
 				}
 			 }
 		  });
+		  
+		  var bFavorites=1;
+		  if (typeof window.myglobals.LastPlanSelected!= 'undefined') {
+			if (window.myglobals.LastPlanSelected>0) {
+				bFavorites=0;
+			}
+		  }
+		  
 		  $.ajax({
-			 url: "json.htm?type=devices&filter=all&used=true&order=Name&plan="+window.myglobals.LastPlanSelected,
+			 url: "json.htm?type=devices&filter=all&used=true&favorite="+bFavorites+"&order=Name&plan="+window.myglobals.LastPlanSelected,
 			 async: false,
 			 dataType: 'json',
 			 success: function(data) {
@@ -1615,7 +1632,10 @@ define(['app'], function (app) {
 				bHaveAddedDevider = false;
 				$.each(data.result, function(i,item) {
 					//Scenes/Groups
-				  if (((item.Type.indexOf('Scene') == 0)||(item.Type.indexOf('Group') == 0))&&(item.Favorite!=0))
+				  if (
+					(item.Type.indexOf('Scene') == 0)||
+					(item.Type.indexOf('Group') == 0)
+					)
 				  {
 					totdevices+=1;
 					if (jj == 0)
@@ -1954,7 +1974,7 @@ define(['app'], function (app) {
 										}
 									else if (item.SwitchType == "TPI") {
 										var img="";
-										var RO=(item.Unit>0)?true:false;
+										var RO = (item.Unit < 64 || item.Unit > 95) ? true : false;
 										if (item.Status == 'On')
 										{
 													status=
@@ -2057,11 +2077,11 @@ define(['app'], function (app) {
 										xhtm+='</tr>';
 									}
 									else if (item.SwitchType == "TPI") {
-										var RO=(item.Unit>0)?true:false;
+									    var RO = (item.Unit < 64 || item.Unit > 95) ? true : false;
 										xhtm+='<tr>';
 										xhtm+='<td colspan="2" style="border:0px solid red; padding-top:10px; padding-bottom:10px;">';
 										xhtm+='<div style="margin-top: -11px; margin-left: 24px;" class="dimslider dimslidernorm" id="light_' + item.idx +'_slider" data-idx="' + item.idx + '" data-type="relay" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"';
-										if(item.Unit>0)
+										if (item.Unit < 64 || item.Unit > 95)
 											xhtm+=' data-disabled="true"';
 										xhtm+='></div>';
 										xhtm+='</td>';
@@ -2076,9 +2096,9 @@ define(['app'], function (app) {
 									}
 									else if (item.SwitchType == "Selector") {
 										xhtm += '<tr>';
-										xhtm += '<td colspan="2" style="border:0px solid red; padding-top:10px; padding-bottom:10px;">';
+										xhtm += '<td colspan="2" style="border:0px solid red; padding-top:4px; padding-bottom:4px;">';
 										if (item.SelectorStyle === 0) {
-											xhtm += '<div style="margin: -15px -4px -5px 24px;" class="selectorlevels">';
+											xhtm += '<div style="margin: -15px -4px -5px 24px; text-align: right;" class="selectorlevels">';
 											xhtm += '<div id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelname="' + escape(GetLightStatusText(item)) + '">';
 											var levelNames = item.LevelNames.split('|');
 											$.each(levelNames, function(index, levelName) {
@@ -2089,7 +2109,7 @@ define(['app'], function (app) {
 											});
 											xhtm += '</div>';
 										} else if (item.SelectorStyle === 1) {
-											xhtm += '<div style="margin: -15px 0px -8px 0px; text-align: center;" class="selectorlevels">';
+											xhtm += '<div style="margin: -15px 0px -8px 0px; text-align: right;" class="selectorlevels">';
 											xhtm += '<select id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelname="' + escape(GetLightStatusText(item)) + '">';
 											var levelNames = item.LevelNames.split('|');
 											$.each(levelNames, function(index, levelName) {
@@ -2295,7 +2315,7 @@ define(['app'], function (app) {
 										}
 									}
 									else if (item.SwitchType == "TPI") {
-										var RO=(item.Unit>0)?true:false;
+									    var RO = (item.Unit < 64 || item.Unit > 95) ? true : false;
 										if (item.Status == 'On')
 										{
 													xhtm+='\t      <td id="img"><img src="images/Fireplace48_On.png" title="' + $.t(RO?"On":"Turn Off") + (RO?'"':'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected +');" class="lcursor"') + ' height="40" width="40"></td>\n';
@@ -2386,7 +2406,7 @@ define(['app'], function (app) {
 									}
 									else if (item.SwitchType == "TPI") {
 										xhtm+='<td><div style="margin-left:50px; margin-top: 0.2em;" class="dimslider dimslidernorm" id="slider" data-idx="' + item.idx + '" data-type="relay" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"';
-										if(item.Unit>0)
+										if (item.Unit < 64 || item.Unit > 95)
 											xhtm+=' data-disabled="true"';
 										xhtm+='></div></td>';
 									}
@@ -3373,7 +3393,7 @@ define(['app'], function (app) {
 								(item.SubType=="Sound Level")||
 								(item.SubType == "Waterflow")||
 								(item.Type == "Current")||
-								(item.SybType == "Custom Sensor")
+								(item.SubType == "Custom Sensor")
 							) {
 							xhtm+=item.Data;
 						}

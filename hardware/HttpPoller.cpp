@@ -71,6 +71,9 @@ void CHttpPoller::Do_Work()
 		if (m_stoprequested)
 			break;
 		sec_counter++;
+		if (sec_counter % 12 == 0) {
+			m_LastHeartbeat = mytime(NULL);
+		}
 		if (sec_counter % m_refresh == 0) {
 			GetScript();
 		}

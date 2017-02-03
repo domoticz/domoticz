@@ -461,6 +461,7 @@ public:
 		updSetPoint,
 		updOverride,
 		updBattery,
+		updDemand,
 	};
 	static const uint8_t m_nMaxZones=12;
 	

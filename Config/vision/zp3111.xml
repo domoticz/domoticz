@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+<!-- 
+Vision ZP3111-5 4 in 1 Multi-Sensor
+http://products.z-wavealliance.org/ProductManual/File?folder=&filename=Manuals/1572/ZP3111-5_R0_20151113%20-%20VISION.pdf
+
+Zooz ZSE40 4-in-1 Multi-Sensor
+http://www.getzooz.com/downloads/zooz-zse40-4-in-1-sensor-manual.pdf
+-->
+	<CommandClass id="112">
+		<Value type="list" genre="config"  index="1" label="Temperature Unit" size="1" min="0" max="1" value="0">
+			<Help></Help>
+			<Item label="Celsius" value="0" />
+			<Item label="Fahrenheit" value="1" />
+		</Value>
+        <Value type="byte" genre="config" instance="1" index="2" label="Temperature Reporting Threshold" min="1" max="50" value="1">
+            <Help>Threshold change in temperature to induce an automatic report.
+            1 to 50 ( Set up from 0.1C to 5C)
+            </Help>
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="3" label="Humidity Reporting Threshold" units="%" min="1" max="50" value="10">
+            <Help>Threshold change in humidity to induce an automatic report.
+            1 to 50 ( Set up from 1%-50%)
+            </Help>
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="4" label="Luminance Reporting Threshold" units="%" min="0" max="50" value="10">
+            <Help>
+                Threshold change in luminance to induce an automatic report.
+                0 is disabled.
+                5 to 50 ( Set up from 5%-50%)
+            </Help>
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="5" label="Motion Sensor Re-trigger Duration" units="min" min="1" max="255" value="3">
+            <Help>
+                Value from 1 to 255 minutes to setup the re-trigger time when there is no movement detected in the period of time.
+            </Help>
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="6" label="Motion Sensor Sensitivity Adjustment" units="" min="1" max="7" value="4">
+            <Help>
+                Sensitivity of the integrated PIR sensor.
+                1 to 7 ( 1 = Most Sensitive )
+            </Help>
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="7" label="LED Mode" units="" min="1" max="3" value="3">
+            <Help>
+		1 - Turn Off LED
+		2 - Breathing Light Mode (High Battery Consumption)
+		3 - Quick Flash on Sensor Reporting or Motion Trigger
+            </Help>
+        </Value>
+
+    </CommandClass>
+
+	<!-- COMMAND_CLASS_BASIC -->
+	<CommandClass id="32" setasreport="true"/>
+
+	<!-- COMMAND_CLASS_ASSOCIATION -->
+	<CommandClass id="133">
+		<Associations num_groups="1">
+			<Group index="1" max_associations="5" label="Lifeline"/>
+		</Associations>
+	</CommandClass>
+</Product>

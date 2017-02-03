@@ -76,6 +76,7 @@ private:
 	char			m_szDevID[40];
 	std::string		m_IP;
 	std::string		m_Port;
+	bool			m_PowerOnSupported;
 
 	CPanasonicStatus		m_PreviousStatus;
 	CPanasonicStatus		m_CurrentStatus;

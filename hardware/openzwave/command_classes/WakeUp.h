@@ -77,7 +77,6 @@ namespace OpenZWave
 		list<Driver::MsgQueueItem>	m_pendingQueue;		// Messages waiting to be sent when the device wakes up
 		bool						m_awake;
 		bool						m_pollRequired;
-		bool						m_notification;
 	};
 
 } // namespace OpenZWave

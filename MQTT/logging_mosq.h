@@ -16,7 +16,7 @@ Contributors:
 #ifndef _LOGGING_MOSQ_H_
 #define _LOGGING_MOSQ_H_
 
-#include "mosquitto.h"
+#include <mosquitto.h>
 
 int _mosquitto_log_printf(struct mosquitto *mosq, int priority, const char *fmt, ...);
 
