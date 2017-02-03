@@ -76,6 +76,7 @@ const char *szHelp=
 #ifdef WWW_ENABLE_SSL
 	"\t-sslwww port (for example -sslwww 443, or -sslwww 0 to disable https)\n"
 	"\t-sslcert file_path (for example /opt/domoticz/server_cert.pem)\n"
+	"\t-sslkey file_path (if different from certificate file)\n"
 	"\t-sslpass passphrase (to access to server private key in certificate)\n"
 	"\t-sslmethod method (for SSL method)\n"
 	"\t-ssloptions options (for SSL options, default is 'default_workarounds,no_sslv2,no_sslv3,no_tlsv1,no_tlsv1_1,single_dh_use')\n"
@@ -682,6 +683,16 @@ int main(int argc, char**argv)
 			return 1;
 		}
 		secure_webserver_settings.cert_file_path = cmdLine.GetSafeArgument("-sslcert", 0, "");
+		secure_webserver_settings.private_key_file_path = secure_webserver_settings.cert_file_path;
+	}
+	if (cmdLine.HasSwitch("-sslkey"))
+	{
+		if (cmdLine.GetArgumentCount("-sslkey") != 1)
+		{
+			_log.Log(LOG_ERROR, "Please specify a file path for your server SSL key file");
+			return 1;
+		}
+		secure_webserver_settings.private_key_file_path = cmdLine.GetSafeArgument("-sslkey", 0, "");
 	}
 	if (cmdLine.HasSwitch("-sslpass"))
 	{
