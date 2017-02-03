@@ -172,8 +172,10 @@ bool P1MeterBase::MatchLine()
 		if (l_exclmarkfound) {
 			time_t atime=mytime(NULL);
 			if (
-				(std::abs(double(m_lastelectrausage)-double(m_p1power.usagecurrent))>40)&&
-				(difftime(atime,m_lastSharedSendElectra)>9))
+				((std::abs(double(m_lastelectrausage)-double(m_p1power.usagecurrent))>40)&&
+				(difftime(atime,m_lastSharedSendElectra)>9))||
+				(difftime(atime,m_lastSharedSendElectra)>59)
+				)
 			{
 				m_lastelectrausage=m_p1power.usagecurrent;
 				m_lastSharedSendElectra=atime;
