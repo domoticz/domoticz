@@ -975,9 +975,9 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_XiaomiGateway:
 		pHardware = new XiaomiGateway(ID);
 		break;
-	case HTYPE_Arilux:	
+	case HTYPE_Arilux:
 		pHardware = new Arilux(ID);
-		break;	
+		break;
 	case HTYPE_OpenWebNetUSB:
 		pHardware = new COpenWebNetUSB(ID, SerialPort, 115200);
 		break;
@@ -5488,6 +5488,10 @@ void MainWorker::decode_LimitlessLights(const int HwdID, const _eHardwareTypes H
 	unsigned char value=pLed->value;
 
 	uint64_t DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,12,-1,cmnd, procResult.DeviceName);
+	char szValueTmp[100];
+	sprintf(szValueTmp, "%d", value);
+	std::string sValue = szValueTmp;
+	uint64_t DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,12,-1,cmnd, sValue.c_str(), procResult.DeviceName);
 	if (DevRowIdx == -1)
 		return;
 	CheckSceneCode(DevRowIdx,devType,subType,cmnd,szTmp);
