@@ -12,7 +12,7 @@
 #include "../main/SQLHelper.h"
 
 #ifdef _DEBUG
-	//	#define DEBUG_OPENWEATHERMAP
+	//#define DEBUG_OPENWEATHERMAP
 	//#define DEBUG_OPENWEATHERMAP_WRITE
 #endif
 
@@ -133,7 +133,7 @@ void COpenWeatherMap::GetMeterDetails()
 	std::string sResult;
 	std::stringstream sURL;
 
-	sURL << "http://api.openweathermap.org/data/2.5/weather?" << m_Location << "&APPID=" << m_APIKey << "&units=metric" << "&lang=" << m_Language;
+	sURL << "http://api.openweathermap.org/data/2.5/weather?q=" << m_Location << "&APPID=" << m_APIKey << "&units=metric" << "&lang=" << m_Language;
 	
 #ifdef DEBUG_OPENWEATHERMAP
 	_log.Log(LOG_STATUS, "OpenWeatherMap: Get data from %s", sURL);
@@ -183,10 +183,10 @@ void COpenWeatherMap::GetMeterDetails()
 		_log.Log(LOG_ERROR, "OpenWeatherMap: Invalid data received!");
 		return;
 	}
-
-	if (root["cod"].asInt() != 200)
+	std::string rcod = root["cod"].asString();
+	if (atoi(rcod.c_str()) != 200)
 	{
-		_log.Log(LOG_ERROR, "OpenWeatherMap: Invalid data ('cod') received!");
+		_log.Log(LOG_ERROR, "OpenWeatherMap: Error received: %s (%s)",rcod.c_str(), root["message"].asString().c_str());
 		return;
 	}
 
