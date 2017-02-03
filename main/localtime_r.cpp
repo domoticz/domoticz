@@ -59,6 +59,7 @@ bool ParseSQLdatetime(time_t &time, struct tm &result, const std::string szSQLda
 		return false;
 	}
 
+	unsigned char i=0;
 	bool goodtime = false;
 	while (!goodtime) {
 		result.tm_isdst = isdst;
@@ -68,14 +69,20 @@ bool ParseSQLdatetime(time_t &time, struct tm &result, const std::string szSQLda
 		result.tm_hour = atoi(szSQLdate.substr(11, 2).c_str());
 		result.tm_min = atoi(szSQLdate.substr(14, 2).c_str());
 		result.tm_sec = atoi(szSQLdate.substr(17, 2).c_str());
+		if (i > 1)
+			result.tm_hour++; // required to make result consistent across platforms
 		time = mktime(&result);
 		if (time == -1) {
 			if (isdst == 0) { return false; }
 			isdst = 0;
 		} else {
 			goodtime = ((result.tm_isdst == isdst) || (isdst == -1));
-			isdst = result.tm_isdst;
+			if (i==0)
+				isdst = result.tm_isdst;
+			else // time is inside DST "black hole" range
+				isdst = -1;
 		}
+		i++;
 	}
 	return true;
 }
@@ -95,9 +102,8 @@ bool constructTime(time_t &time, struct tm &result, const int year, const int mo
 }
 
 bool constructTime(time_t &time, struct tm &result, const int year, const int month, const int day, const int hour, const int minute, const int second, int isdst) {
+	unsigned char i=0;
 	bool goodtime = false;
-	int orgDst = isdst;
-	int lCount = 0;
 	while (!goodtime) {
 		result.tm_isdst = isdst;
 		result.tm_year = year - 1900;
@@ -106,22 +112,20 @@ bool constructTime(time_t &time, struct tm &result, const int year, const int mo
 		result.tm_hour = hour;
 		result.tm_min = minute;
 		result.tm_sec = second;
+		if (i > 1)
+			result.tm_hour++; // required to make result consistent across platforms
 		time = mktime(&result);
-		if (lCount == 3)
-			return false;
 		if (time == -1) {
 			if (isdst == 0) { return false; }
 			isdst = 0;
 		} else {
 			goodtime = ((result.tm_isdst == isdst) || (isdst == -1));
-			isdst = result.tm_isdst;
+			if (i==0)
+				isdst = result.tm_isdst;
+			else // time is inside DST "black hole" range
+				isdst = -1;
 		}
-		if (!goodtime)
-		{
-			lCount++;
-			if (lCount == 3)
-				isdst = orgDst;
-		}
+		i++;
 	}
 	return true;
 }
