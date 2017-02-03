@@ -877,13 +877,15 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 				showmessage = false;
 			}
 			else if (cmd == "heartbeat") {
-				//update the token and gateway ip address.
+				if (model == "gateway") {
+					//update the token and gateway ip address.
 #ifdef _DEBUG
-				_log.Log(LOG_STATUS, "XiaomiGateway: Token Received - %s", root["token"].asString().c_str());
+					_log.Log(LOG_STATUS, "XiaomiGateway: Token Received - %s", root["token"].asString().c_str());
 #endif
-				m_XiaomiGateway->UpdateToken(root["token"].asString());
-				m_gatewayip = root["ip"].asString();
-				showmessage = false;
+					m_XiaomiGateway->UpdateToken(root["token"].asString());
+					m_gatewayip = root["ip"].asString();
+					showmessage = false;
+				}
 			}
 			else {
 				_log.Log(LOG_STATUS, "XiaomiGateway: unknown cmd received: %s", cmd.c_str());
