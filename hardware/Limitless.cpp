@@ -238,16 +238,14 @@ bool CLimitLess::StartHardware()
 				{
 					if (!AddSwitchIfNotExits(3, "AppLamp Group3"))
 					{
-						if (!AddSwitchIfNotExits(4, "AppLamp Group4"))
-						{
-							if (m_BridgeType == LBTYPE_V6)
-							{
-								AddSwitchIfNotExits(5, "AppLamp Bridge");
-							}
-						}
+						AddSwitchIfNotExits(4, "AppLamp Group4");
 					}
 				}
 			}
+		}
+		if (m_BridgeType == LBTYPE_V6)
+		{
+			AddSwitchIfNotExits(5, "AppLamp Bridge");
 		}
 	}
 	else {
@@ -278,7 +276,7 @@ bool CLimitLess::IsDataAvailable(const SOCKET sock)
 	tv.tv_usec = 0;
 
 	// Wait until timeout or data received.
-	n = select(m_RemoteSocket, &fds, NULL, NULL, &tv);
+	n = select(m_RemoteSocket+1, &fds, NULL, NULL, &tv);
 	return (n > 0);
 }
 
@@ -286,8 +284,8 @@ bool CLimitLess::GetV6BridgeID()
 {
 	m_BridgeID_1 = m_BridgeID_2 = 0;
 	int totRetries = 0;
-	sendto(m_RemoteSocket, (const char*)&V6_GetSessionID, sizeof(V6_GetSessionID), 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 
+	sendto(m_RemoteSocket, (const char*)&V6_GetSessionID, sizeof(V6_GetSessionID), 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 	while (totRetries < v6_repeats)
 	{
 		if (!IsDataAvailable(m_RemoteSocket))
@@ -299,13 +297,21 @@ bool CLimitLess::GetV6BridgeID()
 		uint8_t rbuffer[1024];
 		sockaddr_in si_other;
 		socklen_t slen = sizeof(sockaddr_in);
+		sleep_milliseconds(100);
 		int trecv = recvfrom(m_RemoteSocket, (char*)&rbuffer, sizeof(rbuffer), 0, (struct sockaddr*)&si_other, &slen);
+
 		if (trecv < 1)
 		{
 			return false;
 		}
 		if (trecv != 0x16)
-			return false;
+			while ( (rbuffer[0x00] == 0x88) && (rbuffer[0x07] == 0x01) )
+			{
+				totRetries++;
+				int trecv = recvfrom(m_RemoteSocket, (char*)&rbuffer, sizeof(rbuffer), 0, (struct sockaddr*)&si_other, &slen);
+				continue;
+			}
+			//return false;
 		if ((rbuffer[0x00] != 0x28) || (rbuffer[0x15] != 0x00))
 			return false;
 		uint8_t mac_1 = rbuffer[0x07];
@@ -330,6 +336,7 @@ bool CLimitLess::SendV6Command(const uint8_t *pCmd)
 			return false;
 	}
 	uint8_t OutBuffer[100];
+	uint8_t RBuffer[100];
 	int wPointer = 0;
 	memcpy(OutBuffer + wPointer, V6_PreAmble, sizeof(V6_PreAmble)); wPointer += sizeof(V6_PreAmble);
 	OutBuffer[wPointer++] = m_BridgeID_1;
@@ -350,6 +357,7 @@ bool CLimitLess::SendV6Command(const uint8_t *pCmd)
 	OutBuffer[wPointer++] = crc;
 
 	sendto(m_RemoteSocket, (const char*)&OutBuffer, wPointer, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+	sleep_milliseconds(100);
 //	return true;
 	int totRetries = 0;
 	while (totRetries < v6_repeats)
@@ -362,16 +370,31 @@ bool CLimitLess::SendV6Command(const uint8_t *pCmd)
 		}
 		sockaddr_in si_other;
 		socklen_t slen = sizeof(sockaddr_in);
-		int trecv = recvfrom(m_RemoteSocket, (char*)&OutBuffer, sizeof(OutBuffer), 0, (struct sockaddr*)&si_other, &slen);
+		int trecv = recvfrom(m_RemoteSocket, (char*)&RBuffer, sizeof(RBuffer), 0, (struct sockaddr*)&si_other, &slen);
+		//Hack to workaround other communication get from bridge, should solved more clear
+		//8000000015ACCF23F581D8050200340000000000000000000034
+		while ( (RBuffer[0x00] == 0x80) && (RBuffer[0x04] == 0x15) ){
+			int trecv = recvfrom(m_RemoteSocket, (char*)&RBuffer, sizeof(RBuffer), 0, (struct sockaddr*)&si_other, &slen);
+			continue;
+		}
 		if (trecv < 1)
 			return false;
-		if (OutBuffer[0x07] != 0x00)
+		if (RBuffer[0x07] != 0x00)
 		{
 			//Maybe the Bridge was turned off, try getting the ID again
 			if (GetV6BridgeID())
 			{
+				OutBuffer[5]=m_BridgeID_1;
+				OutBuffer[6]=m_BridgeID_2;
 				sendto(m_RemoteSocket, (const char*)&OutBuffer, wPointer, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-				return (IsDataAvailable(m_RemoteSocket));
+				//Hack to flush buffer and see if command succeeded
+				recvfrom(m_RemoteSocket, (char*)&RBuffer, sizeof(RBuffer), 0, (struct sockaddr*)&si_other, &slen);
+				if (RBuffer[0x07] != 0x00)
+				{
+					_log.Log(LOG_ERROR, "AppLamp: Error sending command to Bridge!...");
+				}
+				else return true;
+				//return (IsDataAvailable(m_RemoteSocket));
 			}
 			else
 			{

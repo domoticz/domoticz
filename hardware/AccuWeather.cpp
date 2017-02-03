@@ -15,9 +15,10 @@
 #ifdef _DEBUG
 	//#define DEBUG_AccuWeatherR
 	//#define DEBUG_AccuWeatherW
+	//#define DEBUG_AccuWeatherW2
 #endif
 
-#ifdef DEBUG_AccuWeatherW
+#if defined(DEBUG_AccuWeatherW) || defined(DEBUG_AccuWeatherW2)
 void SaveString2Disk(std::string str, std::string filename)
 {
 	FILE *fOut = fopen(filename.c_str(), "wb+");
@@ -151,26 +152,38 @@ std::string CAccuWeather::GetLocationKey()
 #ifdef DEBUG_AccuWeatherW2
 	SaveString2Disk(sResult, "E:\\AccuWeather_LocationSearch.json");
 #endif
-	Json::Value root;
-
-	Json::Reader jReader;
-	bool ret = jReader.parse(sResult, root);
-	if (!ret)
+	try
 	{
-		_log.Log(LOG_ERROR, "AccuWeather: Invalid data received!");
-		return "";
+		Json::Value root;
+		Json::Reader jReader;
+		bool ret = jReader.parse(sResult, root);
+		if (!ret)
+		{
+			_log.Log(LOG_ERROR, "AccuWeather: Invalid data received!");
+			return "";
+		}
+		if (!root.empty())
+		{
+			if (root.isArray())
+				root = root[0];
+			if (root["Key"].empty())
+			{
+				_log.Log(LOG_ERROR, "AccuWeather: Invalid data received, or unknown location!");
+				return "";
+			}
+			return root["Key"].asString();
+		}
+		else
+		{
+			_log.Log(LOG_ERROR, "AccuWeather: Invalid data received, unknown location or API key!");
+			return "";
+		}
 	}
-	if (root.size()>0)
+	catch (...)
 	{
-		if (root.isArray())
-			root = root[0];
+		_log.Log(LOG_ERROR, "AccuWeather: Error parsing JSon data!");
 	}
-	if (root["Key"].empty())
-	{
-		_log.Log(LOG_ERROR, "AccuWeather: Invalid data received, or unknown location!");
-		return "";
-	}
-	return root["Key"].asString();
+	return "";
 }
 
 void CAccuWeather::GetMeterDetails()

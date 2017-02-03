@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Product xmlns='http://code.google.com/p/open-zwave/'>
+  <!-- http://www.popp.eu/wp-content/uploads/2016/07/Manual_Thermostat_POPP_en.pdf -->
   <!-- COMMAND_CLASS_BASIC does not respond to requests -->
   <CommandClass id="32" action="remove" />
   <!-- This thermostat's setpoint descriptions are 0 based -->
   <CommandClass id="67" base="0" override_precision="2" />
+  <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="1">
+            <Group index="1" max_associations="1" label="Lifeline" />
+        </Associations>
+    </CommandClass>
 </Product>
