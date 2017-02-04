@@ -624,6 +624,7 @@ bool IsLightOrSwitch(const int devType, const int subType)
 	case pTypeRFY:
 	case pTypeThermostat2:
 	case pTypeThermostat3:
+	case pTypeThermostat4:
 	case pTypeRemote:
 	case pTypeGeneralSwitch:
 	case pTypeHomeConfort:

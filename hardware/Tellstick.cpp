@@ -131,7 +131,7 @@ void CTellstick::rawDeviceEvent(int controllerId, const char *data)
     std::string windaverage;
     std::string windgust;
 
-    size_t prevPos;
+    size_t prevPos = 0;
     std::string message = data;
     size_t pos = message.find(";");
 
@@ -311,10 +311,10 @@ namespace http {
         void CWebServer::Cmd_TellstickApplySettings(WebEmSession &session, const request &req, Json::Value &root)
         {
             if (session.rights != 2)
-            {
-                //No admin user, and not allowed to be here
-                return;
-            }
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 
             string hwIdStr = request::findValue(&req, "idx");
             string repeatsStr = request::findValue(&req, "repeats");

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<!-- Configuration Parameters -->
+	<CommandClass id="112">
+		<Value type="byte" index="1" genre="config" label="Delayed OFF time" units="seconds" min="0" max="255" value="0">
+		  <Help>
+			The configuration value is a signed single byte number. This value may represent a value with no units or may represent a value such as time. 0 to 127 (decimal) represents 0 to 127 seconds of time. -128 to -1 (negative decimal numbers) represents 128 to 255 seconds as calculated by this formula.  Config value = desired time in seconds (or desired value) -256 For an example of 172 seconds: config value = 172 - 256 = -84 (decimal) or 0xAC (hex) 
+		  </Help>
+		</Value>
+		<Value type="byte" index="4" genre="config" label="Basic set value" units="" min="1" max="255" value="0">
+		  <Help>
+		  Setting this to anything other than 0 will cause the value to be transmitted to devices in the association group when the switch is triggered. A setting other than 0 will likely result in undesired operation
+		  </Help>
+		</Value>
+	</CommandClass>
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="1">
+        	<Group index="1" max_associations="5" label="Group #1" />
+		</Associations>
+	</CommandClass>
+</Product>

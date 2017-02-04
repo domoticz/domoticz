@@ -156,7 +156,7 @@
             <Help>
 			Value that must correspond to minimum sensor range value.
 			Valid only if parameter 1 is set to values 3, 4 or 5).
-			default value 0 = 0.0°C / 0Lux / 0.0%rh
+			default value 0 = 0.0C / 0Lux / 0.0%rh
 			0 to 10000 => value from 0 to 1000 (resolution 0,1)
 			10001 to 20000 => value from -0,1 to -1000 (resolution 0,1)
 			NOTE: Minimum value must not be higher than maximum value!
@@ -166,7 +166,7 @@
             <Help>
 			Value that must correspond to maximum sensor range value.
 			Valid only if parameter 1 is set to values 3, 4 or 5).
-			default value 1000 = 100.0°C / 100Lux / 100.0%rh
+			default value 1000 = 100.0C / 100Lux / 100.0%rh
 			0 to 10000 => value from 0 to 1000 (resolution 0,1)
 			10001 to 20000 => value from -0,1 to -1000 (resolution 0,1)
 			NOTE: Maximum value must not be lower than minimum value!

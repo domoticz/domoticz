@@ -51,7 +51,6 @@
 #include "../notifications/NotificationHelper.h"
 #include "../main/LuaHandler.h"
 
-#include "mainstructs.h"
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
@@ -406,6 +405,8 @@ namespace http {
 			RegisterCommandCode("bleboxupdatenode", boost::bind(&CWebServer::Cmd_BleBoxUpdateNode, this, _1, _2, _3));
 			RegisterCommandCode("bleboxremovenode", boost::bind(&CWebServer::Cmd_BleBoxRemoveNode, this, _1, _2, _3));
 			RegisterCommandCode("bleboxclearnodes", boost::bind(&CWebServer::Cmd_BleBoxClearNodes, this, _1, _2, _3));
+			RegisterCommandCode("bleboxautosearchingnodes", boost::bind(&CWebServer::Cmd_BleBoxAutoSearchingNodes, this, _1, _2, _3));
+			RegisterCommandCode("bleboxupdatefirmware", boost::bind(&CWebServer::Cmd_BleBoxUpdateFirmware, this, _1, _2, _3));
 
 			RegisterCommandCode("lmssetmode", boost::bind(&CWebServer::Cmd_LMSSetMode, this, _1, _2, _3));
 			RegisterCommandCode("lmsgetnodes", boost::bind(&CWebServer::Cmd_LMSGetNodes, this, _1, _2, _3));
@@ -452,6 +453,11 @@ namespace http {
 			RegisterCommandCode("deleteallplandevices", boost::bind(&CWebServer::Cmd_DeleteAllPlanDevices, this, _1, _2, _3));
 			RegisterCommandCode("changeplanorder", boost::bind(&CWebServer::Cmd_ChangePlanOrder, this, _1, _2, _3));
 			RegisterCommandCode("changeplandeviceorder", boost::bind(&CWebServer::Cmd_ChangePlanDeviceOrder, this, _1, _2, _3));
+
+			RegisterCommandCode("gettimerplans", boost::bind(&CWebServer::Cmd_GetTimerPlans, this, _1, _2, _3));
+			RegisterCommandCode("addtimerplan", boost::bind(&CWebServer::Cmd_AddTimerPlan, this, _1, _2, _3));
+			RegisterCommandCode("updatetimerplan", boost::bind(&CWebServer::Cmd_UpdateTimerPlan, this, _1, _2, _3));
+			RegisterCommandCode("deletetimerplan", boost::bind(&CWebServer::Cmd_DeleteTimerPlan, this, _1, _2, _3));
 
 			RegisterCommandCode("getactualhistory", boost::bind(&CWebServer::Cmd_GetActualHistory, this, _1, _2, _3));
 			RegisterCommandCode("getnewhistory", boost::bind(&CWebServer::Cmd_GetNewHistory, this, _1, _2, _3));
@@ -520,6 +526,9 @@ namespace http {
 			RegisterCommandCode("deletemobiledevice", boost::bind(&CWebServer::Cmd_DeleteMobileDevice, this, _1, _2, _3));
 
 			RegisterCommandCode("addyeelight", boost::bind(&CWebServer::Cmd_AddYeeLight, this, _1, _2, _3));
+
+
+			RegisterCommandCode("addArilux", boost::bind(&CWebServer::Cmd_AddArilux, this, _1, _2, _3));
 
 
 			RegisterRType("graph", boost::bind(&CWebServer::RType_HandleGraph, this, _1, _2, _3));
@@ -910,7 +919,10 @@ namespace http {
 		void CWebServer::Cmd_GetHardwareTypes(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 
 			root["status"] = "OK";
 			root["title"] = "GetHardwareTypes";
@@ -924,7 +936,8 @@ namespace http {
 					(ii == HTYPE_RaspberryBMP085) ||
 					(ii == HTYPE_RaspberryHTU21D) ||
 					(ii == HTYPE_RaspberryTSL2561) ||
-					(ii == HTYPE_RaspberryPCF8574)
+					(ii == HTYPE_RaspberryPCF8574) ||
+					(ii == HTYPE_RaspberryBME280)
 					)
 				{
 					bDoAdd = false;
@@ -952,7 +965,7 @@ namespace http {
 				if (ii == HTYPE_RaspberryGPIO)
 					bDoAdd = false;
 #endif
-				if ((ii == HTYPE_1WIRE) && (!C1Wire::Have1WireSystem()))
+				if (((ii == HTYPE_1WIRE) && (!C1Wire::Have1WireSystem())) || (ii == HTYPE_PythonPlugin))
 					bDoAdd = false;
 				if (bDoAdd)
 					_htypes[Hardware_Type_Desc(ii)] = ii;
@@ -966,12 +979,20 @@ namespace http {
 				root["result"][ii]["name"] = itt->first;
 				ii++;
 			}
+
+#ifdef USE_PYTHON_PLUGINS
+			// Append Plugin list as well
+			PluginList(root["result"]);
+#endif
 		}
 
 		void CWebServer::Cmd_AddHardware(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 
 			std::string name = CURLEncode::URLDecode(request::findValue(&req, "name"));
 			std::string senabled = request::findValue(&req, "enabled");
@@ -998,29 +1019,29 @@ namespace http {
 			int mode5 = 0;
 			int mode6 = 0;
 			int port = atoi(sport.c_str());
-			std::string modeStr = request::findValue(&req, "Mode1");
-			if (!modeStr.empty()) {
-				mode1 = atoi(modeStr.c_str());
+			std::string mode1Str = request::findValue(&req, "Mode1");
+			if (!mode1Str.empty()) {
+				mode1 = atoi(mode1Str.c_str());
 			}
-			modeStr = request::findValue(&req, "Mode2");
-			if (!modeStr.empty()) {
-				mode2 = atoi(modeStr.c_str());
+			std::string mode2Str = request::findValue(&req, "Mode2");
+			if (!mode2Str.empty()) {
+				mode2 = atoi(mode2Str.c_str());
 			}
-			modeStr = request::findValue(&req, "Mode3");
-			if (!modeStr.empty()) {
-				mode3 = atoi(modeStr.c_str());
+			std::string mode3Str = request::findValue(&req, "Mode3");
+			if (!mode3Str.empty()) {
+				mode3 = atoi(mode3Str.c_str());
 			}
-			modeStr = request::findValue(&req, "Mode4");
-			if (!modeStr.empty()) {
-				mode4 = atoi(modeStr.c_str());
+			std::string mode4Str = request::findValue(&req, "Mode4");
+			if (!mode4Str.empty()) {
+				mode4 = atoi(mode4Str.c_str());
 			}
-			modeStr = request::findValue(&req, "Mode5");
-			if (!modeStr.empty()) {
-				mode5 = atoi(modeStr.c_str());
+			std::string mode5Str = request::findValue(&req, "Mode5");
+			if (!mode5Str.empty()) {
+				mode5 = atoi(mode5Str.c_str());
 			}
-			modeStr = request::findValue(&req, "Mode6");
-			if (!modeStr.empty()) {
-				mode6 = atoi(modeStr.c_str());
+			std::string mode6Str = request::findValue(&req, "Mode6");
+			if (!mode6Str.empty()) {
+				mode6 = atoi(mode6Str.c_str());
 			}
 
 			if (IsSerialDevice(htype))
@@ -1092,6 +1113,9 @@ namespace http {
 			else if (htype == HTYPE_RaspberryTSL2561) {
 				//all fine here!
 			}
+			else if (htype == HTYPE_RaspberryBME280) {
+				//all fine here!
+			}
 			else if (htype == HTYPE_Dummy) {
 				//all fine here!
 			}
@@ -1114,6 +1138,12 @@ namespace http {
 				//all fine here!
 			}
 			else if (htype == HTYPE_Yeelight) {
+				//all fine here!
+			}
+			else if (htype == HTYPE_XiaomiGateway) {
+				//all fine here!
+			}
+			else if (htype == HTYPE_Arilux) {
 				//all fine here!
 			}
 			else if (
@@ -1182,7 +1212,7 @@ namespace http {
 			else if (htype == HTYPE_RaspberryGPIO) {
 				//all fine here!
 			}
-			else if (htype == HTYPE_OpenWebNet) {
+			else if (htype == HTYPE_OpenWebNetTCP) {
 				//All fine here
 			}
 			else if (htype == HTYPE_Daikin) {
@@ -1192,7 +1222,16 @@ namespace http {
 				if (username == "")
 					return;
 			}
+			else if (htype == HTYPE_PythonPlugin) {
+				//All fine here
+			}
 			else if (htype == HTYPE_RaspberryPCF8574) {
+				//All fine here
+			}
+			else if (htype == HTYPE_OpenWebNetUSB) {
+				//All fine here
+			}
+			else if (htype == HTYPE_IntergasInComfortLAN2RF) {
 				//All fine here
 			}
 			else
@@ -1245,20 +1284,55 @@ namespace http {
 				mode2 = 500;
 			}
 
-			m_sql.safe_query(
-				"INSERT INTO Hardware (Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) VALUES ('%q',%d, %d,'%q',%d,'%q','%q','%q','%q',%d,%d,%d,%d,%d,%d,%d)",
-				name.c_str(),
-				(senabled == "true") ? 1 : 0,
-				htype,
-				address.c_str(),
-				port,
-				sport.c_str(),
-				username.c_str(),
-				password.c_str(),
-				extra.c_str(),
-				mode1, mode2, mode3, mode4, mode5, mode6,
-				iDataTimeout
+			if (htype == HTYPE_HTTPPOLLER) {
+				m_sql.safe_query(
+					"INSERT INTO Hardware (Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) VALUES ('%q',%d, %d,'%q',%d,'%q','%q','%q','%q','%q','%q', '%q', '%q', '%q', '%q', %d)",
+					name.c_str(),
+					(senabled == "true") ? 1 : 0,
+					htype,
+					address.c_str(),
+					port,
+					sport.c_str(),
+					username.c_str(),
+					password.c_str(),
+					extra.c_str(),
+					mode1Str.c_str(), mode2Str.c_str(), mode3Str.c_str(), mode4Str.c_str(), mode5Str.c_str(), mode6Str.c_str(),
+					iDataTimeout
 				);
+			}
+			else if (htype == HTYPE_PythonPlugin) {
+				sport = request::findValue(&req, "serialport");
+				m_sql.safe_query(
+					"INSERT INTO Hardware (Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) VALUES ('%q',%d, %d,'%q',%d,'%q','%q','%q','%q','%q','%q', '%q', '%q', '%q', '%q', %d)",
+					name.c_str(),
+					(senabled == "true") ? 1 : 0,
+					htype,
+					address.c_str(),
+					port,
+					sport.c_str(),
+					username.c_str(),
+					password.c_str(),
+					extra.c_str(),
+					mode1Str.c_str(), mode2Str.c_str(), mode3Str.c_str(), mode4Str.c_str(), mode5Str.c_str(), mode6Str.c_str(),
+					iDataTimeout
+				);
+			}
+			else {
+				m_sql.safe_query(
+					"INSERT INTO Hardware (Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) VALUES ('%q',%d, %d,'%q',%d,'%q','%q','%q','%q',%d,%d,%d,%d,%d,%d,%d)",
+					name.c_str(),
+					(senabled == "true") ? 1 : 0,
+					htype,
+					address.c_str(),
+					port,
+					sport.c_str(),
+					username.c_str(),
+					password.c_str(),
+					extra.c_str(),
+					mode1, mode2, mode3, mode4, mode5, mode6,
+					iDataTimeout
+				);
+			}
 
 			//add the device for real in our system
 			result = m_sql.safe_query("SELECT MAX(ID) FROM Hardware");
@@ -1276,7 +1350,10 @@ namespace http {
 		void CWebServer::Cmd_UpdateHardware(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 
 			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
@@ -1325,7 +1402,7 @@ namespace http {
 				(htype == HTYPE_KMTronicTCP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_RFLINKTCP) ||
 				(htype == HTYPE_Comm5TCP || (htype == HTYPE_CurrentCostMeterLAN)) ||
 				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviSmartdenLan) || (htype == HTYPE_Ec3kMeterTCP) || (htype == HTYPE_MultiFun) || (htype == HTYPE_ZIBLUETCP)
-				){
+				) {
 				//Lan
 				if (address == "")
 					return;
@@ -1381,6 +1458,9 @@ namespace http {
 			else if (htype == HTYPE_RaspberryTSL2561) {
 				//All fine here
 			}
+			else if (htype == HTYPE_RaspberryBME280) {
+				//All fine here
+			}
 			else if (htype == HTYPE_Dummy) {
 				//All fine here
 			}
@@ -1400,6 +1480,12 @@ namespace http {
 				//All fine here
 			}
 			else if (htype == HTYPE_Yeelight) {
+				//All fine here
+			}
+			else if (htype == HTYPE_XiaomiGateway) {
+				//All fine here
+			}
+			else if (htype == HTYPE_Arilux) {
 				//All fine here
 			}
 			else if (
@@ -1453,20 +1539,29 @@ namespace http {
 			else if (htype == HTYPE_WINDDELEN) {
 				std::string mill_id = request::findValue(&req, "Mode1");
 				if (
-				  (mill_id == "") ||
-				  (sport == "")
-				)
+					(mill_id == "") ||
+					(sport == "")
+					)
 					return;
 			}
-			else if (htype == HTYPE_OpenWebNet) {
+			else if (htype == HTYPE_OpenWebNetTCP) {
+				//All fine here
+			}
+			else if (htype == HTYPE_PythonPlugin) {
 				//All fine here
 			}
 			else if (htype == HTYPE_GoodweAPI) {
-					if (username == "") {
-						return;
-					}
+				if (username == "") {
+					return;
+				}
 			}
 			else if (htype == HTYPE_RaspberryPCF8574) {
+				//All fine here
+			}
+			else if (htype == HTYPE_OpenWebNetUSB) {
+				//All fine here
+			}
+			else if (htype == HTYPE_IntergasInComfortLAN2RF) {
 				//All fine here
 			}
 			else
@@ -1478,6 +1573,14 @@ namespace http {
 			int mode4 = atoi(request::findValue(&req, "Mode4").c_str());
 			int mode5 = atoi(request::findValue(&req, "Mode5").c_str());
 			int mode6 = atoi(request::findValue(&req, "Mode6").c_str());
+
+			std::string mode1Str;
+			std::string mode2Str;
+			std::string mode3Str;
+			std::string mode4Str;
+			std::string mode5Str;
+			std::string mode6Str;
+
 			root["status"] = "OK";
 			root["title"] = "UpdateHardware";
 
@@ -1500,21 +1603,63 @@ namespace http {
 			}
 			else
 			{
-				m_sql.safe_query(
-					"UPDATE Hardware SET Name='%q', Enabled=%d, Type=%d, Address='%q', Port=%d, SerialPort='%q', Username='%q', Password='%q', Extra='%q', Mode1=%d, Mode2=%d, Mode3=%d, Mode4=%d, Mode5=%d, Mode6=%d, DataTimeout=%d WHERE (ID == '%q')",
-					name.c_str(),
-					(bEnabled == true) ? 1 : 0,
-					htype,
-					address.c_str(),
-					port,
-					sport.c_str(),
-					username.c_str(),
-					password.c_str(),
-					extra.c_str(),
-					mode1, mode2, mode3, mode4, mode5, mode6,
-					iDataTimeout,
-					idx.c_str()
+				if (htype == HTYPE_HTTPPOLLER) {
+					m_sql.safe_query(
+						"UPDATE Hardware SET Name='%q', Enabled=%d, Type=%d, Address='%q', Port=%d, SerialPort='%q', Username='%q', Password='%q', Extra='%q', DataTimeout=%d WHERE (ID == '%q')",
+						name.c_str(),
+						(senabled == "true") ? 1 : 0,
+						htype,
+						address.c_str(),
+						port,
+						sport.c_str(),
+						username.c_str(),
+						password.c_str(),
+						extra.c_str(),
+						iDataTimeout,
+						idx.c_str()
 					);
+				}
+				else if (htype == HTYPE_PythonPlugin) {
+					mode1Str = request::findValue(&req, "Mode1");
+					mode2Str = request::findValue(&req, "Mode2");
+					mode3Str = request::findValue(&req, "Mode3");
+					mode4Str = request::findValue(&req, "Mode4");
+					mode5Str = request::findValue(&req, "Mode5");
+					mode6Str = request::findValue(&req, "Mode6");
+					sport = request::findValue(&req, "serialport");
+					m_sql.safe_query(
+						"UPDATE Hardware SET Name='%q', Enabled=%d, Type=%d, Address='%q', Port=%d, SerialPort='%q', Username='%q', Password='%q', Extra='%q', Mode1='%q', Mode2='%q', Mode3='%q', Mode4='%q', Mode5='%q', Mode6='%q', DataTimeout=%d WHERE (ID == '%q')",
+						name.c_str(),
+						(senabled == "true") ? 1 : 0,
+						htype,
+						address.c_str(),
+						port,
+						sport.c_str(),
+						username.c_str(),
+						password.c_str(),
+						extra.c_str(),
+						mode1Str.c_str(), mode2Str.c_str(), mode3Str.c_str(), mode4Str.c_str(), mode5Str.c_str(), mode6Str.c_str(),
+						iDataTimeout,
+						idx.c_str()
+					);
+				}
+				else {
+					m_sql.safe_query(
+						"UPDATE Hardware SET Name='%q', Enabled=%d, Type=%d, Address='%q', Port=%d, SerialPort='%q', Username='%q', Password='%q', Extra='%q', Mode1=%d, Mode2=%d, Mode3=%d, Mode4=%d, Mode5=%d, Mode6=%d, DataTimeout=%d WHERE (ID == '%q')",
+						name.c_str(),
+						(bEnabled == true) ? 1 : 0,
+						htype,
+						address.c_str(),
+						port,
+						sport.c_str(),
+						username.c_str(),
+						password.c_str(),
+						extra.c_str(),
+						mode1, mode2, mode3, mode4, mode5, mode6,
+						iDataTimeout,
+						idx.c_str()
+					);
+				}
 			}
 
 			//re-add the device in our system
@@ -1525,7 +1670,10 @@ namespace http {
 		void CWebServer::Cmd_GetDeviceValueOptions(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
@@ -1554,7 +1702,10 @@ namespace http {
 		void CWebServer::Cmd_GetDeviceValueOptionWording(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 			std::string idx = request::findValue(&req, "idx");
 			std::string pos = request::findValue(&req, "pos");
 			if ((idx == "") || (pos == ""))
@@ -1570,7 +1721,10 @@ namespace http {
 		void CWebServer::Cmd_DeleteUserVariable(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
@@ -1582,11 +1736,18 @@ namespace http {
 		void CWebServer::Cmd_SaveUserVariable(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 			std::string variablename = request::findValue(&req, "vname");
 			std::string variablevalue = request::findValue(&req, "vvalue");
 			std::string variabletype = request::findValue(&req, "vtype");
-			if ((variablename == "") || (variablevalue == "") || (variabletype == ""))
+			if (
+				(variablename == "") || 
+				(variabletype == "") || 
+				((variablevalue == "") && (variabletype != "2"))
+				)
 				return;
 
 			root["status"] = m_sql.SaveUserVariable(variablename, variabletype, variablevalue);
@@ -1596,7 +1757,10 @@ namespace http {
 		void CWebServer::Cmd_UpdateUserVariable(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 			std::string idx = request::findValue(&req, "idx");
 			std::string variablename = request::findValue(&req, "vname");
 			std::string variablevalue = request::findValue(&req, "vvalue");
@@ -1613,7 +1777,12 @@ namespace http {
 				idx = result[0][0];
 			}
 
-			if (idx.empty() || variablename.empty() || variablevalue.empty() || variabletype.empty())
+			if (
+				(idx.empty()) ||
+				(variablename.empty()) ||
+				(variabletype.empty()) ||
+				((variablevalue.empty()) && (variabletype != "2"))
+				) 
 				return;
 
 			root["status"] = m_sql.UpdateUserVariable(idx, variablename, variabletype, variablevalue, true);
@@ -1680,7 +1849,10 @@ namespace http {
 		void CWebServer::Cmd_AllowNewHardware(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 			std::string sTimeout = request::findValue(&req, "timeout");
 			if (sTimeout == "")
 				return;
@@ -1694,7 +1866,10 @@ namespace http {
 		void CWebServer::Cmd_DeleteHardware(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 
 			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
@@ -1762,7 +1937,10 @@ namespace http {
 		void CWebServer::Cmd_AddPlan(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 
 			std::string name = request::findValue(&req, "name");
 			root["status"] = "OK";
@@ -1776,7 +1954,10 @@ namespace http {
 		void CWebServer::Cmd_UpdatePlan(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 
 			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
@@ -1800,7 +1981,10 @@ namespace http {
 		void CWebServer::Cmd_DeletePlan(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 
 			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
@@ -1885,7 +2069,10 @@ namespace http {
 		void CWebServer::Cmd_AddPlanActiveDevice(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 
 			std::string idx = request::findValue(&req, "idx");
 			std::string sactivetype = request::findValue(&req, "activetype");
@@ -1977,8 +2164,10 @@ namespace http {
 		void CWebServer::Cmd_DeletePlanDevice(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
-
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
@@ -2007,8 +2196,10 @@ namespace http {
 		void CWebServer::Cmd_DeleteAllPlanDevices(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
-
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
@@ -2116,6 +2307,97 @@ namespace http {
 				oOrder.c_str(), idx.c_str());
 			m_sql.safe_query("UPDATE DeviceToPlansMap SET [Order] = '%q' WHERE (ID='%q')",
 				aOrder.c_str(), oID.c_str());
+		}
+
+		void CWebServer::Cmd_GetTimerPlans(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+			root["status"] = "OK";
+			root["title"] = "GetTimerPlans";
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query("SELECT ID, Name FROM TimerPlans ORDER BY Name COLLATE NOCASE ASC");
+			if (result.size() > 0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				int ii = 0;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
+					root["result"][ii]["idx"] = sd[0];
+					root["result"][ii]["Name"] = sd[1];
+					ii++;
+				}
+			}
+		}
+
+		void CWebServer::Cmd_AddTimerPlan(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+
+			std::string name = request::findValue(&req, "name");
+			root["status"] = "OK";
+			root["title"] = "AddTimerPlan";
+			m_sql.safe_query("INSERT INTO TimerPlans (Name) VALUES ('%q')", name.c_str());
+		}
+
+		void CWebServer::Cmd_UpdateTimerPlan(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+
+			std::string idx = request::findValue(&req, "idx");
+			if (idx == "")
+				return;
+			std::string name = request::findValue(&req, "name");
+			if (
+				(name == "")
+				)
+				return;
+
+			root["status"] = "OK";
+			root["title"] = "UpdateTimerPlan";
+
+			m_sql.safe_query("UPDATE TimerPlans SET Name='%q' WHERE (ID == '%q')", name.c_str(), idx.c_str());
+		}
+
+		void CWebServer::Cmd_DeleteTimerPlan(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+
+			std::string idx = request::findValue(&req, "idx");
+			if (idx == "")
+				return;
+			int iPlan = atoi(idx.c_str());
+			if (iPlan < 1)
+				return;
+
+			root["status"] = "OK";
+			root["title"] = "DeletePlan";
+			m_sql.safe_query("DELETE FROM Timers WHERE (TimerPlan == '%q')", idx.c_str());
+			m_sql.safe_query("DELETE FROM TimerPlans WHERE (ID == '%q')", idx.c_str());
+
+			if (m_sql.m_ActiveTimerPlan == iPlan)
+			{
+				//Set active timer plan to default
+				m_sql.UpdatePreferencesVar("ActiveTimerPlan", 0);
+				m_sql.m_ActiveTimerPlan = 0;
+				m_mainworker.m_scheduler.ReloadSchedules();
+			}
 		}
 
 		void CWebServer::Cmd_GetVersion(WebEmSession & session, const request& req, Json::Value &root)
@@ -2257,7 +2539,10 @@ namespace http {
 		void CWebServer::Cmd_GetConfig(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights == -1)
+			{
+				session.reply_status = reply::forbidden;
 				return;//Only auth user allowed
+			}
 
 			root["status"] = "OK";
 			root["title"] = "GetConfig";
@@ -2411,13 +2696,15 @@ namespace http {
 		{
 			std::string subject = request::findValue(&req, "subject");
 			std::string body = request::findValue(&req, "body");
+			std::string subsystem = request::findValue(&req, "subsystem");
 			if (
 				(subject == "") ||
 				(body == "")
 				)
 				return;
+			if (subsystem == "") subsystem = NOTIFYALL;
 			//Add to queue
-			if (m_notifications.SendMessage(NOTIFYALL, subject, body, std::string(""), false)) {
+			if (m_notifications.SendMessage(0, std::string(""), subsystem, subject, body, std::string(""), 1, std::string(""), false)) {
 				root["status"] = "OK";
 			}
 			root["title"] = "SendNotification";
@@ -2440,6 +2727,12 @@ namespace http {
 
 		void CWebServer::Cmd_UpdateDevice(WebEmSession & session, const request& req, Json::Value &root)
 		{
+			if (session.rights < 1)
+			{
+				session.reply_status = reply::forbidden;
+				return; //only user or higher allowed
+			}
+
 			std::string idx = request::findValue(&req, "idx");
 			std::string hid = request::findValue(&req, "hid");
 			std::string did = request::findValue(&req, "did");
@@ -2580,7 +2873,10 @@ namespace http {
 		void CWebServer::Cmd_SystemShutdown(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 #ifdef WIN32
 			int ret = system("shutdown -s -f -t 1 -d up:125:1");
 #else
@@ -2598,7 +2894,10 @@ namespace http {
 		void CWebServer::Cmd_SystemReboot(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 #ifdef WIN32
 			int ret = system("shutdown -r -f -t 1 -d up:125:1");
 #else
@@ -2655,7 +2954,7 @@ namespace http {
 			else
 			{
 				//add script to background worker
-				m_sql.AddTaskItem(_tTaskItem::ExecuteScript(1, scriptname, strparm));
+				m_sql.AddTaskItem(_tTaskItem::ExecuteScript(0.2f, scriptname, strparm));
 			}
 			root["title"] = "ExecuteScript";
 			root["status"] = "OK";
@@ -2763,7 +3062,10 @@ namespace http {
 			root["Revision"] = m_mainworker.m_iRevision;
 
 			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
 				return; //Only admin users may update
+			}
 
 			bool bIsForced = (request::findValue(&req, "forced") == "true");
 
@@ -2837,7 +3139,10 @@ namespace http {
 			if (cparam == "deleteallsubdevices")
 			{
 				if (session.rights < 2)
-					return;//Only admin user allowed
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only admin user allowed
+				}
 
 				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
@@ -2849,7 +3154,10 @@ namespace http {
 			else if (cparam == "deletesubdevice")
 			{
 				if (session.rights < 2)
-					return;//Only admin user allowed
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only admin user allowed
+				}
 
 				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
@@ -2861,7 +3169,10 @@ namespace http {
 			else if (cparam == "addsubdevice")
 			{
 				if (session.rights < 2)
-					return;//Only admin user allowed
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only admin user allowed
+				}
 
 				std::string idx = request::findValue(&req, "idx");
 				std::string subidx = request::findValue(&req, "subidx");
@@ -2888,7 +3199,10 @@ namespace http {
 			else if (cparam == "addscenedevice")
 			{
 				if (session.rights < 2)
-					return;//Only admin user allowed
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only admin user allowed
+				}
 
 				std::string idx = request::findValue(&req, "idx");
 				std::string devidx = request::findValue(&req, "devidx");
@@ -2991,7 +3305,10 @@ namespace http {
 			else if (cparam == "updatescenedevice")
 			{
 				if (session.rights < 2)
-					return;//Only admin user allowed
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only admin user allowed
+				}
 
 				std::string idx = request::findValue(&req, "idx");
 				std::string devidx = request::findValue(&req, "devidx");
@@ -3028,7 +3345,10 @@ namespace http {
 			else if (cparam == "deletescenedevice")
 			{
 				if (session.rights < 2)
-					return;//Only admin user allowed
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only admin user allowed
+				}
 
 				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
@@ -3129,7 +3449,10 @@ namespace http {
 			else if (cparam == "changescenedeviceorder")
 			{
 				if (session.rights < 2)
-					return;//Only admin user allowed
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only admin user allowed
+				}
 
 				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
@@ -3182,7 +3505,10 @@ namespace http {
 			else if (cparam == "deleteallscenedevices")
 			{
 				if (session.rights < 2)
-					return;//Only admin user allowed
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only admin user allowed
+				}
 
 				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
@@ -3225,7 +3551,8 @@ namespace http {
 						case HTYPE_RFLINKTCP:
 						case HTYPE_ZIBLUEUSB:
 						case HTYPE_ZIBLUETCP:
-						case HTYPE_OpenWebNet:
+						case HTYPE_OpenWebNetTCP:
+						case HTYPE_OpenWebNetUSB:
 							root["result"][ii]["idx"] = ID;
 							root["result"][ii]["Name"] = Name;
 							ii++;
@@ -3303,6 +3630,7 @@ namespace http {
 						case pTypeChime:
 						case pTypeThermostat2:
 						case pTypeThermostat3:
+						case pTypeThermostat4:
 						case pTypeRemote:
 						case pTypeRadiator1:
 						case pTypeGeneralSwitch:
@@ -3333,20 +3661,47 @@ namespace http {
 									(switchtype == STYPE_Selector)
 									);
 								root["result"][ii]["IsDimmer"] = bIsDimmer;
-								std::string dimmerLevels = bIsDimmer ? "all" : "none";
-								if (switchtype == STYPE_Selector) {
+
+								std::string dimmerLevels = "none";
+
+								if (bIsDimmer)
+								{
 									std::stringstream ss;
-									std::map<std::string, std::string> selectorStatuses;
-									GetSelectorSwitchStatuses(options, selectorStatuses);
-									bool levelOffHidden = options["LevelOffHidden"] == "true";
-									for(int i = 0; i < (int)selectorStatuses.size(); i++) {
-										if (levelOffHidden && (i == 0)) {
-											continue;
+
+									if (switchtype == STYPE_Selector) {
+										std::map<std::string, std::string> selectorStatuses;
+										GetSelectorSwitchStatuses(options, selectorStatuses);
+										bool levelOffHidden = options["LevelOffHidden"] == "true";
+										for (int i = 0; i < (int)selectorStatuses.size(); i++) {
+											if (levelOffHidden && (i == 0)) {
+												continue;
+											}
+											if ((levelOffHidden && (i > 1)) || (i > 0)) {
+												ss << ",";
+											}
+											ss << i * 10;
 										}
-										if((levelOffHidden && (i > 1)) || (i > 0)) {
-											ss << ",";
+									}
+									else
+									{
+										int nValue = 0;
+										std::string sValue = "";
+										std::string lstatus = "";
+										int llevel = 0;
+										bool bHaveDimmer = false;
+										int maxDimLevel = 0;
+										bool bHaveGroupCmd = false;
+
+										GetLightStatus(Type, SubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+
+										for (int i = 0; i <= maxDimLevel; i++)
+										{
+											if (i != 0)
+											{
+												ss << ",";
+											}
+											ss << (int)float((100.0f / float(maxDimLevel))*i);
 										}
-										ss << i * 10;
 									}
 									dimmerLevels = ss.str();
 								}
@@ -3401,6 +3756,7 @@ namespace http {
 							case pTypeChime:
 							case pTypeThermostat2:
 							case pTypeThermostat3:
+							case pTypeThermostat4:
 							case pTypeRemote:
 							case pTypeGeneralSwitch:
 							case pTypeHomeConfort:
@@ -3504,7 +3860,10 @@ namespace http {
 			else if (cparam == "addcamactivedevice")
 			{
 				if (session.rights < 2)
-					return;//Only admin user allowed
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only admin user allowed
+				}
 
 				std::string idx = request::findValue(&req, "idx");
 				std::string activeidx = request::findValue(&req, "activeidx");
@@ -3552,7 +3911,10 @@ namespace http {
 			else if (cparam == "deleteamactivedevice")
 			{
 				if (session.rights < 2)
-					return;//Only admin user allowed
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only admin user allowed
+				}
 
 				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
@@ -3565,7 +3927,10 @@ namespace http {
 			else if (cparam == "deleteallactivecamdevices")
 			{
 				if (session.rights < 2)
-					return;//Only admin user allowed
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only admin user allowed
+				}
 
 				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
@@ -3578,14 +3943,17 @@ namespace http {
 			else if (cparam == "testnotification")
 			{
 				if (session.rights < 2)
-					return;//Only admin user allowed
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only admin user allowed
+				}
 
 				std::string notification_Title = "Domoticz test";
 				std::string notification_Message = "Domoticz test message!";
 				std::string subsystem = request::findValue(&req, "subsystem");
 
 				m_notifications.ConfigFromGetvars(req, false);
-				if (m_notifications.SendMessage(subsystem, notification_Title, notification_Message, std::string(""), false)) {
+				if (m_notifications.SendMessage(0, std::string(""), subsystem, notification_Title, notification_Message, std::string(""), 1, std::string(""), false)) {
 					root["status"] = "OK";
 				}
 				/* we need to reload the config, because the values that were set were only for testing */
@@ -3594,7 +3962,10 @@ namespace http {
 			else if (cparam == "testswitch")
 			{
 				if (session.rights < 2)
-					return;//Only admin user allowed
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only admin user allowed
+				}
 
 				std::string hwdid = request::findValue(&req, "hwdid");
 				std::string sswitchtype = request::findValue(&req, "switchtype");
@@ -3872,6 +4243,20 @@ namespace http {
 							return;
 						devid = id + sgroupcode;
 					}
+					else if (lighttype == 107)
+					{
+						//RFY2
+						dtype = pTypeRFY;
+						subtype = sTypeRFY2;
+						std::string id = request::findValue(&req, "id");
+						sunitcode = request::findValue(&req, "unitcode");
+						if (
+							(id == "") ||
+							(sunitcode == "")
+							)
+							return;
+						devid = id;
+					}
 					else if ((lighttype >= 200) && (lighttype < 300))
 					{
 						dtype = pTypeBlinds;
@@ -3950,8 +4335,19 @@ namespace http {
 						devid = id;
 						sunitcode = "0";
 					}
-					else if (lighttype == 305) {
-						//Blinds Openwebnet
+					else if (lighttype == 305)
+					{
+						//Lucci Air
+						dtype = pTypeFan;
+						subtype = sTypeLucciAir;
+						std::string id = request::findValue(&req, "id");
+						if (id.empty())
+							return;
+						devid = id;
+						sunitcode = "0";
+					}
+					else if (lighttype == 400) {
+						//Openwebnet Bus Blinds
 						dtype = pTypeGeneralSwitch;
 						subtype = sSwitchBlindsT1;
 						devid = request::findValue(&req, "id");
@@ -3962,10 +4358,47 @@ namespace http {
 							)
 							return;
 					}
-					else if (lighttype == 306) {
-						//Light Openwebnet
+					else if (lighttype == 401) {
+						//Openwebnet Bus Lights
 						dtype = pTypeGeneralSwitch;
 						subtype = sSwitchLightT1;
+						devid = request::findValue(&req, "id");
+						sunitcode = request::findValue(&req, "unitcode");
+						if (
+							(devid == "") ||
+							(sunitcode == "")
+							)
+							return;
+					}
+					else if (lighttype == 402)
+					{
+						//Openwebnet Bus Auxiliary
+						dtype = pTypeGeneralSwitch;
+						subtype = sSwitchAuxiliaryT1;
+						devid = request::findValue(&req, "id");
+						sunitcode = request::findValue(&req, "unitcode");
+						if (
+							(devid == "") ||
+							(sunitcode == "")
+							)
+							return;
+					}
+					else if (lighttype == 403) {
+						//Openwebnet Zigbee Blinds
+						dtype = pTypeGeneralSwitch;
+						subtype = sSwitchBlindsT2;
+						devid = request::findValue(&req, "id");
+						sunitcode = request::findValue(&req, "unitcode");
+						if (
+							(devid == "") ||
+							(sunitcode == "")
+							)
+							return;
+					}
+					else if (lighttype == 404) {
+						//Light Openwebnet Zigbee
+						dtype = pTypeGeneralSwitch;
+						subtype = sSwitchLightT2;
 						devid = request::findValue(&req, "id");
 						sunitcode = request::findValue(&req, "unitcode");
 						if (
@@ -4018,7 +4451,10 @@ namespace http {
 			else if (cparam == "addswitch")
 			{
 				if (session.rights < 2)
-					return;//Only admin user allowed
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only admin user allowed
+				}
 
 				std::string hwdid = request::findValue(&req, "hwdid");
 				std::string name = request::findValue(&req, "name");
@@ -4248,6 +4684,20 @@ namespace http {
 						return;
 					devid = id + sgroupcode;
 				}
+				else if (lighttype == 107)
+				{
+					//RFY2
+					dtype = pTypeRFY;
+					subtype = sTypeRFY2;
+					std::string id = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
+					if (
+						(id == "") ||
+						(sunitcode == "")
+						)
+						return;
+					devid = id;
+				}
 				else
 				{
 					if (lighttype == 100)
@@ -4306,16 +4756,6 @@ namespace http {
 							)
 							return;
 						int iUnitCode = atoi(sunitcode.c_str());
-						if (
-							(lighttype == 205) ||
-							(lighttype == 210) ||
-							(lighttype == 211)||
-							(lighttype == 212)
-							)
-						{
-							id = id.substr(0, 6);
-							sunitcode = "0";
-						}
 						sprintf(szTmp, "%d", iUnitCode);
 						sunitcode = szTmp;
 						devid = id;
@@ -4426,7 +4866,18 @@ namespace http {
 					}
 					else if (lighttype == 305)
 					{
-						//Blinds Openwebnet
+						//Lucci Air
+						dtype = pTypeFan;
+						subtype = sTypeLucciAir;
+						std::string id = request::findValue(&req, "id");
+						if (id.empty())
+							return;
+						devid = id;
+						sunitcode = "0";
+					}
+					else if (lighttype == 400)
+					{
+						//Openwebnet Bus Blinds
 						dtype = pTypeGeneralSwitch;
 						subtype = sSwitchBlindsT1;
 						devid = request::findValue(&req, "id");
@@ -4437,11 +4888,50 @@ namespace http {
 							)
 							return;
 					}
-					else if (lighttype == 306)
+					else if (lighttype == 401)
 					{
-						//Light Openwebnet
+						//Openwebnet Bus Lights
 						dtype = pTypeGeneralSwitch;
 						subtype = sSwitchLightT1;
+						devid = request::findValue(&req, "id");
+						sunitcode = request::findValue(&req, "unitcode");
+						if (
+							(devid == "") ||
+							(sunitcode == "")
+							)
+							return;
+					}
+					else if (lighttype == 402)
+					{
+					    //Openwebnet Bus Auxiliary
+					    dtype = pTypeGeneralSwitch;
+						subtype = sSwitchAuxiliaryT1;
+						devid = request::findValue(&req, "id");
+						sunitcode = request::findValue(&req, "unitcode");
+						if (
+							(devid == "") ||
+							(sunitcode == "")
+							)
+							return;
+					}
+					else if (lighttype == 403)
+					{
+						//Openwebnet Zigbee Blinds
+						dtype = pTypeGeneralSwitch;
+						subtype = sSwitchBlindsT2;
+						devid = request::findValue(&req, "id");
+						sunitcode = request::findValue(&req, "unitcode");
+						if (
+							(devid == "") ||
+							(sunitcode == "")
+							)
+							return;
+					}
+					else if (lighttype == 404)
+					{
+						//Openwebnet Zigbee Lights
+						dtype = pTypeGeneralSwitch;
+						subtype = sSwitchLightT2;
 						devid = request::findValue(&req, "id");
 						sunitcode = request::findValue(&req, "unitcode");
 						if (
@@ -4525,7 +5015,10 @@ namespace http {
 			else if (cparam == "getnotificationtypes")
 			{
 				if (session.rights < 2)
-					return;//Only admin user allowed
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only admin user allowed
+				}
 
 				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
@@ -4561,6 +5054,7 @@ namespace http {
 					(dType == pTypeChime) ||
 					(dType == pTypeThermostat2) ||
 					(dType == pTypeThermostat3) ||
+					(dType == pTypeThermostat4) ||
 					(dType == pTypeRemote) ||
 					(dType == pTypeGeneralSwitch) ||
 					(dType == pTypeHomeConfort) ||
@@ -4979,7 +5473,10 @@ namespace http {
 			else if (cparam == "addnotification")
 			{
 				if (session.rights < 2)
-					return;//Only admin user allowed
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only admin user allowed
+				}
 
 				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
@@ -5025,7 +5522,10 @@ namespace http {
 			else if (cparam == "updatenotification")
 			{
 				if (session.rights < 2)
-					return;//Only admin user allowed
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only admin user allowed
+				}
 
 				std::string idx = request::findValue(&req, "idx");
 				std::string devidx = request::findValue(&req, "devidx");
@@ -5074,7 +5574,10 @@ namespace http {
 			else if (cparam == "deletenotification")
 			{
 				if (session.rights < 2)
-					return;//Only admin user allowed
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only admin user allowed
+				}
 
 				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
@@ -5088,7 +5591,10 @@ namespace http {
 			else if (cparam == "switchdeviceorder")
 			{
 				if (session.rights < 2)
-					return;//Only admin user allowed
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only admin user allowed
+				}
 
 				std::string idx1 = request::findValue(&req, "idx1");
 				std::string idx2 = request::findValue(&req, "idx2");
@@ -5173,7 +5679,10 @@ namespace http {
 			else if (cparam == "switchsceneorder")
 			{
 				if (session.rights < 2)
-					return;//Only admin user allowed
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only admin user allowed
+				}
 
 				std::string idx1 = request::findValue(&req, "idx1");
 				std::string idx2 = request::findValue(&req, "idx2");
@@ -5217,7 +5726,10 @@ namespace http {
 			else if (cparam == "clearnotifications")
 			{
 				if (session.rights < 2)
-					return;//Only admin user allowed
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only admin user allowed
+				}
 
 				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
@@ -5231,7 +5743,10 @@ namespace http {
 			else if (cparam == "addcamera")
 			{
 				if (session.rights < 2)
-					return;//Only admin user allowed
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only admin user allowed
+				}
 
 				std::string name = request::findValue(&req, "name");
 				std::string senabled = request::findValue(&req, "enabled");
@@ -5271,7 +5786,10 @@ namespace http {
 			else if (cparam == "updatecamera")
 			{
 				if (session.rights < 2)
-					return;//Only admin user allowed
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only admin user allowed
+				}
 
 				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
@@ -5318,7 +5836,10 @@ namespace http {
 			else if (cparam == "deletecamera")
 			{
 				if (session.rights < 2)
-					return;//Only admin user allowed
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only admin user allowed
+				}
 
 				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
@@ -5332,7 +5853,10 @@ namespace http {
 			else if (cparam == "adduser")
 			{
 				if (session.rights < 2)
-					return;//Only admin user allowed
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only admin user allowed
+				}
 
 				std::string senabled = request::findValue(&req, "enabled");
 				std::string username = request::findValue(&req, "username");
@@ -5374,7 +5898,10 @@ namespace http {
 			else if (cparam == "updateuser")
 			{
 				if (session.rights < 2)
-					return;//Only admin user allowed
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only admin user allowed
+				}
 
 				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
@@ -5421,7 +5948,10 @@ namespace http {
 			else if (cparam == "deleteuser")
 			{
 				if (session.rights < 2)
-					return;//Only admin user allowed
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only admin user allowed
+				}
 
 				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
@@ -5439,7 +5969,10 @@ namespace http {
 			else if (cparam == "clearlightlog")
 			{
 				if (session.rights < 2)
-					return;//Only admin user allowed
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only admin user allowed
+				}
 
 				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
@@ -5472,6 +6005,7 @@ namespace http {
 					(dType != pTypeChime) &&
 					(dType != pTypeThermostat2) &&
 					(dType != pTypeThermostat3) &&
+					(dType != pTypeThermostat4) &&
 					(dType != pTypeRemote) &&
 					(dType != pTypeGeneralSwitch) &&
 					(dType != pTypeHomeConfort) &&
@@ -5489,7 +6023,10 @@ namespace http {
 			else if (cparam == "clearscenelog")
 			{
 				if (session.rights < 2)
-					return;//Only admin user allowed
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only admin user allowed
+				}
 
 				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
@@ -5502,7 +6039,10 @@ namespace http {
 			else if (cparam == "learnsw")
 			{
 				if (session.rights < 2)
-					return;//Only admin user allowed
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only admin user allowed
+				}
 
 				m_sql.AllowNewHardwareTimer(5);
 				m_sql.m_LastSwitchID = "";
@@ -5542,7 +6082,10 @@ namespace http {
 			else if (cparam == "makefavorite")
 			{
 				if (session.rights < 2)
-					return;//Only admin user allowed
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only admin user allowed
+				}
 
 				std::string idx = request::findValue(&req, "idx");
 				std::string sisfavorite = request::findValue(&req, "isfavorite");
@@ -5557,7 +6100,10 @@ namespace http {
 			else if (cparam == "makescenefavorite")
 			{
 				if (session.rights < 2)
-					return;//Only admin user allowed
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only admin user allowed
+				}
 
 				std::string idx = request::findValue(&req, "idx");
 				std::string sisfavorite = request::findValue(&req, "isfavorite");
@@ -5669,7 +6215,10 @@ namespace http {
 			else if (cparam == "switchlight")
 			{
 				if (session.rights < 1)
-					return;//Only user/admin allowed
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only user/admin allowed
+				}
 				std::string Username = "Admin";
 				if (!session.username.empty())
 					Username = session.username;
@@ -5754,7 +6303,10 @@ namespace http {
 			else if (cparam == "switchscene")
 			{
 				if (session.rights < 1)
-					return;//Only user/admin allowed
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only user/admin allowed
+				}
 				std::string Username = "Admin";
 				if (!session.username.empty())
 					Username = session.username;
@@ -6164,7 +6716,10 @@ namespace http {
 			else if (cparam == "addfloorplan")
 			{
 				if (session.rights < 2)
-					return;//Only admin user allowed
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only admin user allowed
+				}
 
 				std::string name = request::findValue(&req, "name");
 				std::string imagefile = request::findValue(&req, "image");
@@ -6189,7 +6744,10 @@ namespace http {
 			else if (cparam == "updatefloorplan")
 			{
 				if (session.rights < 2)
-					return;//Only admin user allowed
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only admin user allowed
+				}
 
 				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
@@ -6218,7 +6776,10 @@ namespace http {
 			else if (cparam == "deletefloorplan")
 			{
 				if (session.rights < 2)
-					return;//Only admin user allowed
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only admin user allowed
+				}
 
 				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
@@ -6244,7 +6805,10 @@ namespace http {
 			else if (cparam == "changefloorplanorder")
 			{
 				if (session.rights < 2)
-					return;//Only admin user allowed
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only admin user allowed
+				}
 
 				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
@@ -6295,7 +6859,10 @@ namespace http {
 			else if (cparam == "getunusedfloorplanplans")
 			{
 				if (session.rights < 2)
-					return;//Only admin user allowed
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only admin user allowed
+				}
 
 				root["status"] = "OK";
 				root["title"] = "GetUnusedFloorplanPlans";
@@ -6344,7 +6911,10 @@ namespace http {
 			else if (cparam == "addfloorplanplan")
 			{
 				if (session.rights < 2)
-					return;//Only admin user allowed
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only admin user allowed
+				}
 
 				std::string idx = request::findValue(&req, "idx");
 				std::string planidx = request::findValue(&req, "planidx");
@@ -6366,7 +6936,10 @@ namespace http {
 			else if (cparam == "updatefloorplanplan")
 			{
 				if (session.rights < 2)
-					return;//Only admin user allowed
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only admin user allowed
+				}
 
 				std::string planidx = request::findValue(&req, "planidx");
 				std::string planarea = request::findValue(&req, "area");
@@ -6385,7 +6958,10 @@ namespace http {
 			else if (cparam == "deletefloorplanplan")
 			{
 				if (session.rights < 2)
-					return;//Only admin user allowed
+				{
+					session.reply_status = reply::forbidden;
+					return; //Only admin user allowed
+				}
 
 				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
@@ -6558,8 +7134,8 @@ namespace http {
 
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string Latitude = request::findValue(&req, "Latitude");
@@ -6769,6 +7345,10 @@ namespace http {
 				m_mainworker.m_eventsystem.StartEventSystem();
 			}
 
+			std::string LogEventScriptTrigger = request::findValue(&req, "LogEventScriptTrigger");
+			m_sql.m_bLogEventScriptTrigger = (LogEventScriptTrigger == "on" ? 1 : 0);
+			m_sql.UpdatePreferencesVar("LogEventScriptTrigger", m_sql.m_bLogEventScriptTrigger);
+
 			std::string EnableWidgetOrdering = request::findValue(&req, "AllowWidgetOrdering");
 			int iEnableAllowWidgetOrdering = (EnableWidgetOrdering == "on" ? 1 : 0);
 			m_sql.UpdatePreferencesVar("AllowWidgetOrdering", iEnableAllowWidgetOrdering);
@@ -6873,8 +7453,8 @@ namespace http {
 			redirect_uri = "/index.html";
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string dbasefile = request::findValue(&req, "dbasefile");
@@ -6906,7 +7486,7 @@ namespace http {
 			const bool bDisplayHidden,
 			const bool bDisplayDisabled,
 			const bool bFetchFavorites,
-			const time_t LastUpdate, 
+			const time_t LastUpdate,
 			const std::string &username,
 			const std::string &hardwareid)
 		{
@@ -6938,7 +7518,18 @@ namespace http {
 					tlist.Name = sd[1];
 					tlist.Enabled = (atoi(sd[2].c_str()) != 0);
 					tlist.HardwareTypeVal = atoi(sd[3].c_str());
+#ifndef USE_PYTHON_PLUGINS
 					tlist.HardwareType = Hardware_Type_Desc(tlist.HardwareTypeVal);
+#else
+					if (tlist.HardwareTypeVal != HTYPE_PythonPlugin)
+					{
+						tlist.HardwareType = Hardware_Type_Desc(tlist.HardwareTypeVal);
+					}
+					else
+					{
+						tlist.HardwareType = PluginHardwareDesc(ID);
+					}
+#endif
 					_hardwareNames[ID] = tlist;
 				}
 			}
@@ -7184,7 +7775,7 @@ namespace http {
 						if (result.size() > 0)
 						{
 							std::string pID = result[0][0];
-							result = m_sql.safe_query("SELECT DeviceRowID FROM DeviceToPlansMap WHERE (PlanID=='%q')",
+							result = m_sql.safe_query("SELECT DeviceRowID FROM DeviceToPlansMap WHERE (PlanID=='%q') AND (DevSceneType==0)",
 								pID.c_str());
 							if (result.size() > 0)
 							{
@@ -7299,7 +7890,7 @@ namespace http {
 						if (result.size() > 0)
 						{
 							std::string pID = result[0][0];
-							result = m_sql.safe_query("SELECT DeviceRowID FROM DeviceToPlansMap WHERE (PlanID=='%q')",
+							result = m_sql.safe_query("SELECT DeviceRowID FROM DeviceToPlansMap WHERE (PlanID=='%q')  AND (DevSceneType==0)",
 								pID.c_str());
 							if (result.size() > 0)
 							{
@@ -7448,6 +8039,7 @@ namespace http {
 								(dType != pTypeChime) &&
 								(dType != pTypeThermostat2) &&
 								(dType != pTypeThermostat3) &&
+								(dType != pTypeThermostat4) &&
 								(dType != pTypeRemote) &&
 								(dType != pTypeGeneralSwitch) &&
 								(dType != pTypeHomeConfort) &&
@@ -7713,6 +8305,7 @@ namespace http {
 						(dType == pTypeChime) ||
 						(dType == pTypeThermostat2) ||
 						(dType == pTypeThermostat3) ||
+						(dType == pTypeThermostat4) ||
 						(dType == pTypeRemote)||
 						(dType == pTypeGeneralSwitch) ||
 						(dType == pTypeHomeConfort) ||
@@ -8724,105 +9317,117 @@ namespace http {
 						std::vector<std::string> splitresults;
 						StringSplit(sValue, ";", splitresults);
 						if (splitresults.size() != 6)
-							continue; //impossible
-
-						float EnergyDivider = 1000.0f;
-						int tValue;
-						if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
 						{
-							EnergyDivider = float(tValue);
-						}
-
-						unsigned long long powerusage1;
-						unsigned long long powerusage2;
-						unsigned long long powerdeliv1;
-						unsigned long long powerdeliv2;
-						unsigned long long usagecurrent;
-						unsigned long long delivcurrent;
-
-						std::stringstream s_powerusage1(splitresults[0]);
-						std::stringstream s_powerusage2(splitresults[1]);
-						std::stringstream s_powerdeliv1(splitresults[2]);
-						std::stringstream s_powerdeliv2(splitresults[3]);
-						std::stringstream s_usagecurrent(splitresults[4]);
-						std::stringstream s_delivcurrent(splitresults[5]);
-
-						s_powerusage1 >> powerusage1;
-						s_powerusage2 >> powerusage2;
-						s_powerdeliv1 >> powerdeliv1;
-						s_powerdeliv2 >> powerdeliv2;
-						s_usagecurrent >> usagecurrent;
-						s_delivcurrent >> delivcurrent;
-
-						unsigned long long powerusage = powerusage1 + powerusage2;
-						unsigned long long powerdeliv = powerdeliv1 + powerdeliv2;
-						if (powerdeliv < 2)
-							powerdeliv = 0;
-
-						float musage = 0;
-
-						root["result"][ii]["SwitchTypeVal"] = MTYPE_ENERGY;
-						musage = float(powerusage) / EnergyDivider;
-						sprintf(szTmp, "%.03f", musage);
-						root["result"][ii]["Counter"] = szTmp;
-						musage = float(powerdeliv) / EnergyDivider;
-						sprintf(szTmp, "%.03f", musage);
-						root["result"][ii]["CounterDeliv"] = szTmp;
-
-						if (bHaveTimeout)
-						{
-							usagecurrent = 0;
-							delivcurrent = 0;
-						}
-						sprintf(szTmp, "%llu Watt", usagecurrent);
-						root["result"][ii]["Usage"] = szTmp;
-						sprintf(szTmp, "%llu Watt", delivcurrent);
-						root["result"][ii]["UsageDeliv"] = szTmp;
-						root["result"][ii]["Data"] = sValue;
-						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-
-						//get value of today
-						time_t now = mytime(NULL);
-						struct tm ltime;
-						localtime_r(&now, &ltime);
-						char szDate[40];
-						sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
-
-						std::vector<std::vector<std::string> > result2;
-						strcpy(szTmp, "0");
-						result2 = m_sql.safe_query("SELECT MIN(Value1), MIN(Value2), MIN(Value5), MIN(Value6) FROM MultiMeter WHERE (DeviceRowID='%q' AND Date>='%q')",
-							sd[0].c_str(), szDate);
-						if (result2.size() > 0)
-						{
-							std::vector<std::string> sd2 = result2[0];
-
-							unsigned long long total_min_usage_1, total_min_usage_2, total_real_usage;
-							unsigned long long total_min_deliv_1, total_min_deliv_2, total_real_deliv;
-
-							std::stringstream s_str1(sd2[0]);
-							s_str1 >> total_min_usage_1;
-							std::stringstream s_str2(sd2[1]);
-							s_str2 >> total_min_deliv_1;
-							std::stringstream s_str3(sd2[2]);
-							s_str3 >> total_min_usage_2;
-							std::stringstream s_str4(sd2[3]);
-							s_str4 >> total_min_deliv_2;
-
-							total_real_usage = powerusage - (total_min_usage_1 + total_min_usage_2);
-							total_real_deliv = powerdeliv - (total_min_deliv_1 + total_min_deliv_2);
-
-							musage = float(total_real_usage) / EnergyDivider;
-							sprintf(szTmp, "%.03f kWh", musage);
-							root["result"][ii]["CounterToday"] = szTmp;
-							musage = float(total_real_deliv) / EnergyDivider;
-							sprintf(szTmp, "%.03f kWh", musage);
-							root["result"][ii]["CounterDelivToday"] = szTmp;
+							root["result"][ii]["SwitchTypeVal"] = MTYPE_ENERGY;
+							root["result"][ii]["Counter"] = "0";
+							root["result"][ii]["CounterDeliv"] = "0";
+							root["result"][ii]["Usage"] = "Invalid";
+							root["result"][ii]["UsageDeliv"] = "Invalid";
+							root["result"][ii]["Data"] = "Invalid!: " + sValue;
+							root["result"][ii]["HaveTimeout"] = true;
+							root["result"][ii]["CounterToday"] = "Invalid";
+							root["result"][ii]["CounterDelivToday"] = "Invalid";
 						}
 						else
 						{
-							sprintf(szTmp, "%.03f kWh", 0.0f);
-							root["result"][ii]["CounterToday"] = szTmp;
-							root["result"][ii]["CounterDelivToday"] = szTmp;
+							float EnergyDivider = 1000.0f;
+							int tValue;
+							if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
+							{
+								EnergyDivider = float(tValue);
+							}
+
+							unsigned long long powerusage1;
+							unsigned long long powerusage2;
+							unsigned long long powerdeliv1;
+							unsigned long long powerdeliv2;
+							unsigned long long usagecurrent;
+							unsigned long long delivcurrent;
+
+							std::stringstream s_powerusage1(splitresults[0]);
+							std::stringstream s_powerusage2(splitresults[1]);
+							std::stringstream s_powerdeliv1(splitresults[2]);
+							std::stringstream s_powerdeliv2(splitresults[3]);
+							std::stringstream s_usagecurrent(splitresults[4]);
+							std::stringstream s_delivcurrent(splitresults[5]);
+
+							s_powerusage1 >> powerusage1;
+							s_powerusage2 >> powerusage2;
+							s_powerdeliv1 >> powerdeliv1;
+							s_powerdeliv2 >> powerdeliv2;
+							s_usagecurrent >> usagecurrent;
+							s_delivcurrent >> delivcurrent;
+
+							unsigned long long powerusage = powerusage1 + powerusage2;
+							unsigned long long powerdeliv = powerdeliv1 + powerdeliv2;
+							if (powerdeliv < 2)
+								powerdeliv = 0;
+
+							float musage = 0;
+
+							root["result"][ii]["SwitchTypeVal"] = MTYPE_ENERGY;
+							musage = float(powerusage) / EnergyDivider;
+							sprintf(szTmp, "%.03f", musage);
+							root["result"][ii]["Counter"] = szTmp;
+							musage = float(powerdeliv) / EnergyDivider;
+							sprintf(szTmp, "%.03f", musage);
+							root["result"][ii]["CounterDeliv"] = szTmp;
+
+							if (bHaveTimeout)
+							{
+								usagecurrent = 0;
+								delivcurrent = 0;
+							}
+							sprintf(szTmp, "%llu Watt", usagecurrent);
+							root["result"][ii]["Usage"] = szTmp;
+							sprintf(szTmp, "%llu Watt", delivcurrent);
+							root["result"][ii]["UsageDeliv"] = szTmp;
+							root["result"][ii]["Data"] = sValue;
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+
+							//get value of today
+							time_t now = mytime(NULL);
+							struct tm ltime;
+							localtime_r(&now, &ltime);
+							char szDate[40];
+							sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
+
+							std::vector<std::vector<std::string> > result2;
+							strcpy(szTmp, "0");
+							result2 = m_sql.safe_query("SELECT MIN(Value1), MIN(Value2), MIN(Value5), MIN(Value6) FROM MultiMeter WHERE (DeviceRowID='%q' AND Date>='%q')",
+								sd[0].c_str(), szDate);
+							if (result2.size() > 0)
+							{
+								std::vector<std::string> sd2 = result2[0];
+
+								unsigned long long total_min_usage_1, total_min_usage_2, total_real_usage;
+								unsigned long long total_min_deliv_1, total_min_deliv_2, total_real_deliv;
+
+								std::stringstream s_str1(sd2[0]);
+								s_str1 >> total_min_usage_1;
+								std::stringstream s_str2(sd2[1]);
+								s_str2 >> total_min_deliv_1;
+								std::stringstream s_str3(sd2[2]);
+								s_str3 >> total_min_usage_2;
+								std::stringstream s_str4(sd2[3]);
+								s_str4 >> total_min_deliv_2;
+
+								total_real_usage = powerusage - (total_min_usage_1 + total_min_usage_2);
+								total_real_deliv = powerdeliv - (total_min_deliv_1 + total_min_deliv_2);
+
+								musage = float(total_real_usage) / EnergyDivider;
+								sprintf(szTmp, "%.03f kWh", musage);
+								root["result"][ii]["CounterToday"] = szTmp;
+								musage = float(total_real_deliv) / EnergyDivider;
+								sprintf(szTmp, "%.03f kWh", musage);
+								root["result"][ii]["CounterDelivToday"] = szTmp;
+							}
+							else
+							{
+								sprintf(szTmp, "%.03f kWh", 0.0f);
+								root["result"][ii]["CounterToday"] = szTmp;
+								root["result"][ii]["CounterDelivToday"] = szTmp;
+							}
 						}
 					}
 					else if (dType == pTypeP1Gas)
@@ -9495,7 +10100,10 @@ namespace http {
 		void CWebServer::GetDatabaseBackup(WebEmSession & session, const request& req, reply & rep)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 #ifdef WIN32
 			std::string OutputFileName = szUserDataFolder + "backup.db";
 #else
@@ -9510,7 +10118,10 @@ namespace http {
 		void CWebServer::RType_DeleteDevice(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 
 			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
@@ -9525,7 +10136,10 @@ namespace http {
 		void CWebServer::RType_AddScene(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 
 			std::string name = request::findValue(&req, "name");
 			if (name == "")
@@ -9559,7 +10173,10 @@ namespace http {
 		void CWebServer::RType_DeleteScene(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 
 			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
@@ -9575,7 +10192,10 @@ namespace http {
 		void CWebServer::RType_UpdateScene(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 
 			std::string idx = request::findValue(&req, "idx");
 			std::string name = request::findValue(&req, "name");
@@ -9909,12 +10529,23 @@ namespace http {
 					root["result"][ii]["Username"] = sd[7];
 					root["result"][ii]["Password"] = sd[8];
 					root["result"][ii]["Extra"] = sd[9];
-					root["result"][ii]["Mode1"] = atoi(sd[10].c_str());
-					root["result"][ii]["Mode2"] = atoi(sd[11].c_str());
-					root["result"][ii]["Mode3"] = atoi(sd[12].c_str());
-					root["result"][ii]["Mode4"] = atoi(sd[13].c_str());
-					root["result"][ii]["Mode5"] = atoi(sd[14].c_str());
-					root["result"][ii]["Mode6"] = atoi(sd[15].c_str());
+					
+					if (hType == HTYPE_PythonPlugin) {
+						root["result"][ii]["Mode1"] = sd[10];  // Plugins can have non-numeric values in the Mode fields
+						root["result"][ii]["Mode2"] = sd[11];
+						root["result"][ii]["Mode3"] = sd[12];
+						root["result"][ii]["Mode4"] = sd[13];
+						root["result"][ii]["Mode5"] = sd[14];
+						root["result"][ii]["Mode6"] = sd[15];
+					}
+					else {
+						root["result"][ii]["Mode1"] = atoi(sd[10].c_str());
+						root["result"][ii]["Mode2"] = atoi(sd[11].c_str());
+						root["result"][ii]["Mode3"] = atoi(sd[12].c_str());
+						root["result"][ii]["Mode4"] = atoi(sd[13].c_str());
+						root["result"][ii]["Mode5"] = atoi(sd[14].c_str());
+						root["result"][ii]["Mode6"] = atoi(sd[15].c_str());
+					}
 					root["result"][ii]["DataTimeout"] = atoi(sd[16].c_str());
 
 					//Special case for openzwave (status for nodes queried)
@@ -10076,7 +10707,10 @@ namespace http {
 		void CWebServer::Cmd_GetSceneActivations(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 
 			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
@@ -10148,7 +10782,10 @@ namespace http {
 		void CWebServer::Cmd_AddSceneCode(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 
 			std::string sceneidx = request::findValue(&req, "sceneidx");
 			std::string idx = request::findValue(&req, "idx");
@@ -10212,7 +10849,10 @@ namespace http {
 		void CWebServer::Cmd_RemoveSceneCode(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 
 			std::string sceneidx = request::findValue(&req, "sceneidx");
 			std::string idx = request::findValue(&req, "idx");
@@ -10286,7 +10926,10 @@ namespace http {
 		void CWebServer::Cmd_ClearSceneCodes(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 
 			std::string sceneidx = request::findValue(&req, "sceneidx");
 			if (sceneidx == "")
@@ -10334,32 +10977,6 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_GetDevicesListOnOff(WebEmSession & session, const request& req, Json::Value &root)
-		{
-			root["status"] = "OK";
-			root["title"] = "GetDevicesListOnOff";
-			int ii = 0;
-			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT ID, Name, Type, SubType FROM DeviceStatus WHERE (Used == 1) ORDER BY Name");
-			if (result.size() > 0)
-			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
-				for (itt = result.begin(); itt != result.end(); ++itt)
-				{
-					std::vector<std::string> sd = *itt;
-					int dType = atoi(sd[2].c_str());
-					int dSubType = atoi(sd[3].c_str());
-					std::string sOptions = RFX_Type_SubType_Values(dType, dSubType);
-					if (sOptions == "Status")
-					{
-						root["result"][ii]["name"] = sd[1];
-						root["result"][ii]["value"] = sd[0];
-						ii++;
-					}
-				}
-			}
-		}
-
 		void CWebServer::Post_UploadCustomIcon(WebEmSession & session, const request& req, reply & rep)
 		{
 			Json::Value root;
@@ -10368,7 +10985,10 @@ namespace http {
 			root["error"] = "Invalid";
 			//Only admin user allowed
 			if (session.rights != 2)
-				return;
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 			std::string zipfile = request::findValue(&req, "file");
 			if (zipfile != "")
 			{
@@ -10420,7 +11040,10 @@ namespace http {
 		void CWebServer::Cmd_DeleteCustomIcon(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 
 			std::string sidx = request::findValue(&req, "idx");
 			if (sidx == "")
@@ -10452,7 +11075,10 @@ namespace http {
 		void CWebServer::Cmd_UpdateCustomIcon(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 
 			std::string sidx = request::findValue(&req, "idx");
 			std::string sname = request::findValue(&req, "name");
@@ -10475,7 +11101,10 @@ namespace http {
 		void CWebServer::Cmd_RenameDevice(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 
 			std::string sidx = request::findValue(&req, "idx");
 			std::string sname = request::findValue(&req, "name");
@@ -10494,7 +11123,10 @@ namespace http {
 		void CWebServer::Cmd_RenameScene(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 
 			std::string sidx = request::findValue(&req, "idx");
 			std::string sname = request::findValue(&req, "name");
@@ -10513,7 +11145,10 @@ namespace http {
 		void CWebServer::Cmd_SetUnused(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 
 			std::string sidx = request::findValue(&req, "idx");
 			if (sidx.empty())
@@ -10538,7 +11173,10 @@ namespace http {
 		void CWebServer::Cmd_ClearShortLog(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 			root["status"] = "OK";
 			root["title"] = "ClearShortLog";
 
@@ -10552,7 +11190,10 @@ namespace http {
 		void CWebServer::Cmd_VacuumDatabase(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 			root["status"] = "OK";
 			root["title"] = "VacuumDatabase";
 
@@ -10595,7 +11236,10 @@ namespace http {
 		void CWebServer::Cmd_DeleteMobileDevice(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 			std::string suuid = request::findValue(&req, "uuid");
 			if (suuid.empty())
 				return;
@@ -10812,7 +11456,10 @@ namespace http {
 		void CWebServer::RType_SetUsed(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 
 			std::string idx = request::findValue(&req, "idx");
 			std::string deviceid = request::findValue(&req, "deviceid");
@@ -11342,6 +11989,10 @@ namespace http {
 				{
 					root["DisableEventScriptSystem"] = nValue;
 				}
+				else if (Key == "LogEventScriptTrigger")
+				{
+					root["LogEventScriptTrigger"] = nValue;
+				}
 				else if (Key == "(1WireSensorPollPeriod")
 				{
 					root["1WireSensorPollPeriod"] = nValue;
@@ -11469,6 +12120,7 @@ namespace http {
 				(dType != pTypeChime) &&
 				(dType != pTypeThermostat2) &&
 				(dType != pTypeThermostat3) &&
+				(dType != pTypeThermostat4) &&
 				(dType != pTypeRemote)&&
 				(dType != pTypeGeneralSwitch) &&
 				(dType != pTypeHomeConfort) &&
@@ -12597,7 +13249,7 @@ namespace http {
 
 											float TotalValue = float(actValue - ulFirstValue);
 
-											if (TotalValue != 0)
+											//if (TotalValue != 0)
 											{
 												switch (metertype)
 												{
@@ -12654,7 +13306,7 @@ namespace http {
 										root["result"][ii]["d"] = sd[1].substr(0, 16);
 
 										float TotalValue = float(curValue);
-										if (TotalValue != 0)
+										//if (TotalValue != 0)
 										{
 											switch (metertype)
 											{
@@ -12693,7 +13345,7 @@ namespace http {
 
 							float TotalValue = float(ulTotalValue);
 
-							if (TotalValue != 0)
+							//if (TotalValue != 0)
 							{
 								switch (metertype)
 								{
@@ -12922,10 +13574,13 @@ namespace http {
 							if (fdirection >= 360)
 								fdirection = 0;
 							int direction = int(fdirection);
-							float speed = static_cast<float>(atof(sd[1].c_str())) * m_sql.m_windscale;
+							float speedOrg = static_cast<float>(atof(sd[1].c_str()));
 							float gustOrg = static_cast<float>(atof(sd[2].c_str()));
+							if ((gustOrg == 0) && (speedOrg != 0))
+								gustOrg = speedOrg;
 							if (gustOrg==0)
 								continue; //no direction if wind is still
+							float speed = speedOrg* m_sql.m_windscale;
 							float gust = gustOrg * m_sql.m_windscale;
 							int bucket = int(fdirection / 22.5f);
 

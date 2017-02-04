@@ -530,6 +530,24 @@ $(document).ready(function() {
 			</tr>
 		</table>
 	</div>
+	<div id="lucci_popup" class="ui-popup ui-body-b ui-overlay-shadow ui-corner-all pop">
+		<div class="ui-close" onclick="CloseLucciPopup()"></div>
+		<table class="display" border="0" cellpadding="0" cellspacing="0">
+			<tr>
+				<td>
+					<center>
+					<br><br>
+					<button class="btn btn-info" onclick="LucciSendCommand('hi')">Hi</button><br>
+					<button class="btn btn-info" onclick="LucciSendCommand('med')">Med</button><br>
+					<button class="btn btn-info" onclick="LucciSendCommand('low')">Low</button><br>
+					<button class="btn btn-info" onclick="LucciSendCommand('off')">Off</button><br>
+					<button data-i18n="Light" class="btn btn-info" onclick="LucciSendCommand('light')">Light</button><br>
+					</center>
+					<br>
+				</td>
+			</tr>
+		</table>
+	</div>
 	<div id="globaldaylog" style="display:none;">
 	  <h2 data-i18n="Day">Day</h2>
 	  <div id="globaldaygraph" style="height: 300px;"></div>
@@ -1630,6 +1648,7 @@ $(document).ready(function() {
 												<ul class="dropdown-menu pull-right">
 													<li ng-class="{'current_page_item':getClass('/Roomplan')}" id="mRoomplan"><a id="cRoomplan" href="#Roomplan"> <span data-i18n="Roomplan">Roomplan</span></a></li>
 													<li ng-class="{'current_page_item':getClass('/Floorplanedit')}" id="mFloorplan"><a id="cFloorplan" href="#Floorplanedit"> <span data-i18n="Floorplan">Floorplan</span></a></li>
+													<li ng-class="{'current_page_item':getClass('/Timerplan')}" id="mTimerplan"><a id="cTimerplan" href="#Timerplan"> <span data-i18n="Timerplan">Timerplan</span></a></li>
 												</ul>
 											</li>
 											<li ng-class="{'current_page_item':getClass('/UserVariables')}" id="mUserVariables"><a id="cUserVariables" href="#UserVariables"><img src="images/variables.png"> <span data-i18n="User variables">User variables</span></a></li>

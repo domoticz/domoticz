@@ -26,7 +26,15 @@ CNotificationHTTP::~CNotificationHTTP()
 {
 }
 
-bool CNotificationHTTP::SendMessageImplementation(const std::string &Subject, const std::string &Text, const std::string &ExtraData, const int Priority, const std::string &Sound, const bool bFromNotification)
+bool CNotificationHTTP::SendMessageImplementation(
+	const uint64_t Idx,
+	const std::string &Name,
+	const std::string &Subject,
+	const std::string &Text,
+	const std::string &ExtraData,
+	const int Priority,
+	const std::string &Sound,
+	const bool bFromNotification)
 {
 	std::string destURL = _HTTPURL;
 	bool bSuccess = false;
@@ -108,7 +116,7 @@ bool CNotificationHTTP::SendMessageImplementation(const std::string &Subject, co
 		}
 		if (file_exist(scriptname.c_str()))
 		{
-			m_sql.AddTaskItem(_tTaskItem::ExecuteScript(1, scriptname, scriptparams));
+			m_sql.AddTaskItem(_tTaskItem::ExecuteScript(0.2f, scriptname, scriptparams));
 			bSuccess = true;
 		}
 	}

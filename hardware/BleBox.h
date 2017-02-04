@@ -31,6 +31,7 @@ public:
 	void RemoveAllNodes();
 	void SetSettings(const int pollIntervalsec);
 	void Restart();
+	void UpdateFirmware();
 
 private:
 	volatile bool m_stoprequested;
