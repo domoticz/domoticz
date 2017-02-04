@@ -105,7 +105,7 @@ bool CRazberry::GetInitialDevices()
 
 	Json::Reader jReader;
 	bool ret=jReader.parse(sResult,root);
-	if (!ret)
+	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR,"Razberry: Invalid data received!");
 		return 0;

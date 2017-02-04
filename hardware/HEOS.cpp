@@ -47,8 +47,7 @@ void CHEOS::ParseLine()
 		if (DEBUG_LOGGING) _log.Log(LOG_NORM, "DENON by HEOS: Handling message: '%s'.", sLine.c_str());
 		
 		bool bRetVal = jReader.parse(sLine, root);
-		
-		if (!bRetVal)
+		if ((!bRetVal) || (!root.isObject()))
 		{
 			_log.Log(LOG_ERROR, "DENON by HEOS: PARSE ERROR: '%s'", sLine.c_str());
 		}

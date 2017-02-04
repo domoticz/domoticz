@@ -72,7 +72,8 @@ int CLuaHandler::l_domoticz_applyJsonPath(lua_State* lua_state)
 
 			Json::Value root;
 			Json::Reader jReader;
-			if (!jReader.parse(buffer, root))
+			bool bRet = jReader.parse(buffer, root);
+			if (!bRet)
 			{
 				_log.Log(LOG_ERROR, "CLuaHandler (applyJsonPath from LUA) : Invalid Json data received");
 				return 0;

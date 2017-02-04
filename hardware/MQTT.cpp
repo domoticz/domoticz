@@ -134,11 +134,9 @@ void MQTT::on_message(const struct mosquitto_message *message)
 	std::string szCommand = "udevice";
 	std::vector<std::vector<std::string> > result;
 	uint64_t idx = 0;
-
 	bool ret = jReader.parse(qMessage, root);
-	if (!ret)
+	if ((!ret) || (!root.isObject()))
 		goto mqttinvaliddata;
-
 	try
 	{
 		if (!root["command"].empty())

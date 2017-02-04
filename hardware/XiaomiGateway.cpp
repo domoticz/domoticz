@@ -642,7 +642,8 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 		Json::Reader jReader;
 		bool showmessage = true;
 		bool ret = jReader.parse(data_, root);
-		if (!ret) {
+		if ((!ret) || (!root.isObject()))
+		{
 			_log.Log(LOG_ERROR, "XiaomiGateway: invalid data received!");
 			return;
 		}
@@ -655,7 +656,8 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 
 				Json::Value root2;
 				ret = jReader.parse(data.c_str(), root2);
-				if (ret) {
+				if ((ret) || (!root2.isObject())) 
+				{
 					_eSwitchType type = STYPE_END;
 					std::string name = "Xiaomi Switch";
 					if (model == "motion") {
@@ -849,7 +851,8 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 			else if (cmd == "get_id_list_ack") {
 				Json::Value root2;
 				ret = jReader.parse(data.c_str(), root2);
-				if (ret) {
+				if ((ret) || (!root2.isObject()))
+				{
 					for (int i = 0; i < (int)root2.size(); i++) {
 						std::string message = "{\"cmd\" : \"read\",\"sid\":\"";
 						message.append(root2[i].asString().c_str());
