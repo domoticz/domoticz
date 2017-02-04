@@ -2977,7 +2977,8 @@ define(['app'], function (app) {
                                 "0": item.idx,
                                 "1": item.Name,
                                 "2": item.IP,
-								"3": item.Type
+								"3": item.Type,
+								"4": item.Uptime
                             });
                         });
                     }

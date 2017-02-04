@@ -624,7 +624,12 @@ namespace http {
 					root["result"][ii]["Name"] = sd[1];
 					root["result"][ii]["IP"] = ip;
 					root["result"][ii]["Type"] = DevicesType[atoi(sd[3].c_str())].name;
-					//TODO: read more paramaters from devices (last visible, version fw, etc)
+
+					BleBox *pHardware = reinterpret_cast<BleBox*>(pBaseHardware);
+					std::string uptime = pHardware->GetUptime(ip);
+					root["result"][ii]["Uptime"] = uptime;
+					//TODO: read more paramaters from devices (version fw, etc)
+
 					ii++;
 				}
 			}
@@ -875,6 +880,31 @@ std::string BleBox::IdentifyDevice(const std::string &IPAddress)
 	}
 	return result;
 }
+
+std::string BleBox::GetUptime(const std::string &IPAddress)
+{
+	Json::Value root = SendCommand(IPAddress, "/api/device/uptime");
+	if (root == "")
+		return "unknown";
+
+	if (root["uptime"].empty() == true)
+		return "unknown";
+
+	std::string result;
+
+	unsigned __int64 msec = root["uptime"].asUInt64();
+	char timestring[32] = "";
+
+	__int64 total_minutes = msec / (1000 * 60);
+	int days = total_minutes / (24 * 60);
+	int hours = total_minutes / 60 - days * 24;
+	int mins = total_minutes - days * 24 * 60 - hours * 60;   //sec / 60 - day * (24 * 60) - hour * 60;
+	
+	sprintf(timestring, "%d:%02d:%02d", days, hours, mins);
+
+	return timestring;
+}
+
 
 void BleBox::AddNode(const std::string &name, const std::string &IPAddress)
 {
