@@ -16,6 +16,7 @@ Version 3.xxxx (January xth 2017)
 - Implemented: Netatmo Home Coach support
 - Implemented: Notification for Dummy Soil/Moisture sensor
 - Implemented: Notification for Alert Sensor via udevice JSON call
+- Implemented: OpenWeatherMap, now supports coordinates and city locations
 - Implemented: Option to replace an Meter device
 - Implemented: RFXtrx Lucci Fan implemented
 - Implemented: RFXtrx RFY2 protocol implemented
