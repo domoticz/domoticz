@@ -280,11 +280,12 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 	if (pSwitch->type == pTypeGeneralSwitch) {
 		std::string switchcmnd = GetGeneralRFLinkFromInt(rfswitchcommands, pSwitch->cmnd);
 		if (pSwitch->cmnd != gswitch_sStop) {
-			if ((m_SwitchType == STYPE_VenetianBlindsEU) || (m_SwitchType == STYPE_Blinds)) {
+			if ((m_SwitchType == STYPE_VenetianBlindsEU) || (m_SwitchType == STYPE_Blinds) || (m_SwitchType == STYPE_BlindsInverted)) {
 				switchcmnd = GetGeneralRFLinkFromInt(rfblindcommands, pSwitch->cmnd);
 			}
 			else {
-				if ((m_SwitchType == STYPE_VenetianBlindsUS) || (m_SwitchType == STYPE_BlindsInverted)) {
+				if (m_SwitchType == STYPE_VenetianBlindsUS) {
+				//if ((m_SwitchType == STYPE_VenetianBlindsUS) || (m_SwitchType == STYPE_BlindsInverted)) {
 					switchcmnd = GetGeneralRFLinkFromInt(rfblindcommands, pSwitch->cmnd);
 					if (pSwitch->cmnd == blinds_sOpen) switchcmnd = GetGeneralRFLinkFromInt(rfblindcommands, blinds_sClose);
 					else if (pSwitch->cmnd == blinds_sClose) switchcmnd = GetGeneralRFLinkFromInt(rfblindcommands, blinds_sOpen);
@@ -577,6 +578,7 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 	if (!bHideDebugLog)
 		_log.Log(LOG_NORM, "RFLink: %s", sLine.c_str());
 #endif
+   if (m_bRFDebug == true) _log.Log(LOG_NORM, "RFLink: %s", sLine.c_str());
 
 	//std::string Sensor_ID = results[1];
 	if (results.size() >2)
@@ -1050,8 +1052,24 @@ namespace http {
 			if (pRFLINK == NULL)
 				return;
 
-			_log.Log(LOG_STATUS, "User: %s initiated a RFLink Device Create command: %s", session.username.c_str(), scommand.c_str());
+			if (scommand.substr(0, 14).compare("10;rfdebug=on;") == 0) {
+				pRFLINK->m_bRFDebug = true; // enable debug
+				_log.Log(LOG_STATUS, "User: %s initiated RFLink Enable Debug mode with command: %s", session.username.c_str(), scommand.c_str());
+				pRFLINK->WriteInt("10;RFDEBUG=ON;\n");
+				root["status"] = "OK";
+				root["title"] = "DebugON";
+				return;
+			}
+			if (scommand.substr(0, 15).compare("10;rfdebug=off;") == 0) {
+				pRFLINK->m_bRFDebug = false; // disable debug
+				_log.Log(LOG_STATUS, "User: %s initiated RFLink Disable Debug mode with command: %s", session.username.c_str(), scommand.c_str());
+				pRFLINK->WriteInt("10;RFDEBUG=OFF;\n");
+				root["status"] = "OK";
+				root["title"] = "DebugOFF";
+				return;
+			}
 
+			_log.Log(LOG_STATUS, "User: %s initiated a RFLink Device Create command: %s", session.username.c_str(), scommand.c_str());
 			scommand = "11;" + scommand;
 			#ifdef _DEBUG
 			_log.Log(LOG_STATUS, "User: %s initiated a RFLink Device Create command: %s", session.username.c_str(), scommand.c_str());

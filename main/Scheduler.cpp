@@ -542,13 +542,13 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 		nth_dow ndm(Occurence, Day, Month);
 		boost::gregorian::date d = ndm.get_date(ltime.tm_year + 1900);
 
-		constructTime(rtime,tm1,ltime.tm_year+1900,pItem->Month,d.day(),pItem->startHour,pItem->startMin,0,isdst);
+		constructTime(rtime, tm1, ltime.tm_year + 1900, pItem->Month, d.day(), pItem->startHour, pItem->startMin, 0, isdst);
 
 		if (rtime < atime) //past date/time
 		{
 			//schedule for next year
 			ltime.tm_year++;
-			constructTime(rtime,tm1,ltime.tm_year+1900,pItem->Month,d.day(),pItem->startHour,pItem->startMin,0,isdst);
+			constructTime(rtime, tm1, ltime.tm_year + 1900, pItem->Month, d.day(), pItem->startHour, pItem->startMin, 0, isdst);
 		}
 
 		rtime += roffset * 60; // add randomness

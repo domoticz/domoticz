@@ -184,7 +184,7 @@ MainWorker::MainWorker()
 	m_secure_webserver_settings.cert_file_path = m_secure_webserver_settings.certificate_chain_file_path;
 	m_secure_webserver_settings.private_key_file_path = m_secure_webserver_settings.certificate_chain_file_path;
 	m_secure_webserver_settings.private_key_pass_phrase = "";
-	m_secure_webserver_settings.options  = "default_workarounds,no_sslv2,single_dh_use";
+	m_secure_webserver_settings.options = "default_workarounds,no_sslv2,no_sslv3,no_tlsv1,no_tlsv1_1,single_dh_use";
 	m_secure_webserver_settings.tmp_dh_file_path = m_secure_webserver_settings.certificate_chain_file_path;
 	m_secure_webserver_settings.verify_peer = false;
 	m_secure_webserver_settings.verify_fail_if_no_peer_cert = false;
@@ -975,9 +975,9 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_XiaomiGateway:
 		pHardware = new XiaomiGateway(ID);
 		break;
-	case HTYPE_Arilux:	
+	case HTYPE_Arilux:
 		pHardware = new Arilux(ID);
-		break;	
+		break;
 	case HTYPE_OpenWebNetUSB:
 		pHardware = new COpenWebNetUSB(ID, SerialPort, 115200);
 		break;
@@ -5487,7 +5487,10 @@ void MainWorker::decode_LimitlessLights(const int HwdID, const _eHardwareTypes H
 	unsigned char cmnd=pLed->command;
 	unsigned char value=pLed->value;
 
-	uint64_t DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,12,-1,cmnd, procResult.DeviceName);
+	char szValueTmp[100];
+	sprintf(szValueTmp, "%d", value);
+	std::string sValue = szValueTmp;
+	uint64_t DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,12,-1,cmnd, sValue.c_str(), procResult.DeviceName);
 	if (DevRowIdx == -1)
 		return;
 	CheckSceneCode(DevRowIdx,devType,subType,cmnd,szTmp);

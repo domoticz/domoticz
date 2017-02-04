@@ -31,6 +31,7 @@ namespace Plugins {
 		bool StartPluginSystem();
 		void BuildManifest();
 		std::map<std::string, std::string>* GetManifest() { return &m_PluginXml; };
+		std::map<int, CDomoticzHardwareBase*>* GetHardware() { return &m_pPlugins; };
 		CDomoticzHardwareBase* RegisterPlugin(const int HwdID, const std::string &Name, const std::string &PluginKey);
 		void	 DeregisterPlugin(const int HwdID);
 		bool StopPluginSystem();
