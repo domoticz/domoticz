@@ -24,6 +24,7 @@ Version 3.xxxx (January xth 2017)
 - Implemented: RFXtrx Kangtai / Cotech implemented
 - Implemented: Timer Plan editor
 - Implemented: Teleinfo : Added a switch indicating the current cost slot
+- Removed: Razberry ZWave handling method. Existing users need to migrate to OpenZWave
 
 Version 3.5878 (November 10th 2016)
 - Fixes and various improvements
