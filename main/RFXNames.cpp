@@ -275,6 +275,7 @@ const char *Switch_Type_Desc(const _eSwitchType sType)
 		{ STYPE_BlindsPercentageInverted, "Blinds Percentage Inverted" },
 		{ STYPE_Media, "Media Player" },
 		{ STYPE_Selector, "Selector" },
+		{ STYPE_DoorLock, "Door Lock" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, sType);

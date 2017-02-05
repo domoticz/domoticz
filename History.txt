@@ -23,6 +23,7 @@ Version 3.xxxx (January xth 2017)
 - Implemented: RFXtrx Lucci Fan implemented
 - Implemented: RFXtrx RFY2 protocol implemented
 - Implemented: RFXtrx Kangtai / Cotech implemented
+- Implemented: Switch type 'Door Lock'
 - Implemented: Timer Plan editor
 - Implemented: Teleinfo : Added a switch indicating the current cost slot
 - Removed: Razberry ZWave handling method. Existing users need to migrate to OpenZWave

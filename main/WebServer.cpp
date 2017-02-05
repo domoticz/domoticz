@@ -8413,6 +8413,19 @@ namespace http {
 							}
 							root["result"][ii]["Status"] = lstatus;
 						}
+						else if (switchtype == STYPE_DoorLock)
+						{
+							root["result"][ii]["TypeImg"] = "door";
+							bool bIsOn = IsLightSwitchOn(lstatus);
+							root["result"][ii]["InternalState"] = (bIsOn == true) ? "Locked" : "Unlocked";
+							if (bIsOn) {
+								lstatus = "Locked";
+							}
+							else {
+								lstatus = "Unlocked";
+							}
+							root["result"][ii]["Status"] = lstatus;
+						}
 						else if (switchtype == STYPE_PushOn)
 						{
 							root["result"][ii]["TypeImg"] = "push";
