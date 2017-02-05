@@ -159,7 +159,7 @@ std::string CNotificationKodi::GetIconFile(const std::string &ExtraData)
 			case STYPE_PushOff:
 				szTypeImage = "pushon48";
 				break;
-			case STYPE_DoorLock:
+			case STYPE_DoorContact:
 				szTypeImage = "door48";
 				break;
 			case STYPE_Media:

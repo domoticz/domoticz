@@ -4,6 +4,7 @@ Version 3.xxxx (January xth 2017)
 - Fixed: JSon float/nan value, solved by upgrading JSonCPP
 - Fixed: OZW, when a value is updated and the sensor did not exists before (for example a kWh sensor), it is created (saves a restart)
 - Changed: Blinds T5 till T13 new DeviceID generation, could cause new sensors
+- Changed: Switch type 'Door Lock' renamed to 'Door Contact'
 - Changed: Minimized On/Off/Script execution time
 - Changed: Wind Direction Graph, if sensor does not supports 'Gust', the 'Speed' value is used
 - Changed: Temperature Only charts will not display the Humidity axis

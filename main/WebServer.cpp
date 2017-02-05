@@ -8400,7 +8400,7 @@ namespace http {
 							root["result"][ii]["TypeImg"] = "doorbell";
 							root["result"][ii]["Status"] = "";//"Pressed";
 						}
-						else if (switchtype == STYPE_DoorLock)
+						else if (switchtype == STYPE_DoorContact)
 						{
 							root["result"][ii]["TypeImg"] = "door";
 							bool bIsOn = IsLightSwitchOn(lstatus);

@@ -1328,7 +1328,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 				std::string lState = (light_command == light2_sOn) ? "1" : "0";
 				if (pChild->presType == S_LOCK)
 				{
-					//Door lock
+					//Door lock/contact
 					return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_LOCK_STATUS, lState, pChild->useAck, pChild->ackTimeout);
 				}
 				else if (pChild->presType == S_SCENE_CONTROLLER)

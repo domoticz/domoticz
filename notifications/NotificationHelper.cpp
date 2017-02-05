@@ -699,7 +699,7 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 						notValue = "Open";
 						szExtraData += "Image=contact48_open|";
 						break;
-					case STYPE_DoorLock:
+					case STYPE_DoorContact:
 						notValue = "Open";
 						szExtraData += "Image=door48open|";
 						break;
@@ -718,7 +718,7 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 					szExtraData += "Status=Off|";
 					switch (switchtype)
 					{
-					case STYPE_DoorLock:
+					case STYPE_DoorContact:
 					case STYPE_Contact:
 						notValue = "Closed";
 						break;

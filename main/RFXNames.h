@@ -18,7 +18,7 @@ enum _eSwitchType
 	STYPE_Motion,			//8
 	STYPE_PushOn,			//9
 	STYPE_PushOff,			//10
-	STYPE_DoorLock,			//11
+	STYPE_DoorContact,			//11
     STYPE_Dusk,             //12
 	STYPE_BlindsPercentage, //13
 	STYPE_VenetianBlindsUS,	//14
