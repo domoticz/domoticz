@@ -1678,9 +1678,39 @@ bool CEvohome::DecodeBatteryInfo(CEvohomeMsg &msg)
 		nDevNo++;
 		tsen.EVOHOME2.type=pTypeEvohomeWater;
 		tsen.EVOHOME2.subtype=sTypeEvohomeWater;
-		tsen.EVOHOME2.zone=nDevNo;
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME2, NULL, nBattery);
+		tsen.EVOHOME2.zone=250;
+		sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME2, NULL, nBattery);  // Update DHW Zone sensor
+		tsen.EVOHOME3.len = sizeof(tsen.EVOHOME3) - 1;
+		tsen.EVOHOME3.type = pTypeEvohomeRelay;
+		tsen.EVOHOME3.subtype = sTypeEvohomeRelay;
+		RFX_SETID3(msg.GetID(0), tsen.EVOHOME3.id1, tsen.EVOHOME3.id2, tsen.EVOHOME3.id3);
+		tsen.EVOHOME3.devno = nDevNo;
+		tsen.EVOHOME3.demand = 0;
+		tsen.EVOHOME3.updatetype = CEvohome::updBattery;
+		tsen.EVOHOME3.battery_level = nBattery;
+		sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME3, NULL, nBattery); // Update DHW Zone valve relay
 	}
+	// To-do device ID won't link for T87RF.  Can only solve for all Sensors??
+	//else if (msg.id[0].GetIDType() == CEvohomeID::devStat) // separate thermostat message which doesn't contain zone number so need to map from DeviceID
+	//{
+	//	std::string zstrid(CEvohomeID::GetHexID(msg.GetID(0)));
+	//	szType = "Dev";
+	//	std::vector<std::vector<std::string> > result;
+	//	// Check whether device alreay exists and get Unit value
+	//	result = m_sql.safe_query("SELECT Unit FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == '%q') AND (Type == %d)", m_HwdID, zstrid.c_str(), (int)pTypeEvohomeZone);
+	//	if (result.size() != 0)
+	//	{
+	//		nDevNo = atoi(result[0][0].c_str()); 
+	//		tsen.EVOHOME2.type = pTypeEvohomeZone;
+	//		tsen.EVOHOME2.subtype = sTypeEvohomeZone;
+	//		tsen.EVOHOME2.zone = nDevNo;
+	//		sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME2, NULL, nBattery);
+	//		
+	//	}
+	//	else return false;
+	//}
+	//else return false;
+
 	Log(true,LOG_STATUS,"evohome: %s: %s=%d charge=%d(%%) level=%d (%s)",tag,szType.c_str(),nDevNo,nBattery,nLowBat,(nLowBat==0)?"Low":"OK");
 	
 	return true;

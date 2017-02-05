@@ -85,6 +85,7 @@ public:
 		devRelay=13,
 		devGateway=18,
 		devRemote=30,
+		devStat=34, // T87RF thermostat
 	};
 	
 	CEvohomeID():m_nID(0){}
