@@ -134,17 +134,21 @@ void MQTT::on_message(const struct mosquitto_message *message)
 	std::string szCommand = "udevice";
 	std::vector<std::vector<std::string> > result;
 	uint64_t idx = 0;
-
 	bool ret = jReader.parse(qMessage, root);
-	if (!ret)
+	if ((!ret) || (!root.isObject()))
 		goto mqttinvaliddata;
-
-
-	if (!root["command"].empty())
+	try
 	{
-		if (!root["command"].isString())
-			goto mqttinvaliddata;
-		szCommand = root["command"].asString();
+		if (!root["command"].empty())
+		{
+			if (!root["command"].isString())
+				goto mqttinvaliddata;
+			szCommand = root["command"].asString();
+		}
+	}
+	catch (const Json::LogicError&)
+	{
+		goto mqttinvaliddata;
 	}
 
 	if ((szCommand == "udevice") || (szCommand == "switchlight") || (szCommand == "getdeviceinfo"))
@@ -272,6 +276,52 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		}
 		return;
 	}
+	else if (szCommand == "setcolbrightnessvalue")
+	{
+		idx = (uint64_t)root["idx"].asInt64();
+		
+		if (root["switchcmd"].empty())
+			root["switchcmd"] = "On";
+		if (!root["switchcmd"].isString())
+			goto mqttinvaliddata;
+			
+		std::string switchcmd = root["switchcmd"].asString();
+		if ((switchcmd != "On") && (switchcmd != "Off") && (switchcmd != "Toggle") && (switchcmd != "Set Level"))
+			goto mqttinvaliddata;
+			
+		int level = 0;
+		if (!root["level"].empty())
+		{
+			if (root["level"].isString())
+				level = atoi(root["level"].asString().c_str());
+			else
+				level = root["level"].asInt();
+		}
+		
+		int hue = 0;
+		if (!root["hue"].empty())
+		{
+			if (root["hue"].isString())
+				hue = atoi(root["hue"].asString().c_str());
+			else
+				hue = root["hue"].asInt();
+		}
+		
+		int isWhite = 0;
+		if (!root["isWhite"].empty())
+		{
+			if (root["isWhite"].isString())
+				isWhite = atoi(root["isWhite"].asString().c_str());
+			else
+				isWhite = root["isWhite"].asInt();
+		}
+		
+		if (!m_mainworker.SwitchLight(idx, switchcmd, level, hue, isWhite!=0, 0) == true)
+		{
+			_log.Log(LOG_ERROR, "MQTT: Error sending switch command!");
+		}
+		return;
+	}
 	else if (szCommand == "switchscene")
 	{
 		if (root["switchcmd"].empty())
@@ -335,7 +385,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 				goto mqttinvaliddata;
 			sound = root["sound"].asString();
 		}
-		m_notifications.SendMessageEx(NOTIFYALL, subject, body, "", priority, sound, true);
+		m_notifications.SendMessageEx(0, std::string(""), NOTIFYALL, subject, body, std::string(""), priority, sound, true);
 		std::string varvalue = root["value"].asString();
 		m_sql.SetUserVariable(idx, varvalue, true);
 		return;
@@ -540,6 +590,9 @@ void MQTT::SendDeviceInfo(const int m_HwdID, const uint64_t DeviceRowIdx, const 
 
 		if (IsLightOrSwitch(dType, dSubType) == true) {
 			root["switchType"] = Switch_Type_Desc(switchType);
+		}
+		else if ((dType = pTypeRFXMeter) || (dType = pTypeRFXSensor)) {
+			root["meterType"] = Meter_Type_Desc((_eMeterType)switchType);
 		}
 		// Add device options
 		std::map<std::string, std::string>::const_iterator ittOptions;

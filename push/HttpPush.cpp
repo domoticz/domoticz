@@ -89,6 +89,7 @@ void CHttpPush::DoHttpPush()
 
 			std::vector<std::string> sd=*itt;
 			unsigned int deviceId = atoi(sd[0].c_str());
+			std::string sdeviceId = sd[0].c_str();
 			std::string ldelpos = sd[1].c_str();
 			int delpos = atoi(sd[1].c_str());
 			int dType = atoi(sd[3].c_str());
@@ -139,10 +140,11 @@ void CHttpPush::DoHttpPush()
 			%D : Target Device id
 			%V : Target Variable
 			%u : Unit
-			%n : Name
+			%n : Device name
 			%T0 : Type
 			%T1 : SubType
 			%h : hostname
+			%idx : 'Original device' id (idx)
 			*/
 
 			std::string lunit = getUnit(delpos, metertype);
@@ -182,6 +184,7 @@ void CHttpPush::DoHttpPush()
 			replaceAll(httpUrl, "%T0", lType);
 			replaceAll(httpUrl, "%T1", lSubType);
 			replaceAll(httpUrl, "%h", std::string(hostname));
+			replaceAll(httpUrl, "%idx", sdeviceId);
 
 			replaceAll(httpData, "%v", sendValue);
 			replaceAll(httpData, "%u", includeUnit ? lunit : "");
@@ -196,6 +199,7 @@ void CHttpPush::DoHttpPush()
 			replaceAll(httpData, "%T0", lType);
 			replaceAll(httpData, "%T1", lSubType);
 			replaceAll(httpData, "%h", std::string(hostname));
+			replaceAll(httpData, "%idx", sdeviceId);
 
 			if (sendValue != "") {
 				std::string sResult;
@@ -258,8 +262,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string url = request::findValue(&req, "url");
@@ -273,11 +277,12 @@ namespace http {
 			std::string authbasicpassword = request::findValue(&req, "authbasicpassword");
 			if (
 				(url == "") ||
-				(data == "") ||
 				(method == "") ||
 				(linkactive == "") ||
 				(debugenabled == "")
 				)
+				return;
+			if ((method != "0") && (data.empty())) //PUT/POST should have data
 				return;
 			int ilinkactive = atoi(linkactive.c_str());
 			int idebugenabled = atoi(debugenabled.c_str());
@@ -299,7 +304,10 @@ namespace http {
 		void CWebServer::Cmd_GetHttpLinkConfig(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 			std::string sValue;
 			int nValue;
 			if (m_sql.GetPreferencesVar("HttpActive", nValue)) {
@@ -355,7 +363,10 @@ namespace http {
 		void CWebServer::Cmd_GetHttpLinks(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT A.ID,A.DeviceID,A.Delimitedvalue,A.TargetType,A.TargetVariable,A.TargetDeviceID,A.TargetProperty,A.Enabled, B.Name, A.IncludeUnit FROM HttpLink as A, DeviceStatus as B WHERE (A.DeviceID==B.ID)");
 			if (result.size() > 0)
@@ -385,7 +396,10 @@ namespace http {
 		void CWebServer::Cmd_SaveHttpLink(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 			std::string idx = request::findValue(&req, "idx");
 			std::string deviceid = request::findValue(&req, "deviceid");
 			int deviceidi = atoi(deviceid.c_str());
@@ -438,8 +452,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string idx = request::findValue(&req, "idx");

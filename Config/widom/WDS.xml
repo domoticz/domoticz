@@ -20,10 +20,10 @@
         <Value type="byte" genre="config" instance="1" index="3" label="Type of outputs" value="0" size="1">
             <Help>
                 Defines if the outputs are controlled individually, as a traditional device with two channels, or if its behaviour simulates a single pole double throw relay.
-                0 – SINGLE CHANNELS (Default Value) => Channel 1 and Channel 2 are controlled individually.
-                From 1 to 9 – SINGLE POLE DOUBLE THROW RELAY => The two channels are in opposite status. If the Channel 1 is close the Channel 2 is open, if the Channel 1 is open the Channel 2 is close. The value of the parameter defines the closing delay of the relay in tenth of seconds
-                From 10 to 19 – SEQUENCING RELAY => Channels are toggled in this way: both channels ON, only channel 1 ON, only channel 2 ON, both channels OFF. The value of the parameter, deducted of 9, defines the closing delay of the relay in tenth of seconds.
-                From 20 to 39 – SELECTOR => Both channels can be OFF but they can never be ON simultaneously. It can be used for fan coil control, roller shutters, and in general for two-speed systems. The value of the parameter, deducted of 19, defines the closing delay of the relay in tenth of seconds.
+                0 - SINGLE CHANNELS (Default Value) => Channel 1 and Channel 2 are controlled individually.
+                From 1 to 9 - SINGLE POLE DOUBLE THROW RELAY => The two channels are in opposite status. If the Channel 1 is close the Channel 2 is open, if the Channel 1 is open the Channel 2 is close. The value of the parameter defines the closing delay of the relay in tenth of seconds
+                From 10 to 19 - SEQUENCING RELAY => Channels are toggled in this way: both channels ON, only channel 1 ON, only channel 2 ON, both channels OFF. The value of the parameter, deducted of 9, defines the closing delay of the relay in tenth of seconds.
+                From 20 to 39 - SELECTOR => Both channels can be OFF but they can never be ON simultaneously. It can be used for fan coil control, roller shutters, and in general for two-speed systems. The value of the parameter, deducted of 19, defines the closing delay of the relay in tenth of seconds.
             </Help>
         </Value>
         <Value type="list" genre="config" instance="1" index="4" label="Number of clicks that activate the control of the associated devices" value="2" size="1">
@@ -33,30 +33,30 @@
         </Value>
         <Value type="byte" genre="config" instance="1" index="5" label="Level used to control the devices associated to group 2 and 3" value="100" size="1">
             <Help>
-                0 – SWITCH_OFF The associated devices are switched OFF.
-                -1 – SWITCH_ON The associated devices are switched ON.
+                0 - SWITCH_OFF The associated devices are switched OFF.
+                -1 - SWITCH_ON The associated devices are switched ON.
                 From 1 to 99 The associated devices (dimmer, roller shutters) are set to the indicated level (only for devices associated to group 3).
-                100 – RELAY_STATUS (Default Value) If the Relay 1 is ON/OFF, the associated devices are ON/OFF.
-                101 – RELAY_STATUS_BUT_IGNORE_IF_OFF If the Relay 1 is ON the associated devices are ON; if it is OFF no action is taken on the associated devices.
-                102 – RELAY_STATUS_BUT_IGNORE_IF_ON If the Relay 1 is OFF the associated devices are OFF; if it is ON no action is taken on the associated devices.
-                103 – RELAY_OPPOSITE_BUT_IGNORE_IF_OFF If the Relay 1 is ON the associated devices are OFF; if it is OFF no action is taken on the associated devices.
-                104 – RELAY_OPPOSITE_BUT_IGNORE_IF_ON If the Relay 1 is OFF the associated devices are ON; if it is ON no action is taken on the associated devices.
-                105 – RELAY_OPPOSITE If the Relay 1 is ON/OFF, the associated devices are OFF/ON.
-                106 – IGNORE No action is taken on the associated devices.
+                100 - RELAY_STATUS (Default Value) If the Relay 1 is ON/OFF, the associated devices are ON/OFF.
+                101 - RELAY_STATUS_BUT_IGNORE_IF_OFF If the Relay 1 is ON the associated devices are ON; if it is OFF no action is taken on the associated devices.
+                102 - RELAY_STATUS_BUT_IGNORE_IF_ON If the Relay 1 is OFF the associated devices are OFF; if it is ON no action is taken on the associated devices.
+                103 - RELAY_OPPOSITE_BUT_IGNORE_IF_OFF If the Relay 1 is ON the associated devices are OFF; if it is OFF no action is taken on the associated devices.
+                104 - RELAY_OPPOSITE_BUT_IGNORE_IF_ON If the Relay 1 is OFF the associated devices are ON; if it is ON no action is taken on the associated devices.
+                105 - RELAY_OPPOSITE If the Relay 1 is ON/OFF, the associated devices are OFF/ON.
+                106 - IGNORE No action is taken on the associated devices.
             </Help>
         </Value>
         <Value type="byte" genre="config" instance="1" index="6" label="Level used to control the devices associated to group 4 and 5" value="100" size="1">
             <Help>
-                0 – SWITCH_OFF The associated devices are switched OFF.
-                -1 – SWITCH_ON The associated devices are switched ON.
+                0 - SWITCH_OFF The associated devices are switched OFF.
+                -1 - SWITCH_ON The associated devices are switched ON.
                 From 1 to 99 The associated devices (dimmer, roller shutters) are set to the indicated level (only for devices associated to group 5).
-                100 – RELAY_STATUS (Default Value) If the Relay 2 is ON/OFF, the associated devices are ON/OFF.
-                101 – RELAY_STATUS_BUT_IGNORE_IF_OFF If the Relay 2 is ON the associated devices are ON; if it is OFF no action is taken on the associated devices.
-                102 – RELAY_STATUS_BUT_IGNORE_IF_ON If the Relay 2 is OFF the associated devices are OFF; if it is ON no action is taken on the associated devices.
-                103 – RELAY_OPPOSITE_BUT_IGNORE_IF_OFF If the Relay 2 is ON the associated devices are OFF; if it is OFF no action is taken on the associated devices.
-                104 – RELAY_OPPOSITE_BUT_IGNORE_IF_ON If the Relay 2 is OFF the associated devices are ON; if it is ON no action is taken on the associated devices.
-                105 – RELAY_OPPOSITE If the Relay 2 is ON/OFF, the associated devices are OFF/ON.
-                106 – IGNORE No action is taken on the associated devices.
+                100 - RELAY_STATUS (Default Value) If the Relay 2 is ON/OFF, the associated devices are ON/OFF.
+                101 - RELAY_STATUS_BUT_IGNORE_IF_OFF If the Relay 2 is ON the associated devices are ON; if it is OFF no action is taken on the associated devices.
+                102 - RELAY_STATUS_BUT_IGNORE_IF_ON If the Relay 2 is OFF the associated devices are OFF; if it is ON no action is taken on the associated devices.
+                103 - RELAY_OPPOSITE_BUT_IGNORE_IF_OFF If the Relay 2 is ON the associated devices are OFF; if it is OFF no action is taken on the associated devices.
+                104 - RELAY_OPPOSITE_BUT_IGNORE_IF_ON If the Relay 2 is OFF the associated devices are ON; if it is ON no action is taken on the associated devices.
+                105 - RELAY_OPPOSITE If the Relay 2 is ON/OFF, the associated devices are OFF/ON.
+                106 - IGNORE No action is taken on the associated devices.
             </Help>
         </Value>
         <Value type="short" genre="config" instance="1" index="10" label="Timer to switch OFF the Channel 1" units="seconds" value="0" min="0" max="32000" size="2">

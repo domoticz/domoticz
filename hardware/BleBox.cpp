@@ -9,7 +9,7 @@
 #include "../main/SQLHelper.h"
 #include "../httpclient/HTTPClient.h"
 
-#define TOT_TYPE 6
+#define TOT_TYPE 8
 
 const _STR_DEVICE DevicesType[TOT_TYPE] =
 { 
@@ -18,7 +18,10 @@ const _STR_DEVICE DevicesType[TOT_TYPE] =
 	{ 2, "wLightBoxS", "Light Box S", int(pTypeLighting2), int(sTypeAC), int(STYPE_Dimmer), "light" },
 	{ 3, "wLightBox", "Light Box", int(pTypeLimitlessLights), int(sTypeLimitlessRGBW), int(STYPE_Dimmer), "rgbw" },
 	{ 4, "gateBox", "Gate Box", int(pTypeLighting2), int(sTypeAC), int(STYPE_Dimmer), "gate" },
-	{ 5, "dimmerBox", "Dimmer Box", int(pTypeLighting2), int(sTypeAC), int(STYPE_Dimmer), "dimmer" }
+	{ 5, "dimmerBox", "Dimmer Box", int(pTypeLighting2), int(sTypeAC), int(STYPE_Dimmer), "dimmer" },
+	{ 6, "switchBoxD", "Switch Box D", int(pTypeLighting2), int(sTypeAC), int(STYPE_OnOff), "relay" }, // unit 6 - dual (0)
+	{ 7, "switchBoxD", "Switch Box D", int(pTypeLighting2), int(sTypeAC), int(STYPE_OnOff), "relay" }  // unit 7 - dual (1)
+	// {8, ....
 };
 
 int BleBox::GetDeviceTypeByApiName(const std::string &apiName)
@@ -108,10 +111,9 @@ void BleBox::GetDevicesState()
 		Json::Value root = SendCommand(itt->first, command);
 		if (root == "")
 			continue;
-
-
-		int node = IPToUInt(itt->first);
-		if (node != 0)
+		
+		int IP = IPToUInt(itt->first);
+		if (IP != 0)
 		{
 			switch (itt->second)
 			{
@@ -122,7 +124,7 @@ void BleBox::GetDevicesState()
 					
 					const bool state = root["state"].asBool();
 
-					SendSwitch(node, itt->second, 255, state, 0, DevicesType[itt->second].name);
+					SendSwitch(IP, itt->second, 255, state, 0, DevicesType[itt->second].name);
 					break;
 				}
 				case 1:
@@ -140,7 +142,7 @@ void BleBox::GetDevicesState()
 					if ((state == 2 && pos == 100) || (state == 3))
 						opened = false;
 
-					SendSwitch(node, itt->second, 255, opened, pos, DevicesType[itt->second].name);
+					SendSwitch(IP, itt->second, 255, opened, pos, DevicesType[itt->second].name);
 					break;
 				}
 				case 2:
@@ -153,7 +155,7 @@ void BleBox::GetDevicesState()
 					sscanf(currentColor.c_str(), "%x", &hexNumber);
 					int level = (int)(hexNumber / (255.0 / 100.0));
 
-					SendSwitch(node, itt->second, 255, level > 0, level, DevicesType[itt->second].name);
+					SendSwitch(IP, itt->second, 255, level > 0, level, DevicesType[itt->second].name);
 					break;
 				}
 				case 3:
@@ -165,7 +167,7 @@ void BleBox::GetDevicesState()
 					int hexNumber;
 					sscanf(currentColor.c_str(), "%x", &hexNumber);
 
-					SendRGBWSwitch(node, itt->second, 255, hexNumber, true, DevicesType[itt->second].name);
+					SendRGBWSwitch(IP, itt->second, 255, hexNumber, true, DevicesType[itt->second].name);
 					break;
 				}
 				case 4:
@@ -176,7 +178,7 @@ void BleBox::GetDevicesState()
 					const int currentPos = root["currentPos"].asInt();
 					int level = (int)(currentPos / (255.0 / 100.0));
 
-					SendSwitch(node, itt->second, 255, level > 0, level, DevicesType[itt->second].name);
+					SendSwitch(IP, itt->second, 255, level > 0, level, DevicesType[itt->second].name);
 					break;
 				}
 				case 5:
@@ -187,7 +189,27 @@ void BleBox::GetDevicesState()
 					const int currentPos = root["dimmer"]["currentBrightness"].asInt();
 					int level = (int)(currentPos / (255.0 / 100.0));
 
-					SendSwitch(node, itt->second, 255, level > 0, level, DevicesType[itt->second].name);
+					SendSwitch(IP, itt->second, 255, level > 0, level, DevicesType[itt->second].name);
+					break;
+				}
+				case 6:
+				{
+					if ((IsNodeExists(root, "relays") == false) || (!root["relays"].isArray()))
+						break;
+
+					Json::Value relays = root["relays"];
+					Json::ArrayIndex count = relays.size();
+					for (Json::ArrayIndex index = 0; index < count; index++)
+					{
+						Json::Value relay = relays[index];
+						if ((IsNodeExists(relay, "relay") == false) || (IsNodeExists(relay, "state") == false))
+							break;
+						int relayNumber = relay["relay"].asInt(); // 0 or 1
+						bool currentState = relay["state"].asBool(); // 0 or 1
+						//std::string name = DevicesType[itt->second].name + " " + relay["state"].asString();
+						SendSwitch(IP, relayNumber + 6, 255, currentState, 0, DevicesType[itt->second].name);
+					}
+					
 					break;
 				}
 			}
@@ -305,6 +327,7 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 				if (IsNodeExists(root, "state") == false)
 					return false;
 
+				// TODO - add check
 				//if (root["state"].asString() != state)
 				//{
 				//	_log.Log(LOG_ERROR, "BleBox: state not changed!");
@@ -338,14 +361,99 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 				if (root == "")
 					return false;
 
-				if (IsNodesExist(root, "light", "currentColor") == false)
+				if (IsNodesExist(root, "light", "desiredColor") == false)
 					return false;
 
-				if (root["light"]["currentColor"].asString() != level) // TODO or desiredcolor ??
+				if (root["light"]["desiredColor"].asString() != level)
 				{
 					_log.Log(LOG_ERROR, "BleBox: light not changed!");
 					return false;
 				}
+
+				break;
+			}
+
+			case 5: // dimmerBox
+			{
+				std::string level;
+				if (output->LIGHTING2.cmnd == light2_sOn)
+				{
+					level = "ff";
+				}
+				else
+					if (output->LIGHTING2.cmnd == light2_sOff)
+					{
+						level = "0";
+					}
+					else
+					{
+						int percentage = output->LIGHTING2.level * 255 / 15;
+
+						char value[4];
+						sprintf(value, "%x", percentage);
+						level = value;
+					}
+
+				Json::Value root = SendCommand(IPAddress, "/s/" + level);
+				if (root == "")
+					return false;
+
+				if (IsNodesExist(root, "dimmer", "desiredBrightness") == false)
+					return false;
+
+				std::stringstream ss;
+				ss << std::hex << root["dimmer"]["desiredBrightness"].asInt();
+				std::string state = ss.str();
+
+				if (state != level)
+				{
+					_log.Log(LOG_ERROR, "BleBox: dimmer not changed!");
+					return false;
+				}
+
+				break;
+			}
+
+			case 6: //switchboxd - 0
+			case 7: //switchboxd - 1
+			{
+				std::string state;
+				if (output->LIGHTING2.cmnd == light2_sOn)
+				{
+					state = "1";
+				}
+				else
+				{
+					state = "0";
+				}
+
+				std::stringstream ss;
+				ss << "/s/" << (output->LIGHTING2.unitcode - 6) << "/" << state;
+
+				Json::Value root = SendCommand(IPAddress, ss.str());
+				if (root == "")
+					return false;
+
+				if ((IsNodeExists(root, "relays") == false) || (!root["relays"].isArray()))
+					return false;
+
+				bool success = false;
+				Json::Value relays = root["relays"];
+				Json::ArrayIndex count = relays.size();
+				for (Json::ArrayIndex index = 0; index < count; index++)
+				{
+					Json::Value relay = relays[index];
+					if ((IsNodeExists(relay, "relay") == false) || (IsNodeExists(relay, "state") == false))
+						continue;
+					int relayNumber = relay["relay"].asInt(); // 0 or 1
+					std::string currentState = relay["state"].asString(); // 0 or 1
+					if (((output->LIGHTING2.unitcode - 6) == relayNumber) && (state == currentState))
+					{
+						success = true;
+						break;
+					}
+				}
+				return success;
 
 				break;
 			}
@@ -440,8 +548,6 @@ void BleBox::SendSwitch(const int NodeID, const int ChildID, const int BatteryLe
 		int nvalue = atoi(result[0][1].c_str());
 		if ((!bOn) && (nvalue == light2_sOff))
 			return;
-		if (bOn && (nvalue == light2_sOn))
-			return;
 		if ((bOn && (nvalue != light2_sOff)))
 		{
 			//Check Level
@@ -487,7 +593,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string hwid = request::findValue(&req, "idx");
@@ -517,6 +624,12 @@ namespace http {
 					root["result"][ii]["Name"] = sd[1];
 					root["result"][ii]["IP"] = ip;
 					root["result"][ii]["Type"] = DevicesType[atoi(sd[3].c_str())].name;
+
+					BleBox *pHardware = reinterpret_cast<BleBox*>(pBaseHardware);
+					std::string uptime = pHardware->GetUptime(ip);
+					root["result"][ii]["Uptime"] = uptime;
+					//TODO: read more paramaters from devices (version fw, etc)
+
 					ii++;
 				}
 			}
@@ -527,7 +640,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string hwid = request::findValue(&req, "idx");
@@ -560,7 +674,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string hwid = request::findValue(&req, "idx");
@@ -586,7 +701,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string hwid = request::findValue(&req, "idx");
@@ -615,7 +731,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string hwid = request::findValue(&req, "idx");
@@ -640,7 +757,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string hwid = request::findValue(&req, "idx");
@@ -652,6 +770,50 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "BleBoxClearNodes";
 			pHardware->RemoveAllNodes();
+		}
+
+		void CWebServer::Cmd_BleBoxAutoSearchingNodes(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+
+			std::string hwid = request::findValue(&req, "idx");
+			std::string ipmask = request::findValue(&req, "ipmask");
+			if (
+				(hwid == "") ||
+				(ipmask == "")
+				)
+				return;
+			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByIDType(hwid, HTYPE_BleBox);
+			if (pBaseHardware == NULL)
+				return;
+			BleBox *pHardware = reinterpret_cast<BleBox*>(pBaseHardware);
+
+			root["status"] = "OK";
+			root["title"] = "BleBoxAutoSearchingNodes";
+			pHardware->SearchNodes(ipmask);
+		}
+
+		void CWebServer::Cmd_BleBoxUpdateFirmware(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+
+			std::string hwid = request::findValue(&req, "idx");
+			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByIDType(hwid, HTYPE_BleBox);
+			if (pBaseHardware == NULL)
+				return;
+			BleBox *pHardware = reinterpret_cast<BleBox*>(pBaseHardware);
+
+			root["status"] = "OK";
+			root["title"] = "BleBoxUpdateFirmware";
+			pHardware->UpdateFirmware();
 		}
 
 	}
@@ -718,6 +880,31 @@ std::string BleBox::IdentifyDevice(const std::string &IPAddress)
 	}
 	return result;
 }
+
+std::string BleBox::GetUptime(const std::string &IPAddress)
+{
+	Json::Value root = SendCommand(IPAddress, "/api/device/uptime");
+	if (root == "")
+		return "unknown";
+
+	if (root["uptime"].empty() == true)
+		return "unknown";
+
+	std::string result;
+
+	uint64_t msec = root["uptime"].asUInt64();
+	char timestring[32] = "";
+
+	uint64_t total_minutes = msec / (1000 * 60);
+	int days = static_cast<int>(total_minutes / (24 * 60));
+	int hours = static_cast<int>(total_minutes / 60 - days * 24);
+	int mins = static_cast<int>(total_minutes - days * 24 * 60 - hours * 60);   //sec / 60 - day * (24 * 60) - hour * 60;
+	
+	sprintf(timestring, "%d:%02d:%02d", days, hours, mins);
+
+	return timestring;
+}
+
 
 void BleBox::AddNode(const std::string &name, const std::string &IPAddress)
 {
@@ -814,3 +1001,24 @@ void BleBox::ReloadNodes()
 	LoadNodes();
 }
 
+void BleBox::UpdateFirmware()
+{
+	std::map<const std::string, const int>::const_iterator itt;
+	for (itt = m_devices.begin(); itt != m_devices.end(); ++itt)
+	{
+		Json::Value root = SendCommand(itt->first, "/api/ota/update");
+	}
+}
+
+void BleBox::SearchNodes(const std::string &ipmask)
+{ 
+	std::vector<std::string> strarray;
+	StringSplit(ipmask, ".", strarray); // ipmask - expected "x.y.z.*"
+	if (strarray.size() != 4)
+		return;
+	if (strarray[3] != "*")
+		return;
+	if (!isInt(strarray[0]) || !isInt(strarray[1]) || !isInt(strarray[2]))
+		return;
+	//TODO
+}

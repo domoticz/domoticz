@@ -275,6 +275,11 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				controller: 'RoomplanController',
 				permission: 'Admin'
 			  })).
+			  when('/Timerplan', angularAMD.route({
+				templateUrl: 'views/timerplan.html',
+				controller: 'TimerplanController',
+				permission: 'Admin'
+			  })).
 			  when('/Scenes', angularAMD.route({
 				templateUrl: 'views/scenes.html',
 				controller: 'ScenesController'

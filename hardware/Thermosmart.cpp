@@ -281,7 +281,7 @@ bool CThermosmart::Login()
 	Json::Value root;
 	Json::Reader jReader;
 	bool ret = jReader.parse(sResult, root);
-	if (!ret)
+	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "Thermosmart: Invalid/no data received...");
 		return false;
@@ -361,7 +361,7 @@ void CThermosmart::GetMeterDetails()
 	Json::Value root;
 	Json::Reader jReader;
 	bool ret = jReader.parse(sResult, root);
-	if (!ret)
+	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "Thermosmart: Invalid/no data received...");
 		m_bDoLogin = true;

@@ -1,5 +1,8 @@
 define(['app'], function (app) {
 	app.controller('LightsController', [ '$scope', '$rootScope', '$location', '$http', '$interval', 'permissions', function($scope,$rootScope,$location,$http,$interval,permissions) {
+	
+		$scope.HasInitializedAddManualDialog = false;
+		$scope.HasInitializedEditLightDialog = false;
 
 		DeleteTimer = function(idx)
 		{
@@ -1456,6 +1459,51 @@ define(['app'], function (app) {
 			});
 		}
 
+		ConfigureEditLightSettings = function() {
+			if ($scope.HasInitializedEditLightDialog == true) {
+				return;
+			}
+			$scope.HasInitializedEditLightDialog=true;
+			//Get Custom icons
+			$.ddData=[];
+			$.ajax({
+			 url: "json.htm?type=custom_light_icons",
+			 async: false,
+			 dataType: 'json',
+			 success: function(data) {
+				if (typeof data.result != 'undefined') {
+					var totalItems=data.result.length;
+					$.each(data.result, function(i,item){
+						var bSelected=false;
+						if (i==0) {
+							bSelected=true;
+						}
+						var img="images/"+item.imageSrc+"48_On.png";
+						$.ddData.push({ text: item.text, value: item.idx, selected: bSelected, description: item.description, imageSrc: img });
+					});
+				}
+			 }
+		   });
+
+			$.LightsAndSwitches = [];
+			$.ajax({
+				url: "json.htm?type=command&param=getlightswitches",
+				async: false,
+				dataType: 'json',
+				success: function(data) {
+					if (typeof data.result != 'undefined') {
+						$.each(data.result, function(i,item) {
+							$.LightsAndSwitches.push({
+								idx: item.idx,
+								name: item.Name
+							});
+						});
+					}
+				}
+			});
+		   
+		}
+
 		EditLightDevice = function(idx,name,description,stype,switchtype,addjvalue,addjvalue2,isslave,customimage,devsubtype,strParam1,strParam2,bIsProtected,strUnit)
 		{
 			if (typeof $scope.mytimer != 'undefined') {
@@ -1468,6 +1516,8 @@ define(['app'], function (app) {
 			$.strUnit=strUnit;
 			$.bIsSelectorSwitch = (devsubtype === "Selector Switch");
 
+			ConfigureEditLightSettings();
+			
 			var oTable;
 
 			if ($.bIsSelectorSwitch) {
@@ -1522,7 +1572,7 @@ define(['app'], function (app) {
 
 			$.bIsLED=(devsubtype.indexOf("RGB") >= 0);
 			$.bIsRGB=(devsubtype=="RGB");
-			$.bIsRGBW=(devsubtype=="RGBW");
+			$.bIsRGBW=(devsubtype.indexOf("RGBW") >= 0);
 			$.bIsWhite=(devsubtype=="White");
 
 			if ($.bIsLED==true) {
@@ -1814,6 +1864,89 @@ define(['app'], function (app) {
 				}, 200);
 			}, 600);
 		}
+		
+		ConfigureAddManualSettings = function()
+		{
+			if ($scope.HasInitializedAddManualDialog==true) {
+				return;
+			}
+			$scope.HasInitializedAddManualDialog=true;
+			$('#dialog-addmanuallightdevice #lightparams2 #combocmd2 >option').remove();
+			$('#dialog-addmanuallightdevice #lightparams2 #combocmd3 >option').remove();
+			$('#dialog-addmanuallightdevice #lightparams2 #combocmd4 >option').remove();
+			$('#dialog-addmanuallightdevice #lightparams3 #combocmd1 >option').remove();
+			$('#dialog-addmanuallightdevice #lightparams3 #combocmd2 >option').remove();
+			$('#dialog-addmanuallightdevice #blindsparams #combocmd1 >option').remove();
+			$('#dialog-addmanuallightdevice #blindsparams #combocmd2 >option').remove();
+			$('#dialog-addmanuallightdevice #blindsparams #combocmd3 >option').remove();
+			$('#dialog-addmanuallightdevice #homeconfortparams #combocmd2 >option').remove();
+			$('#dialog-addmanuallightdevice #homeconfortparams #combocmd3 >option').remove();
+			$('#dialog-addmanuallightdevice #fanparams #combocmd1 >option').remove();
+			$('#dialog-addmanuallightdevice #fanparams #combocmd2 >option').remove();
+			$('#dialog-addmanuallightdevice #fanparams #combocmd3 >option').remove();
+			for (ii=0; ii<256; ii++)
+			{
+				$('#dialog-addmanuallightdevice #lightparams2 #combocmd2').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
+				$('#dialog-addmanuallightdevice #lightparams2 #combocmd3').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
+				$('#dialog-addmanuallightdevice #lightparams2 #combocmd4').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
+				$('#dialog-addmanuallightdevice #lightparams3 #combocmd1').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
+				$('#dialog-addmanuallightdevice #lightparams3 #combocmd2').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
+				$('#dialog-addmanuallightdevice #blindsparams #combocmd1').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
+				$('#dialog-addmanuallightdevice #blindsparams #combocmd2').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
+				$('#dialog-addmanuallightdevice #blindsparams #combocmd3').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
+				$('#dialog-addmanuallightdevice #homeconfortparams #combocmd2').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
+				$('#dialog-addmanuallightdevice #homeconfortparams #combocmd3').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
+				$('#dialog-addmanuallightdevice #fanparams #combocmd1').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
+				$('#dialog-addmanuallightdevice #fanparams #combocmd2').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
+				$('#dialog-addmanuallightdevice #fanparams #combocmd3').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
+			}
+			$('#dialog-addmanuallightdevice #blindsparams #combocmd4 >option').remove();
+			$('#dialog-addmanuallightdevice #blindsparams #combounitcode >option').remove();
+			for (ii=0; ii<16; ii++)
+			{
+				$('#dialog-addmanuallightdevice #blindsparams #combocmd4').append($('<option></option>').val(ii).html(ii.toString(16).toUpperCase()));
+				$('#dialog-addmanuallightdevice #blindsparams #combounitcode').append($('<option></option>').val(ii).html(ii));
+			}
+			$('#dialog-addmanuallightdevice #lightparams2 #combounitcode >option').remove();
+			for (ii=1; ii<16+1; ii++)
+			{
+				$('#dialog-addmanuallightdevice #lightparams2 #combounitcode').append($('<option></option>').val(ii).html(ii));
+			}
+			$('#dialog-addmanuallightdevice #he105params #combounitcode >option').remove();
+			for (ii=0; ii<32; ii++)
+			{
+				$('#dialog-addmanuallightdevice #he105params #combounitcode').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
+			}
+			//Home confort
+			$('#dialog-addmanuallightdevice #homeconfortparams #combocmd1 >option').remove();
+			for (ii=0; ii<8; ii++)
+			{
+				$('#dialog-addmanuallightdevice #homeconfortparams #combocmd1').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
+			}
+			$('#dialog-addmanuallightdevice #homeconfortparams #combohousecode >option').remove();
+			$('#dialog-addmanuallightdevice #homeconfortparams #combounitcode >option').remove();
+			for (ii=0; ii<4; ii++)
+			{
+				$('#dialog-addmanuallightdevice #homeconfortparams #combohousecode').append($('<option></option>').val(65+ii).html(String.fromCharCode(65+ii)));
+				$('#dialog-addmanuallightdevice #homeconfortparams #combounitcode').append($('<option></option>').val((ii+1)).html((ii+1)));
+			}
+			
+			RefreshHardwareComboArray();
+			$("#dialog-addmanuallightdevice #lighttable #combohardware").html("");
+			$.each($.ComboHardware, function(i,item){
+				var option = $('<option />');
+				option.attr('value', item.idx).text(item.name);
+				$("#dialog-addmanuallightdevice #lighttable #combohardware").append(option);
+			});
+
+			RefreshGpioComboArray();
+			$("#combogpio").html("");
+			$.each($.ComboGpio, function(i,item){
+				var option = $('<option />');
+				option.attr('value', item.idx).text(item.name);
+				$("#combogpio").append(option);
+			});
+		}
 
 		RefreshHardwareComboArray = function()
 		{
@@ -1846,26 +1979,6 @@ define(['app'], function (app) {
 					if (typeof data.result != 'undefined') {
 						$.each(data.result, function(i,item) {
 							$.ComboGpio.push({
-								idx: item.idx,
-								name: item.Name
-							});
-						});
-					}
-				}
-			});
-		}
-
-		RefreshLightSwitchesComboArray = function()
-		{
-			$.LightsAndSwitches = [];
-			$.ajax({
-				url: "json.htm?type=command&param=getlightswitches",
-				async: false,
-				dataType: 'json',
-				success: function(data) {
-					if (typeof data.result != 'undefined') {
-						$.each(data.result, function(i,item) {
-							$.LightsAndSwitches.push({
 								idx: item.idx,
 								name: item.Name
 							});
@@ -2023,13 +2136,21 @@ define(['app'], function (app) {
 								img='<img src="images/push48.png" title="' + $.t("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
 							}
 						}
-						else if (item.SwitchType == "Door Lock") {
+						else if (item.SwitchType == "Door Contact") {
 							if (item.InternalState=="Open") {
 								img='<img src="images/door48open.png" title="' + $.t("Close Door") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
 							}
 							else {
 								img='<img src="images/door48.png" title="' + $.t("Open Door") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
 							}
+						}
+						else if (item.SwitchType == "Door Lock") {
+						    if (item.InternalState == "Unlocked") {
+						        img = '<img src="images/door48open.png" title="' + $.t("Lock") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48" width="48">';
+						    }
+						    else {
+						        img = '<img src="images/door48.png" title="' + $.t("Unlock") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48" width="48">';
+						    }
 						}
 						else if (item.SwitchType == "Push Off Button") {
 							img='<img src="images/pushoff48.png" title="' + $.t("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
@@ -2043,7 +2164,23 @@ define(['app'], function (app) {
 							}
 						}
 						else if ((item.SwitchType == "Blinds")||(item.SwitchType.indexOf("Venetian Blinds") == 0)) {
-							if ((item.SubType=="RAEX")||(item.SubType.indexOf('A-OK') == 0)||(item.SubType.indexOf('RollerTrol') == 0)||(item.SubType=="Harrison")||(item.SubType.indexOf('RFY') == 0)||(item.SubType.indexOf('ASA') == 0)||(item.SubType.indexOf('T6 DC') == 0)||(item.SwitchType.indexOf("Venetian Blinds") == 0)) {
+							if (
+								(item.SubType=="RAEX")||
+								(item.SubType.indexOf('A-OK') == 0)||
+								(item.SubType.indexOf('Hasta') >= 0)||
+                                (item.SubType.indexOf('Media Mount') == 0) ||
+                                (item.SubType.indexOf('Forest') == 0) ||
+                                (item.SubType.indexOf('Chamberlain') == 0) ||
+                                (item.SubType.indexOf('Sunpery') == 0) ||
+                                (item.SubType.indexOf('Dolat') == 0) ||
+                                (item.SubType.indexOf('ASP') == 0) ||
+								(item.SubType == "Harrison") ||
+								(item.SubType.indexOf('RFY') == 0)||
+								(item.SubType.indexOf('ASA') == 0)||
+								(item.SubType.indexOf('DC106') == 0)||
+								(item.SubType.indexOf('Confexx') == 0)||
+								(item.SwitchType.indexOf("Venetian Blinds") == 0)
+							   ) {
 								if (item.Status == 'Closed') {
 									img='<img src="images/blindsopen48.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
 									img3='<img src="images/blinds48sel.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
@@ -2065,7 +2202,22 @@ define(['app'], function (app) {
 							}
 						}
 						else if (item.SwitchType == "Blinds Inverted") {
-							if ((item.SubType=="RAEX")||(item.SubType.indexOf('A-OK') == 0)||(item.SubType.indexOf('RollerTrol') == 0)||(item.SubType=="Harrison")||(item.SubType.indexOf('RFY') == 0)||(item.SubType.indexOf('ASA') == 0)||(item.SubType.indexOf('T6 DC') == 0)) {
+							if (
+								(item.SubType=="RAEX")||
+								(item.SubType.indexOf('A-OK') == 0)||
+								(item.SubType.indexOf('Hasta') >= 0)||
+                                (item.SubType.indexOf('Media Mount') == 0) ||
+                                (item.SubType.indexOf('Forest') == 0) ||
+                                (item.SubType.indexOf('Chamberlain') == 0) ||
+                                (item.SubType.indexOf('Sunpery') == 0) ||
+                                (item.SubType.indexOf('Dolat') == 0) ||
+                                (item.SubType.indexOf('ASP') == 0) ||
+								(item.SubType == "Harrison") ||
+								(item.SubType.indexOf('RFY') == 0)||
+								(item.SubType.indexOf('ASA') == 0)||
+								(item.SubType.indexOf('DC106') == 0)||
+								(item.SubType.indexOf('Confexx') == 0)
+							   ) {
 								if (item.Status == 'Closed') {
 									img='<img src="images/blindsopen48.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
 									img3='<img src="images/blinds48sel.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
@@ -2183,7 +2335,7 @@ define(['app'], function (app) {
 							if (item.SubType=="RGB") {
 								img='<img src="images/RGB48_On.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshLights\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="48" width="48">';
 							}
-							else if (item.SubType=="RGBW") {
+							else if (item.SubType.indexOf("RGBW") >= 0) {
 								img='<img src="images/RGB48_On.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshLights\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="48" width="48">';
 							}
 							else {
@@ -2194,7 +2346,7 @@ define(['app'], function (app) {
 							if (item.SubType=="RGB") {
 								img='<img src="images/RGB48_Off.png" onclick="ShowRGBWPopup(event, ' + item.idx + ',\'RefreshLights\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="48" width="48">';
 							}
-							else if (item.SubType=="RGBW") {
+							else if (item.SubType.indexOf("RGBW") >= 0) {
 								img='<img src="images/RGB48_Off.png" onclick="ShowRGBWPopup(event, ' + item.idx + ',\'RefreshLights\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="48" width="48">';
 							}
 							else {
@@ -2264,7 +2416,7 @@ define(['app'], function (app) {
 							img += '<img src="images/' + item.Image + '48_On.png" title="' + $.t("Turn Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48" width="48">';
 						}
 					}
-					else if (item.SubType.indexOf("Itho")==0) {
+					else if ((item.SubType.indexOf("Itho")==0)||(item.SubType.indexOf("Lucci")==0)) {
 						img=$(id + " #img").html();
 					}
 					else {
@@ -2381,8 +2533,6 @@ define(['app'], function (app) {
 			}
 		  $('#modal').show();
 
-		  RefreshLightSwitchesComboArray();
-
 		  var htmlcontent = '';
 			var bShowRoomplan=false;
 			$.RoomPlans = [];
@@ -2480,7 +2630,23 @@ define(['app'], function (app) {
 						'\t<div class="span4" id="' + item.idx + '">\n' +
 						'\t  <section>\n';
 				  if ((item.SwitchType == "Blinds") || (item.SwitchType == "Blinds Inverted") || (item.SwitchType == "Blinds Percentage") || (item.SwitchType == "Blinds Percentage Inverted") || (item.SwitchType.indexOf("Venetian Blinds") == 0) || (item.SwitchType.indexOf("Media Player") == 0)) {
-						if ((item.SubType=="RAEX")||(item.SubType.indexOf('A-OK') == 0)||(item.SubType.indexOf('RollerTrol') == 0)||(item.SubType=="Harrison")||(item.SubType.indexOf('RFY') == 0)||(item.SubType.indexOf('ASA') == 0)||(item.SubType.indexOf('T6 DC') == 0)||(item.SwitchType.indexOf("Venetian Blinds") == 0)) {
+						if (
+							(item.SubType=="RAEX")||
+							(item.SubType.indexOf('A-OK') == 0)||
+							(item.SubType.indexOf('Hasta') >= 0)||
+                            (item.SubType.indexOf('Media Mount') == 0) ||
+                            (item.SubType.indexOf('Forest') == 0) ||
+                            (item.SubType.indexOf('Chamberlain') == 0) ||
+                            (item.SubType.indexOf('Sunpery') == 0) ||
+                            (item.SubType.indexOf('Dolat') == 0) ||
+                            (item.SubType.indexOf('ASP') == 0) ||
+							(item.SubType == "Harrison") ||
+							(item.SubType.indexOf('RFY') == 0)||
+							(item.SubType.indexOf('ASA') == 0)||
+							(item.SubType.indexOf('DC106') == 0)||
+							(item.SubType.indexOf('Confexx') == 0)||
+							(item.SwitchType.indexOf("Venetian Blinds") == 0)
+						   ) {
 							xhtm+='\t    <table id="itemtabletrippleicon" border="0" cellpadding="0" cellspacing="0">\n';
 						}
 						else {
@@ -2547,7 +2713,7 @@ define(['app'], function (app) {
 						xhtm+='\t      <td id="img"><img src="images/push48.png" title="' + $.t("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48"></td>\n';
 					}
 				  }
-				  else if (item.SwitchType == "Door Lock") {
+				  else if (item.SwitchType == "Door Contact") {
 					if (item.InternalState=="Open") {
 						xhtm+='\t      <td id="img"><img src="images/door48open.png" title="' + $.t("Close Door") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48"></td>\n';
 					}
@@ -2555,6 +2721,15 @@ define(['app'], function (app) {
 						xhtm+='\t      <td id="img"><img src="images/door48.png" title="' + $.t("Open Door") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48"></td>\n';
 					}
 					bAddTimer=false;
+				  }
+				  else if (item.SwitchType == "Door Lock") {
+				      if (item.InternalState == "Unlocked") {
+				          xhtm += '\t      <td id="img"><img src="images/door48open.png" title="' + $.t("Lock") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48" width="48"></td>\n';
+				      }
+				      else {
+				          xhtm += '\t      <td id="img"><img src="images/door48.png" title="' + $.t("Unlock") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48" width="48"></td>\n';
+				      }
+				      bAddTimer = false;
 				  }
 				  else if (item.SwitchType == "Push Off Button") {
 					xhtm+='\t      <td id="img"><img src="images/pushoff48.png" title="' + $.t("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48"></td>\n';
@@ -2587,7 +2762,23 @@ define(['app'], function (app) {
 				      bAddTimer = false;
 				  }
 				  else if ((item.SwitchType == "Blinds") || (item.SwitchType.indexOf("Venetian Blinds") == 0)) {
-					if ((item.SubType=="RAEX")||(item.SubType.indexOf('A-OK') == 0)||(item.SubType.indexOf('RollerTrol') == 0)||(item.SubType=="Harrison")||(item.SubType.indexOf('RFY') == 0)||(item.SubType.indexOf('ASA') == 0)||(item.SubType.indexOf('T6 DC') == 0)||(item.SwitchType.indexOf("Venetian Blinds") == 0)) {
+					if (
+						(item.SubType=="RAEX")||
+						(item.SubType.indexOf('A-OK') == 0)||
+						(item.SubType.indexOf('Hasta') >= 0)||
+                        (item.SubType.indexOf('Media Mount') == 0) ||
+                        (item.SubType.indexOf('Forest') == 0) ||
+                        (item.SubType.indexOf('Chamberlain') == 0) ||
+                        (item.SubType.indexOf('Sunpery') == 0) ||
+                        (item.SubType.indexOf('Dolat') == 0) ||
+                        (item.SubType.indexOf('ASP') == 0) ||
+						(item.SubType == "Harrison") ||
+						(item.SubType.indexOf('RFY') == 0)||
+						(item.SubType.indexOf('ASA') == 0)||
+						(item.SubType.indexOf('DC106') == 0)||
+						(item.SubType.indexOf('Confexx') == 0)||
+						(item.SwitchType.indexOf("Venetian Blinds") == 0)
+					   ) {
 						if (item.Status == 'Closed') {
 							xhtm+='\t      <td id="img"><img src="images/blindsopen48.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48"></td>\n';
 							xhtm+='\t      <td id="img2"><img src="images/blindsstop.png" title="' + $.t("Stop Blinds") +'" onclick="SwitchLight(' + item.idx + ',\'Stop\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="24"></td>\n';
@@ -2611,7 +2802,22 @@ define(['app'], function (app) {
 					}
 				  }
 				  else if (item.SwitchType == "Blinds Inverted") {
-					if ((item.SubType=="RAEX")||(item.SubType.indexOf('A-OK') == 0)||(item.SubType.indexOf('RollerTrol') == 0)||(item.SubType=="Harrison")||(item.SubType.indexOf('RFY') == 0)||(item.SubType.indexOf('ASA') == 0)||(item.SubType.indexOf('T6 DC') == 0)) {
+					if (
+						(item.SubType=="RAEX")||
+						(item.SubType.indexOf('A-OK') == 0)||
+						(item.SubType.indexOf('Hasta') >= 0)||
+                        (item.SubType.indexOf('Media Mount') == 0) ||
+                        (item.SubType.indexOf('Forest') == 0) ||
+                        (item.SubType.indexOf('Chamberlain') == 0) ||
+                        (item.SubType.indexOf('Sunpery') == 0) ||
+                        (item.SubType.indexOf('Dolat') == 0) ||
+                        (item.SubType.indexOf('ASP') == 0) ||
+						(item.SubType == "Harrison") ||
+						(item.SubType.indexOf('RFY') == 0)||
+						(item.SubType.indexOf('ASA') == 0)||
+						(item.SubType.indexOf('DC106') == 0)||
+						(item.SubType.indexOf('Confexx') == 0)
+					   ) {
 						if (item.Status == 'Closed') {
 							xhtm+='\t      <td id="img"><img src="images/blindsopen48.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48"></td>\n';
 							xhtm+='\t      <td id="img2"><img src="images/blindsstop.png" title="' + $.t("Stop Blinds") +'" onclick="SwitchLight(' + item.idx + ',\'Stop\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="24"></td>\n';
@@ -2729,7 +2935,7 @@ define(['app'], function (app) {
 										if (item.SubType=="RGB") {
 											xhtm+='\t      <td id="img"><img src="images/RGB48_On.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshLights\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="48" width="48"></td>\n';
 										}
-										else if (item.SubType=="RGBW") {
+										else if (item.SubType.indexOf("RGBW") >= 0) {
 											xhtm+='\t      <td id="img"><img src="images/RGB48_On.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshLights\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="48" width="48"></td>\n';
 										}
 										else {
@@ -2740,7 +2946,7 @@ define(['app'], function (app) {
 										if (item.SubType=="RGB") {
 											xhtm+='\t      <td id="img"><img src="images/RGB48_Off.png" onclick="ShowRGBWPopup(event, ' + item.idx + ',\'RefreshLights\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="48" width="48"></td>\n';
 										}
-										else if (item.SubType=="RGBW") {
+										else if (item.SubType.indexOf("RGBW") >= 0) {
 											xhtm+='\t      <td id="img"><img src="images/RGB48_Off.png" onclick="ShowRGBWPopup(event, ' + item.idx + ',\'RefreshLights\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="48" width="48"></td>\n';
 										}
 										else {
@@ -2796,6 +3002,10 @@ define(['app'], function (app) {
 								bAddTimer=false;
 								xhtm+='\t      <td id="img"><img src="images/Fan48_On.png" height="48" width="48" class="lcursor" onclick="ShowIthoPopup(event, ' + item.idx + ', ShowLights, ' + item.Protected +');"></td>\n';
 							}
+							else if (item.SubType.indexOf("Lucci")==0) {
+								bAddTimer=false;
+								xhtm+='\t      <td id="img"><img src="images/Fan48_On.png" height="48" width="48" class="lcursor" onclick="ShowLucciPopup(event, ' + item.idx + ', ShowLights, ' + item.Protected +');"></td>\n';
+							}
 						  else {
 							if (
 								(item.Status == 'On')||
@@ -2826,7 +3036,7 @@ define(['app'], function (app) {
 						'\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
 						'\t      <td id="type">' + item.Type + ', ' + item.SubType + ', ' + item.SwitchType;
 					if (item.SwitchType == "Dimmer") {
-						if ((item.SubType=="RGBW")||(item.SubType=="RGB")) {
+						if ((item.SubType.indexOf("RGBW") >= 0)||(item.SubType=="RGB")) {
 						}
 						else {
 							xhtm+='<br><br><div style="margin-left:60px;" class="dimslider" id="slider" data-idx="' + item.idx + '" data-type="norm" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"></div>';
@@ -3173,7 +3383,7 @@ define(['app'], function (app) {
 			}
 			else if (lighttype==9) {
 				tothousecodes=16;
-				totunits=4;
+				totunits=10;
 			}
 			else if (lighttype==10) {
 				tothousecodes=4;
@@ -3198,7 +3408,7 @@ define(['app'], function (app) {
 				bIsType5=1;
 				totunits=16;
 			}
-			else if (lighttype==59) {
+			else if (lighttype==65) {
 				//IT (Intertek,FA500,PROmax...)
 				bIsType5=1;
 				totunits=4;
@@ -3212,8 +3422,8 @@ define(['app'], function (app) {
 				bIsType5=1;
 				totunits=4;
 			}
-			else if (lighttype==102) {
-				//RFY
+			else if ((lighttype==102)||(lighttype==107)) {
+				//RFY/RFY2
 				bIsType5=1;
 				totunits=16;
 			}
@@ -3235,25 +3445,30 @@ define(['app'], function (app) {
 				tothousecodes=4;
 				totunits=4;
 			}
-			else if (lighttype==305) {
-				//Openwebnet Blinds
-				totrooms=10;
-				totpointofloads=10;
+			else if ((lighttype==400) || (lighttype==401)) {
+				//Openwebnet Bus Blinds/Lights
+			    totrooms = 11;//area, from 0 to 9 if physical configuration, 0 to 10 if virtual configuration
+			    totpointofloads = 16;//point of load, from 0 to 9 if physical configuration, 1 to 15 if virtual configuration
+				totbus = 10;//maximum 10 local buses
 			}
-			else if (lighttype==306) {
-				//Openwebnet light
+			else if (lighttype==402) {
+				//Openwebnet Bus Auxiliary
 				totrooms=10;
-				totpointofloads=10;
 			}
-
-
+			else if ((lighttype==403) || (lighttype==404)) {
+			    //Openwebnet Zigbee Blinds/Lights
+			    totunits = 3;//unit number is the button number on the switch (e.g. light1/light2 on a light switch)
+			}
+            
 			$("#dialog-addmanuallightdevice #he105params").hide();
 			$("#dialog-addmanuallightdevice #blindsparams").hide();
 			$("#dialog-addmanuallightdevice #lightingparams_enocean").hide();
 			$("#dialog-addmanuallightdevice #lightingparams_gpio").hide();
 			$("#dialog-addmanuallightdevice #homeconfortparams").hide();
 			$("#dialog-addmanuallightdevice #fanparams").hide();
-			$("#dialog-addmanuallightdevice #openwebnetparams").hide();
+			$("#dialog-addmanuallightdevice #openwebnetparamsBus").hide();
+			$("#dialog-addmanuallightdevice #openwebnetparamsAUX").hide();
+			$("#dialog-addmanuallightdevice #openwebnetparamsZigbee").hide();
 
 			if (lighttype==104) {
 				//HE105
@@ -3312,12 +3527,21 @@ define(['app'], function (app) {
 			else if ((lighttype>=200)&&(lighttype<300)) {
 				//Blinds
 				$("#dialog-addmanuallightdevice #blindsparams").show();
+				var bShow1 = (lighttype==205)||(lighttype==206)||(lighttype==207)||(lighttype==210)||(lighttype==211);
 				var bShow4 = (lighttype==206)||(lighttype==207)||(lighttype==209);
-				var bShowUnit = (lighttype==206)||(lighttype==207)||(lighttype==208)||(lighttype==209)||(lighttype==212);
+				var bShowUnit = (lighttype==206)||(lighttype==207)||(lighttype==208)||(lighttype==209)||(lighttype==212)||(lighttype==213);
+				if (bShow1)
+					$('#dialog-addmanuallightdevice #blindsparams #combocmd1').show();
+				else {
+					$('#dialog-addmanuallightdevice #blindsparams #combocmd1').hide();
+					$('#dialog-addmanuallightdevice #blindsparams #combocmd1').val(0);
+				}
 				if (bShow4)
 					$('#dialog-addmanuallightdevice #blindsparams #combocmd4').show();
-				else
+				else {
 					$('#dialog-addmanuallightdevice #blindsparams #combocmd4').hide();
+					$('#dialog-addmanuallightdevice #blindsparams #combocmd4').val(0);
+				}
 				if (bShowUnit)
 					$('#dialog-addmanuallightdevice #blindparamsUnitCode').show();
 				else
@@ -3341,23 +3565,60 @@ define(['app'], function (app) {
 				$("#dialog-addmanuallightdevice #lighting3params").hide();
 				$("#dialog-addmanuallightdevice #fanparams").show();
 			}
-			else if((lighttype==305) || (lighttype==306)){
-				//Openwebnet Blinds/light
-				$("#dialog-addmanuallightdevice #openwebnetparams #combocmd1  >option").remove();
+			else if (lighttype==305) {
+				//Fan (Lucci Air)
+				$("#dialog-addmanuallightdevice #lighting1params").hide();
+				$("#dialog-addmanuallightdevice #lighting2params").hide();
+				$("#dialog-addmanuallightdevice #lighting3params").hide();
+				$("#dialog-addmanuallightdevice #fanparams").show();
+			}
+			else if((lighttype==400) || (lighttype==401)){
+				//Openwebnet Bus Blinds/Light
+			    $("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd1  >option").remove();
 				for (ii=1; ii<totrooms; ii++)
 				{
-					$('#dialog-addmanuallightdevice #openwebnetparams #combocmd1').append($('<option></option>').val(ii).html(ii));
+				    $('#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd1').append($('<option></option>').val(ii).html(ii));
 				}
-				$("#dialog-addmanuallightdevice #openwebnetparams #combocmd2  >option").remove();
+				$("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd2  >option").remove();
 				for (ii=1; ii<totpointofloads; ii++)
 				{
-					$('#dialog-addmanuallightdevice #openwebnetparams #combocmd2').append($('<option></option>').val(ii).html(ii));
+				    $('#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd2').append($('<option></option>').val(ii).html(ii));
+				}
+				$("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd3  >option").remove();
+				$("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd3").append($('<option></option>').val(0).html("local bus"));
+				for (ii = 1; ii < totbus; ii++) {
+				    $("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd3").append($('<option></option>').val(ii).html(ii));
 				}
 
 				$("#dialog-addmanuallightdevice #lighting1params").hide();
 				$("#dialog-addmanuallightdevice #lighting2params").hide();
 				$("#dialog-addmanuallightdevice #lighting3params").hide();
-				$("#dialog-addmanuallightdevice #openwebnetparams").show();
+				$("#dialog-addmanuallightdevice #openwebnetparamsBus").show();
+			}
+			else if (lighttype==402) {
+				//Openwebnet Bus Auxiliary
+				$("#dialog-addmanuallightdevice #openwebnetparamsAUX #combocmd1  >option").remove();
+				for (ii=1; ii<totrooms; ii++)
+				{
+					$('#dialog-addmanuallightdevice #openwebnetparamsAUX #combocmd1').append($('<option></option>').val(ii).html(ii));
+				}
+				$("#dialog-addmanuallightdevice #lighting1params").hide();
+				$("#dialog-addmanuallightdevice #lighting2params").hide();
+				$("#dialog-addmanuallightdevice #lighting3params").hide();
+				$("#dialog-addmanuallightdevice #openwebnetparamsAUX").show();
+			}
+			else if ((lighttype==403) || (lighttype==404)) {
+			    //Openwebnet Zigbee Blinds/Light
+			    $("#dialog-addmanuallightdevice #lighting1params").hide();
+			    $("#dialog-addmanuallightdevice #lighting2params").hide();
+			    $("#dialog-addmanuallightdevice #lighting3params").hide();
+			    $("#dialog-addmanuallightdevice #openwebnetparamsBus").hide();
+			    $("#dialog-addmanuallightdevice #openwebnetparamsAUX").hide();
+			    $("#dialog-addmanuallightdevice #openwebnetparamsZigbee").show();
+			    $("#dialog-addmanuallightdevice #openwebnetparamsZigbee #combocmd2  >option").remove();
+			    for (ii = 1; ii < totunits + 1; ii++) {
+			        $('#dialog-addmanuallightdevice #openwebnetparamsZigbee #combocmd2').append($('<option></option>').val(ii).html(ii));
+			    }
 			}
 			else if (bIsARCType==1) {
 				$('#dialog-addmanuallightdevice #lightparams1 #combohousecode >option').remove();
@@ -3387,9 +3648,9 @@ define(['app'], function (app) {
 				}
 				else {
 					$("#dialog-addmanuallightdevice #lighting2params #combocmd1").hide();
-					if ((lighttype==55)||(lighttype==57)||(lighttype==59)||(lighttype==100)) {
+					if ((lighttype==55)||(lighttype==57)||(lighttype==65)||(lighttype==100)) {
 						$("#dialog-addmanuallightdevice #lighting2params #combocmd2").hide();
-						if ((lighttype!=59)&&(lighttype!=100)) {
+						if ((lighttype!=65)&&(lighttype!=100)) {
 							$("#dialog-addmanuallightdevice #lighting2paramsUnitCode").hide();
 						}
 					}
@@ -3482,13 +3743,56 @@ define(['app'], function (app) {
 					$("#dialog-addmanuallightdevice #fanparams #combocmd3 option:selected").text();
 				mParams+="&id="+ID;
 			}
-			else if ((lighttype==305) || (lighttype==306)) {
-				//OpenWebNet Blinds/light
-				var ID="OpenWebNet";
-				var unitcode=
-					$("#dialog-addmanuallightdevice #openwebnetparams #combocmd1 option:selected").val()+
-					$("#dialog-addmanuallightdevice #openwebnetparams #combocmd2 option:selected").val();
-				mParams+="&id="+ID+"&unitcode="+unitcode;
+			else if (lighttype==305) {
+				//Fan (Lucci Air)
+				ID=
+					$("#dialog-addmanuallightdevice #fanparams #combocmd1 option:selected").text()+
+					$("#dialog-addmanuallightdevice #fanparams #combocmd2 option:selected").text()+
+					$("#dialog-addmanuallightdevice #fanparams #combocmd3 option:selected").text();
+				mParams+="&id="+ID;
+			}
+			else if (lighttype==400) {
+				//OpenWebNet Bus Blinds
+			    var appID = parseInt($("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd1 option:selected").val() +
+					$("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd2 option:selected").val());
+                var ID = ("0002" + ("0000" + appID.toString(16)).slice(-4)); // WHO_AUTOMATION
+                var unitcode = $("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd3 option:selected").val();//TODO : handle bus id (interface) in hardware 
+				mParams+="&id="+ID.toUpperCase()+"&unitcode="+unitcode;
+			}
+			else if (lighttype==401) {
+				//OpenWebNet Bus Lights
+			    var appID = parseInt($("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd1 option:selected").val() +
+					$("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd2 option:selected").val());
+                var ID = ("0001" + ("0000" + appID.toString(16)).slice(-4)); // WHO_LIGHTING
+                var unitcode = $("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd3 option:selected").val();//TODO : handle bus id (interface) in hardware 
+				mParams+="&id="+ID.toUpperCase()+"&unitcode="+unitcode;
+			}
+			else if (lighttype==402) {
+				//OpenWebNet Bus Auxiliary
+				var appID= parseInt($("#dialog-addmanuallightdevice #openwebnetparamsAUX #combocmd1 option:selected").val());
+                var ID = ("0009" + ("0000" + appID.toString(16)).slice(-4)); // WHO_AUXILIARY
+                var unitcode= "0";
+				mParams+="&id="+ID.toUpperCase()+"&unitcode="+unitcode;
+			}
+			else if (lighttype == 403) {
+			    //OpenWebNet Zigbee Blinds
+			    var ID = $("#dialog-addmanuallightdevice #openwebnetparamsZigbee #inputcmd1").val();
+			    if (parseInt(ID) <= 0 || parseInt(ID) >= 0xFFFFFFFF) {
+			        ShowNotify($.t('Zigbee id is incorrect!'), 2500, true);
+			        return "";
+			    }
+			    var unitcode = $("#dialog-addmanuallightdevice #openwebnetparamsZigbee #combocmd2 option:selected").val();
+			    mParams += "&id=" + ID + "&unitcode=" + unitcode;
+			}
+			else if (lighttype == 404) {
+			    //OpenWebNet Zigbee Light
+			    var ID = $("#dialog-addmanuallightdevice #openwebnetparamsZigbee #inputcmd1").val();
+			    if (parseInt(ID) <= 0 || parseInt(ID) >= 0xFFFFFFFF) {
+			        ShowNotify($.t('Zigbee id is incorrect!'), 2500, true);
+			        return "";
+			    }
+			    var unitcode = $("#dialog-addmanuallightdevice #openwebnetparamsZigbee #combocmd2 option:selected").val();
+			    mParams += "&id=" + ID + "&unitcode=" + unitcode;
 			}
 			else {
 				//AC
@@ -3498,11 +3802,12 @@ define(['app'], function (app) {
 					(lighttype==50)||
 					(lighttype==55)||
 					(lighttype==57)||
-					(lighttype==59)||
+					(lighttype==65)||
 					(lighttype==100)||
 					(lighttype==102)||
+					(lighttype==103)||
 					(lighttype==105)||
-					(lighttype==103)
+					(lighttype==107)
 				) {
 					bIsType5=1;
 				}
@@ -3712,23 +4017,7 @@ define(['app'], function (app) {
   				  title: $.t("Add Manual Light/Switch Device"),
 				  buttons: dialog_addmanuallightdevice_buttons,
 				  open: function() {
-						RefreshHardwareComboArray();
-
-						$("#dialog-addmanuallightdevice #lighttable #combohardware").html("");
-						$.each($.ComboHardware, function(i,item){
-							var option = $('<option />');
-							option.attr('value', item.idx).text(item.name);
-							$("#dialog-addmanuallightdevice #lighttable #combohardware").append(option);
-						});
-
-						RefreshGpioComboArray();
-						$("#combogpio").html("");
-						$.each($.ComboGpio, function(i,item){
-							var option = $('<option />');
-							option.attr('value', item.idx).text(item.name);
-							$("#combogpio").append(option);
-						});
-
+						ConfigureAddManualSettings();
 						$("#dialog-addmanuallightdevice #lighttable #comboswitchtype").change(function() {
 							var switchtype=$("#dialog-addmanuallightdevice #lighttable #comboswitchtype option:selected").val(),
 								subtype = -1;
@@ -3767,76 +4056,6 @@ define(['app'], function (app) {
 				EnableDisableSubDevices("#dialog-addmanuallightdevice #howtable #subdevice",true);
 			});
 
-			for (ii=0; ii<256; ii++)
-			{
-				$('#dialog-addmanuallightdevice #lightparams2 #combocmd2').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
-				$('#dialog-addmanuallightdevice #lightparams2 #combocmd3').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
-				$('#dialog-addmanuallightdevice #lightparams2 #combocmd4').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
-				$('#dialog-addmanuallightdevice #lightparams3 #combocmd1').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
-				$('#dialog-addmanuallightdevice #lightparams3 #combocmd2').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
-				$('#dialog-addmanuallightdevice #blindsparams #combocmd1').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
-				$('#dialog-addmanuallightdevice #blindsparams #combocmd2').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
-				$('#dialog-addmanuallightdevice #blindsparams #combocmd3').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
-				$('#dialog-addmanuallightdevice #homeconfortparams #combocmd2').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
-				$('#dialog-addmanuallightdevice #homeconfortparams #combocmd3').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
-				$('#dialog-addmanuallightdevice #fanparams #combocmd1').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
-				$('#dialog-addmanuallightdevice #fanparams #combocmd2').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
-				$('#dialog-addmanuallightdevice #fanparams #combocmd3').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
-			}
-			$('#dialog-addmanuallightdevice #blindsparams #combounitcode >option').remove();
-			for (ii=0; ii<16; ii++)
-			{
-				$('#dialog-addmanuallightdevice #blindsparams #combocmd4').append($('<option></option>').val(ii).html(ii.toString(16).toUpperCase()));
-				$('#dialog-addmanuallightdevice #blindsparams #combounitcode').append($('<option></option>').val(ii).html(ii));
-			}
-			$('#dialog-addmanuallightdevice #lightparams2 #combounitcode >option').remove();
-			for (ii=1; ii<16+1; ii++)
-			{
-				$('#dialog-addmanuallightdevice #lightparams2 #combounitcode').append($('<option></option>').val(ii).html(ii));
-			}
-			$('#dialog-addmanuallightdevice #he105params #combounitcode >option').remove();
-			for (ii=0; ii<32; ii++)
-			{
-				$('#dialog-addmanuallightdevice #he105params #combounitcode').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
-			}
-			//Home confort
-			for (ii=0; ii<8; ii++)
-			{
-				$('#dialog-addmanuallightdevice #homeconfortparams #combocmd1').append($('<option></option>').val(ii).html($.strPad(ii.toString(16).toUpperCase(),2)));
-			}
-			$('#dialog-addmanuallightdevice #homeconfortparams #combohousecode >option').remove();
-			$('#dialog-addmanuallightdevice #homeconfortparams #combounitcode >option').remove();
-			for (ii=0; ii<4; ii++)
-			{
-				$('#dialog-addmanuallightdevice #homeconfortparams #combohousecode').append($('<option></option>').val(65+ii).html(String.fromCharCode(65+ii)));
-				$('#dialog-addmanuallightdevice #homeconfortparams #combounitcode').append($('<option></option>').val((ii+1)).html((ii+1)));
-			}
-
-			$.ddData=[];
-			$scope.CustomImages=[];
-			//Get Custom icons
-			$.ajax({
-			 url: "json.htm?type=custom_light_icons",
-			 async: false,
-			 dataType: 'json',
-			 success: function(data) {
-				if (typeof data.result != 'undefined') {
-					var totalItems=data.result.length;
-					$.each(data.result, function(i,item){
-						var bSelected=false;
-						if (i==0) {
-							bSelected=true;
-						}
-						var img="images/"+item.imageSrc+"48_On.png";
-						$.ddData.push({ text: item.text, value: item.idx, selected: bSelected, description: item.description, imageSrc: img });
-						$scope.CustomImages.push({ text: item.text, value: item.idx, selected: bSelected, description: item.description, imageSrc: img });
-					});
-					if (totalItems>0) {
-						$scope.customimagesel=$scope.CustomImages[0];
-					}
-				}
-			 }
-		   });
 			ShowLights();
 		};
 		$scope.$on('$destroy', function(){

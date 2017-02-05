@@ -14,6 +14,9 @@
 #include "../push/GooglePubSubPush.h"
 #include "concurrent_queue.h"
 #include "../webserver/server_settings.hpp"
+#ifdef USE_PYTHON_PLUGINS
+#	include "../hardware/plugins/PluginManager.h"
+#endif
 
 enum eVerboseLevel
 {
@@ -118,6 +121,9 @@ public:
 
 	CScheduler m_scheduler;
 	CEventSystem m_eventsystem;
+#ifdef USE_PYTHON_PLUGINS
+	Plugins::CPluginSystem m_pluginsystem;
+#endif
 	CDataPush m_datapush;
 	CCameraHandler m_cameras;
 	CHttpPush m_httppush;
@@ -260,6 +266,7 @@ private:
 	void decode_Thermostat1(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_Thermostat2(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_Thermostat3(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
+	void decode_Thermostat4(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_Radiator1(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_Baro(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_TempHumBaro(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);

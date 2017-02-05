@@ -252,7 +252,6 @@ void GoodweAPI::GetMeterDetails()
 	Json::Value root;
 	Json::Reader jReader;
 	bool ret=jReader.parse(sResult,root);
-
 	if (!ret)
 	{
 		_log.Log(LOG_ERROR,"GoodweAPI: Invalid user data received!");
@@ -297,42 +296,42 @@ void GoodweAPI::ParseStation(const std::string sStationId, const std::string sSt
 
 	bret = HTTPClient::GET(sURL, sResult);
 
-        if (!bret)
-        {
-                _log.Log(LOG_ERROR, "GoodweAPI: Error getting http data for station %s!", sStationName.c_str());
-                return;
-        }
+	if (!bret)
+	{
+		_log.Log(LOG_ERROR, "GoodweAPI: Error getting http data for station %s!", sStationName.c_str());
+		return;
+	}
 
 #ifdef DEBUG_GoodweAPIW
 	SaveString2Disk(sResult, "/tmp/Goodwe3.json");
 #endif
 
 	Json::Value root;
-        Json::Reader jReader;
-        bool ret=jReader.parse(sResult,root);
-        if (!ret)
-        {
-                _log.Log(LOG_ERROR,"GoodweAPI: Invalid station data received!");
-                return;
-        }
-
-	// Check completeness of received data
-
-	if (root[BY_STATION_CURRENT_POWER_KW].empty() )
+	Json::Reader jReader;
+	bool ret = jReader.parse(sResult, root);
+	if ((!ret) || (!root.isObject()))
 	{
-		 _log.Log(LOG_ERROR,"GoodweAPI: invalid ID data received - curpower is missing!");
+		_log.Log(LOG_ERROR, "GoodweAPI: Invalid station data received!");
 		return;
 	}
 
-	if (root[BY_STATION_TOTAL_KWH].empty() )
+	// Check completeness of received data
+
+	if (root[BY_STATION_CURRENT_POWER_KW].empty())
 	{
-		 _log.Log(LOG_ERROR,"GoodweAPI: invalid ID data received - etotal is missing!");
-		 return;
+		_log.Log(LOG_ERROR, "GoodweAPI: invalid ID data received - curpower is missing!");
+		return;
 	}
 
-	if (root[BY_STATION_STATUS].empty() )
+	if (root[BY_STATION_TOTAL_KWH].empty())
 	{
-		 _log.Log(LOG_ERROR,"GoodweAPI: invalid ID data received - status is missing!");
+		_log.Log(LOG_ERROR, "GoodweAPI: invalid ID data received - etotal is missing!");
+		return;
+	}
+
+	if (root[BY_STATION_STATUS].empty())
+	{
+		_log.Log(LOG_ERROR, "GoodweAPI: invalid ID data received - status is missing!");
 		return;
 	}
 
@@ -345,7 +344,7 @@ void GoodweAPI::ParseStation(const std::string sStationId, const std::string sSt
 	// Retrieve the values from the strings
 
 	float currentPowerW = getPowerWatt(sCurrentPower);
-	float totalEnergyKWh = getEnergyWh(sTotalEnergy)/1000;
+	float totalEnergyKWh = getEnergyWh(sTotalEnergy) / 1000;
 
 	// Calcullate NodeID from stationId
 
@@ -362,35 +361,35 @@ void GoodweAPI::ParseDeviceList(const std::string sStationId, const std::string 
 	// fetch interverter list
 
 	std::string sURL = GOODWE_DEVICE_LIST_URL + sStationId;
-        bool bret;
+	bool bret;
 	std::string sResult;
 
-        bret = HTTPClient::GET(sURL, sResult);
-        if (!bret)
-        {
-                _log.Log(LOG_ERROR, "GoodweAPI: Error getting http data for device list !");
-                return;
-        }
+	bret = HTTPClient::GET(sURL, sResult);
+	if (!bret)
+	{
+		_log.Log(LOG_ERROR, "GoodweAPI: Error getting http data for device list !");
+		return;
+	}
 #ifdef DEBUG_GoodweAPIW
 	SaveString2Disk(sResult, "/tmp/Goodwe4.json");
 #endif
 
-        Json::Value root;
-        Json::Reader jReader;
-        bool ret=jReader.parse(sResult,root);
-        if (!ret)
-        {
-                _log.Log(LOG_ERROR,"GoodweAPI: Invalid device list!");
-                return;
-        }
+	Json::Value root;
+	Json::Reader jReader;
+	bool ret = jReader.parse(sResult, root);
+	if (!ret)
+	{
+		_log.Log(LOG_ERROR, "GoodweAPI: Invalid device list!");
+		return;
+	}
 
 	if (root.size() < 1)
-        {
-                _log.Log(LOG_STATUS,"GoodweAPI: List if devices / devices is empty!");
-                return;
-        }
-        for (Json::ArrayIndex i = 0; i < root.size(); i++)
-        {
+	{
+		_log.Log(LOG_STATUS, "GoodweAPI: List if devices / devices is empty!");
+		return;
+	}
+	for (Json::ArrayIndex i = 0; i < root.size(); i++)
+	{
 		ParseDevice(root[i], sStationId, sStationName);
 	}
 }
