@@ -473,7 +473,7 @@ typedef struct _tLimitlessLights {
 	uint8_t type;
 	uint8_t subtype;
 	uint32_t id;
-	uint8_t dunit; //0=All, 1=Group1,2=Group2,3=Group3,4=Group4
+	uint8_t dunit; //0=All, 1=Group1,2=Group2,3=Group3,4=Group4, 5=IboxLed
 	uint8_t command;
 	uint8_t value;
 	_tLimitlessLights()

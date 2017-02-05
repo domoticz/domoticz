@@ -577,6 +577,7 @@ define(['app'], function (app) {
 			$.isDimmer=isdimmer;
 			$.isSelector = (devsubtype === "Selector Switch");
 
+			$.bIsRGBWW=(devsubtype.indexOf("RGBWW") >= 0);			
 			$.bIsRGBW=(devsubtype.indexOf("RGBW") >= 0);
 			$.bIsLED=(devsubtype.indexOf("RGB") >= 0);
 
@@ -1581,7 +1582,8 @@ define(['app'], function (app) {
 			else {
 				$("#lightcontent #LedColor").hide();
 			}
-			if (($.bIsRGB==true || $.bIsRGBW==true) && $.strUnit =="0") {
+			//if (($.bIsRGB==true || $.bIsRGBW==true) && $.strUnit =="0") {
+			if (($.bIsRGB==true || $.bIsRGBW==true) && ($.strUnit =="0" || $.strUnit =="5")) {
 				$("#lightcontent #optionsRGB").show();
 			}
 			else {
