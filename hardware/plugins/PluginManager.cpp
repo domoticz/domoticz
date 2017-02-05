@@ -168,11 +168,13 @@ namespace Plugins {
 				if (!PyArg_ParseTuple(args, "s", &msg))
 				{
 					_log.Log(LOG_ERROR, "(%s) PyDomoticz_Debug failed to parse parameters: string expected.", pModState->pPlugin->Name.c_str());
-					return NULL;
+					LogPythonException(pModState->pPlugin, std::string(__func__));
 				}
-
-				std::string	message = "(" + pModState->pPlugin->Name + ") " + msg;
-				_log.Log((_eLogLevel)LOG_NORM, message.c_str());
+				else
+				{
+					std::string	message = "(" + pModState->pPlugin->Name + ") " + msg;
+					_log.Log((_eLogLevel)LOG_NORM, message.c_str());
+				}
 			}
 		}
 
@@ -197,11 +199,13 @@ namespace Plugins {
 			if (!PyArg_ParseTuple(args, "s", &msg))
 			{
 				_log.Log(LOG_ERROR, "(%s) PyDomoticz_Log failed to parse parameters: string expected.", pModState->pPlugin->Name.c_str());
-				return NULL;
+				LogPythonException(pModState->pPlugin, std::string(__func__));
 			}
-
-			std::string	message = "(" + pModState->pPlugin->Name + ") " + msg;
-			_log.Log((_eLogLevel)LOG_NORM, message.c_str());
+			else
+			{
+				std::string	message = "(" + pModState->pPlugin->Name + ") " + msg;
+				_log.Log((_eLogLevel)LOG_NORM, message.c_str());
+			}
 		}
 
 		Py_INCREF(Py_None);
@@ -225,11 +229,13 @@ namespace Plugins {
 			if (!PyArg_ParseTuple(args, "s", &msg))
 			{
 				_log.Log(LOG_ERROR, "(%s) PyDomoticz_Error failed to parse parameters: string expected.", pModState->pPlugin->Name.c_str());
-				return NULL;
+				LogPythonException(pModState->pPlugin, std::string(__func__));
 			}
-
-			std::string	message = "(" + pModState->pPlugin->Name + ") " + msg;
-			_log.Log((_eLogLevel)LOG_ERROR, message.c_str());
+			else
+			{
+				std::string	message = "(" + pModState->pPlugin->Name + ") " + msg;
+				_log.Log((_eLogLevel)LOG_ERROR, message.c_str());
+			}
 		}
 
 		Py_INCREF(Py_None);
@@ -253,6 +259,7 @@ namespace Plugins {
 			if (!PyArg_ParseTuple(args, "i", &type))
 			{
 				_log.Log(LOG_ERROR, "(%s) failed to parse parameters, integer expected.", pModState->pPlugin->Name.c_str());
+				LogPythonException(pModState->pPlugin, std::string(__func__));
 			}
 			else
 			{
@@ -290,6 +297,7 @@ namespace Plugins {
 			if (!PyArg_ParseTupleAndKeywords(args, keywds, "ss|si", kwlist, &szTransport, &szAddress, &szPort, &iBaud))
 			{
 				_log.Log(LOG_ERROR, "(%s) failed to parse parameters. Expected: Transport, Address, Port or Transport, Address, Baud.", pModState->pPlugin->Name.c_str());
+				LogPythonException(pModState->pPlugin, std::string(__func__));
 				Py_INCREF(Py_None);
 				return Py_None;
 			}
@@ -331,6 +339,7 @@ namespace Plugins {
 			if (!PyArg_ParseTuple(args, "s", &szProtocol))
 			{
 				_log.Log(LOG_ERROR, "(%s) failed to parse parameters, string expected.", pModState->pPlugin->Name.c_str());
+				LogPythonException(pModState->pPlugin, std::string(__func__));
 			}
 			else
 			{
@@ -365,6 +374,7 @@ namespace Plugins {
 			if (!PyArg_ParseTuple(args, "i", &iPollinterval))
 			{
 				_log.Log(LOG_ERROR, "(%s) failed to parse parameters, integer expected.", pModState->pPlugin->Name.c_str());
+				LogPythonException(pModState->pPlugin, std::string(__func__));
 			}
 			else
 			{
@@ -440,7 +450,8 @@ namespace Plugins {
 			static char *kwlist[] = { "Message", "Verb", "URL", "Headers", "Delay", NULL };
 			if (!PyArg_ParseTupleAndKeywords(args, keywds, "s|ssOi", kwlist, &szMessage, &szVerb, &szURL, &pHeaders, &iDelay))
 			{
-				_log.Log(LOG_ERROR, "(%s) failed to parse parameters, Message or Message,Verb,URL,Headers expected.", pModState->pPlugin->Name.c_str());
+				_log.Log(LOG_ERROR, "(%s) failed to parse parameters, Message or Message,Verb,URL,Headers,Delay expected.", pModState->pPlugin->Name.c_str());
+				LogPythonException(pModState->pPlugin, std::string(__func__));
 			}
 			else
 			{
@@ -821,8 +832,8 @@ namespace Plugins {
 			{
 				CPlugin* pPlugin = NULL;
 				if (pModState) pPlugin = pModState->pPlugin;
-				LogPythonException(pPlugin, __func__);
 				_log.Log(LOG_ERROR, "Expected: myVar = Domoticz.Device(Name=\"myDevice\", Unit=0, TypeName=\"\", Type=0, Subtype=0, Switchtype=0, Image=0, Options=\"\")");
+				LogPythonException(pPlugin, __func__);
 			}
 		}
 		catch (std::exception e)
@@ -975,6 +986,7 @@ namespace Plugins {
 			if (!PyArg_ParseTupleAndKeywords(args, kwds, "is|iii", kwlist, &nValue, &sValue, &iImage, &iSignalLevel, &iBatteryLevel))
 			{
 				_log.Log(LOG_ERROR, "(%s) %s: Failed to parse parameters: 'nValue', 'sValue', 'SignalLevel' or 'BatteryLevel' expected.", __func__, PyBytes_AsString(pNameBytes));
+				LogPythonException(self->pPlugin, __func__);
 				Py_DECREF(pNameBytes);
 				return NULL;
 			}
