@@ -896,9 +896,9 @@ std::string BleBox::GetUptime(const std::string &IPAddress)
 	char timestring[32] = "";
 
 	uint64_t total_minutes = msec / (1000 * 60);
-	int days = total_minutes / (24 * 60);
-	int hours = total_minutes / 60 - days * 24;
-	int mins = total_minutes - days * 24 * 60 - hours * 60;   //sec / 60 - day * (24 * 60) - hour * 60;
+	int days = static_cast<int>(total_minutes / (24 * 60));
+	int hours = static_cast<int>(total_minutes / 60 - days * 24);
+	int mins = static_cast<int>(total_minutes - days * 24 * 60 - hours * 60);   //sec / 60 - day * (24 * 60) - hour * 60;
 	
 	sprintf(timestring, "%d:%02d:%02d", days, hours, mins);
 
