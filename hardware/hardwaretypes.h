@@ -512,6 +512,9 @@ typedef struct _tLimitlessLights {
 #define Limitless_FullBrightness 21
 #define Limitless_DiscoSpeedFasterLong 22 //exclude RGB
 #define Limitless_SetHEXColour 23
+#define Limitless_DiscoM1 24
+#define Limitless_DiscoM2 25
+
 
 typedef union tREVOBUF {
 	struct _tEVOHOME1 {

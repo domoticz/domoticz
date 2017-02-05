@@ -2475,6 +2475,16 @@ bool GetLightCommand(
 			cmd = Limitless_DiscoMode;
 			return true;
 		}
+		else if (switchcmd == "Disco Mode 1")
+				{
+					cmd = Limitless_DiscoM1;
+					return true;
+				}
+		else if (switchcmd == "Disco Mode 2")
+				{
+					cmd = Limitless_DiscoM2;
+					return true;
+				}
 		else if (switchcmd == "Disco Up")
 		{
 			cmd = Limitless_RGBDiscoNext;

@@ -1181,6 +1181,24 @@ define(['app'], function (app) {
 			});
 		}
 
+		appLampDiscoM1 = function()
+		{
+			$.ajax({
+				 url: "json.htm?type=command&param=discom1&idx=" + $.devIdx,
+				 async: false,
+				 dataType: 'json'
+			});
+		}
+
+		appLampDiscoM2 = function()
+		{
+			$.ajax({
+				 url: "json.htm?type=command&param=discom2&idx=" + $.devIdx,
+				 async: false,
+				 dataType: 'json'
+			});
+		}
+
 		appLampSpeedUp = function()
 		{
 			$.ajax({
@@ -1582,12 +1600,20 @@ define(['app'], function (app) {
 			else {
 				$("#lightcontent #LedColor").hide();
 			}
-			//if (($.bIsRGB==true || $.bIsRGBW==true) && $.strUnit =="0") {
-			if (($.bIsRGB==true || $.bIsRGBW==true) && ($.strUnit =="0" || $.strUnit =="5")) {
+//chris			
+//if (($.bIsRGB==true || $.bIsRGBW==true) && $.strUnit =="0") {
+//if (($.bIsRGB==true || $.bIsRGBW==true) && ($.strUnit =="0" || $.strUnit =="5") && $.bIsRGBWW==false) {
+			if ($.bIsRGB==true && $.strUnit =="0") {
 				$("#lightcontent #optionsRGB").show();
 			}
 			else {
 				$("#lightcontent #optionsRGB").hide();
+			}
+			if ($.bIsRGBWW==true || $.bIsRGBW==true){
+				$("#lightcontent #optionsRGBWW").show();
+			}
+			else {
+				$("#lightcontent #optionsRGBWW").hide();
 			}
 			if ($.bIsRGBW==true) {
 				$("#lightcontent #optionsRGBW").show();
