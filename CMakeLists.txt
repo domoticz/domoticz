@@ -7,6 +7,38 @@ project(domoticz)
 SET(DOMO_MIN_LIBBOOST_VERSION 105500)
 ##
 
+MACRO(Gitversion_GET_REVISION dir variable)
+  EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD
+    WORKING_DIRECTORY ${dir}
+    OUTPUT_VARIABLE ${variable}
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+ENDMACRO(Gitversion_GET_REVISION)
+#~ MESSAGE(FATAL_ERROR "${GIT_EXECUTABLE} ${CMAKE_SOURCE_DIR}")
+Gitversion_GET_REVISION("${CMAKE_SOURCE_DIR}" ProjectRevision)
+
+IF(NOT ProjectRevision)
+  MESSAGE(STATUS "Failed to get ProjectRevision from git")
+  IF(EXISTS ${CMAKE_SOURCE_DIR}/appversion.default)
+    MESSAGE(STATUS "Read ProjectRevision from appversion.default")
+    FILE(STRINGS ${CMAKE_SOURCE_DIR}/appversion.default AppVersionContent)
+    LIST(GET AppVersionContent 0 AppVersionContent)
+    STRING(REPLACE " " ";" AppVersionContent ${AppVersionContent})
+    LIST(GET AppVersionContent 2 ProjectRevision)
+  ELSE(EXISTS ${CMAKE_SOURCE_DIR}/appversion.default)
+    MESSAGE(STATUS "No appversion.default, set ProjectRevision to 0")
+    set (ProjectRevision 0)
+  ENDIF(EXISTS ${CMAKE_SOURCE_DIR}/appversion.default)
+ENDIF(NOT ProjectRevision)
+
+MESSAGE(STATUS "###########################")
+MESSAGE(STATUS "Compiling Revision #${ProjectRevision}")
+MESSAGE(STATUS "###########################")
+
+# The version number.
+set (domoticz_VERSION_MAJOR 3)
+set (domoticz_VERSION_MINOR 0)
+set (domoticz_VERSION_PATCH ${ProjectRevision})
+
 option(USE_BUILTIN_LUA "Use builtin lua library" YES)
 IF(USE_BUILTIN_LUA)
   IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
@@ -199,35 +231,6 @@ ENDMACRO()
 FIND_PROGRAM(GIT_EXECUTABLE git
   DOC "git command line client")
 
-MACRO(Gitversion_GET_REVISION dir variable)
-  EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} --git-dir ./.git rev-list HEAD --count
-    WORKING_DIRECTORY ${dir}
-    OUTPUT_VARIABLE ${variable}
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
-ENDMACRO(Gitversion_GET_REVISION)
-
-Gitversion_GET_REVISION("${CMAKE_SOURCE_DIR}" ProjectRevision)
-IF(NOT ProjectRevision)
-  MESSAGE(STATUS "Failed to get ProjectRevision from git")
-  IF(EXISTS ${CMAKE_SOURCE_DIR}/appversion.default)
-    MESSAGE(STATUS "Read ProjectRevision from appversion.default")
-    FILE(STRINGS ${CMAKE_SOURCE_DIR}/appversion.default AppVersionContent)
-    LIST(GET AppVersionContent 0 AppVersionContent)
-    STRING(REPLACE " " ";" AppVersionContent ${AppVersionContent})
-    LIST(GET AppVersionContent 2 ProjectRevision)
-  ELSE(EXISTS ${CMAKE_SOURCE_DIR}/appversion.default)
-    MESSAGE(STATUS "No appversion.default, set ProjectRevision to 0")
-    set (ProjectRevision 0)
-  ENDIF(EXISTS ${CMAKE_SOURCE_DIR}/appversion.default)
-ELSE(NOT ProjectRevision)
-  MATH(EXPR ProjectRevision "${ProjectRevision}+2107")
-ENDIF(NOT ProjectRevision)
-MESSAGE(STATUS "Compiling Revision #${ProjectRevision}")
-
-# The version number.
-set (domoticz_VERSION_MAJOR 3)
-set (domoticz_VERSION_MINOR 0)
-set (domoticz_VERSION_PATCH ${ProjectRevision})
 
 include_directories(${CMAKE_SOURCE_DIR}/main)
 
