@@ -514,6 +514,13 @@ typedef struct _tLimitlessLights {
 #define Limitless_SetHEXColour 23
 #define Limitless_DiscoM1 24
 #define Limitless_DiscoM2 25
+#define Limitless_DiscoM3 26
+#define Limitless_DiscoM4 27
+#define Limitless_DiscoM5 28
+#define Limitless_DiscoM6 29
+#define Limitless_DiscoM7 30
+#define Limitless_DiscoM8 31
+#define Limitless_DiscoM9 32
 
 
 typedef union tREVOBUF {

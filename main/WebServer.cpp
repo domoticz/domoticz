@@ -6566,6 +6566,118 @@ namespace http {
 
 							m_mainworker.SwitchLight(ID, "Disco Mode 2", 0, -1, false, 0);
 						}
+			else if (cparam == "discom3")
+						{
+							std::string idx = request::findValue(&req, "idx");
+
+							if (idx == "")
+							{
+								return;
+							}
+
+							uint64_t ID;
+							std::stringstream s_strid;
+							s_strid << idx;
+							s_strid >> ID;
+
+							m_mainworker.SwitchLight(ID, "Disco Mode 3", 0, -1, false, 0);
+						}
+			else if (cparam == "discom4")
+						{
+							std::string idx = request::findValue(&req, "idx");
+
+							if (idx == "")
+							{
+								return;
+							}
+
+							uint64_t ID;
+							std::stringstream s_strid;
+							s_strid << idx;
+							s_strid >> ID;
+
+							m_mainworker.SwitchLight(ID, "Disco Mode 4", 0, -1, false, 0);
+						}
+			else if (cparam == "discom5")
+						{
+							std::string idx = request::findValue(&req, "idx");
+
+							if (idx == "")
+							{
+								return;
+							}
+
+							uint64_t ID;
+							std::stringstream s_strid;
+							s_strid << idx;
+							s_strid >> ID;
+
+							m_mainworker.SwitchLight(ID, "Disco Mode 5", 0, -1, false, 0);
+						}
+			else if (cparam == "discom6")
+						{
+							std::string idx = request::findValue(&req, "idx");
+
+							if (idx == "")
+							{
+								return;
+							}
+
+							uint64_t ID;
+							std::stringstream s_strid;
+							s_strid << idx;
+							s_strid >> ID;
+
+							m_mainworker.SwitchLight(ID, "Disco Mode 6", 0, -1, false, 0);
+						}
+			else if (cparam == "discom7")
+						{
+							std::string idx = request::findValue(&req, "idx");
+
+							if (idx == "")
+							{
+								return;
+							}
+
+							uint64_t ID;
+							std::stringstream s_strid;
+							s_strid << idx;
+							s_strid >> ID;
+
+							m_mainworker.SwitchLight(ID, "Disco Mode 7", 0, -1, false, 0);
+						}
+			else if (cparam == "discom8")
+						{
+							std::string idx = request::findValue(&req, "idx");
+
+							if (idx == "")
+							{
+								return;
+							}
+
+							uint64_t ID;
+							std::stringstream s_strid;
+							s_strid << idx;
+							s_strid >> ID;
+
+							m_mainworker.SwitchLight(ID, "Disco Mode 8", 0, -1, false, 0);
+						}
+			else if (cparam == "discom9")
+						{
+							std::string idx = request::findValue(&req, "idx");
+
+							if (idx == "")
+							{
+								return;
+							}
+
+							uint64_t ID;
+							std::stringstream s_strid;
+							s_strid << idx;
+							s_strid >> ID;
+
+							m_mainworker.SwitchLight(ID, "Disco Mode 9", 0, -1, false, 0);
+						}
 			else if (cparam == "discoup")
 			{
 				std::string idx = request::findValue(&req, "idx");

@@ -1199,6 +1199,69 @@ define(['app'], function (app) {
 			});
 		}
 
+		appLampDiscoM3 = function()
+		{
+			$.ajax({
+				 url: "json.htm?type=command&param=discom3&idx=" + $.devIdx,
+				 async: false,
+				 dataType: 'json'
+			});
+		}
+
+		appLampDiscoM4 = function()
+		{
+			$.ajax({
+				 url: "json.htm?type=command&param=discom4&idx=" + $.devIdx,
+				 async: false,
+				 dataType: 'json'
+			});
+		}
+
+		appLampDiscoM5 = function()
+		{
+			$.ajax({
+				 url: "json.htm?type=command&param=discom5&idx=" + $.devIdx,
+				 async: false,
+				 dataType: 'json'
+			});
+		}
+
+		appLampDiscoM6 = function()
+		{
+			$.ajax({
+				 url: "json.htm?type=command&param=discom6&idx=" + $.devIdx,
+				 async: false,
+				 dataType: 'json'
+			});
+		}
+
+		appLampDiscoM7 = function()
+		{
+			$.ajax({
+				 url: "json.htm?type=command&param=discom7&idx=" + $.devIdx,
+				 async: false,
+				 dataType: 'json'
+			});
+		}
+
+		appLampDiscoM8 = function()
+		{
+			$.ajax({
+				 url: "json.htm?type=command&param=discom8&idx=" + $.devIdx,
+				 async: false,
+				 dataType: 'json'
+			});
+		}
+
+		appLampDiscoM9 = function()
+		{
+			$.ajax({
+				 url: "json.htm?type=command&param=discom9&idx=" + $.devIdx,
+				 async: false,
+				 dataType: 'json'
+			});
+		}
+		
 		appLampSpeedUp = function()
 		{
 			$.ajax({

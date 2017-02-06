@@ -2485,6 +2485,41 @@ bool GetLightCommand(
 					cmd = Limitless_DiscoM2;
 					return true;
 				}
+		else if (switchcmd == "Disco Mode 3")
+				{
+					cmd = Limitless_DiscoM3;
+					return true;
+				}
+		else if (switchcmd == "Disco Mode 4")
+				{
+					cmd = Limitless_DiscoM4;
+					return true;
+				}
+		else if (switchcmd == "Disco Mode 5")
+				{
+					cmd = Limitless_DiscoM5;
+					return true;
+				}
+		else if (switchcmd == "Disco Mode 6")
+				{
+					cmd = Limitless_DiscoM6;
+					return true;
+				}
+		else if (switchcmd == "Disco Mode 7")
+				{
+					cmd = Limitless_DiscoM7;
+					return true;
+				}
+		else if (switchcmd == "Disco Mode 8")
+				{
+					cmd = Limitless_DiscoM8;
+					return true;
+				}
+		else if (switchcmd == "Disco Mode 9")
+				{
+					cmd = Limitless_DiscoM9;
+					return true;
+				}
 		else if (switchcmd == "Disco Up")
 		{
 			cmd = Limitless_RGBDiscoNext;
