@@ -624,6 +624,12 @@ namespace http {
 					root["result"][ii]["Name"] = sd[1];
 					root["result"][ii]["IP"] = ip;
 					root["result"][ii]["Type"] = DevicesType[atoi(sd[3].c_str())].name;
+
+					BleBox *pHardware = reinterpret_cast<BleBox*>(pBaseHardware);
+					std::string uptime = pHardware->GetUptime(ip);
+					root["result"][ii]["Uptime"] = uptime;
+					//TODO: read more paramaters from devices (version fw, etc)
+
 					ii++;
 				}
 			}
@@ -788,7 +794,7 @@ namespace http {
 
 			root["status"] = "OK";
 			root["title"] = "BleBoxAutoSearchingNodes";
-		/*	pHardware->xyz();*/ // TODO
+			pHardware->SearchNodes(ipmask);
 		}
 
 		void CWebServer::Cmd_BleBoxUpdateFirmware(WebEmSession & session, const request& req, Json::Value &root)
@@ -874,6 +880,31 @@ std::string BleBox::IdentifyDevice(const std::string &IPAddress)
 	}
 	return result;
 }
+
+std::string BleBox::GetUptime(const std::string &IPAddress)
+{
+	Json::Value root = SendCommand(IPAddress, "/api/device/uptime");
+	if (root == "")
+		return "unknown";
+
+	if (root["uptime"].empty() == true)
+		return "unknown";
+
+	std::string result;
+
+	uint64_t msec = root["uptime"].asUInt64();
+	char timestring[32] = "";
+
+	uint64_t total_minutes = msec / (1000 * 60);
+	int days = static_cast<int>(total_minutes / (24 * 60));
+	int hours = static_cast<int>(total_minutes / 60 - days * 24);
+	int mins = static_cast<int>(total_minutes - days * 24 * 60 - hours * 60);   //sec / 60 - day * (24 * 60) - hour * 60;
+	
+	sprintf(timestring, "%d:%02d:%02d", days, hours, mins);
+
+	return timestring;
+}
+
 
 void BleBox::AddNode(const std::string &name, const std::string &IPAddress)
 {
@@ -979,3 +1010,15 @@ void BleBox::UpdateFirmware()
 	}
 }
 
+void BleBox::SearchNodes(const std::string &ipmask)
+{ 
+	std::vector<std::string> strarray;
+	StringSplit(ipmask, ".", strarray); // ipmask - expected "x.y.z.*"
+	if (strarray.size() != 4)
+		return;
+	if (strarray[3] != "*")
+		return;
+	if (!isInt(strarray[0]) || !isInt(strarray[1]) || !isInt(strarray[2]))
+		return;
+	//TODO
+}

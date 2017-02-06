@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 1346
+# ref 1350
 
 CACHE:
 # CSS
@@ -404,6 +404,7 @@ media/click.wav
 media/delete.mp3
 media/delete.wav
 media/disconnect.wav
+media/disconnect.mp3
 secpanel/media/arm.aac
 secpanel/media/arm.mp3
 secpanel/media/arm.ogg
