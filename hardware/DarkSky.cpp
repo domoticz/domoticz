@@ -153,7 +153,7 @@ void CDarkSky::GetMeterDetails()
 
 	Json::Reader jReader;
 	bool ret=jReader.parse(sResult,root);
-	if (!ret)
+	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR,"DarkSky: Invalid data received! Check Location, use a City or GPS Coordinates (xx.yyyy,xx.yyyyy)");
 		return;

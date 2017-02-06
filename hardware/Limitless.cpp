@@ -219,15 +219,6 @@ bool CLimitLess::StartHardware()
 	m_stRemoteDestAddr.sin_addr = *((struct in_addr *)he->h_addr);
 	memset(m_stRemoteDestAddr.sin_zero, '\0', sizeof m_stRemoteDestAddr.sin_zero);
 
-	if (m_BridgeType == LBTYPE_V6)
-	{
-		if (!GetV6BridgeID())
-		{
-			_log.Log(LOG_ERROR, "AppLamp: Bridge not found, check IP Address/Port!...");
-			return false;
-		}
-	}
-
 	//Add the Default switches
 	if (m_LEDType != sTypeLimitlessRGB) {
 		if (!AddSwitchIfNotExits(0, "AppLamp All"))
@@ -256,8 +247,7 @@ bool CLimitLess::StartHardware()
 	sOnConnected(this);
 	//Start worker thread
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CLimitLess::Do_Work, this)));
-
-	_log.Log(LOG_STATUS,"AppLamp: Worker Started...");
+	_log.Log(LOG_STATUS, "AppLamp: Worker Started...");
 	return (m_thread!=NULL);
 }
 
@@ -428,10 +418,27 @@ bool CLimitLess::StopHardware()
 void CLimitLess::Do_Work()
 {
 	int sec_counter = 0;
+	bool bDoInit = true;
+
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
 		sec_counter++;
+
+		if (bDoInit)
+		{
+			bDoInit = false;
+			if (m_BridgeType == LBTYPE_V6)
+			{
+				if (!GetV6BridgeID())
+				{
+					_log.Log(LOG_ERROR, "AppLamp: Bridge not found, check IP Address/Port!...");
+					_log.Log(LOG_ERROR, "AppLamp: Worker stopped!...");
+					return;
+				}
+				_log.Log(LOG_STATUS, "AppLamp: Bridge found!...");
+			}
+		}
 
 		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat=mytime(NULL);

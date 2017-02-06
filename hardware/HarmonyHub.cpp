@@ -294,7 +294,7 @@ bool CHarmonyHub::UpdateActivities()
 	Json::Reader jReader;
 	Json::Value root;
 	bool ret = jReader.parse(m_szResultString, root);
-	if (!ret)
+	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "Harmony Hub: Invalid data received! (Update Activities)");
 		return false;
@@ -784,7 +784,7 @@ bool CHarmonyHub::CheckIfChanging(const std::string& strData)
 		Json::Reader jReader;
 		Json::Value root;
 		bool ret = jReader.parse(szResponse, root);
-		if (!ret)
+		if ((!ret) || (!root.isObject()))
 			continue;
 
 		if (root["activityStatus"].empty())

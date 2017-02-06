@@ -208,12 +208,12 @@ bool CNest::Login()
 
 	Json::Value root;
 	Json::Reader jReader;
-	if (!jReader.parse(sResult, root))
+	bool bRet = jReader.parse(sResult, root);
+	if ((!bRet) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "Nest: Invalid data received, or invalid username/password!");
 		return false;
 	}
-
 	if (root["urls"].empty())
 	{
 		_log.Log(LOG_ERROR, "Nest: Invalid data received, or invalid username/password!");
@@ -393,13 +393,13 @@ void CNest::GetMeterDetails()
 
 	Json::Value root;
 	Json::Reader jReader;
-	if (!jReader.parse(sResult, root))
+	bool bRet = jReader.parse(sResult, root);
+	if ((!bRet) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "Nest: Invalid data received!");
 		m_bDoLogin = true;
 		return;
 	}
-
 	bool bHaveShared = !root["shared"].empty();
 	bool bHaveTopaz = !root["topaz"].empty();
 
