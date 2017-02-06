@@ -12599,6 +12599,20 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 			if (dID != 0)
 				m_notifications.CheckAndHandleNotification(dID, dName, devType, subType, NTYPE_TEMPERATURE, (float)atof(sValue.c_str()));
 		}
+		else if (devType == pTypeGeneralSwitch)
+		{
+			_tGeneralSwitch gswitch;
+			gswitch.subtype = subType;
+			gswitch.id = ID;
+			gswitch.unitcode = unit;
+			gswitch.cmnd = nValue;
+			gswitch.level = (unsigned char)atoi(sValue.c_str());;
+			gswitch.battery_level = batterylevel;
+			gswitch.rssi = signallevel;
+			gswitch.seqnbr = 0;
+			DecodeRXMessage(pHardware, (const unsigned char *)&gswitch, NULL, batterylevel);
+			return true;
+		}
 	}
 
 	std::string devname = "Unknown";

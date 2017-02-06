@@ -267,7 +267,7 @@ const char *Switch_Type_Desc(const _eSwitchType sType)
 		{ STYPE_Motion, "Motion Sensor" },
 		{ STYPE_PushOn, "Push On Button" },
 		{ STYPE_PushOff, "Push Off Button" },
-		{ STYPE_DoorLock, "Door Lock" },
+		{ STYPE_DoorContact, "Door Contact" },
         { STYPE_Dusk, "Dusk Sensor" },
 		{ STYPE_BlindsPercentage, "Blinds Percentage" },
 		{ STYPE_VenetianBlindsUS, "Venetian Blinds US" },
@@ -275,6 +275,7 @@ const char *Switch_Type_Desc(const _eSwitchType sType)
 		{ STYPE_BlindsPercentageInverted, "Blinds Percentage Inverted" },
 		{ STYPE_Media, "Media Player" },
 		{ STYPE_Selector, "Selector" },
+		{ STYPE_DoorLock, "Door Lock" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, sType);

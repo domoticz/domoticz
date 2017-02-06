@@ -2136,13 +2136,21 @@ define(['app'], function (app) {
 								img='<img src="images/push48.png" title="' + $.t("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
 							}
 						}
-						else if (item.SwitchType == "Door Lock") {
+						else if (item.SwitchType == "Door Contact") {
 							if (item.InternalState=="Open") {
 								img='<img src="images/door48open.png" title="' + $.t("Close Door") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
 							}
 							else {
 								img='<img src="images/door48.png" title="' + $.t("Open Door") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
 							}
+						}
+						else if (item.SwitchType == "Door Lock") {
+						    if (item.InternalState == "Unlocked") {
+						        img = '<img src="images/door48open.png" title="' + $.t("Lock") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48" width="48">';
+						    }
+						    else {
+						        img = '<img src="images/door48.png" title="' + $.t("Unlock") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48" width="48">';
+						    }
 						}
 						else if (item.SwitchType == "Push Off Button") {
 							img='<img src="images/pushoff48.png" title="' + $.t("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
@@ -2705,7 +2713,7 @@ define(['app'], function (app) {
 						xhtm+='\t      <td id="img"><img src="images/push48.png" title="' + $.t("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48"></td>\n';
 					}
 				  }
-				  else if (item.SwitchType == "Door Lock") {
+				  else if (item.SwitchType == "Door Contact") {
 					if (item.InternalState=="Open") {
 						xhtm+='\t      <td id="img"><img src="images/door48open.png" title="' + $.t("Close Door") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48"></td>\n';
 					}
@@ -2713,6 +2721,15 @@ define(['app'], function (app) {
 						xhtm+='\t      <td id="img"><img src="images/door48.png" title="' + $.t("Open Door") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48"></td>\n';
 					}
 					bAddTimer=false;
+				  }
+				  else if (item.SwitchType == "Door Lock") {
+				      if (item.InternalState == "Unlocked") {
+				          xhtm += '\t      <td id="img"><img src="images/door48open.png" title="' + $.t("Lock") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48" width="48"></td>\n';
+				      }
+				      else {
+				          xhtm += '\t      <td id="img"><img src="images/door48.png" title="' + $.t("Unlock") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48" width="48"></td>\n';
+				      }
+				      bAddTimer = false;
 				  }
 				  else if (item.SwitchType == "Push Off Button") {
 					xhtm+='\t      <td id="img"><img src="images/pushoff48.png" title="' + $.t("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48"></td>\n';
