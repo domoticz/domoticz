@@ -615,7 +615,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 			}
 			break;
 		case pTypeP1Power:
-			if (!splitresults.empty())
+			if (splitresults.size() == 6)
 			{
 				utilityval = static_cast<float>(atof(splitresults[4].c_str()));
 				isUtility = true;
@@ -3576,13 +3576,13 @@ std::string CEventSystem::nValueToWording(const unsigned char dType, const unsig
 	bool bHaveDimmer = false;
 	bool bHaveGroupCmd = false;
 	int maxDimLevel = 0;
-	GetLightStatus(dType, dSubType, switchtype,nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
-/*
-	if (lstatus.find("Set Level") == 0)
-	{
-		lstatus = "Set Level";
-	}
-*/
+	GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+	/*
+		if (lstatus.find("Set Level") == 0)
+		{
+			lstatus = "Set Level";
+		}
+	*/
 	if (switchtype == STYPE_Dimmer)
 	{
 		// use default lstatus
@@ -3592,7 +3592,7 @@ std::string CEventSystem::nValueToWording(const unsigned char dType, const unsig
 	{
 		lstatus = sValue;
 	}
-	else if(switchtype == STYPE_Selector)
+	else if (switchtype == STYPE_Selector)
 	{
 		std::map<std::string, std::string> statuses;
 		GetSelectorSwitchStatuses(options, statuses);
@@ -3600,7 +3600,7 @@ std::string CEventSystem::nValueToWording(const unsigned char dType, const unsig
 		sslevel << llevel;
 		lstatus = statuses[sslevel.str()];
 	}
-	else if ((switchtype == STYPE_Contact) || (switchtype == STYPE_DoorLock))
+	else if ((switchtype == STYPE_Contact) || (switchtype == STYPE_DoorContact))
 	{
 		bool bIsOn = IsLightSwitchOn(lstatus);
 		if (bIsOn)
@@ -3610,6 +3610,18 @@ std::string CEventSystem::nValueToWording(const unsigned char dType, const unsig
 		else if (lstatus == "Off")
 		{
 			lstatus = "Closed";
+		}
+	}
+	else if (switchtype == STYPE_DoorLock)
+	{
+		bool bIsOn = IsLightSwitchOn(lstatus);
+		if (bIsOn)
+		{
+			lstatus = "Locked";
+		}
+		else if (lstatus == "Off")
+		{
+			lstatus = "Unlocked";
 		}
 	}
 	else if (switchtype == STYPE_Blinds)
@@ -3672,12 +3684,12 @@ std::string CEventSystem::nValueToWording(const unsigned char dType, const unsig
 	{
 		lstatus = sValue;
 		//OJO if lstatus  is still empty we use nValue for lstatus. ss for conversion
-        	if (lstatus == "")
-        	{
+		if (lstatus == "")
+		{
 			std::stringstream ss;
 			ss << (unsigned int)nValue;
-           		lstatus = ss.str();
-        	}		
+			lstatus = ss.str();
+		}
 	}
 	return lstatus;
 }

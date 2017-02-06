@@ -268,7 +268,7 @@ bool CNetatmo::Login()
 	Json::Value root;
 	Json::Reader jReader;
 	ret = jReader.parse(sResult, root);
-	if (!ret)
+	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "Netatmo: Invalid/no data received...");
 		return false;
@@ -331,7 +331,7 @@ bool CNetatmo::RefreshToken(const bool bForce)
 	Json::Value root;
 	Json::Reader jReader;
 	ret = jReader.parse(sResult, root);
-	if (!ret)
+	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "Netatmo: Invalid/no data received...");
 		//Force login next time
@@ -781,7 +781,7 @@ bool CNetatmo::ParseNetatmoGetResponse(const std::string &sResult, const bool bI
 	Json::Value root;
 	Json::Reader jReader;
 	bool ret = jReader.parse(sResult, root);
-	if (!ret)
+	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_STATUS, "Netatmo: Invalid data received...");
 		return false;
@@ -1039,11 +1039,13 @@ void CNetatmo::GetMeterDetails()
 	//Check for error
 	Json::Value root;
 	Json::Reader jReader;
-	if (!jReader.parse(sResult, root))
+	bool bRet = jReader.parse(sResult, root);
+	if ((!bRet) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "Netatmo: Invalid data received...");
 		return;
 	}
+
 	if (!root["error"].empty())
 	{
 		//We received an error
@@ -1065,7 +1067,8 @@ void CNetatmo::GetMeterDetails()
 				_log.Log(LOG_ERROR, "Netatmo: Error connecting to Server...");
 				return;
 			}
-			if (!jReader.parse(sResult, root))
+			bool bRet = jReader.parse(sResult, root);
+			if ((!bRet) || (!root.isObject()))
 			{
 				_log.Log(LOG_ERROR, "Netatmo: Invalid data received...");
 				return;

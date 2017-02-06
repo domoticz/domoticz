@@ -8400,7 +8400,7 @@ namespace http {
 							root["result"][ii]["TypeImg"] = "doorbell";
 							root["result"][ii]["Status"] = "";//"Pressed";
 						}
-						else if (switchtype == STYPE_DoorLock)
+						else if (switchtype == STYPE_DoorContact)
 						{
 							root["result"][ii]["TypeImg"] = "door";
 							bool bIsOn = IsLightSwitchOn(lstatus);
@@ -8410,6 +8410,19 @@ namespace http {
 							}
 							else {
 								lstatus = "Closed";
+							}
+							root["result"][ii]["Status"] = lstatus;
+						}
+						else if (switchtype == STYPE_DoorLock)
+						{
+							root["result"][ii]["TypeImg"] = "door";
+							bool bIsOn = IsLightSwitchOn(lstatus);
+							root["result"][ii]["InternalState"] = (bIsOn == true) ? "Locked" : "Unlocked";
+							if (bIsOn) {
+								lstatus = "Locked";
+							}
+							else {
+								lstatus = "Unlocked";
 							}
 							root["result"][ii]["Status"] = lstatus;
 						}
@@ -9023,28 +9036,28 @@ namespace http {
 						root["result"][ii]["ValueUnits"] = "";
 
 						double meteroffset = AddjValue;
-						float fvalue = static_cast<float>(atof(sValue.c_str()));
+						double dvalue = static_cast<double>(atof(sValue.c_str()));
 
 						switch (metertype)
 						{
 						case MTYPE_ENERGY:
 						case MTYPE_ENERGY_GENERATED:
-							sprintf(szTmp, "%.03f kWh", meteroffset + (fvalue / EnergyDivider));
+							sprintf(szTmp, "%.03f kWh", meteroffset + (dvalue / EnergyDivider));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_GAS:
-							sprintf(szTmp, "%.03f m3", meteroffset + (fvalue / GasDivider));
+							sprintf(szTmp, "%.03f m3", meteroffset + (dvalue / GasDivider));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_WATER:
-							sprintf(szTmp, "%.03f m3", meteroffset + (fvalue / WaterDivider));
+							sprintf(szTmp, "%.03f m3", meteroffset + (dvalue / WaterDivider));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_COUNTER:
-							sprintf(szTmp, "%.0f %s", meteroffset + fvalue, ValueUnits.c_str());
+							sprintf(szTmp, "%.0f %s", meteroffset + dvalue, ValueUnits.c_str());
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							root["result"][ii]["ValueQuantity"] = ValueQuantity;
@@ -9081,15 +9094,14 @@ namespace http {
 
                         //get value of today
                         time_t now = mytime(NULL);
-			struct tm ltime;
-			localtime_r(&now, &ltime);
+						struct tm ltime;
+						localtime_r(&now, &ltime);
                         char szDate[40];
                         sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
 
                         std::vector<std::vector<std::string> > result2;
                         strcpy(szTmp, "0");
-                        result2 = m_sql.safe_query("SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID='%q' AND Date>='%q')",
-                            sd[0].c_str(), szDate);
+                        result2 = m_sql.safe_query("SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID='%q' AND Date>='%q')", sd[0].c_str(), szDate);
                         if (result2.size() > 0)
                         {
                             std::vector<std::string> sd2 = result2[0];
@@ -9131,27 +9143,27 @@ namespace http {
                         root["result"][ii]["TypeImg"] = "counter";
                         root["result"][ii]["ValueQuantity"] = "";
                         root["result"][ii]["ValueUnits"] = "";
-                        float fvalue = static_cast<float>(atof(sValue.c_str()));
+                        double dvalue = static_cast<double>(atof(sValue.c_str()));
                         switch (metertype)
                         {
                         case MTYPE_ENERGY:
 						case MTYPE_ENERGY_GENERATED:
-                                sprintf(szTmp, "%.03f kWh", fvalue / EnergyDivider);
+                                sprintf(szTmp, "%.03f kWh", dvalue / EnergyDivider);
                                 root["result"][ii]["Data"] = szTmp;
                                 root["result"][ii]["Counter"] = szTmp;
                                 break;
                         case MTYPE_GAS:
-                                sprintf(szTmp, "%.03f m3", fvalue / GasDivider);
+                                sprintf(szTmp, "%.03f m3", dvalue / GasDivider);
                                 root["result"][ii]["Data"] = szTmp;
                                 root["result"][ii]["Counter"] = szTmp;
                                 break;
                         case MTYPE_WATER:
-                                sprintf(szTmp, "%.03f m3", fvalue / WaterDivider);
+                                sprintf(szTmp, "%.03f m3", dvalue / WaterDivider);
                                 root["result"][ii]["Data"] = szTmp;
                                 root["result"][ii]["Counter"] = szTmp;
                                 break;
                         case MTYPE_COUNTER:
-                                sprintf(szTmp, "%.0f %s", fvalue, ValueUnits.c_str());
+                                sprintf(szTmp, "%.0f %s", dvalue, ValueUnits.c_str());
                                 root["result"][ii]["Data"] = szTmp;
                                 root["result"][ii]["Counter"] = szTmp;
                                 root["result"][ii]["ValueQuantity"] = ValueQuantity;
@@ -9196,8 +9208,7 @@ namespace http {
 
 						std::vector<std::vector<std::string> > result2;
 						strcpy(szTmp, "0");
-						result2 = m_sql.safe_query("SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID='%q' AND Date>='%q')",
-							sd[0].c_str(), szDate);
+						result2 = m_sql.safe_query("SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID='%q' AND Date>='%q')", sd[0].c_str(), szDate);
 						if (result2.size() > 0)
 						{
 							std::vector<std::string> sd2 = result2[0];
@@ -9317,105 +9328,117 @@ namespace http {
 						std::vector<std::string> splitresults;
 						StringSplit(sValue, ";", splitresults);
 						if (splitresults.size() != 6)
-							continue; //impossible
-
-						float EnergyDivider = 1000.0f;
-						int tValue;
-						if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
 						{
-							EnergyDivider = float(tValue);
-						}
-
-						unsigned long long powerusage1;
-						unsigned long long powerusage2;
-						unsigned long long powerdeliv1;
-						unsigned long long powerdeliv2;
-						unsigned long long usagecurrent;
-						unsigned long long delivcurrent;
-
-						std::stringstream s_powerusage1(splitresults[0]);
-						std::stringstream s_powerusage2(splitresults[1]);
-						std::stringstream s_powerdeliv1(splitresults[2]);
-						std::stringstream s_powerdeliv2(splitresults[3]);
-						std::stringstream s_usagecurrent(splitresults[4]);
-						std::stringstream s_delivcurrent(splitresults[5]);
-
-						s_powerusage1 >> powerusage1;
-						s_powerusage2 >> powerusage2;
-						s_powerdeliv1 >> powerdeliv1;
-						s_powerdeliv2 >> powerdeliv2;
-						s_usagecurrent >> usagecurrent;
-						s_delivcurrent >> delivcurrent;
-
-						unsigned long long powerusage = powerusage1 + powerusage2;
-						unsigned long long powerdeliv = powerdeliv1 + powerdeliv2;
-						if (powerdeliv < 2)
-							powerdeliv = 0;
-
-						float musage = 0;
-
-						root["result"][ii]["SwitchTypeVal"] = MTYPE_ENERGY;
-						musage = float(powerusage) / EnergyDivider;
-						sprintf(szTmp, "%.03f", musage);
-						root["result"][ii]["Counter"] = szTmp;
-						musage = float(powerdeliv) / EnergyDivider;
-						sprintf(szTmp, "%.03f", musage);
-						root["result"][ii]["CounterDeliv"] = szTmp;
-
-						if (bHaveTimeout)
-						{
-							usagecurrent = 0;
-							delivcurrent = 0;
-						}
-						sprintf(szTmp, "%llu Watt", usagecurrent);
-						root["result"][ii]["Usage"] = szTmp;
-						sprintf(szTmp, "%llu Watt", delivcurrent);
-						root["result"][ii]["UsageDeliv"] = szTmp;
-						root["result"][ii]["Data"] = sValue;
-						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-
-						//get value of today
-						time_t now = mytime(NULL);
-						struct tm ltime;
-						localtime_r(&now, &ltime);
-						char szDate[40];
-						sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
-
-						std::vector<std::vector<std::string> > result2;
-						strcpy(szTmp, "0");
-						result2 = m_sql.safe_query("SELECT MIN(Value1), MIN(Value2), MIN(Value5), MIN(Value6) FROM MultiMeter WHERE (DeviceRowID='%q' AND Date>='%q')",
-							sd[0].c_str(), szDate);
-						if (result2.size() > 0)
-						{
-							std::vector<std::string> sd2 = result2[0];
-
-							unsigned long long total_min_usage_1, total_min_usage_2, total_real_usage;
-							unsigned long long total_min_deliv_1, total_min_deliv_2, total_real_deliv;
-
-							std::stringstream s_str1(sd2[0]);
-							s_str1 >> total_min_usage_1;
-							std::stringstream s_str2(sd2[1]);
-							s_str2 >> total_min_deliv_1;
-							std::stringstream s_str3(sd2[2]);
-							s_str3 >> total_min_usage_2;
-							std::stringstream s_str4(sd2[3]);
-							s_str4 >> total_min_deliv_2;
-
-							total_real_usage = powerusage - (total_min_usage_1 + total_min_usage_2);
-							total_real_deliv = powerdeliv - (total_min_deliv_1 + total_min_deliv_2);
-
-							musage = float(total_real_usage) / EnergyDivider;
-							sprintf(szTmp, "%.03f kWh", musage);
-							root["result"][ii]["CounterToday"] = szTmp;
-							musage = float(total_real_deliv) / EnergyDivider;
-							sprintf(szTmp, "%.03f kWh", musage);
-							root["result"][ii]["CounterDelivToday"] = szTmp;
+							root["result"][ii]["SwitchTypeVal"] = MTYPE_ENERGY;
+							root["result"][ii]["Counter"] = "0";
+							root["result"][ii]["CounterDeliv"] = "0";
+							root["result"][ii]["Usage"] = "Invalid";
+							root["result"][ii]["UsageDeliv"] = "Invalid";
+							root["result"][ii]["Data"] = "Invalid!: " + sValue;
+							root["result"][ii]["HaveTimeout"] = true;
+							root["result"][ii]["CounterToday"] = "Invalid";
+							root["result"][ii]["CounterDelivToday"] = "Invalid";
 						}
 						else
 						{
-							sprintf(szTmp, "%.03f kWh", 0.0f);
-							root["result"][ii]["CounterToday"] = szTmp;
-							root["result"][ii]["CounterDelivToday"] = szTmp;
+							float EnergyDivider = 1000.0f;
+							int tValue;
+							if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
+							{
+								EnergyDivider = float(tValue);
+							}
+
+							unsigned long long powerusage1;
+							unsigned long long powerusage2;
+							unsigned long long powerdeliv1;
+							unsigned long long powerdeliv2;
+							unsigned long long usagecurrent;
+							unsigned long long delivcurrent;
+
+							std::stringstream s_powerusage1(splitresults[0]);
+							std::stringstream s_powerusage2(splitresults[1]);
+							std::stringstream s_powerdeliv1(splitresults[2]);
+							std::stringstream s_powerdeliv2(splitresults[3]);
+							std::stringstream s_usagecurrent(splitresults[4]);
+							std::stringstream s_delivcurrent(splitresults[5]);
+
+							s_powerusage1 >> powerusage1;
+							s_powerusage2 >> powerusage2;
+							s_powerdeliv1 >> powerdeliv1;
+							s_powerdeliv2 >> powerdeliv2;
+							s_usagecurrent >> usagecurrent;
+							s_delivcurrent >> delivcurrent;
+
+							unsigned long long powerusage = powerusage1 + powerusage2;
+							unsigned long long powerdeliv = powerdeliv1 + powerdeliv2;
+							if (powerdeliv < 2)
+								powerdeliv = 0;
+
+							double musage = 0;
+
+							root["result"][ii]["SwitchTypeVal"] = MTYPE_ENERGY;
+							musage = double(powerusage) / EnergyDivider;
+							sprintf(szTmp, "%.03f", musage);
+							root["result"][ii]["Counter"] = szTmp;
+							musage = double(powerdeliv) / EnergyDivider;
+							sprintf(szTmp, "%.03f", musage);
+							root["result"][ii]["CounterDeliv"] = szTmp;
+
+							if (bHaveTimeout)
+							{
+								usagecurrent = 0;
+								delivcurrent = 0;
+							}
+							sprintf(szTmp, "%llu Watt", usagecurrent);
+							root["result"][ii]["Usage"] = szTmp;
+							sprintf(szTmp, "%llu Watt", delivcurrent);
+							root["result"][ii]["UsageDeliv"] = szTmp;
+							root["result"][ii]["Data"] = sValue;
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+
+							//get value of today
+							time_t now = mytime(NULL);
+							struct tm ltime;
+							localtime_r(&now, &ltime);
+							char szDate[40];
+							sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
+
+							std::vector<std::vector<std::string> > result2;
+							strcpy(szTmp, "0");
+							result2 = m_sql.safe_query("SELECT MIN(Value1), MIN(Value2), MIN(Value5), MIN(Value6) FROM MultiMeter WHERE (DeviceRowID='%q' AND Date>='%q')",
+								sd[0].c_str(), szDate);
+							if (result2.size() > 0)
+							{
+								std::vector<std::string> sd2 = result2[0];
+
+								unsigned long long total_min_usage_1, total_min_usage_2, total_real_usage;
+								unsigned long long total_min_deliv_1, total_min_deliv_2, total_real_deliv;
+
+								std::stringstream s_str1(sd2[0]);
+								s_str1 >> total_min_usage_1;
+								std::stringstream s_str2(sd2[1]);
+								s_str2 >> total_min_deliv_1;
+								std::stringstream s_str3(sd2[2]);
+								s_str3 >> total_min_usage_2;
+								std::stringstream s_str4(sd2[3]);
+								s_str4 >> total_min_deliv_2;
+
+								total_real_usage = powerusage - (total_min_usage_1 + total_min_usage_2);
+								total_real_deliv = powerdeliv - (total_min_deliv_1 + total_min_deliv_2);
+
+								musage = double(total_real_usage) / EnergyDivider;
+								sprintf(szTmp, "%.03f kWh", musage);
+								root["result"][ii]["CounterToday"] = szTmp;
+								musage = double(total_real_deliv) / EnergyDivider;
+								sprintf(szTmp, "%.03f kWh", musage);
+								root["result"][ii]["CounterDelivToday"] = szTmp;
+							}
+							else
+							{
+								sprintf(szTmp, "%.03f kWh", 0.0f);
+								root["result"][ii]["CounterToday"] = szTmp;
+								root["result"][ii]["CounterDelivToday"] = szTmp;
+							}
 						}
 					}
 					else if (dType == pTypeP1Gas)
@@ -9443,15 +9466,16 @@ namespace http {
 							s_str1 >> total_min_gas;
 							std::stringstream s_str2(sValue);
 							s_str2 >> gasactual;
-							float musage = 0;
+							
+							double musage = 0;
 
 							root["result"][ii]["SwitchTypeVal"] = MTYPE_GAS;
 
-							musage = float(gasactual) / GasDivider;
+							musage = double(gasactual) / GasDivider;
 							sprintf(szTmp, "%.03f", musage);
 							root["result"][ii]["Counter"] = szTmp;
 							total_real_gas = gasactual - total_min_gas;
-							musage = float(total_real_gas) / GasDivider;
+							musage = double(total_real_gas) / GasDivider;
 							sprintf(szTmp, "%.03f m3", musage);
 							root["result"][ii]["CounterToday"] = szTmp;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;

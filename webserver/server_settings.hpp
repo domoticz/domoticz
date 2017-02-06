@@ -229,7 +229,7 @@ public:
 			// use certificate file for all usage by default
 			certificate_chain_file_path = ssl_settings.cert_file_path;
 			ca_cert_file_path = ssl_settings.cert_file_path;
-			private_key_file_path = ssl_settings.cert_file_path;
+			private_key_file_path = ssl_settings.private_key_file_path;
 			tmp_dh_file_path = ssl_settings.cert_file_path;
 			verify_file_path = ssl_settings.cert_file_path;
 		}

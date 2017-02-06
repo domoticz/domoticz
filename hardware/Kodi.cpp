@@ -192,8 +192,8 @@ void CKodiNode::handleMessage(std::string& pMessage)
 		std::stringstream ssMessage;
 
 		if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Kodi: (%s) Handling message: '%s'.", m_Name.c_str(), pMessage.c_str());
-		bool	bRetVal = jReader.parse(pMessage, root);
-		if (!bRetVal)
+		bool bRet = jReader.parse(pMessage, root);
+		if ((!bRet) || (!root.isObject()))
 		{
 			_log.Log(LOG_ERROR, "Kodi: (%s) PARSE ERROR: '%s'", m_Name.c_str(), pMessage.c_str());
 		}

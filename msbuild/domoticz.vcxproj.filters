@@ -144,9 +144,6 @@
     <Filter Include="Devices\Philips Hue">
       <UniqueIdentifier>{0ba73f41-846f-48e1-a9ff-b70888ac5920}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Devices\ZWave\OpenZWave\Control Panel">
-      <UniqueIdentifier>{2467c1b1-dd49-4842-9931-bb5a12d729e2}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Devices\SolarEdge">
       <UniqueIdentifier>{e30a6865-acaf-4ce1-a43d-37183b91520f}</UniqueIdentifier>
     </Filter>
@@ -464,6 +461,9 @@
     </Filter>
     <Filter Include="Devices\InComfort">
       <UniqueIdentifier>{bbff9485-9778-469f-9659-e3575b33a348}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\ZWave\Control Panel">
+      <UniqueIdentifier>{2467c1b1-dd49-4842-9931-bb5a12d729e2}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -1507,9 +1507,6 @@
     <ClInclude Include="..\hardware\ZWaveBase.h">
       <Filter>Devices\ZWave</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\OpenZWave.h">
-      <Filter>Devices\ZWave\OpenZWave</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\ZWaveCommands.h">
       <Filter>Devices\ZWave</Filter>
     </ClInclude>
@@ -1595,7 +1592,7 @@
       <Filter>Devices\Philips Hue</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\openzwave\control_panel\ozwcp.h">
-      <Filter>Devices\ZWave\OpenZWave\Control Panel</Filter>
+      <Filter>Devices\ZWave\Control Panel</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\evohome.h">
       <Filter>Devices\EvoHome</Filter>
@@ -1987,6 +1984,9 @@
     <ClInclude Include="..\hardware\InComfort.h">
       <Filter>Devices\InComfort</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\OpenZWave.h">
+      <Filter>Devices\ZWave</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2154,9 +2154,6 @@
     <ClCompile Include="..\hardware\ZWaveBase.cpp">
       <Filter>Devices\ZWave</Filter>
     </ClCompile>
-    <ClCompile Include="..\hardware\OpenZWave.cpp">
-      <Filter>Devices\ZWave\OpenZWave</Filter>
-    </ClCompile>
     <ClCompile Include="..\hardware\1Wire\1WireForWindows.cpp">
       <Filter>Devices\1-Wire</Filter>
     </ClCompile>
@@ -2230,7 +2227,7 @@
       <Filter>Devices\Philips Hue</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\openzwave\control_panel\ozwcp.cpp">
-      <Filter>Devices\ZWave\OpenZWave\Control Panel</Filter>
+      <Filter>Devices\ZWave\Control Panel</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\evohome.cpp">
       <Filter>Devices\EvoHome</Filter>
@@ -2419,7 +2416,7 @@
       <Filter>Notifications</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\openzwave\control_panel\zwavelib.cpp">
-      <Filter>Devices\ZWave\OpenZWave\Control Panel</Filter>
+      <Filter>Devices\ZWave\Control Panel</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\RFLinkSerial.cpp">
       <Filter>Devices\RFLink</Filter>
@@ -2627,6 +2624,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\InComfort.cpp">
       <Filter>Devices\InComfort</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\OpenZWave.cpp">
+      <Filter>Devices\ZWave</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -535,10 +535,12 @@ void COpenWebNetTCP::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
     string who = iter->Extract_who();
     string where = iter->Extract_where();
     string what = iter->Extract_what();
+	std::vector<std::string> whatParam = iter->Extract_whatParameters();
     string dimension = iter->Extract_dimension();
     string value = iter->Extract_value(0);
 	string sInterface = iter->Extract_interface();
     string devname;
+	int app_value;
 
     switch (atoi(who.c_str())) {
         case WHO_LIGHTING:
@@ -550,16 +552,12 @@ void COpenWebNetTCP::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
             devname = OPENWEBNET_LIGHT;
             devname += " " + where;                            // 1
 
-			if (atoi(what.c_str()) == 1000) // What = 1000 (Command translation)
-            {
-                if (what[4] == '#')
-                    what = what.substr(5);
-                else
-                    _log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s what=%s", who.c_str(), what.c_str());
-            }
+			app_value = atoi(what.c_str());
+			if (app_value == 1000) // What = 1000 (Command translation)
+				app_value = atoi(whatParam[0].c_str());
 
             //pTypeGeneralSwitch, sSwitchLightT1
-            UpdateSwitch(WHO_LIGHTING, atoi(where.c_str()), atoi(what.c_str()), atoi(sInterface.c_str()), 100, devname.c_str(), sSwitchLightT1);
+            UpdateSwitch(WHO_LIGHTING, atoi(where.c_str()), app_value, atoi(sInterface.c_str()), 255, devname.c_str(), sSwitchLightT1);
             break;
         case WHO_AUTOMATION:
             if(!iter->IsNormalFrame())
@@ -567,7 +565,7 @@ void COpenWebNetTCP::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
                 _log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s frame error!", who.c_str());
                 return;
             }
-            int app_value;
+            
             switch(atoi(what.c_str()))
             {
             case AUTOMATION_WHAT_STOP:  // 0
@@ -580,12 +578,13 @@ void COpenWebNetTCP::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
                 app_value = gswitch_sOn;
                 break;
             default:
+				_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s, What=%s invalid!", who.c_str(), what.c_str());
                 return;
             }
             devname = OPENWEBNET_AUTOMATION;
             devname += " " + where;
 			//pTypeGeneralSwitch, sSwitchBlindsT1
-            UpdateBlinds(WHO_AUTOMATION, atoi(where.c_str()), app_value, atoi(sInterface.c_str()), 100, devname.c_str());                       // 2
+            UpdateBlinds(WHO_AUTOMATION, atoi(where.c_str()), app_value, atoi(sInterface.c_str()), 255, devname.c_str());                       // 2
             break;
         case WHO_TEMPERATURE_CONTROL:
             if(!iter->IsMeasureFrame())
@@ -597,7 +596,7 @@ void COpenWebNetTCP::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
             {
                 devname = OPENWEBNET_TEMPERATURE;
                 devname += " " + where;
-                UpdateTemp(WHO_TEMPERATURE_CONTROL, atoi(where.c_str()), static_cast<float>(atof(value.c_str()) / 10.), 100, devname.c_str());
+                UpdateTemp(WHO_TEMPERATURE_CONTROL, atoi(where.c_str()), static_cast<float>(atof(value.c_str()) / 10.), 255, devname.c_str());
             }
 
             else

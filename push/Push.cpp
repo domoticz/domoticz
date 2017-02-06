@@ -571,7 +571,7 @@ std::string CPush::ProcessSendValue(const std::string &rawsendValue, const int d
 	}	
 	else if (vType == "Counter")
 	{
-		sprintf(szData,"Not supported yet");
+		strcpy(szData, rawsendValue.c_str());
 	}	
 	else if (vType == "Mode")
 	{

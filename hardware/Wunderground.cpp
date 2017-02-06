@@ -153,7 +153,7 @@ void CWunderground::GetMeterDetails()
 
 	Json::Reader jReader;
 	bool ret=jReader.parse(sResult,root);
-	if (!ret)
+	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR,"WUnderground: Invalid data received!");
 		return;
@@ -206,8 +206,9 @@ void CWunderground::GetMeterDetails()
 			time_t tobserver = static_cast<time_t>(atoll(root["current_observation"]["observation_epoch"].asString().c_str()));
 			if (difftime(tlocal, tobserver) >= 1800)
 			{
-				//When we don't get any valid data in 30 minuted, we also stop using the values
-				bValid = false;
+				//When we don't get any valid data in 30 minutes, we also stop using the values
+				_log.Log(LOG_ERROR, "WUnderground: Receiving old data from WU! (No new data return for more then 30 minutes)");
+				return;
 			}
 		}
 		m_bFirstTime = false;

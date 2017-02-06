@@ -157,7 +157,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_WINDDELEN, "Winddelen" },
 		{ HTYPE_TE923, "TE923 USB Compatible Weather Station" },
 		{ HTYPE_Rego6XX, "Rego 6XX USB/serial interface" },
-		{ HTYPE_RazberryZWave, "Razberry Z-Wave via LAN interface (HTTP)" },
+		{ HTYPE_RazberryZWave, "Razberry Z-Wave via LAN interface (Deprecated)" },
 		{ HTYPE_DavisVantage, "Davis Vantage Weather Station USB" },
 		{ HTYPE_VOLCRAFTCO20, "Volcraft CO-20 USB air quality sensor" },
 		{ HTYPE_1WIRE, "1-Wire (System)" },
@@ -267,7 +267,7 @@ const char *Switch_Type_Desc(const _eSwitchType sType)
 		{ STYPE_Motion, "Motion Sensor" },
 		{ STYPE_PushOn, "Push On Button" },
 		{ STYPE_PushOff, "Push Off Button" },
-		{ STYPE_DoorLock, "Door Lock" },
+		{ STYPE_DoorContact, "Door Contact" },
         { STYPE_Dusk, "Dusk Sensor" },
 		{ STYPE_BlindsPercentage, "Blinds Percentage" },
 		{ STYPE_VenetianBlindsUS, "Venetian Blinds US" },
@@ -275,6 +275,7 @@ const char *Switch_Type_Desc(const _eSwitchType sType)
 		{ STYPE_BlindsPercentageInverted, "Blinds Percentage Inverted" },
 		{ STYPE_Media, "Media Player" },
 		{ STYPE_Selector, "Selector" },
+		{ STYPE_DoorLock, "Door Lock" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, sType);
