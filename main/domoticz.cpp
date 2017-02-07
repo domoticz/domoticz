@@ -227,13 +227,6 @@ void daemonize(const char *rundir, const char *pidfile)
 	struct sigaction newSigAction;
 	sigset_t newSigSet;
 
-	/* Check if parent process id is set */
-	if (getppid() == 1)
-	{
-		/* PPID exists, therefore we are already a daemon */
-		return;
-	}
-
 	/* Set signal mask - signals we want to block */
 	sigemptyset(&newSigSet);
 	sigaddset(&newSigSet, SIGCHLD);  /* ignore child - i.e. we don't need to wait for it */
