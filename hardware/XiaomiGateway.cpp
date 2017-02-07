@@ -521,6 +521,10 @@ bool XiaomiGateway::StartHardware()
 			if (Id < lowestId) {
 				lowestId = Id;
 			}
+			if (Id == m_HwdID) {
+				m_GatewayPassword = result[i][0].c_str();
+				m_GatewayIp = result[i][1].c_str();
+			}
 		}
 		m_ListenPort9898 = true;
 		if (lowestId != m_HwdID) {
@@ -531,8 +535,8 @@ bool XiaomiGateway::StartHardware()
 			_log.Log(LOG_STATUS, "XiaomiGateway: will listen on 9898 for hardware id %d", m_HwdID);
 		}
 		//retrieve the gateway key
-		m_GatewayPassword = result[0][0].c_str();
-		m_GatewayIp = result[0][1].c_str();
+		//m_GatewayPassword = result[0][0].c_str();
+		//m_GatewayIp = result[0][1].c_str();
 		m_GatewayRgbHex = "FFFFFF";
 		m_GatewayBrightnessInt = 100;
 		m_GatewayPrefix = "f0b4";
@@ -584,7 +588,7 @@ void XiaomiGateway::Do_Work()
 		}
 	}
 
-	XiaomiGateway::xiaomi_udp_server udp_server(io_service, m_HwdID, m_GatewayIp, m_LocalIp, this);
+	XiaomiGateway::xiaomi_udp_server udp_server(io_service, m_HwdID, m_GatewayIp, m_LocalIp, m_ListenPort9898, this);
 	boost::thread bt;
 	if (m_ListenPort9898) {
 		bt = boost::thread(boost::bind(&boost::asio::io_service::run, &io_service));
@@ -637,7 +641,8 @@ std::string XiaomiGateway::GetGatewayKey()
 #endif
 }
 
-XiaomiGateway::xiaomi_udp_server::xiaomi_udp_server(boost::asio::io_service& io_service, int m_HwdID, const std::string gatewayIp, const std::string localIp, XiaomiGateway *parent)
+
+XiaomiGateway::xiaomi_udp_server::xiaomi_udp_server(boost::asio::io_service& io_service, int m_HwdID, const std::string gatewayIp, const std::string localIp, const bool listenPort9898, XiaomiGateway *parent)
 	: socket_(io_service, boost::asio::ip::udp::v4())
 {
 	m_HardwareID = m_HwdID;
@@ -645,29 +650,38 @@ XiaomiGateway::xiaomi_udp_server::xiaomi_udp_server(boost::asio::io_service& io_
 	m_gatewayip = gatewayIp;
 	m_localip = localIp;
 
-	try {
-		socket_.set_option(boost::asio::ip::udp::socket::reuse_address(true));
-		if (m_localip != "") {
-			socket_.bind(boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(m_localip), 9898));
+	if (listenPort9898) {
+		try {
+			socket_.set_option(boost::asio::ip::udp::socket::reuse_address(true));
+			if (m_localip != "") {
+				socket_.bind(boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(m_localip), 9898));
 #ifdef _DEBUG
-			_log.Log(LOG_STATUS, "XiaomiGateway: BINDING UDP TO SPECIFIC LOCAL IP %s", m_localip.c_str());
+				_log.Log(LOG_STATUS, "XiaomiGateway: BINDING UDP TO SPECIFIC LOCAL IP %s", m_localip.c_str());
 #endif
+			}
+			else {
+				socket_.bind(boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 9898));
+			}
+			boost::shared_ptr<std::string> message(new std::string("{\"cmd\":\"whois\"}"));
+			boost::asio::ip::udp::endpoint remote_endpoint;
+			remote_endpoint = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string("224.0.0.50"), 4321);
+			socket_.send_to(boost::asio::buffer(*message), remote_endpoint);
 		}
-		else {
-			socket_.bind(boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 9898));
+		catch (const boost::system::system_error& ex) {
+			_log.Log(LOG_ERROR, "XiaomiGateway: %s", ex.code().category().name());
+			m_XiaomiGateway->StopHardware();
+			return;
 		}
-		boost::shared_ptr<std::string> message(new std::string("{\"cmd\":\"whois\"}"));
-		boost::asio::ip::udp::endpoint remote_endpoint;
-		remote_endpoint = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string("224.0.0.50"), 4321);
-		socket_.send_to(boost::asio::buffer(*message), remote_endpoint);
+		socket_.set_option(boost::asio::ip::multicast::join_group(boost::asio::ip::address::from_string("224.0.0.50")));
+		start_receive();
 	}
-	catch (const boost::system::system_error& ex) {
-		_log.Log(LOG_ERROR, "XiaomiGateway: %s", ex.code().category().name());
-		m_XiaomiGateway->StopHardware();
-		return;
+	else {
+		_log.Log(LOG_STATUS, "XiaomiGateway: NOT LISTENING TO UDP FOR HARDWARE ID %d", m_HwdID);
 	}
-	socket_.set_option(boost::asio::ip::multicast::join_group(boost::asio::ip::address::from_string("224.0.0.50")));
-	start_receive();
+}
+
+XiaomiGateway::xiaomi_udp_server::~xiaomi_udp_server()
+{
 }
 
 void XiaomiGateway::xiaomi_udp_server::start_receive()

@@ -42,7 +42,8 @@ private:
 	class xiaomi_udp_server
 	{
 	public:
-		xiaomi_udp_server(boost::asio::io_service & io_service, int m_HwdID, const std::string gatewayIp, const std::string localIp, XiaomiGateway *parent);
+		xiaomi_udp_server(boost::asio::io_service & io_service, int m_HwdID, const std::string gatewayIp, const std::string localIp, const bool listenPort9898, XiaomiGateway *parent);
+		~xiaomi_udp_server();
 
 	private:
 		boost::asio::ip::udp::socket socket_;
