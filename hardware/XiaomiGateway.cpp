@@ -386,9 +386,9 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 
 	//check if this switch is already in the database
 	std::vector<std::vector<std::string> > result;
-	//result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) ", m_HwdID, ID.c_str(), pTypeGeneralSwitch);
+	result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) ", m_HwdID, ID.c_str(), pTypeGeneralSwitch);
 	//ignore the hardwareid to handle deviceids over multiple gateways - this will cause a problem if another general switch device has the same deviceid
-	result = m_sql.safe_query("SELECT nValue, LastLevel FROM DeviceStatus WHERE (DeviceID=='%q') AND (Type==%d) ", ID.c_str(), pTypeGeneralSwitch);
+	//result = m_sql.safe_query("SELECT nValue, LastLevel FROM DeviceStatus WHERE (DeviceID=='%q') AND (Type==%d) ", ID.c_str(), pTypeGeneralSwitch);
 	if (result.size() < 1)
 	{
 		_log.Log(LOG_STATUS, "XiaomiGateway: New Device Found (%s)", str.c_str());
@@ -510,9 +510,26 @@ bool XiaomiGateway::StartHardware()
 
 	//check there is only one instance of the Xiaomi Gateway
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Password, Address, ID FROM Hardware WHERE Type=%d AND ID=%d", HTYPE_XiaomiGateway, m_HwdID);
+	//result = m_sql.safe_query("SELECT Password, Address, ID FROM Hardware WHERE Type=%d AND ID=%d", HTYPE_XiaomiGateway, m_HwdID);
+	result = m_sql.safe_query("SELECT Password, Address, ID FROM Hardware WHERE Type=%d", HTYPE_XiaomiGateway);
 	if (result.size() > 0) {
+		int lowestId = 9999;
+		int Id = 0;
+		for (int i = 0; i < result.size(); i++) {
+			Id = atoi(result[i][2].c_str());
+			//_log.Log(LOG_STATUS, "XiaomiGateway: checking hardware id %d", Id);
+			if (Id < lowestId) {
+				lowestId = Id;
+			}
+		}
 		m_ListenPort9898 = true;
+		if (lowestId != m_HwdID) {
+			//_log.Log(LOG_STATUS, "XiaomiGateway: %d != %d", lowestId, m_HwdID);
+			m_ListenPort9898 = false;
+		}
+		else {
+			_log.Log(LOG_STATUS, "XiaomiGateway: will listen on 9898 for hardware id %d", m_HwdID);
+		}
 		//retrieve the gateway key
 		m_GatewayPassword = result[0][0].c_str();
 		m_GatewayIp = result[0][1].c_str();
@@ -568,7 +585,10 @@ void XiaomiGateway::Do_Work()
 	}
 
 	XiaomiGateway::xiaomi_udp_server udp_server(io_service, m_HwdID, m_GatewayIp, m_LocalIp, this);
-	boost::thread bt(boost::bind(&boost::asio::io_service::run, &io_service));
+	boost::thread bt;
+	if (m_ListenPort9898) {
+		bt = boost::thread(boost::bind(&boost::asio::io_service::run, &io_service));
+	}
 
 	int sec_counter = 0;
 	while (!m_stoprequested)
