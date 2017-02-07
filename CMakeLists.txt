@@ -7,6 +7,38 @@ project(domoticz)
 SET(DOMO_MIN_LIBBOOST_VERSION 105500)
 ##
 
+MACRO(Gitversion_GET_REVISION dir variable)
+  EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD
+    WORKING_DIRECTORY ${dir}
+    OUTPUT_VARIABLE ${variable}
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+ENDMACRO(Gitversion_GET_REVISION)
+#~ MESSAGE(FATAL_ERROR "${GIT_EXECUTABLE} ${CMAKE_SOURCE_DIR}")
+Gitversion_GET_REVISION("${CMAKE_SOURCE_DIR}" ProjectRevision)
+
+IF(NOT ProjectRevision)
+  MESSAGE(STATUS "Failed to get ProjectRevision from git")
+  IF(EXISTS ${CMAKE_SOURCE_DIR}/appversion.default)
+    MESSAGE(STATUS "Read ProjectRevision from appversion.default")
+    FILE(STRINGS ${CMAKE_SOURCE_DIR}/appversion.default AppVersionContent)
+    LIST(GET AppVersionContent 0 AppVersionContent)
+    STRING(REPLACE " " ";" AppVersionContent ${AppVersionContent})
+    LIST(GET AppVersionContent 2 ProjectRevision)
+  ELSE(EXISTS ${CMAKE_SOURCE_DIR}/appversion.default)
+    MESSAGE(STATUS "No appversion.default, set ProjectRevision to 0")
+    set (ProjectRevision 0)
+  ENDIF(EXISTS ${CMAKE_SOURCE_DIR}/appversion.default)
+ENDIF(NOT ProjectRevision)
+
+MESSAGE(STATUS "###########################")
+MESSAGE(STATUS "Compiling Revision #${ProjectRevision}")
+MESSAGE(STATUS "###########################")
+
+# The version number.
+set (domoticz_VERSION_MAJOR 3)
+set (domoticz_VERSION_MINOR 0)
+set (domoticz_VERSION_PATCH ${ProjectRevision})
+
 option(USE_BUILTIN_LUA "Use builtin lua library" YES)
 IF(USE_BUILTIN_LUA)
   IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
@@ -97,17 +129,27 @@ ENDIF(HAVE_EXECINFO_H)
 
 INCLUDE(CheckIncludeFiles)
 
-CHECK_INCLUDE_FILES ("sys/types.h;linux/i2c-dev.h;linux/i2c.h" HAVE_LINUX_I2C_H)
-IF (HAVE_LINUX_I2C_H)
-	message(STATUS "Building with I2C support")
-	add_definitions(-DHAVE_LINUX_I2C)
-ENDIF (HAVE_LINUX_I2C_H)
+option(INCLUDE_LINUX_I2C "Include I2C support" YES)
+IF (INCLUDE_LINUX_I2C)
+	CHECK_INCLUDE_FILES ("sys/types.h;linux/i2c-dev.h;linux/i2c.h" HAVE_LINUX_I2C_H)
+	IF (HAVE_LINUX_I2C_H)
+		message(STATUS "Building with I2C support")
+		add_definitions(-DHAVE_LINUX_I2C)
+	ELSE()
+		message(WARNING "I2C support disabled: headers not found!")
+	ENDIF (HAVE_LINUX_I2C_H)
+ENDIF (INCLUDE_LINUX_I2C)
 
-CHECK_INCLUDE_FILES ("sys/types.h;linux/spi/spidev.h" HAVE_LINUX_SPI_H)
-IF (HAVE_LINUX_SPI_H)
-	message(STATUS "Building with SPI support")
-	add_definitions(-DHAVE_LINUX_SPI)
-ENDIF (HAVE_LINUX_SPI_H)
+option(INCLUDE_SPI "Include SPI support" YES)
+IF (INCLUDE_SPI)
+	CHECK_INCLUDE_FILES ("sys/types.h;linux/spi/spidev.h" HAVE_LINUX_SPI_H)
+	IF (HAVE_LINUX_SPI_H)
+		message(STATUS "Building with SPI support")
+		add_definitions(-DHAVE_LINUX_SPI)
+	ELSE()
+		message(WARNING "SPI support disabled: headers not found!")
+	ENDIF (HAVE_LINUX_SPI_H)
+ENDIF (INCLUDE_SPI)
 
 #set(CMAKE_EXE_LINKER_FLAGS "-static")
 
@@ -199,35 +241,6 @@ ENDMACRO()
 FIND_PROGRAM(GIT_EXECUTABLE git
   DOC "git command line client")
 
-MACRO(Gitversion_GET_REVISION dir variable)
-  EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} --git-dir ./.git rev-list HEAD --count
-    WORKING_DIRECTORY ${dir}
-    OUTPUT_VARIABLE ${variable}
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
-ENDMACRO(Gitversion_GET_REVISION)
-
-Gitversion_GET_REVISION("${CMAKE_SOURCE_DIR}" ProjectRevision)
-IF(NOT ProjectRevision)
-  MESSAGE(STATUS "Failed to get ProjectRevision from git")
-  IF(EXISTS ${CMAKE_SOURCE_DIR}/appversion.default)
-    MESSAGE(STATUS "Read ProjectRevision from appversion.default")
-    FILE(STRINGS ${CMAKE_SOURCE_DIR}/appversion.default AppVersionContent)
-    LIST(GET AppVersionContent 0 AppVersionContent)
-    STRING(REPLACE " " ";" AppVersionContent ${AppVersionContent})
-    LIST(GET AppVersionContent 2 ProjectRevision)
-  ELSE(EXISTS ${CMAKE_SOURCE_DIR}/appversion.default)
-    MESSAGE(STATUS "No appversion.default, set ProjectRevision to 0")
-    set (ProjectRevision 0)
-  ENDIF(EXISTS ${CMAKE_SOURCE_DIR}/appversion.default)
-ELSE(NOT ProjectRevision)
-  MATH(EXPR ProjectRevision "${ProjectRevision}+2107")
-ENDIF(NOT ProjectRevision)
-MESSAGE(STATUS "Compiling Revision #${ProjectRevision}")
-
-# The version number.
-set (domoticz_VERSION_MAJOR 3)
-set (domoticz_VERSION_MINOR 0)
-set (domoticz_VERSION_PATCH ${ProjectRevision})
 
 include_directories(${CMAKE_SOURCE_DIR}/main)
 
