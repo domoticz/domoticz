@@ -168,11 +168,13 @@ namespace Plugins {
 				if (!PyArg_ParseTuple(args, "s", &msg))
 				{
 					_log.Log(LOG_ERROR, "(%s) PyDomoticz_Debug failed to parse parameters: string expected.", pModState->pPlugin->Name.c_str());
-					return NULL;
+					LogPythonException(pModState->pPlugin, std::string(__func__));
 				}
-
-				std::string	message = "(" + pModState->pPlugin->Name + ") " + msg;
-				_log.Log((_eLogLevel)LOG_NORM, message.c_str());
+				else
+				{
+					std::string	message = "(" + pModState->pPlugin->Name + ") " + msg;
+					_log.Log((_eLogLevel)LOG_NORM, message.c_str());
+				}
 			}
 		}
 
@@ -197,11 +199,13 @@ namespace Plugins {
 			if (!PyArg_ParseTuple(args, "s", &msg))
 			{
 				_log.Log(LOG_ERROR, "(%s) PyDomoticz_Log failed to parse parameters: string expected.", pModState->pPlugin->Name.c_str());
-				return NULL;
+				LogPythonException(pModState->pPlugin, std::string(__func__));
 			}
-
-			std::string	message = "(" + pModState->pPlugin->Name + ") " + msg;
-			_log.Log((_eLogLevel)LOG_NORM, message.c_str());
+			else
+			{
+				std::string	message = "(" + pModState->pPlugin->Name + ") " + msg;
+				_log.Log((_eLogLevel)LOG_NORM, message.c_str());
+			}
 		}
 
 		Py_INCREF(Py_None);
@@ -225,11 +229,13 @@ namespace Plugins {
 			if (!PyArg_ParseTuple(args, "s", &msg))
 			{
 				_log.Log(LOG_ERROR, "(%s) PyDomoticz_Error failed to parse parameters: string expected.", pModState->pPlugin->Name.c_str());
-				return NULL;
+				LogPythonException(pModState->pPlugin, std::string(__func__));
 			}
-
-			std::string	message = "(" + pModState->pPlugin->Name + ") " + msg;
-			_log.Log((_eLogLevel)LOG_ERROR, message.c_str());
+			else
+			{
+				std::string	message = "(" + pModState->pPlugin->Name + ") " + msg;
+				_log.Log((_eLogLevel)LOG_ERROR, message.c_str());
+			}
 		}
 
 		Py_INCREF(Py_None);
@@ -253,6 +259,7 @@ namespace Plugins {
 			if (!PyArg_ParseTuple(args, "i", &type))
 			{
 				_log.Log(LOG_ERROR, "(%s) failed to parse parameters, integer expected.", pModState->pPlugin->Name.c_str());
+				LogPythonException(pModState->pPlugin, std::string(__func__));
 			}
 			else
 			{
@@ -290,6 +297,7 @@ namespace Plugins {
 			if (!PyArg_ParseTupleAndKeywords(args, keywds, "ss|si", kwlist, &szTransport, &szAddress, &szPort, &iBaud))
 			{
 				_log.Log(LOG_ERROR, "(%s) failed to parse parameters. Expected: Transport, Address, Port or Transport, Address, Baud.", pModState->pPlugin->Name.c_str());
+				LogPythonException(pModState->pPlugin, std::string(__func__));
 				Py_INCREF(Py_None);
 				return Py_None;
 			}
@@ -331,6 +339,7 @@ namespace Plugins {
 			if (!PyArg_ParseTuple(args, "s", &szProtocol))
 			{
 				_log.Log(LOG_ERROR, "(%s) failed to parse parameters, string expected.", pModState->pPlugin->Name.c_str());
+				LogPythonException(pModState->pPlugin, std::string(__func__));
 			}
 			else
 			{
@@ -365,6 +374,7 @@ namespace Plugins {
 			if (!PyArg_ParseTuple(args, "i", &iPollinterval))
 			{
 				_log.Log(LOG_ERROR, "(%s) failed to parse parameters, integer expected.", pModState->pPlugin->Name.c_str());
+				LogPythonException(pModState->pPlugin, std::string(__func__));
 			}
 			else
 			{
@@ -440,7 +450,8 @@ namespace Plugins {
 			static char *kwlist[] = { "Message", "Verb", "URL", "Headers", "Delay", NULL };
 			if (!PyArg_ParseTupleAndKeywords(args, keywds, "s|ssOi", kwlist, &szMessage, &szVerb, &szURL, &pHeaders, &iDelay))
 			{
-				_log.Log(LOG_ERROR, "(%s) failed to parse parameters, Message or Message,Verb,URL,Headers expected.", pModState->pPlugin->Name.c_str());
+				_log.Log(LOG_ERROR, "(%s) failed to parse parameters, Message or Message,Verb,URL,Headers,Delay expected.", pModState->pPlugin->Name.c_str());
+				LogPythonException(pModState->pPlugin, std::string(__func__));
 			}
 			else
 			{
@@ -550,6 +561,8 @@ namespace Plugins {
 		PyObject*	Name;
 		PyObject*	LastUpdate;
 		int			nValue;
+		int			SignalLevel;
+		int			BatteryLevel;
 		PyObject*	sValue;
 		int			Image;
 		PyObject*	Options;
@@ -607,6 +620,8 @@ namespace Plugins {
 					return NULL;
 				}
 				self->Image = 0;
+				self->SignalLevel = 100;
+				self->BatteryLevel = 255;
 				self->pPlugin = NULL;
 			}
 		}
@@ -817,8 +832,8 @@ namespace Plugins {
 			{
 				CPlugin* pPlugin = NULL;
 				if (pModState) pPlugin = pModState->pPlugin;
-				LogPythonException(pPlugin, __func__);
 				_log.Log(LOG_ERROR, "Expected: myVar = Domoticz.Device(Name=\"myDevice\", Unit=0, TypeName=\"\", Type=0, Subtype=0, Switchtype=0, Image=0, Options=\"\")");
+				LogPythonException(pPlugin, __func__);
 			}
 		}
 		catch (std::exception e)
@@ -838,6 +853,9 @@ namespace Plugins {
 		{ "Name", T_OBJECT,	offsetof(CDevice, Name), READONLY, "Name" },
 		{ "nValue", T_INT, offsetof(CDevice, nValue), READONLY, "Numeric device value" },
 		{ "sValue", T_OBJECT, offsetof(CDevice, sValue), READONLY, "String device value" },
+		{ "SignalLevel", T_INT, offsetof(CDevice, SignalLevel), READONLY, "Numeric signal level" },
+		{ "BatteryLevel", T_INT, offsetof(CDevice, BatteryLevel), READONLY, "Numeric battery level" },
+		{ "Image", T_INT, offsetof(CDevice, Image), READONLY, "Numeric image number" },
 		{ "LastLevel", T_INT, offsetof(CDevice, LastLevel), READONLY, "Previous device level" },
 		{ "LastUpdate", T_OBJECT, offsetof(CDevice, LastUpdate), READONLY, "Last update timestamp" },
 		{ NULL }  /* Sentinel */
@@ -849,7 +867,7 @@ namespace Plugins {
 		{
 			// load associated devices to make them available to python
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT Unit, ID, Name, nValue, sValue, DeviceID, Type, SubType, SwitchType, LastLevel, CustomImage, LastUpdate FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) ORDER BY Unit ASC", self->HwdID, self->Unit);
+			result = m_sql.safe_query("SELECT Unit, ID, Name, nValue, sValue, DeviceID, Type, SubType, SwitchType, LastLevel, CustomImage, SignalLevel, BatteryLevel, LastUpdate FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) ORDER BY Unit ASC", self->HwdID, self->Unit);
 			if (result.size() > 0)
 			{
 				for (std::vector<std::vector<std::string> >::const_iterator itt = result.begin(); itt != result.end(); ++itt)
@@ -869,8 +887,10 @@ namespace Plugins {
 					self->SwitchType = atoi(sd[8].c_str());
 					self->LastLevel = atoi(sd[9].c_str());
 					self->Image = atoi(sd[10].c_str());
+					self->SignalLevel = atoi(sd[11].c_str());
+					self->BatteryLevel = atoi(sd[12].c_str());
 					Py_XDECREF(self->LastUpdate);
-					self->LastUpdate = PyUnicode_FromString(sd[11].c_str());
+					self->LastUpdate = PyUnicode_FromString(sd[13].c_str());
 				}
 			}
 		}
@@ -955,16 +975,18 @@ namespace Plugins {
 	{
 		if (self->pPlugin)
 		{
-			int			nValue = 0;
+			int			nValue = self->nValue;
 			char*		sValue = NULL;
-			int			iSignalLevel = 0;
-			int			iBatteryLevel = 0;
+			int			iSignalLevel = self->SignalLevel;
+			int			iBatteryLevel = self->BatteryLevel;
+			int			iImage = self->Image;
 			PyObject*	pNameBytes = PyUnicode_AsASCIIString(self->Name);
-			static char *kwlist[] = { "nValue", "sValue", "SignalLevel", "BatteryLevel", NULL };
+			static char *kwlist[] = { "nValue", "sValue", "Image", "SignalLevel", "BatteryLevel", NULL };
 
-			if (!PyArg_ParseTupleAndKeywords(args, kwds, "is|ii", kwlist, &nValue, &sValue, &iSignalLevel, &iBatteryLevel))
+			if (!PyArg_ParseTupleAndKeywords(args, kwds, "is|iii", kwlist, &nValue, &sValue, &iImage, &iSignalLevel, &iBatteryLevel))
 			{
 				_log.Log(LOG_ERROR, "(%s) %s: Failed to parse parameters: 'nValue', 'sValue', 'SignalLevel' or 'BatteryLevel' expected.", __func__, PyBytes_AsString(pNameBytes));
+				LogPythonException(self->pPlugin, __func__);
 				Py_DECREF(pNameBytes);
 				return NULL;
 			}
@@ -979,8 +1001,18 @@ namespace Plugins {
 			PyObject*	pDeviceBytes = PyUnicode_AsASCIIString(self->DeviceID);
 			std::string	sName = PyBytes_AsString(pNameBytes);
 			m_sql.UpdateValue(self->HwdID, std::string(PyBytes_AsString(pDeviceBytes)).c_str(), (const unsigned char)self->Unit, (const unsigned char)self->Type, (const unsigned char)self->SubType, iSignalLevel, iBatteryLevel, nValue, std::string(sValue).c_str(), sName, true);
-			Py_DECREF(pNameBytes);
 			Py_DECREF(pDeviceBytes);
+			Py_DECREF(pNameBytes);
+
+			// Image change
+			if (iImage != self->Image)
+			{
+				time_t now = time(0);
+				struct tm ltime;
+				localtime_r(&now, &ltime);
+				m_sql.safe_query("UPDATE DeviceStatus SET CustomImage=%d, LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (HardwareID==%d) and (Unit==%d)",
+					iImage, ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec, self->HwdID, self->Unit);
+			}
 
 			CDevice_refresh(self);
 		}
@@ -1039,41 +1071,6 @@ namespace Plugins {
 		return Py_None;
 	}
 
-	static PyObject* CDevice_seticon(CDevice* self, PyObject *args)
-	{
-		if (self->pPlugin)
-		{
-			int			icon;
-			PyObject*	pNameBytes = PyUnicode_AsASCIIString(self->Name);
-			if (!PyArg_ParseTuple(args, "i", &icon))
-			{
-				_log.Log(LOG_ERROR, "(%s) CDevice_seticon: failed to parse parameters: integer expected.", PyBytes_AsString(pNameBytes));
-				Py_DECREF(pNameBytes);
-				return NULL;
-			}
-
-			if (self->pPlugin->m_bDebug)
-			{
-				_log.Log(LOG_NORM, "(%s) Updating device image to %d.", std::string(PyBytes_AsString(pNameBytes)).c_str(), icon);
-			}
-
-			time_t now = time(0);
-			struct tm ltime;
-			localtime_r(&now, &ltime);
-
-			m_sql.safe_query("UPDATE DeviceStatus SET CustomImage=%d, LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (HardwareID==%d) and (Unit==%d)",
-				icon, ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec, self->HwdID, self->Unit);
-			Py_DECREF(pNameBytes);
-		}
-		else
-		{
-			_log.Log(LOG_ERROR, "Device set image failed, Device object is not associated with a plugin.");
-		}
-
-		Py_INCREF(Py_None);
-		return Py_None;
-	}
-
 	static PyObject* CDevice_str(CDevice* self)
 	{
 		PyObject*	pRetVal = PyUnicode_FromFormat("ID: %d, Name: '%U', nValue: %d, sValue: '%U'", self->ID, self->Name, self->nValue, self->sValue);
@@ -1085,7 +1082,6 @@ namespace Plugins {
 		{ "Create", (PyCFunction)CDevice_insert, METH_NOARGS, "Create the device in Domoticz." },
 		{ "Update", (PyCFunction)CDevice_update, METH_VARARGS | METH_KEYWORDS, "Update the device values in Domoticz." },
 		{ "Delete", (PyCFunction)CDevice_delete, METH_NOARGS, "Delete the device in Domoticz." },
-		{ "Image", (PyCFunction)CDevice_seticon, METH_VARARGS, "Set the device image in Domoticz." },
 		{ NULL }  /* Sentinel */
 	};
 
@@ -2503,7 +2499,7 @@ namespace Plugins {
 		}
 
 		// load associated devices to make them available to python
-		result = m_sql.safe_query("SELECT Unit, ID, Name, nValue, sValue, DeviceID, Type, SubType, SwitchType, LastLevel, CustomImage, LastUpdate FROM DeviceStatus WHERE (HardwareID==%d) AND (Used==1) ORDER BY Unit ASC", m_HwdID);
+		result = m_sql.safe_query("SELECT Unit FROM DeviceStatus WHERE (HardwareID==%d) AND (Used==1) ORDER BY Unit ASC", m_HwdID);
 		if (result.size() > 0)
 		{
 			PyType_Ready(&CDeviceType);
@@ -2511,7 +2507,7 @@ namespace Plugins {
 			for (std::vector<std::vector<std::string> >::const_iterator itt = result.begin(); itt != result.end(); ++itt)
 			{
 				std::vector<std::string> sd = *itt;
-				CDevice* pDevice = (CDevice*)PyObject_New(CDevice, &CDeviceType);
+				CDevice* pDevice = (CDevice*)CDevice_new(&CDeviceType, (PyObject*)NULL, (PyObject*)NULL);
 
 				PyObject*	pKey = PyLong_FromLong(atoi(sd[0].c_str()));
 				if (PyDict_SetItem((PyObject*)m_DeviceDict, pKey, (PyObject*)pDevice) == -1)
@@ -2523,18 +2519,7 @@ namespace Plugins {
 				pDevice->PluginKey = PyUnicode_FromString(m_PluginKey.c_str());
 				pDevice->HwdID = m_HwdID;
 				pDevice->Unit = atoi(sd[0].c_str());
-				pDevice->ID = atoi(sd[1].c_str());
-				pDevice->Name = PyUnicode_FromString(sd[2].c_str());
-				pDevice->nValue = atoi(sd[3].c_str());
-				pDevice->sValue = PyUnicode_FromString(sd[4].c_str());
-				pDevice->DeviceID = PyUnicode_FromString(sd[5].c_str());
-				pDevice->Type = atoi(sd[6].c_str());
-				pDevice->SubType = atoi(sd[7].c_str());
-				pDevice->SwitchType = atoi(sd[8].c_str());
-				pDevice->LastLevel = atoi(sd[9].c_str());
-				pDevice->Image = atoi(sd[10].c_str());
-				pDevice->LastUpdate = PyUnicode_FromString(sd[11].c_str());
-
+				CDevice_refresh(pDevice);
 				Py_DECREF(pDevice);
 			}
 		}

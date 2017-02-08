@@ -119,7 +119,8 @@ void CEcoDevices::GetMeterDetails()
 
 	Json::Value root;
 	Json::Reader jReader;
-	if (!jReader.parse(sResult, root))
+	bool bRet = jReader.parse(sResult, root);
+	if ((!bRet) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "EcoDevices: Invalid data received!");
 		return;

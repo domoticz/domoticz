@@ -7,12 +7,12 @@
 #define CRC16_ARC	0x8005
 #define CRC16_ARC_REFL	0xA001
 
-typedef enum { 
-	ID=0, 
-	STD, 
-	LINE17, 
-	LINE18, 
-	EXCLMARK 
+typedef enum {
+	ID=0,
+	STD,
+	LINE17,
+	LINE18,
+	EXCLMARK
 } MatchType;
 
 #define P1_SMID			"/" // Smart Meter ID. Used to detect start of telegram.
@@ -90,9 +90,8 @@ void P1MeterBase::Init()
 	m_bufferpos=0;
 	l_bufferpos=0;
 	m_lastgasusage=0;
-	m_lastelectrausage=0;
-	m_lastSharedSendElectra=0;
 	m_lastSharedSendGas=0;
+	m_lastUpdateTime=0;
 
 	memset(&m_buffer,0,sizeof(m_buffer));
 	memset(&l_buffer,0,sizeof(l_buffer));
@@ -131,14 +130,14 @@ bool P1MeterBase::MatchLine()
 				m_linecount=1;
 				found=1;
 			}
-			else 
+			else
 				continue;
 			break;
 		case STD:
 			if(strncmp(t.key, (const char*)&l_buffer, strlen(t.key)) == 0) {
 				found=1;
 			}
-			else 
+			else
 				continue;
 			break;
 		case LINE17:
@@ -146,7 +145,7 @@ bool P1MeterBase::MatchLine()
 				m_linecount = 17;
 				found=1;
 			}
-			else 
+			else
 				continue;
 			break;
 		case LINE18:
@@ -159,36 +158,31 @@ bool P1MeterBase::MatchLine()
 				l_exclmarkfound=1;
 				found=1;
 			}
-			else 
+			else
 				continue;
 			break;
 		default:
 			continue;
 		} //switch
-		
+
 		if(!found)
 			continue;
 
 		if (l_exclmarkfound) {
 			time_t atime=mytime(NULL);
-			sDecodeRXMessage(this, (const unsigned char *)&m_p1power, "Power", 255);
-			bool bSend2Shared=(difftime(atime,m_lastSharedSendElectra)>59);
-			if (std::abs(double(m_lastelectrausage)-double(m_p1power.usagecurrent))>40)
-				bSend2Shared=true;
-			if (bSend2Shared)
-			{
-				m_lastelectrausage=m_p1power.usagecurrent;
-				m_lastSharedSendElectra=atime;
-			}
-			if (
-				(m_p1gas.gasusage!=m_lastgasusage)||
-				(difftime(atime,m_lastSharedSendGas)>=300)
-				)
-			{
-				//only update gas when there is a new value, or 5 minutes are passed
-				m_lastSharedSendGas=atime;
-				m_lastgasusage=m_p1gas.gasusage;
-				sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, "Gas", 255);
+			if (difftime(atime,m_lastUpdateTime)>=m_ratelimit) {
+				m_lastUpdateTime=atime;
+				sDecodeRXMessage(this, (const unsigned char *)&m_p1power, "Power", 255);
+				if (
+					(m_p1gas.gasusage!=m_lastgasusage)||
+					(difftime(atime,m_lastSharedSendGas)>=300)
+					)
+				{
+					//only update gas when there is a new value, or 5 minutes are passed
+					m_lastSharedSendGas=atime;
+					m_lastgasusage=m_p1gas.gasusage;
+					sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, "Gas", 255);
+				}
 			}
 			m_linecount=0;
 			l_exclmarkfound=0;
@@ -288,7 +282,7 @@ bool P1MeterBase::MatchLine()
 
 
 /*
-/ GB3:	DSMR 4.0 defines a CRC checksum at the end of the message, calculated from 
+/ GB3:	DSMR 4.0 defines a CRC checksum at the end of the message, calculated from
 /	and including the message starting character '/' upto and including the message
 /	end character '!'. According to the specs the CRC is a 16bit checksum using the
 /	polynomial x^16 + x^15 + x^2 + 1, however input/output are reflected.
@@ -355,10 +349,10 @@ bool P1MeterBase::CheckCRC()
 /	done if the message passes all other validation rules
 */
 
-void P1MeterBase::ParseData(const unsigned char *pData, const int Len, const bool disable_crc)
+void P1MeterBase::ParseData(const unsigned char *pData, const int Len, const bool disable_crc, int ratelimit)
 {
 	int ii=0;
-
+	m_ratelimit=ratelimit;
 	// a new message should not start with an empty line, but just in case it does (crude check is sufficient here)
 	while ((m_linecount==0) && (pData[ii]<0x10)){
 		ii++;

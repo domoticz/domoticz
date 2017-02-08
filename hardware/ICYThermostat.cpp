@@ -178,7 +178,7 @@ bool CICYThermostat::GetSerialAndToken()
 
 	Json::Reader jReader;
 	bool ret = jReader.parse(sResult, root);
-	if (!ret)
+	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "ICYThermostat: Invalid data received, or invalid username/password!");
 		return false;
@@ -244,7 +244,7 @@ void CICYThermostat::GetMeterDetails()
 
 	Json::Reader jReader;
 	bool ret = jReader.parse(sResult, root);
-	if (!ret)
+	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "ICYThermostat: Invalid data received!");
 		return;

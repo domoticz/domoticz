@@ -552,7 +552,7 @@ bool CPhilipsHue::GetStates()
 
 	Json::Reader jReader;
 	bool ret = jReader.parse(sResult, root);
-	if (!ret)
+	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "Philips Hue: Invalid data received, or invalid IPAddress/Username!");
 		return false;
@@ -722,8 +722,7 @@ bool CPhilipsHue::GetGroups(const Json::Value &root)
 	Json::Reader jReader;
 	Json::Value root2;
 	bool ret = jReader.parse(sResult, root2);
-
-	if (!ret)
+	if ((!ret) || (!root2.isObject()))
 	{
 		_log.Log(LOG_ERROR, "Philips Hue: Invalid data received, or invalid IPAddress/Username!");
 		return false;
