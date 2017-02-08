@@ -91,8 +91,9 @@ void P1MeterBase::Init()
 	l_bufferpos=0;
 	m_lastgasusage=0;
 	m_lastelectrausage=0;
-	m_lastSharedSendElectra=0;
+	//m_lastSharedSendElectra=0;
 	m_lastSharedSendGas=0;
+	m_lastPollTime=0;
 
 	memset(&m_buffer,0,sizeof(m_buffer));
 	memset(&l_buffer,0,sizeof(l_buffer));
@@ -171,28 +172,31 @@ bool P1MeterBase::MatchLine()
 
 		if (l_exclmarkfound) {
 			time_t atime=mytime(NULL);
-			if (
-				((std::abs(double(m_lastelectrausage)-double(m_p1power.usagecurrent))>40)&&
+			if (difftime(atime,m_lastPollTime)>=m_pollinterval) {
+/*			if (
+				(((std::abs(double(m_lastelectrausage)-double(m_p1power.usagecurrent))>20)||
+				(m_p1power.delivcurrent>0))&&
 				(difftime(atime,m_lastSharedSendElectra)>9))||
 				(difftime(atime,m_lastSharedSendElectra)>59)
 				)
 			{
 				m_lastelectrausage=m_p1power.usagecurrent;
-				m_lastSharedSendElectra=atime;
+				m_lastSharedSendElectra=atime; */
+				m_lastPollTime=atime;
 				sDecodeRXMessage(this, (const unsigned char *)&m_p1power, "Power", 255);
+				if (
+					(m_p1gas.gasusage!=m_lastgasusage)||
+					(difftime(atime,m_lastSharedSendGas)>=300)
+					)
+				{
+					//only update gas when there is a new value, or 5 minutes are passed
+					m_lastSharedSendGas=atime;
+					m_lastgasusage=m_p1gas.gasusage;
+					sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, "Gas", 255);
+				}
+				m_linecount=0;
+				l_exclmarkfound=0;
 			}
-			if (
-				(m_p1gas.gasusage!=m_lastgasusage)||
-				(difftime(atime,m_lastSharedSendGas)>=300)
-				)
-			{
-				//only update gas when there is a new value, or 5 minutes are passed
-				m_lastSharedSendGas=atime;
-				m_lastgasusage=m_p1gas.gasusage;
-				sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, "Gas", 255);
-			}
-			m_linecount=0;
-			l_exclmarkfound=0;
 		}
 		else
 		{
@@ -356,10 +360,10 @@ bool P1MeterBase::CheckCRC()
 /	done if the message passes all other validation rules
 */
 
-void P1MeterBase::ParseData(const unsigned char *pData, const int Len, const bool disable_crc)
+void P1MeterBase::ParseData(const unsigned char *pData, const int Len, const bool disable_crc, int pollinterval)
 {
 	int ii=0;
-
+	m_pollinterval=pollinterval;
 	// a new message should not start with an empty line, but just in case it does (crude check is sufficient here)
 	while ((m_linecount==0) && (pData[ii]<0x10)){
 		ii++;

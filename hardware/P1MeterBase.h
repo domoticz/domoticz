@@ -15,18 +15,20 @@ public:
 	P1Gas	m_p1gas;
 private:
 	bool m_bDisableCRC;
+	int m_pollinterval;
 
 	unsigned long m_lastgasusage;
 	unsigned long m_lastelectrausage;
-	time_t m_lastSharedSendElectra;
+	//time_t m_lastSharedSendElectra;
 	time_t m_lastSharedSendGas;
+	time_t m_lastPollTime;
 
 	unsigned char m_linecount;
 	unsigned char m_exclmarkfound;
 	unsigned char m_CRfound;
 	void Init();
 	bool MatchLine();
-	void ParseData(const unsigned char *pData, const int Len, const bool disable_crc);
+	void ParseData(const unsigned char *pData, const int Len, const bool disable_crc, int pollinterval);
 	unsigned char m_buffer[1400];
 	int m_bufferpos;
 	unsigned char l_buffer[128];
@@ -35,4 +37,3 @@ private:
 
 	bool CheckCRC();
 };
-
