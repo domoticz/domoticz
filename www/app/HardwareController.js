@@ -198,12 +198,12 @@ define(['app'], function (app) {
 
                     Mode1 = baudrate;
                     Mode2 = $("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked")?0:1;
-                    var pollintervalp1=$("#hardwarecontent #hardwareparamspollintervalp1 #pollintervalp1").val();
-                    if (pollintervalp1=="")
+                    var ratelimitp1=$("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val();
+                    if (ratelimitp1=="")
                     {
-                        pollintervalp1 = "10";
+                        ratelimitp1 = "0";
                     }
-                    Mode3 = pollintervalp1;
+                    Mode3 = ratelimitp1;
                 }
 
                 var extra="";
@@ -278,12 +278,12 @@ define(['app'], function (app) {
                 if (text.indexOf("P1 Smart Meter") >= 0)
                 {
                     Mode2 = $("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked")?0:1;
-                    var pollintervalp1=$("#hardwarecontent #hardwareparamspollintervalp1 #pollintervalp1").val();
-                    if (pollintervalp1=="")
+                    var ratelimitp1=$("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val();
+                    if (ratelimitp1=="")
                     {
-                        pollintervalp1 = "10";
+                        ratelimitp1 = "0";
                     }
-                    Mode3 = pollintervalp1;
+                    Mode3 = ratelimitp1;
                 }
 
                 $.ajax({
@@ -1062,12 +1062,12 @@ define(['app'], function (app) {
 
                     Mode1 = baudrate;
                     Mode2 = $("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked")?0:1;
-                    var pollintervalp1=$("#hardwarecontent #hardwareparamspollintervalp1 #pollintervalp1").val();
-                    if (pollintervalp1=="")
+                    var ratelimitp1=$("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val();
+                    if (ratelimitp1=="")
                     {
-                        pollintervalp1 = "10";
+                        ratelimitp1 = "0";
                     }
-                    Mode3 = pollintervalp1;
+                    Mode3 = ratelimitp1;
 
                 }
 
@@ -4890,7 +4890,7 @@ define(['app'], function (app) {
                             {
                                 $("#hardwarecontent #divbaudratep1 #combobaudratep1").val(data["Mode1"]);
                                 $("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked",data["Mode2"]==0);
-                                $("#hardwarecontent #hardwareparamspollintervalp1 #pollintervalp1").val(data["Mode3"]);
+                                $("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val(data["Mode3"]);
                                 if (data["Mode1"]==0)
                                 {
                                     $("#hardwarecontent #divcrcp1").hide();
@@ -4907,7 +4907,7 @@ define(['app'], function (app) {
                             if (data["Type"].indexOf("P1 Smart Meter") >= 0)
                             {
                                 $("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked",data["Mode2"]==0);
-                                $("#hardwarecontent #hardwareparamspollintervalp1 #pollintervalp1").val(data["Mode3"]);
+                                $("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val(data["Mode3"]);
                             }
                         }
                         else if ((((data["Type"].indexOf("LAN") >= 0) || data["Type"].indexOf("MySensors Gateway with MQTT") >= 0) && (data["Type"].indexOf("YouLess") >= 0)) || (data["Type"].indexOf("Domoticz") >= 0) || (data["Type"].indexOf("Denkovi") >= 0) || (data["Type"].indexOf("Satel Integra") >= 0) || (data["Type"].indexOf("Logitech Media Server") >= 0) || (data["Type"].indexOf("HEOS by DENON") >= 0) || (data["Type"].indexOf("Xiaomi Gateway") >= 0) || (data["Type"].indexOf("MyHome OpenWebNet with LAN interface") >= 0)) {
@@ -5084,7 +5084,7 @@ define(['app'], function (app) {
             $("#hardwarecontent #divbaudratemysensors").hide();
             $("#hardwarecontent #divbaudratep1").hide();
             $("#hardwarecontent #divcrcp1").hide();
-            $("#hardwarecontent #divpollintervalp1").hide();
+            $("#hardwarecontent #divratelimitp1").hide();
             $("#hardwarecontent #divlocation").hide();
             $("#hardwarecontent #divphilipshue").hide();
             $("#hardwarecontent #divwinddelen").hide();
@@ -5139,7 +5139,7 @@ define(['app'], function (app) {
                 if (text.indexOf("P1 Smart Meter") >= 0)
                 {
                     $("#hardwarecontent #divbaudratep1").show();
-                    $("#hardwarecontent #divpollintervalp1").show();
+                    $("#hardwarecontent #divratelimitp1").show();
                     $("#hardwarecontent #divcrcp1").show();
                 }
 
@@ -5158,7 +5158,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divhttppoller").hide();
                 if (text.indexOf("P1 Smart Meter") >= 0)
                 {
-                    $("#hardwarecontent #divpollintervalp1").show();
+                    $("#hardwarecontent #divratelimitp1").show();
                     $("#hardwarecontent #divcrcp1").show();
                 }
             }

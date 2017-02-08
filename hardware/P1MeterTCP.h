@@ -7,7 +7,7 @@
 class P1MeterTCP: public P1MeterBase
 {
 public:
-	P1MeterTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const bool disable_crc, const int pollinterval);
+	P1MeterTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const bool disable_crc, const int updateinterval);
 	~P1MeterTCP(void);
 
 	void write(const char *data, size_t size);
@@ -18,7 +18,7 @@ public:
 	boost::signals2::signal<void()>	sDisconnected;
 private:
 	int m_retrycntr;
-	int m_pollinterval;
+	int m_updateinterval;
 	bool StartHardware();
 	bool StopHardware();
 	void disconnect();

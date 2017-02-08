@@ -92,7 +92,7 @@ void P1MeterBase::Init()
 	m_lastgasusage=0;
 	m_lastelectrausage=0;
 	m_lastSharedSendGas=0;
-	m_lastPollTime=0;
+	m_lastUpdateTime=0;
 
 	memset(&m_buffer,0,sizeof(m_buffer));
 	memset(&l_buffer,0,sizeof(l_buffer));
@@ -171,8 +171,8 @@ bool P1MeterBase::MatchLine()
 
 		if (l_exclmarkfound) {
 			time_t atime=mytime(NULL);
-			if (difftime(atime,m_lastPollTime)>=m_pollinterval) {
-				m_lastPollTime=atime;
+			if (difftime(atime,m_lastUpdateTime)>=m_updateinterval) {
+				m_lastUpdateTime=atime;
 				sDecodeRXMessage(this, (const unsigned char *)&m_p1power, "Power", 255);
 				if (
 					(m_p1gas.gasusage!=m_lastgasusage)||
@@ -350,10 +350,10 @@ bool P1MeterBase::CheckCRC()
 /	done if the message passes all other validation rules
 */
 
-void P1MeterBase::ParseData(const unsigned char *pData, const int Len, const bool disable_crc, int pollinterval)
+void P1MeterBase::ParseData(const unsigned char *pData, const int Len, const bool disable_crc, int updateinterval)
 {
 	int ii=0;
-	m_pollinterval=pollinterval;
+	m_updateinterval=updateinterval;
 	// a new message should not start with an empty line, but just in case it does (crude check is sufficient here)
 	while ((m_linecount==0) && (pData[ii]<0x10)){
 		ii++;

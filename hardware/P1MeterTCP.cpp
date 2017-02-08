@@ -7,7 +7,7 @@
 
 #define RETRY_DELAY 30
 
-P1MeterTCP::P1MeterTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const bool disable_crc, const int pollinterval):
+P1MeterTCP::P1MeterTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const bool disable_crc, const int updateinterval):
 m_szIPAddress(IPAddress)
 {
 	m_HwdID=ID;
@@ -16,7 +16,7 @@ m_szIPAddress(IPAddress)
 	m_usIPPort=usIPPort;
 	m_retrycntr = RETRY_DELAY;
 	m_bDisableCRC = disable_crc;
-	m_pollinterval = pollinterval;
+	m_updateinterval = updateinterval;
 }
 
 P1MeterTCP::~P1MeterTCP(void)
@@ -168,7 +168,7 @@ void P1MeterTCP::Do_Work()
 			else
 			{
 				boost::lock_guard<boost::mutex> l(readQueueMutex);
-				ParseData((const unsigned char*)&data, bread, m_bDisableCRC, m_pollinterval);
+				ParseData((const unsigned char*)&data, bread, m_bDisableCRC, m_updateinterval);
 			}
 		}
 	}
