@@ -90,7 +90,6 @@ void P1MeterBase::Init()
 	m_bufferpos=0;
 	l_bufferpos=0;
 	m_lastgasusage=0;
-	m_lastelectrausage=0;
 	m_lastSharedSendGas=0;
 	m_lastUpdateTime=0;
 

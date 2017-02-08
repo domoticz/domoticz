@@ -18,7 +18,6 @@ private:
 	int m_ratelimit;
 
 	unsigned long m_lastgasusage;
-	unsigned long m_lastelectrausage;
 	time_t m_lastSharedSendGas;
 	time_t m_lastUpdateTime;
 
