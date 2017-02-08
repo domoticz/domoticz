@@ -19,7 +19,6 @@ private:
 
 	unsigned long m_lastgasusage;
 	unsigned long m_lastelectrausage;
-	//time_t m_lastSharedSendElectra;
 	time_t m_lastSharedSendGas;
 	time_t m_lastPollTime;
 
