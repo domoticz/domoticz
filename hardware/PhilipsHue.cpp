@@ -292,7 +292,7 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const std::string &LCmd, const i
 	bool ret = jReader.parse(sResult, root);
 	if ((!ret) || (!root.isObject()))
 	{
-		_log.Log(LOG_ERROR, "Philips Hue: Invalid data received (Switch Light/Scene), or invalid IPAddress/Username!");
+		_log.Log(LOG_ERROR, "Philips Hue: Invalid data received (Switch Light/Scene) (%s)",sResult.c_str());
 		return false;
 	}
 
