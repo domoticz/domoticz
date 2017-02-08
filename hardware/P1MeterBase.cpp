@@ -184,9 +184,9 @@ bool P1MeterBase::MatchLine()
 					m_lastgasusage=m_p1gas.gasusage;
 					sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, "Gas", 255);
 				}
-				m_linecount=0;
-				l_exclmarkfound=0;
 			}
+			m_linecount=0;
+			l_exclmarkfound=0;
 		}
 		else
 		{
