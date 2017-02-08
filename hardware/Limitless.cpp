@@ -561,18 +561,6 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 					pCMD[0x09] = pLed->dunit;
 				}
 				break;
-/*
-			case Limitless_DiscoSpeedSlower:
-				sendto(m_RemoteSocket, (const char*)&RGBWOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-				sleep_milliseconds(100);
-				pCMD = (unsigned char*)&RGBWDiscoSpeedSlower;
-				break;
-			case Limitless_DiscoSpeedFaster:
-				sendto(m_RemoteSocket, (const char*)&RGBWOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-				sleep_milliseconds(100);
-				pCMD = (unsigned char*)&RGBWDiscoSpeedFaster;
-				break;
-*/
 			case Limitless_DiscoMode:
 				if (pLed->dunit == 5)
 					pCMD = (unsigned char*)&V6_Bridge_Disco_Mode;
@@ -771,18 +759,6 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				pCMD = (unsigned char*)&V6_RGBW_Mode_Speed_Up;
 				pCMD[0x09] = pLed->dunit;
 				break;
-	/*
-				case Limitless_DiscoSpeedSlower:
-				sendto(m_RemoteSocket, (const char*)&RGBWOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-				sleep_milliseconds(100);
-				pCMD = (unsigned char*)&RGBWDiscoSpeedSlower;
-				break;
-				case Limitless_DiscoSpeedFaster:
-				sendto(m_RemoteSocket, (const char*)&RGBWOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-				sleep_milliseconds(100);
-				pCMD = (unsigned char*)&RGBWDiscoSpeedFaster;
-				break;
-	*/
 			case Limitless_DiscoMode:
 				if (pLed->dunit == 5)
 					return false;
