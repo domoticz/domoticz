@@ -779,6 +779,55 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				pCMD[0x09] = pLed->dunit;
 				pCMD[0x05] = 0x02;
  				break;
+			case Limitless_DiscoM3:
+				if (pLed->dunit == 5)
+					return false;
+				pCMD = (unsigned char*)&V6_RGBW_Disco_Mode;
+				pCMD[0x09] = pLed->dunit;
+				pCMD[0x05] = 0x03;
+ 				break;
+			case Limitless_DiscoM4:
+				if (pLed->dunit == 5)
+					return false;
+				pCMD = (unsigned char*)&V6_RGBW_Disco_Mode;
+				pCMD[0x09] = pLed->dunit;
+				pCMD[0x05] = 0x04;
+ 				break;
+			case Limitless_DiscoM5:
+				if (pLed->dunit == 5)
+					return false;
+				pCMD = (unsigned char*)&V6_RGBW_Disco_Mode;
+				pCMD[0x09] = pLed->dunit;
+				pCMD[0x05] = 0x05;
+ 				break;
+			case Limitless_DiscoM6:
+				if (pLed->dunit == 5)
+					return false;
+				pCMD = (unsigned char*)&V6_RGBW_Disco_Mode;
+				pCMD[0x09] = pLed->dunit;
+				pCMD[0x05] = 0x06;
+ 				break;
+			case Limitless_DiscoM7:
+				if (pLed->dunit == 5)
+					return false;
+				pCMD = (unsigned char*)&V6_RGBW_Disco_Mode;
+				pCMD[0x09] = pLed->dunit;
+				pCMD[0x05] = 0x07;
+ 				break;
+			case Limitless_DiscoM8:
+				if (pLed->dunit == 5)
+					return false;
+				pCMD = (unsigned char*)&V6_RGBW_Disco_Mode;
+				pCMD[0x09] = pLed->dunit;
+				pCMD[0x05] = 0x08;
+ 				break;
+			case Limitless_DiscoM9:
+				if (pLed->dunit == 5)
+					return false;
+				pCMD = (unsigned char*)&V6_RGBW_Disco_Mode;
+				pCMD[0x09] = pLed->dunit;
+				pCMD[0x05] = 0x09;
+ 				break;
 			}
 		}
 /*
