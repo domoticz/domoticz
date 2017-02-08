@@ -91,7 +91,6 @@ void P1MeterBase::Init()
 	l_bufferpos=0;
 	m_lastgasusage=0;
 	m_lastelectrausage=0;
-	//m_lastSharedSendElectra=0;
 	m_lastSharedSendGas=0;
 	m_lastPollTime=0;
 
@@ -173,15 +172,6 @@ bool P1MeterBase::MatchLine()
 		if (l_exclmarkfound) {
 			time_t atime=mytime(NULL);
 			if (difftime(atime,m_lastPollTime)>=m_pollinterval) {
-/*			if (
-				(((std::abs(double(m_lastelectrausage)-double(m_p1power.usagecurrent))>20)||
-				(m_p1power.delivcurrent>0))&&
-				(difftime(atime,m_lastSharedSendElectra)>9))||
-				(difftime(atime,m_lastSharedSendElectra)>59)
-				)
-			{
-				m_lastelectrausage=m_p1power.usagecurrent;
-				m_lastSharedSendElectra=atime; */
 				m_lastPollTime=atime;
 				sDecodeRXMessage(this, (const unsigned char *)&m_p1power, "Power", 255);
 				if (
