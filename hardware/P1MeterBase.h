@@ -15,7 +15,7 @@ public:
 	P1Gas	m_p1gas;
 private:
 	bool m_bDisableCRC;
-	int m_updateinterval;
+	int m_ratelimit;
 
 	unsigned long m_lastgasusage;
 	unsigned long m_lastelectrausage;
@@ -27,7 +27,7 @@ private:
 	unsigned char m_CRfound;
 	void Init();
 	bool MatchLine();
-	void ParseData(const unsigned char *pData, const int Len, const bool disable_crc, int updateinterval);
+	void ParseData(const unsigned char *pData, const int Len, const bool disable_crc, int ratelimit);
 	unsigned char m_buffer[1400];
 	int m_bufferpos;
 	unsigned char l_buffer[128];

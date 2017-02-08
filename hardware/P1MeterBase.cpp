@@ -171,7 +171,7 @@ bool P1MeterBase::MatchLine()
 
 		if (l_exclmarkfound) {
 			time_t atime=mytime(NULL);
-			if (difftime(atime,m_lastUpdateTime)>=m_updateinterval) {
+			if (difftime(atime,m_lastUpdateTime)>=m_ratelimit) {
 				m_lastUpdateTime=atime;
 				sDecodeRXMessage(this, (const unsigned char *)&m_p1power, "Power", 255);
 				if (
@@ -350,10 +350,10 @@ bool P1MeterBase::CheckCRC()
 /	done if the message passes all other validation rules
 */
 
-void P1MeterBase::ParseData(const unsigned char *pData, const int Len, const bool disable_crc, int updateinterval)
+void P1MeterBase::ParseData(const unsigned char *pData, const int Len, const bool disable_crc, int ratelimit)
 {
 	int ii=0;
-	m_updateinterval=updateinterval;
+	m_ratelimit=ratelimit;
 	// a new message should not start with an empty line, but just in case it does (crude check is sufficient here)
 	while ((m_linecount==0) && (pData[ii]<0x10)){
 		ii++;
