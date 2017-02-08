@@ -290,9 +290,9 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const std::string &LCmd, const i
 
 	Json::Reader jReader;
 	bool ret = jReader.parse(sResult, root);
-	if ((!ret) || (!root.isObject()))
+	if (!ret)
 	{
-		_log.Log(LOG_ERROR, "Philips Hue: Invalid data received (Switch Light/Scene) (%s)",sResult.c_str());
+		_log.Log(LOG_ERROR, "Philips Hue: Invalid data received (Switch Light/Scene), or invalid IPAddress/Username!");
 		return false;
 	}
 
@@ -332,7 +332,7 @@ std::string CPhilipsHue::RegisterUser(const std::string &IPAddress, const unsign
 
 	Json::Reader jReader;
 	bool ret = jReader.parse(sResult, root);
-	if ((!ret) || (!root.isObject()))
+	if (!ret)
 	{
 		retStr = "Error;Registration failed (Wrong IPAddress?)";
 		return retStr;
