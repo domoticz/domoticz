@@ -1744,8 +1744,8 @@ namespace http {
 			std::string variablevalue = request::findValue(&req, "vvalue");
 			std::string variabletype = request::findValue(&req, "vtype");
 			if (
-				(variablename == "") || 
-				(variabletype == "") || 
+				(variablename == "") ||
+				(variabletype == "") ||
 				((variablevalue == "") && (variabletype != "2"))
 				)
 				return;
@@ -1782,7 +1782,7 @@ namespace http {
 				(variablename.empty()) ||
 				(variabletype.empty()) ||
 				((variablevalue.empty()) && (variabletype != "2"))
-				) 
+				)
 				return;
 
 			root["status"] = m_sql.UpdateUserVariable(idx, variablename, variabletype, variablevalue, true);
@@ -10541,7 +10541,7 @@ namespace http {
 					root["result"][ii]["Username"] = sd[7];
 					root["result"][ii]["Password"] = sd[8];
 					root["result"][ii]["Extra"] = sd[9];
-					
+
 					if (hType == HTYPE_PythonPlugin) {
 						root["result"][ii]["Mode1"] = sd[10];  // Plugins can have non-numeric values in the Mode fields
 						root["result"][ii]["Mode2"] = sd[11];
@@ -11383,12 +11383,9 @@ namespace http {
 			std::map<std::string, CNotificationBase*>::const_iterator ittNotifiers;
 			for (ittNotifiers = m_notifications.m_notifiers.begin(); ittNotifiers != m_notifications.m_notifiers.end(); ++ittNotifiers)
 			{
-				if (ittNotifiers->first != "gcm")
-				{
-					root["notifiers"][ii]["name"] = ittNotifiers->first;
-					root["notifiers"][ii]["description"] = ittNotifiers->first;
-					ii++;
-				}
+			   root["notifiers"][ii]["name"] = ittNotifiers->first;
+				root["notifiers"][ii]["description"] = ittNotifiers->first;
+				ii++;
 			}
 
 			uint64_t idx = 0;
