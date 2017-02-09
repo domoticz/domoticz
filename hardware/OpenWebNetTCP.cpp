@@ -65,7 +65,7 @@ bool COpenWebNetTCP::StartHardware()
 {
 	m_stoprequested = false;
 	m_bIsStarted = true;
-    firstscan = false;
+	mask_request_status = 0x1; // Set scan all devices
 
 	//Start monitor thread
 	m_monitorThread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&COpenWebNetTCP::MonitorFrames, this)));
@@ -114,7 +114,6 @@ bool COpenWebNetTCP::StopHardware()
 	}
 
 	m_bIsStarted = false;
-	firstscan = false;
 	return true;
 }
 
@@ -387,7 +386,6 @@ void COpenWebNetTCP::MonitorFrames()
                 int bread = m_pStatusSocket->read(data, OPENWEBNET_BUFFER_SIZE, false);
 
                 if (m_stoprequested) break;
-                m_LastHeartbeat = mytime(NULL);
 
                 if ((bread == 0) || (bread<0)) {
                     _log.Log(LOG_ERROR, "COpenWebNetTCP: TCP/IP monitor connection closed!");
@@ -540,33 +538,41 @@ void COpenWebNetTCP::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
     string value = iter->Extract_value(0);
 	string sInterface = iter->Extract_interface();
     string devname;
-	int app_value;
+	int app_value, int_where;
 
     switch (atoi(who.c_str())) {
-        case WHO_LIGHTING:
+        case WHO_LIGHTING:									// 1
             if(!iter->IsNormalFrame())
             {
                 _log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s not normal frame! -> frame_type=%d", who.c_str(), iter->frame_type);
                 return;
             }
             devname = OPENWEBNET_LIGHT;
-            devname += " " + where;                            // 1
+            devname += " " + where;
+
+			int_where = atoi(where.c_str());
 
 			app_value = atoi(what.c_str());
 			if (app_value == 1000) // What = 1000 (Command translation)
 				app_value = atoi(whatParam[0].c_str());
 
             //pTypeGeneralSwitch, sSwitchLightT1
-            UpdateSwitch(WHO_LIGHTING, atoi(where.c_str()), app_value, atoi(sInterface.c_str()), 255, devname.c_str(), sSwitchLightT1);
+            UpdateSwitch(WHO_LIGHTING, int_where, app_value, atoi(sInterface.c_str()), 255, devname.c_str(), sSwitchLightT1);
+			if (int_where < MAX_WHERE_AREA)
+				mask_request_status |= (0x1 << int_where); // Gen or area, need a refresh devices status
             break;
-        case WHO_AUTOMATION:
+        case WHO_AUTOMATION:								// 2
             if(!iter->IsNormalFrame())
             {
                 _log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s frame error!", who.c_str());
                 return;
             }
             
-            switch(atoi(what.c_str()))
+			app_value = atoi(what.c_str());
+			if (app_value == 1000) // What = 1000 (Command translation)
+				app_value = atoi(whatParam[0].c_str());
+
+            switch(app_value)
             {
             case AUTOMATION_WHAT_STOP:  // 0
                 app_value = gswitch_sStop;
@@ -583,8 +589,12 @@ void COpenWebNetTCP::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
             }
             devname = OPENWEBNET_AUTOMATION;
             devname += " " + where;
+			int_where = atoi(where.c_str());
+
 			//pTypeGeneralSwitch, sSwitchBlindsT1
-            UpdateBlinds(WHO_AUTOMATION, atoi(where.c_str()), app_value, atoi(sInterface.c_str()), 255, devname.c_str());                       // 2
+            UpdateBlinds(WHO_AUTOMATION, int_where, app_value, atoi(sInterface.c_str()), 255, devname.c_str());
+			if (int_where < MAX_WHERE_AREA)
+				mask_request_status |= (0x1 << int_where); // Gen or area, need a refresh devices status
             break;
         case WHO_TEMPERATURE_CONTROL:
             if(!iter->IsMeasureFrame())
@@ -895,14 +905,14 @@ bool COpenWebNetTCP::sendCommand(bt_openwebnet& command, vector<bt_openwebnet>& 
 /**
     automatic scan of automation/lighting device
 **/
-void COpenWebNetTCP::scan_automation_lighting()
+void COpenWebNetTCP::scan_automation_lighting(int cen_area)
 {
     bt_openwebnet request;
     vector<bt_openwebnet> responses;
     stringstream whoStr;
     stringstream whereStr;
 	whoStr << WHO_LIGHTING;
-    whereStr << 0;
+    whereStr << cen_area;
     request.CreateStateMsgOpen(whoStr.str(), whereStr.str());
     sendCommand(request, responses, 0, false);
 
@@ -956,21 +966,47 @@ void COpenWebNetTCP::requestTime()
     sendCommand(request, responses, 0, true);
 }
 
+/**
+	scan devices
+**/
 void COpenWebNetTCP::scan_device()
 {
+	int idx;
+
     /* uncomment the line below to enable the time request to the gateway.
     Note that this is only for debugging, the answer to who = 13 is not yet supported */
     //requestTime();
-    _log.Log(LOG_STATUS, "COpenWebNetTCP: scanning automation/lighting...");
-    scan_automation_lighting();
+    
+	if (mask_request_status & 0x1)
+	{
+		_log.Log(LOG_STATUS, "COpenWebNetTCP: scanning automation/lighting...");
+		// Scan of all devices
+		scan_automation_lighting(WHERE_CEN_0);
 
-    /** Scanning of temperature sensor is not necessary simpli wait an update **/
-    //_log.Log(LOG_STATUS, "COpenWebNetTCP: scanning temperature control...");
-    //scan_temperature_control();
+		_log.Log(LOG_STATUS, "COpenWebNetTCP: request burglar alarm status...");
+		requestBurglarAlarmStatus();
 
-    _log.Log(LOG_STATUS, "COpenWebNetTCP: request burglar alarm status...");
-    requestBurglarAlarmStatus();
-    _log.Log(LOG_STATUS, "COpenWebNetTCP: scan device complete, wait all the update data..");
+		/** Scanning of temperature sensor is not necessary simply wait an update **/
+		//_log.Log(LOG_STATUS, "COpenWebNetTCP: scanning temperature control...");
+		//scan_temperature_control();
+
+		_log.Log(LOG_STATUS, "COpenWebNetTCP: scan device complete, wait all the update data..");
+
+		/* Update complete scan time*/
+		m_LastHeartbeat = mytime(NULL);
+	}
+	else
+	{
+		// Scan only the set areas
+		for (idx = WHERE_AREA_1; idx < MAX_WHERE_AREA; idx++)
+		{
+			if (mask_request_status & (0x1 << idx))
+			{
+				_log.Log(LOG_STATUS, "COpenWebNetTCP: scanning AREA %u...", idx);
+				scan_automation_lighting(idx);
+			}				
+		}
+	}   
 }
 
 bool COpenWebNetTCP::ParseData(char* data, int length, vector<bt_openwebnet>& messages)
@@ -994,16 +1030,20 @@ void COpenWebNetTCP::Do_Work()
 {
 	while (!m_stoprequested)
 	{
-	    if (isStatusSocketConnected() && !firstscan)
+	    if (isStatusSocketConnected() && mask_request_status)
         {
-            firstscan = true;
-            _log.Log(LOG_STATUS, "COpenWebNetTCP: start scan devices...");
             scan_device();
-            _log.Log(LOG_STATUS, "COpenWebNetTCP: scan devices complete.");
+			mask_request_status = 0x0; // scan devices complete
         }
 
+		// every 5 minuts force scan ALL devices for refresh status
+		if ((mytime(NULL) - m_LastHeartbeat) > 300) 
+		{
+			_log.Log(LOG_STATUS, "COpenWebNetTCP: HEARTBEAT set scan devices ...");
+			mask_request_status = 0x1; // force scan devices
+		}
+
 		sleep_seconds(OPENWEBNET_HEARTBEAT_DELAY);
-		m_LastHeartbeat = mytime(NULL);
 	}
 	_log.Log(LOG_STATUS, "COpenWebNetTCP: Heartbeat worker stopped...");
 }
