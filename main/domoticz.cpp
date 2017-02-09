@@ -247,7 +247,7 @@ void daemonize(const char *rundir, const char *pidfile)
 	sigaction(SIGABRT, &newSigAction, NULL);    // catch abnormal termination signal
 	sigaction(SIGILL,  &newSigAction, NULL);    // catch invalid program image
 #ifndef WIN32
-	sigaction(SIGHUP,  &newSigAction, NULL);    // catch HUP, for logrotation
+	sigaction(SIGHUP,  &newSigAction, NULL);    // catch HUP, for log rotation
 #endif
 	
 	/* Fork*/
@@ -290,7 +290,7 @@ void daemonize(const char *rundir, const char *pidfile)
 	int twrite=write(pidFilehandle, str, strlen(str));
 	if (twrite != strlen(str))
 	{
-		syslog(LOG_INFO, "Could not write to lockfile %s, exiting", pidfile);
+		syslog(LOG_INFO, "Could not write to lock file %s, exiting", pidfile);
 		exit(EXIT_FAILURE);
 	}
 
