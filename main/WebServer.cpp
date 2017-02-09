@@ -11383,12 +11383,9 @@ namespace http {
 			std::map<std::string, CNotificationBase*>::const_iterator ittNotifiers;
 			for (ittNotifiers = m_notifications.m_notifiers.begin(); ittNotifiers != m_notifications.m_notifiers.end(); ++ittNotifiers)
 			{
-				if (ittNotifiers->first != "gcm")
-				{
-					root["notifiers"][ii]["name"] = ittNotifiers->first;
-					root["notifiers"][ii]["description"] = ittNotifiers->first;
-					ii++;
-				}
+				root["notifiers"][ii]["name"] = ittNotifiers->first;
+				root["notifiers"][ii]["description"] = ittNotifiers->first;
+				ii++;
 			}
 
 			uint64_t idx = 0;

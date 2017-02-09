@@ -116,16 +116,13 @@ bool CNotificationBase::SendMessageEx(
 	if (_options & OPTIONS_URL_BODY) {
 		fText = CURLEncode::URLEncode(fText);
 	}
-	
+
 	bool bRet = SendMessageImplementation(Idx, Name, fSubject, fText, ExtraData, Priority, Sound, bFromNotification);
-	if (_subsystemid != "gcm")
-	{
-		if (bRet) {
-			_log.Log(LOG_NORM, std::string(std::string("Notification sent (") + _subsystemid + std::string(") => Success")).c_str());
-		}
-		else {
-			_log.Log(LOG_ERROR, std::string(std::string("Notification sent (") + _subsystemid + std::string(") => Failed")).c_str());
-		}
+	if (bRet) {
+		_log.Log(LOG_NORM, std::string(std::string("Notification sent (") + _subsystemid + std::string(") => Success")).c_str());
+	}
+	else {
+		_log.Log(LOG_ERROR, std::string(std::string("Notification sent (") + _subsystemid + std::string(") => Failed")).c_str());
 	}
 	return bRet;
 }

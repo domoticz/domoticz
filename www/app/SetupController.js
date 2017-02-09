@@ -166,6 +166,8 @@ define(['app'], function (app) {
 				}
 				extraparams = 'LmsPlayerMac=' + $("#lmstable #LmsPlayerMac").val() + '&LmsDuration=' + $("#lmstable #LmsDuration").val();
 				break;
+			case "gcm":
+				break;
 			default:
 				return;
 			}
@@ -387,7 +389,9 @@ define(['app'], function (app) {
 			  if (typeof data.LmsDuration != 'undefined') {
 				$("#lmstable #LmsDuration").val(data.LmsDuration);
 			  }
-
+  			  if (typeof data.GCMEnabled != 'undefined') {
+  				$("#gcmtable #GCMEnabled").prop('checked',data.GCMEnabled==1);
+			  }
 			  if (typeof data.LightHistoryDays != 'undefined') {
 				$("#lightlogtable #LightHistoryDays").val(data.LightHistoryDays);
 			  }
