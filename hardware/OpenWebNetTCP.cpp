@@ -538,7 +538,7 @@ void COpenWebNetTCP::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
     string value = iter->Extract_value(0);
 	string sInterface = iter->Extract_interface();
     string devname;
-	int app_value, int_where;
+	int iAppValue, iWhere;
 
     switch (atoi(who.c_str())) {
         case WHO_LIGHTING:									// 1
@@ -550,16 +550,16 @@ void COpenWebNetTCP::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
             devname = OPENWEBNET_LIGHT;
             devname += " " + where;
 
-			int_where = atoi(where.c_str());
+			iWhere = atoi(where.c_str());
 
-			app_value = atoi(what.c_str());
-			if (app_value == 1000) // What = 1000 (Command translation)
-				app_value = atoi(whatParam[0].c_str());
+			iAppValue = atoi(what.c_str());
+			if (iAppValue == 1000) // What = 1000 (Command translation)
+				iAppValue = atoi(whatParam[0].c_str());
 
             //pTypeGeneralSwitch, sSwitchLightT1
-            UpdateSwitch(WHO_LIGHTING, int_where, app_value, atoi(sInterface.c_str()), 255, devname.c_str(), sSwitchLightT1);
-			if (int_where < MAX_WHERE_AREA)
-				mask_request_status |= (0x1 << int_where); // Gen or area, need a refresh devices status
+            UpdateSwitch(WHO_LIGHTING, iWhere, iAppValue, atoi(sInterface.c_str()), 255, devname.c_str(), sSwitchLightT1);
+			if (iWhere < MAX_WHERE_AREA)
+				mask_request_status |= (0x1 << iWhere); // Gen or area, need a refresh devices status
             break;
         case WHO_AUTOMATION:								// 2
             if(!iter->IsNormalFrame())
@@ -568,20 +568,20 @@ void COpenWebNetTCP::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
                 return;
             }
             
-			app_value = atoi(what.c_str());
-			if (app_value == 1000) // What = 1000 (Command translation)
-				app_value = atoi(whatParam[0].c_str());
+			iAppValue = atoi(what.c_str());
+			if (iAppValue == 1000) // What = 1000 (Command translation)
+				iAppValue = atoi(whatParam[0].c_str());
 
-            switch(app_value)
+            switch(iAppValue)
             {
             case AUTOMATION_WHAT_STOP:  // 0
-                app_value = gswitch_sStop;
+				iAppValue = gswitch_sStop;
                 break;
             case AUTOMATION_WHAT_UP:    // 1
-                app_value = gswitch_sOff;
+				iAppValue = gswitch_sOff;
                 break;
             case AUTOMATION_WHAT_DOWN:  // 2
-                app_value = gswitch_sOn;
+				iAppValue = gswitch_sOn;
                 break;
             default:
 				_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s, What=%s invalid!", who.c_str(), what.c_str());
@@ -589,12 +589,12 @@ void COpenWebNetTCP::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
             }
             devname = OPENWEBNET_AUTOMATION;
             devname += " " + where;
-			int_where = atoi(where.c_str());
+			iWhere = atoi(where.c_str());
 
 			//pTypeGeneralSwitch, sSwitchBlindsT1
-            UpdateBlinds(WHO_AUTOMATION, int_where, app_value, atoi(sInterface.c_str()), 255, devname.c_str());
-			if (int_where < MAX_WHERE_AREA)
-				mask_request_status |= (0x1 << int_where); // Gen or area, need a refresh devices status
+            UpdateBlinds(WHO_AUTOMATION, iWhere, iAppValue, atoi(sInterface.c_str()), 255, devname.c_str());
+			if (iWhere < MAX_WHERE_AREA)
+				mask_request_status |= (0x1 << iWhere); // Gen or area, need a refresh devices status
             break;
         case WHO_TEMPERATURE_CONTROL:
             if(!iter->IsMeasureFrame())
@@ -905,7 +905,7 @@ bool COpenWebNetTCP::sendCommand(bt_openwebnet& command, vector<bt_openwebnet>& 
 /**
     automatic scan of automation/lighting device
 **/
-void COpenWebNetTCP::scan_automation_lighting(int cen_area)
+void COpenWebNetTCP::scan_automation_lighting(const int cen_area)
 {
     bt_openwebnet request;
     vector<bt_openwebnet> responses;
@@ -971,7 +971,7 @@ void COpenWebNetTCP::requestTime()
 **/
 void COpenWebNetTCP::scan_device()
 {
-	int idx;
+	int iWhere;
 
     /* uncomment the line below to enable the time request to the gateway.
     Note that this is only for debugging, the answer to who = 13 is not yet supported */
@@ -993,17 +993,17 @@ void COpenWebNetTCP::scan_device()
 		_log.Log(LOG_STATUS, "COpenWebNetTCP: scan device complete, wait all the update data..");
 
 		/* Update complete scan time*/
-		m_LastHeartbeat = mytime(NULL);
+		LastScanTime = mytime(NULL);
 	}
 	else
 	{
 		// Scan only the set areas
-		for (idx = WHERE_AREA_1; idx < MAX_WHERE_AREA; idx++)
+		for (iWhere = WHERE_AREA_1; iWhere < MAX_WHERE_AREA; iWhere++)
 		{
-			if (mask_request_status & (0x1 << idx))
+			if (mask_request_status & (0x1 << iWhere))
 			{
-				_log.Log(LOG_STATUS, "COpenWebNetTCP: scanning AREA %u...", idx);
-				scan_automation_lighting(idx);
+				_log.Log(LOG_STATUS, "COpenWebNetTCP: scanning AREA %u...", iWhere);
+				scan_automation_lighting(iWhere);
 			}				
 		}
 	}   
@@ -1037,13 +1037,14 @@ void COpenWebNetTCP::Do_Work()
         }
 
 		// every 5 minuts force scan ALL devices for refresh status
-		if ((mytime(NULL) - m_LastHeartbeat) > 300) 
+		if ((mytime(NULL) - LastScanTime) > 300)
 		{
 			_log.Log(LOG_STATUS, "COpenWebNetTCP: HEARTBEAT set scan devices ...");
 			mask_request_status = 0x1; // force scan devices
 		}
 
 		sleep_seconds(OPENWEBNET_HEARTBEAT_DELAY);
+		m_LastHeartbeat = mytime(NULL);
 	}
 	_log.Log(LOG_STATUS, "COpenWebNetTCP: Heartbeat worker stopped...");
 }

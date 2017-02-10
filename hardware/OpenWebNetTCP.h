@@ -90,6 +90,8 @@ protected:
 	unsigned short m_usIPPort;
     std::string m_ownPassword;
 
+	time_t LastScanTime;
+
 	void Do_Work();
 	void MonitorFrames();
 	boost::shared_ptr<boost::thread> m_monitorThread;
@@ -111,7 +113,7 @@ protected:
     void UpdateBlinds(const int who, const int where, const int Command, int iInterface, const int BatteryLevel, const char *devname);
     void UpdateTemp(const int who, const int where, float fval, const int BatteryLevel, const char *devname);
     void UpdateDeviceValue(vector<bt_openwebnet>::iterator iter);
-    void scan_automation_lighting(int cen_area);
+    void scan_automation_lighting(const int cen_area);
     void scan_temperature_control();
     void scan_device();
     void requestTime();
