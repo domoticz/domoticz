@@ -186,8 +186,9 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 					    // alert("websocket closed");
 					});
 					this.websocket.$on('$message', function (msg) {
-					    console.log(msg);
-					    msg = JSON.parse(msg);
+					    if (typeof msg == "string") {
+					        msg = JSON.parse(msg);
+					    }
 					    switch (msg.event) {
 					        case "notification":
 					            notifyMe('From Domoticz', msg.Text);
@@ -200,13 +201,17 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 							callback_obj.defer_object.resolveWith(settings.context, [ settings.success, msg.data ]);
 						}
 						else {
-							var send = {
+						    var data = msg.data || msg;
+						    if (typeof data == "string") {
+						        data = JSON.parse(data);
+						    }
+						    var send = {
 								title: "Devices", // msg.title
-								item: msg.data.result[0],
-								ServerTime: msg.data.ServerTime,
-								Sunrise: msg.data.Sunrise,
-								Sunset: msg.data.Sunset
-							}
+								item: data.result[0],
+								ServerTime: data.ServerTime,
+								Sunrise: data.Sunrise,
+								Sunset: data.Sunset
+						    }
 							$rootScope.$broadcast('jsonupdate', send);
 						}
 						if(!$rootScope.$$phase) { // prevents triggering a $digest if there's already one in progress

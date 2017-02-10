@@ -1,7 +1,7 @@
 define(['app'], function (app) {
     app.controller('TemperatureController', ['$scope', '$rootScope', '$location', '$http', '$interval', 'permissions', '$window', 'livesocket', function ($scope, $rootScope, $location, $http, $interval, permissions, $window, livesocket) {
         livesocket.Init();
-        livesocket.getJson("json.htm?type=devices&filter=temp&used=true&order=Name");
+        livesocket.getJson("json.htm?type=devices&filter=temp&used=true&order=Name"); // debug
 
 		var ctrl = this;
 
@@ -25,7 +25,6 @@ define(['app'], function (app) {
 			 }
 		  });
 		}
-
 		EditTempDevice = function(idx,name,description,addjvalue)
 		{
 			if (typeof $scope.mytimer != 'undefined') {
@@ -178,13 +177,14 @@ define(['app'], function (app) {
 			  }
 			 }
 		  });
-
-			$scope.mytimer=$interval(function() {
+/*
+	    $scope.mytimer = $interval(function () {
 				RefreshTemps();
 			}, 10000);
+*/
 		}
 
-		ShowForecast = function()
+		ShowForecast = function ()
 		{
 			SwitchLayout("Forecast");
 		}
@@ -596,6 +596,21 @@ define(['app'], function (app) {
 						}
 					};
 
+					$scope.$on('jsonupdate', function (event, json) {
+					    if (json.item) {
+					        var newitem = json.item;
+					        // Change updated items in temperatures list
+					        // TODO is there a better way to do this ?
+					        console.log("Comparing UI item " + ctrl.item.idx + " with received item " + newitem.idx);
+					        if (ctrl.item.idx == newitem.idx) {
+					            console.log("item found");
+					            ctrl.item = newitem;
+					            if (true || $scope.config.ShowUpdatedEffect == true) {
+					                $("#tempwidgets #" + newitem.idx + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
+					            }
+					        }
+					    }
+					});
 					ctrl.nbackcolor = function() {
 						var nbackcolor="#D4E1EE";
 						if (item.HaveTimeout==true) {

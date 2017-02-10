@@ -27,6 +27,8 @@ namespace http {
 		{
 			request req;
 			reply rep;
+			Json::Value jsonValue;
+			Json::StyledWriter writer;
 			// todo: we now assume the session (still) exists
 			WebEmSession session;
 			std::map<std::string, WebEmSession>::iterator itt = myWebem->m_sessions.find(session.id);
@@ -51,12 +53,16 @@ namespace http {
 			if (myWebem->CheckForPageOverride(session, req, rep)) {
 				if (rep.status == reply::ok) {
 					// todo: json_encode
-					std::string response = "{ \"event\": \"response\", \"requestid\": " + requestid + ", \"data\": " + rep.content + " }";
+					jsonValue["event"] = "response";
+					jsonValue["requestid"] = requestid;
+					jsonValue["data"] = rep.content;
+					std::string response = writer.write(jsonValue);
 					MyWrite(response);
 					return true;
 				}
 			}
-			std::string response = "/{ \"error\": \"Internal Server Error!!!\" }";
+			jsonValue["error"] = "Internal Server Error!!";
+			std::string response = writer.write(jsonValue);
 			MyWrite(response);
 			return true;
 		}
@@ -143,11 +149,9 @@ namespace http {
 
 		void CWebsocketHandler::OnDeviceChanged(const unsigned long long DeviceRowIdx)
 		{
-#if 0
 			std::string query = "type=devices&rid=" + boost::lexical_cast<std::string>(DeviceRowIdx);
 			std::string packet = "\"-1/" + query + "\"";
 			Handle(packet);
-#endif
 		}
 
 		void CWebsocketHandler::OnMessage(const std::string & Subject, const std::string & Text, const std::string & ExtraData, const int Priority, const std::string & Sound, const bool bFromNotification)
