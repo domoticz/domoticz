@@ -382,6 +382,7 @@
     <None Include="..\www\views\scenes.html" />
     <None Include="..\www\views\setup.html" />
     <None Include="..\www\views\temperature.html" />
+    <None Include="..\www\views\temperatures\temperatureWidget.html" />
     <None Include="..\www\views\update.html" />
     <None Include="..\www\views\users.html" />
     <None Include="..\www\views\uservariables.html" />
