@@ -121,7 +121,7 @@ void CurrentCostMeterBase::ExtractReadings()
 			SendWattMeter(2 + sensorInt, 1, 255, totalPower, sensorName);
 		}
 	}
-	else it (type == 2.0)
+	else if (type == 2.0)
 	{
 		float consumption(0.0);
 		float ipu(1000.0);
