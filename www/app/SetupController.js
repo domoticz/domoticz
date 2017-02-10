@@ -61,16 +61,7 @@ define(['app'], function (app) {
 					ShowNotify($.t('Please specify the base URL!...'), 3500, true);
 					return;
 				}
-				extraparams =
-                    "HTTPField1=" + HTTPField1 +
-                    "&HTTPField2=" + HTTPField2 +
-                    "&HTTPField3=" + HTTPField3 +
-                    "&HTTPField4=" + HTTPField4 +
-                    "&HTTPTo=" + HTTPTo +
-                    "&HTTPURL=" + HTTPURL +
-                    "&HTTPPostData=" + HTTPPostData +
-                    "&HTTPPostContentType=" + HTTPPostContentType +
-                    "&HTTPPostHeaders=" + HTTPPostHeaders;
+				extraparams = "HTTPField1=" + HTTPField1 + "&HTTPField2=" + HTTPField2 + "&HTTPField3=" + HTTPField3 + "&HTTPField4=" + HTTPField4 + "&HTTPTo=" + HTTPTo + "&HTTPURL=" + HTTPURL + "&HTTPPostData=" + HTTPPostData + "&HTTPPostContentType=" + HTTPPostContentType + "&HTTPPostHeaders=" + HTTPPostHeaders;
 				break;
 			case "prowl":
 				var ProwlAPI=encodeURIComponent($("#prowltable #ProwlAPI").val());
@@ -246,22 +237,6 @@ define(['app'], function (app) {
 			 }
 		  });
 
-		  //Get Timer Plans
-		  $.ajax({
-			 url: "json.htm?type=command&param=gettimerplans",
-			 async: false,
-			 dataType: 'json',
-			 success: function(data) {
-				if (typeof data.result != 'undefined') {
-					$("#settingscontent #comboTimerplan").html("");
-					$.each(data.result, function(i,item) {
-						var option = $('<option />');
-						option.attr('value', item.idx).text(item.Name);
-						$("#settingscontent #comboTimerplan").append(option);
-					});
-				}
-			 }
-		  });
 
 		  $.ajax({
 			 url: "json.htm?type=settings",
