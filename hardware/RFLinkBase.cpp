@@ -949,13 +949,13 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 			_log.Log(LOG_STATUS, "RFLink: id:%d wd %d ws %f wg: %f wt: %f wc: %f status:%d", ID, twindir, twindspeed, twindgust, twindtemp, twindchill, bExists);
 		}
 #endif
-		if (!bHaveWindDir) windir = twindir;
+		if (bHaveWindDir) twindir = round(float(windir)*22.5f);
 		if (!bHaveWindSpeed) windspeed = twindspeed;
 		if (!bHaveWindGust) windgust = twindgust;
 		if (!bHaveWindTemp) windtemp = twindtemp;
 		if (!bHaveWindChill) windchill = twindchill;
 
-		SendWind(ID, BatteryLevel, round(float(windir)*22.5f), windspeed, windgust, windtemp, windchill, bHaveWindTemp, tmp_Name);
+		SendWind(ID, BatteryLevel, twindir, windspeed, windgust, windtemp, windchill, bHaveWindTemp, tmp_Name);
 	}
     
 	if (bHaveCO2)
