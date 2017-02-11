@@ -70,6 +70,10 @@ public:
 		const std::string &DeviceName,
 		const float temp,
 		const float dewpoint);
+	bool CheckAndHandleValueNotification(
+		const uint64_t Idx,
+		const std::string &DeviceName,
+		const int value);
 	bool CheckAndHandleNotification(
 		const uint64_t Idx,
 		const std::string &DeviceName,
