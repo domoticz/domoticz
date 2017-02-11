@@ -198,7 +198,11 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 						if (requestid >= 0) {
 							var callback_obj = this.callbackqueue[requestid];
 							var settings = callback_obj.settings;
-							callback_obj.defer_object.resolveWith(settings.context, [ settings.success, msg.data ]);
+							var data = msg.data || msg;
+							if (typeof data == "string") {
+							    data = JSON.parse(data);
+							}
+							callback_obj.defer_object.resolveWith(settings.context, [settings.success, data]);
 						}
 						else {
 						    var data = msg.data || msg;

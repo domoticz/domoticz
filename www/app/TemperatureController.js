@@ -206,7 +206,6 @@ define(['app'], function (app) {
 			    if (typeof data == "string") {
 			        data = JSON.parse(data);
 			    }
-			    console.log(data);
 			    if (typeof data.result != 'undefined') {
 			        if (typeof data.ActTime != 'undefined') {
 			            $.LastUpdateTime = parseInt(data.ActTime);
