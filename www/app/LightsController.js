@@ -1234,6 +1234,15 @@ define(['app'], function (app) {
 			});
 		}
 
+		appLampWhite = function()
+		{
+			$.ajax({
+				 url: "json.htm?type=command&param=whitelight&idx=" + $.devIdx,
+				 async: false,
+				 dataType: 'json'
+			});
+		}
+
 		appLampNight = function()
 		{
 			$.ajax({

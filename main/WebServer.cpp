@@ -6695,6 +6695,22 @@ namespace http {
 
 				m_mainworker.SwitchLight(ID, "Set Night", 0, -1,false,0);
 			}
+			else if (cparam == "whitelight")
+			{
+				std::string idx = request::findValue(&req, "idx");
+
+				if (idx == "")
+				{
+					return;
+				}
+
+				uint64_t ID;
+				std::stringstream s_strid;
+				s_strid << idx;
+				s_strid >> ID;
+
+				m_mainworker.SwitchLight(ID, "Set White", 0, -1,false,0);
+			}
 			else if (cparam == "getfloorplanimages")
 			{
 				root["status"] = "OK";

@@ -30,30 +30,30 @@ uint8_t V6_BridgeOff[10]	= { 0x31, 0x00, 0x00, 0x00, 0x03, 0x04, 0x00, 0x00, 0x0
 uint8_t V6_RGBWW_Off[10] = { 0x31, 0x00, 0x00, 0x08, 0x04, 0x02, 0x00, 0x00, 0x00, l_zone };
 uint8_t V6_RGBW_Off[10] = { 0x31, 0x00, 0x00, 0x07, 0x03, 0x02, 0x00, 0x00, 0x00, l_zone };
 
-uint8_t V6_Bridge_SetColor[10] = { 0x31, 0x00, 0x00, 0x00, 0x01, 0xBA, 0xBA, 0xBA, 0xBA, 0x00 };
+uint8_t V6_Bridge_SetColor[10] = { 0x31, 0x00, 0x00, 0x00, 0x01, 0xBA, 0xBA, 0xBA, 0xBA, 0x01 };
 uint8_t V6_RGBWW_SetColor[10] = { 0x31, 0x00, 0x00, 0x08, 0x01, 0xBA, 0xBA, 0xBA, 0xBA, l_zone };
 uint8_t V6_RGBW_SetColor[10] = { 0x31, 0x00, 0x00, 0x07, 0x01, 0xBA, 0xBA, 0xBA, 0xBA, l_zone };
 
-uint8_t V6_Bridge_SetBrightnessLevel[10] = { 0x31, 0x00, 0x00, 0x00, 0x02, 0xBE, 0x00, 0x00, 0x00, 0x00 };
+uint8_t V6_Bridge_SetBrightnessLevel[10] = { 0x31, 0x00, 0x00, 0x00, 0x02, 0xBE, 0x00, 0x00, 0x00, 0x01 };
 uint8_t V6_RGBWW_SetBrightnessLevel[10] = { 0x31, 0x00, 0x00, 0x08, 0x03, 0xBE, 0x00, 0x00, 0x00, l_zone };
 uint8_t V6_RGBW_SetBrightnessLevel[10] = { 0x31, 0x00, 0x00, 0x07, 0x02, 0xBE, 0x00, 0x00, 0x00, l_zone };
 
-uint8_t V6_Bridge_White_On[10] = { 0x31, 0x00, 0x00, 0x00, 0x03, 0x05, 0x00, 0x00, 0x00, 0x00 };
+uint8_t V6_Bridge_White_On[10] = { 0x31, 0x00, 0x00, 0x00, 0x03, 0x05, 0x00, 0x00, 0x00, 0x01 };
 uint8_t V6_RGBWW_White_On[10] = { 0x31, 0x00, 0x00, 0x08, 0x05, 0x64, 0x00, 0x00, 0x00, l_zone };
 uint8_t V6_RGBW_White_On[10] = { 0x31, 0x00, 0x00, 0x07, 0x03, 0x05, 0x00, 0x00, 0x00, l_zone };
 
 uint8_t V6_RGBWW_Night_On[10] = { 0x31, 0x00, 0x00, 0x08, 0x04, 0x05, 0x00, 0x00, 0x00, l_zone };
 uint8_t V6_RGBW_Night_On[10] = { 0x31, 0x00, 0x00, 0x07, 0x03, 0x06, 0x00, 0x00, 0x00, l_zone };
 
-uint8_t V6_Bridge_Disco_Mode[10] = { 0x31, 0x00, 0x00, 0x00, 0x04, 0x01, 0x00, 0x00, 0x00, 0x00 }; //(6th hex values 0x01 to 0x09 : examples: 01 = Mode1, 02 = Mode2, 03 = Mode3 .. 09 = Mode9)
+uint8_t V6_Bridge_Disco_Mode[10] = { 0x31, 0x00, 0x00, 0x00, 0x04, 0x01, 0x00, 0x00, 0x00, 0x01 }; //(6th hex values 0x01 to 0x09 : examples: 01 = Mode1, 02 = Mode2, 03 = Mode3 .. 09 = Mode9)
 uint8_t V6_RGBWW_Disco_Mode[10] = { 0x31, 0x00, 0x00, 0x08, 0x06, 0x01, 0x00, 0x00, 0x00, l_zone };  //(6th hex values 0x01 to 0x09 : examples: 01 = Mode1, 02 = Mode2, 03 = Mode3 .. 09 = Mode9)
 uint8_t V6_RGBW_Disco_Mode[10] = { 0x31, 0x00, 0x00, 0x07, 0x04, 0x01, 0x00, 0x00, 0x00, l_zone };   //(6th hex values 0x01 to 0x09 : examples: 01 = Mode1, 02 = Mode2, 03 = Mode3 .. 09 = Mode9)
 
-uint8_t V6_Bridge_Mode_Speed_Up[10] = { 0x31, 0x00, 0x00, 0x00, 0x03, 0x02, 0x00, 0x00, 0x00, 0x00 };
+uint8_t V6_Bridge_Mode_Speed_Up[10] = { 0x31, 0x00, 0x00, 0x00, 0x03, 0x02, 0x00, 0x00, 0x00, 0x01 };
 uint8_t V6_RGBWW_Mode_Speed_Up[10] = { 0x31, 0x00, 0x00, 0x08, 0x04, 0x03, 0x00, 0x00, 0x00, l_zone };
 uint8_t V6_RGBW_Mode_Speed_Up[10] = { 0x31, 0x00, 0x00, 0x07, 0x03, 0x03, 0x00, 0x00, 0x00, l_zone };
 
-uint8_t V6_Bridge_Mode_Speed_Down[10] = { 0x31, 0x00, 0x00, 0x00, 0x03, 0x01, 0x00, 0x00, 0x00, 0x00 };
+uint8_t V6_Bridge_Mode_Speed_Down[10] = { 0x31, 0x00, 0x00, 0x00, 0x03, 0x01, 0x00, 0x00, 0x00, 0x01 };
 uint8_t V6_RGBWW_Mode_Speed_Down[10] = { 0x31, 0x00, 0x00, 0x08, 0x04, 0x04, 0x00, 0x00, 0x00, l_zone };
 uint8_t V6_RGBW_Mode_Speed_Down[10] = { 0x31, 0x00, 0x00, 0x07, 0x03, 0x04, 0x00, 0x00, 0x00, l_zone };
 
@@ -182,20 +182,39 @@ void CLimitLess::Init()
 bool CLimitLess::AddSwitchIfNotExits(const unsigned char Unit, const std::string& devname)
 {
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d)", m_HwdID, int(Unit), pTypeLimitlessLights, int(m_LEDType));
-	if (result.empty())
-	{
-		m_sql.safe_query(
-			"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, nValue, sValue) "
-			"VALUES (%d,'%d',%d,%d,%d,12,255,'%q',0,' ')",
-			m_HwdID, int(1), int(Unit), pTypeLimitlessLights, int(m_LEDType), devname.c_str());
+	if (Unit != 5) {
 		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d)", m_HwdID, int(Unit), pTypeLimitlessLights, int(m_LEDType));
-		if (!result.empty())
+		if (result.empty())
 		{
-			//Set type to dimmer
-			m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (ID==%q)", STYPE_Dimmer, result[0][0].c_str());
+			m_sql.safe_query(
+					"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, nValue, sValue) "
+					"VALUES (%d,'%d',%d,%d,%d,12,255,'%q',0,' ')",
+					m_HwdID, int(1), int(Unit), pTypeLimitlessLights, int(m_LEDType), devname.c_str());
+			result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d)", m_HwdID, int(Unit), pTypeLimitlessLights, int(m_LEDType));
+			if (!result.empty())
+			{
+				//Set type to dimmer
+				m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (ID==%q)", STYPE_Dimmer, result[0][0].c_str());
+			}
+			return false;
 		}
-		return false;
+	}
+	else if (Unit == 5) {
+		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d)", m_HwdID, int(Unit), pTypeLimitlessLights, int(4));
+		if (result.empty())
+		{
+			m_sql.safe_query(
+					"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, nValue, sValue) "
+					"VALUES (%d,'%d',%d,%d,%d,12,255,'%q',0,' ')",
+					m_HwdID, int(1), int(Unit), pTypeLimitlessLights, int(4), devname.c_str());
+			result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d)", m_HwdID, int(Unit), pTypeLimitlessLights, int(4));
+			if (!result.empty())
+			{
+				//Set type to dimmer
+				m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (ID==%q)", STYPE_Dimmer, result[0][0].c_str());
+			}
+			return false;
+		}
 	}
 	return true;
 }
@@ -463,12 +482,17 @@ void CLimitLess::Do_Work()
 bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	_tLimitlessLights *pLed=(_tLimitlessLights*)pdata;
+	int RGBW=1;
+	int RGB=2;
+	int White=3;
+	int RGBWW=4;
 
 	unsigned char *pCMD=NULL;
 
 	if (m_BridgeType == LBTYPE_V6)
 	{
-		if (m_LEDType == sTypeLimitlessRGBWW)
+		//if (m_LEDType == sTypeLimitlessRGBWW)
+		if (pLed->subtype == RGBWW)
 		{
 			switch (pLed->command)
 			{
@@ -670,7 +694,8 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				break;
 			}
 		}
-		else if (m_LEDType == sTypeLimitlessRGBW)
+		//else if (m_LEDType == sTypeLimitlessRGBW)
+		else if (pLed->subtype == RGBW)
 		{
 			switch (pLed->command)
 			{
