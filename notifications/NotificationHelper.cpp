@@ -158,7 +158,7 @@ void CNotificationHelper::LoadConfig()
 		tot++;
 		iter->second->LoadConfig();
 		if (iter->second->IsConfigured()) {
-			if ((iter->second->m_IsEnabled) && (iter->first != "gcm"))
+			if ((iter->second->m_IsEnabled))
 			{
 				if (active == 0)
 					logline << " " << iter->first;
