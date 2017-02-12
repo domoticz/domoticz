@@ -873,6 +873,23 @@ void CDomoticzHardwareBase::SendUVSensor(const int NodeID, const int ChildID, co
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.UV, defaultname.c_str(), BatteryLevel);
 }
 
+void CDomoticzHardwareBase::SendZWaveAlarmSensor(const int NodeID, const int InstanceID, const int BatteryLevel, const int aType, const int aValue, const std::string &defaultname)
+{
+	uint8_t ID1 = 0;
+	uint8_t ID2 = (unsigned char)((NodeID & 0xFF00) >> 8);
+	uint8_t ID3 = (unsigned char)NodeID & 0xFF;
+	uint8_t ID4 = InstanceID;
+
+	unsigned long lID = (ID1 << 24) + (ID2 << 16) + (ID3 << 8) + ID4;
+
+	_tGeneralDevice gDevice;
+	gDevice.subtype = sTypeZWaveAlarm;
+	gDevice.id = aType;
+	gDevice.intval1 = (int)(lID);
+	gDevice.intval2 = aValue;
+	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), BatteryLevel);
+}
+
 int CDomoticzHardwareBase::CalculateBaroForecast(const double pressure)
 {
 	//From 0 to 5 min.

@@ -9537,7 +9537,8 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 		(subType == sTypeDistance) ||
 		(subType == sTypeSoilMoisture) ||
 		(subType == sTypeCustom) ||
-		(subType == sTypeKwh)
+		(subType == sTypeKwh) ||
+		(subType == sTypeZWaveAlarm)
 		)
 	{
 		sprintf(szTmp, "%08X", (unsigned int)pMeter->intval1);
@@ -9706,6 +9707,14 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 			return;
 		m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_USAGE, pMeter->floatval1);
 	}
+	else if (subType == sTypeZWaveAlarm)
+	{
+		Unit = pMeter->id;
+		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, pMeter->intval2, procResult.DeviceName);
+		if (DevRowIdx == -1)
+			return;
+		m_notifications.CheckAndHandleValueNotification(DevRowIdx, procResult.DeviceName, pMeter->intval2);
+	}
 
 	if (m_verboselevel >= EVBL_ALL)
 	{
@@ -9814,6 +9823,11 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 		case sTypeCustom:
 			WriteMessage("subtype       = Custom Sensor");
 			sprintf(szTmp, "Value = %g", pMeter->floatval1);
+			WriteMessage(szTmp);
+			break;
+		case sTypeZWaveAlarm:
+			WriteMessage("subtype       = Alarm");
+			sprintf(szTmp, "Level = %d (0x%02X)", pMeter->intval2, pMeter->intval2);
 			WriteMessage(szTmp);
 			break;
 		default:
