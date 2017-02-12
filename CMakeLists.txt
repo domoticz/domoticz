@@ -275,6 +275,7 @@ main/WindCalculation.cpp
 push/Push.cpp
 push/DataPush.cpp
 push/HttpPush.cpp
+push/InfluxPush.cpp
 push/GooglePubSubPush.cpp
 httpclient/HTTPClient.cpp
 httpclient/UrlEncode.cpp

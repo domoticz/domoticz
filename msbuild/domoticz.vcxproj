@@ -574,6 +574,7 @@
     <ClInclude Include="..\push\DataPush.h" />
     <ClInclude Include="..\push\GooglePubSubPush.h" />
     <ClInclude Include="..\push\HttpPush.h" />
+    <ClInclude Include="..\push\InfluxPush.h" />
     <ClInclude Include="..\push\Push.h" />
     <ClInclude Include="..\webserver\fastcgi.hpp" />
     <ClInclude Include="..\webserver\GZipHelper.h" />
@@ -863,6 +864,7 @@
     <ClCompile Include="..\push\DataPush.cpp" />
     <ClCompile Include="..\push\GooglePubSubPush.cpp" />
     <ClCompile Include="..\push\HttpPush.cpp" />
+    <ClCompile Include="..\push\InfluxPush.cpp" />
     <ClCompile Include="..\push\Push.cpp" />
     <ClCompile Include="..\smtpclient\SMTPClient.cpp" />
     <ClCompile Include="..\sqlite\sqlite3.c">

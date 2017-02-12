@@ -462,6 +462,9 @@
     <Filter Include="Devices\ZWave\Control Panel">
       <UniqueIdentifier>{2467c1b1-dd49-4842-9931-bb5a12d729e2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Pushers\InfluxDB">
+      <UniqueIdentifier>{2c9db333-1435-4a52-970c-2a53298e2689}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -1969,6 +1972,9 @@
     <ClInclude Include="..\hardware\OpenZWave.h">
       <Filter>Devices\ZWave</Filter>
     </ClInclude>
+    <ClInclude Include="..\push\InfluxPush.h">
+      <Filter>Pushers\InfluxDB</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2597,6 +2603,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\OpenZWave.cpp">
       <Filter>Devices\ZWave</Filter>
+    </ClCompile>
+    <ClCompile Include="..\push\InfluxPush.cpp">
+      <Filter>Pushers\InfluxDB</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

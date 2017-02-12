@@ -146,6 +146,12 @@ private:
 	void Cmd_SaveFibaroLink(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DeleteFibaroLink(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetDevicesForFibaroLink(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_SaveInfluxLinkConfig(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_GetInfluxLinkConfig(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_GetInfluxLinks(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_SaveInfluxLink(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_DeleteInfluxLink(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_GetDevicesForInfluxLink(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetDeviceValueOptions(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetDeviceValueOptionWording(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DeleteUserVariable(WebEmSession & session, const request& req, Json::Value &root);

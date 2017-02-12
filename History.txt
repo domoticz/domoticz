@@ -16,6 +16,7 @@ Version 3.xxxx (January xth 2017)
 - Implemented: Blockly/Lua Set SetPoint option
 - Implemented: I2C BME280 sensor (temp+hum+baro)
 - Implemented: I2C for non arm systems
+- Implemented: InfluxDB Data push
 - Implemented: Netatmo Home Coach support
 - Implemented: Notification for Dummy Soil/Moisture sensor
 - Implemented: Notification for Alert Sensor via udevice JSON call

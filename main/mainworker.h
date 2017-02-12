@@ -11,6 +11,7 @@
 #include "../tcpserver/TCPServer.h"
 #include "../push/DataPush.h"
 #include "../push/HttpPush.h"
+#include "../push/InfluxPush.h"
 #include "../push/GooglePubSubPush.h"
 #include "concurrent_queue.h"
 #include "../webserver/server_settings.hpp"
@@ -127,6 +128,7 @@ public:
 	CDataPush m_datapush;
 	CCameraHandler m_cameras;
 	CHttpPush m_httppush;
+	CInfluxPush m_influxpush;
 	CGooglePubSubPush m_googlepubsubpush;
 
 	bool m_bIgnoreUsernamePassword;

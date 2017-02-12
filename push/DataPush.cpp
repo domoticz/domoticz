@@ -14,22 +14,6 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-typedef struct _STR_TABLE_ID1_ID2 {
-	unsigned long    id1;
-	unsigned long    id2;
-	const char   *str1;
-} STR_TABLE_ID1_ID2;
-
-const char *findVarTableID1ID2 (_STR_TABLE_ID1_ID2 *t, unsigned long id1, unsigned long id2)
-{
-	while (t->str1) {
-		if ( (t->id1 == id1) && (t->id2 == id2) )
-			return t->str1;
-		t++;
-	}
-	return "Not supported";
-}
-
 CDataPush::CDataPush()
 {
 	m_bLinkActive = false;

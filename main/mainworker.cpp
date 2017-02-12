@@ -1016,6 +1016,7 @@ bool MainWorker::Start()
 	AddAllDomoticzHardware();
 	m_datapush.Start();
 	m_httppush.Start();
+	m_influxpush.Start();
 	m_googlepubsubpush.Start();
 #ifdef PARSE_RFXCOM_DEVICE_LOG
 	if (m_bStartHardware==false)
@@ -1048,6 +1049,7 @@ bool MainWorker::Stop()
 		m_eventsystem.StopEventSystem();
 		m_datapush.Stop();
 		m_httppush.Stop();
+		m_influxpush.Stop();
 		m_googlepubsubpush.Stop();
 #ifdef USE_PYTHON_PLUGINS
 		m_pluginsystem.StopPluginSystem();
@@ -12482,8 +12484,7 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 			std::stringstream s_strid;
 			s_strid << sd[0];
 			s_strid >> dID;
-			uint64_t dID = 0;
-			std::string dName = sd[1];
+			dName = sd[1];
 		}
 
 		if (devType == pTypeLighting2)
