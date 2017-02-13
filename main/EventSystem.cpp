@@ -4109,6 +4109,21 @@ namespace http {
 					root["status"] = "OK";
 				}
 			}
+			else if (cparam == "updatestatus")
+			{
+			   std::string eventactive = request::findValue(&req, "eventstatus");
+			   if (eventactive == "")
+			      return;
+
+			   std::string eventid = request::findValue(&req, "eventid");
+			   if (eventid == "")
+			      return;
+
+			   m_sql.safe_query("UPDATE EventMaster SET Status ='%d' WHERE (ID == '%q')", atoi(eventactive.c_str()), eventid.c_str());
+			   m_mainworker.m_eventsystem.LoadEvents();
+			   root["status"] = "OK";
+
+			}
 			else if (cparam == "create")
 			{
 
