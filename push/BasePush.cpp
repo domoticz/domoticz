@@ -607,7 +607,7 @@ std::string CBasePush::ProcessSendValue(const std::string &rawsendValue, const i
 	}
 	else if (vType == "Gas usage")
 	{
-		strcpy(szData, rawsendValue.c_str());
+		sprintf(szData, "%.3f", atof(rawsendValue.c_str()) / 1000.0f);
 	}
 	else if (vType == "Weight")
 	{
