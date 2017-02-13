@@ -6,6 +6,10 @@
 #include "Logger.h"
 #include "WebServerHelper.h"
 #include "SQLHelper.h"
+#include "../push/FibaroPush.h"
+#include "../push/HttpPush.h"
+#include "../push/InfluxPush.h"
+#include "../push/GooglePubSubPush.h"
 
 #include "../httpclient/HTTPClient.h"
 #include "../webserver/Base64.h"
@@ -154,6 +158,11 @@ extern std::string szAppVersion;
 extern std::string szWebRoot;
 
 extern http::server::CWebServerHelper m_webservers;
+
+CFibaroPush m_fibaropush;
+CGooglePubSubPush m_googlepubsubpush;
+CHttpPush m_httppush;
+CInfluxPush m_influxpush;
 
 
 namespace tcp {
@@ -1014,7 +1023,7 @@ bool MainWorker::Start()
 	m_pluginsystem.StartPluginSystem();
 #endif
 	AddAllDomoticzHardware();
-	m_datapush.Start();
+	m_fibaropush.Start();
 	m_httppush.Start();
 	m_influxpush.Start();
 	m_googlepubsubpush.Start();
@@ -1047,7 +1056,7 @@ bool MainWorker::Stop()
 		StopDomoticzHardware();
 		m_scheduler.StopScheduler();
 		m_eventsystem.StopEventSystem();
-		m_datapush.Stop();
+		m_fibaropush.Stop();
 		m_httppush.Stop();
 		m_influxpush.Stop();
 		m_googlepubsubpush.Stop();

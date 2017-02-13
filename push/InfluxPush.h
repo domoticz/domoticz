@@ -2,11 +2,11 @@
 
 #include <boost/signals2.hpp>
 
-#include "Push.h"
+#include "BasePush.h"
 #include <map>
 #include <string>
 
-class CInfluxPush : public CPush
+class CInfluxPush : public CBasePush
 {
 	struct _tPushItem
 	{
@@ -38,3 +38,4 @@ private:
 	std::string m_InfluxDatabase;
 	bool m_bInfluxDebugActive;
 };
+extern CInfluxPush m_influxpush;

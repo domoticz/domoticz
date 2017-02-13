@@ -9,10 +9,6 @@
 #include <deque>
 #include "WindCalculation.h"
 #include "../tcpserver/TCPServer.h"
-#include "../push/DataPush.h"
-#include "../push/HttpPush.h"
-#include "../push/InfluxPush.h"
-#include "../push/GooglePubSubPush.h"
 #include "concurrent_queue.h"
 #include "../webserver/server_settings.hpp"
 #ifdef USE_PYTHON_PLUGINS
@@ -125,12 +121,7 @@ public:
 #ifdef USE_PYTHON_PLUGINS
 	Plugins::CPluginSystem m_pluginsystem;
 #endif
-	CDataPush m_datapush;
 	CCameraHandler m_cameras;
-	CHttpPush m_httppush;
-	CInfluxPush m_influxpush;
-	CGooglePubSubPush m_googlepubsubpush;
-
 	bool m_bIgnoreUsernamePassword;
 	bool m_bHaveUpdate;
 	int m_iRevision;

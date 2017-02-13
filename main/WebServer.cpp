@@ -39,7 +39,9 @@
 #include "../json/json.h"
 #include "Logger.h"
 #include "SQLHelper.h"
+#include "../push/BasePush.h"
 #include <algorithm>
+
 
 #ifndef WIN32
 #include <sys/utsname.h>
@@ -1684,7 +1686,7 @@ namespace http {
 			if (idx == "")
 				return;
 			std::vector<std::string> result;
-			result = m_mainworker.m_datapush.DropdownOptions(atoi(idx.c_str()));
+			result = CBasePush::DropdownOptions(atoi(idx.c_str()));
 			if ((result.size() == 1) && result[0] == "Status") {
 				root["result"][0]["Value"] = 0;
 				root["result"][0]["Wording"] = result[0];
@@ -1717,7 +1719,7 @@ namespace http {
 			if ((idx == "") || (pos == ""))
 				return;
 			std::string wording;
-			wording = m_mainworker.m_datapush.DropdownOptionsValue(atoi(idx.c_str()), atoi(pos.c_str()));
+			wording = CBasePush::DropdownOptionsValue(atoi(idx.c_str()), atoi(pos.c_str()));
 			root["wording"] = wording;
 			root["status"] = "OK";
 			root["title"] = "GetDeviceValueOptions";

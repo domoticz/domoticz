@@ -115,7 +115,7 @@ void CInfluxPush::DoInfluxPush()
 			}
 			if (sendValue !="") {
 				std::string szKey;
-				std::string vType = DropdownOptionsValue(m_DeviceRowIdx, delpos);
+				std::string vType = CBasePush::DropdownOptionsValue(m_DeviceRowIdx, delpos);
 				stdreplace(vType, " ", "-");
 				stdreplace(name, " ", "-");
 				szKey = vType + ",idx=" + sd[0] + ",name=" + name;
@@ -237,7 +237,7 @@ namespace http {
 			m_sql.UpdatePreferencesVar("InfluxPort", atoi(port.c_str()));
 			m_sql.UpdatePreferencesVar("InfluxDatabase", database.c_str());
 			m_sql.UpdatePreferencesVar("InfluxDebug", idebugenabled);
-			m_mainworker.m_influxpush.UpdateSettings();
+			m_influxpush.UpdateSettings();
 			root["status"] = "OK";
 			root["title"] = "SaveInfluxLinkConfig";
 		}

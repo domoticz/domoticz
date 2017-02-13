@@ -161,6 +161,7 @@ CLogger _log;
 http::server::CWebServerHelper m_webservers;
 CSQLHelper m_sql;
 CNotificationHelper m_notifications;
+
 std::string logfile = "";
 bool g_bStopApplication = false;
 bool g_bUseSyslog = false;
