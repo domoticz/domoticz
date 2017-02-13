@@ -668,7 +668,7 @@ int MStoBeaufort(const float ms)
 
 bool dirent_is_directory(std::string dir, struct dirent *ent)
 {
-	if (ent->d_type == DT_DIR)
+	if (ent->d_type == DT_DIR || ent->d_type == DT_LNK)
 		return true;
 #ifndef WIN32
 	if (ent->d_type == DT_UNKNOWN) {
