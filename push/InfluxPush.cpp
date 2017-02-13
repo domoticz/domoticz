@@ -11,31 +11,59 @@
 #include "../webserver/Base64.h"
 #include "../main/WebServer.h"
 #include "../webserver/cWebem.h"
+#include "../main/localtime_r.h"
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-CInfluxPush::CInfluxPush()
+CInfluxPush::CInfluxPush():
+	m_InfluxPort(8086),
+	m_bInfluxDebugActive(false),
+	m_stoprequested(false)
 {
 	m_bLinkActive = false;
 }
 
 void CInfluxPush::Start()
 {
-	UpdateActive();
+	UpdateSettings();
 	m_sConnection = m_mainworker.sOnDeviceReceived.connect(boost::bind(&CInfluxPush::OnDeviceReceived, this, _1, _2, _3, _4));
+	StartThread();
 }
 
 void CInfluxPush::Stop()
 {
 	if (m_sConnection.connected())
 		m_sConnection.disconnect();
+	StopThread();
 }
 
-void CInfluxPush::UpdateActive()
+void CInfluxPush::UpdateSettings()
 {
 	int fActive;
 	m_sql.GetPreferencesVar("InfluxActive", fActive);
 	m_bLinkActive = (fActive == 1);
+	m_InfluxPort = 8086;
+	m_sql.GetPreferencesVar("InfluxIP", m_InfluxIP);
+	m_sql.GetPreferencesVar("InfluxPort", m_InfluxPort);
+	m_sql.GetPreferencesVar("InfluxDatabase", m_InfluxDatabase);
+	int InfluxDebugActiveInt;
+	m_bInfluxDebugActive = false;
+	m_sql.GetPreferencesVar("InfluxDebug", InfluxDebugActiveInt);
+	if (InfluxDebugActiveInt == 1) {
+		m_bInfluxDebugActive = true;
+	}
+	m_szURL = "";
+	if (
+		(m_InfluxIP == "") ||
+		(m_InfluxPort == 0) ||
+		(m_InfluxDatabase == "")
+		)
+		return;
+	std::stringstream sURL;
+	if (m_InfluxIP.find("://") == std::string::npos)
+		sURL << "http://";
+	sURL << m_InfluxIP << ":" << m_InfluxPort << "/write?db=" << m_InfluxDatabase;
+	m_szURL = sURL.str();
 }
 
 void CInfluxPush::OnDeviceReceived(const int m_HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
@@ -49,27 +77,6 @@ void CInfluxPush::OnDeviceReceived(const int m_HwdID, const uint64_t DeviceRowId
 
 void CInfluxPush::DoInfluxPush()
 {			
-	std::string InfluxIP = "";
-	int InfluxPort = 8086;
-	std::string InfluxDatabase = "";
-	m_sql.GetPreferencesVar("InfluxIP", InfluxIP);
-	m_sql.GetPreferencesVar("InfluxPort", InfluxPort);
-	m_sql.GetPreferencesVar("InfluxDatabase", InfluxDatabase);
-
-	
-	int InfluxDebugActiveInt;
-	bool InfluxDebugActive = false;
-	m_sql.GetPreferencesVar("InfluxDebug", InfluxDebugActiveInt);
-	if (InfluxDebugActiveInt == 1) {
-		InfluxDebugActive = true;
-	}
-
-	if (
-		(InfluxIP == "") ||
-		(InfluxPort == 0) ||
-		(InfluxDatabase == "")
-		)
-		return;
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query(
 		"SELECT A.DeviceID, A.DelimitedValue, B.ID, B.Type, B.SubType, B.nValue, B.sValue, A.TargetType, A.TargetVariable, A.TargetDeviceID, A.TargetProperty, A.IncludeUnit, B.Name, B.SwitchType FROM PushLink as A, DeviceStatus as B "
@@ -77,6 +84,7 @@ void CInfluxPush::DoInfluxPush()
 		m_DeviceRowIdx);
 	if (result.size()>0)
 	{
+		time_t atime = mytime(NULL);
 		std::string sendValue;
 		std::vector<std::vector<std::string> >::const_iterator itt;
 		for (itt=result.begin(); itt!=result.end(); ++itt)
@@ -106,35 +114,97 @@ void CInfluxPush::DoInfluxPush()
 				}
 			}
 			if (sendValue !="") {
-				std::stringstream szKey;
+				std::string szKey;
 				std::string vType = DropdownOptionsValue(m_DeviceRowIdx, delpos);
 				stdreplace(vType, " ", "-");
 				stdreplace(name, " ", "-");
-				szKey << vType << ",idx=" << sd[0] << ",name=" << name << " value=" << sendValue;
+				szKey = vType + ",idx=" + sd[0] + ",name=" + name;
 
-				std::string szPostdata = szKey.str();
-				std::vector<std::string> ExtraHeaders;
+				_tPushItem pItem;
+				pItem.skey = szKey;
+				pItem.stimestamp = atime;
+				pItem.svalue = sendValue;
 
-				std::stringstream sURL;
-				if (InfluxIP.find("://") == std::string::npos)
-					sURL << "http://";
-				sURL << InfluxIP << ":" << InfluxPort << "/write?db=" << InfluxDatabase;
-
-
-				if (InfluxDebugActive) {
-					_log.Log(LOG_NORM, "InfluxLink: value %s", szPostdata.c_str());
-				}
-
-				std::string sResult;
-				if (!HTTPClient::POST(sURL.str(), szPostdata, ExtraHeaders, sResult))
+				if (targetType == 0)
 				{
-					_log.Log(LOG_ERROR, "InfluxLink: Error sending data to InfluxDB server! (check address/port/database)");
-					return;
+					//Only send on change
+					std::map<std::string, _tPushItem>::iterator itt = m_PushedItems.find(szKey);
+					if (itt != m_PushedItems.end())
+					{
+						if (sendValue == itt->second.svalue)
+							continue;
+					}
+					m_PushedItems[szKey] = pItem;
 				}
+
+				boost::lock_guard<boost::mutex> l(m_background_task_mutex);
+				if (m_background_task_queue.size() < 50)
+					m_background_task_queue.push_back(pItem);
 			}
 		}
 	}
 }
+
+bool CInfluxPush::StartThread()
+{
+	StopThread();
+	m_stoprequested = false;
+	m_background_task_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CInfluxPush::Do_Work, this)));
+	return (m_background_task_thread != NULL);
+}
+
+void CInfluxPush::StopThread()
+{
+	if (m_background_task_thread)
+	{
+		m_stoprequested = true;
+		m_background_task_thread->join();
+	}
+}
+
+
+void CInfluxPush::Do_Work()
+{
+	std::vector<_tPushItem> _items2do;
+
+	while (!m_stoprequested)
+	{
+		sleep_milliseconds(500);
+
+		{ // additional scope for lock (accessing size should be within lock too)
+			boost::lock_guard<boost::mutex> l(m_background_task_mutex);
+			if (m_background_task_queue.empty())
+				continue;
+			_items2do = m_background_task_queue;
+			m_background_task_queue.clear();
+		}
+
+		if (_items2do.size() < 1) {
+			continue;
+		}
+		if (m_szURL.empty())
+			continue;
+
+		std::vector<_tPushItem>::iterator itt = _items2do.begin();
+		while (itt != _items2do.end())
+		{
+			std::string szPostdata = itt->skey + " value=" + itt->svalue;
+			std::vector<std::string> ExtraHeaders;
+
+			if (m_bInfluxDebugActive) {
+				_log.Log(LOG_NORM, "InfluxLink: value %s", szPostdata.c_str());
+			}
+
+			std::string sResult;
+			if (!HTTPClient::POST(m_szURL, szPostdata, ExtraHeaders, sResult))
+			{
+				_log.Log(LOG_ERROR, "InfluxLink: Error sending data to InfluxDB server! (check address/port/database)");
+			}
+			++itt;
+		}
+	}
+}
+
 
 //Webserver helpers
 namespace http {
@@ -167,7 +237,7 @@ namespace http {
 			m_sql.UpdatePreferencesVar("InfluxPort", atoi(port.c_str()));
 			m_sql.UpdatePreferencesVar("InfluxDatabase", database.c_str());
 			m_sql.UpdatePreferencesVar("InfluxDebug", idebugenabled);
-			m_mainworker.m_influxpush.UpdateActive();
+			m_mainworker.m_influxpush.UpdateSettings();
 			root["status"] = "OK";
 			root["title"] = "SaveInfluxLinkConfig";
 		}
@@ -253,6 +323,8 @@ namespace http {
 			std::string deviceid = request::findValue(&req, "deviceid");
 			int deviceidi = atoi(deviceid.c_str());
 			std::string valuetosend = request::findValue(&req, "valuetosend");
+			std::string targettype = request::findValue(&req, "targettype");
+			int targettypei = atoi(targettype.c_str());
 			std::string linkactive = request::findValue(&req, "linkactive");
 			if (idx == "0") {
 				m_sql.safe_query(
@@ -260,7 +332,7 @@ namespace http {
 					1,
 					deviceidi,
 					atoi(valuetosend.c_str()),
-					0,
+					targettypei,
 					"-",
 					0,
 					"-",
@@ -270,9 +342,10 @@ namespace http {
 			}
 			else {
 				m_sql.safe_query(
-					"UPDATE PushLink SET DeviceID='%d', DelimitedValue=%d, Enabled='%d' WHERE (ID == '%q')",
+					"UPDATE PushLink SET DeviceID=%d, DelimitedValue=%d, TargetType=%d, Enabled=%d WHERE (ID == '%q')",
 					deviceidi,
 					atoi(valuetosend.c_str()),
+					targettypei,
 					atoi(linkactive.c_str()),
 					idx.c_str()
 					);

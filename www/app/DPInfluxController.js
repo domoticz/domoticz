@@ -93,6 +93,7 @@ define(['app'], function (app) {
 			var valuetosend = $('#linkparamstable #combosendvalue option:selected').val();
 			var scenevaluetosend = $('#linkparamstable #sendvaluescene option:selected').val();
 			var rebootvaluetosend = $('#linkparamstable #sendvaluereboot option:selected').val();
+			var targettype = $("#linkparamstable #combotargettype option:selected").val();
 			var targetvariable = $('#linkparamstable #targetvariable').val();
 			var targetdeviceid = $('#linkparamstable #targetdeviceid').val();
 			var targetproperty = $('#linkparamstable #targetproperty').val();
@@ -112,6 +113,7 @@ define(['app'], function (app) {
 				"&idx=" + idx +
 				"&deviceid=" + deviceid +
 				"&valuetosend=" + valuetosend +
+				"&targettype=" + targettype +
 				"&linkactive=" + linkactive;
 			$.ajax({
 				 url: url, 
@@ -175,15 +177,21 @@ define(['app'], function (app) {
 					else {
 						DelimitedValue = $.t(GetDeviceValueOptionWording(item.DeviceID,item.Delimitedvalue));
 					}
+					var TargetType = $.t('On Value Change');
+					if (item.TargetType==1) 
+						TargetType = $.t('Direct');
+
 					var addId = oTable.fnAddData( {
 						"DT_RowId": item.idx,
 						"DeviceID": item.DeviceID,
+						"TargetType": item.TargetType,
 						"Enabled": item.Enabled,
 						"Delimitedvalue": item.Delimitedvalue,
 						"0": item.DeviceID,
 						"1": item.Name,
 						"2": DelimitedValue,
-						"3": enabled
+						"3": TargetType,
+						"4": enabled
 					} );
 				});
 			  }
@@ -231,19 +239,10 @@ define(['app'], function (app) {
 							$.linkIdx=idx;	
 							$("#linkparamstable #linkupdate").attr("href", "javascript:AddLink('u')");
 							$("#linkparamstable #linkdelete").attr("href", "javascript:DeleteLink(" + idx + ")");
-							if (data["TargetType"]==2) {
-								$("#linkparamstable #sendvaluescene").val(data["Delimitedvalue"]);
-								$("#linkparamstable #onoffdevicename").val(data["DeviceID"]); 
-							}
-							if (data["TargetType"]==3) {
-								$("#linkparamstable #sendvaluereboot").val(data["Delimitedvalue"]);
-								$("#linkparamstable #onoffdevicename").val(data["DeviceID"]); 
-							}
-							else {
-								$("#linkparamstable #devicename").val(data["DeviceID"]); 
-								ValueSelectorUpdate();
-								$("#linkparamstable #combosendvalue").val(data["Delimitedvalue"]);
-							}
+							$("#linkparamstable #combotargettype").val(data["TargetType"]);
+							$("#linkparamstable #devicename").val(data["DeviceID"]); 
+							ValueSelectorUpdate();
+							$("#linkparamstable #combosendvalue").val(data["Delimitedvalue"]);
 							if (data["Enabled"] == 1) {
 								$('#linkparamstable #linkenabled').prop('checked', true);
 							}
