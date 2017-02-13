@@ -117,6 +117,8 @@ void CFibaroPush::DoFibaroPush()
 							sendValue = ProcessSendValue(rawsendValue,delpos,nValue,includeUnit,metertype);
 						}
 					}
+					else
+						sendValue = ProcessSendValue(sValue, delpos, nValue, includeUnit, metertype);
 				}
 			}
 			else { // scenes/reboot, only on/off

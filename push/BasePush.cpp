@@ -514,9 +514,8 @@ std::string CBasePush::ProcessSendValue(const std::string &rawsendValue, const i
 	}
 	else if (vType == "Altitude")
 	{
-		sprintf(szData,"Not supported yet");
+		sprintf(szData, "%.1f", atof(rawsendValue.c_str()));
 	}
-
 	else if (vType == "UV")
 	{
 		float UVI = static_cast<float>(atof(rawsendValue.c_str()));
@@ -564,12 +563,12 @@ std::string CBasePush::ProcessSendValue(const std::string &rawsendValue, const i
 	}
 	else if (vType == "Rain rate")
 	{
-		sprintf(szData,"Not supported yet");
+		sprintf(szData, "%.1f", atof(rawsendValue.c_str()));
 	}
 	else if (vType == "Total rain")
 	{
-		sprintf(szData,"Not supported yet");
-	}	
+		sprintf(szData, "%.1f", atof(rawsendValue.c_str()));
+	}
 	else if (vType == "Counter")
 	{
 		strcpy(szData, rawsendValue.c_str());
@@ -584,19 +583,19 @@ std::string CBasePush::ProcessSendValue(const std::string &rawsendValue, const i
 	}	
 	else if ((vType == "Current 1") || (vType == "Current 2") || (vType == "Current 3"))
 	{
-		sprintf(szData,"Not supported yet");
+		sprintf(szData, "%.3f", atof(rawsendValue.c_str()));
 	}	
 	else if (vType == "Instant")
 	{
-		sprintf(szData,"Not supported yet");
-	}	
+		sprintf(szData, "%.3f", atof(rawsendValue.c_str()));
+	}
 	else if ((vType == "Usage") || (vType == "Usage 1") || (vType == "Usage 2") )
 	{
-		sprintf(szData,"%.1f",atof(rawsendValue.c_str()));
+		strcpy(szData,rawsendValue.c_str());
 	}	
 	else if ((vType == "Delivery") || (vType == "Delivery 1") || (vType == "Delivery 2") )
 	{
-		sprintf(szData,"%.1f",atof(rawsendValue.c_str()));
+		strcpy(szData, rawsendValue.c_str());
 	}
 	else if (vType == "Usage current")
 	{
@@ -608,7 +607,7 @@ std::string CBasePush::ProcessSendValue(const std::string &rawsendValue, const i
 	}
 	else if (vType == "Gas usage")
 	{
-		sprintf(szData, "%.3f", atof(rawsendValue.c_str()) / 1000.0f);
+		strcpy(szData, rawsendValue.c_str());
 	}
 	else if (vType == "Weight")
 	{
@@ -736,7 +735,7 @@ std::string CBasePush::getUnit(const int delpos, const int metertypein)
 	}
 	else if (vType == "Rain rate")
 	{
-		sprintf(szData,"Not supported yet");
+		strcpy(szData,"");
 	}
 	else if (vType == "Total rain")
 	{

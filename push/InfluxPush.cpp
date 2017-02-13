@@ -105,14 +105,17 @@ void CInfluxPush::DoInfluxPush()
 			std::string lstatus="";
 
 			std::vector<std::string> strarray;
-			if (sValue.find(";")!=std::string::npos) {
+			if (sValue.find(";") != std::string::npos) {
 				StringSplit(sValue, ";", strarray);
-				if (int(strarray.size())>=delpos)
+				if (int(strarray.size()) >= delpos)
 				{
-					std::string rawsendValue = strarray[delpos-1].c_str();
-					sendValue = ProcessSendValue(rawsendValue,delpos,nValue,includeUnit,metertype);
+					std::string rawsendValue = strarray[delpos - 1].c_str();
+					sendValue = ProcessSendValue(rawsendValue, delpos, nValue, includeUnit, metertype);
 				}
 			}
+			else
+				sendValue = ProcessSendValue(sValue, delpos, nValue, includeUnit, metertype);
+
 			if (sendValue !="") {
 				std::string szKey;
 				std::string vType = CBasePush::DropdownOptionsValue(m_DeviceRowIdx, delpos);
