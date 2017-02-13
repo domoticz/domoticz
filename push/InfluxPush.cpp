@@ -179,28 +179,30 @@ void CInfluxPush::Do_Work()
 			m_background_task_queue.clear();
 		}
 
-		if (_items2do.size() < 1) {
-			continue;
-		}
 		if (m_szURL.empty())
 			continue;
+
+		std::string sSendData;
 
 		std::vector<_tPushItem>::iterator itt = _items2do.begin();
 		while (itt != _items2do.end())
 		{
-			std::string szPostdata = itt->skey + " value=" + itt->svalue;
-			std::vector<std::string> ExtraHeaders;
-
+			std::stringstream sziData;
+			sziData << itt->skey << " value=" << itt->svalue;
 			if (m_bInfluxDebugActive) {
-				_log.Log(LOG_NORM, "InfluxLink: value %s", szPostdata.c_str());
+				_log.Log(LOG_NORM, "InfluxLink: value %s", sziData.str().c_str());
 			}
-
-			std::string sResult;
-			if (!HTTPClient::POST(m_szURL, szPostdata, ExtraHeaders, sResult))
-			{
-				_log.Log(LOG_ERROR, "InfluxLink: Error sending data to InfluxDB server! (check address/port/database)");
-			}
+			sziData << " " << (itt->stimestamp * 1000000000);
+			if (!sSendData.empty())
+				sSendData += "\n";
+			sSendData += sziData.str();
 			++itt;
+		}
+		std::vector<std::string> ExtraHeaders;
+		std::string sResult;
+		if (!HTTPClient::POST(m_szURL, sSendData, ExtraHeaders, sResult))
+		{
+			_log.Log(LOG_ERROR, "InfluxLink: Error sending data to InfluxDB server! (check address/port/database)");
 		}
 	}
 }
