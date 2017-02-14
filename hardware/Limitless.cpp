@@ -497,6 +497,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 			switch (pLed->command)
 			{
 			case Limitless_LedOn:
+			{
 				if (pLed->dunit == 5)
 					pCMD = (unsigned char*)&V6_BridgeOn;
 				else {
@@ -504,7 +505,9 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 					pCMD[0x09] = pLed->dunit;
 				}
 				break;
+			}
 			case Limitless_LedOff:
+			{
 				if (pLed->dunit == 5)
 					pCMD = (unsigned char*)&V6_BridgeOff;
 				else {
@@ -512,6 +515,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 					pCMD[0x09] = pLed->dunit;
 				}
 				break;
+			}
 			case Limitless_SetRGBColour:
 			{
 				//First send ON , sleep 100ms, then the command
@@ -533,8 +537,8 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				pCMD[0x08] = pLed->value;
 				if (pLed->dunit != 5)
 					pCMD[0x09] = pLed->dunit;
+				break;
 			}
-			break;
 			case Limitless_SetBrightnessLevel:
 			{
 				//First send ON , sleep 100ms, then the command
@@ -553,9 +557,19 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				pCMD[0x05] = pLed->value;
 				if (pLed->dunit != 5)
 					pCMD[0x09] = pLed->dunit;
+				break;
 			}
-			break;
 			case Limitless_SetColorToWhite:
+			{
+				//First send ON , sleep 100ms, then the command
+				if (pLed->dunit == 5)
+					pCMD = (unsigned char*)&V6_BridgeOn;
+				else {
+					pCMD = (unsigned char*)&V6_RGBWW_On;
+					pCMD[0x09] = pLed->dunit;
+				}
+				SendV6Command(pCMD);
+				sleep_milliseconds(100);
 				if (pLed->dunit == 5)
 					pCMD = (unsigned char*)&V6_Bridge_White_On;
 				else {
@@ -563,13 +577,26 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 					pCMD[0x09] = pLed->dunit;
 				}
 				break;
+			}
 			case Limitless_NightMode:
+			{
+				//First send ON , sleep 100ms, then the command
+				if (pLed->dunit == 5)
+					pCMD = (unsigned char*)&V6_BridgeOn;
+				else {
+					pCMD = (unsigned char*)&V6_RGBWW_On;
+					pCMD[0x09] = pLed->dunit;
+				}
+				SendV6Command(pCMD);
+				sleep_milliseconds(100);
 				if (pLed->dunit == 5)
 					return false;
 				pCMD = (unsigned char*)&V6_RGBWW_Night_On;
 				pCMD[0x09] = pLed->dunit;
 				break;
+			}
 			case Limitless_DiscoSpeedSlower:
+			{
 				if (pLed->dunit == 5)
 					pCMD = (unsigned char*)&V6_Bridge_Mode_Speed_Down;
 				else {
@@ -585,7 +612,18 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 					pCMD[0x09] = pLed->dunit;
 				}
 				break;
+			}
 			case Limitless_DiscoMode:
+			{
+				//First send ON , sleep 100ms, then the command
+				if (pLed->dunit == 5)
+					pCMD = (unsigned char*)&V6_BridgeOn;
+				else {
+					pCMD = (unsigned char*)&V6_RGBWW_On;
+					pCMD[0x09] = pLed->dunit;
+				}
+				SendV6Command(pCMD);
+				sleep_milliseconds(100);
 				if (pLed->dunit == 5)
 					pCMD = (unsigned char*)&V6_Bridge_Disco_Mode;
 				else {
@@ -593,7 +631,18 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 					pCMD[0x09] = pLed->dunit;
 				}
 				break;
+			}
 			case Limitless_DiscoM1:
+			{
+				//First send ON , sleep 100ms, then the command
+				if (pLed->dunit == 5)
+					pCMD = (unsigned char*)&V6_BridgeOn;
+				else {
+					pCMD = (unsigned char*)&V6_RGBWW_On;
+					pCMD[0x09] = pLed->dunit;
+				}
+				SendV6Command(pCMD);
+				sleep_milliseconds(100);
 				if (pLed->dunit == 5) {
 					pCMD = (unsigned char*)&V6_Bridge_Disco_Mode;
 					pCMD[0X05] = 0x01;
@@ -604,7 +653,18 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 					pCMD[0X05] = 0x01;
 				}
 				break;
+			}
 			case Limitless_DiscoM2:
+			{
+				//First send ON , sleep 100ms, then the command
+				if (pLed->dunit == 5)
+					pCMD = (unsigned char*)&V6_BridgeOn;
+				else {
+					pCMD = (unsigned char*)&V6_RGBWW_On;
+					pCMD[0x09] = pLed->dunit;
+				}
+				SendV6Command(pCMD);
+				sleep_milliseconds(100);
 				if (pLed->dunit == 5) {
 					pCMD = (unsigned char*)&V6_Bridge_Disco_Mode;
 					pCMD[0X05] = 0x02;
@@ -615,7 +675,18 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 					pCMD[0X05] = 0x02;
 				}
 				break;
+			}
 			case Limitless_DiscoM3:
+			{
+				//First send ON , sleep 100ms, then the command
+				if (pLed->dunit == 5)
+					pCMD = (unsigned char*)&V6_BridgeOn;
+				else {
+					pCMD = (unsigned char*)&V6_RGBWW_On;
+					pCMD[0x09] = pLed->dunit;
+				}
+				SendV6Command(pCMD);
+				sleep_milliseconds(100);
 				if (pLed->dunit == 5) {
 					pCMD = (unsigned char*)&V6_Bridge_Disco_Mode;
 					pCMD[0X05] = 0x03;
@@ -626,7 +697,18 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 					pCMD[0X05] = 0x03;
 				}
 				break;
+			}
 			case Limitless_DiscoM4:
+			{
+				//First send ON , sleep 100ms, then the command
+				if (pLed->dunit == 5)
+					pCMD = (unsigned char*)&V6_BridgeOn;
+				else {
+					pCMD = (unsigned char*)&V6_RGBWW_On;
+					pCMD[0x09] = pLed->dunit;
+				}
+				SendV6Command(pCMD);
+				sleep_milliseconds(100);
 				if (pLed->dunit == 5) {
 					pCMD = (unsigned char*)&V6_Bridge_Disco_Mode;
 					pCMD[0X05] = 0x04;
@@ -637,7 +719,18 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 					pCMD[0X05] = 0x04;
 				}
 				break;
+			}
 			case Limitless_DiscoM5:
+			{
+				//First send ON , sleep 100ms, then the command
+				if (pLed->dunit == 5)
+					pCMD = (unsigned char*)&V6_BridgeOn;
+				else {
+					pCMD = (unsigned char*)&V6_RGBWW_On;
+					pCMD[0x09] = pLed->dunit;
+				}
+				SendV6Command(pCMD);
+				sleep_milliseconds(100);
 				if (pLed->dunit == 5) {
 					pCMD = (unsigned char*)&V6_Bridge_Disco_Mode;
 					pCMD[0X05] = 0x05;
@@ -648,7 +741,18 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 					pCMD[0X05] = 0x05;
 				}
 				break;
+			}
 			case Limitless_DiscoM6:
+			{
+				//First send ON , sleep 100ms, then the command
+				if (pLed->dunit == 5)
+					pCMD = (unsigned char*)&V6_BridgeOn;
+				else {
+					pCMD = (unsigned char*)&V6_RGBWW_On;
+					pCMD[0x09] = pLed->dunit;
+				}
+				SendV6Command(pCMD);
+				sleep_milliseconds(100);
 				if (pLed->dunit == 5) {
 					pCMD = (unsigned char*)&V6_Bridge_Disco_Mode;
 					pCMD[0X05] = 0x06;
@@ -659,7 +763,18 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 					pCMD[0X05] = 0x06;
 				}
 				break;
+			}
 			case Limitless_DiscoM7:
+			{
+				//First send ON , sleep 100ms, then the command
+				if (pLed->dunit == 5)
+					pCMD = (unsigned char*)&V6_BridgeOn;
+				else {
+					pCMD = (unsigned char*)&V6_RGBWW_On;
+					pCMD[0x09] = pLed->dunit;
+				}
+				SendV6Command(pCMD);
+				sleep_milliseconds(100);
 				if (pLed->dunit == 5) {
 					pCMD = (unsigned char*)&V6_Bridge_Disco_Mode;
 					pCMD[0X05] = 0x07;
@@ -670,7 +785,18 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 					pCMD[0X05] = 0x07;
 				}
 				break;
+			}
 			case Limitless_DiscoM8:
+			{
+				//First send ON , sleep 100ms, then the command
+				if (pLed->dunit == 5)
+					pCMD = (unsigned char*)&V6_BridgeOn;
+				else {
+					pCMD = (unsigned char*)&V6_RGBWW_On;
+					pCMD[0x09] = pLed->dunit;
+				}
+				SendV6Command(pCMD);
+				sleep_milliseconds(100);
 				if (pLed->dunit == 5) {
 					pCMD = (unsigned char*)&V6_Bridge_Disco_Mode;
 					pCMD[0X05] = 0x08;
@@ -681,7 +807,18 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 					pCMD[0X05] = 0x08;
 				}
 				break;
+			}
 			case Limitless_DiscoM9:
+			{
+				//First send ON , sleep 100ms, then the command
+				if (pLed->dunit == 5)
+					pCMD = (unsigned char*)&V6_BridgeOn;
+				else {
+					pCMD = (unsigned char*)&V6_RGBWW_On;
+					pCMD[0x09] = pLed->dunit;
+				}
+				SendV6Command(pCMD);
+				sleep_milliseconds(100);
 				if (pLed->dunit == 5) {
 					pCMD = (unsigned char*)&V6_Bridge_Disco_Mode;
 					pCMD[0X05] = 0x09;
@@ -693,6 +830,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				}
 				break;
 			}
+			}
 		}
 		//else if (m_LEDType == sTypeLimitlessRGBW)
 		else if (pLed->subtype == RGBW)
@@ -700,6 +838,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 			switch (pLed->command)
 			{
 			case Limitless_LedOn:
+			{
 				if (pLed->dunit == 5)
 					pCMD = (unsigned char*)&V6_BridgeOn;
 				else {
@@ -707,7 +846,9 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 					pCMD[0x09] = pLed->dunit;
 				}
 				break;
+			}
 			case Limitless_LedOff:
+			{
 				if (pLed->dunit == 5)
 					pCMD = (unsigned char*)&V6_BridgeOff;
 				else {
@@ -715,6 +856,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 					pCMD[0x09] = pLed->dunit;
 				}
 				break;
+			}
 			case Limitless_SetRGBColour:
 			{
 				//First send ON , sleep 100ms, then the command
@@ -736,8 +878,8 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				pCMD[0x08] = pLed->value;
 				if (pLed->dunit != 5)
 					pCMD[0x09] = pLed->dunit;
+				break;
 			}
-			break;
 			case Limitless_SetBrightnessLevel:
 			{
 				//First send ON , sleep 100ms, then the command
@@ -756,9 +898,19 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				pCMD[0x05] = pLed->value;
 				if (pLed->dunit != 5)
 					pCMD[0x09] = pLed->dunit;
+				break;
 			}
-			break;
 			case Limitless_SetColorToWhite:
+			{
+				//First send ON , sleep 100ms, then the command
+				if (pLed->dunit == 5)
+					pCMD = (unsigned char*)&V6_BridgeOn;
+				else {
+					pCMD = (unsigned char*)&V6_RGBW_On;
+					pCMD[0x09] = pLed->dunit;
+				}
+				SendV6Command(pCMD);
+				sleep_milliseconds(100);
 				if (pLed->dunit == 5)
 					pCMD = (unsigned char*)&V6_Bridge_White_On;
 				else {
@@ -766,93 +918,219 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 					pCMD[0x09] = pLed->dunit;
 				}
 				break;
+			}
 			case Limitless_NightMode:
+			{
+				//First send ON , sleep 100ms, then the command
+				if (pLed->dunit == 5)
+					pCMD = (unsigned char*)&V6_BridgeOn;
+				else {
+					pCMD = (unsigned char*)&V6_RGBW_On;
+					pCMD[0x09] = pLed->dunit;
+				}
+				SendV6Command(pCMD);
+				sleep_milliseconds(100);
 				if (pLed->dunit == 5)
 					return false;
 				pCMD = (unsigned char*)&V6_RGBW_Night_On;
 				pCMD[0x09] = pLed->dunit;
 				break;
+			}
 			case Limitless_DiscoSpeedSlower:
+			{
 				if (pLed->dunit == 5)
 					return false;
 				pCMD = (unsigned char*)&V6_RGBW_Mode_Speed_Down;
 				pCMD[0x09] = pLed->dunit;
 				break;
+			}
 			case Limitless_DiscoSpeedFaster:
+			{
 				if (pLed->dunit == 5)
 					return false;
 				pCMD = (unsigned char*)&V6_RGBW_Mode_Speed_Up;
 				pCMD[0x09] = pLed->dunit;
 				break;
+			}
 			case Limitless_DiscoMode:
+			{
+				//First send ON , sleep 100ms, then the command
+				if (pLed->dunit == 5)
+					pCMD = (unsigned char*)&V6_BridgeOn;
+				else {
+					pCMD = (unsigned char*)&V6_RGBW_On;
+					pCMD[0x09] = pLed->dunit;
+				}
+				SendV6Command(pCMD);
+				sleep_milliseconds(100);
 				if (pLed->dunit == 5)
 					return false;
 				pCMD = (unsigned char*)&V6_RGBW_Disco_Mode;
 				pCMD[0x09] = pLed->dunit;
 				break;
+			}
 			case Limitless_DiscoM1:
+			{
+				//First send ON , sleep 100ms, then the command
+				if (pLed->dunit == 5)
+					pCMD = (unsigned char*)&V6_BridgeOn;
+				else {
+					pCMD = (unsigned char*)&V6_RGBW_On;
+					pCMD[0x09] = pLed->dunit;
+				}
+				SendV6Command(pCMD);
+				sleep_milliseconds(100);
 				if (pLed->dunit == 5)
 					return false;
 				pCMD = (unsigned char*)&V6_RGBW_Disco_Mode;
 				pCMD[0x09] = pLed->dunit;
 				pCMD[0x05] = 0x01;
 				break;
+			}
 			case Limitless_DiscoM2:
+			{
+				//First send ON , sleep 100ms, then the command
+				if (pLed->dunit == 5)
+					pCMD = (unsigned char*)&V6_BridgeOn;
+				else {
+					pCMD = (unsigned char*)&V6_RGBW_On;
+					pCMD[0x09] = pLed->dunit;
+				}
+				SendV6Command(pCMD);
+				sleep_milliseconds(100);
 				if (pLed->dunit == 5)
 					return false;
 				pCMD = (unsigned char*)&V6_RGBW_Disco_Mode;
 				pCMD[0x09] = pLed->dunit;
 				pCMD[0x05] = 0x02;
  				break;
+			}
 			case Limitless_DiscoM3:
+			{
+				//First send ON , sleep 100ms, then the command
+				if (pLed->dunit == 5)
+					pCMD = (unsigned char*)&V6_BridgeOn;
+				else {
+					pCMD = (unsigned char*)&V6_RGBW_On;
+					pCMD[0x09] = pLed->dunit;
+				}
+				SendV6Command(pCMD);
+				sleep_milliseconds(100);
 				if (pLed->dunit == 5)
 					return false;
 				pCMD = (unsigned char*)&V6_RGBW_Disco_Mode;
 				pCMD[0x09] = pLed->dunit;
 				pCMD[0x05] = 0x03;
  				break;
+			}
 			case Limitless_DiscoM4:
+			{
+				//First send ON , sleep 100ms, then the command
+				if (pLed->dunit == 5)
+					pCMD = (unsigned char*)&V6_BridgeOn;
+				else {
+					pCMD = (unsigned char*)&V6_RGBW_On;
+					pCMD[0x09] = pLed->dunit;
+				}
+				SendV6Command(pCMD);
+				sleep_milliseconds(100);
 				if (pLed->dunit == 5)
 					return false;
 				pCMD = (unsigned char*)&V6_RGBW_Disco_Mode;
 				pCMD[0x09] = pLed->dunit;
 				pCMD[0x05] = 0x04;
  				break;
+			}
 			case Limitless_DiscoM5:
+			{
+				//First send ON , sleep 100ms, then the command
+				if (pLed->dunit == 5)
+					pCMD = (unsigned char*)&V6_BridgeOn;
+				else {
+					pCMD = (unsigned char*)&V6_RGBW_On;
+					pCMD[0x09] = pLed->dunit;
+				}
+				SendV6Command(pCMD);
+				sleep_milliseconds(100);
 				if (pLed->dunit == 5)
 					return false;
 				pCMD = (unsigned char*)&V6_RGBW_Disco_Mode;
 				pCMD[0x09] = pLed->dunit;
 				pCMD[0x05] = 0x05;
  				break;
+			}
 			case Limitless_DiscoM6:
+			{
+				//First send ON , sleep 100ms, then the command
+				if (pLed->dunit == 5)
+					pCMD = (unsigned char*)&V6_BridgeOn;
+				else {
+					pCMD = (unsigned char*)&V6_RGBW_On;
+					pCMD[0x09] = pLed->dunit;
+				}
+				SendV6Command(pCMD);
+				sleep_milliseconds(100);
 				if (pLed->dunit == 5)
 					return false;
 				pCMD = (unsigned char*)&V6_RGBW_Disco_Mode;
 				pCMD[0x09] = pLed->dunit;
 				pCMD[0x05] = 0x06;
  				break;
+			}
 			case Limitless_DiscoM7:
+			{
+				//First send ON , sleep 100ms, then the command
+				if (pLed->dunit == 5)
+					pCMD = (unsigned char*)&V6_BridgeOn;
+				else {
+					pCMD = (unsigned char*)&V6_RGBW_On;
+					pCMD[0x09] = pLed->dunit;
+				}
+				SendV6Command(pCMD);
+				sleep_milliseconds(100);
 				if (pLed->dunit == 5)
 					return false;
 				pCMD = (unsigned char*)&V6_RGBW_Disco_Mode;
 				pCMD[0x09] = pLed->dunit;
 				pCMD[0x05] = 0x07;
  				break;
+			}
 			case Limitless_DiscoM8:
+			{
+				//First send ON , sleep 100ms, then the command
+				if (pLed->dunit == 5)
+					pCMD = (unsigned char*)&V6_BridgeOn;
+				else {
+					pCMD = (unsigned char*)&V6_RGBW_On;
+					pCMD[0x09] = pLed->dunit;
+				}
+				SendV6Command(pCMD);
+				sleep_milliseconds(100);
 				if (pLed->dunit == 5)
 					return false;
 				pCMD = (unsigned char*)&V6_RGBW_Disco_Mode;
 				pCMD[0x09] = pLed->dunit;
 				pCMD[0x05] = 0x08;
  				break;
+			}
 			case Limitless_DiscoM9:
+			{
+				//First send ON , sleep 100ms, then the command
+				if (pLed->dunit == 5)
+					pCMD = (unsigned char*)&V6_BridgeOn;
+				else {
+					pCMD = (unsigned char*)&V6_RGBW_On;
+					pCMD[0x09] = pLed->dunit;
+				}
+				SendV6Command(pCMD);
+				sleep_milliseconds(100);
 				if (pLed->dunit == 5)
 					return false;
 				pCMD = (unsigned char*)&V6_RGBW_Disco_Mode;
 				pCMD[0x09] = pLed->dunit;
 				pCMD[0x05] = 0x09;
  				break;
+			}
 			}
 		}
 /*
