@@ -13,7 +13,7 @@ public:
 	bool SendMessageToGateway(const std::string &controlmessage);
 	void InsertUpdateSwitch(const std::string &nodeid, const std::string &Name, const bool bIsOn, const _eSwitchType switchtype, const int level, const bool isctlr2 = false, const bool is2ndchannel = false);
 	void InsertUpdateCubeText(const std::string &nodeid, const std::string &Name, const std::string &degrees);
-	void InsertUpdateVoltage(const std::string &nodeid, const std::string &Name, const int BatteryLevel);
+	void InsertUpdateVoltage(const std::string &nodeid, const std::string &Name, const int VoltageLevel);
 	void InsertUpdateTemperature(const std::string &nodeid, const std::string &Name, const float Temperature);
 	void InsertUpdateHumidity(const std::string &nodeid, const std::string &Name, const int Humidity);
 	void InsertUpdateRGBGateway(const std::string &nodeid, const std::string &Name, const bool bIsOn, const int brightness, const int hue);

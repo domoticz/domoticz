@@ -470,7 +470,7 @@ void XiaomiGateway::InsertUpdateCubeText(const std::string & nodeid, const std::
 
 }
 
-void XiaomiGateway::InsertUpdateVoltage(const std::string & nodeid, const std::string & Name, const int BatteryLevel)
+void XiaomiGateway::InsertUpdateVoltage(const std::string & nodeid, const std::string & Name, const int VoltageLevel)
 {
 	if (nodeid.length() < 14) {
 		_log.Log(LOG_ERROR, "XiaomiGateway: Node ID %s is too short", nodeid.c_str());
@@ -488,7 +488,7 @@ void XiaomiGateway::InsertUpdateVoltage(const std::string & nodeid, const std::s
 	else
 		sprintf(szTmp, "%08X", (unsigned int)sID);
 
-	SendVoltageSensor(sID, sID, BatteryLevel, 3, "Xiaomi Voltage");
+	SendVoltageSensor(sID, sID, VoltageLevel, 3, "Xiaomi Voltage");
 }
 
 void XiaomiGateway::UpdateToken(const std::string & value)
@@ -829,9 +829,9 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, on, type, level);
 						}
 						else {
-							std::string battery = root2["battery"].asString();
-							if (battery != "") {
-								m_XiaomiGateway->InsertUpdateVoltage(sid.c_str(), name, atoi(battery.c_str()));
+							std::string voltage = root2["voltage"].asString();
+							if (voltage != "") {
+								m_XiaomiGateway->InsertUpdateVoltage(sid.c_str(), name, atoi(voltage.c_str()));
 							}
 							else {
 								m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, on, type, level);
