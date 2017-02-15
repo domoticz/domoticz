@@ -580,15 +580,6 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 			}
 			case Limitless_NightMode:
 			{
-				//First send ON , sleep 100ms, then the command
-				if (pLed->dunit == 5)
-					pCMD = (unsigned char*)&V6_BridgeOn;
-				else {
-					pCMD = (unsigned char*)&V6_RGBWW_On;
-					pCMD[0x09] = pLed->dunit;
-				}
-				SendV6Command(pCMD);
-				sleep_milliseconds(100);
 				if (pLed->dunit == 5)
 					return false;
 				pCMD = (unsigned char*)&V6_RGBWW_Night_On;
@@ -921,15 +912,6 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 			}
 			case Limitless_NightMode:
 			{
-				//First send ON , sleep 100ms, then the command
-				if (pLed->dunit == 5)
-					pCMD = (unsigned char*)&V6_BridgeOn;
-				else {
-					pCMD = (unsigned char*)&V6_RGBW_On;
-					pCMD[0x09] = pLed->dunit;
-				}
-				SendV6Command(pCMD);
-				sleep_milliseconds(100);
 				if (pLed->dunit == 5)
 					return false;
 				pCMD = (unsigned char*)&V6_RGBW_Night_On;
