@@ -1,4 +1,3 @@
-
 #include "stdafx.h"
 #include "1Wire.h"
 #include "hardwaretypes.h"
@@ -20,8 +19,6 @@
 #include <sys/types.h>
 
 #define round(a) ( int ) ( a + .5 )
-
-extern CSQLHelper m_sql;
 
 C1Wire::C1Wire(const int ID, const int sensorThreadPeriod, const int switchThreadPeriod, const std::string& path) :
 	m_stoprequested(false),

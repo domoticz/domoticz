@@ -3,12 +3,13 @@ Version 3.xxxx (January xth 2017)
 - Fixed: Devices could become invisible when a scene/group was added to the 'hidden devices' room plan with the same idx
 - Fixed: JSon float/nan value, solved by upgrading JSonCPP
 - Fixed: OZW, when a value is updated and the sensor did not exists before (for example a kWh sensor), it is created (saves a restart)
-- Fixed: Deamonize compatible with Systemd forking type
+- Fixed: Daemonize compatible with Systemd forking type
 - Changed: Blinds T5 till T13 new DeviceID generation, could cause new sensors
 - Changed: Switch type 'Door Lock' renamed to 'Door Contact'
 - Changed: Minimized On/Off/Script execution time
 - Changed: Wind Direction Graph, if sensor does not supports 'Gust', the 'Speed' value is used
 - Changed: Temperature Only charts will not display the Humidity axis
+- Changed: Support symlinks for plugin and theme directories
 - Implemented: Added a new parameter to disable the logging of event script triggers 'Script event triggered: ...'
 - Implemented: AppLamp/LimitLess bridge V6.0 RGBW/RGBWW
 - Implemented: Blinds T1 till T13 new supports the Stop button
@@ -16,6 +17,7 @@ Version 3.xxxx (January xth 2017)
 - Implemented: Blockly/Lua Set SetPoint option
 - Implemented: I2C BME280 sensor (temp+hum+baro)
 - Implemented: I2C for non arm systems
+- Implemented: InfluxDB Data push
 - Implemented: Netatmo Home Coach support
 - Implemented: Notification for Dummy Soil/Moisture sensor
 - Implemented: Notification for Alert Sensor via udevice JSON call

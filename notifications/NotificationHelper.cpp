@@ -158,7 +158,7 @@ void CNotificationHelper::LoadConfig()
 		tot++;
 		iter->second->LoadConfig();
 		if (iter->second->IsConfigured()) {
-			if ((iter->second->m_IsEnabled) && (iter->first != "gcm"))
+			if (iter->second->m_IsEnabled)
 			{
 				if (active == 0)
 					logline << " " << iter->first;
@@ -357,6 +357,59 @@ bool CNotificationHelper::CheckAndHandleDewPointNotification(
 					msg = ParseCustomMessage(itt->CustomMessage, devicename, notValue);
 				SendMessageEx(Idx, devicename, itt->ActiveSystems, msg, msg, szExtraData, itt->Priority, std::string(""), true);
 				TouchNotification(itt->ID);
+			}
+		}
+	}
+	return true;
+}
+
+bool CNotificationHelper::CheckAndHandleValueNotification(
+	const uint64_t Idx,
+	const std::string &DeviceName,
+	const int value)
+{
+	std::vector<_tNotification> notifications = GetNotifications(Idx);
+	if (notifications.size() == 0)
+		return false;
+
+	char szTmp[600];
+	std::string szExtraData = "|Name=" + DeviceName + "|";
+
+	time_t atime = mytime(NULL);
+
+	//check if not sent 12 hours ago, and if applicable
+	atime -= m_NotificationSensorInterval;
+
+	std::string msg = "";
+	std::string notValue;
+
+	std::string signvalue = Notification_Type_Desc(NTYPE_VALUE, 1);
+
+	std::vector<_tNotification>::const_iterator itt;
+	for (itt = notifications.begin(); itt != notifications.end(); ++itt)
+	{
+		if ((atime >= itt->LastSend) || (itt->SendAlways)) //emergency always goes true
+		{
+			std::vector<std::string> splitresults;
+			StringSplit(itt->Params, ";", splitresults);
+			if (splitresults.size() < 2)
+				continue; //impossible
+			std::string ntype = splitresults[0];
+			int svalue = static_cast<int>(atoi(splitresults[1].c_str()));
+
+			if (ntype == signvalue)
+			{
+				if (value > svalue)
+				{
+					sprintf(szTmp, "%s is %d", DeviceName.c_str(), value);
+					msg = szTmp;
+					sprintf(szTmp, "%d", value);
+					notValue = szTmp;
+					if (!itt->CustomMessage.empty())
+						msg = ParseCustomMessage(itt->CustomMessage, DeviceName, notValue);
+					SendMessageEx(Idx, DeviceName, itt->ActiveSystems, msg, msg, szExtraData, itt->Priority, std::string(""), true);
+					TouchNotification(itt->ID);
+				}
 			}
 		}
 	}

@@ -646,25 +646,29 @@ void CEventSystem::GetCurrentMeasurementStates()
 					isBaro = true;
 				}
 				else if ((sitem.subType == sTypeAlert)
-					  || (sitem.subType == sTypeDistance)
-					  || (sitem.subType == sTypePercentage)
-					  || (sitem.subType == sTypeWaterflow)
-					  || (sitem.subType == sTypeCustom)
-					  || (sitem.subType == sTypeVoltage)
-		 			  || (sitem.subType == sTypeCurrent)
-		 			  || (sitem.subType == sTypeSetPoint)
-					  || (sitem.subType == sTypeKwh)
-					  || (sitem.subType == sTypeSoundLevel)
+					|| (sitem.subType == sTypeDistance)
+					|| (sitem.subType == sTypePercentage)
+					|| (sitem.subType == sTypeWaterflow)
+					|| (sitem.subType == sTypeCustom)
+					|| (sitem.subType == sTypeVoltage)
+					|| (sitem.subType == sTypeCurrent)
+					|| (sitem.subType == sTypeSetPoint)
+					|| (sitem.subType == sTypeKwh)
+					|| (sitem.subType == sTypeSoundLevel)
 					)
 				{
 					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
 					isUtility = true;
 				}
-
 			}
 			else
 			{
-				if (sitem.subType == sTypeCounterIncremental)
+				if (sitem.subType == sTypeZWaveAlarm)
+				{
+					utilityval = static_cast<float>(sitem.nValue);
+					isUtility = true;
+				}
+				else if (sitem.subType == sTypeCounterIncremental)
 				{
 					//get value of today
 					time_t now = mytime(NULL);
@@ -4104,6 +4108,21 @@ namespace http {
 					}
 					root["status"] = "OK";
 				}
+			}
+			else if (cparam == "updatestatus")
+			{
+			   std::string eventactive = request::findValue(&req, "eventstatus");
+			   if (eventactive == "")
+			      return;
+
+			   std::string eventid = request::findValue(&req, "eventid");
+			   if (eventid == "")
+			      return;
+
+			   m_sql.safe_query("UPDATE EventMaster SET Status ='%d' WHERE (ID == '%q')", atoi(eventactive.c_str()), eventid.c_str());
+			   m_mainworker.m_eventsystem.LoadEvents();
+			   root["status"] = "OK";
+
 			}
 			else if (cparam == "create")
 			{
