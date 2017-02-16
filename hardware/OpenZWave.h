@@ -70,9 +70,6 @@ public:
 		int								tFanMode;
 		std::vector<string>				tModes;
 		std::vector<string>				tFanModes;
-
-		//Alarm Level/Type
-		int								m_LastAlarmTypeReceived;
 	}NodeInfo;
 
 	COpenZWave(const int ID, const std::string& devname);
@@ -175,6 +172,7 @@ private:
 	bool m_bNightlyNetworkHeal;
 	bool m_bNeedSave;
 	bool m_bAeotecBlinkingMode;
+	int	m_LastAlarmTypeReceived;
 };
 
 #endif //WITH_OPENZWAVE

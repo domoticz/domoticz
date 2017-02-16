@@ -512,6 +512,19 @@ const char *sqlCreateHttpLink =
 	"[Enabled] INTEGER DEFAULT 1, "
 	"[IncludeUnit] INTEGER default 0); ";
 
+const char *sqlCreatePushLink =
+"CREATE TABLE IF NOT EXISTS [PushLink] ("
+"[ID] INTEGER PRIMARY KEY, "
+"[PushType] INTEGER, "
+"[DeviceID]  BIGINT NOT NULL, "
+"[DelimitedValue] INTEGER DEFAULT 0, "
+"[TargetType] INTEGER DEFAULT 0, "
+"[TargetVariable] VARCHAR(100), "
+"[TargetDeviceID] INTEGER, "
+"[TargetProperty] VARCHAR(100), "
+"[Enabled] INTEGER DEFAULT 1, "
+"[IncludeUnit] INTEGER default 0); ";
+
 const char *sqlCreateGooglePubSubLink =
 "CREATE TABLE IF NOT EXISTS [GooglePubSubLink] ("
 "[ID] INTEGER PRIMARY KEY, "
@@ -734,6 +747,7 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateEnoceanSensors);
 	query(sqlCreateFibaroLink);
 	query(sqlCreateHttpLink);
+	query(sqlCreatePushLink);
 	query(sqlCreateGooglePubSubLink);
 	query(sqlCreateUserVariables);
 	query(sqlCreateFloorplans);
@@ -1935,7 +1949,6 @@ bool CSQLHelper::OpenDatabase()
 				<< "([Type] = " << HTYPE_Wunderground << ") OR "
 				<< "([Type] = " << HTYPE_DarkSky << ") OR "
 				<< "([Type] = " << HTYPE_AccuWeather << ") OR "
-				<< "([Type] = " << HTYPE_RazberryZWave << ") OR "
 				<< "([Type] = " << HTYPE_OpenZWave << ")"
 				<< ")";
 			result = query(szQuery.str());
@@ -1961,7 +1974,6 @@ bool CSQLHelper::OpenDatabase()
 			szQuery << "SELECT ID FROM Hardware WHERE ( "
 				<< "([Type] = " << HTYPE_DavisVantage << ") OR "
 				<< "([Type] = " << HTYPE_TE923 << ") OR "
-				<< "([Type] = " << HTYPE_RazberryZWave << ") OR "
 				<< "([Type] = " << HTYPE_OpenZWave << ")"
 				<< ")";
 			result = query(szQuery.str());
@@ -3327,6 +3339,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 		else
 		{
 			if (
+				(stype == STYPE_DoorContact) ||
 				(stype == STYPE_DoorLock) ||
 				(stype == STYPE_Contact)
 				)
@@ -3529,6 +3542,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 						(switchtype == STYPE_Motion) ||
 						(switchtype == STYPE_Dimmer) ||
 						(switchtype == STYPE_PushOn) ||
+						(switchtype == STYPE_DoorContact) ||
 						(switchtype == STYPE_DoorLock) ||
 						(switchtype == STYPE_Selector)
 						)
@@ -5159,14 +5173,19 @@ void CSQLHelper::AddCalendarUpdateMeter()
 				(devType!=pTypeWEIGHT)
 				)
 			{
-				//Insert the last (max) counter value into the meter table to get the "today" value correct.
-				result=safe_query(
-					"INSERT INTO Meter (DeviceRowID, Value, Date) "
-					"VALUES ('%" PRIu64 "', '%q', '%q')",
-					ID,
-					sd[1].c_str(),
-					szDateEnd
+				result = safe_query("SELECT Value FROM Meter WHERE (DeviceRowID='%" PRIu64 "') ORDER BY ROWID DESC LIMIT 1", ID);
+				if (result.size() > 0)
+				{
+					std::vector<std::string> sd = result[0];
+					//Insert the last (max) counter value into the meter table to get the "today" value correct.
+					result = safe_query(
+						"INSERT INTO Meter (DeviceRowID, Value, Date) "
+						"VALUES ('%" PRIu64 "', '%q', '%q')",
+						ID,
+						sd[0].c_str(),
+						szDateEnd
 					);
+				}
 			}
 		}
 		else
