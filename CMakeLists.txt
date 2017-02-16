@@ -395,7 +395,11 @@ hardware/ZWaveBase.cpp
 hardware/Yeelight.cpp
 hardware/XiaomiGateway.cpp
 hardware/Arilux.cpp
+hardware/plugins/DelayedLink.cpp
+hardware/plugins/Plugins.cpp
 hardware/plugins/PluginManager.cpp
+hardware/plugins/PluginTransports.cpp
+hardware/plugins/PluginProtocols.cpp
 notifications/NotificationBase.cpp
 notifications/NotificationEmail.cpp
 notifications/NotificationGCM.cpp

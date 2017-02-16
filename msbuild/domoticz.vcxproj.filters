@@ -1969,6 +1969,15 @@
     <ClInclude Include="..\hardware\OpenZWave.h">
       <Filter>Devices\ZWave</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\plugins\PluginMessages.h">
+      <Filter>Devices\Python Plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\plugins\PluginProtocols.h">
+      <Filter>Devices\Python Plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\plugins\PluginTransports.h">
+      <Filter>Devices\Python Plugins</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2597,6 +2606,18 @@
     </ClCompile>
     <ClCompile Include="..\hardware\OpenZWave.cpp">
       <Filter>Devices\ZWave</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\plugins\PluginProtocols.cpp">
+      <Filter>Devices\Python Plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\plugins\DelayedLink.cpp">
+      <Filter>Devices\Python Plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\plugins\Plugins.cpp">
+      <Filter>Devices\Python Plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\plugins\PluginTransports.cpp">
+      <Filter>Devices\Python Plugins</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
