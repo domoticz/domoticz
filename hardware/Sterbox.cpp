@@ -11,8 +11,6 @@
 
 //http://sterbox.eu/index.php/sterbox
 
-extern CSQLHelper m_sql;
-
 #define STERBOX_POLL_INTERVAL 8
 
 CSterbox::CSterbox(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password) :

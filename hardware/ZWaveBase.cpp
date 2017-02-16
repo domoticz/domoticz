@@ -753,6 +753,17 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		gDevice.intval2 = pDevice->intvalue;
 		sDecodeRXMessage(this, (const unsigned char *)&gDevice, "Thermostat Fan Mode", BatLevel);
 	}
+	else if (pDevice->devType == ZDTYPE_ALARM)
+	{
+		_tGeneralDevice gDevice;
+		gDevice.subtype = sTypeZWaveAlarm;
+		gDevice.id = pDevice->Alarm_Type;
+		gDevice.intval1 = (int)(ID1 << 24) | (ID2 << 16) | (ID3 << 8) | ID4;
+		gDevice.intval2 = pDevice->intvalue;
+		char szTmp[100];
+		sprintf(szTmp, "Alarm Type: %s %d(0x%02X)", pDevice->label.c_str(), pDevice->Alarm_Type, pDevice->Alarm_Type);
+		sDecodeRXMessage(this, (const unsigned char *)&gDevice, szTmp, BatLevel);
+	}
 }
 
 ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const int nodeID, const int instanceID, const int indexID)

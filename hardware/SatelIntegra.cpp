@@ -19,8 +19,6 @@
 
 #define round(a) ( int ) ( a + .5 )
 
-extern CSQLHelper m_sql;
-
 typedef struct tModel {
 	unsigned int id;
 	const char* name;

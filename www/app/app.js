@@ -184,6 +184,11 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				controller: 'DPHttpController',
 				permission: 'Admin'
 			  })).
+			  when('/DPInflux', angularAMD.route({
+				templateUrl: 'views/dpinflux.html',
+				controller: 'DPInfluxController',
+				permission: 'Admin'
+			  })).
 			  when('/DPGooglePubSub', angularAMD.route({
 				templateUrl: 'views/dpgooglepubsub.html',
 				controller: 'DPGooglePubSubController',

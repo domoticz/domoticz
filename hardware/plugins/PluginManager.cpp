@@ -32,6 +32,11 @@
 #else
 #	pragma GCC diagnostic ignored "-Wwrite-strings"
 #endif
+
+#ifdef WITH_THREAD
+#    undefine WITH_THREAD
+#endif
+
 #include <Python.h>
 #include <structmember.h> 
 #include <frameobject.h>
@@ -2852,8 +2857,15 @@ namespace Plugins {
 		boost::lock_guard<boost::mutex> l(PluginMutex);
 		for (std::map<int, CDomoticzHardwareBase*>::iterator itt = m_pPlugins.begin(); itt != m_pPlugins.end(); itt++)
 		{
-			CPluginMessage	Message(PMT_Notification, itt->second->m_HwdID, ssMessage.str());
-			PluginMessageQueue.push(Message);
+			if (itt->second)
+			{
+				CPluginMessage	Message(PMT_Notification, itt->second->m_HwdID, ssMessage.str());
+				PluginMessageQueue.push(Message);
+			}
+			else
+			{
+				_log.Log(LOG_ERROR, "%s: NULL entry found in Plugins map for Hardware %d.", __func__, itt->first);
+			}
 		}
 	}
 }
@@ -2941,9 +2953,14 @@ namespace http {
 			Plugins::CPluginSystem Plugins;
 			std::map<int, CDomoticzHardwareBase*>*	PluginHwd = Plugins.GetHardware();
 			std::string		sRetVal = Hardware_Type_Desc(HTYPE_PythonPlugin);
-			Plugins::CPlugin*	pPlugin = (Plugins::CPlugin*)(*PluginHwd)[HwdID];
+			Plugins::CPlugin*	pPlugin = NULL;
 
 			// Disabled plugins will not be in plugin hardware map
+			if (PluginHwd->count(HwdID))
+			{
+				pPlugin = (Plugins::CPlugin*)(*PluginHwd)[HwdID];
+			}
+
 			if (pPlugin)
 			{
 				std::string	sKey = "key=\"" + pPlugin->m_PluginKey + "\"";
