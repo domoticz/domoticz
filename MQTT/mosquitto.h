@@ -21,7 +21,9 @@ Contributors:
 extern "C" {
 #endif
 
+#if defined(WIN32) && !defined(WITH_BROKER)
 #	define libmosq_EXPORT
+#endif
 
 #ifdef WIN32
 #	ifndef __cplusplus
@@ -37,7 +39,7 @@ extern "C" {
 
 #define LIBMOSQUITTO_MAJOR 1
 #define LIBMOSQUITTO_MINOR 4
-#define LIBMOSQUITTO_REVISION 9
+#define LIBMOSQUITTO_REVISION 10
 /* LIBMOSQUITTO_VERSION_NUMBER looks like 1002001 for e.g. version 1.2.1. */
 #define LIBMOSQUITTO_VERSION_NUMBER (LIBMOSQUITTO_MAJOR*1000000+LIBMOSQUITTO_MINOR*1000+LIBMOSQUITTO_REVISION)
 
