@@ -21,9 +21,7 @@ Contributors:
 extern "C" {
 #endif
 
-#if defined(WIN32) && !defined(WITH_BROKER)
 #	define libmosq_EXPORT
-#endif
 
 #ifdef WIN32
 #	ifndef __cplusplus
