@@ -807,14 +807,6 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							level = 80;
 							on = true;
 						}
-						std::string no_motion = root2["no_motion"].asString();
-						if (no_motion != "") {
-							on = false;
-						}
-						std::string no_close = root2["no_close"].asString();
-						if (no_close != "") {
-							on = true;
-						}
 						std::string rotate = root2["rotate"].asString();
 						if (rotate != "") {
 							int amount = atoi(rotate.c_str());
