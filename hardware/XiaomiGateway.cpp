@@ -439,6 +439,9 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 		if (is2ndchannel) {
 			xcmd.unitcode = 2;
 		}
+		else {
+			_log.Log(LOG_ERROR, "XiaomiGateway: ITS OK is2ndchannel not exist");
+		}
 		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, NULL, -1);
 	}
 }
@@ -949,7 +952,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 		start_receive();
 	}
 	else {
-		_log.Log(LOG_ERROR, "XiaomiGateway: error in handle_receive %d", error);
+		//_log.Log(LOG_ERROR, "XiaomiGateway: error in handle_receive %d", error);
 	}
 
 }
