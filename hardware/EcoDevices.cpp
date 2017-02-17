@@ -28,24 +28,48 @@ CEcoDevices::CEcoDevices(const int ID, const std::string &IPAddress, const unsig
 	m_stoprequested = false;
 
 	memset(&m_p1power, 0, sizeof(m_p1power));
-
 	m_p1power.len = sizeof(P1Power)-1;
 	m_p1power.type = pTypeP1Power;
 	m_p1power.subtype = sTypeP1Power;
 	m_p1power.ID = 1;
+
+	memset(&m_p1power2, 0, sizeof(m_p1power2));
+	m_p1power2.len = sizeof(P1Power)-1;
+	m_p1power2.type = pTypeP1Power;
+	m_p1power2.subtype = sTypeP1Power;
+	m_p1power2.ID = 2;
+
+	memset(&m_p1water, 0, sizeof(m_p1water));
+	m_p1water.len = sizeof(P1Gas)-1;
+	m_p1water.type = pTypeP1Gas;
+	m_p1water.subtype = sTypeP1Gas;
+	m_p1water.ID = 3;
+
+	memset(&m_p1gas, 0, sizeof(m_p1gas));
+	m_p1gas.len = sizeof(P1Gas)-1;
+	m_p1gas.type = pTypeP1Gas;
+	m_p1gas.subtype = sTypeP1Gas;
+	m_p1gas.ID = 4;
+
 	Init();
 }
+
 
 CEcoDevices::~CEcoDevices(void)
 {
 }
+
 
 void CEcoDevices::Init()
 {
 	m_stoprequested = false;
 	m_lastSharedSendElectra = 0;
 	m_lastelectrausage = 0;
+	m_lastelectrausage2 = 0;
+	m_lastwaterusage = 0;
+	m_lastgasusage = 0;
 }
+
 
 bool CEcoDevices::StartHardware()
 {
@@ -57,6 +81,7 @@ bool CEcoDevices::StartHardware()
 	return (m_thread!=NULL);
 }
 
+
 bool CEcoDevices::StopHardware()
 {
 	if (m_thread!=NULL)
@@ -65,9 +90,10 @@ bool CEcoDevices::StopHardware()
 		m_stoprequested = true;
 		m_thread->join();
 	}
-    m_bIsStarted=false;
-    return true;
+	m_bIsStarted=false;
+	return true;
 }
+
 
 #define ECODEVICES_POLL_INTERVAL 30
 
@@ -79,7 +105,8 @@ void CEcoDevices::Do_Work()
 	{
 		sleep_seconds(1);
 		sec_counter++;
-		if (sec_counter % 12 == 0) {
+		if (sec_counter % 12 == 0)
+		{
 			mytime(&m_LastHeartbeat);
 		}
 		if (sec_counter%ECODEVICES_POLL_INTERVAL == 0)
@@ -90,10 +117,12 @@ void CEcoDevices::Do_Work()
 	_log.Log(LOG_STATUS,"EcoDevices: Worker stopped...");
 }
 
+
 bool CEcoDevices::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	return true;
 }
+
 
 void CEcoDevices::GetMeterDetails()
 {
@@ -131,20 +160,55 @@ void CEcoDevices::GetMeterDetails()
 		return;
 	}
 
-	if (root["T1_PAPP"].empty() == false)
+	if (root["T1_PTEC"].empty() == false)
 	{
-		std::string tPAPP = root["T1_PAPP"].asString();
-		if (tPAPP != "----")
+		std::string tPTEC1 = root["T1_PTEC"].asString();
+		if ((tPTEC1 == "TH..") || (tPTEC1 == "----"))
+		{
+			m_p1power.powerusage1 = (unsigned long)(root["T1_BASE"].asFloat());
+			m_p1power.powerusage2 = 0;
+								 //Watt
+			m_p1power.usagecurrent = (unsigned long)(root["T1_PAPP"].asFloat());
+		}
+		if ((tPTEC1 == "HC..") || (tPTEC1 == "HP.."))
 		{
 			m_p1power.powerusage1 = (unsigned long)(root["T1_HCHP"].asFloat());
 			m_p1power.powerusage2 = (unsigned long)(root["T1_HCHC"].asFloat());
-			m_p1power.usagecurrent = (unsigned long)(root["T1_PAPP"].asFloat());	//Watt
+								 //Watt
+			m_p1power.usagecurrent = (unsigned long)(root["T1_PAPP"].asFloat());
 		}
 	}
+
+	if (root["T2_PTEC"].empty() == false)
+	{
+		std::string tPTEC2 = root["T2_PTEC"].asString();
+		if ((tPTEC2 == "TH..") || (tPTEC2 == "----"))
+		{
+			m_p1power2.powerusage1 = (unsigned long)(root["T2_BASE"].asFloat());
+			m_p1power2.powerusage2 = 0;
+								 //Watt
+			m_p1power2.usagecurrent = (unsigned long)(root["T2_PAPP"].asFloat());
+		}
+		if ((tPTEC2 == "HC..") || (tPTEC2 == "HP.."))
+		{
+			m_p1power2.powerusage1 = (unsigned long)(root["T2_HCHP"].asFloat());
+			m_p1power2.powerusage2 = (unsigned long)(root["T2_HCHC"].asFloat());
+								 //Watt
+			m_p1power2.usagecurrent = (unsigned long)(root["T2_PAPP"].asFloat());
+		}
+	}
+
+	if (root["INDEX_C1"].empty() == false)
+		m_p1water.gasusage = (unsigned long)(root["INDEX_C1"].asFloat());
+	if (root["INDEX_C2"].empty() == false)
+		m_p1gas.gasusage = (unsigned long)(root["INDEX_C2"].asFloat());
 
 	//Send Electra if value changed, or at least every 5 minutes
 	if (
 		(m_p1power.usagecurrent != m_lastelectrausage) ||
+		(m_p1power2.usagecurrent != m_lastelectrausage2) ||
+		(m_p1water.gasusage != m_lastwaterusage) ||
+		(m_p1gas.gasusage != m_lastgasusage) ||
 		(difftime(atime,m_lastSharedSendElectra) >= 300)
 		)
 	{
@@ -152,7 +216,13 @@ void CEcoDevices::GetMeterDetails()
 		{
 			m_lastSharedSendElectra = atime;
 			m_lastelectrausage = m_p1power.usagecurrent;
-			sDecodeRXMessage(this, (const unsigned char *)&m_p1power, "Power", 255);
+			m_lastelectrausage2 = m_p1power2.usagecurrent;
+			m_lastwaterusage = m_p1water.gasusage;
+			m_lastgasusage = m_p1gas.gasusage;
+			sDecodeRXMessage(this, (const unsigned char *)&m_p1power,  "Power", 255);
+			sDecodeRXMessage(this, (const unsigned char *)&m_p1power2, "Power", 255);
+			sDecodeRXMessage(this, (const unsigned char *)&m_p1water,  "Gas", 255);
+			sDecodeRXMessage(this, (const unsigned char *)&m_p1gas,    "Gas", 255);
 		}
 	}
 }
