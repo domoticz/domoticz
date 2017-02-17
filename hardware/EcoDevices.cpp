@@ -10,9 +10,17 @@
 #include "../main/mainworker.h"
 #include "../json/json.h"
 
-//http://gce-electronics.com/en/nos-produits/409-module-teleinfo-eco-devices.html
-//Eco- Devices, the first IP module dedicated to monitoring your consumption ...
-//French
+// http://gce-electronics.com/en/nos-produits/409-module-teleinfo-eco-devices.html
+// Eco- Devices is a utility consumption monitoring device dedicated to the French market.
+// It provides 4 inputs, two using the "Teleinfo" protocol found on all recent French electricity meters
+// and two multi-purpose impulse counters to be used for water, gaz or fuel consumption monitoring
+
+// http://gce-electronics.com/en/nos-produits/409-module-teleinfo-eco-devices.html
+
+// Detailed information on the API can be found at 
+// http://www.touteladomotique.com/index.php?option=com_content&id=985:premiers-pas-avec-leco-devices-sur-la-route-de-la-maitrise-de-lenergie&Itemid=89#.WKcK0zi3ik5
+
+
 
 #define round(a) ( int ) ( a + .5 )
 
@@ -27,11 +35,11 @@ CEcoDevices::CEcoDevices(const int ID, const std::string &IPAddress, const unsig
 	m_usIPPort = usIPPort;
 	m_stoprequested = false;
 
-	memset(&m_p1power, 0, sizeof(m_p1power));
-	m_p1power.len = sizeof(P1Power)-1;
-	m_p1power.type = pTypeP1Power;
-	m_p1power.subtype = sTypeP1Power;
-	m_p1power.ID = 1;
+	memset(&m_p1power1, 0, sizeof(m_p1power1));
+	m_p1power1.len = sizeof(P1Power)-1;
+	m_p1power1.type = pTypeP1Power;
+	m_p1power1.subtype = sTypeP1Power;
+	m_p1power1.ID = 1;
 
 	memset(&m_p1power2, 0, sizeof(m_p1power2));
 	m_p1power2.len = sizeof(P1Power)-1;
@@ -64,7 +72,7 @@ void CEcoDevices::Init()
 {
 	m_stoprequested = false;
 	m_lastSharedSendElectra = 0;
-	m_lastelectrausage = 0;
+	m_lastelectrausage1 = 0;
 	m_lastelectrausage2 = 0;
 	m_lastwaterusage = 0;
 	m_lastgasusage = 0;
@@ -165,17 +173,15 @@ void CEcoDevices::GetMeterDetails()
 		std::string tPTEC1 = root["T1_PTEC"].asString();
 		if ((tPTEC1 == "TH..") || (tPTEC1 == "----"))
 		{
-			m_p1power.powerusage1 = (unsigned long)(root["T1_BASE"].asFloat());
-			m_p1power.powerusage2 = 0;
-								 //Watt
-			m_p1power.usagecurrent = (unsigned long)(root["T1_PAPP"].asFloat());
+			m_p1power1.powerusage1 = (unsigned long)(root["T1_BASE"].asFloat());
+			m_p1power1.powerusage2 = 0;
+			m_p1power1.usagecurrent = (unsigned long)(root["T1_PAPP"].asFloat());
 		}
 		if ((tPTEC1 == "HC..") || (tPTEC1 == "HP.."))
 		{
-			m_p1power.powerusage1 = (unsigned long)(root["T1_HCHP"].asFloat());
-			m_p1power.powerusage2 = (unsigned long)(root["T1_HCHC"].asFloat());
-								 //Watt
-			m_p1power.usagecurrent = (unsigned long)(root["T1_PAPP"].asFloat());
+			m_p1power1.powerusage1 = (unsigned long)(root["T1_HCHP"].asFloat());
+			m_p1power1.powerusage2 = (unsigned long)(root["T1_HCHC"].asFloat());
+			m_p1power1.usagecurrent = (unsigned long)(root["T1_PAPP"].asFloat());
 		}
 	}
 
@@ -186,14 +192,12 @@ void CEcoDevices::GetMeterDetails()
 		{
 			m_p1power2.powerusage1 = (unsigned long)(root["T2_BASE"].asFloat());
 			m_p1power2.powerusage2 = 0;
-								 //Watt
 			m_p1power2.usagecurrent = (unsigned long)(root["T2_PAPP"].asFloat());
 		}
 		if ((tPTEC2 == "HC..") || (tPTEC2 == "HP.."))
 		{
 			m_p1power2.powerusage1 = (unsigned long)(root["T2_HCHP"].asFloat());
 			m_p1power2.powerusage2 = (unsigned long)(root["T2_HCHC"].asFloat());
-								 //Watt
 			m_p1power2.usagecurrent = (unsigned long)(root["T2_PAPP"].asFloat());
 		}
 	}
@@ -205,21 +209,21 @@ void CEcoDevices::GetMeterDetails()
 
 	//Send Electra if value changed, or at least every 5 minutes
 	if (
-		(m_p1power.usagecurrent != m_lastelectrausage) ||
+		(m_p1power1.usagecurrent != m_lastelectrausage1) ||
 		(m_p1power2.usagecurrent != m_lastelectrausage2) ||
 		(m_p1water.gasusage != m_lastwaterusage) ||
 		(m_p1gas.gasusage != m_lastgasusage) ||
 		(difftime(atime,m_lastSharedSendElectra) >= 300)
 		)
 	{
-		if ((m_p1power.powerusage1 != 0) || (m_p1power.powerusage2 != 0) || (m_p1power.powerdeliv1 != 0) || (m_p1power.powerdeliv2 != 0))
+		if ((m_p1power1.powerusage1 != 0) || (m_p1power1.powerusage2 != 0) || (m_p1power1.powerdeliv1 != 0) || (m_p1power1.powerdeliv2 != 0))
 		{
 			m_lastSharedSendElectra = atime;
-			m_lastelectrausage = m_p1power.usagecurrent;
+			m_lastelectrausage1 = m_p1power1.usagecurrent;
 			m_lastelectrausage2 = m_p1power2.usagecurrent;
 			m_lastwaterusage = m_p1water.gasusage;
 			m_lastgasusage = m_p1gas.gasusage;
-			sDecodeRXMessage(this, (const unsigned char *)&m_p1power,  "Power", 255);
+			sDecodeRXMessage(this, (const unsigned char *)&m_p1power1, "Power", 255);
 			sDecodeRXMessage(this, (const unsigned char *)&m_p1power2, "Power", 255);
 			sDecodeRXMessage(this, (const unsigned char *)&m_p1water,  "Gas", 255);
 			sDecodeRXMessage(this, (const unsigned char *)&m_p1gas,    "Gas", 255);

@@ -19,10 +19,10 @@ class CEcoDevices : public CDomoticzHardwareBase
 		bool m_stoprequested;
 		boost::shared_ptr<boost::thread> m_thread;
 
-		P1Power m_p1power, m_p1power1, m_p1power2;
+		P1Power m_p1power1, m_p1power2;
 		P1Gas   m_p1water, m_p1gas;
 		time_t m_lastSharedSendElectra;
-		unsigned long m_lastelectrausage, m_lastelectrausage2, m_lastwaterusage, m_lastgasusage;
+		unsigned long m_lastelectrausage1, m_lastelectrausage2, m_lastwaterusage, m_lastgasusage;
 
 		void Init();
 		bool StartHardware();
