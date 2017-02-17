@@ -2167,6 +2167,16 @@ std::string bt_openwebnet::getWhereDescription(const std::string& who, const std
 		}
 	}
 
+	if (where.length() == 1) {
+		//A = [1 - 9] 
+		return "area " + where.substr(0, 1);
+	}
+	else if (where.length() == 2) {
+		//A = [01 - 09] 
+		return "area " + where.substr(0, 2);
+	}
+
+
 	return "Unknown where : " + where + vectorToString(whereParameters);
 }
 

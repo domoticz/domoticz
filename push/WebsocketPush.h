@@ -1,6 +1,6 @@
 #pragma once
 #include <boost/signals2.hpp>
-#include "Push.h"
+#include "BasePush.h"
 
 namespace http {
 	namespace server {
@@ -8,7 +8,7 @@ namespace http {
 	}
 }
 
-class CWebSocketPush : public CPush
+class CWebSocketPush : public CBasePush
 {
 public:
 	CWebSocketPush(http::server::CWebsocketHandler *sock);

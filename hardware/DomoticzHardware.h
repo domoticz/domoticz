@@ -88,6 +88,7 @@ protected:
 	std::string GetTextSensorText(const int NodeID, const int ChildID, bool &bExists);
 	bool CheckPercentageSensorExists(const int NodeID, const int ChildID);
 	void SendCustomSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float Dust, const std::string &defaultname, const std::string &defaultLabel);
+	void SendZWaveAlarmSensor(const int NodeID, const int InstanceID, const int BatteryLevel, const int aType, const int aValue, const std::string &defaultname);
 
 	int m_iHBCounter;
 	boost::mutex readQueueMutex;

@@ -6,6 +6,7 @@ public:
 	CNotificationKodi();
 	~CNotificationKodi();
 	virtual bool IsConfigured();
+	std::string	 GetIconFile(const std::string &ExtraData);
 protected:
 	virtual bool SendMessageImplementation(
 		const uint64_t Idx,
@@ -21,7 +22,6 @@ private:
 	int			_Port;
 	int			_TTL;
 		
-	std::string	 GetIconFile(const std::string &ExtraData);
 	std::string	 GetCustomIcon(std::string &szCustom);
 
 };

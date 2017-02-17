@@ -272,10 +272,11 @@ main/SunRiseSet.cpp
 main/WebServer.cpp
 main/WebServerHelper.cpp
 main/WindCalculation.cpp
-push/Push.cpp
-push/DataPush.cpp
-push/HttpPush.cpp
+push/BasePush.cpp
+push/FibaroPush.cpp
 push/GooglePubSubPush.cpp
+push/HttpPush.cpp
+push/InfluxPush.cpp
 httpclient/HTTPClient.cpp
 httpclient/UrlEncode.cpp
 hardware/1Wire.cpp
@@ -395,7 +396,11 @@ hardware/ZWaveBase.cpp
 hardware/Yeelight.cpp
 hardware/XiaomiGateway.cpp
 hardware/Arilux.cpp
+hardware/plugins/DelayedLink.cpp
+hardware/plugins/Plugins.cpp
 hardware/plugins/PluginManager.cpp
+hardware/plugins/PluginTransports.cpp
+hardware/plugins/PluginProtocols.cpp
 notifications/NotificationBase.cpp
 notifications/NotificationEmail.cpp
 notifications/NotificationGCM.cpp

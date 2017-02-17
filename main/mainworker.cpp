@@ -6,6 +6,10 @@
 #include "Logger.h"
 #include "WebServerHelper.h"
 #include "SQLHelper.h"
+#include "../push/FibaroPush.h"
+#include "../push/HttpPush.h"
+#include "../push/InfluxPush.h"
+#include "../push/GooglePubSubPush.h"
 
 #include "../httpclient/HTTPClient.h"
 #include "../webserver/Base64.h"
@@ -154,6 +158,11 @@ extern std::string szAppVersion;
 extern std::string szWebRoot;
 
 extern http::server::CWebServerHelper m_webservers;
+
+CFibaroPush m_fibaropush;
+CGooglePubSubPush m_googlepubsubpush;
+CHttpPush m_httppush;
+CInfluxPush m_influxpush;
 
 
 namespace tcp {
@@ -1014,8 +1023,9 @@ bool MainWorker::Start()
 	m_pluginsystem.StartPluginSystem();
 #endif
 	AddAllDomoticzHardware();
-	m_datapush.Start();
+	m_fibaropush.Start();
 	m_httppush.Start();
+	m_influxpush.Start();
 	m_googlepubsubpush.Start();
 #ifdef PARSE_RFXCOM_DEVICE_LOG
 	if (m_bStartHardware==false)
@@ -1046,8 +1056,9 @@ bool MainWorker::Stop()
 		StopDomoticzHardware();
 		m_scheduler.StopScheduler();
 		m_eventsystem.StopEventSystem();
-		m_datapush.Stop();
+		m_fibaropush.Stop();
 		m_httppush.Stop();
+		m_influxpush.Stop();
 		m_googlepubsubpush.Stop();
 #ifdef USE_PYTHON_PLUGINS
 		m_pluginsystem.StopPluginSystem();
@@ -9537,7 +9548,8 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 		(subType == sTypeDistance) ||
 		(subType == sTypeSoilMoisture) ||
 		(subType == sTypeCustom) ||
-		(subType == sTypeKwh)
+		(subType == sTypeKwh) ||
+		(subType == sTypeZWaveAlarm)
 		)
 	{
 		sprintf(szTmp, "%08X", (unsigned int)pMeter->intval1);
@@ -9706,6 +9718,14 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 			return;
 		m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_USAGE, pMeter->floatval1);
 	}
+	else if (subType == sTypeZWaveAlarm)
+	{
+		Unit = pMeter->id;
+		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, pMeter->intval2, procResult.DeviceName);
+		if (DevRowIdx == -1)
+			return;
+		m_notifications.CheckAndHandleValueNotification(DevRowIdx, procResult.DeviceName, pMeter->intval2);
+	}
 
 	if (m_verboselevel >= EVBL_ALL)
 	{
@@ -9814,6 +9834,11 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 		case sTypeCustom:
 			WriteMessage("subtype       = Custom Sensor");
 			sprintf(szTmp, "Value = %g", pMeter->floatval1);
+			WriteMessage(szTmp);
+			break;
+		case sTypeZWaveAlarm:
+			WriteMessage("subtype       = Alarm");
+			sprintf(szTmp, "Level = %d (0x%02X)", pMeter->intval2, pMeter->intval2);
 			WriteMessage(szTmp);
 			break;
 		default:
@@ -12468,8 +12493,7 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 			std::stringstream s_strid;
 			s_strid << sd[0];
 			s_strid >> dID;
-			uint64_t dID = 0;
-			std::string dName = sd[1];
+			dName = sd[1];
 		}
 
 		if (devType == pTypeLighting2)
@@ -12599,6 +12623,7 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 			if (dID != 0)
 				m_notifications.CheckAndHandleNotification(dID, dName, devType, subType, NTYPE_TEMPERATURE, (float)atof(sValue.c_str()));
 		}
+/*
 		else if (devType == pTypeGeneralSwitch)
 		{
 			_tGeneralSwitch gswitch;
@@ -12613,6 +12638,7 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 			DecodeRXMessage(pHardware, (const unsigned char *)&gswitch, NULL, batterylevel);
 			return true;
 		}
+*/
 	}
 
 	std::string devname = "Unknown";

@@ -2,14 +2,13 @@
 
 #include <boost/signals2.hpp>
 
-class CPush
+class CBasePush
 {
 public:
-	CPush();
+	CBasePush();
 
-	std::vector<std::string> DropdownOptions(const uint64_t DeviceRowIdxIn);
-	std::string DropdownOptionsValue(const uint64_t DeviceRowIdxIn, const int pos);
-
+	static std::vector<std::string> DropdownOptions(const uint64_t DeviceRowIdxIn);
+	static std::string DropdownOptionsValue(const uint64_t DeviceRowIdxIn, const int pos);
 protected:
 	bool m_bLinkActive;
 	uint64_t m_DeviceRowIdx;
