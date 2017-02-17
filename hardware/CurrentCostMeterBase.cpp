@@ -29,6 +29,7 @@ void CurrentCostMeterBase::Init()
 //    <sensor>1</sensor>            Appliance Number as displayed
 //    <id>01234</id>                radio ID received from the sensor
 //    <type>1</type>                sensor Type, "1" = electricity
+//				    sensor Type, "2" = electric impulse
 //    <ch1>                         sensor channel
 //       <watts>00345</watts>       data and units
 //    </ch1>
@@ -38,6 +39,9 @@ void CurrentCostMeterBase::Init()
 //    <ch3>
 //       <watts>00000</watts>
 //    </ch3>
+//    <type>2</type> 
+//    <imp>0000089466</imp>	    Meter Impulse Count
+//    <ipu>1000</ipu>		    Meter Impulses Per Unit : nbr impulse to have 1kWH
 // </msg>                           end of message
 // there are also periodic messages with history 
 // these all have the <hist> tag in them.
@@ -72,14 +76,14 @@ void CurrentCostMeterBase::ExtractReadings()
 		}
 	}
 
-	if(!ExtractNumberBetweenStrings("<type>", "</type>", &type) || type != 1.0)
+	if(!ExtractNumberBetweenStrings("<type>", "</type>", &type) || ((type != 1.0) && (type != 2.0)))
 	{
 		// not a power sensor, ignore
 		return;
 	}
 
 	// get the temp and only process if it is from the whole house sensor
-	if(ExtractNumberBetweenStrings("<tmpr>", "</tmpr>", &temp) && sensor == 0.0)
+	if(sensor == 0.0 && ExtractNumberBetweenStrings("<tmpr>", "</tmpr>", &temp))
 	{
 		// only send the temp once a minute to avoid filling up the db
 		if((m_tempuratureCounter++ % 10) == 0)
@@ -87,33 +91,56 @@ void CurrentCostMeterBase::ExtractReadings()
 			SendTempSensor(1, 255, temp, "Temp");
 		}
 	}
-
-	float totalPower(0.0);
-	if(ExtractNumberBetweenStrings("<ch1><watts>", "</watts></ch1>", &reading))
+	if (type == 1.0)
 	{
-		totalPower += reading;
+		float totalPower(0.0);
+		if(ExtractNumberBetweenStrings("<ch1><watts>", "</watts></ch1>", &reading))
+		{
+			totalPower += reading;
+		}
+		if(ExtractNumberBetweenStrings("<ch2><watts>", "</watts></ch2>", &reading))
+		{
+			totalPower += reading;
+		}
+		if(ExtractNumberBetweenStrings("<ch3><watts>", "</watts></ch3>", &reading))
+		{
+			totalPower += reading;
+		}
+		if(sensor == 0.0)
+		{
+			SendWattMeter(2, 1, 255, totalPower, "CC Whole House Power");
+		}
+		else
+		{
+			// create a suitable default name
+			// there can only be 8 sensors so this
+			// method is OK and should be faster
+			char sensorInt(static_cast<char>(sensor));
+			std::string sensorName("CC Sensor 0 Power");
+			sensorName[10] += sensorInt;
+			SendWattMeter(2 + sensorInt, 1, 255, totalPower, sensorName);
+		}
 	}
-	if(ExtractNumberBetweenStrings("<ch2><watts>", "</watts></ch2>", &reading))
+	else if (type == 2.0)
 	{
-		totalPower += reading;
-	}
-	if(ExtractNumberBetweenStrings("<ch3><watts>", "</watts></ch3>", &reading))
-	{
-		totalPower += reading;
-	}
-	if(sensor == 0.0)
-	{
-		SendWattMeter(2, 1, 255, totalPower, "CC Whole House Power");
-	}
-	else
-	{
-		// create a suitable default name
-		// there can only be 8 sensors so this
-		// method is OK and should be faster
-		char sensorInt(static_cast<char>(sensor));
-		std::string sensorName("CC Sensor 0 Power");
-		sensorName[10] += sensorInt;
-		SendWattMeter(2 + sensorInt, 1, 255, totalPower, sensorName);
+		float consumption(0.0);
+		float ipu(1000.0);
+		if (ExtractNumberBetweenStrings("<imp>", "</imp>", &reading))
+		{
+			consumption = reading;	
+		}
+		if (ExtractNumberBetweenStrings("<ipu>", "</ipu>", &reading) && (reading != 0.0))
+		{
+			ipu = reading;	
+		}
+		if (consumption != 0.0)
+		{
+			consumption /= ipu;
+			char sensorInt(static_cast<char>(sensor));
+			std::string sensorName("CC Sensor 0 kWh consumption");
+			sensorName[10] += sensorInt;
+			SendKwhMeter(2 + sensorInt, 2, 255, 0, consumption, sensorName);
+		}
 	}
 }
 

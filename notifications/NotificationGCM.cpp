@@ -11,8 +11,7 @@
 
 CNotificationGCM::CNotificationGCM() : CNotificationBase(std::string("gcm"), OPTIONS_URL_SUBJECT | OPTIONS_URL_BODY | OPTIONS_URL_PARAMS)
 {
-	m_IsEnabled = 1;
-	//SetupConfig(std::string("GCMEnabled"), &m_IsEnabled);
+	SetupConfig(std::string("GCMEnabled"), &m_IsEnabled);
 }
 
 CNotificationGCM::~CNotificationGCM()

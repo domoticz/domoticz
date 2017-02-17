@@ -408,9 +408,6 @@
     <Filter Include="Pushers">
       <UniqueIdentifier>{b669cde0-9cf1-43ae-a5c0-5f01851e9b45}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Pushers\PushBase">
-      <UniqueIdentifier>{2be86c90-c015-48e9-9009-0100e9c6b0eb}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Pushers\HttpLink">
       <UniqueIdentifier>{b84812aa-d71f-4b05-b496-4420b93cd9b9}</UniqueIdentifier>
     </Filter>
@@ -461,6 +458,9 @@
     </Filter>
     <Filter Include="Devices\ZWave\Control Panel">
       <UniqueIdentifier>{2467c1b1-dd49-4842-9931-bb5a12d729e2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pushers\InfluxDB">
+      <UniqueIdentifier>{2c9db333-1435-4a52-970c-2a53298e2689}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -1891,17 +1891,11 @@
     <ClInclude Include="..\hardware\AccuWeather.h">
       <Filter>Devices\AccuWeather</Filter>
     </ClInclude>
-    <ClInclude Include="..\push\DataPush.h">
-      <Filter>Pushers\FibaroLink</Filter>
-    </ClInclude>
     <ClInclude Include="..\push\GooglePubSubPush.h">
       <Filter>Pushers\GooglePubsub</Filter>
     </ClInclude>
     <ClInclude Include="..\push\HttpPush.h">
       <Filter>Pushers\HttpLink</Filter>
-    </ClInclude>
-    <ClInclude Include="..\push\Push.h">
-      <Filter>Pushers\PushBase</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\BleBox.h">
       <Filter>Devices\BleBox</Filter>
@@ -1968,6 +1962,15 @@
     </ClInclude>
     <ClInclude Include="..\hardware\OpenZWave.h">
       <Filter>Devices\ZWave</Filter>
+    </ClInclude>
+    <ClInclude Include="..\push\InfluxPush.h">
+      <Filter>Pushers\InfluxDB</Filter>
+    </ClInclude>
+    <ClInclude Include="..\push\FibaroPush.h">
+      <Filter>Pushers\FibaroLink</Filter>
+    </ClInclude>
+    <ClInclude Include="..\push\BasePush.h">
+      <Filter>Pushers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2529,17 +2532,11 @@
     <ClCompile Include="..\hardware\AccuWeather.cpp">
       <Filter>Devices\AccuWeather</Filter>
     </ClCompile>
-    <ClCompile Include="..\push\DataPush.cpp">
-      <Filter>Pushers\FibaroLink</Filter>
-    </ClCompile>
     <ClCompile Include="..\push\GooglePubSubPush.cpp">
       <Filter>Pushers\GooglePubsub</Filter>
     </ClCompile>
     <ClCompile Include="..\push\HttpPush.cpp">
       <Filter>Pushers\HttpLink</Filter>
-    </ClCompile>
-    <ClCompile Include="..\push\Push.cpp">
-      <Filter>Pushers\PushBase</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\BleBox.cpp">
       <Filter>Devices\BleBox</Filter>
@@ -2597,6 +2594,15 @@
     </ClCompile>
     <ClCompile Include="..\hardware\OpenZWave.cpp">
       <Filter>Devices\ZWave</Filter>
+    </ClCompile>
+    <ClCompile Include="..\push\InfluxPush.cpp">
+      <Filter>Pushers\InfluxDB</Filter>
+    </ClCompile>
+    <ClCompile Include="..\push\FibaroPush.cpp">
+      <Filter>Pushers\FibaroLink</Filter>
+    </ClCompile>
+    <ClCompile Include="..\push\BasePush.cpp">
+      <Filter>Pushers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

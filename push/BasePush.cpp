@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Push.h"
+#include "BasePush.h"
 #include "../hardware/hardwaretypes.h"
 #include "../json/json.h"
 #include "../main/Helper.h"
@@ -243,6 +243,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeGeneral, sTypeKwh, "Instant,Usage" },
 		{ pTypeGeneral, sTypeWaterflow, "Percentage" },
 		{ pTypeGeneral, sTypeCustom, "Percentage" },
+		{ pTypeGeneral, sTypeZWaveAlarm, "Status" },
 
 		{ pTypeThermostat, sTypeThermSetpoint, "Temperature" },
 		{ pTypeThermostat, sTypeThermTemperature, "Temperature" },
@@ -354,7 +355,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 	return findTableID1ID2(Table, dType, sType);
 }
 
-CPush::CPush()
+CBasePush::CBasePush()
 {
 	m_bLinkActive = false;
 	m_DeviceRowIdx = -1;
@@ -374,7 +375,7 @@ static boost::posix_time::time_duration get_utc_offset() {
 	return now - utc_now;
 }
 
-unsigned long CPush::get_tzoffset()
+unsigned long CBasePush::get_tzoffset()
 {
 	// Compute tz
 	boost::posix_time::time_duration uoffset = get_utc_offset();
@@ -383,9 +384,9 @@ unsigned long CPush::get_tzoffset()
 }
 
 #ifdef WIN32
-std::string CPush::get_lastUpdate(unsigned __int64 localTimeUtc)
+std::string CBasePush::get_lastUpdate(unsigned __int64 localTimeUtc)
 #else
-std::string CPush::get_lastUpdate(unsigned long long int localTimeUtc)
+std::string CBasePush::get_lastUpdate(unsigned long long int localTimeUtc)
 #endif
 {
 	// RFC3339 time format
@@ -405,7 +406,7 @@ std::string CPush::get_lastUpdate(unsigned long long int localTimeUtc)
 }
 
 // STATIC
-void CPush::replaceAll(std::string& context, const std::string& from, const std::string& to)
+void CBasePush::replaceAll(std::string& context, const std::string& from, const std::string& to)
 {
 	size_t lookHere = 0;
 	size_t foundHere;
@@ -416,7 +417,7 @@ void CPush::replaceAll(std::string& context, const std::string& from, const std:
 	}
 }
 
-std::vector<std::string> CPush::DropdownOptions(const uint64_t DeviceRowIdxIn)
+std::vector<std::string> CBasePush::DropdownOptions(const uint64_t DeviceRowIdxIn)
 {
 	std::vector<std::string> dropdownOptions;
 
@@ -441,7 +442,7 @@ std::vector<std::string> CPush::DropdownOptions(const uint64_t DeviceRowIdxIn)
 	return dropdownOptions;
 }
 
-std::string CPush::DropdownOptionsValue(const uint64_t DeviceRowIdxIn, const int pos)
+std::string CBasePush::DropdownOptionsValue(const uint64_t DeviceRowIdxIn, const int pos)
 {	
 	std::string wording = "???";
 	int getpos = pos-1; // 0 pos is always nvalue/status, 1 and higher goes to svalues
@@ -470,7 +471,7 @@ std::string CPush::DropdownOptionsValue(const uint64_t DeviceRowIdxIn, const int
 	return wording;
 }
 
-std::string CPush::ProcessSendValue(const std::string &rawsendValue, const int delpos, const int nValue, const int includeUnit, const int metertypein)
+std::string CBasePush::ProcessSendValue(const std::string &rawsendValue, const int delpos, const int nValue, const int includeUnit, const int metertypein)
 {
 	std::string vType = DropdownOptionsValue(m_DeviceRowIdx,delpos);
 	unsigned char tempsign=m_sql.m_tempsign[0];
@@ -513,9 +514,8 @@ std::string CPush::ProcessSendValue(const std::string &rawsendValue, const int d
 	}
 	else if (vType == "Altitude")
 	{
-		sprintf(szData,"Not supported yet");
+		sprintf(szData, "%.1f", atof(rawsendValue.c_str()));
 	}
-
 	else if (vType == "UV")
 	{
 		float UVI = static_cast<float>(atof(rawsendValue.c_str()));
@@ -563,12 +563,12 @@ std::string CPush::ProcessSendValue(const std::string &rawsendValue, const int d
 	}
 	else if (vType == "Rain rate")
 	{
-		sprintf(szData,"Not supported yet");
+		sprintf(szData, "%.1f", atof(rawsendValue.c_str()));
 	}
 	else if (vType == "Total rain")
 	{
-		sprintf(szData,"Not supported yet");
-	}	
+		sprintf(szData, "%.1f", atof(rawsendValue.c_str()));
+	}
 	else if (vType == "Counter")
 	{
 		strcpy(szData, rawsendValue.c_str());
@@ -583,19 +583,19 @@ std::string CPush::ProcessSendValue(const std::string &rawsendValue, const int d
 	}	
 	else if ((vType == "Current 1") || (vType == "Current 2") || (vType == "Current 3"))
 	{
-		sprintf(szData,"Not supported yet");
+		sprintf(szData, "%.3f", atof(rawsendValue.c_str()));
 	}	
 	else if (vType == "Instant")
 	{
-		sprintf(szData,"Not supported yet");
-	}	
+		sprintf(szData, "%.3f", atof(rawsendValue.c_str()));
+	}
 	else if ((vType == "Usage") || (vType == "Usage 1") || (vType == "Usage 2") )
 	{
-		sprintf(szData,"%.1f",atof(rawsendValue.c_str()));
+		strcpy(szData,rawsendValue.c_str());
 	}	
 	else if ((vType == "Delivery") || (vType == "Delivery 1") || (vType == "Delivery 2") )
 	{
-		sprintf(szData,"%.1f",atof(rawsendValue.c_str()));
+		strcpy(szData, rawsendValue.c_str());
 	}
 	else if (vType == "Usage current")
 	{
@@ -678,7 +678,7 @@ std::string CPush::ProcessSendValue(const std::string &rawsendValue, const int d
 	}
 }
 
-std::string CPush::getUnit(const int delpos, const int metertypein)
+std::string CBasePush::getUnit(const int delpos, const int metertypein)
 {
 	std::string vType = DropdownOptionsValue(m_DeviceRowIdx,delpos);
 	unsigned char tempsign=m_sql.m_tempsign[0];
@@ -735,7 +735,7 @@ std::string CPush::getUnit(const int delpos, const int metertypein)
 	}
 	else if (vType == "Rain rate")
 	{
-		sprintf(szData,"Not supported yet");
+		strcpy(szData,"");
 	}
 	else if (vType == "Total rain")
 	{
