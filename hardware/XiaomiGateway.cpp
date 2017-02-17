@@ -712,7 +712,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 			std::string model = root["model"].asString();
 			std::string sid = root["sid"].asString();
 			std::string data = root["data"].asString();
-			if ((cmd == "report") || (cmd == "read_ack")) {
+			if ((cmd == "report") || (cmd == "read_ack") || (cmd == "heartbeat")) {
 
 				Json::Value root2;
 				ret = jReader.parse(data.c_str(), root2);
@@ -883,25 +883,34 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 					}
 					else if (name == "Xiaomi RGB Gateway") {
 						std::string rgb = root2["rgb"].asString();
-						std::stringstream ss;
-						ss << std::hex << atoi(rgb.c_str());
-
-						std::string hexstring(ss.str());
-
-						if (hexstring.length() == 7) {
-							hexstring.insert(0, "0");
+						if (rgb != "") {
+							std::stringstream ss;
+							ss << std::hex << atoi(rgb.c_str());
+							std::string hexstring(ss.str());
+							if (hexstring.length() == 7) {
+								hexstring.insert(0, "0");
+							}
+							std::string bright_hex = hexstring.substr(0, 2);
+							std::stringstream ss2;
+							ss2 << std::hex << bright_hex.c_str();
+							int brightness = strtoul(bright_hex.c_str(), NULL, 16);
+							bool on = false;
+							if (rgb != "0") {
+								on = true;
+							}
+							m_XiaomiGateway->InsertUpdateRGBGateway(sid.c_str(), name, on, brightness, 0);
 						}
-
-						std::string bright_hex = hexstring.substr(0, 2);
-						std::stringstream ss2;
-						ss2 << std::hex << bright_hex.c_str();
-						int brightness = strtoul(bright_hex.c_str(), NULL, 16);
-
-						bool on = false;
-						if (rgb != "0") {
-							on = true;
+						else {
+							//check for token
+							std::string token = root["token"].asString();
+							if (token != "") {
+#ifdef _DEBUG
+								_log.Log(LOG_STATUS, "XiaomiGateway: Token Received - %s", token.c_str());
+#endif
+								m_XiaomiGateway->UpdateToken(token);
+								showmessage = false;
+							}
 						}
-						m_XiaomiGateway->InsertUpdateRGBGateway(sid.c_str(), name, on, brightness, 0);
 					}
 					else {
 						_log.Log(LOG_STATUS, "XiaomiGateway: unhandled model: %s", model.c_str());
@@ -929,7 +938,6 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 				if (model == "gateway") {
 					_log.Log(LOG_STATUS, "XiaomiGateway: RGB Gateway Detected");
 					m_XiaomiGateway->InsertUpdateRGBGateway(sid.c_str(), "Xiaomi RGB Gateway", false, 0, 100);
-					//m_gatewayip = root["ip"].asString();
 					//query for list of devices
 					std::string message = "{\"cmd\" : \"get_id_list\"}";
 					boost::shared_ptr<std::string> message2(new std::string(message));
@@ -938,17 +946,6 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 					socket_.send_to(boost::asio::buffer(*message2), remote_endpoint);
 				}
 				showmessage = false;
-			}
-			else if (cmd == "heartbeat") {
-				if (model == "gateway") {
-					//update the token.
-#ifdef _DEBUG
-					_log.Log(LOG_STATUS, "XiaomiGateway: Token Received - %s", root["token"].asString().c_str());
-#endif
-					m_XiaomiGateway->UpdateToken(root["token"].asString());
-					//m_gatewayip = root["ip"].asString();
-					showmessage = false;
-				}
 			}
 			else {
 				_log.Log(LOG_STATUS, "XiaomiGateway: unknown cmd received: %s", cmd.c_str());
