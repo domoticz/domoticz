@@ -2291,12 +2291,12 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 		int intRise = getSunRiseSunSetMinutes("Sunrise");
 		int intSet = getSunRiseSunSetMinutes("Sunset");
 
+		// Do not correct for DST change - we only need this to compare with intRise and intSet which aren't as well
 		time_t now = mytime(NULL);
-		struct tm mtime;
-		time_t tmidnight;
-		getMidnight(tmidnight,mtime);
-		int minutesSinceMidnight = (int)(difftime(now,tmidnight) / 60);
-	
+		struct tm ltime;
+		localtime_r(&now, &ltime);
+		int minutesSinceMidnight = (ltime.tm_hour * 60) + ltime.tm_min;
+
 		bool dayTimeBool = false;
 		bool nightTimeBool = false;
 		if ((minutesSinceMidnight > intRise) && (minutesSinceMidnight < intSet)) {
@@ -2499,11 +2499,12 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 
 	int intRise = getSunRiseSunSetMinutes("Sunrise");
 	int intSet = getSunRiseSunSetMinutes("Sunset");
-	time_t now = time(0);
-	struct tm mtime;
-	time_t tmidnight;
-	getMidnight(tmidnight,mtime);
-	int minutesSinceMidnight = (int)(difftime(now,tmidnight) / 60);
+
+	// Do not correct for DST change - we only need this to compare with intRise and intSet which aren't as well
+	time_t now = mytime(NULL);
+	struct tm ltime;
+	localtime_r(&now, &ltime);
+	int minutesSinceMidnight = (ltime.tm_hour * 60) + ltime.tm_min;
 
 	bool dayTimeBool = false;
 	bool nightTimeBool = false;
