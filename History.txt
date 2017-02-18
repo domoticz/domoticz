@@ -15,9 +15,11 @@ Version 3.xxxx (January xth 2017)
 - Implemented: Blinds T1 till T13 new supports the Stop button
 - Implemented: Devices, Log icon for Blinds
 - Implemented: Blockly/Lua Set SetPoint option
+- Implemented: Estonian Language support (big thanks to Kuido)
 - Implemented: I2C BME280 sensor (temp+hum+baro)
 - Implemented: I2C for non arm systems
 - Implemented: InfluxDB Data push
+- Implemented: Latvian Language support (big thanks to Edgars)
 - Implemented: Netatmo Home Coach support
 - Implemented: Notification for Dummy Soil/Moisture sensor
 - Implemented: Notification for Alert Sensor via udevice JSON call

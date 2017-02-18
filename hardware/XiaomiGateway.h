@@ -13,7 +13,7 @@ public:
 	bool SendMessageToGateway(const std::string &controlmessage);
 	void InsertUpdateSwitch(const std::string &nodeid, const std::string &Name, const bool bIsOn, const _eSwitchType switchtype, const int level, const bool isctlr2 = false, const bool is2ndchannel = false);
 	void InsertUpdateCubeText(const std::string &nodeid, const std::string &Name, const std::string &degrees);
-	void InsertUpdateVoltage(const std::string &nodeid, const std::string &Name, const int BatteryLevel);
+	void InsertUpdateVoltage(const std::string &nodeid, const std::string &Name, const int VoltageLevel);
 	void InsertUpdateTemperature(const std::string &nodeid, const std::string &Name, const float Temperature);
 	void InsertUpdateHumidity(const std::string &nodeid, const std::string &Name, const int Humidity);
 	void InsertUpdateRGBGateway(const std::string &nodeid, const std::string &Name, const bool bIsOn, const int brightness, const int hue);
@@ -26,11 +26,13 @@ private:
 	void Do_Work();
 	boost::shared_ptr<boost::thread> m_thread;
 	boost::shared_ptr<boost::thread> m_udp_thread;
+	bool m_ListenPort9898;
 	std::string GetGatewayKey();
 	std::string m_GatewayRgbHex;
 	int m_GatewayBrightnessInt;
 	std::string m_GatewayPrefix;
 	std::string m_GatewayIp;
+	std::string m_LocalIp;
 	std::string m_GatewayPassword;
 	std::string m_token;
 	boost::mutex m_mutex;
@@ -40,7 +42,8 @@ private:
 	class xiaomi_udp_server
 	{
 	public:
-		xiaomi_udp_server(boost::asio::io_service & io_service, int m_HwdID, XiaomiGateway *parent);
+		xiaomi_udp_server(boost::asio::io_service & io_service, int m_HwdID, const std::string gatewayIp, const std::string localIp, const bool listenPort9898, XiaomiGateway *parent);
+		~xiaomi_udp_server();
 
 	private:
 		boost::asio::ip::udp::socket socket_;
@@ -49,6 +52,7 @@ private:
 		char data_[max_length];
 		int m_HardwareID;
 		std::string m_gatewayip;
+		std::string m_localip;
 		XiaomiGateway* m_XiaomiGateway;
 		void start_receive();
 		void handle_receive(const boost::system::error_code& error, std::size_t /*bytes_transferred*/);
