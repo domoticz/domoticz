@@ -37,10 +37,6 @@ namespace Plugins {
 			m_Type(Type), m_HwdID(HwdID), m_Unit(-1), m_iLevel(-1), m_iHue(-1), m_iValue(-1), m_Message(Message), m_Object(NULL) {
 			m_When = time(0);
 		};
-		CPluginMessage(ePluginMessageType Type, int HwdID, int Unit, const std::string & Message, const int level, const int hue) :
-			m_Type(Type), m_HwdID(HwdID), m_Unit(Unit), m_iLevel(level), m_iHue(hue), m_iValue(-1), m_Message(Message), m_Object(NULL) {
-			m_When = time(0);
-		};
 		CPluginMessage(ePluginMessageType Type, ePluginDirectiveType dType, int HwdID, const std::string & Message) :
 			m_Type(Type), m_Directive(dType), m_HwdID(HwdID), m_Unit(-1), m_iLevel(-1), m_iHue(-1), m_iValue(-1), m_Message(Message), m_Object(NULL) {
 			m_When = time(0);
@@ -64,6 +60,7 @@ namespace Plugins {
 			m_Message = m.m_Message;
 			m_iValue = m.m_iValue;
 			m_iLevel = m.m_iLevel;
+			m_fLevel = m.m_fLevel;
 			m_iHue = m.m_iHue;
 			m_Address = m.m_Address;
 			m_Port = m.m_Port;
@@ -89,6 +86,7 @@ namespace Plugins {
 		std::string				m_Message;
 		int						m_iValue;
 		int						m_iLevel;
+		float					m_fLevel;
 		int						m_iHue;
 		std::string				m_Address;
 		std::string				m_Port;
@@ -106,6 +104,10 @@ namespace Plugins {
 	protected:
 		CPluginMessage(ePluginMessageType Type, int HwdID) :
 			m_Type(Type), m_HwdID(HwdID), m_Unit(-1), m_iLevel(-1), m_iHue(-1), m_iValue(-1), m_Object(NULL) {
+			m_When = time(0);
+		};
+		CPluginMessage(ePluginMessageType Type, int HwdID, int Unit, const std::string & Message, const int level, const int hue) :
+			m_Type(Type), m_HwdID(HwdID), m_Unit(Unit), m_iLevel(level), m_iHue(hue), m_iValue(-1), m_Message(Message), m_Object(NULL) {
 			m_When = time(0);
 		};
 	};
@@ -138,6 +140,21 @@ namespace Plugins {
 	{
 	public:
 		DisconnectMessage(int HwdID) : CPluginMessage(PMT_Disconnect, HwdID) {};
+	};
+
+	class CommandMessage : public CPluginMessage
+	{
+	public:
+		CommandMessage(int HwdID, int Unit, const std::string & Message, const int level, const int hue) : CPluginMessage(PMT_Command, HwdID, Unit, Message, level, hue)
+		{
+			m_fLevel = -273.15;
+		};
+		CommandMessage(int HwdID, int Unit, const std::string & Message, const float level) : CPluginMessage(PMT_Command, HwdID)
+		{
+			m_Unit = Unit;
+			m_fLevel = level;
+			m_Message = Message;
+		};
 	};
 
 	class NotificationMessage : public CPluginMessage
