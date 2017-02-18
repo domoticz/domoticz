@@ -439,9 +439,6 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 		if (is2ndchannel) {
 			xcmd.unitcode = 2;
 		}
-		else {
-			_log.Log(LOG_ERROR, "XiaomiGateway: ITS OK is2ndchannel not exist");
-		}
 		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, NULL, -1);
 	}
 }
