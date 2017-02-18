@@ -41,6 +41,7 @@ namespace Plugins {
 		bool WriteToHardware(const char *pdata, const unsigned char length);
 		void Restart();
 		void SendCommand(const int Unit, const std::string &command, const int level, const int hue);
+		void SendCommand(const int Unit, const std::string &command, const float level);
 
 		std::string			m_PluginKey;
 		CPluginProtocol*	m_pProtocol;
