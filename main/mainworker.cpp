@@ -56,7 +56,7 @@
 #include "../hardware/EnOceanESP2.h"
 #include "../hardware/EnOceanESP3.h"
 #include "../hardware/SBFSpot.h"
-#include "../hardware/PhilipsHue.h"
+#include "../hardware/PhilipsHue/PhilipsHue.h"
 #include "../hardware/ICYThermostat.h"
 #include "../hardware/WOL.h"
 #include "../hardware/Meteostick.h"
