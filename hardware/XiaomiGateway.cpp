@@ -497,7 +497,7 @@ void XiaomiGateway::UpdateToken(const std::string & value)
 	boost::lock_guard<boost::mutex> lock(m_mutex);
 	m_token = value;
 #ifdef _DEBUG
-	_log.Log(LOG_STATUS, "XiaomiGateway: Token Set - %s", m_token.c_str());
+	//_log.Log(LOG_STATUS, "XiaomiGateway: Token Set - %s", m_token.c_str());
 #endif
 }
 
@@ -765,12 +765,13 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 					}
 					if (type != STYPE_END) {
 						std::string status = root2["status"].asString();
+						std::string no_close = root2["no_close"].asString();
 						//Aqara's Wireless switch reports per channel
 						std::string aqara_wireless1 = root2["channel_0"].asString();
 						std::string aqara_wireless2 = root2["channel_1"].asString();
 						bool on = false;
 						int level = 0;
-						if ((status == "motion") || (status == "open") || (status == "no_close") || (status == "on")) {
+						if ((status == "motion") || (status == "open") || (status == "no_close") || (status == "on") || (no_close != "")) {
 							on = true;
 						}
 						else if ((status == "no_motion") || (status == "close") || (status == "off")) {
@@ -898,7 +899,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							std::string token = root["token"].asString();
 							if (token != "") {
 #ifdef _DEBUG
-								_log.Log(LOG_STATUS, "XiaomiGateway: Token Received - %s", token.c_str());
+								//_log.Log(LOG_STATUS, "XiaomiGateway: Token Received - %s", token.c_str());
 #endif
 								m_XiaomiGateway->UpdateToken(token);
 								showmessage = false;
