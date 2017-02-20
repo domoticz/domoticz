@@ -876,49 +876,87 @@ bool CPhilipsHue::GetSensors(const Json::Value &root)
 			_eSwitchType STYPE = STYPE_END;
 
 			CPHSensor hsensor(sensor);
-			
 			// Check if sensor exists and whether an update is needed
 			if (m_sensors.find(sID) != m_sensors.end())
 			{
 				CPHSensor asensor = m_sensors[sID];
-				if ((asensor.m_config.m_on == hsensor.m_config.m_on)
-					&& (asensor.m_state.m_lastupdated == hsensor.m_state.m_lastupdated))
+				if (asensor.m_state.m_lastupdated == hsensor.m_state.m_lastupdated)
 				{
 					bDoSend = false;
 				}
 			}
 			m_sensors.erase(sID);
 			m_sensors.insert(make_pair(sID, hsensor));
-			
+
+
+			string device_name = hsensor.m_type + " " + hsensor.m_name;
 			CPHSensorType sensor_types;
-			string sensor_type = hsensor.m_type;
-			if(sensor_type == sensor_types.Daylight)
+			if(hsensor.m_type == sensor_types.Daylight)
 			{
 			}
-			else if ((sensor_type == sensor_types.ZGPSwitch) 
-				  || (sensor_type == sensor_types.ZLLSwitch))
+			else if ((hsensor.m_type == sensor_types.ZGPSwitch)
+				  || (hsensor.m_type == sensor_types.ZLLSwitch))
 			{
 			}
-			else if (sensor_type == sensor_types.ZLLPresence)
+			else if (hsensor.m_type == sensor_types.ZLLPresence)
+			{
+				if (bDoSend)
+					InsertUpdateSwitch(sID, STYPE_Motion, hsensor.m_state.m_presence, device_name, hsensor.m_config.m_battery);
+			}
+			else if (hsensor.m_type == sensor_types.ZLLTemperature)
 			{
 			}
-			else if (sensor_type == sensor_types.ZLLTemperature)
+			else if (hsensor.m_type == sensor_types.ZLLLightLevel)
 			{
 			}
-			else if (sensor_type == sensor_types.ZLLLightLevel)
-			{
-			}
-			else if (sensor_type == sensor_types.ZLLTemperature)
+			else if (hsensor.m_type == sensor_types.ZLLTemperature)
 			{
 			}
 			else
 			{
-				bDoSend = false; //Only interested in "physical" sensors
+				_log.Log(LOG_STATUS, "Ignoring Philips Hue CLIP Sensors: (%s)", device_name.c_str());
 			}
 		}
 	}
 
 	return true;
+}
+
+void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eSwitchType SType, const bool bPresence, const string &Name, uint8_t BatteryLevel)
+{
+	cout << __func__ << " : " << Name << endl;
+	int sID = NodeID + 3000;
+	char ID[40];
+	sprintf(ID, "%08lX", sID);
+
+	_tGeneralSwitch xcmd;
+	xcmd.len = sizeof(_tGeneralSwitch) - 1;
+	xcmd.id = sID;
+	xcmd.type = pTypeGeneralSwitch;
+	xcmd.subtype = sSwitchGeneralSwitch;
+	xcmd.battery_level = BatteryLevel;
+
+	if (bPresence) {
+		xcmd.cmnd = gswitch_sOn;
+	}
+	else {
+		xcmd.cmnd = gswitch_sOff;
+	}
+
+	//check if this switch is already in the database
+	vector<vector<string> > result;
+	result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) ", m_HwdID, ID, pTypeGeneralSwitch);
+	if (result.size() < 1)
+	{
+		_log.Log(LOG_STATUS, "Philips Hue Switch: New Device Found (%s)", Name.c_str());
+		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, NULL, -1);
+
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, CustomImage=%i WHERE(HardwareID == %d) AND (DeviceID == '%q')", Name.c_str(), (SType), 0, m_HwdID, ID);
+	}
+	else 
+	{
+		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, NULL, -1);
+	}
 }
 
 //Webserver helpers
