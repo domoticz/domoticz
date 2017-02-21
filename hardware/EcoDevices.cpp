@@ -20,6 +20,17 @@
 // Detailed information on the API can be found at
 // http://www.touteladomotique.com/index.php?option=com_content&id=985:premiers-pas-avec-leco-devices-sur-la-route-de-la-maitrise-de-lenergie&Itemid=89#.WKcK0zi3ik5
 
+
+// Version 2.0  2017-02-21
+// Author: Blaise Thauvin, heavily based on version 1 from an anonymous contributor
+
+// Version 2 adds support for any or all 4 counters and several electricity subscription plans whereas version 1 only 
+// supported the first counter for basic subscription plan
+// TODO: add support for EJP and Tempo subscription plans (I would need data samples) and move out of P1SmartMeter
+// dependancy in order to benefit from additional data available (Tri phases subscriptions, alerts when intensity comes 
+// close to subscribed limit, tarif switches to higher prices (EJP...)
+
+ 
 #define round(a) ( int ) ( a + .5 )
 
 #ifdef _DEBUG
