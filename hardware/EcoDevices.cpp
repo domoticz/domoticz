@@ -17,15 +17,13 @@
 
 // http://gce-electronics.com/en/nos-produits/409-module-teleinfo-eco-devices.html
 
-// Detailed information on the API can be found at 
+// Detailed information on the API can be found at
 // http://www.touteladomotique.com/index.php?option=com_content&id=985:premiers-pas-avec-leco-devices-sur-la-route-de-la-maitrise-de-lenergie&Itemid=89#.WKcK0zi3ik5
-
-
 
 #define round(a) ( int ) ( a + .5 )
 
 #ifdef _DEBUG
-	//#define DEBUG_EcoDevices
+//#define DEBUG_EcoDevices
 #endif
 
 CEcoDevices::CEcoDevices(const int ID, const std::string &IPAddress, const unsigned short usIPPort)
@@ -71,9 +69,9 @@ CEcoDevices::~CEcoDevices(void)
 void CEcoDevices::Init()
 {
 	m_stoprequested = false;
-	m_lastSharedSendElectra = 0;
-	m_lastelectrausage1 = 0;
-	m_lastelectrausage2 = 0;
+	m_lastSendData = 0;
+	m_lastusage1 = 0;
+	m_lastusage2 = 0;
 	m_lastwaterusage = 0;
 	m_lastgasusage = 0;
 }
@@ -168,10 +166,10 @@ void CEcoDevices::GetMeterDetails()
 		return;
 	}
 
-	if (root["T1_PTEC"].empty() == false)
+	std::string tPTEC1 = root["T1_PTEC"].asString();
+	if (tPTEC1 !="----")		 // Check if a data source is connected to input 1
 	{
-		std::string tPTEC1 = root["T1_PTEC"].asString();
-		if ((tPTEC1 == "TH..") || (tPTEC1 == "----"))
+		if (tPTEC1 == "TH..")
 		{
 			m_p1power1.powerusage1 = (unsigned long)(root["T1_BASE"].asFloat());
 			m_p1power1.powerusage2 = 0;
@@ -185,10 +183,10 @@ void CEcoDevices::GetMeterDetails()
 		}
 	}
 
-	if (root["T2_PTEC"].empty() == false)
+	std::string tPTEC2 = root["T2_PTEC"].asString();
+	if (tPTEC2 !="----")		 //  Check if a data source is connected to input 2
 	{
-		std::string tPTEC2 = root["T2_PTEC"].asString();
-		if ((tPTEC2 == "TH..") || (tPTEC2 == "----"))
+		if (tPTEC2 == "TH..")
 		{
 			m_p1power2.powerusage1 = (unsigned long)(root["T2_BASE"].asFloat());
 			m_p1power2.powerusage2 = 0;
@@ -207,26 +205,29 @@ void CEcoDevices::GetMeterDetails()
 	if (root["INDEX_C2"].empty() == false)
 		m_p1gas.gasusage = (unsigned long)(root["INDEX_C2"].asFloat());
 
-	//Send Electra if value changed, or at least every 5 minutes
+	//Send data if value changed, or at least every 5 minutes
 	if (
-		(m_p1power1.usagecurrent != m_lastelectrausage1) ||
-		(m_p1power2.usagecurrent != m_lastelectrausage2) ||
+		(m_p1power1.usagecurrent != m_lastusage1) ||
+		(m_p1power2.usagecurrent != m_lastusage2) ||
 		(m_p1water.gasusage != m_lastwaterusage) ||
 		(m_p1gas.gasusage != m_lastgasusage) ||
-		(difftime(atime,m_lastSharedSendElectra) >= 300)
+		(difftime(atime,m_lastSendData) >= 300)
 		)
 	{
-		if ((m_p1power1.powerusage1 != 0) || (m_p1power1.powerusage2 != 0) || (m_p1power1.powerdeliv1 != 0) || (m_p1power1.powerdeliv2 != 0))
-		{
-			m_lastSharedSendElectra = atime;
-			m_lastelectrausage1 = m_p1power1.usagecurrent;
-			m_lastelectrausage2 = m_p1power2.usagecurrent;
-			m_lastwaterusage = m_p1water.gasusage;
-			m_lastgasusage = m_p1gas.gasusage;
+		m_lastSendData = atime;
+		m_lastusage1 = m_p1power1.usagecurrent;
+		m_lastusage2 = m_p1power2.usagecurrent;
+		m_lastwaterusage = m_p1water.gasusage;
+		m_lastgasusage = m_p1gas.gasusage;
+
+		// Send data only for counters effectively in use. Avoids creating useless devices in Domoticz
+		if (m_p1power1.powerusage1 != 0)
 			sDecodeRXMessage(this, (const unsigned char *)&m_p1power1, "Power", 255);
+		if (m_p1power1.powerusage2 != 0)
 			sDecodeRXMessage(this, (const unsigned char *)&m_p1power2, "Power", 255);
+		if (m_p1water.gasusage !=0)
 			sDecodeRXMessage(this, (const unsigned char *)&m_p1water,  "Gas", 255);
+		if (m_p1gas.gasusage != 0)
 			sDecodeRXMessage(this, (const unsigned char *)&m_p1gas,    "Gas", 255);
-		}
 	}
 }

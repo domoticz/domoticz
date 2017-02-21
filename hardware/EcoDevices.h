@@ -21,8 +21,8 @@ class CEcoDevices : public CDomoticzHardwareBase
 
 		P1Power m_p1power1, m_p1power2;
 		P1Gas   m_p1water, m_p1gas;
-		time_t m_lastSharedSendElectra;
-		unsigned long m_lastelectrausage1, m_lastelectrausage2, m_lastwaterusage, m_lastgasusage;
+		time_t m_lastSendData;
+		unsigned long m_lastusage1, m_lastusage2, m_lastwaterusage, m_lastgasusage;
 
 		void Init();
 		bool StartHardware();
