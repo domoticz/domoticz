@@ -67,9 +67,3 @@ public:
 	CPHSensor(Json::Value sensor);
 	~CPHSensor();
 };
-
-//class CPHSZllLightLevel : public CPHSensor
-//{
-//	CPHSensorState state;
-//	CPHSensorConfig config;
-//};
