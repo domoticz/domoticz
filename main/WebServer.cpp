@@ -6488,6 +6488,9 @@ namespace http {
 			}
 			else if (cparam == "brightnessup")
 			{
+				root["status"] = "OK";
+                root["title"] = "Set brightness up!";
+
 				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
@@ -6504,6 +6507,9 @@ namespace http {
 			}
 			else if (cparam == "brightnessdown")
 			{
+				root["status"] = "OK";
+                root["title"] = "Set brightness down!";
+
 				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
@@ -6520,6 +6526,9 @@ namespace http {
 			}
 			else if (cparam == "discomode")
 			{
+				root["status"] = "OK";
+                root["title"] = "Set to last known disco mode!";
+
 				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
@@ -6614,6 +6623,10 @@ namespace http {
 			}
 			else if (cparam == "speeduplong")
 			{
+
+				root["status"] = "OK";
+                root["title"] = "Set speed long!";
+
 				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
