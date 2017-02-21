@@ -1592,7 +1592,7 @@ namespace Plugins {
 			break;
 		case PMT_Command:
 			sHandler = "onCommand";
-			if (Message.m_fLevel != -273.15)
+			if (Message.m_fLevel != -273.15f)
 			{
 				pParams = Py_BuildValue("isfi", Message.m_Unit, Message.m_Message.c_str(), Message.m_fLevel, 0);
 			}
