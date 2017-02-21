@@ -479,6 +479,7 @@
     <ClInclude Include="..\hardware\plugins\PluginProtocols.h" />
     <ClInclude Include="..\hardware\plugins\Plugins.h" />
     <ClInclude Include="..\hardware\plugins\PluginTransports.h" />
+    <ClInclude Include="..\hardware\plugins\PythonObjects.h" />
     <ClInclude Include="..\hardware\PVOutput_Input.h" />
     <ClInclude Include="..\hardware\RAVEn.h" />
     <ClInclude Include="..\hardware\Razberry.h" />
@@ -717,6 +718,7 @@
     <ClCompile Include="..\hardware\plugins\PluginProtocols.cpp" />
     <ClCompile Include="..\hardware\plugins\Plugins.cpp" />
     <ClCompile Include="..\hardware\plugins\PluginTransports.cpp" />
+    <ClCompile Include="..\hardware\plugins\PythonObjects.cpp" />
     <ClCompile Include="..\hardware\PVOutput_Input.cpp" />
     <ClCompile Include="..\hardware\RAVEn.cpp" />
     <ClCompile Include="..\hardware\Razberry.cpp" />

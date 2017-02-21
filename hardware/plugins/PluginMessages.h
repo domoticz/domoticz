@@ -147,7 +147,7 @@ namespace Plugins {
 	public:
 		CommandMessage(int HwdID, int Unit, const std::string & Message, const int level, const int hue) : CPluginMessage(PMT_Command, HwdID, Unit, Message, level, hue)
 		{
-			m_fLevel = -273.15;
+			m_fLevel = -273.15f;
 		};
 		CommandMessage(int HwdID, int Unit, const std::string & Message, const float level) : CPluginMessage(PMT_Command, HwdID)
 		{
