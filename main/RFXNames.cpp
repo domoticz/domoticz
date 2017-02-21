@@ -715,7 +715,9 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneral, sTypeDistance, "Distance" },
 		{ pTypeGeneral, sTypeCounterIncremental, "Counter Incremental" },
 		{ pTypeGeneral, sTypeKwh, "kWh" },
-		{ pTypeGeneral, sTypeWaterflow, "Waterflow" },
+		{ pTypeGeneral, sTypeWater, "m3" },
+                { pTypeGeneral, sTypeGas, "m3" },
+                { pTypeGeneral, sTypeWaterflow, "Waterflow" },
 		{ pTypeGeneral, sTypeCustom, "Custom Sensor" },
 		{ pTypeGeneral, sTypeZWaveAlarm, "Alarm" },
 

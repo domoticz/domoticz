@@ -81,6 +81,8 @@ void CEcoDevices::Init()
 {
 	m_stoprequested = false;
 	m_lastSendData = 0;
+        m_p1power1.powerusage1 = 0;
+        m_p1power2.powerusage1 = 0;
 	m_lastusage1 = 0;
 	m_lastusage2 = 0;
 	m_lastwaterusage = 0;
@@ -184,7 +186,7 @@ void CEcoDevices::GetMeterDetails()
 		{
 			m_p1power1.powerusage1 = (unsigned long)(root["T1_BASE"].asFloat());
 			m_p1power1.powerusage2 = 0;
-			m_p1power1.usagecurrent = (unsigned long)(root["T1_PAPP"].asFloat());
+                        m_p1power1.usagecurrent = (unsigned long)(root["T1_PAPP"].asFloat());
 		}
 		if ((tPTEC1 == "HC..") || (tPTEC1 == "HP.."))
 		{
@@ -233,12 +235,12 @@ void CEcoDevices::GetMeterDetails()
 
 		// Send data only for counters effectively in use. Avoids creating useless devices in Domoticz
 		if (m_p1power1.powerusage1 != 0)
-			sDecodeRXMessage(this, (const unsigned char *)&m_p1power1, "Power", 255);
-		if (m_p1power1.powerusage2 != 0)
-			sDecodeRXMessage(this, (const unsigned char *)&m_p1power2, "Power", 255);
+                        SendKwhMeter(m_HwdID, 1, 255, m_p1power1.usagecurrent, m_p1power1.powerusage1/1000.0, "EcoDevices 1 (Teleinfo)");
+                if (m_p1power2.powerusage1 != 0)
+			SendKwhMeter(m_HwdID, 2, 255, m_p1power2.usagecurrent, m_p1power2.powerusage1/1000.0, "EcoDevices 2 (Teleinfo)");
 		if (m_p1water.gasusage !=0)
-			sDecodeRXMessage(this, (const unsigned char *)&m_p1water,  "Gas", 255);
+			 SendWaterMeter(m_HwdID, 3, 255, m_p1water.gasusage/1000.0, 0,"EcoDevices 3 (Water)");
 		if (m_p1gas.gasusage != 0)
-			sDecodeRXMessage(this, (const unsigned char *)&m_p1gas,    "Gas", 255);
+			SendGasMeter(m_HwdID, 4, 255, m_p1gas.gasusage/1000.0, 0,"EcoDevices 4 (Gas)");
 	}
 }
