@@ -1592,7 +1592,14 @@ namespace Plugins {
 			break;
 		case PMT_Command:
 			sHandler = "onCommand";
-			pParams = Py_BuildValue("isii", Message.m_Unit, Message.m_Message.c_str(), Message.m_iLevel, Message.m_iHue);
+			if (Message.m_fLevel != -273.15)
+			{
+				pParams = Py_BuildValue("isfi", Message.m_Unit, Message.m_Message.c_str(), Message.m_fLevel, 0);
+			}
+			else
+			{
+				pParams = Py_BuildValue("isii", Message.m_Unit, Message.m_Message.c_str(), Message.m_iLevel, Message.m_iHue);
+			}
 			break;
 		case PMT_Stop:
 			sHandler = "onStop";
@@ -1864,7 +1871,16 @@ namespace Plugins {
 	void CPlugin::SendCommand(const int Unit, const std::string &command, const int level, const int hue)
 	{
 		//	Add command to message queue
-		CPluginMessage	Message(PMT_Command, m_HwdID, Unit, command, level, hue);
+		CommandMessage	Message(m_HwdID, Unit, command, level, hue);
+		{
+			boost::lock_guard<boost::mutex> l(PluginMutex);
+			PluginMessageQueue.push(Message);
+		}
+	}
+	void CPlugin::SendCommand(const int Unit, const std::string & command, const float level)
+	{
+		//	Add command to message queue
+		CommandMessage	Message(m_HwdID, Unit, command, level);
 		{
 			boost::lock_guard<boost::mutex> l(PluginMutex);
 			PluginMessageQueue.push(Message);

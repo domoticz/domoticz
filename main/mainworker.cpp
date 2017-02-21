@@ -11544,7 +11544,17 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 	CDomoticzHardwareBase *pHardware=GetHardware(HardwareID);
 	if (pHardware==NULL)
 		return false;
-	if (
+	//
+	//	For plugins all the specific logic below is irrelevent
+	//	so just send the full details to the plugin so that it can take appropriate action
+	//
+	if (pHardware->HwdType == HTYPE_PythonPlugin)
+	{
+#ifdef USE_PYTHON_PLUGINS
+		((Plugins::CPlugin*)pHardware)->SendCommand(Unit, "Set Level", TempValue);
+#endif
+	}
+	else if (
 		(pHardware->HwdType == HTYPE_OpenThermGateway) ||
 		(pHardware->HwdType == HTYPE_OpenThermGatewayTCP) ||
 		(pHardware->HwdType == HTYPE_ICYTHERMOSTAT) ||
