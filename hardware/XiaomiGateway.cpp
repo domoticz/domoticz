@@ -345,7 +345,6 @@ void XiaomiGateway::InsertUpdateRGBGateway(const std::string & nodeid, const std
 
 void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::string &Name, const bool bIsOn, const _eSwitchType switchtype, const int level, const bool isctlr2, const bool is2ndchannel)
 {
-	_log.Log(LOG_STATUS, "XiaomiGateway: InsertUpdateSwitch running for nodeid %s", nodeid.c_str());
 	// Make sure the ID supplied fits with what is expected ie 158d0000fd32c2
 	if (nodeid.length() < 14) {
 		_log.Log(LOG_ERROR, "XiaomiGateway: Node ID %s is too short", nodeid.c_str());
@@ -497,7 +496,7 @@ void XiaomiGateway::UpdateToken(const std::string & value)
 	boost::lock_guard<boost::mutex> lock(m_mutex);
 	m_token = value;
 #ifdef _DEBUG
-	//_log.Log(LOG_STATUS, "XiaomiGateway: Token Set - %s", m_token.c_str());
+	_log.Log(LOG_STATUS, "XiaomiGateway: Token Set - %s", m_token.c_str());
 #endif
 }
 
@@ -821,7 +820,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							}
 							on = true;
 							m_XiaomiGateway->InsertUpdateCubeText(sid.c_str(), name, rotate.c_str());
-							m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, on, type, level, false, false);
+							m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, on, type, level);
 						}
 						else {
 							std::string voltage = root2["voltage"].asString();
@@ -829,7 +828,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 								m_XiaomiGateway->InsertUpdateVoltage(sid.c_str(), name, atoi(voltage.c_str()));
 							}
 							else {
-								m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, on, type, level, false, false);
+								m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, on, type, level);
 							}
 						}
 					}
@@ -900,7 +899,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							std::string token = root["token"].asString();
 							if (token != "") {
 #ifdef _DEBUG
-								//_log.Log(LOG_STATUS, "XiaomiGateway: Token Received - %s", token.c_str());
+								_log.Log(LOG_STATUS, "XiaomiGateway: Token Received - %s", token.c_str());
 #endif
 								m_XiaomiGateway->UpdateToken(token);
 								showmessage = false;
