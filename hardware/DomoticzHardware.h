@@ -58,7 +58,11 @@ protected:
 	void SendSetPointSensor(const int NodeID, const int ChildID, const unsigned char SensorID, const float Temp, const std::string &defaultname);
 	void SendKwhMeterOldWay(const int NodeID, const int ChildID, const int BatteryLevel, const double musage, const double mtotal, const std::string &defaultname);
 	void SendKwhMeter(const int NodeID, const int ChildID, const int BatteryLevel, const double musage, const double mtotal, const std::string &defaultname);
-	void SendWattMeter(const int NodeID, const int ChildID, const int BatteryLevel, const float musage, const std::string &defaultname);
+	void SendWaterMeter(const int NodeID, const int ChildID, const int BatteryLevel, const double musage, const double mtotal,
+const std::string &defaultname);
+        void SendGasMeter(const int NodeID, const int ChildID, const int BatteryLevel, const double musage, const double mtotal,
+const std::string &defaultname);
+        void SendWattMeter(const int NodeID, const int ChildID, const int BatteryLevel, const float musage, const std::string &defaultname);
 	double GetKwhMeter(const int NodeID, const int ChildID, bool &bExists);
 	void SendLuxSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float Lux, const std::string &defaultname);
 	void SendAirQualitySensor(const int NodeID, const int ChildID, const int BatteryLevel, const int AirQuality, const std::string &defaultname);
