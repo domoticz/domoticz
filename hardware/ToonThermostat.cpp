@@ -328,7 +328,7 @@ bool CToonThermostat::Login()
 	Json::Value root;
 	Json::Reader jReader;
 	bool bRet = jReader.parse(sResult, root);
-	if ((!bRet) || (!root.isObject()))
+	if (!bRet)
 	{
 		_log.Log(LOG_ERROR, "ToonThermostat: Invalid data received, or invalid username/password!");
 		return false;
@@ -387,7 +387,7 @@ bool CToonThermostat::Login()
 
 	root.clear();
 	bRet = jReader.parse(sResult, root);
-	if ((!bRet) || (!root.isObject()))
+	if (!bRet)
 	{
 		_log.Log(LOG_ERROR, "ToonThermostat: Invalid data received!");
 		return false;
@@ -483,7 +483,7 @@ bool CToonThermostat::SwitchLight(const std::string &UUID, const int SwitchState
 	Json::Value root;
 	Json::Reader jReader;
 	bool bRet = jReader.parse(sResult, root);
-	if ((!bRet) || (!root.isObject()))
+	if (!bRet)
 	{
 		_log.Log(LOG_ERROR, "ToonThermostat: Invalid data received!");
 		return false;
@@ -527,7 +527,7 @@ bool CToonThermostat::SwitchAll(const int SwitchState)
 	Json::Value root;
 	Json::Reader jReader;
 	bool bRet = jReader.parse(sResult, root);
-	if ((!bRet) || (!root.isObject()))
+	if (!bRet)
 	{
 		_log.Log(LOG_ERROR, "ToonThermostat: Invalid data received!");
 		return false;
@@ -626,7 +626,7 @@ void CToonThermostat::GetMeterDetails()
 
 	Json::Reader jReader;
 	bool bRet = jReader.parse(sResult, root);
-	if ((!bRet) || (!root.isObject()))
+	if (!bRet)
 	{
 		_log.Log(LOG_ERROR, "ToonThermostat: Invalid data received!");
 		m_bDoLogin = true;
@@ -925,7 +925,7 @@ void CToonThermostat::SetSetpoint(const int idx, const float temp)
 		Json::Value root;
 		Json::Reader jReader;
 		bool bRet = jReader.parse(sResult, root);
-		if ((!bRet) || (!root.isObject()))
+		if (!bRet)
 		{
 			_log.Log(LOG_ERROR, "ToonThermostat: Invalid data received!");
 			m_bDoLogin = true;
@@ -983,7 +983,7 @@ void CToonThermostat::SetProgramState(const int newState)
 	Json::Value root;
 	Json::Reader jReader;
 	bool bRet = jReader.parse(sResult, root);
-	if ((!bRet) || (!root.isObject()))
+	if (!bRet)
 	{
 		_log.Log(LOG_ERROR, "ToonThermostat: setProgramState request not successful, restarting..!");
 		m_bDoLogin = true;
