@@ -1113,6 +1113,31 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				pCMD[0x05] = 0x09;
  				break;
 			}
+/* test for brighthup
+			case Limitless_SetBrightUp:
+			{
+				if (pLed->dunit == 5) {
+					pCMD = (unsigned char*)&V6_Bridge_SetBrightnessLevel;
+					if (pLed->value <= 0x5F) {
+						pCMD[0x05] = (pLed->value + 0x05);
+					}
+					else {
+						pCMD[0x05] = 0x64;
+					}
+				}
+				else {
+					pCMD = (unsigned char*)&V6_RGBW_SetBrightnessLevel;
+					if (pLed->value <= 0x5F) {
+						pCMD[0x05] = (pLed->value + 0x05);
+					}
+					else {
+						pCMD[0x05] = 0x64;
+					}
+					pCMD[0x09] = pLed->dunit;
+				}
+				break;
+			}
+*/
 			}
 		}
 /*

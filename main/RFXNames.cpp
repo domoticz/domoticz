@@ -1472,6 +1472,39 @@ void GetLightStatus(
 		case Limitless_SetBrightnessLevel:
 			lstatus="Set Level";
 			break;
+		case Limitless_SetColorToWhite:
+			lstatus="Set to White";
+			break;
+		case Limitless_NightMode:
+			lstatus="Set to Night";
+			break;
+		case Limitless_DiscoM1:
+			lstatus="Set to Disco 1";
+			break;
+		case Limitless_DiscoM2:
+			lstatus="Set to Disco 2";
+			break;
+		case Limitless_DiscoM3:
+			lstatus="Set to Disco 3";
+			break;
+		case Limitless_DiscoM4:
+			lstatus="Set to Disco 4";
+			break;
+		case Limitless_DiscoM5:
+			lstatus="Set to Disco 5";
+			break;
+		case Limitless_DiscoM6:
+			lstatus="Set to Disco 6";
+			break;
+		case Limitless_DiscoM7:
+			lstatus="Set to Disco 7";
+			break;
+		case Limitless_DiscoM8:
+			lstatus="Set to Disco 8";
+			break;
+		case Limitless_DiscoM9:
+			lstatus="Set to Disco 9";
+			break;
 		}
 		break;
 	case pTypeSecurity1:

@@ -6536,7 +6536,11 @@ namespace http {
 			}
 			else if (cparam.find("discom") == 0 && cparam != "discomode" && cparam.size()==7)
 			{
+				root["status"] = "OK";
+                root["title"] = "Set to disco mode!";
+
 				std::string idx = request::findValue(&req, "idx");
+
 				if (idx == "")
 				{
 					return;
@@ -6553,6 +6557,9 @@ namespace http {
 			}
 			else if (cparam == "discoup")
 			{
+				root["status"] = "OK";
+				root["title"] = "Set to next disco mode!";
+
 				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
@@ -6569,6 +6576,9 @@ namespace http {
 			}
 			else if (cparam == "discodown")
 			{
+				root["status"] = "OK";
+				root["title"] = "Set to previous disco mode!";
+
 				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
@@ -6585,6 +6595,9 @@ namespace http {
 			}
 			else if (cparam == "speedup")
 			{
+				root["status"] = "OK";
+				root["title"] = "Set disco speed up!";
+
 				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
@@ -6617,6 +6630,9 @@ namespace http {
 			}
 			else if (cparam == "speeddown")
 			{
+				root["status"] = "OK";
+				root["title"] = "Set disco speed down!";
+
 				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
@@ -6633,6 +6649,9 @@ namespace http {
 			}
 			else if (cparam == "warmer")
 			{
+				root["status"] = "OK";
+				root["title"] = "Set Kelvin up!";
+
 				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
@@ -6649,6 +6668,9 @@ namespace http {
 			}
 			else if (cparam == "cooler")
 			{
+				root["status"] = "OK";
+				root["title"] = "Set Kelvin down!";
+
 				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
@@ -6665,6 +6687,9 @@ namespace http {
 			}
 			else if (cparam == "fulllight")
 			{
+				root["status"] = "OK";
+				root["title"] = "Set Full!";
+
 				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
@@ -6681,6 +6706,9 @@ namespace http {
 			}
 			else if (cparam == "nightlight")
 			{
+				root["status"] = "OK";
+                root["title"] = "Set to nightlight!";
+
 				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
@@ -6694,9 +6722,14 @@ namespace http {
 				s_strid >> ID;
 
 				m_mainworker.SwitchLight(ID, "Set Night", 0, -1,false,0);
+				//chris
+				//_log.Log(LOG_STATUS, "User: %s initiated a switch command (%s/%s/%s)", Username.c_str(), idx.c_str(), sSwitchName.c_str(), switchcmd.c_str());
 			}
 			else if (cparam == "whitelight")
 			{
+				root["status"] = "OK";
+                root["title"] = "Set to clear white!";
+
 				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
