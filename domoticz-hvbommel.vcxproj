@@ -187,7 +187,9 @@
     <ClCompile Include="hardware\RAVEn.cpp" />
     <ClCompile Include="hardware\Razberry.cpp" />
     <ClCompile Include="hardware\Rego6XXSerial.cpp" />
-    <ClCompile Include="hardware\RelayNet.cpp" />
+    <ClCompile Include="hardware\RelayNet.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="hardware\RFLinkBase.cpp" />
     <ClCompile Include="hardware\RFLinkSerial.cpp" />
     <ClCompile Include="hardware\RFLinkTCP.cpp" />
