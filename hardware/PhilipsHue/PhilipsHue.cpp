@@ -407,9 +407,9 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 		}
 		else
 		{
-		//Set Name/Parameters
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, nValue=%d, sValue='%q', LastLevel=%d WHERE(HardwareID == %d) AND (DeviceID == '%q')",
-			Name.c_str(), int(STYPE_Dimmer), int(cmd), szSValue, BrightnessLevel, m_HwdID, szID);
+			//Set Name/Parameters
+			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, nValue=%d, sValue='%q', LastLevel=%d WHERE(HardwareID == %d) AND (DeviceID == '%q')",
+				Name.c_str(), int(STYPE_Dimmer), int(cmd), szSValue, BrightnessLevel, m_HwdID, szID);
 		}
 	}
 	else if (LType == HLTYPE_SCENE)
@@ -873,7 +873,6 @@ bool CPhilipsHue::GetSensors(const Json::Value &root)
 		{
 			bool bDoSend = true;
 			int sID = atoi(iSensor.key().asString().c_str());
-			_eSwitchType STYPE = STYPE_END;
 
 			CPHSensor hsensor(sensor);
 			// Check if sensor exists and whether an update is needed
@@ -888,34 +887,35 @@ bool CPhilipsHue::GetSensors(const Json::Value &root)
 			m_sensors.erase(sID);
 			m_sensors.insert(make_pair(sID, hsensor));
 
-
-			string device_name = hsensor.m_type + " " + hsensor.m_name;
-			CPHSensorType sensor_types;
-			if(hsensor.m_type == sensor_types.Daylight)
+			if (bDoSend)
 			{
-			}
-			else if ((hsensor.m_type == sensor_types.ZGPSwitch)
-				  || (hsensor.m_type == sensor_types.ZLLSwitch))
-			{
-			}
-			else if (hsensor.m_type == sensor_types.ZLLPresence)
-			{
-				if (bDoSend)
+				string device_name = hsensor.m_type + " " + hsensor.m_name;
+				if (hsensor.m_type == SensorTypeDaylight)
+				{
+				}
+				else if ((hsensor.m_type == SensorTypeZGPSwitch)
+					|| (hsensor.m_type == SensorTypeZLLSwitch))
+				{
+				}
+				else if (hsensor.m_type == SensorTypeZLLPresence)
+				{
 					InsertUpdateSwitch(sID, STYPE_Motion, hsensor.m_state.m_presence, device_name, hsensor.m_config.m_battery);
+				}
+				else if (hsensor.m_type == SensorTypeZLLTemperature)
+				{
+				}
+				else if (hsensor.m_type == SensorTypeZLLLightLevel)
+				{
+				}
+				else if (hsensor.m_type == SensorTypeZLLTemperature)
+				{
+				}
+				else
+				{
+					//_log.Log(LOG_STATUS, "Ignoring Philips Hue CLIP Sensors: (%s)", device_name.c_str());
+				}
 			}
-			else if (hsensor.m_type == sensor_types.ZLLTemperature)
-			{
-			}
-			else if (hsensor.m_type == sensor_types.ZLLLightLevel)
-			{
-			}
-			else if (hsensor.m_type == sensor_types.ZLLTemperature)
-			{
-			}
-			else
-			{
-				_log.Log(LOG_STATUS, "Ignoring Philips Hue CLIP Sensors: (%s)", device_name.c_str());
-			}
+			
 		}
 	}
 
@@ -924,10 +924,9 @@ bool CPhilipsHue::GetSensors(const Json::Value &root)
 
 void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eSwitchType SType, const bool bPresence, const string &Name, uint8_t BatteryLevel)
 {
-	cout << __func__ << " : " << Name << endl;
 	int sID = NodeID + 3000;
 	char ID[40];
-	sprintf(ID, "%08lX", sID);
+	sprintf(ID, "%08X", sID);
 
 	_tGeneralSwitch xcmd;
 	xcmd.len = sizeof(_tGeneralSwitch) - 1;
@@ -935,6 +934,7 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eSwitchType SType,
 	xcmd.type = pTypeGeneralSwitch;
 	xcmd.subtype = sSwitchGeneralSwitch;
 	xcmd.battery_level = BatteryLevel;
+	xcmd.rssi = 12;
 
 	if (bPresence) {
 		xcmd.cmnd = gswitch_sOn;

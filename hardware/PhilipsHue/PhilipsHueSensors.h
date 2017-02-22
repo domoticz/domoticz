@@ -1,27 +1,22 @@
 #pragma once
 
 #include "../DomoticzHardware.h"
-#include "../MySensorsBase.h"
 
 using namespace std;
+
+extern const string SensorTypeDaylight;
+extern const string SensorTypeZGPSwitch;
+extern const string SensorTypeZLLSwitch;
+extern const string SensorTypeZLLPresence;
+extern const string SensorTypeZLLTemperature;
+extern const string SensorTypeZLLLightLevel;
 
 namespace Json
 {
 	class Value;
 };
 
-class CPHSensorType
-{
-public:
-	const string Daylight = "Daylight";
-	const string ZGPSwitch = "ZGPSwitch";
-	const string ZLLSwitch = "ZLLSwitch";
-	const string ZLLPresence = "ZLLPresence";
-	const string ZLLTemperature = "ZLLTemperature";
-	const string ZLLLightLevel = "ZLLLightLevel";
-};
-
-class CPHSensorState : CPHSensorType
+class CPHSensorState
 {
 public:
 	string m_lastupdated;	// All devices
@@ -36,7 +31,7 @@ public:
 	~CPHSensorState();
 };
 
-class CPHSensorConfig : CPHSensorType
+class CPHSensorConfig
 {
 public:
 	bool m_on; // All devices
