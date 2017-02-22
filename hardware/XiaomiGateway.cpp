@@ -764,15 +764,17 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 					}
 					if (type != STYPE_END) {
 						std::string status = root2["status"].asString();
+						std::string no_close = root2["no_close"].asString();
+						std::string no_motion = root2["no_motion"].asString();
 						//Aqara's Wireless switch reports per channel
 						std::string aqara_wireless1 = root2["channel_0"].asString();
 						std::string aqara_wireless2 = root2["channel_1"].asString();
 						bool on = false;
 						int level = 0;
-						if ((status == "motion") || (status == "open") || (status == "no_close") || (status == "on")) {
+						if ((status == "motion") || (status == "open") || (status == "no_close") || (status == "on") || (no_close != "")) {
 							on = true;
 						}
-						else if ((status == "no_motion") || (status == "close") || (status == "off")) {
+						else if ((status == "no_motion") || (status == "close") || (status == "off") || (no_motion != "")) {
 							on = false;
 						}
 						else if ((status == "click") || (status == "flip90") || (aqara_wireless1 == "click")) {
