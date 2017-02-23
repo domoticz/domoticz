@@ -1582,7 +1582,10 @@
     <ClInclude Include="..\hardware\SBFSpot.h">
       <Filter>Devices\SBFSpot</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\PhilipsHue.h">
+    <ClInclude Include="..\hardware\PhilipsHue\PhilipsHue.h">
+      <Filter>Devices\Philips Hue</Filter>
+    </ClInclude> 
+	<ClInclude Include="..\hardware\PhilipsHue\PhilipsHueSensors.h">
       <Filter>Devices\Philips Hue</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\openzwave\control_panel\ozwcp.h">
@@ -2217,7 +2220,10 @@
     <ClCompile Include="..\hardware\SBFSpot.cpp">
       <Filter>Devices\SBFSpot</Filter>
     </ClCompile>
-    <ClCompile Include="..\hardware\PhilipsHue.cpp">
+    <ClCompile Include="..\hardware\PhilipsHue\PhilipsHue.cpp">
+      <Filter>Devices\Philips Hue</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\PhilipsHue\PhilipsHueSensors.cpp">
       <Filter>Devices\Philips Hue</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\openzwave\control_panel\ozwcp.cpp">
