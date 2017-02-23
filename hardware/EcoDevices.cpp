@@ -235,12 +235,14 @@ void CEcoDevices::GetMeterDetails()
 
 		// Send data only for counters effectively in use. Avoids creating useless devices in Domoticz
 		if (m_p1power1.powerusage1 != 0)
-                        SendKwhMeter(m_HwdID, 1, 255, m_p1power1.usagecurrent, m_p1power1.powerusage1/1000.0, "EcoDevices 1 (Teleinfo)");
+                        SendKwhMeter(m_HwdID, 1, 255, m_p1power1.usagecurrent, m_p1power1.powerusage1/1000.0, "EcoDevices Teleinfo 1");
                 if (m_p1power2.powerusage1 != 0)
-			SendKwhMeter(m_HwdID, 2, 255, m_p1power2.usagecurrent, m_p1power2.powerusage1/1000.0, "EcoDevices 2 (Teleinfo)");
-		if (m_p1water.gasusage !=0)
-			 SendWaterMeter(m_HwdID, 3, 255, m_p1water.gasusage/1000.0, 0,"EcoDevices 3 (Water)");
+			SendKwhMeter(m_HwdID, 2, 255, m_p1power2.usagecurrent, m_p1power2.powerusage1/1000.0, "EcoDevices Teleinfo 2");
+		if (m_p1water.gasusage !=0) 
+                        SendMeterSensor(m_HwdID, 3, 255, m_p1water.gasusage/1000.0, "EcoDevices Counter 1");
 		if (m_p1gas.gasusage != 0)
-			SendGasMeter(m_HwdID, 4, 255, m_p1gas.gasusage/1000.0, 0,"EcoDevices 4 (Gas)");
+			SendMeterSensor(m_HwdID, 4, 255, m_p1gas.gasusage/1000.0, "EcoDevices Counter 2");
+                SendTextSensor(m_HwdID, 5, 255, "Message Texte", "Message par défault");
+                SendAlertSensor(m_HwdID, 255, 2, "Alerte");
 	}
 }
