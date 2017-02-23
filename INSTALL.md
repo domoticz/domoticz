@@ -156,10 +156,10 @@ make
 
 
 ### Windows
-- You need Visual Studio 2015 (community edition is OK)
+- You need Visual Studio 2015 (Community Edition is OK)
 - The project file for Visual Studio can be found inside the "msbuild" folder
-- You need to download and unpack the following archive inside the "msbuild" folder:
-  http://www.domoticz.com/WindowsLibraries.7z
+- You need to download `WindowsLibraries.7z` from https://github.com/domoticz/win32-libraries
+  and unpack the archive inside the "msbuild" folder.
 
 ### Ubuntu / Raspberry Pi (wheezy)
 ```
