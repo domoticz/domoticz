@@ -474,30 +474,6 @@ void CDomoticzHardwareBase::SendKwhMeter(const int NodeID, const int ChildID, co
 }
 
 
-void CDomoticzHardwareBase::SendWaterMeter(const int NodeID, const int ChildID, const int BatteryLevel, const double musage, const
-double mtotal, const std::string &defaultname)
-{
-	_tGeneralDevice gdevice;
-	gdevice.subtype = sTypeWater;
-	gdevice.intval1 = (NodeID << 8) | ChildID;
-	gdevice.floatval1 = (float)musage;
-	gdevice.floatval2 = (float)(mtotal*1000.0);
-	sDecodeRXMessage(this, (const unsigned char *)&gdevice, defaultname.c_str(), BatteryLevel);
-}
-
-
-void CDomoticzHardwareBase::SendGasMeter(const int NodeID, const int ChildID, const int BatteryLevel, const double musage, const
-double mtotal, const std::string &defaultname)
-{
-	_tGeneralDevice gdevice;
-	gdevice.subtype = sTypeGas;
-	gdevice.intval1 = (NodeID << 8) | ChildID;
-	gdevice.floatval1 = (float)musage;
-	gdevice.floatval2 = (float)(mtotal*1000.0);
-	sDecodeRXMessage(this, (const unsigned char *)&gdevice, defaultname.c_str(), BatteryLevel);
-}
-
-
 double CDomoticzHardwareBase::GetKwhMeter(const int NodeID, const int ChildID, bool &bExists)
 {
 	int dID = (NodeID << 8) | ChildID;
