@@ -1375,6 +1375,19 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 			sendto(m_RemoteSocket, (const char*)&RGBWOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 			sleep_milliseconds(100);
 
+			//reset disco mode
+			if (pLed->dunit == 0)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteAll, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 1)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup1, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 2)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup2, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 3)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup3, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 4)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup4, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			sleep_milliseconds(50);
+
 			pCMD = (unsigned char*)&RGBWDiscoMode;
 			break;
 		}
@@ -1383,6 +1396,19 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 			//First send ON , sleep 100ms, then the command
 			sendto(m_RemoteSocket, (const char*)&RGBWOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 			sleep_milliseconds(100);
+
+			//reset disco mode
+			if (pLed->dunit == 0)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteAll, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 1)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup1, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 2)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup2, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 3)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup3, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 4)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup4, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			sleep_milliseconds(50);
 
 			for (int i=1; i<2; i++) {
 				sendto(m_RemoteSocket, (const char*)&RGBWDiscoMode, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
@@ -1397,6 +1423,19 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 			sendto(m_RemoteSocket, (const char*)&RGBWOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 			sleep_milliseconds(100);
 
+			//reset disco mode
+			if (pLed->dunit == 0)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteAll, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 1)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup1, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 2)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup2, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 3)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup3, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 4)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup4, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			sleep_milliseconds(50);
+
 			for (int i=1; i<3; i++) {
 				sendto(m_RemoteSocket, (const char*)&RGBWDiscoMode, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 				sleep_milliseconds(50);
@@ -1409,6 +1448,19 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 			//First send ON , sleep 100ms, then the command
 			sendto(m_RemoteSocket, (const char*)&RGBWOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 			sleep_milliseconds(100);
+
+			//reset disco mode
+			if (pLed->dunit == 0)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteAll, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 1)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup1, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 2)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup2, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 3)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup3, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 4)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup4, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			sleep_milliseconds(50);
 
 			for (int i=1; i<4; i++) {
 				sendto(m_RemoteSocket, (const char*)&RGBWDiscoMode, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
@@ -1423,6 +1475,19 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 			sendto(m_RemoteSocket, (const char*)&RGBWOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 			sleep_milliseconds(100);
 
+			//reset disco mode
+			if (pLed->dunit == 0)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteAll, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 1)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup1, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 2)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup2, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 3)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup3, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 4)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup4, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			sleep_milliseconds(50);
+
 			for (int i=1; i<5; i++) {
 				sendto(m_RemoteSocket, (const char*)&RGBWDiscoMode, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 				sleep_milliseconds(50);
@@ -1435,6 +1500,19 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 			//First send ON , sleep 100ms, then the command
 			sendto(m_RemoteSocket, (const char*)&RGBWOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 			sleep_milliseconds(100);
+
+			//reset disco mode
+			if (pLed->dunit == 0)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteAll, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 1)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup1, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 2)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup2, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 3)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup3, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 4)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup4, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			sleep_milliseconds(50);
 
 			for (int i=1; i<6; i++) {
 				sendto(m_RemoteSocket, (const char*)&RGBWDiscoMode, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
@@ -1449,6 +1527,19 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 			sendto(m_RemoteSocket, (const char*)&RGBWOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 			sleep_milliseconds(100);
 
+			//reset disco mode
+			if (pLed->dunit == 0)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteAll, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 1)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup1, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 2)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup2, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 3)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup3, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 4)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup4, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			sleep_milliseconds(50);
+
 			for (int i=1; i<7; i++) {
 				sendto(m_RemoteSocket, (const char*)&RGBWDiscoMode, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 				sleep_milliseconds(50);
@@ -1462,6 +1553,19 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 			sendto(m_RemoteSocket, (const char*)&RGBWOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 			sleep_milliseconds(100);
 
+			//reset disco mode
+			if (pLed->dunit == 0)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteAll, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 1)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup1, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 2)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup2, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 3)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup3, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 4)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup4, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			sleep_milliseconds(50);
+
 			for (int i=1; i<8; i++) {
 				sendto(m_RemoteSocket, (const char*)&RGBWDiscoMode, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 				sleep_milliseconds(50);
@@ -1474,6 +1578,19 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 			//First send ON , sleep 100ms, then the command
 			sendto(m_RemoteSocket, (const char*)&RGBWOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 			sleep_milliseconds(100);
+
+			//reset disco mode
+			if (pLed->dunit == 0)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteAll, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 1)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup1, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 2)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup2, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 3)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup3, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 4)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup4, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			sleep_milliseconds(50);
 
 			for (int i=1; i<9; i++) {
 				sendto(m_RemoteSocket, (const char*)&RGBWDiscoMode, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
