@@ -354,7 +354,8 @@ hardware/PanasonicTV.cpp
 hardware/P1MeterBase.cpp
 hardware/P1MeterSerial.cpp
 hardware/P1MeterTCP.cpp
-hardware/PhilipsHue.cpp
+hardware/PhilipsHue/PhilipsHue.cpp
+hardware/PhilipsHue/PhilipsHueSensors.cpp
 hardware/PiFace.cpp
 hardware/Pinger.cpp
 hardware/PVOutput_Input.cpp
