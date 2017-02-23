@@ -1600,9 +1600,6 @@ define(['app'], function (app) {
 			else {
 				$("#lightcontent #LedColor").hide();
 			}
-//chris			
-//if (($.bIsRGB==true || $.bIsRGBW==true) && $.strUnit =="0") {
-//if (($.bIsRGB==true || $.bIsRGBW==true) && ($.strUnit =="0" || $.strUnit =="5") && $.bIsRGBWW==false) {
 			if ($.bIsRGB==true && $.strUnit =="0") {
 				$("#lightcontent #optionsRGB").show();
 			}

@@ -15,6 +15,7 @@
 
 // Commands
 // V6
+// Todo: Kelvin slider & WW/CW type
 #define l_zone 0
 #define v6_repeats 3
 

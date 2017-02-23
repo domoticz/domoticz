@@ -6735,8 +6735,6 @@ namespace http {
 				s_strid >> ID;
 
 				m_mainworker.SwitchLight(ID, "Set Night", 0, -1,false,0);
-				//chris
-				//_log.Log(LOG_STATUS, "User: %s initiated a switch command (%s/%s/%s)", Username.c_str(), idx.c_str(), sSwitchName.c_str(), switchcmd.c_str());
 			}
 			else if (cparam == "whitelight")
 			{
