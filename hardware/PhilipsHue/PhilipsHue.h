@@ -64,6 +64,7 @@ private:
 	bool GetSensors(const Json::Value &root);
 	void InsertUpdateSwitch(const int NodeID, const _eHueLightType LType, const bool bIsOn, const int BrightnessLevel, const int Sat, const int Hue, const std::string &Name, const std::string &Options);
 	void InsertUpdateSwitch(const int NodeID, const _eSwitchType SType, const bool bIsOn, const string &Name, uint8_t BatteryLevel);
+	void ReportTemperature(const int NodeID, const float temperature, const string &Name, uint8_t BatteryLevel);
 	bool SwitchLight(const int nodeID, const std::string &LCmd, const int svalue);
 };
 
