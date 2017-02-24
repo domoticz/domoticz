@@ -3418,7 +3418,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 		std::string lstatus="";
 
 		result = safe_query(
-			"SELECT Name,SwitchType,AddjValue,StrParam1,StrParam2,Options FROM DeviceStatus WHERE (ID = %" PRIu64 ")",
+			"SELECT Name,SwitchType,AddjValue,StrParam1,StrParam2,Options,LastLevel FROM DeviceStatus WHERE (ID = %" PRIu64 ")",
 			ulID);
 		if (result.size()>0)
 		{
@@ -3433,6 +3433,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 			GetLightStatus(devType, subType, switchtype,nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 
 			bool bIsLightSwitchOn=IsLightSwitchOn(lstatus);
+			std::string slevel = sd[6];
 
 			if (((bIsLightSwitchOn) && (llevel != 0) && (llevel != 255)) || (switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageInverted))
 			{
@@ -3441,7 +3442,8 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 					"UPDATE DeviceStatus SET LastLevel='%d' WHERE (ID = %" PRIu64 ")",
 					llevel,
 					ulID);
-
+				if (bUseOnOffAction)
+				    slevel = boost::lexical_cast<std::string>(llevel);
 			}
 
 			if (bUseOnOffAction)
@@ -3451,12 +3453,8 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 				std::string OffAction=sd[4];
 				std::string Options=sd[5];
 
-				if(devType==pTypeEvohome)//would this be ok to extend as a general purpose feature?
+				if(devType==pTypeEvohome)
 				{
-					stdreplace(OnAction, "{deviceid}", ID);
-					stdreplace(OnAction, "{status}", lstatus);
-					//boost::replace_all(OnAction, ID);//future expansion
-					//boost::replace_all(OnAction, "{status}", lstatus);
 					bIsLightSwitchOn=true;//Force use of OnAction for all actions
 
 				} else if (switchtype == STYPE_Selector) {
@@ -3464,7 +3462,15 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 					OnAction = CURLEncode::URLDecode(GetSelectorSwitchLevelAction(BuildDeviceOptions(Options, true), llevel));
 					OffAction = CURLEncode::URLDecode(GetSelectorSwitchLevelAction(BuildDeviceOptions(Options, true), 0));
 				}
-
+				if (bIsLightSwitchOn) {
+					stdreplace(OnAction, "{level}", slevel);
+					stdreplace(OnAction, "{status}", lstatus);
+					stdreplace(OnAction, "{deviceid}", ID);
+				} else {
+					stdreplace(OffAction, "{level}", slevel);
+					stdreplace(OffAction, "{status}", lstatus);
+					stdreplace(OffAction, "{deviceid}", ID);
+				}
 				HandleOnOffAction(bIsLightSwitchOn, OnAction, OffAction);
 			}
 
