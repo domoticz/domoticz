@@ -402,6 +402,7 @@ hardware/plugins/Plugins.cpp
 hardware/plugins/PluginManager.cpp
 hardware/plugins/PluginTransports.cpp
 hardware/plugins/PluginProtocols.cpp
+hardware/plugins/PythonObjects.cpp
 notifications/NotificationBase.cpp
 notifications/NotificationEmail.cpp
 notifications/NotificationGCM.cpp

@@ -367,7 +367,7 @@ namespace Plugins {
 #ifdef WIN32
 		std::string	sIconFile = "..\\..\\" + Notifier.GetIconFile(ExtraData);
 #else
-		std::string	sIconFile = "../../" + Notifier.GetIconFile(ExtraData);
+		std::string	sIconFile = Notifier.GetIconFile(ExtraData);
 #endif
 
 		std::string	sName = "Unknown";
