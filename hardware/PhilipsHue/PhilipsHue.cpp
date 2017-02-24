@@ -908,6 +908,7 @@ bool CPhilipsHue::GetSensors(const Json::Value &root)
 				}
 				else if (hsensor.m_type == SensorTypeZLLLightLevel)
 				{
+					InsertUpdateSwitch(sID, STYPE_Dusk, hsensor.m_state.m_dark, device_name, hsensor.m_config.m_battery);
 				}
 				else
 				{
@@ -943,7 +944,7 @@ void CPhilipsHue::ReportTemperature(const int NodeID, const float temperature, c
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, Name.c_str(), BatteryLevel);
 }
 
-void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eSwitchType SType, const bool bPresence, const string &Name, uint8_t BatteryLevel)
+void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eSwitchType SType, const bool status, const string &Name, uint8_t BatteryLevel)
 {
 	int sID = NodeID;
 	char ID[40];
@@ -957,7 +958,7 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eSwitchType SType,
 	xcmd.battery_level = BatteryLevel;
 	xcmd.rssi = 12;
 
-	if (bPresence) {
+	if (status) {
 		xcmd.cmnd = gswitch_sOn;
 	}
 	else {
