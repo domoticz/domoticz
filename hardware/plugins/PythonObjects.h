@@ -7,11 +7,12 @@ namespace Plugins {
 
 	typedef struct {
 		PyObject_HEAD
-			int			ImageID;
+		int			ImageID;
 		PyObject*	Base;
 		PyObject*	Name;
 		PyObject*	Description;
 		PyObject*	Filename;
+		std::string	ZipFile;
 		CPlugin*	pPlugin;
 	} CImage;
 

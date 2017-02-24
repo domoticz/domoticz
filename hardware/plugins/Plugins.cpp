@@ -523,6 +523,15 @@ namespace Plugins {
 		}
 		Py_INCREF((PyObject *)&CDeviceType);
 		PyModule_AddObject(pModule, "Device", (PyObject *)&CDeviceType);
+
+		if (PyType_Ready(&CImageType) < 0)
+		{
+			_log.Log(LOG_ERROR, "CPlugin:PyInit_Domoticz, Image Type not ready.");
+			return pModule;
+		}
+		Py_INCREF((PyObject *)&CImageType);
+		PyModule_AddObject(pModule, "Image", (PyObject *)&CImageType);
+
 		return pModule;
 	}
 
@@ -1236,7 +1245,7 @@ namespace Plugins {
 				m_Password = sd[5];
 			}
 		}
-
+		
 		m_DeviceDict = PyDict_New();
 		if (PyDict_SetItemString(pModuleDict, "Devices", (PyObject*)m_DeviceDict) == -1)
 		{
@@ -1267,6 +1276,38 @@ namespace Plugins {
 				pDevice->Unit = atoi(sd[0].c_str());
 				CDevice_refresh(pDevice);
 				Py_DECREF(pDevice);
+			}
+		}
+
+		m_ImageDict = PyDict_New();
+		if (PyDict_SetItemString(pModuleDict, "Images", (PyObject*)m_ImageDict) == -1)
+		{
+			_log.Log(LOG_ERROR, "(%s) failed to add Image dictionary.", m_PluginKey.c_str());
+			return false;
+		}
+
+		// load associated custom images to make them available to python
+		result = m_sql.safe_query("SELECT ID, Base, Name, Description FROM CustomImages WHERE Base LIKE '%q%%' ORDER BY ID ASC", m_PluginKey.c_str());
+		if (result.size() > 0)
+		{
+			PyType_Ready(&CImageType);
+			// Add image objects into the image dictionary with ID as the key
+			for (std::vector<std::vector<std::string> >::const_iterator itt = result.begin(); itt != result.end(); ++itt)
+			{
+				std::vector<std::string> sd = *itt;
+				CImage* pImage = (CImage*)CImage_new(&CImageType, (PyObject*)NULL, (PyObject*)NULL);
+
+				PyObject*	pKey = PyUnicode_FromString(sd[1].c_str());
+				if (PyDict_SetItem((PyObject*)m_ImageDict, pKey, (PyObject*)pImage) == -1)
+				{
+					_log.Log(LOG_ERROR, "(%s) failed to add ID '%s' to image dictionary.", m_PluginKey.c_str(), sd[0].c_str());
+					return false;
+				}
+				pImage->ImageID = atoi(sd[0].c_str())+100;
+				pImage->Base = PyUnicode_FromString(sd[1].c_str());
+				pImage->Name = PyUnicode_FromString(sd[2].c_str());
+				pImage->Description = PyUnicode_FromString(sd[3].c_str());
+				Py_DECREF(pImage);
 			}
 		}
 

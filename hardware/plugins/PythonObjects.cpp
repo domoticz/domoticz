@@ -93,28 +93,42 @@ namespace Plugins {
 			module_state*	pModState = ((struct module_state*)PyModule_GetState(pModule));
 			if (!pModState)
 			{
-				_log.Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);
+				_log.Log(LOG_ERROR, "CImage:%s, unable to obtain module state.", __func__);
 				return 0;
 			}
 
 			if (!pModState->pPlugin)
 			{
-				_log.Log(LOG_ERROR, "CPlugin:%s, illegal operation, Plugin has not started yet.", __func__);
+				_log.Log(LOG_ERROR, "CImage:%s, illegal operation, Plugin has not started yet.", __func__);
 				return 0;
 			}
 
 			if (PyArg_ParseTupleAndKeywords(args, kwds, "|s", kwlist, &szFileName))
 			{
-				self->pPlugin = pModState->pPlugin;
-				if (szFileName) {
+				std::string	sFileName = szFileName ? szFileName : "";
+
+				if (sFileName.length())
+				{
+					self->pPlugin = pModState->pPlugin;
+					//
+					//	Check file exists in plugin home folder and load it
+					//
+					std::ifstream	infile;
+					sFileName = self->pPlugin->m_HomeFolder + sFileName;
+					infile.open(sFileName.c_str(), std::ios::in | std::ios::binary);
+					if (infile.is_open())
+					{
+						std::stringstream	ssImages;
+						ssImages << infile.rdbuf();
+						infile.close();
+						self->ZipFile = ssImages.str();
+					}
+					else
+						_log.Log(LOG_ERROR, "CImage:%s, File read failed on '%s'.", __func__, sFileName.c_str());
+
 					Py_DECREF(self->Filename);
-					self->Filename = PyUnicode_FromString(szFileName);
+					self->Filename = PyUnicode_FromString(sFileName.c_str());
 				}
-
-				//
-				//	Check file exists if specified
-				//
-
 			}
 			else
 			{
@@ -141,23 +155,65 @@ namespace Plugins {
 		if (self->pPlugin)
 		{
 			PyObject*	pNameBytes = PyUnicode_AsASCIIString(self->Name);
+			PyObject*	pFileBytes = PyUnicode_AsASCIIString(self->Filename);
 			if (self->ImageID == -1)
 			{
-				if (self->pPlugin->m_bDebug)
+				if (self->ZipFile.length())
 				{
-					PyObject*	pFileBytes = PyUnicode_AsASCIIString(self->Filename);
-					_log.Log(LOG_NORM, "(%s) Creating images from file '%s'.", self->pPlugin->Name.c_str(), std::string(PyBytes_AsString(pFileBytes)).c_str());
-					Py_DECREF(pFileBytes);
-				}
+					if (self->pPlugin->m_bDebug)
+					{
+						_log.Log(LOG_NORM, "(%s) Creating images from file '%s'.", self->pPlugin->Name.c_str(), std::string(PyBytes_AsString(pFileBytes)).c_str());
+					}
 
-				//
-				//	Call code to do insert here
-				//
+					//
+					//	Call code to do insert here
+					//
+					std::string ErrorMessage;
+					if (!m_sql.InsertCustomIconFromZip(self->ZipFile, ErrorMessage))
+					{
+						_log.Log(LOG_ERROR, "(%s) Insert Custom Icon From Zip failed on file '%s' with error '%s'.", self->pPlugin->Name.c_str(), std::string(PyBytes_AsString(pFileBytes)).c_str(), ErrorMessage.c_str());
+					}
+					else
+					{
+						// load associated custom images to make them available to python
+						std::vector<std::vector<std::string> > result = m_sql.safe_query("SELECT max(ID), Base, Name, Description FROM CustomImages");
+						if (result.size() > 0)
+						{
+							PyType_Ready(&CImageType);
+							// Add image objects into the image dictionary with ID as the key
+							for (std::vector<std::vector<std::string> >::const_iterator itt = result.begin(); itt != result.end(); ++itt)
+							{
+								std::vector<std::string> sd = *itt;
+								CImage* pImage = (CImage*)CImage_new(&CImageType, (PyObject*)NULL, (PyObject*)NULL);
+
+								PyObject*	pKey = PyUnicode_FromString(sd[1].c_str());
+								if (PyDict_SetItem((PyObject*)self->pPlugin->m_ImageDict, pKey, (PyObject*)pImage) == -1)
+								{
+									_log.Log(LOG_ERROR, "(%s) failed to add ID '%s' to image dictionary.", self->pPlugin->m_PluginKey.c_str(), sd[0].c_str());
+									break;
+								}
+								else
+								{
+									pImage->ImageID = atoi(sd[0].c_str()) + 100;
+									pImage->Base = PyUnicode_FromString(sd[1].c_str());
+									pImage->Name = PyUnicode_FromString(sd[2].c_str());
+									pImage->Description = PyUnicode_FromString(sd[3].c_str());
+									Py_DECREF(pImage);
+								}
+							}
+						}
+					}
+				}
+				else
+				{
+					_log.Log(LOG_ERROR, "(%s) No images loaded.", self->pPlugin->Name.c_str());
+				}
 			}
 			else
 			{
 				_log.Log(LOG_ERROR, "(%s) Image creation failed, '%s' already exists in Domoticz with Image ID '%d'.", self->pPlugin->Name.c_str(), std::string(PyBytes_AsString(pNameBytes)).c_str(), self->ImageID);
 			}
+			Py_DECREF(pFileBytes);
 			Py_DECREF(pNameBytes);
 		}
 		else
