@@ -97,6 +97,56 @@ unsigned char GetIndexFromAlarm(const std::string &sLabel)
 	return 0;
 }
 
+enum _eAlarm_Types
+{
+	Alarm_General = 0,
+	Alarm_Smoke,
+	Alarm_CarbonMonoxide,
+	Alarm_CarbonDioxide,
+	Alarm_Heat,
+	Alarm_Flood,
+	Alarm_Access_Control,
+	Alarm_Burglar,
+	Alarm_Power_Management,
+	Alarm_System,
+	Alarm_Emergency,
+	Alarm_Clock,
+	Alarm_Appliance,
+	Alarm_HomeHealth,
+	Alarm_Count
+};
+
+static const _tAlarmNameToIndexMapping AlarmTypeToIndexMapping[] = {
+	{ "General",			Alarm_General },
+	{ "Smoke",				Alarm_Smoke },
+	{ "Carbon Monoxide",	Alarm_CarbonMonoxide },
+	{ "Carbon Dioxide",		Alarm_CarbonDioxide },
+	{ "Heat",				Alarm_Heat },
+	{ "Flood",				Alarm_Flood },
+	{ "Access Control",		Alarm_Access_Control },
+	{ "Burglar",			Alarm_Burglar },
+	{ "Power Management",	Alarm_Power_Management },
+	{ "System",				Alarm_System },
+	{ "Emergency",			Alarm_Emergency },
+	{ "Clock",				Alarm_Clock },
+	{ "Appliance",			Alarm_Appliance },
+	{ "HomeHealth",			Alarm_HomeHealth },
+	{ "", 0 }
+};
+
+unsigned char GetIndexFromAlarmType(const std::string &sLabel)
+{
+	int ii = 0;
+	while (!AlarmTypeToIndexMapping[ii].sLabel.empty())
+	{
+		if (AlarmTypeToIndexMapping[ii].sLabel == sLabel)
+			return AlarmTypeToIndexMapping[ii].iIndex;
+		ii++;
+	}
+	return -1;
+}
+
+
 #pragma warning(disable: 4996)
 
 extern std::string szStartupFolder;
@@ -307,6 +357,7 @@ COpenZWave::COpenZWave(const int ID, const std::string& devname) :
 	m_pManager = NULL;
 	m_bNeedSave = false;
 	m_bAeotecBlinkingMode = false;
+	m_LastAlarmTypeReceived = -1;
 }
 
 
@@ -490,14 +541,11 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		nodeInfo.Product_type = pManager->GetNodeProductType(_homeID, _nodeID);
 		nodeInfo.Product_id = pManager->GetNodeProductId(_homeID, _nodeID);
 		nodeInfo.Product_name = pManager->GetNodeProductName(_homeID, _nodeID);
-
 		nodeInfo.tClockDay = -1;
 		nodeInfo.tClockHour = -1;
 		nodeInfo.tClockMinute = -1;
 		nodeInfo.tMode = -1;
 		nodeInfo.tFanMode = -1;
-
-		nodeInfo.m_LastAlarmTypeReceived = -1;
 
 		if ((_homeID == m_controllerID) && (_nodeID == m_controllerNodeId))
 			nodeInfo.eState = NSTATE_AWAKE;	//controller is always awake
@@ -948,6 +996,7 @@ void COpenZWave::EnableDisableDebug()
 
 bool COpenZWave::OpenSerialConnector()
 {
+	m_LastAlarmTypeReceived = -1;
 	_log.Log(LOG_STATUS, "OpenZWave: Starting...");
 	_log.Log(LOG_STATUS, "OpenZWave: Version: %s", GetVersionLong().c_str());
 
@@ -2367,9 +2416,9 @@ void COpenZWave::UpdateNodeScene(const OpenZWave::ValueID &vID, int SceneID)
 	pDevice->lastreceived = atime;
 	pDevice->sequence_number += 1;
 	if (pDevice->sequence_number == 0)
-		pDevice->sequence_number = 1;
-	if (pDevice->bValidValue)
-		SendDevice2Domoticz(pDevice);
+pDevice->sequence_number = 1;
+if (pDevice->bValidValue)
+SendDevice2Domoticz(pDevice);
 }
 
 void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
@@ -2466,18 +2515,21 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 		instance = GetIndexFromAlarm(vLabel);
 		if (instance == 0)
 			return;
-		if (vLabel == "Alarm Level")
+		if (commandclass == COMMAND_CLASS_SENSOR_ALARM)
 		{
-			//Alarm Level
-			if (byteValue == 0)
+			if (vLabel == "Alarm Level")
 			{
-				//Secure
-				_log.Log(LOG_STATUS, "OpenZWave: Alarm Level: Secure");
-			}
-			else
-			{
-				//Tamper
-				_log.Log(LOG_STATUS, "OpenZWave: Alarm Level: Tamper");
+				//Alarm Level
+				if (byteValue == 0)
+				{
+					//Secure
+					_log.Log(LOG_STATUS, "OpenZWave: Alarm Level: Secure");
+				}
+				else
+				{
+					//Tamper
+					_log.Log(LOG_STATUS, "OpenZWave: Alarm Level: Tamper");
+				}
 			}
 		}
 	}
@@ -2773,8 +2825,11 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 				{
 					if (byteValue != 0)
 					{
-						pNode->m_LastAlarmTypeReceived = byteValue;
+						m_LastAlarmTypeReceived = byteValue;
+						return;
 					}
+					else
+						m_LastAlarmTypeReceived = -1;
 				}
 			}
 			else if (vLabel == "Alarm Level")
@@ -2782,102 +2837,113 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 				NodeInfo *pNode = GetNodeInfo(HomeID, NodeID);
 				if (pNode)
 				{
-					if (pNode->m_LastAlarmTypeReceived != -1)
+					if (m_LastAlarmTypeReceived != -1)
 					{
 						//Until we figured out what types/levels we have, we create a switch for each of them
 						char szDeviceName[50];
-						sprintf(szDeviceName, "Alarm Type: 0x%02X", pNode->m_LastAlarmTypeReceived);
+						sprintf(szDeviceName, "Alarm Type: 0x%02X", m_LastAlarmTypeReceived);
 						std::string tmpstr = szDeviceName;
-						SendSwitch(NodeID, pNode->m_LastAlarmTypeReceived, pDevice->batValue, (byteValue != 0) ? true : false, 0, tmpstr);
-						pNode->m_LastAlarmTypeReceived = -1;
+						SendSwitch(NodeID, m_LastAlarmTypeReceived, pDevice->batValue, (byteValue != 0) ? true : false, 0, tmpstr);
+						m_LastAlarmTypeReceived = -1;
 					}
 				}
 			}
-			else if (
-				vLabel == "Carbon Monoxide" ||
-				vLabel == "Carbon Dioxide" ||
-				vLabel == "Heat" ||
-				vLabel == "Flood" ||
-				vLabel == "Burglar" ||
-				vLabel == "System" ||
-				vLabel == "Emergency" ||
-				vLabel == "Clock" ||
-				vLabel == "Appliance" ||
-				vLabel == "HomeHealth"
-				)
+			else
 			{
-				switch (byteValue) {
-				case 0x00: 	// Previous Events cleared
-				case 0xfe:	// Unkown event; returned when retrieving the current state.
-					intValue = 0;
-					break;
-				default:	// all others, interpret as alarm
-					intValue = 255;
-					break;
-				}
-			}
-			else if (vLabel == "Smoke")
-			{
-				switch (byteValue) {
-				case 0x00: 	// Previous Events cleared
-				case 0xfe:	// Unkown event; returned when retrieving the current state.
-					intValue = 0;
-					break;
-
-				case 0x03: 	// Smoke Alarm Test
-				default:	// all others, interpret as alarm
-					intValue = 255;
-					break;
-				}
-			}
-			else if (vLabel == "Access Control")
-			{
-				switch (byteValue) {
-				case 0x00: 	// Previous Events cleared
-				case 0x17: 	// Door closed
-				case 0xfe:	// Unkown event; returned when retrieving the current state.
-					intValue = 0;
-					break;
-
-				case 0x16: 	// Door open
-				default:	// all others, interpret as alarm
-					intValue = 255;
-					break;
-				}
-			}
-			else if (vLabel == "Power Management")
-			{
-				switch (byteValue) {
-				case 0x00: 	// Previous Events cleared
-				case 0xfe:	// Unkown event; returned when retrieving the current state.
-					intValue = 0;
-					break;
-
-				case 0x0a:	// Replace battery soon
-				case 0x0b:	// Replace battery now
-				case 0x0e:	// Charge battery soon
-				case 0x0f:	// Charge battery now!
-					if (pDevice->hasBattery) {
-						pDevice->batValue = 0; // signal battery needs attention ?!?
-					}
-					// fall through by intent
-				default:	// all others, interpret as alarm
-					intValue = 255;
-					break;
-				}
-			}
-			else if ((vLabel != "Alarm Type") && (vLabel != "Alarm Level"))
-			{
-				if (byteValue != 0)
+				int typeIndex = GetIndexFromAlarmType(vLabel);
+				if (typeIndex > 0) //don't include reserver(0) type
 				{
-					//Until we figured out what types/levels we have, we create a switch for each of them
-					char szDeviceName[100];
-					sprintf(szDeviceName, "Alarm Type: 0x%02X (%s)", byteValue, vLabel.c_str());
-					std::string tmpstr = szDeviceName;
-					SendSwitch(NodeID, byteValue, pDevice->batValue, true, 0, tmpstr);
+					char szTmp[100];
+					sprintf(szTmp, "Alarm Type: %s %d (0x%02X)", vLabel.c_str(), typeIndex, typeIndex);
+					SendZWaveAlarmSensor(pDevice->nodeID, pDevice->instanceID, pDevice->batValue, typeIndex, byteValue, szTmp);
 				}
+
+				if (
+					vLabel == "Carbon Monoxide" ||
+					vLabel == "Carbon Dioxide" ||
+					vLabel == "Heat" ||
+					vLabel == "Flood" ||
+					vLabel == "Burglar" ||
+					vLabel == "System" ||
+					vLabel == "Emergency" ||
+					vLabel == "Clock" ||
+					vLabel == "Appliance" ||
+					vLabel == "HomeHealth"
+					)
+				{
+					switch (byteValue) {
+					case 0x00: 	// Previous Events cleared
+					case 0xfe:	// Unkown event; returned when retrieving the current state.
+						intValue = 0;
+						break;
+					default:	// all others, interpret as alarm
+						intValue = 255;
+						break;
+					}
+				}
+				else if (vLabel == "Smoke")
+				{
+					switch (byteValue) {
+					case 0x00: 	// Previous Events cleared
+					case 0xfe:	// Unkown event; returned when retrieving the current state.
+						intValue = 0;
+						break;
+
+					case 0x03: 	// Smoke Alarm Test
+					default:	// all others, interpret as alarm
+						intValue = 255;
+						break;
+					}
+				}
+				else if (vLabel == "Access Control")
+				{
+					switch (byteValue) {
+					case 0x00: 	// Previous Events cleared
+					case 0x17: 	// Door closed
+					case 0xfe:	// Unkown event; returned when retrieving the current state.
+						intValue = 0;
+						break;
+
+					case 0x16: 	// Door open
+					default:	// all others, interpret as alarm
+						intValue = 255;
+						break;
+					}
+				}
+				else if (vLabel == "Power Management")
+				{
+					switch (byteValue) {
+					case 0x00: 	// Previous Events cleared
+					case 0xfe:	// Unkown event; returned when retrieving the current state.
+						intValue = 0;
+						break;
+
+					case 0x0a:	// Replace battery soon
+					case 0x0b:	// Replace battery now
+					case 0x0e:	// Charge battery soon
+					case 0x0f:	// Charge battery now!
+						if (pDevice->hasBattery) {
+							pDevice->batValue = 0; // signal battery needs attention ?!?
+						}
+						// fall through by intent
+					default:	// all others, interpret as alarm
+						intValue = 255;
+						break;
+					}
+				}
+				else if ((vLabel != "Alarm Type") && (vLabel != "Alarm Level"))
+				{
+					if (byteValue != 0)
+					{
+						//Until we figured out what types/levels we have, we create a switch for each of them
+						char szDeviceName[100];
+						sprintf(szDeviceName, "Alarm Type: 0x%02X (%s)", byteValue, vLabel.c_str());
+						std::string tmpstr = szDeviceName;
+						SendSwitch(NodeID, byteValue, pDevice->batValue, true, 0, tmpstr);
+					}
+				}
+				pDevice->intvalue = intValue;
 			}
-			pDevice->intvalue = intValue;
 		}
 		else if (vLabel == "Open")
 		{

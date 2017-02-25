@@ -1,6 +1,19 @@
 #pragma once
 
 #ifdef WIN32
+#	define MS_NO_COREDLL 1
+#else
+#	pragma GCC diagnostic ignored "-Wwrite-strings"
+#endif
+
+#ifdef WITH_THREAD
+#    undefine WITH_THREAD
+#endif
+#include <Python.h>
+#include <structmember.h> 
+#include <frameobject.h>
+
+#ifdef WIN32
 #	include "../../../domoticz/main/dirent_windows.h"
 #else
 #	include <dirent.h>
@@ -71,7 +84,7 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(void, PyEval_RestoreThread, PyThreadState*);
 		DECLARE_PYTHON_SYMBOL(void, _Py_NegativeRefcount, const char* COMMA int COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, _PyObject_New, PyTypeObject*);
-#ifdef DEBUG
+#ifdef _DEBUG
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyModule_Create2TraceRefs, struct PyModuleDef* COMMA int);
 #else
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyModule_Create2, struct PyModuleDef* COMMA int);
@@ -83,7 +96,7 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(PyObject*, Py_BuildValue, const char* COMMA ...);
 		DECLARE_PYTHON_SYMBOL(void, PyMem_Free, void*);
 
-#ifdef DEBUG
+#ifdef _DEBUG
 		// In a debug build dealloc is a function but for release builds its a macro
 		DECLARE_PYTHON_SYMBOL(void, _Py_Dealloc, PyObject*);
 #endif
@@ -95,7 +108,7 @@ namespace Plugins {
 			_Py_RefTotal = 0;
 			if (!shared_lib_) {
 #ifdef WIN32
-#	ifdef DEBUG
+#	ifdef _DEBUG
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python36_d.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python35_d.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python34_d.dll");
@@ -152,7 +165,7 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyEval_RestoreThread);
 					RESOLVE_PYTHON_SYMBOL(_Py_NegativeRefcount);
 					RESOLVE_PYTHON_SYMBOL(_PyObject_New);
-#ifdef DEBUG
+#ifdef _DEBUG
 					RESOLVE_PYTHON_SYMBOL(PyModule_Create2TraceRefs);
 #else
 					RESOLVE_PYTHON_SYMBOL(PyModule_Create2);
@@ -163,7 +176,7 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyUnicode_FromFormat);
 					RESOLVE_PYTHON_SYMBOL(Py_BuildValue);
 					RESOLVE_PYTHON_SYMBOL(PyMem_Free);
-#ifdef DEBUG
+#ifdef _DEBUG
 					RESOLVE_PYTHON_SYMBOL(_Py_Dealloc);
 #endif
 				}
@@ -240,7 +253,7 @@ namespace Plugins {
 						while (!shared_lib_ && (ent = readdir(lDir)) != NULL)
 						{
 							std::string filename = ent->d_name;
-							if (dirent_is_directory(szLibrary, ent) && (filename.length() > 2))
+							if ((ent->d_type == DT_DIR) && (filename.length() > 2))
 							{
 								std::string	newDir = szLibrary + filename + "/";
 								FindLibrary(newDir.c_str());
@@ -264,7 +277,7 @@ namespace Plugins {
 #endif
 	};
 
-	SharedLibraryProxy* pythonLib = new SharedLibraryProxy();
+extern	SharedLibraryProxy* pythonLib;
 
 #define	Py_LoadLibrary			pythonLib->Py_LoadLibrary
 #define	Py_GetVersion			pythonLib->Py_GetVersion
@@ -312,7 +325,7 @@ namespace Plugins {
 #define PyArg_ParseTuple		pythonLib->PyArg_ParseTuple
 #define Py_BuildValue			pythonLib->Py_BuildValue
 #define PyMem_Free				pythonLib->PyMem_Free
-#ifdef DEBUG
+#ifdef _DEBUG
 #	define PyModule_Create2TraceRefs pythonLib->PyModule_Create2TraceRefs
 #else
 #	define PyModule_Create2		pythonLib->PyModule_Create2
@@ -320,7 +333,7 @@ namespace Plugins {
 #define PyModule_AddObject		pythonLib->PyModule_AddObject
 #define PyArg_ParseTupleAndKeywords pythonLib->PyArg_ParseTupleAndKeywords
 
-#ifdef DEBUG
+#ifdef _DEBUG
 #	define _Py_Dealloc			pythonLib->_Py_Dealloc
 #endif
 

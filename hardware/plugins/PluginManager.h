@@ -4,7 +4,7 @@
 //	Domoticz Plugin System - Dnpwwo, 2016
 //
 
-#include "../DomoticzHardware.h"
+class CDomoticzHardwareBase;
 
 namespace Plugins {
 

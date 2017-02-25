@@ -161,6 +161,7 @@ CLogger _log;
 http::server::CWebServerHelper m_webservers;
 CSQLHelper m_sql;
 CNotificationHelper m_notifications;
+
 std::string logfile = "";
 bool g_bStopApplication = false;
 bool g_bUseSyslog = false;
@@ -227,13 +228,6 @@ void daemonize(const char *rundir, const char *pidfile)
 	struct sigaction newSigAction;
 	sigset_t newSigSet;
 
-	/* Check if parent process id is set */
-	if (getppid() == 1)
-	{
-		/* PPID exists, therefore we are already a daemon */
-		return;
-	}
-
 	/* Set signal mask - signals we want to block */
 	sigemptyset(&newSigSet);
 	sigaddset(&newSigSet, SIGCHLD);  /* ignore child - i.e. we don't need to wait for it */
@@ -254,7 +248,7 @@ void daemonize(const char *rundir, const char *pidfile)
 	sigaction(SIGABRT, &newSigAction, NULL);    // catch abnormal termination signal
 	sigaction(SIGILL,  &newSigAction, NULL);    // catch invalid program image
 #ifndef WIN32
-	sigaction(SIGHUP,  &newSigAction, NULL);    // catch HUP, for logrotation
+	sigaction(SIGHUP,  &newSigAction, NULL);    // catch HUP, for log rotation
 #endif
 	
 	/* Fork*/
@@ -297,7 +291,7 @@ void daemonize(const char *rundir, const char *pidfile)
 	int twrite=write(pidFilehandle, str, strlen(str));
 	if (twrite != strlen(str))
 	{
-		syslog(LOG_INFO, "Could not write to lockfile %s, exiting", pidfile);
+		syslog(LOG_INFO, "Could not write to lock file %s, exiting", pidfile);
 		exit(EXIT_FAILURE);
 	}
 

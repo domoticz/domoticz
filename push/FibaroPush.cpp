@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "DataPush.h"
+#include "FibaroPush.h"
 #include "../hardware/hardwaretypes.h"
 #include "../httpclient/HTTPClient.h"
 #include "../json/json.h"
@@ -14,47 +14,31 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-typedef struct _STR_TABLE_ID1_ID2 {
-	unsigned long    id1;
-	unsigned long    id2;
-	const char   *str1;
-} STR_TABLE_ID1_ID2;
-
-const char *findVarTableID1ID2 (_STR_TABLE_ID1_ID2 *t, unsigned long id1, unsigned long id2)
-{
-	while (t->str1) {
-		if ( (t->id1 == id1) && (t->id2 == id2) )
-			return t->str1;
-		t++;
-	}
-	return "Not supported";
-}
-
-CDataPush::CDataPush()
+CFibaroPush::CFibaroPush()
 {
 	m_bLinkActive = false;
 }
 
-void CDataPush::Start()
+void CFibaroPush::Start()
 {
 	UpdateActive();
-	m_sConnection = m_mainworker.sOnDeviceReceived.connect(boost::bind(&CDataPush::OnDeviceReceived, this, _1, _2, _3, _4));
+	m_sConnection = m_mainworker.sOnDeviceReceived.connect(boost::bind(&CFibaroPush::OnDeviceReceived, this, _1, _2, _3, _4));
 }
 
-void CDataPush::Stop()
+void CFibaroPush::Stop()
 {
 	if (m_sConnection.connected())
 		m_sConnection.disconnect();
 }
 
-void CDataPush::UpdateActive()
+void CFibaroPush::UpdateActive()
 {
 	int fActive;
 	m_sql.GetPreferencesVar("FibaroActive", fActive);
 	m_bLinkActive = (fActive == 1);
 }
 
-void CDataPush::OnDeviceReceived(const int m_HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
+void CFibaroPush::OnDeviceReceived(const int m_HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
 {
 	m_DeviceRowIdx = DeviceRowIdx;
 	if (m_bLinkActive)
@@ -63,7 +47,7 @@ void CDataPush::OnDeviceReceived(const int m_HwdID, const uint64_t DeviceRowIdx,
 	}
 }
 
-void CDataPush::DoFibaroPush()
+void CFibaroPush::DoFibaroPush()
 {			
 	std::string fibaroIP = "";
 	std::string fibaroUsername = "";
@@ -133,6 +117,8 @@ void CDataPush::DoFibaroPush()
 							sendValue = ProcessSendValue(rawsendValue,delpos,nValue,includeUnit,metertype);
 						}
 					}
+					else
+						sendValue = ProcessSendValue(sValue, delpos, nValue, includeUnit, metertype);
 				}
 			}
 			else { // scenes/reboot, only on/off
@@ -262,7 +248,7 @@ namespace http {
 			m_sql.UpdatePreferencesVar("FibaroActive", ilinkactive);
 			m_sql.UpdatePreferencesVar("FibaroVersion4", iisversion4);
 			m_sql.UpdatePreferencesVar("FibaroDebug", idebugenabled);
-			m_mainworker.m_datapush.UpdateActive();
+			m_fibaropush.UpdateActive();
 			root["status"] = "OK";
 			root["title"] = "SaveFibaroLinkConfig";
 		}

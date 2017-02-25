@@ -316,7 +316,7 @@ void CSBFSpot::ImportOldMonthData(const uint64_t DevID, const int Year, const in
 				if (pPos == std::string::npos)
 					szKwhCounter = "0," + szKwhCounter;
 				stdreplace(szKwhCounter, ",", ".");
-				double kWhCounter = atof(szKwhCounter.c_str()) * 100000;
+				double kWhCounter = atof(szKwhCounter.c_str()) * 1000;
 				unsigned long long ulCounter = (unsigned long long)kWhCounter;
 
 				//check if this day record does not exists in the database, and insert it
@@ -382,7 +382,7 @@ void CSBFSpot::ImportOldMonthData(const uint64_t DevID, const int Year, const in
 
 						std::string szKwhCounter = results[iInvOff + 1];
 						stdreplace(szKwhCounter, ",", ".");
-						double kWhCounter = atof(szKwhCounter.c_str()) * 100000;
+						double kWhCounter = atof(szKwhCounter.c_str()) * 1000;
 						unsigned long long ulCounter = (unsigned long long)kWhCounter;
 
 						//check if this day record does not exists in the database, and insert it

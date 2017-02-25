@@ -189,98 +189,97 @@ bool Ec3kMeterTCP::WriteToHardware(const char *pdata, const unsigned char length
 
 void Ec3kMeterTCP::ParseData(const unsigned char *pData, int Len)
 {
-  std::string buffer;
-  buffer.assign((char *)pData, Len);
+	std::string buffer;
+	buffer.assign((char *)pData, Len);
 
-  // Validty check on the received json
-  
-  Json::Value root;
-  Json::Reader jReader;
+	// Validty check on the received json
 
-  bool ret = jReader.parse(buffer, root);
-  if (!ret)
-    {
-      _log.Log(LOG_ERROR, "Ec3kMeter: invalid data received!");
-      return;
-    }
-  if (root [SENSOR_ID].empty() == true)
-    {
-      _log.Log(LOG_ERROR, "Ec3kMeter: id not found in telegram");
-      return;
-    }
-  if  (root [DATA].empty() == true)
-    {
-      _log.Log(LOG_ERROR, "Ec3kMeter: data not found in telegram");
-      return;
-    }
+	Json::Value root;
+	Json::Reader jReader;
 
-  Json::Value data = root["data"];
-  if (data[WS].empty() ==true)
-    {
-      _log.Log(LOG_ERROR, "Ec3kMeter: energy (ws) not found in telegram");
-      return;
-    }
- 
-    if (data[W_CURRENT].empty() ==true)
-    {
-      _log.Log(LOG_ERROR, "Ec3kMeter: current consumption not found in telegram");
-      return;
-    }
-    if (data[W_MAX].empty() ==true)
-    {
-      _log.Log(LOG_ERROR, "Ec3kMeter: maximum consumption not found in telegram");
-      return;
-    }
-    if (data[TIME_ON].empty() ==true)
-    {
-      _log.Log(LOG_ERROR, "Ec3kMeter: time on not found in telegram");
-      return;
-    }
-    if (data[TIME_TOTAL].empty() ==true)
-    {
-      _log.Log(LOG_ERROR, "Ec3kMeter: total time not found in telegram");
-      return;
-    }
-    if (data[RESET_COUNT].empty() ==true)
-    {
-      _log.Log(LOG_ERROR, "Ec3kMeter: reset count not found in telegram");
-      return;
-    }
+	bool ret = jReader.parse(buffer, root);
+	if ((!ret) || (!root.isObject()))
+	{
+		_log.Log(LOG_ERROR, "Ec3kMeter: invalid data received!");
+		return;
+	}
+	if (root[SENSOR_ID].empty() == true)
+	{
+		_log.Log(LOG_ERROR, "Ec3kMeter: id not found in telegram");
+		return;
+	}
+	if (root[DATA].empty() == true)
+	{
+		_log.Log(LOG_ERROR, "Ec3kMeter: data not found in telegram");
+		return;
+	}
 
-    // extract values from json
+	Json::Value data = root["data"];
+	if (data[WS].empty() == true)
+	{
+		_log.Log(LOG_ERROR, "Ec3kMeter: energy (ws) not found in telegram");
+		return;
+	}
 
-    std::stringstream ssId;
-    ssId << std::hex << root[SENSOR_ID].asString(); 
-    //int id = root[SENSOR_ID].asInt();
-    int id;
-    ssId >> id;
+	if (data[W_CURRENT].empty() == true)
+	{
+		_log.Log(LOG_ERROR, "Ec3kMeter: current consumption not found in telegram");
+		return;
+	}
+	if (data[W_MAX].empty() == true)
+	{
+		_log.Log(LOG_ERROR, "Ec3kMeter: maximum consumption not found in telegram");
+		return;
+	}
+	if (data[TIME_ON].empty() == true)
+	{
+		_log.Log(LOG_ERROR, "Ec3kMeter: time on not found in telegram");
+		return;
+	}
+	if (data[TIME_TOTAL].empty() == true)
+	{
+		_log.Log(LOG_ERROR, "Ec3kMeter: total time not found in telegram");
+		return;
+	}
+	if (data[RESET_COUNT].empty() == true)
+	{
+		_log.Log(LOG_ERROR, "Ec3kMeter: reset count not found in telegram");
+		return;
+	}
 
-    // update only when the update interval has elapsed 
-    if (m_limiter->update(id))
-      {
-	int ws = data[WS].asInt();
-	float w_current = data[W_CURRENT].asFloat();
-	float w_max = data[W_MAX].asFloat();
-	int s_time_on = data[TIME_ON].asInt();
-	int s_time_total = data[TIME_TOTAL].asInt();
-	int reset_count = data[RESET_COUNT].asInt();
+	// extract values from json
 
-	// create suitable default names and send data
+	std::stringstream ssId;
+	ssId << std::hex << root[SENSOR_ID].asString();
+	//int id = root[SENSOR_ID].asInt();
+	int id;
+	ssId >> id;
 
-	std::stringstream sensorNameKwhSS;
-	sensorNameKwhSS << "EC3K meter " << std::hex << id << " Usage";
-	const std::string sensorNameKwh = sensorNameKwhSS.str();
-	SendKwhMeter(id, 1, 255, w_current, (double)ws/3600/1000, sensorNameKwh);
-	
-	std::stringstream sensorNameWMaxSS;
-	sensorNameWMaxSS << "EC3K meter " << std::hex << id << " maximum";
-	const std::string sensorNameWMax = sensorNameWMaxSS.str();
-	SendWattMeter(id, 2, 255, w_max, sensorNameWMax);
-    
-	// TODO: send times + reset_count?
-      }
+	// update only when the update interval has elapsed 
+	if (m_limiter->update(id))
+	{
+		int ws = data[WS].asInt();
+		float w_current = data[W_CURRENT].asFloat();
+		float w_max = data[W_MAX].asFloat();
+		int s_time_on = data[TIME_ON].asInt();
+		int s_time_total = data[TIME_TOTAL].asInt();
+		int reset_count = data[RESET_COUNT].asInt();
+
+		// create suitable default names and send data
+
+		std::stringstream sensorNameKwhSS;
+		sensorNameKwhSS << "EC3K meter " << std::hex << id << " Usage";
+		const std::string sensorNameKwh = sensorNameKwhSS.str();
+		SendKwhMeter(id, 1, 255, w_current, (double)ws / 3600 / 1000, sensorNameKwh);
+
+		std::stringstream sensorNameWMaxSS;
+		sensorNameWMaxSS << "EC3K meter " << std::hex << id << " maximum";
+		const std::string sensorNameWMax = sensorNameWMaxSS.str();
+		SendWattMeter(id, 2, 255, w_max, sensorNameWMax);
+
+		// TODO: send times + reset_count?
+	}
 }
-
 
 Ec3kLimiter::Ec3kLimiter(void)
 {
@@ -293,26 +292,27 @@ Ec3kLimiter::~Ec3kLimiter(void)
 
 bool Ec3kLimiter::update(int id)
 {
-  int i;
-  for (i = 0; i < no_meters; i++)
-    {
-      if (meters[i].id == id)
+	int i;
+	for (i = 0; i < no_meters; i++)
 	{
-	  // Allow update after at least update interval  seconds
-	  if (( time(NULL) - meters[i].last_update) >= EC3K_UPDATE_INTERVAL)
-	    {
-	      meters[i].last_update = time(NULL);
-	      return true;
-	    }
-	  else
-	    {
-	      return false;
-	    }
+		if (meters[i].id == id)
+		{
+			// Allow update after at least update interval  seconds
+			if ((time(NULL) - meters[i].last_update) >= EC3K_UPDATE_INTERVAL)
+			{
+				meters[i].last_update = time(NULL);
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
 	}
-    }
-  // Store new meter and allow update
-  meters[no_meters].id = id;
-  meters[no_meters].last_update  = time(NULL);
-  no_meters++;
-  return true;
+	// Store new meter and allow update
+	meters[no_meters].id = id;
+	meters[no_meters].last_update = time(NULL);
+	no_meters++;
+	return true;
 }
+

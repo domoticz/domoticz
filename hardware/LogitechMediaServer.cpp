@@ -76,7 +76,7 @@ Json::Value CLogitechMediaServer::Query(std::string sIP, int iPort, std::string 
 	}
 	Json::Reader jReader;
 	bRetVal = jReader.parse(sResult, root);
-	if (!bRetVal)
+	if ((!bRetVal) || (!root.isObject()))
 	{
 		size_t aFind = sResult.find("401 Authorization Required");
 		if ((aFind > 0) && (aFind != std::string::npos))

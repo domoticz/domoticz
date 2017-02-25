@@ -370,7 +370,7 @@ bool CNefitEasy::GetStatusDetails()
 
 	Json::Reader jReader;
 	bool ret = jReader.parse(sResult, root);
-	if (!ret)
+	if ((!ret) || (!root.isObject()))
 	{
 		if (sResult.find("Error: REQUEST_TIMEOUT") != std::string::npos)
 			_log.Log(LOG_ERROR, "NefitEasy: Request Timeout !");
@@ -516,7 +516,7 @@ bool CNefitEasy::GetOutdoorTemp()
 	SaveString2Disk(sResult, "E:\\nefit_outdoor.json");
 #endif
 	ret = jReader.parse(sResult, root);
-	if (!ret)
+	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received! (ODT)");
 		return false;
@@ -570,7 +570,7 @@ bool CNefitEasy::GetFlowTemp()
 	SaveString2Disk(sResult, "E:\\nefit_flow.json");
 #endif
 	ret = jReader.parse(sResult, root);
-	if (!ret)
+	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received! (FT)");
 		return false;
@@ -624,7 +624,7 @@ bool CNefitEasy::GetPressure()
 	SaveString2Disk(sResult, "E:\\nefit_uipres.json");
 #endif
 	ret = jReader.parse(sResult, root);
-	if (!ret)
+	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received! (Press)");
 		return false;
@@ -676,7 +676,7 @@ bool CNefitEasy::GetDisplayCode()
 	SaveString2Disk(sResult, "E:\\nefit_displaycode.json");
 #endif
 	ret = jReader.parse(sResult, root);
-	if (!ret)
+	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received! (DP)");
 		return false;
@@ -778,7 +778,7 @@ bool CNefitEasy::GetGasUsage()
 	SaveString2Disk(sResult, "E:\\nefit_yearTotal.json");
 #endif
 	ret = jReader.parse(sResult, root);
-	if (!ret)
+	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received! (Gas)");
 		return false;
