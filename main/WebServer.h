@@ -346,6 +346,7 @@ private:
 	void ZWaveCPGetTopo(WebEmSession & session, const request& req, reply & rep);
 	void ZWaveCPGetStats(WebEmSession & session, const request& req, reply & rep);
 	void ZWaveCPSetGroup(WebEmSession & session, const request& req, reply & rep);
+	void ZWaveCPSceneCommand(WebEmSession & session, const request& req, reply & rep);
 	void Cmd_ZWaveSetUserCodeEnrollmentMode(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_ZWaveGetNodeUserCodes(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_ZWaveRemoveUserCode(WebEmSession & session, const request& req, Json::Value &root);
