@@ -19,7 +19,7 @@ const _STR_DEVICE DevicesType[TOT_TYPE] =
 	{ 3, "wLightBox", "Light Box", int(pTypeLimitlessLights), int(sTypeLimitlessRGBW), int(STYPE_Dimmer), "rgbw" },
 	{ 4, "gateBox", "Gate Box", int(pTypeGeneral), int(sTypePercentage), 0, "gate" },
 	{ 5, "dimmerBox", "Dimmer Box", int(pTypeLighting2), int(sTypeAC), int(STYPE_Dimmer), "dimmer" },
-	{ 6, "switchBoxD", "Switch Box D", int(pTypeGeneral), int(sTypeAC), int(STYPE_OnOff), "relay" }
+	{ 6, "switchBoxD", "Switch Box D", int(pTypeLighting2), int(sTypeAC), int(STYPE_OnOff), "relay" }
 };
 
 int BleBox::GetDeviceTypeByApiName(const std::string &apiName)
@@ -418,6 +418,7 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 				case 6: //switchboxd
 				{
 					std::string state;
+					std::string relayNumber;
 					if (output->LIGHTING2.cmnd == light2_sOn)
 					{
 						state = "1";
@@ -426,9 +427,17 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 					{
 						state = "0";
 					}
+					if (output->LIGHTING2.unitcode == 0)
+					{
+						relayNumber = "0";
+					}
+					else
+					{
+						relayNumber = "1";
+					}
 
 					std::stringstream ss;
-					ss << "/s/" << (output->LIGHTING2.unitcode) << "/" << state;
+					ss << "/s/" << relayNumber << "/" << state;
 
 					Json::Value root = SendCommand(IPAddress, ss.str());
 					if (root == "")
@@ -494,11 +503,6 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 					return false;
 
 				break;
-
-			}
-			case 6: // switchboxd
-			{
-
 			}
 			default:
 			{
