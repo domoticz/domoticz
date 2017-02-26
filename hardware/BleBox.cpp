@@ -19,7 +19,7 @@ const _STR_DEVICE DevicesType[TOT_TYPE] =
 	{ 3, "wLightBox", "Light Box", int(pTypeLimitlessLights), int(sTypeLimitlessRGBW), int(STYPE_Dimmer), "rgbw" },
 	{ 4, "gateBox", "Gate Box", int(pTypeGeneral), int(sTypePercentage), 0, "gate" },
 	{ 5, "dimmerBox", "Dimmer Box", int(pTypeLighting2), int(sTypeAC), int(STYPE_Dimmer), "dimmer" },
-	{ 6, "switchBoxD", "Switch Box D", int(pTypeLighting2), int(sTypeAC), int(STYPE_OnOff), "relay" }
+	{ 6, "switchBoxD", "Switch Box D", int(pTypeGeneral), int(sTypeAC), int(STYPE_OnOff), "relay" }
 };
 
 int BleBox::GetDeviceTypeByApiName(const std::string &apiName)
@@ -457,9 +457,56 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 
 					break;
 				}
+				default:
+				{
+					return false;
+				}
 			}
 			return true;
 		}
+	}
+
+	if (output->ICMND.packettype == pTypeGeneralSwitch && output->LIGHTING2.subtype == sTypeAC)
+	{
+		std::string IPAddress = GetDeviceRevertIP(output);
+
+		int type = GetDeviceType(IPAddress);
+
+		switch (type)
+		{
+			case 4: // gatebox
+			{
+				std::string command;
+				if (output->ICMND.msg4 == 2) // 2=primary, 3=secondary
+				{
+					command = "p";
+				}
+				else
+				{
+					command = "s";
+				}
+
+				Json::Value root = SendCommand(IPAddress, "/s/" + command);
+				if (root == "")
+					return false;
+
+				if (IsNodeExists(root, "gate") == false)
+					return false;
+
+				break;
+
+			}
+			case 6: // switchboxd
+			{
+
+			}
+			default:
+			{
+				return false;
+			}
+
+		}
+		return true;
 	}
 
 	if (output->ICMND.packettype == pTypeLimitlessLights && output->LIGHTING2.subtype == sTypeLimitlessRGBW)
@@ -956,7 +1003,18 @@ void BleBox::AddNode(const std::string &name, const std::string &IPAddress)
 			"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue) "
 			"VALUES (%d, '%q', %d, %d, %d, %d, 1, 12, 255, '%q', 0, 'Unavailable')",
 			m_HwdID, szIdx.c_str(), 3, pTypeGeneralSwitch, sTypeAC, STYPE_PushOn, name.c_str());
+	}
+	if (deviceType.unit == 6) // switchboxd
+	{
+		m_sql.safe_query(
+			"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue) "
+			"VALUES (%d, '%q', %d, %d, %d, %d, 1, 12, 255, '%q', 0, 'Unavailable')",
+			m_HwdID, szIdx.c_str(), 0, deviceType.deviceID, deviceType.subType, deviceType.switchType, name.c_str());
 
+		m_sql.safe_query(
+			"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue) "
+			"VALUES (%d, '%q', %d, %d, %d, %d, 1, 12, 255, '%q', 0, 'Unavailable')",
+			m_HwdID, szIdx.c_str(), 1, deviceType.deviceID, deviceType.subType, deviceType.switchType, name.c_str());
 	}
 	else
 	{
