@@ -81,9 +81,7 @@ void CEcoDevices::Init()
 {
 	m_stoprequested = false;
 	m_lastSendData = 0;
-	m_p1power1.powerusage1 = 0;
-        m_p1power2.powerusage1 = 0;
-        m_lastusage1 = 0;
+	m_lastusage1 = 0;
 	m_lastusage2 = 0;
 	m_lastwaterusage = 0;
 	m_lastgasusage = 0;
@@ -236,7 +234,7 @@ void CEcoDevices::GetMeterDetails()
 		// Send data only for counters effectively in use. Avoids creating useless devices in Domoticz
 		if (m_p1power1.powerusage1 != 0)
 			sDecodeRXMessage(this, (const unsigned char *)&m_p1power1, "Power", 255);
-		if (m_p1power2.powerusage1 != 0)
+		if (m_p1power1.powerusage2 != 0)
 			sDecodeRXMessage(this, (const unsigned char *)&m_p1power2, "Power", 255);
 		if (m_p1water.gasusage !=0)
 			sDecodeRXMessage(this, (const unsigned char *)&m_p1water,  "Gas", 255);
