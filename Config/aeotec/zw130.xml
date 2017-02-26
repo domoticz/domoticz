@@ -12,17 +12,17 @@ Aeotec ZW130 WallMote Quad, base on Engineering Spec 9/27/2016
     <!-- Configuration Parameters -->
     <CommandClass id="112">
         <Value type="list" genre="config" instance="1" index="1" label="Touch sound" min="0" max="1" value="1" size="1">
-            <Help>Enable/disable the touch sound</Help>
+            <Help>This will enable or disable the sound effects when you press or touch  the sensing area</Help>
             <Item label="Disable" value="0"/>
             <Item label="Enable" value="1"/>
         </Value>
         <Value type="list" genre="config" instance="1" index="2" label="Touch vibration" min="0" max="1" value="1" size="1">
-            <Help>Enable/disable the touch vibration</Help>
+            <Help>This will enable or disable the vibration effects when you press or  touch the sensing area</Help>
             <Item label="Disable" value="0"/>
             <Item label="Enable" value="1"/>
         </Value>
         <Value type="list" genre="config" instance="1" index="3" label="Button slide function" min="0" max="1" value="1" size="1">
-            <Help>Enable/disable the function of button slide</Help>
+            <Help>This will enable or disable control by sliding the button area</Help>
             <Item label="Disable" value="0"/>
             <Item label="Enable" value="1"/>
         </Value>
@@ -66,14 +66,14 @@ Aeotec ZW130 WallMote Quad, base on Engineering Spec 9/27/2016
     <CommandClass id="133">
         <Associations num_groups="9">
             <Group index="1" max_associations="1" label="Lifeline"/>
-            <Group index="2" max_associations="5" label="Basic Set On/Off control via Button 1"/>
-            <Group index="3" max_associations="5" label="Multilevel Switch Set Dimmer control via Button 1"/>
-            <Group index="4" max_associations="5" label="Basic Set On/Off control via Button 2"/>
-            <Group index="5" max_associations="5" label="Multilevel Switch Set Dimmer control via Button 2"/>
-            <Group index="6" max_associations="5" label="Basic Set On/Off control via Button 3"/>
-            <Group index="7" max_associations="5" label="Multilevel Switch Set Dimmer control via Button 3"/>
-            <Group index="8" max_associations="5" label="Basic Set On/Off control via Button 4"/>
-            <Group index="9" max_associations="5" label="Multilevel Switch Set Dimmer control via Button 4"/>
+            <Group index="2" max_associations="5" label="On/Off control via Button 1"/>
+            <Group index="3" max_associations="5" label="Dimmer control via Button 1"/>
+            <Group index="4" max_associations="5" label="On/Off control via Button 2"/>
+            <Group index="5" max_associations="5" label="Dimmer control via Button 2"/>
+            <Group index="6" max_associations="5" label="On/Off control via Button 3"/>
+            <Group index="7" max_associations="5" label="Dimmer control via Button 3"/>
+            <Group index="8" max_associations="5" label="On/Off control via Button 4"/>
+            <Group index="9" max_associations="5" label="Dimmer control via Button 4"/>
         </Associations>
     </CommandClass>
     <CommandClass id="142" ForceInstances="true"/>

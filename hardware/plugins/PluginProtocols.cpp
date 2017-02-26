@@ -223,11 +223,11 @@ namespace Plugins {
 				std::string		sHeaderLine = sData.substr(0, sData.find_first_of('\r'));
 				std::string		sHeaderName = sData.substr(0, sHeaderLine.find_first_of(':'));
 				std::string		sHeaderText = sHeaderLine.substr(sHeaderName.length() + 2);
-				if (sHeaderName == "Content-Length")
+				if ((sHeaderName == "Content-Length") || (sHeaderName == "CONTENT-LENGTH"))
 				{
 					m_ContentLength = atoi(sHeaderText.c_str());
 				}
-				if ((sHeaderName == "Transfer-Encoding") && (sHeaderText == "chunked"))
+				if (((sHeaderName == "Transfer-Encoding") || (sHeaderName == "TRANSFER-ENCODING")) && (sHeaderText == "chunked"))
 				{
 					m_Chunked = true;
 				}

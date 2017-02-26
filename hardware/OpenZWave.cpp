@@ -416,7 +416,8 @@ unsigned char COpenZWave::GetInstanceFromValueID(const OpenZWave::ValueID &vID)
 		(commandClass == COMMAND_CLASS_MULTI_INSTANCE) ||
 		(commandClass == COMMAND_CLASS_SENSOR_MULTILEVEL) ||
 		(commandClass == COMMAND_CLASS_THERMOSTAT_SETPOINT) ||
-		(commandClass == COMMAND_CLASS_SENSOR_BINARY)
+		(commandClass == COMMAND_CLASS_SENSOR_BINARY) ||
+		(commandClass == COMMAND_CLASS_CENTRAL_SCENE)
 		)
 	{
 		instance = vIndex;
@@ -1593,6 +1594,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 	int iValue = 0;
 	bool bValue = false;
 	unsigned char byteValue = 0;
+	int32 intValue = 0;
 
 	// We choose SwitchMultilevel first, if not available, SwhichBinary is chosen
 	if (commandclass == COMMAND_CLASS_SWITCH_BINARY)
@@ -2254,6 +2256,15 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 		//Ignore this class, we can make our own schedule with timers
 		//_log.Log(LOG_STATUS, "OpenZWave: Unhandled class: 0x%02X (%s), NodeID: %d (0x%02x), Index: %d, Instance: %d", commandclass, cclassStr(commandclass), NodeID, NodeID, vOrgIndex, vOrgInstance);
 	}
+	else if (commandclass == COMMAND_CLASS_CENTRAL_SCENE)
+	{
+		if (vType == OpenZWave::ValueID::ValueType_Int)
+		{
+			_device.devType = ZDTYPE_CENTRAL_SCENE;
+			_device.intvalue = 0;
+			InsertDevice(_device);
+		}
+	}
 	else if (commandclass == COMMAND_CLASS_DOOR_LOCK)
 	{
 		if (
@@ -2448,6 +2459,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 	int iValue = 0;
 	bool bValue = false;
 	unsigned char byteValue = 0;
+	int32 intValue = 0;
 	std::string strValue = "";
 	int32 lValue = 0;
 
@@ -2464,6 +2476,11 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 	else if (vType == OpenZWave::ValueID::ValueType_Byte)
 	{
 		if (m_pManager->GetValueAsByte(vID, &byteValue) == false)
+			return;
+	}
+	else if (vType == OpenZWave::ValueID::ValueType_Int)
+	{
+		if (m_pManager->GetValueAsInt(vID, &intValue) == false)
 			return;
 	}
 	else if ((vType == OpenZWave::ValueID::ValueType_Raw) || (vType == OpenZWave::ValueID::ValueType_String))
@@ -2575,6 +2592,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 
 		sstr << "." << scaleID;
 	}
+
 	std::string path = sstr.str();
 
 #ifdef DEBUG_ZWAVE_INT
@@ -3230,6 +3248,12 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 			{
 
 			}
+		}
+		break;
+	case ZDTYPE_CENTRAL_SCENE:
+		if (vType == OpenZWave::ValueID::ValueType_Int)
+		{
+			pDevice->intvalue = 255;
 		}
 		break;
 	}
@@ -5399,6 +5423,29 @@ namespace http {
 					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
 					reply::set_content(&rep, pOZWHardware->m_ozwcp.GetCPStats());
 					reply::add_header_attachment(&rep, "stats.xml");
+				}
+			}
+		}
+		void CWebServer::ZWaveCPSceneCommand(WebEmSession & session, const request& req, reply & rep)
+		{
+			if (req.content.find("fun") == std::string::npos)
+				return;
+			std::multimap<std::string, std::string> values;
+			request::makeValuesFromPostContent(&req, values);
+			std::string sArg1 = request::findValue(&values, "fun");
+			std::string sArg2 = request::findValue(&values, "id");
+			std::string sVid = request::findValue(&values, "vid");
+			std::string sLabel = request::findValue(&values, "label");
+			std::string sArg3 = (!sVid.empty()) ? sVid : sLabel;
+			std::string sArg4 = request::findValue(&values, "value");
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
+			if (pHardware != NULL)
+			{
+				if (pHardware->HwdType == HTYPE_OpenZWave)
+				{
+					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+					reply::set_content(&rep, pOZWHardware->m_ozwcp.DoSceneCommand(sArg1, sArg2, sArg3, sArg4));
 				}
 			}
 		}

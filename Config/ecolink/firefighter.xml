@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Ecolink Z-Wave Plus FireFighter
+http://products.z-wavealliance.org/ProductManual/File?folder=&filename=Manuals/1827/1%20-%20Ecolink%20FireFighter%20Z-wave%20plus%20Manual%20(standard).pdf
+-->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+    <!-- Basic set as report-->
+	<CommandClass id="32" setasreport="true"/>
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="1">
+            <Group index="1" max_associations="5" label="Lifeline"/>
+        </Associations>
+    </CommandClass>
+</Product>
