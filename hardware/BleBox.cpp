@@ -13,13 +13,13 @@
 
 const _STR_DEVICE DevicesType[TOT_TYPE] =
 { 
-	{ 0, "switchBox", "Switch Box",int(pTypeLighting2), int(sTypeAC), int(STYPE_OnOff), "relay" },
-	{ 1, "shutterBox", "Shutter Box", int(pTypeLighting2), int(sTypeAC), int(STYPE_BlindsPercentageInverted), "shutter" },
-	{ 2, "wLightBoxS", "Light Box S", int(pTypeLighting2), int(sTypeAC), int(STYPE_Dimmer), "light" },
-	{ 3, "wLightBox", "Light Box", int(pTypeLimitlessLights), int(sTypeLimitlessRGBW), int(STYPE_Dimmer), "rgbw" },
-	{ 4, "gateBox", "Gate Box", int(pTypeGeneral), int(sTypePercentage), 0, "gate" },
-	{ 5, "dimmerBox", "Dimmer Box", int(pTypeLighting2), int(sTypeAC), int(STYPE_Dimmer), "dimmer" },
-	{ 6, "switchBoxD", "Switch Box D", int(pTypeLighting2), int(sTypeAC), int(STYPE_OnOff), "relay" }
+	{ 0, "switchBox", "Switch Box",pTypeLighting2, sTypeAC, STYPE_OnOff, "relay" },
+	{ 1, "shutterBox", "Shutter Box", pTypeLighting2, sTypeAC, STYPE_BlindsPercentageInverted, "shutter" },
+	{ 2, "wLightBoxS", "Light Box S", pTypeLighting2, sTypeAC, STYPE_Dimmer, "light" },
+	{ 3, "wLightBox", "Light Box", pTypeLimitlessLights, sTypeLimitlessRGBW, STYPE_Dimmer, "rgbw" },
+	{ 4, "gateBox", "Gate Box", pTypeGeneral, sTypePercentage, 0, "gate" },
+	{ 5, "dimmerBox", "Dimmer Box", pTypeLighting2, sTypeAC, STYPE_Dimmer, "dimmer" },
+	{ 6, "switchBoxD", "Switch Box D", pTypeLighting2, sTypeAC, STYPE_OnOff, "relay" }
 };
 
 int BleBox::GetDeviceTypeByApiName(const std::string &apiName)
@@ -107,7 +107,7 @@ void BleBox::GetDevicesState()
 		std::string command = sstr.str();
 
 		Json::Value root = SendCommand(itt->first, command);
-		if (root == "")
+		if (root.empty())
 			continue;
 		
 		int IP = IPToUInt(itt->first);
@@ -289,7 +289,7 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 					}
 
 					Json::Value root = SendCommand(IPAddress, "/s/" + state);
-					if (root == "")
+					if (root.empty())
 						return false;
 
 					if (IsNodeExists(root, "state") == false)
@@ -322,7 +322,7 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 						}
 
 					Json::Value root = SendCommand(IPAddress, "/s/" + state);
-					if (root == "")
+					if (root.empty())
 						return false;
 
 					if (IsNodeExists(root, "state") == false)
@@ -359,7 +359,7 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 						}
 
 					Json::Value root = SendCommand(IPAddress, "/s/" + level);
-					if (root == "")
+					if (root.empty())
 						return false;
 
 					if (IsNodesExist(root, "light", "desiredColor") == false)
@@ -396,7 +396,7 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 						}
 
 					Json::Value root = SendCommand(IPAddress, "/s/" + level);
-					if (root == "")
+					if (root.empty())
 						return false;
 
 					if (IsNodesExist(root, "dimmer", "desiredBrightness") == false)
@@ -440,7 +440,7 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 					ss << "/s/" << relayNumber << "/" << state;
 
 					Json::Value root = SendCommand(IPAddress, ss.str());
-					if (root == "")
+					if (root.empty())
 						return false;
 
 					if ((IsNodeExists(root, "relays") == false) || (!root["relays"].isArray()))
@@ -496,7 +496,7 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 				}
 
 				Json::Value root = SendCommand(IPAddress, "/s/" + command);
-				if (root == "")
+				if (root.empty())
 					return false;
 
 				if (IsNodeExists(root, "gate") == false)
@@ -527,7 +527,7 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 		std::string state(level);
 
 		Json::Value root = SendCommand(IPAddress, "/s/" + state);
-		if (root == "")
+		if (root.empty())
 			return false;
 
 		if (IsNodesExist(root, "rgbw", "desiredColor") == false)
@@ -915,7 +915,7 @@ Json::Value BleBox::SendCommand(const std::string &IPAddress, const std::string 
 std::string BleBox::IdentifyDevice(const std::string &IPAddress)
 {
 	Json::Value root = SendCommand(IPAddress, "/api/device/state");
-	if (root == "")
+	if (root.empty())
 		return "";
 
 	std::string result;
@@ -942,7 +942,7 @@ std::string BleBox::IdentifyDevice(const std::string &IPAddress)
 std::string BleBox::GetUptime(const std::string &IPAddress)
 {
 	Json::Value root = SendCommand(IPAddress, "/api/device/uptime");
-	if (root == "")
+	if (root.empty())
 		return "unknown";
 
 	if (root["uptime"].empty() == true)
