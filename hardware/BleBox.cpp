@@ -17,7 +17,7 @@ const _STR_DEVICE DevicesType[TOT_TYPE] =
 	{ 1, "shutterBox", "Shutter Box", int(pTypeLighting2), int(sTypeAC), int(STYPE_BlindsPercentageInverted), "shutter" },
 	{ 2, "wLightBoxS", "Light Box S", int(pTypeLighting2), int(sTypeAC), int(STYPE_Dimmer), "light" },
 	{ 3, "wLightBox", "Light Box", int(pTypeLimitlessLights), int(sTypeLimitlessRGBW), int(STYPE_Dimmer), "rgbw" },
-	{ 4, "gateBox", "Gate Box", int(pTypeLighting2), int(sTypeAC), int(STYPE_Dimmer), "gate" },
+	{ 4, "gateBox", "Gate Box", int(pTypeGeneral), int(sTypePercentage), 0, "gate" },
 	{ 5, "dimmerBox", "Dimmer Box", int(pTypeLighting2), int(sTypeAC), int(STYPE_Dimmer), "dimmer" },
 	{ 6, "switchBoxD", "Switch Box D", int(pTypeLighting2), int(sTypeAC), int(STYPE_OnOff), "relay" }
 };
@@ -173,10 +173,9 @@ void BleBox::GetDevicesState()
 					if (IsNodeExists(root, "currentPos") == false)
 						break;
 
-					const int currentPos = root["currentPos"].asInt();
-					int level = (int)(currentPos / (255.0 / 100.0));
+					const float level = root["currentPos"].asFloat();
 
-					SendSwitch(IP, 0, 255, level > 0, level, DevicesType[itt->second].name);
+					SendPercentageSensor(IP, 0, 255, level, DevicesType[itt->second].name);
 					break;
 				}
 				case 5:
@@ -271,16 +270,11 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 	{
 		std::string IPAddress = GetDeviceIP(output);
 
-		std::map<const std::string, const int>::const_iterator itt = m_devices.find(IPAddress);
+		int type = GetDeviceType(IPAddress);
 
-		if (itt == m_devices.end())
+		if (type != -1)
 		{
-			_log.Log(LOG_ERROR, "BleBox: write to unknown device ({0})", IPAddress.c_str());
-			return false;
-		}
-		else
-		{
-			switch (itt->second)
+			switch (type)
 			{
 				case 0:
 				{
@@ -616,7 +610,7 @@ namespace http {
 			root["title"] = "BleBoxGetNodes";
 
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT ID,Name,DeviceID,Unit FROM DeviceStatus WHERE (HardwareID=='%d')", pBaseHardware->m_HwdID);
+			result = m_sql.safe_query("SELECT ID,Name,DeviceID FROM DeviceStatus WHERE (HardwareID=='%d')", pBaseHardware->m_HwdID);
 			if (result.size() > 0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
@@ -633,11 +627,14 @@ namespace http {
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
 					root["result"][ii]["IP"] = ip;
-					root["result"][ii]["Type"] = DevicesType[atoi(sd[3].c_str())].name;
 
 					BleBox *pHardware = reinterpret_cast<BleBox*>(pBaseHardware);
 					std::string uptime = pHardware->GetUptime(ip);
 					root["result"][ii]["Uptime"] = uptime;
+
+					int type = pHardware->GetDeviceType(ip);
+					root["result"][ii]["Type"] = DevicesType[type].name;
+
 					//TODO: read more paramaters from devices (version fw, etc)
 
 					ii++;
@@ -915,6 +912,19 @@ std::string BleBox::GetUptime(const std::string &IPAddress)
 	return timestring;
 }
 
+int BleBox::GetDeviceType(const std::string &IPAddress)
+{
+	std::map<const std::string, const int>::const_iterator itt = m_devices.find(IPAddress);
+	if (itt == m_devices.end())
+	{
+		_log.Log(LOG_ERROR, "BleBox: unknown device ({0})", IPAddress.c_str());
+		return -1;
+	}
+	else
+	{
+		return itt->second;
+	}
+}
 
 void BleBox::AddNode(const std::string &name, const std::string &IPAddress)
 {
@@ -930,11 +940,31 @@ void BleBox::AddNode(const std::string &name, const std::string &IPAddress)
 
 	std::string szIdx = IPToHex(IPAddress, deviceType.deviceID);
 
-	m_sql.safe_query(
-		"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue) "
-		"VALUES (%d, '%q', %d, %d, %d, %d, 1, 12, 255, '%q', 0, 'Unavailable')",
-		m_HwdID, szIdx.c_str(), deviceType.unit, deviceType.deviceID, deviceType.subType, deviceType.switchType, name.c_str());
+	if (deviceType.unit == 4) // gatebox
+	{
+		m_sql.safe_query(
+			"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue) "
+			"VALUES (%d, '%q', %d, %d, %d, %d, 1, 12, 255, '%q', 0, 'Unavailable')",
+			m_HwdID, szIdx.c_str(), 1, deviceType.deviceID, deviceType.subType, deviceType.switchType, name.c_str());
 
+		m_sql.safe_query(
+			"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue) "
+			"VALUES (%d, '%q', %d, %d, %d, %d, 1, 12, 255, '%q', 0, 'Unavailable')",
+			m_HwdID, szIdx.c_str(), 2, pTypeGeneralSwitch, sTypeAC, STYPE_PushOn, name.c_str());
+
+		m_sql.safe_query(
+			"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue) "
+			"VALUES (%d, '%q', %d, %d, %d, %d, 1, 12, 255, '%q', 0, 'Unavailable')",
+			m_HwdID, szIdx.c_str(), 3, pTypeGeneralSwitch, sTypeAC, STYPE_PushOn, name.c_str());
+
+	}
+	else
+	{
+		m_sql.safe_query(
+			"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue) "
+			"VALUES (%d, '%q', %d, %d, %d, %d, 1, 12, 255, '%q', 0, 'Unavailable')",
+			m_HwdID, szIdx.c_str(), 0, deviceType.deviceID, deviceType.subType, deviceType.switchType, name.c_str());
+	}
 	ReloadNodes();
 }
 
@@ -985,7 +1015,7 @@ bool BleBox::LoadNodes()
 	boost::lock_guard<boost::mutex> l(m_mutex);
 
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT ID,DeviceID, Unit FROM DeviceStatus WHERE (HardwareID==%d)", m_HwdID);
+	result = m_sql.safe_query("SELECT ID,DeviceID FROM DeviceStatus WHERE (HardwareID==%d)", m_HwdID);
 	if (result.size() > 0)
 	{
 		std::vector<std::vector<std::string> >::const_iterator itt;
@@ -993,8 +1023,16 @@ bool BleBox::LoadNodes()
 		{
 			const std::vector<std::string> &sd = *itt;
 			std::string addressIP = GetDeviceIP(sd[1]);
-			int type = atoi(sd[2].c_str());
-			m_devices.insert(std::pair<const std::string, const int>(addressIP, type));
+
+			std::string deviceApiName = IdentifyDevice(addressIP);
+			if (deviceApiName.empty())
+				continue;
+
+			int deviceTypeID = GetDeviceTypeByApiName(deviceApiName);
+			if (deviceTypeID == -1)
+				continue;
+
+			m_devices.insert(std::pair<const std::string, const int>(addressIP, deviceTypeID));
 		}
 		return true;
 	}
