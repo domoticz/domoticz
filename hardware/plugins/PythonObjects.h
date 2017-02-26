@@ -122,6 +122,7 @@ namespace Plugins {
 		{ "Image", T_INT, offsetof(CDevice, Image), READONLY, "Numeric image number" },
 		{ "LastLevel", T_INT, offsetof(CDevice, LastLevel), READONLY, "Previous device level" },
 		{ "LastUpdate", T_OBJECT, offsetof(CDevice, LastUpdate), READONLY, "Last update timestamp" },
+		{ "Options", T_OBJECT, offsetof(CDevice, Options), READONLY, "Device options" },
 		{ NULL }  /* Sentinel */
 	};
 
