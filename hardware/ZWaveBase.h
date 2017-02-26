@@ -43,6 +43,7 @@ class ZWaveBase : public CDomoticzHardwareBase
 		ZDTYPE_SENSOR_TANK_CAPACITY,
 
 		ZDTYPE_ALARM,
+		ZDTYPE_CENTRAL_SCENE,
 	};
 	struct _tZWaveDevice
 	{
