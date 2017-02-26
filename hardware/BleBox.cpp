@@ -19,9 +19,7 @@ const _STR_DEVICE DevicesType[TOT_TYPE] =
 	{ 3, "wLightBox", "Light Box", int(pTypeLimitlessLights), int(sTypeLimitlessRGBW), int(STYPE_Dimmer), "rgbw" },
 	{ 4, "gateBox", "Gate Box", int(pTypeLighting2), int(sTypeAC), int(STYPE_Dimmer), "gate" },
 	{ 5, "dimmerBox", "Dimmer Box", int(pTypeLighting2), int(sTypeAC), int(STYPE_Dimmer), "dimmer" },
-	{ 6, "switchBoxD", "Switch Box D", int(pTypeLighting2), int(sTypeAC), int(STYPE_OnOff), "relay" }, // unit 6 - dual (0)
-	{ 7, "switchBoxD", "Switch Box D", int(pTypeLighting2), int(sTypeAC), int(STYPE_OnOff), "relay" }  // unit 7 - dual (1)
-	// {8, ....
+	{ 6, "switchBoxD", "Switch Box D", int(pTypeLighting2), int(sTypeAC), int(STYPE_OnOff), "relay" }
 };
 
 int BleBox::GetDeviceTypeByApiName(const std::string &apiName)
@@ -124,7 +122,7 @@ void BleBox::GetDevicesState()
 					
 					const bool state = root["state"].asBool();
 
-					SendSwitch(IP, itt->second, 255, state, 0, DevicesType[itt->second].name);
+					SendSwitch(IP, 0, 255, state, 0, DevicesType[itt->second].name);
 					break;
 				}
 				case 1:
@@ -142,7 +140,7 @@ void BleBox::GetDevicesState()
 					if ((state == 2 && pos == 100) || (state == 3))
 						opened = false;
 
-					SendSwitch(IP, itt->second, 255, opened, pos, DevicesType[itt->second].name);
+					SendSwitch(IP, 0, 255, opened, pos, DevicesType[itt->second].name);
 					break;
 				}
 				case 2:
@@ -155,7 +153,7 @@ void BleBox::GetDevicesState()
 					sscanf(currentColor.c_str(), "%x", &hexNumber);
 					int level = (int)(hexNumber / (255.0 / 100.0));
 
-					SendSwitch(IP, itt->second, 255, level > 0, level, DevicesType[itt->second].name);
+					SendSwitch(IP, 0, 255, level > 0, level, DevicesType[itt->second].name);
 					break;
 				}
 				case 3:
@@ -167,7 +165,7 @@ void BleBox::GetDevicesState()
 					int hexNumber;
 					sscanf(currentColor.c_str(), "%x", &hexNumber);
 
-					SendRGBWSwitch(IP, itt->second, 255, hexNumber, true, DevicesType[itt->second].name);
+					SendRGBWSwitch(IP, 0, 255, hexNumber, true, DevicesType[itt->second].name);
 					break;
 				}
 				case 4:
@@ -178,7 +176,7 @@ void BleBox::GetDevicesState()
 					const int currentPos = root["currentPos"].asInt();
 					int level = (int)(currentPos / (255.0 / 100.0));
 
-					SendSwitch(IP, itt->second, 255, level > 0, level, DevicesType[itt->second].name);
+					SendSwitch(IP, 0, 255, level > 0, level, DevicesType[itt->second].name);
 					break;
 				}
 				case 5:
@@ -189,7 +187,7 @@ void BleBox::GetDevicesState()
 					const int currentPos = root["dimmer"]["currentBrightness"].asInt();
 					int level = (int)(currentPos / (255.0 / 100.0));
 
-					SendSwitch(IP, itt->second, 255, level > 0, level, DevicesType[itt->second].name);
+					SendSwitch(IP, 0, 255, level > 0, level, DevicesType[itt->second].name);
 					break;
 				}
 				case 6:
@@ -207,7 +205,7 @@ void BleBox::GetDevicesState()
 						int relayNumber = relay["relay"].asInt(); // 0 or 1
 						bool currentState = relay["state"].asBool(); // 0 or 1
 						//std::string name = DevicesType[itt->second].name + " " + relay["state"].asString();
-						SendSwitch(IP, relayNumber + 6, 255, currentState, 0, DevicesType[itt->second].name);
+						SendSwitch(IP, relayNumber, 255, currentState, 0, DevicesType[itt->second].name);
 					}
 					
 					break;
@@ -273,192 +271,203 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 	{
 		std::string IPAddress = GetDeviceIP(output);
 
-		switch (output->LIGHTING2.unitcode)
+		std::map<const std::string, const int>::const_iterator itt = m_devices.find(IPAddress);
+
+		if (itt == m_devices.end())
 		{
-			case 0:
+			_log.Log(LOG_ERROR, "BleBox: write to unknown device ({0})", IPAddress.c_str());
+			return false;
+		}
+		else
+		{
+			switch (itt->second)
 			{
-				std::string state;
-				if (output->LIGHTING2.cmnd == light2_sOn)
+				case 0:
 				{
-					state = "1";
-				}
-				else
-				{
-					state = "0";
-				}
-
-				Json::Value root = SendCommand(IPAddress, "/s/" + state);
-				if (root == "")
-					return false;
-
-				if (IsNodeExists(root, "state") == false)
-					return false;
-
-				if (root["state"].asString() != state)
-				{
-					_log.Log(LOG_ERROR, "BleBox: state not changed!");
-					return false;
-				}
-				break;
-			}
-
-			case 1:
-			{
-				std::string state;
-				if (output->LIGHTING2.cmnd == light2_sOn)
-				{
-					state = "u";
-				}
-				else
-					if (output->LIGHTING2.cmnd == light2_sOff)
+					std::string state;
+					if (output->LIGHTING2.cmnd == light2_sOn)
 					{
-						state = "d";
+						state = "1";
 					}
 					else
 					{
-						int percentage = output->LIGHTING2.level * 100 / 15;
-						state = boost::to_string(percentage);
+						state = "0";
 					}
 
-				Json::Value root = SendCommand(IPAddress, "/s/" + state);
-				if (root == "")
-					return false;
+					Json::Value root = SendCommand(IPAddress, "/s/" + state);
+					if (root == "")
+						return false;
 
-				if (IsNodeExists(root, "state") == false)
-					return false;
+					if (IsNodeExists(root, "state") == false)
+						return false;
 
-				// TODO - add check
-				//if (root["state"].asString() != state)
-				//{
-				//	_log.Log(LOG_ERROR, "BleBox: state not changed!");
-				//	return false;
-				//}
-				break;
-			}
-
-			case 2:
-			{
-				std::string level;
-				if (output->LIGHTING2.cmnd == light2_sOn)
-				{
-					level = "ff";
-				}
-				else
-					if (output->LIGHTING2.cmnd == light2_sOff)
+					if (root["state"].asString() != state)
 					{
-						level = "00";
+						_log.Log(LOG_ERROR, "BleBox: state not changed!");
+						return false;
+					}
+					break;
+				}
+
+				case 1:
+				{
+					std::string state;
+					if (output->LIGHTING2.cmnd == light2_sOn)
+					{
+						state = "u";
+					}
+					else
+						if (output->LIGHTING2.cmnd == light2_sOff)
+						{
+							state = "d";
+						}
+						else
+						{
+							int percentage = output->LIGHTING2.level * 100 / 15;
+							state = boost::to_string(percentage);
+						}
+
+					Json::Value root = SendCommand(IPAddress, "/s/" + state);
+					if (root == "")
+						return false;
+
+					if (IsNodeExists(root, "state") == false)
+						return false;
+
+					// TODO - add check
+					//if (root["state"].asString() != state)
+					//{
+					//	_log.Log(LOG_ERROR, "BleBox: state not changed!");
+					//	return false;
+					//}
+					break;
+				}
+
+				case 2:
+				{
+					std::string level;
+					if (output->LIGHTING2.cmnd == light2_sOn)
+					{
+						level = "ff";
+					}
+					else
+						if (output->LIGHTING2.cmnd == light2_sOff)
+						{
+							level = "00";
+						}
+						else
+						{
+							int percentage = output->LIGHTING2.level * 255 / 15;
+
+							char value[4];
+							sprintf(value, "%x", percentage);
+							level = value;
+						}
+
+					Json::Value root = SendCommand(IPAddress, "/s/" + level);
+					if (root == "")
+						return false;
+
+					if (IsNodesExist(root, "light", "desiredColor") == false)
+						return false;
+
+					if (root["light"]["desiredColor"].asString() != level)
+					{
+						_log.Log(LOG_ERROR, "BleBox: light not changed!");
+						return false;
+					}
+
+					break;
+				}
+
+				case 5: // dimmerBox
+				{
+					std::string level;
+					if (output->LIGHTING2.cmnd == light2_sOn)
+					{
+						level = "ff";
+					}
+					else
+						if (output->LIGHTING2.cmnd == light2_sOff)
+						{
+							level = "0";
+						}
+						else
+						{
+							int percentage = output->LIGHTING2.level * 255 / 15;
+
+							char value[4];
+							sprintf(value, "%x", percentage);
+							level = value;
+						}
+
+					Json::Value root = SendCommand(IPAddress, "/s/" + level);
+					if (root == "")
+						return false;
+
+					if (IsNodesExist(root, "dimmer", "desiredBrightness") == false)
+						return false;
+
+					std::stringstream ss;
+					ss << std::hex << root["dimmer"]["desiredBrightness"].asInt();
+					std::string state = ss.str();
+
+					if (state != level)
+					{
+						_log.Log(LOG_ERROR, "BleBox: dimmer not changed!");
+						return false;
+					}
+
+					break;
+				}
+
+				case 6: //switchboxd
+				{
+					std::string state;
+					if (output->LIGHTING2.cmnd == light2_sOn)
+					{
+						state = "1";
 					}
 					else
 					{
-						int percentage = output->LIGHTING2.level * 255 / 15;
-
-						char value[4];
-						sprintf(value, "%x", percentage);
-						level = value;
+						state = "0";
 					}
 
-				Json::Value root = SendCommand(IPAddress, "/s/" + level);
-				if (root == "")
-					return false;
+					std::stringstream ss;
+					ss << "/s/" << (output->LIGHTING2.unitcode) << "/" << state;
 
-				if (IsNodesExist(root, "light", "desiredColor") == false)
-					return false;
+					Json::Value root = SendCommand(IPAddress, ss.str());
+					if (root == "")
+						return false;
 
-				if (root["light"]["desiredColor"].asString() != level)
-				{
-					_log.Log(LOG_ERROR, "BleBox: light not changed!");
-					return false;
-				}
+					if ((IsNodeExists(root, "relays") == false) || (!root["relays"].isArray()))
+						return false;
 
-				break;
-			}
-
-			case 5: // dimmerBox
-			{
-				std::string level;
-				if (output->LIGHTING2.cmnd == light2_sOn)
-				{
-					level = "ff";
-				}
-				else
-					if (output->LIGHTING2.cmnd == light2_sOff)
+					bool success = false;
+					Json::Value relays = root["relays"];
+					Json::ArrayIndex count = relays.size();
+					for (Json::ArrayIndex index = 0; index < count; index++)
 					{
-						level = "0";
+						Json::Value relay = relays[index];
+						if ((IsNodeExists(relay, "relay") == false) || (IsNodeExists(relay, "state") == false))
+							continue;
+						int relayNumber = relay["relay"].asInt(); // 0 or 1
+						std::string currentState = relay["state"].asString(); // 0 or 1
+						if (((output->LIGHTING2.unitcode) == relayNumber) && (state == currentState))
+						{
+							success = true;
+							break;
+						}
 					}
-					else
-					{
-						int percentage = output->LIGHTING2.level * 255 / 15;
+					return success;
 
-						char value[4];
-						sprintf(value, "%x", percentage);
-						level = value;
-					}
-
-				Json::Value root = SendCommand(IPAddress, "/s/" + level);
-				if (root == "")
-					return false;
-
-				if (IsNodesExist(root, "dimmer", "desiredBrightness") == false)
-					return false;
-
-				std::stringstream ss;
-				ss << std::hex << root["dimmer"]["desiredBrightness"].asInt();
-				std::string state = ss.str();
-
-				if (state != level)
-				{
-					_log.Log(LOG_ERROR, "BleBox: dimmer not changed!");
-					return false;
+					break;
 				}
-
-				break;
 			}
-
-			case 6: //switchboxd - 0
-			case 7: //switchboxd - 1
-			{
-				std::string state;
-				if (output->LIGHTING2.cmnd == light2_sOn)
-				{
-					state = "1";
-				}
-				else
-				{
-					state = "0";
-				}
-
-				std::stringstream ss;
-				ss << "/s/" << (output->LIGHTING2.unitcode - 6) << "/" << state;
-
-				Json::Value root = SendCommand(IPAddress, ss.str());
-				if (root == "")
-					return false;
-
-				if ((IsNodeExists(root, "relays") == false) || (!root["relays"].isArray()))
-					return false;
-
-				bool success = false;
-				Json::Value relays = root["relays"];
-				Json::ArrayIndex count = relays.size();
-				for (Json::ArrayIndex index = 0; index < count; index++)
-				{
-					Json::Value relay = relays[index];
-					if ((IsNodeExists(relay, "relay") == false) || (IsNodeExists(relay, "state") == false))
-						continue;
-					int relayNumber = relay["relay"].asInt(); // 0 or 1
-					std::string currentState = relay["state"].asString(); // 0 or 1
-					if (((output->LIGHTING2.unitcode - 6) == relayNumber) && (state == currentState))
-					{
-						success = true;
-						break;
-					}
-				}
-				return success;
-
-				break;
-			}
+			return true;
 		}
 	}
+
 	if (output->ICMND.packettype == pTypeLimitlessLights && output->LIGHTING2.subtype == sTypeLimitlessRGBW)
 	{
 		std::string IPAddress = GetDeviceRevertIP(output);
@@ -475,7 +484,7 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 		Json::Value root = SendCommand(IPAddress, "/s/" + state);
 		if (root == "")
 			return false;
-	
+
 		if (IsNodesExist(root, "rgbw", "desiredColor") == false)
 			return false;
 
@@ -484,9 +493,10 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 			_log.Log(LOG_ERROR, "BleBox: rgbw not changed!");
 			return false;
 		}
+		return true;
 	}
-	
-	return true;
+
+	return false;
 }
 
 bool BleBox::IsNodeExists(const Json::Value root, const std::string node)
