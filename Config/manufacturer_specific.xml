@@ -122,6 +122,10 @@
 		<Product type="0002" id="0064" name="ZW100 MultiSensor 6" config="aeotec/zw100.xml" />
 		<Product type="0102" id="0064" name="ZW100 MultiSensor 6" config="aeotec/zw100.xml" />
 		<Product type="0202" id="0064" name="ZW100 MultiSensor 6" config="aeotec/zw100.xml" />
+		<Product type="0003" id="006f" name="ZW111 Nano Dimmer" config="aeotec/zw111.xml"/>
+		<Product type="0103" id="006f" name="ZW111 Nano Dimmer" config="aeotec/zw111.xml"/>
+		<Product type="0203" id="006f" name="ZW111 Nano Dimmer" config="aeotec/zw111.xml"/>
+		<Product type="1d03" id="006f" name="ZW111 Nano Dimmer" config="aeotec/zw111.xml"/>
 		<Product type="0002" id="0070" name="ZW112 Door Window Sensor 6" config="aeotec/zw112.xml" />
 		<Product type="0102" id="0070" name="ZW112 Door Window Sensor 6" config="aeotec/zw112.xml" />
 		<Product type="0202" id="0070" name="ZW112 Door Window Sensor 6" config="aeotec/zw112.xml" />
@@ -155,10 +159,13 @@
 	<Manufacturer id="0129" name="Assa Abloy">
 		<Product type="0001" id="0000" name="Yale Touchscreen Lever (YRL220)" config="assa_abloy/TouchLever.xml"/>
 		<Product type="0002" id="0000" name="Yale Touchscreen Deadbolt (YRD220)" config="assa_abloy/TouchDeadbolt.xml" />
+		<Product type="0002" id="0209" name="Yale Key Free Touchscreen Deadbolt (YRD240)" config="assa_abloy/TouchDeadbolt.xml"/>
 		<Product type="0002" id="0800" name="Yale Touchscreen Deadbolt (YRD120)" config="assa_abloy/TouchDeadbolt.xml" />
+		<Product type="0003" id="0409" name="Yale Push Button Lever Lock (YRL210)" config="assa_abloy/PushButtonLever.xml"/>
 		<Product type="0003" id="0800" name="Yale Push Button Lever Lock (YRL210)" config="assa_abloy/PushButtonLever.xml"/>
-		<Product type="0004" id="0000" name="Yale Push Button Deadbolt (YRD210)" config="assa_abloy/PushButtonDeadbolt.xml"/>		
-		<Product type="0004" id="0800" name="Yale Push Button Deadbolt (YRD110)" config="assa_abloy/PushButtonDeadbolt.xml"/>		
+		<Product type="0004" id="0000" name="Yale Push Button Deadbolt (YRD210)" config="assa_abloy/PushButtonDeadbolt.xml"/>
+		<Product type="0004" id="0209" name="Yale Push Button Deadbolt (YRD210)" config="assa_abloy/PushButtonDeadbolt.xml"/>
+		<Product type="0004" id="0800" name="Yale Push Button Deadbolt (YRD110)" config="assa_abloy/PushButtonDeadbolt.xml"/>
 		<Product type="0006" id="0000" name="Yale Key Free Touchscreen Deadbolt (YRD240)" config="assa_abloy/TouchDeadbolt.xml"/>
 		<Product type="0007" id="0000" name="Yale Keyless Connected Smart Lock (YSL)" config="assa_abloy/KeyfreeConnected.xml"/>			
 		<Product type="1bef" id="9230" name="Yale Keyless Connected Smart Lock (YSL)" config="assa_abloy/KeyfreeConnected.xml"/>
@@ -282,9 +289,12 @@
 		<Product type="0001" id="0001" name="Switchkeeper Plug-in Appliance Module"/>
 	</Manufacturer>
 	<Manufacturer id="014a" name="Ecolink">
-		<Product type="0001" id="0001" name="PIR Motion Sensor" config="ecolink/sensor.xml"/>
-		<Product type="0001" id="0002" name="Door/Window Sensor" config="ecolink/sensor.xml"/>
-		<Product type="0001" id="0003" name="Garage Door Sensor" config="ecolink/sensor.xml"/>
+		<Product type="0001" id="0001" name="Motion Sensor" config="ecolink/sensor.xml"/>
+		<Product type="0001" id="0002" name="Door/Window Sensor" config="ecolink/doorwindow.xml"/>
+		<Product type="0001" id="0003" name="Tilt Sensor" config="ecolink/sensor.xml"/>
+		<Product type="0004" id="0001" name="Motion Detector" config="ecolink/motion.xml"/>
+		<Product type="0004" id="0003" name="Garage Door Tilt Sensor" config="ecolink/sensor.xml"/>
+		<Product type="0005" id="000f" name="FireFighter" config="ecolink/firefighter.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0087" name="Eka Systems">
 	</Manufacturer>
@@ -310,9 +320,10 @@
 		<Product type="0601" id="0901" name="ZWN-BPC Ceiling Mounted PIR Motion Sensor" config="enerwave/zwn-bpc.xml"/>
 		<Product type="0801" id="0b03" name="ZWN-SC7 7-Button Scene Controller" config="enerwave/zwn-sc7.xml"/>
 		<Product type="0101" id="0102" name="ZW15S 15A On/Off Switch" config="enerwave/zw15s.xml"/>
-		<Product type="0101" id="0603" name="ZW20R 20A Tamper Resistant Duplex Receptacle" config="enerwave/zw20r.xml"/>
-		<Product type="0111" id="0101" name="ZW20RM 20A Smart Meter Duplex Receptacle" config="enerwave/zw20rm.xml"/>
+		<Product type="0101" id="0603" name="ZW20R 20A TR Duplex Receptacle" config="enerwave/zw20r.xml"/>
+		<Product type="0111" id="0101" name="ZW20RM 20A TR Smart Meter Duplex Receptacle" config="enerwave/zw20rm.xml"/>
 		<Product type="0102" id="0201" name="ZW500D 500W In-Wall Preset Dimmer Switch" config="enerwave/zw500d.xml"/>
+		<Product type="0111" id="0105" name="ZW15RM Plus 15A TR Smart Meter Duplex Receptacle" config="enerwave/zw15rmplus.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0060" name="Everspring">
 		<Product type="0001" id="0001" name="HSP02 Motion Detector" config="everspring/hsp02.xml"/>
@@ -412,6 +423,7 @@
 		<Product type="0203" id="1000" name="FGS223 Double Relay" config="fibaro/fgs223.xml"/>
 		<Product type="0203" id="3000" name="FGS223 Double Relay" config="fibaro/fgs223.xml"/>
 		<Product type="0600" id="1000" name="FGWPE/F Wall Plug" config="fibaro/fgwpe.xml" />
+		<Product type="0200" id="1000" name="FGWPE/F Wall Plug" config="fibaro/fgwpe.xml"/>
 		<Product type="0602" id="1001" name="FGWPE/F Wall Plug Gen5" config="fibaro/fgwpfzw5.xml" />
 		<Product type="0800" id="1001" name="FGMS001 Motion Sensor" config="fibaro/fgms.xml" />
 		<Product type="0800" id="2001" name="FGMS001 Motion Sensor" config="fibaro/fgms.xml" />
@@ -431,7 +443,9 @@
 		<Product type="0c00" id="1000" name="FGSS101 Smoke Sensor" config="fibaro/fgss101.xml" />
 		<Product type="0c02" id="1002" name="FGSD002 Smoke Sensor" config="fibaro/fgsd002.xml" />
 		<Product type="0d01" id="1000" name="FGGC001 Swipe" config="fibaro/fggc001.xml" />
-		<Product type="0f01" id="1000" name="FGPB101 Button" config="fibaro/fgpb101.xml" />
+		<Product type="0f01" id="1000" name="FGPB101 Button" config="fibaro/fgpb101.xml" />	
+		<Product type="1001" id="1000" name="FGKF601 Keyfob" config="fibaro/fgkf601.xml" />			
+		<Product type="1001" id="2000" name="FGKF601 Keyfob" config="fibaro/fgkf601.xml" />		
   	</Manufacturer>
 	<Manufacturer id="0138" name="First Alert">
         <Product type="0001" id="0002" name="ZCombo Smoke and Carbon Monoxide Detector"  config="firstalert/zcombo.xml"/>
@@ -468,8 +482,8 @@
 		<Product type="4457" id="3230" name="45606 2-Way Dimmer Switch" config="ge/dimmer.xml"/>
 		<Product type="4944" id="3031" name="12724 3-Way Dimmer Switch" config="ge/12724-dimmer.xml"/>
 		<Product type="4944" id="3033" name="12729 3-Way Dimmer Switch" config="ge/12724-dimmer.xml"/>
-                <Product type="4944" id="3034" name="12730 Fan Control Switch" config="ge/12724-dimmer.xml"/>
-                <Product type="4952" id="3036" name="12491 In-Wall Smart Switch" config="ge/12491-switch.xml"/>
+		<Product type="4944" id="3034" name="12730 Fan Control Switch" config="ge/12724-dimmer.xml"/>
+		<Product type="4952" id="3036" name="14291 In-Wall Smart Switch" config="ge/14291-switch.xml"/>
 		<Product type="5250" id="3030" name="45603 Plugin Appliance Module"/>
 		<Product type="5250" id="3130" name="45604 Outdoor Module"/>
 		<Product type="4f50" id="3031" name="12720 Outdoor Smart Switch"/>
@@ -479,7 +493,7 @@
 		<Product type="4952" id="3031" name="12721 Lighting Control Duplex Receptacle" config="ge/receptacle.xml"/>
 		<Product type="4952" id="3032" name="12722 On/Off Relay Switch" config="ge/relay.xml"/>
 		<Product type="4952" id="3033" name="12727 In-Wall Smart Switch (Toggle)"/>
-  	<Product type="4953" id="3032" name="32563 Hinge Pin Smart Door Sensor" config="ge/hinge-pin.xml"/>
+		<Product type="4953" id="3032" name="32563 Hinge Pin Smart Door Sensor" config="ge/hinge-pin.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0099" name="GreenWave">
 		<Product type="0001" id="0002" name="One Gateway"/>
@@ -604,7 +618,7 @@
 		<Product type="0c01" id="0206" name="VRCPG-SG RF Handheld Remote Controller" config="leviton/vrcpg.xml"/>
 		<Product type="1001" id="0209" name="VRF01-1LZ Multilevel Scene Switch - 1.5A Fan" config="leviton/vrf01.xml"/>
 		<Product type="1102" id="0243" name="VRCS2-MRZ 2-Button Scene Controller with Switches"/>
-            	<Product type="1902" id="0334" name="DZPD3-1LW Plug-In Dimming Lamp Module"/>
+        <Product type="1902" id="0334" name="DZPD3-1LW Plug-In Dimming Lamp Module"/>
 		<Product type="1a02" id="0334" name="DZPA1-1LW Plug-In Appliance Module"/>
 	</Manufacturer>
 	<Manufacturer id="014f" name="Linear">
@@ -624,8 +638,8 @@
         <Product type="8015" id="0001" name="LS-8015-ZW Single Latch Door Lock"/>
 	</Manufacturer>
 	<Manufacturer id="0234" name="Logic Soft">
-                <Product type="0003" id="010a" name="ZHC5010 Wall switch" config="logicsoft/ZHC5010.xml"/>
-        </Manufacturer>
+        <Product type="0003" id="010a" name="ZHC5010 Wall switch" config="logicsoft/ZHC5010.xml"/>
+    </Manufacturer>
 	<Manufacturer id="007f" name="Logitech">
 	</Manufacturer>
 	<Manufacturer id="0025" name="Loudwater Tech">
@@ -709,13 +723,14 @@
 	<Manufacturer id="0041" name="OpenPeak Inc.">
 	</Manufacturer>
 	<Manufacturer id="0245" name="Permundo">
-        	<Product type="0003" id="0002" name="PSC132ZW Smart Mini Plug"/>
+		<Product type="0003" id="0002" name="PSC132ZW Smart Mini Plug"/>
 		<Product type="0003" id="0001" name="PSC234ZW Smart Plug"/>
-    	</Manufacturer>
+    </Manufacturer>
 	<Manufacturer id="013c" name="Philio Technology Corporation">
 		<Product type="0001" id="0001" name="PAN11-4 Smart Energy Plug In Switch"/>
 		<Product type="0001" id="0003" name="PAN04-1 Double Relay Switch 2x1.5kW with Power Measurement" config="philio/pan04.xml"/>
 		<Product type="0001" id="0004" name="PAN06-1 In Wall Dual Relay (1 Way) Switch Module"/>
+		<Product type="0001" id="0005" name="PAN07-1 TWO SPDT Switch module with meter" config="philio/pan07.xml"/>
 		<Product type="0001" id="0006" name="PAN08-1 In Wall Roller Shutter Controller" config="philio/pan08.xml"/>
 		<Product type="0001" id="000f" name="PAN03 Switch Module with meter 3 KW X1" config="philio/pan03.xml"/>
 		<Product type="0001" id="0011" name="PAN11 Smart Energy Plug In Switch" config="philio/pan11.xml"/>
@@ -748,6 +763,7 @@
 		<Product type="0001" id="0001" name="123658 Plug-in Switch plus Power Meter" config="popp/123658.xml" />
 		<Product type="0003" id="0001" name="009105 Wall Plug Switch Schuko (IP44)" config="popp/009105.xml" />
 		<Product type="0005" id="0001" name="012501 Strike Lock Control" config="popp/012501.xml" />
+		<Product type="0004" id="0004" name="009402 10-Year Smoke Detector" config="popp/009402.xml" />
 	</Manufacturer>
 	<Manufacturer id="0169" name="Popp">
 		<Product type="0001" id="0001" name="ZWeather" config="popp/zweather.xml" />
@@ -818,6 +834,7 @@
 		<Product type="0107" id="8377" name="ZXT-120IL" config="remotec/zxt-120.xml"/>
 		<Product type="0108" id="8377" name="ZXT-120BR" config="remotec/zxt-120.xml"/>
 		<Product type="0001" id="8510" name="ZRC-90" config="remotec/zrc-90.xml"/>
+		<Product type="0002" id="8510" name="ZRC-90" config="remotec/zrc-90.xml"/>
 		<Product type="8201" id="8120" name="ZFM-X10EU Dual Mode Insert Module "/>
 		<Product type="8000" id="0002" name="ZFM-80" config="remotec/zfm-80.xml" />
 		<Product type="0200" id="8031" name="ZTS-110" config="remotec/zts-110.xml" />
@@ -881,10 +898,10 @@
 	</Manufacturer>
 	<Manufacturer id="0012" name="Tell It Online">
 	</Manufacturer>
-        <Manufacturer id="0176" name="Telldus">
-                <Product type="0003" id="0001" name="TZWP-100 Plug-in Switch" config="telldus/tzwp100.xml"/>
-                <Product type="0005" id="0001" name="TZDW-100 Magnet Switch" config="telldus/tzdw100.xml"/>
-        </Manufacturer>
+	<Manufacturer id="0176" name="Telldus">
+		<Product type="0003" id="0001" name="TZWP-100 Plug-in Switch" config="telldus/tzwp100.xml"/>
+		<Product type="0005" id="0001" name="TZDW-100 Magnet Switch" config="telldus/tzdw100.xml"/>
+	</Manufacturer>
 	<Manufacturer id="0048" name="Telsey">
 	</Manufacturer>
 	<Manufacturer id="010c" name="There">
@@ -931,11 +948,11 @@
 		<Product type="2001" id="0104" name="ZD2102 JP Door/Window Sensor" config="vision/zd2102.xml"/>
 		<Product type="2001" id="0105" name="ZD2102 EU Door/Window Sensor" config="vision/zd2102.xml"/>
 		<Product type="2001" id="0106" name="ZD2102 EU Door/Window Sensor" config="vision/zd2102.xml"/>
-		<Product type="2002" id="0201" name="ZP3102 US PIR Motion Sensor" config="vision/zp3102.xml"/>
-		<Product type="2002" id="0202" name="ZP3102 AU PIR Motion Sensor" config="vision/zp3102.xml"/>
-		<Product type="2002" id="0203" name="ZP3102 EU PIR Motion Sensor" config="vision/zp3102.xml"/>
-		<Product type="2002" id="0204" name="ZP3102 JP PIR Motion Sensor" config="vision/zp3102.xml"/>
-		<Product type="2002" id="0205" name="ZP3102 EU PIR Motion Sensor" config="vision/zp3102.xml"/>
+		<Product type="2002" id="0201" name="ZP3102 PIR Motion Sensor" config="vision/zp3102.xml"/>
+		<Product type="2002" id="0202" name="ZP3102 PIR Motion Sensor" config="vision/zp3102.xml"/>
+		<Product type="2002" id="0203" name="ZP3102 PIR Motion Sensor" config="vision/zp3102.xml"/>
+		<Product type="2002" id="0204" name="ZP3102 PIR Motion Sensor" config="vision/zp3102.xml"/>
+		<Product type="2002" id="0205" name="ZP3102 PIR Motion Sensor" config="vision/zp3102.xml"/>
 		<Product type="2003" id="0301" name="ZS5101 Shock and Vibration Sensor" config="vision/zs5101eu.xml"/>
 		<Product type="2003" id="0302" name="ZS5101 Shock and Vibration Sensor" config="vision/zs5101eu.xml"/>
 		<Product type="2003" id="0306" name="ZS5101 Shock and Vibration Sensor" config="vision/zs5101eu.xml"/>

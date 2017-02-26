@@ -515,7 +515,7 @@ bool XiaomiGateway::StartHardware()
 	if (result.size() > 0) {
 		int lowestId = 9999;
 		int Id = 0;
-		for (int i = 0; i < result.size(); i++) {
+		for (size_t i = 0; i < result.size(); i++) {
 			Id = atoi(result[i][2].c_str());
 			//_log.Log(LOG_STATUS, "XiaomiGateway: checking hardware id %d", Id);
 			if (Id < lowestId) {
