@@ -904,11 +904,18 @@ bool CPhilipsHue::GetSensors(const Json::Value &root)
 				}
 				else if (hsensor.m_type == SensorTypeZLLTemperature)
 				{
-					ReportTemperature(sID, float(hsensor.m_state.m_temperature / 100), device_name, hsensor.m_config.m_battery);
+					ReportTemperature(sID, float(hsensor.m_state.m_temperature / 100.0f), device_name, hsensor.m_config.m_battery);
 				}
 				else if (hsensor.m_type == SensorTypeZLLLightLevel)
 				{
 					InsertUpdateSwitch(sID, STYPE_Dusk, hsensor.m_state.m_dark, device_name, hsensor.m_config.m_battery);
+					double lux = 0.00001;
+					if (hsensor.m_state.m_lightlevel != 0)
+					{
+						float convertedLightLevel = float((hsensor.m_state.m_lightlevel - 1) / 10000.00f);
+						lux = pow(10, convertedLightLevel);
+					}
+					ReportLux(sID, (float)lux, hsensor.m_type + " Lux " + hsensor.m_name, hsensor.m_config.m_battery);
 				}
 				else
 				{
@@ -936,12 +943,30 @@ void CPhilipsHue::ReportTemperature(const int NodeID, const float temperature, c
 	tsen.TEMP.id1 = (sID & 0xFF00) >> 8;
 	tsen.TEMP.id2 = sID & 0xFF;
 	tsen.TEMP.tempsign = (temperature >= 0) ? 0 : 1;
-	int at10 = round(std::abs(temperature*10.0f));
+
+	int at10 = round(abs(temperature*10.0f));
 	tsen.TEMP.temperatureh = (BYTE)(at10 / 256);
 	at10 -= (tsen.TEMP.temperatureh * 256);
 	tsen.TEMP.temperaturel = (BYTE)(at10);
 
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, Name.c_str(), BatteryLevel);
+}
+
+
+void CPhilipsHue::ReportLux(const int NodeID, const float lux, const string &Name, uint8_t BatteryLevel)
+{
+	int sID = NodeID;
+
+	_tLightMeter lmeter;
+	lmeter.id1 = (sID & 0xFF00) >> 8;;
+	lmeter.id2 = sID & 0xFF;
+	lmeter.id3 = 0;
+	lmeter.id4 = 0;
+	lmeter.dunit = 0;
+	lmeter.fLux = lux;
+	lmeter.battery_level = BatteryLevel;
+
+	sDecodeRXMessage(this, (const unsigned char *)&lmeter, Name.c_str(), BatteryLevel);
 }
 
 void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eSwitchType SType, const bool status, const string &Name, uint8_t BatteryLevel)
