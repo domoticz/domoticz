@@ -19,8 +19,35 @@ class CEcoDevices : public CDomoticzHardwareBase
 		bool m_stoprequested;
 		boost::shared_ptr<boost::thread> m_thread;
 
-		uint32_t m_indexC1, m_indexC2, m_previousC1, m_previousC2;
-		time_t m_lastSendDataT1, m_lastSendDataT2, m_lastSendDataC1, m_lastSendDataC2;
+		time_t m_lastSendDataT1, m_lastSendDataT2;
+		typedef struct _tStatus
+		{
+			uint8_t     len;
+			std::string hostname;  // EcoDevices configured hostname
+			std::string version;   // EcoDevices firmware version
+			uint32_t    meter2;    // current flow l/mn counter 1
+			uint32_t    meter3;    // current flow l/mn counter 2
+			uint32_t    count0;    // index counter 1, liters
+			uint32_t    count1;    // index counter 2, liters
+			uint32_t    pmeter2;   // previous current flow counter 1
+			uint32_t    pmeter3;   // previous current flow counter 2
+			uint32_t    pcount0;   // previous index counter 1
+			uint32_t    pcount1;   // previous index counter 2
+                        time_t      lastsend0; // Time last counter 1 sent
+                        time_t      lastsend1; // Time last counter 2 sent
+			_tStatus()
+			{
+				len = sizeof(_tStatus) - 1;
+				pmeter2 = 0;
+				pmeter3 = 0;
+				pcount0 = 0;
+				pcount1 = 0;
+                                lastsend0 = 0;
+                                lastsend1 = 0;
+			}
+		} Status;
+
+		Status m_status;
 
 		typedef struct _tTeleinfo
 		{
@@ -112,23 +139,23 @@ class CEcoDevices : public CDomoticzHardwareBase
 	Mot dtat (autocontrle) : MOTDETAT (6 car.)
 
 English
-        ADCO     meter id
-        OPTARIF  pricing option
-        ISOUSC   maximum power subscribed  
-        BASE     index basic rate
-        HCHC     index off-peak rate
-        HCHP     index peak rate
-        EJPHPM   index "mobile peak rate"
-        EJPHN    index normal rate
-        BBRHCJB  index off-peak rate blue day
-        BBRHPJB  index peak rate blue day
-        BBRHCJW  index off-peak rate white day
-        BBRHPJW  index peak rate white day
-        BBRHCJR  index off-peak rate red day
-        BBRHPJR  index peak rate red day
-        PTEC     current tariff period
-        IINST    instant current
-        IMAX     maximum current 
-        PAPP     apparent power (VA)
-        MOTDETAT status code
+		ADCO     meter id
+		OPTARIF  pricing option
+		ISOUSC   maximum power subscribed
+		BASE     index basic rate
+		HCHC     index off-peak rate
+		HCHP     index peak rate
+		EJPHPM   index "mobile peak rate"
+		EJPHN    index normal rate
+		BBRHCJB  index off-peak rate blue day
+		BBRHPJB  index peak rate blue day
+		BBRHCJW  index off-peak rate white day
+		BBRHPJW  index peak rate white day
+		BBRHCJR  index off-peak rate red day
+		BBRHPJR  index peak rate red day
+		PTEC     current tariff period
+		IINST    instant current
+		IMAX     maximum current
+		PAPP     apparent power (VA)
+		MOTDETAT status code
 */
