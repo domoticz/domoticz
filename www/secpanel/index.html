@@ -63,7 +63,7 @@
 					}
 				},
 				error: function(data){
-					if (401 == data.status) { // 401 : Unauthorized
+					if (data.status==401) { // 401 : Unauthorized
 						window.location = "/index.html";
 					}
 					else {
