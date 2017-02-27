@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "EcoDevices.h"
 #include "../main/Helper.h"
 #include "../main/Logger.h"
@@ -5,7 +6,6 @@
 #include "../main/localtime_r.h"
 #include "../httpclient/HTTPClient.h"
 #include "../json/json.h"
-#include "../tinyxpath/xpath_processor.h"
 
 /*
 Eco- Devices is a utility consumption monitoring device dedicated to the French market.
