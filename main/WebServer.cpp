@@ -5962,6 +5962,14 @@ namespace http {
 					idx.c_str()
 					);
 				LoadUsers();
+
+				// Invalid user's sessions if password has changed
+				std::vector<std::vector<std::string> > result;
+				result = m_sql.safe_query("SELECT Password FROM Users WHERE (ID == '%q')", idx.c_str());
+				if (result.size() == 1 && password != result[0][0])
+				{
+					m_sql.safe_query("DELETE FROM UserSessions WHERE (Username == '%s')", base64_encode((const unsigned char*) username.c_str(), username.size()).c_str());
+				}
 			}
 			else if (cparam == "deleteuser")
 			{
