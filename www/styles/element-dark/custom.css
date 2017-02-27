@@ -15,7 +15,7 @@ body {
 	background: #202020 url(images/imgbg.jpg) repeat !important;
 }
 #appversion:after {
-  content: " ElementMedia Dark v0.2";
+  content: " ElementMedia Dark v0.3";
 }
 
 #status, #lastupdate, body table#itemtable tr td:first-child + td + td + td + td + td{color: #5e5d5d;}
@@ -221,7 +221,13 @@ width: 99.5% !important;
 .dimslider {
   width: calc(98% - 55px) !important;
   height: 10px;
-  margin-top: 7px !important;
-  margin-left: 48px !important;
+  margin-top: 0px !important;
   box-shadow: initial;
+  position: relative;
 }
+
+#dashcontent .dimslider {
+        width: calc(100% - 8px) !important;
+        margin-left: 4px !important;       
+}
+
