@@ -86,7 +86,7 @@ class CEcoDevices : public CDomoticzHardwareBase
 
 /*  Details on Teleinfo variables
 
-	N didentification du compteur : ADCO (12 caractres)
+	N didentification du compteur: ADCO (12 caractres)
 	Option tarifaire (type dabonnement) : OPTARIF (4 car.)
 	Intensit souscrite : ISOUSC ( 2 car. unit = ampres)
 	Index si option = base : BASE ( 9 car. unit = Wh)
@@ -111,4 +111,24 @@ class CEcoDevices : public CDomoticzHardwareBase
 	Groupe horaire si option = heures creuses ou tempo : HHPHC (1 car.)
 	Mot dtat (autocontrle) : MOTDETAT (6 car.)
 
+English
+        ADCO     meter id
+        OPTARIF  pricing option
+        ISOUSC   maximum power subscribed  
+        BASE     index basic rate
+        HCHC     index off-peak rate
+        HCHP     index peak rate
+        EJPHPM   index "mobile peak rate"
+        EJPHN    index normal rate
+        BBRHCJB  index off-peak rate blue day
+        BBRHPJB  index peak rate blue day
+        BBRHCJW  index off-peak rate white day
+        BBRHPJW  index peak rate white day
+        BBRHCJR  index off-peak rate red day
+        BBRHPJR  index peak rate red day
+        PTEC     current tariff period
+        IINST    instant current
+        IMAX     maximum current 
+        PAPP     apparent power (VA)
+        MOTDETAT status code
 */
