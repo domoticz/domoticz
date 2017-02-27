@@ -23,18 +23,20 @@ class CEcoDevices : public CDomoticzHardwareBase
 		typedef struct _tStatus
 		{
 			uint8_t     len;
-			std::string hostname;  // EcoDevices configured hostname
-			std::string version;   // EcoDevices firmware version
-			uint32_t    meter2;    // current flow l/mn counter 1
-			uint32_t    meter3;    // current flow l/mn counter 2
-			uint32_t    count0;    // index counter 1, liters
-			uint32_t    count1;    // index counter 2, liters
-			uint32_t    pmeter2;   // previous current flow counter 1
-			uint32_t    pmeter3;   // previous current flow counter 2
-			uint32_t    pcount0;   // previous index counter 1
-			uint32_t    pcount1;   // previous index counter 2
-                        time_t      lastsend0; // Time last counter 1 sent
-                        time_t      lastsend1; // Time last counter 2 sent
+			std::string hostname;// EcoDevices configured hostname
+			std::string version; // EcoDevices firmware version
+			uint32_t    meter2;	 // current flow l/mn counter 1
+			uint32_t    meter3;	 // current flow l/mn counter 2
+			uint32_t    count0;	 // index counter 1, liters
+			uint32_t    count1;	 // index counter 2, liters
+			uint32_t    pmeter2; // previous current flow counter 1
+			uint32_t    pmeter3; // previous current flow counter 2
+			uint32_t    pcount0; // previous index counter 1
+			uint32_t    pcount1; // previous index counter 2
+								 // Time last counter 1 sent
+			time_t      lastsend0;
+								 // Time last counter 2 sent
+			time_t      lastsend1;
 			_tStatus()
 			{
 				len = sizeof(_tStatus) - 1;
@@ -42,8 +44,8 @@ class CEcoDevices : public CDomoticzHardwareBase
 				pmeter3 = 0;
 				pcount0 = 0;
 				pcount1 = 0;
-                                lastsend0 = 0;
-                                lastsend1 = 0;
+				lastsend0 = 0;
+				lastsend1 = 0;
 			}
 		} Status;
 

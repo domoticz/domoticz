@@ -8,6 +8,7 @@
 #include "../json/json.h"
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
+#include <boost/foreach.hpp>
 
 /*
 Eco- Devices is a utility consumption monitoring device dedicated to the French market.
@@ -140,17 +141,20 @@ void CEcoDevices::GetMeterDetails()
 		_log.Log(LOG_ERROR, "EcoDevices: Error getting status.xml from EcoDevices!");
 		return;
 	}
-    // populate tree structure pt
-    using boost::property_tree::ptree;
-    ptree pt;
-    read_xml(sResult, pt);
+	// populate tree structure pt
+	using boost::property_tree::ptree;
+	ptree pt;
+	read_xml(sResult, pt);
 
+		m_status.hostname=pt.get<std::string>("response.config_hostname");
+//		SendTextSensor(m_HwdID, 20, 255, m_status.hostname, "Test");
 	if ((m_status.count0 >0) && ((m_status.count0 != m_status.pcount0) || (difftime(atime,m_status.lastsend0) >= 300)))
 	{
 		m_status.pcount0 = m_status.count0;
-                m_status.pmeter2 = m_status.meter2;
+		m_status.pmeter2 = m_status.meter2;
 		m_status.lastsend0 = atime;
-		SendMeterSensor(m_HwdID, 1, 255, m_status.count0/1000.0, m_status.hostname + " Counter 1");
+	//	SendMeterSensor(m_HwdID, 100, 255, m_status.count0/1000.0, m_status.hostname + " Counter 1");
+//		SendTextSensor(m_HwdID, 20, 255, m_status.hostname, "Test");
 	}
 
 }
