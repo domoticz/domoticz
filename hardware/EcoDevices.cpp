@@ -360,7 +360,7 @@ void CEcoDevices::GetMeterDetails()
 			m_teleinfo2.tariff="Undefined";
 		}
 
-		//Basic subscription scheme
+		// Basic subscription scheme
 		if (m_teleinfo2.PTEC == "TH..")
 		{
 			m_teleinfo2.tariff="Tarif de Base";
