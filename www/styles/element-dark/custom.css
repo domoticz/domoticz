@@ -219,19 +219,29 @@ width: 99.5% !important;
 }
 
 .dimslider {
-  width: calc(98% - 55px) !important;
-  height: 10px;
-  margin-top: 0px !important;
-  box-shadow: initial;
-  position: relative;
+   width: calc(98% - 55px) !important;
+   height: 10px;
+   margin-top: 0px !important;
+   margin-left: 48px !important;
+   box-shadow: initial;
+   position: relative;
 }
 
 #dashcontent .dimslider {
-        width: calc(100% - 8px) !important;
-        margin-left: 4px !important;       
+   width: calc(100% - 8px) !important;
+   margin-left: 4px !important;
+   margin-top: 10px !important;       
+}
+
+#itemtablesmall .dimslider {
+   width: calc(100% - 52px) !important;
+   margin-top: 10px !important;
+   margin-left: 48px !important;
 }
 
 #rgbw_popup .dimslider {
-        margin-left: 4px !important;
-        margin-top: 10px !important;       
+   width: calc(100% - 108px) !important;
+   margin-left: 6px !important;
+   margin-top: 10px !important;       
 }
+
