@@ -1476,34 +1476,34 @@ void GetLightStatus(
 			lstatus="Set to White";
 			break;
 		case Limitless_NightMode:
-			lstatus="Set to Night";
+			lstatus="NightMode";
 			break;
 		case Limitless_DiscoMode_1:
-			lstatus="Set to Disco Mode 1";
+			lstatus="Disco Mode 1";
 			break;
 		case Limitless_DiscoMode_2:
-			lstatus="Set to Disco Mode 2";
+			lstatus="Disco Mode 2";
 			break;
 		case Limitless_DiscoMode_3:
-			lstatus="Set to Disco Mode 3";
+			lstatus="Disco Mode 3";
 			break;
 		case Limitless_DiscoMode_4:
-			lstatus="Set to Disco Mode 4";
+			lstatus="Disco Mode 4";
 			break;
 		case Limitless_DiscoMode_5:
-			lstatus="Set to Disco Mode 5";
+			lstatus="Disco Mode 5";
 			break;
 		case Limitless_DiscoMode_6:
-			lstatus="Set to Disco Mode 6";
+			lstatus="Disco Mode 6";
 			break;
 		case Limitless_DiscoMode_7:
-			lstatus="Set to Disco Mode 7";
+			lstatus="Disco Mode 7";
 			break;
 		case Limitless_DiscoMode_8:
-			lstatus="Set to Disco Mode 8";
+			lstatus="Disco Mode 8";
 			break;
 		case Limitless_DiscoMode_9:
-			lstatus="Set to Disco Mode 9";
+			lstatus="Disco Mode 9";
 			break;
 		}
 		break;
