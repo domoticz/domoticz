@@ -1181,10 +1181,10 @@ define(['app'], function (app) {
 			});
 		}
 
-		appLampDiscoM = function(mode)
+		appLampDiscoModeNum = function(mode)
 		{
 			$.ajax({
-				 url: "json.htm?type=command&param=discom" + mode + "&idx=" + $.devIdx,
+				 url: "json.htm?type=command&param=discomodenum" + mode + "&idx=" + $.devIdx,
 				 async: false,
 				 dataType: 'json'
 			});

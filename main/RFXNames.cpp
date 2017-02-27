@@ -1478,32 +1478,32 @@ void GetLightStatus(
 		case Limitless_NightMode:
 			lstatus="Set to Night";
 			break;
-		case Limitless_DiscoM1:
-			lstatus="Set to Disco 1";
+		case Limitless_DiscoMode_1:
+			lstatus="Set to Disco Mode 1";
 			break;
-		case Limitless_DiscoM2:
-			lstatus="Set to Disco 2";
+		case Limitless_DiscoMode_2:
+			lstatus="Set to Disco Mode 2";
 			break;
-		case Limitless_DiscoM3:
-			lstatus="Set to Disco 3";
+		case Limitless_DiscoMode_3:
+			lstatus="Set to Disco Mode 3";
 			break;
-		case Limitless_DiscoM4:
-			lstatus="Set to Disco 4";
+		case Limitless_DiscoMode_4:
+			lstatus="Set to Disco Mode 4";
 			break;
-		case Limitless_DiscoM5:
-			lstatus="Set to Disco 5";
+		case Limitless_DiscoMode_5:
+			lstatus="Set to Disco Mode 5";
 			break;
-		case Limitless_DiscoM6:
-			lstatus="Set to Disco 6";
+		case Limitless_DiscoMode_6:
+			lstatus="Set to Disco Mode 6";
 			break;
-		case Limitless_DiscoM7:
-			lstatus="Set to Disco 7";
+		case Limitless_DiscoMode_7:
+			lstatus="Set to Disco Mode 7";
 			break;
-		case Limitless_DiscoM8:
-			lstatus="Set to Disco 8";
+		case Limitless_DiscoMode_8:
+			lstatus="Set to Disco Mode 8";
 			break;
-		case Limitless_DiscoM9:
-			lstatus="Set to Disco 9";
+		case Limitless_DiscoMode_9:
+			lstatus="Set to Disco Mode 9";
 			break;
 		}
 		break;
@@ -2510,47 +2510,47 @@ bool GetLightCommand(
 		}
 		else if (switchcmd == "Disco Mode 1")
 				{
-					cmd = Limitless_DiscoM1;
+					cmd = Limitless_DiscoMode_1;
 					return true;
 				}
 		else if (switchcmd == "Disco Mode 2")
 				{
-					cmd = Limitless_DiscoM2;
+					cmd = Limitless_DiscoMode_2;
 					return true;
 				}
 		else if (switchcmd == "Disco Mode 3")
 				{
-					cmd = Limitless_DiscoM3;
+					cmd = Limitless_DiscoMode_3;
 					return true;
 				}
 		else if (switchcmd == "Disco Mode 4")
 				{
-					cmd = Limitless_DiscoM4;
+					cmd = Limitless_DiscoMode_4;
 					return true;
 				}
 		else if (switchcmd == "Disco Mode 5")
 				{
-					cmd = Limitless_DiscoM5;
+					cmd = Limitless_DiscoMode_5;
 					return true;
 				}
 		else if (switchcmd == "Disco Mode 6")
 				{
-					cmd = Limitless_DiscoM6;
+					cmd = Limitless_DiscoMode_6;
 					return true;
 				}
 		else if (switchcmd == "Disco Mode 7")
 				{
-					cmd = Limitless_DiscoM7;
+					cmd = Limitless_DiscoMode_7;
 					return true;
 				}
 		else if (switchcmd == "Disco Mode 8")
 				{
-					cmd = Limitless_DiscoM8;
+					cmd = Limitless_DiscoMode_8;
 					return true;
 				}
 		else if (switchcmd == "Disco Mode 9")
 				{
-					cmd = Limitless_DiscoM9;
+					cmd = Limitless_DiscoMode_9;
 					return true;
 				}
 		else if (switchcmd == "Disco Up")

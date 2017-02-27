@@ -6543,7 +6543,7 @@ namespace http {
 
 				m_mainworker.SwitchLight(ID, "Disco Mode", 0, -1, false, 0);
 			}
-			else if (cparam.find("discom") == 0 && cparam != "discomode" && cparam.size()==7)
+			else if (cparam.find("discomodenum") == 0 && cparam != "discomode" && cparam.size()==13)
 			{
 				root["status"] = "OK";
                 root["title"] = "Set to disco mode!";
@@ -6561,7 +6561,7 @@ namespace http {
 				s_strid >> ID;
 
 				char szTmp[40];
-			    sprintf(szTmp,"Disco Mode %s",cparam.substr(6).c_str());
+			    sprintf(szTmp,"Disco Mode %s",cparam.substr(12).c_str());
 				m_mainworker.SwitchLight(ID, szTmp, 0, -1, false, 0);
 			}
 			else if (cparam == "discoup")

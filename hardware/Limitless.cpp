@@ -624,7 +624,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				}
 				break;
 			}
-			case Limitless_DiscoM1:
+			case Limitless_DiscoMode_1:
 			{
 				//First send ON , sleep 100ms, then the command
 				if (pLed->dunit == 5)
@@ -646,7 +646,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				}
 				break;
 			}
-			case Limitless_DiscoM2:
+			case Limitless_DiscoMode_2:
 			{
 				//First send ON , sleep 100ms, then the command
 				if (pLed->dunit == 5)
@@ -668,7 +668,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				}
 				break;
 			}
-			case Limitless_DiscoM3:
+			case Limitless_DiscoMode_3:
 			{
 				//First send ON , sleep 100ms, then the command
 				if (pLed->dunit == 5)
@@ -690,7 +690,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				}
 				break;
 			}
-			case Limitless_DiscoM4:
+			case Limitless_DiscoMode_4:
 			{
 				//First send ON , sleep 100ms, then the command
 				if (pLed->dunit == 5)
@@ -712,7 +712,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				}
 				break;
 			}
-			case Limitless_DiscoM5:
+			case Limitless_DiscoMode_5:
 			{
 				//First send ON , sleep 100ms, then the command
 				if (pLed->dunit == 5)
@@ -734,7 +734,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				}
 				break;
 			}
-			case Limitless_DiscoM6:
+			case Limitless_DiscoMode_6:
 			{
 				//First send ON , sleep 100ms, then the command
 				if (pLed->dunit == 5)
@@ -756,7 +756,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				}
 				break;
 			}
-			case Limitless_DiscoM7:
+			case Limitless_DiscoMode_7:
 			{
 				//First send ON , sleep 100ms, then the command
 				if (pLed->dunit == 5)
@@ -778,7 +778,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				}
 				break;
 			}
-			case Limitless_DiscoM8:
+			case Limitless_DiscoMode_8:
 			{
 				//First send ON , sleep 100ms, then the command
 				if (pLed->dunit == 5)
@@ -800,7 +800,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				}
 				break;
 			}
-			case Limitless_DiscoM9:
+			case Limitless_DiscoMode_9:
 			{
 				//First send ON , sleep 100ms, then the command
 				if (pLed->dunit == 5)
@@ -952,7 +952,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				pCMD[0x09] = pLed->dunit;
 				break;
 			}
-			case Limitless_DiscoM1:
+			case Limitless_DiscoMode_1:
 			{
 				//First send ON , sleep 100ms, then the command
 				if (pLed->dunit == 5)
@@ -970,7 +970,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				pCMD[0x05] = 0x01;
 				break;
 			}
-			case Limitless_DiscoM2:
+			case Limitless_DiscoMode_2:
 			{
 				//First send ON , sleep 100ms, then the command
 				if (pLed->dunit == 5)
@@ -988,7 +988,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				pCMD[0x05] = 0x02;
  				break;
 			}
-			case Limitless_DiscoM3:
+			case Limitless_DiscoMode_3:
 			{
 				//First send ON , sleep 100ms, then the command
 				if (pLed->dunit == 5)
@@ -1006,7 +1006,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				pCMD[0x05] = 0x03;
  				break;
 			}
-			case Limitless_DiscoM4:
+			case Limitless_DiscoMode_4:
 			{
 				//First send ON , sleep 100ms, then the command
 				if (pLed->dunit == 5)
@@ -1024,7 +1024,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				pCMD[0x05] = 0x04;
  				break;
 			}
-			case Limitless_DiscoM5:
+			case Limitless_DiscoMode_5:
 			{
 				//First send ON , sleep 100ms, then the command
 				if (pLed->dunit == 5)
@@ -1042,7 +1042,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				pCMD[0x05] = 0x05;
  				break;
 			}
-			case Limitless_DiscoM6:
+			case Limitless_DiscoMode_6:
 			{
 				//First send ON , sleep 100ms, then the command
 				if (pLed->dunit == 5)
@@ -1060,7 +1060,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				pCMD[0x05] = 0x06;
  				break;
 			}
-			case Limitless_DiscoM7:
+			case Limitless_DiscoMode_7:
 			{
 				//First send ON , sleep 100ms, then the command
 				if (pLed->dunit == 5)
@@ -1078,7 +1078,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				pCMD[0x05] = 0x07;
  				break;
 			}
-			case Limitless_DiscoM8:
+			case Limitless_DiscoMode_8:
 			{
 				//First send ON , sleep 100ms, then the command
 				if (pLed->dunit == 5)
@@ -1096,7 +1096,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				pCMD[0x05] = 0x08;
  				break;
 			}
-			case Limitless_DiscoM9:
+			case Limitless_DiscoMode_9:
 			{
 				//First send ON , sleep 100ms, then the command
 				if (pLed->dunit == 5)
@@ -1370,7 +1370,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 			sleep_milliseconds(100);
 			pCMD = (unsigned char*)&RGBWDiscoMode;
 			break;
-		case Limitless_DiscoM1:
+		case Limitless_DiscoMode_1:
 		{
 			//First send ON , sleep 50ms, then the command
 			if (pLed->dunit == 0)
@@ -1401,7 +1401,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 			pCMD = (unsigned char*)&RGBWDiscoMode;
 			break;
 		}
-		case Limitless_DiscoM2:
+		case Limitless_DiscoMode_2:
 		{
 			//First send ON , sleep 50ms, then the command
 			if (pLed->dunit == 0)
@@ -1436,7 +1436,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 			pCMD = (unsigned char*)&RGBWDiscoMode;
 			break;
 		}
-		case Limitless_DiscoM3:
+		case Limitless_DiscoMode_3:
 		{
 			//First send ON , sleep 50ms, then the command
 			if (pLed->dunit == 0)
@@ -1471,7 +1471,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 			pCMD = (unsigned char*)&RGBWDiscoMode;
 			break;
 		}
-		case Limitless_DiscoM4:
+		case Limitless_DiscoMode_4:
 		{
 			//First send ON , sleep 50ms, then the command
 			if (pLed->dunit == 0)
@@ -1506,7 +1506,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 			pCMD = (unsigned char*)&RGBWDiscoMode;
 			break;
 		}
-		case Limitless_DiscoM5:
+		case Limitless_DiscoMode_5:
 		{
 			//First send ON , sleep 50ms, then the command
 			if (pLed->dunit == 0)
@@ -1541,7 +1541,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 			pCMD = (unsigned char*)&RGBWDiscoMode;
 			break;
 		}
-		case Limitless_DiscoM6:
+		case Limitless_DiscoMode_6:
 		{
 			//First send ON , sleep 50ms, then the command
 			if (pLed->dunit == 0)
@@ -1576,7 +1576,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 			pCMD = (unsigned char*)&RGBWDiscoMode;
 			break;
 		}
-		case Limitless_DiscoM7:
+		case Limitless_DiscoMode_7:
 		{
 			//First send ON , sleep 50ms, then the command
 			if (pLed->dunit == 0)
@@ -1611,7 +1611,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 			pCMD = (unsigned char*)&RGBWDiscoMode;
 			break;
 		}
-		case Limitless_DiscoM8:
+		case Limitless_DiscoMode_8:
 		{
 			//First send ON , sleep 50ms, then the command
 			if (pLed->dunit == 0)
@@ -1646,7 +1646,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 			pCMD = (unsigned char*)&RGBWDiscoMode;
 			break;
 		}
-		case Limitless_DiscoM9:
+		case Limitless_DiscoMode_9:
 		{
 			//First send ON , sleep 50ms, then the command
 			if (pLed->dunit == 0)
