@@ -19,33 +19,32 @@ class CEcoDevices : public CDomoticzHardwareBase
 		bool m_stoprequested;
 		boost::shared_ptr<boost::thread> m_thread;
 
-		time_t m_lastSendDataT1, m_lastSendDataT2;
 		typedef struct _tStatus
 		{
 			uint8_t     len;
 			std::string hostname;// EcoDevices configured hostname
 			std::string version; // EcoDevices firmware version
-			uint32_t    meter2;	 // current flow l/mn counter 1
-			uint32_t    meter3;	 // current flow l/mn counter 2
-			uint32_t    count0;	 // index counter 1, liters
-			uint32_t    count1;	 // index counter 2, liters
-			uint32_t    pmeter2; // previous current flow counter 1
-			uint32_t    pmeter3; // previous current flow counter 2
-			uint32_t    pcount0; // previous index counter 1
-			uint32_t    pcount1; // previous index counter 2
-								 // Time last counter 1 sent
-			time_t      lastsend0;
-								 // Time last counter 2 sent
-			time_t      lastsend1;
+			uint32_t    flow1;	 // current flow l/mn counter 1
+			uint32_t    flow2;	 // current flow l/mn counter 2
+			uint32_t    index1;	 // index counter 1, liters
+			uint32_t    index2;	 // index counter 2, liters
+			std::string  t1_ptec;// Subcription on input Teleinfo 1
+			std::string t2_ptec; // subscription on input Teleifo 2
+			uint32_t    pflow1;	 // previous current flow counter 1
+			uint32_t    pflow2;	 // previous current flow counter 2
+			uint32_t    pindex1; // previous index counter 1
+			uint32_t    pindex2; // previous index counter 2
+			time_t      time1;	 // time counter 1 sent
+			time_t      time2;	 // time counter 2 sent
 			_tStatus()
 			{
 				len = sizeof(_tStatus) - 1;
-				pmeter2 = 0;
-				pmeter3 = 0;
-				pcount0 = 0;
-				pcount1 = 0;
-				lastsend0 = 0;
-				lastsend1 = 0;
+				pflow1 = 0;
+				pflow2 = 0;
+				pindex1 = 0;
+				pindex2 = 0;
+				time1 = 0;
+				time2 = 0;
 			}
 		} Status;
 
@@ -58,6 +57,13 @@ class CEcoDevices : public CDomoticzHardwareBase
 			uint8_t subtype;
 			int32_t ID;
 			std::string PTEC;
+			std::string OPTARIF;
+			uint32_t ISOUSC;
+			uint32_t IINST;
+			uint32_t IINST1;
+			uint32_t IINST2;
+			uint32_t IINST3;
+			uint32_t ADPS;
 			uint32_t PAPP;
 			uint32_t BASE;
 			uint32_t HCHC;
@@ -76,12 +82,14 @@ class CEcoDevices : public CDomoticzHardwareBase
 			std::string rate;
 			std::string tariff;
 			std::string color;
+			time_t   last;
 			_tTeleinfo()
 			{
 				len = sizeof(_tTeleinfo) - 1;
 				type = 0;		 //pTypeP1Power;
 				subtype = 0;	 //sTypeP1Power;
 				ID=0;
+				OPTARIF="";
 				PTEC="";
 				PAPP=0;
 				BASE=0;
@@ -101,6 +109,7 @@ class CEcoDevices : public CDomoticzHardwareBase
 				rate="";
 				tariff="";
 				color="";
+				last = 0;
 			}
 		} Teleinfo;
 
@@ -110,14 +119,16 @@ class CEcoDevices : public CDomoticzHardwareBase
 		bool StartHardware();
 		bool StopHardware();
 		void Do_Work();
+		void DecodeXML2Teleinfo(const std::string &sResult, Teleinfo &teleinfo);
+		void ProcessTeleinfo(const std::string &name, int HwdID, int rank, Teleinfo &teleinfo);
 		void GetMeterDetails();
 };
 
 /*  Details on Teleinfo variables
 
-	N didentification du compteur: ADCO (12 caractres)
+	No d'identification du compteur: ADCO (12 caractres)
 	Option tarifaire (type dabonnement) : OPTARIF (4 car.)
-	Intensit souscrite : ISOUSC ( 2 car. unit = ampres)
+	Intensit souscrite : ISOUSC ( 2 car. unit = amperes)
 	Index si option = base : BASE ( 9 car. unit = Wh)
 	Index heures creuses si option = heures creuses : HCHC ( 9 car. unit = Wh)
 	Index heures pleines si option = heures creuses : HCHP ( 9 car. unit = Wh)
@@ -130,15 +141,15 @@ class CEcoDevices : public CDomoticzHardwareBase
 	Index heures creuses jours rouges si option = tempo : BBR HC JR ( 9 car. unit = Wh)
 	Index heures pleines jours rouges si option = tempo : BBR HP JR ( 9 car. unit = Wh)
 	Pravis EJP si option = EJP : PEJP ( 2 car.) 30mn avant priode EJP
-	Priode tarifaire en cours : PTEC ( 4 car.)
+	Periode tarifaire en cours : PTEC ( 4 car.)
 	Couleur du lendemain si option = tempo : DEMAIN
-	Intensit instantane : IINST ( 3 car. unit = ampres)
-	Avertissement de dpassement de puissance souscrite : ADPS ( 3 car. unit = ampres)
-	  (message mis uniquement en cas de dpassement effectif, dans ce cas il est immdiat)
-	Intensit maximale : IMAX ( 3 car. unit = ampres)
-	Puissance apparente : PAPP ( 5 car. unit = Volt.ampres)
+	Intensit instantane : IINST ( 3 car. unit = amperes)
+	Avertissement de dzpassement de puissance souscrite : ADPS ( 3 car. unit = amperes)
+	  (message mis uniquement en cas de dpassement effectif, dans ce cas il est immediat)
+	Intensite maximale : IMAX ( 3 car. unit = amperes)
+	Puissance apparente : PAPP ( 5 car. unit = Volt.amepres)
 	Groupe horaire si option = heures creuses ou tempo : HHPHC (1 car.)
-	Mot dtat (autocontrle) : MOTDETAT (6 car.)
+	Mot d'etat (autocontrole) : MOTDETAT (6 car.)
 
 English
 		ADCO     meter id
