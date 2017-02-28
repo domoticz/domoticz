@@ -221,7 +221,9 @@ define(['app'], function (app) {
 											(item.Status == 'On')||
 											(item.Status == 'Chime')||
 											(item.Status == 'Group On')||
-											(item.Status.indexOf('Set ') == 0)
+											(item.Status.indexOf('Set ') == 0)||
+											(item.Status.indexOf('NightMode') == 0)||
+											(item.Status.indexOf('Disco ') == 0)
 										 ) {
 													itemImage='<img src="images/lightbulb.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowDevices);" class="lcursor">';
 									}
