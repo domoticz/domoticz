@@ -6506,6 +6506,9 @@ namespace http {
 			}
 			else if (cparam == "brightnessup")
 			{
+				root["status"] = "OK";
+                root["title"] = "Set brightness up!";
+
 				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
@@ -6522,6 +6525,9 @@ namespace http {
 			}
 			else if (cparam == "brightnessdown")
 			{
+				root["status"] = "OK";
+                root["title"] = "Set brightness down!";
+
 				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
@@ -6538,6 +6544,9 @@ namespace http {
 			}
 			else if (cparam == "discomode")
 			{
+				root["status"] = "OK";
+                root["title"] = "Set to last known disco mode!";
+
 				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
@@ -6552,8 +6561,32 @@ namespace http {
 
 				m_mainworker.SwitchLight(ID, "Disco Mode", 0, -1, false, 0);
 			}
+			else if (cparam.find("discomodenum") == 0 && cparam != "discomode" && cparam.size()==13)
+			{
+				root["status"] = "OK";
+                root["title"] = "Set to disco mode!";
+
+				std::string idx = request::findValue(&req, "idx");
+
+				if (idx == "")
+				{
+					return;
+				}
+
+				uint64_t ID;
+				std::stringstream s_strid;
+				s_strid << idx;
+				s_strid >> ID;
+
+				char szTmp[40];
+			    sprintf(szTmp,"Disco Mode %s",cparam.substr(12).c_str());
+				m_mainworker.SwitchLight(ID, szTmp, 0, -1, false, 0);
+			}
 			else if (cparam == "discoup")
 			{
+				root["status"] = "OK";
+				root["title"] = "Set to next disco mode!";
+
 				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
@@ -6570,6 +6603,9 @@ namespace http {
 			}
 			else if (cparam == "discodown")
 			{
+				root["status"] = "OK";
+				root["title"] = "Set to previous disco mode!";
+
 				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
@@ -6586,6 +6622,9 @@ namespace http {
 			}
 			else if (cparam == "speedup")
 			{
+				root["status"] = "OK";
+				root["title"] = "Set disco speed up!";
+
 				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
@@ -6602,6 +6641,10 @@ namespace http {
 			}
 			else if (cparam == "speeduplong")
 			{
+
+				root["status"] = "OK";
+                root["title"] = "Set speed long!";
+
 				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
@@ -6618,6 +6661,9 @@ namespace http {
 			}
 			else if (cparam == "speeddown")
 			{
+				root["status"] = "OK";
+				root["title"] = "Set disco speed down!";
+
 				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
@@ -6634,6 +6680,9 @@ namespace http {
 			}
 			else if (cparam == "warmer")
 			{
+				root["status"] = "OK";
+				root["title"] = "Set Kelvin up!";
+
 				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
@@ -6650,6 +6699,9 @@ namespace http {
 			}
 			else if (cparam == "cooler")
 			{
+				root["status"] = "OK";
+				root["title"] = "Set Kelvin down!";
+
 				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
@@ -6666,6 +6718,9 @@ namespace http {
 			}
 			else if (cparam == "fulllight")
 			{
+				root["status"] = "OK";
+				root["title"] = "Set Full!";
+
 				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
@@ -6682,6 +6737,9 @@ namespace http {
 			}
 			else if (cparam == "nightlight")
 			{
+				root["status"] = "OK";
+                root["title"] = "Set to nightlight!";
+
 				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
@@ -6695,6 +6753,25 @@ namespace http {
 				s_strid >> ID;
 
 				m_mainworker.SwitchLight(ID, "Set Night", 0, -1,false,0);
+			}
+			else if (cparam == "whitelight")
+			{
+				root["status"] = "OK";
+                root["title"] = "Set to clear white!";
+
+				std::string idx = request::findValue(&req, "idx");
+
+				if (idx == "")
+				{
+					return;
+				}
+
+				uint64_t ID;
+				std::stringstream s_strid;
+				s_strid << idx;
+				s_strid >> ID;
+
+				m_mainworker.SwitchLight(ID, "Set White", 0, -1,false,0);
 			}
 			else if (cparam == "getfloorplanimages")
 			{
