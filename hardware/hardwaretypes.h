@@ -474,7 +474,7 @@ typedef struct _tLimitlessLights {
 	uint8_t type;
 	uint8_t subtype;
 	uint32_t id;
-	uint8_t dunit; //0=All, 1=Group1,2=Group2,3=Group3,4=Group4
+	uint8_t dunit; //0=All, 1=Group1,2=Group2,3=Group3,4=Group4, 5=IboxLed
 	uint8_t command;
 	uint8_t value;
 	_tLimitlessLights()
@@ -513,6 +513,16 @@ typedef struct _tLimitlessLights {
 #define Limitless_FullBrightness 21
 #define Limitless_DiscoSpeedFasterLong 22 //exclude RGB
 #define Limitless_SetHEXColour 23
+#define Limitless_DiscoMode_1 24
+#define Limitless_DiscoMode_2 25
+#define Limitless_DiscoMode_3 26
+#define Limitless_DiscoMode_4 27
+#define Limitless_DiscoMode_5 28
+#define Limitless_DiscoMode_6 29
+#define Limitless_DiscoMode_7 30
+#define Limitless_DiscoMode_8 31
+#define Limitless_DiscoMode_9 32
+
 
 typedef union tREVOBUF {
 	struct _tEVOHOME1 {

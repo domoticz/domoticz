@@ -1476,6 +1476,39 @@ void GetLightStatus(
 		case Limitless_SetBrightnessLevel:
 			lstatus="Set Level";
 			break;
+		case Limitless_SetColorToWhite:
+			lstatus="Set to White";
+			break;
+		case Limitless_NightMode:
+			lstatus="NightMode";
+			break;
+		case Limitless_DiscoMode_1:
+			lstatus="Disco Mode 1";
+			break;
+		case Limitless_DiscoMode_2:
+			lstatus="Disco Mode 2";
+			break;
+		case Limitless_DiscoMode_3:
+			lstatus="Disco Mode 3";
+			break;
+		case Limitless_DiscoMode_4:
+			lstatus="Disco Mode 4";
+			break;
+		case Limitless_DiscoMode_5:
+			lstatus="Disco Mode 5";
+			break;
+		case Limitless_DiscoMode_6:
+			lstatus="Disco Mode 6";
+			break;
+		case Limitless_DiscoMode_7:
+			lstatus="Disco Mode 7";
+			break;
+		case Limitless_DiscoMode_8:
+			lstatus="Disco Mode 8";
+			break;
+		case Limitless_DiscoMode_9:
+			lstatus="Disco Mode 9";
+			break;
 		}
 		break;
 	case pTypeSecurity1:
@@ -2479,6 +2512,51 @@ bool GetLightCommand(
 			cmd = Limitless_DiscoMode;
 			return true;
 		}
+		else if (switchcmd == "Disco Mode 1")
+				{
+					cmd = Limitless_DiscoMode_1;
+					return true;
+				}
+		else if (switchcmd == "Disco Mode 2")
+				{
+					cmd = Limitless_DiscoMode_2;
+					return true;
+				}
+		else if (switchcmd == "Disco Mode 3")
+				{
+					cmd = Limitless_DiscoMode_3;
+					return true;
+				}
+		else if (switchcmd == "Disco Mode 4")
+				{
+					cmd = Limitless_DiscoMode_4;
+					return true;
+				}
+		else if (switchcmd == "Disco Mode 5")
+				{
+					cmd = Limitless_DiscoMode_5;
+					return true;
+				}
+		else if (switchcmd == "Disco Mode 6")
+				{
+					cmd = Limitless_DiscoMode_6;
+					return true;
+				}
+		else if (switchcmd == "Disco Mode 7")
+				{
+					cmd = Limitless_DiscoMode_7;
+					return true;
+				}
+		else if (switchcmd == "Disco Mode 8")
+				{
+					cmd = Limitless_DiscoMode_8;
+					return true;
+				}
+		else if (switchcmd == "Disco Mode 9")
+				{
+					cmd = Limitless_DiscoMode_9;
+					return true;
+				}
 		else if (switchcmd == "Disco Up")
 		{
 			cmd = Limitless_RGBDiscoNext;
