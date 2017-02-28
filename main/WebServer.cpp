@@ -5948,13 +5948,27 @@ namespace http {
 						return;
 					}
 				}
+				std::string sHashedUsername = base64_encode((const unsigned char*)username.c_str(), username.size()).c_str();
+
+				// Invalid user's sessions if username or password has changed
+				std::vector<std::vector<std::string> > result;
+				std::string sOldUsername;
+				std::string sOldPassword;
+				result = m_sql.safe_query("SELECT Username, Password FROM Users WHERE (ID == '%q')", idx.c_str());
+				if (result.size() == 1)
+				{
+					sOldUsername = result[0][0];
+					sOldPassword = result[0][1];
+				}
+				if ((sHashedUsername != sOldUsername) || (password != sOldPassword))
+					RemoveUsersSessions(sOldUsername, session);
 
 				root["status"] = "OK";
 				root["title"] = "UpdateUser";
 				m_sql.safe_query(
 					"UPDATE Users SET Active=%d, Username='%q', Password='%q', Rights=%d, RemoteSharing=%d, TabsEnabled=%d WHERE (ID == '%q')",
 					(senabled == "true") ? 1 : 0,
-					base64_encode((const unsigned char*)username.c_str(), username.size()).c_str(),
+					sHashedUsername.c_str(),
 					password.c_str(),
 					rights,
 					(sRemoteSharing == "true") ? 1 : 0,
@@ -5962,6 +5976,8 @@ namespace http {
 					idx.c_str()
 					);
 				LoadUsers();
+
+
 			}
 			else if (cparam == "deleteuser")
 			{
@@ -5977,6 +5993,15 @@ namespace http {
 
 				root["status"] = "OK";
 				root["title"] = "DeleteUser";
+
+				// Remove user's sessions
+				std::vector<std::vector<std::string> > result;
+				result = m_sql.safe_query("SELECT Username FROM Users WHERE (ID == '%q')", idx.c_str());
+				if (result.size() == 1)
+				{
+					RemoveUsersSessions(result[0][0], session);
+				}
+
 				m_sql.safe_query("DELETE FROM Users WHERE (ID == '%q')", idx.c_str());
 
 				m_sql.safe_query("DELETE FROM SharedDevices WHERE (SharedUserID == '%q')",
@@ -7300,6 +7325,17 @@ namespace http {
 			{
 				WebPassword = GenerateMD5Hash(WebPassword);
 			}
+
+			// Invalid sessions of WebUser when his username or password has been changed
+			int nUnusedValue = 0;
+			std::string sOldWebLogin;
+			std::string sOldWebPassword;
+			if (((m_sql.GetPreferencesVar("WebUserName", nUnusedValue, sOldWebLogin)) && (sOldWebLogin != WebUserName))
+			|| ((m_sql.GetPreferencesVar("WebPassword", nUnusedValue, sOldWebPassword)) && (sOldWebPassword != WebPassword)))
+			{
+				RemoveUsersSessions(sOldWebLogin, session);
+			}
+
 			m_sql.UpdatePreferencesVar("WebUserName", WebUserName.c_str());
 			m_sql.UpdatePreferencesVar("WebPassword", WebPassword.c_str());
 			m_sql.UpdatePreferencesVar("WebLocalNetworks", WebLocalNetworks.c_str());
@@ -16496,6 +16532,17 @@ namespace http {
 			//_log.Log(LOG_STATUS, "SessionStore : clean...");
 			m_sql.safe_query(
 					"DELETE FROM UserSessions WHERE ExpirationDate < datetime('now', 'localtime')");
+		}
+
+		/**
+		 * Delete all user's session, except the session used to modify the username or password.
+		 * username must have been hashed
+		 *
+		 * Note : on the WebUserName modification, this method will not delete the session, but the session will be deleted anyway
+		 * because the username will be unknown (see cWebemRequestHandler::checkAuthToken).
+		 */
+		void CWebServer::RemoveUsersSessions(const std::string& username, const WebEmSession & exceptSession) {
+			m_sql.safe_query("DELETE FROM UserSessions WHERE (Username=='%q') and (SessionID!='%q')", username.c_str(), exceptSession.id.c_str());
 		}
 
 	} //server
