@@ -2955,7 +2955,9 @@ define(['app'], function (app) {
 									(item.Status == 'On')||
 									(item.Status == 'Chime')||
 									(item.Status == 'Group On')||
-									(item.Status.indexOf('Set ') == 0)
+									(item.Status.indexOf('Set ') == 0)||
+									(item.Status.indexOf('NightMode') == 0)||
+									(item.Status.indexOf('Disco ') == 0)
 								   ) {
 										if (item.SubType=="RGB") {
 											xhtm+='\t      <td id="img"><img src="images/RGB48_On.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshLights\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="48" width="48"></td>\n';
