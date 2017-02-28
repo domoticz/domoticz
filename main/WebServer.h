@@ -146,6 +146,12 @@ private:
 	void Cmd_SaveFibaroLink(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DeleteFibaroLink(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetDevicesForFibaroLink(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_SaveInfluxLinkConfig(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_GetInfluxLinkConfig(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_GetInfluxLinks(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_SaveInfluxLink(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_DeleteInfluxLink(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_GetDevicesForInfluxLink(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetDeviceValueOptions(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetDeviceValueOptionWording(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DeleteUserVariable(WebEmSession & session, const request& req, Json::Value &root);
@@ -340,6 +346,7 @@ private:
 	void ZWaveCPGetTopo(WebEmSession & session, const request& req, reply & rep);
 	void ZWaveCPGetStats(WebEmSession & session, const request& req, reply & rep);
 	void ZWaveCPSetGroup(WebEmSession & session, const request& req, reply & rep);
+	void ZWaveCPSceneCommand(WebEmSession & session, const request& req, reply & rep);
 	void Cmd_ZWaveSetUserCodeEnrollmentMode(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_ZWaveGetNodeUserCodes(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_ZWaveRemoveUserCode(WebEmSession & session, const request& req, Json::Value &root);
