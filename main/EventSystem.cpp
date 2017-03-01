@@ -2919,9 +2919,20 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 		secstatusw = "Disarmed";
 	}
 
-	lua_createtable(lua_state, 1, 0);
+	std::stringstream lua_DirT;
+
+#ifdef WIN32
+	lua_DirT << szUserDataFolder << "scripts\\lua\\";
+#else
+	lua_DirT << szUserDataFolder << "scripts/lua/";
+#endif
+
+	lua_createtable(lua_state, 2, 0);
 	lua_pushstring(lua_state, "Security");
 	lua_pushstring(lua_state, secstatusw.c_str());
+	lua_rawset(lua_state, -3);
+	lua_pushstring(lua_state, "script_path");
+	lua_pushstring(lua_state, lua_DirT.str().c_str());
 	lua_rawset(lua_state, -3);
 	lua_setglobal(lua_state, "globalvariables");
 
