@@ -1917,7 +1917,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 		session.id = generateSessionID();
 		session.expires = session.timeout;
 		if (session.rememberme) {
-			// Extend session by a year
+			// Extend session by 30 days
 			session.expires += (86400 * 30);
 		}
 		session.auth_token = generateAuthToken(session, req); // do it after expires to save it also

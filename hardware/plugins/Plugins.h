@@ -18,7 +18,6 @@ namespace Plugins {
 
 		std::string		m_Username;
 		std::string		m_Password;
-		std::string		m_HomeFolder;
 		std::string		m_Version;
 		std::string		m_Author;
 
@@ -47,6 +46,8 @@ namespace Plugins {
 		CPluginProtocol*	m_pProtocol;
 		CPluginTransport*	m_pTransport;
 		void*				m_DeviceDict;
+		void*				m_ImageDict;
+		std::string			m_HomeFolder;
 		bool				m_bDebug;
 		bool				m_stoprequested;
 	};

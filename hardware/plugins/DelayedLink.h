@@ -253,7 +253,7 @@ namespace Plugins {
 						while (!shared_lib_ && (ent = readdir(lDir)) != NULL)
 						{
 							std::string filename = ent->d_name;
-							if (dirent_is_directory(szLibrary, ent) && (filename.length() > 2))
+							if ((ent->d_type == DT_DIR) && (filename.length() > 2))
 							{
 								std::string	newDir = szLibrary + filename + "/";
 								FindLibrary(newDir.c_str());

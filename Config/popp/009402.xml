@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+
+<!-- Popp: 10 Year Smoke Detector and Siren (POPE009402)
+
+Requires PCB 1.5 and firmware 1.14 (or higher)
+
+http://manuals-backend.z-wave.info/make.php?lang=en&sku=pope009402&type=popp
+
+-->
+
+	<!-- Configuration  -->
+	<CommandClass id="112">
+		<Value type="byte" genre="config" instance="1" index="1" label="Siren alarm sequence interval" size="1" min="6" max="127" value="10">
+			<Help>The additional siren is creating a different acoustic signal differentiate from the smoke alarm. This sound is partly on and partly off. This parameter defines the total length of the interval in seconds.</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="2" label="Siren alarm tone length" size="1" min="1" max="99" value="8">
+			<Help>The additional siren is creating a different acoustic signal differentiate from the smoke alarm. This sound is partly on and partly off. This parameter defines the total length of the sound versus silence within this interval. Please make sure this value is always smaller (shorter time) than parameter 1 that defines the whole sequence.</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="3" label="Value of On-Command" size="1" min="0" max="99" value="99">
+			<Help>This value is sent as BASIC Set to Association Group 3 when an Smoke Alarm occurs.</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="4" label="Value of Off-Command" size="1" min="0" max="99" value="99">
+			<Help>This value is sent as BASIC Set to Association Group 3 when an Smoke Alarm is cleared. </Help>
+		</Value>
+	</CommandClass>
+
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="3">
+			<Group index="1" max_associations="10" label="Lifeline"/>
+			<Group index="2" max_associations="10" label="Alarm Reports."/>
+			<Group index="3" max_associations="10" label="Switching Command"/>
+		</Associations>
+	</CommandClass>
+</Product>
+

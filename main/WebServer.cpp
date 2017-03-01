@@ -622,6 +622,7 @@ namespace http {
 			m_pWebEm->RegisterPageCode("/ozwcp/topopost.html", boost::bind(&CWebServer::ZWaveCPGetTopo, this, _1, _2, _3));
 			m_pWebEm->RegisterPageCode("/ozwcp/statpost.html", boost::bind(&CWebServer::ZWaveCPGetStats, this, _1, _2, _3));
 			m_pWebEm->RegisterPageCode("/ozwcp/grouppost.html", boost::bind(&CWebServer::ZWaveCPSetGroup, this, _1, _2, _3));
+			m_pWebEm->RegisterPageCode("/ozwcp/scenepost.html", boost::bind(&CWebServer::ZWaveCPSceneCommand, this, _1, _2, _3));
 			//
 			//pollpost.html
 			//scenepost.html
@@ -5947,13 +5948,27 @@ namespace http {
 						return;
 					}
 				}
+				std::string sHashedUsername = base64_encode((const unsigned char*)username.c_str(), username.size()).c_str();
+
+				// Invalid user's sessions if username or password has changed
+				std::vector<std::vector<std::string> > result;
+				std::string sOldUsername;
+				std::string sOldPassword;
+				result = m_sql.safe_query("SELECT Username, Password FROM Users WHERE (ID == '%q')", idx.c_str());
+				if (result.size() == 1)
+				{
+					sOldUsername = result[0][0];
+					sOldPassword = result[0][1];
+				}
+				if ((sHashedUsername != sOldUsername) || (password != sOldPassword))
+					RemoveUsersSessions(sOldUsername, session);
 
 				root["status"] = "OK";
 				root["title"] = "UpdateUser";
 				m_sql.safe_query(
 					"UPDATE Users SET Active=%d, Username='%q', Password='%q', Rights=%d, RemoteSharing=%d, TabsEnabled=%d WHERE (ID == '%q')",
 					(senabled == "true") ? 1 : 0,
-					base64_encode((const unsigned char*)username.c_str(), username.size()).c_str(),
+					sHashedUsername.c_str(),
 					password.c_str(),
 					rights,
 					(sRemoteSharing == "true") ? 1 : 0,
@@ -5961,6 +5976,8 @@ namespace http {
 					idx.c_str()
 					);
 				LoadUsers();
+
+
 			}
 			else if (cparam == "deleteuser")
 			{
@@ -5976,6 +5993,15 @@ namespace http {
 
 				root["status"] = "OK";
 				root["title"] = "DeleteUser";
+
+				// Remove user's sessions
+				std::vector<std::vector<std::string> > result;
+				result = m_sql.safe_query("SELECT Username FROM Users WHERE (ID == '%q')", idx.c_str());
+				if (result.size() == 1)
+				{
+					RemoveUsersSessions(result[0][0], session);
+				}
+
 				m_sql.safe_query("DELETE FROM Users WHERE (ID == '%q')", idx.c_str());
 
 				m_sql.safe_query("DELETE FROM SharedDevices WHERE (SharedUserID == '%q')",
@@ -6505,6 +6531,9 @@ namespace http {
 			}
 			else if (cparam == "brightnessup")
 			{
+				root["status"] = "OK";
+                root["title"] = "Set brightness up!";
+
 				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
@@ -6521,6 +6550,9 @@ namespace http {
 			}
 			else if (cparam == "brightnessdown")
 			{
+				root["status"] = "OK";
+                root["title"] = "Set brightness down!";
+
 				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
@@ -6537,6 +6569,9 @@ namespace http {
 			}
 			else if (cparam == "discomode")
 			{
+				root["status"] = "OK";
+                root["title"] = "Set to last known disco mode!";
+
 				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
@@ -6551,8 +6586,32 @@ namespace http {
 
 				m_mainworker.SwitchLight(ID, "Disco Mode", 0, -1, false, 0);
 			}
+			else if (cparam.find("discomodenum") == 0 && cparam != "discomode" && cparam.size()==13)
+			{
+				root["status"] = "OK";
+                root["title"] = "Set to disco mode!";
+
+				std::string idx = request::findValue(&req, "idx");
+
+				if (idx == "")
+				{
+					return;
+				}
+
+				uint64_t ID;
+				std::stringstream s_strid;
+				s_strid << idx;
+				s_strid >> ID;
+
+				char szTmp[40];
+			    sprintf(szTmp,"Disco Mode %s",cparam.substr(12).c_str());
+				m_mainworker.SwitchLight(ID, szTmp, 0, -1, false, 0);
+			}
 			else if (cparam == "discoup")
 			{
+				root["status"] = "OK";
+				root["title"] = "Set to next disco mode!";
+
 				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
@@ -6569,6 +6628,9 @@ namespace http {
 			}
 			else if (cparam == "discodown")
 			{
+				root["status"] = "OK";
+				root["title"] = "Set to previous disco mode!";
+
 				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
@@ -6585,6 +6647,9 @@ namespace http {
 			}
 			else if (cparam == "speedup")
 			{
+				root["status"] = "OK";
+				root["title"] = "Set disco speed up!";
+
 				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
@@ -6601,6 +6666,10 @@ namespace http {
 			}
 			else if (cparam == "speeduplong")
 			{
+
+				root["status"] = "OK";
+                root["title"] = "Set speed long!";
+
 				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
@@ -6617,6 +6686,9 @@ namespace http {
 			}
 			else if (cparam == "speeddown")
 			{
+				root["status"] = "OK";
+				root["title"] = "Set disco speed down!";
+
 				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
@@ -6633,6 +6705,9 @@ namespace http {
 			}
 			else if (cparam == "warmer")
 			{
+				root["status"] = "OK";
+				root["title"] = "Set Kelvin up!";
+
 				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
@@ -6649,6 +6724,9 @@ namespace http {
 			}
 			else if (cparam == "cooler")
 			{
+				root["status"] = "OK";
+				root["title"] = "Set Kelvin down!";
+
 				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
@@ -6665,6 +6743,9 @@ namespace http {
 			}
 			else if (cparam == "fulllight")
 			{
+				root["status"] = "OK";
+				root["title"] = "Set Full!";
+
 				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
@@ -6681,6 +6762,9 @@ namespace http {
 			}
 			else if (cparam == "nightlight")
 			{
+				root["status"] = "OK";
+                root["title"] = "Set to nightlight!";
+
 				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
@@ -6694,6 +6778,25 @@ namespace http {
 				s_strid >> ID;
 
 				m_mainworker.SwitchLight(ID, "Set Night", 0, -1,false,0);
+			}
+			else if (cparam == "whitelight")
+			{
+				root["status"] = "OK";
+                root["title"] = "Set to clear white!";
+
+				std::string idx = request::findValue(&req, "idx");
+
+				if (idx == "")
+				{
+					return;
+				}
+
+				uint64_t ID;
+				std::stringstream s_strid;
+				s_strid << idx;
+				s_strid >> ID;
+
+				m_mainworker.SwitchLight(ID, "Set White", 0, -1,false,0);
 			}
 			else if (cparam == "getfloorplanimages")
 			{
@@ -7222,6 +7325,17 @@ namespace http {
 			{
 				WebPassword = GenerateMD5Hash(WebPassword);
 			}
+
+			// Invalid sessions of WebUser when his username or password has been changed
+			int nUnusedValue = 0;
+			std::string sOldWebLogin;
+			std::string sOldWebPassword;
+			if (((m_sql.GetPreferencesVar("WebUserName", nUnusedValue, sOldWebLogin)) && (sOldWebLogin != WebUserName))
+			|| ((m_sql.GetPreferencesVar("WebPassword", nUnusedValue, sOldWebPassword)) && (sOldWebPassword != WebPassword)))
+			{
+				RemoveUsersSessions(sOldWebLogin, session);
+			}
+
 			m_sql.UpdatePreferencesVar("WebUserName", WebUserName.c_str());
 			m_sql.UpdatePreferencesVar("WebPassword", WebPassword.c_str());
 			m_sql.UpdatePreferencesVar("WebLocalNetworks", WebLocalNetworks.c_str());
@@ -16418,6 +16532,17 @@ namespace http {
 			//_log.Log(LOG_STATUS, "SessionStore : clean...");
 			m_sql.safe_query(
 					"DELETE FROM UserSessions WHERE ExpirationDate < datetime('now', 'localtime')");
+		}
+
+		/**
+		 * Delete all user's session, except the session used to modify the username or password.
+		 * username must have been hashed
+		 *
+		 * Note : on the WebUserName modification, this method will not delete the session, but the session will be deleted anyway
+		 * because the username will be unknown (see cWebemRequestHandler::checkAuthToken).
+		 */
+		void CWebServer::RemoveUsersSessions(const std::string& username, const WebEmSession & exceptSession) {
+			m_sql.safe_query("DELETE FROM UserSessions WHERE (Username=='%q') and (SessionID!='%q')", username.c_str(), exceptSession.id.c_str());
 		}
 
 	} //server
