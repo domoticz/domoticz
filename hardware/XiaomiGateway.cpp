@@ -439,7 +439,13 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 		if (is2ndchannel) {
 			xcmd.unitcode = 2;
 		}
-		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, NULL, -1);
+		int nvalue = atoi(result[0][0].c_str());
+		if (((bIsOn) && (nvalue == 0)) || ((bIsOn == false) && (nvalue == 1))) {
+			m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, NULL, -1);
+		}
+		else {
+			_log.Log(LOG_STATUS, "XiaomiGateway: not updating Domoticz for switch as no change from last state");
+		}
 	}
 }
 
