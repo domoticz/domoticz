@@ -99,6 +99,7 @@ namespace Plugins {
 		PyObject*	sValue;
 		int			Image;
 		PyObject*	Options;
+		int			Used;
 		CPlugin*	pPlugin;
 	} CDevice;
 
