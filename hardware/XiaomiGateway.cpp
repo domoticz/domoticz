@@ -568,9 +568,27 @@ void XiaomiGateway::Do_Work()
 {
 	_log.Log(LOG_STATUS, "XiaomiGateway: Worker started...");
 	boost::asio::io_service io_service;
+	try {
+		boost::asio::ip::udp::resolver resolver(io_service);
+		boost::asio::ip::udp::resolver::query query(boost::asio::ip::udp::v4(), m_GatewayIp, "");
+		boost::asio::ip::udp::resolver::iterator endpoints = resolver.resolve(query);
+		boost::asio::ip::udp::endpoint ep = *endpoints;
+		boost::asio::ip::udp::socket socket(io_service);
+		socket.connect(ep);
+		boost::asio::ip::address addr = socket.local_endpoint().address();
+		std::string compareIp = m_GatewayIp.substr(0, (m_GatewayIp.length() - 3));
+		std::size_t found = addr.to_string().find(compareIp);
+		if (found != std::string::npos) {
+			m_LocalIp = addr.to_string();
+			_log.Log(LOG_STATUS, "XiaomiGateway: Using %s for local IP address.", m_LocalIp.c_str());
+		}
+	}
+	catch (std::exception& e) {
+		std::cerr << "Could not deal with socket. Exception: " << e.what() << std::endl;
+	}
 
 	//find the local ip address that is similar to the xiaomi gateway
-	boost::asio::ip::tcp::resolver resolver(io_service);
+	/*boost::asio::ip::tcp::resolver resolver(io_service);
 	boost::asio::ip::tcp::resolver::query query(boost::asio::ip::host_name(), "");
 	boost::asio::ip::tcp::resolver::iterator it = resolver.resolve(query);
 	while (it != boost::asio::ip::tcp::resolver::iterator())
@@ -586,7 +604,7 @@ void XiaomiGateway::Do_Work()
 #endif
 			}
 		}
-	}
+	}*/
 
 	XiaomiGateway::xiaomi_udp_server udp_server(io_service, m_HwdID, m_GatewayIp, m_LocalIp, m_ListenPort9898, this);
 	boost::thread bt;
@@ -653,29 +671,38 @@ XiaomiGateway::xiaomi_udp_server::xiaomi_udp_server(boost::asio::io_service& io_
 	if (listenPort9898) {
 		try {
 			socket_.set_option(boost::asio::ip::udp::socket::reuse_address(true));
-			/* The following was causing some setups not to receive updates from devices, so have disabled.
-			if (m_localip != "") {
-				socket_.bind(boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(m_localip), 9898));
-#ifdef _DEBUG
-				_log.Log(LOG_STATUS, "XiaomiGateway: BINDING UDP TO SPECIFIC LOCAL IP %s", m_localip.c_str());
-#endif
+			if (m_localip != "" ) {
+				boost::system::error_code ec;
+				boost::asio::ip::address listen_addr = boost::asio::ip::address::from_string(m_localip, ec);
+				boost::asio::ip::address mcast_addr = boost::asio::ip::address::from_string("224.0.0.50", ec);
+				boost::asio::ip::udp::endpoint listen_endpoint(mcast_addr, 9898);
+
+				socket_.bind(boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 9898));
+				boost::shared_ptr<std::string> message(new std::string("{\"cmd\":\"whois\"}"));
+				boost::asio::ip::udp::endpoint remote_endpoint;
+				remote_endpoint = boost::asio::ip::udp::endpoint(mcast_addr, 4321);
+				socket_.send_to(boost::asio::buffer(*message), remote_endpoint);
+				socket_.set_option(boost::asio::ip::multicast::join_group(mcast_addr.to_v4(), listen_addr.to_v4()), ec);
+				socket_.bind(listen_endpoint, ec);
+				start_receive();
 			}
 			else {
 				socket_.bind(boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 9898));
-			}*/
-			socket_.bind(boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 9898));
-			boost::shared_ptr<std::string> message(new std::string("{\"cmd\":\"whois\"}"));
-			boost::asio::ip::udp::endpoint remote_endpoint;
-			remote_endpoint = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string("224.0.0.50"), 4321);
-			socket_.send_to(boost::asio::buffer(*message), remote_endpoint);
+				boost::shared_ptr<std::string> message(new std::string("{\"cmd\":\"whois\"}"));
+				boost::asio::ip::udp::endpoint remote_endpoint;
+				remote_endpoint = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string("224.0.0.50"), 4321);
+				socket_.send_to(boost::asio::buffer(*message), remote_endpoint);
+				socket_.set_option(boost::asio::ip::multicast::join_group(boost::asio::ip::address::from_string("224.0.0.50")));
+				start_receive();
+			}
 		}
 		catch (const boost::system::system_error& ex) {
 			_log.Log(LOG_ERROR, "XiaomiGateway: %s", ex.code().category().name());
 			m_XiaomiGateway->StopHardware();
 			return;
 		}
-		socket_.set_option(boost::asio::ip::multicast::join_group(boost::asio::ip::address::from_string("224.0.0.50")));
-		start_receive();
+		//socket_.set_option(boost::asio::ip::multicast::join_group(boost::asio::ip::address::from_string("224.0.0.50")));
+		//start_receive();
 	}
 	else {
 		_log.Log(LOG_STATUS, "XiaomiGateway: NOT LISTENING TO UDP FOR HARDWARE ID %d", m_HwdID);
