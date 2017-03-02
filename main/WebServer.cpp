@@ -7606,9 +7606,10 @@ namespace http {
 			m_sql.UpdatePreferencesVar("OneWireSwitchPollPeriod", atoi(request::findValue(&req, "OneWireSwitchPollPeriod").c_str()));
 
 			m_notifications.LoadConfig();
-
+#ifdef USE_PYTHON_PLUGINS
 			//Signal plugins to update Settings dictionary
 			PluginLoadConfig();
+#endif
 		}
 
 		void CWebServer::RestoreDatabase(WebEmSession & session, const request& req, std::string & redirect_uri)
