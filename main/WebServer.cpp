@@ -7577,6 +7577,8 @@ namespace http {
 
 			m_notifications.LoadConfig();
 
+			//Signal plugins to update Settings dictionary
+			PluginLoadConfig();
 		}
 
 		void CWebServer::RestoreDatabase(WebEmSession & session, const request& req, std::string & redirect_uri)

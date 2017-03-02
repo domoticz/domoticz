@@ -545,7 +545,8 @@ namespace Plugins {
 		m_bDebug(false),
 		m_PyInterpreter(NULL),
 		m_PyModule(NULL),
-		m_DeviceDict(NULL)
+		m_DeviceDict(NULL),
+		m_SettingsDict(NULL)
 	{
 		m_HwdID = HwdID;
 		Name = sName;
@@ -953,6 +954,9 @@ namespace Plugins {
 					PluginMessageQueue.push(DisconnectMessage);
 				}
 				break;
+			case PDT_Settings:
+				LoadSettings();
+				break;
 			default:
 				_log.Log(LOG_ERROR, "(%s) Unknown directive type in message: %d.", Name.c_str(), Message.m_Directive);
 				return;
@@ -1245,7 +1249,7 @@ namespace Plugins {
 				m_Password = sd[5];
 			}
 		}
-		
+
 		m_DeviceDict = PyDict_New();
 		if (PyDict_SetItemString(pModuleDict, "Devices", (PyObject*)m_DeviceDict) == -1)
 		{
@@ -1254,7 +1258,7 @@ namespace Plugins {
 		}
 
 		// load associated devices to make them available to python
-		result = m_sql.safe_query("SELECT Unit FROM DeviceStatus WHERE (HardwareID==%d) AND (Used==1) ORDER BY Unit ASC", m_HwdID);
+		result = m_sql.safe_query("SELECT Unit FROM DeviceStatus WHERE (HardwareID==%d) ORDER BY Unit ASC", m_HwdID);
 		if (result.size() > 0)
 		{
 			PyType_Ready(&CDeviceType);
@@ -1276,6 +1280,7 @@ namespace Plugins {
 				pDevice->Unit = atoi(sd[0].c_str());
 				CDevice_refresh(pDevice);
 				Py_DECREF(pDevice);
+				Py_DECREF(pKey);
 			}
 		}
 
@@ -1303,18 +1308,66 @@ namespace Plugins {
 					_log.Log(LOG_ERROR, "(%s) failed to add ID '%s' to image dictionary.", m_PluginKey.c_str(), sd[0].c_str());
 					return false;
 				}
-				pImage->ImageID = atoi(sd[0].c_str())+100;
+				pImage->ImageID = atoi(sd[0].c_str()) + 100;
 				pImage->Base = PyUnicode_FromString(sd[1].c_str());
 				pImage->Name = PyUnicode_FromString(sd[2].c_str());
 				pImage->Description = PyUnicode_FromString(sd[3].c_str());
 				Py_DECREF(pImage);
+				Py_DECREF(pKey);
 			}
 		}
+
+		LoadSettings();
 
 		m_bIsStarted = true;
 		return true;
 	}
-	
+
+	bool CPlugin::LoadSettings()
+	{
+		PyObject* pModuleDict = PyModule_GetDict((PyObject*)m_PyModule);  // returns a borrowed referece to the __dict__ object for the module
+		if (m_SettingsDict) Py_XDECREF(m_SettingsDict);
+		m_SettingsDict = PyDict_New();
+		if (PyDict_SetItemString(pModuleDict, "Settings", (PyObject*)m_SettingsDict) == -1)
+		{
+			_log.Log(LOG_ERROR, "(%s) failed to add Settings dictionary.", m_PluginKey.c_str());
+			return false;
+		}
+
+		// load associated settings to make them available to python
+		std::vector<std::vector<std::string> > result;
+		result = m_sql.safe_query("SELECT Key, nValue, sValue FROM Preferences");
+		if (result.size() > 0)
+		{
+			PyType_Ready(&CDeviceType);
+			// Add settings strings into the settings dictionary with Unit as the key
+			for (std::vector<std::vector<std::string> >::const_iterator itt = result.begin(); itt != result.end(); ++itt)
+			{
+				std::vector<std::string> sd = *itt;
+
+				PyObject*	pKey = PyUnicode_FromString(sd[0].c_str());
+				PyObject*	pValue = NULL;
+				if (sd[2].length())
+				{
+					pValue = PyUnicode_FromString(sd[2].c_str());
+				}
+				else
+				{
+					pValue = PyUnicode_FromString(sd[1].c_str());
+				}
+				if (PyDict_SetItem((PyObject*)m_SettingsDict, pKey, pValue))
+				{
+					_log.Log(LOG_ERROR, "(%s) failed to add setting '%s' to settings dictionary.", m_PluginKey.c_str(), sd[0].c_str());
+					return false;
+				}
+				Py_XDECREF(pValue);
+				Py_XDECREF(pKey);
+			}
+		}
+
+		return true;
+	}
+
 	bool CPlugin::WriteToHardware(const char *pdata, const unsigned char length)
 	{
 		return true;
