@@ -37,6 +37,7 @@ License: Public domain
 #define OPENWEBNET_LIGHT                "LIGHT"
 #define OPENWEBNET_TEMPERATURE          "TEMPERATURE"
 #define OPENWEBNET_AUXILIARY            "AUXILIARY"
+#define OPENWEBNET_DRY_CONTACT			"DRYCONTACT"
 
 /**
     Create new hardware OpenWebNet instance
@@ -505,6 +506,14 @@ void COpenWebNetTCP::UpdateSwitch(const int who, const int where, const int what
 	    int slevel = atoi(result[0][1].c_str());
         if ((what > 1) && (nvalue != gswitch_sOff) && (slevel == level)) return; // Already ON/LEVEL at x%
     }
+	else if (who == WHO_DRY_CONTACT_IR_DETECTION)
+	{
+		// Special insert to set SwitchType = STYPE_Contact
+		// so we have a correct contact device
+		m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Name, Used) "
+			"VALUES (%d,'%s', %d,%d,%d,%d,'%q',0)",
+			m_HwdID, szIdx, unit, pTypeGeneralSwitch, subtype, STYPE_Contact, devname);
+	}
 
     _tGeneralSwitch gswitch;
     gswitch.subtype = subtype;
@@ -528,6 +537,9 @@ void COpenWebNetTCP::UpdateSwitch(const int who, const int where, const int what
     sDecodeRXMessage(this, (const unsigned char *)&gswitch, devname, BatteryLevel);
 }
 
+/**
+	Insert/Update device
+**/
 void COpenWebNetTCP::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
 {
     string who = iter->Extract_who();
@@ -680,7 +692,32 @@ void COpenWebNetTCP::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
 			//pTypeGeneralSwitch, sSwitchAuxiliaryT1
             UpdateSwitch(WHO_AUXILIARY, atoi(where.c_str()), atoi(what.c_str()), atoi(sInterface.c_str()), 100, devname.c_str(), sSwitchAuxiliaryT1);
             break;
+		case WHO_DRY_CONTACT_IR_DETECTION:              // 25
+			if (!iter->IsNormalFrame())
+			{
+				_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s not normal frame! -> frame_type=%d", who.c_str(), iter->frame_type);
+				return;
+			}
 
+			if (where.substr(0, 1) != "3")
+			{
+				_log.Log(LOG_ERROR, "COpenWebNetTCP: Where=%s is not correct for who=%s", where.c_str()), who.c_str();
+				return;
+			}
+
+			devname = OPENWEBNET_DRY_CONTACT;
+			devname += " " + where.substr(1);
+			iWhere = atoi(where.substr(1).c_str());
+
+			iAppValue = atoi(what.c_str());
+			if (iAppValue == DRY_CONTACT_IR_DETECTION_WHAT_ON) // What = 1000 (Command translation)
+				iAppValue = 1;
+			else
+				iAppValue = 0;
+
+			//pTypeGeneralSwitch, sSwitchGeneralSwitch
+			UpdateSwitch(WHO_DRY_CONTACT_IR_DETECTION, iWhere, iAppValue, atoi(sInterface.c_str()), 255, devname.c_str(), sSwitchContactT1);
+			break;
         case WHO_SCENARIO:                              // 0
         case WHO_LOAD_CONTROL:                          // 3
         case WHO_DOOR_ENTRY_SYSTEM:                     // 6
@@ -692,7 +729,6 @@ void COpenWebNetTCP::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
         case WHO_SCENARIO_PROGRAMMING:                  // 17
         case WHO_ENERGY_MANAGEMENT:                     // 18
         case WHO_LIHGTING_MANAGEMENT:                   // 24
-        case WHO_SCENARIO_SCHEDULER_BUTTONS:            // 25
         case WHO_DIAGNOSTIC:                            // 1000
         case WHO_AUTOMATIC_DIAGNOSTIC:                  // 1001
         case WHO_THERMOREGULATION_DIAGNOSTIC_FAILURES:  // 1004
@@ -791,6 +827,9 @@ bool COpenWebNetTCP:: WriteToHardware(const char *pdata, const unsigned char len
                     break;
             }
             break;
+		case sSwitchContactT1:
+			// Dry Contact / IR Detection
+			return(false); // can't write a contact
         case pTypeThermostat:
             // Test Thermostat subtype
             switch(subtype){
@@ -885,21 +924,22 @@ bool COpenWebNetTCP::sendCommand(bt_openwebnet& command, vector<bt_openwebnet>& 
 
 	if (waitForResponse > 0) {
 		sleep_seconds(waitForResponse);
+
+		char responseBuffer[OPENWEBNET_BUFFER_SIZE];
+		memset(responseBuffer, 0, OPENWEBNET_BUFFER_SIZE);
+		int read = commandSocket->read(responseBuffer, OPENWEBNET_BUFFER_SIZE, false);
+
+		if (!silent) {
+			_log.Log(LOG_STATUS, "COpenWebNetTCP: sent=%s received=%s", command.frame_open.c_str(), responseBuffer);
+		}
+
+		if (commandSocket->getState() != csocket::CLOSED)
+			commandSocket->close();
+
+		boost::lock_guard<boost::mutex> l(readQueueMutex);
+		return ParseData(responseBuffer, read, response);
 	}
-
-	char responseBuffer[OPENWEBNET_BUFFER_SIZE];
-	memset(responseBuffer, 0, OPENWEBNET_BUFFER_SIZE);
-	int read = commandSocket->read(responseBuffer, OPENWEBNET_BUFFER_SIZE, false);
-
-	if (!silent) {
-		_log.Log(LOG_STATUS, "COpenWebNetTCP: sent=%s received=%s", command.frame_open.c_str(), responseBuffer);
-	}
-
-    if (commandSocket->getState() != csocket::CLOSED)
-        commandSocket->close();
-
-    boost::lock_guard<boost::mutex> l(readQueueMutex);
-	return ParseData(responseBuffer, read, response);
+	return(true);
 }
 
 /**
@@ -955,6 +995,21 @@ void COpenWebNetTCP::requestBurglarAlarmStatus()
 }
 
 /**
+	request Dry contact/IR Detection alarm status
+**/
+void COpenWebNetTCP::requestDryContactIRDetectionStatus()
+{
+	bt_openwebnet request;
+	vector<bt_openwebnet> responses;
+	stringstream whoStr;
+	stringstream whereStr;
+	whoStr << WHO_DRY_CONTACT_IR_DETECTION;
+	whereStr << 30;
+	request.CreateStateMsgOpen(whoStr.str(), whereStr.str());
+	sendCommand(request, responses, 0, false);
+}
+
+/**
     Request time to gateway
 **/
 void COpenWebNetTCP::requestTime()
@@ -982,6 +1037,8 @@ void COpenWebNetTCP::scan_device()
 		_log.Log(LOG_STATUS, "COpenWebNetTCP: scanning automation/lighting...");
 		// Scan of all devices
 		scan_automation_lighting(WHERE_CEN_0);
+
+		requestDryContactIRDetectionStatus();
 
 		_log.Log(LOG_STATUS, "COpenWebNetTCP: request burglar alarm status...");
 		requestBurglarAlarmStatus();
@@ -1039,7 +1096,8 @@ void COpenWebNetTCP::Do_Work()
 		// every 5 minuts force scan ALL devices for refresh status
 		if ((mytime(NULL) - LastScanTime) > 300)
 		{
-			_log.Log(LOG_STATUS, "COpenWebNetTCP: HEARTBEAT set scan devices ...");
+			if ((mask_request_status & 0x1) == 0)
+				_log.Log(LOG_STATUS, "COpenWebNetTCP: HEARTBEAT set scan devices ...");
 			mask_request_status = 0x1; // force scan devices
 		}
 
@@ -1089,6 +1147,11 @@ bool COpenWebNetTCP::FindDevice(int who, int where, int iInterface, int* used)
 			subType = sSwitchAuxiliaryT1;
 			sprintf(szIdx, "%02X%02X%02X%02X", ID1, ID2, ID3, ID4);
             break;
+		case WHO_DRY_CONTACT_IR_DETECTION:              // 25
+			devType = pTypeGeneralSwitch;
+			subType = sSwitchContactT1;
+			sprintf(szIdx, "%02X%02X%02X%02X", ID1, ID2, ID3, ID4);
+			break;
         case WHO_SCENARIO:                              // 0
 		case WHO_LOAD_CONTROL:                          // 3
 		case WHO_BURGLAR_ALARM:                         // 5
@@ -1101,7 +1164,6 @@ bool COpenWebNetTCP::FindDevice(int who, int where, int iInterface, int* used)
 		case WHO_SCENARIO_PROGRAMMING:                  // 17
 		case WHO_ENERGY_MANAGEMENT:                     // 18
 		case WHO_LIHGTING_MANAGEMENT:                   // 24
-		case WHO_SCENARIO_SCHEDULER_BUTTONS:            // 25
 		case WHO_DIAGNOSTIC:                            // 1000
 		case WHO_AUTOMATIC_DIAGNOSTIC:                  // 1001
 		case WHO_THERMOREGULATION_DIAGNOSTIC_FAILURES:  // 1004
@@ -1110,7 +1172,7 @@ bool COpenWebNetTCP::FindDevice(int who, int where, int iInterface, int* used)
 			return false;
 	}
 
-    if ((who == WHO_LIGHTING) || (who == WHO_AUTOMATION) || (who == WHO_TEMPERATURE_CONTROL) || (who == WHO_AUXILIARY))
+    if ((who == WHO_LIGHTING) || (who == WHO_AUTOMATION) || (who == WHO_TEMPERATURE_CONTROL) || (who == WHO_AUXILIARY) || (who == WHO_DRY_CONTACT_IR_DETECTION))
     {
         if (used != NULL)
         {
