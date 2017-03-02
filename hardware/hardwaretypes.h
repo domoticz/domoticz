@@ -224,7 +224,9 @@
 #define sTypeP1Gas		0x02
 
 #define pTypeP1Voltage	0xFF
-#define sTypeP1Voltage	0x03
+#define sTypeP1VoltageL1	0x03
+#define sTypeP1VoltageL2	0x04
+#define sTypeP1VoltageL3	0x05
 
 #define pTypeYouLess	0xFC
 #define sTypeYouLess	0x01
@@ -483,7 +485,7 @@ typedef struct _tP1Voltage {
 	{
 		len = sizeof(_tP1Voltage) - 1;
 		type = pTypeP1Voltage;
-		subtype = sTypeP1Voltage;
+		subtype = sTypeP1VoltageL1;
 		ID = 1;
 	}
 } P1Voltage;

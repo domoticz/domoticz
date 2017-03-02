@@ -123,17 +123,17 @@ void P1MeterBase::Init()
 
 	m_p1voltagel1.len=sizeof(P1Voltage)-1;
 	m_p1voltagel1.type=pTypeP1Voltage;
-	m_p1voltagel1.subtype=sTypeP1Voltage;
+	m_p1voltagel1.subtype=sTypeP1VoltageL1;
 	m_p1voltagel1.ID=1;
 
 	m_p1voltagel2.len=sizeof(P1Voltage)-1;
 	m_p1voltagel2.type=pTypeP1Voltage;
-	m_p1voltagel2.subtype=sTypeP1Voltage+1;
+	m_p1voltagel2.subtype=sTypeP1VoltageL2;
 	m_p1voltagel2.ID=1;
 
 	m_p1voltagel3.len=sizeof(P1Voltage)-1;
 	m_p1voltagel4.type=pTypeP1Voltage;
-	m_p1voltagel3.subtype=sTypeP1Voltage+2;
+	m_p1voltagel3.subtype=sTypeP1VoltageL3;
 	m_p1voltagel3.ID=1;
 }
 

@@ -9251,9 +9251,18 @@ void MainWorker::decode_P1MeterVoltage(const int HwdID, const _eHardwareTypes Hw
 		WriteMessageStart();
 		switch (p1Voltage->subtype)
 		{
-		case sTypeP1Voltage:
-			WriteMessage("subtype       = P1 Smart Meter Voltage");
-
+		case sTypeP1VoltageL1:
+			WriteMessage("subtype       = P1 Smart Meter Voltage L1");
+			sprintf(szTmp,"voltage = %.1f V", float(p1Voltage->voltage));
+			WriteMessage(szTmp);
+			break;
+		case sTypeP1VoltageL2:
+			WriteMessage("subtype       = P1 Smart Meter Voltage L2");
+			sprintf(szTmp,"voltage = %.1f V", float(p1Voltage->voltage));
+			WriteMessage(szTmp);
+			break;
+		case sTypeP1VoltageL3:
+			WriteMessage("subtype       = P1 Smart Meter Voltage L3");
 			sprintf(szTmp,"voltage = %.1f V", float(p1Voltage->voltage));
 			WriteMessage(szTmp);
 			break;

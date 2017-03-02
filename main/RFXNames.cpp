@@ -678,7 +678,9 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 
 		{ pTypeP1Power, sTypeP1Power, "Energy" },
 		{ pTypeP1Gas, sTypeP1Gas, "Gas" },
-		{ pTypeP1Voltage, sTypeP1Voltage, "Voltage" },
+		{ pTypeP1Voltage, sTypeP1VoltageL1, "Voltage" },
+		{ pTypeP1Voltage, sTypeP1VoltageL2, "Voltage" },
+		{ pTypeP1Voltage, sTypeP1VoltageL3, "Voltage" },
 
 		{ pTypeYouLess, sTypeYouLess, "YouLess counter" },
 
