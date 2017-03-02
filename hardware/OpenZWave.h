@@ -70,6 +70,8 @@ public:
 		int								tFanMode;
 		std::vector<string>				tModes;
 		std::vector<string>				tFanModes;
+
+		int								m_LastAlarmTypeReceived;
 	}NodeInfo;
 
 	COpenZWave(const int ID, const std::string& devname);

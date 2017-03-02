@@ -146,7 +146,6 @@ unsigned char GetIndexFromAlarmType(const std::string &sLabel)
 	return -1;
 }
 
-
 #pragma warning(disable: 4996)
 
 extern std::string szStartupFolder;
@@ -357,7 +356,6 @@ COpenZWave::COpenZWave(const int ID, const std::string& devname) :
 	m_pManager = NULL;
 	m_bNeedSave = false;
 	m_bAeotecBlinkingMode = false;
-	m_LastAlarmTypeReceived = -1;
 }
 
 
@@ -542,11 +540,14 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		nodeInfo.Product_type = pManager->GetNodeProductType(_homeID, _nodeID);
 		nodeInfo.Product_id = pManager->GetNodeProductId(_homeID, _nodeID);
 		nodeInfo.Product_name = pManager->GetNodeProductName(_homeID, _nodeID);
+
 		nodeInfo.tClockDay = -1;
 		nodeInfo.tClockHour = -1;
 		nodeInfo.tClockMinute = -1;
 		nodeInfo.tMode = -1;
 		nodeInfo.tFanMode = -1;
+
+		nodeInfo.m_LastAlarmTypeReceived = -1;
 
 		if ((_homeID == m_controllerID) && (_nodeID == m_controllerNodeId))
 			nodeInfo.eState = NSTATE_AWAKE;	//controller is always awake
@@ -1295,7 +1296,7 @@ bool COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 	bool bHandleAsBinary = false;
 	if ((value == 0) || (value == 255))
 	{
-		if (pDevice->Manufacturer_id == 0x010f) 
+		if (pDevice->Manufacturer_id == 0x010f)
 		{
 			if (
 				((pDevice->Product_id == 0x1000) && (pDevice->Product_type == 0x0203)) ||
@@ -2427,9 +2428,9 @@ void COpenZWave::UpdateNodeScene(const OpenZWave::ValueID &vID, int SceneID)
 	pDevice->lastreceived = atime;
 	pDevice->sequence_number += 1;
 	if (pDevice->sequence_number == 0)
-pDevice->sequence_number = 1;
-if (pDevice->bValidValue)
-SendDevice2Domoticz(pDevice);
+		pDevice->sequence_number = 1;
+	if (pDevice->bValidValue)
+		SendDevice2Domoticz(pDevice);
 }
 
 void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
@@ -2532,23 +2533,6 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 		instance = GetIndexFromAlarm(vLabel);
 		if (instance == 0)
 			return;
-		if (commandclass == COMMAND_CLASS_SENSOR_ALARM)
-		{
-			if (vLabel == "Alarm Level")
-			{
-				//Alarm Level
-				if (byteValue == 0)
-				{
-					//Secure
-					_log.Log(LOG_STATUS, "OpenZWave: Alarm Level: Secure");
-				}
-				else
-				{
-					//Tamper
-					_log.Log(LOG_STATUS, "OpenZWave: Alarm Level: Tamper");
-				}
-			}
-		}
 	}
 
 	time_t atime = mytime(NULL);
@@ -2592,7 +2576,6 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 
 		sstr << "." << scaleID;
 	}
-
 	std::string path = sstr.str();
 
 #ifdef DEBUG_ZWAVE_INT
@@ -2843,8 +2826,8 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 				{
 					if (byteValue != 0)
 					{
+						pNode->m_LastAlarmTypeReceived = byteValue;
 						m_LastAlarmTypeReceived = byteValue;
-						return;
 					}
 					else
 						m_LastAlarmTypeReceived = -1;
@@ -2855,13 +2838,14 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 				NodeInfo *pNode = GetNodeInfo(HomeID, NodeID);
 				if (pNode)
 				{
-					if (m_LastAlarmTypeReceived != -1)
+					if (pNode->m_LastAlarmTypeReceived != -1)
 					{
 						//Until we figured out what types/levels we have, we create a switch for each of them
 						char szDeviceName[50];
-						sprintf(szDeviceName, "Alarm Type: 0x%02X", m_LastAlarmTypeReceived);
+						sprintf(szDeviceName, "Alarm Type: 0x%02X", pNode->m_LastAlarmTypeReceived);
 						std::string tmpstr = szDeviceName;
-						SendSwitch(NodeID, m_LastAlarmTypeReceived, pDevice->batValue, (byteValue != 0) ? true : false, 0, tmpstr);
+						SendSwitch(NodeID, pNode->m_LastAlarmTypeReceived, pDevice->batValue, (byteValue != 0) ? true : false, 0, tmpstr);
+						pNode->m_LastAlarmTypeReceived = -1;
 						m_LastAlarmTypeReceived = -1;
 					}
 				}
@@ -2917,13 +2901,13 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 				{
 					switch (byteValue) {
 					case 0x00: 	// Previous Events cleared
+					case 0x06:	//Keypad unlock/Arm Home
 					case 0x17: 	// Door closed
 					case 0xfe:	// Unkown event; returned when retrieving the current state.
-					case 0x06:	// Arm Home/Keypad Unlock
 						intValue = 0;
 						break;
 
-					case 0x05:	// Arm Away/Keypad Lock
+					case 0x05:	//Keypad Lock/Arm Away
 					case 0x16: 	// Door open
 					default:	// all others, interpret as alarm
 						intValue = 255;
@@ -2962,8 +2946,8 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 						SendSwitch(NodeID, byteValue, pDevice->batValue, true, 0, tmpstr);
 					}
 				}
-				pDevice->intvalue = intValue;
 			}
+			pDevice->intvalue = intValue;
 		}
 		else if (vLabel == "Open")
 		{

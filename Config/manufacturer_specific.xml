@@ -189,6 +189,7 @@
 		<Product type="0006" id="0200" name="Energy Switch" config="BeNext/EnergySwitch.xml"/>
 		<Product type="0007" id="0100" name="Tag Reader" config="BeNext/TagReader.xml"/>
 		<Product type="0007" id="0101" name="Tag Reader" config="BeNext/TagReader.xml"/>
+		<Product type="0007" id="0200" name="Tag Reader 500" config="BeNext/TagReader500.xml"/>
 		<Product type="0008" id="0101" name="Power Switch"/>
 		<Product type="000d" id="0100" name="Built-in Dimmer" config="BeNext/BuiltinDimmer.xml"/>
 		<Product type="0014" id="0100" name="Panic Button" config="BeNext/PanicButton.xml"/>
