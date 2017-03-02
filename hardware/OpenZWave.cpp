@@ -2919,9 +2919,11 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 					case 0x00: 	// Previous Events cleared
 					case 0x17: 	// Door closed
 					case 0xfe:	// Unkown event; returned when retrieving the current state.
+					case 0x06:	// Arm Home/Keypad Unlock
 						intValue = 0;
 						break;
 
+					case 0x05:	// Arm Away/Keypad Lock
 					case 0x16: 	// Door open
 					default:	// all others, interpret as alarm
 						intValue = 255;
