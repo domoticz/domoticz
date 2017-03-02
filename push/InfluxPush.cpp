@@ -195,7 +195,7 @@ void CInfluxPush::Do_Work()
 			if (m_bInfluxDebugActive) {
 				_log.Log(LOG_NORM, "InfluxLink: value %s", sziData.str().c_str());
 			}
-			sziData << " " << (itt->stimestamp * 1000000000);
+			//sziData << " " << (itt->stimestamp * 1000000000);
 			if (!sSendData.empty())
 				sSendData += "\n";
 			sSendData += sziData.str();

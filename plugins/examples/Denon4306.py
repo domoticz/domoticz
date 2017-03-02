@@ -6,7 +6,7 @@
 #   Mode3 ("Sources") needs to have '|' delimited names of sources that the Denon knows about.  The Selector can be changed afterwards to any  text and the plugin will still map to the actual Denon name.
 #
 """
-<plugin key="Denon4306" version="2.1.0" name="Denon AVR 4306 Amplifier" author="dnpwwo" wikilink="" externallink="http://www.denon.co.uk/uk">
+<plugin key="Denon4306" version="2.2.0" name="Denon AVR 4306 Amplifier" author="dnpwwo" wikilink="" externallink="http://www.denon.co.uk/uk">
     <params>
         <param field="Address" label="IP Address" width="200px" required="true" default="127.0.0.1"/>
         <param field="Port" label="Port" width="30px" required="true" default="23"/>
@@ -67,45 +67,47 @@ def onStart():
     LevelActions = '|'*Parameters["Mode3"].count('|')
     # if Zone 3 required make sure at least themain device exists, otherwise suppress polling for it
     if (Parameters["Mode1"] > "2"):
-        if (5 not in Devices):
-            Domoticz.Device(Name="Zone 3", Unit=5, TypeName="Selector Switch", Switchtype=18, Image=5, \
+        if (6 not in Devices):
+            Domoticz.Device(Name="Zone 3", Unit=6, TypeName="Selector Switch", Switchtype=18, Image=5, \
                             Options="LevelActions:"+stringToBase64(LevelActions)+";LevelNames:"+stringToBase64(Parameters["Mode3"])+";LevelOffHidden:ZmFsc2U=;SelectorStyle:MQ==").Create()
-            if (6 not in Devices): Domoticz.Device(Name="Volume 3", Unit=6, Type=244, Subtype=73, Switchtype=7,  Image=8).Create()
+            if (7 not in Devices): Domoticz.Device(Name="Volume 3", Unit=7, Type=244, Subtype=73, Switchtype=7,  Image=8).Create()
             Domoticz.Log("Created Zone 3 device(s) because zone requested in hardware setup but device not found.")
         else:
-            zone3Source = Devices[5].nValue
-            if (6 in Devices): zone3Volume = int(Devices[6].sValue)
+            zone3Source = Devices[6].nValue
+            if (7 in Devices): zone3Volume = int(Devices[7].sValue)
     else:
         pollingDict.pop("Z3")
         pollingDict["Z2"] = "PW?\r"
+    
     # if Zone 2 required make sure at least themain device exists, otherwise suppress polling for it
     if (Parameters["Mode1"] > "1"):
-        if (3 not in Devices):
-            Domoticz.Device(Name="Zone 2", Unit=3, TypeName="Selector Switch", Switchtype=18, Image=5, \
+        if (4 not in Devices):
+            Domoticz.Device(Name="Zone 2", Unit=4, TypeName="Selector Switch", Switchtype=18, Image=5, \
                             Options="LevelActions:"+stringToBase64(LevelActions)+";LevelNames:"+stringToBase64(Parameters["Mode3"])+";LevelOffHidden:ZmFsc2U=;SelectorStyle:MQ==").Create()
-            if (4 not in Devices): Domoticz.Device(Name="Volume 2", Unit=4, Type=244, Subtype=73, Switchtype=7,  Image=8).Create()
+            if (5 not in Devices): Domoticz.Device(Name="Volume 2", Unit=5, Type=244, Subtype=73, Switchtype=7,  Image=8).Create()
             Domoticz.Log("Created Zone 2 device(s) because zone requested in hardware setup but device not found.")
         else:
-            zone2Source = Devices[3].nValue
-            if (4 in Devices): zone2Volume = int(Devices[4].sValue)
+            zone2Source = Devices[4].nValue
+            if (5 in Devices): zone2Volume = int(Devices[5].sValue)
     else:
         pollingDict.pop("Z2")
         pollingDict["MU"] = "PW?\r"
+        
     if (1 not in Devices):
-        Domoticz.Device(Name="Main Zone", Unit=1, TypeName="Selector Switch", Switchtype=18, Image=5, \
+        Domoticz.Device(Name="Power", Unit=1, TypeName="Switch",  Image=5).Create()
+        if (2 not in Devices): Domoticz.Device(Name="Main Zone", Unit=2, TypeName="Selector Switch", Switchtype=18, Image=5, \
                         Options="LevelActions:"+stringToBase64(LevelActions)+";LevelNames:"+stringToBase64(Parameters["Mode3"])+";LevelOffHidden:ZmFsc2U=;SelectorStyle:MQ==").Create()
-        Domoticz.Device(Name="Main Volume", Unit=2, Type=244, Subtype=73, Switchtype=7,  Image=8).Create()
+        if (3 not in Devices): Domoticz.Device(Name="Main Volume", Unit=3, Type=244, Subtype=73, Switchtype=7,  Image=8).Create()
         Domoticz.Log("Created Main Zone devices because they were not found.")
     else:
-        mainSource = Devices[1].nValue
-        if (2 in Devices): mainVolume1 = int(Devices[2].sValue)
+        mainSource = Devices[2].nValue
+        if (3 in Devices): mainVolume1 = int(Devices[3].sValue)
         
     DumpConfigToLog()
     dictValue=0
     for item in Parameters["Mode3"].split('|'):
         selectorMap[dictValue] = item
         dictValue = dictValue + 10
-    Domoticz.Log(str(selectorMap))
     Domoticz.Transport("TCP/IP", Parameters["Address"], Parameters["Port"])
     Domoticz.Protocol("Line")
     Domoticz.Connect()
@@ -198,34 +200,36 @@ def onCommand(Unit, Command, Level, Hue):
         delay = int(Parameters["Mode2"])
     if (action == "On"):
         if (Unit == 1):     Domoticz.Send(Message='ZMON\r', Delay=delay)
-        elif (Unit == 2):   Domoticz.Send(Message='MUOFF\r', Delay=delay)
-        elif (Unit == 3):   Domoticz.Send(Message='Z2ON\r', Delay=delay)
-        elif (Unit == 4):   Domoticz.Send(Message='Z2MUOFF\r', Delay=delay)
-        elif (Unit == 5):   Domoticz.Send(Message='Z3ON\r', Delay=delay)
-        elif (Unit == 6):   Domoticz.Send(Message='Z3MUOFF\r', Delay=delay)
+        elif (Unit == 2):   Domoticz.Send(Message='ZMON\r', Delay=delay)
+        elif (Unit == 3):   Domoticz.Send(Message='MUOFF\r', Delay=delay)
+        elif (Unit == 4):   Domoticz.Send(Message='Z2ON\r', Delay=delay)
+        elif (Unit == 5):   Domoticz.Send(Message='Z2MUOFF\r', Delay=delay)
+        elif (Unit == 6):   Domoticz.Send(Message='Z3ON\r', Delay=delay)
+        elif (Unit == 7):   Domoticz.Send(Message='Z3MUOFF\r', Delay=delay)
         else: Domoticz.Error( "Unknown Unit number in command "+str(Unit)+".")
     elif (action == "Set"):
             if (params.capitalize() == 'Level') or (Command.lower() == 'Volume'):
-                if (Unit == 1):     # Main selector
+                if (Unit == 2):     # Main selector
                     Domoticz.Send(Message='SI'+selectorMap[Level]+'\r', Delay=delay)
-                elif (Unit == 2):   # Volume control
+                elif (Unit == 3):   # Volume control
                     Domoticz.Send(Message='MV'+str(Level)+'\r', Delay=delay)
-                elif (Unit == 3):   # Zone 2 selector
+                elif (Unit == 4):   # Zone 2 selector
                     Domoticz.Send(Message='Z2'+selectorMap[Level]+'\r', Delay=delay)
-                elif (Unit == 4):   # Zone 2 Volume control
+                elif (Unit == 5):   # Zone 2 Volume control
                     Domoticz.Send(Message='Z2'+str(Level)+'\r', Delay=delay)
-                elif (Unit == 5):   # Zone 3 selector
+                elif (Unit == 6):   # Zone 3 selector
                     Domoticz.Send(Message='Z3'+selectorMap[Level]+'\r', Delay=delay)
-                elif (Unit == 6):   # Zone 3 Volume control
+                elif (Unit == 7):   # Zone 3 Volume control
                     Domoticz.Send(Message='Z3'+str(Level)+'\r', Delay=delay)
                 SyncDevices()
     elif (action == "Off"):
         if (Unit == 1):     Domoticz.Send(Message='ZMOFF\r', Delay=delay)
-        elif (Unit == 2):   Domoticz.Send(Message='MUON\r', Delay=delay)
-        elif (Unit == 3):   Domoticz.Send(Message='Z2OFF\r', Delay=delay)
-        elif (Unit == 4):   Domoticz.Send(Message='Z2MUON\r', Delay=delay)
-        elif (Unit == 5):   Domoticz.Send(Message='Z3OFF\r', Delay=delay)
-        elif (Unit == 6):   Domoticz.Send(Message='Z3MUON\r', Delay=delay)
+        elif (Unit == 2):   Domoticz.Send(Message='ZMOFF\r', Delay=delay)
+        elif (Unit == 3):   Domoticz.Send(Message='MUON\r', Delay=delay)
+        elif (Unit == 4):   Domoticz.Send(Message='Z2OFF\r', Delay=delay)
+        elif (Unit == 5):   Domoticz.Send(Message='Z2MUON\r', Delay=delay)
+        elif (Unit == 6):   Domoticz.Send(Message='Z3OFF\r', Delay=delay)
+        elif (Unit == 7):   Domoticz.Send(Message='Z3MUON\r', Delay=delay)
         else: Domoticz.Error( "Unknown Unit number in command "+str(Unit)+".")
     else:
         Domoticz.Error("Unhandled action '"+action+"' ignored, options are On/Set/Off")
@@ -262,22 +266,24 @@ def SyncDevices():
     global powerOn, mainSource, mainVolume1, zone2Source, zone2Volume, zone3Source, zone3Volume
     
     if (powerOn == False):
-        UpdateDevice(1, 0, "0")
-        UpdateDevice(2, 0, str(abs(mainVolume1)))
-        UpdateDevice(3, 0, "0")
-        UpdateDevice(4, 0, str(abs(zone2Volume)))
-        UpdateDevice(5, 0, "0")
-        UpdateDevice(6, 0, str(abs(zone3Volume)))
+        UpdateDevice(1, 0, "Off")
+        UpdateDevice(2, 0, "0")
+        UpdateDevice(3, 0, str(abs(mainVolume1)))
+        UpdateDevice(4, 0, "0")
+        UpdateDevice(5, 0, str(abs(zone2Volume)))
+        UpdateDevice(6, 0, "0")
+        UpdateDevice(7, 0, str(abs(zone3Volume)))
     else:
-        UpdateDevice(1, mainSource, str(mainSource))
-        if (mainVolume1 <= 0): UpdateDevice(2, 0, str(abs(mainVolume1)))
-        else: UpdateDevice(2, 2, str(mainVolume1))
-        UpdateDevice(3, zone2Source, str(zone2Source))
-        if (zone2Volume <= 0): UpdateDevice(4, 0, str(abs(zone2Volume)))
-        else: UpdateDevice(4, 2, str(zone2Volume))
-        UpdateDevice(5, zone3Source, str(zone3Source))
-        if (zone3Volume <= 0): UpdateDevice(6, 0, str(abs(zone3Volume)))
-        else: UpdateDevice(6, 2, str(zone3Volume))
+        UpdateDevice(1, 1, "On")
+        UpdateDevice(2, mainSource, str(mainSource))
+        if (mainVolume1 <= 0): UpdateDevice(3, 0, str(abs(mainVolume1)))
+        else: UpdateDevice(3, 2, str(mainVolume1))
+        UpdateDevice(4, zone2Source, str(zone2Source))
+        if (zone2Volume <= 0): UpdateDevice(5, 0, str(abs(zone2Volume)))
+        else: UpdateDevice(5, 2, str(zone2Volume))
+        UpdateDevice(6, zone3Source, str(zone3Source))
+        if (zone3Volume <= 0): UpdateDevice(7, 0, str(abs(zone3Volume)))
+        else: UpdateDevice(7, 2, str(zone3Volume))
     return
 
 def UpdateDevice(Unit, nValue, sValue):

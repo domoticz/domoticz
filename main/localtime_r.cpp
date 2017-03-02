@@ -143,7 +143,7 @@ bool getMidnight(time_t &time, struct tm &result) {
 }
 
 bool getMidnight(time_t &time, struct tm &result, int year, int month, int day) {
-	return constructTime(time, result, year, month, day, 0, 0, 0);
+	return constructTime(time, result, year, month, day, 0, 0, 0, -1);
 }
 
 /* getNoon()
