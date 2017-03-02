@@ -101,9 +101,6 @@ void P1MeterBase::Init()
 	m_lastgasusage=0;
 	m_lastSharedSendGas=0;
 	m_lastUpdateTime=0;
-/*	voltagel1=0;
-	voltagel2=0;
-	voltagel3=0;*/
 
 	memset(&m_buffer,0,sizeof(m_buffer));
 	memset(&l_buffer,0,sizeof(l_buffer));

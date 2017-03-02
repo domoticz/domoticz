@@ -9612,8 +9612,8 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 
 	}
 	std::string ID=szTmp;
-		unsigned char Unit=1;
-		unsigned char cmnd=0;
+	unsigned char Unit=1;
+	unsigned char cmnd=0;
 
 	uint64_t DevRowIdx=-1;
 

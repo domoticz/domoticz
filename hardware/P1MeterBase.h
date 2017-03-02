@@ -29,10 +29,6 @@ private:
 	unsigned char m_exclmarkfound;
 	unsigned char m_CRfound;
 
-/*	float voltagel1;
-	float voltagel2;
-	float voltagel3;*/
-
 	void Init();
 	bool MatchLine();
 	void ParseData(const unsigned char *pData, const int Len, const bool disable_crc, int ratelimit);
