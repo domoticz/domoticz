@@ -547,7 +547,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		nodeInfo.tMode = -1;
 		nodeInfo.tFanMode = -1;
 
-		nodeInfo.m_LastAlarmTypeReceived = -1;
+		m_LastAlarmTypeReceived = -1;
 
 		if ((_homeID == m_controllerID) && (_nodeID == m_controllerNodeId))
 			nodeInfo.eState = NSTATE_AWAKE;	//controller is always awake
@@ -2821,33 +2821,23 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 
 			if (vLabel == "Alarm Type")
 			{
-				NodeInfo *pNode = GetNodeInfo(HomeID, NodeID);
-				if (pNode)
+				if (byteValue != 0)
 				{
-					if (byteValue != 0)
-					{
-						pNode->m_LastAlarmTypeReceived = byteValue;
-						m_LastAlarmTypeReceived = byteValue;
-					}
-					else
-						m_LastAlarmTypeReceived = -1;
+					m_LastAlarmTypeReceived = byteValue;
 				}
+				else
+					m_LastAlarmTypeReceived = -1;
 			}
 			else if (vLabel == "Alarm Level")
 			{
-				NodeInfo *pNode = GetNodeInfo(HomeID, NodeID);
-				if (pNode)
+				if (m_LastAlarmTypeReceived != -1)
 				{
-					if (pNode->m_LastAlarmTypeReceived != -1)
-					{
-						//Until we figured out what types/levels we have, we create a switch for each of them
-						char szDeviceName[50];
-						sprintf(szDeviceName, "Alarm Type: 0x%02X", pNode->m_LastAlarmTypeReceived);
-						std::string tmpstr = szDeviceName;
-						SendSwitch(NodeID, pNode->m_LastAlarmTypeReceived, pDevice->batValue, (byteValue != 0) ? true : false, 0, tmpstr);
-						pNode->m_LastAlarmTypeReceived = -1;
-						m_LastAlarmTypeReceived = -1;
-					}
+					//Until we figured out what types/levels we have, we create a switch for each of them
+					char szDeviceName[50];
+					sprintf(szDeviceName, "Alarm Type: 0x%02X", m_LastAlarmTypeReceived);
+					std::string tmpstr = szDeviceName;
+					SendSwitch(NodeID, m_LastAlarmTypeReceived, pDevice->batValue, (byteValue != 0) ? true : false, 0, tmpstr);
+					m_LastAlarmTypeReceived = -1;
 				}
 			}
 			else
