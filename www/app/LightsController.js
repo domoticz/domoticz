@@ -1216,6 +1216,24 @@ define(['app'], function (app) {
 			});
 		}
 
+		appLampSpeedMin = function()
+		{
+			$.ajax({
+				 url: "json.htm?type=command&param=speedmin&idx=" + $.devIdx,
+				 async: false,
+				 dataType: 'json'
+			});
+		}
+
+		appLampSpeedMax = function()
+		{
+			$.ajax({
+				 url: "json.htm?type=command&param=speedmax&idx=" + $.devIdx,
+				 async: false,
+				 dataType: 'json'
+			});
+		}
+
 		appLampWarmer = function()
 		{
 			$.ajax({
@@ -1606,7 +1624,8 @@ define(['app'], function (app) {
 			else {
 				$("#lightcontent #optionsRGB").hide();
 			}
-			if ($.bIsRGBWW==true || $.bIsRGBW==true){
+			//if ($.bIsRGBWW==true || $.bIsRGBW==true){
+			if ($.bIsRGBWW==true){
 				$("#lightcontent #optionsRGBWW").show();
 			}
 			else {

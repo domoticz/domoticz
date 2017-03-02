@@ -1476,6 +1476,9 @@ void GetLightStatus(
 		case Limitless_SetBrightnessLevel:
 			lstatus="Set Level";
 			break;
+		case Limitless_SetKelvinLevel:
+			lstatus="Set Kelvin Level";
+			break;
 		case Limitless_SetColorToWhite:
 			lstatus="Set to White";
 			break;
@@ -2482,6 +2485,11 @@ bool GetLightCommand(
 			cmd=Limitless_SetBrightnessLevel;
 			return true;
 		}
+		else if (switchcmd=="Set Kelvin Level")
+		{
+			cmd=Limitless_SetKelvinLevel;
+			return true;
+		}
 		else if (switchcmd == "Set White")
 		{
 			cmd = Limitless_SetColorToWhite;
@@ -2580,6 +2588,16 @@ bool GetLightCommand(
 		else if (switchcmd == "Speed Down")
 		{
 			cmd = Limitless_DiscoSpeedSlower;
+			return true;
+		}
+		else if (switchcmd == "Speed Minimal")
+		{
+			cmd = Limitless_DiscoSpeedMinimal;
+			return true;
+		}
+		else if (switchcmd == "Speed Maximal")
+		{
+			cmd = Limitless_DiscoSpeedMaximal;
 			return true;
 		}
 		else if (switchcmd == "Warmer")

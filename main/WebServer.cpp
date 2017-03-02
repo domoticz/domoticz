@@ -6529,6 +6529,25 @@ namespace http {
 				root["status"] = "OK";
 				root["title"] = "SetColBrightnessValue";
 			}
+			else if (cparam == "setkelvinlevel")
+			{
+				root["status"] = "OK";
+                root["title"] = "Set Kelvin Level";
+
+				std::string idx = request::findValue(&req, "idx");
+
+				if (idx == "")
+				{
+					return;
+				}
+
+				uint64_t ID;
+				std::stringstream s_strid;
+				s_strid << idx;
+				s_strid >> ID;
+
+				m_mainworker.SwitchLight(ID, "Set Kelvin Level", 0, -1,false,0);
+			}
 			else if (cparam == "brightnessup")
 			{
 				root["status"] = "OK";
@@ -6702,6 +6721,44 @@ namespace http {
 				s_strid >> ID;
 
 				m_mainworker.SwitchLight(ID, "Speed Down", 0, -1,false,0);
+			}
+			else if (cparam == "speedmin")
+			{
+				root["status"] = "OK";
+				root["title"] = "Set disco speed minimal!";
+
+				std::string idx = request::findValue(&req, "idx");
+
+				if (idx == "")
+				{
+					return;
+				}
+
+				uint64_t ID;
+				std::stringstream s_strid;
+				s_strid << idx;
+				s_strid >> ID;
+
+				m_mainworker.SwitchLight(ID, "Speed Minimal", 0, -1,false,0);
+			}
+			else if (cparam == "speedmax")
+			{
+				root["status"] = "OK";
+				root["title"] = "Set disco speed maximal!";
+
+				std::string idx = request::findValue(&req, "idx");
+
+				if (idx == "")
+				{
+					return;
+				}
+
+				uint64_t ID;
+				std::stringstream s_strid;
+				s_strid << idx;
+				s_strid >> ID;
+
+				m_mainworker.SwitchLight(ID, "Speed Maximal", 0, -1,false,0);
 			}
 			else if (cparam == "warmer")
 			{
