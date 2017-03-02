@@ -629,7 +629,7 @@ int main(int argc, char**argv)
 		}
 		std::string wwwport = cmdLine.GetSafeArgument("-www", 0, "");
 		int iPort = (int)atoi(wwwport.c_str());
-		if ((iPort < 1) || (iPort > 32767))
+		if ((iPort < 0) || (iPort > 32767))
 		{
 			_log.Log(LOG_ERROR, "Please specify a valid www port");
 			return 1;
@@ -670,7 +670,7 @@ int main(int argc, char**argv)
 		}
 		std::string wwwport = cmdLine.GetSafeArgument("-sslwww", 0, "");
 		int iPort = (int)atoi(wwwport.c_str());
-		if ((iPort < 1) || (iPort > 32767))
+		if ((iPort < 0) || (iPort > 32767))
 		{
 			_log.Log(LOG_ERROR, "Please specify a valid sslwww port");
 			return 1;
