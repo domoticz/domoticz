@@ -276,6 +276,7 @@ private:
 	// Plugin functions
 	void Cmd_PluginCommand(WebEmSession & session, const request& req, Json::Value &root);
 	void PluginList(Json::Value &root);
+	void PluginLoadConfig();
 	std::string PluginHardwareDesc(int HwdID);
 
 	//RTypes
