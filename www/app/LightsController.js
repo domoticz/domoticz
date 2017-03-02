@@ -577,6 +577,7 @@ define(['app'], function (app) {
 			$.isDimmer=isdimmer;
 			$.isSelector = (devsubtype === "Selector Switch");
 
+			$.bIsRGBWW=(devsubtype.indexOf("RGBWW") >= 0);			
 			$.bIsRGBW=(devsubtype.indexOf("RGBW") >= 0);
 			$.bIsLED=(devsubtype.indexOf("RGB") >= 0);
 
@@ -1180,6 +1181,15 @@ define(['app'], function (app) {
 			});
 		}
 
+		appLampDiscoModeNum = function(mode)
+		{
+			$.ajax({
+				 url: "json.htm?type=command&param=discomodenum" + mode + "&idx=" + $.devIdx,
+				 async: false,
+				 dataType: 'json'
+			});
+		}
+
 		appLampSpeedUp = function()
 		{
 			$.ajax({
@@ -1219,6 +1229,15 @@ define(['app'], function (app) {
 		{
 			$.ajax({
 				 url: "json.htm?type=command&param=fulllight&idx=" + $.devIdx,
+				 async: false,
+				 dataType: 'json'
+			});
+		}
+
+		appLampWhite = function()
+		{
+			$.ajax({
+				 url: "json.htm?type=command&param=whitelight&idx=" + $.devIdx,
 				 async: false,
 				 dataType: 'json'
 			});
@@ -1581,11 +1600,17 @@ define(['app'], function (app) {
 			else {
 				$("#lightcontent #LedColor").hide();
 			}
-			if (($.bIsRGB==true || $.bIsRGBW==true) && $.strUnit =="0") {
+			if ($.bIsRGB==true && $.strUnit =="0") {
 				$("#lightcontent #optionsRGB").show();
 			}
 			else {
 				$("#lightcontent #optionsRGB").hide();
+			}
+			if ($.bIsRGBWW==true || $.bIsRGBW==true){
+				$("#lightcontent #optionsRGBWW").show();
+			}
+			else {
+				$("#lightcontent #optionsRGBWW").hide();
 			}
 			if ($.bIsRGBW==true) {
 				$("#lightcontent #optionsRGBW").show();
@@ -2930,7 +2955,9 @@ define(['app'], function (app) {
 									(item.Status == 'On')||
 									(item.Status == 'Chime')||
 									(item.Status == 'Group On')||
-									(item.Status.indexOf('Set ') == 0)
+									(item.Status.indexOf('Set ') == 0)||
+									(item.Status.indexOf('NightMode') == 0)||
+									(item.Status.indexOf('Disco ') == 0)
 								   ) {
 										if (item.SubType=="RGB") {
 											xhtm+='\t      <td id="img"><img src="images/RGB48_On.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshLights\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="48" width="48"></td>\n';

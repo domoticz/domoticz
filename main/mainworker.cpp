@@ -10378,7 +10378,7 @@ void MainWorker::decode_CartelectronicTIC(const int HwdID,
 
          // Counter 2
          counter2 = (pResponse->TIC.counter2_0 << 24) + (pResponse->TIC.counter2_1 << 16) + (pResponse->TIC.counter2_2 << 8) + (pResponse->TIC.counter2_3);
-         sprintf(szTmp, "%u;%ld", counter2ApparentPower, counter2);
+         sprintf(szTmp, "%u;%d", counter2ApparentPower, counter2);
 
          uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), 1, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 
@@ -10397,7 +10397,7 @@ void MainWorker::decode_CartelectronicTIC(const int HwdID,
          // Counter 2
          counter2 = (pResponse->TIC.counter2_0 << 24) + (pResponse->TIC.counter2_1 << 16) + (pResponse->TIC.counter2_2 << 8) + (pResponse->TIC.counter2_3);
 
-         sprintf(szTmp, "%u;%ld", counter2ApparentPower, counter2);
+         sprintf(szTmp, "%u;%d", counter2ApparentPower, counter2);
          uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), 1, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 
          if (DevRowIdx == -1)
@@ -10457,7 +10457,7 @@ void MainWorker::decode_CartelectronicTIC(const int HwdID,
          // Counter 2
          counter2 = (pResponse->TIC.counter2_0 << 24) + (pResponse->TIC.counter2_1 << 16) + (pResponse->TIC.counter2_2 << 8) + (pResponse->TIC.counter2_3);
 
-         sprintf(szTmp, "%u;%ld", counter2ApparentPower, counter2);
+         sprintf(szTmp, "%u;%d", counter2ApparentPower, counter2);
          uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), unitCounter2, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 
          if (DevRowIdx == -1)
@@ -10474,7 +10474,7 @@ void MainWorker::decode_CartelectronicTIC(const int HwdID,
    // Counter 1
    counter1 = (pResponse->TIC.counter1_0 << 24) + (pResponse->TIC.counter1_1 << 16) + (pResponse->TIC.counter1_2 << 8) + (pResponse->TIC.counter1_3);
 
-   sprintf(szTmp, "%u;%ld", counter1ApparentPower, counter1);
+   sprintf(szTmp, "%u;%d", counter1ApparentPower, counter1);
    uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), unitCounter1, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 
    if (DevRowIdx == -1)
@@ -10509,13 +10509,13 @@ void MainWorker::decode_CartelectronicEncoder(const int HwdID,
    unsigned char BatteryLevel = (pResponse->CEENCODER.battery_level + 1) * 10;
 
    // Id of the module
-   sprintf(szTmp, "%ld", ((uint32_t)(pResponse->CEENCODER.id1 << 24) + (pResponse->CEENCODER.id2 << 16) + (pResponse->CEENCODER.id3 << 8) + pResponse->CEENCODER.id4));
+   sprintf(szTmp, "%d", ((uint32_t)(pResponse->CEENCODER.id1 << 24) + (pResponse->CEENCODER.id2 << 16) + (pResponse->CEENCODER.id3 << 8) + pResponse->CEENCODER.id4));
    ID = szTmp;
 
    // Counter 1
    counter1 = (pResponse->CEENCODER.counter1_0 << 24) + (pResponse->CEENCODER.counter1_1 << 16) + (pResponse->CEENCODER.counter1_2 << 8) + (pResponse->CEENCODER.counter1_3);
 
-   sprintf(szTmp, "%ld", counter1);
+   sprintf(szTmp, "%d", counter1);
    DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
    if (DevRowIdx == -1)
       return;
@@ -10525,7 +10525,7 @@ void MainWorker::decode_CartelectronicEncoder(const int HwdID,
    // Counter 2
    counter2 = (pResponse->CEENCODER.counter2_0 << 24) + (pResponse->CEENCODER.counter2_1 << 16) + (pResponse->CEENCODER.counter2_2 << 8) + (pResponse->CEENCODER.counter2_3);
 
-   sprintf(szTmp, "%ld", counter2);
+   sprintf(szTmp, "%d", counter2);
    DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), 1, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
    if (DevRowIdx == -1)
       return;
