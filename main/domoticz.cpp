@@ -628,6 +628,12 @@ int main(int argc, char**argv)
 			return 1;
 		}
 		std::string wwwport = cmdLine.GetSafeArgument("-www", 0, "");
+		int iPort = (int)atoi(wwwport.c_str());
+		if ((iPort < 1) || (iPort > 32767))
+		{
+			_log.Log(LOG_ERROR, "Please specify a valid www port");
+			return 1;
+		}
 		webserver_settings.listening_port = wwwport;
 	}
 
@@ -663,6 +669,12 @@ int main(int argc, char**argv)
 			return 1;
 		}
 		std::string wwwport = cmdLine.GetSafeArgument("-sslwww", 0, "");
+		int iPort = (int)atoi(wwwport.c_str());
+		if ((iPort < 1) || (iPort > 32767))
+		{
+			_log.Log(LOG_ERROR, "Please specify a valid sslwww port");
+			return 1;
+		}
 		secure_webserver_settings.listening_port = wwwport;
 	}
 	if (!webserver_settings.listening_address.empty()) {
