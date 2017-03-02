@@ -4418,6 +4418,18 @@ namespace http {
 							)
 							return;
 					}
+					else if ((lighttype == 405) || (lighttype == 406)) {
+						// Openwebnet Dry Contact / IR Detection
+						dtype = pTypeGeneralSwitch;
+						subtype = sSwitchContactT1;
+						devid = request::findValue(&req, "id");
+						sunitcode = request::findValue(&req, "unitcode");
+						if (
+							(devid == "") ||
+							(sunitcode == "")
+							)
+							return;
+					}
 				}
        // ----------- If needed convert to GeneralSwitch type (for o.a. RFlink) -----------
 				CDomoticzHardwareBase *pBaseHardware = reinterpret_cast<CDomoticzHardwareBase*>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
@@ -4943,6 +4955,19 @@ namespace http {
 						//Openwebnet Zigbee Lights
 						dtype = pTypeGeneralSwitch;
 						subtype = sSwitchLightT2;
+						devid = request::findValue(&req, "id");
+						sunitcode = request::findValue(&req, "unitcode");
+						if (
+							(devid == "") ||
+							(sunitcode == "")
+							)
+							return;
+					}
+					else if ((lighttype == 405) || (lighttype == 406))
+					{
+						//Openwebnet Dry Contact / IR Detection
+						dtype = pTypeGeneralSwitch;
+						subtype = sSwitchContactT1;
 						devid = request::findValue(&req, "id");
 						sunitcode = request::findValue(&req, "unitcode");
 						if (
