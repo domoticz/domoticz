@@ -1,20 +1,23 @@
 #pragma once
 
+#include <iostream>
+#include "ASyncTCP.h"
 #include "DomoticzHardware.h"
 #include "../main/RFXtrx.h"
-#include <iostream>
 
-class RelayNet : public CDomoticzHardwareBase
+class RelayNet : public CDomoticzHardwareBase, ASyncTCP
 {
 
 public:
 
 	RelayNet(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password, const bool pollInputs, const bool pollRelays, const int pollInterval, const int inputCount, const int relayCount);
 	~RelayNet(void);
-
 	bool WriteToHardware(const char *pdata, const unsigned char length);
-	bool WriteToHardwareTcp(const char *pdata, const unsigned char length);
-	bool WriteToHardwareHttp(const char *pdata, const unsigned char length);
+	bool isConnected() { return mIsConnected; };
+
+public:
+	// signals
+	boost::signals2::signal<void()>	sDisconnected;
 
 private:
 
@@ -26,32 +29,44 @@ private:
 	sockaddr_in 						m_addr;
 	bool								m_poll_inputs;
 	bool								m_poll_relays;
-	bool								m_connected;
-	bool								m_keep_connection;
+	bool								m_reconnect;
+	bool								m_setup_devices;
+	int									m_skip_relay_update;
 	int									m_poll_interval;
 	int									m_input_count;
 	int									m_relay_count;
 	boost::shared_ptr<boost::thread> 	m_thread;
 	tRBUF 								Packet;
 
-	void Init();
 	bool StartHardware();
 	bool StopHardware();
-	void Do_Work();
-	void SetupDevices();
-	bool RelaycardTcpConnect();
-	void RelaycardTcpDisconnect();
-	bool TcpGetSetRelay(int RelayNumber, bool Set, bool State);
-	void UpdateDomoticzRelayState(int RelayNumber, bool State);
-	bool UpdateDomoticzInput(int InputNumber, bool State);
-	bool UpdateDomoticzOutput(int OutputNumber, bool State);
-	bool ProcessRelaycardDump(char* Dump, int Length);
-	bool GetRelayState(int RelayNumber);
-	bool SetRelayState(int RelayNumber, bool State);
-	bool TcpGetRelaycardDump(char* Buffer, int Length);
 
 protected:
 
 	int m_socket;
+
+	void Do_Work();
+	void Do_Little();
+	void Init();
+	void SetupDevices();
+	void RelaycardTcpConnect();
+	void RelaycardTcpDisconnect();
+	void TcpGetSetRelay(int RelayNumber, bool Set, bool State);
+	void UpdateDomoticzInput(int InputNumber, bool State);
+	void UpdateDomoticzRelay(int OutputNumber, bool State);
+	void ProcessRelaycardDump(char* Dump, int Length);
+	void SetRelayState(int RelayNumber, bool State);
+	void TcpRequestRelaycardDump();
+	bool WriteToHardwareTcp(const char *pdata, const unsigned char length);
+	bool WriteToHardwareHttp(const char *pdata, const unsigned char length);
+	void ParseData(const unsigned char *pData, int Len);
+	void KeepConnectionAlive();
+
+	/* ASyncTCP required methodes */
+	void OnConnect();
+	void OnDisconnect();
+	void OnData(const unsigned char *pData, size_t length);
+	void OnError(const std::exception e);
+	void OnError(const boost::system::error_code& error);
 };
 
