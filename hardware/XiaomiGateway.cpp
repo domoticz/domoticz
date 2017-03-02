@@ -56,59 +56,38 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 			std::string sid = s_strid2.str();
 			std::transform(sid.begin(), sid.end(), sid.begin(), ::tolower);
 			//append 158d00 to the front
-			//158d0001190076
 			sid.insert(0, "158d00");
 			//check that switch is STYPE_OnOff
-				std::string cmdchannel = "";
-				std::string cmdcommand = "";
-				std::string cmddevice = "";
-				bool isctrl2 = false;
-				for (unsigned i = 0; i < arrAqara_Wired_ID.size(); i++) {
-					if (arrAqara_Wired_ID[i] == sid) {
-						//this device is ctrl2..
-						isctrl2 = true;
-						isctrl = true;
-						if (xcmd->unitcode == 1) {
-							cmdchannel = "\\\"channel_0\\\":";
-						}
-						else if (xcmd->unitcode == 2) {
-							cmdchannel = "\\\"channel_1\\\":";
-						}
+			std::string cmdchannel = "";
+			std::string cmdcommand = "";
+			std::string cmddevice = "";
+			bool isctrl2 = false;
+			for (unsigned i = 0; i < arrAqara_Wired_ID.size(); i++) {
+				if (arrAqara_Wired_ID[i] == sid) {
+					//this device is ctrl2..
+					isctrl2 = true;
+					isctrl = true;
+					if (xcmd->unitcode == 1) {
+						cmdchannel = "\\\"channel_0\\\":";
+					}
+					else if (xcmd->unitcode == 2) {
+						cmdchannel = "\\\"channel_1\\\":";
 					}
 				}
-				if (isctrl2) {
-					cmddevice = "ctrl_neutral2";
-				}
-				else {
-					cmddevice = "ctrl_neutral1";
-				}
-				if (xcmd->cmnd == 0) {
-					cmdcommand = "\\\"off";
-				}
-				else if (xcmd->cmnd == 1) {
-					cmdcommand = "\\\"on";
-				}
-				message = "{\"cmd\":\"write\",\"model\":\"" + cmddevice + "\",\"sid\":\"" + sid + "\",\"short_id\":0,\"data\":\"{" + cmdchannel + cmdcommand + "\\\",\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
-			//"{\"cmd\":\"write\",\"model\":\"ctrl_neutral2\",\"sid\":\"" + sid + "\",\"short_id\":0,\"data\":\"{" + cmdchannel + cmdcommand + "\\\",\\\"key\\\":\\\"@gatewaykey\\\"}\" }"
-				//message = "{\"cmd\":\"write\",\"model\":\"ctrl_neutral2\",\"sid\":\"" + sid + "\",\"short_id\":0,\"data\":\"{" + cmdchannel + "\\\",\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
-
-
-		/*if (xcmd->subtype == sSwitchTypeSelector) {
-			std::string cmdchannel = "";
-			if (xcmd->level == 10) {
-				cmdchannel = "\\\"channel_0\\\":\\\"on";
 			}
-			else if (xcmd->level == 20) {
-				cmdchannel = "\\\"channel_0\\\":\\\"off";
+			if (isctrl2) {
+				cmddevice = "ctrl_neutral2";
 			}
-			else if (xcmd->level == 30) {
-				cmdchannel = "\\\"channel_1\\\":\\\"on";
+			else {
+				cmddevice = "ctrl_neutral1";
 			}
-			else if (xcmd->level == 40) {
-				cmdchannel = "\\\"channel_1\\\":\\\"off";
+			if (xcmd->cmnd == 0) {
+				cmdcommand = "\\\"off";
 			}
-			message = "{\"cmd\":\"write\",\"model\":\"ctrl_neutral2\",\"sid\":\"" + sid + "\",\"short_id\":0,\"data\":\"{" + cmdchannel + "\\\",\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
-		}*/
+			else if (xcmd->cmnd == 1) {
+				cmdcommand = "\\\"on";
+			}
+			message = "{\"cmd\":\"write\",\"model\":\"" + cmddevice + "\",\"sid\":\"" + sid + "\",\"short_id\":0,\"data\":\"{" + cmdchannel + cmdcommand + "\\\",\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
 		if ((xcmd->subtype == sSwitchGeneralSwitch) && (!isctrl)) { // added bool to avoid sending command if ID belong to ctrl_neutrals devices
 			std::string command = "on";
 			switch (xcmd->cmnd) {
@@ -387,8 +366,6 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 	//check if this switch is already in the database
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) ", m_HwdID, ID.c_str(), pTypeGeneralSwitch);
-	//ignore the hardwareid to handle deviceids over multiple gateways - this will cause a problem if another general switch device has the same deviceid
-	//result = m_sql.safe_query("SELECT nValue, LastLevel FROM DeviceStatus WHERE (DeviceID=='%q') AND (Type==%d) ", ID.c_str(), pTypeGeneralSwitch);
 	if (result.size() < 1)
 	{
 		_log.Log(LOG_STATUS, "XiaomiGateway: New Device Found (%s)", str.c_str());
@@ -440,7 +417,7 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 			xcmd.unitcode = 2;
 		}
 		int nvalue = atoi(result[0][0].c_str());
-		if ((((bIsOn) && (nvalue == 0)) || ((bIsOn == false) && (nvalue == 1))) || (switchtype != STYPE_Motion)) {
+		if ((bIsOn && nvalue == 0) || (bIsOn == false && nvalue == 1))  {
 			m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, NULL, -1);
 		}
 		else {
@@ -574,6 +551,7 @@ void XiaomiGateway::Do_Work()
 {
 	_log.Log(LOG_STATUS, "XiaomiGateway: Worker started...");
 	boost::asio::io_service io_service;
+	//find the local ip address that is similar to the xiaomi gateway
 	try {
 		boost::asio::ip::udp::resolver resolver(io_service);
 		boost::asio::ip::udp::resolver::query query(boost::asio::ip::udp::v4(), m_GatewayIp, "");
@@ -592,25 +570,6 @@ void XiaomiGateway::Do_Work()
 	catch (std::exception& e) {
 		std::cerr << "Could not deal with socket. Exception: " << e.what() << std::endl;
 	}
-
-	//find the local ip address that is similar to the xiaomi gateway
-	/*boost::asio::ip::tcp::resolver resolver(io_service);
-	boost::asio::ip::tcp::resolver::query query(boost::asio::ip::host_name(), "");
-	boost::asio::ip::tcp::resolver::iterator it = resolver.resolve(query);
-	while (it != boost::asio::ip::tcp::resolver::iterator())
-	{
-		boost::asio::ip::address addr = (it++)->endpoint().address();
-		if (addr.to_string().length() > (m_GatewayIp.length() - 3)) {
-			std::string compareIp = m_GatewayIp.substr(0, (m_GatewayIp.length() - 3));
-			std::size_t found = addr.to_string().find(compareIp);
-			if (found != std::string::npos) {
-				m_LocalIp = addr.to_string();
-#ifdef _DEBUG
-				_log.Log(LOG_STATUS, "XiaomiGateway: Using %s for local IP address.", m_LocalIp.c_str());
-#endif
-			}
-		}
-	}*/
 
 	XiaomiGateway::xiaomi_udp_server udp_server(io_service, m_HwdID, m_GatewayIp, m_LocalIp, m_ListenPort9898, this);
 	boost::thread bt;
@@ -690,7 +649,6 @@ XiaomiGateway::xiaomi_udp_server::xiaomi_udp_server(boost::asio::io_service& io_
 				socket_.send_to(boost::asio::buffer(*message), remote_endpoint);
 				socket_.set_option(boost::asio::ip::multicast::join_group(mcast_addr.to_v4(), listen_addr.to_v4()), ec);
 				socket_.bind(listen_endpoint, ec);
-				start_receive();
 			}
 			else {
 				socket_.bind(boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 9898));
@@ -699,7 +657,6 @@ XiaomiGateway::xiaomi_udp_server::xiaomi_udp_server(boost::asio::io_service& io_
 				remote_endpoint = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string("224.0.0.50"), 4321);
 				socket_.send_to(boost::asio::buffer(*message), remote_endpoint);
 				socket_.set_option(boost::asio::ip::multicast::join_group(boost::asio::ip::address::from_string("224.0.0.50")));
-				start_receive();
 			}
 		}
 		catch (const boost::system::system_error& ex) {
@@ -707,8 +664,7 @@ XiaomiGateway::xiaomi_udp_server::xiaomi_udp_server(boost::asio::io_service& io_
 			m_XiaomiGateway->StopHardware();
 			return;
 		}
-		//socket_.set_option(boost::asio::ip::multicast::join_group(boost::asio::ip::address::from_string("224.0.0.50")));
-		//start_receive();
+		start_receive();
 	}
 	else {
 		_log.Log(LOG_STATUS, "XiaomiGateway: NOT LISTENING TO UDP FOR HARDWARE ID %d", m_HwdID);
@@ -731,7 +687,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 	if (!error || error == boost::asio::error::message_size)
 	{
 #ifdef _DEBUG
-		//_log.Log(LOG_STATUS, data_);
+		_log.Log(LOG_STATUS, data_);
 #endif
 		Json::Value root;
 		Json::Reader jReader;
