@@ -568,7 +568,7 @@ void XiaomiGateway::Do_Work()
 		}
 	}
 	catch (std::exception& e) {
-		std::cerr << "Could not deal with socket. Exception: " << e.what() << std::endl;
+		_log.Log(LOG_STATUS, "XiaomiGateway: Could not detect local IP address: %s", e.what());
 	}
 
 	XiaomiGateway::xiaomi_udp_server udp_server(io_service, m_HwdID, m_GatewayIp, m_LocalIp, m_ListenPort9898, this);
@@ -687,7 +687,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 	if (!error || error == boost::asio::error::message_size)
 	{
 #ifdef _DEBUG
-		_log.Log(LOG_STATUS, data_);
+		//_log.Log(LOG_STATUS, data_);
 #endif
 		Json::Value root;
 		Json::Reader jReader;
