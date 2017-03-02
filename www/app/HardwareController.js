@@ -5209,7 +5209,6 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divlogin").show();
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").show();
-                $("#hardwarecontent #hardwareparamshttp #refresh").val(300);
 
 				var method = $("#hardwarecontent #divhttppoller #combomethod option:selected").val();
 				if (method == 0)
