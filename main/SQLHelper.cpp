@@ -4354,6 +4354,7 @@ void CSQLHelper::UpdateMeter()
 		"SELECT ID,Name,HardwareID,DeviceID,Unit,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE ("
 		"Type=%d OR " //pTypeRFXMeter
 		"Type=%d OR " //pTypeP1Gas
+		"Type=%d OR " //pTypeP1Voltage
 		"Type=%d OR " //pTypeYouLess
 		"Type=%d OR " //pTypeENERGY
 		"Type=%d OR " //pTypePOWER
@@ -4378,6 +4379,7 @@ void CSQLHelper::UpdateMeter()
 		")",
 		pTypeRFXMeter,
 		pTypeP1Gas,
+		pTypeP1Voltage,
 		pTypeYouLess,
 		pTypeENERGY,
 		pTypePOWER,
@@ -4442,8 +4444,13 @@ void CSQLHelper::UpdateMeter()
 				if (difftime(now,checktime) >= 3 * 3600)
 					continue;
 			}
-
-			if (dType==pTypeYouLess)
+			if (dType==pTypeP1Voltage)
+			{
+				double fValue=atof(sValue.c_str())*10.0f;
+				sprintf(szTmp,"%.0f",fValue);
+				sValue=szTmp;
+			}
+			else if (dType==pTypeYouLess)
 			{
 				std::vector<std::string> splitresults;
 				StringSplit(sValue, ";", splitresults);
@@ -5090,9 +5097,9 @@ void CSQLHelper::AddCalendarUpdateMeter()
 			double avg_value = (double)atof(sd[2].c_str());
 
 			if (
-				(devType!=pTypeAirQuality)&&
-				(devType!=pTypeRFXSensor)&&
-				(!((devType==pTypeGeneral)&&(subType==sTypeVisibility)))&&
+				(devType!=pTypeAirQuality) &&
+				(devType!=pTypeRFXSensor) &&
+				(!((devType==pTypeGeneral)&&(subType==sTypeVisibility))) &&
 				(!((devType == pTypeGeneral) && (subType == sTypeDistance))) &&
 				(!((devType == pTypeGeneral) && (subType == sTypeSolarRadiation))) &&
 				(!((devType==pTypeGeneral)&&(subType==sTypeSoilMoisture)))&&
@@ -5102,8 +5109,9 @@ void CSQLHelper::AddCalendarUpdateMeter()
 				(!((devType == pTypeGeneral) && (subType == sTypePressure))) &&
 				(!((devType == pTypeGeneral) && (subType == sTypeSoundLevel))) &&
 				(devType != pTypeLux) &&
-				(devType!=pTypeWEIGHT)&&
-				(devType!=pTypeUsage)
+				(devType!=pTypeWEIGHT) &&
+				(devType!=pTypeUsage) &&
+				(devType!=pTypeP1Voltage)
 				)
 			{
 				double total_real=total_max-total_min;
@@ -5158,8 +5166,8 @@ void CSQLHelper::AddCalendarUpdateMeter()
 					);
 			}
 			if (
-				(devType!=pTypeAirQuality)&&
-				(devType!=pTypeRFXSensor)&&
+				(devType!=pTypeAirQuality) &&
+				(devType!=pTypeRFXSensor) &&
 				((devType != pTypeGeneral) && (subType != sTypeVisibility)) &&
 				((devType != pTypeGeneral) && (subType != sTypeDistance)) &&
 				((devType != pTypeGeneral) && (subType != sTypeSolarRadiation)) &&
@@ -5170,7 +5178,8 @@ void CSQLHelper::AddCalendarUpdateMeter()
 				((devType != pTypeGeneral) && (subType != sTypeLeafWetness)) &&
 				((devType != pTypeGeneral) && (subType != sTypeSoundLevel)) &&
 				(devType != pTypeLux) &&
-				(devType!=pTypeWEIGHT)
+				(devType!=pTypeWEIGHT) &&
+				(devType!=pTypeP1Voltage)
 				)
 			{
 				result = safe_query("SELECT Value FROM Meter WHERE (DeviceRowID='%" PRIu64 "') ORDER BY ROWID DESC LIMIT 1", ID);

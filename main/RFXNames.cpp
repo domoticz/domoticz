@@ -465,6 +465,7 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeRFXMeter, "RFXMeter" , "counter" },
 		{ pTypeP1Power, "P1 Smart Meter" , "counter" },
 		{ pTypeP1Gas, "P1 Smart Meter" , "counter" },
+		{ pTypeP1Voltage, "P1 Smart Meter" , "current" },
 		{ pTypeYouLess, "YouLess Meter", "counter" },
 		{ pTypeFS20, "FS20" , "unknown" },
 		{ pTypeRego6XXTemp, "Temp" , "temperature" },
@@ -677,6 +678,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 
 		{ pTypeP1Power, sTypeP1Power, "Energy" },
 		{ pTypeP1Gas, sTypeP1Gas, "Gas" },
+		{ pTypeP1Voltage, sTypeP1Voltage, "Voltage" },
 
 		{ pTypeYouLess, sTypeYouLess, "YouLess counter" },
 

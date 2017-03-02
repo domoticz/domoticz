@@ -11,8 +11,12 @@ public:
 	P1MeterBase(void);
 	~P1MeterBase(void);
 
-	P1Power	m_p1power;
-	P1Gas	m_p1gas;
+	P1Power		m_p1power;
+	P1Gas		m_p1gas;
+	P1Voltage	m_p1voltagel1;
+	P1Voltage	m_p1voltagel2;
+	P1Voltage	m_p1voltagel3;
+	
 private:
 	bool m_bDisableCRC;
 	int m_ratelimit;
@@ -24,6 +28,11 @@ private:
 	unsigned char m_linecount;
 	unsigned char m_exclmarkfound;
 	unsigned char m_CRfound;
+
+/*	float voltagel1;
+	float voltagel2;
+	float voltagel3;*/
+
 	void Init();
 	bool MatchLine();
 	void ParseData(const unsigned char *pData, const int Len, const bool disable_crc, int ratelimit);

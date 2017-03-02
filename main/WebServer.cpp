@@ -5412,6 +5412,14 @@ namespace http {
 					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_TODAYGAS, 1);
 					ii++;
 				}
+				if (dType == pTypeP1Voltage)
+				{
+					root["result"][ii]["val"] = NTYPE_USAGE;
+					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_USAGE, 0);
+					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_USAGE, 1);
+					ii++;
+				}
+
 				if ((dType == pTypeThermostat) && (dSubType == sTypeThermSetpoint))
 				{
 					root["result"][ii]["val"] = NTYPE_TEMPERATURE;
@@ -8129,6 +8137,7 @@ namespace http {
 								(dType != pTypePOWER) &&
 								(dType != pTypeP1Power) &&
 								(dType != pTypeP1Gas) &&
+								(dType != pTypeP1Voltage) &&
 								(dType != pTypeYouLess) &&
 								(dType != pTypeAirQuality) &&
 								(dType != pTypeLux) &&
@@ -9510,6 +9519,14 @@ namespace http {
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 						}
+					}
+					else if (dType == pTypeP1Voltage)
+					{
+							sprintf(szData, "%.1f V", atof(sValue.c_str()));
+							root["result"][ii]["Data"] = szData;
+							root["result"][ii]["TypeImg"] = "current";
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+							root["result"][ii]["Voltage"] = atof(sValue.c_str());
 					}
 					else if (dType == pTypeCURRENT)
 					{
@@ -12388,6 +12405,7 @@ namespace http {
 				{
 					if (
 						(dType == pTypeP1Power) ||
+						(dType == pTypeP1Voltage) ||
 						(dType == pTypeCURRENT) ||
 						(dType == pTypeCURRENTENERGY) ||
 						(dType == pTypeAirQuality) ||
@@ -12757,7 +12775,8 @@ namespace http {
 						((dType == pTypeGeneral) && (dSubType == sTypeVoltage)) ||
 						((dType == pTypeGeneral) && (dSubType == sTypeCurrent)) ||
 						((dType == pTypeGeneral) && (dSubType == sTypePressure)) ||
-						((dType == pTypeGeneral) && (dSubType == sTypeSoundLevel))
+						((dType == pTypeGeneral) && (dSubType == sTypeSoundLevel)) ||
+						((dType == pTypeP1Voltage))
 						)
 					{//day
 						root["status"] = "OK";
@@ -14784,7 +14803,8 @@ namespace http {
 						((dType == pTypeGeneral) && (dSubType == sTypeVoltage)) ||
 						((dType == pTypeGeneral) && (dSubType == sTypeCurrent)) ||
 						((dType == pTypeGeneral) && (dSubType == sTypePressure)) ||
-						((dType == pTypeGeneral) && (dSubType == sTypeSoundLevel))
+						((dType == pTypeGeneral) && (dSubType == sTypeSoundLevel)) ||
+						((dType == pTypeP1Voltage))
 						)
 					{//month/year
 						root["status"] = "OK";
@@ -14838,6 +14858,11 @@ namespace http {
 									root["result"][ii]["v_min"] = szTmp;
 									sprintf(szTmp, "%.1f", fValue2);
 									root["result"][ii]["v_max"] = szTmp;
+									if (fValue3 != 0)
+									{
+										sprintf(szTmp, "%.1f", fValue3);
+										root["result"][ii]["v_avg"] = szTmp;
+									}
 								}
 								ii++;
 							}
@@ -15395,7 +15420,8 @@ namespace http {
 						((dType == pTypeGeneral) && (dSubType == sTypeVoltage)) ||
 						((dType == pTypeGeneral) && (dSubType == sTypeCurrent)) ||
 						((dType == pTypeGeneral) && (dSubType == sTypePressure)) ||
-						((dType == pTypeGeneral) && (dSubType == sTypeSoundLevel))
+						((dType == pTypeGeneral) && (dSubType == sTypeSoundLevel)) ||
+						((dType == pTypeP1Voltage))
 						)
 					{
 						float vdiv = 10.0f;
