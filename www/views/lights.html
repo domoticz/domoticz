@@ -80,6 +80,16 @@
 								<button id="speedUp" onclick="appLampSpeedUp()">Speed Up</button><button id="speedDown" onclick="appLampSpeedDown()">Speed Down</button><br />
 								<button id="discoUp" onclick="appLampDiscoMode()">Disco Mode</button><button id="speedUpLong" onclick="appLampSpeedUpLong()">Exclude Lamp</button><br />
 							</div>
+							<div id="optionsRGBWW" style="display:none;">
+								<button id="Night" onclick="appLampNight()">Night Light</button><button id="White" onclick="appLampWhite()">Set White</button><br />
+								<br />
+								<button id="discoM1" onclick="appLampDiscoModeNum(1)">Disco M1</button><button id="discoM2" onclick="appLampDiscoModeNum(2)">Disco M2</button><button id="discoM3" onclick="appLampDiscoModeNum(3)">Disco M3</button><br />
+								<button id="discoM4" onclick="appLampDiscoModeNum(4)">Disco M4</button><button id="discoM5" onclick="appLampDiscoModeNum(5)">Disco M5</button><button id="discoM6" onclick="appLampDiscoModeNum(6)">Disco M6</button><br />
+								<button id="discoM7" onclick="appLampDiscoModeNum(7)">Disco M7</button><button id="discoM8" onclick="appLampDiscoModeNum(8)">Disco M8</button><button id="discoM9" onclick="appLampDiscoModeNum(9)">Disco M9</button><br />
+								<br />
+								<button id="speedUp" onclick="appLampSpeedUp()">Speed Up</button><button id="speedDown" onclick="appLampSpeedDown()">Speed Down</button><br />
+								<button id="discoMod" onclick="appLampDiscoMode()">Disco Mode</button><br />
+							</div>
 						</td>
 					</tr>
 					</table>
@@ -277,6 +287,8 @@
 						<option value="402">Auxiliary OpenWebNet Bus</option>
 						<option value="403">Blinds OpenWebNet Zigbee</option>
 						<option value="404">Lights OpenWebNet Zigbee</option>
+                        <option value="405">Dry Contact OpenWebNet</option>
+                        <option value="406">IR Detection OpenWebNet</option>
 			</select>
 			</td>
 		  </tr>
@@ -462,6 +474,26 @@
                 </tr>
                 <tr id="openwebnet_unit">
                     <td align="right"><label><span data-i18n="Unit">Unit</span>:</label></td>
+                    <td><select id="combocmd2" style="width:60px" class="combobox ui-corner-all"></select></td>
+                </tr>
+            </table>
+        </div>
+        <div id="openwebnetparamsDryContact">
+            <table class="display" border="0" cellpadding="0" cellspacing="20">
+                <tr id="openwebnet_drycontact">
+                    <td align="right"><label><span data-i18n="Zone">Zone</span>:</label></td>
+                    <td><select id="combocmd1" style="width:60px" class="combobox ui-corner-all"></select></td>
+                </tr>
+            </table>
+        </div>
+        <div id="openwebnetparamsIRdetec">
+            <table class="display" border="0" cellpadding="0" cellspacing="20">
+                <tr id="openwebnet_zoneIR">
+                    <td align="right"><label><span data-i18n="Zone">Zone</span>:</label></td>
+                    <td><select id="combocmd1" style="width:60px" class="combobox ui-corner-all"></select></td>
+                </tr>
+                <tr id="openwebnet_subzoneIR">
+                    <td align="right"><label><span data-i18n="SubZone">SubZone</span>:</label></td>
                     <td><select id="combocmd2" style="width:60px" class="combobox ui-corner-all"></select></td>
                 </tr>
             </table>

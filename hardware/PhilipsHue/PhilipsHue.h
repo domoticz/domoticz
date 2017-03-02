@@ -1,8 +1,8 @@
 #pragma once
 
-#include "DomoticzHardware.h"
-#include <iostream>
+#include "../DomoticzHardware.h"
 #include <map>
+#include "PhilipsHueSensors.h"
 
 namespace Json
 {
@@ -36,6 +36,7 @@ class CPhilipsHue : public CDomoticzHardwareBase
 		std::string name;
 		std::string lastupdated;
 	};
+
 public:
 	CPhilipsHue(const int ID, const std::string &IPAddress, const unsigned short Port, const std::string &Username);
 	~CPhilipsHue(void);
@@ -50,6 +51,7 @@ private:
 	std::map<int, _tHueLight> m_lights;
 	std::map<int, _tHueGroup> m_groups;
 	std::map<std::string, _tHueScene> m_scenes;
+	std::map<int, CPHSensor> m_sensors;
 
 	void Init();
 	bool StartHardware();
@@ -59,7 +61,9 @@ private:
 	bool GetLights(const Json::Value &root);
 	bool GetGroups(const Json::Value &root);
 	bool GetScenes(const Json::Value &root);
+	bool GetSensors(const Json::Value &root);
 	void InsertUpdateSwitch(const int NodeID, const _eHueLightType LType, const bool bIsOn, const int BrightnessLevel, const int Sat, const int Hue, const std::string &Name, const std::string &Options);
+	void InsertUpdateSwitch(const int NodeID, const _eSwitchType SType, const bool bIsOn, const string &Name, uint8_t BatteryLevel);
 	bool SwitchLight(const int nodeID, const std::string &LCmd, const int svalue);
 };
 

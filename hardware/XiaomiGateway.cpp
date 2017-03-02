@@ -439,9 +439,6 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 		if (is2ndchannel) {
 			xcmd.unitcode = 2;
 		}
-		else {
-			_log.Log(LOG_ERROR, "XiaomiGateway: ITS OK is2ndchannel not exist");
-		}
 		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, NULL, -1);
 	}
 }
@@ -518,7 +515,7 @@ bool XiaomiGateway::StartHardware()
 	if (result.size() > 0) {
 		int lowestId = 9999;
 		int Id = 0;
-		for (int i = 0; i < result.size(); i++) {
+		for (size_t i = 0; i < result.size(); i++) {
 			Id = atoi(result[i][2].c_str());
 			//_log.Log(LOG_STATUS, "XiaomiGateway: checking hardware id %d", Id);
 			if (Id < lowestId) {
@@ -656,6 +653,7 @@ XiaomiGateway::xiaomi_udp_server::xiaomi_udp_server(boost::asio::io_service& io_
 	if (listenPort9898) {
 		try {
 			socket_.set_option(boost::asio::ip::udp::socket::reuse_address(true));
+			/* The following was causing some setups not to receive updates from devices, so have disabled.
 			if (m_localip != "") {
 				socket_.bind(boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(m_localip), 9898));
 #ifdef _DEBUG
@@ -664,7 +662,8 @@ XiaomiGateway::xiaomi_udp_server::xiaomi_udp_server(boost::asio::io_service& io_
 			}
 			else {
 				socket_.bind(boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 9898));
-			}
+			}*/
+			socket_.bind(boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 9898));
 			boost::shared_ptr<std::string> message(new std::string("{\"cmd\":\"whois\"}"));
 			boost::asio::ip::udp::endpoint remote_endpoint;
 			remote_endpoint = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string("224.0.0.50"), 4321);
@@ -767,15 +766,17 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 					}
 					if (type != STYPE_END) {
 						std::string status = root2["status"].asString();
+						std::string no_close = root2["no_close"].asString();
+						std::string no_motion = root2["no_motion"].asString();
 						//Aqara's Wireless switch reports per channel
 						std::string aqara_wireless1 = root2["channel_0"].asString();
 						std::string aqara_wireless2 = root2["channel_1"].asString();
 						bool on = false;
 						int level = 0;
-						if ((status == "motion") || (status == "open") || (status == "no_close") || (status == "on")) {
+						if ((status == "motion") || (status == "open") || (status == "no_close") || (status == "on") || (no_close != "")) {
 							on = true;
 						}
-						else if ((status == "no_motion") || (status == "close") || (status == "off")) {
+						else if ((status == "no_motion") || (status == "close") || (status == "off") || (no_motion != "")) {
 							on = false;
 						}
 						else if ((status == "click") || (status == "flip90") || (aqara_wireless1 == "click")) {

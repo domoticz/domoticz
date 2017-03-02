@@ -23,7 +23,8 @@ namespace Plugins {
 		PDT_Protocol,
 		PDT_Connect,
 		PDT_Write,
-		PDT_Disconnect
+		PDT_Disconnect,
+		PDT_Settings
 	};
 
 	class CPluginMessage
@@ -147,7 +148,7 @@ namespace Plugins {
 	public:
 		CommandMessage(int HwdID, int Unit, const std::string & Message, const int level, const int hue) : CPluginMessage(PMT_Command, HwdID, Unit, Message, level, hue)
 		{
-			m_fLevel = -273.15;
+			m_fLevel = -273.15f;
 		};
 		CommandMessage(int HwdID, int Unit, const std::string & Message, const float level) : CPluginMessage(PMT_Command, HwdID)
 		{
@@ -184,5 +185,20 @@ namespace Plugins {
 	public:
 		StopMessage(int HwdID) : CPluginMessage(PMT_Stop, HwdID) {};
 	};
+
+	// Base directive message class
+	class CDirectiveMessage : public CPluginMessage
+	{
+	public:
+		CDirectiveMessage(ePluginDirectiveType dType, int HwdID) : CPluginMessage(PMT_Directive, dType, HwdID) {};
+	};
+
+	class SettingsDirective : public CDirectiveMessage
+	{
+	public:
+		SettingsDirective(int HwdID) : CDirectiveMessage(PDT_Settings, HwdID) {};
+	};
+
+
 }
 

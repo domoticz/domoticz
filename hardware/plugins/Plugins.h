@@ -18,7 +18,6 @@ namespace Plugins {
 
 		std::string		m_Username;
 		std::string		m_Password;
-		std::string		m_HomeFolder;
 		std::string		m_Version;
 		std::string		m_Author;
 
@@ -31,6 +30,7 @@ namespace Plugins {
 		void LogPythonException(const std::string &);
 		bool HandleInitialise();
 		bool HandleStart();
+		bool LoadSettings();
 
 	public:
 		CPlugin(const int HwdID, const std::string &Name, const std::string &PluginKey);
@@ -47,6 +47,9 @@ namespace Plugins {
 		CPluginProtocol*	m_pProtocol;
 		CPluginTransport*	m_pTransport;
 		void*				m_DeviceDict;
+		void*				m_ImageDict;
+		void*				m_SettingsDict;
+		std::string			m_HomeFolder;
 		bool				m_bDebug;
 		bool				m_stoprequested;
 	};
