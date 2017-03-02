@@ -1182,8 +1182,7 @@ namespace http {
 			else if (htype == HTYPE_SolarEdgeAPI)
 			{
 				if (
-					(username == "") ||
-					(password == "")
+					(username == "")
 					)
 					return;
 				std::string siteID = request::findValue(&req, "Mode1");
@@ -1386,6 +1385,13 @@ namespace http {
 				)
 				return;
 
+			int mode1 = atoi(request::findValue(&req, "Mode1").c_str());
+			int mode2 = atoi(request::findValue(&req, "Mode2").c_str());
+			int mode3 = atoi(request::findValue(&req, "Mode3").c_str());
+			int mode4 = atoi(request::findValue(&req, "Mode4").c_str());
+			int mode5 = atoi(request::findValue(&req, "Mode5").c_str());
+			int mode6 = atoi(request::findValue(&req, "Mode6").c_str());
+
 			bool bEnabled = (senabled == "true") ? true : false;
 
 			_eHardwareTypes htype = (_eHardwareTypes)atoi(shtype.c_str());
@@ -1511,7 +1517,6 @@ namespace http {
 				(htype == HTYPE_NEST) ||
 				(htype == HTYPE_ANNATHERMOSTAT) ||
 				(htype == HTYPE_THERMOSMART) ||
-				(htype == HTYPE_SolarEdgeAPI) ||
 				(htype == HTYPE_Netatmo) ||
 				(htype == HTYPE_FITBIT)
 				)
@@ -1519,6 +1524,13 @@ namespace http {
 				if (
 					(username == "") ||
 					(password == "")
+					)
+					return;
+			}
+			else if (htype == HTYPE_SolarEdgeAPI)
+			{
+				if (
+					(username == "")
 					)
 					return;
 			}
@@ -1577,13 +1589,6 @@ namespace http {
 			}
 			else
 				return;
-
-			int mode1 = atoi(request::findValue(&req, "Mode1").c_str());
-			int mode2 = atoi(request::findValue(&req, "Mode2").c_str());
-			int mode3 = atoi(request::findValue(&req, "Mode3").c_str());
-			int mode4 = atoi(request::findValue(&req, "Mode4").c_str());
-			int mode5 = atoi(request::findValue(&req, "Mode5").c_str());
-			int mode6 = atoi(request::findValue(&req, "Mode6").c_str());
 
 			std::string mode1Str;
 			std::string mode2Str;
