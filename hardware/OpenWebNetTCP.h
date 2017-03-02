@@ -29,7 +29,7 @@ public:
 		WHO_SCENARIO_PROGRAMMING = 17,
 		WHO_ENERGY_MANAGEMENT = 18,
 		WHO_LIHGTING_MANAGEMENT = 24,
-		WHO_SCENARIO_SCHEDULER_BUTTONS = 25,
+		WHO_DRY_CONTACT_IR_DETECTION = 25,
 		WHO_DIAGNOSTIC = 1000,
 		WHO_AUTOMATIC_DIAGNOSTIC = 1001,
 		WHO_THERMOREGULATION_DIAGNOSTIC_FAILURES = 1004,
@@ -50,6 +50,11 @@ public:
 	enum _eAuxiliaryWhat {
         AUXILIARY_WHAT_OFF = 0,
         AUXILIARY_WHAT_ON = 1
+	};
+
+	enum _eDryContactIrDetectionWhat {
+		DRY_CONTACT_IR_DETECTION_WHAT_ON = 31,
+		DRY_CONTACT_IR_DETECTION_WHAT_OFF = 32
 	};
 
 	enum _eArea {
@@ -118,4 +123,5 @@ protected:
     void scan_device();
     void requestTime();
     void requestBurglarAlarmStatus();
+	void requestDryContactIRDetectionStatus();
 };
