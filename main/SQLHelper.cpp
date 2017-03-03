@@ -4465,6 +4465,7 @@ void CSQLHelper::UpdateMeter()
 				if (difftime(now,checktime) >= 3 * 3600)
 					continue;
 			}
+
 			if (dType==pTypeYouLess)
 			{
 				std::vector<std::string> splitresults;
@@ -5112,9 +5113,9 @@ void CSQLHelper::AddCalendarUpdateMeter()
 			double avg_value = (double)atof(sd[2].c_str());
 
 			if (
-				(devType!=pTypeAirQuality) &&
-				(devType!=pTypeRFXSensor) &&
-				(!((devType==pTypeGeneral)&&(subType==sTypeVisibility))) &&
+				(devType!=pTypeAirQuality)&&
+				(devType!=pTypeRFXSensor)&&
+				(!((devType==pTypeGeneral)&&(subType==sTypeVisibility)))&&
 				(!((devType == pTypeGeneral) && (subType == sTypeDistance))) &&
 				(!((devType == pTypeGeneral) && (subType == sTypeSolarRadiation))) &&
 				(!((devType==pTypeGeneral)&&(subType==sTypeSoilMoisture)))&&
@@ -5124,7 +5125,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 				(!((devType == pTypeGeneral) && (subType == sTypePressure))) &&
 				(!((devType == pTypeGeneral) && (subType == sTypeSoundLevel))) &&
 				(devType != pTypeLux) &&
-				(devType!=pTypeWEIGHT) &&
+				(devType!=pTypeWEIGHT)&&
 				(devType!=pTypeUsage)
 				)
 			{
@@ -5180,8 +5181,8 @@ void CSQLHelper::AddCalendarUpdateMeter()
 					);
 			}
 			if (
-				(devType!=pTypeAirQuality) &&
-				(devType!=pTypeRFXSensor) &&
+				(devType!=pTypeAirQuality)&&
+				(devType!=pTypeRFXSensor)&&
 				((devType != pTypeGeneral) && (subType != sTypeVisibility)) &&
 				((devType != pTypeGeneral) && (subType != sTypeDistance)) &&
 				((devType != pTypeGeneral) && (subType != sTypeSolarRadiation)) &&
