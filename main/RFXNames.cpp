@@ -2514,50 +2514,50 @@ bool GetLightCommand(
 			return true;
 		}
 		else if (switchcmd == "Disco Mode 1")
-				{
-					cmd = Limitless_DiscoMode_1;
-					return true;
-				}
+		{
+			cmd = Limitless_DiscoMode_1;
+			return true;
+		}
 		else if (switchcmd == "Disco Mode 2")
-				{
-					cmd = Limitless_DiscoMode_2;
-					return true;
-				}
+		{
+			cmd = Limitless_DiscoMode_2;
+			return true;
+		}
 		else if (switchcmd == "Disco Mode 3")
-				{
-					cmd = Limitless_DiscoMode_3;
-					return true;
-				}
+		{
+			cmd = Limitless_DiscoMode_3;
+			return true;
+		}
 		else if (switchcmd == "Disco Mode 4")
-				{
-					cmd = Limitless_DiscoMode_4;
-					return true;
-				}
+		{
+			cmd = Limitless_DiscoMode_4;
+			return true;
+		}
 		else if (switchcmd == "Disco Mode 5")
-				{
-					cmd = Limitless_DiscoMode_5;
-					return true;
-				}
+		{
+			cmd = Limitless_DiscoMode_5;
+			return true;
+		}
 		else if (switchcmd == "Disco Mode 6")
-				{
-					cmd = Limitless_DiscoMode_6;
-					return true;
-				}
+		{
+			cmd = Limitless_DiscoMode_6;
+			return true;
+		}
 		else if (switchcmd == "Disco Mode 7")
-				{
-					cmd = Limitless_DiscoMode_7;
-					return true;
-				}
+		{
+			cmd = Limitless_DiscoMode_7;
+			return true;
+		}
 		else if (switchcmd == "Disco Mode 8")
-				{
-					cmd = Limitless_DiscoMode_8;
-					return true;
-				}
+		{
+			cmd = Limitless_DiscoMode_8;
+			return true;
+		}
 		else if (switchcmd == "Disco Mode 9")
-				{
-					cmd = Limitless_DiscoMode_9;
-					return true;
-				}
+		{
+			cmd = Limitless_DiscoMode_9;
+			return true;
+		}
 		else if (switchcmd == "Disco Up")
 		{
 			cmd = Limitless_RGBDiscoNext;
