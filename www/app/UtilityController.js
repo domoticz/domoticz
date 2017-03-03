@@ -1558,7 +1558,7 @@ define(['app'], function (app) {
 							xhtm+='<a class="btnsmall" onclick="EditThermostatFanMode(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', \'' + item.Mode + '\', \'' + item.Modes + '\',' + item.Protected +');" data-i18n="Edit">Edit</a> ';
 						}
 				  }
-				  else if (((item.Type == "General")||(item.Type == "P1 Smart Meter"))&&(item.SubType == "Voltage")) {
+				  else if ((item.Type == "General")&&(item.SubType == "Voltage")) {
 					xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal +', \'VoltageGeneral\');" data-i18n="Log">Log</a> ';
 					if (permissions.hasPermission("Admin")) {
 						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';

@@ -621,13 +621,6 @@ void CEventSystem::GetCurrentMeasurementStates()
 				isUtility = true;
 			}
 			break;
-		case pTypeP1Voltage:
-			if (!splitresults.empty())
-			{
-				utilityval = static_cast<float>(atof(splitresults[0].c_str()));
-				isUtility = true;
-			}
-			break;
 		case pTypeLux:
 			if (!splitresults.empty())
 			{

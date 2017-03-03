@@ -2283,9 +2283,6 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const 
 		case pTypeP1Gas:
 			decode_P1MeterGas(HwdID, HwdType, reinterpret_cast<const tRBUF *>(pRXCommand), procResult);
 			break;
-		case pTypeP1Voltage:
-			decode_P1MeterVoltage(HwdID, HwdType, reinterpret_cast<const tRBUF *>(pRXCommand), procResult);
-			break;
 		case pTypeUsage:
 			decode_Usage(HwdID, HwdType, reinterpret_cast<const tRBUF *>(pRXCommand), procResult);
 			break;
@@ -9213,61 +9210,6 @@ void MainWorker::decode_P1MeterGas(const int HwdID, const _eHardwareTypes HwdTyp
 			break;
 		default:
 			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", p1Gas->type, p1Gas->subtype);
-			WriteMessage(szTmp);
-			break;
-		}
-		WriteMessageEnd();
-	}
-	procResult.DeviceRowIdx = DevRowIdx;
-}
-
-void MainWorker::decode_P1MeterVoltage(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
-{
-	char szTmp[200];
-	const _tP1Voltage *p1Voltage = reinterpret_cast<const _tP1Voltage*>(pResponse);
-	if (p1Voltage->len != sizeof(_tP1Voltage) - 1)
-		return;
-
-	unsigned char devType=p1Voltage->type;
-	unsigned char subType=p1Voltage->subtype;
-	std::string ID;
-	sprintf(szTmp, "%d", p1Voltage->ID);
-	ID = szTmp;
-	unsigned char Unit = subType;
-	unsigned char cmnd=0;
-	unsigned char SignalLevel=12;
-	unsigned char BatteryLevel = 255;
-
-	sprintf(szTmp,"%.1f",p1Voltage->voltage);
-	uint64_t DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp, procResult.DeviceName);
-
-	if (DevRowIdx == -1)
-		return;
-	
-	m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName,devType, subType, NTYPE_USAGE, (const float)p1Voltage->voltage);
-
-	if (m_verboselevel >= EVBL_ALL)
-	{
-		WriteMessageStart();
-		switch (p1Voltage->subtype)
-		{
-		case sTypeP1VoltageL1:
-			WriteMessage("subtype       = P1 Smart Meter Voltage L1");
-			sprintf(szTmp,"voltage = %.1f V", float(p1Voltage->voltage));
-			WriteMessage(szTmp);
-			break;
-		case sTypeP1VoltageL2:
-			WriteMessage("subtype       = P1 Smart Meter Voltage L2");
-			sprintf(szTmp,"voltage = %.1f V", float(p1Voltage->voltage));
-			WriteMessage(szTmp);
-			break;
-		case sTypeP1VoltageL3:
-			WriteMessage("subtype       = P1 Smart Meter Voltage L3");
-			sprintf(szTmp,"voltage = %.1f V", float(p1Voltage->voltage));
-			WriteMessage(szTmp);
-			break;
-		default:
-			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", p1Voltage->type, p1Voltage->subtype);
 			WriteMessage(szTmp);
 			break;
 		}

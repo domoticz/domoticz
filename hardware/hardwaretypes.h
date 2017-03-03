@@ -223,11 +223,6 @@
 #define pTypeP1Gas		0xFB
 #define sTypeP1Gas		0x02
 
-#define pTypeP1Voltage	0xFF
-#define sTypeP1VoltageL1	0x03
-#define sTypeP1VoltageL2	0x04
-#define sTypeP1VoltageL3	0x05
-
 #define pTypeYouLess	0xFC
 #define sTypeYouLess	0x01
 
@@ -474,21 +469,6 @@ typedef struct _tP1Gas {
 		ID = 1;
 	}
 } P1Gas;
-
-typedef struct _tP1Voltage {
-	uint8_t len;
-	uint8_t type;
-	uint8_t subtype;
-	float voltage;
-	int32_t ID;
-	_tP1Voltage()
-	{
-		len = sizeof(_tP1Voltage) - 1;
-		type = pTypeP1Voltage;
-		subtype = sTypeP1VoltageL1;
-		ID = 1;
-	}
-} P1Voltage;
 
 typedef struct _tLimitlessLights {
 	uint8_t len;

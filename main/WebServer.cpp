@@ -1760,8 +1760,8 @@ namespace http {
 			std::string variablevalue = request::findValue(&req, "vvalue");
 			std::string variabletype = request::findValue(&req, "vtype");
 			if (
-				(variablename == "") || 
-				(variabletype == "") || 
+				(variablename == "") ||
+				(variabletype == "") ||
 				((variablevalue == "") && (variabletype != "2"))
 				)
 				return;
@@ -1798,7 +1798,7 @@ namespace http {
 				(variablename.empty()) ||
 				(variabletype.empty()) ||
 				((variablevalue.empty()) && (variabletype != "2"))
-				) 
+				)
 				return;
 
 			root["status"] = m_sql.UpdateUserVariable(idx, variablename, variabletype, variablevalue, true);
@@ -5443,14 +5443,6 @@ namespace http {
 					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_TODAYGAS, 1);
 					ii++;
 				}
-				if (dType == pTypeP1Voltage)
-				{
-					root["result"][ii]["val"] = NTYPE_USAGE;
-					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_USAGE, 0);
-					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_USAGE, 1);
-					ii++;
-				}
-
 				if ((dType == pTypeThermostat) && (dSubType == sTypeThermSetpoint))
 				{
 					root["result"][ii]["val"] = NTYPE_TEMPERATURE;
@@ -8283,7 +8275,6 @@ namespace http {
 								(dType != pTypePOWER) &&
 								(dType != pTypeP1Power) &&
 								(dType != pTypeP1Gas) &&
-								(dType != pTypeP1Voltage) &&
 								(dType != pTypeYouLess) &&
 								(dType != pTypeAirQuality) &&
 								(dType != pTypeLux) &&
@@ -9638,7 +9629,7 @@ namespace http {
 							s_str1 >> total_min_gas;
 							std::stringstream s_str2(sValue);
 							s_str2 >> gasactual;
-							
+
 							double musage = 0;
 
 							root["result"][ii]["SwitchTypeVal"] = MTYPE_GAS;
@@ -9665,14 +9656,6 @@ namespace http {
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 						}
-					}
-					else if (dType == pTypeP1Voltage)
-					{
-							sprintf(szData, "%.1f V", atof(sValue.c_str()));
-							root["result"][ii]["Data"] = szData;
-							root["result"][ii]["TypeImg"] = "current";
-							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-							root["result"][ii]["Voltage"] = atof(sValue.c_str());
 					}
 					else if (dType == pTypeCURRENT)
 					{
@@ -10004,7 +9987,12 @@ namespace http {
 						}
 						else if (dSubType == sTypeVoltage)
 						{
-							sprintf(szData, "%.3f V", atof(sValue.c_str()));
+						if 	((pHardware != NULL) &&
+							((pHardware->HwdType == HTYPE_P1SmartMeter) ||
+							(pHardware->HwdType == HTYPE_P1SmartMeterLAN)))
+								sprintf(szData, "%.1f V", atof(sValue.c_str()));
+							else
+								sprintf(szData, "%.3f V", atof(sValue.c_str()));
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["TypeImg"] = "current";
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
@@ -10729,7 +10717,7 @@ namespace http {
 					root["result"][ii]["Username"] = sd[7];
 					root["result"][ii]["Password"] = sd[8];
 					root["result"][ii]["Extra"] = sd[9];
-					
+
 					if (hType == HTYPE_PythonPlugin) {
 						root["result"][ii]["Mode1"] = sd[10];  // Plugins can have non-numeric values in the Mode fields
 						root["result"][ii]["Mode2"] = sd[11];
@@ -12551,7 +12539,6 @@ namespace http {
 				{
 					if (
 						(dType == pTypeP1Power) ||
-						(dType == pTypeP1Voltage) ||
 						(dType == pTypeCURRENT) ||
 						(dType == pTypeCURRENTENERGY) ||
 						(dType == pTypeAirQuality) ||
@@ -12921,8 +12908,7 @@ namespace http {
 						((dType == pTypeGeneral) && (dSubType == sTypeVoltage)) ||
 						((dType == pTypeGeneral) && (dSubType == sTypeCurrent)) ||
 						((dType == pTypeGeneral) && (dSubType == sTypePressure)) ||
-						((dType == pTypeGeneral) && (dSubType == sTypeSoundLevel)) ||
-						((dType == pTypeP1Voltage))
+						((dType == pTypeGeneral) && (dSubType == sTypeSoundLevel))
 						)
 					{//day
 						root["status"] = "OK";
@@ -14949,8 +14935,7 @@ namespace http {
 						((dType == pTypeGeneral) && (dSubType == sTypeVoltage)) ||
 						((dType == pTypeGeneral) && (dSubType == sTypeCurrent)) ||
 						((dType == pTypeGeneral) && (dSubType == sTypePressure)) ||
-						((dType == pTypeGeneral) && (dSubType == sTypeSoundLevel)) ||
-						((dType == pTypeP1Voltage))
+						((dType == pTypeGeneral) && (dSubType == sTypeSoundLevel))
 						)
 					{//month/year
 						root["status"] = "OK";
@@ -15566,8 +15551,7 @@ namespace http {
 						((dType == pTypeGeneral) && (dSubType == sTypeVoltage)) ||
 						((dType == pTypeGeneral) && (dSubType == sTypeCurrent)) ||
 						((dType == pTypeGeneral) && (dSubType == sTypePressure)) ||
-						((dType == pTypeGeneral) && (dSubType == sTypeSoundLevel)) ||
-						((dType == pTypeP1Voltage))
+						((dType == pTypeGeneral) && (dSubType == sTypeSoundLevel))
 						)
 					{
 						float vdiv = 10.0f;

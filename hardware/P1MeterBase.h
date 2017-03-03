@@ -13,10 +13,7 @@ public:
 
 	P1Power		m_p1power;
 	P1Gas		m_p1gas;
-	P1Voltage	m_p1voltagel1;
-	P1Voltage	m_p1voltagel2;
-	P1Voltage	m_p1voltagel3;
-	
+
 private:
 	bool m_bDisableCRC;
 	int m_ratelimit;
@@ -28,6 +25,10 @@ private:
 	unsigned char m_linecount;
 	unsigned char m_exclmarkfound;
 	unsigned char m_CRfound;
+
+	float m_voltagel1;
+	float m_voltagel2;
+	float m_voltagel3;
 
 	void Init();
 	bool MatchLine();

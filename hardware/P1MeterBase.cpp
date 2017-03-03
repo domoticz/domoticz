@@ -69,9 +69,9 @@ Match matchlist[] = {
 	{STD,		P1TYPE_TARIFF,				P1TIP,			"tariff",		12, 4},
 	{STD,		P1TYPE_USAGECURRENT,		P1PUC,			"powerusagec",	10, 7},
 	{STD,		P1TYPE_DELIVCURRENT,		P1PDC,			"powerdelivc",	10, 7},
-	{STD,		P1TYPE_VOLTAGEL1,			P1VOLTL1,		"voltagel1",	11, 5},
-	{STD,		P1TYPE_VOLTAGEL2,			P1VOLTL2,		"voltagel2",	11, 5},
-	{STD,		P1TYPE_VOLTAGEL3,			P1VOLTL3,		"voltagel3",	11, 5},
+	{STD,		P1TYPE_VOLTAGEL1,			P1VOLTL1,		"m_voltagel1",	11, 5},
+	{STD,		P1TYPE_VOLTAGEL2,			P1VOLTL2,		"m_voltagel2",	11, 5},
+	{STD,		P1TYPE_VOLTAGEL3,			P1VOLTL3,		"m_voltagel3",	11, 5},
 	{LINE17,	P1TYPE_GASTIMESTAMP,		P1GTS,			"gastimestamp",	11, 12},
 	{LINE17,	P1TYPE_GASTIMESTAMPME382,	P1GTSME382,		"gastimestamp",	11, 12},
 	{LINE18,	P1TYPE_GASUSAGE,			"(",			"gasusage",		1, 9},
@@ -101,15 +101,15 @@ void P1MeterBase::Init()
 	m_lastgasusage=0;
 	m_lastSharedSendGas=0;
 	m_lastUpdateTime=0;
+	m_voltagel1=0;
+	m_voltagel2=0;
+	m_voltagel3=0;
 
 	memset(&m_buffer,0,sizeof(m_buffer));
 	memset(&l_buffer,0,sizeof(l_buffer));
 
 	memset(&m_p1power,0,sizeof(m_p1power));
 	memset(&m_p1gas,0,sizeof(m_p1gas));
-	memset(&m_p1voltagel1,0,sizeof(m_p1voltagel1));
-	memset(&m_p1voltagel2,0,sizeof(m_p1voltagel2));
-	memset(&m_p1voltagel3,0,sizeof(m_p1voltagel3));
 
 	m_p1power.len=sizeof(P1Power)-1;
 	m_p1power.type=pTypeP1Power;
@@ -120,21 +120,6 @@ void P1MeterBase::Init()
 	m_p1gas.type=pTypeP1Gas;
 	m_p1gas.subtype=sTypeP1Gas;
 	m_p1gas.ID=1;
-
-	m_p1voltagel1.len=sizeof(P1Voltage)-1;
-	m_p1voltagel1.type=pTypeP1Voltage;
-	m_p1voltagel1.subtype=sTypeP1VoltageL1;
-	m_p1voltagel1.ID=1;
-
-	m_p1voltagel2.len=sizeof(P1Voltage)-1;
-	m_p1voltagel2.type=pTypeP1Voltage;
-	m_p1voltagel2.subtype=sTypeP1VoltageL2;
-	m_p1voltagel2.ID=1;
-
-	m_p1voltagel3.len=sizeof(P1Voltage)-1;
-	m_p1voltagel3.type=pTypeP1Voltage;
-	m_p1voltagel3.subtype=sTypeP1VoltageL3;
-	m_p1voltagel3.ID=1;
 }
 
 bool P1MeterBase::MatchLine()
@@ -200,12 +185,12 @@ bool P1MeterBase::MatchLine()
 			if (difftime(atime,m_lastUpdateTime)>=m_ratelimit) {
 				m_lastUpdateTime=atime;
 				sDecodeRXMessage(this, (const unsigned char *)&m_p1power, "Power", 255);
-				if (m_p1voltagel1.voltage) {
-					sDecodeRXMessage(this, (const unsigned char *)&m_p1voltagel1, "Voltage L1", 255);
-					if (m_p1voltagel2.voltage)
-						sDecodeRXMessage(this, (const unsigned char *)&m_p1voltagel2, "Voltage L2", 255);
-					if (m_p1voltagel3.voltage)
-						sDecodeRXMessage(this, (const unsigned char *)&m_p1voltagel3, "Voltage L3", 255);
+				if (m_voltagel1) {
+					SendVoltageSensor(0, 1, 255, m_voltagel1, "Voltage L1");
+					if (m_voltagel2)
+						SendVoltageSensor(0, 2, 255, m_voltagel2, "Voltage L2");
+					if (m_voltagel3)
+						SendVoltageSensor(0, 3, 255, m_voltagel3, "Voltage L3");
 				}
 				if (
 					(m_p1gas.gasusage!=m_lastgasusage)||
@@ -295,17 +280,17 @@ bool P1MeterBase::MatchLine()
 			case P1TYPE_VOLTAGEL1:
 				temp_volt = strtof(value,&validate);
 				if (temp_volt < 300)
-					m_p1voltagel1.voltage = temp_volt; //Voltage L1;
+					m_voltagel1 = temp_volt; //Voltage L1;
 				break;
 			case P1TYPE_VOLTAGEL2:
 				temp_volt = strtof(value,&validate);
 				if (temp_volt < 300)
-					m_p1voltagel2.voltage = temp_volt; //Voltage L2;
+					m_voltagel2 = temp_volt; //Voltage L2;
 				break;
 			case P1TYPE_VOLTAGEL3:
 				temp_volt = strtof(value,&validate);
 				if (temp_volt < 300)
-					m_p1voltagel3.voltage = temp_volt; //Voltage L3;
+					m_voltagel3 = temp_volt; //Voltage L3;
 				break;
 			case P1TYPE_GASTIMESTAMP:
 			case P1TYPE_GASTIMESTAMPME382:
