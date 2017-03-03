@@ -385,7 +385,8 @@ void CEcoDevices::GetMeterDetails()
 	else
 	{
                 message = "EcoDevices firmware needs to be at least version ";
-                message = message + boost::to_string(min_major) + "." + boost::to_string(min_minor) + "." + boost::to_string(min_release) + ", current vesion is " +  m_status.version;
+                message = message + boost::to_string(min_major) + "." + boost::to_string(min_minor) + "." + boost::to_string(min_release);
+                message = message + ", current version is " +  m_status.version;
 		_log.Log(LOG_ERROR, message.c_str());
 		return;
 	}
