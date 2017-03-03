@@ -8,6 +8,7 @@
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/iostreams/stream.hpp>
+#include <boost/lexical_cast.hpp>
 
 /*
 Eco- Devices is a utility consumption monitoring device dedicated to the French market.
@@ -27,7 +28,7 @@ Author  Blaise Thauvin
 
 Version history
 
-3.0   28-02-2017 Move from JSON to XML API on EcoDevices in order to retreive more Teleinfo variables (current, alerts...)
+3.0   03-03-2017 Move from JSON to XML API on EcoDevices in order to retreive more Teleinfo variables (current, alerts...)
 2.1   27-02-2017 Switch from sDecodeRX to standard helpers (Sendxxxxx) for updating devices.
 				 Supports 4 main subscription plans (Basic, Tempo, EJP, "Heures Creuses")
 				 Text device for reporting the current rate for multiple rates plans.
@@ -39,6 +40,12 @@ Version history
 #ifdef _DEBUG
 #define DEBUG_EcoDevices
 #endif
+
+
+// Minimum EcoDevises firmware require
+#define MAJOR 1
+#define MINOR 5
+#define RELEASE 12
 
 CEcoDevices::CEcoDevices(const int ID, const std::string &IPAddress, const unsigned short usIPPort)
 {
@@ -149,13 +156,18 @@ void CEcoDevices::DecodeXML2Teleinfo(const std::string &sResult, Teleinfo &telei
 	teleinfo.IINST1 = pt.get<unsigned>("response.IINST1", 0);
 	teleinfo.IINST2 = pt.get<unsigned>("response.IINST2", 0);
 	teleinfo.IINST3 = pt.get<unsigned>("response.IINST3", 0);
+        teleinfo.IMAX = pt.get<unsigned>("response.IMAX", 0);
+        teleinfo.IMAX1 = pt.get<unsigned>("response.IMAX1", 0);
+        teleinfo.IMAX2 = pt.get<unsigned>("response.IMAX2", 0);
+        teleinfo.IMAX3 = pt.get<unsigned>("response.IMAX3", 0);
 	teleinfo.ADPS = pt.get<unsigned>("response.ADPS", 0);
 }
 
 
 void CEcoDevices::ProcessTeleinfo(const std::string &name, int HwdID, int rank, Teleinfo &teleinfo)
 {
-	uint32_t m_pappHC, m_pappHP, m_pappHCJB, m_pappHPJB, m_pappHCJW, m_pappHPJW, m_pappHCJR, m_pappHPJR, checksum;
+	uint32_t m_pappHC, m_pappHP, m_pappHCJB, m_pappHPJB, m_pappHCJW, m_pappHPJW, m_pappHCJR, m_pappHPJR, checksum, level;
+        double flevel;
 	time_t atime = mytime(NULL);
 
 	// PAPP only exist on some meter versions. If not present, we can approximate it as (current x 230V)
@@ -207,14 +219,13 @@ void CEcoDevices::ProcessTeleinfo(const std::string &name, int HwdID, int rank, 
 		{
 			teleinfo.tariff="Tarif de Base";
 			SendKwhMeter(HwdID, 10, 255, teleinfo.PAPP, teleinfo.BASE/1000.0, name + " Index");
-			SendTextSensor(HwdID, 11, 255, teleinfo.rate, name + " Tarif en cours");
 		}
 		else if  (teleinfo.OPTARIF == "HC..")
 		{
 			teleinfo.tariff="Tarif option Heures Creuses";
 			SendKwhMeter(HwdID, 12, 255, m_pappHC, teleinfo.HCHC/1000.0, name + " Heures Creuses");
 			SendKwhMeter(HwdID, 13, 255, m_pappHP, teleinfo.HCHP/1000.0, name + " Heures Pleines");
-			SendKwhMeter(HwdID, 14, 255, teleinfo.PAPP, (teleinfo.HCHP + teleinfo.HCHC)/1000.0, "Teleinfo 1 Total");
+			SendKwhMeter(HwdID, 14, 255, teleinfo.PAPP, (teleinfo.HCHP + teleinfo.HCHC)/1000.0, name + " Total");
 			SendTextSensor(HwdID, 11, 255, teleinfo.rate, name + " Tarif en cours");
 		}
 		else if (teleinfo.OPTARIF == "EJP.")
@@ -224,7 +235,7 @@ void CEcoDevices::ProcessTeleinfo(const std::string &name, int HwdID, int rank, 
 			SendKwhMeter(HwdID, 16, 255, m_pappHP, teleinfo.EJPHPM/1000.0, name + " Heures Pointe Mobile");
 			SendKwhMeter(HwdID, 17, 255, teleinfo.PAPP, (teleinfo.EJPHN + teleinfo.EJPHPM)/1000.0, name + " Total");
 			SendTextSensor(HwdID, 11, 255, teleinfo.rate, name + " Tarif en cours");
-			SendAlertSensor(HwdID, 255, teleinfo.PEJP/6, "Alerte Pointe Mobile");
+			SendAlertSensor((HwdID*256) + rank, 255, ((teleinfo.PEJP == 30) ? 4 : 1),  (name + " Alerte Pointe Mobile").c_str());
 		}
 		else if (teleinfo.OPTARIF.substr(0,3) == "BBR")
 		{
@@ -270,12 +281,22 @@ void CEcoDevices::ProcessTeleinfo(const std::string &name, int HwdID, int rank, 
 			SendKwhMeter(HwdID, 22, 255, m_pappHCJR, teleinfo.BBRHCJR/1000.0, "Teleinfo 1 Jour Rouge, Creux");
 			SendKwhMeter(HwdID, 23, 255, m_pappHPJR, teleinfo.BBRHCJR/1000.0, "Teleinfo 1 Jour Rouge, Plein");
 			SendKwhMeter(HwdID, 24, 255, teleinfo.PAPP, (teleinfo.BBRHCJB + teleinfo.BBRHPJB + teleinfo.BBRHCJW \
-				+ teleinfo.BBRHPJW + teleinfo.BBRHCJR + teleinfo.BBRHPJR)/1000.0, "Teleinfo 1 Total");
-			SendTextSensor(HwdID, 11, 255, "Jour " +  teleinfo.color + ", " + teleinfo.rate, "Tarif en cours Teleinfo 1");
-			SendTextSensor(HwdID, 25, 255, "Demain, jour " + teleinfo.DEMAIN , "Teleinfo 1 couleur demain");
+				+ teleinfo.BBRHPJW + teleinfo.BBRHCJR + teleinfo.BBRHPJR)/1000.0,  name + " Total");
+			SendTextSensor(HwdID, 11, 255, "Jour " +  teleinfo.color + ", " + teleinfo.rate,  name + " Tarif en cours ");
+			SendTextSensor(HwdID, 25, 255, "Demain, jour " + teleinfo.DEMAIN ,  name + " couleur demain");
 		}
 		// Common sensors for all rates
-		SendCurrentSensor(HwdID, 255, teleinfo.IINST1, teleinfo.IINST2, teleinfo.IINST3, "Teleinfo 1 Courant");
+		SendCurrentSensor(HwdID, 255, teleinfo.IINST1, teleinfo.IINST2, teleinfo.IINST3, name + " Courant");
+                
+                // Alert level is 0 below 100% usage, linear, 1 for 100% load and 4 for maximum load (IMAX)
+                if ((teleinfo.IMAX - teleinfo.IINST ) <=0) 
+                     level = 4;
+                else 
+                     flevel = (3.0 * teleinfo.IINST + teleinfo.IMAX - 4.0 * teleinfo.ISOUSC) / (teleinfo.IMAX - teleinfo.ISOUSC);
+                     if (flevel > 4) flevel = 4;
+                     if (flevel < 1) flevel = 1;
+                     level = round(flevel + 0.49);
+                SendAlertSensor((HwdID*256), 255, level,  (name + " Dépassement intensité maximale").c_str()); 
 	}
 }
 
@@ -288,12 +309,14 @@ void CEcoDevices::GetMeterDetails()
 	// From http://xx.xx.xx.xx/protect/settings/teleinfoX.xml we get a complete feed of Teleinfo data
 
 	std::vector<std::string> ExtraHeaders;
-	std::string       sResult, sub;
+	std::string       sResult, sub, message;
 	std::string::size_type len, pos;
 	std::stringstream sstr;
 	time_t atime = mytime(NULL);
-
-	// Check EcoDevices firmware version and process pulse counters
+        int   major, minor, release;
+        int min_major = MAJOR, min_minor = MINOR, min_release = RELEASE;
+	
+        // Check EcoDevices firmware version and process pulse counters
 	sstr << "http://" << m_szIPAddress << ":" << m_usIPPort << "/status.xml";
 	if (m_status.hostname.empty()) m_status.hostname = m_szIPAddress;
 	if (HTTPClient::GET(sstr.str(), ExtraHeaders, sResult))
@@ -320,9 +343,15 @@ void CEcoDevices::GetMeterDetails()
 	}
 	// XML format changes dramatically between firmware versions. This code was developped for version 1.05.12
 	m_status.version  = pt.get<std::string>("response.version");
-	if (m_status.version == "1.05.12")
-	{
+        major = boost::lexical_cast<int>(m_status.version.substr(0,m_status.version.find(".")).c_str());
+        m_status.version.erase(0,m_status.version.find(".")+1);
+        minor = boost::lexical_cast<int>(m_status.version.substr(0,m_status.version.find(".")).c_str());
+        m_status.version.erase(0,m_status.version.find(".")+1);
+        release = boost::lexical_cast<int>(m_status.version.c_str());
+        m_status.version = pt.get<std::string>("response.version");
 
+	if ((major>min_major) || ((major==min_major) && (minor>min_minor)) || ((major==min_major) && (minor==min_minor) && (release>=min_release)))
+	{
 		m_status.hostname = pt.get<std::string>("response.config_hostname");
 		m_status.flow1    = pt.get<unsigned>("response.meter2");
 		m_status.flow2    = pt.get<unsigned>("response.meter3");
@@ -339,7 +368,7 @@ void CEcoDevices::GetMeterDetails()
 			m_status.pflow1 = m_status.flow1;
 			m_status.time1 = atime;
 			SendMeterSensor(m_HwdID, 1, 255, m_status.index1/1000.0, m_status.hostname + " Counter 1");
-			SendWaterflowSensor(m_HwdID, 2, 255, m_status.flow1, "D\303\251bit eau");
+			SendWaterflowSensor(m_HwdID, 2, 255, m_status.flow1, m_status.hostname + " Flow counter 1");
 		}
 
 		// Process Counter 2
@@ -350,12 +379,14 @@ void CEcoDevices::GetMeterDetails()
 			m_status.pflow2 = m_status.flow2;
 			m_status.time2 = atime;
 			SendMeterSensor(m_HwdID, 3, 255, m_status.index2/1000.0, m_status.hostname + " Counter 2");
-			SendWaterflowSensor(m_HwdID, 4, 255, m_status.flow2, "D\303\251bit gaz");
+			SendWaterflowSensor(m_HwdID, 4, 255, m_status.flow2, m_status.hostname + " Flow counter 2");
 		}
 	}
 	else
 	{
-		_log.Log(LOG_ERROR, "EcoDevices firmware needs to be at least version 1.05.12, current version is %s", m_status.version.c_str());
+                message = "EcoDevices firmware needs to be at least version ";
+                message = message + boost::to_string(min_major) + "." + boost::to_string(min_minor) + "." + boost::to_string(min_release) + ", current vesion is " +  m_status.version;
+		_log.Log(LOG_ERROR, message.c_str());
 		return;
 	}
 
