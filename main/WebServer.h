@@ -276,7 +276,9 @@ private:
 	// Plugin functions
 	void Cmd_PluginCommand(WebEmSession & session, const request& req, Json::Value &root);
 	void PluginList(Json::Value &root);
+#ifdef USE_PYTHON_PLUGINS
 	void PluginLoadConfig();
+#endif
 	std::string PluginHardwareDesc(int HwdID);
 
 	//RTypes

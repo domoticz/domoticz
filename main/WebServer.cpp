@@ -3048,6 +3048,9 @@ namespace http {
 					s_usagecurrent >> usagecurrent;
 					s_delivcurrent >> delivcurrent;
 
+					powerdeliv1 = (powerdeliv1 < 10) ? 0 : powerdeliv1;
+					powerdeliv2 = (powerdeliv2 < 10) ? 0 : powerdeliv2;
+
 					sprintf(szTmp, "%.03f", float(powerusage1) / EnergyDivider);
 					root["CounterT1"] = szTmp;
 					sprintf(szTmp, "%.03f", float(powerusage2) / EnergyDivider);
@@ -7606,9 +7609,10 @@ namespace http {
 			m_sql.UpdatePreferencesVar("OneWireSwitchPollPeriod", atoi(request::findValue(&req, "OneWireSwitchPollPeriod").c_str()));
 
 			m_notifications.LoadConfig();
-
+#ifdef USE_PYTHON_PLUGINS
 			//Signal plugins to update Settings dictionary
 			PluginLoadConfig();
+#endif
 		}
 
 		void CWebServer::RestoreDatabase(WebEmSession & session, const request& req, std::string & redirect_uri)
@@ -9531,6 +9535,9 @@ namespace http {
 							s_powerdeliv2 >> powerdeliv2;
 							s_usagecurrent >> usagecurrent;
 							s_delivcurrent >> delivcurrent;
+
+							powerdeliv1 = (powerdeliv1 < 10) ? 0 : powerdeliv1;
+							powerdeliv2 = (powerdeliv2 < 10) ? 0 : powerdeliv2;
 
 							unsigned long long powerusage = powerusage1 + powerusage2;
 							unsigned long long powerdeliv = powerdeliv1 + powerdeliv2;
@@ -12737,6 +12744,9 @@ namespace http {
 									std::stringstream s_str4(sd[5]);
 									s_str4 >> actDeliv2;
 
+									actDeliv1 = (actDeliv1 < 10) ? 0 : actDeliv1;
+									actDeliv2 = (actDeliv2 < 10) ? 0 : actDeliv2;
+
 									std::string stime = sd[6];
 									struct tm ntime;
 									time_t atime;
@@ -14006,6 +14016,9 @@ namespace http {
 								float fDeliv1 = (float)(atof(szValueDeliv1.c_str()));
 								float fDeliv2 = (float)(atof(szValueDeliv2.c_str()));
 
+								fDeliv1 = (fDeliv1 < 10) ? 0 : fDeliv1;
+								fDeliv2 = (fDeliv2 < 10) ? 0 : fDeliv2;
+
 								if ((fDeliv1 != 0) || (fDeliv2 != 0))
 									bHaveDeliverd = true;
 								sprintf(szTmp, "%.3f", fUsage1 / EnergyDivider);
@@ -14767,6 +14780,9 @@ namespace http {
 								float fUsage_2 = static_cast<float>(atof(szUsage2.c_str()));
 								float fDeliv_1 = static_cast<float>(atof(szDeliv1.c_str()));
 								float fDeliv_2 = static_cast<float>(atof(szDeliv2.c_str()));
+
+								fDeliv_1 = (fDeliv_1 < 10) ? 0 : fDeliv_1;
+								fDeliv_2 = (fDeliv_2 < 10) ? 0 : fDeliv_2;
 
 								if ((fDeliv_1 != 0) || (fDeliv_2 != 0))
 									bHaveDeliverd = true;
