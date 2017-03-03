@@ -409,16 +409,10 @@ void RelayNet::KeepConnectionAlive()
 void RelayNet::TcpGetSetRelay(int RelayNumber, bool SetRelay, bool State)
 {
 	int					portno = m_usIPPort;
-	unsigned long 		ip;
-	int					n;
-	struct sockaddr_in 	serv_addr;
 	char 				sndbuf[4];
-	char				recbuf[16];
 	std::string			expectedResponse;
 	std::string			receivedResponse;
-	std::size_t 		found;
 	bool				newState = State;
-	size_t				sndlen;
 
 	/* Determine TCP command to be send */
 	if (SetRelay)
