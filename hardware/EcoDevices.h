@@ -63,6 +63,10 @@ class CEcoDevices : public CDomoticzHardwareBase
 			uint32_t IINST1;
 			uint32_t IINST2;
 			uint32_t IINST3;
+                        uint32_t IMAX;
+                        uint32_t IMAX1;
+                        uint32_t IMAX2;
+                        uint32_t IMAX3;
 			uint32_t ADPS;
 			uint32_t PAPP;
 			uint32_t BASE;
