@@ -50,7 +50,8 @@
 #include "../hardware/S0MeterTCP.h"
 #include "../hardware/OTGWSerial.h"
 #include "../hardware/OTGWTCP.h"
-#include "../hardware/Teleinfo.h"
+#include "../hardware/TeleinfoBase.h"
+#include "../hardware/TeleinfoSerial.h"
 #include "../hardware/Limitless.h"
 #include "../hardware/MochadTCP.h"
 #include "../hardware/EnOceanESP2.h"
@@ -670,7 +671,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new OTGWSerial(ID,SerialPort, 9600, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
 		break;
 	case HTYPE_TeleinfoMeter:
-		pHardware = new Teleinfo(ID, SerialPort);
+		pHardware = new TeleinfoSerial(ID, SerialPort);
 		break;
 	case HTYPE_MySensorsUSB:
 		pHardware = new MySensorsSerial(ID, SerialPort, Mode1);
