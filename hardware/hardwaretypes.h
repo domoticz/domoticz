@@ -169,6 +169,7 @@
 #define sSwitchAuxiliaryT1			0x68
 #define sSwitchBlindsT2				0x69
 #define sSwitchLightT2				0x70
+#define sSwitchContactT1			0x71
 
 //Switch commands
 #define gswitch_sOff				0x00

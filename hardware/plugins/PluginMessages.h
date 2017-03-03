@@ -23,7 +23,8 @@ namespace Plugins {
 		PDT_Protocol,
 		PDT_Connect,
 		PDT_Write,
-		PDT_Disconnect
+		PDT_Disconnect,
+		PDT_Settings
 	};
 
 	class CPluginMessage
@@ -184,5 +185,20 @@ namespace Plugins {
 	public:
 		StopMessage(int HwdID) : CPluginMessage(PMT_Stop, HwdID) {};
 	};
+
+	// Base directive message class
+	class CDirectiveMessage : public CPluginMessage
+	{
+	public:
+		CDirectiveMessage(ePluginDirectiveType dType, int HwdID) : CPluginMessage(PMT_Directive, dType, HwdID) {};
+	};
+
+	class SettingsDirective : public CDirectiveMessage
+	{
+	public:
+		SettingsDirective(int HwdID) : CDirectiveMessage(PDT_Settings, HwdID) {};
+	};
+
+
 }
 

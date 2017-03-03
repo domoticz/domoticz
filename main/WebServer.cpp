@@ -1182,8 +1182,7 @@ namespace http {
 			else if (htype == HTYPE_SolarEdgeAPI)
 			{
 				if (
-					(username == "") ||
-					(password == "")
+					(username == "")
 					)
 					return;
 				std::string siteID = request::findValue(&req, "Mode1");
@@ -1386,6 +1385,13 @@ namespace http {
 				)
 				return;
 
+			int mode1 = atoi(request::findValue(&req, "Mode1").c_str());
+			int mode2 = atoi(request::findValue(&req, "Mode2").c_str());
+			int mode3 = atoi(request::findValue(&req, "Mode3").c_str());
+			int mode4 = atoi(request::findValue(&req, "Mode4").c_str());
+			int mode5 = atoi(request::findValue(&req, "Mode5").c_str());
+			int mode6 = atoi(request::findValue(&req, "Mode6").c_str());
+
 			bool bEnabled = (senabled == "true") ? true : false;
 
 			_eHardwareTypes htype = (_eHardwareTypes)atoi(shtype.c_str());
@@ -1511,7 +1517,6 @@ namespace http {
 				(htype == HTYPE_NEST) ||
 				(htype == HTYPE_ANNATHERMOSTAT) ||
 				(htype == HTYPE_THERMOSMART) ||
-				(htype == HTYPE_SolarEdgeAPI) ||
 				(htype == HTYPE_Netatmo) ||
 				(htype == HTYPE_FITBIT)
 				)
@@ -1519,6 +1524,13 @@ namespace http {
 				if (
 					(username == "") ||
 					(password == "")
+					)
+					return;
+			}
+			else if (htype == HTYPE_SolarEdgeAPI)
+			{
+				if (
+					(username == "")
 					)
 					return;
 			}
@@ -1577,13 +1589,6 @@ namespace http {
 			}
 			else
 				return;
-
-			int mode1 = atoi(request::findValue(&req, "Mode1").c_str());
-			int mode2 = atoi(request::findValue(&req, "Mode2").c_str());
-			int mode3 = atoi(request::findValue(&req, "Mode3").c_str());
-			int mode4 = atoi(request::findValue(&req, "Mode4").c_str());
-			int mode5 = atoi(request::findValue(&req, "Mode5").c_str());
-			int mode6 = atoi(request::findValue(&req, "Mode6").c_str());
 
 			std::string mode1Str;
 			std::string mode2Str;
@@ -3043,6 +3048,9 @@ namespace http {
 					s_usagecurrent >> usagecurrent;
 					s_delivcurrent >> delivcurrent;
 
+					powerdeliv1 = (powerdeliv1 < 10) ? 0 : powerdeliv1;
+					powerdeliv2 = (powerdeliv2 < 10) ? 0 : powerdeliv2;
+
 					sprintf(szTmp, "%.03f", float(powerusage1) / EnergyDivider);
 					root["CounterT1"] = szTmp;
 					sprintf(szTmp, "%.03f", float(powerusage2) / EnergyDivider);
@@ -4418,6 +4426,18 @@ namespace http {
 							)
 							return;
 					}
+					else if ((lighttype == 405) || (lighttype == 406)) {
+						// Openwebnet Dry Contact / IR Detection
+						dtype = pTypeGeneralSwitch;
+						subtype = sSwitchContactT1;
+						devid = request::findValue(&req, "id");
+						sunitcode = request::findValue(&req, "unitcode");
+						if (
+							(devid == "") ||
+							(sunitcode == "")
+							)
+							return;
+					}
 				}
        // ----------- If needed convert to GeneralSwitch type (for o.a. RFlink) -----------
 				CDomoticzHardwareBase *pBaseHardware = reinterpret_cast<CDomoticzHardwareBase*>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
@@ -4943,6 +4963,19 @@ namespace http {
 						//Openwebnet Zigbee Lights
 						dtype = pTypeGeneralSwitch;
 						subtype = sSwitchLightT2;
+						devid = request::findValue(&req, "id");
+						sunitcode = request::findValue(&req, "unitcode");
+						if (
+							(devid == "") ||
+							(sunitcode == "")
+							)
+							return;
+					}
+					else if ((lighttype == 405) || (lighttype == 406))
+					{
+						//Openwebnet Dry Contact / IR Detection
+						dtype = pTypeGeneralSwitch;
+						subtype = sSwitchContactT1;
 						devid = request::findValue(&req, "id");
 						sunitcode = request::findValue(&req, "unitcode");
 						if (
@@ -7576,7 +7609,10 @@ namespace http {
 			m_sql.UpdatePreferencesVar("OneWireSwitchPollPeriod", atoi(request::findValue(&req, "OneWireSwitchPollPeriod").c_str()));
 
 			m_notifications.LoadConfig();
-
+#ifdef USE_PYTHON_PLUGINS
+			//Signal plugins to update Settings dictionary
+			PluginLoadConfig();
+#endif
 		}
 
 		void CWebServer::RestoreDatabase(WebEmSession & session, const request& req, std::string & redirect_uri)
@@ -9499,6 +9535,9 @@ namespace http {
 							s_powerdeliv2 >> powerdeliv2;
 							s_usagecurrent >> usagecurrent;
 							s_delivcurrent >> delivcurrent;
+
+							powerdeliv1 = (powerdeliv1 < 10) ? 0 : powerdeliv1;
+							powerdeliv2 = (powerdeliv2 < 10) ? 0 : powerdeliv2;
 
 							unsigned long long powerusage = powerusage1 + powerusage2;
 							unsigned long long powerdeliv = powerdeliv1 + powerdeliv2;
@@ -12700,6 +12739,9 @@ namespace http {
 									std::stringstream s_str4(sd[5]);
 									s_str4 >> actDeliv2;
 
+									actDeliv1 = (actDeliv1 < 10) ? 0 : actDeliv1;
+									actDeliv2 = (actDeliv2 < 10) ? 0 : actDeliv2;
+
 									std::string stime = sd[6];
 									struct tm ntime;
 									time_t atime;
@@ -13969,6 +14011,9 @@ namespace http {
 								float fDeliv1 = (float)(atof(szValueDeliv1.c_str()));
 								float fDeliv2 = (float)(atof(szValueDeliv2.c_str()));
 
+								fDeliv1 = (fDeliv1 < 10) ? 0 : fDeliv1;
+								fDeliv2 = (fDeliv2 < 10) ? 0 : fDeliv2;
+
 								if ((fDeliv1 != 0) || (fDeliv2 != 0))
 									bHaveDeliverd = true;
 								sprintf(szTmp, "%.3f", fUsage1 / EnergyDivider);
@@ -14730,6 +14775,9 @@ namespace http {
 								float fUsage_2 = static_cast<float>(atof(szUsage2.c_str()));
 								float fDeliv_1 = static_cast<float>(atof(szDeliv1.c_str()));
 								float fDeliv_2 = static_cast<float>(atof(szDeliv2.c_str()));
+
+								fDeliv_1 = (fDeliv_1 < 10) ? 0 : fDeliv_1;
+								fDeliv_2 = (fDeliv_2 < 10) ? 0 : fDeliv_2;
 
 								if ((fDeliv_1 != 0) || (fDeliv_2 != 0))
 									bHaveDeliverd = true;
