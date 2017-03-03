@@ -99,13 +99,11 @@
 #include "ASyncTCP.h"
 #include <sstream>
 
-#ifdef WIN32
-//#include <winsock2.h>
-#else
-//#include <sys/socket.h>
-#endif
+//===========================================================================
 
-extern CSQLHelper m_sql;
+extern 	CSQLHelper m_sql;
+
+//===========================================================================
 
 #define	RELAYNET_USE_HTTP 					false
 #define RELAYNET_POLL_INPUTS				true
@@ -114,6 +112,7 @@ extern CSQLHelper m_sql;
 #define MAX_INPUT_COUNT						64
 #define MAX_RELAY_COUNT						64
 #define KEEP_ALIVE_INTERVAL					10
+#define RETRY_DELAY 						30
 
 //===========================================================================
 
@@ -155,6 +154,8 @@ m_reconnect(false)
 	}
 }
 
+//===========================================================================
+
 RelayNet::~RelayNet(void)
 {
 }
@@ -163,39 +164,35 @@ RelayNet::~RelayNet(void)
 
 bool RelayNet::StartHardware()
 {
-	bool bOk = true;
+	bool bOk 			= false;;
 	m_stoprequested		= false;
 	m_reconnect			= false;
 	m_bIsStarted		= false;
 	m_setup_devices		= false;
 	m_bIsStarted		= false;
 
+	m_stoprequested=false;
+	m_bDoRestart=false;
+
+	//force connect the next first time
+	m_retrycntr=RETRY_DELAY;
+
+
 	if (m_input_count || m_relay_count)
 	{
-		m_setup_devices = true;
+		m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&RelayNet::Do_Work, this)));
+	}
 
-		RelaycardTcpConnect();
-
-		if (isConnected())
-		{
-			/*  setup Domoticz devices */
-			Init();
-			TcpRequestRelaycardDump();
-
-			/* Start worker thread */
-			m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&RelayNet::Do_Work, this)));
-		}
-		else
-		{
-			_log.Log(LOG_STATUS, "RelayNet: Failed to connect to Relay Module %s port:%ld", m_szIPAddress.c_str(), m_usIPPort);
-			bOk = false;
-
-			m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&RelayNet::Do_Little, this)));
-		}
+	if (m_thread != NULL)
+	{
+		bOk = true;
+		m_bIsStarted=true;
 	}
 
 	return bOk;
 }
+
+//===========================================================================
 
 bool RelayNet::StopHardware()
 {
@@ -203,8 +200,7 @@ bool RelayNet::StopHardware()
 
 	if (isConnected())
 	{
-		RelaycardTcpDisconnect();
-		_log.Log(LOG_STATUS, "RelayNet: Disconnected Relay Module (%s)", m_szIPAddress.c_str());
+		disconnect();
 	}
 
 	try 
@@ -219,6 +215,8 @@ bool RelayNet::StopHardware()
 	}
 
 	m_bIsStarted = false;
+
+	_log.Log(LOG_STATUS, "RelayNet: Relay Module disconnected %s", m_szIPAddress.c_str());
 
 	return true;
 }
@@ -235,21 +233,7 @@ bool RelayNet::WriteToHardware(const char *pdata, const unsigned char length)
 
 #else
 
-	update();
-
-	if (!isConnected())
-	{
-		RelaycardTcpConnect();
-	}
-
-	if (isConnected())
-	{
-		bOk = WriteToHardwareTcp(pdata, length);
-	}
-	else
-	{
-		bOk = false;
-	}
+	bOk = WriteToHardwareTcp(pdata, length);
 
 #endif
 
@@ -258,22 +242,13 @@ bool RelayNet::WriteToHardware(const char *pdata, const unsigned char length)
 
 //===========================================================================
 
-void RelayNet::Do_Little()
-{
-	/* Update heartbeat to prevent error messages */
-	while (!m_stoprequested)
-	{
-		sleep_seconds(1);
-		m_LastHeartbeat = mytime(NULL);
-	}
-}
-
-//===========================================================================
-
 void RelayNet::Do_Work()
 {
-	int 	sec_counter = 0;
-	char	dump[512];
+	bool bFirstTime=true;
+	int sec_counter = 0;
+
+	/*  Init  */
+	Init();
 
 	if (m_poll_inputs || m_poll_relays)
 	{
@@ -282,86 +257,49 @@ void RelayNet::Do_Work()
 
 	while (!m_stoprequested)
 	{
+		/*  One second sleep  */
 		sleep_seconds(1);
 		sec_counter++;
 
-		if (m_stoprequested)
+		/*  Heartbeat maintenance  */
+		if (sec_counter  % 10 == 0)
 		{
-			break;
+			m_LastHeartbeat = mytime(NULL);
 		}
 
-		update();
-
-		/*  Restart if needed */
-		time_t atime = time(NULL);
-		if ((m_reconnect) && (atime % 30 == 0))
+		/*  Connection maintenance  */
+		if (bFirstTime)
 		{
-			_log.Log(LOG_STATUS, "RelayNet: Restart, trying to connect to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
-			RelaycardTcpConnect();
-			m_reconnect = false;
+			bFirstTime = false;
+			connect(m_szIPAddress,m_usIPPort);
+		}
+		else
+		{
+			if ((m_bDoRestart) && (sec_counter % 30 == 0))
+			{
+				connect(m_szIPAddress,m_usIPPort);
+			}
+			update();
 		}
 
+		/*  Prevent disconnect request by Relay Module  */
 		if ((sec_counter % KEEP_ALIVE_INTERVAL == 0) &&
 			((m_poll_interval > KEEP_ALIVE_INTERVAL) || (!m_poll_inputs && !m_poll_relays)))
 		{
 			KeepConnectionAlive();
 		}
 
+		/*  Update relay module status when poll interval has expired  */
 		if ((m_poll_inputs || m_poll_relays) && (sec_counter % m_poll_interval == 0))
 		{
-			/* poll interval has expired, update relay module status */
 			TcpRequestRelaycardDump();
 		}
-		m_LastHeartbeat = mytime(NULL);
 	}
 
+	/*  Done  */
 	if (m_poll_inputs || m_poll_relays)
 	{
 		_log.Log(LOG_STATUS, "RelayNet: %d-second poller stopped (%s)", m_poll_interval, m_szIPAddress.c_str());
-	}
-}
-
-//===========================================================================
-
-void RelayNet::RelaycardTcpConnect()
-{
-	//-----------------------------------------------------------------------
-	//	On successful connect OnConnect() will be called.
-	//
-	update();
-
-	if (!isConnected())
-	{
-		connect(m_szIPAddress, m_usIPPort);
-	}
-
-	for (int i = 0; i < 100; i++)
-	{
-		if (isConnected())
-		{
-			break;
-		}
-		else
-		{
-			sleep_milliseconds(20);
-			update();
-		}
-	}
-}
-
-void RelayNet::RelaycardTcpDisconnect()
-{
-	update();
-
-	if (isConnected())
-	{
-		try
-		{
-			disconnect();
-		}
-		catch (...)
-		{
-		}
 	}
 }
 
@@ -444,22 +382,25 @@ void RelayNet::SetupDevices()
 
 //===========================================================================
 
+void RelayNet::TcpRequestRelaycardDump()
+{
+	std::string	sRequest = "DUMP\r\n";
+
+	if (isConnected())
+	{
+		write(sRequest);
+	}
+}
+
+//===========================================================================
+
 void RelayNet::KeepConnectionAlive()
 {
 	std::string	sRequest = "R1\r\n";
 
-	if (!m_stoprequested)
+	if (isConnected())
 	{
-		if (!isConnected())
-		{
-			RelaycardTcpConnect();
-		}
-
-		if (isConnected())
-		{
-			write(sRequest);
-		}
-
+		write(sRequest);
 	}
 }
 
@@ -499,11 +440,6 @@ void RelayNet::TcpGetSetRelay(int RelayNumber, bool SetRelay, bool State)
 	sndbuf[1] = 0x30 + RelayNumber;
 	sndbuf[2] = '\r';
 	sndbuf[3] = '\n';
-
-	if (!isConnected())
-	{
-		RelaycardTcpConnect();
-	}
 
 	if (isConnected())
 	{
@@ -559,13 +495,13 @@ void RelayNet::UpdateDomoticzInput(int InputNumber, bool State)
 {
 	if (State)
 	{
-		Packet.LIGHTING2.cmnd	= light2_sOn;
-		Packet.LIGHTING2.level	= 100;
+		Packet.LIGHTING2.cmnd = light2_sOn;
+		Packet.LIGHTING2.level = 100;
 	}
 	else
 	{
-		Packet.LIGHTING2.cmnd	= light2_sOff;
-		Packet.LIGHTING2.level	= 0;
+		Packet.LIGHTING2.cmnd = light2_sOff;
+		Packet.LIGHTING2.level = 0;
 	}
 	Packet.LIGHTING2.unitcode = 100 + InputNumber;
 	Packet.LIGHTING2.seqnbr++;
@@ -580,39 +516,19 @@ void RelayNet::UpdateDomoticzRelay(int RelayNumber, bool State)
 {
 	if (State)
 	{
-		Packet.LIGHTING2.cmnd	= light2_sOn;
-		Packet.LIGHTING2.level	= 100;
+		Packet.LIGHTING2.cmnd = light2_sOn;
+		Packet.LIGHTING2.level = 100;
 	}
 	else
 	{
-		Packet.LIGHTING2.cmnd	= light2_sOff;
-		Packet.LIGHTING2.level	= 0;
+		Packet.LIGHTING2.cmnd = light2_sOff;
+		Packet.LIGHTING2.level = 0;
 	}
 	Packet.LIGHTING2.unitcode = RelayNumber;
 	Packet.LIGHTING2.seqnbr++;
 
 	/* send packet to Domoticz */
 	sDecodeRXMessage(this, (const unsigned char *)&Packet.LIGHTING2, "Relay", 255);
-}
-
-//===========================================================================
-
-void RelayNet::TcpRequestRelaycardDump()
-{
-	std::string	sRequest = "DUMP\r\n";
-
-	if (!m_stoprequested)
-	{
-		if (!isConnected())
-		{
-			RelaycardTcpConnect();
-		}
-
-		if (isConnected())
-		{
-			write(sRequest);
-		}
-	}
 }
 
 //===========================================================================
@@ -696,61 +612,6 @@ void RelayNet::ParseData(const unsigned char *pData, int Len)
 
 //===========================================================================
 //
-//	ASyncTCP support
-//
-void RelayNet::OnConnect() 
-{
-	_log.Log(LOG_STATUS, "RelayNet: Connected to Relay Module %s", m_szIPAddress.c_str());
-	m_reconnect  = false;
-	m_bIsStarted = true;
-}
-
-void RelayNet::OnDisconnect() 
-{
-	_log.Log(LOG_STATUS, "RelayNet: Relay Module disconnected %s", m_szIPAddress.c_str());
-
-	if (!m_stoprequested)
-	{
-		m_reconnect = true;
-	}
-}
-
-void RelayNet::OnData(const unsigned char *pData, size_t length)
-{
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
-	if (!m_stoprequested)
-	{
-		ParseData(pData, length);
-	}
-}
-
-void RelayNet::OnError(const std::exception e)
-{
-	_log.Log(LOG_ERROR, "RelayNet: Error: %s", e.what());
-}
-
-void RelayNet::OnError(const boost::system::error_code& error)
-{
-	if ((error == boost::asio::error::address_in_use) ||
-		(error == boost::asio::error::connection_refused) ||
-		(error == boost::asio::error::access_denied) ||
-		(error == boost::asio::error::host_unreachable) ||
-		(error == boost::asio::error::timed_out))
-	{
-		_log.Log(LOG_ERROR, "RelayNet: OnError: Can not connect to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
-	}
-	else if ((error == boost::asio::error::eof) || (error == boost::asio::error::connection_reset))
-	{
-		_log.Log(LOG_STATUS, "RelayNet: OnError: Connection reset!");
-	}
-	else
-	{
-		_log.Log(LOG_ERROR, "RelayNet: OnError: %s", error.message().c_str());
-	}
-}
-
-//===========================================================================
-//
 //	Alternate way of turning relays on/off using HTTP. 
 //	Currently not used. 
 //
@@ -824,6 +685,70 @@ bool RelayNet::WriteToHardwareHttp(const char *pdata, const unsigned char length
 	}
 
 	return false;
+}
+
+//===========================================================================
+//
+//							ASyncTCP support
+//
+void RelayNet::OnConnect()
+{
+	_log.Log(LOG_STATUS, "RelayNet: Connected to Relay Module %s", m_szIPAddress.c_str());
+	m_reconnect = false;
+	m_bIsStarted = true;
+}
+
+//===========================================================================
+
+void RelayNet::OnDisconnect()
+{
+	_log.Log(LOG_STATUS, "RelayNet: Relay Module disconnected %s, reconnect", m_szIPAddress.c_str());
+
+	if (!m_stoprequested)
+	{
+		m_reconnect = true;
+	}
+}
+
+//===========================================================================
+
+void RelayNet::OnData(const unsigned char *pData, size_t length)
+{
+	boost::lock_guard<boost::mutex> l(readQueueMutex);
+
+	if (!m_stoprequested)
+	{
+		ParseData(pData, length);
+	}
+}
+
+//===========================================================================
+
+void RelayNet::OnError(const std::exception e)
+{
+	_log.Log(LOG_ERROR, "RelayNet: Error: %s", e.what());
+}
+
+//===========================================================================
+
+void RelayNet::OnError(const boost::system::error_code& error)
+{
+	if ((error == boost::asio::error::address_in_use) ||
+		(error == boost::asio::error::connection_refused) ||
+		(error == boost::asio::error::access_denied) ||
+		(error == boost::asio::error::host_unreachable) ||
+		(error == boost::asio::error::timed_out))
+	{
+		_log.Log(LOG_ERROR, "RelayNet: OnError: Can not connect to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+	}
+	else if ((error == boost::asio::error::eof) || (error == boost::asio::error::connection_reset))
+	{
+		_log.Log(LOG_STATUS, "RelayNet: OnError: Connection reset!");
+	}
+	else
+	{
+		_log.Log(LOG_ERROR, "RelayNet: OnError: %s", error.message().c_str());
+	}
 }
 
 //===========================================================================

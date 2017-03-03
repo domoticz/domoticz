@@ -30,11 +30,13 @@ private:
 	bool								m_poll_inputs;
 	bool								m_poll_relays;
 	bool								m_reconnect;
+	bool								m_bDoRestart;
 	bool								m_setup_devices;
 	int									m_skip_relay_update;
 	int									m_poll_interval;
 	int									m_input_count;
 	int									m_relay_count;
+	int									m_retrycntr;
 	boost::shared_ptr<boost::thread> 	m_thread;
 	tRBUF 								Packet;
 
@@ -46,11 +48,8 @@ protected:
 	int m_socket;
 
 	void Do_Work();
-	void Do_Little();
 	void Init();
 	void SetupDevices();
-	void RelaycardTcpConnect();
-	void RelaycardTcpDisconnect();
 	void TcpGetSetRelay(int RelayNumber, bool Set, bool State);
 	void UpdateDomoticzInput(int InputNumber, bool State);
 	void UpdateDomoticzRelay(int OutputNumber, bool State);
