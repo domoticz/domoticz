@@ -11,9 +11,8 @@ public:
 	P1MeterBase(void);
 	~P1MeterBase(void);
 
-	P1Power		m_p1power;
-	P1Gas		m_p1gas;
-
+	P1Power	m_p1power;
+	P1Gas	m_p1gas;
 private:
 	bool m_bDisableCRC;
 	int m_ratelimit;
