@@ -52,7 +52,7 @@ class CEcoDevices : public CDomoticzHardwareBase
 
 		typedef struct _tTeleinfo
 		{
-			uint8_t len;
+			uint16_t len;
 			uint8_t type;
 			uint8_t subtype;
 			int32_t ID;
