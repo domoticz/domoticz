@@ -563,18 +563,6 @@ define(['app'], function (app) {
             }
             else if (text.indexOf("SolarEdge via Web") >= 0)
             {
-                var siteid=$("#hardwarecontent #divsolaredgeapi #siteid").val();
-                if (siteid=="")
-                {
-                    ShowNotify($.t('Please enter an Site ID!'), 2500, true);
-                    return;
-                }
-                var serial=$("#hardwarecontent #divsolaredgeapi #serial").val();
-                if (serial=="")
-                {
-                    ShowNotify($.t('Please enter an Serial!'), 2500, true);
-                    return;
-                }
                 var apikey=$("#hardwarecontent #divsolaredgeapi #apikey").val();
                 if (apikey=="")
                 {
@@ -584,13 +572,11 @@ define(['app'], function (app) {
 
                 $.ajax({
                      url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
-                        "&username=" + encodeURIComponent(serial) +
-                        "&password=" + encodeURIComponent(apikey) +
+                        "&username=" + encodeURIComponent(apikey) +
                         "&name=" + encodeURIComponent(name) +
                         "&enabled=" + bEnabled +
                         "&idx=" + idx +
-                        "&datatimeout=" + datatimeout +
-                        "&Mode1=" + siteid,
+                        "&datatimeout=" + datatimeout,
                      async: false,
                      dataType: 'json',
                      success: function(data) {
@@ -1398,18 +1384,6 @@ define(['app'], function (app) {
             }
             else if (text.indexOf("SolarEdge via Web") >= 0)
             {
-                var siteid=$("#hardwarecontent #divsolaredgeapi #siteid").val();
-                if (siteid=="")
-                {
-                    ShowNotify($.t('Please enter an Site ID!'), 2500, true);
-                    return;
-                }
-                var serial=$("#hardwarecontent #divsolaredgeapi #serial").val();
-                if (serial=="")
-                {
-                    ShowNotify($.t('Please enter an Serial!'), 2500, true);
-                    return;
-                }
                 var apikey=$("#hardwarecontent #divsolaredgeapi #apikey").val();
                 if (apikey=="")
                 {
@@ -1419,12 +1393,10 @@ define(['app'], function (app) {
                 $.ajax({
                      url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
 						"&name=" + encodeURIComponent(name) +
-                        "&username=" + encodeURIComponent(serial) +
-                        "&password=" + encodeURIComponent(apikey) +
+                        "&username=" + encodeURIComponent(apikey) +
                         "&enabled=" + bEnabled +
                         "&idx=" + idx +
-                        "&datatimeout=" + datatimeout +
-                        "&Mode1=" + siteid,
+                        "&datatimeout=" + datatimeout,
                      async: false,
                      dataType: 'json',
                      success: function(data) {
@@ -4954,9 +4926,7 @@ define(['app'], function (app) {
                             $("#hardwarecontent #hardwareparamslocation #location").val(data["Username"]);
                         }
                         else if (data["Type"].indexOf("SolarEdge via") >= 0) {
-                            $("#hardwarecontent #hardwareparamssolaredgeapi #siteid").val(data["Mode1"]);
-                            $("#hardwarecontent #hardwareparamssolaredgeapi #serial").val(data["Username"]);
-                            $("#hardwarecontent #hardwareparamssolaredgeapi #apikey").val(data["Password"]);
+                            $("#hardwarecontent #hardwareparamssolaredgeapi #apikey").val(data["Username"]);
                         }
                         else if (data["Type"].indexOf("Toon") >= 0) {
                             $("#hardwarecontent #hardwareparamsenecotoon #agreement").val(data["Mode1"]);
@@ -5239,7 +5209,6 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divlogin").show();
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").show();
-                $("#hardwarecontent #hardwareparamshttp #refresh").val(300);
 
 				var method = $("#hardwarecontent #divhttppoller #combomethod option:selected").val();
 				if (method == 0)

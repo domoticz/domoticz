@@ -881,7 +881,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CAccuWeather(ID, Username, Password);
 		break;
 	case HTYPE_SolarEdgeAPI:
-		pHardware = new SolarEdgeAPI(ID, Mode1, Username, Password);
+		pHardware = new SolarEdgeAPI(ID, Username);
 		break;
 	case HTYPE_Netatmo:
 		pHardware = new CNetatmo(ID,Username,Password);
