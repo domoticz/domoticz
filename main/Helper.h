@@ -23,6 +23,7 @@ bool isInt(const std::string &s);
 void sleep_seconds(const long seconds);
 void sleep_milliseconds(const long milliseconds);
 
+int createdir(const char *szDirName, int secattr);
 int mkdir_deep(const char *szDirName, int secattr);
 
 double ConvertToCelsius(const double Fahrenheit);

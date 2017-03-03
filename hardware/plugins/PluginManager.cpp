@@ -141,19 +141,14 @@ namespace Plugins {
 		std::stringstream plugin_DirT;
 #ifdef WIN32
 		plugin_DirT << szUserDataFolder << "plugins\\";
+#else
+		plugin_DirT << szUserDataFolder << "plugins/";
+#endif
 		std::string plugin_Dir = plugin_DirT.str();
-		if (!mkdir(plugin_Dir.c_str()))
+		if (!createdir(plugin_Dir.c_str(), 0755))
 		{
 			_log.Log(LOG_NORM, "%s: Created directory %s", __func__, plugin_Dir.c_str());
 		}
-#else
-		plugin_DirT << szUserDataFolder << "plugins/";
-		std::string plugin_Dir = plugin_DirT.str();
-		if (!mkdir(plugin_Dir.c_str(), 0755))
-		{
-			_log.Log(LOG_NORM, "BuildManifest: Created directory %s", plugin_Dir.c_str());
-		}
-#endif
 
 		DIR *lDir;
 		struct dirent *ent;
