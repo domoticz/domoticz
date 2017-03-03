@@ -36,8 +36,10 @@ License: Public domain
 #define OPENWEBNET_AUTOMATION           "AUTOMATION"
 #define OPENWEBNET_LIGHT                "LIGHT"
 #define OPENWEBNET_TEMPERATURE          "TEMPERATURE"
+#define OPENWEBNET_BURGLAR_ALARM        "BURGLAR ALARM"
+#define OPENWEBNET_CENPLUS            	"CEN PLUS"
 #define OPENWEBNET_AUXILIARY            "AUXILIARY"
-#define OPENWEBNET_DRY_CONTACT			"DRYCONTACT"
+#define OPENWEBNET_DRY_CONTACT					"DRYCONTACT"
 
 /**
     Create new hardware OpenWebNet instance
@@ -444,7 +446,7 @@ void COpenWebNetTCP::UpdateBlinds(const int who, const int where, const int Comm
 	sprintf(szIdx, "%02X%02X%02X%02X", ID1, ID2, ID3, ID4);
 
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",
+	result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)",
                            m_HwdID, szIdx, unit);
 	if (!result.empty())
 	{
@@ -473,6 +475,41 @@ void COpenWebNetTCP::UpdateBlinds(const int who, const int where, const int Comm
     sDecodeRXMessage(this, (const unsigned char *)&gswitch, devname, BatteryLevel);
 }
 
+void COpenWebNetTCP::UpdateAlarm(const int who, const int where, const int Command, const char *sCommand, int iInterface, const int BatteryLevel, const char *devname)
+{
+	 //make device ID
+  unsigned char ID1 = (unsigned char)((who & 0xFF00) >> 8);
+	unsigned char ID2 = (unsigned char)(who & 0xFF);
+	unsigned char ID3 = (unsigned char)((where & 0xFF00) >> 8);
+	unsigned char ID4 = (unsigned char)where & 0xFF;
+
+	//interface id (bus identifier)
+	int unit = iInterface;
+
+    char szIdx[10];
+	sprintf(szIdx, "%02X%02X%02X%02X", ID1, ID2, ID3, ID4);
+	
+
+    std::vector<std::vector<std::string> > result;
+    string strdev;
+    //check first Insert
+   result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)",
+     												m_HwdID, szIdx, unit);
+      if (result.empty())
+    {
+      m_sql.UpdateValue(m_HwdID, szIdx, unit, pTypeGeneral, sTypeAlert, 12, 255, 0,sCommand,strdev);
+      m_sql.safe_query("UPDATE DeviceStatus SET Name='%s' WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)",devname, m_HwdID,szIdx,unit);//can't update from devname ???
+      return;
+    }                       
+    	
+        //check if we have a change, if not do not update it
+        int nvalue = atoi(result[0][0].c_str());
+        if (Command == -1 || nvalue == Command) return; // update not necessary
+   	 m_sql.UpdateValue(m_HwdID, szIdx, unit, pTypeGeneral, sTypeAlert, 12, 255, Command,sCommand,strdev);
+
+}
+
+
 /**
     Insert/Update  switch device
 **/
@@ -494,7 +531,7 @@ void COpenWebNetTCP::UpdateSwitch(const int who, const int where, const int what
 	if (what > 1) level = what * 10; // what=0 mean 0% OFF, what=2 to 10 mean 20% to 100% ON
 
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",
+	result = m_sql.safe_query("SELECT nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)",
                             m_HwdID, szIdx, unit);
 	if (!result.empty())
 	{
@@ -545,12 +582,13 @@ void COpenWebNetTCP::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
     string who = iter->Extract_who();
     string where = iter->Extract_where();
     string what = iter->Extract_what();
-	std::vector<std::string> whatParam = iter->Extract_whatParameters();
+    std::vector<std::string> whereParam = iter->Extract_whereParameters();
+		std::vector<std::string> whatParam = iter->Extract_whatParameters();
     string dimension = iter->Extract_dimension();
     string value = iter->Extract_value(0);
-	string sInterface = iter->Extract_interface();
-    string devname;
-	int iAppValue, iWhere;
+		string sInterface = iter->Extract_interface();
+    string devname,sCommand;
+	int iAppValue, iWhere,zone;
 
     switch (atoi(who.c_str())) {
         case WHO_LIGHTING:									// 1
@@ -626,49 +664,83 @@ void COpenWebNetTCP::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
             break;
 
             case WHO_BURGLAR_ALARM:                         // 5
-            /**
+             if(!iter->IsNormalFrame())
+           {
+                _log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s not normal frame! -> frame_type=%d", who.c_str(), iter->frame_type);
+                return;
+           }
 
-            Tables of what:
-            0 = system on maintenance
-            1 = system active
-
-            8 = system engaged
-            9 = system disengaged
-
-            4 = battery fault
-            5 = battery OK
-            10 = battery KO
-
-            6 = no network
-            7 = network OK
-
-            11 = zone N engaged
-            18 = zone N divided
-
-            15 = zone N Intrusion alarm
-            16 = zone N Tampering alarm
-            17 = zone N Anti-panic alarm
-
-            12 = aux N in technical alarm
-            31 = silent alarm from aux N
-
-            Example of burglar alarm status messages (Monitor session):
-            *5*1*##
-            *5*5*##
-            *5*7*##
-            *5*9*##
-            *5*11*#1##
-            *5*11*#2##
-            *5*11*#3##
-            *5*18*#4##
-            *5*18*#5##
-            *5*18*#6##
-            *5*18*#7##
-            *5*18*#8##
-
-            **/
-            break;
-
+	      switch (atoi(what.c_str())) {
+		
+					case 0:         //maintenace
+					//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm in Maintenance");
+					break;
+					
+					case 1:         //active
+					//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm Active");
+					iWhere = atoi(where.c_str());
+					sCommand = "Active"; 	
+					devname = OPENWEBNET_BURGLAR_ALARM;
+					sCommand = "Engaged";																			//u will never see
+					UpdateAlarm(WHO_BURGLAR_ALARM, iWhere, -1,sCommand.c_str(), atoi(sInterface.c_str()), 255, devname.c_str());
+					break;
+					
+					case 2:         //disabled
+					//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm Inactive");
+					break;
+					
+					case 4:         //battery fault
+					//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm Battery Fault");
+					break;
+					
+					case 5:         //battery ok
+					//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm Battery OK");
+					break;
+					
+					case 8: 	//engaged
+					//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm Engaged");
+					iWhere = atoi(where.c_str());
+					devname = OPENWEBNET_BURGLAR_ALARM;
+					sCommand = "Engaged";
+					UpdateAlarm(WHO_BURGLAR_ALARM, iWhere, 1,sCommand.c_str(), atoi(sInterface.c_str()), 255, devname.c_str());
+					
+					break;
+					
+					case 9:         //disengaged
+					//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm Disengaged");
+					iWhere = atoi(where.c_str());
+					devname = OPENWEBNET_BURGLAR_ALARM;
+					sCommand = "DisEngaged";
+					UpdateAlarm(WHO_BURGLAR_ALARM, iWhere,0, sCommand.c_str(),atoi(sInterface.c_str()), 255, devname.c_str());
+					break;
+					
+					case 10:         //battery Unloads
+					//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm Battery Unloads");
+					break;
+					
+					case 11 :         // zone N Active
+					zone=atoi(whereParam[0].c_str());
+					//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm Zone %d Active",zone);
+					break;
+					
+					case 15:         //INTRUSION ALARM
+					//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm INTRUSION ALARM");
+					iWhere = atoi(where.c_str());
+					devname = OPENWEBNET_BURGLAR_ALARM;
+					sCommand = "Intrusion";
+					UpdateAlarm(WHO_BURGLAR_ALARM, iWhere,4,sCommand.c_str(), atoi(sInterface.c_str()), 255, devname.c_str());
+					break;
+					
+					case 18:         // zone N Not Active
+					zone=atoi(whereParam[0].c_str());
+					//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm Zone %d Not active",zone);
+					
+					break;            
+					
+					default:
+					_log.Log(LOG_STATUS, "COpenWebNetTCP: who=%s, where=%s, dimension=%s not yet supported", who.c_str(), where.c_str(), dimension.c_str());
+					break;
+							}
 
         case WHO_AUXILIARY:                             // 9
             /**
