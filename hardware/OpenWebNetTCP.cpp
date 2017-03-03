@@ -576,7 +576,7 @@ void COpenWebNetTCP::UpdateSwitch(const int who, const int where, const int what
 	    int slevel = atoi(result[0][1].c_str());
         if ((what > 1) && (nvalue != gswitch_sOff) && (slevel == level)) return; // Already ON/LEVEL at x%
     }
-	else if (who == WHO_DRY_CONTACT_IR_DETECTION)
+	else if (who == WHO_DRY_CONTACT_IR_DETECTION_CEN_PLUS)
 	{
 		// Special insert to set SwitchType = STYPE_Contact
 		// so we have a correct contact device
@@ -796,7 +796,7 @@ void COpenWebNetTCP::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
 			//pTypeGeneralSwitch, sSwitchAuxiliaryT1
             UpdateSwitch(WHO_AUXILIARY, atoi(where.c_str()), atoi(what.c_str()), atoi(sInterface.c_str()), 100, devname.c_str(), sSwitchAuxiliaryT1);
             break;
-		case WHO_DRY_CONTACT_IR_DETECTION:              // 25
+		case WHO_DRY_CONTACT_IR_DETECTION_CEN_PLUS:              // 25
 			if (!iter->IsNormalFrame())
 			{
 				_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s not normal frame! -> frame_type=%d", who.c_str(), iter->frame_type);
@@ -812,7 +812,7 @@ void COpenWebNetTCP::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
                 		_log.Log(LOG_STATUS, "COpenWebNetTCP: CEN PLUS Short pressure %d Button %d",iWhere,iAppValue);
                 		devname = OPENWEBNET_CENPLUS;
                 		devname += " " + where + " Short Press Button " + whatParam[0].c_str();
-                		UpdateCenPlus(WHO_DRY_CONTACT_IR_DETECTION, iWhere,1,iAppValue, atoi(what.c_str()), 255, devname.c_str());
+                		UpdateCenPlus(WHO_DRY_CONTACT_IR_DETECTION_CEN_PLUS, iWhere,1,iAppValue, atoi(what.c_str()), 255, devname.c_str());
                 		return;
                 break;
 
@@ -833,7 +833,7 @@ void COpenWebNetTCP::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
                 		_log.Log(LOG_STATUS, "COpenWebNetTCP: CEN PLUS Long pressure %d Button %d",iWhere,iAppValue);
                 		devname = OPENWEBNET_CENPLUS;
                 		devname += " " + where + " Long Press Button " + whatParam[0].c_str();
-                		UpdateCenPlus(WHO_DRY_CONTACT_IR_DETECTION, iWhere,1,iAppValue, atoi(what.c_str()), 255, devname.c_str());
+                		UpdateCenPlus(WHO_DRY_CONTACT_IR_DETECTION_CEN_PLUS, iWhere,1,iAppValue, atoi(what.c_str()), 255, devname.c_str());
                 		return;
                 break;
             	    	
@@ -861,7 +861,7 @@ void COpenWebNetTCP::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
 					iAppValue = 0;
 				
 				//pTypeGeneralSwitch, sSwitchGeneralSwitch
-				UpdateSwitch(WHO_DRY_CONTACT_IR_DETECTION, iWhere, iAppValue, atoi(sInterface.c_str()), 255, devname.c_str(), sSwitchContactT1);
+				UpdateSwitch(WHO_DRY_CONTACT_IR_DETECTION_CEN_PLUS, iWhere, iAppValue, atoi(sInterface.c_str()), 255, devname.c_str(), sSwitchContactT1);
 				
 				
 
@@ -1151,7 +1151,7 @@ void COpenWebNetTCP::requestDryContactIRDetectionStatus()
 	vector<bt_openwebnet> responses;
 	stringstream whoStr;
 	stringstream whereStr;
-	whoStr << WHO_DRY_CONTACT_IR_DETECTION;
+	whoStr << WHO_DRY_CONTACT_IR_DETECTION_CEN_PLUS;
 	whereStr << 30;
 	request.CreateStateMsgOpen(whoStr.str(), whereStr.str());
 	sendCommand(request, responses, 0, false);
@@ -1169,6 +1169,15 @@ void COpenWebNetTCP::requestTime()
     sendCommand(request, responses, 0, true);
 }
 
+void COpenWebNetTCP::setTime()
+{
+    _log.Log(LOG_STATUS, "COpenWebNetTCP: request time...");
+    bt_openwebnet request;
+    vector<bt_openwebnet> responses;
+    request.CreateTimeReqMsgOpen();
+    sendCommand(request, responses, 0, true);
+}
+
 /**
 	scan devices
 **/
@@ -1178,7 +1187,7 @@ void COpenWebNetTCP::scan_device()
 
     /* uncomment the line below to enable the time request to the gateway.
     Note that this is only for debugging, the answer to who = 13 is not yet supported */
-    //requestTime();
+    setTime();
     
 	if (mask_request_status & 0x1)
 	{
@@ -1295,7 +1304,7 @@ bool COpenWebNetTCP::FindDevice(int who, int where, int iInterface, int* used)
 			subType = sSwitchAuxiliaryT1;
 			sprintf(szIdx, "%02X%02X%02X%02X", ID1, ID2, ID3, ID4);
             break;
-		case WHO_DRY_CONTACT_IR_DETECTION:              // 25
+		case WHO_DRY_CONTACT_IR_DETECTION_CEN_PLUS:              // 25
 			devType = pTypeGeneralSwitch;
 			subType = sSwitchContactT1;
 			sprintf(szIdx, "%02X%02X%02X%02X", ID1, ID2, ID3, ID4);
@@ -1320,7 +1329,7 @@ bool COpenWebNetTCP::FindDevice(int who, int where, int iInterface, int* used)
 			return false;
 	}
 
-    if ((who == WHO_LIGHTING) || (who == WHO_AUTOMATION) || (who == WHO_TEMPERATURE_CONTROL) || (who == WHO_AUXILIARY) || (who == WHO_DRY_CONTACT_IR_DETECTION))
+    if ((who == WHO_LIGHTING) || (who == WHO_AUTOMATION) || (who == WHO_TEMPERATURE_CONTROL) || (who == WHO_AUXILIARY) || (who == WHO_DRY_CONTACT_IR_DETECTION_CEN_PLUS) || (who == WHO_DRY_CONTACT_IR_DETECTION_CEN_PLUS))
     {
         if (used != NULL)
         {
