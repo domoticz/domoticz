@@ -494,16 +494,17 @@ void COpenWebNetTCP::UpdateAlarm(const int who, const int where, const int Comma
     string strdev;
     //check first Insert
    result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)",
-     												m_HwdID, szIdx, unit);
+     												m_HwdID, szIdx, unit);  
       if (result.empty())
     {
-      m_sql.UpdateValue(m_HwdID, szIdx, unit, pTypeGeneral, sTypeAlert, 12, 255, 0,sCommand,strdev);
-      m_sql.safe_query("UPDATE DeviceStatus SET Name='%s' WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)",devname, m_HwdID,szIdx,unit);//can't update from devname ???
+      m_sql.UpdateValue(m_HwdID, szIdx, unit, pTypeGeneral, sTypeAlert, 12, 255, 2,sCommand,strdev);
+      m_sql.safe_query("UPDATE DeviceStatus SET Name='%s' WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)",devname, m_HwdID,szIdx,unit);//can't update from devname ???    
       return;
     }                       
     	
         //check if we have a change, if not do not update it
         int nvalue = atoi(result[0][0].c_str());
+       
         if (Command == -1 || nvalue == Command) return; // update not necessary
    	 m_sql.UpdateValue(m_HwdID, szIdx, unit, pTypeGeneral, sTypeAlert, 12, 255, Command,sCommand,strdev);
 
@@ -669,11 +670,10 @@ void COpenWebNetTCP::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
                 _log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s not normal frame! -> frame_type=%d", who.c_str(), iter->frame_type);
                 return;
            }
-
 	      switch (atoi(what.c_str())) {
-		
+	
 					case 0:         //maintenace
-					//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm in Maintenance");
+					_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm in Maintenance");
 					break;
 					
 					case 1:         //active
@@ -681,7 +681,7 @@ void COpenWebNetTCP::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
 					iWhere = atoi(where.c_str());
 					sCommand = "Active"; 	
 					devname = OPENWEBNET_BURGLAR_ALARM;
-					sCommand = "Engaged";																			//u will never see
+					sCommand = "";																			//u will never see
 					UpdateAlarm(WHO_BURGLAR_ALARM, iWhere, -1,sCommand.c_str(), atoi(sInterface.c_str()), 255, devname.c_str());
 					break;
 					
@@ -770,6 +770,8 @@ void COpenWebNetTCP::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
 				_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s not normal frame! -> frame_type=%d", who.c_str(), iter->frame_type);
 				return;
 			}
+			
+			_log.Log(LOG_ERROR, "COpenWebNetTCP: Where=%s is not correct for who=%s", where.c_str()), who.c_str();
 
 			if (where.substr(0, 1) != "3")
 			{
