@@ -752,7 +752,7 @@ void COpenWebNetTCP::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
 					
 					case 11 :         // zone N Active
 					zone=atoi(whereParam[0].c_str());
-					//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm Zone %d Active",zone);
+					_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm Zone %d Active",zone);
 					break;
 					
 					case 15:         //INTRUSION ALARM
