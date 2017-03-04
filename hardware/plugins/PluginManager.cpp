@@ -55,7 +55,7 @@ namespace Plugins {
 	PyMODINIT_FUNC PyInit_Domoticz(void);
 
 	boost::mutex PluginMutex;	// controls accessto the message queue
-	std::queue<CPluginMessage>	PluginMessageQueue;
+	std::queue<CPluginMessage*>	PluginMessageQueue;
 	boost::asio::io_service ios;
 
 	std::map<int, CDomoticzHardwareBase*>	CPluginSystem::m_pPlugins;
@@ -282,16 +282,16 @@ namespace Plugins {
 			bool	bProcessed = true;
 			while (bProcessed)
 			{
-				CPluginMessage Message;
+				CPluginMessage* Message = NULL;
 				bProcessed = false;
 
 				// Cycle once through the queue looking for the 1st message that is ready to process
 				for (size_t i = 0; i < PluginMessageQueue.size(); i++)
 				{
 					boost::lock_guard<boost::mutex> l(PluginMutex);
-					CPluginMessage FrontMessage = PluginMessageQueue.front();
+					CPluginMessage* FrontMessage = PluginMessageQueue.front();
 					PluginMessageQueue.pop();
-					if (FrontMessage.m_When <= Now)
+					if (FrontMessage->m_When <= Now)
 					{
 						// Message is ready now or was already ready (this is the case for almost all messages)
 						Message = FrontMessage;
@@ -301,27 +301,29 @@ namespace Plugins {
 					PluginMessageQueue.push(FrontMessage);
 				}
 
-				if (Message.m_Type != PMT_NULL)
+				if (Message && Message->m_Type != PMT_NULL)
 				{
 					bProcessed = true;
-					if (!m_pPlugins.count(Message.m_HwdID))
+					if (!m_pPlugins.count(Message->m_HwdID))
 					{
-						_log.Log(LOG_ERROR, "PluginSystem: Unknown hardware in message: %d.", Message.m_HwdID);
+						_log.Log(LOG_ERROR, "PluginSystem: Unknown hardware in message: %d.", Message->m_HwdID);
 					}
 					else
 					{
-						CPlugin*	pPlugin = (CPlugin*)m_pPlugins[Message.m_HwdID];
+						CPlugin*	pPlugin = (CPlugin*)m_pPlugins[Message->m_HwdID];
 						if (pPlugin)
 						{
 							pPlugin->HandleMessage(Message);
 						}
 						else
 						{
-							_log.Log(LOG_ERROR, "PluginSystem: Plugin for Hardware %d not found in Plugins map.", Message.m_HwdID);
+							_log.Log(LOG_ERROR, "PluginSystem: Plugin for Hardware %d not found in Plugins map.", Message->m_HwdID);
 						}
 
 					}
 				}
+				// Free the memory for the message
+				delete Message;
 			}
 			sleep_milliseconds(50);
 		}
@@ -393,7 +395,7 @@ namespace Plugins {
 		{
 			if (itt->second)
 			{
-				NotificationMessage	Message(itt->second->m_HwdID, Subject, Text, sName, sStatus, Priority, Sound, sIconFile);
+				NotificationMessage*	Message = new NotificationMessage(itt->second->m_HwdID, Subject, Text, sName, sStatus, Priority, Sound, sIconFile);
 				PluginMessageQueue.push(Message);
 			}
 			else
@@ -411,7 +413,7 @@ namespace Plugins {
 		{
 			if (itt->second)
 			{
-				SettingsDirective	Message(itt->second->m_HwdID);
+				SettingsDirective*	Message = new SettingsDirective(itt->second->m_HwdID);
 				PluginMessageQueue.push(Message);
 			}
 			else

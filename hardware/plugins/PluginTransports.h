@@ -21,7 +21,7 @@ namespace Plugins {
 		virtual	bool		handleConnect() { return false; };
 		virtual void		handleRead(const boost::system::error_code& e, std::size_t bytes_transferred);
 		virtual void		handleRead(const char *data, std::size_t bytes_transferred);
-		virtual void		handleWrite(const std::string&) = 0;
+		virtual void		handleWrite(const std::vector<byte>&) = 0;
 		virtual	bool		handleDisconnect() { return false; };
 		~CPluginTransport() {}
 
@@ -58,7 +58,7 @@ namespace Plugins {
 		virtual	void		handleAsyncResolve(const boost::system::error_code& err, boost::asio::ip::tcp::resolver::iterator endpoint_iterator);
 		virtual	void		handleAsyncConnect(const boost::system::error_code& err, boost::asio::ip::tcp::resolver::iterator endpoint_iterator);
 		virtual void		handleRead(const boost::system::error_code& e, std::size_t bytes_transferred);
-		virtual void		handleWrite(const std::string& pMessage);
+		virtual void		handleWrite(const std::vector<byte>& pMessage);
 		virtual	bool		handleDisconnect();
 	};
 
@@ -67,7 +67,7 @@ namespace Plugins {
 	public:
 		CPluginTransportUDP(int HwdID, const std::string& Address, const std::string& Port) : CPluginTransportIP(HwdID, Address, Port) { };
 		virtual void		handleRead(const boost::system::error_code& e, std::size_t bytes_transferred) {};
-		virtual void		handleWrite(const std::string&) {};
+		virtual void		handleWrite(const std::vector<byte>&) {};
 	};
 
 	class CPluginTransportSerial : CPluginTransport, AsyncSerial
@@ -79,7 +79,7 @@ namespace Plugins {
 		~CPluginTransportSerial(void);
 		virtual	bool		handleConnect();
 		virtual void		handleRead(const char *data, std::size_t bytes_transferred);
-		virtual void		handleWrite(const std::string&);
+		virtual void		handleWrite(const std::vector<byte>&);
 		virtual	bool		handleDisconnect();
 	};
 

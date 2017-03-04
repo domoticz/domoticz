@@ -16,7 +16,7 @@
 namespace Plugins {
 
 	extern boost::mutex PluginMutex;	// controls accessto the message queue
-	extern std::queue<CPluginMessage>	PluginMessageQueue;
+	extern std::queue<CPluginMessage*>	PluginMessageQueue;
 	extern boost::asio::io_service ios;
 
 	void CPluginTransport::handleRead(const boost::system::error_code& e, std::size_t bytes_transferred)
@@ -59,8 +59,7 @@ namespace Plugins {
 		catch (std::exception& e)
 		{
 			//			_log.Log(LOG_ERROR, "Plugin: Connection Exception: '%s' connecting to '%s:%s'", e.what(), m_IP.c_str(), m_Port.c_str());
-			CPluginMessage	Message(PMT_Connected, m_HwdID, std::string(e.what()));
-			Message.m_iValue = -1;
+			ConnectedMessage*	Message = new ConnectedMessage(m_HwdID, -1, std::string(e.what()));
 			boost::lock_guard<boost::mutex> l(PluginMutex);
 			PluginMessageQueue.push(Message);
 			return false;
@@ -84,8 +83,7 @@ namespace Plugins {
 			m_Socket = NULL;
 
 			//			_log.Log(LOG_ERROR, "Plugin: Connection Exception: '%s' connecting to '%s:%s'", err.message().c_str(), m_IP.c_str(), m_Port.c_str());
-			CPluginMessage	Message(PMT_Connected, m_HwdID, err.message());
-			Message.m_iValue = err.value();
+			ConnectedMessage*	Message = new ConnectedMessage(m_HwdID, err.value(), err.message());
 			boost::lock_guard<boost::mutex> l(PluginMutex);
 			PluginMessageQueue.push(Message);
 		}
@@ -115,9 +113,7 @@ namespace Plugins {
 			//			_log.Log(LOG_ERROR, "Plugin: Connection Exception: '%s' connecting to '%s:%s'", err.message().c_str(), m_IP.c_str(), m_Port.c_str());
 		}
 
-		ConnectedMessage	Message(m_HwdID);
-		Message.m_Message = err.message();
-		Message.m_iValue = err.value();
+		ConnectedMessage*	Message = new ConnectedMessage(m_HwdID, err.value(), err.message());
 		boost::lock_guard<boost::mutex> l(PluginMutex);
 		PluginMessageQueue.push(Message);
 	}
@@ -126,7 +122,7 @@ namespace Plugins {
 	{
 		if (!e)
 		{
-			CPluginMessage	Message(PMT_Read, m_HwdID, std::string(m_Buffer, bytes_transferred));
+			ReadMessage*	Message = new ReadMessage(m_HwdID, std::string(m_Buffer, bytes_transferred));
 			{
 				boost::lock_guard<boost::mutex> l(PluginMutex);
 				PluginMessageQueue.push(Message);
@@ -150,7 +146,7 @@ namespace Plugins {
 					_log.Log(LOG_ERROR, "Plugin: Async Read Exception: %d, %s", e.value(), e.message().c_str());
 			}
 
-			CPluginMessage	DisconnectMessage(PMT_Directive, PDT_Disconnect, m_HwdID);
+			DisconnectDirective*	DisconnectMessage = new DisconnectDirective(m_HwdID);
 			{
 				boost::lock_guard<boost::mutex> l(PluginMutex);
 				PluginMessageQueue.push(DisconnectMessage);
@@ -158,22 +154,22 @@ namespace Plugins {
 		}
 	}
 
-	void CPluginTransportTCP::handleWrite(const std::string& pMessage)
+	void CPluginTransportTCP::handleWrite(const std::vector<byte>& pMessage)
 	{
 		if (m_Socket)
 		{
 			try
 			{
-				m_Socket->write_some(boost::asio::buffer(pMessage.c_str(), pMessage.length()));
+				m_Socket->write_some(boost::asio::buffer(pMessage, pMessage.size()));
 			}
 			catch (...)
 			{
-				_log.Log(LOG_ERROR, "Plugin: Socket error durring 'write_some' operation: '%s'", pMessage.c_str());
+				_log.Log(LOG_ERROR, "%s: Socket error during 'write_some' operation: %d '%s'", __func__, pMessage.size(), pMessage);
 			}
 		}
 		else
 		{
-			_log.Log(LOG_ERROR, "Plugin: Data not sent to NULL socket: '%s'", pMessage.c_str());
+			_log.Log(LOG_ERROR, "%s: Data not sent to NULL socket.", __func__);
 		}
 	}
 
@@ -216,17 +212,15 @@ namespace Plugins {
 
 				m_bConnected = isOpen();
 
-				ConnectedMessage	Message(m_HwdID);
+				ConnectedMessage*	Message = NULL;
 				if (m_bConnected)
 				{
-					Message.m_Message = "SerialPort " + m_Port + " opened successfully.";
-					Message.m_iValue = 0;
+					Message = new ConnectedMessage(m_HwdID, 0, "SerialPort " + m_Port + " opened successfully.");
 					setReadCallback(boost::bind(&CPluginTransportSerial::handleRead, this, _1, _2));
 				}
 				else
 				{
-					Message.m_Message = "SerialPort " + m_Port + " open failed, check log for details.";
-					Message.m_iValue = -1;
+					Message = new ConnectedMessage(m_HwdID, -1, "SerialPort " + m_Port + " open failed, check log for details.");
 				}
 				boost::lock_guard<boost::mutex> l(PluginMutex);
 				PluginMessageQueue.push(Message);
@@ -234,8 +228,7 @@ namespace Plugins {
 		}
 		catch (std::exception& e)
 		{
-			CPluginMessage	Message(PMT_Connected, m_HwdID, std::string(e.what()));
-			Message.m_iValue = -1;
+			ConnectedMessage*	Message = new ConnectedMessage(m_HwdID, -1, std::string(e.what()));
 			boost::lock_guard<boost::mutex> l(PluginMutex);
 			PluginMessageQueue.push(Message);
 			return false;
@@ -248,7 +241,7 @@ namespace Plugins {
 	{
 		if (bytes_transferred)
 		{
-			CPluginMessage	Message(PMT_Read, m_HwdID, std::string(data, bytes_transferred));
+			ReadMessage*	Message = new ReadMessage(m_HwdID, std::string(data, bytes_transferred));
 			{
 				boost::lock_guard<boost::mutex> l(PluginMutex);
 				PluginMessageQueue.push(Message);
@@ -262,9 +255,9 @@ namespace Plugins {
 		}
 	}
 
-	void CPluginTransportSerial::handleWrite(const std::string & data)
+	void CPluginTransportSerial::handleWrite(const std::vector<byte>& data)
 	{
-		write(data.c_str(), data.length());
+		write((const char *)data[0], data.size());
 	}
 
 	bool CPluginTransportSerial::handleDisconnect()

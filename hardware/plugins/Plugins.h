@@ -36,7 +36,7 @@ namespace Plugins {
 		CPlugin(const int HwdID, const std::string &Name, const std::string &PluginKey);
 		~CPlugin(void);
 
-		void HandleMessage(const CPluginMessage& Message);
+		void HandleMessage(const CPluginMessage* Message);
 
 		bool WriteToHardware(const char *pdata, const unsigned char length);
 		void Restart();
