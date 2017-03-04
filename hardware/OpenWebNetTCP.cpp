@@ -37,9 +37,11 @@ License: Public domain
 #define OPENWEBNET_LIGHT                "LIGHT"
 #define OPENWEBNET_TEMPERATURE          "TEMPERATURE"
 #define OPENWEBNET_BURGLAR_ALARM        "BURGLAR ALARM"
+#define OPENWEBNET_BURGLAR_ALARM_SENSOR "BURGLAR ALARM SENSOR ZONE"
 #define OPENWEBNET_CENPLUS            	"CEN PLUS"
 #define OPENWEBNET_AUXILIARY            "AUXILIARY"
 #define OPENWEBNET_DRY_CONTACT					"DRYCONTACT"
+
 
 /**
     Create new hardware OpenWebNet instance
@@ -510,6 +512,41 @@ void COpenWebNetTCP::UpdateAlarm(const int who, const int where, const int Comma
 
 }
 
+void COpenWebNetTCP::UpdateSensorAlarm(const int who, const int where, const int Command, const char *sCommand, int iInterface, const int BatteryLevel, const char *devname)
+{
+	 //make device ID
+  unsigned char ID1 = (unsigned char)((who & 0xFF00) >> 8);
+	unsigned char ID2 = (unsigned char)(who & 0xFF);
+	unsigned char ID3 = (unsigned char)((where & 0xFF00) >> 8);
+	unsigned char ID4 = (unsigned char)where & 0xFF;
+
+	//interface id (bus identifier)
+	int unit = iInterface;
+
+    char szIdx[10];
+	sprintf(szIdx, "%02X%02X%02X%02X", ID1, ID2, ID3, ID4);
+	
+
+    std::vector<std::vector<std::string> > result;
+    string strdev;
+    //check first Insert
+   result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)",
+     												m_HwdID, szIdx, unit); 
+     												 
+      if (result.empty())
+    {
+      m_sql.UpdateValue(m_HwdID, szIdx, unit, pTypeGeneral, sTypeAlert, 12, 255, Command,sCommand,strdev);
+      m_sql.safe_query("UPDATE DeviceStatus SET Name='%s' WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)",devname, m_HwdID,szIdx,unit);//can't update from devname ???    
+      return;
+    }                       
+    	
+        //check if we have a change, if not do not update it
+        int nvalue = atoi(result[0][0].c_str());
+       
+        if (Command == -1 || nvalue == Command) return; // update not necessary
+   	 m_sql.UpdateValue(m_HwdID, szIdx, unit, pTypeGeneral, sTypeAlert, 12, 255, Command,sCommand,strdev);
+
+}
 void COpenWebNetTCP::UpdateCenPlus(const int who, const int where, const int Command, const int iAppValue, int iInterface, const int BatteryLevel, const char *devname)
 {
 	 //make device ID
@@ -754,7 +791,11 @@ void COpenWebNetTCP::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
 					
 					case 11 :         // zone N Active
 					zone=atoi(whereParam[0].c_str());
-					_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm Zone %d Active",zone);
+					//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm Zone %d Active",zone);
+					devname = OPENWEBNET_BURGLAR_ALARM_SENSOR;
+          sCommand = "Active";
+          devname += " " + whereParam[0];
+					UpdateSensorAlarm(WHO_BURGLAR_ALARM, iWhere,1,sCommand.c_str(), zone, 255, devname.c_str());
 					break;
 					
 					case 15:         //INTRUSION ALARM
@@ -768,7 +809,10 @@ void COpenWebNetTCP::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
 					case 18:         // zone N Not Active
 					zone=atoi(whereParam[0].c_str());
 					//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm Zone %d Not active",zone);
-					
+					devname = OPENWEBNET_BURGLAR_ALARM_SENSOR;
+          devname += " " + whereParam[0];
+          sCommand = "Inactive";
+					UpdateSensorAlarm(WHO_BURGLAR_ALARM, iWhere,0,sCommand.c_str(), zone, 255, devname.c_str());
 					break;            
 					
 					default:
@@ -1173,15 +1217,14 @@ void COpenWebNetTCP::requestTime()
 }
 
 void COpenWebNetTCP::setTime()
-{
-/*
+{/*
     _log.Log(LOG_STATUS, "COpenWebNetTCP: set DateTime...");
     bt_openwebnet request;
     vector<bt_openwebnet> responses;
     request.CreateSetTimeMsgOpen();
     sendCommand(request, responses, 0, true);
-*/
-}
+
+*/}
 
 /**
 	scan devices
