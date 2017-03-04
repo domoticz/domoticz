@@ -280,7 +280,7 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 		int level = pDevice->intvalue;
 
 		// Simple on/off device, make sure we only have 0 or 255
-		if (pDevice->devType == ZDTYPE_SWITCH_NORMAL)
+		if ((pDevice->devType == ZDTYPE_SWITCH_NORMAL)|| (pDevice->devType == ZDTYPE_CENTRAL_SCENE))
 			level = (level == 0) ? 0 : 255;
 
 		// Now check the values
@@ -346,7 +346,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		BatLevel = pDevice->batValue;
 	}
 
-	if ((pDevice->devType==ZDTYPE_SWITCH_NORMAL)||(pDevice->devType==ZDTYPE_SWITCH_DIMMER))
+	if ((pDevice->devType==ZDTYPE_SWITCH_NORMAL)||(pDevice->devType==ZDTYPE_SWITCH_DIMMER)||(pDevice->devType== ZDTYPE_CENTRAL_SCENE))
 	{
 		//Send as pTypeGeneralSwitch, sSwitchGeneralSwitch
 		_tGeneralSwitch gswitch;
@@ -359,7 +359,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		int level = pDevice->intvalue;
 
 		// Simple on/off device, make sure we only have 0 or 255
-		if (pDevice->devType == ZDTYPE_SWITCH_NORMAL)
+		if ((pDevice->devType == ZDTYPE_SWITCH_NORMAL)|| (pDevice->devType == ZDTYPE_CENTRAL_SCENE))
 			level = (level == 0) ? 0 : 255;
 
 		// Now check the values

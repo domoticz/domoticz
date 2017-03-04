@@ -862,6 +862,7 @@ body table#itemtablenostatus tr td:first-child + td + td + td + td + td + td {
   background: rgba(51, 51, 51, 0.7);
   text-transform: uppercase;
   font-size: 0.9em;
+  margin-bottom: 15px;
 }
 .dataTables_paginate {
   margin: 0px 0px 10px 0px;

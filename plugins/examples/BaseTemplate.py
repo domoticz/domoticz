@@ -65,7 +65,7 @@ def onCommand(Unit, Command, Level, Hue):
 
 def onNotification(Name, Subject, Text, Status, Priority, Sound, ImageFile):
     global _plugin
-    _plugin.onNotification(Data)
+    _plugin.onNotification(Name, Subject, Text, Status, Priority, Sound, ImageFile)
 
 def onDisconnect():
     global _plugin

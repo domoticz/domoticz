@@ -293,6 +293,9 @@ private:
 	void decode_evohome1(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_evohome2(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_evohome3(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
+   void decode_Cartelectronic(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
+   void decode_CartelectronicTIC(const int HwdID, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
+   void decode_CartelectronicEncoder(const int HwdID, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 };
 
 extern MainWorker m_mainworker;
