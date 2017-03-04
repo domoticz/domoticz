@@ -2,6 +2,7 @@
 #include "Helper.h"
 #ifdef WIN32
 #include "dirent_windows.h"
+#include <direct.h>
 #else
 #include <dirent.h>
 #endif
@@ -397,37 +398,41 @@ void sleep_milliseconds(const long milliseconds)
 #endif
 }
 
+int createdir(const char *szDirName, int secattr)
+{
+	int ret = 0;
+#ifdef WIN32
+	ret = _mkdir(szDirName);
+#else
+	ret = mkdir(szDirName, secattr);
+#endif
+	return ret;
+}
+
 int mkdir_deep(const char *szDirName, int secattr)
 {
 	char DirName[260];
 	DirName[0] = 0;
 	const char* p = szDirName;
-	char* q = DirName; 
+	char* q = DirName;
+	int ret = 0;
 	while(*p)
 	{
 		if (('\\' == *p) || ('/' == *p))
 		{
-		 if (':' != *(p-1))
-		 {
-#if (defined(__WIN32__) || defined(_WIN32)) && !defined(IMN_PIM)
-			CreateDirectory(DirName, NULL);
-#else
-			 mkdir(DirName,secattr);
-#endif
-		 }
+			if (':' != *(p-1))
+			{
+				ret = createdir(DirName, secattr);
+			}
 		}
 		*q++ = *p++;
 		*q = '\0';
 	}
 	if (DirName[0])
 	{
-		#if (defined(__WIN32__) || defined(_WIN32)) && !defined(IMN_PIM)
-				CreateDirectory(DirName, NULL);
-		#else
-				mkdir(DirName, secattr);
-		#endif
+		ret = createdir(DirName, secattr);
 	}
-	return 0;
+	return ret;
 }
 
 double ConvertToCelsius(const double Fahrenheit)
@@ -696,6 +701,35 @@ bool dirent_is_file(std::string dir, struct dirent *ent)
 	}
 #endif
 	return false;
+}
+
+/*!
+ * List entries of a directory.
+ * @param entries A string vector containing the result
+ * @param dir Target directory for listing
+ * @param bInclDirs Boolean flag to include directories in the result
+ * @param bInclFiles Boolean flag to include regular files in the result
+ */
+void DirectoryListing(std::vector<std::string>& entries, const std::string &dir, bool bInclDirs, bool bInclFiles)
+{
+	DIR *d = NULL;
+	struct dirent *ent;
+	if ((d = opendir(dir.c_str())) != NULL)
+	{
+		while ((ent = readdir(d)) != NULL) {
+			std::string name = ent->d_name;
+			if (bInclDirs && dirent_is_directory(dir, ent) && name != "." && name != "..") {
+				entries.push_back(name);
+				continue;
+			}
+			if (bInclFiles && dirent_is_file(dir, ent)) {
+				entries.push_back(name);
+				continue;
+			}
+		}
+		closedir(d);
+	}
+	return;
 }
 
 std::string GenerateUserAgent()
