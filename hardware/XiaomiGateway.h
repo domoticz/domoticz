@@ -11,7 +11,7 @@ public:
 	~XiaomiGateway(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 	bool SendMessageToGateway(const std::string &controlmessage);
-	void InsertUpdateSwitch(const std::string &nodeid, const std::string &Name, const bool bIsOn, const _eSwitchType switchtype, const int level, const bool isctlr2 = false, const bool is2ndchannel = false);
+	void InsertUpdateSwitch(const std::string &nodeid, const std::string &Name, const bool bIsOn, const _eSwitchType switchtype, const int level, const std::string messagetype, const bool isctlr2 = false, const bool is2ndchannel = false);
 	void InsertUpdateCubeText(const std::string &nodeid, const std::string &Name, const std::string &degrees);
 	void InsertUpdateVoltage(const std::string &nodeid, const std::string &Name, const int VoltageLevel);
 	void InsertUpdateTemperature(const std::string &nodeid, const std::string &Name, const float Temperature);

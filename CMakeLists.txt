@@ -361,6 +361,7 @@ hardware/Pinger.cpp
 hardware/PVOutput_Input.cpp
 hardware/Razberry.cpp
 hardware/Rego6XXSerial.cpp
+hardware/RelayNet.cpp
 hardware/RFLinkBase.cpp
 hardware/RFLinkSerial.cpp
 hardware/RFLinkTCP.cpp

@@ -1064,7 +1064,7 @@ namespace http {
 			else if (
 				(htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) || (htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) ||
 				(htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_ECODEVICES) || (htype == HTYPE_Mochad) || (htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MySensorsMQTT) || (htype == HTYPE_MQTT) || (htype == HTYPE_FRITZBOX) ||
-				(htype == HTYPE_ETH8020) || (htype == HTYPE_Sterbox) || (htype == HTYPE_KMTronicTCP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_RFLINKTCP) || (htype == HTYPE_Comm5TCP) || (htype == HTYPE_CurrentCostMeterLAN) ||
+				(htype == HTYPE_ETH8020) || (htype == HTYPE_RelayNet) || (htype == HTYPE_Sterbox) || (htype == HTYPE_KMTronicTCP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_RFLINKTCP) || (htype == HTYPE_Comm5TCP) || (htype == HTYPE_CurrentCostMeterLAN) ||
 				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviSmartdenLan) || (htype == HTYPE_Ec3kMeterTCP) || (htype == HTYPE_MultiFun) || (htype == HTYPE_ZIBLUETCP)
 				) {
 				//Lan
@@ -1416,10 +1416,10 @@ namespace http {
 				(htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) ||
 				(htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_S0SmartMeterTCP) || (htype == HTYPE_ECODEVICES) || (htype == HTYPE_Mochad) ||
 				(htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MySensorsMQTT) || (htype == HTYPE_MQTT) || (htype == HTYPE_FRITZBOX) || (htype == HTYPE_ETH8020) || (htype == HTYPE_Sterbox) ||
-				(htype == HTYPE_KMTronicTCP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_RFLINKTCP) ||
+				(htype == HTYPE_KMTronicTCP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_RelayNet)  || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_RFLINKTCP) ||
 				(htype == HTYPE_Comm5TCP || (htype == HTYPE_CurrentCostMeterLAN)) ||
 				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviSmartdenLan) || (htype == HTYPE_Ec3kMeterTCP) || (htype == HTYPE_MultiFun) || (htype == HTYPE_ZIBLUETCP)
-				) {
+				){
 				//Lan
 				if (address == "")
 					return;
@@ -1760,8 +1760,8 @@ namespace http {
 			std::string variablevalue = request::findValue(&req, "vvalue");
 			std::string variabletype = request::findValue(&req, "vtype");
 			if (
-				(variablename == "") || 
-				(variabletype == "") || 
+				(variablename == "") ||
+				(variabletype == "") ||
 				((variablevalue == "") && (variabletype != "2"))
 				)
 				return;
@@ -1798,7 +1798,7 @@ namespace http {
 				(variablename.empty()) ||
 				(variabletype.empty()) ||
 				((variablevalue.empty()) && (variabletype != "2"))
-				) 
+				)
 				return;
 
 			root["status"] = m_sql.UpdateUserVariable(idx, variablename, variabletype, variablevalue, true);
@@ -3047,6 +3047,9 @@ namespace http {
 					s_powerdeliv2 >> powerdeliv2;
 					s_usagecurrent >> usagecurrent;
 					s_delivcurrent >> delivcurrent;
+
+					powerdeliv1 = (powerdeliv1 < 10) ? 0 : powerdeliv1;
+					powerdeliv2 = (powerdeliv2 < 10) ? 0 : powerdeliv2;
 
 					sprintf(szTmp, "%.03f", float(powerusage1) / EnergyDivider);
 					root["CounterT1"] = szTmp;
@@ -9533,6 +9536,9 @@ namespace http {
 							s_usagecurrent >> usagecurrent;
 							s_delivcurrent >> delivcurrent;
 
+							powerdeliv1 = (powerdeliv1 < 10) ? 0 : powerdeliv1;
+							powerdeliv2 = (powerdeliv2 < 10) ? 0 : powerdeliv2;
+
 							unsigned long long powerusage = powerusage1 + powerusage2;
 							unsigned long long powerdeliv = powerdeliv1 + powerdeliv2;
 							if (powerdeliv < 2)
@@ -9630,7 +9636,7 @@ namespace http {
 							s_str1 >> total_min_gas;
 							std::stringstream s_str2(sValue);
 							s_str2 >> gasactual;
-							
+
 							double musage = 0;
 
 							root["result"][ii]["SwitchTypeVal"] = MTYPE_GAS;
@@ -9988,7 +9994,12 @@ namespace http {
 						}
 						else if (dSubType == sTypeVoltage)
 						{
-							sprintf(szData, "%.3f V", atof(sValue.c_str()));
+						if 	((pHardware != NULL) &&
+							((pHardware->HwdType == HTYPE_P1SmartMeter) ||
+							(pHardware->HwdType == HTYPE_P1SmartMeterLAN)))
+								sprintf(szData, "%.1f V", atof(sValue.c_str()));
+							else
+								sprintf(szData, "%.3f V", atof(sValue.c_str()));
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["TypeImg"] = "current";
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
@@ -10713,7 +10724,7 @@ namespace http {
 					root["result"][ii]["Username"] = sd[7];
 					root["result"][ii]["Password"] = sd[8];
 					root["result"][ii]["Extra"] = sd[9];
-					
+
 					if (hType == HTYPE_PythonPlugin) {
 						root["result"][ii]["Mode1"] = sd[10];  // Plugins can have non-numeric values in the Mode fields
 						root["result"][ii]["Mode2"] = sd[11];
@@ -12733,6 +12744,9 @@ namespace http {
 									std::stringstream s_str4(sd[5]);
 									s_str4 >> actDeliv2;
 
+									actDeliv1 = (actDeliv1 < 10) ? 0 : actDeliv1;
+									actDeliv2 = (actDeliv2 < 10) ? 0 : actDeliv2;
+
 									std::string stime = sd[6];
 									struct tm ntime;
 									time_t atime;
@@ -14002,6 +14016,9 @@ namespace http {
 								float fDeliv1 = (float)(atof(szValueDeliv1.c_str()));
 								float fDeliv2 = (float)(atof(szValueDeliv2.c_str()));
 
+								fDeliv1 = (fDeliv1 < 10) ? 0 : fDeliv1;
+								fDeliv2 = (fDeliv2 < 10) ? 0 : fDeliv2;
+
 								if ((fDeliv1 != 0) || (fDeliv2 != 0))
 									bHaveDeliverd = true;
 								sprintf(szTmp, "%.3f", fUsage1 / EnergyDivider);
@@ -14764,6 +14781,9 @@ namespace http {
 								float fDeliv_1 = static_cast<float>(atof(szDeliv1.c_str()));
 								float fDeliv_2 = static_cast<float>(atof(szDeliv2.c_str()));
 
+								fDeliv_1 = (fDeliv_1 < 10) ? 0 : fDeliv_1;
+								fDeliv_2 = (fDeliv_2 < 10) ? 0 : fDeliv_2;
+
 								if ((fDeliv_1 != 0) || (fDeliv_2 != 0))
 									bHaveDeliverd = true;
 								sprintf(szTmp, "%.3f", fUsage_1 / EnergyDivider);
@@ -14985,6 +15005,11 @@ namespace http {
 									root["result"][ii]["v_min"] = szTmp;
 									sprintf(szTmp, "%.1f", fValue2);
 									root["result"][ii]["v_max"] = szTmp;
+									if (fValue3 != 0)
+									{
+										sprintf(szTmp, "%.1f", fValue3);
+										root["result"][ii]["v_avg"] = szTmp;
+									}
 								}
 								ii++;
 							}
@@ -16580,4 +16605,3 @@ namespace http {
 
 	} //server
 }//http
-
