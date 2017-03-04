@@ -889,7 +889,7 @@ Json::Value BleBox::SendCommand(const std::string &IPAddress, const std::string 
 	if (!HTTPClient::GET(sURL, extraHeaders, result))
 	{
 		_log.Log(LOG_ERROR, "BleBox: send '%s'command to %s failed!", command.c_str(), IPAddress.c_str());
-		return "";
+		return Json::ValueType::nullValue;
 	}
 
 	Json::Value root;
@@ -897,13 +897,13 @@ Json::Value BleBox::SendCommand(const std::string &IPAddress, const std::string 
 	if (!jReader.parse(result, root))
 	{
 		_log.Log(LOG_ERROR, "BleBox: Invalid json received!");
-		return "";
+		return Json::ValueType::nullValue;
 	}
 
 	if (root.size() == 0)
 	{
 		_log.Log(LOG_ERROR, "BleBox: Json is empty!");
-		return "";
+		return Json::ValueType::nullValue;
 	}
 
 	if (root.isArray())
