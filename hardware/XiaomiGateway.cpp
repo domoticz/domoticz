@@ -515,7 +515,7 @@ bool XiaomiGateway::StartHardware()
 	if (result.size() > 0) {
 		int lowestId = 9999;
 		int Id = 0;
-		for (int i = 0; i < result.size(); i++) {
+		for (size_t i = 0; i < result.size(); i++) {
 			Id = atoi(result[i][2].c_str());
 			//_log.Log(LOG_STATUS, "XiaomiGateway: checking hardware id %d", Id);
 			if (Id < lowestId) {
@@ -653,6 +653,7 @@ XiaomiGateway::xiaomi_udp_server::xiaomi_udp_server(boost::asio::io_service& io_
 	if (listenPort9898) {
 		try {
 			socket_.set_option(boost::asio::ip::udp::socket::reuse_address(true));
+			/* The following was causing some setups not to receive updates from devices, so have disabled.
 			if (m_localip != "") {
 				socket_.bind(boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(m_localip), 9898));
 #ifdef _DEBUG
@@ -661,7 +662,8 @@ XiaomiGateway::xiaomi_udp_server::xiaomi_udp_server(boost::asio::io_service& io_
 			}
 			else {
 				socket_.bind(boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 9898));
-			}
+			}*/
+			socket_.bind(boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 9898));
 			boost::shared_ptr<std::string> message(new std::string("{\"cmd\":\"whois\"}"));
 			boost::asio::ip::udp::endpoint remote_endpoint;
 			remote_endpoint = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string("224.0.0.50"), 4321);

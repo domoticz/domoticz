@@ -881,7 +881,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CAccuWeather(ID, Username, Password);
 		break;
 	case HTYPE_SolarEdgeAPI:
-		pHardware = new SolarEdgeAPI(ID, Mode1, Username, Password);
+		pHardware = new SolarEdgeAPI(ID, Username);
 		break;
 	case HTYPE_Netatmo:
 		pHardware = new CNetatmo(ID,Username,Password);
@@ -2325,6 +2325,9 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const 
 		case pTypeHomeConfort:
 			decode_HomeConfort(HwdID, HwdType, reinterpret_cast<const tRBUF *>(pRXCommand), procResult);
 			break;
+      case pTypeCARTELECTRONIC:
+         decode_Cartelectronic(HwdID, HwdType, reinterpret_cast<const tRBUF *>(pRXCommand), procResult);
+         break;
 		default:
 			_log.Log(LOG_ERROR, "UNHANDLED PACKET TYPE:      FS20 %02X", pRXCommand[1]);
 			return;
@@ -2574,9 +2577,9 @@ void MainWorker::decode_InterfaceMessage(const int HwdID, const _eHardwareTypes 
 						WriteMessage("Oregon Scientific disabled");
 
 					if (pResponse->IRESPONSE.ATIenabled)
-						WriteMessage("ATI               enabled");
+						WriteMessage("ATI/Cartelectronic enabled");
 					else
-						WriteMessage("ATI               disabled");
+						WriteMessage("ATI/Cartelectronic disabled");
 
 					if (pResponse->IRESPONSE.VISONICenabled)
 						WriteMessage("Visonic           enabled");
@@ -9557,6 +9560,7 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 	else
 	{
 		sprintf(szTmp,"%d", pMeter->id);
+
 	}
 	std::string ID=szTmp;
 	unsigned char Unit=1;
@@ -10238,6 +10242,296 @@ void MainWorker::decode_FS20(const int HwdID, const _eHardwareTypes HwdType, con
 	sprintf(szTmp,"Signal level  = %d", pResponse->FS20.rssi);
 	WriteMessage(szTmp);
 	procResult.DeviceRowIdx = -1;
+}
+
+void MainWorker::decode_Cartelectronic(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
+{
+   char szTmp[100];
+   std::string ID;
+
+   sprintf(szTmp, "%llu", ((unsigned long long)(pResponse->TIC.id1) << 32) + (pResponse->TIC.id2 << 24) + (pResponse->TIC.id3 << 16) + (pResponse->TIC.id4 << 8) + (pResponse->TIC.id5));
+   ID = szTmp;
+   unsigned char Unit = 0;
+   unsigned char cmnd = 0;
+
+   unsigned char subType = pResponse->TIC.subtype;
+
+   switch (subType)
+   {
+   case sTypeTIC:
+      decode_CartelectronicTIC(HwdID, pResponse, procResult);
+      WriteMessage("Cartelectronic TIC received");
+      break;
+   case sTypeCEencoder:
+      decode_CartelectronicEncoder(HwdID, pResponse, procResult);
+      WriteMessage("Cartelectronic Encoder received");
+      break;
+   default:
+      WriteMessage("Cartelectronic protocol not supported");
+      break;
+   }
+}
+
+void MainWorker::decode_CartelectronicTIC(const int HwdID,
+                                          const tRBUF *pResponse,
+                                          _tRxMessageProcessingResult & procResult)
+{
+   //Contract Options
+   typedef enum {
+      OP_NOT_DEFINED,
+      OP_BASE,
+      OP_CREUSE,
+      OP_EJP,
+      OP_TEMPO
+   } Contract;
+
+   //Running time
+   typedef enum {
+      PER_NOT_DEFINED,
+      PER_ALL_HOURS,             //TH..
+      PER_LOWCOST_HOURS,         //HC..
+      PER_HIGHCOST_HOURS,        //HP..
+      PER_NORMAL_HOURS,          //HN..
+      PER_MOBILE_PEAK_HOURS,     //PM..
+      PER_BLUE_LOWCOST_HOURS,    //HCJB
+      PER_WHITE_LOWCOST_HOURS,   //HCJW
+      PER_RED_LOWCOST_HOURS,     //HCJR
+      PER_BLUE_HIGHCOST_HOURS,   //HPJB
+      PER_WHITE_HIGHCOST_HOURS,  //HPJW
+      PER_RED_HIGHCOST_HOURS     //HPJR
+   } PeriodTime;
+
+   char szTmp[100];
+   uint32_t counter1 = 0;
+   uint32_t counter2 = 0;
+   unsigned int apparentPower = 0;
+   unsigned int counter1ApparentPower = 0;
+   unsigned int counter2ApparentPower = 0;
+   unsigned char unitCounter1 = 0;
+   unsigned char unitCounter2 = 1;
+   unsigned char cmnd = 0;
+   std::string ID;
+
+   unsigned char devType = pTypeGeneral;
+   unsigned char subType = sTypeKwh;
+   unsigned char SignalLevel = pResponse->TIC.rssi;
+
+   unsigned char BatteryLevel = (pResponse->TIC.battery_level + 1) * 10;
+
+   // If no error
+   if ((pResponse->TIC.state & 0x04) == 0)
+   {
+      // Id of the counter
+      uint64_t uint64ID = ((uint64_t)pResponse->TIC.id1 << 32) +
+         ((uint64_t)pResponse->TIC.id2 << 24) +
+         ((uint64_t)pResponse->TIC.id3 << 16) +
+         ((uint64_t)pResponse->TIC.id4 << 8) +
+         (uint64_t)(pResponse->TIC.id5);
+
+      sprintf(szTmp, "%.12" PRIu64, uint64ID);
+      ID = szTmp;
+
+      // Contract Type
+      Contract contractType = (Contract)(pResponse->TIC.contract_type >> 4);
+
+      // Period
+      PeriodTime period = (PeriodTime)(pResponse->TIC.contract_type & 0x0f);
+
+      // Apparent Power
+      if ((pResponse->TIC.state & 0x02) != 0) // Only if this one is present
+      {
+         apparentPower = (pResponse->TIC.power_H << 8) + pResponse->TIC.power_L;
+
+         sprintf(szTmp, "%u", apparentPower);
+         uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), 1, pTypeUsage, sTypeElectric, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
+
+         if (DevRowIdx == -1)
+            return;
+
+         m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, pTypeUsage, sTypeElectric, NTYPE_ENERGYINSTANT, (const float)apparentPower);
+      }
+
+      switch (contractType)
+      {
+         // BASE CONTRACT
+      case OP_BASE:
+      {
+         unitCounter1 = 0;
+         counter1ApparentPower = apparentPower;
+      }
+      break;
+
+      // LOW/HIGH PERIOD
+      case OP_CREUSE:
+      {
+         unitCounter1 = 0;
+
+         if (period == PER_LOWCOST_HOURS)
+         {
+            counter1ApparentPower = apparentPower;
+            counter2ApparentPower = 0;
+         }
+         if (period == PER_HIGHCOST_HOURS)
+         {
+            counter1ApparentPower = 0;
+            counter2ApparentPower = apparentPower;
+         }
+
+         // Counter 2
+         counter2 = (pResponse->TIC.counter2_0 << 24) + (pResponse->TIC.counter2_1 << 16) + (pResponse->TIC.counter2_2 << 8) + (pResponse->TIC.counter2_3);
+         sprintf(szTmp, "%u;%d", counter2ApparentPower, counter2);
+
+         uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), 1, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
+
+         if (DevRowIdx == -1)
+            return;
+
+         m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_TODAYENERGY, (const float)counter2);
+         //----------------------------
+      }
+      break;
+
+      // EJP
+      case OP_EJP:
+      {
+         unitCounter1 = 0;
+         // Counter 2
+         counter2 = (pResponse->TIC.counter2_0 << 24) + (pResponse->TIC.counter2_1 << 16) + (pResponse->TIC.counter2_2 << 8) + (pResponse->TIC.counter2_3);
+
+         sprintf(szTmp, "%u;%d", counter2ApparentPower, counter2);
+         uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), 1, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
+
+         if (DevRowIdx == -1)
+            return;
+
+         m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_TODAYENERGY, (const float)counter2);
+         //----------------------------
+      }
+      break;
+
+      // TEMPO Contracts
+      // Total of 6 counters. Theses counters depends of the time period received. For each period time, only 2 counters are sended.
+      case OP_TEMPO:
+      {
+         switch (period)
+         {
+         case PER_BLUE_LOWCOST_HOURS:
+            counter1ApparentPower = apparentPower;
+            counter2ApparentPower = 0;
+            unitCounter1 = 0;
+            unitCounter2 = 1;
+            break;
+         case PER_BLUE_HIGHCOST_HOURS:
+            counter1ApparentPower = 0;
+            counter2ApparentPower = apparentPower;
+            unitCounter1 = 0;
+            unitCounter2 = 1;
+            break;
+         case PER_WHITE_LOWCOST_HOURS:
+            counter1ApparentPower = apparentPower;
+            counter2ApparentPower = 0;
+            unitCounter1 = 2;
+            unitCounter2 = 3;
+            break;
+         case PER_WHITE_HIGHCOST_HOURS:
+            counter1ApparentPower = 0;
+            counter2ApparentPower = apparentPower;
+            unitCounter1 = 2;
+            unitCounter2 = 3;
+            break;
+         case PER_RED_LOWCOST_HOURS:
+            counter1ApparentPower = apparentPower;
+            counter2ApparentPower = 0;
+            unitCounter1 = 4;
+            unitCounter2 = 5;
+            break;
+         case PER_RED_HIGHCOST_HOURS:
+            counter1ApparentPower = 0;
+            counter2ApparentPower = apparentPower;
+            unitCounter1 = 4;
+            unitCounter2 = 5;
+            break;
+         default:
+            break;
+         }
+
+         // Counter 2
+         counter2 = (pResponse->TIC.counter2_0 << 24) + (pResponse->TIC.counter2_1 << 16) + (pResponse->TIC.counter2_2 << 8) + (pResponse->TIC.counter2_3);
+
+         sprintf(szTmp, "%u;%d", counter2ApparentPower, counter2);
+         uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), unitCounter2, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
+
+         if (DevRowIdx == -1)
+            return;
+
+         m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_TODAYENERGY, (const float)counter2);
+         //----------------------------
+      }
+      break;
+      default:
+         break;
+   }
+
+   // Counter 1
+   counter1 = (pResponse->TIC.counter1_0 << 24) + (pResponse->TIC.counter1_1 << 16) + (pResponse->TIC.counter1_2 << 8) + (pResponse->TIC.counter1_3);
+
+   sprintf(szTmp, "%u;%d", counter1ApparentPower, counter1);
+   uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), unitCounter1, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
+
+   if (DevRowIdx == -1)
+      return;
+
+   m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_TODAYENERGY, (const float)counter1);
+   //----------------------------
+   }
+   else
+   {
+      WriteMessage("TeleInfo not connected");
+   }
+}
+
+void MainWorker::decode_CartelectronicEncoder(const int HwdID,
+                                              const tRBUF *pResponse,
+                                              _tRxMessageProcessingResult & procResult)
+{
+   char szTmp[100];
+   uint32_t counter1 = 0;
+   uint32_t counter2 = 0;
+   int apparentPower = 0;
+   unsigned char Unit = 0;
+   unsigned char cmnd = 0;
+   uint64_t DevRowIdx = 0;
+   std::string ID;
+
+   unsigned char devType = pTypeRFXMeter;
+   unsigned char subType = sTypeRFXMeterCount;
+   unsigned char SignalLevel = pResponse->CEENCODER.rssi;
+
+   unsigned char BatteryLevel = (pResponse->CEENCODER.battery_level + 1) * 10;
+
+   // Id of the module
+   sprintf(szTmp, "%d", ((uint32_t)(pResponse->CEENCODER.id1 << 24) + (pResponse->CEENCODER.id2 << 16) + (pResponse->CEENCODER.id3 << 8) + pResponse->CEENCODER.id4));
+   ID = szTmp;
+
+   // Counter 1
+   counter1 = (pResponse->CEENCODER.counter1_0 << 24) + (pResponse->CEENCODER.counter1_1 << 16) + (pResponse->CEENCODER.counter1_2 << 8) + (pResponse->CEENCODER.counter1_3);
+
+   sprintf(szTmp, "%d", counter1);
+   DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
+   if (DevRowIdx == -1)
+      return;
+
+   m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_TODAYCOUNTER, (const float)counter1);
+
+   // Counter 2
+   counter2 = (pResponse->CEENCODER.counter2_0 << 24) + (pResponse->CEENCODER.counter2_1 << 16) + (pResponse->CEENCODER.counter2_2 << 8) + (pResponse->CEENCODER.counter2_3);
+
+   sprintf(szTmp, "%d", counter2);
+   DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), 1, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
+   if (DevRowIdx == -1)
+      return;
+
+   m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_TODAYCOUNTER, (const float)counter2);
 }
 
 bool MainWorker::GetSensorData(const uint64_t idx, int &nValue, std::string &sValue)

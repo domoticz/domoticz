@@ -146,7 +146,6 @@ unsigned char GetIndexFromAlarmType(const std::string &sLabel)
 	return -1;
 }
 
-
 #pragma warning(disable: 4996)
 
 extern std::string szStartupFolder;
@@ -357,7 +356,6 @@ COpenZWave::COpenZWave(const int ID, const std::string& devname) :
 	m_pManager = NULL;
 	m_bNeedSave = false;
 	m_bAeotecBlinkingMode = false;
-	m_LastAlarmTypeReceived = -1;
 }
 
 
@@ -416,7 +414,8 @@ unsigned char COpenZWave::GetInstanceFromValueID(const OpenZWave::ValueID &vID)
 		(commandClass == COMMAND_CLASS_MULTI_INSTANCE) ||
 		(commandClass == COMMAND_CLASS_SENSOR_MULTILEVEL) ||
 		(commandClass == COMMAND_CLASS_THERMOSTAT_SETPOINT) ||
-		(commandClass == COMMAND_CLASS_SENSOR_BINARY)
+		(commandClass == COMMAND_CLASS_SENSOR_BINARY) ||
+		(commandClass == COMMAND_CLASS_CENTRAL_SCENE)
 		)
 	{
 		instance = vIndex;
@@ -541,11 +540,14 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		nodeInfo.Product_type = pManager->GetNodeProductType(_homeID, _nodeID);
 		nodeInfo.Product_id = pManager->GetNodeProductId(_homeID, _nodeID);
 		nodeInfo.Product_name = pManager->GetNodeProductName(_homeID, _nodeID);
+
 		nodeInfo.tClockDay = -1;
 		nodeInfo.tClockHour = -1;
 		nodeInfo.tClockMinute = -1;
 		nodeInfo.tMode = -1;
 		nodeInfo.tFanMode = -1;
+
+		m_LastAlarmTypeReceived = -1;
 
 		if ((_homeID == m_controllerID) && (_nodeID == m_controllerNodeId))
 			nodeInfo.eState = NSTATE_AWAKE;	//controller is always awake
@@ -1294,7 +1296,7 @@ bool COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 	bool bHandleAsBinary = false;
 	if ((value == 0) || (value == 255))
 	{
-		if (pDevice->Manufacturer_id == 0x010f) 
+		if (pDevice->Manufacturer_id == 0x010f)
 		{
 			if (
 				((pDevice->Product_id == 0x1000) && (pDevice->Product_type == 0x0203)) ||
@@ -1593,6 +1595,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 	int iValue = 0;
 	bool bValue = false;
 	unsigned char byteValue = 0;
+	int32 intValue = 0;
 
 	// We choose SwitchMultilevel first, if not available, SwhichBinary is chosen
 	if (commandclass == COMMAND_CLASS_SWITCH_BINARY)
@@ -2254,6 +2257,15 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 		//Ignore this class, we can make our own schedule with timers
 		//_log.Log(LOG_STATUS, "OpenZWave: Unhandled class: 0x%02X (%s), NodeID: %d (0x%02x), Index: %d, Instance: %d", commandclass, cclassStr(commandclass), NodeID, NodeID, vOrgIndex, vOrgInstance);
 	}
+	else if (commandclass == COMMAND_CLASS_CENTRAL_SCENE)
+	{
+		if (vType == OpenZWave::ValueID::ValueType_Int)
+		{
+			_device.devType = ZDTYPE_CENTRAL_SCENE;
+			_device.intvalue = 0;
+			InsertDevice(_device);
+		}
+	}
 	else if (commandclass == COMMAND_CLASS_DOOR_LOCK)
 	{
 		if (
@@ -2416,9 +2428,9 @@ void COpenZWave::UpdateNodeScene(const OpenZWave::ValueID &vID, int SceneID)
 	pDevice->lastreceived = atime;
 	pDevice->sequence_number += 1;
 	if (pDevice->sequence_number == 0)
-pDevice->sequence_number = 1;
-if (pDevice->bValidValue)
-SendDevice2Domoticz(pDevice);
+		pDevice->sequence_number = 1;
+	if (pDevice->bValidValue)
+		SendDevice2Domoticz(pDevice);
 }
 
 void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
@@ -2448,6 +2460,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 	int iValue = 0;
 	bool bValue = false;
 	unsigned char byteValue = 0;
+	int32 intValue = 0;
 	std::string strValue = "";
 	int32 lValue = 0;
 
@@ -2464,6 +2477,11 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 	else if (vType == OpenZWave::ValueID::ValueType_Byte)
 	{
 		if (m_pManager->GetValueAsByte(vID, &byteValue) == false)
+			return;
+	}
+	else if (vType == OpenZWave::ValueID::ValueType_Int)
+	{
+		if (m_pManager->GetValueAsInt(vID, &intValue) == false)
 			return;
 	}
 	else if ((vType == OpenZWave::ValueID::ValueType_Raw) || (vType == OpenZWave::ValueID::ValueType_String))
@@ -2515,23 +2533,6 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 		instance = GetIndexFromAlarm(vLabel);
 		if (instance == 0)
 			return;
-		if (commandclass == COMMAND_CLASS_SENSOR_ALARM)
-		{
-			if (vLabel == "Alarm Level")
-			{
-				//Alarm Level
-				if (byteValue == 0)
-				{
-					//Secure
-					_log.Log(LOG_STATUS, "OpenZWave: Alarm Level: Secure");
-				}
-				else
-				{
-					//Tamper
-					_log.Log(LOG_STATUS, "OpenZWave: Alarm Level: Tamper");
-				}
-			}
-		}
 	}
 
 	time_t atime = mytime(NULL);
@@ -2820,32 +2821,23 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 
 			if (vLabel == "Alarm Type")
 			{
-				NodeInfo *pNode = GetNodeInfo(HomeID, NodeID);
-				if (pNode)
+				if (byteValue != 0)
 				{
-					if (byteValue != 0)
-					{
-						m_LastAlarmTypeReceived = byteValue;
-						return;
-					}
-					else
-						m_LastAlarmTypeReceived = -1;
+					m_LastAlarmTypeReceived = byteValue;
 				}
+				else
+					m_LastAlarmTypeReceived = -1;
 			}
 			else if (vLabel == "Alarm Level")
 			{
-				NodeInfo *pNode = GetNodeInfo(HomeID, NodeID);
-				if (pNode)
+				if (m_LastAlarmTypeReceived != -1)
 				{
-					if (m_LastAlarmTypeReceived != -1)
-					{
-						//Until we figured out what types/levels we have, we create a switch for each of them
-						char szDeviceName[50];
-						sprintf(szDeviceName, "Alarm Type: 0x%02X", m_LastAlarmTypeReceived);
-						std::string tmpstr = szDeviceName;
-						SendSwitch(NodeID, m_LastAlarmTypeReceived, pDevice->batValue, (byteValue != 0) ? true : false, 0, tmpstr);
-						m_LastAlarmTypeReceived = -1;
-					}
+					//Until we figured out what types/levels we have, we create a switch for each of them
+					char szDeviceName[50];
+					sprintf(szDeviceName, "Alarm Type: 0x%02X", m_LastAlarmTypeReceived);
+					std::string tmpstr = szDeviceName;
+					SendSwitch(NodeID, m_LastAlarmTypeReceived, pDevice->batValue, (byteValue != 0) ? true : false, 0, tmpstr);
+					m_LastAlarmTypeReceived = -1;
 				}
 			}
 			else
@@ -2899,11 +2891,13 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 				{
 					switch (byteValue) {
 					case 0x00: 	// Previous Events cleared
+					case 0x06:	//Keypad unlock/Arm Home
 					case 0x17: 	// Door closed
 					case 0xfe:	// Unkown event; returned when retrieving the current state.
 						intValue = 0;
 						break;
 
+					case 0x05:	//Keypad Lock/Arm Away
 					case 0x16: 	// Door open
 					default:	// all others, interpret as alarm
 						intValue = 255;
@@ -2942,8 +2936,8 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 						SendSwitch(NodeID, byteValue, pDevice->batValue, true, 0, tmpstr);
 					}
 				}
-				pDevice->intvalue = intValue;
 			}
+			pDevice->intvalue = intValue;
 		}
 		else if (vLabel == "Open")
 		{
@@ -3230,6 +3224,12 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 			{
 
 			}
+		}
+		break;
+	case ZDTYPE_CENTRAL_SCENE:
+		if (vType == OpenZWave::ValueID::ValueType_Int)
+		{
+			pDevice->intvalue = 255;
 		}
 		break;
 	}
@@ -5399,6 +5399,29 @@ namespace http {
 					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
 					reply::set_content(&rep, pOZWHardware->m_ozwcp.GetCPStats());
 					reply::add_header_attachment(&rep, "stats.xml");
+				}
+			}
+		}
+		void CWebServer::ZWaveCPSceneCommand(WebEmSession & session, const request& req, reply & rep)
+		{
+			if (req.content.find("fun") == std::string::npos)
+				return;
+			std::multimap<std::string, std::string> values;
+			request::makeValuesFromPostContent(&req, values);
+			std::string sArg1 = request::findValue(&values, "fun");
+			std::string sArg2 = request::findValue(&values, "id");
+			std::string sVid = request::findValue(&values, "vid");
+			std::string sLabel = request::findValue(&values, "label");
+			std::string sArg3 = (!sVid.empty()) ? sVid : sLabel;
+			std::string sArg4 = request::findValue(&values, "value");
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
+			if (pHardware != NULL)
+			{
+				if (pHardware->HwdType == HTYPE_OpenZWave)
+				{
+					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+					reply::set_content(&rep, pOZWHardware->m_ozwcp.DoSceneCommand(sArg1, sArg2, sArg3, sArg4));
 				}
 			}
 		}

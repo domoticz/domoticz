@@ -889,6 +889,7 @@ bool CPhilipsHue::GetSensors(const Json::Value &root)
 
 			if (bDoSend)
 			{
+				sID += 3000;
 				string device_name = hsensor.m_type + " " + hsensor.m_name;
 				if (hsensor.m_type == SensorTypeDaylight)
 				{
@@ -903,12 +904,19 @@ bool CPhilipsHue::GetSensors(const Json::Value &root)
 				}
 				else if (hsensor.m_type == SensorTypeZLLTemperature)
 				{
+					SendTempSensor(sID, hsensor.m_config.m_battery, float(hsensor.m_state.m_temperature / 100.0f), device_name);
 				}
 				else if (hsensor.m_type == SensorTypeZLLLightLevel)
 				{
-				}
-				else if (hsensor.m_type == SensorTypeZLLTemperature)
-				{
+					InsertUpdateSwitch(sID, STYPE_Dusk, hsensor.m_state.m_dark, device_name, hsensor.m_config.m_battery);
+
+					double lux = 0.00001;
+					if (hsensor.m_state.m_lightlevel != 0)
+					{
+						float convertedLightLevel = float((hsensor.m_state.m_lightlevel - 1) / 10000.00f);
+						lux = pow(10, convertedLightLevel);
+					}
+					SendLuxSensor(sID, 0, hsensor.m_config.m_battery, (const float)lux, hsensor.m_type + " Lux " + hsensor.m_name);
 				}
 				else
 				{
@@ -922,9 +930,9 @@ bool CPhilipsHue::GetSensors(const Json::Value &root)
 	return true;
 }
 
-void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eSwitchType SType, const bool bPresence, const string &Name, uint8_t BatteryLevel)
+void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eSwitchType SType, const bool status, const string &Name, uint8_t BatteryLevel)
 {
-	int sID = NodeID + 3000;
+	int sID = NodeID;
 	char ID[40];
 	sprintf(ID, "%08X", sID);
 
@@ -936,7 +944,7 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eSwitchType SType,
 	xcmd.battery_level = BatteryLevel;
 	xcmd.rssi = 12;
 
-	if (bPresence) {
+	if (status) {
 		xcmd.cmnd = gswitch_sOn;
 	}
 	else {
@@ -948,14 +956,14 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eSwitchType SType,
 	result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) ", m_HwdID, ID, pTypeGeneralSwitch);
 	if (result.size() < 1)
 	{
-		_log.Log(LOG_STATUS, "Philips Hue Switch: New Device Found (%s)", Name.c_str());
-		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, NULL, -1);
+		//_log.Log(LOG_STATUS, "Philips Hue Switch: New Device Found (%s)", Name.c_str());
+		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, Name.c_str(), BatteryLevel);
 
 		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, CustomImage=%i WHERE(HardwareID == %d) AND (DeviceID == '%q')", Name.c_str(), (SType), 0, m_HwdID, ID);
 	}
 	else 
 	{
-		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, NULL, -1);
+		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, Name.c_str(), BatteryLevel);
 	}
 }
 

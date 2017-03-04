@@ -402,6 +402,24 @@ namespace Plugins {
 			}
 		}
 	}
+
+	void CPluginSystem::LoadSettings()
+	{
+		//	Add command to message queue for every plugin
+		boost::lock_guard<boost::mutex> l(PluginMutex);
+		for (std::map<int, CDomoticzHardwareBase*>::iterator itt = m_pPlugins.begin(); itt != m_pPlugins.end(); itt++)
+		{
+			if (itt->second)
+			{
+				SettingsDirective	Message(itt->second->m_HwdID);
+				PluginMessageQueue.push(Message);
+			}
+			else
+			{
+				_log.Log(LOG_ERROR, "%s: NULL entry found in Plugins map for Hardware %d.", __func__, itt->first);
+			}
+		}
+	}
 }
 
 //Webserver helpers
@@ -480,6 +498,12 @@ namespace http {
 					}
 				}
 			}  
+		}
+
+		void CWebServer::PluginLoadConfig()
+		{
+			Plugins::CPluginSystem Plugins;
+			Plugins.LoadSettings();
 		}
 
 		std::string CWebServer::PluginHardwareDesc(int HwdID)
