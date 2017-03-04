@@ -117,6 +117,7 @@
 #include "../hardware/Arilux.h"
 #include "../hardware/OpenWebNetUSB.h"
 #include "../hardware/InComfort.h"
+#include "../hardware/RelayNet.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -784,6 +785,10 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_ETH8020:
 		//LAN
 		pHardware = new CETH8020(ID, Address, Port, Username, Password);
+		break;
+	case HTYPE_RelayNet:
+		//LAN
+		pHardware = new RelayNet(ID, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5);
 		break;
 	case HTYPE_KMTronicTCP:
 		//LAN
