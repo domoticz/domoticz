@@ -769,7 +769,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_RelayNet:
 		//LAN
-		pHardware = new RelayNet(ID, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5);
+		pHardware = new RelayNet(ID, Address, Port, Username, Password, Mode1 != 0, Mode2 != 0, Mode3, Mode4, Mode5);
 		break;
 	case HTYPE_KMTronicTCP:
 		//LAN
