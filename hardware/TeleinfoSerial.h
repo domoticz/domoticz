@@ -1,6 +1,6 @@
 /*
 Domoticz Software : http://domoticz.com/
-File : Teleinfo.h
+File : TeleinfoSerial.h
 Author : Nicolas HILAIRE
 Version : 1.6
 Description : This class manage the Teleinfo Signal
@@ -12,6 +12,8 @@ History :
 - 2014-12-13 : Add 'Tempo' contract (Kevin NICOLAS)
 - 2015-06-10 : Fix bug power divided by 2 (Christophe DELPECH)
 - 2016-02-05 : Fix bug power display with 'Tempo' contract (Anthony LAGUERRE)
+- 2017-03-03 : Renamed from Teleinfo.h to TeleinfoSerial.h in order to create 
+               a shared class to process Teleinfo protocol (Blaise Thauvin)
 */
 
 #pragma once
@@ -19,13 +21,14 @@ History :
 #include "DomoticzHardware.h"
 #include "P1MeterBase.h"
 #include "ASyncSerial.h"
+#include "TeleinfoBase.h"
 #define TELEINFO_BAUD_RATE         1200
 #define TELEINFO_PARITY            boost::asio::serial_port_base::parity::even
 #define TELEINFO_CARACTER_SIZE      7
 #define TELEINFO_FLOW_CONTROL      boost::asio::serial_port_base::flow_control::none
 #define TELEINFO_STOP_BITS         boost::asio::serial_port_base::stop_bits::one
 
-class Teleinfo : public CDomoticzHardwareBase, AsyncSerial
+class TeleinfoSerial : public CDomoticzHardwareBase, AsyncSerial
 {
 	typedef enum {
 		ID = 0,
@@ -63,8 +66,8 @@ class Teleinfo : public CDomoticzHardwareBase, AsyncSerial
 
 public:
 
-	Teleinfo(const int ID, const std::string& devname, unsigned int baud_rate = TELEINFO_BAUD_RATE);
-	~Teleinfo();
+	TeleinfoSerial(const int ID, const std::string& devname, unsigned int baud_rate = TELEINFO_BAUD_RATE);
+	~TeleinfoSerial();
 	std::string m_szSerialPort;
 
 	P1Power   m_p1power;
@@ -104,6 +107,6 @@ private:
 
 	unsigned char m_buffer[1028];
 	int m_bufferpos;
-	static Teleinfo::Match m_matchlist[19];
+	static TeleinfoSerial::Match m_matchlist[19];
 };
 
