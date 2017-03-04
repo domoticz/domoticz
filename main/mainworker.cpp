@@ -296,29 +296,10 @@ void MainWorker::StopDomoticzHardware()
 
 void MainWorker::GetAvailableWebThemes()
 {
-	m_webthemes.clear();
-	DIR *d = NULL;
-
 	std::string ThemeFolder = szWWWFolder + "/styles/";
+	m_webthemes.clear();
+	DirectoryListing(m_webthemes, ThemeFolder, true, false);
 
-	d = opendir(ThemeFolder.c_str());
-	if (d != NULL)
-	{
-		struct dirent *de = NULL;
-		// Loop while not NULL
-		while ((de = readdir(d)))
-		{
-			std::string dirname = de->d_name;
-			if (dirent_is_directory(ThemeFolder, de))
-			{
-				if ((dirname != ".") && (dirname != "..") && (dirname != ".svn"))
-				{
-					m_webthemes.push_back(dirname);
-				}
-			}
-		}
-		closedir(d);
-	}
 	//check if current theme is found, if not, select default
 	bool bFound = false;
 	std::string sValue;
