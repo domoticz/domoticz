@@ -1760,8 +1760,8 @@ namespace http {
 			std::string variablevalue = request::findValue(&req, "vvalue");
 			std::string variabletype = request::findValue(&req, "vtype");
 			if (
-				(variablename == "") || 
-				(variabletype == "") || 
+				(variablename == "") ||
+				(variabletype == "") ||
 				((variablevalue == "") && (variabletype != "2"))
 				)
 				return;
@@ -1798,7 +1798,7 @@ namespace http {
 				(variablename.empty()) ||
 				(variabletype.empty()) ||
 				((variablevalue.empty()) && (variabletype != "2"))
-				) 
+				)
 				return;
 
 			root["status"] = m_sql.UpdateUserVariable(idx, variablename, variabletype, variablevalue, true);
@@ -9636,7 +9636,7 @@ namespace http {
 							s_str1 >> total_min_gas;
 							std::stringstream s_str2(sValue);
 							s_str2 >> gasactual;
-							
+
 							double musage = 0;
 
 							root["result"][ii]["SwitchTypeVal"] = MTYPE_GAS;
@@ -9994,7 +9994,12 @@ namespace http {
 						}
 						else if (dSubType == sTypeVoltage)
 						{
-							sprintf(szData, "%.3f V", atof(sValue.c_str()));
+						if 	((pHardware != NULL) &&
+							((pHardware->HwdType == HTYPE_P1SmartMeter) ||
+							(pHardware->HwdType == HTYPE_P1SmartMeterLAN)))
+								sprintf(szData, "%.1f V", atof(sValue.c_str()));
+							else
+								sprintf(szData, "%.3f V", atof(sValue.c_str()));
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["TypeImg"] = "current";
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
@@ -10719,7 +10724,7 @@ namespace http {
 					root["result"][ii]["Username"] = sd[7];
 					root["result"][ii]["Password"] = sd[8];
 					root["result"][ii]["Extra"] = sd[9];
-					
+
 					if (hType == HTYPE_PythonPlugin) {
 						root["result"][ii]["Mode1"] = sd[10];  // Plugins can have non-numeric values in the Mode fields
 						root["result"][ii]["Mode2"] = sd[11];
@@ -15000,6 +15005,11 @@ namespace http {
 									root["result"][ii]["v_min"] = szTmp;
 									sprintf(szTmp, "%.1f", fValue2);
 									root["result"][ii]["v_max"] = szTmp;
+									if (fValue3 != 0)
+									{
+										sprintf(szTmp, "%.1f", fValue3);
+										root["result"][ii]["v_avg"] = szTmp;
+									}
 								}
 								ii++;
 							}

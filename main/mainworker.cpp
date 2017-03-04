@@ -9560,6 +9560,7 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 	else
 	{
 		sprintf(szTmp,"%d", pMeter->id);
+
 	}
 	std::string ID=szTmp;
 	unsigned char Unit=1;
