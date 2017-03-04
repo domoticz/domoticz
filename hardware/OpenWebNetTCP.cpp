@@ -515,8 +515,8 @@ void COpenWebNetTCP::UpdateCenPlus(const int who, const int where, const int Com
 	 //make device ID
   unsigned char ID1 = (unsigned char)((who & 0xFF00) >> 8);
 	unsigned char ID2 = (unsigned char)(who & 0xFF);
-	unsigned char ID3 = (unsigned char)((where+iAppValue+iInterface & 0xFF00) >> 8);
-	unsigned char ID4 = (unsigned char)where+iAppValue+iInterface & 0xFF;
+	unsigned char ID3 = (unsigned char)((where+(iAppValue * 2) + (iInterface *3) & 0xFF00) >> 8);
+	unsigned char ID4 = (unsigned char)(where+(iAppValue * 2) + (iInterface *3)) & 0xFF;
 
 	//interface id (bus identifier)
 	int unit = iInterface;
@@ -529,12 +529,14 @@ void COpenWebNetTCP::UpdateCenPlus(const int who, const int where, const int Com
     //check first Insert
    result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)",
      												m_HwdID, szIdx, unit);
-      if (result.empty())					
-    {
+     	
+     												
+      if (result.empty())		
+      {
       m_sql.UpdateValue(m_HwdID, szIdx, unit, pTypeGeneralSwitch, sSwitchLightT1, 12, 255, 0,strdev);
       m_sql.safe_query("UPDATE DeviceStatus SET Name='%s'  WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)",devname, m_HwdID,szIdx,unit); 
       return;
-    }
+      }
     
         //check if we have a change, if not do not update it
         //int nvalue = atoi(result[0][0].c_str());
@@ -833,7 +835,7 @@ void COpenWebNetTCP::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
                 		_log.Log(LOG_STATUS, "COpenWebNetTCP: CEN PLUS Long pressure %d Button %d",iWhere,iAppValue);
                 		devname = OPENWEBNET_CENPLUS;
                 		devname += " " + where + " Long Press Button " + whatParam[0].c_str();
-                		UpdateCenPlus(WHO_DRY_CONTACT_IR_DETECTION, iWhere,1,iAppValue, atoi(what.c_str()), 255, devname.c_str());
+                		UpdateCenPlus(WHO_DRY_CONTACT_IR_DETECTION, iWhere,1,iAppValue,  atoi(what.c_str()), 255, devname.c_str());
                 		return;
                 break;
             	    	
