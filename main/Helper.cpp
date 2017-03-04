@@ -703,6 +703,35 @@ bool dirent_is_file(std::string dir, struct dirent *ent)
 	return false;
 }
 
+/*!
+ * List entries of a directory.
+ * @param entries A string vector containing the result
+ * @param dir Target directory for listing
+ * @param bInclDirs Boolean flag to include directories in the result
+ * @param bInclFiles Boolean flag to include regular files in the result
+ */
+void DirectoryListing(std::vector<std::string>& entries, const std::string &dir, bool bInclDirs, bool bInclFiles)
+{
+	DIR *d = NULL;
+	struct dirent *ent;
+	if ((d = opendir(dir.c_str())) != NULL)
+	{
+		while ((ent = readdir(d)) != NULL) {
+			std::string name = ent->d_name;
+			if (bInclDirs && dirent_is_directory(dir, ent) && name != "." && name != "..") {
+				entries.push_back(name);
+				continue;
+			}
+			if (bInclFiles && dirent_is_file(dir, ent)) {
+				entries.push_back(name);
+				continue;
+			}
+		}
+		closedir(d);
+	}
+	return;
+}
+
 std::string GenerateUserAgent()
 {
 	srand((unsigned int)time(NULL));
