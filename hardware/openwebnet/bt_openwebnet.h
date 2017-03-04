@@ -115,6 +115,7 @@ public:
 
   void CreateTimeReqMsgOpen();
 
+	void CreateSetTimeMsgOpen();
   //general message
   void CreateMsgOpen(const std::string& message);
 

@@ -6,6 +6,7 @@
 #include <iostream>
 #include <string>
 #include <iomanip>
+#include "../../main/localtime_r.h"
 #include "bt_openwebnet.h"
 // private methods ......
 
@@ -706,6 +707,23 @@ void bt_openwebnet::CreateTimeReqMsgOpen()
 
   // checks for correct syntax ...
   IsCorrect();
+}
+
+void bt_openwebnet::CreateSetTimeMsgOpen()
+{
+	//call CreateNullMsgOpen function
+  CreateNullMsgOpen();
+  	
+	char frame_dt[50];
+	time_t now = time(NULL);
+	struct tm *t = localtime(&now);	
+	strftime(frame_dt, sizeof(frame_dt)-1, "*#13**#22*%H*%M*%S*001*%u*%d*%m*%Y##", t); //set date time 
+	std::stringstream frame;
+	frame << frame_dt;
+	frame_open = DeleteControlCharacters(frame.str());
+	length_frame_open = frame_open.length();
+
+ 	IsCorrect();
 }
 
 // creates the OPEN message *#who*where*dimension##
