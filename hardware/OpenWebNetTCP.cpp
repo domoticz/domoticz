@@ -1174,11 +1174,13 @@ void COpenWebNetTCP::requestTime()
 
 void COpenWebNetTCP::setTime()
 {
+/*
     _log.Log(LOG_STATUS, "COpenWebNetTCP: set DateTime...");
     bt_openwebnet request;
     vector<bt_openwebnet> responses;
     request.CreateSetTimeMsgOpen();
     sendCommand(request, responses, 0, true);
+*/
 }
 
 /**
