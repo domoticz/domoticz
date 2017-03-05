@@ -337,7 +337,7 @@ namespace Plugins {
 					return NULL;
 				}
 				self->Image = 0;
-				self->Used = 1;
+				self->Used = 0;
 				self->SignalLevel = 100;
 				self->BatteryLevel = 255;
 				self->pPlugin = NULL;
