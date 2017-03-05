@@ -2,6 +2,10 @@
 
 #include "../DomoticzHardware.h"
 
+#ifndef byte
+typedef unsigned char byte;
+#endif
+
 namespace Plugins {
 
 	class CPluginMessage;
