@@ -5,8 +5,8 @@
 //
 #ifdef USE_PYTHON_PLUGINS
 
-#include "PluginTransports.h"
 #include "PluginMessages.h"
+#include "PluginTransports.h"
 
 #include "../main/Logger.h"
 #include <queue>
@@ -122,7 +122,7 @@ namespace Plugins {
 	{
 		if (!e)
 		{
-			ReadMessage*	Message = new ReadMessage(m_HwdID, std::string(m_Buffer, bytes_transferred));
+			ReadMessage*	Message = new ReadMessage(m_HwdID, bytes_transferred, m_Buffer);
 			{
 				boost::lock_guard<boost::mutex> l(PluginMutex);
 				PluginMessageQueue.push(Message);
@@ -241,7 +241,7 @@ namespace Plugins {
 	{
 		if (bytes_transferred)
 		{
-			ReadMessage*	Message = new ReadMessage(m_HwdID, std::string(data, bytes_transferred));
+			ReadMessage*	Message = new ReadMessage(m_HwdID, bytes_transferred, (const unsigned char*)data);
 			{
 				boost::lock_guard<boost::mutex> l(PluginMutex);
 				PluginMessageQueue.push(Message);

@@ -7,13 +7,13 @@ namespace Plugins {
 	class CPluginProtocol
 	{
 	protected:
-		std::string		m_sRetainedData;
+		std::vector<byte>	m_sRetainedData;
 
 	public:
 		virtual void				ProcessInbound(const ReadMessage* Message);
 		virtual std::vector<byte>	ProcessOutbound(const WriteDirective* WriteMessage);
 		virtual void				Flush(const int HwdID);
-		virtual int					Length() { return m_sRetainedData.length(); };
+		virtual int					Length() { return m_sRetainedData.size(); };
 	};
 
 	class CPluginProtocolLine : CPluginProtocol

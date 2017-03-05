@@ -421,6 +421,7 @@ namespace Plugins {
 					PluginMessageQueue.push(Message);
 				}
 			}
+			Py_XDECREF(PyBuffer.obj);
 		}
 
 		Py_INCREF(Py_None);
@@ -929,23 +930,7 @@ namespace Plugins {
 					std::vector<byte>	vWriteData = m_pProtocol->ProcessOutbound(WriteMessage);
 					if (m_bDebug)
 					{
-						_log.Log(LOG_NORM, "(%s) Sending %d bytes of data:.", Name.c_str(), vWriteData.size());
-						for (int i = 0; i < vWriteData.size(); i = i + 20)
-						{
-							std::stringstream ssHex;
-							std::string sChars;
-							for (int j = 0; j < 20; j++)
-							{
-								if (i+j < vWriteData.size())
-								{
-									ssHex << std::hex << (int)vWriteData[i + j] << " ";
-									if ((int)vWriteData[i + j] > 32) sChars += vWriteData[i + j];
-									else sChars += ".";
-								}
-								else ssHex << ".. ";
-							}
-							_log.Log(LOG_NORM, "(%s)     %s    %s", Name.c_str(), ssHex.str().c_str(), sChars.c_str());
-						}
+						WriteDebugBuffer(vWriteData, false);
 					}
 					m_pTransport->handleWrite(vWriteData);
 					if (WriteMessage->m_Object)
@@ -998,24 +983,29 @@ namespace Plugins {
 		case PMT_Message:
 		{
 			const ReceivedMessage* RecvMessage = (const ReceivedMessage*)Message;
-			if (RecvMessage->m_Buffer.length())
+			if (RecvMessage->m_Buffer.size())
 			{
 				sHandler = "onMessage";
 				if (RecvMessage->m_Object)
 				{
 					PyObject*	pHeaders = RecvMessage->m_Object;
-					pParams = Py_BuildValue("yiO", (unsigned char*)(RecvMessage->m_Buffer.c_str()), RecvMessage->m_Status, pHeaders);
-					if (!pParams)
-					{
-						_log.Log(LOG_ERROR, "(%s) Failed to create parameters for inbound message: (%d) %s.", Name.c_str(), RecvMessage->m_Buffer.length(), RecvMessage->m_Buffer.c_str());
-						LogPythonException(sHandler);
-					}
+					pParams = Py_BuildValue("y#iO", &RecvMessage->m_Buffer[0], RecvMessage->m_Buffer.size(), RecvMessage->m_Status, pHeaders);
 					Py_XDECREF(pHeaders);
 				}
 				else
 				{
 					Py_INCREF(Py_None);
-					pParams = Py_BuildValue("yiO", RecvMessage->m_Buffer.c_str(), RecvMessage->m_Status, Py_None);
+					pParams = Py_BuildValue("y#iO", &RecvMessage->m_Buffer[0], RecvMessage->m_Buffer.size(), RecvMessage->m_Status, Py_None);
+				}
+				if (!pParams)
+				{
+					_log.Log(LOG_ERROR, "(%s) Failed to create parameters for inbound message.", Name.c_str());
+					LogPythonException(sHandler);
+					WriteDebugBuffer(RecvMessage->m_Buffer, true);
+				}
+				else if (m_bDebug)
+				{
+					WriteDebugBuffer(RecvMessage->m_Buffer, true);
 				}
 			}
 			break;
@@ -1396,6 +1386,35 @@ namespace Plugins {
 		}
 
 		return true;
+	}
+
+#define DZ_BYTES_PER_LINE 20
+	void CPlugin::WriteDebugBuffer(const std::vector<byte>& Buffer, bool Incoming)
+	{
+		if (Incoming)
+			_log.Log(LOG_NORM, "(%s) Received %d bytes of data:.", Name.c_str(), Buffer.size());
+		else
+			_log.Log(LOG_NORM, "(%s) Sending %d bytes of data:.", Name.c_str(), Buffer.size());
+
+		for (int i = 0; i < (int)Buffer.size(); i = i + DZ_BYTES_PER_LINE)
+		{
+			std::stringstream ssHex;
+			std::string sChars;
+			for (int j = 0; j < DZ_BYTES_PER_LINE; j++)
+			{
+				if (i + j < (int)Buffer.size())
+				{
+					if (Buffer[i + j] < 16)
+						ssHex << '0' << std::hex << (int)Buffer[i + j] << " ";
+					else
+						ssHex << std::hex << (int)Buffer[i + j] << " ";
+					if ((int)Buffer[i + j] > 32) sChars += Buffer[i + j];
+					else sChars += ".";
+				}
+				else ssHex << ".. ";
+			}
+			_log.Log(LOG_NORM, "(%s)     %s    %s", Name.c_str(), ssHex.str().c_str(), sChars.c_str());
+		}
 	}
 
 	bool CPlugin::WriteToHardware(const char *pdata, const unsigned char length)

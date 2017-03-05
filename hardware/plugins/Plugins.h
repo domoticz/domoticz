@@ -31,6 +31,7 @@ namespace Plugins {
 		bool HandleInitialise();
 		bool HandleStart();
 		bool LoadSettings();
+		void WriteDebugBuffer(const std::vector<byte>& Buffer, bool Incoming);
 
 	public:
 		CPlugin(const int HwdID, const std::string &Name, const std::string &PluginKey);

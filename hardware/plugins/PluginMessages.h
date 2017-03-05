@@ -2,6 +2,10 @@
 
 #include "DelayedLink.h"
 
+#ifndef byte
+typedef unsigned char byte;
+#endif
+
 namespace Plugins {
 
 	enum ePluginMessageType {
@@ -79,11 +83,12 @@ namespace Plugins {
 	class ReadMessage : public CPluginMessage
 	{
 	public:
-		ReadMessage(int HwdID, const std::string Text) : CPluginMessage(PMT_Read, HwdID)
+		ReadMessage(int HwdID, const int ByteCount, const unsigned char* Data) : CPluginMessage(PMT_Read, HwdID)
 		{
-			m_Buffer = Text;
+			m_Buffer.reserve(ByteCount);
+			m_Buffer.assign(Data, Data + ByteCount);
 		};
-		std::string				m_Buffer;
+		std::vector<byte>		m_Buffer;
 	};
 
 	class HeartbeatMessage : public CPluginMessage
@@ -128,15 +133,20 @@ namespace Plugins {
 	public:
 		ReceivedMessage(int HwdID, const std::string& Buffer) : CPluginMessage(PMT_Message, HwdID), m_Status(-1), m_Object(NULL)
 		{
+			m_Buffer.reserve(Buffer.length());
+			m_Buffer.assign((const byte*)Buffer.c_str(), (const byte*)Buffer.c_str()+Buffer.length());
+		};
+		ReceivedMessage(int HwdID, const std::vector<byte>& Buffer) : CPluginMessage(PMT_Message, HwdID), m_Status(-1), m_Object(NULL)
+		{
 			m_Buffer = Buffer;
 		};
-		ReceivedMessage(int HwdID, const std::string& Buffer, const int Status, PyObject*	Object) : CPluginMessage(PMT_Message, HwdID)
+		ReceivedMessage(int HwdID, const std::vector<byte>& Buffer, const int Status, PyObject*	Object) : CPluginMessage(PMT_Message, HwdID)
 		{
 			m_Buffer = Buffer;
 			m_Status = Status;
 			m_Object = Object;
 		};
-		std::string				m_Buffer;
+		std::vector<byte>		m_Buffer;
 		int						m_Status;
 		PyObject*				m_Object;
 	};

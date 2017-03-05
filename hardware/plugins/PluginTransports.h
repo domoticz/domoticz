@@ -14,7 +14,7 @@ namespace Plugins {
 		bool			m_bConnected;
 		long			m_iTotalBytes;
 
-		char			m_Buffer[4096];
+		unsigned char	m_Buffer[4096];
 
 	public:
 		CPluginTransport(int HwdID) : m_HwdID(HwdID), m_bConnected(false), m_iTotalBytes(0) {};
