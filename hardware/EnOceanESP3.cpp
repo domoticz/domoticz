@@ -1917,7 +1917,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 			{
 				unsigned char DATA_BYTE3=m_buffer[1];
 				unsigned char func = (m_buffer[1] >> 2) & 0x3F;
-				unsigned char type = (m_buffer[2] >> 3) & 0x1F  | ((m_buffer[1] & 0x03) << 5);
+				unsigned char type = ((m_buffer[2] >> 3) & 0x1F) | ((m_buffer[1] & 0x03) << 5);
 
 				_log.Log(LOG_NORM, "EnOcean message VLD: func: %02X Type: %02X", func, type);
 				if(func == 0x01)
