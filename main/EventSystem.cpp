@@ -356,6 +356,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 	m_winddirValuesByName.clear();
 	m_windspeedValuesByName.clear();
 	m_windgustValuesByName.clear();
+	m_zwaveAlarmValuesByName.clear();
 
 	m_tempValuesByID.clear();
 	m_dewValuesByID.clear();
@@ -369,6 +370,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 	m_winddirValuesByID.clear();
 	m_windspeedValuesByID.clear();
 	m_windgustValuesByID.clear();
+	m_zwaveAlarmValuesByID.clear();
 
 	std::stringstream szQuery;
 
@@ -413,6 +415,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 		float winddir = 0;
 		float windspeed = 0;
 		float windgust = 0;
+		int alarmval = 0;
 
 		bool isTemp = false;
 		bool isDew = false;
@@ -426,6 +429,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 		bool isWindDir = false;
 		bool isWindSpeed = false;
 		bool isWindGust = false;
+		bool isZWaveAlarm = false;
 
 		szQuery.clear();
 		szQuery.str("");
@@ -665,8 +669,8 @@ void CEventSystem::GetCurrentMeasurementStates()
 			{
 				if (sitem.subType == sTypeZWaveAlarm)
 				{
-					utilityval = static_cast<float>(sitem.nValue);
-					isUtility = true;
+					alarmval = static_cast<int>(sitem.nValue);
+					isZWaveAlarm = true;
 				}
 				else if (sitem.subType == sTypeCounterIncremental)
 				{
@@ -947,6 +951,11 @@ void CEventSystem::GetCurrentMeasurementStates()
 		if (isWindGust) {
 			m_windgustValuesByName[sitem.deviceName] = windgust;
 			m_windgustValuesByID[sitem.ID] = windgust;
+		}
+		if (isZWaveAlarm)
+		{
+			m_zwaveAlarmValuesByName[sitem.deviceName] = alarmval;
+			m_zwaveAlarmValuesByID[sitem.ID] = alarmval;
 		}
 	}
 }
@@ -1437,6 +1446,17 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 		}
 		lua_setglobal(lua_state, "windgustdevice");
 	}
+	if (m_zwaveAlarmValuesByID.size() > 0) {
+		lua_createtable(lua_state, (int)m_zwaveAlarmValuesByID.size(), 0);
+		std::map<uint64_t, int>::iterator p;
+		for (p = m_zwaveAlarmValuesByID.begin(); p != m_zwaveAlarmValuesByID.end(); ++p)
+		{
+			lua_pushnumber(lua_state, (lua_Number)p->first);
+			lua_pushnumber(lua_state, (lua_Number)p->second);
+			lua_rawset(lua_state, -3);
+		}
+		lua_setglobal(lua_state, "zwavealarms");
+	}
 
 	lua_pushnumber(lua_state, (lua_Number)m_SecStatus);
 	lua_setglobal(lua_state, "securitystatus");
@@ -1459,47 +1479,52 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const uint64_t Dev
 		for (it = m_events.begin(); it != m_events.end(); ++it) {
 			bool eventInScope = ((it->Interpreter == "Blockly") && ((it->Type=="all")||(it->Type == reason)));
 			bool eventActive = (it->EventStatus == 1);
-			std::stringstream sstr;
-			sstr << "device[" << DeviceID << "]";
-			std::string conditions (it->Conditions);
-			found = conditions.find(sstr.str());
-			if ((eventInScope) && (eventActive) && (found != std::string::npos)) {
-				// Replace Sunrise and sunset placeholder with actual time for query
-				if (conditions.find("@Sunrise") != std::string::npos) {
-					int intRise = getSunRiseSunSetMinutes("Sunrise");
-					std::stringstream ssRise;
-					ssRise << intRise;
-					stdreplace(conditions, "@Sunrise", ssRise.str());
-				}
-				if (conditions.find("@Sunset") != std::string::npos) {
-					int intSet = getSunRiseSunSetMinutes("Sunset");
-					std::stringstream ssSet;
-					ssSet << intSet;
-					stdreplace(conditions, "@Sunset", ssSet.str());
-				}
-
-				std::string ifCondition = "result = 0; weekday = os.date('*t')['wday']; timeofday = ((os.date('*t')['hour']*60)+os.date('*t')['min']); if " + conditions + " then result = 1 end; return result";
-
-				if (lua_state == NULL)
+			if (eventInScope && eventActive)
+			{
+				std::stringstream sstr;
+				//sstr << "device[" << DeviceID << "]";
+				sstr << "[" << DeviceID << "]";
+				std::string conditions(it->Conditions);
+				found = conditions.find(sstr.str());
+				if (found != std::string::npos)
 				{
-					lua_state = CreateBlocklyLuaState();
+					// Replace Sunrise and sunset placeholder with actual time for query
+					if (conditions.find("@Sunrise") != std::string::npos) {
+						int intRise = getSunRiseSunSetMinutes("Sunrise");
+						std::stringstream ssRise;
+						ssRise << intRise;
+						stdreplace(conditions, "@Sunrise", ssRise.str());
+					}
+					if (conditions.find("@Sunset") != std::string::npos) {
+						int intSet = getSunRiseSunSetMinutes("Sunset");
+						std::stringstream ssSet;
+						ssSet << intSet;
+						stdreplace(conditions, "@Sunset", ssSet.str());
+					}
+
+					std::string ifCondition = "result = 0; weekday = os.date('*t')['wday']; timeofday = ((os.date('*t')['hour']*60)+os.date('*t')['min']); if " + conditions + " then result = 1 end; return result";
+
 					if (lua_state == NULL)
-						return;
-				}
-
-				//_log.Log(LOG_STATUS,"EventSystem: ifc: %s",ifCondition.c_str());
-				if (luaL_dostring(lua_state, ifCondition.c_str()))
-				{
-					_log.Log(LOG_ERROR, "EventSystem: Lua script error (Blockly), Name: %s => %s", it->Name.c_str(), lua_tostring(lua_state, -1));
-				}
-				else
-				{
-					lua_Number ruleTrue = lua_tonumber(lua_state, -1);
-					if (ruleTrue != 0)
 					{
-						if (m_sql.m_bLogEventScriptTrigger)
-							_log.Log(LOG_NORM, "EventSystem: Event triggered: %s", it->Name.c_str());
-						parseBlocklyActions(it->Actions, it->Name, it->ID);
+						lua_state = CreateBlocklyLuaState();
+						if (lua_state == NULL)
+							return;
+					}
+
+					//_log.Log(LOG_STATUS,"EventSystem: ifc: %s",ifCondition.c_str());
+					if (luaL_dostring(lua_state, ifCondition.c_str()))
+					{
+						_log.Log(LOG_ERROR, "EventSystem: Lua script error (Blockly), Name: %s => %s", it->Name.c_str(), lua_tostring(lua_state, -1));
+					}
+					else
+					{
+						lua_Number ruleTrue = lua_tonumber(lua_state, -1);
+						if (ruleTrue != 0)
+						{
+							if (m_sql.m_bLogEventScriptTrigger)
+								_log.Log(LOG_NORM, "EventSystem: Event triggered: %s", it->Name.c_str());
+							parseBlocklyActions(it->Actions, it->Name, it->ID);
+						}
 					}
 				}
 			}
@@ -1820,6 +1845,16 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 		if (itt != m_uservariables.end())
 		{
 			return itt->second.variableValue;
+		}
+	}
+	else if (Argument.find("zwavealarms") == 0)
+	{
+		std::map<uint64_t, int>::const_iterator itt = m_zwaveAlarmValuesByID.find(dindex);
+		if (itt != m_zwaveAlarmValuesByID.end())
+		{
+			std::stringstream sstr;
+			sstr << (int)itt->second;
+			return sstr.str();
 		}
 	}
 
@@ -2368,6 +2403,7 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 		main_namespace["otherdevices_winddir"] = toPythonDict(m_winddirValuesByName);
 		main_namespace["otherdevices_windspeed"] = toPythonDict(m_windspeedValuesByName);
 		main_namespace["otherdevices_windgust"] = toPythonDict(m_windgustValuesByName);
+		main_namespace["otherdevices_zwavealarms"] = toPythonDict(m_zwaveAlarmValuesByName);
 
 		if(PyString.length() > 0)
 			exec(str(PyString), main_namespace);
@@ -2546,6 +2582,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 		float thisDeviceWindSpeed = 0;
 		float thisDeviceWindGust = 0;
 		float thisDeviceWeather = 0;
+		int thisZwaveAlarm = 0;
 
 		if (m_tempValuesByName.size()>0)
 		{
@@ -2727,6 +2764,21 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 			}
 			lua_setglobal(lua_state, "otherdevices_weather");
 		}
+		if (m_zwaveAlarmValuesByName.size() > 0)
+		{
+			lua_createtable(lua_state, (int)m_zwaveAlarmValuesByName.size(), 0);
+			std::map<std::string, int>::iterator p;
+			for (p = m_zwaveAlarmValuesByName.begin(); p != m_zwaveAlarmValuesByName.end(); ++p)
+			{
+				lua_pushstring(lua_state, p->first.c_str());
+				lua_pushnumber(lua_state, (lua_Number)p->second);
+				lua_rawset(lua_state, -3);
+				if (p->first == devname) {
+					thisZwaveAlarm = p->second;
+				}
+			}
+			lua_setglobal(lua_state, "otherdevices_zwavealarms");
+		}
 
 		if (reason == "device")
 		{
@@ -2800,6 +2852,13 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 				tempName += "_UV";
 				lua_pushstring(lua_state, tempName.c_str());
 				lua_pushnumber(lua_state, (lua_Number)thisDeviceUV);
+				lua_rawset(lua_state, -3);
+			}
+			if (thisZwaveAlarm != 0) {
+				std::string alarmName = devname;
+				alarmName += "_ZWaveAlarm";
+				lua_pushstring(lua_state, alarmName.c_str());
+				lua_pushnumber(lua_state, (lua_Number)thisZwaveAlarm);
 				lua_rawset(lua_state, -3);
 			}
 			lua_setglobal(lua_state, "devicechanged");
