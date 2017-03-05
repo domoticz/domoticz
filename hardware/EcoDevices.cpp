@@ -473,7 +473,7 @@ void CEcoDevices::GetMeterDetails()
 	{
 		m_previousC1 = m_indexC1;
 		m_lastSendDataC1 = atime;
-		SendMeterSensor(m_HwdID, 3, 255, m_indexC1/1000.0, "EcoDevices Counter 1");
+		SendMeterSensor(m_HwdID, 3, 255, m_indexC1/1000.0f, "EcoDevices Counter 1");
 	}
 
 	m_indexC2 = (unsigned long)(root["INDEX_C2"].asFloat());
@@ -481,6 +481,6 @@ void CEcoDevices::GetMeterDetails()
 	{
 		m_previousC2 = m_indexC2;
 		m_lastSendDataC2 = atime;
-		SendMeterSensor(m_HwdID, 4, 255, m_indexC2/1000.0, "EcoDevices Counter 2");
+		SendMeterSensor(m_HwdID, 4, 255, m_indexC2/1000.0f, "EcoDevices Counter 2");
 	}
 }
