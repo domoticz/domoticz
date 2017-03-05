@@ -20,12 +20,6 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#ifdef WIN32
-#include "dirent_windows.h"
-#else
-#include <dirent.h>
-#endif
-
 extern "C" {
 #ifdef WITH_EXTERNAL_LUA
 #include <lua.h>
@@ -1098,105 +1092,79 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const uint64_t Devic
 		return;
 	boost::unique_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
 
-	std::stringstream lua_DirT;
-
+	std::string lua_Dir;
 #ifdef WIN32
-	lua_DirT << szUserDataFolder << "scripts\\lua\\";
+	lua_Dir = szUserDataFolder + "scripts\\lua\\";
 #else
-	lua_DirT << szUserDataFolder << "scripts/lua/";
+	lua_Dir = szUserDataFolder + "scripts/lua/";
 #endif
-
-	std::string lua_Dir = lua_DirT.str();
-
-	DIR *lDir;
-	struct dirent *ent;
-
-	if ((lDir = opendir(lua_Dir.c_str())) != NULL)
+	std::vector<std::string> FileEntries;
+	std::vector<std::string>::const_iterator itt;
+	std::string filename;
+	DirectoryListing(FileEntries, lua_Dir, false, true);
+	for (itt = FileEntries.begin(); itt != FileEntries.end(); ++itt)
 	{
-		while ((ent = readdir(lDir)) != NULL)
+		filename = *itt;
+		if (filename.length() > 4 &&
+			filename.compare(filename.length() - 4, 4, ".lua") == 0 &&
+			filename.find("_demo.lua") == std::string::npos)
 		{
-			std::string filename = ent->d_name;
-			if (dirent_is_file(lua_Dir, ent))
+			if (reason == "device" && filename.find("_device_") != std::string::npos)
 			{
-				if ((filename.length() < 4) || (filename.compare(filename.length() - 4, 4, ".lua") != 0))
-				{
-					//_log.Log(LOG_STATUS,"EventSystem: ignore file not .lua: %s",filename.c_str());
-				}
-				else if (filename.find("_demo.lua") == std::string::npos) //skip demo lua files
-				{
-					if ((reason == "device") && (filename.find("_device_") != std::string::npos))
-					{
-						EvaluateLua(reason, lua_Dir + filename, "", DeviceID, devname, nValue, sValue, nValueWording, 0);
-					}
-					else if ((reason == "time") && (filename.find("_time_") != std::string::npos))
-					{
-						EvaluateLua(reason, lua_Dir + filename, "");
-					}
-					else if ((reason == "security") && (filename.find("_security_") != std::string::npos))
-					{
-						EvaluateLua(reason, lua_Dir + filename, "");
-					}
-					else if ((reason == "uservariable") && (filename.find("_variable_") != std::string::npos))
-					{
-						EvaluateLua(reason, lua_Dir + filename, "", varId);
-					}
-				}
+				EvaluateLua(reason, lua_Dir + filename, "", DeviceID, devname, nValue, sValue, nValueWording, 0);
+			}
+			else if (reason == "time" && filename.find("_time_") != std::string::npos)
+			{
+				EvaluateLua(reason, lua_Dir + filename, "");
+			}
+			else if (reason == "security" && filename.find("_security_") != std::string::npos)
+			{
+				EvaluateLua(reason, lua_Dir + filename, "");
+			}
+			else if (reason == "uservariable" && filename.find("_variable_") != std::string::npos)
+			{
+				EvaluateLua(reason, lua_Dir + filename, "", varId);
 			}
 		}
-		closedir(lDir);
-	}
-	else {
-		_log.Log(LOG_ERROR, "EventSystem: Error accessing lua script directory %s", lua_Dir.c_str());
+		// else _log.Log(LOG_STATUS,"EventSystem: ignore file not .lua or is demo file: %s", filename.c_str());
 	}
 
 #ifdef ENABLE_PYTHON
 	try
 	{
-		std::stringstream python_DirT;
+		std::string python_Dir;
 #ifdef WIN32
-		python_DirT << szUserDataFolder << "scripts\\python\\";
+		python_Dir = szUserDataFolder + "scripts\\python\\";
 #else
-		python_DirT << szUserDataFolder << "scripts/python/";
+		python_Dir = szUserDataFolder + "scripts/python/";
 #endif
-
-		std::string python_Dir = python_DirT.str();
-
-		if ((lDir = opendir(python_Dir.c_str())) != NULL)
+		FileEntries.clear();
+		DirectoryListing(FileEntries, python_Dir, false, true);
+		for (itt = FileEntries.begin(); itt != FileEntries.end(); ++itt)
 		{
-			while ((ent = readdir(lDir)) != NULL)
+			filename = *itt;
+			if (filename.length() > 3 &&
+				filename.compare(filename.length() - 3, 3, ".py") == 0 &&
+				filename.find("_demo.py") == std::string::npos)
 			{
-				std::string filename = ent->d_name;
-				if (dirent_is_file(python_Dir, ent))
+				if (reason == "device" && filename.find("_device_") != std::string::npos)
 				{
-					if ((filename.length() < 4) || (filename.compare(filename.length() - 3, 3, ".py") != 0))
-					{
-						//_log.Log(LOG_STATUS,"EventSystem: ignore file not .lua: %s",filename.c_str());
-					}
-					else if (filename.find("_demo.py") == std::string::npos) //skip demo python files
-					{
-						if ((reason == "device") && (filename.find("_device_") != std::string::npos))
-						{
-							EvaluatePython(reason, python_Dir + filename, "", DeviceID, devname, nValue, sValue, nValueWording, 0);
-						}
-						else if ((reason == "time") && (filename.find("_time_") != std::string::npos))
-						{
-							EvaluatePython(reason, python_Dir + filename, "");
-						}
-						else if ((reason == "security") && (filename.find("_security_") != std::string::npos))
-						{
-							EvaluatePython(reason, python_Dir + filename, "");
-						}
-						else if ((reason == "uservariable") && (filename.find("_variable_") != std::string::npos))
-						{
-							EvaluatePython(reason, python_Dir + filename, "", varId);
-						}
-					}
+					EvaluatePython(reason, python_Dir + filename, "", DeviceID, devname, nValue, sValue, nValueWording, 0);
+				}
+				else if (reason == "time" && filename.find("_time_") != std::string::npos)
+				{
+					EvaluatePython(reason, python_Dir + filename, "");
+				}
+				else if (reason == "security" && filename.find("_security_") != std::string::npos)
+				{
+					EvaluatePython(reason, python_Dir + filename, "");
+				}
+				else if (reason == "uservariable" && filename.find("_variable_") != std::string::npos)
+				{
+					EvaluatePython(reason, python_Dir + filename, "", varId);
 				}
 			}
-			closedir(lDir);
-		}
-		else {
-			_log.Log(LOG_ERROR, "EventSystem: Error accessing python script directory %s", python_Dir.c_str());
+			// else _log.Log(LOG_STATUS,"EventSystem: ignore file not .py or is demo file: %s", filename.c_str());
 		}
 	}
 	catch (...)
