@@ -1088,7 +1088,7 @@ std::string bt_openwebnet::getWhoDescription(const std::string& who)
 		return "Lighting management";
 	}
 	else if (who == "25") {
-		return "CEN Plus";
+		return "CEN Plus/Dry contact/IR Detection";
 	}
 	else if (who == "1000") {
 		return "Diagnostic";//not documented
