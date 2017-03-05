@@ -257,7 +257,7 @@ namespace Plugins {
 
 	void CPluginTransportSerial::handleWrite(const std::vector<byte>& data)
 	{
-		write((const char *)data[0], data.size());
+		write((const char *)&data[0], data.size());
 	}
 
 	bool CPluginTransportSerial::handleDisconnect()
