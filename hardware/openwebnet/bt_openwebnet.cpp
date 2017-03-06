@@ -1322,25 +1322,25 @@ std::string bt_openwebnet::getWhatDescription(const std::string& who, const std:
 			return "protection(generic)";
 		}
 		else if (what == "103") {
-			return "OFF - Heating Mode";
+			return "OFF – Heating Mode";
 		}
 		else if (what == "203") {
-			return "OFF - Conditioning Mode";
+			return "OFF – Conditioning Mode";
 		}
 		else if (what == "303") {
 			return "OFF(Generic)";
 		}
 		else if (what == "110") {
-			return "manual - adjustment Mode - Heating";
+			return "manual - adjustment Mode – Heating";
 		}
 		else if (what == "210") {
-			return "manual - adjustment Mode - Conditioning";
+			return "manual - adjustment Mode – Conditioning";
 		}
 		else if (what == "310") {
 			return "manual - adjustment Mode(Generic)";
 		}
 		else if (what == "111") {
-			return "programming Mode - Heating";
+			return "programming Mode – Heating";
 		}
 		else if (what == "211") {
 			return "programming Mode - Conditioning";
@@ -1349,10 +1349,10 @@ std::string bt_openwebnet::getWhatDescription(const std::string& who, const std:
 			return "programming Mode(generic)";
 		}
 		else if (what == "115") {
-			return "holiday daily plan - Heating Mode";
+			return "holiday daily plan – Heating Mode";
 		}
 		else if (what == "215") {
-			return "holiday daily plan - Conditioning Mode";
+			return "holiday daily plan – Conditioning Mode";
 		}
 		else if (what == "315") {
 			return "holiday daily plan";
@@ -1392,65 +1392,65 @@ std::string bt_openwebnet::getWhatDescription(const std::string& who, const std:
 		}
 		int iWhat = atoi(what.c_str());
 		if (iWhat >= 1100 && iWhat <= 1199) {
-			//Weekly Heating program x(x = 1...3)
+			//Weekly Heating program x(x = 1…3)
 			std::stringstream sstr;
 			sstr << "Weekly Heating program ";
 			sstr << (iWhat - 1100);
 			return sstr.str();
 		}
 		else if (iWhat >= 1200 && iWhat <= 1299) {
-			//Heating Scenario xx(xx = 1...16)
+			//Heating Scenario xx(xx = 1…16)
 			std::stringstream sstr;
 			sstr << "Heating Scenario ";
 			sstr << (iWhat - 1200);
 			return sstr.str();
 		}
 		else if (iWhat >= 2100 && iWhat <= 2199) {
-			//Weekly Conditioning program x(x = 1...3)
+			//Weekly Conditioning program x(x = 1…3)
 			std::stringstream sstr;
 			sstr << "Weekly Conditioning program ";
 			sstr << (iWhat - 2100);
 			return sstr.str();
 		}
 		else if (iWhat >= 2200 && iWhat <= 2299) {
-			//Conditionning Scenario xx(xx = 1...16)
+			//Conditionning Scenario xx(xx = 1…16)
 			std::stringstream sstr;
 			sstr << "Conditionning Scenario ";
 			sstr << (iWhat - 2200);
 			return sstr.str();
 		}
 		else if (iWhat >= 13000 && iWhat <= 13999) {
-			//"Vacation scenario for xxx days - Heating mode"
+			//"Vacation scenario for xxx days – Heating mode"
 			std::stringstream sstr;
 			sstr << "Vacation scenario for ";
 			sstr << (iWhat - 13000);
-			sstr << " days - Heating mode";
+			sstr << " days – Heating mode";
 			return sstr.str();
 		}
 		else if (iWhat >= 23000 && iWhat <= 23999) {
-			//Vacation scenario for xxx days - Conditioning mode(xxx = 0...999)
+			//Vacation scenario for xxx days – Conditioning mode(xxx = 0….999)
 			std::stringstream sstr;
 			sstr << "Vacation scenario for ";
 			sstr << (iWhat - 23000);
-			sstr << " days - Conditioning mode";
+			sstr << " days – Conditioning mode";
 			return sstr.str();
 		}
 		else if (iWhat >= 3100 && iWhat <= 3199) {
-			//Weekly Program x(x = 1...3)
+			//Weekly Program x(x = 1…3)
 			std::stringstream sstr;
 			sstr << "Weekly Program ";
 			sstr << (iWhat - 3100);
 			return sstr.str();
 		}
 		else if (iWhat >= 3200 && iWhat <= 3299) {
-			//Scenario x(x = 1...16)
+			//Scenario x(x = 1…16)
 			std::stringstream sstr;
 			sstr << "Scenario ";
 			sstr << (iWhat - 3200);
 			return sstr.str();
 		}
 		else if (iWhat >= 33000 && iWhat <= 33999) {
-			//Vacation scenario for xxx days(xxx = 0...999)
+			//Vacation scenario for xxx days(xxx = 0….999)
 			std::stringstream sstr;
 			sstr << "Vacation scenario for ";
 			sstr << (iWhat - 33000);
@@ -1676,7 +1676,7 @@ std::string bt_openwebnet::getWhatDescription(const std::string& who, const std:
 			return "source cycle(channel stereo)";
 		}
 		else if (what == "30") {
-			return "sleep on \"base band\"";
+			return "sleep on “base band”";
 		}
 		else if (what == "33") {
 			return "sleep on channel stereo";
@@ -2154,11 +2154,11 @@ std::string bt_openwebnet::getWhereDescription(const std::string& who, const std
 	else if (who == "1004") {
 		// "Thermoregulation diagnostic" : TODO
 		//1 Zone 1 master probe 
-		//2 Zone 2 master probe ...
+		//2 Zone 2 master probe … 
 		//99 Zone 99 master probe
 		//#0 Central unit 
 		//#1 Zone 1 via central unit 
-		//#2 Zone 2 via central unit ...
+		//#2 Zone 2 via central unit … 
 		//#99 Zone 99 via central unit
 	}
 
@@ -2269,8 +2269,8 @@ std::string bt_openwebnet::getDimensionsDescription(const std::string& who, cons
 		//12 Complete probe status
 		//13 Local set offset : 00  knob on 0 // 01  knob on + 1 (degree) //11  knob on - 1 (degree)//02  knob on + 2 (degree)//12  knob on - 2 (degree)//03  knob on + 3 (degree)//13  knob on - 3 (degree)//4  knob on Local OFF
 		//14 Set Point temperature
-		//14 et 0 : values T et M : T = Zone operation temperature not ad just by local offset.The T field is composed from 4 digits: c1c2c3c4, included between "0050"(5° temperature) and "0400"(40° temperature). c1 is always equal to 0, it indicates a positive temperature.The c2c3 couple indicates the temperature values between[05° - 40°].c4 indicates the decimal Celsius degree by 0.5° step. M = operation mode1  heating mode2  conditional mode3  generic mode
-		//19 Valves status 		CV, HV = Valves' status, CV: Conditioning Valve and HV : Heating Valve
+		//14 et 0 : values T et M : T = Zone operation temperature not ad just by local offset.The T field is composed from 4 digits: c1c2c3c4, included between “0050”(5° temperature) and “0400”(40° temperature). c1 is always equal to 0, it indicates a positive temperature.The c2c3 couple indicates the temperature values between[05° - 40°].c4 indicates the decimal Celsius degree by 0.5° step. M = operation mode1  heating mode2  conditional mode3  generic mode
+		//19 Valves status 		CV, HV = Valves’ status, CV: Conditioning Valve and HV : Heating Valve
 		//			CV, HV = 0  OFF
 		//		CV, HV = 1  ON
 		//	CV, HV = 2  Opened

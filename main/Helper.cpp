@@ -790,7 +790,6 @@ std::string GenerateUserAgent()
 	return sstr.str();
 }
 
-
 std::string MakeHtml(const std::string &txt)
 {
 	std::string sRet = txt;
@@ -803,3 +802,22 @@ std::string MakeHtml(const std::string &txt)
 	stdreplace(sRet, "\r\n", "<br/>");
 	return sRet;
 }
+
+#if defined WIN32
+//FILETIME of Jan 1 1970 00:00:00
+static const uint64_t epoch = (const uint64_t)(116444736000000000);
+
+int gettimeofday( timeval * tp, void * tzp)
+{
+	FILETIME    file_time;
+	SYSTEMTIME  system_time;
+	ULARGE_INTEGER ularge;
+	GetSystemTime(&system_time);
+	SystemTimeToFileTime(&system_time, &file_time);
+	ularge.LowPart = file_time.dwLowDateTime;
+	ularge.HighPart = file_time.dwHighDateTime;
+	tp->tv_sec = (long)((ularge.QuadPart - epoch) / 10000000L);
+	tp->tv_usec = (long)(system_time.wMilliseconds * 1000);
+	return 0;
+}
+#endif
