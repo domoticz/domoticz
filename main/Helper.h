@@ -3,9 +3,9 @@
 
 void StringSplit(std::string str, const std::string &delim, std::vector<std::string> &results);
 void stdreplace(
-	std::string &inoutstring,
-	const std::string& replaceWhat, 
-	const std::string& replaceWithWhat);
+std::string &inoutstring,
+const std::string& replaceWhat,
+const std::string& replaceWithWhat);
 void stdupper(std::string &inoutstring);
 bool file_exist (const char *filename);
 std::vector<std::string> GetSerialPorts(bool &bUseDirectPath);
@@ -50,3 +50,5 @@ bool dirent_is_file(std::string dir, struct dirent *ent);
 void DirectoryListing(std::vector<std::string>& entries, const std::string &dir, bool bInclDirs, bool bInclFiles);
 
 std::string GenerateUserAgent();
+
+std::string MakeHtml(const std::string &txt);

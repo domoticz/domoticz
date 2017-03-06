@@ -133,8 +133,8 @@ void CEcoDevices::DecodeXML2Teleinfo(const std::string &sResult, Teleinfo &telei
 	using namespace TinyXPath;
 
 	teleinfo.OPTARIF = S_xpath_string(XMLdoc.RootElement(),"/response/OPTARIF/text()").c_str();
-        teleinfo.PTEC = S_xpath_string(XMLdoc.RootElement(),"/response/PTEC/text()").c_str();
-        teleinfo.DEMAIN = S_xpath_string(XMLdoc.RootElement(),"/response/DEMAIN/text()").c_str();
+	teleinfo.PTEC = S_xpath_string(XMLdoc.RootElement(),"/response/PTEC/text()").c_str();
+	teleinfo.DEMAIN = S_xpath_string(XMLdoc.RootElement(),"/response/DEMAIN/text()").c_str();
 	teleinfo.ISOUSC = i_xpath_int(XMLdoc.RootElement(),"/response/ISOUSC/text()");
 	teleinfo.PAPP = i_xpath_int(XMLdoc.RootElement(),"/response/PAPP/text()");
 	teleinfo.BASE = i_xpath_int(XMLdoc.RootElement(),"/response/BASE/text()");
@@ -342,18 +342,11 @@ void CEcoDevices::GetMeterDetails()
 	}
 
 	// XML format changes dramatically between firmware versions. This code was developped for version 1.05.12
-        using namespace TinyXPath;
+	using namespace TinyXPath;
 	m_status.version = S_xpath_string(XMLdoc.RootElement(),"/response/version/text()").c_str();
 
 	#ifdef DEBUG_EcoDevices
-	std::string EncodedXML = sResult;
-        using boost::algorithm::replace_all;
-        replace_all(EncodedXML, "&",  "&amp;");
-        replace_all(EncodedXML, "\"", "&quot;");
-        replace_all(EncodedXML, "\'", "&apos;");
-        replace_all(EncodedXML, "<",  "&lt;");
-        replace_all(EncodedXML, ">",  "&gt;");
-        _log.Log(LOG_NORM, "DEBUG: XML output for /status.xml\n%s", EncodedXML.c_str());
+	_log.Log(LOG_NORM, "DEBUG: XML output for /status.xml\n%s", MakeHtml(sResult).c_str());
 	#endif
 
 	major = boost::lexical_cast<int>(m_status.version.substr(0,m_status.version.find(".")).c_str());
@@ -365,15 +358,15 @@ void CEcoDevices::GetMeterDetails()
 
 	if ((major>min_major) || ((major==min_major) && (minor>min_minor)) || ((major==min_major) && (minor==min_minor) && (release>=min_release)))
 	{
-                m_status.hostname = S_xpath_string(XMLdoc.RootElement(),"/response/config_hostname/text()").c_str();
+		m_status.hostname = S_xpath_string(XMLdoc.RootElement(),"/response/config_hostname/text()").c_str();
 		m_status.flow1    = i_xpath_int(XMLdoc.RootElement(),"/response/meter2/text()");
 		m_status.flow2    = i_xpath_int(XMLdoc.RootElement(),"/response/meter3/text()");
 		m_status.index1   = i_xpath_int(XMLdoc.RootElement(),"/response/count0/text()");
 		m_status.index2   = i_xpath_int(XMLdoc.RootElement(),"/response/count1/text()");
 		m_status.t1_ptec  = S_xpath_string(XMLdoc.RootElement(),"/response/T1_PTEC/text()").c_str();
 		m_status.t2_ptec  = S_xpath_string(XMLdoc.RootElement(),"/response/T2_PTEC/text()").c_str();
-		
-                // Process Counter 1
+
+		// Process Counter 1
 		if ((m_status.index1 >0) && ((m_status.index1 != m_status.pindex1) || (m_status.flow1 != m_status.pflow1) \
 			|| (difftime(atime,m_status.time1) >= 300)))
 		{
@@ -418,14 +411,7 @@ void CEcoDevices::GetMeterDetails()
 			return;
 		}
 		#ifdef DEBUG_EcoDevices
-		std::string EncodedXML = sResult;
-		using boost::algorithm::replace_all;
-		replace_all(EncodedXML, "&", "&amp;");
-		replace_all(EncodedXML, "\"", "&quot;");
-		replace_all(EncodedXML, "\'", "&apos;");
-		replace_all(EncodedXML, "<",  "&lt;");
-		replace_all(EncodedXML, ">",  "&gt;");
-		_log.Log(LOG_NORM, "DEBUG: XML output for Teleinfo1:\n%s", EncodedXML.c_str());
+		_log.Log(LOG_NORM, "DEBUG: XML output for Teleinfo1:\n%s", MakeHtml(sResult).c_str());
 		#endif
 
 		// Remove all "T1_"s from output as it prevents writing generic code for both counters
@@ -449,14 +435,7 @@ void CEcoDevices::GetMeterDetails()
 			return;
 		}
 		#ifdef DEBUG_EcoDevices
-		std::string EncodedXML = sResult;
- 		using boost::algorithm::replace_all;
-		replace_all(EncodedXML, "&",  "&amp;");
-		replace_all(EncodedXML, "\"", "&quot;");
-		replace_all(EncodedXML, "\'", "&apos;");
-		replace_all(EncodedXML, "<",  "&lt;");
-		replace_all(EncodedXML, ">",  "&gt;");
-		_log.Log(LOG_NORM, "DEBUG: XML output for Teleinfo2:\n%s", EncodedXML.c_str());
+		_log.Log(LOG_NORM, "DEBUG: XML output for Teleinfo2:\n%s", MakeHtml(sResult).c_str());
 		#endif
 
 		// Remove all "T2_"s from output as it prevents writing generic code for both counters
