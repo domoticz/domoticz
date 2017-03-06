@@ -227,8 +227,6 @@ bool RelayNet::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	bool bOk = true;
 
-	UNREFERENCED_PARAMETER(length);
-
 #if RELAYNET_USE_HTTP
 
 	bOk = WriteToHardwareHttp(pdata);
