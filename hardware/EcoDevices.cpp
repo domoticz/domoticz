@@ -5,11 +5,9 @@
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 #include "../httpclient/HTTPClient.h"
-#include <boost/property_tree/xml_parser.hpp>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/iostreams/stream.hpp>
+#include <../tinyxpath/xpath_static.h>
+#include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
-
 /*
 Eco- Devices is a utility consumption monitoring device dedicated to the French market.
 It provides 4 inputs, two using the "Teleinfo" protocol found on all recent French electricity meters
@@ -24,11 +22,11 @@ Detailed information on the Teleinfo protocol can be found at (version 5, 16/03/
 http://www.enedis.fr/sites/default/files/ERDF-NOI-CPT_02E.pdf
 
 Version 3.0
-Author  Blaise Thauvin
+Author Blaise Thauvin
 
 Version history
 
-3.0   03-03-2017 Move from JSON to XML API on EcoDevices in order to retreive more Teleinfo variables (current, alerts...)
+3.0   05-03-2017 Move from JSON to XML API on EcoDevices in order to retreive more Teleinfo variables (current, alerts...)
 2.1   27-02-2017 Switch from sDecodeRX to standard helpers (Sendxxxxx) for updating devices.
 				 Supports 4 main subscription plans (Basic, Tempo, EJP, "Heures Creuses")
 				 Text device for reporting the current rate for multiple rates plans.
@@ -41,8 +39,7 @@ Version history
 #define DEBUG_EcoDevices
 #endif
 
-
-// Minimum EcoDevises firmware require
+// Minimum EcoDevises firmware required
 #define MAJOR 1
 #define MINOR 5
 #define RELEASE 12
@@ -124,50 +121,56 @@ bool CEcoDevices::WriteToHardware(const char *pdata, const unsigned char length)
 
 void CEcoDevices::DecodeXML2Teleinfo(const std::string &sResult, Teleinfo &teleinfo)
 {
-	boost::property_tree::ptree pt;
-	boost::iostreams::stream<boost::iostreams::array_source> stream(sResult.c_str(), sResult.size());
-	try
+	TiXmlDocument XMLdoc("Teleinfo.xml");
+
+	XMLdoc.Parse(sResult.c_str(), 0, TIXML_ENCODING_UTF8);
+	if (XMLdoc.Error())
 	{
-		read_xml(stream, pt);
-	}
-	catch(boost::exception const&  ex)
-	{
-		_log.Log(LOG_ERROR, "XML Parsing error. %s", diagnostic_information(ex).c_str());
+		_log.Log(LOG_ERROR, "Error parsing XML for /protect/settings/teleinfo?.xml: %s", XMLdoc.ErrorDesc());
 		return;
 	}
-	teleinfo.OPTARIF = pt.get<std::string>("response.OPTARIF", "----");
-	teleinfo.PTEC = pt.get<std::string>("response.PTEC", "----");
-	teleinfo.DEMAIN = pt.get<std::string>("response.DEMAIN", "");
-	teleinfo.ISOUSC = pt.get<unsigned>("response.ISOUSC", 0);
-	teleinfo.PAPP = pt.get<unsigned>("response.PAPP", 0);
-	teleinfo.BASE = pt.get<unsigned>("response.BASE", 0);
-	teleinfo.HCHC = pt.get<unsigned>("response.HCHC", 0);
-	teleinfo.HCHP = pt.get<unsigned>("response.HCHP", 0);
-	teleinfo.EJPHN = pt.get<unsigned>("response.EJPHN", 0);
-	teleinfo.EJPHPM = pt.get<unsigned>("response.EJPHPM", 0);
-	teleinfo.BBRHCJB = pt.get<unsigned>("response.BBRHCJB", 0);
-	teleinfo.BBRHPJB = pt.get<unsigned>("response.BBRHPJB", 0);
-	teleinfo.BBRHCJW = pt.get<unsigned>("response.BBRHCJW", 0);
-	teleinfo.BBRHPJW = pt.get<unsigned>("response.BBRHPJB", 0);
-	teleinfo.BBRHCJR = pt.get<unsigned>("response.BBRHCJR", 0);
-	teleinfo.BBRHPJR = pt.get<unsigned>("response.BBRHPJR", 0);
-	teleinfo.PEJP = pt.get<unsigned>("response.PEJP", 0);
-	teleinfo.IINST = pt.get<unsigned>("response.IINST", 0);
-	teleinfo.IINST1 = pt.get<unsigned>("response.IINST1", 0);
-	teleinfo.IINST2 = pt.get<unsigned>("response.IINST2", 0);
-	teleinfo.IINST3 = pt.get<unsigned>("response.IINST3", 0);
-        teleinfo.IMAX = pt.get<unsigned>("response.IMAX", 0);
-        teleinfo.IMAX1 = pt.get<unsigned>("response.IMAX1", 0);
-        teleinfo.IMAX2 = pt.get<unsigned>("response.IMAX2", 0);
-        teleinfo.IMAX3 = pt.get<unsigned>("response.IMAX3", 0);
-	teleinfo.ADPS = pt.get<unsigned>("response.ADPS", 0);
+
+	using namespace TinyXPath;
+
+	teleinfo.OPTARIF = S_xpath_string(XMLdoc.RootElement(),"/response/OPTARIF/text()").c_str();
+        teleinfo.PTEC = S_xpath_string(XMLdoc.RootElement(),"/response/PTEC/text()").c_str();
+        teleinfo.DEMAIN = S_xpath_string(XMLdoc.RootElement(),"/response/DEMAIN/text()").c_str();
+	teleinfo.ISOUSC = i_xpath_int(XMLdoc.RootElement(),"/response/ISOUSC/text()");
+	teleinfo.PAPP = i_xpath_int(XMLdoc.RootElement(),"/response/PAPP/text()");
+	teleinfo.BASE = i_xpath_int(XMLdoc.RootElement(),"/response/BASE/text()");
+	teleinfo.HCHC = i_xpath_int(XMLdoc.RootElement(),"/response/HCHC/text()");
+	teleinfo.HCHP = i_xpath_int(XMLdoc.RootElement(),"/response/HCHP/text()");
+	teleinfo.EJPHN = i_xpath_int(XMLdoc.RootElement(),"/response/EJPHN/text()");
+	teleinfo.EJPHPM = i_xpath_int(XMLdoc.RootElement(),"/response/EJPHPM/text()");
+	teleinfo.BBRHCJB = i_xpath_int(XMLdoc.RootElement(),"/response/BBRHCJB/text()");
+	teleinfo.BBRHPJB = i_xpath_int(XMLdoc.RootElement(),"/response/BBRHPJB/text()");
+	teleinfo.BBRHCJW = i_xpath_int(XMLdoc.RootElement(),"/response/BBRHCJW/text()");
+	teleinfo.BBRHPJW = i_xpath_int(XMLdoc.RootElement(),"/response/BBRHPJB/text()");
+	teleinfo.BBRHCJR = i_xpath_int(XMLdoc.RootElement(),"/response/BBRHCJR/text()");
+	teleinfo.BBRHPJR = i_xpath_int(XMLdoc.RootElement(),"/response/BBRHPJR/text()");
+	teleinfo.PEJP = i_xpath_int(XMLdoc.RootElement(),"/response/PEJP/text()");
+	teleinfo.IINST = i_xpath_int(XMLdoc.RootElement(),"/response/IINST/text()");
+	teleinfo.IINST1 = i_xpath_int(XMLdoc.RootElement(),"/response/IINST1/text()");
+	teleinfo.IINST2 = i_xpath_int(XMLdoc.RootElement(),"/response/IINST2/text()");
+	teleinfo.IINST3 = i_xpath_int(XMLdoc.RootElement(),"/response/IINST3/text()");
+	teleinfo.IMAX = i_xpath_int(XMLdoc.RootElement(),"/response/IMAX/text()");
+	teleinfo.IMAX1 =i_xpath_int(XMLdoc.RootElement(),"/response/IMAX1/text()");
+	teleinfo.IMAX2 = i_xpath_int(XMLdoc.RootElement(),"/response/IMAX2/text()");
+	teleinfo.IMAX3 = i_xpath_int(XMLdoc.RootElement(),"/response/IMAX3/text()");
+	teleinfo.ADPS = i_xpath_int(XMLdoc.RootElement(),"/response/ADPS/text()");
+
+	#ifdef DEBUG_EcoDevices
+	_log.Log(LOG_NORM, "DEBUG: OPTARIF: '%s'", teleinfo.OPTARIF.c_str());
+	_log.Log(LOG_NORM, "DEBUG: PTEC:    '%s'", teleinfo.PTEC.c_str());
+	_log.Log(LOG_NORM, "DEBUG: DEMAIN:  '%s'", teleinfo.DEMAIN.c_str());
+	#endif
 }
 
 
 void CEcoDevices::ProcessTeleinfo(const std::string &name, int HwdID, int rank, Teleinfo &teleinfo)
 {
 	uint32_t m_pappHC, m_pappHP, m_pappHCJB, m_pappHPJB, m_pappHCJW, m_pappHPJW, m_pappHCJR, m_pappHPJR, checksum, level;
-        double flevel;
+	double flevel;
 	time_t atime = mytime(NULL);
 
 	// PAPP only exist on some meter versions. If not present, we can approximate it as (current x 230V)
@@ -211,7 +214,7 @@ void CEcoDevices::ProcessTeleinfo(const std::string &name, int HwdID, int rank, 
 		+ teleinfo.BBRHPJB + teleinfo.BBRHCJW + teleinfo.BBRHPJB + teleinfo.BBRHCJR + teleinfo.BBRHPJR + teleinfo.PAPP;
 
 	//Send data if value changed or at least every 5 minutes
-	if  ((teleinfo.previous != checksum) || (difftime(atime, teleinfo.last) >= 300))
+	if ((teleinfo.previous != checksum) || (difftime(atime, teleinfo.last) >= 300))
 	{
 		teleinfo.previous = checksum;
 		teleinfo.last = atime;
@@ -220,7 +223,7 @@ void CEcoDevices::ProcessTeleinfo(const std::string &name, int HwdID, int rank, 
 			teleinfo.tariff="Tarif de Base";
 			SendKwhMeter(HwdID, 10, 255, teleinfo.PAPP, teleinfo.BASE/1000.0, name + " Index");
 		}
-		else if  (teleinfo.OPTARIF == "HC..")
+		else if (teleinfo.OPTARIF == "HC..")
 		{
 			teleinfo.tariff="Tarif option Heures Creuses";
 			SendKwhMeter(HwdID, 12, 255, m_pappHC, teleinfo.HCHC/1000.0, name + " Heures Creuses");
@@ -235,7 +238,7 @@ void CEcoDevices::ProcessTeleinfo(const std::string &name, int HwdID, int rank, 
 			SendKwhMeter(HwdID, 16, 255, m_pappHP, teleinfo.EJPHPM/1000.0, name + " Heures Pointe Mobile");
 			SendKwhMeter(HwdID, 17, 255, teleinfo.PAPP, (teleinfo.EJPHN + teleinfo.EJPHPM)/1000.0, name + " Total");
 			SendTextSensor(HwdID, 11, 255, teleinfo.rate, name + " Tarif en cours");
-			SendAlertSensor((HwdID*256) + rank, 255, ((teleinfo.PEJP == 30) ? 4 : 1),  (name + " Alerte Pointe Mobile").c_str());
+			SendAlertSensor(10+rank, 255, ((teleinfo.PEJP == 30) ? 4 : 1), (name + " Alerte Pointe Mobile").c_str());
 		}
 		else if (teleinfo.OPTARIF.substr(0,3) == "BBR")
 		{
@@ -281,22 +284,22 @@ void CEcoDevices::ProcessTeleinfo(const std::string &name, int HwdID, int rank, 
 			SendKwhMeter(HwdID, 22, 255, m_pappHCJR, teleinfo.BBRHCJR/1000.0, "Teleinfo 1 Jour Rouge, Creux");
 			SendKwhMeter(HwdID, 23, 255, m_pappHPJR, teleinfo.BBRHCJR/1000.0, "Teleinfo 1 Jour Rouge, Plein");
 			SendKwhMeter(HwdID, 24, 255, teleinfo.PAPP, (teleinfo.BBRHCJB + teleinfo.BBRHPJB + teleinfo.BBRHCJW \
-				+ teleinfo.BBRHPJW + teleinfo.BBRHCJR + teleinfo.BBRHPJR)/1000.0,  name + " Total");
-			SendTextSensor(HwdID, 11, 255, "Jour " +  teleinfo.color + ", " + teleinfo.rate,  name + " Tarif en cours ");
-			SendTextSensor(HwdID, 25, 255, "Demain, jour " + teleinfo.DEMAIN ,  name + " couleur demain");
+				+ teleinfo.BBRHPJW + teleinfo.BBRHCJR + teleinfo.BBRHPJR)/1000.0, name + " Total");
+			SendTextSensor(HwdID, 11, 255, "Jour " + teleinfo.color + ", " + teleinfo.rate, name + " Tarif en cours ");
+			SendTextSensor(HwdID, 25, 255, "Demain, jour " + teleinfo.DEMAIN , name + " couleur demain");
 		}
 		// Common sensors for all rates
 		SendCurrentSensor(HwdID, 255, teleinfo.IINST1, teleinfo.IINST2, teleinfo.IINST3, name + " Courant");
-                
-                // Alert level is 0 below 100% usage, linear, 1 for 100% load and 4 for maximum load (IMAX)
-                if ((teleinfo.IMAX - teleinfo.IINST ) <=0) 
-                     level = 4;
-                else 
-                     flevel = (3.0 * teleinfo.IINST + teleinfo.IMAX - 4.0 * teleinfo.ISOUSC) / (teleinfo.IMAX - teleinfo.ISOUSC);
-                     if (flevel > 4) flevel = 4;
-                     if (flevel < 1) flevel = 1;
-                     level = round(flevel + 0.49);
-                SendAlertSensor((HwdID*256), 255, level,  (name + " Dépassement intensité maximale").c_str()); 
+
+		// Alert level is 1 up to 100% usage, 2 then 3 above 100% load and 4 for maximum load (IMAX)
+		if ((teleinfo.IMAX - teleinfo.IINST ) <=0)
+			level = 4;
+		else
+			flevel = (3.0 * teleinfo.IINST + teleinfo.IMAX - 4.0 * teleinfo.ISOUSC) / (teleinfo.IMAX - teleinfo.ISOUSC);
+		if (flevel > 4) flevel = 4;
+		if (flevel < 1) flevel = 1;
+		level = round(flevel + 0.49);
+		SendAlertSensor(rank, 255, level, (name + " Alerte courant maximal").c_str());
 	}
 }
 
@@ -305,18 +308,19 @@ void CEcoDevices::GetMeterDetails()
 {
 	if (m_szIPAddress.size()==0)
 		return;
-	// From http://xx.xx.xx.xx/status.xml  we get the pulse counters indexes and current flow
+	// From http://xx.xx.xx.xx/status.xml we get the pulse counters indexes and current flow
 	// From http://xx.xx.xx.xx/protect/settings/teleinfoX.xml we get a complete feed of Teleinfo data
 
 	std::vector<std::string> ExtraHeaders;
 	std::string       sResult, sub, message;
 	std::string::size_type len, pos;
 	std::stringstream sstr;
+	TiXmlDocument XMLdoc("Teleinfo.xml");
 	time_t atime = mytime(NULL);
-        int   major, minor, release;
-        int min_major = MAJOR, min_minor = MINOR, min_release = RELEASE;
-	
-        // Check EcoDevices firmware version and process pulse counters
+	int   major, minor, release;
+	int min_major = MAJOR, min_minor = MINOR, min_release = RELEASE;
+
+	// Check EcoDevices firmware version and process pulse counters
 	sstr << "http://" << m_szIPAddress << ":" << m_usIPPort << "/status.xml";
 	if (m_status.hostname.empty()) m_status.hostname = m_szIPAddress;
 	if (HTTPClient::GET(sstr.str(), ExtraHeaders, sResult))
@@ -328,40 +332,49 @@ void CEcoDevices::GetMeterDetails()
 		_log.Log(LOG_ERROR, "EcoDevices: Error getting status.xml from EcoDevices%s!", m_status.hostname.c_str());
 		return;
 	}
-	// populate tree structure pt
-	using boost::property_tree::ptree;
-	ptree pt;
-	boost::iostreams::stream<boost::iostreams::array_source> stream(sResult.c_str(), sResult.size());
-	try
+
+	// Process XML result
+	XMLdoc.Parse(sResult.c_str(), 0, TIXML_ENCODING_UTF8);
+	if (XMLdoc.Error())
 	{
-		read_xml(stream, pt);
-	}
-	catch(boost::exception const&  ex)
-	{
-		_log.Log(LOG_ERROR, "XML Parsing error. %s", diagnostic_information(ex).c_str());
+		_log.Log(LOG_ERROR, "Error parsing XML at /status.xml: %s", XMLdoc.ErrorDesc());
 		return;
 	}
+
 	// XML format changes dramatically between firmware versions. This code was developped for version 1.05.12
-	m_status.version  = pt.get<std::string>("response.version");
-        major = boost::lexical_cast<int>(m_status.version.substr(0,m_status.version.find(".")).c_str());
-        m_status.version.erase(0,m_status.version.find(".")+1);
-        minor = boost::lexical_cast<int>(m_status.version.substr(0,m_status.version.find(".")).c_str());
-        m_status.version.erase(0,m_status.version.find(".")+1);
-        release = boost::lexical_cast<int>(m_status.version.c_str());
-        m_status.version = pt.get<std::string>("response.version");
+        using namespace TinyXPath;
+	m_status.version = S_xpath_string(XMLdoc.RootElement(),"/response/version/text()").c_str();
+
+	#ifdef DEBUG_EcoDevices
+	std::string EncodedXML = sResult;
+        using boost::algorithm::replace_all;
+        replace_all(EncodedXML, "&",  "&amp;");
+        replace_all(EncodedXML, "\"", "&quot;");
+        replace_all(EncodedXML, "\'", "&apos;");
+        replace_all(EncodedXML, "<",  "&lt;");
+        replace_all(EncodedXML, ">",  "&gt;");
+        _log.Log(LOG_NORM, "DEBUG: XML output for /status.xml\n%s", EncodedXML.c_str());
+	#endif
+
+	major = boost::lexical_cast<int>(m_status.version.substr(0,m_status.version.find(".")).c_str());
+	m_status.version.erase(0,m_status.version.find(".")+1);
+	minor = boost::lexical_cast<int>(m_status.version.substr(0,m_status.version.find(".")).c_str());
+	m_status.version.erase(0,m_status.version.find(".")+1);
+	release = boost::lexical_cast<int>(m_status.version.c_str());
+	m_status.version = S_xpath_string(XMLdoc.RootElement(),"/response/version/text()").c_str();
 
 	if ((major>min_major) || ((major==min_major) && (minor>min_minor)) || ((major==min_major) && (minor==min_minor) && (release>=min_release)))
 	{
-		m_status.hostname = pt.get<std::string>("response.config_hostname");
-		m_status.flow1    = pt.get<unsigned>("response.meter2");
-		m_status.flow2    = pt.get<unsigned>("response.meter3");
-		m_status.index1   = pt.get<unsigned>("response.count0");
-		m_status.index2   = pt.get<unsigned>("response.count1");
-		m_status.t1_ptec  = pt.get<std::string>("response.T1_PTEC");
-		m_status.t2_ptec  = pt.get<std::string>("response.T2_PTEC");
-
-		// Process Counter 1
-		if ((m_status.index1 >0) && ((m_status.index1 != m_status.pindex1)  || (m_status.flow1 != m_status.pflow1) \
+                m_status.hostname = S_xpath_string(XMLdoc.RootElement(),"/response/config_hostname/text()").c_str();
+		m_status.flow1    = i_xpath_int(XMLdoc.RootElement(),"/response/meter2/text()");
+		m_status.flow2    = i_xpath_int(XMLdoc.RootElement(),"/response/meter3/text()");
+		m_status.index1   = i_xpath_int(XMLdoc.RootElement(),"/response/count0/text()");
+		m_status.index2   = i_xpath_int(XMLdoc.RootElement(),"/response/count1/text()");
+		m_status.t1_ptec  = S_xpath_string(XMLdoc.RootElement(),"/response/T1_PTEC/text()").c_str();
+		m_status.t2_ptec  = S_xpath_string(XMLdoc.RootElement(),"/response/T2_PTEC/text()").c_str();
+		
+                // Process Counter 1
+		if ((m_status.index1 >0) && ((m_status.index1 != m_status.pindex1) || (m_status.flow1 != m_status.pflow1) \
 			|| (difftime(atime,m_status.time1) >= 300)))
 		{
 			m_status.pindex1 = m_status.index1;
@@ -372,7 +385,7 @@ void CEcoDevices::GetMeterDetails()
 		}
 
 		// Process Counter 2
-		if ((m_status.index2 >0) && ((m_status.index2 != m_status.pindex2)  || (m_status.flow2 != m_status.pflow2) \
+		if ((m_status.index2 >0) && ((m_status.index2 != m_status.pindex2) || (m_status.flow2 != m_status.pflow2) \
 			|| (difftime(atime,m_status.time2) >= 300)))
 		{
 			m_status.pindex2 = m_status.index2;
@@ -384,17 +397,17 @@ void CEcoDevices::GetMeterDetails()
 	}
 	else
 	{
-                message = "EcoDevices firmware needs to be at least version ";
-                message = message + boost::to_string(min_major) + "." + boost::to_string(min_minor) + "." + boost::to_string(min_release);
-                message = message + ", current version is " +  m_status.version;
+		message = "EcoDevices firmware needs to be at least version ";
+		message = message + boost::to_string(min_major) + "." + boost::to_string(min_minor) + "." + boost::to_string(min_release);
+		message = message + ", current version is " + m_status.version;
 		_log.Log(LOG_ERROR, message.c_str());
 		return;
 	}
 
 	// Query Teleinfo counters only if an active subscrition is detected (PTEC != "----")
 
-	//  Get Teleinfo 1
-	if (m_status.t1_ptec != "----")
+	// Get Teleinfo 1
+	if (m_status.t1_ptec.c_str() != "----")
 	{
 		sstr.str("");
 		sstr << "http://" << m_szIPAddress << ":" << m_usIPPort << "/protect/settings/teleinfo1.xml";
@@ -405,7 +418,14 @@ void CEcoDevices::GetMeterDetails()
 			return;
 		}
 		#ifdef DEBUG_EcoDevices
-		_log.Log(LOG_NORM, "Data: %s", sResult.c_str());
+		std::string EncodedXML = sResult;
+		using boost::algorithm::replace_all;
+		replace_all(EncodedXML, "&", "&amp;");
+		replace_all(EncodedXML, "\"", "&quot;");
+		replace_all(EncodedXML, "\'", "&apos;");
+		replace_all(EncodedXML, "<",  "&lt;");
+		replace_all(EncodedXML, ">",  "&gt;");
+		_log.Log(LOG_NORM, "DEBUG: XML output for Teleinfo1:\n%s", EncodedXML.c_str());
 		#endif
 
 		// Remove all "T1_"s from output as it prevents writing generic code for both counters
@@ -429,7 +449,14 @@ void CEcoDevices::GetMeterDetails()
 			return;
 		}
 		#ifdef DEBUG_EcoDevices
-		_log.Log(LOG_NORM, "Data: %s", sResult.c_str());
+		std::string EncodedXML = sResult;
+ 		using boost::algorithm::replace_all;
+		replace_all(EncodedXML, "&",  "&amp;");
+		replace_all(EncodedXML, "\"", "&quot;");
+		replace_all(EncodedXML, "\'", "&apos;");
+		replace_all(EncodedXML, "<",  "&lt;");
+		replace_all(EncodedXML, ">",  "&gt;");
+		_log.Log(LOG_NORM, "DEBUG: XML output for Teleinfo2:\n%s", EncodedXML.c_str());
 		#endif
 
 		// Remove all "T2_"s from output as it prevents writing generic code for both counters
