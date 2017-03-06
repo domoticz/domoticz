@@ -7,7 +7,6 @@
 #include "../httpclient/HTTPClient.h"
 #include <../tinyxpath/xpath_static.h>
 #include <boost/algorithm/string.hpp>
-#include <boost/lexical_cast.hpp>
 /*
 Eco- Devices is a utility consumption monitoring device dedicated to the French market.
 It provides 4 inputs, two using the "Teleinfo" protocol found on all recent French electricity meters
@@ -349,11 +348,12 @@ void CEcoDevices::GetMeterDetails()
 	_log.Log(LOG_NORM, "DEBUG: XML output for /status.xml\n%s", MakeHtml(sResult).c_str());
 	#endif
 
-	major = boost::lexical_cast<int>(m_status.version.substr(0,m_status.version.find(".")).c_str());
+        m_status.version = m_status.version + "..";
+	major = atoi(m_status.version.substr(0,m_status.version.find(".")).c_str());
 	m_status.version.erase(0,m_status.version.find(".")+1);
-	minor = boost::lexical_cast<int>(m_status.version.substr(0,m_status.version.find(".")).c_str());
+	minor = atoi(m_status.version.substr(0,m_status.version.find(".")).c_str());
 	m_status.version.erase(0,m_status.version.find(".")+1);
-	release = boost::lexical_cast<int>(m_status.version.c_str());
+	release = atoi(m_status.version.substr(0,m_status.version.find(".")).c_str());
 	m_status.version = S_xpath_string(XMLdoc.RootElement(),"/response/version/text()").c_str();
 
 	if ((major>min_major) || ((major==min_major) && (minor>min_minor)) || ((major==min_major) && (minor==min_minor) && (release>=min_release)))
@@ -400,7 +400,7 @@ void CEcoDevices::GetMeterDetails()
 	// Query Teleinfo counters only if an active subscrition is detected (PTEC != "----")
 
 	// Get Teleinfo 1
-	if (m_status.t1_ptec.c_str() != "----")
+	if (strcmp (m_status.t1_ptec.c_str(), "----") !=0)
 	{
 		sstr.str("");
 		sstr << "http://" << m_szIPAddress << ":" << m_usIPPort << "/protect/settings/teleinfo1.xml";
@@ -424,7 +424,7 @@ void CEcoDevices::GetMeterDetails()
 		ProcessTeleinfo("Teleinfo 1", m_HwdID, 1, m_teleinfo1);
 	}
 	// Get Teleinfo 2
-	if (m_status.t2_ptec != "----")
+	if (strcmp (m_status.t2_ptec.c_str(), "----") !=0)
 	{
 		sstr.str("");
 		sstr << "http://" << m_szIPAddress << ":" << m_usIPPort << "/protect/settings/teleinfo2.xml";
