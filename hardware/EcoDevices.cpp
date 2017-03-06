@@ -6,7 +6,8 @@
 #include "../main/localtime_r.h"
 #include "../httpclient/HTTPClient.h"
 #include <../tinyxpath/xpath_static.h>
-#include <boost/algorithm/string.hpp>
+#include <sstream>
+
 /*
 Eco- Devices is a utility consumption monitoring device dedicated to the French market.
 It provides 4 inputs, two using the "Teleinfo" protocol found on all recent French electricity meters
@@ -391,7 +392,7 @@ void CEcoDevices::GetMeterDetails()
 	else
 	{
 		message = "EcoDevices firmware needs to be at least version ";
-		message = message + boost::to_string(min_major) + "." + boost::to_string(min_minor) + "." + boost::to_string(min_release);
+                message = message + static_cast<std::ostringstream*>( &(std::ostringstream() << min_major << "." << min_minor << "." << min_release) )->str();
 		message = message + ", current version is " + m_status.version;
 		_log.Log(LOG_ERROR, message.c_str());
 		return;
