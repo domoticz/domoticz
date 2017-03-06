@@ -289,7 +289,7 @@ void CEcoDevices::ProcessTeleinfo(const std::string &name, int HwdID, int rank, 
 			SendTextSensor(HwdID, 25, 255, "Demain, jour " + teleinfo.DEMAIN , name + " couleur demain");
 		}
 		// Common sensors for all rates
-		SendCurrentSensor(HwdID, 255, teleinfo.IINST1, teleinfo.IINST2, teleinfo.IINST3, name + " Courant");
+		SendCurrentSensor(HwdID, 255, (float)teleinfo.IINST1, (float)teleinfo.IINST2, (float)teleinfo.IINST3, name + " Courant");
 
 		// Alert level is 1 up to 100% usage, 2 then 3 above 100% load and 4 for maximum load (IMAX)
 		if ((teleinfo.IMAX - teleinfo.IINST ) <=0)
@@ -298,7 +298,7 @@ void CEcoDevices::ProcessTeleinfo(const std::string &name, int HwdID, int rank, 
 			flevel = (3.0 * teleinfo.IINST + teleinfo.IMAX - 4.0 * teleinfo.ISOUSC) / (teleinfo.IMAX - teleinfo.ISOUSC);
 		if (flevel > 4) flevel = 4;
 		if (flevel < 1) flevel = 1;
-		level = round(flevel + 0.49);
+		level = (int)round(flevel + 0.49);
 		SendAlertSensor(rank, 255, level, (name + " Alerte courant maximal").c_str());
 	}
 }
@@ -381,7 +381,7 @@ void CEcoDevices::GetMeterDetails()
 			m_status.pflow1 = m_status.flow1;
 			m_status.time1 = atime;
 			SendMeterSensor(m_HwdID, 1, 255, m_status.index1/1000.0f, m_status.hostname + " Counter 1");
-			SendWaterflowSensor(m_HwdID, 2, 255, m_status.flow1, m_status.hostname + " Flow counter 1");
+			SendWaterflowSensor(m_HwdID, 2, 255, (float)m_status.flow1, m_status.hostname + " Flow counter 1");
 		}
 
 		// Process Counter 2
@@ -392,7 +392,7 @@ void CEcoDevices::GetMeterDetails()
 			m_status.pflow2 = m_status.flow2;
 			m_status.time2 = atime;
 			SendMeterSensor(m_HwdID, 3, 255, m_status.index2/1000.0f, m_status.hostname + " Counter 2");
-			SendWaterflowSensor(m_HwdID, 4, 255, m_status.flow2, m_status.hostname + " Flow counter 2");
+			SendWaterflowSensor(m_HwdID, 4, 255, (float)m_status.flow2, m_status.hostname + " Flow counter 2");
 		}
 	}
 	else
