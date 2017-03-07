@@ -5,6 +5,7 @@
 #include <time.h>
 #include "localtime_r.h"
 #include "mainworker.h"
+#include "Helper.h"
 
 #ifndef WIN32
 	#include <syslog.h>
@@ -103,25 +104,20 @@ void CLogger::Log(const _eLogLevel level, const char* logline, ...)
 	if (bEnableLogTimestamps)
 	{
 		char szDate[100];
-#if !defined WIN32
-		// Get a timestamp
 		struct timeval tv;
 		gettimeofday(&tv, NULL);
-
 		struct tm timeinfo;
+#ifdef WIN32
+		//Thanks to the winsock header file
+		time_t tv_sec = tv.tv_sec;
+		localtime_r(&tv_sec, &timeinfo);
+#else
 		localtime_r(&tv.tv_sec, &timeinfo);
-
+#endif
 		// create a time stamp string for the log message
 		snprintf(szDate, sizeof(szDate), "%04d-%02d-%02d %02d:%02d:%02d.%03d ",
 			timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday,
 			timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec, (int)tv.tv_usec / 1000);
-#else
-		// Get a timestamp
-		SYSTEMTIME time;
-		::GetLocalTime(&time);
-		// create a time stamp string for the log message
-		sprintf_s(szDate, sizeof(szDate), "%04d-%02d-%02d %02d:%02d:%02d.%03d ", time.wYear, time.wMonth, time.wDay, time.wHour, time.wMinute, time.wSecond, time.wMilliseconds);
-#endif
 		sstr << szDate << " ";
 	}
 

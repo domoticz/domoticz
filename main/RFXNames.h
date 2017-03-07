@@ -181,6 +181,7 @@ enum _eHardwareTypes {
 	HTYPE_Arilux,				//97
 	HTYPE_OpenWebNetUSB,		//98
 	HTYPE_IntergasInComfortLAN2RF,			//99
+	HTYPE_RelayNet,				//100
 	HTYPE_END
 };
 
