@@ -5,7 +5,8 @@
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 #include "../httpclient/HTTPClient.h"
-#include "../json/json.h"
+#include <../tinyxpath/xpath_static.h>
+#include <sstream>
 
 /*
 Eco- Devices is a utility consumption monitoring device dedicated to the French market.
@@ -20,28 +21,32 @@ http://www.touteladomotique.com/index.php?option=com_content&id=985:premiers-pas
 Detailed information on the Teleinfo protocol can be found at (version 5, 16/03/2015)
 http://www.enedis.fr/sites/default/files/ERDF-NOI-CPT_02E.pdf
 
-
-Version 2.1  
-Author  Blaise Thauvin
-
+Version 3.0
+Author Blaise Thauvin
 
 Version history
 
+3.0   05-03-2017 Move from JSON to XML API on EcoDevices in order to retreive more Teleinfo variables (current, alerts...)
 2.1   27-02-2017 Switch from sDecodeRX to standard helpers (Sendxxxxx) for updating devices.
-                 Supports 4 main subscription plans (Basic, Tempo, EJP, "Heures Creuses")
-                 Text device for reporting the current rate for multiple rates plans.
+				 Supports 4 main subscription plans (Basic, Tempo, EJP, "Heures Creuses")
+				 Text device for reporting the current rate for multiple rates plans.
 2.0   21-02-2017 Support for any or all 4 counters and several electricity subscription plans
 1.0              Anonymous contributor initiated the EcoDevices hardware support for one counter and one subscription plan
 
 */
 
 #ifdef _DEBUG
-//#define DEBUG_EcoDevices
+#define DEBUG_EcoDevices
 #endif
+
+// Minimum EcoDevises firmware required
+#define MAJOR 1
+#define MINOR 5
+#define RELEASE 12
 
 CEcoDevices::CEcoDevices(const int ID, const std::string &IPAddress, const unsigned short usIPPort)
 {
-	m_HwdID=ID;
+	m_HwdID = ID;
 	m_szIPAddress = IPAddress;
 	m_usIPPort = usIPPort;
 	m_stoprequested = false;
@@ -58,14 +63,6 @@ CEcoDevices::~CEcoDevices(void)
 void CEcoDevices::Init()
 {
 	m_stoprequested = false;
-	m_indexC1 = 0;
-	m_indexC2 = 0;
-	m_previousC1 = 0;
-	m_previousC2 = 0;
-	m_lastSendDataT1=0;
-	m_lastSendDataT2=0;
-	m_lastSendDataC1=0;
-	m_lastSendDataC2=0;
 }
 
 
@@ -122,365 +119,334 @@ bool CEcoDevices::WriteToHardware(const char *pdata, const unsigned char length)
 }
 
 
-void CEcoDevices::GetMeterDetails()
+void CEcoDevices::DecodeXML2Teleinfo(const std::string &sResult, Teleinfo &teleinfo)
 {
-	if (m_szIPAddress.size()==0)
-		return;
+	TiXmlDocument XMLdoc("Teleinfo.xml");
 
-	std::vector<std::string> ExtraHeaders;
-	std::string sResult;
-
-	std::stringstream sstr2;
-	sstr2 << "http://" << m_szIPAddress
-		<< ":" << m_usIPPort
-		<< "/api/xdevices.json?cmd=10";
-	//Get Data
-	std::string sURL = sstr2.str();
-	if (!HTTPClient::GET(sURL, ExtraHeaders, sResult))
+	XMLdoc.Parse(sResult.c_str(), 0, TIXML_ENCODING_UTF8);
+	if (XMLdoc.Error())
 	{
-		_log.Log(LOG_ERROR, "EcoDevices: Error getting current state!");
+		_log.Log(LOG_ERROR, "Error parsing XML for /protect/settings/teleinfo?.xml: %s", XMLdoc.ErrorDesc());
 		return;
 	}
 
+	using namespace TinyXPath;
+
+	teleinfo.OPTARIF = S_xpath_string(XMLdoc.RootElement(),"/response/OPTARIF/text()").c_str();
+	teleinfo.PTEC = S_xpath_string(XMLdoc.RootElement(),"/response/PTEC/text()").c_str();
+	teleinfo.DEMAIN = S_xpath_string(XMLdoc.RootElement(),"/response/DEMAIN/text()").c_str();
+	teleinfo.ISOUSC = i_xpath_int(XMLdoc.RootElement(),"/response/ISOUSC/text()");
+	teleinfo.PAPP = i_xpath_int(XMLdoc.RootElement(),"/response/PAPP/text()");
+	teleinfo.BASE = i_xpath_int(XMLdoc.RootElement(),"/response/BASE/text()");
+	teleinfo.HCHC = i_xpath_int(XMLdoc.RootElement(),"/response/HCHC/text()");
+	teleinfo.HCHP = i_xpath_int(XMLdoc.RootElement(),"/response/HCHP/text()");
+	teleinfo.EJPHN = i_xpath_int(XMLdoc.RootElement(),"/response/EJPHN/text()");
+	teleinfo.EJPHPM = i_xpath_int(XMLdoc.RootElement(),"/response/EJPHPM/text()");
+	teleinfo.BBRHCJB = i_xpath_int(XMLdoc.RootElement(),"/response/BBRHCJB/text()");
+	teleinfo.BBRHPJB = i_xpath_int(XMLdoc.RootElement(),"/response/BBRHPJB/text()");
+	teleinfo.BBRHCJW = i_xpath_int(XMLdoc.RootElement(),"/response/BBRHCJW/text()");
+	teleinfo.BBRHPJW = i_xpath_int(XMLdoc.RootElement(),"/response/BBRHPJB/text()");
+	teleinfo.BBRHCJR = i_xpath_int(XMLdoc.RootElement(),"/response/BBRHCJR/text()");
+	teleinfo.BBRHPJR = i_xpath_int(XMLdoc.RootElement(),"/response/BBRHPJR/text()");
+	teleinfo.PEJP = i_xpath_int(XMLdoc.RootElement(),"/response/PEJP/text()");
+	teleinfo.IINST = i_xpath_int(XMLdoc.RootElement(),"/response/IINST/text()");
+	teleinfo.IINST1 = i_xpath_int(XMLdoc.RootElement(),"/response/IINST1/text()");
+	teleinfo.IINST2 = i_xpath_int(XMLdoc.RootElement(),"/response/IINST2/text()");
+	teleinfo.IINST3 = i_xpath_int(XMLdoc.RootElement(),"/response/IINST3/text()");
+	teleinfo.IMAX = i_xpath_int(XMLdoc.RootElement(),"/response/IMAX/text()");
+	teleinfo.IMAX1 =i_xpath_int(XMLdoc.RootElement(),"/response/IMAX1/text()");
+	teleinfo.IMAX2 = i_xpath_int(XMLdoc.RootElement(),"/response/IMAX2/text()");
+	teleinfo.IMAX3 = i_xpath_int(XMLdoc.RootElement(),"/response/IMAX3/text()");
+	teleinfo.ADPS = i_xpath_int(XMLdoc.RootElement(),"/response/ADPS/text()");
+
+	#ifdef DEBUG_EcoDevices
+	_log.Log(LOG_NORM, "DEBUG: OPTARIF: '%s'", teleinfo.OPTARIF.c_str());
+	_log.Log(LOG_NORM, "DEBUG: PTEC:    '%s'", teleinfo.PTEC.c_str());
+	_log.Log(LOG_NORM, "DEBUG: DEMAIN:  '%s'", teleinfo.DEMAIN.c_str());
+	#endif
+}
+
+
+void CEcoDevices::ProcessTeleinfo(const std::string &name, int HwdID, int rank, Teleinfo &teleinfo)
+{
+	uint32_t m_pappHC, m_pappHP, m_pappHCJB, m_pappHPJB, m_pappHCJW, m_pappHPJW, m_pappHCJR, m_pappHPJR, checksum, level;
+	double flevel;
 	time_t atime = mytime(NULL);
-	uint32_t checksum = 0, m_pappHC, m_pappHP, m_pappHCJB, m_pappHPJB, m_pappHCJW, m_pappHPJW, m_pappHCJR, m_pappHPJR;
 
-	Json::Value root;
-	Json::Reader jReader;
-	bool bRet = jReader.parse(sResult, root);
-	if ((!bRet) || (!root.isObject()))
+	// PAPP only exist on some meter versions. If not present, we can approximate it as (current x 230V)
+	if ((teleinfo.PAPP == 0) && (teleinfo.IINST > 0))
+		teleinfo.PAPP = (teleinfo.IINST * 230);
+
+	if (teleinfo.PTEC.substr(0,2) == "TH")
+		teleinfo.rate="Toutes Heures";
+	else if (teleinfo.PTEC.substr(0,2) == "HC")
 	{
-		_log.Log(LOG_ERROR, "EcoDevices: Invalid data received!");
-		return;
+		teleinfo.rate = "Heures Creuses";
+		m_pappHC = m_teleinfo1.PAPP;
+		m_pappHP = 0;
 	}
-	if (root["product"].empty() == true || root["product"].asString() != "Eco-devices")
+	else if (teleinfo.PTEC.substr(0,2) == "HP")
 	{
-		_log.Log(LOG_ERROR, "EcoDevices: Invalid data received..!");
-		return;
+		teleinfo.rate = "Heures Pleines";
+		m_pappHC = 0;
+		m_pappHP = teleinfo.PAPP;
+	}
+	else if (teleinfo.PTEC.substr(0,2) == "HN")
+	{
+		teleinfo.rate = "Heures Normales";
+		m_pappHC = teleinfo.PAPP;
+		m_pappHP = 0;
+	}
+	else if (teleinfo.PTEC.substr(0,2) == "PM")
+	{
+		teleinfo.rate = "Pointe Mobile";
+		m_pappHC = 0;
+		m_pappHP = teleinfo.PAPP;
+	}
+	else
+	{
+		teleinfo.rate = "Unknown";
+		teleinfo.tariff = "Undefined";
 	}
 
-	// Process Teleinfo 1 data
-	m_teleinfo1.PTEC = root["T1_PTEC"].asString();
-	// Check if a data source is connected to input 1
-	if (m_teleinfo1.PTEC !="----")
+	// Checksum to detect changes between measures
+	checksum=teleinfo.BASE + teleinfo.HCHC + teleinfo.HCHP + teleinfo.EJPHN + teleinfo.EJPHPM + teleinfo.BBRHCJB \
+		+ teleinfo.BBRHPJB + teleinfo.BBRHCJW + teleinfo.BBRHPJB + teleinfo.BBRHCJR + teleinfo.BBRHPJR + teleinfo.PAPP;
+
+	//Send data if value changed or at least every 5 minutes
+	if ((teleinfo.previous != checksum) || (difftime(atime, teleinfo.last) >= 300))
 	{
-		// PAPP only exist on some meter versions. If not present, we could approximate it as (current x 230V)
-		// but current is not available in JSON API, we need to switch to XML
-		if (root["T1_PAPP"].empty())
-			m_teleinfo1.PAPP = 0;
-		else
-			m_teleinfo1.PAPP = (unsigned long)(root["T1_PAPP"].asFloat());
-		if (m_teleinfo1.PTEC.substr(0,2) == "TH")
+		teleinfo.previous = checksum;
+		teleinfo.last = atime;
+		if (teleinfo.OPTARIF == "BASE")
 		{
-			m_teleinfo1.rate="Tarif de base";
+			teleinfo.tariff="Tarif de Base";
+			SendKwhMeter(HwdID, 10, 255, teleinfo.PAPP, teleinfo.BASE/1000.0, name + " Index");
 		}
-		else if (m_teleinfo1.PTEC.substr(0,2) == "HC")
+		else if (teleinfo.OPTARIF == "HC..")
 		{
-			m_teleinfo1.rate="Heures Creuses";
-			m_pappHC=m_teleinfo1.PAPP;
-			m_pappHP=0;
+			teleinfo.tariff="Tarif option Heures Creuses";
+			SendKwhMeter(HwdID, 12, 255, m_pappHC, teleinfo.HCHC/1000.0, name + " Heures Creuses");
+			SendKwhMeter(HwdID, 13, 255, m_pappHP, teleinfo.HCHP/1000.0, name + " Heures Pleines");
+			SendKwhMeter(HwdID, 14, 255, teleinfo.PAPP, (teleinfo.HCHP + teleinfo.HCHC)/1000.0, name + " Total");
+			SendTextSensor(HwdID, 11, 255, teleinfo.rate, name + " Tarif en cours");
 		}
-		else if (m_teleinfo1.PTEC.substr(0,2) == "HP")
+		else if (teleinfo.OPTARIF == "EJP.")
 		{
-			m_teleinfo1.rate="Heures Pleines";
-			m_pappHC=0;
-			m_pappHP=m_teleinfo1.PAPP;
+			teleinfo.tariff="Tarif option EJP";
+			SendKwhMeter(HwdID, 5, 255, m_pappHC, teleinfo.EJPHN/1000.0, name + " Heures Normales");
+			SendKwhMeter(HwdID, 16, 255, m_pappHP, teleinfo.EJPHPM/1000.0, name + " Heures Pointe Mobile");
+			SendKwhMeter(HwdID, 17, 255, teleinfo.PAPP, (teleinfo.EJPHN + teleinfo.EJPHPM)/1000.0, name + " Total");
+			SendTextSensor(HwdID, 11, 255, teleinfo.rate, name + " Tarif en cours");
+			SendAlertSensor(10+rank, 255, ((teleinfo.PEJP == 30) ? 4 : 1), (name + " Alerte Pointe Mobile").c_str());
 		}
-		else if (m_teleinfo1.PTEC.substr(0,2) == "HN")
+		else if (teleinfo.OPTARIF.substr(0,3) == "BBR")
 		{
-			m_teleinfo1.rate="Heures Normales";
-			m_pappHC=m_teleinfo1.PAPP;
-			m_pappHP=0;
-		}
-		else if (m_teleinfo1.PTEC.substr(0,2) == "PM")
-		{
-			m_teleinfo1.rate="Pointe Mobile";
-			m_pappHC=0;
-			m_pappHP=m_teleinfo1.PAPP;
-		}
-		else
-		{
-			m_teleinfo1.rate="Unknown";
-			m_teleinfo1.tariff="Undefined";
-		}
-
-		//Basic subscription scheme
-		if (m_teleinfo1.PTEC == "TH..")
-		{
-			m_teleinfo1.tariff="Tarif de Base";
-			m_teleinfo1.BASE = (unsigned long)(root["T1_BASE"].asFloat());
-		}
-
-		// Peak/Off-Peak subscription scheme
-		else if ((m_teleinfo1.PTEC == "HC..") || (m_teleinfo1.PTEC == "HP.."))
-		{
-			m_teleinfo1.tariff="Tarif option Heures Creuses";
-			m_teleinfo1.HCHP = (unsigned long)(root["T1_HCHP"].asFloat());
-			m_teleinfo1.HCHC = (unsigned long)(root["T1_HCHC"].asFloat());
-		}
-
-		// "EJP" subscription scheme
-		else if ((m_teleinfo1.PTEC == "HN..") || (m_teleinfo1.PTEC == "PM.."))
-		{
-			m_teleinfo1.tariff="Tarif option EJP";
-			m_teleinfo1.EJPHN = (unsigned long)(root["T1_EJPHN"].asFloat());
-			m_teleinfo1.EJPHPM = (unsigned long)(root["T1_EJPHPM"].asFloat());
-		}
-
-		// "TEMPO" subscription scheme
-		else if (m_teleinfo1.PTEC.substr(2,1) == "J")
-		{
-			m_teleinfo1.color="";
-			m_teleinfo1.tariff="Tarif option TEMPO";
+			teleinfo.tariff="Tarif option TEMPO";
 			m_pappHCJB=0;
 			m_pappHPJB=0;
 			m_pappHCJW=0;
 			m_pappHPJW=0;
 			m_pappHCJR=0;
 			m_pappHPJR=0;
-			if (m_teleinfo1.PTEC.substr(3,1) == "B")
+			if (teleinfo.PTEC.substr(3,1) == "B")
 			{
-				m_teleinfo1.color="Bleu";
-				if (m_teleinfo1.rate == "Heures Creuses")
-					m_pappHCJB=m_teleinfo1.PAPP;
+				teleinfo.color="Bleu";
+				if (teleinfo.rate == "Heures Creuses")
+					m_pappHCJB=teleinfo.PAPP;
 				else
-					m_pappHPJB=m_teleinfo1.PAPP;
+					m_pappHPJB=teleinfo.PAPP;
 			}
-			else if (m_teleinfo1.PTEC.substr(3,1) == "W")
+			else if (teleinfo.PTEC.substr(3,1) == "W")
 			{
-				m_teleinfo1.color="Blanc";
-				if (m_teleinfo1.rate == "Heures Creuses")
-					m_pappHCJW=m_teleinfo1.PAPP;
+				teleinfo.color="Blanc";
+				if (teleinfo.rate == "Heures Creuses")
+					m_pappHCJW=teleinfo.PAPP;
 				else
-					m_pappHPJW=m_teleinfo1.PAPP;
+					m_pappHPJW=teleinfo.PAPP;
 			}
-			else if (m_teleinfo1.PTEC.substr(3,1) == "R")
+			else if (teleinfo.PTEC.substr(3,1) == "R")
 			{
-				m_teleinfo1.color="Rouge";
-				if (m_teleinfo1.rate == "Heures Creuses")
-					m_pappHCJR=m_teleinfo1.PAPP;
+				teleinfo.color="Rouge";
+				if (teleinfo.rate == "Heures Creuses")
+					m_pappHCJR=teleinfo.PAPP;
 				else
-					m_pappHPJR=m_teleinfo1.PAPP;
+					m_pappHPJR=teleinfo.PAPP;
 			}
 			else
 			{
-				m_teleinfo1.color="Unknown";
+				teleinfo.color="Unknown";
 			}
-			m_teleinfo1.BBRHCJB = (unsigned long)(root["T1_BBRHCJB"].asFloat());
-			m_teleinfo1.BBRHPJB = (unsigned long)(root["T1_BBRHOJB"].asFloat());
-			m_teleinfo1.BBRHCJW = (unsigned long)(root["T1_BBRHCJW"].asFloat());
-			m_teleinfo1.BBRHPJW = (unsigned long)(root["T1_BBRHOJW"].asFloat());
-			m_teleinfo1.BBRHCJR = (unsigned long)(root["T1_BBRHCJR"].asFloat());
-			m_teleinfo1.BBRHPJR = (unsigned long)(root["T1_BBRHOJR"].asFloat());
+			SendKwhMeter(HwdID, 18, 255, m_pappHCJB, teleinfo.BBRHCJB/1000.0, "Teleinfo 1 Jour Bleu, Creux");
+			SendKwhMeter(HwdID, 19, 255, m_pappHPJB, teleinfo.BBRHPJB/1000.0, "Teleinfo 1 Jour Bleu, Plein");
+			SendKwhMeter(HwdID, 20, 255, m_pappHCJW, teleinfo.BBRHCJW/1000.0, "Teleinfo 1 Jour Blanc, Creux");
+			SendKwhMeter(HwdID, 21, 255, m_pappHPJW, teleinfo.BBRHPJW/1000.0, "Teleinfo 1 Jour Blanc, Plein");
+			SendKwhMeter(HwdID, 22, 255, m_pappHCJR, teleinfo.BBRHCJR/1000.0, "Teleinfo 1 Jour Rouge, Creux");
+			SendKwhMeter(HwdID, 23, 255, m_pappHPJR, teleinfo.BBRHCJR/1000.0, "Teleinfo 1 Jour Rouge, Plein");
+			SendKwhMeter(HwdID, 24, 255, teleinfo.PAPP, (teleinfo.BBRHCJB + teleinfo.BBRHPJB + teleinfo.BBRHCJW \
+				+ teleinfo.BBRHPJW + teleinfo.BBRHCJR + teleinfo.BBRHPJR)/1000.0, name + " Total");
+			SendTextSensor(HwdID, 11, 255, "Jour " + teleinfo.color + ", " + teleinfo.rate, name + " Tarif en cours ");
+			SendTextSensor(HwdID, 25, 255, "Demain, jour " + teleinfo.DEMAIN , name + " couleur demain");
 		}
-		// Checksum to detect changes
-		checksum=m_teleinfo1.BASE + m_teleinfo1.HCHC + m_teleinfo1.HCHP + m_teleinfo1.EJPHN + m_teleinfo1.EJPHPM + m_teleinfo1.BBRHCJB \
-			+ m_teleinfo1.BBRHPJB + m_teleinfo1.BBRHCJW + m_teleinfo1.BBRHPJB + m_teleinfo1.BBRHCJR + m_teleinfo1.BBRHPJR + m_teleinfo1.PAPP;
-		//Send data if value changed or at least every 5 minutes and only if non zero
-		if ((checksum > 0) && ((m_teleinfo1.previous != checksum) || (difftime(atime,m_lastSendDataT1) >= 300)))
-		{
-			m_teleinfo1.previous = checksum;
-			m_lastSendDataT1 = atime;
-			if (m_teleinfo1.tariff == "Tarif de Base")
-			{
-				SendKwhMeter(m_HwdID, 1, 255, m_teleinfo1.PAPP, m_teleinfo1.BASE/1000.0, "Teleinfo 1 Index");
-				SendTextSensor(m_HwdID, 15, 255, m_teleinfo1.tariff, "Tarif en cours Teleinfo 1");
-			}
-			else if (m_teleinfo1.tariff == "Tarif option Heures Creuses")
-			{
-				SendKwhMeter(m_HwdID, 2, 255, m_pappHC, m_teleinfo1.HCHC/1000.0, "Teleinfo 1 Heures Creuses");
-				SendKwhMeter(m_HwdID, 3, 255, m_pappHP, m_teleinfo1.HCHP/1000.0, "Teleinfo 1 Heures Pleines");
-				SendKwhMeter(m_HwdID, 4, 255, m_teleinfo1.PAPP, (m_teleinfo1.HCHP + m_teleinfo1.HCHC)/1000.0, "Teleinfo 1 Total");
-				SendTextSensor(m_HwdID, 15, 255, m_teleinfo1.rate, "Tarif en cours Teleinfo 1");
-			}
-			else if (m_teleinfo1.tariff == "Tarif option EJP")
-			{
-				SendKwhMeter(m_HwdID, 5, 255, m_pappHC, m_teleinfo1.EJPHN/1000.0, "Teleinfo 1 Heures Normales");
-				SendKwhMeter(m_HwdID, 6, 255, m_pappHP, m_teleinfo1.EJPHPM/1000.0, "Teleinfo 1 Heures Pointe Mobile");
-				SendKwhMeter(m_HwdID, 7, 255, m_teleinfo1.PAPP, (m_teleinfo1.EJPHN + m_teleinfo1.EJPHPM)/1000.0, "Teleinfo 1 Total");
-				SendTextSensor(m_HwdID, 15, 255, m_teleinfo1.rate, "Tarif en cours Teleinfo 1");
-			}
-			else if (m_teleinfo1.tariff == "Tarif option TEMPO")
-			{
-				SendKwhMeter(m_HwdID, 8, 255, m_pappHCJB, m_teleinfo1.BBRHCJB/1000.0, "Teleinfo 1 Jour Bleu, Creux");
-				SendKwhMeter(m_HwdID, 9, 255, m_pappHPJB, m_teleinfo1.BBRHPJB/1000.0, "Teleinfo 1 Jour Bleu, Plein");
-				SendKwhMeter(m_HwdID, 10, 255, m_pappHCJW, m_teleinfo1.BBRHCJW/1000.0, "Teleinfo 1 Jour Blanc, Creux");
-				SendKwhMeter(m_HwdID, 11, 255, m_pappHPJW, m_teleinfo1.BBRHPJW/1000.0, "Teleinfo 1 Jour Blanc, Plein");
-				SendKwhMeter(m_HwdID, 12, 255, m_pappHCJR, m_teleinfo1.BBRHCJR/1000.0, "Teleinfo 1 Jour Rouge, Creux");
-				SendKwhMeter(m_HwdID, 13, 255, m_pappHPJR, m_teleinfo1.BBRHCJR/1000.0, "Teleinfo 1 Jour Rouge, Plein");
-				SendKwhMeter(m_HwdID, 14, 255, m_teleinfo1.PAPP, (m_teleinfo1.BBRHCJB + m_teleinfo1.BBRHPJB + m_teleinfo1.BBRHCJW \
-					+ m_teleinfo1.BBRHPJW + m_teleinfo1.BBRHCJR + m_teleinfo1.BBRHPJR)/1000.0, "Teleinfo 1 Total");
-				SendTextSensor(m_HwdID, 15, 255, "Jour " +  m_teleinfo1.color + ", " + m_teleinfo1.rate, "Tarif en cours Teleinfo 1");
-			}
-		}
-	}
+		// Common sensors for all rates
+		SendCurrentSensor(HwdID, 255, (float)teleinfo.IINST1, (float)teleinfo.IINST2, (float)teleinfo.IINST3, name + " Courant");
 
-	// Process Teleinfo 2 data
-	m_teleinfo2.PTEC = root["T2_PTEC"].asString();
-	// Check if a data source is connected to input 2
-	if (m_teleinfo2.PTEC !="----")
-	{
-		// PAPP only exist on some meter versions. If not present, we could approximate it as (current x 230V)
-		// but current is not available in JSON API, we need to switch to XML
-		if (root["T2_PAPP"].empty())
-			m_teleinfo2.PAPP = 0;
+		// Alert level is 1 up to 100% usage, 2 then 3 above 100% load and 4 for maximum load (IMAX)
+		if ((teleinfo.IMAX - teleinfo.IINST ) <=0)
+			level = 4;
 		else
-			m_teleinfo2.PAPP = (unsigned long)(root["T2_PAPP"].asFloat());
-		if (m_teleinfo2.PTEC.substr(0,2) == "TH")
-		{
-			m_teleinfo2.rate="Tarif de base";
-		}
-		else if (m_teleinfo2.PTEC.substr(0,2) == "HC")
-		{
-			m_teleinfo2.rate="Heures Creuses";
-			m_pappHC=m_teleinfo2.PAPP;
-			m_pappHP=0;
-		}
-		else if (m_teleinfo2.PTEC.substr(0,2) == "HP")
-		{
-			m_teleinfo2.rate="Heures Pleines";
-			m_pappHC=0;
-			m_pappHP=m_teleinfo2.PAPP;
-		}
-		else if (m_teleinfo2.PTEC.substr(0,2) == "HN")
-		{
-			m_teleinfo2.rate="Heures Normales";
-			m_pappHC=m_teleinfo2.PAPP;
-			m_pappHP=0;
-		}
-		else if (m_teleinfo2.PTEC.substr(0,2) == "PM")
-		{
-			m_teleinfo2.rate="Pointe Mobile";
-			m_pappHC=0;
-			m_pappHP=m_teleinfo2.PAPP;
-		}
-		else
-		{
-			m_teleinfo2.rate="Unknown";
-			m_teleinfo2.tariff="Undefined";
-		}
-
-		// Basic subscription scheme
-		if (m_teleinfo2.PTEC == "TH..")
-		{
-			m_teleinfo2.tariff="Tarif de Base";
-			m_teleinfo2.BASE = (unsigned long)(root["T2_BASE"].asFloat());
-		}
-
-		// Peak/Off-Peak subscription scheme
-		else if ((m_teleinfo2.PTEC == "HC..") || (m_teleinfo2.PTEC == "HP.."))
-		{
-			m_teleinfo2.tariff="Tarif option Heures Creuses";
-			m_teleinfo2.HCHP = (unsigned long)(root["T2_HCHP"].asFloat());
-			m_teleinfo2.HCHC = (unsigned long)(root["T2_HCHC"].asFloat());
-		}
-
-		// "EJP" subscription scheme
-		else if ((m_teleinfo2.PTEC == "HN..") || (m_teleinfo2.PTEC == "PM.."))
-		{
-			m_teleinfo2.tariff="Tarif option EJP";
-			m_teleinfo2.EJPHN = (unsigned long)(root["T2_EJPHN"].asFloat());
-			m_teleinfo2.EJPHPM = (unsigned long)(root["T2_EJPHPM"].asFloat());
-		}
-
-		// "TEMPO" subscription scheme
-		else if (m_teleinfo2.PTEC.substr(2,1) == "J")
-		{
-			m_teleinfo2.color="";
-			m_teleinfo2.tariff="Tarif option TEMPO";
-			m_pappHCJW=0;
-			m_pappHPJW=0;
-			m_pappHCJR=0;
-			m_pappHPJR=0;
-			if (m_teleinfo2.PTEC.substr(3,1) == "B")
-			{
-				m_teleinfo2.color="Bleu";
-				if (m_teleinfo2.rate == "Heures Creuses")
-					m_pappHCJB=m_teleinfo2.PAPP;
-				else
-					m_pappHPJB=m_teleinfo2.PAPP;
-			}
-			else if (m_teleinfo2.PTEC.substr(3,1) == "W")
-			{
-				m_teleinfo2.color="Blanc";
-				if (m_teleinfo2.rate == "Heures Creuses")
-					m_pappHCJW=m_teleinfo2.PAPP;
-				else
-					m_pappHPJW=m_teleinfo2.PAPP;
-			}
-			else if (m_teleinfo2.PTEC.substr(3,1) == "R")
-			{
-				m_teleinfo2.color="Rouge";
-				if (m_teleinfo2.rate == "Heures Creuses")
-					m_pappHCJR=m_teleinfo2.PAPP;
-				else
-					m_pappHPJR=m_teleinfo2.PAPP;
-			}
-			else
-			{
-				m_teleinfo2.color="Unknown";
-			}
-			m_teleinfo2.BBRHCJB = (unsigned long)(root["T2_BBRHCJB"].asFloat());
-			m_teleinfo2.BBRHPJB = (unsigned long)(root["T2_BBRHOJB"].asFloat());
-			m_teleinfo2.BBRHCJR = (unsigned long)(root["T2_BBRHCJR"].asFloat());
-			m_teleinfo2.BBRHPJR = (unsigned long)(root["T2_BBRHOJR"].asFloat());
-		}
-		// Checksum to detect changes
-		checksum=m_teleinfo2.BASE + m_teleinfo2.HCHC + m_teleinfo2.HCHP + m_teleinfo2.EJPHN + m_teleinfo2.EJPHPM + m_teleinfo2.BBRHCJB \
-			+ m_teleinfo2.BBRHPJB + m_teleinfo2.BBRHCJW + m_teleinfo2.BBRHPJB + m_teleinfo2.BBRHCJR + m_teleinfo2.BBRHPJR + m_teleinfo2.PAPP;
-		//Send data if value changed or at least every 5 minutes and only if non zero
-		if ((checksum > 0) && ((m_teleinfo2.previous != checksum) || (difftime(atime,m_lastSendDataT2) >= 300)))
-		{
-			m_teleinfo2.previous = checksum;
-			m_lastSendDataT2 = atime;
-			if (m_teleinfo2.tariff == "Tarif de Base")
-			{
-				SendKwhMeter(m_HwdID, 1, 255, m_teleinfo2.PAPP, m_teleinfo2.BASE/1000.0, "Teleinfo 2 Index");
-				SendTextSensor(m_HwdID, 15, 255, m_teleinfo2.tariff, "Tarif en cours Teleinfo 2");
-			}
-			else if (m_teleinfo2.tariff == "Tarif option Heures Creuses")
-			{
-				SendKwhMeter(m_HwdID, 2, 255, m_pappHC, m_teleinfo2.HCHC/1000.0, "Teleinfo 2 Heures Creuses");
-				SendKwhMeter(m_HwdID, 3, 255, m_pappHP, m_teleinfo2.HCHP/1000.0, "Teleinfo 2 Heures Pleines");
-				SendKwhMeter(m_HwdID, 4, 255, m_teleinfo2.PAPP, (m_teleinfo2.HCHP + m_teleinfo2.HCHC)/1000.0, "Teleinfo 2 Total");
-				SendTextSensor(m_HwdID, 15, 255, m_teleinfo2.rate, "Tarif en cours Teleinfo 2");
-			}
-			else if (m_teleinfo2.tariff == "Tarif option EJP")
-			{
-				SendKwhMeter(m_HwdID, 5, 255, m_pappHC, m_teleinfo2.EJPHN/1000.0, "Teleinfo 2 Heures Normales");
-				SendKwhMeter(m_HwdID, 6, 255, m_pappHP, m_teleinfo2.EJPHPM/1000.0, "Teleinfo 2 Heures Pointe Mobile");
-				SendKwhMeter(m_HwdID, 7, 255, m_teleinfo2.PAPP, (m_teleinfo2.EJPHN + m_teleinfo2.EJPHPM)/1000.0, "Teleinfo 2 Total");
-				SendTextSensor(m_HwdID, 15, 255, m_teleinfo2.rate, "Tarif en cours Teleinfo 2");
-			}
-			else if (m_teleinfo2.tariff == "Tarif option TEMPO")
-			{
-				SendKwhMeter(m_HwdID, 8, 255, m_pappHCJB, m_teleinfo2.BBRHCJB/1000.0, "Teleinfo 2 Jour Bleu, Creux");
-				SendKwhMeter(m_HwdID, 9, 255, m_pappHPJB, m_teleinfo2.BBRHPJB/1000.0, "Teleinfo 2 Jour Bleu, Plein");
-				SendKwhMeter(m_HwdID, 10, 255, m_pappHCJW, m_teleinfo2.BBRHCJW/1000.0, "Teleinfo 2 Jour Blanc, Creux");
-				SendKwhMeter(m_HwdID, 11, 255, m_pappHPJW, m_teleinfo2.BBRHPJW/1000.0, "Teleinfo 2 Jour Blanc, Plein");
-				SendKwhMeter(m_HwdID, 12, 255, m_pappHCJR, m_teleinfo2.BBRHCJR/1000.0, "Teleinfo 2 Jour Rouge, Creux");
-				SendKwhMeter(m_HwdID, 13, 255, m_pappHPJR, m_teleinfo2.BBRHCJR/1000.0, "Teleinfo 2 Jour Rouge, Plein");
-				SendKwhMeter(m_HwdID, 14, 255, m_teleinfo2.PAPP, (m_teleinfo2.BBRHCJB + m_teleinfo2.BBRHPJB + m_teleinfo2.BBRHCJW \
-					+ m_teleinfo2.BBRHPJW + m_teleinfo2.BBRHCJR + m_teleinfo2.BBRHPJR)/1000.0, "Teleinfo 2 Total");
-				SendTextSensor(m_HwdID, 15, 255, "Jour " +  m_teleinfo2.color + ", " + m_teleinfo2.rate, "Tarif en cours Teleinfo 2");
-			}
-		}
+			flevel = (3.0 * teleinfo.IINST + teleinfo.IMAX - 4.0 * teleinfo.ISOUSC) / (teleinfo.IMAX - teleinfo.ISOUSC);
+		if (flevel > 4) flevel = 4;
+		if (flevel < 1) flevel = 1;
+		level = (int)round(flevel + 0.49);
+		SendAlertSensor(rank, 255, level, (name + " Alerte courant maximal").c_str());
 	}
+}
 
-	// Process pulse counters
-	m_indexC1 = (unsigned long)(root["INDEX_C1"].asFloat());
-	if ((m_indexC1 >0) && ((m_indexC1 != m_previousC1) || (difftime(atime,m_lastSendDataC1) >= 300)))
+
+void CEcoDevices::GetMeterDetails()
+{
+	if (m_szIPAddress.size()==0)
+		return;
+	// From http://xx.xx.xx.xx/status.xml we get the pulse counters indexes and current flow
+	// From http://xx.xx.xx.xx/protect/settings/teleinfoX.xml we get a complete feed of Teleinfo data
+
+	std::vector<std::string> ExtraHeaders;
+	std::string       sResult, sub, message;
+	std::string::size_type len, pos;
+	std::stringstream sstr;
+	TiXmlDocument XMLdoc("Teleinfo.xml");
+	time_t atime = mytime(NULL);
+	int   major, minor, release;
+	int min_major = MAJOR, min_minor = MINOR, min_release = RELEASE;
+
+	// Check EcoDevices firmware version and process pulse counters
+	sstr << "http://" << m_szIPAddress << ":" << m_usIPPort << "/status.xml";
+	if (m_status.hostname.empty()) m_status.hostname = m_szIPAddress;
+	if (HTTPClient::GET(sstr.str(), ExtraHeaders, sResult))
 	{
-		m_previousC1 = m_indexC1;
-		m_lastSendDataC1 = atime;
-		SendMeterSensor(m_HwdID, 3, 255, m_indexC1/1000.0f, "EcoDevices Counter 1");
+		_log.Log(LOG_NORM, "Ecodevices: Fetching counters and status data from %s", m_status.hostname.c_str());
+	}
+	else
+	{
+		_log.Log(LOG_ERROR, "EcoDevices: Error getting status.xml from EcoDevices%s!", m_status.hostname.c_str());
+		return;
 	}
 
-	m_indexC2 = (unsigned long)(root["INDEX_C2"].asFloat());
-	if ((m_indexC2 >0) && ((m_indexC2 != m_previousC2) || (difftime(atime,m_lastSendDataC2) >= 300)))
+	// Process XML result
+	XMLdoc.Parse(sResult.c_str(), 0, TIXML_ENCODING_UTF8);
+	if (XMLdoc.Error())
 	{
-		m_previousC2 = m_indexC2;
-		m_lastSendDataC2 = atime;
-		SendMeterSensor(m_HwdID, 4, 255, m_indexC2/1000.0f, "EcoDevices Counter 2");
+		_log.Log(LOG_ERROR, "Error parsing XML at /status.xml: %s", XMLdoc.ErrorDesc());
+		return;
 	}
+
+	// XML format changes dramatically between firmware versions. This code was developped for version 1.05.12
+	using namespace TinyXPath;
+	m_status.version = S_xpath_string(XMLdoc.RootElement(),"/response/version/text()").c_str();
+
+	#ifdef DEBUG_EcoDevices
+	_log.Log(LOG_NORM, "DEBUG: XML output for /status.xml\n%s", MakeHtml(sResult).c_str());
+	#endif
+
+        m_status.version = m_status.version + "..";
+	major = atoi(m_status.version.substr(0,m_status.version.find(".")).c_str());
+	m_status.version.erase(0,m_status.version.find(".")+1);
+	minor = atoi(m_status.version.substr(0,m_status.version.find(".")).c_str());
+	m_status.version.erase(0,m_status.version.find(".")+1);
+	release = atoi(m_status.version.substr(0,m_status.version.find(".")).c_str());
+	m_status.version = S_xpath_string(XMLdoc.RootElement(),"/response/version/text()").c_str();
+
+	if ((major>min_major) || ((major==min_major) && (minor>min_minor)) || ((major==min_major) && (minor==min_minor) && (release>=min_release)))
+	{
+		m_status.hostname = S_xpath_string(XMLdoc.RootElement(),"/response/config_hostname/text()").c_str();
+		m_status.flow1    = i_xpath_int(XMLdoc.RootElement(),"/response/meter2/text()");
+		m_status.flow2    = i_xpath_int(XMLdoc.RootElement(),"/response/meter3/text()");
+		m_status.index1   = i_xpath_int(XMLdoc.RootElement(),"/response/count0/text()");
+		m_status.index2   = i_xpath_int(XMLdoc.RootElement(),"/response/count1/text()");
+		m_status.t1_ptec  = S_xpath_string(XMLdoc.RootElement(),"/response/T1_PTEC/text()").c_str();
+		m_status.t2_ptec  = S_xpath_string(XMLdoc.RootElement(),"/response/T2_PTEC/text()").c_str();
+
+		// Process Counter 1
+		if ((m_status.index1 >0) && ((m_status.index1 != m_status.pindex1) || (m_status.flow1 != m_status.pflow1) \
+			|| (difftime(atime,m_status.time1) >= 300)))
+		{
+			m_status.pindex1 = m_status.index1;
+			m_status.pflow1 = m_status.flow1;
+			m_status.time1 = atime;
+			SendMeterSensor(m_HwdID, 1, 255, m_status.index1/1000.0f, m_status.hostname + " Counter 1");
+			SendWaterflowSensor(m_HwdID, 2, 255, (float)m_status.flow1, m_status.hostname + " Flow counter 1");
+		}
+
+		// Process Counter 2
+		if ((m_status.index2 >0) && ((m_status.index2 != m_status.pindex2) || (m_status.flow2 != m_status.pflow2) \
+			|| (difftime(atime,m_status.time2) >= 300)))
+		{
+			m_status.pindex2 = m_status.index2;
+			m_status.pflow2 = m_status.flow2;
+			m_status.time2 = atime;
+			SendMeterSensor(m_HwdID, 3, 255, m_status.index2/1000.0f, m_status.hostname + " Counter 2");
+			SendWaterflowSensor(m_HwdID, 4, 255, (float)m_status.flow2, m_status.hostname + " Flow counter 2");
+		}
+	}
+	else
+	{
+		message = "EcoDevices firmware needs to be at least version ";
+                message = message + static_cast<std::ostringstream*>( &(std::ostringstream() << min_major << "." << min_minor << "." << min_release) )->str();
+		message = message + ", current version is " + m_status.version;
+		_log.Log(LOG_ERROR, message.c_str());
+		return;
+	}
+
+	// Query Teleinfo counters only if an active subscrition is detected (PTEC != "----")
+
+	// Get Teleinfo 1
+	if (strcmp (m_status.t1_ptec.c_str(), "----") !=0)
+	{
+		sstr.str("");
+		sstr << "http://" << m_szIPAddress << ":" << m_usIPPort << "/protect/settings/teleinfo1.xml";
+		_log.Log(LOG_NORM, "Ecodevices: Fetching Teleinfo 1 data from %s", m_status.hostname.c_str());
+		if (!HTTPClient::GET(sstr.str(), ExtraHeaders, sResult))
+		{
+			_log.Log(LOG_ERROR, "EcoDevices: Error getting teleinfo1.xml from EcoDevices %s!", m_status.hostname.c_str());
+			return;
+		}
+		#ifdef DEBUG_EcoDevices
+		_log.Log(LOG_NORM, "DEBUG: XML output for Teleinfo1:\n%s", MakeHtml(sResult).c_str());
+		#endif
+
+		// Remove all "T1_"s from output as it prevents writing generic code for both counters
+		sub = "T1_";
+		len = sub.length();
+		for (pos = sResult.find(sub);pos != std::string::npos;pos = sResult.find(sub))
+			sResult.erase(pos,len);
+
+		DecodeXML2Teleinfo(sResult, m_teleinfo1);
+		ProcessTeleinfo("Teleinfo 1", m_HwdID, 1, m_teleinfo1);
+	}
+	// Get Teleinfo 2
+	if (strcmp (m_status.t2_ptec.c_str(), "----") !=0)
+	{
+		sstr.str("");
+		sstr << "http://" << m_szIPAddress << ":" << m_usIPPort << "/protect/settings/teleinfo2.xml";
+		_log.Log(LOG_NORM, "Ecodevices: Fetching Teleinfo 2 data from %s", m_status.hostname.c_str());
+		if (!HTTPClient::GET(sstr.str(), ExtraHeaders, sResult))
+		{
+			_log.Log(LOG_ERROR, "EcoDevices: Error getting teleinfo2.xml from EcoDevices %s!", m_status.hostname.c_str());
+			return;
+		}
+		#ifdef DEBUG_EcoDevices
+		_log.Log(LOG_NORM, "DEBUG: XML output for Teleinfo2:\n%s", MakeHtml(sResult).c_str());
+		#endif
+
+		// Remove all "T2_"s from output as it prevents writing generic code for both counters
+		sub = "T2_";
+		len = sub.length();
+		for (pos = sResult.find(sub);pos != std::string::npos;pos = sResult.find(sub))
+			sResult.erase(pos,len);
+
+		DecodeXML2Teleinfo(sResult, m_teleinfo2);
+		ProcessTeleinfo("Teleinfo 2", m_HwdID, 2, m_teleinfo2);
+	}
+
 }
