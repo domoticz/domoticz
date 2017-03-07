@@ -743,6 +743,19 @@ std::string GenerateUserAgent()
 	return sstr.str();
 }
 
+std::string MakeHtml(const std::string &txt)
+{
+        std::string sRet = txt;
+
+        stdreplace(sRet, "&", "&amp;");
+        stdreplace(sRet, "\"", "&quot;");
+        stdreplace(sRet, "'", "&apos;");
+        stdreplace(sRet, "<", "&lt;");
+        stdreplace(sRet, ">", "&gt;");
+        stdreplace(sRet, "\r\n", "<br/>");
+        return sRet;
+}
+
 #if defined WIN32
 //FILETIME of Jan 1 1970 00:00:00
 static const uint64_t epoch = (const uint64_t)(116444736000000000);
