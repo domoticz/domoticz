@@ -254,7 +254,6 @@ local function EventHelpers(settings, domoticz, mainMethod)
 			cmd = 'ls -a "' .. directory .. '"'
 		else
 			-- assume windows for now
-			--cmd = 'dir "' .. directory .. '" /b /ad'
 			cmd = 'dir "' .. directory .. '" /B'
 		end
 

@@ -6,6 +6,7 @@
 #include <iostream>
 #include <string>
 #include <iomanip>
+#include "../../main/localtime_r.h"
 #include "bt_openwebnet.h"
 // private methods ......
 
@@ -708,6 +709,23 @@ void bt_openwebnet::CreateTimeReqMsgOpen()
   IsCorrect();
 }
 
+void bt_openwebnet::CreateSetTimeMsgOpen()
+{
+	//call CreateNullMsgOpen function
+  CreateNullMsgOpen();
+  	
+	char frame_dt[50];
+	time_t now = time(NULL);
+	struct tm *t = localtime(&now);	
+	strftime(frame_dt, sizeof(frame_dt)-1, "*#13**#22*%H*%M*%S*001*%u*%d*%m*%Y##", t); //set date time 
+	std::stringstream frame;
+	frame << frame_dt;
+	frame_open = DeleteControlCharacters(frame.str());
+	length_frame_open = frame_open.length();
+
+ 	IsCorrect();
+}
+
 // creates the OPEN message *#who*where*dimension##
 void bt_openwebnet::CreateDimensionMsgOpen(const std::string& who, const std::string& where, const std::string& dimension)
 {
@@ -1070,7 +1088,7 @@ std::string bt_openwebnet::getWhoDescription(const std::string& who)
 		return "Lighting management";
 	}
 	else if (who == "25") {
-		return "Dry contact/IR Detection";
+		return "CEN Plus";
 	}
 	else if (who == "1000") {
 		return "Diagnostic";//not documented
@@ -1900,7 +1918,20 @@ std::string bt_openwebnet::getWhatDescription(const std::string& who, const std:
 	else if (who == "25") {
 		// "Dry contact";
 		std::stringstream sstr;
-
+		
+		if (what == "21") {
+			sstr << "Short pressure";
+		}
+		else if (what == "22") {
+			sstr << "Start of extended pressure";
+			
+		}else if (what == "23") {
+			sstr << "Extended pressure";
+			
+		}else if (what == "24") {
+			sstr << "End Extended pressure";
+		}
+	
 		if (what == "31") {
 			sstr << "contact ON or IR detection";
 		}
@@ -1929,7 +1960,7 @@ std::string bt_openwebnet::getWhatDescription(const std::string& who, const std:
 	return "Unknown what : " + what + vectorToString(whatParameters);
 }
 
-std::string bt_openwebnet::getWhereDescription(const std::string& who, const std::string& where, const std::vector<std::string>& whereParameters)
+std::string bt_openwebnet::getWhereDescription(const std::string& who, const std::string& what,const std::string& where, const std::vector<std::string>& whereParameters)
 {
 	if (!whereParameters.empty() && whereParameters[whereParameters.size() - 1] == "9") {
 		std::stringstream desc;
@@ -2021,6 +2052,17 @@ std::string bt_openwebnet::getWhereDescription(const std::string& who, const std
 		//3#<where actuators> with actuators = Z#N belonging to [0 - 99]#[1 - 9] : Split Control actuator Z/N
 	}
 	else if (who == "5") {
+        
+        if (atoi(what.c_str()) == 11 ){
+            return "zone " + whereParameters[0];
+        }
+        else if (atoi(what.c_str()) >= 0 && atoi(what.c_str()) <= 10  ) {
+            return "";
+            
+        }else if (atoi(what.c_str()) == 18 ) {
+            return "zone " + whereParameters[0];
+        }
+        
 		// "Burglar alarm" : TODO
 		//1 : CONTROL PANEL
 		//#0 ... #8 : ZONE xx CENTRAL
@@ -2032,7 +2074,7 @@ std::string bt_openwebnet::getWhereDescription(const std::string& who, const std
 		//8n :  ZONE 8, SENSOR n
 		//#12 : ZONE C
 		//#15 : ZONE F
-	}
+    }
 	else if (who == "7") {
 		// "Video door entry system" : TODO
 		//4000			Camera 00.. 
@@ -2484,7 +2526,7 @@ std::string bt_openwebnet::frameToString(const bt_openwebnet& frame)
 
 		frameStr << " - who=" << getWhoDescription(frame.Extract_who());
 		frameStr << " - what=" << getWhatDescription(frame.Extract_who(), frame.Extract_what(), frame.Extract_whatParameters());
-		frameStr << " - where=" << getWhereDescription(frame.Extract_who(), frame.Extract_where(), frame.Extract_whereParameters());
+		frameStr << " - where=" << getWhereDescription(frame.Extract_who(), frame.Extract_what(),frame.Extract_where(), frame.Extract_whereParameters());
 
 		if (!frame.Extract_dimension().empty()) {
 			frameStr << " - dimensions : " << getDimensionsDescription(frame.Extract_who(), frame.Extract_dimension(), frame.Extract_values());

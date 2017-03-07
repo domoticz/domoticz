@@ -62,7 +62,7 @@ private:
 
   //fields description
   static std::string getDimensionsDescription(const std::string& who, const std::string& dimension, const std::vector<std::string>& values);
-  static std::string getWhereDescription(const std::string& who, const std::string& where, const std::vector<std::string>& whereParameters);
+  static std::string getWhereDescription(const std::string& who,const std::string& what, const std::string& where, const std::vector<std::string>& whereParameters);
   static std::string getWhatDescription(const std::string& who, const std::string& what, const std::vector<std::string>& whatParameters);
   static std::string getWhoDescription(const std::string& who);
 
@@ -115,6 +115,7 @@ public:
 
   void CreateTimeReqMsgOpen();
 
+	void CreateSetTimeMsgOpen();
   //general message
   void CreateMsgOpen(const std::string& message);
 

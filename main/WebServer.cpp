@@ -8319,6 +8319,11 @@ namespace http {
 								)
 								continue;
 						}
+						else if (rfilter == "zwavealarms")
+						{
+							if (!((dType == pTypeGeneral) && (dSubType == sTypeZWaveAlarm)))
+								continue;
+						}
 					}
 
 					// has this device already been seen, now with different plan?
