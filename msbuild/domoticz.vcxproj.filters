@@ -462,6 +462,9 @@
     <Filter Include="Pushers\InfluxDB">
       <UniqueIdentifier>{2c9db333-1435-4a52-970c-2a53298e2689}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\RelayNet">
+      <UniqueIdentifier>{9882d591-40c3-4d12-8c0a-af2d53d939ff}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -1987,6 +1990,9 @@
     <ClInclude Include="..\push\BasePush.h">
       <Filter>Pushers</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\RelayNet.h">
+      <Filter>Devices\RelayNet</Filter>
+    </ClInclude>
     <ClInclude Include="..\hardware\plugins\PythonObjects.h">
       <Filter>Devices\Python Plugins</Filter>
     </ClInclude>
@@ -2639,6 +2645,9 @@
     </ClCompile>
     <ClCompile Include="..\push\BasePush.cpp">
       <Filter>Pushers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\RelayNet.cpp">
+      <Filter>Devices\RelayNet</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\plugins\PythonObjects.cpp">
       <Filter>Devices\Python Plugins</Filter>
