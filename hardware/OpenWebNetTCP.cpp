@@ -369,7 +369,7 @@ void COpenWebNetTCP::MonitorFrames()
             time_t atime=time(NULL);
 			if ((atime%OPENWEBNET_RETRY_DELAY)==0)
 			{
-			    if(m_pStatusSocket = connectGwOwn(OPENWEBNET_EVENT_SESSION))
+			    if ((m_pStatusSocket = connectGwOwn(OPENWEBNET_EVENT_SESSION)))
                 {
                     // Monitor session correctly open
                     _log.Log(LOG_STATUS, "COpenWebNetTCP: Monitor session connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
