@@ -363,12 +363,12 @@ void CGpio::Do_Work()
 	_log.Log(LOG_NORM,"GPIO: Worker started...");
 
 	while (!m_stoprequested) {
+		//_log.Log(LOG_NORM, "GPIO: Updating heartbeat");
+		mytime(&m_LastHeartbeat);
+
 #ifndef WIN32
 		boost::mutex::scoped_lock lock(interruptQueueMutex);
-		if (!interruptCondition.timed_wait(lock, duration)) {
-			//_log.Log(LOG_NORM, "GPIO: Updating heartbeat");
-			mytime(&m_LastHeartbeat);
-		} else {
+		if (interruptCondition.timed_wait(lock, duration)) {
 			while (!gpioInterruptQueue.empty()) {
 				interruptNumber = gpioInterruptQueue.front();
 				triggers.push_back(interruptNumber);
