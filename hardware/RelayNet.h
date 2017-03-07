@@ -53,11 +53,11 @@ protected:
 	void TcpGetSetRelay(int RelayNumber, bool Set, bool State);
 	void UpdateDomoticzInput(int InputNumber, bool State);
 	void UpdateDomoticzRelay(int OutputNumber, bool State);
-	void ProcessRelaycardDump(char* Dump, int Length);
+	void ProcessRelaycardDump(char* Dump);
 	void SetRelayState(int RelayNumber, bool State);
 	void TcpRequestRelaycardDump();
-	bool WriteToHardwareTcp(const char *pdata, const unsigned char length);
-	bool WriteToHardwareHttp(const char *pdata, const unsigned char length);
+	bool WriteToHardwareTcp(const char *pdata);
+	bool WriteToHardwareHttp(const char *pdata);
 	void ParseData(const unsigned char *pData, int Len);
 	void KeepConnectionAlive();
 

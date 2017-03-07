@@ -229,11 +229,11 @@ bool RelayNet::WriteToHardware(const char *pdata, const unsigned char length)
 
 #if RELAYNET_USE_HTTP
 
-	bOk = WriteToHardwareHttp(pdata, length);
+	bOk = WriteToHardwareHttp(pdata);
 
 #else
 
-	bOk = WriteToHardwareTcp(pdata, length);
+	bOk = WriteToHardwareTcp(pdata);
 
 #endif
 
@@ -317,12 +317,12 @@ void RelayNet::Init()
 
 	if (m_HwdID > 0xFF)
 	{
-		id3 = (m_HwdID >> 8) && 0xFF;
+		id3 = (m_HwdID >> 8) & 0xFF;
 	}
 
 	if (m_HwdID > 0xFFFF)
 	{
-		id3 = (m_HwdID >> 16) && 0xFF;
+		id3 = (m_HwdID >> 16) & 0xFF;
 	}
 
 	Packet.LIGHTING2.packetlength	= sizeof(Packet.LIGHTING2) - 1;
@@ -362,6 +362,11 @@ void RelayNet::SetupDevices()
 			if (result.empty())
 			{
 				_log.Log(LOG_STATUS, "RelayNet: Create %s/Relay%i", m_szIPAddress.c_str(), relayNumber);
+
+				m_sql.safe_query(
+					"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue) "
+					"VALUES (%d, '%q', %d, %d, %d, %d, 0, 12, 255, '%q', 0, ' ')",
+					m_HwdID, szIdx, relayNumber, pTypeLighting2, sTypeAC, int(STYPE_OnOff), "Relay");
 			}
 		}
 	}
@@ -375,6 +380,11 @@ void RelayNet::SetupDevices()
 			if (result.empty())
 			{
 				_log.Log(LOG_STATUS, "RelayNet: Create %s/Input%i", m_szIPAddress.c_str(), inputNumber);
+
+				m_sql.safe_query(
+					"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue) "
+					"VALUES (%d,'%q',%d, %d, %d, %d, 0, 12, 255, '%q', 0, ' ')",
+					m_HwdID, szIdx, 100+inputNumber, pTypeLighting2, sTypeAC, int(STYPE_Contact), "Input");
 			}
 		}
 	}
@@ -408,11 +418,7 @@ void RelayNet::KeepConnectionAlive()
 
 void RelayNet::TcpGetSetRelay(int RelayNumber, bool SetRelay, bool State)
 {
-	int					portno = m_usIPPort;
 	char 				sndbuf[4];
-	std::string			expectedResponse;
-	std::string			receivedResponse;
-	bool				newState = State;
 
 	/* Determine TCP command to be send */
 	if (SetRelay)
@@ -431,7 +437,7 @@ void RelayNet::TcpGetSetRelay(int RelayNumber, bool SetRelay, bool State)
 		sndbuf[0] = 'R'; 		//	Get relay status
 	}
 
-	sndbuf[1] = 0x30 + RelayNumber;
+	sndbuf[1] = 0x30 + (char) RelayNumber;
 	sndbuf[2] = '\r';
 	sndbuf[3] = '\n';
 
@@ -452,7 +458,7 @@ void RelayNet::SetRelayState(int RelayNumber, bool State)
 
 //===========================================================================
 
-bool RelayNet::WriteToHardwareTcp(const char *pdata, const unsigned char length)
+bool RelayNet::WriteToHardwareTcp(const char *pdata)
 {
 	bool bOk = true;
 
@@ -497,7 +503,7 @@ void RelayNet::UpdateDomoticzInput(int InputNumber, bool State)
 		Packet.LIGHTING2.cmnd = light2_sOff;
 		Packet.LIGHTING2.level = 0;
 	}
-	Packet.LIGHTING2.unitcode = 100 + InputNumber;
+	Packet.LIGHTING2.unitcode = 100 + (char) InputNumber;
 	Packet.LIGHTING2.seqnbr++;
 
 	/* send packet to Domoticz */
@@ -518,7 +524,7 @@ void RelayNet::UpdateDomoticzRelay(int RelayNumber, bool State)
 		Packet.LIGHTING2.cmnd = light2_sOff;
 		Packet.LIGHTING2.level = 0;
 	}
-	Packet.LIGHTING2.unitcode = RelayNumber;
+	Packet.LIGHTING2.unitcode = (char) RelayNumber;
 	Packet.LIGHTING2.seqnbr++;
 
 	/* send packet to Domoticz */
@@ -527,7 +533,7 @@ void RelayNet::UpdateDomoticzRelay(int RelayNumber, bool State)
 
 //===========================================================================
 
-void RelayNet::ProcessRelaycardDump(char* Dump, int Length)
+void RelayNet::ProcessRelaycardDump(char* Dump)
 {
 	char	cTemp[16];
 	std::string sDump;
@@ -600,7 +606,7 @@ void RelayNet::ParseData(const unsigned char *pData, int Len)
 		/* Its a RelayCard dump message */
 		memset(&relayCardDump[0], 0, Len);
 		memcpy(&relayCardDump[0], pData, Len);
-		ProcessRelaycardDump(&relayCardDump[0], Len);
+		ProcessRelaycardDump(&relayCardDump[0]);
 	}
 }
 
@@ -609,7 +615,7 @@ void RelayNet::ParseData(const unsigned char *pData, int Len)
 //	Alternate way of turning relays on/off using HTTP. 
 //	Currently not used. 
 //
-bool RelayNet::WriteToHardwareHttp(const char *pdata, const unsigned char length)
+bool RelayNet::WriteToHardwareHttp(const char *pdata)
 {
 	//-----------------------------------------------------------------------
 	//

@@ -50,3 +50,8 @@ bool dirent_is_file(std::string dir, struct dirent *ent);
 void DirectoryListing(std::vector<std::string>& entries, const std::string &dir, bool bInclDirs, bool bInclFiles);
 
 std::string GenerateUserAgent();
+std::string MakeHtml(const std::string &txt);
+
+#if defined WIN32
+	int gettimeofday(timeval * tp, void * tzp);
+#endif
