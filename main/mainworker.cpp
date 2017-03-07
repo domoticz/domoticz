@@ -653,7 +653,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new OTGWSerial(ID,SerialPort, 9600, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
 		break;
 	case HTYPE_TeleinfoMeter:
-		pHardware = new TeleinfoSerial(ID, SerialPort);
+		pHardware = new CTeleinfoSerial(ID, SerialPort);
 		break;
 	case HTYPE_MySensorsUSB:
 		pHardware = new MySensorsSerial(ID, SerialPort, Mode1);
