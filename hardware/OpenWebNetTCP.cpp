@@ -33,13 +33,16 @@ License: Public domain
 #define OPENWEBNET_BUFFER_SIZE          1024
 #define OPENWEBNET_SOCKET_SUCCESS       0
 
-#define OPENWEBNET_AUTOMATION           "AUTOMATION"
-#define OPENWEBNET_LIGHT                "LIGHT"
-#define OPENWEBNET_TEMPERATURE          "TEMPERATURE"
-#define OPENWEBNET_BURGLAR_ALARM        "BURGLAR ALARM"
-#define OPENWEBNET_BURGLAR_ALARM_SENSOR "BURGLAR ALARM SENSOR ZONE"
-#define OPENWEBNET_CENPLUS            	"CEN PLUS"
-#define OPENWEBNET_AUXILIARY            "AUXILIARY"
+#define OPENWEBNET_AUTOMATION					"AUTOMATION"
+#define OPENWEBNET_LIGHT						"LIGHT"
+#define OPENWEBNET_TEMPERATURE					"TEMPERATURE"
+#define OPENWEBNET_BURGLAR_ALARM_SENSOR			"ALARM SENSOR ZONE"
+#define OPENWEBNET_BURGLAR_ALARM_BATTERY		"ALARM BATTERY"
+#define OPENWEBNET_BURGLAR_ALARM_NETWORK		"ALARM NETWORK"
+#define OPENWEBNET_BURGLAR_ALARM_SYS_STATUS		"ALARM SYSTEM STATUS"
+#define OPENWEBNET_BURGLAR_ALARM_SYS_ENGAGEMENT "ALARM SYSTEM ENGAGEMENT"
+#define OPENWEBNET_CENPLUS            			"CEN PLUS"
+#define OPENWEBNET_AUXILIARY					"AUXILIARY"
 #define OPENWEBNET_DRY_CONTACT					"DRYCONTACT"
 
 
@@ -366,7 +369,7 @@ void COpenWebNetTCP::MonitorFrames()
             time_t atime=time(NULL);
 			if ((atime%OPENWEBNET_RETRY_DELAY)==0)
 			{
-			    if(m_pStatusSocket = connectGwOwn(OPENWEBNET_EVENT_SESSION))
+			    if ((m_pStatusSocket = connectGwOwn(OPENWEBNET_EVENT_SESSION)))
                 {
                     // Monitor session correctly open
                     _log.Log(LOG_STATUS, "COpenWebNetTCP: Monitor session connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
@@ -477,10 +480,13 @@ void COpenWebNetTCP::UpdateBlinds(const int who, const int where, const int Comm
     sDecodeRXMessage(this, (const unsigned char *)&gswitch, devname, BatteryLevel);
 }
 
+/**
+	Insert/Update Alarm system and sensor
+**/
 void COpenWebNetTCP::UpdateAlarm(const int who, const int where, const int Command, const char *sCommand, int iInterface, const int BatteryLevel, const char *devname)
 {
 	 //make device ID
-  unsigned char ID1 = (unsigned char)((who & 0xFF00) >> 8);
+    unsigned char ID1 = (unsigned char)((who & 0xFF00) >> 8);
 	unsigned char ID2 = (unsigned char)(who & 0xFF);
 	unsigned char ID3 = (unsigned char)((where & 0xFF00) >> 8);
 	unsigned char ID4 = (unsigned char)where & 0xFF;
@@ -495,45 +501,9 @@ void COpenWebNetTCP::UpdateAlarm(const int who, const int where, const int Comma
     std::vector<std::vector<std::string> > result;
     string strdev;
     //check first Insert
-   result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)",
+    result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)",
      												m_HwdID, szIdx, unit);  
-      if (result.empty())
-    {
-      m_sql.UpdateValue(m_HwdID, szIdx, unit, pTypeGeneral, sTypeAlert, 12, 255, 2,sCommand,strdev);
-      m_sql.safe_query("UPDATE DeviceStatus SET Name='%s' WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)",devname, m_HwdID,szIdx,unit);//can't update from devname ???    
-      return;
-    }                       
-    	
-        //check if we have a change, if not do not update it
-        int nvalue = atoi(result[0][0].c_str());
-       
-        if (Command == -1 || nvalue == Command) return; // update not necessary
-   	 m_sql.UpdateValue(m_HwdID, szIdx, unit, pTypeGeneral, sTypeAlert, 12, 255, Command,sCommand,strdev);
-
-}
-
-void COpenWebNetTCP::UpdateSensorAlarm(const int who, const int where, const int Command, const char *sCommand, int iInterface, const int BatteryLevel, const char *devname)
-{
-	 //make device ID
-  unsigned char ID1 = (unsigned char)((who & 0xFF00) >> 8);
-	unsigned char ID2 = (unsigned char)(who & 0xFF);
-	unsigned char ID3 = (unsigned char)((where & 0xFF00) >> 8);
-	unsigned char ID4 = (unsigned char)where & 0xFF;
-
-	//interface id (bus identifier)
-	int unit = iInterface;
-
-    char szIdx[10];
-	sprintf(szIdx, "%02X%02X%02X%02X", ID1, ID2, ID3, ID4);
-	
-
-    std::vector<std::vector<std::string> > result;
-    string strdev;
-    //check first Insert
-   result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)",
-     												m_HwdID, szIdx, unit); 
-     												 
-      if (result.empty())
+    if (result.empty())
     {
       m_sql.UpdateValue(m_HwdID, szIdx, unit, pTypeGeneral, sTypeAlert, 12, 255, Command,sCommand,strdev);
       m_sql.safe_query("UPDATE DeviceStatus SET Name='%s' WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)",devname, m_HwdID,szIdx,unit);//can't update from devname ???    
@@ -547,10 +517,14 @@ void COpenWebNetTCP::UpdateSensorAlarm(const int who, const int where, const int
    	 m_sql.UpdateValue(m_HwdID, szIdx, unit, pTypeGeneral, sTypeAlert, 12, 255, Command,sCommand,strdev);
 
 }
+
+/**
+	Insert/Update  CEN PLUS
+**/
 void COpenWebNetTCP::UpdateCenPlus(const int who, const int where, const int Command, const int iAppValue, int iInterface, const int BatteryLevel, const char *devname)
 {
 	 //make device ID
-  unsigned char ID1 = (unsigned char)((who & 0xFF00) >> 8);
+    unsigned char ID1 = (unsigned char)((who & 0xFF00) >> 8);
 	unsigned char ID2 = (unsigned char)(who & 0xFF);
 	unsigned char ID3 = (unsigned char)((where+(iAppValue * 2) + (iInterface *3) & 0xFF00) >> 8);
 	unsigned char ID4 = (unsigned char)(where+(iAppValue * 2) + (iInterface *3)) & 0xFF;
@@ -561,25 +535,24 @@ void COpenWebNetTCP::UpdateCenPlus(const int who, const int where, const int Com
     char szIdx[10];
 	sprintf(szIdx, "%02X%02X%02X%02X", ID1, ID2, ID3, ID4);
 	
-	 std::vector<std::vector<std::string> > result;
+	std::vector<std::vector<std::string> > result;
     string strdev;
     //check first Insert
-   result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)",
+    result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)",
      												m_HwdID, szIdx, unit);
      	
      												
-      if (result.empty())		
-      {
+    if (result.empty())		
+    {
       m_sql.UpdateValue(m_HwdID, szIdx, unit, pTypeGeneralSwitch, sSwitchLightT1, 12, 255, 0,strdev);
       m_sql.safe_query("UPDATE DeviceStatus SET Name='%s'  WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)",devname, m_HwdID,szIdx,unit); 
       return;
-      }
+    }
     
-        //check if we have a change, if not do not update it
-        //int nvalue = atoi(result[0][0].c_str());
-       // if (nvalue == Command)return; // update not necessary
-   	 m_sql.UpdateValue(m_HwdID, szIdx, unit, pTypeGeneralSwitch, sSwitchLightT1, 12, 255, Command,strdev);
-	
+    //check if we have a change, if not do not update it
+    //int nvalue = atoi(result[0][0].c_str());
+    // if (nvalue == Command)return; // update not necessary
+    m_sql.UpdateValue(m_HwdID, szIdx, unit, pTypeGeneralSwitch, sSwitchLightT1, 12, 255, Command,strdev);	
 }
 
 /**
@@ -615,7 +588,7 @@ void COpenWebNetTCP::UpdateSwitch(const int who, const int where, const int what
 	    int slevel = atoi(result[0][1].c_str());
         if ((what > 1) && (nvalue != gswitch_sOff) && (slevel == level)) return; // Already ON/LEVEL at x%
     }
-	else if (who == WHO_DRY_CONTACT_IR_DETECTION)
+	else if (who == WHO_CEN_PLUS_DRY_CONTACT_IR_DETECTION)
 	{
 		// Special insert to set SwitchType = STYPE_Contact
 		// so we have a correct contact device
@@ -660,279 +633,303 @@ void COpenWebNetTCP::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
 	string value = iter->Extract_value(0);
 	string sInterface = iter->Extract_interface();
 	string devname, sCommand;
-	int iAppValue, zone;
-	int iWhere = 0;
+	int iAppValue, iWhere;
 
 	switch (atoi(who.c_str())) {
-	case WHO_LIGHTING:									// 1
-		if (!iter->IsNormalFrame())
-		{
-			_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s not normal frame! -> frame_type=%d", who.c_str(), iter->frame_type);
-			return;
-		}
-		devname = OPENWEBNET_LIGHT;
-		devname += " " + where;
-
-		iWhere = atoi(where.c_str());
-
-		iAppValue = atoi(what.c_str());
-		if (iAppValue == 1000) // What = 1000 (Command translation)
-			iAppValue = atoi(whatParam[0].c_str());
-
-		//pTypeGeneralSwitch, sSwitchLightT1
-		UpdateSwitch(WHO_LIGHTING, iWhere, iAppValue, atoi(sInterface.c_str()), 255, devname.c_str(), sSwitchLightT1);
-		if (iWhere < MAX_WHERE_AREA)
-			mask_request_status |= (0x1 << iWhere); // Gen or area, need a refresh devices status
-		break;
-	case WHO_AUTOMATION:								// 2
-		if (!iter->IsNormalFrame())
-		{
-			_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s frame error!", who.c_str());
-			return;
-		}
-
-		iAppValue = atoi(what.c_str());
-		if (iAppValue == 1000) // What = 1000 (Command translation)
-			iAppValue = atoi(whatParam[0].c_str());
-
-		switch (iAppValue)
-		{
-		case AUTOMATION_WHAT_STOP:  // 0
-			iAppValue = gswitch_sStop;
-			break;
-		case AUTOMATION_WHAT_UP:    // 1
-			iAppValue = gswitch_sOff;
-			break;
-		case AUTOMATION_WHAT_DOWN:  // 2
-			iAppValue = gswitch_sOn;
-			break;
-		default:
-			_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s, What=%s invalid!", who.c_str(), what.c_str());
-			return;
-		}
-		devname = OPENWEBNET_AUTOMATION;
-		devname += " " + where;
-		iWhere = atoi(where.c_str());
-
-		//pTypeGeneralSwitch, sSwitchBlindsT1
-		UpdateBlinds(WHO_AUTOMATION, iWhere, iAppValue, atoi(sInterface.c_str()), 255, devname.c_str());
-		if (iWhere < MAX_WHERE_AREA)
-			mask_request_status |= (0x1 << iWhere); // Gen or area, need a refresh devices status
-		break;
-	case WHO_TEMPERATURE_CONTROL:
-		if (!iter->IsMeasureFrame())
-		{
-			_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s frame error!", who.c_str());
-			return;
-		}             // 4
-		if (atoi(dimension.c_str()) == 0)
-		{
-			devname = OPENWEBNET_TEMPERATURE;
+		case WHO_LIGHTING:									// 1
+			if (!iter->IsNormalFrame())
+			{
+				_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s not normal frame! -> frame_type=%d", who.c_str(), iter->frame_type);
+				return;
+			}
+			devname = OPENWEBNET_LIGHT;
 			devname += " " + where;
-			UpdateTemp(WHO_TEMPERATURE_CONTROL, atoi(where.c_str()), static_cast<float>(atof(value.c_str()) / 10.), 255, devname.c_str());
-		}
 
-		else
-			_log.Log(LOG_STATUS, "COpenWebNetTCP: who=%s, where=%s, dimension=%s not yet supported", who.c_str(), where.c_str(), dimension.c_str());
-		break;
+			iWhere = atoi(where.c_str());
 
-	case WHO_BURGLAR_ALARM:                         // 5
-		if (!iter->IsNormalFrame())
-		{
-			_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s not normal frame! -> frame_type=%d", who.c_str(), iter->frame_type);
+			iAppValue = atoi(what.c_str());
+			if (iAppValue == 1000) // What = 1000 (Command translation)
+				iAppValue = atoi(whatParam[0].c_str());
+
+			//pTypeGeneralSwitch, sSwitchLightT1
+			UpdateSwitch(WHO_LIGHTING, iWhere, iAppValue, atoi(sInterface.c_str()), 255, devname.c_str(), sSwitchLightT1);
+			if (iWhere < MAX_WHERE_AREA)
+				mask_request_status |= (0x1 << iWhere); // Gen or area, need a refresh devices status
+			break;
+		case WHO_AUTOMATION:								// 2
+			if (!iter->IsNormalFrame())
+			{
+				_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s frame error!", who.c_str());
+				return;
+			}
+
+			iAppValue = atoi(what.c_str());
+			if (iAppValue == 1000) // What = 1000 (Command translation)
+				iAppValue = atoi(whatParam[0].c_str());
+
+			switch (iAppValue)
+			{
+			case AUTOMATION_WHAT_STOP:  // 0
+				iAppValue = gswitch_sStop;
+				break;
+			case AUTOMATION_WHAT_UP:    // 1
+				iAppValue = gswitch_sOff;
+				break;
+			case AUTOMATION_WHAT_DOWN:  // 2
+				iAppValue = gswitch_sOn;
+				break;
+			default:
+				_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s, What=%s invalid!", who.c_str(), what.c_str());
+				return;
+			}
+			devname = OPENWEBNET_AUTOMATION;
+			devname += " " + where;
+			iWhere = atoi(where.c_str());
+
+			//pTypeGeneralSwitch, sSwitchBlindsT1
+			UpdateBlinds(WHO_AUTOMATION, iWhere, iAppValue, atoi(sInterface.c_str()), 255, devname.c_str());
+			if (iWhere < MAX_WHERE_AREA)
+				mask_request_status |= (0x1 << iWhere); // Gen or area, need a refresh devices status
+			break;
+		case WHO_TEMPERATURE_CONTROL:
+			if (!iter->IsMeasureFrame())
+			{
+				_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s frame error!", who.c_str());
+				return;
+			}             // 4
+			if (atoi(dimension.c_str()) == 0)
+			{
+				devname = OPENWEBNET_TEMPERATURE;
+				devname += " " + where;
+				UpdateTemp(WHO_TEMPERATURE_CONTROL, atoi(where.c_str()), static_cast<float>(atof(value.c_str()) / 10.), 255, devname.c_str());
+			}
+			else
+				_log.Log(LOG_STATUS, "COpenWebNetTCP: who=%s, where=%s, dimension=%s not yet supported", who.c_str(), where.c_str(), dimension.c_str());
+			break;
+
+		case WHO_BURGLAR_ALARM:                         // 5
+			if (!iter->IsNormalFrame())
+			{
+				_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s not normal frame! -> frame_type=%d", who.c_str(), iter->frame_type);
+				return;
+			}
+
+			switch (atoi(what.c_str())) {
+			case 0:         //maintenace
+				//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm in Maintenance");
+				iWhere = 0xff; // force where to 0xff because not exist
+				devname = OPENWEBNET_BURGLAR_ALARM_SYS_STATUS;
+				sCommand = "Maintenance";
+				UpdateAlarm(WHO_BURGLAR_ALARM, iWhere, 2, sCommand.c_str(), atoi(sInterface.c_str()), 255, devname.c_str());
+				break;
+			case 1:         //active
+				//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm Active");
+				iWhere = 0xff; // force where to 0xff because not exist	
+				devname = OPENWEBNET_BURGLAR_ALARM_SYS_STATUS;
+				sCommand = "Active";
+				UpdateAlarm(WHO_BURGLAR_ALARM, iWhere, 1, sCommand.c_str(), atoi(sInterface.c_str()), 255, devname.c_str());
+				break;
+			case 2:         //disabled
+				//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm Inactive");
+				iWhere = 0xff; // force where to 0xff because not exist
+				devname = OPENWEBNET_BURGLAR_ALARM_SYS_STATUS;
+				sCommand = "Inactive";
+				UpdateAlarm(WHO_BURGLAR_ALARM, iWhere, 3, sCommand.c_str(), atoi(sInterface.c_str()), 255, devname.c_str());
+				break;
+
+			case 4:         //battery fault
+				//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm Battery Fault");
+				iWhere = 0xfd; // force where to 0xfd because not exist
+				devname = OPENWEBNET_BURGLAR_ALARM_BATTERY;
+				sCommand = "Battery Fault";
+				UpdateAlarm(WHO_BURGLAR_ALARM, iWhere, 4, sCommand.c_str(), atoi(sInterface.c_str()), 255, devname.c_str());
+				break;
+
+			case 5:         //battery ok
+				//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm Battery OK");
+				iWhere = 0xfd; // force where to 0xfd because not exist
+				devname = OPENWEBNET_BURGLAR_ALARM_BATTERY;
+				sCommand = "Battery Ok";
+				UpdateAlarm(WHO_BURGLAR_ALARM, iWhere, 1, sCommand.c_str(), atoi(sInterface.c_str()), 255, devname.c_str());
+				break;
+
+			case 6:			//no network
+				//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm no network");
+				iWhere = 0xfe; // force where to 0xfe because not exist
+				devname = OPENWEBNET_BURGLAR_ALARM_NETWORK;
+				sCommand = "No network";
+				UpdateAlarm(WHO_BURGLAR_ALARM, iWhere, 4, sCommand.c_str(), atoi(sInterface.c_str()), 255, devname.c_str());
+				break;
+
+			case 7:			//network ok
+				//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm network ok");
+				iWhere = 0xfe; // force where to 0xfe because not exist
+				devname = OPENWEBNET_BURGLAR_ALARM_NETWORK;
+				sCommand = "Network OK";
+				UpdateAlarm(WHO_BURGLAR_ALARM, iWhere, 1, sCommand.c_str(), atoi(sInterface.c_str()), 255, devname.c_str());
+				break;
+
+			case 8: 	//engaged
+				//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm Engaged");
+				iWhere = 0xfc; // force where to 0xfc because not exist
+				devname = OPENWEBNET_BURGLAR_ALARM_SYS_ENGAGEMENT;
+				sCommand = "Engaged";
+				UpdateAlarm(WHO_BURGLAR_ALARM, iWhere, 1, sCommand.c_str(), atoi(sInterface.c_str()), 255, devname.c_str());
+				break;
+
+			case 9:         //disengaged
+				//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm Disengaged");
+				iWhere = 0xfc; // force where to 0xfc because not exist
+				devname = OPENWEBNET_BURGLAR_ALARM_SYS_ENGAGEMENT;
+				sCommand = "DisEngaged";
+				UpdateAlarm(WHO_BURGLAR_ALARM, iWhere, 0, sCommand.c_str(), atoi(sInterface.c_str()), 255, devname.c_str());
+				break;
+
+			case 10:         //battery Unloads
+				//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm Battery Unloads");
+				iWhere = 0xfd; // force where to 0xfd because not exist
+				devname = OPENWEBNET_BURGLAR_ALARM_BATTERY;
+				sCommand = "Battery Unloads";
+				UpdateAlarm(WHO_BURGLAR_ALARM, iWhere, 4, sCommand.c_str(), atoi(sInterface.c_str()), 255, devname.c_str());
+				break;
+
+			case 11:         // zone N Active
+				iWhere = atoi(whereParam[0].c_str());
+				//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm Zone %d Active",iWhere);
+				devname = OPENWEBNET_BURGLAR_ALARM_SENSOR;
+				devname += " " + whereParam[0];
+				sCommand = "Active";
+				UpdateAlarm(WHO_BURGLAR_ALARM, iWhere, 1, sCommand.c_str(), atoi(sInterface.c_str()), 255, devname.c_str());
+				break;
+
+			case 15:         //zone N INTRUSION ALARM
+				iWhere = atoi(whereParam[0].c_str());
+				//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm Zone %d INTRUSION ALARM", iWhere);
+				devname = OPENWEBNET_BURGLAR_ALARM_SENSOR;
+				devname += " " + whereParam[0];
+				sCommand = "Intrusion";
+				UpdateAlarm(WHO_BURGLAR_ALARM, iWhere, 4, sCommand.c_str(), atoi(sInterface.c_str()), 255, devname.c_str());
+				break;
+
+			case 18:         // zone N Not Active
+				iWhere = atoi(whereParam[0].c_str());
+				//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm Zone %d Not active", iWhere);
+				devname = OPENWEBNET_BURGLAR_ALARM_SENSOR;
+				devname += " " + whereParam[0];
+				sCommand = "Inactive";
+				UpdateAlarm(WHO_BURGLAR_ALARM, iWhere, 0, sCommand.c_str(), atoi(sInterface.c_str()), 255, devname.c_str());
+				break;
+
+			default:
+				_log.Log(LOG_STATUS, "COpenWebNetTCP: who=%s, where=%s, dimension=%s not yet supported", who.c_str(), where.c_str(), dimension.c_str());
+				break;
+			}
+			break;
+		case WHO_AUXILIARY:                             // 9
+			/**
+				example:
+
+				*9*what*where##
+
+				what:   0 = OFF
+						1 = ON
+				where:  1 to 9 (AUX channel)
+			**/
+			if (!iter->IsNormalFrame())
+			{
+				_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s frame error!", who.c_str());
+				return;
+			}
+
+			devname = OPENWEBNET_AUXILIARY;
+			devname += " " + where;
+
+			//pTypeGeneralSwitch, sSwitchAuxiliaryT1
+			UpdateSwitch(WHO_AUXILIARY, atoi(where.c_str()), atoi(what.c_str()), atoi(sInterface.c_str()), 100, devname.c_str(), sSwitchAuxiliaryT1);
+			break;
+		case WHO_CEN_PLUS_DRY_CONTACT_IR_DETECTION:              // 25
+			if (!iter->IsNormalFrame())
+			{
+				_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s not normal frame! -> frame_type=%d", who.c_str(), iter->frame_type);
+				return;
+			}
+
+
+			switch (atoi(what.c_str())) { //CEN PLUS / DRY CONTACT / IR DETECTION
+
+			case 21:         //Short pressure
+				iWhere = atoi(where.c_str());
+				iAppValue = atoi(whatParam[0].c_str());
+				_log.Log(LOG_STATUS, "COpenWebNetTCP: CEN PLUS Short pressure %d Button %d", iWhere, iAppValue);
+				devname = OPENWEBNET_CENPLUS;
+				devname += " " + where + " Short Press Button " + whatParam[0].c_str();
+				UpdateCenPlus(WHO_CEN_PLUS_DRY_CONTACT_IR_DETECTION, iWhere, 1, iAppValue, atoi(what.c_str()), 255, devname.c_str());
+				break;
+
+			case 22:         //Start of extended pressure
+				_log.Log(LOG_STATUS, "COpenWebNetTCP: CEN Start of extended pressure");
+				break;
+
+			case 23:         //Extended pressure
+				_log.Log(LOG_STATUS, "COpenWebNetTCP: CEN Extended pressure");
+				break;
+
+			case 24:         //End of Extended pressure
+				iWhere = atoi(where.c_str());
+				iAppValue = atoi(whatParam[0].c_str());
+
+				_log.Log(LOG_STATUS, "COpenWebNetTCP: CEN PLUS Long pressure %d Button %d", iWhere, iAppValue);
+				devname = OPENWEBNET_CENPLUS;
+				devname += " " + where + " Long Press Button " + whatParam[0].c_str();
+				UpdateCenPlus(WHO_CEN_PLUS_DRY_CONTACT_IR_DETECTION, iWhere, 1, iAppValue, atoi(what.c_str()), 255, devname.c_str());
+				break;
+
+			case 31:
+			case 32:
+				if (where.substr(0, 1) != "3")
+				{
+					_log.Log(LOG_ERROR, "COpenWebNetTCP: Where=%s is not correct for who=%s", where.c_str()), who.c_str();
+					return;
+				}
+
+				devname = OPENWEBNET_DRY_CONTACT;
+				devname += " " + where.substr(1);
+				iWhere = atoi(where.substr(1).c_str());
+
+				iAppValue = atoi(what.c_str());
+				if (iAppValue == DRY_CONTACT_IR_DETECTION_WHAT_ON)
+					iAppValue = 1;
+				else
+					iAppValue = 0;
+
+				//pTypeGeneralSwitch, sSwitchContactT1
+				UpdateSwitch(WHO_CEN_PLUS_DRY_CONTACT_IR_DETECTION, iWhere, iAppValue, atoi(sInterface.c_str()), 255, devname.c_str(), sSwitchContactT1);
+				break;
+			default:
+				_log.Log(LOG_ERROR, "COpenWebNetTCP: What=%s is not correct for who=%s", what.c_str()), who.c_str();
+				return;
+			}
+			break;
+		case WHO_SCENARIO:                              // 0
+		case WHO_LOAD_CONTROL:                          // 3
+		case WHO_DOOR_ENTRY_SYSTEM:                     // 6
+		case WHO_MULTIMEDIA:                            // 7
+		case WHO_GATEWAY_INTERFACES_MANAGEMENT:         // 13
+		case WHO_LIGHT_SHUTTER_ACTUATOR_LOCK:           // 14
+		case WHO_SCENARIO_SCHEDULER_SWITCH:             // 15
+		case WHO_AUDIO:                                 // 16
+		case WHO_SCENARIO_PROGRAMMING:                  // 17
+		case WHO_ENERGY_MANAGEMENT:                     // 18
+		case WHO_LIHGTING_MANAGEMENT:                   // 24
+		case WHO_DIAGNOSTIC:                            // 1000
+		case WHO_AUTOMATIC_DIAGNOSTIC:                  // 1001
+		case WHO_THERMOREGULATION_DIAGNOSTIC_FAILURES:  // 1004
+		case WHO_DEVICE_DIAGNOSTIC:                     // 1013
+			_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s not yet supported!", who.c_str());
 			return;
-		}
-		switch (atoi(what.c_str())) {
-
-		case 0:         //maintenace
-			_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm in Maintenance");
-			break;
-
-		case 1:         //active
-		//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm Active");
-			iWhere = atoi(where.c_str());
-			sCommand = "Active";
-			devname = OPENWEBNET_BURGLAR_ALARM;
-			sCommand = "";																			//u will never see
-			UpdateAlarm(WHO_BURGLAR_ALARM, iWhere, -1, sCommand.c_str(), atoi(sInterface.c_str()), 255, devname.c_str());
-			break;
-
-		case 2:         //disabled
-		//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm Inactive");
-			break;
-
-		case 4:         //battery fault
-		//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm Battery Fault");
-			break;
-
-		case 5:         //battery ok
-		//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm Battery OK");
-			break;
-
-		case 8: 	//engaged
-		//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm Engaged");
-			iWhere = atoi(where.c_str());
-			devname = OPENWEBNET_BURGLAR_ALARM;
-			sCommand = "Engaged";
-			UpdateAlarm(WHO_BURGLAR_ALARM, iWhere, 1, sCommand.c_str(), atoi(sInterface.c_str()), 255, devname.c_str());
-
-			break;
-
-		case 9:         //disengaged
-			_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm Disengaged");
-			iWhere = atoi(where.c_str());
-			devname = OPENWEBNET_BURGLAR_ALARM;
-			sCommand = "DisEngaged";
-			UpdateAlarm(WHO_BURGLAR_ALARM, iWhere, 0, sCommand.c_str(), atoi(sInterface.c_str()), 255, devname.c_str());
-			break;
-
-		case 10:         //battery Unloads
-		//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm Battery Unloads");
-			break;
-
-		case 11:         // zone N Active
-			zone = atoi(whereParam[0].c_str());
-			//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm Zone %d Active",zone);
-			devname = OPENWEBNET_BURGLAR_ALARM_SENSOR;
-			sCommand = "Active";
-			devname += " " + whereParam[0];
-			UpdateSensorAlarm(WHO_BURGLAR_ALARM, iWhere, 1, sCommand.c_str(), zone, 255, devname.c_str());
-			break;
-
-		case 15:         //INTRUSION ALARM
-		//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm INTRUSION ALARM");
-			iWhere = atoi(where.c_str());
-			devname = OPENWEBNET_BURGLAR_ALARM;
-			sCommand = "Intrusion";
-			UpdateAlarm(WHO_BURGLAR_ALARM, iWhere, 4, sCommand.c_str(), atoi(sInterface.c_str()), 255, devname.c_str());
-			break;
-
-		case 18:         // zone N Not Active
-			zone = atoi(whereParam[0].c_str());
-			//_log.Log(LOG_STATUS, "COpenWebNetTCP: Alarm Zone %d Not active",zone);
-			devname = OPENWEBNET_BURGLAR_ALARM_SENSOR;
-			devname += " " + whereParam[0];
-			sCommand = "Inactive";
-			UpdateSensorAlarm(WHO_BURGLAR_ALARM, iWhere, 0, sCommand.c_str(), zone, 255, devname.c_str());
-			break;
-
 		default:
-			_log.Log(LOG_STATUS, "COpenWebNetTCP: who=%s, where=%s, dimension=%s not yet supported", who.c_str(), where.c_str(), dimension.c_str());
-			break;
-		}
-
-	case WHO_AUXILIARY:                             // 9
-		/**
-			example:
-
-			*9*what*where##
-
-			what:   0 = OFF
-					1 = ON
-			where:  1 to 9 (AUX channel)
-		**/
-		if (!iter->IsNormalFrame())
-		{
-			_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s frame error!", who.c_str());
+			_log.Log(LOG_ERROR, "COpenWebNetTCP: ERROR Who=%s not exist!", who.c_str());
 			return;
-		}
-
-		devname = OPENWEBNET_AUXILIARY;
-		devname += " " + where;
-
-		//pTypeGeneralSwitch, sSwitchAuxiliaryT1
-		UpdateSwitch(WHO_AUXILIARY, atoi(where.c_str()), atoi(what.c_str()), atoi(sInterface.c_str()), 100, devname.c_str(), sSwitchAuxiliaryT1);
-		break;
-	case WHO_DRY_CONTACT_IR_DETECTION:              // 25
-		if (!iter->IsNormalFrame())
-		{
-			_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s not normal frame! -> frame_type=%d", who.c_str(), iter->frame_type);
-			return;
-		}
-
-
-		switch (atoi(what.c_str())) { //CEN PLUS
-
-		case 21:         //Short pressure
-			iWhere = atoi(where.c_str());
-			iAppValue = atoi(whatParam[0].c_str());
-			_log.Log(LOG_STATUS, "COpenWebNetTCP: CEN PLUS Short pressure %d Button %d", iWhere, iAppValue);
-			devname = OPENWEBNET_CENPLUS;
-			devname += " " + where + " Short Press Button " + whatParam[0].c_str();
-			UpdateCenPlus(WHO_DRY_CONTACT_IR_DETECTION, iWhere, 1, iAppValue, atoi(what.c_str()), 255, devname.c_str());
-			return;
-			break;
-
-		case 22:         //Start of extended pressure
-			_log.Log(LOG_STATUS, "COpenWebNetTCP: CEN Start of extended pressure");
-			return;
-			break;
-
-		case 23:         //Extended pressure
-			_log.Log(LOG_STATUS, "COpenWebNetTCP: CEN Extended pressure");
-			return;
-			break;
-
-		case 24:         //End of Extended pressure
-			iWhere = atoi(where.c_str());
-			iAppValue = atoi(whatParam[0].c_str());
-
-			_log.Log(LOG_STATUS, "COpenWebNetTCP: CEN PLUS Long pressure %d Button %d", iWhere, iAppValue);
-			devname = OPENWEBNET_CENPLUS;
-			devname += " " + where + " Long Press Button " + whatParam[0].c_str();
-			UpdateCenPlus(WHO_DRY_CONTACT_IR_DETECTION, iWhere, 1, iAppValue, atoi(what.c_str()), 255, devname.c_str());
-			return;
-			break;
-
-		default:
-			_log.Log(LOG_ERROR, "COpenWebNetTCP: Where=%s is not correct for who=%s", where.c_str()), who.c_str();
-			return;
-			break;
-		}
-
-
-		if (where.substr(0, 1) != "3")
-		{
-			_log.Log(LOG_ERROR, "COpenWebNetTCP: Where=%s is not correct for who=%s", where.c_str()), who.c_str();
-			return;
-		}
-
-		devname = OPENWEBNET_DRY_CONTACT;
-		devname += " " + where.substr(1);
-		iWhere = atoi(where.substr(1).c_str());
-
-		iAppValue = atoi(what.c_str());
-		if (iAppValue == DRY_CONTACT_IR_DETECTION_WHAT_ON) // What = 1000 (Command translation)
-			iAppValue = 1;
-		else
-			iAppValue = 0;
-
-		//pTypeGeneralSwitch, sSwitchGeneralSwitch
-		UpdateSwitch(WHO_DRY_CONTACT_IR_DETECTION, iWhere, iAppValue, atoi(sInterface.c_str()), 255, devname.c_str(), sSwitchContactT1);
-
-
-
-		break;
-	case WHO_SCENARIO:                              // 0
-	case WHO_LOAD_CONTROL:                          // 3
-	case WHO_DOOR_ENTRY_SYSTEM:                     // 6
-	case WHO_MULTIMEDIA:                            // 7
-	case WHO_GATEWAY_INTERFACES_MANAGEMENT:         // 13
-	case WHO_LIGHT_SHUTTER_ACTUATOR_LOCK:           // 14
-	case WHO_SCENARIO_SCHEDULER_SWITCH:             // 15
-	case WHO_AUDIO:                                 // 16
-	case WHO_SCENARIO_PROGRAMMING:                  // 17
-	case WHO_ENERGY_MANAGEMENT:                     // 18
-	case WHO_LIHGTING_MANAGEMENT:                   // 24
-	case WHO_DIAGNOSTIC:                            // 1000
-	case WHO_AUTOMATIC_DIAGNOSTIC:                  // 1001
-	case WHO_THERMOREGULATION_DIAGNOSTIC_FAILURES:  // 1004
-	case WHO_DEVICE_DIAGNOSTIC:                     // 1013
-		_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s not yet supported!", who.c_str());
-		return;
-	default:
-		_log.Log(LOG_ERROR, "COpenWebNetTCP: ERROR Who=%s not exist!", who.c_str());
-		return;
 	}
 }
 
@@ -1145,12 +1142,10 @@ void COpenWebNetTCP::scan_automation_lighting(const int cen_area)
     vector<bt_openwebnet> responses;
     stringstream whoStr;
     stringstream whereStr;
-		whoStr << WHO_LIGHTING;
+	whoStr << WHO_LIGHTING;
     whereStr << cen_area;
     request.CreateStateMsgOpen(whoStr.str(), whereStr.str());
-    
     sendCommand(request, responses, 0, false);
-
 }
 
 /**
@@ -1183,7 +1178,7 @@ void COpenWebNetTCP::requestBurglarAlarmStatus()
     vector<bt_openwebnet> responses;
     stringstream whoStr;
     stringstream whereStr;
-		whoStr << WHO_BURGLAR_ALARM;
+	whoStr << WHO_BURGLAR_ALARM;
     whereStr << 0;
     request.CreateStateMsgOpen(whoStr.str(), whereStr.str());
     sendCommand(request, responses, 0, false);
@@ -1198,7 +1193,7 @@ void COpenWebNetTCP::requestDryContactIRDetectionStatus()
 	vector<bt_openwebnet> responses;
 	stringstream whoStr;
 	stringstream whereStr;
-	whoStr << WHO_DRY_CONTACT_IR_DETECTION;
+	whoStr << WHO_CEN_PLUS_DRY_CONTACT_IR_DETECTION;
 	whereStr << 30;
 	request.CreateStateMsgOpen(whoStr.str(), whereStr.str());
 	sendCommand(request, responses, 0, false);
@@ -1217,14 +1212,13 @@ void COpenWebNetTCP::requestTime()
 }
 
 void COpenWebNetTCP::setTime()
-{/*
+{
     _log.Log(LOG_STATUS, "COpenWebNetTCP: set DateTime...");
     bt_openwebnet request;
     vector<bt_openwebnet> responses;
     request.CreateSetTimeMsgOpen();
     sendCommand(request, responses, 0, true);
-
-*/}
+}
 
 /**
 	scan devices
@@ -1233,9 +1227,12 @@ void COpenWebNetTCP::scan_device()
 {
 	int iWhere;
 
-    /* uncomment the line below to enable the time request to the gateway.
-    Note that this is only for debugging, the answer to who = 13 is not yet supported */
-    setTime();
+	/* uncomment the line below to enable the time request to the gateway.
+	Note that this is only for debugging, the answer to who = 13 is not yet supported */
+	//requestTime();
+
+	/* uncomment the line below to enable the set time commenad to the gateway.*/
+	//setTime();
     
 	if (mask_request_status & 0x1)
 	{
@@ -1352,7 +1349,7 @@ bool COpenWebNetTCP::FindDevice(int who, int where, int iInterface, int* used)
 			subType = sSwitchAuxiliaryT1;
 			sprintf(szIdx, "%02X%02X%02X%02X", ID1, ID2, ID3, ID4);
             break;
-		case WHO_DRY_CONTACT_IR_DETECTION:              // 25
+		case WHO_CEN_PLUS_DRY_CONTACT_IR_DETECTION:     // 25
 			devType = pTypeGeneralSwitch;
 			subType = sSwitchContactT1;
 			sprintf(szIdx, "%02X%02X%02X%02X", ID1, ID2, ID3, ID4);
@@ -1377,7 +1374,7 @@ bool COpenWebNetTCP::FindDevice(int who, int where, int iInterface, int* used)
 			return false;
 	}
 
-    if ((who == WHO_LIGHTING) || (who == WHO_AUTOMATION) || (who == WHO_TEMPERATURE_CONTROL) || (who == WHO_AUXILIARY) || (who == WHO_DRY_CONTACT_IR_DETECTION) || (who == WHO_DRY_CONTACT_IR_DETECTION))
+    if ((who == WHO_LIGHTING) || (who == WHO_AUTOMATION) || (who == WHO_TEMPERATURE_CONTROL) || (who == WHO_AUXILIARY) || (who == WHO_CEN_PLUS_DRY_CONTACT_IR_DETECTION))
     {
         if (used != NULL)
         {
