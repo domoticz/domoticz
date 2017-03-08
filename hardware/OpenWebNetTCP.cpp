@@ -1097,6 +1097,8 @@ bool COpenWebNetTCP:: WriteToHardware(const char *pdata, const unsigned char len
 bool COpenWebNetTCP::sendCommand(bt_openwebnet& command, vector<bt_openwebnet>& response, int waitForResponse, bool silent)
 {
     csocket *commandSocket;
+	bool ret;
+
     if(!(commandSocket = connectGwOwn(OPENWEBNET_COMMAND_SESSION)))
     {
         _log.Log(LOG_ERROR, "COpenWebNetTCP: Command session ERROR");
@@ -1124,13 +1126,15 @@ bool COpenWebNetTCP::sendCommand(bt_openwebnet& command, vector<bt_openwebnet>& 
 			_log.Log(LOG_STATUS, "COpenWebNetTCP: sent=%s received=%s", command.frame_open.c_str(), responseBuffer);
 		}
 
-		if (commandSocket->getState() != csocket::CLOSED)
-			commandSocket->close();
-
 		boost::lock_guard<boost::mutex> l(readQueueMutex);
-		return ParseData(responseBuffer, read, response);
+		ret = ParseData(responseBuffer, read, response);
 	}
-	return(true);
+	else
+		ret = true;
+
+	if (commandSocket->getState() != csocket::CLOSED)
+		commandSocket->close();
+	return (ret);
 }
 
 /**
