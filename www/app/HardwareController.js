@@ -1154,6 +1154,12 @@ define(['app'], function (app) {
                 (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0)
 				)
             {
+                Mode1 = 0;
+                Mode2 = 0;
+                Mode3 = 0;
+                Mode4 = 0;
+                Mode5 = 0;
+
                 var address=$("#hardwarecontent #divremote #tcpaddress").val();
                 if (address=="")
                 {
