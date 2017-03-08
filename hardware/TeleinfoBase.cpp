@@ -10,6 +10,7 @@ History :
 0.1 2017-03-03 : Creation
 */
 
+#include "stdafx.h"
 #include "TeleinfoBase.h"
 
 CTeleinfoBase::CTeleinfoBase()
