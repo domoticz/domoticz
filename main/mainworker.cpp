@@ -50,7 +50,8 @@
 #include "../hardware/S0MeterTCP.h"
 #include "../hardware/OTGWSerial.h"
 #include "../hardware/OTGWTCP.h"
-#include "../hardware/Teleinfo.h"
+#include "../hardware/TeleinfoBase.h"
+#include "../hardware/TeleinfoSerial.h"
 #include "../hardware/Limitless.h"
 #include "../hardware/MochadTCP.h"
 #include "../hardware/EnOceanESP2.h"
@@ -117,6 +118,7 @@
 #include "../hardware/Arilux.h"
 #include "../hardware/OpenWebNetUSB.h"
 #include "../hardware/InComfort.h"
+#include "../hardware/RelayNet.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -296,29 +298,10 @@ void MainWorker::StopDomoticzHardware()
 
 void MainWorker::GetAvailableWebThemes()
 {
-	m_webthemes.clear();
-	DIR *d = NULL;
-
 	std::string ThemeFolder = szWWWFolder + "/styles/";
+	m_webthemes.clear();
+	DirectoryListing(m_webthemes, ThemeFolder, true, false);
 
-	d = opendir(ThemeFolder.c_str());
-	if (d != NULL)
-	{
-		struct dirent *de = NULL;
-		// Loop while not NULL
-		while ((de = readdir(d)))
-		{
-			std::string dirname = de->d_name;
-			if (dirent_is_directory(ThemeFolder, de))
-			{
-				if ((dirname != ".") && (dirname != "..") && (dirname != ".svn"))
-				{
-					m_webthemes.push_back(dirname);
-				}
-			}
-		}
-		closedir(d);
-	}
 	//check if current theme is found, if not, select default
 	bool bFound = false;
 	std::string sValue;
@@ -670,7 +653,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new OTGWSerial(ID,SerialPort, 9600, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
 		break;
 	case HTYPE_TeleinfoMeter:
-		pHardware = new Teleinfo(ID, SerialPort);
+		pHardware = new CTeleinfoSerial(ID, SerialPort);
 		break;
 	case HTYPE_MySensorsUSB:
 		pHardware = new MySensorsSerial(ID, SerialPort, Mode1);
@@ -785,6 +768,10 @@ bool MainWorker::AddHardwareFromParams(
 		//LAN
 		pHardware = new CETH8020(ID, Address, Port, Username, Password);
 		break;
+	case HTYPE_RelayNet:
+		//LAN
+		pHardware = new RelayNet(ID, Address, Port, Username, Password, Mode1 != 0, Mode2 != 0, Mode3, Mode4, Mode5);
+		break;
 	case HTYPE_KMTronicTCP:
 		//LAN
 		pHardware = new KMTronicTCP(ID, Address, Port, Username, Password);
@@ -881,7 +868,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CAccuWeather(ID, Username, Password);
 		break;
 	case HTYPE_SolarEdgeAPI:
-		pHardware = new SolarEdgeAPI(ID, Mode1, Username, Password);
+		pHardware = new SolarEdgeAPI(ID, Username);
 		break;
 	case HTYPE_Netatmo:
 		pHardware = new CNetatmo(ID,Username,Password);
@@ -2058,26 +2045,20 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const 
 	const_cast<CDomoticzHardwareBase *>(pHardware)->SetHeartbeatReceived();
 
 	char szDate[100];
-#if !defined WIN32
-	// Get a timestamp
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
-
 	struct tm timeinfo;
+#ifdef WIN32
+	//Thanks to the winsock header file
+	time_t tv_sec = tv.tv_sec;
+	localtime_r(&tv_sec, &timeinfo);
+#else
 	localtime_r(&tv.tv_sec, &timeinfo);
-
+#endif
 	// create a time stamp string for the log message
 	snprintf(szDate, sizeof(szDate), "%04d-%02d-%02d %02d:%02d:%02d.%03d ",
 		timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday,
 		timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec, (int)tv.tv_usec / 1000);
-#else
-	// Get a timestamp
-	SYSTEMTIME time;
-	::GetLocalTime(&time);
-
-	// create a time stamp string for the log message
-	sprintf_s(szDate, sizeof(szDate), "%04d-%02d-%02d %02d:%02d:%02d.%03d ", time.wYear, time.wMonth, time.wDay, time.wHour, time.wMinute, time.wSecond, time.wMilliseconds);
-#endif
 
 	uint64_t DeviceRowIdx = -1;
 	std::string DeviceName = "";
@@ -9560,6 +9541,7 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 	else
 	{
 		sprintf(szTmp,"%d", pMeter->id);
+
 	}
 	std::string ID=szTmp;
 	unsigned char Unit=1;
@@ -10378,7 +10360,7 @@ void MainWorker::decode_CartelectronicTIC(const int HwdID,
 
          // Counter 2
          counter2 = (pResponse->TIC.counter2_0 << 24) + (pResponse->TIC.counter2_1 << 16) + (pResponse->TIC.counter2_2 << 8) + (pResponse->TIC.counter2_3);
-         sprintf(szTmp, "%u;%ld", counter2ApparentPower, counter2);
+         sprintf(szTmp, "%u;%d", counter2ApparentPower, counter2);
 
          uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), 1, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 
@@ -10397,7 +10379,7 @@ void MainWorker::decode_CartelectronicTIC(const int HwdID,
          // Counter 2
          counter2 = (pResponse->TIC.counter2_0 << 24) + (pResponse->TIC.counter2_1 << 16) + (pResponse->TIC.counter2_2 << 8) + (pResponse->TIC.counter2_3);
 
-         sprintf(szTmp, "%u;%ld", counter2ApparentPower, counter2);
+         sprintf(szTmp, "%u;%d", counter2ApparentPower, counter2);
          uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), 1, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 
          if (DevRowIdx == -1)
@@ -10457,7 +10439,7 @@ void MainWorker::decode_CartelectronicTIC(const int HwdID,
          // Counter 2
          counter2 = (pResponse->TIC.counter2_0 << 24) + (pResponse->TIC.counter2_1 << 16) + (pResponse->TIC.counter2_2 << 8) + (pResponse->TIC.counter2_3);
 
-         sprintf(szTmp, "%u;%ld", counter2ApparentPower, counter2);
+         sprintf(szTmp, "%u;%d", counter2ApparentPower, counter2);
          uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), unitCounter2, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 
          if (DevRowIdx == -1)
@@ -10474,7 +10456,7 @@ void MainWorker::decode_CartelectronicTIC(const int HwdID,
    // Counter 1
    counter1 = (pResponse->TIC.counter1_0 << 24) + (pResponse->TIC.counter1_1 << 16) + (pResponse->TIC.counter1_2 << 8) + (pResponse->TIC.counter1_3);
 
-   sprintf(szTmp, "%u;%ld", counter1ApparentPower, counter1);
+   sprintf(szTmp, "%u;%d", counter1ApparentPower, counter1);
    uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), unitCounter1, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 
    if (DevRowIdx == -1)
@@ -10509,13 +10491,13 @@ void MainWorker::decode_CartelectronicEncoder(const int HwdID,
    unsigned char BatteryLevel = (pResponse->CEENCODER.battery_level + 1) * 10;
 
    // Id of the module
-   sprintf(szTmp, "%ld", ((uint32_t)(pResponse->CEENCODER.id1 << 24) + (pResponse->CEENCODER.id2 << 16) + (pResponse->CEENCODER.id3 << 8) + pResponse->CEENCODER.id4));
+   sprintf(szTmp, "%d", ((uint32_t)(pResponse->CEENCODER.id1 << 24) + (pResponse->CEENCODER.id2 << 16) + (pResponse->CEENCODER.id3 << 8) + pResponse->CEENCODER.id4));
    ID = szTmp;
 
    // Counter 1
    counter1 = (pResponse->CEENCODER.counter1_0 << 24) + (pResponse->CEENCODER.counter1_1 << 16) + (pResponse->CEENCODER.counter1_2 << 8) + (pResponse->CEENCODER.counter1_3);
 
-   sprintf(szTmp, "%ld", counter1);
+   sprintf(szTmp, "%d", counter1);
    DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
    if (DevRowIdx == -1)
       return;
@@ -10525,7 +10507,7 @@ void MainWorker::decode_CartelectronicEncoder(const int HwdID,
    // Counter 2
    counter2 = (pResponse->CEENCODER.counter2_0 << 24) + (pResponse->CEENCODER.counter2_1 << 16) + (pResponse->CEENCODER.counter2_2 << 8) + (pResponse->CEENCODER.counter2_3);
 
-   sprintf(szTmp, "%ld", counter2);
+   sprintf(szTmp, "%d", counter2);
    DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), 1, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
    if (DevRowIdx == -1)
       return;
@@ -12562,28 +12544,21 @@ void MainWorker::SetInternalSecStatus()
 
 	if (m_verboselevel >= EVBL_ALL)
 	{
-	char szDate[100];
-#if !defined WIN32
-	// Get a timestamp
-	struct timeval tv;
-	gettimeofday(&tv, NULL);
-
-	struct tm timeinfo;
-	localtime_r(&tv.tv_sec, &timeinfo);
-
-	// create a time stamp string for the log message
-	snprintf(szDate, sizeof(szDate), "%04d-%02d-%02d %02d:%02d:%02d.%03d ",
-		timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday,
-		timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec, (int)tv.tv_usec / 1000);
+		char szDate[100];
+		struct timeval tv;
+		gettimeofday(&tv, NULL);
+		struct tm timeinfo;
+#ifdef WIN32
+		//Thanks to the winsock header file
+		time_t tv_sec = tv.tv_sec;
+		localtime_r(&tv_sec, &timeinfo);
 #else
-	// Get a timestamp
-	SYSTEMTIME time;
-	::GetLocalTime(&time);
-
-	// create a time stamp string for the log message
-	sprintf_s(szDate, sizeof(szDate), "%04d-%02d-%02d %02d:%02d:%02d.%03d ", time.wYear, time.wMonth, time.wDay, time.wHour, time.wMinute, time.wSecond, time.wMilliseconds);
+		localtime_r(&tv.tv_sec, &timeinfo);
 #endif
-
+		// create a time stamp string for the log message
+		snprintf(szDate, sizeof(szDate), "%04d-%02d-%02d %02d:%02d:%02d.%03d ",
+			timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday,
+			timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec, (int)tv.tv_usec / 1000);
 		_log.Log(LOG_NORM, "%s (System) Domoticz Security Status", szDate);
 	}
 

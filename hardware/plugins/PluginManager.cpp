@@ -138,81 +138,58 @@ namespace Plugins {
 		//	Scan plugins folder and load XML plugin manifests
 		//
 		m_PluginXml.clear();
-		std::stringstream plugin_DirT;
+		std::string plugin_BaseDir;
 #ifdef WIN32
-		plugin_DirT << szUserDataFolder << "plugins\\";
-		std::string plugin_Dir = plugin_DirT.str();
-		if (!mkdir(plugin_Dir.c_str()))
-		{
-			_log.Log(LOG_NORM, "%s: Created directory %s", __func__, plugin_Dir.c_str());
-		}
+		plugin_BaseDir = szUserDataFolder + "plugins\\";
 #else
-		plugin_DirT << szUserDataFolder << "plugins/";
-		std::string plugin_Dir = plugin_DirT.str();
-		if (!mkdir(plugin_Dir.c_str(), 0755))
-		{
-			_log.Log(LOG_NORM, "BuildManifest: Created directory %s", plugin_Dir.c_str());
-		}
+		plugin_BaseDir = szUserDataFolder + "plugins/";
 #endif
+		if (!createdir(plugin_BaseDir.c_str(), 0755))
+		{
+			_log.Log(LOG_NORM, "%s: Created directory %s", __func__, plugin_BaseDir.c_str());
+		}
 
-		DIR *lDir;
-		struct dirent *ent;
-		if ((lDir = opendir(plugin_Dir.c_str())) != NULL)
+		std::vector<std::string> DirEntries, FileEntries;
+		std::vector<std::string>::const_iterator itt_Dir, itt_File;
+		std::string plugin_Dir, plugin_File;
+
+		DirectoryListing(DirEntries, plugin_BaseDir, true, false);
+		for (itt_Dir = DirEntries.begin(); itt_Dir != DirEntries.end(); ++itt_Dir)
 		{
-			while ((ent = readdir(lDir)) != NULL)
+			if (*itt_Dir != "examples")
 			{
-				std::string dirname = ent->d_name;
-				if ((dirent_is_directory(plugin_Dir, ent)) && (dirname.length() > 2) && (dirname != "examples"))
-				{
-					DIR *lDir;
-					struct dirent *ent;
 #ifdef WIN32
-					dirname = plugin_Dir + dirname + "\\";
+				plugin_Dir = plugin_BaseDir + *itt_Dir + "\\";
 #else
-					dirname = plugin_Dir + dirname + "/";
+				plugin_Dir = plugin_BaseDir + *itt_Dir + "/";
 #endif
-					if ((lDir = opendir(dirname.c_str())) != NULL)
+				DirectoryListing(FileEntries, plugin_Dir, false, true);
+				for (itt_File = FileEntries.begin(); itt_File != FileEntries.end(); ++itt_File)
+				{
+					if (*itt_File == "plugin.py")
 					{
-						while ((ent = readdir(lDir)) != NULL)
+						try
 						{
-							std::string filename = ent->d_name;
-							if (dirent_is_file(dirname, ent))
-							{
-								if (filename == "plugin.py")
-								{
-									try
-									{
-										std::string sXML;
-										std::stringstream	FileName;
-										FileName << dirname << filename;
-										std::string line;
-										std::ifstream readFile(FileName.str().c_str());
-										bool pluginFound = false;
-										while (getline(readFile, line)) {
-											if (!pluginFound && (line.find("<plugin") != std::string::npos))
-												pluginFound = true;
-											if (pluginFound)
-											{
-												sXML += line + "\n";
-											}
-											if (line.find("</plugin>") != std::string::npos)
-												break;
-										}
-										readFile.close();
-										m_PluginXml.insert(std::pair<std::string, std::string>(dirname, sXML));
-									}
-									catch (...)
-									{
-										_log.Log(LOG_ERROR, "%s: Exception loading plugin file: '%s'", __func__, filename.c_str());
-									}
-								}
+							std::string sXML;
+							plugin_File = plugin_Dir + *itt_File;
+							std::string line;
+							std::ifstream readFile(plugin_File.c_str());
+							bool bFound = false;
+							while (getline(readFile, line)) {
+								if (!bFound && (line.find("<plugin") != std::string::npos))
+									bFound = true;
+								if (bFound)
+									sXML += line + "\n";
+								if (line.find("</plugin>") != std::string::npos)
+									break;
 							}
+							readFile.close();
+							m_PluginXml.insert(std::pair<std::string, std::string>(plugin_Dir, sXML));
 						}
-						closedir(lDir);
-					}
-					else
-					{
-						_log.Log(LOG_ERROR, "%s: Error accessing plugins directory %s", __func__, plugin_Dir.c_str());
+						catch (...)
+						{
+							_log.Log(LOG_ERROR, "%s: Exception loading plugin file: '%s'", __func__, plugin_File.c_str());
+						}
 					}
 				}
 			}
@@ -402,6 +379,24 @@ namespace Plugins {
 			}
 		}
 	}
+
+	void CPluginSystem::LoadSettings()
+	{
+		//	Add command to message queue for every plugin
+		boost::lock_guard<boost::mutex> l(PluginMutex);
+		for (std::map<int, CDomoticzHardwareBase*>::iterator itt = m_pPlugins.begin(); itt != m_pPlugins.end(); itt++)
+		{
+			if (itt->second)
+			{
+				SettingsDirective	Message(itt->second->m_HwdID);
+				PluginMessageQueue.push(Message);
+			}
+			else
+			{
+				_log.Log(LOG_ERROR, "%s: NULL entry found in Plugins map for Hardware %d.", __func__, itt->first);
+			}
+		}
+	}
 }
 
 //Webserver helpers
@@ -480,6 +475,12 @@ namespace http {
 					}
 				}
 			}  
+		}
+
+		void CWebServer::PluginLoadConfig()
+		{
+			Plugins::CPluginSystem Plugins;
+			Plugins.LoadSettings();
 		}
 
 		std::string CWebServer::PluginHardwareDesc(int HwdID)

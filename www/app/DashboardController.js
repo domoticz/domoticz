@@ -1402,8 +1402,7 @@ define(['app'], function (app) {
 							(item.Type == "Weight") || 
 							(item.Type == "Usage")||
 							(item.SubType=="Percentage")||
-							((item.Type=="Fan")&&(typeof item.SubType != 'undefined')&&(item.SubType.indexOf('Itho')!=0))||
-							((item.Type=="Fan")&&(typeof item.SubType != 'undefined')&&(item.SubType.indexOf('Lucci')!=0))||
+							//((item.Type=="Fan")&&(typeof item.SubType != 'undefined')&&(item.SubType.indexOf('Lucci')!=0))||
 							((item.Type == "Thermostat")&&(item.SubType=="SetPoint"))||
 							(item.SubType=="kWh")||
 							(item.SubType=="Soil Moisture")||
@@ -2525,7 +2524,9 @@ define(['app'], function (app) {
 												(item.Status == 'On')||
 												(item.Status == 'Chime')||
 												(item.Status == 'Group On')||
-												(item.Status.indexOf('Set ') == 0)
+												(item.Status.indexOf('Set ') == 0)||
+												(item.Status.indexOf('NightMode') == 0)||
+												(item.Status.indexOf('Disco ') == 0)
 											 ) {
 													if (item.SubType=="RGB") {
 														xhtm+='\t      <td id="img"><img src="images/RGB48_On.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshFavorites\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="40" width="40"></td>\n';
@@ -3362,8 +3363,7 @@ define(['app'], function (app) {
 							(item.Type == "Weight") || 
 							(item.Type == "Usage")||
 							(item.SubType == "Percentage")||	
-							((item.Type=="Fan")&&(typeof item.SubType != 'undefined')&&(item.SubType.indexOf('Itho')!=0))||
-							((item.Type=="Fan")&&(typeof item.SubType != 'undefined')&&(item.SubType.indexOf('Lucci')!=0))||
+							//((item.Type=="Fan")&&(typeof item.SubType != 'undefined')&&(item.SubType.indexOf('Lucci')!=0))||
 							((item.Type == "Thermostat")&&(item.SubType=="SetPoint"))||
 							(item.SubType=="Soil Moisture")||
 							(item.SubType=="Leaf Wetness")||

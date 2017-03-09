@@ -98,6 +98,7 @@ public:
 	void StoreSession(const WebEmStoredSession & session);
 	void RemoveSession(const std::string & sessionId);
 	void CleanSessions();
+	void RemoveUsersSessions(const std::string& username, const WebEmSession & exceptSession);
 
 private:
 	void HandleCommand(const std::string &cparam, WebEmSession & session, const request& req, Json::Value &root);
@@ -275,6 +276,9 @@ private:
 	// Plugin functions
 	void Cmd_PluginCommand(WebEmSession & session, const request& req, Json::Value &root);
 	void PluginList(Json::Value &root);
+#ifdef USE_PYTHON_PLUGINS
+	void PluginLoadConfig();
+#endif
 	std::string PluginHardwareDesc(int HwdID);
 
 	//RTypes

@@ -247,6 +247,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_Arilux, "Arilux AL-LC0x" },
 		{ HTYPE_OpenWebNetUSB, "MyHome OpenWebNet USB" },
 		{ HTYPE_IntergasInComfortLAN2RF, "Intergas InComfort LAN2RF Gateway" },
+		{ HTYPE_RelayNet, "Relay-Net 8 channel LAN Relay and binary Input module" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -595,7 +596,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLighting5, sTypeIT, "Intertek,FA500,PROmax" },
 		{ pTypeLighting5, sTypeMDREMOTE108, "MDRemote 108" },
 		{ pTypeLighting5, sTypeKangtai, "Kangtai / Cotech" },
-		
+
 		{ pTypeLighting6, sTypeBlyss, "Blyss" },
 
 		{ pTypeHomeConfort, sTypeHomeConfortTEL010 , "TEL-010" },
@@ -828,6 +829,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchBlindsT1, "Legrand MyHome Blind Bus" },
 		{ pTypeGeneralSwitch, sSwitchLightT1, "Legrand MyHome Light Bus" },
 		{ pTypeGeneralSwitch, sSwitchAuxiliaryT1, "Legrand MyHome Auxiliary Bus" },
+		{ pTypeGeneralSwitch, sSwitchContactT1, "Legrand MyHome DryContact/IRdetec" },
 		{ pTypeGeneralSwitch, sSwitchMC145026, "MC145026" },
 		{ pTypeGeneralSwitch, sSwitchLobeco, "Lobeco" },
 		{ pTypeGeneralSwitch, sSwitchFriedland, "Friedland" },
@@ -853,6 +855,13 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchTypeLiwin, "Liwin" },
 		{ pTypeGeneralSwitch, sSwitchBlindsT2, "Legrand MyHome Blind Zigbee" },
 		{ pTypeGeneralSwitch, sSwitchLightT2, "Legrand MyHome Light Zigbee" },
+		{ pTypeGeneralSwitch, sSwitchTypeYW_Secu, "YW_Secu" },
+		{ pTypeGeneralSwitch, sSwitchTypeMertik_GV60, "Mertik_GV60" },
+		{ pTypeGeneralSwitch, sSwitchTypeNingbo64, "Ningbo64"},
+		{ pTypeGeneralSwitch, sSwitchTypeX2D, "X2D" },
+		{ pTypeGeneralSwitch, sSwitchTypeHRCMotor, "HRCMotor" },
+		{ pTypeGeneralSwitch, sSwitchTypeVelleman, "Velleman" },
+		{ pTypeGeneralSwitch, sSwitchTypeRFCustom, "RFCustom" },
 		{  0,0,NULL }
 	};
 	return findTableID1ID2(Table, dType, sType);
@@ -1475,6 +1484,39 @@ void GetLightStatus(
 			break;
 		case Limitless_SetBrightnessLevel:
 			lstatus="Set Level";
+			break;
+		case Limitless_SetColorToWhite:
+			lstatus="Set to White";
+			break;
+		case Limitless_NightMode:
+			lstatus="NightMode";
+			break;
+		case Limitless_DiscoMode_1:
+			lstatus="Disco Mode 1";
+			break;
+		case Limitless_DiscoMode_2:
+			lstatus="Disco Mode 2";
+			break;
+		case Limitless_DiscoMode_3:
+			lstatus="Disco Mode 3";
+			break;
+		case Limitless_DiscoMode_4:
+			lstatus="Disco Mode 4";
+			break;
+		case Limitless_DiscoMode_5:
+			lstatus="Disco Mode 5";
+			break;
+		case Limitless_DiscoMode_6:
+			lstatus="Disco Mode 6";
+			break;
+		case Limitless_DiscoMode_7:
+			lstatus="Disco Mode 7";
+			break;
+		case Limitless_DiscoMode_8:
+			lstatus="Disco Mode 8";
+			break;
+		case Limitless_DiscoMode_9:
+			lstatus="Disco Mode 9";
 			break;
 		}
 		break;
@@ -2477,6 +2519,51 @@ bool GetLightCommand(
 		else if (switchcmd == "Disco Mode")
 		{
 			cmd = Limitless_DiscoMode;
+			return true;
+		}
+		else if (switchcmd == "Disco Mode 1")
+		{
+			cmd = Limitless_DiscoMode_1;
+			return true;
+		}
+		else if (switchcmd == "Disco Mode 2")
+		{
+			cmd = Limitless_DiscoMode_2;
+			return true;
+		}
+		else if (switchcmd == "Disco Mode 3")
+		{
+			cmd = Limitless_DiscoMode_3;
+			return true;
+		}
+		else if (switchcmd == "Disco Mode 4")
+		{
+			cmd = Limitless_DiscoMode_4;
+			return true;
+		}
+		else if (switchcmd == "Disco Mode 5")
+		{
+			cmd = Limitless_DiscoMode_5;
+			return true;
+		}
+		else if (switchcmd == "Disco Mode 6")
+		{
+			cmd = Limitless_DiscoMode_6;
+			return true;
+		}
+		else if (switchcmd == "Disco Mode 7")
+		{
+			cmd = Limitless_DiscoMode_7;
+			return true;
+		}
+		else if (switchcmd == "Disco Mode 8")
+		{
+			cmd = Limitless_DiscoMode_8;
+			return true;
+		}
+		else if (switchcmd == "Disco Mode 9")
+		{
+			cmd = Limitless_DiscoMode_9;
 			return true;
 		}
 		else if (switchcmd == "Disco Up")

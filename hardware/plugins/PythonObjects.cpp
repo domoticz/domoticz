@@ -337,6 +337,7 @@ namespace Plugins {
 					return NULL;
 				}
 				self->Image = 0;
+				self->Used = 1;
 				self->SignalLevel = 100;
 				self->BatteryLevel = 255;
 				self->pPlugin = NULL;
@@ -364,7 +365,8 @@ namespace Plugins {
 		int			SwitchType = -1;
 		int			Image = -1;
 		char*		Options = NULL;
-		static char *kwlist[] = { "Name", "Unit", "TypeName", "Type", "Subtype", "Switchtype", "Image", "Options", NULL };
+		int			Used = -1;
+		static char *kwlist[] = { "Name", "Unit", "TypeName", "Type", "Subtype", "Switchtype", "Image", "Options", "Used", NULL };
 
 		try
 		{
@@ -388,7 +390,7 @@ namespace Plugins {
 				return 0;
 			}
 
-			if (PyArg_ParseTupleAndKeywords(args, kwds, "si|siiiis", kwlist, &Name, &Unit, &TypeName, &Type, &SubType, &SwitchType, &Image, &Options))
+			if (PyArg_ParseTupleAndKeywords(args, kwds, "si|siiiisi", kwlist, &Name, &Unit, &TypeName, &Type, &SubType, &SwitchType, &Image, &Options, &Used))
 			{
 				self->pPlugin = pModState->pPlugin;
 				self->PluginKey = PyUnicode_FromString(pModState->pPlugin->m_PluginKey.c_str());
@@ -540,6 +542,7 @@ namespace Plugins {
 				if ((SubType != -1) && SubType) self->SubType = SubType;
 				if (SwitchType != -1) self->SwitchType = SwitchType;
 				if (Image != -1) self->Image = Image;
+				if (Used == 0) self->Used = Used;
 				if (Options) {
 					Py_DECREF(self->Options);
 					self->Options = PyUnicode_FromString(Options);
@@ -549,7 +552,7 @@ namespace Plugins {
 			{
 				CPlugin* pPlugin = NULL;
 				if (pModState) pPlugin = pModState->pPlugin;
-				_log.Log(LOG_ERROR, "Expected: myVar = Domoticz.Device(Name=\"myDevice\", Unit=0, TypeName=\"\", Type=0, Subtype=0, Switchtype=0, Image=0, Options=\"\")");
+				_log.Log(LOG_ERROR, "Expected: myVar = Domoticz.Device(Name=\"myDevice\", Unit=0, TypeName=\"\", Type=0, Subtype=0, Switchtype=0, Image=0, Options=\"\", Used=1)");
 				LogPythonException(pPlugin, __func__);
 			}
 		}
@@ -630,8 +633,8 @@ namespace Plugins {
 					std::string	sLongName = self->pPlugin->Name + " - " + PyBytes_AsString(pNameBytes);
 					m_sql.safe_query(
 						"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue, CustomImage, Options) "
-						"VALUES (%d, '%q', %d, %d, %d, %d, 1, 12, 255, '%q', 0, '%q', %d, '%q')",
-						self->HwdID, szID, self->Unit, self->Type, self->SubType, self->SwitchType, sLongName.c_str(), std::string(PyBytes_AsString(pSValueBytes)).c_str(), self->Image, std::string(PyBytes_AsString(pOptionBytes)).c_str());
+						"VALUES (%d, '%q', %d, %d, %d, %d, %d, 12, 255, '%q', 0, '%q', %d, '%q')",
+						self->HwdID, szID, self->Unit, self->Type, self->SubType, self->SwitchType, self->Used, sLongName.c_str(), std::string(PyBytes_AsString(pSValueBytes)).c_str(), self->Image, std::string(PyBytes_AsString(pOptionBytes)).c_str());
 					Py_DECREF(pOptionBytes);
 					Py_DECREF(pSValueBytes);
 
