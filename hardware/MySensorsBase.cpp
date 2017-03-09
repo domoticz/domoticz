@@ -1143,7 +1143,6 @@ void MySensorsBase::UpdateRGBWSwitchLastUpdate(const int NodeID, const int Child
 void MySensorsBase::UpdateSwitch(const _eSetType vType, const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname, const int BatLevel)
 {
 	// LLEMARINEL : #1312  Changed to use as pTypeGeneralSwitch : do not constrain to 16 steps anymore but 100 :
-	// double rlevel = (15.0 / 100)*Level;
 	int level = int(Level);
 
 	char szIdx[10];
@@ -1302,7 +1301,6 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 	unsigned char subtype = pCmd->ICMND.subtype;
 
 	// LLEMARINEL : #1312  Change to pTypeGeneralSwitch insteand of Lighting2
-//	if (packettype == pTypeLighting2)
 	if (packettype == pTypeGeneralSwitch)
 	{
 		//Light command
@@ -1319,19 +1317,27 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 				return false;
 			}
 
-			int light_command = pCmd->LIGHTING2.cmnd;
-			if ((pCmd->LIGHTING2.cmnd == light2_sSetLevel) && (pCmd->LIGHTING2.level == 0))
+			const _tGeneralSwitch *pSwitch= reinterpret_cast<const _tGeneralSwitch*>(pdata);
+			int level = pSwitch->level;
+			int cmnd = pSwitch->cmnd;
+
+			if (cmnd == gswitch_sSetLevel)
 			{
-				light_command = light2_sOff;
-			}
-			else if ((pCmd->LIGHTING2.cmnd == light2_sSetLevel) && (pCmd->LIGHTING2.level == 255))
-			{
-				light_command = light2_sOn;
+				// Set command based on level value
+				if (level == 0)
+					cmnd = gswitch_sOff;
+				else if (level == 255)
+					cmnd = gswitch_sOn;
+				else
+				{
+					// For dimmers we only allow level 0-100
+					level = (level > 100) ? 100 : level;
+				}
 			}
 
-			if ((light_command == light2_sOn) || (light_command == light2_sOff))
+			if ((cmnd == gswitch_sOn) || (cmnd == gswitch_sOff))
 			{
-				std::string lState = (light_command == light2_sOn) ? "1" : "0";
+				std::string lState = (cmnd == gswitch_sOn) ? "1" : "0";
 				if (pChild->presType == S_LOCK)
 				{
 					//Door lock/contact
@@ -1340,7 +1346,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 				else if (pChild->presType == S_SCENE_CONTROLLER)
 				{
 					//Scene Controller
-					return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, (light_command == light2_sOn) ? V_SCENE_ON : V_SCENE_OFF, lState, pChild->useAck, pChild->ackTimeout);
+					return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, (cmnd == gswitch_sOn) ? V_SCENE_ON : V_SCENE_OFF, lState, pChild->useAck, pChild->ackTimeout);
 				}
 				else
 				{
@@ -1348,17 +1354,10 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 					return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_STATUS, lState, pChild->useAck, pChild->ackTimeout);
 				}
 			}
-			else if (light_command == light2_sSetLevel)
+			else if (cmnd == gswitch_sSetLevel)
 			{
-				// LLEMARINEL : #1312  Do not constrain anymore to 16 steps :
-				// float fvalue = (100.0f / 14.0f)*float(pCmd->LIGHTING2.level);
-				float fvalue = float(pCmd->LIGHTING2.level);
-				if (fvalue > 100.0f)
-					fvalue = 100.0f; //99 is fully on
-				int svalue = round(fvalue);
-
 				std::stringstream sstr;
-				sstr << svalue;
+				sstr << level;
 				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_PERCENTAGE, sstr.str(), pChild->useAck, pChild->ackTimeout);
 			}
 		}
