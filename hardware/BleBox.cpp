@@ -1135,8 +1135,12 @@ void BleBox::SearchNodes(const std::string &ipmask)
 	{
 		std::stringstream sstr;
 		sstr << strarray[0] << "." << strarray[1] << "." << strarray[2] << "." << i;
-		std::string ip = sstr.str();
+		std::string IPAddress = sstr.str();
 
-		m_searchingThread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&BleBox::AddNode, this, "unknown", ip)));
+		std::map<const std::string, const int>::const_iterator itt = m_devices.find(IPAddress);
+		if (itt == m_devices.end())
+		{
+			m_searchingThread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&BleBox::AddNode, this, "unknown", IPAddress)));
+		}
 	}
 }
