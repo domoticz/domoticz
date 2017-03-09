@@ -915,7 +915,7 @@ Json::Value BleBox::SendCommand(const std::string &IPAddress, const std::string 
 std::string BleBox::IdentifyDevice(const std::string &IPAddress)
 {
 	Json::Value root = SendCommand(IPAddress, "/api/device/state");
-	if (root.empty())
+	if (!root.isObject())
 		return "";
 
 	std::string result;
@@ -990,8 +990,6 @@ void BleBox::AddNode(const std::string &name, const std::string &IPAddress)
 	STR_DEVICE deviceType = DevicesType[deviceTypeID];
 
 	std::string szIdx = IPToHex(IPAddress, deviceType.deviceID);
-
-	boost::lock_guard<boost::mutex> l(m_mutex);
 
 	if (deviceType.unit == 4) // gatebox
 	{
