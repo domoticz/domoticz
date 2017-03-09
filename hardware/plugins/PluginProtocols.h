@@ -7,18 +7,18 @@ namespace Plugins {
 	class CPluginProtocol
 	{
 	protected:
-		std::string		m_sRetainedData;
+		std::vector<byte>	m_sRetainedData;
 
 	public:
-		virtual void		ProcessInbound(const int HwdID, std::string& ReadData);
-		virtual std::string	ProcessOutbound(const CPluginMessage & WriteMessage);
-		virtual void		Flush(const int HwdID);
-		virtual int			Length() { return m_sRetainedData.length(); };
+		virtual void				ProcessInbound(const ReadMessage* Message);
+		virtual std::vector<byte>	ProcessOutbound(const WriteDirective* WriteMessage);
+		virtual void				Flush(const int HwdID);
+		virtual int					Length() { return m_sRetainedData.size(); };
 	};
 
 	class CPluginProtocolLine : CPluginProtocol
 	{
-		virtual void	ProcessInbound(const int HwdID, std::string& ReadData);
+		virtual void	ProcessInbound(const ReadMessage* Message);
 	};
 
 	class CPluginProtocolXML : CPluginProtocol
@@ -26,12 +26,12 @@ namespace Plugins {
 	private:
 		std::string		m_Tag;
 	public:
-		virtual void	ProcessInbound(const int HwdID, std::string& ReadData);
+		virtual void	ProcessInbound(const ReadMessage* Message);
 	};
 
 	class CPluginProtocolJSON : CPluginProtocol
 	{
-		virtual void	ProcessInbound(const int HwdID, std::string& ReadData);
+		virtual void	ProcessInbound(const ReadMessage* Message);
 	};
 
 	class CPluginProtocolHTTP : CPluginProtocol
@@ -46,9 +46,9 @@ namespace Plugins {
 		size_t			m_RemainingChunk;
 	public:
 		CPluginProtocolHTTP() : m_Status(0), m_ContentLength(0), m_Headers(NULL), m_Chunked(false) {};
-		virtual void		ProcessInbound(const int HwdID, std::string& ReadData);
-		virtual std::string	ProcessOutbound(const CPluginMessage & WriteMessage);
-		void				AuthenticationDetails(std::string Username, std::string Password)
+		virtual void				ProcessInbound(ReadMessage* Message);
+		virtual std::vector<byte>	ProcessOutbound(const WriteDirective* WriteMessage);
+		void						AuthenticationDetails(std::string Username, std::string Password)
 		{
 			m_Username = Username;
 			m_Password = Password;
