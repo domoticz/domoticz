@@ -28,7 +28,7 @@ History :
 #define TELEINFO_FLOW_CONTROL      boost::asio::serial_port_base::flow_control::none
 #define TELEINFO_STOP_BITS         boost::asio::serial_port_base::stop_bits::one
 
-class TeleinfoSerial : public CDomoticzHardwareBase, AsyncSerial
+class CTeleinfoSerial : public CDomoticzHardwareBase, AsyncSerial
 {
 	typedef enum {
 		ID = 0,
@@ -66,8 +66,8 @@ class TeleinfoSerial : public CDomoticzHardwareBase, AsyncSerial
 
 public:
 
-	TeleinfoSerial(const int ID, const std::string& devname, unsigned int baud_rate = TELEINFO_BAUD_RATE);
-	~TeleinfoSerial();
+	CTeleinfoSerial(const int ID, const std::string& devname, unsigned int baud_rate = TELEINFO_BAUD_RATE);
+	~CTeleinfoSerial();
 	std::string m_szSerialPort;
 
 	P1Power   m_p1power;
@@ -107,6 +107,6 @@ private:
 
 	unsigned char m_buffer[1028];
 	int m_bufferpos;
-	static TeleinfoSerial::Match m_matchlist[19];
+	static CTeleinfoSerial::Match m_matchlist[19];
 };
 

@@ -71,7 +71,7 @@ History :
 #define TE_PAPP "PAPP"//apparent power
 #define TE_MOTDETAT "MOTDETAT"//mot d'etat
 
-TeleinfoSerial::Match TeleinfoSerial::m_matchlist[19] = {
+CTeleinfoSerial::Match CTeleinfoSerial::m_matchlist[19] = {
 	{ STD, TELEINFO_TYPE_ADCO, TE_ADCO, 12 },
 	{ STD, TELEINFO_TYPE_OPTARIF, TE_OPTARIF, 4 },
 	{ STD, TELEINFO_TYPE_ISOUSC, TE_ISOUSC, 2 },
@@ -93,7 +93,7 @@ TeleinfoSerial::Match TeleinfoSerial::m_matchlist[19] = {
 	{ STD, TELEINFO_TYPE_MOTDETAT, TE_MOTDETAT, 6 }
 };
 
-TeleinfoSerial::TeleinfoSerial(const int ID, const std::string& devname, unsigned int baud_rate)
+CTeleinfoSerial::CTeleinfoSerial(const int ID, const std::string& devname, unsigned int baud_rate)
 {
 	m_HwdID = ID;
 	m_szSerialPort = devname;
@@ -106,12 +106,12 @@ TeleinfoSerial::TeleinfoSerial(const int ID, const std::string& devname, unsigne
 	Init();
 }
 
-TeleinfoSerial::~TeleinfoSerial(void)
+CTeleinfoSerial::~CTeleinfoSerial(void)
 {
 	StopHardware();
 }
 
-void TeleinfoSerial::Init()
+void CTeleinfoSerial::Init()
 {
 	m_bufferpos = 0;
 
@@ -141,7 +141,7 @@ void TeleinfoSerial::Init()
 	m_Power_USAGE_IINST_JR = 0;
 }
 
-bool TeleinfoSerial::StartHardware()
+bool CTeleinfoSerial::StartHardware()
 {
 	StartHeartbeatThread();
 	//Try to open the Serial Port
@@ -170,14 +170,14 @@ bool TeleinfoSerial::StartHardware()
 		_log.Log(LOG_ERROR, "Teleinfo: Error opening serial port!!!");
 		return false;
 	}
-	setReadCallback(boost::bind(&TeleinfoSerial::readCallback, this, _1, _2));
+	setReadCallback(boost::bind(&CTeleinfoSerial::readCallback, this, _1, _2));
 	m_bIsStarted = true;
 	sOnConnected(this);
 
 	return true;
 }
 
-bool TeleinfoSerial::StopHardware()
+bool CTeleinfoSerial::StopHardware()
 {
 	terminate();
 	StopHeartbeatThread();
@@ -186,7 +186,7 @@ bool TeleinfoSerial::StopHardware()
 }
 
 
-void TeleinfoSerial::readCallback(const char *data, size_t len)
+void CTeleinfoSerial::readCallback(const char *data, size_t len)
 {
 	boost::lock_guard<boost::mutex> l(readQueueMutex);
 	if (!m_bEnableReceive)
@@ -195,19 +195,19 @@ void TeleinfoSerial::readCallback(const char *data, size_t len)
 	ParseData((const unsigned char*)data, static_cast<int>(len));
 }
 
-void TeleinfoSerial::MatchLine()
+void CTeleinfoSerial::MatchLine()
 {
 	if ((strlen((const char*)&m_buffer)<1) || (m_buffer[0] == 0x0a))
 		return;
 
 	uint8_t i;
 	uint8_t found = 0;
-	TeleinfoSerial::Match t;
+	CTeleinfoSerial::Match t;
 	char value[20] = "";
 	std::string vString;
 
 	//_log.Log(LOG_NORM,"Frame : #%s#", m_buffer);
-	for (i = 0; (i<sizeof(m_matchlist) / sizeof(TeleinfoSerial::Match))&(!found); i++)
+	for (i = 0; (i<sizeof(m_matchlist) / sizeof(CTeleinfoSerial::Match))&(!found); i++)
 	{
 		t = m_matchlist[i];
 		switch (t.matchtype)
@@ -433,7 +433,7 @@ void TeleinfoSerial::MatchLine()
 	}
 }
 
-void TeleinfoSerial::ParseData(const unsigned char *pData, int Len)
+void CTeleinfoSerial::ParseData(const unsigned char *pData, int Len)
 {
 	int ii = 0;
 	while (ii<Len)
@@ -485,7 +485,7 @@ Enfin, on ajoute 20 en hexadÈcimal. Le rÈsultat sera donc toujours un caractË
 lettre majuscule) allant de 20  5F en hexadÈcimal.
 */
 
-bool TeleinfoSerial::isCheckSumOk()
+bool CTeleinfoSerial::isCheckSumOk()
 {
 	unsigned int checksum = 0x00;
 	int i;
@@ -498,7 +498,7 @@ bool TeleinfoSerial::isCheckSumOk()
 	return (checksum == m_buffer[strlen((char*)m_buffer) - 1]);
 }
 
-bool TeleinfoSerial::WriteToHardware(const char *pdata, const unsigned char length)
+bool CTeleinfoSerial::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	return false;
 }
