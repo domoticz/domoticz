@@ -1390,7 +1390,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 		break;
 		case Limitless_DiscoSpeedSlower:
 		{
-			//First send ON , sleep 50ms, then the command
+			//First send ON , sleep 100ms, then the command
 			if (pLed->dunit == 0)
 				sendto(m_RemoteSocket, (const char*)&RGBWOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 			else if (pLed->dunit == 1)
@@ -1401,14 +1401,14 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				sendto(m_RemoteSocket, (const char*)&RGBWGroup3AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 			else if (pLed->dunit == 4)
 				sendto(m_RemoteSocket, (const char*)&RGBWGroup4AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-			sleep_milliseconds(50);
+			sleep_milliseconds(100);
 
 			pCMD = (unsigned char*)&RGBWDiscoSpeedSlower;
 			break;
 		}
 		case Limitless_DiscoSpeedFaster:
 		{
-			//First send ON , sleep 50ms, then the command
+			//First send ON , sleep 100ms, then the command
 			if (pLed->dunit == 0)
 				sendto(m_RemoteSocket, (const char*)&RGBWOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 			else if (pLed->dunit == 1)
@@ -1419,14 +1419,14 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				sendto(m_RemoteSocket, (const char*)&RGBWGroup3AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 			else if (pLed->dunit == 4)
 				sendto(m_RemoteSocket, (const char*)&RGBWGroup4AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-			sleep_milliseconds(50);
+			sleep_milliseconds(100);
 
 			pCMD = (unsigned char*)&RGBWDiscoSpeedFaster;
 			break;
 		}
 		case Limitless_DiscoMode:
 		{
-			//First send ON , sleep 50ms, then the command
+			//First send ON , sleep 100ms, then the command
 			if (pLed->dunit == 0)
 				sendto(m_RemoteSocket, (const char*)&RGBWOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 			else if (pLed->dunit == 1)
@@ -1437,14 +1437,14 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				sendto(m_RemoteSocket, (const char*)&RGBWGroup3AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 			else if (pLed->dunit == 4)
 				sendto(m_RemoteSocket, (const char*)&RGBWGroup4AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-			sleep_milliseconds(50);
+			sleep_milliseconds(100);
 
 			pCMD = (unsigned char*)&RGBWDiscoMode;
 			break;
 		}
 		case Limitless_DiscoSpeedMinimal:
 		{
-			//First send ON , sleep 50ms, then the command
+			//First send ON , sleep 100ms, then the command
 			if (pLed->dunit == 0)
 				sendto(m_RemoteSocket, (const char*)&RGBWOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 			else if (pLed->dunit == 1)
@@ -1455,7 +1455,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				sendto(m_RemoteSocket, (const char*)&RGBWGroup3AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 			else if (pLed->dunit == 4)
 				sendto(m_RemoteSocket, (const char*)&RGBWGroup4AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-			sleep_milliseconds(50);
+			sleep_milliseconds(100);
 
 			//It takes at max 8 speed clicks to get the minimal speed
 			for (int i=1; i<8; i++) {
@@ -1468,7 +1468,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 		}
 		case Limitless_DiscoSpeedMaximal:
 		{
-			//First send ON , sleep 50ms, then the command
+			//First send ON , sleep 100ms, then the command
 			if (pLed->dunit == 0)
 				sendto(m_RemoteSocket, (const char*)&RGBWOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 			else if (pLed->dunit == 1)
@@ -1479,7 +1479,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				sendto(m_RemoteSocket, (const char*)&RGBWGroup3AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 			else if (pLed->dunit == 4)
 				sendto(m_RemoteSocket, (const char*)&RGBWGroup4AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-			sleep_milliseconds(50);
+			sleep_milliseconds(100);
 
 			//It takes at max 8 speed clicks to get the minimal speed
 			for (int i=1; i<8; i++) {
@@ -1492,7 +1492,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 		}
 		case Limitless_DiscoMode_1:
 		{
-			//First send ON , sleep 50ms, then the command
+			//First send ON , sleep 100ms, then the command
 			if (pLed->dunit == 0)
 				sendto(m_RemoteSocket, (const char*)&RGBWOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 			else if (pLed->dunit == 1)
@@ -1503,7 +1503,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				sendto(m_RemoteSocket, (const char*)&RGBWGroup3AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 			else if (pLed->dunit == 4)
 				sendto(m_RemoteSocket, (const char*)&RGBWGroup4AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-			sleep_milliseconds(50);
+			sleep_milliseconds(100);
 
 			//reset disco mode
 			if (pLed->dunit == 0)
@@ -1516,7 +1516,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup3, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 			else if (pLed->dunit == 4)
 				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup4, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-			sleep_milliseconds(50);
+			sleep_milliseconds(100);
 
 			pCMD = (unsigned char*)&RGBWDiscoMode;
 			break;
@@ -1534,7 +1534,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				sendto(m_RemoteSocket, (const char*)&RGBWGroup3AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 			else if (pLed->dunit == 4)
 				sendto(m_RemoteSocket, (const char*)&RGBWGroup4AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-			sleep_milliseconds(50);
+			sleep_milliseconds(100);
 
 			//reset disco mode
 			if (pLed->dunit == 0)
@@ -1547,7 +1547,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup3, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 			else if (pLed->dunit == 4)
 				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup4, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-			sleep_milliseconds(50);
+			sleep_milliseconds(100);
 
 			for (int i=1; i<2; i++) {
 				sendto(m_RemoteSocket, (const char*)&RGBWDiscoMode, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
@@ -1558,7 +1558,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 		}
 		case Limitless_DiscoMode_3:
 		{
-			//First send ON , sleep 50ms, then the command
+			//First send ON , sleep 100ms, then the command
 			if (pLed->dunit == 0)
 				sendto(m_RemoteSocket, (const char*)&RGBWOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 			else if (pLed->dunit == 1)
@@ -1582,7 +1582,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup3, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 			else if (pLed->dunit == 4)
 				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup4, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-			sleep_milliseconds(50);
+			sleep_milliseconds(100);
 
 			for (int i=1; i<3; i++) {
 				sendto(m_RemoteSocket, (const char*)&RGBWDiscoMode, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
@@ -1593,7 +1593,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 		}
 		case Limitless_DiscoMode_4:
 		{
-			//First send ON , sleep 50ms, then the command
+			//First send ON , sleep 100ms, then the command
 			if (pLed->dunit == 0)
 				sendto(m_RemoteSocket, (const char*)&RGBWOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 			else if (pLed->dunit == 1)
@@ -1604,7 +1604,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				sendto(m_RemoteSocket, (const char*)&RGBWGroup3AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 			else if (pLed->dunit == 4)
 				sendto(m_RemoteSocket, (const char*)&RGBWGroup4AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-			sleep_milliseconds(50);
+			sleep_milliseconds(100);
 
 			//reset disco mode
 			if (pLed->dunit == 0)
@@ -1617,7 +1617,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup3, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 			else if (pLed->dunit == 4)
 				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup4, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-			sleep_milliseconds(50);
+			sleep_milliseconds(100);
 
 			for (int i=1; i<4; i++) {
 				sendto(m_RemoteSocket, (const char*)&RGBWDiscoMode, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
@@ -1628,7 +1628,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 		}
 		case Limitless_DiscoMode_5:
 		{
-			//First send ON , sleep 50ms, then the command
+			//First send ON , sleep 100ms, then the command
 			if (pLed->dunit == 0)
 				sendto(m_RemoteSocket, (const char*)&RGBWOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 			else if (pLed->dunit == 1)
@@ -1639,7 +1639,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				sendto(m_RemoteSocket, (const char*)&RGBWGroup3AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 			else if (pLed->dunit == 4)
 				sendto(m_RemoteSocket, (const char*)&RGBWGroup4AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-			sleep_milliseconds(50);
+			sleep_milliseconds(100);
 
 			//reset disco mode
 			if (pLed->dunit == 0)
@@ -1652,7 +1652,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup3, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 			else if (pLed->dunit == 4)
 				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup4, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-			sleep_milliseconds(50);
+			sleep_milliseconds(100);
 
 			for (int i=1; i<5; i++) {
 				sendto(m_RemoteSocket, (const char*)&RGBWDiscoMode, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
@@ -1663,7 +1663,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 		}
 		case Limitless_DiscoMode_6:
 		{
-			//First send ON , sleep 50ms, then the command
+			//First send ON , sleep 100ms, then the command
 			if (pLed->dunit == 0)
 				sendto(m_RemoteSocket, (const char*)&RGBWOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 			else if (pLed->dunit == 1)
@@ -1674,7 +1674,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				sendto(m_RemoteSocket, (const char*)&RGBWGroup3AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 			else if (pLed->dunit == 4)
 				sendto(m_RemoteSocket, (const char*)&RGBWGroup4AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-			sleep_milliseconds(50);
+			sleep_milliseconds(100);
 
 			//reset disco mode
 			if (pLed->dunit == 0)
@@ -1691,7 +1691,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 
 			for (int i=1; i<6; i++) {
 				sendto(m_RemoteSocket, (const char*)&RGBWDiscoMode, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-				sleep_milliseconds(50);
+				sleep_milliseconds(100);
 			}
 			pCMD = (unsigned char*)&RGBWDiscoMode;
 			break;
@@ -1709,7 +1709,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				sendto(m_RemoteSocket, (const char*)&RGBWGroup3AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 			else if (pLed->dunit == 4)
 				sendto(m_RemoteSocket, (const char*)&RGBWGroup4AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-			sleep_milliseconds(50);
+			sleep_milliseconds(100);
 
 			//reset disco mode
 			if (pLed->dunit == 0)
@@ -1722,7 +1722,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup3, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 			else if (pLed->dunit == 4)
 				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup4, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-			sleep_milliseconds(50);
+			sleep_milliseconds(100);
 
 			for (int i=1; i<7; i++) {
 				sendto(m_RemoteSocket, (const char*)&RGBWDiscoMode, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
@@ -1733,7 +1733,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 		}
 		case Limitless_DiscoMode_8:
 		{
-			//First send ON , sleep 50ms, then the command
+			//First send ON , sleep 100ms, then the command
 			if (pLed->dunit == 0)
 				sendto(m_RemoteSocket, (const char*)&RGBWOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 			else if (pLed->dunit == 1)
@@ -1744,7 +1744,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				sendto(m_RemoteSocket, (const char*)&RGBWGroup3AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 			else if (pLed->dunit == 4)
 				sendto(m_RemoteSocket, (const char*)&RGBWGroup4AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-			sleep_milliseconds(50);
+			sleep_milliseconds(100);
 
 			//reset disco mode
 			if (pLed->dunit == 0)
@@ -1757,7 +1757,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup3, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 			else if (pLed->dunit == 4)
 				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup4, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-			sleep_milliseconds(50);
+			sleep_milliseconds(100);
 
 			for (int i=1; i<8; i++) {
 				sendto(m_RemoteSocket, (const char*)&RGBWDiscoMode, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
@@ -1768,7 +1768,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 		}
 		case Limitless_DiscoMode_9:
 		{
-			//First send ON , sleep 50ms, then the command
+			//First send ON , sleep 100ms, then the command
 			if (pLed->dunit == 0)
 				sendto(m_RemoteSocket, (const char*)&RGBWOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 			else if (pLed->dunit == 1)
@@ -1779,7 +1779,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				sendto(m_RemoteSocket, (const char*)&RGBWGroup3AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 			else if (pLed->dunit == 4)
 				sendto(m_RemoteSocket, (const char*)&RGBWGroup4AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-			sleep_milliseconds(50);
+			sleep_milliseconds(100);
 
 			//reset disco mode
 			if (pLed->dunit == 0)
@@ -1796,14 +1796,14 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 
 			for (int i=1; i<9; i++) {
 				sendto(m_RemoteSocket, (const char*)&RGBWDiscoMode, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-				sleep_milliseconds(50);
+				sleep_milliseconds(100);
 			}
 			pCMD = (unsigned char*)&RGBWDiscoMode;
 			break;
 		}
 		case Limitless_NightMode:
 		{
-			//First send Off hack for keeping this stable, sleep 50ms, then the command
+			//First send Off hack for keeping this stable, sleep 100ms, then the command
 			if (pLed->dunit == 0)
 				sendto(m_RemoteSocket, (const char*)&RGBWOff, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 			else if (pLed->dunit == 1)
@@ -1814,7 +1814,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				sendto(m_RemoteSocket, (const char*)&RGBWGroup3AllOff, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 			else if (pLed->dunit == 4)
 				sendto(m_RemoteSocket, (const char*)&RGBWGroup4AllOff, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-			sleep_milliseconds(50);
+			sleep_milliseconds(100);
 
 			if (pLed->dunit == 0)
 				pCMD = (unsigned char*)&RGBWAllNightMode;
