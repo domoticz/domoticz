@@ -60,10 +60,10 @@ const _tRFLinkStringIntHelper rfswitches[] =
 	{ "Doorbell", sSwitchTypeSelectPlus3 },  // p73  
 	{ "FA20RF", sSwitchTypeFA20 },           // p80
 	{ "Chuango", sSwitchTypeChuango },       // p62
-    { "Plieger", sSwitchTypePlieger },       // p71
-    { "SilverCrest", sSwitchTypeSilvercrest }, // p75
-    { "Mertik", sSwitchTypeMertik },         // p82
-    { "HomeConfort", sSwitchTypeHomeConfort }, // p11
+	{ "Plieger", sSwitchTypePlieger },       // p71
+	{ "SilverCrest", sSwitchTypeSilvercrest }, // p75
+	{ "Mertik", sSwitchTypeMertik },         // p82
+	{ "HomeConfort", sSwitchTypeHomeConfort }, // p11
 	{ "Powerfix", sSwitchTypePowerfix },     // p13
 	{ "TriState", sSwitchTypeTriState },     // p16
 	{ "Deltronic", sSwitchTypeDeltronic },   // p73
@@ -120,6 +120,13 @@ const _tRFLinkStringIntHelper rfswitches[] =
 	{ "KonigSec", sSwitchTypeKonigSec },
 	{ "RM174RF", sSwitchTypeRM174RF },
 	{ "Liwin", sSwitchTypeLiwin },
+	{ "YW_Secu", sSwitchTypeYW_Secu },
+	{ "Mertik_GV60", sSwitchTypeMertik_GV60 },
+	{ "Ningbo64", sSwitchTypeNingbo64 },
+	{ "X2D", sSwitchTypeX2D },
+	{ "HRCMotor", sSwitchTypeHRCMotor },
+	{ "Velleman", sSwitchTypeVelleman },
+	{ "RFCustom", sSwitchTypeRFCustom },
 	{ "", -1 }
 };
 

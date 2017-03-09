@@ -75,8 +75,11 @@
     <Filter Include="Devices\OpenTherm-Gateway">
       <UniqueIdentifier>{9b834e19-65cb-442c-bfd7-c39e44279cb7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Devices\Teleinfo">
+    <Filter Include="Devices\TeleinfoSerial">
       <UniqueIdentifier>{9b098c6e-b49d-404b-b9a2-5904c1d92edd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\TeleinfoBase">
+      <UniqueIdentifier>{9b098c6e-b49d-aaaa-b9a2-5904c1d92edd}</UniqueIdentifier>
     </Filter>
     <Filter Include="Devices\ZWave">
       <UniqueIdentifier>{8541fa16-1ca3-4b1c-8658-7075b91f73a8}</UniqueIdentifier>
@@ -458,6 +461,9 @@
     </Filter>
     <Filter Include="Pushers\InfluxDB">
       <UniqueIdentifier>{2c9db333-1435-4a52-970c-2a53298e2689}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\RelayNet">
+      <UniqueIdentifier>{9882d591-40c3-4d12-8c0a-af2d53d939ff}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -1492,8 +1498,11 @@
     <ClInclude Include="..\hardware\OTGWTCP.h">
       <Filter>Devices\OpenTherm-Gateway</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\Teleinfo.h">
-      <Filter>Devices\Teleinfo</Filter>
+    <ClInclude Include="..\hardware\TeleinfoSerial.h">
+      <Filter>Devices\TeleinfoSerial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\TeleinfoBase.h">
+      <Filter>Devices\TeleinfoBase</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\ZWaveBase.h">
       <Filter>Devices\ZWave</Filter>
@@ -1981,6 +1990,9 @@
     <ClInclude Include="..\push\BasePush.h">
       <Filter>Pushers</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\RelayNet.h">
+      <Filter>Devices\RelayNet</Filter>
+    </ClInclude>
     <ClInclude Include="..\hardware\plugins\PythonObjects.h">
       <Filter>Devices\Python Plugins</Filter>
     </ClInclude>
@@ -2145,8 +2157,11 @@
     <ClCompile Include="..\hardware\OTGWTCP.cpp">
       <Filter>Devices\OpenTherm-Gateway</Filter>
     </ClCompile>
-    <ClCompile Include="..\hardware\Teleinfo.cpp">
-      <Filter>Devices\Teleinfo</Filter>
+    <ClCompile Include="..\hardware\TeleinfoBase.cpp">
+      <Filter>Devices\TeleinfoBase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\TeleinfoSerial.cpp">
+      <Filter>Devices\TeleinfoSerial</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\ZWaveBase.cpp">
       <Filter>Devices\ZWave</Filter>
@@ -2630,6 +2645,9 @@
     </ClCompile>
     <ClCompile Include="..\push\BasePush.cpp">
       <Filter>Pushers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\RelayNet.cpp">
+      <Filter>Devices\RelayNet</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\plugins\PythonObjects.cpp">
       <Filter>Devices\Python Plugins</Filter>
