@@ -1088,7 +1088,8 @@ void MySensorsBase::UpdateSwitchLastUpdate(const unsigned char Idx, const int Su
 	char szIdx[10];
 	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, szIdx, SubUnit, int(pTypeLighting2), int(sTypeAC));
+	// LLEMARINEL : #1312  Changed pTypeLighting2 to pTypeGeneralSwitch
+	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, szIdx, SubUnit, int(pTypeGeneralSwitch), int(sTypeAC));
 	if (result.size() < 1)
 		return; //not found!
 	time_t now = time(0);
@@ -1141,13 +1142,14 @@ void MySensorsBase::UpdateRGBWSwitchLastUpdate(const int NodeID, const int Child
 
 void MySensorsBase::UpdateSwitch(const _eSetType vType, const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname, const int BatLevel)
 {
-	double rlevel = (15.0 / 100)*Level;
-	int level = int(rlevel);
+	// LLEMARINEL : #1312  Changed to use as pTypeGeneralSwitch : do not constrain to 16 steps anymore but 100 :
+	// double rlevel = (15.0 / 100)*Level;
+	int level = int(Level);
 
 	char szIdx[10];
 	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, szIdx, SubUnit, int(pTypeLighting2), int(sTypeAC));
+	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, szIdx, SubUnit, int(pTypeGeneralSwitch), int(sTypeAC));
 	if (!result.empty())
 	{
 		if (
@@ -1169,11 +1171,13 @@ void MySensorsBase::UpdateSwitch(const _eSetType vType, const unsigned char Idx,
 		}
 	}
 
-	//Send as Lighting 2
+	// LLEMARINEL : #1312  Changed to use as pTypeGeneralSwitch
+	// --- Send as Lighting 2
 	tRBUF lcmd;
 	memset(&lcmd, 0, sizeof(RBUF));
 	lcmd.LIGHTING2.packetlength = sizeof(lcmd.LIGHTING2) - 1;
-	lcmd.LIGHTING2.packettype = pTypeLighting2;
+	lcmd.LIGHTING2.packettype = pTypeGeneralSwitch;
+	//lcmd.LIGHTING2.packettype = pTypeLighting2;
 	lcmd.LIGHTING2.subtype = sTypeAC;
 	lcmd.LIGHTING2.id1 = 0;
 	lcmd.LIGHTING2.id2 = 0;
@@ -1297,7 +1301,9 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 	unsigned char packettype = pCmd->ICMND.packettype;
 	unsigned char subtype = pCmd->ICMND.subtype;
 
-	if (packettype == pTypeLighting2)
+	// LLEMARINEL : #1312  Change to pTypeGeneralSwitch insteand of Lighting2
+//	if (packettype == pTypeLighting2)
+	if (packettype == pTypeGeneralSwitch)
 	{
 		//Light command
 
@@ -1344,7 +1350,9 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 			}
 			else if (light_command == light2_sSetLevel)
 			{
-				float fvalue = (100.0f / 14.0f)*float(pCmd->LIGHTING2.level);
+				// LLEMARINEL : #1312  Do not constrain anymore to 16 steps :
+				// float fvalue = (100.0f / 14.0f)*float(pCmd->LIGHTING2.level);
+				float fvalue = float(pCmd->LIGHTING2.level);
 				if (fvalue > 100.0f)
 					fvalue = 100.0f; //99 is fully on
 				int svalue = round(fvalue);
