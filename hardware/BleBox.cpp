@@ -991,6 +991,8 @@ void BleBox::AddNode(const std::string &name, const std::string &IPAddress)
 
 	std::string szIdx = IPToHex(IPAddress, deviceType.deviceID);
 
+	boost::lock_guard<boost::mutex> l(m_mutex);
+
 	if (deviceType.unit == 4) // gatebox
 	{
 		m_sql.safe_query(
@@ -1130,5 +1132,13 @@ void BleBox::SearchNodes(const std::string &ipmask)
 		return;
 	if (!isInt(strarray[0]) || !isInt(strarray[1]) || !isInt(strarray[2]))
 		return;
-	//TODO
+
+	for (unsigned int i = 1; i < 255; ++i)
+	{
+		std::stringstream sstr;
+		sstr << strarray[0] << "." << strarray[1] << "." << strarray[2] << "." << i;
+		std::string ip = sstr.str();
+
+		m_searchingThread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&BleBox::AddNode, this, "unknown", ip)));
+	}
 }
