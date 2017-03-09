@@ -382,7 +382,8 @@ hardware/Sterbox.cpp
 hardware/TCPProxy/tcpproxy_server.cpp
 hardware/TE923.cpp
 hardware/TE923Tool.cpp
-hardware/Teleinfo.cpp
+hardware/TeleinfoBase.cpp
+hardware/TeleinfoSerial.cpp
 hardware/Tellstick.cpp
 hardware/Thermosmart.cpp
 hardware/ToonThermostat.cpp
