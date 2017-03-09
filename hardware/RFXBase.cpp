@@ -139,7 +139,7 @@ bool CRFXBase::CheckValidRFXData(const uint8_t *pData)
 	case pTypeWEIGHT:
 		return (pLen == 0x08);
 	case pTypeCARTELECTRONIC:
-		return (pLen == 0x15);
+		return (pLen == 0x15 || pLen == 0x11);
 	case pTypeRFXSensor:
 		return (pLen == 0x07);
 	case pTypeRFXMeter:

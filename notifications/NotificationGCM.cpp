@@ -4,14 +4,14 @@
 #include "../main/Logger.h"
 #include "../main/SQLHelper.h"
 #include "../json/json.h"
+#include <boost/lexical_cast.hpp>
 
 #define GAPI_POST_URL "https://gcm-http.googleapis.com/gcm/send"
 #define GAPI "AIzaSyBnRMroiDaXCKbwPeOmoxkNiQfjWkGMre8"
 
 CNotificationGCM::CNotificationGCM() : CNotificationBase(std::string("gcm"), OPTIONS_URL_SUBJECT | OPTIONS_URL_BODY | OPTIONS_URL_PARAMS)
 {
-	m_IsEnabled = 1;
-	//SetupConfig(std::string("GCMEnabled"), &m_IsEnabled);
+	SetupConfig(std::string("GCMEnabled"), &m_IsEnabled);
 }
 
 CNotificationGCM::~CNotificationGCM()
@@ -54,7 +54,8 @@ bool CNotificationGCM::SendMessageImplementation(
 			ii++;
 		}
 	}
-	sstr << "], \"data\" : { \"message\": \"" << Subject << "\" } }";
+	sstr << "], \"data\" : { \"subject\": \""<< Subject << "\", \"body\": \""<< Text << "\", \"extradata\": \""<< ExtraData << "\", \"priority\": \""<< boost::lexical_cast<std::string>(Priority) << "\", ";
+	sstr << "\"deviceid\": \""<< boost::lexical_cast<std::string>(Idx) << "\", \"message\": \"" << Subject << "\" } }";
 	std::string szPostdata = sstr.str();
 
 	std::vector<std::string> ExtraHeaders;

@@ -166,6 +166,11 @@ std::string CAccuWeather::GetLocationKey()
 		{
 			if (root.isArray())
 				root = root[0];
+			if (!root.isObject())
+			{
+				_log.Log(LOG_ERROR, "AccuWeather: Invalid data received, or unknown location!");
+				return "";
+			}
 			if (root["Key"].empty())
 			{
 				_log.Log(LOG_ERROR, "AccuWeather: Invalid data received, or unknown location!");
@@ -219,7 +224,6 @@ void CAccuWeather::GetMeterDetails()
 	try
 	{
 		Json::Value root;
-
 		Json::Reader jReader;
 		bool ret = jReader.parse(sResult, root);
 		if (!ret)

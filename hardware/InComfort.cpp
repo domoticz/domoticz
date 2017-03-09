@@ -65,8 +65,8 @@ bool CInComfort::StopHardware()
 	if (m_thread != NULL)
 	{
 		assert(m_thread);
-		m_stoprequested = true;
-		m_thread->join();
+m_stoprequested = true;
+m_thread->join();
 	}
 	m_bIsStarted = false;
 	return true;
@@ -158,12 +158,12 @@ void CInComfort::ParseAndUpdateDevices(std::string jsonData)
 {
 	Json::Value root;
 	Json::Reader jReader;
-	if (!jReader.parse(jsonData, root))
+	bool bRet = jReader.parse(jsonData, root);
+	if ((!bRet) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "InComfort: Invalid data received. Data is not json formatted.");
 		return;
 	}
-
 	if (root["nodenr"].empty() == true)
 	{
 		_log.Log(LOG_ERROR, "InComfort: Invalid data received. Nodenr not found.");

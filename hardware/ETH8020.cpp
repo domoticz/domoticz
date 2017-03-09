@@ -9,8 +9,6 @@
 #include "../main/SQLHelper.h"
 #include <sstream>
 
-extern CSQLHelper m_sql;
-
 #define ETH8020_POLL_INTERVAL 10
 
 CETH8020::CETH8020(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password) :

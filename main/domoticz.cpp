@@ -76,9 +76,10 @@ const char *szHelp=
 #ifdef WWW_ENABLE_SSL
 	"\t-sslwww port (for example -sslwww 443, or -sslwww 0 to disable https)\n"
 	"\t-sslcert file_path (for example /opt/domoticz/server_cert.pem)\n"
+	"\t-sslkey file_path (if different from certificate file)\n"
 	"\t-sslpass passphrase (to access to server private key in certificate)\n"
 	"\t-sslmethod method (for SSL method)\n"
-	"\t-ssloptions options (for SSL options, default is 'default_workarounds,no_sslv2,single_dh_use')\n"
+	"\t-ssloptions options (for SSL options, default is 'default_workarounds,no_sslv2,no_sslv3,no_tlsv1,no_tlsv1_1,single_dh_use')\n"
 	"\t-ssldhparam file_path (for SSL DH parameters)\n"
 #endif
 #if defined WIN32
@@ -160,6 +161,7 @@ CLogger _log;
 http::server::CWebServerHelper m_webservers;
 CSQLHelper m_sql;
 CNotificationHelper m_notifications;
+
 std::string logfile = "";
 bool g_bStopApplication = false;
 bool g_bUseSyslog = false;
@@ -226,13 +228,6 @@ void daemonize(const char *rundir, const char *pidfile)
 	struct sigaction newSigAction;
 	sigset_t newSigSet;
 
-	/* Check if parent process id is set */
-	if (getppid() == 1)
-	{
-		/* PPID exists, therefore we are already a daemon */
-		return;
-	}
-
 	/* Set signal mask - signals we want to block */
 	sigemptyset(&newSigSet);
 	sigaddset(&newSigSet, SIGCHLD);  /* ignore child - i.e. we don't need to wait for it */
@@ -253,7 +248,7 @@ void daemonize(const char *rundir, const char *pidfile)
 	sigaction(SIGABRT, &newSigAction, NULL);    // catch abnormal termination signal
 	sigaction(SIGILL,  &newSigAction, NULL);    // catch invalid program image
 #ifndef WIN32
-	sigaction(SIGHUP,  &newSigAction, NULL);    // catch HUP, for logrotation
+	sigaction(SIGHUP,  &newSigAction, NULL);    // catch HUP, for log rotation
 #endif
 	
 	/* Fork*/
@@ -296,7 +291,7 @@ void daemonize(const char *rundir, const char *pidfile)
 	int twrite=write(pidFilehandle, str, strlen(str));
 	if (twrite != strlen(str))
 	{
-		syslog(LOG_INFO, "Could not write to lockfile %s, exiting", pidfile);
+		syslog(LOG_INFO, "Could not write to lock file %s, exiting", pidfile);
 		exit(EXIT_FAILURE);
 	}
 
@@ -633,6 +628,12 @@ int main(int argc, char**argv)
 			return 1;
 		}
 		std::string wwwport = cmdLine.GetSafeArgument("-www", 0, "");
+		int iPort = (int)atoi(wwwport.c_str());
+		if ((iPort < 0) || (iPort > 32767))
+		{
+			_log.Log(LOG_ERROR, "Please specify a valid www port");
+			return 1;
+		}
 		webserver_settings.listening_port = wwwport;
 	}
 
@@ -668,6 +669,12 @@ int main(int argc, char**argv)
 			return 1;
 		}
 		std::string wwwport = cmdLine.GetSafeArgument("-sslwww", 0, "");
+		int iPort = (int)atoi(wwwport.c_str());
+		if ((iPort < 0) || (iPort > 32767))
+		{
+			_log.Log(LOG_ERROR, "Please specify a valid sslwww port");
+			return 1;
+		}
 		secure_webserver_settings.listening_port = wwwport;
 	}
 	if (!webserver_settings.listening_address.empty()) {
@@ -682,6 +689,16 @@ int main(int argc, char**argv)
 			return 1;
 		}
 		secure_webserver_settings.cert_file_path = cmdLine.GetSafeArgument("-sslcert", 0, "");
+		secure_webserver_settings.private_key_file_path = secure_webserver_settings.cert_file_path;
+	}
+	if (cmdLine.HasSwitch("-sslkey"))
+	{
+		if (cmdLine.GetArgumentCount("-sslkey") != 1)
+		{
+			_log.Log(LOG_ERROR, "Please specify a file path for your server SSL key file");
+			return 1;
+		}
+		secure_webserver_settings.private_key_file_path = cmdLine.GetSafeArgument("-sslkey", 0, "");
 	}
 	if (cmdLine.HasSwitch("-sslpass"))
 	{

@@ -31,6 +31,10 @@ public:
 	void RemoveAllNodes();
 	void SetSettings(const int pollIntervalsec);
 	void Restart();
+	void UpdateFirmware();
+	void SearchNodes(const std::string &ipmask);
+	std::string GetUptime(const std::string &IPAddress);
+	int GetDeviceType(const std::string &IPAddress);
 
 private:
 	volatile bool m_stoprequested;

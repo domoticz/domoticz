@@ -15,6 +15,7 @@
 
 // Commands
 // V6
+// Todo: Kelvin slider & WW/CW type
 #define l_zone 0
 #define v6_repeats 3
 
@@ -30,20 +31,33 @@ uint8_t V6_BridgeOff[10]	= { 0x31, 0x00, 0x00, 0x00, 0x03, 0x04, 0x00, 0x00, 0x0
 uint8_t V6_RGBWW_Off[10] = { 0x31, 0x00, 0x00, 0x08, 0x04, 0x02, 0x00, 0x00, 0x00, l_zone };
 uint8_t V6_RGBW_Off[10] = { 0x31, 0x00, 0x00, 0x07, 0x03, 0x02, 0x00, 0x00, 0x00, l_zone };
 
-uint8_t V6_Bridge_SetColor[10] = { 0x31, 0x00, 0x00, 0x00, 0x01, 0xBA, 0xBA, 0xBA, 0xBA, 0x00 };
+uint8_t V6_Bridge_SetColor[10] = { 0x31, 0x00, 0x00, 0x00, 0x01, 0xBA, 0xBA, 0xBA, 0xBA, 0x01 };
 uint8_t V6_RGBWW_SetColor[10] = { 0x31, 0x00, 0x00, 0x08, 0x01, 0xBA, 0xBA, 0xBA, 0xBA, l_zone };
 uint8_t V6_RGBW_SetColor[10] = { 0x31, 0x00, 0x00, 0x07, 0x01, 0xBA, 0xBA, 0xBA, 0xBA, l_zone };
 
-uint8_t V6_Bridge_SetBrightnessLevel[10] = { 0x31, 0x00, 0x00, 0x00, 0x02, 0xBE, 0x00, 0x00, 0x00, 0 };
+uint8_t V6_Bridge_SetBrightnessLevel[10] = { 0x31, 0x00, 0x00, 0x00, 0x02, 0xBE, 0x00, 0x00, 0x00, 0x01 };
 uint8_t V6_RGBWW_SetBrightnessLevel[10] = { 0x31, 0x00, 0x00, 0x08, 0x03, 0xBE, 0x00, 0x00, 0x00, l_zone };
 uint8_t V6_RGBW_SetBrightnessLevel[10] = { 0x31, 0x00, 0x00, 0x07, 0x02, 0xBE, 0x00, 0x00, 0x00, l_zone };
 
-uint8_t V6_Bridge_White_On[10] = { 0x31, 0x00, 0x00, 0x00, 0x03, 0x05, 0x00, 0x00, 0x00, 0x00 };
+uint8_t V6_Bridge_White_On[10] = { 0x31, 0x00, 0x00, 0x00, 0x03, 0x05, 0x00, 0x00, 0x00, 0x01 };
 uint8_t V6_RGBWW_White_On[10] = { 0x31, 0x00, 0x00, 0x08, 0x05, 0x64, 0x00, 0x00, 0x00, l_zone };
 uint8_t V6_RGBW_White_On[10] = { 0x31, 0x00, 0x00, 0x07, 0x03, 0x05, 0x00, 0x00, 0x00, l_zone };
 
 uint8_t V6_RGBWW_Night_On[10] = { 0x31, 0x00, 0x00, 0x08, 0x04, 0x05, 0x00, 0x00, 0x00, l_zone };
 uint8_t V6_RGBW_Night_On[10] = { 0x31, 0x00, 0x00, 0x07, 0x03, 0x06, 0x00, 0x00, 0x00, l_zone };
+
+uint8_t V6_Bridge_Disco_Mode[10] = { 0x31, 0x00, 0x00, 0x00, 0x04, 0x01, 0x00, 0x00, 0x00, 0x01 }; //(6th hex values 0x01 to 0x09 : examples: 01 = Mode1, 02 = Mode2, 03 = Mode3 .. 09 = Mode9)
+uint8_t V6_RGBWW_Disco_Mode[10] = { 0x31, 0x00, 0x00, 0x08, 0x06, 0x01, 0x00, 0x00, 0x00, l_zone };  //(6th hex values 0x01 to 0x09 : examples: 01 = Mode1, 02 = Mode2, 03 = Mode3 .. 09 = Mode9)
+uint8_t V6_RGBW_Disco_Mode[10] = { 0x31, 0x00, 0x00, 0x07, 0x04, 0x01, 0x00, 0x00, 0x00, l_zone };   //(6th hex values 0x01 to 0x09 : examples: 01 = Mode1, 02 = Mode2, 03 = Mode3 .. 09 = Mode9)
+
+uint8_t V6_Bridge_Mode_Speed_Up[10] = { 0x31, 0x00, 0x00, 0x00, 0x03, 0x02, 0x00, 0x00, 0x00, 0x01 };
+uint8_t V6_RGBWW_Mode_Speed_Up[10] = { 0x31, 0x00, 0x00, 0x08, 0x04, 0x03, 0x00, 0x00, 0x00, l_zone };
+uint8_t V6_RGBW_Mode_Speed_Up[10] = { 0x31, 0x00, 0x00, 0x07, 0x03, 0x03, 0x00, 0x00, 0x00, l_zone };
+
+uint8_t V6_Bridge_Mode_Speed_Down[10] = { 0x31, 0x00, 0x00, 0x00, 0x03, 0x01, 0x00, 0x00, 0x00, 0x01 };
+uint8_t V6_RGBWW_Mode_Speed_Down[10] = { 0x31, 0x00, 0x00, 0x08, 0x04, 0x04, 0x00, 0x00, 0x00, l_zone };
+uint8_t V6_RGBW_Mode_Speed_Down[10] = { 0x31, 0x00, 0x00, 0x07, 0x03, 0x04, 0x00, 0x00, 0x00, l_zone };
+
 
 // V4/V5
 // White LEDs
@@ -169,20 +183,39 @@ void CLimitLess::Init()
 bool CLimitLess::AddSwitchIfNotExits(const unsigned char Unit, const std::string& devname)
 {
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d)", m_HwdID, int(Unit), pTypeLimitlessLights, int(m_LEDType));
-	if (result.empty())
-	{
-		m_sql.safe_query(
-			"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, nValue, sValue) "
-			"VALUES (%d,'%d',%d,%d,%d,12,255,'%q',0,' ')",
-			m_HwdID, int(1), int(Unit), pTypeLimitlessLights, int(m_LEDType), devname.c_str());
+	if (Unit != 5) {
 		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d)", m_HwdID, int(Unit), pTypeLimitlessLights, int(m_LEDType));
-		if (!result.empty())
+		if (result.empty())
 		{
-			//Set type to dimmer
-			m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (ID==%q)", STYPE_Dimmer, result[0][0].c_str());
+			m_sql.safe_query(
+					"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, nValue, sValue) "
+					"VALUES (%d,'%d',%d,%d,%d,12,255,'%q',0,' ')",
+					m_HwdID, int(1), int(Unit), pTypeLimitlessLights, int(m_LEDType), devname.c_str());
+			result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d)", m_HwdID, int(Unit), pTypeLimitlessLights, int(m_LEDType));
+			if (!result.empty())
+			{
+				//Set type to dimmer
+				m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (ID==%q)", STYPE_Dimmer, result[0][0].c_str());
+			}
+			return false;
 		}
-		return false;
+	}
+	else if (Unit == 5) {
+		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d)", m_HwdID, int(Unit), pTypeLimitlessLights, int(4));
+		if (result.empty())
+		{
+			m_sql.safe_query(
+					"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, nValue, sValue) "
+					"VALUES (%d,'%d',%d,%d,%d,12,255,'%q',0,' ')",
+					m_HwdID, int(1), int(Unit), pTypeLimitlessLights, int(4), devname.c_str());
+			result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d)", m_HwdID, int(Unit), pTypeLimitlessLights, int(4));
+			if (!result.empty())
+			{
+				//Set type to dimmer
+				m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (ID==%q)", STYPE_Dimmer, result[0][0].c_str());
+			}
+			return false;
+		}
 	}
 	return true;
 }
@@ -219,15 +252,6 @@ bool CLimitLess::StartHardware()
 	m_stRemoteDestAddr.sin_addr = *((struct in_addr *)he->h_addr);
 	memset(m_stRemoteDestAddr.sin_zero, '\0', sizeof m_stRemoteDestAddr.sin_zero);
 
-	if (m_BridgeType == LBTYPE_V6)
-	{
-		if (!GetV6BridgeID())
-		{
-			_log.Log(LOG_ERROR, "AppLamp: Bridge not found, check IP Address/Port!...");
-			return false;
-		}
-	}
-
 	//Add the Default switches
 	if (m_LEDType != sTypeLimitlessRGB) {
 		if (!AddSwitchIfNotExits(0, "AppLamp All"))
@@ -238,16 +262,14 @@ bool CLimitLess::StartHardware()
 				{
 					if (!AddSwitchIfNotExits(3, "AppLamp Group3"))
 					{
-						if (!AddSwitchIfNotExits(4, "AppLamp Group4"))
-						{
-							if (m_BridgeType == LBTYPE_V6)
-							{
-								AddSwitchIfNotExits(5, "AppLamp Bridge");
-							}
-						}
+						AddSwitchIfNotExits(4, "AppLamp Group4");
 					}
 				}
 			}
+		}
+		if (m_BridgeType == LBTYPE_V6)
+		{
+			AddSwitchIfNotExits(5, "AppLamp Bridge");
 		}
 	}
 	else {
@@ -258,8 +280,7 @@ bool CLimitLess::StartHardware()
 	sOnConnected(this);
 	//Start worker thread
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CLimitLess::Do_Work, this)));
-
-	_log.Log(LOG_STATUS,"AppLamp: Worker Started...");
+	_log.Log(LOG_STATUS, "AppLamp: Worker Started...");
 	return (m_thread!=NULL);
 }
 
@@ -278,7 +299,7 @@ bool CLimitLess::IsDataAvailable(const SOCKET sock)
 	tv.tv_usec = 0;
 
 	// Wait until timeout or data received.
-	n = select(m_RemoteSocket, &fds, NULL, NULL, &tv);
+	n = select(m_RemoteSocket+1, &fds, NULL, NULL, &tv);
 	return (n > 0);
 }
 
@@ -286,8 +307,8 @@ bool CLimitLess::GetV6BridgeID()
 {
 	m_BridgeID_1 = m_BridgeID_2 = 0;
 	int totRetries = 0;
-	sendto(m_RemoteSocket, (const char*)&V6_GetSessionID, sizeof(V6_GetSessionID), 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 
+	sendto(m_RemoteSocket, (const char*)&V6_GetSessionID, sizeof(V6_GetSessionID), 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 	while (totRetries < v6_repeats)
 	{
 		if (!IsDataAvailable(m_RemoteSocket))
@@ -299,13 +320,21 @@ bool CLimitLess::GetV6BridgeID()
 		uint8_t rbuffer[1024];
 		sockaddr_in si_other;
 		socklen_t slen = sizeof(sockaddr_in);
+		sleep_milliseconds(100);
 		int trecv = recvfrom(m_RemoteSocket, (char*)&rbuffer, sizeof(rbuffer), 0, (struct sockaddr*)&si_other, &slen);
+
 		if (trecv < 1)
 		{
 			return false;
 		}
 		if (trecv != 0x16)
-			return false;
+			while ( (rbuffer[0x00] == 0x88) && (rbuffer[0x07] == 0x01) )
+			{
+				totRetries++;
+				int trecv = recvfrom(m_RemoteSocket, (char*)&rbuffer, sizeof(rbuffer), 0, (struct sockaddr*)&si_other, &slen);
+				continue;
+			}
+			//return false;
 		if ((rbuffer[0x00] != 0x28) || (rbuffer[0x15] != 0x00))
 			return false;
 		uint8_t mac_1 = rbuffer[0x07];
@@ -330,6 +359,7 @@ bool CLimitLess::SendV6Command(const uint8_t *pCmd)
 			return false;
 	}
 	uint8_t OutBuffer[100];
+	uint8_t RBuffer[100];
 	int wPointer = 0;
 	memcpy(OutBuffer + wPointer, V6_PreAmble, sizeof(V6_PreAmble)); wPointer += sizeof(V6_PreAmble);
 	OutBuffer[wPointer++] = m_BridgeID_1;
@@ -350,6 +380,7 @@ bool CLimitLess::SendV6Command(const uint8_t *pCmd)
 	OutBuffer[wPointer++] = crc;
 
 	sendto(m_RemoteSocket, (const char*)&OutBuffer, wPointer, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+	sleep_milliseconds(100);
 //	return true;
 	int totRetries = 0;
 	while (totRetries < v6_repeats)
@@ -362,16 +393,31 @@ bool CLimitLess::SendV6Command(const uint8_t *pCmd)
 		}
 		sockaddr_in si_other;
 		socklen_t slen = sizeof(sockaddr_in);
-		int trecv = recvfrom(m_RemoteSocket, (char*)&OutBuffer, sizeof(OutBuffer), 0, (struct sockaddr*)&si_other, &slen);
+		int trecv = recvfrom(m_RemoteSocket, (char*)&RBuffer, sizeof(RBuffer), 0, (struct sockaddr*)&si_other, &slen);
+		//Hack to workaround other communication get from bridge, should solved more clear
+		//8000000015ACCF23F581D8050200340000000000000000000034
+		while ( (RBuffer[0x00] == 0x80) && (RBuffer[0x04] == 0x15) ){
+			int trecv = recvfrom(m_RemoteSocket, (char*)&RBuffer, sizeof(RBuffer), 0, (struct sockaddr*)&si_other, &slen);
+			continue;
+		}
 		if (trecv < 1)
 			return false;
-		if (OutBuffer[0x07] != 0x00)
+		if (RBuffer[0x07] != 0x00)
 		{
 			//Maybe the Bridge was turned off, try getting the ID again
 			if (GetV6BridgeID())
 			{
+				OutBuffer[5]=m_BridgeID_1;
+				OutBuffer[6]=m_BridgeID_2;
 				sendto(m_RemoteSocket, (const char*)&OutBuffer, wPointer, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-				return (IsDataAvailable(m_RemoteSocket));
+				//Hack to flush buffer and see if command succeeded
+				recvfrom(m_RemoteSocket, (char*)&RBuffer, sizeof(RBuffer), 0, (struct sockaddr*)&si_other, &slen);
+				if (RBuffer[0x07] != 0x00)
+				{
+					_log.Log(LOG_ERROR, "AppLamp: Error sending command to Bridge!...");
+				}
+				else return true;
+				//return (IsDataAvailable(m_RemoteSocket));
 			}
 			else
 			{
@@ -405,10 +451,27 @@ bool CLimitLess::StopHardware()
 void CLimitLess::Do_Work()
 {
 	int sec_counter = 0;
+	bool bDoInit = true;
+
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
 		sec_counter++;
+
+		if (bDoInit)
+		{
+			bDoInit = false;
+			if (m_BridgeType == LBTYPE_V6)
+			{
+				if (!GetV6BridgeID())
+				{
+					_log.Log(LOG_ERROR, "AppLamp: Bridge not found, check IP Address/Port!...");
+					_log.Log(LOG_ERROR, "AppLamp: Worker stopped!...");
+					return;
+				}
+				_log.Log(LOG_STATUS, "AppLamp: Bridge found!...");
+			}
+		}
 
 		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat=mytime(NULL);
@@ -420,16 +483,22 @@ void CLimitLess::Do_Work()
 bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	_tLimitlessLights *pLed=(_tLimitlessLights*)pdata;
+	int RGBW=1;
+	int RGB=2;
+	int White=3;
+	int RGBWW=4;
 
 	unsigned char *pCMD=NULL;
 
 	if (m_BridgeType == LBTYPE_V6)
 	{
-		if (m_LEDType == sTypeLimitlessRGBWW)
+		//if (m_LEDType == sTypeLimitlessRGBWW)
+		if (pLed->subtype == RGBWW)
 		{
 			switch (pLed->command)
 			{
 			case Limitless_LedOn:
+			{
 				if (pLed->dunit == 5)
 					pCMD = (unsigned char*)&V6_BridgeOn;
 				else {
@@ -437,7 +506,9 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 					pCMD[0x09] = pLed->dunit;
 				}
 				break;
+			}
 			case Limitless_LedOff:
+			{
 				if (pLed->dunit == 5)
 					pCMD = (unsigned char*)&V6_BridgeOff;
 				else {
@@ -445,6 +516,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 					pCMD[0x09] = pLed->dunit;
 				}
 				break;
+			}
 			case Limitless_SetRGBColour:
 			{
 				//First send ON , sleep 100ms, then the command
@@ -466,8 +538,8 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				pCMD[0x08] = pLed->value;
 				if (pLed->dunit != 5)
 					pCMD[0x09] = pLed->dunit;
+				break;
 			}
-			break;
 			case Limitless_SetBrightnessLevel:
 			{
 				//First send ON , sleep 100ms, then the command
@@ -486,9 +558,19 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				pCMD[0x05] = pLed->value;
 				if (pLed->dunit != 5)
 					pCMD[0x09] = pLed->dunit;
+				break;
 			}
-			break;
 			case Limitless_SetColorToWhite:
+			{
+				//First send ON , sleep 100ms, then the command
+				if (pLed->dunit == 5)
+					pCMD = (unsigned char*)&V6_BridgeOn;
+				else {
+					pCMD = (unsigned char*)&V6_RGBWW_On;
+					pCMD[0x09] = pLed->dunit;
+				}
+				SendV6Command(pCMD);
+				sleep_milliseconds(100);
 				if (pLed->dunit == 5)
 					pCMD = (unsigned char*)&V6_Bridge_White_On;
 				else {
@@ -496,36 +578,259 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 					pCMD[0x09] = pLed->dunit;
 				}
 				break;
+			}
 			case Limitless_NightMode:
+			{
 				if (pLed->dunit == 5)
 					return false;
 				pCMD = (unsigned char*)&V6_RGBWW_Night_On;
 				pCMD[0x09] = pLed->dunit;
 				break;
-/*
+			}
 			case Limitless_DiscoSpeedSlower:
-				sendto(m_RemoteSocket, (const char*)&RGBWOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-				sleep_milliseconds(100);
-				pCMD = (unsigned char*)&RGBWDiscoSpeedSlower;
+			{
+				if (pLed->dunit == 5)
+					pCMD = (unsigned char*)&V6_Bridge_Mode_Speed_Down;
+				else {
+					pCMD = (unsigned char*)&V6_RGBWW_Mode_Speed_Down;
+					pCMD[0x09] = pLed->dunit;
+				}
 				break;
 			case Limitless_DiscoSpeedFaster:
-				sendto(m_RemoteSocket, (const char*)&RGBWOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-				sleep_milliseconds(100);
-				pCMD = (unsigned char*)&RGBWDiscoSpeedFaster;
+				if (pLed->dunit == 5)
+					pCMD = (unsigned char*)&V6_Bridge_Mode_Speed_Up;
+				else {
+					pCMD = (unsigned char*)&V6_RGBWW_Mode_Speed_Up;
+					pCMD[0x09] = pLed->dunit;
+				}
 				break;
+			}
 			case Limitless_DiscoMode:
-				sendto(m_RemoteSocket, (const char*)&RGBWOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			{
+				//First send ON , sleep 100ms, then the command
+				if (pLed->dunit == 5)
+					pCMD = (unsigned char*)&V6_BridgeOn;
+				else {
+					pCMD = (unsigned char*)&V6_RGBWW_On;
+					pCMD[0x09] = pLed->dunit;
+				}
+				SendV6Command(pCMD);
 				sleep_milliseconds(100);
-				pCMD = (unsigned char*)&RGBWDiscoMode;
+				if (pLed->dunit == 5)
+					pCMD = (unsigned char*)&V6_Bridge_Disco_Mode;
+				else {
+					pCMD = (unsigned char*)&V6_RGBWW_Disco_Mode;
+					pCMD[0x09] = pLed->dunit;
+				}
 				break;
-*/
+			}
+			case Limitless_DiscoMode_1:
+			{
+				//First send ON , sleep 100ms, then the command
+				if (pLed->dunit == 5)
+					pCMD = (unsigned char*)&V6_BridgeOn;
+				else {
+					pCMD = (unsigned char*)&V6_RGBWW_On;
+					pCMD[0x09] = pLed->dunit;
+				}
+				SendV6Command(pCMD);
+				sleep_milliseconds(100);
+				if (pLed->dunit == 5) {
+					pCMD = (unsigned char*)&V6_Bridge_Disco_Mode;
+					pCMD[0X05] = 0x01;
+				}
+				else {
+					pCMD = (unsigned char*)&V6_RGBWW_Disco_Mode;
+					pCMD[0x09] = pLed->dunit;
+					pCMD[0X05] = 0x01;
+				}
+				break;
+			}
+			case Limitless_DiscoMode_2:
+			{
+				//First send ON , sleep 100ms, then the command
+				if (pLed->dunit == 5)
+					pCMD = (unsigned char*)&V6_BridgeOn;
+				else {
+					pCMD = (unsigned char*)&V6_RGBWW_On;
+					pCMD[0x09] = pLed->dunit;
+				}
+				SendV6Command(pCMD);
+				sleep_milliseconds(100);
+				if (pLed->dunit == 5) {
+					pCMD = (unsigned char*)&V6_Bridge_Disco_Mode;
+					pCMD[0X05] = 0x02;
+				}
+				else {
+					pCMD = (unsigned char*)&V6_RGBWW_Disco_Mode;
+					pCMD[0x09] = pLed->dunit;
+					pCMD[0X05] = 0x02;
+				}
+				break;
+			}
+			case Limitless_DiscoMode_3:
+			{
+				//First send ON , sleep 100ms, then the command
+				if (pLed->dunit == 5)
+					pCMD = (unsigned char*)&V6_BridgeOn;
+				else {
+					pCMD = (unsigned char*)&V6_RGBWW_On;
+					pCMD[0x09] = pLed->dunit;
+				}
+				SendV6Command(pCMD);
+				sleep_milliseconds(100);
+				if (pLed->dunit == 5) {
+					pCMD = (unsigned char*)&V6_Bridge_Disco_Mode;
+					pCMD[0X05] = 0x03;
+				}
+				else {
+					pCMD = (unsigned char*)&V6_RGBWW_Disco_Mode;
+					pCMD[0x09] = pLed->dunit;
+					pCMD[0X05] = 0x03;
+				}
+				break;
+			}
+			case Limitless_DiscoMode_4:
+			{
+				//First send ON , sleep 100ms, then the command
+				if (pLed->dunit == 5)
+					pCMD = (unsigned char*)&V6_BridgeOn;
+				else {
+					pCMD = (unsigned char*)&V6_RGBWW_On;
+					pCMD[0x09] = pLed->dunit;
+				}
+				SendV6Command(pCMD);
+				sleep_milliseconds(100);
+				if (pLed->dunit == 5) {
+					pCMD = (unsigned char*)&V6_Bridge_Disco_Mode;
+					pCMD[0X05] = 0x04;
+				}
+				else {
+					pCMD = (unsigned char*)&V6_RGBWW_Disco_Mode;
+					pCMD[0x09] = pLed->dunit;
+					pCMD[0X05] = 0x04;
+				}
+				break;
+			}
+			case Limitless_DiscoMode_5:
+			{
+				//First send ON , sleep 100ms, then the command
+				if (pLed->dunit == 5)
+					pCMD = (unsigned char*)&V6_BridgeOn;
+				else {
+					pCMD = (unsigned char*)&V6_RGBWW_On;
+					pCMD[0x09] = pLed->dunit;
+				}
+				SendV6Command(pCMD);
+				sleep_milliseconds(100);
+				if (pLed->dunit == 5) {
+					pCMD = (unsigned char*)&V6_Bridge_Disco_Mode;
+					pCMD[0X05] = 0x05;
+				}
+				else {
+					pCMD = (unsigned char*)&V6_RGBWW_Disco_Mode;
+					pCMD[0x09] = pLed->dunit;
+					pCMD[0X05] = 0x05;
+				}
+				break;
+			}
+			case Limitless_DiscoMode_6:
+			{
+				//First send ON , sleep 100ms, then the command
+				if (pLed->dunit == 5)
+					pCMD = (unsigned char*)&V6_BridgeOn;
+				else {
+					pCMD = (unsigned char*)&V6_RGBWW_On;
+					pCMD[0x09] = pLed->dunit;
+				}
+				SendV6Command(pCMD);
+				sleep_milliseconds(100);
+				if (pLed->dunit == 5) {
+					pCMD = (unsigned char*)&V6_Bridge_Disco_Mode;
+					pCMD[0X05] = 0x06;
+				}
+				else {
+					pCMD = (unsigned char*)&V6_RGBWW_Disco_Mode;
+					pCMD[0x09] = pLed->dunit;
+					pCMD[0X05] = 0x06;
+				}
+				break;
+			}
+			case Limitless_DiscoMode_7:
+			{
+				//First send ON , sleep 100ms, then the command
+				if (pLed->dunit == 5)
+					pCMD = (unsigned char*)&V6_BridgeOn;
+				else {
+					pCMD = (unsigned char*)&V6_RGBWW_On;
+					pCMD[0x09] = pLed->dunit;
+				}
+				SendV6Command(pCMD);
+				sleep_milliseconds(100);
+				if (pLed->dunit == 5) {
+					pCMD = (unsigned char*)&V6_Bridge_Disco_Mode;
+					pCMD[0X05] = 0x07;
+				}
+				else {
+					pCMD = (unsigned char*)&V6_RGBWW_Disco_Mode;
+					pCMD[0x09] = pLed->dunit;
+					pCMD[0X05] = 0x07;
+				}
+				break;
+			}
+			case Limitless_DiscoMode_8:
+			{
+				//First send ON , sleep 100ms, then the command
+				if (pLed->dunit == 5)
+					pCMD = (unsigned char*)&V6_BridgeOn;
+				else {
+					pCMD = (unsigned char*)&V6_RGBWW_On;
+					pCMD[0x09] = pLed->dunit;
+				}
+				SendV6Command(pCMD);
+				sleep_milliseconds(100);
+				if (pLed->dunit == 5) {
+					pCMD = (unsigned char*)&V6_Bridge_Disco_Mode;
+					pCMD[0X05] = 0x08;
+				}
+				else {
+					pCMD = (unsigned char*)&V6_RGBWW_Disco_Mode;
+					pCMD[0x09] = pLed->dunit;
+					pCMD[0X05] = 0x08;
+				}
+				break;
+			}
+			case Limitless_DiscoMode_9:
+			{
+				//First send ON , sleep 100ms, then the command
+				if (pLed->dunit == 5)
+					pCMD = (unsigned char*)&V6_BridgeOn;
+				else {
+					pCMD = (unsigned char*)&V6_RGBWW_On;
+					pCMD[0x09] = pLed->dunit;
+				}
+				SendV6Command(pCMD);
+				sleep_milliseconds(100);
+				if (pLed->dunit == 5) {
+					pCMD = (unsigned char*)&V6_Bridge_Disco_Mode;
+					pCMD[0X05] = 0x09;
+				}
+				else {
+					pCMD = (unsigned char*)&V6_RGBWW_Disco_Mode;
+					pCMD[0x09] = pLed->dunit;
+					pCMD[0X05] = 0x09;
+				}
+				break;
+			}
 			}
 		}
-		else if (m_LEDType == sTypeLimitlessRGBW)
+		//else if (m_LEDType == sTypeLimitlessRGBW)
+		else if (pLed->subtype == RGBW)
 		{
 			switch (pLed->command)
 			{
 			case Limitless_LedOn:
+			{
 				if (pLed->dunit == 5)
 					pCMD = (unsigned char*)&V6_BridgeOn;
 				else {
@@ -533,7 +838,9 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 					pCMD[0x09] = pLed->dunit;
 				}
 				break;
+			}
 			case Limitless_LedOff:
+			{
 				if (pLed->dunit == 5)
 					pCMD = (unsigned char*)&V6_BridgeOff;
 				else {
@@ -541,6 +848,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 					pCMD[0x09] = pLed->dunit;
 				}
 				break;
+			}
 			case Limitless_SetRGBColour:
 			{
 				//First send ON , sleep 100ms, then the command
@@ -562,8 +870,8 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				pCMD[0x08] = pLed->value;
 				if (pLed->dunit != 5)
 					pCMD[0x09] = pLed->dunit;
+				break;
 			}
-			break;
 			case Limitless_SetBrightnessLevel:
 			{
 				//First send ON , sleep 100ms, then the command
@@ -582,9 +890,19 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				pCMD[0x05] = pLed->value;
 				if (pLed->dunit != 5)
 					pCMD[0x09] = pLed->dunit;
+				break;
 			}
-			break;
 			case Limitless_SetColorToWhite:
+			{
+				//First send ON , sleep 100ms, then the command
+				if (pLed->dunit == 5)
+					pCMD = (unsigned char*)&V6_BridgeOn;
+				else {
+					pCMD = (unsigned char*)&V6_RGBW_On;
+					pCMD[0x09] = pLed->dunit;
+				}
+				SendV6Command(pCMD);
+				sleep_milliseconds(100);
 				if (pLed->dunit == 5)
 					pCMD = (unsigned char*)&V6_Bridge_White_On;
 				else {
@@ -592,29 +910,235 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 					pCMD[0x09] = pLed->dunit;
 				}
 				break;
+			}
 			case Limitless_NightMode:
+			{
 				if (pLed->dunit == 5)
 					return false;
 				pCMD = (unsigned char*)&V6_RGBW_Night_On;
 				pCMD[0x09] = pLed->dunit;
 				break;
-				/*
-				case Limitless_DiscoSpeedSlower:
-				sendto(m_RemoteSocket, (const char*)&RGBWOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-				sleep_milliseconds(100);
-				pCMD = (unsigned char*)&RGBWDiscoSpeedSlower;
+			}
+			case Limitless_DiscoSpeedSlower:
+			{
+				if (pLed->dunit == 5)
+					return false;
+				pCMD = (unsigned char*)&V6_RGBW_Mode_Speed_Down;
+				pCMD[0x09] = pLed->dunit;
 				break;
-				case Limitless_DiscoSpeedFaster:
-				sendto(m_RemoteSocket, (const char*)&RGBWOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-				sleep_milliseconds(100);
-				pCMD = (unsigned char*)&RGBWDiscoSpeedFaster;
+			}
+			case Limitless_DiscoSpeedFaster:
+			{
+				if (pLed->dunit == 5)
+					return false;
+				pCMD = (unsigned char*)&V6_RGBW_Mode_Speed_Up;
+				pCMD[0x09] = pLed->dunit;
 				break;
-				case Limitless_DiscoMode:
-				sendto(m_RemoteSocket, (const char*)&RGBWOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			}
+			case Limitless_DiscoMode:
+			{
+				//First send ON , sleep 100ms, then the command
+				if (pLed->dunit == 5)
+					pCMD = (unsigned char*)&V6_BridgeOn;
+				else {
+					pCMD = (unsigned char*)&V6_RGBW_On;
+					pCMD[0x09] = pLed->dunit;
+				}
+				SendV6Command(pCMD);
 				sleep_milliseconds(100);
-				pCMD = (unsigned char*)&RGBWDiscoMode;
+				if (pLed->dunit == 5)
+					return false;
+				pCMD = (unsigned char*)&V6_RGBW_Disco_Mode;
+				pCMD[0x09] = pLed->dunit;
 				break;
-				*/
+			}
+			case Limitless_DiscoMode_1:
+			{
+				//First send ON , sleep 100ms, then the command
+				if (pLed->dunit == 5)
+					pCMD = (unsigned char*)&V6_BridgeOn;
+				else {
+					pCMD = (unsigned char*)&V6_RGBW_On;
+					pCMD[0x09] = pLed->dunit;
+				}
+				SendV6Command(pCMD);
+				sleep_milliseconds(100);
+				if (pLed->dunit == 5)
+					return false;
+				pCMD = (unsigned char*)&V6_RGBW_Disco_Mode;
+				pCMD[0x09] = pLed->dunit;
+				pCMD[0x05] = 0x01;
+				break;
+			}
+			case Limitless_DiscoMode_2:
+			{
+				//First send ON , sleep 100ms, then the command
+				if (pLed->dunit == 5)
+					pCMD = (unsigned char*)&V6_BridgeOn;
+				else {
+					pCMD = (unsigned char*)&V6_RGBW_On;
+					pCMD[0x09] = pLed->dunit;
+				}
+				SendV6Command(pCMD);
+				sleep_milliseconds(100);
+				if (pLed->dunit == 5)
+					return false;
+				pCMD = (unsigned char*)&V6_RGBW_Disco_Mode;
+				pCMD[0x09] = pLed->dunit;
+				pCMD[0x05] = 0x02;
+ 				break;
+			}
+			case Limitless_DiscoMode_3:
+			{
+				//First send ON , sleep 100ms, then the command
+				if (pLed->dunit == 5)
+					pCMD = (unsigned char*)&V6_BridgeOn;
+				else {
+					pCMD = (unsigned char*)&V6_RGBW_On;
+					pCMD[0x09] = pLed->dunit;
+				}
+				SendV6Command(pCMD);
+				sleep_milliseconds(100);
+				if (pLed->dunit == 5)
+					return false;
+				pCMD = (unsigned char*)&V6_RGBW_Disco_Mode;
+				pCMD[0x09] = pLed->dunit;
+				pCMD[0x05] = 0x03;
+ 				break;
+			}
+			case Limitless_DiscoMode_4:
+			{
+				//First send ON , sleep 100ms, then the command
+				if (pLed->dunit == 5)
+					pCMD = (unsigned char*)&V6_BridgeOn;
+				else {
+					pCMD = (unsigned char*)&V6_RGBW_On;
+					pCMD[0x09] = pLed->dunit;
+				}
+				SendV6Command(pCMD);
+				sleep_milliseconds(100);
+				if (pLed->dunit == 5)
+					return false;
+				pCMD = (unsigned char*)&V6_RGBW_Disco_Mode;
+				pCMD[0x09] = pLed->dunit;
+				pCMD[0x05] = 0x04;
+ 				break;
+			}
+			case Limitless_DiscoMode_5:
+			{
+				//First send ON , sleep 100ms, then the command
+				if (pLed->dunit == 5)
+					pCMD = (unsigned char*)&V6_BridgeOn;
+				else {
+					pCMD = (unsigned char*)&V6_RGBW_On;
+					pCMD[0x09] = pLed->dunit;
+				}
+				SendV6Command(pCMD);
+				sleep_milliseconds(100);
+				if (pLed->dunit == 5)
+					return false;
+				pCMD = (unsigned char*)&V6_RGBW_Disco_Mode;
+				pCMD[0x09] = pLed->dunit;
+				pCMD[0x05] = 0x05;
+ 				break;
+			}
+			case Limitless_DiscoMode_6:
+			{
+				//First send ON , sleep 100ms, then the command
+				if (pLed->dunit == 5)
+					pCMD = (unsigned char*)&V6_BridgeOn;
+				else {
+					pCMD = (unsigned char*)&V6_RGBW_On;
+					pCMD[0x09] = pLed->dunit;
+				}
+				SendV6Command(pCMD);
+				sleep_milliseconds(100);
+				if (pLed->dunit == 5)
+					return false;
+				pCMD = (unsigned char*)&V6_RGBW_Disco_Mode;
+				pCMD[0x09] = pLed->dunit;
+				pCMD[0x05] = 0x06;
+ 				break;
+			}
+			case Limitless_DiscoMode_7:
+			{
+				//First send ON , sleep 100ms, then the command
+				if (pLed->dunit == 5)
+					pCMD = (unsigned char*)&V6_BridgeOn;
+				else {
+					pCMD = (unsigned char*)&V6_RGBW_On;
+					pCMD[0x09] = pLed->dunit;
+				}
+				SendV6Command(pCMD);
+				sleep_milliseconds(100);
+				if (pLed->dunit == 5)
+					return false;
+				pCMD = (unsigned char*)&V6_RGBW_Disco_Mode;
+				pCMD[0x09] = pLed->dunit;
+				pCMD[0x05] = 0x07;
+ 				break;
+			}
+			case Limitless_DiscoMode_8:
+			{
+				//First send ON , sleep 100ms, then the command
+				if (pLed->dunit == 5)
+					pCMD = (unsigned char*)&V6_BridgeOn;
+				else {
+					pCMD = (unsigned char*)&V6_RGBW_On;
+					pCMD[0x09] = pLed->dunit;
+				}
+				SendV6Command(pCMD);
+				sleep_milliseconds(100);
+				if (pLed->dunit == 5)
+					return false;
+				pCMD = (unsigned char*)&V6_RGBW_Disco_Mode;
+				pCMD[0x09] = pLed->dunit;
+				pCMD[0x05] = 0x08;
+ 				break;
+			}
+			case Limitless_DiscoMode_9:
+			{
+				//First send ON , sleep 100ms, then the command
+				if (pLed->dunit == 5)
+					pCMD = (unsigned char*)&V6_BridgeOn;
+				else {
+					pCMD = (unsigned char*)&V6_RGBW_On;
+					pCMD[0x09] = pLed->dunit;
+				}
+				SendV6Command(pCMD);
+				sleep_milliseconds(100);
+				if (pLed->dunit == 5)
+					return false;
+				pCMD = (unsigned char*)&V6_RGBW_Disco_Mode;
+				pCMD[0x09] = pLed->dunit;
+				pCMD[0x05] = 0x09;
+ 				break;
+			}
+/* test for brighthup
+			case Limitless_SetBrightUp:
+			{
+				if (pLed->dunit == 5) {
+					pCMD = (unsigned char*)&V6_Bridge_SetBrightnessLevel;
+					if (pLed->value <= 0x5F) {
+						pCMD[0x05] = (pLed->value + 0x05);
+					}
+					else {
+						pCMD[0x05] = 0x64;
+					}
+				}
+				else {
+					pCMD = (unsigned char*)&V6_RGBW_SetBrightnessLevel;
+					if (pLed->value <= 0x5F) {
+						pCMD[0x05] = (pLed->value + 0x05);
+					}
+					else {
+						pCMD[0x05] = 0x64;
+					}
+					pCMD[0x09] = pLed->dunit;
+				}
+				break;
+			}
+*/
 			}
 		}
 /*
@@ -846,6 +1370,344 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 			sleep_milliseconds(100);
 			pCMD = (unsigned char*)&RGBWDiscoMode;
 			break;
+		case Limitless_DiscoMode_1:
+		{
+			//First send ON , sleep 50ms, then the command
+			if (pLed->dunit == 0)
+				sendto(m_RemoteSocket, (const char*)&RGBWOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 1)
+				sendto(m_RemoteSocket, (const char*)&RGBWGroup1AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 2)
+				sendto(m_RemoteSocket, (const char*)&RGBWGroup2AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 3)
+				sendto(m_RemoteSocket, (const char*)&RGBWGroup3AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 4)
+				sendto(m_RemoteSocket, (const char*)&RGBWGroup4AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			sleep_milliseconds(50);
+
+			//reset disco mode
+			if (pLed->dunit == 0)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteAll, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 1)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup1, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 2)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup2, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 3)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup3, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 4)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup4, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			sleep_milliseconds(50);
+
+			pCMD = (unsigned char*)&RGBWDiscoMode;
+			break;
+		}
+		case Limitless_DiscoMode_2:
+		{
+			//First send ON , sleep 50ms, then the command
+			if (pLed->dunit == 0)
+				sendto(m_RemoteSocket, (const char*)&RGBWOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 1)
+				sendto(m_RemoteSocket, (const char*)&RGBWGroup1AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 2)
+				sendto(m_RemoteSocket, (const char*)&RGBWGroup2AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 3)
+				sendto(m_RemoteSocket, (const char*)&RGBWGroup3AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 4)
+				sendto(m_RemoteSocket, (const char*)&RGBWGroup4AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			sleep_milliseconds(50);
+
+			//reset disco mode
+			if (pLed->dunit == 0)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteAll, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 1)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup1, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 2)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup2, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 3)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup3, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 4)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup4, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			sleep_milliseconds(50);
+
+			for (int i=1; i<2; i++) {
+				sendto(m_RemoteSocket, (const char*)&RGBWDiscoMode, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+				sleep_milliseconds(50);
+			}
+			pCMD = (unsigned char*)&RGBWDiscoMode;
+			break;
+		}
+		case Limitless_DiscoMode_3:
+		{
+			//First send ON , sleep 50ms, then the command
+			if (pLed->dunit == 0)
+				sendto(m_RemoteSocket, (const char*)&RGBWOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 1)
+				sendto(m_RemoteSocket, (const char*)&RGBWGroup1AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 2)
+				sendto(m_RemoteSocket, (const char*)&RGBWGroup2AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 3)
+				sendto(m_RemoteSocket, (const char*)&RGBWGroup3AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 4)
+				sendto(m_RemoteSocket, (const char*)&RGBWGroup4AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			sleep_milliseconds(50);
+
+			//reset disco mode
+			if (pLed->dunit == 0)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteAll, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 1)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup1, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 2)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup2, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 3)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup3, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 4)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup4, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			sleep_milliseconds(50);
+
+			for (int i=1; i<3; i++) {
+				sendto(m_RemoteSocket, (const char*)&RGBWDiscoMode, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+				sleep_milliseconds(50);
+			}
+			pCMD = (unsigned char*)&RGBWDiscoMode;
+			break;
+		}
+		case Limitless_DiscoMode_4:
+		{
+			//First send ON , sleep 50ms, then the command
+			if (pLed->dunit == 0)
+				sendto(m_RemoteSocket, (const char*)&RGBWOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 1)
+				sendto(m_RemoteSocket, (const char*)&RGBWGroup1AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 2)
+				sendto(m_RemoteSocket, (const char*)&RGBWGroup2AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 3)
+				sendto(m_RemoteSocket, (const char*)&RGBWGroup3AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 4)
+				sendto(m_RemoteSocket, (const char*)&RGBWGroup4AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			sleep_milliseconds(50);
+
+			//reset disco mode
+			if (pLed->dunit == 0)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteAll, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 1)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup1, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 2)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup2, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 3)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup3, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 4)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup4, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			sleep_milliseconds(50);
+
+			for (int i=1; i<4; i++) {
+				sendto(m_RemoteSocket, (const char*)&RGBWDiscoMode, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+				sleep_milliseconds(50);
+			}
+			pCMD = (unsigned char*)&RGBWDiscoMode;
+			break;
+		}
+		case Limitless_DiscoMode_5:
+		{
+			//First send ON , sleep 50ms, then the command
+			if (pLed->dunit == 0)
+				sendto(m_RemoteSocket, (const char*)&RGBWOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 1)
+				sendto(m_RemoteSocket, (const char*)&RGBWGroup1AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 2)
+				sendto(m_RemoteSocket, (const char*)&RGBWGroup2AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 3)
+				sendto(m_RemoteSocket, (const char*)&RGBWGroup3AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 4)
+				sendto(m_RemoteSocket, (const char*)&RGBWGroup4AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			sleep_milliseconds(50);
+
+			//reset disco mode
+			if (pLed->dunit == 0)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteAll, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 1)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup1, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 2)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup2, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 3)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup3, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 4)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup4, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			sleep_milliseconds(50);
+
+			for (int i=1; i<5; i++) {
+				sendto(m_RemoteSocket, (const char*)&RGBWDiscoMode, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+				sleep_milliseconds(50);
+			}
+			pCMD = (unsigned char*)&RGBWDiscoMode;
+			break;
+		}
+		case Limitless_DiscoMode_6:
+		{
+			//First send ON , sleep 50ms, then the command
+			if (pLed->dunit == 0)
+				sendto(m_RemoteSocket, (const char*)&RGBWOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 1)
+				sendto(m_RemoteSocket, (const char*)&RGBWGroup1AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 2)
+				sendto(m_RemoteSocket, (const char*)&RGBWGroup2AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 3)
+				sendto(m_RemoteSocket, (const char*)&RGBWGroup3AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 4)
+				sendto(m_RemoteSocket, (const char*)&RGBWGroup4AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			sleep_milliseconds(50);
+
+			//reset disco mode
+			if (pLed->dunit == 0)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteAll, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 1)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup1, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 2)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup2, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 3)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup3, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 4)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup4, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			sleep_milliseconds(50);
+
+			for (int i=1; i<6; i++) {
+				sendto(m_RemoteSocket, (const char*)&RGBWDiscoMode, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+				sleep_milliseconds(50);
+			}
+			pCMD = (unsigned char*)&RGBWDiscoMode;
+			break;
+		}
+		case Limitless_DiscoMode_7:
+		{
+			//First send ON , sleep 50ms, then the command
+			if (pLed->dunit == 0)
+				sendto(m_RemoteSocket, (const char*)&RGBWOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 1)
+				sendto(m_RemoteSocket, (const char*)&RGBWGroup1AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 2)
+				sendto(m_RemoteSocket, (const char*)&RGBWGroup2AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 3)
+				sendto(m_RemoteSocket, (const char*)&RGBWGroup3AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 4)
+				sendto(m_RemoteSocket, (const char*)&RGBWGroup4AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			sleep_milliseconds(50);
+
+			//reset disco mode
+			if (pLed->dunit == 0)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteAll, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 1)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup1, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 2)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup2, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 3)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup3, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 4)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup4, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			sleep_milliseconds(50);
+
+			for (int i=1; i<7; i++) {
+				sendto(m_RemoteSocket, (const char*)&RGBWDiscoMode, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+				sleep_milliseconds(50);
+			}
+			pCMD = (unsigned char*)&RGBWDiscoMode;
+			break;
+		}
+		case Limitless_DiscoMode_8:
+		{
+			//First send ON , sleep 50ms, then the command
+			if (pLed->dunit == 0)
+				sendto(m_RemoteSocket, (const char*)&RGBWOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 1)
+				sendto(m_RemoteSocket, (const char*)&RGBWGroup1AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 2)
+				sendto(m_RemoteSocket, (const char*)&RGBWGroup2AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 3)
+				sendto(m_RemoteSocket, (const char*)&RGBWGroup3AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 4)
+				sendto(m_RemoteSocket, (const char*)&RGBWGroup4AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			sleep_milliseconds(50);
+
+			//reset disco mode
+			if (pLed->dunit == 0)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteAll, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 1)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup1, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 2)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup2, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 3)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup3, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 4)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup4, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			sleep_milliseconds(50);
+
+			for (int i=1; i<8; i++) {
+				sendto(m_RemoteSocket, (const char*)&RGBWDiscoMode, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+				sleep_milliseconds(50);
+			}
+			pCMD = (unsigned char*)&RGBWDiscoMode;
+			break;
+		}
+		case Limitless_DiscoMode_9:
+		{
+			//First send ON , sleep 50ms, then the command
+			if (pLed->dunit == 0)
+				sendto(m_RemoteSocket, (const char*)&RGBWOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 1)
+				sendto(m_RemoteSocket, (const char*)&RGBWGroup1AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 2)
+				sendto(m_RemoteSocket, (const char*)&RGBWGroup2AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 3)
+				sendto(m_RemoteSocket, (const char*)&RGBWGroup3AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 4)
+				sendto(m_RemoteSocket, (const char*)&RGBWGroup4AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			sleep_milliseconds(50);
+
+			//reset disco mode
+			if (pLed->dunit == 0)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteAll, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 1)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup1, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 2)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup2, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 3)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup3, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 4)
+				sendto(m_RemoteSocket, (const char*)&RGBWSetColorToWhiteGroup4, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			sleep_milliseconds(50);
+
+			for (int i=1; i<9; i++) {
+				sendto(m_RemoteSocket, (const char*)&RGBWDiscoMode, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+				sleep_milliseconds(50);
+			}
+			pCMD = (unsigned char*)&RGBWDiscoMode;
+			break;
+		}
+		case Limitless_NightMode:
+		{
+			//First send Off hack for keeping this stable, sleep 50ms, then the command
+			if (pLed->dunit == 0)
+				sendto(m_RemoteSocket, (const char*)&RGBWOff, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 1)
+				sendto(m_RemoteSocket, (const char*)&RGBWGroup1AllOff, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 2)
+				sendto(m_RemoteSocket, (const char*)&RGBWGroup2AllOff, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 3)
+				sendto(m_RemoteSocket, (const char*)&RGBWGroup3AllOff, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			else if (pLed->dunit == 4)
+				sendto(m_RemoteSocket, (const char*)&RGBWGroup4AllOff, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			sleep_milliseconds(50);
+
+			if (pLed->dunit == 0)
+				pCMD = (unsigned char*)&RGBWAllNightMode;
+			else if (pLed->dunit == 1)
+				pCMD = (unsigned char*)&RGBWGroup1NightMode;
+			else if (pLed->dunit == 2)
+				pCMD = (unsigned char*)&RGBWGroup2NightMode;
+			else if (pLed->dunit == 3)
+				pCMD = (unsigned char*)&RGBWGroup3NightMode;
+			else if (pLed->dunit == 4)
+				pCMD = (unsigned char*)&RGBWGroup4NightMode;
+			break;
+		}
 		case Limitless_SetColorToWhite:
 			//First send ON , sleep 100ms, then the command
 			if (pLed->dunit == 0) {

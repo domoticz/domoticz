@@ -427,7 +427,7 @@ void CAtagOne::GetMeterDetails()
 	Json::Value root2;
 	Json::Reader jReader;
 	bool ret = jReader.parse(sResult, root2);
-	if (!ret)
+	if ((!ret) || (!root2.isObject()))
 	{
 		_log.Log(LOG_ERROR, "AtagOne: Invalid/no data received...");
 		return;

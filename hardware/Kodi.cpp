@@ -192,8 +192,8 @@ void CKodiNode::handleMessage(std::string& pMessage)
 		std::stringstream ssMessage;
 
 		if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Kodi: (%s) Handling message: '%s'.", m_Name.c_str(), pMessage.c_str());
-		bool	bRetVal = jReader.parse(pMessage, root);
-		if (!bRetVal)
+		bool bRet = jReader.parse(pMessage, root);
+		if ((!bRet) || (!root.isObject()))
 		{
 			_log.Log(LOG_ERROR, "Kodi: (%s) PARSE ERROR: '%s'", m_Name.c_str(), pMessage.c_str());
 		}
@@ -1457,9 +1457,16 @@ namespace http {
 				{
 					switch (hType) {
 					case HTYPE_Kodi:
+					{
 						CKodi	Kodi(HwID);
 						Kodi.SendCommand(idx, sAction);
 						break;
+					}
+#ifdef USE_PYTHON_PLUGINS
+					case HTYPE_PythonPlugin:
+						Cmd_PluginCommand(session, req, root);
+						break;
+#endif
 						// put other players here ...
 					}
 				}

@@ -1,10 +1,19 @@
 #pragma once
 
 #ifdef WIN32
-#	include "../../../domoticz/main/dirent_windows.h"
+#	define MS_NO_COREDLL 1
 #else
-#	include <dirent.h>
+#	pragma GCC diagnostic ignored "-Wwrite-strings"
 #endif
+
+#ifdef WITH_THREAD
+#    undefine WITH_THREAD
+#endif
+#include <Python.h>
+#include <structmember.h> 
+#include <frameobject.h>
+
+#include "../../main/Helper.h"
 
 namespace Plugins {
 
@@ -71,7 +80,7 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(void, PyEval_RestoreThread, PyThreadState*);
 		DECLARE_PYTHON_SYMBOL(void, _Py_NegativeRefcount, const char* COMMA int COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, _PyObject_New, PyTypeObject*);
-#ifdef DEBUG
+#ifdef _DEBUG
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyModule_Create2TraceRefs, struct PyModuleDef* COMMA int);
 #else
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyModule_Create2, struct PyModuleDef* COMMA int);
@@ -83,7 +92,7 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(PyObject*, Py_BuildValue, const char* COMMA ...);
 		DECLARE_PYTHON_SYMBOL(void, PyMem_Free, void*);
 
-#ifdef DEBUG
+#ifdef _DEBUG
 		// In a debug build dealloc is a function but for release builds its a macro
 		DECLARE_PYTHON_SYMBOL(void, _Py_Dealloc, PyObject*);
 #endif
@@ -95,7 +104,7 @@ namespace Plugins {
 			_Py_RefTotal = 0;
 			if (!shared_lib_) {
 #ifdef WIN32
-#	ifdef DEBUG
+#	ifdef _DEBUG
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python36_d.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python35_d.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python34_d.dll");
@@ -152,7 +161,7 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyEval_RestoreThread);
 					RESOLVE_PYTHON_SYMBOL(_Py_NegativeRefcount);
 					RESOLVE_PYTHON_SYMBOL(_PyObject_New);
-#ifdef DEBUG
+#ifdef _DEBUG
 					RESOLVE_PYTHON_SYMBOL(PyModule_Create2TraceRefs);
 #else
 					RESOLVE_PYTHON_SYMBOL(PyModule_Create2);
@@ -163,7 +172,7 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyUnicode_FromFormat);
 					RESOLVE_PYTHON_SYMBOL(Py_BuildValue);
 					RESOLVE_PYTHON_SYMBOL(PyMem_Free);
-#ifdef DEBUG
+#ifdef _DEBUG
 					RESOLVE_PYTHON_SYMBOL(_Py_Dealloc);
 #endif
 				}
@@ -176,95 +185,82 @@ namespace Plugins {
 
 #ifndef WIN32
 		private:
-			void FindLibrary(const char * szLibrary, bool bSimple = false)
+			void FindLibrary(const std::string sLibrary, bool bSimple = false)
 			{
+				std::string library;
 				if (bSimple)
 				{
 					// look in directories covered by ldconfig
 					if (!shared_lib_)
 					{
-						std::string sLibrary = "lib";
-						sLibrary += szLibrary;
-						sLibrary += ".so";
-						shared_lib_ = dlopen(sLibrary.c_str(), RTLD_LAZY | RTLD_GLOBAL);
-
+						library = "lib" + sLibrary + ".so";
+						shared_lib_ = dlopen(library.c_str(), RTLD_LAZY | RTLD_GLOBAL);
 					}
 					// look in directories covered by ldconfig but 'm' variant
 					if (!shared_lib_)
 					{
-						std::string sLibraryM = "lib";
-						sLibraryM += szLibrary;
-						sLibraryM += "m.so";
-						shared_lib_ = dlopen(sLibraryM.c_str(), RTLD_LAZY | RTLD_GLOBAL);
+						library = "lib" + sLibrary + "m.so";
+						shared_lib_ = dlopen(library.c_str(), RTLD_LAZY | RTLD_GLOBAL);
 					}
 					// look in /usr/lib directories
 					if (!shared_lib_)
 					{
-						std::string	sLibraryDir = "/usr/lib/";
-						sLibraryDir += szLibrary;
-						sLibraryDir += "/";
-						FindLibrary(sLibraryDir.c_str(), false);
+						library = "/usr/lib/" + sLibrary + "/";
+						FindLibrary(library, false);
 					}
 					// look in /usr/lib directories but 'm' variant
 					if (!shared_lib_)
 					{
-						std::string	sLibraryMDir = "/usr/lib/";
-						sLibraryMDir += szLibrary;
-						sLibraryMDir += "m/";
-						FindLibrary(sLibraryMDir.c_str(), false);
+						library = "/usr/lib/" + sLibrary + "m/";
+						FindLibrary(library, false);
 					}
 					// look in /usr/local/lib directory (handles build from source)
 					if (!shared_lib_)
 					{
-						std::string sLibrary = "/usr/local/lib/lib";
-						sLibrary += szLibrary;
-						sLibrary += ".so";
-						shared_lib_ = dlopen(sLibrary.c_str(), RTLD_LAZY | RTLD_GLOBAL);
+						library = "/usr/local/lib/lib" + sLibrary + ".so";
+						shared_lib_ = dlopen(library.c_str(), RTLD_LAZY | RTLD_GLOBAL);
 
 					}
 					// look in /usr/local/lib directory (handles build from source) but 'm' variant
 					if (!shared_lib_)
 					{
-						std::string sLibraryM = "/usr/local/lib/lib";
-						sLibraryM += szLibrary;
-						sLibraryM += "m.so";
-						shared_lib_ = dlopen(sLibraryM.c_str(), RTLD_LAZY | RTLD_GLOBAL);
+						library = "/usr/local/lib/lib" + sLibrary + "m.so";
+						shared_lib_ = dlopen(library.c_str(), RTLD_LAZY | RTLD_GLOBAL);
 					}
 				}
 				else
 				{
-					DIR *lDir;
-					struct dirent *ent;
-					if ((lDir = opendir(szLibrary)) != NULL)
+					std::vector<std::string> entries;
+					std::vector<std::string>::const_iterator itt;
+					DirectoryListing(entries, sLibrary, true, false);
+					for (itt = entries.begin(); !shared_lib_ && itt != entries.end(); ++itt)
 					{
-						while (!shared_lib_ && (ent = readdir(lDir)) != NULL)
+						library = sLibrary + *itt + "/";
+						FindLibrary(library, false);
+					}
+
+					std::string filename;
+					entries.clear();
+					DirectoryListing(entries, sLibrary, false, true);
+					for (itt = entries.begin(); !shared_lib_ && itt != entries.end(); ++itt)
+					{
+						filename = *itt;
+						if (filename.length() > 12 &&
+							filename.compare(0, 11, "libpython3.") == 0 &&
+							filename.compare(filename.length() - 3, 3, ".so") == 0 &&
+							filename.compare(filename.length() - 6, 6, ".dylib") == 0)
 						{
-							std::string filename = ent->d_name;
-							if (dirent_is_directory(szLibrary, ent) && (filename.length() > 2))
-							{
-								std::string	newDir = szLibrary + filename + "/";
-								FindLibrary(newDir.c_str());
-							}
-							else
-							{
-								if ((filename.length() > 12) &&
-									(filename.compare(0, 11, "libpython3.") == 0) &&
-									((filename.compare(filename.length() - 3, 3, ".so") == 0) ||
-									(filename.compare(filename.length() - 6, 6, ".dylib") == 0)))
-								{
-									std::string sLibFile = szLibrary + filename;
-									shared_lib_ = dlopen(sLibFile.c_str(), RTLD_LAZY | RTLD_GLOBAL);
-								}
-							}
+							library = sLibrary + filename;
+							shared_lib_ = dlopen(library.c_str(), RTLD_LAZY | RTLD_GLOBAL);
 						}
-						closedir(lDir);
+
 					}
 				}
 			}
 #endif
 	};
 
-	SharedLibraryProxy* pythonLib = new SharedLibraryProxy();
+extern	SharedLibraryProxy* pythonLib;
 
 #define	Py_LoadLibrary			pythonLib->Py_LoadLibrary
 #define	Py_GetVersion			pythonLib->Py_GetVersion
@@ -312,7 +308,7 @@ namespace Plugins {
 #define PyArg_ParseTuple		pythonLib->PyArg_ParseTuple
 #define Py_BuildValue			pythonLib->Py_BuildValue
 #define PyMem_Free				pythonLib->PyMem_Free
-#ifdef DEBUG
+#ifdef _DEBUG
 #	define PyModule_Create2TraceRefs pythonLib->PyModule_Create2TraceRefs
 #else
 #	define PyModule_Create2		pythonLib->PyModule_Create2
@@ -320,7 +316,7 @@ namespace Plugins {
 #define PyModule_AddObject		pythonLib->PyModule_AddObject
 #define PyArg_ParseTupleAndKeywords pythonLib->PyArg_ParseTupleAndKeywords
 
-#ifdef DEBUG
+#ifdef _DEBUG
 #	define _Py_Dealloc			pythonLib->_Py_Dealloc
 #endif
 

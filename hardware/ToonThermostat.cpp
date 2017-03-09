@@ -327,12 +327,12 @@ bool CToonThermostat::Login()
 
 	Json::Value root;
 	Json::Reader jReader;
-	if (!jReader.parse(sResult, root))
+	bool bRet = jReader.parse(sResult, root);
+	if (!bRet)
 	{
 		_log.Log(LOG_ERROR, "ToonThermostat: Invalid data received, or invalid username/password!");
 		return false;
 	}
-
 	if (root["clientId"].empty() == true)
 	{
 		_log.Log(LOG_ERROR, "ToonThermostat: Invalid data received, or invalid username/password!");
@@ -386,7 +386,8 @@ bool CToonThermostat::Login()
 #endif
 
 	root.clear();
-	if (!jReader.parse(sResult, root))
+	bRet = jReader.parse(sResult, root);
+	if (!bRet)
 	{
 		_log.Log(LOG_ERROR, "ToonThermostat: Invalid data received!");
 		return false;
@@ -481,7 +482,8 @@ bool CToonThermostat::SwitchLight(const std::string &UUID, const int SwitchState
 
 	Json::Value root;
 	Json::Reader jReader;
-	if (!jReader.parse(sResult, root))
+	bool bRet = jReader.parse(sResult, root);
+	if (!bRet)
 	{
 		_log.Log(LOG_ERROR, "ToonThermostat: Invalid data received!");
 		return false;
@@ -524,7 +526,8 @@ bool CToonThermostat::SwitchAll(const int SwitchState)
 
 	Json::Value root;
 	Json::Reader jReader;
-	if (!jReader.parse(sResult, root))
+	bool bRet = jReader.parse(sResult, root);
+	if (!bRet)
 	{
 		_log.Log(LOG_ERROR, "ToonThermostat: Invalid data received!");
 		return false;
@@ -622,7 +625,8 @@ void CToonThermostat::GetMeterDetails()
 #endif
 
 	Json::Reader jReader;
-	if (!jReader.parse(sResult, root))
+	bool bRet = jReader.parse(sResult, root);
+	if (!bRet)
 	{
 		_log.Log(LOG_ERROR, "ToonThermostat: Invalid data received!");
 		m_bDoLogin = true;
@@ -920,7 +924,8 @@ void CToonThermostat::SetSetpoint(const int idx, const float temp)
 
 		Json::Value root;
 		Json::Reader jReader;
-		if (!jReader.parse(sResult, root))
+		bool bRet = jReader.parse(sResult, root);
+		if (!bRet)
 		{
 			_log.Log(LOG_ERROR, "ToonThermostat: Invalid data received!");
 			m_bDoLogin = true;
@@ -977,7 +982,8 @@ void CToonThermostat::SetProgramState(const int newState)
 
 	Json::Value root;
 	Json::Reader jReader;
-	if (!jReader.parse(sResult, root))
+	bool bRet = jReader.parse(sResult, root);
+	if (!bRet)
 	{
 		_log.Log(LOG_ERROR, "ToonThermostat: setProgramState request not successful, restarting..!");
 		m_bDoLogin = true;

@@ -116,16 +116,13 @@ bool CNotificationBase::SendMessageEx(
 	if (_options & OPTIONS_URL_BODY) {
 		fText = CURLEncode::URLEncode(fText);
 	}
-	
+
 	bool bRet = SendMessageImplementation(Idx, Name, fSubject, fText, ExtraData, Priority, Sound, bFromNotification);
-	if (_subsystemid != "gcm")
-	{
-		if (bRet) {
-			_log.Log(LOG_NORM, std::string(std::string("Notification sent (") + _subsystemid + std::string(") => Success")).c_str());
-		}
-		else {
-			_log.Log(LOG_ERROR, std::string(std::string("Notification sent (") + _subsystemid + std::string(") => Failed")).c_str());
-		}
+	if (bRet) {
+		_log.Log(LOG_NORM, std::string(std::string("Notification sent (") + _subsystemid + std::string(") => Success")).c_str());
+	}
+	else {
+		_log.Log(LOG_ERROR, std::string(std::string("Notification sent (") + _subsystemid + std::string(") => Failed")).c_str());
 	}
 	return bRet;
 }
@@ -242,15 +239,3 @@ bool CNotificationBase::IsInConfigBase64(const std::string &Key)
 	return false;
 }
 
-std::string CNotificationBase::MakeHtml(const std::string &txt)
-{
-	std::string sRet = txt;
-
-	stdreplace(sRet, "&", "&amp;");
-	stdreplace(sRet, "\"", "&quot;");
-	stdreplace(sRet, "'", "&apos;");
-	stdreplace(sRet, "<", "&lt;");
-	stdreplace(sRet, ">", "&gt;");
-	stdreplace(sRet, "\r\n", "<br/>");
-	return sRet;
-}

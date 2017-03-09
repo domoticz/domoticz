@@ -341,7 +341,8 @@ bool cWebem::CheckForAction(WebEmSession & session, request& req )
 					if (
 						(szContentType.find("application/octet-stream") != std::string::npos) ||
 						(szContentType.find("application/json") != std::string::npos) ||
-						(szContentType.find("Content-Type: text/xml") != std::string::npos)
+						(szContentType.find("Content-Type: text/xml") != std::string::npos) ||
+						(szContentType.find("Content-Type: text/x-hex") != std::string::npos)
 						)
 					{
 						//Its a file/stream, next line should be empty
@@ -1597,6 +1598,19 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 	bool isPage = myWebem->IsPageOverride(req, rep);
 	bool isAction = myWebem->IsAction(req);
 
+	// Respond to CORS Preflight request (for JSON API)
+	if (req.method == "OPTIONS")
+	{
+		rep.status = reply::ok;
+		reply::add_header(&rep, "Content-Length", "0");
+		reply::add_header(&rep, "Content-Type", "text/plain");
+		reply::add_header(&rep, "Access-Control-Max-Age", "3600");
+		reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
+		reply::add_header(&rep, "Access-Control-Allow-Methods", "GET, POST");
+		reply::add_header(&rep, "Access-Control-Allow-Headers", "Authorization, Content-Type");
+		return;
+	}
+
 	// Check authentication on each page or action, if it exists.
 	if ((isPage || isAction) && !CheckAuthentication(session, req, rep)) {
 		return;
@@ -1734,7 +1748,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 		session.id = generateSessionID();
 		session.expires = session.timeout;
 		if (session.rememberme) {
-			// Extend session by a year
+			// Extend session by 30 days
 			session.expires += (86400 * 30);
 		}
 		session.auth_token = generateAuthToken(session, req); // do it after expires to save it also

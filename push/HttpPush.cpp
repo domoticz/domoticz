@@ -296,7 +296,7 @@ namespace http {
 			m_sql.UpdatePreferencesVar("HttpAuthBasicLogin", authbasiclogin.c_str());
 			m_sql.UpdatePreferencesVar("HttpAuthBasicPassword", authbasicpassword.c_str());
 
-			m_mainworker.m_httppush.UpdateActive();
+			m_httppush.UpdateActive();
 			root["status"] = "OK";
 			root["title"] = "SaveHttpLinkConfig";
 		}

@@ -18,7 +18,6 @@
 #include "WebServerHelper.h"
 #include "../webserver/Base64.h"
 #include "unzip.h"
-#include "mainstructs.h"
 #include <boost/lexical_cast.hpp>
 #include "../notifications/NotificationHelper.h"
 
@@ -33,7 +32,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 110
+#define DB_VERSION 111
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -513,6 +512,19 @@ const char *sqlCreateHttpLink =
 	"[Enabled] INTEGER DEFAULT 1, "
 	"[IncludeUnit] INTEGER default 0); ";
 
+const char *sqlCreatePushLink =
+"CREATE TABLE IF NOT EXISTS [PushLink] ("
+"[ID] INTEGER PRIMARY KEY, "
+"[PushType] INTEGER, "
+"[DeviceID]  BIGINT NOT NULL, "
+"[DelimitedValue] INTEGER DEFAULT 0, "
+"[TargetType] INTEGER DEFAULT 0, "
+"[TargetVariable] VARCHAR(100), "
+"[TargetDeviceID] INTEGER, "
+"[TargetProperty] VARCHAR(100), "
+"[Enabled] INTEGER DEFAULT 1, "
+"[IncludeUnit] INTEGER default 0); ";
+
 const char *sqlCreateGooglePubSubLink =
 "CREATE TABLE IF NOT EXISTS [GooglePubSubLink] ("
 "[ID] INTEGER PRIMARY KEY, "
@@ -735,6 +747,7 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateEnoceanSensors);
 	query(sqlCreateFibaroLink);
 	query(sqlCreateHttpLink);
+	query(sqlCreatePushLink);
 	query(sqlCreateGooglePubSubLink);
 	query(sqlCreateUserVariables);
 	query(sqlCreateFloorplans);
@@ -1936,7 +1949,6 @@ bool CSQLHelper::OpenDatabase()
 				<< "([Type] = " << HTYPE_Wunderground << ") OR "
 				<< "([Type] = " << HTYPE_DarkSky << ") OR "
 				<< "([Type] = " << HTYPE_AccuWeather << ") OR "
-				<< "([Type] = " << HTYPE_RazberryZWave << ") OR "
 				<< "([Type] = " << HTYPE_OpenZWave << ")"
 				<< ")";
 			result = query(szQuery.str());
@@ -1962,7 +1974,6 @@ bool CSQLHelper::OpenDatabase()
 			szQuery << "SELECT ID FROM Hardware WHERE ( "
 				<< "([Type] = " << HTYPE_DavisVantage << ") OR "
 				<< "([Type] = " << HTYPE_TE923 << ") OR "
-				<< "([Type] = " << HTYPE_RazberryZWave << ") OR "
 				<< "([Type] = " << HTYPE_OpenZWave << ")"
 				<< ")";
 			result = query(szQuery.str());
@@ -2146,6 +2157,23 @@ bool CSQLHelper::OpenDatabase()
 					szQuery2.str("");
 					szQuery2 << "UPDATE Hardware SET Mode1=0, Extra='%s' WHERE (ID=" << id << ")";
 					safe_query(szQuery2.str().c_str(), extraBase64.c_str());
+				}
+			}
+		}
+		if (dbversion < 111)
+		{
+			//SolarEdge API, no need for Serial Number anymore
+			std::stringstream szQuery2;
+			std::vector<std::vector<std::string> > result;
+			szQuery2 << "SELECT ID, Password FROM Hardware WHERE([Type]==" << HTYPE_SolarEdgeAPI << ")";
+			result = query(szQuery2.str());
+			if (result.size() > 0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
+					safe_query("UPDATE Hardware SET Username='%q', Password='' WHERE (ID=%s)", sd[1].c_str(), sd[0].c_str());
 				}
 			}
 		}
@@ -2372,7 +2400,7 @@ bool CSQLHelper::OpenDatabase()
 
 	if (!GetPreferencesVar("SecStatus", nValue))
 	{
-		UpdatePreferencesVar("SecStatus", (int)SECSTATUS_DISARMED);
+		UpdatePreferencesVar("SecStatus", 0);
 	}
 	if (!GetPreferencesVar("SecOnDelay", nValue))
 	{
@@ -3328,6 +3356,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 		else
 		{
 			if (
+				(stype == STYPE_DoorContact) ||
 				(stype == STYPE_DoorLock) ||
 				(stype == STYPE_Contact)
 				)
@@ -3406,7 +3435,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 		std::string lstatus="";
 
 		result = safe_query(
-			"SELECT Name,SwitchType,AddjValue,StrParam1,StrParam2,Options FROM DeviceStatus WHERE (ID = %" PRIu64 ")",
+			"SELECT Name,SwitchType,AddjValue,StrParam1,StrParam2,Options,LastLevel FROM DeviceStatus WHERE (ID = %" PRIu64 ")",
 			ulID);
 		if (result.size()>0)
 		{
@@ -3421,6 +3450,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 			GetLightStatus(devType, subType, switchtype,nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 
 			bool bIsLightSwitchOn=IsLightSwitchOn(lstatus);
+			std::string slevel = sd[6];
 
 			if (((bIsLightSwitchOn) && (llevel != 0) && (llevel != 255)) || (switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageInverted))
 			{
@@ -3429,7 +3459,8 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 					"UPDATE DeviceStatus SET LastLevel='%d' WHERE (ID = %" PRIu64 ")",
 					llevel,
 					ulID);
-
+				if (bUseOnOffAction)
+				    slevel = boost::lexical_cast<std::string>(llevel);
 			}
 
 			if (bUseOnOffAction)
@@ -3439,12 +3470,8 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 				std::string OffAction=sd[4];
 				std::string Options=sd[5];
 
-				if(devType==pTypeEvohome)//would this be ok to extend as a general purpose feature?
+				if(devType==pTypeEvohome)
 				{
-					stdreplace(OnAction, "{deviceid}", ID);
-					stdreplace(OnAction, "{status}", lstatus);
-					//boost::replace_all(OnAction, ID);//future expansion
-					//boost::replace_all(OnAction, "{status}", lstatus);
 					bIsLightSwitchOn=true;//Force use of OnAction for all actions
 
 				} else if (switchtype == STYPE_Selector) {
@@ -3452,7 +3479,15 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 					OnAction = CURLEncode::URLDecode(GetSelectorSwitchLevelAction(BuildDeviceOptions(Options, true), llevel));
 					OffAction = CURLEncode::URLDecode(GetSelectorSwitchLevelAction(BuildDeviceOptions(Options, true), 0));
 				}
-
+				if (bIsLightSwitchOn) {
+					stdreplace(OnAction, "{level}", slevel);
+					stdreplace(OnAction, "{status}", lstatus);
+					stdreplace(OnAction, "{deviceid}", ID);
+				} else {
+					stdreplace(OffAction, "{level}", slevel);
+					stdreplace(OffAction, "{status}", lstatus);
+					stdreplace(OffAction, "{deviceid}", ID);
+				}
 				HandleOnOffAction(bIsLightSwitchOn, OnAction, OffAction);
 			}
 
@@ -3530,6 +3565,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 						(switchtype == STYPE_Motion) ||
 						(switchtype == STYPE_Dimmer) ||
 						(switchtype == STYPE_PushOn) ||
+						(switchtype == STYPE_DoorContact) ||
 						(switchtype == STYPE_DoorLock) ||
 						(switchtype == STYPE_Selector)
 						)
@@ -5160,14 +5196,19 @@ void CSQLHelper::AddCalendarUpdateMeter()
 				(devType!=pTypeWEIGHT)
 				)
 			{
-				//Insert the last (max) counter value into the meter table to get the "today" value correct.
-				result=safe_query(
-					"INSERT INTO Meter (DeviceRowID, Value, Date) "
-					"VALUES ('%" PRIu64 "', '%q', '%q')",
-					ID,
-					sd[1].c_str(),
-					szDateEnd
+				result = safe_query("SELECT Value FROM Meter WHERE (DeviceRowID='%" PRIu64 "') ORDER BY ROWID DESC LIMIT 1", ID);
+				if (result.size() > 0)
+				{
+					std::vector<std::string> sd = result[0];
+					//Insert the last (max) counter value into the meter table to get the "today" value correct.
+					result = safe_query(
+						"INSERT INTO Meter (DeviceRowID, Value, Date) "
+						"VALUES ('%" PRIu64 "', '%q', '%q')",
+						ID,
+						sd[0].c_str(),
+						szDateEnd
 					);
+				}
 			}
 		}
 		else

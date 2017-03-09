@@ -16,6 +16,7 @@ public:
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 	virtual bool WriteInt(const std::string &sendString) = 0;
 	bool m_bTXokay;
+	bool m_bRFDebug;
 	std::string m_Version;
 private:
 	void Init();

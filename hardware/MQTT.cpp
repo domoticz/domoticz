@@ -134,11 +134,9 @@ void MQTT::on_message(const struct mosquitto_message *message)
 	std::string szCommand = "udevice";
 	std::vector<std::vector<std::string> > result;
 	uint64_t idx = 0;
-
 	bool ret = jReader.parse(qMessage, root);
-	if (!ret)
+	if ((!ret) || (!root.isObject()))
 		goto mqttinvaliddata;
-
 	try
 	{
 		if (!root["command"].empty())
@@ -309,7 +307,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 				hue = root["hue"].asInt();
 		}
 		
-		bool isWhite = false;
+		int isWhite = 0;
 		if (!root["isWhite"].empty())
 		{
 			if (root["isWhite"].isString())
@@ -318,7 +316,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 				isWhite = root["isWhite"].asInt();
 		}
 		
-		if (!m_mainworker.SwitchLight(idx, switchcmd, level, hue, isWhite, 0) == true)
+		if (!m_mainworker.SwitchLight(idx, switchcmd, level, hue, isWhite!=0, 0) == true)
 		{
 			_log.Log(LOG_ERROR, "MQTT: Error sending switch command!");
 		}
@@ -592,6 +590,9 @@ void MQTT::SendDeviceInfo(const int m_HwdID, const uint64_t DeviceRowIdx, const 
 
 		if (IsLightOrSwitch(dType, dSubType) == true) {
 			root["switchType"] = Switch_Type_Desc(switchType);
+		}
+		else if ((dType = pTypeRFXMeter) || (dType = pTypeRFXSensor)) {
+			root["meterType"] = Meter_Type_Desc((_eMeterType)switchType);
 		}
 		// Add device options
 		std::map<std::string, std::string>::const_iterator ittOptions;
