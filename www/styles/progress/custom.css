@@ -1,0 +1,373 @@
+body table#itemtablesmall tr td:first-child + td {margin:0!important; padding:5px!important; line-height:100%!important}
+
+@font-face {
+	font-family: "OpenSans";
+	font-style: normal;
+	src: url('fonts/OpenSans.ttf');
+	src: local('OpenSans'), url('fonts/OpenSans.ttf') format('truetype');
+}
+@font-face {
+	font-family: "DroidSans";
+	font-style: normal;
+	src: url('fonts/DroidSans.ttf');
+	src: local('DroidSans'), url('fonts/DroidSans.ttf') format('truetype');
+}
+body {
+	background: #fff url(images/imgbg.jpg) no-repeat center center fixed;
+	-webkit-background-size: cover;
+  	-moz-background-size: cover;
+  	-o-background-size: cover;
+  	background-size: cover;
+}
+
+#appversion {
+    display: none;
+}
+
+#bannav {
+    float: left;
+    margin-bottom: 5px;
+    width: auto;
+}
+
+#bigtext, #status {
+    color: #444 !important;
+    font-size: 130%!important;
+    font-weight: bold;
+    white-space: nowrap;
+    line-height: 100%!important;
+    text-align: right;
+    overflow: hidden;
+    position: absolute;
+    top: 27px;
+    left: 60%;
+    width: 20%;
+    padding: 5px!important;
+    margin:0!important;
+}
+
+
+
+#copyright {
+    background-color: #f1f1f1;
+    margin-top: 10px;
+    border: none;
+    height:auto;
+}
+
+#holder h1, #holder h2, #holder h3 {
+    clear: both;
+    color: #999;
+    margin: 10px 0 10px 0;
+}
+
+#img {
+    margin: 0;
+    padding: 17px 17px 0 0;
+    position: absolute;
+    top:17px;
+    right: 0;
+}
+
+#img1 {
+    margin: 0;
+    padding: 17px 17px 0 0;
+    position: absolute;
+    top:17px;
+    right: 0;
+}
+
+#img2 {
+    margin: 0;
+    padding: 17px 17px 0 0;
+    position: absolute;
+    top:17px;
+    right: 50px;
+}
+
+#itemtable #status {
+    display: none;
+}
+
+#itemtabledoubleicon td:last-of-type .lcursor, #itemtable td:last-of-type .lcursor, #itemtablenotype td:last-of-type .lcursor, #itemtablenostatus td:last-of-type .lcursor {
+    position: relative;
+    top: 7px;
+    background-color: #aaa;
+    padding: 2px 4px 3px 4px;
+    border-radius: 5px;
+}
+
+#itemtablenostatus td:before {
+    font-style: normal;
+}
+
+#itemtablesmall #lastupdate, #itemtablesmall #type {
+    display: none;
+}
+
+#itemtablesmall #name {
+    margin:0 !important;
+    padding:5px 10px!important
+    left: 10px;
+    top: 25px;
+}
+
+#itemtablesmall tr {
+    border-style: none;
+    padding: 0;
+    background-color:#background-color: rgb(212, 225, 238);
+    height: 75px;
+    position: relative;
+}
+
+#dashcontent #itemtablesmall tr {
+    background-color:#D4E1EE!important;
+}
+
+
+#lastupdate {
+    color: #999;
+    padding: 5px;
+    position: absolute;
+    top: 49px;
+    left:20px;
+    width: 45%;
+}
+
+#lastupdate:before {
+    font-style: normal!important;
+}
+
+#name {
+    border-style: none!important;
+    border-width:0!important;
+    color: #fff!important;
+    font-weight: bold;
+    overflow: hidden;
+    padding:5px 10px!important;
+    position: absolute;
+    top:12px;
+    left:10px;
+    text-transform: uppercase;
+    width: 50%;
+}
+
+#scenecontent #bigtext, #itemtablenostatus #bigtext {
+    display: none
+}
+
+#scenecontent #itemtabledoubleicon td:last-of-type, #itemtable td:last-of-type, #itemtablenotype td:last-of-type, #itemtablenostatus td:last-of-type {
+    margin: 0;
+    padding:5px!important;
+    position: absolute;
+    left: 13px;
+    top: 78px;
+}
+
+#itemtabledoubleicon tr, #itemtable tr, #itemtablenotype tr, #itemtablenostatus tr {
+    height: 110px;
+    position: relative;
+    padding:0;
+    background-color: #D4E1EE!important;
+}
+
+/*
+#scenecontent a.btnstyle:before, #cameracontent a.btnstyle:before,#lightcontent a.btnstyle:before, #lightcontent a.btnstylerev:before {
+    content: "+ ";
+}
+*/
+
+
+#timesun div {
+    display: none;
+}
+
+#type {
+    color: #999999;
+    font-style: normal;
+    padding:5px;
+    position: absolute;
+    top: 62px;
+    left:20px;
+}
+
+#type:before {
+    font-style: normal!important;
+}
+
+.container-fluid {
+    margin-top: 25px;
+}
+
+.dropdown-submenu > a:after {
+    border-left-color: #0066cc;
+    margin-right: 0px;
+}
+
+.navbar .nav .current_page_item > a {
+    background-color: white!important;
+    color: #999!important;
+    background-image:none!important;
+    border:none!important;
+}
+
+.navbar .nav .dropdown-menu {
+    background-color: #eee;
+    background-image: none;
+    border-color: #ddd;
+}
+
+.navbar .nav .dropdown-menu li a {
+    background-color: #eee;
+}
+
+.navbar .nav li a {
+    background-color: #ddd;
+    background-image: none;
+    border: none;
+    color: #666;
+    font-weight: normal;
+}
+
+.navbar .nav li a:hover{
+    background-color: #ccc!important;
+    border: none!important;
+}
+
+
+#appnavbar li a {
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.navbar-fixed-top .navbar-inner, .navbar-static-top .navbar-inner {
+    box-shadow: none;
+    padding: 10px 0 0 0;
+}
+
+.row {
+    clear: both;
+}
+
+.row-fluid .span3, .row-fluid .span4, .row-fluid .span6 {
+    background-color: #eee;
+    padding: 20px;
+}
+
+.ui-widget-content {
+    background-color: #fff;
+    background-image: none;
+    border-color: #999;
+    color: #333;
+}
+
+a.btnsmall {
+    background-color: #abafb8;
+    background-image: none;
+    margin-bottom: 10px;
+}
+
+a.btnstyle, a.btnstylerev {
+    background-color: #999;
+    background-image: none;
+    margin-right: 10px;
+    padding: 0px 10px 0 10px;
+}
+
+body {
+    background: none;
+    color: #666;
+}
+
+div.container {
+    border-style: none;
+}
+
+div.navbar-inner {
+    border-style: none;
+}
+
+p.ng-binding {
+    color: #ccc;
+    font-size: 12px;
+    padding-top: 2px
+;
+}
+
+table tr {
+    border-style: none;
+    padding: 0;
+}
+
+#NewHardware button {
+    margin: 15px 0 10px 0;
+}
+
+#protectiontable, #loghistory table, #notifications>table, #metercounters table, #othersettings table, #floorplans table, #emailsetup, #settingscontent #ActiveTabs {
+    background-color: #eee;
+    padding: 20px;
+}
+#emailsetup{margin-top:20px}
+
+#protectiontable, #loghistory table, #notifications>table,#metercounters table, #othersettings table, #floorplans table {
+    border-top: 10px solid #eee;
+    border-bottom: 10px solid #eee;
+}
+
+#restoredatabase center {
+    text-align: left
+}
+
+.bannercontent {
+    padding-bottom: 50px
+    ;
+}
+
+#copyright p {
+    color: #ccc;
+    margin: 0 10px 0 0;
+    text-align: right;
+}
+
+#copyright a, #copyright a:visited {
+    color: #ccc;
+}
+
+.brand img {
+    height: 30px;
+    width: 30px
+}
+
+.brand h1 {
+    font-size: 1em;
+    font-family: helvetica,sans-serif;
+    margin-top: -30px;
+    margin-left: 26px
+}
+
+
+.sub-tabs-apply {
+    position:absolute;
+    bottom:60px;
+    left:10%;
+    border-radius:5px!important
+}
+
+.page-header-small {border:none!important;}
+
+#settingscontent {
+    margin-bottom:80px
+}
+
+#settingscontent .sub-tabs {
+border-bottom:1px solid #ddd;
+}
+
+#settingscontent #tabs a {
+    background-color:#ddd!important;
+}
+
+#settingscontent #tabs .active a{
+    background-color:#fff!important;
+}
+
