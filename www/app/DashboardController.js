@@ -78,7 +78,7 @@ define(['app'], function (app) {
 			htm+='</ul></div></span>';
 			return htm;
 		}
-		SetColValue = function (idx,hue,brightness, isWhite)
+		SetColValue = function (idx,hue,brightness, isWhite, rgb)
 		{
 			clearInterval($.setColValue);
 			if (permissions.hasPermission("Viewer")) {
@@ -87,7 +87,7 @@ define(['app'], function (app) {
 				return;
 			}
 			$.ajax({
-				 url: "json.htm?type=command&param=setcolbrightnessvalue&idx=" + idx + "&hue=" + hue + "&brightness=" + brightness + "&iswhite=" + isWhite,
+				 url: "json.htm?type=command&param=setcolbrightnessvalue&idx=" + idx + "&hue=" + hue + "&brightness=" + brightness + "&iswhite=" + isWhite + "&hex=" +rgbToHex(rgb),
 				 async: false, 
 				 dataType: 'json'
 			});

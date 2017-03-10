@@ -264,7 +264,7 @@ define(['app'], function (app) {
 		  });
 		}
 
-		SetColValue = function (idx,hue,brightness)
+		SetColValue = function (idx,hue,brightness, rgb)
 		{
 			clearInterval($.setColValue);
 			if (permissions.hasPermission("Viewer")) {
@@ -274,7 +274,7 @@ define(['app'], function (app) {
 			}
 			var bIsWhite=$('#scenecontent #ledtable #optionsWhite').is(":checked");
 			$.ajax({
-				 url: "json.htm?type=command&param=setcolbrightnessvalue&idx=" + idx + "&hue=" + hue + "&brightness=" + brightness + "&iswhite=" + bIsWhite,
+				 url: "json.htm?type=command&param=setcolbrightnessvalue&idx=" + idx + "&hue=" + hue + "&brightness=" + brightness + "&iswhite=" + bIsWhite + "&hex=" +rgbToHex(rgb),
 				 async: false, 
 				 dataType: 'json'
 			});
@@ -646,7 +646,7 @@ define(['app'], function (app) {
 						$("#scenecontent #optionsRGB").prop('checked',!bIsWhite);
 						$("#scenecontent #optionsWhite").prop('checked',bIsWhite);
 						clearInterval($.setColValue);
-						$.setColValue = setInterval(function() { SetColValue($.lampIdx,hsb.h,hsb.b); }, 400);
+						$.setColValue = setInterval(function() { SetColValue($.lampIdx,hsb.h,hsb.b, rgb); }, 400);
 					}
 				}
 			});
