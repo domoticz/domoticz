@@ -382,7 +382,8 @@ hardware/Sterbox.cpp
 hardware/TCPProxy/tcpproxy_server.cpp
 hardware/TE923.cpp
 hardware/TE923Tool.cpp
-hardware/Teleinfo.cpp
+hardware/TeleinfoBase.cpp
+hardware/TeleinfoSerial.cpp
 hardware/Tellstick.cpp
 hardware/Thermosmart.cpp
 hardware/ToonThermostat.cpp
@@ -598,7 +599,7 @@ else()
 endif()
 IF(OpenZWave)
   message(STATUS ${OpenZWave})
-  target_link_libraries(domoticz ${OpenZWave})
+  target_link_libraries(domoticz ${OpenZWave} -lresolv)
   include_directories(${CMAKE_SOURCE_DIR}/hardware/openzwave)
   add_definitions(-DWITH_OPENZWAVE)
   # open-zwave needs libudev
