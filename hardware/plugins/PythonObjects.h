@@ -107,9 +107,9 @@ namespace Plugins {
 	PyObject* CDevice_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
 	int CDevice_init(CDevice *self, PyObject *args, PyObject *kwds);
 	PyObject* CDevice_refresh(CDevice* self);
-	PyObject* CDevice_insert(CDevice* self, PyObject *args);
+	PyObject* CDevice_insert(CDevice* self);
 	PyObject* CDevice_update(CDevice *self, PyObject *args, PyObject *kwds);
-	PyObject* CDevice_delete(CDevice* self, PyObject *args);
+	PyObject* CDevice_delete(CDevice* self);
 	PyObject* CDevice_str(CDevice* self);
 
 	static PyMemberDef CDevice_members[] = {

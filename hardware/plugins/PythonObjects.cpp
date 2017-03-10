@@ -610,7 +610,7 @@ namespace Plugins {
 		return Py_None;
 	}
 
-	PyObject* CDevice_insert(CDevice* self, PyObject *args)
+	PyObject* CDevice_insert(CDevice* self)
 	{
 		if (self->pPlugin)
 		{
@@ -732,7 +732,7 @@ namespace Plugins {
 		return Py_None;
 	}
 
-	PyObject* CDevice_delete(CDevice* self, PyObject *args)
+	PyObject* CDevice_delete(CDevice* self)
 	{
 		if (self->pPlugin)
 		{
