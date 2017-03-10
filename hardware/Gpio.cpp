@@ -222,7 +222,7 @@ bool CGpio::StartHardware()
 #endif
 	m_stoprequested=false;
 
-	//Start worker thread that will be responsible for interrupt handling
+	//  Start worker thread that will be responsible for interrupt handling
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CGpio::Do_Work, this)));
 
 	m_bIsStarted=true;
@@ -230,7 +230,7 @@ bool CGpio::StartHardware()
 	//Hook up interrupt call-backs for each input GPIO
 	for(std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it) {
 		if (it->GetIsExported() && it->GetIsInput()) {
-			_log.Log(LOG_NORM, "GPIO: Hooking interrupt handler for GPIO %d.", it->GetId());
+			//	_log.Log(LOG_NORM, "GPIO: Hooking interrupt handler for GPIO %d.", it->GetId());
 			switch (it->GetId()) {
 				case 0: wiringPiISR(0, INT_EDGE_SETUP, &interruptHandler0); getclock(&tvBegin[0]); break;
 				case 1: wiringPiISR(1, INT_EDGE_SETUP, &interruptHandler1); getclock(&tvBegin[1]); break;
@@ -264,12 +264,24 @@ bool CGpio::StartHardware()
 				case 29: wiringPiISR(29, INT_EDGE_SETUP, &interruptHandler29); getclock(&tvBegin[29]); break;
 				case 30: wiringPiISR(30, INT_EDGE_SETUP, &interruptHandler30); getclock(&tvBegin[30]); break;
 				case 31: wiringPiISR(31, INT_EDGE_SETUP, &interruptHandler31); getclock(&tvBegin[31]); break;
-				default:
-					_log.Log(LOG_ERROR, "GPIO: Error hooking interrupt handler for unknown GPIO %d.", it->GetId());
+				default: _log.Log(LOG_ERROR, "GPIO: Error hooking interrupt handler for unknown GPIO %d.", it->GetId());
 			}
 		}
 	}
-	_log.Log(LOG_NORM, "GPIO: WiringPi is now initialized");
+	
+	//
+	//  Read all exported GPIO ports and set the device status accordingly.
+	//  Wait 250 milli seconds to make sure all are set before initialising
+	//  the remainder of domoticz. 
+	//
+	CopyDeviceStates();
+	sleep_milliseconds(250);
+
+	//
+	//  Start thread to do a delayed setup of initial state
+	//
+	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CGpio::DelayedStartup, this)));
+	//  _log.Log(LOG_NORM, "GPIO: WiringPi is now initialized");
 #endif
 	sOnConnected(this);
 
@@ -328,7 +340,7 @@ bool CGpio::WriteToHardware(const char *pdata, const unsigned char length)
 
 void CGpio::ProcessInterrupt(int gpioId) {
 #ifndef WIN32
-	_log.Log(LOG_NORM, "GPIO: Processing interrupt for GPIO %d...", gpioId);
+	// _log.Log(LOG_NORM, "GPIO: Processing interrupt for GPIO %d...", gpioId);
 
 	// Debounce reading
 	sleep_milliseconds(50);
@@ -350,7 +362,7 @@ void CGpio::ProcessInterrupt(int gpioId) {
 
 	sDecodeRXMessage(this, (const unsigned char *)&IOPinStatusPacket, NULL, 255);
 
-	_log.Log(LOG_NORM, "GPIO: Done processing interrupt for GPIO %d (%s).", gpioId, (value != 0) ? "HIGH" : "LOW");
+	// _log.Log(LOG_NORM, "GPIO: Done processing interrupt for GPIO %d (%s).", gpioId, (value != 0) ? "HIGH" : "LOW");
 #endif
 }
 
@@ -373,7 +385,7 @@ void CGpio::Do_Work()
 				interruptNumber = gpioInterruptQueue.front();
 				triggers.push_back(interruptNumber);
 				gpioInterruptQueue.erase(gpioInterruptQueue.begin());
-				_log.Log(LOG_NORM, "GPIO: Acknowledging interrupt for GPIO %d.", interruptNumber);
+				// _log.Log(LOG_NORM, "GPIO: Acknowledging interrupt for GPIO %d.", interruptNumber);
 			}
 		}
 		lock.unlock();
@@ -423,7 +435,7 @@ bool CGpio::InitPins()
 		// 01234567890123456789
 
 		std::string exportLine(buf);
-		std::cout << "Processing line: " << exportLine;
+		//	std::cout << "Processing line: " << exportLine;
 		std::vector<std::string> sresults;
 		StringSplit(exportLine, ":", sresults);
 		if (sresults.empty())
@@ -581,4 +593,98 @@ CGpioPin* CGpio::GetPPinById(int id)
 	return NULL;
 }
 
+void CGpio::DelayedStartup()
+{
+	//
+	//	This runs to better support Raspberry Pi as domoticz slave device.
+	//
+	//  Delay 30 seconds to make sure master domoticz has connected. Then 
+	//	copy the GPIO ports states to the switches one more time so the 
+	//	master will see the actual states also after it has connected. 
+	//
+	sleep_milliseconds(30000);
+
+	_log.Log(LOG_NORM, "GPIO: Copy 2nd time. Optional connected Master Domoticz now updates its status");
+	CopyDeviceStates();
+
+	// _log.Log(LOG_NORM, "GPIO: DelayedStartup - done");
+}
+
+void CGpio::CopyDeviceStates()
+{
+        char buf[256];
+        int gpioId;
+        FILE *cmd = NULL;
+
+        _log.Log(LOG_NORM, "GPIO: Copy GPIO states to devices");
+
+        cmd = popen("gpio exports", "r");
+
+        while (fgets(buf, sizeof(buf), cmd) != 0)
+        {
+                // Decode GPIO pin number from the output formatted as follows:
+                //
+                // GPIO Pins exported:
+                //   18: in 27 both
+                //
+                std::string exportLine(buf);
+                std::vector<std::string> sresults;
+                StringSplit(exportLine, ":", sresults);
+
+                if (sresults.empty())
+                {
+                        continue;
+                }
+
+                if (sresults[0] == "GPIO Pins exported")
+                {
+                        continue;
+                }
+
+                if (sresults.size() >= 2)
+                {
+                        gpioId = atoi(sresults[0].c_str());
+
+                        if ((gpioId >= 0) && (gpioId <= MAX_GPIO))
+                        {
+                                SetupInitialState(gpioId);
+                                //  _log.Log(LOG_NORM, "GPIO: CopyDeviceStates - %s", buf);
+                        }
+                        else
+                        {
+                                _log.Log(LOG_NORM, "GPIO: CopyDeviceStates - Ignoring unsupported pin '%s'", buf);
+                        }
+                }
+        }
+
+        // _log.Log(LOG_NORM, "GPIO: CopyDeviceStates - done");
+}
+
+void CGpio::SetupInitialState(int gpioId)
+{
+	//
+        // Read GPIO data
+	//
+        int value = digitalRead(gpioId);
+
+        if (value != 0) 
+	{
+                IOPinStatusPacket.LIGHTING1.cmnd = light1_sOn;
+        }
+        else 
+	{
+                IOPinStatusPacket.LIGHTING1.cmnd = light1_sOff;
+        }
+
+        unsigned char seqnr = IOPinStatusPacket.LIGHTING1.seqnbr;
+        seqnr++;
+        IOPinStatusPacket.LIGHTING1.seqnbr = seqnr;
+        IOPinStatusPacket.LIGHTING1.unitcode = gpioId;
+
+        sDecodeRXMessage(this, (const unsigned char *)&IOPinStatusPacket, NULL, 255);
+        
+	//  _log.Log(LOG_NORM, "GPIO:%d initial state %s", gpioId, (value != 0) ? "OPEN" : "CLOSED");
+}
+
 #endif // WITH_GPIO
+
