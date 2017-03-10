@@ -553,7 +553,7 @@ namespace Plugins {
 				if ((SubType != -1) && SubType) self->SubType = SubType;
 				if (SwitchType != -1) self->SwitchType = SwitchType;
 				if (Image != -1) self->Image = Image;
-				if (Used == 0) self->Used = Used;
+				if (Used == 1) self->Used = Used;
 				if (Options) {
 					Py_DECREF(self->Options);
 					self->Options = PyUnicode_FromString(Options);
