@@ -915,7 +915,7 @@ Json::Value BleBox::SendCommand(const std::string &IPAddress, const std::string 
 std::string BleBox::IdentifyDevice(const std::string &IPAddress)
 {
 	Json::Value root = SendCommand(IPAddress, "/api/device/state");
-	if (root.empty())
+	if (!root.isObject())
 		return "";
 
 	std::string result;
@@ -1130,5 +1130,17 @@ void BleBox::SearchNodes(const std::string &ipmask)
 		return;
 	if (!isInt(strarray[0]) || !isInt(strarray[1]) || !isInt(strarray[2]))
 		return;
-	//TODO
+
+	for (unsigned int i = 1; i < 255; ++i)
+	{
+		std::stringstream sstr;
+		sstr << strarray[0] << "." << strarray[1] << "." << strarray[2] << "." << i;
+		std::string IPAddress = sstr.str();
+
+		std::map<const std::string, const int>::const_iterator itt = m_devices.find(IPAddress);
+		if (itt == m_devices.end())
+		{
+			m_searchingThread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&BleBox::AddNode, this, "unknown", IPAddress)));
+		}
+	}
 }
