@@ -16,12 +16,12 @@ MySensorsMQTT::MySensorsMQTT(const int ID, const std::string &Name, const std::s
 {
 	switch (Topics) {
 		case 1:
-			MyTopicIn = TOPIC_IN + "/" + TOPIC_DEFAULT;
-			MyTopicOut = TOPIC_OUT + "/" + TOPIC_DEFAULT;
+			MyTopicIn = TOPIC_IN + '/' + TOPIC_DEFAULT;
+			MyTopicOut = TOPIC_OUT + '/' + TOPIC_DEFAULT;
 			break;
 		case 2:
-			MyTopicIn = TOPIC_IN + "/" + Name;
-			MyTopicOut = TOPIC_OUT + "/" + Name;
+			MyTopicIn = TOPIC_IN + '/' + Name;
+			MyTopicOut = TOPIC_OUT + '/' + Name;
 			break;
 	}
 	m_TopicInWithoutHash = MyTopicIn;
