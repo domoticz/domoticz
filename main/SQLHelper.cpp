@@ -6587,7 +6587,7 @@ void CSQLHelper::CheckDeviceTimeout()
 
 		std::vector<std::vector<std::string> > result;
 		result = safe_query(
-			"SELECT A.ID, A.Name, A.LastUpdate FROM DeviceStatus WHERE (Used!=0 AND A.LastUpdate<='%04d-%02d-%02d %02d:%02d:%02d' "
+			"SELECT ID, Name, LastUpdate FROM DeviceStatus WHERE (Used!=0 AND LastUpdate<='%04d-%02d-%02d %02d:%02d:%02d' "
 			"AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d "
 			"AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d) "
 			"ORDER BY Name",
