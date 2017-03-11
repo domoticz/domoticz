@@ -14,8 +14,6 @@
 MySensorsMQTT::MySensorsMQTT(const int ID, const std::string &Name, const std::string &IPAddress, const unsigned short usIPPort, const std::string &Username, const std::string &Password, const std::string &CAfilename, const int Topics) :
 	MQTT(ID, IPAddress, usIPPort, Username, Password, CAfilename, (int)MQTT::PT_out)
 {
-	std::string MyTopicIn;
-	std::string MyTopicOut;
 	switch (Topics) {
 		case 1:
 			MyTopicIn = TOPIC_IN + "/" + TOPIC_DEFAULT;
