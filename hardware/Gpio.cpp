@@ -55,6 +55,7 @@ Connection information:
 #include "../main/RFXtrx.h"
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
+#include "../main/SQLHelper.h"
 
 #define NO_INTERRUPT	-1
 #define MAX_GPIO	31
@@ -62,6 +63,8 @@ Connection information:
 
 bool m_bIsInitGPIOPins=false;
 bool interruptHigh[MAX_GPIO+1]={ false };
+
+extern 	CSQLHelper m_sql;
 
 // List of GPIO pin numbers, ordered as listed
 std::vector<CGpioPin> CGpio::pins;
@@ -662,26 +665,45 @@ void CGpio::CopyDeviceStates()
 
 void CGpio::SetupInitialState(int gpioId)
 {
-	//
-        // Read GPIO data
-	//
-        int value = digitalRead(gpioId);
+	bool updateDatabase = false;
+	int state = digitalRead(gpioId);
+	std::vector<std::vector<std::string> > result;
 
-        if (value != 0) 
+	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", m_HwdID, gpioId);
+
+	if ((!result.empty()) && (result.size()>0))
 	{
-                IOPinStatusPacket.LIGHTING1.cmnd = light1_sOn;
-        }
-        else 
+		if ((!result.empty()) && (result.size()>0))
+		{
+			std::vector<std::string> sd=result[0];
+
+			int dbaseState = atoi(sd[1].c_str());
+
+			if (dbaseState != state)
+			{
+				updateDatabase = true;
+			}
+		}
+	}
+
+	if (updateDatabase)
 	{
-                IOPinStatusPacket.LIGHTING1.cmnd = light1_sOff;
-        }
+		if (state != 0)
+		{
+			IOPinStatusPacket.LIGHTING1.cmnd = light1_sOn;
+		}
+		else
+		{
+			IOPinStatusPacket.LIGHTING1.cmnd = light1_sOff;
+		}
 
-        unsigned char seqnr = IOPinStatusPacket.LIGHTING1.seqnbr;
-        seqnr++;
-        IOPinStatusPacket.LIGHTING1.seqnbr = seqnr;
-        IOPinStatusPacket.LIGHTING1.unitcode = gpioId;
+		unsigned char seqnr = IOPinStatusPacket.LIGHTING1.seqnbr;
+		seqnr++;
+		IOPinStatusPacket.LIGHTING1.seqnbr = seqnr;
+		IOPinStatusPacket.LIGHTING1.unitcode = gpioId;
 
-        sDecodeRXMessage(this, (const unsigned char *)&IOPinStatusPacket, NULL, 255);
+		sDecodeRXMessage(this, (const unsigned char *)&IOPinStatusPacket, NULL, 255);
+	}
         
 	//  _log.Log(LOG_NORM, "GPIO:%d initial state %s", gpioId, (value != 0) ? "OPEN" : "CLOSED");
 }
