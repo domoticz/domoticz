@@ -1133,7 +1133,7 @@ void BleBox::SearchNodes(const std::string &ipmask)
 		return;
 
 
-	std::vector<boost::shared_ptr<boost::thread>> m_searchingThreads;
+	std::vector< boost::shared_ptr<boost::thread> > searchingThreads;
 
 	for (unsigned int i = 1; i < 255; ++i)
 	{
@@ -1144,12 +1144,12 @@ void BleBox::SearchNodes(const std::string &ipmask)
 		std::map<const std::string, const int>::const_iterator itt = m_devices.find(IPAddress);
 		if (itt == m_devices.end())
 		{
-			m_searchingThreads.push_back(boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&BleBox::AddNode, this, "unknown", IPAddress))));
+			searchingThreads.push_back(boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&BleBox::AddNode, this, "unknown", IPAddress))));
 		}
 	}
 
-	for (size_t i = 1; i <= m_searchingThreads.size(); ++i)
+	for (size_t i = 1; i <= searchingThreads.size(); ++i)
 	{
-		m_searchingThreads[i-1]->join();
+		searchingThreads[i-1]->join();
 	}
 }
