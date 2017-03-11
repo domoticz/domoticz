@@ -40,7 +40,6 @@ private:
 	volatile bool m_stoprequested;
 	int m_PollInterval;
 	boost::shared_ptr<boost::thread> m_thread;
-	boost::shared_ptr<boost::thread> m_searchingThread;
 	std::map<const std::string, const int> m_devices;
 	boost::mutex m_mutex;
 

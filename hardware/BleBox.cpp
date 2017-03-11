@@ -175,7 +175,7 @@ void BleBox::GetDevicesState()
 
 					const float level = root["currentPos"].asFloat();
 
-					SendPercentageSensor(IP, 0, 255, level, DevicesType[itt->second].name);
+					SendPercentageSensor(IP, 1, 255, level, DevicesType[itt->second].name);
 					break;
 				}
 				case 5:
@@ -1008,6 +1008,7 @@ void BleBox::AddNode(const std::string &name, const std::string &IPAddress)
 			"VALUES (%d, '%q', %d, %d, %d, %d, 1, 12, 255, '%q', 0, 'Unavailable')",
 			m_HwdID, szIdx.c_str(), 3, pTypeGeneralSwitch, sTypeAC, STYPE_PushOn, name.c_str());
 	}
+	else
 	if (deviceType.unit == 6) // switchboxd
 	{
 		m_sql.safe_query(
@@ -1131,6 +1132,9 @@ void BleBox::SearchNodes(const std::string &ipmask)
 	if (!isInt(strarray[0]) || !isInt(strarray[1]) || !isInt(strarray[2]))
 		return;
 
+
+	std::vector< boost::shared_ptr<boost::thread> > searchingThreads;
+
 	for (unsigned int i = 1; i < 255; ++i)
 	{
 		std::stringstream sstr;
@@ -1140,7 +1144,12 @@ void BleBox::SearchNodes(const std::string &ipmask)
 		std::map<const std::string, const int>::const_iterator itt = m_devices.find(IPAddress);
 		if (itt == m_devices.end())
 		{
-			m_searchingThread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&BleBox::AddNode, this, "unknown", IPAddress)));
+			searchingThreads.push_back(boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&BleBox::AddNode, this, "unknown", IPAddress))));
 		}
+	}
+
+	for (size_t i = 1; i <= searchingThreads.size(); ++i)
+	{
+		searchingThreads[i-1]->join();
 	}
 }
