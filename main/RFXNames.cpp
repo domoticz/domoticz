@@ -263,13 +263,13 @@ const char *Switch_Type_Desc(const _eSwitchType sType)
 		{ STYPE_Blinds, "Blinds" },
 		{ STYPE_X10Siren, "X10 Siren" },
 		{ STYPE_SMOKEDETECTOR, "Smoke Detector" },
-        { STYPE_BlindsInverted, "Blinds Inverted" },
+		{ STYPE_BlindsInverted, "Blinds Inverted" },
 		{ STYPE_Dimmer, "Dimmer" },
 		{ STYPE_Motion, "Motion Sensor" },
 		{ STYPE_PushOn, "Push On Button" },
 		{ STYPE_PushOff, "Push Off Button" },
 		{ STYPE_DoorContact, "Door Contact" },
-        { STYPE_Dusk, "Dusk Sensor" },
+		{ STYPE_Dusk, "Dusk Sensor" },
 		{ STYPE_BlindsPercentage, "Blinds Percentage" },
 		{ STYPE_VenetianBlindsUS, "Venetian Blinds US" },
 		{ STYPE_VenetianBlindsEU, "Venetian Blinds EU" },
@@ -327,6 +327,7 @@ const char *Notification_Type_Desc(const int nType, const unsigned char snum)
 		{ NTYPE_STOPPED, "Stop Stream", "Q" },
 		{ NTYPE_PLAYING, "Play Stream", "a" },
 		{ NTYPE_VALUE, "Value", "F" },
+		{ NTYPE_LASTUPDATE, "Last Update", "J"},
 		{  0,NULL,NULL }
 	};
 	if (snum==0)
@@ -366,6 +367,7 @@ const char *Notification_Type_Label(const int nType)
 		{ NTYPE_STOPPED, "" },
 		{ NTYPE_PLAYING, "" },
 		{ NTYPE_VALUE, "" },
+		{ NTYPE_LASTUPDATE, "minutes" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, nType);
@@ -855,6 +857,13 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchTypeLiwin, "Liwin" },
 		{ pTypeGeneralSwitch, sSwitchBlindsT2, "Legrand MyHome Blind Zigbee" },
 		{ pTypeGeneralSwitch, sSwitchLightT2, "Legrand MyHome Light Zigbee" },
+		{ pTypeGeneralSwitch, sSwitchTypeYW_Secu, "YW_Secu" },
+		{ pTypeGeneralSwitch, sSwitchTypeMertik_GV60, "Mertik_GV60" },
+		{ pTypeGeneralSwitch, sSwitchTypeNingbo64, "Ningbo64"},
+		{ pTypeGeneralSwitch, sSwitchTypeX2D, "X2D" },
+		{ pTypeGeneralSwitch, sSwitchTypeHRCMotor, "HRCMotor" },
+		{ pTypeGeneralSwitch, sSwitchTypeVelleman, "Velleman" },
+		{ pTypeGeneralSwitch, sSwitchTypeRFCustom, "RFCustom" },
 		{  0,0,NULL }
 	};
 	return findTableID1ID2(Table, dType, sType);

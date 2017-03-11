@@ -20,50 +20,51 @@
 
 namespace Plugins {
 
-	extern 	std::queue<CPluginMessage>	PluginMessageQueue;
+	extern 	std::queue<CPluginMessage*>	PluginMessageQueue;
 	extern	boost::mutex PluginMutex;
 
-
-	void CPluginProtocol::ProcessInbound(const int HwdID, std::string &ReadData)
+	void CPluginProtocol::ProcessInbound(const ReadMessage* Message)
 	{
 		// Raw protocol is to just always dispatch data to plugin without interpretation
-		CPluginMessage	Message(PMT_Message, HwdID, ReadData);
+		ReceivedMessage*	RecvMessage = new ReceivedMessage(Message->m_HwdID, Message->m_Buffer);
 		{
 			boost::lock_guard<boost::mutex> l(PluginMutex);
-			PluginMessageQueue.push(Message);
+			PluginMessageQueue.push(RecvMessage);
 		}
 	}
 
-	std::string CPluginProtocol::ProcessOutbound(const CPluginMessage & WriteMessage)
+	std::vector<byte> CPluginProtocol::ProcessOutbound(const WriteDirective* WriteMessage)
 	{
-		return WriteMessage.m_Message;
+		return WriteMessage->m_Buffer;
 	}
 
 	void CPluginProtocol::Flush(const int HwdID)
 	{
 		// Forced buffer clear, make sure the plugin gets a look at the data in case it wants it
-		CPluginMessage	Message(PMT_Message, HwdID, m_sRetainedData);
+		ReceivedMessage*	RecvMessage = new ReceivedMessage(HwdID, m_sRetainedData);
 		{
 			boost::lock_guard<boost::mutex> l(PluginMutex);
-			PluginMessageQueue.push(Message);
+			PluginMessageQueue.push(RecvMessage);
 		}
 		m_sRetainedData.clear();
 	}
 
-	void CPluginProtocolLine::ProcessInbound(const int HwdID, std::string & ReadData)
+	void CPluginProtocolLine::ProcessInbound(const ReadMessage* Message)
 	{
 		//
 		//	Handles the cases where a read contains a partial message or multiple messages
 		//
-		std::string	sData = m_sRetainedData + ReadData;  // if there was some data left over from last time add it back in
+		std::vector<byte>	vData = m_sRetainedData;										// if there was some data left over from last time add it back in
+		vData.insert(vData.end(), Message->m_Buffer.begin(), Message->m_Buffer.end());		// add the new data
 
+		std::string		sData(vData.begin(), vData.end());
 		int iPos = sData.find_first_of('\r');		//  Look for message terminator 
 		while (iPos != std::string::npos)
 		{
-			CPluginMessage	Message(PMT_Message, HwdID, sData.substr(0, iPos));
+			ReceivedMessage*	RecvMessage = new ReceivedMessage(Message->m_HwdID, std::vector<byte>(&sData[0], &sData[iPos]));
 			{
 				boost::lock_guard<boost::mutex> l(PluginMutex);
-				PluginMessageQueue.push(Message);
+				PluginMessageQueue.push(RecvMessage);
 			}
 
 			if (sData[iPos + 1] == '\n') iPos++;				//  Handle \r\n 
@@ -71,16 +72,18 @@ namespace Plugins {
 			iPos = sData.find_first_of('\r');
 		}
 
-		m_sRetainedData = sData; // retain any residual for next time
+		m_sRetainedData.assign(sData.c_str(), sData.c_str() + sData.length()); // retain any residual for next time
 	}
 
-	void CPluginProtocolJSON::ProcessInbound(const int HwdID, std::string & ReadData)
+	void CPluginProtocolJSON::ProcessInbound(const ReadMessage* Message)
 	{
 		//
 		//	Handles the cases where a read contains a partial message or multiple messages
 		//
-		std::string	sData = m_sRetainedData + ReadData;  // if there was some data left over from last time add it back in
+		std::vector<byte>	vData = m_sRetainedData;										// if there was some data left over from last time add it back in
+		vData.insert(vData.end(), Message->m_Buffer.begin(), Message->m_Buffer.end());		// add the new data
 
+		std::string		sData(vData.begin(), vData.end());
 		int iPos = 1;
 		while (iPos) {
 			iPos = sData.find("}{", 0) + 1;		//  Look for message separater in case there is more than one
@@ -89,36 +92,39 @@ namespace Plugins {
 				if ((sData.substr(sData.length() - 1, 1) == "}") &&
 					(std::count(sData.begin(), sData.end(), '{') == std::count(sData.begin(), sData.end(), '}'))) // whole message so queue the whole buffer
 				{
-					CPluginMessage	Message(PMT_Message, HwdID, sData);
+					ReceivedMessage*	RecvMessage = new ReceivedMessage(Message->m_HwdID, sData);
 					{
 						boost::lock_guard<boost::mutex> l(PluginMutex);
-						PluginMessageQueue.push(Message);
+						PluginMessageQueue.push(RecvMessage);
 					}
-					sData = "";
+					sData.clear();
 				}
 			}
 			else  // more than one message so queue the first one
 			{
 				std::string sMessage = sData.substr(0, iPos);
 				sData = sData.substr(iPos);
-				CPluginMessage	Message(PMT_Message, HwdID, sMessage);
+				ReceivedMessage*	RecvMessage = new ReceivedMessage(Message->m_HwdID, sMessage);
 				{
 					boost::lock_guard<boost::mutex> l(PluginMutex);
-					PluginMessageQueue.push(Message);
+					PluginMessageQueue.push(RecvMessage);
 				}
 			}
 		}
 
-		m_sRetainedData = sData; // retain any residual for next time
+		m_sRetainedData.assign(sData.c_str(), sData.c_str() + sData.length()); // retain any residual for next time
 	}
 
-	void CPluginProtocolXML::ProcessInbound(const int HwdID, std::string & ReadData)
+	void CPluginProtocolXML::ProcessInbound(const ReadMessage* Message)
 	{
 		//
 		//	Only returns whole XML messages. Does not handle <tag /> as the top level tag
 		//	Handles the cases where a read contains a partial message or multiple messages
 		//
-		std::string	sData = m_sRetainedData + ReadData;  // if there was some data left over from last time add it back in
+		std::vector<byte>	vData = m_sRetainedData;										// if there was some data left over from last time add it back in
+		vData.insert(vData.end(), Message->m_Buffer.begin(), Message->m_Buffer.end());		// add the new data
+
+		std::string		sData(vData.begin(), vData.end());
 		try
 		{
 			while (true)
@@ -147,10 +153,10 @@ namespace Plugins {
 				if (iPos != std::string::npos)
 				{
 					int iEnd = iPos + m_Tag.length() + 3;
-					CPluginMessage	Message(PMT_Message, HwdID, sData.substr(0, iEnd));
+					ReceivedMessage*	RecvMessage = new ReceivedMessage(Message->m_HwdID, sData.substr(0, iEnd));
 					{
 						boost::lock_guard<boost::mutex> l(PluginMutex);
-						PluginMessageQueue.push(Message);
+						PluginMessageQueue.push(RecvMessage);
 					}
 
 					if (iEnd == sData.length())
@@ -172,10 +178,10 @@ namespace Plugins {
 			_log.Log(LOG_ERROR, "(CPluginProtocolXML::ProcessInbound) Unexpected exception thrown '%s', Data '%s'.", exc.what(), sData.c_str());
 		}
 
-		m_sRetainedData = sData; // retain any residual for next time
+		m_sRetainedData.assign(sData.c_str(), sData.c_str() + sData.length()); // retain any residual for next time
 	}
 
-	void CPluginProtocolHTTP::ProcessInbound(const int HwdID, std::string& ReadData)
+	void CPluginProtocolHTTP::ProcessInbound(ReadMessage* Message)
 	{
 		// HTTP/1.0 404 Not Found
 		// Content-Type: text/html; charset=UTF-8
@@ -203,7 +209,9 @@ namespace Plugins {
 		// is this the start of a response?
 		if (!m_Status)
 		{
-			std::string	sData = m_sRetainedData + ReadData;  // if there was some data left over from last time add it back in
+			std::vector<byte>	vData = m_sRetainedData;										// if there was some data left over from last time add it back in
+			vData.insert(vData.end(), Message->m_Buffer.begin(), Message->m_Buffer.end());		// add the new data
+			std::string		sData(vData.begin(), vData.end());
 
 			m_ContentLength = 0;
 			m_Chunked = false;
@@ -243,7 +251,7 @@ namespace Plugins {
 			// not enough data arrived to complete header processing
 			if (!sData.length())
 			{
-				m_sRetainedData += ReadData; // retain any residual for next time
+				m_sRetainedData.insert(m_sRetainedData.end(), Message->m_Buffer.begin(), Message->m_Buffer.end()); // retain any residual for next time
 				m_Status = 0;
 				m_ContentLength = 0;
 				Py_DECREF(pHeaderDict);
@@ -253,7 +261,7 @@ namespace Plugins {
 			m_Headers = pHeaderDict;
 			sData = sData.substr(sData.find_first_of('\n') + 1);		// skip over 2nd new line char
 			m_sRetainedData.clear();
-			ReadData = sData;
+			Message->m_Buffer.assign(sData.c_str(), sData.c_str() + sData.length()); // retain any residual for next time
 		}
 
 		// Process the message body
@@ -261,16 +269,16 @@ namespace Plugins {
 		{
 			if (!m_Chunked)
 			{
-				std::string	sData = m_sRetainedData + ReadData;  // if there was some data left over from last time add it back in
+				std::vector<byte>	vData = m_sRetainedData;										// if there was some data left over from last time add it back in
+				vData.insert(vData.end(), Message->m_Buffer.begin(), Message->m_Buffer.end());		// add the new data
+				std::string		sData(vData.begin(), vData.end());
 
-																 // If full message then return it
+				// If full message then return it
 				if (m_ContentLength == sData.length())
 				{
-					CPluginMessage	Message(PMT_Message, HwdID, sData);
-					Message.m_iLevel = m_Status;
-					Message.m_Object = m_Headers;
+					ReceivedMessage*	RecvMessage = new ReceivedMessage(Message->m_HwdID, vData, m_Status, (PyObject*)m_Headers);
 					boost::lock_guard<boost::mutex> l(PluginMutex);
-					PluginMessageQueue.push(Message);
+					PluginMessageQueue.push(RecvMessage);
 
 					m_Status = 0;
 					m_ContentLength = 0;
@@ -278,29 +286,28 @@ namespace Plugins {
 					m_sRetainedData.clear();
 				}
 				else
-					m_sRetainedData += ReadData; // retain any residual for next time
+					m_sRetainedData.insert(m_sRetainedData.end(), Message->m_Buffer.begin(), Message->m_Buffer.end()); // retain any residual for next time
 			}
 			else
 			{
 				// Process available chunks
-				while (ReadData.length() && (ReadData != "\r\n"))
+				std::string		sData(Message->m_Buffer.begin(), Message->m_Buffer.end());
+				while (sData.length() && (sData != "\r\n"))
 				{
 					if (!m_RemainingChunk)	// Not processing a chunk so we should be at the start of one
 					{
-						if (ReadData[0] == '\r')
+						if (sData[0] == '\r')
 						{
-							ReadData = ReadData.substr(ReadData.find_first_of('\n') + 1);
+							sData = sData.substr(sData.find_first_of('\n') + 1);
 						}
-						std::string		sChunkLine = ReadData.substr(0, ReadData.find_first_of('\r'));
+						std::string		sChunkLine = sData.substr(0, sData.find_first_of('\r'));
 						m_RemainingChunk = strtol(sChunkLine.c_str(), NULL, 16);
-						ReadData = ReadData.substr(ReadData.find_first_of('\n') + 1);
+						sData = sData.substr(sData.find_first_of('\n') + 1);
 						if (!m_RemainingChunk)	// last chunk is zero length
 						{
-							CPluginMessage	Message(PMT_Message, HwdID, m_sRetainedData);
-							Message.m_iLevel = m_Status;
-							Message.m_Object = m_Headers;
+							ReceivedMessage*	RecvMessage = new ReceivedMessage(Message->m_HwdID, m_sRetainedData, m_Status, (PyObject*)m_Headers);
 							boost::lock_guard<boost::mutex> l(PluginMutex);
-							PluginMessageQueue.push(Message);
+							PluginMessageQueue.push(RecvMessage);
 
 							m_Status = 0;
 							m_ContentLength = 0;
@@ -310,23 +317,24 @@ namespace Plugins {
 						}
 					}
 
-					if (ReadData.length() <= m_RemainingChunk)		// Read data is just part of a chunk
+					if (sData.length() <= m_RemainingChunk)		// Read data is just part of a chunk
 					{
-						m_sRetainedData += ReadData;
-						m_RemainingChunk -= ReadData.length();
+						m_sRetainedData.assign(sData.c_str(), sData.c_str() + sData.length()); // retain any residual for next time
+						m_RemainingChunk -= sData.length();
 						break;
 					}
 
-					m_sRetainedData += ReadData.substr(0, m_RemainingChunk);
-					ReadData = ReadData.substr(m_RemainingChunk);
+					m_sRetainedData.insert(m_sRetainedData.end(), sData.c_str(), sData.c_str() + m_RemainingChunk);
+					sData = sData.substr(m_RemainingChunk);
 					m_RemainingChunk = 0;
 				}
 			}
 		}
 	}
 
-	std::string	CPluginProtocolHTTP::ProcessOutbound(const CPluginMessage & WriteMessage)
+	std::vector<byte>	CPluginProtocolHTTP::ProcessOutbound(const WriteDirective* WriteMessage)
 	{
+		std::vector<byte>	retVal;
 		std::string	sHttpRequest = "GET ";
 		// Create first line of the request.
 		// GET /path/file.html HTTP/1.1
@@ -342,14 +350,14 @@ namespace Plugins {
 		//
 		// param1=value&param2=other+value
 
-		if (WriteMessage.m_Operation.length())
+		if (WriteMessage->m_Operation.length())
 		{
-			sHttpRequest = WriteMessage.m_Operation + " ";
+			sHttpRequest = WriteMessage->m_Operation + " ";
 		}
 
-		if (WriteMessage.m_Address.length())
+		if (WriteMessage->m_URL.length())
 		{
-			sHttpRequest += WriteMessage.m_Address + " ";
+			sHttpRequest += WriteMessage->m_URL + " ";
 		}
 		else
 		{
@@ -375,11 +383,11 @@ namespace Plugins {
 		}
 
 		// Did we get headers to send?
-		if (WriteMessage.m_Object)
+		if (WriteMessage->m_Object)
 		{
-			if ((((PyObject*)WriteMessage.m_Object)->ob_type->tp_flags & (Py_TPFLAGS_DICT_SUBCLASS)) != 0)
+			if ((((PyObject*)WriteMessage->m_Object)->ob_type->tp_flags & (Py_TPFLAGS_DICT_SUBCLASS)) != 0)
 			{
-				PyObject*	pHeaders = (PyObject*)WriteMessage.m_Object;
+				PyObject*	pHeaders = (PyObject*)WriteMessage->m_Object;
 				PyObject *key, *value;
 				Py_ssize_t pos = 0;
 				while (PyDict_Next(pHeaders, &pos, &key, &value))
@@ -399,8 +407,11 @@ namespace Plugins {
 			}
 		}
 
-		sHttpRequest += "\r\n" + WriteMessage.m_Message;
-		return sHttpRequest;
+		std::string StringBuffer(WriteMessage->m_Buffer.begin(), WriteMessage->m_Buffer.end());
+		sHttpRequest += "\r\n" + StringBuffer;
+
+		retVal.assign(sHttpRequest.c_str(), sHttpRequest.c_str() + sHttpRequest.length());
+		return retVal;
 	}
 }
 #endif

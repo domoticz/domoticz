@@ -170,6 +170,13 @@
 #define sSwitchBlindsT2				0x69
 #define sSwitchLightT2				0x70
 #define sSwitchContactT1			0x71
+#define sSwitchTypeYW_Secu			0x6a
+#define sSwitchTypeMertik_GV60		0x6b
+#define sSwitchTypeNingbo64			0x6c
+#define sSwitchTypeX2D				0x6d
+#define sSwitchTypeHRCMotor			0x6e
+#define sSwitchTypeVelleman			0x6f
+#define sSwitchTypeRFCustom			0x72
 
 //Switch commands
 #define gswitch_sOff				0x00

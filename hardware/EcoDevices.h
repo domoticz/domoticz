@@ -3,6 +3,7 @@
 #include "DomoticzHardware.h"
 #include <iostream>
 #include "hardwaretypes.h"
+#include "TeleinfoBase.h"
 
 class CEcoDevices : public CDomoticzHardwareBase
 {

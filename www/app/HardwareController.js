@@ -1154,6 +1154,12 @@ define(['app'], function (app) {
                 (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0)
 				)
             {
+                Mode1 = 0;
+                Mode2 = 0;
+                Mode3 = 0;
+                Mode4 = 0;
+                Mode5 = 0;
+
                 var address=$("#hardwarecontent #divremote #tcpaddress").val();
                 if (address=="")
                 {
@@ -3604,7 +3610,7 @@ define(['app'], function (app) {
                      async: false,
                      dataType: 'json',
                      success: function(data) {
-                        bootbox.alert($.t('Configuration send to node. If the node is asleep, this could take a while!'));
+                        bootbox.alert($.t('Configuration sent to node. If the node is asleep, this could take a while!'));
                      },
                      error: function(){
                             ShowNotify($.t('Problem updating Node Configuration!'), 2500, true);

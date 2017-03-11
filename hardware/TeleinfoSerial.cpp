@@ -1,6 +1,6 @@
 /*
 Domoticz Software : http://domoticz.com/
-File : Teleinfo.cpp
+File : TeleinfoSerial.cpp
 Author : Nicolas HILAIRE
 Version : 1.6
 Description : This class manage the Teleinfo Signal
@@ -15,10 +15,13 @@ History :
 - 2016-02-11 : Fix power display when PAPP is missing (Anthony LAGUERRE)
 - 2016-02-17 : Fix bug power usage (Anthony LAGUERRE). Thanks to Multinet
 - 2017-01-28 : Add 'Heures Creuses' Switch (A.L)
+- 2017-03-03 : Renamed from Teleinfo.cpp to TeleinfoSerial.cpp in order to create   
+               a shared class to process Teleinfo protocol (Blaise Thauvin)
 */
 
 #include "stdafx.h"
-#include "Teleinfo.h"
+#include "TeleinfoSerial.h"
+#include "TeleinfoBase.h"
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 #include "../main/Logger.h"
@@ -68,7 +71,7 @@ History :
 #define TE_PAPP "PAPP"//apparent power
 #define TE_MOTDETAT "MOTDETAT"//mot d'etat
 
-Teleinfo::Match Teleinfo::m_matchlist[19] = {
+CTeleinfoSerial::Match CTeleinfoSerial::m_matchlist[19] = {
 	{ STD, TELEINFO_TYPE_ADCO, TE_ADCO, 12 },
 	{ STD, TELEINFO_TYPE_OPTARIF, TE_OPTARIF, 4 },
 	{ STD, TELEINFO_TYPE_ISOUSC, TE_ISOUSC, 2 },
@@ -90,7 +93,7 @@ Teleinfo::Match Teleinfo::m_matchlist[19] = {
 	{ STD, TELEINFO_TYPE_MOTDETAT, TE_MOTDETAT, 6 }
 };
 
-Teleinfo::Teleinfo(const int ID, const std::string& devname, unsigned int baud_rate)
+CTeleinfoSerial::CTeleinfoSerial(const int ID, const std::string& devname, unsigned int baud_rate)
 {
 	m_HwdID = ID;
 	m_szSerialPort = devname;
@@ -103,12 +106,12 @@ Teleinfo::Teleinfo(const int ID, const std::string& devname, unsigned int baud_r
 	Init();
 }
 
-Teleinfo::~Teleinfo(void)
+CTeleinfoSerial::~CTeleinfoSerial(void)
 {
 	StopHardware();
 }
 
-void Teleinfo::Init()
+void CTeleinfoSerial::Init()
 {
 	m_bufferpos = 0;
 
@@ -138,7 +141,7 @@ void Teleinfo::Init()
 	m_Power_USAGE_IINST_JR = 0;
 }
 
-bool Teleinfo::StartHardware()
+bool CTeleinfoSerial::StartHardware()
 {
 	StartHeartbeatThread();
 	//Try to open the Serial Port
@@ -167,14 +170,14 @@ bool Teleinfo::StartHardware()
 		_log.Log(LOG_ERROR, "Teleinfo: Error opening serial port!!!");
 		return false;
 	}
-	setReadCallback(boost::bind(&Teleinfo::readCallback, this, _1, _2));
+	setReadCallback(boost::bind(&CTeleinfoSerial::readCallback, this, _1, _2));
 	m_bIsStarted = true;
 	sOnConnected(this);
 
 	return true;
 }
 
-bool Teleinfo::StopHardware()
+bool CTeleinfoSerial::StopHardware()
 {
 	terminate();
 	StopHeartbeatThread();
@@ -183,7 +186,7 @@ bool Teleinfo::StopHardware()
 }
 
 
-void Teleinfo::readCallback(const char *data, size_t len)
+void CTeleinfoSerial::readCallback(const char *data, size_t len)
 {
 	boost::lock_guard<boost::mutex> l(readQueueMutex);
 	if (!m_bEnableReceive)
@@ -192,19 +195,19 @@ void Teleinfo::readCallback(const char *data, size_t len)
 	ParseData((const unsigned char*)data, static_cast<int>(len));
 }
 
-void Teleinfo::MatchLine()
+void CTeleinfoSerial::MatchLine()
 {
 	if ((strlen((const char*)&m_buffer)<1) || (m_buffer[0] == 0x0a))
 		return;
 
 	uint8_t i;
 	uint8_t found = 0;
-	Teleinfo::Match t;
+	CTeleinfoSerial::Match t;
 	char value[20] = "";
 	std::string vString;
 
 	//_log.Log(LOG_NORM,"Frame : #%s#", m_buffer);
-	for (i = 0; (i<sizeof(m_matchlist) / sizeof(Teleinfo::Match))&(!found); i++)
+	for (i = 0; (i<sizeof(m_matchlist) / sizeof(CTeleinfoSerial::Match))&(!found); i++)
 	{
 		t = m_matchlist[i];
 		switch (t.matchtype)
@@ -430,7 +433,7 @@ void Teleinfo::MatchLine()
 	}
 }
 
-void Teleinfo::ParseData(const unsigned char *pData, int Len)
+void CTeleinfoSerial::ParseData(const unsigned char *pData, int Len)
 {
 	int ii = 0;
 	while (ii<Len)
@@ -482,7 +485,7 @@ Enfin, on ajoute 20 en hexadÈcimal. Le rÈsultat sera donc toujours un caractË
 lettre majuscule) allant de 20  5F en hexadÈcimal.
 */
 
-bool Teleinfo::isCheckSumOk()
+bool CTeleinfoSerial::isCheckSumOk()
 {
 	unsigned int checksum = 0x00;
 	int i;
@@ -495,7 +498,7 @@ bool Teleinfo::isCheckSumOk()
 	return (checksum == m_buffer[strlen((char*)m_buffer) - 1]);
 }
 
-bool Teleinfo::WriteToHardware(const char *pdata, const unsigned char length)
+bool CTeleinfoSerial::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	return false;
 }
