@@ -410,7 +410,7 @@ namespace Plugins {
 		std::string StringBuffer(WriteMessage->m_Buffer.begin(), WriteMessage->m_Buffer.end());
 		sHttpRequest += "\r\n" + StringBuffer;
 
-		retVal.assign(sHttpRequest.length(), sHttpRequest[0]);
+		retVal.assign(sHttpRequest.c_str(), sHttpRequest.c_str() + sHttpRequest.length());
 		return retVal;
 	}
 }
