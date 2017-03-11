@@ -456,8 +456,6 @@ int main(int argc, char**argv)
 			_log.Log(LOG_ERROR, "Please specify an output log file");
 			return 1;
 		}
-		logfile = cmdLine.GetSafeArgument("-log", 0, "domoticz.log");
-		_log.SetOutputFile(logfile.c_str());
 	}
 	if (cmdLine.HasSwitch("-loglevel"))
 	{
@@ -466,8 +464,14 @@ int main(int argc, char**argv)
 			_log.Log(LOG_ERROR, "Please specify logfile output level (0=All, 1=Status+Error, 2=Error)");
 			return 1;
 		}
-		int Level = atoi(cmdLine.GetSafeArgument("-loglevel", 0, "").c_str());
-		_log.SetVerboseLevel((_eLogFileVerboseLevel)Level);
+	}
+	if (cmdLine.HasSwitch("-verbose"))
+	{
+		if (cmdLine.GetArgumentCount("-verbose") != 1)
+		{
+			_log.Log(LOG_ERROR, "Please specify a verbose level");
+			return 1;
+		}
 	}
 	if (cmdLine.HasSwitch("-notimestamps"))
 	{
@@ -807,16 +811,6 @@ int main(int argc, char**argv)
 			szWebRoot = szroot;
 	}
 
-	if (cmdLine.HasSwitch("-verbose"))
-	{
-		if (cmdLine.GetArgumentCount("-verbose") != 1)
-		{
-			_log.Log(LOG_ERROR, "Please specify a verbose level");
-			return 1;
-		}
-		int Level = atoi(cmdLine.GetSafeArgument("-verbose", 0, "").c_str());
-		m_mainworker.SetVerboseLevel((eVerboseLevel)Level);
-	}
 #if defined WIN32
 	if (cmdLine.HasSwitch("-nobrowser"))
 	{
@@ -915,6 +909,27 @@ int main(int argc, char**argv)
 		return 1;
 	}
 	m_StartTime = time(NULL);
+
+  //set log level / log output file name verbose level if set on command line
+  //the value as been taken from database in call of GetLogPreference m_mainworker.Start()
+	if (cmdLine.HasSwitch("-log"))
+	{
+		logfile = cmdLine.GetSafeArgument("-log", 0, "domoticz.log");
+		_log.SetOutputFile(logfile.c_str());
+	}
+	if (cmdLine.HasSwitch("-loglevel"))
+	{
+		int Level = atoi(cmdLine.GetSafeArgument("-loglevel", 0, "").c_str());
+    if     (Level==0) _log.SetVerboseLevel(VBL_ALL);
+    else if(Level==1) _log.SetVerboseLevel(VBL_STATUS_ERROR);
+    else if(Level==2) _log.SetVerboseLevel(VBL_ERROR);
+	}
+	if (cmdLine.HasSwitch("-verbose"))
+	{
+		int Level = atoi(cmdLine.GetSafeArgument("-verbose", 0, "").c_str());
+		m_mainworker.SetVerboseLevel((eVerboseLevel)Level);
+	}
+
 
 	/* now, lets get into an infinite loop of doing nothing. */
 #if defined WIN32

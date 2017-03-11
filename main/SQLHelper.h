@@ -294,6 +294,17 @@ public:
 	bool SetUserVariable(const uint64_t idx, const std::string &varvalue, const bool eventtrigger);
 	std::vector<std::vector<std::string> > GetUserVariables();
 
+	void UpdateDeviceValue(const char * FieldName , std::string &Value , std::string &Idx );
+	void UpdateDeviceValue(const char * FieldName , int Value , std::string &Idx )   ;
+	void UpdateDeviceValue(const char * FieldName , float Value , std::string &Idx ) ;
+	double ConvertTemperature(double tempcelcius);
+	double ConvertTemperatureUnit(double tempcelcius);
+	std::string GetDeviceValue(const char * FieldName , const char *Idx );
+
+	float getTemperatureFromSValue(const char * sValue);
+
+	bool GetPreferencesVar(const std::string &Key, double &Value);
+	void UpdatePreferencesVar(const std::string &Key, const double Value);
 	void AllowNewHardwareTimer(const int iTotMinutes);
 
 	bool InsertCustomIconFromZip(const std::string &szZip, std::string &ErrorMessage);
@@ -374,4 +385,12 @@ private:
 	std::vector<std::vector<std::string> > queryBlob(const std::string &szQuery);
 };
 
+//row result for an sql query : string Vector
+typedef   std::vector<std::string> TSqlRowQuery ;
+
+// result for an sql query : Vector of TSqlRowQuery
+typedef   std::vector<TSqlRowQuery> TSqlQueryResult ;
 extern CSQLHelper m_sql;
+
+std::string getSValuePart(const char * sValue, unsigned int part );
+std::string getSValuePart(std::string &sValue, unsigned int part );

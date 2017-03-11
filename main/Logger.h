@@ -7,16 +7,19 @@
 
 enum _eLogLevel
 {
-	LOG_NORM=0,
-	LOG_ERROR,
-	LOG_STATUS,
+	LOG_ERROR=0,
+	LOG_STATUS=1,
+	LOG_NORM=2,
+	LOG_TRACE=3
 };
 
 enum _eLogFileVerboseLevel
 {
-	VBL_ALL=0,
-	VBL_STATUS_ERROR,
-	VBL_ERROR,
+	VBL_ERROR=0,
+	VBL_STATUS_ERROR=1,
+	VBL_ALL=2,
+ 	VBL_TRACE,
+
 };
 
 class CLogger
@@ -46,6 +49,12 @@ public:
 
 	void EnableLogTimestamps(const bool bEnableTimestamps);
 
+	void SetFilterString(std::string  &Filter);
+	bool isTraceEnable();
+	bool TestFilter(char * cbuffer);
+	void setLogVerboseLevel(int LogLevel);
+	void SetLogPreference (std::string  LogFilter, std::string  LogFileName , std::string  LogLevel );
+	void GetLogPreference ();
 	void ForwardErrorsToNotificationSystem(const bool bDoForward);
 
 	std::list<_tLogLineStruct> GetLog(const _eLogLevel lType);
@@ -65,6 +74,9 @@ private:
 	bool m_bEnableErrorsToNotificationSystem;
 	time_t m_LastLogNotificationsSend;
 	std::stringstream m_sequencestring;
+	std::string FilterString;
+	std::vector<std::string> FilterStringList;
+	std::vector<std::string> KeepStringList;
 	_eLogFileVerboseLevel m_verbose_level;
 };
 extern CLogger _log;

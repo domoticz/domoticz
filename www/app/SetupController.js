@@ -606,6 +606,15 @@ define(['app'], function (app) {
 			  if (typeof data.SecOnDelay != 'undefined') {
 				$("#sectable #SecOnDelay").val(data.SecOnDelay);
 			  }
+              if (typeof data.LogFilter != 'undefined') {
+                $("#LogFilterTable #LogFilter").val(data.LogFilter);
+              }
+              if (typeof data.LogFileName != 'undefined') {
+                $("#LogFilterTable #LogFileName").val(data.LogFileName);
+              }
+              if (typeof data.LogLevel != 'undefined') {
+                $("#LogFilterTable #LogLevel").val(data.LogLevel);
+              }
 			  if (typeof data.cloudenabled != 'undefined') {
 				  if (!data.cloudenabled) {
 					  $("#MyDomoticzTab").css("display", "none");
