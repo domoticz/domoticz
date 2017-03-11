@@ -433,6 +433,7 @@ define(['app'], function (app) {
                 var Mode1 = "";
                 if ((text.indexOf("MySensors Gateway with MQTT") >= 0)) {
                     extra = $("#hardwarecontent #divmysensorsmqtt #filename").val();
+                    Mode1 = $("#hardwarecontent #divmysensorsmqtt #combotopicselect").val();
                 }
                 else if ((text.indexOf("MQTT") >= 0)) {
 					extra=$("#hardwarecontent #divmqtt #filename").val();

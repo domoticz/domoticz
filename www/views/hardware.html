@@ -1431,7 +1431,21 @@
 			</table>
 		</div>
 		<div id="divmysensorsmqtt">
+			<br>
 			<table class="display" id="hardwareparamsmysensorsmqtt" border="0" cellpadding="0" cellspacing="20">
+				<tr valign="top">
+					<td align="right" style="width:110px"><label for="combotopicselect"><span data-i18n="Topic Prefix">Topic Prefix</span>:</label></td>
+					<td><select id="combotopicselect" style="width:200px" class="combobox ui-corner-all">
+						<option value="1">MyMQTT (default)</option>
+						<option value="2">Gateway Node Name</option>
+						</select>
+					<br />
+					<span>Select the Topic('s) Domoticz will use to publish outgoing messages. <br />
+						<b>MyMQTT (default)</b> - domoticz/in/MyMQTT, domoticz/out/MyMQTT <br />
+						<b>Gateway Node Name</b> - domoticz/in/GatewayNodeName, domoticz/out/GatewayNodeName (GatewayNodeName is a name specified on this page)<br />
+						<br />
+					</td>
+				</tr>
 				<tr>
 					<td align="right" style="width:110px"><label id="lbfilename" for="filename"><span data-i18n="CA Filename">CA Filename</span>:</label></td>
 					<td><input type="text" id="filename" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
