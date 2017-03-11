@@ -6558,8 +6558,8 @@ void CSQLHelper::CheckDeviceTimeout()
 			std::stringstream(sd[3].substr(11,2)) >> ltime.tm_hour;
 			std::stringstream(sd[3].substr(14,2)) >> ltime.tm_min;
 			std::stringstream(sd[3].substr(17,2)) >> ltime.tm_sec;
-			_log.Log(LOG_STATUS, "CheckDeviceTimeout: %s tm_year: %d, tm_mon: %d, tm_mday: %d, tm_hour: %d, tm_min: %d, tm_sec: %d",
-				sd[2].c_str(), ltime.tm_year, ltime.tm_mon, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
+			//_log.Log(LOG_STATUS, "CheckDeviceTimeout: %s tm_year: %d, tm_mon: %d, tm_mday: %d, tm_hour: %d, tm_min: %d, tm_sec: %d",
+			//	sd[2].c_str(), ltime.tm_year, ltime.tm_mon, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
 			if ((difftime(now,mktime(&ltime)) > SensorTimeOut*60 && bWhenIsGreater)||
 				(difftime(now,mktime(&ltime)) < SensorTimeOut*60 && !bWhenIsGreater))
 			{
