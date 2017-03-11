@@ -2189,18 +2189,19 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 
 static int numargs=0;
 
-/* Return the number of arguments of the application command line */
+// Python module methods
 static PyObject*
 PyDomoticz_log(PyObject *self, PyObject *args)
 {
-	char* msg;
-	int type;
+        char* msg;
+        int type;
+
+    // _log.Log(LOG_STATUS, "EventSystem - Python: Calling log");
+
     if(!PyArg_ParseTuple(args, "is", &type, &msg))
         return NULL;
-	_log.Log((_eLogLevel)type, msg);
-	Py_INCREF(Py_None);
-    return Py_None;
-
+        _log.Log((_eLogLevel)type, msg);
+        Py_RETURN_NONE;
 }
 
 static PyMethodDef DomoticzMethods[] = {
@@ -2208,6 +2209,24 @@ static PyMethodDef DomoticzMethods[] = {
     {NULL, NULL, 0, NULL}
 };
 
+// Module defs and init
+static struct PyModuleDef eventModuledef = {
+        PyModuleDef_HEAD_INIT,
+        "DomoticzEvents",
+        "Domtoticz Events Python module",
+        -1,
+        DomoticzMethods,
+        NULL,
+        NULL,
+        NULL,
+        NULL
+};
+
+PyMODINIT_FUNC PyInit_DomoticzEvents(void)
+{
+    _log.Log(LOG_STATUS, "EventSystem - Python: Initalizing module");
+    return PyModule_Create(&eventModuledef);
+}
 
 // from https://gist.github.com/octavifs/5362297
 
@@ -2225,10 +2244,13 @@ boost::python::dict toPythonDict(std::map<K, V> map) {
 // this should be filled in by the preprocessor
 const char * Python_exe = "PYTHON_EXE";
 
+// Status of setup
+bool PythonInitDone = false;
+
 void CEventSystem::EvaluatePython(const std::string &reason, const std::string &filename, const std::string &PyString, const uint64_t DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const uint64_t varId)
 {
 	//_log.Log(LOG_NORM, "EventSystem: Already scheduled this event, skipping");
-	//_log.Log(LOG_STATUS, "EventSystem: script %s trigger, file: %s, deviceName: %s" , reason.c_str(), filename.c_str(), devname.c_str());
+	_log.Log(LOG_STATUS, "EventSystem: script %s trigger, file: %s, deviceName: %s" , reason.c_str(), filename.c_str(), devname.c_str());
 
 	std::stringstream python_DirT;
 
@@ -2238,7 +2260,8 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 	python_DirT << szUserDataFolder << "scripts/python/";
 #endif
 	std::string python_Dir = python_DirT.str();
-	if(!Py_IsInitialized()) {
+    /*
+    if(!Py_IsInitialized()) {
 		Py_SetProgramName((char*)Python_exe); // will this cast lead to problems ?
 		Py_Initialize();
 		Py_InitModule("domoticz_", DomoticzMethods);
@@ -2251,7 +2274,36 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 		class_<CEventSystem, boost::noncopyable>("Domoticz", no_init)
 			.def("command", ScheduleEventMethod)
 			;
-	}
+	}*/
+
+    if(!Py_IsInitialized()) {
+        _log.Log(LOG_STATUS, "EventSystem - Python: Starting Python");
+        Py_SetProgramName(Py_GetProgramFullPath());
+        // PyImport_AppendInittab("DomoticzEvents", &CEventSystem::PyInit_DomoticzEvents);
+        PyImport_AppendInittab("DomoticzEvents", &PyInit_DomoticzEvents);
+        Py_Initialize();
+        PythonInitDone = false;
+    }
+
+    if (!PythonInitDone) {
+        _log.Log(LOG_STATUS, "EventSystem - Python: Initalizing Python");
+        PyObject* sys = PyImport_ImportModule("sys");
+		PyObject *path = PyObject_GetAttrString(sys, "path");
+		PyList_Append(path, PyUnicode_FromString(python_Dir.c_str()));
+
+        bool (CEventSystem::*ScheduleEventMethod)(std::string ID, const std::string &Action, const std::string &eventName) = &CEventSystem::ScheduleEvent;
+		class_<CEventSystem, boost::noncopyable>("Domoticz", no_init)
+			.def("command", ScheduleEventMethod)
+			;
+
+        PythonInitDone = true;
+    }
+
+    // FILE* PythonScriptFile = _Py_fopen(filename.c_str(),"r+");
+
+    // FILE* PythonScriptFile = fopen(filename.c_str(), "r");
+    // PyRun_SimpleFile(PythonScriptFile, filename.c_str());
+
 
 	FILE* PythonScriptFile = fopen(filename.c_str(), "r");
 	object main_module = import("__main__");
@@ -2320,20 +2372,6 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 
 		//main_namespace["timeofday"] = ... 		// not sure how to set this
 
-
-		/*std::string secstatusw = "";
-		m_sql.GetPreferencesVar("SecStatus", secstatus);
-		if (secstatus == 1) {
-			secstatusw = "Armed Home";
-		}
-		else if (secstatus == 2) {
-			secstatusw = "Armed Away";
-		}
-		else {
-			secstatusw = "Disarmed";
-		}
-		main_namespace["Security"] = secstatusw;*/
-
 		// put variables in user_variables dict, but also in the namespace
 		object user_variables = dict();
 		{
@@ -2375,9 +2413,12 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 
 		if(PyString.length() > 0)
 			exec(str(PyString), main_namespace);
-		else
-			object ignored = exec_file(str(filename), main_namespace);
-	} catch(...) {
+		else {
+            _log.Log(LOG_STATUS, "EventSystem - Python: Running script");
+            object ignored = exec_file(str(filename), main_namespace);
+        }
+
+    } catch(...) {
 
 		PyObject *exc,*val,*tb;
 		PyErr_Fetch(&exc,&val,&tb);
@@ -2397,6 +2438,7 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 		else
 			_log.Log(LOG_ERROR, "%s",formatted_str.c_str());
 	}
+
 	if (PythonScriptFile!=NULL)
 		fclose(PythonScriptFile);
 	//Py_Finalize();
@@ -2841,14 +2883,14 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 			lua_pushstring(lua_state, "svalue");
 			lua_pushstring(lua_state, sValue);
 			lua_rawset(lua_state, -3);
-			
+
 			lua_pushstring(lua_state, "nvalue");
 			lua_pushnumber(lua_state, nValue);
 			lua_rawset(lua_state, -3);
 
 			/* USELESS, WE HAVE THE DEVICE INDEX
-			// replace devicechanged => 
-			lua_pushstring(lua_state, "name"); 
+			// replace devicechanged =>
+			lua_pushstring(lua_state, "name");
 			lua_pushnumber(lua_state, nValue);
 			lua_rawset(lua_state, -3);
 			*/
@@ -2858,7 +2900,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 	}
 
 	exportDeviceStatesToLua(lua_state);
-	
+
 	lua_createtable(lua_state, (int)m_uservariables.size(), 0);
 
 	typedef std::map<uint64_t, _tUserVariable>::iterator it_var;
