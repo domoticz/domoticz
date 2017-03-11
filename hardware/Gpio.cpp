@@ -64,8 +64,6 @@ Connection information:
 bool m_bIsInitGPIOPins=false;
 bool interruptHigh[MAX_GPIO+1]={ false };
 
-extern 	CSQLHelper m_sql;
-
 // List of GPIO pin numbers, ordered as listed
 std::vector<CGpioPin> CGpio::pins;
 
@@ -159,24 +157,24 @@ int timeval_subtract (struct timeval *result, struct timeval *x, struct timeval 
 	if (diff>MIN_PERIOD_US) {
 		interruptHigh[gpioId]=false;
 		if(std::find(gpioInterruptQueue.begin(), gpioInterruptQueue.end(), gpioId) != gpioInterruptQueue.end()) {
-			_log.Log(LOG_NORM, "GPIO: Interrupt for GPIO %d already queued. Ignoring...", gpioId);
+			// _log.Log(LOG_NORM, "GPIO: Interrupt for GPIO %d already queued. Ignoring...", gpioId);
 		}
 		else {
 			// Queue interrupt. Note that as we make sure it contains only unique numbers, it can never "overflow".
-			_log.Log(LOG_NORM, "GPIO: Queuing interrupt for GPIO %d.", gpioId);
+			// _log.Log(LOG_NORM, "GPIO: Queuing interrupt for GPIO %d.", gpioId);
 			gpioInterruptQueue.push_back(gpioId);
 		}
 	}
 	else {
 		if (!interruptHigh[gpioId]) {
-			_log.Log(LOG_NORM, "GPIO: Too many interrupts for GPIO %d. Ignoring..", gpioId);
+			// _log.Log(LOG_NORM, "GPIO: Too many interrupts for GPIO %d. Ignoring..", gpioId);
 			interruptHigh[gpioId]=true;
 		}
 		interruptCondition.notify_one();
 		return;
 	}
 	interruptCondition.notify_one();
-	_log.Log(LOG_NORM, "GPIO: %d interrupts in queue.", gpioInterruptQueue.size());
+	// _log.Log(LOG_NORM, "GPIO: %d interrupts in queue.", gpioInterruptQueue.size());
 }
 
 void interruptHandler0 (void) { pushInterrupt(0); }
@@ -277,7 +275,7 @@ bool CGpio::StartHardware()
 	//  Wait 250 milli seconds to make sure all are set before initialising
 	//  the remainder of domoticz. 
 	//
-	CopyDeviceStates();
+	CopyDeviceStates(false);
 	sleep_milliseconds(250);
 
 	//
@@ -607,13 +605,13 @@ void CGpio::DelayedStartup()
 	//
 	sleep_milliseconds(30000);
 
-	_log.Log(LOG_NORM, "GPIO: Copy 2nd time. Optional connected Master Domoticz now updates its status");
-	CopyDeviceStates();
+	_log.Log(LOG_NORM, "GPIO: Optional connected Master Domoticz now updates its status");
+	CopyDeviceStates(true);
 
 	// _log.Log(LOG_NORM, "GPIO: DelayedStartup - done");
 }
 
-void CGpio::CopyDeviceStates()
+void CGpio::CopyDeviceStates(bool forceUpdate)
 {
         char buf[256];
         int gpioId;
@@ -650,7 +648,7 @@ void CGpio::CopyDeviceStates()
 
                         if ((gpioId >= 0) && (gpioId <= MAX_GPIO))
                         {
-                                SetupInitialState(gpioId);
+                                SetupInitialState(gpioId, forceUpdate);
                                 //  _log.Log(LOG_NORM, "GPIO: CopyDeviceStates - %s", buf);
                         }
                         else
@@ -663,7 +661,7 @@ void CGpio::CopyDeviceStates()
         // _log.Log(LOG_NORM, "GPIO: CopyDeviceStates - done");
 }
 
-void CGpio::SetupInitialState(int gpioId)
+void CGpio::SetupInitialState(int gpioId, bool forceUpdate)
 {
 	bool updateDatabase = false;
 	int state = digitalRead(gpioId);
@@ -686,7 +684,7 @@ void CGpio::SetupInitialState(int gpioId)
 		}
 	}
 
-	if (updateDatabase)
+	if ((updateDatabase) || (forceUpdate))
 	{
 		if (state != 0)
 		{
