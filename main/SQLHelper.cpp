@@ -6512,10 +6512,6 @@ void CSQLHelper::CheckDeviceTimeout()
 {
 	int TimeoutCheckInterval=1;
 	GetPreferencesVar("SensorTimeoutNotification", TimeoutCheckInterval);
-	time_t now = mytime(NULL);
-	struct tm stoday;
-	struct tm ltime;
-	localtime_r(&now,&stoday);
 
 	if (TimeoutCheckInterval==0)
 	{
@@ -6532,8 +6528,14 @@ void CSQLHelper::CheckDeviceTimeout()
 			);
 		if (result.size()<1)
 			return;
-		uint32_t SensorTimeOut=60;
+
 		uint64_t ulID;
+		int SensorTimeOut=60;
+		time_t now = mytime(NULL);
+		struct tm stoday;
+		struct tm ltime;
+		localtime_r(&now,&stoday);
+
 		std::vector<std::vector<std::string> >::const_iterator itt;
 		std::string ltype = Notification_Type_Desc(NTYPE_LASTUPDATE, 0);
 		std::string label = Notification_Type_Label(NTYPE_LASTUPDATE);
@@ -6574,16 +6576,21 @@ void CSQLHelper::CheckDeviceTimeout()
 			return;
 		m_sensortimeoutcounter=0;
 
+		int SensorTimeOut=60;
 		GetPreferencesVar("SensorTimeout", SensorTimeOut);
+		time_t now = mytime(NULL);
+		struct tm stoday;
+		localtime_r(&now,&stoday);
 		now-=(SensorTimeOut*60);
+		struct tm ltime;
 		localtime_r(&now,&ltime);
 
 		std::vector<std::vector<std::string> > result;
 		result = safe_query(
-			"SELECT A.ID, A.Name, A.LastUpdate FROM DeviceStatus WHERE (Used!=0 AND A.LastUpdate<='%04d-%02d-%02d %02d:%02d:%02d'
-			 AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d
-			 AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d)
-			 ORDER BY Name",
+			"SELECT A.ID, A.Name, A.LastUpdate FROM DeviceStatus WHERE (Used!=0 AND A.LastUpdate<='%04d-%02d-%02d %02d:%02d:%02d' "
+			"AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d "
+			"AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d) "
+			"ORDER BY Name",
 			ltime.tm_year+1900,ltime.tm_mon+1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
 			pTypeLighting1,
 			pTypeLighting2,
