@@ -5520,29 +5520,7 @@ namespace http {
 					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_SWITCH_OFF, 1);
 					ii++;
 				}
-				if
-					(
-					(dType != pTypeLighting1) ||
-					(dType != pTypeLighting2) ||
-					(dType != pTypeLighting3) ||
-					(dType != pTypeLighting4) ||
-					(dType != pTypeLighting5) ||
-					(dType != pTypeLighting6) ||
-					(dType != pTypeFan) ||
-					(dType != pTypeRadiator1) ||
-					(dType != pTypeLimitlessLights) ||
-					(dType != pTypeSecurity1) ||
-					(dType != pTypeCurtain) ||
-					(dType != pTypeBlinds) ||
-					(dType != pTypeRFY) ||
-					(dType != pTypeChime) ||
-					(dType != pTypeThermostat2) ||
-					(dType != pTypeThermostat3) ||
-					(dType != pTypeThermostat4) ||
-					(dType != pTypeRemote) ||
-					(dType != pTypeGeneralSwitch) ||
-					(dType != pTypeHomeConfort)
-					)
+				if (!IsLightOrSwitch(dType, subType))
 				{
 					root["result"][ii]["val"] = NTYPE_LASTUPDATE;
 					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_LASTUPDATE, 0);
