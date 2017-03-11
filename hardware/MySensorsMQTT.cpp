@@ -7,7 +7,7 @@
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 
-#define TOPIC_DEFAULT	"MyMQTT"
+#define TOPIC_DEFAULT	'MyMQTT'
 #define TOPIC_IN	"domoticz/in"
 #define TOPIC_OUT	"domoticz/out"
 
