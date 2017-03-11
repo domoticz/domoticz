@@ -3610,7 +3610,7 @@ define(['app'], function (app) {
                      async: false,
                      dataType: 'json',
                      success: function(data) {
-                        bootbox.alert($.t('Configuration send to node. If the node is asleep, this could take a while!'));
+                        bootbox.alert($.t('Configuration sent to node. If the node is asleep, this could take a while!'));
                      },
                      error: function(){
                             ShowNotify($.t('Problem updating Node Configuration!'), 2500, true);
