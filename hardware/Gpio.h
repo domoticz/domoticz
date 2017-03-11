@@ -47,7 +47,10 @@ private:
 	bool StopHardware();
 
 	void Do_Work();
+	void DelayedStartup();
+	void CopyDeviceStates();
 	void ProcessInterrupt(int gpioId);
+	void SetupInitialState(int gpioId);
 	
 	// List of GPIO pin numbers, ordered as listed
 	static std::vector<CGpioPin> pins;
