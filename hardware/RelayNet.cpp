@@ -507,10 +507,14 @@ void RelayNet::UpdateDomoticzInput(int InputNumber, bool State)
 	if ((!result.empty()) && (result.size()>0))
 	{
 		std::vector<std::string> sd=result[0];
+		bool dbState = true;
 
-		int dbaseState = atoi(sd[1].c_str());
+		if (atoi(sd[1].c_str()) == 0)
+		{
+			dbState = false;
+		}
 
-		if (dbaseState != State)
+		if (dbState != State)
 		{
 			updateDatabase = true;
 		}
@@ -554,11 +558,15 @@ void RelayNet::UpdateDomoticzRelay(int RelayNumber, bool State)
 
 	if ((!result.empty()) && (result.size()>0))
 	{
-		std::vector<std::string> sd=result[0];
+		std::vector<std::string> sd = result[0];
+		bool dbState = true;
 
-		int dbaseState = atoi(sd[1].c_str());
+		if (atoi(sd[1].c_str()) == 0)
+		{
+			dbState = false;
+		}
 
-		if (dbaseState != State)
+		if (dbState != State)
 		{
 			updateDatabase = true;
 		}
