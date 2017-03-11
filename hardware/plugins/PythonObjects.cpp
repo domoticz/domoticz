@@ -10,6 +10,7 @@
 #include "../hardware/hardwaretypes.h"
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
+#include "../main/EventSystem.h"
 #include "PythonObjects.h"
 
 namespace Plugins {
@@ -337,7 +338,7 @@ namespace Plugins {
 					return NULL;
 				}
 				self->Image = 0;
-				self->Used = 1;
+				self->Used = 0;
 				self->SignalLevel = 100;
 				self->BatteryLevel = 255;
 				self->pPlugin = NULL;
@@ -358,6 +359,7 @@ namespace Plugins {
 	int CDevice_init(CDevice *self, PyObject *args, PyObject *kwds)
 	{
 		char*		Name = NULL;
+		char*		DeviceID = NULL;
 		int			Unit = -1;
 		char*		TypeName = NULL;
 		int			Type = -1;
@@ -366,7 +368,7 @@ namespace Plugins {
 		int			Image = -1;
 		char*		Options = NULL;
 		int			Used = -1;
-		static char *kwlist[] = { "Name", "Unit", "TypeName", "Type", "Subtype", "Switchtype", "Image", "Options", "Used", NULL };
+		static char *kwlist[] = { "Name", "Unit", "TypeName", "Type", "Subtype", "Switchtype", "Image", "Options", "Used", "DeviceID", NULL };
 
 		try
 		{
@@ -390,7 +392,7 @@ namespace Plugins {
 				return 0;
 			}
 
-			if (PyArg_ParseTupleAndKeywords(args, kwds, "si|siiiisi", kwlist, &Name, &Unit, &TypeName, &Type, &SubType, &SwitchType, &Image, &Options, &Used))
+			if (PyArg_ParseTupleAndKeywords(args, kwds, "si|siiiisis", kwlist, &Name, &Unit, &TypeName, &Type, &SubType, &SwitchType, &Image, &Options, &Used, &DeviceID))
 			{
 				self->pPlugin = pModState->pPlugin;
 				self->PluginKey = PyUnicode_FromString(pModState->pPlugin->m_PluginKey.c_str());
@@ -407,6 +409,16 @@ namespace Plugins {
 				{
 					_log.Log(LOG_ERROR, "CPlugin:%s, illegal Unit number (%d), valid values range from 1 to 255.", __func__, Unit);
 					return 0;
+				}
+				Py_DECREF(self->DeviceID);
+				if (DeviceID) {
+					self->DeviceID = PyUnicode_FromString(DeviceID);
+				}
+				else
+				{
+					char szID[40];		// Generate a Device ID if one was not supplied
+					sprintf(szID, "%04X%04X", self->HwdID, self->Unit);
+					self->DeviceID = PyUnicode_FromString(szID);
 				}
 				if (TypeName) {
 					std::string	sTypeName = TypeName;
@@ -542,7 +554,7 @@ namespace Plugins {
 				if ((SubType != -1) && SubType) self->SubType = SubType;
 				if (SwitchType != -1) self->SwitchType = SwitchType;
 				if (Image != -1) self->Image = Image;
-				if (Used == 0) self->Used = Used;
+				if (Used == 1) self->Used = Used;
 				if (Options) {
 					Py_DECREF(self->Options);
 					self->Options = PyUnicode_FromString(Options);
@@ -626,15 +638,15 @@ namespace Plugins {
 				result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", self->HwdID, self->Unit);
 				if (result.size() == 0)
 				{
-					char szID[40];
-					sprintf(szID, "%X%02X%02X%02X", 0, 0, (self->HwdID & 0xFF00) >> 8, self->HwdID & 0xFF);
+					PyObject*	pDeviceIDBytes = PyUnicode_AsASCIIString(self->DeviceID);
 					PyObject*	pOptionBytes = PyUnicode_AsASCIIString(self->Options);
 					PyObject*	pSValueBytes = PyUnicode_AsASCIIString(self->sValue);
 					std::string	sLongName = self->pPlugin->Name + " - " + PyBytes_AsString(pNameBytes);
 					m_sql.safe_query(
 						"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue, CustomImage, Options) "
 						"VALUES (%d, '%q', %d, %d, %d, %d, %d, 12, 255, '%q', 0, '%q', %d, '%q')",
-						self->HwdID, szID, self->Unit, self->Type, self->SubType, self->SwitchType, self->Used, sLongName.c_str(), std::string(PyBytes_AsString(pSValueBytes)).c_str(), self->Image, std::string(PyBytes_AsString(pOptionBytes)).c_str());
+						self->HwdID, std::string(PyBytes_AsString(pDeviceIDBytes)).c_str(), self->Unit, self->Type, self->SubType, self->SwitchType, self->Used, sLongName.c_str(), std::string(PyBytes_AsString(pSValueBytes)).c_str(), self->Image, std::string(PyBytes_AsString(pOptionBytes)).c_str());
+					Py_DECREF(pDeviceIDBytes);
 					Py_DECREF(pOptionBytes);
 					Py_DECREF(pSValueBytes);
 
@@ -722,6 +734,12 @@ namespace Plugins {
 			}
 
 			CDevice_refresh(self);
+
+			// Signal Event System to handle the change
+			m_mainworker.m_eventsystem.ProcessDevice(self->HwdID, self->ID, self->Unit, self->Type, self->SubType, iSignalLevel, iBatteryLevel, nValue, sValue, sName.c_str(), 0);
+
+			// Handle notifications
+
 		}
 		else
 		{
