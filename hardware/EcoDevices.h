@@ -1,9 +1,9 @@
 #pragma once
 
 #include "DomoticzHardware.h"
-#include <iostream>
 #include "hardwaretypes.h"
 #include "TeleinfoBase.h"
+#include <iostream>
 
 class CEcoDevices : public CDomoticzHardwareBase
 {
@@ -50,14 +50,14 @@ class CEcoDevices : public CDomoticzHardwareBase
 		} Status;
 
 		Status m_status;
-		CTeleinfoBase m_teleinfo1;
-		CTeleinfoBase m_teleinfo2;
+                CTeleinfoBase *p_teleinfo1;
+                CTeleinfoBase *p_teleinfo2;
 
 		void Init();
 		bool StartHardware();
 		bool StopHardware();
 		void Do_Work();
-		void DecodeXML2Teleinfo(const std::string &sResult, CTeleinfoBase &teleinfo);
+		void DecodeXML2Teleinfo(const std::string &sResult, CTeleinfoBase *teleinfo);
 		void GetMeterDetails();
 };
 

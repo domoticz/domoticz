@@ -51,6 +51,8 @@ CEcoDevices::CEcoDevices(const int ID, const std::string &IPAddress, const unsig
 	m_szIPAddress = IPAddress;
 	m_usIPPort = usIPPort;
 	m_stoprequested = false;
+        p_teleinfo1 = new CTeleinfoBase(m_HwdID, 1, "Teleinfo 1");
+        p_teleinfo2 = new CTeleinfoBase(m_HwdID, 2, "Teleinfo 2");
 
 	Init();
 }
@@ -58,14 +60,14 @@ CEcoDevices::CEcoDevices(const int ID, const std::string &IPAddress, const unsig
 
 CEcoDevices::~CEcoDevices(void)
 {
+delete p_teleinfo1;
+delete p_teleinfo2;
 }
 
 
 void CEcoDevices::Init()
 {
 	m_stoprequested = false;
-	//        m_teleinfo1(1);
-	//        m_teleinfo2(2);
 }
 
 
@@ -120,7 +122,7 @@ bool CEcoDevices::WriteToHardware(const char *pdata, const unsigned char length)
 }
 
 
-void CEcoDevices::DecodeXML2Teleinfo(const std::string &sResult, CTeleinfoBase &teleinfo)
+void CEcoDevices::DecodeXML2Teleinfo(const std::string &sResult, CTeleinfoBase *teleinfo)
 {
 	TiXmlDocument XMLdoc("Teleinfo.xml");
 
@@ -133,38 +135,38 @@ void CEcoDevices::DecodeXML2Teleinfo(const std::string &sResult, CTeleinfoBase &
 
 	using namespace TinyXPath;
 
-	teleinfo.OPTARIF = S_xpath_string(XMLdoc.RootElement(),"/response/OPTARIF/text()").c_str();
-	teleinfo.PTEC = S_xpath_string(XMLdoc.RootElement(),"/response/PTEC/text()").c_str();
-	teleinfo.DEMAIN = S_xpath_string(XMLdoc.RootElement(),"/response/DEMAIN/text()").c_str();
-	teleinfo.ISOUSC = i_xpath_int(XMLdoc.RootElement(),"/response/ISOUSC/text()");
-	teleinfo.PAPP = i_xpath_int(XMLdoc.RootElement(),"/response/PAPP/text()");
-	teleinfo.BASE = i_xpath_int(XMLdoc.RootElement(),"/response/BASE/text()");
-	teleinfo.HCHC = i_xpath_int(XMLdoc.RootElement(),"/response/HCHC/text()");
-	teleinfo.HCHP = i_xpath_int(XMLdoc.RootElement(),"/response/HCHP/text()");
-	teleinfo.EJPHN = i_xpath_int(XMLdoc.RootElement(),"/response/EJPHN/text()");
-	teleinfo.EJPHPM = i_xpath_int(XMLdoc.RootElement(),"/response/EJPHPM/text()");
-	teleinfo.BBRHCJB = i_xpath_int(XMLdoc.RootElement(),"/response/BBRHCJB/text()");
-	teleinfo.BBRHPJB = i_xpath_int(XMLdoc.RootElement(),"/response/BBRHPJB/text()");
-	teleinfo.BBRHCJW = i_xpath_int(XMLdoc.RootElement(),"/response/BBRHCJW/text()");
-	teleinfo.BBRHPJW = i_xpath_int(XMLdoc.RootElement(),"/response/BBRHPJB/text()");
-	teleinfo.BBRHCJR = i_xpath_int(XMLdoc.RootElement(),"/response/BBRHCJR/text()");
-	teleinfo.BBRHPJR = i_xpath_int(XMLdoc.RootElement(),"/response/BBRHPJR/text()");
-	teleinfo.PEJP = i_xpath_int(XMLdoc.RootElement(),"/response/PEJP/text()");
-	teleinfo.IINST = i_xpath_int(XMLdoc.RootElement(),"/response/IINST/text()");
-	teleinfo.IINST1 = i_xpath_int(XMLdoc.RootElement(),"/response/IINST1/text()");
-	teleinfo.IINST2 = i_xpath_int(XMLdoc.RootElement(),"/response/IINST2/text()");
-	teleinfo.IINST3 = i_xpath_int(XMLdoc.RootElement(),"/response/IINST3/text()");
-	teleinfo.IMAX = i_xpath_int(XMLdoc.RootElement(),"/response/IMAX/text()");
-	teleinfo.IMAX1 =i_xpath_int(XMLdoc.RootElement(),"/response/IMAX1/text()");
-	teleinfo.IMAX2 = i_xpath_int(XMLdoc.RootElement(),"/response/IMAX2/text()");
-	teleinfo.IMAX3 = i_xpath_int(XMLdoc.RootElement(),"/response/IMAX3/text()");
-	teleinfo.ADPS = i_xpath_int(XMLdoc.RootElement(),"/response/ADPS/text()");
+	teleinfo->OPTARIF = S_xpath_string(XMLdoc.RootElement(),"/response/OPTARIF/text()").c_str();
+	teleinfo->PTEC = S_xpath_string(XMLdoc.RootElement(),"/response/PTEC/text()").c_str();
+	teleinfo->DEMAIN = S_xpath_string(XMLdoc.RootElement(),"/response/DEMAIN/text()").c_str();
+	teleinfo->ISOUSC = i_xpath_int(XMLdoc.RootElement(),"/response/ISOUSC/text()");
+	teleinfo->PAPP = i_xpath_int(XMLdoc.RootElement(),"/response/PAPP/text()");
+	teleinfo->BASE = i_xpath_int(XMLdoc.RootElement(),"/response/BASE/text()");
+	teleinfo->HCHC = i_xpath_int(XMLdoc.RootElement(),"/response/HCHC/text()");
+	teleinfo->HCHP = i_xpath_int(XMLdoc.RootElement(),"/response/HCHP/text()");
+	teleinfo->EJPHN = i_xpath_int(XMLdoc.RootElement(),"/response/EJPHN/text()");
+	teleinfo->EJPHPM = i_xpath_int(XMLdoc.RootElement(),"/response/EJPHPM/text()");
+	teleinfo->BBRHCJB = i_xpath_int(XMLdoc.RootElement(),"/response/BBRHCJB/text()");
+	teleinfo->BBRHPJB = i_xpath_int(XMLdoc.RootElement(),"/response/BBRHPJB/text()");
+	teleinfo->BBRHCJW = i_xpath_int(XMLdoc.RootElement(),"/response/BBRHCJW/text()");
+	teleinfo->BBRHPJW = i_xpath_int(XMLdoc.RootElement(),"/response/BBRHPJB/text()");
+	teleinfo->BBRHCJR = i_xpath_int(XMLdoc.RootElement(),"/response/BBRHCJR/text()");
+	teleinfo->BBRHPJR = i_xpath_int(XMLdoc.RootElement(),"/response/BBRHPJR/text()");
+	teleinfo->PEJP = i_xpath_int(XMLdoc.RootElement(),"/response/PEJP/text()");
+	teleinfo->IINST = i_xpath_int(XMLdoc.RootElement(),"/response/IINST/text()");
+	teleinfo->IINST1 = i_xpath_int(XMLdoc.RootElement(),"/response/IINST1/text()");
+	teleinfo->IINST2 = i_xpath_int(XMLdoc.RootElement(),"/response/IINST2/text()");
+	teleinfo->IINST3 = i_xpath_int(XMLdoc.RootElement(),"/response/IINST3/text()");
+	teleinfo->IMAX = i_xpath_int(XMLdoc.RootElement(),"/response/IMAX/text()");
+	teleinfo->IMAX1 =i_xpath_int(XMLdoc.RootElement(),"/response/IMAX1/text()");
+	teleinfo->IMAX2 = i_xpath_int(XMLdoc.RootElement(),"/response/IMAX2/text()");
+	teleinfo->IMAX3 = i_xpath_int(XMLdoc.RootElement(),"/response/IMAX3/text()");
+	teleinfo->ADPS = i_xpath_int(XMLdoc.RootElement(),"/response/ADPS/text()");
 
-	#ifdef DEBUG_EcoDevices
-	_log.Log(LOG_NORM, "DEBUG: OPTARIF: '%s'", teleinfo.OPTARIF.c_str());
-	_log.Log(LOG_NORM, "DEBUG: PTEC:    '%s'", teleinfo.PTEC.c_str());
-	_log.Log(LOG_NORM, "DEBUG: DEMAIN:  '%s'", teleinfo.DEMAIN.c_str());
-	#endif
+//	#ifdef DEBUG_EcoDevices
+	_log.Log(LOG_NORM, "DEBUG: OPTARIF: '%s'", teleinfo->OPTARIF.c_str());
+	_log.Log(LOG_NORM, "DEBUG: PTEC:    '%s'", teleinfo->PTEC.c_str());
+	_log.Log(LOG_NORM, "DEBUG: DEMAIN:  '%s'", teleinfo->DEMAIN.c_str());
+//	#endif
 }
 
 
@@ -182,7 +184,9 @@ void CEcoDevices::GetMeterDetails()
 	TiXmlDocument XMLdoc("Teleinfo.xml");
 	time_t atime = mytime(NULL);
 	int   major, minor, release;
-	int min_major = MAJOR, min_minor = MINOR, min_release = RELEASE;
+	int min_major = MAJOR;
+        int min_minor = MINOR;
+        int min_release = RELEASE;
 
 	// Check EcoDevices firmware version and process pulse counters
 	sstr << "http://" << m_szIPAddress << ":" << m_usIPPort << "/status.xml";
@@ -238,8 +242,9 @@ void CEcoDevices::GetMeterDetails()
 			m_status.pindex1 = m_status.index1;
 			m_status.pflow1 = m_status.flow1;
 			m_status.time1 = atime;
-			SendMeterSensor(m_HwdID, 1, 255, m_status.index1/1000.0f, m_status.hostname + " Counter 1");
-			SendWaterflowSensor(m_HwdID, 2, 255, (float)m_status.flow1, m_status.hostname + " Flow counter 1");
+ _log.Log(LOG_NORM, "HWID %i, index %f", m_HwdID, m_status.index1/1000.0f);
+			SendMeterSensor(5, 1, 255, m_status.index1/1000.0f, m_status.hostname + " Counter 1");
+			SendWaterflowSensor(5, 2, 255, (float)m_status.flow1, m_status.hostname + " Flow counter 1");
 		}
 
 		// Process Counter 2
@@ -285,8 +290,8 @@ void CEcoDevices::GetMeterDetails()
 		for (pos = sResult.find(sub);pos != std::string::npos;pos = sResult.find(sub))
 			sResult.erase(pos,len);
 
-		DecodeXML2Teleinfo(sResult, m_teleinfo1);
-		m_teleinfo1.UpdateDevices();
+		DecodeXML2Teleinfo(sResult, p_teleinfo1);
+		p_teleinfo1->UpdateDevices();
 	}
 	// Get Teleinfo 2
 	if (strcmp (m_status.t2_ptec.c_str(), "----") !=0)
@@ -309,8 +314,8 @@ void CEcoDevices::GetMeterDetails()
 		for (pos = sResult.find(sub);pos != std::string::npos;pos = sResult.find(sub))
 			sResult.erase(pos,len);
 
-		DecodeXML2Teleinfo(sResult, m_teleinfo2);
-		m_teleinfo2.UpdateDevices();
+		DecodeXML2Teleinfo(sResult, p_teleinfo2);
+		p_teleinfo2->UpdateDevices();
 	}
 
 }

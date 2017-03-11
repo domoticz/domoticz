@@ -61,7 +61,6 @@ class CTeleinfoBase : public CDomoticzHardwareBase
 	private:
 		uint32_t previous;
 		int rank;
-		int HwdID;
 		bool triphase;
 		std::string name;
 		std::string rate;
