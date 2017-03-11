@@ -54,6 +54,11 @@ namespace Plugins {
 
 	PyMODINIT_FUNC PyInit_Domoticz(void);
 
+#ifdef ENABLE_PYTHON
+    // Need forward decleration
+    PyMODINIT_FUNC PyInit_DomoticzEvents(void);
+#endif // ENABLE_PYTHON
+
 	boost::mutex PluginMutex;	// controls accessto the message queue
 	std::queue<CPluginMessage*>	PluginMessageQueue;
 	boost::asio::io_service ios;
@@ -118,6 +123,13 @@ namespace Plugins {
 				_log.Log(LOG_ERROR, "PluginSystem: Failed to append 'Domoticz' to the existing table of built-in modules.");
 				return false;
 			}
+#ifdef ENABLE_PYTHON
+            if (PyImport_AppendInittab("DomoticzEvents", PyInit_DomoticzEvents) == -1)
+			{
+				_log.Log(LOG_ERROR, "PluginSystem: Failed to append 'DomoticzEvents' to the existing table of built-in modules.");
+				return false;
+			}
+#endif //ENABLE_PYTHON
 
 			Py_Initialize();
 
@@ -476,7 +488,7 @@ namespace http {
 						}
 					}
 				}
-			}  
+			}
 		}
 
 		void CWebServer::PluginLoadConfig()
