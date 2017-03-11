@@ -517,15 +517,18 @@ bt_openwebnet::bt_openwebnet(const std::string& message)
   CreateMsgOpen(message);
 }
 
-bt_openwebnet::bt_openwebnet(int who, int what, int where)
+bt_openwebnet::bt_openwebnet(int who, int what, int where, int group)
 {
 	std::stringstream whoStr;
-	std::stringstream whereStr;
 	std::stringstream whatStr;
+	std::stringstream whereStr;	
 
 	whoStr << who;
-	whereStr << what;
-	whatStr << where;
+	whatStr << what;
+	if (group)
+		whereStr << "#";
+
+	whereStr << where;
 
 	std::string sWho = whoStr.str();
 	std::string sWhere = whereStr.str();
@@ -2165,12 +2168,12 @@ std::string bt_openwebnet::getWhereDescription(const std::string& who, const std
 
 	if (translateAmbPL) {
 		if (atoi(where.c_str()) == 0) {
+			if (whereParameters.size()>0) {
+				//group from 1 to 255
+				return "Group " + whereParameters[0];
+			}
 			return "General";
-		}
-		if (whereParameters.size()>0) {
-			//group from 1 to 255
-			return "Group " + whereParameters[0];
-		}
+		}		
 
 		std::string room;
 		std::string pointOfLight;
