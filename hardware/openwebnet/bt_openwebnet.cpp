@@ -517,7 +517,7 @@ bt_openwebnet::bt_openwebnet(const std::string& message)
   CreateMsgOpen(message);
 }
 
-bt_openwebnet::bt_openwebnet(int who, int what, int where, int group)
+bt_openwebnet::bt_openwebnet(const int who, const int what, const int where, const int group)
 {
 	std::stringstream whoStr;
 	std::stringstream whatStr;
