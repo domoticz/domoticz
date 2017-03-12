@@ -17,6 +17,7 @@
 #include <queue>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/lock_guard.hpp>
+#include <boost/algorithm/string.hpp>
 
 namespace Plugins {
 
@@ -181,7 +182,7 @@ namespace Plugins {
 		m_sRetainedData.assign(sData.c_str(), sData.c_str() + sData.length()); // retain any residual for next time
 	}
 
-	void CPluginProtocolHTTP::ProcessInbound(ReadMessage* Message)
+	void CPluginProtocolHTTP::ProcessInbound(const ReadMessage* Message)
 	{
 		// HTTP/1.0 404 Not Found
 		// Content-Type: text/html; charset=UTF-8
@@ -206,92 +207,77 @@ namespace Plugins {
 		// </html>
 		// 0
 
-		// is this the start of a response?
-		if (!m_Status)
+		m_sRetainedData.insert(m_sRetainedData.end(), Message->m_Buffer.begin(), Message->m_Buffer.end());
+
+		// HTML is non binary so use strings
+		std::string		sData(m_sRetainedData.begin(), m_sRetainedData.end());
+
+		m_Status = 0;
+		m_ContentLength = 0;
+		m_Chunked = false;
+		m_RemainingChunk = 0;
+
+		// Process response header (HTTP/1.1 200 OK)
+		std::string		sFirstLine = sData.substr(0, sData.find_first_of('\r'));
+		sFirstLine = sFirstLine.substr(sFirstLine.find_first_of(' ') + 1);
+		sFirstLine = sFirstLine.substr(0, sFirstLine.find_first_of(' '));
+		m_Status = atoi(sFirstLine.c_str());
+		sData = sData.substr(sData.find_first_of('\n') + 1);
+
+		// Remove headers
+		PyObject *pHeaderDict = PyDict_New();
+		while (sData.length() && (sData[0] != '\r'))
 		{
-			std::vector<byte>	vData = m_sRetainedData;										// if there was some data left over from last time add it back in
-			vData.insert(vData.end(), Message->m_Buffer.begin(), Message->m_Buffer.end());		// add the new data
-			std::string		sData(vData.begin(), vData.end());
-
-			m_ContentLength = 0;
-			m_Chunked = false;
-			m_RemainingChunk = 0;
-
-			// Process response header (HTTP/1.1 200 OK)
-			std::string		sFirstLine = sData.substr(0, sData.find_first_of('\r'));
-			sFirstLine = sFirstLine.substr(sFirstLine.find_first_of(' ') + 1);
-			sFirstLine = sFirstLine.substr(0, sFirstLine.find_first_of(' '));
-			m_Status = atoi(sFirstLine.c_str());
+			std::string		sHeaderLine = sData.substr(0, sData.find_first_of('\r'));
+			std::string		sHeaderName = sData.substr(0, sHeaderLine.find_first_of(':'));
+			std::string		uHeaderName = boost::algorithm::to_upper_copy(sHeaderName);
+			std::string		sHeaderText = sHeaderLine.substr(sHeaderName.length() + 2);
+			if (uHeaderName == "CONTENT-LENGTH")
+			{
+				m_ContentLength = atoi(sHeaderText.c_str());
+			}
+			if ((uHeaderName == "TRANSFER-ENCODING") && (boost::algorithm::to_upper_copy(sHeaderText) == "CHUNKED"))
+			{
+				m_Chunked = true;
+			}
+			PyObject*	pObj = Py_BuildValue("s", sHeaderText.c_str());
+			if (PyDict_SetItemString(pHeaderDict, sHeaderName.c_str(), pObj) == -1)
+			{
+				_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%s' to headers.", __func__, sHeaderName.c_str(), sHeaderText.c_str());
+			}
+			Py_DECREF(pObj);
 			sData = sData.substr(sData.find_first_of('\n') + 1);
-
-			// Remove headers
-			PyObject *pHeaderDict = PyDict_New();
-			while (sData.length() && (sData[0] != '\r'))
-			{
-				std::string		sHeaderLine = sData.substr(0, sData.find_first_of('\r'));
-				std::string		sHeaderName = sData.substr(0, sHeaderLine.find_first_of(':'));
-				std::string		sHeaderText = sHeaderLine.substr(sHeaderName.length() + 2);
-				if ((sHeaderName == "Content-Length") || (sHeaderName == "CONTENT-LENGTH"))
-				{
-					m_ContentLength = atoi(sHeaderText.c_str());
-				}
-				if (((sHeaderName == "Transfer-Encoding") || (sHeaderName == "TRANSFER-ENCODING")) && (sHeaderText == "chunked"))
-				{
-					m_Chunked = true;
-				}
-				PyObject*	pObj = Py_BuildValue("s", sHeaderText.c_str());
-				if (PyDict_SetItemString(pHeaderDict, sHeaderName.c_str(), pObj) == -1)
-				{
-					_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%s' to headers.", __func__, sHeaderName.c_str(), sHeaderText.c_str());
-				}
-				Py_DECREF(pObj);
-				sData = sData.substr(sData.find_first_of('\n') + 1);
-			}
-
-			// not enough data arrived to complete header processing
-			if (!sData.length())
-			{
-				m_sRetainedData.insert(m_sRetainedData.end(), Message->m_Buffer.begin(), Message->m_Buffer.end()); // retain any residual for next time
-				m_Status = 0;
-				m_ContentLength = 0;
-				Py_DECREF(pHeaderDict);
-				return;
-			}
-
-			m_Headers = pHeaderDict;
-			sData = sData.substr(sData.find_first_of('\n') + 1);		// skip over 2nd new line char
-			m_sRetainedData.clear();
-			Message->m_Buffer.assign(sData.c_str(), sData.c_str() + sData.length()); // retain any residual for next time
 		}
+
+		// not enough data arrived to complete header processing
+		if (!sData.length())
+		{
+			Py_DECREF(pHeaderDict);
+			return;
+		}
+
+		m_Headers = pHeaderDict;
+		sData = sData.substr(sData.find_first_of('\n') + 1);		// skip over 2nd new line char
 
 		// Process the message body
 		if (m_Status)
 		{
 			if (!m_Chunked)
 			{
-				std::vector<byte>	vData = m_sRetainedData;										// if there was some data left over from last time add it back in
-				vData.insert(vData.end(), Message->m_Buffer.begin(), Message->m_Buffer.end());		// add the new data
-				std::string		sData(vData.begin(), vData.end());
-
 				// If full message then return it
 				if (m_ContentLength == sData.length())
 				{
+					std::vector<byte>	vData(sData.c_str(), sData.c_str() + sData.length());
 					ReceivedMessage*	RecvMessage = new ReceivedMessage(Message->m_HwdID, vData, m_Status, (PyObject*)m_Headers);
 					boost::lock_guard<boost::mutex> l(PluginMutex);
 					PluginMessageQueue.push(RecvMessage);
-
-					m_Status = 0;
-					m_ContentLength = 0;
-					m_Headers = NULL;
 					m_sRetainedData.clear();
 				}
-				else
-					m_sRetainedData.insert(m_sRetainedData.end(), Message->m_Buffer.begin(), Message->m_Buffer.end()); // retain any residual for next time
 			}
 			else
 			{
 				// Process available chunks
-				std::string		sData(Message->m_Buffer.begin(), Message->m_Buffer.end());
+				std::vector<byte>	vData(sData.c_str(), sData.c_str() + sData.length());
 				while (sData.length() && (sData != "\r\n"))
 				{
 					if (!m_RemainingChunk)	// Not processing a chunk so we should be at the start of one
@@ -305,13 +291,9 @@ namespace Plugins {
 						sData = sData.substr(sData.find_first_of('\n') + 1);
 						if (!m_RemainingChunk)	// last chunk is zero length
 						{
-							ReceivedMessage*	RecvMessage = new ReceivedMessage(Message->m_HwdID, m_sRetainedData, m_Status, (PyObject*)m_Headers);
+							ReceivedMessage*	RecvMessage = new ReceivedMessage(Message->m_HwdID, vData, m_Status, (PyObject*)m_Headers);
 							boost::lock_guard<boost::mutex> l(PluginMutex);
 							PluginMessageQueue.push(RecvMessage);
-
-							m_Status = 0;
-							m_ContentLength = 0;
-							m_Headers = NULL;
 							m_sRetainedData.clear();
 							break;
 						}
@@ -319,12 +301,10 @@ namespace Plugins {
 
 					if (sData.length() <= m_RemainingChunk)		// Read data is just part of a chunk
 					{
-						m_sRetainedData.assign(sData.c_str(), sData.c_str() + sData.length()); // retain any residual for next time
-						m_RemainingChunk -= sData.length();
+						Py_DECREF(pHeaderDict);
 						break;
 					}
 
-					m_sRetainedData.insert(m_sRetainedData.end(), sData.c_str(), sData.c_str() + m_RemainingChunk);
 					sData = sData.substr(m_RemainingChunk);
 					m_RemainingChunk = 0;
 				}
