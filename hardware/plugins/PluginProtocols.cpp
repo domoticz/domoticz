@@ -17,7 +17,6 @@
 #include <queue>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/lock_guard.hpp>
-#include <boost/algorithm/string.hpp>
 
 namespace Plugins {
 
@@ -230,15 +229,19 @@ namespace Plugins {
 		{
 			std::string		sHeaderLine = sData.substr(0, sData.find_first_of('\r'));
 			std::string		sHeaderName = sData.substr(0, sHeaderLine.find_first_of(':'));
-			std::string		uHeaderName = boost::algorithm::to_upper_copy(sHeaderName);
+			std::string		uHeaderName = sHeaderName;
+			stdupper(uHeaderName);
 			std::string		sHeaderText = sHeaderLine.substr(sHeaderName.length() + 2);
 			if (uHeaderName == "CONTENT-LENGTH")
 			{
 				m_ContentLength = atoi(sHeaderText.c_str());
 			}
-			if ((uHeaderName == "TRANSFER-ENCODING") && (boost::algorithm::to_upper_copy(sHeaderText) == "CHUNKED"))
+			if (uHeaderName == "TRANSFER-ENCODING") 
 			{
-				m_Chunked = true;
+				std::string		uHeaderText = sHeaderText;
+				stdupper(uHeaderText);
+				if (uHeaderText == "CHUNKED")
+					m_Chunked = true;
 			}
 			PyObject*	pObj = Py_BuildValue("s", sHeaderText.c_str());
 			if (PyDict_SetItemString(pHeaderDict, sHeaderName.c_str(), pObj) == -1)
@@ -277,7 +280,7 @@ namespace Plugins {
 			else
 			{
 				// Process available chunks
-				std::vector<byte>	vData(sData.c_str(), sData.c_str() + sData.length());
+				std::vector<byte>	vHTML;
 				while (sData.length() && (sData != "\r\n"))
 				{
 					if (!m_RemainingChunk)	// Not processing a chunk so we should be at the start of one
@@ -291,7 +294,7 @@ namespace Plugins {
 						sData = sData.substr(sData.find_first_of('\n') + 1);
 						if (!m_RemainingChunk)	// last chunk is zero length
 						{
-							ReceivedMessage*	RecvMessage = new ReceivedMessage(Message->m_HwdID, vData, m_Status, (PyObject*)m_Headers);
+							ReceivedMessage*	RecvMessage = new ReceivedMessage(Message->m_HwdID, vHTML, m_Status, (PyObject*)m_Headers);
 							boost::lock_guard<boost::mutex> l(PluginMutex);
 							PluginMessageQueue.push(RecvMessage);
 							m_sRetainedData.clear();
@@ -305,6 +308,7 @@ namespace Plugins {
 						break;
 					}
 
+					vHTML.insert(vHTML.end(), sData.c_str(), sData.c_str() + m_RemainingChunk);
 					sData = sData.substr(m_RemainingChunk);
 					m_RemainingChunk = 0;
 				}
