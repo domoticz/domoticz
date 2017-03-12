@@ -1319,6 +1319,7 @@ define(['app'], function (app) {
                 var mode1 = "";
                 if (text.indexOf("MySensors Gateway with MQTT") >= 0) {
                     extra = encodeURIComponent($("#hardwarecontent #divmysensorsmqtt #filename").val());
+                    mode1 = $("#hardwarecontent #divmysensorsmqtt #combotopicselect").val();
                 }
                 else if (text.indexOf("MQTT") >= 0) {
                     extra = encodeURIComponent($("#hardwarecontent #divmqtt #filename").val());
@@ -5042,6 +5043,7 @@ define(['app'], function (app) {
 						}
                         if (data["Type"].indexOf("MySensors Gateway with MQTT") >= 0) {
                             $("#hardwarecontent #hardwareparamsmysensorsmqtt #filename").val(data["Extra"]);
+                            $("#hardwarecontent #hardwareparamsmysensorsmqtt #combotopicselect").val(data["Mode1"]);
                         }
                         else if (data["Type"].indexOf("MQTT") >= 0) {
                             $("#hardwarecontent #hardwareparamsmqtt #filename").val(data["Extra"]);
