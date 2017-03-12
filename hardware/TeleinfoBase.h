@@ -12,14 +12,13 @@ History :
 
 #pragma once
 
-#include "stdafx.h"
 #include "../main/localtime_r.h"
-
 #include "DomoticzHardware.h"
 #include "hardwaretypes.h"
 
 class CTeleinfoBase : public CDomoticzHardwareBase
 {
+friend class CEcoDevices;
 
 	public:
 		std::string PTEC;
@@ -49,24 +48,23 @@ class CTeleinfoBase : public CDomoticzHardwareBase
 		uint32_t BBRHPJR;
 		uint32_t BBRHCJR;
 
-		CTeleinfoBase();
-		CTeleinfoBase(const int c_HwdID);
-		CTeleinfoBase(const int c_HwdID, const int c_rank, const std::string c_name);
+		CTeleinfoBase(const int ID);
+		CTeleinfoBase(const int ID, const int rank, const std::string name);
 		~CTeleinfoBase();
 		void Init();
 		bool WriteToHardware(const char *pdata, const unsigned char length);
 
-		bool UpdateDevices();
+		bool UpdateDevices(CDomoticzHardwareBase *CCalling);
 
 	private:
-		uint32_t previous;
-		int rank;
-		bool triphase;
-		std::string name;
-		std::string rate;
-		std::string tariff;
-		std::string color;
-		time_t   last;
+		uint32_t m_previous;
+		int m_rank;
+		bool m_triphase;
+		std::string m_name;
+		std::string m_rate;
+		std::string m_tariff;
+		std::string m_color;
+		time_t   m_last;
 
 		bool StartHardware();
 		bool StopHardware();

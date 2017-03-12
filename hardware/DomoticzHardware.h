@@ -9,6 +9,7 @@
 class CDomoticzHardwareBase
 {
 	friend class MainWorker;
+friend class CTeleinfoBase;
 public:
 	CDomoticzHardwareBase();
 	virtual ~CDomoticzHardwareBase();
