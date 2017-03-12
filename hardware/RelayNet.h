@@ -45,8 +45,6 @@ private:
 
 protected:
 
-	int m_socket;
-
 	void Do_Work();
 	void Init();
 	void SetupDevices();
