@@ -527,12 +527,14 @@ bt_openwebnet::bt_openwebnet(const int who, const int what, const int where, con
 	whatStr << what;
 	if (group) {
 		/*
+			Group Command: GRP [1 - 255]
 			we need to add a '#'
 		*/
 		whereStr << "#";
 	} else if ((where > 99) && (where < 1000)) {
 
 		/* 
+			APL Command: A [01 - 09]; PL [10 - 15]
 			In this case, 'where' is > 99, but < 1000 (area 10)
 
 			int value is for example 110 (A=1, PL=10).
@@ -540,11 +542,13 @@ bt_openwebnet::bt_openwebnet(const int who, const int what, const int where, con
 		*/
 		whereStr << "0";
 	}
-	else
-	{
-		/*
-		*/
-	}
+
+	/*
+		In other cases just take 'where' as is
+		Area Command: A [1 - 9] 
+		APL Command: A[1 - 9]; PL[1 - 9]
+		APL Command: A = 10; PL[01 - 15]
+	*/
 
 	whereStr << where;
 
