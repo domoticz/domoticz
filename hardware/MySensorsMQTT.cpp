@@ -8,25 +8,29 @@
 #include "../main/mainworker.h"
 
 #define TOPIC_DEFAULT	"MyMQTT"
-#define TOPIC_IN	"domoticz/in/"
-#define TOPIC_OUT	"domoticz/out/"
+#define TOPIC_IN		"domoticz/in/"
+#define TOPIC_OUT		"domoticz/out/"
 
 MySensorsMQTT::MySensorsMQTT(const int ID, const std::string &Name, const std::string &IPAddress, const unsigned short usIPPort, const std::string &Username, const std::string &Password, const std::string &CAfilename, const int Topics) :
 	MQTT(ID, IPAddress, usIPPort, Username, Password, CAfilename, (int)MQTT::PT_out)
 {
+	MyTopicIn = TOPIC_IN;
+	MyTopicOut = TOPIC_OUT;
 	switch (Topics) {
-		case 1:
-			MyTopicIn = TOPIC_IN + TOPIC_DEFAULT;
-			MyTopicOut = TOPIC_OUT + TOPIC_DEFAULT;
-			break;
 		case 2:
-			MyTopicIn = TOPIC_IN + Name;
-			MyTopicOut = TOPIC_OUT + Name;
+			MyTopicIn += TOPIC_DEFAULT;
+			MyTopicOut += TOPIC_DEFAULT;
+			break;
+		case 1:
+		default:
+			MyTopicIn += TOPIC_DEFAULT;
+			MyTopicOut += TOPIC_DEFAULT;
 			break;
 	}
 	m_TopicInWithoutHash = MyTopicIn;
 	m_TopicIn = m_TopicInWithoutHash + "/#";
 	m_TopicOut = MyTopicOut;
+
 }
 
 MySensorsMQTT::~MySensorsMQTT(void)
