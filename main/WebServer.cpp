@@ -1185,10 +1185,6 @@ namespace http {
 					(username == "")
 					)
 					return;
-				std::string siteID = request::findValue(&req, "Mode1");
-				if (siteID.empty())
-					return;
-				mode1 = atoi(siteID.c_str());
 			}
 			else if (htype == HTYPE_SBFSpot) {
 				if (username == "")
@@ -5518,6 +5514,13 @@ namespace http {
 					root["result"][ii]["val"] = NTYPE_SWITCH_OFF;
 					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_SWITCH_OFF, 0);
 					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_SWITCH_OFF, 1);
+					ii++;
+				}
+				if (!IsLightOrSwitch(dType, dSubType))
+				{
+					root["result"][ii]["val"] = NTYPE_LASTUPDATE;
+					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_LASTUPDATE, 0);
+					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_LASTUPDATE, 1);
 					ii++;
 				}
 			}
