@@ -525,8 +525,26 @@ bt_openwebnet::bt_openwebnet(const int who, const int what, const int where, con
 
 	whoStr << who;
 	whatStr << what;
-	if (group)
+	if (group) {
+		/*
+			we need to add a '#'
+		*/
 		whereStr << "#";
+	} else if ((where > 99) && (where < 1000)) {
+
+		/* 
+			In this case, 'where' is > 99, but < 1000 (area 10)
+
+			int value is for example 110 (A=1, PL=10).
+			The correct string is '0110', so we need to add a '0'
+		*/
+		whereStr << "0";
+	}
+	else
+	{
+		/*
+		*/
+	}
 
 	whereStr << where;
 
