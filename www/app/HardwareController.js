@@ -1320,6 +1320,7 @@ define(['app'], function (app) {
                 if (text.indexOf("MySensors Gateway with MQTT") >= 0) {
                     extra = encodeURIComponent($("#hardwarecontent #divmysensorsmqtt #filename").val());
                     mode1 = $("#hardwarecontent #divmysensorsmqtt #combotopicselect").val();
+                    ShowNotify($.t(mode1), 2500, true);
                 }
                 else if (text.indexOf("MQTT") >= 0) {
                     extra = encodeURIComponent($("#hardwarecontent #divmqtt #filename").val());
