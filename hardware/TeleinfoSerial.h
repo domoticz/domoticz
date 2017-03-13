@@ -18,7 +18,6 @@ History :
 
 #pragma once
 
-#include "DomoticzHardware.h"
 #include "P1MeterBase.h"
 #include "ASyncSerial.h"
 #include "TeleinfoBase.h"
@@ -28,7 +27,7 @@ History :
 #define TELEINFO_FLOW_CONTROL      boost::asio::serial_port_base::flow_control::none
 #define TELEINFO_STOP_BITS         boost::asio::serial_port_base::stop_bits::one
 
-class CTeleinfoSerial : public CDomoticzHardwareBase, AsyncSerial
+class CTeleinfoSerial : public CTeleinfoBase, AsyncSerial
 {
 	typedef enum {
 		ID = 0,

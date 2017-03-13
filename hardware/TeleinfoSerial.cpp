@@ -21,7 +21,6 @@ History :
 
 #include "stdafx.h"
 #include "TeleinfoSerial.h"
-#include "TeleinfoBase.h"
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 #include "../main/Logger.h"
@@ -205,6 +204,7 @@ void CTeleinfoSerial::MatchLine()
 	CTeleinfoSerial::Match t;
 	char value[20] = "";
 	std::string vString;
+        Teleinfo teleinfo;
 
 	//_log.Log(LOG_NORM,"Frame : #%s#", m_buffer);
 	for (i = 0; (i<sizeof(m_matchlist) / sizeof(CTeleinfoSerial::Match))&(!found); i++)
@@ -247,13 +247,15 @@ void CTeleinfoSerial::MatchLine()
                         {
                                 m_bLabel_Tempo = false;
                         }
-
+			teleinfo.OPTARIF = vString;
 			break;
 		case TELEINFO_TYPE_ISOUSC:
+                        teleinfo.ISOUSC = ulValue;
 			break;
 		case TELEINFO_TYPE_BASE:
 			if (ulValue != 0)
 				m_p1power.powerusage1 = ulValue;
+                        teleinfo.BASE = ulValue;
 			break;
 		case TELEINFO_TYPE_HCHC:
 			if (ulValue != 0)
@@ -431,6 +433,7 @@ void CTeleinfoSerial::MatchLine()
 		}
 		return;
 	}
+        ProcessTeleinfo(teleinfo);
 }
 
 void CTeleinfoSerial::ParseData(const unsigned char *pData, int Len)

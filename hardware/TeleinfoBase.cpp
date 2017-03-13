@@ -13,233 +13,150 @@ History :
 #include "stdafx.h"
 #include "TeleinfoBase.h"
 #include "../main/Logger.h"
+#include "../main/localtime_r.h"
 
-#ifdef _DEBUG
-#define DEBUG_TeleinfoBase
-#endif
+CTeleinfoBase::CTeleinfoBase() {}
 
-#define DEBUG_TeleinfoBase
-
-// Poll every 30s, and update counters at least every 5mn
-#define TELEINFO_MAX_POLL_INTERVAL 300
+CTeleinfoBase::~CTeleinfoBase() {}
 
 
-CTeleinfoBase::CTeleinfoBase(const int ID)
+void CTeleinfoBase::ProcessTeleinfo(Teleinfo &teleinfo) 
 {
-	m_HwdID = ID;
-	m_rank = 1;
-	m_name = "Teleinfo";
-
-	Init();
+ProcessTeleinfo("Teleinfo", 1, teleinfo);
 }
 
-
-CTeleinfoBase::CTeleinfoBase(const int ID, const int rank, const std::string name)
+void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo &teleinfo)
 {
-	m_HwdID = ID;
-	m_name = name;
-	m_rank = rank;
+        uint32_t m_pappHC, m_pappHP, m_pappHCJB, m_pappHPJB, m_pappHCJW, m_pappHPJW, m_pappHCJR, m_pappHPJR, checksum, level;
+        double flevel;
+        time_t atime = mytime(NULL);
 
-	Init();
-}
+        // PAPP only exist on some meter versions. If not present, we can approximate it as (current x 230V)
+        if ((teleinfo.PAPP == 0) && (teleinfo.IINST > 0))
+                teleinfo.PAPP = (teleinfo.IINST * 230);
 
+        if (teleinfo.PTEC.substr(0,2) == "TH")
+                teleinfo.rate="Toutes Heures";
+        else if (teleinfo.PTEC.substr(0,2) == "HC")
+        {
+                teleinfo.rate = "Heures Creuses";
+                m_pappHC = teleinfo.PAPP;
+                m_pappHP = 0;
+        }
+        else if (teleinfo.PTEC.substr(0,2) == "HP")
+        {
+                teleinfo.rate = "Heures Pleines";
+                m_pappHC = 0;
+                m_pappHP = teleinfo.PAPP;
+        }
+        else if (teleinfo.PTEC.substr(0,2) == "HN")
+        {
+                teleinfo.rate = "Heures Normales";
+                m_pappHC = teleinfo.PAPP;
+                m_pappHP = 0;
+        }
+        else if (teleinfo.PTEC.substr(0,2) == "PM")
+        {
+                teleinfo.rate = "Pointe Mobile";
+                m_pappHC = 0;
+                m_pappHP = teleinfo.PAPP;
+        }
+        else
+        {
+                teleinfo.rate = "Unknown";
+                teleinfo.tariff = "Undefined";
+        }
 
-void CTeleinfoBase::Init()
-{
-	OPTARIF = "";
-	PTEC = "";
-	DEMAIN = "";
-	PAPP = 0;
-	BASE = 0;
-	HCHC = 0;
-	HCHP = 0;
-	PEJP = 0;
-	EJPHN= 0;
-	EJPHPM = 0;
-	BBRHPJB = 0;
-	BBRHCJB = 0;
-	BBRHPJW = 0;
-	BBRHCJW = 0;
-	BBRHPJR = 0;
-	BBRHCJR = 0;
-	IINST = 0;
-	IINST1 = 0;
-	IINST2 = 0;
-	IINST3 = 0;
-	IMAX = 0;
-	IMAX1 = 0;
-	IMAX2 = 0;
-	IMAX3 = 0;
+        // Checksum to detect changes between measures
+        checksum=teleinfo.BASE + teleinfo.HCHC + teleinfo.HCHP + teleinfo.EJPHN + teleinfo.EJPHPM + teleinfo.BBRHCJB \
+                + teleinfo.BBRHPJB + teleinfo.BBRHCJW + teleinfo.BBRHPJB + teleinfo.BBRHCJR + teleinfo.BBRHPJR + teleinfo.PAPP;
 
-	m_previous = 0;
-	m_rate = "";
-	m_tariff = "";
-	m_color = "";
-	m_last = 0;
-	m_triphase = false;
-}
+        //Send data if value changed or at least every 5 minutes
+        if ((teleinfo.previous != checksum) || (difftime(atime, teleinfo.last) >= 300))
+        {
+                teleinfo.previous = checksum;
+                teleinfo.last = atime;
+                if (teleinfo.OPTARIF == "BASE")
+                {
+                        teleinfo.tariff="Tarif de Base";
+                        SendKwhMeter(m_HwdID, 10, 255, teleinfo.PAPP, teleinfo.BASE/1000.0, name + " Index");
+                }
+                else if (teleinfo.OPTARIF == "HC..")
+                {
+                        teleinfo.tariff="Tarif option Heures Creuses";
+                        SendKwhMeter(m_HwdID, 12, 255, m_pappHC, teleinfo.HCHC/1000.0, name + " Heures Creuses");
+                        SendKwhMeter(m_HwdID, 13, 255, m_pappHP, teleinfo.HCHP/1000.0, name + " Heures Pleines");
+                        SendKwhMeter(m_HwdID, 14, 255, teleinfo.PAPP, (teleinfo.HCHP + teleinfo.HCHC)/1000.0, name + " Total");
+                        SendTextSensor(m_HwdID, 11, 255, teleinfo.rate, name + " Tarif en cours");
+                }
+                else if (teleinfo.OPTARIF == "EJP.")
+                {
+                        teleinfo.tariff="Tarif option EJP";
+                        SendKwhMeter(m_HwdID, 5, 255, m_pappHC, teleinfo.EJPHN/1000.0, name + " Heures Normales");
+                        SendKwhMeter(m_HwdID, 16, 255, m_pappHP, teleinfo.EJPHPM/1000.0, name + " Heures Pointe Mobile");
+                        SendKwhMeter(m_HwdID, 17, 255, teleinfo.PAPP, (teleinfo.EJPHN + teleinfo.EJPHPM)/1000.0, name + " Total");
+                        SendTextSensor(m_HwdID, 11, 255, teleinfo.rate, name + " Tarif en cours");
+                        SendAlertSensor(10+rank, 255, ((teleinfo.PEJP == 30) ? 4 : 1), (name + " Alerte Pointe Mobile").c_str());
+                }
+                else if (teleinfo.OPTARIF.substr(0,3) == "BBR")
+                {
+                        teleinfo.tariff="Tarif option TEMPO";
+                        m_pappHCJB=0;
+                        m_pappHPJB=0;
+                        m_pappHCJW=0;
+                        m_pappHPJW=0;
+                        m_pappHCJR=0;
+                        m_pappHPJR=0;
+                        if (teleinfo.PTEC.substr(3,1) == "B")
+                        {
+                                teleinfo.color="Bleu";
+                                if (teleinfo.rate == "Heures Creuses")
+                                        m_pappHCJB=teleinfo.PAPP;
+                                else
+                                        m_pappHPJB=teleinfo.PAPP;
+                        }
+                        else if (teleinfo.PTEC.substr(3,1) == "W")
+                        {
+                                teleinfo.color="Blanc";
+                                if (teleinfo.rate == "Heures Creuses")
+                                        m_pappHCJW=teleinfo.PAPP;
+                                else
+                                        m_pappHPJW=teleinfo.PAPP;
+                        }
+                        else if (teleinfo.PTEC.substr(3,1) == "R")
+                        {
+                                teleinfo.color="Rouge";
+                                if (teleinfo.rate == "Heures Creuses")
+                                        m_pappHCJR=teleinfo.PAPP;
+                                else
+                                        m_pappHPJR=teleinfo.PAPP;
+                        }
+                        else
+                        {
+                                teleinfo.color="Unknown";
+                        }
+                        SendKwhMeter(m_HwdID, 18, 255, m_pappHCJB, teleinfo.BBRHCJB/1000.0, "Teleinfo 1 Jour Bleu, Creux");
+                        SendKwhMeter(m_HwdID, 19, 255, m_pappHPJB, teleinfo.BBRHPJB/1000.0, "Teleinfo 1 Jour Bleu, Plein");
+                        SendKwhMeter(m_HwdID, 20, 255, m_pappHCJW, teleinfo.BBRHCJW/1000.0, "Teleinfo 1 Jour Blanc, Creux");
+                        SendKwhMeter(m_HwdID, 21, 255, m_pappHPJW, teleinfo.BBRHPJW/1000.0, "Teleinfo 1 Jour Blanc, Plein");
+                        SendKwhMeter(m_HwdID, 22, 255, m_pappHCJR, teleinfo.BBRHCJR/1000.0, "Teleinfo 1 Jour Rouge, Creux");
+                        SendKwhMeter(m_HwdID, 23, 255, m_pappHPJR, teleinfo.BBRHCJR/1000.0, "Teleinfo 1 Jour Rouge, Plein");
+                        SendKwhMeter(m_HwdID, 24, 255, teleinfo.PAPP, (teleinfo.BBRHCJB + teleinfo.BBRHPJB + teleinfo.BBRHCJW \
+                                + teleinfo.BBRHPJW + teleinfo.BBRHCJR + teleinfo.BBRHPJR)/1000.0, name + " Total");
+                        SendTextSensor(m_HwdID, 11, 255, "Jour " + teleinfo.color + ", " + teleinfo.rate, name + " Tarif en cours ");
+                        SendTextSensor(m_HwdID, 25, 255, "Demain, jour " + teleinfo.DEMAIN , name + " couleur demain");
+                }
+                // Common sensors for all rates
+                SendCurrentSensor(m_HwdID, 255, (float)teleinfo.IINST1, (float)teleinfo.IINST2, (float)teleinfo.IINST3, name + " Courant");
 
-
-CTeleinfoBase::~CTeleinfoBase(void) {}
-
-bool CTeleinfoBase::WriteToHardware(const char*, unsigned char)
-{
-	return true;
-}
-
-
-bool CTeleinfoBase::StartHardware()
-{
-	return true;
-}
-
-
-bool CTeleinfoBase::StopHardware()
-{
-	return true;
-}
-
-
-bool CTeleinfoBase::UpdateDevices(CDomoticzHardwareBase *CallingHardware)
-{
-	uint32_t pappHC, pappHP, pappHCJB, pappHPJB, pappHCJW, pappHPJW, pappHCJR, pappHPJR, checksum, level;
-	double flevel;
-	time_t atime = mytime(NULL);
-
-	// PAPP only exist on some meter versions. If not present, we can approximate it as (current x 230V)
-	if ((PAPP == 0) && (IINST > 0))
-		PAPP = (IINST * 230);
-
-	// Guess if power supply is three phases or one.
-	if ((IINST2 + IINST3) > 0) m_triphase=true;
-
-	if (PTEC.substr(0,2) == "TH")
-		m_rate="Toutes Heures";
-	else if (PTEC.substr(0,2) == "HC")
-	{
-		m_rate = "Heures Creuses";
-		pappHC = PAPP;
-		pappHP = 0;
-	}
-	else if (PTEC.substr(0,2) == "HP")
-	{
-		m_rate = "Heures Pleines";
-		pappHC = 0;
-		pappHP = PAPP;
-	}
-	else if (PTEC.substr(0,2) == "HN")
-	{
-		m_rate = "Heures Normales";
-		pappHC = PAPP;
-		pappHP = 0;
-	}
-	else if (PTEC.substr(0,2) == "PM")
-	{
-		m_rate = "Pointe Mobile";
-		pappHC = 0;
-		pappHP = PAPP;
-	}
-	else
-	{
-		m_rate = "Unknown";
-		m_tariff = "Undefined";
-	}
-
-	// Checksum to detect changes between measures
-	checksum=BASE + HCHC + HCHP + EJPHN + EJPHPM + BBRHCJB + BBRHPJB + BBRHCJW + BBRHPJB + BBRHCJR + BBRHPJR + PAPP;
-
-	//Send data if value changed or at least every 5 minutes
-	if ((m_previous != checksum) || (difftime(atime, m_last) >= TELEINFO_MAX_POLL_INTERVAL))
-	{
-		m_previous = checksum;
-		m_last = atime;
-		if (OPTARIF == "BASE")
-		{
-			m_tariff="Tarif de Base";
-			CallingHardware->SendKwhMeter(m_HwdID, 10, 255, PAPP, BASE/1000.0, m_name + " Index");
-		}
-		else if (OPTARIF == "HC..")
-		{
-			m_tariff="Tarif option Heures Creuses";
-			SendKwhMeter(m_HwdID, 12, 255, pappHC, HCHC/1000.0, m_name + " Heures Creuses");
-			SendKwhMeter(m_HwdID, 13, 255, pappHP, HCHP/1000.0, m_name + " Heures Pleines");
-			SendKwhMeter(m_HwdID, 14, 255, PAPP, (HCHP + HCHC)/1000.0, m_name + " Total");
-			SendTextSensor(m_HwdID, 11, 255, m_rate, m_name + " Tarif en cours");
-		}
-		else if (OPTARIF == "EJP.")
-		{
-			m_tariff="Tarif option EJP";
-			SendKwhMeter(m_HwdID, 5, 255, pappHC, EJPHN/1000.0, m_name + " Heures Normales");
-			SendKwhMeter(m_HwdID, 16, 255, pappHP, EJPHPM/1000.0, m_name + " Heures Pointe Mobile");
-			SendKwhMeter(m_HwdID, 17, 255, PAPP, (EJPHN + EJPHPM)/1000.0, m_name + " Total");
-			SendTextSensor(m_HwdID, 11, 255, m_rate, m_name + " Tarif en cours");
-			SendAlertSensor(10+m_rank, 255, ((PEJP == 30) ? 4 : 1), (m_name + " Alerte Pointe Mobile").c_str());
-		}
-		else if (OPTARIF.substr(0,3) == "BBR")
-		{
-			m_tariff="Tarif option TEMPO";
-			pappHCJB=0;
-			pappHPJB=0;
-			pappHCJW=0;
-			pappHPJW=0;
-			pappHCJR=0;
-			pappHPJR=0;
-			if (PTEC.substr(3,1) == "B")
-			{
-				m_color="Bleu";
-				if (m_rate == "Heures Creuses")
-					pappHCJB=PAPP;
-				else
-					pappHPJB=PAPP;
-			}
-			else if (PTEC.substr(3,1) == "W")
-			{
-				m_color="Blanc";
-				if (m_rate == "Heures Creuses")
-					pappHCJW=PAPP;
-				else
-					pappHPJW=PAPP;
-			}
-			else if (PTEC.substr(3,1) == "R")
-			{
-				m_color="Rouge";
-				if (m_rate == "Heures Creuses")
-					pappHCJR=PAPP;
-				else
-					pappHPJR=PAPP;
-			}
-			else
-			{
-				m_color="Unknown";
-			}
-			SendKwhMeter(m_HwdID, 18, 255, pappHCJB, BBRHCJB/1000.0, "Teleinfo 1 Jour Bleu, Creux");
-			SendKwhMeter(m_HwdID, 19, 255, pappHPJB, BBRHPJB/1000.0, "Teleinfo 1 Jour Bleu, Plein");
-			SendKwhMeter(m_HwdID, 20, 255, pappHCJW, BBRHCJW/1000.0, "Teleinfo 1 Jour Blanc, Creux");
-			SendKwhMeter(m_HwdID, 21, 255, pappHPJW, BBRHPJW/1000.0, "Teleinfo 1 Jour Blanc, Plein");
-			SendKwhMeter(m_HwdID, 22, 255, pappHCJR, BBRHCJR/1000.0, "Teleinfo 1 Jour Rouge, Creux");
-			SendKwhMeter(m_HwdID, 23, 255, pappHPJR, BBRHCJR/1000.0, "Teleinfo 1 Jour Rouge, Plein");
-			SendKwhMeter(m_HwdID, 24, 255, PAPP, (BBRHCJB + BBRHPJB + BBRHCJW + BBRHPJW + BBRHCJR + BBRHPJR)/1000.0, m_name + " Total");\
-			SendTextSensor(m_HwdID, 11, 255, "Jour " + m_color + ", " + m_rate, m_name + " Tarif en cours ");
-			SendTextSensor(m_HwdID, 25, 255, "Demain, jour " + DEMAIN , m_name + " couleur demain");
-		}
-		// Common sensors for all rates
-		SendCurrentSensor(m_HwdID, 255, (float)IINST1, (float)IINST2, (float)IINST3, m_name + " Courant");
-
-		// Alert level is 1 up to 100% usage, 2 then 3 above 100% load and 4 for maximum load (IMAX)
-		if ((IMAX - IINST ) <=0)
-			level = 4;
-		else
-			flevel = (3.0 * IINST + IMAX - 4.0 * ISOUSC) / (IMAX - ISOUSC);
-		if (flevel > 4) flevel = 4;
-		if (flevel < 1) flevel = 1;
-		level = (int)round(flevel + 0.49);
-		#ifdef DEBUG_TeleinfoBase
-		_log.Log(LOG_NORM,"TeleinfoBase: HdwID=%i, rank=%i, PAPP=%i",m_HwdID, m_rank, PAPP);
-		CallingHardware->SendAlertSensor(0, 255, 4, " Alerte courant maximal");
-                #endif
-		CallingHardware->SendAlertSensor(m_HwdID, 255, level, (m_name + " Alerte courant maximal").c_str());
-
-		// If triphase, then send three alerts, one for each phase
-		//TODO
-	}
+                // Alert level is 1 up to 100% usage, 2 then 3 above 100% load and 4 for maximum load (IMAX)
+                if ((teleinfo.IMAX - teleinfo.IINST ) <=0)
+                        level = 4;
+                else
+                        flevel = (3.0 * teleinfo.IINST + teleinfo.IMAX - 4.0 * teleinfo.ISOUSC) / (teleinfo.IMAX - teleinfo.ISOUSC);
+                if (flevel > 4) flevel = 4;
+                if (flevel < 1) flevel = 1;
+                level = (int)round(flevel + 0.49);
+                SendAlertSensor(rank, 255, level, (name + " Alerte courant maximal").c_str());
+        }
 }
