@@ -134,6 +134,12 @@ namespace Plugins {
 				//
 				if (!m_Tag.length())
 				{
+					if (sData.find("<?xml") != std::string::npos)	// step over '<?xml version="1.0" encoding="utf-8"?>' if present
+					{
+						int iEnd = sData.find("?>");
+						sData = sData.substr(iEnd + 2);
+					}
+
 					int iStart = sData.find_first_of('<');
 					if (iStart == std::string::npos)
 					{
@@ -141,8 +147,8 @@ namespace Plugins {
 						m_sRetainedData.clear();
 						break;
 					}
-					sData = sData.substr(iStart);					// remove any leading data
-					int iEnd = sData.find_first_of('>');
+					if (iStart) sData = sData.substr(iStart);		// remove any leading data
+					int iEnd = sData.find_first_of(" >");
 					if (iEnd != std::string::npos)
 					{
 						m_Tag = sData.substr(1, (iEnd - 1));
