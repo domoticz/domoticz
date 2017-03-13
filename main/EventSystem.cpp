@@ -2287,7 +2287,7 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 
     if (!PythonInitDone) {
         _log.Log(LOG_STATUS, "EventSystem - Python: Initalizing Python");
-        PyObject* sys = PyImport_ImportModule("sys");
+        /* PyObject* sys = PyImport_ImportModule("sys");
 		PyObject *path = PyObject_GetAttrString(sys, "path");
 		PyList_Append(path, PyUnicode_FromString(python_Dir.c_str()));
 
@@ -2295,149 +2295,14 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 		class_<CEventSystem, boost::noncopyable>("Domoticz", no_init)
 			.def("command", ScheduleEventMethod)
 			;
-
+        */
         PythonInitDone = true;
     }
 
-    // FILE* PythonScriptFile = _Py_fopen(filename.c_str(),"r+");
+    FILE* PythonScriptFile = _Py_fopen(filename.c_str(),"r+");
 
     // FILE* PythonScriptFile = fopen(filename.c_str(), "r");
-    // PyRun_SimpleFile(PythonScriptFile, filename.c_str());
-
-
-	FILE* PythonScriptFile = fopen(filename.c_str(), "r");
-	object main_module = import("__main__");
-	object main_namespace = dict(main_module.attr("__dict__")).copy();
-
-
-	try {
-		object domoticz_module = import("domoticz");
-		object reloader = import("reloader");
-		reloader.attr("_check_reload")();
-
-		//object alldevices = dict();
-		object devices = domoticz_module.attr("devices");
-		object domoticz_namespace = domoticz_module.attr("__dict__");
-
-		domoticz_namespace["event_system"] = ptr(this);
-
-		main_namespace["changed_device_name"] = str(devname);
-		domoticz_namespace["changed_device_name"] = str(devname);
-
-		boost::shared_lock<boost::shared_mutex> devicestatesMutexLock1(m_devicestatesMutex);
-		typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
-		for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
-		{
-			_tDeviceStatus sitem = iterator->second;
-			object deviceStatus = domoticz_module.attr("Device")(sitem.ID, sitem.deviceName, sitem.devType, sitem.subType, sitem.switchtype, sitem.nValue, sitem.nValueWording, sitem.sValue, sitem.lastUpdate);
-			devices[sitem.deviceName] = deviceStatus;
-		}
-		main_namespace["domoticz"] = ptr(this);
-		main_namespace["__file__"] = filename;
-
-		if (reason == "device")
-		{
-			main_namespace["changed_device"] = devices[m_devicestates[DeviceID].deviceName];
-			domoticz_namespace["changed_device"] = devices[m_devicestates[DeviceID].deviceName];
-		}
-		devicestatesMutexLock1.unlock();
-
-
-		int intRise = getSunRiseSunSetMinutes("Sunrise");
-		int intSet = getSunRiseSunSetMinutes("Sunset");
-
-		// Do not correct for DST change - we only need this to compare with intRise and intSet which aren't as well
-		time_t now = mytime(NULL);
-		struct tm ltime;
-		localtime_r(&now, &ltime);
-		int minutesSinceMidnight = (ltime.tm_hour * 60) + ltime.tm_min;
-
-		bool dayTimeBool = false;
-		bool nightTimeBool = false;
-		if ((minutesSinceMidnight > intRise) && (minutesSinceMidnight < intSet)) {
-			dayTimeBool = true;
-		}
-		else {
-			nightTimeBool = true;
-		}
-		main_namespace["is_daytime"] = dayTimeBool;
-		main_namespace["is_nighttime"] = nightTimeBool;
-		main_namespace["sunrise_in_minutes"] = intRise;
-		main_namespace["sunset_in_minutes"] = intSet;
-
-		domoticz_namespace["is_daytime"] = dayTimeBool;
-		domoticz_namespace["is_nighttime"] = nightTimeBool;
-		domoticz_namespace["sunrise_in_minutes"] = intRise;
-		domoticz_namespace["sunset_in_minutes"] = intSet;
-
-		//main_namespace["timeofday"] = ... 		// not sure how to set this
-
-		// put variables in user_variables dict, but also in the namespace
-		object user_variables = dict();
-		{
-			typedef std::map<uint64_t, _tUserVariable>::iterator it_var;
-			for (it_var iterator = m_uservariables.begin(); iterator != m_uservariables.end(); ++iterator) {
-				_tUserVariable uvitem = iterator->second;
-				//user_variables[uvitem.variableName] = uvitem;
-				if (uvitem.variableType == 0) {
-					//Integer
-					main_namespace[uvitem.variableName] = atoi(uvitem.variableValue.c_str());
-					user_variables[uvitem.variableName] = main_namespace[uvitem.variableName];
-				}
-				else if (uvitem.variableType == 1) {
-					//Float
-					main_namespace[uvitem.variableName] = atof(uvitem.variableValue.c_str());
-					user_variables[uvitem.variableName] = main_namespace[uvitem.variableName];
-				}
-				else {
-					//String,Date,Time
-					main_namespace[uvitem.variableName] = uvitem.variableValue;
-					user_variables[uvitem.variableName] = main_namespace[uvitem.variableName];
-				}
-			}
-		}
-
-		domoticz_namespace["user_variables"] = user_variables;
-		main_namespace["user_variables"] = user_variables;
-		main_namespace["otherdevices_temperature"] = toPythonDict(m_tempValuesByName);
-		main_namespace["otherdevices_dewpoint"] = toPythonDict(m_dewValuesByName);
-		main_namespace["otherdevices_barometer"] = toPythonDict(m_baroValuesByName);
-		main_namespace["otherdevices_utility"] = toPythonDict(m_utilityValuesByName);
-		main_namespace["otherdevices_rain"] = toPythonDict(m_rainValuesByName);
-		main_namespace["otherdevices_rain_lasthour"] = toPythonDict(m_rainLastHourValuesByName);
-		main_namespace["otherdevices_uv"] = toPythonDict(m_uvValuesByName);
-		main_namespace["otherdevices_winddir"] = toPythonDict(m_winddirValuesByName);
-		main_namespace["otherdevices_windspeed"] = toPythonDict(m_windspeedValuesByName);
-		main_namespace["otherdevices_windgust"] = toPythonDict(m_windgustValuesByName);
-		main_namespace["otherdevices_zwavealarms"] = toPythonDict(m_zwaveAlarmValuesByName);
-
-		if(PyString.length() > 0)
-			exec(str(PyString), main_namespace);
-		else {
-            _log.Log(LOG_STATUS, "EventSystem - Python: Running script");
-            object ignored = exec_file(str(filename), main_namespace);
-        }
-
-    } catch(...) {
-
-		PyObject *exc,*val,*tb;
-		PyErr_Fetch(&exc,&val,&tb);
-		boost::python::handle<> hexc(exc), hval(boost::python::allow_null(val)), htb(boost::python::allow_null(tb));
-		boost::python::object traceback(boost::python::import("traceback"));
-
-		boost::python::object format_exception(traceback.attr("format_exception"));
-		boost::python::object formatted_list = format_exception(hexc, hval, htb);
-		boost::python::object formatted = boost::python::str("\n").join(formatted_list);
-
-		object traceback_module = import("traceback");
-		std::string formatted_str = extract<std::string>(formatted);
-		//PyErr_Print();
-		PyErr_Clear();
-		if(PyString.length() > 0)
-			_log.Log(LOG_ERROR, "in event %s: %s", filename.c_str(), formatted_str.c_str());
-		else
-			_log.Log(LOG_ERROR, "%s",formatted_str.c_str());
-	}
+    PyRun_SimpleFile(PythonScriptFile, filename.c_str());
 
 	if (PythonScriptFile!=NULL)
 		fclose(PythonScriptFile);
