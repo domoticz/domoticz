@@ -18,9 +18,6 @@ http://gce-electronics.com/en/nos-produits/409-module-teleinfo-eco-devices.html
 Detailed information on the API can be found at
 http://www.touteladomotique.com/index.php?option=com_content&id=985:premiers-pas-avec-leco-devices-sur-la-route-de-la-maitrise-de-lenergie&Itemid=89#.WKcK0zi3ik5
 
-Detailed information on the Teleinfo protocol can be found at (version 5, 16/03/2015)
-http://www.enedis.fr/sites/default/files/ERDF-NOI-CPT_02E.pdf
-
 Version 3.0
 Author Blaise Thauvin
 

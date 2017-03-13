@@ -5,15 +5,14 @@ Author : Nicolas HILAIRE
 Version : 1.6
 Description : This class manage the Teleinfo Signal
 
-
 History :
 - 2013-11-01 : Creation
 - 2014-10-29 : Add 'EJP' contract (Laurent MEY)
 - 2014-12-13 : Add 'Tempo' contract (Kevin NICOLAS)
 - 2015-06-10 : Fix bug power divided by 2 (Christophe DELPECH)
 - 2016-02-05 : Fix bug power display with 'Tempo' contract (Anthony LAGUERRE)
-- 2017-03-03 : Renamed from Teleinfo.h to TeleinfoSerial.h in order to create 
-               a shared class to process Teleinfo protocol (Blaise Thauvin)
+- 2017-03-03 : Renamed from Teleinfo.h to TeleinfoSerial.h in order to create
+			   a shared class to process Teleinfo protocol (Blaise Thauvin)
 */
 
 #pragma once
@@ -29,12 +28,14 @@ History :
 
 class CTeleinfoSerial : public CTeleinfoBase, AsyncSerial
 {
-	typedef enum {
+	typedef enum
+	{
 		ID = 0,
 		STD,
 	} MatchType;
 
-	typedef enum {
+	typedef enum
+	{
 		TELEINFO_TYPE_ADCO,
 		TELEINFO_TYPE_OPTARIF,
 		TELEINFO_TYPE_ISOUSC,
@@ -56,56 +57,57 @@ class CTeleinfoSerial : public CTeleinfoBase, AsyncSerial
 		TELEINFO_TYPE_MOTDETAT
 	} Type;
 
-	typedef struct _tMatch {
+	typedef struct _tMatch
+	{
 		MatchType matchtype;
 		Type type;
 		const char* key;
 		int width;
 	} Match;
 
-public:
+	public:
 
-	CTeleinfoSerial(const int ID, const std::string& devname, unsigned int baud_rate = TELEINFO_BAUD_RATE);
-	~CTeleinfoSerial();
-	std::string m_szSerialPort;
+		CTeleinfoSerial(const int ID, const std::string& devname, unsigned int baud_rate = TELEINFO_BAUD_RATE);
+		~CTeleinfoSerial();
+		std::string m_szSerialPort;
 
-	P1Power   m_p1power;
-	P1Power   m_p2power;
-	P1Power   m_p3power;
-	bool WriteToHardware(const char *pdata, const unsigned char length);
-private:
-	bool StartHardware();
-	bool StopHardware();
-	/**
-	* Read callback, stores data in the buffer
-	*/
+		P1Power   m_p1power;
+		P1Power   m_p2power;
+		P1Power   m_p3power;
+		bool WriteToHardware(const char *pdata, const unsigned char length);
+                Teleinfo teleinfo;
+	private:
+		bool StartHardware();
+		bool StopHardware();
+		/**
+		 * Read callback, stores data in the buffer
+		 */
 
-	void readCallback(const char *data, size_t len);
+		void readCallback(const char *data, size_t len);
 
-	unsigned int m_iBaudRate;
-	boost::asio::serial_port_base::parity m_iOptParity;
-	boost::asio::serial_port_base::character_size m_iOptCsize;
-	boost::asio::serial_port_base::flow_control m_iOptFlow;
-	boost::asio::serial_port_base::stop_bits m_iOptStop;
+		unsigned int m_iBaudRate;
+		boost::asio::serial_port_base::parity m_iOptParity;
+		boost::asio::serial_port_base::character_size m_iOptCsize;
+		boost::asio::serial_port_base::flow_control m_iOptFlow;
+		boost::asio::serial_port_base::stop_bits m_iOptStop;
 
-	int m_counter;
-	unsigned long m_Power_USAGE_IINST;
-	unsigned long m_Power_USAGE_IINST_JW;
-	unsigned long m_Power_USAGE_IINST_JR;
-	bool m_bLabel_PAPP_Exist;
-	bool m_bLabel_PTEC_JB;
-	bool m_bLabel_PTEC_JW;
-	bool m_bLabel_PTEC_JR;
-	bool m_bLabel_Tempo;
-	static const int NumberOfFrameToSendOne = 8;
+		int m_counter;
+		unsigned long m_Power_USAGE_IINST;
+		unsigned long m_Power_USAGE_IINST_JW;
+		unsigned long m_Power_USAGE_IINST_JR;
+		bool m_bLabel_PAPP_Exist;
+		bool m_bLabel_PTEC_JB;
+		bool m_bLabel_PTEC_JW;
+		bool m_bLabel_PTEC_JR;
+		bool m_bLabel_Tempo;
+		static const int NumberOfFrameToSendOne = 8;
 
-	void Init();
-	void MatchLine();
-	void ParseData(const unsigned char *pData, int Len);
-	bool isCheckSumOk();
+		void Init();
+		void MatchLine();
+		void ParseData(const unsigned char *pData, int Len);
+		bool isCheckSumOk();
 
-	unsigned char m_buffer[1028];
-	int m_bufferpos;
-	static CTeleinfoSerial::Match m_matchlist[19];
+		unsigned char m_buffer[1028];
+		int m_bufferpos;
+		static CTeleinfoSerial::Match m_matchlist[19];
 };
-
