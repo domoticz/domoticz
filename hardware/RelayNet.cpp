@@ -2,12 +2,16 @@
 //
 //	Notes for RELAY-NET-V5.7 LAN 8 channel relay and binary input card.
 //
-//	Hard reset: Hold reset button and power on to hard reset the relay card
+//	Hard reset: Hold reset button and power until, after about 10 seconds, one
+//				of the green LEDS starts to flash to hard reset the relay card
 //
 //	After Hard Reset:
 //	IpAddress 	= 192.168.1.166
 //	Username	= admin
 //	Password	= 12345678
+//
+//	Connect to it from a browser, type HTTP://192.168.1.166 in the bar.
+//	Make sure you computer has access to the subnet.
 //
 //	Relay-Net-V5.7 card settings:
 //
@@ -88,20 +92,16 @@
 //---------------------------------------------------------------------------
 #include "stdafx.h"
 #include "RelayNet.h"
+#include "hardwaretypes.h"
+#include "ASyncTCP.h"
 #include "../main/Helper.h"
 #include "../main/Logger.h"
-#include "../httpclient/HTTPClient.h"
-#include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 #include "../main/SQLHelper.h"
 #include "../webserver/Base64.h"
-#include "ASyncTCP.h"
+#include "../httpclient/HTTPClient.h"
 #include <sstream>
-
-//===========================================================================
-
-extern 	CSQLHelper m_sql;
 
 //===========================================================================
 
@@ -123,20 +123,22 @@ m_password(CURLEncode::URLEncode(password)),
 m_stoprequested(false),
 m_reconnect(false)
 {
-	m_bOutputLog 		= false;
-	m_username			= username;
-	m_password			= password;
-	m_HwdID				= ID;
-	m_usIPPort			= usIPPort;
-	m_stoprequested		= false;
-	m_bIsStarted		= false;
-	m_poll_inputs		= pollInputs;
-	m_poll_relays		= pollRelays;
-	m_input_count 		= inputCount;
-	m_relay_count		= relayCount;
-	m_poll_interval		= pollInterval;
-	m_setup_devices		= true;
+	m_stoprequested = false;
+	m_setup_devices = true;
+	m_bOutputLog = false;
+	m_bDoRestart = false;
+	m_bIsStarted = false;
+	m_username = username;
+	m_password = password;
+	m_HwdID = ID;
+	m_usIPPort = usIPPort;
+	m_poll_inputs = pollInputs;
+	m_poll_relays = pollRelays;
+	m_input_count = inputCount;
+	m_relay_count = relayCount;
+	m_poll_interval = pollInterval;
 	m_skip_relay_update	= 0;
+	m_retrycntr = 0;
 
 	if (inputCount == 0)
 	{
@@ -164,19 +166,15 @@ RelayNet::~RelayNet(void)
 
 bool RelayNet::StartHardware()
 {
-	bool bOk 			= false;;
-	m_stoprequested		= false;
-	m_reconnect			= false;
-	m_bIsStarted		= false;
-	m_setup_devices		= false;
-	m_bIsStarted		= false;
-
-	m_stoprequested=false;
-	m_bDoRestart=false;
-
-	//force connect the next first time
-	m_retrycntr=RETRY_DELAY;
-
+	bool bOk = false;;
+	m_stoprequested = false;
+	m_reconnect = false;
+	m_bIsStarted = false;
+	m_setup_devices = false;
+	m_bIsStarted = false;
+	m_stoprequested = false;
+	m_bDoRestart = false;
+	m_retrycntr = RETRY_DELAY; //force connect the next first time
 
 	if (m_input_count || m_relay_count)
 	{
@@ -244,7 +242,7 @@ bool RelayNet::WriteToHardware(const char *pdata, const unsigned char length)
 
 void RelayNet::Do_Work()
 {
-	bool bFirstTime=true;
+	bool bFirstTime = true;
 	int sec_counter = 0;
 
 	/*  Init  */
@@ -307,10 +305,10 @@ void RelayNet::Do_Work()
 
 void RelayNet::Init()
 {
-	BYTE	id1 = 0x03;
-	BYTE	id2 = 0x0E;
-	BYTE 	id3 = 0x0E;
-	BYTE 	id4 = m_HwdID & 0xFF;
+	BYTE id1 = 0x03;
+	BYTE id2 = 0x0E;
+	BYTE id3 = 0x0E;
+	BYTE id4 = m_HwdID & 0xFF;
 
 	/* 	Prepare packet for LIGHTING2 relay status packet  */
 	memset(&Packet, 0, sizeof(RBUF));
@@ -325,18 +323,18 @@ void RelayNet::Init()
 		id3 = (m_HwdID >> 16) & 0xFF;
 	}
 
-	Packet.LIGHTING2.packetlength	= sizeof(Packet.LIGHTING2) - 1;
-	Packet.LIGHTING2.packettype		= pTypeLighting2;
-	Packet.LIGHTING2.subtype		= sTypeAC;
-	Packet.LIGHTING2.id1			= id1;
-	Packet.LIGHTING2.id2			= id2;
-	Packet.LIGHTING2.id3			= id3;
-	Packet.LIGHTING2.id4			= id4;
-	Packet.LIGHTING2.unitcode		= 0;
-	Packet.LIGHTING2.cmnd			= 0;
-	Packet.LIGHTING2.level			= 0;
-	Packet.LIGHTING2.filler			= 0;
-	Packet.LIGHTING2.rssi			= 12;
+	Packet.LIGHTING2.packetlength = sizeof(Packet.LIGHTING2) - 1;
+	Packet.LIGHTING2.packettype = pTypeLighting2;
+	Packet.LIGHTING2.subtype = sTypeAC;
+	Packet.LIGHTING2.unitcode = 0;
+	Packet.LIGHTING2.id1 = id1;
+	Packet.LIGHTING2.id2 = id2;
+	Packet.LIGHTING2.id3 = id3;
+	Packet.LIGHTING2.id4 = id4;
+	Packet.LIGHTING2.cmnd = 0;
+	Packet.LIGHTING2.level = 0;
+	Packet.LIGHTING2.filler = 0;
+	Packet.LIGHTING2.rssi = 12;
 
 	SetupDevices();
 }
@@ -347,6 +345,7 @@ void RelayNet::SetupDevices()
 {
 	std::vector<std::vector<std::string> > result;
 	char szIdx[10];
+
 	sprintf(szIdx, "%X%02X%02X%02X",
 		Packet.LIGHTING2.id1,
 		Packet.LIGHTING2.id2,
@@ -383,7 +382,7 @@ void RelayNet::SetupDevices()
 
 				m_sql.safe_query(
 					"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue) "
-					"VALUES (%d,'%q',%d, %d, %d, %d, 0, 12, 255, '%q', 0, ' ')",
+					"VALUES (%d,'%q',%d, %d, %d, %d, 1, 12, 255, '%q', 0, ' ')",
 					m_HwdID, szIdx, 100+inputNumber, pTypeLighting2, sTypeAC, int(STYPE_Contact), "Input");
 			}
 		}
@@ -418,9 +417,8 @@ void RelayNet::KeepConnectionAlive()
 
 void RelayNet::TcpGetSetRelay(int RelayNumber, bool SetRelay, bool State)
 {
-	char 				sndbuf[4];
+	char sndbuf[4];
 
-	/* Determine TCP command to be send */
 	if (SetRelay)
 	{
 		if (State)
@@ -450,6 +448,7 @@ void RelayNet::TcpGetSetRelay(int RelayNumber, bool SetRelay, bool State)
 void RelayNet::SetRelayState(int RelayNumber, bool State)
 {
 	TcpGetSetRelay(RelayNumber, true, State);
+
 	if (m_poll_relays)
 	{
 		m_skip_relay_update++;
@@ -493,42 +492,104 @@ bool RelayNet::WriteToHardwareTcp(const char *pdata)
 
 void RelayNet::UpdateDomoticzInput(int InputNumber, bool State)
 {
-	if (State)
-	{
-		Packet.LIGHTING2.cmnd = light2_sOn;
-		Packet.LIGHTING2.level = 100;
-	}
-	else
-	{
-		Packet.LIGHTING2.cmnd = light2_sOff;
-		Packet.LIGHTING2.level = 0;
-	}
-	Packet.LIGHTING2.unitcode = 100 + (char) InputNumber;
-	Packet.LIGHTING2.seqnbr++;
+	bool updateDatabase = false;
+	std::vector<std::vector<std::string> > result;
+	char szIdx[10];
 
-	/* send packet to Domoticz */
-	sDecodeRXMessage(this, (const unsigned char *)&Packet.LIGHTING2, "Input", 255);
+	sprintf(szIdx, "%X%02X%02X%02X",
+		Packet.LIGHTING2.id1,
+		Packet.LIGHTING2.id2,
+		Packet.LIGHTING2.id3,
+		Packet.LIGHTING2.id4);
+
+	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, szIdx, 100 + InputNumber);
+
+	if ((!result.empty()) && (result.size()>0))
+	{
+		std::vector<std::string> sd=result[0];
+		bool dbState = true;
+
+		if (atoi(sd[1].c_str()) == 0)
+		{
+			dbState = false;
+		}
+
+		if (dbState != State)
+		{
+			updateDatabase = true;
+		}
+	}
+
+	if (updateDatabase)
+	{
+		if (State)
+		{
+			Packet.LIGHTING2.cmnd = light2_sOn;
+			Packet.LIGHTING2.level = 100;
+		}
+		else
+		{
+			Packet.LIGHTING2.cmnd = light2_sOff;
+			Packet.LIGHTING2.level = 0;
+		}
+		Packet.LIGHTING2.unitcode = 100 + (char) InputNumber;
+		Packet.LIGHTING2.seqnbr++;
+
+		/* send packet to Domoticz */
+		sDecodeRXMessage(this, (const unsigned char *)&Packet.LIGHTING2, "Input", 255);
+	}
 }
 
 //===========================================================================
 
 void RelayNet::UpdateDomoticzRelay(int RelayNumber, bool State)
 {
-	if (State)
-	{
-		Packet.LIGHTING2.cmnd = light2_sOn;
-		Packet.LIGHTING2.level = 100;
-	}
-	else
-	{
-		Packet.LIGHTING2.cmnd = light2_sOff;
-		Packet.LIGHTING2.level = 0;
-	}
-	Packet.LIGHTING2.unitcode = (char) RelayNumber;
-	Packet.LIGHTING2.seqnbr++;
+	bool updateDatabase = false;
+	std::vector<std::vector<std::string> > result;
+	char szIdx[10];
 
-	/* send packet to Domoticz */
-	sDecodeRXMessage(this, (const unsigned char *)&Packet.LIGHTING2, "Relay", 255);
+	sprintf(szIdx, "%X%02X%02X%02X",
+		Packet.LIGHTING2.id1,
+		Packet.LIGHTING2.id2,
+		Packet.LIGHTING2.id3,
+		Packet.LIGHTING2.id4);
+
+	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, szIdx, RelayNumber);
+
+	if ((!result.empty()) && (result.size()>0))
+	{
+		std::vector<std::string> sd = result[0];
+		bool dbState = true;
+
+		if (atoi(sd[1].c_str()) == 0)
+		{
+			dbState = false;
+		}
+
+		if (dbState != State)
+		{
+			updateDatabase = true;
+		}
+	}
+
+	if (updateDatabase)
+	{
+		if (State)
+		{
+			Packet.LIGHTING2.cmnd = light2_sOn;
+			Packet.LIGHTING2.level = 100;
+		}
+		else
+		{
+			Packet.LIGHTING2.cmnd = light2_sOff;
+			Packet.LIGHTING2.level = 0;
+		}
+		Packet.LIGHTING2.unitcode = (char) RelayNumber;
+		Packet.LIGHTING2.seqnbr++;
+
+		/* send packet to Domoticz */
+		sDecodeRXMessage(this, (const unsigned char *)&Packet.LIGHTING2, "Relay", 255);
+	}
 }
 
 //===========================================================================
