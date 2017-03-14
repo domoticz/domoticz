@@ -10,6 +10,7 @@
 #include "../hardware/hardwaretypes.h"
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
+#include "../main/EventSystem.h"
 #include "PythonObjects.h"
 
 namespace Plugins {
@@ -553,7 +554,7 @@ namespace Plugins {
 				if ((SubType != -1) && SubType) self->SubType = SubType;
 				if (SwitchType != -1) self->SwitchType = SwitchType;
 				if (Image != -1) self->Image = Image;
-				if (Used == 0) self->Used = Used;
+				if (Used == 1) self->Used = Used;
 				if (Options) {
 					Py_DECREF(self->Options);
 					self->Options = PyUnicode_FromString(Options);
@@ -722,9 +723,6 @@ namespace Plugins {
 			Py_DECREF(pDeviceBytes);
 			Py_DECREF(pNameBytes);
 
-			// Handle notifications
-
-
 			// Image change
 			if (iImage != self->Image)
 			{
@@ -736,6 +734,12 @@ namespace Plugins {
 			}
 
 			CDevice_refresh(self);
+
+			// Signal Event System to handle the change
+			m_mainworker.m_eventsystem.ProcessDevice(self->HwdID, self->ID, self->Unit, self->Type, self->SubType, iSignalLevel, iBatteryLevel, nValue, sValue, sName.c_str(), 0);
+
+			// Handle notifications
+
 		}
 		else
 		{
