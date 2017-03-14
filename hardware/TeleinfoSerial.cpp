@@ -35,8 +35,6 @@ History :
 #define DEBUG_TeleinfoSerial
 #endif
 
-#define DEBUG_TeleinfoSerial
-
 #define TE_ADCO "ADCO"		 //meter id
 #define TE_OPTARIF "OPTARIF"	 //pricing option
 #define TE_ISOUSC "ISOUSC"	 //current power subscribe   //A
@@ -90,8 +88,8 @@ CTeleinfoSerial::Match CTeleinfoSerial::m_matchlist[27] =
         { STD, TELEINFO_TYPE_IMAX1, TE_IMAX1, 3 },
         { STD, TELEINFO_TYPE_IMAX2, TE_IMAX2, 3 },
         { STD, TELEINFO_TYPE_IMAX3, TE_IMAX3, 3 },
-        { STD, TELEINFO_TYPE_PEJP, TE_PEJP, 3 },
-        { STD, TELEINFO_TYPE_DEMAIN, TE_DEMAIN, 3 },
+        { STD, TELEINFO_TYPE_PEJP, TE_PEJP, 2 },
+        { STD, TELEINFO_TYPE_DEMAIN, TE_DEMAIN, 4 },
 	{ STD, TELEINFO_TYPE_PAPP, TE_PAPP, 5 },
 	{ STD, TELEINFO_TYPE_MOTDETAT, TE_MOTDETAT, 6 }
 };

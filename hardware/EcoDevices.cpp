@@ -284,10 +284,10 @@ void CEcoDevices::GetMeterDetails()
 		ProcessTeleinfo("Teleinfo 1", 1, m_teleinfo1);
 	}
 	// Get Teleinfo 2
-	if (strcmp (m_status.t2_ptec.c_str(), "----") !=0)
+	if (strcmp (m_status.t2_ptec.c_str(), "----") ==0)
 	{
 		sstr.str("");
-		sstr << "http://" << m_szIPAddress << ":" << m_usIPPort << "/protect/settings/teleinfo2.xml";
+		sstr << "http://" << m_szIPAddress << ":" << m_usIPPort << "/protect/settings/teleinfo1.xml";
 		_log.Log(LOG_NORM, "Ecodevices: Fetching Teleinfo 2 data from %s", m_status.hostname.c_str());
 		if (!HTTPClient::GET(sstr.str(), ExtraHeaders, sResult))
 		{
@@ -299,12 +299,13 @@ void CEcoDevices::GetMeterDetails()
 		#endif
 
 		// Remove all "T2_"s from output as it prevents writing generic code for both counters
-		sub = "T2_";
+		sub = "T1_";
 		len = sub.length();
 		for (pos = sResult.find(sub);pos != std::string::npos;pos = sResult.find(sub))
 			sResult.erase(pos,len);
 
 		DecodeXML2Teleinfo(sResult, m_teleinfo2);
+//m_teleinfo2.triphase=true;
 		ProcessTeleinfo("Teleinfo 2", 2, m_teleinfo2);
 	}
 
