@@ -24,6 +24,8 @@ class CTeleinfoBase : public CDomoticzHardwareBase
 		~CTeleinfoBase();
 
 	private:
+		int AlertLevel(int Iinst, int Imax, int Isousc);
+
 	protected:
 		typedef struct _tTeleinfo
 		{
@@ -59,7 +61,7 @@ class CTeleinfoBase : public CDomoticzHardwareBase
 			std::string tariff;
 			std::string color;
 			time_t   last;
-                        bool    triphase;
+			bool    triphase;
 			_tTeleinfo()
 			{
 				ISOUSC = 0;
@@ -87,7 +89,7 @@ class CTeleinfoBase : public CDomoticzHardwareBase
 				BBRHCJR = 0;
 				previous =0;
 				last = 0;
-                                triphase = false;
+				triphase = false;
 			}
 		} Teleinfo;
 

@@ -35,28 +35,37 @@ History :
 #define DEBUG_TeleinfoSerial
 #endif
 
-#define DEBUG_TeleinfoSerial
+//#define DEBUG_TeleinfoSerial
 
-#define TE_ADCO "ADCO"			 //meter id
+#define TE_ADCO "ADCO"		 //meter id
 #define TE_OPTARIF "OPTARIF"	 //pricing option
-#define TE_ISOUSC "ISOUSC"		 //current power subscribe   //A
-#define TE_BASE "BASE"			 //total power usage normal tariff in base option
-#define TE_HCHC "HCHC"			 // total power usage low tariff in HC option
-#define TE_HCHP "HCHP"			 // total power usage normal tariff in HC option
-#define TE_EJPHPM "EJPHPM"		 // total power usage normal tariff in PM option
-#define TE_EJPHN "EJPHN"		 // total power usage low tariff in HN option
+#define TE_ISOUSC "ISOUSC"	 //current power subscribe   //A
+#define TE_BASE "BASE"		 //total power usage normal tariff in base option
+#define TE_HCHC "HCHC"		 // total power usage low tariff in HC option
+#define TE_HCHP "HCHP"		 // total power usage normal tariff in HC option
+#define TE_EJPHPM "EJPHPM"	 // total power usage normal tariff in PM option
+#define TE_EJPHN "EJPHN"	 // total power usage low tariff in HN option
 #define TE_BBRHCJB "BBRHCJB"	 // total power usage low tariff in HC option tempo blue
 #define TE_BBRHPJB "BBRHPJB"	 // total power usage normal tariff in HC option tempo blue
 #define TE_BBRHCJW "BBRHCJW"	 // total power usage low tariff in HC option tempo white
 #define TE_BBRHPJW "BBRHPJW"	 // total power usage normal tariff in HC option tempo white
 #define TE_BBRHCJR "BBRHCJR"	 // total power usage low tariff in HC option tempo red
 #define TE_BBRHPJR "BBRHPJR"	 // total power usage normal tariff in HC option tempo red
-#define TE_PTEC   "PTEC"		 //current tariff period
-#define TE_IINST "IINST"		 //instant current power usage
-#define TE_IMAX "IMAX"			 //maximal current power usage
-#define TE_PAPP "PAPP"			 //apparent power
+#define TE_PTEC   "PTEC"	 //current tariff period
+#define TE_IINST "IINST"	 //instant current power usage
+#define TE_IINST1 "IINST1"       //instant current power usage pahse 1
+#define TE_IINST2 "IINST2"       //instant current power usage phase 2
+#define TE_IINST3 "IINST3"       //instant current power usage phase 2
+#define TE_IMAX "IMAX"           //maximal current power usage 
+#define TE_IMAX1 "IMAX1"         //maximal current power usage phase 1
+#define TE_IMAX2 "IMAX2"         //maximal current power usage phase 2
+#define TE_IMAX3 "IMAX3"         //maximal current power usage phase 2
+#define TE_DEMAIN "DEMAIN"       //tariff tomorrow
+#define TE_PEJP "PEJP"           //prior notice "pointe mobile" tariff
+#define TE_PAPP "PAPP"		 //apparent power
 #define TE_MOTDETAT "MOTDETAT"	 //mot d'etat
-CTeleinfoSerial::Match CTeleinfoSerial::m_matchlist[19] =
+
+CTeleinfoSerial::Match CTeleinfoSerial::m_matchlist[27] =
 {
 	{ STD, TELEINFO_TYPE_ADCO, TE_ADCO, 12 },
 	{ STD, TELEINFO_TYPE_OPTARIF, TE_OPTARIF, 4 },
@@ -74,7 +83,15 @@ CTeleinfoSerial::Match CTeleinfoSerial::m_matchlist[19] =
 	{ STD, TELEINFO_TYPE_BBRHPJR, TE_BBRHPJR, 9 },
 	{ STD, TELEINFO_TYPE_PTEC, TE_PTEC, 4 },
 	{ STD, TELEINFO_TYPE_IINST, TE_IINST, 3 },
+        { STD, TELEINFO_TYPE_IINST1, TE_IINST1, 3 },
+        { STD, TELEINFO_TYPE_IINST2, TE_IINST2, 3 },
+        { STD, TELEINFO_TYPE_IINST3, TE_IINST3, 3 },
 	{ STD, TELEINFO_TYPE_IMAX, TE_IMAX, 3 },
+        { STD, TELEINFO_TYPE_IMAX1, TE_IMAX1, 3 },
+        { STD, TELEINFO_TYPE_IMAX2, TE_IMAX2, 3 },
+        { STD, TELEINFO_TYPE_IMAX3, TE_IMAX3, 3 },
+        { STD, TELEINFO_TYPE_PEJP, TE_PEJP, 3 },
+        { STD, TELEINFO_TYPE_DEMAIN, TE_DEMAIN, 3 },
 	{ STD, TELEINFO_TYPE_PAPP, TE_PAPP, 5 },
 	{ STD, TELEINFO_TYPE_MOTDETAT, TE_MOTDETAT, 6 }
 };

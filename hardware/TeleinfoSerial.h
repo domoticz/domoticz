@@ -52,7 +52,15 @@ class CTeleinfoSerial : public CTeleinfoBase, AsyncSerial
 		TELEINFO_TYPE_BBRHPJR,
 		TELEINFO_TYPE_PTEC,
 		TELEINFO_TYPE_IINST,
+                TELEINFO_TYPE_IINST1,
+                TELEINFO_TYPE_IINST2,
+                TELEINFO_TYPE_IINST3,
 		TELEINFO_TYPE_IMAX,
+                TELEINFO_TYPE_IMAX1,
+                TELEINFO_TYPE_IMAX2,
+                TELEINFO_TYPE_IMAX3,
+                TELEINFO_TYPE_DEMAIN,
+                TELEINFO_TYPE_PEJP,
 		TELEINFO_TYPE_PAPP,
 		TELEINFO_TYPE_MOTDETAT
 	} Type;
@@ -109,5 +117,5 @@ class CTeleinfoSerial : public CTeleinfoBase, AsyncSerial
 
 		unsigned char m_buffer[1028];
 		int m_bufferpos;
-		static CTeleinfoSerial::Match m_matchlist[19];
+		static CTeleinfoSerial::Match m_matchlist[27];
 };
