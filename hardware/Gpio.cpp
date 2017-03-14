@@ -677,14 +677,14 @@ void CGpio::SetupInitialState(int gpioId, bool forceUpdate)
 
 			int dbaseState = atoi(sd[1].c_str());
 
-			if (dbaseState != state)
+			if ((dbaseState != state) || (forceUpdate))
 			{
 				updateDatabase = true;
 			}
 		}
 	}
 
-	if ((updateDatabase) || (forceUpdate))
+	if (updateDatabase)
 	{
 		if (state != 0)
 		{
