@@ -1,9 +1,9 @@
 /*
 Domoticz Software : http://domoticz.com/
-File : TeleinfoSerial.h
+File : TeleinfoSerial.cpp
 Author : Nicolas HILAIRE
-Version : 1.6
-Description : This class manage the Teleinfo Signal
+Version : 2.0
+Description : This class decodes the Teleinfo signal from serial/USB devices before processing them
 
 History :
 - 2013-11-01 : Creation
@@ -11,13 +11,15 @@ History :
 - 2014-12-13 : Add 'Tempo' contract (Kevin NICOLAS)
 - 2015-06-10 : Fix bug power divided by 2 (Christophe DELPECH)
 - 2016-02-05 : Fix bug power display with 'Tempo' contract (Anthony LAGUERRE)
-- 2017-03-03 : Renamed from Teleinfo.h to TeleinfoSerial.h in order to create
-			   a shared class to process Teleinfo protocol (Blaise Thauvin)
+- 2016-02-11 : Fix power display when PAPP is missing (Anthony LAGUERRE)
+- 2016-02-17 : Fix bug power usage (Anthony LAGUERRE). Thanks to Multinet
+- 2017-01-28 : Add 'Heures Creuses' Switch (A.L)
+- 2017-03-17 : Renamed from Teleinfo.cpp to TeleinfoSerial.cpp in order to create
+						   a shared class to process Teleinfo protocol (Blaise Thauvin)
 */
 
 #pragma once
 
-#include "P1MeterBase.h"
 #include "ASyncSerial.h"
 #include "TeleinfoBase.h"
 #define TELEINFO_BAUD_RATE         1200
@@ -52,15 +54,15 @@ class CTeleinfoSerial : public CTeleinfoBase, AsyncSerial
 		TELEINFO_TYPE_BBRHPJR,
 		TELEINFO_TYPE_PTEC,
 		TELEINFO_TYPE_IINST,
-                TELEINFO_TYPE_IINST1,
-                TELEINFO_TYPE_IINST2,
-                TELEINFO_TYPE_IINST3,
+		TELEINFO_TYPE_IINST1,
+		TELEINFO_TYPE_IINST2,
+		TELEINFO_TYPE_IINST3,
 		TELEINFO_TYPE_IMAX,
-                TELEINFO_TYPE_IMAX1,
-                TELEINFO_TYPE_IMAX2,
-                TELEINFO_TYPE_IMAX3,
-                TELEINFO_TYPE_DEMAIN,
-                TELEINFO_TYPE_PEJP,
+		TELEINFO_TYPE_IMAX1,
+		TELEINFO_TYPE_IMAX2,
+		TELEINFO_TYPE_IMAX3,
+		TELEINFO_TYPE_DEMAIN,
+		TELEINFO_TYPE_PEJP,
 		TELEINFO_TYPE_PAPP,
 		TELEINFO_TYPE_MOTDETAT
 	} Type;
@@ -79,11 +81,8 @@ class CTeleinfoSerial : public CTeleinfoBase, AsyncSerial
 		~CTeleinfoSerial();
 		std::string m_szSerialPort;
 
-		P1Power   m_p1power;
-		P1Power   m_p2power;
-		P1Power   m_p3power;
 		bool WriteToHardware(const char *pdata, const unsigned char length);
-                Teleinfo teleinfo;
+		Teleinfo teleinfo;
 	private:
 		bool StartHardware();
 		bool StopHardware();

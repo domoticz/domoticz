@@ -4,8 +4,8 @@ File : TeleinfoBase.cpp
 Author : Blaise Thauvin
 Version : 0.9
 Description : This class is used by various Teleinfo hardware decoders to process and display data
-		  It is used by EcoDevices, TeleinfoSerial and more to come
-			  Detailed information on the Teleinfo protocol can be found at (version 5, 16/03/2015)
+		  It is currently used by EcoDevices, TeleinfoSerial
+		  Detailed information on the Teleinfo protocol can be found at (version 5, 16/03/2015)
 			  http://www.enedis.fr/sites/default/files/ERDF-NOI-CPT_02E.pdf
 
 History :
@@ -34,6 +34,8 @@ int CTeleinfoBase::AlertLevel(int Iinst, int Imax, int Isousc)
 	int level;
 	double flevel;
 
+	if ((Imax - Isousc) == 0)
+		return 0;
 	if ((Imax - Iinst ) <=0)
 		level = 4;
 	else
@@ -49,14 +51,14 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 {
 	uint32_t m_pappHC, m_pappHP, m_pappHCJB, m_pappHPJB, m_pappHCJW, m_pappHPJW, m_pappHCJR, m_pappHPJR, checksum;
 	time_t atime = mytime(NULL);
- 
-        // We need to limit the number of Teleinfo devices per hardware because of the subID in sensors. i
-        if ((rank < 1) || (rank > 4)) 
+
+	// We need to limit the number of Teleinfo devices per hardware because of the subID in sensors. i
+	if ((rank < 1) || (rank > 4))
 	{
 		_log.Log(LOG_ERROR,"TeleinfoBase: Invalid rank passed to function (%i), must be between 1 and 4", rank);
-        	return;
+		return;
 	}
-	rank = rank -1; // Now it is 0 to 3
+	rank = rank -1;				 // Now it is 0 to 3
 
 	// Guess if we are running with one phase or three
 	// (some devices like EcoDevices always send all variables regardless or the real setting)
@@ -174,7 +176,7 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 			SendKwhMeter(m_HwdID, 32*rank + 13, 255, m_pappHPJW, teleinfo.BBRHPJW/1000.0, "Teleinfo 1 Jour Blanc, Plein");
 			SendKwhMeter(m_HwdID, 32*rank + 14, 255, m_pappHCJR, teleinfo.BBRHCJR/1000.0, "Teleinfo 1 Jour Rouge, Creux");
 			SendKwhMeter(m_HwdID, 32*rank + 15, 255, m_pappHPJR, teleinfo.BBRHCJR/1000.0, "Teleinfo 1 Jour Rouge, Plein");
-			SendKwhMeter(m_HwdID, 32*rank + 16, 255, teleinfo.PAPP, (teleinfo.BBRHCJB + teleinfo.BBRHPJB + teleinfo.BBRHCJW \
+			SendKwhMeter(m_HwdID, 32*rank + 16, 255, teleinfo.PAPP, (teleinfo.BBRHCJB + teleinfo.BBRHPJB + teleinfo.BBRHCJW
 				+ teleinfo.BBRHPJW + teleinfo.BBRHCJR + teleinfo.BBRHPJR)/1000.0, name + " Total");
 			SendTextSensor(m_HwdID, 32*rank + 1, 255, "Jour " + teleinfo.color + ", " + teleinfo.rate, name + " Tarif en cours ");
 			SendTextSensor(m_HwdID, 32*rank + 2, 255, "Demain, jour " + teleinfo.DEMAIN , name + " couleur demain");
@@ -183,18 +185,29 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 		if (teleinfo.triphase == false)
 		{
 			SendCurrentSensor(m_HwdID + rank, 255, (float)teleinfo.IINST, 0, 0, name + " Courant");
-			SendAlertSensor(32*rank + 1, 255, AlertLevel(teleinfo.IMAX, teleinfo.IINST, teleinfo.ISOUSC), (name + " Alerte courant maximal").c_str());
+			SendAlertSensor(32*rank + 1, 255, AlertLevel(teleinfo.IMAX, teleinfo.IINST, teleinfo.ISOUSC),
+				(name + " Alerte courant maximal").c_str());
 			SendPercentageSensor(32* rank + 1, 0, 255, (teleinfo.IINST*100)/teleinfo.IMAX, name + " Intensite souscrite");
 		}
 		else
 		{
-			SendCurrentSensor(m_HwdID + rank, 255, (float)teleinfo.IINST1, (float)teleinfo.IINST2, (float)teleinfo.IINST3, name + " Courant");
-			SendAlertSensor(32*rank + 1, 255, AlertLevel(teleinfo.IMAX1, teleinfo.IINST1, teleinfo.ISOUSC), (name + " Alerte courant maximal phase 1").c_str());
-			SendAlertSensor(32*rank + 2, 255, AlertLevel(teleinfo.IMAX2, teleinfo.IINST2, teleinfo.ISOUSC), (name + " Alerte courant maximal phase 2").c_str());
-			SendAlertSensor(32*rank + 3, 255, AlertLevel(teleinfo.IMAX3, teleinfo.IINST3, teleinfo.ISOUSC), (name + " Alerte courant maximal phase 3").c_str());
-			SendPercentageSensor(32 * rank + 1, 0, 255, (teleinfo.IINST1*100)/teleinfo.IMAX1, name + " Intensite souscrite phase 1");
-			SendPercentageSensor(32 * rank + 2, 0, 255, (teleinfo.IINST2*100)/teleinfo.IMAX2, name + " Intensite souscrite phase 2");
-			SendPercentageSensor(32 * rank + 3, 0, 255, (teleinfo.IINST3*100)/teleinfo.IMAX3, name + " Intensite souscrite phase 3");
+			SendCurrentSensor(m_HwdID + rank, 255, (float)teleinfo.IINST1, (float)teleinfo.IINST2, (float)teleinfo.IINST3,
+				name + " Courant");
+			SendAlertSensor(32*rank + 1, 255, AlertLevel(teleinfo.IMAX1, teleinfo.IINST1, teleinfo.ISOUSC),
+				(name + " Alerte courant maximal phase 1").c_str());
+			SendAlertSensor(32*rank + 2, 255, AlertLevel(teleinfo.IMAX2, teleinfo.IINST2, teleinfo.ISOUSC),
+				(name + " Alerte courant maximal phase 2").c_str());
+			SendAlertSensor(32*rank + 3, 255, AlertLevel(teleinfo.IMAX3, teleinfo.IINST3, teleinfo.ISOUSC),
+				(name + " Alerte courant maximal phase 3").c_str());
+			if (teleinfo.IMAX1 > 0)
+				SendPercentageSensor(32 * rank + 1, 0, 255, (teleinfo.IINST1*100)/teleinfo.IMAX1,
+					name + " Intensite souscrite phase 1");
+			if (teleinfo.IMAX2 > 0)
+				SendPercentageSensor(32 * rank + 2, 0, 255, (teleinfo.IINST2*100)/teleinfo.IMAX2,
+					name + " Intensite souscrite phase 2");
+			if (teleinfo.IMAX3 > 0)
+				SendPercentageSensor(32 * rank + 3, 0, 255, (teleinfo.IINST3*100)/teleinfo.IMAX3,
+					name + " Intensite souscrite phase 3");
 		}
 	}
 }

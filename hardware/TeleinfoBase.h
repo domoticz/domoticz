@@ -2,12 +2,15 @@
 Domoticz Software : http://domoticz.com/
 File : TeleinfoBase.h
 Author : Blaise Thauvin
-Version : 0.1
+Version : 0.9
 Description : This class is used by various Teleinfo hardware decoders to process and display data
-			  It is used by EcoDevices, TeleinfoSerial and more to come
+			  It is currently used by EcoDevices, TeleinfoSerial
+			  Detailed information on the Teleinfo protocol can be found at (version 5, 16/03/2015)
+			  http://www.enedis.fr/sites/default/files/ERDF-NOI-CPT_02E.pdf
 
 History :
-0.1  2017-03-03 : Creation
+0.1 2017-03-03 : Creation
+0.9 2017-03-17 : Release candidate
 */
 
 #pragma once

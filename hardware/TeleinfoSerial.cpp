@@ -2,8 +2,8 @@
 Domoticz Software : http://domoticz.com/
 File : TeleinfoSerial.cpp
 Author : Nicolas HILAIRE
-Version : 1.6
-Description : This class manage the Teleinfo Signal
+Version : 2.0
+Description : This class decodes the Teleinfo signal from serial/USB devices before processing them
 
 History :
 - 2013-11-01 : Creation
@@ -14,7 +14,7 @@ History :
 - 2016-02-11 : Fix power display when PAPP is missing (Anthony LAGUERRE)
 - 2016-02-17 : Fix bug power usage (Anthony LAGUERRE). Thanks to Multinet
 - 2017-01-28 : Add 'Heures Creuses' Switch (A.L)
-- 2017-03-03 : Renamed from Teleinfo.cpp to TeleinfoSerial.cpp in order to create
+- 2017-03-17 : Renamed from Teleinfo.cpp to TeleinfoSerial.cpp in order to create
 			   a shared class to process Teleinfo protocol (Blaise Thauvin)
 */
 
@@ -35,32 +35,32 @@ History :
 #define DEBUG_TeleinfoSerial
 #endif
 
-#define TE_ADCO "ADCO"		 //meter id
+#define TE_ADCO "ADCO"			 //meter id
 #define TE_OPTARIF "OPTARIF"	 //pricing option
-#define TE_ISOUSC "ISOUSC"	 //current power subscribe   //A
-#define TE_BASE "BASE"		 //total power usage normal tariff in base option
-#define TE_HCHC "HCHC"		 // total power usage low tariff in HC option
-#define TE_HCHP "HCHP"		 // total power usage normal tariff in HC option
-#define TE_EJPHPM "EJPHPM"	 // total power usage normal tariff in PM option
-#define TE_EJPHN "EJPHN"	 // total power usage low tariff in HN option
+#define TE_ISOUSC "ISOUSC"		 //current power subscribe   //A
+#define TE_BASE "BASE"			 //total power usage normal tariff in base option
+#define TE_HCHC "HCHC"			 // total power usage low tariff in HC option
+#define TE_HCHP "HCHP"			 // total power usage normal tariff in HC option
+#define TE_EJPHPM "EJPHPM"		 // total power usage normal tariff in PM option
+#define TE_EJPHN "EJPHN"		 // total power usage low tariff in HN option
 #define TE_BBRHCJB "BBRHCJB"	 // total power usage low tariff in HC option tempo blue
 #define TE_BBRHPJB "BBRHPJB"	 // total power usage normal tariff in HC option tempo blue
 #define TE_BBRHCJW "BBRHCJW"	 // total power usage low tariff in HC option tempo white
 #define TE_BBRHPJW "BBRHPJW"	 // total power usage normal tariff in HC option tempo white
 #define TE_BBRHCJR "BBRHCJR"	 // total power usage low tariff in HC option tempo red
 #define TE_BBRHPJR "BBRHPJR"	 // total power usage normal tariff in HC option tempo red
-#define TE_PTEC   "PTEC"	 //current tariff period
-#define TE_IINST "IINST"	 //instant current power usage
-#define TE_IINST1 "IINST1"       //instant current power usage pahse 1
-#define TE_IINST2 "IINST2"       //instant current power usage phase 2
-#define TE_IINST3 "IINST3"       //instant current power usage phase 2
-#define TE_IMAX "IMAX"           //maximal current power usage 
-#define TE_IMAX1 "IMAX1"         //maximal current power usage phase 1
-#define TE_IMAX2 "IMAX2"         //maximal current power usage phase 2
-#define TE_IMAX3 "IMAX3"         //maximal current power usage phase 2
-#define TE_DEMAIN "DEMAIN"       //tariff tomorrow
-#define TE_PEJP "PEJP"           //prior notice "pointe mobile" tariff
-#define TE_PAPP "PAPP"		 //apparent power
+#define TE_PTEC   "PTEC"		 //current tariff period
+#define TE_IINST "IINST"		 //instant current power usage
+#define TE_IINST1 "IINST1"		 //instant current power usage pahse 1
+#define TE_IINST2 "IINST2"		 //instant current power usage phase 2
+#define TE_IINST3 "IINST3"		 //instant current power usage phase 2
+#define TE_IMAX "IMAX"			 //maximal current power usage
+#define TE_IMAX1 "IMAX1"		 //maximal current power usage phase 1
+#define TE_IMAX2 "IMAX2"		 //maximal current power usage phase 2
+#define TE_IMAX3 "IMAX3"		 //maximal current power usage phase 2
+#define TE_DEMAIN "DEMAIN"		 //tariff tomorrow
+#define TE_PEJP "PEJP"			 //prior notice "pointe mobile" tariff
+#define TE_PAPP "PAPP"			 //apparent power
 #define TE_MOTDETAT "MOTDETAT"	 //mot d'etat
 
 CTeleinfoSerial::Match CTeleinfoSerial::m_matchlist[27] =
@@ -81,15 +81,15 @@ CTeleinfoSerial::Match CTeleinfoSerial::m_matchlist[27] =
 	{ STD, TELEINFO_TYPE_BBRHPJR, TE_BBRHPJR, 9 },
 	{ STD, TELEINFO_TYPE_PTEC, TE_PTEC, 4 },
 	{ STD, TELEINFO_TYPE_IINST, TE_IINST, 3 },
-        { STD, TELEINFO_TYPE_IINST1, TE_IINST1, 3 },
-        { STD, TELEINFO_TYPE_IINST2, TE_IINST2, 3 },
-        { STD, TELEINFO_TYPE_IINST3, TE_IINST3, 3 },
+	{ STD, TELEINFO_TYPE_IINST1, TE_IINST1, 3 },
+	{ STD, TELEINFO_TYPE_IINST2, TE_IINST2, 3 },
+	{ STD, TELEINFO_TYPE_IINST3, TE_IINST3, 3 },
 	{ STD, TELEINFO_TYPE_IMAX, TE_IMAX, 3 },
-        { STD, TELEINFO_TYPE_IMAX1, TE_IMAX1, 3 },
-        { STD, TELEINFO_TYPE_IMAX2, TE_IMAX2, 3 },
-        { STD, TELEINFO_TYPE_IMAX3, TE_IMAX3, 3 },
-        { STD, TELEINFO_TYPE_PEJP, TE_PEJP, 2 },
-        { STD, TELEINFO_TYPE_DEMAIN, TE_DEMAIN, 4 },
+	{ STD, TELEINFO_TYPE_IMAX1, TE_IMAX1, 3 },
+	{ STD, TELEINFO_TYPE_IMAX2, TE_IMAX2, 3 },
+	{ STD, TELEINFO_TYPE_IMAX3, TE_IMAX3, 3 },
+	{ STD, TELEINFO_TYPE_PEJP, TE_PEJP, 2 },
+	{ STD, TELEINFO_TYPE_DEMAIN, TE_DEMAIN, 4 },
 	{ STD, TELEINFO_TYPE_PAPP, TE_PAPP, 5 },
 	{ STD, TELEINFO_TYPE_MOTDETAT, TE_MOTDETAT, 6 }
 };
@@ -117,31 +117,7 @@ CTeleinfoSerial::~CTeleinfoSerial()
 void CTeleinfoSerial::Init()
 {
 	m_bufferpos = 0;
-
-	memset(&m_buffer, 0, sizeof(m_buffer));
-	memset(&m_p1power, 0, sizeof(m_p1power));
-	memset(&m_p2power, 0, sizeof(m_p2power));
-	memset(&m_p3power, 0, sizeof(m_p3power));
-
-	m_p1power.len = sizeof(P1Power) - 1;
-	m_p1power.type = pTypeP1Power;
-	m_p1power.subtype = sTypeP1Power;
-	m_p1power.ID = 1;
-
-	m_p2power.len = sizeof(P1Power) - 1;
-	m_p2power.type = pTypeP1Power;
-	m_p2power.subtype = sTypeP1Power;
-	m_p2power.ID = 2;
-
-	m_p3power.len = sizeof(P1Power) - 1;
-	m_p3power.type = pTypeP1Power;
-	m_p3power.subtype = sTypeP1Power;
-	m_p3power.ID = 3;
-
 	m_counter = 0;
-	m_Power_USAGE_IINST = 0;
-	m_Power_USAGE_IINST_JW = 0;
-	m_Power_USAGE_IINST_JR = 0;
 }
 
 
@@ -261,8 +237,6 @@ void CTeleinfoSerial::MatchLine()
 				teleinfo.HCHC = ulValue;
 				break;
 			case TELEINFO_TYPE_HCHP:
-				if (ulValue != 0)
-					m_p1power.powerusage1 = ulValue;
 				teleinfo.HCHP = ulValue;
 				break;
 			case TELEINFO_TYPE_EJPHPM:
@@ -296,27 +270,27 @@ void CTeleinfoSerial::MatchLine()
 			case TELEINFO_TYPE_IINST:
 				teleinfo.IINST = ulValue;
 				break;
-                        case TELEINFO_TYPE_IINST1:
-                                teleinfo.IINST1 = ulValue;
-                                break;
-                        case TELEINFO_TYPE_IINST2:
-                                teleinfo.IINST2 = ulValue;
-                                break;
-                        case TELEINFO_TYPE_IINST3:
-                                teleinfo.IINST3 = ulValue;
-                                break;
+			case TELEINFO_TYPE_IINST1:
+				teleinfo.IINST1 = ulValue;
+				break;
+			case TELEINFO_TYPE_IINST2:
+				teleinfo.IINST2 = ulValue;
+				break;
+			case TELEINFO_TYPE_IINST3:
+				teleinfo.IINST3 = ulValue;
+				break;
 			case TELEINFO_TYPE_IMAX:
 				teleinfo.IMAX = ulValue;
 				break;
-                        case TELEINFO_TYPE_IMAX1:
-                                teleinfo.IMAX1 = ulValue;
-                                break;
-                        case TELEINFO_TYPE_IMAX2:
-                                teleinfo.IMAX2 = ulValue;
-                                break;
-                        case TELEINFO_TYPE_IMAX3:
-                                teleinfo.IMAX3 = ulValue;
-                                break;
+			case TELEINFO_TYPE_IMAX1:
+				teleinfo.IMAX1 = ulValue;
+				break;
+			case TELEINFO_TYPE_IMAX2:
+				teleinfo.IMAX2 = ulValue;
+				break;
+			case TELEINFO_TYPE_IMAX3:
+				teleinfo.IMAX3 = ulValue;
+				break;
 			case TELEINFO_TYPE_PAPP:
 				teleinfo.PAPP = ulValue;
 				break;
@@ -324,12 +298,9 @@ void CTeleinfoSerial::MatchLine()
 				m_counter++;
 				if (m_counter >= NumberOfFrameToSendOne)
 				{
-					#ifdef DEBUG_TeleinfoSerial
+				#ifdef DEBUG_TeleinfoSerial
 					_log.Log(LOG_NORM,"Teleinfo frame complete");
-					_log.Log(LOG_NORM,"powerusage1 = %lu", m_p1power.powerusage1);
-					_log.Log(LOG_NORM,"powerusage2 = %lu", m_p1power.powerusage2);
-					_log.Log(LOG_NORM,"usagecurrent = %lu", m_p1power.usagecurrent);
-					#endif
+				#endif
 					m_counter = 0;
 				}
 				ProcessTeleinfo(teleinfo);

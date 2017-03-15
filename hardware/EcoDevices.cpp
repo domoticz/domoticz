@@ -1,13 +1,3 @@
-#include "stdafx.h"
-#include "EcoDevices.h"
-#include "../main/Helper.h"
-#include "../main/Logger.h"
-#include "hardwaretypes.h"
-#include "../main/localtime_r.h"
-#include "../httpclient/HTTPClient.h"
-#include <../tinyxpath/xpath_static.h>
-#include <sstream>
-
 /*
 Eco- Devices is a utility consumption monitoring device dedicated to the French market.
 It provides 4 inputs, two using the "Teleinfo" protocol found on all recent French electricity meters
@@ -23,7 +13,8 @@ Author Blaise Thauvin
 
 Version history
 
-3.0   05-03-2017 Move from JSON to XML API on EcoDevices in order to retreive more Teleinfo variables (current, alerts...)
+3.0   15-03-2017 Merge Teleinfo protocol processing with other hardware using common class CTeleinfoBase
+2.2   05-03-2017 Move from JSON to XML API on EcoDevices in order to retreive more Teleinfo variables (current, alerts...)
 2.1   27-02-2017 Switch from sDecodeRX to standard helpers (Sendxxxxx) for updating devices.
 				 Supports 4 main subscription plans (Basic, Tempo, EJP, "Heures Creuses")
 				 Text device for reporting the current rate for multiple rates plans.
@@ -31,6 +22,16 @@ Version history
 1.0              Anonymous contributor initiated the EcoDevices hardware support for one counter and one subscription plan
 
 */
+
+#include "stdafx.h"
+#include "EcoDevices.h"
+#include "../main/Helper.h"
+#include "../main/Logger.h"
+#include "hardwaretypes.h"
+#include "../main/localtime_r.h"
+#include "../httpclient/HTTPClient.h"
+#include <../tinyxpath/xpath_static.h>
+#include <sstream>
 
 #ifdef _DEBUG
 #define DEBUG_EcoDevices
@@ -163,6 +164,7 @@ void CEcoDevices::DecodeXML2Teleinfo(const std::string &sResult, Teleinfo &telei
 	#endif
 }
 
+
 void CEcoDevices::GetMeterDetails()
 {
 	if (m_szIPAddress.size()==0)
@@ -208,7 +210,7 @@ void CEcoDevices::GetMeterDetails()
 	_log.Log(LOG_NORM, "DEBUG: XML output for /status.xml\n%s", MakeHtml(sResult).c_str());
 	#endif
 
-        m_status.version = m_status.version + "..";
+	m_status.version = m_status.version + "..";
 	major = atoi(m_status.version.substr(0,m_status.version.find(".")).c_str());
 	m_status.version.erase(0,m_status.version.find(".")+1);
 	minor = atoi(m_status.version.substr(0,m_status.version.find(".")).c_str());
@@ -251,7 +253,7 @@ void CEcoDevices::GetMeterDetails()
 	else
 	{
 		message = "EcoDevices firmware needs to be at least version ";
-                message = message + static_cast<std::ostringstream*>( &(std::ostringstream() << min_major << "." << min_minor << "." << min_release) )->str();
+		message = message + static_cast<std::ostringstream*>( &(std::ostringstream() << min_major << "." << min_minor << "." << min_release) )->str();
 		message = message + ", current version is " + m_status.version;
 		_log.Log(LOG_ERROR, message.c_str());
 		return;
@@ -284,10 +286,10 @@ void CEcoDevices::GetMeterDetails()
 		ProcessTeleinfo("Teleinfo 1", 1, m_teleinfo1);
 	}
 	// Get Teleinfo 2
-	if (strcmp (m_status.t2_ptec.c_str(), "----") ==0)
+	if (strcmp (m_status.t2_ptec.c_str(), "----") !=0)
 	{
 		sstr.str("");
-		sstr << "http://" << m_szIPAddress << ":" << m_usIPPort << "/protect/settings/teleinfo1.xml";
+		sstr << "http://" << m_szIPAddress << ":" << m_usIPPort << "/protect/settings/teleinfo2.xml";
 		_log.Log(LOG_NORM, "Ecodevices: Fetching Teleinfo 2 data from %s", m_status.hostname.c_str());
 		if (!HTTPClient::GET(sstr.str(), ExtraHeaders, sResult))
 		{
@@ -299,13 +301,12 @@ void CEcoDevices::GetMeterDetails()
 		#endif
 
 		// Remove all "T2_"s from output as it prevents writing generic code for both counters
-		sub = "T1_";
+		sub = "T2_";
 		len = sub.length();
 		for (pos = sResult.find(sub);pos != std::string::npos;pos = sResult.find(sub))
 			sResult.erase(pos,len);
 
 		DecodeXML2Teleinfo(sResult, m_teleinfo2);
-//m_teleinfo2.triphase=true;
 		ProcessTeleinfo("Teleinfo 2", 2, m_teleinfo2);
 	}
 
