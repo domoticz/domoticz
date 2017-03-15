@@ -167,7 +167,10 @@ bool CTeleinfoSerial::StopHardware()
 }
 
 
-bool CTeleinfoSerial::WriteToHardware(const char *pdata, const unsigned char length) {}
+bool CTeleinfoSerial::WriteToHardware(const char *pdata, const unsigned char length) 
+{
+	return true;
+}
 
 void CTeleinfoSerial::readCallback(const char *data, size_t len)
 {
