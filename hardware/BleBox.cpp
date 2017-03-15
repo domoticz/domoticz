@@ -906,6 +906,7 @@ Json::Value BleBox::SendCommand(const std::string &IPAddress, const std::string 
 
 	std::string sURL = sstr.str();
 	HTTPClient::SetConnectionTimeout(timeOut);
+	HTTPClient::SetTimeout(4);
 	if (!HTTPClient::GET(sURL, result))
 	{
 		_log.Log(LOG_ERROR, "BleBox: send '%s'command to %s failed!", command.c_str(), IPAddress.c_str());
