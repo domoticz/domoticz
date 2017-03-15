@@ -680,8 +680,13 @@ namespace http {
 					root["result"][ii]["IP"] = ip;
 
 					BleBox *pHardware = reinterpret_cast<BleBox*>(pBaseHardware);
-					std::string uptime = pHardware->GetUptime(ip);
-					root["result"][ii]["Uptime"] = uptime;
+
+					Json::Value root = pHardware->GetApiDeviceState(ip);
+					if (!root.isNull())
+					{
+						std::string uptime = pHardware->GetUptime(ip);
+						root["result"][ii]["Uptime"] = uptime;
+					}
 
 					int type = pHardware->GetDeviceType(ip);
 					root["result"][ii]["Type"] = DevicesType[type].name;
@@ -937,6 +942,24 @@ std::string BleBox::IdentifyDevice(const std::string &IPAddress)
 		result = root["device"]["type"].asString();
 	}
 	return result;
+}
+
+Json::Value BleBox::GetApiDeviceState(const std::string &IPAddress)
+{
+	Json::Value empty;
+
+	Json::Value root = SendCommand(IPAddress, "/api/device/state");
+	if (!root.isObject())
+		return empty;
+
+	if (root["device"].empty() == true)
+	{
+		return root;
+	}
+	else
+	{
+		return root["device"];
+	}
 }
 
 std::string BleBox::GetUptime(const std::string &IPAddress)

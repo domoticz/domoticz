@@ -35,6 +35,7 @@ public:
 	void SearchNodes(const std::string &ipmask);
 	std::string GetUptime(const std::string &IPAddress);
 	int GetDeviceType(const std::string &IPAddress);
+	Json::Value GetApiDeviceState(const std::string &IPAddress);
 
 private:
 	volatile bool m_stoprequested;
