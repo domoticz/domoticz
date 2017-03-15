@@ -14,7 +14,7 @@ History :
 - 2016-02-11 : Fix power display when PAPP is missing (Anthony LAGUERRE)
 - 2016-02-17 : Fix bug power usage (Anthony LAGUERRE). Thanks to Multinet
 - 2017-01-28 : Add 'Heures Creuses' Switch (A.L)
-- 2017-03-17 : Renamed from Teleinfo.cpp to TeleinfoSerial.cpp in order to create
+- 2017-03-15 : Renamed from Teleinfo.cpp to TeleinfoSerial.cpp in order to create
 			   a shared class to process Teleinfo protocol (Blaise Thauvin)
 */
 

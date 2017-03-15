@@ -2,7 +2,7 @@
 Domoticz Software : http://domoticz.com/
 File : TeleinfoBase.h
 Author : Blaise Thauvin
-Version : 0.9
+Version : 1.0
 Description : This class is used by various Teleinfo hardware decoders to process and display data
 			  It is currently used by EcoDevices, TeleinfoSerial
 			  Detailed information on the Teleinfo protocol can be found at (version 5, 16/03/2015)
@@ -10,7 +10,7 @@ Description : This class is used by various Teleinfo hardware decoders to proces
 
 History :
 0.1 2017-03-03 : Creation
-0.9 2017-03-17 : Release candidate
+1.0 2017-03-15 : Release candidate
 */
 
 #pragma once
