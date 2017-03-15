@@ -2205,21 +2205,21 @@ bool CSQLHelper::OpenDatabase()
 	}
 	if ((!GetPreferencesVar("MeterDividerGas", nValue)) || (nValue == 0))
 	{
-		UpdatePreferencesVar("MeterDividerGas", 100);
+		UpdatePreferencesVar("MeterDividerGas", 1000);
 	}
 	else if (nValue == 0)
 	{
 		//Sanity check!
-		UpdatePreferencesVar("MeterDividerGas", 100);
+		UpdatePreferencesVar("MeterDividerGas", 1000);
 	}
 	if ((!GetPreferencesVar("MeterDividerWater", nValue)) || (nValue == 0))
 	{
-		UpdatePreferencesVar("MeterDividerWater", 100);
+		UpdatePreferencesVar("MeterDividerWater", 1000);
 	}
 	else if (nValue == 0)
 	{
 		//Sanity check!
-		UpdatePreferencesVar("MeterDividerWater", 100);
+		UpdatePreferencesVar("MeterDividerWater", 1000);
 	}
 	if ((!GetPreferencesVar("RandomTimerFrame", nValue)) || (nValue == 0))
 	{
