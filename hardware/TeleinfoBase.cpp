@@ -111,25 +111,25 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 		if (teleinfo.OPTARIF == "BASE")
 		{
 			teleinfo.tariff="Tarif de Base";
-			SendKwhMeter(m_HwdID, 30*rank + 2, 255, teleinfo.PAPP, teleinfo.BASE/1000.0, name + " Index");
-			SendTextSensor(m_HwdID, 30*rank + 1, 255, teleinfo.rate, name + " Tarif en cours");
+			SendKwhMeter(m_HwdID, 32*rank + 2, 255, teleinfo.PAPP, teleinfo.BASE/1000.0, name + " Index");
+			SendTextSensor(m_HwdID, 32*rank + 1, 255, teleinfo.rate, name + " Tarif en cours");
 		}
 		else if (teleinfo.OPTARIF == "HC..")
 		{
 			teleinfo.tariff="Tarif option Heures Creuses";
-			SendKwhMeter(m_HwdID, 30*rank + 3, 255, m_pappHC, teleinfo.HCHC/1000.0, name + " Heures Creuses");
-			SendKwhMeter(m_HwdID, 30*rank + 4, 255, m_pappHP, teleinfo.HCHP/1000.0, name + " Heures Pleines");
-			SendKwhMeter(m_HwdID, 30*rank + 5, 255, teleinfo.PAPP, (teleinfo.HCHP + teleinfo.HCHC)/1000.0, name + " Total");
-			SendTextSensor(m_HwdID, 30*rank + 1, 255, teleinfo.rate, name + " Tarif en cours");
+			SendKwhMeter(m_HwdID, 32*rank + 3, 255, m_pappHC, teleinfo.HCHC/1000.0, name + " Heures Creuses");
+			SendKwhMeter(m_HwdID, 32*rank + 4, 255, m_pappHP, teleinfo.HCHP/1000.0, name + " Heures Pleines");
+			SendKwhMeter(m_HwdID, 32*rank + 5, 255, teleinfo.PAPP, (teleinfo.HCHP + teleinfo.HCHC)/1000.0, name + " Total");
+			SendTextSensor(m_HwdID, 32*rank + 1, 255, teleinfo.rate, name + " Tarif en cours");
 		}
 		else if (teleinfo.OPTARIF == "EJP.")
 		{
 			teleinfo.tariff="Tarif option EJP";
-			SendKwhMeter(m_HwdID, 30*rank + 6, 255, m_pappHC, teleinfo.EJPHN/1000.0, name + " Heures Normales");
-			SendKwhMeter(m_HwdID, 30*rank + 7, 255, m_pappHP, teleinfo.EJPHPM/1000.0, name + " Heures Pointe Mobile");
-			SendKwhMeter(m_HwdID, 30*rank + 8, 255, teleinfo.PAPP, (teleinfo.EJPHN + teleinfo.EJPHPM)/1000.0, name + " Total");
-			SendTextSensor(m_HwdID, 30*rank + 1, 255, teleinfo.rate, name + " Tarif en cours");
-			SendAlertSensor(30*rank + 4, 255, ((teleinfo.PEJP == 30) ? 4 : 1), (name + " Alerte Pointe Mobile").c_str());
+			SendKwhMeter(m_HwdID, 32*rank + 6, 255, m_pappHC, teleinfo.EJPHN/1000.0, name + " Heures Normales");
+			SendKwhMeter(m_HwdID, 32*rank + 7, 255, m_pappHP, teleinfo.EJPHPM/1000.0, name + " Heures Pointe Mobile");
+			SendKwhMeter(m_HwdID, 32*rank + 8, 255, teleinfo.PAPP, (teleinfo.EJPHN + teleinfo.EJPHPM)/1000.0, name + " Total");
+			SendTextSensor(m_HwdID, 32*rank + 1, 255, teleinfo.rate, name + " Tarif en cours");
+			SendAlertSensor(32*rank + 4, 255, ((teleinfo.PEJP == 30) ? 4 : 1), (name + " Alerte Pointe Mobile").c_str());
 		}
 		else if (teleinfo.OPTARIF.substr(0,3) == "BBR")
 		{
@@ -168,33 +168,33 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 			{
 				teleinfo.color="Unknown";
 			}
-			SendKwhMeter(m_HwdID, 30*rank + 10, 255, m_pappHCJB, teleinfo.BBRHCJB/1000.0, "Teleinfo 1 Jour Bleu, Creux");
-			SendKwhMeter(m_HwdID, 30*rank + 11, 255, m_pappHPJB, teleinfo.BBRHPJB/1000.0, "Teleinfo 1 Jour Bleu, Plein");
-			SendKwhMeter(m_HwdID, 30*rank + 12, 255, m_pappHCJW, teleinfo.BBRHCJW/1000.0, "Teleinfo 1 Jour Blanc, Creux");
-			SendKwhMeter(m_HwdID, 30*rank + 13, 255, m_pappHPJW, teleinfo.BBRHPJW/1000.0, "Teleinfo 1 Jour Blanc, Plein");
-			SendKwhMeter(m_HwdID, 30*rank + 14, 255, m_pappHCJR, teleinfo.BBRHCJR/1000.0, "Teleinfo 1 Jour Rouge, Creux");
-			SendKwhMeter(m_HwdID, 30*rank + 15, 255, m_pappHPJR, teleinfo.BBRHCJR/1000.0, "Teleinfo 1 Jour Rouge, Plein");
-			SendKwhMeter(m_HwdID, 30*rank + 16, 255, teleinfo.PAPP, (teleinfo.BBRHCJB + teleinfo.BBRHPJB + teleinfo.BBRHCJW \
+			SendKwhMeter(m_HwdID, 32*rank + 10, 255, m_pappHCJB, teleinfo.BBRHCJB/1000.0, "Teleinfo 1 Jour Bleu, Creux");
+			SendKwhMeter(m_HwdID, 32*rank + 11, 255, m_pappHPJB, teleinfo.BBRHPJB/1000.0, "Teleinfo 1 Jour Bleu, Plein");
+			SendKwhMeter(m_HwdID, 32*rank + 12, 255, m_pappHCJW, teleinfo.BBRHCJW/1000.0, "Teleinfo 1 Jour Blanc, Creux");
+			SendKwhMeter(m_HwdID, 32*rank + 13, 255, m_pappHPJW, teleinfo.BBRHPJW/1000.0, "Teleinfo 1 Jour Blanc, Plein");
+			SendKwhMeter(m_HwdID, 32*rank + 14, 255, m_pappHCJR, teleinfo.BBRHCJR/1000.0, "Teleinfo 1 Jour Rouge, Creux");
+			SendKwhMeter(m_HwdID, 32*rank + 15, 255, m_pappHPJR, teleinfo.BBRHCJR/1000.0, "Teleinfo 1 Jour Rouge, Plein");
+			SendKwhMeter(m_HwdID, 32*rank + 16, 255, teleinfo.PAPP, (teleinfo.BBRHCJB + teleinfo.BBRHPJB + teleinfo.BBRHCJW \
 				+ teleinfo.BBRHPJW + teleinfo.BBRHCJR + teleinfo.BBRHPJR)/1000.0, name + " Total");
-			SendTextSensor(m_HwdID, 30*rank + 1, 255, "Jour " + teleinfo.color + ", " + teleinfo.rate, name + " Tarif en cours ");
-			SendTextSensor(m_HwdID, 30*rank + 2, 255, "Demain, jour " + teleinfo.DEMAIN , name + " couleur demain");
+			SendTextSensor(m_HwdID, 32*rank + 1, 255, "Jour " + teleinfo.color + ", " + teleinfo.rate, name + " Tarif en cours ");
+			SendTextSensor(m_HwdID, 32*rank + 2, 255, "Demain, jour " + teleinfo.DEMAIN , name + " couleur demain");
 		}
 		// Common sensors for all rates
 		if (teleinfo.triphase == false)
 		{
 			SendCurrentSensor(m_HwdID + rank, 255, (float)teleinfo.IINST, 0, 0, name + " Courant");
-			SendAlertSensor(30*rank + 1, 255, AlertLevel(teleinfo.IMAX, teleinfo.IINST, teleinfo.ISOUSC), (name + " Alerte courant maximal").c_str());
-			SendPercentageSensor(m_HwdID, 30 * rank + 1, 255, (teleinfo.IINST*100)/teleinfo.IMAX, name + " Intensite souscrite");
+			SendAlertSensor(32*rank + 1, 255, AlertLevel(teleinfo.IMAX, teleinfo.IINST, teleinfo.ISOUSC), (name + " Alerte courant maximal").c_str());
+			SendPercentageSensor(32* rank + 1, 0, 255, (teleinfo.IINST*100)/teleinfo.IMAX, name + " Intensite souscrite");
 		}
 		else
 		{
 			SendCurrentSensor(m_HwdID + rank, 255, (float)teleinfo.IINST1, (float)teleinfo.IINST2, (float)teleinfo.IINST3, name + " Courant");
-			SendAlertSensor(30*rank + 1, 255, AlertLevel(teleinfo.IMAX1, teleinfo.IINST1, teleinfo.ISOUSC), (name + " Alerte courant maximal phase 1").c_str());
-			SendAlertSensor(30*rank + 2, 255, AlertLevel(teleinfo.IMAX2, teleinfo.IINST2, teleinfo.ISOUSC), (name + " Alerte courant maximal phase 2").c_str());
-			SendAlertSensor(30*rank + 3, 255, AlertLevel(teleinfo.IMAX3, teleinfo.IINST3, teleinfo.ISOUSC), (name + " Alerte courant maximal phase 3").c_str());
-			SendPercentageSensor(m_HwdID, 30 * rank + 1, 255, (teleinfo.IINST1*100)/teleinfo.IMAX1, name + " Intensite souscrite phase 1");
-			SendPercentageSensor(m_HwdID, 30 * rank + 2, 255, (teleinfo.IINST2*100)/teleinfo.IMAX2, name + " Intensite souscrite phase 2");
-			SendPercentageSensor(m_HwdID, 30 * rank + 3, 255, (teleinfo.IINST3*100)/teleinfo.IMAX3, name + " Intensite souscrite phase 3");
+			SendAlertSensor(32*rank + 1, 255, AlertLevel(teleinfo.IMAX1, teleinfo.IINST1, teleinfo.ISOUSC), (name + " Alerte courant maximal phase 1").c_str());
+			SendAlertSensor(32*rank + 2, 255, AlertLevel(teleinfo.IMAX2, teleinfo.IINST2, teleinfo.ISOUSC), (name + " Alerte courant maximal phase 2").c_str());
+			SendAlertSensor(32*rank + 3, 255, AlertLevel(teleinfo.IMAX3, teleinfo.IINST3, teleinfo.ISOUSC), (name + " Alerte courant maximal phase 3").c_str());
+			SendPercentageSensor(32 * rank + 1, 0, 255, (teleinfo.IINST1*100)/teleinfo.IMAX1, name + " Intensite souscrite phase 1");
+			SendPercentageSensor(32 * rank + 2, 0, 255, (teleinfo.IINST2*100)/teleinfo.IMAX2, name + " Intensite souscrite phase 2");
+			SendPercentageSensor(32 * rank + 3, 0, 255, (teleinfo.IINST3*100)/teleinfo.IMAX3, name + " Intensite souscrite phase 3");
 		}
 	}
 }
