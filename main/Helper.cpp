@@ -36,11 +36,10 @@ void StringSplit(std::string str, const std::string &delim, std::vector<std::str
 	}
 }
 
-
 void stdreplace(
-std::string &inoutstring,
-const std::string& replaceWhat,
-const std::string& replaceWithWhat)
+	std::string &inoutstring,
+	const std::string& replaceWhat, 
+	const std::string& replaceWithWhat)
 {
 	int pos = 0;
 	while (std::string::npos != (pos = inoutstring.find(replaceWhat, pos)))
@@ -50,20 +49,18 @@ const std::string& replaceWithWhat)
 	}
 }
 
-
 void stdupper(std::string &inoutstring)
 {
 	for (size_t i = 0; i < inoutstring.size(); ++i)
 		inoutstring[i] = toupper(inoutstring[i]);
 }
 
-
 std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 {
 	bUseDirectPath=false;
 
 	std::vector<std::string> ret;
-	#if defined WIN32
+#if defined WIN32
 	//windows
 
 	std::vector<int> ports;
@@ -110,47 +107,40 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 				}
 			}
 			if (!bFound)
-								 // add port
-				ret.push_back(szPortName);
+				ret.push_back(szPortName); // add port
 		}
 	}
 	// Method 2: CreateFile, slow
 	// ---------
-	if (!bFoundPort)
-	{
+	if (!bFoundPort) {
 		for (int ii = 0; ii < 256; ii++)
 		{
 			sprintf(szPortName, "\\\\.\\COM%d", ii);
 			bool bSuccess = false;
 			HANDLE hPort = ::CreateFile(szPortName, GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, 0, 0);
-			if (hPort == INVALID_HANDLE_VALUE)
-			{
+			if (hPort == INVALID_HANDLE_VALUE) {
 				DWORD dwError = GetLastError();
 				//Check to see if the error was because some other app had the port open
 				if (dwError == ERROR_ACCESS_DENIED)
 					bSuccess = TRUE;
 			}
-			else
-			{
+			else {
 				//The port was opened successfully
 				bSuccess = TRUE;
 				//Don't forget to close the port, since we are going to do nothing with it anyway
 				CloseHandle(hPort);
 			}
-			if (bSuccess)
-			{
+			if (bSuccess) {
 				bFoundPort = true;
 				sprintf(szPortName, "COM%d", ii);
-								 // add port
-				ret.push_back(szPortName);
+				ret.push_back(szPortName); // add port
 			}
-			// --------------
+			// --------------            
 		}
 	}
 	// Method 3: EnumSerialPortsWindows, often fails
 	// ---------
-	if (!bFoundPort)
-	{
+	if (!bFoundPort) {
 		std::vector<SerialPortInfo> serialports;
 		EnumSerialPortsWindows(serialports);
 		if (!serialports.empty())
@@ -158,13 +148,12 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 			std::vector<SerialPortInfo>::const_iterator itt;
 			for (itt = serialports.begin(); itt != serialports.end(); ++itt)
 			{
-								 // add port
-				ret.push_back(itt->szPortName);
+				ret.push_back(itt->szPortName); // add port
 			}
 		}
 	}
 
-	#else
+#else
 	//scan /dev for /dev/ttyUSB* or /dev/ttyS* or /dev/tty.usbserial* or /dev/ttyAMA* or /dev/ttySAC*
 
 	bool bHaveTtyAMAfree=false;
@@ -209,7 +198,7 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 				bUseDirectPath = true;
 				ret.push_back("/dev/" + fname);
 			}
-			#ifdef __FreeBSD__
+#ifdef __FreeBSD__            
 			else if (fname.find("ttyU")!=std::string::npos)
 			{
 				bUseDirectPath=true;
@@ -220,14 +209,14 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 				bUseDirectPath=true;
 				ret.push_back("/dev/" + fname);
 			}
-			#endif
-			#ifdef __APPLE__
+#endif
+#ifdef __APPLE__
 			else if (fname.find("cu.")!=std::string::npos)
 			{
 				bUseDirectPath=true;
 				ret.push_back("/dev/" + fname);
 			}
-			#endif
+#endif
 			if (bHaveTtyAMAfree)
 			{
 				if (fname.find("ttyAMA0")!=std::string::npos)
@@ -256,17 +245,16 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 		}
 		closedir(d);
 	}
-	#endif
+
+#endif
 	return ret;
 }
 
-
 bool file_exist (const char *filename)
 {
-	struct stat sbuffer;
+	struct stat sbuffer;   
 	return (stat(filename, &sbuffer) == 0);
 }
-
 
 double CalculateAltitudeFromPressure(double pressure)
 {
@@ -275,11 +263,10 @@ double CalculateAltitudeFromPressure(double pressure)
 	return altitude;
 }
 
-
 /**************************************************************************/
 /*!
 Calculates the altitude (in meters) from the specified atmospheric
-pressure (in hPa), sea-level pressure (in hPa), and temperature (in C)
+pressure (in hPa), sea-level pressure (in hPa), and temperature (in °C)
 @param seaLevel Sea-level pressure in hPa
 @param atmospheric Atmospheric pressure in hPa
 @param temp Temperature in degrees Celsius
@@ -296,17 +283,16 @@ float pressureToAltitude(float seaLevel, float atmospheric, float temp)
 	/* where: h = height (in meters) */
 	/* P0 = sea-level pressure (in hPa) */
 	/* P = atmospheric pressure (in hPa) */
-	/* T = temperature (in C) */
+	/* T = temperature (in °C) */
 	return (((float)pow((seaLevel / atmospheric), 0.190223F) - 1.0F)
 		* (temp + 273.15F)) / 0.0065F;
 }
-
 
 /**************************************************************************/
 /*!
 Calculates the sea-level pressure (in hPa) based on the current
 altitude (in meters), atmospheric pressure (in hPa), and temperature
-(in C)
+(in °C)
 @param altitude altitude in meters
 @param atmospheric Atmospheric pressure in hPa
 @param temp Temperature in degrees Celsius
@@ -323,7 +309,7 @@ float pressureSeaLevelFromAltitude(float altitude, float atmospheric, float temp
 	/* where: P0 = sea-level pressure (in hPa) */
 	/* P = atmospheric pressure (in hPa) */
 	/* h = altitude (in meters) */
-	/* T = Temperature (in C) */
+	/* T = Temperature (in °C) */
 	return atmospheric * (float)pow((1.0F - (0.0065F * altitude) /
 		(temp + 0.0065F * altitude + 273.15F)), -5.257F);
 }
@@ -341,7 +327,6 @@ std::string &stdstring_ltrim(std::string &s)
 	return s;
 }
 
-
 std::string &stdstring_rtrim(std::string &s)
 {
 	while (!s.empty())
@@ -354,13 +339,11 @@ std::string &stdstring_rtrim(std::string &s)
 	return s;
 }
 
-
 // trim from both ends
 std::string &stdstring_trim(std::string &s)
 {
 	return stdstring_ltrim(stdstring_rtrim(s));
 }
-
 
 double CalculateDewPoint(double temp, int humidity)
 {
@@ -373,8 +356,7 @@ double CalculateDewPoint(double temp, int humidity)
 	return dew_numer/dew_denom;
 }
 
-
-uint32_t IPToUInt(const std::string &ip)
+uint32_t IPToUInt(const std::string &ip) 
 {
 	int a, b, c, d;
 	uint32_t addr = 0;
@@ -389,49 +371,43 @@ uint32_t IPToUInt(const std::string &ip)
 	return addr;
 }
 
-
 bool isInt(const std::string &s)
 {
-	for(size_t i = 0; i < s.length(); i++)
-	{
+	for(size_t i = 0; i < s.length(); i++){
 		if(!isdigit(s[i]))
 			return false;
 	}
 	return true;
 }
 
-
 void sleep_seconds(const long seconds)
 {
-	#if (BOOST_VERSION < 105000)
+#if (BOOST_VERSION < 105000)
 	boost::this_thread::sleep(boost::posix_time::seconds(seconds));
-	#else
+#else
 	boost::this_thread::sleep_for(boost::chrono::seconds(seconds));
-	#endif
+#endif
 }
-
 
 void sleep_milliseconds(const long milliseconds)
 {
-	#if (BOOST_VERSION < 105000)
+#if (BOOST_VERSION < 105000)
 	boost::this_thread::sleep(boost::posix_time::milliseconds(milliseconds));
-	#else
+#else
 	boost::this_thread::sleep_for(boost::chrono::milliseconds(milliseconds));
-	#endif
+#endif
 }
-
 
 int createdir(const char *szDirName, int secattr)
 {
 	int ret = 0;
-	#ifdef WIN32
+#ifdef WIN32
 	ret = _mkdir(szDirName);
-	#else
+#else
 	ret = mkdir(szDirName, secattr);
-	#endif
+#endif
 	return ret;
 }
-
 
 int mkdir_deep(const char *szDirName, int secattr)
 {
@@ -459,18 +435,15 @@ int mkdir_deep(const char *szDirName, int secattr)
 	return ret;
 }
 
-
 double ConvertToCelsius(const double Fahrenheit)
 {
 	return (Fahrenheit-32.0)/1.8;
 }
 
-
 double ConvertToFahrenheit(const double Celsius)
 {
 	return (Celsius*1.8)+32.0;
 }
-
 
 double RoundDouble(const long double invalue, const short numberOfPrecisions)
 {
@@ -479,14 +452,12 @@ double RoundDouble(const long double invalue, const short numberOfPrecisions)
 	return ret;
 }
 
-
 double ConvertTemperature(const double tValue, const unsigned char tSign)
 {
 	if (tSign=='C')
 		return tValue;
 	return RoundDouble(ConvertToFahrenheit(tValue),1);
 }
-
 
 std::vector<std::string> ExecuteCommandAndReturn(const std::string &szCommand)
 {
@@ -497,11 +468,11 @@ std::vector<std::string> ExecuteCommandAndReturn(const std::string &szCommand)
 		FILE *fp;
 
 		/* Open the command for reading. */
-		#ifdef WIN32
+#ifdef WIN32
 		fp = _popen(szCommand.c_str(), "r");
-		#else
+#else
 		fp = popen(szCommand.c_str(), "r");
-		#endif
+#endif
 		if (fp != NULL)
 		{
 			char path[1035];
@@ -511,20 +482,19 @@ std::vector<std::string> ExecuteCommandAndReturn(const std::string &szCommand)
 				ret.push_back(path);
 			}
 			/* close */
-			#ifdef WIN32
+#ifdef WIN32
 			_pclose(fp);
-			#else
+#else
 			pclose(fp);
-			#endif
+#endif
 		}
 	}
 	catch (...)
 	{
-
+		
 	}
 	return ret;
 }
-
 
 std::string GenerateMD5Hash(const std::string &InputString, const std::string &Salt)
 {
@@ -538,7 +508,6 @@ std::string GenerateMD5Hash(const std::string &InputString, const std::string &S
 		sprintf(&mdString[i * 2], "%02x", (unsigned int)digest[i]);
 	return mdString;
 }
-
 
 void hue2rgb(const float hue, int &outR, int &outG, int &outB, const double maxValue)
 {
@@ -555,43 +524,41 @@ void hue2rgb(const float hue, int &outR, int &outG, int &outB, const double maxV
 	q = vlue * (1.0 - (saturation * ff));
 	t = vlue * (1.0 - (saturation * (1.0 - ff)));
 
-	switch (i)
-	{
-		case 0:
-			outR = int(vlue*maxValue);
-			outG = int(t*maxValue);
-			outB = int(p*maxValue);
-			break;
-		case 1:
-			outR = int(q*maxValue);
-			outG = int(vlue*maxValue);
-			outB = int(p*maxValue);
-			break;
-		case 2:
-			outR = int(p*maxValue);
-			outG = int(vlue*maxValue);
-			outB = int(t*maxValue);
-			break;
+	switch (i) {
+	case 0:
+		outR = int(vlue*maxValue);
+		outG = int(t*maxValue);
+		outB = int(p*maxValue);
+		break;
+	case 1:
+		outR = int(q*maxValue);
+		outG = int(vlue*maxValue);
+		outB = int(p*maxValue);
+		break;
+	case 2:
+		outR = int(p*maxValue);
+		outG = int(vlue*maxValue);
+		outB = int(t*maxValue);
+		break;
 
-		case 3:
-			outR = int(p*maxValue);
-			outG = int(q*maxValue);
-			outB = int(vlue*maxValue);
-			break;
-		case 4:
-			outR = int(t*maxValue);
-			outG = int(p*maxValue);
-			outB = int(vlue*maxValue);
-			break;
-		case 5:
-		default:
-			outR = int(vlue*maxValue);
-			outG = int(p*maxValue);
-			outB = int(q*maxValue);
-			break;
+	case 3:
+		outR = int(p*maxValue);
+		outG = int(q*maxValue);
+		outB = int(vlue*maxValue);
+		break;
+	case 4:
+		outR = int(t*maxValue);
+		outG = int(p*maxValue);
+		outB = int(vlue*maxValue);
+		break;
+	case 5:
+	default:
+		outR = int(vlue*maxValue);
+		outG = int(p*maxValue);
+		outB = int(q*maxValue);
+		break;
 	}
 }
-
 
 void rgb2hsb(const int r, const int g, const int b, float hsbvals[3])
 {
@@ -610,8 +577,7 @@ void rgb2hsb(const int r, const int g, const int b, float hsbvals[3])
 		saturation = 0;
 	if (saturation == 0)
 		hue = 0;
-	else
-	{
+	else {
 		float redc = ((float)(cmax - r)) / ((float)(cmax - cmin));
 		float greenc = ((float)(cmax - g)) / ((float)(cmax - cmin));
 		float bluec = ((float)(cmax - b)) / ((float)(cmax - cmin));
@@ -630,7 +596,6 @@ void rgb2hsb(const int r, const int g, const int b, float hsbvals[3])
 	hsbvals[2] = brightness;
 }
 
-
 bool is_number(const std::string& s)
 {
 	std::string::const_iterator it = s.begin();
@@ -638,47 +603,44 @@ bool is_number(const std::string& s)
 	return !s.empty() && it == s.end();
 }
 
-
 void padLeft(std::string &str, const size_t num, const char paddingChar)
 {
 	if (num > str.size())
 		str.insert(0, num - str.size(), paddingChar);
 }
 
-
 bool IsLightOrSwitch(const int devType, const int subType)
 {
 	bool bIsLightSwitch = false;
 	switch (devType)
 	{
-		case pTypeLighting1:
-		case pTypeLighting2:
-		case pTypeLighting3:
-		case pTypeLighting4:
-		case pTypeLighting5:
-		case pTypeLighting6:
-		case pTypeFan:
-		case pTypeLimitlessLights:
-		case pTypeSecurity1:
-		case pTypeSecurity2:
-		case pTypeCurtain:
-		case pTypeBlinds:
-		case pTypeRFY:
-		case pTypeThermostat2:
-		case pTypeThermostat3:
-		case pTypeThermostat4:
-		case pTypeRemote:
-		case pTypeGeneralSwitch:
-		case pTypeHomeConfort:
-			bIsLightSwitch = true;
-			break;
-		case pTypeRadiator1:
-			bIsLightSwitch = (subType == sTypeSmartwaresSwitchRadiator);
-			break;
+	case pTypeLighting1:
+	case pTypeLighting2:
+	case pTypeLighting3:
+	case pTypeLighting4:
+	case pTypeLighting5:
+	case pTypeLighting6:
+	case pTypeFan:
+	case pTypeLimitlessLights:
+	case pTypeSecurity1:
+	case pTypeSecurity2:
+	case pTypeCurtain:
+	case pTypeBlinds:
+	case pTypeRFY:
+	case pTypeThermostat2:
+	case pTypeThermostat3:
+	case pTypeThermostat4:
+	case pTypeRemote:
+	case pTypeGeneralSwitch:
+	case pTypeHomeConfort:
+		bIsLightSwitch = true;
+		break;
+	case pTypeRadiator1:
+		bIsLightSwitch = (subType == sTypeSmartwaresSwitchRadiator);
+		break;
 	}
 	return bIsLightSwitch;
 }
-
 
 int MStoBeaufort(const float ms)
 {
@@ -709,42 +671,37 @@ int MStoBeaufort(const float ms)
 	return 12;
 }
 
-
 bool dirent_is_directory(std::string dir, struct dirent *ent)
 {
 	if (ent->d_type == DT_DIR)
 		return true;
-	#ifndef WIN32
+#ifndef WIN32
 	if (ent->d_type == DT_LNK)
 		return true;
-	if (ent->d_type == DT_UNKNOWN)
-	{
+	if (ent->d_type == DT_UNKNOWN) {
 		std::string fname = dir + "/" + ent->d_name;
 		struct stat st;
 		if (!lstat(fname.c_str(), &st))
 			return S_ISDIR(st.st_mode);
 	}
-	#endif
+#endif
 	return false;
 }
-
 
 bool dirent_is_file(std::string dir, struct dirent *ent)
 {
 	if (ent->d_type == DT_REG)
 		return true;
-	#ifndef WIN32
-	if (ent->d_type == DT_UNKNOWN)
-	{
+#ifndef WIN32
+	if (ent->d_type == DT_UNKNOWN) {
 		std::string fname = dir + "/" + ent->d_name;
 		struct stat st;
 		if (!lstat(fname.c_str(), &st))
 			return S_ISREG(st.st_mode);
 	}
-	#endif
+#endif
 	return false;
 }
-
 
 /*!
  * List entries of a directory.
@@ -759,16 +716,13 @@ void DirectoryListing(std::vector<std::string>& entries, const std::string &dir,
 	struct dirent *ent;
 	if ((d = opendir(dir.c_str())) != NULL)
 	{
-		while ((ent = readdir(d)) != NULL)
-		{
+		while ((ent = readdir(d)) != NULL) {
 			std::string name = ent->d_name;
-			if (bInclDirs && dirent_is_directory(dir, ent) && name != "." && name != "..")
-			{
+			if (bInclDirs && dirent_is_directory(dir, ent) && name != "." && name != "..") {
 				entries.push_back(name);
 				continue;
 			}
-			if (bInclFiles && dirent_is_file(dir, ent))
-			{
+			if (bInclFiles && dirent_is_file(dir, ent)) {
 				entries.push_back(name);
 				continue;
 			}
@@ -777,7 +731,6 @@ void DirectoryListing(std::vector<std::string>& entries, const std::string &dir,
 	}
 	return;
 }
-
 
 std::string GenerateUserAgent()
 {
@@ -790,20 +743,18 @@ std::string GenerateUserAgent()
 	return sstr.str();
 }
 
-
 std::string MakeHtml(const std::string &txt)
 {
-	std::string sRet = txt;
+        std::string sRet = txt;
 
-	stdreplace(sRet, "&", "&amp;");
-	stdreplace(sRet, "\"", "&quot;");
-	stdreplace(sRet, "'", "&apos;");
-	stdreplace(sRet, "<", "&lt;");
-	stdreplace(sRet, ">", "&gt;");
-	stdreplace(sRet, "\r\n", "<br/>");
-	return sRet;
+        stdreplace(sRet, "&", "&amp;");
+        stdreplace(sRet, "\"", "&quot;");
+        stdreplace(sRet, "'", "&apos;");
+        stdreplace(sRet, "<", "&lt;");
+        stdreplace(sRet, ">", "&gt;");
+        stdreplace(sRet, "\r\n", "<br/>");
+        return sRet;
 }
-
 
 #if defined WIN32
 //FILETIME of Jan 1 1970 00:00:00
