@@ -132,7 +132,10 @@ void BleBox::GetDevicesState()
 
 					const int state = root["state"].asInt();
 
-					const int currentPos = root["currentPos"].asInt();
+					if (IsNodesExist(root, "currentPos", "position") == false)
+						break;
+
+					const int currentPos = root["currentPos"]["position"].asInt();
 					//	const int desiredPos = root["desiredPos"].asInt();
 					const int pos = currentPos;
 
