@@ -18,4 +18,5 @@ protected:
 		const bool bFromNotification);
 private:
 	std::string _apikey;
+	std::string _apiuser;
 };
