@@ -67,7 +67,9 @@ Json::Value CLogitechMediaServer::Query(std::string sIP, int iPort, std::string 
 		sURL << "http://" << sIP << ":" << iPort << "/jsonrpc.js";
 
 	sPostData << sPostdata;
-	bool bRetVal = HTTPClient::POST(sURL.str(), sPostData.str(), ExtraHeaders, sResult, m_iPingTimeoutms / 1000);
+	
+	HTTPClient::SetTimeout(m_iPingTimeoutms / 1000);
+	bool bRetVal = HTTPClient::POST(sURL.str(), sPostData.str(), ExtraHeaders, sResult);
 
 	if (!bRetVal)
 	{
