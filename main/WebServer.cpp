@@ -10034,7 +10034,7 @@ namespace http {
 							root["result"][ii]["Data"] = sValue;
 							root["result"][ii]["TypeImg"] = "text";
 							root["result"][ii]["HaveTimeout"] = false;
-							root["result"][ii]["ShowNotifications"] = false;
+							root["result"][ii]["ShowNotifications"] = true;
 						}
 						else if (dSubType == sTypeAlert)
 						{
