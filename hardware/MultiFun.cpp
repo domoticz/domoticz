@@ -414,7 +414,7 @@ void MultiFun::GetRegisters(bool firstTime)
 					}
 					if (((m_LastAlarms != 0) != (value != 0)) || firstTime)
 					{
-						SendAlertSensor(0, 255, value ? 4 : 1, "Alarm", "Alarm");
+						SendAlertSensor(0, 255, value ? 4 : 1, value ? "Alarm" : "OK", "Alarm");
 					}
 					m_LastAlarms = value;
 					break;
@@ -436,7 +436,7 @@ void MultiFun::GetRegisters(bool firstTime)
 					}
 					if (((m_LastWarnings != 0) != (value != 0)) || firstTime)
 					{
-						SendAlertSensor(1, 255, value ? 3 : 1, "Warning", "Alarm");
+						SendAlertSensor(1, 255, value ? 3 : 1, value ? "Warning" : "OK", "Alarm");
 					}
 					m_LastWarnings = value;
 					break;
