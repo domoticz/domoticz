@@ -835,7 +835,12 @@ void CDomoticzHardwareBase::SendAlertSensor(const int NodeID, const int BatteryL
 	gDevice.subtype = sTypeAlert;
 	gDevice.id = (unsigned char)NodeID;
 	gDevice.intval1 = alertLevel;
-        gDevice.text = message;
+        std::stringstream ss;
+	if (strcmp(gDevice.text.c_str(), ""))
+        	ss << alertLevel;
+	else
+		ss << "(" << alertLevel << ") " << message;
+        gDevice.text = ss.str();
 	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname, BatteryLevel);
 }
 

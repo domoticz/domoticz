@@ -239,7 +239,7 @@ void CEcoDevices::ProcessTeleinfo(const std::string &name, int HwdID, int rank, 
 			SendKwhMeter(HwdID, 16, 255, m_pappHP, teleinfo.EJPHPM/1000.0, name + " Heures Pointe Mobile");
 			SendKwhMeter(HwdID, 17, 255, teleinfo.PAPP, (teleinfo.EJPHN + teleinfo.EJPHPM)/1000.0, name + " Total");
 			SendTextSensor(HwdID, 11, 255, teleinfo.rate, name + " Tarif en cours");
-			SendAlertSensor(10+rank, 255, ((teleinfo.PEJP == 30) ? 4 : 1), "", (name + " Alerte Pointe Mobile").c_str());
+			SendAlertSensor(10+rank, 255, ((teleinfo.PEJP == 30) ? 4 : 1), teleinfo.rate.c_str(), (name + " Alerte Pointe Mobile").c_str());
 		}
 		else if (teleinfo.OPTARIF.substr(0,3) == "BBR")
 		{
@@ -302,7 +302,11 @@ void CEcoDevices::ProcessTeleinfo(const std::string &name, int HwdID, int rank, 
 			flevel = 4;
                         message = "Intensité maximale dépassée";
                 } 
-		if (flevel < 1) flevel = 1;
+		if (flevel < 1) 
+		{
+			flevel = 1;
+			message = "Intensité normale";
+		}
 		level = (int)round(flevel + 0.49);
 		SendAlertSensor(rank, 255, level, message.c_str(), (name + " Alerte courant maximal").c_str());
 	}
