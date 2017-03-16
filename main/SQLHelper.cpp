@@ -6561,7 +6561,7 @@ void CSQLHelper::CheckDeviceTimeout()
 //				"tm_min: %d, tm_sec: %d, tm_isdst: %d, bWhenIsGreater: %s, SensorTimeOut: %d",
 //				sd[2].c_str(), ltime.tm_year, ltime.tm_mon, ltime.tm_mday, ltime.tm_hour,
 //				ltime.tm_min, ltime.tm_sec, ltime.tm_isdst,	bWhenIsGreater ? "true" : "false", SensorTimeOut);
-			int diff = difftime(now,mktime(&ltime));
+			double diff = difftime(now,mktime(&ltime));
 			if ((diff > SensorTimeOut*60 && bWhenIsGreater)||
 				(diff < SensorTimeOut*60 && !bWhenIsGreater))
 			{
