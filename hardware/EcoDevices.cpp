@@ -171,6 +171,7 @@ void CEcoDevices::ProcessTeleinfo(const std::string &name, int HwdID, int rank, 
 {
 	uint32_t m_pappHC, m_pappHP, m_pappHCJB, m_pappHPJB, m_pappHCJW, m_pappHPJW, m_pappHCJR, m_pappHPJR, checksum, level;
 	double flevel;
+	std::string message;
 	time_t atime = mytime(NULL);
 
 	// PAPP only exist on some meter versions. If not present, we can approximate it as (current x 230V)
@@ -238,7 +239,7 @@ void CEcoDevices::ProcessTeleinfo(const std::string &name, int HwdID, int rank, 
 			SendKwhMeter(HwdID, 16, 255, m_pappHP, teleinfo.EJPHPM/1000.0, name + " Heures Pointe Mobile");
 			SendKwhMeter(HwdID, 17, 255, teleinfo.PAPP, (teleinfo.EJPHN + teleinfo.EJPHPM)/1000.0, name + " Total");
 			SendTextSensor(HwdID, 11, 255, teleinfo.rate, name + " Tarif en cours");
-			SendAlertSensor(10+rank, 255, ((teleinfo.PEJP == 30) ? 4 : 1), (name + " Alerte Pointe Mobile").c_str());
+			SendAlertSensor(10+rank, 255, ((teleinfo.PEJP == 30) ? 4 : 1), "", (name + " Alerte Pointe Mobile").c_str());
 		}
 		else if (teleinfo.OPTARIF.substr(0,3) == "BBR")
 		{
@@ -296,10 +297,14 @@ void CEcoDevices::ProcessTeleinfo(const std::string &name, int HwdID, int rank, 
 			level = 4;
 		else
 			flevel = (3.0 * teleinfo.IINST + teleinfo.IMAX - 4.0 * teleinfo.ISOUSC) / (teleinfo.IMAX - teleinfo.ISOUSC);
-		if (flevel > 4) flevel = 4;
+		if (flevel > 4) 
+		{
+			flevel = 4;
+                        message = "Intensité maximale dépassée";
+                } 
 		if (flevel < 1) flevel = 1;
 		level = (int)round(flevel + 0.49);
-		SendAlertSensor(rank, 255, level, (name + " Alerte courant maximal").c_str());
+		SendAlertSensor(rank, 255, level, message.c_str(), (name + " Alerte courant maximal").c_str());
 	}
 }
 

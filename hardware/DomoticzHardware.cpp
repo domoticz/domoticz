@@ -829,12 +829,13 @@ void CDomoticzHardwareBase::SendSoundSensor(const int NodeID, const int BatteryL
 	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), BatteryLevel);
 }
 
-void CDomoticzHardwareBase::SendAlertSensor(const int NodeID, const int BatteryLevel, const int alertLevel, const char* defaultname)
+void CDomoticzHardwareBase::SendAlertSensor(const int NodeID, const int BatteryLevel, const int alertLevel, const char* message, const char* defaultname)
 {
 	_tGeneralDevice gDevice;
 	gDevice.subtype = sTypeAlert;
 	gDevice.id = (unsigned char)NodeID;
 	gDevice.intval1 = alertLevel;
+        gDevice.text = message;
 	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname, BatteryLevel);
 }
 
