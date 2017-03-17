@@ -347,7 +347,7 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 	xcmd.len = sizeof(_tGeneralSwitch) - 1;
 	xcmd.id = sID;
 	xcmd.type = pTypeGeneralSwitch;
-	xcmd.subtype = sSwitchCustomSwitch;
+	xcmd.subtype = sSwitchGeneralSwitch;
 
 	if (switchtype == STYPE_Selector) {
 		xcmd.subtype = sSwitchTypeSelector;
