@@ -9694,8 +9694,9 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
         		ss << pMeter->intval1;
 		else
 			ss << "(" << pMeter->intval1 << ") " << pMeter->text.c_str();
-        	pMeter->text = ss;
-		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, pMeter->intval1, pMeter->text.c_str(), procResult.DeviceName);
+		const std::string tmp = ss.str();
+		const char* cstr = tmp.c_str();
+		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, pMeter->intval1, cstr, procResult.DeviceName);
 		if (DevRowIdx == -1)
 			return;
 		m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_USAGE, static_cast<float>(pMeter->intval1));
