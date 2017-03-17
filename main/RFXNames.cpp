@@ -247,6 +247,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_Arilux, "Arilux AL-LC0x" },
 		{ HTYPE_OpenWebNetUSB, "MyHome OpenWebNet USB" },
 		{ HTYPE_IntergasInComfortLAN2RF, "Intergas InComfort LAN2RF Gateway" },
+		{ HTYPE_RelayNet, "Relay-Net 8 channel LAN Relay and binary Input module" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -262,13 +263,13 @@ const char *Switch_Type_Desc(const _eSwitchType sType)
 		{ STYPE_Blinds, "Blinds" },
 		{ STYPE_X10Siren, "X10 Siren" },
 		{ STYPE_SMOKEDETECTOR, "Smoke Detector" },
-        { STYPE_BlindsInverted, "Blinds Inverted" },
+		{ STYPE_BlindsInverted, "Blinds Inverted" },
 		{ STYPE_Dimmer, "Dimmer" },
 		{ STYPE_Motion, "Motion Sensor" },
 		{ STYPE_PushOn, "Push On Button" },
 		{ STYPE_PushOff, "Push Off Button" },
 		{ STYPE_DoorContact, "Door Contact" },
-        { STYPE_Dusk, "Dusk Sensor" },
+		{ STYPE_Dusk, "Dusk Sensor" },
 		{ STYPE_BlindsPercentage, "Blinds Percentage" },
 		{ STYPE_VenetianBlindsUS, "Venetian Blinds US" },
 		{ STYPE_VenetianBlindsEU, "Venetian Blinds EU" },
@@ -326,6 +327,7 @@ const char *Notification_Type_Desc(const int nType, const unsigned char snum)
 		{ NTYPE_STOPPED, "Stop Stream", "Q" },
 		{ NTYPE_PLAYING, "Play Stream", "a" },
 		{ NTYPE_VALUE, "Value", "F" },
+		{ NTYPE_LASTUPDATE, "Last Update", "J"},
 		{  0,NULL,NULL }
 	};
 	if (snum==0)
@@ -365,6 +367,7 @@ const char *Notification_Type_Label(const int nType)
 		{ NTYPE_STOPPED, "" },
 		{ NTYPE_PLAYING, "" },
 		{ NTYPE_VALUE, "" },
+		{ NTYPE_LASTUPDATE, "minutes" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, nType);
@@ -595,7 +598,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLighting5, sTypeIT, "Intertek,FA500,PROmax" },
 		{ pTypeLighting5, sTypeMDREMOTE108, "MDRemote 108" },
 		{ pTypeLighting5, sTypeKangtai, "Kangtai / Cotech" },
-		
+
 		{ pTypeLighting6, sTypeBlyss, "Blyss" },
 
 		{ pTypeHomeConfort, sTypeHomeConfortTEL010 , "TEL-010" },
@@ -828,6 +831,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchBlindsT1, "Legrand MyHome Blind Bus" },
 		{ pTypeGeneralSwitch, sSwitchLightT1, "Legrand MyHome Light Bus" },
 		{ pTypeGeneralSwitch, sSwitchAuxiliaryT1, "Legrand MyHome Auxiliary Bus" },
+		{ pTypeGeneralSwitch, sSwitchContactT1, "Legrand MyHome DryContact/IRdetec" },
 		{ pTypeGeneralSwitch, sSwitchMC145026, "MC145026" },
 		{ pTypeGeneralSwitch, sSwitchLobeco, "Lobeco" },
 		{ pTypeGeneralSwitch, sSwitchFriedland, "Friedland" },
@@ -853,6 +857,13 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchTypeLiwin, "Liwin" },
 		{ pTypeGeneralSwitch, sSwitchBlindsT2, "Legrand MyHome Blind Zigbee" },
 		{ pTypeGeneralSwitch, sSwitchLightT2, "Legrand MyHome Light Zigbee" },
+		{ pTypeGeneralSwitch, sSwitchTypeYW_Secu, "YW_Secu" },
+		{ pTypeGeneralSwitch, sSwitchTypeMertik_GV60, "Mertik_GV60" },
+		{ pTypeGeneralSwitch, sSwitchTypeNingbo64, "Ningbo64"},
+		{ pTypeGeneralSwitch, sSwitchTypeX2D, "X2D" },
+		{ pTypeGeneralSwitch, sSwitchTypeHRCMotor, "HRCMotor" },
+		{ pTypeGeneralSwitch, sSwitchTypeVelleman, "Velleman" },
+		{ pTypeGeneralSwitch, sSwitchTypeRFCustom, "RFCustom" },
 		{  0,0,NULL }
 	};
 	return findTableID1ID2(Table, dType, sType);
@@ -2513,50 +2524,50 @@ bool GetLightCommand(
 			return true;
 		}
 		else if (switchcmd == "Disco Mode 1")
-				{
-					cmd = Limitless_DiscoMode_1;
-					return true;
-				}
+		{
+			cmd = Limitless_DiscoMode_1;
+			return true;
+		}
 		else if (switchcmd == "Disco Mode 2")
-				{
-					cmd = Limitless_DiscoMode_2;
-					return true;
-				}
+		{
+			cmd = Limitless_DiscoMode_2;
+			return true;
+		}
 		else if (switchcmd == "Disco Mode 3")
-				{
-					cmd = Limitless_DiscoMode_3;
-					return true;
-				}
+		{
+			cmd = Limitless_DiscoMode_3;
+			return true;
+		}
 		else if (switchcmd == "Disco Mode 4")
-				{
-					cmd = Limitless_DiscoMode_4;
-					return true;
-				}
+		{
+			cmd = Limitless_DiscoMode_4;
+			return true;
+		}
 		else if (switchcmd == "Disco Mode 5")
-				{
-					cmd = Limitless_DiscoMode_5;
-					return true;
-				}
+		{
+			cmd = Limitless_DiscoMode_5;
+			return true;
+		}
 		else if (switchcmd == "Disco Mode 6")
-				{
-					cmd = Limitless_DiscoMode_6;
-					return true;
-				}
+		{
+			cmd = Limitless_DiscoMode_6;
+			return true;
+		}
 		else if (switchcmd == "Disco Mode 7")
-				{
-					cmd = Limitless_DiscoMode_7;
-					return true;
-				}
+		{
+			cmd = Limitless_DiscoMode_7;
+			return true;
+		}
 		else if (switchcmd == "Disco Mode 8")
-				{
-					cmd = Limitless_DiscoMode_8;
-					return true;
-				}
+		{
+			cmd = Limitless_DiscoMode_8;
+			return true;
+		}
 		else if (switchcmd == "Disco Mode 9")
-				{
-					cmd = Limitless_DiscoMode_9;
-					return true;
-				}
+		{
+			cmd = Limitless_DiscoMode_9;
+			return true;
+		}
 		else if (switchcmd == "Disco Up")
 		{
 			cmd = Limitless_RGBDiscoNext;

@@ -25,8 +25,8 @@
 #include "../main/localtime_r.h"
 #include "../main/Logger.h"
 
-//10 minutes
-#define SESSION_TIMEOUT 600
+#define SHORT_SESSION_TIMEOUT 600 // 10 minutes
+#define LONG_SESSION_TIMEOUT (30 * 86400) // 30 days
 
 int m_failcounter=0;
 
@@ -1910,7 +1910,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 	} // if (is_upgrade_request())
 
 	// Set timeout to make session in use
-	session.timeout = mytime(NULL) + SESSION_TIMEOUT;
+	session.timeout = mytime(NULL) + SHORT_SESSION_TIMEOUT;
 
 	if (session.isnew == true) {
 		// Create a new session ID
@@ -1918,7 +1918,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 		session.expires = session.timeout;
 		if (session.rememberme) {
 			// Extend session by 30 days
-			session.expires += (86400 * 30);
+			session.expires += LONG_SESSION_TIMEOUT;
 		}
 		session.auth_token = generateAuthToken(session, req); // do it after expires to save it also
 		session.isnew = false;
@@ -1941,9 +1941,17 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 		if (memSession != NULL)
 		{
 			time_t now = mytime(NULL);
-			if (memSession->expires - 60 < now)
+			// Renew session expiration date if half of session duration has been exceeded ("dont remember me" sessions, 10 minutes)
+			if (memSession->expires - (SHORT_SESSION_TIMEOUT / 2) < now)
 			{
-				memSession->expires = now + SESSION_TIMEOUT;
+				memSession->expires = now + SHORT_SESSION_TIMEOUT;
+				memSession->auth_token = generateAuthToken(*memSession, req); // do it after expires to save it also
+				send_cookie(rep, *memSession);
+			}
+			// Renew session expiration date if half of session duration has been exceeded ("remember me" sessions, 30 days)
+			else if ((memSession->expires > SHORT_SESSION_TIMEOUT + now) && (memSession->expires - (LONG_SESSION_TIMEOUT / 2) < now))
+			{
+				memSession->expires = now + LONG_SESSION_TIMEOUT;
 				memSession->auth_token = generateAuthToken(*memSession, req); // do it after expires to save it also
 				send_cookie(rep, *memSession);
 			}

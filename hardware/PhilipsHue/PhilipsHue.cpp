@@ -872,17 +872,24 @@ bool CPhilipsHue::GetSensors(const Json::Value &root)
 		if (sensor.isObject())
 		{
 			bool bDoSend = true;
+			bool bNewSensor = false;
 			int sID = atoi(iSensor.key().asString().c_str());
 
 			CPHSensor hsensor(sensor);
-			// Check if sensor exists and whether an update is needed
+			CPHSensor lsensor;
+			// Check if sensor exists and whether last update is changed
 			if (m_sensors.find(sID) != m_sensors.end())
 			{
-				CPHSensor asensor = m_sensors[sID];
-				if (asensor.m_state.m_lastupdated == hsensor.m_state.m_lastupdated)
+				lsensor = m_sensors[sID];
+				if (lsensor.m_state.m_lastupdated == hsensor.m_state.m_lastupdated)
 				{
 					bDoSend = false;
 				}
+			}
+			else
+			{
+				// New sensor found, always update it's value
+				bNewSensor = true;
 			}
 			m_sensors.erase(sID);
 			m_sensors.insert(make_pair(sID, hsensor));
@@ -900,23 +907,39 @@ bool CPhilipsHue::GetSensors(const Json::Value &root)
 				}
 				else if (hsensor.m_type == SensorTypeZLLPresence)
 				{
-					InsertUpdateSwitch(sID, STYPE_Motion, hsensor.m_state.m_presence, device_name, hsensor.m_config.m_battery);
+					if ((lsensor.m_state.m_presence != hsensor.m_state.m_presence)
+						|| (bNewSensor))
+					{
+						InsertUpdateSwitch(sID, STYPE_Motion, hsensor.m_state.m_presence, device_name, hsensor.m_config.m_battery);
+					}
 				}
 				else if (hsensor.m_type == SensorTypeZLLTemperature)
 				{
-					SendTempSensor(sID, hsensor.m_config.m_battery, float(hsensor.m_state.m_temperature / 100.0f), device_name);
+					if ((lsensor.m_state.m_temperature != hsensor.m_state.m_temperature)
+						|| (bNewSensor))
+					{
+						SendTempSensor(sID, hsensor.m_config.m_battery, float(hsensor.m_state.m_temperature / 100.0f), device_name);
+					}
 				}
 				else if (hsensor.m_type == SensorTypeZLLLightLevel)
 				{
-					InsertUpdateSwitch(sID, STYPE_Dusk, hsensor.m_state.m_dark, device_name, hsensor.m_config.m_battery);
-
-					double lux = 0.00001;
-					if (hsensor.m_state.m_lightlevel != 0)
+					if ((lsensor.m_state.m_dark != hsensor.m_state.m_dark)
+						|| (bNewSensor))
 					{
-						float convertedLightLevel = float((hsensor.m_state.m_lightlevel - 1) / 10000.00f);
-						lux = pow(10, convertedLightLevel);
+						InsertUpdateSwitch(sID, STYPE_Dusk, hsensor.m_state.m_dark, device_name, hsensor.m_config.m_battery);
 					}
-					SendLuxSensor(sID, 0, hsensor.m_config.m_battery, (const float)lux, hsensor.m_type + " Lux " + hsensor.m_name);
+
+					if ((lsensor.m_state.m_lightlevel != hsensor.m_state.m_lightlevel)
+						|| (bNewSensor))
+					{
+						double lux = 0.00001;
+						if (hsensor.m_state.m_lightlevel != 0)
+						{
+							float convertedLightLevel = float((hsensor.m_state.m_lightlevel - 1) / 10000.00f);
+							lux = pow(10, convertedLightLevel);
+						}
+						SendLuxSensor(sID, 0, hsensor.m_config.m_battery, (const float)lux, hsensor.m_type + " Lux " + hsensor.m_name);
+					}
 				}
 				else
 				{
