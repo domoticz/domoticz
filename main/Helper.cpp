@@ -179,6 +179,9 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 		// Loop while not NULL
 		while ((de = readdir(d)))
 		{
+			// Only consider character devices and symbolic links
+                        if ((de->d_type == DT_CHR) || (de->d_type == DT_LNK))
+                        {
 			std::string fname = de->d_name;
 			if (fname.find("ttyUSB")!=std::string::npos)
 			{
@@ -224,6 +227,21 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 				{
 					ret.push_back("/dev/" + fname);
 					bUseDirectPath=true;
+				}
+				// By default, this is the "small UART" on Rasberry 3 boards
+                                        if (fname.find("ttyS0")!=std::string::npos)
+                                        {
+                                                ret.push_back("/dev/" + fname);
+                                                bUseDirectPath=true;
+                                        }
+                                        // serial0 and serial1 are new with Rasbian Jessie
+                                        // Avoids confusion between Raspberry 2 and 3 boards
+                                        // More info at http://spellfoundry.com/2016/05/29/configuring-gpio-serial-port-raspbian-jessie-including-pi-3/
+                                        if (fname.find("serial")!=std::string::npos)
+                                        {
+                                                ret.push_back("/dev/" + fname);
+                                                bUseDirectPath=true;
+                                        }
 				}
 			}
 		}

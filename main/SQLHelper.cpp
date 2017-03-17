@@ -6543,9 +6543,8 @@ void CSQLHelper::CheckDeviceTimeout()
 		uint64_t ulID;
 		int SensorTimeOut=60;
 		time_t now = mytime(NULL);
-		struct tm stoday;
 		struct tm ltime;
-		localtime_r(&now,&stoday);
+		localtime_r(&now,&ltime); // make sure DST is set correctly
 
 		std::vector<std::vector<std::string> >::const_iterator itt;
 		std::string ltype = Notification_Type_Desc(NTYPE_LASTUPDATE, 0);
@@ -6569,10 +6568,13 @@ void CSQLHelper::CheckDeviceTimeout()
 			std::stringstream(sd[3].substr(11,2)) >> ltime.tm_hour;
 			std::stringstream(sd[3].substr(14,2)) >> ltime.tm_min;
 			std::stringstream(sd[3].substr(17,2)) >> ltime.tm_sec;
-			//_log.Log(LOG_STATUS, "CheckDeviceTimeout: %s tm_year: %d, tm_mon: %d, tm_mday: %d, tm_hour: %d, tm_min: %d, tm_sec: %d",
-			//	sd[2].c_str(), ltime.tm_year, ltime.tm_mon, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
-			if ((difftime(now,mktime(&ltime)) > SensorTimeOut*60 && bWhenIsGreater)||
-				(difftime(now,mktime(&ltime)) < SensorTimeOut*60 && !bWhenIsGreater))
+//			_log.Log(LOG_STATUS, "CheckDeviceTimeout: %s tm_year: %d, tm_mon: %d, tm_mday: %d, tm_hour: %d, "
+//				"tm_min: %d, tm_sec: %d, tm_isdst: %d, bWhenIsGreater: %s, SensorTimeOut: %d",
+//				sd[2].c_str(), ltime.tm_year, ltime.tm_mon, ltime.tm_mday, ltime.tm_hour,
+//				ltime.tm_min, ltime.tm_sec, ltime.tm_isdst,	bWhenIsGreater ? "true" : "false", SensorTimeOut);
+			double diff = difftime(now,mktime(&ltime));
+			if ((diff > SensorTimeOut*60 && bWhenIsGreater)||
+				(diff < SensorTimeOut*60 && !bWhenIsGreater))
 			{
 				char szTmp[300];
 				sprintf(szTmp,"Sensor %s %s: %s [%s %d %s]",sd[2].c_str(),ltype.c_str(),sd[3].c_str(),splitparams[1].c_str(),SensorTimeOut,label.c_str());

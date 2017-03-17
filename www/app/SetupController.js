@@ -97,12 +97,13 @@ define(['app'], function (app) {
 				extraparams = "PushbulletAPI=" + PushbulletAPI;
 				break;
 			case "pushsafer":
-				var PushsaferAPI=encodeURIComponent($("#pushsafertable #PushsaferAPI").val());
+			    var PushsaferAPI = encodeURIComponent($("#pushsafertable #PushsaferAPI").val());
+			    var PushsaferImage = encodeURIComponent($("#pushsafertable #PushsaferImage").val());
 				if (PushsaferAPI=="") {
 					ShowNotify($.t('Please enter the API key!...'), 3500, true);
 					return;
 				}
-				extraparams = "PushsaferAPI=" + PushsaferAPI;
+				extraparams = "PushsaferAPI=" + PushsaferAPI + "&PushsaferImage=" + PushsaferImage;
 				break;				
 			case "pushover":
 				var POAPI=encodeURIComponent($("#pushovertable #PushoverAPI").val());
@@ -296,8 +297,11 @@ define(['app'], function (app) {
   				$("#pushsafertable #PushsaferEnabled").prop('checked',data.PushsaferEnabled==1);
 			  }			  
 			  if (typeof data.PushsaferAPI != 'undefined') {
-				$("#pushsafertable #PushsaferAPI").val(data.PushsaferAPI);
-			  }			  
+			      $("#pushsafertable #PushsaferAPI").val(data.PushsaferAPI);
+			  }
+			  if (typeof data.PushsaferImage != 'undefined') {
+			      $("#pushsafertable #PushsaferImage").val(data.PushsaferImage);
+			  }
 			  if (typeof data.PushoverEnabled != 'undefined') {
   				$("#pushovertable #PushoverEnabled").prop('checked',data.PushoverEnabled==1);
 			  }

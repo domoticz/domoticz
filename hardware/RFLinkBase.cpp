@@ -1019,6 +1019,7 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 	if (bHaveRGB)
 	{
 		//RRGGBB
+		if (switchcmd == "ON") rgb = 0xffff;
 		SendRGBWSwitch(ID, switchunit, BatteryLevel, rgb, false, tmp_Name);
 	} else
 	if (bHaveRGBW)
