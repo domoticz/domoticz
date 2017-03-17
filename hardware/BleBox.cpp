@@ -9,7 +9,7 @@
 #include "../main/SQLHelper.h"
 #include "../httpclient/HTTPClient.h"
 
-#define TOT_TYPE 8
+#define TOT_TYPE 7
 
 const _STR_DEVICE DevicesType[TOT_TYPE] =
 { 
