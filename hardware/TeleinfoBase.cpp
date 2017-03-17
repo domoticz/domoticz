@@ -131,7 +131,7 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 			SendKwhMeter(m_HwdID, 32*rank + 7, 255, m_pappHP, teleinfo.EJPHPM/1000.0, name + " Heures Pointe Mobile");
 			SendKwhMeter(m_HwdID, 32*rank + 8, 255, teleinfo.PAPP, (teleinfo.EJPHN + teleinfo.EJPHPM)/1000.0, name + " Total");
 			SendTextSensor(m_HwdID, 32*rank + 1, 255, teleinfo.rate, name + " Tarif en cours");
-			SendAlertSensor(32*rank + 4, 255, ((teleinfo.PEJP == 30) ? 4 : 1), teleinfo.rate, (name + " Alerte Pointe Mobile").c_str());
+			SendAlertSensor(32*rank + 4, 255, ((teleinfo.PEJP == 30) ? 4 : 1), teleinfo.rate.c_str(), (name + " Alerte Pointe Mobile").c_str());
 		}
 		else if (teleinfo.OPTARIF.substr(0,3) == "BBR")
 		{
