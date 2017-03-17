@@ -185,7 +185,7 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 		if (teleinfo.triphase == false)
 		{
 			SendCurrentSensor(m_HwdID + rank, 255, (float)teleinfo.IINST, 0, 0, name + " Courant");
-			SendAlertSensor(32*rank + 1, 255, AlertLevel(teleinfo.IMAX, teleinfo.IINST, teleinfo.ISOUSC), ""
+			SendAlertSensor(32*rank + 1, 255, AlertLevel(teleinfo.IMAX, teleinfo.IINST, teleinfo.ISOUSC), "",
 				(name + " Alerte courant maximal").c_str());
 			SendPercentageSensor(32* rank + 1, 0, 255, (teleinfo.IINST*100)/teleinfo.IMAX, name + " Intensite souscrite");
 		}
@@ -193,11 +193,11 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 		{
 			SendCurrentSensor(m_HwdID + rank, 255, (float)teleinfo.IINST1, (float)teleinfo.IINST2, (float)teleinfo.IINST3,
 				name + " Courant");
-			SendAlertSensor(32*rank + 1, 255, AlertLevel(teleinfo.IMAX1, teleinfo.IINST1, teleinfo.ISOUSC), ""
+			SendAlertSensor(32*rank + 1, 255, AlertLevel(teleinfo.IMAX1, teleinfo.IINST1, teleinfo.ISOUSC), "",
 				(name + " Alerte courant maximal phase 1").c_str());
-			SendAlertSensor(32*rank + 2, 255, AlertLevel(teleinfo.IMAX2, teleinfo.IINST2, teleinfo.ISOUSC), ""
+			SendAlertSensor(32*rank + 2, 255, AlertLevel(teleinfo.IMAX2, teleinfo.IINST2, teleinfo.ISOUSC), "",
 				(name + " Alerte courant maximal phase 2").c_str());
-			SendAlertSensor(32*rank + 3, 255, AlertLevel(teleinfo.IMAX3, teleinfo.IINST3, teleinfo.ISOUSC), ""
+			SendAlertSensor(32*rank + 3, 255, AlertLevel(teleinfo.IMAX3, teleinfo.IINST3, teleinfo.ISOUSC), "",
 				(name + " Alerte courant maximal phase 3").c_str());
 			if (teleinfo.IMAX1 > 0)
 				SendPercentageSensor(32 * rank + 1, 0, 255, (teleinfo.IINST1*100)/teleinfo.IMAX1,
