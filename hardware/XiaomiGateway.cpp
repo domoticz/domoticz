@@ -417,11 +417,13 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 			xcmd.unitcode = 2;
 		}
 		int nvalue = atoi(result[0][0].c_str());
-		if ((((bIsOn) && (nvalue == 0)) || ((bIsOn == false) && (nvalue == 1))) || (messagetype != "heartbeat")) {
+		if ((((bIsOn) && (nvalue == 0)) || ((bIsOn == false) && (nvalue == 1)))) { // || (messagetype != "heartbeat")) {
 			m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, NULL, -1);
 		}
 		else {
+#ifdef _DEBUG
 			_log.Log(LOG_STATUS, "XiaomiGateway: not updating Domoticz for switch as no change from last state");
+#endif
 		}
 	}
 }
@@ -819,7 +821,10 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 								m_XiaomiGateway->InsertUpdateVoltage(sid.c_str(), name, atoi(voltage.c_str()));
 							}
 							else {
-								m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, on, type, level, cmd);
+								if (model == "plug" || model == "ctrl_neutral1" || model == "ctrl_neutral2") {
+									sleep_milliseconds(100); //need to sleep here as the gateway will send 2 update messages, and need time for the database to update the state so that the event is not triggered twice
+								}								
+								m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, on, type, level, cmd);								
 							}
 						}
 					}
