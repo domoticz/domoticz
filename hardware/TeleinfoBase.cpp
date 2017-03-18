@@ -187,7 +187,7 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 			SendCurrentSensor(m_HwdID + rank, 255, (float)teleinfo.IINST, 0, 0, name + " Courant");
 			SendAlertSensor(32*rank + 1, 255, AlertLevel(teleinfo.IMAX, teleinfo.IINST, teleinfo.ISOUSC), "",
 				(name + " Alerte courant maximal").c_str());
-			SendPercentageSensor(32* rank + 1, 0, 255, (teleinfo.IINST*100)/teleinfo.IMAX, name + " Intensite souscrite");
+			SendPercentageSensor(32* rank + 1, 0, 255, (teleinfo.IINST*100)/float(teleinfo.IMAX), name + " Intensite souscrite");
 		}
 		else
 		{
@@ -200,13 +200,13 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 			SendAlertSensor(32*rank + 3, 255, AlertLevel(teleinfo.IMAX3, teleinfo.IINST3, teleinfo.ISOUSC), "",
 				(name + " Alerte courant maximal phase 3").c_str());
 			if (teleinfo.IMAX1 > 0)
-				SendPercentageSensor(32 * rank + 1, 0, 255, (teleinfo.IINST1*100)/teleinfo.IMAX1,
+				SendPercentageSensor(32 * rank + 1, 0, 255, (teleinfo.IINST1*100)/float(teleinfo.IMAX1),
 					name + " Intensite souscrite phase 1");
 			if (teleinfo.IMAX2 > 0)
-				SendPercentageSensor(32 * rank + 2, 0, 255, (teleinfo.IINST2*100)/teleinfo.IMAX2,
+				SendPercentageSensor(32 * rank + 2, 0, 255, (teleinfo.IINST2*100)/float(teleinfo.IMAX2),
 					name + " Intensite souscrite phase 2");
 			if (teleinfo.IMAX3 > 0)
-				SendPercentageSensor(32 * rank + 3, 0, 255, (teleinfo.IINST3*100)/teleinfo.IMAX3,
+				SendPercentageSensor(32 * rank + 3, 0, 255, (teleinfo.IINST3*100)/float(teleinfo.IMAX3),
 					name + " Intensite souscrite phase 3");
 		}
 	}
