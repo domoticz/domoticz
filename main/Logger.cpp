@@ -412,28 +412,53 @@ void CLogger::setLogVerboseLevel(int LogLevel)
 
 
 }
+//set the DEBUG option in order to allow LOG_TRACE log level 
+void  CLogger::SetLogDebug(bool debug)
+{
+  m_debug = debug ;
+}
+bool  CLogger::GetLogDebug()
+{
+  return m_debug;
+}
+
 void CLogger::SetLogPreference (std::string  LogFilter, std::string  LogFileName , std::string  LogLevel )
 {
-	m_sql.UpdatePreferencesVar("LogFilter"  , 0, LogFilter.c_str() );
-	m_sql.UpdatePreferencesVar("LogFileName",0, LogFileName.c_str() );
-	m_sql.UpdatePreferencesVar("LogLevel"   ,0, LogLevel.c_str() );
-	SetFilterString (LogFilter);
-	SetOutputFile (LogFileName.c_str());
-	setLogVerboseLevel(atoi(LogLevel.c_str()));
+	//if trace level is allowed
+	if (GetLogDebug()) {
+		//set LogFilter/LogFileName/LogLevel from Preferences tables
+		m_sql.UpdatePreferencesVar("LogFilter", 0, LogFilter.c_str());
+		m_sql.UpdatePreferencesVar("LogFileName", 0, LogFileName.c_str());
+		m_sql.UpdatePreferencesVar("LogLevel", 0, LogLevel.c_str());
+		SetFilterString(LogFilter);
+		SetOutputFile(LogFileName.c_str());
+		setLogVerboseLevel(atoi(LogLevel.c_str()));
+	}
 }
 void CLogger::GetLogPreference()
 {
 	std::string LogFilter, LogFileName, LogLevel;
 
-	m_sql.GetPreferencesVar("LogFilter", LogFilter);
-	m_sql.GetPreferencesVar("LogFileName", LogFileName);
-	m_sql.GetPreferencesVar("LogLevel", LogLevel);
-	SetFilterString(LogFilter);
-	SetOutputFile(LogFileName.c_str());
-	if (LogLevel.length() != 0)
-		setLogVerboseLevel(atoi(LogLevel.c_str()));
-	else
+  //if trace level is allowed
+  if (GetLogDebug()){
+    //get LogFilter/LogFileName/LogLevel from Preferences tables
+    m_sql.GetPreferencesVar("LogFilter", LogFilter);
+    m_sql.GetPreferencesVar("LogFileName", LogFileName);
+    m_sql.GetPreferencesVar("LogLevel", LogLevel);
+    SetFilterString(LogFilter);
+    SetOutputFile(LogFileName.c_str());
+
+    if (LogLevel.length() != 0)
+      setLogVerboseLevel(atoi(LogLevel.c_str()));
+	else {
+		m_sql.UpdatePreferencesVar("LogLevel", 0, std::to_string(VBL_ALL) );
 		SetVerboseLevel(VBL_ALL);
+	}
+  }
+  else{
+    //delete LogLevel key in order to dot not display in settings TAB
+    m_sql.DeletePreferencesVar("LogLevel");
+  }
 }
 void CLogger::ClearLog()
 {

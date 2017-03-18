@@ -198,6 +198,12 @@ struct _tTaskItem
 	}
 };
 
+//row result for an sql query : string Vector
+typedef   std::vector<std::string> TSqlRowQuery;
+
+// result for an sql query : Vector of TSqlRowQuery
+typedef   std::vector<TSqlRowQuery> TSqlQueryResult;
+
 class CSQLHelper
 {
 public:
@@ -305,6 +311,7 @@ public:
 
 	bool GetPreferencesVar(const std::string &Key, double &Value);
 	void UpdatePreferencesVar(const std::string &Key, const double Value);
+	void DeletePreferencesVar(const std::string Key );
 	void AllowNewHardwareTimer(const int iTotMinutes);
 
 	bool InsertCustomIconFromZip(const std::string &szZip, std::string &ErrorMessage);
@@ -383,13 +390,9 @@ private:
 
 	std::vector<std::vector<std::string> > query(const std::string &szQuery);
 	std::vector<std::vector<std::string> > queryBlob(const std::string &szQuery);
+	void LogQueryResult(TSqlQueryResult &result);
 };
 
-//row result for an sql query : string Vector
-typedef   std::vector<std::string> TSqlRowQuery ;
-
-// result for an sql query : Vector of TSqlRowQuery
-typedef   std::vector<TSqlRowQuery> TSqlQueryResult ;
 extern CSQLHelper m_sql;
 
 std::string getSValuePart(const char * sValue, unsigned int part );

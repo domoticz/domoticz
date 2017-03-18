@@ -2932,8 +2932,6 @@ std::vector<std::vector<std::string> > CSQLHelper::query(const std::string &szQu
 	}
 	boost::lock_guard<boost::mutex> l(m_sqlQueryMutex);
 
-	if (_log.isTraceEnable()) _log.Log(LOG_TRACE,"SQLH query: %s",szQuery.c_str()) ;
-
 	sqlite3_stmt *statement;
 	std::vector<std::vector<std::string> > results;
 
@@ -2965,6 +2963,12 @@ std::vector<std::vector<std::string> > CSQLHelper::query(const std::string &szQu
 			}
 		}
 		sqlite3_finalize(statement);
+	}
+
+	if (_log.isTraceEnable()) {
+		_log.Log(LOG_TRACE, "SQLQ query : %s", szQuery.c_str());
+		if (!_log.TestFilter("SQLR"))	
+			LogQueryResult(results);
 	}
 
 	std::string error = sqlite3_errmsg(m_dbase);
@@ -3750,6 +3754,11 @@ void CSQLHelper::UpdatePreferencesVar(const std::string &Key, const std::string 
 {
 	UpdatePreferencesVar(Key, 0, sValue);
 }
+void CSQLHelper::UpdatePreferencesVar(const std::string &Key, const double Value)
+{
+	std::string sValue = std::to_string(Value);
+	UpdatePreferencesVar(Key, 0, sValue);
+}
 
 void CSQLHelper::UpdatePreferencesVar(const std::string &Key, const int nValue)
 {
@@ -3794,6 +3803,18 @@ bool CSQLHelper::GetPreferencesVar(const std::string &Key, std::string &sValue)
 	return true;
 }
 
+bool CSQLHelper::GetPreferencesVar(const std::string &Key, double &Value)
+{
+	
+	std::string sValue;
+	int nValue;
+	Value = 0;
+	bool res = GetPreferencesVar(Key, nValue, sValue);
+	if (!res)
+		return false;
+	Value = atof(sValue.c_str());
+	return true;
+}
 bool CSQLHelper::GetPreferencesVar(const std::string &Key, int &nValue, std::string &sValue)
 {
 	if (!m_dbase)
@@ -3815,6 +3836,21 @@ bool CSQLHelper::GetPreferencesVar(const std::string &Key, int &nValue)
 	std::string sValue;
 	return GetPreferencesVar(Key, nValue, sValue);
 }
+void CSQLHelper::DeletePreferencesVar(const std::string Key )
+{
+  std::string sValue ;
+	if (!m_dbase)
+		return ;
+
+  //if found, delete
+  if ( GetPreferencesVar(Key,sValue)== true)
+  {
+	  TSqlQueryResult result;
+	  result = safe_query("DELETE FROM Preferences WHERE (Key='%q')",Key.c_str());
+  }
+}
+
+
 
 int CSQLHelper::GetLastBackupNo(const char *Key, int &nValue)
 {
@@ -7176,6 +7212,20 @@ float CSQLHelper::getTemperatureFromSValue(const char * sValue)
       return 0;
     else
       return (float)atof(splitresults[0].c_str());
+}
+void LogRow (TSqlRowQuery * row)
+{
+		std::string Row;
+		for (unsigned int j=0;j<(*row).size();j++)
+			Row = Row+(*row)[j]+";";
+    _log.Log(LOG_TRACE,"SQLR result: %s",Row.c_str());
+}
+void CSQLHelper::LogQueryResult (TSqlQueryResult &result)
+{
+	for (unsigned int i=0;i<result.size();i++)
+	{
+		LogRow( &result[i] );
+	}
 }
 bool CSQLHelper::InsertCustomIconFromZip(const std::string &szZip, std::string &ErrorMessage)
 {

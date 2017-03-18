@@ -104,7 +104,8 @@ const char *szHelp=
 #else
 	"\t-log file_path (for example /var/log/domoticz.log)\n"
 #endif
-	"\t-loglevel (0=All, 1=Status+Error, 2=Error)\n"
+	"\t-loglevel (0=All, 1=Status+Error, 2=Error , 3= Trace )\n"
+	"\t-debug    allow log trace level 3 \n"
 	"\t-notimestamps (do not prepend timestamps to logs; useful with syslog, etc.)\n"
 	"\t-php_cgi_path (for example /usr/bin/php-cgi)\n"
 #ifndef WIN32
@@ -473,6 +474,10 @@ int main(int argc, char**argv)
 			return 1;
 		}
 	}
+	if (cmdLine.HasSwitch("-debug"))
+		_log.SetLogDebug(true);
+	else
+		_log.SetLogDebug(false);
 	if (cmdLine.HasSwitch("-notimestamps"))
 	{
 		_log.EnableLogTimestamps(false);
@@ -920,9 +925,10 @@ int main(int argc, char**argv)
 	if (cmdLine.HasSwitch("-loglevel"))
 	{
 		int Level = atoi(cmdLine.GetSafeArgument("-loglevel", 0, "").c_str());
-    if     (Level==0) _log.SetVerboseLevel(VBL_ALL);
-    else if(Level==1) _log.SetVerboseLevel(VBL_STATUS_ERROR);
-    else if(Level==2) _log.SetVerboseLevel(VBL_ERROR);
+		if     (Level==0) _log.SetVerboseLevel(VBL_ALL);
+		else if(Level==1) _log.SetVerboseLevel(VBL_STATUS_ERROR);
+		else if(Level==2) _log.SetVerboseLevel(VBL_ERROR);
+		else if ((Level == 3) && (_log.GetLogDebug())) _log.SetVerboseLevel(VBL_TRACE);
 	}
 	if (cmdLine.HasSwitch("-verbose"))
 	{
