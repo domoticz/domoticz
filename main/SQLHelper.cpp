@@ -3756,7 +3756,7 @@ void CSQLHelper::UpdatePreferencesVar(const std::string &Key, const std::string 
 }
 void CSQLHelper::UpdatePreferencesVar(const std::string &Key, const double Value)
 {
-	std::string sValue = std::to_string(Value);
+	std::string sValue = boost::to_string(Value);
 	UpdatePreferencesVar(Key, 0, sValue);
 }
 

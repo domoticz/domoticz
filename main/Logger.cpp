@@ -451,7 +451,7 @@ void CLogger::GetLogPreference()
     if (LogLevel.length() != 0)
       setLogVerboseLevel(atoi(LogLevel.c_str()));
 	else {
-		m_sql.UpdatePreferencesVar("LogLevel", 0, std::to_string(VBL_ALL) );
+		m_sql.UpdatePreferencesVar("LogLevel", 0, boost::to_string(VBL_ALL) );
 		SetVerboseLevel(VBL_ALL);
 	}
   }
