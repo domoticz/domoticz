@@ -154,8 +154,6 @@ bool CITGWBase::WriteToHardware(const char *pdata, const unsigned char length)
 	if (pSwitch->type == pTypeGeneralSwitch) {
 		std::string switchcmnd = GetGeneralITGWFromInt(rfswitchcommands, pSwitch->cmnd);
 
-		_log.Log(LOG_NORM, "ITGW: switch command: %d", pSwitch->cmnd);
-
 		if (switchcmnd.empty()) {
 			_log.Log(LOG_ERROR, "ITGW: trying to send unknown switch command: %d", pSwitch->cmnd);
 			return false;
@@ -168,12 +166,9 @@ bool CITGWBase::WriteToHardware(const char *pdata, const unsigned char length)
       std::string itcmnd;
       if(pSwitch->cmnd == gswitch_sOn) {
         itcmnd = its->GetOnCommandString(ID.c_str());
-        _log.Log(LOG_NORM, "ITGW: switch on command got: %s", itcmnd);
-
       }
       else if(pSwitch->cmnd == gswitch_sOff) {
         itcmnd =  its->GetOffCommandString(ID.c_str());
-        _log.Log(LOG_NORM, "ITGW: switch off command got: %s", itcmnd);
       }
       sstr << its->GetHeader() << itcmnd << txversion << its->GetSpeed();
     }
@@ -182,21 +177,19 @@ bool CITGWBase::WriteToHardware(const char *pdata, const unsigned char length)
       std::string itcmnd;
       if(pSwitch->cmnd == gswitch_sOn) {
         itcmnd = its->GetOnCommandString(ID.c_str());
-        _log.Log(LOG_NORM, "ITGW: switch on command got: %s", itcmnd);
 
       }
       else if(pSwitch->cmnd == gswitch_sOff) {
         itcmnd =  its->GetOffCommandString(ID.c_str());
-        _log.Log(LOG_NORM, "ITGW: switch off command got: %s", itcmnd);
       }
       sstr << its->GetHeader() << itcmnd << txversion << its->GetSpeed();
     }
 
 		sstr << suffix << "\n";
 
-//#ifdef _DEBUG
+#ifdef _DEBUG
 		_log.Log(LOG_STATUS, "ITGW Sending: %s", sstr.str().c_str());
-//#endif
+#endif
 		m_bTXokay = false; // clear OK flag
 		WriteInt(sstr.str());
 		time_t atime = mytime(NULL);

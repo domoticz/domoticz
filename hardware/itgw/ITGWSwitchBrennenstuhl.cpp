@@ -1,17 +1,12 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/*
  * File:   ITGWSwitchBrennenstuhl.cpp
  * Author: alexiade
  *
  * Created on March 18, 2017, 1:49 PM
  */
-
+#include "stdafx.h"
 #include "ITGWSwitchBrennenstuhl.h"
+
 
 #define B_LOW "1,3,1,3,"
 #define B_FLOAT "1,3,3,1,"
