@@ -1,6 +1,6 @@
 define(['app'], function (app) {
 	app.controller('LightsController', [ '$scope', '$rootScope', '$location', '$http', '$interval', 'permissions', function($scope,$rootScope,$location,$http,$interval,permissions) {
-	
+
 		$scope.HasInitializedAddManualDialog = false;
 		$scope.HasInitializedEditLightDialog = false;
 
@@ -577,7 +577,7 @@ define(['app'], function (app) {
 			$.isDimmer=isdimmer;
 			$.isSelector = (devsubtype === "Selector Switch");
 
-			$.bIsRGBWW=(devsubtype.indexOf("RGBWW") >= 0);			
+			$.bIsRGBWW=(devsubtype.indexOf("RGBWW") >= 0);
 			$.bIsRGBW=(devsubtype.indexOf("RGBW") >= 0);
 			$.bIsLED=(devsubtype.indexOf("RGB") >= 0);
 
@@ -1520,7 +1520,7 @@ define(['app'], function (app) {
 					}
 				}
 			});
-		   
+
 		}
 
 		EditLightDevice = function(idx,name,description,stype,switchtype,addjvalue,addjvalue2,isslave,customimage,devsubtype,strParam1,strParam2,bIsProtected,strUnit)
@@ -1536,7 +1536,7 @@ define(['app'], function (app) {
 			$.bIsSelectorSwitch = (devsubtype === "Selector Switch");
 
 			ConfigureEditLightSettings();
-			
+
 			var oTable;
 
 			if ($.bIsSelectorSwitch) {
@@ -1889,7 +1889,7 @@ define(['app'], function (app) {
 				}, 200);
 			}, 600);
 		}
-		
+
 		ConfigureAddManualSettings = function()
 		{
 			if ($scope.HasInitializedAddManualDialog==true) {
@@ -1955,7 +1955,7 @@ define(['app'], function (app) {
 				$('#dialog-addmanuallightdevice #homeconfortparams #combohousecode').append($('<option></option>').val(65+ii).html(String.fromCharCode(65+ii)));
 				$('#dialog-addmanuallightdevice #homeconfortparams #combounitcode').append($('<option></option>').val((ii+1)).html((ii+1)));
 			}
-			
+
 			RefreshHardwareComboArray();
 			$("#dialog-addmanuallightdevice #lighttable #combohardware").html("");
 			$.each($.ComboHardware, function(i,item){
@@ -3376,12 +3376,12 @@ define(['app'], function (app) {
 		UpdateAddManualDialog = function()
 		{
 			var lighttype=$("#dialog-addmanuallightdevice #lighttable #combolighttype option:selected").val();
-			var bIsARCType=((lighttype<20)||(lighttype==101));
+			var bIsARCType=((lighttype<20)||(lighttype==101)||(lighttype==115));
 			var bIsType5=0;
 
 			var tothousecodes=1;
 			var totunits=1;
-			if ((lighttype==0)||(lighttype==1)||(lighttype==3)||(lighttype==101)) {
+			if ((lighttype==0)||(lighttype==1)||(lighttype==3)||(lighttype==101)||(lighttype==115)) {
 				tothousecodes=16;
 				totunits=16;
 			}
@@ -3495,7 +3495,7 @@ define(['app'], function (app) {
 			    totrooms = 10;
 			    totpointofloads = 10
 			}
-            
+
 			$("#dialog-addmanuallightdevice #he105params").hide();
 			$("#dialog-addmanuallightdevice #blindsparams").hide();
 			$("#dialog-addmanuallightdevice #lightingparams_enocean").hide();
@@ -3507,6 +3507,7 @@ define(['app'], function (app) {
 			$("#dialog-addmanuallightdevice #openwebnetparamsZigbee").hide();
 			$("#dialog-addmanuallightdevice #openwebnetparamsDryContact").hide();
 			$("#dialog-addmanuallightdevice #openwebnetparamsIRdetec").hide();
+			$("#dialog-addmanuallightdevice #brennenstuhlparams").hide();
 
 			if (lighttype==104) {
 				//HE105
@@ -3514,6 +3515,12 @@ define(['app'], function (app) {
 				$("#dialog-addmanuallightdevice #lighting2params").hide();
 				$("#dialog-addmanuallightdevice #lighting3params").hide();
 				$("#dialog-addmanuallightdevice #he105params").show();
+			}if (lighttype==116) {
+				//Brennenstuhl
+				$("#dialog-addmanuallightdevice #lighting1params").hide();
+				$("#dialog-addmanuallightdevice #lighting2params").hide();
+				$("#dialog-addmanuallightdevice #lighting3params").hide();
+				$("#dialog-addmanuallightdevice #brennenstuhlparams").show();
 			}
 			else if (lighttype==303) {
 				$("#dialog-addmanuallightdevice #lighting1params").hide();
@@ -3774,12 +3781,15 @@ define(['app'], function (app) {
 				//GPIO
 				mParams+="&id=GPIO&unitcode="+$("#dialog-addmanuallightdevice #lightingparams_gpio #combogpio option:selected").val();
 			}
-			else if ((lighttype<20)||(lighttype==101)) {
+			else if ((lighttype<20)||(lighttype==101)||(lighttype==115)) {
 				mParams+="&housecode="+$("#dialog-addmanuallightdevice #lightparams1 #combohousecode option:selected").val();
 				mParams+="&unitcode="+$("#dialog-addmanuallightdevice #lightparams1 #combounitcode option:selected").val();
 			}
 			else if (lighttype==104) {
 				mParams+="&unitcode="+$("#dialog-addmanuallightdevice #he105params #combounitcode option:selected").text();
+			}
+      else if (lighttype==116) {
+				mParams+="&dipswitchcode="+$("#dialog-addmanuallightdevice #brennenstuhlparams #dipswitchcode").val();
 			}
 			else if ((lighttype>=200)&&(lighttype<300)) {
 				//Blinds
@@ -3822,7 +3832,7 @@ define(['app'], function (app) {
 			    var appID = parseInt($("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd1 option:selected").val() +
 					$("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd2 option:selected").val());
                 var ID = ("0002" + ("0000" + appID.toString(16)).slice(-4)); // WHO_AUTOMATION
-                var unitcode = $("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd3 option:selected").val();//TODO : handle bus id (interface) in hardware 
+                var unitcode = $("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd3 option:selected").val();//TODO : handle bus id (interface) in hardware
 				mParams+="&id="+ID.toUpperCase()+"&unitcode="+unitcode;
 			}
 			else if (lighttype==401) {
@@ -3830,7 +3840,7 @@ define(['app'], function (app) {
 			    var appID = parseInt($("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd1 option:selected").val() +
 					$("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd2 option:selected").val());
                 var ID = ("0001" + ("0000" + appID.toString(16)).slice(-4)); // WHO_LIGHTING
-                var unitcode = $("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd3 option:selected").val();//TODO : handle bus id (interface) in hardware 
+                var unitcode = $("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd3 option:selected").val();//TODO : handle bus id (interface) in hardware
 				mParams+="&id="+ID.toUpperCase()+"&unitcode="+unitcode;
 			}
 			else if (lighttype==402) {

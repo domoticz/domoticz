@@ -267,7 +267,7 @@ private:
 	void Cmd_BleBoxClearNodes(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_BleBoxAutoSearchingNodes(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_BleBoxUpdateFirmware(WebEmSession & session, const request& req, Json::Value &root);
-	
+
 	void Cmd_GetTimerPlans(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_AddTimerPlan(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_UpdateTimerPlan(WebEmSession & session, const request& req, Json::Value &root);
@@ -314,6 +314,7 @@ private:
 	void RType_CreateEvohomeSensor(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_BindEvohome(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_CreateRFLinkDevice(WebEmSession & session, const request& req, Json::Value &root);
+	void RType_CreateITGWDevice(WebEmSession & session, const request& req, Json::Value &root);
 #ifdef WITH_OPENZWAVE
 	//ZWave
 	void Cmd_ZWaveUpdateNode(WebEmSession & session, const request& req, Json::Value &root);

@@ -177,6 +177,8 @@
 #define sSwitchTypeHRCMotor			0x6e
 #define sSwitchTypeVelleman			0x6f
 #define sSwitchTypeRFCustom			0x72
+#define sSwitchTypeInterTechno	0x73
+#define sSwitchTypeBrennenstuhl	0x74
 
 //Switch commands
 #define gswitch_sOff				0x00
