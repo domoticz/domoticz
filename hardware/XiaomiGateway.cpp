@@ -763,11 +763,13 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						std::string aqara_wireless1 = root2["channel_0"].asString();
 						std::string aqara_wireless2 = root2["channel_1"].asString();
 						bool on = false;
-						int level = 0;
+						int level = -1;
 						if ((status == "motion") || (status == "open") || (status == "no_close") || (status == "on") || (no_close != "")) {
+							level = 0;
 							on = true;
 						}
 						else if ((status == "no_motion") || (status == "close") || (status == "off") || (no_motion != "")) {
+							level = 0;
 							on = false;
 						}
 						else if ((status == "click") || (status == "flip90") || (aqara_wireless1 == "click")) {
@@ -823,8 +825,10 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							else {
 								if (model == "plug" || model == "ctrl_neutral1" || model == "ctrl_neutral2") {
 									sleep_milliseconds(100); //need to sleep here as the gateway will send 2 update messages, and need time for the database to update the state so that the event is not triggered twice
-								}								
-								m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, on, type, level, cmd);								
+								}
+								if (level > -1) { //this should stop false updates when empty 'data' is received
+									m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, on, type, level, cmd);
+								}																
 							}
 						}
 					}
