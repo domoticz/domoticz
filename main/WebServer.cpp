@@ -6529,7 +6529,7 @@ namespace http {
 				root["status"] = "OK";
 				root["title"] = "SetColBrightnessValue";
 			}
-			else if (cparam == "setkelvinlevel")
+			else if (cparam.find("setkelvinlevel") == 0)
 			{
 				root["status"] = "OK";
                 root["title"] = "Set Kelvin Level";
@@ -6546,7 +6546,13 @@ namespace http {
 				s_strid << idx;
 				s_strid >> ID;
 
-				m_mainworker.SwitchLight(ID, "Set Kelvin Level", 0, -1,false,0);
+				std::string kelvin = request::findValue(&req, "kelvin");
+
+				int ival;
+				//ival = atof(cparam.substr(14).c_str());
+				ival = atof(kelvin.c_str());
+
+				m_mainworker.SwitchLight(ID, "Set Kelvin Level", ival, -1,false,0);
 			}
 			else if (cparam == "brightnessup")
 			{

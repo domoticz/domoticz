@@ -1190,6 +1190,15 @@ define(['app'], function (app) {
 			});
 		}
 
+		appLampSetKelvin = function(kelvin)
+		{
+			$.ajax({
+				 url: "json.htm?type=command&param=setkelvinlevel&idx=" + $.devIdx + "&kelvin=" + kelvin,
+				 async: false,
+				 dataType: 'json'
+			});
+		}
+
 		appLampSpeedUp = function()
 		{
 			$.ajax({
@@ -1607,9 +1616,15 @@ define(['app'], function (app) {
 			$('#lightcontent #Brightness').val(100);
 			$('#lightcontent #Hue').val(128);
 
+//For later use with slider: chris
+//			var kelvin=100;
+//			$('#lightcontent #Temperature').val(75);
+//chris
+
 			$.bIsLED=(devsubtype.indexOf("RGB") >= 0);
 			$.bIsRGB=(devsubtype=="RGB");
 			$.bIsRGBW=(devsubtype.indexOf("RGBW") >= 0);
+			$.bIsRGBWW=(devsubtype.indexOf("RGBWW") >= 0);
 			$.bIsWhite=(devsubtype=="White");
 
 			if ($.bIsLED==true) {
@@ -1624,14 +1639,13 @@ define(['app'], function (app) {
 			else {
 				$("#lightcontent #optionsRGB").hide();
 			}
-			//if ($.bIsRGBWW==true || $.bIsRGBW==true){
 			if ($.bIsRGBWW==true){
 				$("#lightcontent #optionsRGBWW").show();
 			}
 			else {
 				$("#lightcontent #optionsRGBWW").hide();
 			}
-			if ($.bIsRGBW==true) {
+			if ($.bIsRGBW==true && $.bIsRGBWW==false) {
 				$("#lightcontent #optionsRGBW").show();
 			}
 			else {

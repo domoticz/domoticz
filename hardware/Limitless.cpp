@@ -568,13 +568,9 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				if (pLed->dunit == 5)
 					return false;
 				else {
-					//First send ON , sleep 100ms, then the command
-					pCMD = (unsigned char*)&V6_RGBWW_On;
-					pCMD[0x09] = pLed->dunit;
-					SendV6Command(pCMD);
-					sleep_milliseconds(50);
 
 					pCMD = (unsigned char*)&V6_RGBWW_SetKelvinLevel;
+					//pCMD[0x05] = tmpValue[0];
 					pCMD[0x05] = pLed->value;
 					pCMD[0x09] = pLed->dunit;
 				}
