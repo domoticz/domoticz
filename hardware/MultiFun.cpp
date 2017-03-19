@@ -578,10 +578,8 @@ int MultiFun::SendCommand(const unsigned char* cmd, const unsigned int cmdLength
 	m_socket->canRead(&bIsDataReadable, 3.0f);
 	if (bIsDataReadable)
 	{
-		if (memset(databuffer, 0, BUFFER_LENGHT) > 0)
-		{
-			ret = m_socket->read((char*)databuffer, BUFFER_LENGHT, false);
-		}
+		memset(databuffer, 0, BUFFER_LENGHT);
+		ret = m_socket->read((char*)databuffer, BUFFER_LENGHT, false);
 	}
 
 	if ((ret <= 0) || (ret >= BUFFER_LENGHT))
