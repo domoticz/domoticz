@@ -7189,20 +7189,6 @@ void CSQLHelper::UpdateDeviceValue(const char * FieldName , float Value , std::s
 	safe_query("UPDATE DeviceStatus SET %s=%4.2f , LastUpdate='%s' WHERE (ID == %s )",FieldName, Value ,GetCurrentAsciiTime ().c_str(),Idx.c_str());
 }
 
-std::string getSValuePart(std::string &sValue, unsigned int part )
-{
-  return getSValuePart(sValue.c_str(),  part );
-}
-std::string getSValuePart(const char * sValue, unsigned int part )
-{
-	std::vector<std::string> splitresults;
-	StringSplit(sValue, ";", splitresults);
-	if (part>=splitresults.size())
-      return 0;
-    else
-      return splitresults[part] ;
-}
-
 //return temperature value from Svalue : is code temperature;humidity;???
 float CSQLHelper::getTemperatureFromSValue(const char * sValue)
 {
