@@ -59,10 +59,14 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyUnicode_AsASCIIString, PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyUnicode_FromString, const char*);
 		DECLARE_PYTHON_SYMBOL(wchar_t*, PyUnicode_AsWideCharString, PyObject* COMMA Py_ssize_t*);
+		DECLARE_PYTHON_SYMBOL(const char*, PyUnicode_AsUTF8, PyObject*);
+		DECLARE_PYTHON_SYMBOL(PyObject*, PyUnicode_FromKindAndData, int COMMA const void* COMMA Py_ssize_t);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyLong_FromLong, long);
 		DECLARE_PYTHON_SYMBOL(PY_LONG_LONG, PyLong_AsLongLong, PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyModule_GetDict, PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyDict_New, );
+		DECLARE_PYTHON_SYMBOL(void, PyDict_Clear, PyObject *);
+		DECLARE_PYTHON_SYMBOL(Py_ssize_t, PyDict_Size, PyObject*);
 		DECLARE_PYTHON_SYMBOL(int, PyDict_SetItemString, PyObject* COMMA const char* COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(int, PyDict_SetItem, PyObject* COMMA PyObject* COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(int, PyDict_DelItem, PyObject* COMMA PyObject*);
@@ -140,10 +144,14 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyUnicode_AsASCIIString);
 					RESOLVE_PYTHON_SYMBOL(PyUnicode_FromString);
 					RESOLVE_PYTHON_SYMBOL(PyUnicode_AsWideCharString);
+					RESOLVE_PYTHON_SYMBOL(PyUnicode_AsUTF8);
+					RESOLVE_PYTHON_SYMBOL(PyUnicode_FromKindAndData);
 					RESOLVE_PYTHON_SYMBOL(PyLong_FromLong);
 					RESOLVE_PYTHON_SYMBOL(PyLong_AsLongLong);
 					RESOLVE_PYTHON_SYMBOL(PyModule_GetDict);
 					RESOLVE_PYTHON_SYMBOL(PyDict_New);
+					RESOLVE_PYTHON_SYMBOL(PyDict_Clear);
+					RESOLVE_PYTHON_SYMBOL(PyDict_Size);
 					RESOLVE_PYTHON_SYMBOL(PyDict_SetItemString);
 					RESOLVE_PYTHON_SYMBOL(PyDict_SetItem);
 					RESOLVE_PYTHON_SYMBOL(PyDict_DelItem);
@@ -284,10 +292,14 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyUnicode_FromString	pythonLib->PyUnicode_FromString
 #define PyUnicode_FromFormat	pythonLib->PyUnicode_FromFormat
 #define PyUnicode_AsWideCharString	pythonLib->PyUnicode_AsWideCharString
+#define PyUnicode_AsUTF8		pythonLib->PyUnicode_AsUTF8
+#define PyUnicode_FromKindAndData  pythonLib->PyUnicode_FromKindAndData
 #define PyLong_FromLong			pythonLib->PyLong_FromLong
 #define PyLong_AsLongLong		pythonLib->PyLong_AsLongLong
 #define PyModule_GetDict		pythonLib->PyModule_GetDict
 #define PyDict_New				pythonLib->PyDict_New
+#define PyDict_Clear			pythonLib->PyDict_Clear
+#define PyDict_Size				pythonLib->PyDict_Size
 #define PyDict_SetItemString	pythonLib->PyDict_SetItemString
 #define PyDict_SetItem			pythonLib->PyDict_SetItem
 #define PyDict_DelItem			pythonLib->PyDict_DelItem
