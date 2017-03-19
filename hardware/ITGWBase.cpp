@@ -15,7 +15,7 @@
 #include "itgw/ITGWSwitchIntertechno.h"
 #include "itgw/ITGWSwitchBrennenstuhl.h"
 
-
+#define _DEBUG
 #ifdef _DEBUG
 	#define ENABLE_LOGGING
 #endif
