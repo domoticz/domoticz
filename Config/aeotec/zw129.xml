@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-Aeotec ZW130 WallMote Quad, base on Engineering Spec 9/27/2016
+Aeotec ZW129 WallMote Duo, base on Engineering Spec 9/27/2016
 -->
 <Product xmlns='http://code.google.com/p/open-zwave/'>
     <!-- COMMAND_CLASS_BASIC -->
@@ -64,16 +64,12 @@ Aeotec ZW130 WallMote Quad, base on Engineering Spec 9/27/2016
     </CommandClass>
     <!-- Association Groups -->
     <CommandClass id="133">
-        <Associations num_groups="9">
+        <Associations num_groups="5">
             <Group index="1" max_associations="1" label="Lifeline"/>
             <Group index="2" max_associations="5" label="On/Off control via Button 1"/>
             <Group index="3" max_associations="5" label="Dimmer control via Button 1"/>
             <Group index="4" max_associations="5" label="On/Off control via Button 2"/>
             <Group index="5" max_associations="5" label="Dimmer control via Button 2"/>
-            <Group index="6" max_associations="5" label="On/Off control via Button 3"/>
-            <Group index="7" max_associations="5" label="Dimmer control via Button 3"/>
-            <Group index="8" max_associations="5" label="On/Off control via Button 4"/>
-            <Group index="9" max_associations="5" label="Dimmer control via Button 4"/>
         </Associations>
     </CommandClass>
     <!--<CommandClass id="142" ForceInstances="true"/>-->

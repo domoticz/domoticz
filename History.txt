@@ -36,6 +36,7 @@ Version 3.xxxx (January xth 2017)
 - Implemented: Support for Open Web Net
 - Implemented: Support for XiaomiGateway Gateway
 - Implemented: Support for YeeLight
+- Implemented: Support for Youless LS120
 - Implemented: Switch type 'Door Lock'
 - Implemented: Timer Plan editor
 - Implemented: Teleinfo : Added a switch indicating the current cost slot

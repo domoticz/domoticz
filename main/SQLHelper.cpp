@@ -2673,6 +2673,9 @@ void CSQLHelper::Do_Work()
 		std::vector<_tTaskItem>::iterator itt=_items2do.begin();
 		while (itt!=_items2do.end())
 		{
+			if (_log.isTraceEnable())	  
+						_log.Log(LOG_TRACE,"SQLH: Do Task ItemType:%d Cmd:%s Value:%s ",itt->_ItemType ,itt->_command.c_str() ,itt->_sValue.c_str() ); 
+
 			if (itt->_ItemType == TITEM_SWITCHCMD)
 			{
 				if (itt->_switchtype==STYPE_Motion)
@@ -2960,6 +2963,12 @@ std::vector<std::vector<std::string> > CSQLHelper::query(const std::string &szQu
 			}
 		}
 		sqlite3_finalize(statement);
+	}
+
+	if (_log.isTraceEnable()) {
+		_log.Log(LOG_TRACE, "SQLQ query : %s", szQuery.c_str());
+		if (!_log.TestFilter("SQLR"))	
+			LogQueryResult(results);
 	}
 
 	std::string error = sqlite3_errmsg(m_dbase);
@@ -3663,6 +3672,9 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 		CheckSceneStatusWithDevice(ulID);
 		break;
 	}
+
+	if (_log.isTraceEnable()) _log.Log(LOG_TRACE,"SQLH UpdateValueInt %s HwID:%d  DevID:%s Type:%d  sType:%d nValue:%d sValue:%s ", devname.c_str(),HardwareID, ID, devType, subType, nValue, sValue );
+
 	if (bDeviceUsed)
 		m_mainworker.m_eventsystem.ProcessDevice(HardwareID, ulID, unit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, 0);
 	return ulID;
@@ -3742,6 +3754,11 @@ void CSQLHelper::UpdatePreferencesVar(const std::string &Key, const std::string 
 {
 	UpdatePreferencesVar(Key, 0, sValue);
 }
+void CSQLHelper::UpdatePreferencesVar(const std::string &Key, const double Value)
+{
+	std::string sValue = boost::to_string(Value);
+	UpdatePreferencesVar(Key, 0, sValue);
+}
 
 void CSQLHelper::UpdatePreferencesVar(const std::string &Key, const int nValue)
 {
@@ -3786,6 +3803,18 @@ bool CSQLHelper::GetPreferencesVar(const std::string &Key, std::string &sValue)
 	return true;
 }
 
+bool CSQLHelper::GetPreferencesVar(const std::string &Key, double &Value)
+{
+	
+	std::string sValue;
+	int nValue;
+	Value = 0;
+	bool res = GetPreferencesVar(Key, nValue, sValue);
+	if (!res)
+		return false;
+	Value = atof(sValue.c_str());
+	return true;
+}
 bool CSQLHelper::GetPreferencesVar(const std::string &Key, int &nValue, std::string &sValue)
 {
 	if (!m_dbase)
@@ -3807,6 +3836,21 @@ bool CSQLHelper::GetPreferencesVar(const std::string &Key, int &nValue)
 	std::string sValue;
 	return GetPreferencesVar(Key, nValue, sValue);
 }
+void CSQLHelper::DeletePreferencesVar(const std::string Key )
+{
+  std::string sValue ;
+	if (!m_dbase)
+		return ;
+
+  //if found, delete
+  if ( GetPreferencesVar(Key,sValue)== true)
+  {
+	  TSqlQueryResult result;
+	  result = safe_query("DELETE FROM Preferences WHERE (Key='%q')",Key.c_str());
+  }
+}
+
+
 
 int CSQLHelper::GetLastBackupNo(const char *Key, int &nValue)
 {
@@ -6087,7 +6131,8 @@ void CSQLHelper::AddTaskItem(const _tTaskItem &tItem)
 	boost::lock_guard<boost::mutex> l(m_background_task_mutex);
 
 	// Check if an event for the same device is already in queue, and if so, replace it
-	// _log.Log(LOG_NORM, "Request to add task: idx=%" PRIu64 ", DelayTime=%d, Command='%s', Level=%d, Hue=%d, RelatedEvent='%s'", tItem._idx, tItem._DelayTime, tItem._command.c_str(), tItem._level, tItem._Hue, tItem._relatedEvent.c_str());
+	if (_log.isTraceEnable())
+	   _log.Log(LOG_TRACE, "SQLH AddTask: Request to add task: idx=%" PRIu64 ", DelayTime=%f, Command='%s', Level=%d, Hue=%d, RelatedEvent='%s'", tItem._idx, tItem._DelayTime, tItem._command.c_str(), tItem._level, tItem._Hue, tItem._relatedEvent.c_str());
 	// Remove any previous task linked to the same device
 
 	if (
@@ -6098,13 +6143,15 @@ void CSQLHelper::AddTaskItem(const _tTaskItem &tItem)
 		std::vector<_tTaskItem>::iterator itt = m_background_task_queue.begin();
 		while (itt != m_background_task_queue.end())
 		{
-			// _log.Log(LOG_NORM, "Comparing with item in queue: idx=%llu, DelayTime=%d, Command='%s', Level=%d, Hue=%d, RelatedEvent='%s'", itt->_idx, itt->_DelayTime, itt->_command.c_str(), itt->_level, itt->_Hue, itt->_relatedEvent.c_str());
+			if (_log.isTraceEnable())
+				 _log.Log(LOG_TRACE, "SQLH AddTask: Comparing with item in queue: idx=%llu, DelayTime=%d, Command='%s', Level=%d, Hue=%d, RelatedEvent='%s'", itt->_idx, itt->_DelayTime, itt->_command.c_str(), itt->_level, itt->_Hue, itt->_relatedEvent.c_str());
 			if (itt->_idx == tItem._idx && itt->_ItemType == tItem._ItemType)
 			{
 				float iDelayDiff = tItem._DelayTime - itt->_DelayTime;
 				if (iDelayDiff < (1./timer_resolution_hz/2))
 				{
-					// _log.Log(LOG_NORM, "=> Already present. Cancelling previous task item");
+					if (_log.isTraceEnable())
+						 _log.Log(LOG_TRACE, "SQLH AddTask: => Already present. Cancelling previous task item");
 					itt = m_background_task_queue.erase(itt);
 				}
 				else
@@ -6396,10 +6443,12 @@ void CSQLHelper::SetUnitsAndScale()
 
 bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string &OnAction, const std::string &OffAction)
 {
+	if (OnAction.size()<1)
+		return true;
+	if (_log.isTraceEnable()) _log.Log(LOG_TRACE,"SQLH HandleOnOffAction: %d OnAction:%s OffAction:%s",bIsOn, OnAction.c_str(),OffAction.c_str());
+
 	if (bIsOn)
 	{
-		if (OnAction.size()<1)
-			return true;
 		if ((OnAction.find("http://") != std::string::npos) || (OnAction.find("https://") != std::string::npos))
 		{
 			AddTaskItem(_tTaskItem::GetHTTPPage(0.2f, OnAction, "SwitchActionOn"));
@@ -6430,8 +6479,6 @@ bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string &OnAction
 	}
 	else
 	{
-		if (OffAction.size()<1)
-			return true;
 		if ((OffAction.find("http://") != std::string::npos) || (OffAction.find("https://") != std::string::npos))
 		{
 			AddTaskItem(_tTaskItem::GetHTTPPage(0.2f, OffAction, "SwitchActionOff"));
@@ -6561,7 +6608,7 @@ void CSQLHelper::CheckDeviceTimeout()
 //				"tm_min: %d, tm_sec: %d, tm_isdst: %d, bWhenIsGreater: %s, SensorTimeOut: %d",
 //				sd[2].c_str(), ltime.tm_year, ltime.tm_mon, ltime.tm_mday, ltime.tm_hour,
 //				ltime.tm_min, ltime.tm_sec, ltime.tm_isdst,	bWhenIsGreater ? "true" : "false", SensorTimeOut);
-			int diff = difftime(now,mktime(&ltime));
+			double diff = difftime(now,mktime(&ltime));
 			if ((diff > SensorTimeOut*60 && bWhenIsGreater)||
 				(diff < SensorTimeOut*60 && !bWhenIsGreater))
 			{
@@ -7120,6 +7167,66 @@ void CSQLHelper::AllowNewHardwareTimer(const int iTotMinutes)
 	_log.Log(LOG_STATUS, "New sensors allowed for %d minutes...", iTotMinutes);
 }
 
+std::string CSQLHelper::GetDeviceValue(const char * FieldName , const char *Idx )
+{	
+	TSqlQueryResult result = safe_query("SELECT %s from DeviceStatus WHERE (ID == %s )",FieldName, Idx );
+  if (result.size()>0)
+	  return  result[0][0];
+  else
+	  return  "";
+}
+
+void CSQLHelper::UpdateDeviceValue(const char * FieldName , std::string &Value , std::string &Idx )
+{	
+	safe_query("UPDATE DeviceStatus SET %s='%s' , LastUpdate='%s' WHERE (ID == %s )",FieldName, Value.c_str() ,GetCurrentAsciiTime ().c_str(),Idx.c_str());
+}
+void CSQLHelper::UpdateDeviceValue(const char * FieldName , int Value , std::string &Idx )
+{	
+	safe_query("UPDATE DeviceStatus SET %s=%d , LastUpdate='%s' WHERE (ID == %s )",FieldName, Value ,GetCurrentAsciiTime ().c_str(),Idx.c_str());
+}
+void CSQLHelper::UpdateDeviceValue(const char * FieldName , float Value , std::string &Idx )
+{	
+	safe_query("UPDATE DeviceStatus SET %s=%4.2f , LastUpdate='%s' WHERE (ID == %s )",FieldName, Value ,GetCurrentAsciiTime ().c_str(),Idx.c_str());
+}
+
+std::string getSValuePart(std::string &sValue, unsigned int part )
+{
+  return getSValuePart(sValue.c_str(),  part );
+}
+std::string getSValuePart(const char * sValue, unsigned int part )
+{
+	std::vector<std::string> splitresults;
+	StringSplit(sValue, ";", splitresults);
+	if (part>=splitresults.size())
+      return 0;
+    else
+      return splitresults[part] ;
+}
+
+//return temperature value from Svalue : is code temperature;humidity;???
+float CSQLHelper::getTemperatureFromSValue(const char * sValue)
+{
+	std::vector<std::string> splitresults;
+	StringSplit(sValue, ";", splitresults);
+	if (splitresults.size()<1)
+      return 0;
+    else
+      return (float)atof(splitresults[0].c_str());
+}
+void LogRow (TSqlRowQuery * row)
+{
+		std::string Row;
+		for (unsigned int j=0;j<(*row).size();j++)
+			Row = Row+(*row)[j]+";";
+    _log.Log(LOG_TRACE,"SQLR result: %s",Row.c_str());
+}
+void CSQLHelper::LogQueryResult (TSqlQueryResult &result)
+{
+	for (unsigned int i=0;i<result.size();i++)
+	{
+		LogRow( &result[i] );
+	}
+}
 bool CSQLHelper::InsertCustomIconFromZip(const std::string &szZip, std::string &ErrorMessage)
 {
 	//write file to disk
