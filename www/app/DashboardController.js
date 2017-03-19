@@ -558,7 +558,6 @@ define(['app'], function (app) {
 											if (typeof dslider != 'undefined') {
 												dslider.slider( "value", item.LevelInt+1 );
 											}
-
 										}
 										if ($(id + " #status").html()!=status) {
 											$(id + " #status").html(status);
@@ -889,7 +888,6 @@ define(['app'], function (app) {
 											var dslider=$(id + " #slider");
 											if (typeof dslider != 'undefined') {
 												dslider.slider( "value", item.LevelInt+1 );
-
 											}
 										}
 										if (item.SwitchType === "Selector") {
@@ -2256,7 +2254,6 @@ define(['app'], function (app) {
 										xhtm+='<td colspan="2" style="border:0px solid red; padding-top:10px; padding-bottom:10px;">';
 										xhtm+='<div style="margin-top: -11px; margin-left: 24px;" class="dimslider dimslidernorm" id="light_' + item.idx +'_slider" data-idx="' + item.idx + '" data-type="norm" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"></div>';
 										xhtm+='</td>';
-
 										xhtm+='</tr>';
 									}
 									else if (item.SwitchType == "TPI") {
