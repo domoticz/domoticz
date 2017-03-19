@@ -29,7 +29,7 @@ public:
 		WHO_SCENARIO_PROGRAMMING = 17,
 		WHO_ENERGY_MANAGEMENT = 18,
 		WHO_LIHGTING_MANAGEMENT = 24,
-		WHO_SCENARIO_SCHEDULER_BUTTONS = 25,
+		WHO_CEN_PLUS_DRY_CONTACT_IR_DETECTION = 25,
 		WHO_DIAGNOSTIC = 1000,
 		WHO_AUTOMATIC_DIAGNOSTIC = 1001,
 		WHO_THERMOREGULATION_DIAGNOSTIC_FAILURES = 1004,
@@ -50,6 +50,11 @@ public:
 	enum _eAuxiliaryWhat {
         AUXILIARY_WHAT_OFF = 0,
         AUXILIARY_WHAT_ON = 1
+	};
+
+	enum _eDryContactIrDetectionWhat {
+		DRY_CONTACT_IR_DETECTION_WHAT_ON = 31,
+		DRY_CONTACT_IR_DETECTION_WHAT_OFF = 32
 	};
 
 	enum _eArea {
@@ -111,11 +116,16 @@ protected:
 	bool FindDevice(int who, int where, int iInterface, int *used);
     void UpdateSwitch(const int who, const int where, const int Level, int iInterface, const int BatteryLevel,const char *devname, const int subtype);
     void UpdateBlinds(const int who, const int where, const int Command, int iInterface, const int BatteryLevel, const char *devname);
+    void UpdateAlarm(const int who, const int where, const int Command, const char *sCommand, int iInterface, const int BatteryLevel, const char *devname);
+		void UpdateSensorAlarm(const int who, const int where, const int Command, const char *sCommand, int iInterface, const int BatteryLevel, const char *devname);
+    void UpdateCenPlus(const int who, const int where, const int Command, const int iAppValue, int iInterface, const int BatteryLevel, const char *devname);
     void UpdateTemp(const int who, const int where, float fval, const int BatteryLevel, const char *devname);
     void UpdateDeviceValue(vector<bt_openwebnet>::iterator iter);
     void scan_automation_lighting(const int cen_area);
     void scan_temperature_control();
     void scan_device();
     void requestTime();
+    void setTime();
     void requestBurglarAlarmStatus();
+	void requestDryContactIRDetectionStatus();
 };

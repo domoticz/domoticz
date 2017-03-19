@@ -23,6 +23,7 @@ bool isInt(const std::string &s);
 void sleep_seconds(const long seconds);
 void sleep_milliseconds(const long milliseconds);
 
+int createdir(const char *szDirName, int secattr);
 int mkdir_deep(const char *szDirName, int secattr);
 
 double ConvertToCelsius(const double Fahrenheit);
@@ -31,6 +32,11 @@ double ConvertTemperature(const double tValue, const unsigned char tSign);
 
 std::vector<std::string> ExecuteCommandAndReturn(const std::string &szCommand);
 
+void DateAsciiTotmTime (std::string &sLastUpdate , struct tm &LastUpdateTime  );
+void AsciiTime (struct tm &ltime , char * pLastUpdate );
+std::string  GetCurrentAsciiTime ();
+void AsciiTime ( time_t DateStart, char * DateStr );
+time_t DateAsciiToTime_t ( std::string & DateStr );
 std::string GenerateMD5Hash(const std::string &InputString, const std::string &Salt="");
 
 void hue2rgb(const float hue, int &outR, int &outG, int &outB, const double maxValue = 100.0);
@@ -46,5 +52,11 @@ int MStoBeaufort(const float ms);
 struct dirent;
 bool dirent_is_directory(std::string dir, struct dirent *ent);
 bool dirent_is_file(std::string dir, struct dirent *ent);
+void DirectoryListing(std::vector<std::string>& entries, const std::string &dir, bool bInclDirs, bool bInclFiles);
 
 std::string GenerateUserAgent();
+std::string MakeHtml(const std::string &txt);
+
+#if defined WIN32
+	int gettimeofday(timeval * tp, void * tzp);
+#endif
