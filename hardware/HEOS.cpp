@@ -47,8 +47,7 @@ void CHEOS::ParseLine()
 		if (DEBUG_LOGGING) _log.Log(LOG_NORM, "DENON by HEOS: Handling message: '%s'.", sLine.c_str());
 		
 		bool bRetVal = jReader.parse(sLine, root);
-		
-		if (!bRetVal)
+		if ((!bRetVal) || (!root.isObject()))
 		{
 			_log.Log(LOG_ERROR, "DENON by HEOS: PARSE ERROR: '%s'", sLine.c_str());
 		}
@@ -706,11 +705,18 @@ bool CHEOS::WriteInt(const unsigned char *pData, const unsigned char Len)
 
 bool CHEOS::WriteInt(const std::string &sendStr)
 {
+	std::stringstream ssSend;
+	std::string	sSend;
+
 	if (!mIsConnected)
 	{
 		return false;
 	}
-	write((const unsigned char*)sendStr.c_str(), sendStr.size());
+		
+	ssSend << sendStr << "\r\n";
+	sSend = ssSend.str();
+	
+	write((const unsigned char*)sSend.c_str(), sSend.size());
 	return true;
 }
 
@@ -869,8 +875,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 			std::string hwid = request::findValue(&req, "idx");
 			std::string mode1 = request::findValue(&req, "mode1");

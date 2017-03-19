@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <Product xmlns='http://code.google.com/p/open-zwave/'>
-
+	<!--
+	Fibaro Motion Sensor FGMS-001
+	http://www.fibaro.com/manuals/en/Motion-Sensor/Motion-Sensor_EN_5.3.14.pdf
+	-->
   <!-- Configuration -->
   <CommandClass id="112">
     <Value type="byte" genre="config" instance="1" index="1" label="Motion sensor's sensitivity" min="0" max="255" value="10">
@@ -161,7 +164,7 @@
 	<Item label="Tamper + Cancellation + Orientation" value="3" />
 	<Item label="Vibration" value="4" />
     </Value>
-    <Value type="byte" genre="config" instance="1" index="26" label="Tamper alarm broadcast mode" min="0" max="1" value="0">
+    <Value type="list" genre="config" instance="1" index="26" label="Tamper alarm broadcast mode" min="0" max="1" value="0" size="1">
 	<Help>
 		The parameter determines whether the tamper alarm frame will or
 		will not be sent in broadcast mode. Alarm frames sent in broadcast

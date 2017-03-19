@@ -61,7 +61,16 @@ define(['app'], function (app) {
 					ShowNotify($.t('Please specify the base URL!...'), 3500, true);
 					return;
 				}
-				extraparams = "HTTPField1=" + HTTPField1 + "&HTTPField2=" + HTTPField2 + "&HTTPField3=" + HTTPField3 + "&HTTPField4=" + HTTPField4 + "&HTTPTo=" + HTTPTo + "&HTTPURL=" + HTTPURL + "&HTTPPostData=" + HTTPPostData + "&HTTPPostContentType=" + HTTPPostContentType + "&HTTPPostHeaders=" + HTTPPostHeaders;
+				extraparams =
+                    "HTTPField1=" + HTTPField1 +
+                    "&HTTPField2=" + HTTPField2 +
+                    "&HTTPField3=" + HTTPField3 +
+                    "&HTTPField4=" + HTTPField4 +
+                    "&HTTPTo=" + HTTPTo +
+                    "&HTTPURL=" + HTTPURL +
+                    "&HTTPPostData=" + HTTPPostData +
+                    "&HTTPPostContentType=" + HTTPPostContentType +
+                    "&HTTPPostHeaders=" + HTTPPostHeaders;
 				break;
 			case "prowl":
 				var ProwlAPI=encodeURIComponent($("#prowltable #ProwlAPI").val());
@@ -88,12 +97,13 @@ define(['app'], function (app) {
 				extraparams = "PushbulletAPI=" + PushbulletAPI;
 				break;
 			case "pushsafer":
-				var PushsaferAPI=encodeURIComponent($("#pushsafertable #PushsaferAPI").val());
+			    var PushsaferAPI = encodeURIComponent($("#pushsafertable #PushsaferAPI").val());
+			    var PushsaferImage = encodeURIComponent($("#pushsafertable #PushsaferImage").val());
 				if (PushsaferAPI=="") {
 					ShowNotify($.t('Please enter the API key!...'), 3500, true);
 					return;
 				}
-				extraparams = "PushsaferAPI=" + PushsaferAPI;
+				extraparams = "PushsaferAPI=" + PushsaferAPI + "&PushsaferImage=" + PushsaferImage;
 				break;				
 			case "pushover":
 				var POAPI=encodeURIComponent($("#pushovertable #PushoverAPI").val());
@@ -156,6 +166,8 @@ define(['app'], function (app) {
 					return;
 				}
 				extraparams = 'LmsPlayerMac=' + $("#lmstable #LmsPlayerMac").val() + '&LmsDuration=' + $("#lmstable #LmsDuration").val();
+				break;
+			case "gcm":
 				break;
 			default:
 				return;
@@ -237,6 +249,22 @@ define(['app'], function (app) {
 			 }
 		  });
 
+		  //Get Timer Plans
+		  $.ajax({
+			 url: "json.htm?type=command&param=gettimerplans",
+			 async: false,
+			 dataType: 'json',
+			 success: function(data) {
+				if (typeof data.result != 'undefined') {
+					$("#settingscontent #comboTimerplan").html("");
+					$.each(data.result, function(i,item) {
+						var option = $('<option />');
+						option.attr('value', item.idx).text(item.Name);
+						$("#settingscontent #comboTimerplan").append(option);
+					});
+				}
+			 }
+		  });
 
 		  $.ajax({
 			 url: "json.htm?type=settings",
@@ -269,8 +297,11 @@ define(['app'], function (app) {
   				$("#pushsafertable #PushsaferEnabled").prop('checked',data.PushsaferEnabled==1);
 			  }			  
 			  if (typeof data.PushsaferAPI != 'undefined') {
-				$("#pushsafertable #PushsaferAPI").val(data.PushsaferAPI);
-			  }			  
+			      $("#pushsafertable #PushsaferAPI").val(data.PushsaferAPI);
+			  }
+			  if (typeof data.PushsaferImage != 'undefined') {
+			      $("#pushsafertable #PushsaferImage").val(data.PushsaferImage);
+			  }
 			  if (typeof data.PushoverEnabled != 'undefined') {
   				$("#pushovertable #PushoverEnabled").prop('checked',data.PushoverEnabled==1);
 			  }
@@ -362,7 +393,9 @@ define(['app'], function (app) {
 			  if (typeof data.LmsDuration != 'undefined') {
 				$("#lmstable #LmsDuration").val(data.LmsDuration);
 			  }
-
+  			  if (typeof data.GCMEnabled != 'undefined') {
+  				$("#gcmtable #GCMEnabled").prop('checked',data.GCMEnabled==1);
+			  }
 			  if (typeof data.LightHistoryDays != 'undefined') {
 				$("#lightlogtable #LightHistoryDays").val(data.LightHistoryDays);
 			  }
@@ -539,6 +572,9 @@ define(['app'], function (app) {
 			  if (typeof data.DisableEventScriptSystem!= 'undefined') {
 				$("#eventsystemtable #DisableEventScriptSystem").prop('checked',data.DisableEventScriptSystem==1);
 			  }
+			  if (typeof data.LogEventScriptTrigger != 'undefined') {
+			    $("#eventsystemtable #LogEventScriptTrigger").prop('checked',data.LogEventScriptTrigger==1);
+			  }
 
 			  if (typeof data.FloorplanPopupDelay!= 'undefined') {
 				$("#floorplanoptionstable #FloorplanPopupDelay").val(data.FloorplanPopupDelay);
@@ -573,6 +609,16 @@ define(['app'], function (app) {
 			  }
 			  if (typeof data.SecOnDelay != 'undefined') {
 				$("#sectable #SecOnDelay").val(data.SecOnDelay);
+			  }
+			  if (typeof data.LogLevel != 'undefined') {
+  				$("#LogDebug #LogFilterTable #LogLevel").val(data.LogLevel);
+  				$("#LogDebug").show();
+			  }
+			  if (typeof data.LogFilter != 'undefined') {
+					$("#LogDebug #LogFilterTable #LogFilter").val(data.LogFilter);
+			  }
+			  if (typeof data.LogFileName != 'undefined') {
+					$("#LogDebug #LogFilterTable #LogFileName").val(data.LogFileName);
 			  }
 			  if (typeof data.cloudenabled != 'undefined') {
 				  if (!data.cloudenabled) {

@@ -587,7 +587,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 				if (ret==4)
 				{
 					long long t = (actload1+actload2+actload3)-m_lastloadcpu;
-					double cpuper=((t / ((acttime-m_lastquerytime) * HZ)) * 100)/double(m_totcpu);
+					double cpuper=((t / (difftime(acttime,m_lastquerytime) * HZ)) * 100)/double(m_totcpu);
 					if (cpuper>0)
 					{
 						sprintf(szTmp,"%.2f", cpuper);

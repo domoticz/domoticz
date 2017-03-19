@@ -7,6 +7,7 @@ class MySensorsBase : public CDomoticzHardwareBase
 {
 	friend class MySensorsSerial;
 	friend class MySensorsTCP;
+	friend class MySensorsMQTT;
 	friend class MQTT;
 public:
 	enum _eMessageType
@@ -153,7 +154,12 @@ public:
 		I_DISCOVER = 20,
 		I_DISCOVER_RESPONSE = 21,
 		I_HEARTBEAT_RESPONSE = 22,
-		I_LOCKED = 23					//!< Node is locked (reason in string-payload)
+		I_LOCKED = 23,					//!< Node is locked (reason in string-payload)
+		I_PING = 24,	//!< Ping sent to node, payload incremental hop counter
+		I_PONG = 25,	//!< In return to ping, sent back to sender, payload incremental hop counter
+		I_REGISTRATION_REQUEST = 26,	//!< Register request to GW
+		I_REGISTRATION_RESPONSE = 27,	//!< Register response from GW
+		I_DEBUG = 28	//!< Debug message
 	};
 
 	struct _tMySensorValue
@@ -162,13 +168,18 @@ public:
 		int intvalue;
 		bool bValidValue;
 		std::string stringValue;
+		bool bFloatValue;
+		bool bIntValue;
+		bool bStringValue;
 		time_t lastreceived;
-
 		_tMySensorValue()
 		{
 			floatValue = 0;
 			intvalue = 0;
 			bValidValue = false;
+			bFloatValue = false;
+			bIntValue = false;
+			bStringValue = false;
 			lastreceived = 0;
 		}
 	};
@@ -213,6 +224,33 @@ public:
 			}
 			return ret;
 		}
+		std::vector<std::string> GetChildValues()
+		{
+			std::vector<std::string> ret;
+			std::map<_eSetType, _tMySensorValue>::const_iterator itt;
+			for (itt = values.begin(); itt != values.end(); ++itt)
+			{
+				std::stringstream sstr;
+				if (itt->second.bFloatValue)
+				{
+					sstr << itt->second.floatValue;
+				}
+				else if (itt->second.bIntValue)
+				{
+					sstr << itt->second.intvalue;
+				}
+				else if (itt->second.bStringValue)
+				{
+					sstr << itt->second.stringValue;
+				}
+				else
+				{
+					sstr << "??";
+				}
+				ret.push_back(sstr.str());
+			}
+			return ret;
+		}
 		bool GetValue(const _eSetType vType, int &intValue)
 		{
 			std::map<_eSetType, _tMySensorValue>::const_iterator itt;
@@ -250,18 +288,21 @@ public:
 		{
 			values[vType].intvalue = intValue;
 			values[vType].bValidValue = true;
+			values[vType].bIntValue = true;
 			values[vType].lastreceived = time(NULL);
 		}
 		void SetValue(const _eSetType vType, const float floatValue)
 		{
 			values[vType].floatValue = floatValue;
 			values[vType].bValidValue = true;
+			values[vType].bFloatValue = true;
 			values[vType].lastreceived = time(NULL);
 		}
 		void SetValue(const _eSetType vType, const std::string &stringValue)
 		{
 			values[vType].stringValue = stringValue;
 			values[vType].bValidValue = true;
+			values[vType].bStringValue = true;
 			values[vType].lastreceived = time(NULL);
 		}
 	};

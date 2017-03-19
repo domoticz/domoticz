@@ -333,7 +333,6 @@
 	</div>
 	<input type="hidden" id="idx" name="idx" value="-1">
 </div>
-
 <div id="wakeonlan" style="display:none;">
 	<div class="page-header-small">
 		<table border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -381,7 +380,6 @@
 		</tr>
 	</table>
 </div>
-
 <div id="pinger" style="display:none;">
 	<div class="page-header-small">
 		<table border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -623,16 +621,24 @@
     </div>
     <table class="display" id="bleboxsettingstable" border="0" cellpadding="0" cellspacing="20">
         <tr>
-            <td align="right" style="width:110px"><label for="pollinterval"><span data-i18n="Poll Interval"></span>:</label></td>
+            <td align="right" style="width:170px"><label for="pollinterval"><span data-i18n="Poll Interval"></span>:</label></td>
             <td><input type="text" id="pollinterval" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;(<span data-i18n="Seconds">Seconds</span>)</td>
         </tr>
         <tr>
-            <td align="right" style="width:110px"><label for="pingtimeout"><span data-i18n="Ping Timeout"></span>:</label></td>
+            <td align="right" style="width:170px"><label for="pingtimeout"><span data-i18n="Ping Timeout"></span>:</label></td>
             <td><input type="text" id="pingtimeout" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;(<span data-i18n="Milliseconds"></span>)</td>
         </tr>
         <tr>
             <td></td>
             <td><a class="btn-danger sub-tabs-apply" onclick="SetBleBoxSettings();" data-i18n="Apply Settings">Apply Settings</a></td>
+        </tr>
+        <tr>
+            <td align="left" style="width:170px">
+                <a align="left" class="btnstyle3" id="autosearching" data-i18n="AutoSearching" onclick="BleBoxAutoSearchingNodes();">Auto Searching on:</a>
+            </td>
+            <td>
+                <input type="text" id="ipmask" style="width: 120px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+            </td>
         </tr>
     </table>
     <div class="page-header-small">
@@ -650,7 +656,10 @@
                 <th width="70" align="center" data-i18n="ID">ID</th>
                 <th width="250" align="left" data-i18n="Name">Name</th>
                 <th width="150" align="left" data-i18n="IP Address">IP Address</th>
-				<th align="left" data-i18n="Type">Type</th>
+				<th width="200" align="left" data-i18n="Type">Type</th>
+				<th width="100" align="left" data-i18n="Uptime">Uptime</th>
+				<th width="100" align="left" data-i18n="Hardware">Hardware</th>
+				<th align="left" data-i18n="Firmware">Firmware</th>
             </tr>
         </thead>
     </table>
@@ -659,7 +668,10 @@
         <tr>
             <td>
                 <a class="btnstyle3-dis" id="nodeupdate" data-i18n="Update">Update</a>&nbsp;&nbsp;&nbsp;
-                <a class="btnstyle3-dis" id="nodedelete" data-i18n="Delete">Delete</a>
+                <a class="btnstyle3-dis" id="nodedelete" data-i18n="Delete">Delete</a>&nbsp;&nbsp;&nbsp;
+            </td>
+            <td align="right" style="width:200px">
+                <a align="left" class="btnstyle3" id="updatefirmware" data-i18n="Update devices firmware" onclick="BleBoxUpdateFirmware();">Update devices firmware</a>
             </td>
             <td align="right">
                 <a class="btnstyle3" id="nodelistrefresh" data-i18n="Clear" onclick="BleBoxClearNodes();">Clear</a>
@@ -771,7 +783,7 @@
 			<td><input type="checkbox" id="HC" name="HC">&nbsp;<label for="HC">Home Confort</label></td>
 			<td><input type="checkbox" id="ImaginTronix" name="ImaginTronix">&nbsp;<label for="ImaginTronix">ImaginTronix</label></td>
 			<td><input type="checkbox" id="BlindT0" name="BlindT0">&nbsp;<label for="BlindT0">Blind T0</label></td>
-			<td><input type="checkbox" id="ATIremote" name="ATIremote">&nbsp;<label for="ATIremote">ATI remote</label></td>
+			<td><input type="checkbox" id="ATIremote" name="ATIremote">&nbsp;<label for="ATIremote">ATI/Cartelectronic</label></td>         
 		</tr>
 		<tr>
 			<td></td>
@@ -1008,10 +1020,17 @@
 	<form id="limitform">
 		<br>
 		<center>
+			<label><span data-i18n="Bridge Type"></span>: </label>
+			<select id="CCBridgeType" name="CCBridgeType" style="width:100px" class="combobox ui-corner-all">
+				<option value="0">V4/V5</option>
+				<option value="2">V6</option>
+			</select>
+			<br><br>
 			<label><span data-i18n="Type"></span>: </label><select id="combom1type" name="LimitlessType" style="width:100px" class="combobox ui-corner-all">
 				<option value="1">RGBW</option>
 				<option value="2">RGB</option>
 				<option value="3">White</option>
+				<option value="4">RGBWW</option>
 			</select>
 			<br><br>
 			<input type="hidden" id="idx" name="idx" value="-1">
@@ -1132,6 +1151,15 @@
 				</tr>
 			</table>
 		</div>
+		<div id="divi2caddress">
+			<br>
+			<table class="display" id="hardwareparami2caddress" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label id="lbli2caddress" for="name"><span data-i18n="I2C address"></span>I2C address:</label></td>
+					<td><input type="text" id="i2caddress" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+			</table>
+		</div>
     <div id="divbaudratemysensors">
       <table class="display" id="hardwareparamsbaudratemysensors" border="0" cellpadding="0" cellspacing="20">
         <tr>
@@ -1178,14 +1206,48 @@
 						<br />
 						<span data-i18n="Using CRC message validation prevents incorrect data from entering the Domoticz database.">Using CRC message validation prevents incorrect data from entering the Domoticz database.</span>
 						<br />
-						<strong><font class="warning-text"><span data-i18n="Should normally not be disabled!"></span>Should normally not be disabled!</font></strong>
+						<strong><font class="warning-text"><span data-i18n="Should normally not be disabled!"></span></font></strong>
 					</td>
+				</tr>
+			</table>
+		</div>
+    <div id="divratelimitp1">
+			<br>
+			<table class="display" id="hardwareparamsratelimitp1" border="0" cellpadding="0" cellspacing="20">
+				<tr valign="top">
+					<td align="right" style="width:110px"><label for="ratelimitp1"><span data-i18n="Rate Limit">Rate Limit</span>: </label></td>
+					<td><input type="text" id="ratelimitp1" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;<span data-i18n="(Seconds) 0 = Disabled">Seconds</span>
+            <br />
+						<span data-i18n="This limits the amount of meter updates.">This limits the amount of meter updates.</span>
+						<br />
+          </td>
 				</tr>
 			</table>
 		</div>
 		<div id="divhttppoller">
 			<br>
 			<table class="display" id="hardwareparamshttp" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label id="lblmethod" for="name"><span data-i18n="Method">Method</span>: </label></td>
+					<td>
+						<select id="combomethod" style="width:100px" class="combobox ui-corner-all">
+						<option value="0">GET</option>
+						<option value="1">POST</option>
+						</select>
+					</td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label id="lblcontenttype" for="name"><span data-i18n="ContentType">Content Type</span>: </label></td>
+					<td><input type="text" id="contenttype" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label id="lblheaders" for="name"><span data-i18n="Headers">Headers</span>: </label></td>
+					<td align="left"><textarea id="headers" name="Headers" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all"></textarea></td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px" id="divpostdatalabel"><label id="lblpostdata" for="name"><span data-i18n="PostData">POST Data</span>: </label></td>
+					<td align="left" id="divpostdatatextarea"><textarea id="postdata" name="POST DATA" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all"></textarea></td>
+				</tr>
 				<tr>
 					<td align="right" style="width:110px"><label><span data-i18n="URL"></span>:</label></td>
 					<td><input type="text" id="url" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
@@ -1209,6 +1271,32 @@
 				</tr>
 			</table>
 		</div>
+        <div id="divrelaynet">
+            <br>
+            <table class="display" id="hardwareparamsrelaynet" border="0" cellpadding="0" cellspacing="20">
+                <tr>
+                    <td align="right" style="width:110px"><label><span data-i18n="Poll inputs">Poll inputs</span>:</label></td>
+                    <td><input type="checkbox" id="relaynetpollinputs" checked></td>
+                </tr>
+                <tr>
+                    <td align="right" style="width:110px"><label><span data-i18n="Poll relays">Poll relays</span>:</label></td>
+                    <td><input type="checkbox" id="relaynetpollrelays" checked></td>
+                </tr>
+                <tr>
+                    <td align="right" style="width:110px"><label><span data-i18n="Poll interval">Poll interval</span>:</label></td>
+                    <td><input type="text" id="relaynetpollinterval" style="width: 25px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="5" /> &nbsp; Seconds </td>
+                </tr>
+                <tr>
+                    <td align="right" style="width:110px"><label><span data-i18n="Input count">Input count</span>:</label></td>
+                    <td><input type="text" id="relaynetinputcount" style="width: 15px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="8" /></td>
+                </tr>
+                <tr>
+                    <td align="right" style="width:110px"><label><span data-i18n="Relay count">Relay count</span>:</label></td>
+                    <td><input type="text" id="relaynetrelaycount" style="width: 15px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="8" /></td>
+                </tr>
+            </tr>
+            </table>
+        </div>
 		<div id="divunderground">
 			<br>
 			<table class="display" id="hardwareparamsunderground" border="0" cellpadding="0" cellspacing="20">
@@ -1225,14 +1313,6 @@
 		<div id="divsolaredgeapi">
 			<br>
 			<table class="display" id="hardwareparamssolaredgeapi" border="0" cellpadding="0" cellspacing="20">
-				<tr>
-					<td align="right" style="width:110px"><label><span data-i18n="SiteID">SiteID</span>:</label></td>
-					<td><input type="text" id="siteid" style="width: 170px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-				</tr>
-				<tr>
-					<td align="right" style="width:110px"><label><span data-i18n="Serial">Serial</span>:</label></td>
-					<td><input type="text" id="serial" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-				</tr>
 				<tr>
 					<td align="right" style="width:110px"><label><span data-i18n="API Key"></span>:</label></td>
 					<td><input type="text" id="apikey" style="width: 280px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
@@ -1278,7 +1358,11 @@
 			<table class="display" id="hardwareparamsphilipshue" border="0" cellpadding="0" cellspacing="20">
 				<tr>
 					<td align="right" style="width:110px"><label id="lblusername" for="name"><span data-i18n="Username"></span>:</label></td>
-					<td><input type="text" id="username" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+					<td>
+						<input type="text" id="username" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+						<br />
+						<span data-i18n="Leave the username empty and press the LINK button on the Philips Hue bridge. Then press the 'Register on Bridge' button.">Leave the username empty and press the LINK button on the Philips Hue bridge. Then press the 'Register on Bridge' button.</span>
+					</td>
 				</tr>
 				<tr>
 					<td></td>
@@ -1320,6 +1404,7 @@
                                 </tr>
                         </table>
                 </div>
+		<div id="divpythonplugin"/>
 		<div id="divmqtt">
 			<br>
 			<table class="display" id="hardwareparamsmqtt" border="0" cellpadding="0" cellspacing="20">
@@ -1341,6 +1426,14 @@
 						Note that <b>Hierarchical</b> only reports sensor updates for sensors that are placed on a floorplan/plan.
 					</td>
 				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label id="lbfilename" for="filename"><span data-i18n="CA Filename">CA Filename</span>:</label></td>
+					<td><input type="text" id="filename" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+			</table>
+		</div>
+		<div id="divmysensorsmqtt">
+			<table class="display" id="hardwareparamsmysensorsmqtt" border="0" cellpadding="0" cellspacing="20">
 				<tr>
 					<td align="right" style="width:110px"><label id="lbfilename" for="filename"><span data-i18n="CA Filename">CA Filename</span>:</label></td>
 					<td><input type="text" id="filename" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
@@ -1415,6 +1508,52 @@
 			</table>
 		</form>
 </div>
+<div id="dialog-addyeelight" title="Add YeeLight Light" style="display: none;">
+    <form>
+        <table border="0" cellpadding="0" cellspacing="10">
+            <tr>
+                <td align="right" style="width: 200px"><label for="name"><span data-i18n="Name"></span>:</label></td>
+                <td><input type="text" id="name" style="width: 240px; padding: .2em;" class="text ui-widget-content ui-corner-all"/></td>
+            </tr>
+            <tr>
+                <td align="right"><label for="ipaddress"><span data-i18n="IP Address"></span>:</label></td>
+                <td><input type="text" id="ipaddress" style="width: 140px; padding: .2em;" class="text ui-widget-content ui-corner-all"/></td>
+            </tr>
+            <tr>
+                <td align="right"><label for="lighttype"><span data-i18n="Light Type">Light Type</span>: </label></td>
+                <td>
+                    <select id="lighttype" style="width: 150px" class="combobox ui-corner-all">
+                        <option value="0" data-i18n="Mono">Mono</option>
+                        <option value="1" data-i18n="RGBW">RGBW</option>
+                    </select>
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+<div id="dialog-addArilux" title="Add Arilux AL-C0x controller" style="display:none;">
+    <form>
+        <table border="0" cellpadding="0" cellspacing="10">
+            <tr>
+                <td align="right" style="width:200px"><label for="name"><span data-i18n="Name"></span>:</label></td>
+                <td><input type="text" id="name" style="width: 240px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+            </tr>
+            <tr>
+                <td align="right"><label for="ipaddress"><span data-i18n="IP Address"></span>:</label></td>
+                <td><input type="text" id="ipaddress" style="width: 140px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+            </tr>
+            <tr>
+                <td align="right"><label for="lighttype"><span data-i18n="Light Type">Light Type</span>: </label></td>
+                <td>
+                    <select id="lighttype" style="width:150px" class="combobox ui-corner-all">
+                        <option value="0" data-i18n="Mono">RGB</option>
+                        <option value="1" data-i18n="RGBW">RGBW</option>
+                    </select>
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
 <div id="dialog-createevohomesensor" title="Create evohome device" style="display:none;">
 		<form>
 				<label for="sensortype"><span data-i18n="Devices"></span>: </label>
@@ -1456,4 +1595,3 @@
         </tr>
     </table>
 </div>
-    

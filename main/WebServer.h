@@ -53,7 +53,6 @@ public:
 	void SetRego6XXType(WebEmSession & session, const request& req, std::string & redirect_uri);
 	void SetS0MeterType(WebEmSession & session, const request& req, std::string & redirect_uri);
 	void SetLimitlessType(WebEmSession & session, const request& req, std::string & redirect_uri);
-	void SetYeelightType(WebEmSession & session, const request & req, std::string & redirect_uri);
 
 	void SetOpenThermSettings(WebEmSession & session, const request& req, std::string & redirect_uri);
 	void Cmd_SendOpenThermCommand(WebEmSession & session, const request& req, Json::Value &root);
@@ -62,6 +61,8 @@ public:
 	void RestoreDatabase(WebEmSession & session, const request& req, std::string & redirect_uri);
 	void SBFSpotImportOldData(WebEmSession & session, const request& req, std::string & redirect_uri);
 	void SetCurrentCostUSBType(WebEmSession & session, const request& req, std::string & redirect_uri);
+
+	void EventCreate(WebEmSession & session, const request& req, std::string & redirect_uri);
 
 	cWebem *m_pWebEm;
 
@@ -86,15 +87,18 @@ public:
 		const std::string &planID,
 		const std::string &floorID,
 		const bool bDisplayHidden,
+		const bool bDisplayDisabled,
 		const bool bFetchFavorites,
 		const time_t LastUpdate,
-		const std::string &username);
+		const std::string &username,
+		const std::string &hardwareid = ""); // OTO
 
 	// SessionStore interface
 	const WebEmStoredSession GetSession(const std::string & sessionId);
 	void StoreSession(const WebEmStoredSession & session);
 	void RemoveSession(const std::string & sessionId);
 	void CleanSessions();
+	void RemoveUsersSessions(const std::string& username, const WebEmSession & exceptSession);
 
 private:
 	void HandleCommand(const std::string &cparam, WebEmSession & session, const request& req, Json::Value &root);
@@ -143,6 +147,12 @@ private:
 	void Cmd_SaveFibaroLink(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DeleteFibaroLink(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetDevicesForFibaroLink(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_SaveInfluxLinkConfig(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_GetInfluxLinkConfig(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_GetInfluxLinks(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_SaveInfluxLink(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_DeleteInfluxLink(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_GetDevicesForInfluxLink(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetDeviceValueOptions(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetDeviceValueOptionWording(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DeleteUserVariable(WebEmSession & session, const request& req, Json::Value &root);
@@ -246,6 +256,8 @@ private:
 	void Cmd_DeleteMobileDevice(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_HEOSSetMode(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_HEOSMediaCommand(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_AddYeeLight(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_AddArilux(WebEmSession & session, const request& req, Json::Value &root);
 
 	void Cmd_BleBoxSetMode(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_BleBoxGetNodes(WebEmSession & session, const request& req, Json::Value &root);
@@ -253,6 +265,21 @@ private:
 	void Cmd_BleBoxUpdateNode(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_BleBoxRemoveNode(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_BleBoxClearNodes(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_BleBoxAutoSearchingNodes(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_BleBoxUpdateFirmware(WebEmSession & session, const request& req, Json::Value &root);
+	
+	void Cmd_GetTimerPlans(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_AddTimerPlan(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_UpdateTimerPlan(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_DeleteTimerPlan(WebEmSession & session, const request& req, Json::Value &root);
+
+	// Plugin functions
+	void Cmd_PluginCommand(WebEmSession & session, const request& req, Json::Value &root);
+	void PluginList(Json::Value &root);
+#ifdef USE_PYTHON_PLUGINS
+	void PluginLoadConfig();
+#endif
+	std::string PluginHardwareDesc(int HwdID);
 
 	//RTypes
 	void RType_HandleGraph(WebEmSession & session, const request& req, Json::Value &root);
@@ -323,6 +350,7 @@ private:
 	void ZWaveCPGetTopo(WebEmSession & session, const request& req, reply & rep);
 	void ZWaveCPGetStats(WebEmSession & session, const request& req, reply & rep);
 	void ZWaveCPSetGroup(WebEmSession & session, const request& req, reply & rep);
+	void ZWaveCPSceneCommand(WebEmSession & session, const request& req, reply & rep);
 	void Cmd_ZWaveSetUserCodeEnrollmentMode(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_ZWaveGetNodeUserCodes(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_ZWaveRemoveUserCode(WebEmSession & session, const request& req, Json::Value &root);

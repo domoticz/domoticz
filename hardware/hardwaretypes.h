@@ -31,6 +31,7 @@
 #define sTypeLimitlessRGBW		0x01
 #define sTypeLimitlessRGB		0x02
 #define sTypeLimitlessWhite		0x03
+#define sTypeLimitlessRGBWW		0x04
 
 #define pTypeThermostat			0xF2
 #define sTypeThermSetpoint		0x01
@@ -63,6 +64,7 @@
 #define sTypeKwh					0x1D
 #define sTypeWaterflow				0x1E
 #define sTypeCustom					0x1F
+#define sTypeZWaveAlarm				0x20
 
 //General Switch
 #define pTypeGeneralSwitch			0xF4
@@ -160,6 +162,21 @@
 #define sSwitchTypeSteffen			0x61
 #define sSwitchTypeAlectoSA			0x62
 #define sSwitchTypeGPIOset			0x63
+#define sSwitchLightT1				0x64
+#define sSwitchTypeKonigSec			0x65
+#define sSwitchTypeRM174RF			0x66
+#define sSwitchTypeLiwin			0x67
+#define sSwitchAuxiliaryT1			0x68
+#define sSwitchBlindsT2				0x69
+#define sSwitchLightT2				0x70
+#define sSwitchContactT1			0x71
+#define sSwitchTypeYW_Secu			0x6a
+#define sSwitchTypeMertik_GV60		0x6b
+#define sSwitchTypeNingbo64			0x6c
+#define sSwitchTypeX2D				0x6d
+#define sSwitchTypeHRCMotor			0x6e
+#define sSwitchTypeVelleman			0x6f
+#define sSwitchTypeRFCustom			0x72
 
 //Switch commands
 #define gswitch_sOff				0x00
@@ -223,6 +240,9 @@
 #define sTypeRego6XXStatus   0x02
 #define sTypeRego6XXCounter  0x03
 
+//RFY2 (protocol v2)
+#define sTypeRFY2			0xFE
+
 //types for evohome
 #define pTypeEvohome 0x45
 #define sTypeEvohome 0x00 //Controller
@@ -238,11 +258,6 @@
 
 //#define sTypeEvohomeOutside 0x30 //If connected
 //#define sTypeEvohomeStatus 0x40 //Not sure if we can do this in 1 sensor would be for things like zone valve status, boiler relay status (maybe OT values too) and comms errors (maybe seperature sensor or switch for each is easiest)
-
-//types for Yeelight
-#define pTypeYeelight	0x61
-#define sTypeYeelightColor	0x00
-#define sTypeYeelightWhite	0x01
 
 typedef struct _tThermostat {
 	uint8_t len;
@@ -467,7 +482,7 @@ typedef struct _tLimitlessLights {
 	uint8_t type;
 	uint8_t subtype;
 	uint32_t id;
-	uint8_t dunit; //0=All, 1=Group1,2=Group2,3=Group3,4=Group4
+	uint8_t dunit; //0=All, 1=Group1,2=Group2,3=Group3,4=Group4, 5=IboxLed
 	uint8_t command;
 	uint8_t value;
 	_tLimitlessLights()
@@ -506,51 +521,16 @@ typedef struct _tLimitlessLights {
 #define Limitless_FullBrightness 21
 #define Limitless_DiscoSpeedFasterLong 22 //exclude RGB
 #define Limitless_SetHEXColour 23
+#define Limitless_DiscoMode_1 24
+#define Limitless_DiscoMode_2 25
+#define Limitless_DiscoMode_3 26
+#define Limitless_DiscoMode_4 27
+#define Limitless_DiscoMode_5 28
+#define Limitless_DiscoMode_6 29
+#define Limitless_DiscoMode_7 30
+#define Limitless_DiscoMode_8 31
+#define Limitless_DiscoMode_9 32
 
-typedef struct _tYeelight {
-	uint8_t len;
-	uint8_t type;
-	uint8_t subtype;
-	uint32_t id;
-	uint8_t dunit;
-	uint8_t command;
-	uint8_t value;
-	_tYeelight()
-	{
-		id = 1;
-		dunit = 1;
-		len = sizeof(_tYeelight) - 1;
-		type = pTypeYeelight;
-		subtype = sTypeYeelightColor;
-		command = 0;
-		value = 0;
-	}
-} _tYeelight;
-
-#define Yeelight_LedOff 0
-#define Yeelight_LedOn 1
-#define Yeelight_LedNight 2
-#define Yeelight_LedFull 3
-#define Yeelight_BrightnessUp 4
-#define Yeelight_BrightnessDown 5
-#define Yeelight_ColorTempUp 6
-#define Yeelight_ColorTempDown 7
-#define Yeelight_RGBDiscoNext 8
-#define Yeelight_RGBDiscoPrevious 9
-#define Yeelight_SetRGBColour 10
-#define Yeelight_DiscoSpeedSlower 11
-#define Yeelight_DiscoSpeedFaster 12
-#define Yeelight_DiscoMode 13
-#define Yeelight_SetColorToWhite 14
-#define Yeelight_SetBrightnessLevel 15
-#define Yeelight_SetBrightUp 16
-#define Yeelight_SetBrightDown 17
-#define Yeelight_WarmWhiteIncrease 18
-#define Yeelight_CoolWhiteIncrease 19
-#define Yeelight_NightMode 20
-#define Yeelight_FullBrightness 21
-#define Yeelight_DiscoSpeedFasterLong 22
-#define Yeelight_SetHEXColour 23
 
 typedef union tREVOBUF {
 	struct _tEVOHOME1 {

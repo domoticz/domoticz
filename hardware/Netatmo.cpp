@@ -12,7 +12,7 @@
 #define round(a) ( int ) ( a + .5 )
 
 #ifdef _DEBUG
-//	#define DEBUG_NetatmoWeatherStationR
+	//#define DEBUG_NetatmoWeatherStationR
 #endif
 
 #ifdef DEBUG_NetatmoWeatherStationW
@@ -62,6 +62,7 @@ m_clientSecret("6vIpQVjNsL2A74Bd8tINscklLw2LKv7NhE9uW2")
 {
 	m_nextRefreshTs = mytime(NULL);
 	m_isLogged = false;
+	m_bIsHomeCoach = false;
 
 	m_HwdID=ID;
 
@@ -87,6 +88,7 @@ void CNetatmo::Init()
 	m_bFirstTimeThermostat = true;
 	m_bFirstTimeWeatherData = true;
 	m_bForceSetpointUpdate=false;
+	m_bIsHomeCoach = false;
 }
 
 bool CNetatmo::StartHardware()
@@ -246,7 +248,7 @@ bool CNetatmo::Login()
 	sstr << "client_secret=" << m_clientSecret << "&";
 	sstr << "username=" << m_username << "&";
 	sstr << "password=" << m_password << "&";
-	sstr << "scope=read_station read_thermostat write_thermostat";
+	sstr << "scope=read_station read_thermostat write_thermostat read_homecoach";
 
 	std::string httpData = sstr.str();
 	std::vector<std::string> ExtraHeaders;
@@ -266,7 +268,7 @@ bool CNetatmo::Login()
 	Json::Value root;
 	Json::Reader jReader;
 	ret = jReader.parse(sResult, root);
-	if (!ret)
+	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "Netatmo: Invalid/no data received...");
 		return false;
@@ -286,6 +288,7 @@ bool CNetatmo::Login()
 	int expires = root["expires_in"].asInt();
 	m_nextRefreshTs = mytime(NULL) + expires;
 	StoreRefreshToken();
+	m_isLogged = true;
 	return true;
 }
 
@@ -328,7 +331,7 @@ bool CNetatmo::RefreshToken(const bool bForce)
 	Json::Value root;
 	Json::Reader jReader;
 	ret = jReader.parse(sResult, root);
-	if (!ret)
+	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "Netatmo: Invalid/no data received...");
 		//Force login next time
@@ -733,8 +736,22 @@ void CNetatmo::SetSetpoint(const int idx, const float temp)
 		tempDest = (tempDest - 32.0f) / 1.8f;
 	}
 
-	time_t end_time = time(NULL);
-	end_time += 3600; //One hour
+	time_t now = mytime(NULL);
+	struct tm etime;
+	localtime_r(&now, &etime);
+	time_t end_time;
+	int isdst = etime.tm_isdst;
+	bool goodtime = false;
+	while (!goodtime) {
+		etime.tm_isdst = isdst;
+		etime.tm_hour += 1;
+		end_time = mktime(&etime);
+		goodtime = (etime.tm_isdst == isdst);
+		isdst = etime.tm_isdst;
+		if (!goodtime) {
+			localtime_r(&now, &etime);
+		}
+	}
 
 	std::stringstream sstr;
 	sstr << "access_token=" << m_accessToken;
@@ -764,7 +781,7 @@ bool CNetatmo::ParseNetatmoGetResponse(const std::string &sResult, const bool bI
 	Json::Value root;
 	Json::Reader jReader;
 	bool ret = jReader.parse(sResult, root);
-	if (!ret)
+	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_STATUS, "Netatmo: Invalid data received...");
 		return false;
@@ -784,7 +801,7 @@ bool CNetatmo::ParseNetatmoGetResponse(const std::string &sResult, const bool bI
 	}
 	if (!bHaveDevices)
 	{
-		if ((!bIsThermostat)&&(m_bPollWeatherData))
+		if ((!bIsThermostat) && (!m_bFirstTimeWeatherData) && (m_bPollWeatherData))
 		{
 			//Do not warn if we check if we have a Thermostat device
 			_log.Log(LOG_STATUS, "Netatmo: No Weather Station devices found...");
@@ -803,7 +820,11 @@ bool CNetatmo::ParseNetatmoGetResponse(const std::string &sResult, const bool bI
 			std::string id = device["_id"].asString();
 			std::string type = device["type"].asString();
 			std::string name = device["module_name"].asString();
-			std::string station_name = device["station_name"].asString();
+			std::string station_name;
+			if (!device["station_name"].empty())
+				station_name = device["station_name"].asString();
+			else if (!device["name"].empty())
+				station_name = device["name"].asString();
 
 			stdreplace(name, "'", "");
 			stdreplace(station_name, "'", "");
@@ -973,18 +994,28 @@ bool CNetatmo::ParseNetatmoGetResponse(const std::string &sResult, const bool bI
 	return (!_netatmo_devices.empty());
 }
 
+std::string CNetatmo::MakeRequestURL(const bool bIsHomeCoach)
+{
+	std::stringstream sstr;
+	//	sstr2 << "https://api.netatmo.net/api/devicelist";
+	if (bIsHomeCoach)
+		sstr << "https://api.netatmo.net/api/gethomecoachsdata";
+	else
+		sstr << "https://api.netatmo.net/api/getstationsdata";
+
+
+	sstr << "?";
+	sstr << "access_token=" << m_accessToken;
+	sstr << "&" << "get_favorites=" << "true";
+	return sstr.str();
+}
+
 void CNetatmo::GetMeterDetails()
 {
 	if (!m_isLogged)
 		return;
 
-	std::stringstream sstr2;
-//	sstr2 << "https://api.netatmo.net/api/devicelist";
-	sstr2 << "https://api.netatmo.net/api/getstationsdata";
-	sstr2 << "?";
-	sstr2 << "access_token=" << m_accessToken;
-	sstr2 << "&" << "get_favorites=" << "true";
-	std::string httpUrl = sstr2.str();
+	std::string httpUrl = MakeRequestURL(m_bIsHomeCoach);
 
 	std::vector<std::string> ExtraHeaders;
 	std::string sResult;
@@ -997,25 +1028,73 @@ void CNetatmo::GetMeterDetails()
 	bool ret=HTTPClient::GET(httpUrl, ExtraHeaders, sResult);
 	if (!ret)
 	{
-		_log.Log(LOG_STATUS, "Netatmo: Error connecting to Server...");
+		_log.Log(LOG_ERROR, "Netatmo: Error connecting to Server...");
 		return;
 	}
 #endif
 #ifdef DEBUG_NetatmoWeatherStationW
 	SaveString2Disk(sResult, "E:\\netatmo_getstationdata.json");
 #endif
+
+	//Check for error
+	Json::Value root;
+	Json::Reader jReader;
+	bool bRet = jReader.parse(sResult, root);
+	if ((!bRet) || (!root.isObject()))
+	{
+		_log.Log(LOG_ERROR, "Netatmo: Invalid data received...");
+		return;
+	}
+
+	if (!root["error"].empty())
+	{
+		//We received an error
+		_log.Log(LOG_ERROR, "Netatmo: %s", root["error"]["message"].asString().c_str());
+		m_isLogged = false;
+		return;
+	}
+
 	if (!ParseNetatmoGetResponse(sResult, false))
 	{
 		if (m_bFirstTimeWeatherData)
 		{
 			m_bFirstTimeWeatherData = false;
-			m_bPollWeatherData = false;
+			//Check if the user has an Home Coach device
+			httpUrl = MakeRequestURL(true);
+			bool ret = HTTPClient::GET(httpUrl, ExtraHeaders, sResult);
+			if (!ret)
+			{
+				_log.Log(LOG_ERROR, "Netatmo: Error connecting to Server...");
+				return;
+			}
+			bool bRet = jReader.parse(sResult, root);
+			if ((!bRet) || (!root.isObject()))
+			{
+				_log.Log(LOG_ERROR, "Netatmo: Invalid data received...");
+				return;
+			}
+			if (!root["error"].empty())
+			{
+				//We received an error
+				_log.Log(LOG_ERROR, "Netatmo: %s", root["error"]["message"].asString().c_str());
+				m_isLogged = false;
+				return;
+			}
+			m_bIsHomeCoach = ParseNetatmoGetResponse(sResult, false);
+			if (!m_bIsHomeCoach)
+			{
+				m_bPollWeatherData = false;
+			}
 		}
 	}
+	m_bFirstTimeWeatherData = false;
 }
 
 void CNetatmo::GetThermostatDetails()
 {
+	if (!m_isLogged)
+		return;
+
 	std::stringstream sstr2;
 	sstr2 << "https://api.netatmo.net/api/getthermostatsdata";
 	sstr2 << "?";

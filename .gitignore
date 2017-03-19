@@ -29,3 +29,8 @@ domocookie.txt
 domoticz.exe
 /Config/zwcfg_*.xml
 /makebetarob
+/plugins/manifest.xml
+install_manifest.txt
+.project
+.cproject
+.settings/

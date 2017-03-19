@@ -97,6 +97,55 @@ unsigned char GetIndexFromAlarm(const std::string &sLabel)
 	return 0;
 }
 
+enum _eAlarm_Types
+{
+	Alarm_General = 0,
+	Alarm_Smoke,
+	Alarm_CarbonMonoxide,
+	Alarm_CarbonDioxide,
+	Alarm_Heat,
+	Alarm_Flood,
+	Alarm_Access_Control,
+	Alarm_Burglar,
+	Alarm_Power_Management,
+	Alarm_System,
+	Alarm_Emergency,
+	Alarm_Clock,
+	Alarm_Appliance,
+	Alarm_HomeHealth,
+	Alarm_Count
+};
+
+static const _tAlarmNameToIndexMapping AlarmTypeToIndexMapping[] = {
+	{ "General",			Alarm_General },
+	{ "Smoke",				Alarm_Smoke },
+	{ "Carbon Monoxide",	Alarm_CarbonMonoxide },
+	{ "Carbon Dioxide",		Alarm_CarbonDioxide },
+	{ "Heat",				Alarm_Heat },
+	{ "Flood",				Alarm_Flood },
+	{ "Access Control",		Alarm_Access_Control },
+	{ "Burglar",			Alarm_Burglar },
+	{ "Power Management",	Alarm_Power_Management },
+	{ "System",				Alarm_System },
+	{ "Emergency",			Alarm_Emergency },
+	{ "Clock",				Alarm_Clock },
+	{ "Appliance",			Alarm_Appliance },
+	{ "HomeHealth",			Alarm_HomeHealth },
+	{ "", 0 }
+};
+
+unsigned char GetIndexFromAlarmType(const std::string &sLabel)
+{
+	int ii = 0;
+	while (!AlarmTypeToIndexMapping[ii].sLabel.empty())
+	{
+		if (AlarmTypeToIndexMapping[ii].sLabel == sLabel)
+			return AlarmTypeToIndexMapping[ii].iIndex;
+		ii++;
+	}
+	return -1;
+}
+
 #pragma warning(disable: 4996)
 
 extern std::string szStartupFolder;
@@ -365,7 +414,8 @@ unsigned char COpenZWave::GetInstanceFromValueID(const OpenZWave::ValueID &vID)
 		(commandClass == COMMAND_CLASS_MULTI_INSTANCE) ||
 		(commandClass == COMMAND_CLASS_SENSOR_MULTILEVEL) ||
 		(commandClass == COMMAND_CLASS_THERMOSTAT_SETPOINT) ||
-		(commandClass == COMMAND_CLASS_SENSOR_BINARY)
+		(commandClass == COMMAND_CLASS_SENSOR_BINARY) ||
+		(commandClass == COMMAND_CLASS_CENTRAL_SCENE)
 		)
 	{
 		instance = vIndex;
@@ -497,7 +547,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		nodeInfo.tMode = -1;
 		nodeInfo.tFanMode = -1;
 
-		nodeInfo.m_LastAlarmTypeReceived = -1;
+		m_LastAlarmTypeReceived = -1;
 
 		if ((_homeID == m_controllerID) && (_nodeID == m_controllerNodeId))
 			nodeInfo.eState = NSTATE_AWAKE;	//controller is always awake
@@ -948,6 +998,7 @@ void COpenZWave::EnableDisableDebug()
 
 bool COpenZWave::OpenSerialConnector()
 {
+	m_LastAlarmTypeReceived = -1;
 	_log.Log(LOG_STATUS, "OpenZWave: Starting...");
 	_log.Log(LOG_STATUS, "OpenZWave: Version: %s", GetVersionLong().c_str());
 
@@ -1245,7 +1296,7 @@ bool COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 	bool bHandleAsBinary = false;
 	if ((value == 0) || (value == 255))
 	{
-		if (pDevice->Manufacturer_id == 0x010f) 
+		if (pDevice->Manufacturer_id == 0x010f)
 		{
 			if (
 				((pDevice->Product_id == 0x1000) && (pDevice->Product_type == 0x0203)) ||
@@ -1544,6 +1595,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 	int iValue = 0;
 	bool bValue = false;
 	unsigned char byteValue = 0;
+	int32 intValue = 0;
 
 	// We choose SwitchMultilevel first, if not available, SwhichBinary is chosen
 	if (commandclass == COMMAND_CLASS_SWITCH_BINARY)
@@ -2205,6 +2257,15 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 		//Ignore this class, we can make our own schedule with timers
 		//_log.Log(LOG_STATUS, "OpenZWave: Unhandled class: 0x%02X (%s), NodeID: %d (0x%02x), Index: %d, Instance: %d", commandclass, cclassStr(commandclass), NodeID, NodeID, vOrgIndex, vOrgInstance);
 	}
+	else if (commandclass == COMMAND_CLASS_CENTRAL_SCENE)
+	{
+		if (vType == OpenZWave::ValueID::ValueType_Int)
+		{
+			_device.devType = ZDTYPE_CENTRAL_SCENE;
+			_device.intvalue = 0;
+			InsertDevice(_device);
+		}
+	}
 	else if (commandclass == COMMAND_CLASS_DOOR_LOCK)
 	{
 		if (
@@ -2399,6 +2460,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 	int iValue = 0;
 	bool bValue = false;
 	unsigned char byteValue = 0;
+	int32 intValue = 0;
 	std::string strValue = "";
 	int32 lValue = 0;
 
@@ -2415,6 +2477,11 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 	else if (vType == OpenZWave::ValueID::ValueType_Byte)
 	{
 		if (m_pManager->GetValueAsByte(vID, &byteValue) == false)
+			return;
+	}
+	else if (vType == OpenZWave::ValueID::ValueType_Int)
+	{
+		if (m_pManager->GetValueAsInt(vID, &intValue) == false)
 			return;
 	}
 	else if ((vType == OpenZWave::ValueID::ValueType_Raw) || (vType == OpenZWave::ValueID::ValueType_String))
@@ -2466,20 +2533,6 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 		instance = GetIndexFromAlarm(vLabel);
 		if (instance == 0)
 			return;
-		if (vLabel == "Alarm Level")
-		{
-			//Alarm Level
-			if (byteValue == 0)
-			{
-				//Secure
-				_log.Log(LOG_STATUS, "OpenZWave: Alarm Level: Secure");
-			}
-			else
-			{
-				//Tamper
-				_log.Log(LOG_STATUS, "OpenZWave: Alarm Level: Tamper");
-			}
-		}
 	}
 
 	time_t atime = mytime(NULL);
@@ -2669,7 +2722,40 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 		}
 	}
 	if (pDevice == NULL)
-		return;
+	{
+		//ignore the following command classes as they are not used in Domoticz at the moment
+		if (
+			(commandclass == COMMAND_CLASS_CLIMATE_CONTROL_SCHEDULE)
+			)
+		{
+			return;
+		}
+
+		//New device, let's add it
+		COpenZWave::NodeInfo *pNode = GetNodeInfo(HomeID, NodeID);
+		if (!pNode)
+			return;
+
+		AddValue(vID, pNode);
+		for (itt = m_devices.begin(); itt != m_devices.end(); ++itt)
+		{
+			std::string dstring = itt->second.string_id;
+			if (dstring == path) {
+				pDevice = &itt->second;
+				break;
+			}
+			else {
+				size_t loc = dstring.find(path_plus);
+				if (loc != std::string::npos)
+				{
+					pDevice = &itt->second;
+					break;
+				}
+			}
+		}
+		if (pDevice == NULL)
+			return;
+	}
 
 	pDevice->bValidValue = true;
 	pDevice->orgInstanceID = vOrgInstance;
@@ -2735,113 +2821,120 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 
 			if (vLabel == "Alarm Type")
 			{
-				NodeInfo *pNode = GetNodeInfo(HomeID, NodeID);
-				if (pNode)
+				if (byteValue != 0)
 				{
-					if (byteValue != 0)
-					{
-						pNode->m_LastAlarmTypeReceived = byteValue;
-					}
+					m_LastAlarmTypeReceived = byteValue;
 				}
+				else
+					m_LastAlarmTypeReceived = -1;
 			}
 			else if (vLabel == "Alarm Level")
 			{
-				NodeInfo *pNode = GetNodeInfo(HomeID, NodeID);
-				if (pNode)
-				{
-					if (pNode->m_LastAlarmTypeReceived != -1)
-					{
-						//Until we figured out what types/levels we have, we create a switch for each of them
-						char szDeviceName[50];
-						sprintf(szDeviceName, "Alarm Type: 0x%02X", pNode->m_LastAlarmTypeReceived);
-						std::string tmpstr = szDeviceName;
-						SendSwitch(NodeID, pNode->m_LastAlarmTypeReceived, pDevice->batValue, (byteValue != 0) ? true : false, 0, tmpstr);
-						pNode->m_LastAlarmTypeReceived = -1;
-					}
-				}
-			}
-			else if (
-				vLabel == "Carbon Monoxide" ||
-				vLabel == "Carbon Dioxide" ||
-				vLabel == "Heat" ||
-				vLabel == "Flood" ||
-				vLabel == "Burglar" ||
-				vLabel == "System" ||
-				vLabel == "Emergency" ||
-				vLabel == "Clock" ||
-				vLabel == "Appliance" ||
-				vLabel == "HomeHealth"
-				)
-			{
-				switch (byteValue) {
-				case 0x00: 	// Previous Events cleared
-				case 0xfe:	// Unkown event; returned when retrieving the current state.
-					intValue = 0;
-					break;
-				default:	// all others, interpret as alarm
-					intValue = 255;
-					break;
-				}
-			}
-			else if (vLabel == "Smoke")
-			{
-				switch (byteValue) {
-				case 0x00: 	// Previous Events cleared
-				case 0xfe:	// Unkown event; returned when retrieving the current state.
-					intValue = 0;
-					break;
-
-				case 0x03: 	// Smoke Alarm Test
-				default:	// all others, interpret as alarm
-					intValue = 255;
-					break;
-				}
-			}
-			else if (vLabel == "Access Control")
-			{
-				switch (byteValue) {
-				case 0x00: 	// Previous Events cleared
-				case 0x17: 	// Door closed
-				case 0xfe:	// Unkown event; returned when retrieving the current state.
-					intValue = 0;
-					break;
-
-				case 0x16: 	// Door open
-				default:	// all others, interpret as alarm
-					intValue = 255;
-					break;
-				}
-			}
-			else if (vLabel == "Power Management")
-			{
-				switch (byteValue) {
-				case 0x00: 	// Previous Events cleared
-				case 0xfe:	// Unkown event; returned when retrieving the current state.
-					intValue = 0;
-					break;
-
-				case 0x0a:	// Replace battery soon
-				case 0x0b:	// Replace battery now
-				case 0x0e:	// Charge battery soon
-				case 0x0f:	// Charge battery now!
-					if (pDevice->hasBattery) {
-						pDevice->batValue = 0; // signal battery needs attention ?!?
-					}
-					// fall through by intent
-				default:	// all others, interpret as alarm
-					intValue = 255;
-					break;
-				}
-			}
-			else if ((vLabel != "Alarm Type") && (vLabel != "Alarm Level"))
-			{
-				if (byteValue != 0)
+				if (m_LastAlarmTypeReceived != -1)
 				{
 					//Until we figured out what types/levels we have, we create a switch for each of them
-					char szDeviceName[100];
-					sprintf(szDeviceName, "Alarm Type: 0x%02X (%s)", byteValue, vLabel.c_str());
+					char szDeviceName[50];
+					sprintf(szDeviceName, "Alarm Type: 0x%02X", m_LastAlarmTypeReceived);
 					std::string tmpstr = szDeviceName;
-					SendSwitch(NodeID, byteValue, pDevice->batValue, true, 0, tmpstr);
+					SendSwitch(NodeID, m_LastAlarmTypeReceived, pDevice->batValue, (byteValue != 0) ? true : false, 0, tmpstr);
+					m_LastAlarmTypeReceived = -1;
+				}
+			}
+			else
+			{
+				int typeIndex = GetIndexFromAlarmType(vLabel);
+				if (typeIndex > 0) //don't include reserver(0) type
+				{
+					char szTmp[100];
+					sprintf(szTmp, "Alarm Type: %s %d (0x%02X)", vLabel.c_str(), typeIndex, typeIndex);
+					SendZWaveAlarmSensor(pDevice->nodeID, pDevice->instanceID, pDevice->batValue, typeIndex, byteValue, szTmp);
+				}
+
+				if (
+					vLabel == "Carbon Monoxide" ||
+					vLabel == "Carbon Dioxide" ||
+					vLabel == "Heat" ||
+					vLabel == "Flood" ||
+					vLabel == "Burglar" ||
+					vLabel == "System" ||
+					vLabel == "Emergency" ||
+					vLabel == "Clock" ||
+					vLabel == "Appliance" ||
+					vLabel == "HomeHealth"
+					)
+				{
+					switch (byteValue) {
+					case 0x00: 	// Previous Events cleared
+					case 0xfe:	// Unkown event; returned when retrieving the current state.
+						intValue = 0;
+						break;
+					default:	// all others, interpret as alarm
+						intValue = 255;
+						break;
+					}
+				}
+				else if (vLabel == "Smoke")
+				{
+					switch (byteValue) {
+					case 0x00: 	// Previous Events cleared
+					case 0xfe:	// Unkown event; returned when retrieving the current state.
+						intValue = 0;
+						break;
+
+					case 0x03: 	// Smoke Alarm Test
+					default:	// all others, interpret as alarm
+						intValue = 255;
+						break;
+					}
+				}
+				else if (vLabel == "Access Control")
+				{
+					switch (byteValue) {
+					case 0x00: 	// Previous Events cleared
+					case 0x06:	//Keypad unlock/Arm Home
+					case 0x17: 	// Door closed
+					case 0xfe:	// Unkown event; returned when retrieving the current state.
+						intValue = 0;
+						break;
+
+					case 0x05:	//Keypad Lock/Arm Away
+					case 0x16: 	// Door open
+					default:	// all others, interpret as alarm
+						intValue = 255;
+						break;
+					}
+				}
+				else if (vLabel == "Power Management")
+				{
+					switch (byteValue) {
+					case 0x00: 	// Previous Events cleared
+					case 0xfe:	// Unkown event; returned when retrieving the current state.
+						intValue = 0;
+						break;
+
+					case 0x0a:	// Replace battery soon
+					case 0x0b:	// Replace battery now
+					case 0x0e:	// Charge battery soon
+					case 0x0f:	// Charge battery now!
+						if (pDevice->hasBattery) {
+							pDevice->batValue = 0; // signal battery needs attention ?!?
+						}
+						// fall through by intent
+					default:	// all others, interpret as alarm
+						intValue = 255;
+						break;
+					}
+				}
+				else if ((vLabel != "Alarm Type") && (vLabel != "Alarm Level"))
+				{
+					if (byteValue != 0)
+					{
+						//Until we figured out what types/levels we have, we create a switch for each of them
+						char szDeviceName[100];
+						sprintf(szDeviceName, "Alarm Type: 0x%02X (%s)", byteValue, vLabel.c_str());
+						std::string tmpstr = szDeviceName;
+						SendSwitch(NodeID, byteValue, pDevice->batValue, true, 0, tmpstr);
+					}
 				}
 			}
 			pDevice->intvalue = intValue;
@@ -3131,6 +3224,12 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 			{
 
 			}
+		}
+		break;
+	case ZDTYPE_CENTRAL_SCENE:
+		if (vType == OpenZWave::ValueID::ValueType_Int)
+		{
+			pDevice->intvalue = 255;
 		}
 		break;
 	}
@@ -3597,6 +3696,21 @@ void COpenZWave::EnableNodePoll(const unsigned int homeID, const int nodeID, con
 				{
 					if (!m_pManager->isPolled(*ittValue))
 						m_pManager->EnablePoll(*ittValue, 2);
+				}
+				else if (commandclass == COMMAND_CLASS_THERMOSTAT_SETPOINT)
+				{
+					if (!m_pManager->isPolled(*ittValue))
+						m_pManager->EnablePoll(*ittValue, 1);
+				}
+				else if (commandclass == COMMAND_CLASS_THERMOSTAT_FAN_MODE)
+				{
+					if (!m_pManager->isPolled(*ittValue))
+						m_pManager->EnablePoll(*ittValue, 1);
+				}
+				else if (commandclass == COMMAND_CLASS_THERMOSTAT_FAN_STATE)
+				{
+					if (!m_pManager->isPolled(*ittValue))
+						m_pManager->EnablePoll(*ittValue, 1);
 				}
 				else
 				{
@@ -4127,7 +4241,7 @@ bool COpenZWave::ApplyNodeConfig(const unsigned int homeID, const int nodeID, co
 
 	std::vector<std::string> results;
 	StringSplit(svaluelist, "_", results);
-	if (results.size() < 1)
+	if (results.size() % 2 != 0)
 		return false;
 
 	bool bRestartOpenZWave = false;
@@ -4439,8 +4553,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string idx = request::findValue(&req, "idx");
@@ -4484,8 +4598,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string idx = request::findValue(&req, "idx");
@@ -4515,8 +4629,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string idx = request::findValue(&req, "idx");
@@ -4539,8 +4653,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string idx = request::findValue(&req, "idx");
@@ -4604,8 +4718,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string idx = request::findValue(&req, "idx");
@@ -4625,8 +4739,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string idx = request::findValue(&req, "idx");
@@ -4663,8 +4777,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string idx = request::findValue(&req, "idx");
@@ -4684,8 +4798,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string idx = request::findValue(&req, "idx");
@@ -4708,8 +4822,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			root["title"] = "ZWaveNetworkInfo";
@@ -4769,8 +4883,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string idx = request::findValue(&req, "idx");
@@ -4801,8 +4915,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string idx = request::findValue(&req, "idx");
@@ -4918,8 +5032,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string idx = request::findValue(&req, "idx");
@@ -4975,8 +5089,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string idx = request::findValue(&req, "idx");
@@ -4996,8 +5110,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string idx = request::findValue(&req, "idx");
@@ -5017,8 +5131,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string idx = request::findValue(&req, "idx");
@@ -5288,13 +5402,36 @@ namespace http {
 				}
 			}
 		}
+		void CWebServer::ZWaveCPSceneCommand(WebEmSession & session, const request& req, reply & rep)
+		{
+			if (req.content.find("fun") == std::string::npos)
+				return;
+			std::multimap<std::string, std::string> values;
+			request::makeValuesFromPostContent(&req, values);
+			std::string sArg1 = request::findValue(&values, "fun");
+			std::string sArg2 = request::findValue(&values, "id");
+			std::string sVid = request::findValue(&values, "vid");
+			std::string sLabel = request::findValue(&values, "label");
+			std::string sArg3 = (!sVid.empty()) ? sVid : sLabel;
+			std::string sArg4 = request::findValue(&values, "value");
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
+			if (pHardware != NULL)
+			{
+				if (pHardware->HwdType == HTYPE_OpenZWave)
+				{
+					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+					reply::set_content(&rep, pOZWHardware->m_ozwcp.DoSceneCommand(sArg1, sArg2, sArg3, sArg4));
+				}
+			}
+		}
 
 		void CWebServer::ZWaveCPTestHeal(WebEmSession & session, const request& req, reply & rep)
 		{
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 			if (req.content.find("fun") == std::string::npos)
 				return;
@@ -5342,8 +5479,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string idx = request::findValue(&req, "idx");
@@ -5363,8 +5500,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string idx = request::findValue(&req, "idx");

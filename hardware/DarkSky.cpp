@@ -12,7 +12,40 @@
 
 #define round(a) ( int ) ( a + .5 )
 
-//#define DEBUG_DarkSky
+#ifdef _DEBUG
+//#define DEBUG_DarkSkyR
+//#define DEBUG_DarkSkyW
+#endif
+
+#ifdef DEBUG_DarkSkyW
+void SaveString2Disk(std::string str, std::string filename)
+{
+	FILE *fOut = fopen(filename.c_str(), "wb+");
+	if (fOut)
+	{
+		fwrite(str.c_str(), 1, str.size(), fOut);
+		fclose(fOut);
+	}
+}
+#endif
+#ifdef DEBUG_DarkSkyR
+std::string ReadFile(std::string filename)
+{
+	std::ifstream file;
+	std::string sResult = "";
+	file.open(filename.c_str());
+	if (!file.is_open())
+		return "";
+	std::string sLine;
+	while (!file.eof())
+	{
+		getline(file, sLine);
+		sResult += sLine;
+	}
+	file.close();
+	return sResult;
+}
+#endif
 
 CDarkSky::CDarkSky(const int ID, const std::string &APIKey, const std::string &Location) :
 m_APIKey(APIKey),
@@ -55,6 +88,8 @@ bool CDarkSky::StopHardware()
 
 void CDarkSky::Do_Work()
 {
+	_log.Log(LOG_STATUS, "DarkSky: Started...");
+
 	int sec_counter = 590;
 	while (!m_stoprequested)
 	{
@@ -76,24 +111,6 @@ bool CDarkSky::WriteToHardware(const char *pdata, const unsigned char length)
 	return false;
 }
 
-static std::string readDarkSkyTestFile( const char *path )
-{
-	std::string text;
-	FILE *file = fopen( path, "rb" );
-	if ( !file )
-		return text;
-	fseek( file, 0, SEEK_END );
-	long size = ftell( file );
-	fseek( file, 0, SEEK_SET );
-	char *buffer = new char[size+1];
-	buffer[size] = 0;
-	if ( fread( buffer, 1, size, file ) == (unsigned long)size )
-		text = buffer;
-	fclose( file );
-	delete[] buffer;
-	return text;
-}
-
 std::string CDarkSky::GetForecastURL()
 {
 	std::stringstream sURL;
@@ -105,11 +122,11 @@ std::string CDarkSky::GetForecastURL()
 void CDarkSky::GetMeterDetails()
 {
 	std::string sResult;
-#ifdef DEBUG_DarkSky
-	sResult=readDarkSkyTestFile("E:\\DarkSky.json");
+#ifdef DEBUG_DarkSkyR
+	sResult=ReadFile("E:\\DarkSky.json");
 #else
 	std::stringstream sURL;
-	std::string szLoc = CURLEncode::URLEncode(m_Location);
+	std::string szLoc = m_Location;
 	sURL << "https://api.darksky.net/forecast/" << m_APIKey << "/" << szLoc;
 	try
 	{
@@ -118,7 +135,7 @@ void CDarkSky::GetMeterDetails()
 		bret = HTTPClient::GET(szURL, sResult);
 		if (!bret)
 		{
-			_log.Log(LOG_ERROR, "DarkSky: Error getting http data!");
+			_log.Log(LOG_ERROR, "DarkSky: Error getting http data!.");
 			return;
 		}
 	}
@@ -127,15 +144,18 @@ void CDarkSky::GetMeterDetails()
 		_log.Log(LOG_ERROR, "DarkSky: Error getting http data!");
 		return;
 	}
+#ifdef DEBUG_DarkSkyW
+	SaveString2Disk(sResult, "E:\\DarkSky.json");
+#endif
 
 #endif
 	Json::Value root;
 
 	Json::Reader jReader;
 	bool ret=jReader.parse(sResult,root);
-	if (!ret)
+	if ((!ret) || (!root.isObject()))
 	{
-		_log.Log(LOG_ERROR,"DarkSky: Invalid data received!");
+		_log.Log(LOG_ERROR,"DarkSky: Invalid data received! Check Location, use a City or GPS Coordinates (xx.yyyy,xx.yyyyy)");
 		return;
 	}
 	if (root["currently"].empty()==true)

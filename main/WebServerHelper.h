@@ -41,9 +41,11 @@ namespace http {
 				const std::string &planID,
 				const std::string &floorID,
 				const bool bDisplayHidden,
+				const bool bDisplayDisabled,
 				const bool bFetchFavorites,
 				const time_t LastUpdate,
-				const std::string &username);
+				const std::string &username,
+				const std::string &hardwareid = "");
 			// called from CSQLHelper
 			void ReloadCustomSwitchIcons();
 		private:
