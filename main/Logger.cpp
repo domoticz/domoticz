@@ -4,6 +4,7 @@
 #include <stdarg.h>
 #include <time.h>
 #include "localtime_r.h"
+#include "Helper.h"
 #include "mainworker.h"
 #include "Helper.h"
 
@@ -12,9 +13,10 @@
 	#include <errno.h>
 #endif
 
+#include "SQLHelper.h"
 
 #define MAX_LOG_LINE_BUFFER 100
-#define MAX_LOG_LINE_LENGTH 2048
+#define MAX_LOG_LINE_LENGTH (2048*3)
 
 extern bool g_bRunAsDaemon;
 extern bool g_bUseSyslog;
@@ -28,6 +30,7 @@ CLogger::_tLogLineStruct::_tLogLineStruct(const _eLogLevel nlevel, const std::st
 
 CLogger::CLogger(void)
 {
+	FilterString="";
 	m_bInSequenceMode=false;
 	m_bEnableLogTimestamps=true;
 	m_verbose_level=VBL_ALL;
@@ -48,6 +51,8 @@ void CLogger::SetOutputFile(const char *OutputFile)
 		m_outputfile.close();
 
 	if (OutputFile==NULL)
+		return;
+	if (*OutputFile==0)
 		return;
 
 	try {
@@ -79,11 +84,14 @@ void CLogger::Log(const _eLogLevel level, const char* logline, ...)
 	boost::unique_lock< boost::mutex > lock(m_mutex);
 
 	bool bDoLog = false;
-	if (m_verbose_level == VBL_ALL)
+/*	if (m_verbose_level == VBL_ALL)
 		bDoLog = true;
 	else if ((m_verbose_level == VBL_STATUS_ERROR) && ((level == LOG_STATUS) || (level == LOG_ERROR)))
 		bDoLog = true;
 	else if ((m_verbose_level == VBL_ERROR) && (level == LOG_ERROR))
+		bDoLog = true;
+    */
+  if (level <= (_eLogLevel)m_verbose_level )
 		bDoLog = true;
 
 	if (!bDoLog)
@@ -94,6 +102,9 @@ void CLogger::Log(const _eLogLevel level, const char* logline, ...)
 	va_start(argList, logline);
 	vsnprintf(cbuffer, sizeof(cbuffer), logline, argList);
 	va_end(argList);
+
+    //test if log contain a string to be filtered from LOG content
+    if (TestFilter(cbuffer) ) return ;
 
 	std::stringstream sstr;
 	bool bEnableLogTimestamps = m_bEnableLogTimestamps;
@@ -121,7 +132,8 @@ void CLogger::Log(const _eLogLevel level, const char* logline, ...)
 		sstr << szDate << " ";
 	}
 
-	if ((level==LOG_NORM)||(level==LOG_STATUS))
+
+	if ((level!=LOG_ERROR))
 	{
 		sstr << cbuffer;
 	}
@@ -129,7 +141,6 @@ void CLogger::Log(const _eLogLevel level, const char* logline, ...)
 	{
 		sstr << "Error: " << cbuffer;
 	}
-
 	if (m_lastlog.size()>=MAX_LOG_LINE_BUFFER)
 		m_lastlog.erase(m_lastlog.begin());
 	m_lastlog.push_back(_tLogLineStruct(level,sstr.str()));
@@ -197,11 +208,7 @@ void CLogger::LogNoLF(const _eLogLevel level, const char* logline, ...)
 	boost::unique_lock< boost::mutex > lock(m_mutex);
 
 	bool bDoLog = false;
-	if (m_verbose_level == VBL_ALL)
-		bDoLog = true;
-	else if ((m_verbose_level == VBL_STATUS_ERROR) && ((level == LOG_STATUS) || (level == LOG_ERROR)))
-		bDoLog = true;
-	else if ((m_verbose_level == VBL_ERROR) && (level == LOG_ERROR))
+  if (level <= (_eLogLevel)m_verbose_level )
 		bDoLog = true;
 
 	if (!bDoLog)
@@ -212,6 +219,9 @@ void CLogger::LogNoLF(const _eLogLevel level, const char* logline, ...)
 	va_start(argList, logline);
 	vsnprintf(cbuffer, sizeof(cbuffer), logline, argList);
 	va_end(argList);
+
+    //test if log contain a string to be filtered from LOG content
+    if (TestFilter(cbuffer) ) return ;
 
 	std::string message=cbuffer;
 	if (strhasEnding(message,"\n"))
@@ -248,7 +258,7 @@ void CLogger::LogNoLF(const _eLogLevel level, const char* logline, ...)
 
 	if (!g_bRunAsDaemon)
 	{
-		if ((level == LOG_NORM) || (level == LOG_STATUS))
+		if ((level != LOG_ERROR) )
 		{
 			std::cout << cbuffer;
 			std::cout.flush();
@@ -344,6 +354,112 @@ std::list<CLogger::_tLogLineStruct> CLogger::GetLog(const _eLogLevel lType)
 	return mlist;
 }
 
+void CLogger::SetFilterString(std::string  &pFilter)
+{
+	std::vector<std::string> FilterList;
+	FilterString = pFilter;
+	FilterStringList.clear();
+	KeepStringList.clear();
+	StringSplit(pFilter, ";", FilterList);
+	for (unsigned int i=0;i<FilterList.size();i++)
+	{
+		if (FilterList[i][0] == '+' ) 
+			KeepStringList.push_back (FilterList[i].substr(1) );
+		else
+			FilterStringList.push_back (FilterList[i] );
+	}
+}
+//return true if trace enable
+bool CLogger::isTraceEnable()
+{
+	return (m_verbose_level==	VBL_TRACE );
+}
+
+//return true if the log shall be filtered
+//
+bool CLogger::TestFilter(char * cbuffer)
+{
+	bool filtered = false; //default not filtered
+
+	//search if the log shall be filter
+	for (unsigned int i=0;i<FilterStringList.size();i++){
+		if (strstr ( cbuffer,FilterStringList[i].c_str() )!=0) {
+			filtered = true;
+			break;
+		}
+	}
+	//if the log as been filtered , search if it shall be keeped
+	if (filtered)
+	{
+		for (unsigned int i=0;i<KeepStringList.size();i++){
+			if (strstr ( cbuffer,KeepStringList[i].c_str() )!=0) {
+				filtered = false;
+				break;
+			}
+		}
+	}
+
+	return filtered;
+}
+void CLogger::setLogVerboseLevel(int LogLevel)
+{
+	SetVerboseLevel((_eLogFileVerboseLevel) (LogLevel & 0x3 ) );
+	//test verbose level
+	if (LogLevel & 0x4)
+		m_mainworker.SetVerboseLevel(EVBL_ALL);
+	else
+		m_mainworker.SetVerboseLevel(EVBL_None);
+
+
+}
+//set the DEBUG option in order to allow LOG_TRACE log level 
+void  CLogger::SetLogDebug(bool debug)
+{
+  m_debug = debug ;
+}
+bool  CLogger::GetLogDebug()
+{
+  return m_debug;
+}
+
+void CLogger::SetLogPreference (std::string  LogFilter, std::string  LogFileName , std::string  LogLevel )
+{
+	//if trace level is allowed
+	if (GetLogDebug()) {
+		//set LogFilter/LogFileName/LogLevel from Preferences tables
+		m_sql.UpdatePreferencesVar("LogFilter", 0, LogFilter.c_str());
+		m_sql.UpdatePreferencesVar("LogFileName", 0, LogFileName.c_str());
+		m_sql.UpdatePreferencesVar("LogLevel", 0, LogLevel.c_str());
+		SetFilterString(LogFilter);
+		SetOutputFile(LogFileName.c_str());
+		setLogVerboseLevel(atoi(LogLevel.c_str()));
+	}
+}
+void CLogger::GetLogPreference()
+{
+	std::string LogFilter, LogFileName, LogLevel;
+
+  //if trace level is allowed
+  if (GetLogDebug()){
+    //get LogFilter/LogFileName/LogLevel from Preferences tables
+    m_sql.GetPreferencesVar("LogFilter", LogFilter);
+    m_sql.GetPreferencesVar("LogFileName", LogFileName);
+    m_sql.GetPreferencesVar("LogLevel", LogLevel);
+    SetFilterString(LogFilter);
+    SetOutputFile(LogFileName.c_str());
+
+    if (LogLevel.length() != 0)
+      setLogVerboseLevel(atoi(LogLevel.c_str()));
+	else {
+		m_sql.UpdatePreferencesVar("LogLevel", 0, boost::to_string(VBL_ALL) );
+		SetVerboseLevel(VBL_ALL);
+	}
+  }
+  else{
+    //delete LogLevel key in order to dot not display in settings TAB
+    m_sql.DeletePreferencesVar("LogLevel");
+  }
+}
 void CLogger::ClearLog()
 {
 	boost::unique_lock< boost::mutex > lock(m_mutex);
