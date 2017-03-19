@@ -47,7 +47,7 @@ Connection information:
 #include "Gpio.h"
 #include "GpioPin.h"
 #ifndef WIN32
-	#include <wiringPi.h>
+#include <wiringPi.h>
 #endif
 #include "../main/Helper.h"
 #include "../main/Logger.h"
@@ -341,29 +341,36 @@ bool CGpio::WriteToHardware(const char *pdata, const unsigned char length)
 
 void CGpio::ProcessInterrupt(int gpioId) {
 #ifndef WIN32
-	// _log.Log(LOG_NORM, "GPIO: Processing interrupt for GPIO %d...", gpioId);
+	std::vector<std::vector<std::string> > result;
 
-	// Debounce reading
-	sleep_milliseconds(50);
+	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", m_HwdID, gpioId);
 
-	// Read GPIO data
-	int value = digitalRead(gpioId);
+	if ((!result.empty()) && (result.size() > 0))
+	{
+		// _log.Log(LOG_NORM, "GPIO: Processing interrupt for GPIO %d...", gpioId);
 
-	if (value != 0) {
-		IOPinStatusPacket.LIGHTING1.cmnd = light1_sOn;
+		// Debounce reading
+		sleep_milliseconds(50);
+
+		// Read GPIO data
+		int value = digitalRead(gpioId);
+
+		if (value != 0) {
+			IOPinStatusPacket.LIGHTING1.cmnd = light1_sOn;
+		}
+		else {
+			IOPinStatusPacket.LIGHTING1.cmnd = light1_sOff;
+		}
+
+		unsigned char seqnr = IOPinStatusPacket.LIGHTING1.seqnbr;
+		seqnr++;
+		IOPinStatusPacket.LIGHTING1.seqnbr = seqnr;
+		IOPinStatusPacket.LIGHTING1.unitcode = gpioId;
+
+		sDecodeRXMessage(this, (const unsigned char *)&IOPinStatusPacket, NULL, 255);
+
+		// _log.Log(LOG_NORM, "GPIO: Done processing interrupt for GPIO %d (%s).", gpioId, (value != 0) ? "HIGH" : "LOW");
 	}
-	else {
-		IOPinStatusPacket.LIGHTING1.cmnd = light1_sOff;
-	}
-
-	unsigned char seqnr = IOPinStatusPacket.LIGHTING1.seqnbr;
-	seqnr++;
-	IOPinStatusPacket.LIGHTING1.seqnbr = seqnr;
-	IOPinStatusPacket.LIGHTING1.unitcode = gpioId;
-
-	sDecodeRXMessage(this, (const unsigned char *)&IOPinStatusPacket, NULL, 255);
-
-	// _log.Log(LOG_NORM, "GPIO: Done processing interrupt for GPIO %d (%s).", gpioId, (value != 0) ? "HIGH" : "LOW");
 #endif
 }
 
