@@ -9690,7 +9690,7 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 	else if (subType == sTypeAlert)
 	{
 	        std::stringstream ss;
-		if (strcmp(pMeter->text.c_str(), ""))
+		if (pMeter->text ==  "")
         		ss << pMeter->intval1;
 		else
 			ss << "(" << pMeter->intval1 << ") " << pMeter->text.c_str();
