@@ -59,6 +59,7 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 	uint32_t m_pappHC, m_pappHP, m_pappHCJB, m_pappHPJB, m_pappHCJW, m_pappHPJW, m_pappHCJR, m_pappHPJR, checksum;
 	int  rate_alert = 0, color_alert = 0, demain = 0;
 	std::stringstream ss;
+	std::string message;
 	time_t atime = mytime(NULL);
 
 	// We need to limit the number of Teleinfo devices per hardware because of the subID in sensors. i
@@ -95,7 +96,7 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 		teleinfo.rate = "Heures Pleines";
 		m_pappHC = 0;
 		m_pappHP = teleinfo.PAPP;
-		rate_alert = 4;
+		rate_alert = 2;
 	}
 	else if (teleinfo.PTEC.substr(0,2) == "HN")
 	{
@@ -115,7 +116,7 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 	{
 		teleinfo.rate = "Unknown";
 		teleinfo.tariff = "Undefined";
-		rate_alert = 4;
+		rate_alert = 3;
 	}
 
 	// Checksum to detect changes between measures
@@ -155,7 +156,7 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 			m_p1power.powerusage2 = teleinfo.EJPHPM;
 			sDecodeRXMessage(this, (const unsigned char *)&m_p1power, (name + " kWh EJP").c_str(), 255);
 			//		SendKwhMeter(m_HwdID, 32*rank + 8, 255, teleinfo.PAPP, (teleinfo.EJPHN + teleinfo.EJPHPM)/1000.0, name + " Total");
-			SendAlertSensor(32*rank + 2, 255, ((teleinfo.PEJP == 30) ? 4 : 1), teleinfo.rate.c_str(), (name + " Pr\303\251annonce Pointe Mobile").c_str());
+			SendAlertSensor(32*rank + 2, 255, ((teleinfo.PEJP == 30) ? 4 : 1), teleinfo.rate, (name + " Preannonce Pointe Mobile"));
 		}
 		else if (teleinfo.OPTARIF.substr(0,3) == "BBR")
 		{
@@ -187,7 +188,7 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 			else if (teleinfo.PTEC.substr(3,1) == "R")
 			{
 				teleinfo.color="Rouge";
-				color_alert = 4;
+				color_alert = 3;
 				if (teleinfo.rate == "Heures Creuses")
 					m_pappHCJR=teleinfo.PAPP;
 				else
@@ -218,7 +219,7 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 			sDecodeRXMessage(this, (const unsigned char *)&m_p1power, (name + "Jours Bleus").c_str(), 255);
 			sDecodeRXMessage(this, (const unsigned char *)&m_p2power, (name + "Jours Blancs").c_str(), 255);
 			sDecodeRXMessage(this, (const unsigned char *)&m_p3power, (name + "Jours Rouges").c_str(), 255);
-			SendAlertSensor(32*rank + 2, 255, color_alert, ("Jour " + teleinfo.color).c_str(), (name + " Couleur du jour").c_str());
+			SendAlertSensor(32*rank + 2, 255, color_alert, ("Jour " + teleinfo.color), (name + " Couleur du jour"));
 			if (teleinfo.DEMAIN == "BLEU")
 				demain = 1;
 			else if  (teleinfo.DEMAIN == "BLANC")
@@ -229,17 +230,18 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 				teleinfo.DEMAIN = "ROUGE";
 			}
 			else demain = 0;
-			SendAlertSensor(32*rank + 3, 255, demain, ("Demain, jour " + teleinfo.DEMAIN).c_str() , (name + " Couleur demain").c_str());
+			SendAlertSensor(32*rank + 3, 255, demain, ("Demain, jour " + teleinfo.DEMAIN) , (name + " Couleur demain"));
 		}
 		// Common sensors for all rates
-		SendAlertSensor(32*rank + 1, 255, rate_alert, teleinfo.rate.c_str(), (name + " Tarif en cours").c_str());
+		SendAlertSensor(32*rank + 1, 255, rate_alert, teleinfo.rate, (name + " Tarif en cours"));
 		if (teleinfo.triphase == false)
 		{
 			SendCurrentSensor(m_HwdID + rank, 255, (float)teleinfo.IINST, 0, 0, name + " Courant");
 			ss.clear();
-			ss << "Courant " << teleinfo.IINST << "A, " << teleinfo.ISOUSC << "A souscrits";
-			SendAlertSensor(32*rank + 4, 255, AlertLevel(teleinfo.IMAX, teleinfo.IINST, teleinfo.ISOUSC),
-				ss.str().c_str(), (name + " Alerte courant maximal").c_str());
+			ss << teleinfo.IINST << "A, sur " << teleinfo.ISOUSC << "A souscrits";
+			message = ss.str();
+			SendAlertSensor(32*rank + 4, 255, AlertLevel(teleinfo.IINST, teleinfo.IMAX, teleinfo.ISOUSC),
+				message, (name + " Alerte courant maximal"));
 			SendPercentageSensor(32* rank + 1, 0, 255, (teleinfo.IINST*100)/float(teleinfo.IMAX), name + " Intensite souscrite");
 		}
 		else
@@ -247,17 +249,20 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 			SendCurrentSensor(m_HwdID + rank, 255, (float)teleinfo.IINST1, (float)teleinfo.IINST2, (float)teleinfo.IINST3,
 				name + " Courant");
 			ss.clear();
-			ss << "Courant " << teleinfo.IINST1 << "A, " << teleinfo.ISOUSC << "A souscrits";
-			SendAlertSensor(32*rank + 4, 255, AlertLevel(teleinfo.IMAX1, teleinfo.IINST1, teleinfo.ISOUSC),
-				ss.str().c_str(), (name + " Alerte courant phase 1").c_str());
+			ss << teleinfo.IINST1 << "A, sur " << teleinfo.ISOUSC << "A souscrits";
+			message = ss.str();
+			SendAlertSensor(32*rank + 4, 255, AlertLevel(teleinfo.IINST1, teleinfo.IMAX1, teleinfo.ISOUSC),
+				message, (name + " Alerte courant phase 1"));
 			ss.clear();
-			ss << "Courant " << teleinfo.IINST2 << "A, " << teleinfo.ISOUSC << "A souscrits";
-			SendAlertSensor(32*rank + 5, 255, AlertLevel(teleinfo.IMAX2, teleinfo.IINST2, teleinfo.ISOUSC),
-				ss.str().c_str(), (name + " Alerte courant phase 2").c_str());
+			ss << teleinfo.IINST2 << "A, sur " << teleinfo.ISOUSC << "A souscrits";
+			message = ss.str();
+			SendAlertSensor(32*rank + 5, 255, AlertLevel(teleinfo.IINST2, teleinfo.IMAX2, teleinfo.ISOUSC),
+				message, (name + " Alerte courant phase 2"));
 			ss.clear();
-			ss << "Courant " << teleinfo.IINST3 << "A, " << teleinfo.ISOUSC << "A souscrits";
-			SendAlertSensor(32*rank + 6, 255, AlertLevel(teleinfo.IMAX3, teleinfo.IINST3, teleinfo.ISOUSC),
-				ss.str().c_str(), (name + " Alerte courant phase 3").c_str());
+			ss << teleinfo.IINST3 << "A, sur " << teleinfo.ISOUSC << "A souscrits";
+			message = ss.str();
+			SendAlertSensor(32*rank + 6, 255, AlertLevel(teleinfo.IINST3, teleinfo.IMAX3, teleinfo.ISOUSC),
+				message, (name + " Alerte courant phase 3"));
 			if (teleinfo.IMAX1 > 0)
 				SendPercentageSensor(32 * rank + 1, 0, 255, (teleinfo.IINST1*100)/float(teleinfo.IMAX1),
 					name + " Charge phase 1");
