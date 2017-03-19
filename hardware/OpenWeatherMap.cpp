@@ -145,6 +145,8 @@ void COpenWeatherMap::GetMeterDetails()
 	{
 		bool bret;
 		std::string szURL = sURL.str();
+		HTTPClient::SetConnectionTimeout(2);
+		HTTPClient::SetTimeout(3);
 		bret = HTTPClient::GET(szURL, sResult);
 		if (!bret)
 		{
