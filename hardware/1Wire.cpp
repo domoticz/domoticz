@@ -1,4 +1,3 @@
-
 #include "stdafx.h"
 #include "1Wire.h"
 #include "hardwaretypes.h"
@@ -20,8 +19,6 @@
 #include <sys/types.h>
 
 #define round(a) ( int ) ( a + .5 )
-
-extern CSQLHelper m_sql;
 
 C1Wire::C1Wire(const int ID, const int sensorThreadPeriod, const int switchThreadPeriod, const std::string& path) :
 	m_stoprequested(false),
@@ -129,12 +126,16 @@ void C1Wire::SensorThread()
 
 	int iteration = 0;
 
+	m_bSensorFirstTime = true;
+
 	while (!m_stoprequested)
 	{
 		sleep_milliseconds(pollPeriod);
 		if (0 == iteration++ % pollIterations) // may glitch on overflow, not disastrous
 		{
-			if (m_sql.m_bAcceptNewHardware || 1 == iteration) {
+			if (m_bSensorFirstTime)
+			{
+				m_bSensorFirstTime = false;
 				BuildSensorList();
 			}
 
@@ -157,14 +158,17 @@ void C1Wire::SwitchThread()
 
 	int iteration = 0;
 
+	m_bSwitchFirstTime = true;
+
 	while (!m_stoprequested)
 	{
 		sleep_milliseconds(pollPeriod);
 
 		if (0 == iteration++ % rescanIterations) // may glitch on overflow, not disastrous
 		{
-			if (m_sql.m_bAcceptNewHardware || 1 == iteration)
+			if (m_bSwitchFirstTime)
 			{
+				m_bSwitchFirstTime = false;
 				BuildSwitchList();
 			}
 		}

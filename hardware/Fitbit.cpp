@@ -172,7 +172,7 @@ bool CFitbit::Login()
 	Json::Value root;
 	Json::Reader jReader;
 	ret = jReader.parse(sResult, root);
-	if (!ret)
+	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "Fitbit: Invalid/no data received...");
 		return false;
@@ -235,7 +235,7 @@ bool CFitbit::RefreshToken(const bool bForce)
 	Json::Value root;
 	Json::Reader jReader;
 	ret = jReader.parse(sResult, root);
-	if (!ret)
+	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "Fitbit: Invalid/no data received...");
 		//Force login next time

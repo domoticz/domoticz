@@ -15,9 +15,10 @@
 #ifdef _DEBUG
 	//#define DEBUG_AccuWeatherR
 	//#define DEBUG_AccuWeatherW
+	//#define DEBUG_AccuWeatherW2
 #endif
 
-#ifdef DEBUG_AccuWeatherW
+#if defined(DEBUG_AccuWeatherW) || defined(DEBUG_AccuWeatherW2)
 void SaveString2Disk(std::string str, std::string filename)
 {
 	FILE *fOut = fopen(filename.c_str(), "wb+");
@@ -151,26 +152,43 @@ std::string CAccuWeather::GetLocationKey()
 #ifdef DEBUG_AccuWeatherW2
 	SaveString2Disk(sResult, "E:\\AccuWeather_LocationSearch.json");
 #endif
-	Json::Value root;
-
-	Json::Reader jReader;
-	bool ret = jReader.parse(sResult, root);
-	if (!ret)
+	try
 	{
-		_log.Log(LOG_ERROR, "AccuWeather: Invalid data received!");
-		return "";
+		Json::Value root;
+		Json::Reader jReader;
+		bool ret = jReader.parse(sResult, root);
+		if (!ret)
+		{
+			_log.Log(LOG_ERROR, "AccuWeather: Invalid data received!");
+			return "";
+		}
+		if (!root.empty())
+		{
+			if (root.isArray())
+				root = root[0];
+			if (!root.isObject())
+			{
+				_log.Log(LOG_ERROR, "AccuWeather: Invalid data received, or unknown location!");
+				return "";
+			}
+			if (root["Key"].empty())
+			{
+				_log.Log(LOG_ERROR, "AccuWeather: Invalid data received, or unknown location!");
+				return "";
+			}
+			return root["Key"].asString();
+		}
+		else
+		{
+			_log.Log(LOG_ERROR, "AccuWeather: Invalid data received, unknown location or API key!");
+			return "";
+		}
 	}
-	if (root.size()>0)
+	catch (...)
 	{
-		if (root.isArray())
-			root = root[0];
+		_log.Log(LOG_ERROR, "AccuWeather: Error parsing JSon data!");
 	}
-	if (root["Key"].empty())
-	{
-		_log.Log(LOG_ERROR, "AccuWeather: Invalid data received, or unknown location!");
-		return "";
-	}
-	return root["Key"].asString();
+	return "";
 }
 
 void CAccuWeather::GetMeterDetails()
@@ -203,231 +221,237 @@ void CAccuWeather::GetMeterDetails()
 	SaveString2Disk(sResult, "E:\\AccuWeather.json");
 #endif
 
-	Json::Value root;
-
-	Json::Reader jReader;
-	bool ret=jReader.parse(sResult,root);
-	if (!ret)
+	try
 	{
-		_log.Log(LOG_ERROR,"AccuWeather: Invalid data received!");
-		return;
-	}
-
-	if (root.size() < 1)
-	{
-		_log.Log(LOG_ERROR, "AccuWeather: Invalid data received!");
-		return;
-	}
-	root = root[0];
-
-	if (root["LocalObservationDateTime"].empty())
-	{
-		_log.Log(LOG_ERROR,"AccuWeather: Invalid data received, or unknown location!");
-		return;
-	}
-
-	float temp=0;
-	int humidity=0;
-	int barometric=0;
-	int barometric_forcast=baroForecastNoInfo;
-
-	if (!root["Temperature"].empty())
-	{
-		temp = root["Temperature"]["Metric"]["Value"].asFloat();
-	}
-
-	if (!root["RelativeHumidity"].empty())
-	{
-		humidity = root["RelativeHumidity"].asInt();
-	}
-	if (!root["Pressure"].empty())
-	{
-		barometric=atoi(root["Pressure"]["Metric"]["Value"].asString().c_str());
-		if (barometric<1000)
-			barometric_forcast=baroForecastRain;
-		else if (barometric<1020)
-			barometric_forcast=baroForecastCloudy;
-		else if (barometric<1030)
-			barometric_forcast=baroForecastPartlyCloudy;
-		else
-			barometric_forcast=baroForecastSunny;
-
-		if (!root["WeatherIcon"].empty())
+		Json::Value root;
+		Json::Reader jReader;
+		bool ret = jReader.parse(sResult, root);
+		if (!ret)
 		{
-			int forcasticon=atoi(root["WeatherIcon"].asString().c_str());
-			switch (forcasticon)
-			{
-			case 1:
-			case 2:
-			case 3:
-				barometric_forcast = baroForecastSunny;
-				break;
-			case 4:
-			case 5:
-			case 6:
-				barometric_forcast = baroForecastCloudy;
-				break;
-			case 7:
-			case 8:
-			case 9:
-			case 10:
-			case 11:
-			case 20:
-			case 21:
-			case 22:
-			case 23:
-			case 24:
-			case 25:
-			case 26:
-			case 27:
-			case 28:
-			case 29:
-			case 39:
-			case 40:
-			case 41:
-			case 42:
-			case 43:
-			case 44:
+			_log.Log(LOG_ERROR, "AccuWeather: Invalid data received!");
+			return;
+		}
+
+		if (root.size() < 1)
+		{
+			_log.Log(LOG_ERROR, "AccuWeather: Invalid data received!");
+			return;
+		}
+		root = root[0];
+
+		if (root["LocalObservationDateTime"].empty())
+		{
+			_log.Log(LOG_ERROR, "AccuWeather: Invalid data received, or unknown location!");
+			return;
+		}
+
+		float temp = 0;
+		int humidity = 0;
+		int barometric = 0;
+		int barometric_forcast = baroForecastNoInfo;
+
+		if (!root["Temperature"].empty())
+		{
+			temp = root["Temperature"]["Metric"]["Value"].asFloat();
+		}
+
+		if (!root["RelativeHumidity"].empty())
+		{
+			humidity = root["RelativeHumidity"].asInt();
+		}
+		if (!root["Pressure"].empty())
+		{
+			barometric = atoi(root["Pressure"]["Metric"]["Value"].asString().c_str());
+			if (barometric < 1000)
 				barometric_forcast = baroForecastRain;
-				break;
-			case 12:
-			case 13:
-			case 14:
-			case 15:
-			case 16:
-			case 17:
-			case 18:
-			case 19:
+			else if (barometric < 1020)
 				barometric_forcast = baroForecastCloudy;
-				break;
-			}
-		}
-	}
+			else if (barometric < 1030)
+				barometric_forcast = baroForecastPartlyCloudy;
+			else
+				barometric_forcast = baroForecastSunny;
 
-	if (barometric!=0)
-	{
-		//Add temp+hum+baro device
-		SendTempHumBaroSensor(1, 255, temp, humidity, static_cast<float>(barometric), barometric_forcast, "THB");
-	}
-	else if (humidity!=0)
-	{
-		//add temp+hum device
-		SendTempHumSensor(1, 255, temp, humidity, "TempHum");
-	}
-	else
-	{
-		//add temp device
-		SendTempSensor(1, 255, temp, "Temperature");
-	}
-
-	//Wind
-	if (!root["Wind"].empty())
-	{
-		int wind_degrees = -1;
-		float windspeed_ms = 0;
-		float windgust_ms = 0;
-		float wind_temp = temp;
-		float wind_chill = temp;
-
-		if (!root["Wind"]["Direction"].empty())
-		{
-			wind_degrees = root["Wind"]["Direction"]["Degrees"].asInt();
-		}
-		if (!root["Wind"]["Speed"].empty())
-		{
-			windspeed_ms = root["Wind"]["Speed"]["Metric"]["Value"].asFloat() / 3.6f; //km/h to m/s
-		}
-		if (!root["WindGust"].empty())
-		{
-			if (!root["WindGust"]["Speed"].empty())
+			if (!root["WeatherIcon"].empty())
 			{
-				windgust_ms = root["WindGust"]["Speed"]["Metric"]["Value"].asFloat() / 3.6f; //km/h to m/s
-			}
-		}
-		if (!root["RealFeelTemperature"].empty())
-		{
-			wind_chill = root["RealFeelTemperature"]["Metric"]["Value"].asFloat();
-		}
-		if (wind_degrees != -1)
-		{
-			SendWind(1, 255, wind_degrees, windspeed_ms, windgust_ms, temp, wind_chill, true, "Wind");
-		}
-	}
-
-	//UV
-	if (!root["UVIndex"].empty())
-	{
-		float UV = static_cast<float>(atof(root["UVIndex"].asString().c_str()));
-		if ((UV<16)&&(UV>=0))
-		{
-			SendUVSensor(0, 1, 255, UV, "UV");
-		}
-	}
-
-	//Rain
-	if (!root["PrecipitationSummary"].empty())
-	{
-		if (!root["PrecipitationSummary"]["Precipitation"].empty())
-		{
-			float RainCount = static_cast<float>(atof(root["PrecipitationSummary"]["Precipitation"]["Metric"]["Value"].asString().c_str()));
-			if ((RainCount!=-9999.00f)&&(RainCount>=0.00f))
-			{
-				RBUF tsen;
-				memset(&tsen,0,sizeof(RBUF));
-				tsen.RAIN.packetlength=sizeof(tsen.RAIN)-1;
-				tsen.RAIN.packettype=pTypeRAIN;
-				tsen.RAIN.subtype=sTypeRAINWU;
-				tsen.RAIN.battery_level=9;
-				tsen.RAIN.rssi=12;
-				tsen.RAIN.id1=0;
-				tsen.RAIN.id2=1;
-
-				tsen.RAIN.rainrateh=0;
-				tsen.RAIN.rainratel=0;
-
-				if (!root["PrecipitationSummary"]["PastHour"].empty())
+				int forcasticon = atoi(root["WeatherIcon"].asString().c_str());
+				switch (forcasticon)
 				{
-					float rainrateph = static_cast<float>(atof(root["PrecipitationSummary"]["PastHour"]["Metric"]["Value"].asString().c_str()));
-					if (rainrateph!=-9999.00f)
-					{
-						int at10=round(std::abs(rainrateph*10.0f));
-						tsen.RAIN.rainrateh=(BYTE)(at10/256);
-						at10-=(tsen.RAIN.rainrateh*256);
-						tsen.RAIN.rainratel=(BYTE)(at10);
-					}
+				case 1:
+				case 2:
+				case 3:
+					barometric_forcast = baroForecastSunny;
+					break;
+				case 4:
+				case 5:
+				case 6:
+					barometric_forcast = baroForecastCloudy;
+					break;
+				case 7:
+				case 8:
+				case 9:
+				case 10:
+				case 11:
+				case 20:
+				case 21:
+				case 22:
+				case 23:
+				case 24:
+				case 25:
+				case 26:
+				case 27:
+				case 28:
+				case 29:
+				case 39:
+				case 40:
+				case 41:
+				case 42:
+				case 43:
+				case 44:
+					barometric_forcast = baroForecastRain;
+					break;
+				case 12:
+				case 13:
+				case 14:
+				case 15:
+				case 16:
+				case 17:
+				case 18:
+				case 19:
+					barometric_forcast = baroForecastCloudy;
+					break;
 				}
-
-				int tr10=int((float(RainCount)*10.0f));
-				tsen.RAIN.raintotal1=0;
-				tsen.RAIN.raintotal2=(BYTE)(tr10/256);
-				tr10-=(tsen.RAIN.raintotal2*256);
-				tsen.RAIN.raintotal3=(BYTE)(tr10);
-
-				sDecodeRXMessage(this, (const unsigned char *)&tsen.RAIN, NULL, 255);
 			}
 		}
-	}
 
-	//Visibility
-	if (!root["Visibility"].empty())
-	{
-		if (!root["Visibility"]["Metric"].empty())
+		if (barometric != 0)
 		{
-			float visibility = root["Visibility"]["Metric"]["Value"].asFloat();
-			if (visibility>=0)
+			//Add temp+hum+baro device
+			SendTempHumBaroSensor(1, 255, temp, humidity, static_cast<float>(barometric), barometric_forcast, "THB");
+		}
+		else if (humidity != 0)
+		{
+			//add temp+hum device
+			SendTempHumSensor(1, 255, temp, humidity, "TempHum");
+		}
+		else
+		{
+			//add temp device
+			SendTempSensor(1, 255, temp, "Temperature");
+		}
+
+		//Wind
+		if (!root["Wind"].empty())
+		{
+			int wind_degrees = -1;
+			float windspeed_ms = 0;
+			float windgust_ms = 0;
+			float wind_temp = temp;
+			float wind_chill = temp;
+
+			if (!root["Wind"]["Direction"].empty())
 			{
-				_tGeneralDevice gdevice;
-				gdevice.subtype=sTypeVisibility;
-				gdevice.floatval1=visibility;
-				sDecodeRXMessage(this, (const unsigned char *)&gdevice, NULL, 255);
+				wind_degrees = root["Wind"]["Direction"]["Degrees"].asInt();
+			}
+			if (!root["Wind"]["Speed"].empty())
+			{
+				windspeed_ms = root["Wind"]["Speed"]["Metric"]["Value"].asFloat() / 3.6f; //km/h to m/s
+			}
+			if (!root["WindGust"].empty())
+			{
+				if (!root["WindGust"]["Speed"].empty())
+				{
+					windgust_ms = root["WindGust"]["Speed"]["Metric"]["Value"].asFloat() / 3.6f; //km/h to m/s
+				}
+			}
+			if (!root["RealFeelTemperature"].empty())
+			{
+				wind_chill = root["RealFeelTemperature"]["Metric"]["Value"].asFloat();
+			}
+			if (wind_degrees != -1)
+			{
+				SendWind(1, 255, wind_degrees, windspeed_ms, windgust_ms, temp, wind_chill, true, "Wind");
 			}
 		}
-	}
 
-	//Forecast URL
-	if (!root["Link"].empty())
+		//UV
+		if (!root["UVIndex"].empty())
+		{
+			float UV = static_cast<float>(atof(root["UVIndex"].asString().c_str()));
+			if ((UV < 16) && (UV >= 0))
+			{
+				SendUVSensor(0, 1, 255, UV, "UV");
+			}
+		}
+
+		//Rain
+		if (!root["PrecipitationSummary"].empty())
+		{
+			if (!root["PrecipitationSummary"]["Precipitation"].empty())
+			{
+				float RainCount = static_cast<float>(atof(root["PrecipitationSummary"]["Precipitation"]["Metric"]["Value"].asString().c_str()));
+				if ((RainCount != -9999.00f) && (RainCount >= 0.00f))
+				{
+					RBUF tsen;
+					memset(&tsen, 0, sizeof(RBUF));
+					tsen.RAIN.packetlength = sizeof(tsen.RAIN) - 1;
+					tsen.RAIN.packettype = pTypeRAIN;
+					tsen.RAIN.subtype = sTypeRAINWU;
+					tsen.RAIN.battery_level = 9;
+					tsen.RAIN.rssi = 12;
+					tsen.RAIN.id1 = 0;
+					tsen.RAIN.id2 = 1;
+
+					tsen.RAIN.rainrateh = 0;
+					tsen.RAIN.rainratel = 0;
+
+					if (!root["PrecipitationSummary"]["PastHour"].empty())
+					{
+						float rainrateph = static_cast<float>(atof(root["PrecipitationSummary"]["PastHour"]["Metric"]["Value"].asString().c_str()));
+						if (rainrateph != -9999.00f)
+						{
+							int at10 = round(std::abs(rainrateph*10.0f));
+							tsen.RAIN.rainrateh = (BYTE)(at10 / 256);
+							at10 -= (tsen.RAIN.rainrateh * 256);
+							tsen.RAIN.rainratel = (BYTE)(at10);
+						}
+					}
+
+					int tr10 = int((float(RainCount)*10.0f));
+					tsen.RAIN.raintotal1 = 0;
+					tsen.RAIN.raintotal2 = (BYTE)(tr10 / 256);
+					tr10 -= (tsen.RAIN.raintotal2 * 256);
+					tsen.RAIN.raintotal3 = (BYTE)(tr10);
+
+					sDecodeRXMessage(this, (const unsigned char *)&tsen.RAIN, NULL, 255);
+				}
+			}
+		}
+
+		//Visibility
+		if (!root["Visibility"].empty())
+		{
+			if (!root["Visibility"]["Metric"].empty())
+			{
+				float visibility = root["Visibility"]["Metric"]["Value"].asFloat();
+				if (visibility >= 0)
+				{
+					_tGeneralDevice gdevice;
+					gdevice.subtype = sTypeVisibility;
+					gdevice.floatval1 = visibility;
+					sDecodeRXMessage(this, (const unsigned char *)&gdevice, NULL, 255);
+				}
+			}
+		}
+
+		//Forecast URL
+		if (!root["Link"].empty())
+		{
+			m_ForecastURL = root["Link"].asString();
+		}
+	}
+	catch (...)
 	{
-		m_ForecastURL = root["Link"].asString();
+		_log.Log(LOG_ERROR, "AccuWeather: Error parsing JSon data!");
 	}
 }
 
