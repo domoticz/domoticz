@@ -26,7 +26,9 @@ std::string ITGWSwitchBrennenstuhl::GetEncodedAddress(const char* ID){
 	std::string res = "";
   std::string _id = ID;
   std::string dipswitch_hex = _id.substr(1,3);
-  int dipswitch = std::stoi(dipswitch_hex, nullptr, 16);
+
+  char * pEnd;
+  int dipswitch = (int) std::strtol(dipswitch_hex.c_str(), &pEnd, 16);
   std::string dipswitchcode = std::bitset< 10 >( dipswitch ).to_string();
   std::string enc_addr = "";
   std::string h = B_FLOAT;

@@ -4308,7 +4308,8 @@ namespace http {
               (dipswitchcode == "")
               )
               return;
-						sprintf(szTmp, "%03X", std::stoi(dipswitchcode, nullptr, 2));
+            char * pEnd;
+						sprintf(szTmp, "%03lX", std::strtol(dipswitchcode.c_str(), &pEnd, 2));
 						sdipswitchcode = szTmp;
 						sprintf(szTmp, "%02X", switchtype);
             devid = "1"+sdipswitchcode+szTmp;
@@ -4795,7 +4796,8 @@ namespace http {
               (dipswitchcode == "")
               )
               return;
-						sprintf(szTmp, "%03X", std::stoi(dipswitchcode, nullptr, 2));
+            char * pEnd;
+						sprintf(szTmp, "%03lX", std::strtol(dipswitchcode.c_str(), &pEnd, 2));
 						sdipswitchcode = szTmp;
 						sprintf(szTmp, "%02X", switchtype);
             devid = "1"+sdipswitchcode+szTmp;
