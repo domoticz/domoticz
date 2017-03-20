@@ -135,7 +135,7 @@ void KMTronicUDP::GetMeterDetails()
 	struct sockaddr_in udpClient;
 	char buf[8];
 	struct timeval tv;
-	size_t serverlen;
+	socklen_t serverlen;
 
         struct hostent *he;
 	if ((he=gethostbyname(m_szIPAddress.c_str())) == NULL) {  // get the host info
