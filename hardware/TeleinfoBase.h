@@ -17,6 +17,7 @@ History :
 
 #include <iostream>
 #include "DomoticzHardware.h"
+#include "hardwaretypes.h"
 
 class CTeleinfoBase : public CDomoticzHardwareBase
 {
@@ -28,6 +29,7 @@ class CTeleinfoBase : public CDomoticzHardwareBase
 
 	private:
 		int AlertLevel(int Iinst, int Imax, int Isousc);
+		P1Power	m_p1power, m_p2power, m_p3power;
 
 	protected:
 		typedef struct _tTeleinfo
