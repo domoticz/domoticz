@@ -33,7 +33,7 @@
 """
 import Domoticz
 import json
-import base64
+import pprint
 
 class BasePlugin:
     isConnected = False
@@ -57,7 +57,10 @@ class BasePlugin:
             Domoticz.Debugging(1)
         if (len(Devices) == 0):
             Domoticz.Device(Name="Status",  Unit=1, Type=17,  Switchtype=17).Create()
-            Options = "LevelActions:"+stringToBase64("||||")+";LevelNames:"+stringToBase64("Off|Video|Music|TV Shows|Live TV")+";LevelOffHidden:ZmFsc2U=;SelectorStyle:MA=="
+            Options = {"LevelActions": "||||",
+                       "LevelNames": "Off|Video|Music|TV Shows|Live TV",
+                       "LevelOffHidden": "false",
+                       "SelectorStyle": "1"}
             Domoticz.Device(Name="Source",  Unit=2, TypeName="Selector Switch", Switchtype=18, Image=12, Options=Options).Create()
             Domoticz.Device(Name="Volume",  Unit=3, Type=244, Subtype=73, \
                             Switchtype=7,  Image=8).Create()
@@ -535,10 +538,8 @@ def DumpConfigToLog():
         Domoticz.Debug("Device nValue:    " + str(Devices[x].nValue))
         Domoticz.Debug("Device sValue:   '" + Devices[x].sValue + "'")
         Domoticz.Debug("Device LastLevel: " + str(Devices[x].LastLevel))
+        Domoticz.Debug("Device Options:   " + pprint.pformat(Devices[x].Options))
     return
-
-def stringToBase64(s):
-    return base64.b64encode(s.encode('utf-8')).decode("utf-8")
   
 def UpdateDevice(Unit, nValue, sValue):
     # Make sure that the Domoticz device still exists (they can be deleted) before updating it 

@@ -82,8 +82,9 @@ class CTeleinfoSerial : public CTeleinfoBase, AsyncSerial
 		std::string m_szSerialPort;
 
 		bool WriteToHardware(const char *pdata, const unsigned char length);
-		Teleinfo teleinfo;
+	
 	private:
+		Teleinfo teleinfo;
 		bool StartHardware();
 		bool StopHardware();
 		/**

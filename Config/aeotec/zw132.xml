@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-Aeotec ZW116 Nano Switch, base on Engineering Spec 12/07/2016
+Aeotec ZW132 Dual Nano Switch, base on Engineering Spec 02/27/2017
 Product Type ID: EU=0x00, US=0x01, AU=0x02 CN=0x1D 
 -->
 <Product xmlns='http://code.google.com/p/open-zwave/'>
@@ -89,52 +89,82 @@ Product Type ID: EU=0x00, US=0x01, AU=0x02 CN=0x1D
 		<Value type="int" index="101" genre="config" label="Report type sent in Reporting Group 1" units="" value="0">
 			<Help>
 				Defines the type of report sent for reporting group 1.
-				1 is meter report for voltage.
-				2 is meter report for current.
-				4 is meter report for watts.
-				8 is meter report for kilowatts.
+				1 is meter report for voltage average.
+				2 is meter report for current total.
+				4 is meter report for watts total.
+				8 is meter report for kilowatts total.
 				Value 1 (msb) Reserved
-				Value 2 Reserved
-				Value 3 Reserved
+				Value 2
+				bit 4 current S2
+				bit 3 current S1
+				bit 2 Reserved
+				bit 1 voltage S2
+				bit 0 voltage S1
+				Value 3
+				bit 4 kWh S2
+				bit 3 kWh S1
+				bit 2 Reserved
+				bit 1 watt S2
+				bit 0 watt S1
 				Value 4 (lsb) bits 7-4 reserved
-				bit 3 current
-				bit 2 voltage
-				bit 1 watt
-				bit 0 kWh
+				bit 3 current total
+				bit 2 voltage average
+				bit 1 watt total
+				bit 0 kWh total
 			</Help>
 		</Value>
 		<Value type="int" index="102" genre="config" label="Report type sent in Reporting Group 2" units="" value="0">
 			<Help>
 				Defines the type of report sent for reporting group 2.
-				1 is meter report for voltage.
-				2 is meter report for current.
-				4 is meter report for watts.
-				8 is meter report for kilowatts.
+				1 is meter report for voltage average.
+				2 is meter report for current total.
+				4 is meter report for watts total.
+				8 is meter report for kilowatts total.
 				Value 1 (msb) Reserved
-				Value 2 Reserved
-				Value 3 Reserved
+				Value 2
+				bit 4 current S2
+				bit 3 current S1
+				bit 2 Reserved
+				bit 1 voltage S2
+				bit 0 voltage S1
+				Value 3
+				bit 4 kWh S2
+				bit 3 kWh S1
+				bit 2 Reserved
+				bit 1 watt S2
+				bit 0 watt S1
 				Value 4 (lsb) bits 7-4 reserved
-				bit 3 current
-				bit 2 voltage
-				bit 1 watt
-				bit 0 kWh
+				bit 3 current total
+				bit 2 voltage average
+				bit 1 watt total
+				bit 0 kWh total
 			</Help>
 		</Value>
 		<Value type="int" index="103" genre="config" label="Report type sent in Reporting Group 3" units="" value="0">
 			<Help>
 				Defines the type of report sent for reporting group 3.
-				1 is meter report for voltage.
-				2 is meter report for current.
-				4 is meter report for watts.
-				8 is meter report for kilowatts.
+				1 is meter report for voltage average.
+				2 is meter report for current total.
+				4 is meter report for watts total.
+				8 is meter report for kilowatts total.
 				Value 1 (msb) Reserved
-				Value 2 Reserved
-				Value 3 Reserved
+				Value 2
+				bit 4 current S2
+				bit 3 current S1
+				bit 2 Reserved
+				bit 1 voltage S2
+				bit 0 voltage S1
+				Value 3
+				bit 4 kWh S2
+				bit 3 kWh S1
+				bit 2 Reserved
+				bit 1 watt S2
+				bit 0 watt S1
 				Value 4 (lsb) bits 7-4 reserved
-				bit 3 current
-				bit 2 voltage
-				bit 1 watt
-				bit 0 kWh
+				bit 3 current total
+				bit 2 voltage average
+				bit 1 watt total
+				bit 0 kWh total
 			</Help>
 		</Value>
 		<Value type="button" index="110" genre="config" label="Set 111-113 to default" units="" write_only="true" value="0" affects="111,112,113">
