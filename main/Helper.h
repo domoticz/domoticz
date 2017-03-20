@@ -32,6 +32,11 @@ double ConvertTemperature(const double tValue, const unsigned char tSign);
 
 std::vector<std::string> ExecuteCommandAndReturn(const std::string &szCommand);
 
+void DateAsciiTotmTime (std::string &sLastUpdate , struct tm &LastUpdateTime  );
+void AsciiTime (struct tm &ltime , char * pLastUpdate );
+std::string  GetCurrentAsciiTime ();
+void AsciiTime ( time_t DateStart, char * DateStr );
+time_t DateAsciiToTime_t ( std::string & DateStr );
 std::string GenerateMD5Hash(const std::string &InputString, const std::string &Salt="");
 
 void hue2rgb(const float hue, int &outR, int &outG, int &outB, const double maxValue = 100.0);

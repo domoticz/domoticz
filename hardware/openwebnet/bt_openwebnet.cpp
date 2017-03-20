@@ -517,15 +517,40 @@ bt_openwebnet::bt_openwebnet(const std::string& message)
   CreateMsgOpen(message);
 }
 
-bt_openwebnet::bt_openwebnet(int who, int what, int where)
+bt_openwebnet::bt_openwebnet(const int who, const int what, const int where, const int group)
 {
 	std::stringstream whoStr;
-	std::stringstream whereStr;
 	std::stringstream whatStr;
+	std::stringstream whereStr;	
 
 	whoStr << who;
-	whereStr << what;
-	whatStr << where;
+	whatStr << what;
+	if (group) {
+		/*
+			Group Command: GRP [1 - 255]
+			we need to add a '#'
+		*/
+		whereStr << "#";
+	} else if ((where > 99) && (where < 1000)) {
+
+		/* 
+			APL Command: A [01 - 09]; PL [10 - 15]
+			In this case, 'where' is > 99, but < 1000 (area 10)
+
+			int value is for example 110 (A=1, PL=10).
+			The correct string is '0110', so we need to add a '0'
+		*/
+		whereStr << "0";
+	}
+
+	/*
+		In other cases just take 'where' as is
+		Area Command: A [1 - 9] 
+		APL Command: A[1 - 9]; PL[1 - 9]
+		APL Command: A = 10; PL[01 - 15]
+	*/
+
+	whereStr << where;
 
 	std::string sWho = whoStr.str();
 	std::string sWhere = whereStr.str();
@@ -715,9 +740,10 @@ void bt_openwebnet::CreateSetTimeMsgOpen()
   CreateNullMsgOpen();
   	
 	char frame_dt[50];
-	time_t now = time(NULL);
-	struct tm *t = localtime(&now);	
-	strftime(frame_dt, sizeof(frame_dt)-1, "*#13**#22*%H*%M*%S*001*%u*%d*%m*%Y##", t); //set date time 
+	time_t now = mytime(NULL);
+	struct tm ltime;
+	localtime_r(&now, &ltime);
+	strftime(frame_dt, sizeof(frame_dt)-1, "*#13**#22*%H*%M*%S*001*%u*%d*%m*%Y##", &ltime); //set date time 
 	std::stringstream frame;
 	frame << frame_dt;
 	frame_open = DeleteControlCharacters(frame.str());
@@ -2165,12 +2191,12 @@ std::string bt_openwebnet::getWhereDescription(const std::string& who, const std
 
 	if (translateAmbPL) {
 		if (atoi(where.c_str()) == 0) {
+			if (whereParameters.size()>0) {
+				//group from 1 to 255
+				return "Group " + whereParameters[0];
+			}
 			return "General";
-		}
-		if (whereParameters.size()>0) {
-			//group from 1 to 255
-			return "Group " + whereParameters[0];
-		}
+		}		
 
 		std::string room;
 		std::string pointOfLight;
