@@ -320,10 +320,10 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 						else
 						{
 							int percentage = output->LIGHTING2.level * 100 / 15;
-							state = boost::to_string(percentage);
+							state = "p/" + boost::to_string(percentage);
 						}
 
-					Json::Value root = SendCommand(IPAddress, "/s/p/" + state);
+					Json::Value root = SendCommand(IPAddress, "/s/" + state);
 					if (root.empty())
 						return false;
 
