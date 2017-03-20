@@ -844,6 +844,7 @@ namespace http {
 					goto exitjson;
 
 				}
+				if (_log.isTraceEnable()) _log.Log(LOG_TRACE, "WEBS GetJSon :%s :%s ", cparam.c_str(), req.uri.c_str());
 				HandleCommand(cparam, session, req, root);
 			} //(rtype=="command")
 			else {
@@ -1185,10 +1186,6 @@ namespace http {
 					(username == "")
 					)
 					return;
-				std::string siteID = request::findValue(&req, "Mode1");
-				if (siteID.empty())
-					return;
-				mode1 = atoi(siteID.c_str());
 			}
 			else if (htype == HTYPE_SBFSpot) {
 				if (username == "")
@@ -2859,6 +2856,9 @@ namespace http {
 		{
 			std::string sstate = request::findValue(&req, "state");
 			std::string idx = request::findValue(&req, "idx");
+			std::string name = request::findValue(&req,"name");
+			_log.Log(LOG_TRACE, "WEBS SetThermostatState  State cmd Id:%s Name:%s State:%s",idx.c_str(), name.c_str(),sstate.c_str());
+
 			if (
 				(idx == "") ||
 				(sstate == "")
@@ -5520,6 +5520,13 @@ namespace http {
 					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_SWITCH_OFF, 1);
 					ii++;
 				}
+				if (!IsLightOrSwitch(dType, dSubType))
+				{
+					root["result"][ii]["val"] = NTYPE_LASTUPDATE;
+					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_LASTUPDATE, 0);
+					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_LASTUPDATE, 1);
+					ii++;
+				}
 			}
 			else if (cparam == "addnotification")
 			{
@@ -6303,6 +6310,7 @@ namespace http {
 				std::string switchcmd = request::findValue(&req, "switchcmd");
 				std::string level = request::findValue(&req, "level");
 				std::string onlyonchange=request::findValue(&req, "ooc");//No update unless the value changed (check if updated)
+				if (_log.isTraceEnable()) _log.Log(LOG_TRACE,"WEBS switchlight idx:%s switchcmd:%s level:%s",  idx.c_str() , switchcmd.c_str() , level.c_str());
 				std::string passcode = request::findValue(&req, "passcode");
 				if ((idx == "") || (switchcmd == ""))
 					return;
@@ -7293,6 +7301,9 @@ namespace http {
 
 			std::string Latitude = request::findValue(&req, "Latitude");
 			std::string Longitude = request::findValue(&req, "Longitude");
+			_log.SetLogPreference ( CURLEncode::URLDecode( request::findValue(&req,"LogFilter")   ),
+									CURLEncode::URLDecode( request::findValue(&req,"LogFileName") ),
+									CURLEncode::URLDecode( request::findValue(&req,"LogLevel")    ) );
 			if ((Latitude != "") && (Longitude != ""))
 			{
 				std::string LatLong = Latitude + ";" + Longitude;
@@ -8400,30 +8411,38 @@ namespace http {
 						}
 					}
 
-					sprintf(szData, "%04X", (unsigned int)atoi(sd[1].c_str()));
-					if (
-						(dType == pTypeTEMP) ||
-						(dType == pTypeTEMP_BARO) ||
-						(dType == pTypeTEMP_HUM) ||
-						(dType == pTypeTEMP_HUM_BARO) ||
-						(dType == pTypeBARO) ||
-						(dType == pTypeHUM) ||
-						(dType == pTypeWIND) ||
-						(dType == pTypeRAIN) ||
-						(dType == pTypeUV) ||
-						(dType == pTypeCURRENT) ||
-						(dType == pTypeCURRENTENERGY) ||
-						(dType == pTypeENERGY) ||
-						(dType == pTypeRFXMeter) ||
-						(dType == pTypeAirQuality) ||
-						(dType == pTypeRFXSensor)
-						)
+					if ((pHardware != NULL) && (pHardware->HwdType == HTYPE_PythonPlugin))
 					{
-						root["result"][ii]["ID"] = szData;
+						// Device ID special formatting should not be applied to Python plugins
+						root["result"][ii]["ID"] = sd[1];
 					}
 					else
 					{
-						root["result"][ii]["ID"] = sd[1];
+						sprintf(szData, "%04X", (unsigned int)atoi(sd[1].c_str()));
+						if (
+							(dType == pTypeTEMP) ||
+							(dType == pTypeTEMP_BARO) ||
+							(dType == pTypeTEMP_HUM) ||
+							(dType == pTypeTEMP_HUM_BARO) ||
+							(dType == pTypeBARO) ||
+							(dType == pTypeHUM) ||
+							(dType == pTypeWIND) ||
+							(dType == pTypeRAIN) ||
+							(dType == pTypeUV) ||
+							(dType == pTypeCURRENT) ||
+							(dType == pTypeCURRENTENERGY) ||
+							(dType == pTypeENERGY) ||
+							(dType == pTypeRFXMeter) ||
+							(dType == pTypeAirQuality) ||
+							(dType == pTypeRFXSensor)
+							)
+						{
+							root["result"][ii]["ID"] = szData;
+						}
+						else
+						{
+							root["result"][ii]["ID"] = sd[1];
+						}
 					}
 					root["result"][ii]["Unit"] = atoi(sd[2].c_str());
 					root["result"][ii]["Type"] = RFX_Type_Desc(dType, 1);
@@ -12273,6 +12292,18 @@ namespace http {
 				}
 				else if (Key == "SendErrorsAsNotification") {
 					root["SendErrorsAsNotification"] = nValue;
+				}
+				else if (Key == "LogFilter") {
+					root[Key] = sValue;
+				}
+				else if (Key == "LogFileName") {
+					root[Key] = sValue;
+				}
+				else if (Key == "LogLevel") {
+					root[Key] = sValue;
+				}
+				else if (Key == "DeltaTemperatureLog") {
+					root[Key] = sValue;
 				}
 			}
 		}

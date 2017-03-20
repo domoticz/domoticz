@@ -771,7 +771,7 @@ void SatelIntegra::ReportZonesViolation(const int Idx, const bool violation)
 
 	m_zonesLastState[Idx - 1] = violation;
 
-	SendAlertSensor(Idx, 255, violation ? 3 : 1, NULL);
+	SendAlertSensor(Idx, 255, violation ? 3 : 1, "", NULL);
 }
 
 void SatelIntegra::ReportOutputState(const int Idx, const bool state)

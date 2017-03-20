@@ -382,7 +382,8 @@ hardware/Sterbox.cpp
 hardware/TCPProxy/tcpproxy_server.cpp
 hardware/TE923.cpp
 hardware/TE923Tool.cpp
-hardware/Teleinfo.cpp
+hardware/TeleinfoBase.cpp
+hardware/TeleinfoSerial.cpp
 hardware/Tellstick.cpp
 hardware/Thermosmart.cpp
 hardware/ToonThermostat.cpp
@@ -622,12 +623,12 @@ IF(OpenZWave)
       find_library(UDEV NAMES libudev.a)
       IF(UDEV)
         message(STATUS ${UDEV})
-        target_link_libraries(domoticz ${UDEV} -lrt)
+        target_link_libraries(domoticz ${UDEV} -lrt -lresolv)
       else()
         find_library(UDEV NAMES libudev.so)
         IF(UDEV)
            message(STATUS ${UDEV})
-           target_link_libraries(domoticz ${UDEV} -lrt)
+           target_link_libraries(domoticz ${UDEV} -lrt -lresolv)
         else()
            MESSAGE(FATAL_ERROR "LIB UDEV not found on your system, see install.txt how to get them installed.\nsudo apt-get install libudev-dev")
         ENDIF(UDEV)

@@ -11,6 +11,7 @@
 #include <fstream>
 #include <math.h>
 #include <algorithm>
+#include "../main/localtime_r.h"
 #include <sstream>
 #include <openssl/md5.h>
 
@@ -178,6 +179,9 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 		// Loop while not NULL
 		while ((de = readdir(d)))
 		{
+			// Only consider character devices and symbolic links
+                        if ((de->d_type == DT_CHR) || (de->d_type == DT_LNK))
+                        {
 			std::string fname = de->d_name;
 			if (fname.find("ttyUSB")!=std::string::npos)
 			{
@@ -223,6 +227,21 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 				{
 					ret.push_back("/dev/" + fname);
 					bUseDirectPath=true;
+				}
+				// By default, this is the "small UART" on Rasberry 3 boards
+                                        if (fname.find("ttyS0")!=std::string::npos)
+                                        {
+                                                ret.push_back("/dev/" + fname);
+                                                bUseDirectPath=true;
+                                        }
+                                        // serial0 and serial1 are new with Rasbian Jessie
+                                        // Avoids confusion between Raspberry 2 and 3 boards
+                                        // More info at http://spellfoundry.com/2016/05/29/configuring-gpio-serial-port-raspbian-jessie-including-pi-3/
+                                        if (fname.find("serial")!=std::string::npos)
+                                        {
+                                                ret.push_back("/dev/" + fname);
+                                                bUseDirectPath=true;
+                                        }
 				}
 			}
 		}
@@ -496,6 +515,50 @@ std::vector<std::string> ExecuteCommandAndReturn(const std::string &szCommand)
 	return ret;
 }
 
+//convert date string 10/12/2014 10:45:58 en  struct tm 
+void DateAsciiTotmTime (std::string &sTime , struct tm &tmTime  )
+{
+		tmTime.tm_isdst=0; //dayly saving time
+		tmTime.tm_year=atoi(sTime.substr(0,4).c_str())-1900;
+		tmTime.tm_mon=atoi(sTime.substr(5,2).c_str())-1;
+		tmTime.tm_mday=atoi(sTime.substr(8,2).c_str());
+		tmTime.tm_hour=atoi(sTime.substr(11,2).c_str());
+		tmTime.tm_min=atoi(sTime.substr(14,2).c_str());
+		tmTime.tm_sec=atoi(sTime.substr(17,2).c_str());
+
+
+}
+//convert struct tm time to char 
+void AsciiTime (struct tm &ltime , char * pTime )
+{
+		sprintf(pTime, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
+}
+
+std::string  GetCurrentAsciiTime ()
+{
+	    time_t now = time(0)+1;	
+		struct tm ltime;
+		localtime_r(&now, &ltime);
+		char pTime[40];
+		AsciiTime (ltime ,  pTime );
+		return pTime ;
+}
+
+void AsciiTime ( time_t DateStart, char * DateStr )
+{
+	struct tm ltime;
+	localtime_r(&DateStart, &ltime);
+	AsciiTime (ltime ,  DateStr );
+
+}
+
+time_t DateAsciiToTime_t ( std::string & DateStr )
+{
+	struct tm tmTime ;
+	DateAsciiTotmTime (DateStr , tmTime  );
+	return mktime(&tmTime);
+
+}
 std::string GenerateMD5Hash(const std::string &InputString, const std::string &Salt)
 {
 	std::string cstring = InputString + Salt;
@@ -742,3 +805,35 @@ std::string GenerateUserAgent()
 	sstr << "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/" << (601 + sversion) << "." << (36+mversion) << " (KHTML, like Gecko) Chrome/" << (53 + mversion) << ".0." << cversion << ".0 Safari/" << (601 + sversion) << "." << (36+sversion);
 	return sstr.str();
 }
+
+std::string MakeHtml(const std::string &txt)
+{
+        std::string sRet = txt;
+
+        stdreplace(sRet, "&", "&amp;");
+        stdreplace(sRet, "\"", "&quot;");
+        stdreplace(sRet, "'", "&apos;");
+        stdreplace(sRet, "<", "&lt;");
+        stdreplace(sRet, ">", "&gt;");
+        stdreplace(sRet, "\r\n", "<br/>");
+        return sRet;
+}
+
+#if defined WIN32
+//FILETIME of Jan 1 1970 00:00:00
+static const uint64_t epoch = (const uint64_t)(116444736000000000);
+
+int gettimeofday( timeval * tp, void * tzp)
+{
+	FILETIME    file_time;
+	SYSTEMTIME  system_time;
+	ULARGE_INTEGER ularge;
+	GetSystemTime(&system_time);
+	SystemTimeToFileTime(&system_time, &file_time);
+	ularge.LowPart = file_time.dwLowDateTime;
+	ularge.HighPart = file_time.dwHighDateTime;
+	tp->tv_sec = (long)((ularge.QuadPart - epoch) / 10000000L);
+	tp->tv_usec = (long)(system_time.wMilliseconds * 1000);
+	return 0;
+}
+#endif
