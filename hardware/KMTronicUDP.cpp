@@ -134,7 +134,6 @@ void KMTronicUDP::GetMeterDetails()
 	int udpSocket, n;
 	struct sockaddr_in udpClient;
 	char buf[8];
-	struct timeval tv;
 	socklen_t serverlen;
 
         struct hostent *he;
@@ -150,14 +149,15 @@ void KMTronicUDP::GetMeterDetails()
 	udpClient.sin_port = htons(m_usIPPort); // short, network byte order
 	udpClient.sin_addr = *((struct in_addr *)he->h_addr);
 
-	/** set timeout **/
-	tv.tv_sec = 1;
-	tv.tv_usec = 0;
-	if (setsockopt(udpSocket, SOL_SOCKET, SO_RCVTIMEO,&tv,sizeof(tv)) < 0) {
-		closesocket(udpSocket);
-		_log.Log(LOG_ERROR, "KMTronic: Error setting timeout");
-		return;
-	}
+	/** set timeout to 1 second**/
+#if !defined WIN32
+        struct timeval tv;
+        tv.tv_sec = 1;
+        setsockopt(udpSocket, SOL_SOCKET, SO_RCVTIMEO,(struct timeval *)&tv,sizeof(struct timeval));
+#else
+        unsigned long nTimeout = 1*1000;
+        setsockopt(udpSocket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&nTimeout, sizeof(DWORD));
+#endif
 
 
 	/** send the packet **/
