@@ -289,6 +289,7 @@ hardware/AccuWeather.cpp
 hardware/AnnaThermostat.cpp
 hardware/ASyncSerial.cpp
 hardware/ASyncTCP.cpp
+hardware/ASyncUDP.cpp
 hardware/AtagOne.cpp
 hardware/BleBox.cpp
 hardware/Comm5TCP.cpp
@@ -322,6 +323,10 @@ hardware/HEOS.cpp
 hardware/I2C.cpp
 hardware/ICYThermostat.cpp
 hardware/InComfort.cpp
+hardware/itgw/ITGWSwitchBrennenstuhl.cpp
+hardware/itgw/ITGWSwitchIntertechno.cpp
+hardware/ITGWBase.cpp
+hardware/ITGWUDP.cpp
 hardware/KMTronicBase.cpp
 hardware/KMTronic433.cpp
 hardware/KMTronicSerial.cpp

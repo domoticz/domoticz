@@ -26,6 +26,7 @@
 #include "../hardware/MySensorsBase.h"
 #include "../hardware/RFXBase.h"
 #include "../hardware/RFLinkBase.h"
+#include "../hardware/ITGWBase.h"
 #include "../hardware/HEOS.h"
 #ifdef WITH_GPIO
 #include "../hardware/Gpio.h"
@@ -574,6 +575,7 @@ namespace http {
 			RegisterRType("createevohomesensor", boost::bind(&CWebServer::RType_CreateEvohomeSensor, this, _1, _2, _3));
 			RegisterRType("bindevohome", boost::bind(&CWebServer::RType_BindEvohome, this, _1, _2, _3));
 			RegisterRType("createrflinkdevice", boost::bind(&CWebServer::RType_CreateRFLinkDevice, this, _1, _2, _3));
+			RegisterRType("createitgwdevice", boost::bind(&CWebServer::RType_CreateITGWDevice, this, _1, _2, _3));
 
 			RegisterRType("custom_light_icons", boost::bind(&CWebServer::RType_CustomLightIcons, this, _1, _2, _3));
 			RegisterRType("plans", boost::bind(&CWebServer::RType_Plans, this, _1, _2, _3));
@@ -1079,6 +1081,10 @@ namespace http {
 					}
 				}
 			}
+      else if (htype == HTYPE_ITGWUDP){
+        if (address == "")
+            return;
+      }
 			else if (htype == HTYPE_DomoticzInternal)	{
 				// DomoticzInternal cannot be added manually
 				return;
@@ -1413,7 +1419,7 @@ namespace http {
 				(htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) ||
 				(htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_S0SmartMeterTCP) || (htype == HTYPE_ECODEVICES) || (htype == HTYPE_Mochad) ||
 				(htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MySensorsMQTT) || (htype == HTYPE_MQTT) || (htype == HTYPE_FRITZBOX) || (htype == HTYPE_ETH8020) || (htype == HTYPE_Sterbox) ||
-				(htype == HTYPE_KMTronicTCP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_RelayNet)  || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_RFLINKTCP) ||
+				(htype == HTYPE_KMTronicTCP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_RelayNet)  || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_RFLINKTCP) || (htype == HTYPE_ITGWUDP) ||
 				(htype == HTYPE_Comm5TCP || (htype == HTYPE_CurrentCostMeterLAN)) ||
 				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviSmartdenLan) || (htype == HTYPE_Ec3kMeterTCP) || (htype == HTYPE_MultiFun) || (htype == HTYPE_ZIBLUETCP)
 				){
@@ -3568,6 +3574,7 @@ namespace http {
 						case HTYPE_RaspberryGPIO:
 						case HTYPE_RFLINKUSB:
 						case HTYPE_RFLINKTCP:
+						case HTYPE_ITGWUDP:
 						case HTYPE_ZIBLUEUSB:
 						case HTYPE_ZIBLUETCP:
 						case HTYPE_OpenWebNetTCP:
@@ -4276,6 +4283,41 @@ namespace http {
 							return;
 						devid = id;
 					}
+          else if (lighttype == 115)
+          {
+            dtype = pTypeGeneralSwitch;
+            subtype = lighttype;
+            std::string shousecode = request::findValue(&req, "housecode");
+            sunitcode = request::findValue(&req, "unitcode");
+            if (
+              (shousecode == "") ||
+              (sunitcode == "")
+              )
+              return;
+            sprintf(szTmp, "%02X", atoi(sunitcode.c_str()));
+						sunitcode = szTmp;
+						sprintf(szTmp, "%02X", atoi(shousecode.c_str()));
+						shousecode = szTmp;
+						sprintf(szTmp, "%03X", switchtype);
+            devid = shousecode+sunitcode+szTmp;
+          }
+          else if (lighttype == 116)
+          {
+            dtype = pTypeGeneralSwitch;
+            subtype = lighttype;
+            std::string dipswitchcode = request::findValue(&req, "dipswitchcode");
+            sunitcode = "0";
+            std::string sdipswitchcode;
+            if (
+              (dipswitchcode == "")
+              )
+              return;
+            char * pEnd;
+						sprintf(szTmp, "%03lX", std::strtol(dipswitchcode.c_str(), &pEnd, 2));
+						sdipswitchcode = szTmp;
+						sprintf(szTmp, "%02X", switchtype);
+            devid = "1"+sdipswitchcode+szTmp;
+          }
 					else if ((lighttype >= 200) && (lighttype < 300))
 					{
 						dtype = pTypeBlinds;
@@ -4443,7 +4485,7 @@ namespace http {
 				CDomoticzHardwareBase *pBaseHardware = reinterpret_cast<CDomoticzHardwareBase*>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
 				if (pBaseHardware != NULL)
 				{
-					if ((pBaseHardware->HwdType == HTYPE_RFLINKUSB) || (pBaseHardware->HwdType == HTYPE_RFLINKTCP)) {
+					if ((pBaseHardware->HwdType == HTYPE_RFLINKUSB) || (pBaseHardware->HwdType == HTYPE_RFLINKTCP) || (pBaseHardware->HwdType == HTYPE_ITGWUDP)) {
 						ConvertToGeneralSwitchType(devid, dtype, subtype);
 					}
 				}
@@ -4729,6 +4771,41 @@ namespace http {
 						return;
 					devid = id;
 				}
+        else if (lighttype == 115)
+          {
+            dtype = pTypeGeneralSwitch;
+            subtype = lighttype;
+            std::string shousecode = request::findValue(&req, "housecode");
+            sunitcode = request::findValue(&req, "unitcode");
+            if (
+              (shousecode == "") ||
+              (sunitcode == "")
+              )
+              return;
+            sprintf(szTmp, "%02X", atoi(sunitcode.c_str()));
+						sunitcode = szTmp;
+						sprintf(szTmp, "%02X", atoi(shousecode.c_str()));
+						shousecode = szTmp;
+						sprintf(szTmp, "%03X", switchtype);
+            devid = shousecode+sunitcode+szTmp;
+          }
+          else if (lighttype == 116)
+          {
+            dtype = pTypeGeneralSwitch;
+            subtype = lighttype;
+            std::string dipswitchcode = request::findValue(&req, "dipswitchcode");
+            sunitcode = "0";
+            std::string sdipswitchcode;
+            if (
+              (dipswitchcode == "")
+              )
+              return;
+            char * pEnd;
+						sprintf(szTmp, "%03lX", std::strtol(dipswitchcode.c_str(), &pEnd, 2));
+						sdipswitchcode = szTmp;
+						sprintf(szTmp, "%02X", switchtype);
+            devid = "1"+sdipswitchcode+szTmp;
+          }
 				else
 				{
 					if (lighttype == 100)
@@ -5001,7 +5078,7 @@ namespace http {
 				CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(atoi(hwdid.c_str()));
 				if (pBaseHardware != NULL)
 				{
-					if ((pBaseHardware->HwdType == HTYPE_RFLINKUSB) || (pBaseHardware->HwdType == HTYPE_RFLINKTCP)) {
+					if ((pBaseHardware->HwdType == HTYPE_RFLINKUSB) || (pBaseHardware->HwdType == HTYPE_RFLINKTCP) || (pBaseHardware->HwdType == HTYPE_ITGWUDP)) {
 						ConvertToGeneralSwitchType(devid, dtype, subtype);
 					}
 				}
@@ -10797,6 +10874,11 @@ namespace http {
 						else if ((pHardware->HwdType == HTYPE_RFLINKUSB) || (pHardware->HwdType == HTYPE_RFLINKTCP))
 						{
 							CRFLinkBase *pMyHardware = reinterpret_cast<CRFLinkBase*>(pHardware);
+							root["result"][ii]["version"] = pMyHardware->m_Version;
+						}
+            else if ((pHardware->HwdType == HTYPE_ITGWUDP))
+						{
+							CITGWBase *pMyHardware = reinterpret_cast<CITGWBase*>(pHardware);
 							root["result"][ii]["version"] = pMyHardware->m_Version;
 						}
 						else

@@ -119,6 +119,7 @@
 #include "../hardware/OpenWebNetUSB.h"
 #include "../hardware/InComfort.h"
 #include "../hardware/RelayNet.h"
+#include "../hardware/ITGWUDP.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -979,6 +980,10 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_IntergasInComfortLAN2RF:
 		pHardware = new CInComfort(ID, Address, Port);
+		break;
+  case HTYPE_ITGWUDP:
+		//LAN
+		pHardware = new CITGWUDP(ID, Address);
 		break;
 	}
 

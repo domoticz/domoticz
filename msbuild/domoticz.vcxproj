@@ -415,6 +415,7 @@
     <ClInclude Include="..\hardware\AnnaThermostat.h" />
     <ClInclude Include="..\hardware\Arilux.h" />
     <ClInclude Include="..\hardware\ASyncTCP.h" />
+    <ClInclude Include="..\hardware\ASyncUDP.h" />
     <ClInclude Include="..\hardware\AtagOne.h" />
     <ClInclude Include="..\hardware\Comm5Serial.h" />
     <ClInclude Include="..\hardware\Comm5TCP.h" />
@@ -444,6 +445,10 @@
     <ClInclude Include="..\hardware\I2C.h" />
     <ClInclude Include="..\hardware\ICYThermostat.h" />
     <ClInclude Include="..\hardware\InComfort.h" />
+    <ClInclude Include="..\hardware\itgw\ITGWSwitchBrennenstuhl.h" />
+    <ClInclude Include="..\hardware\itgw\ITGWSwitchIntertechno.h" />
+    <ClInclude Include="..\hardware\ITGWBase.h" />
+    <ClInclude Include="..\hardware\ITGWUDP.h" />
     <ClInclude Include="..\hardware\KMTronic433.h" />
     <ClInclude Include="..\hardware\KMTronicBase.h" />
     <ClInclude Include="..\hardware\KMTronicSerial.h" />
@@ -654,6 +659,7 @@
     <ClCompile Include="..\hardware\Arilux.cpp" />
     <ClCompile Include="..\hardware\ASyncSerial.cpp" />
     <ClCompile Include="..\hardware\ASyncTCP.cpp" />
+    <ClCompile Include="..\hardware\ASyncUDP.cpp" />
     <ClCompile Include="..\hardware\AtagOne.cpp" />
     <ClCompile Include="..\hardware\Comm5Serial.cpp" />
     <ClCompile Include="..\hardware\Comm5TCP.cpp" />
@@ -683,6 +689,10 @@
     <ClCompile Include="..\hardware\I2C.cpp" />
     <ClCompile Include="..\hardware\ICYThermostat.cpp" />
     <ClCompile Include="..\hardware\InComfort.cpp" />
+    <ClCompile Include="..\hardware\itgw\ITGWSwitchBrennenstuhl.cpp" />
+    <ClCompile Include="..\hardware\itgw\ITGWSwitchIntertechno.cpp" />
+    <ClCompile Include="..\hardware\ITGWBase.cpp" />
+    <ClCompile Include="..\hardware\ITGWUDP.cpp" />
     <ClCompile Include="..\hardware\KMTronic433.cpp" />
     <ClCompile Include="..\hardware\KMTronicBase.cpp" />
     <ClCompile Include="..\hardware\KMTronicSerial.cpp" />
