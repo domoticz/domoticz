@@ -13,6 +13,12 @@
 #define ON "1,3,3,1,1,3,3,1,"
 #define OFF "1,3,3,1,1,3,1,3,"
 
+/** Brennenstuhl basic 433MHz swiches support
+ * Tested with assorted RCS-1000 devices.
+ *
+ * http://www.brennenstuhl.com/index.php?module=products_downloads&index%5Bproducts_downloads%5D%5Bcategory%5D=105
+ */
+
 ITGWSwitchBrennenstuhl::ITGWSwitchBrennenstuhl() {
 }
 

@@ -15,6 +15,20 @@
 #include "itgw/ITGWSwitchIntertechno.h"
 #include "itgw/ITGWSwitchBrennenstuhl.h"
 
+/*Intertechno 433Mhz gateway ITGW-433 support
+ *
+ * ITGW is transmitter only, commonly sold in Bauhous brand stores
+ * in eastern parts of europe. The Wlan in the name is misleading,
+ * device requires a cable ethernet to operate and gets it's IP
+ * from DHCP only. To configure it, easyest way of finding out what it got,
+ * is using your smartphone and "Power Switch" app. It broadcasts it's presence
+ * on the network, that this app detects. Or you can listen for the broadcasts
+ * with whatever you preffer for it. You may also want to tell router
+ * to keep giving it the same ip.
+ *
+ * http://intertechno.at/front/produkte/smartphone/itgw-433/
+ */
+
 #ifdef _DEBUG
 	#define ENABLE_LOGGING
 #endif

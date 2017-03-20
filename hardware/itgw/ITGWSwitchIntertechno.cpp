@@ -7,6 +7,14 @@
 #include "stdafx.h"
 #include "ITGWSwitchIntertechno.h"
 
+/* Intertechno switches support
+ * Should be capable of switching any intertechno switches.
+ * for teachable ones, you need to configure the taught code
+ * as it was set with dials on the remote.
+ *
+ * http://intertechno.at/front/produkte/empfanger/einaus/
+ */
+
 #define B_LOW "4,12,4,12,"
 #define B_FLOAT "4,12,12,4,"
 #define ON "4,12,12,4,4,12,12,4,"
