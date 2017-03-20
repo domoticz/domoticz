@@ -76,6 +76,7 @@
 #include "../hardware/RFLinkTCP.h"
 #include "../hardware/KMTronicSerial.h"
 #include "../hardware/KMTronicTCP.h"
+#include "../hardware/KMTronicUDP.h"
 #include "../hardware/KMTronic433.h"
 #include "../hardware/SolarMaxTCP.h"
 #include "../hardware/Pinger.h"
@@ -775,6 +776,10 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_KMTronicTCP:
 		//LAN
 		pHardware = new KMTronicTCP(ID, Address, Port, Username, Password);
+		break;
+	case HTYPE_KMTronicUDP:
+		//UDP
+		pHardware = new KMTronicUDP(ID, Address, Port);
 		break;
 	case HTYPE_NefitEastLAN:
 		pHardware = new CNefitEasy(ID, Address, Port);
