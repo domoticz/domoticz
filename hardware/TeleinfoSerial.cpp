@@ -266,8 +266,11 @@ void CTeleinfoSerial::MatchLine()
 			case TELEINFO_TYPE_BBRHPJR:
 				teleinfo.BBRHPJR = ulValue;
 				break;
+			case TELEINFO_TYPE_DEMAIN:
+				teleinfo.DEMAIN = vString;
+				break;
 			case TELEINFO_TYPE_PTEC:
-				SendSwitch(5,1,255,(vString.substr (0,2) == "HC"),0,"Heures Creuses");
+				//SendSwitch(5,1,255,(vString.substr (0,2) == "HC"),0,"Heures Creuses");
 				teleinfo.PTEC = vString;
 				break;
 			case TELEINFO_TYPE_IINST:
