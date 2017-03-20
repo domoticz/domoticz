@@ -19,6 +19,7 @@ public:
    virtual int GetVoltage(const _t1WireDevice& device,int unit) const;
    virtual float GetIlluminance(const _t1WireDevice& device) const;
    virtual void StartSimultaneousTemperatureRead();
+   virtual void PrepareDevices();
    // END : I_1WireSystem implementation
 
    static bool IsAvailable();
@@ -27,7 +28,7 @@ protected:
    void GetDevice(const std::string& deviceName, /*out*/_t1WireDevice& device) const;
 
    bool sendAndReceiveByRwFile(std::string path,const unsigned char * const cmd,size_t cmdSize,unsigned char * const answer,size_t answerSize) const;
-
+   void ReadStates();
 
    // Thread management
    boost::thread* m_Thread;
@@ -57,8 +58,6 @@ protected:
    protected:
       _t1WireDevice m_Device;
    };
-
-   bool m_AllDevicesInitialized;
 
    // Thread-shared data and lock methods
    boost::mutex m_Mutex;

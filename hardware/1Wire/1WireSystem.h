@@ -22,4 +22,5 @@ public:
    virtual int GetVoltage(const _t1WireDevice& device,int unit) const=0;
    virtual float GetIlluminance(const _t1WireDevice& device) const=0;
    virtual void StartSimultaneousTemperatureRead()=0;
+   virtual void PrepareDevices() = 0;
 };
