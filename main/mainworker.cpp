@@ -2072,7 +2072,7 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const 
 	if (_log.isTraceEnable()) {
 		char  mes[sizeof(tRBUF)*2+2];
 		char * ptmes = mes;
-		for (int i = 0; i < Len; i++) {
+		for (size_t i = 0; i < Len; i++) {
 			sprintf(ptmes,"%02X", pRXCommand[i]);
 			ptmes += 2;
 		}
@@ -9706,8 +9706,14 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 	}
 	else if (subType == sTypeAlert)
 	{
-		sprintf(szTmp, "%d", pMeter->intval1);
-		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, pMeter->intval1, szTmp, procResult.DeviceName);
+	        std::stringstream ss;
+		if (pMeter->text ==  "")
+        		ss << pMeter->intval1;
+		else
+			ss << "(" << pMeter->intval1 << ") " << pMeter->text.c_str();
+		const std::string tmp = ss.str();
+		const char* cstr = tmp.c_str();
+		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, pMeter->intval1, cstr, procResult.DeviceName);
 		if (DevRowIdx == -1)
 			return;
 		m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_USAGE, static_cast<float>(pMeter->intval1));
