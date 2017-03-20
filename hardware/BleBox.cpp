@@ -136,7 +136,6 @@ void BleBox::GetDevicesState()
 						break;
 
 					const int currentPos = root["currentPos"]["position"].asInt();
-					//	const int desiredPos = root["desiredPos"].asInt();
 					const int pos = currentPos;
 
 					bool opened = true;
@@ -324,7 +323,7 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 							state = boost::to_string(percentage);
 						}
 
-					Json::Value root = SendCommand(IPAddress, "/s/" + state);
+					Json::Value root = SendCommand(IPAddress, "/s/p/" + state);
 					if (root.empty())
 						return false;
 
