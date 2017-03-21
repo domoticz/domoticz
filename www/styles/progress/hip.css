@@ -29,6 +29,10 @@ body{
     background-attachment: fixed;
 }
 
+body table#itemtabledoubleicon tbody tr, body table#itemtable tbody tr, body table#itemtablenostatus tbody tr, body table#itemtablenostatus tbody tr, body table#itemtablenotype tbody tr {
+    background-color:transparent;
+}
+
 .navbar{
     background-color:#f1f1f1;
 }
@@ -41,6 +45,14 @@ body{
 #tabs a{
     font-family: "Lato", sans-serif;
     font-size: 110%;
+}
+
+#bannav td a{
+    text-transform: uppercase;
+}
+
+.ui-draggable td:last-of-type a.btnsmall{
+    color: #43A4D3!important
 }
 
 #holder h1, #holder h2, #holder h3{
@@ -85,7 +97,6 @@ tr, #name{
 .related > .span3 {
     text-align: center;
 }
-
 
 /* Settings reshuffle for big screens */
 
