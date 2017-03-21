@@ -2,7 +2,7 @@
 Domoticz Software : http://domoticz.com/
 File : TeleinfoSerial.cpp
 Author : Nicolas HILAIRE
-Version : 2.0
+Version : 2.1
 Description : This class decodes the Teleinfo signal from serial/USB devices before processing them
 
 History :
@@ -14,8 +14,9 @@ History :
 - 2016-02-11 : Fix power display when PAPP is missing (Anthony LAGUERRE)
 - 2016-02-17 : Fix bug power usage (Anthony LAGUERRE). Thanks to Multinet
 - 2017-01-28 : Add 'Heures Creuses' Switch (A.L)
-- 2017-03-15 : Renamed from Teleinfo.cpp to TeleinfoSerial.cpp in order to create
+- 2017-03-15 : 2.0 Renamed from Teleinfo.cpp to TeleinfoSerial.cpp in order to create
 			   a shared class to process Teleinfo protocol (Blaise Thauvin)
+- 2017-03-21 : 2.1 Fixed bug sending too many updates
 */
 
 #include "stdafx.h"
@@ -34,6 +35,8 @@ History :
 #ifdef _DEBUG
 #define DEBUG_TeleinfoSerial
 #endif
+
+#define NBFRAMES 8 		//number of frames to collect before processing one
 
 #define TE_ADCO "ADCO"			 //meter id
 #define TE_OPTARIF "OPTARIF"	 //pricing option
@@ -54,10 +57,7 @@ History :
 #define TE_IINST1 "IINST1"		 //instant current power usage pahse 1
 #define TE_IINST2 "IINST2"		 //instant current power usage phase 2
 #define TE_IINST3 "IINST3"		 //instant current power usage phase 2
-#define TE_IMAX "IMAX"			 //maximal current power usage
-#define TE_IMAX1 "IMAX1"		 //maximal current power usage phase 1
-#define TE_IMAX2 "IMAX2"		 //maximal current power usage phase 2
-#define TE_IMAX3 "IMAX3"		 //maximal current power usage phase 2
+#define TE_PPOT "PPOT"			 //Potental on all 3 phases
 #define TE_DEMAIN "DEMAIN"		 //tariff tomorrow
 #define TE_PEJP "PEJP"			 //prior notice "pointe mobile" tariff
 #define TE_PAPP "PAPP"			 //apparent power
@@ -84,10 +84,7 @@ CTeleinfoSerial::Match CTeleinfoSerial::m_matchlist[27] =
 	{ STD, TELEINFO_TYPE_IINST1, TE_IINST1, 3 },
 	{ STD, TELEINFO_TYPE_IINST2, TE_IINST2, 3 },
 	{ STD, TELEINFO_TYPE_IINST3, TE_IINST3, 3 },
-	{ STD, TELEINFO_TYPE_IMAX, TE_IMAX, 3 },
-	{ STD, TELEINFO_TYPE_IMAX1, TE_IMAX1, 3 },
-	{ STD, TELEINFO_TYPE_IMAX2, TE_IMAX2, 3 },
-	{ STD, TELEINFO_TYPE_IMAX3, TE_IMAX3, 3 },
+	{ STD, TELEINFO_TYPE_PPOT, TE_PPOT, 2 },
 	{ STD, TELEINFO_TYPE_PEJP, TE_PEJP, 2 },
 	{ STD, TELEINFO_TYPE_DEMAIN, TE_DEMAIN, 4 },
 	{ STD, TELEINFO_TYPE_PAPP, TE_PAPP, 5 },
@@ -285,31 +282,22 @@ void CTeleinfoSerial::MatchLine()
 			case TELEINFO_TYPE_IINST3:
 				teleinfo.IINST3 = ulValue;
 				break;
-			case TELEINFO_TYPE_IMAX:
-				teleinfo.IMAX = ulValue;
-				break;
-			case TELEINFO_TYPE_IMAX1:
-				teleinfo.IMAX1 = ulValue;
-				break;
-			case TELEINFO_TYPE_IMAX2:
-				teleinfo.IMAX2 = ulValue;
-				break;
-			case TELEINFO_TYPE_IMAX3:
-				teleinfo.IMAX3 = ulValue;
+			case TELEINFO_TYPE_PPOT:
+				teleinfo.PPOT = ulValue;
 				break;
 			case TELEINFO_TYPE_PAPP:
 				teleinfo.PAPP = ulValue;
 				break;
 			case TELEINFO_TYPE_MOTDETAT:
 				m_counter++;
-				if (m_counter >= NumberOfFrameToSendOne)
+				if (m_counter >= NBFRAMES)
 				{
 				#ifdef DEBUG_TeleinfoSerial
 					_log.Log(LOG_NORM,"Teleinfo frame complete");
 				#endif
 					m_counter = 0;
-				}
 				ProcessTeleinfo(teleinfo);
+				}
 				break;
 			default:
 				_log.Log(LOG_ERROR, "Teleinfo: label '%s' not handled!", t.key);
