@@ -90,7 +90,7 @@ tr, #name{
 
 #dashcontent .selectorlevels .ui-state-default{
     background-color: #D4E1EE;
-    box-shadow: -2px -1px 20px -1px rgba(50, 50, 50, 0.1)
+    box-shadow: -2px -2px 20px -1px rgba(50, 50, 50, 0.2)
 }
 
 .related > .span2,
