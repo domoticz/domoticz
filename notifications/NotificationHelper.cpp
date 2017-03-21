@@ -114,7 +114,7 @@ bool CNotificationHelper::SendMessageEx(
 
 	for (it_noti_type iter = m_notifiers.begin(); iter != m_notifiers.end(); ++iter) {
 		std::map<std::string, int>::const_iterator ittSystem = ActiveSystems.find(iter->first);
-		if (ActiveSystems.empty() || (ittSystem!=ActiveSystems.end() && iter->second->IsConfigured())) 
+		if (ActiveSystems.empty() || (ittSystem!=ActiveSystems.end() && iter->second->IsConfigured()))
 		{
 			bRet |= iter->second->SendMessageEx(Idx, Name, Subject, Text, ExtraData, Priority, Sound, bFromNotification);
 		}
@@ -211,6 +211,8 @@ bool CNotificationHelper::CheckAndHandleTempHumidityNotification(
 	std::vector<_tNotification>::const_iterator itt;
 	for (itt = notifications.begin(); itt != notifications.end(); ++itt)
 	{
+		if (itt->LastUpdate)
+			TouchLastUpdate(itt->ID);
 		if ((atime >= itt->LastSend) || (itt->SendAlways)) //emergency always goes true
 		{
 			std::vector<std::string> splitresults;
@@ -329,6 +331,8 @@ bool CNotificationHelper::CheckAndHandleDewPointNotification(
 	std::vector<_tNotification>::const_iterator itt;
 	for (itt = notifications.begin(); itt != notifications.end(); ++itt)
 	{
+		if (itt->LastUpdate)
+			TouchLastUpdate(itt->ID);
 		if ((atime >= itt->LastSend) || (itt->SendAlways)) //emergency always goes true
 		{
 			std::vector<std::string> splitresults;
@@ -388,6 +392,8 @@ bool CNotificationHelper::CheckAndHandleValueNotification(
 	std::vector<_tNotification>::const_iterator itt;
 	for (itt = notifications.begin(); itt != notifications.end(); ++itt)
 	{
+		if (itt->LastUpdate)
+			TouchLastUpdate(itt->ID);
 		if ((atime >= itt->LastSend) || (itt->SendAlways)) //emergency always goes true
 		{
 			std::vector<std::string> splitresults;
@@ -446,6 +452,8 @@ bool CNotificationHelper::CheckAndHandleAmpere123Notification(
 	std::vector<_tNotification>::const_iterator itt;
 	for (itt = notifications.begin(); itt != notifications.end(); ++itt)
 	{
+		if (itt->LastUpdate)
+			TouchLastUpdate(itt->ID);
 		if ((atime >= itt->LastSend) || (itt->SendAlways)) //emergency always goes true
 		{
 			std::vector<std::string> splitresults;
@@ -578,6 +586,8 @@ bool CNotificationHelper::CheckAndHandleNotification(
 	std::vector<_tNotification>::const_iterator itt;
 	for (itt = notifications.begin(); itt != notifications.end(); ++itt)
 	{
+		if (itt->LastUpdate)
+			TouchLastUpdate(itt->ID);
 		std::vector<std::string> splitresults;
 		StringSplit(itt->Params, ";", splitresults);
 		if (splitresults.size() < 1)
@@ -640,6 +650,8 @@ bool CNotificationHelper::CheckAndHandleNotification(
 	std::vector<_tNotification>::const_iterator itt;
 	for (itt = notifications.begin(); itt != notifications.end(); ++itt)
 	{
+		if (itt->LastUpdate)
+			TouchLastUpdate(itt->ID);
 		if ((atime >= itt->LastSend) || (itt->SendAlways)) //emergency always goes true
 		{
 			std::vector<std::string> splitresults;
@@ -854,7 +866,7 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 					if (!bWhenEqual || iLevel < 10 || iLevel > 100)
 						continue; //invalid
 
-					if (llevel == iLevel) 
+					if (llevel == iLevel)
 					{
 						bSendNotification = true;
 						std::string sLevel = boost::lexical_cast<std::string>(llevel);
@@ -876,7 +888,7 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 						}
 					}
 				}
-				else 
+				else
 				{
 					bSendNotification = true;
 					szExtraData += "Status=Off|";
@@ -954,6 +966,64 @@ bool CNotificationHelper::CheckAndHandleRainNotification(
 	return false;
 }
 
+void CNotificationHelper::CheckAndHandleLastUpdateNotification()
+{
+	if (m_notifications.size() < 1)
+		return;
+
+	time_t atime = mytime(NULL);
+	atime -= m_NotificationSensorInterval;
+
+	std::map<uint64_t, std::vector<_tNotification> >::const_iterator itt;
+
+	for (itt = m_notifications.begin(); itt != m_notifications.end(); ++itt)
+	{
+		std::vector<_tNotification>::const_iterator itt2;
+		for (itt2 = itt->second.begin(); itt2 != itt->second.end(); ++itt2)
+		{
+			if (((atime >= itt2->LastSend) || (itt2->SendAlways)) && (itt2->LastUpdate)) //emergency always goes true
+			{
+				std::vector<std::string> splitresults;
+				StringSplit(itt2->Params, ";", splitresults);
+				if (splitresults.size() < 3)
+					continue;
+				std::string ttype = Notification_Type_Desc(NTYPE_LASTUPDATE, 1);
+				if (splitresults[0] == ttype)
+				{
+					time_t btime = mytime(NULL);
+					bool bWhenIsGreater = (splitresults[1] == ">");
+					int SensorTimeOut = atoi(splitresults[2].c_str());
+					int diff = difftime(btime,itt2->LastUpdate);
+					if (((diff > SensorTimeOut*60) && (bWhenIsGreater)) || ((diff < SensorTimeOut*60) && (!bWhenIsGreater)))
+					{
+						uint64_t Idx = itt->first;
+						std::vector<std::vector<std::string> > result;
+						result = m_sql.safe_query("SELECT SwitchType FROM DeviceStatus WHERE (ID=%" PRIu64 ")", Idx);
+						if (result.size() == 0)
+							continue;
+						std::string szExtraData = "|Name=" + itt2->DeviceName + "|SwitchType=" + result[0][0] + "|";
+						std::string ltype = Notification_Type_Desc(NTYPE_LASTUPDATE, 0);
+						std::string label = Notification_Type_Label(NTYPE_LASTUPDATE);
+						char szDate[50];
+						char szTmp[300];
+						struct tm ltime;
+						localtime_r(&itt2->LastUpdate,&ltime);
+						sprintf(szDate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
+						sprintf(szTmp,"Sensor %s %s: %s [%s %d %s]", itt2->DeviceName.c_str(),ltype.c_str(),szDate,splitresults[1].c_str(),SensorTimeOut,label.c_str());
+						std::string msg = szTmp;
+						if (!itt2->CustomMessage.empty())
+						{
+							msg = ParseCustomMessage(itt2->CustomMessage, itt2->DeviceName, "");
+						}
+						SendMessageEx(Idx, itt2->DeviceName, itt2->ActiveSystems, msg, msg, szExtraData, itt2->Priority, std::string(""), true);
+						TouchNotification(itt2->ID);
+					}
+				}
+			}
+		}
+	}
+}
+
 void CNotificationHelper::TouchNotification(const uint64_t ID)
 {
 	char szDate[50];
@@ -978,6 +1048,26 @@ void CNotificationHelper::TouchNotification(const uint64_t ID)
 			if (itt2->ID == ID)
 			{
 				itt2->LastSend = atime;
+				return;
+			}
+		}
+	}
+}
+
+void CNotificationHelper::TouchLastUpdate(const uint64_t ID)
+{
+	time_t atime = mytime(NULL);
+	boost::lock_guard<boost::mutex> l(m_mutex);
+
+	std::map<uint64_t, std::vector<_tNotification> >::iterator itt;
+	for (itt = m_notifications.begin(); itt != m_notifications.end(); ++itt)
+	{
+		std::vector<_tNotification>::iterator itt2;
+		for (itt2 = itt->second.begin(); itt2 != itt->second.end(); ++itt2)
+		{
+			if (itt2->ID == ID)
+			{
+				itt2->LastUpdate = atime;
 				return;
 			}
 		}
@@ -1068,6 +1158,7 @@ void CNotificationHelper::ReloadNotifications()
 	time_t mtime = mytime(NULL);
 	struct tm atime;
 	localtime_r(&mtime, &atime);
+	std::vector<std::string> splitresults;
 
 	std::stringstream sstr;
 
@@ -1107,7 +1198,27 @@ void CNotificationHelper::ReloadNotifications()
 			struct tm ntime;
 			ParseSQLdatetime(notification.LastSend, ntime, stime, atime.tm_isdst);
 		}
-
+		std::string ttype = Notification_Type_Desc(NTYPE_LASTUPDATE, 1);
+		StringSplit(notification.Params, ";", splitresults);
+		if (splitresults[0] == ttype) {
+			std::vector<std::vector<std::string> > result2;
+			result2 = m_sql.safe_query(
+				"SELECT B.Name, B.LastUpdate "
+				"FROM Notifications AS A "
+				"LEFT OUTER JOIN DeviceStatus AS B "
+				"ON A.DeviceRowID=B.ID "
+				"WHERE (A.Params LIKE '%q%%') "
+				"AND (A.ID=='%" PRIu64 "') "
+				"LIMIT 1",
+				ttype.c_str(), notification.ID
+				);
+			if (result2.size() == 1) {
+				struct tm ntime;
+				notification.DeviceName = result2[0][0];
+				std::string stime = result2[0][1];
+				ParseSQLdatetime(notification.LastUpdate, ntime, stime, atime.tm_isdst);
+			}
+		}
 		m_notifications[Idx].push_back(notification);
 	}
 }
