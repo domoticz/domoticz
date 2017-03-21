@@ -2,6 +2,7 @@
 
 html, body {height:100%}
 #main-view{padding-top:20px}
+td{box-sizing: border-box;}
 
 #IMain{
     background-color:#ccc;
@@ -82,10 +83,6 @@ html, body {height:100%}
     background-color: transparent!important;    
 }
 
-#dashcontent .selectorlevels .ui-button-text-only .ui-button-text{
-    padding-top: 6px;
-}
-
 #dashcontent td > div.dimslider .ui-widget-content{
     border-color:#ccc;
 }
@@ -149,10 +146,16 @@ html, body {height:100%}
     display: none;
 }
 
+.container .ui-draggable tr{
+    padding:0!important;
+    margin:5px 0!important;
+    width:100%!important;
+}
+
 #itemtablesmalldoubleicon tr, #itemtablesmall tr {
     border-style: none;
     padding: 0;
-    height: 45px!important;
+    height: 55px!important;
     position: relative;
     overflow:hidden;
 }
@@ -189,45 +192,52 @@ html, body {height:100%}
 }
 
 #name {
+    width: 55%;
+    height: 40px!important;
     font-size: 115%!important;
     border-style: none!important;
     border-width:0!important;
     color: #444!important;
     overflow: hidden;
+    box-sizing: border-box;
     padding: 14px 5px 9px 35px!important;
     position: absolute;
     top:0;
     left:0;
     text-transform: uppercase;
-    width: 50%;
+    width: 55%;
     border-top-right-radius: 0!important;
     border-bottom-right-radius: 0!important;
     border-bottom-left-radius: 0!important;
 }
 
 #dashcontent #name {
-    padding: 20px 5px 20px 20px!important;
-    max-height:45px;
+    display: flex;
+    align-items: center;
+    padding: 4px 0 0 20px!important;*/
+    width:55%;
+    height:100%!important;
 }
 
 #scenecontent #bigtext, #itemtablenostatus #bigtext {
     display: none
 }
 
-#scenecontent #itemtabledoubleicon td:last-of-type, #itemtable td:last-of-type, #itemtablenotype td:last-of-type, #itemtablenostatus td:last-of-type {
+#scenecontent #itemtabledoubleicon td:last-of-type, #itemtable td:last-of-type, #itemtablenotype td:last-of-type, #itemtablenostatus td:last-of-type, #scenecontent #itemtabledoubleicon td:last-of-type, #itemtable td:last-of-type, #itemtablenotype td:last-of-type, #itemtablenostatus td:last-of-type {
     white-space: nowrap;
-    max-width:90%;
-    margin: 0;
-    padding:0px!important;
+    /*max-width:90%;*/
+    margin: 0!important;
+    padding:0!important;
     position: absolute;
     left: 0px;
     top: 42px;
 }
 
+
 #itemtabledoubleicon tr, #itemtable tr, #itemtablenotype tr, #itemtablenostatus tr {
-    height: 120px;
+    height: 130px;
     position: relative;
-    padding:0;
+    padding:0!important;
     overflow: hidden;
 }
 
@@ -236,8 +246,8 @@ html, body {height:100%}
     color:#aaa;
     z-index:1000;
     position:absolute;
-    bottom:2px;
     left:20px;
+    bottom:0;
 }
 
 @media only screen and (max-width: 640px) {
@@ -253,16 +263,16 @@ html, body {height:100%}
     white-space: nowrap;
     padding:0 0 0 164px!important;
     position: relative;
-    top: 76px;
+    top: 81px;
     left: 20px;
     width: 90%;
 }
 
-#type > div {
-    position: relative;
+#type > .dimslider {
+    position: absolute;
     margin: 0!important;
-    top: -5px;
-    left:-164px;
+    top: 23px;
+    left: 0;
     width: 100%!important;
 }
 
@@ -375,12 +385,11 @@ a.btnstyle, a.btnstylerev {
     margin-right: 10px;
     background-image:none;
     padding: 0px 10px 0 10px;
-    
-    background: #46b1d9; /* Old browsers */
-    background: -moz-linear-gradient(top, #46b1d9 0%, #3d9bc9 50%, #2e8cbc 51%, #2571ab 100%); /* FF3.6-15 */
-    background: -webkit-linear-gradient(top, #46b1d9 0%,#3d9bc9 50%,#2e8cbc 51%,#2571ab 100%); /* Chrome10-25,Safari5.1-6 */
-    background: linear-gradient(to bottom, #46b1d9 0%,#3d9bc9 50%,#2e8cbc 51%,#2571ab 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
-    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#46b1d9', endColorstr='#2571ab',GradientType=0 ); /* IE6-9 */   
+    background: #46b1d9;
+    background: -moz-linear-gradient(top, #46b1d9 0%, #3d9bc9 50%, #2e8cbc 51%, #2571ab 100%);
+    background: -webkit-linear-gradient(top, #46b1d9 0%,#3d9bc9 50%,#2e8cbc 51%,#2571ab 100%);
+    background: linear-gradient(to bottom, #46b1d9 0%,#3d9bc9 50%,#2e8cbc 51%,#2571ab 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#46b1d9', endColorstr='#2571ab',GradientType=0 );  
 }
 
 a.btnstyle:last-of-type, a.btnstylerev:last-of-type{
@@ -701,19 +710,22 @@ table.dataTable thead th{
     color:#666
 }
 
-.selectorlevels{
+.ui-draggable .selectorlevels{
+    position:absolute;
     font-style:normal;
     margin:0;
-    top: 6px!important;
-    left: -172px!important;
+    top: 14px!important;
+    left: 0!important;
 }    
 
 #dashcontent .selectorlevels {
-    width:34%;
+    width: calc(45% - 50px);
     position:absolute;
-    top:-3px!important;
+    top:0!important;
     left:55%!important;
+    margin-top:0!important
 }
+
 #dashcontent .selectorlevels .state-default{
     color:#666;
 }
@@ -724,6 +736,7 @@ table.dataTable thead th{
     background-image:none;
     border-color:transparent!important;
     font-weight:normal;
+    margin-right:0; /* newly added */
 }
 
 .selectorlevels  .ui-state-active{
@@ -732,13 +745,40 @@ table.dataTable thead th{
 }
     
 #dashcontent .selectorlevels .ui-buttonset .ui-button{
-    width: 50%;
+    min-width: 50%;
     margin-left: 0;
-    margin-right: -.3em;
+    /*margin-right: -.3em;*/
     border-radius: 0;
     overflow:hidden;
-    height: 28px;
     border: none;
+}
+
+#dashcontent .selectorlevels .ui-buttonset label{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#dashcontent .selectorlevels label .ui-button-text{
+    padding:0;
+}
+
+/*Change button size based on amount of buttons. CSS3 is awesome: */
+
+#dashcontent .selectorlevels .ui-buttonset .ui-button:nth-child(odd) {width:100%}
+
+#dashcontent .selectorlevels .ui-buttonset{
+    height:55px;
+    display: flex;
+    flex-flow: row wrap;
+    align-items: stretch;
+    margin-right:0;
+}
+
+#dashcontent .selectorlevels .ui-buttonset .ui-button{
+    min-width:50%;
+    flex-grow: 1;
+    flex-shrink: 1;
 }
 
 .ui-dialog-titlebar{
@@ -820,7 +860,7 @@ textarea{width:100%}
 select{min-width:220px; padding:5px 0}
 input{width:auto!important; min-width:210px; padding:5px}
 br{display:none; display: inline;}
-p {margin:0!important}
+p {margin:5px 0!important}
 
 /* temporary fix for use of tables in odd places */
 #fibaromain > table > tbody > tr > td {display:block;}
