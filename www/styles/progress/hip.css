@@ -81,6 +81,11 @@ tr, #name{
     box-shadow: -2px -1px 20px -1px rgba(50, 50, 50, 0.1)
 }
 
+.related > .span2,
+.related > .span3 {
+    text-align: center;
+}
+
 
 /* Settings reshuffle for big screens */
 
