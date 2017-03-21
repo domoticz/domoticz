@@ -1,9 +1,5 @@
 @import url("hip.css");
 
-body table#itemtabledoubleicon tbody tr, body table#itemtable tbody tr, body table#itemtablenostatus tbody tr, body table#itemtablenostatus tbody tr, body table#itemtablenotype tbody tr {
-    background-color:transparent;
-}
-
 html, body {height:100%}
 #main-view{padding-top:20px}
 
@@ -100,7 +96,7 @@ html, body {height:100%}
 
 #holder h1, #holder h2, #holder h3 {
     clear: both;
-    margin: 20px 0 20px 0; /* was 10 boven en 10 onder */
+    margin: 20px 0 20px 0;
 }
 
 #holder h1{padding-bottom: 10px;}
@@ -156,7 +152,6 @@ html, body {height:100%}
 #itemtablesmalldoubleicon tr, #itemtablesmall tr {
     border-style: none;
     padding: 0;
-    /*background-color: rgb(212, 225, 238);*/
     height: 45px!important;
     position: relative;
     overflow:hidden;
@@ -233,7 +228,6 @@ html, body {height:100%}
     height: 120px;
     position: relative;
     padding:0;
-    /*background-color: #D4E1EE!important;*/
     overflow: hidden;
 }
 
@@ -277,7 +271,9 @@ html, body {height:100%}
     margin-right: 0px;
 }
 
+/*
 .navbar-inverse .navbar-inner{background-color:transparent}
+*/
 
 .navbar .nav .current_page_item > a {
     background-color: white!important;
@@ -372,10 +368,6 @@ a.btnsmall {
     background-image: none;
     margin-bottom: 10px;
     padding:7px;
-}
-
-.ui-draggable td:last-of-type a{
-    color: #43A4D3!important
 }
 
 a.btnstyle, a.btnstylerev {
