@@ -38,7 +38,7 @@ body{
     padding:10px 12px
 }
 
-/*#settingscontent*/ #tabs a{
+#tabs a{
     font-family: "Lato", sans-serif;
     font-size: 110%;
 }
@@ -70,7 +70,7 @@ tr, #name{
     box-shadow: 2px 2px 18px 0px rgba(50, 50, 50, 0.2);
 }
 
-#dashcontent .container .ui-draggable tr{
+#dashcontent .ui-draggable tr{
     background-image: none;
     background-color: #D4E1EE;
     box-shadow: 2px 2px 18px 0px rgba(50, 50, 50, 0.3);
