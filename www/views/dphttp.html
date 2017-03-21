@@ -1,158 +1,165 @@
-<div id="httpmain" class="container">
-    <table class="display" id="linkhttptable" border="0" cellpadding="0" cellspacing="0" width="100%">
-        <thead>
-            <tr>
-				<th width="120" align="left" data-i18n="Device name">Device name</th>
-				<th width="60" align="left" data-i18n="Value to send">Value to send</th>
-				<th width="120" align="left" data-i18n="Target type">Target type</th>
-				<th width="120" align="left" data-i18n="Target variable">Target variable</th>
-				<th width="60" align="left" data-i18n="Target device id">Target id</th>
-				<th width="120" align="left" data-i18n="Target property">Target property</th>
-				<th width="60" align="left" data-i18n="Include unit">Include unit</th>				
-				<th width="60" align="left" data-i18n="Enabled">Enabled</th>
-            </tr>
-        </thead>		
-    </table>
-	<p>
-	<table width="100%">
-	<tr>
-	<td valign="top" >
-	<h2 data-i18n="Edit link">Edit link</h2><br>
-	<table class="display" id="linkhttpparamstable" border="0" cellpadding="0" cellspacing="20">
-		<tr>
-			<td align="right" style="width:110px"><label for="combotargettype"><span data-i18n="Target type"></span>:</label></td>
-			<td><select id="combotargettype" style="width:160px" onchange="TargetTypeUpdate();" class="combobox ui-corner-all">
-					<option value="0" data-i18n="Global variable">Global variable</option>
-					<option value="1" data-i18n="Virtual device">Virtual device</option>
-				</select>
-			</td>
-		</tr>
-		<tr id="targetdevicename">
-			<td align="right" style="width:110px"><label for="devicename"><span data-i18n="Device name"></span>:</label></td>
-			<td><select id="devicename" style="width:280px" class="combobox ui-corner-all" onchange="ValueSelectorUpdate();"></select></td>
-		</tr>
-		<tr id="targetonoffdevicename" style="display:none;">
-			<td align="right" style="width:110px"><label for="onoffdevicename"><span data-i18n="Device name"></span>:</label></td>
-			<td><select id="onoffdevicename" style="width:280px" class="combobox ui-corner-all" onchange="ValueSelectorUpdate();"></select></td>
-		</tr>
-		<tr id="variabletosend">
-			<td align="right" style="width:110px"><label for="name"><span data-i18n="Value to send"></span>:</label></td>
-			<!--<td><input type="text" id="valuetosend" value="0" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> (<span data-i18n="0 = nvalue, 1 = svalue field 1, 2 = svalue field 2, etc."></span>)</td>-->
-			<td><select id="combosendvalue" style="width:160px" class="combobox ui-corner-all"></select></td>
-		</tr>
-		<tr id="scenevariabletosend" style="display:none;">
-			<td align="right" style="width:110px"><label for="sendvaluescene"><span data-i18n="Start scene on"></span>:</label></td>
-			<td><select id="sendvaluescene" style="width:160px" class="combobox ui-corner-all">
-					<option value="0" data-i18n="Off">Off</option>
-					<option value="1" data-i18n="On">On</option>
-				</select>
-			</td>
-		</tr>	
-		<tr id="rebootvariabletosend" style="display:none;">
-			<td align="right" style="width:110px"><label for="sendvaluereboot"><span data-i18n="Start on"></span>:</label></td>
-			<td><select id="sendvaluereboot" style="width:160px" class="combobox ui-corner-all">
-					<option value="0" data-i18n="Off">Off</option>
-					<option value="1" data-i18n="On">On</option>
-				</select>
-			</td>
-		</tr>	
-		<tr id="targetvariablerow">
-			<td align="right" style="width:110px"><label for="targetvariable"><span data-i18n="Target variable"></span>:</label></td>
-			<td><input type="text" id="targetvariable" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-		</tr>	
-		<tr id="targetdeviceidrow" style="display:none;">
-			<td align="right" style="width:110px"><label for="targetdeviceid"><span data-i18n="Target device/scene id"></span>:</label></td>
-			<td><input type="text" id="targetdeviceid" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-		</tr>		
-		<tr id="targetpropertyrow" style="display:none;">
-			<td align="right" style="width:110px"><label for="targetproperty"><span data-i18n="Target property"></span>:</label></td>
-			<td><input type="text" id="targetproperty" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-		</tr>
-		<tr id="targetincludeunit">
-			<td align="right" style="width:80px"><label for="includeunit"><span data-i18n="Include unit"></span>:</label></td>
-			<td><input type="checkbox" id="includeunit" checked></td>
-		</tr>		
-		<tr id="targetlinkenabled">
-			<td align="right" style="width:80px"><label for="linkenabled"><span data-i18n="Link active"></span>:</label></td>
-			<td><input type="checkbox" id="linkenabled" checked></td>
-		</tr>
-		<tr>
-			<td colspan="2">
-				<a class="btnstyle3" onclick="AddLink('a');" data-i18n="Add">Add</a>
-				<a class="btnstyle3-dis" id="linkupdate" data-i18n="Update">Update</a>&nbsp;&nbsp;&nbsp;
-				<a class="btnstyle3-dis" id="linkdelete" data-i18n="Delete">Delete</a>
-			</td>
-		</tr>	
-	</table>
-	</td>
-	<td valign="top" >
-	<h2 data-i18n="General settings">General settings</h2><br>
-		<table class="display" id="httpremote" border="0" cellpadding="0" cellspacing="20">
-		<tr>
-			<td align="right" style="width:110px"><label id="lblavailablekeywords" for="availablekeywords"><span data-i18n="Available keywords">Available keywords</span>:</label></td>
-			<td>%v : Value -- 
-						%t0 : Timestamp (epoc time localtime) -- 
-						%t1 : Timestamp (epoc ms localtime) -- 
-						%t2 : Timestamp (epoc time UTC) -- 
-						%t3 : Timestamp (epoc ms UTC) -- 
-						%t4 : Timestamp : "2015-01-29T21:50:44Z" -- 
-						%D : Target Device id -- 
-						%V : Target Variable -- 
-						%u : Unit -- 
-						%n : Device name -- 
-						%T0 : Type -- 
-						%T1 : SubType -- 
-						%h : hostname -- 
-						%idx : 'Original device' id (idx)</td>
+<div class="container" id="httpmain">
+	<div class="row-fluid">
+		<div class="span12">
+			<table border="0" cellpadding="0" cellspacing="0" class="display" id="linkhttptable" width="100%">
+				<thead>
+					<tr>
+						<th align="left" data-i18n="Device name" width="120">Device name</th>
+						<th align="left" data-i18n="Value to send" width="60">Value to send</th>
+						<th align="left" data-i18n="Target type" width="120">Target type</th>
+						<th align="left" data-i18n="Target variable" width="120">Target variable</th>
+						<th align="left" data-i18n="Target device id" width="60">Target id</th>
+						<th align="left" data-i18n="Target property" width="120">Target property</th>
+						<th align="left" data-i18n="Include unit" width="60">Include unit</th>
+						<th align="left" data-i18n="Enabled" width="60">Enabled</th>
+					</tr>
+				</thead>
+			</table>
+		</div>
+	</div>
+	<div class="row-fluid">
+		<div class="span6">
+			<h2 data-i18n="Edit link">Edit link</h2><br>
+			<table border="0" cellpadding="0" cellspacing="20" class="display" id="linkhttpparamstable">
+				<tr>
+					<td align="right" style="width:110px"><label for="combotargettype"><span data-i18n="Target type"></span>:</label></td>
+					<td><select class="combobox ui-corner-all" id="combotargettype" onchange="TargetTypeUpdate();" style="width:160px">
+						<option data-i18n="Global variable" value="0">
+							Global variable
+						</option>
+						<option data-i18n="Virtual device" value="1">
+							Virtual device
+						</option>
+					</select></td>
+				</tr>
+				<tr id="targetdevicename">
+					<td align="right" style="width:110px"><label for="devicename"><span data-i18n="Device name"></span>:</label></td>
+					<td><select class="combobox ui-corner-all" id="devicename" onchange="ValueSelectorUpdate();" style="width:280px">
+					</select></td>
+				</tr>
+				<tr id="targetonoffdevicename" style="display:none;">
+					<td align="right" style="width:110px"><label for="onoffdevicename"><span data-i18n="Device name"></span>:</label></td>
+					<td><select class="combobox ui-corner-all" id="onoffdevicename" onchange="ValueSelectorUpdate();" style="width:280px">
+					</select></td>
+				</tr>
+				<tr id="variabletosend">
+					<td align="right" style="width:110px"><label for="name"><span data-i18n="Value to send"></span>:</label></td><!--<td><input type="text" id="valuetosend" value="0" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> (<span data-i18n="0 = nvalue, 1 = svalue field 1, 2 = svalue field 2, etc."></span>)</td>-->
+					<td><select class="combobox ui-corner-all" id="combosendvalue" style="width:160px">
+					</select></td>
+				</tr>
+				<tr id="scenevariabletosend" style="display:none;">
+					<td align="right" style="width:110px"><label for="sendvaluescene"><span data-i18n="Start scene on"></span>:</label></td>
+					<td><select class="combobox ui-corner-all" id="sendvaluescene" style="width:160px">
+						<option data-i18n="Off" value="0">
+							Off
+						</option>
+						<option data-i18n="On" value="1">
+							On
+						</option>
+					</select></td>
+				</tr>
+				<tr id="rebootvariabletosend" style="display:none;">
+					<td align="right" style="width:110px"><label for="sendvaluereboot"><span data-i18n="Start on"></span>:</label></td>
+					<td><select class="combobox ui-corner-all" id="sendvaluereboot" style="width:160px">
+						<option data-i18n="Off" value="0">
+							Off
+						</option>
+						<option data-i18n="On" value="1">
+							On
+						</option>
+					</select></td>
+				</tr>
+				<tr id="targetvariablerow">
+					<td align="right" style="width:110px"><label for="targetvariable"><span data-i18n="Target variable"></span>:</label></td>
+					<td><input class="text ui-widget-content ui-corner-all" id="targetvariable" style="width: 250px; padding: .2em;" type="text"></td>
+				</tr>
+				<tr id="targetdeviceidrow" style="display:none;">
+					<td align="right" style="width:110px"><label for="targetdeviceid"><span data-i18n="Target device/scene id"></span>:</label></td>
+					<td><input class="text ui-widget-content ui-corner-all" id="targetdeviceid" style="width: 250px; padding: .2em;" type="text"></td>
+				</tr>
+				<tr id="targetpropertyrow" style="display:none;">
+					<td align="right" style="width:110px"><label for="targetproperty"><span data-i18n="Target property"></span>:</label></td>
+					<td><input class="text ui-widget-content ui-corner-all" id="targetproperty" style="width: 250px; padding: .2em;" type="text"></td>
+				</tr>
+				<tr id="targetincludeunit">
+					<td align="right" style="width:80px"><label for="includeunit"><span data-i18n="Include unit"></span>:</label></td>
+					<td><input checked id="includeunit" type="checkbox"></td>
+				</tr>
+				<tr id="targetlinkenabled">
+					<td align="right" style="width:80px"><label for="linkenabled"><span data-i18n="Link active"></span>:</label></td>
+					<td><input checked id="linkenabled" type="checkbox"></td>
 				</tr>
 				<tr>
-			<td align="right" style="width:110px"><label id="lblremoteurl" for="name"><span data-i18n="URL">URL</span>:</label></td>
-			<td><input type="text" id="url" style="width: 450px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-		</tr>
-		<tr>
-			<td align="right" style="width:110px"><label for="combomethod"><span data-i18n="Method">Method</span>:</label></td>
-			<td><select id="combomethod" style="width:160px" onchange="MethodUpdate();" class="combobox ui-corner-all">
-					<option value="0" data-i18n="GET">GET</option>
-					<option value="1" data-i18n="POST">POST</option>
-					<option value="2" data-i18n="PUT">PUT</option>
-				</select>
-			</td>
-		</tr>
-		<tr>
-			<td align="right" style="width:110px"><label for="comboauth"><span data-i18n="Authentication">Authentication</span>:</label></td>
-			<td><select id="comboauth" style="width:100px" onchange="MethodAuthenticationUpdate();" class="combobox ui-corner-all">
-					<option value="0" data-i18n="NO">None</option>
-					<option value="1" data-i18n="Basic-Auth">Basic-Auth</option>
-				</select>
-			</td>
-		</tr>
-		<tr>
-			<td align="right" style="width:60px"><label id="lblauthbasiclogin" for="name"><span data-i18n="Login"></span>: </label></td>
-			<td><input type="text" id="authBasicUser" name="BasicUser" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-		</tr>
-		<tr>
-			<td align="right" style="width:60px"><label id="lblauthbasicpassword" for="name"><span data-i18n="Password"></span>: </label></td>
-			<td><input type="password" id="authBasicPassword" name="BasicPassword" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-		</tr>
-		<tr>
-			<td align="right" style="width:110px"><label id="lblremotedata" for="name"><span data-i18n="Data">Data</span>:</label></td>
-			<td><textarea id="data" rows="4" style="width: 450px; padding: .2em;" class="text ui-widget-content ui-corner-all"></textarea></td>
-		</tr>
-		<tr>
-			<td align="right" style="width:110px"><label id="lblremoteheaders" for="name"><span data-i18n="Headers">Headers</span>:</label></td>
-			<td><textarea id="headers" rows="4" style="width: 450px; padding: .2em;" class="text ui-widget-content ui-corner-all"></textarea></td>
-		</tr>
-		<tr>
-			<td align="right" style="width:80px"><label for="httplinkenabled"><span data-i18n="Active">Active</span>:</label></td>
-			<td><input type="checkbox" id="httplinkenabled" checked></td>
-		</tr>
-		<tr>
-			<td align="right" style="width:80px"><label for="debugenabled"><span data-i18n="Debug to logfile"></span>:</label></td>
-			<td><input type="checkbox" id="debugenabled" checked></td>
-		</tr>
-	</table>
-	<a class="btnstyle3" onclick="SaveConfiguration();" data-i18n="Save">Save</a>
-	</td>
-	</tr>
-</table>
+					<td colspan="2">
+						<a class="btnstyle3" data-i18n="Add" onclick="AddLink('a');">Add</a> <a class="btnstyle3-dis" data-i18n="Update" id="linkupdate">Update</a>&nbsp;&nbsp;&nbsp; <a class="btnstyle3-dis" data-i18n="Delete" id="linkdelete">Delete</a>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<div class="span6">
+			<h2 data-i18n="General settings">General settings</h2><br>
+			<table border="0" cellpadding="0" cellspacing="20" class="display" id="httpremote">
+				<tr>
+					<td align="right" style="width:110px"><label for="availablekeywords" id="lblavailablekeywords"><span data-i18n="Available keywords">Available keywords</span>:</label></td>
+					<td>%v : Value -- %t0 : Timestamp (epoc time localtime) -- %t1 : Timestamp (epoc ms localtime) -- %t2 : Timestamp (epoc time UTC) -- %t3 : Timestamp (epoc ms UTC) -- %t4 : Timestamp : "2015-01-29T21:50:44Z" -- %D : Target Device id -- %V : Target Variable -- %u : Unit -- %n : Device name -- %T0 : Type -- %T1 : SubType -- %h : hostname -- %idx : 'Original device' id (idx)</td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label for="name" id="lblremoteurl"><span data-i18n="URL">URL</span>:</label></td>
+					<td><input class="text ui-widget-content ui-corner-all" id="url" style="width: 450px; padding: .2em;" type="text"></td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label for="combomethod"><span data-i18n="Method">Method</span>:</label></td>
+					<td><select class="combobox ui-corner-all" id="combomethod" onchange="MethodUpdate();" style="width:160px">
+						<option data-i18n="GET" value="0">
+							GET
+						</option>
+						<option data-i18n="POST" value="1">
+							POST
+						</option>
+						<option data-i18n="PUT" value="2">
+							PUT
+						</option>
+					</select></td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label for="comboauth"><span data-i18n="Authentication">Authentication</span>:</label></td>
+					<td><select class="combobox ui-corner-all" id="comboauth" onchange="MethodAuthenticationUpdate();" style="width:100px">
+						<option data-i18n="NO" value="0">
+							None
+						</option>
+						<option data-i18n="Basic-Auth" value="1">
+							Basic-Auth
+						</option>
+					</select></td>
+				</tr>
+				<tr>
+					<td align="right" style="width:60px"><label for="name" id="lblauthbasiclogin"><span data-i18n="Login"></span>:</label></td>
+					<td><input class="text ui-widget-content ui-corner-all" id="authBasicUser" name="BasicUser" style="width: 200px; padding: .2em;" type="text"></td>
+				</tr>
+				<tr>
+					<td align="right" style="width:60px"><label for="name" id="lblauthbasicpassword"><span data-i18n="Password"></span>:</label></td>
+					<td><input class="text ui-widget-content ui-corner-all" id="authBasicPassword" name="BasicPassword" style="width: 200px; padding: .2em;" type="password"></td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label for="name" id="lblremotedata"><span data-i18n="Data">Data</span>:</label></td>
+					<td>
+					<textarea class="text ui-widget-content ui-corner-all" id="data" rows="4" style="width: 450px; padding: .2em;"></textarea></td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label for="name" id="lblremoteheaders"><span data-i18n="Headers">Headers</span>:</label></td>
+					<td>
+					<textarea class="text ui-widget-content ui-corner-all" id="headers" rows="4" style="width: 450px; padding: .2em;"></textarea></td>
+				</tr>
+				<tr>
+					<td align="right" style="width:80px"><label for="httplinkenabled"><span data-i18n="Active">Active</span>:</label></td>
+					<td><input checked id="httplinkenabled" type="checkbox"></td>
+				</tr>
+				<tr>
+					<td align="right" style="width:80px"><label for="debugenabled"><span data-i18n="Debug to logfile"></span>:</label></td>
+					<td><input checked id="debugenabled" type="checkbox"></td>
+				</tr>
+			</table><a class="btnstyle3" data-i18n="Save" onclick="SaveConfiguration();">Save</a>
+		</div>
+	</div>
 </div>
+
