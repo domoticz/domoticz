@@ -2,12 +2,10 @@
 //class bt_openwebnet is a modification of GNU bticino C++ openwebnet client
 //from openwebnet class
 //see www.bticino.it; www.myhome-bticino.it
-#include <sstream>
-#include <iostream>
-#include <string>
-#include <iomanip>
-#include "../../main/localtime_r.h"
+#include "stdafx.h"
 #include "bt_openwebnet.h"
+#include "../../main/localtime_r.h"
+
 // private methods ......
 
 std::string bt_openwebnet::FirstToken(const std::string& myText, const std::string& delimiters)
