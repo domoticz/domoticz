@@ -400,7 +400,7 @@ typedef struct _tGeneralDevice {
 	float floatval2;
 	int32_t intval1;
 	int32_t intval2;
-        std::string text;
+        char text[200];
 	_tGeneralDevice()
 	{
 		len=sizeof(_tGeneralDevice)-1;
