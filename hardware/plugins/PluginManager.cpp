@@ -300,7 +300,7 @@ namespace Plugins {
 					}
 				}
 				// Free the memory for the message
-				delete Message;
+				if (Message) delete Message;
 			}
 			sleep_milliseconds(50);
 		}
