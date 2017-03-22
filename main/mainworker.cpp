@@ -1547,6 +1547,7 @@ void MainWorker::Do_Work()
 					m_sql.UpdatePreferencesVar("WebPassword", "");
 					std::remove(szPwdResetFile.c_str());
 				}
+				m_notifications.CheckAndHandleLastUpdateNotification();
 			}
 			if (_log.NotificationLogsEnabled())
 			{
@@ -9711,14 +9712,11 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 	}
 	else if (subType == sTypeAlert)
 	{
-	        std::stringstream ss;
-		if (pMeter->text ==  "")
-        		ss << pMeter->intval1;
+		if (strcmp(pMeter->text,  ""))
+			sprintf(szTmp, "(%d) %s", pMeter->intval1, pMeter->text);
 		else
-			ss << "(" << pMeter->intval1 << ") " << pMeter->text.c_str();
-		const std::string tmp = ss.str();
-		const char* cstr = tmp.c_str();
-		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, pMeter->intval1, cstr, procResult.DeviceName);
+			sprintf(szTmp, "%d", pMeter->intval1);
+		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, pMeter->intval1, szTmp, procResult.DeviceName);
 		if (DevRowIdx == -1)
 			return;
 		m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_USAGE, static_cast<float>(pMeter->intval1));
