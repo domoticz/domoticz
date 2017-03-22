@@ -261,8 +261,7 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 				else demain_alert = 0;
 				if (demain_alert != teleinfo.pAlertDemain)
 				{
-					SendAlertSensor(32*rank + 3, 255, demain_alert, "Demain, jour " + teleinfo.DEMAIN, 
-						name + " Couleur demain");
+					SendAlertSensor(32*rank + 3, 255, demain_alert, "Demain, jour " + teleinfo.DEMAIN, name + " Couleur demain");
 					teleinfo.pAlertDemain = demain_alert;
 				}
 			}
