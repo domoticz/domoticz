@@ -326,6 +326,7 @@ hardware/KMTronicBase.cpp
 hardware/KMTronic433.cpp
 hardware/KMTronicSerial.cpp
 hardware/KMTronicTCP.cpp
+hardware/KMTronicUDP.cpp
 hardware/Kodi.cpp
 hardware/Limitless.cpp
 hardware/LogitechMediaServer.cpp
@@ -599,7 +600,7 @@ else()
 endif()
 IF(OpenZWave)
   message(STATUS ${OpenZWave})
-  target_link_libraries(domoticz ${OpenZWave} -lresolv)
+  target_link_libraries(domoticz ${OpenZWave})
   include_directories(${CMAKE_SOURCE_DIR}/hardware/openzwave)
   add_definitions(-DWITH_OPENZWAVE)
   # open-zwave needs libudev
@@ -623,12 +624,12 @@ IF(OpenZWave)
       find_library(UDEV NAMES libudev.a)
       IF(UDEV)
         message(STATUS ${UDEV})
-        target_link_libraries(domoticz ${UDEV} -lrt)
+        target_link_libraries(domoticz ${UDEV} -lrt -lresolv)
       else()
         find_library(UDEV NAMES libudev.so)
         IF(UDEV)
            message(STATUS ${UDEV})
-           target_link_libraries(domoticz ${UDEV} -lrt)
+           target_link_libraries(domoticz ${UDEV} -lrt -lresolv)
         else()
            MESSAGE(FATAL_ERROR "LIB UDEV not found on your system, see install.txt how to get them installed.\nsudo apt-get install libudev-dev")
         ENDIF(UDEV)

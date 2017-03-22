@@ -400,6 +400,7 @@ typedef struct _tGeneralDevice {
 	float floatval2;
 	int32_t intval1;
 	int32_t intval2;
+        std::string text;
 	_tGeneralDevice()
 	{
 		len=sizeof(_tGeneralDevice)-1;
@@ -459,6 +460,12 @@ typedef struct _tP1Power {
 		type = pTypeP1Power;
 		subtype = sTypeP1Power;
 		ID = 1;
+		powerusage1 = 0;
+		powerusage2 = 0;
+		powerdeliv1 = 0;
+		powerdeliv2 = 0;
+		usagecurrent = 0;
+		delivcurrent = 0;
 	}
 } P1Power;
 
