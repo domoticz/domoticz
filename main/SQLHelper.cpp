@@ -32,7 +32,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 111
+#define DB_VERSION 112
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -2174,6 +2174,33 @@ bool CSQLHelper::OpenDatabase()
 				{
 					std::vector<std::string> sd = *itt;
 					safe_query("UPDATE Hardware SET Username='%q', Password='' WHERE (ID=%s)", sd[1].c_str(), sd[0].c_str());
+				}
+			}
+		}
+		if (dbversion < 112)
+		{
+			//Patch for new 1-Wire subtypes
+			std::stringstream szQuery2;
+			std::vector<std::vector<std::string> > result;
+			std::vector<std::string> sd;
+			szQuery2 << "SELECT ID FROM Hardware WHERE([Type]==" << HTYPE_1WIRE << ")";
+			result = query(szQuery2.str());
+			if (result.size() > 0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					sd = *itt;
+					szQuery2.clear();
+					szQuery2.str("");
+					szQuery2 << "UPDATE DeviceStatus SET SubType=" << sTypeTEMP5 << " WHERE ([Type]==" << pTypeTEMP << ") AND (SubType==" << sTypeTEMP10 << ") AND (HardwareID=" << sd[0] << ")";
+					query(szQuery2.str());
+
+					szQuery2.clear();
+					szQuery2.str("");
+					szQuery2 << "UPDATE DeviceStatus SET SubType=" << sTypeHUM1 << " WHERE ([Type]==" << pTypeHUM << ") AND (SubType==" << sTypeHUM2 << ") AND (HardwareID=" << sd[0] << ")";
+					query(szQuery2.str());
+
 				}
 			}
 		}
