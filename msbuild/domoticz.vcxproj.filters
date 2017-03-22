@@ -1681,6 +1681,9 @@
     <ClInclude Include="..\hardware\KMTronicTCP.h">
       <Filter>Devices\KMTronic</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\KMTronicUDP.h">
+      <Filter>Devices\KMTronic</Filter>
+    </ClInclude>
     <ClInclude Include="..\notifications\NotificationKodi.h">
       <Filter>Notifications</Filter>
     </ClInclude>
@@ -2308,6 +2311,9 @@
       <Filter>Devices\KMTronic</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\KMTronicTCP.cpp">
+      <Filter>Devices\KMTronic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\KMTronicUDP.cpp">
       <Filter>Devices\KMTronic</Filter>
     </ClCompile>
     <ClCompile Include="..\notifications\NotificationKodi.cpp">
