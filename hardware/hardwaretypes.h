@@ -400,7 +400,7 @@ typedef struct _tGeneralDevice {
 	float floatval2;
 	int32_t intval1;
 	int32_t intval2;
-        char text[200];
+	char text[64];
 	_tGeneralDevice()
 	{
 		len=sizeof(_tGeneralDevice)-1;
@@ -411,6 +411,7 @@ typedef struct _tGeneralDevice {
 		floatval2=0;
 		intval1=0;
 		intval2=0;
+		text[0] = 0;
 	}
 } GeneralDevice;
 
