@@ -151,10 +151,7 @@ void CEcoDevices::DecodeXML2Teleinfo(const std::string &sResult, Teleinfo &telei
 	teleinfo.IINST1 = i_xpath_int(XMLdoc.RootElement(),"/response/IINST1/text()");
 	teleinfo.IINST2 = i_xpath_int(XMLdoc.RootElement(),"/response/IINST2/text()");
 	teleinfo.IINST3 = i_xpath_int(XMLdoc.RootElement(),"/response/IINST3/text()");
-	teleinfo.IMAX = i_xpath_int(XMLdoc.RootElement(),"/response/IMAX/text()");
-	teleinfo.IMAX1 =i_xpath_int(XMLdoc.RootElement(),"/response/IMAX1/text()");
-	teleinfo.IMAX2 = i_xpath_int(XMLdoc.RootElement(),"/response/IMAX2/text()");
-	teleinfo.IMAX3 = i_xpath_int(XMLdoc.RootElement(),"/response/IMAX3/text()");
+	teleinfo.PPOT = i_xpath_int(XMLdoc.RootElement(),"/response/PPOT/text()");
 	teleinfo.ADPS = i_xpath_int(XMLdoc.RootElement(),"/response/ADPS/text()");
 
 	#ifdef DEBUG_EcoDevices
