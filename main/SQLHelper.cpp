@@ -2967,7 +2967,8 @@ std::vector<std::vector<std::string> > CSQLHelper::query(const std::string &szQu
 
 	if (_log.isTraceEnable()) {
 		_log.Log(LOG_TRACE, "SQLQ query : %s", szQuery.c_str());
-		if (!_log.TestFilter("SQLR"))
+		char tmp[5]="SQLR";
+		if (!_log.TestFilter(tmp))
 			LogQueryResult(results);
 	}
 

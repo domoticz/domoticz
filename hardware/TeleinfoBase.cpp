@@ -179,7 +179,7 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 				alertEJP =  (teleinfo.PEJP == 30) ? 4 : 1;
 				if (alertEJP != teleinfo.pAlertEJP)
 				{
-					SendAlertSensor(32*rank + 2, 255, alertEJP, teleinfo.rate, (name + " Preannonce Pointe Mobile").C_str());
+					SendAlertSensor(32*rank + 2, 255, alertEJP, teleinfo.rate, (name + " Preannonce Pointe Mobile").c_str());
 					teleinfo.pAlertEJP = alertEJP;
 				}
 			}
@@ -262,7 +262,7 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 				if (demain_alert != teleinfo.pAlertDemain)
 				{
 					SendAlertSensor(32*rank + 3, 255, demain_alert, ("Demain, jour " + teleinfo.DEMAIN), 
-						(name + " Couleur demain").C_str());
+						(name + " Couleur demain").c_str());
 					teleinfo.pAlertDemain = demain_alert;
 				}
 			}
@@ -298,7 +298,7 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 			alertI1 =  AlertLevel(teleinfo.IINST, teleinfo.ISOUSC, szTmp);
 			if (alertI1 != teleinfo.pAlertI1)
 			{
-				SendAlertSensor(32*rank + 4, 255, alertI1, szTmp, (name + " Alerte courant").C_str());
+				SendAlertSensor(32*rank + 4, 255, alertI1, szTmp, (name + " Alerte courant").c_str());
 				teleinfo.pAlertI1 = alertI1;
 			}
 		}
@@ -313,13 +313,13 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 			alertI2 = AlertLevel(teleinfo.IINST2, teleinfo.ISOUSC, szTmp);
 			if (alertI2 != teleinfo.pAlertI2)
 			{
-				SendAlertSensor(32*rank + 5, 255, alertI2, szTmp, (name + " Alerte phase 2").C_str();
+				SendAlertSensor(32*rank + 5, 255, alertI2, szTmp, (name + " Alerte phase 2").c_str());
 				teleinfo.pAlertI2 = alertI2;
 			}
 			alertI3 = AlertLevel(teleinfo.IINST3, teleinfo.ISOUSC, szTmp);
 			if (alertI3 != teleinfo.pAlertI3)
 			{
-				SendAlertSensor(32*rank + 6, 255, alertI3, szTmp, (name + " Alerte phase 3").C_str());
+				SendAlertSensor(32*rank + 6, 255, alertI3, szTmp, (name + " Alerte phase 3").c_str());
 				teleinfo.pAlertI3 = alertI3;
 			}
 			if (teleinfo.PPOT != teleinfo.pAlertPPOT)
