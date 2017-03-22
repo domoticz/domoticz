@@ -29,7 +29,7 @@ class CTeleinfoBase : public CDomoticzHardwareBase
 
 	private:
 		int AlertLevel(int Iinst, int Isousc, char* text);
-		P1Power	m_p1power, m_p2power, m_p3power;
+		P1Power m_p1power, m_p2power, m_p3power;
 
 	protected:
 		typedef struct _tTeleinfo
@@ -94,13 +94,13 @@ class CTeleinfoBase : public CDomoticzHardwareBase
 				BBRHPJR = 0;
 				BBRHCJR = 0;
 				pAlertPAPP = 10;
-             	           	pAlertI1 = 10;
-	                        pAlertI2 = 10;
-       	                 	pAlertI3 = 10;
+				pAlertI1 = 10;
+				pAlertI2 = 10;
+				pAlertI3 = 10;
 				pAlertPPOT = 10;
-       	                 	pAlertRate = 10;
-       		                pAlertColor = 10;
-                        	pAlertEJP = 10;
+				pAlertRate = 10;
+				pAlertColor = 10;
+				pAlertEJP = 10;
 				pAlertDemain = 10;
 				last = 0;
 				triphase = false;
