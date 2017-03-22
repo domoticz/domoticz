@@ -36,7 +36,6 @@ private:
 	void SensorThread();
 	void SwitchThread();
 	void BuildSensorList();
-	void PollSensors();
 	void BuildSwitchList();
 	void PollSwitches();
 
