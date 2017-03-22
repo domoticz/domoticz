@@ -47,7 +47,7 @@ int CTeleinfoBase::AlertLevel(int Iinst, int Isousc, char* text)
 	int level;
 	float flevel;
 
-	flevel = Iinst*100 / Isousc;
+	flevel = (float)(Iinst*100) / Isousc;
 	level = 1;
 	sprintf(text, " < 80%% de %iA souscrits", Isousc);
 	if (flevel > 80)
@@ -73,7 +73,7 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 {
 	uint32_t m_pappHC, m_pappHP, m_pappHCJB, m_pappHPJB, m_pappHCJW, m_pappHPJW, m_pappHCJR, m_pappHPJR;
 	int rate_alert = 0, color_alert = 0, demain_alert = 0;
-	int alertI1, alertI2, alertI3, alertEJP, alertRate, alertPPOT;
+	int alertI1, alertI2, alertI3, alertEJP, alertPPOT;
 	char szTmp[100];
 	std::string message;
 	time_t atime = mytime(NULL);
