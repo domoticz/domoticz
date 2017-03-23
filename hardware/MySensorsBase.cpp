@@ -470,6 +470,7 @@ void MySensorsBase::UpdateNodeBatteryLevel(const int nodeID, const int Level)
 
 void MySensorsBase::UpdateNodeHeartbeat(const int nodeID)
 {
+
 	std::map<int, _tMySensorNode>::iterator ittNode = m_nodes.find(nodeID);
 	if (ittNode == m_nodes.end())
 		return; //Not found
@@ -478,6 +479,8 @@ void MySensorsBase::UpdateNodeHeartbeat(const int nodeID)
 	mytime(&m_LastHeartbeatReceive);
 	_tMySensorNode *pNode = &ittNode->second;
 	std::vector<_tMySensorChild>::iterator itt;
+
+
 	for (itt = pNode->m_childs.begin(); itt != pNode->m_childs.end(); ++itt)
 	{
 		std::map<_eSetType, _tMySensorValue>::const_iterator itt2;
@@ -1146,11 +1149,15 @@ void MySensorsBase::UpdateSwitch(const _eSetType vType, const unsigned char Idx,
 	int level = int(Level);
 
 	char szIdx[10];
-	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);
+	sprintf(szIdx, "%02X%02X%02X%02X", 0, 0, 0, Idx);
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, szIdx, SubUnit, int(pTypeGeneralSwitch), int(sTypeAC));
+
+	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, szIdx, SubUnit, int(pTypeGeneralSwitch), int(sTypeAC));
+
+
 	if (!result.empty())
 	{
+		_log.Log(LOG_ERROR, "Result not empty. " );
 		if (
 			(((vType != V_TRIPPED) || (!bOn))) &&
 			((vType != V_SCENE_OFF) && (vType != V_SCENE_ON))
@@ -1171,30 +1178,26 @@ void MySensorsBase::UpdateSwitch(const _eSetType vType, const unsigned char Idx,
 	}
 
 	// LLEMARINEL : #1312  Changed to use as pTypeGeneralSwitch
-	// --- Send as Lighting 2
-	tRBUF lcmd;
-	memset(&lcmd, 0, sizeof(RBUF));
-	lcmd.LIGHTING2.packetlength = sizeof(lcmd.LIGHTING2) - 1;
-	lcmd.LIGHTING2.packettype = pTypeGeneralSwitch;
-	//lcmd.LIGHTING2.packettype = pTypeLighting2;
-	lcmd.LIGHTING2.subtype = sTypeAC;
-	lcmd.LIGHTING2.id1 = 0;
-	lcmd.LIGHTING2.id2 = 0;
-	lcmd.LIGHTING2.id3 = 0;
-	lcmd.LIGHTING2.id4 = Idx;
-	lcmd.LIGHTING2.unitcode = SubUnit;
+	// Send as General Switch :
+	_tGeneralSwitch gswitch;
+	gswitch.subtype = sTypeAC;
+	gswitch.id = Idx;
+	gswitch.unitcode = SubUnit;
 	if (!bOn)
 	{
-		lcmd.LIGHTING2.cmnd = light2_sOff;
+		gswitch.cmnd = gswitch_sOff;
 	}
 	else
 	{
-		lcmd.LIGHTING2.cmnd = light2_sOn;
+		gswitch.cmnd = gswitch_sOn;
 	}
-	lcmd.LIGHTING2.level = level;
-	lcmd.LIGHTING2.filler = 0;
-	lcmd.LIGHTING2.rssi = 12;
-	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), BatLevel);
+    gswitch.level = level; //level;
+	gswitch.battery_level = BatLevel;
+	gswitch.rssi = 12;
+	gswitch.seqnbr = 0;
+	sDecodeRXMessage(this, (const unsigned char *)&gswitch, defaultname.c_str(), BatLevel);
+
+
 }
 
 bool MySensorsBase::GetBlindsValue(const int NodeID, const int ChildID, int &blind_value)
@@ -1304,9 +1307,10 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 	if (packettype == pTypeGeneralSwitch)
 	{
 		//Light command
+		const _tGeneralSwitch *pSwitch = reinterpret_cast<const _tGeneralSwitch*>(pdata);
 
-		int node_id = pCmd->LIGHTING2.id4;
-		int child_sensor_id = pCmd->LIGHTING2.unitcode;
+		int node_id = pSwitch->id;
+		int child_sensor_id = pSwitch->unitcode;
 
 		if (_tMySensorNode *pNode = FindNode(node_id))
 		{
@@ -1317,7 +1321,6 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 				return false;
 			}
 
-			const _tGeneralSwitch *pSwitch= reinterpret_cast<const _tGeneralSwitch*>(pdata);
 			int level = pSwitch->level;
 			int cmnd = pSwitch->cmnd;
 
@@ -1599,7 +1602,7 @@ void MySensorsBase::ParseLine()
 		return;
 	std::string sLine((char*)&m_buffer);
 
-	//_log.Log(LOG_STATUS, sLine.c_str());
+	_log.Log(LOG_STATUS, "MySensors: frame received : %s", sLine.c_str());
 
 	std::vector<std::string> results;
 	StringSplit(sLine, ";", results);
