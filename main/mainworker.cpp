@@ -76,6 +76,7 @@
 #include "../hardware/RFLinkTCP.h"
 #include "../hardware/KMTronicSerial.h"
 #include "../hardware/KMTronicTCP.h"
+#include "../hardware/KMTronicUDP.h"
 #include "../hardware/KMTronic433.h"
 #include "../hardware/SolarMaxTCP.h"
 #include "../hardware/Pinger.h"
@@ -776,6 +777,10 @@ bool MainWorker::AddHardwareFromParams(
 		//LAN
 		pHardware = new KMTronicTCP(ID, Address, Port, Username, Password);
 		break;
+	case HTYPE_KMTronicUDP:
+		//UDP
+		pHardware = new KMTronicUDP(ID, Address, Port);
+		break;
 	case HTYPE_NefitEastLAN:
 		pHardware = new CNefitEasy(ID, Address, Port);
 		break;
@@ -931,7 +936,7 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_RaspberryGPIO:
 		//Raspberry Pi GPIO port access
 #ifdef WITH_GPIO
-		pHardware = new CGpio(ID);
+		pHardware = new CGpio(ID, Mode1, Mode2);
 #endif
 		break;
 	case HTYPE_Comm5TCP:
@@ -1542,6 +1547,7 @@ void MainWorker::Do_Work()
 					m_sql.UpdatePreferencesVar("WebPassword", "");
 					std::remove(szPwdResetFile.c_str());
 				}
+				m_notifications.CheckAndHandleLastUpdateNotification();
 			}
 			if (_log.NotificationLogsEnabled())
 			{
@@ -9706,14 +9712,11 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 	}
 	else if (subType == sTypeAlert)
 	{
-	        std::stringstream ss;
-		if (pMeter->text ==  "")
-        		ss << pMeter->intval1;
+		if (strcmp(pMeter->text,  ""))
+			sprintf(szTmp, "(%d) %s", pMeter->intval1, pMeter->text);
 		else
-			ss << "(" << pMeter->intval1 << ") " << pMeter->text.c_str();
-		const std::string tmp = ss.str();
-		const char* cstr = tmp.c_str();
-		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, pMeter->intval1, cstr, procResult.DeviceName);
+			sprintf(szTmp, "%d", pMeter->intval1);
+		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, pMeter->intval1, szTmp, procResult.DeviceName);
 		if (DevRowIdx == -1)
 			return;
 		m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_USAGE, static_cast<float>(pMeter->intval1));
