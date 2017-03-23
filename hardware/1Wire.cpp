@@ -453,7 +453,7 @@ void C1Wire::ReportWiper(const std::string& deviceId, const unsigned int wiper)
 	unsigned char deviceIdByteArray[DEVICE_ID_SIZE] = { 0 };
 	DeviceIdToByteArray(deviceId, deviceIdByteArray);
 
-	uint16_t NodeID = (deviceIdByteArray[0] << 8) | deviceIdByteArray[1];
+	int NodeID = (deviceIdByteArray[0] << 24) | (deviceIdByteArray[1] << 16) | (deviceIdByteArray[2] << 8) | (deviceIdByteArray[3]);
 	SendSwitch(NodeID, 0, 255, wiper > 0, wiper, "Wiper");
 }
 

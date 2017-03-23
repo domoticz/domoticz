@@ -140,7 +140,7 @@ void C1WireByOWFS::writeData(const _t1WireDevice& device,std::string propertyNam
 void C1WireByOWFS::SetLightState(const std::string& sId,int unit,bool value)
 {
    _t1WireDevice device;
-   if (!FindDevice(sId, device)) // TODO
+   if (!FindDevice(sId, device))
       return;
 
    switch(device.family)
@@ -181,7 +181,7 @@ void C1WireByOWFS::SetLightState(const std::string& sId,int unit,bool value)
       }
    case digital_potentiometer:
    {
-	   writeData(device, "wiper", value ? "1" : "250"); // TODO
+	   writeData(device, "wiper", value ? "1" : "250"); // TODO - send level also
 	   break;
    }
 
