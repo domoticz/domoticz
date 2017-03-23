@@ -5567,7 +5567,11 @@ namespace http {
 				}
 				else
 				{
-					unsigned char twhen = (swhen == "0") ? '>' : '<';
+					unsigned char twhen = '=';
+					if (swhen == "0")
+						twhen = '>';
+					else if (swhen == "1")
+						twhen = '<';
 					sprintf(szTmp, "%s;%c;%s", ttype.c_str(), twhen, svalue.c_str());
 				}
 				int priority = atoi(spriority.c_str());

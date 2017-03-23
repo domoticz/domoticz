@@ -88,9 +88,9 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 
 	// Guess if we are running with one phase or three
 	// some devices like EcoDevices always send all variables so presence/absence of IINSTx is not significant
-	// Also, EcoDevices sends always sends the same value for IINST and IINST1, so check must be done on IINST2 and IINST3
-	if ((teleinfo.triphase == true) || (teleinfo.IINST2 > 0) || (teleinfo.IINST3 > 0))
-		teleinfo.triphase  = true;
+	// Also, EcoDevices always sends the same value for IINST and IINST1, so check must be done on IINST2 and IINST3
+	//if ((teleinfo.IINST2 > 0) || (teleinfo.IINST3 > 0))
+		teleinfo.triphase = true;
 
 	// PAPP only exist on some meter versions. If not present, we can approximate it as (current x 230V)
 	if ((teleinfo.PAPP == 0) && ((teleinfo.IINST > 0)||(teleinfo.IINST1 > 0)||(teleinfo.IINST2 > 0)||(teleinfo.IINST3 > 0)))
