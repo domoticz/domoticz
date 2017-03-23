@@ -2020,6 +2020,9 @@
     <ClInclude Include="..\hardware\plugins\PythonObjects.h">
       <Filter>Devices\Python Plugins</Filter>
     </ClInclude>
+    <ClInclude Include="..\push\Push.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
