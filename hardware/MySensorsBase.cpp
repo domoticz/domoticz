@@ -1157,7 +1157,6 @@ void MySensorsBase::UpdateSwitch(const _eSetType vType, const unsigned char Idx,
 
 	if (!result.empty())
 	{
-		_log.Log(LOG_ERROR, "Result not empty. " );
 		if (
 			(((vType != V_TRIPPED) || (!bOn))) &&
 			((vType != V_SCENE_OFF) && (vType != V_SCENE_ON))
@@ -1602,7 +1601,7 @@ void MySensorsBase::ParseLine()
 		return;
 	std::string sLine((char*)&m_buffer);
 
-	_log.Log(LOG_STATUS, "MySensors: frame received : %s", sLine.c_str());
+	//_log.Log(LOG_STATUS, sLine.c_str());
 
 	std::vector<std::string> results;
 	StringSplit(sLine, ";", results);
