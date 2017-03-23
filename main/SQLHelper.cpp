@@ -32,7 +32,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 111
+#define DB_VERSION 112
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -2176,6 +2176,21 @@ bool CSQLHelper::OpenDatabase()
 					safe_query("UPDATE Hardware SET Username='%q', Password='' WHERE (ID=%s)", sd[1].c_str(), sd[0].c_str());
 				}
 			}
+		}
+		if (dbversion < 112)
+		{
+			// SendPercentSensor now uses NodeID and ChildID in the same way other sensors do
+                        std::vector<std::vector<std::string> > result;
+                        result = safe_query("SELECT ID, DeviceID FROM DeviceStatus WHERE Type=%d AND SubType=%d AND substr(DeviceID,7,2)<>'00';", pTypeGeneral, sTypePercentage); 
+                        if (result.size() > 0)
+                        {
+                                std::vector<std::vector<std::string> >::const_iterator itt;
+                                for (itt = result.begin(); itt != result.end(); ++itt)
+                                {
+                                        std::vector<std::string> sd = *itt;
+                                        safe_query("UPDATE DeviceStatus SET DeviceId=SUBSTR(DeviceID,3,6)||'00' WHERE (ID=%s)", sd[0].c_str());
+                                }
+                        }
 		}
 	}
 	else if (bNewInstall)
