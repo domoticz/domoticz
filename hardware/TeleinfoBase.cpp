@@ -47,7 +47,7 @@ int CTeleinfoBase::AlertLevel(int Iinst, int Isousc, char* text)
 	int level;
 	float flevel;
 
-	flevel = Iinst*100 / Isousc;
+	flevel = (float)(Iinst*100) / Isousc;
 	level = 1;
 	sprintf(text, " < 80%% de %iA souscrits", Isousc);
 	if (flevel > 80)
@@ -73,7 +73,7 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 {
 	uint32_t m_pappHC, m_pappHP, m_pappHCJB, m_pappHPJB, m_pappHCJW, m_pappHPJW, m_pappHCJR, m_pappHPJR;
 	int rate_alert = 0, color_alert = 0, demain_alert = 0;
-	int alertI1, alertI2, alertI3, alertEJP, alertRate, alertPPOT;
+	int alertI1, alertI2, alertI3, alertEJP, alertPPOT;
 	char szTmp[100];
 	std::string message;
 	time_t atime = mytime(NULL);
@@ -179,7 +179,7 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 				alertEJP =  (teleinfo.PEJP == 30) ? 4 : 1;
 				if (alertEJP != teleinfo.pAlertEJP)
 				{
-					SendAlertSensor(32*rank + 2, 255, alertEJP, teleinfo.rate, (name + " Preannonce Pointe Mobile"));
+					SendAlertSensor(32*rank + 2, 255, alertEJP, teleinfo.rate, name + " Preannonce Pointe Mobile");
 					teleinfo.pAlertEJP = alertEJP;
 				}
 			}
@@ -246,7 +246,7 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 				sDecodeRXMessage(this, (const unsigned char *)&m_p3power, (name + "kWh Jours Rouges").c_str(), 255);
 				if (color_alert != teleinfo.pAlertColor)
 				{
-					SendAlertSensor(32*rank + 2, 255, color_alert, ("Jour " + teleinfo.color), (name + " Couleur du jour"));
+					SendAlertSensor(32*rank + 2, 255, color_alert, "Jour " + teleinfo.color, name + " Couleur du jour");
 					teleinfo.pAlertColor = color_alert;
 				}
 				if (teleinfo.DEMAIN == "BLEU")
@@ -261,7 +261,7 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 				else demain_alert = 0;
 				if (demain_alert != teleinfo.pAlertDemain)
 				{
-					SendAlertSensor(32*rank + 3, 255, demain_alert, ("Demain, jour " + teleinfo.DEMAIN) , (name + " Couleur demain"));
+					SendAlertSensor(32*rank + 3, 255, demain_alert, "Demain, jour " + teleinfo.DEMAIN, name + " Couleur demain");
 					teleinfo.pAlertDemain = demain_alert;
 				}
 			}

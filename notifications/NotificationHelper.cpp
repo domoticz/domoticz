@@ -993,7 +993,7 @@ void CNotificationHelper::CheckAndHandleLastUpdateNotification()
 					time_t btime = mytime(NULL);
 					bool bWhenIsGreater = (splitresults[1] == ">");
 					int SensorTimeOut = atoi(splitresults[2].c_str());
-					int diff = difftime(btime,itt2->LastUpdate);
+					double diff = difftime(btime,itt2->LastUpdate);
 					if (((diff > SensorTimeOut*60) && (bWhenIsGreater)) || ((diff < SensorTimeOut*60) && (!bWhenIsGreater)))
 					{
 						uint64_t Idx = itt->first;
