@@ -2191,16 +2191,11 @@ bool CSQLHelper::OpenDatabase()
 				for (itt = result.begin(); itt != result.end(); ++itt)
 				{
 					sd = *itt;
-					szQuery2.clear();
-					szQuery2.str("");
-					szQuery2 << "UPDATE DeviceStatus SET SubType=" << sTypeTEMP5 << " WHERE ([Type]==" << pTypeTEMP << ") AND (SubType==" << sTypeTEMP10 << ") AND (HardwareID=" << sd[0] << ")";
-					query(szQuery2.str());
+					safe_query("UPDATE DeviceStatus SET SubType='%d' WHERE ([Type]==%d) AND (SubType==%d) AND (HardwareID=%s)",
+						sTypeTEMP5, pTypeTEMP, sTypeTEMP10, sd[0].c_str());
 
-					szQuery2.clear();
-					szQuery2.str("");
-					szQuery2 << "UPDATE DeviceStatus SET SubType=" << sTypeHUM1 << " WHERE ([Type]==" << pTypeHUM << ") AND (SubType==" << sTypeHUM2 << ") AND (HardwareID=" << sd[0] << ")";
-					query(szQuery2.str());
-
+					safe_query("UPDATE DeviceStatus SET SubType='%d' WHERE ([Type]==%d) AND (SubType==%d) AND (HardwareID=%s)",
+						sTypeHUM1, pTypeHUM, sTypeHUM2, sd[0].c_str());
 				}
 			}
 		}
