@@ -57,10 +57,7 @@ class CTeleinfoSerial : public CTeleinfoBase, AsyncSerial
 		TELEINFO_TYPE_IINST1,
 		TELEINFO_TYPE_IINST2,
 		TELEINFO_TYPE_IINST3,
-		TELEINFO_TYPE_IMAX,
-		TELEINFO_TYPE_IMAX1,
-		TELEINFO_TYPE_IMAX2,
-		TELEINFO_TYPE_IMAX3,
+		TELEINFO_TYPE_PPOT,
 		TELEINFO_TYPE_DEMAIN,
 		TELEINFO_TYPE_PEJP,
 		TELEINFO_TYPE_PAPP,
@@ -82,8 +79,9 @@ class CTeleinfoSerial : public CTeleinfoBase, AsyncSerial
 		std::string m_szSerialPort;
 
 		bool WriteToHardware(const char *pdata, const unsigned char length);
-		Teleinfo teleinfo;
+	
 	private:
+		Teleinfo teleinfo;
 		bool StartHardware();
 		bool StopHardware();
 		/**
@@ -107,7 +105,6 @@ class CTeleinfoSerial : public CTeleinfoBase, AsyncSerial
 		bool m_bLabel_PTEC_JW;
 		bool m_bLabel_PTEC_JR;
 		bool m_bLabel_Tempo;
-		static const int NumberOfFrameToSendOne = 8;
 
 		void Init();
 		void MatchLine();
