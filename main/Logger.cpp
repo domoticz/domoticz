@@ -369,6 +369,7 @@ void CLogger::SetFilterString(std::string  &pFilter)
 			FilterStringList.push_back (FilterList[i] );
 	}
 }
+
 //return true if trace enable
 bool CLogger::isTraceEnable()
 {
@@ -377,7 +378,7 @@ bool CLogger::isTraceEnable()
 
 //return true if the log shall be filtered
 //
-bool CLogger::TestFilter(char * cbuffer)
+bool CLogger::TestFilter(const char *cbuffer)
 {
 	bool filtered = false; //default not filtered
 
@@ -398,9 +399,9 @@ bool CLogger::TestFilter(char * cbuffer)
 			}
 		}
 	}
-
 	return filtered;
 }
+
 void CLogger::setLogVerboseLevel(int LogLevel)
 {
 	SetVerboseLevel((_eLogFileVerboseLevel) (LogLevel & 0x3 ) );
@@ -412,11 +413,13 @@ void CLogger::setLogVerboseLevel(int LogLevel)
 
 
 }
+
 //set the DEBUG option in order to allow LOG_TRACE log level 
 void  CLogger::SetLogDebug(bool debug)
 {
   m_debug = debug ;
 }
+
 bool  CLogger::GetLogDebug()
 {
   return m_debug;

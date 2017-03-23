@@ -470,6 +470,7 @@ void MySensorsBase::UpdateNodeBatteryLevel(const int nodeID, const int Level)
 
 void MySensorsBase::UpdateNodeHeartbeat(const int nodeID)
 {
+
 	std::map<int, _tMySensorNode>::iterator ittNode = m_nodes.find(nodeID);
 	if (ittNode == m_nodes.end())
 		return; //Not found
@@ -478,6 +479,8 @@ void MySensorsBase::UpdateNodeHeartbeat(const int nodeID)
 	mytime(&m_LastHeartbeatReceive);
 	_tMySensorNode *pNode = &ittNode->second;
 	std::vector<_tMySensorChild>::iterator itt;
+
+
 	for (itt = pNode->m_childs.begin(); itt != pNode->m_childs.end(); ++itt)
 	{
 		std::map<_eSetType, _tMySensorValue>::const_iterator itt2;
@@ -1088,7 +1091,8 @@ void MySensorsBase::UpdateSwitchLastUpdate(const unsigned char Idx, const int Su
 	char szIdx[10];
 	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, szIdx, SubUnit, int(pTypeLighting2), int(sTypeAC));
+	// LLEMARINEL : #1312  Changed pTypeLighting2 to pTypeGeneralSwitch
+	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, szIdx, SubUnit, int(pTypeGeneralSwitch), int(sTypeAC));
 	if (result.size() < 1)
 		return; //not found!
 	time_t now = time(0);
@@ -1141,13 +1145,16 @@ void MySensorsBase::UpdateRGBWSwitchLastUpdate(const int NodeID, const int Child
 
 void MySensorsBase::UpdateSwitch(const _eSetType vType, const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname, const int BatLevel)
 {
-	double rlevel = (15.0 / 100)*Level;
-	int level = int(rlevel);
+	// LLEMARINEL : #1312  Changed to use as pTypeGeneralSwitch : do not constrain to 16 steps anymore but 100 :
+	int level = int(Level);
 
 	char szIdx[10];
-	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);
+	sprintf(szIdx, "%02X%02X%02X%02X", 0, 0, 0, Idx);
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, szIdx, SubUnit, int(pTypeLighting2), int(sTypeAC));
+
+	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, szIdx, SubUnit, int(pTypeGeneralSwitch), int(sTypeAC));
+
+
 	if (!result.empty())
 	{
 		if (
@@ -1169,29 +1176,27 @@ void MySensorsBase::UpdateSwitch(const _eSetType vType, const unsigned char Idx,
 		}
 	}
 
-	//Send as Lighting 2
-	tRBUF lcmd;
-	memset(&lcmd, 0, sizeof(RBUF));
-	lcmd.LIGHTING2.packetlength = sizeof(lcmd.LIGHTING2) - 1;
-	lcmd.LIGHTING2.packettype = pTypeLighting2;
-	lcmd.LIGHTING2.subtype = sTypeAC;
-	lcmd.LIGHTING2.id1 = 0;
-	lcmd.LIGHTING2.id2 = 0;
-	lcmd.LIGHTING2.id3 = 0;
-	lcmd.LIGHTING2.id4 = Idx;
-	lcmd.LIGHTING2.unitcode = SubUnit;
+	// LLEMARINEL : #1312  Changed to use as pTypeGeneralSwitch
+	// Send as General Switch :
+	_tGeneralSwitch gswitch;
+	gswitch.subtype = sTypeAC;
+	gswitch.id = Idx;
+	gswitch.unitcode = SubUnit;
 	if (!bOn)
 	{
-		lcmd.LIGHTING2.cmnd = light2_sOff;
+		gswitch.cmnd = gswitch_sOff;
 	}
 	else
 	{
-		lcmd.LIGHTING2.cmnd = light2_sOn;
+		gswitch.cmnd = gswitch_sOn;
 	}
-	lcmd.LIGHTING2.level = level;
-	lcmd.LIGHTING2.filler = 0;
-	lcmd.LIGHTING2.rssi = 12;
-	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), BatLevel);
+    gswitch.level = level; //level;
+	gswitch.battery_level = BatLevel;
+	gswitch.rssi = 12;
+	gswitch.seqnbr = 0;
+	sDecodeRXMessage(this, (const unsigned char *)&gswitch, defaultname.c_str(), BatLevel);
+
+
 }
 
 bool MySensorsBase::GetBlindsValue(const int NodeID, const int ChildID, int &blind_value)
@@ -1297,12 +1302,14 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 	unsigned char packettype = pCmd->ICMND.packettype;
 	unsigned char subtype = pCmd->ICMND.subtype;
 
-	if (packettype == pTypeLighting2)
+	// LLEMARINEL : #1312  Change to pTypeGeneralSwitch insteand of Lighting2
+	if (packettype == pTypeGeneralSwitch)
 	{
 		//Light command
+		const _tGeneralSwitch *pSwitch = reinterpret_cast<const _tGeneralSwitch*>(pdata);
 
-		int node_id = pCmd->LIGHTING2.id4;
-		int child_sensor_id = pCmd->LIGHTING2.unitcode;
+		int node_id = pSwitch->id;
+		int child_sensor_id = pSwitch->unitcode;
 
 		if (_tMySensorNode *pNode = FindNode(node_id))
 		{
@@ -1313,19 +1320,26 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 				return false;
 			}
 
-			int light_command = pCmd->LIGHTING2.cmnd;
-			if ((pCmd->LIGHTING2.cmnd == light2_sSetLevel) && (pCmd->LIGHTING2.level == 0))
+			int level = pSwitch->level;
+			int cmnd = pSwitch->cmnd;
+
+			if (cmnd == gswitch_sSetLevel)
 			{
-				light_command = light2_sOff;
-			}
-			else if ((pCmd->LIGHTING2.cmnd == light2_sSetLevel) && (pCmd->LIGHTING2.level == 255))
-			{
-				light_command = light2_sOn;
+				// Set command based on level value
+				if (level == 0)
+					cmnd = gswitch_sOff;
+				else if (level == 255)
+					cmnd = gswitch_sOn;
+				else
+				{
+					// For dimmers we only allow level 0-100
+					level = (level > 100) ? 100 : level;
+				}
 			}
 
-			if ((light_command == light2_sOn) || (light_command == light2_sOff))
+			if ((cmnd == gswitch_sOn) || (cmnd == gswitch_sOff))
 			{
-				std::string lState = (light_command == light2_sOn) ? "1" : "0";
+				std::string lState = (cmnd == gswitch_sOn) ? "1" : "0";
 				if (pChild->presType == S_LOCK)
 				{
 					//Door lock/contact
@@ -1334,7 +1348,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 				else if (pChild->presType == S_SCENE_CONTROLLER)
 				{
 					//Scene Controller
-					return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, (light_command == light2_sOn) ? V_SCENE_ON : V_SCENE_OFF, lState, pChild->useAck, pChild->ackTimeout);
+					return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, (cmnd == gswitch_sOn) ? V_SCENE_ON : V_SCENE_OFF, lState, pChild->useAck, pChild->ackTimeout);
 				}
 				else
 				{
@@ -1342,15 +1356,10 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 					return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_STATUS, lState, pChild->useAck, pChild->ackTimeout);
 				}
 			}
-			else if (light_command == light2_sSetLevel)
+			else if (cmnd == gswitch_sSetLevel)
 			{
-				float fvalue = (100.0f / 14.0f)*float(pCmd->LIGHTING2.level);
-				if (fvalue > 100.0f)
-					fvalue = 100.0f; //99 is fully on
-				int svalue = round(fvalue);
-
 				std::stringstream sstr;
-				sstr << svalue;
+				sstr << level;
 				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_PERCENTAGE, sstr.str(), pChild->useAck, pChild->ackTimeout);
 			}
 		}
