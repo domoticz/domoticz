@@ -32,9 +32,9 @@ History :
 
 #include <ctime>
 
-//#ifdef _DEBUG
+#ifdef _DEBUG
 #define DEBUG_TeleinfoSerial
-//#endif
+#endif
 
 #define NBFRAMES 8 		//number of frames to collect before processing one
 
@@ -329,7 +329,7 @@ void CTeleinfoSerial::ParseData(const unsigned char *pData, int Len)
 				m_buffer[m_bufferpos] = 0;
 
 			//We check the line only if the checksum is ok
-			if (isCheckSumOk())
+			if (isCheckSumOk(teleinfo.CRCmode1))
 				MatchLine();
 
 			m_bufferpos = 0;
@@ -371,23 +371,45 @@ d'introduire des fonctions ASCII (00  1F en hexadcimal), on ne conserve que les 
 resultat obtenu (cette operation se traduit par un ET logique entre la somme precedemment calculee et 03Fh).
 Enfin, on ajoute 20 en hexadecimal. Le resultat sera donc toujours un caractre ASCII imprimable (signe, chiffre,
 lettre majuscule) allant de 20 a 5F en hexadcimal.
+
+Un deuxième mode de calcul existe qui prend aussi le caractère de séparation final dans le calcul.
 */
 
-bool CTeleinfoSerial::isCheckSumOk()
+bool CTeleinfoSerial::isCheckSumOk(int &isMode1)
 {
-	unsigned int checksum = 0x00;
+	unsigned int checksum, mode1 = 0x00, mode2 = 0x00;
 	int i;
-	bool line_ok;
+	bool line_ok = false;
 
+        checksum = m_buffer[strlen((char*)m_buffer) - 1];
 	for (i = 0; i < int(strlen((char*)m_buffer)) - 2; i++)
 	{
-		checksum += m_buffer[i];
+		mode1 += m_buffer[i];
 	}
-	checksum = (checksum & 0x3F) + 0x20;
-	line_ok = (checksum == m_buffer[strlen((char*)m_buffer) - 1]);
-        if (!line_ok) _log.Log(LOG_ERROR, "CRC check failed on Teleinfo line '%s'. Line skipped. Checksum computed:'%s'", m_buffer, checksum);
+        mode2 = ((mode1 + m_buffer[i]) & 0x3F) + 0x20;
+	mode1 = (mode2 & 0x3F) + 0x20;
+	
+	if (mode1 == checksum)
+		if (isMode1 == (int)true) // This will evaluate to false when isMode still equals to 255 at second run 
+			line_ok = true;
+		else 
+		{
+			isMode1	= true;
+			_log.Log(LOG_STATUS, "(%s) Teleinfo CRC check mode set to 1", Name);
+		}	
+	else if (mode2 == checksum)
+                if (isMode1 == false)  
+			line_ok = true;
+		else
+		{
+			isMode1 = false;
+                        _log.Log(LOG_STATUS, "(%s) TeleinfoCRC check mode set to 2", Name); 
+		}
+ 	else // Don't send an error on the first run as the line is probably truncated, wait for mode to be initialised 
+		if (isMode1 != 255) _log.Log(LOG_ERROR, "(%s) CRC check failed on Teleinfo line '%s' using both modes 1 and 2. Line skipped.", Name, m_buffer);
+
 	#ifdef DEBUG_TeleinfoSerial
-        if (line_ok) _log.Log(LOG_NORM, "CRC check passed on Teleinfo line '%s'. Line processed", m_buffer);
-        #endif
+       	if (line_ok) _log.Log(LOG_NORM, "(%s) CRC check passed on Teleinfo line '%s'. Line processed", Name, m_buffer);
+       	#endif
 	return line_ok;
 }

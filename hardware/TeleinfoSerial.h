@@ -109,7 +109,7 @@ class CTeleinfoSerial : public CTeleinfoBase, AsyncSerial
 		void Init();
 		void MatchLine();
 		void ParseData(const unsigned char *pData, int Len);
-		bool isCheckSumOk();
+		bool isCheckSumOk(int &isMode1);
 
 		unsigned char m_buffer[1028];
 		int m_bufferpos;
