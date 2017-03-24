@@ -1303,7 +1303,69 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 	unsigned char subtype = pCmd->ICMND.subtype;
 
 	// LLEMARINEL : #1312  Change to pTypeGeneralSwitch insteand of Lighting2
-	if (packettype == pTypeGeneralSwitch)
+	if (packettype == pTypeLighting2)
+	{
+		//Light command
+
+		int node_id = pCmd->LIGHTING2.id4;
+		int child_sensor_id = pCmd->LIGHTING2.unitcode;
+
+		if (_tMySensorNode *pNode = FindNode(node_id))
+		{
+			_tMySensorChild *pChild = pNode->FindChild(child_sensor_id);
+			if (!pChild)
+			{
+				_log.Log(LOG_ERROR, "MySensors: Light command received for unknown node_id: %d, child_id: %d", node_id, child_sensor_id);
+				return false;
+			}
+
+			int light_command = pCmd->LIGHTING2.cmnd;
+			if ((pCmd->LIGHTING2.cmnd == light2_sSetLevel) && (pCmd->LIGHTING2.level == 0))
+			{
+				light_command = light2_sOff;
+			}
+			else if ((pCmd->LIGHTING2.cmnd == light2_sSetLevel) && (pCmd->LIGHTING2.level == 255))
+			{
+				light_command = light2_sOn;
+			}
+
+			if ((light_command == light2_sOn) || (light_command == light2_sOff))
+			{
+				std::string lState = (light_command == light2_sOn) ? "1" : "0";
+				if (pChild->presType == S_LOCK)
+				{
+					//Door lock/contact
+					return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_LOCK_STATUS, lState, pChild->useAck, pChild->ackTimeout);
+				}
+				else if (pChild->presType == S_SCENE_CONTROLLER)
+				{
+					//Scene Controller
+					return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, (light_command == light2_sOn) ? V_SCENE_ON : V_SCENE_OFF, lState, pChild->useAck, pChild->ackTimeout);
+				}
+				else
+				{
+					//normal
+					return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_STATUS, lState, pChild->useAck, pChild->ackTimeout);
+				}
+			}
+			else if (light_command == light2_sSetLevel)
+			{
+				float fvalue = (100.0f / 14.0f)*float(pCmd->LIGHTING2.level);
+				if (fvalue > 100.0f)
+					fvalue = 100.0f; //99 is fully on
+				int svalue = round(fvalue);
+
+				std::stringstream sstr;
+				sstr << svalue;
+				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_PERCENTAGE, sstr.str(), pChild->useAck, pChild->ackTimeout);
+			}
+		}
+		else {
+			_log.Log(LOG_ERROR, "MySensors: Light command received for unknown node_id: %d", node_id);
+			return false;
+		}
+	}
+	else if (packettype == pTypeGeneralSwitch)
 	{
 		//Light command
 		const _tGeneralSwitch *pSwitch = reinterpret_cast<const _tGeneralSwitch*>(pdata);
