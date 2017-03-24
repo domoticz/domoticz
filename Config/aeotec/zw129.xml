@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Aeotec ZW129 WallMote Duo, base on Engineering Spec 9/27/2016
+-->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+    <!-- COMMAND_CLASS_BASIC -->
+    <CommandClass id="32" getsupported="false"/>
+    <!-- COMMAND_CLASS_SWITCH_BINARY -->
+    <CommandClass id="37" getsupported="false"/>
+    <!-- COMMAND_CLASS_SWITCH_MULTILEVEL -->
+    <CommandClass id="38" getsupported="false"/>
+    <!-- Configuration Parameters -->
+    <CommandClass id="112">
+        <Value type="list" genre="config" instance="1" index="1" label="Touch sound" min="0" max="1" value="1" size="1">
+            <Help>This will enable or disable the sound effects when you press or touch  the sensing area</Help>
+            <Item label="Disable" value="0"/>
+            <Item label="Enable" value="1"/>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="2" label="Touch vibration" min="0" max="1" value="1" size="1">
+            <Help>This will enable or disable the vibration effects when you press or  touch the sensing area</Help>
+            <Item label="Disable" value="0"/>
+            <Item label="Enable" value="1"/>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="3" label="Button slide function" min="0" max="1" value="1" size="1">
+            <Help>This will enable or disable control by sliding the button area</Help>
+            <Item label="Disable" value="0"/>
+            <Item label="Enable" value="1"/>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="4" label="Report type" min="0" max="1" value="1" size="1">
+            <Help>To configure which report will be sent when pressing the buttons</Help>
+            <Item label="Send nothing" value="0"/>
+            <Item label="Send Central Scene Command Notification" value="1"/>
+            <Item label="Send Central Scene Command Notification and Configuration report" value="3"/>
+        </Value>
+        <Value type="int" index="5" genre="config" label="Color when button is pressed" units="" value="65280" >
+            <Help>
+                To configure which color will be displayed when the button is pressed.
+                Value 1: (msb) Red.
+                Value 2: Green.
+                Value 3: Blue.
+                Value 4: Reserved
+            </Help>
+        </Value>
+        <Value type="int" index="33" genre="config" label="Test the LED, buzzer and vibrator" units="" value="0" read_only="true">
+            <Help>
+                Get the LED Strip color value
+                Value 1: (msb) Red.
+                Value 2: Green.
+                Value 3: Blue.
+                Value 4: buzzer and vibrator. (1=ON, 0=OFF)
+            </Help>
+        </Value>
+        <Value type="byte" index="39" genre="config" label="Set the low battery value" units="%" min="10" max="50" value="20">
+            <Help>
+                Set the low battery value.
+                Range: 10% - 50%.</Help>
+        </Value>
+        <Value type="list" index="255" genre="config" label="Reset To Factory Defaults" size="4" value="1" write_only="true">
+            <Help>Reset to factory defaults</Help>
+            <Item label="Reset to factory default setting" value="0"/>
+            <Item label="Normal" value="1"/>
+            <Item label="Reset to factory default setting and removed from the z-wave network" value="1431655765"/>
+        </Value>
+    </CommandClass>
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="5">
+            <Group index="1" max_associations="1" label="Lifeline"/>
+            <Group index="2" max_associations="5" label="On/Off control via Button 1"/>
+            <Group index="3" max_associations="5" label="Dimmer control via Button 1"/>
+            <Group index="4" max_associations="5" label="On/Off control via Button 2"/>
+            <Group index="5" max_associations="5" label="Dimmer control via Button 2"/>
+        </Associations>
+    </CommandClass>
+    <!--<CommandClass id="142" ForceInstances="true"/>-->
+</Product>

@@ -76,6 +76,7 @@
 #include "../hardware/RFLinkTCP.h"
 #include "../hardware/KMTronicSerial.h"
 #include "../hardware/KMTronicTCP.h"
+#include "../hardware/KMTronicUDP.h"
 #include "../hardware/KMTronic433.h"
 #include "../hardware/SolarMaxTCP.h"
 #include "../hardware/Pinger.h"
@@ -776,6 +777,10 @@ bool MainWorker::AddHardwareFromParams(
 		//LAN
 		pHardware = new KMTronicTCP(ID, Address, Port, Username, Password);
 		break;
+	case HTYPE_KMTronicUDP:
+		//UDP
+		pHardware = new KMTronicUDP(ID, Address, Port);
+		break;
 	case HTYPE_NefitEastLAN:
 		pHardware = new CNefitEasy(ID, Address, Port);
 		break;
@@ -931,7 +936,7 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_RaspberryGPIO:
 		//Raspberry Pi GPIO port access
 #ifdef WITH_GPIO
-		pHardware = new CGpio(ID);
+		pHardware = new CGpio(ID, Mode1, Mode2);
 #endif
 		break;
 	case HTYPE_Comm5TCP:
@@ -1002,6 +1007,9 @@ bool MainWorker::Start()
 	{
 		return false;
 	}
+	//set the log preference
+	_log.GetLogPreference();
+
 	HTTPClient::SetUserAgent(GenerateUserAgent());
 	m_notifications.Init();
 	GetSunSettings();
@@ -1539,6 +1547,7 @@ void MainWorker::Do_Work()
 					m_sql.UpdatePreferencesVar("WebPassword", "");
 					std::remove(szPwdResetFile.c_str());
 				}
+				m_notifications.CheckAndHandleLastUpdateNotification();
 			}
 			if (_log.NotificationLogsEnabled())
 			{
@@ -1606,10 +1615,10 @@ void MainWorker::SendCommand(const int HwdID, unsigned char Cmd, const char *szM
 	int hindex=FindDomoticzHardware(HwdID);
 	if (hindex==-1)
 		return;
-#ifdef _DEBUG
+
 	if (szMessage!=NULL)
-		_log.Log(LOG_NORM,"Cmd: %s", szMessage);
-#endif
+		if (_log.isTraceEnable()) _log.Log(LOG_TRACE,"MAIN SendCommand: %s", szMessage);
+
 
 	tRBUF cmd;
 	cmd.ICMND.packetlength = 13;
@@ -1637,6 +1646,8 @@ bool MainWorker::WriteToHardware(const int HwdID, const char *pdata, const unsig
 		return false;
 
 	return m_hardwaredevices[hindex]->WriteToHardware(pdata,length);
+	if (_log.isTraceEnable()) _log.Log(LOG_TRACE,"MAIN WriteToHardware %s",m_hardwaredevices[hindex]->Name.c_str()  );
+
 }
 
 void MainWorker::WriteMessageStart()
@@ -2063,6 +2074,18 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const 
 	uint64_t DeviceRowIdx = -1;
 	std::string DeviceName = "";
 	tcp::server::CTCPClient *pClient2Ignore = NULL;
+
+	if (_log.isTraceEnable()) {
+		char  mes[sizeof(tRBUF)*2+2];
+		char * ptmes = mes;
+		for (size_t i = 0; i < Len; i++) {
+			sprintf(ptmes,"%02X", pRXCommand[i]);
+			ptmes += 2;
+		}
+		*ptmes = 0 ;
+
+		_log.Log(LOG_TRACE, "MAIN ProcessRX Msg %s", mes);
+	}
 
 	if (pHardware->HwdType == HTYPE_Domoticz)
 	{
@@ -9689,7 +9712,10 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 	}
 	else if (subType == sTypeAlert)
 	{
-		sprintf(szTmp, "%d", pMeter->intval1);
+		if (strcmp(pMeter->text,  ""))
+			sprintf(szTmp, "(%d) %s", pMeter->intval1, pMeter->text);
+		else
+			sprintf(szTmp, "%d", pMeter->intval1);
 		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, pMeter->intval1, szTmp, procResult.DeviceName);
 		if (DevRowIdx == -1)
 			return;
@@ -10716,6 +10742,9 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 
 	int HardwareID = atoi(sd[0].c_str());
 
+	if (_log.isTraceEnable()) _log.Log(LOG_TRACE,"MAIN SwitchLightInt : switchcmd:%s level:%d HWid:%d  sd:%s %s %s %s %s %s", switchcmd.c_str(),level,HardwareID ,
+	 sd[0].c_str(), sd[1].c_str(), sd[2].c_str(), sd[3].c_str(), sd[4].c_str(), sd[5].c_str() );
+
 	int hindex=FindDomoticzHardware(HardwareID);
 	if (hindex == -1)
 	{
@@ -11690,6 +11719,7 @@ bool MainWorker::SwitchLight(const std::string &idx, const std::string &switchcm
 bool MainWorker::SwitchLight(const uint64_t idx, const std::string &switchcmd, const int level, const int hue, const bool ooc, const int ExtraDelay)
 {
 	//Get Device details
+    if (_log.isTraceEnable()) _log.Log(LOG_TRACE,"MAIN SwitchLight idx:%d cmd:%s lvl:%d " ,(long)idx,switchcmd.c_str(),level );
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query(
 		"SELECT HardwareID,DeviceID,Unit,Type,SubType,SwitchType,AddjValue2,nValue,sValue,Name,Options FROM DeviceStatus WHERE (ID == %" PRIu64 ")",
@@ -11957,6 +11987,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 			if (pHardware->HwdType == HTYPE_Dummy)
 			{
 				//Also set it in the database, ad this devices does not send updates
+				_log.Log(LOG_TRACE, "MAIN SetPoint command Idx=%s : Temp=%f",sd[7].c_str(),TempValue);
 				PushAndWaitRxMessage(pHardware, (const unsigned char*)&tmeter, NULL, -1);
 			}
 		}
