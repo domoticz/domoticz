@@ -177,6 +177,7 @@
 #define sSwitchTypeHRCMotor			0x6e
 #define sSwitchTypeVelleman			0x6f
 #define sSwitchTypeRFCustom			0x72
+#define sSwitchTypeYW_Sensor		0x73
 
 //Switch commands
 #define gswitch_sOff				0x00
