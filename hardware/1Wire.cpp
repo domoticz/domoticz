@@ -448,7 +448,7 @@ void C1Wire::PollSwitches()
 
 void C1Wire::ReportWiper(const std::string& deviceId, const unsigned int wiper)
 {
-	if ((wiper < 0) || (wiper > 255))
+	if (wiper > 255)
 		return;
 	unsigned char deviceIdByteArray[DEVICE_ID_SIZE] = { 0 };
 	DeviceIdToByteArray(deviceId, deviceIdByteArray);
