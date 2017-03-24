@@ -9,7 +9,7 @@
 #ifdef WITH_THREAD
 #    undefine WITH_THREAD
 #endif
-#include <Python.h>
+#include "Python.h"
 #include <structmember.h> 
 #include <frameobject.h>
 
