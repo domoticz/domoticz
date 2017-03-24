@@ -820,7 +820,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							}
 							on = true;
 							m_XiaomiGateway->InsertUpdateCubeText(sid.c_str(), name, rotate.c_str());
-							m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, on, type, level, cmd);
+							m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, on, type, level, cmd, false, false);
 						}
 						else {
 							std::string voltage = root2["voltage"].asString();
@@ -833,7 +833,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 									sleep_milliseconds(100); //need to sleep here as the gateway will send 2 update messages, and need time for the database to update the state so that the event is not triggered twice
 								}
 								if (level > -1) { //this should stop false updates when empty 'data' is received
-									m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, on, type, level, cmd);
+									m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, on, type, level, cmd, false, false);
 								}																
 							}
 						}
