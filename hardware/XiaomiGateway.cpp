@@ -418,8 +418,8 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 		if (is2ndchannel) {
 			xcmd.unitcode = 2;
 		}
-		int nvalue = atoi(result[0][0].c_str());
-		if ((((bIsOn) && (nvalue == 0)) || ((bIsOn == false) && (nvalue == 1)))) { // || (messagetype != "heartbeat")) {
+		int nvalue = atoi(result[0][0].c_str());		
+		if ((((bIsOn) && (nvalue == 0)) || ((bIsOn == false) && (nvalue == 1))) || (level > 0)) {
 			m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, NULL, -1);
 		}
 		else {
@@ -668,7 +668,7 @@ XiaomiGateway::xiaomi_udp_server::xiaomi_udp_server(boost::asio::io_service& io_
 			m_XiaomiGateway->StopHardware();
 			return;
 		}
-		start_receive();
+		start_receive();		
 	}
 	else {
 		_log.Log(LOG_STATUS, "XiaomiGateway: NOT LISTENING TO UDP FOR HARDWARE ID %d", m_HwdID);
