@@ -121,9 +121,12 @@ namespace Plugins {
 		{ "SignalLevel", T_INT, offsetof(CDevice, SignalLevel), READONLY, "Numeric signal level" },
 		{ "BatteryLevel", T_INT, offsetof(CDevice, BatteryLevel), READONLY, "Numeric battery level" },
 		{ "Image", T_INT, offsetof(CDevice, Image), READONLY, "Numeric image number" },
+		{ "Type", T_INT, offsetof(CDevice, Type), READONLY, "Numeric device type" },
+		{ "SubType", T_INT, offsetof(CDevice, SubType), READONLY, "Numeric device subtype" },
 		{ "LastLevel", T_INT, offsetof(CDevice, LastLevel), READONLY, "Previous device level" },
 		{ "LastUpdate", T_OBJECT, offsetof(CDevice, LastUpdate), READONLY, "Last update timestamp" },
 		{ "Options", T_OBJECT, offsetof(CDevice, Options), READONLY, "Device options" },
+		{ "Used", T_INT, offsetof(CDevice, Used), READONLY, "Numeric device Used flag" },
 		{ NULL }  /* Sentinel */
 	};
 

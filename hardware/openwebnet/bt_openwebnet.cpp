@@ -2,12 +2,10 @@
 //class bt_openwebnet is a modification of GNU bticino C++ openwebnet client
 //from openwebnet class
 //see www.bticino.it; www.myhome-bticino.it
-#include <sstream>
-#include <iostream>
-#include <string>
-#include <iomanip>
-#include "../../main/localtime_r.h"
+#include "stdafx.h"
 #include "bt_openwebnet.h"
+#include "../../main/localtime_r.h"
+
 // private methods ......
 
 std::string bt_openwebnet::FirstToken(const std::string& myText, const std::string& delimiters)
@@ -740,9 +738,10 @@ void bt_openwebnet::CreateSetTimeMsgOpen()
   CreateNullMsgOpen();
   	
 	char frame_dt[50];
-	time_t now = time(NULL);
-	struct tm *t = localtime(&now);	
-	strftime(frame_dt, sizeof(frame_dt)-1, "*#13**#22*%H*%M*%S*001*%u*%d*%m*%Y##", t); //set date time 
+	time_t now = mytime(NULL);
+	struct tm ltime;
+	localtime_r(&now, &ltime);
+	strftime(frame_dt, sizeof(frame_dt)-1, "*#13**#22*%H*%M*%S*001*%u*%d*%m*%Y##", &ltime); //set date time 
 	std::stringstream frame;
 	frame << frame_dt;
 	frame_open = DeleteControlCharacters(frame.str());

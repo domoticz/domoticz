@@ -394,6 +394,3 @@ private:
 };
 
 extern CSQLHelper m_sql;
-
-std::string getSValuePart(const char * sValue, unsigned int part );
-std::string getSValuePart(std::string &sValue, unsigned int part );
