@@ -77,7 +77,7 @@ m_szIPAddress(IPAddress)
 	m_mochadsec.SECURITY1.id1 = 0;
 	m_mochadsec.SECURITY1.id2 = 0;
 	m_mochadsec.SECURITY1.id3 = 0;
-	m_mochadsec.SECURITY1.status;
+	m_mochadsec.SECURITY1.status = sStatusNormal;
 	m_mochadsec.SECURITY1.rssi = 12;
 	m_mochadsec.SECURITY1.battery_level = 0;
 
