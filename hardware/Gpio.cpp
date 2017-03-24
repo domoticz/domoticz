@@ -59,10 +59,11 @@ Connection information:
 
 #define NO_INTERRUPT	-1
 #define MAX_GPIO	31
-#define MIN_PERIOD_US	50000
 
 bool m_bIsInitGPIOPins=false;
 bool interruptHigh[MAX_GPIO+1]={ false };
+uint32_t m_debounce;
+uint32_t m_period;
 
 // List of GPIO pin numbers, ordered as listed
 std::vector<CGpioPin> CGpio::pins;
@@ -79,10 +80,12 @@ struct timeval tvBegin[MAX_GPIO+1], tvEnd[MAX_GPIO+1], tvDiff[MAX_GPIO+1];
 /*
  * Direct GPIO implementation, inspired by other hardware implementations such as PiFace and EnOcean
  */
-CGpio::CGpio(const int ID)
+CGpio::CGpio(const int ID, const int debounce, const int period)
 {
 	m_stoprequested=false;
 	m_HwdID=ID;
+	m_debounce=debounce;
+	m_period=period;
 
 	//Prepare a generic packet info for LIGHTING1 packet, so we do not have to do it for every packet
 	IOPinStatusPacket.LIGHTING1.packetlength = sizeof(IOPinStatusPacket.LIGHTING1) -1;
@@ -154,14 +157,14 @@ int timeval_subtract (struct timeval *result, struct timeval *x, struct timeval 
 	unsigned int diff = tvDiff[gpioId].tv_usec + tvDiff[gpioId].tv_sec * 1000000;
 	getclock(&tvBegin[gpioId]);
 	boost::mutex::scoped_lock lock(interruptQueueMutex);
-	if (diff>MIN_PERIOD_US) {
+	if (diff>m_period*1000) {
 		interruptHigh[gpioId]=false;
 		if(std::find(gpioInterruptQueue.begin(), gpioInterruptQueue.end(), gpioId) != gpioInterruptQueue.end()) {
-			// _log.Log(LOG_NORM, "GPIO: Interrupt for GPIO %d already queued. Ignoring...", gpioId);
+			_log.Log(LOG_NORM, "GPIO: Interrupt for GPIO %d already queued. Ignoring...", gpioId);
 		}
 		else {
 			// Queue interrupt. Note that as we make sure it contains only unique numbers, it can never "overflow".
-			// _log.Log(LOG_NORM, "GPIO: Queuing interrupt for GPIO %d.", gpioId);
+			_log.Log(LOG_NORM, "GPIO: Queuing interrupt for GPIO %d.", gpioId);
 			gpioInterruptQueue.push_back(gpioId);
 		}
 	}
@@ -269,20 +272,23 @@ bool CGpio::StartHardware()
 			}
 		}
 	}
-	
-	//
-	//  Read all exported GPIO ports and set the device status accordingly.
-	//  Wait 250 milli seconds to make sure all are set before initialising
-	//  the remainder of domoticz. 
-	//
-	CopyDeviceStates(false);
-	sleep_milliseconds(250);
 
-	//
-	//  Start thread to do a delayed setup of initial state
-	//
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CGpio::DelayedStartup, this)));
-	//  _log.Log(LOG_NORM, "GPIO: WiringPi is now initialized");
+	//  Read all exported GPIO ports and set the device status accordingly.
+	CopyDeviceStates(false);
+
+	//  No need for delayed startup and force update when no masters are able to connect.
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT ID FROM Users WHERE (RemoteSharing==1) AND (Active==1)");
+	if (result.size()>0)
+	{
+		//  Wait 250 milli seconds to make sure all are set before initialising
+		//  the remainder of domoticz.
+		sleep_milliseconds(250);
+
+		//  Start thread to do a delayed setup of initial state
+		m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CGpio::DelayedStartup, this)));
+	}
+	 _log.Log(LOG_NORM, "GPIO: WiringPi is now initialized");
 #endif
 	sOnConnected(this);
 
@@ -347,10 +353,10 @@ void CGpio::ProcessInterrupt(int gpioId) {
 
 	if ((!result.empty()) && (result.size() > 0))
 	{
-		// _log.Log(LOG_NORM, "GPIO: Processing interrupt for GPIO %d...", gpioId);
+		_log.Log(LOG_NORM, "GPIO: Processing interrupt for GPIO %d...", gpioId);
 
 		// Debounce reading
-		sleep_milliseconds(50);
+		sleep_milliseconds(m_debounce);
 
 		// Read GPIO data
 		int value = digitalRead(gpioId);
@@ -369,7 +375,7 @@ void CGpio::ProcessInterrupt(int gpioId) {
 
 		sDecodeRXMessage(this, (const unsigned char *)&IOPinStatusPacket, NULL, 255);
 
-		// _log.Log(LOG_NORM, "GPIO: Done processing interrupt for GPIO %d (%s).", gpioId, (value != 0) ? "HIGH" : "LOW");
+		_log.Log(LOG_NORM, "GPIO: Done processing interrupt for GPIO %d (%s).", gpioId, (value != 0) ? "HIGH" : "LOW");
 	}
 #endif
 }
@@ -381,6 +387,7 @@ void CGpio::Do_Work()
 	std::vector<int> triggers;
 
 	_log.Log(LOG_NORM,"GPIO: Worker started...");
+	_log.Log(LOG_NORM,"GPIO: Debounce: %dms - Period: %dms", m_debounce, m_period);
 
 	while (!m_stoprequested) {
 		//_log.Log(LOG_NORM, "GPIO: Updating heartbeat");
@@ -606,12 +613,11 @@ void CGpio::DelayedStartup()
 	//
 	//	This runs to better support Raspberry Pi as domoticz slave device.
 	//
-	//  Delay 30 seconds to make sure master domoticz has connected. Then 
-	//	copy the GPIO ports states to the switches one more time so the 
-	//	master will see the actual states also after it has connected. 
+	//  Delay 30 seconds to make sure master domoticz has connected. Then
+	//	copy the GPIO ports states to the switches one more time so the
+	//	master will see the actual states also after it has connected.
 	//
 	sleep_milliseconds(30000);
-
 	_log.Log(LOG_NORM, "GPIO: Optional connected Master Domoticz now updates its status");
 	CopyDeviceStates(true);
 
@@ -709,7 +715,7 @@ void CGpio::SetupInitialState(int gpioId, bool forceUpdate)
 
 		sDecodeRXMessage(this, (const unsigned char *)&IOPinStatusPacket, NULL, 255);
 	}
-        
+
 	//  _log.Log(LOG_NORM, "GPIO:%d initial state %s", gpioId, (value != 0) ? "OPEN" : "CLOSED");
 }
 
