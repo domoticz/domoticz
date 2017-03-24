@@ -87,7 +87,9 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 			else if (xcmd->cmnd == 1) {
 				cmdcommand = "\\\"on";
 			}
-			message = "{\"cmd\":\"write\",\"model\":\"" + cmddevice + "\",\"sid\":\"" + sid + "\",\"short_id\":0,\"data\":\"{" + cmdchannel + cmdcommand + "\\\",\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
+			if (isctrl) {
+				message = "{\"cmd\":\"write\",\"model\":\"" + cmddevice + "\",\"sid\":\"" + sid + "\",\"short_id\":0,\"data\":\"{" + cmdchannel + cmdcommand + "\\\",\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
+			}
 		if ((xcmd->subtype == sSwitchGeneralSwitch) && (!isctrl)) { // added bool to avoid sending command if ID belong to ctrl_neutrals devices
 			std::string command = "on";
 			switch (xcmd->cmnd) {
@@ -764,6 +766,9 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						std::string aqara_wireless2 = root2["channel_1"].asString();
 						bool on = false;
 						int level = -1;
+						if (model == "switch") {
+							level = 0;
+						}
 						if ((status == "motion") || (status == "open") || (status == "no_close") || (status == "on") || (no_close != "")) {
 							level = 0;
 							on = true;
@@ -823,7 +828,8 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 								m_XiaomiGateway->InsertUpdateVoltage(sid.c_str(), name, atoi(voltage.c_str()));
 							}
 							else {
-								if (model == "plug" || model == "ctrl_neutral1" || model == "ctrl_neutral2") {
+								//if (model == "plug" || model == "ctrl_neutral1" || model == "ctrl_neutral2") {
+								if (model == "plug" ) {
 									sleep_milliseconds(100); //need to sleep here as the gateway will send 2 update messages, and need time for the database to update the state so that the event is not triggered twice
 								}
 								if (level > -1) { //this should stop false updates when empty 'data' is received
