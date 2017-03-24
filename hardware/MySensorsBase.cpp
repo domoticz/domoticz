@@ -1092,7 +1092,7 @@ void MySensorsBase::UpdateSwitchLastUpdate(const unsigned char Idx, const int Su
 	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);
 	std::vector<std::vector<std::string> > result;
 	// LLEMARINEL : #1312  Changed pTypeLighting2 to pTypeGeneralSwitch
-	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, szIdx, SubUnit, int(pTypeGeneralSwitch), int(sTypeAC));
+	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, szIdx, SubUnit, int(pTypeGeneralSwitch), int(sSwitchTypeAC));
 	if (result.size() < 1)
 		return; //not found!
 	time_t now = time(0);
@@ -1152,7 +1152,7 @@ void MySensorsBase::UpdateSwitch(const _eSetType vType, const unsigned char Idx,
 	sprintf(szIdx, "%02X%02X%02X%02X", 0, 0, 0, Idx);
 	std::vector<std::vector<std::string> > result;
 
-	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, szIdx, SubUnit, int(pTypeGeneralSwitch), int(sTypeAC));
+	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, szIdx, SubUnit, int(pTypeGeneralSwitch), int(sSwitchTypeAC));
 
 
 	if (!result.empty())
@@ -1179,7 +1179,7 @@ void MySensorsBase::UpdateSwitch(const _eSetType vType, const unsigned char Idx,
 	// LLEMARINEL : #1312  Changed to use as pTypeGeneralSwitch
 	// Send as General Switch :
 	_tGeneralSwitch gswitch;
-	gswitch.subtype = sTypeAC;
+	gswitch.subtype = sSwitchTypeAC;
 	gswitch.id = Idx;
 	gswitch.unitcode = SubUnit;
 	if (!bOn)
