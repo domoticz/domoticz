@@ -105,7 +105,7 @@ class CTeleinfoBase : public CDomoticzHardwareBase
 				pAlertDemain = 10;
 				last = 0;
 				triphase = false;
-				CRCmode1 = 255; // not initialized yet, will be when running CRCCheck for the first time
+				CRCmode1 = 255; // means "bool not initialized yet", will be when running CRC Check for the first time
 			}
 		} Teleinfo;
 
