@@ -861,10 +861,10 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							xctrl = true;
 						}
 						if (aqara_wired1 != "") {
-							m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, state, type, 0, cmd, xctrl, false);
+							m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, state, type, 10, cmd, xctrl, false);
 						}
 						else if (aqara_wired2 != "") {
-							m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, state, type, 0, cmd, xctrl, true);
+							m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, state, type, 10, cmd, xctrl, true);
 						}
 					}
 					else if (name == "Xiaomi Temperature/Humidity") {
