@@ -32,9 +32,9 @@ History :
 
 #include <ctime>
 
-#ifdef _DEBUG
+//#ifdef _DEBUG
 #define DEBUG_TeleinfoSerial
-#endif
+//#endif
 
 #define NBFRAMES 8 		//number of frames to collect before processing one
 
@@ -365,23 +365,29 @@ result (this translates into a logical AND between the amount previously calcula
 Finally, we added 20 hexadecimal. The result will always be a printable ASCII character (sign, digit,
 capital letter) of from 0x20 to hexadecimal 0x5F
 
-La "checksum" est calcule sur l'ensemble des caractres allant du dbut du champ tiquette  la fin du champ
-donne, caractre SP inclus. On fait tout d'abord la somme des codes ASCII de tous ces caractres. Pour viter
+Le "checksum" est calcule sur l'ensemble des caracteres allant du debut du champ etiquette a la fin du champ
+donnee, caractere SP inclus. On fait tout d'abord la somme des codes ASCII de tous ces caracteres. Pour eviter
 d'introduire des fonctions ASCII (00  1F en hexadcimal), on ne conserve que les six bits de poids faible du
-rsultat obtenu (cette opration se traduit par un ET logique entre la somme prcdemment calcule et 03Fh).
-Enfin, on ajoute 20 en hexadcimal. Le rsultat sera donc toujours un caractre ASCII imprimable (signe, chiffre,
-lettre majuscule) allant de 20  5F en hexadcimal.
+resultat obtenu (cette operation se traduit par un ET logique entre la somme precedemment calculee et 03Fh).
+Enfin, on ajoute 20 en hexadecimal. Le resultat sera donc toujours un caractre ASCII imprimable (signe, chiffre,
+lettre majuscule) allant de 20 a 5F en hexadcimal.
 */
 
 bool CTeleinfoSerial::isCheckSumOk()
 {
 	unsigned int checksum = 0x00;
 	int i;
+	bool line_ok;
 
 	for (i = 0; i < int(strlen((char*)m_buffer)) - 2; i++)
 	{
 		checksum += m_buffer[i];
 	}
 	checksum = (checksum & 0x3F) + 0x20;
-	return (checksum == m_buffer[strlen((char*)m_buffer) - 1]);
+	line_ok = (checksum == m_buffer[strlen((char*)m_buffer) - 1]);
+        if (!line_ok) _log.Log(LOG_ERROR, "CRC check failed on Teleinfo line '%s'. Line skipped. Checksum computed:'%s'", m_buffer, checksum);
+	#ifdef DEBUG_TeleinfoSerial
+        if (line_ok) _log.Log(LOG_NORM, "CRC check passed on Teleinfo line '%s'. Line processed", m_buffer);
+        #endif
+	return line_ok;
 }

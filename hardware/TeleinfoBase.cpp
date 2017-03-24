@@ -88,12 +88,12 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 
 	// Guess if we are running with one phase or three
 	// some devices like EcoDevices always send all variables so presence/absence of IINSTx is not significant
-	// Also, EcoDevices sends always sends the same value for IINST and IINST1, so check must be done on IINST2 and IINST3
-	if ((teleinfo.triphase == true) || (teleinfo.IINST2 > 0) || (teleinfo.IINST3 > 0))
+	// Also, EcoDevices always sends the same value for IINST and IINST1, so check must be done on IINST2 and IINST3
+	if (((teleinfo.IINST == 0) && (teleinfo.IINST1 > 0)) || (teleinfo.IINST2 > 0) || (teleinfo.IINST3 > 0))
 		teleinfo.triphase  = true;
 
 	// PAPP only exist on some meter versions. If not present, we can approximate it as (current x 230V)
-	if ((teleinfo.PAPP == 0) && ((teleinfo.IINST > 0)||(teleinfo.IINST1 > 0)||(teleinfo.IINST2 > 0)||(teleinfo.IINST3 > 0)))
+	if ((teleinfo.PAPP == 0) && ((teleinfo.IINST > 0) || (teleinfo.IINST1 > 0) || (teleinfo.IINST2 > 0) || (teleinfo.IINST3 > 0)))
 		teleinfo.PAPP = (teleinfo.triphase ? (teleinfo.IINST1 + teleinfo.IINST2 + teleinfo.IINST3) : (teleinfo.IINST)) * 230;
 
 	if (teleinfo.PTEC.substr(0,2) == "TH")
@@ -155,7 +155,6 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 				m_p1power.powerusage1 = teleinfo.BASE;
 				m_p1power.powerusage2 = 0;
 				sDecodeRXMessage(this, (const unsigned char *)&m_p1power, (name + " kWh Total").c_str(), 255);
-				//	SendKwhMeter(m_HwdID, 32*rank + 2, 255, teleinfo.PAPP, teleinfo.BASE/1000.0, name + " kWh Total");
 			}
 			else if (teleinfo.OPTARIF == "HC..")
 			{
@@ -165,7 +164,6 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 				m_p1power.powerusage1 = teleinfo.HCHP;
 				m_p1power.powerusage2 = teleinfo.HCHC;
 				sDecodeRXMessage(this, (const unsigned char *)&m_p1power, (name + " kWh Total").c_str(), 255);
-				//	SendKwhMeter(m_HwdID, 32*rank + 5, 255, teleinfo.PAPP, (teleinfo.HCHP + teleinfo.HCHC)/1000.0, name + " kWh Total");
 			}
 			else if (teleinfo.OPTARIF == "EJP.")
 			{
@@ -175,7 +173,6 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 				m_p1power.powerusage1 = teleinfo.EJPHPM;
 				m_p1power.powerusage2 = teleinfo.EJPHN;
 				sDecodeRXMessage(this, (const unsigned char *)&m_p1power, (name + " kWh EJP").c_str(), 255);
-				//	SendKwhMeter(m_HwdID, 32*rank + 8, 255, teleinfo.PAPP, (teleinfo.EJPHN + teleinfo.EJPHPM)/1000.0, name + "kWh  Total");
 				alertEJP =  (teleinfo.PEJP == 30) ? 4 : 1;
 				if (alertEJP != teleinfo.pAlertEJP)
 				{
@@ -224,12 +221,6 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 					teleinfo.color = "Unknown";
 					color_alert = 3;
 				}
-				//SendKwhMeter(m_HwdID, 32*rank + 10, 255, m_pappHCJB, teleinfo.BBRHCJB/1000.0, name + " Jour Bleu, Creux");
-				//SendKwhMeter(m_HwdID, 32*rank + 11, 255, m_pappHPJB, teleinfo.BBRHPJB/1000.0, name + " Jour Bleu, Plein");
-				//SendKwhMeter(m_HwdID, 32*rank + 12, 255, m_pappHCJW, teleinfo.BBRHCJW/1000.0, name + " Jour Blanc, Creux");
-				//SendKwhMeter(m_HwdID, 32*rank + 13, 255, m_pappHPJW, teleinfo.BBRHPJW/1000.0, name + " Jour Blanc, Plein");
-				//SendKwhMeter(m_HwdID, 32*rank + 14, 255, m_pappHCJR, teleinfo.BBRHCJR/1000.0, name + " Jour Rouge, Creux");
-				//SendKwhMeter(m_HwdID, 32*rank + 15, 255, m_pappHPJR, teleinfo.BBRHCJR/1000.0, name + " Jour Rouge, Plein");
 				SendKwhMeter(m_HwdID, 32*rank + 16, 255, teleinfo.PAPP, (teleinfo.BBRHCJB + teleinfo.BBRHPJB + teleinfo.BBRHCJW
 					+ teleinfo.BBRHPJW + teleinfo.BBRHCJR + teleinfo.BBRHPJR)/1000.0, name + " kWh Total");
 				m_p1power.powerusage1 = teleinfo.BBRHPJB;
