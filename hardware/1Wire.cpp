@@ -56,7 +56,7 @@ void C1Wire::DetectSystem()
 {
 #ifdef WIN32
 	if (!m_system && C1WireForWindows::IsAvailable())
-		m_system=new C1WireForWindows();
+		m_system = new C1WireForWindows();
 #else // WIN32
 
 	// Using the both systems at same time results in conflicts,
@@ -68,7 +68,6 @@ void C1Wire::DetectSystem()
 	} else {
 		m_system=new C1WireByOWFS(m_path);
 	}
-
 #endif // WIN32
 }
 
@@ -365,6 +364,7 @@ void C1Wire::BuildSwitchList() {
 		case Temperature_IO:
 		case dual_channel_addressable_switch:
 		case _4k_EEPROM_with_PIO:
+		case digital_potentiometer:
 			m_switches.insert(*device);
 			break;
 
@@ -433,12 +433,29 @@ void C1Wire::PollSwitches()
 				break;
 			}
 
+		case digital_potentiometer:
+		{
+			unsigned int wiper = m_system->GetWiper(device);
+			ReportWiper(device.devid, wiper);
+			break;
+		}
+
 		default: // Not a supported switch
 			break;
 		}
 	}
 }
 
+void C1Wire::ReportWiper(const std::string& deviceId, const unsigned int wiper)
+{
+	if ((wiper < 0) || (wiper > 255))
+		return;
+	unsigned char deviceIdByteArray[DEVICE_ID_SIZE] = { 0 };
+	DeviceIdToByteArray(deviceId, deviceIdByteArray);
+
+	int NodeID = (deviceIdByteArray[0] << 24) | (deviceIdByteArray[1] << 16) | (deviceIdByteArray[2] << 8) | (deviceIdByteArray[3]);
+	SendSwitch(NodeID, 0, 255, wiper > 0, wiper, "Wiper");
+}
 
 void C1Wire::ReportTemperature(const std::string& deviceId, const float temperature)
 {
