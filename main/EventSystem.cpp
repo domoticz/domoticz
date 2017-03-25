@@ -723,6 +723,8 @@ void CEventSystem::GetCurrentMeasurementStates()
 						case MTYPE_COUNTER:
 							sprintf(szTmp, "%llu", total_real);
 							break;
+						default:
+							continue; //not handled
 						}
 						utilityval = static_cast<float>(atof(szTmp));
 						isUtility = true;
@@ -887,6 +889,8 @@ void CEventSystem::GetCurrentMeasurementStates()
 					case MTYPE_COUNTER:
 						sprintf(szTmp, "%llu", total_real);
 						break;
+					default:
+						continue; //not handled
 					}
 					utilityval = static_cast<float>(atof(szTmp));
 					isUtility = true;
