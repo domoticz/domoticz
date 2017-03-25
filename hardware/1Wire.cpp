@@ -73,6 +73,9 @@ void C1Wire::DetectSystem()
 
 bool C1Wire::StartHardware()
 {
+	if (!m_system)
+		return false;
+
 	// Start worker thread
 	if (0 != m_sensorThreadPeriod)
 	{
@@ -195,7 +198,7 @@ bool C1Wire::WriteToHardware(const char *pdata, const unsigned char length)
 		deviceIdByteArray[2]=pSen->LIGHTING2.id3;
 		deviceIdByteArray[3]=pSen->LIGHTING2.id4;
 
-		m_system->SetLightState(ByteArrayToDeviceId(deviceIdByteArray),pSen->LIGHTING2.unitcode,pSen->LIGHTING2.cmnd==light2_sOn);
+		m_system->SetLightState(ByteArrayToDeviceId(deviceIdByteArray), pSen->LIGHTING2.unitcode, pSen->LIGHTING2.cmnd == light2_sOn, pSen->LIGHTING2.level);
 		return true;
 	}
 	return false;
@@ -454,7 +457,8 @@ void C1Wire::ReportWiper(const std::string& deviceId, const unsigned int wiper)
 	DeviceIdToByteArray(deviceId, deviceIdByteArray);
 
 	int NodeID = (deviceIdByteArray[0] << 24) | (deviceIdByteArray[1] << 16) | (deviceIdByteArray[2] << 8) | (deviceIdByteArray[3]);
-	SendSwitch(NodeID, 0, 255, wiper > 0, wiper, "Wiper");
+	unsigned int value = wiper * (100.0 / 255.0);
+	SendSwitch(NodeID, 0, 255, wiper > 0, value, "Wiper");
 }
 
 void C1Wire::ReportTemperature(const std::string& deviceId, const float temperature)
