@@ -36,7 +36,7 @@ History :
 #define DEBUG_TeleinfoSerial
 #endif
 
-#define NBFRAMES 8 		//number of frames to collect before processing one
+#define NBFRAMES 8				 //number of frames to collect before processing one
 
 #define TE_ADCO "ADCO"			 //meter id
 #define TE_OPTARIF "OPTARIF"	 //pricing option
@@ -124,7 +124,7 @@ bool CTeleinfoSerial::StartHardware()
 	//Try to open the Serial Port
 	try
 	{
-		_log.Log(LOG_STATUS, "Teleinfo: Using serial port: %s", m_szSerialPort.c_str());
+		_log.Log(LOG_STATUS, "Teleinfo: %s uses serial port: %s", Name.c_str(), m_szSerialPort.c_str());
 		open(
 			m_szSerialPort,
 			m_iBaudRate,
@@ -164,10 +164,11 @@ bool CTeleinfoSerial::StopHardware()
 }
 
 
-bool CTeleinfoSerial::WriteToHardware(const char *pdata, const unsigned char length) 
+bool CTeleinfoSerial::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	return true;
 }
+
 
 void CTeleinfoSerial::readCallback(const char *data, size_t len)
 {
@@ -296,7 +297,7 @@ void CTeleinfoSerial::MatchLine()
 					_log.Log(LOG_NORM,"Teleinfo frame complete");
 				#endif
 					m_counter = 0;
-				ProcessTeleinfo(teleinfo);
+					ProcessTeleinfo(teleinfo);
 				}
 				break;
 			default:
@@ -372,7 +373,7 @@ resultat obtenu (cette operation se traduit par un ET logique entre la somme pre
 Enfin, on ajoute 20 en hexadecimal. Le resultat sera donc toujours un caractre ASCII imprimable (signe, chiffre,
 lettre majuscule) allant de 20 a 5F en hexadcimal.
 
-Un deuxième mode de calcul existe qui prend aussi le caractère de séparation final dans le calcul.
+Un deuxime mode de calcul existe qui prend aussi le caractre de sparation final dans le calcul.
 */
 
 bool CTeleinfoSerial::isCheckSumOk(int &isMode1)
@@ -381,35 +382,36 @@ bool CTeleinfoSerial::isCheckSumOk(int &isMode1)
 	int i;
 	bool line_ok = false;
 
-        checksum = m_buffer[strlen((char*)m_buffer) - 1];
+	checksum = m_buffer[strlen((char*)m_buffer) - 1];
 	for (i = 0; i < int(strlen((char*)m_buffer)) - 2; i++)
 	{
 		mode1 += m_buffer[i];
 	}
-        mode2 = ((mode1 + m_buffer[i]) & 0x3F) + 0x20;
+	mode2 = ((mode1 + m_buffer[i]) & 0x3F) + 0x20;
 	mode1 = (mode2 & 0x3F) + 0x20;
-	
+
 	if (mode1 == checksum)
-		if (isMode1 == (int)true) // This will evaluate to false when isMode still equals to 255 at second run 
+		if (isMode1 == (int)true)// This will evaluate to false when isMode still equals to 255 at second run
 			line_ok = true;
-		else 
-		{
-			isMode1	= true;
-			_log.Log(LOG_STATUS, "(%s) Teleinfo CRC check mode set to 1", Name);
-		}	
+	else
+	{
+		isMode1 = true;
+		_log.Log(LOG_STATUS, "(%s) Teleinfo CRC check mode set to 1", Name.c_str());
+	}
 	else if (mode2 == checksum)
-                if (isMode1 == false)  
-			line_ok = true;
-		else
-		{
-			isMode1 = false;
-                        _log.Log(LOG_STATUS, "(%s) TeleinfoCRC check mode set to 2", Name); 
-		}
- 	else // Don't send an error on the first run as the line is probably truncated, wait for mode to be initialised 
-		if (isMode1 != 255) _log.Log(LOG_ERROR, "(%s) CRC check failed on Teleinfo line '%s' using both modes 1 and 2. Line skipped.", Name, m_buffer);
+	if (isMode1 == false)
+		line_ok = true;
+	else
+	{
+		isMode1 = false;
+		_log.Log(LOG_STATUS, "(%s) TeleinfoCRC check mode set to 2", Name.c_str());
+	}
+	else						 // Don't send an error on the first run as the line is probably truncated, wait for mode to be initialised
+	if (isMode1 != 255) _log.Log(LOG_ERROR, "(%s) CRC check failed on Teleinfo line '%s' using both modes 1 and 2. Line skipped.",
+				Name.c_str(), m_buffer);
 
 	#ifdef DEBUG_TeleinfoSerial
-       	if (line_ok) _log.Log(LOG_NORM, "(%s) CRC check passed on Teleinfo line '%s'. Line processed", Name, m_buffer);
-       	#endif
+	if (line_ok) _log.Log(LOG_NORM, "(%s) CRC check passed on Teleinfo line '%s'. Line processed", Name.c_str(), m_buffer);
+	#endif
 	return line_ok;
 }
