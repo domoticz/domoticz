@@ -322,7 +322,7 @@ namespace Plugins {
 				self->SubType = 0;
 				self->SwitchType = 0;
 				self->ID = -1;
-				self->LastLevel;
+				self->LastLevel = 0;
 				self->Name = PyUnicode_FromString("");
 				if (self->Name == NULL) {
 					Py_DECREF(self);
