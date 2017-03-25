@@ -4,7 +4,7 @@
 time_t m_lasttime=time(NULL);
 boost::mutex TimeMutex_;
 
-#ifdef __APPLE__
+#if defined(__APPLE__) || defined(__USE_POSIX)
 	#define localtime_r
 #endif
 

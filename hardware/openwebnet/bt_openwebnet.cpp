@@ -933,10 +933,12 @@ std::string bt_openwebnet::Extract_who() const
 }
 
 std::string bt_openwebnet::Extract_address(unsigned int i) const
-{ 
-	if (i >= 0 && i < addresses.size()) 
-		return addresses.at(i); 
-	return ""; 
+{
+	if (i < addresses.size())
+	{
+		return addresses.at(i);
+	}
+	return "";
 }
 
 std::string bt_openwebnet::Extract_what() const
@@ -970,9 +972,11 @@ std::string bt_openwebnet::Extract_dimension() const
 }
 
 std::string bt_openwebnet::Extract_value(unsigned int i) const
-{ 
-	if (i >= 0 && i < values.size()) 
-		return values.at(i); 
+{
+	if (i < values.size())
+	{
+		return values.at(i);
+	}
 	return "";
 }
 

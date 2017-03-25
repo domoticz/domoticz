@@ -137,7 +137,7 @@ void C1WireByOWFS::writeData(const _t1WireDevice& device,std::string propertyNam
     file.close();
 }
 
-void C1WireByOWFS::SetLightState(const std::string& sId,int unit,bool value)
+void C1WireByOWFS::SetLightState(const std::string& sId,int unit,bool value, const unsigned int level)
 {
    _t1WireDevice device;
    if (!FindDevice(sId, device))
@@ -181,7 +181,8 @@ void C1WireByOWFS::SetLightState(const std::string& sId,int unit,bool value)
       }
    case digital_potentiometer:
    {
-	   writeData(device, "wiper", value ? "1" : "250"); // TODO - send level also
+	   unsigned int wiper = level * (255.0 / 15.0);
+	   writeData(device, "wiper", boost::to_string(wiper));
 	   break;
    }
 
