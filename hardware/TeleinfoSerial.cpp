@@ -54,10 +54,10 @@ History :
 #define TE_BBRHCJR "BBRHCJR"	 // total power usage low tariff in HC option tempo red
 #define TE_BBRHPJR "BBRHPJR"	 // total power usage normal tariff in HC option tempo red
 #define TE_PTEC   "PTEC"		 //current tariff period
-#define TE_IINSTA "IINST"		 //instant current power usage. 
-#define TE_IINSTB "IINST1"		 //instant current power usage pahse 1
-#define TE_IINSTC "IINST2"		 //instant current power usage phase 2
-#define TE_IINSTD "IINST3"		 //instant current power usage phase 2
+#define TE_IINST "IINST"		 //instant current power usage. 
+#define TE_IINST1 "IINST1"		 //instant current power usage pahse 1
+#define TE_IINST2 "IINST2"		 //instant current power usage phase 2
+#define TE_IINST3 "IINST3"		 //instant current power usage phase 2
 #define TE_PPOT "PPOT"			 //Potental on all 3 phases
 #define TE_DEMAIN "DEMAIN"		 //tariff tomorrow
 #define TE_PEJP "PEJP"			 //prior notice "pointe mobile" tariff
@@ -81,10 +81,10 @@ CTeleinfoSerial::Match CTeleinfoSerial::m_matchlist[27] =
 	{ STD, TELEINFO_TYPE_BBRHCJR, TE_BBRHCJR, 9 },
 	{ STD, TELEINFO_TYPE_BBRHPJR, TE_BBRHPJR, 9 },
 	{ STD, TELEINFO_TYPE_PTEC, TE_PTEC, 4 },
-	{ STD, TELEINFO_TYPE_IINSTB, TE_IINSTB, 3 },
-	{ STD, TELEINFO_TYPE_IINSTC, TE_IINSTC, 3 },
-	{ STD, TELEINFO_TYPE_IINSTD, TE_IINSTD, 3 },
-        { STD, TELEINFO_TYPE_IINSTA, TE_IINSTA, 3 },
+	{ STD, TELEINFO_TYPE_IINST1, TE_IINST1, 3 },
+	{ STD, TELEINFO_TYPE_IINST2, TE_IINST2, 3 },
+	{ STD, TELEINFO_TYPE_IINST3, TE_IINST3, 3 },
+        { STD, TELEINFO_TYPE_IINST, TE_IINST, 3 },
 	{ STD, TELEINFO_TYPE_PPOT, TE_PPOT, 2 },
 	{ STD, TELEINFO_TYPE_PEJP, TE_PEJP, 2 },
 	{ STD, TELEINFO_TYPE_DEMAIN, TE_DEMAIN, 4 },
@@ -271,16 +271,16 @@ void CTeleinfoSerial::MatchLine()
 			case TELEINFO_TYPE_PTEC:
 				teleinfo.PTEC = vString;
 				break;
-			case TELEINFO_TYPE_IINSTA:
+			case TELEINFO_TYPE_IINST:
 				teleinfo.IINST = ulValue;
 				break;
-			case TELEINFO_TYPE_IINSTB:
+			case TELEINFO_TYPE_IINST1:
 				teleinfo.IINST1 = ulValue;
 				break;
-			case TELEINFO_TYPE_IINSTC:
+			case TELEINFO_TYPE_IINST2:
 				teleinfo.IINST2 = ulValue;
 				break;
-			case TELEINFO_TYPE_IINSTD:
+			case TELEINFO_TYPE_IINST3:
 				teleinfo.IINST3 = ulValue;
 				break;
 			case TELEINFO_TYPE_PPOT:
