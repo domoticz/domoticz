@@ -53,10 +53,10 @@ class CTeleinfoSerial : public CTeleinfoBase, AsyncSerial
 		TELEINFO_TYPE_BBRHCJR,
 		TELEINFO_TYPE_BBRHPJR,
 		TELEINFO_TYPE_PTEC,
-		TELEINFO_TYPE_IINST,
 		TELEINFO_TYPE_IINST1,
 		TELEINFO_TYPE_IINST2,
 		TELEINFO_TYPE_IINST3,
+                TELEINFO_TYPE_IINST,
 		TELEINFO_TYPE_PPOT,
 		TELEINFO_TYPE_DEMAIN,
 		TELEINFO_TYPE_PEJP,
@@ -109,7 +109,7 @@ class CTeleinfoSerial : public CTeleinfoBase, AsyncSerial
 		void Init();
 		void MatchLine();
 		void ParseData(const unsigned char *pData, int Len);
-		bool isCheckSumOk();
+		bool isCheckSumOk(int &isMode1);
 
 		unsigned char m_buffer[1028];
 		int m_bufferpos;
