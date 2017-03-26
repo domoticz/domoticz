@@ -31,10 +31,6 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-define GREATER 0
-define BELOW   1
-define EQUAL   2
-
 typedef std::map<std::string, CNotificationBase*>::iterator it_noti_type;
 
 CNotificationHelper::CNotificationHelper()
@@ -493,7 +489,7 @@ bool CNotificationHelper::CheckAndHandleAmpere123Notification(
 				}
 				else if ((splitresults[1] == "=") || (splitresults[1] == ">=") || (splitresults[1] == "<=")) 
                                 {
-                                        if (Ampere1 = svalue)
+                                        if (Ampere1 == svalue)
                                         {
                                                 bSendNotification = true;
                                                 sprintf(szTmp, "%s Ampere1 is %.1f Ampere", devicename.c_str(), Ampere1);

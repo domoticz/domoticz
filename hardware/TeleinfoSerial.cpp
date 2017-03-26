@@ -36,7 +36,8 @@ History :
 #define DEBUG_TeleinfoSerial
 #endif
 
-#define NBFRAMES 8 		//number of frames to collect before processing one
+
+#define NBFRAMES 8				 //number of frames to collect before processing one
 
 #define TE_ADCO "ADCO"			 //meter id
 #define TE_OPTARIF "OPTARIF"	 //pricing option
@@ -53,7 +54,7 @@ History :
 #define TE_BBRHCJR "BBRHCJR"	 // total power usage low tariff in HC option tempo red
 #define TE_BBRHPJR "BBRHPJR"	 // total power usage normal tariff in HC option tempo red
 #define TE_PTEC   "PTEC"		 //current tariff period
-#define TE_IINST "IINST"		 //instant current power usage
+#define TE_IINST "IINST"		 //instant current power usage. 
 #define TE_IINST1 "IINST1"		 //instant current power usage pahse 1
 #define TE_IINST2 "IINST2"		 //instant current power usage phase 2
 #define TE_IINST3 "IINST3"		 //instant current power usage phase 2
@@ -80,10 +81,10 @@ CTeleinfoSerial::Match CTeleinfoSerial::m_matchlist[27] =
 	{ STD, TELEINFO_TYPE_BBRHCJR, TE_BBRHCJR, 9 },
 	{ STD, TELEINFO_TYPE_BBRHPJR, TE_BBRHPJR, 9 },
 	{ STD, TELEINFO_TYPE_PTEC, TE_PTEC, 4 },
-	{ STD, TELEINFO_TYPE_IINST, TE_IINST, 3 },
 	{ STD, TELEINFO_TYPE_IINST1, TE_IINST1, 3 },
 	{ STD, TELEINFO_TYPE_IINST2, TE_IINST2, 3 },
 	{ STD, TELEINFO_TYPE_IINST3, TE_IINST3, 3 },
+        { STD, TELEINFO_TYPE_IINST, TE_IINST, 3 },
 	{ STD, TELEINFO_TYPE_PPOT, TE_PPOT, 2 },
 	{ STD, TELEINFO_TYPE_PEJP, TE_PEJP, 2 },
 	{ STD, TELEINFO_TYPE_DEMAIN, TE_DEMAIN, 4 },
@@ -124,7 +125,7 @@ bool CTeleinfoSerial::StartHardware()
 	//Try to open the Serial Port
 	try
 	{
-		_log.Log(LOG_STATUS, "Teleinfo: Using serial port: %s", m_szSerialPort.c_str());
+		_log.Log(LOG_STATUS, "Teleinfo: %s uses serial port: %s", Name.c_str(), m_szSerialPort.c_str());
 		open(
 			m_szSerialPort,
 			m_iBaudRate,
@@ -164,10 +165,11 @@ bool CTeleinfoSerial::StopHardware()
 }
 
 
-bool CTeleinfoSerial::WriteToHardware(const char *pdata, const unsigned char length) 
+bool CTeleinfoSerial::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	return true;
 }
+
 
 void CTeleinfoSerial::readCallback(const char *data, size_t len)
 {
@@ -267,7 +269,6 @@ void CTeleinfoSerial::MatchLine()
 				teleinfo.DEMAIN = vString;
 				break;
 			case TELEINFO_TYPE_PTEC:
-				//SendSwitch(5,1,255,(vString.substr (0,2) == "HC"),0,"Heures Creuses");
 				teleinfo.PTEC = vString;
 				break;
 			case TELEINFO_TYPE_IINST:
@@ -296,7 +297,7 @@ void CTeleinfoSerial::MatchLine()
 					_log.Log(LOG_NORM,"Teleinfo frame complete");
 				#endif
 					m_counter = 0;
-				ProcessTeleinfo(teleinfo);
+					ProcessTeleinfo(teleinfo);
 				}
 				break;
 			default:
@@ -329,7 +330,7 @@ void CTeleinfoSerial::ParseData(const unsigned char *pData, int Len)
 				m_buffer[m_bufferpos] = 0;
 
 			//We check the line only if the checksum is ok
-			if (isCheckSumOk())
+			if (isCheckSumOk(teleinfo.CRCmode1))
 				MatchLine();
 
 			m_bufferpos = 0;
@@ -365,23 +366,52 @@ result (this translates into a logical AND between the amount previously calcula
 Finally, we added 20 hexadecimal. The result will always be a printable ASCII character (sign, digit,
 capital letter) of from 0x20 to hexadecimal 0x5F
 
-La "checksum" est calcule sur l'ensemble des caractres allant du dbut du champ tiquette  la fin du champ
-donne, caractre SP inclus. On fait tout d'abord la somme des codes ASCII de tous ces caractres. Pour viter
+Le "checksum" est calcule sur l'ensemble des caracteres allant du debut du champ etiquette a la fin du champ
+donnee, caractere SP inclus. On fait tout d'abord la somme des codes ASCII de tous ces caracteres. Pour eviter
 d'introduire des fonctions ASCII (00  1F en hexadcimal), on ne conserve que les six bits de poids faible du
-rsultat obtenu (cette opration se traduit par un ET logique entre la somme prcdemment calcule et 03Fh).
-Enfin, on ajoute 20 en hexadcimal. Le rsultat sera donc toujours un caractre ASCII imprimable (signe, chiffre,
-lettre majuscule) allant de 20  5F en hexadcimal.
+resultat obtenu (cette operation se traduit par un ET logique entre la somme precedemment calculee et 03Fh).
+Enfin, on ajoute 20 en hexadecimal. Le resultat sera donc toujours un caractre ASCII imprimable (signe, chiffre,
+lettre majuscule) allant de 20 a 5F en hexadcimal.
+
+Un deuxime mode de calcul existe qui prend aussi le caractre de sparation final dans le calcul.
 */
 
-bool CTeleinfoSerial::isCheckSumOk()
+bool CTeleinfoSerial::isCheckSumOk(int &isMode1)
 {
-	unsigned int checksum = 0x00;
+	unsigned int checksum, mode1 = 0x00, mode2 = 0x00;
 	int i;
+	bool line_ok = false;
 
+	checksum = m_buffer[strlen((char*)m_buffer) - 1];
 	for (i = 0; i < int(strlen((char*)m_buffer)) - 2; i++)
 	{
-		checksum += m_buffer[i];
+		mode1 += m_buffer[i];
 	}
-	checksum = (checksum & 0x3F) + 0x20;
-	return (checksum == m_buffer[strlen((char*)m_buffer) - 1]);
+	mode2 = ((mode1 + m_buffer[i]) & 0x3F) + 0x20;
+	mode1 = (mode2 & 0x3F) + 0x20;
+
+	if (mode1 == checksum)
+		if (isMode1 == (int)true)// This will evaluate to false when isMode still equals to 255 at second run
+			line_ok = true;
+	else
+	{
+		isMode1 = true;
+		_log.Log(LOG_STATUS, "(%s) Teleinfo CRC check mode set to 1", Name.c_str());
+	}
+	else if (mode2 == checksum)
+	if (isMode1 == false)
+		line_ok = true;
+	else
+	{
+		isMode1 = false;
+		_log.Log(LOG_STATUS, "(%s) TeleinfoCRC check mode set to 2", Name.c_str());
+	}
+	else						 // Don't send an error on the first run as the line is probably truncated, wait for mode to be initialised
+	if (isMode1 != 255) _log.Log(LOG_ERROR, "(%s) CRC check failed on Teleinfo line '%s' using both modes 1 and 2. Line skipped.",
+				Name.c_str(), m_buffer);
+
+	#ifdef DEBUG_TeleinfoSerial
+	if (line_ok) _log.Log(LOG_NORM, "(%s) CRC check passed on Teleinfo line '%s'. Line processed", Name.c_str(), m_buffer);
+	#endif
+	return line_ok;
 }
