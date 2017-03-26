@@ -9221,6 +9221,9 @@ namespace http {
 							case MTYPE_COUNTER:
 								sprintf(szTmp, "%llu %s", total_real, ValueUnits.c_str());
 								break;
+							default:
+								strcpy(szTmp, "?");
+								break;
 							}
 						}
 						root["result"][ii]["CounterToday"] = szTmp;
@@ -9255,6 +9258,12 @@ namespace http {
 							sprintf(szTmp, "%.0f %s", meteroffset + dvalue, ValueUnits.c_str());
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
+							root["result"][ii]["ValueQuantity"] = ValueQuantity;
+							root["result"][ii]["ValueUnits"] = ValueUnits;
+							break;
+						default:
+							root["result"][ii]["Data"] = "?";
+							root["result"][ii]["Counter"] = "?";
 							root["result"][ii]["ValueQuantity"] = ValueQuantity;
 							root["result"][ii]["ValueUnits"] = ValueUnits;
 							break;
@@ -9329,6 +9338,9 @@ namespace http {
                             case MTYPE_COUNTER:
                                     sprintf(szTmp, "%llu %s", total_real, ValueUnits.c_str());
                                     break;
+							default:
+									strcpy(szTmp, "0");
+									break;
                             }
                         }
                         root["result"][ii]["Counter"] = sValue;
@@ -9364,7 +9376,13 @@ namespace http {
                                 root["result"][ii]["ValueQuantity"] = ValueQuantity;
                                 root["result"][ii]["ValueUnits"] = ValueUnits;
                                 break;
-                        }
+						default:
+								root["result"][ii]["Data"] = "?";
+								root["result"][ii]["Counter"] = "?";
+								root["result"][ii]["ValueQuantity"] = ValueQuantity;
+								root["result"][ii]["ValueUnits"] = ValueUnits;
+								break;
+						}
                     }
 					else if (dType == pTypeYouLess)
 					{
@@ -9436,6 +9454,9 @@ namespace http {
 							case MTYPE_COUNTER:
 								sprintf(szTmp, "%llu %s", total_real, ValueUnits.c_str());
 								break;
+							default:
+								strcpy(szTmp, "0");
+								break;
 							}
 						}
 						root["result"][ii]["CounterToday"] = szTmp;
@@ -9465,6 +9486,9 @@ namespace http {
 						case MTYPE_COUNTER:
 							sprintf(szTmp, "%llu", total_actual);
 							break;
+						default:
+							strcpy(szTmp, "0");
+							break;
 						}
 						root["result"][ii]["Counter"] = szTmp;
 
@@ -9492,6 +9516,9 @@ namespace http {
 						case MTYPE_COUNTER:
 							sprintf(szTmp, "%llu %s", acounter, ValueUnits.c_str());
 							break;
+						default:
+							strcpy(szTmp, "0");
+							break;
 						}
 						root["result"][ii]["Data"] = szTmp;
 						root["result"][ii]["ValueQuantity"] = "";
@@ -9512,6 +9539,9 @@ namespace http {
 							sprintf(szTmp, "%s", splitresults[1].c_str());
 							root["result"][ii]["ValueQuantity"] = ValueQuantity;
 							root["result"][ii]["ValueUnits"] = ValueUnits;
+							break;
+						default:
+							strcpy(szTmp, "0");
 							break;
 						}
 
@@ -13342,6 +13372,9 @@ namespace http {
 											case MTYPE_COUNTER:
 												sprintf(szTmp, "%.1f", TotalValue);
 												break;
+											default:
+												strcpy(szTmp, "0");
+												break;
 											}
 											root["result"][ii][method==1 ? "eu" : "v"] = szTmp;
 											ii++;
@@ -13393,6 +13426,9 @@ namespace http {
 										break;
 									case MTYPE_COUNTER:
 										sprintf(szTmp, "%.1f", TotalValue);
+										break;
+									default:
+										strcpy(szTmp, "0");
 										break;
 									}
 									root["result"][ii]["v"] = szTmp;
@@ -13501,6 +13537,9 @@ namespace http {
 												case MTYPE_COUNTER:
 													sprintf(szTmp, "%.1f", TotalValue);
 													break;
+												default:
+													strcpy(szTmp, "0");
+													break;
 												}
 												root["result"][ii]["v"] = szTmp;
 												ii++;
@@ -13558,6 +13597,9 @@ namespace http {
 											case MTYPE_COUNTER:
 												sprintf(szTmp, "%.1f", TotalValue);
 												break;
+											default:
+												strcpy(szTmp, "0");
+												break;
 											}
 											root["result"][ii]["v"] = szTmp;
 											ii++;
@@ -13596,6 +13638,9 @@ namespace http {
 									break;
 								case MTYPE_COUNTER:
 									sprintf(szTmp, "%.1f", TotalValue);
+									break;
+								default:
+									strcpy(szTmp, "0");
 									break;
 								}
 								root["result"][ii]["v"] = szTmp;
@@ -14104,6 +14149,9 @@ namespace http {
 									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / WaterDivider);
 									szValue = szTmp;
 									break;
+								default:
+									szValue = "0";
+									break;
 								}
 								root["result"][ii]["v"] = szValue;
 								ii++;
@@ -14209,6 +14257,9 @@ namespace http {
 							case MTYPE_WATER:
 								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / WaterDivider);
 								szValue = szTmp;
+								break;
+							default:
+								szValue = "0";
 								break;
 							}
 

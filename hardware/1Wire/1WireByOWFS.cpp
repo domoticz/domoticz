@@ -137,7 +137,7 @@ void C1WireByOWFS::writeData(const _t1WireDevice& device,std::string propertyNam
     file.close();
 }
 
-void C1WireByOWFS::SetLightState(const std::string& sId,int unit,bool value)
+void C1WireByOWFS::SetLightState(const std::string& sId,int unit,bool value, const unsigned int level)
 {
    _t1WireDevice device;
    if (!FindDevice(sId, device))
@@ -179,6 +179,13 @@ void C1WireByOWFS::SetLightState(const std::string& sId,int unit,bool value)
          writeData(device,"control",value?"2":"1");
          break;
       }
+   case digital_potentiometer:
+   {
+	   unsigned int wiper = level * (255.0 / 15.0);
+	   writeData(device, "wiper", boost::to_string(wiper));
+	   break;
+   }
+
    default:
       return;
    }
@@ -347,6 +354,14 @@ float C1WireByOWFS::GetIlluminance(const _t1WireDevice& device) const
    if (readValue.empty())
 	   return -1000.0;
    return (float)(atof(readValue.c_str())*1000.0);
+}
+
+unsigned int C1WireByOWFS::GetWiper(const _t1WireDevice& device) const
+{
+	std::string readValue = readRawData(std::string(device.filename + "/wiper"));
+	if (readValue.empty())
+		return 0;
+	return atoi(readValue.c_str());
 }
 
 void C1WireByOWFS::StartSimultaneousTemperatureRead()

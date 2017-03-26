@@ -867,7 +867,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchTypeHRCMotor, "HRCMotor" },
 		{ pTypeGeneralSwitch, sSwitchTypeVelleman, "Velleman" },
 		{ pTypeGeneralSwitch, sSwitchTypeRFCustom, "RFCustom" },
-		{ pTypeGeneralSwitch, sSwitchTypeX2D, "X2D" },
+		{ pTypeGeneralSwitch, sSwitchTypeYW_Sensor, "YW_Sensor" },
 		{  0,0,NULL }
 	};
 	return findTableID1ID2(Table, dType, sType);

@@ -982,7 +982,6 @@ void CNotificationHelper::CheckAndHandleLastUpdateNotification()
 
 	time_t atime = mytime(NULL);
 	atime -= m_NotificationSensorInterval;
-
 	std::map<uint64_t, std::vector<_tNotification> >::const_iterator itt;
 
 	for (itt = m_notifications.begin(); itt != m_notifications.end(); ++itt)
@@ -999,11 +998,13 @@ void CNotificationHelper::CheckAndHandleLastUpdateNotification()
 				std::string ttype = Notification_Type_Desc(NTYPE_LASTUPDATE, 1);
 				if (splitresults[0] == ttype)
 				{
+					extern time_t m_StartTime;
 					time_t btime = mytime(NULL);
 					bool bWhenIsGreater = (splitresults[1] == ">");
 					int SensorTimeOut = atoi(splitresults[2].c_str());
+					bool bStartTime = (difftime(btime,m_StartTime) < SensorTimeOut*60);
 					double diff = difftime(btime,itt2->LastUpdate);
-					if (((diff > SensorTimeOut*60) && (bWhenIsGreater)) || ((diff < SensorTimeOut*60) && (!bWhenIsGreater)))
+					if (((diff > SensorTimeOut*60) && (bWhenIsGreater) && (!bStartTime)) || ((diff < SensorTimeOut*60) && (!bWhenIsGreater)))
 					{
 						uint64_t Idx = itt->first;
 						std::vector<std::vector<std::string> > result;

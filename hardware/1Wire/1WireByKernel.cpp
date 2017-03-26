@@ -271,6 +271,11 @@ float C1WireByKernel::GetTemperature(const _t1WireDevice& device) const
    }
 }
 
+unsigned int C1WireByKernel::GetWiper(const _t1WireDevice& device) const
+{
+	return -1;// Device not supported in kernel mode (maybe later...), use OWFS solution.
+}
+
 float C1WireByKernel::GetHumidity(const _t1WireDevice& device) const
 {
    return 0.0f;// Device not supported in kernel mode (maybe later...), use OWFS solution.
@@ -419,7 +424,7 @@ unsigned char C1WireByKernel::ThreadReadRawData8ChannelAddressableSwitch(const s
    return answer[0];
 }
 
-void C1WireByKernel::SetLightState(const std::string& sId,int unit,bool value)
+void C1WireByKernel::SetLightState(const std::string& sId,int unit,bool value, const unsigned int level)
 {
    DeviceCollection::const_iterator it=m_Devices.find(sId);
    if (it==m_Devices.end())

@@ -114,15 +114,22 @@ namespace Plugins {
 					//
 					//	Check file exists in plugin home folder and load it
 					//
-					std::ifstream	infile;
 					sFileName = self->pPlugin->m_HomeFolder + sFileName;
-					infile.open(sFileName.c_str(), std::ios::in | std::ios::binary);
+					if (self->pPlugin->m_bDebug)
+					{
+						_log.Log(LOG_NORM, "(%s) Opening image file '%s'.", self->pPlugin->Name.c_str(), sFileName.c_str());
+					}
+					std::ifstream	infile(sFileName.c_str(), std::ios::in | std::ios::binary);
 					if (infile.is_open())
 					{
 						std::stringstream	ssImages;
 						ssImages << infile.rdbuf();
 						infile.close();
 						self->ZipFile = ssImages.str();
+						if (self->pPlugin->m_bDebug)
+						{
+							_log.Log(LOG_NORM, "(%s) Loaded %d bytes from image file.", self->pPlugin->Name.c_str(), self->ZipFile.length());
+						}
 					}
 					else
 						_log.Log(LOG_ERROR, "CImage:%s, File read failed on '%s'.", __func__, sFileName.c_str());
@@ -155,15 +162,15 @@ namespace Plugins {
 	{
 		if (self->pPlugin)
 		{
-			PyObject*	pNameBytes = PyUnicode_AsASCIIString(self->Name);
-			PyObject*	pFileBytes = PyUnicode_AsASCIIString(self->Filename);
+			std::string	sName = PyUnicode_AsUTF8(self->Name);
+			std::string	sFilename = PyUnicode_AsUTF8(self->Filename);
 			if (self->ImageID == -1)
 			{
 				if (self->ZipFile.length())
 				{
 					if (self->pPlugin->m_bDebug)
 					{
-						_log.Log(LOG_NORM, "(%s) Creating images from file '%s'.", self->pPlugin->Name.c_str(), std::string(PyBytes_AsString(pFileBytes)).c_str());
+						_log.Log(LOG_NORM, "(%s) Creating images from file '%s'.", self->pPlugin->Name.c_str(), sFilename.c_str());
 					}
 
 					//
@@ -172,7 +179,7 @@ namespace Plugins {
 					std::string ErrorMessage;
 					if (!m_sql.InsertCustomIconFromZip(self->ZipFile, ErrorMessage))
 					{
-						_log.Log(LOG_ERROR, "(%s) Insert Custom Icon From Zip failed on file '%s' with error '%s'.", self->pPlugin->Name.c_str(), std::string(PyBytes_AsString(pFileBytes)).c_str(), ErrorMessage.c_str());
+						_log.Log(LOG_ERROR, "(%s) Insert Custom Icon From Zip failed on file '%s' with error '%s'.", self->pPlugin->Name.c_str(), sFilename.c_str(), ErrorMessage.c_str());
 					}
 					else
 					{
@@ -212,10 +219,8 @@ namespace Plugins {
 			}
 			else
 			{
-				_log.Log(LOG_ERROR, "(%s) Image creation failed, '%s' already exists in Domoticz with Image ID '%d'.", self->pPlugin->Name.c_str(), std::string(PyBytes_AsString(pNameBytes)).c_str(), self->ImageID);
+				_log.Log(LOG_ERROR, "(%s) Image creation failed, '%s' already exists in Domoticz with Image ID '%d'.", self->pPlugin->Name.c_str(), sName.c_str(), self->ImageID);
 			}
-			Py_DECREF(pFileBytes);
-			Py_DECREF(pNameBytes);
 		}
 		else
 		{
@@ -230,12 +235,12 @@ namespace Plugins {
 	{
 		if (self->pPlugin)
 		{
-			PyObject*	pNameBytes = PyUnicode_AsASCIIString(self->Name);
+			std::string	sName = PyUnicode_AsUTF8(self->Name);
 			if (self->ImageID != -1)
 			{
 				if (self->pPlugin->m_bDebug)
 				{
-					_log.Log(LOG_NORM, "(%s) Deleting Image '%s'.", self->pPlugin->Name.c_str(), std::string(PyBytes_AsString(pNameBytes)).c_str());
+					_log.Log(LOG_NORM, "(%s) Deleting Image '%s'.", self->pPlugin->Name.c_str(), sName.c_str());
 				}
 
 				std::vector<std::vector<std::string> > result;
@@ -259,9 +264,8 @@ namespace Plugins {
 			}
 			else
 			{
-				_log.Log(LOG_ERROR, "(%s) Image deletion failed, '%s' does not represent a Image in Domoticz.", self->pPlugin->Name.c_str(), std::string(PyBytes_AsString(pNameBytes)).c_str());
+				_log.Log(LOG_ERROR, "(%s) Image deletion failed, '%s' does not represent a Image in Domoticz.", self->pPlugin->Name.c_str(), sName.c_str());
 			}
-			Py_DECREF(pNameBytes);
 		}
 		else
 		{
@@ -322,7 +326,7 @@ namespace Plugins {
 				self->SubType = 0;
 				self->SwitchType = 0;
 				self->ID = -1;
-				self->LastLevel;
+				self->LastLevel = 0;
 				self->Name = PyUnicode_FromString("");
 				if (self->Name == NULL) {
 					Py_DECREF(self);
@@ -544,7 +548,7 @@ namespace Plugins {
 					}
 					else if (sTypeName == "Selector Switch")
 					{
-						if (!Options) {
+						if (!Options || !PyDict_Check(Options)) {
 							PyDict_Clear(self->Options);
 							PyDict_SetItemString(self->Options, "LevelActions", PyUnicode_FromString("|||"));
 							PyDict_SetItemString(self->Options, "LevelNames", PyUnicode_FromString("Off|Level1|Level2|Level3"));
@@ -562,7 +566,7 @@ namespace Plugins {
 				if (SwitchType != -1) self->SwitchType = SwitchType;
 				if (Image != -1) self->Image = Image;
 				if (Used == 1) self->Used = Used;
-				if (Options && PyDict_Size(Options) > 0) {
+				if (Options && PyDict_Check(Options) && PyDict_Size(Options) > 0) {
 					PyObject *pKey, *pValue;
 					Py_ssize_t pos = 0;
 					PyDict_Clear(self->Options);
@@ -667,27 +671,25 @@ namespace Plugins {
 	{
 		if (self->pPlugin)
 		{
-			PyObject*	pNameBytes = PyUnicode_AsASCIIString(self->Name);
+			std::string	sName = PyUnicode_AsUTF8(self->Name);
+			std::string	sDeviceID = PyUnicode_AsUTF8(self->DeviceID);
 			if (self->ID == -1)
 			{
 				if (self->pPlugin->m_bDebug)
 				{
-					_log.Log(LOG_NORM, "(%s) Creating device '%s'.", self->pPlugin->Name.c_str(), std::string(PyBytes_AsString(pNameBytes)).c_str());
+					_log.Log(LOG_NORM, "(%s) Creating device '%s'.", self->pPlugin->Name.c_str(), sName.c_str());
 				}
 
 				std::vector<std::vector<std::string> > result;
 				result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", self->HwdID, self->Unit);
 				if (result.size() == 0)
 				{
-					PyObject*	pDeviceIDBytes = PyUnicode_AsASCIIString(self->DeviceID);
-					PyObject*	pSValueBytes = PyUnicode_AsASCIIString(self->sValue);
-					std::string	sLongName = self->pPlugin->Name + " - " + PyBytes_AsString(pNameBytes);
+					std::string	sValue = PyUnicode_AsUTF8(self->sValue);
+					std::string	sLongName = self->pPlugin->Name + " - " + sName;
 					m_sql.safe_query(
 						"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue, CustomImage) "
 						"VALUES (%d, '%q', %d, %d, %d, %d, %d, 12, 255, '%q', 0, '%q', %d)",
-						self->HwdID, std::string(PyBytes_AsString(pDeviceIDBytes)).c_str(), self->Unit, self->Type, self->SubType, self->SwitchType, self->Used, sLongName.c_str(), std::string(PyBytes_AsString(pSValueBytes)).c_str(), self->Image);
-					Py_DECREF(pDeviceIDBytes);
-					Py_DECREF(pSValueBytes);
+						self->HwdID, sDeviceID.c_str(), self->Unit, self->Type, self->SubType, self->SwitchType, self->Used, sLongName.c_str(), sValue.c_str(), self->Image);
 
 					result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", self->HwdID, self->Unit);
 					if (result.size())
@@ -732,9 +734,8 @@ namespace Plugins {
 			}
 			else
 			{
-				_log.Log(LOG_ERROR, "(%s) Device creation failed, '%s' already exists in Domoticz with Device ID '%d'.", self->pPlugin->Name.c_str(), std::string(PyBytes_AsString(pNameBytes)).c_str(), self->ID);
+				_log.Log(LOG_ERROR, "(%s) Device creation failed, '%s' already exists in Domoticz with Device ID '%d'.", self->pPlugin->Name.c_str(), sName.c_str(), self->ID);
 			}
-			Py_DECREF(pNameBytes);
 		}
 		else
 		{
@@ -755,29 +756,22 @@ namespace Plugins {
 			int			iBatteryLevel = self->BatteryLevel;
 			int			iImage = self->Image;
 			PyObject*	pOptionsDict = NULL;
-			PyObject*	pNameBytes = PyUnicode_AsASCIIString(self->Name);
+			std::string	sName = PyUnicode_AsUTF8(self->Name);
+			std::string	sDeviceID = PyUnicode_AsUTF8(self->DeviceID);
 			static char *kwlist[] = { "nValue", "sValue", "Image", "SignalLevel", "BatteryLevel", "Options", NULL };
 
 			if (!PyArg_ParseTupleAndKeywords(args, kwds, "is|iiiO", kwlist, &nValue, &sValue, &iImage, &iSignalLevel, &iBatteryLevel, &pOptionsDict))
 			{
-				_log.Log(LOG_ERROR, "(%s) %s: Failed to parse parameters: 'nValue', 'sValue', 'SignalLevel', 'BatteryLevel' or 'Options' expected.", __func__, PyBytes_AsString(pNameBytes));
+				_log.Log(LOG_ERROR, "(%s) %s: Failed to parse parameters: 'nValue', 'sValue', 'SignalLevel', 'BatteryLevel' or 'Options' expected.", __func__, sName.c_str());
 				LogPythonException(self->pPlugin, __func__);
-				Py_DECREF(pNameBytes);
 				return NULL;
 			}
 
 			if (self->pPlugin->m_bDebug)
 			{
-				wchar_t*	pWideValue = PyUnicode_AsWideCharString(self->sValue, NULL);
-				_log.Log(LOG_NORM, "(%s) Updating device from %d:'%S' to have values %d:'%s'.",
-					std::string(PyBytes_AsString(pNameBytes)).c_str(), self->nValue, pWideValue, nValue, sValue);
-				PyMem_Free(pWideValue);
+				_log.Log(LOG_NORM, "(%s) Updating device from %d:'%s' to have values %d:'%s'.", sName.c_str(), self->nValue, PyUnicode_AsUTF8(self->sValue), nValue, sValue);
 			}
-			PyObject*	pDeviceBytes = PyUnicode_AsASCIIString(self->DeviceID);
-			std::string	sName = PyBytes_AsString(pNameBytes);
-			m_sql.UpdateValue(self->HwdID, std::string(PyBytes_AsString(pDeviceBytes)).c_str(), (const unsigned char)self->Unit, (const unsigned char)self->Type, (const unsigned char)self->SubType, iSignalLevel, iBatteryLevel, nValue, std::string(sValue).c_str(), sName, true);
-			Py_DECREF(pDeviceBytes);
-			Py_DECREF(pNameBytes);
+			m_sql.UpdateValue(self->HwdID, sDeviceID.c_str(), (const unsigned char)self->Unit, (const unsigned char)self->Type, (const unsigned char)self->SubType, iSignalLevel, iBatteryLevel, nValue, std::string(sValue).c_str(), sName, true);
 
 			// Image change
 			if (iImage != self->Image)
@@ -825,12 +819,12 @@ namespace Plugins {
 	{
 		if (self->pPlugin)
 		{
-			PyObject*	pNameBytes = PyUnicode_AsASCIIString(self->Name);
+			std::string	sName = PyUnicode_AsUTF8(self->Name);
 			if (self->ID != -1)
 			{
 				if (self->pPlugin->m_bDebug)
 				{
-					_log.Log(LOG_NORM, "(%s) Deleting device '%s'.", self->pPlugin->Name.c_str(), std::string(PyBytes_AsString(pNameBytes)).c_str());
+					_log.Log(LOG_NORM, "(%s) Deleting device '%s'.", self->pPlugin->Name.c_str(), sName.c_str());
 				}
 
 				std::vector<std::vector<std::string> > result;
@@ -854,9 +848,8 @@ namespace Plugins {
 			}
 			else
 			{
-				_log.Log(LOG_ERROR, "(%s) Device deletion failed, '%s' does not represent a device in Domoticz.", self->pPlugin->Name.c_str(), std::string(PyBytes_AsString(pNameBytes)).c_str());
+				_log.Log(LOG_ERROR, "(%s) Device deletion failed, '%s' does not represent a device in Domoticz.", self->pPlugin->Name.c_str(), sName.c_str());
 			}
-			Py_DECREF(pNameBytes);
 		}
 		else
 		{
