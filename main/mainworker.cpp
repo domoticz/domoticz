@@ -10692,6 +10692,11 @@ bool MainWorker::GetSensorData(const uint64_t idx, int &nValue, std::string &sVa
 			case MTYPE_COUNTER:
 				sprintf(szTmp, "%llu", total_real);
 				break;
+/*
+			default:
+				strcpy(szTmp, "?");
+				break;
+*/
 			}
 		}
 		nValue = 0;

@@ -50,7 +50,8 @@ time_t mytime(time_t * _Time)
 bool ParseSQLdatetime(time_t &time, struct tm &result, const std::string szSQLdate) {
 	time_t now = mytime(NULL);
 	struct tm ltime;
-	localtime_r(&now,&ltime);
+	if (localtime_r(&now, &ltime) == NULL)
+		return false;
 	return ParseSQLdatetime(time, result, szSQLdate, ltime.tm_isdst);
 }
 
@@ -97,7 +98,8 @@ bool ParseSQLdatetime(time_t &time, struct tm &result, const std::string szSQLda
 bool constructTime(time_t &time, struct tm &result, const int year, const int month, const int day, const int hour, const int minute, const int second) {
 	time_t now = mytime(NULL);
 	struct tm ltime;
-	localtime_r(&now,&ltime);
+	if (localtime_r(&now, &ltime) == NULL)
+		return false;
 	return constructTime(time, result, year, month, day, hour, minute, second, ltime.tm_isdst);
 }
 
@@ -138,7 +140,8 @@ bool constructTime(time_t &time, struct tm &result, const int year, const int mo
 bool getMidnight(time_t &time, struct tm &result) {
 	time_t now = mytime(NULL);
 	struct tm ltime;
-	localtime_r(&now,&ltime);
+	if (localtime_r(&now, &ltime) == NULL)
+		return false;
 	return constructTime(time, result, ltime.tm_year+1900, ltime.tm_mon+1, ltime.tm_mday, 0, 0, 0, ltime.tm_isdst);
 }
 
@@ -156,7 +159,8 @@ bool getMidnight(time_t &time, struct tm &result, int year, int month, int day) 
 bool getNoon(time_t &time, struct tm &result) {
 	time_t now = mytime(NULL);
 	struct tm ltime;
-	localtime_r(&now,&ltime);
+	if (localtime_r(&now, &ltime) == NULL)
+		return false;
 	return constructTime(time, result, ltime.tm_year+1900, ltime.tm_mon+1, ltime.tm_mday, 12, 0, 0, ltime.tm_isdst);
 }
 

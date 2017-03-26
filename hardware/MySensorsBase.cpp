@@ -139,6 +139,8 @@ std::string MySensorsBase::GetMySensorsValueTypeStr(const enum _eSetType vType)
 		return "V_VA";
 	case V_POWER_FACTOR:
 		return "V_POWER_FACTOR";
+	default:
+		return "V_UNKNOWN";
 
 	}
 	return "Unknown!";
@@ -224,6 +226,12 @@ std::string MySensorsBase::GetMySensorsPresentationTypeStr(const enum _ePresenta
 		return "S_INFO";
 	case S_GAS:
 		return "S_GAS";
+	case S_GPS:
+		return "S_GPS";
+	case S_WATER_QUALITY:
+		return "S_WATER_QUALITY";
+	case S_UNKNOWN:
+		return "S_UNKNOWN";
 	}
 	return "Unknown!";
 }

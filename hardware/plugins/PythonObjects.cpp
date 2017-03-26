@@ -548,7 +548,7 @@ namespace Plugins {
 					}
 					else if (sTypeName == "Selector Switch")
 					{
-						if (!Options || PyDict_Check(Options)) {
+						if (!Options || !PyDict_Check(Options)) {
 							PyDict_Clear(self->Options);
 							PyDict_SetItemString(self->Options, "LevelActions", PyUnicode_FromString("|||"));
 							PyDict_SetItemString(self->Options, "LevelNames", PyUnicode_FromString("Off|Level1|Level2|Level3"));
