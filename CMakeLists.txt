@@ -268,6 +268,7 @@ main/mainworker.cpp
 main/RFXNames.cpp
 main/Scheduler.cpp
 main/SQLHelper.cpp
+main/LuaCommon.cpp
 main/LuaHandler.cpp
 main/SunRiseSet.cpp
 main/WebServer.cpp
