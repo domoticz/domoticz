@@ -2501,6 +2501,12 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 	lua_pushcfunction(lua_state, l_domoticz_print);
 	lua_setglobal(lua_state, "print");
 
+	lua_pushcfunction(lua_state, l_domoticz_applyJsonPath);
+	lua_setglobal(lua_state, "domoticz_applyJsonPath");
+
+	lua_pushcfunction(lua_state, l_domoticz_applyXPath);
+	lua_setglobal(lua_state, "domoticz_applyXPath");
+
 #ifdef _DEBUG
 	_log.Log(LOG_STATUS, "EventSystem: script %s trigger", reason.c_str());
 #endif
