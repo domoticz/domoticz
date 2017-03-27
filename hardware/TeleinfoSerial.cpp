@@ -154,27 +154,27 @@ void CTeleinfoSerial::MatchLine()
         #endif
 
 	if (vString == "OPTARIF") teleinfo.OPTARIF = vString;
-	else if (vString == "ISOUSC") teleinfo.ISOUSC = value;
-	else if (vString == "BASE") teleinfo.BASE = value;
-	else if (vString == "HCHC") teleinfo.HCHC = value;
-	else if (vString == "HCHP") teleinfo.HCHP = value;
-	else if (vString == "EJPHPM") teleinfo.EJPHPM = value;
-	else if (vString == "EJPHN") teleinfo.EJPHN = value;
-	else if (vString == "BBRHCJB") teleinfo.BBRHCJB = value;
-	else if (vString == "BBRHPJB") teleinfo.BBRHPJB = value;
-	else if (vString == "BBRHCJW") teleinfo.BBRHCJW = value;
-	else if (vString == "BBRHPJW") teleinfo.BBRHPJW = value;
-	else if (vString == "BBRHCJR") teleinfo.BBRHCJR = value;
-	else if (vString == "BBRHPJR") teleinfo.BBRHPJR = value;
-	else if (vString == "DEMAIN") teleinfo.DEMAIN = vString;
-	else if (vString == "PTEC")  teleinfo.PTEC = vString;
-	else if (vString == "IINST") teleinfo.IINST = value;
-	else if (vString == "IINST1") teleinfo.IINST1 = value;
-	else if (vString == "IINST2") teleinfo.IINST2 = value;
-	else if (vString == "IINST3") teleinfo.IINST3 = value;
-	else if (vString == "PPOT")  teleinfo.PPOT = value;
-	else if (vString == "PAPP") teleinfo.PAPP = value;
-	else if (vString == "MOTDETAT")
+	else if (label == "ISOUSC") teleinfo.ISOUSC = value;
+	else if (label == "BASE") teleinfo.BASE = value;
+	else if (label == "HCHC") teleinfo.HCHC = value;
+	else if (label == "HCHP") teleinfo.HCHP = value;
+	else if (label == "EJPHPM") teleinfo.EJPHPM = value;
+	else if (label == "EJPHN") teleinfo.EJPHN = value;
+	else if (label == "BBRHCJB") teleinfo.BBRHCJB = value;
+	else if (label == "BBRHPJB") teleinfo.BBRHPJB = value;
+	else if (label == "BBRHCJW") teleinfo.BBRHCJW = value;
+	else if (label == "BBRHPJW") teleinfo.BBRHPJW = value;
+	else if (label == "BBRHCJR") teleinfo.BBRHCJR = value;
+	else if (label == "BBRHPJR") teleinfo.BBRHPJR = value;
+	else if (label == "DEMAIN") teleinfo.DEMAIN = vString;
+	else if (label == "PTEC")  teleinfo.PTEC = vString;
+	else if (label == "IINST") teleinfo.IINST = value;
+	else if (label == "IINST1") teleinfo.IINST1 = value;
+	else if (label == "IINST2") teleinfo.IINST2 = value;
+	else if (label == "IINST3") teleinfo.IINST3 = value;
+	else if (label == "PPOT")  teleinfo.PPOT = value;
+	else if (label == "PAPP") teleinfo.PAPP = value;
+	else if (label == "MOTDETAT")
 	{
 		m_counter++; 
         	#ifdef DEBUG_TeleinfoSerial
