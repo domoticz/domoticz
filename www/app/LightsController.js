@@ -1626,6 +1626,10 @@ define(['app'], function (app) {
 			$.bIsRGBW=(devsubtype.indexOf("RGBW") >= 0);
 			$.bIsRGBWW=(devsubtype.indexOf("RGBWW") >= 0);
 			$.bIsWhite=(devsubtype=="White");
+			//Only Limitless type bulbs
+			$.bIsLimitless=(stype.indexOf("Limitless") >= 0);
+			//
+
 
 			if ($.bIsLED==true) {
 				$("#lightcontent #LedColor").show();
@@ -1633,19 +1637,19 @@ define(['app'], function (app) {
 			else {
 				$("#lightcontent #LedColor").hide();
 			}
-			if ($.bIsRGB==true && $.strUnit =="0") {
+			if ($.bIsRGB==true && $.strUnit =="0" && $.bIsLimitless==true) {
 				$("#lightcontent #optionsRGB").show();
 			}
 			else {
 				$("#lightcontent #optionsRGB").hide();
 			}
-			if ($.bIsRGBWW==true){
+			if ($.bIsRGBWW==true && $.bIsLimitless==true){
 				$("#lightcontent #optionsRGBWW").show();
 			}
 			else {
 				$("#lightcontent #optionsRGBWW").hide();
 			}
-			if ($.bIsRGBW==true && $.bIsRGBWW==false) {
+			if ($.bIsRGBW==true && $.bIsRGBWW==false && $.bIsLimitless==true) {
 				$("#lightcontent #optionsRGBW").show();
 			}
 			else {
