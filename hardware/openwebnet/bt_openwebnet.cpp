@@ -2,12 +2,10 @@
 //class bt_openwebnet is a modification of GNU bticino C++ openwebnet client
 //from openwebnet class
 //see www.bticino.it; www.myhome-bticino.it
-#include <sstream>
-#include <iostream>
-#include <string>
-#include <iomanip>
-#include "../../main/localtime_r.h"
+#include "stdafx.h"
 #include "bt_openwebnet.h"
+#include "../../main/localtime_r.h"
+
 // private methods ......
 
 std::string bt_openwebnet::FirstToken(const std::string& myText, const std::string& delimiters)
@@ -935,10 +933,12 @@ std::string bt_openwebnet::Extract_who() const
 }
 
 std::string bt_openwebnet::Extract_address(unsigned int i) const
-{ 
-	if (i >= 0 && i < addresses.size()) 
-		return addresses.at(i); 
-	return ""; 
+{
+	if (i < addresses.size())
+	{
+		return addresses.at(i);
+	}
+	return "";
 }
 
 std::string bt_openwebnet::Extract_what() const
@@ -972,9 +972,11 @@ std::string bt_openwebnet::Extract_dimension() const
 }
 
 std::string bt_openwebnet::Extract_value(unsigned int i) const
-{ 
-	if (i >= 0 && i < values.size()) 
-		return values.at(i); 
+{
+	if (i < values.size())
+	{
+		return values.at(i);
+	}
 	return "";
 }
 

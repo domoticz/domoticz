@@ -56,7 +56,7 @@ void C1Wire::DetectSystem()
 {
 #ifdef WIN32
 	if (!m_system && C1WireForWindows::IsAvailable())
-		m_system=new C1WireForWindows();
+		m_system = new C1WireForWindows();
 #else // WIN32
 
 	// Using the both systems at same time results in conflicts,
@@ -68,13 +68,16 @@ void C1Wire::DetectSystem()
 	} else {
 		m_system=new C1WireByOWFS(m_path);
 	}
-
 #endif // WIN32
 }
 
 bool C1Wire::StartHardware()
 {
+	if (!m_system)
+		return false;
+
 	m_system->PrepareDevices();
+
 	// Start worker thread
 	if (0 != m_sensorThreadPeriod)
 	{
@@ -296,7 +299,7 @@ bool C1Wire::WriteToHardware(const char *pdata, const unsigned char length)
 		deviceIdByteArray[2]=pSen->LIGHTING2.id3;
 		deviceIdByteArray[3]=pSen->LIGHTING2.id4;
 
-		m_system->SetLightState(ByteArrayToDeviceId(deviceIdByteArray),pSen->LIGHTING2.unitcode,pSen->LIGHTING2.cmnd==light2_sOn);
+		m_system->SetLightState(ByteArrayToDeviceId(deviceIdByteArray), pSen->LIGHTING2.unitcode, pSen->LIGHTING2.cmnd == light2_sOn, pSen->LIGHTING2.level);
 		return true;
 	}
 	return false;
@@ -362,6 +365,7 @@ void C1Wire::BuildSwitchList() {
 		case Temperature_IO:
 		case dual_channel_addressable_switch:
 		case _4k_EEPROM_with_PIO:
+		case digital_potentiometer:
 			m_switches.insert(*device);
 			break;
 
@@ -431,10 +435,29 @@ void C1Wire::PollSwitches()
 				break;
 			}
 
+		case digital_potentiometer:
+		{
+			unsigned int wiper = m_system->GetWiper(device);
+			ReportWiper(device.devid, wiper);
+			break;
+		}
+
 		default: // Not a supported switch
 			break;
 		}
 	}
+}
+
+void C1Wire::ReportWiper(const std::string& deviceId, const unsigned int wiper)
+{
+	if (wiper > 255)
+		return;
+	unsigned char deviceIdByteArray[DEVICE_ID_SIZE] = { 0 };
+	DeviceIdToByteArray(deviceId, deviceIdByteArray);
+
+	int NodeID = (deviceIdByteArray[0] << 24) | (deviceIdByteArray[1] << 16) | (deviceIdByteArray[2] << 8) | (deviceIdByteArray[3]);
+	unsigned int value = wiper * (100.0 / 255.0);
+	SendSwitch(NodeID, 0, 255, wiper > 0, value, "Wiper");
 }
 
 void C1Wire::ReportTemperature(const std::string& deviceId, const float temperature)

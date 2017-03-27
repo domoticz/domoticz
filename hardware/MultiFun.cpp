@@ -554,6 +554,7 @@ void MultiFun::GetRegisters(bool firstTime)
 	}
 }
 
+// return length of answer (-1 = error)
 int MultiFun::SendCommand(const unsigned char* cmd, const unsigned int cmdLength, unsigned char *answer, bool write)
 {
 	if (!ConnectToDevice())
@@ -564,7 +565,7 @@ int MultiFun::SendCommand(const unsigned char* cmd, const unsigned int cmdLength
 	boost::lock_guard<boost::mutex> lock(m_mutex);
 
 	unsigned char databuffer[BUFFER_LENGHT];
-	int ret;
+	int ret = -1;
 
 	if (m_socket->write((char*)cmd, cmdLength) != cmdLength)
 	{
@@ -577,10 +578,8 @@ int MultiFun::SendCommand(const unsigned char* cmd, const unsigned int cmdLength
 	m_socket->canRead(&bIsDataReadable, 3.0f);
 	if (bIsDataReadable)
 	{
-		if (memset(databuffer, 0, BUFFER_LENGHT) > 0)
-		{
-			ret = m_socket->read((char*)databuffer, BUFFER_LENGHT, false);
-		}
+		memset(databuffer, 0, BUFFER_LENGHT);
+		ret = m_socket->read((char*)databuffer, BUFFER_LENGHT, false);
 	}
 
 	if ((ret <= 0) || (ret >= BUFFER_LENGHT))

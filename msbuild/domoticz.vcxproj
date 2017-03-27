@@ -540,6 +540,7 @@
     <ClInclude Include="..\hardware\P1MeterSerial.h" />
     <ClInclude Include="..\hardware\P1MeterTCP.h" />
     <ClInclude Include="..\main\Logger.h" />
+    <ClInclude Include="..\main\LuaCommon.h" />
     <ClInclude Include="..\main\LuaHandler.h" />
     <ClInclude Include="..\main\mainstructs.h" />
     <ClInclude Include="..\main\unzip.h" />
@@ -708,8 +709,8 @@
     <ClCompile Include="..\hardware\OpenWebNetTCP.cpp" />
     <ClCompile Include="..\hardware\OpenWebNetUSB.cpp" />
     <ClCompile Include="..\hardware\openwebnet\bt_openwebnet.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Use</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\hardware\OpenZWave.cpp" />
     <ClCompile Include="..\hardware\openzwave\control_panel\ozwcp.cpp" />
@@ -776,6 +777,7 @@
     <ClCompile Include="..\hardware\P1MeterSerial.cpp" />
     <ClCompile Include="..\hardware\P1MeterTCP.cpp" />
     <ClCompile Include="..\main\Logger.cpp" />
+    <ClCompile Include="..\main\LuaCommon.cpp" />
     <ClCompile Include="..\main\LuaHandler.cpp" />
     <ClCompile Include="..\main\Scheduler.cpp" />
     <ClCompile Include="..\main\SQLHelper.cpp" />

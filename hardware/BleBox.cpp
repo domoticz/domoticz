@@ -136,7 +136,6 @@ void BleBox::GetDevicesState()
 						break;
 
 					const int currentPos = root["currentPos"]["position"].asInt();
-					//	const int desiredPos = root["desiredPos"].asInt();
 					const int pos = currentPos;
 
 					bool opened = true;
@@ -306,25 +305,11 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 					break;
 				}
 
-				case 1:
+				case 1: // shutterbox
 				{
-					std::string state;
-					if (output->LIGHTING2.cmnd == light2_sOn)
-					{
-						state = "u";
-					}
-					else
-						if (output->LIGHTING2.cmnd == light2_sOff)
-						{
-							state = "d";
-						}
-						else
-						{
-							int percentage = output->LIGHTING2.level * 100 / 15;
-							state = boost::to_string(percentage);
-						}
+					int percentage = output->LIGHTING2.level * 100 / 15;
 
-					Json::Value root = SendCommand(IPAddress, "/s/" + state);
+					Json::Value root = SendCommand(IPAddress, "/s/p/" + boost::to_string(percentage));
 					if (root.empty())
 						return false;
 
