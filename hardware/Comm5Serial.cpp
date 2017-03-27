@@ -168,7 +168,7 @@ void Comm5Serial::requestDigitalInputResponseHandler(const std::string & frame)
 
 	for (int i = 0; i < 8; ++i) {
 		bool on = (sensorStatus & (1 << i)) != 0 ? true : false;
-		if ((lastKnownSensorState & (1 << i) ^ (sensorStatus & (1 << i))) || initSensorData) {
+		if (((lastKnownSensorState & (1 << i)) ^ (sensorStatus & (1 << i))) || initSensorData) {
 			SendSwitch((i + 1) << 8, 1, 255, on, 0, "Sensor " + boost::lexical_cast<std::string>(i + 1));
 		}
 	}

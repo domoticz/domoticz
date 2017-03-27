@@ -304,7 +304,7 @@ namespace Plugins {
 				self->SubType = 0;
 				self->SwitchType = 0;
 				self->ID = -1;
-				self->LastLevel;
+				self->LastLevel = 0;
 				self->Name = PyUnicode_FromString("");
 				if (self->Name == NULL) {
 					Py_DECREF(self);
@@ -526,7 +526,7 @@ namespace Plugins {
 					}
 					else if (sTypeName == "Selector Switch")
 					{
-						if (!Options || PyDict_Check(Options)) {
+						if (!Options || !PyDict_Check(Options)) {
 							PyDict_Clear(self->Options);
 							PyDict_SetItemString(self->Options, "LevelActions", PyUnicode_FromString("|||"));
 							PyDict_SetItemString(self->Options, "LevelNames", PyUnicode_FromString("Off|Level1|Level2|Level3"));
