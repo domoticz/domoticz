@@ -12,7 +12,6 @@ namespace Plugins {
 		PyObject*	Name;
 		PyObject*	Description;
 		PyObject*	Filename;
-		std::string	ZipFile;
 		CPlugin*	pPlugin;
 	} CImage;
 

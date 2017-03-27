@@ -7193,7 +7193,12 @@ bool CSQLHelper::InsertCustomIconFromZip(const std::string &szZip, std::string &
 	outfile.flush();
 	outfile.close();
 
-	clx::basic_unzip<char> in(outputfile);
+	return InsertCustomIconFromZipFile(outputfile, ErrorMessage);
+}
+
+bool CSQLHelper::InsertCustomIconFromZipFile(const std::string &szZipFile, std::string &ErrorMessage)
+{
+	clx::basic_unzip<char> in(szZipFile);
 	if (!in.is_open())
 	{
 		ErrorMessage = "Error opening zip file";
@@ -7211,7 +7216,7 @@ bool CSQLHelper::InsertCustomIconFromZip(const std::string &szZip, std::string &
 			continue;
 
 		int ipos = fpath.find("icons.txt");
-		if ( ipos != std::string::npos)
+		if (ipos != std::string::npos)
 		{
 			std::string rpath;
 			if (ipos > 0)
