@@ -657,7 +657,9 @@
                 <th width="250" align="left" data-i18n="Name">Name</th>
                 <th width="150" align="left" data-i18n="IP Address">IP Address</th>
 				<th width="200" align="left" data-i18n="Type">Type</th>
-				<th align="left" data-i18n="Uptime">Uptime</th>
+				<th width="100" align="left" data-i18n="Uptime">Uptime</th>
+				<th width="100" align="left" data-i18n="Hardware">Hardware</th>
+				<th align="left" data-i18n="Firmware">Firmware</th>
             </tr>
         </thead>
     </table>
@@ -1269,6 +1271,32 @@
 				</tr>
 			</table>
 		</div>
+        <div id="divrelaynet">
+            <br>
+            <table class="display" id="hardwareparamsrelaynet" border="0" cellpadding="0" cellspacing="20">
+                <tr>
+                    <td align="right" style="width:110px"><label><span data-i18n="Poll inputs">Poll inputs</span>:</label></td>
+                    <td><input type="checkbox" id="relaynetpollinputs" checked></td>
+                </tr>
+                <tr>
+                    <td align="right" style="width:110px"><label><span data-i18n="Poll relays">Poll relays</span>:</label></td>
+                    <td><input type="checkbox" id="relaynetpollrelays" checked></td>
+                </tr>
+                <tr>
+                    <td align="right" style="width:110px"><label><span data-i18n="Poll interval">Poll interval</span>:</label></td>
+                    <td><input type="text" id="relaynetpollinterval" style="width: 25px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="5" /> &nbsp; Seconds </td>
+                </tr>
+                <tr>
+                    <td align="right" style="width:110px"><label><span data-i18n="Input count">Input count</span>:</label></td>
+                    <td><input type="text" id="relaynetinputcount" style="width: 15px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="8" /></td>
+                </tr>
+                <tr>
+                    <td align="right" style="width:110px"><label><span data-i18n="Relay count">Relay count</span>:</label></td>
+                    <td><input type="text" id="relaynetrelaycount" style="width: 15px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="8" /></td>
+                </tr>
+            </tr>
+            </table>
+        </div>
 		<div id="divunderground">
 			<br>
 			<table class="display" id="hardwareparamsunderground" border="0" cellpadding="0" cellspacing="20">
@@ -1285,14 +1313,6 @@
 		<div id="divsolaredgeapi">
 			<br>
 			<table class="display" id="hardwareparamssolaredgeapi" border="0" cellpadding="0" cellspacing="20">
-				<tr>
-					<td align="right" style="width:110px"><label><span data-i18n="SiteID">SiteID</span>:</label></td>
-					<td><input type="text" id="siteid" style="width: 170px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-				</tr>
-				<tr>
-					<td align="right" style="width:110px"><label><span data-i18n="Serial">Serial</span>:</label></td>
-					<td><input type="text" id="serial" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-				</tr>
 				<tr>
 					<td align="right" style="width:110px"><label><span data-i18n="API Key"></span>:</label></td>
 					<td><input type="text" id="apikey" style="width: 280px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>

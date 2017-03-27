@@ -24,6 +24,11 @@ private:
 	unsigned char m_linecount;
 	unsigned char m_exclmarkfound;
 	unsigned char m_CRfound;
+
+	float m_voltagel1;
+	float m_voltagel2;
+	float m_voltagel3;
+
 	void Init();
 	bool MatchLine();
 	void ParseData(const unsigned char *pData, const int Len, const bool disable_crc, int ratelimit);

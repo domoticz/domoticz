@@ -2,6 +2,10 @@
 
 #include "../DomoticzHardware.h"
 
+#ifndef byte
+typedef unsigned char byte;
+#endif
+
 namespace Plugins {
 
 	class CPluginMessage;
@@ -30,12 +34,14 @@ namespace Plugins {
 		void LogPythonException(const std::string &);
 		bool HandleInitialise();
 		bool HandleStart();
+		bool LoadSettings();
+		void WriteDebugBuffer(const std::vector<byte>& Buffer, bool Incoming);
 
 	public:
 		CPlugin(const int HwdID, const std::string &Name, const std::string &PluginKey);
 		~CPlugin(void);
 
-		void HandleMessage(const CPluginMessage& Message);
+		void HandleMessage(const CPluginMessage* Message);
 
 		bool WriteToHardware(const char *pdata, const unsigned char length);
 		void Restart();
@@ -47,6 +53,7 @@ namespace Plugins {
 		CPluginTransport*	m_pTransport;
 		void*				m_DeviceDict;
 		void*				m_ImageDict;
+		void*				m_SettingsDict;
 		std::string			m_HomeFolder;
 		bool				m_bDebug;
 		bool				m_stoprequested;

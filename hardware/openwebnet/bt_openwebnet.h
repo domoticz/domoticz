@@ -62,7 +62,7 @@ private:
 
   //fields description
   static std::string getDimensionsDescription(const std::string& who, const std::string& dimension, const std::vector<std::string>& values);
-  static std::string getWhereDescription(const std::string& who, const std::string& where, const std::vector<std::string>& whereParameters);
+  static std::string getWhereDescription(const std::string& who,const std::string& what, const std::string& where, const std::vector<std::string>& whereParameters);
   static std::string getWhatDescription(const std::string& who, const std::string& what, const std::vector<std::string>& whatParameters);
   static std::string getWhoDescription(const std::string& who);
 
@@ -96,7 +96,7 @@ public:
   // constructors
   bt_openwebnet();
   bt_openwebnet(const std::string& message);
-  bt_openwebnet(int who, int what, int where);
+  bt_openwebnet(int who, int what, int where, int group);
   bt_openwebnet(const std::string& who, const std::string& what, const std::string& where, const std::string& when);
 
   void CreateNullMsgOpen();
@@ -115,6 +115,7 @@ public:
 
   void CreateTimeReqMsgOpen();
 
+	void CreateSetTimeMsgOpen();
   //general message
   void CreateMsgOpen(const std::string& message);
 
@@ -179,7 +180,7 @@ public:
 	  WHO_ENERGY_MANAGEMENT = 18,
 	  WHO_SOUND_DIFFUSION = 22,
 	  WHO_LIHGTING_MANAGEMENT = 24,
-	  WHO_DRY_CONTACT_IR_DETECTION = 25,
+	  WHO_CEN_PLUS_DRY_CONTACT_IR_DETECTION = 25,
 	  WHO_ZIGBEE_DIAGNOSTIC = 1000,
 	  WHO_AUTOMATIC_DIAGNOSTIC = 1001,
 	  WHO_THERMOREGULATION_DIAGNOSTIC_FAILURES = 1004,

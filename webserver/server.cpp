@@ -206,7 +206,7 @@ void ssl_server::init_connection() {
 			_log.Log(LOG_ERROR, "[web:%s] missing SSL verify file parameter !", settings_.listening_port.c_str());
 		} else {
 			context_.load_verify_file(settings_.verify_file_path);
-			boost::asio::ssl::context::verify_mode verify_mode;
+			boost::asio::ssl::context::verify_mode verify_mode = 0;
 			if (settings_.verify_peer) {
 				verify_mode |= boost::asio::ssl::context::verify_peer;
 			}

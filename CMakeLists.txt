@@ -8,14 +8,13 @@ SET(DOMO_MIN_LIBBOOST_VERSION 105500)
 ##
 
 MACRO(Gitversion_GET_REVISION dir variable)
-  EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD
+  EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} --git-dir ./.git rev-list HEAD --count
     WORKING_DIRECTORY ${dir}
     OUTPUT_VARIABLE ${variable}
     OUTPUT_STRIP_TRAILING_WHITESPACE)
 ENDMACRO(Gitversion_GET_REVISION)
-#~ MESSAGE(FATAL_ERROR "${GIT_EXECUTABLE} ${CMAKE_SOURCE_DIR}")
-Gitversion_GET_REVISION("${CMAKE_SOURCE_DIR}" ProjectRevision)
 
+Gitversion_GET_REVISION("${CMAKE_SOURCE_DIR}" ProjectRevision)
 IF(NOT ProjectRevision)
   MESSAGE(STATUS "Failed to get ProjectRevision from git")
   IF(EXISTS ${CMAKE_SOURCE_DIR}/appversion.default)
@@ -28,6 +27,8 @@ IF(NOT ProjectRevision)
     MESSAGE(STATUS "No appversion.default, set ProjectRevision to 0")
     set (ProjectRevision 0)
   ENDIF(EXISTS ${CMAKE_SOURCE_DIR}/appversion.default)
+ELSE(NOT ProjectRevision)
+  MATH(EXPR ProjectRevision "${ProjectRevision}+2107")
 ENDIF(NOT ProjectRevision)
 
 MESSAGE(STATUS "###########################")
@@ -361,6 +362,7 @@ hardware/Pinger.cpp
 hardware/PVOutput_Input.cpp
 hardware/Razberry.cpp
 hardware/Rego6XXSerial.cpp
+hardware/RelayNet.cpp
 hardware/RFLinkBase.cpp
 hardware/RFLinkSerial.cpp
 hardware/RFLinkTCP.cpp
@@ -380,7 +382,8 @@ hardware/Sterbox.cpp
 hardware/TCPProxy/tcpproxy_server.cpp
 hardware/TE923.cpp
 hardware/TE923Tool.cpp
-hardware/Teleinfo.cpp
+hardware/TeleinfoBase.cpp
+hardware/TeleinfoSerial.cpp
 hardware/Tellstick.cpp
 hardware/Thermosmart.cpp
 hardware/ToonThermostat.cpp
@@ -620,12 +623,12 @@ IF(OpenZWave)
       find_library(UDEV NAMES libudev.a)
       IF(UDEV)
         message(STATUS ${UDEV})
-        target_link_libraries(domoticz ${UDEV} -lrt)
+        target_link_libraries(domoticz ${UDEV} -lrt -lresolv)
       else()
         find_library(UDEV NAMES libudev.so)
         IF(UDEV)
            message(STATUS ${UDEV})
-           target_link_libraries(domoticz ${UDEV} -lrt)
+           target_link_libraries(domoticz ${UDEV} -lrt -lresolv)
         else()
            MESSAGE(FATAL_ERROR "LIB UDEV not found on your system, see install.txt how to get them installed.\nsudo apt-get install libudev-dev")
         ENDIF(UDEV)
