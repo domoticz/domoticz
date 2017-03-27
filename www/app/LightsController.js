@@ -1638,18 +1638,24 @@ define(['app'], function (app) {
 				$("#lightcontent #LedColor").hide();
 			}
 			if ($.bIsRGB==true && $.strUnit =="0" && $.bIsLimitless==true) {
-				$("#lightcontent #optionsRGB").show();
+				$("#lightcontent #optionsRGBLimit").show();
 			}
 			else {
-				$("#lightcontent #optionsRGB").hide();
+				$("#lightcontent #optionsRGBLimit").hide();
 			}
 			if ($.bIsRGBWW==true && $.bIsLimitless==true){
-				$("#lightcontent #optionsRGBWW").show();
+				$("#lightcontent #optionsRGBWWLimit").show();
 			}
 			else {
-				$("#lightcontent #optionsRGBWW").hide();
+				$("#lightcontent #optionsRGBWWLimit").hide();
 			}
 			if ($.bIsRGBW==true && $.bIsRGBWW==false && $.bIsLimitless==true) {
+				$("#lightcontent #optionsRGBWLimit").show();
+			}
+			else {
+				$("#lightcontent #optionsRGBWLimit").hide();
+			}
+			if ($.bIsRGBW==true) {
 				$("#lightcontent #optionsRGBW").show();
 			}
 			else {
