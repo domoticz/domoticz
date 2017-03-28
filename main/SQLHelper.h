@@ -198,6 +198,12 @@ struct _tTaskItem
 	}
 };
 
+//row result for an sql query : string Vector
+typedef   std::vector<std::string> TSqlRowQuery;
+
+// result for an sql query : Vector of TSqlRowQuery
+typedef   std::vector<TSqlRowQuery> TSqlQueryResult;
+
 class CSQLHelper
 {
 public:
@@ -294,9 +300,22 @@ public:
 	bool SetUserVariable(const uint64_t idx, const std::string &varvalue, const bool eventtrigger);
 	std::vector<std::vector<std::string> > GetUserVariables();
 
+	void UpdateDeviceValue(const char * FieldName , std::string &Value , std::string &Idx );
+	void UpdateDeviceValue(const char * FieldName , int Value , std::string &Idx )   ;
+	void UpdateDeviceValue(const char * FieldName , float Value , std::string &Idx ) ;
+	double ConvertTemperature(double tempcelcius);
+	double ConvertTemperatureUnit(double tempcelcius);
+	std::string GetDeviceValue(const char * FieldName , const char *Idx );
+
+	float getTemperatureFromSValue(const char * sValue);
+
+	bool GetPreferencesVar(const std::string &Key, double &Value);
+	void UpdatePreferencesVar(const std::string &Key, const double Value);
+	void DeletePreferencesVar(const std::string Key );
 	void AllowNewHardwareTimer(const int iTotMinutes);
 
 	bool InsertCustomIconFromZip(const std::string &szZip, std::string &ErrorMessage);
+	bool InsertCustomIconFromZipFile(const std::string & szZipFile, std::string & ErrorMessage);
 
 	std::map<std::string, std::string> BuildDeviceOptions(const std::string & options, const bool decode = true);
 	std::map<std::string, std::string> GetDeviceOptions(const std::string & idx);
@@ -372,6 +391,7 @@ private:
 
 	std::vector<std::vector<std::string> > query(const std::string &szQuery);
 	std::vector<std::vector<std::string> > queryBlob(const std::string &szQuery);
+	void LogQueryResult(TSqlQueryResult &result);
 };
 
 extern CSQLHelper m_sql;

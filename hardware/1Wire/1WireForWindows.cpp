@@ -408,11 +408,29 @@ float C1WireForWindows::GetIlluminance(const _t1WireDevice& device) const
    return ansRoot.get("Illuminescence",0.0f).asFloat();
 }
 
+unsigned int C1WireForWindows::GetWiper(const _t1WireDevice& device) const
+{
+	Json::Value ansRoot;
+	try
+	{
+		ansRoot = readData(device);
+	}
+	catch (C1WireForWindowsReadException&)
+	{
+		return -1000.0;
+	}
+	return ansRoot.get("Wiper", 0.0f).asUInt();
+}
+
 void C1WireForWindows::StartSimultaneousTemperatureRead()
 {
 }
 
-void C1WireForWindows::SetLightState(const std::string& sId,int unit,bool value)
+void C1WireForWindows::PrepareDevices()
+{
+}
+
+void C1WireForWindows::SetLightState(const std::string& sId,int unit,bool value, const unsigned int level)
 {
    if (m_Socket==INVALID_SOCKET)
       return;

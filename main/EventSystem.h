@@ -15,7 +15,9 @@ extern "C" {
 #endif
 }
 
-class CEventSystem
+#include "LuaCommon.h"
+
+class CEventSystem : public CLuaCommon
 {
 	typedef struct lua_State lua_State;
 

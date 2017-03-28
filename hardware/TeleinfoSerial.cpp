@@ -2,9 +2,8 @@
 Domoticz Software : http://domoticz.com/
 File : TeleinfoSerial.cpp
 Author : Nicolas HILAIRE
-Version : 1.6
-Description : This class manage the Teleinfo Signal
-
+Version : 2.1
+Description : This class decodes the Teleinfo signal from serial/USB devices before processing them
 
 History :
 - 2013-11-01 : Creation
@@ -15,13 +14,13 @@ History :
 - 2016-02-11 : Fix power display when PAPP is missing (Anthony LAGUERRE)
 - 2016-02-17 : Fix bug power usage (Anthony LAGUERRE). Thanks to Multinet
 - 2017-01-28 : Add 'Heures Creuses' Switch (A.L)
-- 2017-03-03 : Renamed from Teleinfo.cpp to TeleinfoSerial.cpp in order to create   
-               a shared class to process Teleinfo protocol (Blaise Thauvin)
+- 2017-03-15 : 2.0 Renamed from Teleinfo.cpp to TeleinfoSerial.cpp in order to create
+			   a shared class to process Teleinfo protocol (Blaise Thauvin)
+- 2017-03-21 : 2.1 Fixed bug sending too many updates
 */
 
 #include "stdafx.h"
 #include "TeleinfoSerial.h"
-#include "TeleinfoBase.h"
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 #include "../main/Logger.h"
@@ -33,45 +32,40 @@ History :
 
 #include <ctime>
 
-//Teleinfo for EDF power meter.
+#ifdef _DEBUG
+#define DEBUG_TeleinfoSerial
+#endif
 
-//Teleinfo official specification :
-//http://www.planete-domotique.com/notices/ERDF-NOI-CPT_O2E.pdf
 
-//Example of data received by EDF power meter
-//ADCO 271028237723 C
-//OPTARIF HC.. <
-//ISOUSC 45 ?
-//HCHC 013149843 '
-//HCHP 013016759 3
-//PTEC HP..
-//IINST 002 Y
-//IMAX 049 L
-//PAPP 00450 *
-//HHPHC D /
-//MOTDETAT 000000 B
+#define NBFRAMES 8				 //number of frames to collect before processing one
 
-#define TE_ADCO "ADCO" //meter id
-#define TE_OPTARIF "OPTARIF"//pricing option
-#define TE_ISOUSC "ISOUSC"//current power subscribe   //A
-#define TE_BASE "BASE"//total power usage normal tariff in base option
-#define TE_HCHC "HCHC"// total power usage low tariff in HC option
-#define TE_HCHP "HCHP"// total power usage normal tariff in HC option
-#define TE_EJPHPM "EJPHPM"// total power usage normal tariff in PM option
-#define TE_EJPHN "EJPHN"// total power usage low tariff in HN option
-#define TE_BBRHCJB "BBRHCJB"// total power usage low tariff in HC option tempo blue
-#define TE_BBRHPJB "BBRHPJB"// total power usage normal tariff in HC option tempo blue
-#define TE_BBRHCJW "BBRHCJW"// total power usage low tariff in HC option tempo white
-#define TE_BBRHPJW "BBRHPJW"// total power usage normal tariff in HC option tempo white
-#define TE_BBRHCJR "BBRHCJR"// total power usage low tariff in HC option tempo red
-#define TE_BBRHPJR "BBRHPJR"// total power usage normal tariff in HC option tempo red
-#define TE_PTEC   "PTEC"//current tariff period
-#define TE_IINST "IINST"//instant current power usage
-#define TE_IMAX "IMAX"//maximal current power usage
-#define TE_PAPP "PAPP"//apparent power
-#define TE_MOTDETAT "MOTDETAT"//mot d'etat
+#define TE_ADCO "ADCO"			 //meter id
+#define TE_OPTARIF "OPTARIF"	 //pricing option
+#define TE_ISOUSC "ISOUSC"		 //current power subscribe   //A
+#define TE_BASE "BASE"			 //total power usage normal tariff in base option
+#define TE_HCHC "HCHC"			 // total power usage low tariff in HC option
+#define TE_HCHP "HCHP"			 // total power usage normal tariff in HC option
+#define TE_EJPHPM "EJPHPM"		 // total power usage normal tariff in PM option
+#define TE_EJPHN "EJPHN"		 // total power usage low tariff in HN option
+#define TE_BBRHCJB "BBRHCJB"	 // total power usage low tariff in HC option tempo blue
+#define TE_BBRHPJB "BBRHPJB"	 // total power usage normal tariff in HC option tempo blue
+#define TE_BBRHCJW "BBRHCJW"	 // total power usage low tariff in HC option tempo white
+#define TE_BBRHPJW "BBRHPJW"	 // total power usage normal tariff in HC option tempo white
+#define TE_BBRHCJR "BBRHCJR"	 // total power usage low tariff in HC option tempo red
+#define TE_BBRHPJR "BBRHPJR"	 // total power usage normal tariff in HC option tempo red
+#define TE_PTEC   "PTEC"		 //current tariff period
+#define TE_IINST "IINST"		 //instant current power usage. 
+#define TE_IINST1 "IINST1"		 //instant current power usage pahse 1
+#define TE_IINST2 "IINST2"		 //instant current power usage phase 2
+#define TE_IINST3 "IINST3"		 //instant current power usage phase 2
+#define TE_PPOT "PPOT"			 //Potental on all 3 phases
+#define TE_DEMAIN "DEMAIN"		 //tariff tomorrow
+#define TE_PEJP "PEJP"			 //prior notice "pointe mobile" tariff
+#define TE_PAPP "PAPP"			 //apparent power
+#define TE_MOTDETAT "MOTDETAT"	 //mot d'etat
 
-CTeleinfoSerial::Match CTeleinfoSerial::m_matchlist[19] = {
+CTeleinfoSerial::Match CTeleinfoSerial::m_matchlist[27] =
+{
 	{ STD, TELEINFO_TYPE_ADCO, TE_ADCO, 12 },
 	{ STD, TELEINFO_TYPE_OPTARIF, TE_OPTARIF, 4 },
 	{ STD, TELEINFO_TYPE_ISOUSC, TE_ISOUSC, 2 },
@@ -87,8 +81,13 @@ CTeleinfoSerial::Match CTeleinfoSerial::m_matchlist[19] = {
 	{ STD, TELEINFO_TYPE_BBRHCJR, TE_BBRHCJR, 9 },
 	{ STD, TELEINFO_TYPE_BBRHPJR, TE_BBRHPJR, 9 },
 	{ STD, TELEINFO_TYPE_PTEC, TE_PTEC, 4 },
-	{ STD, TELEINFO_TYPE_IINST, TE_IINST, 3 },
-	{ STD, TELEINFO_TYPE_IMAX, TE_IMAX, 3 },
+	{ STD, TELEINFO_TYPE_IINST1, TE_IINST1, 3 },
+	{ STD, TELEINFO_TYPE_IINST2, TE_IINST2, 3 },
+	{ STD, TELEINFO_TYPE_IINST3, TE_IINST3, 3 },
+        { STD, TELEINFO_TYPE_IINST, TE_IINST, 3 },
+	{ STD, TELEINFO_TYPE_PPOT, TE_PPOT, 2 },
+	{ STD, TELEINFO_TYPE_PEJP, TE_PEJP, 2 },
+	{ STD, TELEINFO_TYPE_DEMAIN, TE_DEMAIN, 4 },
 	{ STD, TELEINFO_TYPE_PAPP, TE_PAPP, 5 },
 	{ STD, TELEINFO_TYPE_MOTDETAT, TE_MOTDETAT, 6 }
 };
@@ -106,40 +105,19 @@ CTeleinfoSerial::CTeleinfoSerial(const int ID, const std::string& devname, unsig
 	Init();
 }
 
-CTeleinfoSerial::~CTeleinfoSerial(void)
+
+CTeleinfoSerial::~CTeleinfoSerial()
 {
 	StopHardware();
 }
 
+
 void CTeleinfoSerial::Init()
 {
 	m_bufferpos = 0;
-
-	memset(&m_buffer, 0, sizeof(m_buffer));
-	memset(&m_p1power, 0, sizeof(m_p1power));
-	memset(&m_p2power, 0, sizeof(m_p2power));
-	memset(&m_p3power, 0, sizeof(m_p3power));
-
-	m_p1power.len = sizeof(P1Power) - 1;
-	m_p1power.type = pTypeP1Power;
-	m_p1power.subtype = sTypeP1Power;
-	m_p1power.ID = 1;
-	
-	m_p2power.len = sizeof(P1Power) - 1;
-	m_p2power.type = pTypeP1Power;
-	m_p2power.subtype = sTypeP1Power;
-	m_p2power.ID = 2;
-	
-	m_p3power.len = sizeof(P1Power) - 1;
-	m_p3power.type = pTypeP1Power;
-	m_p3power.subtype = sTypeP1Power;
-	m_p3power.ID = 3;
-
 	m_counter = 0;
-	m_Power_USAGE_IINST = 0;
-	m_Power_USAGE_IINST_JW = 0;
-	m_Power_USAGE_IINST_JR = 0;
 }
+
 
 bool CTeleinfoSerial::StartHardware()
 {
@@ -147,7 +125,7 @@ bool CTeleinfoSerial::StartHardware()
 	//Try to open the Serial Port
 	try
 	{
-		_log.Log(LOG_STATUS, "Teleinfo: Using serial port: %s", m_szSerialPort.c_str());
+		_log.Log(LOG_STATUS, "Teleinfo: %s uses serial port: %s", Name.c_str(), m_szSerialPort.c_str());
 		open(
 			m_szSerialPort,
 			m_iBaudRate,
@@ -158,11 +136,11 @@ bool CTeleinfoSerial::StartHardware()
 	catch (boost::exception & e)
 	{
 		_log.Log(LOG_ERROR, "Teleinfo: Error opening serial port!");
-#ifdef _DEBUG
+		#ifdef DEBUG_TeleinfoSerial
 		_log.Log(LOG_ERROR, "-----------------\n%s\n-----------------", boost::diagnostic_information(e).c_str());
-#else
+		#else
 		(void)e;
-#endif
+		#endif
 		return false;
 	}
 	catch (...)
@@ -177,6 +155,7 @@ bool CTeleinfoSerial::StartHardware()
 	return true;
 }
 
+
 bool CTeleinfoSerial::StopHardware()
 {
 	terminate();
@@ -186,14 +165,21 @@ bool CTeleinfoSerial::StopHardware()
 }
 
 
+bool CTeleinfoSerial::WriteToHardware(const char *pdata, const unsigned char length)
+{
+	return true;
+}
+
+
 void CTeleinfoSerial::readCallback(const char *data, size_t len)
 {
 	boost::lock_guard<boost::mutex> l(readQueueMutex);
 	if (!m_bEnableReceive)
-		return; //receiving not enabled
+		return;					 //receiving not enabled
 
 	ParseData((const unsigned char*)data, static_cast<int>(len));
 }
+
 
 void CTeleinfoSerial::MatchLine()
 {
@@ -205,19 +191,21 @@ void CTeleinfoSerial::MatchLine()
 	CTeleinfoSerial::Match t;
 	char value[20] = "";
 	std::string vString;
-
-	//_log.Log(LOG_NORM,"Frame : #%s#", m_buffer);
+	#ifdef DEBUG_TeleinfoSerial
+	_log.Log(LOG_NORM,"Frame : #%s#", m_buffer);
+	#endif
 	for (i = 0; (i<sizeof(m_matchlist) / sizeof(CTeleinfoSerial::Match))&(!found); i++)
 	{
 		t = m_matchlist[i];
 		switch (t.matchtype)
 		{
-		case STD:
-			if (strncmp(t.key, (const char*)&m_buffer, strlen(t.key)) == 0) {
-				found = 1;
-			}
-			break;
-		} //switch
+			case STD:
+				if (strncmp(t.key, (const char*)&m_buffer, strlen(t.key)) == 0)
+				{
+					found = 1;
+				}
+				break;
+		}						 //switch
 
 		if (!found)
 			continue;
@@ -236,202 +224,90 @@ void CTeleinfoSerial::MatchLine()
 		vString = value;
 		switch (t.type)
 		{
-		case TELEINFO_TYPE_ADCO:
-			break;
-		case TELEINFO_TYPE_OPTARIF:
-			if (vString.substr (0,3) == "BBR")
-                        {
-                                m_bLabel_Tempo = true;
-                        }
-                        else
-                        {
-                                m_bLabel_Tempo = false;
-                        }
-
-			break;
-		case TELEINFO_TYPE_ISOUSC:
-			break;
-		case TELEINFO_TYPE_BASE:
-			if (ulValue != 0)
-				m_p1power.powerusage1 = ulValue;
-			break;
-		case TELEINFO_TYPE_HCHC:
-			if (ulValue != 0)
-				m_p1power.powerusage2 = ulValue;
-			break;
-		case TELEINFO_TYPE_HCHP:
-			if (ulValue != 0)
-				m_p1power.powerusage1 = ulValue;
-			break;
-		case TELEINFO_TYPE_EJPHPM:
-			if (ulValue != 0)
-				m_p1power.powerusage2 = ulValue;
-			break;
-		case TELEINFO_TYPE_EJPHN:
-			if (ulValue != 0)
-				m_p1power.powerusage1 = ulValue;
-			break;
-		case TELEINFO_TYPE_BBRHCJB:
-			if (ulValue != 0)
-				m_p1power.powerusage2 = ulValue;
-			break;
-		case TELEINFO_TYPE_BBRHPJB:
-			if (ulValue != 0)
-				m_p1power.powerusage1 = ulValue;
-			break;
-		case TELEINFO_TYPE_BBRHCJW:
-			if (ulValue != 0)
-				m_p2power.powerusage2 = ulValue;
-			break;
-		case TELEINFO_TYPE_BBRHPJW:
-			if (ulValue != 0)
-				m_p2power.powerusage1 = ulValue;
-			break;
-		case TELEINFO_TYPE_BBRHCJR:
-			if (ulValue != 0)
-				m_p3power.powerusage2 = ulValue;
-			break;
-		case TELEINFO_TYPE_BBRHPJR:
-			if (ulValue != 0)
-				m_p3power.powerusage1 = ulValue;
-			break;
-		case TELEINFO_TYPE_PTEC:
-			SendSwitch(5,1,255,(vString.substr (0,2) == "HC"),0,"Heures Creuses");
-
-			if (vString.substr (2,2) == "JB")
-                        {
-                                m_bLabel_PTEC_JB = true;
-                                m_bLabel_PTEC_JW = false;
-                                m_bLabel_PTEC_JR = false;
-                        }
-                        else if (vString.substr (2,2) == "JW")
-                        {
-                                m_bLabel_PTEC_JB = false;
-                                m_bLabel_PTEC_JW = true;
-                                m_bLabel_PTEC_JR = false;
-                        }
-                        else if (vString.substr (2,2) == "JR")
-                        {
-                                m_bLabel_PTEC_JB = false;
-                                m_bLabel_PTEC_JW = false;
-                                m_bLabel_PTEC_JR = true;
-                        }
-                        else
-                        {
-                                m_bLabel_PTEC_JB = false;
-                                m_bLabel_PTEC_JW = false;
-                                m_bLabel_PTEC_JR = false;
-                        }
-
-			break;
-		case TELEINFO_TYPE_IINST:
-			if (m_bLabel_PAPP_Exist == false)
-			{
-				if (m_bLabel_PTEC_JW == true)
-				{
-					m_Power_USAGE_IINST = 0;
-                        		m_Power_USAGE_IINST_JW += (ulValue * 230);
-                        		m_Power_USAGE_IINST_JR = 0;
-                        	}
-                		else if (m_bLabel_PTEC_JR == true)
-                        	{
-                        		m_Power_USAGE_IINST = 0;
-                        		m_Power_USAGE_IINST_JW = 0;
-                        		m_Power_USAGE_IINST_JR += (ulValue * 230);
-                        	}
-                        	else
-                        	{
-                        		m_Power_USAGE_IINST += (ulValue * 230);
-                        		m_Power_USAGE_IINST_JW = 0;
-                        		m_Power_USAGE_IINST_JR = 0;
-                        	}
-			}
-			break;
-		case TELEINFO_TYPE_IMAX:
-			break;
-		case TELEINFO_TYPE_PAPP:
-			//we count to prevent add each block but only one every 10 seconds
-			if (m_bLabel_PTEC_JW == true)
-                        {
-                        m_p1power.usagecurrent = 0;
-                        m_p2power.usagecurrent += ulValue;
-                        m_p3power.usagecurrent = 0;
-                        }
-                        else if (m_bLabel_PTEC_JR == true)
-                        {
-                        m_p1power.usagecurrent = 0;
-                        m_p2power.usagecurrent = 0;
-                        m_p3power.usagecurrent += ulValue;
-                        }
-                        else
-                        {
-                        m_p1power.usagecurrent += ulValue;
-                        m_p2power.usagecurrent = 0;
-                        m_p3power.usagecurrent = 0;
-                        }
-
-			m_counter++;
-			m_bLabel_PAPP_Exist = true;
-			if (m_counter >= NumberOfFrameToSendOne)
-			{
-				//_log.Log(LOG_NORM,"Teleinfo frame complete");
-				//_log.Log(LOG_NORM,"powerusage1 = %lu", m_p1power.powerusage1);
-				//_log.Log(LOG_NORM,"powerusage2 = %lu", m_p1power.powerusage2);
-				//_log.Log(LOG_NORM,"usagecurrent = %lu", m_p1power.usagecurrent);
-				m_p1power.usagecurrent /= m_counter;
-                                m_p2power.usagecurrent /= m_counter;
-                                m_p3power.usagecurrent /= m_counter;
-                                sDecodeRXMessage(this, (const unsigned char *)&m_p1power, NULL, 255);
-                                if (m_bLabel_Tempo == true)
-                                {
-                                        sDecodeRXMessage(this, (const unsigned char *)&m_p2power, NULL, 255);
-                                        sDecodeRXMessage(this, (const unsigned char *)&m_p3power, NULL, 255);
-                                }
-                                m_Power_USAGE_IINST = 0;
-				m_Power_USAGE_IINST_JW = 0;
-				m_Power_USAGE_IINST_JR = 0;
-                                m_counter = 0;
-                                m_p1power.usagecurrent = 0;
-                                m_p2power.usagecurrent = 0;
-                                m_p3power.usagecurrent = 0;
-                        }
-			break;
-		case TELEINFO_TYPE_MOTDETAT:
-			if (m_bLabel_PAPP_Exist == false)
-			{
+			case TELEINFO_TYPE_ADCO:
+				break;
+			case TELEINFO_TYPE_OPTARIF:
+				teleinfo.OPTARIF = vString;
+				break;
+			case TELEINFO_TYPE_ISOUSC:
+				teleinfo.ISOUSC = ulValue;
+				break;
+			case TELEINFO_TYPE_BASE:
+				teleinfo.BASE = ulValue;
+				break;
+			case TELEINFO_TYPE_HCHC:
+				teleinfo.HCHC = ulValue;
+				break;
+			case TELEINFO_TYPE_HCHP:
+				teleinfo.HCHP = ulValue;
+				break;
+			case TELEINFO_TYPE_EJPHPM:
+				teleinfo.EJPHPM = ulValue;
+				break;
+			case TELEINFO_TYPE_EJPHN:
+				teleinfo.EJPHN = ulValue;
+				break;
+			case TELEINFO_TYPE_BBRHCJB:
+				teleinfo.BBRHCJB = ulValue;
+				break;
+			case TELEINFO_TYPE_BBRHPJB:
+				teleinfo.BBRHPJB = ulValue;
+				break;
+			case TELEINFO_TYPE_BBRHCJW:
+				teleinfo.BBRHCJW = ulValue;
+				break;
+			case TELEINFO_TYPE_BBRHPJW:
+				teleinfo.BBRHPJW = ulValue;
+				break;
+			case TELEINFO_TYPE_BBRHCJR:
+				teleinfo.BBRHCJR = ulValue;
+				break;
+			case TELEINFO_TYPE_BBRHPJR:
+				teleinfo.BBRHPJR = ulValue;
+				break;
+			case TELEINFO_TYPE_DEMAIN:
+				teleinfo.DEMAIN = vString;
+				break;
+			case TELEINFO_TYPE_PTEC:
+				teleinfo.PTEC = vString;
+				break;
+			case TELEINFO_TYPE_IINST:
+				teleinfo.IINST = ulValue;
+				break;
+			case TELEINFO_TYPE_IINST1:
+				teleinfo.IINST1 = ulValue;
+				break;
+			case TELEINFO_TYPE_IINST2:
+				teleinfo.IINST2 = ulValue;
+				break;
+			case TELEINFO_TYPE_IINST3:
+				teleinfo.IINST3 = ulValue;
+				break;
+			case TELEINFO_TYPE_PPOT:
+				teleinfo.PPOT = ulValue;
+				break;
+			case TELEINFO_TYPE_PAPP:
+				teleinfo.PAPP = ulValue;
+				break;
+			case TELEINFO_TYPE_MOTDETAT:
 				m_counter++;
-				if (m_counter >= NumberOfFrameToSendOne)
+				if (m_counter >= NBFRAMES)
 				{
-					//_log.Log(LOG_NORM,"Teleinfo frame complete");
-					//_log.Log(LOG_NORM,"powerusage1 = %lu", m_p1power.powerusage1);
-					//_log.Log(LOG_NORM,"powerusage2 = %lu", m_p1power.powerusage2);
-					//_log.Log(LOG_NORM,"usagecurrent = %lu", m_p1power.usagecurrent);
-					m_p1power.usagecurrent = (m_Power_USAGE_IINST / m_counter);
-                        		m_p2power.usagecurrent = (m_Power_USAGE_IINST_JW / m_counter);
-                        		m_p3power.usagecurrent = (m_Power_USAGE_IINST_JR / m_counter);
-                                        sDecodeRXMessage(this, (const unsigned char *)&m_p1power, NULL, 255);
-                                        if (m_bLabel_Tempo == true)
-                                        {
-                                                sDecodeRXMessage(this, (const unsigned char *)&m_p2power, NULL, 255);
-                                                sDecodeRXMessage(this, (const unsigned char *)&m_p3power, NULL, 255);
-                                        }
-                                        m_counter = 0;
-                                        m_p1power.usagecurrent = 0;
-                                        m_p2power.usagecurrent = 0;
-                                        m_p3power.usagecurrent = 0;
-                                        m_Power_USAGE_IINST = 0;
-                        		m_Power_USAGE_IINST_JW = 0;
-                        		m_Power_USAGE_IINST_JR = 0;
-                                }
-                        }
-			break;
-		default:
-			_log.Log(LOG_ERROR, "Teleinfo: label '%s' not handled!", t.key);
-			break;
+				#ifdef DEBUG_TeleinfoSerial
+					_log.Log(LOG_NORM,"Teleinfo frame complete");
+				#endif
+					m_counter = 0;
+					ProcessTeleinfo(teleinfo);
+				}
+				break;
+			default:
+				_log.Log(LOG_ERROR, "Teleinfo: label '%s' not handled!", t.key);
+				break;
 		}
 		return;
 	}
 }
+
 
 void CTeleinfoSerial::ParseData(const unsigned char *pData, int Len)
 {
@@ -454,7 +330,7 @@ void CTeleinfoSerial::ParseData(const unsigned char *pData, int Len)
 				m_buffer[m_bufferpos] = 0;
 
 			//We check the line only if the checksum is ok
-			if (isCheckSumOk())
+			if (isCheckSumOk(teleinfo.CRCmode1))
 				MatchLine();
 
 			m_bufferpos = 0;
@@ -468,6 +344,19 @@ void CTeleinfoSerial::ParseData(const unsigned char *pData, int Len)
 }
 
 
+//Example of data received from power meter
+//ADCO 271028237723 C
+//OPTARIF HC.. <
+//ISOUSC 45 ?
+//HCHC 013149843 '
+//HCHP 013016759 3
+//PTEC HP..
+//IINST 002 Y
+//IMAX 049 L
+//PAPP 00450 *
+//HHPHC D /
+//MOTDETAT 000000 B
+
 /* Explanation of the checksum computation issued from the official EDF specification
 
 a "checksum" is calculated on the set of characters from the beginning of the label field to the end of the field given character SP included.
@@ -477,29 +366,52 @@ result (this translates into a logical AND between the amount previously calcula
 Finally, we added 20 hexadecimal. The result will always be a printable ASCII character (sign, digit,
 capital letter) of from 0x20 to hexadecimal 0x5F
 
-La "checksum" est calculÈe sur l'ensemble des caractËres allant du dÈbut du champ Ètiquette  la fin du champ
-donnÈe, caractËre SP inclus. On fait tout d'abord la somme des codes ASCII de tous ces caractËres. Pour Èviter
-d'introduire des fonctions ASCII (00  1F en hexadÈcimal), on ne conserve que les six bits de poids faible du
-rÈsultat obtenu (cette opÈration se traduit par un ET logique entre la somme prÈcÈdemment calculÈe et 03Fh).
-Enfin, on ajoute 20 en hexadÈcimal. Le rÈsultat sera donc toujours un caractËre ASCII imprimable (signe, chiffre,
-lettre majuscule) allant de 20  5F en hexadÈcimal.
+Le "checksum" est calcule sur l'ensemble des caracteres allant du debut du champ etiquette a la fin du champ
+donnee, caractere SP inclus. On fait tout d'abord la somme des codes ASCII de tous ces caracteres. Pour eviter
+d'introduire des fonctions ASCII (00  1F en hexadcimal), on ne conserve que les six bits de poids faible du
+resultat obtenu (cette operation se traduit par un ET logique entre la somme precedemment calculee et 03Fh).
+Enfin, on ajoute 20 en hexadecimal. Le resultat sera donc toujours un caractre ASCII imprimable (signe, chiffre,
+lettre majuscule) allant de 20 a 5F en hexadcimal.
+
+Un deuxime mode de calcul existe qui prend aussi le caractre de sparation final dans le calcul.
 */
 
-bool CTeleinfoSerial::isCheckSumOk()
+bool CTeleinfoSerial::isCheckSumOk(int &isMode1)
 {
-	unsigned int checksum = 0x00;
+	unsigned int checksum, mode1 = 0x00, mode2 = 0x00;
 	int i;
+	bool line_ok = false;
 
+	checksum = m_buffer[strlen((char*)m_buffer) - 1];
 	for (i = 0; i < int(strlen((char*)m_buffer)) - 2; i++)
 	{
-		checksum += m_buffer[i];
+		mode1 += m_buffer[i];
 	}
-	checksum = (checksum & 0x3F) + 0x20;
-	return (checksum == m_buffer[strlen((char*)m_buffer) - 1]);
-}
+	mode2 = ((mode1 + m_buffer[i]) & 0x3F) + 0x20;
+	mode1 = (mode2 & 0x3F) + 0x20;
 
-bool CTeleinfoSerial::WriteToHardware(const char *pdata, const unsigned char length)
-{
-	return false;
-}
+	if (mode1 == checksum)
+		if (isMode1 == (int)true)// This will evaluate to false when isMode still equals to 255 at second run
+			line_ok = true;
+	else
+	{
+		isMode1 = true;
+		_log.Log(LOG_STATUS, "(%s) Teleinfo CRC check mode set to 1", Name.c_str());
+	}
+	else if (mode2 == checksum)
+	if (isMode1 == false)
+		line_ok = true;
+	else
+	{
+		isMode1 = false;
+		_log.Log(LOG_STATUS, "(%s) TeleinfoCRC check mode set to 2", Name.c_str());
+	}
+	else						 // Don't send an error on the first run as the line is probably truncated, wait for mode to be initialised
+	if (isMode1 != 255) _log.Log(LOG_ERROR, "(%s) CRC check failed on Teleinfo line '%s' using both modes 1 and 2. Line skipped.",
+				Name.c_str(), m_buffer);
 
+	#ifdef DEBUG_TeleinfoSerial
+	if (line_ok) _log.Log(LOG_NORM, "(%s) CRC check passed on Teleinfo line '%s'. Line processed", Name.c_str(), m_buffer);
+	#endif
+	return line_ok;
+}
