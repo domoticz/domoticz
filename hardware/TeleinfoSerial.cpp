@@ -142,8 +142,14 @@ void CTeleinfoSerial::MatchLine()
 	if ((strlen((const char*)&line)<4) || (line[0] == 0x0a))
 		return;
 
-	// Extract the label if any
+	// Extract the elements, return if not enough and line is invalid
 	StringSplit(line, " ", splitresults);
+	if (splitresults.size() <3)
+	{ 
+		_log.Log(LOG_ERROR,"Frame #%s# passed the checksum test but failed analysis", line);
+		return;
+	}
+
 	label = splitresults[0];
 	vString = splitresults[1];
 	value = atoi(splitresults[1].c_str());
