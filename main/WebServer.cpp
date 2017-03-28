@@ -1072,6 +1072,13 @@ namespace http {
 				if (address == "" || port == 0)
 					return;
 
+				if (htype == HTYPE_MySensorsMQTT) {
+					std::string modeqStr = request::findValue(&req, "mode1");
+					if (!modeqStr.empty()) {
+						mode1 = atoi(modeqStr.c_str());
+					}
+				}
+
 				if (htype == HTYPE_MQTT) {
 					std::string modeqStr = request::findValue(&req, "mode1");
 					if (!modeqStr.empty()) {
