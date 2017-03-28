@@ -5574,11 +5574,11 @@ namespace http {
 				}
 				else
 				{
-					unsigned char twhen = '=';
+					unsigned char twhen = '<';
 					if (swhen == "0")
 						twhen = '>';
 					else if (swhen == "1")
-						twhen = '<';
+						twhen = '=';
 					sprintf(szTmp, "%s;%c;%s", ttype.c_str(), twhen, svalue.c_str());
 				}
 				int priority = atoi(spriority.c_str());
@@ -5634,8 +5634,12 @@ namespace http {
 				}
 				else
 				{
-					unsigned char twhen = (swhen == "0") ? '>' : '<';
-					sprintf(szTmp, "%s;%c;%s", ttype.c_str(), twhen, svalue.c_str());
+					unsigned char twhen = '<';
+                                        if (swhen == "0")
+                                                twhen = '>';
+                                        else if (swhen == "1")
+                                                twhen = '=';
+                                        sprintf(szTmp, "%s;%c;%s", ttype.c_str(), twhen, svalue.c_str());
 				}
 				int priority = atoi(spriority.c_str());
 				m_notifications.AddNotification(devidx, szTmp, scustommessage, sactivesystems, priority, (ssendalways == "true") ? true : false);
