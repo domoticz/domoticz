@@ -48,6 +48,7 @@ public:
 	void LogSequenceEnd(const _eLogLevel level);
 
 	void EnableLogTimestamps(const bool bEnableTimestamps);
+	bool IsLogTimestampsEnabled();
 
 	void SetFilterString(std::string &Filter);
 	bool isTraceEnabled();
