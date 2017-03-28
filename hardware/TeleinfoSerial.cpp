@@ -34,12 +34,11 @@ History :
 
 #include <ctime>
 
-#ifdef _DEBUG
+//#ifdef _DEBUG
 #define DEBUG_TeleinfoSerial
-#endif
+//#endif
 
 #define NBFRAMES 8				 //number of frames to collect before processing one
-
 
 CTeleinfoSerial::CTeleinfoSerial(const int ID, const std::string& devname, unsigned int baud_rate)
 {
@@ -148,13 +147,13 @@ void CTeleinfoSerial::MatchLine()
 	label = splitresults[0];
 	vString = splitresults[1];
 	value = atoi(splitresults[1].c_str());
-	
-	#ifdef DEBUG_TeleinfoSerial
-        _log.Log(LOG_NORM,"Label: %s, vString: %s, Value: %i", label.c_str(), vString.c_str(), value);
-        #endif
 
-	if (vString == "OPTARIF") teleinfo.OPTARIF = vString;
+	if (label == "ADCO") teleinfo.ADCO = vString;
+	else if (label == "OPTARIF") teleinfo.OPTARIF = vString;
 	else if (label == "ISOUSC") teleinfo.ISOUSC = value;
+	else if (label == "PAPP") teleinfo.PAPP = value;
+	else if (label == "PTEC")  teleinfo.PTEC = vString;
+	else if (label == "IINST") teleinfo.IINST = value;
 	else if (label == "BASE") teleinfo.BASE = value;
 	else if (label == "HCHC") teleinfo.HCHC = value;
 	else if (label == "HCHP") teleinfo.HCHP = value;
@@ -167,24 +166,19 @@ void CTeleinfoSerial::MatchLine()
 	else if (label == "BBRHCJR") teleinfo.BBRHCJR = value;
 	else if (label == "BBRHPJR") teleinfo.BBRHPJR = value;
 	else if (label == "DEMAIN") teleinfo.DEMAIN = vString;
-	else if (label == "PTEC")  teleinfo.PTEC = vString;
-	else if (label == "IINST") teleinfo.IINST = value;
 	else if (label == "IINST1") teleinfo.IINST1 = value;
 	else if (label == "IINST2") teleinfo.IINST2 = value;
 	else if (label == "IINST3") teleinfo.IINST3 = value;
 	else if (label == "PPOT")  teleinfo.PPOT = value;
-	else if (label == "PAPP") teleinfo.PAPP = value;
-	else if (label == "MOTDETAT")
-	{
-		m_counter++; 
-        	#ifdef DEBUG_TeleinfoSerial
-        	_log.Log(LOG_NORM,"Teleinfo frame nb %i complete", m_counter);
-       	 	#endif
-	} 
+	else if (label == "MOTDETAT") m_counter++;
+
 	if (m_counter >= NBFRAMES)
 	{
 		m_counter = 0;
 		ProcessTeleinfo(teleinfo);
+		#ifdef DEBUG_TeleinfoSerial
+		_log.Log(LOG_NORM,"(%s), Teleinfo frame complete, PAPP: %i, PTEC: %s", Name.c_str(), teleinfo.PAPP, teleinfo.PTEC.c_str());
+		#endif
 	}
 }
 
@@ -288,7 +282,7 @@ bool CTeleinfoSerial::isCheckSumOk(int &isMode1)
 	}
 	else						 // Don't send an error on the first run as the line is probably truncated, wait for mode to be initialised
 	if (isMode1 != 255) _log.Log(LOG_ERROR, "(%s) CRC check failed on Teleinfo line '%s' using both modes 1 and 2. Line skipped.",
-		Name.c_str(), m_buffer);
+				Name.c_str(), m_buffer);
 
 	#ifdef DEBUG_TeleinfoSerial
 	if (line_ok) _log.Log(LOG_NORM, "(%s) CRC check passed on Teleinfo line '%s'. Line processed", Name.c_str(), m_buffer);
