@@ -31,6 +31,7 @@ public:
    virtual float GetIlluminance(const _t1WireDevice& device) const;
    unsigned int GetWiper(const _t1WireDevice& device) const;
    virtual void StartSimultaneousTemperatureRead();
+   virtual void PrepareDevices();
    // END : I_1WireSystem implementation
 
 protected:
