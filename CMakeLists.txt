@@ -288,6 +288,7 @@ hardware/1Wire/1WireCommon.cpp
 hardware/1Wire/1WireForWindows.cpp
 hardware/AccuWeather.cpp
 hardware/AnnaThermostat.cpp
+hardware/Arilux.cpp
 hardware/ASyncSerial.cpp
 hardware/ASyncTCP.cpp
 hardware/AtagOne.cpp
@@ -401,7 +402,6 @@ hardware/ZiBlueTCP.cpp
 hardware/ZWaveBase.cpp
 hardware/Yeelight.cpp
 hardware/XiaomiGateway.cpp
-hardware/Arilux.cpp
 hardware/plugins/DelayedLink.cpp
 hardware/plugins/Plugins.cpp
 hardware/plugins/PluginManager.cpp
