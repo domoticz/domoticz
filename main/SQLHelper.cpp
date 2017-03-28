@@ -6488,12 +6488,19 @@ void CSQLHelper::SetUnitsAndScale()
 
 bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string &OnAction, const std::string &OffAction)
 {
-	if (OnAction.size()<1)
-		return true;
-	if (_log.isTraceEnabled()) _log.Log(LOG_TRACE,"SQLH HandleOnOffAction: %d OnAction:%s OffAction:%s",bIsOn, OnAction.c_str(),OffAction.c_str());
+	if (_log.isTraceEnabled())
+	{
+		if (bIsOn)
+			_log.Log(LOG_TRACE, "SQLH HandleOnOffAction: OnAction:%s", OnAction.c_str());
+		else
+			_log.Log(LOG_TRACE, "SQLH HandleOnOffAction: OffAction:%s", OffAction.c_str());
+	}
 
 	if (bIsOn)
 	{
+		if (OnAction.empty())
+			return true;
+
 		if ((OnAction.find("http://") != std::string::npos) || (OnAction.find("https://") != std::string::npos))
 		{
 			AddTaskItem(_tTaskItem::GetHTTPPage(0.2f, OnAction, "SwitchActionOn"));
@@ -6521,32 +6528,35 @@ bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string &OnAction
 			else
 				_log.Log(LOG_ERROR, "SQLHelper: Error script not found '%s'", scriptname.c_str());
 		}
+		return true;
 	}
-	else
+
+	//Off action
+	if (OffAction.empty())
+		return true;
+
+	if ((OffAction.find("http://") != std::string::npos) || (OffAction.find("https://") != std::string::npos))
 	{
-		if ((OffAction.find("http://") != std::string::npos) || (OffAction.find("https://") != std::string::npos))
-		{
-			AddTaskItem(_tTaskItem::GetHTTPPage(0.2f, OffAction, "SwitchActionOff"));
-		}
-		else if (OffAction.find("script://")!=std::string::npos)
-		{
-			//Execute possible script
-			std::string scriptname = OffAction.substr(9);
+		AddTaskItem(_tTaskItem::GetHTTPPage(0.2f, OffAction, "SwitchActionOff"));
+	}
+	else if (OffAction.find("script://") != std::string::npos)
+	{
+		//Execute possible script
+		std::string scriptname = OffAction.substr(9);
 #if !defined WIN32
-			if (scriptname.find("/") != 0)
-				scriptname = szUserDataFolder + "scripts/" + scriptname;
+		if (scriptname.find("/") != 0)
+			scriptname = szUserDataFolder + "scripts/" + scriptname;
 #endif
-			std::string scriptparams="";
-			int pindex=scriptname.find(' ');
-			if (pindex!=std::string::npos)
-			{
-				scriptparams=scriptname.substr(pindex+1);
-				scriptname=scriptname.substr(0,pindex);
-			}
-			if (file_exist(scriptname.c_str()))
-			{
-				AddTaskItem(_tTaskItem::ExecuteScript(0.2f,scriptname,scriptparams));
-			}
+		std::string scriptparams = "";
+		int pindex = scriptname.find(' ');
+		if (pindex != std::string::npos)
+		{
+			scriptparams = scriptname.substr(pindex + 1);
+			scriptname = scriptname.substr(0, pindex);
+		}
+		if (file_exist(scriptname.c_str()))
+		{
+			AddTaskItem(_tTaskItem::ExecuteScript(0.2f, scriptname, scriptparams));
 		}
 	}
 	return true;
