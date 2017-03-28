@@ -34,9 +34,9 @@ History :
 
 #include <ctime>
 
-//#ifdef _DEBUG
+#ifdef _DEBUG
 #define DEBUG_TeleinfoSerial
-//#endif
+#endif
 
 #define NBFRAMES 8				 //number of frames to collect before processing one
 
