@@ -216,8 +216,7 @@ enum _eNotificationTypes
 	NTYPE_STOPPED,
 	NTYPE_PLAYING,
 	NTYPE_VALUE,
-	NTYPE_LASTUPDATE,
-        NTYPE_TEXT
+	NTYPE_LASTUPDATE
 };
 
 const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum);

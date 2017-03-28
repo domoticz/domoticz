@@ -329,7 +329,6 @@ const char *Notification_Type_Desc(const int nType, const unsigned char snum)
 		{ NTYPE_PLAYING, "Play Stream", "a" },
 		{ NTYPE_VALUE, "Value", "F" },
 		{ NTYPE_LASTUPDATE, "Last Update", "J"},
-                { NTYPE_TEXT, "Text", "t"},
 		{  0,NULL,NULL }
 	};
 	if (snum==0)
@@ -370,7 +369,6 @@ const char *Notification_Type_Label(const int nType)
 		{ NTYPE_PLAYING, "" },
 		{ NTYPE_VALUE, "" },
 		{ NTYPE_LASTUPDATE, "minutes" },
-                { NTYPE_TEXT, "" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, nType);
