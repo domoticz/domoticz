@@ -87,9 +87,7 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 			else if (xcmd->cmnd == 1) {
 				cmdcommand = "\\\"on";
 			}
-			if (isctrl) {
-				message = "{\"cmd\":\"write\",\"model\":\"" + cmddevice + "\",\"sid\":\"" + sid + "\",\"short_id\":0,\"data\":\"{" + cmdchannel + cmdcommand + "\\\",\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
-			}
+			message = "{\"cmd\":\"write\",\"model\":\"" + cmddevice + "\",\"sid\":\"" + sid + "\",\"short_id\":0,\"data\":\"{" + cmdchannel + cmdcommand + "\\\",\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
 		if ((xcmd->subtype == sSwitchGeneralSwitch) && (!isctrl)) { // added bool to avoid sending command if ID belong to ctrl_neutrals devices
 			std::string command = "on";
 			switch (xcmd->cmnd) {
@@ -349,7 +347,7 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 	xcmd.len = sizeof(_tGeneralSwitch) - 1;
 	xcmd.id = sID;
 	xcmd.type = pTypeGeneralSwitch;
-	xcmd.subtype = sSwitchCustomSwitch;
+	xcmd.subtype = sSwitchGeneralSwitch;
 
 	if (switchtype == STYPE_Selector) {
 		xcmd.subtype = sSwitchTypeSelector;
@@ -401,7 +399,7 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 				}
 				else if (Name == "Xiaomi Wireless Dual Wall Switch") {
 					//for Aqara wireless switch, 2 buttons support
-					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Both Click|Switch 1|Switch 2", false));
+					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Switch 1|Switch 2|Both_Click", false));
 				}
 				else if (Name == "Xiaomi Wired Single Wall Switch") {
 					//for Aqara wired switch, single button support
@@ -419,7 +417,7 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 			xcmd.unitcode = 2;
 		}
 		int nvalue = atoi(result[0][0].c_str());
-		if ((((bIsOn) && (nvalue == 0)) || ((bIsOn == false) && (nvalue == 1))) || (level > 0)) {
+		if ((((bIsOn) && (nvalue == 0)) || ((bIsOn == false) && (nvalue == 1)))) { // || (messagetype != "heartbeat")) {
 			m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, NULL, -1);
 		}
 		else {
@@ -494,9 +492,6 @@ bool XiaomiGateway::StartHardware()
 
 	//force connect the next first time
 	m_bIsStarted = true;
-
-	// update any CustomSwitch Xiaomi devices to GeneralSwitch
-	m_sql.safe_query("UPDATE DeviceStatus SET SubType=73 WHERE(HardwareID == %d) AND (SubType == 72)", m_HwdID);	
 
 	//check there is only one instance of the Xiaomi Gateway
 	std::vector<std::vector<std::string> > result;
@@ -770,14 +765,11 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						std::string aqara_wireless3 = root2["dual_channel"].asString();
 						bool on = false;
 						int level = -1;
-						if (model == "switch") {
-							level = 0;
-						}
 						if ((status == "motion") || (status == "open") || (status == "no_close") || (status == "on") || (no_close != "")) {
 							level = 0;
 							on = true;
 						}
-						else if ((status == "no_motion") || (status == "close") || (status == "off") || (no_motion != "") || (aqara_wireless3 == "both_click")) {
+						else if ((status == "no_motion") || (status == "close") || (status == "off") || (no_motion != "")) {
 							level = 0;
 							on = false;
 						}
@@ -789,7 +781,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							level = 20;
 							on = true;
 						}
-						else if ((status == "long_click_release") || (status == "move")) {
+						else if ((status == "long_click_release") || (status == "move") || (aqara_wireless3 == "both_click")) {
 							level = 30;
 							on = true;
 						}
@@ -824,7 +816,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							}
 							on = true;
 							m_XiaomiGateway->InsertUpdateCubeText(sid.c_str(), name, rotate.c_str());
-							m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, on, type, level, cmd, false, false);
+							m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, on, type, level, cmd);
 						}
 						else {
 							std::string voltage = root2["voltage"].asString();
@@ -832,12 +824,11 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 								m_XiaomiGateway->InsertUpdateVoltage(sid.c_str(), name, atoi(voltage.c_str()));
 							}
 							else {
-								//if (model == "plug" || model == "ctrl_neutral1" || model == "ctrl_neutral2") {
-								if (model == "plug" ) {
+								if (model == "plug" || model == "ctrl_neutral1" || model == "ctrl_neutral2") {
 									sleep_milliseconds(100); //need to sleep here as the gateway will send 2 update messages, and need time for the database to update the state so that the event is not triggered twice
 								}
 								if (level > -1) { //this should stop false updates when empty 'data' is received
-									m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, on, type, level, cmd, false, false);
+									m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, on, type, level, cmd);
 								}																
 							}
 						}
