@@ -349,7 +349,7 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 	xcmd.len = sizeof(_tGeneralSwitch) - 1;
 	xcmd.id = sID;
 	xcmd.type = pTypeGeneralSwitch;
-	xcmd.subtype = sSwitchGeneralSwitch;
+	xcmd.subtype = sSwitchCustomSwitch;
 
 	if (switchtype == STYPE_Selector) {
 		xcmd.subtype = sSwitchTypeSelector;
@@ -767,6 +767,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						//Aqara's Wireless switch reports per channel
 						std::string aqara_wireless1 = root2["channel_0"].asString();
 						std::string aqara_wireless2 = root2["channel_1"].asString();
+						std::string aqara_wireless3 = root2["dual_channel"].asString();
 						bool on = false;
 						int level = -1;
 						if (model == "switch") {
@@ -776,7 +777,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							level = 0;
 							on = true;
 						}
-						else if ((status == "no_motion") || (status == "close") || (status == "off") || (no_motion != "")) {
+						else if ((status == "no_motion") || (status == "close") || (status == "off") || (no_motion != "") || (aqara_wireless3 == "both_click")) {
 							level = 0;
 							on = false;
 						}
@@ -864,10 +865,10 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							xctrl = true;
 						}
 						if (aqara_wired1 != "") {
-							m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, state, type, 10, cmd, xctrl, false);
+							m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, state, type, 0, cmd, xctrl, false);
 						}
 						else if (aqara_wired2 != "") {
-							m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, state, type, 10, cmd, xctrl, true);
+							m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, state, type, 0, cmd, xctrl, true);
 						}
 					}
 					else if (name == "Xiaomi Temperature/Humidity") {
