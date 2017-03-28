@@ -371,7 +371,7 @@ void CLogger::SetFilterString(std::string  &pFilter)
 }
 
 //return true if trace enable
-bool CLogger::isTraceEnable()
+bool CLogger::isTraceEnabled()
 {
 	return (m_verbose_level==	VBL_TRACE );
 }
