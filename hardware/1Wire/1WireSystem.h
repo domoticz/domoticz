@@ -23,4 +23,5 @@ public:
    virtual float GetIlluminance(const _t1WireDevice& device) const=0;
    virtual unsigned int GetWiper(const _t1WireDevice& device) const = 0;
    virtual void StartSimultaneousTemperatureRead()=0;
+   virtual void PrepareDevices() = 0;
 };

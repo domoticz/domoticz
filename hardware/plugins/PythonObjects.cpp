@@ -111,29 +111,7 @@ namespace Plugins {
 				if (sFileName.length())
 				{
 					self->pPlugin = pModState->pPlugin;
-					//
-					//	Check file exists in plugin home folder and load it
-					//
 					sFileName = self->pPlugin->m_HomeFolder + sFileName;
-					if (self->pPlugin->m_bDebug)
-					{
-						_log.Log(LOG_NORM, "(%s) Opening image file '%s'.", self->pPlugin->Name.c_str(), sFileName.c_str());
-					}
-					std::ifstream	infile(sFileName.c_str(), std::ios::in | std::ios::binary);
-					if (infile.is_open())
-					{
-						std::stringstream	ssImages;
-						ssImages << infile.rdbuf();
-						infile.close();
-						self->ZipFile = ssImages.str();
-						if (self->pPlugin->m_bDebug)
-						{
-							_log.Log(LOG_NORM, "(%s) Loaded %d bytes from image file.", self->pPlugin->Name.c_str(), self->ZipFile.length());
-						}
-					}
-					else
-						_log.Log(LOG_ERROR, "CImage:%s, File read failed on '%s'.", __func__, sFileName.c_str());
-
 					Py_DECREF(self->Filename);
 					self->Filename = PyUnicode_FromString(sFileName.c_str());
 				}
@@ -166,7 +144,7 @@ namespace Plugins {
 			std::string	sFilename = PyUnicode_AsUTF8(self->Filename);
 			if (self->ImageID == -1)
 			{
-				if (self->ZipFile.length())
+				if (sFilename.length())
 				{
 					if (self->pPlugin->m_bDebug)
 					{
@@ -177,7 +155,7 @@ namespace Plugins {
 					//	Call code to do insert here
 					//
 					std::string ErrorMessage;
-					if (!m_sql.InsertCustomIconFromZip(self->ZipFile, ErrorMessage))
+					if (!m_sql.InsertCustomIconFromZipFile(sFilename, ErrorMessage))
 					{
 						_log.Log(LOG_ERROR, "(%s) Insert Custom Icon From Zip failed on file '%s' with error '%s'.", self->pPlugin->Name.c_str(), sFilename.c_str(), ErrorMessage.c_str());
 					}

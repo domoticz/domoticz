@@ -50,7 +50,7 @@ public:
 	void EnableLogTimestamps(const bool bEnableTimestamps);
 
 	void SetFilterString(std::string &Filter);
-	bool isTraceEnable();
+	bool isTraceEnabled();
 	bool TestFilter(const char *cbuffer);
 	void setLogVerboseLevel(int LogLevel);
 	void SetLogPreference(std::string LogFilter, std::string LogFileName, std::string LogLevel);
