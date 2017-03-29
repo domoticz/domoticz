@@ -182,26 +182,14 @@ std::string CNotificationHelper::ParseCustomMessage(const std::string &cMessage,
 
 bool CNotificationHelper::ApplyRule(std::string rule, bool equal, bool less)
 {
-	if ((rule == ">") || (rule == "M"))
-   	{
-   		if ((!less) && (!equal))
-     			return true;
-    	}
-  	else if ((rule == "<") || (rule == "L"))
-  	{
-     		if (less)
-       			return true;
-   	}
-  	else if ((rule == "=") || (rule == "M") || (rule == "L"))
-    	{
-  		if (equal)
-      			return true;
-    	}
-    	else if (rule == "N")
-     	{
-      		if (!equal)
-       			return true;
-      	}
+	if (((rule == ">") || (rule == "M")) && (!less) && (!equal))  // > or >=
+     		return true;
+  	else if (((rule == "<") || (rule == "L")) && (less)) // < or <=
+       		return true;
+  	else if (((rule == "=") || (rule == "M") || (rule == "L")) && (equal))  // = or <= or >=
+      		return true;
+    	else if ((rule == "N") && (!equal)) // <>
+       		return true;
 	return false;
 }
 
@@ -913,11 +901,11 @@ void CNotificationHelper::CheckAndHandleLastUpdateNotification()
 				{
 					extern time_t m_StartTime;
 					time_t btime = mytime(NULL);
-					bool bWhenIsGreater = (splitresults[1] == ">");
-					int SensorTimeOut = atoi(splitresults[2].c_str());
+					int SensorTimeOut = atoi(splitresults[2].c_str());  // minutes
 					bool bStartTime = (difftime(btime,m_StartTime) < SensorTimeOut*60);
-					double diff = difftime(btime,itt2->LastUpdate);
-					if (((diff > SensorTimeOut*60) && (bWhenIsGreater) && (!bStartTime)) || ((diff < SensorTimeOut*60) && (!bWhenIsGreater)))
+					int diff = (int)round(difftime(btime,itt2->LastUpdate));
+				 	bool bSendNotification = ApplyRule(splitresults[1], (diff == SensorTimeOut*60), (diff < SensorTimeOut*60));
+					if ((bSendNotification) && (!bStartTime))
 					{
 						uint64_t Idx = itt->first;
 						std::vector<std::vector<std::string> > result;
