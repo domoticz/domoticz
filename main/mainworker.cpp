@@ -12895,6 +12895,22 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 				DecodeRXMessage(pHardware, (const unsigned char *)&gDevice, NULL, batterylevel);
 				return true;
 			}
+			else if (subType == sTypeKwh)
+			{
+				std::vector<std::string> strarray;
+				StringSplit(sValue, ";", strarray);
+				if (strarray.size() == 2)
+				{
+					_tGeneralDevice gDevice;
+					gDevice.subtype = subType;
+					gDevice.id = unit;
+					gDevice.intval1 = static_cast<int>(ID);
+					gDevice.floatval1 = static_cast<float>(atof(strarray[0].c_str()));
+					gDevice.floatval2 = static_cast<float>(atof(strarray[1].c_str()));
+					DecodeRXMessage(pHardware, (const unsigned char *)&gDevice, NULL, batterylevel);
+					return true;
+				}
+			}
 			else if (subType == sTypeAlert)
 			{
 				std::string devname = "Unknown";
