@@ -496,7 +496,7 @@ bool XiaomiGateway::StartHardware()
 	m_bIsStarted = true;
 	
 	// update any CustomSwitch Xiaomi devices to GeneralSwitch		
- -	//m_sql.safe_query("UPDATE DeviceStatus SET SubType=73 WHERE(HardwareID == %d) AND (SubType == 72)", m_HwdID);	
+ 	//m_sql.safe_query("UPDATE DeviceStatus SET SubType=73 WHERE(HardwareID == %d) AND (SubType == 72)", m_HwdID);	
 
 	//check there is only one instance of the Xiaomi Gateway
 	std::vector<std::vector<std::string> > result;
@@ -770,9 +770,9 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						std::string aqara_wireless3 = root2["dual_channel"].asString();
 						bool on = false;
 						int level = -1;
-						if (model == "switch") {		
- -							level = 0;		
- -						}
+						if (model == "switch") {
+ 							level = 0;
+ 						}
 						if ((status == "motion") || (status == "open") || (status == "no_close") || (status == "on") || (no_close != "")) {
 							level = 0;
 							on = true;
