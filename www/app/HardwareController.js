@@ -188,6 +188,19 @@ define(['app'], function (app) {
                     }
                 }
 
+                if (text.indexOf("Evohome") >= 0)
+                {
+                    var baudrate=$("#hardwarecontent #divbaudrateevohome #combobaudrateevohome option:selected").val();
+
+                    if (typeof baudrate == 'undefined')
+                    {
+                        ShowNotify($.t('No baud rate selected!'), 2500, true);
+                        return;
+                    }
+
+                    Mode1 = baudrate;
+                }
+
                 if (text.indexOf("MySensors") >= 0)
                 {
                     var baudrate=$("#hardwarecontent #divbaudratemysensors #combobaudrate option:selected").val();
@@ -1094,6 +1107,19 @@ define(['app'], function (app) {
                 {
                     ShowNotify($.t('No serial port selected!'), 2500, true);
                     return;
+                }
+
+                if (text.indexOf("Evohome") >= 0)
+                {
+                    var baudrate=$("#hardwarecontent #divbaudrateevohome #combobaudrateevohome option:selected").val();
+
+                    if (typeof baudrate == 'undefined')
+                    {
+                        ShowNotify($.t('No baud rate selected!'), 2500, true);
+                        return;
+                    }
+
+                    Mode1 = baudrate;
                 }
 
                 if (text.indexOf("MySensors") >= 0)
@@ -5191,6 +5217,7 @@ define(['app'], function (app) {
             $("#hardwarecontent #username").show();
             $("#hardwarecontent #lblusername").show();
 
+            $("#hardwarecontent #divbaudrateevohome").hide();
             $("#hardwarecontent #divbaudratemysensors").hide();
             $("#hardwarecontent #divbaudratep1").hide();
             $("#hardwarecontent #divcrcp1").hide();
@@ -5253,6 +5280,10 @@ define(['app'], function (app) {
             }
             else if (text.indexOf("USB") >= 0)
             {
+                if (text.indexOf("Evohome") >= 0)
+                {
+                    $("#hardwarecontent #divbaudrateevohome").show();
+                }
                 if (text.indexOf("MySensors") >= 0)
                 {
                     $("#hardwarecontent #divbaudratemysensors").show();
