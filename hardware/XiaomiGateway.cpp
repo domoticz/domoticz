@@ -419,7 +419,7 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 			xcmd.unitcode = 2;
 		}
 		int nvalue = atoi(result[0][0].c_str());
-		if ((((bIsOn) && (nvalue == 0)) || ((bIsOn == false) && (nvalue == 1))) || (level > 0)) {
+		if (((((bIsOn) && (nvalue == 0)) || ((bIsOn == false) && (nvalue == 1))) || (level > 0)) && (messagetype != "heartbeat")) {
 			m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, NULL, -1);
 		}
 		else {
