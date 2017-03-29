@@ -34,7 +34,6 @@ class CTeleinfoBase : public CDomoticzHardwareBase
 	protected:
 		typedef struct _tTeleinfo
 		{
-			std::string ADCO;
 			std::string PTEC;
 			std::string OPTARIF;
 			uint32_t ISOUSC;

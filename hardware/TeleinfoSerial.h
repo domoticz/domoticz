@@ -1,8 +1,8 @@
 /*
 Domoticz Software : http://domoticz.com/
 File : TeleinfoSerial.cpp
-Author : Nicolas HILAIRE, Blaise Thauvin
-Version : 2.2
+Author : Nicolas HILAIRE
+Version : 2.0
 Description : This class decodes the Teleinfo signal from serial/USB devices before processing them
 
 History :
@@ -16,7 +16,6 @@ History :
 - 2017-01-28 : Add 'Heures Creuses' Switch (A.L)
 - 2017-03-15 : Renamed from Teleinfo.cpp to TeleinfoSerial.cpp in order to create
 						   a shared class to process Teleinfo protocol (Blaise Thauvin)
-- 2017-03-27 : Greatly simplified code
 */
 
 #pragma once
@@ -31,6 +30,48 @@ History :
 
 class CTeleinfoSerial : public CTeleinfoBase, AsyncSerial
 {
+	typedef enum
+	{
+		ID = 0,
+		STD,
+	} MatchType;
+
+	typedef enum
+	{
+		TELEINFO_TYPE_ADCO,
+		TELEINFO_TYPE_OPTARIF,
+		TELEINFO_TYPE_ISOUSC,
+		TELEINFO_TYPE_BASE,
+		TELEINFO_TYPE_HCHC,
+		TELEINFO_TYPE_HCHP,
+		TELEINFO_TYPE_EJPHN,
+		TELEINFO_TYPE_EJPHPM,
+		TELEINFO_TYPE_BBRHCJB,
+		TELEINFO_TYPE_BBRHPJB,
+		TELEINFO_TYPE_BBRHCJW,
+		TELEINFO_TYPE_BBRHPJW,
+		TELEINFO_TYPE_BBRHCJR,
+		TELEINFO_TYPE_BBRHPJR,
+		TELEINFO_TYPE_PTEC,
+		TELEINFO_TYPE_IINST1,
+		TELEINFO_TYPE_IINST2,
+		TELEINFO_TYPE_IINST3,
+                TELEINFO_TYPE_IINST,
+		TELEINFO_TYPE_PPOT,
+		TELEINFO_TYPE_DEMAIN,
+		TELEINFO_TYPE_PEJP,
+		TELEINFO_TYPE_PAPP,
+		TELEINFO_TYPE_MOTDETAT
+	} Type;
+
+	typedef struct _tMatch
+	{
+		MatchType matchtype;
+		Type type;
+		const char* key;
+		int width;
+	} Match;
+
 	public:
 
 		CTeleinfoSerial(const int ID, const std::string& devname, unsigned int baud_rate = TELEINFO_BAUD_RATE);
@@ -56,12 +97,21 @@ class CTeleinfoSerial : public CTeleinfoBase, AsyncSerial
 		boost::asio::serial_port_base::stop_bits m_iOptStop;
 
 		int m_counter;
+		unsigned long m_Power_USAGE_IINST;
+		unsigned long m_Power_USAGE_IINST_JW;
+		unsigned long m_Power_USAGE_IINST_JR;
+		bool m_bLabel_PAPP_Exist;
+		bool m_bLabel_PTEC_JB;
+		bool m_bLabel_PTEC_JW;
+		bool m_bLabel_PTEC_JR;
+		bool m_bLabel_Tempo;
 
 		void Init();
 		void MatchLine();
-		void ParseData(const char *pData, int Len);
+		void ParseData(const unsigned char *pData, int Len);
 		bool isCheckSumOk(int &isMode1);
 
-		char m_buffer[1028];
+		unsigned char m_buffer[1028];
 		int m_bufferpos;
+		static CTeleinfoSerial::Match m_matchlist[27];
 };
