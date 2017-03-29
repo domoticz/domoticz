@@ -5578,7 +5578,13 @@ namespace http {
 					if (swhen == "0")
 						twhen = '>';
 					else if (swhen == "1")
-						twhen = '=';
+						twhen = 'M';
+					else if (swhen == "2")
+                                                twhen = '=';
+                                        else if (swhen == "3")
+                                                twhen = 'N';
+                                        else if (swhen == "4")
+                                                twhen = 'L';
 					sprintf(szTmp, "%s;%c;%s", ttype.c_str(), twhen, svalue.c_str());
 				}
 				int priority = atoi(spriority.c_str());
@@ -5634,11 +5640,17 @@ namespace http {
 				}
 				else
 				{
-					unsigned char twhen = '<';
+                                        unsigned char twhen = '<';
                                         if (swhen == "0")
                                                 twhen = '>';
                                         else if (swhen == "1")
+                                                twhen = 'M';
+                                        else if (swhen == "2")
                                                 twhen = '=';
+                                        else if (swhen == "3")
+                                                twhen = 'N';
+                                        else if (swhen == "4")
+                                                twhen = 'L';
                                         sprintf(szTmp, "%s;%c;%s", ttype.c_str(), twhen, svalue.c_str());
 				}
 				int priority = atoi(spriority.c_str());
@@ -10087,7 +10099,7 @@ namespace http {
 							root["result"][ii]["Data"] = sValue;
 							root["result"][ii]["TypeImg"] = "text";
 							root["result"][ii]["HaveTimeout"] = false;
-							root["result"][ii]["ShowNotifications"] = true;
+							root["result"][ii]["ShowNotifications"] = false;
 						}
 						else if (dSubType == sTypeAlert)
 						{
