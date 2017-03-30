@@ -72,7 +72,7 @@ const char* CEvohome::GetZoneModeName(uint8_t nZoneMode)
 	return m_szZoneMode[(std::min)(nZoneMode, (uint8_t)6)]; //parentheses around function name apparently avoids macro expansion windef.h macros will conflict here
 }
 
-CEvohome::CEvohome(const int ID, const std::string &szSerialPort) :
+CEvohome::CEvohome(const int ID, const std::string &szSerialPort, const int baudrate) :
 	m_ZoneNames(m_nMaxZones),
 	m_ZoneOverrideLocal(m_nMaxZones)
 {
@@ -91,8 +91,16 @@ CEvohome::CEvohome(const int ID, const std::string &szSerialPort) :
 	m_MaxDeviceID = 0;
 
 	AllSensors = false;
-	
-	m_iBaudRate=115200;
+
+	if(baudrate!=0)
+	{
+	  m_iBaudRate=baudrate;
+	}
+	else
+	{
+	  // allow migration of hardware created before baud rate was configurable
+	  m_iBaudRate=115200;
+	}
 	if(!szSerialPort.empty())
 	{
 		m_szSerialPort=szSerialPort;
@@ -219,8 +227,8 @@ bool CEvohome::OpenSerialDevice()
 	//Try to open the Serial Port
 	try
 	{
+		_log.Log(LOG_STATUS,"evohome: Opening serial port: %s@%d", m_szSerialPort.c_str(), m_iBaudRate);
 		open(m_szSerialPort,m_iBaudRate);
-		_log.Log(LOG_STATUS,"evohome: Using serial port: %s", m_szSerialPort.c_str());
 	}
 	catch (boost::exception & e)
 	{
