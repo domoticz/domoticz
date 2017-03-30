@@ -142,15 +142,14 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 		//Send data if value changed, at most every minute and at least every 5 minutes
 		if ((difftime(atime, teleinfo.last) >= 60) || (difftime(atime, teleinfo.last) >= 300))
 		{
-			#ifdef DEBUG_TeleinfoBase
-			_log.Log(LOG_STATUS,"Triphase=%s, I=%i, I1=%i, I2=%i, I3=%i", (teleinfo.triphase)?"True":"False",
-				teleinfo.IINST, teleinfo.IINST1, teleinfo.IINST2, teleinfo.IINST3);
-			#endif
 			teleinfo.pAlertPAPP = teleinfo.PAPP;
 			teleinfo.last = atime;
 			m_p1power.usagecurrent = teleinfo.PAPP;
 			if (teleinfo.OPTARIF == "BASE")
 			{
+				#ifdef DEBUG_TeleinfoBase
+                        	_log.Log(LOG_STATUS,"Teleinfo Base: %i, PAPP: %i", teleinfo.BASE, teleinfo.PAPP);
+                        	#endif
 				teleinfo.tariff="Tarif de Base";
 				m_p1power.powerusage1 = teleinfo.BASE;
 				m_p1power.powerusage2 = 0;

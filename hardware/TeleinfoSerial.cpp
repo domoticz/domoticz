@@ -2,7 +2,7 @@
 Domoticz Software : http://domoticz.com/
 File : TeleinfoSerial.cpp
 Author : Nicolas HILAIRE
-Version : 2.1
+Version : 2.2
 Description : This class decodes the Teleinfo signal from serial/USB devices before processing them
 
 History :
@@ -17,6 +17,7 @@ History :
 - 2017-03-15 : 2.0 Renamed from Teleinfo.cpp to TeleinfoSerial.cpp in order to create
 			   a shared class to process Teleinfo protocol (Blaise Thauvin)
 - 2017-03-21 : 2.1 Fixed bug sending too many updates
+- 2017-03-26 : 2.2 Fixed bug affecting tree-phases users. Consequently, simplified code
 */
 
 #include "stdafx.h"
@@ -24,6 +25,7 @@ History :
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 #include "../main/Logger.h"
+#include "../main/Helper.h"
 
 #include <string>
 #include <algorithm>
@@ -36,61 +38,7 @@ History :
 #define DEBUG_TeleinfoSerial
 #endif
 
-
 #define NBFRAMES 8				 //number of frames to collect before processing one
-
-#define TE_ADCO "ADCO"			 //meter id
-#define TE_OPTARIF "OPTARIF"	 //pricing option
-#define TE_ISOUSC "ISOUSC"		 //current power subscribe   //A
-#define TE_BASE "BASE"			 //total power usage normal tariff in base option
-#define TE_HCHC "HCHC"			 // total power usage low tariff in HC option
-#define TE_HCHP "HCHP"			 // total power usage normal tariff in HC option
-#define TE_EJPHPM "EJPHPM"		 // total power usage normal tariff in PM option
-#define TE_EJPHN "EJPHN"		 // total power usage low tariff in HN option
-#define TE_BBRHCJB "BBRHCJB"	 // total power usage low tariff in HC option tempo blue
-#define TE_BBRHPJB "BBRHPJB"	 // total power usage normal tariff in HC option tempo blue
-#define TE_BBRHCJW "BBRHCJW"	 // total power usage low tariff in HC option tempo white
-#define TE_BBRHPJW "BBRHPJW"	 // total power usage normal tariff in HC option tempo white
-#define TE_BBRHCJR "BBRHCJR"	 // total power usage low tariff in HC option tempo red
-#define TE_BBRHPJR "BBRHPJR"	 // total power usage normal tariff in HC option tempo red
-#define TE_PTEC   "PTEC"		 //current tariff period
-#define TE_IINST "IINST"		 //instant current power usage. 
-#define TE_IINST1 "IINST1"		 //instant current power usage pahse 1
-#define TE_IINST2 "IINST2"		 //instant current power usage phase 2
-#define TE_IINST3 "IINST3"		 //instant current power usage phase 2
-#define TE_PPOT "PPOT"			 //Potental on all 3 phases
-#define TE_DEMAIN "DEMAIN"		 //tariff tomorrow
-#define TE_PEJP "PEJP"			 //prior notice "pointe mobile" tariff
-#define TE_PAPP "PAPP"			 //apparent power
-#define TE_MOTDETAT "MOTDETAT"	 //mot d'etat
-
-CTeleinfoSerial::Match CTeleinfoSerial::m_matchlist[27] =
-{
-	{ STD, TELEINFO_TYPE_ADCO, TE_ADCO, 12 },
-	{ STD, TELEINFO_TYPE_OPTARIF, TE_OPTARIF, 4 },
-	{ STD, TELEINFO_TYPE_ISOUSC, TE_ISOUSC, 2 },
-	{ STD, TELEINFO_TYPE_BASE, TE_BASE, 9 },
-	{ STD, TELEINFO_TYPE_HCHC, TE_HCHC, 9 },
-	{ STD, TELEINFO_TYPE_HCHP, TE_HCHP, 9 },
-	{ STD, TELEINFO_TYPE_EJPHPM, TE_EJPHPM, 9 },
-	{ STD, TELEINFO_TYPE_EJPHN, TE_EJPHN, 9 },
-	{ STD, TELEINFO_TYPE_BBRHCJB, TE_BBRHCJB, 9 },
-	{ STD, TELEINFO_TYPE_BBRHPJB, TE_BBRHPJB, 9 },
-	{ STD, TELEINFO_TYPE_BBRHCJW, TE_BBRHCJW, 9 },
-	{ STD, TELEINFO_TYPE_BBRHPJW, TE_BBRHPJW, 9 },
-	{ STD, TELEINFO_TYPE_BBRHCJR, TE_BBRHCJR, 9 },
-	{ STD, TELEINFO_TYPE_BBRHPJR, TE_BBRHPJR, 9 },
-	{ STD, TELEINFO_TYPE_PTEC, TE_PTEC, 4 },
-	{ STD, TELEINFO_TYPE_IINST1, TE_IINST1, 3 },
-	{ STD, TELEINFO_TYPE_IINST2, TE_IINST2, 3 },
-	{ STD, TELEINFO_TYPE_IINST3, TE_IINST3, 3 },
-        { STD, TELEINFO_TYPE_IINST, TE_IINST, 3 },
-	{ STD, TELEINFO_TYPE_PPOT, TE_PPOT, 2 },
-	{ STD, TELEINFO_TYPE_PEJP, TE_PEJP, 2 },
-	{ STD, TELEINFO_TYPE_DEMAIN, TE_DEMAIN, 4 },
-	{ STD, TELEINFO_TYPE_PAPP, TE_PAPP, 5 },
-	{ STD, TELEINFO_TYPE_MOTDETAT, TE_MOTDETAT, 6 }
-};
 
 CTeleinfoSerial::CTeleinfoSerial(const int ID, const std::string& devname, unsigned int baud_rate)
 {
@@ -101,7 +49,6 @@ CTeleinfoSerial::CTeleinfoSerial(const int ID, const std::string& devname, unsig
 	m_iOptCsize = boost::asio::serial_port_base::character_size(TELEINFO_CARACTER_SIZE);
 	m_iOptFlow = boost::asio::serial_port_base::flow_control(TELEINFO_FLOW_CONTROL);
 	m_iOptStop = boost::asio::serial_port_base::stop_bits(TELEINFO_STOP_BITS);
-	m_bLabel_PAPP_Exist = false;
 	Init();
 }
 
@@ -177,144 +124,77 @@ void CTeleinfoSerial::readCallback(const char *data, size_t len)
 	if (!m_bEnableReceive)
 		return;					 //receiving not enabled
 
-	ParseData((const unsigned char*)data, static_cast<int>(len));
+	ParseData(data, static_cast<int>(len));
 }
 
 
 void CTeleinfoSerial::MatchLine()
 {
-	if ((strlen((const char*)&m_buffer)<1) || (m_buffer[0] == 0x0a))
-		return;
-
-	uint8_t i;
-	uint8_t found = 0;
-	CTeleinfoSerial::Match t;
-	char value[20] = "";
-	std::string vString;
+	std::string label, vString;
+	std::vector<std::string> splitresults;
+	unsigned long value;
+	const char* line = m_buffer;
 	#ifdef DEBUG_TeleinfoSerial
-	_log.Log(LOG_NORM,"Frame : #%s#", m_buffer);
+	_log.Log(LOG_NORM,"Frame : #%s#", line);
 	#endif
-	for (i = 0; (i<sizeof(m_matchlist) / sizeof(CTeleinfoSerial::Match))&(!found); i++)
-	{
-		t = m_matchlist[i];
-		switch (t.matchtype)
-		{
-			case STD:
-				if (strncmp(t.key, (const char*)&m_buffer, strlen(t.key)) == 0)
-				{
-					found = 1;
-				}
-				break;
-		}						 //switch
 
-		if (!found)
-			continue;
-
-		if (t.matchtype == STD)
-		{
-			//We get the width car after the space
-			unsigned char * pos = (unsigned char *)strchr((char*)m_buffer, ' ');
-			if (pos == NULL)
-				continue;
-			int position = int(pos - (unsigned char*)&m_buffer);
-			strncpy(value, (char*)&(m_buffer[position + 1]), t.width);
-			value[t.width] = 0;
-		}
-		unsigned long ulValue = (unsigned long)atoi(value);
-		vString = value;
-		switch (t.type)
-		{
-			case TELEINFO_TYPE_ADCO:
-				break;
-			case TELEINFO_TYPE_OPTARIF:
-				teleinfo.OPTARIF = vString;
-				break;
-			case TELEINFO_TYPE_ISOUSC:
-				teleinfo.ISOUSC = ulValue;
-				break;
-			case TELEINFO_TYPE_BASE:
-				teleinfo.BASE = ulValue;
-				break;
-			case TELEINFO_TYPE_HCHC:
-				teleinfo.HCHC = ulValue;
-				break;
-			case TELEINFO_TYPE_HCHP:
-				teleinfo.HCHP = ulValue;
-				break;
-			case TELEINFO_TYPE_EJPHPM:
-				teleinfo.EJPHPM = ulValue;
-				break;
-			case TELEINFO_TYPE_EJPHN:
-				teleinfo.EJPHN = ulValue;
-				break;
-			case TELEINFO_TYPE_BBRHCJB:
-				teleinfo.BBRHCJB = ulValue;
-				break;
-			case TELEINFO_TYPE_BBRHPJB:
-				teleinfo.BBRHPJB = ulValue;
-				break;
-			case TELEINFO_TYPE_BBRHCJW:
-				teleinfo.BBRHCJW = ulValue;
-				break;
-			case TELEINFO_TYPE_BBRHPJW:
-				teleinfo.BBRHPJW = ulValue;
-				break;
-			case TELEINFO_TYPE_BBRHCJR:
-				teleinfo.BBRHCJR = ulValue;
-				break;
-			case TELEINFO_TYPE_BBRHPJR:
-				teleinfo.BBRHPJR = ulValue;
-				break;
-			case TELEINFO_TYPE_DEMAIN:
-				teleinfo.DEMAIN = vString;
-				break;
-			case TELEINFO_TYPE_PTEC:
-				teleinfo.PTEC = vString;
-				break;
-			case TELEINFO_TYPE_IINST:
-				teleinfo.IINST = ulValue;
-				break;
-			case TELEINFO_TYPE_IINST1:
-				teleinfo.IINST1 = ulValue;
-				break;
-			case TELEINFO_TYPE_IINST2:
-				teleinfo.IINST2 = ulValue;
-				break;
-			case TELEINFO_TYPE_IINST3:
-				teleinfo.IINST3 = ulValue;
-				break;
-			case TELEINFO_TYPE_PPOT:
-				teleinfo.PPOT = ulValue;
-				break;
-			case TELEINFO_TYPE_PAPP:
-				teleinfo.PAPP = ulValue;
-				break;
-			case TELEINFO_TYPE_MOTDETAT:
-				m_counter++;
-				if (m_counter >= NBFRAMES)
-				{
-				#ifdef DEBUG_TeleinfoSerial
-					_log.Log(LOG_NORM,"Teleinfo frame complete");
-				#endif
-					m_counter = 0;
-					ProcessTeleinfo(teleinfo);
-				}
-				break;
-			default:
-				_log.Log(LOG_ERROR, "Teleinfo: label '%s' not handled!", t.key);
-				break;
-		}
+	// Is the line we got worth analysing any further?
+	if ((strlen((const char*)&line)<4) || (line[0] == 0x0a))
 		return;
+
+	// Extract the elements, return if not enough and line is invalid
+	StringSplit(line, " ", splitresults);
+	if (splitresults.size() <3)
+	{ 
+		_log.Log(LOG_ERROR,"Frame #%s# passed the checksum test but failed analysis", line);
+		return;
+	}
+
+	label = splitresults[0];
+	vString = splitresults[1];
+	value = atoi(splitresults[1].c_str());
+
+	if (label == "ADCO") teleinfo.ADCO = vString;
+	else if (label == "OPTARIF") teleinfo.OPTARIF = vString;
+	else if (label == "ISOUSC") teleinfo.ISOUSC = value;
+	else if (label == "PAPP") teleinfo.PAPP = value;
+	else if (label == "PTEC")  teleinfo.PTEC = vString;
+	else if (label == "IINST") teleinfo.IINST = value;
+	else if (label == "BASE") teleinfo.BASE = value;
+	else if (label == "HCHC") teleinfo.HCHC = value;
+	else if (label == "HCHP") teleinfo.HCHP = value;
+	else if (label == "EJPHPM") teleinfo.EJPHPM = value;
+	else if (label == "EJPHN") teleinfo.EJPHN = value;
+	else if (label == "BBRHCJB") teleinfo.BBRHCJB = value;
+	else if (label == "BBRHPJB") teleinfo.BBRHPJB = value;
+	else if (label == "BBRHCJW") teleinfo.BBRHCJW = value;
+	else if (label == "BBRHPJW") teleinfo.BBRHPJW = value;
+	else if (label == "BBRHCJR") teleinfo.BBRHCJR = value;
+	else if (label == "BBRHPJR") teleinfo.BBRHPJR = value;
+	else if (label == "DEMAIN") teleinfo.DEMAIN = vString;
+	else if (label == "IINST1") teleinfo.IINST1 = value;
+	else if (label == "IINST2") teleinfo.IINST2 = value;
+	else if (label == "IINST3") teleinfo.IINST3 = value;
+	else if (label == "PPOT")  teleinfo.PPOT = value;
+	else if (label == "MOTDETAT") m_counter++;
+
+	if (m_counter >= NBFRAMES)
+	{
+		m_counter = 0;
+		ProcessTeleinfo(teleinfo);
+		#ifdef DEBUG_TeleinfoSerial
+		_log.Log(LOG_NORM,"(%s), Teleinfo frame complete, PAPP: %i, PTEC: %s", Name.c_str(), teleinfo.PAPP, teleinfo.PTEC.c_str());
+		#endif
 	}
 }
 
 
-void CTeleinfoSerial::ParseData(const unsigned char *pData, int Len)
+void CTeleinfoSerial::ParseData(const char *pData, int Len)
 {
 	int ii = 0;
 	while (ii<Len)
 	{
-		const unsigned char c = pData[ii];
+		const char c = pData[ii];
 
 		if ((c == 0x0d) || (c == 0x00) || (c == 0x02) || (c == 0x03))
 		{
