@@ -816,9 +816,9 @@ bool CEvohomeMsg::DecodePacket(const char * rawmsg)
 void CEvohome::ProcessMsg(const char * rawmsg)
 {
 	CEvohomeMsg msg(rawmsg);
+	Log(rawmsg,msg);
 	if(msg.IsValid())
 	{
-		Log(rawmsg,msg);
 		if(!GetControllerID())//no controller id ..just use the 1st one we find
 		{
 			for(int n=0;n<3;n++)
