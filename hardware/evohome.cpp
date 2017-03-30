@@ -1845,7 +1845,11 @@ void CEvohome::Log(const char *szMsg, CEvohomeMsg &msg)
 		*m_pEvoLog << szMsg;
 		*m_pEvoLog << " (";
 		for(int i=0;i<msg.payloadsize;i++)
-			*m_pEvoLog << msg.payload[i];
+		{
+			unsigned char c = msg.payload[i];
+			if (c < 0x20 || c > 0x7E) c = '.';
+			*m_pEvoLog << c;
+		}
 		*m_pEvoLog << ")";
 		*m_pEvoLog << std::endl;
 	}
