@@ -12,7 +12,6 @@ namespace Plugins {
 		PyObject*	Name;
 		PyObject*	Description;
 		PyObject*	Filename;
-		std::string	ZipFile;
 		CPlugin*	pPlugin;
 	} CImage;
 
@@ -107,9 +106,9 @@ namespace Plugins {
 	PyObject* CDevice_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
 	int CDevice_init(CDevice *self, PyObject *args, PyObject *kwds);
 	PyObject* CDevice_refresh(CDevice* self);
-	PyObject* CDevice_insert(CDevice* self, PyObject *args);
+	PyObject* CDevice_insert(CDevice* self);
 	PyObject* CDevice_update(CDevice *self, PyObject *args, PyObject *kwds);
-	PyObject* CDevice_delete(CDevice* self, PyObject *args);
+	PyObject* CDevice_delete(CDevice* self);
 	PyObject* CDevice_str(CDevice* self);
 
 	static PyMemberDef CDevice_members[] = {
@@ -121,8 +120,12 @@ namespace Plugins {
 		{ "SignalLevel", T_INT, offsetof(CDevice, SignalLevel), READONLY, "Numeric signal level" },
 		{ "BatteryLevel", T_INT, offsetof(CDevice, BatteryLevel), READONLY, "Numeric battery level" },
 		{ "Image", T_INT, offsetof(CDevice, Image), READONLY, "Numeric image number" },
+		{ "Type", T_INT, offsetof(CDevice, Type), READONLY, "Numeric device type" },
+		{ "SubType", T_INT, offsetof(CDevice, SubType), READONLY, "Numeric device subtype" },
 		{ "LastLevel", T_INT, offsetof(CDevice, LastLevel), READONLY, "Previous device level" },
 		{ "LastUpdate", T_OBJECT, offsetof(CDevice, LastUpdate), READONLY, "Last update timestamp" },
+		{ "Options", T_OBJECT, offsetof(CDevice, Options), READONLY, "Device options" },
+		{ "Used", T_INT, offsetof(CDevice, Used), READONLY, "Numeric device Used flag" },
 		{ NULL }  /* Sentinel */
 	};
 

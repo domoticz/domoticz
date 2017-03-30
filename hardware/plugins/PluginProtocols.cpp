@@ -382,12 +382,8 @@ namespace Plugins {
 				Py_ssize_t pos = 0;
 				while (PyDict_Next(pHeaders, &pos, &key, &value))
 				{
-					PyObject*	pKeyBytes = PyUnicode_AsASCIIString(key);
-					std::string	sKey = PyBytes_AsString(pKeyBytes);
-					Py_DECREF(pKeyBytes);
-					PyObject*	pValueBytes = PyUnicode_AsASCIIString(value);
-					std::string	sValue = PyBytes_AsString(pValueBytes);
-					Py_DECREF(pValueBytes);
+					std::string	sKey = PyUnicode_AsUTF8(key);
+					std::string	sValue = PyUnicode_AsUTF8(value);
 					sHttpRequest += sKey + ": " + sValue + "\r\n";
 				}
 			}
