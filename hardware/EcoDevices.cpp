@@ -49,6 +49,7 @@ CEcoDevices::CEcoDevices(const int ID, const std::string &IPAddress, const unsig
 	m_usIPPort = usIPPort;
 	m_stoprequested = false;
 	m_iModel = model;
+        m_iRateLimit=30;
 
 	Init();
 }
@@ -89,7 +90,6 @@ bool CEcoDevices::StopHardware()
 }
 
 
-#define ECODEVICES_POLL_INTERVAL 30
 
 void CEcoDevices::Do_Work()
 {
@@ -103,7 +103,7 @@ void CEcoDevices::Do_Work()
 		{
 			mytime(&m_LastHeartbeat);
 		}
-		if (sec_counter%ECODEVICES_POLL_INTERVAL == 0)
+		if (sec_counter % m_iRateLimit == 0)
 		{
 			GetMeterDetails();
 		}

@@ -183,7 +183,7 @@ void CTeleinfoSerial::MatchLine()
 	else if (label == "PPOT")  teleinfo.PPOT = value;
 	else if (label == "MOTDETAT") m_counter++;
 
-	if (m_counter >= m_iRateLimit) // at 9600 baud we have roughly one frame per second
+	if (m_counter > m_iRateLimit) // at 9600 baud we have roughly one frame per second
 	{
 		m_counter = 0;
 		ProcessTeleinfo(teleinfo);
