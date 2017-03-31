@@ -421,7 +421,9 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 		int nvalue = atoi(result[0][0].c_str());
 		//if ((((bIsOn && nvalue == 0) || (bIsOn == false && nvalue == 1))) && (messagetype != "heartbeat")) {
 		if (messagetype != "heartbeat") {
-			m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, NULL, -1);
+			if ((((bIsOn && nvalue == 0) || (bIsOn == false && nvalue == 1))) || (switchtype == STYPE_Selector)) {
+				m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, NULL, -1);
+			}
 		}
 		else {
 #ifdef _DEBUG
