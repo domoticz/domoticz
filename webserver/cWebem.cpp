@@ -1585,6 +1585,9 @@ char *cWebemRequestHandler::strftime_t(const char *format, const time_t rawtime)
 
 void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 {
+	if (_log.isTraceEnabled())	  
+		_log.Log(LOG_TRACE, "WEBH : Host:%s Uri;%s", req.host_address.c_str(), req.uri.c_str());
+
 	// Initialize session
 	WebEmSession session;
 	session.remote_host = req.host_address;

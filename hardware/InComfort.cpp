@@ -115,7 +115,6 @@ std::string CInComfort::GetHTTPData(std::string sURL)
 	if (!HTTPClient::GET(sURL, ExtraHeaders, sResult))
 	{
 		_log.Log(LOG_ERROR, "InComfort: Error getting current state!");
-		return NULL;
 	}
 	return sResult;
 }
@@ -127,9 +126,7 @@ std::string CInComfort::SetRoom1SetTemperature(float tempSetpoint)
 	std::stringstream sstr;
 	sstr << "http://" << m_szIPAddress << ":" << m_usIPPort << "/data.json?heater=0&setpoint=" << setpointToSet << "&thermostat=0";
 
-	// Get Data
-	std::string sResult = GetHTTPData(sstr.str());
-	return sResult;
+	return GetHTTPData(sstr.str());
 }
 
 void CInComfort::GetHeaterDetails()
@@ -142,7 +139,7 @@ void CInComfort::GetHeaterDetails()
 
 	// Get Data
 	std::string sResult = GetHTTPData(sstr.str());
-	if (sResult.length() == 0)
+	if (sResult.empty())
 	{
 		_log.Log(LOG_ERROR, "InComfort: Error getting current state!");
 		return;

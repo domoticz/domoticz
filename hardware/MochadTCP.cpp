@@ -77,7 +77,7 @@ m_szIPAddress(IPAddress)
 	m_mochadsec.SECURITY1.id1 = 0;
 	m_mochadsec.SECURITY1.id2 = 0;
 	m_mochadsec.SECURITY1.id3 = 0;
-	m_mochadsec.SECURITY1.status;
+	m_mochadsec.SECURITY1.status = sStatusNormal;
 	m_mochadsec.SECURITY1.rssi = 12;
 	m_mochadsec.SECURITY1.battery_level = 0;
 
@@ -486,11 +486,14 @@ void MochadTCP::ParseData(const unsigned char *pData, int Len)
 void MochadTCP::setSecID(unsigned char *p)
 {
 	int j = 0;
-	m_mochadsec.SECURITY1.id1 = (hex2bin(p[j++]) << 4) | hex2bin(p[j++]);
+	m_mochadsec.SECURITY1.id1 = (hex2bin(p[j++]) << 4);
+	m_mochadsec.SECURITY1.id1 |= hex2bin(p[j++]);
 	j++; // skip the ":"
-	m_mochadsec.SECURITY1.id2 = (hex2bin(p[j++]) << 4) | hex2bin(p[j++]);
+	m_mochadsec.SECURITY1.id2 = (hex2bin(p[j++]) << 4);
+	m_mochadsec.SECURITY1.id2 |= hex2bin(p[j++]);
 	j++; // skip the ":"
-	m_mochadsec.SECURITY1.id3 = (hex2bin(p[j++]) << 4) | hex2bin(p[j]);
+	m_mochadsec.SECURITY1.id3 = (hex2bin(p[j++]) << 4);
+	m_mochadsec.SECURITY1.id3 |= hex2bin(p[j]);
 }
 
 unsigned char MochadTCP::hex2bin(char h)

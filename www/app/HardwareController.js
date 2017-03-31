@@ -140,6 +140,21 @@ define(['app'], function (app) {
                 	var i2caddress=$("#hardwareparami2caddress #i2caddress").val();
                 	var port="&port=" + encodeURIComponent(i2caddress);
                 }
+                if (text.indexOf("GPIO") >= 0)
+                {
+                    var gpiodebounce=$("#hardwareparamsgpio #gpiodebounce").val();
+                    var gpioperiod=$("#hardwareparamsgpio #gpioperiod").val();
+                    if (gpiodebounce=="")
+                    {
+                        gpiodebounce = "50";
+                    }
+                    if (gpioperiod=="")
+                    {
+                        gpioperiod = "50";
+                    }
+                    Mode1 = gpiodebounce;
+                    Mode2 = gpioperiod;
+                }
             	$.ajax({
                      url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
                         "&name=" + encodeURIComponent(name) +
@@ -171,6 +186,19 @@ define(['app'], function (app) {
                     else {
                         serialport="";
                     }
+                }
+
+                if (text.indexOf("Evohome") >= 0)
+                {
+                    var baudrate=$("#hardwarecontent #divbaudrateevohome #combobaudrateevohome option:selected").val();
+
+                    if (typeof baudrate == 'undefined')
+                    {
+                        ShowNotify($.t('No baud rate selected!'), 2500, true);
+                        return;
+                    }
+
+                    Mode1 = baudrate;
                 }
 
                 if (text.indexOf("MySensors") >= 0)
@@ -433,6 +461,7 @@ define(['app'], function (app) {
                 var Mode1 = "";
                 if ((text.indexOf("MySensors Gateway with MQTT") >= 0)) {
                     extra = $("#hardwarecontent #divmysensorsmqtt #filename").val();
+                    Mode1 = $("#hardwarecontent #divmysensorsmqtt #combotopicselect").val();
                 }
                 else if ((text.indexOf("MQTT") >= 0)) {
 					extra=$("#hardwarecontent #divmqtt #filename").val();
@@ -1002,7 +1031,6 @@ define(['app'], function (app) {
 				(text.indexOf("System Alive") >= 0) ||
 				(text.indexOf("Kodi Media") >= 0) ||
 				(text.indexOf("PiFace") >= 0) ||
-				(text.indexOf("GPIO") >= 0) ||
 				(text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0) ||
 				(text.indexOf("Tellstick") >= 0) ||
 				(text.indexOf("Motherboard") >= 0) ||
@@ -1022,6 +1050,32 @@ define(['app'], function (app) {
                      }
                 });
             }
+            else if (text.indexOf("GPIO") >= 0)
+            {
+                var gpiodebounce=$("#hardwarecontent #hardwareparamsgpio #gpiodebounce").val();
+                var gpioperiod=$("#hardwarecontent #hardwareparamsgpio #gpioperiod").val();
+                if (gpiodebounce=="")
+                {
+                    gpiodebounce = "50";
+                }
+                if (gpioperiod=="")
+                {
+                    gpioperiod = "50";
+                }
+                Mode1 = gpiodebounce;
+                Mode2 = gpioperiod;
+                $.ajax({
+                     url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout + "&Mode1=" + Mode1 + "&Mode2=" + Mode2,
+                     async: false,
+                     dataType: 'json',
+                     success: function(data) {
+                        RefreshHardwareTable();
+                     },
+                     error: function(){
+                            ShowNotify($.t('Problem adding hardware!'), 2500, true);
+                     }
+                });
+        }
 	    else if (text.indexOf("I2C ") >= 0 && text.indexOf("I2C sensor PIO 8bit expander PCF8574") < 0)
 	    {
                 hardwaretype = $("#hardwareparamsi2clocal #comboi2clocal").find('option:selected').val();
@@ -1053,6 +1107,19 @@ define(['app'], function (app) {
                 {
                     ShowNotify($.t('No serial port selected!'), 2500, true);
                     return;
+                }
+
+                if (text.indexOf("Evohome") >= 0)
+                {
+                    var baudrate=$("#hardwarecontent #divbaudrateevohome #combobaudrateevohome option:selected").val();
+
+                    if (typeof baudrate == 'undefined')
+                    {
+                        ShowNotify($.t('No baud rate selected!'), 2500, true);
+                        return;
+                    }
+
+                    Mode1 = baudrate;
                 }
 
                 if (text.indexOf("MySensors") >= 0)
@@ -1318,6 +1385,7 @@ define(['app'], function (app) {
                 var mode1 = "";
                 if (text.indexOf("MySensors Gateway with MQTT") >= 0) {
                     extra = encodeURIComponent($("#hardwarecontent #divmysensorsmqtt #filename").val());
+                    mode1 = $("#hardwarecontent #divmysensorsmqtt #combotopicselect").val();
                 }
                 else if (text.indexOf("MQTT") >= 0) {
                     extra = encodeURIComponent($("#hardwarecontent #divmqtt #filename").val());
@@ -3025,7 +3093,7 @@ define(['app'], function (app) {
             $('#updelclr #nodedelete').attr("class", "btnstyle3-dis");
             $("#hardwarecontent #bleboxnodeparamstable #nodename").val("");
             $("#hardwarecontent #bleboxnodeparamstable #nodeip").val("");
-			$("#hardwarecontent #bleboxnodeparamstable #type").val("");
+
 
             var oTable = $('#bleboxnodestable').dataTable();
             oTable.fnClearTable();
@@ -3045,7 +3113,9 @@ define(['app'], function (app) {
                                 "1": item.Name,
                                 "2": item.IP,
 								"3": item.Type,
-								"4": item.Uptime
+								"4": item.Uptime,
+								"5": item.hv,
+								"6": item.fv
                             });
                         });
                     }
@@ -3061,7 +3131,6 @@ define(['app'], function (app) {
                     $('#updelclr #nodeupdate').attr("class", "btnstyle3-dis");
                     $("#hardwarecontent #bleboxnodeparamstable #nodename").val("");
                     $("#hardwarecontent #bleboxnodeparamstable #nodeip").val("");
-					$("#hardwarecontent #bleboxnodeparamstable #type").val("");
                 }
                 else {
                     var oTable = $('#bleboxnodestable').dataTable();
@@ -3077,7 +3146,6 @@ define(['app'], function (app) {
                         $("#updelclr #nodedelete").attr("href", "javascript:BleBoxDeleteNode(" + idx + ")");
                         $("#hardwarecontent #bleboxnodeparamstable #nodename").val(data["1"]);
                         $("#hardwarecontent #bleboxnodeparamstable #nodeip").val(data["2"]);
-						$("#hardwarecontent #bleboxnodeparamstable #type").val(data["3"]);
                     }
                 }
             });
@@ -4928,6 +4996,10 @@ define(['app'], function (app) {
             					$("#hardwareparami2caddress #i2caddress").val(data["Port"].substring(4));
             				}
                         }
+                        else if (data["Type"].indexOf("GPIO") >= 0) {
+                            $("#hardwareparamsgpio #gpiodebounce").val(data["Mode1"]);
+                            $("#hardwareparamsgpio #gpioperiod").val(data["Mode2"]);
+                        }
                         else if (data["Type"].indexOf("USB") >= 0) {
                             $("#hardwarecontent #hardwareparamsserial #comboserialport").val(data["IntPort"]);
                             if (data["Type"].indexOf("MySensors") >= 0)
@@ -4962,12 +5034,12 @@ define(['app'], function (app) {
                             $("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
                             $("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
                             $("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
-                            
+
                             if (data["Type"].indexOf("Satel Integra") >= 0)
                             {
                                 $("#hardwarecontent #hardwareparamspollinterval #pollinterval").val(data["Mode1"]);
                             }
-                            
+
                             if (data["Type"].indexOf("Relay-Net") >= 0)
                             {
                                 $("#hardwarecontent #hardwareparamsrelaynet #relaynetpollinputs").prop("checked",data["Mode1"]==1);
@@ -5041,6 +5113,7 @@ define(['app'], function (app) {
 						}
                         if (data["Type"].indexOf("MySensors Gateway with MQTT") >= 0) {
                             $("#hardwarecontent #hardwareparamsmysensorsmqtt #filename").val(data["Extra"]);
+                            $("#hardwarecontent #hardwareparamsmysensorsmqtt #combotopicselect").val(data["Mode1"]);
                         }
                         else if (data["Type"].indexOf("MQTT") >= 0) {
                             $("#hardwarecontent #hardwareparamsmqtt #filename").val(data["Extra"]);
@@ -5144,6 +5217,7 @@ define(['app'], function (app) {
             $("#hardwarecontent #username").show();
             $("#hardwarecontent #lblusername").show();
 
+            $("#hardwarecontent #divbaudrateevohome").hide();
             $("#hardwarecontent #divbaudratemysensors").hide();
             $("#hardwarecontent #divbaudratep1").hide();
             $("#hardwarecontent #divcrcp1").hide();
@@ -5162,6 +5236,7 @@ define(['app'], function (app) {
             $("#hardwarecontent #divpollinterval").hide();
             $("#hardwarecontent #divpythonplugin").hide();
 			$("#hardwarecontent #divrelaynet").hide();
+            $("#hardwarecontent #divgpio").hide();
 
             if (
 				(text.indexOf("TE923") >= 0)||
@@ -5179,8 +5254,8 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
             }
-	    else if (text.indexOf("I2C ") >= 0)
-	    {
+    	    else if (text.indexOf("I2C ") >= 0)
+    	    {
                 $("#hardwarecontent #divi2clocal").show();
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").hide();
@@ -5191,11 +5266,24 @@ define(['app'], function (app) {
                 var text1 = $("#hardwarecontent #divi2clocal #hardwareparamsi2clocal #comboi2clocal option:selected").text();
                 if (text1.indexOf("I2C sensor PIO 8bit expander PCF8574") >= 0)
                 {
-                	$("#hardwarecontent #divi2caddress").show();
+                    $("#hardwarecontent #divi2caddress").show();
                 }
-	    }
+            }
+            else if (text.indexOf("GPIO") >= 0)
+            {
+                $("#hardwarecontent #divgpio").show();
+                $("#hardwarecontent #divserial").hide();
+                $("#hardwarecontent #divremote").hide();
+                $("#hardwarecontent #divlogin").hide();
+                $("#hardwarecontent #divunderground").hide();
+                $("#hardwarecontent #divhttppoller").hide();
+            }
             else if (text.indexOf("USB") >= 0)
             {
+                if (text.indexOf("Evohome") >= 0)
+                {
+                    $("#hardwarecontent #divbaudrateevohome").show();
+                }
                 if (text.indexOf("MySensors") >= 0)
                 {
                     $("#hardwarecontent #divbaudratemysensors").show();
@@ -5245,13 +5333,13 @@ define(['app'], function (app) {
                   $("#hardwarecontent #divlogin").hide();
                   $("#hardwarecontent #divrelaynet").show();
                 }
-                
+
 				if (text.indexOf("Satel Integra") >= 0)
                 {
                     $("#hardwarecontent #divpollinterval").show();
                     $("#hardwarecontent #hardwareparamspollinterval #pollinterval").val(1000);
 				}
-				
+
 				if (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0)
 				{
 				    $("#hardwarecontent #hardwareparamsremote #tcpport").val(20000);

@@ -27,6 +27,12 @@ portions of this file.
 */
 
 /*
+SDK version 9.15
+	BlindsT13 - Screenline angle change added
+
+SDK version 9.14
+	Lighting5 - Kangtai added
+
 SDK version 9.13
 	BlindsT13 - Screenline added
 
@@ -672,6 +678,8 @@ SDK version 4.9
 #define blinds_s10LearnMaster 0x4
 #define blinds_s10EraseCurrentCh 0x5
 #define blinds_s10ChangeDirection 0x6
+#define blinds_s13anglePlus 0x4
+#define blinds_s13angleMinus 0x5
 
 //types for RFY
 #define pTypeRFY 0x1A
