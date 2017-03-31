@@ -12762,7 +12762,7 @@ void MainWorker::HeartbeatCheck()
 							}
 						}
 
-						_log.Log(LOG_ERROR, "%s hardware (%d) nothing received for more then %d %s!....", sd[0].c_str(), pHardware->m_HwdID, totNum, sDataTimeout.c_str());
+						_log.Log(LOG_ERROR, "%s hardware (%d) nothing received for more than %d %s!....", sd[0].c_str(), pHardware->m_HwdID, totNum, sDataTimeout.c_str());
 						m_devicestorestart.push_back(pHardware->m_HwdID);
 					}
 				}

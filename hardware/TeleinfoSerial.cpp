@@ -49,11 +49,11 @@ CTeleinfoSerial::CTeleinfoSerial(const int ID, const std::string& devname, unsig
 	m_iOptStop = boost::asio::serial_port_base::stop_bits(TELEINFO_STOP_BITS);
         m_bDisableCRC = disable_crc;
 	m_iRateLimit = ratelimit;
-
+m_iRateLimit = 8;
 	if (baud_rate == 1)
-		m_iBaudRate = 9600;
+		m_iBaudRate = 1200;
 	else
-		m_iBaudRate = 115200;
+		m_iBaudRate = 9600;
 	Init();
 }
 
@@ -214,8 +214,8 @@ void CTeleinfoSerial::ParseData(const char *pData, int Len)
 			if (m_bufferpos > 0)
 				m_buffer[m_bufferpos] = 0;
 
-			//We check the line only if the checksum is ok and user did not request ty bypass this verification
-			if (isCheckSumOk(teleinfo.CRCmode1) && (!m_bDisableCRC))
+			//We process the line only if the checksum is ok and user did not request ty bypass CRC verification
+			if ((m_bDisableCRC) || isCheckSumOk(teleinfo.CRCmode1)) 
 				MatchLine();
 
 			m_bufferpos = 0;
