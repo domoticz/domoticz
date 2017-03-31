@@ -128,6 +128,7 @@ const _tRFLinkStringIntHelper rfswitches[] =
 	{ "Velleman", sSwitchTypeVelleman },
 	{ "RFCustom", sSwitchTypeRFCustom },
 	{ "YW_Sensor", sSwitchTypeYW_Sensor },
+	{ "LEGRANDCAD", sSwitchTypeLegrandcad },
 	{ "", -1 }
 };
 
