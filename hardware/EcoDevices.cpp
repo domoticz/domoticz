@@ -42,12 +42,13 @@ Version history
 #define MINOR 5
 #define RELEASE 12
 
-CEcoDevices::CEcoDevices(const int ID, const std::string &IPAddress, const unsigned short usIPPort)
+CEcoDevices::CEcoDevices(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const unsigned int model)
 {
 	m_HwdID = ID;
 	m_szIPAddress = IPAddress;
 	m_usIPPort = usIPPort;
 	m_stoprequested = false;
+	m_iModel = model;
 
 	Init();
 }

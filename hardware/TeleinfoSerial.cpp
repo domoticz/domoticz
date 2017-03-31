@@ -38,17 +38,22 @@ History :
 #define DEBUG_TeleinfoSerial
 #endif
 
-#define NBFRAMES 8				 //number of frames to collect before processing one
 
-CTeleinfoSerial::CTeleinfoSerial(const int ID, const std::string& devname, unsigned int baud_rate)
+CTeleinfoSerial::CTeleinfoSerial(const int ID, const std::string& devname, unsigned int baud_rate, const bool disable_crc, const int ratelimit)
 {
 	m_HwdID = ID;
 	m_szSerialPort = devname;
-	m_iBaudRate = baud_rate;
 	m_iOptParity = boost::asio::serial_port_base::parity(TELEINFO_PARITY);
 	m_iOptCsize = boost::asio::serial_port_base::character_size(TELEINFO_CARACTER_SIZE);
 	m_iOptFlow = boost::asio::serial_port_base::flow_control(TELEINFO_FLOW_CONTROL);
 	m_iOptStop = boost::asio::serial_port_base::stop_bits(TELEINFO_STOP_BITS);
+        m_bDisableCRC = disable_crc;
+	m_iRateLimit = ratelimit;
+
+	if (baud_rate == 1)
+		m_iBaudRate = 9600;
+	else
+		m_iBaudRate = 115200;
 	Init();
 }
 
@@ -72,7 +77,7 @@ bool CTeleinfoSerial::StartHardware()
 	//Try to open the Serial Port
 	try
 	{
-		_log.Log(LOG_STATUS, "Teleinfo: %s uses serial port: %s", Name.c_str(), m_szSerialPort.c_str());
+		_log.Log(LOG_STATUS, "Teleinfo: %s uses serial port: %s at %i bauds", Name.c_str(), m_szSerialPort.c_str(), m_iBaudRate);
 		open(
 			m_szSerialPort,
 			m_iBaudRate,
@@ -178,7 +183,7 @@ void CTeleinfoSerial::MatchLine()
 	else if (label == "PPOT")  teleinfo.PPOT = value;
 	else if (label == "MOTDETAT") m_counter++;
 
-	if (m_counter >= NBFRAMES)
+	if (m_counter >= m_iRateLimit) // at 9600 baud we have roughly one frame per second
 	{
 		m_counter = 0;
 		ProcessTeleinfo(teleinfo);
@@ -209,8 +214,8 @@ void CTeleinfoSerial::ParseData(const char *pData, int Len)
 			if (m_bufferpos > 0)
 				m_buffer[m_bufferpos] = 0;
 
-			//We check the line only if the checksum is ok
-			if (isCheckSumOk(teleinfo.CRCmode1))
+			//We check the line only if the checksum is ok and user did not request ty bypass this verification
+			if (isCheckSumOk(teleinfo.CRCmode1) && (!m_bDisableCRC))
 				MatchLine();
 
 			m_bufferpos = 0;

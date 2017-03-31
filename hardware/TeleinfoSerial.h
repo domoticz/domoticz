@@ -23,7 +23,6 @@ History :
 
 #include "ASyncSerial.h"
 #include "TeleinfoBase.h"
-#define TELEINFO_BAUD_RATE         1200
 #define TELEINFO_PARITY            boost::asio::serial_port_base::parity::even
 #define TELEINFO_CARACTER_SIZE      7
 #define TELEINFO_FLOW_CONTROL      boost::asio::serial_port_base::flow_control::none
@@ -33,7 +32,8 @@ class CTeleinfoSerial : public CTeleinfoBase, AsyncSerial
 {
 	public:
 
-		CTeleinfoSerial(const int ID, const std::string& devname, unsigned int baud_rate = TELEINFO_BAUD_RATE);
+		CTeleinfoSerial(const int ID, const std::string& devname, unsigned int baud_rate, 
+			const bool disable_crc, const int ratelimit); 
 		~CTeleinfoSerial();
 		std::string m_szSerialPort;
 
@@ -50,6 +50,8 @@ class CTeleinfoSerial : public CTeleinfoBase, AsyncSerial
 		void readCallback(const char *data, size_t len);
 
 		unsigned int m_iBaudRate;
+		unsigned int m_iRateLimit;
+		bool m_bDisableCRC;
 		boost::asio::serial_port_base::parity m_iOptParity;
 		boost::asio::serial_port_base::character_size m_iOptCsize;
 		boost::asio::serial_port_base::flow_control m_iOptFlow;
