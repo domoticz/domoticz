@@ -419,7 +419,8 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 			xcmd.unitcode = 2;
 		}
 		int nvalue = atoi(result[0][0].c_str());
-		if ((((bIsOn && nvalue == 0) || (bIsOn == false && nvalue == 1))) && (messagetype != "heartbeat")) {
+		//if ((((bIsOn && nvalue == 0) || (bIsOn == false && nvalue == 1))) && (messagetype != "heartbeat")) {
+		if (messagetype != "heartbeat") {
 			m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, NULL, -1);
 		}
 		else {
@@ -496,7 +497,7 @@ bool XiaomiGateway::StartHardware()
 	m_bIsStarted = true;
 	
 	// update any CustomSwitch Xiaomi devices to GeneralSwitch		
- 	//m_sql.safe_query("UPDATE DeviceStatus SET SubType=73 WHERE(HardwareID == %d) AND (SubType == 72)", m_HwdID);	
+ 	m_sql.safe_query("UPDATE DeviceStatus SET SubType=73 WHERE(HardwareID == %d) AND (SubType == 72)", m_HwdID);	
 
 	//check there is only one instance of the Xiaomi Gateway
 	std::vector<std::vector<std::string> > result;
