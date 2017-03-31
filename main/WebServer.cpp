@@ -844,6 +844,7 @@ namespace http {
 					goto exitjson;
 
 				}
+				if (_log.isTraceEnabled()) _log.Log(LOG_TRACE, "WEBS GetJSon :%s :%s ", cparam.c_str(), req.uri.c_str());
 				HandleCommand(cparam, session, req, root);
 			} //(rtype=="command")
 			else {
@@ -1064,12 +1065,19 @@ namespace http {
 			else if (
 				(htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) || (htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) ||
 				(htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_ECODEVICES) || (htype == HTYPE_Mochad) || (htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MySensorsMQTT) || (htype == HTYPE_MQTT) || (htype == HTYPE_FRITZBOX) ||
-				(htype == HTYPE_ETH8020) || (htype == HTYPE_RelayNet) || (htype == HTYPE_Sterbox) || (htype == HTYPE_KMTronicTCP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_RFLINKTCP) || (htype == HTYPE_Comm5TCP) || (htype == HTYPE_CurrentCostMeterLAN) ||
+				(htype == HTYPE_ETH8020) || (htype == HTYPE_RelayNet) || (htype == HTYPE_Sterbox) || (htype == HTYPE_KMTronicTCP) || (htype == HTYPE_KMTronicUDP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_RFLINKTCP) || (htype == HTYPE_Comm5TCP) || (htype == HTYPE_CurrentCostMeterLAN) ||
 				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviSmartdenLan) || (htype == HTYPE_Ec3kMeterTCP) || (htype == HTYPE_MultiFun) || (htype == HTYPE_ZIBLUETCP)
 				) {
 				//Lan
 				if (address == "" || port == 0)
 					return;
+
+				if (htype == HTYPE_MySensorsMQTT) {
+					std::string modeqStr = request::findValue(&req, "mode1");
+					if (!modeqStr.empty()) {
+						mode1 = atoi(modeqStr.c_str());
+					}
+				}
 
 				if (htype == HTYPE_MQTT) {
 					std::string modeqStr = request::findValue(&req, "mode1");
@@ -1185,10 +1193,6 @@ namespace http {
 					(username == "")
 					)
 					return;
-				std::string siteID = request::findValue(&req, "Mode1");
-				if (siteID.empty())
-					return;
-				mode1 = atoi(siteID.c_str());
 			}
 			else if (htype == HTYPE_SBFSpot) {
 				if (username == "")
@@ -1416,7 +1420,7 @@ namespace http {
 				(htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) ||
 				(htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_S0SmartMeterTCP) || (htype == HTYPE_ECODEVICES) || (htype == HTYPE_Mochad) ||
 				(htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MySensorsMQTT) || (htype == HTYPE_MQTT) || (htype == HTYPE_FRITZBOX) || (htype == HTYPE_ETH8020) || (htype == HTYPE_Sterbox) ||
-				(htype == HTYPE_KMTronicTCP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_RelayNet)  || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_RFLINKTCP) ||
+				(htype == HTYPE_KMTronicTCP) || (htype == HTYPE_KMTronicUDP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_RelayNet)  || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_RFLINKTCP) ||
 				(htype == HTYPE_Comm5TCP || (htype == HTYPE_CurrentCostMeterLAN)) ||
 				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviSmartdenLan) || (htype == HTYPE_Ec3kMeterTCP) || (htype == HTYPE_MultiFun) || (htype == HTYPE_ZIBLUETCP)
 				){
@@ -2859,6 +2863,9 @@ namespace http {
 		{
 			std::string sstate = request::findValue(&req, "state");
 			std::string idx = request::findValue(&req, "idx");
+			std::string name = request::findValue(&req,"name");
+			_log.Log(LOG_TRACE, "WEBS SetThermostatState  State cmd Id:%s Name:%s State:%s",idx.c_str(), name.c_str(),sstate.c_str());
+
 			if (
 				(idx == "") ||
 				(sstate == "")
@@ -5520,6 +5527,13 @@ namespace http {
 					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_SWITCH_OFF, 1);
 					ii++;
 				}
+				if (!IsLightOrSwitch(dType, dSubType))
+				{
+					root["result"][ii]["val"] = NTYPE_LASTUPDATE;
+					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_LASTUPDATE, 0);
+					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_LASTUPDATE, 1);
+					ii++;
+				}
 			}
 			else if (cparam == "addnotification")
 			{
@@ -6303,6 +6317,7 @@ namespace http {
 				std::string switchcmd = request::findValue(&req, "switchcmd");
 				std::string level = request::findValue(&req, "level");
 				std::string onlyonchange=request::findValue(&req, "ooc");//No update unless the value changed (check if updated)
+				if (_log.isTraceEnabled()) _log.Log(LOG_TRACE,"WEBS switchlight idx:%s switchcmd:%s level:%s",  idx.c_str() , switchcmd.c_str() , level.c_str());
 				std::string passcode = request::findValue(&req, "passcode");
 				if ((idx == "") || (switchcmd == ""))
 					return;
@@ -7293,6 +7308,9 @@ namespace http {
 
 			std::string Latitude = request::findValue(&req, "Latitude");
 			std::string Longitude = request::findValue(&req, "Longitude");
+			_log.SetLogPreference ( CURLEncode::URLDecode( request::findValue(&req,"LogFilter")   ),
+									CURLEncode::URLDecode( request::findValue(&req,"LogFileName") ),
+									CURLEncode::URLDecode( request::findValue(&req,"LogLevel")    ) );
 			if ((Latitude != "") && (Longitude != ""))
 			{
 				std::string LatLong = Latitude + ";" + Longitude;
@@ -8400,30 +8418,38 @@ namespace http {
 						}
 					}
 
-					sprintf(szData, "%04X", (unsigned int)atoi(sd[1].c_str()));
-					if (
-						(dType == pTypeTEMP) ||
-						(dType == pTypeTEMP_BARO) ||
-						(dType == pTypeTEMP_HUM) ||
-						(dType == pTypeTEMP_HUM_BARO) ||
-						(dType == pTypeBARO) ||
-						(dType == pTypeHUM) ||
-						(dType == pTypeWIND) ||
-						(dType == pTypeRAIN) ||
-						(dType == pTypeUV) ||
-						(dType == pTypeCURRENT) ||
-						(dType == pTypeCURRENTENERGY) ||
-						(dType == pTypeENERGY) ||
-						(dType == pTypeRFXMeter) ||
-						(dType == pTypeAirQuality) ||
-						(dType == pTypeRFXSensor)
-						)
+					if ((pHardware != NULL) && (pHardware->HwdType == HTYPE_PythonPlugin))
 					{
-						root["result"][ii]["ID"] = szData;
+						// Device ID special formatting should not be applied to Python plugins
+						root["result"][ii]["ID"] = sd[1];
 					}
 					else
 					{
-						root["result"][ii]["ID"] = sd[1];
+						sprintf(szData, "%04X", (unsigned int)atoi(sd[1].c_str()));
+						if (
+							(dType == pTypeTEMP) ||
+							(dType == pTypeTEMP_BARO) ||
+							(dType == pTypeTEMP_HUM) ||
+							(dType == pTypeTEMP_HUM_BARO) ||
+							(dType == pTypeBARO) ||
+							(dType == pTypeHUM) ||
+							(dType == pTypeWIND) ||
+							(dType == pTypeRAIN) ||
+							(dType == pTypeUV) ||
+							(dType == pTypeCURRENT) ||
+							(dType == pTypeCURRENTENERGY) ||
+							(dType == pTypeENERGY) ||
+							(dType == pTypeRFXMeter) ||
+							(dType == pTypeAirQuality) ||
+							(dType == pTypeRFXSensor)
+							)
+						{
+							root["result"][ii]["ID"] = szData;
+						}
+						else
+						{
+							root["result"][ii]["ID"] = sd[1];
+						}
 					}
 					root["result"][ii]["Unit"] = atoi(sd[2].c_str());
 					root["result"][ii]["Type"] = RFX_Type_Desc(dType, 1);
@@ -9198,6 +9224,9 @@ namespace http {
 							case MTYPE_COUNTER:
 								sprintf(szTmp, "%llu %s", total_real, ValueUnits.c_str());
 								break;
+							default:
+								strcpy(szTmp, "?");
+								break;
 							}
 						}
 						root["result"][ii]["CounterToday"] = szTmp;
@@ -9232,6 +9261,12 @@ namespace http {
 							sprintf(szTmp, "%.0f %s", meteroffset + dvalue, ValueUnits.c_str());
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
+							root["result"][ii]["ValueQuantity"] = ValueQuantity;
+							root["result"][ii]["ValueUnits"] = ValueUnits;
+							break;
+						default:
+							root["result"][ii]["Data"] = "?";
+							root["result"][ii]["Counter"] = "?";
 							root["result"][ii]["ValueQuantity"] = ValueQuantity;
 							root["result"][ii]["ValueUnits"] = ValueUnits;
 							break;
@@ -9306,6 +9341,9 @@ namespace http {
                             case MTYPE_COUNTER:
                                     sprintf(szTmp, "%llu %s", total_real, ValueUnits.c_str());
                                     break;
+							default:
+									strcpy(szTmp, "0");
+									break;
                             }
                         }
                         root["result"][ii]["Counter"] = sValue;
@@ -9341,7 +9379,13 @@ namespace http {
                                 root["result"][ii]["ValueQuantity"] = ValueQuantity;
                                 root["result"][ii]["ValueUnits"] = ValueUnits;
                                 break;
-                        }
+						default:
+								root["result"][ii]["Data"] = "?";
+								root["result"][ii]["Counter"] = "?";
+								root["result"][ii]["ValueQuantity"] = ValueQuantity;
+								root["result"][ii]["ValueUnits"] = ValueUnits;
+								break;
+						}
                     }
 					else if (dType == pTypeYouLess)
 					{
@@ -9413,6 +9457,9 @@ namespace http {
 							case MTYPE_COUNTER:
 								sprintf(szTmp, "%llu %s", total_real, ValueUnits.c_str());
 								break;
+							default:
+								strcpy(szTmp, "0");
+								break;
 							}
 						}
 						root["result"][ii]["CounterToday"] = szTmp;
@@ -9442,6 +9489,9 @@ namespace http {
 						case MTYPE_COUNTER:
 							sprintf(szTmp, "%llu", total_actual);
 							break;
+						default:
+							strcpy(szTmp, "0");
+							break;
 						}
 						root["result"][ii]["Counter"] = szTmp;
 
@@ -9469,6 +9519,9 @@ namespace http {
 						case MTYPE_COUNTER:
 							sprintf(szTmp, "%llu %s", acounter, ValueUnits.c_str());
 							break;
+						default:
+							strcpy(szTmp, "0");
+							break;
 						}
 						root["result"][ii]["Data"] = szTmp;
 						root["result"][ii]["ValueQuantity"] = "";
@@ -9489,6 +9542,9 @@ namespace http {
 							sprintf(szTmp, "%s", splitresults[1].c_str());
 							root["result"][ii]["ValueQuantity"] = ValueQuantity;
 							root["result"][ii]["ValueUnits"] = ValueUnits;
+							break;
+						default:
+							strcpy(szTmp, "0");
 							break;
 						}
 
@@ -12274,6 +12330,18 @@ namespace http {
 				else if (Key == "SendErrorsAsNotification") {
 					root["SendErrorsAsNotification"] = nValue;
 				}
+				else if (Key == "LogFilter") {
+					root[Key] = sValue;
+				}
+				else if (Key == "LogFileName") {
+					root[Key] = sValue;
+				}
+				else if (Key == "LogLevel") {
+					root[Key] = sValue;
+				}
+				else if (Key == "DeltaTemperatureLog") {
+					root[Key] = sValue;
+				}
 			}
 		}
 
@@ -13307,6 +13375,9 @@ namespace http {
 											case MTYPE_COUNTER:
 												sprintf(szTmp, "%.1f", TotalValue);
 												break;
+											default:
+												strcpy(szTmp, "0");
+												break;
 											}
 											root["result"][ii][method==1 ? "eu" : "v"] = szTmp;
 											ii++;
@@ -13358,6 +13429,9 @@ namespace http {
 										break;
 									case MTYPE_COUNTER:
 										sprintf(szTmp, "%.1f", TotalValue);
+										break;
+									default:
+										strcpy(szTmp, "0");
 										break;
 									}
 									root["result"][ii]["v"] = szTmp;
@@ -13466,6 +13540,9 @@ namespace http {
 												case MTYPE_COUNTER:
 													sprintf(szTmp, "%.1f", TotalValue);
 													break;
+												default:
+													strcpy(szTmp, "0");
+													break;
 												}
 												root["result"][ii]["v"] = szTmp;
 												ii++;
@@ -13523,6 +13600,9 @@ namespace http {
 											case MTYPE_COUNTER:
 												sprintf(szTmp, "%.1f", TotalValue);
 												break;
+											default:
+												strcpy(szTmp, "0");
+												break;
 											}
 											root["result"][ii]["v"] = szTmp;
 											ii++;
@@ -13561,6 +13641,9 @@ namespace http {
 									break;
 								case MTYPE_COUNTER:
 									sprintf(szTmp, "%.1f", TotalValue);
+									break;
+								default:
+									strcpy(szTmp, "0");
 									break;
 								}
 								root["result"][ii]["v"] = szTmp;
@@ -14069,6 +14152,9 @@ namespace http {
 									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / WaterDivider);
 									szValue = szTmp;
 									break;
+								default:
+									szValue = "0";
+									break;
 								}
 								root["result"][ii]["v"] = szValue;
 								ii++;
@@ -14174,6 +14260,9 @@ namespace http {
 							case MTYPE_WATER:
 								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / WaterDivider);
 								szValue = szTmp;
+								break;
+							default:
+								szValue = "0";
 								break;
 							}
 
