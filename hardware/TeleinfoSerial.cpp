@@ -49,8 +49,8 @@ CTeleinfoSerial::CTeleinfoSerial(const int ID, const std::string& devname, unsig
 	m_iOptStop = boost::asio::serial_port_base::stop_bits(TELEINFO_STOP_BITS);
         m_bDisableCRC = disable_crc;
 	m_iRateLimit = ratelimit;
-m_iRateLimit = 8;
-	if (baud_rate == 1)
+
+	if (baud_rate == 0)
 		m_iBaudRate = 1200;
 	else
 		m_iBaudRate = 9600;

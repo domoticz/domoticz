@@ -139,8 +139,8 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 	// Process only if power consumption changed. If it did not, then alerts and intensity have not changed either
 	if (teleinfo.pAlertPAPP != teleinfo.PAPP)
 	{
-		//Send data if value changed, at most every minute and at least every 5 minutes
-		if ((difftime(atime, teleinfo.last) >= 60) || (difftime(atime, teleinfo.last) >= 300))
+		//Send data if value changed, at most at rate specified in settings, and at least every 5 minutes
+		if ((difftime(atime, teleinfo.last) >= m_iRateLimit) || (difftime(atime, teleinfo.last) >= 300))
 		{
 			teleinfo.pAlertPAPP = teleinfo.PAPP;
 			teleinfo.last = atime;

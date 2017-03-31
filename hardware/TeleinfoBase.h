@@ -32,6 +32,7 @@ class CTeleinfoBase : public CDomoticzHardwareBase
 		P1Power m_p1power, m_p2power, m_p3power;
 
 	protected:
+	        unsigned int m_iRateLimit;
 		typedef struct _tTeleinfo
 		{
 			std::string ADCO;

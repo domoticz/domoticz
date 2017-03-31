@@ -50,7 +50,6 @@ class CTeleinfoSerial : public CTeleinfoBase, AsyncSerial
 		void readCallback(const char *data, size_t len);
 
 		unsigned int m_iBaudRate;
-		unsigned int m_iRateLimit;
 		bool m_bDisableCRC;
 		boost::asio::serial_port_base::parity m_iOptParity;
 		boost::asio::serial_port_base::character_size m_iOptCsize;
