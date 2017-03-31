@@ -692,7 +692,7 @@ int CEvohome::ProcessBuf(char * buf, int size)
 	for (int i = 0; i < size; ++i) 
 	{
 		if(buf[i]==0x11)//this appears to be a break character?
-			start=i+1;
+			buf[i]=0x20; // replace with printable char and continue; next stage will log error
 		else if(buf[i]==0x0A)//this is the end of packet marker...not sure if there is a CR before this?
 		{
 			if (i - start >= 2048) {
@@ -816,9 +816,9 @@ bool CEvohomeMsg::DecodePacket(const char * rawmsg)
 void CEvohome::ProcessMsg(const char * rawmsg)
 {
 	CEvohomeMsg msg(rawmsg);
+	Log(rawmsg,msg);
 	if(msg.IsValid())
 	{
-		Log(rawmsg,msg);
 		if(!GetControllerID())//no controller id ..just use the 1st one we find
 		{
 			for(int n=0;n<3;n++)
@@ -1845,7 +1845,11 @@ void CEvohome::Log(const char *szMsg, CEvohomeMsg &msg)
 		*m_pEvoLog << szMsg;
 		*m_pEvoLog << " (";
 		for(int i=0;i<msg.payloadsize;i++)
-			*m_pEvoLog << msg.payload[i];
+		{
+			unsigned char c = msg.payload[i];
+			if (c < 0x20 || c > 0x7E) c = '.';
+			*m_pEvoLog << c;
+		}
 		*m_pEvoLog << ")";
 		*m_pEvoLog << std::endl;
 	}
