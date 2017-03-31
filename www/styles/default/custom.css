@@ -1,3 +1,8 @@
 /*
 Default style for Domoticz (no overrides)
 */
+
+/* temporary fix until new default theme is migrated. */
+tr.statusTimeout{background-color: #F1F5FA!important;}
+tr.statusProtected{background-color: #F1F5FA!important;}
+tr.statusLowBattery{background-color: #F1F5FA!important;}
