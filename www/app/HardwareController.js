@@ -89,7 +89,6 @@ define(['app'], function (app) {
 				}
 				return;
 			}
-
             if (text.indexOf("1-Wire") >= 0)
             {
     			var extra=$("#hardwarecontent #div1wire #owfspath").val();
@@ -127,7 +126,7 @@ define(['app'], function (app) {
 				(text.indexOf("Kodi Media") >= 0) ||
 				(text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0) ||
 				(text.indexOf("YeeLight") >= 0) ||
-				(text.indexOf("AriLux AL-LC0x") >= 0)
+				(text.indexOf("Arilux AL-LC0x") >= 0)
 				)
             {
 				// if hardwaretype == 1000 => I2C sensors grouping
@@ -5002,6 +5001,10 @@ define(['app'], function (app) {
                         }
                         else if (data["Type"].indexOf("USB") >= 0) {
                             $("#hardwarecontent #hardwareparamsserial #comboserialport").val(data["IntPort"]);
+                            if (data["Type"].indexOf("Evohome") >= 0)
+                            {
+                                $("#hardwarecontent #divbaudrateevohome #combobaudrateevohome").val(data["Mode1"]);
+                            }
                             if (data["Type"].indexOf("MySensors") >= 0)
                             {
                                 $("#hardwarecontent #divbaudratemysensors #combobaudrate").val(data["Mode1"]);

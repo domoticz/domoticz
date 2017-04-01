@@ -3003,6 +3003,10 @@ namespace http {
 				root["CostEnergy"] = nValue;
 				m_sql.GetPreferencesVar("CostEnergyT2", nValue);
 				root["CostEnergyT2"] = nValue;
+				m_sql.GetPreferencesVar("CostEnergyR1", nValue);
+				root["CostEnergyR1"] = nValue;
+				m_sql.GetPreferencesVar("CostEnergyR2", nValue);
+				root["CostEnergyR2"] = nValue;
 				m_sql.GetPreferencesVar("CostGas", nValue);
 				root["CostGas"] = nValue;
 				m_sql.GetPreferencesVar("CostWater", nValue);
@@ -7467,10 +7471,14 @@ namespace http {
 
 			float CostEnergy = static_cast<float>(atof(request::findValue(&req, "CostEnergy").c_str()));
 			float CostEnergyT2 = static_cast<float>(atof(request::findValue(&req, "CostEnergyT2").c_str()));
+			float CostEnergyR1 = static_cast<float>(atof(request::findValue(&req, "CostEnergyR1").c_str()));
+			float CostEnergyR2 = static_cast<float>(atof(request::findValue(&req, "CostEnergyR2").c_str()));
 			float CostGas = static_cast<float>(atof(request::findValue(&req, "CostGas").c_str()));
 			float CostWater = static_cast<float>(atof(request::findValue(&req, "CostWater").c_str()));
 			m_sql.UpdatePreferencesVar("CostEnergy", int(CostEnergy*10000.0f));
 			m_sql.UpdatePreferencesVar("CostEnergyT2", int(CostEnergyT2*10000.0f));
+			m_sql.UpdatePreferencesVar("CostEnergyR1", int(CostEnergyR1*10000.0f));
+			m_sql.UpdatePreferencesVar("CostEnergyR2", int(CostEnergyR2*10000.0f));
 			m_sql.UpdatePreferencesVar("CostGas", int(CostGas*10000.0f));
 			m_sql.UpdatePreferencesVar("CostWater", int(CostWater*10000.0f));
 
@@ -12151,6 +12159,16 @@ namespace http {
 				{
 					sprintf(szTmp, "%.4f", (float)(nValue) / 10000.0f);
 					root["CostEnergyT2"] = szTmp;
+				}
+				else if (Key == "CostEnergyR1")
+				{
+					sprintf(szTmp, "%.4f", (float)(nValue) / 10000.0f);
+					root["CostEnergyR1"] = szTmp;
+				}
+				else if (Key == "CostEnergyR2")
+				{
+					sprintf(szTmp, "%.4f", (float)(nValue) / 10000.0f);
+					root["CostEnergyR2"] = szTmp;
 				}
 				else if (Key == "CostGas")
 				{
