@@ -36,12 +36,12 @@ private:
 	void SensorThread();
 	void SwitchThread();
 	void BuildSensorList();
-	void PollSensors();
 	void BuildSwitchList();
 	void PollSwitches();
 
 	// Messages to Domoticz
 	void ReportLightState(const std::string& deviceId, const int unit, const bool state);
+	void ReportWiper(const std::string& deviceId, const unsigned int wiper);
 	void ReportTemperature(const std::string& deviceId, const float temperature);
 	void ReportTemperatureHumidity(const std::string& deviceId, const float temperature, const float humidity);
 	void ReportHumidity(const std::string& deviceId, const float humidity);

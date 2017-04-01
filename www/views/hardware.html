@@ -783,7 +783,7 @@
 			<td><input type="checkbox" id="HC" name="HC">&nbsp;<label for="HC">Home Confort</label></td>
 			<td><input type="checkbox" id="ImaginTronix" name="ImaginTronix">&nbsp;<label for="ImaginTronix">ImaginTronix</label></td>
 			<td><input type="checkbox" id="BlindT0" name="BlindT0">&nbsp;<label for="BlindT0">Blind T0</label></td>
-			<td><input type="checkbox" id="ATIremote" name="ATIremote">&nbsp;<label for="ATIremote">ATI/Cartelectronic</label></td>         
+			<td><input type="checkbox" id="ATIremote" name="ATIremote">&nbsp;<label for="ATIremote">ATI/Cartelectronic</label></td>
 		</tr>
 		<tr>
 			<td></td>
@@ -1160,6 +1160,27 @@
 				</tr>
 			</table>
 		</div>
+		<div id="divgpio">
+			<br>
+			<table class="display" id="hardwareparamsgpio" border="0" cellpadding="0" cellspacing="20">
+				<tr valign="top">
+					<td align="right" style="width:110px"><label id="lblgpiodebounce" for="name"><span data-i18n="Debounce"></span>Debounce:</label></td>
+					<td><input type="text" id="gpiodebounce" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="50" />&nbsp;(<span data-i18n="Milliseconds"></span>)
+					<br />
+						<span data-i18n="Make sure the correct pin status is read by introducing a bounce delay.">Make sure the correct pin status is read by introducing a bounce delay.</span>
+						<br />
+						</td>
+				</tr>
+				<tr valign="top">
+					<td align="right" style="width:110px"><label id="lblgpioperiod" for="name"><span data-i18n="Period"></span>Period:</label></td>
+					<td><input type="text" id="gpioperiod" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="50" />&nbsp;(<span data-i18n="Milliseconds"></span>)
+					<br />
+						<span data-i18n="Maximum of one interrupt per pin allowed in this period (prevents interrupt storms).">Maximum of one interrupt per pin allowed in this period (prevents interrupt storms).</span>
+						<br />
+					</td>
+				</tr>
+			</table>
+		</div>
     <div id="divbaudratemysensors">
       <table class="display" id="hardwareparamsbaudratemysensors" border="0" cellpadding="0" cellspacing="20">
         <tr>
@@ -1433,7 +1454,21 @@
 			</table>
 		</div>
 		<div id="divmysensorsmqtt">
+			<br>
 			<table class="display" id="hardwareparamsmysensorsmqtt" border="0" cellpadding="0" cellspacing="20">
+				<tr valign="top">
+					<td align="right" style="width:110px"><label for="combotopicselect"><span data-i18n="Topic Prefix">Topic Prefix</span>:</label></td>
+					<td><select id="combotopicselect" style="width:200px" class="combobox ui-corner-all">
+						<option value="0">MyMQTT (default)</option>
+						<option value="1">Gateway Node Name</option>
+						</select>
+					<br />
+					<span>Select the Topic(s) where Domoticz publish/receive messages.<br />
+						<b>MyMQTT (default)</b> - domoticz/in/MyMQTT, domoticz/out/MyMQTT <br />
+						<b>Gateway Node Name</b> - domoticz/in/GatewayNodeName, domoticz/out/GatewayNodeName (GatewayNodeName is specified in the Name field (above))<br />
+						<br />
+					</td>
+				</tr>
 				<tr>
 					<td align="right" style="width:110px"><label id="lbfilename" for="filename"><span data-i18n="CA Filename">CA Filename</span>:</label></td>
 					<td><input type="text" id="filename" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
