@@ -89,7 +89,6 @@ define(['app'], function (app) {
 				}
 				return;
 			}
-
             if (text.indexOf("1-Wire") >= 0)
             {
     			var extra=$("#hardwarecontent #div1wire #owfspath").val();
@@ -127,7 +126,7 @@ define(['app'], function (app) {
 				(text.indexOf("Kodi Media") >= 0) ||
 				(text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0) ||
 				(text.indexOf("YeeLight") >= 0) ||
-				(text.indexOf("AriLux AL-LC0x") >= 0)
+				(text.indexOf("Arilux AL-LC0x") >= 0)
 				)
             {
 				// if hardwaretype == 1000 => I2C sensors grouping
