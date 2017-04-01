@@ -5002,6 +5002,10 @@ define(['app'], function (app) {
                         }
                         else if (data["Type"].indexOf("USB") >= 0) {
                             $("#hardwarecontent #hardwareparamsserial #comboserialport").val(data["IntPort"]);
+                            if (data["Type"].indexOf("Evohome") >= 0)
+                            {
+                                $("#hardwarecontent #divbaudrateevohome #combobaudrateevohome").val(data["Mode1"]);
+                            }
                             if (data["Type"].indexOf("MySensors") >= 0)
                             {
                                 $("#hardwarecontent #divbaudratemysensors #combobaudrate").val(data["Mode1"]);
