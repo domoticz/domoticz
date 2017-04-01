@@ -477,8 +477,9 @@ void XiaomiGateway::InsertUpdateVoltage(const std::string & nodeid, const std::s
 		sprintf(szTmp, "%d", 1);
 	else
 		sprintf(szTmp, "%08X", (unsigned int)sID);
-
-	SendVoltageSensor(sID, sID, VoltageLevel, 3, "Xiaomi Voltage");
+	int percent = ((VoltageLevel - 3000) / 6);
+	float voltage = (float)VoltageLevel / 1000;
+	SendVoltageSensor(sID, sID, percent, voltage, "Xiaomi Voltage");
 }
 
 void XiaomiGateway::UpdateToken(const std::string & value)
