@@ -2465,6 +2465,12 @@ span.evomobile .ui-popup {
 	color: red;
 }
 
+/* status updates */
+.statusNormal{background-color: #D4E1EE}
+.statusProtected{background-color: #A4B1EE}
+.statusTimeout{background-color: #DF2D3A}
+.statusLowBattery{background-color:#DDDF2D}
+
 .sub-tabs {
 	border-bottom: 0px solid #ffff00;
 	margin: 0 0 0 0;
