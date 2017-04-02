@@ -5578,7 +5578,17 @@ namespace http {
 				}
 				else
 				{
-					unsigned char twhen = (swhen == "0") ? '>' : '<';
+					unsigned char twhen = '<';
+					if (swhen == "0")
+						twhen = '>';
+					else if (swhen == "1")
+						twhen = 'M';
+					else if (swhen == "2")
+                                                twhen = '=';
+                                        else if (swhen == "3")
+                                                twhen = 'N';
+                                        else if (swhen == "4")
+                                                twhen = 'L';
 					sprintf(szTmp, "%s;%c;%s", ttype.c_str(), twhen, svalue.c_str());
 				}
 				int priority = atoi(spriority.c_str());
@@ -5634,8 +5644,18 @@ namespace http {
 				}
 				else
 				{
-					unsigned char twhen = (swhen == "0") ? '>' : '<';
-					sprintf(szTmp, "%s;%c;%s", ttype.c_str(), twhen, svalue.c_str());
+                                        unsigned char twhen = '<';
+                                        if (swhen == "0")
+                                                twhen = '>';
+                                        else if (swhen == "1")
+                                                twhen = 'M';
+                                        else if (swhen == "2")
+                                                twhen = '=';
+                                        else if (swhen == "3")
+                                                twhen = 'N';
+                                        else if (swhen == "4")
+                                                twhen = 'L';
+                                        sprintf(szTmp, "%s;%c;%s", ttype.c_str(), twhen, svalue.c_str());
 				}
 				int priority = atoi(spriority.c_str());
 				m_notifications.AddNotification(devidx, szTmp, scustommessage, sactivesystems, priority, (ssendalways == "true") ? true : false);
@@ -6581,6 +6601,31 @@ namespace http {
 				root["status"] = "OK";
 				root["title"] = "SetColBrightnessValue";
 			}
+			else if (cparam.find("setkelvinlevel") == 0)
+			{
+				root["status"] = "OK";
+                root["title"] = "Set Kelvin Level";
+
+				std::string idx = request::findValue(&req, "idx");
+
+				if (idx == "")
+				{
+					return;
+				}
+
+				uint64_t ID;
+				std::stringstream s_strid;
+				s_strid << idx;
+				s_strid >> ID;
+
+				std::string kelvin = request::findValue(&req, "kelvin");
+
+				int ival;
+				//ival = atof(cparam.substr(14).c_str());
+				ival = atof(kelvin.c_str());
+
+				m_mainworker.SwitchLight(ID, "Set Kelvin Level", ival, -1,false,0);
+			}
 			else if (cparam == "brightnessup")
 			{
 				root["status"] = "OK";
@@ -6754,6 +6799,44 @@ namespace http {
 				s_strid >> ID;
 
 				m_mainworker.SwitchLight(ID, "Speed Down", 0, -1,false,0);
+			}
+			else if (cparam == "speedmin")
+			{
+				root["status"] = "OK";
+				root["title"] = "Set disco speed minimal!";
+
+				std::string idx = request::findValue(&req, "idx");
+
+				if (idx == "")
+				{
+					return;
+				}
+
+				uint64_t ID;
+				std::stringstream s_strid;
+				s_strid << idx;
+				s_strid >> ID;
+
+				m_mainworker.SwitchLight(ID, "Speed Minimal", 0, -1,false,0);
+			}
+			else if (cparam == "speedmax")
+			{
+				root["status"] = "OK";
+				root["title"] = "Set disco speed maximal!";
+
+				std::string idx = request::findValue(&req, "idx");
+
+				if (idx == "")
+				{
+					return;
+				}
+
+				uint64_t ID;
+				std::stringstream s_strid;
+				s_strid << idx;
+				s_strid >> ID;
+
+				m_mainworker.SwitchLight(ID, "Speed Maximal", 0, -1,false,0);
 			}
 			else if (cparam == "warmer")
 			{
