@@ -100,11 +100,6 @@ tr, #name{
 .statusTimeout{background-color: #DF2D3A}
 .statusLowBattery{background-color:#DDDF2D}
 
-/* a little experiment */
-tr.statusTimeout{
-    background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABsAAAAoCAYAAAAPOoFWAAAAGXRFW…lIN+2qKRyCND0bhqSYCyTB3CAOc4WusBEIpkeBuPgJMAAX8Hs1NfqHRgAAAABJRU5ErkJggg==) left top repeat scroll lightgreen;
-}
-
 #dashcontent .ui-draggable:not(.ui-dialog) tr{
     background-image: none;
     background-color: #D4E1EE;
