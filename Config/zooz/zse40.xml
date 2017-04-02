@@ -9,7 +9,7 @@
                 Temperature scale (Celsius or Fahrenheit (default)).
             </Help>
             <Item label="Celsius" value="0" />
-            <Item label="Fahhhrenheit" value="1" />
+            <Item label="Fahrenheit" value="1" />
         </Value>
         <Value type="byte" index="2" genre="config" label="Temperature Change Notif" units="0.1 degree" min="1" max="50" value="10">
             <Help>

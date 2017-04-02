@@ -20,7 +20,7 @@ It must be installed beforehand following instructions at http://wiringpi.com/do
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
     MA 02110-1301 USA.
 
-This is a derivative work based on the samples included with wiringPi where distributed 
+This is a derivative work based on the samples included with wiringPi where distributed
 under the GNU Lesser General Public License version 3
 Source: http://wiringpi.com
 */
@@ -33,11 +33,11 @@ Source: http://wiringpi.com
 class CGpio : public CDomoticzHardwareBase
 {
 public:
-	explicit CGpio(const int ID);
+	explicit CGpio(const int ID, const int debounce, const int period, const int pollinterval);
 	~CGpio();
 
 	bool WriteToHardware(const char *pdata, const unsigned char length);
-	
+
 	static bool InitPins();
 	static std::vector<CGpioPin> GetPinList();
 	static CGpioPin* GetPPinById(int id);
@@ -45,16 +45,17 @@ public:
 private:
 	bool StartHardware();
 	bool StopHardware();
-
 	void Do_Work();
+	void Poller();
+	void DelayedStartup();
+	void UpdateDeviceStates(bool forceUpdate);
 	void ProcessInterrupt(int gpioId);
-	
+	void UpdateState(int gpioId, bool forceUpdate);
+
 	// List of GPIO pin numbers, ordered as listed
 	static std::vector<CGpioPin> pins;
-	
+
 	boost::shared_ptr<boost::thread> m_thread;
 	volatile bool m_stoprequested;
-	int m_waitcntr;
 	tRBUF IOPinStatusPacket;
-
 };

@@ -9,8 +9,6 @@
 #include "../main/SQLHelper.h"
 #include <sstream>
 
-extern CSQLHelper m_sql;
-
 #define Daikin_POLL_INTERVAL 300
 
 #ifdef _DEBUG

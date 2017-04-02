@@ -12,8 +12,6 @@
 #include <algorithm>
 #include <boost/bind.hpp>
 
-extern MainWorker m_mainworker;
-
 namespace tcp {
 namespace server {
 

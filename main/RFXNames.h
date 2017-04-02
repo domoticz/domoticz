@@ -13,13 +13,13 @@ enum _eSwitchType
 	STYPE_Blinds,					//3
 	STYPE_X10Siren,					//4
 	STYPE_SMOKEDETECTOR,			//5
-    STYPE_BlindsInverted,			//6
+	STYPE_BlindsInverted,			//6
 	STYPE_Dimmer,					//7
 	STYPE_Motion,					//8
 	STYPE_PushOn,					//9
 	STYPE_PushOff,					//10
 	STYPE_DoorContact,				//11
-    STYPE_Dusk,						//12
+	STYPE_Dusk,						//12
 	STYPE_BlindsPercentage,			//13
 	STYPE_VenetianBlindsUS,			//14
 	STYPE_VenetianBlindsEU,			//15
@@ -35,7 +35,7 @@ enum _eMeterType
 	MTYPE_ENERGY=0,			//0
 	MTYPE_GAS,				//1
 	MTYPE_WATER,			//2
-    MTYPE_COUNTER,			//3
+	MTYPE_COUNTER,			//3
 	MTYPE_ENERGY_GENERATED,	//4
 	MTYPE_TIME,				//5
 	MTYPE_END
@@ -181,6 +181,8 @@ enum _eHardwareTypes {
 	HTYPE_Arilux,				//97
 	HTYPE_OpenWebNetUSB,		//98
 	HTYPE_IntergasInComfortLAN2RF,			//99
+	HTYPE_RelayNet,				//100
+	HTYPE_KMTronicUDP,			//101
 	HTYPE_END
 };
 
@@ -212,7 +214,9 @@ enum _eNotificationTypes
 	NTYPE_PHOTO,
 	NTYPE_PAUSED,
 	NTYPE_STOPPED,
-	NTYPE_PLAYING
+	NTYPE_PLAYING,
+	NTYPE_VALUE,
+	NTYPE_LASTUPDATE
 };
 
 const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum);

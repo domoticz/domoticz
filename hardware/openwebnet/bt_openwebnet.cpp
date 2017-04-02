@@ -2,11 +2,10 @@
 //class bt_openwebnet is a modification of GNU bticino C++ openwebnet client
 //from openwebnet class
 //see www.bticino.it; www.myhome-bticino.it
-#include <sstream>
-#include <iostream>
-#include <string>
-#include <iomanip>
+#include "stdafx.h"
 #include "bt_openwebnet.h"
+#include "../../main/localtime_r.h"
+
 // private methods ......
 
 std::string bt_openwebnet::FirstToken(const std::string& myText, const std::string& delimiters)
@@ -516,15 +515,40 @@ bt_openwebnet::bt_openwebnet(const std::string& message)
   CreateMsgOpen(message);
 }
 
-bt_openwebnet::bt_openwebnet(int who, int what, int where)
+bt_openwebnet::bt_openwebnet(const int who, const int what, const int where, const int group)
 {
 	std::stringstream whoStr;
-	std::stringstream whereStr;
 	std::stringstream whatStr;
+	std::stringstream whereStr;	
 
 	whoStr << who;
-	whereStr << what;
-	whatStr << where;
+	whatStr << what;
+	if (group) {
+		/*
+			Group Command: GRP [1 - 255]
+			we need to add a '#'
+		*/
+		whereStr << "#";
+	} else if ((where > 99) && (where < 1000)) {
+
+		/* 
+			APL Command: A [01 - 09]; PL [10 - 15]
+			In this case, 'where' is > 99, but < 1000 (area 10)
+
+			int value is for example 110 (A=1, PL=10).
+			The correct string is '0110', so we need to add a '0'
+		*/
+		whereStr << "0";
+	}
+
+	/*
+		In other cases just take 'where' as is
+		Area Command: A [1 - 9] 
+		APL Command: A[1 - 9]; PL[1 - 9]
+		APL Command: A = 10; PL[01 - 15]
+	*/
+
+	whereStr << where;
 
 	std::string sWho = whoStr.str();
 	std::string sWhere = whereStr.str();
@@ -706,6 +730,24 @@ void bt_openwebnet::CreateTimeReqMsgOpen()
 
   // checks for correct syntax ...
   IsCorrect();
+}
+
+void bt_openwebnet::CreateSetTimeMsgOpen()
+{
+	//call CreateNullMsgOpen function
+  CreateNullMsgOpen();
+  	
+	char frame_dt[50];
+	time_t now = mytime(NULL);
+	struct tm ltime;
+	localtime_r(&now, &ltime);
+	strftime(frame_dt, sizeof(frame_dt)-1, "*#13**#22*%H*%M*%S*001*%u*%d*%m*%Y##", &ltime); //set date time 
+	std::stringstream frame;
+	frame << frame_dt;
+	frame_open = DeleteControlCharacters(frame.str());
+	length_frame_open = frame_open.length();
+
+ 	IsCorrect();
 }
 
 // creates the OPEN message *#who*where*dimension##
@@ -891,10 +933,12 @@ std::string bt_openwebnet::Extract_who() const
 }
 
 std::string bt_openwebnet::Extract_address(unsigned int i) const
-{ 
-	if (i >= 0 && i < addresses.size()) 
-		return addresses.at(i); 
-	return ""; 
+{
+	if (i < addresses.size())
+	{
+		return addresses.at(i);
+	}
+	return "";
 }
 
 std::string bt_openwebnet::Extract_what() const
@@ -928,9 +972,11 @@ std::string bt_openwebnet::Extract_dimension() const
 }
 
 std::string bt_openwebnet::Extract_value(unsigned int i) const
-{ 
-	if (i >= 0 && i < values.size()) 
-		return values.at(i); 
+{
+	if (i < values.size())
+	{
+		return values.at(i);
+	}
 	return "";
 }
 
@@ -1070,7 +1116,7 @@ std::string bt_openwebnet::getWhoDescription(const std::string& who)
 		return "Lighting management";
 	}
 	else if (who == "25") {
-		return "Dry contact/IR Detection";
+		return "CEN Plus/Dry Contact/IR Detection";
 	}
 	else if (who == "1000") {
 		return "Diagnostic";//not documented
@@ -1304,25 +1350,25 @@ std::string bt_openwebnet::getWhatDescription(const std::string& who, const std:
 			return "protection(generic)";
 		}
 		else if (what == "103") {
-			return "OFF – Heating Mode";
+			return "OFF - Heating Mode";
 		}
 		else if (what == "203") {
-			return "OFF – Conditioning Mode";
+			return "OFF - Conditioning Mode";
 		}
 		else if (what == "303") {
 			return "OFF(Generic)";
 		}
 		else if (what == "110") {
-			return "manual - adjustment Mode – Heating";
+			return "manual - adjustment Mode - Heating";
 		}
 		else if (what == "210") {
-			return "manual - adjustment Mode – Conditioning";
+			return "manual - adjustment Mode - Conditioning";
 		}
 		else if (what == "310") {
 			return "manual - adjustment Mode(Generic)";
 		}
 		else if (what == "111") {
-			return "programming Mode – Heating";
+			return "programming Mode - Heating";
 		}
 		else if (what == "211") {
 			return "programming Mode - Conditioning";
@@ -1331,10 +1377,10 @@ std::string bt_openwebnet::getWhatDescription(const std::string& who, const std:
 			return "programming Mode(generic)";
 		}
 		else if (what == "115") {
-			return "holiday daily plan – Heating Mode";
+			return "holiday daily plan - Heating Mode";
 		}
 		else if (what == "215") {
-			return "holiday daily plan – Conditioning Mode";
+			return "holiday daily plan - Conditioning Mode";
 		}
 		else if (what == "315") {
 			return "holiday daily plan";
@@ -1374,65 +1420,65 @@ std::string bt_openwebnet::getWhatDescription(const std::string& who, const std:
 		}
 		int iWhat = atoi(what.c_str());
 		if (iWhat >= 1100 && iWhat <= 1199) {
-			//Weekly Heating program x(x = 1…3)
+			//Weekly Heating program x(x = 1...3)
 			std::stringstream sstr;
 			sstr << "Weekly Heating program ";
 			sstr << (iWhat - 1100);
 			return sstr.str();
 		}
 		else if (iWhat >= 1200 && iWhat <= 1299) {
-			//Heating Scenario xx(xx = 1…16)
+			//Heating Scenario xx(xx = 1...16)
 			std::stringstream sstr;
 			sstr << "Heating Scenario ";
 			sstr << (iWhat - 1200);
 			return sstr.str();
 		}
 		else if (iWhat >= 2100 && iWhat <= 2199) {
-			//Weekly Conditioning program x(x = 1…3)
+			//Weekly Conditioning program x(x = 1...3)
 			std::stringstream sstr;
 			sstr << "Weekly Conditioning program ";
 			sstr << (iWhat - 2100);
 			return sstr.str();
 		}
 		else if (iWhat >= 2200 && iWhat <= 2299) {
-			//Conditionning Scenario xx(xx = 1…16)
+			//Conditionning Scenario xx(xx = 1...16)
 			std::stringstream sstr;
 			sstr << "Conditionning Scenario ";
 			sstr << (iWhat - 2200);
 			return sstr.str();
 		}
 		else if (iWhat >= 13000 && iWhat <= 13999) {
-			//"Vacation scenario for xxx days – Heating mode"
+			//"Vacation scenario for xxx days - Heating mode"
 			std::stringstream sstr;
 			sstr << "Vacation scenario for ";
 			sstr << (iWhat - 13000);
-			sstr << " days – Heating mode";
+			sstr << " days - Heating mode";
 			return sstr.str();
 		}
 		else if (iWhat >= 23000 && iWhat <= 23999) {
-			//Vacation scenario for xxx days – Conditioning mode(xxx = 0….999)
+			//Vacation scenario for xxx days - Conditioning mode(xxx = 0...999)
 			std::stringstream sstr;
 			sstr << "Vacation scenario for ";
 			sstr << (iWhat - 23000);
-			sstr << " days – Conditioning mode";
+			sstr << " days - Conditioning mode";
 			return sstr.str();
 		}
 		else if (iWhat >= 3100 && iWhat <= 3199) {
-			//Weekly Program x(x = 1…3)
+			//Weekly Program x(x = 1...3)
 			std::stringstream sstr;
 			sstr << "Weekly Program ";
 			sstr << (iWhat - 3100);
 			return sstr.str();
 		}
 		else if (iWhat >= 3200 && iWhat <= 3299) {
-			//Scenario x(x = 1…16)
+			//Scenario x(x = 1...16)
 			std::stringstream sstr;
 			sstr << "Scenario ";
 			sstr << (iWhat - 3200);
 			return sstr.str();
 		}
 		else if (iWhat >= 33000 && iWhat <= 33999) {
-			//Vacation scenario for xxx days(xxx = 0….999)
+			//Vacation scenario for xxx days(xxx = 0...999)
 			std::stringstream sstr;
 			sstr << "Vacation scenario for ";
 			sstr << (iWhat - 33000);
@@ -1658,7 +1704,7 @@ std::string bt_openwebnet::getWhatDescription(const std::string& who, const std:
 			return "source cycle(channel stereo)";
 		}
 		else if (what == "30") {
-			return "sleep on “base band”";
+			return "sleep on \"base band\"";
 		}
 		else if (what == "33") {
 			return "sleep on channel stereo";
@@ -1900,7 +1946,20 @@ std::string bt_openwebnet::getWhatDescription(const std::string& who, const std:
 	else if (who == "25") {
 		// "Dry contact";
 		std::stringstream sstr;
-
+		
+		if (what == "21") {
+			sstr << "Short pressure";
+		}
+		else if (what == "22") {
+			sstr << "Start of extended pressure";
+			
+		}else if (what == "23") {
+			sstr << "Extended pressure";
+			
+		}else if (what == "24") {
+			sstr << "End Extended pressure";
+		}
+	
 		if (what == "31") {
 			sstr << "contact ON or IR detection";
 		}
@@ -1929,7 +1988,7 @@ std::string bt_openwebnet::getWhatDescription(const std::string& who, const std:
 	return "Unknown what : " + what + vectorToString(whatParameters);
 }
 
-std::string bt_openwebnet::getWhereDescription(const std::string& who, const std::string& where, const std::vector<std::string>& whereParameters)
+std::string bt_openwebnet::getWhereDescription(const std::string& who, const std::string& what,const std::string& where, const std::vector<std::string>& whereParameters)
 {
 	if (!whereParameters.empty() && whereParameters[whereParameters.size() - 1] == "9") {
 		std::stringstream desc;
@@ -2021,6 +2080,17 @@ std::string bt_openwebnet::getWhereDescription(const std::string& who, const std
 		//3#<where actuators> with actuators = Z#N belonging to [0 - 99]#[1 - 9] : Split Control actuator Z/N
 	}
 	else if (who == "5") {
+        
+        if (atoi(what.c_str()) == 11 ){
+            return "zone " + whereParameters[0];
+        }
+        else if (atoi(what.c_str()) >= 0 && atoi(what.c_str()) <= 10  ) {
+            return "";
+            
+        }else if (atoi(what.c_str()) == 18 ) {
+            return "zone " + whereParameters[0];
+        }
+        
 		// "Burglar alarm" : TODO
 		//1 : CONTROL PANEL
 		//#0 ... #8 : ZONE xx CENTRAL
@@ -2032,7 +2102,7 @@ std::string bt_openwebnet::getWhereDescription(const std::string& who, const std
 		//8n :  ZONE 8, SENSOR n
 		//#12 : ZONE C
 		//#15 : ZONE F
-	}
+    }
 	else if (who == "7") {
 		// "Video door entry system" : TODO
 		//4000			Camera 00.. 
@@ -2112,23 +2182,23 @@ std::string bt_openwebnet::getWhereDescription(const std::string& who, const std
 	else if (who == "1004") {
 		// "Thermoregulation diagnostic" : TODO
 		//1 Zone 1 master probe 
-		//2 Zone 2 master probe … 
+		//2 Zone 2 master probe ... 
 		//99 Zone 99 master probe
 		//#0 Central unit 
 		//#1 Zone 1 via central unit 
-		//#2 Zone 2 via central unit … 
+		//#2 Zone 2 via central unit ... 
 		//#99 Zone 99 via central unit
 	}
 
 
 	if (translateAmbPL) {
 		if (atoi(where.c_str()) == 0) {
+			if (whereParameters.size()>0) {
+				//group from 1 to 255
+				return "Group " + whereParameters[0];
+			}
 			return "General";
-		}
-		if (whereParameters.size()>0) {
-			//group from 1 to 255
-			return "Group " + whereParameters[0];
-		}
+		}		
 
 		std::string room;
 		std::string pointOfLight;
@@ -2166,6 +2236,16 @@ std::string bt_openwebnet::getWhereDescription(const std::string& who, const std
 			return room + ", point of light " + pointOfLight;
 		}
 	}
+
+	if (where.length() == 1) {
+		//A = [1 - 9] 
+		return "area " + where.substr(0, 1);
+	}
+	else if (where.length() == 2) {
+		//A = [01 - 09] 
+		return "area " + where.substr(0, 2);
+	}
+
 
 	return "Unknown where : " + where + vectorToString(whereParameters);
 }
@@ -2217,8 +2297,8 @@ std::string bt_openwebnet::getDimensionsDescription(const std::string& who, cons
 		//12 Complete probe status
 		//13 Local set offset : 00  knob on 0 // 01  knob on + 1 (degree) //11  knob on - 1 (degree)//02  knob on + 2 (degree)//12  knob on - 2 (degree)//03  knob on + 3 (degree)//13  knob on - 3 (degree)//4  knob on Local OFF
 		//14 Set Point temperature
-		//14 et 0 : values T et M : T = Zone operation temperature not ad just by local offset.The T field is composed from 4 digits: c1c2c3c4, included between “0050”(5° temperature) and “0400”(40° temperature). c1 is always equal to 0, it indicates a positive temperature.The c2c3 couple indicates the temperature values between[05° - 40°].c4 indicates the decimal Celsius degree by 0.5° step. M = operation mode1  heating mode2  conditional mode3  generic mode
-		//19 Valves status 		CV, HV = Valves’ status, CV: Conditioning Valve and HV : Heating Valve
+		//14 et 0 : values T et M : T = Zone operation temperature not ad just by local offset.The T field is composed from 4 digits: c1c2c3c4, included between "0050"(5° temperature) and "0400"(40° temperature). c1 is always equal to 0, it indicates a positive temperature.The c2c3 couple indicates the temperature values between[05° - 40°].c4 indicates the decimal Celsius degree by 0.5° step. M = operation mode1  heating mode2  conditional mode3  generic mode
+		//19 Valves status 		CV, HV = Valves' status, CV: Conditioning Valve and HV : Heating Valve
 		//			CV, HV = 0  OFF
 		//		CV, HV = 1  ON
 		//	CV, HV = 2  Opened
@@ -2474,7 +2554,7 @@ std::string bt_openwebnet::frameToString(const bt_openwebnet& frame)
 
 		frameStr << " - who=" << getWhoDescription(frame.Extract_who());
 		frameStr << " - what=" << getWhatDescription(frame.Extract_who(), frame.Extract_what(), frame.Extract_whatParameters());
-		frameStr << " - where=" << getWhereDescription(frame.Extract_who(), frame.Extract_where(), frame.Extract_whereParameters());
+		frameStr << " - where=" << getWhereDescription(frame.Extract_who(), frame.Extract_what(),frame.Extract_where(), frame.Extract_whereParameters());
 
 		if (!frame.Extract_dimension().empty()) {
 			frameStr << " - dimensions : " << getDimensionsDescription(frame.Extract_who(), frame.Extract_dimension(), frame.Extract_values());

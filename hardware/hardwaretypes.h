@@ -64,6 +64,7 @@
 #define sTypeKwh					0x1D
 #define sTypeWaterflow				0x1E
 #define sTypeCustom					0x1F
+#define sTypeZWaveAlarm				0x20
 
 //General Switch
 #define pTypeGeneralSwitch			0xF4
@@ -168,6 +169,16 @@
 #define sSwitchAuxiliaryT1			0x68
 #define sSwitchBlindsT2				0x69
 #define sSwitchLightT2				0x70
+#define sSwitchContactT1			0x71
+#define sSwitchTypeYW_Secu			0x6a
+#define sSwitchTypeMertik_GV60		0x6b
+#define sSwitchTypeNingbo64			0x6c
+#define sSwitchTypeX2D				0x6d
+#define sSwitchTypeHRCMotor			0x6e
+#define sSwitchTypeVelleman			0x6f
+#define sSwitchTypeRFCustom			0x72
+#define sSwitchTypeYW_Sensor		0x73
+#define sSwitchTypeLegrandcad		0x74
 
 //Switch commands
 #define gswitch_sOff				0x00
@@ -391,6 +402,7 @@ typedef struct _tGeneralDevice {
 	float floatval2;
 	int32_t intval1;
 	int32_t intval2;
+	char text[64];
 	_tGeneralDevice()
 	{
 		len=sizeof(_tGeneralDevice)-1;
@@ -401,6 +413,7 @@ typedef struct _tGeneralDevice {
 		floatval2=0;
 		intval1=0;
 		intval2=0;
+		text[0] = 0;
 	}
 } GeneralDevice;
 
@@ -450,6 +463,12 @@ typedef struct _tP1Power {
 		type = pTypeP1Power;
 		subtype = sTypeP1Power;
 		ID = 1;
+		powerusage1 = 0;
+		powerusage2 = 0;
+		powerdeliv1 = 0;
+		powerdeliv2 = 0;
+		usagecurrent = 0;
+		delivcurrent = 0;
 	}
 } P1Power;
 
@@ -473,7 +492,7 @@ typedef struct _tLimitlessLights {
 	uint8_t type;
 	uint8_t subtype;
 	uint32_t id;
-	uint8_t dunit; //0=All, 1=Group1,2=Group2,3=Group3,4=Group4
+	uint8_t dunit; //0=All, 1=Group1,2=Group2,3=Group3,4=Group4, 5=IboxLed
 	uint8_t command;
 	uint8_t value;
 	_tLimitlessLights()
@@ -512,6 +531,19 @@ typedef struct _tLimitlessLights {
 #define Limitless_FullBrightness 21
 #define Limitless_DiscoSpeedFasterLong 22 //exclude RGB
 #define Limitless_SetHEXColour 23
+#define Limitless_DiscoMode_1 24
+#define Limitless_DiscoMode_2 25
+#define Limitless_DiscoMode_3 26
+#define Limitless_DiscoMode_4 27
+#define Limitless_DiscoMode_5 28
+#define Limitless_DiscoMode_6 29
+#define Limitless_DiscoMode_7 30
+#define Limitless_DiscoMode_8 31
+#define Limitless_DiscoMode_9 32
+#define Limitless_SetKelvinLevel 33
+#define Limitless_DiscoSpeedMinimal 34
+#define Limitless_DiscoSpeedMaximal 35
+
 
 typedef union tREVOBUF {
 	struct _tEVOHOME1 {

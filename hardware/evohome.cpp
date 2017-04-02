@@ -40,11 +40,11 @@
 extern std::string szUserDataFolder;
 
 std::ofstream *CEvohome::m_pEvoLog=NULL;
-//#ifdef _DEBUG
+#ifdef _DEBUG
 bool CEvohome::m_bDebug=true;
-//#else
-//bool CEvohome::m_bDebug=false;
-//#endif
+#else
+bool CEvohome::m_bDebug=false;
+#endif
 
 const char CEvohome::m_szControllerMode[7][20]={"Normal","Economy","Away","Day Off","Custom","Heating Off","Unknown"};
 const char CEvohome::m_szWebAPIMode[7][20]={"Auto","AutoWithEco","Away","DayOff","Custom","HeatingOff","Unknown"};
@@ -72,7 +72,7 @@ const char* CEvohome::GetZoneModeName(uint8_t nZoneMode)
 	return m_szZoneMode[(std::min)(nZoneMode, (uint8_t)6)]; //parentheses around function name apparently avoids macro expansion windef.h macros will conflict here
 }
 
-CEvohome::CEvohome(const int ID, const std::string &szSerialPort, const std::string &UserContID) :
+CEvohome::CEvohome(const int ID, const std::string &szSerialPort, const int baudrate) :
 	m_ZoneNames(m_nMaxZones),
 	m_ZoneOverrideLocal(m_nMaxZones)
 {
@@ -91,8 +91,16 @@ CEvohome::CEvohome(const int ID, const std::string &szSerialPort, const std::str
 	m_MaxDeviceID = 0;
 
 	AllSensors = false;
-	
-	m_iBaudRate=115200;
+
+	if(baudrate!=0)
+	{
+	  m_iBaudRate=baudrate;
+	}
+	else
+	{
+	  // allow migration of hardware created before baud rate was configurable
+	  m_iBaudRate=115200;
+	}
 	if(!szSerialPort.empty())
 	{
 		m_szSerialPort=szSerialPort;
@@ -252,8 +260,8 @@ bool CEvohome::OpenSerialDevice()
 	//Try to open the Serial Port
 	try
 	{
+		_log.Log(LOG_STATUS,"evohome: Opening serial port: %s@%d", m_szSerialPort.c_str(), m_iBaudRate);
 		open(m_szSerialPort,m_iBaudRate);
-		_log.Log(LOG_STATUS,"evohome: Using serial port: %s", m_szSerialPort.c_str());
 	}
 	catch (boost::exception & e)
 	{
@@ -738,7 +746,7 @@ int CEvohome::ProcessBuf(char * buf, int size)
 	for (int i = 0; i < size; ++i) 
 	{
 		if(buf[i]==0x11)//this appears to be a break character?
-			start=i+1;
+			buf[i]=0x20; // replace with printable char and continue; next stage will log error
 		else if(buf[i]==0x0A)//this is the end of packet marker...not sure if there is a CR before this?
 		{
 			if (i - start >= 2048) {
@@ -862,10 +870,9 @@ bool CEvohomeMsg::DecodePacket(const char * rawmsg)
 void CEvohome::ProcessMsg(const char * rawmsg)
 {
 	CEvohomeMsg msg(rawmsg);
+	Log(rawmsg,msg);
 	if(msg.IsValid())
 	{
-		Log(rawmsg,msg);
-		
 		if (GetControllerID()== 0xFFFFFF) // If we still have a dummy controller update the controller DeviceID list
 		{
 			for (int n = 0; n<3; n++)
@@ -1030,7 +1037,6 @@ bool CEvohome::DecodeSetpoint(CEvohomeMsg &msg)//0x2309
 		Log(false,LOG_ERROR,"evohome: %s: Error decoding zone setpoint payload, size incorrect: %d", tag, msg.payloadsize);
 		return false;
 	}
-	
 	REVOBUF tsen;
 	memset(&tsen,0,sizeof(REVOBUF));
 	tsen.EVOHOME2.len=sizeof(tsen.EVOHOME2)-1;
@@ -1203,6 +1209,7 @@ bool CEvohome::DecodeZoneTemp(CEvohomeMsg &msg)//0x30C9
 		//msg from sensor itself
 		if (AllSensors) 
 		{
+			std::vector<std::vector<std::string> > result;
 			char zstrname[40];
 			std::string zstrid(CEvohomeID::GetHexID(msg.GetID(0)));
 
@@ -1417,7 +1424,7 @@ bool CEvohome::DecodeZoneName(CEvohomeMsg &msg)
 	}
 	if(memcmp(&msg.payload[2],m_szNameErr,18)==0)
 	{
-		Log(true,LOG_STATUS,"evohome: %s: Warning zone name not set: %d", tag, msg.payload[0]);
+		Log(true,LOG_STATUS,"evohome: %s: Warning zone name not set: %d", tag, msg.payload[0]+1);
 		m_bStartup[0]=false;
 		return true;
 	}
@@ -1615,7 +1622,11 @@ bool CEvohome::DecodeHeatDemand(CEvohomeMsg &msg)
 	Log(true,LOG_STATUS,"evohome: %s: %s (0x%x) DevNo 0x%02x %d (0x%x)", tag, szSourceType.c_str(), msg.GetID(0), nDevNo, nDemand, msg.command);
 
 	if(msg.command==0x0008)
+	{
+		if (nDevNo < 12)
+			nDevNo++; //Need to add 1 to give correct zone numbers
 		RXRelay(static_cast<uint8_t>(nDevNo),static_cast<uint8_t>(nDemand), msg.GetID(0));
+	}
 	return true;
 }
 
@@ -1771,7 +1782,8 @@ bool CEvohome::DecodeBatteryInfo(CEvohomeMsg &msg)
 		tsen.EVOHOME2.type=pTypeEvohomeWater;
 		tsen.EVOHOME2.subtype=sTypeEvohomeWater;
 		tsen.EVOHOME2.zone=nDevNo;
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME2, NULL, nBattery);
+		RFX_SETID3(GetControllerID(), tsen.EVOHOME2.id1, tsen.EVOHOME2.id2, tsen.EVOHOME2.id3); 
+		sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME2, "DHW Temp", nBattery);  // Update DHW Zone sensor
 	}
 	Log(true,LOG_STATUS,"evohome: %s: %s=%d charge=%d(%%) level=%d (%s)",tag,szType.c_str(),nDevNo,nBattery,nLowBat,(nLowBat==0)?"Low":"OK");
 	
@@ -1947,7 +1959,11 @@ void CEvohome::Log(const char *szMsg, CEvohomeMsg &msg)
 		*m_pEvoLog << szMsg;
 		*m_pEvoLog << " (";
 		for(int i=0;i<msg.payloadsize;i++)
-			*m_pEvoLog << msg.payload[i];
+		{
+			unsigned char c = msg.payload[i];
+			if (c < 0x20 || c > 0x7E) c = '.';
+			*m_pEvoLog << c;
+		}
 		*m_pEvoLog << ")";
 		*m_pEvoLog << std::endl;
 	}

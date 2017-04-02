@@ -4,7 +4,7 @@
 //	Domoticz Plugin System - Dnpwwo, 2016
 //
 
-#include "../DomoticzHardware.h"
+class CDomoticzHardwareBase;
 
 namespace Plugins {
 
@@ -37,6 +37,7 @@ namespace Plugins {
 		bool StopPluginSystem();
 		void AllPluginsStarted() { m_bAllPluginsStarted = true; };
 		static void SendNotification(const std::string &, const std::string &, const std::string &, int, const std::string &);
+		static void LoadSettings();
 	};
 };
 

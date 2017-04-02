@@ -2,6 +2,7 @@
 #include "Helper.h"
 #ifdef WIN32
 #include "dirent_windows.h"
+#include <direct.h>
 #else
 #include <dirent.h>
 #endif
@@ -10,6 +11,7 @@
 #include <fstream>
 #include <math.h>
 #include <algorithm>
+#include "../main/localtime_r.h"
 #include <sstream>
 #include <openssl/md5.h>
 
@@ -177,6 +179,9 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 		// Loop while not NULL
 		while ((de = readdir(d)))
 		{
+			// Only consider character devices and symbolic links
+                        if ((de->d_type == DT_CHR) || (de->d_type == DT_LNK))
+                        {
 			std::string fname = de->d_name;
 			if (fname.find("ttyUSB")!=std::string::npos)
 			{
@@ -222,6 +227,21 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 				{
 					ret.push_back("/dev/" + fname);
 					bUseDirectPath=true;
+				}
+				// By default, this is the "small UART" on Rasberry 3 boards
+                                        if (fname.find("ttyS0")!=std::string::npos)
+                                        {
+                                                ret.push_back("/dev/" + fname);
+                                                bUseDirectPath=true;
+                                        }
+                                        // serial0 and serial1 are new with Rasbian Jessie
+                                        // Avoids confusion between Raspberry 2 and 3 boards
+                                        // More info at http://spellfoundry.com/2016/05/29/configuring-gpio-serial-port-raspbian-jessie-including-pi-3/
+                                        if (fname.find("serial")!=std::string::npos)
+                                        {
+                                                ret.push_back("/dev/" + fname);
+                                                bUseDirectPath=true;
+                                        }
 				}
 			}
 		}
@@ -397,37 +417,41 @@ void sleep_milliseconds(const long milliseconds)
 #endif
 }
 
+int createdir(const char *szDirName, int secattr)
+{
+	int ret = 0;
+#ifdef WIN32
+	ret = _mkdir(szDirName);
+#else
+	ret = mkdir(szDirName, secattr);
+#endif
+	return ret;
+}
+
 int mkdir_deep(const char *szDirName, int secattr)
 {
 	char DirName[260];
 	DirName[0] = 0;
 	const char* p = szDirName;
-	char* q = DirName; 
+	char* q = DirName;
+	int ret = 0;
 	while(*p)
 	{
 		if (('\\' == *p) || ('/' == *p))
 		{
-		 if (':' != *(p-1))
-		 {
-#if (defined(__WIN32__) || defined(_WIN32)) && !defined(IMN_PIM)
-			CreateDirectory(DirName, NULL);
-#else
-			 mkdir(DirName,secattr);
-#endif
-		 }
+			if (':' != *(p-1))
+			{
+				ret = createdir(DirName, secattr);
+			}
 		}
 		*q++ = *p++;
 		*q = '\0';
 	}
 	if (DirName[0])
 	{
-		#if (defined(__WIN32__) || defined(_WIN32)) && !defined(IMN_PIM)
-				CreateDirectory(DirName, NULL);
-		#else
-				mkdir(DirName, secattr);
-		#endif
+		ret = createdir(DirName, secattr);
 	}
-	return 0;
+	return ret;
 }
 
 double ConvertToCelsius(const double Fahrenheit)
@@ -491,6 +515,50 @@ std::vector<std::string> ExecuteCommandAndReturn(const std::string &szCommand)
 	return ret;
 }
 
+//convert date string 10/12/2014 10:45:58 en  struct tm 
+void DateAsciiTotmTime (std::string &sTime , struct tm &tmTime  )
+{
+		tmTime.tm_isdst=0; //dayly saving time
+		tmTime.tm_year=atoi(sTime.substr(0,4).c_str())-1900;
+		tmTime.tm_mon=atoi(sTime.substr(5,2).c_str())-1;
+		tmTime.tm_mday=atoi(sTime.substr(8,2).c_str());
+		tmTime.tm_hour=atoi(sTime.substr(11,2).c_str());
+		tmTime.tm_min=atoi(sTime.substr(14,2).c_str());
+		tmTime.tm_sec=atoi(sTime.substr(17,2).c_str());
+
+
+}
+//convert struct tm time to char 
+void AsciiTime (struct tm &ltime , char * pTime )
+{
+		sprintf(pTime, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
+}
+
+std::string  GetCurrentAsciiTime ()
+{
+	    time_t now = time(0)+1;	
+		struct tm ltime;
+		localtime_r(&now, &ltime);
+		char pTime[40];
+		AsciiTime (ltime ,  pTime );
+		return pTime ;
+}
+
+void AsciiTime ( time_t DateStart, char * DateStr )
+{
+	struct tm ltime;
+	localtime_r(&DateStart, &ltime);
+	AsciiTime (ltime ,  DateStr );
+
+}
+
+time_t DateAsciiToTime_t ( std::string & DateStr )
+{
+	struct tm tmTime ;
+	DateAsciiTotmTime (DateStr , tmTime  );
+	return mktime(&tmTime);
+
+}
 std::string GenerateMD5Hash(const std::string &InputString, const std::string &Salt)
 {
 	std::string cstring = InputString + Salt;
@@ -671,6 +739,8 @@ bool dirent_is_directory(std::string dir, struct dirent *ent)
 	if (ent->d_type == DT_DIR)
 		return true;
 #ifndef WIN32
+	if (ent->d_type == DT_LNK)
+		return true;
 	if (ent->d_type == DT_UNKNOWN) {
 		std::string fname = dir + "/" + ent->d_name;
 		struct stat st;
@@ -696,6 +766,35 @@ bool dirent_is_file(std::string dir, struct dirent *ent)
 	return false;
 }
 
+/*!
+ * List entries of a directory.
+ * @param entries A string vector containing the result
+ * @param dir Target directory for listing
+ * @param bInclDirs Boolean flag to include directories in the result
+ * @param bInclFiles Boolean flag to include regular files in the result
+ */
+void DirectoryListing(std::vector<std::string>& entries, const std::string &dir, bool bInclDirs, bool bInclFiles)
+{
+	DIR *d = NULL;
+	struct dirent *ent;
+	if ((d = opendir(dir.c_str())) != NULL)
+	{
+		while ((ent = readdir(d)) != NULL) {
+			std::string name = ent->d_name;
+			if (bInclDirs && dirent_is_directory(dir, ent) && name != "." && name != "..") {
+				entries.push_back(name);
+				continue;
+			}
+			if (bInclFiles && dirent_is_file(dir, ent)) {
+				entries.push_back(name);
+				continue;
+			}
+		}
+		closedir(d);
+	}
+	return;
+}
+
 std::string GenerateUserAgent()
 {
 	srand((unsigned int)time(NULL));
@@ -706,3 +805,35 @@ std::string GenerateUserAgent()
 	sstr << "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/" << (601 + sversion) << "." << (36+mversion) << " (KHTML, like Gecko) Chrome/" << (53 + mversion) << ".0." << cversion << ".0 Safari/" << (601 + sversion) << "." << (36+sversion);
 	return sstr.str();
 }
+
+std::string MakeHtml(const std::string &txt)
+{
+        std::string sRet = txt;
+
+        stdreplace(sRet, "&", "&amp;");
+        stdreplace(sRet, "\"", "&quot;");
+        stdreplace(sRet, "'", "&apos;");
+        stdreplace(sRet, "<", "&lt;");
+        stdreplace(sRet, ">", "&gt;");
+        stdreplace(sRet, "\r\n", "<br/>");
+        return sRet;
+}
+
+#if defined WIN32
+//FILETIME of Jan 1 1970 00:00:00
+static const uint64_t epoch = (const uint64_t)(116444736000000000);
+
+int gettimeofday( timeval * tp, void * tzp)
+{
+	FILETIME    file_time;
+	SYSTEMTIME  system_time;
+	ULARGE_INTEGER ularge;
+	GetSystemTime(&system_time);
+	SystemTimeToFileTime(&system_time, &file_time);
+	ularge.LowPart = file_time.dwLowDateTime;
+	ularge.HighPart = file_time.dwHighDateTime;
+	tp->tv_sec = (long)((ularge.QuadPart - epoch) / 10000000L);
+	tp->tv_usec = (long)(system_time.wMilliseconds * 1000);
+	return 0;
+}
+#endif

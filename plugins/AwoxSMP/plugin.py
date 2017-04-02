@@ -91,15 +91,15 @@ class BasePlugin:
 		try:
 			plug = SmartPlug(Parameters["Address"])
 			(SMPstate, SMPconso) = plug.status_request()
+			plug.disconnect()
+			SMPstate = 'on' if SMPstate else 'off'
+			Domoticz.Log('plug state = %s' % SMPstate)
+			if (SMPstate == 'off'): UpdateDevice(1,0,'Off')
+			else: UpdateDevice(1,1,'On')
+			Domoticz.Log('plug power = %d W' % SMPconso)
+			UpdateDevice(2,0,str(SMPconso))
 		except btle.BTLEException as err:
 			Domoticz.Log('error when requesting stat to plug %s (code %d)' % (Parameters["Address"], err.code))
-		plug.disconnect()
-		SMPstate = 'on' if SMPstate else 'off'
-		Domoticz.Log('plug state = %s' % SMPstate)
-		if (SMPstate == 'off'): UpdateDevice(1,0,'Off')
-		else: UpdateDevice(1,1,'On')
-		Domoticz.Log('plug power = %d W' % SMPconso)
-		UpdateDevice(2,0,str(SMPconso))
 		return True
 
 	def SetSocketSettings(self, power):

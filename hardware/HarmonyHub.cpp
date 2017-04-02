@@ -207,17 +207,13 @@ void CHarmonyHub::Do_Work()
 			std::string strData;
 			while (bIsDataReadable)
 			{
-				if (memset(m_databuffer, 0, BUFFER_SIZE) > 0)
+				memset(m_databuffer, 0, BUFFER_SIZE);
+				m_commandcsocket->read(m_databuffer, BUFFER_SIZE, false);
+				std::string szNewData = std::string(m_databuffer);
+				if (!szNewData.empty())
 				{
-					m_commandcsocket->read(m_databuffer, BUFFER_SIZE, false);
-					std::string szNewData = std::string(m_databuffer);
-					if (!szNewData.empty())
-					{
-						strData.append(m_databuffer);
-						m_commandcsocket->canRead(&bIsDataReadable, 0.4f);
-					}
-					else
-						bIsDataReadable = false;
+					strData.append(m_databuffer);
+					m_commandcsocket->canRead(&bIsDataReadable, 0.4f);
 				}
 				else
 					bIsDataReadable = false;
@@ -639,21 +635,16 @@ bool CHarmonyHub::SubmitCommand(const std::string &strCommand, const std::string
 	m_commandcsocket->canRead(&bIsDataReadable,5.0f);
 	while(bIsDataReadable)
 	{
-
-		if(memset(m_databuffer, 0, BUFFER_SIZE)>0)
+		memset(m_databuffer, 0, BUFFER_SIZE);
+		m_commandcsocket->read(m_databuffer, BUFFER_SIZE, false);
+		std::string szNewData = std::string(m_databuffer);
+		if (!szNewData.empty())
 		{
-			m_commandcsocket->read(m_databuffer, BUFFER_SIZE, false);
-			std::string szNewData = std::string(m_databuffer);
-			if (!szNewData.empty())
-			{
-				strData.append(m_databuffer);
-				m_commandcsocket->canRead(&bIsDataReadable, 0.4f);
-			}
-			else
-				bIsDataReadable = false;
+			strData.append(m_databuffer);
+			m_commandcsocket->canRead(&bIsDataReadable, 0.4f);
 		}
 		else
-			bIsDataReadable=false;
+			bIsDataReadable = false;
 	}
 	if (strData.empty())
 		return false;
