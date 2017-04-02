@@ -6390,8 +6390,14 @@ void MainWorker::decode_evohome3(const int HwdID, const _eHardwareTypes HwdType,
 			procResult.DeviceName = "CH Valve";
 		else if(Unit==0xFA)
 			procResult.DeviceName = "DHW Valve";
-		else if(Unit==0xFC)
-			procResult.DeviceName = "Boiler";
+		else if (Unit == 0xFC)
+		{
+			if(pEvo->EVOHOME3.id1 >> 2 == CEvohomeID::devBridge) // Evohome OT Bridge
+				procResult.DeviceName = "Boiler (OT Bridge)";
+			else
+				procResult.DeviceName = "Boiler";
+		}
+			
 		else if (Unit <= 12)
 			procResult.DeviceName = "Zone";
 		std::vector<std::vector<std::string> > result;
