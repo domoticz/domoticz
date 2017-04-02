@@ -1190,6 +1190,15 @@ define(['app'], function (app) {
 			});
 		}
 
+		appLampSetKelvin = function(kelvin)
+		{
+			$.ajax({
+				 url: "json.htm?type=command&param=setkelvinlevel&idx=" + $.devIdx + "&kelvin=" + kelvin,
+				 async: false,
+				 dataType: 'json'
+			});
+		}
+
 		appLampSpeedUp = function()
 		{
 			$.ajax({
@@ -1211,6 +1220,24 @@ define(['app'], function (app) {
 		{
 			$.ajax({
 				 url: "json.htm?type=command&param=speeddown&idx=" + $.devIdx,
+				 async: false,
+				 dataType: 'json'
+			});
+		}
+
+		appLampSpeedMin = function()
+		{
+			$.ajax({
+				 url: "json.htm?type=command&param=speedmin&idx=" + $.devIdx,
+				 async: false,
+				 dataType: 'json'
+			});
+		}
+
+		appLampSpeedMax = function()
+		{
+			$.ajax({
+				 url: "json.htm?type=command&param=speedmax&idx=" + $.devIdx,
 				 async: false,
 				 dataType: 'json'
 			});
@@ -1589,10 +1616,20 @@ define(['app'], function (app) {
 			$('#lightcontent #Brightness').val(100);
 			$('#lightcontent #Hue').val(128);
 
+//For later use with slider: chris
+//			var kelvin=100;
+//			$('#lightcontent #Temperature').val(75);
+//chris
+
 			$.bIsLED=(devsubtype.indexOf("RGB") >= 0);
 			$.bIsRGB=(devsubtype=="RGB");
 			$.bIsRGBW=(devsubtype.indexOf("RGBW") >= 0);
+			$.bIsRGBWW=(devsubtype.indexOf("RGBWW") >= 0);
 			$.bIsWhite=(devsubtype=="White");
+			//Only Limitless type bulbs
+			$.bIsLimitless=(stype.indexOf("Limitless") >= 0);
+			//
+
 
 			if ($.bIsLED==true) {
 				$("#lightcontent #LedColor").show();
@@ -1600,17 +1637,23 @@ define(['app'], function (app) {
 			else {
 				$("#lightcontent #LedColor").hide();
 			}
-			if ($.bIsRGB==true && $.strUnit =="0") {
-				$("#lightcontent #optionsRGB").show();
+			if ($.bIsRGB==true && $.strUnit =="0" && $.bIsLimitless==true) {
+				$("#lightcontent #optionsRGBLimit").show();
 			}
 			else {
-				$("#lightcontent #optionsRGB").hide();
+				$("#lightcontent #optionsRGBLimit").hide();
 			}
-			if ($.bIsRGBWW==true || $.bIsRGBW==true){
-				$("#lightcontent #optionsRGBWW").show();
+			if ($.bIsRGBWW==true && $.bIsLimitless==true){
+				$("#lightcontent #optionsRGBWWLimit").show();
 			}
 			else {
-				$("#lightcontent #optionsRGBWW").hide();
+				$("#lightcontent #optionsRGBWWLimit").hide();
+			}
+			if ($.bIsRGBW==true && $.bIsRGBWW==false && $.bIsLimitless==true) {
+				$("#lightcontent #optionsRGBWLimit").show();
+			}
+			else {
+				$("#lightcontent #optionsRGBWLimit").hide();
 			}
 			if ($.bIsRGBW==true) {
 				$("#lightcontent #optionsRGBW").show();
