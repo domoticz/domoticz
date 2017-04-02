@@ -352,7 +352,7 @@ transform: scale(1.2,1.2);
 .navbar .nav > li > .dropdown-menu.pull-right > li.dropdown-submenu > .dropdown-menu.pull-left > li.dropdown-submenu > .dropdown-menu.pull-right li{
     width: 100%;
     min-height: 30px;
-    padding: 10px 0 10x 0;
+    padding: 10px 0 10px 0;
     margin-bottom:1px;
     /*-webkit-box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.2)!important;
     box-shadow: 0px 0px 2px 0px rgba(0, 0, 0, 0.2)!important;*/
