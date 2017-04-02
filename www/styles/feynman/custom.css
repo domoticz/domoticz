@@ -1,0 +1,43 @@
+@import url("base.css"); /* Don't remove this line! */
+@import url("feynman.css");  /* Don't remove this line! */
+@import url("dashboard_highlights.css"); /* This adds bigger items at the top of the dashboard */
+@import url("navigation_main_sidebar.css"); /* This transforms the main menu to a vertical menu on the left.*/
+@import url("navigation_settings_sidemenu.css"); /* This transforms the settings-tabs into a fixed sidebar.*/
+@import url("extras_and_animations.css"); /* Adds fun visual extras */
+
+
+/* GENERAL SETTINGS
+Welcome the the Progress Theme settings.
+
+First, you can remove or change certain features by simply removing (or adding) the /* at the beginning of the 
+lines at the of this page.
+
+
+/* CUSTOM BACKGROUND IMAGE
+You can add your own background image here. Just place the URL between the brackets of "url()"in the line below.
+*/
+
+body {
+    background-image: url() no-repeat center center fixed;
+}
+
+
+/* OPTION DETAILS
+
+__Dashboard Highlights__
+This is a little CSS script that super-sizes the top 3 items for each category. You can use this to highlight 
+some of your devices, or give their buttons a little more breathing room. This only works for the normal view, 
+because the compact view is about saving space.
+
+__Navigation main sidemenu__
+This moves the main menu to the left side of the screen. It works best for wide screens (about 980 pixels wide 
+is my recommendation).
+
+__Settings Sidemenu__
+Instead of the tabs at the top of each settings page, you get a sidebar instead. It stays in place. This 
+includes the 'save' button, so you always have easy access to that.
+
+__Extra's and animations__
+Adds some pretty details (checkboxes) and animations (dialog pop-ups).
+
+*/
