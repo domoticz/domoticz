@@ -180,6 +180,19 @@ std::string CNotificationHelper::ParseCustomMessage(const std::string &cMessage,
 	return ret;
 }
 
+bool CNotificationHelper::ApplyRule(std::string rule, bool equal, bool less)
+{
+	if (((rule == ">") || (rule == "M")) && (!less) && (!equal))  // > or >=
+     		return true;
+  	else if (((rule == "<") || (rule == "L")) && (less)) // < or <=
+       		return true;
+  	else if (((rule == "=") || (rule == "M") || (rule == "L")) && (equal))  // = or <= or >=
+      		return true;
+    	else if ((rule == "N") && (!equal)) // <>
+       		return true;
+	return false;
+}
+
 bool CNotificationHelper::CheckAndHandleTempHumidityNotification(
 	const uint64_t Idx,
 	const std::string &devicename,
@@ -220,7 +233,6 @@ bool CNotificationHelper::CheckAndHandleTempHumidityNotification(
 			if (splitresults.size() < 3)
 				continue; //impossible
 			std::string ntype = splitresults[0];
-			bool bWhenIsGreater = (splitresults[1] == ">");
 			float svalue = static_cast<float>(atof(splitresults[2].c_str()));
 			if (m_sql.m_tempunit == TEMPUNIT_F)
 			{
@@ -240,26 +252,11 @@ bool CNotificationHelper::CheckAndHandleTempHumidityNotification(
 				else if (temp > 10.0) szExtraData += "Image=temp-10-15|";
 				else if (temp > 5.0) szExtraData += "Image=temp-5-10|";
 				else szExtraData += "Image=temp48|";
-				if (bWhenIsGreater)
-				{
-					if (temp > svalue)
-					{
-						bSendNotification = true;
-						sprintf(szTmp, "%s temperature is %.1f degrees", devicename.c_str(), temp);
-						msg = szTmp;
-					}
-				}
-				else
-				{
-					if (temp < svalue)
-					{
-						bSendNotification = true;
-						sprintf(szTmp, "%s temperature is %.1f degrees", devicename.c_str(), temp);
-						msg = szTmp;
-					}
-				}
-				if (bSendNotification)
-				{
+                               	bSendNotification = ApplyRule(splitresults[1], (temp == svalue), (temp < svalue));
+                                if (bSendNotification)
+                                {
+                                        sprintf(szTmp, "%s temperature is %.1f degrees", devicename.c_str(), temp);
+                                        msg = szTmp;
 					sprintf(szTmp, "%.1f", temp);
 					notValue = szTmp;
 				}
@@ -268,26 +265,11 @@ bool CNotificationHelper::CheckAndHandleTempHumidityNotification(
 			{
 				//humidity
 				szExtraData += "Image=moisture48|";
-				if (bWhenIsGreater)
-				{
-					if (humidity > svalue)
-					{
-						bSendNotification = true;
-						sprintf(szTmp, "%s Humidity is %d %%", devicename.c_str(), humidity);
-						msg = szTmp;
-					}
-				}
-				else
-				{
-					if (humidity < svalue)
-					{
-						bSendNotification = true;
-						sprintf(szTmp, "%s Humidity is %d %%", devicename.c_str(), humidity);
-						msg = szTmp;
-					}
-				}
-				if (bSendNotification)
-				{
+				bSendNotification = ApplyRule(splitresults[1], (humidity == svalue), (humidity < svalue));
+                                if (bSendNotification)
+                                {
+                                        sprintf(szTmp, "%s Humidity is %d %%", devicename.c_str(), humidity);
+                                        msg = szTmp;
 					sprintf(szTmp, "%d", humidity);
 					notValue = szTmp;
 				}
@@ -461,91 +443,42 @@ bool CNotificationHelper::CheckAndHandleAmpere123Notification(
 			if (splitresults.size() < 3)
 				continue; //impossible
 			std::string ntype = splitresults[0];
-			bool bWhenIsGreater = (splitresults[1] == ">");
 			float svalue = static_cast<float>(atof(splitresults[2].c_str()));
 
 			bool bSendNotification = false;
 
 			if (ntype == signamp1)
 			{
-				//Ampere1
-				if (bWhenIsGreater)
-				{
-					if (Ampere1 > svalue)
-					{
-						bSendNotification = true;
-						sprintf(szTmp, "%s Ampere1 is %.1f Ampere", devicename.c_str(), Ampere1);
-						msg = szTmp;
-					}
-				}
-				else
-				{
-					if (Ampere1 < svalue)
-					{
-						bSendNotification = true;
-						sprintf(szTmp, "%s Ampere1 is %.1f Ampere", devicename.c_str(), Ampere1);
-						msg = szTmp;
-					}
-				}
+				bSendNotification = ApplyRule(splitresults[1], (Ampere1 == svalue), (Ampere1 < svalue)); 
 				if (bSendNotification)
 				{
+			        	sprintf(szTmp, "%s Ampere1 is %.1f Ampere", devicename.c_str(), Ampere1);
+                               		 msg = szTmp;
 					sprintf(szTmp, "%.1f", Ampere1);
 					notValue = szTmp;
 				}
 			}
 			else if (ntype == signamp2)
 			{
-				//Ampere2
-				if (bWhenIsGreater)
-				{
-					if (Ampere2 > svalue)
-					{
-						bSendNotification = true;
-						sprintf(szTmp, "%s Ampere2 is %.1f Ampere", devicename.c_str(), Ampere2);
-						msg = szTmp;
-					}
-				}
-				else
-				{
-					if (Ampere2 < svalue)
-					{
-						bSendNotification = true;
-						sprintf(szTmp, "%s Ampere2 is %.1f Ampere", devicename.c_str(), Ampere2);
-						msg = szTmp;
-					}
-				}
-				if (bSendNotification)
-				{
-					sprintf(szTmp, "%.1f", Ampere2);
-					notValue = szTmp;
-				}
+                               bSendNotification = ApplyRule(splitresults[1], (Ampere2 == svalue), (Ampere2 < svalue));
+                                if (bSendNotification)
+                                {
+                                        sprintf(szTmp, "%s Ampere2 is %.1f Ampere", devicename.c_str(), Ampere2);
+                                         msg = szTmp;
+                                        sprintf(szTmp, "%.1f", Ampere2);
+                                        notValue = szTmp;
+                                }
 			}
 			else if (ntype == signamp3)
 			{
-				//Ampere3
-				if (bWhenIsGreater)
-				{
-					if (Ampere3 > svalue)
-					{
-						bSendNotification = true;
-						sprintf(szTmp, "%s Ampere3 is %.1f Ampere", devicename.c_str(), Ampere3);
-						msg = szTmp;
-					}
-				}
-				else
-				{
-					if (Ampere3 < svalue)
-					{
-						bSendNotification = true;
-						sprintf(szTmp, "%s Ampere3 is %.1f Ampere", devicename.c_str(), Ampere3);
-						msg = szTmp;
-					}
-				}
-				if (bSendNotification)
-				{
-					sprintf(szTmp, "%.1f", Ampere3);
-					notValue = szTmp;
-				}
+                               bSendNotification = ApplyRule(splitresults[1], (Ampere3 == svalue), (Ampere3 < svalue));
+                                if (bSendNotification)
+                                {
+                                        sprintf(szTmp, "%s Ampere1 is %.1f Ampere", devicename.c_str(), Ampere3);
+                                         msg = szTmp;
+                                        sprintf(szTmp, "%.1f", Ampere3);
+                                        notValue = szTmp;
+                                }
 			}
 			if (bSendNotification)
 			{
@@ -659,42 +592,19 @@ bool CNotificationHelper::CheckAndHandleNotification(
 			if (splitresults.size() < 3)
 				continue; //impossible
 			std::string ntype = splitresults[0];
-			bool bWhenIsGreater = (splitresults[1] == ">");
 			float svalue = static_cast<float>(atof(splitresults[2].c_str()));
 
 			bool bSendNotification = false;
 
 			if (ntype == nsign)
-			{
-				if (bWhenIsGreater)
-				{
-					if (mvalue > svalue)
-					{
-						bSendNotification = true;
-						sprintf(szTmp, "%s %s is %s %s",
-							devicename.c_str(),
-							ltype.c_str(),
-							pvalue.c_str(),
-							label.c_str()
-							);
-						msg = szTmp;
-					}
-				}
-				else
-				{
-					if (mvalue < svalue)
-					{
-						bSendNotification = true;
-						sprintf(szTmp, "%s %s is %s %s",
-							devicename.c_str(),
-							ltype.c_str(),
-							pvalue.c_str(),
-							label.c_str()
-							);
-						msg = szTmp;
-					}
-				}
-			}
+		        {
+                                bSendNotification = ApplyRule(splitresults[1], (mvalue == svalue), (mvalue < svalue));
+                              	if (bSendNotification)
+                                {
+                                        sprintf(szTmp, "%s %s is %s %s", devicename.c_str(), ltype.c_str(), pvalue.c_str(), label.c_str());
+                                        msg = szTmp;
+                                }
+                        }
 			if (bSendNotification)
 			{
 				if (!itt->CustomMessage.empty())
@@ -991,11 +901,11 @@ void CNotificationHelper::CheckAndHandleLastUpdateNotification()
 				{
 					extern time_t m_StartTime;
 					time_t btime = mytime(NULL);
-					bool bWhenIsGreater = (splitresults[1] == ">");
-					int SensorTimeOut = atoi(splitresults[2].c_str());
+					int SensorTimeOut = atoi(splitresults[2].c_str());  // minutes
 					bool bStartTime = (difftime(btime,m_StartTime) < SensorTimeOut*60);
-					double diff = difftime(btime,itt2->LastUpdate);
-					if (((diff > SensorTimeOut*60) && (bWhenIsGreater) && (!bStartTime)) || ((diff < SensorTimeOut*60) && (!bWhenIsGreater)))
+					int diff = (int)round(difftime(btime,itt2->LastUpdate));
+				 	bool bSendNotification = ApplyRule(splitresults[1], (diff == SensorTimeOut*60), (diff < SensorTimeOut*60));
+					if ((bSendNotification) && (!bStartTime))
 					{
 						uint64_t Idx = itt->first;
 						std::vector<std::vector<std::string> > result;
@@ -1009,13 +919,13 @@ void CNotificationHelper::CheckAndHandleLastUpdateNotification()
 						char szTmp[300];
 						struct tm ltime;
 						localtime_r(&itt2->LastUpdate,&ltime);
-						sprintf(szDate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
-						sprintf(szTmp,"Sensor %s %s: %s [%s %d %s]", itt2->DeviceName.c_str(),ltype.c_str(),szDate,splitresults[1].c_str(),SensorTimeOut,label.c_str());
+						sprintf(szDate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, 
+							ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
+						sprintf(szTmp,"Sensor %s %s: %s [%s %d %s]", itt2->DeviceName.c_str(),ltype.c_str(),szDate,
+							splitresults[1].c_str(),SensorTimeOut,label.c_str());
 						std::string msg = szTmp;
 						if (!itt2->CustomMessage.empty())
-						{
 							msg = ParseCustomMessage(itt2->CustomMessage, itt2->DeviceName, "");
-						}
 						SendMessageEx(Idx, itt2->DeviceName, itt2->ActiveSystems, msg, msg, szExtraData, itt2->Priority, std::string(""), true);
 						TouchNotification(itt2->ID);
 					}
