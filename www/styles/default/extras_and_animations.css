@@ -29,7 +29,7 @@ body:hover .ui-dialog{
 
 /*  CHECKBOX  */
 
-:not(table.display) input[type='checkbox']{
+#settings input[type='checkbox']{
     position:relative;
     left:15px;
     top:-3px;
@@ -38,7 +38,7 @@ body:hover .ui-dialog{
     z-index:2;
 }
 
-:not(table.display) input[type=checkbox]:after {
+#settings input[type=checkbox]:after {
     display: inline-block;
     visibility: visible;
     content: "\2714";
@@ -59,7 +59,7 @@ body:hover .ui-dialog{
     transition: all .3s;
 }
 
-:not(table.display) input[type=checkbox]:checked:after {
+#settings input[type=checkbox]:checked:after {
     content: " ";
     background-color: transparent;
     content: "\2714";
