@@ -832,11 +832,6 @@ p.ng-binding {
     margin-bottom:60px
 }
 
-#uservariablesedittable tr:last-of-type a{
-    top: 50px;
-    position:relative;
-}
-
 table.dataTable{
     background-color: #666;
     color: #fff!important;
