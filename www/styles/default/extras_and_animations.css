@@ -1,0 +1,83 @@
+/* Animations and small cool things */
+
+
+/*  POPUP ANIMATION  */
+
+@-webkit-keyframes fadeIn {
+    from { opacity: 0; }
+      to { opacity: 1; }
+    from { transform: scale(0.8); }
+      to { transform: scale(1);  }   
+    
+}  
+@keyframes fadeIn {
+    from { opacity: 0; }
+      to { opacity: 1; }
+    from { transform: scale(0.8); }
+      to { transform: scale(1);  }
+}
+
+
+/* Dialog */
+
+body:hover .ui-dialog{
+    -webkit-animation: fadeIn 0.2s;
+    animation: fadeIn 0.2s;
+}
+
+
+
+/*  CHECKBOX  */
+
+:not(table.display) input[type='checkbox']{
+    position:relative;
+    left:15px;
+    top:-3px;
+    margin-right:22px;
+    background-color: #3b99fc;
+    z-index:2;
+}
+
+:not(table.display) input[type=checkbox]:after {
+    display: inline-block;
+    visibility: visible;
+    content: "\2714";
+    font-size: 9px;
+    background-color: #fff;
+    color:#fff;
+    height: 12px!important;
+    border-radius: 3px;
+    border: 2px solid #d84c47;
+    border-right: 14px solid #d84c47;
+    width: 12px!important;
+    overflow: hidden;
+    position: relative;
+    left: -12px;
+    top: -2px;
+    -moz-transition: all .3s;
+    -webkit-transition: all .3s;
+    transition: all .3s;
+}
+
+:not(table.display) input[type=checkbox]:checked:after {
+    content: " ";
+    background-color: transparent;
+    content: "\2714";
+    font-size: 9px;
+    background-color: #fff;
+    height: 12px!important;
+    border-radius: 3px;
+    border: 2px solid #378637;
+    border-left: 14px solid #378637;
+    width: 12px!important;
+    overflow: hidden;
+    position: relative;
+    left: -12px;
+    top: -2px;
+    -moz-transition: all .1s;
+    -webkit-transition: all .1s;
+    transition: all .1s;
+}
+
+
+
