@@ -1016,10 +1016,10 @@ body table#itemtablesmall tr td:first-child{
 	border-width: 1px 1px 1px 1px;
 	border-color: #2B5074;
 	border-style: solid;
-  border-radius: 5px;
-
+	border-radius: 5px;
+	
 	color: #0D161F;
-	background-color: #D4E1EE;
+	/*background-color: #D4E1EE;*/
 }
 
 /* Second column */
