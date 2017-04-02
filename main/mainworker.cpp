@@ -713,8 +713,8 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new DomoticzTCP(ID, Address, Port, Username, Password);
 		break;
 	case HTYPE_RazberryZWave:
-		//HTTP
-		pHardware = new CRazberry(ID, Address, Port, Username, Password);
+		_log.Log(LOG_ERROR, "Razberry: Deprecated, support is removed! Use OpenZWave (see wiki)...");
+		return false;
 		break;
 	case HTYPE_P1SmartMeterLAN:
 		//LAN
@@ -2841,10 +2841,7 @@ void MainWorker::decode_BateryLevel(bool bIsInPercentage, unsigned char level)
 
 unsigned char MainWorker::get_BateryLevel(const _eHardwareTypes HwdType, bool bIsInPercentage, unsigned char level)
 {
-	if (
-		(HwdType == HTYPE_RazberryZWave)||
-		(HwdType == HTYPE_OpenZWave)
-		)
+	if (HwdType == HTYPE_OpenZWave)
 	{
 		bIsInPercentage=true;
 	}
@@ -3262,10 +3259,7 @@ void MainWorker::decode_Temp(const int HwdID, const _eHardwareTypes HwdType, con
 		BatteryLevel=100;
 
 	//Override battery level if hardware supports it
-	if (
-		(HwdType == HTYPE_RazberryZWave)||
-		(HwdType == HTYPE_OpenZWave)
-		)
+	if (HwdType == HTYPE_OpenZWave)
 	{
 		BatteryLevel=pResponse->TEMP.battery_level*10;
 	}
@@ -3422,10 +3416,7 @@ void MainWorker::decode_Hum(const int HwdID, const _eHardwareTypes HwdType, cons
 	else
 		BatteryLevel=100;
 	//Override battery level if hardware supports it
-	if (
-		(HwdType == HTYPE_RazberryZWave)||
-		(HwdType == HTYPE_OpenZWave)
-		)
+	if (HwdType == HTYPE_OpenZWave)
 	{
 		BatteryLevel=pResponse->TEMP.battery_level;
 	}
@@ -3759,10 +3750,7 @@ void MainWorker::decode_TempHumBaro(const int HwdID, const _eHardwareTypes HwdTy
 	else
 		BatteryLevel=100;
 	//Override battery level if hardware supports it
-	if (
-		(HwdType == HTYPE_RazberryZWave)||
-		(HwdType == HTYPE_OpenZWave)
-		)
+	if (HwdType == HTYPE_OpenZWave)
 	{
 		BatteryLevel=pResponse->TEMP.battery_level;
 	}
@@ -11639,14 +11627,11 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		else
 		{
 			float tempDest = TempValue;
-			//if ((pHardware->HwdType != HTYPE_OpenZWave) && (pHardware->HwdType != HTYPE_RazberryZWave))
-			{
 			unsigned char tSign = m_sql.m_tempsign[0];
 			if (tSign == 'F')
 			{
 				//Convert to Celsius
 				tempDest = (tempDest - 32.0f) / 1.8f;
-			}
 			}
 
 			_tThermostat tmeter;
@@ -12613,6 +12598,20 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 		{
 			if (dID != 0)
 				m_notifications.CheckAndHandleNotification(dID, dName, devType, subType, NTYPE_TEMPERATURE, (float)atof(sValue.c_str()));
+		}
+		else if (devType == pTypeGeneralSwitch)
+		{
+			_tGeneralSwitch gswitch;
+			gswitch.subtype = subType;
+			gswitch.id = ID;
+			gswitch.unitcode = unit;
+			gswitch.cmnd = nValue;
+			gswitch.level = (unsigned char)atoi(sValue.c_str());;
+			gswitch.battery_level = batterylevel;
+			gswitch.rssi = signallevel;
+			gswitch.seqnbr = 0;
+			DecodeRXMessage(pHardware, (const unsigned char *)&gswitch, NULL, batterylevel);
+			return true;
 		}
 	}
 

@@ -153,7 +153,7 @@ void CWunderground::GetMeterDetails()
 
 	Json::Reader jReader;
 	bool ret=jReader.parse(sResult,root);
-	if (!ret)
+	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR,"WUnderground: Invalid data received!");
 		return;

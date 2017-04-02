@@ -410,6 +410,7 @@
 		<Product type="0202" id="1002" name="FGS222 Double Relay Switch 2x1.5kW" config="fibaro/fgs222.xml" />
 		<Product type="0202" id="3002" name="FGS222 Double Relay Switch 2x1.5kW" config="fibaro/fgs222.xml" />
 		<Product type="0203" id="1000" name="FGS223 Double Relay" config="fibaro/fgs223.xml"/>
+		<Product type="0203" id="3000" name="FGS223 Double Relay" config="fibaro/fgs223.xml"/>
 		<Product type="0600" id="1000" name="FGWPE/F Wall Plug" config="fibaro/fgwpe.xml" />
 		<Product type="0602" id="1001" name="FGWPE/F Wall Plug Gen5" config="fibaro/fgwpfzw5.xml" />
 		<Product type="0800" id="1001" name="FGMS001 Motion Sensor" config="fibaro/fgms.xml" />
@@ -466,7 +467,9 @@
 		<Product type="4450" id="3030" name="45602 Lamp Dimmer Module" config="ge/dimmer_module.xml"/>
 		<Product type="4457" id="3230" name="45606 2-Way Dimmer Switch" config="ge/dimmer.xml"/>
 		<Product type="4944" id="3031" name="12724 3-Way Dimmer Switch" config="ge/12724-dimmer.xml"/>
+		<Product type="4944" id="3033" name="12729 3-Way Dimmer Switch" config="ge/12724-dimmer.xml"/>
                 <Product type="4944" id="3034" name="12730 Fan Control Switch" config="ge/12724-dimmer.xml"/>
+                <Product type="4952" id="3036" name="12491 In-Wall Smart Switch" config="ge/12491-switch.xml"/>
 		<Product type="5250" id="3030" name="45603 Plugin Appliance Module"/>
 		<Product type="5250" id="3130" name="45604 Outdoor Module"/>
 		<Product type="4f50" id="3031" name="12720 Outdoor Smart Switch"/>
@@ -613,9 +616,9 @@
 		<Product type="5246" id="3133" name="FS20Z Isolated Contact Fixture Module"/>
 		<Product type="5250" id="3030" name="PS15Z-2 Plug-in Appliance Module"/>
 		<Product type="5252" id="3530" name="WO15Z-1 Single Wall Outlet"/>
-		<Product type="5257" id="3533" name="WS15Z-1"/>
+		<Product type="5257" id="3533" name="WS15Z-1 Wall Switch" config="linear/WS15Z-1.xml"/>
 		<Product type="5343" id="3132" name="WA00Z-1 Scene Switch" config="linear/WA00Z-1.xml"/>
-		<Product type="5457" id="3033" name="WT00Z-1 3-Way wall Accessory Switch"/>
+		<Product type="5457" id="3033" name="WT00Z-1 3-Way Wall Accessory Switch" config="linear/WT00Z-1.xml"/>
 	</Manufacturer>
 	<Manufacturer id="015e" name="Locstar">
         <Product type="8015" id="0001" name="LS-8015-ZW Single Latch Door Lock"/>
@@ -681,6 +684,7 @@
 		<Product type="0003" id="0083" name="Battery Powered PIR Sensor" config="shenzen_neo/nas-pd01z.xml"/>
 		<Product type="0003" id="1083" name="Battery Powered PIR Sensor" config="shenzen_neo/nas-pd01z.xml"/>
         <Product type="0003" id="1085" name="Water Leakage Detector" config="shenzen_neo/nas-ws02z.xml"/>
+        <Product type="0003" id="6085" name="Water Leakage Detector" config="shenzen_neo/nas-ws02z.xml"/>
 		<Product type="0003" id="0088" name="Siren Alarm" config="shenzen_neo/nas-ab01z.xml"/>
 		<Product type="0003" id="1088" name="Siren Alarm" config="shenzen_neo/nas-ab01z.xml"/>
 	</Manufacturer>
