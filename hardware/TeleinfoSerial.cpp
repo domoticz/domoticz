@@ -104,6 +104,11 @@ bool CTeleinfoSerial::StartHardware()
 	m_bIsStarted = true;
 	sOnConnected(this);
 
+	if (m_bDisableCRC)
+		_log.Log(LOG_STATUS, "(%s) CRC checks on incoming data are disabled", Name.c_str());
+	else		
+		_log.Log(LOG_STATUS, "(%s) will compute CRC checks on incoming data", Name.c_str());
+
 	return true;
 }
 

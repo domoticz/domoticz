@@ -101,7 +101,7 @@ bool CEcoDevices::StopHardware()
 void CEcoDevices::Do_Work()
 {
 	int sec_counter = 0;
-	_log.Log(LOG_STATUS,"EcoDevices: Worker started...");
+	_log.Log(LOG_STATUS,"(%s): Worker started...",  Name.c_str());
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
@@ -118,7 +118,7 @@ void CEcoDevices::Do_Work()
 				GetMeterRT2Details();
 		}
 	}
-	_log.Log(LOG_STATUS,"EcoDevices: Worker stopped...");
+	_log.Log(LOG_STATUS,"(%s): Worker stoped...",  Name.c_str());
 }
 
 
@@ -193,11 +193,11 @@ void CEcoDevices::GetMeterDetails()
 	if (m_status.hostname.empty()) m_status.hostname = m_szIPAddress;
 	if (HTTPClient::GET(sstr.str(), ExtraHeaders, sResult))
 	{
-		_log.Log(LOG_NORM, "Ecodevices: Fetching counters and status data from %s", m_status.hostname.c_str());
+		_log.Log(LOG_NORM, "(%s) Fetching counters and status data", Name.c_str());
 	}
 	else
 	{
-		_log.Log(LOG_ERROR, "EcoDevices: Error getting status.xml from EcoDevices %s!", m_status.hostname.c_str());
+		_log.Log(LOG_ERROR, "(%s) Error getting status.xml!", Name.c_str());
 		return;
 	}
 
@@ -205,7 +205,7 @@ void CEcoDevices::GetMeterDetails()
 	XMLdoc.Parse(sResult.c_str(), 0, TIXML_ENCODING_UTF8);
 	if (XMLdoc.Error())
 	{
-		_log.Log(LOG_ERROR, "Error parsing XML at /status.xml: %s", XMLdoc.ErrorDesc());
+		_log.Log(LOG_ERROR, "(%s) Error parsing XML at /status.xml: %s", Name.c_str(), XMLdoc.ErrorDesc());
 		return;
 	}
 
@@ -268,7 +268,7 @@ void CEcoDevices::GetMeterDetails()
 		message = "EcoDevices firmware needs to be at least version ";
 		message = message + static_cast<std::ostringstream*>( &(std::ostringstream() << min_major << "." << min_minor << "." << min_release) )->str();
 		message = message + ", current version is " + m_status.version;
-		_log.Log(LOG_ERROR, message.c_str());
+		_log.Log(LOG_ERROR, "(%s) %s", Name.c_str(), message.c_str());
 		return;
 	}
 
@@ -279,10 +279,10 @@ void CEcoDevices::GetMeterDetails()
 	{
 		sstr.str("");
 		sstr << "http://" << m_szIPAddress << ":" << m_usIPPort << "/protect/settings/teleinfo1.xml";
-		_log.Log(LOG_NORM, "Ecodevices: Fetching Teleinfo 1 data from %s", m_status.hostname.c_str());
+		_log.Log(LOG_NORM, "(%s) Fetching Teleinfo 1 data", Name.c_str());
 		if (!HTTPClient::GET(sstr.str(), ExtraHeaders, sResult))
 		{
-			_log.Log(LOG_ERROR, "EcoDevices: Error getting teleinfo1.xml from EcoDevices %s!", m_status.hostname.c_str());
+			_log.Log(LOG_ERROR, "(%s) Error getting teleinfo1.xml from EcoDevices!", Name.c_str());
 			return;
 		}
 		#ifdef DEBUG_EcoDevices
@@ -303,10 +303,10 @@ void CEcoDevices::GetMeterDetails()
 	{
 		sstr.str("");
 		sstr << "http://" << m_szIPAddress << ":" << m_usIPPort << "/protect/settings/teleinfo2.xml";
-		_log.Log(LOG_NORM, "Ecodevices: Fetching Teleinfo 2 data from %s", m_status.hostname.c_str());
+		_log.Log(LOG_NORM, "(%s) Fetching Teleinfo 2 data", Name.c_str());
 		if (!HTTPClient::GET(sstr.str(), ExtraHeaders, sResult))
 		{
-			_log.Log(LOG_ERROR, "EcoDevices: Error getting teleinfo2.xml from EcoDevices %s!", m_status.hostname.c_str());
+			_log.Log(LOG_ERROR, "(%s) Error getting teleinfo2.xml!", Name.c_str());
 			return;
 		}
 		#ifdef DEBUG_EcoDevices
@@ -348,11 +348,11 @@ void CEcoDevices::GetMeterRT2Details()
         if (m_status.hostname.empty()) m_status.hostname = m_szIPAddress;
         if (HTTPClient::GET(sstr.str(), ExtraHeaders, sResult))
         {
-                _log.Log(LOG_NORM, "Ecodevices RT2: Fetching data from %s", m_status.hostname.c_str());
+                _log.Log(LOG_NORM, "(%s) Fetching data", Name.c_str());
         }
         else
         {
-                _log.Log(LOG_ERROR, "EcoDevices: Error getting status.xml from EcoDevices RT2 %s!", m_status.hostname.c_str());
+                _log.Log(LOG_ERROR, "(%s) Error getting status.xml!", Name.c_str());
                 return;
         }
 
@@ -360,7 +360,7 @@ void CEcoDevices::GetMeterRT2Details()
         XMLdoc.Parse(sResult.c_str(), 0, TIXML_ENCODING_UTF8);
         if (XMLdoc.Error())
         {
-                _log.Log(LOG_ERROR, "Error parsing XML at /admin/status.xml: %s", XMLdoc.ErrorDesc());
+                _log.Log(LOG_ERROR, "(%s) Error parsing XML at /admin/status.xml: %s", Name.c_str(), XMLdoc.ErrorDesc());
                 return;
         }
 
@@ -369,7 +369,7 @@ void CEcoDevices::GetMeterRT2Details()
 	std::string product = S_xpath_string(XMLdoc.RootElement(),"/response/product/text()").c_str();
 	if (product != "ECODEVICES RT 2")
 	{
-		_log.Log(LOG_ERROR, "Product information found in XML file is not 'ECODEVICES RT 2' as expected, but '%s'", product.c_str());
+		_log.Log(LOG_ERROR, "(%s) Product information found in XML file is not 'ECODEVICES RT 2' as expected, but '%s'", Name.c_str(), product.c_str());
 		return;
 	}
         m_status.version = S_xpath_string(XMLdoc.RootElement(),"/response/infofirm/text()").c_str();
@@ -391,7 +391,7 @@ void CEcoDevices::GetMeterRT2Details()
                 message = "EcoDevices RT2 firmware needs to be at least version ";
                 message = message + static_cast<std::ostringstream*>( &(std::ostringstream() << min_major << "." << min_minor << "." << min_release) )->str();
                 message = message + ", current version is " + m_status.version;
-                _log.Log(LOG_ERROR, message.c_str());
+                _log.Log(LOG_ERROR, "(%s) %s", Name.c_str(), message.c_str());
                 return;
         }
 	

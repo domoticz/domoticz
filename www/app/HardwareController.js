@@ -344,7 +344,7 @@ define(['app'], function (app) {
                 }
 		if (text.indexOf("Eco Devices") >= 0)
                 {
-                    Mode1 = $("#hardwarecontent #divmodelecodevice #combomodelecodevice option:selected").val();
+                    Mode1 = $("#hardwarecontent #divmodelecodevices #combomodelecodevices option:selected").val();
                     var ratelimitp1=$("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val();
                     if (ratelimitp1=="")
                     {
@@ -5107,7 +5107,7 @@ define(['app'], function (app) {
                             }
  			    if (data["Type"].indexOf("Eco Devices") >= 0)
                             {
-                                $("#hardwarecontent #divmodelecodevice #combomodelecodevice").val(data["Mode1"]);
+                                $("#hardwarecontent #divmodelecodevices #combomodelecodevices").val(data["Mode1"]);
 				$("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val(data["Mode2"]);
                             }
                         }
