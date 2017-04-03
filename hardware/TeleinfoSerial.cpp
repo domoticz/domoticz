@@ -77,7 +77,7 @@ bool CTeleinfoSerial::StartHardware()
 	//Try to open the Serial Port
 	try
 	{
-		_log.Log(LOG_STATUS, "Teleinfo: %s uses serial port: %s at %i bauds", Name.c_str(), m_szSerialPort.c_str(), m_iBaudRate);
+		_log.Log(LOG_STATUS, "(%s) Teleinfo device uses serial port: %s at %i bauds", Name.c_str(), m_szSerialPort.c_str(), m_iBaudRate);
 		open(
 			m_szSerialPort,
 			m_iBaudRate,
