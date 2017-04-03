@@ -928,7 +928,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 #endif //WITH_TELLDUSCORE
 	case HTYPE_EVOHOME_SCRIPT:
-		pHardware = new CEvohome(ID,"",0);
+		pHardware = new CEvohome(ID,"",0,"");
 		break;
 	case HTYPE_PiFace:
 		pHardware = new CPiFace(ID);
