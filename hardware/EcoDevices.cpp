@@ -26,6 +26,7 @@ Version history
 #include "stdafx.h"
 #include "EcoDevices.h"
 #include "../main/Helper.h"
+#include "../main/SQLHelper.h"
 #include "../main/Logger.h"
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
@@ -42,14 +43,19 @@ Version history
 #define MINOR 5
 #define RELEASE 12
 
-CEcoDevices::CEcoDevices(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const unsigned int model)
+//Minimum EcoDevices RT2 firmware required
+#define MAJOR_RT2 2
+#define MINOR_RT2 0
+#define RELEASE_RT2 29
+
+CEcoDevices::CEcoDevices(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const unsigned int model, const int ratelimit)
 {
 	m_HwdID = ID;
 	m_szIPAddress = IPAddress;
 	m_usIPPort = usIPPort;
 	m_stoprequested = false;
 	m_iModel = model;
-        m_iRateLimit=30;
+        m_iRateLimit = 30;
 
 	Init();
 }
@@ -63,6 +69,7 @@ CEcoDevices::~CEcoDevices(void)
 void CEcoDevices::Init()
 {
 	m_stoprequested = false;
+	m_bFirstRun = true;
 }
 
 
@@ -105,7 +112,10 @@ void CEcoDevices::Do_Work()
 		}
 		if (sec_counter % m_iRateLimit == 0)
 		{
-			GetMeterDetails();
+			if (m_iModel == 0) 
+				GetMeterDetails();
+			else 
+				GetMeterRT2Details();
 		}
 	}
 	_log.Log(LOG_STATUS,"EcoDevices: Worker stopped...");
@@ -162,7 +172,6 @@ void CEcoDevices::DecodeXML2Teleinfo(const std::string &sResult, Teleinfo &telei
 	#endif
 }
 
-
 void CEcoDevices::GetMeterDetails()
 {
 	if (m_szIPAddress.size()==0)
@@ -188,7 +197,7 @@ void CEcoDevices::GetMeterDetails()
 	}
 	else
 	{
-		_log.Log(LOG_ERROR, "EcoDevices: Error getting status.xml from EcoDevices%s!", m_status.hostname.c_str());
+		_log.Log(LOG_ERROR, "EcoDevices: Error getting status.xml from EcoDevices %s!", m_status.hostname.c_str());
 		return;
 	}
 
@@ -225,7 +234,13 @@ void CEcoDevices::GetMeterDetails()
 		m_status.index2   = i_xpath_int(XMLdoc.RootElement(),"/response/count1/text()");
 		m_status.t1_ptec  = S_xpath_string(XMLdoc.RootElement(),"/response/T1_PTEC/text()").c_str();
 		m_status.t2_ptec  = S_xpath_string(XMLdoc.RootElement(),"/response/T2_PTEC/text()").c_str();
-
+	
+		// Update hardware name if this is first run
+		if (m_bFirstRun)
+		{
+			m_sql.safe_query("UPDATE Hardware SET Name = '%s' WHERE ID = %i", m_status.hostname.c_str(), m_HwdID);
+			m_bFirstRun = false;
+		}
 		// Process Counter 1
 		if ((m_status.index1 >0) && ((m_status.index1 != m_status.pindex1) || (m_status.flow1 != m_status.pflow1) \
 			|| (difftime(atime,m_status.time1) >= 300)))
@@ -308,4 +323,148 @@ void CEcoDevices::GetMeterDetails()
 		ProcessTeleinfo("Teleinfo 2", 2, m_teleinfo2);
 	}
 
+}
+
+void CEcoDevices::GetMeterRT2Details()
+{
+        if (m_szIPAddress.size()==0)
+                return;
+
+        // From http://xx.xx.xx.xx/admin/status.xml we get the Teleinfo data
+
+        std::vector<std::string> ExtraHeaders, splitresults;
+	char XMLLabel[200];
+        std::string  sResult, message, label, value;
+	float fvalue1, fvalue2;
+        std::stringstream sstr;
+	std::map<std::string, std::string> XMLmap;
+        TiXmlDocument XMLdoc("Teleinfo.xml");
+        time_t atime = mytime(NULL);
+        int   i, major, minor, release;
+        int min_major = MAJOR_RT2, min_minor = MINOR_RT2, min_release = RELEASE_RT2;
+
+        // Check EcoDevices firmware version and process pulse counters
+        sstr << "http://" << m_szIPAddress << ":" << m_usIPPort << "/admin/status.xml";
+        if (m_status.hostname.empty()) m_status.hostname = m_szIPAddress;
+        if (HTTPClient::GET(sstr.str(), ExtraHeaders, sResult))
+        {
+                _log.Log(LOG_NORM, "Ecodevices RT2: Fetching data from %s", m_status.hostname.c_str());
+        }
+        else
+        {
+                _log.Log(LOG_ERROR, "EcoDevices: Error getting status.xml from EcoDevices RT2 %s!", m_status.hostname.c_str());
+                return;
+        }
+
+        // Process XML result
+        XMLdoc.Parse(sResult.c_str(), 0, TIXML_ENCODING_UTF8);
+        if (XMLdoc.Error())
+        {
+                _log.Log(LOG_ERROR, "Error parsing XML at /admin/status.xml: %s", XMLdoc.ErrorDesc());
+                return;
+        }
+
+        // XML format changes dramatically between firmware versions. This code was developped for version 2.0.29
+        using namespace TinyXPath;
+	std::string product = S_xpath_string(XMLdoc.RootElement(),"/response/product/text()").c_str();
+	if (product != "ECODEVICES RT 2")
+	{
+		_log.Log(LOG_ERROR, "Product information found in XML file is not 'ECODEVICES RT 2' as expected, but '%s'", product.c_str());
+		return;
+	}
+        m_status.version = S_xpath_string(XMLdoc.RootElement(),"/response/infofirm/text()").c_str();
+
+        #ifdef DEBUG_EcoDevices
+        _log.Log(LOG_NORM, "DEBUG: XML output for /admin/status.xml\n%s", MakeHtml(sResult).c_str());
+        #endif
+
+        m_status.version = m_status.version + "..";
+        major = atoi(m_status.version.substr(0,m_status.version.find(".")).c_str());
+        m_status.version.erase(0,m_status.version.find(".")+1);
+        minor = atoi(m_status.version.substr(0,m_status.version.find(".")).c_str());
+        m_status.version.erase(0,m_status.version.find(".")+1);
+        release = atoi(m_status.version.substr(0,m_status.version.find(".")).c_str());
+        m_status.version = S_xpath_string(XMLdoc.RootElement(),"/response/version/text()").c_str();
+
+        if (!((major>min_major) || ((major==min_major) && (minor>min_minor)) || ((major==min_major) && (minor==min_minor) && (release>=min_release))))
+        {
+                message = "EcoDevices RT2 firmware needs to be at least version ";
+                message = message + static_cast<std::ostringstream*>( &(std::ostringstream() << min_major << "." << min_minor << "." << min_release) )->str();
+                message = message + ", current version is " + m_status.version;
+                _log.Log(LOG_ERROR, message.c_str());
+                return;
+        }
+	
+        // Update hardware name if this is first run
+        if (m_bFirstRun)
+        {
+		m_status.hostname = S_xpath_string(XMLdoc.RootElement(),"/response/hostname/text()").c_str();
+		if (m_status.hostname == "") m_status.hostname = "EcoDevices RT2";
+		m_sql.safe_query("UPDATE Hardware SET Name = '%s' WHERE ID = %i", m_status.hostname.c_str(), m_HwdID);
+                m_bFirstRun = false;
+        }
+
+	//Measured voltage on power supply 
+	m_status.voltage=i_xpath_int(XMLdoc.RootElement(),"/response/vmesure/text()");
+	SendVoltageSensor(m_HwdID, 1, 255, (float)m_status.voltage, "EcoDevice RT2");
+
+	// Teleinfo data processing
+	for (i=0; i<32; i++)
+	{
+		sprintf(XMLLabel, "/response/etiquette%i/text()", i);
+		label = S_xpath_string(XMLdoc.RootElement(), XMLLabel).c_str();
+		sprintf(XMLLabel, "/response/etiquetteEC%i/text()", i);
+		value = S_xpath_string(XMLdoc.RootElement(), XMLLabel).c_str();   
+		if (label == "") break;
+	        XMLmap[label] = value;	
+	}
+        m_teleinfo1.OPTARIF = XMLmap["OPTARIF"];
+        m_teleinfo1.PTEC = XMLmap["PTEC"];
+        m_teleinfo1.DEMAIN = XMLmap["DEMAIN"];
+        m_teleinfo1.ISOUSC = atoi(XMLmap["ISOUSC"].c_str());
+        m_teleinfo1.PAPP = atoi(XMLmap["PAPP"].c_str());
+        m_teleinfo1.BASE = atoi(XMLmap["BASE"].c_str());
+        m_teleinfo1.HCHC = atoi(XMLmap["HCHC"].c_str());
+        m_teleinfo1.HCHP = atoi(XMLmap["HCHP"].c_str());
+        m_teleinfo1.EJPHN = atoi(XMLmap["EJPHN"].c_str());
+        m_teleinfo1.EJPHPM = atoi(XMLmap["EJPHPM"].c_str());
+        m_teleinfo1.BBRHCJB = atoi(XMLmap["BBRHCJB"].c_str());
+        m_teleinfo1.BBRHPJB = atoi(XMLmap["BBRHPJB"].c_str());
+        m_teleinfo1.BBRHCJW = atoi(XMLmap["BBRHCJW"].c_str());
+        m_teleinfo1.BBRHPJW = atoi(XMLmap["BBRHPJW"].c_str());
+        m_teleinfo1.BBRHCJR = atoi(XMLmap["BBRHCJR"].c_str());
+        m_teleinfo1.BBRHPJR = atoi(XMLmap["BBRPJR"].c_str());
+        m_teleinfo1.PEJP = atoi(XMLmap["PEJP"].c_str());
+        m_teleinfo1.IINST = atoi(XMLmap["IINST"].c_str());
+        m_teleinfo1.IINST1 = atoi(XMLmap["IINST1"].c_str());
+        m_teleinfo1.IINST2 = atoi(XMLmap["IINST2"].c_str());
+        m_teleinfo1.IINST3 = atoi(XMLmap["IISNT3"].c_str());
+        m_teleinfo1.PPOT = atoi(XMLmap["PPOT"].c_str());
+        m_teleinfo1.ADPS = atoi(XMLmap["ADPS"].c_str());
+
+        #ifdef DEBUG_EcoDevices
+        _log.Log(LOG_NORM, "DEBUG: OPTARIF: '%s'", teleinfo.OPTARIF.c_str());
+        _log.Log(LOG_NORM, "DEBUG: PTEC:    '%s'", teleinfo.PTEC.c_str());
+        _log.Log(LOG_NORM, "DEBUG: DEMAIN:  '%s'", teleinfo.DEMAIN.c_str());
+        #endif
+        ProcessTeleinfo("Teleinfo RT2", 1, m_teleinfo1);
+
+	// 8 internal counters (postes) processing
+	for (i=0; i<8; i++)
+	{
+		sprintf(XMLLabel, "/response/poste%i/text()", i);
+                label = S_xpath_string(XMLdoc.RootElement(), XMLLabel).c_str();
+                sprintf(XMLLabel, "/response/info%i/text()", i);
+                value = S_xpath_string(XMLdoc.RootElement(), XMLLabel).c_str();
+                StringSplit(value, ",", splitresults);
+		if (splitresults[0] == "") 
+			break;
+		else 
+		{		
+			fvalue1= atof(splitresults[0].c_str());
+			if (fvalue1 > 0) SendMeterSensor(m_HwdID, i, 255, fvalue1/1000, m_status.hostname + " " + label);
+			fvalue2= atof(splitresults[1].c_str());
+                        if (fvalue2 >0) SendWaterflowSensor(m_HwdID, i, 255, fvalue2, m_status.hostname + " " + label);
+		}
+	}
 }
