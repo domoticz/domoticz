@@ -506,19 +506,13 @@ transform: scale(1.2,1.2);
 /* The floorplan doesn't like a side menu.. */
 
 #floorplancontent{
-    background-color: #eee;
-    height: 100%!important;
-    width: 100%!important;
-    top: 0!important;
-    padding:10px;
-}
-#floorplancontent fpwrapper > div{
-    display:block;
+    top: 10px!important;
 }
 
-#floorplancontent fpwrapper svg{
-    height:100%;
+#floorplancontent #fpwrapper SVG{
+    transform: scale(0.95, 0.95);
 }
+
 
 /*  This is important. It makes room for the side-menu. It does this by completely taking over from Bootstrap. */
 
