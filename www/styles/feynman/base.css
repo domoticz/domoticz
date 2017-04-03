@@ -34,6 +34,10 @@ td:before {
     font-style: normal;
 }
 
+.row {
+    clear: both;
+}
+
 button{
     background-color:#999;
     padding:5px;
@@ -114,13 +118,18 @@ tr.odd{
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#46b1d9', endColorstr='#2571ab',GradientType=0 );
 }
 
+
 /* HEADER CONTENT*/
 
-#temptophtm {height:40px}
+@media only screen and (max-width: 640px) {
+    #timesun div {display:none}
+    }
+
 #temptophtm .bannav{
-    position:relative; 
+    /*position:relative; 
+    top:-20px*/
     width:auto;
-    top:-20px
+    margin-bottom:1em;
 }
 
 #temptophtm td:last-of-type span{
@@ -147,8 +156,8 @@ tr.odd{
     bottom:0;
 }
 
-/*  LOGO & MAIN NAVIGATION  */
 
+/*  LOGO & MAIN NAVIGATION  */
 
 .brand img {
     height: 30px;
@@ -167,12 +176,87 @@ tr.odd{
     display: none;
 }
 
+.navbar-inverse .nav li.dropdown.open > .dropdown-toggle{
+    background-color:#ccc;
+}
+
+#appnavbar a:hover,
+#appnavbar li:hover{
+    background-color:#ccc;
+    background-image:none;
+    color:#666
+}
+
+.dropdown-submenu > a:after {
+    border-left-color: #0066cc;
+    margin-right: 0px;
+}
+
+.navbar .nav .current_page_item > a {
+    background-color: white!important;
+    color: #999!important;
+    background-image:none!important;
+    border:none!important;
+}
+
+.navbar .nav .dropdown-menu {
+    background-color: #eee;
+    background-image: none;
+    border-color: #ddd;
+}
+
+.navbar .nav .dropdown-menu li a {
+    background-color: #eee;
+}
+
+.navbar .nav li a {
+    background-color: #ddd;
+    background-image: none;
+    border: none;
+    color: #666;
+    font-weight: normal;
+}
+
+.navbar .nav li a:hover{
+    background-color: #ccc;
+    background-image:none;
+    border: none!important;
+    text-shadow: none;
+    -webkit-transition: .2s; /* Safari */
+    transition: .2s;
+}
+
+#appnavbar li a {
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+    text-shadow:none;
+}
+
+.navbar-fixed-top .navbar-inner, .navbar-static-top .navbar-inner {
+    box-shadow: none;
+    padding: 10px 0 0 0;
+}
+
+.navbar-inverse .brand, .navbar-inverse .nav > li > a{
+    text-shadow: none;
+}
+
+.navbar .brand{ 
+    margin-left:0;
+}
+
+.navbar .nav{
+    margin:0;
+}
+
 
 /*  SUB-NAVIGATION  */
 
+#timesun + td {margin-bottom:1em}
+
 #bannav {
     width: auto;
-    padding-bottom:10px;
+    margin-bottom:1em;
 }
 
 #bannav td{
@@ -193,6 +277,33 @@ tr.odd{
     left:10%;
     border-radius:5px!important;
     border:none!important;
+}
+
+
+/*  FLOORPLAN */
+
+#BulletGroup{
+    background-color: rgba(0,0,0,0.5)!important; 
+    transition: all 1s ease-out;
+}
+#BulletGroup:hover{
+    background-color: rgba(0,0,0,1)!important;
+}
+
+
+
+#floorplancontent #BulletGroup .bullet, 
+#floorplancontent #BulletGroup .bulletSelected{
+    width:30px;
+    height:30px;
+}
+
+#floorplancontent #BulletGroup #BulletImages{
+
+}
+
+#floorplancontent #BulletGroup:hover #BulletImages{
+    padding-top:10px;
 }
 
 
@@ -384,9 +495,6 @@ body #dashcontent table > tbody > tr{
     padding: 0;
 }
 
-
-
-
 #lastupdate {
     color: #777;
     font-style: normal;
@@ -447,11 +555,6 @@ body #dashcontent table > tbody > tr{
 }
 
 
-
-@media only screen and (max-width: 640px) {
-    #timesun div {display:none}
-    }
-
 #type:before {
     font-style: normal!important;
 }
@@ -466,73 +569,6 @@ body #dashcontent table > tbody > tr{
     width: 100%;
     height:0;
 }
-
-.dropdown-submenu > a:after {
-    border-left-color: #0066cc;
-    margin-right: 0px;
-}
-
-.navbar .nav .current_page_item > a {
-    background-color: white!important;
-    color: #999!important;
-    background-image:none!important;
-    border:none!important;
-}
-
-.navbar .nav .dropdown-menu {
-    background-color: #eee;
-    background-image: none;
-    border-color: #ddd;
-}
-
-.navbar .nav .dropdown-menu li a {
-    background-color: #eee;
-}
-
-.navbar .nav li a {
-    background-color: #ddd;
-    background-image: none;
-    border: none;
-    color: #666;
-    font-weight: normal;
-}
-
-.navbar .nav li a:hover{
-    background-color: #ccc;
-    background-image:none;
-    border: none!important;
-    text-shadow: none;
-    -webkit-transition: .2s; /* Safari */
-    transition: .2s;
-}
-
-#appnavbar li a {
-    border-bottom-right-radius: 0;
-    border-bottom-left-radius: 0;
-    text-shadow:none;
-}
-
-.navbar-fixed-top .navbar-inner, .navbar-static-top .navbar-inner {
-    box-shadow: none;
-    padding: 10px 0 0 0;
-}
-
-.navbar-inverse .brand, .navbar-inverse .nav > li > a{
-    text-shadow: none;
-}
-
-.navbar .brand{ 
-    margin-left:0;
-}
-
-.navbar .nav{
-    margin:0;
-}
-
-.row {
-    clear: both;
-}
-
 
 
 .span3 #type > .dimslider,
@@ -642,6 +678,10 @@ p.ng-binding {
 }
 
 .page-header-small {border:none!important; margin-top:0!important}
+
+
+
+/*  SETTINGS  */
 
 #settingscontent {
     margin-bottom:80px;
@@ -760,14 +800,17 @@ p.ng-binding {
     
 #scenecontent > table:first-of-type{
     width:auto;
+    margin-bottom:1em;
 }
 
 #scenecontent #combodevice a{
-    position:relative;
+/*    position:relative;
     left:-394px;
-    top: 140px;
+    top: 140px;*/
 }
 
+
+/* ICONS PAGE */
 #iconsman > h3{
     font-size:2em
 }
@@ -777,30 +820,7 @@ p.ng-binding {
 }
 
 
-.ui-toolbar, div.dataTables_wrapper .ui-widget-header{
-    color:#666;
-    background-color:#ccc;
-}
-
-.ui-toolbar {
-    background-color:#ccc;
-    background-image:none;
-    border:none;
-}
-
-.ui-state-default, .ui-widget-header, .ui-state-disabled{
-    background-image:none;
-    color:#666;
-}
-
-.ui-state-default{
-    background-color:#ddd;
-    color:#444;
-    border:none;
-    /*border-right: 2px solid #ccc;*/
-    border-top:none;
-    border-bottom:none;
-}
+/*  SLIDERS */
 
 .dimslider,
 .ui-slider-range{
@@ -826,16 +846,17 @@ p.ng-binding {
     margin-left:-20px;
 }
 
+
+/*  USER VARIABLES */
+
 #uservariablesedittable{
     background-color:#eee;
     border-top:10px solid #eee;
     margin-bottom:60px
 }
 
-#uservariablesedittable tr:last-of-type a{
-    top: 50px;
-    position:relative;
-}
+
+/*  DATA TABLE  */
 
 table.dataTable{
     background-color: #666;
@@ -866,19 +887,15 @@ table.display td{padding:5px;}
     margin-left:10px;
 }
 
+
+/*  POPUP  */
+
 #rgbw_popup{
     left:50%!important;
 }
 
-.navbar-inverse .nav li.dropdown.open > .dropdown-toggle{
-    background-color:#ccc;
-}
 
-#appnavbar a:hover,#appnavbar li:hover{
-    background-color:#ccc;
-    background-image:none;
-    color:#666
-}
+/*  SELECTORLEVELS  */
 
 .selectorlevels{
     font-style:normal;
@@ -895,40 +912,6 @@ table.display td{padding:5px;}
     border-top:none;
 }
 
-
-
-/* UI & BOOTSTRAP */
-
-#dashcontent .selectorlevels .state-default{
-    color:#666;
-}
-
-.ui-widget-content {
-    background-color: #fff;
-    background-image: none!important;
-    border-color: #999;
-    color: #333;
-    margin-left:0!important;
-}
-
-#settingscontent .ui-widget-content{
-    min-width:210px;
-    width:calc(100% - 65px);
-}
-
-.ui-slider-handle{
-    cursor: move; /* fallback if grab cursor is unsupported */
-    cursor: grab;
-    cursor: -moz-grab;
-    cursor: -webkit-grab;
-}
-
-.ui-draggable-dragging > section{
-    -webkit-box-shadow: 7px 7px 25px 5px rgba(50, 50, 50, 0.48);
-    -moz-box-shadow:    7px 7px 25px 5px rgba(50, 50, 50, 0.48);
-    box-shadow:         7px 7px 25px 5px rgba(50, 50, 50, 0.48);
-}
-
 .selectorlevels .ui-buttonset{
     margin-right:0;
     position:relative;
@@ -940,7 +923,6 @@ table.display td{padding:5px;}
 .divider .selectorlevels .ui-buttonset{
     height:36px;
 }
-    
 
 .selectorlevels .ui-buttonset .ui-button{
     border: none;
@@ -970,10 +952,6 @@ table.display td{padding:5px;}
     background-color:#73b6ca!important;
     color:#fff;
     box-shadow: inset 0px 1px 2px 1px rgba(50,50,50,0.1);
-}
-
-.ui-state-hover{
-    background-color:#43A4D3;
 }
 
 #dashcontent .selectorlevels label .ui-button-text{
@@ -1022,6 +1000,69 @@ table.display td{padding:5px;}
     flex-shrink: 1;
 }
 
+
+/* UI & BOOTSTRAP */
+
+#dashcontent .selectorlevels .state-default{
+    color:#666;
+}
+
+.ui-widget-content {
+    background-color: #fff;
+    background-image: none!important;
+    border-color: #999;
+    color: #333;
+    margin-left:0!important;
+}
+
+#settingscontent .ui-widget-content{
+    min-width:210px;
+    width:calc(100% - 65px);
+}
+
+.ui-slider-handle{
+    cursor: move; /* fallback if grab cursor is unsupported */
+    cursor: grab;
+    cursor: -moz-grab;
+    cursor: -webkit-grab;
+}
+
+.ui-draggable-dragging > section{
+    -webkit-box-shadow: 7px 7px 25px 5px rgba(50, 50, 50, 0.48);
+    -moz-box-shadow:    7px 7px 25px 5px rgba(50, 50, 50, 0.48);
+    box-shadow:         7px 7px 25px 5px rgba(50, 50, 50, 0.48);
+    transform: scale(1.1);
+}
+
+.ui-toolbar, div.dataTables_wrapper .ui-widget-header{
+    color:#666;
+    background-color:#ccc;
+}
+
+.ui-toolbar {
+    background-color:#ccc;
+    background-image:none;
+    border:none;
+}
+
+.ui-state-default, .ui-widget-header, .ui-state-disabled{
+    background-image:none;
+    color:#666;
+}
+
+.ui-state-default{
+    background-color:#ddd;
+    color:#444;
+    border:none;
+    /*border-right: 2px solid #ccc;*/
+    border-top:none;
+    border-bottom:none;
+}
+
+.ui-state-hover{
+    background-color:#43A4D3;
+}
+
 .ui-dialog-titlebar{
     color:#fff;
 }
@@ -1037,6 +1078,7 @@ table.display td{padding:5px;}
 
 
 /* BACKSTAGE HARDWARE PAGES */
+
 #holder #notification{
     background-color:#333;
     padding:20px    
@@ -1261,6 +1303,7 @@ tbody{
     
 }
 
+/*
 @media all and (min-width: 481px) and (max-width: 979px){
     
     .navbar .brand{
@@ -1270,7 +1313,7 @@ tbody{
     .navbar .nav {
         margin-right:20px
     }
-}
+}*/
 
 @media all and (min-width: 1200px){
     

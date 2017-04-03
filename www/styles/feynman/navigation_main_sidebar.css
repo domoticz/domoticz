@@ -4,7 +4,13 @@
 /* the animations have been disabled for now, as they seemed to interfere with smooth operation. */
 
 
+
+/*This media query is there until Domoticz has a 'mobile' tag in the body, so that we know if a user is on a mobile phone. */
+@media screen and (min-width : 480px){
+
 /*  MAIN RESETS AND GENERAL NAVBAR SETTINGS */
+
+
 .bannercontent{padding-top:20px;}
 
 .navbar *{
@@ -352,7 +358,7 @@ transform: scale(1.2,1.2);
 .navbar .nav > li > .dropdown-menu.pull-right > li.dropdown-submenu > .dropdown-menu.pull-left > li.dropdown-submenu > .dropdown-menu.pull-right li{
     width: 100%;
     min-height: 30px;
-    padding: 10px 0 10x 0;
+    padding: 10px 0 10px 0;
     margin-bottom:1px;
     /*-webkit-box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.2)!important;
     box-shadow: 0px 0px 2px 0px rgba(0, 0, 0, 0.2)!important;*/
@@ -372,6 +378,9 @@ transform: scale(1.2,1.2);
 .navbar .nav > li > .dropdown-menu.pull-right > li.dropdown-submenu > .dropdown-menu.pull-left > li.dropdown-submenu > .dropdown-menu.pull-right li{
     
 }
+
+} /*  closing the hopefully temporary hiding of this menu for iPhones.*/
+
 
 
 
@@ -426,6 +435,9 @@ transform: scale(1.2,1.2);
         left:422px!important;   
     }
 }
+
+
+
 
 /*  A little vertical shrinking on short screens */
 @media all and (max-height: 690px) {
@@ -489,9 +501,20 @@ transform: scale(1.2,1.2);
     
 }
 
+/*  FIXES  */
+
+/* The floorplan doesn't like a side menu.. */
+
+#floorplancontent{
+    top: 10px!important;
+}
+
+#floorplancontent #fpwrapper SVG{
+    transform: scale(0.95, 0.95);
+}
 
 
-/*  This is important. It makes room for the side-meny. It does this by completely taking over from Bootstrap. */
+/*  This is important. It makes room for the side-menu. It does this by completely taking over from Bootstrap. */
 
 @media all and (min-width: 768px) and (max-width: 1300px){
 
