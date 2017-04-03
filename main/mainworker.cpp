@@ -939,7 +939,7 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_RaspberryGPIO:
 		//Raspberry Pi GPIO port access
 #ifdef WITH_GPIO
-		pHardware = new CGpio(ID, Mode1, Mode2);
+		pHardware = new CGpio(ID, Mode1, Mode2, Mode3);
 #endif
 		break;
 	case HTYPE_Comm5TCP:

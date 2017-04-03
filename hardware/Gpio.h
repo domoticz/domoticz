@@ -33,7 +33,7 @@ Source: http://wiringpi.com
 class CGpio : public CDomoticzHardwareBase
 {
 public:
-	explicit CGpio(const int ID, const int debounce, const int period);
+	explicit CGpio(const int ID, const int debounce, const int period, const int pollinterval);
 	~CGpio();
 
 	bool WriteToHardware(const char *pdata, const unsigned char length);
@@ -45,12 +45,12 @@ public:
 private:
 	bool StartHardware();
 	bool StopHardware();
-
 	void Do_Work();
+	void Poller();
 	void DelayedStartup();
-	void CopyDeviceStates(bool forceUpdate);
+	void UpdateDeviceStates(bool forceUpdate);
 	void ProcessInterrupt(int gpioId);
-	void SetupInitialState(int gpioId, bool forceUpdate);
+	void UpdateState(int gpioId, bool forceUpdate);
 
 	// List of GPIO pin numbers, ordered as listed
 	static std::vector<CGpioPin> pins;
