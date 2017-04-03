@@ -116,11 +116,11 @@ tr.odd{
 
 /* HEADER CONTENT*/
 
-#temptophtm {height:40px}
 #temptophtm .bannav{
-    position:relative; 
+    /*position:relative; 
+    top:-20px*/
     width:auto;
-    top:-20px
+    margin-bottom:10px;
 }
 
 #temptophtm td:last-of-type span{

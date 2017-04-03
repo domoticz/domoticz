@@ -85,6 +85,10 @@ tr, #name{
     display:block;
 }
 
+#dashcontent #bigtext span {
+    border-radius:3px;
+}
+
 #dashcontent .selectorlevels {
     width:100%;
     height:25px;

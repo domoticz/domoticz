@@ -4,7 +4,13 @@
 /* the animations have been disabled for now, as they seemed to interfere with smooth operation. */
 
 
+
+/*This media query is there until Domoticz has a 'mobile' tag in the body, so that we know if a user is on a mobile phone. */
+@media screen and (min-width : 480px){
+
 /*  MAIN RESETS AND GENERAL NAVBAR SETTINGS */
+
+
 .bannercontent{padding-top:20px;}
 
 .navbar *{
@@ -373,6 +379,9 @@ transform: scale(1.2,1.2);
     
 }
 
+} /*  closing the hopefully temporary hiding of this menu for iPhones.*/
+
+
 
 
 /* The following media queries allow the menu to scale independently in both X and Y axis. */
@@ -426,6 +435,9 @@ transform: scale(1.2,1.2);
         left:422px!important;   
     }
 }
+
+
+
 
 /*  A little vertical shrinking on short screens */
 @media all and (max-height: 690px) {
@@ -489,9 +501,26 @@ transform: scale(1.2,1.2);
     
 }
 
+/*  FIXES  */
 
+/* The floorplan doesn't like a side menu.. */
 
-/*  This is important. It makes room for the side-meny. It does this by completely taking over from Bootstrap. */
+#floorplancontent{
+    background-color: #eee;
+    height: 100%!important;
+    width: 100%!important;
+    top: 0!important;
+    padding:10px;
+}
+#floorplancontent fpwrapper > div{
+    display:block;
+}
+
+#floorplancontent fpwrapper svg{
+    height:100%;
+}
+
+/*  This is important. It makes room for the side-menu. It does this by completely taking over from Bootstrap. */
 
 @media all and (min-width: 768px) and (max-width: 1300px){
 

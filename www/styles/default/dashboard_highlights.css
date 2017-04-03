@@ -210,6 +210,8 @@
         background-color: transparent;
         width:100%;
         overflow:hidden;
+        height:50px;
+        display:inline-block;
     }
     
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr #img img,

@@ -1,20 +1,21 @@
 @import url("base.css"); /* Don't remove this line! */
 @import url("classic.css");  /* Don't remove this line! */
-@import url("dashboard_highlights.css"); /* This adds bigger items at the top of the dashboard */
-@import url("navigation_main_sidebar.css"); /* This transforms the main menu to a vertical menu on the left.*/
-@import url("navigation_settings_sidemenu.css"); /* This transforms the settings-tabs into a fixed sidebar.*/
-@import url("extras_and_animations.css"); /* Adds fun visual extras */
+@import url("dashboard_highlights.css"); /* This adds bigger items at the top of each dashboard category. */
+@import url("dashboard_vertical_columns.css"); /* Turns dashboard into vertical columns. */
+@import url("navigation_main_sidebar.css"); /* This transforms the main menu to a vertical menu on the left. */
+@import url("navigation_settings_sidemenu.css"); /* This transforms the settings-tabs into a sidebar on the left. */
+@import url("extras_and_animations.css"); /* Adds fun visual extras. */
 
 
 /* GENERAL SETTINGS
-Welcome the the Progress Theme settings.
+Welcome the the Feynman Theme settings.
 
-First, you can remove or change certain features by simply removing (or adding) the /* at the beginning of the 
-lines at the of this page.
+First, you can adsd or remove features by simply adding or removing /* at the beginning of the 
+lines at the top of this page.
 
 
 /* CUSTOM BACKGROUND IMAGE
-You can add your own background image here. Just place the URL between the brackets of "url()"in the line below.
+You can add your own background image here. Just place the URL between the brackets of "url()" in the line below.
 */
 
 body {
@@ -22,22 +23,29 @@ body {
 }
 
 
-/* OPTION DETAILS
+/* FEATURE DETAILS
 
 __Dashboard Highlights__
-This is a little CSS script that super-sizes the top 3 items for each category. You can use this to highlight 
+This is a little CSS script that super-sizes the first three items for each category. You can use this to highlight 
 some of your devices, or give their buttons a little more breathing room. This only works for the normal view, 
-because the compact view is about saving space.
+because the compact view is about saving space. This can be combined with:
 
-__Navigation main sidemenu__
+__Dashboard Vertical Columns__
+This feature will create vertical columns on your dashboard, one for each sensor type. BUT this feature only 
+springs into action if you have enough horizontal space for the amount device-types that you have. So for 5 columns 
+you need at least a 1300 pixels wide screen, for example. This feature works for both the normal and compact display option.
+
+__Navigation Main Sidemenu__
 This moves the main menu to the left side of the screen. It works best for wide screens (about 980 pixels wide 
-is my recommendation).
+is my recommendation). It is automatically disabled for mobile phones.
 
 __Settings Sidemenu__
 Instead of the tabs at the top of each settings page, you get a sidebar instead. It stays in place. This 
 includes the 'save' button, so you always have easy access to that.
 
-__Extra's and animations__
+__Extra's and Animations__
 Adds some pretty details (checkboxes) and animations (dialog pop-ups).
+
+
 
 */
