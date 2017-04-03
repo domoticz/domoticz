@@ -3156,11 +3156,11 @@ define(['app'], function (app) {
 							'\t      <td class="options">';
 					  if (item.Favorite == 0) {
 						xhtm+=
-							  '<img class="favorite favoriteOff" src="images/nofavorite.png" title="' + $.t('Add to Dashboard') + '" onclick="MakeFavorite(' + item.idx + ',1);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
+							  '<img class="favorite favoriteOff lcursor" src="images/nofavorite.png" title="' + $.t('Add to Dashboard') + '" onclick="MakeFavorite(' + item.idx + ',1);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
 					  }
 					  else {
 						xhtm+=
-							  '<img class="favorite favoriteOn" src="images/favorite.png" title="' + $.t('Remove from Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',0);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
+							  '<img class="favorite favoriteOn lcursor" src="images/favorite.png" title="' + $.t('Remove from Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',0);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
 					  }
 				  xhtm+=
 						'<a class="btnsmall" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name)  + '\', \'#lightcontent\', \'ShowLights\');" data-i18n="Log">Log</a> ';
