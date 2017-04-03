@@ -129,7 +129,7 @@ tr.odd{
     /*position:relative; 
     top:-20px*/
     width:auto;
-    margin-bottom:10px;
+    margin-bottom:1em;
 }
 
 #temptophtm td:last-of-type span{
@@ -252,9 +252,11 @@ tr.odd{
 
 /*  SUB-NAVIGATION  */
 
+#timesun + td {margin-bottom:1em}
+
 #bannav {
     width: auto;
-    padding-bottom:10px;
+    margin-bottom:1em;
 }
 
 #bannav td{
@@ -281,8 +283,14 @@ tr.odd{
 /*  FLOORPLAN */
 
 #BulletGroup{
-    background-color: rgba(0,0,0,0.5)!important;
+    background-color: rgba(0,0,0,0.5)!important; 
+    transition: all 1s ease-out;
 }
+#BulletGroup:hover{
+    background-color: rgba(0,0,0,1)!important;
+}
+
+
 
 #floorplancontent #BulletGroup .bullet, 
 #floorplancontent #BulletGroup .bulletSelected{
@@ -290,13 +298,14 @@ tr.odd{
     height:30px;
 }
 
-#floorplancontent #bulletGroup:hover #BulletImages{
+#floorplancontent #BulletGroup #BulletImages{
+
+}
+
+#floorplancontent #BulletGroup:hover #BulletImages{
     padding-top:10px;
 }
 
-#fpwrapper > div {
-transform: scale(0.8, 0.8);
-}
 
 /*  HEADERS  */
 
@@ -791,6 +800,7 @@ p.ng-binding {
     
 #scenecontent > table:first-of-type{
     width:auto;
+    margin-bottom:1em;
 }
 
 #scenecontent #combodevice a{
@@ -1021,6 +1031,7 @@ table.display td{padding:5px;}
     -webkit-box-shadow: 7px 7px 25px 5px rgba(50, 50, 50, 0.48);
     -moz-box-shadow:    7px 7px 25px 5px rgba(50, 50, 50, 0.48);
     box-shadow:         7px 7px 25px 5px rgba(50, 50, 50, 0.48);
+    transform: scale(1.1);
 }
 
 .ui-toolbar, div.dataTables_wrapper .ui-widget-header{
