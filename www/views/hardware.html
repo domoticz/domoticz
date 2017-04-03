@@ -1165,7 +1165,7 @@
 			<table class="display" id="hardwareparamsgpio" border="0" cellpadding="0" cellspacing="20">
 				<tr valign="top">
 					<td align="right" style="width:110px"><label id="lblgpiodebounce" for="name"><span data-i18n="Debounce"></span>Debounce:</label></td>
-					<td><input type="text" id="gpiodebounce" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="50" />&nbsp;<span data-i18n="Milliseconds"></span>
+					<td><input type="text" id="gpiodebounce" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="50" />&nbsp;(<span data-i18n="Milliseconds"></span>)
 					<br />
 						<span data-i18n="Make sure the correct pin status is read by introducing a bounce delay.">Make sure the correct pin status is read by introducing a bounce delay.</span>
 						<br />
@@ -1173,7 +1173,7 @@
 				</tr>
 				<tr valign="top">
 					<td align="right" style="width:110px"><label id="lblgpioperiod" for="name"><span data-i18n="Period"></span>Period:</label></td>
-					<td><input type="text" id="gpioperiod" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="50" />&nbsp;<span data-i18n="Milliseconds"></span>
+					<td><input type="text" id="gpioperiod" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="50" />&nbsp;(<span data-i18n="Milliseconds"></span>)
 					<br />
 						<span data-i18n="Maximum of one interrupt per pin allowed in this period (prevents interrupt storms).">Maximum of one interrupt per pin allowed in this period (prevents interrupt storms).</span>
 						<br />
@@ -1181,11 +1181,7 @@
 				</tr>
                 <tr valign="top">
                     <td align="right" style="width:110px"><label id="lblgpiopollinterval" for="name"><span data-i18n="Pollinterval"></span>Poll interval:</label></td>
-                    <td>
-                        <input type="text" id="gpiopollinterval" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="0" />&nbsp;<span data-i18n="Seconds"></span>
-                        <br />
-                        <span data-i18n="Set poll interval to zero to disable input polling.">Set poll interval to zero to disable input polling.</span>
-                        <br />
+                    <td><input type="text" id="gpiopollinterval" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="0" />&nbsp;<span data-i18n="(Seconds) 0 = Disabled"></span>
                     </td>
                 </tr>
 			</table>
