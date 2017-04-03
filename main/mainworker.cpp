@@ -657,7 +657,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new OTGWSerial(ID,SerialPort, 9600, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
 		break;
 	case HTYPE_TeleinfoMeter:
-		pHardware = new CTeleinfoSerial(ID, SerialPort);
+		pHardware = new CTeleinfoSerial(ID, SerialPort, Mode1, (Mode2 != 0), Mode3);
 		break;
 	case HTYPE_MySensorsUSB:
 		pHardware = new MySensorsSerial(ID, SerialPort, Mode1);
@@ -789,7 +789,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_ECODEVICES:
 		//LAN
-		pHardware = new CEcoDevices(ID, Address, Port);
+		pHardware = new CEcoDevices(ID, Address, Port, Mode1, Mode2);
 		break;
 	case HTYPE_1WIRE:
 		//1-Wire file system
@@ -12765,7 +12765,7 @@ void MainWorker::HeartbeatCheck()
 							}
 						}
 
-						_log.Log(LOG_ERROR, "%s hardware (%d) nothing received for more then %d %s!....", sd[0].c_str(), pHardware->m_HwdID, totNum, sDataTimeout.c_str());
+						_log.Log(LOG_ERROR, "%s hardware (%d) nothing received for more than %d %s!....", sd[0].c_str(), pHardware->m_HwdID, totNum, sDataTimeout.c_str());
 						m_devicestorestart.push_back(pHardware->m_HwdID);
 					}
 				}
