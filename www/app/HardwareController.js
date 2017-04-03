@@ -142,7 +142,8 @@ define(['app'], function (app) {
                 if (text.indexOf("GPIO") >= 0)
                 {
                     var gpiodebounce=$("#hardwareparamsgpio #gpiodebounce").val();
-                    var gpioperiod=$("#hardwareparamsgpio #gpioperiod").val();
+                    var gpioperiod = $("#hardwareparamsgpio #gpioperiod").val();
+                    var gpiopollinterval = $("#hardwareparamsgpio #gpiopollinterval").val();
                     if (gpiodebounce=="")
                     {
                         gpiodebounce = "50";
@@ -151,8 +152,13 @@ define(['app'], function (app) {
                     {
                         gpioperiod = "50";
                     }
+                    if (gpiopollinterval=="")
+                    {
+                        gpiopollinterval = "0";
+                    }
                     Mode1 = gpiodebounce;
                     Mode2 = gpioperiod;
+                    Mode3 = gpiopollinterval;
                 }
             	$.ajax({
                      url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
@@ -1091,7 +1097,8 @@ define(['app'], function (app) {
             else if (text.indexOf("GPIO") >= 0)
             {
                 var gpiodebounce=$("#hardwarecontent #hardwareparamsgpio #gpiodebounce").val();
-                var gpioperiod=$("#hardwarecontent #hardwareparamsgpio #gpioperiod").val();
+                var gpioperiod = $("#hardwarecontent #hardwareparamsgpio #gpioperiod").val();
+                var gpiopollinterval = $("#hardwarecontent #hardwareparamsgpio #gpiopollinterval").val();
                 if (gpiodebounce=="")
                 {
                     gpiodebounce = "50";
@@ -1100,19 +1107,31 @@ define(['app'], function (app) {
                 {
                     gpioperiod = "50";
                 }
+                if (gpiopollinterval == "")
+                {
+                    gpiopollinterval = "0";
+                }
                 Mode1 = gpiodebounce;
                 Mode2 = gpioperiod;
+                Mode3 = gpiopollinterval;
                 $.ajax({
-                     url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout + "&Mode1=" + Mode1 + "&Mode2=" + Mode2,
-                     async: false,
-                     dataType: 'json',
-                     success: function(data) {
-                        RefreshHardwareTable();
-                     },
-                     error: function(){
+                    url: "json.htm?type=command&param=addhardware&htype="
+                    + hardwaretype
+                    + "&name=" + encodeURIComponent(name)
+                    + "&enabled=" + bEnabled
+                    + "&datatimeout=" + datatimeout
+                    + "&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3,
+                    async: false,
+                        dataType: 'json',
+                        success: function (data)
+                        {
+                            RefreshHardwareTable();
+                        },
+                        error: function ()
+                        {
                             ShowNotify($.t('Problem adding hardware!'), 2500, true);
-                     }
-                });
+                        }
+                    });
         }
 	    else if (text.indexOf("I2C ") >= 0 && text.indexOf("I2C sensor PIO 8bit expander PCF8574") < 0)
 	    {
@@ -5057,6 +5076,7 @@ define(['app'], function (app) {
                         else if (data["Type"].indexOf("GPIO") >= 0) {
                             $("#hardwareparamsgpio #gpiodebounce").val(data["Mode1"]);
                             $("#hardwareparamsgpio #gpioperiod").val(data["Mode2"]);
+                            $("#hardwareparamsgpio #gpiopollinterval").val(data["Mode3"]);
                         }
                         else if (data["Type"].indexOf("USB") >= 0  || data["Type"].indexOf("Teleinfo EDF") >=0) {
                             $("#hardwarecontent #hardwareparamsserial #comboserialport").val(data["IntPort"]);
