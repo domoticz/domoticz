@@ -829,9 +829,9 @@ define(['app'], function (app) {
 		  $("#dialog-editenergydevice #devicedescription").val(unescape(description));
 		  $("#dialog-editenergydevice #combometertype").val(switchtype);
             
-          $('#dialog-editenergydevice input:radio[name=devoptions][value="'+devoptions+'"]').attr('checked', true);
-          $('#dialog-editenergydevice input:radio[name=devoptions][value="'+devoptions+'"]').prop('checked', true);
-          $('#dialog-editenergydevice input:radio[name=devoptions][value="'+devoptions+'"]').trigger('change');
+          	$('#dialog-editenergydevice input:radio[name=devoptions][value="'+devoptions+'"]').attr('checked', true);
+          	$('#dialog-editenergydevice input:radio[name=devoptions][value="'+devoptions+'"]').prop('checked', true);
+		$('#dialog-editenergydevice input:radio[name=devoptions][value="'+devoptions+'"]').trigger('change');
 		  $("#dialog-editenergydevice" ).i18n();
 		  $("#dialog-editenergydevice" ).dialog( "open" );
 		}
@@ -1111,23 +1111,25 @@ define(['app'], function (app) {
 						}
 					}
 				});
-			  }
-			 }
-		  });
-			$scope.mytimer=$interval(function() {
-				RefreshUtilities();
-			}, 10000);
+			}
 		}
+	});
+	$scope.mytimer=$interval(function() {
+		RefreshUtilities();
+	}, 10000);
+}
 
-		ShowUtilities = function()
-		{
+	ShowUtilities = function()
+	{
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
 			}
-		  $('#modal').show();
-		  
-		  var htmlcontent = '';
+		  	$('#modal').show();
+		  	$( "body" ).removeClass();
+			$( "body" ).addClass( "utilities" );	
+			
+		  	var htmlcontent = '';
 			var bShowRoomplan=false;
 			$.RoomPlans = [];
 		  $.ajax({
@@ -1139,10 +1141,12 @@ define(['app'], function (app) {
 					var totalItems=data.result.length;
 					if (totalItems>0) {
 						bShowRoomplan=true;
-		//				if (window.myglobals.ismobile==true) {
-			//				bShowRoomplan=false;
-				//		}
+						if (window.myglobals.ismobile==true) {
+							$( "body" ).addClass( "mobile" );	
+							//bShowRoomplan=false;
+						}
 						if (bShowRoomplan==true) {
+							$( "body" ).addClass( "showRoomplan" );	
 							$.each(data.result, function(i,item) {
 								$.RoomPlans.push({
 									idx: item.idx,
