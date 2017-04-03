@@ -39,7 +39,7 @@
 </plugin>
 """
 import Domoticz
-import pprint
+import base64
 
 isConnected = False
 nextConnect = 3
@@ -65,15 +65,12 @@ def onStart():
     if Parameters["Mode6"] == "Debug":
         Domoticz.Debugging(1)
     LevelActions = '|'*Parameters["Mode3"].count('|')
-    SourceOptions = {'LevelActions': LevelActions,
-                     'LevelNames': Parameters["Mode3"],
-                     'LevelOffHidden': 'false',
-                     'SelectorStyle': '1'}
     # if Zone 3 required make sure at least themain device exists, otherwise suppress polling for it
     if (Parameters["Mode1"] > "2"):
         if (6 not in Devices):
-            Domoticz.Device(Name="Zone 3", Unit=6, TypeName="Selector Switch", Switchtype=18, Image=5, Options=SourceOptions).Create()
-            if (7 not in Devices): Domoticz.Device(Name="Volume 3", Unit=7, Type=244, Subtype=73, Switchtype=7, Image=8).Create()
+            Domoticz.Device(Name="Zone 3", Unit=6, TypeName="Selector Switch", Switchtype=18, Image=5, \
+                            Options="LevelActions:"+stringToBase64(LevelActions)+";LevelNames:"+stringToBase64(Parameters["Mode3"])+";LevelOffHidden:ZmFsc2U=;SelectorStyle:MQ==").Create()
+            if (7 not in Devices): Domoticz.Device(Name="Volume 3", Unit=7, Type=244, Subtype=73, Switchtype=7,  Image=8).Create()
             Domoticz.Log("Created Zone 3 device(s) because zone requested in hardware setup but device not found.")
         else:
             zone3Source = Devices[6].nValue
@@ -85,8 +82,9 @@ def onStart():
     # if Zone 2 required make sure at least themain device exists, otherwise suppress polling for it
     if (Parameters["Mode1"] > "1"):
         if (4 not in Devices):
-            Domoticz.Device(Name="Zone 2", Unit=4, TypeName="Selector Switch", Switchtype=18, Image=5, Options=SourceOptions).Create()
-            if (5 not in Devices): Domoticz.Device(Name="Volume 2", Unit=5, Type=244, Subtype=73, Switchtype=7, Image=8).Create()
+            Domoticz.Device(Name="Zone 2", Unit=4, TypeName="Selector Switch", Switchtype=18, Image=5, \
+                            Options="LevelActions:"+stringToBase64(LevelActions)+";LevelNames:"+stringToBase64(Parameters["Mode3"])+";LevelOffHidden:ZmFsc2U=;SelectorStyle:MQ==").Create()
+            if (5 not in Devices): Domoticz.Device(Name="Volume 2", Unit=5, Type=244, Subtype=73, Switchtype=7,  Image=8).Create()
             Domoticz.Log("Created Zone 2 device(s) because zone requested in hardware setup but device not found.")
         else:
             zone2Source = Devices[4].nValue
@@ -97,8 +95,9 @@ def onStart():
         
     if (1 not in Devices):
         Domoticz.Device(Name="Power", Unit=1, TypeName="Switch",  Image=5).Create()
-        if (2 not in Devices): Domoticz.Device(Name="Main Zone", Unit=2, TypeName="Selector Switch", Switchtype=18, Image=5, Options=SourceOptions).Create()
-        if (3 not in Devices): Domoticz.Device(Name="Main Volume", Unit=3, Type=244, Subtype=73, Switchtype=7, Image=8).Create()
+        if (2 not in Devices): Domoticz.Device(Name="Main Zone", Unit=2, TypeName="Selector Switch", Switchtype=18, Image=5, \
+                        Options="LevelActions:"+stringToBase64(LevelActions)+";LevelNames:"+stringToBase64(Parameters["Mode3"])+";LevelOffHidden:ZmFsc2U=;SelectorStyle:MQ==").Create()
+        if (3 not in Devices): Domoticz.Device(Name="Main Volume", Unit=3, Type=244, Subtype=73, Switchtype=7,  Image=8).Create()
         Domoticz.Log("Created Main Zone devices because they were not found.")
     else:
         mainSource = Devices[2].nValue
@@ -307,5 +306,10 @@ def DumpConfigToLog():
         Domoticz.Debug("Device nValue:    " + str(Devices[x].nValue))
         Domoticz.Debug("Device sValue:   '" + Devices[x].sValue + "'")
         Domoticz.Debug("Device LastLevel: " + str(Devices[x].LastLevel))
-        Domoticz.Debug("Device Options:   " + pprint.pformat(Devices[x].Options))
     return
+
+def stringToBase64(s):
+    return base64.b64encode(s.encode('utf-8')).decode("utf-8")
+
+def base64ToString(b):
+    return base64.b64decode(b).decode('utf-8')
