@@ -2157,8 +2157,8 @@ define(['app'], function (app) {
 					id="#lightcontent #" + item.idx;
 					var obj=$(id);
 					if (typeof obj != 'undefined') {
-						if ($(id + " #name").html()!=item.Name) {
-							$(id + " #name").html(item.Name);
+						if ($(id + " #name span").html()!=item.Name) {
+							$(id + " #name span").html(item.Name);
 						}
 						var isdimmer=false;
 						var img="";
@@ -2571,8 +2571,8 @@ define(['app'], function (app) {
 							}
 							bigtext = GetLightStatusText(item);
 						}
-						if ($(id + " #bigtext").html()!=TranslateStatus(GetLightStatusText(item))) {
-							$(id + " #bigtext").html(bigtext);
+						if ($(id + " #bigtext span").html()!=TranslateStatus(GetLightStatusText(item))) {
+							$(id + " #bigtext span").html(bigtext);
 						}
 						if ((typeof $(id + " #status") != 'undefined') && ($(id + " #status").html() != status)) {
 						    $(id + " #status").html(status);
@@ -2740,8 +2740,8 @@ define(['app'], function (app) {
 
 					xhtm+=
 						'\t    <tr>\n' +
-						'\t      <td id="name" class="name" style="background-color: ' + nbackcolor + ';">' + item.Name + '</td>\n' +
-										'\t      <td id="bigtext" class="bigtext">';
+						'\t      <td id="name" class="name" style="background-color: ' + nbackcolor + ';"><span>' + item.Name + '</span></td>\n' +
+										'\t      <td id="bigtext" class="bigtext"><span>';
 				  var bigtext=TranslateStatusShort(item.Status);
 				  if (item.UsedByCamera==true) {
 					var streamimg='<img src="images/webcam.png" title="' + $.t('Stream Video') +'" height="16" width="16">';
@@ -2754,7 +2754,7 @@ define(['app'], function (app) {
 						bigtext+="&nbsp;"+rfysetup;
 					  }
 				  }
-				  xhtm+=bigtext+'</td>\n';
+				  xhtm+=bigtext+'</span></td>\n';
 				  if (item.SubType=="Security Panel") {
 					xhtm+='\t      <td id="img"><a href="secpanel/"><img src="images/security48.png" class="lcursor" height="48" width="48"></a></td>\n';
 				  }
@@ -3108,26 +3108,27 @@ define(['app'], function (app) {
 						  }
 					xhtm+=
 						'\t      <td id="status" class="status">' + status + '</td>\n' +
-						'\t      <td id="lastupdate" class="lastupdate">' + item.LastUpdate + '</td>\n' +
-						'\t      <td id="type" class="type">' + item.Type + ', ' + item.SubType + ', ' + item.SwitchType;
+						'\t      <td id="lastupdate" class="lastupdate"><span>' + item.LastUpdate + '</span></td>\n' +
+						'\t      <td id="type" class="type"><span>' + item.Type + ', ' + item.SubType + ', ' + item.SwitchType;
 					if (item.SwitchType == "Dimmer") {
 						if ((item.SubType.indexOf("RGBW") >= 0)||(item.SubType=="RGB")) {
+                        xhtm+='</span>
 						}
 						else {
-							xhtm+='<br><br><div style="margin-left:60px;" class="dimslider" id="slider" data-idx="' + item.idx + '" data-type="norm" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"></div>';
+							xhtm+='</span><br><br><div style="margin-left:60px;" class="dimslider" id="slider" data-idx="' + item.idx + '" data-type="norm" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"></div>';
 						}
 					}
 					else if (item.SwitchType == "TPI") {
-						xhtm+='<br><br><div style="margin-left:60px;" class="dimslider" id="slider" data-idx="' + item.idx + '" data-type="relay" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"';
+						xhtm+='</span><br><br><div style="margin-left:60px;" class="dimslider" id="slider" data-idx="' + item.idx + '" data-type="relay" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"';
 						if (item.Unit < 64 || item.Unit > 95)
 							xhtm+=' data-disabled="true"';
 						xhtm+='></div>';
 					}
 					else if ((item.SwitchType == "Blinds Percentage") || (item.SwitchType == "Blinds Percentage Inverted")) {
-						xhtm+='<br><div style="margin-left:108px; margin-top:7px;" class="dimslider dimsmall" id="slider" data-idx="' + item.idx + '" data-type="blinds" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"></div>';
+						xhtm+='</span><br><div style="margin-left:108px; margin-top:7px;" class="dimslider dimsmall" id="slider" data-idx="' + item.idx + '" data-type="blinds" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"></div>';
 					}
 					else if (item.SwitchType == "Selector") {
-						xhtm += '<br><div class="selectorlevels" style="margin-top: 0.4em;">';
+						xhtm += '</span><br><div class="selectorlevels" style="margin-top: 0.4em;">';
 						if (item.SelectorStyle === 0) {
 							xhtm += '<div id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelnames="' + escape(item.LevelNames) + '" data-selectorstyle="' + item.SelectorStyle + '" data-levelname="' + escape(GetLightStatusText(item)) + '" data-leveloffhidden="' + item.LevelOffHidden + '" data-levelactions="' + item.LevelActions + '">';
 							var levelNames = item.LevelNames.split('|');
@@ -3313,8 +3314,8 @@ define(['app'], function (app) {
 								$(id + " #img").html(img);
 							}
 						}
-						if ($(id + " #bigtext").html()!=bigtext) {
-							$(id + " #bigtext").html(bigtext);
+						if ($(id + " #bigtext span").html()!=bigtext) {
+							$(id + " #bigtext span").html(bigtext);
 						}
 					}
 					if (dtype!="relay")
@@ -3356,7 +3357,7 @@ define(['app'], function (app) {
 						div$.data('levelname', levelname);
 					});
 
-					$('#lightcontent #' + idx + " #bigtext").html(unescape(levelname));
+					$('#lightcontent #' + idx + " #bigtext span").html(unescape(levelname));
 				}
 			});
 
@@ -3379,7 +3380,7 @@ define(['app'], function (app) {
 					select$.selectmenu("menuWidget").addClass('selectorlevels-menu');
 					select$.val(level);
 
-					$('#lightcontent #' + idx + " #bigtext").html(unescape(levelname));
+					$('#lightcontent #' + idx + " #bigtext span").html(unescape(levelname));
 				},
 				change: function (event, ui) { //When the user selects an option
 					var select$ = $(this),
