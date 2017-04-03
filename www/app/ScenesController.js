@@ -1532,14 +1532,21 @@ define(['app'], function (app) {
 				$scope.mytimer = undefined;
 			}
 			
-		  RefreshLightSwitchesComboArray();
+		  	RefreshLightSwitchesComboArray();
 
+			$( "body" ).removeClass();
+ 			$( "body" ).addClass( "scenes" );	
+			if (window.myglobals.ismobileint==true) {
+			 	$( "body" ).addClass( "mobile" );		
+			}
+			
 		  var htmlcontent = '';
 		  var bHaveAddedDevider = false;
 		  var bAllowWidgetReorder=true;
 
 		  var tophtm="";
 		  if (permissions.hasPermission("Admin")) {
+ 			$( "body" ).addClass( "admin" );			  
 			tophtm+=
 				'\t<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">' +
 				'\t<tr>' +
@@ -1592,8 +1599,8 @@ define(['app'], function (app) {
 						}
 					  xhtm+=
 						'\t    <tr>\n' +
-						'\t      <td id="name" style="background-color: ' + nbackcolor + ';">' + item.Name + '</td>\n' +
-						'\t      <td id="bigtext">';
+						'\t      <td id="name" class="name" style="background-color: ' + nbackcolor + ';">' + item.Name + '</td>\n' +
+						'\t      <td id="bigtext" class="bigtext">';
 						var bigtext=TranslateStatusShort(item.Status);
 					  if (item.UsedByCamera==true) {
 						var streamimg='<img src="images/webcam.png" title="' + $.t('Stream Video') +'" height="16" width="16">';
@@ -1618,21 +1625,21 @@ define(['app'], function (app) {
 							offclass="transimg";
 						}
 
-						xhtm+='<td id="img1"><img class="lcursor ' + onclass + '" src="images/push48.png" title="' + $.t('Turn On') +'" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected +');" height="48" width="48"></td>\n';
-						xhtm+='<td id="img2"><img class="lcursor ' + offclass + '"src="images/pushoff48.png" title="' + $.t('Turn Off') +'" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes, ' + item.Protected +');" height="48" width="48"></td>\n';
-						xhtm+='\t      <td id="status">&nbsp;</td>\n';
+						xhtm+='<td id="img1" class="img img1"><img class="lcursor ' + onclass + '" src="images/push48.png" title="' + $.t('Turn On') +'" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected +');" height="48" width="48"></td>\n';
+						xhtm+='<td id="img2" class="img2"><img class="lcursor ' + offclass + '"src="images/pushoff48.png" title="' + $.t('Turn Off') +'" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes, ' + item.Protected +');" height="48" width="48"></td>\n';
+						xhtm+='\t      <td id="status" class="status">&nbsp;</td>\n';
 					}
 					xhtm+=
-						'\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
-						'\t      <td id="type">' + $.t(item.Type) +'</td>\n';
-					xhtm+='\t      <td>';
+						'\t      <td id="lastupdate" class="lastupdate">' + item.LastUpdate + '</td>\n' +
+						'\t      <td id="type" class="type">' + $.t(item.Type) +'</td>\n';
+					xhtm+='\t      <td class="options">';
 				  if (item.Favorite == 0) {
 					xhtm+=      
-						  '<img src="images/nofavorite.png" title="' + $.t('Add to Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',1);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
+						  '<img src="images/nofavorite.png" class="favorite favoriteOff" title="' + $.t('Add to Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',1);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
 				  }
 				  else {
 					xhtm+=      
-						  '<img src="images/favorite.png" title="' + $.t('Remove from Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',0);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
+						  '<img src="images/favorite.png" class="favorite favoriteOn" title="' + $.t('Remove from Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',0);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
 				  }
 				  xhtm+='<a class="btnsmall" onclick="ShowSceneLog(\'#scenecontent\',\'ShowScenes\',' + item.idx + ',\'' + escape(item.Name) + '\');" data-i18n="Log">Log</a> ';
 			  
