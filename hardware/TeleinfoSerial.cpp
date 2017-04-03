@@ -67,7 +67,7 @@ CTeleinfoSerial::~CTeleinfoSerial()
 void CTeleinfoSerial::Init()
 {
 	m_bufferpos = 0;
-	m_counter = 0;
+	m_counter = -2; // Make sure 1 full frame is processed before any update
 }
 
 
@@ -188,7 +188,7 @@ void CTeleinfoSerial::MatchLine()
 	else if (label == "PPOT")  teleinfo.PPOT = value;
 	else if (label == "MOTDETAT") m_counter++;
 
-	if (m_counter > m_iRateLimit) // at 9600 baud we have roughly one frame per second
+	if (m_counter > m_iRateLimit/2) // at 1200 baud we have roughly one frame per second, check more frequently for alerts
 	{
 		m_counter = 0;
 		ProcessTeleinfo(teleinfo);

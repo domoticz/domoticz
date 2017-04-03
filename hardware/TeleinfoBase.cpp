@@ -25,6 +25,9 @@ History :
 #define DEBUG_TeleinfoBase
 #endif
 
+// Update are at least every 5 minutes
+#define MAXIMUM_UPDATE_INTERVAL 300
+
 CTeleinfoBase::CTeleinfoBase()
 {
 	m_p1power.ID = 1;
@@ -136,13 +139,15 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 		rate_alert = 3;
 	}
 
-	// Process only if power consumption changed. If it did not, then alerts and intensity have not changed either
-	if (teleinfo.pAlertPAPP != teleinfo.PAPP)
+	// Process only if maximum time between updates has been reached or power consumption changed 
+        // If it did not, then alerts and intensity have not changed either
+	if ((teleinfo.pAlertPAPP != teleinfo.PAPP) || (difftime(atime, teleinfo.last) >= MAXIMUM_UPDATE_INTERVAL))
 	{
+		teleinfo.pAlertPAPP = teleinfo.PAPP;
+
 		//Send data if value changed, at most at rate specified in settings, and at least every 5 minutes
-		if ((difftime(atime, teleinfo.last) >= m_iRateLimit) || (difftime(atime, teleinfo.last) >= 300))
+		if ((difftime(atime, teleinfo.last) >= m_iRateLimit) || (difftime(atime, teleinfo.last) >= MAXIMUM_UPDATE_INTERVAL))
 		{
-			teleinfo.pAlertPAPP = teleinfo.PAPP;
 			teleinfo.last = atime;
 			m_p1power.usagecurrent = teleinfo.PAPP;
 			if (teleinfo.OPTARIF == "BASE")
@@ -276,7 +281,7 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 			}
 		}
 		// Common sensors for all rates
-		// Alerts can be updated at every call and is not subject to the 1mn interval
+		// Alerts can be updated at every call and are not subject to the "rate limit" interval
 		if (rate_alert != teleinfo.pAlertRate)
 		{
 			SendAlertSensor(32*rank + 1, 255, rate_alert, teleinfo.rate, name + " Tarif en cours");

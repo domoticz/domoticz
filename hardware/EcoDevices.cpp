@@ -55,7 +55,9 @@ CEcoDevices::CEcoDevices(const int ID, const std::string &IPAddress, const unsig
 	m_usIPPort = usIPPort;
 	m_stoprequested = false;
 	m_iModel = model;
-        m_iRateLimit = 30;
+        m_iRateLimit = ratelimit;
+
+	if (m_iRateLimit < 2) m_iRateLimit = 2; // system seems unstable if going too fast
 
 	Init();
 }

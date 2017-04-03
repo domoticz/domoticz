@@ -56,7 +56,7 @@ class CTeleinfoSerial : public CTeleinfoBase, AsyncSerial
 		boost::asio::serial_port_base::flow_control m_iOptFlow;
 		boost::asio::serial_port_base::stop_bits m_iOptStop;
 
-		int m_counter;
+		signed int m_counter;
 
 		void Init();
 		void MatchLine();
