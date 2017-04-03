@@ -844,7 +844,7 @@ namespace http {
 					goto exitjson;
 
 				}
-				if (_log.isTraceEnable()) _log.Log(LOG_TRACE, "WEBS GetJSon :%s :%s ", cparam.c_str(), req.uri.c_str());
+				if (_log.isTraceEnabled()) _log.Log(LOG_TRACE, "WEBS GetJSon :%s :%s ", cparam.c_str(), req.uri.c_str());
 				HandleCommand(cparam, session, req, root);
 			} //(rtype=="command")
 			else {
@@ -1065,12 +1065,19 @@ namespace http {
 			else if (
 				(htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) || (htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) ||
 				(htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_ECODEVICES) || (htype == HTYPE_Mochad) || (htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MySensorsMQTT) || (htype == HTYPE_MQTT) || (htype == HTYPE_FRITZBOX) ||
-				(htype == HTYPE_ETH8020) || (htype == HTYPE_RelayNet) || (htype == HTYPE_Sterbox) || (htype == HTYPE_KMTronicTCP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_RFLINKTCP) || (htype == HTYPE_Comm5TCP) || (htype == HTYPE_CurrentCostMeterLAN) ||
+				(htype == HTYPE_ETH8020) || (htype == HTYPE_RelayNet) || (htype == HTYPE_Sterbox) || (htype == HTYPE_KMTronicTCP) || (htype == HTYPE_KMTronicUDP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_RFLINKTCP) || (htype == HTYPE_Comm5TCP) || (htype == HTYPE_CurrentCostMeterLAN) ||
 				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviSmartdenLan) || (htype == HTYPE_Ec3kMeterTCP) || (htype == HTYPE_MultiFun) || (htype == HTYPE_ZIBLUETCP)
 				) {
 				//Lan
 				if (address == "" || port == 0)
 					return;
+
+				if (htype == HTYPE_MySensorsMQTT) {
+					std::string modeqStr = request::findValue(&req, "mode1");
+					if (!modeqStr.empty()) {
+						mode1 = atoi(modeqStr.c_str());
+					}
+				}
 
 				if (htype == HTYPE_MQTT) {
 					std::string modeqStr = request::findValue(&req, "mode1");
@@ -1413,7 +1420,7 @@ namespace http {
 				(htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) ||
 				(htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_S0SmartMeterTCP) || (htype == HTYPE_ECODEVICES) || (htype == HTYPE_Mochad) ||
 				(htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MySensorsMQTT) || (htype == HTYPE_MQTT) || (htype == HTYPE_FRITZBOX) || (htype == HTYPE_ETH8020) || (htype == HTYPE_Sterbox) ||
-				(htype == HTYPE_KMTronicTCP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_RelayNet)  || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_RFLINKTCP) ||
+				(htype == HTYPE_KMTronicTCP) || (htype == HTYPE_KMTronicUDP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_RelayNet)  || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_RFLINKTCP) ||
 				(htype == HTYPE_Comm5TCP || (htype == HTYPE_CurrentCostMeterLAN)) ||
 				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviSmartdenLan) || (htype == HTYPE_Ec3kMeterTCP) || (htype == HTYPE_MultiFun) || (htype == HTYPE_ZIBLUETCP)
 				){
@@ -2996,6 +3003,10 @@ namespace http {
 				root["CostEnergy"] = nValue;
 				m_sql.GetPreferencesVar("CostEnergyT2", nValue);
 				root["CostEnergyT2"] = nValue;
+				m_sql.GetPreferencesVar("CostEnergyR1", nValue);
+				root["CostEnergyR1"] = nValue;
+				m_sql.GetPreferencesVar("CostEnergyR2", nValue);
+				root["CostEnergyR2"] = nValue;
 				m_sql.GetPreferencesVar("CostGas", nValue);
 				root["CostGas"] = nValue;
 				m_sql.GetPreferencesVar("CostWater", nValue);
@@ -5567,7 +5578,17 @@ namespace http {
 				}
 				else
 				{
-					unsigned char twhen = (swhen == "0") ? '>' : '<';
+					unsigned char twhen = '<';
+					if (swhen == "0")
+						twhen = '>';
+					else if (swhen == "1")
+						twhen = 'M';
+					else if (swhen == "2")
+                                                twhen = '=';
+                                        else if (swhen == "3")
+                                                twhen = 'N';
+                                        else if (swhen == "4")
+                                                twhen = 'L';
 					sprintf(szTmp, "%s;%c;%s", ttype.c_str(), twhen, svalue.c_str());
 				}
 				int priority = atoi(spriority.c_str());
@@ -5623,8 +5644,18 @@ namespace http {
 				}
 				else
 				{
-					unsigned char twhen = (swhen == "0") ? '>' : '<';
-					sprintf(szTmp, "%s;%c;%s", ttype.c_str(), twhen, svalue.c_str());
+                                        unsigned char twhen = '<';
+                                        if (swhen == "0")
+                                                twhen = '>';
+                                        else if (swhen == "1")
+                                                twhen = 'M';
+                                        else if (swhen == "2")
+                                                twhen = '=';
+                                        else if (swhen == "3")
+                                                twhen = 'N';
+                                        else if (swhen == "4")
+                                                twhen = 'L';
+                                        sprintf(szTmp, "%s;%c;%s", ttype.c_str(), twhen, svalue.c_str());
 				}
 				int priority = atoi(spriority.c_str());
 				m_notifications.AddNotification(devidx, szTmp, scustommessage, sactivesystems, priority, (ssendalways == "true") ? true : false);
@@ -6310,7 +6341,7 @@ namespace http {
 				std::string switchcmd = request::findValue(&req, "switchcmd");
 				std::string level = request::findValue(&req, "level");
 				std::string onlyonchange=request::findValue(&req, "ooc");//No update unless the value changed (check if updated)
-				if (_log.isTraceEnable()) _log.Log(LOG_TRACE,"WEBS switchlight idx:%s switchcmd:%s level:%s",  idx.c_str() , switchcmd.c_str() , level.c_str());
+				if (_log.isTraceEnabled()) _log.Log(LOG_TRACE,"WEBS switchlight idx:%s switchcmd:%s level:%s",  idx.c_str() , switchcmd.c_str() , level.c_str());
 				std::string passcode = request::findValue(&req, "passcode");
 				if ((idx == "") || (switchcmd == ""))
 					return;
@@ -6570,6 +6601,31 @@ namespace http {
 				root["status"] = "OK";
 				root["title"] = "SetColBrightnessValue";
 			}
+			else if (cparam.find("setkelvinlevel") == 0)
+			{
+				root["status"] = "OK";
+                root["title"] = "Set Kelvin Level";
+
+				std::string idx = request::findValue(&req, "idx");
+
+				if (idx == "")
+				{
+					return;
+				}
+
+				uint64_t ID;
+				std::stringstream s_strid;
+				s_strid << idx;
+				s_strid >> ID;
+
+				std::string kelvin = request::findValue(&req, "kelvin");
+
+				int ival;
+				//ival = atof(cparam.substr(14).c_str());
+				ival = atof(kelvin.c_str());
+
+				m_mainworker.SwitchLight(ID, "Set Kelvin Level", ival, -1,false,0);
+			}
 			else if (cparam == "brightnessup")
 			{
 				root["status"] = "OK";
@@ -6743,6 +6799,44 @@ namespace http {
 				s_strid >> ID;
 
 				m_mainworker.SwitchLight(ID, "Speed Down", 0, -1,false,0);
+			}
+			else if (cparam == "speedmin")
+			{
+				root["status"] = "OK";
+				root["title"] = "Set disco speed minimal!";
+
+				std::string idx = request::findValue(&req, "idx");
+
+				if (idx == "")
+				{
+					return;
+				}
+
+				uint64_t ID;
+				std::stringstream s_strid;
+				s_strid << idx;
+				s_strid >> ID;
+
+				m_mainworker.SwitchLight(ID, "Speed Minimal", 0, -1,false,0);
+			}
+			else if (cparam == "speedmax")
+			{
+				root["status"] = "OK";
+				root["title"] = "Set disco speed maximal!";
+
+				std::string idx = request::findValue(&req, "idx");
+
+				if (idx == "")
+				{
+					return;
+				}
+
+				uint64_t ID;
+				std::stringstream s_strid;
+				s_strid << idx;
+				s_strid >> ID;
+
+				m_mainworker.SwitchLight(ID, "Speed Maximal", 0, -1,false,0);
 			}
 			else if (cparam == "warmer")
 			{
@@ -7440,10 +7534,14 @@ namespace http {
 
 			float CostEnergy = static_cast<float>(atof(request::findValue(&req, "CostEnergy").c_str()));
 			float CostEnergyT2 = static_cast<float>(atof(request::findValue(&req, "CostEnergyT2").c_str()));
+			float CostEnergyR1 = static_cast<float>(atof(request::findValue(&req, "CostEnergyR1").c_str()));
+			float CostEnergyR2 = static_cast<float>(atof(request::findValue(&req, "CostEnergyR2").c_str()));
 			float CostGas = static_cast<float>(atof(request::findValue(&req, "CostGas").c_str()));
 			float CostWater = static_cast<float>(atof(request::findValue(&req, "CostWater").c_str()));
 			m_sql.UpdatePreferencesVar("CostEnergy", int(CostEnergy*10000.0f));
 			m_sql.UpdatePreferencesVar("CostEnergyT2", int(CostEnergyT2*10000.0f));
+			m_sql.UpdatePreferencesVar("CostEnergyR1", int(CostEnergyR1*10000.0f));
+			m_sql.UpdatePreferencesVar("CostEnergyR2", int(CostEnergyR2*10000.0f));
 			m_sql.UpdatePreferencesVar("CostGas", int(CostGas*10000.0f));
 			m_sql.UpdatePreferencesVar("CostWater", int(CostWater*10000.0f));
 
@@ -9217,6 +9315,9 @@ namespace http {
 							case MTYPE_COUNTER:
 								sprintf(szTmp, "%llu %s", total_real, ValueUnits.c_str());
 								break;
+							default:
+								strcpy(szTmp, "?");
+								break;
 							}
 						}
 						root["result"][ii]["CounterToday"] = szTmp;
@@ -9251,6 +9352,12 @@ namespace http {
 							sprintf(szTmp, "%.0f %s", meteroffset + dvalue, ValueUnits.c_str());
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
+							root["result"][ii]["ValueQuantity"] = ValueQuantity;
+							root["result"][ii]["ValueUnits"] = ValueUnits;
+							break;
+						default:
+							root["result"][ii]["Data"] = "?";
+							root["result"][ii]["Counter"] = "?";
 							root["result"][ii]["ValueQuantity"] = ValueQuantity;
 							root["result"][ii]["ValueUnits"] = ValueUnits;
 							break;
@@ -9325,6 +9432,9 @@ namespace http {
                             case MTYPE_COUNTER:
                                     sprintf(szTmp, "%llu %s", total_real, ValueUnits.c_str());
                                     break;
+							default:
+									strcpy(szTmp, "0");
+									break;
                             }
                         }
                         root["result"][ii]["Counter"] = sValue;
@@ -9360,7 +9470,13 @@ namespace http {
                                 root["result"][ii]["ValueQuantity"] = ValueQuantity;
                                 root["result"][ii]["ValueUnits"] = ValueUnits;
                                 break;
-                        }
+						default:
+								root["result"][ii]["Data"] = "?";
+								root["result"][ii]["Counter"] = "?";
+								root["result"][ii]["ValueQuantity"] = ValueQuantity;
+								root["result"][ii]["ValueUnits"] = ValueUnits;
+								break;
+						}
                     }
 					else if (dType == pTypeYouLess)
 					{
@@ -9432,6 +9548,9 @@ namespace http {
 							case MTYPE_COUNTER:
 								sprintf(szTmp, "%llu %s", total_real, ValueUnits.c_str());
 								break;
+							default:
+								strcpy(szTmp, "0");
+								break;
 							}
 						}
 						root["result"][ii]["CounterToday"] = szTmp;
@@ -9461,6 +9580,9 @@ namespace http {
 						case MTYPE_COUNTER:
 							sprintf(szTmp, "%llu", total_actual);
 							break;
+						default:
+							strcpy(szTmp, "0");
+							break;
 						}
 						root["result"][ii]["Counter"] = szTmp;
 
@@ -9488,6 +9610,9 @@ namespace http {
 						case MTYPE_COUNTER:
 							sprintf(szTmp, "%llu %s", acounter, ValueUnits.c_str());
 							break;
+						default:
+							strcpy(szTmp, "0");
+							break;
 						}
 						root["result"][ii]["Data"] = szTmp;
 						root["result"][ii]["ValueQuantity"] = "";
@@ -9508,6 +9633,9 @@ namespace http {
 							sprintf(szTmp, "%s", splitresults[1].c_str());
 							root["result"][ii]["ValueQuantity"] = ValueQuantity;
 							root["result"][ii]["ValueUnits"] = ValueUnits;
+							break;
+						default:
+							strcpy(szTmp, "0");
 							break;
 						}
 
@@ -12095,6 +12223,16 @@ namespace http {
 					sprintf(szTmp, "%.4f", (float)(nValue) / 10000.0f);
 					root["CostEnergyT2"] = szTmp;
 				}
+				else if (Key == "CostEnergyR1")
+				{
+					sprintf(szTmp, "%.4f", (float)(nValue) / 10000.0f);
+					root["CostEnergyR1"] = szTmp;
+				}
+				else if (Key == "CostEnergyR2")
+				{
+					sprintf(szTmp, "%.4f", (float)(nValue) / 10000.0f);
+					root["CostEnergyR2"] = szTmp;
+				}
 				else if (Key == "CostGas")
 				{
 					sprintf(szTmp, "%.4f", (float)(nValue) / 10000.0f);
@@ -13338,6 +13476,9 @@ namespace http {
 											case MTYPE_COUNTER:
 												sprintf(szTmp, "%.1f", TotalValue);
 												break;
+											default:
+												strcpy(szTmp, "0");
+												break;
 											}
 											root["result"][ii][method==1 ? "eu" : "v"] = szTmp;
 											ii++;
@@ -13389,6 +13530,9 @@ namespace http {
 										break;
 									case MTYPE_COUNTER:
 										sprintf(szTmp, "%.1f", TotalValue);
+										break;
+									default:
+										strcpy(szTmp, "0");
 										break;
 									}
 									root["result"][ii]["v"] = szTmp;
@@ -13497,6 +13641,9 @@ namespace http {
 												case MTYPE_COUNTER:
 													sprintf(szTmp, "%.1f", TotalValue);
 													break;
+												default:
+													strcpy(szTmp, "0");
+													break;
 												}
 												root["result"][ii]["v"] = szTmp;
 												ii++;
@@ -13554,6 +13701,9 @@ namespace http {
 											case MTYPE_COUNTER:
 												sprintf(szTmp, "%.1f", TotalValue);
 												break;
+											default:
+												strcpy(szTmp, "0");
+												break;
 											}
 											root["result"][ii]["v"] = szTmp;
 											ii++;
@@ -13592,6 +13742,9 @@ namespace http {
 									break;
 								case MTYPE_COUNTER:
 									sprintf(szTmp, "%.1f", TotalValue);
+									break;
+								default:
+									strcpy(szTmp, "0");
 									break;
 								}
 								root["result"][ii]["v"] = szTmp;
@@ -14100,6 +14253,9 @@ namespace http {
 									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / WaterDivider);
 									szValue = szTmp;
 									break;
+								default:
+									szValue = "0";
+									break;
 								}
 								root["result"][ii]["v"] = szValue;
 								ii++;
@@ -14205,6 +14361,9 @@ namespace http {
 							case MTYPE_WATER:
 								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / WaterDivider);
 								szValue = szTmp;
+								break;
+							default:
+								szValue = "0";
 								break;
 							}
 

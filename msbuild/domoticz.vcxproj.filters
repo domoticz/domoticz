@@ -1693,6 +1693,9 @@
     <ClInclude Include="..\hardware\KMTronicTCP.h">
       <Filter>Devices\KMTronic</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\KMTronicUDP.h">
+      <Filter>Devices\KMTronic</Filter>
+    </ClInclude>
     <ClInclude Include="..\notifications\NotificationKodi.h">
       <Filter>Notifications</Filter>
     </ClInclude>
@@ -2012,6 +2015,7 @@
       <Filter>Pushers\FibaroLink</Filter>
     </ClInclude>
     <ClInclude Include="..\push\BasePush.h">
+    <ClInclude Include="..\push\Push.h">
       <Filter>Pushers</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\RelayNet.h">
@@ -2020,7 +2024,7 @@
     <ClInclude Include="..\hardware\plugins\PythonObjects.h">
       <Filter>Devices\Python Plugins</Filter>
     </ClInclude>
-    <ClInclude Include="..\push\Push.h">
+    <ClInclude Include="..\main\LuaCommon.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -2335,6 +2339,9 @@
       <Filter>Devices\KMTronic</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\KMTronicTCP.cpp">
+      <Filter>Devices\KMTronic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\KMTronicUDP.cpp">
       <Filter>Devices\KMTronic</Filter>
     </ClCompile>
     <ClCompile Include="..\notifications\NotificationKodi.cpp">
@@ -2690,6 +2697,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\plugins\PythonObjects.cpp">
       <Filter>Devices\Python Plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\LuaCommon.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

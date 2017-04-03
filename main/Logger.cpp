@@ -324,6 +324,11 @@ void CLogger::EnableLogTimestamps(const bool bEnableTimestamps)
 	m_bEnableLogTimestamps = bEnableTimestamps;
 }
 
+bool CLogger::IsLogTimestampsEnabled()
+{
+	return m_bEnableLogTimestamps;
+}
+
 std::list<CLogger::_tLogLineStruct> CLogger::GetLog(const _eLogLevel lType)
 {
 	boost::unique_lock< boost::mutex > lock(m_mutex);
@@ -369,15 +374,16 @@ void CLogger::SetFilterString(std::string  &pFilter)
 			FilterStringList.push_back (FilterList[i] );
 	}
 }
+
 //return true if trace enable
-bool CLogger::isTraceEnable()
+bool CLogger::isTraceEnabled()
 {
 	return (m_verbose_level==	VBL_TRACE );
 }
 
 //return true if the log shall be filtered
 //
-bool CLogger::TestFilter(char * cbuffer)
+bool CLogger::TestFilter(const char *cbuffer)
 {
 	bool filtered = false; //default not filtered
 
@@ -398,9 +404,9 @@ bool CLogger::TestFilter(char * cbuffer)
 			}
 		}
 	}
-
 	return filtered;
 }
+
 void CLogger::setLogVerboseLevel(int LogLevel)
 {
 	SetVerboseLevel((_eLogFileVerboseLevel) (LogLevel & 0x3 ) );
@@ -412,11 +418,13 @@ void CLogger::setLogVerboseLevel(int LogLevel)
 
 
 }
+
 //set the DEBUG option in order to allow LOG_TRACE log level 
 void  CLogger::SetLogDebug(bool debug)
 {
   m_debug = debug ;
 }
+
 bool  CLogger::GetLogDebug()
 {
   return m_debug;

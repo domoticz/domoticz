@@ -410,6 +410,12 @@ define(['app'], function (app) {
 			  if (typeof data.CostEnergyT2 != 'undefined') {
 				$("#rfxmetertable #CostEnergyT2").val(data.CostEnergyT2);
 			  }
+			  if (typeof data.CostEnergyR1 != 'undefined') {
+				$("#rfxmetertable #CostEnergyR1").val(data.CostEnergyR1);
+			  }
+			  if (typeof data.CostEnergyR2 != 'undefined') {
+				$("#rfxmetertable #CostEnergyR2").val(data.CostEnergyR2);
+			  }
 			  if (typeof data.GasDivider != 'undefined') {
 				$("#rfxmetertable #GasDivider").val(data.GasDivider );
 			  }
