@@ -172,7 +172,7 @@ define(['app'], function (app) {
                      }
                 });
             }
-            else if (text.indexOf("USB") >= 0)
+            else if (text.indexOf("USB") >= 0 || text.indexOf("Teleinfo EDF") >= 0)
             {
                 var Mode1 = "0";
                 var serialport=$("#hardwarecontent #divserial #comboserialport option:selected").text();
@@ -5058,7 +5058,7 @@ define(['app'], function (app) {
                             $("#hardwareparamsgpio #gpiodebounce").val(data["Mode1"]);
                             $("#hardwareparamsgpio #gpioperiod").val(data["Mode2"]);
                         }
-                        else if (data["Type"].indexOf("USB") >= 0) {
+                        else if (data["Type"].indexOf("USB") >= 0  || data["Type"].indexOf("Teleinfo EDF") >=0) {
                             $("#hardwarecontent #hardwareparamsserial #comboserialport").val(data["IntPort"]);
                             if (data["Type"].indexOf("Evohome") >= 0)
                             {
@@ -5082,20 +5082,20 @@ define(['app'], function (app) {
                                     $("#hardwarecontent #divcrcp1").show();
                                 }
                             }
-			}
-		        else if (data["Type"].indexOf("Teleinfo EDF") >= 0)
-                        {   
-                             $("#hardwarecontent #divbaudrateteleinfo #combobaudrateteleinfo").val(data["Mode1"]);
-                             $("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked",data["Mode2"]==0);
-                             $("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val(data["Mode3"]);
-                             if (data["Mode1"]==0) 
-                             {   
-                                 $("#hardwarecontent #divcrcp1").hide();
-                             }  
-                             else
-                             {   
-                                 $("#hardwarecontent #divcrcp1").show();
-                             }
+		            else if (data["Type"].indexOf("Teleinfo EDF") >= 0)
+                           {   
+                                $("#hardwarecontent #divbaudrateteleinfo #combobaudrateteleinfo").val(data["Mode1"]);
+                                $("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked",data["Mode2"]==0);
+                                $("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val(data["Mode3"]);
+                                if (data["Mode1"]==0) 
+                                {   
+                                    $("#hardwarecontent #divcrcp1").hide();
+                               }  
+                                else
+                                {   
+                                    $("#hardwarecontent #divcrcp1").show();
+                                }
+                           }
                         }
                         else if ((((data["Type"].indexOf("LAN") >= 0) || data["Type"].indexOf("MySensors Gateway with MQTT") >= 0) && (data["Type"].indexOf("YouLess") == -1) && (data["Type"].indexOf("Denkovi") == -1) && (data["Type"].indexOf("Relay-Net") == -1) && (data["Type"].indexOf("Satel Integra") == -1) && (data["Type"].indexOf("MyHome OpenWebNet with LAN interface") == -1)) || (data["Type"].indexOf("Domoticz") >= 0) || (data["Type"].indexOf("Harmony") >= 0)) {
                             $("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
