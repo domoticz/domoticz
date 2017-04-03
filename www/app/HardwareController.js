@@ -5082,20 +5082,20 @@ define(['app'], function (app) {
                                     $("#hardwarecontent #divcrcp1").show();
                                 }
                             }
-		            if (data["Type"].indexOf("Teleinfo EDF") >= 0)
-                            {   
-                                $("#hardwarecontent #divbaudrateteleinfo #combobaudrateteleinfo").val(data["Mode1"]);
-                                $("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked",data["Mode2"]==0);
-                                $("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val(data["Mode3"]);
-                                if (data["Mode1"]==0) 
-                                {   
-                                    $("#hardwarecontent #divcrcp1").hide();
-                                }  
-                                else
-                                {   
-                                    $("#hardwarecontent #divcrcp1").show();
-                                }
-                            }
+			}
+		        else if (data["Type"].indexOf("Teleinfo EDF") >= 0)
+                        {   
+                             $("#hardwarecontent #divbaudrateteleinfo #combobaudrateteleinfo").val(data["Mode1"]);
+                             $("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked",data["Mode2"]==0);
+                             $("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val(data["Mode3"]);
+                             if (data["Mode1"]==0) 
+                             {   
+                                 $("#hardwarecontent #divcrcp1").hide();
+                             }  
+                             else
+                             {   
+                                 $("#hardwarecontent #divcrcp1").show();
+                             }
                         }
                         else if ((((data["Type"].indexOf("LAN") >= 0) || data["Type"].indexOf("MySensors Gateway with MQTT") >= 0) && (data["Type"].indexOf("YouLess") == -1) && (data["Type"].indexOf("Denkovi") == -1) && (data["Type"].indexOf("Relay-Net") == -1) && (data["Type"].indexOf("Satel Integra") == -1) && (data["Type"].indexOf("MyHome OpenWebNet with LAN interface") == -1)) || (data["Type"].indexOf("Domoticz") >= 0) || (data["Type"].indexOf("Harmony") >= 0)) {
                             $("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
