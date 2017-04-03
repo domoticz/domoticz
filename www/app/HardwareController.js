@@ -5058,7 +5058,7 @@ define(['app'], function (app) {
                             $("#hardwareparamsgpio #gpiodebounce").val(data["Mode1"]);
                             $("#hardwareparamsgpio #gpioperiod").val(data["Mode2"]);
                         }
-                        else if (data["Type"].indexOf("USB") >= 0 || text.indexOf("Teleinfo EDF") >= 0) {
+                        else if (data["Type"].indexOf("USB") >= 0) {
                             $("#hardwarecontent #hardwareparamsserial #comboserialport").val(data["IntPort"]);
                             if (data["Type"].indexOf("Evohome") >= 0)
                             {
@@ -5830,3 +5830,4 @@ define(['app'], function (app) {
 		});
     } ]);
 });
+
