@@ -3112,7 +3112,7 @@ define(['app'], function (app) {
 						'\t      <td id="type" class="type"><span>' + item.Type + ', ' + item.SubType + ', ' + item.SwitchType;
 					if (item.SwitchType == "Dimmer") {
 						if ((item.SubType.indexOf("RGBW") >= 0)||(item.SubType=="RGB")) {
-                        xhtm+='</span>
+                        				xhtm+='</span>';						
 						}
 						else {
 							xhtm+='</span><br><br><div style="margin-left:60px;" class="dimslider" id="slider" data-idx="' + item.idx + '" data-type="norm" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"></div>';
