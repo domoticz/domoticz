@@ -1635,11 +1635,11 @@ define(['app'], function (app) {
 					xhtm+='\t      <td class="options">';
 				  if (item.Favorite == 0) {
 					xhtm+=      
-						  '<img src="images/nofavorite.png" class="favorite favoriteOff" title="' + $.t('Add to Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',1);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
+						  '<img src="images/nofavorite.png" class="favorite favoriteOff lcursor" title="' + $.t('Add to Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',1);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
 				  }
 				  else {
 					xhtm+=      
-						  '<img src="images/favorite.png" class="favorite favoriteOn" title="' + $.t('Remove from Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',0);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
+						  '<img src="images/favorite.png" class="favorite favoriteOn lcursor" title="' + $.t('Remove from Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',0);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
 				  }
 				  xhtm+='<a class="btnsmall" onclick="ShowSceneLog(\'#scenecontent\',\'ShowScenes\',' + item.idx + ',\'' + escape(item.Name) + '\');" data-i18n="Log">Log</a> ';
 			  
