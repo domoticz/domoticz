@@ -395,7 +395,7 @@ public:
 class CEvohome : public AsyncSerial, public CDomoticzHardwareBase
 {
 public:
-	CEvohome(const int ID, const std::string &szSerialPort, const int baudrate);
+	CEvohome(const int ID, const std::string &szSerialPort, const int baudrate, const std::string &UserContID);
 	~CEvohome(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 

@@ -5036,6 +5036,7 @@ define(['app'], function (app) {
                             if (data["Type"].indexOf("Evohome") >= 0)
                             {
                                 $("#hardwarecontent #divbaudrateevohome #combobaudrateevohome").val(data["Mode1"]);
+                                $("#hardwarecontent #hardwareparamsevohome #controllerid").val(data["Extra"]);
                             }
                             if (data["Type"].indexOf("MySensors") >= 0)
                             {
@@ -5319,6 +5320,7 @@ define(['app'], function (app) {
                 if (text.indexOf("Evohome") >= 0)
                 {
                     $("#hardwarecontent #divbaudrateevohome").show();
+                    $("#hardwarecontent #divevohome").show();
                 }
                 if (text.indexOf("MySensors") >= 0)
                 {
