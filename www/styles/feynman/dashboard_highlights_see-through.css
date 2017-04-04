@@ -40,10 +40,14 @@ background: linear-gradient(to right, rgba(125,185,232,0.2) 0%,rgba(89,203,234,0
 filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#337db9e8', endColorstr='#1a59cbea',GradientType=1 );
 }
 
+
+/*  this has to happen before the override for the highlighted items  */
 #dashcontent #name{
     color: rgba(255,255,255,0.6)!important;
 }
 
+
+/*  force transparency on the items  */
 
 #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr.statusNormal,
 #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr #name.statusNormal{
@@ -53,91 +57,31 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#337db9e8', e
     color: rgba(255,255,255,0.8)!important;
 }
 
-
 #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr.statusProtected,
 #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr #name.statusProtected{
     background-color: transparent!important;
-    box-shadow: none;
-    color: rgba(255,255,255,0.8)!important;    
 }
-#dashcontent h2 + div.divider .span4:nth-child(-n+3) tr.statusProtected:after {
-    content : "";
-    display: block;
-    position: relative;
-    top: -35px;
-    left: 0;
-    float:right;
-    background: url(/images/lock_closed.png) no-repeat center center; 
-    -webkit-background-size: 16px;
-    -moz-background-size: 16px;
-    -o-background-size: 16px;
-    background-size: 16px;
-    width: 32px;
-    height: 32px;
-    opacity : 0.6;
-    z-index: 1;
-    filter: grayscale(1) contrast(0%) brightness(50%); 
-    -webkit-filter: grayscale(1) contrast(0%) brightness(50%); 
-    -moz-filter: grayscale(1) contrast(0%) brightness(50%); 
-    -o-filter: grayscale(1) contrast(0%) brightness(50%); 
-
+#dashcontent h2 + div.divider .span4:nth-child(-n+3) tr #name.statusProtected{
+    color: rgba(255,255,255,0.8)!important;    
 }
 
 #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr.statusTimeout,
 #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr #name.statusTimeout{
     background-color: transparent!important;
-    box-shadow: none;
+}  
+#dashcontent h2 + div.divider .span4:nth-child(-n+3) tr #name.statusTimeout{    
     color: rgba(255,255,255,0.8)!important;    
-}
-
-#dashcontent h2 + div.divider .span4:nth-child(-n+3) tr.statusTimeout:after {
-    content : "";
-    display: block;
-    position: relative;
-    top: -35px;
-    right: 16px;
-    float:right;
-    background: url(/images/Alert48_2.png) no-repeat center center; 
-    -webkit-background-size: 16px;
-    -moz-background-size: 16px
-    -o-background-size: 16px;
-    background-size: 16px;
-    width: 32px;
-    height: 32px;
-    opacity : 0.8;
-    z-index: -1;
 }
 
 #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr.statusLowBattery,
 #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr #name.statusLowBattery{
     background-color: transparent!important;
-    box-shadow: none;
+}
+#dashcontent h2 + div.divider .span4:nth-child(-n+3) tr #name.statusLowBattery{
     color: rgba(255,255,255,0.8)!important;    
 }
 
-#dashcontent h2 + div.divider .span4:nth-child(-n+3) tr.statusLowBattery:after {
-    content : "";
-    display: block;
-    position: relative;
-    top: -30px;
-    right: 5px;
-    float:right;
-    background-color:rgba(250,250,250,0.2);
-    background: url(/images/battery-low.png) no-repeat center center; 
-    -webkit-background-size: 16px;
-    -moz-background-size: 16px;
-    -o-background-size: 16px;
-    background-size: 16px;
-    width: 22px;
-    height: 22px;
-    border-radius:50%;
-    opacity : 0.4;
-    z-index: 1;
-    filter: grayscale(1) contrast(0%) brightness(50%); 
-    -webkit-filter: grayscale(1) contrast(0%) brightness(50%); 
-    -moz-filter: grayscale(1) contrast(0%) brightness(50%); 
-    -o-filter: grayscale(1) contrast(0%) brightness(50%); 
-}
+
 
 
 
