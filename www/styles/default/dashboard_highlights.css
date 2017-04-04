@@ -205,7 +205,8 @@
 
     /*  adds little icons to show current status of items, instead of the default box-shadow solution. */
 
-    #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr.statusProtected{
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr.statusProtected,
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr.statusProtected #name{
         box-shadow: none; 
     }
 
@@ -225,9 +226,11 @@
         height: 32px;
         opacity : 0.6;
         z-index: 1;
+        cursor:pointer;
     }
 
-    #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr.statusTimeout{
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr.statusTimeout,
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr.statusTimeout #name{
         box-shadow: none;
     }
 
@@ -247,9 +250,11 @@
         height: 32px;
         opacity : 0.8;
         z-index: 1;
+        cursor:pointer;
     }
 
-    #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr.statusLowBattery{
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr.statusLowBattery,
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr.statusLowBattery #name{
         box-shadow: none;   
     }
 
@@ -260,7 +265,6 @@
         top: -32px;
         right: 5px;
         float:right;
-        /*background-color:rgba(250,250,250,0.5);*/
         background: url(/images/battery-low.png) no-repeat center center; 
         -webkit-background-size: 20px;
         -moz-background-size: 20px;
@@ -268,9 +272,9 @@
         background-size: 20px;
         width: 32px;
         height: 32px;
-        /*border-radius:50%;*/
         opacity : 0.5;
         z-index: 1;
+        cursor:pointer;
     }
 
 }   /* closing of the media query */
