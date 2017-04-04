@@ -5,7 +5,7 @@ body {
 }
     
 .row-fluid [class^="span"]{
-    background-color: #292929; /*!important;*/
+    background-color: #555; /*!important;*/
     color:#fff!important;
 }
 
@@ -42,9 +42,9 @@ body {
 #scenecontent #paramstable, 
 #notificationparamstable, #hardwareparamstable
 {
-    background-color: #292929!important;
+    background-color: #555!important;
     color:#fff!important;
-    border-color: #292929!important;
+    border-color: #555!important;
 }
 
 
@@ -189,7 +189,7 @@ tr, #name{
 }
 
 #settingscontent .span6 tr{
-    border-top: 1px solid #393939;
+    border-top: 1px solid #666;
 }
 
 textarea, input, select {
@@ -205,4 +205,39 @@ table.dataTable {
     background-color: #292929!important;
     color: #fff!important;
     border-color: #292929!important;
+}
+
+
+
+#img img, 
+#img1 img,
+#img2 img,    
+#img3 img,
+#img4 img{
+    height:30px;    
+    border-radius: 50%;
+    box-sizing: border-box;
+    padding:4px;
+    box-shadow: -2px 0px 5px 1px rgba(50, 50, 50, 0.05);
+    cursor: pointer;
+}
+
+.span4 #img img:hover, 
+.span4 #img1 img:hover,
+.span4 #img2 img:hover,
+.span4 #img3 img:hover,
+.span4 #img4 img:hover,
+#dashcontent #img img:hover, 
+#dashcontent #img1 img:hover,
+#dashcontent #img2 img:hover,
+#dashcontent #img3 img:hover,
+#dashcontent #img4 img:hover{
+    background-color:#3d9cca;
+    cursor: pointer;
+    -webkit-transition: .3s; /* Safari */
+    transition: .3s;
+}
+
+#copyright{
+    background-color:#222;
 }

@@ -42,7 +42,7 @@
         display:inline-block;
         height:50px;
         line-height: 30px;
-        font-size: 35px;
+        font-size: 30px;
         background-color: transparent;  
     }    
 
@@ -160,6 +160,7 @@
         width:100%;
         margin:0!important;
         font-size:150%;
+        border-radius:3px;
     }
 
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) .selectorlevels .ui-buttonset .ui-button{
@@ -178,11 +179,9 @@
     }
     
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) .selectorlevels .ui-selectmenu-button{
-        left: 115px;
-        width: 50%!important;
-        width: calc(100% - 115px)!important;
+        left: 35%;
+        width: 65%!important;
         top: 30px;
-        width: 75%;
         height: 60px;
         box-shadow:none;
     }
@@ -202,102 +201,89 @@
     .ui-draggable-dragging{
         z-index:4;
     }
-    
-}  
+ 
 
+    /*  adds little icons to show current status of items, instead of the default box-shadow solution. */
 
-/*
-@media all and (min-width: 1200px){
-
-    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmall tr #bigtext{
-        left: 110px;
-        top: 32px;
-        width: calc(100% - 110px);
-        padding:0;
-        background-color: transparent;
-        line-height:40px;
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr.statusProtected{
+        box-shadow: none; 
     }
-    
-    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmall tr #bigtext span{
-        font-size: 40px;
-        background-color: transparent;
-        width:100%;
-        overflow:hidden;
-        height:50px;
-        display:inline-block;
+
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr.statusProtected:after {
+        content : "";
+        display: block;
+        position: relative;
+        top: -32px;
+        right: 3px;
+        float:right;
+        background: url(/images/lock_closed.png) no-repeat center center; 
+        -webkit-background-size: 16px;
+        -moz-background-size: 16px;
+        -o-background-size: 16px;
+        background-size: 16px;
+        width: 32px;
+        height: 32px;
+        opacity : 0.6;
+        z-index: 1;
     }
-    
-    #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr #img img,
-    #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr #img1 img,
-    #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr #img2 img,
-    #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr #img3 img{
-        width:80px;
-        height:80px;
+
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr.statusTimeout{
         box-shadow: none;
     }
 
-    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmall tr #img,
-    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmall tr #img1{
-        float: left!important;
-        width: 80px!important;
-        top: 14px;
-        left: 25px;
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr.statusTimeout:after{
+        content : "";
+        display: block;
+        position: relative;
+        top: -32px;
+        right: 5px;
+        float:right;
+        background: url(/images/Alert48_2.png) no-repeat center center; 
+        -webkit-background-size: 16px;
+        -moz-background-size: 16px
+        -o-background-size: 16px;
+        background-size: 16px;
+        width: 32px;
+        height: 32px;
+        opacity : 0.8;
+        z-index: 1;
     }
 
-
-    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalldoubleicon tr #img,
-    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalldoubleicon tr #img1{
-        float:left!important;
-        width:80px;
-        height:80px;
-        top:14px;
-        left:20%;
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr.statusLowBattery{
+        box-shadow: none;   
     }
 
-    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalldoubleicon tr #img2{
-        width:80px;
-        top:14px;
-        right:20%;
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr.statusLowBattery:after {
+        content : "";
+        display: block;
+        position: relative;
+        top: -32px;
+        right: 5px;
+        float:right;
+        /*background-color:rgba(250,250,250,0.5);*/
+        background: url(/images/battery-low.png) no-repeat center center; 
+        -webkit-background-size: 20px;
+        -moz-background-size: 20px;
+        -o-background-size: 20px;
+        background-size: 20px;
+        width: 32px;
+        height: 32px;
+        /*border-radius:50%;*/
+        opacity : 0.5;
+        z-index: 1;
     }
 
-    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalldoubleicon tr #img img,
-    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalldoubleicon tr #img1 img,
-    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalldoubleicon tr #img2 img{
-        width:80px!important;
-        height:80px!important;
-        margin: 0 auto;
-    }
+}   /* closing of the media query */
 
-    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #img,
-    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #img1{
-        top:14px;
-        right:10%;
-    }
 
-    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #img2{
-        top:14px;
-        right:50%;
-        margin-right:-40px!important;
-    }
 
-    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #img3{
-        float:left!important;
-        top:14px;
-        left:10%;
-    }
 
-    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #img img,
-    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #img1 img,
-    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #img2 img{
-        width:80px!important;
-        height:80px!important;
-        margin: 0 auto;
-    }
 
-*/
 
     
-    
-    
-    
-}  
+
+
+
+
+
+
