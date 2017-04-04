@@ -195,7 +195,8 @@ define(['app'], function (app) {
 
                 if (text.indexOf("Evohome") >= 0)
                 {
-                    var baudrate=$("#hardwarecontent #divbaudrateevohome #combobaudrateevohome option:selected").val();
+                    var baudrate = $("#hardwarecontent #divbaudrateevohome #combobaudrateevohome option:selected").val();
+
 
                     if (typeof baudrate == 'undefined')
                     {
@@ -252,8 +253,7 @@ define(['app'], function (app) {
 
                 if (text.indexOf("Evohome") >= 0 && text.indexOf("script") == -1)
                 {
-                    extra = $("#hardwarecontent #divevohome #controllerid").val();
-                    //Mode2 = $("#hardwarecontent #divevohome #controllerid").val();
+                    extra = $("#hardwarecontent #divcontrolleridevohome #controllerid").val();
                 }
                     
                 $.ajax({
@@ -1182,8 +1182,7 @@ define(['app'], function (app) {
                 }
                 else if (text.indexOf("Evohome") >= 0 && text.indexOf("script") == -1)
                 {
-                    extra = $("#hardwarecontent #divevohome #controllerid").val();
-                    //Mode2 = $("#hardwarecontent #divevohome #controllerid").val();
+                    extra = $("#hardwarecontent #divcontrolleridevohome #controllerid").val();
                 }
              
                 $.ajax({
@@ -5320,7 +5319,7 @@ define(['app'], function (app) {
                 if (text.indexOf("Evohome") >= 0)
                 {
                     $("#hardwarecontent #divbaudrateevohome").show();
-                    $("#hardwarecontent #divevohome").show();
+                    $("#hardwarecontent #divcontrolleridevohome").show();
                 }
                 if (text.indexOf("MySensors") >= 0)
                 {
