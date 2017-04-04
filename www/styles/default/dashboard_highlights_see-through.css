@@ -104,7 +104,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#337db9e8', e
     background-size: 16px;
     width: 32px;
     height: 32px;
-    opacity : 0.2;
+    opacity : 0.8;
     z-index: -1;
 }
 
@@ -115,7 +115,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#337db9e8', e
     color: rgba(255,255,255,0.8)!important;    
 }
 
-#dashcontent h2 + div.divider .span4:nth-child(-n+3) tr.statusTimeout:after {
+#dashcontent h2 + div.divider .span4:nth-child(-n+3) tr.statusLowBattery:after {
     content : "";
     display: block;
     position: relative;
@@ -172,6 +172,10 @@ background: -moz-linear-gradient(top, #46b1d9 0%, #3d9bc9 50%, #2e8cbc 51%, #257
     background-color: rgba(100,100,200,0.4);
 }
 
+#dashcontent h2 + div.divider .span4:nth-child(-n+3) .selectorlevels  .ui-buttonset{
+    align-content:space-between;
+}
+
 #dashcontent h2 + div.divider .span4:nth-child(-n+3) .selectorlevels .ui-buttonset .ui-button{
     background-image:none;
     background-color: rgba(200,200,200,0.1);
@@ -180,12 +184,17 @@ background: -moz-linear-gradient(top, #46b1d9 0%, #3d9bc9 50%, #2e8cbc 51%, #257
     font-size: 100%;   
     transition: all 0.3 linear;
     border-radius:0;   
+    align-items: baseline;
+    padding-top:2px;   
 }
 
 #dashcontent h2 + div.divider .span4:nth-child(-n+3) .selectorlevels .ui-buttonset .ui-button:hover{
     background-color: rgba(200,200,200,0.2);
     color: #fff;
-    transition: all 0.3 linear;      
+    transition: all 0.3 linear; 
+    background: -moz-linear-gradient(top, #46b1d9 0%, #3d9bc9 50%, #2e8cbc 51%, #2571ab 100%);
+    background: -webkit-linear-gradient(top, #46b1d9 0%,#3d9bc9 50%,#2e8cbc 51%,#2571ab 100%);
+    background: linear-gradient(to bottom, #46b1d9 0%,#3d9bc9 50%,#2e8cbc 51%,#2571ab 100%);    
 }
 
 #dashcontent .item .bigtext,
@@ -195,8 +204,5 @@ background: -moz-linear-gradient(top, #46b1d9 0%, #3d9bc9 50%, #2e8cbc 51%, #257
     background-color:transparent!important;
 }
 
-#dashcontent h2 + div.divider .span4:nth-child(-n+3) .selectorlevels  .ui-buttonset{
-    align-content:space-between;
-}
 
 
