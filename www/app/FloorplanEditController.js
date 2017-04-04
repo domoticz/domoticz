@@ -66,7 +66,7 @@ define(['app'], function (app) {
 					if (points != "") {
 						points = points + ",";
 					} else {
-						$("#floorplangroup")[0].appendChild(makeSVGnode('circle', { id: "firstclick", cx:xPoint, cy:yPoint, r:2, class:'hoverable' }, ''));
+						$("#floorplangroup")[0].appendChild(makeSVGnode('circle', { id: "firstclick", cx:xPoint, cy:yPoint, r:2, 'class':"hoverable" }, ''));
 						$(".hoverable").css({'fill': $.myglobals.RoomColour,
 												'fill-opacity': $.myglobals.ActiveRoomOpacity/100,
 												'stroke': $.myglobals.RoomColour,

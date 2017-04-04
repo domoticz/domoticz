@@ -5796,7 +5796,7 @@ define(['app'], function (app) {
 											PluginParams += '</select></td>';
 										} else {
 											PluginParams += '<td><input type="text" id="'+param.field+'" style="width:'+param.width+'; padding: .2em;" class="text ui-widget-content ui-corner-all" '
-											if (typeof(param.default) != "undefined") PluginParams += 'value="'+param.default+'"';
+//											if (typeof(param.default) != "undefined") PluginParams += 'value="'+param.default+'"';
 											if ((typeof(param.required) != "undefined") && (param.required == "true")) PluginParams += ' required';
 											PluginParams += ' /></td>';
 										}
@@ -5805,7 +5805,7 @@ define(['app'], function (app) {
 										PluginParams += '<td><select id="'+param.field+'" style="width:'+param.width+'" class="combobox ui-corner-all">';
 										$.each(param.options, function(i,option) {
 											PluginParams += '<option data-i18n="'+option.label+'" value="'+option.value+'"';
-											if ((typeof(option.default) != "undefined") && (option.default == "true")) PluginParams += ' selected';
+//											if ((typeof(option.default) != "undefined") && (option.default == "true")) PluginParams += ' selected';
 											PluginParams += '>'+option.label+'</option>';
 										});
 										PluginParams += '</select></td>';
