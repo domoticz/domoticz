@@ -219,7 +219,7 @@ void CTeleinfoSerial::ParseData(const char *pData, int Len)
 			if (m_bufferpos > 0)
 				m_buffer[m_bufferpos] = 0;
 
-			//We process the line only if the checksum is ok and user did not request ty bypass CRC verification
+			//We process the line only if the checksum is ok and user did not request to bypass CRC verification
 			if ((m_bDisableCRC) || isCheckSumOk(teleinfo.CRCmode1)) 
 				MatchLine();
 

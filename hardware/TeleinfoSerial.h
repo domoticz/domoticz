@@ -63,6 +63,6 @@ class CTeleinfoSerial : public CTeleinfoBase, AsyncSerial
 		void ParseData(const char *pData, int Len);
 		bool isCheckSumOk(int &isMode1);
 
-		char m_buffer[1028];
+		char m_buffer[1024];
 		int m_bufferpos;
 };
