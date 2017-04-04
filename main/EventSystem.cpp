@@ -2410,6 +2410,86 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 void CEventSystem::exportDeviceStatesToLua(lua_State *lua_state)
 {
 	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock2(m_devicestatesMutex);
+	
+	lua_createtable(lua_state, (int)m_devicestates.size(), 0);
+	typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
+	int i = 0;
+	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
+	{
+		_tDeviceStatus sitem = iterator->second;
+		
+		_log.Log(LOG_STATUS, "device %s, %d", sitem.deviceName.c_str(), i);
+		
+			
+		lua_pushnumber(lua_state, i);
+
+		lua_createtable(lua_state, 1, 11);
+
+		lua_pushstring(lua_state, "id");
+		lua_pushnumber(lua_state, (lua_Number)sitem.ID);
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "name");
+		lua_pushstring(lua_state, sitem.deviceName.c_str());
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "nValue");
+		lua_pushnumber(lua_state, (lua_Number)sitem.nValue);
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "nValueWording");
+		lua_pushstring(lua_state, sitem.nValueWording.c_str());
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "lastUpdate");
+		lua_pushstring(lua_state, sitem.lastUpdate.c_str());
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "switchType");
+		lua_pushnumber(lua_state, (lua_Number)sitem.switchtype);
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "sValue");
+		lua_pushstring(lua_state, sitem.sValue.c_str());
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "subType");
+		lua_pushnumber(lua_state, (lua_Number)sitem.subType);
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "devType");
+		lua_pushnumber(lua_state, (lua_Number)sitem.devType);
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "lastLevel");
+		lua_pushnumber(lua_state, (lua_Number)sitem.lastLevel);
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "switchType");
+		lua_pushnumber(lua_state, (lua_Number)sitem.switchtype);
+		lua_rawset(lua_state, -3);
+
+
+		
+		lua_pushstring(lua_state, "data");
+
+		lua_createtable(lua_state, 0, 2);
+		lua_pushstring(lua_state, "temperature");
+		lua_pushstring(lua_state, "1234");
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "humidity");
+		lua_pushstring(lua_state, "34");
+		lua_rawset(lua_state, -3);
+
+		lua_settable(lua_state, -3);
+
+		lua_settable(lua_state, -3);
+
+		i++;
+	
+	}
+	lua_setglobal(lua_state, "deviceData");
+
+
+
+	unsigned char lastLevel;
+	unsigned char switchtype;
+
+
+
+
+
+
 	lua_createtable(lua_state, (int)m_devicestates.size(), 0);
 	typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
 	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
