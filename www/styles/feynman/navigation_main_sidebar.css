@@ -8,66 +8,7 @@
 /*This media query is there until Domoticz has a 'mobile' tag in the body, so that we know if a user is on a mobile phone. */
 @media screen and (min-width : 480px){
 
-/*  MAIN RESETS AND GENERAL NAVBAR SETTINGS */
-
-
-.bannercontent{padding-top:20px;}
-
-.navbar *{
-    width:auto;
-    padding:0;
-    margin:0;
-    text-align:left!important;
-    border-radius:0;
-}
-
-#holder{
-    width: calc(100% - 77px);
-    left: 67px;
-}
-
-.navbar-fixed-top{
-    right:auto;
-    margin:0;
-}
-
-.navbar .pull-right > li > .dropdown-menu:before{
-    right:auto!important;
-    border-bottom:2px solid blue;    
-} 
-.navbar .nav > li > .dropdown-menu.pull-right:before{
-    right:auto!important;
-    border-bottom:2px solid #999;
-}
-
-.navbar-inverse .navbar-inner{}
-
-.navbar .nav .dropdown-menu{padding:0}
-
-.navbar-fixed-top .navbar-inner{padding:0;height:100%;background-color:transparent;}
-
-.navbar{
-    width:auto;
-    /*width:200px;  temporary*/
-    height:100%;
-    box-shadow: 0 2px 10px 2px rgba(50,50,50,0.2);
-    position:fixed;
-    overflow:hidden;
-    background-color:#eee;    
-}
-
-.navbar:hover{box-shadow: 0 2px 10px 2px rgba(50,50,50,0.2);}
-
-.navbar .nav{
-    float:none;
-}
-
-.navbar .container {
-    width:auto;
-    height:100%;
-}
-
-
+    
 /*  LOGO  */
 
 .navbar .brand {
@@ -125,9 +66,71 @@
     transition: all 1s linear;
     transition-delay: 1s;  
 }
+    
+    
+    
+/*  MAIN RESETS AND GENERAL NAVBAR SETTINGS */
 
 
-/*  GENERAL APPNAVBAR SETTINGS  */
+.bannercontent{padding-top:20px;}
+
+.navbar *{
+    width:auto;
+    padding:0;
+    margin:0;
+    text-align:left!important;
+    border-radius:0;
+}    
+    
+#holder{
+    width: calc(100% - 77px);
+    left: 67px;
+}
+
+.navbar{
+    width:auto;
+    /*width:200px;  temporary*/
+    height:100%;
+    box-shadow: 0 2px 10px 2px rgba(50,50,50,0.2);
+    position:fixed;
+    overflow:visible;
+    background-color:#eee;    
+}
+
+.navbar:hover{box-shadow: 0 2px 10px 2px rgba(50,50,50,0.2);}
+
+.navbar .nav{
+    float:none;
+}
+
+.navbar-fixed-top{
+    right:auto;
+    margin:0;
+}
+
+    /*
+.navbar .pull-right > li > .dropdown-menu:before{
+    right:auto!important;
+    border-bottom:2px solid blue;    
+} 
+.navbar .nav > li > .dropdown-menu.pull-right:before{
+    right:auto!important;
+    border-bottom:2px solid #999;
+}*/
+
+.navbar .nav .dropdown-menu{padding:0}
+
+.navbar-fixed-top .navbar-inner{
+    padding:0;
+    height:100%;
+    background-color:transparent;
+}    
+    
+.navbar .container {
+    width:auto;
+    height:100%;
+}
+
 
 .navbar #appnavbar{
     width:auto; 
@@ -139,16 +142,16 @@
     margin:0;
     padding:0;
     text-align:left;
-    /*display:flex;
-    flex-direction:column;
-    flex-wrap: wrap;
-    justify-content: flex-start;*/
-/*    transition: move 0.2s linear; */     
+    background: rgb(221,221,221); /* Old browsers */
+    background: -moz-linear-gradient(left, rgba(221,221,221,1) 0%, rgba(229,229,229,1) 50%, rgba(221,221,221,1) 100%); /* FF3.6-15 */
+    background: -webkit-linear-gradient(left, rgba(221,221,221,1) 0%,rgba(229,229,229,1) 50%,rgba(221,221,221,1) 100%); /* Chrome10-25,Safari5.1-6 */
+    background: linear-gradient(to right, rgba(221,221,221,1) 0%,rgba(229,229,229,1) 50%,rgba(221,221,221,1) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
 }
+.navbar:hover #appnavbar{background-image:none;}
 
-.navbar .nav > li{
-    float:none;
-    flex-grow:1;
+.navbar .nav > li,
+.navbar .nav > li a{
+    background-color: transparent;    
 }
 
 .navbar li.divider{display:none;}
@@ -163,6 +166,12 @@
     display:none!important;
 }
 
+#appnavbar li{
+    float:left;
+    clear:left;
+    width:100%;
+}
+    
 #appnavbar li a,
 .navbar .nav li a{
     left:6px;
@@ -182,6 +191,10 @@
     image-rendering: pixelated;   
 }
 
+    
+    
+    
+    
 .navbar #appnavbar > li > a > img{
     margin-top:5px;
     margin-bottom:5px;
@@ -280,9 +293,9 @@ transform: scale(1.2,1.2);
     height:100%;
     /*height:calc(100% + 5px);
     top:-5px; */
-    flex-direction:column-reverse;
+    /*flex-direction:column-reverse;
     justify-content: flex-end;
-    flex-wrap: wrap!important;  
+    flex-wrap: wrap!important;  */
     padding-top:59px;
     box-shadow: none;
     border-left:none;
@@ -315,18 +328,23 @@ transform: scale(1.2,1.2);
     height:100%;
     right:auto!important;
     top:0;
-    display:flex;
+    display:block;
+    /*
     flex-direction:column;
     flex-wrap: wrap!important;
-    justify-content: space-around;
+    justify-content:flex-start;*/
     box-shadow: none;
     border-left:1px solid #fff;
     left: 225px!important;
     border-radius: 0;
 }
 
+.navbar:hover .nav > li > .dropdown-menu.pull-right > li.dropdown-submenu > .dropdown-menu.pull-left{
+display:block
+}  
+    
 .navbar .nav > li > .dropdown-menu.pull-right > li.dropdown-submenu > .dropdown-menu.pull-left > li{
-    flex-grow: 1;
+    /*flex-grow: 1;*/
 }
 
 .navbar:hover .nav > li > .dropdown-menu.pull-right > li.dropdown-submenu > .dropdown-menu.pull-left{
@@ -335,7 +353,7 @@ transform: scale(1.2,1.2);
 .navbar .pull-right > li > .dropdown-menu .dropdown-menu, 
 .navbar .nav > li > .dropdown-menu.pull-right .dropdown-menu{
     border-left:1px solid white;
-    flex-wrap: wrap!important;    
+    /*flex-wrap: wrap!important;  */  
 }
 
 

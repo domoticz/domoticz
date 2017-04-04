@@ -4,7 +4,9 @@ body table#itemtable tr td:first-child + td{
     font-size:115%;
 }
 
-
+#utilitycontent table:first-of-type{
+margin-bottom:20px;
+}
 
 /* GENERAL STYLING AND RESETS */
 
@@ -58,15 +60,18 @@ textarea, input, select {
     padding:5px;
 }
 
+
+
 .span6 textarea, .span6 input.text, .span6 select{
     width:100%!important;
 }
 
+#settingscontent select,
 #settingscontent input.text,
 #settingscontent .ui-widget-content{
     min-width: 120px;
-    width:calc(100% - 75px);
-    padding:5px;
+    width:calc(100% - 75px)!important;
+    padding:5px!important;
 }
 
 #settingscontent td:not(:first-of-type){width:auto!important;}
@@ -254,7 +259,7 @@ tr.odd{
 
 #timesun + td {margin-bottom:1em}
 
-#bannav {
+#bannav, .bannav {
     width: auto;
     margin-bottom:1em;
 }
@@ -272,11 +277,15 @@ tr.odd{
 }
 
 .sub-tabs-apply {
-    position:absolute;
+/*    position:absolute;
     bottom:60px;
-    left:10%;
+    left:10%;*/
     border-radius:5px!important;
     border:none!important;
+}
+
+.sub-tabs > li > a{
+    cursor:pointer;
 }
 
 
@@ -290,16 +299,10 @@ tr.odd{
     background-color: rgba(0,0,0,1)!important;
 }
 
-
-
 #floorplancontent #BulletGroup .bullet, 
 #floorplancontent #BulletGroup .bulletSelected{
     width:30px;
     height:30px;
-}
-
-#floorplancontent #BulletGroup #BulletImages{
-
 }
 
 #floorplancontent #BulletGroup:hover #BulletImages{
@@ -513,7 +516,6 @@ body #dashcontent table > tbody > tr{
 
 #status {
     color: #777;
-    font-weight: normal!important;
     white-space: nowrap;
     overflow: visible;
     position: relative;
@@ -866,16 +868,52 @@ table.dataTable{
     border-right:none!important;
 }
 
-table.dataTable thead th{
-    padding: 8px
-}
-
-table.display thead th div.DataTables_sort_wrapper{padding-right:0;}
-
 table.display td{padding:5px;}
 
+table.dataTable thead th{
+    padding: 5px;
+    text-align:left;
+}
+
+table.dataTable thead th img{
+    background-color: rgba(250,250,250,0.5);
+    margin-top:2px;
+    padding:3px;
+    box-sizing: content-box;
+    border-radius:3px;
+    vertical-align: top;
+}
+table.dataTable thead th img:hover{
+    background-color:rgba(0,0,0,0.4);
+    box-shadow: 1px 1px 1px rgba(250,250,250,0.1);
+}
+
+table.display thead th div.DataTables_sort_wrapper{
+    padding-right:0;
+    text-align:left;
+    white-space: nowrap;    
+}
+
+table.display thead th div.DataTables_sort_wrapper .ui-icon{
+    border-radius:50%;
+    background-color:#eee;
+    padding:2px 2px 2px 0;
+}
+
+table.display thead th div.DataTables_sort_wrapper span{
+    display:inline-block;
+    margin: 0 0 0 5px;
+    position:relative;
+    top:3px;
+}
+table.display thead th div.DataTables_sort_wrapper span:hover{background-color:rgba(0,0,0,0.4)}
+
+table.dataTable tbody img{
+    vertical-align: middle;
+}
+
 .dataTables_wrapper .ui-toolbar{
-    padding: 10px 10px 5px 10px
+    padding: 10px 10px 5px 10px;
 }
 
 .dataTables_paginate{
@@ -949,9 +987,9 @@ table.display td{padding:5px;}
 }
 
 .selectorlevels  .ui-state-active{
-    background-color:#73b6ca!important;
+    background-color:#73b6ca;
     color:#fff;
-    box-shadow: inset 0px 1px 2px 1px rgba(50,50,50,0.1);
+    box-shadow: inset 0px 1px 2px 1px rgba(50,50,50,0.2);
 }
 
 #dashcontent .selectorlevels label .ui-button-text{
@@ -1031,7 +1069,6 @@ table.display td{padding:5px;}
     -webkit-box-shadow: 7px 7px 25px 5px rgba(50, 50, 50, 0.48);
     -moz-box-shadow:    7px 7px 25px 5px rgba(50, 50, 50, 0.48);
     box-shadow:         7px 7px 25px 5px rgba(50, 50, 50, 0.48);
-    transform: scale(1.1);
 }
 
 .ui-toolbar, div.dataTables_wrapper .ui-widget-header{
@@ -1057,6 +1094,7 @@ table.display td{padding:5px;}
     /*border-right: 2px solid #ccc;*/
     border-top:none;
     border-bottom:none;
+    text-shadow: none!important;
 }
 
 .ui-state-hover{
@@ -1153,7 +1191,14 @@ table.display td{padding:5px;}
     color:#fff;
 }
 
-
+#settingscontent div.row-fluid.related{
+    display:flex;
+    flex-flow: row wrap;
+    align-items: stretch;
+}
+#settingscontent div.row-fluid.related .span2{
+    width:auto;
+}
 
 
 
@@ -1216,7 +1261,6 @@ tbody{
 }
 
 #dashcontent .mobileitem td{
-   /* padding-right:6px!important; /*was eerst rondom */
     height:auto!important;
 }
 

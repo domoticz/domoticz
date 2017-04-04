@@ -1,6 +1,7 @@
 @import url("base.css"); /* Don't remove this line! */
 @import url("feynman.css");  /* Don't remove this line! */
 @import url("dashboard_highlights.css"); /* This adds bigger items at the top of each dashboard category. */
+@import url("dashboard_highlights_see-through.css"); /* makes bigger items also semi-transparent. */
 @import url("dashboard_vertical_columns.css"); /* Turns dashboard into vertical columns. */
 @import url("navigation_main_sidebar.css"); /* This transforms the main menu to a vertical menu on the left. */
 @import url("navigation_settings_sidemenu.css"); /* This transforms the settings-tabs into a sidebar on the left. */
@@ -8,32 +9,37 @@
 
 
 /* GENERAL SETTINGS
-Welcome the the Feynman Theme settings.
+Welcome the Feynman theme settings.
 
-First, you can adsd or remove features by simply adding or removing /* at the beginning of the 
-lines at the top of this page.
+First, you can (add or) remove features by simply adding (or removing) /* at the beginning of the 
+lines at the top of this page. Or you can just delete the line.
 
 
 /* CUSTOM BACKGROUND IMAGE
-You can add your own background image here. Just place the URL between the brackets of "url()" in the line below.
+You can add your own background image here. Just place the URL between the brackets of "url()" in the line below, and 
+remove the /* before the word 'body'. This will override the detault background image.
 */
 
-body {
-    background-image: url() no-repeat center center fixed;
+/* body {
+    background: url() no-repeat center center fixed;
 }
 
 
-/* FEATURE DETAILS
+*//* FEATURE DETAILS
 
 __Dashboard Highlights__
 This is a little CSS script that super-sizes the first three items for each category. You can use this to highlight 
 some of your devices, or give their buttons a little more breathing room. This only works for the normal view, 
-because the compact view is about saving space. This can be combined with:
+because the compact view is about saving space. This can be combined with Vertical Columns.
+
+__Dashboard See-Through Highlights__
+This makes the background of items see-through. This can look nice if you use your own background images.
 
 __Dashboard Vertical Columns__
 This feature will create vertical columns on your dashboard, one for each sensor type. BUT this feature only 
 springs into action if you have enough horizontal space for the amount device-types that you have. So for 5 columns 
 you need at least a 1300 pixels wide screen, for example. This feature works for both the normal and compact display option.
+ (!) This feature is currently waiting for some changes to Domoticz.
 
 __Navigation Main Sidemenu__
 This moves the main menu to the left side of the screen. It works best for wide screens (about 980 pixels wide 

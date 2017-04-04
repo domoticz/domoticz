@@ -10,8 +10,8 @@
 
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr{
         height:143px;
-        background: rgba(203,96,179,1);
-        background: rgba(196,225,238,1);
+        /*background: rgba(203,96,179,1);
+        background: rgba(196,225,238,1);*/
         background: -moz-linear-gradient(top, rgba(196,225,238,1) 0%, rgba(196,209,238,1) 27%, rgba(212,225,238,1) 100%);
         background: -webkit-gradient(left top, left bottom, color-stop(0%, rgba(196,225,238,1)), color-stop(27%, rgba(196,209,238,1)), color-stop(100%, rgba(212,225,238,1)));
         background: -webkit-linear-gradient(top, rgba(196,225,238,1) 0%, rgba(196,209,238,1) 27%, rgba(212,225,238,1) 100%);
@@ -31,15 +31,19 @@
         float: left;
         font-size: 25px;
         text-align: left;
-        width: calc(100% - 105px);
+        width: 65%;
         top: 36px;
-        font-size: 30px;
-        left:100px;
+        left:35%
     }
     
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmall tr #bigtext span{
         width:100%;
         overflow-x:hidden;
+        display:inline-block;
+        height:50px;
+        line-height: 30px;
+        font-size: 35px;
+        background-color: transparent;  
     }    
 
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr #img,
@@ -47,49 +51,56 @@
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr #img2,
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr #img3{
         border-radius:2px;
+        overflow:visible;        
     }
 
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr #img img,
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr #img1 img,
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr #img2 img,
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr #img3 img{
-        width:60px;
-        height:60px;
+        /*width:60px;
+        height:60px;*/
+        width:100%;        
+        height:auto;
         box-shadow: none;
     }
 
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmall tr #img,
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmall tr #img1{
         float: left!important;
-        width: 60px;
-        top: 24px;
-        left: 15px;
+        width: 30%;
+        max-width:80px;
+        top: 14px;
+        left: 5%;
     }
 
 
+    
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #img,
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #img1{
-        top:24px;
-        right:10%;
+        top:14px;
+        right:10%;  
     }
 
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #img2{
-        top:24px;
+        top:14px;
         right:50%;
         margin-right:-30px!important;
     }
 
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #img3{
         float:left!important;
-        top:24px;
+        top:14px;
         left:10%;
     }
 
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #img img,
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #img1 img,
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #img2 img{
-        width:60px!important;
-        height:60px!important;
+        width:20%;
+        height:20%;
+        max-width:60px!important;
+        max-height:60px!important;
         margin: 0 auto;
     }
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #bigtext{
@@ -102,24 +113,25 @@
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalldoubleicon tr #img,
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalldoubleicon tr #img1{
         float:left!important;
-        width:80px;
-        top:14px; /* 24 na de JS fix? */
+        width:35%;
+        max-width:80px;
+        top:14px; /* 24 after the JS fix? */
         left:10%;
     }
 
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalldoubleicon tr #img2{
-        width:80px;
-        top:14px; /* 24 na de JS fix? */
+        width:35%;
+        max-width:80px;
+        top:14px; /* 24 after the JS fix? */
         right:10%;
     }
 
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalldoubleicon tr #img img,
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalldoubleicon tr #img1 img,
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalldoubleicon tr #img2 img{
-        width:80px;
-        height:80px;
-    }    
-    
+        width:100%;
+        height:auto;
+    }
 
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) td > div.dimslider {
         top: 110px;
@@ -194,6 +206,7 @@
 }  
 
 
+/*
 @media all and (min-width: 1200px){
 
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmall tr #bigtext{
@@ -281,7 +294,7 @@
         margin: 0 auto;
     }
 
-
+*/
 
     
     

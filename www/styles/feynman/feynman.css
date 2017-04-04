@@ -8,8 +8,8 @@
 @font-face {
 	font-family: "LatoThin";
 	font-style: normal;
-	src: url('fonts/Lato-Thin.ttf');
-	src: local('Lato Thin'), url('fonts/Lato-Thin.ttf') format('truetype');
+	src: url('fonts/Lato-Light.ttf');
+	src: local('Lato Thin'), url('fonts/Lato-Light.ttf') format('truetype');
 }
 
 body{
@@ -28,8 +28,10 @@ body{
     background-attachment: fixed;
 }
 
+
 .row-fluid [class^="span"]{
     background-color: rgba(255,255,255,0.9);
+   
 }
 
 /*
@@ -83,7 +85,7 @@ body table#itemtabledoubleicon tbody tr, body table#itemtable tbody tr, body tab
 }
 
 tr, #name{
-    border-radius: 0!important;
+    border-radius: 0;
 }
 
 .ui-draggable:not(.ui-dialog) table > tbody > tr{
@@ -92,17 +94,36 @@ tr, #name{
     background: -webkit-linear-gradient(to bottom, rgba(212,225,238,1) 0% ,rgba(212,225,238,1) 42px, rgba(255,255,255,1) 42px,rgba(255,255,255,0.95) 70px,rgba(255,255,255,1) 70px,rgba(255,255,255,1) 100%); 
     background: linear-gradient(to bottom, rgba(212,225,238,1) 0% ,rgba(212,225,238,1) 42px, rgba(255,255,255,0.9) 42px,rgba(255,255,255,0.95) 49px,rgba(255,255,255,1) 70px,rgba(255,255,255,0.95) 70px, rgba(255,255,255,1) 100%);    
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#d4e1ee', endColorstr='#cccccccc',GradientType=0 );
+    border-radius:2px!important;
+}
+
+.ui-draggable:not(.ui-dialog) table{
     box-shadow: 2px 2px 18px 0px rgba(50, 50, 50, 0.2);
 }
 
-.statusNormal{background-color: #D4E1EE}
-.statusProtected{background-color: #A4B1EE}
-.statusTimeout{background-color: #DF2D3A}
-.statusLowBattery{background-color:#DDDF2D}
+td.statusNormal{background-color: transparent}
+td.statusProtected{background-color: transparent}
+td.statusTimeout{background-color: transparent}
+td.statusLowBattery{background-color: transparent}
 
-/* a little experiment */
-tr.statusTimeout{
-    background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABsAAAAoCAYAAAAPOoFWAAAAGXRFW…lIN+2qKRyCND0bhqSYCyTB3CAOc4WusBEIpkeBuPgJMAAX8Hs1NfqHRgAAAABJRU5ErkJggg==) left top repeat scroll lightgreen;
+td.statusNormal{
+/*    -moz-box-shadow:  inset 0 -3px 0 0 #A4B1EE;
+    -webkit-box-shadow:  inset 0 -3px 0 0 #A4B1EE;
+    box-shadow:  inset 0 -3px 0 0 #A4B1EE;*/
+}
+td.statusProtected{
+background-color: #A4B1EE;
+}
+
+td.statusTimeout{
+    -moz-box-shadow:  0 3px 0 0 #DF2D3A;
+    -webkit-box-shadow:  0 3px 0 0 #DF2D3A;
+    box-shadow:  0 3px 0 0 #DF2D3A;    
+}
+td.statusLowBattery{
+    -moz-box-shadow:  0 3px 0 0 #DDDF2D;
+    -webkit-box-shadow:  0 3px 0 0 #DDDF2D;
+    box-shadow:  0 3px 0 0 #DDDF2D;    
 }
 
 #dashcontent .ui-draggable:not(.ui-dialog) tr{
@@ -143,11 +164,17 @@ tr.statusTimeout{
     top: -50px;
 }
 
+#bigtext span {border-radius:3px}
+
 #dashcontent #bigtext {
     width: calc(50% - 55px);
     font-weight:100;
 }
-#bigtext span {border-radius:3px}
+
+#dashcontent #bigtext span{
+    font-weight:100;
+}
+
 
 
 #img img, 
@@ -288,18 +315,32 @@ a.btnsmall {
 }
 
 /* new proposed items */
-#settingscontent span2.related{
-    padding-top:20px;
+#settingscontent .row-fluid.related{
+    display:flex;
+    align-items: stretch    
 }
-.related span2{
+
+#settingscontent .row-fluid.related .span2{
     background:none;
-    padding:0;
+    margin-right:20px;
     min-height:0;
+    width:auto;
+    padding:0;
+}
+
+#settingscontent .row-fluid.related .span2 a{
+    height:100%;
+    text-align: center;
+    transition: all 0.2s ease;
 }
 
 .relatedIcon{
-    width:60%;
-    margin:10%;
+    box-sizing: content-box;
+    border: 5px solid white;
+    background-color: rgba(0,0,0,0.2);
+    width: 48px;
+    margin: 10px;
+    border-radius:50%;
     image-rendering: -moz-crisp-edges;
     image-rendering: -moz-crisp-edges;
     image-rendering: -o-crisp-edges;
@@ -307,6 +348,17 @@ a.btnsmall {
     -ms-interpolation-mode: nearest-neighbor;
     filter: contrast(1);
     image-rendering: pixelated;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.4);
+}
+
+#settingscontent .row-fluid.related .span2 a:hover .relatedIcon{
+    box-shadow: 0px 0px 20px 5px rgba(250,250,250,0.2);
+    transition: all 0.1s ease;
+}
+
+
+#settingscontent .row-fluid.related span{
+    display:block;
 }
 
 
@@ -385,7 +437,7 @@ body:hover .ui-dialog {
     vertical-align: middle;
     cursor: pointer;
     
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
+    box-shadow:  0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
     */
 }
 
