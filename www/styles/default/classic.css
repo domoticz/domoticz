@@ -1,11 +1,11 @@
 /* This is a sub-theme. It makes the most visible changes to the base.css file, such as changing colours or the position of certain elements. */
 
 body {
-    color: #0D161F!important;
+    color: #0D161F; /*!important;*/
 }
     
 .row-fluid [class^="span"]{
-    background-color: #292929!important;
+    background-color: #292929; /*!important;*/
     color:#fff!important;
 }
 
@@ -66,8 +66,9 @@ tr, #name{
     border-radius: 0!important;
 }
 
+
 #dashcontent .ui-draggable:not(.ui-dialog) tr{
-    /*height: 80px!important;*/
+    background-color:transparent!important;
     background: -moz-linear-gradient(to bottom, rgba(241,245,250,1) 0% ,rgba(241,245,250,1) 55px, rgba(241,245,250,0.05) 55px, rgba(241,245,250,0.1) 60px,rgba(241,245,250,0.1) 100%); 
     background: -webkit-linear-gradient(to bottom, rgba(241,245,250,1) 0% ,rgba(241,245,250,1) 55px, rgba(241,245,250,0.05) 55px, rgba(241,245,250,0.1) 60px,rgba(241,245,250,0.1) 100%);
     background: linear-gradient(to bottom, rgba(241,245,250,1) 0% ,rgba(241,245,250,1) 55px, rgba(241,245,250,0.05) 55px,rgba(241,245,250,0.1) 60px, rgba(241,245,250,0.1) 100%); 
@@ -76,8 +77,8 @@ tr, #name{
 }
 
 #dashcontent .ui-draggable tr{
-    background-image: none;
-    background-color: #D4E1EE;
+    /*background-image: none!important;*/
+    /*background-color: #D4E1EE;*/
     box-shadow: 2px 2px 18px 0px rgba(50, 50, 50, 0.3);
 }
 
