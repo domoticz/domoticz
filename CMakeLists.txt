@@ -464,25 +464,6 @@ add_dependencies(domoticz revisiontag)
 
 # Add JS files to be compressed and minified on install
 # Needs YUI compressor installed
-set(js_in_files1
-	app/AboutController.js
-        app/CamController.js
-        app/CustomIconsController.js
-        app/DPFibaroController.js
-        app/DPGooglePubSubController.js
-        app/DPHttpController.js
-        app/DPInfluxController.js
-        app/DashboardController.js
-        app/DevicesController.js
-        app/DummyController.js
-        app/EventsController.js
-        app/FloorplanController.js
-        app/ForecastController.js
-        app/FrontpageController.js
-        app/app.js
-        app/main.js
-)
-
 file(GLOB_RECURSE js_in_files RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/www/" *.js)
 
 find_program(YUI_EXECUTABLE yui-compressor)
