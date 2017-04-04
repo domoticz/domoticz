@@ -141,8 +141,8 @@ define(['app'], function (app) {
 													status+='<button class="btn btn-mini btn-info" type="button" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshFavorites, ' + item.Protected + ');">' + $.t("On") +'</button> ' +
 															'<button class="btn btn-mini" type="button" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshFavorites, ' + item.Protected + ');">' + $.t("Off") +'</button>';
 												}
-												if ($(id + " #status span").html()!=status) {
-													$(id + " #status span").html(status);
+												if ($(id + " #status").html()!=status) {
+													$(id + " #status").html(status);
 												}
 											}
 										}
@@ -176,11 +176,11 @@ define(['app'], function (app) {
 												if ($(id + " #img2").html()!=img2) {
 													$(id + " #img2").html(img2);
 												}
-												if ($(id + " #bigtext span").html()!=TranslateStatus(item.Status)) {
-													$(id + " #bigtext span").html(bigtext);
+												if ($(id + " #bigtext > span").html()!=TranslateStatus(item.Status)) {
+													$(id + " #bigtext > span").html(bigtext);
 												}
-												if ($(id + " #lastupdate").html()!=item.LastUpdate) {
-													$(id + " #lastupdate").html(item.LastUpdate);
+												if ($(id + " #lastupdate > span").html()!=item.LastUpdate) {
+													$(id + " #lastupdate > span").html(item.LastUpdate);
 												}
 												if ($scope.config.ShowUpdatedEffect==true) {
 													$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
@@ -559,8 +559,8 @@ define(['app'], function (app) {
 												dslider.slider( "value", item.LevelInt+1 );
 											}
 										}
-										if ($(id + " #status span").html()!=status) {
-											$(id + " #status span").html(status);
+										if ($(id + " #status").html()!=status) {
+											$(id + " #status").html(status);
 										}
 									}
 									else {
@@ -908,14 +908,14 @@ define(['app'], function (app) {
 											}
 											bigtext = GetLightStatusText(item);
 										}
-										if ($(id + " #bigtext span").html()!=bigtext) {
-											$(id + " #bigtext span").html(bigtext);
+										if ($(id + " #bigtext > span").html()!=bigtext) {
+											$(id + " #bigtext > span").html(bigtext);
 										}
-										if ((typeof $(id + " #status span") != 'undefined') && ($(id + " #status span").html() != status)) {
-										    $(id + " #status span").html(status);
+										if ((typeof $(id + " #status") != 'undefined') && ($(id + " #status").html() != status)) {
+										    $(id + " #status").html(status);
 										}
-										if ($(id + " #lastupdate").html() != item.LastUpdate) {
-											$(id + " #lastupdate").html(item.LastUpdate);
+										if ($(id + " #lastupdate > span").html() != item.LastUpdate) {
+											$(id + " #lastupdate > span").html(item.LastUpdate);
 										}
 										if ($scope.config.ShowUpdatedEffect==true) {
 											$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
@@ -1026,16 +1026,16 @@ define(['app'], function (app) {
                                             }
                                         }
 										
-										if ($(id + " #status span").html()!=status) {
-											$(id + " #status span").html(status);
+										if ($(id + " #status").html()!=status) {
+											$(id + " #status").html(status);
 										}
-										if (typeof $(id + " #bigtext span") != 'undefined') {
-											if ($(id + " #bigtext span").html()!=bigtext) {
-												$(id + " #bigtext span").html(bigtext);
+										if (typeof $(id + " #bigtext > span") != 'undefined') {
+											if ($(id + " #bigtext > span").html()!=bigtext) {
+												$(id + " #bigtext > span").html(bigtext);
 											}
 										}
-										if ($(id + " #lastupdate").html()!=item.LastUpdate) {
-											$(id + " #lastupdate").html(item.LastUpdate);
+										if ($(id + " #lastupdate > span").html()!=item.LastUpdate) {
+											$(id + " #lastupdate > span").html(item.LastUpdate);
 										}
 										if ($scope.config.ShowUpdatedEffect==true) {
 											$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
@@ -1095,8 +1095,8 @@ define(['app'], function (app) {
 												status+=', Altitude: ' + item.Altitude + ' meter';
 											}
 										}
-										if ($(id + " #status span").html()!=status) {
-											$(id + " #status span").html(status);
+										if ($(id + " #status").html()!=status) {
+											$(id + " #status").html(status);
 										}
 									}
 									else {
@@ -1189,14 +1189,14 @@ define(['app'], function (app) {
 										if ($(id + " #img").html()!=img) {
 											$(id + " #img").html(img);
 										}
-										if ($(id + " #status span").html()!=status) {
-											$(id + " #status span").html(status);
+										if ($(id + " #status").html()!=status) {
+											$(id + " #status").html(status);
 										}
-										if ($(id + " #bigtext span").html()!=bigtext) {
-											$(id + " #bigtext span").html(bigtext);
+										if ($(id + " #bigtext > span").html()!=bigtext) {
+											$(id + " #bigtext > span").html(bigtext);
 										}
-										if ($(id + " #lastupdate").html()!=item.LastUpdate) {
-											$(id + " #lastupdate").html(item.LastUpdate);
+										if ($(id + " #lastupdate > span").html()!=item.LastUpdate) {
+											$(id + " #lastupdate > span").html(item.LastUpdate);
 										}
 										if ($scope.config.ShowUpdatedEffect==true) {
 											$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
@@ -1227,8 +1227,8 @@ define(['app'], function (app) {
 											}
 										}
 									
-										if ($(id + " #bigtext span").html()!=tmpStatus) {
-											$(id + " #bigtext span").html(tmpStatus);
+										if ($(id + " #bigtext > span").html()!=tmpStatus) {
+											$(id + " #bigtext > span").html(tmpStatus);
 										}
 										if ($scope.config.ShowUpdatedEffect==true) {
 											$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
@@ -1310,11 +1310,11 @@ define(['app'], function (app) {
 										if ($(id + " #img").html()!=img) {
 											$(id + " #img").html(img);
 										}
-										if ($(id + " #bigtext span").html()!=TranslateStatus(item.Status)) {
-											$(id + " #bigtext span").html(TranslateStatus(item.Status));
+										if ($(id + " #bigtext > span").html()!=TranslateStatus(item.Status)) {
+											$(id + " #bigtext > span").html(TranslateStatus(item.Status));
 										}
-										if ($(id + " #lastupdate").html()!=item.LastUpdate) {
-											$(id + " #lastupdate").html(item.LastUpdate);
+										if ($(id + " #lastupdate > span").html()!=item.LastUpdate) {
+											$(id + " #lastupdate > span").html(item.LastUpdate);
 										}
 										if ($scope.config.ShowUpdatedEffect==true) {
 											$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
@@ -1359,11 +1359,11 @@ define(['app'], function (app) {
 											if ($(id + " #img").html()!=img) {
 												$(id + " #img").html(img);
 											}
-											if ($(id + " #bigtext span").html()!=TranslateStatus(EvoDisplayTextMode(item.Status))) {
-												$(id + " #bigtext span").html(TranslateStatus(EvoDisplayTextMode(item.Status)));
+											if ($(id + " #bigtext > span").html()!=TranslateStatus(EvoDisplayTextMode(item.Status))) {
+												$(id + " #bigtext > span").html(TranslateStatus(EvoDisplayTextMode(item.Status)));
 											}
-											if ($(id + " #lastupdate").html()!=item.LastUpdate) {
-												$(id + " #lastupdate").html(item.LastUpdate);
+											if ($(id + " #lastupdate > span").html()!=item.LastUpdate) {
+												$(id + " #lastupdate > span").html(item.LastUpdate);
 											}
 											if ($scope.config.ShowUpdatedEffect==true) {
 												$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
@@ -1489,8 +1489,8 @@ define(['app'], function (app) {
 										}
 									}
 								}
-								if ($(id + " #status span").html()!=status) {
-									$(id + " #status span").html(status);
+								if ($(id + " #status").html()!=status) {
+									$(id + " #status").html(status);
 								}
 							}
 							else {
@@ -1623,14 +1623,14 @@ define(['app'], function (app) {
                                     }
                                 }
 								
-								if ($(id + " #status span").html()!=status) {
-									$(id + " #status span").html(status);
+								if ($(id + " #status").html()!=status) {
+									$(id + " #status").html(status);
 								}
-								if ($(id + " #bigtext span").html()!=bigtext) {
-									$(id + " #bigtext span").html(bigtext);
+								if ($(id + " #bigtext > span").html()!=bigtext) {
+									$(id + " #bigtext > span").html(bigtext);
 								}
-								if ($(id + " #lastupdate").html()!=item.LastUpdate) {
-									$(id + " #lastupdate").html(item.LastUpdate);
+								if ($(id + " #lastupdate > span").html()!=item.LastUpdate) {
+									$(id + " #lastupdate > span").html(item.LastUpdate);
 								}
 								if (img!="")
 								{
@@ -1826,7 +1826,7 @@ define(['app'], function (app) {
 									  xhtm+=bigtext+'</span></td>\n';
 									if (item.Type.indexOf('Scene')==0) {
 										xhtm+='<td id="img1" class="img img1"><img src="images/push48.png" title="Activate" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshFavorites, ' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
-										xhtm+='\t      <td id="status"></td>\n';
+										xhtm+='\t      <td id="status" class="status"></td>\n';
 									}
 									else {
 										var onclass="";
@@ -2825,7 +2825,7 @@ define(['app'], function (app) {
 										}
 									}
 									xhtm+='" class="lcursor" onclick="ShowTempLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40"></td>\n' +
-											'\t      <td id="status">';
+											'\t      <td id="status" class="status">';
 									var bHaveBefore=false;
 									if (typeof item.HumidityStatus != 'undefined') {
 										xhtm+=$.t(item.HumidityStatus);
@@ -3021,7 +3021,7 @@ define(['app'], function (app) {
 									xhtm+='\t      <td id="img" class="img img1"><img src="images/';
 									if (typeof item.Rain != 'undefined') {
 										xhtm+='rain48.png" class="lcursor" onclick="ShowRainLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40"></td>\n' +
-										'\t      <td id="status">' + item.Rain + ' mm';
+										'\t      <td id="status" class="status">' + item.Rain + ' mm';
 										if (typeof item.RainRate != 'undefined') {
 											if (item.RainRate!=0) {
 												xhtm+=', Rate: ' + item.RainRate + ' mm/h';
@@ -3030,22 +3030,22 @@ define(['app'], function (app) {
 									}
 									else if (typeof item.Visibility != 'undefined') {
 										xhtm+='visibility48.png" class="lcursor" onclick="ShowGeneralGraph(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal +', \'Visibility\');" height="40" width="40"></td>\n' +
-										'\t      <td id="status">' + item.Data;
+										'\t      <td id="status" class="status">' + item.Data;
 									}
 									else if (typeof item.UVI != 'undefined') {
 										xhtm+='uv48.png" class="lcursor" onclick="ShowUVLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40"></td>\n' +
-										'\t      <td id="status">' + item.UVI + ' UVI';
+										'\t      <td id="status" class="status">' + item.UVI + ' UVI';
 										if (typeof item.Temp!= 'undefined') {
 											xhtm+=', Temp: ' + item.Temp + '&deg; ' + $scope.config.TempSign;
 										}
 									}
 									else if (typeof item.Radiation != 'undefined') {
 										xhtm+='radiation48.png" class="lcursor" onclick="ShowGeneralGraph(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal +', \'Radiation\');" height="40" width="40"></td>\n' +
-										'\t      <td id="status">' + item.Data;
+										'\t      <td id="status" class="status">' + item.Data;
 									}
 									else if (typeof item.Direction != 'undefined') {
 										xhtm+='Wind' + item.DirectionStr + '.png" class="lcursor" onclick="ShowWindLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40"></td>\n' +
-										'\t      <td id="status">' + item.Direction + ' ' + item.DirectionStr;
+										'\t      <td id="status" class="status">' + item.Direction + ' ' + item.DirectionStr;
 										if (typeof item.Speed != 'undefined') {
 											xhtm+=', ' + $.t('Speed') + ': ' + item.Speed + ' ' + $scope.config.WindSign;
 										}
@@ -3065,7 +3065,7 @@ define(['app'], function (app) {
 									}
 									else if (typeof item.Barometer != 'undefined') {
 										xhtm+='baro48.png" class="lcursor" onclick="ShowBaroLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40"></td>\n' +
-										'\t      <td id="status">' + item.Barometer + ' hPa';
+										'\t      <td id="status" class="status">' + item.Barometer + ' hPa';
 										if (typeof item.ForecastStr != 'undefined') {
 											xhtm+=', ' + $.t('Prediction') + ': ' + $.t(item.ForecastStr);
 										}
@@ -3143,7 +3143,7 @@ define(['app'], function (app) {
 											'\t      <td id="name" class="name">' + item.Name + '</td>\n';
 									var status=TranslateStatus(item.Status);
 									
-									xhtm+='\t      <td id="status">';
+									xhtm+='\t      <td id="status" class="status">';
 									xhtm+=status;
 									if (item.SubType=="Security Panel") {
 										xhtm+=' <a href="secpanel/"><img src="images/security48.png" class="lcursor" height="16" width="16"></a>';
@@ -3243,7 +3243,7 @@ define(['app'], function (app) {
 										}
 									}
 									xhtm+=
-												'\t      <td id="status"></td>\n' +
+												'\t      <td id="status" class="status"></td>\n' +
 												'\t      <td id="lastupdate" class="lastupdate"><span>' + item.LastUpdate + '</span></td>\n' +
 												'\t    </tr>\n' +
 												'\t    </table>\n' +
@@ -3342,7 +3342,7 @@ define(['app'], function (app) {
 													'\t      <td id="bigtext" class="bigtext"><span></span></td>\n';
 										xhtm+=EvohomePopupMenu(item,'evomini');
 										xhtm+=
-													'\t      <td id="status">' + TranslateStatus(EvoDisplayTextMode(item.Status)) + '</td>\n' +
+													'\t      <td id="status" class="status">' + TranslateStatus(EvoDisplayTextMode(item.Status)) + '</td>\n' +
 													'\t      <td id="lastupdate" class="lastupdate"><span>' + item.LastUpdate + '</span></td>\n' +
 													'\t    </tr>\n' +
 													'\t    </table>\n' +
@@ -3970,8 +3970,8 @@ define(['app'], function (app) {
 								status='<button class="btn btn-mini btn-info" type="button">' + $.t(TxtOn) +': ' + fPercentage + "% </button> " +
 									'<button class="btn btn-mini" type="button">' + $.t(TxtOff) +'</button>';
 							}
-							if ($(id + " #status span").html()!=status) {
-								$(id + " #status span").html(status);
+							if ($(id + " #status").html()!=status) {
+								$(id + " #status").html(status);
 							}
 						}
 						else {
@@ -3993,8 +3993,8 @@ define(['app'], function (app) {
 									$(id + " #img").html(img);
 								}
 							}
-							if ($(id + " #bigtext span").html()!=status) {
-								$(id + " #bigtext span").html(status);
+							if ($(id + " #bigtext > span").html()!=status) {
+								$(id + " #bigtext > span").html(status);
 							}
 							if ($scope.config.ShowUpdatedEffect==true) {
 								$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
@@ -4043,7 +4043,7 @@ define(['app'], function (app) {
 					if (($scope.config.DashboardType === 2) || (window.myglobals.ismobile === true)) {
 						$('#dashcontent #light_' + idx + " #status").html('');
 					} else {
-						$('#dashcontent #light_' + idx + " #bigtext").html(unescape(levelname));
+						$('#dashcontent #light_' + idx + " #bigtext > span").html(unescape(levelname));
 					}
 				}
 			});
@@ -4070,7 +4070,7 @@ define(['app'], function (app) {
 					if (($scope.config.DashboardType === 2) || (window.myglobals.ismobile === true)) {
 						$('#dashcontent #light_' + idx + " #status").html('');
 					} else {
-						$('#dashcontent #light_' + idx + " #bigtext").html(unescape(levelname));
+						$('#dashcontent #light_' + idx + " #bigtext > span").html(unescape(levelname));
 					}
 				},
 				change: function (event, ui) { //When the user selects an option
