@@ -34,3 +34,5 @@ install_manifest.txt
 .project
 .cproject
 .settings/
+*.min
+*.min.gz

@@ -363,6 +363,7 @@ hardware/PhilipsHue/PhilipsHueSensors.cpp
 hardware/PiFace.cpp
 hardware/Pinger.cpp
 hardware/PVOutput_Input.cpp
+hardware/RAVEn.cpp
 hardware/Razberry.cpp
 hardware/Rego6XXSerial.cpp
 hardware/RelayNet.cpp
@@ -391,17 +392,16 @@ hardware/Tellstick.cpp
 hardware/Thermosmart.cpp
 hardware/ToonThermostat.cpp
 hardware/VolcraftCO20.cpp
-hardware/RAVEn.cpp
 hardware/Winddelen.cpp
 hardware/WOL.cpp
 hardware/Wunderground.cpp
+hardware/XiaomiGateway.cpp
+hardware/Yeelight.cpp
 hardware/YouLess.cpp
 hardware/ZiBlueBase.cpp
 hardware/ZiBlueSerial.cpp
 hardware/ZiBlueTCP.cpp
 hardware/ZWaveBase.cpp
-hardware/Yeelight.cpp
-hardware/XiaomiGateway.cpp
 hardware/plugins/DelayedLink.cpp
 hardware/plugins/Plugins.cpp
 hardware/plugins/PluginManager.cpp
@@ -462,6 +462,58 @@ add_executable(domoticz ${domoticz_SRCS})
 # explicitly say that the executable depends on the revisiontag
 add_dependencies(domoticz revisiontag)
 
+# Add JS files to be compressed and minified on install
+# Needs YUI compressor installed
+set(js_in_files
+	app/AboutController.js
+        app/CamController.js
+        app/CustomIconsController.js
+        app/DPFibaroController.js
+        app/DPGooglePubSubController.js
+        app/DPHttpController.js
+        app/DPInfluxController.js
+        app/DashboardController.js
+        app/DevicesController.js
+        app/DummyController.js
+        app/EventsController.js
+        app/ForecastController.js
+        app/FrontpageController.js
+        app/app.js
+        app/main.js
+)
+
+find_program(YUI_EXECUTABLE yui-compressor)
+find_program(GZIP gzip)
+if(YUI_EXECUTABLE AND GZIP AND (NOT ${CMAKE_BUILD_TYPE} STREQUAL "Debug"))
+    message(STATUS "JS files will be minified and compressed before install.")
+    foreach(jsfile ${js_in_files})
+        set(jsmin "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}.min")
+        set(jsgz "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}.min.gz")
+        add_custom_command(OUTPUT ${jsmin}
+            COMMAND ${YUI_EXECUTABLE}
+            ARGS "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}" -o "${jsmin}"
+        )
+	add_custom_command(OUTPUT ${jsgz}
+            COMMAND ${GZIP}
+            ARGS "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsmin}" -k
+        )
+        install(FILES ${jsgz}
+            DESTINATION "${CMAKE_INSTALL_PREFIX}/www/"
+	    RENAME ${jsfile}.gz
+        )
+        set(js_out_files ${js_out_files} ${jsgz})
+    endforeach(jsfile)
+else()
+    message(STATUS "JS files will be installed unmodified.")
+    foreach(jsfile ${js_in_files})
+        install(FILES ${jsfile}
+            DESTINATION "${CMAKE_INSTALL_PREFIX}/www/"
+        )
+        set(js_out_files ${js_out_files} ${jsfile})
+    endforeach(jsfile)
+endif()
+
+add_custom_target(installjs ALL DEPENDS ${js_out_files})
 
 ## Link libraries
 
