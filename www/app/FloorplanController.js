@@ -443,7 +443,8 @@ define(['app'], function (app) {
 						$scope.floorPlans[i].Loaded = false;
 						var thisFP = $scope.makeHTMLnode('div', { id:$scope.floorPlans[i].tagName, index:item.idx, order:item.Order, style:'display:inline;', 'class':'imageparent'})
 						$("#fpwrapper").append(thisFP);
-						thisFP.appendChild($scope.makeHTMLnode('img', { id:$scope.floorPlans[i].tagName+'_img', 'src':item.Image, align:'top', 'onload':"ImgLoaded('"+$scope.floorPlans[i].tagName+"');", class:'floorplan', style:"display:none" }));
+						thisFP.appendChild($scope.makeHTMLnode('img', { id:$scope.floorPlans[i].tagName+'_img', 'src':item.Image, align:'top', 'onload':"ImgLoaded('"+$scope.floorPlans[i].tagName+"');", 'class':"floorplan", style:"display:none"}));
+//thisFP.appendChild($scope.makeHTMLnode('img', { id:$scope.floorPlans[i].tagName+'_img', 'src':item.Image, align:'top', 'onload':"ImgLoaded('"+$scope.floorPlans[i].tagName+"');", class:'floorplan', style:"display:none" }));
 						thisFP.appendChild(makeSVGnode('svg', {id:tagName+'_svg', width:"100%", height:"100%", version:"1.1", xmlns:"http://www.w3.org/2000/svg", 'xmlns:xlink':"http://www.w3.org/1999/xlink", viewBox:"0 0 0 0", preserveAspectRatio:"xMidYMid meet", overflow:"hidden", style:"display:none"}, ''));
 						if ($scope.FloorplanCount > 1) {
 							var bulletTd = $scope.makeHTMLnode('td', {'class':"bulletcell", "width":100/$scope.FloorplanCount+"%"});

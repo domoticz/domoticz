@@ -476,6 +476,7 @@ set(js_in_files
         app/DevicesController.js
         app/DummyController.js
         app/EventsController.js
+        app/FloorplanController.js
         app/ForecastController.js
         app/FrontpageController.js
         app/app.js
@@ -483,25 +484,36 @@ set(js_in_files
 )
 
 find_program(YUI_EXECUTABLE yui-compressor)
-find_program(GZIP gzip)
-if(YUI_EXECUTABLE AND GZIP AND (NOT ${CMAKE_BUILD_TYPE} STREQUAL "Debug"))
-    message(STATUS "JS files will be minified and compressed before install.")
+if(YUI_EXECUTABLE AND (NOT ${CMAKE_BUILD_TYPE} STREQUAL "Debug"))
+    message(STATUS "JS files will be minified before install.")
     foreach(jsfile ${js_in_files})
         set(jsmin "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}.min")
-        set(jsgz "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}.min.gz")
         add_custom_command(OUTPUT ${jsmin}
             COMMAND ${YUI_EXECUTABLE}
             ARGS "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}" -o "${jsmin}"
+	    DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}"
         )
-	add_custom_command(OUTPUT ${jsgz}
+        set(js_out_files ${js_out_files} ${jsmin})
+    endforeach(jsfile)
+endif()
+add_custom_target(minimisejs ALL DEPENDS ${js_out_files})
+
+find_program(GZIP gzip)
+if(GZIP AND (NOT ${CMAKE_BUILD_TYPE} STREQUAL "Debug"))
+    message(STATUS "JS files will be compressed before install.")
+    foreach(jsfile ${js_in_files})
+	set(jsmin "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}.min")
+        set(jsgz "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}.min.gz")
+       add_custom_command(OUTPUT ${jsgz}
             COMMAND ${GZIP}
-            ARGS "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsmin}" -k
+            ARGS "${jsmin}" -f -q -k
+	    DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}"
         )
         install(FILES ${jsgz}
             DESTINATION "${CMAKE_INSTALL_PREFIX}/www/"
-	    RENAME ${jsfile}.gz
+            RENAME ${jsfile}.gz
         )
-        set(js_out_files ${js_out_files} ${jsgz})
+        set(gz_out_files ${gz_out_files} ${jsgz})
     endforeach(jsfile)
 else()
     message(STATUS "JS files will be installed unmodified.")
@@ -509,12 +521,12 @@ else()
         install(FILES ${jsfile}
             DESTINATION "${CMAKE_INSTALL_PREFIX}/www/"
         )
-        set(js_out_files ${js_out_files} ${jsfile})
+        set(gz_out_files ${gz_out_files} ${gzfile})
     endforeach(jsfile)
 endif()
+add_custom_target(compressjs ALL DEPENDS ${gz_out_files})
 
-add_custom_target(installjs ALL DEPENDS ${js_out_files})
-
+add_dependencies(compressjs minimisejs)
 ## Link libraries
 
 option(USE_PYTHON "Use Python as a scripting language" NO)
@@ -776,7 +788,7 @@ IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 
 install(TARGETS domoticz DESTINATION ${CMAKE_INSTALL_PREFIX})
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/www DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/www DESTINATION ${CMAKE_INSTALL_PREFIX} PATTERN "*.js" EXCLUDE PATTERN "*.min" EXCLUDE PATTERN "*.min.gz" EXCLUDE)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/License.txt DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/History.txt DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/server_cert.pem DESTINATION ${CMAKE_INSTALL_PREFIX})
