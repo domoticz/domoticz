@@ -5035,7 +5035,7 @@ define(['app'], function (app) {
                             if (data["Type"].indexOf("Evohome") >= 0)
                             {
                                 $("#hardwarecontent #divbaudrateevohome #combobaudrateevohome").val(data["Mode1"]);
-                                $("#hardwarecontent #hardwareparamsevohome #controllerid").val(data["Extra"]);
+                                $("#hardwarecontent #divcontrolleridevohome #controllerid").val(data["Extra"]);
                             }
                             if (data["Type"].indexOf("MySensors") >= 0)
                             {
