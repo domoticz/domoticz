@@ -36,3 +36,5 @@ install_manifest.txt
 .settings/
 *.min
 *.min.gz
+*.js.gz
+!app.js.gz
