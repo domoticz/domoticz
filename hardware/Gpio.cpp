@@ -716,16 +716,13 @@ void CGpio::UpdateState(int gpioId, bool forceUpdate)
 
 	if ((!result.empty()) && (result.size()>0))
 	{
-		if ((!result.empty()) && (result.size()>0))
+		std::vector<std::string> sd=result[0];
+
+		int dbaseState = atoi(sd[1].c_str());
+
+		if ((dbaseState != state) || (forceUpdate))
 		{
-			std::vector<std::string> sd=result[0];
-
-			int dbaseState = atoi(sd[1].c_str());
-
-			if ((dbaseState != state) || (forceUpdate))
-			{
-				updateDatabase = true;
-			}
+			updateDatabase = true;
 		}
 	}
 
