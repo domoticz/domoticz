@@ -152,6 +152,88 @@ IF (INCLUDE_SPI)
 	ENDIF (HAVE_LINUX_SPI_H)
 ENDIF (INCLUDE_SPI)
 
+
+# Depending on available packages, JavaScript files stored in plain format can
+# be minified (or uglyfied...), ie: removing all useless caracters as spaces, CRs, tabs...
+# and variables names shortened to one caracter in order to minimize memeory footprint and increase 
+# global performance. We use yui-compressor (which does not compress in anyway despite its name...)
+# Do it only if not compiling in debug mode
+
+
+# Buil list of JS files in www dir and subdirs to be compressed and minified on install
+file(GLOB_RECURSE js_in_files RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/www/" *.js)
+
+option(MINIFY_JS "Minify JavaScript files" YES)
+unset(YUI)
+find_program(YUI yui-compressor)
+IF(YUI AND (NOT ${CMAKE_BUILD_TYPE} STREQUAL "Debug"))
+    message(STATUS "yui-compressor found, JS files will be minified before install.")
+    foreach(jsfile ${js_in_files})
+        set(jsmin "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}.min")
+        add_custom_command(OUTPUT ${jsmin}
+            COMMAND ${YUI_EXECUTABLE}
+            ARGS "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}" -o "${jsmin}"
+            DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}"
+        )
+        set(js_min_files ${js_min_files} ${jsmin})
+    endforeach(jsfile)
+    set(JSMIN true)
+    add_custom_target(minifyJS ALL DEPENDS ${js_min_files})
+    add_dependencies(minifyJS revisiontag)
+ELSE()
+    message(STATUS "yui-compressor not available, JS files will remain untouched")
+    set(JSMIN false})
+ENDIF()
+
+option(COMPRESS_JS "Compress (gzip) JavaScript files" YES)
+unset(GZIP)
+find_program(GZIP gzip2)
+IF(GZIP)
+    message(STATUS "gzip found, JS files will be compressed before install.")
+    IF(JSMIN)
+        set(MIN ".min")	
+    ELSE(JSMIN)
+        set(MIN "")
+    ENDIF(JSMIN) 
+    foreach(jsfile ${js_in_files})
+        set(jsmin "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}${MIN}")
+        set(jsgz "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsmin}.gz")
+        add_custom_command(OUTPUT ${jsgz}
+            COMMAND ${GZIP}
+            ARGS "${jsmin}" -f -q -k
+            DEPENDS "${jsmin}" minifyJS
+        )
+        install(FILES ${jsgz}
+            DESTINATION "${CMAKE_INSTALL_PREFIX}/www/"
+            RENAME ${jsfile}.gz
+        )
+        set(gz_out_files ${gz_out_files} ${jsgz})
+    endforeach(jsfile)
+ELSE(GZIP)
+    IF(JSMIN)
+        message(STATUS "JS files will be installed minified but uncompressed.")
+        foreach(jsfile ${js_in_files})
+            install(FILES ${jsfile}.min
+                DESTINATION "${CMAKE_INSTALL_PREFIX}/www/"
+                RENAME ${jsfile}
+            )
+            set(gz_out_files ${gz_out_files} ${jsfile})
+        endforeach(jsfile)
+    ELSE(JSMIN)
+        message(STATUS "JS files will be downloaded untouched (un-minified and un-compressed).")
+        foreach(jsfile ${js_in_files})
+            install(FILES ${jsfile}
+                DESTINATION "${CMAKE_INSTALL_PREFIX}/www/"
+            )
+            set(gz_out_files ${gz_out_files} ${jsfile})
+        endforeach(jsfile)
+    ENDIF(JSMIN)
+ENDIF(GZIP)
+add_custom_target(compressJS ALL DEPENDS ${gz_out_files})
+add_dependencies(compressJS revisiontag)
+IF(JSMIN)         
+    add_dependencies(compressJS minifyJS)
+ENDIF(JSMIN)
 #set(CMAKE_EXE_LINKER_FLAGS "-static")
 
 # Macro for setting up precompiled headers. Usage:
@@ -462,54 +544,7 @@ add_executable(domoticz ${domoticz_SRCS})
 # explicitly say that the executable depends on the revisiontag
 add_dependencies(domoticz revisiontag)
 
-# Add JS files to be compressed and minified on install
-# Needs YUI compressor installed
-file(GLOB_RECURSE js_in_files RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/www/" *.js)
 
-find_program(YUI_EXECUTABLE yui-compressor)
-if(YUI_EXECUTABLE AND (NOT ${CMAKE_BUILD_TYPE} STREQUAL "Debug"))
-    message(STATUS "JS files will be minified before install.")
-    foreach(jsfile ${js_in_files})
-        set(jsmin "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}.min")
-        add_custom_command(OUTPUT ${jsmin}
-            COMMAND ${YUI_EXECUTABLE}
-            ARGS "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}" -o "${jsmin}"
-	    DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}"
-        )
-        set(js_out_files ${js_out_files} ${jsmin})
-    endforeach(jsfile)
-endif()
-add_custom_target(minimisejs ALL DEPENDS ${js_out_files})
-
-find_program(GZIP gzip)
-if(GZIP AND (NOT ${CMAKE_BUILD_TYPE} STREQUAL "Debug"))
-    message(STATUS "JS files will be compressed before install.")
-    foreach(jsfile ${js_in_files})
-	set(jsmin "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}.min")
-        set(jsgz "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}.min.gz")
-       add_custom_command(OUTPUT ${jsgz}
-            COMMAND ${GZIP}
-            ARGS "${jsmin}" -f -q -k
-	    DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}"
-        )
-        install(FILES ${jsgz}
-            DESTINATION "${CMAKE_INSTALL_PREFIX}/www/"
-            RENAME ${jsfile}.gz
-        )
-        set(gz_out_files ${gz_out_files} ${jsgz})
-    endforeach(jsfile)
-else()
-    message(STATUS "JS files will be installed unmodified.")
-    foreach(jsfile ${js_in_files})
-        install(FILES ${jsfile}
-            DESTINATION "${CMAKE_INSTALL_PREFIX}/www/"
-        )
-        set(gz_out_files ${gz_out_files} ${gzfile})
-    endforeach(jsfile)
-endif()
-add_custom_target(compressjs ALL DEPENDS ${gz_out_files})
-
-add_dependencies(compressjs minimisejs)
 ## Link libraries
 
 option(USE_PYTHON "Use Python as a scripting language" NO)
