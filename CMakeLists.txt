@@ -179,7 +179,7 @@ IF(YUI AND GZIP AND (NOT ${CMAKE_BUILD_TYPE} STREQUAL "Debug"))
             COMMAND ${YUI}
             ARGS "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}" -o "${jsmin}"
             COMMAND ${GZIP}
-            ARGS "-f -q -k ${jsmin}" 
+            ARGS -f -q -k "${jsmin}" 
             DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}"
         )
         install(FILES ${jsgz}
@@ -198,7 +198,7 @@ ELSEIF(((NOT YUI) AND GZIP) OR (YUI AND GZIP AND (${CMAKE_BUILD_TYPE} STREQUAL "
         set(jsgz "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}.gz")
         add_custom_command(OUTPUT ${jsgz}
             COMMAND ${GZIP}
-            ARGS "-f -q -k ${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}"
+            ARGS -f -q -k "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}"
             DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}"
         )
         install(FILES ${jsgz}
