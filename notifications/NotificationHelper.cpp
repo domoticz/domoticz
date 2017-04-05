@@ -1093,12 +1093,16 @@ bool CNotificationHelper::CustomRecoveryMessage(const uint64_t ID, std::string &
 		{
 			if (itt2->ID == ID)
 			{
-				std::vector<std::vector<std::string> > result;
-				result = m_sql.safe_query("SELECT ID FROM Notifications WHERE (ID=='%" PRIu64 "') AND (Params=='%q')", itt2->ID, itt2->Params.c_str());
-				if (result.size() == 0)
-					return false;
-
 				std::vector<std::string> splitresults;
+				if (isRecovery)
+				{
+					StringSplit(itt2->Params, ";", splitresults);
+					if (splitresults.size() < 4)
+						return false;
+					if (splitresults[3] != "1")
+						return false;
+				}
+
 				std::string szTmp;
 				StringSplit(itt2->CustomMessage, ";;", splitresults);
 				if (msg.empty())
@@ -1136,6 +1140,10 @@ bool CNotificationHelper::CustomRecoveryMessage(const uint64_t ID, std::string &
 					if (!splitresults[0].empty())
 						szTmp = splitresults[0];
 				}
+				std::vector<std::vector<std::string> > result;
+				result = m_sql.safe_query("SELECT ID FROM Notifications WHERE (ID=='%" PRIu64 "') AND (Params=='%q')", itt2->ID, itt2->Params.c_str());
+				if (result.size() == 0)
+					return false;
 
 				m_sql.safe_query("UPDATE Notifications SET CustomMessage='%q' WHERE ID=='%" PRIu64 "'", szTmp.c_str(), itt2->ID);
 				itt2->CustomMessage = szTmp;
