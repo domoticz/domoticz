@@ -307,12 +307,25 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 
 				case 1: // shutterbox
 				{
-					int percentage = output->LIGHTING2.level * 100 / 15;
+					int percentage = 0;
+					switch (output->LIGHTING2.cmnd) {
+						case light2_sOn:
+							percentage = 0;
+							break;
+						case light2_sOff:
+							percentage = 100;
+							break;
+						default:
+							percentage = output->LIGHTING2.level * 100 / 15;
+							break;
+					}
+					
 
 					Json::Value root = SendCommand(IPAddress, "/s/p/" + boost::to_string(percentage));
-					if (root.empty())
-						return false;
-
+ 
+ 					if (root.empty())
+  						return false;
+					
 					if (IsNodeExists(root, "state") == false)
 						return false;
 
