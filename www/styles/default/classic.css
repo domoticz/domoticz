@@ -86,11 +86,11 @@ tr, #name{
     display:block;
 }
 
-#dashcontent #bigtext span {
+#dashcontent [class^="span"] #bigtext span {
     border-radius:3px;
 }
 
-#dashcontent .selectorlevels {
+#dashcontent [class^="span"] .selectorlevels {
     width:100%;
     height:25px;
     position:relative;
@@ -98,9 +98,9 @@ tr, #name{
     margin-top:0!important
 }
 
-#dashcontent .selectorlevels .ui-buttonset .ui-button{height:25px}
+#dashcontent [class^="span"] .selectorlevels .ui-buttonset .ui-button{height:25px}
 
-#dashcontent .selectorlevels .ui-buttonset{
+#dashcontent [class^="span"] .selectorlevels .ui-buttonset{
     height:25px;
     display: flex;
     flex-flow: row nowrap;
@@ -108,7 +108,7 @@ tr, #name{
     margin-right:0;
 }
 
-#dashcontent td > div.dimslider{
+#dashcontent [class^="span"] td > div.dimslider{
     left:0;
     top:0;
     width:100%!important;
@@ -121,7 +121,7 @@ tr, #name{
     box-sizing: border-box;
 }
 
-#dashcontent .dimslider .ui-slider-handle{
+#dashcontent [class^="span"] .dimslider .ui-slider-handle{
     top:-9px;
 }
 
@@ -206,8 +206,6 @@ table.dataTable {
     color: #fff!important;
     border-color: #292929!important;
 }
-
-
 
 #img img, 
 #img1 img,

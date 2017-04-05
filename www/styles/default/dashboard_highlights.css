@@ -69,12 +69,27 @@
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmall tr #img1{
         float: left!important;
         width: 30%;
-        max-width:80px;
-        top: 14px;
+        /*top: 14px;*/
+        position: relative;        
         left: 5%;
+        top: 35%;        
+        border-bottom: 2px solid red;
+        /*height: 1px;*/
+        display: flex;
+        align-items: center;
+        flex-direction: row;
     }
 
 
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmall tr #img img,
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmall tr #img1 img{
+        width: 100%;
+        height: auto;
+        max-width: 80px;
+        box-shadow: none;
+        margin-left: auto;      
+    }
+    
     
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #img,
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #img1{
@@ -101,7 +116,9 @@
         height:20%;
         max-width:60px!important;
         max-height:60px!important;
-        margin: 0 auto;
+        margin: 0 auto;(
+          
+        
     }
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #bigtext{
         right:10px; 

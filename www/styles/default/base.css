@@ -436,7 +436,7 @@ body #dashcontent table > tbody > tr{
 }
 
 
-#name {
+[class^="span"] #name {
     width: 100%;
     height: 40px!important;
     font-size: 100%!important;
@@ -454,7 +454,7 @@ body #dashcontent table > tbody > tr{
     cursor: move;
 }
 
-#dashcontent #name {
+#dashcontent [class^="span"] #name {
     align-items: center;
     padding: 21px 0 0 20px!important;
     height:55px!important;
@@ -489,16 +489,16 @@ body #dashcontent table > tbody > tr{
     right: 55px;
 }
 
-#bigtext span{
+[class^="span"] #bigtext span{
     background-color: #D4E1EE;
     padding: 3px 10px 3px 3px;
 }
-#dashcontent #bigtext span{
+#dashcontent [class^="span"] #bigtext span{
     background-color: #D4E1EE;
     padding: 0;
 }
 
-#lastupdate {
+[class^="span"] #lastupdate {
     color: #777;
     font-style: normal;
     white-space: nowrap;
@@ -514,7 +514,7 @@ body #dashcontent table > tbody > tr{
     font-style: normal!important;
 }
 
-#status {
+[class^="span"] #status {
     color: #777;
     white-space: nowrap;
     overflow: visible;
@@ -529,7 +529,7 @@ body #dashcontent table > tbody > tr{
     height:0;
 }
 
-#dashcontent #status{
+#dashcontent [class^="span"] #status{
     display:none;
 }
 
@@ -561,7 +561,7 @@ body #dashcontent table > tbody > tr{
     font-style: normal!important;
 }
 
-#type {
+[class^="span"] #type {
     color: #777;
     white-space: nowrap;
     text-indent: 184px;
@@ -571,7 +571,6 @@ body #dashcontent table > tbody > tr{
     width: 100%;
     height:0;
 }
-
 
 .span3 #type > .dimslider,
 .span4 #type > .dimslider {
@@ -583,8 +582,7 @@ body #dashcontent table > tbody > tr{
     width: calc(100% - 40px)!important;
 }
 
-#dashcontent #type > .dimslider,
-#dashcontent #type > .dimslider {
+#dashcontent [class^="span"] #type > .dimslider {
     position: relative;
     margin: 10px 0 0 0!important;
     top: 0px;
@@ -958,6 +956,7 @@ table.dataTable tbody img{
     align-items: center;
     justify-content: space-between;
 }
+
 .divider .selectorlevels .ui-buttonset{
     height:36px;
 }
@@ -1200,88 +1199,173 @@ table.dataTable tbody img{
 
 /* MOBILE */
 
-tbody{
+/*  NEW STYLING  */
+
+body.dashMobile #dashcontent {width:100%}
+
+table.mobileitem{
+    width: 100%;
+    padding: 0;
+    margin-top:20px;
+    border-bottom-right-radius: 0;
+}
+
+table.mobileitem > thead{
+    display: flex;
+}
+
+table.mobileitem > thead > tr {
+    background-color:#dce9f9;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    display:flex;
+}
+table.mobileitem > thead > tr > th:first-of-type{
+    flex-grow:1;
+}
+
+.mobileitem .btn-mini{
+/*    height: 80%;
+    margin-left: 2px;
+    margin-top:10%;
+    margin-bottom:10%;*/
+    position:initial;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.mobileitem th{
+    display:inline;
+    background-color: transparent;
+}
+
+.mobileitem tr{
+    margin: 0!important;
+    padding: 0!important;
+    box-sizing: border-box;
+    height: auto;
+    display: flex;
+    flex-grow: 1;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+}
+
+
+/* First content row of each item */
+
+.mobileitem td{
+    height: auto!important;
+    margin-right: 0!important;
+    /*word-break: break-word;*/
+    color: #333!important;
+    background-color: white!important;
+    background-image: none!important;
+    display: inline-flex;
+    width: auto;
+    flex-grow: 1;
+    flex-shrink: 1;
+    align-items: center; 
+    padding:5px!important;
+    height:auto!important;
+}
+
+.mobileitem td:last-child{
+    flex-wrap:wrap;
+}
+
+.mobileitem td label{
+    white-space: nowrap;
     height:100%;
 }
-
-.mobileitem{
-    margin-top:20px;
+.mobileitem td#name{
+    font-size: 100%;
+    position: inherit;
+    padding:0 0 0 10px!important;
+    height:auto;
+    min-height:40px;
+    padding: 10px!important;
 }
 
-.mobileitem > tbody > tr{
-    position:relative;
+.mobileitem #name img {
+    margin-right: 5px;
+    vertical-align: text-bottom;
+    position: initial;
+    height:auto;
 }
 
-.mobileitem td:first-child{
-    font-size:15px;
+#dashcontent .mobileitem td#status{
+    display: flex;
+    position:initial;
+    flex-direction: row;
+    font-size: 100%!important;
+    white-space: normal;
+    width: auto;
+    justify-content: flex-end;
+    padding: 0;
+    flex-grow: 1;
+    flex-shrink: 1;
+    margin: 0;
+    text-align: end;
+}
+
+#dashcontent .mobileitem td#status #img,
+#dashcontent .mobileitem td#status #img1,
+#dashcontent .mobileitem td#status #img2,
+#dashcontent .mobileitem td#status #img3{
+    height:100%;
+    position:initial;
+}
+
+
+
+
+/* and now for the second TR's with colspan=2 */
+
+td[colspan]:not([colspan="1"]){
     padding:10px;
 }
 
-.mobileitem img{
-    margin-right:5px;
-    vertical-align: text-bottom;
-}
-
-#dashcontent .mobileitem #status{
-    display:table-cell;
-    position:relative;
-    top:0;
-    left:0;
-    font-size:100%!important;
-    white-space: normal;
-    width:40%;
-}
+td[colspan]:not([colspan="1"])
 
 .mobileitem #type{
     text-indent:0!important;
     font-size:0;
 }
 
-.mobileitem #type .selectorlevels{
+.mobileitem .selectorlevels{
     font-size:80%;
     text-indent:0!important;
+    height:auto;
+    display:initial!important;
+    width: 100%;
+    padding:5px 10px 5px 10px;
+    margin: 0 0 0 0px!important;
+}
+
+#dashcontent .mobileitem .selectorlevels  .ui-buttonset{
+    height:auto;
 }
 
 .mobileitem #type .selectorlevels label,
 .mobileitem #type .selectorlevels span{
     font-size:80%;
-        text-indent:0!important;
+    text-indent:0!important;
+}
+
+
+#dashcontent .mobileitem .selectorlevels .ui-buttonset .ui-button{
+    min-height:30px;
 }
 
 .mobileitem #type .selectorlevels .ui-buttonset{height:50px;}
 
-.mobileitem .btn-mini{margin-left:5px}
-
-#dashcontent .mobileitem #img{
-    position:initial;
-}
-
-#dashcontent .mobileitem td{
-    height:auto!important;
-}
-
-#dashcontent .mobileitem .btn:last-of-type{margin-right:5px;}
-
-#dashcontent .mobileitem #name{
-    font-size:16px;
-    display:table-cell;
-    /*height:40px!important;*/
-    position:relative;
-    width:60%;
-    padding:0 0 0 10px !important;
-    border-style: ridge!important;
-    border-width:1px!important;
-    border-right-width: 0px!important;
-    border-right-style: none!important;
-}
-
 #dashcontent .mobileitem td > div.dimslider{
-    top: -5px!important;
+    top: 0!important;
     height: 20px;
-    left:10px; 
-    width:90%!important;
-    width:90%!important;
-    /*width: calc(100% - 20px);*/
+    left:0; 
+    width:95%;
+    margin-right:10px;
     border: 5px solid white;
 }
 
@@ -1292,26 +1376,10 @@ tbody{
 
 #dashcontent .mobileitem .ui-slider-handle{
     top:-7px;
+    width:20px;
+    height:20px;
+    margin-left: -10px;
 }
-
-#dashcontent .mobileitem .selectorlevels{
-    display:initial!important;
-    width: calc(100% - 20px)!important;
-    left:0!important;
-    height:35px;
-    top:0;
-    margin: 0 0 0 0px!important;
-    text-indent: 0;
-}
-
-#dashcontent .mobileitem .selectorlevels  .ui-buttonset{
-    height:auto;
-}
-
-#dashcontent .mobileitem td:last-of-type{
-    top:0;
-}
-
 
 
 /* Media queries */

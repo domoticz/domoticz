@@ -458,7 +458,7 @@ display:block
 
 
 /*  A little vertical shrinking on short screens */
-@media all and (max-height: 690px) {
+@media all and (max-height: 690px) and (min-width : 480px {
     
     #appnavbar a img{ 
         margin-top:5px!important;
@@ -485,7 +485,7 @@ display:block
 }
 
 /*  for very short screens  */
-@media all and (max-height: 480px) {
+@media all and (max-height: 480px) and (min-width : 480px){
     
     /*
     .navbar .container .brand img{left:11px;}
