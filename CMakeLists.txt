@@ -165,77 +165,76 @@ file(GLOB_RECURSE js_in_files RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/www/" *.js)
 
 option(MINIFY_JS "Minify JavaScript files" YES)
 unset(YUI CACHE)
-message(STATUS ${YUI})
+unset(GZIP CACHE)
 find_program(YUI yui-compressor)
-message(STATUS ${YUI})
-IF(YUI AND (NOT ${CMAKE_BUILD_TYPE} STREQUAL "Debug"))
-    message(STATUS "yui-compressor found, JS files will be minified before install.")
+find_program(GZIP gzip2)
+
+# Both yui and gzip are available, we are not in debug mode
+IF(YUI AND GZIP AND (NOT ${CMAKE_BUILD_TYPE} STREQUAL "Debug"))
+    message(STATUS "yui-compressor and gzip found and not build_type=Debug, JS files will be minified and compressed before install.")
     foreach(jsfile ${js_in_files})
         set(jsmin "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}.min")
-        add_custom_command(OUTPUT ${jsmin}
+        set(jsgz "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}.gz")
+        add_custom_command(OUTPUT ${jsgz}
+            COMMAND ${YUI_EXECUTABLE}
+            ARGS "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}" -o "${jsmin}"
+            COMMAND ${GZIP}
+            ARGS "${jsmin}" -f -q -k 
+            DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}"
+        )
+        install(FILES ${jsgz}
+            DESTINATION "${CMAKE_INSTALL_PREFIX}/www/"
+        )
+        set(js_out_files ${js_out_files} ${jsgz})
+    endforeach(jsfile)
+
+# yui not available, gzip available, or both available but debug mode. 
+ELSEIF(((NOT YUI) AND GZIP) OR (YUI AND GZIP AND (${CMAKE_BUILD_TYPE} STREQUAL "Debug")))
+    message(WARNING "yui-compressor not available or build_type=Debug, JS files will be compressed but not minified")
+    foreach(jsfile ${js_in_files})
+        set(jsgz "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}.gz")
+        add_custom_command(OUTPUT ${jsgz}
+            COMMAND ${GZIP}
+            ARGS "${jsmin}" -f -q -k
+            DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}"
+        )
+        install(FILES ${jsgz}
+            DESTINATION "${CMAKE_INSTALL_PREFIX}/www/"
+        )
+        set(js_out_files ${js_out_files} ${jsgz})
+    endforeach(jsfile)
+
+# yui available, gzip not found, not in debug mode
+ELSEIF(YUI AND (NOT GZIP) AND (NOT ${CMAKE_BUILD_TYPE} STREQUAL "Debug"))
+    message(WARNING "yui-compressor found and not build_type=debug, gzip not found, JS files will be minified but not compressed before install.")
+    foreach(jsfile ${js_in_files})
+        set(jsmin "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}.min")
+        add_custom_command(OUTPUT ${jsgz}
             COMMAND ${YUI_EXECUTABLE}
             ARGS "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}" -o "${jsmin}"
             DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}"
         )
-        set(js_min_files ${js_min_files} ${jsmin})
-    endforeach(jsfile)
-    set(JSMIN true)
-    add_custom_target(minifyJS ALL DEPENDS ${js_min_files})
-    add_dependencies(minifyJS revisiontag)
-ELSE()
-    message(STATUS "yui-compressor not available, JS files will not be modified")
-    set(JSMIN false})
-ENDIF()
-
-option(COMPRESS_JS "Compress (gzip) JavaScript files" YES)
-unset(GZIP)
-find_program(GZIP gzip2)
-IF(GZIP)
-    message(STATUS "gzip found, JS files will be compressed before install.")
-    IF(JSMIN)
-        set(MIN ".min")	
-    ELSE(JSMIN)
-        set(MIN "")
-    ENDIF(JSMIN) 
-    foreach(jsfile ${js_in_files})
-        set(jsmin "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}${MIN}")
-        set(jsgz "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsmin}.gz")
-        add_custom_command(OUTPUT ${jsgz}
-            COMMAND ${GZIP}
-            ARGS "${jsmin}" -f -q -k
-            DEPENDS "${jsmin}" minifyJS
-        )
         install(FILES ${jsgz}
             DESTINATION "${CMAKE_INSTALL_PREFIX}/www/"
-            RENAME ${jsfile}.gz
+            RENAME ${jsfile}
         )
-        set(gz_out_files ${gz_out_files} ${jsgz})
+        set(js_out_files ${js_out_files} ${jsmin})
     endforeach(jsfile)
-ELSE(GZIP)
-    IF(JSMIN)
-        message(STATUS "JS files will be installed minified but uncompressed.")
-        foreach(jsfile ${js_in_files})
-            install(FILES ${jsfile}.min
-                DESTINATION "${CMAKE_INSTALL_PREFIX}/www/"
-                RENAME ${jsfile}
-            )
-            set(gz_out_files ${gz_out_files} ${jsfile})
-        endforeach(jsfile)
-    ELSE(JSMIN)
-        message(STATUS "JS files will be downloaded untouched (un-minified and un-compressed).")
-        foreach(jsfile ${js_in_files})
-            install(FILES ${jsfile}
-                DESTINATION "${CMAKE_INSTALL_PREFIX}/www/"
-            )
-            set(gz_out_files ${gz_out_files} ${jsfile})
-        endforeach(jsfile)
-    ENDIF(JSMIN)
-ENDIF(GZIP)
-add_custom_target(compressJS ALL DEPENDS ${gz_out_files})
-add_dependencies(compressJS revisiontag)
-IF(JSMIN)         
-    add_dependencies(compressJS minifyJS)
-ENDIF(JSMIN)
+
+# yui and gzip both not availabl and default case
+ELSE()
+    message(WARNING "yui and gzip not available, installing JavaScript file un-modified")
+    foreach(jsfile ${js_in_files})
+        install(FILES ${jsfile}
+            DESTINATION "${CMAKE_INSTALL_PREFIX}/www/"
+        )
+        set(js_out_files ${js_out_files} ${jsfile})
+    endforeach(jsfile)
+ENDIF()
+
+add_custom_target(optimiseJS ALL DEPENDS ${js_out_files})
+add_dependencies(optimiseJS revisiontag)
+
 #set(CMAKE_EXE_LINKER_FLAGS "-static")
 
 # Macro for setting up precompiled headers. Usage:
