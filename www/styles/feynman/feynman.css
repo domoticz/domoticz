@@ -6,10 +6,10 @@
 }
 
 @font-face {
-	font-family: "LatoThin";
+	font-family: "LatoLight";
 	font-style: normal;
 	src: url('fonts/Lato-Light.ttf');
-	src: local('Lato Thin'), url('fonts/Lato-Light.ttf') format('truetype');
+	src: local('Lato Light'), url('fonts/Lato-Light.ttf') format('truetype');
 }
 
 body{
@@ -71,7 +71,7 @@ body table#itemtabledoubleicon tbody tr, body table#itemtable tbody tr, body tab
 }
 
 #holder h1, #holder h2, #holder h3{
-    font-family: "LatoThin", sans-serif;
+    font-family: "LatoLight", sans-serif;
     border-bottom: 1px dotted white;
     color: #fff;
 }
@@ -382,7 +382,7 @@ body:hover .ui-dialog {
 }
 
 .ui-dialog .ui-dialog-titlebar span{
-    font-family: "LatoThin";
+    font-family: "LatoLight";
 }
 
 .ui-dialog .ui-dialog-buttonpane{
@@ -480,7 +480,7 @@ body:hover .ui-dialog {
     
     /* Thinner items */
     
-    #dashcontent .selectorlevels{
+    #dashcontent [class^="span"] .selectorlevels{
         top:7px;
         left:50%;
         width:35%;
@@ -490,7 +490,7 @@ body:hover .ui-dialog {
         height:0;
     }
     
-    #dashcontent .selectorlevels .ui-buttonset{
+    #dashcontent [class^="span"] .selectorlevels .ui-buttonset{
         height:55px;
         display: flex;
         flex-flow: row wrap;
@@ -499,25 +499,25 @@ body:hover .ui-dialog {
         top:-62px;
     }
     
-    #dashcontent .selectorlevels .ui-selectmenu-button{
+    #dashcontent [class^="span"] .selectorlevels .ui-selectmenu-button{
         top: -62px!important;
         height:55px;
     }
     
-    #dashcontent .ui-selectmenu-button{
+    #dashcontent [class^="span"] .ui-selectmenu-button{
         position:relative;
         right:-1px;
         top:16px;
         width:100%!important;
     }
     
-    #dashcontent .ui-selectmenu-button span.ui-selectmenu-text{
+    #dashcontent [class^="span"] .ui-selectmenu-button span.ui-selectmenu-text{
         text-align:right;
         background-color:#D4E1EE;
         align-content:flex-end;
     }
     
-    #dashcontent .ui-selectmenu-button .ui-state-default .ui-icon{
+    #dashcontent [class^="span"] .ui-selectmenu-button .ui-state-default .ui-icon{
         background-image: url("images/ui-icons_222222_256x240.png")
     }
     

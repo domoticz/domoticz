@@ -154,3 +154,14 @@ This can give a nice effect with background images. */
 
 } /*  End of mobile protection  */
 
+/*  Fix for people who use mobile dashboard on the desktop  */
+#dashcontent .mobileitem td.name,
+#dashcontent table.mobileitem td#name{
+    color:#333!important;
+    background-color:white!important;
+    background-image:none!important;
+}
+#dashcontent table.mobileitem .selectorlevels .ui-buttonset,
+#dashcontent table.mobileitem .selectorlevels .ui-selectmenu-button{
+    top:0!important
+}
