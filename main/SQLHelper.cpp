@@ -2221,11 +2221,13 @@ bool CSQLHelper::OpenDatabase()
                 if (dbversion < 114)
                 {
                         //Set default values for new parameters in EcoDevices and Teleinfo EDF
-                        std::stringstream szQuery1, szQuery2;
+                        std::stringstream szQuery1, szQuery2, szQuery3;
 			szQuery1 << "UPDATE Hardware SET Mode1 = 0, Mode2 = 60 WHERE Type =" << HTYPE_ECODEVICES ;
                         query(szQuery1.str());
                         szQuery2 << "UPDATE Hardware SET Mode1 = 0, Mode2 = 0, Mode3 = 60 WHERE Type =" << HTYPE_TeleinfoMeter ;
                         query(szQuery2.str());
+			szQuery3 << "UPDATE Hardware SET DataTimeout = DataTimeout + 5 WHERE DataTimeout >0";
+                        query(szQuery3.str());
                 }
 
 	}

@@ -8,11 +8,12 @@ http://gce-electronics.com/en/nos-produits/409-module-teleinfo-eco-devices.html
 Detailed information on the API can be found at
 http://www.touteladomotique.com/index.php?option=com_content&id=985:premiers-pas-avec-leco-devices-sur-la-route-de-la-maitrise-de-lenergie&Itemid=89#.WKcK0zi3ik5
 
-Version 3.0
+Version 3.1
 Author Blaise Thauvin
 
 Version history
 
+3.1   01-04-2017 Added basic support for recently launched EcoDevices RT2
 3.0   15-03-2017 Merge Teleinfo protocol processing with other hardware using common class CTeleinfoBase
 2.2   05-03-2017 Move from JSON to XML API on EcoDevices in order to retreive more Teleinfo variables (current, alerts...)
 2.1   27-02-2017 Switch from sDecodeRX to standard helpers (Sendxxxxx) for updating devices.

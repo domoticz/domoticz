@@ -1,8 +1,8 @@
 /*
 Domoticz Software : http://domoticz.com/
 File : TeleinfoSerial.cpp
-Author : Nicolas HILAIRE
-Version : 2.2
+Author : Nicolas HILAIRE, Blaise Thauvin
+Version : 2.3
 Description : This class decodes the Teleinfo signal from serial/USB devices before processing them
 
 History :
@@ -18,6 +18,7 @@ History :
 			   a shared class to process Teleinfo protocol (Blaise Thauvin)
 - 2017-03-21 : 2.1 Fixed bug sending too many updates
 - 2017-03-26 : 2.2 Fixed bug affecting tree-phases users. Consequently, simplified code
+- 2017-04-01 : 2.3 Added RateLimit, flag to ignore CRC checks, and new CRC computation algorithm available on newer meters
 */
 
 #include "stdafx.h"

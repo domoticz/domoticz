@@ -2,7 +2,7 @@
 Domoticz Software : http://domoticz.com/
 File : TeleinfoBase.cpp
 Author : Blaise Thauvin
-Version : 1.2
+Version : 1.3
 Description : This class is used by various Teleinfo hardware decoders to process and display data
 		  It is currently used by EcoDevices, TeleinfoSerial
 		  Detailed information on the Teleinfo protocol can be found at (version 5, 16/03/2015)
@@ -13,6 +13,7 @@ History :
 1.0 2017-03-15 : Release candidate
 1.1 2017-03-18 : Updated to benefit from new messages in Alert sensors rather than simple text sensors
 1.2 2017-03-21 : Various bug fix and reverting to using P1SmartMeter as users requested
+1.2 2017-04-01 : Added RateLimit
 */
 
 #include "stdafx.h"
