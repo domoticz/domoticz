@@ -474,7 +474,6 @@ bool CNotificationHelper::CheckAndHandleAmpere123Notification(
 			StringSplit(itt->Params, ";", splitresults);
 			if (splitresults.size() < 3)
 				continue; //impossible
-			std::vector<std::string> splitcustom;
 			std::string ntype = splitresults[0];
 			std::string recoverymsg;
 			std::string custommsg;
@@ -968,7 +967,6 @@ void CNotificationHelper::CheckAndHandleLastUpdateNotification()
 				{
 					extern time_t m_StartTime;
 					time_t btime = mytime(NULL);
-					std::vector<std::string> splitcustom;
 					std::string msg;
 					std::string szExtraData;
 					std::string recoverymsg;
