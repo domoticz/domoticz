@@ -167,7 +167,7 @@ option(MINIFY_JS "Minify JavaScript files" YES)
 unset(YUI CACHE)
 unset(GZIP CACHE)
 find_program(YUI yui-compressor)
-find_program(GZIP gzip2)
+find_program(GZIP gzip)
 
 # Both yui and gzip are available, we are not in debug mode
 IF(YUI AND GZIP AND (NOT ${CMAKE_BUILD_TYPE} STREQUAL "Debug"))
@@ -176,7 +176,7 @@ IF(YUI AND GZIP AND (NOT ${CMAKE_BUILD_TYPE} STREQUAL "Debug"))
         set(jsmin "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}.min")
         set(jsgz "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}.gz")
         add_custom_command(OUTPUT ${jsgz}
-            COMMAND ${YUI_EXECUTABLE}
+            COMMAND ${YUI}
             ARGS "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}" -o "${jsmin}"
             COMMAND ${GZIP}
             ARGS "${jsmin}" -f -q -k 
@@ -187,6 +187,8 @@ IF(YUI AND GZIP AND (NOT ${CMAKE_BUILD_TYPE} STREQUAL "Debug"))
         )
         set(js_out_files ${js_out_files} ${jsgz})
     endforeach(jsfile)
+    add_custom_target(optimiseJS ALL DEPENDS ${js_out_files})
+    add_dependencies(optimiseJS revisiontag)
 
 # yui not available, gzip available, or both available but debug mode. 
 ELSEIF(((NOT YUI) AND GZIP) OR (YUI AND GZIP AND (${CMAKE_BUILD_TYPE} STREQUAL "Debug")))
@@ -195,7 +197,7 @@ ELSEIF(((NOT YUI) AND GZIP) OR (YUI AND GZIP AND (${CMAKE_BUILD_TYPE} STREQUAL "
         set(jsgz "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}.gz")
         add_custom_command(OUTPUT ${jsgz}
             COMMAND ${GZIP}
-            ARGS "${jsmin}" -f -q -k
+            ARGS "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}" -f -q -k
             DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}"
         )
         install(FILES ${jsgz}
@@ -203,6 +205,8 @@ ELSEIF(((NOT YUI) AND GZIP) OR (YUI AND GZIP AND (${CMAKE_BUILD_TYPE} STREQUAL "
         )
         set(js_out_files ${js_out_files} ${jsgz})
     endforeach(jsfile)
+    add_custom_target(optimiseJS ALL DEPENDS ${js_out_files})
+    add_dependencies(optimiseJS revisiontag)
 
 # yui available, gzip not found, not in debug mode
 ELSEIF(YUI AND (NOT GZIP) AND (NOT ${CMAKE_BUILD_TYPE} STREQUAL "Debug"))
@@ -210,7 +214,7 @@ ELSEIF(YUI AND (NOT GZIP) AND (NOT ${CMAKE_BUILD_TYPE} STREQUAL "Debug"))
     foreach(jsfile ${js_in_files})
         set(jsmin "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}.min")
         add_custom_command(OUTPUT ${jsgz}
-            COMMAND ${YUI_EXECUTABLE}
+            COMMAND ${YUI}
             ARGS "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}" -o "${jsmin}"
             DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}"
         )
@@ -220,20 +224,19 @@ ELSEIF(YUI AND (NOT GZIP) AND (NOT ${CMAKE_BUILD_TYPE} STREQUAL "Debug"))
         )
         set(js_out_files ${js_out_files} ${jsmin})
     endforeach(jsfile)
+    add_custom_target(optimiseJS ALL DEPENDS ${js_out_files})
+    add_dependencies(optimiseJS revisiontag)
 
-# yui and gzip both not availabl and default case
+# yui and gzip both not available, default case
 ELSE()
     message(WARNING "yui and gzip not available, installing JavaScript file un-modified")
     foreach(jsfile ${js_in_files})
-        install(FILES ${jsfile}
+        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}
             DESTINATION "${CMAKE_INSTALL_PREFIX}/www/"
         )
         set(js_out_files ${js_out_files} ${jsfile})
     endforeach(jsfile)
 ENDIF()
-
-add_custom_target(optimiseJS ALL DEPENDS ${js_out_files})
-add_dependencies(optimiseJS revisiontag)
 
 #set(CMAKE_EXE_LINKER_FLAGS "-static")
 
