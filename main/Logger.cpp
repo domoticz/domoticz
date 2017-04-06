@@ -324,6 +324,11 @@ void CLogger::EnableLogTimestamps(const bool bEnableTimestamps)
 	m_bEnableLogTimestamps = bEnableTimestamps;
 }
 
+bool CLogger::IsLogTimestampsEnabled()
+{
+	return m_bEnableLogTimestamps;
+}
+
 std::list<CLogger::_tLogLineStruct> CLogger::GetLog(const _eLogLevel lType)
 {
 	boost::unique_lock< boost::mutex > lock(m_mutex);
@@ -371,7 +376,7 @@ void CLogger::SetFilterString(std::string  &pFilter)
 }
 
 //return true if trace enable
-bool CLogger::isTraceEnable()
+bool CLogger::isTraceEnabled()
 {
 	return (m_verbose_level==	VBL_TRACE );
 }

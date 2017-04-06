@@ -384,6 +384,10 @@ void C1WireByOWFS::StartSimultaneousTemperatureRead()
 	}
 }
 
+void C1WireByOWFS::PrepareDevices()
+{
+}
+
 bool C1WireByOWFS::IsValidDir(const struct dirent*const de)
 {
     // Check dirent type

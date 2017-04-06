@@ -426,6 +426,10 @@ void C1WireForWindows::StartSimultaneousTemperatureRead()
 {
 }
 
+void C1WireForWindows::PrepareDevices()
+{
+}
+
 void C1WireForWindows::SetLightState(const std::string& sId,int unit,bool value, const unsigned int level)
 {
    if (m_Socket==INVALID_SOCKET)

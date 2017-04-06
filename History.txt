@@ -31,6 +31,7 @@ Version 3.xxxx (January xth 2017)
 - Implemented: RFXtrx Kangtai / Cotech implemented
 - Implemented: SolarEdgeAPI, support for multiple inverters
 - Implemented: Support for Ble Box hardware
+- Implemented: Support for different usage/return costs for electricity
 - Implemented: Support for Intergas InComfort LAN2RF Gateway
 - Implemented: Support for Open Weather Map
 - Implemented: Support for Open Web Net

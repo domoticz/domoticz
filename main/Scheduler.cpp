@@ -402,6 +402,7 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 	localtime_r(&atime, &ltime);
 	int isdst = ltime.tm_isdst;
 	struct tm tm1;
+	tm1.tm_isdst = -1;
 
 	unsigned long HourMinuteOffset = (pItem->startHour * 3600) + (pItem->startMin * 60);
 
@@ -558,17 +559,16 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 	else
 		return false; //unknown timer type
 
-	if (bForceAddDay)
-	{
-		//item is scheduled for next day
-		rtime += (24 * 3600);
-	}
-
-	//Adjust timer by 1 day if we are in the past
-	while (rtime < atime + 60)
-	{
-		rtime += (24 * 3600);
-	}
+	// Adjust timer by 1 day if item is scheduled for next day or we are in the past
+        while (bForceAddDay || (rtime < atime + 60) )
+        {
+                if (tm1.tm_isdst == -1) // rtime was loaded from sunset/sunrise values; need to initialize tm1
+                        localtime_r(&rtime, &tm1);
+                struct tm tm2;
+                tm1.tm_mday++;
+                constructTime(rtime, tm2, tm1.tm_year + 1900, tm1.tm_mon + 1, tm1.tm_mday, tm1.tm_hour, tm1.tm_min, tm1.tm_sec, isdst);
+                bForceAddDay = false;
+        }
 
 	pItem->startTime = rtime;
 	return true;

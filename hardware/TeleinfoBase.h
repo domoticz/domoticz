@@ -34,6 +34,7 @@ class CTeleinfoBase : public CDomoticzHardwareBase
 	protected:
 		typedef struct _tTeleinfo
 		{
+			std::string ADCO;
 			std::string PTEC;
 			std::string OPTARIF;
 			uint32_t ISOUSC;
@@ -71,6 +72,7 @@ class CTeleinfoBase : public CDomoticzHardwareBase
 			std::string color;
 			time_t   last;
 			bool    triphase;
+			int    CRCmode1; // really a bool, but with a special "un-initialized state"
 			_tTeleinfo()
 			{
 				ISOUSC = 0;
@@ -104,6 +106,7 @@ class CTeleinfoBase : public CDomoticzHardwareBase
 				pAlertDemain = 10;
 				last = 0;
 				triphase = false;
+				CRCmode1 = 255; // means "bool not initialized yet", will be when running CRC Check for the first time
 			}
 		} Teleinfo;
 
