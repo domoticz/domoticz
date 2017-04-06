@@ -164,10 +164,10 @@ ENDIF (INCLUDE_SPI)
 file(GLOB_RECURSE js_in_files RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/www/" *.js)
 
 option(MINIFY_JS "Minify JavaScript files" YES)
-unset(YUI CACHE)
+unset(UGLY CACHE)
 unset(GZIP CACHE)
 unset (PARAM CACHE)
-find_program(YUI uuglifyjs)
+find_program(UGLY uglifyjs)
 find_program(GZIP gzip)
 IF (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
     MESSAGE(STATUS "Debug mode, variables in JavaScript will NOT be mangled")
@@ -179,13 +179,13 @@ ELSE()
 ENDIF()
 
 # Both uglifyjs and gzip are available, we are not in debug mode
-IF(YUI AND GZIP)
+IF(UGLY AND GZIP)
     message(STATUS "uglifyjs and gzip found, JS files will be minified and compressed before install.")
     foreach(jsfile ${js_in_files})
         set(jsmin "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}.min")
         set(jsgz "${jsmin}.gz")
         add_custom_command(OUTPUT ${jsgz}
-            COMMAND ${YUI}
+            COMMAND ${UGLY}
             ARGS "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}" "${PARAM}" --comment -o "${jsmin}"
             COMMAND ${GZIP}
             ARGS -f -q -k "${jsmin}" 
@@ -201,7 +201,7 @@ IF(YUI AND GZIP)
     add_dependencies(optimiseJS revisiontag)
 
 # uglifyjs not available, gzip available. 
-ELSEIF((NOT YUI) AND GZIP) 
+ELSEIF((NOT UGLY) AND GZIP) 
     message(WARNING "uglifyjs not available, JS files will be compressed but not minified")
     foreach(jsfile ${js_in_files})
         set(jsgz "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}.min.gz")
@@ -220,12 +220,12 @@ ELSEIF((NOT YUI) AND GZIP)
     add_dependencies(optimiseJS revisiontag)
 
 # uglifyjs available, gzip not found
-ELSEIF(YUI AND (NOT GZIP))
+ELSEIF(UGLY AND (NOT GZIP))
     message(WARNING "uglifyjs found, gzip not found, JS files will be minified but not compressed before install.")
     foreach(jsfile ${js_in_files})
         set(jsmin "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}.min")
         add_custom_command(OUTPUT ${jsmin}
-            COMMAND ${YUI}
+            COMMAND ${UGLY}
             ARGS "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}" ${PARAM} --comment -o "${jsmin}"
             DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}"
         )
