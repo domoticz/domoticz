@@ -67,7 +67,7 @@ CTeleinfoSerial::~CTeleinfoSerial()
 void CTeleinfoSerial::Init()
 {
 	m_bufferpos = 0;
-	m_counter = -2;				 // Make sure 1 full frame is processed before any update
+	m_counter = 0;				 // Make sure 1 full frame is processed before any update
 }
 
 
@@ -132,9 +132,10 @@ bool CTeleinfoSerial::WriteToHardware(const char *pdata, const unsigned char len
 void CTeleinfoSerial::readCallback(const char *data, size_t len)
 {
 	boost::lock_guard<boost::mutex> l(readQueueMutex);
-	if (!m_bEnableReceive)
-		return;					 //receiving not enabled
-
+	if (!m_bEnableReceive) {
+		_log.Log(LOG_ERROR, "(%s) Receiving is not enabled", Name.c_str());
+		return;
+	}
 	ParseData(data, static_cast<int>(len));
 }
 
@@ -189,8 +190,8 @@ void CTeleinfoSerial::MatchLine()
 	else if (label == "PPOT")  teleinfo.PPOT = value;
 	else if (label == "MOTDETAT") m_counter++;
 
-								 // at 1200 baud we have roughly one frame per second, check more frequently for alerts
-	if (m_counter > m_iRateLimit/2)
+	// at 1200 baud we have roughly one frame per 1,5 second, check more frequently for alerts. 
+	if (m_counter >= m_iBaudRate/600)
 	{
 		m_counter = 0;
 		#ifdef DEBUG_TeleinfoSerial
