@@ -167,7 +167,7 @@ option(MINIFY_JS "Minify JavaScript files" YES)
 unset(YUI CACHE)
 unset(GZIP CACHE)
 unset (PARAM CACHE)
-find_program(YUI uglifyjs)
+find_program(YUI uuglifyjs)
 find_program(GZIP gzip)
 IF (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
     MESSAGE(STATUS "Debug mode, variables in JavaScript will NOT be mangled")
@@ -204,14 +204,15 @@ IF(YUI AND GZIP)
 ELSEIF((NOT YUI) AND GZIP) 
     message(WARNING "uglifyjs not available, JS files will be compressed but not minified")
     foreach(jsfile ${js_in_files})
-        set(jsgz "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}.gz")
+        set(jsgz "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}.min.gz")
         add_custom_command(OUTPUT ${jsgz}
             COMMAND ${GZIP}
-            ARGS -f -q -k "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}"
+            ARGS -f -q -k -S .min.gz "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}"
             DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}"
         )
         install(FILES ${jsgz}
             DESTINATION "${CMAKE_INSTALL_PREFIX}/www/"
+	     RENAME ${jsfile}.gz
         )
         set(js_out_files ${js_out_files} ${jsgz})
     endforeach(jsfile)
