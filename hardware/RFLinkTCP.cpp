@@ -100,7 +100,7 @@ void CRFLinkTCP::Do_Work()
 			if (atime - m_LastReceivedTime > 30)
 			{
 				//Timeout
-				_log.Log(LOG_ERROR, "RFLink: Nothing received for more then 30 seconds, restarting...");
+				_log.Log(LOG_ERROR, "RFLink: Nothing received for more than 30 seconds, restarting...");
 				m_retrycntr = 0;
 				m_LastReceivedTime = atime;
 				m_bDoRestart = true;
