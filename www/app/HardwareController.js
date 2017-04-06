@@ -4942,15 +4942,14 @@ define(['app'], function (app) {
                     }
 
                     var sDataTimeout="";
-		    var iAdjusted=item.DataTimeout - 5;
                     if (item.DataTimeout==0) {
                         sDataTimeout=$.t("Disabled");
                     }
-                    else if (iAdjusted<60) {
-                        sDataTimeout=iAdjusted + " " + $.t("Seconds");
+                    else if (item.DataTimeout<60) {
+                        sDataTimeout=item.DataTimeout + " " + $.t("Seconds");
                     }
-                    else if (iAdjusted<3600) {
-                        var minutes=iAdjusted/60;
+                    else if (item.DataTimeout<3600) {
+                        var minutes=item.DataTimeout/60;
                         if (minutes==1) {
                             sDataTimeout=minutes + " " + $.t("Minute");
                         }
@@ -4958,8 +4957,8 @@ define(['app'], function (app) {
                             sDataTimeout=minutes + " " + $.t("Minutes");
                         }
                     }
-                    else if (iAdjusted<=86400) {
-                        var hours=iAdjusted/3600;
+                    else if (item.DataTimeout<=86400) {
+                        var hours=item.DataTimeout/3600;
                         if (hours==1) {
                             sDataTimeout=hours + " " + $.t("Hour");
                         }
@@ -4968,7 +4967,7 @@ define(['app'], function (app) {
                         }
                     }
                     else {
-                        var days=iAdjusted/86400;
+                        var days=item.DataTimeout/86400;
                         if (days==1) {
                             sDataTimeout=days + " " + $.t("Day");
                         }
