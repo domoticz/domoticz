@@ -2459,10 +2459,14 @@ void CEventSystem::exportDeviceStatesToLua(lua_State *lua_state)
 	typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
 	int additional_lines = 0;
 	int data_lines = 0;
+	const char* dev_type;
+	const char* sub_type;
 
 	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
 	{
 		_tDeviceStatus sitem = iterator->second;
+		dev_type = RFX_Type_Desc(sitem.devType, 1);
+		sub_type = RFX_Type_SubType_Desc(sitem.devType, sitem.subType);
 		additional_lines = 0;
 		data_lines = 0;
 
@@ -2493,10 +2497,10 @@ void CEventSystem::exportDeviceStatesToLua(lua_State *lua_state)
 		lua_pushstring(lua_state, "device");
 		lua_rawset(lua_state, -3);
 		lua_pushstring(lua_state, "devType");
-		lua_pushstring(lua_state, RFX_Type_Desc(sitem.devType, 1));
+		lua_pushstring(lua_state, dev_type);
 		lua_rawset(lua_state, -3);
 		lua_pushstring(lua_state, "subType");
-		lua_pushstring(lua_state, RFX_Type_SubType_Desc(sitem.devType, sitem.subType));
+		lua_pushstring(lua_state, sub_type);
 		lua_rawset(lua_state, -3);
 		lua_pushstring(lua_state, "switchType");
 		lua_pushstring(lua_state, Switch_Type_Desc((_eSwitchType)sitem.switchtype));
@@ -2548,7 +2552,59 @@ void CEventSystem::exportDeviceStatesToLua(lua_State *lua_state)
 
 		lua_pushstring(lua_state, "data");
 		lua_createtable(lua_state, 0, 0);
-					
+		
+		//get all svalues separate
+		std::vector<std::string> strarray;
+		StringSplit(sitem.sValue, ";", strarray);
+		
+		if (("Heating" == dev_type) && ("Zone" == sub_type))
+		{
+			lua_pushstring(lua_state, "setPoint");
+			lua_pushstring(lua_state, strarray[2].c_str());
+			lua_rawset(lua_state, -3);
+			lua_pushstring(lua_state, "heatingMode");
+			lua_pushstring(lua_state, strarray[3].c_str());
+			lua_rawset(lua_state, -3);
+		}
+		
+		if (("Lux" == dev_type) && ("Lux" == sub_type))
+		{
+			lua_pushstring(lua_state, "lux");
+			lua_pushstring(lua_state, strarray[1].c_str());
+			lua_rawset(lua_state, -3);
+		}
+
+		if (("General" == dev_type) && ("kWh" == sub_type))
+		{
+			lua_pushstring(lua_state, "whTotal");
+			lua_pushstring(lua_state, strarray[2].c_str());
+			lua_rawset(lua_state, -3);
+			lua_pushstring(lua_state, "whActual");
+			lua_pushstring(lua_state, strarray[1].c_str());
+			lua_rawset(lua_state, -3);
+		}
+		
+		if (("Usage" == dev_type) && ("Electric" == sub_type))
+		{
+			lua_pushstring(lua_state, "wActual");
+			lua_pushstring(lua_state, strarray[1].c_str());
+			lua_rawset(lua_state, -3);
+		}
+
+		if (("P1 Smart Meter" == dev_type) && ("Energy" == sub_type))
+		{
+			lua_pushstring(lua_state, "wActual");
+			lua_pushstring(lua_state, strarray[5].c_str());
+			lua_rawset(lua_state, -3);
+		}
+
+		if (("Thermostat" == dev_type) && ("SetPoint" == sub_type))
+		{
+			lua_pushstring(lua_state, "setPoint");
+			lua_pushstring(lua_state, strarray[1].c_str());
+			lua_rawset(lua_state, -3);
+		}
+
 		if (m_tempValuesByID.size() > 0)
 		{
 			std::map<uint64_t, float>::iterator it;
