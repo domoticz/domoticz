@@ -193,10 +193,11 @@ define(['app'], function (app) {
                     }
                 }
 
+                var extra = "";
                 if (text.indexOf("Evohome") >= 0)
                 {
-                    var baudrate = $("#hardwarecontent #divbaudrateevohome #combobaudrateevohome option:selected").val();
-
+                    var baudrate = $("#hardwarecontent #divevohome #combobaudrateevohome option:selected").val();
+                    extra = $("#hardwarecontent #divevohome #controllerid").val();
 
                     if (typeof baudrate == 'undefined')
                     {
@@ -239,21 +240,14 @@ define(['app'], function (app) {
                     }
                     Mode3 = ratelimitp1;
                 }
-
-                var extra="";
+               
                 if (text.indexOf("S0 Meter") >= 0)
                 {
 					extra = $.devExtra;
                 }
 
-                if (text.indexOf("P1 Smart Meter") >= 0)
-                {
-                    Mode2 = $("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked")?0:1;
-                }
-
-                if (text.indexOf("Evohome") >= 0 && text.indexOf("script") == -1)
-                {
-                    extra = $("#hardwarecontent #divcontrolleridevohome #controllerid").val();
+                if (text.indexOf("P1 Smart Meter") >= 0) {
+                    Mode2 = $("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked") ? 0 : 1;
                 }
                     
                 $.ajax({
@@ -1136,7 +1130,8 @@ define(['app'], function (app) {
 
                 if (text.indexOf("Evohome") >= 0)
                 {
-                    var baudrate=$("#hardwarecontent #divbaudrateevohome #combobaudrateevohome option:selected").val();
+                    var baudrate = $("#hardwarecontent #divevohome #combobaudrateevohome option:selected").val();
+                    extra = $("#hardwarecontent #divevohome #controllerid").val();
 
                     if (typeof baudrate == 'undefined')
                     {
@@ -1180,11 +1175,7 @@ define(['app'], function (app) {
                     Mode3 = ratelimitp1;
 
                 }
-                else if (text.indexOf("Evohome") >= 0 && text.indexOf("script") == -1)
-                {
-                    extra = $("#hardwarecontent #divcontrolleridevohome #controllerid").val();
-                }
-             
+            
                 $.ajax({
                      url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&port=" + encodeURIComponent(serialport) + "&extra=" + extra + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout +
                           "&Mode1=" + Mode1 ,
@@ -5034,8 +5025,8 @@ define(['app'], function (app) {
                             $("#hardwarecontent #hardwareparamsserial #comboserialport").val(data["IntPort"]);
                             if (data["Type"].indexOf("Evohome") >= 0)
                             {
-                                $("#hardwarecontent #divbaudrateevohome #combobaudrateevohome").val(data["Mode1"]);
-                                $("#hardwarecontent #divcontrolleridevohome #controllerid").val(data["Extra"]);
+                                $("#hardwarecontent #divevohome #combobaudrateevohome").val(data["Mode1"]);
+                                $("#hardwarecontent #divevohome #controllerid").val(data["Extra"]);
                             }
                             if (data["Type"].indexOf("MySensors") >= 0)
                             {
@@ -5252,7 +5243,7 @@ define(['app'], function (app) {
             $("#hardwarecontent #username").show();
             $("#hardwarecontent #lblusername").show();
 
-            $("#hardwarecontent #divbaudrateevohome").hide();
+            $("#hardwarecontent #divevohome").hide();
             $("#hardwarecontent #divbaudratemysensors").hide();
             $("#hardwarecontent #divbaudratep1").hide();
             $("#hardwarecontent #divcrcp1").hide();
@@ -5318,8 +5309,8 @@ define(['app'], function (app) {
             {
                 if (text.indexOf("Evohome") >= 0)
                 {
-                    $("#hardwarecontent #divbaudrateevohome").show();
-                    $("#hardwarecontent #divcontrolleridevohome").show();
+                    $("#hardwarecontent #divevohome").show();
+
                 }
                 if (text.indexOf("MySensors") >= 0)
                 {
@@ -5330,12 +5321,7 @@ define(['app'], function (app) {
                     $("#hardwarecontent #divratelimitp1").show();
                     $("#hardwarecontent #divcrcp1").show();
                 }
-                if (text.indexOf("Evohome") >= 0 && text.indexOf("script") == -1) {
-                    $("#hardwarecontent #divevohome").show();
-                }
-                else {
-                    $("#hardwarecontent #divevohome").hide();
-                }
+                
                 $("#hardwarecontent #divserial").show();
                 $("#hardwarecontent #divremote").hide();
                 $("#hardwarecontent #divlogin").hide();
@@ -5347,7 +5333,6 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").show();
                 $("#hardwarecontent #divlogin").hide();
-                $("#hardwarecontent #divevohome").hide();
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
                 if (text.indexOf("P1 Smart Meter") >= 0)
@@ -5363,7 +5348,6 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divlogin").show();
                 $("#hardwarecontent #username").hide();
                 $("#hardwarecontent #lblusername").hide();
-                $("#hardwarecontent #divevohome").hide();
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
 
@@ -5393,7 +5377,6 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").show();
                 $("#hardwarecontent #divlogin").show();
-                $("#hardwarecontent #divevohome").hide();
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
                 $("#hardwarecontent #hardwareparamsremote #tcpport").val(6144);
@@ -5405,7 +5388,6 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").show();
                 $("#hardwarecontent #divlogin").show();
-                $("#hardwarecontent #divevohome").hide();
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
             }
@@ -5415,7 +5397,6 @@ define(['app'], function (app) {
 				$("#hardwarecontent #divenecotoon").show();
                 $("#hardwarecontent #divremote").hide();
                 $("#hardwarecontent #divserial").hide();
-                $("#hardwarecontent #divevohome").hide();
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
             }
@@ -5425,7 +5406,6 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").hide();
                 $("#hardwarecontent #divlogin").hide();
-                $("#hardwarecontent #divevohome").hide();
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
                 $("#hardwarecontent #username").hide();
@@ -5443,7 +5423,6 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").hide();
                 $("#hardwarecontent #divlogin").show();
-                $("#hardwarecontent #divevohome").hide();
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
             }
@@ -5451,7 +5430,6 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").hide();
                 $("#hardwarecontent #divlogin").show();
-                $("#hardwarecontent #divevohome").hide();
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").show();
 
@@ -5472,7 +5450,6 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").hide();
                 $("#hardwarecontent #divlogin").hide();
-                $("#hardwarecontent #divevohome").hide();
                 $("#hardwarecontent #divunderground").show();
                 $("#hardwarecontent #divhttppoller").hide();
             }
@@ -5482,7 +5459,6 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divremote").show();
                 $("#hardwarecontent #divlogin").hide();
                 $("#hardwarecontent #divphilipshue").show();
-                $("#hardwarecontent #divevohome").hide();
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
                 $("#hardwarecontent #hardwareparamsremote #tcpport").val(80);
@@ -5508,7 +5484,6 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divlogin").hide();
                 $("#hardwarecontent #username").hide();
                 $("#hardwarecontent #lblusername").hide();
-                $("#hardwarecontent #divevohome").hide();
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
                 $("#hardwarecontent #divwinddelen").show();
@@ -5532,7 +5507,6 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").show();
                 $("#hardwarecontent #divlogin").hide();
-                $("#hardwarecontent #divevohome").hide();
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
                 $("#hardwarecontent #hardwareparamsremote #tcpport").val(20000);
@@ -5543,7 +5517,6 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").hide();
                 $("#hardwarecontent #divlogin").hide();
-                $("#hardwarecontent #divevohome").hide();
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
             }
@@ -5563,7 +5536,6 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").hide();
                 $("#hardwarecontent #divlogin").hide();
-                $("#hardwarecontent #divevohome").hide();
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
             }
