@@ -52,13 +52,20 @@ public:
 	//notification functions
 	void CheckAndHandleLastUpdateNotification();
 	void ReloadNotifications();
-	bool AddNotification(const std::string &DevIdx, const std::string &Param, const std::string &CustomMessage, const std::string &ActiveSystems, const int Priority, const bool SendAlways);
+	bool AddNotification(
+		const std::string &DevIdx,
+		const std::string &Param,
+		const std::string &CustomMessage,
+		const std::string &ActiveSystems,
+		const int Priority,
+		const bool SendAlways);
 	bool RemoveDeviceNotifications(const std::string &DevIdx);
 	bool RemoveNotification(const std::string &ID);
 	std::vector<_tNotification> GetNotifications(const uint64_t DevIdx);
 	std::vector<_tNotification> GetNotifications(const std::string &DevIdx);
 	void TouchNotification(const uint64_t ID);
 	void TouchLastUpdate(const uint64_t ID);
+	bool CustomRecoveryMessage(const uint64_t ID, std::string &msg, const bool isRecovery);
 	bool HasNotifications(const uint64_t DevIdx);
 	bool HasNotifications(const std::string &DevIdx);
 
