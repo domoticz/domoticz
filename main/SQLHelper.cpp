@@ -32,7 +32,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 113
+#define DB_VERSION 114
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -2218,6 +2218,16 @@ bool CSQLHelper::OpenDatabase()
 				}
 			}
 		}
+                if (dbversion < 114)
+                {
+                        //Set default values for new parameters in EcoDevices and Teleinfo EDF
+                        std::stringstream szQuery1, szQuery2;
+			szQuery1 << "UPDATE Hardware SET Mode1 = 0, Mode2 = 60 WHERE Type =" << HTYPE_ECODEVICES ;
+                        query(szQuery1.str());
+                        szQuery2 << "UPDATE Hardware SET Mode1 = 0, Mode2 = 0, Mode3 = 60 WHERE Type =" << HTYPE_TeleinfoMeter ;
+                        query(szQuery2.str());
+                }
+
 	}
 	else if (bNewInstall)
 	{
