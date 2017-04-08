@@ -1,0 +1,151 @@
+/* This feature will create vertical columns on your dashboard, one for each sensor type.
+
+BE AWARE this feature only springs into action if you have enough horizontal space for the amount 
+device-types that you have. 
+
+
+*/
+
+#dashcontent .beforebannav{
+    margin-bottom:20px;
+}
+
+/* two columns */
+@media all and (min-width: 769px){
+    
+    #dashcontent > section:first-of-type:nth-last-of-type(2),
+    #dashcontent > section:first-of-type:nth-last-of-type(2) ~ section {
+            width:calc(100% / 2 - 20px);
+            float:left;
+            margin-left:20px;
+    }
+
+    #dashcontent section:first-of-type:nth-last-of-type(2) .span3,
+    #dashcontent section:first-of-type:nth-last-of-type(2) ~ section * .span3,
+    #dashcontent section:first-of-type:nth-last-of-type(2) .span4,
+    #dashcontent section:first-of-type:nth-last-of-type(2) ~ section * .span4{
+        width:100%;
+        width:calc(100% - 15px);
+        margin-bottom:1.5em;
+    }  
+    
+}
+
+
+/* three columns */
+@media all and (min-width: 980px){   
+    
+    #dashcontent > section:first-of-type:nth-last-of-type(3),
+    #dashcontent > section:first-of-type:nth-last-of-type(3) ~ section {
+            width:calc(100% / 3 - 20px);
+            float:left;
+            margin-left:20px;
+    }
+
+    #dashcontent > section:first-of-type:nth-last-of-type(3) .span3,
+    #dashcontent > section:first-of-type:nth-last-of-type(3) ~ section * .span3,    
+    #dashcontent > section:first-of-type:nth-last-of-type(3) .span4,
+    #dashcontent > section:first-of-type:nth-last-of-type(3) ~ section * .span4{
+        width:100%;
+        width:calc(100% - 15px);
+        margin-bottom:1.5em;    
+    }  
+    
+}
+
+
+/* four columns */
+@media all and (min-width: 1200px){
+    
+
+    #dashcontent > section:first-of-type:nth-last-of-type(4),
+    #dashcontent > section:first-of-type:nth-last-of-type(4) ~ section {
+            width:calc(100% / 4 - 20px);
+            float:left;
+            margin-left:20px;
+    }
+    
+    #dashcontent > section:first-of-type:nth-last-of-type(4) .span3,
+    #dashcontent > section:first-of-type:nth-last-of-type(4) ~ section * .span3,
+    #dashcontent > section:first-of-type:nth-last-of-type(4) .span4,
+    #dashcontent > section:first-of-type:nth-last-of-type(4) ~ section * .span4{
+        width:100%;
+        width:calc(100% - 15px);
+        margin-bottom:1.5em;
+    }  
+    
+}
+
+
+/* five columns */
+@media all and (min-width: 1300px){
+    
+    #dashcontent{width:100%;} /* FROM HERE ON OUT IT'S BATCOUNTRY */
+    
+    #dashcontent > section tr > #name{
+        font-size: 95%!important;
+        padding-top:24px!important;
+    }
+    
+    #dashcontent > section:first-of-type:nth-last-of-type(5),
+    #dashcontent > section:first-of-type:nth-last-of-type(5) ~ section {
+            width:calc(100% / 5 - 20px);
+            float:left;
+            margin-left:20px;
+    }    
+
+    #dashcontent > section:first-of-type:nth-last-of-type(5) .span3,
+    #dashcontent > section:first-of-type:nth-last-of-type(5) ~ section * .span3,  
+    #dashcontent > section:first-of-type:nth-last-of-type(5) .span4,
+    #dashcontent > section:first-of-type:nth-last-of-type(5) ~ section * .span4{
+        width:100%;
+        width:calc(100% - 15px);
+        margin-bottom:1.5em;
+    }  
+
+}  
+
+
+/* six columns */
+@media all and (min-width: 1500px){
+    
+
+    #dashcontent > section:first-of-type:nth-last-of-type(6),
+    #dashcontent > section:first-of-type:nth-last-of-type(6) ~ section {
+            width:calc(100% / 6 - 20px);
+            float:left;
+            margin-left:20px;
+    }
+
+    #dashcontent > section:first-of-type:nth-last-of-type(6) .span3,
+    #dashcontent > section:first-of-type:nth-last-of-type(6) ~ section * .span3,    
+    #dashcontent > section:first-of-type:nth-last-of-type(6) .span4,
+    #dashcontent > section:first-of-type:nth-last-of-type(6) ~ section * .span4{
+        width:100%;
+        width:calc(100% - 15px);
+        margin-bottom:1.5em;
+    }  
+    
+}
+
+
+/* seven columns, what a power user! */
+@media all and (min-width: 1700px){
+
+
+    #dashcontent > section:first-of-type:nth-last-of-type(7),
+    #dashcontent > section:first-of-type:nth-last-of-type(7) ~ section {
+            width:calc(100% / 7 - 20px);
+            float:left;
+            margin-left:20px;
+    }
+
+    #dashcontent > section:first-of-type:nth-last-of-type(7) .span3,
+    #dashcontent > section:first-of-type:nth-last-of-type(7) ~ section * .span3,    
+    #dashcontent > section:first-of-type:nth-last-of-type(7) .span4,
+    #dashcontent > section:first-of-type:nth-last-of-type(7) ~ section * .span4{
+        width:100%;
+        width:calc(100% - 15px);
+    } 
+    
+}

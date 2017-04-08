@@ -1,18 +1,18 @@
 @import url("base.css"); /* Don't remove this line! */
-@import url("classic.css");  /* Don't remove this line! */
+@import url("feynman.css");  /* Don't remove this line! */
 @import url("dashboard_highlights.css"); /* This adds bigger items at the top of each dashboard category. */
-/*@import url("dashboard_highlights_see-through.css"); /* makes bigger items also semi-transparent. */
-/*@import url("dashboard_vertical_columns.css"); /* Turns dashboard into vertical columns. */
-/*@import url("navigation_main_sidebar.css"); /* This transforms the main menu to a vertical menu on the left. */
-/*@import url("navigation_settings_sidemenu.css"); /* This transforms the settings-tabs into a sidebar on the left. */
-/*@import url("extras_and_animations.css"); /* Adds fun visual extras. */
+@import url("dashboard_highlights_see-through.css"); /* makes bigger items also semi-transparent. */
+@import url("dashboard_vertical_columns.css"); /* Turns dashboard into vertical columns. */
+@import url("navigation_main_sidebar.css"); /* This transforms the main menu to a vertical menu on the left. */
+@import url("navigation_settings_sidemenu.css"); /* This transforms the settings-tabs into a sidebar on the left. */
+@import url("extras_and_animations.css"); /* Adds fun visual extras. */
 
 
 /* GENERAL SETTINGS
-Welcome the theme settings.
+Welcome the Feynman theme settings.
 
-First, you can add or remove features by simply adding or removing /* at the beginning of the 
-lines at the top of this page.
+First, you can (add or) remove features by simply adding (or removing) /* at the beginning of the 
+lines at the top of this page. Or you can just delete the line.
 
 
 /* CUSTOM BACKGROUND IMAGE

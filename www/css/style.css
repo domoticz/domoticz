@@ -1016,10 +1016,10 @@ body table#itemtablesmall tr td:first-child{
 	border-width: 1px 1px 1px 1px;
 	border-color: #2B5074;
 	border-style: solid;
-  border-radius: 5px;
-
+	border-radius: 5px;
+	
 	color: #0D161F;
-	background-color: #D4E1EE;
+	/*background-color: #D4E1EE;*/
 }
 
 /* Second column */
@@ -2464,6 +2464,12 @@ span.evomobile .ui-popup {
 .warning-text {
 	color: red;
 }
+
+/* status updates */
+.statusNormal{background-color: #D4E1EE}
+.statusProtected{background-color: #A4B1EE}
+.statusTimeout{background-color: #DF2D3A}
+.statusLowBattery{background-color:#DDDF2D}
 
 .sub-tabs {
 	border-bottom: 0px solid #ffff00;
