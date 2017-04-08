@@ -116,6 +116,7 @@ public:
 
 	std::map<std::string, CNotificationBase*> m_notifiers;
 	void AddNotifier(CNotificationBase *notifier);
+	void RemoveNotifier(CNotificationBase * notifier);
 protected:
 	void SetConfigValue(const std::string &key, const std::string &value);
 private:

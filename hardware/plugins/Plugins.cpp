@@ -818,6 +818,8 @@ namespace Plugins {
 				m_thread->join();
 				m_thread.reset();
 			}
+
+			if (m_Notifier) delete m_Notifier;
 		}
 		catch (...)
 		{
@@ -1503,7 +1505,7 @@ namespace Plugins {
 
 	CPluginNotifier::~CPluginNotifier()
 	{
-		//m_notifications.RemoveNotifier(?);
+		m_notifications.RemoveNotifier(this);
 	}
 
 	bool CPluginNotifier::IsConfigured()
@@ -1573,6 +1575,7 @@ namespace Plugins {
 			if (szStatus != "Off") szStatus = "On";
 		}
 
+		// Use image is specified
 		int	posImage = (int)ExtraData.find("|Image=");
 		if (posImage >= 0)
 		{
@@ -1584,25 +1587,30 @@ namespace Plugins {
 			}
 		}
 
+		// Use uploaded and custom images 
 		int	posCustom = (int)ExtraData.find("|CustomImage=");
 		if (posCustom >= 0)
 		{
 			posCustom += 13;
 			std::string szCustom = ExtraData.substr(posCustom, ExtraData.find("|", posCustom) - posCustom);
-			szImageFile = szImageFolder + GetCustomIcon(szCustom) + "_" + szStatus + ".png";
-			if (file_exist(szImageFile.c_str()))
+			int iCustom = atoi(szCustom.c_str());
+			if (iCustom)
 			{
-				return szImageFile;
-			}
-			szImageFile = szImageFolder + GetCustomIcon(szCustom) + "48_" + szStatus + ".png";
-			if (file_exist(szImageFile.c_str()))
-			{
-				return szImageFile;
-			}
-			szImageFile = szImageFolder + GetCustomIcon(szCustom) + ".png";
-			if (file_exist(szImageFile.c_str()))
-			{
-				return szImageFile;
+				szImageFile = szImageFolder + GetCustomIcon(szCustom) + "_" + szStatus + ".png";
+				if (file_exist(szImageFile.c_str()))
+				{
+					return szImageFile;
+				}
+				szImageFile = szImageFolder + GetCustomIcon(szCustom) + "48_" + szStatus + ".png";
+				if (file_exist(szImageFile.c_str()))
+				{
+					return szImageFile;
+				}
+				szImageFile = szImageFolder + GetCustomIcon(szCustom) + ".png";
+				if (file_exist(szImageFile.c_str()))
+				{
+					return szImageFile;
+				}
 			}
 		}
 
@@ -1617,7 +1625,12 @@ namespace Plugins {
 			switch (switchtype)
 			{
 			case STYPE_OnOff:
-				szTypeImage = "Light48";
+				if (posCustom >= 0)
+				{
+					std::string szCustom = ExtraData.substr(posCustom, ExtraData.find("|", posCustom) - posCustom);
+					szTypeImage = GetCustomIcon(szCustom);
+				}
+				else szTypeImage = "Light48";
 				break;
 			case STYPE_Doorbell:
 				szTypeImage = "doorbell48";
@@ -1660,7 +1673,6 @@ namespace Plugins {
 			case STYPE_Media:
 				if (posCustom >= 0)
 				{
-					posCustom += 13;
 					std::string szCustom = ExtraData.substr(posCustom, ExtraData.find("|", posCustom) - posCustom);
 					szTypeImage = GetCustomIcon(szCustom);
 				}

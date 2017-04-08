@@ -68,6 +68,11 @@ void CNotificationHelper::AddNotifier(CNotificationBase *notifier)
 	m_notifiers[notifier->GetSubsystemId()] = notifier;
 }
 
+void CNotificationHelper::RemoveNotifier(CNotificationBase *notifier)
+{
+	m_notifiers.erase(notifier->GetSubsystemId());
+}
+
 bool CNotificationHelper::SendMessage(
 	const uint64_t Idx,
 	const std::string &Name,
