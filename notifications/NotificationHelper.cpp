@@ -647,8 +647,6 @@ bool CNotificationHelper::CheckAndHandleNotification(
 			float svalue = static_cast<float>(atof(splitresults[2].c_str()));
 			bool bSendNotification = false;
 			bool bCustomMessage = false;
-
-			bRecoveryMessage = CustomRecoveryMessage(itt->ID, recoverymsg, true);
 			bCustomMessage = CustomRecoveryMessage(itt->ID, custommsg, false);
 
 			if (ntype == nsign)
@@ -984,8 +982,6 @@ void CNotificationHelper::CheckAndHandleLastUpdateNotification()
 					bool bStartTime = (difftime(btime, m_StartTime) < SensorTimeOut*60);
 					bool bSendNotification = ApplyRule(splitresults[1], (diff == SensorTimeOut*60), (diff < SensorTimeOut*60));
 					bool bCustomMessage = false;
-
-					bRecoveryMessage = CustomRecoveryMessage(itt2->ID, recoverymsg, true);
 					bCustomMessage = CustomRecoveryMessage(itt2->ID, custommsg, false);
 
 					if (bSendNotification && !bStartTime && (!bRecoveryMessage || itt2->SendAlways))
