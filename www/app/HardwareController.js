@@ -126,7 +126,8 @@ define(['app'], function (app) {
 				(text.indexOf("Kodi Media") >= 0) ||
 				(text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0) ||
 				(text.indexOf("YeeLight") >= 0) ||
-				(text.indexOf("Arilux AL-LC0x") >= 0)
+                (text.indexOf("Arilux AL-LC0x") >= 0) ||
+                (text.indexOf("sysfs gpio") >= 0)
 				)
             {
 				// if hardwaretype == 1000 => I2C sensors grouping
@@ -139,7 +140,7 @@ define(['app'], function (app) {
                 	var i2caddress=$("#hardwareparami2caddress #i2caddress").val();
                 	var port="&port=" + encodeURIComponent(i2caddress);
                 }
-                if (text.indexOf("GPIO") >= 0)
+                if ((text.indexOf("GPIO") >= 0) && (text.indexOf("sysfs gpio") == -1))
                 {
                     var gpiodebounce=$("#hardwareparamsgpio #gpiodebounce").val();
                     var gpioperiod = $("#hardwareparamsgpio #gpioperiod").val();
@@ -1083,8 +1084,9 @@ define(['app'], function (app) {
 				(text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0) ||
 				(text.indexOf("Tellstick") >= 0) ||
 				(text.indexOf("Motherboard") >= 0) ||
-				(text.indexOf("YeeLight") >= 0) ||
-				(text.indexOf("Arilux AL-LC0x") >= 0)
+                (text.indexOf("YeeLight") >= 0) ||
+                (text.indexOf("Arilux AL-LC0x") >= 0) ||
+                (text.indexOf("sysfs gpio") >= 0)
 				)
             {
                 $.ajax({
@@ -5062,7 +5064,8 @@ define(['app'], function (app) {
 							(data["Type"].indexOf("PiFace") >= 0)||
 							(data["Type"].indexOf("Tellstick") >= 0) ||
 							(data["Type"].indexOf("Yeelight") >= 0) ||
-							(data["Type"].indexOf("Arilux AL-LC0x") >= 0)
+                            (data["Type"].indexOf("Arilux AL-LC0x") >= 0) ||
+                            (data["Type"].indexOf("sysfs gpio") >= 0)
                            )
                         {
                             //nothing to be set
@@ -5354,7 +5357,8 @@ define(['app'], function (app) {
 				(text.indexOf("System Alive") >= 0)||
 				(text.indexOf("PiFace") >= 0) ||
 				(text.indexOf("Yeelight") >= 0) ||
-				(text.indexOf("Arilux AL-LC0x") >= 0)
+                (text.indexOf("Arilux AL-LC0x") >= 0) ||
+                (text.indexOf("sysfs gpio") >= 0)
                )
             {
                 $("#hardwarecontent #divserial").hide();
@@ -5378,7 +5382,7 @@ define(['app'], function (app) {
                     $("#hardwarecontent #divi2caddress").show();
                 }
             }
-            else if (text.indexOf("GPIO") >= 0)
+            else if ((text.indexOf("GPIO") >= 0) && (text.indexOf("sysfs gpio") == -1))
             {
                 $("#hardwarecontent #divgpio").show();
                 $("#hardwarecontent #divserial").hide();

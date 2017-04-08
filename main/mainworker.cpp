@@ -120,6 +120,7 @@
 #include "../hardware/OpenWebNetUSB.h"
 #include "../hardware/InComfort.h"
 #include "../hardware/RelayNet.h"
+#include "../hardware/SysfsGPIO.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -941,6 +942,11 @@ bool MainWorker::AddHardwareFromParams(
 		//Raspberry Pi GPIO port access
 #ifdef WITH_GPIO
 		pHardware = new CGpio(ID, Mode1, Mode2, Mode3);
+#endif
+		break;
+	case HTYPE_SysfsGPIO:
+#ifndef WIN32
+		pHardware = new CSysfsGPIO(ID);
 #endif
 		break;
 	case HTYPE_Comm5TCP:
