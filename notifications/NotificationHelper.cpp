@@ -17,9 +17,6 @@
 #include "NotificationKodi.h"
 #include "NotificationLogitechMediaServer.h"
 #include "NotificationGCM.h"
-#ifdef USE_PYTHON_PLUGINS
-#	include "../hardware/plugins/PluginManager.h"
-#endif
 
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
@@ -71,6 +68,11 @@ void CNotificationHelper::AddNotifier(CNotificationBase *notifier)
 	m_notifiers[notifier->GetSubsystemId()] = notifier;
 }
 
+void CNotificationHelper::RemoveNotifier(CNotificationBase *notifier)
+{
+	m_notifiers.erase(notifier->GetSubsystemId());
+}
+
 bool CNotificationHelper::SendMessage(
 	const uint64_t Idx,
 	const std::string &Name,
@@ -119,9 +121,6 @@ bool CNotificationHelper::SendMessageEx(
 			bRet |= iter->second->SendMessageEx(Idx, Name, Subject, Text, ExtraData, Priority, Sound, bFromNotification);
 		}
 	}
-#ifdef USE_PYTHON_PLUGINS
-	Plugins::CPluginSystem::SendNotification(Subject, Text, ExtraData, Priority, Sound);
-#endif
 	return bRet;
 }
 
