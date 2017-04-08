@@ -230,19 +230,20 @@ bool CNotificationHelper::CheckAndHandleTempHumidityNotification(
 
 		if ((atime >= itt->LastSend) || (itt->SendAlways) || (!itt->CustomMessage.empty())) //emergency always goes true
 		{
+			std::string recoverymsg;
+			bool bRecoveryMessage = false;
+			bRecoveryMessage = CustomRecoveryMessage(itt->ID, recoverymsg, true);
+			if ((atime < itt->LastSend) && (!itt->SendAlways) && (!bRecoveryMessage))
+				continue;
 			std::vector<std::string> splitresults;
 			StringSplit(itt->Params, ";", splitresults);
 			if (splitresults.size() < 3)
 				continue; //impossible
 			std::string ntype = splitresults[0];
-			std::string recoverymsg;
 			std::string custommsg;
 			float svalue = static_cast<float>(atof(splitresults[2].c_str()));
 			bool bSendNotification = false;
-			bool bRecoveryMessage = false;
 			bool bCustomMessage = false;
-
-			bRecoveryMessage = CustomRecoveryMessage(itt->ID, recoverymsg, true);
 			bCustomMessage = CustomRecoveryMessage(itt->ID, custommsg, false);
 
 			if (m_sql.m_tempunit == TEMPUNIT_F)
@@ -468,22 +469,22 @@ bool CNotificationHelper::CheckAndHandleAmpere123Notification(
 
 		if ((atime >= itt->LastSend) || (itt->SendAlways) || (!itt->CustomMessage.empty())) //emergency always goes true
 		{
+			std::string recoverymsg;
+			bool bRecoveryMessage = false;
+			bRecoveryMessage = CustomRecoveryMessage(itt->ID, recoverymsg, true);
+			if ((atime < itt->LastSend) && (!itt->SendAlways) && (!bRecoveryMessage))
+				continue;
 			std::vector<std::string> splitresults;
-
 			StringSplit(itt->Params, ";", splitresults);
 			if (splitresults.size() < 3)
 				continue; //impossible
 			std::string ntype = splitresults[0];
-			std::string recoverymsg;
 			std::string custommsg;
 			std::string ltype;
 			float svalue = static_cast<float>(atof(splitresults[2].c_str()));
 			float ampere;
 			bool bSendNotification = false;
-			bool bRecoveryMessage = false;
 			bool bCustomMessage = false;
-
-			bRecoveryMessage = CustomRecoveryMessage(itt->ID, recoverymsg, true);
 			bCustomMessage = CustomRecoveryMessage(itt->ID, custommsg, false);
 
 			if (ntype == signamp1)
@@ -632,16 +633,19 @@ bool CNotificationHelper::CheckAndHandleNotification(
 
 		if ((atime >= itt->LastSend) || (itt->SendAlways) || (!itt->CustomMessage.empty())) //emergency always goes true
 		{
+			std::string recoverymsg;
+			bool bRecoveryMessage = false;
+			bRecoveryMessage = CustomRecoveryMessage(itt->ID, recoverymsg, true);
+			if ((atime < itt->LastSend) && (!itt->SendAlways) && (!bRecoveryMessage))
+				continue;
 			std::vector<std::string> splitresults;
 			StringSplit(itt->Params, ";", splitresults);
 			if (splitresults.size() < 3)
 				continue; //impossible
 			std::string ntype = splitresults[0];
-			std::string recoverymsg;
 			std::string custommsg;
 			float svalue = static_cast<float>(atof(splitresults[2].c_str()));
 			bool bSendNotification = false;
-			bool bRecoveryMessage = false;
 			bool bCustomMessage = false;
 
 			bRecoveryMessage = CustomRecoveryMessage(itt->ID, recoverymsg, true);
@@ -964,18 +968,21 @@ void CNotificationHelper::CheckAndHandleLastUpdateNotification()
 				std::string ttype = Notification_Type_Desc(NTYPE_LASTUPDATE, 1);
 				if (splitresults[0] == ttype)
 				{
+					std::string recoverymsg;
+					bool bRecoveryMessage = false;
+					bRecoveryMessage = CustomRecoveryMessage(itt2->ID, recoverymsg, true);
+					if ((atime < itt2->LastSend) && (!itt2->SendAlways) && (!bRecoveryMessage))
+						continue;
 					extern time_t m_StartTime;
 					time_t btime = mytime(NULL);
 					std::string msg;
 					std::string szExtraData;
-					std::string recoverymsg;
 					std::string custommsg;
 					uint64_t Idx = itt->first;
 					int SensorTimeOut = atoi(splitresults[2].c_str());  // minutes
 					int diff = (int)round(difftime(btime, itt2->LastUpdate));
 					bool bStartTime = (difftime(btime, m_StartTime) < SensorTimeOut*60);
 					bool bSendNotification = ApplyRule(splitresults[1], (diff == SensorTimeOut*60), (diff < SensorTimeOut*60));
-					bool bRecoveryMessage = false;
 					bool bCustomMessage = false;
 
 					bRecoveryMessage = CustomRecoveryMessage(itt2->ID, recoverymsg, true);
@@ -1127,15 +1134,15 @@ bool CNotificationHelper::CustomRecoveryMessage(const uint64_t ID, std::string &
 				if (!isRecovery)
 					return false;
 
-				if ((msg.find("!") != 0) && (msg.size() > 1))
-				{
-					szTmp = ";;[Recovered] ";
-					szTmp.append(msg);
-				}
-				else if (splitresults.size() > 0)
+				if (splitresults.size() > 0)
 				{
 					if (!splitresults[0].empty())
 						szTmp = splitresults[0];
+				}
+				if ((msg.find("!") != 0) && (msg.size() > 1))
+				{
+					szTmp.append(";;[Recovered] ");
+					szTmp.append(msg);
 				}
 				std::vector<std::vector<std::string> > result;
 				result = m_sql.safe_query("SELECT ID FROM Notifications WHERE (ID=='%" PRIu64 "') AND (Params=='%q')", itt2->ID, itt2->Params.c_str());

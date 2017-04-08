@@ -5630,7 +5630,7 @@ namespace http {
 				root["title"] = "UpdateNotification";
 
 				std::string recoverymsg;
-				if (m_notifications.CustomRecoveryMessage(strtoull(idx.c_str(),NULL,0), recoverymsg, true))
+				if ((srecovery == "1") && (m_notifications.CustomRecoveryMessage(strtoull(idx.c_str(),NULL,0), recoverymsg, true)))
 				{
 					scustommessage.append(";;");
 					scustommessage.append(recoverymsg);
