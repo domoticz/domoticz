@@ -36,7 +36,6 @@ namespace Plugins {
 		void	 DeregisterPlugin(const int HwdID);
 		bool StopPluginSystem();
 		void AllPluginsStarted() { m_bAllPluginsStarted = true; };
-		static void SendNotification(const std::string &, const std::string &, const std::string &, int, const std::string &);
 		static void LoadSettings();
 	};
 };
