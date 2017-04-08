@@ -1,8 +1,10 @@
 @import url("base.css"); /* Don't remove this line! */
 @import url("feynman.css");  /* Don't remove this line! */
+@import url("dashboard_move_sun.css"); /* Moves the sun-up indicator to the footer. */
+@import url("dashboard_show_last_update.css"); /* Displays the 'last update' time on the dashboard. */
+/*@import url("dashboard_highlights_see-through.css"); /* makes all dashboard items semi-transparent. */
 @import url("dashboard_highlights.css"); /* This adds bigger items at the top of each dashboard category. */
-@import url("dashboard_highlights_see-through.css"); /* makes bigger items also semi-transparent. */
-@import url("dashboard_vertical_columns.css"); /* Turns dashboard into vertical columns. */
+/*@import url("dashboard_vertical_columns.css"); /* Turns dashboard into vertical columns. */
 @import url("navigation_main_sidebar.css"); /* This transforms the main menu to a vertical menu on the left. */
 @import url("navigation_settings_sidemenu.css"); /* This transforms the settings-tabs into a sidebar on the left. */
 @import url("extras_and_animations.css"); /* Adds fun visual extras. */
@@ -26,6 +28,10 @@ remove the /* before the word 'body'. This will override the detault background 
 
 
 *//* FEATURE DETAILS
+
+
+__Dashboard Show Last Update__
+Enable this if you want the last update time to also be displayed onthe dashboard.
 
 __Dashboard Highlights__
 This is a little CSS script that super-sizes the first three items for each category. You can use this to highlight 

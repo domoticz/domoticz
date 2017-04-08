@@ -1,6 +1,6 @@
 /* Creates a Settings sidebar and thinner items menu on big screens */
 
-@media only screen and (min-width:1200px){    
+@media only screen and (min-width:1200px) and (min-height:600px){    
 
     /* Sidebar menu */
     
@@ -31,15 +31,6 @@
         width: calc(100% - 200px);
         overflow: inherit;
         margin-left: 180px;
-    }
-    
-
-@media all and (max-height: 600px) {    
-    
-    #settingscontent #tabs{
-    top: 0;
-    height: 100%;
-    overflow: auto;
     }
     
 }

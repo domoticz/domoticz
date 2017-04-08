@@ -84,18 +84,42 @@ body table#itemtabledoubleicon tbody tr, body table#itemtable tbody tr, body tab
     border-bottom:1px solid #fff;
 }
 
+/*
 tr, #name{
-    border-radius: 0;
+    border-radius: 0px;
+}*/
+
+#name,
+body table#itemtablesmall tr td:first-child,
+body table#itemtablesmalldoubleicon tr td:first-child,
+body table#itemtablesmalltrippleicon tr td:first-child,
+body table#itemtablesmall tr td:first-child,
+body table#itemtablenotype tr td:first-child{
+    border-radius:2px!important;
 }
 
 .ui-draggable:not(.ui-dialog) table > tbody > tr{
     background-color:transparent!important;
-    background: -moz-linear-gradient(to bottom, rgba(212,225,238,1) 0% ,rgba(212,225,238,1) 42px, rgba(255,255,255,1) 42px,rgba(255,255,255,0.95) 70px,rgba(255,255,255,1) 70px,rgba(255,255,255,1) 100%);
-    background: -webkit-linear-gradient(to bottom, rgba(212,225,238,1) 0% ,rgba(212,225,238,1) 42px, rgba(255,255,255,1) 42px,rgba(255,255,255,0.95) 70px,rgba(255,255,255,1) 70px,rgba(255,255,255,1) 100%); 
-    background: linear-gradient(to bottom, rgba(212,225,238,1) 0% ,rgba(212,225,238,1) 42px, rgba(255,255,255,0.9) 42px,rgba(255,255,255,0.95) 49px,rgba(255,255,255,1) 70px,rgba(255,255,255,0.95) 70px, rgba(255,255,255,1) 100%);    
+    background: -moz-linear-gradient(to bottom, rgba(212,225,238,1) 0% ,rgba(212,225,238,1) 42px, rgba(255,255,255,1) 42px,rgba(255,255,255,0.95) 69px,rgba(255,255,255,1) 69px,rgba(255,255,255,1) 100%);
+    background: -webkit-linear-gradient(to bottom, rgba(212,225,238,1) 0% ,rgba(212,225,238,1) 42px, rgba(255,255,255,1) 42px,rgba(255,255,255,0.95) 69px,rgba(255,255,255,1) 69px,rgba(255,255,255,1) 100%); 
+    background: linear-gradient(to bottom, rgba(212,225,238,1) 0% ,rgba(212,225,238,1) 42px, rgba(255,255,255,0.9) 42px,rgba(255,255,255,0.95) 49px,rgba(255,255,255,1) 69px,rgba(255,255,255,0.95) 69px, rgba(255,255,255,1) 100%);    
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#d4e1ee', endColorstr='#cccccccc',GradientType=0 );
     border-radius:2px!important;
 }
+#dashcontent .ui-draggable:not(.ui-dialog) table > tbody > tr{
+    background-color:transparent!important;
+    background: -moz-linear-gradient(to bottom, rgba(212,225,238,0.9) 0% ,rgba(212,225,238,1) 100%);   
+    background: -webkit-linear-gradient(to bottom, rgba(212,225,238,0.9) 0% ,rgba(212,225,238,1) 100%); 
+    background: linear-gradient(to bottom, rgba(212,225,238,0.9) 0% ,rgba(212,225,238,1) 100%);    
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#d4e1ee', endColorstr='#cccccccc',GradientType=0 );
+    border-radius:2px!important;
+}
+
+/* hoeveel van deze dingen heb ik zeg..
+#dashcontent .ui-draggable:not(.ui-dialog) table > tbody > tr{
+    background-color:#D4E1EE;
+}*/
+
 
 .ui-draggable:not(.ui-dialog) table{
     box-shadow: 2px 2px 18px 0px rgba(50, 50, 50, 0.2);
@@ -112,18 +136,18 @@ td.statusNormal{
     box-shadow:  inset 0 -3px 0 0 #A4B1EE;*/
 }
 td.statusProtected{
-background-color: #A4B1EE;
+    background-color: #A4B1EE;
 }
 
 td.statusTimeout{
-    -moz-box-shadow:  0 3px 0 0 #DF2D3A;
-    -webkit-box-shadow:  0 3px 0 0 #DF2D3A;
-    box-shadow:  0 3px 0 0 #DF2D3A;    
+    -moz-box-shadow:  0 1px 0 0 #DF2D3A;
+    -webkit-box-shadow:  0 1px 0 0 #DF2D3A;
+    box-shadow:  0 1px 0 0 #DF2D3A;    
 }
 td.statusLowBattery{
-    -moz-box-shadow:  0 3px 0 0 #DDDF2D;
-    -webkit-box-shadow:  0 3px 0 0 #DDDF2D;
-    box-shadow:  0 3px 0 0 #DDDF2D;    
+    -moz-box-shadow:  0 1px 0 0 #DDDF2D;
+    -webkit-box-shadow:  0 1px 0 0 #DDDF2D;
+    box-shadow:  0 1px 0 0 #DDDF2D;    
 }
 
 #dashcontent .ui-draggable:not(.ui-dialog) tr{
@@ -139,7 +163,7 @@ td.statusLowBattery{
 }
 
 #dashcontent .selectorlevels .ui-state-default{
-    background-color: #D4E1EE;
+    /*background-color: transparent;*/ /* see through is a problem for highlights*/
     /*box-shadow: -2px -2px 5px -1px rgba(255, 255, 255, 0.2);*/
 }
 
@@ -164,24 +188,26 @@ td.statusLowBattery{
     top: -50px;
 }
 
-#bigtext span {border-radius:3px}
+#bigtext > span {border-radius:3px}
 
+/*
 #dashcontent #bigtext {
     width: calc(50% - 55px);
     font-weight:100;
-}
+}*/
 
-#dashcontent #bigtext span{
+#dashcontent #bigtext > span{
     font-weight:100;
 }
 
-
+#bigtext > span{
+    background-color: #D4E1EE;
+}
 
 #img img, 
 #img1 img,
 #img2 img,    
-#img3 img,
-#img4 img{
+#img3 img{
     height:30px;    
     border-radius: 50%;
     box-sizing: border-box;
@@ -199,6 +225,10 @@ td.statusLowBattery{
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#b3dced', endColorstr='#29b8e5', GradientType=1 );
         */
 }
+
+#itemtabledoubleicon [id^="img"] img{border-radius:0}
+#itemtabletrippleicon [id^="img"] img{border-radius:0}
+
 
 .span4 #img img:hover, 
 .span4 #img1 img:hover,
@@ -253,6 +283,12 @@ td.statusLowBattery{
 }
 */
 
+#type,
+#lastupdate{
+    color:#999;
+}
+
+
 .ui-corner-bottom, .ui-corner-br, .ui-corner-all, .ui-corner-top, .ui-corner-right, .ui-corner-left, .ui-corner-tr{
     border-radius:0!important;
 }
@@ -299,15 +335,15 @@ button,
 
 .ui-selectmenu-button span.ui-selectmenu-text{
     text-align:center;
-    padding:0 0 0 10px!important;
 }
 
 
 
 .divider .span3 .ui-selectmenu-button,
 .divider .span4 .ui-selectmenu-button{
-    height:20px;
+    height:25px;
     font-weight: normal;
+    border-radius:3px!important;
 }
 
 a.btnsmall {
@@ -444,53 +480,23 @@ body:hover .ui-dialog {
 
 /* Creates a Settings sidebar and thinner items menu on big screens */
 
-@media only screen and (min-width:1200px){    
+/*@media only screen and (min-width:1800px){ debugging*/   
 
-    /* Sidebar menu */
-    
-    #settingscontent #tabs{
-        position: fixed;
-        width: 160px;
-        border-bottom:0;
-        overflow:hidden;
-    }
-    
-    #settingscontent .nav-tabs > li{
-        width:160px;
-    }
-    
-    #settingscontent .nav-tabs > li > a{
-        border-radius:0;
-    }    
-    
-    #settingscontent .sub-tabs-apply{
-        position:inherit;
-        margin-top:20px;
-        text-align:center;
-        border-radius:5px;
-    }
-    
-    #settingscontent .tab-content{
-        width:84%;
-        width: calc(100% - 200px);
-        overflow: inherit;
-        margin-left: 180px;
-    }
-    
+@media only screen and (min-width:1200px){ 
     
     /* Thinner items */
     
-    #dashcontent [class^="span"] .selectorlevels{
+    #dashcontent .selectorlevels{
         top:7px;
-        left:50%;
-        width:35%;
-        width: calc(50% - 55px);
+        left: 190px;
+        width: 35%;
+        width: calc(100% - 245px);
         margin-top:0!important;
         position:relative;
         height:0;
     }
     
-    #dashcontent [class^="span"] .selectorlevels .ui-buttonset{
+    #dashcontent .selectorlevels .ui-buttonset{
         height:55px;
         display: flex;
         flex-flow: row wrap;
@@ -499,27 +505,27 @@ body:hover .ui-dialog {
         top:-62px;
     }
     
-    #dashcontent [class^="span"] .selectorlevels .ui-selectmenu-button{
+    #dashcontent .selectorlevels .ui-selectmenu-button{
         top: -62px!important;
         height:55px;
     }
     
-    #dashcontent [class^="span"] .ui-selectmenu-button{
+    #dashcontent .ui-selectmenu-button{
         position:relative;
         right:-1px;
         top:16px;
         width:100%!important;
     }
     
-    #dashcontent [class^="span"] .ui-selectmenu-button span.ui-selectmenu-text{
+    #dashcontent .ui-selectmenu-button span.ui-selectmenu-text{
         text-align:right;
         background-color:#D4E1EE;
         align-content:flex-end;
     }
     
-    #dashcontent [class^="span"] .ui-selectmenu-button .ui-state-default .ui-icon{
-        background-image: url("images/ui-icons_222222_256x240.png")
-    }
+    /*#dashcontent .ui-selectmenu-button .ui-state-default .ui-icon{
+        filter: contrast(0);
+    }*/
     
 }    
 
