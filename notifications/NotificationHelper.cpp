@@ -505,7 +505,7 @@ bool CNotificationHelper::CheckAndHandleAmpere123Notification(
 			bSendNotification = ApplyRule(splitresults[1], (ampere == svalue), (ampere < svalue));
 			if (bSendNotification && (!bRecoveryMessage || itt->SendAlways))
 			{
-				sprintf(szTmp, "%s %s is %.1f Ampere", devicename.c_str(), ltype.c_str(), ampere);
+				sprintf(szTmp, "%s %s is %.1f Ampere [%s %.1f Ampere]", devicename.c_str(), ltype.c_str(), ampere, splitresults[1].c_str(), svalue);
 				msg = szTmp;
 				sprintf(szTmp, "%.1f", ampere);
 				notValue = szTmp;
@@ -654,7 +654,7 @@ bool CNotificationHelper::CheckAndHandleNotification(
 				bSendNotification = ApplyRule(splitresults[1], (mvalue == svalue), (mvalue < svalue));
 				if (bSendNotification && (!bRecoveryMessage || itt->SendAlways))
 				{
-					sprintf(szTmp, "%s %s is %s %s", devicename.c_str(), ltype.c_str(), pvalue.c_str(), label.c_str());
+					sprintf(szTmp, "%s %s is %s %s [%s %.1f %s]", devicename.c_str(), ltype.c_str(), pvalue.c_str(), label.c_str(), splitresults[1].c_str(), svalue, label.c_str());
 					msg = szTmp;
 				}
 				else if (!bSendNotification && bRecoveryMessage)
