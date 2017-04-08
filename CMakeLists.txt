@@ -558,7 +558,7 @@ add_executable(domoticz ${domoticz_SRCS})
 
 # explicitly say that the executable depends on the revisiontag
 add_dependencies(domoticz revisiontag)
-
+add_dependencies(domoticz optimiseJS)
 
 ## Link libraries
 
