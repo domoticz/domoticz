@@ -115,10 +115,10 @@ public:
 		);
 
 	std::map<std::string, CNotificationBase*> m_notifiers;
+	void AddNotifier(CNotificationBase *notifier);
 protected:
 	void SetConfigValue(const std::string &key, const std::string &value);
 private:
-	void AddNotifier(CNotificationBase *notifier);
 	std::string ParseCustomMessage(const std::string &cMessage, const std::string &sName, const std::string &sValue);
 	bool ApplyRule(std::string rule, bool equal, bool less);
 	boost::mutex m_mutex;
