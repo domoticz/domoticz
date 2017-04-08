@@ -6635,7 +6635,7 @@ namespace http {
 
 				int ival;
 				//ival = atof(cparam.substr(14).c_str());
-				ival = atof(kelvin.c_str());
+				ival = round(atof(kelvin.c_str()));
 
 				m_mainworker.SwitchLight(ID, "Set Kelvin Level", ival, -1,false,0);
 			}
