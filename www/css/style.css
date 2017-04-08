@@ -1070,6 +1070,11 @@ body table#itemtablesmall tr td:first-child + td + td + td + td:before{
 	font-style: italic;
 }
 
+
+/* styling for the older themes */
+#dashcontent #status span{padding-right:5px;}
+
+
 /* Hover state*/
 body table#itemtablesmall tbody tr:hover{
 	border-color: #2B2C74;
