@@ -1284,8 +1284,6 @@ void CNotificationHelper::ReloadNotifications()
 		}
 		std::string ttype = Notification_Type_Desc(NTYPE_LASTUPDATE, 1);
 		StringSplit(notification.Params, ";", splitresults);
-		if (splitresults.size() < 3)
-			continue;
 		if (splitresults[0] == ttype) {
 			std::vector<std::vector<std::string> > result2;
 			result2 = m_sql.safe_query(
