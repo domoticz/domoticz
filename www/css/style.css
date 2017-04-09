@@ -84,17 +84,24 @@ strong {
 }
 
 #wrap {
-min-height:100%;
-margin:0 auto;
+	min-height:100%;
+	margin:0 auto;
 }
 #wrap:before { /* Opera and IE8 "redraw" bug fix */
-content:"";
-float:left;
-height:100%;
-margin-top:-999em;
+	content:"";
+	float:left;
+	height:100%;
+	margin-top:-999em;
 }
 * html #wrap { /* IE6 workaround */
-height:100%;
+	height:100%;
+}
+
+
+/* div.item styling - this helps older themes */
+
+div.item{
+	margin-bottom:10px;
 }
 
 /* Copyright */
