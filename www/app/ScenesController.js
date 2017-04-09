@@ -1533,7 +1533,6 @@ define(['app'], function (app) {
 			}
 			
             RefreshLightSwitchesComboArray();
-
             
             $("body").removeClass();
             $("body").addClass("scenes");   
@@ -1549,7 +1548,6 @@ define(['app'], function (app) {
             if ($scope.config.DashboardType == 3) {
                 $("body").addClass("dashFloorplan");
             }    
-            
             
             var htmlcontent = '';
             var bHaveAddedDevider = false;
@@ -1591,7 +1589,7 @@ define(['app'], function (app) {
 				$.each(data.result, function(i,item){
 				  if (j % 3 == 0)
 				  {
-					//add devider
+					//add divider
 					if (bHaveAddedDevider == true) {
 					  //close previous devider
 					  htmlcontent+='</div>\n';
@@ -1599,23 +1597,37 @@ define(['app'], function (app) {
 					htmlcontent+='<div class="row divider">\n';
 					bHaveAddedDevider=true;
 				  }
+                    
+                    
+                    var backgroundClass = "statusNormal";
+                    if (item.Protected == true) {
+                        backgroundClass = "statusProtected";
+                    }
+                    else if (item.HaveTimeout == true) {
+                        backgroundClass = "statusTimeout";
+                    } 
+                    else {
+                        var BatteryLevel = parseInt(item.BatteryLevel);
+                        if (BatteryLevel != 255) {
+                            if (BatteryLevel <= 10) {
+                                backgroundClass = "statusLowBattery";
+                            }
+                        }
+                    }
+                    
 				  var bAddTimer=true;
 				  var xhtm=
 						'\t<div class="span4" id="' + item.idx + '">\n' +
-						'\t  <div class="item">\n';
+						'\t  <div class="item ' + backgroundClass + '">\n';
 					  if (item.Type=="Scene") {
 						xhtm+='\t    <table id="itemtablenostatus" border="0" cellpadding="0" cellspacing="0">\n';
 					  }
 					  else {
 						xhtm+='\t    <table id="itemtabledoubleicon" border="0" cellpadding="0" cellspacing="0">\n';
 					  }
-						var nbackcolor="#D4E1EE";
-						if (item.Protected==true) {
-							nbackcolor="#A4B1EE";
-						}
 					  xhtm+=
 						'\t    <tr>\n' +
-						'\t      <td id="name" class="name" style="background-color: ' + nbackcolor + ';">' + item.Name + '</td>\n' +
+						'\t      <td id="name" class="name">' + item.Name + '</td>\n' +
 						'\t      <td id="bigtext" class="bigtext"><span class="wrapper">';
 						var bigtext=TranslateStatusShort(item.Status);
 					  if (item.UsedByCamera==true) {

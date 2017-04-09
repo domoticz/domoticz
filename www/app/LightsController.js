@@ -591,7 +591,7 @@ define(['app'], function (app) {
 
 			$('#modal').show();
 			var htmlcontent = '';
-			htmlcontent='<h2><span data-i18n="Name"></span>: ' + unescape(name) + '</h2>\n';
+			htmlcontent='<p><h2><span data-i18n="Name"></span>: ' + unescape(name) + '</h2></p><br>\n';
 
 			var sunRise="";
 			var sunSet="";
@@ -2125,7 +2125,7 @@ define(['app'], function (app) {
 
 		EvohomePopupMenu = function(item)
 		{
-			var htm='\t      <td id="img"><a href="#evohome" id="evohome_'+ item.idx +'">'+EvohomeImg(item)+'</a></td>\n<div id="evopop_'+ item.idx +'" class="ui-popup ui-body-b ui-overlay-shadow ui-corner-all pop">  <ul class="ui-listview ui-listview-inset ui-corner-all ui-shadow">         <li class="ui-li-divider ui-bar-inherit ui-first-child">Choose an action</li>';
+			var htm='\t      <td id="img" class="img img1"><a href="#evohome" id="evohome_'+ item.idx +'">'+EvohomeImg(item)+'</a></td>\n<div id="evopop_'+ item.idx +'" class="ui-popup ui-body-b ui-overlay-shadow ui-corner-all pop">  <ul class="ui-listview ui-listview-inset ui-corner-all ui-shadow">         <li class="ui-li-divider ui-bar-inherit ui-first-child">Choose an action</li>';
 			$.each([{"name":"Normal","data":"Auto"},{"name":"Economy","data":"AutoWithEco"},{"name":"Away","data":"Away"},{"name":"Day Off","data":"DayOff"},{"name":"Custom","data":"Custom"},{"name":"Heating Off","data":"HeatingOff"}],function(idx, obj){htm+='<li><a href="#" class="ui-btn ui-btn-icon-right ui-icon-'+obj.data+'" onclick="SwitchModal(\''+item.idx+'\',\''+obj.name+'\',\''+obj.data+'\',RefreshLights);deselect($(this),\'#evopop_'+ item.idx +'\');return false;">'+obj.name+'</a></li>';});
 			htm+='</ul></div>';
 			return htm;
@@ -2157,8 +2157,8 @@ define(['app'], function (app) {
 					id="#lightcontent #" + item.idx;
 					var obj=$(id);
 					if (typeof obj != 'undefined') {
-						if ($(id + " #name span").html()!=item.Name) {
-							$(id + " #name span").html(item.Name);
+						if ($(id + " #name").html()!=item.Name) {
+							$(id + " #name").html(item.Name);
 						}
 						var isdimmer=false;
 						var img="";
@@ -2236,12 +2236,12 @@ define(['app'], function (app) {
 								(item.SubType=="RAEX")||
 								(item.SubType.indexOf('A-OK') == 0)||
 								(item.SubType.indexOf('Hasta') >= 0)||
-								(item.SubType.indexOf('Media Mount') == 0) ||
-								(item.SubType.indexOf('Forest') == 0) ||
-								(item.SubType.indexOf('Chamberlain') == 0) ||
-								(item.SubType.indexOf('Sunpery') == 0) ||
-								(item.SubType.indexOf('Dolat') == 0) ||
-								(item.SubType.indexOf('ASP') == 0) ||
+                                (item.SubType.indexOf('Media Mount') == 0) ||
+                                (item.SubType.indexOf('Forest') == 0) ||
+                                (item.SubType.indexOf('Chamberlain') == 0) ||
+                                (item.SubType.indexOf('Sunpery') == 0) ||
+                                (item.SubType.indexOf('Dolat') == 0) ||
+                                (item.SubType.indexOf('ASP') == 0) ||
 								(item.SubType == "Harrison") ||
 								(item.SubType.indexOf('RFY') == 0)||
 								(item.SubType.indexOf('ASA') == 0)||
@@ -2274,12 +2274,12 @@ define(['app'], function (app) {
 								(item.SubType=="RAEX")||
 								(item.SubType.indexOf('A-OK') == 0)||
 								(item.SubType.indexOf('Hasta') >= 0)||
-								(item.SubType.indexOf('Media Mount') == 0) ||
-								(item.SubType.indexOf('Forest') == 0) ||
-								(item.SubType.indexOf('Chamberlain') == 0) ||
-								(item.SubType.indexOf('Sunpery') == 0) ||
-								(item.SubType.indexOf('Dolat') == 0) ||
-								(item.SubType.indexOf('ASP') == 0) ||
+                                (item.SubType.indexOf('Media Mount') == 0) ||
+                                (item.SubType.indexOf('Forest') == 0) ||
+                                (item.SubType.indexOf('Chamberlain') == 0) ||
+                                (item.SubType.indexOf('Sunpery') == 0) ||
+                                (item.SubType.indexOf('Dolat') == 0) ||
+                                (item.SubType.indexOf('ASP') == 0) ||
 								(item.SubType == "Harrison") ||
 								(item.SubType.indexOf('RFY') == 0)||
 								(item.SubType.indexOf('ASA') == 0)||
@@ -2571,8 +2571,8 @@ define(['app'], function (app) {
 							}
 							bigtext = GetLightStatusText(item);
 						}
-						if ($(id + " #bigtext span").html()!=TranslateStatus(GetLightStatusText(item))) {
-							$(id + " #bigtext span").html(bigtext);
+						if ($(id + " #bigtext > span").html()!=TranslateStatus(GetLightStatusText(item))) {
+							$(id + " #bigtext > span").html(bigtext);
 						}
 						if ((typeof $(id + " #status") != 'undefined') && ($(id + " #status").html() != status)) {
 						    $(id + " #status").html(status);
@@ -2599,10 +2599,23 @@ define(['app'], function (app) {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
 			}
-		  	$('#modal').show();
-            		$( "body" ).removeClass();
-	            	$( "body" ).addClass( "switches" );
-			
+		  $('#modal').show();
+            
+            $("body").removeClass();
+            $("body").addClass("switches");   
+            if ($scope.config.DashboardType == 0) {   
+                $("body").addClass("3column");
+            }
+            if ($scope.config.DashboardType == 1) {
+                $("body").addClass("4column");
+            }                    
+            if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
+                $("body").addClass("dashMobile");    
+            }    
+            if ($scope.config.DashboardType == 3) {
+                $("body").addClass("dashFloorplan");
+            }        
+
 		  var htmlcontent = '';
 			var bShowRoomplan=false;
 			$.RoomPlans = [];
@@ -2615,12 +2628,10 @@ define(['app'], function (app) {
 					var totalItems=data.result.length;
 					if (totalItems>0) {
 						bShowRoomplan=true;
-						if (window.myglobals.ismobile==true) {
-							$( "body" ).addClass( "mobile" );
-							//bShowRoomplan=false;
-						}
+		//				if (window.myglobals.ismobile==true) {
+			//				bShowRoomplan=false;
+				//		}
 						if (bShowRoomplan==true) {
-							$( "body" ).addClass( "showRoomplan" );
 							$.each(data.result, function(i,item) {
 								$.RoomPlans.push({
 									idx: item.idx,
@@ -2657,16 +2668,15 @@ define(['app'], function (app) {
 					'\t</tr>\n' +
 					'\t</table>\n';
 		   }
-		if (permissions.hasPermission("Admin")) {
-			$( "body" ).addClass( "admin" );
-			tophtm+=
-				'\t<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
-				'\t<tr>\n' +
-				'\t  <td align="left"><a class="btnstylerev" onclick="AddManualLightDevice();" data-i18n="Manual Light/Switch">Manual Light/Switch</a></td>\n' +
-				'\t  <td align="right"><a class="btnstyle" onclick="AddLightDevice();" data-i18n="Learn Light/Switch">Learn Light/Switch</a></td>\n' +
-				'\t</tr>\n' +
-				'\t</table>\n';
-		}
+			if (permissions.hasPermission("Admin")) {
+				tophtm+=
+					'\t<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
+					'\t<tr>\n' +
+					'\t  <td align="left"><a class="btnstylerev" onclick="AddManualLightDevice();" data-i18n="Manual Light/Switch">Manual Light/Switch</a></td>\n' +
+					'\t  <td align="right"><a class="btnstyle" onclick="AddLightDevice();" data-i18n="Learn Light/Switch">Learn Light/Switch</a></td>\n' +
+					'\t</tr>\n' +
+					'\t</table>\n';
+			}
 
 		  var i=0;
 		  var j=0;
@@ -2696,23 +2706,40 @@ define(['app'], function (app) {
 					htmlcontent+='<div class="row divider">\n';
 					bHaveAddedDevider=true;
 				  }
+                    
+                    var backgroundClass = "statusNormal";
+                    if (item.Protected == true) {
+                        backgroundClass = "statusProtected";
+                    }
+                    else if (item.HaveTimeout == true) {
+                        backgroundClass = "statusTimeout";
+                    } 
+                    else {
+                        var BatteryLevel = parseInt(item.BatteryLevel);
+                        if (BatteryLevel != 255) {
+                            if (BatteryLevel <= 10) {
+                                backgroundClass = "statusLowBattery";
+                            }
+                        }
+                    }    
+                    
 				  var bAddTimer=true;
 				  var bIsDimmer=false;
 				  var status = "";
 				  var xhtm =
 						'\t<div class="span4" id="' + item.idx + '">\n' +
-						'\t  <section>\n';
+						'\t  <div class="item ' + backgroundClass + '">\n';
 				  if ((item.SwitchType == "Blinds") || (item.SwitchType == "Blinds Inverted") || (item.SwitchType == "Blinds Percentage") || (item.SwitchType == "Blinds Percentage Inverted") || (item.SwitchType.indexOf("Venetian Blinds") == 0) || (item.SwitchType.indexOf("Media Player") == 0)) {
 						if (
 							(item.SubType=="RAEX")||
 							(item.SubType.indexOf('A-OK') == 0)||
 							(item.SubType.indexOf('Hasta') >= 0)||
-							    (item.SubType.indexOf('Media Mount') == 0) ||
-							    (item.SubType.indexOf('Forest') == 0) ||
-							    (item.SubType.indexOf('Chamberlain') == 0) ||
-							    (item.SubType.indexOf('Sunpery') == 0) ||
-							    (item.SubType.indexOf('Dolat') == 0) ||
-							    (item.SubType.indexOf('ASP') == 0) ||
+                            (item.SubType.indexOf('Media Mount') == 0) ||
+                            (item.SubType.indexOf('Forest') == 0) ||
+                            (item.SubType.indexOf('Chamberlain') == 0) ||
+                            (item.SubType.indexOf('Sunpery') == 0) ||
+                            (item.SubType.indexOf('Dolat') == 0) ||
+                            (item.SubType.indexOf('ASP') == 0) ||
 							(item.SubType == "Harrison") ||
 							(item.SubType.indexOf('RFY') == 0)||
 							(item.SubType.indexOf('ASA') == 0)||
@@ -2730,18 +2757,10 @@ define(['app'], function (app) {
 						xhtm+='\t    <table id="itemtablenostatus" border="0" cellpadding="0" cellspacing="0">\n';
 					}
 
-					var nbackcolor="#D4E1EE";
-					if (item.HaveTimeout==true) {
-						nbackcolor="#DF2D3A";
-					}
-					else if (item.Protected==true) {
-						nbackcolor="#A4B1EE";
-					}
-
 					xhtm+=
 						'\t    <tr>\n' +
-						'\t      <td id="name" class="name" style="background-color: ' + nbackcolor + ';"><span>' + item.Name + '</span></td>\n' +
-										'\t      <td id="bigtext" class="bigtext"><span>';
+						'\t      <td id="name" class="name">' + item.Name + '</td>\n' +
+										'\t      <td id="bigtext" class="name"><span class="wrapper">';
 				  var bigtext=TranslateStatusShort(item.Status);
 				  if (item.UsedByCamera==true) {
 					var streamimg='<img src="images/webcam.png" title="' + $.t('Stream Video') +'" height="16" width="16">';
@@ -2755,8 +2774,9 @@ define(['app'], function (app) {
 					  }
 				  }
 				  xhtm+=bigtext+'</span></td>\n';
+				  xhtm+=bigtext+'</span></td>\n';
 				  if (item.SubType=="Security Panel") {
-					xhtm+='\t      <td id="img"><a href="secpanel/"><img src="images/security48.png" class="lcursor" height="48" width="48"></a></td>\n';
+					xhtm+='\t      <td id="img" class="img img1"><a href="secpanel/"><img src="images/security48.png" class="lcursor" height="48" width="48"></a></td>\n';
 				  }
 				  else if (item.SubType=="Evohome") {
 					xhtm+=EvohomePopupMenu(item);
@@ -3107,28 +3127,27 @@ define(['app'], function (app) {
 								}
 						  }
 					xhtm+=
-						'\t      <td id="status" class="status">' + status + '</td>\n' +
-						'\t      <td id="lastupdate" class="lastupdate"><span>' + item.LastUpdate + '</span></td>\n' +
-						'\t      <td id="type" class="type"><span>' + item.Type + ', ' + item.SubType + ', ' + item.SwitchType;
+						'\t      <td id="status"><span class="wrapper">' + status + '</span></td>\n' +
+						'\t      <td id="lastupdate"><span>' + item.LastUpdate + '</span></td>\n' +
+						'\t      <td id="type">' + item.Type + ', ' + item.SubType + ', ' + item.SwitchType;
 					if (item.SwitchType == "Dimmer") {
 						if ((item.SubType.indexOf("RGBW") >= 0)||(item.SubType=="RGB")) {
-                        				xhtm+='</span>';						
 						}
 						else {
-							xhtm+='</span><br><br><div style="margin-left:60px;" class="dimslider" id="slider" data-idx="' + item.idx + '" data-type="norm" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"></div>';
+							xhtm+='<br><br><div style="margin-left:60px;" class="dimslider" id="slider" data-idx="' + item.idx + '" data-type="norm" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"></div>';
 						}
 					}
 					else if (item.SwitchType == "TPI") {
-						xhtm+='</span><br><br><div style="margin-left:60px;" class="dimslider" id="slider" data-idx="' + item.idx + '" data-type="relay" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"';
+						xhtm+='<br><br><div style="margin-left:60px;" class="dimslider" id="slider" data-idx="' + item.idx + '" data-type="relay" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"';
 						if (item.Unit < 64 || item.Unit > 95)
 							xhtm+=' data-disabled="true"';
 						xhtm+='></div>';
 					}
 					else if ((item.SwitchType == "Blinds Percentage") || (item.SwitchType == "Blinds Percentage Inverted")) {
-						xhtm+='</span><br><div style="margin-left:108px; margin-top:7px;" class="dimslider dimsmall" id="slider" data-idx="' + item.idx + '" data-type="blinds" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"></div>';
+						xhtm+='<br><div style="margin-left:108px; margin-top:7px;" class="dimslider dimsmall" id="slider" data-idx="' + item.idx + '" data-type="blinds" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"></div>';
 					}
 					else if (item.SwitchType == "Selector") {
-						xhtm += '</span><br><div class="selectorlevels" style="margin-top: 0.4em;">';
+						xhtm += '<br><div class="selectorlevels" style="margin-top: 0.4em;">';
 						if (item.SelectorStyle === 0) {
 							xhtm += '<div id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelnames="' + escape(item.LevelNames) + '" data-selectorstyle="' + item.SelectorStyle + '" data-levelname="' + escape(GetLightStatusText(item)) + '" data-leveloffhidden="' + item.LevelOffHidden + '" data-levelactions="' + item.LevelActions + '">';
 							var levelNames = item.LevelNames.split('|');
@@ -3156,11 +3175,11 @@ define(['app'], function (app) {
 							'\t      <td class="options">';
 					  if (item.Favorite == 0) {
 						xhtm+=
-							  '<img class="favorite favoriteOff lcursor" src="images/nofavorite.png" title="' + $.t('Add to Dashboard') + '" onclick="MakeFavorite(' + item.idx + ',1);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
+							  '<img src="images/nofavorite.png" title="' + $.t('Add to Dashboard') + '" onclick="MakeFavorite(' + item.idx + ',1);" class="lcursor favorite favoriteOff">&nbsp;&nbsp;&nbsp;&nbsp;';
 					  }
 					  else {
 						xhtm+=
-							  '<img class="favorite favoriteOn lcursor" src="images/favorite.png" title="' + $.t('Remove from Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',0);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
+							  '<img src="images/favorite.png" title="' + $.t('Remove from Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',0);" class="lcursor favorite favoriteOn">&nbsp;&nbsp;&nbsp;&nbsp;';
 					  }
 				  xhtm+=
 						'<a class="btnsmall" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name)  + '\', \'#lightcontent\', \'ShowLights\');" data-i18n="Log">Log</a> ';
@@ -3195,7 +3214,7 @@ define(['app'], function (app) {
 						'</td>\n' +
 						'\t    </tr>\n' +
 						'\t    </table>\n' +
-						'\t  </section>\n' +
+						'\t  </div>\n' +
 						'\t</div>\n';
 				  htmlcontent+=xhtm;
 				  j+=1;
@@ -3314,8 +3333,8 @@ define(['app'], function (app) {
 								$(id + " #img").html(img);
 							}
 						}
-						if ($(id + " #bigtext span").html()!=bigtext) {
-							$(id + " #bigtext span").html(bigtext);
+						if ($(id + " #bigtext > span").html()!=bigtext) {
+							$(id + " #bigtext > span").html(bigtext);
 						}
 					}
 					if (dtype!="relay")
@@ -3357,7 +3376,7 @@ define(['app'], function (app) {
 						div$.data('levelname', levelname);
 					});
 
-					$('#lightcontent #' + idx + " #bigtext span").html(unescape(levelname));
+					$('#lightcontent #' + idx + " #bigtext > span").html(unescape(levelname));
 				}
 			});
 
@@ -3380,7 +3399,7 @@ define(['app'], function (app) {
 					select$.selectmenu("menuWidget").addClass('selectorlevels-menu');
 					select$.val(level);
 
-					$('#lightcontent #' + idx + " #bigtext span").html(unescape(levelname));
+					$('#lightcontent #' + idx + " #bigtext > span").html(unescape(levelname));
 				},
 				change: function (event, ui) { //When the user selects an option
 					var select$ = $(this),
