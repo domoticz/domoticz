@@ -350,6 +350,7 @@ namespace http {
 
 			RegisterCommandCode("getlanguage", boost::bind(&CWebServer::Cmd_GetLanguage, this, _1, _2, _3), true);
 			RegisterCommandCode("getthemes", boost::bind(&CWebServer::Cmd_GetThemes, this, _1, _2, _3), true);
+                        RegisterCommandCode("gettile", boost::bind(&CWebServer::Cmd_GetTitle, this, _1, _2, _3), true);
 
 			RegisterCommandCode("logincheck", boost::bind(&CWebServer::Cmd_LoginCheck, this, _1, _2, _3), true);
 			RegisterCommandCode("getversion", boost::bind(&CWebServer::Cmd_GetVersion, this, _1, _2, _3), true);
@@ -869,7 +870,7 @@ namespace http {
 				root["language"] = sValue;
 			}
 		}
-
+                
 		void CWebServer::Cmd_GetThemes(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			root["status"] = "OK";
@@ -883,6 +884,17 @@ namespace http {
 				ii++;
 			}
 		}
+
+                void CWebServer::Cmd_GetTitle(WebEmSession & session, const request& req, Json::Value &root)
+                {
+                        std::string sValue;
+			root["status"] = "OK";
+                        root["title"] = "GetTitle";
+                        if (m_sql.GetPreferencesVar("Title", sValue))
+                                root["Title"] = sValue;
+			else 
+				root["Title"] = "Domoticz4";
+                }
 
 		void CWebServer::Cmd_LoginCheck(WebEmSession & session, const request& req, Json::Value &root)
 		{

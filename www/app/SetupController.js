@@ -554,6 +554,9 @@ define(['app'], function (app) {
 			  }
 			  if (typeof data.title != 'undefined') {
                                 $("#settingscontent #Title").val(data.Title);
+				$.myglobals.Title = data.Title;
+				document.title = $.myglobals.Title;
+				sessionStorage.title = data.Title;
                           }
 
 			  if (typeof data.AuthenticationMethod != 'undefined') {
