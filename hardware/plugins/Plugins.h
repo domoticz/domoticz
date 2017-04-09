@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../DomoticzHardware.h"
+#include "../../notifications/NotificationBase.h"
 
 #ifndef byte
 typedef unsigned char byte;
@@ -11,6 +12,7 @@ namespace Plugins {
 	class CPluginMessage;
 	class CPluginProtocol;
 	class CPluginTransport;
+	class CPluginNotifier;
 
 	class CPlugin : public CDomoticzHardwareBase
 	{
@@ -24,6 +26,8 @@ namespace Plugins {
 		std::string		m_Password;
 		std::string		m_Version;
 		std::string		m_Author;
+
+		CPluginNotifier*	m_Notifier;
 
 		boost::shared_ptr<boost::thread> m_thread;
 
@@ -57,6 +61,28 @@ namespace Plugins {
 		std::string			m_HomeFolder;
 		bool				m_bDebug;
 		bool				m_stoprequested;
+	};
+
+	class CPluginNotifier : public CNotificationBase
+	{
+	private:
+		const int	m_Hwd_ID;
+	public:
+		CPluginNotifier(const int Hwd_ID, const std::string & );
+		~CPluginNotifier();
+		virtual bool IsConfigured();
+		std::string	 GetIconFile(const std::string &ExtraData);
+		std::string GetCustomIcon(std::string & szCustom);
+	protected:
+		virtual bool SendMessageImplementation(
+			const uint64_t Idx,
+			const std::string &Name,
+			const std::string &Subject,
+			const std::string &Text,
+			const std::string &ExtraData,
+			const int Priority,
+			const std::string &Sound,
+			const bool bFromNotification);
 	};
 
 }

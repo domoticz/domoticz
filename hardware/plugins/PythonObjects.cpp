@@ -808,12 +808,6 @@ namespace Plugins {
 			}
 
 			CDevice_refresh(self);
-
-			// Signal Event System to handle the change
-			m_mainworker.m_eventsystem.ProcessDevice(self->HwdID, self->ID, self->Unit, self->Type, self->SubType, iSignalLevel, iBatteryLevel, nValue, sValue, sName.c_str(), 0);
-
-			// Handle notifications
-
 		}
 		else
 		{
