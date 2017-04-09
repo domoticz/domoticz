@@ -704,7 +704,7 @@ define(['app'], function(app) {
 												(item.Status == 'On')
 											) {
 												img = '<img src="images/Fireplace48_On.png" title="' + $.t(RO ? "On" : "Turn Off") + (RO ? '"' : '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor"') + ' height="40" width="40">';
-												$(id + " #div.item").removeClass('Off-fireplace').addClass('on-fireplace');
+												$(id + " #div.item").removeClass('off-fireplace').addClass('on-fireplace');
 											} else {
 												img = '<img src="images/Fireplace48_Off.png" title="' + $.t(RO ? "Off" : "Turn On") + (RO ? '"' : '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor"') + ' height="40" width="40">';
 												$(id + " #div.item").removeClass('on-fireplace').addClass('off-fireplace');
@@ -975,7 +975,7 @@ define(['app'], function(app) {
 							}
 						}); //temp devices
 
-						//Weather Sensors
+//Weather Sensors
 						$.each(data.result, function(i, item) {
 							if (
 								((typeof item.Rain != 'undefined') || (typeof item.Visibility != 'undefined') || (typeof item.UVI != 'undefined') || (typeof item.Radiation != 'undefined') || (typeof item.Direction != 'undefined') || (typeof item.Barometer != 'undefined')) &&
@@ -1012,14 +1012,14 @@ define(['app'], function(app) {
 											if (typeof item.ForecastStr != 'undefined') {
 												status = item.Barometer + ' hPa, ' + $.t('Prediction') + ': ' + $.t(item.ForecastStr);
 
-												$(id + " #div.item");
+												//$(id + " #div.item");
 												var classList = $(id + " #div.item").attr('class').split(' ');
 
 												$.each(classList, function(cssid, cssitem) {
-													if (item.indexOf('itlookstobe-') == 0) $(id + " #div.item").removeClass(item);
+													if (item.indexOf('weatherPrediction-') == 0) $(id + " #div.item").removeClass(item);
 												});
 
-												$(id + " #div.item").addClass('itslookstobe-' + item.ForecastStr);
+												$(id + " #div.item").addClass('weatherPrediction-' + item.ForecastStr);
 											} else {
 												status = item.Barometer + ' hPa';
 											}
@@ -1067,7 +1067,7 @@ define(['app'], function(app) {
 											if (typeof item.Gust != 'undefined') {
 												status += ', ' + $.t('Gust') + ': ' + item.Gust + ' ' + $scope.config.WindSign;
 											}
-											status += '<br>\n';
+											status += '</span><span>\n'; //removed \n too
 											if (typeof item.Temp != 'undefined') {
 												status += $.t('Temp') + ': ' + item.Temp + '&deg; ' + $scope.config.TempSign;
 											}
@@ -1235,7 +1235,7 @@ define(['app'], function(app) {
 							}
 						}); //security devices
 
-						//evohome devices
+//evohome devices
 						$.each(data.result, function(i, item) {
 							if ((item.Type.indexOf('Heating') == 0) && (item.Favorite != 0)) {
 								id = "#dashcontent #evohome_" + item.idx;
@@ -1284,7 +1284,7 @@ define(['app'], function(app) {
 							}
 						}); //evohome devices
 
-						//Utility Sensors
+            //Utility Sensors
 						$.each(data.result, function(i, item) {
 							if (
 								(
@@ -1373,7 +1373,7 @@ define(['app'], function(app) {
 										}
 										if (typeof item.Usage != 'undefined') {
 											if ($scope.config.DashboardType == 0) {
-												status += '<br>' + $.t("Actual") + ': ' + item.Usage;
+												status += '</span><span>' + $.t("Actual") + ': ' + item.Usage;
 											} else {
 												status += ", A: " + item.Usage;
 											}
@@ -1381,10 +1381,10 @@ define(['app'], function(app) {
 										if (typeof item.CounterDeliv != 'undefined') {
 											if (item.CounterDeliv != 0) {
 												if ($scope.config.DashboardType == 0) {
-													status += '<br>' + $.t("Return") + ': ' + item.CounterDelivToday;
-													status += '<br>' + $.t("Actual") + ': ' + item.UsageDeliv;
+													status += '</span><span>' + $.t("Return") + ': ' + item.CounterDelivToday;
+													status += '</span><span>' + $.t("Actual") + ': ' + item.UsageDeliv;
 												} else {
-													status += '<br>R: T: ' + item.CounterDelivToday;
+													status += '</span><span>R: T: ' + item.CounterDelivToday;
 													status += ", A: " + item.UsageDeliv;
 												}
 											}
@@ -1463,7 +1463,7 @@ define(['app'], function(app) {
 												if ($scope.config.DashboardType == 0) {
 													//status+='<br>' + $.t("Actual") + ': ' + item.Usage;
 													if (typeof item.CounterToday != 'undefined') {
-														status += '<br>' + $.t("Today") + ': ' + item.CounterToday;
+														status += '</span><span>' + $.t("Today") + ': ' + item.CounterToday;
 													}
 												} else {
 													//status+=", A: " + item.Usage;
@@ -1478,7 +1478,7 @@ define(['app'], function(app) {
 												if (item.UsageDeliv.charAt(0) != 0) {
 													bigtext = '-' + item.UsageDeliv;
 												}
-												status += '<br>';
+												status += '</span><span>';
 												if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
 													status += 'R: ' + item.CounterDelivToday;
 												} else {
@@ -1500,7 +1500,8 @@ define(['app'], function(app) {
 												}
 											}
 										}
-
+                                            
+                                        status = '<span>' + status + '</span>';
 										if ($(id + " #status > span").html() != status) {
 											$(id + " #status > span").html(status);
 										}
@@ -1731,8 +1732,7 @@ define(['app'], function(app) {
 							htmlcontent += '</section>';
 						}
 
-
-						//light devices
+//light devices
 						jj = 0;
 						bHaveAddedDivider = false;
 						$.each(data.result, function(i, item) {
@@ -2362,6 +2362,7 @@ define(['app'], function(app) {
 										}
 									} else if (item.SubType.indexOf("Itho") == 0) {
 										xhtm += '\t      <td id="img" class="img img1"><img src="images/Fan48_On.png" height="40" width="40" class="lcursor" onclick="ShowIthoPopup(event, ' + item.idx + ', RefreshFavorites, ' + item.Protected + ');"></td>\n';
+                                        
 									} else if (item.SubType.indexOf("Lucci") == 0) {
 										xhtm += '\t      <td id="img" class="img img1"><img src="images/Fan48_On.png" height="40" width="40" class="lcursor" onclick="ShowLucciPopup(event, ' + item.idx + ', RefreshFavorites, ' + item.Protected + ');"></td>\n';
 									} else {
@@ -2513,7 +2514,7 @@ define(['app'], function(app) {
 										status += ' (' + $.t(item.HumidityStatus) + ')';
 									}
 									if (typeof item.DewPoint != 'undefined') {
-										status += "<br>" + $.t("Dew Point") + ": " + item.DewPoint + '&deg; ' + $scope.config.TempSign;
+										status += "</span><span>" + $.t("Dew Point") + ": " + item.DewPoint + '&deg; ' + $scope.config.TempSign;
 									}
 									xhtm +=
 										'\t      <td id="status" class="status">' + status + '</td>\n' +
@@ -2568,7 +2569,7 @@ define(['app'], function(app) {
 										}
 									}
 									xhtm += '" class="lcursor" onclick="ShowTempLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40"></td>\n' +
-										'\t      <td id="status" class="status">';
+										'\t      <td id="status" class="status"><span>';
 									var bHaveBefore = false;
 									if (typeof item.HumidityStatus != 'undefined') {
 										xhtm += $.t(item.HumidityStatus);
@@ -2581,7 +2582,7 @@ define(['app'], function(app) {
 										xhtm += $.t("Dew Point") + ": " + item.DewPoint + '&deg; ' + $scope.config.TempSign;
 									}
 									xhtm +=
-										'</td>\n' +
+										'</span></td>\n' +
 										'\t      <td id="lastupdate" class="lastupdate"><span>' + item.LastUpdate + '</span></td>\n' +
 										'\t    </tr>\n' +
 										'\t    </table>\n' +
@@ -3290,7 +3291,7 @@ define(['app'], function(app) {
 
 									/* generate bigtext html */
 									var bigtexthtml = "";
-									bigtexthtml += '<span class="value1">';
+									bigtexthtml += '<span>';
 									if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv == 'undefined')) {
 										bigtexthtml += item.Usage;
 									} else if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv != 'undefined')) {
@@ -3306,7 +3307,7 @@ define(['app'], function(app) {
 											bigtexthtml += item.Usage;
 										}
 										if (item.UsageDeliv.charAt(0) != 0) {
-											bigtexthtml += '</span><span class="value2">' + item.UsageDeliv;
+											bigtexthtml += '</span><span>' + item.UsageDeliv;
 										}
 									} else if ((item.SubType == "Gas") || (item.SubType == "RFXMeter counter")) {
 										bigtexthtml += item.CounterToday;
@@ -3456,7 +3457,7 @@ define(['app'], function(app) {
 											if ($scope.config.DashboardType == 0) {
 												//status+='<br>' + $.t("Actual") + ': ' + item.Usage;
 												if (typeof item.CounterToday != 'undefined') {
-													statushtml += '</span><span class="value2">' + $.t("Today") + ': ' + item.CounterToday;
+													statushtml += '</span><span>' + $.t("Today") + ': ' + item.CounterToday;
 												}
 											} else {
 												//status+=", A: " + item.Usage;
@@ -3468,11 +3469,11 @@ define(['app'], function(app) {
 									}
 									if (typeof item.CounterDeliv != 'undefined') {
 										if (item.CounterDeliv != 0) {
-											statushtml += '</span><span class="value2">';
+											statushtml += '</span><span>';
 											statushtml += '' + $.t("Return") + ': ' + item.CounterDelivToday;
 										}
 									}
-									statushtml = '<span class="value1">' + statushtml + '</span>';
+									statushtml = '<span>' + statushtml + '</span>';
 
 									/* checking the generated html for even more classes, then fill in the HTML */
 									var count = 1;
