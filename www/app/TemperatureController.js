@@ -585,7 +585,24 @@ define(['app'], function (app) {
 				controller: function($scope, $element, $attrs, permissions) {
 					var ctrl = this;
 					var item = ctrl.item;
-
+                    
+                    var backgroundClass = "statusNormal";
+                    if (item.Protected == true) {
+                        backgroundClass = "statusProtected";
+                    }
+                    else if (item.HaveTimeout == true) {
+                        backgroundClass = "statusTimeout";
+                    } 
+                    else {
+                        var BatteryLevel = parseInt(item.BatteryLevel);
+                        if (BatteryLevel != 255) {
+                            if (BatteryLevel <= 10) {
+                                backgroundClass = "statusLowBattery";
+                            }
+                        }
+                    }
+                    $scope.statusClass = backgroundClass;
+                    
 					ctrl.sHeatMode = function() {
 						if (typeof item.Status != 'undefined') { //FIXME only support this for evohome?
 							return item.Status;
@@ -594,7 +611,7 @@ define(['app'], function (app) {
 						}
 					};
 
-					ctrl.nbackcolor = function() {
+					ctrl.nbackcolor = function() { // this can stay for now because EvoSetPointColor seems to use it?
 						var nbackcolor="#D4E1EE";
 						if (item.HaveTimeout==true) {
 							nbackcolor="#DF2D3A";

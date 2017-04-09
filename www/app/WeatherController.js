@@ -474,22 +474,23 @@ define(['app'], function (app) {
 					var ctrl = this;
 					var item = ctrl.item;
 
-					ctrl.nbackcolor = function() {
-						var nbackcolor="#D4E1EE";
-						if (item.HaveTimeout==true) {
-							nbackcolor="#DF2D3A";
-						}
-						else {
-							var BatteryLevel=parseInt(item.BatteryLevel);
-							if (BatteryLevel!=255) {
-								if (BatteryLevel<=10) {
-									nbackcolor="#DDDF2D";
-								}
-							}
-						}
-						return {'background-color': nbackcolor};
-					};
-
+                    var backgroundClass = "statusNormal";
+                    if (item.Protected == true) {
+                        backgroundClass = "statusProtected";
+                    }
+                    else if (item.HaveTimeout == true) {
+                        backgroundClass = "statusTimeout";
+                    } 
+                    else {
+                        var BatteryLevel = parseInt(item.BatteryLevel);
+                        if (BatteryLevel != 255) {
+                            if (BatteryLevel <= 10) {
+                                backgroundClass = "statusLowBattery";
+                            }
+                        }
+                    }
+                    $scope.statusClass = backgroundClass;
+                    
 					ctrl.displayBarometer = function() {
 						return typeof item.Barometer != 'undefined';
 					};
