@@ -5630,7 +5630,7 @@ namespace http {
 				root["title"] = "UpdateNotification";
 
 				std::string recoverymsg;
-				if (m_notifications.CustomRecoveryMessage(strtoull(idx.c_str(),NULL,0), recoverymsg, true))
+				if ((srecovery == "1") && (m_notifications.CustomRecoveryMessage(strtoull(idx.c_str(),NULL,0), recoverymsg, true)))
 				{
 					scustommessage.append(";;");
 					scustommessage.append(recoverymsg);
@@ -7587,9 +7587,20 @@ namespace http {
 			std::string EnableTabCustom = request::findValue(&req, "EnableTabCustom");
 			m_sql.UpdatePreferencesVar("EnableTabCustom", (EnableTabCustom == "on" ? 1 : 0));
 
-			m_sql.UpdatePreferencesVar("NotificationSensorInterval", atoi(request::findValue(&req, "NotificationSensorInterval").c_str()));
-			m_sql.UpdatePreferencesVar("NotificationSwitchInterval", atoi(request::findValue(&req, "NotificationSwitchInterval").c_str()));
-
+			m_sql.GetPreferencesVar("NotificationSensorInterval", rnOldvalue);
+			rnvalue = atoi(request::findValue(&req, "NotificationSensorInterval").c_str());
+			if (rnOldvalue != rnvalue)
+			{
+				m_sql.UpdatePreferencesVar("NotificationSensorInterval", rnvalue);
+				m_notifications.ReloadNotifications();
+			}
+			m_sql.GetPreferencesVar("NotificationSwitchInterval", rnOldvalue);
+			rnvalue = atoi(request::findValue(&req, "NotificationSwitchInterval").c_str());
+			if (rnOldvalue != rnvalue)
+			{
+				m_sql.UpdatePreferencesVar("NotificationSwitchInterval", rnvalue);
+				m_notifications.ReloadNotifications();
+			}
 			std::string RaspCamParams = request::findValue(&req, "RaspCamParams");
 			if (RaspCamParams != "")
 				m_sql.UpdatePreferencesVar("RaspCamParams", RaspCamParams.c_str());
