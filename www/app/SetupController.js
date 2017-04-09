@@ -552,6 +552,9 @@ define(['app'], function (app) {
 			  if (typeof data.WebTheme != 'undefined') {
 				$("#settingscontent #combothemes").val(data.WebTheme);
 			  }
+			  if (typeof data.title != 'undefined') {
+                                $("#settingscontent #Title").val(data.Title);
+                          }
 
 			  if (typeof data.AuthenticationMethod != 'undefined') {
 				$("#webtable #comboauthmethod").val(data.AuthenticationMethod);

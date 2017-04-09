@@ -7664,6 +7664,7 @@ namespace http {
 			std::string SelectedTheme = request::findValue(&req, "Themes");
 			m_sql.UpdatePreferencesVar("WebTheme", SelectedTheme.c_str());
 			m_pWebEm->SetWebTheme(SelectedTheme);
+                        m_sql.UpdatePreferencesVar("Title", request::findValue(&req, "Title").c_str());
 
 			m_sql.GetPreferencesVar("RandomTimerFrame", rnOldvalue);
 			rnvalue = atoi(request::findValue(&req, "RandomSpread").c_str());
@@ -12311,6 +12312,10 @@ namespace http {
 				else if (Key == "Language")
 				{
 					root["Language"] = sValue;
+				 }
+                                else if (Key == "Title")
+                                {
+                                        root["Title"] = sValue;
 				}
 				else if (Key == "WindUnit")
 				{
