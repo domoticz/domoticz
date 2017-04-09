@@ -1,8 +1,8 @@
     <div class="item temperature">
         <table id="itemtablenotype" border="0" cellpadding="0" cellspacing="0">
             <tr>
-                <td id="name" class="name statusNormal" ng-style="ctrl.nbackcolor()" ng-bind="ctrl.item.Name"></td>
-                <td id="bigtext" class="bigtext ng-cloak">
+                <td id="name" ng-style="ctrl.nbackcolor()" ng-bind="ctrl.item.Name"><span></span></td>
+                <td id="bigtext" class="ng-cloak"><span>
                     <span ng-show="ctrl.displayTemp()">{{ctrl.item.Temp}}&#176; {{ctrl.tempsign}}</span>
                     <span ng-show="ctrl.displaySetPoint() && ctrl.isSetPointOn()">({{ctrl.item.SetPoint}}&#176; {{ctrl.tempsign}})</span>
                     <span ng-show="ctrl.displaySetPoint() && !ctrl.isSetPointOn()">(Off)</span>
@@ -14,9 +14,9 @@
 
                     <span ng-show="ctrl.displayChill() && (ctrl.displayTemp() || ctrl.displaySetPoint() || ctrl.displayState() || ctrl.displayHeat())">/</span>
                     <span ng-show="ctrl.displayChill()">{{ctrl.item.Chill}}&#176; {{ctrl.tempsign}}</span>
-                </td>
+                </span></td>
                 <td id="img" class="img img1"><img ng-src="images/{{ctrl.image()}}" height="48" width="48"></td>
-                <td id="status" class="status ng-cloak">
+                <td id="status" class="ng-cloak"><span class="wrapper">
                     <!-- NB : weird comments to avoid unwanted spaces due to new line -->
                     <span ng-show="ctrl.displaySetPoint()" data-i18n="Set Point">Set Point</span><span ng-show="ctrl.displaySetPoint() && ctrl.isSetPointOn()">: {{ctrl.item.SetPoint}}&#176; {{ctrl.tempsign}}, </span><span ng-show="ctrl.displaySetPoint() && !ctrl.isSetPointOn()">: Off, </span><!--
                     --><span ng-show="ctrl.displayState()" data-i18n="State">State</span><span ng-show="ctrl.displayState()">: {{ctrl.item.State}}, </span><span ng-show="ctrl.displayMode()" data-i18n="Mode">Mode</span><span ng-show="ctrl.displayMode()">: {{ctrl.EvoDisplayTextMode()}}</span><!--
@@ -32,8 +32,8 @@
                     --><span ng-show="ctrl.displayGust()" data-i18n="Gust">Gust</span><span ng-show="ctrl.displayGust()">: {{ctrl.item.Gust}} {{ctrl.windsign}}</span><!--
                     --><span ng-show="(ctrl.displayMode() || ctrl.displayHumidityStatus()) && !ctrl.displayForecast() && ctrl.displayDewPoint()">, </span><!--
                     --><span ng-show="ctrl.displayDewPoint()" data-i18n="Dew Point">Dew Point</span><span ng-show="ctrl.displayDewPoint()">: {{ctrl.item.DewPoint}}&#176; {{ctrl.tempsign}}</span>
-                </td>
-                <td id="lastupdate" class="lastupdate" ng-bind="ctrl.item.LastUpdate"></td>
+                </span></td>
+                <td id="lastupdate" ng-bind="ctrl.item.LastUpdate"><span></span></td>
                 <td class="options">
                     <img ng-show="ctrl.item.Favorite == 0" src="images/nofavorite.png" ng-click="ctrl.MakeFavorite(1)" class="favorite favoriteOff lcursor" data-i18n="[title]Add to Dashboard" title="Add to Dashboard">
                     <img ng-show="ctrl.item.Favorite != 0" src="images/favorite.png" ng-click="ctrl.MakeFavorite(0)" class="favorite favoriteOn lcursor" data-i18n="[title]Remove from Dashboard" title="Remove from Dashboard">
