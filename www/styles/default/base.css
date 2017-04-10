@@ -1452,8 +1452,10 @@ div.dataTables_wrapper .ui-widget-header{
     transition: all 0.2s ease-in-out; 
     transform: scale(0.8); */
     transition: all 2s ease-in-out;
+    text-align:left;
 }
-
+.ui-dialog td label,
+.ui-dialog td{display:inline;text-align:left;important;}
 
 /*  HOVER STATES  */
 
