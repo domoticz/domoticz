@@ -100,7 +100,7 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 				command = "on";
 				break;
 			default:
-				_log.Log(LOG_STATUS, "XiaomiGateway: Unknown command %d", xcmd->cmnd);
+				_log.Log(LOG_ERROR, "XiaomiGateway: Unknown command %d", xcmd->cmnd);
 				break;
 			}
 			message = "{\"cmd\":\"write\",\"model\":\"plug\",\"sid\":\"158d00" + sid + "\",\"short_id\":9844,\"data\":\"{\\\"channel_0\\\":\\\"" + command + "\\\",\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
@@ -493,15 +493,14 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 			xcmd.unitcode = 2;
 		}
 		int nvalue = atoi(result[0][0].c_str());
-		int BatteryLevel = atoi(result[0][1].c_str());
-		
-		//if ((((bIsOn && nvalue == 0) || (bIsOn == false && nvalue == 1))) || (switchtype == STYPE_Selector)) {
+		int BatteryLevel = atoi(result[0][1].c_str());		
+
 		if (messagetype == "heartbeat") {
 			if (battery != 255) {
 				BatteryLevel = battery;
 				m_sql.safe_query("UPDATE DeviceStatus SET BatteryLevel=%d WHERE(HardwareID == %d) AND (DeviceID == '%q') AND (Unit == '%d')", BatteryLevel, m_HwdID, ID.c_str(), xcmd.unitcode);
 			}
-		} 
+		}
 		else {
 			if ((bIsOn == false && nvalue >= 1) || (bIsOn == true) || (Name == "Xiaomi Wired Dual Wall Switch") || (Name == "Xiaomi Wired Single Wall Switch")) {
 				m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, NULL, BatteryLevel);
@@ -591,7 +590,7 @@ void XiaomiGateway::UpdateToken(const std::string & value)
 	boost::lock_guard<boost::mutex> lock(m_mutex);
 	m_token = value;
 #ifdef _DEBUG
-	//_log.Log(LOG_STATUS, "XiaomiGateway: Token Set - %s", m_token.c_str());
+	_log.Log(LOG_STATUS, "XiaomiGateway: Token Set - %s", m_token.c_str());
 #endif
 }
 
@@ -603,9 +602,6 @@ bool XiaomiGateway::StartHardware()
 	//force connect the next first time
 	m_bIsStarted = true;
 
-	// update any CustomSwitch Xiaomi devices to GeneralSwitch		
-	//m_sql.safe_query("UPDATE DeviceStatus SET SubType=73 WHERE(HardwareID == %d) AND (SubType == 72)", m_HwdID);
-	//m_sql.safe_query("UPDATE DeviceStatus SET nValue=0 WHERE(HardwareID == %d) ", m_HwdID);
 	m_GatewayMusicId = "10000";
 	m_GatewayVolume = "20";
 
@@ -731,9 +727,9 @@ std::string XiaomiGateway::GetGatewayKey()
 		sprintf(&gatewaykey[i * 2], "%02X", ciphertext[i]);
 	}
 #ifdef _DEBUG
-	//_log.Log(LOG_STATUS, "XiaomiGateway: GetGatewayKey Password - %s", m_GatewayPassword.c_str());
-	//_log.Log(LOG_STATUS, "XiaomiGateway: GetGatewayKey Token - %s", m_token.c_str());
-	//_log.Log(LOG_STATUS, "XiaomiGateway: GetGatewayKey key - %s", gatewaykey);
+	_log.Log(LOG_STATUS, "XiaomiGateway: GetGatewayKey Password - %s", m_GatewayPassword.c_str());
+	_log.Log(LOG_STATUS, "XiaomiGateway: GetGatewayKey Token - %s", m_token.c_str());
+	_log.Log(LOG_STATUS, "XiaomiGateway: GetGatewayKey key - %s", gatewaykey);
 #endif
 	return gatewaykey;
 #else
@@ -1036,7 +1032,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							std::string token = root["token"].asString();
 							if (token != "") {
 #ifdef _DEBUG
-								//_log.Log(LOG_STATUS, "XiaomiGateway: Token Received - %s", token.c_str());
+								_log.Log(LOG_STATUS, "XiaomiGateway: Token Received - %s", token.c_str());
 #endif
 								m_XiaomiGateway->UpdateToken(token);
 								showmessage = false;
