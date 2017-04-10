@@ -893,7 +893,7 @@ namespace http {
                         if (m_sql.GetPreferencesVar("Title", sValue))
                                 root["Title"] = sValue;
 			else 
-				root["Title"] = "Domoticz4";
+				root["Title"] = "Domoticz";
                 }
 
 		void CWebServer::Cmd_LoginCheck(WebEmSession & session, const request& req, Json::Value &root)
@@ -7687,7 +7687,8 @@ namespace http {
 			std::string SelectedTheme = request::findValue(&req, "Themes");
 			m_sql.UpdatePreferencesVar("WebTheme", SelectedTheme.c_str());
 			m_pWebEm->SetWebTheme(SelectedTheme);
-                        m_sql.UpdatePreferencesVar("Title", request::findValue(&req, "Title").c_str());
+			std::string Title = request::findValue(&req, "Title").c_str();
+                        m_sql.UpdatePreferencesVar("Title", (Title == "")?"Domoticz":Title);
 
 			m_sql.GetPreferencesVar("RandomTimerFrame", rnOldvalue);
 			rnvalue = atoi(request::findValue(&req, "RandomSpread").c_str());

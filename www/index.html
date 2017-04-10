@@ -275,24 +275,18 @@ $(document).ready(function() {
 		DashboardType: 0,
 		isproxied: false
 	};
-	if ( sessionStorage.title ) {		
-		document.title = sessionStorage.title;
-	}
-	else {
+	if (typeof sessionStorage.title == 'undefined') {
+		sessionStorage.title = 'Domoticz';
 		$.ajax({ 
-                	url: "json.htm?type=command&param=gettitle",
-                 	async: false,
-                 	dataType: 'json',
-                 	success: function(data) {
-                                       sessionStorage.title = data.Title;
-                                }
-	         	},
-			error: function(){
-                             	sessionStorage.title = "Domoticz2";
-                 	}
+	             	url: "json.htm?type=command&param=gettitle",
+	        	async: false,
+		     	dataType: 'json',
+	          	success: function(data) {
+				sessionStorage.title = data.Title;
+				  }
 		})
-		document.title = sessionStorage.title;
 	}
+	document.title = sessionStorage.title;
 
 	if( /Android|webOS|iPhone|iPad|iPod|ZuneWP7|BlackBerry/i.test(navigator.userAgent) ) {
 		$.myglobals.ismobile=true;

@@ -2241,7 +2241,11 @@ bool CSQLHelper::OpenDatabase()
 	//Make sure we have some default preferences
 	int nValue=10;
 	std::string sValue;
-	if ((!GetPreferencesVar("LightHistoryDays", nValue)) || (nValue==0))
+	if (!GetPreferencesVar("Title", sValue))
+        {
+                UpdatePreferencesVar("Title", "Domoticz"); 
+        }
+        if ((!GetPreferencesVar("LightHistoryDays", nValue)) || (nValue==0))
 	{
 		UpdatePreferencesVar("LightHistoryDays", 30);
 	}
