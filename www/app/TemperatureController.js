@@ -194,7 +194,22 @@ define(['app'], function (app) {
 				$scope.mytimer = undefined;
 			}
 		  $('#modal').show();
-
+            
+            $('body').removeClass();
+            $('body').addClass('temperature').addClass('frontStage');   
+            /* This creates an error, no idea why.. oh well. */
+            /*if ($scope.config.DashboardType == 0) {   
+                $('body').addClass('3column');
+            }
+            if ($scope.config.DashboardType == 1) {
+                $('body').addClass('4column');
+            }                    
+            if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
+                $('body').addClass('dashMobile');    
+            }    
+            if ($scope.config.DashboardType == 3) {
+                $('body').addClass('dashFloorplan');*/
+            
 			// TODO should belong to a global controller
 			ctrl.isNotMobile = function() {
 				return $window.myglobals.ismobile == false;

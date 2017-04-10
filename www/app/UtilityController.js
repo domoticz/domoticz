@@ -1005,26 +1005,26 @@ define(['app'], function(app) {
 										}
 									}
 								}
-
-								var nbackcolor = "#D4E1EE";
-								if (item.Protected == true) {
-									nbackcolor = "#A4B1EE";
-								}
-								if (item.HaveTimeout == true) {
-									nbackcolor = "#DF2D3A";
-								} else {
-									var BatteryLevel = parseInt(item.BatteryLevel);
-									if (BatteryLevel != 255) {
-										if (BatteryLevel <= 10) {
-											nbackcolor = "#DDDF2D";
-										}
-									}
-								}
-								var obackcolor = rgb2hex($(id + " #name").css("background-color"));
-								if (obackcolor != nbackcolor) {
-									$(id + " #name").css("background-color", nbackcolor);
-								}
-
+                                
+                                var newStatusClass = "statusNormal";
+                                if (item.Protected == true) {
+                                    newStatusClass = "statusProtected";
+                                }
+                                else if (item.HaveTimeout == true) {
+                                    newStatusClass = "statusTimeout";
+                                } 
+                                else {
+                                    var BatteryLevel = parseInt(item.BatteryLevel);
+                                    if (BatteryLevel != 255) {
+                                        if (BatteryLevel <= 10) {
+                                            newStatusClass = "statusLowBattery";
+                                        }
+                                    }
+                                }
+                                if(!$(id + ".item").hasClass(newStatusClass)) {
+                                    $(id + ".item").removeClass("statusNormal").removeClass("statusProtected").removeClass("statusTimeout").removeClass("statusLowBattery"); 
+                                    $(id + ".item").addClass(newStatusClass);
+                                }
 								if ($(id + " #status").html() != status) {
 									$(id + " #bigtext").html(bigtext);
 									$(id + " #status").html(status);
@@ -1061,9 +1061,22 @@ define(['app'], function(app) {
 				$scope.mytimer = undefined;
 			}
 			$('#modal').show();
-			$("body").removeClass();
-			$("body").addClass("utilities");
 
+            $("body").removeClass();
+            $("body").addClass("utility").addClass('frontStage');   
+            if ($scope.config.DashboardType == 0) {   
+                $("body").addClass("3column");
+            }
+            if ($scope.config.DashboardType == 1) {
+                $("body").addClass("4column");
+            }                    
+            if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
+                $("body").addClass("dashMobile");    
+            }    
+            if ($scope.config.DashboardType == 3) {
+                $("body").addClass("dashFloorplan");
+            }       
+            
 			var htmlcontent = '';
 			var bShowRoomplan = false;
 			$.RoomPlans = [];
@@ -1138,27 +1151,29 @@ define(['app'], function(app) {
 								htmlcontent += '<div class="row divider">\n';
 								bHaveAddedDevider = true;
 							}
+                            
+                            var backgroundClass = "statusNormal";
+                            if (item.Protected == true) {
+                                backgroundClass = "statusProtected";
+                            }
+                            else if (item.HaveTimeout == true) {
+                                backgroundClass = "statusTimeout";
+                            } 
+                            else {
+                                var BatteryLevel = parseInt(item.BatteryLevel);
+                                if (BatteryLevel != 255) {
+                                    if (BatteryLevel <= 10) {
+                                        backgroundClass = "statusLowBattery";
+                                    }
+                                }
+                            }
 
 							var xhtm =
 								'\t<div class="span4" id="' + item.idx + '">\n' +
-								'\t  <section>\n' +
+								'\t  <div class="item ' + backgroundClass + '">\n' +
 								'\t    <table id="itemtable" class="itemtable" border="0" cellpadding="0" cellspacing="0">\n' +
 								'\t    <tr>\n';
-							var nbackcolor = "#D4E1EE";
-							if (item.Protected == true) {
-								nbackcolor = "#A4B1EE";
-							}
-							if (item.HaveTimeout == true) {
-								nbackcolor = "#DF2D3A";
-							} else {
-								var BatteryLevel = parseInt(item.BatteryLevel);
-								if (BatteryLevel != 255) {
-									if (BatteryLevel <= 10) {
-										nbackcolor = "#DDDF2D";
-									}
-								}
-							}
-							xhtm += '\t      <td id="name" class="name" style="background-color: ' + nbackcolor + ';">' + item.Name + '</td>\n';
+							xhtm += '\t      <td id="name" class="name">' + item.Name + '</td>\n';
 							xhtm += '\t      <td id="bigtext" class="bigtext">';
 							if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv == 'undefined')) {
 								xhtm += item.Usage;
@@ -1308,14 +1323,14 @@ define(['app'], function(app) {
 							xhtm +=
 								'\t      <td id="status" class="status">' + status + '</td>\n' +
 								'\t      <td id="lastupdate" class="lastupdate">' + item.LastUpdate + '</td>\n' +
-								'\t      <td id="type" class="type">' + item.Type + ', ' + item.SubType + '</td>\n' +
-								'\t      <td class"options">';
+								'\t      <td id="type" class="type"><span class="wrapper"><span>' + item.Type + '</span><span>' + item.SubType + '</span></span></td>\n' +
+								'\t      <td class="options">';
 							if (item.Favorite == 0) {
 								xhtm +=
-									'<img class="favorite favoriteOff lcursor" src="images/nofavorite.png" title="' + $.t('Add to Dashboard') + '" onclick="MakeFavorite(' + item.idx + ',1);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
+									'<img class="favorite favoriteOff" src="images/nofavorite.png" title="' + $.t('Add to Dashboard') + '" onclick="MakeFavorite(' + item.idx + ',1);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
 							} else {
 								xhtm +=
-									'<img class="favorite favoriteOff lcursor" src="images/favorite.png" title="' + $.t('Remove from Dashboard') + '" onclick="MakeFavorite(' + item.idx + ',0);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
+									'<img class="favorite favoriteOff" src="images/favorite.png" title="' + $.t('Remove from Dashboard') + '" onclick="MakeFavorite(' + item.idx + ',0);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
 							}
 
 							if (typeof item.Counter != 'undefined') {
@@ -1480,7 +1495,7 @@ define(['app'], function(app) {
 								'</td>\n' +
 								'\t    </tr>\n' +
 								'\t    </table>\n' +
-								'\t  </section>\n' +
+								'\t  </div>\n' +
 								'\t</div>\n';
 							htmlcontent += xhtm;
 						});

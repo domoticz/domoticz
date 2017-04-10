@@ -2513,19 +2513,25 @@ define(['app'], function (app) {
 						}
 					}
 
-						var nbackcolor="#D4E1EE";
-						if (item.HaveTimeout==true) {
-							nbackcolor="#DF2D3A";
-						}
-						else if (item.Protected==true) {
-							nbackcolor="#A4B1EE";
-						}
-
-						var obackcolor=rgb2hex($(id + " #name").css( "background-color" ));
-						if (obackcolor!=nbackcolor) {
-							$(id + " #name").css( "background-color", nbackcolor );
-						}
-
+                        var newStatusClass = "statusNormal";
+                        if (item.Protected == true) {
+                            newStatusClass = "statusProtected";
+                        }
+                        else if (item.HaveTimeout == true) {
+                            newStatusClass = "statusTimeout";
+                        } 
+                        else {
+                            var BatteryLevel = parseInt(item.BatteryLevel);
+                            if (BatteryLevel != 255) {
+                                if (BatteryLevel <= 10) {
+                                    newStatusClass = "statusLowBattery";
+                                }
+                            }
+                        }
+                        if(!$(id + ".item").hasClass(newStatusClass)) {
+                            $(id + ".item").removeClass("statusNormal").removeClass("statusProtected").removeClass("statusTimeout").removeClass("statusLowBattery"); 
+                            $(id + ".item").addClass(newStatusClass);
+                        }
 						if ($(id + " #img").html()!=img) {
 							$(id + " #img").html(img);
 						}
@@ -2602,7 +2608,7 @@ define(['app'], function (app) {
 		  $('#modal').show();
             
             $("body").removeClass();
-            $("body").addClass("switches");   
+            $("body").addClass("switches").addClass("frontStage");   
             if ($scope.config.DashboardType == 0) {   
                 $("body").addClass("3column");
             }
@@ -2774,7 +2780,7 @@ define(['app'], function (app) {
 					  }
 				  }
 				  xhtm+=bigtext+'</span></td>\n';
-				  xhtm+=bigtext+'</span></td>\n';
+				  //xhtm+=bigtext+'</span></td>\n';
 				  if (item.SubType=="Security Panel") {
 					xhtm+='\t      <td id="img" class="img img1"><a href="secpanel/"><img src="images/security48.png" class="lcursor" height="48" width="48"></a></td>\n';
 				  }
