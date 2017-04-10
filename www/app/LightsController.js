@@ -2581,10 +2581,10 @@ define(['app'], function (app) {
 							$(id + " #bigtext > span").html(bigtext);
 						}
 						if ((typeof $(id + " #status") != 'undefined') && ($(id + " #status").html() != status)) {
-						    $(id + " #status").html(status);
+						    $(id + " #status > span").html(status);
 						}
-						if ($(id + " #lastupdate").html() != item.LastUpdate) {
-							$(id + " #lastupdate").html(item.LastUpdate);
+						if ($(id + " #lastupdate > span").html() != item.LastUpdate) {
+							$(id + " #lastupdate > span").html(item.LastUpdate);
 						}
 						if ($scope.config.ShowUpdatedEffect==true) {
 							$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
@@ -2703,38 +2703,53 @@ define(['app'], function (app) {
 
 				$.each(data.result, function(i,item){
 				  if (j % 3 == 0)
-				  {
-					//add devider
+				    {
+					//add divider
 					if (bHaveAddedDevider == true) {
-					  //close previous devider
-					  htmlcontent+='</div>\n';
+                        //close previous devider
+                        htmlcontent+='</div>\n';
 					}
-					htmlcontent+='<div class="row divider">\n';
-					bHaveAddedDevider=true;
-				  }
+                        htmlcontent+='<div class="row divider">\n';
+                        bHaveAddedDevider=true;
+				    }
                     
-                    var backgroundClass = "statusNormal";
-                    if (item.Protected == true) {
-                        backgroundClass = "statusProtected";
+                    /* generate two item classes.  */
+
+                    /* type of device */
+                    var itemtypeclass = "";
+                    var itemsubtypeclass = "";
+                    if (typeof item.Type != 'undefined') {
+                        var itemtypeclass = ' ' + item.Type.slice(0);
+                        itemtypeclass = itemtypeclass.replace(/\s/g, '');
+                        itemtypeclass = itemtypeclass.replace(/\\/g, '');
+                        itemtypeclass = itemtypeclass.replace(/\//g, '');
                     }
-                    else if (item.HaveTimeout == true) {
+                    if (typeof item.SubType != 'undefined') {
+                        var itemsubtypeclass = item.SubType.split(' ').join('');
+                        itemsubtypeclass = itemsubtypeclass.replace(/\\/g, '');
+                        itemsubtypeclass = itemsubtypeclass.replace(/\//g, '');
+                    }
+
+                    /* generate protected/timeout/lowbattery status */
+                    var backgroundClass = "statusNormal";
+                    if (item.HaveTimeout == true) {
                         backgroundClass = "statusTimeout";
-                    } 
-                    else {
+                    } else {
                         var BatteryLevel = parseInt(item.BatteryLevel);
                         if (BatteryLevel != 255) {
                             if (BatteryLevel <= 10) {
                                 backgroundClass = "statusLowBattery";
                             }
                         }
-                    }    
+                    }
                     
-				  var bAddTimer=true;
-				  var bIsDimmer=false;
-				  var status = "";
-				  var xhtm =
-						'\t<div class="span4" id="' + item.idx + '">\n' +
-						'\t  <div class="item ' + backgroundClass + '">\n';
+                    var count = 0;
+				    var bAddTimer=true;
+				    var bIsDimmer=false;
+				    var status = "";
+				    var xhtm = "";
+						xhtm+='\t<div class="span4" id="' + item.idx + '">\n';
+						xhtm += '\t  <div class="item ' + itemtypeclass + ' ' + itemsubtypeclass + ' ' + backgroundClass + ' withoutstatus statuscount' + count + '">\n';
 				  if ((item.SwitchType == "Blinds") || (item.SwitchType == "Blinds Inverted") || (item.SwitchType == "Blinds Percentage") || (item.SwitchType == "Blinds Percentage Inverted") || (item.SwitchType.indexOf("Venetian Blinds") == 0) || (item.SwitchType.indexOf("Media Player") == 0)) {
 						if (
 							(item.SubType=="RAEX")||
@@ -2765,8 +2780,8 @@ define(['app'], function (app) {
 
 					xhtm+=
 						'\t    <tr>\n' +
-						'\t      <td id="name" class="name">' + item.Name + '</td>\n' +
-										'\t      <td id="bigtext" class="name"><span class="wrapper">';
+						'\t      <td id="name" class="name"><span>' + item.Name + '</span></td>\n' +
+				        '\t      <td id="bigtext" class="name"><span class="wrapper">';
 				  var bigtext=TranslateStatusShort(item.Status);
 				  if (item.UsedByCamera==true) {
 					var streamimg='<img src="images/webcam.png" title="' + $.t('Stream Video') +'" height="16" width="16">';

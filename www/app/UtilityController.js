@@ -1112,13 +1112,16 @@ define(['app'], function(app) {
 			var tophtm = "";
 			if ($.RoomPlans.length == 0) {
 				tophtm +=
-					'\t<table border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
+                    '\t<div class="tophtm">\n' +
+					'\t<table class="prebannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
 					'\t<tr>\n' +
 					'\t  <td align="left" valign="top" id="timesun"></td>\n' +
 					'\t</tr>\n' +
-					'\t</table>\n';
+					'\t</table>\n' +
+                    '\t</div>\n';
 			} else {
 				tophtm +=
+                    '\t<div class="prebannav" class="tophtm">\n' +
 					'\t<table border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
 					'\t<tr>\n' +
 					'\t  <td align="left" valign="top" id="timesun"></td>\n' +
@@ -1129,6 +1132,7 @@ define(['app'], function(app) {
 					'</td>' +
 					'\t</tr>\n' +
 					'\t</table>\n';
+                    '\t</div>\n';            
 			}
 
 			var i = 0;
@@ -1151,30 +1155,46 @@ define(['app'], function(app) {
 								htmlcontent += '<div class="row divider">\n';
 								bHaveAddedDevider = true;
 							}
+                                /* generate two item classes.  */
                             
-                            var backgroundClass = "statusNormal";
-                            if (item.Protected == true) {
-                                backgroundClass = "statusProtected";
-                            }
-                            else if (item.HaveTimeout == true) {
-                                backgroundClass = "statusTimeout";
-                            } 
-                            else {
-                                var BatteryLevel = parseInt(item.BatteryLevel);
-                                if (BatteryLevel != 255) {
-                                    if (BatteryLevel <= 10) {
-                                        backgroundClass = "statusLowBattery";
+                                /* type of device */
+                                var itemtypeclass = "";
+                                var itemsubtypeclass = "";
+                                if (typeof item.Type != 'undefined') {
+                                    var itemtypeclass = ' ' + item.Type.slice(0);
+                                    itemtypeclass = itemtypeclass.replace(/\s/g, '');
+                                    itemtypeclass = itemtypeclass.replace(/\\/g, '');
+                                    itemtypeclass = itemtypeclass.replace(/\//g, '');
+                                }
+                                if (typeof item.SubType != 'undefined') {
+                                    var itemsubtypeclass = item.SubType.split(' ').join('');
+                                    itemsubtypeclass = itemsubtypeclass.replace(/\\/g, '');
+                                    itemsubtypeclass = itemsubtypeclass.replace(/\//g, '');
+                                }
+                            
+                                /* generate protected/timeout/lowbattery status */
+                                var backgroundClass = "statusNormal";
+                                if (item.HaveTimeout == true) {
+                                    backgroundClass = "statusTimeout";
+                                } else {
+                                    var BatteryLevel = parseInt(item.BatteryLevel);
+                                    if (BatteryLevel != 255) {
+                                        if (BatteryLevel <= 10) {
+                                            backgroundClass = "statusLowBattery";
+                                        }
                                     }
                                 }
-                            }
 
-							var xhtm =
-								'\t<div class="span4" id="' + item.idx + '">\n' +
-								'\t  <div class="item ' + backgroundClass + '">\n' +
-								'\t    <table id="itemtable" class="itemtable" border="0" cellpadding="0" cellspacing="0">\n' +
+                                var count = 0;
+                                
+				                var xhtm = "";
+                                var xhtm +=	'\t<div class="span4" id="' + item.idx + '">\n';
+                                xhtm += '\t  <div class="item ' + itemtypeclass + ' ' + itemsubtypeclass + ' ' + backgroundClass + '">\n'; //this could also do the whole "bigtexthtml vs statushtml" thing, which is in the dashboard,and use that to create a nicely designed list of outputs. But for now this will do.
+				                var xhtm +='\t    <table id="itemtable" class="itemtable" border="0" cellpadding="0" cellspacing="0">\n' +
 								'\t    <tr>\n';
-							xhtm += '\t      <td id="name" class="name">' + item.Name + '</td>\n';
-							xhtm += '\t      <td id="bigtext" class="bigtext">';
+                                xhtm += '\t      <td id="name" class="name"><span>' + item.Name + '</span></td>\n';
+                                xhtm += '\t      <td id="bigtext" class="bigtext"><span class="wrapper">';
+                            
 							if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv == 'undefined')) {
 								xhtm += item.Usage;
 							} else if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv != 'undefined')) {
@@ -1213,7 +1233,7 @@ define(['app'], function(app) {
 							} else if (item.SubType == "Waterflow") {
 								xhtm += item.Data;
 							}
-							xhtm += '</td>\n';
+							xhtm += '</span></td>\n';
 							xhtm += '\t      <td id="img" class="img"><img src="images/';
 							var status = "";
 							if (typeof item.Counter != 'undefined') {
@@ -1321,7 +1341,7 @@ define(['app'], function(app) {
 								}
 							}
 							xhtm +=
-								'\t      <td id="status" class="status">' + status + '</td>\n' +
+								'\t      <td id="status" class="status"><span class="wraper">' + status + '</span></td>\n' +
 								'\t      <td id="lastupdate" class="lastupdate">' + item.LastUpdate + '</td>\n' +
 								'\t      <td id="type" class="type"><span class="wrapper"><span>' + item.Type + '</span><span>' + item.SubType + '</span></span></td>\n' +
 								'\t      <td class="options">';
