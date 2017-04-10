@@ -54,10 +54,7 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 		std::stringstream s_strid2;
 		s_strid2 << std::hex << ID;
 		std::string sid = s_strid2.str();
-		std::transform(sid.begin(), sid.end(), sid.begin(), ::tolower);
-		//append 158d00 to the front
-		//sid.insert(0, "158d00");
-		//check that switch is STYPE_OnOff
+		std::transform(sid.begin(), sid.end(), sid.begin(), ::tolower);		
 		std::string cmdchannel = "";
 		std::string cmdcommand = "";
 		std::string cmddevice = "";
