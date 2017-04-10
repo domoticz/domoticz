@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include "RFXNames.h"
+#include "Helper.h"
 #include "../httpclient/UrlEncode.h"
 #include <map>
 
@@ -60,6 +61,7 @@ struct _tTaskItem
     unsigned char _level;
 	int _Hue;
     std::string _relatedEvent;
+    timeval _DelayTimeBegin;
 
 	_tTaskItem()
 	{
@@ -70,6 +72,7 @@ struct _tTaskItem
 	{
 		_tTaskItem tItem;
 		tItem._ItemType=TITEM_SWITCHCMD;
+		getclock(&tItem._DelayTimeBegin);
 		tItem._DelayTime=DelayTime;
 		tItem._idx=idx;
 		tItem._HardwareID=HardwareID;
@@ -132,6 +135,7 @@ struct _tTaskItem
 	static _tTaskItem SwitchLightEvent(const float DelayTime, const uint64_t idx, const std::string &Command, const unsigned char Level, const int Hue, const std::string &eventName)
 	{
 		_tTaskItem tItem;
+		getclock(&tItem._DelayTimeBegin);
 		tItem._ItemType=TITEM_SWITCHCMD_EVENT;
 		tItem._DelayTime=DelayTime;
 		tItem._idx=idx;
@@ -145,6 +149,7 @@ struct _tTaskItem
     static _tTaskItem SwitchSceneEvent(const float DelayTime, const uint64_t idx, const std::string &Command, const std::string &eventName)
 	{
 		_tTaskItem tItem;
+		getclock(&tItem._DelayTimeBegin);
 		tItem._ItemType=TITEM_SWITCHCMD_SCENE;
 		tItem._DelayTime=DelayTime;
 		tItem._idx=idx;

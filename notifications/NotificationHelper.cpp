@@ -620,6 +620,7 @@ bool CNotificationHelper::CheckAndHandleNotification(
 	atime -= m_NotificationSensorInterval;
 
 	std::string msg = "";
+	std::string label;
 
 	std::string ltype = Notification_Type_Desc(ntype, 0);
 	std::string nsign = Notification_Type_Desc(ntype, 1);
