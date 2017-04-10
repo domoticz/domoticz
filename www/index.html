@@ -276,13 +276,14 @@ $(document).ready(function() {
 		isproxied: false
 	};
 	if (typeof sessionStorage.title == 'undefined') {
-		sessionStorage.title = 'Domoticz';
+		sessionStorage.title = "Domoticz";
 		$.ajax({ 
 	             	url: "json.htm?type=command&param=gettitle",
 	        	async: false,
 		     	dataType: 'json',
 	          	success: function(data) {
-				sessionStorage.title = data.Title;
+				if (typeof data.Title != 'undefined')
+					sessionStorage.title = data.Title;
 				  }
 		})
 	}
