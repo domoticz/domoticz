@@ -21,9 +21,9 @@ This can give a nice effect with background images. */
         filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#337db9e8', endColorstr='#1a59cbea',GradientType=0 );
     }
 
-    #dashcontent #lastupdate {
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr td#lastupdate > span{
         color: rgba(255,255,255,0.4);
-        background-color:rgba(50,50,50,0.1)!important;
+        background-color:rgba(250,250,250,0.1)!important;
     }
 
 
