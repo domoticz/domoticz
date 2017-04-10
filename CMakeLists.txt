@@ -264,11 +264,12 @@ main/EventSystem.cpp
 main/Helper.cpp
 main/localtime_r.cpp
 main/Logger.cpp
+main/LuaCommon.cpp
+main/LuaHandler.cpp
 main/mainworker.cpp
 main/RFXNames.cpp
 main/Scheduler.cpp
 main/SQLHelper.cpp
-main/LuaHandler.cpp
 main/SunRiseSet.cpp
 main/WebServer.cpp
 main/WebServerHelper.cpp
@@ -287,6 +288,7 @@ hardware/1Wire/1WireCommon.cpp
 hardware/1Wire/1WireForWindows.cpp
 hardware/AccuWeather.cpp
 hardware/AnnaThermostat.cpp
+hardware/Arilux.cpp
 hardware/ASyncSerial.cpp
 hardware/ASyncTCP.cpp
 hardware/AtagOne.cpp
@@ -326,6 +328,7 @@ hardware/KMTronicBase.cpp
 hardware/KMTronic433.cpp
 hardware/KMTronicSerial.cpp
 hardware/KMTronicTCP.cpp
+hardware/KMTronicUDP.cpp
 hardware/Kodi.cpp
 hardware/Limitless.cpp
 hardware/LogitechMediaServer.cpp
@@ -399,12 +402,11 @@ hardware/ZiBlueTCP.cpp
 hardware/ZWaveBase.cpp
 hardware/Yeelight.cpp
 hardware/XiaomiGateway.cpp
-hardware/Arilux.cpp
 hardware/plugins/DelayedLink.cpp
 hardware/plugins/Plugins.cpp
 hardware/plugins/PluginManager.cpp
-hardware/plugins/PluginTransports.cpp
 hardware/plugins/PluginProtocols.cpp
+hardware/plugins/PluginTransports.cpp
 hardware/plugins/PythonObjects.cpp
 notifications/NotificationBase.cpp
 notifications/NotificationEmail.cpp
@@ -439,21 +441,21 @@ json/json_reader.cpp
 json/json_value.cpp
 json/json_writer.cpp
 tinyxpath/action_store.cpp
+tinyxpath/htmlutil.cpp
+tinyxpath/lex_util.cpp
+tinyxpath/node_set.cpp
+tinyxpath/tinystr.cpp
 tinyxpath/tinyxml.cpp
+tinyxpath/tinyxmlerror.cpp
+tinyxpath/tinyxmlparser.cpp
 tinyxpath/tokenlist.cpp
+tinyxpath/xml_util.cpp
+tinyxpath/xpath_expression.cpp
 tinyxpath/xpath_processor.cpp
 tinyxpath/xpath_stream.cpp
-tinyxpath/htmlutil.cpp
-tinyxpath/node_set.cpp
-tinyxpath/tinyxmlerror.cpp
-tinyxpath/xml_util.cpp
 tinyxpath/xpath_stack.cpp
-tinyxpath/xpath_syntax.cpp
-tinyxpath/lex_util.cpp
-tinyxpath/tinystr.cpp
-tinyxpath/tinyxmlparser.cpp
-tinyxpath/xpath_expression.cpp
 tinyxpath/xpath_static.cpp
+tinyxpath/xpath_syntax.cpp
 )
 add_executable(domoticz ${domoticz_SRCS})
 
@@ -599,7 +601,7 @@ else()
 endif()
 IF(OpenZWave)
   message(STATUS ${OpenZWave})
-  target_link_libraries(domoticz ${OpenZWave} -lresolv)
+  target_link_libraries(domoticz ${OpenZWave})
   include_directories(${CMAKE_SOURCE_DIR}/hardware/openzwave)
   add_definitions(-DWITH_OPENZWAVE)
   # open-zwave needs libudev
@@ -623,12 +625,12 @@ IF(OpenZWave)
       find_library(UDEV NAMES libudev.a)
       IF(UDEV)
         message(STATUS ${UDEV})
-        target_link_libraries(domoticz ${UDEV} -lrt)
+        target_link_libraries(domoticz ${UDEV} -lrt -lresolv)
       else()
         find_library(UDEV NAMES libudev.so)
         IF(UDEV)
            message(STATUS ${UDEV})
-           target_link_libraries(domoticz ${UDEV} -lrt)
+           target_link_libraries(domoticz ${UDEV} -lrt -lresolv)
         else()
            MESSAGE(FATAL_ERROR "LIB UDEV not found on your system, see install.txt how to get them installed.\nsudo apt-get install libudev-dev")
         ENDIF(UDEV)

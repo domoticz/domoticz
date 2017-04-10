@@ -18,6 +18,7 @@
 #include "../tinyxpath/tinyxml.h"
 #include "../main/localtime_r.h"
 
+#include "../../notifications/NotificationHelper.h"
 
 #define ADD_STRING_TO_DICT(pDict, key, value) \
 		{	\
@@ -28,6 +29,8 @@
 		}
 
 #define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
+
+extern std::string szWWWFolder;
 
 namespace Plugins {
 
@@ -349,6 +352,46 @@ namespace Plugins {
 		return Py_None;
 	}
 
+	static PyObject*	PyDomoticz_Notifier(PyObject *self, PyObject *args)
+	{
+		module_state*	pModState = ((struct module_state*)PyModule_GetState(self));
+		if (!pModState)
+		{
+			_log.Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);
+		}
+		else if (!pModState->pPlugin)
+		{
+			_log.Log(LOG_ERROR, "CPlugin:%s, illegal operation, Plugin has not started yet.", __func__);
+		}
+		else
+		{
+			char*	szNotifier;
+			if (!PyArg_ParseTuple(args, "s", &szNotifier))
+			{
+				_log.Log(LOG_ERROR, "(%s) failed to parse parameters, Notifier Name expected.", pModState->pPlugin->Name.c_str());
+				LogPythonException(pModState->pPlugin, std::string(__func__));
+			}
+			else
+			{
+				std::string		sNotifierName = szNotifier;
+				if ((!sNotifierName.length()) || (sNotifierName.find_first_of(' ') != -1))
+				{
+					_log.Log(LOG_ERROR, "(%s) failed to parse parameters, valid Notifier Name expected, received '%s'.", pModState->pPlugin->Name.c_str(), szNotifier);
+				}
+				else
+				{
+					//	Add notifier command to message queue
+					NotifierDirective*	Message = new NotifierDirective(pModState->pPlugin->m_HwdID, szNotifier);
+					boost::lock_guard<boost::mutex> l(PluginMutex);
+					PluginMessageQueue.push(Message);
+				}
+			}
+		}
+
+		Py_INCREF(Py_None);
+		return Py_None;
+	}
+
 	static PyObject*	PyDomoticz_Connect(PyObject *self, PyObject *args)
 	{
 		module_state*	pModState = ((struct module_state*)PyModule_GetState(self));
@@ -470,6 +513,7 @@ namespace Plugins {
 		{ "Transport", (PyCFunction)PyDomoticz_Transport, METH_VARARGS | METH_KEYWORDS, "Set the communication transport: TCP/IP, Serial." },
 		{ "Protocol", PyDomoticz_Protocol, METH_VARARGS, "Set the protocol the messages will use: None, line, JSON, XML, HTTP." },
 		{ "Heartbeat", PyDomoticz_Heartbeat, METH_VARARGS, "Set the heartbeat interval, default 10 seconds." },
+		{ "Notifier", PyDomoticz_Notifier, METH_VARARGS, "Enable notification handling with supplied name." },
 		{ "Connect", PyDomoticz_Connect, METH_NOARGS, "Connect to remote device using transport details." },
 		{ "Send", (PyCFunction)PyDomoticz_Send, METH_VARARGS | METH_KEYWORDS, "Send the specified message to the remote device." },
 		{ "Disconnect", PyDomoticz_Disconnect, METH_NOARGS, "Disconnectfrom remote device." },
@@ -530,6 +574,7 @@ namespace Plugins {
 		m_pTransport(NULL),
 		m_PluginKey(sPluginKey),
 		m_iPollInterval(10),
+		m_Notifier(NULL),
 		m_bDebug(false),
 		m_PyInterpreter(NULL),
 		m_PyModule(NULL),
@@ -773,6 +818,8 @@ namespace Plugins {
 				m_thread->join();
 				m_thread.reset();
 			}
+
+			if (m_Notifier) delete m_Notifier;
 		}
 		catch (...)
 		{
@@ -891,6 +938,14 @@ namespace Plugins {
 				const PollIntervalDirective* PollMessage = (const PollIntervalDirective*)Message;
 				if (m_bDebug) _log.Log(LOG_NORM, "(%s) Heartbeat interval set to: %d.", Name.c_str(), PollMessage->m_Interval);
 				this->m_iPollInterval = PollMessage->m_Interval;
+				break;
+			}
+			case PDT_Notifier:
+			{
+				const NotifierDirective* NotifierMessage = (const NotifierDirective*)Message;
+				if (m_Notifier) delete m_Notifier;
+				if (m_bDebug) _log.Log(LOG_NORM, "(%s) Notifier Name set to: %s.", Name.c_str(), NotifierMessage->m_Name.c_str());
+				m_Notifier = new CPluginNotifier(m_HwdID, NotifierMessage->m_Name);
 				break;
 			}
 			case PDT_Connect:
@@ -1440,6 +1495,254 @@ namespace Plugins {
 			boost::lock_guard<boost::mutex> l(PluginMutex);
 			PluginMessageQueue.push(Message);
 		}
+	}
+
+
+	CPluginNotifier::CPluginNotifier(const int Hwd_ID, const std::string &NotifierName) : CNotificationBase(NotifierName, OPTIONS_NONE), m_Hwd_ID(Hwd_ID)
+	{
+		m_notifications.AddNotifier(this);
+	}
+
+	CPluginNotifier::~CPluginNotifier()
+	{
+		m_notifications.RemoveNotifier(this);
+	}
+
+	bool CPluginNotifier::IsConfigured()
+	{
+		return true;
+	}
+
+	std::string CPluginNotifier::GetCustomIcon(std::string &szCustom)
+	{
+		int	iIconLine = atoi(szCustom.c_str());
+		std::string szRetVal = "Light48";
+		if (iIconLine < 100)  // default set of custom icons
+		{
+			std::string sLine = "";
+			std::ifstream infile;
+			std::string switchlightsfile = szWWWFolder + "/switch_icons.txt";
+			infile.open(switchlightsfile.c_str());
+			if (infile.is_open())
+			{
+				int index = 0;
+				while (!infile.eof())
+				{
+					getline(infile, sLine);
+					if ((sLine.size() != 0) && (index++ == iIconLine))
+					{
+						std::vector<std::string> results;
+						StringSplit(sLine, ";", results);
+						if (results.size() == 3)
+						{
+							szRetVal = results[0] + "48";
+							break;
+						}
+					}
+				}
+				infile.close();
+			}
+		}
+		else  // Uploaded icons
+		{
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query("SELECT Base FROM CustomImages WHERE ID = %d", iIconLine - 100);
+			if (result.size() == 1)
+			{
+				std::string sBase = result[0][0];
+				return sBase;
+			}
+		}
+
+		return szRetVal;
+	}
+
+	std::string CPluginNotifier::GetIconFile(const std::string &ExtraData)
+	{
+		std::string	szImageFile;
+#ifdef WIN32
+		std::string	szImageFolder = szWWWFolder + "\\images\\";
+#else
+		std::string	szImageFolder = szWWWFolder + "/images/";
+#endif
+
+		std::string	szStatus = "Off";
+		int	posStatus = (int)ExtraData.find("|Status=");
+		if (posStatus >= 0)
+		{
+			posStatus += 8;
+			szStatus = ExtraData.substr(posStatus, ExtraData.find("|", posStatus) - posStatus);
+			if (szStatus != "Off") szStatus = "On";
+		}
+
+		// Use image is specified
+		int	posImage = (int)ExtraData.find("|Image=");
+		if (posImage >= 0)
+		{
+			posImage += 7;
+			szImageFile = szImageFolder + ExtraData.substr(posImage, ExtraData.find("|", posImage) - posImage) + ".png";
+			if (file_exist(szImageFile.c_str()))
+			{
+				return szImageFile;
+			}
+		}
+
+		// Use uploaded and custom images 
+		int	posCustom = (int)ExtraData.find("|CustomImage=");
+		if (posCustom >= 0)
+		{
+			posCustom += 13;
+			std::string szCustom = ExtraData.substr(posCustom, ExtraData.find("|", posCustom) - posCustom);
+			int iCustom = atoi(szCustom.c_str());
+			if (iCustom)
+			{
+				szImageFile = szImageFolder + GetCustomIcon(szCustom) + "_" + szStatus + ".png";
+				if (file_exist(szImageFile.c_str()))
+				{
+					return szImageFile;
+				}
+				szImageFile = szImageFolder + GetCustomIcon(szCustom) + "48_" + szStatus + ".png";
+				if (file_exist(szImageFile.c_str()))
+				{
+					return szImageFile;
+				}
+				szImageFile = szImageFolder + GetCustomIcon(szCustom) + ".png";
+				if (file_exist(szImageFile.c_str()))
+				{
+					return szImageFile;
+				}
+			}
+		}
+
+		// if a switch type was supplied try and work out the image
+		int	posType = (int)ExtraData.find("|SwitchType=");
+		if (posType >= 0)
+		{
+			posType += 12;
+			std::string	szType = ExtraData.substr(posType, ExtraData.find("|", posType) - posType);
+			std::string	szTypeImage;
+			_eSwitchType switchtype = (_eSwitchType)atoi(szType.c_str());
+			switch (switchtype)
+			{
+			case STYPE_OnOff:
+				if (posCustom >= 0)
+				{
+					std::string szCustom = ExtraData.substr(posCustom, ExtraData.find("|", posCustom) - posCustom);
+					szTypeImage = GetCustomIcon(szCustom);
+				}
+				else szTypeImage = "Light48";
+				break;
+			case STYPE_Doorbell:
+				szTypeImage = "doorbell48";
+				break;
+			case STYPE_Contact:
+				szTypeImage = "contact48";
+				break;
+			case STYPE_Blinds:
+			case STYPE_BlindsPercentage:
+			case STYPE_VenetianBlindsUS:
+			case STYPE_VenetianBlindsEU:
+			case STYPE_BlindsPercentageInverted:
+			case STYPE_BlindsInverted:
+				szTypeImage = "blinds48";
+				break;
+			case STYPE_X10Siren:
+				szTypeImage = "siren";
+				break;
+			case STYPE_SMOKEDETECTOR:
+				szTypeImage = "smoke48";
+				break;
+			case STYPE_Dimmer:
+				szTypeImage = "Dimmer48";
+				break;
+			case STYPE_Motion:
+				szTypeImage = "motion48";
+				break;
+			case STYPE_PushOn:
+				szTypeImage = "pushon48";
+				break;
+			case STYPE_PushOff:
+				szTypeImage = "pushon48";
+				break;
+			case STYPE_DoorContact:
+				szTypeImage = "door48";
+				break;
+			case STYPE_DoorLock:
+				szTypeImage = "door48open";
+				break;
+			case STYPE_Media:
+				if (posCustom >= 0)
+				{
+					std::string szCustom = ExtraData.substr(posCustom, ExtraData.find("|", posCustom) - posCustom);
+					szTypeImage = GetCustomIcon(szCustom);
+				}
+				else szTypeImage = "Media48";
+				break;
+			default:
+				szTypeImage = "logo";
+			}
+			szImageFile = szImageFolder + szTypeImage + "_" + szStatus + ".png";
+			if (file_exist(szImageFile.c_str()))
+			{
+				return szImageFile;
+			}
+
+			szImageFile = szImageFolder + szTypeImage + ((szStatus == "Off") ? "-off" : "-on") + ".png";
+			if (file_exist(szImageFile.c_str()))
+			{
+				return szImageFile;
+			}
+
+			szImageFile = szImageFolder + szTypeImage + ((szStatus == "Off") ? "off" : "on") + ".png";
+			if (file_exist(szImageFile.c_str()))
+			{
+				return szImageFile;
+			}
+
+			szImageFile = szImageFolder + szTypeImage + ".png";
+			if (file_exist(szImageFile.c_str()))
+			{
+				return szImageFile;
+			}
+		}
+
+		// Image of last resort is the logo
+		szImageFile = szImageFolder + "logo.png";
+		if (!file_exist(szImageFile.c_str()))
+		{
+			_log.Log(LOG_ERROR, "Logo image file does not exist: %s", szImageFile.c_str());
+			szImageFile = "";
+		}
+		return szImageFile;
+	}
+
+	bool CPluginNotifier::SendMessageImplementation(const uint64_t Idx, const std::string & Name, const std::string & Subject, const std::string & Text, const std::string & ExtraData, const int Priority, const std::string & Sound, const bool bFromNotification)
+	{
+		// ExtraData = |Name=Test|SwitchType=9|CustomImage=0|Status=On|
+
+		std::string	sIconFile = GetIconFile(ExtraData);
+		std::string	sName = "Unknown";
+		int	posName = (int)ExtraData.find("|Name=");
+		if (posName >= 0)
+		{
+			posName += 6;
+			sName = ExtraData.substr(posName, ExtraData.find("|", posName) - posName);
+		}
+
+		std::string	sStatus = "Unknown";
+		int	posStatus = (int)ExtraData.find("|Status=");
+		if (posStatus >= 0)
+		{
+			posStatus += 8;
+			sStatus = ExtraData.substr(posStatus, ExtraData.find("|", posStatus) - posStatus);
+		}
+
+		//	Add command to message queue for every plugin
+		boost::lock_guard<boost::mutex> l(PluginMutex);
+		NotificationMessage*	Message = new NotificationMessage(m_Hwd_ID, Subject, Text, sName, sStatus, Priority, Sound, sIconFile);
+		PluginMessageQueue.push(Message);
+
+		return true;
 	}
 }
 #endif

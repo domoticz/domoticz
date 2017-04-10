@@ -723,6 +723,8 @@ void CEventSystem::GetCurrentMeasurementStates()
 						case MTYPE_COUNTER:
 							sprintf(szTmp, "%llu", total_real);
 							break;
+						default:
+							continue; //not handled
 						}
 						utilityval = static_cast<float>(atof(szTmp));
 						isUtility = true;
@@ -887,6 +889,8 @@ void CEventSystem::GetCurrentMeasurementStates()
 					case MTYPE_COUNTER:
 						sprintf(szTmp, "%llu", total_real);
 						break;
+					default:
+						continue; //not handled
 					}
 					utilityval = static_cast<float>(atof(szTmp));
 					isUtility = true;
@@ -2403,6 +2407,12 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 	luaL_openlibs(lua_state);
 	lua_pushcfunction(lua_state, l_domoticz_print);
 	lua_setglobal(lua_state, "print");
+
+	lua_pushcfunction(lua_state, l_domoticz_applyJsonPath);
+	lua_setglobal(lua_state, "domoticz_applyJsonPath");
+
+	lua_pushcfunction(lua_state, l_domoticz_applyXPath);
+	lua_setglobal(lua_state, "domoticz_applyXPath");
 
 #ifdef _DEBUG
 	_log.Log(LOG_STATUS, "EventSystem: script %s trigger", reason.c_str());

@@ -46,7 +46,7 @@ namespace Plugins {
 		size_t			m_RemainingChunk;
 	public:
 		CPluginProtocolHTTP() : m_Status(0), m_ContentLength(0), m_Headers(NULL), m_Chunked(false) {};
-		virtual void				ProcessInbound(ReadMessage* Message);
+		virtual void				ProcessInbound(const ReadMessage* Message);
 		virtual std::vector<byte>	ProcessOutbound(const WriteDirective* WriteMessage);
 		void						AuthenticationDetails(std::string Username, std::string Password)
 		{

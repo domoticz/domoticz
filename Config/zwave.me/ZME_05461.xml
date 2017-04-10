@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--Taken from http://manuals.zwaveeurope.com/make.php?lang=en&type=&sku=ZME_05461 and http://www.pepper1.net/zwavedb/device/564/564-0115-1000-0100-03-03-43-01-00.xml-->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+    <!-- Configuration Parameters -->
+    <!--IMPORTANT: Controllers may only allow to configure signed values.
+        In order to set values in the range  128?255 for parameters 4,  5 and 6 the
+        value sent in the application shall be the desired value minus 256.
+        For example: to set parameter 4 in Window Blind to 200? sit may be  needed
+        to set a value of 200?256=?56.
+        Similar rule applies to parameter 2: to set values in range 32768?65535
+        use value equal to desired value minus 65536. For example, to set auto
+        switch off period to 10 hours =36000s it may be needed to set a value
+        36000?65536=?29536.-->
+
+    <CommandClass id="112">
+        <Value type="list" index="1" genre="config" label="Set LED indication mode" units="" min="1" max="99" value="1" size="1">
+            <Item label="Disabled" value="0"/>
+            <Item label="Show switch state (Default)" value="1"/>
+            <Item label="Night mode (inverted switch state)" value="2"/>
+        </Value>
+        <Value type="int" index="2" genre="config" label="Automatically switch first channel off after" units="seconds" min="0" max="65535" value="0">
+            <Help>If not zero, automatically switch first channel off after a user defined time</Help>
+        </Value>
+        <Value type="int" index="22" genre="config" label="Automatically switch second channel off after" units="seconds" min="0" max="65535" value="0">
+            <Help>If not zero, automatically switch second channel off after a user defined time</Help>
+        </Value>
+        <Value type="list" index="3" genre="config" label="What to do on RF first channel off command" value="0" size="1">
+            <Help>Defines how to interpret RF first channel Off command. Can be used in conjunction with Auto Off function: Ignore - to switch on the light by motion detectors and switch it off after some amount of time: in case of multiple motion detectors each would try to switch the light off that would break logics; Switch on - to switch on the light on both On and Off paddle press on the remote and switch it off after some amount of time. Button off click will still work (if button
+                operations are not disabled).
+            </Help>
+            <Item label="Switch off (default)" value="0"/>
+            <Item label="Ignore" value="1"/>
+            <Item label="Switch on" value="2"/>
+            <Item label="Switch on if load is off else switch off" value="3"/>
+        </Value>
+        <Value type="list" index="23" genre="config" label="What to do on RF second channel off command" value="0" size="1">
+            <Help>Defines how to interpret RF second channel Off command. Can be used in conjunction with Auto Off function: Ignore - to switch on the light by motion detectors and switch it off after some amount of time: in case of multiple motion detectors each would try to switch the light off that would break logics; Switch on - to switch on the light on both On and Off paddle press on the remote and switch it off after some amount of time. Button off click will still work (if button
+                operations are not disabled).
+            </Help>
+            <Item label="Switch off (default)" value="0"/>
+            <Item label="Ignore" value="1"/>
+            <Item label="Switch on" value="2"/>
+            <Item label="Switch on if load is off else switch off" value="3"/>
+        </Value>
+        <Value type="list" index="16" genre="config" label="What to do on button Down press (for both channels)" value="0" size="1">
+            <Help>Defines how to interpret button Down press. Depends on parameters 12 and 32 &quot;Switch by buttons&quot; parameter. If not Disabled this parameter will affect the action selected by the latter parameter. Can be used in conjunction with Auto Off function.</Help>
+            <Item label="Switch off (Default)" value="0"/>
+            <Item label="Switch On if load is Off, else switch Off" value="1"/>
+            <Item label="Switch on" value="2"/>
+        </Value>
+        <Value type="list" index="4" genre="config" label="Ignore Start Level" value="1" size="1">
+            <Help>Defines if the dimmer shall ignore start level in StartLevelChange command despite it is specified or not.</Help>
+            <Item label="No" value="0"/>
+            <Item label="Yes (default)" value="1"/>
+        </Value>
+        <Value type="list" index="5" genre="config" label="Restore switch state after power cycle" size="1" value="3">
+            <Help>Defines if the switch should restore switch state to the last state prior to device power off (power cycle).</Help>
+            <Item label="No, turn OFF" value="0"/>
+            <Item label="Yes (only for the first channel)" value="1"/>
+            <Item label="Yes (only for the second channel)" value="2"/>
+            <Item label="Yes (for both channels) (Default)" value="3"/>
+        </Value>
+        <Value type="list" index="11" genre="config" label="Invert buttons" value="0" size="1">
+            <Item label="No (Default)" value="0"/>
+            <Item label="Yes" value="1"/>
+        </Value>
+        <Value type="list" index="12" genre="config" label="Switch by buttons (first channel)" value="1" size="1">
+            <Help>If disabled, the local operations by buttons will not switch relay on first channel, but only send commands to On/Off association group. In this mode buttons are not linked with the switch anymore. They can be used separately: buttons to control remote device, switch will operate by RF commands only.</Help>
+            <Item label="No" value="0"/>
+            <Item label="By single press and hold (default)" value="1"/>
+            <Item label="By double press and hold" value="2"/>
+        </Value>
+        <Value type="list" index="32" genre="config" label="Switch by buttons (second channel)" value="2" size="1">
+            <Help>If disabled, the local operations by buttons will not switch relay on second channel, but only send commands to On/Off association group. In this mode buttons are not linked with the switch anymore. They can be used separately: buttons to control remote device, switch will operate by RF commands only.</Help>
+            <Item label="No" value="0"/>
+            <Item label="By single press and hold" value="1"/>
+            <Item label="By double press and hold (Default)" value="2"/>
+        </Value>
+        <Value type="list" index="13" genre="config" label="Action on button single press or hold" value="2" size="1">
+            <Help>Defines which command should be sent on button single press or hold. Basic and Scene Activation commands are sent to Association group. Use Scene Controller Conf to set up Scene ID for Scene Activation. Switch All commands are sent broadcast.</Help>
+            <Item label="Disabled" value="0"/>
+            <Item label="Switch On/Off and Dim (send Basic Set and Switch Multilevel) (Default)" value="2"/>
+            <Item label="Switch On/Off only (send Basic Set)" value="1"/>
+            <Item label="Send Scenes" value="3"/>
+        </Value>
+        <Value type="list" index="14" genre="config" label="Action on button double press or hold" value="2" size="1">
+            <Help>Defines which command should be sent on button double press or press-hold. Basic and Scene Activation commands are sent to Association group. Use Scene Controller Conf to set up Scene ID for Scene Activation. Switch All commands are sent broadcast. If not disabled, the device will wait for a click timeout to see if the second click would be pressed. This will introduce a small delay for single click commands.</Help>
+            <Item label="Disabled (don't wait for double click)" value="0"/>
+            <Item label="Switch On/Off and Dim (send Basic Set and Switch Multilevel, default)" value="2"/>
+            <Item label="Switch On, Off only (send Basic Set)" value="1"/>
+            <Item label="Send Scenes" value="3"/>
+        </Value>
+        <Value type="int" index="20" genre="config" label="Energy consumption for first channel" units="watts" min="0" max="708" value="0">
+            <Help>Specify the consumption of the load in watts, for the calculation of power consumption. Max load 1800 W. Disabled if zero.</Help>
+        </Value>
+        <Value type="int" index="40" genre="config" label="Energy consumption for second channel" units="watts" min="0" max="708" value="0">
+            <Help>Specify the consumption of the load in watts, for the calculation of power consumption. Max load 1800 W. Disabled if zero.</Help>
+        </Value>
+    </CommandClass>
+
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="3">
+            <Group index="1" max_associations="5" label="Send Reports on switch state change"/>
+            <Group index="2" max_associations="5" label="Single press and hold of up/down buttons" />
+            <Group index="3" max_associations="5" label="Double press and press-hold of up/down buttons"/>
+        </Associations>
+    </CommandClass>
+</Product>

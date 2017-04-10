@@ -5,7 +5,7 @@
 #include "../hardware/evohome.h"
 #include "Helper.h"
 #include <boost/algorithm/string.hpp>
-//#include "Logger.h"
+#include "Logger.h"
 
 typedef struct _STR_TABLE_SINGLE {
 	unsigned long    id;
@@ -169,7 +169,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_PiFace, "PiFace - Raspberry Pi IO expansion board" },
 		{ HTYPE_S0SmartMeterUSB, "S0 Meter USB" },
 		{ HTYPE_OpenThermGateway, "OpenTherm Gateway USB" },
-		{ HTYPE_TeleinfoMeter, "Teleinfo EDF USB" },
+		{ HTYPE_TeleinfoMeter, "Teleinfo EDF" },
 		{ HTYPE_OpenThermGatewayTCP, "OpenTherm Gateway with LAN interface" },
 		{ HTYPE_OpenZWave, "OpenZWave USB" },
 		{ HTYPE_LimitlessLights, "Limitless/AppLamp/Mi Light with LAN/WiFi interface" },
@@ -248,6 +248,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_OpenWebNetUSB, "MyHome OpenWebNet USB" },
 		{ HTYPE_IntergasInComfortLAN2RF, "Intergas InComfort LAN2RF Gateway" },
 		{ HTYPE_RelayNet, "Relay-Net 8 channel LAN Relay and binary Input module" },
+		{ HTYPE_KMTronicUDP, "KMTronic Gateway with LAN/UDP interface" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -864,6 +865,8 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchTypeHRCMotor, "HRCMotor" },
 		{ pTypeGeneralSwitch, sSwitchTypeVelleman, "Velleman" },
 		{ pTypeGeneralSwitch, sSwitchTypeRFCustom, "RFCustom" },
+		{ pTypeGeneralSwitch, sSwitchTypeYW_Sensor, "YW_Sensor" },
+		{ pTypeGeneralSwitch, sSwitchTypeLegrandcad, "LEGRANDCAD" },
 		{  0,0,NULL }
 	};
 	return findTableID1ID2(Table, dType, sType);
@@ -1487,6 +1490,9 @@ void GetLightStatus(
 		case Limitless_SetBrightnessLevel:
 			lstatus="Set Level";
 			break;
+		case Limitless_SetKelvinLevel:
+			lstatus="Set Kelvin Level";
+			break;
 		case Limitless_SetColorToWhite:
 			lstatus="Set to White";
 			break;
@@ -1925,6 +1931,8 @@ void GetLightStatus(
 		}
 		break;
 	}
+	if (_log.isTraceEnabled()) _log.Log(LOG_TRACE,"RFXN : GetLightStatus Typ:%2d STyp:%2d nVal:%d sVal:%-4s llvl:%2d isDim:%d maxDim:%2d GrpCmd:%d lstat:%s", 
+		dType,dSubType,nValue,sValue.c_str(),llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd,lstatus.c_str());
 }
 
 /**
@@ -2493,6 +2501,11 @@ bool GetLightCommand(
 			cmd=Limitless_SetBrightnessLevel;
 			return true;
 		}
+		else if (switchcmd=="Set Kelvin Level")
+		{
+			cmd=Limitless_SetKelvinLevel;
+			return true;
+		}
 		else if (switchcmd == "Set White")
 		{
 			cmd = Limitless_SetColorToWhite;
@@ -2591,6 +2604,16 @@ bool GetLightCommand(
 		else if (switchcmd == "Speed Down")
 		{
 			cmd = Limitless_DiscoSpeedSlower;
+			return true;
+		}
+		else if (switchcmd == "Speed Minimal")
+		{
+			cmd = Limitless_DiscoSpeedMinimal;
+			return true;
+		}
+		else if (switchcmd == "Speed Maximal")
+		{
+			cmd = Limitless_DiscoSpeedMaximal;
 			return true;
 		}
 		else if (switchcmd == "Warmer")

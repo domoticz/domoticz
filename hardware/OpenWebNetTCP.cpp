@@ -33,6 +33,8 @@ License: Public domain
 #define OPENWEBNET_BUFFER_SIZE          1024
 #define OPENWEBNET_SOCKET_SUCCESS       0
 
+#define OPENWEBNET_GROUP_ID				0x00008000
+
 #define OPENWEBNET_AUTOMATION					"AUTOMATION"
 #define OPENWEBNET_LIGHT						"LIGHT"
 #define OPENWEBNET_TEMPERATURE					"TEMPERATURE"
@@ -642,19 +644,37 @@ void COpenWebNetTCP::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
 				_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s not normal frame! -> frame_type=%d", who.c_str(), iter->frame_type);
 				return;
 			}
-			devname = OPENWEBNET_LIGHT;
-			devname += " " + where;
-
-			iWhere = atoi(where.c_str());
 
 			iAppValue = atoi(what.c_str());
 			if (iAppValue == 1000) // What = 1000 (Command translation)
 				iAppValue = atoi(whatParam[0].c_str());
 
+			iWhere = atoi(where.c_str());
+
+			devname = OPENWEBNET_LIGHT;		
+			if ((!whereParam.empty()) && (iWhere == 0))
+			{
+				/* GROUP light device */
+				iWhere = atoi(whereParam[0].c_str()) + OPENWEBNET_GROUP_ID;
+				devname += " GROUP " + whereParam[0];
+			}
+			else if (iWhere < MAX_WHERE_AREA)
+			{
+				/* AREA light device */
+				mask_request_status |= (0x1 << iWhere); // Gen or area, need a refresh devices status
+				if (iWhere == 0)
+					devname += " GEN " + where;
+				else
+					devname += " AREA " + where;
+			} 
+			else
+			{
+				/* Normal light device */
+				devname += " " + where;
+			}
+
 			//pTypeGeneralSwitch, sSwitchLightT1
 			UpdateSwitch(WHO_LIGHTING, iWhere, iAppValue, atoi(sInterface.c_str()), 255, devname.c_str(), sSwitchLightT1);
-			if (iWhere < MAX_WHERE_AREA)
-				mask_request_status |= (0x1 << iWhere); // Gen or area, need a refresh devices status
 			break;
 		case WHO_AUTOMATION:								// 2
 			if (!iter->IsNormalFrame())
@@ -682,14 +702,34 @@ void COpenWebNetTCP::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
 				_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s, What=%s invalid!", who.c_str(), what.c_str());
 				return;
 			}
-			devname = OPENWEBNET_AUTOMATION;
-			devname += " " + where;
+
 			iWhere = atoi(where.c_str());
+
+			devname = OPENWEBNET_AUTOMATION;
+			if ((!whereParam.empty()) && (iWhere == 0))
+			{
+				/* GROUP automation device */
+				iWhere = atoi(whereParam[0].c_str()) + OPENWEBNET_GROUP_ID;
+				devname += " GROUP " + whereParam[0];
+			}
+			else if (iWhere < MAX_WHERE_AREA)
+			{
+				/* AREA automation device */
+				mask_request_status |= (0x1 << iWhere); // Gen or area, need a refresh devices status
+				if (iWhere == 0)
+					devname += " GEN " + where;
+				else
+					devname += " AREA " + where;
+			}
+			else
+			{
+				/* Normal automation device */
+				devname += " " + where;
+			}
 
 			//pTypeGeneralSwitch, sSwitchBlindsT1
 			UpdateBlinds(WHO_AUTOMATION, iWhere, iAppValue, atoi(sInterface.c_str()), 255, devname.c_str());
-			if (iWhere < MAX_WHERE_AREA)
-				mask_request_status |= (0x1 << iWhere); // Gen or area, need a refresh devices status
+			
 			break;
 		case WHO_TEMPERATURE_CONTROL:
 			if (!iter->IsMeasureFrame())
@@ -1046,7 +1086,7 @@ bool COpenWebNetTCP:: WriteToHardware(const char *pdata, const unsigned char len
 	if (iInterface==0) {
 		//local bus
 		vector<bt_openwebnet> responses;
-		bt_openwebnet request(who, where, what);
+		bt_openwebnet request(who, what, (where & ~OPENWEBNET_GROUP_ID), (where & OPENWEBNET_GROUP_ID));
 		if (sendCommand(request, responses))
 		{
 			if (responses.size() > 0)
@@ -1064,12 +1104,15 @@ bool COpenWebNetTCP:: WriteToHardware(const char *pdata, const unsigned char len
 		std::string sWho = whoStr.str();
 
 		std::stringstream whatStr;
-		whatStr << where;
+		whatStr << what;
 		std::string sWhat = whatStr.str();
 
 		std::stringstream whereStr;
-		whereStr << what;
-		std::string sWhere = whereStr.str();
+		whereStr << (where & ~OPENWEBNET_GROUP_ID);
+		std::string sWhere = "";
+		if ((where & OPENWEBNET_GROUP_ID))
+			sWhere += "#";
+		sWhere += whereStr.str();
 
 		std::stringstream interfaceStr;
 		interfaceStr << iInterface;

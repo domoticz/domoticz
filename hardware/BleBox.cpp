@@ -9,7 +9,7 @@
 #include "../main/SQLHelper.h"
 #include "../httpclient/HTTPClient.h"
 
-#define TOT_TYPE 8
+#define TOT_TYPE 7
 
 const _STR_DEVICE DevicesType[TOT_TYPE] =
 { 
@@ -31,7 +31,7 @@ int BleBox::GetDeviceTypeByApiName(const std::string &apiName)
 			return DevicesType[i].unit;
 		}
 	}
-	_log.Log(LOG_ERROR, "BleBox: unknown device api name({0})", apiName.c_str());
+	_log.Log(LOG_ERROR, "BleBox: unknown device api name(%s)", apiName.c_str());
 	return -1;
 }
 
@@ -106,7 +106,7 @@ void BleBox::GetDevicesState()
 		sstr << "/api/" << DevicesType[itt->second].api_state << "/state";
 		std::string command = sstr.str();
 
-		Json::Value root = SendCommand(itt->first, command);
+		Json::Value root = SendCommand(itt->first, command, 2);
 		if (root.empty())
 			continue;
 		
@@ -132,8 +132,10 @@ void BleBox::GetDevicesState()
 
 					const int state = root["state"].asInt();
 
-					const int currentPos = root["currentPos"].asInt();
-					//	const int desiredPos = root["desiredPos"].asInt();
+					if (IsNodesExist(root, "currentPos", "position") == false)
+						break;
+
+					const int currentPos = root["currentPos"]["position"].asInt();
 					const int pos = currentPos;
 
 					bool opened = true;
@@ -303,28 +305,27 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 					break;
 				}
 
-				case 1:
+				case 1: // shutterbox
 				{
-					std::string state;
-					if (output->LIGHTING2.cmnd == light2_sOn)
-					{
-						state = "u";
+					int percentage = 0;
+					switch (output->LIGHTING2.cmnd) {
+						case light2_sOn:
+							percentage = 0;
+							break;
+						case light2_sOff:
+							percentage = 100;
+							break;
+						default:
+							percentage = output->LIGHTING2.level * 100 / 15;
+							break;
 					}
-					else
-						if (output->LIGHTING2.cmnd == light2_sOff)
-						{
-							state = "d";
-						}
-						else
-						{
-							int percentage = output->LIGHTING2.level * 100 / 15;
-							state = boost::to_string(percentage);
-						}
+					
 
-					Json::Value root = SendCommand(IPAddress, "/s/" + state);
-					if (root.empty())
-						return false;
-
+					Json::Value root = SendCommand(IPAddress, "/s/p/" + boost::to_string(percentage));
+ 
+ 					if (root.empty())
+  						return false;
+					
 					if (IsNodeExists(root, "state") == false)
 						return false;
 
@@ -678,15 +679,31 @@ namespace http {
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
 					root["result"][ii]["IP"] = ip;
+					root["result"][ii]["Type"] = "unknown";
+					root["result"][ii]["Uptime"] = "unknown";			
+					root["result"][ii]["hv"] = "unknown";
+					root["result"][ii]["fv"] = "unknown";
 
 					BleBox *pHardware = reinterpret_cast<BleBox*>(pBaseHardware);
-					std::string uptime = pHardware->GetUptime(ip);
-					root["result"][ii]["Uptime"] = uptime;
 
 					int type = pHardware->GetDeviceType(ip);
-					root["result"][ii]["Type"] = DevicesType[type].name;
+					if (type != -1)
+					{
+						root["result"][ii]["Type"] = DevicesType[type].name;
 
-					//TODO: read more paramaters from devices (version fw, etc)
+						Json::Value state = pHardware->GetApiDeviceState(ip);
+						if (!state.isNull())
+						{
+							if (pHardware->IsNodeExists(state, "fv"))
+								root["result"][ii]["fv"] = state["fv"].asString();
+
+							if (pHardware->IsNodeExists(state, "hv"))
+								root["result"][ii]["hv"] = state["hv"].asString();
+
+							std::string uptime = pHardware->GetUptime(ip);
+							root["result"][ii]["Uptime"] = uptime;
+						}
+					}
 
 					ii++;
 				}
@@ -877,9 +894,8 @@ namespace http {
 	}
 }
 
-Json::Value BleBox::SendCommand(const std::string &IPAddress, const std::string &command)
+Json::Value BleBox::SendCommand(const std::string &IPAddress, const std::string &command, const int timeOut)
 {
-	std::vector<std::string> extraHeaders;
 	std::string result;
 	Json::Value root;
 
@@ -887,7 +903,9 @@ Json::Value BleBox::SendCommand(const std::string &IPAddress, const std::string 
 	sstr << "http://" << IPAddress << command;
 
 	std::string sURL = sstr.str();
-	if (!HTTPClient::GET(sURL, extraHeaders, result))
+	HTTPClient::SetConnectionTimeout(timeOut);
+	HTTPClient::SetTimeout(4);
+	if (!HTTPClient::GET(sURL, result))
 	{
 		_log.Log(LOG_ERROR, "BleBox: send '%s'command to %s failed!", command.c_str(), IPAddress.c_str());
 		return root;
@@ -914,7 +932,7 @@ Json::Value BleBox::SendCommand(const std::string &IPAddress, const std::string 
 
 std::string BleBox::IdentifyDevice(const std::string &IPAddress)
 {
-	Json::Value root = SendCommand(IPAddress, "/api/device/state");
+	Json::Value root = SendCommand(IPAddress, "/api/device/state", 2);
 	if (!root.isObject())
 		return "";
 
@@ -939,9 +957,27 @@ std::string BleBox::IdentifyDevice(const std::string &IPAddress)
 	return result;
 }
 
+Json::Value BleBox::GetApiDeviceState(const std::string &IPAddress)
+{
+	Json::Value empty;
+
+	Json::Value root = SendCommand(IPAddress, "/api/device/state", 2);
+	if (!root.isObject())
+		return empty;
+
+	if (root["device"].empty() == true)
+	{
+		return root;
+	}
+	else
+	{
+		return root["device"];
+	}
+}
+
 std::string BleBox::GetUptime(const std::string &IPAddress)
 {
-	Json::Value root = SendCommand(IPAddress, "/api/device/uptime");
+	Json::Value root = SendCommand(IPAddress, "/api/device/uptime", 2);
 	if (root.empty())
 		return "unknown";
 
@@ -968,7 +1004,7 @@ int BleBox::GetDeviceType(const std::string &IPAddress)
 	std::map<const std::string, const int>::const_iterator itt = m_devices.find(IPAddress);
 	if (itt == m_devices.end())
 	{
-		_log.Log(LOG_ERROR, "BleBox: unknown device ({0})", IPAddress.c_str());
+		_log.Log(LOG_ERROR, "BleBox: unknown device (%s)", IPAddress.c_str());
 		return -1;
 	}
 	else
@@ -1117,7 +1153,7 @@ void BleBox::UpdateFirmware()
 	std::map<const std::string, const int>::const_iterator itt;
 	for (itt = m_devices.begin(); itt != m_devices.end(); ++itt)
 	{
-		Json::Value root = SendCommand(itt->first, "/api/ota/update");
+		Json::Value root = SendCommand(itt->first, "/api/ota/update", 2);
 	}
 }
 
