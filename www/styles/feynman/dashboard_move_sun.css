@@ -1,6 +1,10 @@
 /*  This moves the Sun-up and sun-down indicator to the footer. */
 
-#timesun {height:0!important}
+#timesun {
+    display:inline-block;
+    height:0!important;
+}
+
 #timesun div {
     color:#aaa;
     z-index:100;

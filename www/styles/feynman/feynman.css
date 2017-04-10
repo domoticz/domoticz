@@ -50,15 +50,35 @@ body table#itemtabledoubleicon tbody tr, body table#itemtable tbody tr, body tab
     padding:10px 12px
 }
 
+.brand:hover h2{
+    display:block!important;
+    position: relative;
+    float:right;
+    top: -40px;
+    left: 10px;
+    margin:0!important;
+    opacity:100;
+    transition: all 1s linear;
+}
+
+.brand div.tooltip{
+    top:2px!important;
+    
+}
+
 #tabs a{
     font-family: "Lato", sans-serif;
     font-size: 110%;
 }
 
-/* The domoticz css is too messy to make this possible :-(
+#timesun{
+    color:#ddd;
+}
+
+/* The domoticz css is too messy to make this possible :-( */
 #bannav td a{
     text-transform: uppercase;
-}*/
+}
 
 .span3,
 .span4 {
@@ -88,6 +108,12 @@ body table#itemtabledoubleicon tbody tr, body table#itemtable tbody tr, body tab
 tr, #name{
     border-radius: 0px;
 }*/
+
+#name{
+    background-color:#D4E1EE;
+}
+
+body:not(.dashboard) .item #status{font-weight: bold;}
 
 #name,
 body table#itemtablesmall tr td:first-child,
@@ -125,15 +151,123 @@ body table#itemtablenotype tr td:first-child{
     box-shadow: 2px 2px 18px 0px rgba(50, 50, 50, 0.2);
 }
 
+/*  status indicator */
+div.item.statusNormal td#name{
+    background-color: transparent;
+
+}
+div.item.statusProtected td#name{
+    background-color: transparent;
+    -moz-box-shadow:  0 2px 0 0 #A4B1EE;;
+    -webkit-box-shadow:  0 2px 0 0 #A4B1EE;;
+    box-shadow:  0 2px 0 0 #A4B1EE;;  
+}
+div.item.statusTimeout td#name{
+    background-color: transparent;
+    -moz-box-shadow:  0 2px 0 0 #DF2D3A;
+    -webkit-box-shadow:  0 2px 0 0 #DF2D3A;
+    box-shadow:  0 2px 0 0 #DF2D3A;    
+}
+div.item.statusLowBattery td#name{
+    background-color: transparent;
+    -moz-box-shadow:  0 2px 0 0 #DDDF2D;
+    -webkit-box-shadow:  0 2px 0 0 #DDDF2D;
+    box-shadow:  0 2px 0 0 #DDDF2D;  
+}
+
+div.item.withstatus.statusNormal td#name{
+    background-color: transparent;
+
+}
+div.item.withstatus.statusProtected td#name{
+    background-color: transparent;
+    -moz-box-shadow:  0 1px 0 0 #A4B1EE;
+    -webkit-box-shadow:  0 1px 0 0 #A4B1EE;
+    box-shadow:  0 1px 0 0 #A4B1EE;
+}
+div.item.withstatus.statusTimeout td#name{
+    background-color: transparent;
+    -moz-box-shadow:  0 1px 0 0 #DF2D3A;
+    -webkit-box-shadow:  0 1px 0 0 #DF2D3A;
+    box-shadow:  0 1px 0 0 #DF2D3A;    
+}
+div.item.withstatus.statusLowBattery td#name{
+    background-color: transparent;
+    -moz-box-shadow:  0 1px 0 0 #DDDF2D;
+    -webkit-box-shadow:  0 1px 0 0 #DDDF2D;
+    box-shadow:  0 1px 0 0 #DDDF2D;  
+}
+
+
+
+/*  Adding some nice statusindicator icons to the non-dashboard display pages. */
+
+body:not(.dashboard) h2 + div.divider .span4:nth-child(-n+3) div.item.statusProtected tr:after {
+    content : "";
+    display: block;
+    position: relative;
+    top: 0;
+    right: 3px;
+    float:right;
+    background: url(/images/lock_closed.png) no-repeat center center; 
+    -webkit-background-size: 16px;
+    -moz-background-size: 16px;
+    -o-background-size: 16px;
+    background-size: 16px;
+    width: 32px;
+    height: 32px;
+    opacity : 0.6;
+    z-index: 1;
+}
+
+body:not(.dashboard) h2 + div.divider .span4:nth-child(-n+3) div.item.statusTimeout tr:after{
+    content : "";
+    display: block;
+    position: relative;
+    top: 0;
+    right: 5px;
+    float:right;
+    background: url(/images/Alert48_2.png) no-repeat center center; 
+    -webkit-background-size: 16px;
+    -moz-background-size: 16px
+    -o-background-size: 16px;
+    background-size: 16px;
+    width: 32px;
+    height: 32px;
+    opacity : 0.8;
+    z-index: 1;
+}
+
+body:not(.dashboard) h2 + div.divider .span4:nth-child(-n+3) div.item.statusLowBattery tr:after {
+    content : "";
+    display: block;
+    position: relative;
+    top: 0px;
+    right: 5px;
+    float:right;
+    background: url(/images/battery-low.png) no-repeat center center; 
+    -webkit-background-size: 20px;
+    -moz-background-size: 20px;
+    -o-background-size: 20px;
+    background-size: 20px;
+    width: 32px;
+    height: 32px;
+    opacity : 0.5;
+    z-index: 1;
+}
+
+
+
+/*
 td.statusNormal{background-color: transparent}
 td.statusProtected{background-color: transparent}
 td.statusTimeout{background-color: transparent}
 td.statusLowBattery{background-color: transparent}
 
 td.statusNormal{
-/*    -moz-box-shadow:  inset 0 -3px 0 0 #A4B1EE;
+    -moz-box-shadow:  inset 0 -3px 0 0 #A4B1EE;
     -webkit-box-shadow:  inset 0 -3px 0 0 #A4B1EE;
-    box-shadow:  inset 0 -3px 0 0 #A4B1EE;*/
+    box-shadow:  inset 0 -3px 0 0 #A4B1EE;
 }
 td.statusProtected{
     background-color: #A4B1EE;
@@ -148,7 +282,7 @@ td.statusLowBattery{
     -moz-box-shadow:  0 1px 0 0 #DDDF2D;
     -webkit-box-shadow:  0 1px 0 0 #DDDF2D;
     box-shadow:  0 1px 0 0 #DDDF2D;    
-}
+}*/
 
 #dashcontent .ui-draggable:not(.ui-dialog) tr{
     background-image: none;
@@ -476,56 +610,3 @@ body:hover .ui-dialog {
     box-shadow:  0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
     */
 }
-
-
-/* Creates a Settings sidebar and thinner items menu on big screens */
-
-/*@media only screen and (min-width:1800px){ debugging*/   
-
-@media only screen and (min-width:1200px){ 
-    
-    /* Thinner items */
-    
-    #dashcontent .selectorlevels{
-        top:7px;
-        left: 190px;
-        width: 35%;
-        width: calc(100% - 245px);
-        margin-top:0!important;
-        position:relative;
-        height:0;
-    }
-    
-    #dashcontent .selectorlevels .ui-buttonset{
-        height:55px;
-        display: flex;
-        flex-flow: row wrap;
-        align-items: stretch;
-        margin-right:0;
-        top:-62px;
-    }
-    
-    #dashcontent .selectorlevels .ui-selectmenu-button{
-        top: -62px!important;
-        height:55px;
-    }
-    
-    #dashcontent .ui-selectmenu-button{
-        position:relative;
-        right:-1px;
-        top:16px;
-        width:100%!important;
-    }
-    
-    #dashcontent .ui-selectmenu-button span.ui-selectmenu-text{
-        text-align:right;
-        background-color:#D4E1EE;
-        align-content:flex-end;
-    }
-    
-    /*#dashcontent .ui-selectmenu-button .ui-state-default .ui-icon{
-        filter: contrast(0);
-    }*/
-    
-}    
-

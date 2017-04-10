@@ -1,17 +1,19 @@
 @import url("base.css"); /* Don't remove this line! */
 @import url("feynman.css");  /* Don't remove this line! */
+/*@import url("show_version_number.css");  /* shows the version number above the logo */
 @import url("dashboard_move_sun.css"); /* Moves the sun-up indicator to the footer. */
 @import url("dashboard_show_last_update.css"); /* Displays the 'last update' time on the dashboard. */
+/*@import url("dashboard_thinner_items_on_wide_screens.css"); /* Only for wide screens; item-options move next to the name. */
 /*@import url("dashboard_highlights_see-through.css"); /* makes all dashboard items semi-transparent. */
 @import url("dashboard_highlights.css"); /* This adds bigger items at the top of each dashboard category. */
-/*@import url("dashboard_vertical_columns.css"); /* Turns dashboard into vertical columns. */
+@import url("dashboard_vertical_columns.css"); /* Turns dashboard into vertical columns. */
 @import url("navigation_main_sidebar.css"); /* This transforms the main menu to a vertical menu on the left. */
 @import url("navigation_settings_sidemenu.css"); /* This transforms the settings-tabs into a sidebar on the left. */
 @import url("extras_and_animations.css"); /* Adds fun visual extras. */
 
 
 /* GENERAL SETTINGS
-Welcome the Feynman theme settings.
+Welcome the theme settings.
 
 First, you can (add or) remove features by simply adding (or removing) /* at the beginning of the 
 lines at the top of this page. Or you can just delete the line.
@@ -30,8 +32,19 @@ remove the /* before the word 'body'. This will override the detault background 
 *//* FEATURE DETAILS
 
 
+
+__Show Version Number__
+This permanently shows the Domoticz version number, not just on mouse-over.
+
+__Dashboard Move Sun__
+This moves the sun-up and sun-down times indicator to the footer.
+
 __Dashboard Show Last Update__
-Enable this if you want the last update time to also be displayed onthe dashboard.
+Enable this if you want items on the dashboard to also display the time they were last updated.
+
+__Thinner Items on Wide Screens__
+If you have a really wide screen, then this can be useful. It takes the item's buttons, and moves them in line 
+with the name. Only use this in combination with Vertical Columns if your screen is really really big.
 
 __Dashboard Highlights__
 This is a little CSS script that super-sizes the first three items for each category. You can use this to highlight 

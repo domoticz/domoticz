@@ -19,12 +19,28 @@ This theme generally tries not to set any colours, and leaves that to the sub-th
 */
 
 
+/* setting the stage, based on the part of the style.css code this I now concider 'legacy'. */
 
+body .ui-draggable table,
+body .ui-draggable table tbody,
+body .ui-draggable table tbody tr,
+body .ui-draggable table  tbody tr > td{
+    display:block;
+    width:100%;
+	padding: 0;
+	margin: 0;    
+}
+
+#img,
+#img1,
+#img2,
+#img3{
+    width:auto;
+}
 
 
 /*  RESETS THAT CAN HOPEFULLY BE REMOVED SOON  */
 
-/* #D4E1EE -> #F1F5FA */
 
 body table#itemtable tr td:first-child + td{
     font-size:115%;
@@ -34,11 +50,14 @@ body table#itemtable tr td:first-child + td{
     margin-bottom:20px;
 }
 
+
+/*
 body table#itemtablesmall tr td:first-child,
 body table#itemtablesmalldoubleicon tr td:first-child,
 body table#itemtablesmalltrippleicon tr td:first-child,
 body table#itemtablesmall tr td:first-child,
-body table#itemtablenotype tr td:first-child{
+body table#itemtablenotype tr td:first-child,*/
+body table[id^="itemtable"] tr td:first-child{
     border-radius:0px;
 }
 
@@ -48,6 +67,7 @@ body table#itemtablesmalltrippleicon tr td:first-child + td{
     font-weight: normal;
 }
 
+body table[id^="itemtable"] tr td:first-child + td + td + td + td + td + td,
 body table#itemtablenotype tr td:first-child + td + td + td + td + td{
     margin:0;
     padding:0;
@@ -203,6 +223,7 @@ p.ng-binding {
     margin-bottom:1em;
 }
 
+/*
 #temptophtm td:last-of-type span{
     top: 2px;
     background-color: #eee;
@@ -214,7 +235,7 @@ p.ng-binding {
     border-top: 1px solid #999;
     border-left: 1px solid #999;
     border-bottom: 1px solid #999;
-}
+}*/
 
 #temptophtm td:last-of-type select{width:100px!important;}
 
@@ -234,22 +255,6 @@ p.ng-binding {
     font-weight: 300;
     margin-top: -30px;
     margin-left: 26px
-}
-
-.brand:hover h2{
-    display:block!important;
-    position: relative;
-    float:right;
-    top: -40px;
-    left: 10px;
-    margin:0!important;
-    opacity:100;
-    transition: all 1s linear;
-}
-
-.brand div.tooltip{
-    top:2px!important;
-    
 }
 
 #appversion {
@@ -335,7 +340,15 @@ p.ng-binding {
 
 /*  SUB-NAVIGATION  */
 
-#timesun + td {margin-bottom:1em}
+#timesun{
+    /*display:block;*/
+}
+
+#timesun + td {
+    /*display: block;
+    text-align: left;*/
+    margin-bottom: 1em;
+}
 
 #bannav, .bannav {
     width: auto;
@@ -398,7 +411,14 @@ p.ng-binding {
 
 h1,h2,h3{
     clear: both;
+    margin-top:10px;
     padding-bottom:10px;
+}
+
+.container > h1:first-of-type,
+.container > h2:first-of-type,
+.container > h3:first-of-type{
+    margin-top:20px;
 }
 
 #dashcontent h1, 
@@ -408,8 +428,6 @@ h1,h2,h3{
     padding-bottom:10px;
     margin: 20px 0 10px 0;
 }
-
-.span6 .h2{margin-top:0}
 
 #dashcontent h2:first-of-type{
     margin-top:0!important;
@@ -503,24 +521,24 @@ body #dashcontent table > tbody > tr{
 
 
 /*  this transforms the triple-image items into items with buttons at the bottom. Using just CSS.. */
-#dashcontent [class^="span"] #itemtablesmalltrippleicon{
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon{
     min-height:80px;
     white-space: nowrap;
-    overflow:hidden;
+    /*overflow:hidden;*/
 }
 
-#dashcontent [class^="span"] #itemtablesmalltrippleicon #bigtext{right:0px;}
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #bigtext{right:0px;}
 
-#dashcontent [class^="span"] #itemtablesmalltrippleicon #bigtext span{padding-right:10px;}
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #bigtext span{padding-right:10px;}
 
 
-#dashcontent [class^="span"] #itemtablesmalltrippleicon #img,
-#dashcontent [class^="span"] #itemtablesmalltrippleicon #img1{padding-left:0px}
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img,
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img1{padding-left:0px}
 
-#dashcontent [class^="span"] #itemtablesmalltrippleicon #img,
-#dashcontent [class^="span"] #itemtablesmalltrippleicon #img1,
-#dashcontent [class^="span"] #itemtablesmalltrippleicon #img2,
-#dashcontent [class^="span"] #itemtablesmalltrippleicon #img3{
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img,
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img1,
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img2,
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img3{
     display:inline-block;
     /*float:none!important;*/
     height:32px;
@@ -531,17 +549,17 @@ body #dashcontent table > tbody > tr{
     border-radius:3px;
     background-color: #D4E1EE;
 }
-#dashcontent [class^="span"] #itemtablesmalltrippleicon #img:hover,
-#dashcontent [class^="span"] #itemtablesmalltrippleicon #img1:hover,
-#dashcontent [class^="span"] #itemtablesmalltrippleicon #img2:hover,
-#dashcontent [class^="span"] #itemtablesmalltrippleicon #img3:hover{
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img:hover,
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img1:hover,
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img2:hover,
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img3:hover{
     background-color:#fff;
 }
 
-#dashcontent [class^="span"] #itemtablesmalltrippleicon #img img,
-#dashcontent [class^="span"] #itemtablesmalltrippleicon #img1 img,
-#dashcontent [class^="span"] #itemtablesmalltrippleicon #img2 img,
-#dashcontent [class^="span"] #itemtablesmalltrippleicon #img3 img{
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img img,
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img1 img,
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img2 img,
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img3 img{
     height:22px;
     width: 22px;
     border:none;
@@ -552,10 +570,10 @@ body #dashcontent table > tbody > tr{
     padding:5px 0 0 5px;
     border-radius:0;
 }
-#dashcontent [class^="span"] #itemtablesmalltrippleicon #img img:hover,
-#dashcontent [class^="span"] #itemtablesmalltrippleicon #img1 img:hover,
-#dashcontent [class^="span"] #itemtablesmalltrippleicon #img2 img:hover,
-#dashcontent [class^="span"] #itemtablesmalltrippleicon #img3 img:hover{
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img img:hover,
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img1 img:hover,
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img2 img:hover,
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img3 img:hover{
     background-color:transparent;
 }
 
@@ -588,7 +606,7 @@ body #dashcontent table > tbody > tr{
     color:#333;
 }
 
-#dashcontent [class^="span"] #itemtablesmalltrippleicon #img3{
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img3{
     /*display:inline-flex;
     flex-grow: 1;*/
     /*width:auto;*/
@@ -596,10 +614,10 @@ body #dashcontent table > tbody > tr{
 
 
 /*
-#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img{right:7px} 
-#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img1{right:7px}
-#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img2{right:52px}
-#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img3{right:97px}*/
+#dashcontent divdiv[class^="span"] #itemtablesmalltrippleicon #img{right:7px} 
+#dashcontent divdiv[class^="span"] #itemtablesmalltrippleicon #img1{right:7px}
+#dashcontent divdiv[class^="span"] #itemtablesmalltrippleicon #img2{right:52px}
+#dashcontent divdiv[class^="span"] #itemtablesmalltrippleicon #img3{right:97px}*/
 
 
 .item .options img.favorite, /* the future version */
@@ -630,7 +648,7 @@ body #dashcontent table > tbody > tr{
 }
 
 
-#name {
+body .item tr > #name {
     display:inline-block;
     width: 100%;
     height: 40px!important;
@@ -638,13 +656,11 @@ body #dashcontent table > tbody > tr{
     border-style: none!important;
     border-width:0!important;
     /*color: #444!important;*/
+    white-space: nowrap;
     overflow: hidden;
     box-sizing: border-box;
-    padding: 14px 5px 9px 35px!important;
+    padding: 14px 5px 9px 35px;
     text-transform: uppercase;
-    border-top-right-radius: 0!important;
-    border-bottom-right-radius: 0!important;
-    border-bottom-left-radius: 0!important;
     margin:0!important;
     cursor: move;
 }
@@ -657,9 +673,10 @@ body #dashcontent table > tbody > tr{
 }
 
 #bigtext{
-    color: #444 !important;
-    font-size: 115%;
-    font-weight: normal!important;
+    float:right;
+    color:#222;
+    font-size: 19px;
+    font-weight: normal;
     white-space: nowrap;
     line-height: 100%;
     text-align: right;
@@ -673,10 +690,14 @@ body #dashcontent table > tbody > tr{
     max-width:50%;
 }
 
+#dashcontent #bigtext{
+    color: #444;
+}
+
 #bigtext > span{
     /*padding: 3px;*/
     display:inline-block;
-    font-weight: normal!important;
+    font-weight: normal;
     overflow:hidden;
     width:100%;
 }
@@ -694,11 +715,14 @@ body #dashcontent table > tbody > tr{
 */
 
 #dashcontent #bigtext{
-    top: -38px;
+    top: -39px;
     right: 55px;
 }
 
-#dashcontent #bigtext > span{padding:3px}
+#dashcontent #bigtext > span{
+    padding:3px;
+    width:auto;
+}
 
 #itemtabledoubleicon #bigtext{right: 80px;}
 #itemtablesmalldoubleicon #bigtext{right: 90px;}
@@ -711,6 +735,7 @@ body #dashcontent table > tbody > tr{
 
 #lastupdate {
     color: #777;
+    font-size:11.5px;
     font-style: normal;
     white-space: nowrap;
     position: relative;
@@ -773,13 +798,15 @@ body #dashcontent table > tbody > tr{
 #dashcontent .item.withstatus.statuscount4 tr{height:175px}
 
 #dashcontent .item.withstatus #status > .wrapper > span{
-    display:block;
+    display:flex;
+    flex-direction: column;
+    justify-content: center;
     width:100%;
     font-size:115%;
     padding:10px 10px 10px 15px;
     flex: 1 1 auto;
     height:30px;
-    box-shadow: inset 2px -4px 18px 0px rgba(50, 50, 50, 0.2);
+    box-shadow: 2px 4px 18px 0px rgba(50, 50, 50, 0.2)
     
 }
 
@@ -787,25 +814,27 @@ body #dashcontent table > tbody > tr{
 
 
 /*  mini options menu */
-[class^="span"] div.item .options,
-.span3 table > tbody> tr > td:last-of-type,
-/*#main-view > div:not(#dashcontent)*/ .span4 table > tbody> tr > td:last-of-type{
+div.item .options{
     position:relative;
     padding:0;
     margin:0!important;
     white-space: nowrap;
 }
 
-[class^="span"] div.item .options a,
+td.options{
+    padding:0;
+}
+
+div[class^="span"] div.item .options a,
 .span3 table > tbody> tr > td:last-of-type a,
 .span4 table > tbody> tr > td:last-of-type a{
     position:relative;
     left:-16px;  
 }
 
-[class^="span"] table#itemtable > tbody> tr > td:first-of-type a,
-[class^="span"] table#itemtabledoubleicon > tbody> tr > td:first-of-type a,
-[class^="span"] table#itemtabletrippleicon > tbody> tr > td:first-of-type a{
+div[class^="span"] table#itemtable > tbody> tr > td:first-of-type a,
+div[class^="span"] table#itemtabledoubleicon > tbody> tr > td:first-of-type a,
+div[class^="span"] table#itemtabletrippleicon > tbody> tr > td:first-of-type a{
     margin-left:5px;
 }
 
@@ -823,12 +852,14 @@ body #dashcontent table > tbody > tr{
 #type {
     color: #777;
     white-space: nowrap;
-    text-indent: 184px;
+    text-indent: 144px;
     position: relative;
     top: 35px;
     left: 0px;
     width: 100%;
     height:0;
+    overflow:visible;
+    font-size: 11.5px;
 }
 
 
@@ -1025,7 +1056,7 @@ a.btnstyle:last-of-type, a.btnstylerev:last-of-type{
     border-bottom:20px solid #eee;
 }
 
-#updelclr, #delclractive, #delclr, #delclractive {
+#updelclr, #delclractive, #delclr, #delclractive, #delclract {
     box-sizing: border-box;
     padding:10px; background-color:#eee;
 }
@@ -1436,7 +1467,7 @@ div.dataTables_wrapper .ui-widget-header{
 }
 
 #dashcontent #itemtablesmalltrippleicon [id^="img"]:hover,
-#dashcontent [class^="span"] .selectorlevels .ui-buttonset .ui-button:hover,
+#dashcontent div[class^="span"] .selectorlevels .ui-buttonset .ui-button:hover,
 #dashcontent .selectorlevels .ui-selectmenu-text:hover{
     box-shadow: inset 0px 0px 20px 2px rgba(250, 250, 250, 0.4);
 }
@@ -1451,8 +1482,9 @@ div.dataTables_wrapper .ui-widget-header{
     padding:20px    
 }
 
+/*
 #utilitycontent {margin-top:30px}
-
+*/
 
 /* LOG */
 
@@ -1528,6 +1560,24 @@ div.dataTables_wrapper .ui-widget-header{
 #settingscontent div.row-fluid.related .span2{
     width:auto;
 }
+
+
+
+
+
+/*  PAGE SPECIFIC OVERRIDES  */
+
+.utility td#status{
+    font-size:15px;
+    white-space: normal;
+    color:#333;
+}
+
+div#mysensorsnodestable_wrapper + #updelclr,
+div#hardwaretable_wrapper + #updelclr{border-top:0!important;border-bottom:10px!important;padding-top:0;}
+
+
+
 
 
 
@@ -1651,7 +1701,7 @@ table.mobileitem > thead > tr > th:first-of-type{
 
 
 
-/* and now for the second TR's with colspan=2 */
+/* and now for the second mobile row (with colspan=2) */
 
 td[colspan]:not([colspan="1"]){
     padding:10px;
@@ -1713,6 +1763,8 @@ td[colspan]:not([colspan="1"])
 }
 
 
+
+
 /* Media queries */
 
 @media screen and (max-device-width: 361px){ /* for mobile phones, makes popups work better */
@@ -1760,20 +1812,52 @@ td[colspan]:not([colspan="1"])
 
 
 /*  Makes the name and value slide above each other on small displays.  */
-@media screen and (min-width: 768px) and (max-width: 900px){
+
+
+@media screen and (max-width: 767px){
     
+    #bigtext{float:right;}
+    
+    #dashcontent .item.withstatus #status{
+        height:auto;
+        position:initial;
+    }
+    
+    #dashcontent .item.withstatus #status > .wrapper > span{padding-left:10px}
+    
+    #dashcontent #lastupdate{
+        box-shadow:2px 4px 18px 0px rgba(50, 50, 50, 0.2);
+        padding-top:3px;
+    }
+}
+
+@media screen and (min-width: 768px) and (max-width: 980px){
+    
+    #name,
     #dashcontent #name{
-        padding-top:8px!important;
+        padding-top:7px!important;
         padding-left:10px;
     }
     
-    #dashcontent #bigtext{
+    #bigtext{
         float:left;
+        text-align: left;
+        top: -20px;
+        left: 35px;
+    }
+    #dashcontent #bigtext{
         top: -28px;
         left: 10px;
     }
     
-    #dashcontent #bigtext > span{padding:0} 
+    #bigtext > span{
+        font-size:13px;
+        font-weight:bold;
+        color:#444;
+    }
+    #dashcontent #bigtext > span{
+        padding:0;
+    } 
     
     #dashcontent .item.withstatus #status{
         top:20px;
@@ -1786,7 +1870,10 @@ td[colspan]:not([colspan="1"])
     }
 
 }  
-    
+@media screen and (min-width: 981px){
+
+    #bigtext{float:right;}
+}
     
 @media all and (min-width: 1200px){
     
