@@ -1188,9 +1188,9 @@ define(['app'], function(app) {
                                 var count = 0;
                                 
 				                var xhtm = "";
-                                var xhtm +=	'\t<div class="span4" id="' + item.idx + '">\n';
+                                xhtm +=	'\t<div class="span4" id="' + item.idx + '">\n';
                                 xhtm += '\t  <div class="item ' + itemtypeclass + ' ' + itemsubtypeclass + ' ' + backgroundClass + '">\n'; //this could also do the whole "bigtexthtml vs statushtml" thing, which is in the dashboard,and use that to create a nicely designed list of outputs. But for now this will do.
-				                var xhtm +='\t    <table id="itemtable" class="itemtable" border="0" cellpadding="0" cellspacing="0">\n' +
+				                xhtm +='\t    <table id="itemtable" class="itemtable" border="0" cellpadding="0" cellspacing="0">\n' +
 								'\t    <tr>\n';
                                 xhtm += '\t      <td id="name" class="name"><span>' + item.Name + '</span></td>\n';
                                 xhtm += '\t      <td id="bigtext" class="bigtext"><span class="wrapper">';
