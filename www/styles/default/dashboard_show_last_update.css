@@ -1,0 +1,122 @@
+/* LastUpdate on the dashboard. */
+
+
+/*  Last Update fade in  */
+
+/*
+@-webkit-keyframes fadeIn {
+    from { opacity: 0; }
+      to { opacity: 1; }
+    
+}  
+@keyframes fadeIn {
+    from { opacity: 0; }
+      to { opacity: 1; }
+}*/
+
+#dashcontent .divider tr,
+#dashcontent .item tr{
+    display:block;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    /*border-bottom:20px solid transparent;
+    border-color:transparent!important;*/
+    height:auto;
+    min-height:75px;
+}
+
+#dashcontent #lastupdate{
+    display:block;
+    clear:both;
+    width:100%;
+    left:0;
+    top: 0;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+#dashcontent #lastupdate > span{
+    height: 20px;
+    padding: 4px 3px 0px 0px;  
+    box-shadow: 0px -4px 8px -4px rgba(130, 130, 130, 0.2);    
+}
+
+
+@media screen and (max-width: 768px){
+
+    #dashcontent #lastupdate{
+        display:block;
+        height:20px;
+        background-color:#d4e1ee;
+        padding-left:10px;
+    }
+    #dashcontent #lastupdate > span{}    
+    
+    #dashcontent .item.withstatus{
+        background-color:#D4E1EE;
+        border-bottom:20px solid transparent; /*little trick to push it down*/
+    }   
+    
+}
+
+@media screen and (min-width: 768px) and (max-width: 980px){
+
+    #dashcontent .divider tr, 
+    #dashcontent .item tr {
+        min-height: 75px;
+    }
+    
+    #dashcontent #lastupdate > span {padding-left:10px;}
+    
+    #dashcontent .item.withstatus{
+        border-bottom:20px solid transparent; /*little trick to push it down*/
+    }   
+    
+}
+
+@media screen and (min-width: 981px){
+
+    #dashcontent .divider tr, #dashcontent .item tr {
+        min-height: 55px;
+        border-radius:3px;
+    }
+
+    /*#dashcontent #name{
+        border-radius:3px!important;
+    }*/
+
+    #dashcontent #lastupdate{
+        background-image:none;
+        position:relative;
+        height:0;
+        overflow:visible;
+        top: -17px;
+        padding:0;
+        left:0px;
+        background-color:transparent;
+        background-image:none;
+    }
+    #dashcontent #lastupdate > span {padding-left:15px;}
+
+    #dashcontent #itemtablesmalltrippleicon #lastupdate{
+        top:-48px;
+    }
+    
+}    
+
+@media screen and (min-width: 1100px){
+
+
+    #dashcontent /*.item:not(.withstatus)*/ #name{padding:15px 0 0 15px!important;}
+    #dashcontent /*.item:not(.withstatus)*/ #lastupdate{top: -23px;}
+
+    #dashcontent #itemtablesmalltrippleicon #lastupdate{
+        top:-53px;
+    }
+    
+}
+
+
+
+
+

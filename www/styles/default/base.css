@@ -1,12 +1,90 @@
+/*  BASE THEME 
+
+Welcome to the base theme.
+
+This theme tries to 'reset' the core css of domoticz into a version that is a bit more in line with current 
+throughts on interaction design. If you want to create your own theme based on this theme, my advice is to 
+create another CSS file that is loaded after this one, and then work in that. That will be the 'subtheme'.
+
+
+COLOURS
+
+This theme generally tries not to set any colours, and leaves that to the sub-theme. THe exceptions are:
+- link styling. It's important for users that all links are the same colour.
+- Data tables. This theme aims to create a 'middle of the road' design of all data tables.
+- Mobile view. The mobile design follows the standard Apple design.
+- Widgets, like sliders, are partially themed. 
+
+
+*/
+
+
+/* setting the stage, based on the part of the style.css code this I now concider 'legacy'. */
+
+body .ui-draggable table,
+body .ui-draggable table tbody,
+body .ui-draggable table tbody tr,
+body .ui-draggable table  tbody tr > td{
+    display:block;
+    width:100%;
+	padding: 0;
+	margin: 0;    
+}
+
+#img,
+#img1,
+#img2,
+#img3{
+    width:auto;
+}
+
+
 /*  RESETS THAT CAN HOPEFULLY BE REMOVED SOON  */
+
 
 body table#itemtable tr td:first-child + td{
     font-size:115%;
 }
 
 #utilitycontent table:first-of-type{
-margin-bottom:20px;
+    margin-bottom:20px;
 }
+
+
+/*
+body table#itemtablesmall tr td:first-child,
+body table#itemtablesmalldoubleicon tr td:first-child,
+body table#itemtablesmalltrippleicon tr td:first-child,
+body table#itemtablesmall tr td:first-child,
+body table#itemtablenotype tr td:first-child,*/
+body table[id^="itemtable"] tr td:first-child{
+    border-radius:0px;
+}
+
+body table#itemtablesmall tr td:first-child + td,
+body table#itemtablesmalldoubleicon tr td:first-child + td,
+body table#itemtablesmalltrippleicon tr td:first-child + td{
+    font-weight: normal;
+}
+
+body table[id^="itemtable"] tr td:first-child + td + td + td + td + td + td,
+body table#itemtablenotype tr td:first-child + td + td + td + td + td{
+    margin:0;
+    padding:0;
+}
+
+/*  seriously.. */
+body table#itemtable tr td:first-child + td + td + td + td + td + td + td,
+body table#itemtabledoubleicon tr td:first-child + td + td + td + td + td + td + td,
+body table#itemtabletrippleicon tr td:first-child + td + td + td + td + td + td + td,
+body table#itemtabletrippleicon tr td:first-child + td + td + td + td + td + td + td + td,
+body table#itemtablenostatus tr td:first-child + td + td + td + td + td + td{
+    padding:0;
+}
+
+
+
+
 
 /* GENERAL STYLING AND RESETS */
 
@@ -15,7 +93,7 @@ margin-bottom:20px;
 html, body {height:100%}
 #main-view{padding-top:20px}
 
-.row-fluid [class^="span"]{
+.row-fluid .span6{
     box-sizing: border-box;
     padding: 20px;
     margin-bottom:15px;
@@ -23,7 +101,7 @@ html, body {height:100%}
 }
 
 
-div.divider [class^="span"]{
+div.divider span4{
     margin-bottom:1em;
     padding:0;
 }
@@ -60,8 +138,6 @@ textarea, input, select {
     padding:5px;
 }
 
-
-
 .span6 textarea, .span6 input.text, .span6 select{
     width:100%!important;
 }
@@ -76,7 +152,7 @@ textarea, input, select {
 
 #settingscontent td:not(:first-of-type){width:auto!important;}
 
-td br{display:none;}
+/* td br{display:none;} */
 
 br{   content: "A" !important;
     /*display: block !important;*/
@@ -115,20 +191,30 @@ tr.odd{
     margin-left:10px;
 }
 
-.btnstyle3{
-    background: #46b1d9;
-    background: -moz-linear-gradient(top, #46b1d9 0%, #3d9bc9 50%, #2e8cbc 51%, #2571ab 100%);
-    background: -webkit-linear-gradient(top, #46b1d9 0%,#3d9bc9 50%,#2e8cbc 51%,#2571ab 100%);
-    background: linear-gradient(to bottom, #46b1d9 0%,#3d9bc9 50%,#2e8cbc 51%,#2571ab 100%);
-    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#46b1d9', endColorstr='#2571ab',GradientType=0 );
+div.container {
+    border-style: none;
+}
+
+div.navbar-inner {
+    border-style: none;
+}
+
+p.ng-binding {
+    color: #ccc;
+    font-size: 12px;
+    padding-top: 2px
+}
+
+
+.selectorlevels .ui-state-default, 
+.selectorlevels .ui-widget-content .ui-state-default, 
+.selectorlevels .ui-widget-header .ui-state-default{
+    background-color:#D4E1EE;
 }
 
 
 /* HEADER CONTENT*/
 
-@media only screen and (max-width: 640px) {
-    #timesun div {display:none}
-    }
 
 #temptophtm .bannav{
     /*position:relative; 
@@ -137,6 +223,7 @@ tr.odd{
     margin-bottom:1em;
 }
 
+/*
 #temptophtm td:last-of-type span{
     top: 2px;
     background-color: #eee;
@@ -148,18 +235,11 @@ tr.odd{
     border-top: 1px solid #999;
     border-left: 1px solid #999;
     border-bottom: 1px solid #999;
-}
+}*/
 
 #temptophtm td:last-of-type select{width:100px!important;}
 
-#timesun {height:0!important}
-#timesun div {
-    color:#aaa;
-    z-index:100;
-    position:absolute;
-    left:20px;
-    bottom:0;
-}
+#dashcontent > section {margin-bottom:20px;}
 
 
 /*  LOGO & MAIN NAVIGATION  */
@@ -197,11 +277,15 @@ tr.odd{
     margin-right: 0px;
 }
 
+.navbar .nav .current_page_item{
+    background-color: #73b6ca;
+}
 .navbar .nav .current_page_item > a {
-    background-color: white!important;
-    color: #999!important;
+    color: #eee;
+    background-color:transparent!important;
     background-image:none!important;
     border:none!important;
+    font-weight: normal;
 }
 
 .navbar .nav .dropdown-menu {
@@ -218,7 +302,7 @@ tr.odd{
     background-color: #ddd;
     background-image: none;
     border: none;
-    color: #666;
+    color: #555;
     font-weight: normal;
 }
 
@@ -231,10 +315,9 @@ tr.odd{
     transition: .2s;
 }
 
-#appnavbar li a {
+#appnavbar > li > a {
     border-bottom-right-radius: 0;
     border-bottom-left-radius: 0;
-    text-shadow:none;
 }
 
 .navbar-fixed-top .navbar-inner, .navbar-static-top .navbar-inner {
@@ -257,7 +340,15 @@ tr.odd{
 
 /*  SUB-NAVIGATION  */
 
-#timesun + td {margin-bottom:1em}
+#timesun{
+    /*display:block;*/
+}
+
+#timesun + td {
+    /*display: block;
+    text-align: left;*/
+    margin-bottom: 1em;
+}
 
 #bannav, .bannav {
     width: auto;
@@ -305,21 +396,41 @@ tr.odd{
     height:30px;
 }
 
+#floorplancontent #BulletGroup .bullet:hover, 
+#floorplancontent #BulletGroup .bulletSelected:hover{
+    background-color:#43A4D3;
+}
+
 #floorplancontent #BulletGroup:hover #BulletImages{
     padding-top:10px;
 }
 
 
+
 /*  HEADERS  */
 
-#dashcontent h2:first-of-type{
-    margin-top:0!important;
+h1,h2,h3{
+    clear: both;
+    margin-top:10px;
+    padding-bottom:10px;
 }
 
-#holder h1, #holder h2, #holder h3 {
+.container > h1:first-of-type,
+.container > h2:first-of-type,
+.container > h3:first-of-type{
+    margin-top:20px;
+}
+
+#dashcontent h1, 
+#dashcontent h2, 
+#dashcontent h3 {
     clear: both;
     padding-bottom:10px;
     margin: 20px 0 10px 0;
+}
+
+#dashcontent h2:first-of-type{
+    margin-top:0!important;
 }
 
 
@@ -329,7 +440,6 @@ body .span3  table > tbody > tr,
 body .span4  table > tbody > tr{
     padding:0!important;
     margin:0 0 0 0!important;
-    width:100%!important;
     width:100%!important;
     /*position: relative!important;*/
     border-style: none;
@@ -350,7 +460,7 @@ body .span4  table > tbody > tr{
 }
 
 body #dashcontent table > tbody > tr{
-    height: auto;
+    height: 100%;
 }
 
 
@@ -373,14 +483,13 @@ body #dashcontent table > tbody > tr{
 
 #img2 {
     top:-35px;
-    right: 47px;
+    right: 45px;
     z-index:1;
 }
 
 #img3 {
     top:-35px;
-    right: 87px;
-    background-color:#D4E1EE;
+    right: 67px;
 }
 
 #img img, 
@@ -388,7 +497,7 @@ body #dashcontent table > tbody > tr{
 #img2 img, 
 #img3 img{
     height:30px;
-    width:30px;
+    width:auto;
 }
 
 #dashcontent #img, 
@@ -406,11 +515,112 @@ body #dashcontent table > tbody > tr{
     width:40px;
 }
 
-#dashcontent .span3 #img2{right:47px}
-#dashcontent .span3 #img3{right:87px}
-#dashcontent .span4 #img2{right:52px}
-#dashcontent .span4 #img3{right:97px}
+/*
+#dashcontent .span3 #itemtablesmalltrippleicon #img2{right:47px}
+#dashcontent .span3 #itemtablesmalltrippleicon #img3{right:87px}*/
 
+
+/*  this transforms the triple-image items into items with buttons at the bottom. Using just CSS.. */
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon{
+    min-height:80px;
+    white-space: nowrap;
+    /*overflow:hidden;*/
+}
+
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #bigtext{right:0px;}
+
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #bigtext span{padding-right:10px;}
+
+
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img,
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img1{padding-left:0px}
+
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img,
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img1,
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img2,
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img3{
+    display:inline-block;
+    /*float:none!important;*/
+    height:32px;
+    position:initial;
+    width:33.3%;
+    overflow:hidden;
+    box-shadow: -2px -1px 20px -1px rgba(50, 50, 50, 0.1);
+    border-radius:3px;
+    background-color: #D4E1EE;
+}
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img:hover,
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img1:hover,
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img2:hover,
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img3:hover{
+    background-color:#fff;
+}
+
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img img,
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img1 img,
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img2 img,
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img3 img{
+    height:22px;
+    width: 22px;
+    border:none;
+    position: relative;
+    z-index: 1;
+    box-sizing: content-box;
+    border-right: 300px solid transparent!important;
+    padding:5px 0 0 5px;
+    border-radius:0;
+}
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img img:hover,
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img1 img:hover,
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img2 img:hover,
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img3 img:hover{
+    background-color:transparent;
+}
+
+#dashcontent #itemtablesmalltrippleicon #img2:hover{
+    background-color:#fff;
+}
+#dashcontent #itemtablesmalltrippleicon #img:after,
+#dashcontent #itemtablesmalltrippleicon #img1:after {
+    content: "Open";
+    left: 33px;
+    position: relative;
+    top: -19px;
+    font-size: 14px;
+    color:#333;
+}
+#dashcontent #itemtablesmalltrippleicon #img2:after {
+    content: "Stop";
+    left: 33px;
+    position: relative;
+    top: -19px;
+    font-size: 14px;
+    color:#333;
+}
+#dashcontent #itemtablesmalltrippleicon #img3:after {
+    content: "Close";
+    left: 33px;
+    position: relative;
+    top: -19px;
+    font-size: 14px;
+    color:#333;
+}
+
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img3{
+    /*display:inline-flex;
+    flex-grow: 1;*/
+    /*width:auto;*/
+}
+
+
+/*
+#dashcontent divdiv[class^="span"] #itemtablesmalltrippleicon #img{right:7px} 
+#dashcontent divdiv[class^="span"] #itemtablesmalltrippleicon #img1{right:7px}
+#dashcontent divdiv[class^="span"] #itemtablesmalltrippleicon #img2{right:52px}
+#dashcontent divdiv[class^="span"] #itemtablesmalltrippleicon #img3{right:97px}*/
+
+
+.item .options img.favorite, /* the future version */
 .span3 td:last-of-type .lcursor,
 .span4 td:last-of-type .lcursor
 /*#itemtabledoubleicon td:last-of-type .lcursor, 
@@ -423,46 +633,49 @@ body #dashcontent table > tbody > tr{
 }
 
 
-#dashcontent #lastupdate,  
+#dashcontent #lastupdate,
 #dashcontent #type{
     display: none;
 }
 
+
+
 #dashcontent td > div.dimslider{
-    position:relative;
+    position: relative;
     margin:0 0 0 0!important;
-    overflow:visible;
+    overflow: visible;
     box-sizing: border-box;
 }
 
 
-[class^="span"] #name {
+body .item tr > #name {
+    display:inline-block;
     width: 100%;
     height: 40px!important;
     font-size: 100%!important;
     border-style: none!important;
     border-width:0!important;
-    color: #444!important;
+    /*color: #444!important;*/
+    white-space: nowrap;
     overflow: hidden;
     box-sizing: border-box;
-    padding: 14px 5px 9px 35px!important;
+    padding: 14px 5px 9px 35px;
     text-transform: uppercase;
-    border-top-right-radius: 0!important;
-    border-bottom-right-radius: 0!important;
-    border-bottom-left-radius: 0!important;
     margin:0!important;
     cursor: move;
 }
 
-#dashcontent [class^="span"] #name {
+#dashcontent #name {
     align-items: center;
-    padding: 21px 0 0 20px!important;
+    padding: 21px 0 0 10px!important;
     height:55px!important;
+    color: #444!important; /*the dashboard is at the moment of writing the only place where the signal colours are done via a class and not via javascript directly.*/    
 }
 
 #bigtext{
-    color: #444 !important;
-    font-size: 115%;
+    float:right;
+    color:#222;
+    font-size: 19px;
     font-weight: normal;
     white-space: nowrap;
     line-height: 100%;
@@ -474,8 +687,24 @@ body #dashcontent table > tbody > tr{
     /*width: 25%;*/
     margin:0!important;
     height:0;
+    max-width:50%;
 }
 
+#dashcontent #bigtext{
+    color: #444;
+}
+
+#bigtext > span{
+    /*padding: 3px;*/
+    display:inline-block;
+    font-weight: normal;
+    overflow:hidden;
+    width:100%;
+}
+
+
+
+/*
 #scenecontent #bigtext, 
 #itemtablenostatus #bigtext,
 #lightcontent #bigtext,
@@ -483,23 +712,27 @@ body #dashcontent table > tbody > tr{
 #dashcontent #itemtabletrippleicon #bigtext{
     display: none;
 }
+*/
 
 #dashcontent #bigtext{
-    top: -35px;
+    top: -39px;
     right: 55px;
 }
 
-[class^="span"] #bigtext span{
-    background-color: #D4E1EE;
-    padding: 3px 10px 3px 3px;
-}
-#dashcontent [class^="span"] #bigtext span{
-    background-color: #D4E1EE;
-    padding: 0;
-}
+#dashcontent #bigtext > span{padding:3px}
 
-[class^="span"] #lastupdate {
+#itemtabledoubleicon #bigtext{right: 80px;}
+#itemtablesmalldoubleicon #bigtext{right: 90px;}
+/*#dashcontent #itemtablesmalldoubleicon #bigtext{right:55px}*/
+
+#itemtabletrippleicon #bigtext{right: 100px;}
+#itemtablesmalltrippleicon #bigtext{right: 105px;}
+/*#dashcontent #itemtablesmalltrippleicon #bigtext{right: 55px;}*/
+
+
+#lastupdate {
     color: #777;
+    font-size:11.5px;
     font-style: normal;
     white-space: nowrap;
     position: relative;
@@ -514,14 +747,14 @@ body #dashcontent table > tbody > tr{
     font-style: normal!important;
 }
 
-[class^="span"] #status {
+#status {
     color: #777;
     white-space: nowrap;
     overflow: visible;
     position: relative;
     top: 60px;
     left: 20px;
-    width: 90%;
+    width: 100%;
     margin:0!important;
     font-style: normal!important;
     font-size:80%!important;
@@ -529,67 +762,106 @@ body #dashcontent table > tbody > tr{
     height:0;
 }
 
-#dashcontent [class^="span"] #status{
+#dashcontent td#status {
     display:none;
+    height:0;
 }
 
-.span3 table > tbody> tr > td:last-of-type,
-.span4 table > tbody> tr > td:last-of-type{
+
+/* New display of status elements*/
+
+#dashcontent .item.withstatus #status{
+    /*display:none;*/
+    display:block;
+    left:0;
+    color:#555;
+    font-size:30px;
+    position:initial;
+    height:0;
+}
+
+#dashcontent .item.withstatus #status .spanwrapper{
+    height:0;
+    width:100%;
+    overflow:visible;
+    display:flex;
+    flex-direction: column;
+    margin:0;
+    padding:0;
+}
+#dashcontent .item.withstatus.statuscount1 tr{height:85px}
+#dashcontent .item.withstatus.statuscount2 tr{height:115px}
+#dashcontent .item.withstatus.statuscount3 tr{height:145px}
+#dashcontent .item.withstatus.statuscount4 tr{height:175px}
+
+#dashcontent .item.withstatus #status > .wrapper > span{
+    display:flex;
+    flex-direction: column;
+    justify-content: center;
+    width:100%;
+    font-size:115%;
+    padding:10px 10px 10px 15px;
+    flex: 1 1 auto;
+    height:30px;
+    box-shadow: 2px 4px 18px 0px rgba(50, 50, 50, 0.2)
+    
+}
+
+
+
+
+/*  mini options menu */
+div.item .options{
     position:relative;
-    padding:0!important;
+    padding:0;
     margin:0!important;
     white-space: nowrap;
 }
 
+td.options{
+    padding:0;
+}
+
+div[class^="span"] div.item .options a,
 .span3 table > tbody> tr > td:last-of-type a,
 .span4 table > tbody> tr > td:last-of-type a{
     position:relative;
-    left:-16px;
+    left:-16px;  
 }
 
-#dashcontent > table:first-of-type{
-    display:none;
+div[class^="span"] table#itemtable > tbody> tr > td:first-of-type a,
+div[class^="span"] table#itemtabledoubleicon > tbody> tr > td:first-of-type a,
+div[class^="span"] table#itemtabletrippleicon > tbody> tr > td:first-of-type a{
+    margin-left:5px;
 }
 
-.span4 td:last-of-type a, 
-.span4 td:last-of-type div{
+/*  new2
+.span4 td.options a, 
+#dashcontent .span4 td.options div{
     font-size:12px;
-}
+}*/
 
 
 #type:before {
     font-style: normal!important;
 }
 
-[class^="span"] #type {
+#type {
     color: #777;
     white-space: nowrap;
-    text-indent: 184px;
+    text-indent: 144px;
     position: relative;
     top: 35px;
     left: 0px;
     width: 100%;
     height:0;
+    overflow:visible;
+    font-size: 11.5px;
 }
 
-.span3 #type > .dimslider,
-.span4 #type > .dimslider {
-    position: relative;
-    margin: 0!important;
-    top: 15px;
-    left: 20px;
-    width: 90%!important;
-    width: calc(100% - 40px)!important;
-}
 
-#dashcontent [class^="span"] #type > .dimslider {
-    position: relative;
-    margin: 10px 0 0 0!important;
-    top: 0px;
-    left: 20px;
-    width: 90%!important;
-    width: calc(100% - 40px)!important;
-}
+
+/* buttons  */
 
 .btn-primary{
     text-shadow:none;
@@ -603,7 +875,7 @@ a.btnsmall {
 
 a.btnstyle, a.btnstylerev {
     font-family: "Lato", sans-serif;
-    font-size: 110%;
+    font-size: 100%;
     background-color: #777;
     margin-right: 10px;
     background-image:none;
@@ -619,19 +891,14 @@ a.btnstyle:last-of-type, a.btnstylerev:last-of-type{
     margin-right:0;
 }
 
-div.container {
-    border-style: none;
+.btnstyle3{
+    background: #46b1d9;
+    background: -moz-linear-gradient(top, #46b1d9 0%, #3d9bc9 50%, #2e8cbc 51%, #2571ab 100%);
+    background: -webkit-linear-gradient(top, #46b1d9 0%,#3d9bc9 50%,#2e8cbc 51%,#2571ab 100%);
+    background: linear-gradient(to bottom, #46b1d9 0%,#3d9bc9 50%,#2e8cbc 51%,#2571ab 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#46b1d9', endColorstr='#2571ab',GradientType=0 );
 }
 
-div.navbar-inner {
-    border-style: none;
-}
-
-p.ng-binding {
-    color: #ccc;
-    font-size: 12px;
-    padding-top: 2px
-}
 
 /* this is a fix for a lack of proper span tags */
 #protectiontable, 
@@ -650,12 +917,13 @@ p.ng-binding {
     text-align: left;
 }
 
-.bannercontent {
-    padding-bottom: 50px;
-}
 
 
 /*  FOOTER  */
+
+.bannercontent {
+    padding-bottom: 50px;
+}
 
 #copyright {
     background-color: #f1f1f1;
@@ -785,7 +1053,7 @@ p.ng-binding {
     border-bottom:20px solid #eee;
 }
 
-#updelclr, #delclractive, #delclr, #delclractive {
+#updelclr, #delclractive, #delclr, #delclractive, #delclract {
     box-sizing: border-box;
     padding:10px; background-color:#eee;
 }
@@ -821,6 +1089,26 @@ p.ng-binding {
 
 
 /*  SLIDERS */
+
+.span3 #type > .dimslider,
+.span4 #type > .dimslider {
+    position: relative;
+    margin: 0!important;
+    top: 15px;
+    left: 20px;
+    width: 90%!important;
+    width: calc(100% - 40px)!important;
+}
+
+#dashcontent #type > .dimslider {
+    position: relative;
+    margin: 10px 0 0 0!important;
+    top: 0px;
+    left: 20px;
+    width: 90%!important;
+    width: calc(100% - 40px)!important;
+}
+
 
 .dimslider,
 .ui-slider-range{
@@ -866,7 +1154,7 @@ table.dataTable{
     border-right:none!important;
 }
 
-table.display td{padding:5px;}
+table.display td{padding:4px; box-sizing: initial;}
 
 table.dataTable thead th{
     padding: 5px;
@@ -874,7 +1162,7 @@ table.dataTable thead th{
 }
 
 table.dataTable thead th img{
-    background-color: rgba(250,250,250,0.5);
+    /*background-color: rgba(250,250,250,0.5);*/
     margin-top:2px;
     padding:3px;
     box-sizing: content-box;
@@ -882,19 +1170,20 @@ table.dataTable thead th img{
     vertical-align: top;
 }
 table.dataTable thead th img:hover{
-    background-color:rgba(0,0,0,0.4);
+    background-color: #999;
     box-shadow: 1px 1px 1px rgba(250,250,250,0.1);
 }
 
 table.display thead th div.DataTables_sort_wrapper{
     padding-right:0;
-    text-align:left;
-    white-space: nowrap;    
+    /*text-align:left;*/
+    white-space: nowrap;   
+    font-weight: normal;
 }
 
 table.display thead th div.DataTables_sort_wrapper .ui-icon{
     border-radius:50%;
-    background-color:#eee;
+    background-color:#777;
     padding:2px 2px 2px 0;
 }
 
@@ -926,9 +1215,51 @@ table.dataTable tbody img{
 
 /*  POPUP  */
 
-#rgbw_popup{
-    left:50%!important;
+
+.ui-popup{
+    position:fixed!important;
+    min-height:200px;
+    top: 30%;
+    top:calc(50% - 100px)!important;
+    left:30%!important;
+    left:calc(50% - 150px)!important;        
+    -webkit-box-shadow: 7px 7px 25px 5px rgba(50, 50, 50, 0.48);
+    -moz-box-shadow:    7px 7px 25px 5px rgba(50, 50, 50, 0.48);
+    box-shadow:         7px 7px 25px 5px rgba(50, 50, 50, 0.48);    
 }
+
+#rgbw_popup td,
+#setpoint_popup td{
+    width:auto!important;
+    padding:10px
+}
+
+#rgbw_popup table#ledtable #popup_picker{
+    width:200px!important;
+    height:220px!important;
+}
+#rgbw_popup table#ledtable td:last-of-type{
+    display:flex;
+    flex-direction:column;
+    padding-top:50px;
+    justify-content: center;
+}
+
+#setpoint_popup tr{
+    display:flex;
+    flex-direction: row;
+    justify-content: center;
+}
+#setpoint_popup td{
+    display:flex;
+    flex-direction: column;    
+    justify-content: center;
+}
+#setpoint_popup td:first-of-type{
+    flex-direction: row;
+    align-items: center;
+}
+#setpoint_popup td:first-of-type span {padding:5px;}
 
 
 /*  SELECTORLEVELS  */
@@ -995,14 +1326,18 @@ table.dataTable tbody img{
     padding:0;
 }
 
+.selectorlevels .ui-selectmenu-button span.ui-icon{
+    filter: contrast(0);
+}
+
 .span3 .selectorlevels .ui-selectmenu-button,
 .span4 .selectorlevels .ui-selectmenu-button{
+    display:block;
     left:20px;
     top:5px;
     width:calc(100% - 40px)!important;
 }
 
-#dashcontent .selectorlevels .ui-selectmenu-button,
 #dashcontent .selectorlevels .ui-selectmenu-button{
     left:0px;
     top:0;
@@ -1010,6 +1345,8 @@ table.dataTable tbody img{
     border:0;
     box-shadow: 1px -0.5px 2px 0.5px rgba(50, 50, 50, 0.1);
     color:#333;
+    background-color:transparent;
+    box-shadow: inset -2px -1px 20px -1px rgba(50, 50, 50, 0.2);
 }
 
 #dashcontent .selectorlevels .ui-selectmenu-button span.ui-selectmenu-text{
@@ -1020,12 +1357,9 @@ table.dataTable tbody img{
     display:flex;
     align-items: center;
     justify-content: center;
-}
-
-#dashcontent .selectorlevels .ui-selectmenu-button span.ui-selectmenu-text {
     font-weight: normal;
     text-align: center;
-    padding: 3px;
+    background-color:transparent;
 }
 
 #dashcontent .selectorlevels .ui-buttonset .ui-button{
@@ -1034,7 +1368,7 @@ table.dataTable tbody img{
 }
 
 
-/* UI & BOOTSTRAP */
+/* UI & BOOTSTRAP & dataTable */
 
 #dashcontent .selectorlevels .state-default{
     color:#666;
@@ -1060,15 +1394,24 @@ table.dataTable tbody img{
     cursor: -webkit-grab;
 }
 
-.ui-draggable-dragging > section{
+.ui-draggable-dragging > div.item > table,
+.ui-draggable-dragging > section > table{
     -webkit-box-shadow: 7px 7px 25px 5px rgba(50, 50, 50, 0.48);
     -moz-box-shadow:    7px 7px 25px 5px rgba(50, 50, 50, 0.48);
     box-shadow:         7px 7px 25px 5px rgba(50, 50, 50, 0.48);
+    /*z-index:5;*/
 }
 
-.ui-toolbar, div.dataTables_wrapper .ui-widget-header{
+div.dataTables_wrapper .ui-toolbar, /* new */
+div.dataTables_wrapper .ui-widget-header{
     color:#666;
     background-color:#ccc;
+}
+
+.dataTables_wrapper .dataTables_info, 
+.dataTables_wrapper .dataTables_length, 
+.dataTables_wrapper .dataTables_filter{
+    color:#666;
 }
 
 .ui-toolbar {
@@ -1077,23 +1420,22 @@ table.dataTable tbody img{
     border:none;
 }
 
-.ui-state-default, .ui-widget-header, .ui-state-disabled{
+/*                                  new
+.ui-state-default, 
+.ui-widget-header, 
+.ui-state-disabled{
     background-image:none;
     color:#666;
-}
+}*/
 
-.ui-state-default{
-    background-color:#ddd;
-    color:#444;
+.dataTables_wrapper .ui-state-default{ /* new */
+    /*background-color:#ddd;
+    color:#444;*/
     border:none;
     /*border-right: 2px solid #ccc;*/
     border-top:none;
     border-bottom:none;
     text-shadow: none!important;
-}
-
-.ui-state-hover{
-    background-color:#43A4D3;
 }
 
 .ui-dialog-titlebar{
@@ -1110,6 +1452,26 @@ table.dataTable tbody img{
 }
 
 
+/*  HOVER STATES  */
+
+.ui-state-hover{
+    background-color:#43A4D3;
+}
+
+.selectorlevels label:hover{
+    color:#333;
+    background-color:#fff;
+}
+
+#dashcontent #itemtablesmalltrippleicon [id^="img"]:hover,
+#dashcontent div[class^="span"] .selectorlevels .ui-buttonset .ui-button:hover,
+#dashcontent .selectorlevels .ui-selectmenu-text:hover{
+    box-shadow: inset 0px 0px 20px 2px rgba(250, 250, 250, 0.4);
+}
+
+
+
+
 /* BACKSTAGE HARDWARE PAGES */
 
 #holder #notification{
@@ -1117,8 +1479,9 @@ table.dataTable tbody img{
     padding:20px    
 }
 
+/*
 #utilitycontent {margin-top:30px}
-
+*/
 
 /* LOG */
 
@@ -1197,9 +1560,25 @@ table.dataTable tbody img{
 
 
 
-/* MOBILE */
 
-/*  NEW STYLING  */
+
+/*  PAGE SPECIFIC OVERRIDES  */
+
+.utility td#status{
+    font-size:15px;
+    white-space: normal;
+    color:#333;
+}
+
+div#mysensorsnodestable_wrapper + #updelclr,
+div#hardwaretable_wrapper + #updelclr{border-top:0!important;border-bottom:10px!important;padding-top:0;}
+
+
+
+
+
+
+/* MOBILE */
 
 body.dashMobile #dashcontent {width:100%}
 
@@ -1319,8 +1698,7 @@ table.mobileitem > thead > tr > th:first-of-type{
 
 
 
-
-/* and now for the second TR's with colspan=2 */
+/* and now for the second mobile row (with colspan=2) */
 
 td[colspan]:not([colspan="1"]){
     padding:10px;
@@ -1382,9 +1760,12 @@ td[colspan]:not([colspan="1"])
 }
 
 
+
+
 /* Media queries */
 
 @media screen and (max-device-width: 361px){ /* for mobile phones, makes popups work better */
+    
     
     .ui-dialog{
         width:90%!important;
@@ -1405,6 +1786,7 @@ td[colspan]:not([colspan="1"])
         max-width: 80%!important;
     }
     
+    
     input[type=checkbox] {
         transform: scale(1.5);
     }
@@ -1421,8 +1803,75 @@ td[colspan]:not([colspan="1"])
     .navbar .nav {
         margin-right:20px
     }
+
+
 }*/
 
+
+/*  Makes the name and value slide above each other on small displays.  */
+
+
+@media screen and (max-width: 767px){
+    
+    #bigtext{float:right;}
+    
+    #dashcontent .item.withstatus #status{
+        height:auto;
+        position:initial;
+    }
+    
+    #dashcontent .item.withstatus #status > .wrapper > span{padding-left:10px}
+    
+    #dashcontent #lastupdate{
+        box-shadow:2px 4px 18px 0px rgba(50, 50, 50, 0.2);
+        padding-top:3px;
+    }
+}
+
+@media screen and (min-width: 768px) and (max-width: 980px){
+    
+    #name,
+    #dashcontent #name{
+        padding-top:7px!important;
+        padding-left:10px;
+    }
+    
+    #bigtext{
+        float:left;
+        text-align: left;
+        top: -20px;
+        left: 35px;
+    }
+    #dashcontent #bigtext{
+        top: -28px;
+        left: 10px;
+    }
+    
+    #bigtext > span{
+        font-size:13px;
+        font-weight:bold;
+        color:#444;
+    }
+    #dashcontent #bigtext > span{
+        padding:0;
+    } 
+    
+    #dashcontent .item.withstatus #status{
+        top:20px;
+        position:relative;
+    }
+    
+    #dashcontent .item.withstatus #status > .wrapper > span{
+        padding-left:10px;
+        background-color:#D4E1EE;
+    }
+
+}  
+@media screen and (min-width: 981px){
+
+    #bigtext{float:right;}
+}
+    
 @media all and (min-width: 1200px){
     
     input.text{min-width:210px;}

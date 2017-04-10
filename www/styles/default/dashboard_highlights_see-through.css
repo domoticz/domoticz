@@ -4,23 +4,27 @@ This can give a nice effect with background images. */
 /*  Hide from mobile  */
 @media screen and (min-width: 600px){
 
-
-
     /*  CONTENT MODIFICATIONS */
 
-    #dashcontent .ui-draggable tr{
+    #dashcontent .ui-draggable:not(.ui-dialog) tr:hover,
+    #dashcontent .ui-draggable:not(.ui-dialog) tr{
         background-image:none!important;
+        background-color:transparent!important;
     }
 
-
+    #dashcontent #lastupdate,
     #dashcontent .item .name,
     #dashcontent #name{
-        background: -moz-linear-gradient(left, rgba(125,185,232,0.2) 0%, rgba(89,203,234,0.1) 99%, rgba(89,203,234,0.1) 100%); 
-        background: -webkit-linear-gradient(left, rgba(125,185,232,0.2) 0%,rgba(89,203,234,0.1) 99%,rgba(89,203,234,0.1) 100%); 
-        background: linear-gradient(to right, rgba(125,185,232,0.2) 0%,rgba(89,203,234,0.1) 99%,rgba(89,203,234,0.1) 100%); 
-        filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#337db9e8', endColorstr='#1a59cbea',GradientType=1 );
+        background: -moz-linear-gradient(top, rgba(125,185,232,0.2) 0%, rgba(89,203,234,0.1) 99%, rgba(89,203,234,0.1) 100%); 
+        background: -webkit-linear-gradient(top, rgba(125,185,232,0.2) 0%,rgba(89,203,234,0.1) 99%,rgba(89,203,234,0.1) 100%); 
+        background: linear-gradient(to bottom, rgba(125,185,232,0.2) 0%,rgba(89,203,234,0.1) 99%,rgba(89,203,234,0.1) 100%); 
+        filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#337db9e8', endColorstr='#1a59cbea',GradientType=0 );
     }
 
+    #dashcontent #lastupdate {
+        color: rgba(255,255,255,0.4);
+        background-color:rgba(50,50,50,0.1)!important;
+    }
 
 
     /*  BACKGROUND AND STATUS MODIFICATIONS (and reset/overrule) */
@@ -38,10 +42,10 @@ This can give a nice effect with background images. */
         background: -webkit-linear-gradient(top, rgba(30,87,153,0.3) 0%,rgba(125,185,232,0.1) 100%); 
         background: linear-gradient(to bottom, rgba(30,87,153,0.3) 0%,rgba(125,185,232,0.1) 100%); 
         filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#4d1e5799', endColorstr='#1a7db9e8',GradientType=0 );*/
-    background: -moz-linear-gradient(left, rgba(125,185,232,0.2) 0%, rgba(89,203,234,0.1) 99%, rgba(89,203,234,0.1) 100%)!important; 
-    background: -webkit-linear-gradient(left, rgba(125,185,232,0.2) 0%,rgba(89,203,234,0.1) 99%,rgba(89,203,234,0.1) 100%)!important;
-    background: linear-gradient(to right, rgba(125,185,232,0.2) 0%,rgba(89,203,234,0.1) 99%,rgba(89,203,234,0.1) 100%)!important; 
-    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#337db9e8', endColorstr='#1a59cbea',GradientType=1 );
+        background: -moz-linear-gradient(top, rgba(125,185,232,0.2) 0%, rgba(89,203,234,0.1) 99%, rgba(89,203,234,0.1) 100%)!important; 
+        background: -webkit-linear-gradient(top, rgba(125,185,232,0.2) 0%,rgba(89,203,234,0.1) 99%,rgba(89,203,234,0.1) 100%)!important;
+        background: linear-gradient(to bottom, rgba(125,185,232,0.2) 0%,rgba(89,203,234,0.1) 99%,rgba(89,203,234,0.1) 100%)!important; 
+        filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#337db9e8', endColorstr='#1a59cbea',GradientType=1 );
     }
 
 
@@ -126,7 +130,7 @@ This can give a nice effect with background images. */
 
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) .selectorlevels .ui-buttonset .ui-button{
         background-image:none;
-        background-color: rgba(200,200,200,0.1);
+        background-color:rgba(100,150,200,0.4);
         box-shadow: none;
         color: #ddd;
         font-size: 100%;   
@@ -152,7 +156,24 @@ This can give a nice effect with background images. */
         background-color:transparent!important;
     }
 
+    #dashcontent [class^="span"] #itemtablesmalltrippleicon #img, 
+    #dashcontent [class^="span"] #itemtablesmalltrippleicon #img1, 
+    #dashcontent [class^="span"] #itemtablesmalltrippleicon #img2, 
+    #dashcontent [class^="span"] #itemtablesmalltrippleicon #img3 {
+        background: -moz-linear-gradient(top, #46b1d9 0%, #3d9bc9 50%, #2e8cbc 51%, #2571ab 100%);
+        background: -webkit-linear-gradient(top, #46b1d9 0%,#3d9bc9 50%,#2e8cbc 51%,#2571ab 100%);
+        background: linear-gradient(to bottom, #46b1d9 0%,#3d9bc9 50%,#2e8cbc 51%,#2571ab 100%);
+    }
+
 } /*  End of mobile protection  */
+
+@media screen and (min-width: 900px){
+    
+    #dashcontent #lastupdate{
+        /*background-color:transparent;
+        background-image:none;*/
+    }
+}
 
 /*  Fix for people who use mobile dashboard on the desktop  */
 #dashcontent .mobileitem td.name,
@@ -161,6 +182,7 @@ This can give a nice effect with background images. */
     background-color:white!important;
     background-image:none!important;
 }
+
 #dashcontent table.mobileitem .selectorlevels .ui-buttonset,
 #dashcontent table.mobileitem .selectorlevels .ui-selectmenu-button{
     top:0!important

@@ -17,7 +17,8 @@ device-types that you have.
     #dashcontent > section:first-of-type:nth-last-of-type(2) ~ section {
             width:calc(100% / 2 - 20px);
             float:left;
-            margin-left:20px;
+            margin-left:10px;
+            margin-right: 10px;
     }
 
     #dashcontent section:first-of-type:nth-last-of-type(2) .span3,
@@ -39,7 +40,8 @@ device-types that you have.
     #dashcontent > section:first-of-type:nth-last-of-type(3) ~ section {
             width:calc(100% / 3 - 20px);
             float:left;
-            margin-left:20px;
+            margin-left:10px;
+            margin-right: 10px;
     }
 
     #dashcontent > section:first-of-type:nth-last-of-type(3) .span3,
@@ -62,7 +64,8 @@ device-types that you have.
     #dashcontent > section:first-of-type:nth-last-of-type(4) ~ section {
             width:calc(100% / 4 - 20px);
             float:left;
-            margin-left:20px;
+            margin-left:10px;
+            margin-right: 10px;
     }
     
     #dashcontent > section:first-of-type:nth-last-of-type(4) .span3,
@@ -84,14 +87,15 @@ device-types that you have.
     
     #dashcontent > section tr > #name{
         font-size: 95%!important;
-        padding-top:24px!important;
+        /*padding-top:24px;*/
     }
     
     #dashcontent > section:first-of-type:nth-last-of-type(5),
     #dashcontent > section:first-of-type:nth-last-of-type(5) ~ section {
             width:calc(100% / 5 - 20px);
             float:left;
-            margin-left:20px;
+            margin-left:10px;
+            margin-right: 10px;
     }    
 
     #dashcontent > section:first-of-type:nth-last-of-type(5) .span3,
@@ -114,7 +118,8 @@ device-types that you have.
     #dashcontent > section:first-of-type:nth-last-of-type(6) ~ section {
             width:calc(100% / 6 - 20px);
             float:left;
-            margin-left:20px;
+            margin-left:10px;
+            margin-right: 10px;
     }
 
     #dashcontent > section:first-of-type:nth-last-of-type(6) .span3,
@@ -137,7 +142,8 @@ device-types that you have.
     #dashcontent > section:first-of-type:nth-last-of-type(7) ~ section {
             width:calc(100% / 7 - 20px);
             float:left;
-            margin-left:20px;
+            margin-left:10px;
+            margin-right: 10px;
     }
 
     #dashcontent > section:first-of-type:nth-last-of-type(7) .span3,
