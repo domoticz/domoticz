@@ -719,7 +719,10 @@ body .item tr > #name {
     right: 55px;
 }
 
-#dashcontent #bigtext > span{padding:3px}
+#dashcontent #bigtext > span{
+    padding:3px;
+    width:auto;
+}
 
 #itemtabledoubleicon #bigtext{right: 80px;}
 #itemtablesmalldoubleicon #bigtext{right: 90px;}
