@@ -699,7 +699,8 @@ body .item tr > #name {
     display:inline-block;
     font-weight: normal;
     overflow:hidden;
-    width:100%;
+    width:auto;
+    height:auto;
 }
 
 
