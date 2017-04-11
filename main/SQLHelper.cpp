@@ -2,6 +2,7 @@
 #include "SQLHelper.h"
 #include <iostream>     /* standard I/O functions                         */
 #include "RFXtrx.h"
+#include "Helper.h"
 #include "RFXNames.h"
 #include "localtime_r.h"
 #include "Logger.h"
@@ -2710,6 +2711,7 @@ void CSQLHelper::Do_Work()
 			if (m_background_task_queue.size()>0)
 			{
 				_items2do.clear();
+
 				std::vector<_tTaskItem>::iterator itt=m_background_task_queue.begin();
 				while (itt!=m_background_task_queue.end())
 				{
