@@ -2721,7 +2721,7 @@ void CSQLHelper::Do_Work()
 							tvDiff.tv_sec = 0;
 							tvDiff.tv_usec = 0;
 						}
-						float diff = (tvDiff.tv_usec + tvDiff.tv_sec * 1000000) / 1000000;
+						float diff = ((tvDiff.tv_usec / 1000000.0f) + tvDiff.tv_sec);
 						if ((itt->_DelayTime) <= diff)
 						{
 							_items2do.push_back(*itt);
@@ -2734,7 +2734,6 @@ void CSQLHelper::Do_Work()
 					{
 						_items2do.push_back(*itt);
 						itt=m_background_task_queue.erase(itt);
-						++itt;
 					}
 				}
 			}
