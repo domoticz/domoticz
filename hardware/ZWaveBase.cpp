@@ -697,7 +697,9 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_WATER)
 	{
-		SendMeterSensor(ID3, ID4, BatLevel, pDevice->floatValue,"Water");
+		uint16_t NodeID = (ID3 << 8) | ID4;
+		SendRainSensor(NodeID, BatLevel, pDevice->floatValue*1000.0f, "Water");
+		//SendMeterSensor(ID3, ID4, BatLevel, pDevice->floatValue,"Water");
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_CO2)
 	{
