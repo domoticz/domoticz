@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include "RFXNames.h"
+#include "Helper.h"
 #include "../httpclient/UrlEncode.h"
 #include <map>
 
