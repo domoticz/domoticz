@@ -36,7 +36,7 @@
     
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item:not(.withstatus) #itemtablesmall tr #bigtext{
         font-family: "Lato", sans-serif;
-        float: left;
+        float: none;
         font-size: 25px;
         text-align: left;
         width: 63%;
@@ -181,9 +181,9 @@
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr #img2,
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr #img3{
         border-radius:2px;
-        overflow:visible;        
+        overflow:visible;    
     }
-
+    
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr #img img:hover,
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr #img1 img:hover,
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr #img2 img:hover,
@@ -283,7 +283,7 @@
 
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalldoubleicon tr #img,
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalldoubleicon tr #img1{
-        float:left!important;
+        float:none!important;
         width:35%;
         max-width:80px;
         left:10%;
@@ -528,6 +528,13 @@
     }
 }
 
+@media all and (min-width: 767px){
+
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr #img,
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr #img1{
+        float:none;
+    }
+}
 
 
 @media only screen and (min-width: 1200px){
