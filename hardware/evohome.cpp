@@ -692,7 +692,7 @@ int CEvohome::ProcessBuf(char * buf, int size)
 	for (int i = 0; i < size; ++i) 
 	{
 		if(buf[i]==0x11)//this appears to be a break character?
-			buf[i]=0x20; // replace with printable char and continue; next stage will log error
+			start=i+1;
 		else if(buf[i]==0x0A)//this is the end of packet marker...not sure if there is a CR before this?
 		{
 			if (i - start >= 2048) {
@@ -1515,7 +1515,11 @@ bool CEvohome::DecodeHeatDemand(CEvohomeMsg &msg)
 	Log(true,LOG_STATUS,"evohome: %s: %s (0x%x) DevNo 0x%02x %d (0x%x)", tag, szSourceType.c_str(), msg.GetID(0), nDevNo, nDemand, msg.command);
 
 	if(msg.command==0x0008)
+	{
+		if (nDevNo < 12)
+			nDevNo++; //Need to add 1 to give correct zone numbers
 		RXRelay(static_cast<uint8_t>(nDevNo),static_cast<uint8_t>(nDemand), msg.GetID(0));
+	}
 	return true;
 }
 

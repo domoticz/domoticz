@@ -1498,12 +1498,12 @@ $(document).ready(function() {
 			<table class="display" id="notificationtable" border="0" cellpadding="0" cellspacing="0" width="100%">
 					<thead>
 							<tr>
-									<th width="120" align="left" data-i18n="Type">Type</th>
-									<th width="120" align="left" data-i18n="When">When</th>
+									<th width="100" align="left" data-i18n="Type">Type</th>
+									<th width="160" align="left" data-i18n="When">When</th>
 									<th align="left" data-i18n="Active Systems">Active Systems</th>
 									<th align="left" data-i18n="Custom Message">Custom Message</th>
-									<th width="120" align="left" data-i18n="Priority">Priority</th>
-									<th width="120" align="left" data-i18n="Ignore Interval">Ignore Interval</th>
+									<th width="110" align="left" data-i18n="Priority">Priority</th>
+									<th width="110" align="left" data-i18n="Ignore Interval">Ignore Interval</th>
 							</tr>
 					</thead>
 			</table>
@@ -1555,7 +1555,11 @@ $(document).ready(function() {
 					<td align="right"><label for="combowhen"><span data-i18n="When"></span>:</label></td>
 					<td><select id="combowhen" style="width:120px" class="combobox ui-corner-all">
 								<option value="0" data-i18n="Greater">Greater</option>
-								<option value="1" data-i18n="Below">Below</option>
+								<option value="1" data-i18n="Greater or Equal">Greater or Equal</option>
+								<option value="2" data-i18n="Equal">Equal</option>
+								<option value="3" data-i18n="Not Equal">Not Equal</option>
+								<option value="4" data-i18n="Less or Equal">Less or Equal</option>
+								<option value="5" data-i18n="Less">Less</option>
 							</select>
 					</td>
 				</tr>

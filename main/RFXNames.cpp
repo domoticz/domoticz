@@ -169,7 +169,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_PiFace, "PiFace - Raspberry Pi IO expansion board" },
 		{ HTYPE_S0SmartMeterUSB, "S0 Meter USB" },
 		{ HTYPE_OpenThermGateway, "OpenTherm Gateway USB" },
-		{ HTYPE_TeleinfoMeter, "Teleinfo EDF USB" },
+		{ HTYPE_TeleinfoMeter, "Teleinfo EDF" },
 		{ HTYPE_OpenThermGatewayTCP, "OpenTherm Gateway with LAN interface" },
 		{ HTYPE_OpenZWave, "OpenZWave USB" },
 		{ HTYPE_LimitlessLights, "Limitless/AppLamp/Mi Light with LAN/WiFi interface" },
@@ -1490,6 +1490,9 @@ void GetLightStatus(
 		case Limitless_SetBrightnessLevel:
 			lstatus="Set Level";
 			break;
+		case Limitless_SetKelvinLevel:
+			lstatus="Set Kelvin Level";
+			break;
 		case Limitless_SetColorToWhite:
 			lstatus="Set to White";
 			break;
@@ -2498,6 +2501,11 @@ bool GetLightCommand(
 			cmd=Limitless_SetBrightnessLevel;
 			return true;
 		}
+		else if (switchcmd=="Set Kelvin Level")
+		{
+			cmd=Limitless_SetKelvinLevel;
+			return true;
+		}
 		else if (switchcmd == "Set White")
 		{
 			cmd = Limitless_SetColorToWhite;
@@ -2596,6 +2604,16 @@ bool GetLightCommand(
 		else if (switchcmd == "Speed Down")
 		{
 			cmd = Limitless_DiscoSpeedSlower;
+			return true;
+		}
+		else if (switchcmd == "Speed Minimal")
+		{
+			cmd = Limitless_DiscoSpeedMinimal;
+			return true;
+		}
+		else if (switchcmd == "Speed Maximal")
+		{
+			cmd = Limitless_DiscoSpeedMaximal;
 			return true;
 		}
 		else if (switchcmd == "Warmer")

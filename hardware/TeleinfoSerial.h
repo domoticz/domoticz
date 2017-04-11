@@ -2,7 +2,7 @@
 Domoticz Software : http://domoticz.com/
 File : TeleinfoSerial.cpp
 Author : Nicolas HILAIRE, Blaise Thauvin
-Version : 2.2
+Version : 2.3
 Description : This class decodes the Teleinfo signal from serial/USB devices before processing them
 
 History :
@@ -17,6 +17,7 @@ History :
 - 2017-03-15 : Renamed from Teleinfo.cpp to TeleinfoSerial.cpp in order to create
 						   a shared class to process Teleinfo protocol (Blaise Thauvin)
 - 2017-03-27 : Greatly simplified code
+- 2017-04-01 : 2.3 Added RateLimit, flag to ignore CRC checks, and new CRC computation algorithm available on newer meters
 */
 
 #pragma once
@@ -56,13 +57,13 @@ class CTeleinfoSerial : public CTeleinfoBase, AsyncSerial
 		boost::asio::serial_port_base::flow_control m_iOptFlow;
 		boost::asio::serial_port_base::stop_bits m_iOptStop;
 
-		int m_counter;
+		signed int m_counter;
 
 		void Init();
 		void MatchLine();
 		void ParseData(const char *pData, int Len);
 		bool isCheckSumOk(int &isMode1);
 
-		char m_buffer[1028];
+		char m_buffer[1024];
 		int m_bufferpos;
 };

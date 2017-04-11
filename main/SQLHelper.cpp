@@ -32,7 +32,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 113
+#define DB_VERSION 114
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -2218,6 +2218,16 @@ bool CSQLHelper::OpenDatabase()
 				}
 			}
 		}
+                if (dbversion < 114)
+                {
+                        //Set default values for new parameters in EcoDevices and Teleinfo EDF
+                        std::stringstream szQuery1, szQuery2;
+			szQuery1 << "UPDATE Hardware SET Mode1 = 0, Mode2 = 60 WHERE Type =" << HTYPE_ECODEVICES ;
+                        query(szQuery1.str());
+                        szQuery2 << "UPDATE Hardware SET Mode1 = 0, Mode2 = 0, Mode3 = 60 WHERE Type =" << HTYPE_TeleinfoMeter ;
+                        query(szQuery2.str());
+                }
+
 	}
 	else if (bNewInstall)
 	{
@@ -2331,6 +2341,16 @@ bool CSQLHelper::OpenDatabase()
 		GetPreferencesVar("CostEnergy", nValue);
 		UpdatePreferencesVar("CostEnergyT2", nValue);
 	}
+	if ((!GetPreferencesVar("CostEnergyR1", nValue)) || (nValue == 0))
+	{
+		UpdatePreferencesVar("CostEnergyR1", 800);
+	}
+	if ((!GetPreferencesVar("CostEnergyR2", nValue)) || (nValue == 0))
+	{
+		GetPreferencesVar("CostEnergyR1", nValue);
+		UpdatePreferencesVar("CostEnergyR2", nValue);
+	}
+
 	if ((!GetPreferencesVar("CostGas", nValue)) || (nValue == 0))
 	{
 		UpdatePreferencesVar("CostGas", 6218);
@@ -5427,7 +5447,7 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 			//Check for Notification
 			if (devType==pTypeP1Power)
 			{
-				float musage=(total_real[0]+total_real[1])/EnergyDivider;
+				float musage=(total_real[0]+total_real[2])/EnergyDivider;
 				m_notifications.CheckAndHandleNotification(ID, devname, devType, subType, NTYPE_TODAYENERGY, musage);
 			}
 /*
