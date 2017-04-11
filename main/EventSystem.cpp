@@ -1097,14 +1097,26 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const uint64_t Devic
 	boost::unique_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
 
 	std::string lua_Dir;
+	std::string dzv_Dir;
 #ifdef WIN32
 	lua_Dir = szUserDataFolder + "scripts\\lua\\";
 #else
 	lua_Dir = szUserDataFolder + "scripts/lua/";
+	dzv_Dir = szUserDataFolder + "scripts/lua//dzVents/";
 #endif
 	std::vector<std::string> FileEntries;
 	std::vector<std::string>::const_iterator itt;
 	std::string filename;
+	DirectoryListing(FileEntries, lua_Dir, true, false);
+	for (itt = FileEntries.begin(); itt != FileEntries.end(); ++itt)
+	{
+		filename = *itt;
+		if (filename.find("dzVents") != std::string::npos)
+		{
+			EvaluateLua(reason, dzv_Dir + "dzVents.lua", "", DeviceID, devname, nValue, sValue, nValueWording, 0);
+		}
+	}
+
 	DirectoryListing(FileEntries, lua_Dir, false, true);
 	for (itt = FileEntries.begin(); itt != FileEntries.end(); ++itt)
 	{
@@ -3320,13 +3332,17 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 	lua_DirT << szUserDataFolder << "scripts/lua/";
 #endif
 
-	lua_createtable(lua_state, 2, 0);
+	lua_createtable(lua_state, 3, 0);
 	lua_pushstring(lua_state, "Security");
 	lua_pushstring(lua_state, secstatusw.c_str());
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "script_path");
 	lua_pushstring(lua_state, lua_DirT.str().c_str());
 	lua_rawset(lua_state, -3);
+	lua_pushstring(lua_state, "script_reason");
+	lua_pushstring(lua_state, reason.c_str());
+	lua_rawset(lua_state, -3);
+
 	lua_setglobal(lua_state, "globalvariables");
 
 	int status = 0;
