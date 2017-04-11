@@ -675,9 +675,6 @@ body .item tr > #name {
 #bigtext{
     float:right;
     color:#222;
-    font-size: 19px;
-    font-weight: normal;
-    white-space: nowrap;
     line-height: 100%;
     text-align: right;
     overflow: visible;
@@ -689,19 +686,19 @@ body .item tr > #name {
     height:0;
     max-width:50%;
 }
-
-#dashcontent #bigtext{
-    color: #444;
+#bigtext span{
+    font-size: 17.5px;
+    font-weight: normal;
+    white-space: nowrap;
 }
 
 #bigtext > span{
     /*padding: 3px;*/
     display:inline-block;
-    font-weight: normal;
     overflow:hidden;
-    width:100%;
+    width:auto;
+    height:auto;
 }
-
 
 
 /*
@@ -876,10 +873,7 @@ a.btnsmall {
     padding:7px;
 }
 
-a.btnstyle, a.btnstylerev {
-    font-family: "Lato", sans-serif;
-    font-size: 100%;
-    background-color: #777;
+a.btnstyle, a.btnstylerev, a.btnsmall-sel {
     margin-right: 10px;
     background-image:none;
     padding: 0px 10px 0 10px;
@@ -893,6 +887,20 @@ a.btnstyle, a.btnstylerev {
 a.btnstyle:last-of-type, a.btnstylerev:last-of-type{
     margin-right:0;
 }
+
+.options a.btnstyle, 
+.options a.btnstylerev, 
+.options a.btnsmall-sel{
+    font-size:12.5px;
+}
+.options a{
+    margin-right: 3px;
+}
+.options a:last-of-type{
+    margin-right: 0;
+}
+
+
 
 .btnstyle3{
     background: #46b1d9;
