@@ -444,9 +444,9 @@ void CEcoDevices::GetMeterRT2Details()
         m_teleinfo1.ADPS = atoi(XMLmap["ADPS"].c_str());
 
         #ifdef DEBUG_EcoDevices
-        _log.Log(LOG_NORM, "DEBUG: OPTARIF: '%s'", m_teleinfo1.OPTARIF.c_str());
-        _log.Log(LOG_NORM, "DEBUG: PTEC:    '%s'", m_teleinfo1.PTEC.c_str());
-        _log.Log(LOG_NORM, "DEBUG: DEMAIN:  '%s'", m_teleinfo1.DEMAIN.c_str());
+        _log.Log(LOG_NORM, "DEBUG: OPTARIF: '%s'", teleinfo.OPTARIF.c_str());
+        _log.Log(LOG_NORM, "DEBUG: PTEC:    '%s'", teleinfo.PTEC.c_str());
+        _log.Log(LOG_NORM, "DEBUG: DEMAIN:  '%s'", teleinfo.DEMAIN.c_str());
         #endif
         ProcessTeleinfo("Teleinfo RT2", 1, m_teleinfo1);
 
