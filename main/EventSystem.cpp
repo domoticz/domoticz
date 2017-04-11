@@ -1100,6 +1100,7 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const uint64_t Devic
 	std::string dzv_Dir;
 #ifdef WIN32
 	lua_Dir = szUserDataFolder + "scripts\\lua\\";
+	dzv_Dir = szUserDataFolder + "scripts\\lua\\dzVents\\";
 #else
 	lua_Dir = szUserDataFolder + "scripts/lua/";
 	dzv_Dir = szUserDataFolder + "scripts/lua//dzVents/";
