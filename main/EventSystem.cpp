@@ -2560,48 +2560,48 @@ void CEventSystem::exportDeviceStatesToLua(lua_State *lua_state)
 		if (("Heating" == dev_type) && ("Zone" == sub_type))
 		{
 			lua_pushstring(lua_state, "setPoint");
-			lua_pushstring(lua_state, strarray[1].c_str());
+			lua_pushstring(lua_state, strarray[2].c_str());
 			lua_rawset(lua_state, -3);
 			lua_pushstring(lua_state, "heatingMode");
-			lua_pushstring(lua_state, strarray[2].c_str());
+			lua_pushstring(lua_state, strarray[3].c_str());
 			lua_rawset(lua_state, -3);
 		}
 		
 		if (("Lux" == dev_type) && ("Lux" == sub_type))
 		{
 			lua_pushstring(lua_state, "lux");
-			lua_pushstring(lua_state, strarray[0].c_str());
+			lua_pushstring(lua_state, strarray[1].c_str());
 			lua_rawset(lua_state, -3);
 		}
 
 		if (("General" == dev_type) && ("kWh" == sub_type))
 		{
 			lua_pushstring(lua_state, "whTotal");
-			lua_pushstring(lua_state, strarray[1].c_str());
+			lua_pushstring(lua_state, strarray[2].c_str());
 			lua_rawset(lua_state, -3);
 			lua_pushstring(lua_state, "whActual");
-			lua_pushstring(lua_state, strarray[0].c_str());
+			lua_pushstring(lua_state, strarray[1].c_str());
 			lua_rawset(lua_state, -3);
 		}
 		
 		if (("Usage" == dev_type) && ("Electric" == sub_type))
 		{
 			lua_pushstring(lua_state, "wActual");
-			lua_pushstring(lua_state, strarray[0].c_str());
+			lua_pushstring(lua_state, strarray[1].c_str());
 			lua_rawset(lua_state, -3);
 		}
 
 		if (("P1 Smart Meter" == dev_type) && ("Energy" == sub_type))
 		{
 			lua_pushstring(lua_state, "wActual");
-			lua_pushstring(lua_state, strarray[4].c_str());
+			lua_pushstring(lua_state, strarray[5].c_str());
 			lua_rawset(lua_state, -3);
 		}
 
 		if (("Thermostat" == dev_type) && ("SetPoint" == sub_type))
 		{
 			lua_pushstring(lua_state, "setPoint");
-			lua_pushstring(lua_state, strarray[0].c_str());
+			lua_pushstring(lua_state, strarray[1].c_str());
 			lua_rawset(lua_state, -3);
 		}
 
