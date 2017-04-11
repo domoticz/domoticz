@@ -2221,7 +2221,7 @@ bool CSQLHelper::OpenDatabase()
                 {
                         //Set default values for new parameters in EcoDevices and Teleinfo EDF
                         std::stringstream szQuery1, szQuery2;
-			szQuery1 << "UPDATE Hardware SET Mode1 = 0, Mode2 = 60 WHERE Type =" << HTYPE_ECODEVICES ;
+						szQuery1 << "UPDATE Hardware SET Mode1 = 0, Mode2 = 60 WHERE Type =" << HTYPE_ECODEVICES ;
                         query(szQuery1.str());
                         szQuery2 << "UPDATE Hardware SET Mode1 = 0, Mode2 = 0, Mode3 = 60 WHERE Type =" << HTYPE_TeleinfoMeter ;
                         query(szQuery2.str());
@@ -2714,6 +2714,7 @@ void CSQLHelper::Do_Work()
 			if (m_background_task_queue.size()>0)
 			{
 				_items2do.clear();
+
 				std::vector<_tTaskItem>::iterator itt=m_background_task_queue.begin();
 				while (itt!=m_background_task_queue.end())
 				{
@@ -2725,7 +2726,7 @@ void CSQLHelper::Do_Work()
 							tvDiff.tv_sec = 0;
 							tvDiff.tv_usec = 0;
 						}
-						float diff = (tvDiff.tv_usec + tvDiff.tv_sec * 1000000) / 1000000;
+						float diff = ((tvDiff.tv_usec / 1000000.0f) + tvDiff.tv_sec);
 						if ((itt->_DelayTime) <= diff)
 						{
 							_items2do.push_back(*itt);
@@ -2738,7 +2739,6 @@ void CSQLHelper::Do_Work()
 					{
 						_items2do.push_back(*itt);
 						itt=m_background_task_queue.erase(itt);
-						++itt;
 					}
 				}
 			}
