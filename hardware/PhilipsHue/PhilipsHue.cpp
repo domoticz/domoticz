@@ -48,12 +48,13 @@ string ReadFile(string filename)
 }
 #endif
 
-CPhilipsHue::CPhilipsHue(const int ID, const string &IPAddress, const unsigned short Port, const string &Username) :
+CPhilipsHue::CPhilipsHue(const int ID, const string &IPAddress, const unsigned short Port, const string &Username, const int poll) :
 m_IPAddress(IPAddress),
 m_UserName(Username)
 {
 	m_HwdID=ID;
 	m_Port = Port;
+	m_poll = poll;
 	m_stoprequested=false;
 	Init();
 }
@@ -93,9 +94,22 @@ bool CPhilipsHue::StopHardware()
 void CPhilipsHue::Do_Work()
 {
 	int msec_counter = 0;
-	int sec_counter = HUE_POLL_INTERVAL-2;
+	int sec_counter = 0;
 
 	_log.Log(LOG_STATUS,"Philips Hue: Worker started...");
+
+	// Catch uninitialised Mode1 entry.
+	if (m_poll < 1)
+	{
+		m_poll = HUE_POLL_INTERVAL;
+		_log.Log(LOG_STATUS, "Philips Hue: Using default poll interval of %d secs.", m_poll);
+	}
+	else
+	{
+		_log.Log(LOG_STATUS, "Philips Hue: Using poll interval of %d secs.", m_poll);
+	}
+
+	sec_counter = m_poll - 1;
 
 	while (!m_stoprequested)
 	{
@@ -106,7 +120,7 @@ void CPhilipsHue::Do_Work()
 		{
 			msec_counter = 0;
 			sec_counter++;
-			if (sec_counter % HUE_POLL_INTERVAL == 0)
+			if (sec_counter % m_poll == 0)
 			{
 				m_LastHeartbeat = mytime(NULL);
 				GetStates();
