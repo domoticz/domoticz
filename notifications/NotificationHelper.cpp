@@ -17,9 +17,6 @@
 #include "NotificationKodi.h"
 #include "NotificationLogitechMediaServer.h"
 #include "NotificationGCM.h"
-#ifdef USE_PYTHON_PLUGINS
-#	include "../hardware/plugins/PluginManager.h"
-#endif
 
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
@@ -71,6 +68,11 @@ void CNotificationHelper::AddNotifier(CNotificationBase *notifier)
 	m_notifiers[notifier->GetSubsystemId()] = notifier;
 }
 
+void CNotificationHelper::RemoveNotifier(CNotificationBase *notifier)
+{
+	m_notifiers.erase(notifier->GetSubsystemId());
+}
+
 bool CNotificationHelper::SendMessage(
 	const uint64_t Idx,
 	const std::string &Name,
@@ -119,9 +121,6 @@ bool CNotificationHelper::SendMessageEx(
 			bRet |= iter->second->SendMessageEx(Idx, Name, Subject, Text, ExtraData, Priority, Sound, bFromNotification);
 		}
 	}
-#ifdef USE_PYTHON_PLUGINS
-	Plugins::CPluginSystem::SendNotification(Subject, Text, ExtraData, Priority, Sound);
-#endif
 	return bRet;
 }
 
@@ -231,19 +230,20 @@ bool CNotificationHelper::CheckAndHandleTempHumidityNotification(
 
 		if ((atime >= itt->LastSend) || (itt->SendAlways) || (!itt->CustomMessage.empty())) //emergency always goes true
 		{
+			std::string recoverymsg;
+			bool bRecoveryMessage = false;
+			bRecoveryMessage = CustomRecoveryMessage(itt->ID, recoverymsg, true);
+			if ((atime < itt->LastSend) && (!itt->SendAlways) && (!bRecoveryMessage))
+				continue;
 			std::vector<std::string> splitresults;
 			StringSplit(itt->Params, ";", splitresults);
 			if (splitresults.size() < 3)
 				continue; //impossible
 			std::string ntype = splitresults[0];
-			std::string recoverymsg;
 			std::string custommsg;
 			float svalue = static_cast<float>(atof(splitresults[2].c_str()));
 			bool bSendNotification = false;
-			bool bRecoveryMessage = false;
 			bool bCustomMessage = false;
-
-			bRecoveryMessage = CustomRecoveryMessage(itt->ID, recoverymsg, true);
 			bCustomMessage = CustomRecoveryMessage(itt->ID, custommsg, false);
 
 			if (m_sql.m_tempunit == TEMPUNIT_F)
@@ -469,22 +469,22 @@ bool CNotificationHelper::CheckAndHandleAmpere123Notification(
 
 		if ((atime >= itt->LastSend) || (itt->SendAlways) || (!itt->CustomMessage.empty())) //emergency always goes true
 		{
+			std::string recoverymsg;
+			bool bRecoveryMessage = false;
+			bRecoveryMessage = CustomRecoveryMessage(itt->ID, recoverymsg, true);
+			if ((atime < itt->LastSend) && (!itt->SendAlways) && (!bRecoveryMessage))
+				continue;
 			std::vector<std::string> splitresults;
-
 			StringSplit(itt->Params, ";", splitresults);
 			if (splitresults.size() < 3)
 				continue; //impossible
 			std::string ntype = splitresults[0];
-			std::string recoverymsg;
 			std::string custommsg;
 			std::string ltype;
 			float svalue = static_cast<float>(atof(splitresults[2].c_str()));
 			float ampere;
 			bool bSendNotification = false;
-			bool bRecoveryMessage = false;
 			bool bCustomMessage = false;
-
-			bRecoveryMessage = CustomRecoveryMessage(itt->ID, recoverymsg, true);
 			bCustomMessage = CustomRecoveryMessage(itt->ID, custommsg, false);
 
 			if (ntype == signamp1)
@@ -505,7 +505,7 @@ bool CNotificationHelper::CheckAndHandleAmpere123Notification(
 			bSendNotification = ApplyRule(splitresults[1], (ampere == svalue), (ampere < svalue));
 			if (bSendNotification && (!bRecoveryMessage || itt->SendAlways))
 			{
-				sprintf(szTmp, "%s %s is %.1f Ampere", devicename.c_str(), ltype.c_str(), ampere);
+				sprintf(szTmp, "%s %s is %.1f Ampere [%s %.1f Ampere]", devicename.c_str(), ltype.c_str(), ampere, splitresults[1].c_str(), svalue);
 				msg = szTmp;
 				sprintf(szTmp, "%.1f", ampere);
 				notValue = szTmp;
@@ -633,19 +633,20 @@ bool CNotificationHelper::CheckAndHandleNotification(
 
 		if ((atime >= itt->LastSend) || (itt->SendAlways) || (!itt->CustomMessage.empty())) //emergency always goes true
 		{
+			std::string recoverymsg;
+			bool bRecoveryMessage = false;
+			bRecoveryMessage = CustomRecoveryMessage(itt->ID, recoverymsg, true);
+			if ((atime < itt->LastSend) && (!itt->SendAlways) && (!bRecoveryMessage))
+				continue;
 			std::vector<std::string> splitresults;
 			StringSplit(itt->Params, ";", splitresults);
 			if (splitresults.size() < 3)
 				continue; //impossible
 			std::string ntype = splitresults[0];
-			std::string recoverymsg;
 			std::string custommsg;
 			float svalue = static_cast<float>(atof(splitresults[2].c_str()));
 			bool bSendNotification = false;
-			bool bRecoveryMessage = false;
 			bool bCustomMessage = false;
-
-			bRecoveryMessage = CustomRecoveryMessage(itt->ID, recoverymsg, true);
 			bCustomMessage = CustomRecoveryMessage(itt->ID, custommsg, false);
 
 			if (ntype == nsign)
@@ -653,7 +654,7 @@ bool CNotificationHelper::CheckAndHandleNotification(
 				bSendNotification = ApplyRule(splitresults[1], (mvalue == svalue), (mvalue < svalue));
 				if (bSendNotification && (!bRecoveryMessage || itt->SendAlways))
 				{
-					sprintf(szTmp, "%s %s is %s %s", devicename.c_str(), ltype.c_str(), pvalue.c_str(), label.c_str());
+					sprintf(szTmp, "%s %s is %s %s [%s %.1f %s]", devicename.c_str(), ltype.c_str(), pvalue.c_str(), label.c_str(), splitresults[1].c_str(), svalue, label.c_str());
 					msg = szTmp;
 				}
 				else if (!bSendNotification && bRecoveryMessage)
@@ -965,21 +966,22 @@ void CNotificationHelper::CheckAndHandleLastUpdateNotification()
 				std::string ttype = Notification_Type_Desc(NTYPE_LASTUPDATE, 1);
 				if (splitresults[0] == ttype)
 				{
+					std::string recoverymsg;
+					bool bRecoveryMessage = false;
+					bRecoveryMessage = CustomRecoveryMessage(itt2->ID, recoverymsg, true);
+					if ((atime < itt2->LastSend) && (!itt2->SendAlways) && (!bRecoveryMessage))
+						continue;
 					extern time_t m_StartTime;
 					time_t btime = mytime(NULL);
 					std::string msg;
 					std::string szExtraData;
-					std::string recoverymsg;
 					std::string custommsg;
 					uint64_t Idx = itt->first;
 					int SensorTimeOut = atoi(splitresults[2].c_str());  // minutes
 					int diff = (int)round(difftime(btime, itt2->LastUpdate));
 					bool bStartTime = (difftime(btime, m_StartTime) < SensorTimeOut*60);
 					bool bSendNotification = ApplyRule(splitresults[1], (diff == SensorTimeOut*60), (diff < SensorTimeOut*60));
-					bool bRecoveryMessage = false;
 					bool bCustomMessage = false;
-
-					bRecoveryMessage = CustomRecoveryMessage(itt2->ID, recoverymsg, true);
 					bCustomMessage = CustomRecoveryMessage(itt2->ID, custommsg, false);
 
 					if (bSendNotification && !bStartTime && (!bRecoveryMessage || itt2->SendAlways))
@@ -1128,15 +1130,15 @@ bool CNotificationHelper::CustomRecoveryMessage(const uint64_t ID, std::string &
 				if (!isRecovery)
 					return false;
 
-				if ((msg.find("!") != 0) && (msg.size() > 1))
-				{
-					szTmp = ";;[Recovered] ";
-					szTmp.append(msg);
-				}
-				else if (splitresults.size() > 0)
+				if (splitresults.size() > 0)
 				{
 					if (!splitresults[0].empty())
 						szTmp = splitresults[0];
+				}
+				if ((msg.find("!") != 0) && (msg.size() > 1))
+				{
+					szTmp.append(";;[Recovered] ");
+					szTmp.append(msg);
 				}
 				std::vector<std::vector<std::string> > result;
 				result = m_sql.safe_query("SELECT ID FROM Notifications WHERE (ID=='%" PRIu64 "') AND (Params=='%q')", itt2->ID, itt2->Params.c_str());
@@ -1285,8 +1287,6 @@ void CNotificationHelper::ReloadNotifications()
 		}
 		std::string ttype = Notification_Type_Desc(NTYPE_LASTUPDATE, 1);
 		StringSplit(notification.Params, ";", splitresults);
-		if (splitresults.size() < 3)
-			continue;
 		if (splitresults[0] == ttype) {
 			std::vector<std::vector<std::string> > result2;
 			result2 = m_sql.safe_query(
