@@ -1103,7 +1103,7 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const uint64_t Devic
 	dzv_Dir = szUserDataFolder + "scripts\\lua\\dzVents\\";
 #else
 	lua_Dir = szUserDataFolder + "scripts/lua/";
-	dzv_Dir = szUserDataFolder + "scripts/lua//dzVents/";
+	dzv_Dir = szUserDataFolder + "scripts/lua/dzVents/";
 #endif
 	std::vector<std::string> FileEntries;
 	std::vector<std::string>::const_iterator itt;
