@@ -2091,6 +2091,11 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 				}
 			}
 		}
+		else if (vLabel == "Rain Rate")
+		{
+			//Ignore
+			return;
+		}
 		else
 		{
 			_log.Log(LOG_STATUS, "OpenZWave: Value_Added: Unhandled Label: %s, Unit: %s", vLabel.c_str(), vUnits.c_str());
