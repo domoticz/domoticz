@@ -108,6 +108,43 @@ CGpio::~CGpio(void)
 {
 }
 
+ /*
+  * interrupt timer functions:
+	*********************************************************************************
+  */
+int getclock(struct timeval *tv) {
+#ifdef CLOCK_MONOTONIC
+	struct timespec ts;
+		if (!clock_gettime(CLOCK_MONOTONIC, &ts)) {
+			tv->tv_sec = ts.tv_sec;
+			tv->tv_usec = ts.tv_nsec / 1000;
+			return 0;
+		}
+#endif
+	return gettimeofday(tv, NULL);
+}
+int timeval_subtract (struct timeval *result, struct timeval *x, struct timeval *y) {
+	/* Perform the carry for the later subtraction by updating y. */
+  if (x->tv_usec < y->tv_usec) {
+		int nsec = (y->tv_usec - x->tv_usec) / 1000000 + 1;
+    y->tv_usec -= 1000000 * nsec;
+    y->tv_sec += nsec;
+  }
+  if (x->tv_usec - y->tv_usec > 1000000) {
+    int nsec = (x->tv_usec - y->tv_usec) / 1000000;
+    y->tv_usec += 1000000 * nsec;
+    y->tv_sec -= nsec;
+  }
+
+  /* Compute the time remaining to wait.
+     tv_usec is certainly positive. */
+  result->tv_sec = x->tv_sec - y->tv_sec;
+  result->tv_usec = x->tv_usec - y->tv_usec;
+
+  /* Return 1 if result is negative. */
+  return x->tv_sec < y->tv_sec;
+}
+
 /*
  * interrupt handlers:
  *********************************************************************************
@@ -365,10 +402,10 @@ void CGpio::Do_Work()
 		mytime(&m_LastHeartbeat);
 
 #ifndef WIN32
-
+		
 		/* Interrupt handling */
-		boost::mutex::scoped_lock lock(interruptQueueMutex);
-		if (interruptCondition.timed_wait(lock, duration))
+		boost::mutex::scoped_lock lock(interruptQueueMutex);	
+		if (interruptCondition.timed_wait(lock, duration)) 
 		{
 			while (!gpioInterruptQueue.empty()) {
 				interruptNumber = gpioInterruptQueue.front();
@@ -400,8 +437,8 @@ void CGpio::Do_Work()
 void CGpio::Poller()
 {
 	//
-	//	This code has been added for robustness like for example when gpio is
-	//	used in alarm systems. In case a state change event (interrupt) is
+	//	This code has been added for robustness like for example when gpio is 
+	//	used in alarm systems. In case a state change event (interrupt) is 
 	//	missed this code will make up for it.
 	//
 	int sec_counter = 0;

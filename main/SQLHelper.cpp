@@ -2,6 +2,7 @@
 #include "SQLHelper.h"
 #include <iostream>     /* standard I/O functions                         */
 #include "RFXtrx.h"
+#include "Helper.h"
 #include "RFXNames.h"
 #include "localtime_r.h"
 #include "Logger.h"
@@ -2710,32 +2711,18 @@ void CSQLHelper::Do_Work()
 			if (m_background_task_queue.size()>0)
 			{
 				_items2do.clear();
+
 				std::vector<_tTaskItem>::iterator itt=m_background_task_queue.begin();
 				while (itt!=m_background_task_queue.end())
 				{
-					if (itt->_DelayTime)
-					{
-						struct timeval tvDiff, DelayTimeEnd;
-						getclock(&DelayTimeEnd);
-						if (timeval_subtract(&tvDiff, &DelayTimeEnd, &itt->_DelayTimeBegin)) {
-							tvDiff.tv_sec = 0;
-							tvDiff.tv_usec = 0;
-						}
-						float diff = (tvDiff.tv_usec + tvDiff.tv_sec * 1000000) / 1000000;
-						if ((itt->_DelayTime) <= diff)
-						{
-							_items2do.push_back(*itt);
-							itt=m_background_task_queue.erase(itt);
-						}
-						else
-							++itt;
-					}
-					else
+					itt->_DelayTime -= static_cast<float>(1./timer_resolution_hz);
+					if (itt->_DelayTime<=(1./timer_resolution_hz/2))
 					{
 						_items2do.push_back(*itt);
 						itt=m_background_task_queue.erase(itt);
-						++itt;
 					}
+					else
+						++itt;
 				}
 			}
 		}
