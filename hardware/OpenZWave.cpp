@@ -56,7 +56,8 @@ enum _eSensorScaleID
 	SCALEID_CO2,
 	SCALEID_WATER,
 	SCALEID_MOISTRUE,
-	SCALEID_TANK_CAPACITY
+	SCALEID_TANK_CAPACITY,
+	SCALEID_RAIN_RATE,
 };
 
 struct _tAlarmNameToIndexMapping
@@ -2093,8 +2094,18 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 		}
 		else if (vLabel == "Rain Rate")
 		{
-			//Ignore
-			return;
+			if (vType == OpenZWave::ValueID::ValueType_Decimal)
+			{
+				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
+				{
+					_device.floatValue = fValue;
+					_device.scaleID = SCALEID_RAIN_RATE;
+					_device.scaleMultiply = 1;
+					_device.devType = ZDTYPE_SENSOR_CUSTOM;
+					_device.custom_label = "mm/h";
+					InsertDevice(_device);
+				}
+			}
 		}
 		else
 		{
@@ -2578,6 +2589,8 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 			scaleID = SCALEID_MOISTRUE;
 		else if (vLabel == "Tank Capacity")
 			scaleID = SCALEID_TANK_CAPACITY;
+		else if (vLabel == "Rain Rate")
+			scaleID = SCALEID_RAIN_RATE;
 
 		sstr << "." << scaleID;
 	}
@@ -3150,6 +3163,14 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 			return;
 		float oldvalue = pDevice->floatValue;
 		pDevice->floatValue = fValue; //always set the value
+	}
+	break;
+	case ZDTYPE_SENSOR_CUSTOM:
+	{
+		if (vType != OpenZWave::ValueID::ValueType_Decimal)
+			return;
+		float oldvalue = pDevice->floatValue;
+		pDevice->floatValue = fValue;
 	}
 	break;
 	case ZDTYPE_SENSOR_MOISTURE:
