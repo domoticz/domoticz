@@ -8,14 +8,14 @@
 class CEcoDevices : public CTeleinfoBase
 {
 	public:
-		CEcoDevices(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const unsigned int model, const int ratelimit);
+		CEcoDevices(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password, const unsigned int model, const int ratelimit);
 		~CEcoDevices();
 		bool WriteToHardware(const char *pdata, const unsigned char length);
 	private:
 		bool Login();
 		void Logout();
 
-		std::string m_szIPAddress;
+		std::string m_szIPAddress, m_username, m_password;
 		unsigned short m_usIPPort;
 		bool m_stoprequested;
                 bool m_bFirstRun;	

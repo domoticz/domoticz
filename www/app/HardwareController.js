@@ -348,16 +348,6 @@ define(['app'], function (app) {
                     }
                     Mode3 = ratelimitp1;
                 }
-		if (text.indexOf("Eco Devices") >= 0)
-                {
-                    Mode1 = $("#hardwarecontent #divmodelecodevices #combomodelecodevices option:selected").val();
-                    var ratelimitp1=$("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val();
-                    if (ratelimitp1=="")
-                    {
-                        ratelimitp1 = "60";
-                    }
-                    Mode2 = ratelimitp1;
-                }
 
                 $.ajax({
                      url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
@@ -473,7 +463,8 @@ define(['app'], function (app) {
             }
             else if (
 				(text.indexOf("Domoticz") >= 0) ||
-				(text.indexOf("ETH8020") >= 0) ||
+				(text.indexOf("Eco Devices") >= 0) ||
+                                (text.indexOf("ETH8020") >= 0) ||
 				(text.indexOf("Daikin") >= 0) ||
 				(text.indexOf("Sterbox") >= 0) ||
 				(text.indexOf("Anna") >= 0) ||
@@ -511,6 +502,17 @@ define(['app'], function (app) {
 					extra=$("#hardwarecontent #divmqtt #filename").val();
 					Mode1 = $("#hardwarecontent #divmqtt #combotopicselect").val();
 				}
+               if (text.indexOf("Eco Devices") >= 0)
+                {
+                    Mode1 = $("#hardwarecontent #divmodelecodevices #combomodelecodevices option:selected").val();
+                    var ratelimitp1=$("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val();
+                    if (ratelimitp1=="")
+                    {
+                        ratelimitp1 = "60";
+                    }
+                    Mode2 = ratelimitp1;
+                }
+
                 $.ajax({
                      url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
                         "&address=" + address +
@@ -5117,7 +5119,7 @@ define(['app'], function (app) {
                                 }
                            }
                         }
-                        else if ((((data["Type"].indexOf("LAN") >= 0) || data["Type"].indexOf("MySensors Gateway with MQTT") >= 0) && (data["Type"].indexOf("YouLess") == -1) && (data["Type"].indexOf("Denkovi") == -1) && (data["Type"].indexOf("Relay-Net") == -1) && (data["Type"].indexOf("Satel Integra") == -1) && (data["Type"].indexOf("MyHome OpenWebNet with LAN interface") == -1)) || (data["Type"].indexOf("Domoticz") >= 0) || (data["Type"].indexOf("Harmony") >= 0)) {
+                        else if ((((data["Type"].indexOf("LAN") >= 0) || (data["Type"].indexOf("Eco Devices") >= 0) || data["Type"].indexOf("MySensors Gateway with MQTT") >= 0) && (data["Type"].indexOf("YouLess") == -1) && (data["Type"].indexOf("Denkovi") == -1) && (data["Type"].indexOf("Relay-Net") == -1) && (data["Type"].indexOf("Satel Integra") == -1) && (data["Type"].indexOf("MyHome OpenWebNet with LAN interface") == -1)) || (data["Type"].indexOf("Domoticz") >= 0) || (data["Type"].indexOf("Harmony") >= 0)) {
                             $("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
                             $("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
                             if (data["Type"].indexOf("P1 Smart Meter") >= 0)
@@ -5223,6 +5225,7 @@ define(['app'], function (app) {
                         if (
                             (data["Type"].indexOf("Domoticz") >= 0)||
                             (data["Type"].indexOf("ICY") >= 0) ||
+                            (data["Type"].indexOf("Eco Devices") >= 0) ||
                             (data["Type"].indexOf("Toon") >= 0) ||
                             (data["Type"].indexOf("Atag") >= 0)||
                             (data["Type"].indexOf("Nest Th") >= 0)||
@@ -5235,12 +5238,12 @@ define(['app'], function (app) {
                             (data["Type"].indexOf("MQTT") >= 0) ||
                             (data["Type"].indexOf("Netatmo") >= 0) ||
                             (data["Type"].indexOf("Fitbit") >= 0)||
-							(data["Type"].indexOf("HTTP") >= 0)||
+                            (data["Type"].indexOf("HTTP") >= 0)||
                             (data["Type"].indexOf("Thermosmart") >= 0) ||
-							(data["Type"].indexOf("Logitech Media Server") >= 0) ||
-							(data["Type"].indexOf("HEOS by DENON") >= 0) ||
-							(data["Type"].indexOf("Razberry") >= 0) ||
-							(data["Type"].indexOf("Comm5") >= 0)
+			    (data["Type"].indexOf("Logitech Media Server") >= 0) ||
+		            (data["Type"].indexOf("HEOS by DENON") >= 0) ||
+		            (data["Type"].indexOf("Razberry") >= 0) ||
+		            (data["Type"].indexOf("Comm5") >= 0)
                             )
                         {
                             $("#hardwarecontent #hardwareparamslogin #username").val(data["Username"]);
@@ -5411,7 +5414,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
             }
-            else if ((text.indexOf("LAN") >= 0 || text.indexOf("Harmony") >= 0 || text.indexOf("MySensors Gateway with MQTT") >= 0) && text.indexOf("YouLess") == -1 && text.indexOf("Denkovi") == -1 && text.indexOf("Relay-Net") == -1  && text.indexOf("Satel Integra") == -1 && text.indexOf("MyHome OpenWebNet with LAN interface") == -1)
+            else if ((text.indexOf("LAN") >= 0 || text.indexOf("Harmony") >= 0 || text.indexOf("Eco Devices") >= 0 || text.indexOf("MySensors Gateway with MQTT") >= 0) && text.indexOf("YouLess") == -1 && text.indexOf("Denkovi") == -1 && text.indexOf("Relay-Net") == -1  && text.indexOf("Satel Integra") == -1 && text.indexOf("MyHome OpenWebNet with LAN interface") == -1)
             {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").show();
@@ -5422,6 +5425,7 @@ define(['app'], function (app) {
 		{
 		    $("#hardwarecontent #divmodelecodevices").show();
 		    $("#hardwarecontent #divratelimitp1").show();
+		    $("#hardwarecontent #divlogin").show();
 		}
                 if (text.indexOf("P1 Smart Meter") >= 0)
                 {

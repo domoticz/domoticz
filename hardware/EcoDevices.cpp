@@ -33,6 +33,8 @@ Version history
 #include "../main/localtime_r.h"
 #include "../httpclient/HTTPClient.h"
 #include <../tinyxpath/xpath_static.h>
+#include "../webserver/Base64.h"
+#include "../json/json.h"
 #include <sstream>
 
 #ifdef _DEBUG
@@ -49,11 +51,13 @@ Version history
 #define MINOR_RT2 0
 #define RELEASE_RT2 29
 
-CEcoDevices::CEcoDevices(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const unsigned int model, const int ratelimit)
+CEcoDevices::CEcoDevices(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password, const unsigned int model, const int ratelimit)
 {
 	m_HwdID = ID;
 	m_szIPAddress = IPAddress;
 	m_usIPPort = usIPPort;
+        m_username = username;
+        m_password = password;
 	m_stoprequested = false;
 	m_iModel = model;
         m_iRateLimit = ratelimit;
@@ -181,17 +185,24 @@ void CEcoDevices::GetMeterDetails()
 	// From http://xx.xx.xx.xx/protect/settings/teleinfoX.xml we get a complete feed of Teleinfo data
 
 	std::vector<std::string> ExtraHeaders;
-	std::string       sResult, sub, message;
+	std::string       sResult, sub, message, sAccessToken;
 	std::string::size_type len, pos;
-	std::stringstream sstr;
+	std::stringstream sstr, sLogin;
 	TiXmlDocument XMLdoc("Teleinfo.xml");
 	time_t atime = mytime(NULL);
 	int   major, minor, release;
 	int min_major = MAJOR, min_minor = MINOR, min_release = RELEASE;
 
 	// Check EcoDevices firmware version and process pulse counters
-	sstr << "http://" << m_szIPAddress << ":" << m_usIPPort << "/status.xml";
+	sstr << "http://blaise:taratata@"  << m_szIPAddress << ":" << m_usIPPort << "/status.xml";
 	if (m_status.hostname.empty()) m_status.hostname = m_szIPAddress;
+
+	sLogin << m_username << ":" << m_password;
+
+        /* Generate UnEncrypted base64 Basic Authorization for username/password and add result to ExtraHeaders */
+        sAccessToken = base64_encode((const unsigned char *)(sLogin.str().c_str()), strlen(sLogin.str().c_str()));
+        ExtraHeaders.push_back("Authorization: Basic " + sAccessToken);
+
 	if (HTTPClient::GET(sstr.str(), ExtraHeaders, sResult))
 	{
 		_log.Log(LOG_NORM, "(%s) Fetching counters and status data", Name.c_str());
@@ -279,7 +290,7 @@ void CEcoDevices::GetMeterDetails()
 	if (strcmp (m_status.t1_ptec.c_str(), "----") !=0)
 	{
 		sstr.str("");
-		sstr << "http://" << m_szIPAddress << ":" << m_usIPPort << "/protect/settings/teleinfo1.xml";
+		sstr << "http://blaise:taratata@" << m_szIPAddress << ":" << m_usIPPort << "/protect/settings/teleinfo1.xml";
 		_log.Log(LOG_NORM, "(%s) Fetching Teleinfo 1 data", Name.c_str());
 		if (!HTTPClient::GET(sstr.str(), ExtraHeaders, sResult))
 		{
@@ -344,12 +355,48 @@ void CEcoDevices::GetMeterRT2Details()
         int   i, major, minor, release;
         int min_major = MAJOR_RT2, min_minor = MINOR_RT2, min_release = RELEASE_RT2;
 
-        // Check EcoDevices firmware version and process pulse counters
+        // Check EcoDevices firmware version and hostname from JSON AIP
+        sstr << "http://" << m_szIPAddress
+                << ":" << m_usIPPort
+                << "/admin/system.json";
+        //Get Data
+        std::string sURL = sstr.str();
+        if (!HTTPClient::GET(sURL, ExtraHeaders, sResult))
+        {       
+                _log.Log(LOG_ERROR, "(%s) Error getting system information from /admin/system.json", Name.c_str());
+                return;
+        }
+
+        Json::Value root;
+        Json::Reader jReader;
+        bool bRet = jReader.parse(sResult, root);
+        if ((!bRet) || (!root.isObject()))
+        {       
+                _log.Log(LOG_ERROR, "(%s) Invalid JSON data received from /admin/system.json", Name.c_str());
+                return;
+        }
+        if (root["confighostname"].empty() == true)
+        {       
+                _log.Log(LOG_ERROR, "(%s) Invalid JSON data received from /admin/system.json, hostname missing", Name.c_str());
+        }
+        else
+	{
+		m_status.hostname = root["confighostname"].asString();
+		stdstring_rtrim(m_status.hostname);
+		// Update hardware name if this is first run
+                if (m_bFirstRun)
+                {
+                        m_sql.safe_query("UPDATE Hardware SET Name = '%s' WHERE ID = %i", m_status.hostname.c_str(), m_HwdID);
+                        m_bFirstRun = false;
+                }
+        }
+
+        // Get Teleinfo meter data and process pulse counters
+	sstr.str("");
         sstr << "http://" << m_szIPAddress << ":" << m_usIPPort << "/admin/status.xml";
-        if (m_status.hostname.empty()) m_status.hostname = m_szIPAddress;
         if (HTTPClient::GET(sstr.str(), ExtraHeaders, sResult))
         {
-                _log.Log(LOG_NORM, "(%s) Fetching data", Name.c_str());
+                _log.Log(LOG_NORM, "(%s) Fetching data from /admin/status.xml", Name.c_str());
         }
         else
         {
