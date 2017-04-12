@@ -1108,6 +1108,7 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const uint64_t Devic
 	std::vector<std::string> FileEntries;
 	std::vector<std::string>::const_iterator itt;
 	std::string filename;
+	
 	DirectoryListing(FileEntries, lua_Dir, true, false);
 	for (itt = FileEntries.begin(); itt != FileEntries.end(); ++itt)
 	{
@@ -2466,7 +2467,7 @@ void CEventSystem::exportDeviceStatesToLua(lua_State *lua_state)
 		}
 	}
 
-	_log.Log(LOG_STATUS, "%d devices in table.", m_devicestates.size());
+	//_log.Log(LOG_STATUS, "%d devices in table.", m_devicestates.size());
 
 	lua_createtable(lua_state, (int)m_devicestates.size(), 0);
 	typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
