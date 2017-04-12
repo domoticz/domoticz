@@ -184,6 +184,11 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				controller: 'DPHttpController',
 				permission: 'Admin'
 			  })).
+			  when('/DPInflux', angularAMD.route({
+				templateUrl: 'views/dpinflux.html',
+				controller: 'DPInfluxController',
+				permission: 'Admin'
+			  })).
 			  when('/DPGooglePubSub', angularAMD.route({
 				templateUrl: 'views/dpgooglepubsub.html',
 				controller: 'DPGooglePubSubController',
@@ -273,6 +278,11 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			  when('/Roomplan', angularAMD.route({
 				templateUrl: 'views/roomplan.html',
 				controller: 'RoomplanController',
+				permission: 'Admin'
+			  })).
+			  when('/Timerplan', angularAMD.route({
+				templateUrl: 'views/timerplan.html',
+				controller: 'TimerplanController',
 				permission: 'Admin'
 			  })).
 			  when('/Scenes', angularAMD.route({

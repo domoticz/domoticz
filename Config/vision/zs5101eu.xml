@@ -3,7 +3,7 @@
         <CommandClass id="32" setasreport="true"/>
         <CommandClass id="133">
                 <Associations num_groups="1">
-                        <Group index="1" max_associations="5" label="Group 1"  />
+                        <Group index="1" max_associations="5" label="Send Command when shock is detected"  />
                 </Associations>
         </CommandClass>
 </Product>

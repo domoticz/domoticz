@@ -583,11 +583,18 @@ define(['app'], function (app) {
 				if (bShowLevel==true) {
 					var levelDiv$ = $("#scenecontent #LevelDiv");
 					levelDiv$.find("option").show().end().show();
-					if (dimmerLevels !== "all") {
-						levelDiv$.find("option").hide();
-						$.each(dimmerLevels.split(','), function(i, level) {
-							levelDiv$.find("option[value=\"" + level + "\"]").show();
-						});
+
+					var dimmerValues = [];
+
+					$.each(dimmerLevels.split(','), function(i, level) {
+						dimmerValues[i] = level;
+					});
+
+					levelDiv$.find("option").remove();
+					for (var levelCounter = 0; levelCounter < dimmerValues.length; levelCounter++) {
+					    var option = $('<option />');
+					    option.attr('value', dimmerValues[levelCounter]).text(dimmerValues[levelCounter] + "%");
+					    $("#scenecontent #combolevel").append(option);
 					}
 				}
 			}

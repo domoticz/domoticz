@@ -7,7 +7,7 @@
 
 #define RETRY_DELAY 30
 
-P1MeterTCP::P1MeterTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort):
+P1MeterTCP::P1MeterTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const bool disable_crc, const int ratelimit):
 m_szIPAddress(IPAddress)
 {
 	m_HwdID=ID;
@@ -15,6 +15,8 @@ m_szIPAddress(IPAddress)
 	m_stoprequested=false;
 	m_usIPPort=usIPPort;
 	m_retrycntr = RETRY_DELAY;
+	m_bDisableCRC = disable_crc;
+	m_ratelimit = ratelimit;
 }
 
 P1MeterTCP::~P1MeterTCP(void)
@@ -97,6 +99,10 @@ bool P1MeterTCP::ConnectInternal()
 
 	_log.Log(LOG_STATUS,"P1 Smart Meter: connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
 
+	if (m_bDisableCRC) {
+		_log.Log(LOG_STATUS,"P1 Smart Meter: CRC validation disabled through hardware control");
+	}
+
 	Init();
 
 	sOnConnected(this);
@@ -162,12 +168,12 @@ void P1MeterTCP::Do_Work()
 			else
 			{
 				boost::lock_guard<boost::mutex> l(readQueueMutex);
-				ParseData((const unsigned char*)&data,bread);
+				ParseData((const unsigned char*)&data, bread, m_bDisableCRC, m_ratelimit);
 			}
 		}
 	}
 	_log.Log(LOG_STATUS,"P1 Smart Meter: TCP/IP Worker stopped...");
-} 
+}
 
 void P1MeterTCP::write(const char *data, size_t size)
 {

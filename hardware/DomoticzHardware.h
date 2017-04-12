@@ -4,7 +4,7 @@
 #include "../main/RFXNames.h"
 
 //Base class with functions all notification systems should have
-#define RX_BUFFER_SIZE 40
+#define RX_BUFFER_SIZE 100
 
 class CDomoticzHardwareBase
 {
@@ -72,6 +72,7 @@ protected:
 	void SendWaterflowSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float LPM, const std::string &defaultname);
 	void SendRainSensor(const int NodeID, const int BatteryLevel, const float RainCounter, const std::string &defaultname);
 	float GetRainSensorValue(const int NodeID, bool &bExists);
+	bool GetWindSensorValue(const int NodeID, int &WindDir, float &WindSpeed, float &WindGust, float &twindtemp, float &windchill, bool bHaveWindTemp, bool &bExists);
 	void SendWind(const int NodeID, const int BatteryLevel, const int WindDir, const float WindSpeed, const float WindGust, const float WindTemp, const float WindChill, const bool bHaveWindTemp, const std::string &defaultname);
 	void SendPressureSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float pressure, const std::string &defaultname);
 	void SendSolarRadiationSensor(const unsigned char NodeID, const int BatteryLevel, const float radiation, const std::string &defaultname);
@@ -80,13 +81,14 @@ protected:
 	void SendUVSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float UVI, const std::string &defaultname);
 	void SendBlindSensor(const int NodeID, const int ChildID, const int BatteryLevel, const int Command, const std::string &defaultname);
 	void SendSoundSensor(const int NodeID, const int BatteryLevel, const int sLevel, const std::string &defaultname);
-	void SendAlertSensor(const int NodeID, const int BatteryLevel, const int alertLevel, const char* defaultname);
+	void SendAlertSensor(const int NodeID, const int BatteryLevel, const int alertLevel, const std::string &message, const std::string &defaultname);
 	void SendGeneralSwitchSensor(const int NodeID, const int BatteryLevel, const int switchState, const char* defaultname, const int unitCode);
 	void SendMoistureSensor(const int NodeID, const int BatteryLevel, const int mLevel, const std::string &defaultname);
 	void SendTextSensor(const int NodeID, const int ChildID, const int BatteryLevel, const std::string &textMessage, const std::string &defaultname);
 	std::string GetTextSensorText(const int NodeID, const int ChildID, bool &bExists);
 	bool CheckPercentageSensorExists(const int NodeID, const int ChildID);
 	void SendCustomSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float Dust, const std::string &defaultname, const std::string &defaultLabel);
+	void SendZWaveAlarmSensor(const int NodeID, const int InstanceID, const int BatteryLevel, const int aType, const int aValue, const std::string &defaultname);
 
 	int m_iHBCounter;
 	boost::mutex readQueueMutex;

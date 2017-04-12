@@ -89,6 +89,23 @@
 	<h2 data-i18n="General settings">General settings</h2><br>
 		<table class="display" id="httpremote" border="0" cellpadding="0" cellspacing="20">
 		<tr>
+			<td align="right" style="width:110px"><label id="lblavailablekeywords" for="availablekeywords"><span data-i18n="Available keywords">Available keywords</span>:</label></td>
+			<td>%v : Value -- 
+						%t0 : Timestamp (epoc time localtime) -- 
+						%t1 : Timestamp (epoc ms localtime) -- 
+						%t2 : Timestamp (epoc time UTC) -- 
+						%t3 : Timestamp (epoc ms UTC) -- 
+						%t4 : Timestamp : "2015-01-29T21:50:44Z" -- 
+						%D : Target Device id -- 
+						%V : Target Variable -- 
+						%u : Unit -- 
+						%n : Device name -- 
+						%T0 : Type -- 
+						%T1 : SubType -- 
+						%h : hostname -- 
+						%idx : 'Original device' id (idx)</td>
+				</tr>
+				<tr>
 			<td align="right" style="width:110px"><label id="lblremoteurl" for="name"><span data-i18n="URL">URL</span>:</label></td>
 			<td><input type="text" id="url" style="width: 450px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 		</tr>
@@ -120,6 +137,10 @@
 		<tr>
 			<td align="right" style="width:110px"><label id="lblremotedata" for="name"><span data-i18n="Data">Data</span>:</label></td>
 			<td><textarea id="data" rows="4" style="width: 450px; padding: .2em;" class="text ui-widget-content ui-corner-all"></textarea></td>
+		</tr>
+		<tr>
+			<td align="right" style="width:110px"><label id="lblremoteheaders" for="name"><span data-i18n="Headers">Headers</span>:</label></td>
+			<td><textarea id="headers" rows="4" style="width: 450px; padding: .2em;" class="text ui-widget-content ui-corner-all"></textarea></td>
 		</tr>
 		<tr>
 			<td align="right" style="width:80px"><label for="httplinkenabled"><span data-i18n="Active">Active</span>:</label></td>

@@ -6,7 +6,7 @@ define(['app'], function (app) {
 		{
 			$scope.MakeGlobalConfig();
 			var htmlcontent = '';
-			htmlcontent+='<iframe class="cIFrameLarge" id="IMain" src="//forecast.io/#/f/' + $scope.config.Latitude + ',' + $scope.config.Longitude + '"></iframe>';
+			htmlcontent+='<iframe class="cIFrameLarge" id="IMain" src="//darksky.net/#/f/' + $scope.config.Latitude + ',' + $scope.config.Longitude + '"></iframe>';
 			$('#maincontent').html(htmlcontent);
 			$('#maincontent').i18n();
 		};
