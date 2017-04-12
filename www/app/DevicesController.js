@@ -195,7 +195,7 @@ define(['app'], function (app) {
 		  oTable.fnClearTable();
 		  
 		  $.ajax({
-			 url: "json.htm?type=devices&displayhidden=1&filter=all&used=" + ifilter, 
+			 url: "json.htm?type=devices&displayhidden=1&displaydisabled=1&filter=all&used=" + ifilter, 
 			 async: false, 
 			 dataType: 'json',
 			 success: function(data) {
@@ -221,7 +221,9 @@ define(['app'], function (app) {
 											(item.Status == 'On')||
 											(item.Status == 'Chime')||
 											(item.Status == 'Group On')||
-											(item.Status.indexOf('Set ') == 0)
+											(item.Status.indexOf('Set ') == 0)||
+											(item.Status.indexOf('NightMode') == 0)||
+											(item.Status.indexOf('Disco ') == 0)
 										 ) {
 													itemImage='<img src="images/lightbulb.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowDevices);" class="lcursor">';
 									}
@@ -306,7 +308,8 @@ define(['app'], function (app) {
 						(item.Type.indexOf("Chime")==0)||
 						(item.Type.indexOf("Security")==0)||
 						(item.Type.indexOf("RFY")==0)||
-						(item.Type.indexOf("ASA")==0)
+						(item.Type.indexOf("ASA")==0)||
+						(item.Type.indexOf("Blinds")==0)
 					 )
 				  {
 					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name)  + '\', \'#devicescontent\', \'ShowDevices\');">';
@@ -417,6 +420,9 @@ define(['app'], function (app) {
 				});
 				mTable.fnDraw();
 			  }
+			 },
+			 error: function(xhr, ajaxOptions, thrownError) {
+				alert("Problem retrieving devices!");
 			 }
 		  });
 		}

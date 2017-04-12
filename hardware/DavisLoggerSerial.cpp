@@ -467,7 +467,7 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 		{
 			tsen.WIND.tempsign=(OutsideTemperature>=0)?0:1;
 			tsen.WIND.chillsign=(OutsideTemperature>=0)?0:1;
-			int at10=round(abs(OutsideTemperature*10.0f));
+			int at10=round(std::abs(OutsideTemperature*10.0f));
 			tsen.WIND.temperatureh=(BYTE)(at10/256);
 			tsen.WIND.chillh=(BYTE)(at10/256);
 			at10-=(tsen.WIND.chillh*256);

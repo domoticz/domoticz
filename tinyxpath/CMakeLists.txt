@@ -11,7 +11,7 @@ SET(LIBRARY_OUTPUT_PATH "" CACHE INTERNAL
 )
 
 SET(CORE
-	action_store.cpp lex_util.cpp node_set.cpp tinyxml.cpptinyxmlparser.cpp xml_util.cpp xpath_processor.cpp xpath_static.cpp xpath_syntax.cpp
+	action_store.cpp lex_util.cpp node_set.cpp tinyxml.cpp tinyxmlparser.cpp xml_util.cpp xpath_processor.cpp xpath_static.cpp xpath_syntax.cpp
 	htmlutil.cpp tinystr.cpp tinyxmlerror.cpp tokenlist.cpp xpath_expression.cpp xpath_stack.cpp xpath_stream.cpp
 )
 
