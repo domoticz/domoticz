@@ -311,7 +311,7 @@ void RelayNet::Init()
 	BYTE id4 = m_HwdID & 0xFF;
 
 	/* 	Prepare packet for LIGHTING2 relay status packet  */
-	memset(&Packet, 0, sizeof(RBUF));
+	memset(&Packet, 0, sizeof(tRBUF));
 
 	if (m_HwdID > 0xFF)
 	{
