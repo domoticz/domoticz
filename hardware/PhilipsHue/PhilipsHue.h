@@ -43,7 +43,7 @@ public:
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 	static std::string RegisterUser(const std::string &IPAddress, const unsigned short Port, const std::string &username);
 private:
-	int m_poll;
+	int m_poll_interval;
 	std::string m_IPAddress;
 	unsigned short m_Port;
 	std::string m_UserName;
