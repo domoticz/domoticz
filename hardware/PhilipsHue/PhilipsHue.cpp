@@ -107,11 +107,9 @@ bool CPhilipsHue::StopHardware()
 void CPhilipsHue::Do_Work()
 {
 	int msec_counter = 0;
-	int sec_counter = 0;
+	int sec_counter = m_poll_interval - 1;
 
 	_log.Log(LOG_STATUS,"Philips Hue: Worker started...");
-
-	sec_counter = m_poll_interval - 1;
 
 	while (!m_stoprequested)
 	{
