@@ -8,11 +8,12 @@ http://gce-electronics.com/en/nos-produits/409-module-teleinfo-eco-devices.html
 Detailed information on the API can be found at
 http://www.touteladomotique.com/index.php?option=com_content&id=985:premiers-pas-avec-leco-devices-sur-la-route-de-la-maitrise-de-lenergie&Itemid=89#.WKcK0zi3ik5
 
-Version 3.1
+Version 3.2
 Author Blaise Thauvin
 
 Version history
 
+3.2   12-04-2017 Added support for authentication when connecting to EcoDevices
 3.1   01-04-2017 Added basic support for recently launched EcoDevices RT2
 3.0   15-03-2017 Merge Teleinfo protocol processing with other hardware using common class CTeleinfoBase
 2.2   05-03-2017 Move from JSON to XML API on EcoDevices in order to retreive more Teleinfo variables (current, alerts...)
@@ -194,14 +195,14 @@ void CEcoDevices::GetMeterDetails()
 	int min_major = MAJOR, min_minor = MINOR, min_release = RELEASE;
 
 	// Check EcoDevices firmware version and process pulse counters
-	sstr << "http://blaise:taratata@"  << m_szIPAddress << ":" << m_usIPPort << "/status.xml";
+	// Are there a login and password configured?
+	if ((m_username.size() > 0) && (m_password.size() > 0))
+		sstr << "http://" << m_username << ":" << m_password << "@";
+	else 	
+		sstr <<"http://";
+	sstr << m_szIPAddress << ":" << m_usIPPort << "/status.xml";
+	
 	if (m_status.hostname.empty()) m_status.hostname = m_szIPAddress;
-
-	sLogin << m_username << ":" << m_password;
-
-        /* Generate UnEncrypted base64 Basic Authorization for username/password and add result to ExtraHeaders */
-        sAccessToken = base64_encode((const unsigned char *)(sLogin.str().c_str()), strlen(sLogin.str().c_str()));
-        ExtraHeaders.push_back("Authorization: Basic " + sAccessToken);
 
 	if (HTTPClient::GET(sstr.str(), ExtraHeaders, sResult))
 	{
@@ -290,7 +291,13 @@ void CEcoDevices::GetMeterDetails()
 	if (strcmp (m_status.t1_ptec.c_str(), "----") !=0)
 	{
 		sstr.str("");
-		sstr << "http://blaise:taratata@" << m_szIPAddress << ":" << m_usIPPort << "/protect/settings/teleinfo1.xml";
+		// Are there a login and password configured?
+        	if ((m_username.size() > 0) && (m_password.size() > 0))
+                	sstr << "http://" << m_username << ":" << m_password << "@";
+        	else
+                	sstr <<"http://";
+
+		sstr << m_szIPAddress << ":" << m_usIPPort << "/protect/settings/teleinfo1.xml";
 		_log.Log(LOG_NORM, "(%s) Fetching Teleinfo 1 data", Name.c_str());
 		if (!HTTPClient::GET(sstr.str(), ExtraHeaders, sResult))
 		{
@@ -355,10 +362,15 @@ void CEcoDevices::GetMeterRT2Details()
         int   i, major, minor, release;
         int min_major = MAJOR_RT2, min_minor = MINOR_RT2, min_release = RELEASE_RT2;
 
-        // Check EcoDevices firmware version and hostname from JSON AIP
-        sstr << "http://" << m_szIPAddress
-                << ":" << m_usIPPort
-                << "/admin/system.json";
+        // Check EcoDevices firmware version and hostname from JSON API
+
+	// Are there a login and password configured?
+        if ((m_username.size() > 0) && (m_password.size() > 0))
+                sstr << "http://" << m_username << ":" << m_password << "@";
+        else
+                sstr <<"http://";
+        sstr << m_szIPAddress << ":" << m_usIPPort << "/admin/system.json";
+
         //Get Data
         std::string sURL = sstr.str();
         if (!HTTPClient::GET(sURL, ExtraHeaders, sResult))
@@ -393,7 +405,14 @@ void CEcoDevices::GetMeterRT2Details()
 
         // Get Teleinfo meter data and process pulse counters
 	sstr.str("");
-        sstr << "http://" << m_szIPAddress << ":" << m_usIPPort << "/admin/status.xml";
+
+        // Are there a login and password configured?
+        if ((m_username.size() > 0) && (m_password.size() > 0))
+                sstr << "http://" << m_username << ":" << m_password << "@";
+        else
+                sstr <<"http://";
+        sstr << m_szIPAddress << ":" << m_usIPPort << "/admin/status.xml";
+
         if (HTTPClient::GET(sstr.str(), ExtraHeaders, sResult))
         {
                 _log.Log(LOG_NORM, "(%s) Fetching data from /admin/status.xml", Name.c_str());
