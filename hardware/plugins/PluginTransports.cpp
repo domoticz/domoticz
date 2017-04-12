@@ -140,11 +140,12 @@ namespace Plugins {
 		}
 		else
 		{
-			if (e.value() != 1236)		// local disconnect cause by hardware reload
-			{
-				if ((e.value() != 2) && (e.value() != 121))	// Semaphore timeout expiry or end of file aka 'lost contact'
-					_log.Log(LOG_ERROR, "Plugin: Async Read Exception: %d, %s", e.value(), e.message().c_str());
-			}
+			if ((e.value() != 2) && 
+				(e.value() != 121) &&	// Semaphore timeout expiry or end of file aka 'lost contact'
+				(e.value() != 125) &&	// Operation cancelled
+				(e.value() != 995) &&	// Abort due to shutdown during disconnect
+				(e.value() != 1236))	// local disconnect cause by hardware reload
+				_log.Log(LOG_ERROR, "Plugin: Async Read Exception: %d, %s", e.value(), e.message().c_str());
 
 			DisconnectDirective*	DisconnectMessage = new DisconnectDirective(m_HwdID);
 			{
@@ -179,6 +180,8 @@ namespace Plugins {
 		{
 			if (m_Socket)
 			{
+				boost::system::error_code e;
+				m_Socket->shutdown(boost::asio::ip::tcp::socket::shutdown_both, e);
 				m_Socket->close();
 				delete m_Socket;
 				m_Socket = NULL;

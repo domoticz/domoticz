@@ -567,6 +567,14 @@ define(['app'], function (app) {
 			  if (typeof data.WebTheme != 'undefined') {
 				$("#settingscontent #combothemes").val(data.WebTheme);
 			  }
+			  if (typeof data.Title != 'undefined') {
+				sessionStorage.title = data.Title;
+                          }
+			  else {
+				sessionStorage.title = 'Domoticz';
+                          }
+                          document.title = sessionStorage.title;
+                          $("#settingscontent #Title").val(sessionStorage.title);
 
 			  if (typeof data.AuthenticationMethod != 'undefined') {
 				$("#webtable #comboauthmethod").val(data.AuthenticationMethod);
@@ -682,6 +690,10 @@ define(['app'], function (app) {
 
 		  var secpanel=$("#sectable #SecPassword").val();
 		  var switchprotection=$("#protectiontable #ProtectionPassword").val();
+
+                  // Apply Title
+		  sessionStorage.title = $("#settingscontent #Title").val();
+		  document.title=sessionStorage.title;
 
 		  //Check email settings
 		  var EmailServer=$("#emailtable #EmailServer").val();
