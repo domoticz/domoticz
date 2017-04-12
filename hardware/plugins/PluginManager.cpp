@@ -13,7 +13,6 @@
 #include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "../main/SQLHelper.h"
-#include "../notifications/NotificationKodi.h"	// Use Kodi specific notifier because it has function to get the icon file name
 #include "../main/WebServer.h"
 #include "../main/mainworker.h"
 #include "../main/EventSystem.h"
@@ -336,50 +335,6 @@ namespace Plugins {
 
 		_log.Log(LOG_STATUS, "PluginSystem: Stopped.");
 		return true;
-	}
-
-	void CPluginSystem::SendNotification(const std::string &Subject, const std::string &Text, const std::string &ExtraData, int Priority, const std::string &Sound)
-	{
-		// ExtraData = |Name=Test|SwitchType=9|CustomImage=0|Status=On|
-
-		CNotificationKodi	Notifier;
-#ifdef WIN32
-		std::string	sIconFile = "..\\..\\" + Notifier.GetIconFile(ExtraData);
-#else
-		std::string	sIconFile = Notifier.GetIconFile(ExtraData);
-#endif
-
-		std::string	sName = "Unknown";
-		int	posName = (int)ExtraData.find("|Name=");
-		if (posName >= 0)
-		{
-			posName += 6;
-			sName = ExtraData.substr(posName, ExtraData.find("|", posName) - posName);
-		}
-
-		std::string	sStatus = "Unknown";
-		int	posStatus = (int)ExtraData.find("|Status=");
-		if (posStatus >= 0)
-		{
-			posStatus += 8;
-			sStatus = ExtraData.substr(posStatus, ExtraData.find("|", posStatus) - posStatus);
-		}
-
-
-		//	Add command to message queue for every plugin
-		boost::lock_guard<boost::mutex> l(PluginMutex);
-		for (std::map<int, CDomoticzHardwareBase*>::iterator itt = m_pPlugins.begin(); itt != m_pPlugins.end(); itt++)
-		{
-			if (itt->second)
-			{
-				NotificationMessage*	Message = new NotificationMessage(itt->second->m_HwdID, Subject, Text, sName, sStatus, Priority, Sound, sIconFile);
-				PluginMessageQueue.push(Message);
-			}
-			else
-			{
-				_log.Log(LOG_ERROR, "%s: NULL entry found in Plugins map for Hardware %d.", __func__, itt->first);
-			}
-		}
 	}
 
 	void CPluginSystem::LoadSettings()
