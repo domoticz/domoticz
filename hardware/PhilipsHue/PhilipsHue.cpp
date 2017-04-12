@@ -50,13 +50,13 @@ string ReadFile(string filename)
 }
 #endif
 
-CPhilipsHue::CPhilipsHue(const int ID, const string &IPAddress, const unsigned short Port, const string &Username, const int Poll) :
+CPhilipsHue::CPhilipsHue(const int ID, const string &IPAddress, const unsigned short Port, const string &Username, const int PollInterval) :
 m_IPAddress(IPAddress),
 m_UserName(Username)
 {
 	m_HwdID=ID;
 	m_Port = Port;
-	m_poll_interval = Poll;
+	m_poll_interval = PollInterval;
 	m_stoprequested=false;
 
 	// Catch uninitialised Mode1 entry.
