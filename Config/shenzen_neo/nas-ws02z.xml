@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+    <!-- Configuration Parameters -->
+    <CommandClass id="112">
+        <Value type="byte" genre="config" instance="1" index="1" label="Alarm Duration Time" units="minute" value="120" min="0" max="255" size="1">
+            <Help>If this parameter is set to 0, the beep and LED will be turn on always until water leakage is not detected.</Help>
+        </Value>
+
+        <Value type="byte" genre="config" instance="1" index="2" label="Alarm Interval" units="minute" value="1" min="0" max="255" size="1">
+            <Help>This Parameter defines beep on/off interval time when water leakage is detected.</Help>
+        </Value>
+
+        <Value type="byte" genre="config" instance="1" index="3" label="First Alarm On Time Duration" units="second" value="60" min="0" max="255" size="1">
+            <Help>This parameter defines beep on duration first time when water leakage is detected.</Help>
+        </Value>
+
+        <Value type="byte" genre="config" instance="1" index="4" label="Alarm on Time Duration" units="second" value="5" min="0" max="255" size="1">
+            <Help>This parameter defines beep on duration after fist beep on when water leakage is detected.</Help>
+        </Value>
+
+        <Value type="list" genre="config" instance="1" index="5" label="Alarm sound" value="1" size="1">
+            <Help>This parameter defines beep on is enabled or disabled when water leakage is detected.
+                0 indicate beep on is disable, but LED will be turned on when water leakage detected.
+                1 indicate beep on is enabled, the BEEP and LED will be turned on when water leakage detected.
+            </Help>
+            <Item label="Disabled" value="0"/>
+            <Item label="Enabled" value="1"/>
+        </Value>
+
+        <Value type="list" genre="config" instance="1" index="6" label="Water Leakage Detected Report" value="1" size="1">
+            <Help>This parameter defines the function than water leakage detect is enabled or disabled.
+                0 indicate disable water leakage detect,
+                1 indicate enable water leakage detect.
+            </Help>
+            <Item label="Disabled" value="0"/>
+            <Item label="Enabled" value="1"/>
+        </Value>
+
+        <Value type="byte" genre="config" instance="1" index="7" label="Basic Set Level" value="255" min="0" max="255" size="1">
+            <Help>Basic Set Command will be sent where contains a value when the leakage is detected, the receiver will take it for consideration;
+                for instance, if a lamp module is received the Basic Set Command of which value is decisive as to how bright of dim level of lamp module shall be.
+            </Help>
+        </Value>
+
+    </CommandClass>
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="4">
+            <Group index="1" max_associations="4" label="Lifeline"/>
+            <Group index="2" max_associations="4" label="Control Commands"/>
+            <Group index="3" max_associations="4" label="Send Notification Report"/>
+            <Group index="4" max_associations="4" label="Send Binary Sensor Report"/>
+        </Associations>
+    </CommandClass>
+</Product>

@@ -14,7 +14,9 @@
 #ifdef WIN32
 	#include <comdef.h>
 #elif defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__)
+#ifndef __FreeBSD__
 	#include <sys/sysinfo.h>
+#endif
 	#include <iostream>
 	#include <fstream>
 	#include <string>
@@ -143,11 +145,17 @@ void CHardwareMonitor::Do_Work()
 
 			if (sec_counter%POLL_INTERVAL == 0)
 			{
-				FetchData();
+				try
+				{
+					FetchData();
+				}
+				catch (...)
+				{
+					_log.Log(LOG_STATUS, "Hardware Monitor: Error occurred while Fetching motherboard sensors!...");
+				}
 			}
 		}
 	}
-
 	_log.Log(LOG_STATUS,"Hardware Monitor: Stopped...");			
 }
 
@@ -513,6 +521,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 		char szTmp[300];
 		//Memory
 		float memusedpercentage = GetMemUsageLinux();
+#ifndef __FreeBSD__
 		if (memusedpercentage == -1)
 		{
 			//old (wrong) way
@@ -523,6 +532,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 			unsigned long usedram = mySysInfo.totalram - mySysInfo.freeram;
 			memusedpercentage = (100.0f / float(mySysInfo.totalram))*usedram;
 		}
+#endif
 		sprintf(szTmp,"%.2f",memusedpercentage);
 		UpdateSystemSensor("Load", 0, "Memory Usage", szTmp);
 
@@ -577,7 +587,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 				if (ret==4)
 				{
 					long long t = (actload1+actload2+actload3)-m_lastloadcpu;
-					double cpuper=((t / ((acttime-m_lastquerytime) * HZ)) * 100)/double(m_totcpu);
+					double cpuper=((t / (difftime(acttime,m_lastquerytime) * HZ)) * 100)/double(m_totcpu);
 					if (cpuper>0)
 					{
 						sprintf(szTmp,"%.2f", cpuper);

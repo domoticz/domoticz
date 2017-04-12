@@ -2,9 +2,9 @@
 
 #include <boost/signals2.hpp>
 
-#include "Push.h"
+#include "BasePush.h"
 
-class CGooglePubSubPush : public CPush
+class CGooglePubSubPush : public CBasePush
 {
 public:
 	CGooglePubSubPush();
@@ -14,7 +14,8 @@ public:
 
 private:
 
-	void OnDeviceReceived(const int m_HwdID, const unsigned long long DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand);
+	void OnDeviceReceived(const int m_HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand);
 	void DoGooglePubSubPush();
 };
+extern CGooglePubSubPush m_googlepubsubpush;
 
