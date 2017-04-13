@@ -49,17 +49,16 @@ CTeleinfoSerial::CTeleinfoSerial(const int ID, const std::string& devname, const
 	m_iOptStop = boost::asio::serial_port_base::stop_bits(TELEINFO_STOP_BITS);
 	m_bDisableCRC = disable_crc;
 	m_iRateLimit = ratelimit;
+	m_iDataTimeout = datatimeout;
 
 	if (baud_rate == 0)
 		m_iBaudRate = 1200;
 	else
 		m_iBaudRate = 9600;
 
-	// Make sure minimum update rate fits with the timeout configured in hardware tab. Defaults to 5mn if set to no timeout
-	if (datatimeout < 20)
-		m_iDataTimeout = 300;
-	else
-		m_iDataTimeout = datatimeout;
+        // RateLimit > DataTimeout is an inconsistent setting. In that case, decrease RateLimit (which increases update rate) 
+        // down to Timeout in order to avoir watchdog errors due to this user configuration mistake
+        if ((m_iRateLimit > m_iDataTimeout) && (m_iDataTimeout > 0))  m_iRateLimit = m_iDataTimeout;
 
 	Init();
 }

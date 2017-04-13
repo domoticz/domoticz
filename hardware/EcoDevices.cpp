@@ -64,16 +64,14 @@ CEcoDevices::CEcoDevices(const int ID, const std::string &IPAddress, const unsig
 	m_stoprequested = false;
 	m_iModel = model;
 	m_iRateLimit = ratelimit;
+	m_iDataTimeout = datatimeout;
 	
  	// system seems unstable if going too fast
 	if (m_iRateLimit < 2) m_iRateLimit = 2;
 
-	// Make sure minimum update rate fits with the timeout configured in hardware tab. Defaults to 5mn if set to no timeout
-	if (datatimeout < 20)
-		m_iDataTimeout = 300;
-	else
-		m_iDataTimeout = datatimeout;
-
+        // RateLimit > DataTimeout is an inconsistent setting. In that case, decrease RateLimit (which increases update rate) 
+	// down to Timeout in order to avoir watchdog errors due to this user configuration mistake
+        if ((m_iRateLimit > m_iDataTimeout) && (m_iDataTimeout > 0))  m_iRateLimit = m_iDataTimeout;
 
 	Init();
 }
@@ -100,7 +98,6 @@ void CEcoDevices::Init()
 
 }
 
-
 bool CEcoDevices::StartHardware()
 {
 	Init();
@@ -110,7 +107,6 @@ bool CEcoDevices::StartHardware()
 	sOnConnected(this);
 	return (m_thread != NULL);
 }
-
 
 bool CEcoDevices::StopHardware()
 {
@@ -123,8 +119,6 @@ bool CEcoDevices::StopHardware()
 	m_bIsStarted = false;
 	return true;
 }
-
-
 
 void CEcoDevices::Do_Work()
 {
@@ -151,7 +145,6 @@ bool CEcoDevices::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	return true;
 }
-
 
 void CEcoDevices::DecodeXML2Teleinfo(const std::string &sResult, Teleinfo &teleinfo)
 {
@@ -215,7 +208,6 @@ void CEcoDevices::GetMeterDetails()
 
 	// Check EcoDevices firmware version and process pulse counters
 	sstr << m_ssURL.str() << "/status.xml";
-
 	
 	if (m_status.hostname.empty()) m_status.hostname = m_szIPAddress;
 	if (HTTPClient::GET(sstr.str(), ExtraHeaders, sResult))
@@ -410,7 +402,6 @@ void CEcoDevices::GetMeterRT2Details()
 	// Get Teleinfo meter data and process pulse counters
 	sstr.str("");
 	sstr << m_ssURL.str() << "/admin/status.xml";
-
 
 	if (HTTPClient::GET(sstr.str(), ExtraHeaders, sResult))
 	{
