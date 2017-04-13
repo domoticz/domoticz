@@ -2,7 +2,6 @@
 #include "SQLHelper.h"
 #include <iostream>     /* standard I/O functions                         */
 #include "RFXtrx.h"
-#include "Helper.h"
 #include "RFXNames.h"
 #include "localtime_r.h"
 #include "Logger.h"
@@ -32,7 +31,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 112
+#define DB_VERSION 114
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -2197,6 +2196,37 @@ bool CSQLHelper::OpenDatabase()
 				}
 			}
 		}
+		if (dbversion < 113)
+		{
+			//Patch for new 1-Wire subtypes
+			std::stringstream szQuery2;
+			std::vector<std::vector<std::string> > result;
+			szQuery2 << "SELECT ID FROM Hardware WHERE([Type]==" << HTYPE_1WIRE << ")";
+			result = query(szQuery2.str());
+			if (result.size() > 0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
+					safe_query("UPDATE DeviceStatus SET SubType='%d' WHERE ([Type]==%d) AND (SubType==%d) AND (HardwareID=%s)",
+						sTypeTEMP5, pTypeTEMP, sTypeTEMP10, sd[0].c_str());
+
+					safe_query("UPDATE DeviceStatus SET SubType='%d' WHERE ([Type]==%d) AND (SubType==%d) AND (HardwareID=%s)",
+						sTypeHUM1, pTypeHUM, sTypeHUM2, sd[0].c_str());
+				}
+			}
+		}
+                if (dbversion < 114)
+                {
+                        //Set default values for new parameters in EcoDevices and Teleinfo EDF
+                        std::stringstream szQuery1, szQuery2;
+						szQuery1 << "UPDATE Hardware SET Mode1 = 0, Mode2 = 60 WHERE Type =" << HTYPE_ECODEVICES ;
+                        query(szQuery1.str());
+                        szQuery2 << "UPDATE Hardware SET Mode1 = 0, Mode2 = 0, Mode3 = 60 WHERE Type =" << HTYPE_TeleinfoMeter ;
+                        query(szQuery2.str());
+                }
+
 	}
 	else if (bNewInstall)
 	{
@@ -2210,7 +2240,11 @@ bool CSQLHelper::OpenDatabase()
 	//Make sure we have some default preferences
 	int nValue=10;
 	std::string sValue;
-	if ((!GetPreferencesVar("LightHistoryDays", nValue)) || (nValue==0))
+	if (!GetPreferencesVar("Title", sValue))
+        {
+                UpdatePreferencesVar("Title", "Domoticz"); 
+        }
+        if ((!GetPreferencesVar("LightHistoryDays", nValue)) || (nValue==0))
 	{
 		UpdatePreferencesVar("LightHistoryDays", 30);
 	}
@@ -2310,6 +2344,16 @@ bool CSQLHelper::OpenDatabase()
 		GetPreferencesVar("CostEnergy", nValue);
 		UpdatePreferencesVar("CostEnergyT2", nValue);
 	}
+	if ((!GetPreferencesVar("CostEnergyR1", nValue)) || (nValue == 0))
+	{
+		UpdatePreferencesVar("CostEnergyR1", 800);
+	}
+	if ((!GetPreferencesVar("CostEnergyR2", nValue)) || (nValue == 0))
+	{
+		GetPreferencesVar("CostEnergyR1", nValue);
+		UpdatePreferencesVar("CostEnergyR2", nValue);
+	}
+
 	if ((!GetPreferencesVar("CostGas", nValue)) || (nValue == 0))
 	{
 		UpdatePreferencesVar("CostGas", 6218);
@@ -2674,14 +2718,28 @@ void CSQLHelper::Do_Work()
 				std::vector<_tTaskItem>::iterator itt=m_background_task_queue.begin();
 				while (itt!=m_background_task_queue.end())
 				{
-					itt->_DelayTime -= static_cast<float>(1./timer_resolution_hz);
-					if (itt->_DelayTime<=(1./timer_resolution_hz/2))
+					if (itt->_DelayTime)
+					{
+						struct timeval tvDiff, DelayTimeEnd;
+						getclock(&DelayTimeEnd);
+						if (timeval_subtract(&tvDiff, &DelayTimeEnd, &itt->_DelayTimeBegin)) {
+							tvDiff.tv_sec = 0;
+							tvDiff.tv_usec = 0;
+						}
+						float diff = ((tvDiff.tv_usec / 1000000.0f) + tvDiff.tv_sec);
+						if ((itt->_DelayTime) <= diff)
+						{
+							_items2do.push_back(*itt);
+							itt=m_background_task_queue.erase(itt);
+						}
+						else
+							++itt;
+					}
+					else
 					{
 						_items2do.push_back(*itt);
 						itt=m_background_task_queue.erase(itt);
 					}
-					else
-						++itt;
 				}
 			}
 		}
@@ -2693,7 +2751,7 @@ void CSQLHelper::Do_Work()
 		std::vector<_tTaskItem>::iterator itt=_items2do.begin();
 		while (itt!=_items2do.end())
 		{
-			if (_log.isTraceEnable())
+			if (_log.isTraceEnabled())
 						_log.Log(LOG_TRACE,"SQLH: Do Task ItemType:%d Cmd:%s Value:%s ",itt->_ItemType ,itt->_command.c_str() ,itt->_sValue.c_str() );
 
 			if (itt->_ItemType == TITEM_SWITCHCMD)
@@ -2985,7 +3043,7 @@ std::vector<std::vector<std::string> > CSQLHelper::query(const std::string &szQu
 		sqlite3_finalize(statement);
 	}
 
-	if (_log.isTraceEnable()) {
+	if (_log.isTraceEnabled()) {
 		_log.Log(LOG_TRACE, "SQLQ query : %s", szQuery.c_str());
 		if (!_log.TestFilter("SQLR"))
 			LogQueryResult(results);
@@ -3693,7 +3751,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 		break;
 	}
 
-	if (_log.isTraceEnable()) _log.Log(LOG_TRACE,"SQLH UpdateValueInt %s HwID:%d  DevID:%s Type:%d  sType:%d nValue:%d sValue:%s ", devname.c_str(),HardwareID, ID, devType, subType, nValue, sValue );
+	if (_log.isTraceEnabled()) _log.Log(LOG_TRACE,"SQLH UpdateValueInt %s HwID:%d  DevID:%s Type:%d  sType:%d nValue:%d sValue:%s ", devname.c_str(),HardwareID, ID, devType, subType, nValue, sValue );
 
 	if (bDeviceUsed)
 		m_mainworker.m_eventsystem.ProcessDevice(HardwareID, ulID, unit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, 0);
@@ -5231,6 +5289,10 @@ void CSQLHelper::AddCalendarUpdateMeter()
 					if (musage!=0)
 						m_notifications.CheckAndHandleNotification(ID, devname, devType, subType, NTYPE_TODAYCOUNTER, musage);
 					break;
+				default:
+					//Unhandled
+					musage = 0;
+					break;
 				}
 			}
 			else
@@ -5402,7 +5464,7 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 			//Check for Notification
 			if (devType==pTypeP1Power)
 			{
-				float musage=(total_real[0]+total_real[1])/EnergyDivider;
+				float musage=(total_real[0]+total_real[2])/EnergyDivider;
 				m_notifications.CheckAndHandleNotification(ID, devname, devType, subType, NTYPE_TODAYENERGY, musage);
 			}
 /*
@@ -6151,7 +6213,7 @@ void CSQLHelper::AddTaskItem(const _tTaskItem &tItem)
 	boost::lock_guard<boost::mutex> l(m_background_task_mutex);
 
 	// Check if an event for the same device is already in queue, and if so, replace it
-	if (_log.isTraceEnable())
+	if (_log.isTraceEnabled())
 	   _log.Log(LOG_TRACE, "SQLH AddTask: Request to add task: idx=%" PRIu64 ", DelayTime=%f, Command='%s', Level=%d, Hue=%d, RelatedEvent='%s'", tItem._idx, tItem._DelayTime, tItem._command.c_str(), tItem._level, tItem._Hue, tItem._relatedEvent.c_str());
 	// Remove any previous task linked to the same device
 
@@ -6163,14 +6225,14 @@ void CSQLHelper::AddTaskItem(const _tTaskItem &tItem)
 		std::vector<_tTaskItem>::iterator itt = m_background_task_queue.begin();
 		while (itt != m_background_task_queue.end())
 		{
-			if (_log.isTraceEnable())
+			if (_log.isTraceEnabled())
 				 _log.Log(LOG_TRACE, "SQLH AddTask: Comparing with item in queue: idx=%llu, DelayTime=%d, Command='%s', Level=%d, Hue=%d, RelatedEvent='%s'", itt->_idx, itt->_DelayTime, itt->_command.c_str(), itt->_level, itt->_Hue, itt->_relatedEvent.c_str());
 			if (itt->_idx == tItem._idx && itt->_ItemType == tItem._ItemType)
 			{
 				float iDelayDiff = tItem._DelayTime - itt->_DelayTime;
 				if (iDelayDiff < (1./timer_resolution_hz/2))
 				{
-					if (_log.isTraceEnable())
+					if (_log.isTraceEnabled())
 						 _log.Log(LOG_TRACE, "SQLH AddTask: => Already present. Cancelling previous task item");
 					itt = m_background_task_queue.erase(itt);
 				}
@@ -6463,12 +6525,19 @@ void CSQLHelper::SetUnitsAndScale()
 
 bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string &OnAction, const std::string &OffAction)
 {
-	if (OnAction.size()<1)
-		return true;
-	if (_log.isTraceEnable()) _log.Log(LOG_TRACE,"SQLH HandleOnOffAction: %d OnAction:%s OffAction:%s",bIsOn, OnAction.c_str(),OffAction.c_str());
+	if (_log.isTraceEnabled())
+	{
+		if (bIsOn)
+			_log.Log(LOG_TRACE, "SQLH HandleOnOffAction: OnAction:%s", OnAction.c_str());
+		else
+			_log.Log(LOG_TRACE, "SQLH HandleOnOffAction: OffAction:%s", OffAction.c_str());
+	}
 
 	if (bIsOn)
 	{
+		if (OnAction.empty())
+			return true;
+
 		if ((OnAction.find("http://") != std::string::npos) || (OnAction.find("https://") != std::string::npos))
 		{
 			AddTaskItem(_tTaskItem::GetHTTPPage(0.2f, OnAction, "SwitchActionOn"));
@@ -6496,32 +6565,35 @@ bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string &OnAction
 			else
 				_log.Log(LOG_ERROR, "SQLHelper: Error script not found '%s'", scriptname.c_str());
 		}
+		return true;
 	}
-	else
+
+	//Off action
+	if (OffAction.empty())
+		return true;
+
+	if ((OffAction.find("http://") != std::string::npos) || (OffAction.find("https://") != std::string::npos))
 	{
-		if ((OffAction.find("http://") != std::string::npos) || (OffAction.find("https://") != std::string::npos))
-		{
-			AddTaskItem(_tTaskItem::GetHTTPPage(0.2f, OffAction, "SwitchActionOff"));
-		}
-		else if (OffAction.find("script://")!=std::string::npos)
-		{
-			//Execute possible script
-			std::string scriptname = OffAction.substr(9);
+		AddTaskItem(_tTaskItem::GetHTTPPage(0.2f, OffAction, "SwitchActionOff"));
+	}
+	else if (OffAction.find("script://") != std::string::npos)
+	{
+		//Execute possible script
+		std::string scriptname = OffAction.substr(9);
 #if !defined WIN32
-			if (scriptname.find("/") != 0)
-				scriptname = szUserDataFolder + "scripts/" + scriptname;
+		if (scriptname.find("/") != 0)
+			scriptname = szUserDataFolder + "scripts/" + scriptname;
 #endif
-			std::string scriptparams="";
-			int pindex=scriptname.find(' ');
-			if (pindex!=std::string::npos)
-			{
-				scriptparams=scriptname.substr(pindex+1);
-				scriptname=scriptname.substr(0,pindex);
-			}
-			if (file_exist(scriptname.c_str()))
-			{
-				AddTaskItem(_tTaskItem::ExecuteScript(0.2f,scriptname,scriptparams));
-			}
+		std::string scriptparams = "";
+		int pindex = scriptname.find(' ');
+		if (pindex != std::string::npos)
+		{
+			scriptparams = scriptname.substr(pindex + 1);
+			scriptname = scriptname.substr(0, pindex);
+		}
+		if (file_exist(scriptname.c_str()))
+		{
+			AddTaskItem(_tTaskItem::ExecuteScript(0.2f, scriptname, scriptparams));
 		}
 	}
 	return true;
@@ -7193,7 +7265,12 @@ bool CSQLHelper::InsertCustomIconFromZip(const std::string &szZip, std::string &
 	outfile.flush();
 	outfile.close();
 
-	clx::basic_unzip<char> in(outputfile);
+	return InsertCustomIconFromZipFile(outputfile, ErrorMessage);
+}
+
+bool CSQLHelper::InsertCustomIconFromZipFile(const std::string &szZipFile, std::string &ErrorMessage)
+{
+	clx::basic_unzip<char> in(szZipFile);
 	if (!in.is_open())
 	{
 		ErrorMessage = "Error opening zip file";
@@ -7211,7 +7288,7 @@ bool CSQLHelper::InsertCustomIconFromZip(const std::string &szZip, std::string &
 			continue;
 
 		int ipos = fpath.find("icons.txt");
-		if ( ipos != std::string::npos)
+		if (ipos != std::string::npos)
 		{
 			std::string rpath;
 			if (ipos > 0)

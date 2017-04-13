@@ -212,6 +212,7 @@ MainWorker::MainWorker()
 	m_ScheduleLastMinuteTime = 0;
 	m_ScheduleLastHourTime = 0;
 	m_ScheduleLastDayTime = 0;
+        m_LastSunriseSet = "";
 
 	m_bHaveDownloadedDomoticzUpdate=false;
 	m_bHaveDownloadedDomoticzUpdateSuccessFull=false;
@@ -517,6 +518,7 @@ bool MainWorker::GetSunSettings()
 	sprintf(szRiseSet,"%02d:%02d:00",sresult.SunSetHour,sresult.SunSetMin);
 	sunset=szRiseSet;
 
+	m_scheduler.SetSunRiseSetTimers(sunrise, sunset);
 	std::string riseset=sunrise.substr(0, sunrise.size()-3)+";"+sunset.substr(0, sunrise.size() - 3); //make a short version
 	if (m_LastSunriseSet != riseset)
 	{
@@ -525,8 +527,10 @@ bool MainWorker::GetSunSettings()
 
 		// ToDo: add here some condition to avoid double events loading on application startup. check if m_LastSunriseSet was empty?
 		m_eventsystem.LoadEvents(); // reloads all events from database to refresh blocky events sunrise/sunset what are already replaced with time
+
+		// FixMe: only reload schedules relative to sunset/sunrise to prevent race conditions
+		// m_scheduler.ReloadSchedules(); // force reload of all schedules to adjust for changed sunrise/sunset values
 	}
-	m_scheduler.SetSunRiseSetTimers(sunrise, sunset);
 	return true;
 }
 
@@ -654,7 +658,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new OTGWSerial(ID,SerialPort, 9600, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
 		break;
 	case HTYPE_TeleinfoMeter:
-		pHardware = new CTeleinfoSerial(ID, SerialPort);
+		pHardware = new CTeleinfoSerial(ID, SerialPort, Mode1, (Mode2 != 0), Mode3);
 		break;
 	case HTYPE_MySensorsUSB:
 		pHardware = new MySensorsSerial(ID, SerialPort, Mode1);
@@ -680,7 +684,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new Meteostick(ID, SerialPort, 115200);
 		break;
 	case HTYPE_EVOHOME_SERIAL:
-		pHardware = new CEvohome(ID,SerialPort);
+		pHardware = new CEvohome(ID,SerialPort,Mode1);
 		break;
 	case HTYPE_RFLINKUSB:
 		pHardware = new CRFLinkSerial(ID, SerialPort);
@@ -727,7 +731,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_MySensorsMQTT:
 		//LAN
-		pHardware = new MySensorsMQTT(ID, Address, Port, Username, Password, Filename);
+		pHardware = new MySensorsMQTT(ID, Name, Address, Port, Username, Password, Filename, Mode1);
 		break;
 	case HTYPE_RFLINKTCP:
 		//LAN
@@ -786,7 +790,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_ECODEVICES:
 		//LAN
-		pHardware = new CEcoDevices(ID, Address, Port);
+		pHardware = new CEcoDevices(ID, Address, Port, Mode1, Mode2);
 		break;
 	case HTYPE_1WIRE:
 		//1-Wire file system
@@ -908,7 +912,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CThermosmart(ID, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
 		break;
 	case HTYPE_Philips_Hue:
-		pHardware = new CPhilipsHue(ID, Address, Port, Username);
+		pHardware = new CPhilipsHue(ID, Address, Port, Username, Mode1);
 		break;
 	case HTYPE_HARMONY_HUB:
 		pHardware = new CHarmonyHub(ID, Address, Port);
@@ -925,7 +929,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 #endif //WITH_TELLDUSCORE
 	case HTYPE_EVOHOME_SCRIPT:
-		pHardware = new CEvohome(ID,"");
+		pHardware = new CEvohome(ID,"",0);
 		break;
 	case HTYPE_PiFace:
 		pHardware = new CPiFace(ID);
@@ -936,7 +940,7 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_RaspberryGPIO:
 		//Raspberry Pi GPIO port access
 #ifdef WITH_GPIO
-		pHardware = new CGpio(ID, Mode1, Mode2);
+		pHardware = new CGpio(ID, Mode1, Mode2, Mode3);
 #endif
 		break;
 	case HTYPE_Comm5TCP:
@@ -1617,7 +1621,7 @@ void MainWorker::SendCommand(const int HwdID, unsigned char Cmd, const char *szM
 		return;
 
 	if (szMessage!=NULL)
-		if (_log.isTraceEnable()) _log.Log(LOG_TRACE,"MAIN SendCommand: %s", szMessage);
+		if (_log.isTraceEnabled()) _log.Log(LOG_TRACE,"MAIN SendCommand: %s", szMessage);
 
 
 	tRBUF cmd;
@@ -1646,7 +1650,7 @@ bool MainWorker::WriteToHardware(const int HwdID, const char *pdata, const unsig
 		return false;
 
 	return m_hardwaredevices[hindex]->WriteToHardware(pdata,length);
-	if (_log.isTraceEnable()) _log.Log(LOG_TRACE,"MAIN WriteToHardware %s",m_hardwaredevices[hindex]->Name.c_str()  );
+	if (_log.isTraceEnabled()) _log.Log(LOG_TRACE,"MAIN WriteToHardware %s",m_hardwaredevices[hindex]->Name.c_str()  );
 
 }
 
@@ -2055,7 +2059,7 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const 
 
 	const_cast<CDomoticzHardwareBase *>(pHardware)->SetHeartbeatReceived();
 
-	char szDate[100];
+	char szDate[100]; szDate[0] = 0;
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
 	struct tm timeinfo;
@@ -2067,15 +2071,18 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const 
 	localtime_r(&tv.tv_sec, &timeinfo);
 #endif
 	// create a time stamp string for the log message
-	snprintf(szDate, sizeof(szDate), "%04d-%02d-%02d %02d:%02d:%02d.%03d ",
-		timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday,
-		timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec, (int)tv.tv_usec / 1000);
+	if (_log.IsLogTimestampsEnabled())
+	{
+		snprintf(szDate, sizeof(szDate), "%04d-%02d-%02d %02d:%02d:%02d.%03d ",
+			timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday,
+			timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec, (int)tv.tv_usec / 1000);
+	}
 
 	uint64_t DeviceRowIdx = -1;
 	std::string DeviceName = "";
 	tcp::server::CTCPClient *pClient2Ignore = NULL;
 
-	if (_log.isTraceEnable()) {
+	if (_log.isTraceEnabled()) {
 		char  mes[sizeof(tRBUF)*2+2];
 		char * ptmes = mes;
 		for (size_t i = 0; i < Len; i++) {
@@ -2366,7 +2373,9 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const 
 			const _tGeneralDevice *pMeter = reinterpret_cast<const _tGeneralDevice*>(pRXCommand);
 			sdevicetype += "/" + std::string(RFX_Type_SubType_Desc(pMeter->type, pMeter->subtype));
 		}
-		sTmp << szDate << " (" << pHardware->Name << ") " << sdevicetype << " (" << DeviceName << ")";
+		if (szDate[0] != 0)
+			sTmp << szDate;
+		sTmp << " (" << pHardware->Name << ") " << sdevicetype << " (" << DeviceName << ")";
 		WriteMessageStart();
 		WriteMessage(sTmp.str().c_str());
 		WriteMessageEnd();
@@ -10692,6 +10701,11 @@ bool MainWorker::GetSensorData(const uint64_t idx, int &nValue, std::string &sVa
 			case MTYPE_COUNTER:
 				sprintf(szTmp, "%llu", total_real);
 				break;
+/*
+			default:
+				strcpy(szTmp, "?");
+				break;
+*/
 			}
 		}
 		nValue = 0;
@@ -10742,7 +10756,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 
 	int HardwareID = atoi(sd[0].c_str());
 
-	if (_log.isTraceEnable()) _log.Log(LOG_TRACE,"MAIN SwitchLightInt : switchcmd:%s level:%d HWid:%d  sd:%s %s %s %s %s %s", switchcmd.c_str(),level,HardwareID ,
+	if (_log.isTraceEnabled()) _log.Log(LOG_TRACE,"MAIN SwitchLightInt : switchcmd:%s level:%d HWid:%d  sd:%s %s %s %s %s %s", switchcmd.c_str(),level,HardwareID ,
 	 sd[0].c_str(), sd[1].c_str(), sd[2].c_str(), sd[3].c_str(), sd[4].c_str(), sd[5].c_str() );
 
 	int hindex=FindDomoticzHardware(HardwareID);
@@ -11719,7 +11733,7 @@ bool MainWorker::SwitchLight(const std::string &idx, const std::string &switchcm
 bool MainWorker::SwitchLight(const uint64_t idx, const std::string &switchcmd, const int level, const int hue, const bool ooc, const int ExtraDelay)
 {
 	//Get Device details
-    if (_log.isTraceEnable()) _log.Log(LOG_TRACE,"MAIN SwitchLight idx:%d cmd:%s lvl:%d " ,(long)idx,switchcmd.c_str(),level );
+    if (_log.isTraceEnabled()) _log.Log(LOG_TRACE,"MAIN SwitchLight idx:%d cmd:%s lvl:%d " ,(long)idx,switchcmd.c_str(),level );
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query(
 		"SELECT HardwareID,DeviceID,Unit,Type,SubType,SwitchType,AddjValue2,nValue,sValue,Name,Options FROM DeviceStatus WHERE (ID == %" PRIu64 ")",
@@ -12575,22 +12589,7 @@ void MainWorker::SetInternalSecStatus()
 
 	if (m_verboselevel >= EVBL_ALL)
 	{
-		char szDate[100];
-		struct timeval tv;
-		gettimeofday(&tv, NULL);
-		struct tm timeinfo;
-#ifdef WIN32
-		//Thanks to the winsock header file
-		time_t tv_sec = tv.tv_sec;
-		localtime_r(&tv_sec, &timeinfo);
-#else
-		localtime_r(&tv.tv_sec, &timeinfo);
-#endif
-		// create a time stamp string for the log message
-		snprintf(szDate, sizeof(szDate), "%04d-%02d-%02d %02d:%02d:%02d.%03d ",
-			timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday,
-			timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec, (int)tv.tv_usec / 1000);
-		_log.Log(LOG_NORM, "%s (System) Domoticz Security Status", szDate);
+		_log.Log(LOG_NORM, "(System) Domoticz Security Status");
 	}
 
 	CDomoticzHardwareBase *pHardware = GetHardwareByType(HTYPE_DomoticzInternal);
@@ -12767,7 +12766,7 @@ void MainWorker::HeartbeatCheck()
 							}
 						}
 
-						_log.Log(LOG_ERROR, "%s hardware (%d) nothing received for more then %d %s!....", sd[0].c_str(), pHardware->m_HwdID, totNum, sDataTimeout.c_str());
+						_log.Log(LOG_ERROR, "%s hardware (%d) nothing received for more than %d %s!....", sd[0].c_str(), pHardware->m_HwdID, totNum, sDataTimeout.c_str());
 						m_devicestorestart.push_back(pHardware->m_HwdID);
 					}
 				}
@@ -12899,6 +12898,22 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 				gDevice.intval2 = nValue;
 				DecodeRXMessage(pHardware, (const unsigned char *)&gDevice, NULL, batterylevel);
 				return true;
+			}
+			else if (subType == sTypeKwh)
+			{
+				std::vector<std::string> strarray;
+				StringSplit(sValue, ";", strarray);
+				if (strarray.size() == 2)
+				{
+					_tGeneralDevice gDevice;
+					gDevice.subtype = subType;
+					gDevice.id = unit;
+					gDevice.intval1 = static_cast<int>(ID);
+					gDevice.floatval1 = static_cast<float>(atof(strarray[0].c_str()));
+					gDevice.floatval2 = static_cast<float>(atof(strarray[1].c_str()));
+					DecodeRXMessage(pHardware, (const unsigned char *)&gDevice, NULL, batterylevel);
+					return true;
+				}
 			}
 			else if (subType == sTypeAlert)
 			{

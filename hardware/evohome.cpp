@@ -72,7 +72,7 @@ const char* CEvohome::GetZoneModeName(uint8_t nZoneMode)
 	return m_szZoneMode[(std::min)(nZoneMode, (uint8_t)6)]; //parentheses around function name apparently avoids macro expansion windef.h macros will conflict here
 }
 
-CEvohome::CEvohome(const int ID, const std::string &szSerialPort) :
+CEvohome::CEvohome(const int ID, const std::string &szSerialPort, const int baudrate) :
 	m_ZoneNames(m_nMaxZones),
 	m_ZoneOverrideLocal(m_nMaxZones)
 {
@@ -91,8 +91,16 @@ CEvohome::CEvohome(const int ID, const std::string &szSerialPort) :
 	m_MaxDeviceID = 0;
 
 	AllSensors = false;
-	
-	m_iBaudRate=115200;
+
+	if(baudrate!=0)
+	{
+	  m_iBaudRate=baudrate;
+	}
+	else
+	{
+	  // allow migration of hardware created before baud rate was configurable
+	  m_iBaudRate=115200;
+	}
 	if(!szSerialPort.empty())
 	{
 		m_szSerialPort=szSerialPort;
@@ -219,8 +227,8 @@ bool CEvohome::OpenSerialDevice()
 	//Try to open the Serial Port
 	try
 	{
+		_log.Log(LOG_STATUS,"evohome: Opening serial port: %s@%d", m_szSerialPort.c_str(), m_iBaudRate);
 		open(m_szSerialPort,m_iBaudRate);
-		_log.Log(LOG_STATUS,"evohome: Using serial port: %s", m_szSerialPort.c_str());
 	}
 	catch (boost::exception & e)
 	{
@@ -808,9 +816,9 @@ bool CEvohomeMsg::DecodePacket(const char * rawmsg)
 void CEvohome::ProcessMsg(const char * rawmsg)
 {
 	CEvohomeMsg msg(rawmsg);
+	Log(rawmsg,msg);
 	if(msg.IsValid())
 	{
-		Log(rawmsg,msg);
 		if(!GetControllerID())//no controller id ..just use the 1st one we find
 		{
 			for(int n=0;n<3;n++)
@@ -1507,7 +1515,11 @@ bool CEvohome::DecodeHeatDemand(CEvohomeMsg &msg)
 	Log(true,LOG_STATUS,"evohome: %s: %s (0x%x) DevNo 0x%02x %d (0x%x)", tag, szSourceType.c_str(), msg.GetID(0), nDevNo, nDemand, msg.command);
 
 	if(msg.command==0x0008)
+	{
+		if (nDevNo < 12)
+			nDevNo++; //Need to add 1 to give correct zone numbers
 		RXRelay(static_cast<uint8_t>(nDevNo),static_cast<uint8_t>(nDemand), msg.GetID(0));
+	}
 	return true;
 }
 
@@ -1837,7 +1849,11 @@ void CEvohome::Log(const char *szMsg, CEvohomeMsg &msg)
 		*m_pEvoLog << szMsg;
 		*m_pEvoLog << " (";
 		for(int i=0;i<msg.payloadsize;i++)
-			*m_pEvoLog << msg.payload[i];
+		{
+			unsigned char c = msg.payload[i];
+			if (c < 0x20 || c > 0x7E) c = '.';
+			*m_pEvoLog << c;
+		}
 		*m_pEvoLog << ")";
 		*m_pEvoLog << std::endl;
 	}

@@ -1179,6 +1179,11 @@
 						<br />
 					</td>
 				</tr>
+                <tr valign="top">
+                    <td align="right" style="width:110px"><label id="lblgpiopollinterval" for="name"><span data-i18n="Pollinterval"></span>Poll interval:</label></td>
+                    <td><input type="text" id="gpiopollinterval" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="0" />&nbsp;<span data-i18n="(Seconds) 0 = Disabled"></span>
+                    </td>
+                </tr>
 			</table>
 		</div>
     <div id="divbaudratemysensors">
@@ -1188,6 +1193,18 @@
           <td><select id="combobaudrate" style="width:210px" class="combobox ui-corner-all">
             <option value="0">115200</option>
             <option value="1">38400 (SenseBender / Arduino Pro Mini 3.3V)</option>
+          </select></td>
+      </tr>
+      </table>
+    </div>
+    <div id="divbaudrateevohome">
+      <table class="display" id="hardwareparamsbaudrateevohome" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+          <td align="right" style="width:110px"><label id="lblbaudrateevohome" for="name"><span data-i18n="Baudrate">Baudrate</span>: </label></td>
+          <td><select id="combobaudrateevohome" style="width:210px" class="combobox ui-corner-all">
+            <option value="115200">115200 (for genuine Honeywell HGI80/HGS80)</option>
+            <option value="76800">76800</option>
+            <option value="38400">38400</option>
           </select></td>
       </tr>
       </table>
@@ -1205,6 +1222,32 @@
 				</tr>
 			</table>
 		</div>
+		<div id="divbaudrateteleinfo">
+                        <table class="display" id="hardwareparamsbaudrateteleinfo" border="0" cellpadding="0" cellspacing="20">
+                                <tr>
+                                        <td align="right" style="width:110px"><label id="lblbaudrateteleinfo" for="name"><span data-i18n="Baudrate">Baudrate</span>: </label></td>
+                                        <td>
+                                                <select id="combobaudrateteleinfo" style="width:210px" class="combobox ui-corner-all">
+                                                <option value="0">1200</option>
+                                                <option value="1">9600</option>
+                                                </select>
+                                        </td>
+                                </tr>
+                        </table>
+                </div>
+               <div id="divmodelecodevices">
+                        <table class="display" id="hardwareparamsmodelecodevices" border="0" cellpadding="0" cellspacing="20">
+                                <tr>
+                                        <td align="right" style="width:110px"><label id="lblmodelecodevices" for="name"><span data-i18n="Model">Model</span>: </label></td>
+                                        <td>
+                                                <select id="combomodelecodevices" style="width:210px" class="combobox ui-corner-all">
+                                                <option value="0">EcoDevices</option>
+                                                <option value="1">EcoDevices RT2</option>
+                                                </select>
+                                        </td>
+                                </tr>
+                        </table>
+                </div>
 		<div id="divremote">
 			<br>
 			<table class="display" id="hardwareparamsremote" border="0" cellpadding="0" cellspacing="20">
@@ -1377,6 +1420,10 @@
 		<div id="divphilipshue">
 			<br>
 			<table class="display" id="hardwareparamsphilipshue" border="0" cellpadding="0" cellspacing="20">
+                <tr>
+                    <td align="right" style="width:110px"><label for="pollinterval"><span data-i18n="Poll Interval"></span>:</label></td>
+                    <td><input type="text" id="pollinterval" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;(<span data-i18n="Seconds">Seconds</span>)</td>
+                </tr>
 				<tr>
 					<td align="right" style="width:110px"><label id="lblusername" for="name"><span data-i18n="Username"></span>:</label></td>
 					<td>
@@ -1454,7 +1501,21 @@
 			</table>
 		</div>
 		<div id="divmysensorsmqtt">
+			<br>
 			<table class="display" id="hardwareparamsmysensorsmqtt" border="0" cellpadding="0" cellspacing="20">
+				<tr valign="top">
+					<td align="right" style="width:110px"><label for="combotopicselect"><span data-i18n="Topic Prefix">Topic Prefix</span>:</label></td>
+					<td><select id="combotopicselect" style="width:200px" class="combobox ui-corner-all">
+						<option value="0">MyMQTT (default)</option>
+						<option value="1">Gateway Node Name</option>
+						</select>
+					<br />
+					<span>Select the Topic(s) where Domoticz publish/receive messages.<br />
+						<b>MyMQTT (default)</b> - domoticz/in/MyMQTT, domoticz/out/MyMQTT <br />
+						<b>Gateway Node Name</b> - domoticz/in/GatewayNodeName, domoticz/out/GatewayNodeName (GatewayNodeName is specified in the Name field (above))<br />
+						<br />
+					</td>
+				</tr>
 				<tr>
 					<td align="right" style="width:110px"><label id="lbfilename" for="filename"><span data-i18n="CA Filename">CA Filename</span>:</label></td>
 					<td><input type="text" id="filename" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>

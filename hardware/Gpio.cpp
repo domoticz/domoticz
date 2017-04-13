@@ -64,6 +64,7 @@ bool m_bIsInitGPIOPins=false;
 bool interruptHigh[MAX_GPIO+1]={ false };
 uint32_t m_debounce;
 uint32_t m_period;
+uint32_t m_pollinterval;
 
 // List of GPIO pin numbers, ordered as listed
 std::vector<CGpioPin> CGpio::pins;
@@ -80,12 +81,13 @@ struct timeval tvBegin[MAX_GPIO+1], tvEnd[MAX_GPIO+1], tvDiff[MAX_GPIO+1];
 /*
  * Direct GPIO implementation, inspired by other hardware implementations such as PiFace and EnOcean
  */
-CGpio::CGpio(const int ID, const int debounce, const int period)
+CGpio::CGpio(const int ID, const int debounce, const int period, const int pollinterval)
 {
 	m_stoprequested=false;
 	m_HwdID=ID;
 	m_debounce=debounce;
 	m_period=period;
+	m_pollinterval = pollinterval;
 
 	//Prepare a generic packet info for LIGHTING1 packet, so we do not have to do it for every packet
 	IOPinStatusPacket.LIGHTING1.packetlength = sizeof(IOPinStatusPacket.LIGHTING1) -1;
@@ -104,43 +106,6 @@ CGpio::CGpio(const int ID, const int debounce, const int period)
 
 CGpio::~CGpio(void)
 {
-}
-
- /*
-  * interrupt timer functions:
-	*********************************************************************************
-  */
-int getclock(struct timeval *tv) {
-#ifdef CLOCK_MONOTONIC
-	struct timespec ts;
-		if (!clock_gettime(CLOCK_MONOTONIC, &ts)) {
-			tv->tv_sec = ts.tv_sec;
-			tv->tv_usec = ts.tv_nsec / 1000;
-			return 0;
-		}
-#endif
-	return gettimeofday(tv, NULL);
-}
-int timeval_subtract (struct timeval *result, struct timeval *x, struct timeval *y) {
-	/* Perform the carry for the later subtraction by updating y. */
-  if (x->tv_usec < y->tv_usec) {
-		int nsec = (y->tv_usec - x->tv_usec) / 1000000 + 1;
-    y->tv_usec -= 1000000 * nsec;
-    y->tv_sec += nsec;
-  }
-  if (x->tv_usec - y->tv_usec > 1000000) {
-    int nsec = (x->tv_usec - y->tv_usec) / 1000000;
-    y->tv_usec += 1000000 * nsec;
-    y->tv_sec -= nsec;
-  }
-
-  /* Compute the time remaining to wait.
-     tv_usec is certainly positive. */
-  result->tv_sec = x->tv_sec - y->tv_sec;
-  result->tv_usec = x->tv_usec - y->tv_usec;
-
-  /* Return 1 if result is negative. */
-  return x->tv_sec < y->tv_sec;
 }
 
 /*
@@ -274,7 +239,7 @@ bool CGpio::StartHardware()
 	}
 
 	//  Read all exported GPIO ports and set the device status accordingly.
-	CopyDeviceStates(false);
+	UpdateDeviceStates(false);
 
 	//  No need for delayed startup and force update when no masters are able to connect.
 	std::vector<std::vector<std::string> > result;
@@ -288,11 +253,17 @@ bool CGpio::StartHardware()
 		//  Start thread to do a delayed setup of initial state
 		m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CGpio::DelayedStartup, this)));
 	}
-	 _log.Log(LOG_NORM, "GPIO: WiringPi is now initialized");
+
+	if (m_pollinterval > 0)
+	{
+		m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CGpio::Poller, this)));
+	}
+
+	_log.Log(LOG_NORM, "GPIO: WiringPi is now initialized");
 #endif
 	sOnConnected(this);
 
-	return (m_thread!=NULL);
+	return (m_thread != NULL);
 }
 
 
@@ -386,16 +357,19 @@ void CGpio::Do_Work()
 	boost::posix_time::milliseconds duration(12000);
 	std::vector<int> triggers;
 
-	_log.Log(LOG_NORM,"GPIO: Worker started...");
-	_log.Log(LOG_NORM,"GPIO: Debounce: %dms - Period: %dms", m_debounce, m_period);
+	_log.Log(LOG_NORM,"GPIO: Worker started, Debounce:%dms Period:%dms Poll-interval:%dsec", m_debounce, m_period, m_pollinterval);
 
 	while (!m_stoprequested) {
-		//_log.Log(LOG_NORM, "GPIO: Updating heartbeat");
+
+		/* housekeeping */
 		mytime(&m_LastHeartbeat);
 
 #ifndef WIN32
+
+		/* Interrupt handling */
 		boost::mutex::scoped_lock lock(interruptQueueMutex);
-		if (interruptCondition.timed_wait(lock, duration)) {
+		if (interruptCondition.timed_wait(lock, duration))
+		{
 			while (!gpioInterruptQueue.empty()) {
 				interruptNumber = gpioInterruptQueue.front();
 				triggers.push_back(interruptNumber);
@@ -410,15 +384,42 @@ void CGpio::Do_Work()
 		}
 
     	while (!triggers.empty()) {
-		interruptNumber = triggers.front();
-		triggers.erase(triggers.begin());
-		CGpio::ProcessInterrupt(interruptNumber);
+			interruptNumber = triggers.front();
+			triggers.erase(triggers.begin());
+			CGpio::ProcessInterrupt(interruptNumber);
 		}
+
 #else
 		sleep_milliseconds(100);
 #endif
 	}
 	_log.Log(LOG_NORM,"GPIO: Worker stopped...");
+}
+
+
+void CGpio::Poller()
+{
+	//
+	//	This code has been added for robustness like for example when gpio is
+	//	used in alarm systems. In case a state change event (interrupt) is
+	//	missed this code will make up for it.
+	//
+	int sec_counter = 0;
+
+	_log.Log(LOG_STATUS, "GPIO: %d-second poller started", m_pollinterval);
+
+	while (!m_stoprequested)
+	{
+		sleep_seconds(1);
+		sec_counter++;
+
+		if ((sec_counter % m_pollinterval == 0) && (!m_stoprequested))
+		{
+			UpdateDeviceStates(false);
+		}
+	}
+
+	_log.Log(LOG_STATUS, "GPIO: %d-second poller stopped", m_pollinterval);
 }
 
 /*
@@ -619,62 +620,56 @@ void CGpio::DelayedStartup()
 	//
 	sleep_milliseconds(30000);
 	_log.Log(LOG_NORM, "GPIO: Optional connected Master Domoticz now updates its status");
-	CopyDeviceStates(true);
+	UpdateDeviceStates(true);
 
 	// _log.Log(LOG_NORM, "GPIO: DelayedStartup - done");
 }
 
-void CGpio::CopyDeviceStates(bool forceUpdate)
+void CGpio::UpdateDeviceStates(bool forceUpdate)
 {
-        char buf[256];
-        int gpioId;
-        FILE *cmd = NULL;
+    char buf[256];
+    int gpioId;
+    FILE *cmd = NULL;
 
-        _log.Log(LOG_NORM, "GPIO: Copy GPIO states to devices");
+    cmd = popen("gpio exports", "r");
 
-        cmd = popen("gpio exports", "r");
+    while (fgets(buf, sizeof(buf), cmd) != 0)
+    {
+		//
+        // Decode GPIO pin number from the output formatted as follows:
+        // GPIO Pins exported: "18: in 27 both"
+        //
+        std::string exportLine(buf);
+        std::vector<std::string> sresults;
+        StringSplit(exportLine, ":", sresults);
 
-        while (fgets(buf, sizeof(buf), cmd) != 0)
+        if (sresults.empty())
         {
-                // Decode GPIO pin number from the output formatted as follows:
-                //
-                // GPIO Pins exported:
-                //   18: in 27 both
-                //
-                std::string exportLine(buf);
-                std::vector<std::string> sresults;
-                StringSplit(exportLine, ":", sresults);
-
-                if (sresults.empty())
-                {
-                        continue;
-                }
-
-                if (sresults[0] == "GPIO Pins exported")
-                {
-                        continue;
-                }
-
-                if (sresults.size() >= 2)
-                {
-                        gpioId = atoi(sresults[0].c_str());
-
-                        if ((gpioId >= 0) && (gpioId <= MAX_GPIO))
-                        {
-                                SetupInitialState(gpioId, forceUpdate);
-                                //  _log.Log(LOG_NORM, "GPIO: CopyDeviceStates - %s", buf);
-                        }
-                        else
-                        {
-                                _log.Log(LOG_NORM, "GPIO: CopyDeviceStates - Ignoring unsupported pin '%s'", buf);
-                        }
-                }
+			continue;
         }
 
-        // _log.Log(LOG_NORM, "GPIO: CopyDeviceStates - done");
+        if (sresults[0] == "GPIO Pins exported")
+        {
+			continue;
+        }
+
+        if (sresults.size() >= 2)
+        {
+			gpioId = atoi(sresults[0].c_str());
+
+			if ((gpioId >= 0) && (gpioId <= MAX_GPIO))
+			{
+				UpdateState(gpioId, forceUpdate);
+			}
+			else
+			{
+				_log.Log(LOG_NORM, "GPIO: UpdateDeviceStates - Ignoring unsupported pin '%s'", buf);
+			}
+        }
+    }
 }
 
-void CGpio::SetupInitialState(int gpioId, bool forceUpdate)
+void CGpio::UpdateState(int gpioId, bool forceUpdate)
 {
 	bool updateDatabase = false;
 	int state = digitalRead(gpioId);
@@ -684,16 +679,13 @@ void CGpio::SetupInitialState(int gpioId, bool forceUpdate)
 
 	if ((!result.empty()) && (result.size()>0))
 	{
-		if ((!result.empty()) && (result.size()>0))
+		std::vector<std::string> sd=result[0];
+
+		int dbaseState = atoi(sd[1].c_str());
+
+		if ((dbaseState != state) || (forceUpdate))
 		{
-			std::vector<std::string> sd=result[0];
-
-			int dbaseState = atoi(sd[1].c_str());
-
-			if ((dbaseState != state) || (forceUpdate))
-			{
-				updateDatabase = true;
-			}
+			updateDatabase = true;
 		}
 	}
 
