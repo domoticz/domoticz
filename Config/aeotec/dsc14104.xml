@@ -30,7 +30,7 @@ https://aeotec.freshdesk.com/helpdesk/attachments/6009584516
 	<Value type="list" index="8" genre="config" label="Set count of External Button/Switch" units="" min="0" max="1" size="1" value="0">
       <Help>
 	  Set count of External Button/Switch
-	  Note: Single External Button must connect to ST and COMport.
+	  Note: Single External Button must connect to ST and COM port.
 	  </Help>
       <Item label="0=Three External Button/Switch (Default)" value="0"/>
       <Item label="Single External Button" value="1"/>

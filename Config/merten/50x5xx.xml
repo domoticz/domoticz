@@ -5,7 +5,7 @@
   <CommandClass id="112">
 
     <Value type="byte" genre="config" instance="1" index="1" label="Switching additional CONNECT radio receivers" value="1">
-      <Help>To configure if other radio recivers from Merten should be switched as well.</Help>
+      <Help>To configure if other radio receivers from Merten should be switched as well.</Help>
     </Value>
 
     <Value type="byte" genre="config" instance="1" index="176" label="Changeover delay (motor protection)" value="100">
