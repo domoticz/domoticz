@@ -88,6 +88,15 @@ void CEcoDevices::Init()
 {
 	m_stoprequested = false;
 	m_bFirstRun = true;
+
+	// Is the device we poll password protected?
+	if ((m_username.size() > 0) && (m_password.size() > 0))
+        	m_ssURL << "http://" << m_username << ":" << m_password << "@";
+        else
+                m_ssURL <<"http://";
+
+        m_ssURL << m_szIPAddress << ":" << m_usIPPort;
+
 }
 
 
@@ -204,12 +213,7 @@ void CEcoDevices::GetMeterDetails()
 	int min_major = MAJOR, min_minor = MINOR, min_release = RELEASE;
 
 	// Check EcoDevices firmware version and process pulse counters
-	// Are there a login and password configured?
-	if ((m_username.size() > 0) && (m_password.size() > 0))
-		sstr << "http://" << m_username << ":" << m_password << "@";
-	else
-		sstr <<"http://";
-	sstr << m_szIPAddress << ":" << m_usIPPort << "/status.xml";
+	sstr << m_ssURL.str() << "/status.xml";
 
 	
 	if (m_status.hostname.empty()) m_status.hostname = m_szIPAddress;
@@ -300,14 +304,7 @@ void CEcoDevices::GetMeterDetails()
 	if (strcmp(m_status.t1_ptec.c_str(), "----") != 0)
 	{
 		sstr.str("");
-
-		// Are there a login and password configured?
-		if ((m_username.size() > 0) && (m_password.size() > 0))
-			sstr << "http://" << m_username << ":" << m_password << "@";
-		else
-			sstr <<"http://";
-
-		sstr << m_szIPAddress << ":" << m_usIPPort << "/protect/settings/teleinfo1.xml";
+		sstr << m_ssURL.str() << "/protect/settings/teleinfo1.xml";
 
 		_log.Log(LOG_NORM, "(%s) Fetching Teleinfo 1 data", Name.c_str());
 		if (!HTTPClient::GET(sstr.str(), ExtraHeaders, sResult))
@@ -332,14 +329,7 @@ void CEcoDevices::GetMeterDetails()
 	if (strcmp(m_status.t2_ptec.c_str(), "----") != 0)
 	{
 		sstr.str("");
-
-		// Are there a login and password configured?
-		if ((m_username.size() > 0) && (m_password.size() > 0))
-			sstr << "http://" << m_username << ":" << m_password << "@";
-		else
-			sstr <<"http://";
-
-		sstr << m_szIPAddress << ":" << m_usIPPort << "/protect/settings/teleinfo1.xml";
+		sstr << m_ssURL.str() << "/protect/settings/teleinfo2.xml";
 		
 		_log.Log(LOG_NORM, "(%s) Fetching Teleinfo 2 data", Name.c_str());
 		if (!HTTPClient::GET(sstr.str(), ExtraHeaders, sResult))
@@ -382,13 +372,7 @@ void CEcoDevices::GetMeterRT2Details()
 	int min_major = MAJOR_RT2, min_minor = MINOR_RT2, min_release = RELEASE_RT2;
 
 	// Check EcoDevices firmware version and hostname from JSON API
-
-	// Are there a login and password configured?
-	if ((m_username.size() > 0) && (m_password.size() > 0))
-		sstr << "http://" << m_username << ":" << m_password << "@";
-	else
-		sstr <<"http://";
-	sstr << m_szIPAddress << ":" << m_usIPPort << "/admin/system.json";
+	sstr << m_ssURL.str() << "/admin/system.json";
 
 	//Get Data
 	std::string sURL = sstr.str();
@@ -424,13 +408,7 @@ void CEcoDevices::GetMeterRT2Details()
 
 	// Get Teleinfo meter data and process pulse counters
 	sstr.str("");
-
-	// Are there a login and password configured?
-	if ((m_username.size() > 0) && (m_password.size() > 0))
-		sstr << "http://" << m_username << ":" << m_password << "@";
-	else
-		sstr <<"http://";
-	sstr << m_szIPAddress << ":" << m_usIPPort << "/admin/status.xml";
+	sstr << m_ssURL.str() << "/admin/status.xml";
 
 
 	if (HTTPClient::GET(sstr.str(), ExtraHeaders, sResult))

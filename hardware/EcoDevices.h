@@ -16,6 +16,7 @@ class CEcoDevices : public CTeleinfoBase
 		void Logout();
 
 		std::string m_szIPAddress, m_username, m_password;
+		std::stringstream m_ssURL;
 		unsigned short m_usIPPort;
 		bool m_stoprequested;
 		bool m_bFirstRun;
