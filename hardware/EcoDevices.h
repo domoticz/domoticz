@@ -8,7 +8,7 @@
 class CEcoDevices : public CTeleinfoBase
 {
 	public:
-		CEcoDevices(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password, const unsigned int model, const int ratelimit);
+		CEcoDevices(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password, const int  datatimeout, const int model, const int ratelimit);
 		~CEcoDevices();
 		bool WriteToHardware(const char *pdata, const unsigned char length);
 	private:
@@ -19,7 +19,7 @@ class CEcoDevices : public CTeleinfoBase
 		unsigned short m_usIPPort;
 		bool m_stoprequested;
                 bool m_bFirstRun;	
-		int m_iModel;
+		int m_iModel, m_iRateLimit, m_iDataTimeout;
 		boost::shared_ptr<boost::thread> m_thread;
 
 		typedef struct _tStatus

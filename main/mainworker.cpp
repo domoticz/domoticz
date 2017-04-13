@@ -789,7 +789,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_ECODEVICES:
 		//LAN
-		pHardware = new CEcoDevices(ID, Address, Port, Username, Password, Mode1, Mode2);
+		pHardware = new CEcoDevices(ID, Address, Port, Username, Password, DataTimeout, Mode1, Mode2);
 		break;
 	case HTYPE_1WIRE:
 		//1-Wire file system

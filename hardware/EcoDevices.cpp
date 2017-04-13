@@ -52,7 +52,7 @@ Version history
 #define MINOR_RT2 0
 #define RELEASE_RT2 29
 
-CEcoDevices::CEcoDevices(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password, const unsigned int model, const int ratelimit)
+CEcoDevices::CEcoDevices(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password, const int datatimeout, const int model, const int ratelimit)
 {
 	m_HwdID = ID;
 	m_szIPAddress = IPAddress;
@@ -62,6 +62,7 @@ CEcoDevices::CEcoDevices(const int ID, const std::string &IPAddress, const unsig
 	m_stoprequested = false;
 	m_iModel = model;
         m_iRateLimit = ratelimit;
+	m_iDataTimeout = datatimeout;
 
 	if (m_iRateLimit < 2) m_iRateLimit = 2; // system seems unstable if going too fast
 
@@ -186,9 +187,9 @@ void CEcoDevices::GetMeterDetails()
 	// From http://xx.xx.xx.xx/protect/settings/teleinfoX.xml we get a complete feed of Teleinfo data
 
 	std::vector<std::string> ExtraHeaders;
-	std::string       sResult, sub, message, sAccessToken;
+	std::string       sResult, sub, message;
 	std::string::size_type len, pos;
-	std::stringstream sstr, sLogin;
+	std::stringstream sstr;
 	TiXmlDocument XMLdoc("Teleinfo.xml");
 	time_t atime = mytime(NULL);
 	int   major, minor, release;
