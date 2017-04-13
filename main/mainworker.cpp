@@ -528,7 +528,8 @@ bool MainWorker::GetSunSettings()
 		// ToDo: add here some condition to avoid double events loading on application startup. check if m_LastSunriseSet was empty?
 		m_eventsystem.LoadEvents(); // reloads all events from database to refresh blocky events sunrise/sunset what are already replaced with time
 
-                m_scheduler.ReloadSchedules(); // force reload of all schedules to adjust for changed sunrise/sunset values
+		// FixMe: only reload schedules relative to sunset/sunrise to prevent race conditions
+		// m_scheduler.ReloadSchedules(); // force reload of all schedules to adjust for changed sunrise/sunset values
 	}
 	return true;
 }
