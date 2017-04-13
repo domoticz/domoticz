@@ -90,6 +90,7 @@ void CEcoDevices::Init()
 	m_bFirstRun = true;
 
 	// Is the device we poll password protected?
+	m_ssURL.str("");
 	if ((m_username.size() > 0) && (m_password.size() > 0))
         	m_ssURL << "http://" << m_username << ":" << m_password << "@";
         else
@@ -223,7 +224,7 @@ void CEcoDevices::GetMeterDetails()
 	}
 	else
 	{
-		_log.Log(LOG_ERROR, "(%s) Error getting status.xml!", Name.c_str());
+		_log.Log(LOG_ERROR, "(%s) Error getting data from: %s", Name.c_str(), sstr.str().c_str());
 		return;
 	}
 
@@ -378,7 +379,7 @@ void CEcoDevices::GetMeterRT2Details()
 	std::string sURL = sstr.str();
 	if (!HTTPClient::GET(sURL, ExtraHeaders, sResult))
 	{
-		_log.Log(LOG_ERROR, "(%s) Error getting system information from /admin/system.json", Name.c_str());
+		_log.Log(LOG_ERROR, "(%s) Error getting system information from: %s", Name.c_str(), sstr.str().c_str());
 		return;
 	}
 
