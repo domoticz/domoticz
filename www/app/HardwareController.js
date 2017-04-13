@@ -557,7 +557,12 @@ define(['app'], function (app) {
                     ShowNotify($.t('Please enter a username!'), 2500, true);
                     return;
                 }
-
+                var pollinterval = $("#hardwarecontent #hardwareparamsphilipshue #pollinterval").val();
+                if (pollinterval == "") {
+                    ShowNotify($.t('Please enter poll interval!'), 2500, true);
+                    return;
+                }
+                Mode1 = pollinterval;
                 $.ajax({
                      url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
                         "&address=" + address +
@@ -5204,6 +5209,7 @@ define(['app'], function (app) {
                             $("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
                             $("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
                             $("#hardwarecontent #hardwareparamsphilipshue #username").val(data["Username"]);
+                            $("#hardwarecontent #hardwareparamsphilipshue #pollinterval").val(data["Mode1"]);
                         }
                         else if (data["Type"].indexOf("Winddelen") >= 0) {
                             $("#hardwarecontent #hardwareparamswinddelen #combomillselect").val(data["Mode1"]);
@@ -5547,7 +5553,6 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divphilipshue").show();
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
-                $("#hardwarecontent #hardwareparamsremote #tcpport").val(80);
             }
             else if (text.indexOf("Yeelight") >= 0) {
                 $("#hardwarecontent #divserial").hide();
