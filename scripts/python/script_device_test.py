@@ -1,4 +1,4 @@
-import domoticz
+import Domoticz
 
 #import reloader
 #reloader.auto_reload(__name__)
@@ -13,7 +13,7 @@ import domoticz
 
 #DomoticzEvents.log(0, "Test")
 
-domoticz.log("Testing")
+Domoticz.Log(0, "Testing")
 
-if domoticz.changed_device.name == "Test":
-    domoticz.command(name="Test_Target", action="Off", file=__file__)
+#if domoticz.changed_device.name == "Test":
+#    domoticz.command(name="Test_Target", action="Off", file=__file__)

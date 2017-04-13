@@ -14,7 +14,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#ifdef ENABLE_PYTHON
+#ifdef ENABLE_PYTHON_DECAP
 extern "C" {
 #include <Python.h>
 }
@@ -27,9 +27,9 @@ extern std::string szUserDataFolder;
 // this should be filled in by the preprocessor
 extern const char * Python_exe;
 
-#ifdef ENABLE_PYTHON
+#ifdef ENABLE_PYTHON_DECAP
 static struct PyModuleDef eventModuledef;
-#endif //ENABLE_PYTHON
+#endif //ENABLE_PYTHON_DECAP
 
 CGooglePubSubPush::CGooglePubSubPush()
 {
@@ -66,7 +66,7 @@ void CGooglePubSubPush::OnDeviceReceived(const int m_HwdID, const uint64_t Devic
 }
 
 
-#ifdef ENABLE_PYTHON
+#ifdef ENABLE_PYTHON_DECAP
 static int numargs = 0;
 
 /* Return the number of arguments of the application command line */
@@ -229,7 +229,7 @@ void CGooglePubSubPush::DoGooglePubSubPush()
 			if (sendValue != "") {
 				std::stringstream python_DirT;
 
-#ifdef ENABLE_PYTHON
+#ifdef ENABLE_PYTHON_DECAP
 #ifdef WIN32
 				python_DirT << szUserDataFolder << "scripts\\python\\";
 				std::string filename = szUserDataFolder + "scripts\\python\\" + "googlepubsub.py";
@@ -245,7 +245,7 @@ void CGooglePubSubPush::DoGooglePubSubPush()
 				std::string python_Dir = python_DirT.str();
 				if (!Py_IsInitialized()) {
 					Py_SetProgramName(Py_GetProgramFullPath());
-					Py_Initialize();
+					ialize();
                     PyModule_Create(&eventModuledef);
 
 					// TODO: may have a small memleak, remove references in destructor

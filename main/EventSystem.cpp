@@ -35,7 +35,7 @@ extern "C" {
 #endif
 }
 
-#ifdef ENABLE_PYTHON
+#ifdef ENABLE_PYTHON_DECAP
 #include <boost/python.hpp>
 using namespace boost::python;
 #endif
@@ -2193,6 +2193,7 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 
 static int numargs=0;
 
+/*
 // Python module methods
 static PyObject*
 PyDomoticz_log(PyObject *self, PyObject *args)
@@ -2207,6 +2208,7 @@ PyDomoticz_log(PyObject *self, PyObject *args)
         _log.Log((_eLogLevel)type, msg);
         Py_RETURN_NONE;
 }
+
 
 static PyMethodDef DomoticzMethods[] = {
     {"log", PyDomoticz_log, METH_VARARGS,  "log to Domoticz."},
@@ -2232,8 +2234,10 @@ PyMODINIT_FUNC PyInit_DomoticzEvents(void)
     return PyModule_Create(&eventModuledef);
 }
 
+*/
 // from https://gist.github.com/octavifs/5362297
 
+/*
 template <class K, class V>
 boost::python::dict toPythonDict(std::map<K, V> map) {
     typename std::map<K, V>::iterator iter;
@@ -2243,7 +2247,7 @@ boost::python::dict toPythonDict(std::map<K, V> map) {
 	}
 	return dictionary;
 }
-
+*/
 
 // this should be filled in by the preprocessor
 const char * Python_exe = "PYTHON_EXE";
@@ -2280,6 +2284,7 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 			;
 	}*/
 
+    /*
     if(!Py_IsInitialized()) {
         _log.Log(LOG_STATUS, "EventSystem - Python: Starting Python");
         Py_SetProgramName(Py_GetProgramFullPath());
@@ -2288,7 +2293,8 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
         Py_Initialize();
         PythonInitDone = false;
     }
-
+    */
+    /*
     if (!PythonInitDone) {
         _log.Log(LOG_STATUS, "EventSystem - Python: Initalizing Python");
         /* PyObject* sys = PyImport_ImportModule("sys");
@@ -2299,19 +2305,25 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 		class_<CEventSystem, boost::noncopyable>("Domoticz", no_init)
 			.def("command", ScheduleEventMethod)
 			;
-        */
+        */ /*
         PythonInitDone = true;
+    } */
+
+
+   if (Py_IsInitialized()) {
+        FILE* PythonScriptFile = _Py_fopen(filename.c_str(),"r+");
+
+        // FILE* PythonScriptFile = fopen(filename.c_str(), "r");
+        PyRun_SimpleFile(PythonScriptFile, filename.c_str());
+
+    	if (PythonScriptFile!=NULL)
+    		fclose(PythonScriptFile);
+    } else {
+        _log.Log(LOG_ERROR, "EventSystem: Python not initalized");
     }
-
-    FILE* PythonScriptFile = _Py_fopen(filename.c_str(),"r+");
-
-    // FILE* PythonScriptFile = fopen(filename.c_str(), "r");
-    PyRun_SimpleFile(PythonScriptFile, filename.c_str());
-
-	if (PythonScriptFile!=NULL)
-		fclose(PythonScriptFile);
 	//Py_Finalize();
 }
+
 #endif // ENABLE_PYTHON
 
 void CEventSystem::exportDeviceStatesToLua(lua_State *lua_state)
