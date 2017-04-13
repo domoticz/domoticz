@@ -19,7 +19,7 @@ class CEcoDevices : public CTeleinfoBase
 		unsigned short m_usIPPort;
 		bool m_stoprequested;
 		bool m_bFirstRun;
-		int m_iModel, m_iRateLimit, m_iDataTimeout;
+		int m_iModel;
 		boost::shared_ptr<boost::thread> m_thread;
 
 		typedef struct _tStatus

@@ -34,8 +34,8 @@ class CTeleinfoBase : public CDomoticzHardwareBase
 		P1Power m_p1power, m_p2power, m_p3power;
 
 	protected:
-		int m_iRateLimit = 60;	 // defaults to 1mn
-		int m_iDataTimeout = 300;// defaults to 5mn
+		int m_iRateLimit;
+		int m_iDataTimeout;
 
 		typedef struct _tTeleinfo
 		{

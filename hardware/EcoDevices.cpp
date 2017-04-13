@@ -67,7 +67,7 @@ CEcoDevices::CEcoDevices(const int ID, const std::string &IPAddress, const unsig
 
 	// Make sure minimum update rate fits with the timeout configured in hardware tab. Defaults to 5mn if set to no timeout
 	if (datatimeout < 20)
-		m_DataTimeout = 300;
+		m_iDataTimeout = 300;
 	else
 		m_iDataTimeout = datatimeout;
 
