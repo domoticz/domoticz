@@ -18,7 +18,7 @@ class CEcoDevices : public CTeleinfoBase
 		std::string m_szIPAddress, m_username, m_password;
 		unsigned short m_usIPPort;
 		bool m_stoprequested;
-                bool m_bFirstRun;	
+		bool m_bFirstRun;
 		int m_iModel, m_iRateLimit, m_iDataTimeout;
 		boost::shared_ptr<boost::thread> m_thread;
 
@@ -39,7 +39,7 @@ class CEcoDevices : public CTeleinfoBase
 			uint32_t    pindex2; // previous index counter 2
 			time_t      time1;	 // time counter 1 sent
 			time_t      time2;	 // time counter 2 sent
-			uint32_t    voltage;	// voltage, for model RT2 only 
+			uint32_t    voltage; // voltage, for model RT2 only
 			_tStatus()
 			{
 				len = sizeof(_tStatus) - 1;

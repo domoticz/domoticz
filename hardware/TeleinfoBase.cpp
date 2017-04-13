@@ -13,7 +13,8 @@ History :
 1.0 2017-03-15 : Release candidate
 1.1 2017-03-18 : Updated to benefit from new messages in Alert sensors rather than simple text sensors
 1.2 2017-03-21 : Various bug fix and reverting to using P1SmartMeter as users requested
-1.2 2017-04-01 : Added RateLimit
+1.3 2017-04-01 : Added RateLimit
+1.4 2017-04-01 : Added DataTimeout
 */
 
 #include "stdafx.h"
@@ -25,9 +26,6 @@ History :
 #ifdef _DEBUG
 #define DEBUG_TeleinfoBase
 #endif
-
-// Update are at least every 5 minutes
-#define MAXIMUM_UPDATE_INTERVAL 300
 
 CTeleinfoBase::CTeleinfoBase()
 {
@@ -140,25 +138,25 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 		rate_alert = 3;
 	}
 
-	// Process only if maximum time between updates has been reached or power consumption changed 
-        // If it did not, then alerts and intensity have not changed either
+	// Process only if maximum time between updates has been reached or power consumption changed
+	// If it did not, then alerts and intensity have not changed either
 	#ifdef DEBUG_TeleinfoBase
 	_log.Log(LOG_NORM,"(%s) TeleinfoBase called. Power changed: %s, last update %.f sec", Name.c_str(), (teleinfo.pAlertPAPP != teleinfo.PAPP)?"true":"false", difftime(atime, teleinfo.last));
 	#endif
-	if ((teleinfo.pAlertPAPP != teleinfo.PAPP) || (difftime(atime, teleinfo.last) >= MAXIMUM_UPDATE_INTERVAL))
+	if ((teleinfo.pAlertPAPP != teleinfo.PAPP) || (difftime(atime, teleinfo.last) >= (m_iDataTimeout -10)))
 	{
 		teleinfo.pAlertPAPP = teleinfo.PAPP;
 
-		//Send data at rate specified in settings, and at least every 5 minutes
-		if ((difftime(atime, teleinfo.last) >= m_iRateLimit) || (difftime(atime, teleinfo.last) >= MAXIMUM_UPDATE_INTERVAL))
+		//Send data at mamximum rate specified in settings, and at least 10sec less that Data Timeout
+		if ((difftime(atime, teleinfo.last) >= m_iRateLimit) || (difftime(atime, teleinfo.last) >= (m_iDataTimeout -10)))
 		{
 			teleinfo.last = atime;
 			m_p1power.usagecurrent = teleinfo.PAPP;
 			if (teleinfo.OPTARIF == "BASE")
 			{
 				#ifdef DEBUG_TeleinfoBase
-                        	_log.Log(LOG_STATUS,"Teleinfo Base: %i, PAPP: %i", teleinfo.BASE, teleinfo.PAPP);
-                        	#endif
+				_log.Log(LOG_STATUS,"Teleinfo Base: %i, PAPP: %i", teleinfo.BASE, teleinfo.PAPP);
+				#endif
 				teleinfo.tariff="Tarif de Base";
 				m_p1power.powerusage1 = teleinfo.BASE;
 				m_p1power.powerusage2 = 0;

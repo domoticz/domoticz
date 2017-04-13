@@ -57,14 +57,19 @@ CEcoDevices::CEcoDevices(const int ID, const std::string &IPAddress, const unsig
 	m_HwdID = ID;
 	m_szIPAddress = IPAddress;
 	m_usIPPort = usIPPort;
-        m_username = username;
-        m_password = password;
+	m_username = username;
+	m_password = password;
 	m_stoprequested = false;
 	m_iModel = model;
-        m_iRateLimit = ratelimit;
-	m_iDataTimeout = datatimeout;
 
-	if (m_iRateLimit < 2) m_iRateLimit = 2; // system seems unstable if going too fast
+								 // system seems unstable if going too fast
+	if (m_iRateLimit < 2) m_iRateLimit = 2;
+
+	// Make sure minimum update rate fits with the timeout configured in hardware tab. Defaults to 5mn if set to no timeout
+	if (datatimeout < 20)
+		m_DataTimeout = 300;
+	else
+		m_iDataTimeout = datatimeout;
 
 	Init();
 }
@@ -106,22 +111,22 @@ bool CEcoDevices::StopHardware()
 }
 
 
-
 void CEcoDevices::Do_Work()
 {
-	signed int sec_counter = m_iRateLimit-2; // Make sure we update once soon after restart
+								 // Make sure we update once soon after restart
+	signed int sec_counter = m_iRateLimit-2;
 	_log.Log(LOG_STATUS,"(%s): Worker started...",  Name.c_str());
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
 		sec_counter++;
-			mytime(&m_LastHeartbeat);
+		mytime(&m_LastHeartbeat);
 		if (sec_counter >= m_iRateLimit)
 		{
 			sec_counter = 0;
-			if (m_iModel == 0) 
+			if (m_iModel == 0)
 				GetMeterDetails();
-			else 
+			else
 				GetMeterRT2Details();
 		}
 	}
@@ -179,6 +184,7 @@ void CEcoDevices::DecodeXML2Teleinfo(const std::string &sResult, Teleinfo &telei
 	#endif
 }
 
+
 void CEcoDevices::GetMeterDetails()
 {
 	if (m_szIPAddress.size()==0)
@@ -199,10 +205,10 @@ void CEcoDevices::GetMeterDetails()
 	// Are there a login and password configured?
 	if ((m_username.size() > 0) && (m_password.size() > 0))
 		sstr << "http://" << m_username << ":" << m_password << "@";
-	else 	
+	else
 		sstr <<"http://";
 	sstr << m_szIPAddress << ":" << m_usIPPort << "/status.xml";
-	
+
 	if (m_status.hostname.empty()) m_status.hostname = m_szIPAddress;
 
 	if (HTTPClient::GET(sstr.str(), ExtraHeaders, sResult))
@@ -248,7 +254,7 @@ void CEcoDevices::GetMeterDetails()
 		m_status.index2   = i_xpath_int(XMLdoc.RootElement(),"/response/count1/text()");
 		m_status.t1_ptec  = S_xpath_string(XMLdoc.RootElement(),"/response/T1_PTEC/text()").c_str();
 		m_status.t2_ptec  = S_xpath_string(XMLdoc.RootElement(),"/response/T2_PTEC/text()").c_str();
-	
+
 		// Update hardware name if this is first run
 		if (m_bFirstRun)
 		{
@@ -257,7 +263,7 @@ void CEcoDevices::GetMeterDetails()
 		}
 		// Process Counter 1
 		if ((m_status.index1 >0) && ((m_status.index1 != m_status.pindex1) || (m_status.flow1 != m_status.pflow1) \
-			|| (difftime(atime,m_status.time1) >= 300)))
+			|| (difftime(atime,m_status.time1) >= m_iDataTimeout - 10)))
 		{
 			m_status.pindex1 = m_status.index1;
 			m_status.pflow1 = m_status.flow1;
@@ -268,7 +274,7 @@ void CEcoDevices::GetMeterDetails()
 
 		// Process Counter 2
 		if ((m_status.index2 >0) && ((m_status.index2 != m_status.pindex2) || (m_status.flow2 != m_status.pflow2) \
-			|| (difftime(atime,m_status.time2) >= 300)))
+			|| (difftime(atime,m_status.time2) >= m_iDataTimeout -10)))
 		{
 			m_status.pindex2 = m_status.index2;
 			m_status.pflow2 = m_status.flow2;
@@ -293,10 +299,10 @@ void CEcoDevices::GetMeterDetails()
 	{
 		sstr.str("");
 		// Are there a login and password configured?
-        	if ((m_username.size() > 0) && (m_password.size() > 0))
-                	sstr << "http://" << m_username << ":" << m_password << "@";
-        	else
-                	sstr <<"http://";
+		if ((m_username.size() > 0) && (m_password.size() > 0))
+			sstr << "http://" << m_username << ":" << m_password << "@";
+		else
+			sstr <<"http://";
 
 		sstr << m_szIPAddress << ":" << m_usIPPort << "/protect/settings/teleinfo1.xml";
 		_log.Log(LOG_NORM, "(%s) Fetching Teleinfo 1 data", Name.c_str());
@@ -345,134 +351,135 @@ void CEcoDevices::GetMeterDetails()
 
 }
 
+
 void CEcoDevices::GetMeterRT2Details()
 {
-        if (m_szIPAddress.size()==0)
-                return;
+	if (m_szIPAddress.size()==0)
+		return;
 
-        // From http://xx.xx.xx.xx/admin/status.xml we get the Teleinfo data
+	// From http://xx.xx.xx.xx/admin/status.xml we get the Teleinfo data
 
-        std::vector<std::string> ExtraHeaders, splitresults;
+	std::vector<std::string> ExtraHeaders, splitresults;
 	char XMLLabel[200];
-        std::string  sResult, message, label, value;
+	std::string  sResult, message, label, value;
 	float fvalue1, fvalue2;
-        std::stringstream sstr;
+	std::stringstream sstr;
 	std::map<std::string, std::string> XMLmap;
-        TiXmlDocument XMLdoc("Teleinfo.xml");
-        time_t atime = mytime(NULL);
-        int   i, major, minor, release;
-        int min_major = MAJOR_RT2, min_minor = MINOR_RT2, min_release = RELEASE_RT2;
+	TiXmlDocument XMLdoc("Teleinfo.xml");
+	time_t atime = mytime(NULL);
+	int   i, major, minor, release;
+	int min_major = MAJOR_RT2, min_minor = MINOR_RT2, min_release = RELEASE_RT2;
 
-        // Check EcoDevices firmware version and hostname from JSON API
+	// Check EcoDevices firmware version and hostname from JSON API
 
 	// Are there a login and password configured?
-        if ((m_username.size() > 0) && (m_password.size() > 0))
-                sstr << "http://" << m_username << ":" << m_password << "@";
-        else
-                sstr <<"http://";
-        sstr << m_szIPAddress << ":" << m_usIPPort << "/admin/system.json";
+	if ((m_username.size() > 0) && (m_password.size() > 0))
+		sstr << "http://" << m_username << ":" << m_password << "@";
+	else
+		sstr <<"http://";
+	sstr << m_szIPAddress << ":" << m_usIPPort << "/admin/system.json";
 
-        //Get Data
-        std::string sURL = sstr.str();
-        if (!HTTPClient::GET(sURL, ExtraHeaders, sResult))
-        {       
-                _log.Log(LOG_ERROR, "(%s) Error getting system information from /admin/system.json", Name.c_str());
-                return;
-        }
+	//Get Data
+	std::string sURL = sstr.str();
+	if (!HTTPClient::GET(sURL, ExtraHeaders, sResult))
+	{
+		_log.Log(LOG_ERROR, "(%s) Error getting system information from /admin/system.json", Name.c_str());
+		return;
+	}
 
-        Json::Value root;
-        Json::Reader jReader;
-        bool bRet = jReader.parse(sResult, root);
-        if ((!bRet) || (!root.isObject()))
-        {       
-                _log.Log(LOG_ERROR, "(%s) Invalid JSON data received from /admin/system.json", Name.c_str());
-                return;
-        }
-        if (root["confighostname"].empty() == true)
-        {       
-                _log.Log(LOG_ERROR, "(%s) Invalid JSON data received from /admin/system.json, hostname missing", Name.c_str());
-        }
-        else
+	Json::Value root;
+	Json::Reader jReader;
+	bool bRet = jReader.parse(sResult, root);
+	if ((!bRet) || (!root.isObject()))
+	{
+		_log.Log(LOG_ERROR, "(%s) Invalid JSON data received from /admin/system.json", Name.c_str());
+		return;
+	}
+	if (root["confighostname"].empty() == true)
+	{
+		_log.Log(LOG_ERROR, "(%s) Invalid JSON data received from /admin/system.json, hostname missing", Name.c_str());
+	}
+	else
 	{
 		m_status.hostname = root["confighostname"].asString();
 		stdstring_rtrim(m_status.hostname);
 		// Update hardware name if this is first run
-                if (m_bFirstRun)
-                {
-                        m_sql.safe_query("UPDATE Hardware SET Name = '%s' WHERE ID = %i", m_status.hostname.c_str(), m_HwdID);
-                        m_bFirstRun = false;
-                }
-        }
+		if (m_bFirstRun)
+		{
+			m_sql.safe_query("UPDATE Hardware SET Name = '%s' WHERE ID = %i", m_status.hostname.c_str(), m_HwdID);
+			m_bFirstRun = false;
+		}
+	}
 
-        // Get Teleinfo meter data and process pulse counters
+	// Get Teleinfo meter data and process pulse counters
 	sstr.str("");
 
-        // Are there a login and password configured?
-        if ((m_username.size() > 0) && (m_password.size() > 0))
-                sstr << "http://" << m_username << ":" << m_password << "@";
-        else
-                sstr <<"http://";
-        sstr << m_szIPAddress << ":" << m_usIPPort << "/admin/status.xml";
+	// Are there a login and password configured?
+	if ((m_username.size() > 0) && (m_password.size() > 0))
+		sstr << "http://" << m_username << ":" << m_password << "@";
+	else
+		sstr <<"http://";
+	sstr << m_szIPAddress << ":" << m_usIPPort << "/admin/status.xml";
 
-        if (HTTPClient::GET(sstr.str(), ExtraHeaders, sResult))
-        {
-                _log.Log(LOG_NORM, "(%s) Fetching data from /admin/status.xml", Name.c_str());
-        }
-        else
-        {
-                _log.Log(LOG_ERROR, "(%s) Error getting status.xml!", Name.c_str());
-                return;
-        }
+	if (HTTPClient::GET(sstr.str(), ExtraHeaders, sResult))
+	{
+		_log.Log(LOG_NORM, "(%s) Fetching data from /admin/status.xml", Name.c_str());
+	}
+	else
+	{
+		_log.Log(LOG_ERROR, "(%s) Error getting status.xml!", Name.c_str());
+		return;
+	}
 
-        // Process XML result
-        XMLdoc.Parse(sResult.c_str(), 0, TIXML_ENCODING_UTF8);
-        if (XMLdoc.Error())
-        {
-                _log.Log(LOG_ERROR, "(%s) Error parsing XML at /admin/status.xml: %s", Name.c_str(), XMLdoc.ErrorDesc());
-                return;
-        }
+	// Process XML result
+	XMLdoc.Parse(sResult.c_str(), 0, TIXML_ENCODING_UTF8);
+	if (XMLdoc.Error())
+	{
+		_log.Log(LOG_ERROR, "(%s) Error parsing XML at /admin/status.xml: %s", Name.c_str(), XMLdoc.ErrorDesc());
+		return;
+	}
 
-        // XML format changes dramatically between firmware versions. This code was developped for version 2.0.29
-        using namespace TinyXPath;
+	// XML format changes dramatically between firmware versions. This code was developped for version 2.0.29
+	using namespace TinyXPath;
 	std::string product = S_xpath_string(XMLdoc.RootElement(),"/response/product/text()").c_str();
 	if (product != "ECODEVICES RT 2")
 	{
 		_log.Log(LOG_ERROR, "(%s) Product information found in XML file is not 'ECODEVICES RT 2' as expected, but '%s'", Name.c_str(), product.c_str());
 		return;
 	}
-        m_status.version = S_xpath_string(XMLdoc.RootElement(),"/response/infofirm/text()").c_str();
+	m_status.version = S_xpath_string(XMLdoc.RootElement(),"/response/infofirm/text()").c_str();
 
-        #ifdef DEBUG_EcoDevices
-        _log.Log(LOG_NORM, "DEBUG: XML output for /admin/status.xml\n%s", MakeHtml(sResult).c_str());
-        #endif
+	#ifdef DEBUG_EcoDevices
+	_log.Log(LOG_NORM, "DEBUG: XML output for /admin/status.xml\n%s", MakeHtml(sResult).c_str());
+	#endif
 
-        m_status.version = m_status.version + "..";
-        major = atoi(m_status.version.substr(0,m_status.version.find(".")).c_str());
-        m_status.version.erase(0,m_status.version.find(".")+1);
-        minor = atoi(m_status.version.substr(0,m_status.version.find(".")).c_str());
-        m_status.version.erase(0,m_status.version.find(".")+1);
-        release = atoi(m_status.version.substr(0,m_status.version.find(".")).c_str());
-        m_status.version = S_xpath_string(XMLdoc.RootElement(),"/response/version/text()").c_str();
+	m_status.version = m_status.version + "..";
+	major = atoi(m_status.version.substr(0,m_status.version.find(".")).c_str());
+	m_status.version.erase(0,m_status.version.find(".")+1);
+	minor = atoi(m_status.version.substr(0,m_status.version.find(".")).c_str());
+	m_status.version.erase(0,m_status.version.find(".")+1);
+	release = atoi(m_status.version.substr(0,m_status.version.find(".")).c_str());
+	m_status.version = S_xpath_string(XMLdoc.RootElement(),"/response/version/text()").c_str();
 
-        if (!((major>min_major) || ((major==min_major) && (minor>min_minor)) || ((major==min_major) && (minor==min_minor) && (release>=min_release))))
-        {
-                message = "EcoDevices RT2 firmware needs to be at least version ";
-                message = message + static_cast<std::ostringstream*>( &(std::ostringstream() << min_major << "." << min_minor << "." << min_release) )->str();
-                message = message + ", current version is " + m_status.version;
-                _log.Log(LOG_ERROR, "(%s) %s", Name.c_str(), message.c_str());
-                return;
-        }
-	
-        // Update hardware name if this is first run
-        if (m_bFirstRun)
-        {
+	if (!((major>min_major) || ((major==min_major) && (minor>min_minor)) || ((major==min_major) && (minor==min_minor) && (release>=min_release))))
+	{
+		message = "EcoDevices RT2 firmware needs to be at least version ";
+		message = message + static_cast<std::ostringstream*>( &(std::ostringstream() << min_major << "." << min_minor << "." << min_release) )->str();
+		message = message + ", current version is " + m_status.version;
+		_log.Log(LOG_ERROR, "(%s) %s", Name.c_str(), message.c_str());
+		return;
+	}
+
+	// Update hardware name if this is first run
+	if (m_bFirstRun)
+	{
 		m_status.hostname = S_xpath_string(XMLdoc.RootElement(),"/response/hostname/text()").c_str();
 		if (m_status.hostname == "") m_status.hostname = "EcoDevices RT2";
 		m_sql.safe_query("UPDATE Hardware SET Name = '%s' WHERE ID = %i", m_status.hostname.c_str(), m_HwdID);
-                m_bFirstRun = false;
-        }
+		m_bFirstRun = false;
+	}
 
-	//Measured voltage on power supply 
+	//Measured voltage on power supply
 	m_status.voltage=i_xpath_int(XMLdoc.RootElement(),"/response/vmesure/text()");
 	SendVoltageSensor(m_HwdID, 1, 255, (float)m_status.voltage, "EcoDevice RT2");
 
@@ -482,57 +489,57 @@ void CEcoDevices::GetMeterRT2Details()
 		sprintf(XMLLabel, "/response/etiquette%i/text()", i);
 		label = S_xpath_string(XMLdoc.RootElement(), XMLLabel).c_str();
 		sprintf(XMLLabel, "/response/etiquetteEC%i/text()", i);
-		value = S_xpath_string(XMLdoc.RootElement(), XMLLabel).c_str();   
+		value = S_xpath_string(XMLdoc.RootElement(), XMLLabel).c_str();
 		if (label == "") break;
-	        XMLmap[label] = value;	
+		XMLmap[label] = value;
 	}
-        m_teleinfo1.OPTARIF = XMLmap["OPTARIF"];
-        m_teleinfo1.PTEC = XMLmap["PTEC"];
-        m_teleinfo1.DEMAIN = XMLmap["DEMAIN"];
-        m_teleinfo1.ISOUSC = atoi(XMLmap["ISOUSC"].c_str());
-        m_teleinfo1.PAPP = atoi(XMLmap["PAPP"].c_str());
-        m_teleinfo1.BASE = atoi(XMLmap["BASE"].c_str());
-        m_teleinfo1.HCHC = atoi(XMLmap["HCHC"].c_str());
-        m_teleinfo1.HCHP = atoi(XMLmap["HCHP"].c_str());
-        m_teleinfo1.EJPHN = atoi(XMLmap["EJPHN"].c_str());
-        m_teleinfo1.EJPHPM = atoi(XMLmap["EJPHPM"].c_str());
-        m_teleinfo1.BBRHCJB = atoi(XMLmap["BBRHCJB"].c_str());
-        m_teleinfo1.BBRHPJB = atoi(XMLmap["BBRHPJB"].c_str());
-        m_teleinfo1.BBRHCJW = atoi(XMLmap["BBRHCJW"].c_str());
-        m_teleinfo1.BBRHPJW = atoi(XMLmap["BBRHPJW"].c_str());
-        m_teleinfo1.BBRHCJR = atoi(XMLmap["BBRHCJR"].c_str());
-        m_teleinfo1.BBRHPJR = atoi(XMLmap["BBRPJR"].c_str());
-        m_teleinfo1.PEJP = atoi(XMLmap["PEJP"].c_str());
-        m_teleinfo1.IINST = atoi(XMLmap["IINST"].c_str());
-        m_teleinfo1.IINST1 = atoi(XMLmap["IINST1"].c_str());
-        m_teleinfo1.IINST2 = atoi(XMLmap["IINST2"].c_str());
-        m_teleinfo1.IINST3 = atoi(XMLmap["IISNT3"].c_str());
-        m_teleinfo1.PPOT = atoi(XMLmap["PPOT"].c_str());
-        m_teleinfo1.ADPS = atoi(XMLmap["ADPS"].c_str());
+	m_teleinfo1.OPTARIF = XMLmap["OPTARIF"];
+	m_teleinfo1.PTEC = XMLmap["PTEC"];
+	m_teleinfo1.DEMAIN = XMLmap["DEMAIN"];
+	m_teleinfo1.ISOUSC = atoi(XMLmap["ISOUSC"].c_str());
+	m_teleinfo1.PAPP = atoi(XMLmap["PAPP"].c_str());
+	m_teleinfo1.BASE = atoi(XMLmap["BASE"].c_str());
+	m_teleinfo1.HCHC = atoi(XMLmap["HCHC"].c_str());
+	m_teleinfo1.HCHP = atoi(XMLmap["HCHP"].c_str());
+	m_teleinfo1.EJPHN = atoi(XMLmap["EJPHN"].c_str());
+	m_teleinfo1.EJPHPM = atoi(XMLmap["EJPHPM"].c_str());
+	m_teleinfo1.BBRHCJB = atoi(XMLmap["BBRHCJB"].c_str());
+	m_teleinfo1.BBRHPJB = atoi(XMLmap["BBRHPJB"].c_str());
+	m_teleinfo1.BBRHCJW = atoi(XMLmap["BBRHCJW"].c_str());
+	m_teleinfo1.BBRHPJW = atoi(XMLmap["BBRHPJW"].c_str());
+	m_teleinfo1.BBRHCJR = atoi(XMLmap["BBRHCJR"].c_str());
+	m_teleinfo1.BBRHPJR = atoi(XMLmap["BBRPJR"].c_str());
+	m_teleinfo1.PEJP = atoi(XMLmap["PEJP"].c_str());
+	m_teleinfo1.IINST = atoi(XMLmap["IINST"].c_str());
+	m_teleinfo1.IINST1 = atoi(XMLmap["IINST1"].c_str());
+	m_teleinfo1.IINST2 = atoi(XMLmap["IINST2"].c_str());
+	m_teleinfo1.IINST3 = atoi(XMLmap["IISNT3"].c_str());
+	m_teleinfo1.PPOT = atoi(XMLmap["PPOT"].c_str());
+	m_teleinfo1.ADPS = atoi(XMLmap["ADPS"].c_str());
 
-        #ifdef DEBUG_EcoDevices
-        _log.Log(LOG_NORM, "DEBUG: OPTARIF: '%s'", teleinfo.OPTARIF.c_str());
-        _log.Log(LOG_NORM, "DEBUG: PTEC:    '%s'", teleinfo.PTEC.c_str());
-        _log.Log(LOG_NORM, "DEBUG: DEMAIN:  '%s'", teleinfo.DEMAIN.c_str());
-        #endif
-        ProcessTeleinfo("Teleinfo RT2", 1, m_teleinfo1);
+	#ifdef DEBUG_EcoDevices
+	_log.Log(LOG_NORM, "DEBUG: OPTARIF: '%s'", teleinfo.OPTARIF.c_str());
+	_log.Log(LOG_NORM, "DEBUG: PTEC:    '%s'", teleinfo.PTEC.c_str());
+	_log.Log(LOG_NORM, "DEBUG: DEMAIN:  '%s'", teleinfo.DEMAIN.c_str());
+	#endif
+	ProcessTeleinfo("Teleinfo RT2", 1, m_teleinfo1);
 
 	// 8 internal counters (postes) processing
 	for (i=0; i<8; i++)
 	{
 		sprintf(XMLLabel, "/response/poste%i/text()", i);
-                label = S_xpath_string(XMLdoc.RootElement(), XMLLabel).c_str();
-                sprintf(XMLLabel, "/response/info%i/text()", i);
-                value = S_xpath_string(XMLdoc.RootElement(), XMLLabel).c_str();
-                StringSplit(value, ",", splitresults);
-		if (splitresults[0] == "") 
+		label = S_xpath_string(XMLdoc.RootElement(), XMLLabel).c_str();
+		sprintf(XMLLabel, "/response/info%i/text()", i);
+		value = S_xpath_string(XMLdoc.RootElement(), XMLLabel).c_str();
+		StringSplit(value, ",", splitresults);
+		if (splitresults[0] == "")
 			break;
-		else 
-		{		
+		else
+		{
 			fvalue1= atof(splitresults[0].c_str());
 			if (fvalue1 > 0) SendMeterSensor(m_HwdID, i, 255, fvalue1/1000, m_status.hostname + " " + label);
 			fvalue2= atof(splitresults[1].c_str());
-                        if (fvalue2 >0) SendWaterflowSensor(m_HwdID, i, 255, fvalue2, m_status.hostname + " " + label);
+			if (fvalue2 >0) SendWaterflowSensor(m_HwdID, i, 255, fvalue2, m_status.hostname + " " + label);
 		}
 	}
 }

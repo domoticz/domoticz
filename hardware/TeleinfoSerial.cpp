@@ -39,7 +39,7 @@ History :
 #define DEBUG_TeleinfoSerial
 #endif
 
-CTeleinfoSerial::CTeleinfoSerial(const int ID, const std::string& devname, unsigned int baud_rate, const bool disable_crc, const int ratelimit)
+CTeleinfoSerial::CTeleinfoSerial(const int ID, const std::string& devname, const int datatimeout, unsigned int baud_rate, const bool disable_crc, const int ratelimit)
 {
 	m_HwdID = ID;
 	m_szSerialPort = devname;
@@ -54,6 +54,13 @@ CTeleinfoSerial::CTeleinfoSerial(const int ID, const std::string& devname, unsig
 		m_iBaudRate = 1200;
 	else
 		m_iBaudRate = 9600;
+
+	// Make sure minimum update rate fits with the timeout configured in hardware tab. Defaults to 5mn if set to no timeout
+	if (datatimeout < 20)
+		m_DataTimeout = 300;
+	else
+		m_iDataTimeout = datatimeout;
+
 	Init();
 }
 
@@ -67,7 +74,7 @@ CTeleinfoSerial::~CTeleinfoSerial()
 void CTeleinfoSerial::Init()
 {
 	m_bufferpos = 0;
-	m_counter = 0;				 // Make sure 1 full frame is processed before any update
+	m_counter = 0;
 }
 
 
@@ -103,7 +110,7 @@ bool CTeleinfoSerial::StartHardware()
 	setReadCallback(boost::bind(&CTeleinfoSerial::readCallback, this, _1, _2));
 	m_bIsStarted = true;
 	sOnConnected(this);
-	teleinfo.CRCmode1 = 255;   // Guess the CRC mode at first run
+	teleinfo.CRCmode1 = 255;	 // Guess the CRC mode at first run
 
 	if (m_bDisableCRC)
 		_log.Log(LOG_STATUS, "(%s) CRC checks on incoming data are disabled", Name.c_str());
@@ -132,7 +139,8 @@ bool CTeleinfoSerial::WriteToHardware(const char *pdata, const unsigned char len
 void CTeleinfoSerial::readCallback(const char *data, size_t len)
 {
 	boost::lock_guard<boost::mutex> l(readQueueMutex);
-	if (!m_bEnableReceive) {
+	if (!m_bEnableReceive)
+	{
 		_log.Log(LOG_ERROR, "(%s) Receiving is not enabled", Name.c_str());
 		return;
 	}
@@ -190,7 +198,7 @@ void CTeleinfoSerial::MatchLine()
 	else if (label == "PPOT")  teleinfo.PPOT = value;
 	else if (label == "MOTDETAT") m_counter++;
 
-	// at 1200 baud we have roughly one frame per 1,5 second, check more frequently for alerts. 
+	// at 1200 baud we have roughly one frame per 1,5 second, check more frequently for alerts.
 	if (m_counter >= m_iBaudRate/600)
 	{
 		m_counter = 0;
@@ -198,7 +206,7 @@ void CTeleinfoSerial::MatchLine()
 		_log.Log(LOG_NORM,"(%s) Teleinfo frame complete, PAPP: %i, PTEC: %s", Name.c_str(), teleinfo.PAPP, teleinfo.PTEC.c_str());
 		#endif
 		ProcessTeleinfo(teleinfo);
-		mytime(&m_LastHeartbeat);  // keep heartbeat happy
+		mytime(&m_LastHeartbeat);// keep heartbeat happy
 	}
 }
 
@@ -296,7 +304,7 @@ bool CTeleinfoSerial::isCheckSumOk(int &isMode1)
 	else if (mode2 == checksum)
 	{
 		line_ok = true;
-		if (isMode1 != false)   // if this is first run, will still be at 255
+		if (isMode1 != false)	 // if this is first run, will still be at 255
 		{
 			isMode1 = false;
 			_log.Log(LOG_STATUS, "(%s) TeleinfoCRC check mode set to 2", Name.c_str());
