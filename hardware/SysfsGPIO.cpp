@@ -487,7 +487,7 @@ void CSysfsGPIO::UpdateDomoticzInputs()
 	}
 }
 
-static int GetReadResult(int bytecount, char* value_str)
+int CSysfsGPIO::GetReadResult(int bytecount, char* value_str)
 {
 	int retval = -1;
 
@@ -535,15 +535,13 @@ static int GetReadResult(int bytecount, char* value_str)
 	return (retval);
 }
 
-static int GPIORead(int gpio_pin, const char *param)
+int CSysfsGPIO::GPIORead(int gpio_pin, const char *param)
 {
 	char path[GPIO_MAX_PATH];
 	char value_str[GPIO_MAX_VALUE_SIZE];
 	int fd;
 	int bytecount = -1;
 	int retval = -1;
-
-	memset(value_str, GPIO_MAX_VALUE_SIZE, 0);
 
 	snprintf(path, GPIO_MAX_PATH, "%s%d/%s", GPIO_PATH, gpio_pin, param);
 	fd = open(path, O_RDONLY);
@@ -565,13 +563,11 @@ static int GPIORead(int gpio_pin, const char *param)
 	return(GetReadResult(bytecount, &value_str[0]));
 }
 
-static int GPIOReadFd(int fd)
+int CSysfsGPIO::GPIOReadFd(int fd)
 {
 	int bytecount = -1;
 	int retval = -1;
 	char value_str[GPIO_MAX_VALUE_SIZE];
-
-	memset(value_str, GPIO_MAX_VALUE_SIZE, 0);
 
 	if (fd == -1)
 	{
@@ -588,7 +584,7 @@ static int GPIOReadFd(int fd)
 	return(GetReadResult(bytecount, &value_str[0]));
 }
 
-static int GPIOWrite(int gpio_pin, int value)
+int CSysfsGPIO::GPIOWrite(int gpio_pin, int value)
 {
 	char path[GPIO_MAX_PATH];
 	int fd;
