@@ -4,12 +4,13 @@
 /*@import url("dashboard_move_sun.css"); /* Moves the sun-up indicator to the footer. */
 @import url("dashboard_show_last_update.css"); /* Displays the 'last update' time on the dashboard. */
 /*@import url("dashboard_thinner_items_on_wide_screens.css"); /* Only for wide screens; item-options move next to the name. */
-/*@import url("dashboard_highlights_see-through.css"); /* makes all dashboard items semi-transparent. */
 @import url("dashboard_highlights.css"); /* This adds bigger items at the top of each dashboard category. */
+/*@import url("dashboard_highlights_see-through.css"); /* makes all dashboard items semi-transparent. */
 /*@import url("dashboard_vertical_columns.css"); /* Turns dashboard into vertical columns. */
 /*@import url("navigation_main_sidebar.css"); /* This transforms the main menu to a vertical menu on the left. */
 /*@import url("navigation_settings_sidemenu.css"); /* This transforms the settings-tabs into a sidebar on the left. */
 /*@import url("extras_and_animations.css"); /* Adds fun visual extras. */
+/*@import url("stable-support.css");  /* Tweaks for non-development Domoticz versions (stable & beta) */
 
 
 /* GENERAL SETTINGS
@@ -25,13 +26,19 @@ remove the /* before the word 'body'. This will override the detault background 
 */
 
 /* body {
-    background: url() no-repeat center center fixed;
+    background: transparent url() center center fixed;
+    background-size: cover;
 }
 
 
 *//* FEATURE DETAILS
 
 
+
+__Stable Support__
+This theme is a work in progress, and will hopefully become the basis for a new default theme for Domoticz.  
+This CSS file addsSmall tweaks that make the theme work on non-development versions of Domoticz. The theme is 
+currently starting to be very dependent on a new version of Domoticz that is available via Github only.
 
 __Show Version Number__
 This permanently shows the Domoticz version number, not just on mouse-over.

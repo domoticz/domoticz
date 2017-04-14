@@ -57,15 +57,21 @@ body table#itemtablesmalldoubleicon tr td:first-child,
 body table#itemtablesmalltrippleicon tr td:first-child,
 body table#itemtablesmall tr td:first-child,
 body table#itemtablenotype tr td:first-child,*/
-body table[id^="itemtable"] tr td:first-child{
+body table[id^="itemtable"] tr td:first-child
+body table[id^="itemtable"] tr td#name{
     border-radius:0px;
+    height:40px;
+    border:none;
 }
+
+body table#itemtablenostatus tr td:first-child
 
 body table#itemtablesmall tr td:first-child + td,
 body table#itemtablesmalldoubleicon tr td:first-child + td,
 body table#itemtablesmalltrippleicon tr td:first-child + td{
     font-weight: normal;
 }
+
 
 body table[id^="itemtable"] tr td:first-child + td + td + td + td + td + td,
 body table#itemtablenotype tr td:first-child + td + td + td + td + td{
@@ -82,6 +88,9 @@ body table#itemtablenostatus tr td:first-child + td + td + td + td + td + td{
     padding:0;
 }
 
+body #dashcontent table[id^="itemtable"] tr td:first-child + td + td + td + td +td:before,
+body table[id^="itemtable"] tr #lastupdate:before{content:none!important}
+
 
 
 
@@ -93,8 +102,8 @@ body table#itemtablenostatus tr td:first-child + td + td + td + td + td + td{
 html, body {height:100%}
 #main-view{padding-top:20px}
 
+.row-fluid .span12,
 .row-fluid .span6{
-    box-sizing: border-box;
     padding: 20px;
     margin-bottom:15px;
     margin-top:5px
@@ -142,6 +151,11 @@ textarea, input, select {
     width:100%!important;
 }
 
+.span12 > label,
+.span6 > label{padding:5px;}
+
+.span6 table td:nth-child(2) > span{width:100%;}
+
 #settingscontent select,
 #settingscontent input.text,
 #settingscontent .ui-widget-content{
@@ -155,8 +169,8 @@ textarea, input, select {
 /* td br{display:none;} */
 
 br{   content: "A" !important;
-    /*display: block !important;*/
-    margin-bottom: 1.5em !important;
+    display: block !important;
+    margin-bottom: 0 !important;
 }
 
 #zwavenodesqueried ~ #configuration br{   content: "A" !important;
@@ -412,7 +426,8 @@ p.ng-binding {
 h1,h2,h3{
     clear: both;
     margin-top:10px;
-    padding-bottom:10px;
+    padding-bottom: 5px;
+    margin-bottom: 5px;
 }
 
 .container > h1:first-of-type,
@@ -479,17 +494,23 @@ body #dashcontent table > tbody > tr{
     top:-35px;
     right:7px;
     z-index:1;
+    height:0;
+    overflow:visible;
 }
 
 #img2 {
     top:-35px;
     right: 45px;
     z-index:1;
+    height:0;
+    overflow:visible;
 }
 
 #img3 {
     top:-35px;
     right: 67px;
+    height:0;
+    overflow:visible;
 }
 
 #img img, 
@@ -515,11 +536,6 @@ body #dashcontent table > tbody > tr{
     width:40px;
 }
 
-/*
-#dashcontent .span3 #itemtablesmalltrippleicon #img2{right:47px}
-#dashcontent .span3 #itemtablesmalltrippleicon #img3{right:87px}*/
-
-
 /*  this transforms the triple-image items into items with buttons at the bottom. Using just CSS.. */
 #dashcontent div[class^="span"] #itemtablesmalltrippleicon{
     min-height:80px;
@@ -530,7 +546,6 @@ body #dashcontent table > tbody > tr{
 #dashcontent div[class^="span"] #itemtablesmalltrippleicon #bigtext{right:0px;}
 
 #dashcontent div[class^="span"] #itemtablesmalltrippleicon #bigtext span{padding-right:10px;}
-
 
 #dashcontent div[class^="span"] #itemtablesmalltrippleicon #img,
 #dashcontent div[class^="span"] #itemtablesmalltrippleicon #img1{padding-left:0px}
@@ -606,38 +621,19 @@ body #dashcontent table > tbody > tr{
     color:#333;
 }
 
-#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img3{
-    /*display:inline-flex;
-    flex-grow: 1;*/
-    /*width:auto;*/
-}
-
-
-/*
-#dashcontent divdiv[class^="span"] #itemtablesmalltrippleicon #img{right:7px} 
-#dashcontent divdiv[class^="span"] #itemtablesmalltrippleicon #img1{right:7px}
-#dashcontent divdiv[class^="span"] #itemtablesmalltrippleicon #img2{right:52px}
-#dashcontent divdiv[class^="span"] #itemtablesmalltrippleicon #img3{right:97px}*/
-
-
 .item .options img.favorite, /* the future version */
 .span3 td:last-of-type .lcursor,
-.span4 td:last-of-type .lcursor
-/*#itemtabledoubleicon td:last-of-type .lcursor, 
-#itemtable td:last-of-type .lcursor, #itemtablenotype td:last-of-type .lcursor, 
-#itemtablenostatus td:last-of-type .lcursor*/ {
+.span4 td:last-of-type .lcursor{
     position: relative;
     top: -33px;
     left: 13px;
     border-radius: 5px;
 }
 
-
 #dashcontent #lastupdate,
 #dashcontent #type{
     display: none;
 }
-
 
 
 #dashcontent td > div.dimslider{
@@ -655,7 +651,6 @@ body .item tr > #name {
     font-size: 100%!important;
     border-style: none!important;
     border-width:0!important;
-    /*color: #444!important;*/
     white-space: nowrap;
     overflow: hidden;
     box-sizing: border-box;
@@ -679,21 +674,22 @@ body .item tr > #name {
     text-align: right;
     overflow: visible;
     position: relative;
-    top: -27px;
-    right: 40px;
-    /*width: 25%;*/
+    /*top: -27px;
+    right: 40px;*/
+    top:6px;
+    right:10px;
     margin:0!important;
     height:0;
     max-width:50%;
 }
 #bigtext span{
-    font-size: 17.5px;
+    font-size: 17px;
     font-weight: normal;
     white-space: nowrap;
 }
 
 #bigtext > span{
-    /*padding: 3px;*/
+    padding: 3px;
     display:inline-block;
     overflow:hidden;
     width:auto;
@@ -701,18 +697,28 @@ body .item tr > #name {
 }
 
 
-/*
-#scenecontent #bigtext, 
-#itemtablenostatus #bigtext,
-#lightcontent #bigtext,
-#dashcontent #itemtablesmalldoubleicon #bigtext,
-#dashcontent #itemtabletrippleicon #bigtext{
-    display: none;
-}
-*/
+@media all and (min-width: 1200px){
+    #bigtext{
+    top: -29px;
+    right: 55px;
+    }
+    
+    #itemtabledoubleicon #bigtext{right: 80px;}
+    #itemtablesmalldoubleicon #bigtext{right: 90px;}
+    
+    #itemtabletrippleicon #bigtext{right: 100px;}
+    #itemtablesmalltrippleicon #bigtext{right: 105px;}
+    
+    #itemtabledoubleicon #bigtext{right: 80px;}
+    #itemtablesmalldoubleicon #bigtext{right: 90px;}
+
+    #itemtabletrippleicon #bigtext{right: 100px;}
+#itemtablesmalltrippleicon #bigtext{right: 105px;}
+    
+}  
 
 #dashcontent #bigtext{
-    top: -39px;
+    top: -38px;
     right: 55px;
 }
 
@@ -721,12 +727,12 @@ body .item tr > #name {
     width:auto;
 }
 
-#itemtabledoubleicon #bigtext{right: 80px;}
-#itemtablesmalldoubleicon #bigtext{right: 90px;}
+#dashcontent #itemtabledoubleicon #bigtext{right: 80px;}
+#dashcontent #itemtablesmalldoubleicon #bigtext{right: 90px;}
 /*#dashcontent #itemtablesmalldoubleicon #bigtext{right:55px}*/
 
-#itemtabletrippleicon #bigtext{right: 100px;}
-#itemtablesmalltrippleicon #bigtext{right: 105px;}
+#dashcontent #itemtabletrippleicon #bigtext{right: 100px;}
+#dashcontent #itemtablesmalltrippleicon #bigtext{right: 105px;}
 /*#dashcontent #itemtablesmalltrippleicon #bigtext{right: 55px;}*/
 
 
@@ -752,7 +758,7 @@ body .item tr > #name {
     white-space: nowrap;
     overflow: visible;
     position: relative;
-    top: 60px;
+    top: 52px;
     left: 20px;
     width: 100%;
     margin:0!important;
@@ -793,6 +799,11 @@ body .item tr > #name {
 #dashcontent .item.withstatus.statuscount2 tr{height:115px}
 #dashcontent .item.withstatus.statuscount3 tr{height:145px}
 #dashcontent .item.withstatus.statuscount4 tr{height:175px}
+#dashcontent .item.withstatus.statuscount5 tr{height:205px}
+#dashcontent .item.withstatus.statuscount6 tr{height:235px}
+#dashcontent .item.withstatus.statuscount7 tr{height:265px}
+#dashcontent .item.withstatus.statuscount8 tr{height:295px}
+#dashcontent .item.withstatus.statuscount9 tr{height:325px}
 
 #dashcontent .item.withstatus #status > .wrapper > span{
     display:flex;
@@ -1128,7 +1139,8 @@ a.btnstyle:last-of-type, a.btnstylerev:last-of-type{
 
 .dimslider .ui-slider-range{
     background-color: rgba(115,182,202,0.7);
-/*  background: linear-gradient(top, #73b6ca 0%,#63b6ca 100%);
+    background-image:none;
+    /* background: linear-gradient(top, rgba(115,182,202,0.7) 0%,rgba(115,182,202,0.7) 100%);
     background: -moz-linear-gradient(top, #73b6ca 0%, #73b6ca 100%);
     background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#73b6ca), color-stop(100%,#73b6ca));
     background: -webkit-linear-gradient(top, #73b6ca 0%,#73b6ca 100%);
@@ -1586,6 +1598,7 @@ div.dataTables_wrapper .ui-widget-header{
 div#mysensorsnodestable_wrapper + #updelclr,
 div#hardwaretable_wrapper + #updelclr{border-top:0!important;border-bottom:10px!important;padding-top:0;}
 
+#settingscontent #rfxmetertable td{text-align: left!important}
 
 
 
@@ -1853,7 +1866,7 @@ td[colspan]:not([colspan="1"])
         float:left;
         text-align: left;
         top: -20px;
-        left: 35px;
+        left: 32px; /* was 35px, but bigtext now has apdding of 3 default, to deal with overlapping situations. */
     }
     #dashcontent #bigtext{
         top: -28px;
@@ -1888,5 +1901,18 @@ td[colspan]:not([colspan="1"])
 @media all and (min-width: 1200px){
     
     input.text{min-width:210px;}
+
+    /* items with lots of data outputs, let's keep them from getting too freakishly tall */
+    #dashcontent div.item.withstatus tr td#status > .wrapper {display:flex; flex-wrap: wrap;} 
+    #dashcontent div.item.withstatus td#status > .wrapper > span{width:50%}
     
+    #dashcontent div.item.withstatus.statuscount2 tr{height:85px}
+    #dashcontent .item.withstatus.statuscount3 tr,
+    #dashcontent .item.withstatus.statuscount4 tr{height:115px}
+    #dashcontent .item.withstatus.statuscount5 tr,
+    #dashcontent .item.withstatus.statuscount6 tr{height:145px}
+    #dashcontent .item.withstatus.statuscount7 tr,
+    #dashcontent .item.withstatus.statuscount8 tr{height:175px}
+    #dashcontent .item.withstatus.statuscount9 tr,
+    #dashcontent .item.withstatus.statuscount10 tr{height:205px}    
 }  

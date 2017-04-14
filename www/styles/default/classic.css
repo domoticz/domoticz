@@ -52,29 +52,9 @@ body {
 }
 
 
-/*  status indicators */
-
-div.item.statusNormal td#name{
-    background-color: transparent;
-
-}
-div.item.statusProtected td#name{
-    background-color: transparent;
-    -moz-box-shadow:  0 2px 0 0 #A4B1EE;
-    -webkit-box-shadow:  0 2px 0 0 #A4B1EE;
-    box-shadow:  0 2px 0 0 #A4B1EE;
-}
-div.item.statusTimeout td#name{
-    background-color: transparent;
-    -moz-box-shadow:  0 2px 0 0 #DF2D3A;
-    -webkit-box-shadow:  0 2px 0 0 #DF2D3A;
-    box-shadow:  0 2px 0 0 #DF2D3A;    
-}
-div.item.statusLowBattery td#name{
-    background-color: transparent;
-    -moz-box-shadow:  0 2px 0 0 #DDDF2D;
-    -webkit-box-shadow:  0 2px 0 0 #DDDF2D;
-    box-shadow:  0 2px 0 0 #DDDF2D;  
+/*  logo  */
+h2#appversion{
+    display:block
 }
 
 
@@ -149,11 +129,13 @@ h1,h2,h3{color:#999}
 
 /* bigtext */
 
-#dashcontent div[class^="span"] #bigtext > span > span {
+#dashcontent div[class^="span"] #bigtext > span {
     border-radius:3px;
     background-color: #D4E1EE;
-    font-size: 18px;
-    padding: 0;
+}
+
+#dashcontent div[class^="span"] #bigtext > span > span {
+    border-radius:3px;
 }
 
 
@@ -235,6 +217,11 @@ background: linear-gradient(to bottom, #d4e1ee 0%,#bdd5ed 100%);
 filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#bdd5ed', endColorstr='#d4e1ee',GradientType=0 );
 }
 
+body.frontStage .item table > tbody > tr, /* the new way*/
+body .span3  table > tbody > tr,
+body .span4  table > tbody > tr{
+    border-radius:3px;
+}
 
 #dashcontent .ui-draggable tr{
     /*background-image: none!important;*/
@@ -336,7 +323,7 @@ vertical-align: text-bottom;
 }
 
 #settingscontent .span6 tr{
-    border-top: 1px solid #666;
+    border-top: 1px solid #595959;
 }
 
 textarea, input, select {
@@ -361,6 +348,32 @@ div.dataTables_wrapper .ui-toolbar, div.dataTables_wrapper .ui-widget-header{
     border:10px solid #eee;
 }
 
+
+
+/*  status indicators */
+
+div.item.statusNormal td#name{
+    background-color: transparent;
+
+}
+div.item.statusProtected td#name{
+    background-color: transparent;
+    -moz-box-shadow:  0 2px 0 0 #A4B1EE;
+    -webkit-box-shadow:  0 2px 0 0 #A4B1EE;
+    box-shadow:  0 2px 0 0 #A4B1EE;
+}
+div.item.statusTimeout td#name{
+    background-color: transparent;
+    -moz-box-shadow:  0 2px 0 0 #DF2D3A;
+    -webkit-box-shadow:  0 2px 0 0 #DF2D3A;
+    box-shadow:  0 2px 0 0 #DF2D3A;    
+}
+div.item.statusLowBattery td#name{
+    background-color: transparent;
+    -moz-box-shadow:  0 2px 0 0 #DDDF2D;
+    -webkit-box-shadow:  0 2px 0 0 #DDDF2D;
+    box-shadow:  0 2px 0 0 #DDDF2D;  
+}
 
 
 /*  footer  */

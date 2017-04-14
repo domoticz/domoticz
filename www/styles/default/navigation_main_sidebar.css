@@ -19,6 +19,8 @@
         width:100%;
         height:60px;
         background-color: #eee;
+        width:60px;
+        overflow:visible;
     }
 
     .navbar .container .brand img{
@@ -47,25 +49,17 @@
     }
 
     .brand h2{
-        display:block!important;
+        display:none!important;
         color:#aaa;
-        display:block;
-        position: fixed;
-        margin:0!important;
+        position: initial!important;
+        margin:15px 0 0 110px!important;
         float:none;
-        top:-30px;
-        left:100px;
-        opacity:0;
+        text-decoration: none!important;
+        border-bottom:0!important;
     }
-    .brand:hover h2{
+    .navbar:hover .brand h2{
         display:block!important;
-        position: fixed;
-        float:fixed;
-        top:10px;
-        left:100px;
-        margin:0!important;
-        opacity:100;
-        transition: all 1s linear;
+        text-decoration: none!important;
     }
 
     

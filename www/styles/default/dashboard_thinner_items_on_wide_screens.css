@@ -1,6 +1,6 @@
 /* Creates thinner items on really wide screens */
 
-@media only screen and (min-width:1800px){ 
+@media all and (min-width:1800px){ 
     
     /* Thinner items */
     
