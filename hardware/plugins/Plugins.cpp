@@ -20,8 +20,6 @@
 
 #include "../../notifications/NotificationHelper.h"
 
-#include <chrono>
-
 #define ADD_STRING_TO_DICT(pDict, key, value) \
 		{	\
 			PyObject*	pObj = Py_BuildValue("s", value.c_str());	\
@@ -1121,14 +1119,7 @@ namespace Plugins {
 					if (m_bDebug) _log.Log(LOG_NORM, "(%s) Calling message handler '%s'.", Name.c_str(), sHandler.c_str());
 
 					PyErr_Clear();
-					std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 					PyObject*	pReturnValue = PyObject_CallObject(pFunc, pParams);
-					std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-					long elapsed = std::chrono::duration<long, std::milli>(std::chrono::duration_cast<std::chrono::milliseconds>(end - begin)).count();
-					if (elapsed > 1000)
-					{
-						_log.Log(LOG_NORM, "(%s) Message handler '%s' slow response, %d milliseconds.", Name.c_str(), sHandler.c_str(), elapsed);
-					}
 					if (!pReturnValue)
 					{
 						LogPythonException(sHandler);
