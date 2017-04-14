@@ -2507,18 +2507,18 @@ define(['app'], function(app) {
 										'\t      <td id="lastupdate" class="lastupdate"><span>' + item.LastUpdate + '</span></td>\n';
 									if (item.SwitchType == "Dimmer") {
 										if ((item.SubType.indexOf("RGBW") >= 0) || (item.SubType == "RGB")) {} else {
-											xhtm += '<td><div style="margin-left:50px; margin-top: 0.2em;" class="dimslider dimslidernorm" id="slider" data-idx="' + item.idx + '" data-type="norm" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"></div></td>';
+											xhtm += '<td class="widget"><div style="margin-left:50px; margin-top: 0.2em;" class="dimslider dimslidernorm" id="slider" data-idx="' + item.idx + '" data-type="norm" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"></div></td>';
 										}
 									} else if (item.SwitchType == "TPI") {
-										xhtm += '<td><div style="margin-left:50px; margin-top: 0.2em;" class="dimslider dimslidernorm" id="slider" data-idx="' + item.idx + '" data-type="relay" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"';
+										xhtm += '<td class="widget"><div style="margin-left:50px; margin-top: 0.2em;" class="dimslider dimslidernorm" id="slider" data-idx="' + item.idx + '" data-type="relay" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"';
 										if (item.Unit < 64 || item.Unit > 95)
 											xhtm += ' data-disabled="true"';
 										xhtm += '></div></td>';
 									} else if ((item.SwitchType == "Blinds Percentage") || (item.SwitchType == "Blinds Percentage Inverted")) {
-										xhtm += '<td><div style="margin-left:94px; margin-top: 0.2em;" class="dimslider dimslidersmalldouble" id="slider" data-idx="' + item.idx + '" data-type="blinds" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"></div></td>';
+										xhtm += '<td class="widget"><div style="margin-left:94px; margin-top: 0.2em;" class="dimslider dimslidersmalldouble" id="slider" data-idx="' + item.idx + '" data-type="blinds" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"></div></td>';
 									} else if (item.SwitchType == "Selector") {
 										if (item.SelectorStyle === 0) {
-											xhtm += '<td><div style="margin-top:0.2em;" class="selectorlevels">';
+											xhtm += '<td class="widget"><div style="margin-top:0.2em;" class="selectorlevels">';
 											xhtm += '<div id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelname="' + escape(GetLightStatusText(item)) + '">';
 											var levelNames = item.LevelNames.split('|');
 											$.each(levelNames, function(index, levelName) {
@@ -2529,7 +2529,7 @@ define(['app'], function(app) {
 											});
 											xhtm += '</div></td>';
 										} else if (item.SelectorStyle === 1) {
-											xhtm += '<td><div style="margin-top:0.2em;" class="selectorlevels">';
+											xhtm += '<td class="widget"><div style="margin-top:0.2em;" class="selectorlevels">';
 											xhtm += '<select id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelname="' + escape(GetLightStatusText(item)) + '">';
 											var levelNames = item.LevelNames.split('|');
 											$.each(levelNames, function(index, levelName) {
