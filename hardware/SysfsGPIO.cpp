@@ -138,23 +138,6 @@
 #define GPIO_MAX_PATH		64
 #define GPIO_PATH			"/sys/class/gpio/gpio"
 
-static int GPIORead(int pin, const char* param);
-static int GPIOReadFd(int fd);
-static int GPIOWrite(int pin, int value);
-
-struct gpio_info
-{
-	int	pin_number;		// GPIO Pin number
-	int	value;			// GPIO pin Value
-	int	db_state;		// Database Value
-	int	direction;		// GPIO IN or OUT
-	int	active_low;		// GPIO ActiveLow
-	int	edge;			// GPIO int Edge
-	int	read_value_fd;	// Fast read fd
-};
-
-static std::vector<gpio_info> GpioSavedState;
-
 CSysfsGPIO::CSysfsGPIO(const int ID)
 {
 	m_stoprequested = false;

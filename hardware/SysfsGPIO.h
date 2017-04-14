@@ -8,6 +8,17 @@
 
 class CSysfsGPIO : public CDomoticzHardwareBase
 {
+	struct gpio_info
+	{
+		int	pin_number;		// GPIO Pin number
+		int	value;			// GPIO pin Value
+		int	db_state;		// Database Value
+		int	direction;		// GPIO IN or OUT
+		int	active_low;		// GPIO ActiveLow
+		int	edge;			// GPIO int Edge
+		int	read_value_fd;	// Fast read fd
+	};
+
 public:
 	CSysfsGPIO(const int ID);
 	~CSysfsGPIO();
@@ -29,6 +40,7 @@ private:
 	int GPIOWrite(int pin, int value);
 	int GetReadResult(int bytecount, char* value_str);
 	boost::shared_ptr<boost::thread> m_thread;
+	std::vector<gpio_info> GpioSavedState;
 	volatile bool m_stoprequested;
 	tRBUF m_Packet;
 };
