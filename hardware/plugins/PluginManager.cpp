@@ -27,6 +27,10 @@
 
 #include "DelayedLink.h"
 
+#ifdef ENABLE_PYTHON
+#include "../../main/EventsPythonModule.h"
+#endif
+
 #define MINIMUM_PYTHON_VERSION "3.4.0"
 
 #define ATTRIBUTE_VALUE(pElement, Name, Value) \
@@ -122,7 +126,7 @@ namespace Plugins {
 				_log.Log(LOG_ERROR, "PluginSystem: Failed to append 'Domoticz' to the existing table of built-in modules.");
 				return false;
 			}
-#ifdef ENABLE_PYTHON_DECAP
+#ifdef ENABLE_PYTHON
             if (PyImport_AppendInittab("DomoticzEvents", PyInit_DomoticzEvents) == -1)
 			{
 				_log.Log(LOG_ERROR, "PluginSystem: Failed to append 'DomoticzEvents' to the existing table of built-in modules.");
