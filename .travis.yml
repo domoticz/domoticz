@@ -19,8 +19,9 @@ before_install:
   # Domoticz needs the full history to be able to calculate the version string
   - git fetch --unshallow
   # OpenZWave
-  - git clone https://github.com/OpenZWave/open-zwave.git
-  - ln -s open-zwave open-zwave-read-only
+  - git clone https://github.com/OpenZWave/open-zwave.git open-zwave-read-only
+  - git checkout Dev
+  # - ln -s open-zwave open-zwave-read-only
 
 
 # Build matrix definition

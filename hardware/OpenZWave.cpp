@@ -3716,14 +3716,14 @@ void COpenZWave::AddNode(const unsigned int homeID, const int nodeID, const Node
 std::string COpenZWave::GetVersion()
 {
 	if (!m_pManager)
-		return "??!";
+		return "?Manager Down!";
 	return m_pManager->getVersionAsString();
 }
 
 std::string COpenZWave::GetVersionLong()
 {
 	if (!m_pManager)
-		return "??!";
+		return "?Manager Down!";
 	return m_pManager->getVersionLongAsString();
 }
 
