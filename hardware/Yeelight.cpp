@@ -283,12 +283,12 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 		message = ss.str();
 		break;
 	case Limitless_SetRGBColour: {
-			sendOnFirst = true;
-			float cHue = (359.0f / 255.0f)*float(pLed->value); // hue given was in range of 0-255
-			ss << "{\"id\":1,\"method\":\"set_hsv\",\"params\":[" << cHue << ", 100, \"smooth\", 2000]}\r\n";
-			message = ss.str();
-		}
-		break;
+		sendOnFirst = true;
+		float cHue = (359.0f / 255.0f)*float(pLed->value); // hue given was in range of 0-255
+		ss << "{\"id\":1,\"method\":\"set_hsv\",\"params\":[" << cHue << ", 100, \"smooth\", 2000]}\r\n";
+		message = ss.str();
+	}
+								 break;
 	case Limitless_SetBrightUp:
 		message = "{\"id\":1,\"method\":\"set_adjust\",\"params\":[\"increase\", \"bright\"]}\r\n";
 		break;
@@ -312,12 +312,12 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 		}
 		break;
 	case Limitless_FullBrightness: {
-			sendOnFirst = true;
-			int value = pLed->value;
-			ss << "{\"id\":1,\"method\":\"set_bright\",\"params\":[100, \"smooth\", 500]}\r\n";
-			message = ss.str();
-		}
-		break;
+		sendOnFirst = true;
+		int value = pLed->value;
+		ss << "{\"id\":1,\"method\":\"set_bright\",\"params\":[100, \"smooth\", 500]}\r\n";
+		message = ss.str();
+	}
+								   break;
 	case Limitless_DiscoMode:
 		sendOnFirst = true;
 		// simulate strobe effect - at time of writing, minimum timing allowed by Yeelight is 50ms

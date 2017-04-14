@@ -426,7 +426,7 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 	if (result.size() < 1)
 	{
 		_log.Log(LOG_STATUS, "XiaomiGateway: New Switch Device Found (%s)", str.c_str());
-		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, NULL, battery);	
+		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, NULL, battery);		
 		if (customimage == 0) {
 			if (switchtype == STYPE_OnOff) {
 				customimage = 1; //wall socket			
@@ -708,31 +708,35 @@ void XiaomiGateway::Do_Work()
 std::string XiaomiGateway::GetGatewayKey()
 {
 #ifdef WWW_ENABLE_SSL
-
-	const unsigned char *key = (unsigned char *)m_GatewayPassword.c_str();
-	unsigned char iv[AES_BLOCK_SIZE] = { 0x17, 0x99, 0x6d, 0x09, 0x3d, 0x28, 0xdd, 0xb3, 0xba, 0x69, 0x5a, 0x2e, 0x6f, 0x58, 0x56, 0x2e };
-	unsigned char *plaintext = (unsigned char *)m_token.c_str();
-	unsigned char ciphertext[128];
-
-	AES_KEY encryption_key;
-	AES_set_encrypt_key(key, 128, &(encryption_key));
-	AES_cbc_encrypt((unsigned char *)plaintext, ciphertext, sizeof(plaintext) * 8, &encryption_key, iv, AES_ENCRYPT);
-
-	char gatewaykey[128];
-	for (int i = 0; i < 16; i++)
-	{
-		sprintf(&gatewaykey[i * 2], "%02X", ciphertext[i]);
+	if (m_token.c_str() == "") {
+		_log.Log(LOG_ERROR, "XiaomiGateway: Cannot get gateway key as there is no token received from the gateway.  Please ensure your network allows UDP multicast between the Xiaomi Gateway and Domoticz");
 	}
-#ifdef _DEBUG
-	_log.Log(LOG_STATUS, "XiaomiGateway: GetGatewayKey Password - %s", m_GatewayPassword.c_str());
-	_log.Log(LOG_STATUS, "XiaomiGateway: GetGatewayKey Token - %s", m_token.c_str());
-	_log.Log(LOG_STATUS, "XiaomiGateway: GetGatewayKey key - %s", gatewaykey);
-#endif
-	return gatewaykey;
-#else
-	_log.Log(LOG_ERROR, "XiaomiGateway: GetGatewayKey NO SSL AVAILABLE");
-	return std::string("");
-#endif
+	else {
+		const unsigned char *key = (unsigned char *)m_GatewayPassword.c_str();
+		unsigned char iv[AES_BLOCK_SIZE] = { 0x17, 0x99, 0x6d, 0x09, 0x3d, 0x28, 0xdd, 0xb3, 0xba, 0x69, 0x5a, 0x2e, 0x6f, 0x58, 0x56, 0x2e };
+		unsigned char *plaintext = (unsigned char *)m_token.c_str();
+		unsigned char ciphertext[128];
+
+		AES_KEY encryption_key;
+		AES_set_encrypt_key(key, 128, &(encryption_key));
+		AES_cbc_encrypt((unsigned char *)plaintext, ciphertext, sizeof(plaintext) * 8, &encryption_key, iv, AES_ENCRYPT);
+
+		char gatewaykey[128];
+		for (int i = 0; i < 16; i++)
+		{
+			sprintf(&gatewaykey[i * 2], "%02X", ciphertext[i]);
+		}
+	#ifdef _DEBUG
+		_log.Log(LOG_STATUS, "XiaomiGateway: GetGatewayKey Password - %s", m_GatewayPassword.c_str());
+		_log.Log(LOG_STATUS, "XiaomiGateway: GetGatewayKey Token - %s", m_token.c_str());
+		_log.Log(LOG_STATUS, "XiaomiGateway: GetGatewayKey key - %s", gatewaykey);
+	#endif
+		return gatewaykey;
+	#else
+		_log.Log(LOG_ERROR, "XiaomiGateway: GetGatewayKey NO SSL AVAILABLE");
+		return std::string("");
+	#endif
+	}
 }
 
 
