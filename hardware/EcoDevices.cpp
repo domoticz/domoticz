@@ -262,7 +262,7 @@ void CEcoDevices::GetMeterDetails()
 		}
 		// Process Counter 1
 		if ((m_status.index1 > 0) && ((m_status.index1 != m_status.pindex1) || (m_status.flow1 != m_status.pflow1) \
-			|| (difftime(atime, m_status.time1) >= m_iDataTimeout -10)))
+			|| (difftime(atime, m_status.time1) >= m_iDataTimeout - 10)))
 		{
 			m_status.pindex1 = m_status.index1;
 			m_status.pflow1 = m_status.flow1;
@@ -273,7 +273,7 @@ void CEcoDevices::GetMeterDetails()
 
 		// Process Counter 2
 		if ((m_status.index2 > 0) && ((m_status.index2 != m_status.pindex2) || (m_status.flow2 != m_status.pflow2) \
-			|| (difftime(atime, m_status.time2) >= m_iDataTimeout -10)))
+			|| (difftime(atime, m_status.time2) >= m_iDataTimeout - 10)))
 		{
 			m_status.pindex2 = m_status.index2;
 			m_status.pflow2 = m_status.flow2;
