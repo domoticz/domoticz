@@ -43,6 +43,7 @@ namespace OpenZWave
 	class Node;
 
 	/** \brief Base class for values associated with a node.
+	 * \ingroup ValueID
 	 */
 	class Value: public Ref
 	{
@@ -50,7 +51,7 @@ namespace OpenZWave
 		friend class ValueStore;
 
 	public:
-		Value( uint32 const _homeId, uint8 const _nodeId, ValueID::ValueGenre const _genre, uint8 const _commandClassId, uint8 const _instance, uint8 const _index, ValueID::ValueType const _type, string const& _label, string const& _units, bool const _readOnly, bool const _writeOnly, bool const _isset, uint8 const _pollIntensity );
+		Value( uint32 const _homeId, uint8 const _nodeId, ValueID::ValueGenre const _genre, uint8 const _commandClassId, uint8 const _instance, uint16 const _index, ValueID::ValueType const _type, string const& _label, string const& _units, bool const _readOnly, bool const _writeOnly, bool const _isset, uint8 const _pollIntensity );
 		Value();
 
 		virtual void ReadXML( uint32 const _homeId, uint8 const _nodeId, uint8 const _commandClassId, TiXmlElement const* _valueElement );

@@ -35,6 +35,7 @@ namespace OpenZWave
 	class TimeStampImpl;
 
 	/** \brief Implements a platform-independent TimeStamp.
+	 * \ingroup Platform
 	 */
 	class OPENZWAVE_EXPORT TimeStamp
 	{
@@ -79,8 +80,8 @@ namespace OpenZWave
 		int32 operator- ( TimeStamp const& _other );
 
 	private:
-		TimeStamp( TimeStamp const& );					// prevent copy
-		TimeStamp& operator = ( TimeStamp const& );			// prevent assignment
+		TimeStamp( TimeStamp const& );				// prevent copy
+		TimeStamp& operator = ( TimeStamp const& );	// prevent assignment
 
 		TimeStampImpl*	m_pImpl;					// Pointer to an object that encapsulates the platform-specific implementation of the TimeStamp.
 	};

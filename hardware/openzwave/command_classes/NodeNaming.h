@@ -32,7 +32,24 @@
 
 namespace OpenZWave
 {
+
+	/** \brief Extract a String from a Z-Wave Encoded Packet
+	 * \ingroup CommandClass
+	 *
+	 *  this function is used by the NodeNaming CC as well as the Alarm CC
+	 */
+	string ExtractString( uint8 const* _data, uint32 const _length );
+
+	/** \brief Convert from UTF16 to UTF8
+	 * \ingroup CommandClass
+	 *
+	 *  this function is used by the NodeNaming CC as well as the Alarm CC
+	 */
+	uint32 ConvertUFT16ToUTF8( uint16 _utf16, char* _buffer, uint32 pos );
+
+
 	/** \brief Implements COMMAND_CLASS_NODE_NAMING (0x77), a Z-Wave device command class.
+	 * \ingroup CommandClass
 	 */
 	class NodeNaming: public CommandClass
 	{
@@ -45,7 +62,7 @@ namespace OpenZWave
 
 		// From CommandClass
 		virtual bool RequestState( uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue );
-		virtual bool RequestValue( uint32 const _requestFlags, uint8 const _index, uint8 const _instance, Driver::MsgQueue const _queue );
+		virtual bool RequestValue( uint32 const _requestFlags, uint16 const _index, uint8 const _instance, Driver::MsgQueue const _queue );
 		virtual uint8 const GetCommandClassId()const{ return StaticGetCommandClassId(); }		
 		virtual string const GetCommandClassName()const{ return StaticGetCommandClassName(); }
 		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 );
@@ -55,9 +72,6 @@ namespace OpenZWave
 
 	private:
 		NodeNaming( uint32 const _homeId, uint8 const _nodeId ): CommandClass( _homeId, _nodeId ){}
-
-		string ExtractString( uint8 const* _data, uint32 const _length );
-		uint32 ConvertUFT16ToUTF8( uint16 _utf16, char* _buffer, uint32 pos );
 	};
 
 } // namespace OpenZWave

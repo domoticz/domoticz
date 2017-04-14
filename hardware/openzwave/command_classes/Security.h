@@ -34,8 +34,6 @@
 
 namespace OpenZWave
 {
-	/** \brief Implements COMMAND_CLASS_SECURITY (0x98), a Z-Wave device command class.
-	 */
 
 
 	enum SecurityCmd
@@ -59,6 +57,9 @@ namespace OpenZWave
 	};
 
 
+	/** \brief Implements COMMAND_CLASS_SECURITY (0x98), a Z-Wave device command class.
+	 * \ingroup CommandClass
+	 */
 
 	class Security: public CommandClass
 	{
@@ -84,7 +85,7 @@ namespace OpenZWave
 	private:
 		Security( uint32 const _homeId, uint8 const _nodeId );
 		bool RequestState( uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue);
-		bool RequestValue( uint32 const _requestFlags, uint8 const _index, uint8 const _instance, Driver::MsgQueue const _queue);
+		bool RequestValue( uint32 const _requestFlags, uint16 const _index, uint8 const _instance, Driver::MsgQueue const _queue);
 		bool HandleSupportedReport(uint8 const* _data, uint32 const _length);
 
 		bool m_schemeagreed;

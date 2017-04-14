@@ -40,6 +40,7 @@ namespace OpenZWave
 	class Node;
 
 	/** \brief Decimal value sent to/received from a node.
+	 * \ingroup ValueID
 	 */
 	class ValueDecimal: public Value
 	{
@@ -49,7 +50,7 @@ namespace OpenZWave
 		friend class ThermostatSetpoint;
 
 	public:
-		ValueDecimal( uint32 const _homeId, uint8 const _nodeId, ValueID::ValueGenre const _genre, uint8 const _commandClassId, uint8 const _instance, uint8 const _index, string const& _label, string const& _units, bool const _readOnly, bool const _writeOnly, string const& _value, uint8 const _pollIntensity );
+		ValueDecimal( uint32 const _homeId, uint8 const _nodeId, ValueID::ValueGenre const _genre, uint8 const _commandClassId, uint8 const _instance, uint16 const _index, string const& _label, string const& _units, bool const _readOnly, bool const _writeOnly, string const& _value, uint8 const _pollIntensity );
 		ValueDecimal(): m_precision( 0 ){}
 		virtual ~ValueDecimal(){}
 

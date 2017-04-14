@@ -35,6 +35,7 @@ namespace OpenZWave
 	class ValueByte;
 
 	/** \brief Implements COMMAND_CLASS_ALARM (0x71), a Z-Wave device command class.
+	 * \ingroup CommandClass
 	 */
 	class Alarm: public CommandClass
 	{
@@ -49,7 +50,7 @@ namespace OpenZWave
 
 		// From CommandClass
 		virtual bool RequestState( uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue );
-		virtual bool RequestValue( uint32 const _requestFlags, uint8 const _index, uint8 const _instance, Driver::MsgQueue const _queue );
+		virtual bool RequestValue( uint32 const _requestFlags, uint16 const _index, uint8 const _instance, Driver::MsgQueue const _queue );
 		/** \brief Get command class ID (1 byte) identifying this command class. (Inherited from CommandClass) */
 		virtual uint8 const GetCommandClassId()const{ return StaticGetCommandClassId(); }
 		/** \brief Get a string containing the name of this command class. (Inherited from CommandClass) */
@@ -59,11 +60,9 @@ namespace OpenZWave
 
 		virtual uint8 GetMaxVersion(){ return 3; }
 
-	protected:
-		virtual void CreateVars( uint8 const _instance );
-
 	private:
 		Alarm( uint32 const _homeId, uint8 const _nodeId );
+		multimap<uint8, uint8> m_TempValueIDs;
 	};
 
 } // namespace OpenZWave
