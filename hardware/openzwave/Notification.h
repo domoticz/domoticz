@@ -28,6 +28,8 @@
 #ifndef _Notification_H
 #define _Notification_H
 
+#include <iostream>
+
 #include "Defs.h"
 #include "value_classes/ValueID.h"
 
@@ -53,6 +55,10 @@ namespace OpenZWave
 		friend class NoOperation;
 		friend class SceneActivation;
 		friend class WakeUp;
+		friend class ManufacturerSpecificDB;
+		/* allow us to Stream a Notification */
+		//friend std::ostream &operator<<(std::ostream &os, const Notification &dt);
+
 
 	public:
 		/**
@@ -64,19 +70,19 @@ namespace OpenZWave
 	     */
 		enum NotificationType
 		{
-			Type_ValueAdded = 0,					/**< A new node value has been added to OpenZWave's list. These notifications occur after a node has been discovered, and details of its command classes have been received.  Each command class may generate one or more values depending on the complexity of the item being represented.  */
+			Type_ValueAdded = 0,				/**< A new node value has been added to OpenZWave's list. These notifications occur after a node has been discovered, and details of its command classes have been received.  Each command class may generate one or more values depending on the complexity of the item being represented.  */
 			Type_ValueRemoved,					/**< A node value has been removed from OpenZWave's list.  This only occurs when a node is removed. */
 			Type_ValueChanged,					/**< A node value has been updated from the Z-Wave network and it is different from the previous value. */
-			Type_ValueRefreshed,					/**< A node value has been updated from the Z-Wave network. */
-			Type_Group,						/**< The associations for the node have changed. The application should rebuild any group information it holds about the node. */
+			Type_ValueRefreshed,				/**< A node value has been updated from the Z-Wave network. */
+			Type_Group,							/**< The associations for the node have changed. The application should rebuild any group information it holds about the node. */
 			Type_NodeNew,						/**< A new node has been found (not already stored in zwcfg*.xml file) */
 			Type_NodeAdded,						/**< A new node has been added to OpenZWave's list.  This may be due to a device being added to the Z-Wave network, or because the application is initializing itself. */
 			Type_NodeRemoved,					/**< A node has been removed from OpenZWave's list.  This may be due to a device being removed from the Z-Wave network, or because the application is closing. */
-			Type_NodeProtocolInfo,					/**< Basic node information has been received, such as whether the node is a listening device, a routing device and its baud rate and basic, generic and specific types. It is after this notification that you can call Manager::GetNodeType to obtain a label containing the device description. */
+			Type_NodeProtocolInfo,				/**< Basic node information has been received, such as whether the node is a listening device, a routing device and its baud rate and basic, generic and specific types. It is after this notification that you can call Manager::GetNodeType to obtain a label containing the device description. */
 			Type_NodeNaming,					/**< One of the node names has changed (name, manufacturer, product). */
 			Type_NodeEvent,						/**< A node has triggered an event.  This is commonly caused when a node sends a Basic_Set command to the controller.  The event value is stored in the notification. */
-			Type_PollingDisabled,					/**< Polling of a node has been successfully turned off by a call to Manager::DisablePoll */
-			Type_PollingEnabled,					/**< Polling of a node has been successfully turned on by a call to Manager::EnablePoll */
+			Type_PollingDisabled,				/**< Polling of a node has been successfully turned off by a call to Manager::DisablePoll */
+			Type_PollingEnabled,				/**< Polling of a node has been successfully turned on by a call to Manager::EnablePoll */
 			Type_SceneEvent,					/**< Scene Activation Set received */
 			Type_CreateButton,					/**< Handheld controller button event created */
 			Type_DeleteButton,					/**< Handheld controller button event deleted */
@@ -85,16 +91,18 @@ namespace OpenZWave
 			Type_DriverReady,					/**< A driver for a PC Z-Wave controller has been added and is ready to use.  The notification will contain the controller's Home ID, which is needed to call most of the Manager methods. */
 			Type_DriverFailed,					/**< Driver failed to load */
 			Type_DriverReset,					/**< All nodes and values for this driver have been removed.  This is sent instead of potentially hundreds of individual node and value notifications. */
-			Type_EssentialNodeQueriesComplete,			/**< The queries on a node that are essential to its operation have been completed. The node can now handle incoming messages. */
-			Type_NodeQueriesComplete,				/**< All the initialization queries on a node have been completed. */
-			Type_AwakeNodesQueried,					/**< All awake nodes have been queried, so client application can expected complete data for these nodes. */
-			Type_AllNodesQueriedSomeDead,				/**< All nodes have been queried but some dead nodes found. */
-			Type_AllNodesQueried,					/**< All nodes have been queried, so client application can expected complete data. */
+			Type_EssentialNodeQueriesComplete,	/**< The queries on a node that are essential to its operation have been completed. The node can now handle incoming messages. */
+			Type_NodeQueriesComplete,			/**< All the initialization queries on a node have been completed. */
+			Type_AwakeNodesQueried,				/**< All awake nodes have been queried, so client application can expected complete data for these nodes. */
+			Type_AllNodesQueriedSomeDead,		/**< All nodes have been queried but some dead nodes found. */
+			Type_AllNodesQueried,				/**< All nodes have been queried, so client application can expected complete data. */
 			Type_Notification,					/**< An error has occurred that we need to report. */
 			Type_DriverRemoved,					/**< The Driver is being removed. (either due to Error or by request) Do Not Call Any Driver Related Methods after receiving this call */
-			Type_ControllerCommand,				/**< When Controller Commands are executed, Notifications of Success/Failure etc are communicated via this Notification
-												  * Notification::GetEvent returns Driver::ControllerState and Notification::GetNotification returns Driver::ControllerError if there was a error */
-			Type_NodeReset						/**< The Device has been reset and thus removed from the NodeList in OZW */
+			Type_ControllerCommand,					/**< When Controller Commands are executed, Notifications of Success/Failure etc are communicated via this Notification
+										 * Notification::GetEvent returns Driver::ControllerCommand and Notification::GetNotification returns Driver::ControllerState */
+			Type_NodeReset,						/**< The Device has been reset and thus removed from the NodeList in OZW */
+			Type_UserAlerts,					/**< Warnings and Notifications Generated by the library that should be displayed to the user (eg, out of date config files) */
+			Type_ManufacturerSpecificDBReady			/**< The ManufacturerSpecific Database Is Ready */
 		};
 
 		/**
@@ -104,13 +112,28 @@ namespace OpenZWave
 		 */
 		enum NotificationCode
 		{
-			Code_MsgComplete = 0,					/**< Completed messages */
-			Code_Timeout,						/**< Messages that timeout will send a Notification with this code. */
-			Code_NoOperation,					/**< Report on NoOperation message sent completion  */
+			Code_MsgComplete = 0,			/**< Completed messages */
+			Code_Timeout,					/**< Messages that timeout will send a Notification with this code. */
+			Code_NoOperation,				/**< Report on NoOperation message sent completion  */
 			Code_Awake,						/**< Report when a sleeping node wakes up */
 			Code_Sleep,						/**< Report when a node goes to sleep */
 			Code_Dead,						/**< Report when a node is presumed dead */
 			Code_Alive						/**< Report when a node is revived */
+		};
+
+		/**
+		 * User Alert Types - These are messages that should be displayed to users to inform them of
+		 * potential issues such as Out of Date configuration files etc
+		 */
+		enum UserAlertNofification
+		{
+			Alert_None,						/**< No Alert Currently Present */
+			Alert_ConfigOutOfDate,			/**< One of the Config Files is out of date. Use GetNodeId to determine which node is affected. */
+			Alert_MFSOutOfDate,				/**< the manufacturer_specific.xml file is out of date. */
+			Alert_ConfigFileDownloadFailed, /**< A Config File failed to download */
+			Alert_DNSError,					/**< A error occurred performing a DNS Lookup */
+			Alert_NodeReloadReqired,		/**< A new Config file has been discovered for this node, and its pending a Reload to Take Effect */
+			Alert_UnsupportedController		/**< The Controller is not running a Firmware Library we support */
 		};
 
 		/**
@@ -169,6 +192,12 @@ namespace OpenZWave
 		 */
 		uint8 GetNotification()const{ assert((Type_Notification==m_type) || (Type_ControllerCommand == m_type)); return m_byte; }
 
+        /**
+         * Get the (controller) command from a notification. Only valid for Notification::Type_ControllerCommand notifications.
+         * \return the (controller) command code.
+         */
+        uint8 GetCommand()const{ assert(Type_ControllerCommand == m_type); return m_command; }
+		
 		/**
 		 * Helper function to simplify wrapping the notification class.  Should not normally need to be called.
 		 * \return the internal byte value of the notification.
@@ -181,9 +210,14 @@ namespace OpenZWave
 		 */
 		string GetAsString()const;
 
+		/**
+		 * Retrieve the User Alert Type Enum to determine what this message is about
+		 * \return UserAlertNotification Enum describing the Alert Type
+		 */
+		UserAlertNofification GetUserAlertType()const {return m_useralerttype;};
 
 	private:
-		Notification( NotificationType _type ): m_type( _type ), m_byte(0), m_event(0) {}
+		Notification( NotificationType _type ): m_type( _type ), m_byte(0), m_event(0), m_command(0), m_useralerttype(Alert_None) {}
 		~Notification(){}
 
 		void SetHomeAndNodeIds( uint32 const _homeId, uint8 const _nodeId ){ m_valueId = ValueID( _homeId, _nodeId ); }
@@ -194,14 +228,21 @@ namespace OpenZWave
 		void SetSceneId( uint8 const _sceneId ){ assert(Type_SceneEvent==m_type); m_byte = _sceneId; }
 		void SetButtonId( uint8 const _buttonId ){ assert(Type_CreateButton==m_type||Type_DeleteButton==m_type||Type_ButtonOn==m_type||Type_ButtonOff==m_type); m_byte = _buttonId; }
 		void SetNotification( uint8 const _noteId ){ assert((Type_Notification==m_type) || (Type_ControllerCommand == m_type)); m_byte = _noteId; }
+		void SetUserAlertNofification(UserAlertNofification const alerttype){ assert(Type_UserAlerts==m_type); m_useralerttype = alerttype; }
+		void SetCommand( uint8 const _command ){ assert(Type_ControllerCommand == m_type); m_command = _command; }
 
 		NotificationType		m_type;
 		ValueID				m_valueId;
 		uint8				m_byte;
 		uint8				m_event;
+		uint8				m_command;
+		UserAlertNofification m_useralerttype;
 	};
 
 } //namespace OpenZWave
+
+std::ostream& operator<<(std::ostream &os, const OpenZWave::Notification &dt);
+std::ostream& operator<<(std::ostream &os, const OpenZWave::Notification *dt);
 
 #endif //_Notification_H
 

@@ -33,6 +33,7 @@
 namespace OpenZWave
 {
 	/** \brief Implements COMMAND_CLASS_NO_OPERATION (0x00), a Z-Wave device command class.
+	 * \ingroup CommandClass
 	 */
 	class NoOperation: public CommandClass
 	{

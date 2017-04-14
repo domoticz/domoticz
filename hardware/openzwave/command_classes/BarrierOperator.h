@@ -1,10 +1,10 @@
 //-----------------------------------------------------------------------------
 //
-//	Clock.h
+//	BarrierOperator.h
 //
-//	Implementation of the Z-Wave COMMAND_CLASS_CLOCK
+//	Implementation of the COMMAND_CLASS_BARRIER_OPERATOR
 //
-//	Copyright (c) 2010 Mal Lansell <openzwave@lansell.org>
+//	Copyright (c) 2016 srirams (https://github.com/srirams)
 //
 //	SOFTWARE NOTICE AND LICENSE
 //
@@ -25,27 +25,27 @@
 //
 //-----------------------------------------------------------------------------
 
-#ifndef _Clock_H
-#define _Clock_H
+#ifndef _BarrierOperator_H
+#define _BarrierOperator_H
 
 #include "command_classes/CommandClass.h"
 
 namespace OpenZWave
 {
 	class ValueByte;
-	class ValueList;
+	class ValueBool;
 
-	/** \brief Implements COMMAND_CLASS_CLOCK (0x81), a Z-Wave device command class.
+	/** \brief Implements COMMAND_CLASS_BARRIER_OPERATOR (0x66), a Z-Wave device command class.
 	 * \ingroup CommandClass
 	 */
-	class Clock: public CommandClass
+	class BarrierOperator: public CommandClass
 	{
 	public:
-		static CommandClass* Create( uint32 const _homeId, uint8 const _nodeId ){ return new Clock( _homeId, _nodeId ); }
-		virtual ~Clock(){}
+		static CommandClass* Create( uint32 const _homeId, uint8 const _nodeId ){ return new BarrierOperator( _homeId, _nodeId ); }
+		virtual ~BarrierOperator(){}
 
-		static uint8 const StaticGetCommandClassId(){ return 0x81; }
-		static string const StaticGetCommandClassName(){ return "COMMAND_CLASS_CLOCK"; }
+		static uint8 const StaticGetCommandClassId(){ return 0x66; }
+		static string const StaticGetCommandClassName(){ return "COMMAND_CLASS_BARRIER_OPERATOR"; }
 
 		// From CommandClass
 		virtual bool RequestState( uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue );
@@ -53,16 +53,17 @@ namespace OpenZWave
 		virtual uint8 const GetCommandClassId()const{ return StaticGetCommandClassId(); }
 		virtual string const GetCommandClassName()const{ return StaticGetCommandClassName(); }
 		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 );
-		virtual bool SetValue( Value const& _value );
+		virtual bool SetValue(Value const& _value);
+
+		virtual uint8 GetMaxVersion(){ return 3; }
 
 	protected:
 		virtual void CreateVars( uint8 const _instance );
 
 	private:
-		Clock( uint32 const _homeId, uint8 const _nodeId ): CommandClass( _homeId, _nodeId ){}
+		BarrierOperator( uint32 const _homeId, uint8 const _nodeId );
 	};
 
 } // namespace OpenZWave
 
 #endif
-

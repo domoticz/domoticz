@@ -35,6 +35,7 @@ namespace OpenZWave
 	class ValueByte;
 
 	/** \brief Implements COMMAND_CLASS_CENTRAL_SCENE (0x5B), a Z-Wave device command class.
+	 * \ingroup CommandClass
 	 */
 	class CentralScene: public CommandClass
 	{
@@ -59,7 +60,7 @@ namespace OpenZWave
 		void ReadXML( TiXmlElement const* _ccElement	);
 		void WriteXML( TiXmlElement* _ccElement );
 		bool RequestState( uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue );
-		bool RequestValue( uint32 const _requestFlags, uint8 const _what, uint8 const _instance, Driver::MsgQueue const _queue );
+		bool RequestValue( uint32 const _requestFlags, uint16 const _index, uint8 const _instance, Driver::MsgQueue const _queue );
 	private:
 		CentralScene( uint32 const _homeId, uint8 const _nodeId );
 		int32 m_scenecount;

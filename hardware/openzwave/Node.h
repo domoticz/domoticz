@@ -57,6 +57,7 @@ namespace OpenZWave
 	class ValueShort;
 	class ValueString;
 	class Mutex;
+	class ProductDescriptor;
 
 	/** \brief The Node class describes a Z-Wave node object...typically a device on the
 	 *  Z-Wave network.
@@ -83,10 +84,11 @@ namespace OpenZWave
 			friend class Language;
 			friend class Lock;
 			friend class ManufacturerSpecific;
+			friend class ManufacturerSpecificDB;
 			friend class Meter;
 			friend class MeterPulse;
 			friend class MultiInstance;
-			friend class MultiInstanceAssociation;
+			friend class MultiChannelAssociation;
 			friend class NodeNaming;
 			friend class Protection;
 			friend class Security;
@@ -133,26 +135,26 @@ namespace OpenZWave
 		public:
 			enum QueryStage
 			{
-				QueryStage_None,						/**< Query process hasn't started for this node */
-				QueryStage_ProtocolInfo,				/**< Retrieve protocol information */
-				QueryStage_Probe,					/**< Ping device to see if alive */
-				QueryStage_WakeUp,					/**< Start wake up process if a sleeping node */
+				QueryStage_None,							/**< Query process hasn't started for this node */
+				QueryStage_ProtocolInfo,					/**< Retrieve protocol information */
+				QueryStage_Probe,							/**< Ping device to see if alive */
+				QueryStage_WakeUp,							/**< Start wake up process if a sleeping node */
 				QueryStage_ManufacturerSpecific1,			/**< Retrieve manufacturer name and product ids if ProtocolInfo lets us */
-				QueryStage_NodeInfo,					/**< Retrieve info about supported, controlled command classes */
-				QueryStage_NodePlusInfo,				/**< Retrieve ZWave+ info and update device classes */
-				QueryStage_SecurityReport,				/**< Retrive a list of Command Classes that require Security */
+				QueryStage_NodeInfo,						/**< Retrieve info about supported, controlled command classes */
+				QueryStage_NodePlusInfo,					/**< Retrieve ZWave+ info and update device classes */
+				QueryStage_SecurityReport,					/**< Retrieve a list of Command Classes that require Security */
 				QueryStage_ManufacturerSpecific2,			/**< Retrieve manufacturer name and product ids */
-				QueryStage_Versions,					/**< Retrieve version information */
-				QueryStage_Instances,					/**< Retrieve information about multiple command class instances */
-				QueryStage_Static,					/**< Retrieve static information (doesn't change) */
-				QueryStage_CacheLoad,					/**< Ping a device upon restarting with cached config for the device */
-				QueryStage_Probe1 = QueryStage_CacheLoad, /** < Depreciated name. /todo Remove in 2.0 timeframe */
-				QueryStage_Associations,				/**< Retrieve information about associations */
-				QueryStage_Neighbors,					/**< Retrieve node neighbor list */
-				QueryStage_Session,					/**< Retrieve session information (changes infrequently) */
-				QueryStage_Dynamic,					/**< Retrieve dynamic information (changes frequently) */
-				QueryStage_Configuration,				/**< Retrieve configurable parameter information (only done on request) */
-				QueryStage_Complete					/**< Query process is completed for this node */
+				QueryStage_Versions,						/**< Retrieve version information */
+				QueryStage_Instances,						/**< Retrieve information about multiple command class instances */
+				QueryStage_Static,							/**< Retrieve static information (doesn't change) */
+				QueryStage_CacheLoad,						/**< Ping a device upon restarting with cached config for the device */
+				QueryStage_Probe1 = QueryStage_CacheLoad,	/** < Depreciated name. /todo Remove in 2.0 timeframe */
+				QueryStage_Associations,					/**< Retrieve information about associations */
+				QueryStage_Neighbors,						/**< Retrieve node neighbor list */
+				QueryStage_Session,							/**< Retrieve session information (changes infrequently) */
+				QueryStage_Dynamic,							/**< Retrieve dynamic information (changes frequently) */
+				QueryStage_Configuration,					/**< Retrieve configurable parameter information (only done on request) */
+				QueryStage_Complete							/**< Query process is completed for this node */
 			};
 
 
@@ -168,7 +170,7 @@ namespace OpenZWave
 			 * <p>
 			 * The individual command classes also store some state information as to whether
 			 * they have had a response to certain queries.  This state information is
-			 * initilized by the SetStaticRequests call in QueryStage_None.  It is also saved,
+			 * initialized by the SetStaticRequests call in QueryStage_None.  It is also saved,
 			 * so we do not need to request state  from every command class if some have previously
 			 * responded.
 			 */
@@ -239,7 +241,7 @@ namespace OpenZWave
 			 * devices classes and the CommandClasses that the node supports, so we can build a pretty good Node out of that
 			 * info.
 			 * @param _protocolInfo Byte 0 - Basic Device Class Byte 1 - Generic Device Class, Byte 2 - Specific Device Classes Remaining Bytes - Supported Command Classes
-			 * @param _length lenght of the _protocolInfo field.
+			 * @param _length length of the _protocolInfo field.
 			 */
 			void SetProtocolInfo(uint8 const* _protocolInfo, uint8 const _length);
 			void UpdateNodeInfo( uint8 const* _data, uint8 const _length );
@@ -289,7 +291,7 @@ namespace OpenZWave
 				SecurityFlag_BeamCapability			= 0x10,
 				SecurityFlag_Sensor250ms			= 0x20,
 				SecurityFlag_Sensor1000ms			= 0x40,
-				SecurityFlag_OptionalFunctionality		= 0x80
+				SecurityFlag_OptionalFunctionality	= 0x80
 			};
 
 			// Node Ids
@@ -329,13 +331,13 @@ namespace OpenZWave
 			bool		m_security;
 			uint32		m_homeId;
 			uint8		m_nodeId;
-			uint8		m_basic;		//*< Basic device class (0x01-Controller, 0x02-Static Controller, 0x03-Slave, 0x04-Routing Slave
+			uint8		m_basic;				//*< Basic device class (0x01-Controller, 0x02-Static Controller, 0x03-Slave, 0x04-Routing Slave
 			uint8		m_generic;
 			uint8		m_specific;
-			string		m_type;			// Label representing the specific/generic/basic value
-			uint8		m_neighbors[29];	// Bitmask containing the neighbouring nodes
-			uint8		m_numRouteNodes;	// number of node routes
-			uint8		m_routeNodes[5];	// nodes to route to
+			string		m_type;					// Label representing the specific/generic/basic value
+			uint8		m_neighbors[29];		// Bitmask containing the neighboring nodes
+			uint8		m_numRouteNodes;		// number of node routes
+			uint8		m_routeNodes[5];		// nodes to route to
 			map<uint8,uint8>	m_buttonMap;	// Map button IDs into virtual node numbers
 			bool		m_addingNode;
 
@@ -433,6 +435,61 @@ namespace OpenZWave
 
 			map<uint8,CommandClass*>		m_commandClassMap;	/**< Map of command class ids and pointers to associated command class objects */
 			bool							m_secured; /**< Is this Node added Securely */
+
+			//-----------------------------------------------------------------------------
+			// Configuration Revision Related Classes
+			//-----------------------------------------------------------------------------
+		public:
+			void SetProductDetails(ProductDescriptor *product);
+			/** Get a path to the config file for this device
+			 *
+			 * @return a path relative to the config directory for the config file. returns a empty string if a config file is not present.
+			 */
+			string getConfigPath();
+			/** Get the latest local revision of the config file for this node
+			 *
+			 * @return a revision number
+			 */
+			uint32 getFileConfigRevision() { return m_fileConfigRevision; };
+			/** Get the Revision number of the config that is laoded for this Node
+			 *
+			 * @return the revision number currently loaded.
+			 */
+			uint32 getLoadedConfigRevision() { return m_loadedConfigRevision; };
+			/** Get the Latest Config File revision available at openzwave.com
+			 *
+			 * @return The latest revision number available
+			 */
+			uint32 getLatestConfigRevision() { return m_latestConfigRevision; };
+			/** Set the revision number of the Config File for this device
+			 *
+			 * @param rev the revision number
+			 */
+			void setFileConfigRevision(uint32 rev);
+			/** Set the revision number of the config that is loaded for this device
+			 *
+			 * @param rev the revision number
+			 */
+			void setLoadedConfigRevision(uint32 rev);
+			/** Set the revision number of the latest available config file for this device
+			 *
+			 * @param rev the revision number
+			 */
+			void setLatestConfigRevision(uint32 rev);
+			/** Check the latest available revision number for this device.
+			 *
+			 */
+			void checkLatestConfigRevision( );
+
+		private:
+
+
+			ProductDescriptor *m_Product;
+
+
+			uint32 m_fileConfigRevision;
+			uint32 m_loadedConfigRevision;
+			uint32 m_latestConfigRevision;
 			//-----------------------------------------------------------------------------
 			// Basic commands (helpers that go through the basic command class)
 			//-----------------------------------------------------------------------------
@@ -554,7 +611,7 @@ namespace OpenZWave
 			void ReadDeviceClasses();																	// Read the static device class data from the device_classes.xml file
 			string GetEndPointDeviceClassLabel( uint8 const _generic, uint8 const _specific );
 
-			static bool								s_deviceClassesLoaded;		// True if the xml file has alreayd been loaded
+			static bool								s_deviceClassesLoaded;		// True if the xml file has already been loaded
 			static map<uint8,string>				s_basicDeviceClasses;		// Map of basic device classes.
 			static map<uint8,GenericDeviceClass*>	s_genericDeviceClasses;		// Map of generic device classes.
 			static map<uint8,DeviceClass*> 			s_roleDeviceClasses;		// Map of Zwave+ role device classes.
@@ -606,7 +663,7 @@ namespace OpenZWave
 			TimeStamp m_sentTS;				// Last message sent time
 			TimeStamp m_receivedTS;				// Last message received time
 			uint32 m_averageRequestRTT;			// Average Request round trip time.
-			uint32 m_averageResponseRTT;			// Average Reponse round trip time.
+			uint32 m_averageResponseRTT;			// Average Response round trip time.
 			uint8 m_quality;				// Node quality measure
 			uint8 m_lastReceivedMessage[254];		// Place to hold last received message
 			uint8 m_errors;					// Count errors for dead node detection
@@ -622,6 +679,38 @@ namespace OpenZWave
 			private:
 			uint8 m_lastnonce;
 			uint8 m_nonces[8][8];
+
+			//-----------------------------------------------------------------------------
+			//	MetaData Related
+			//-----------------------------------------------------------------------------
+
+			public:
+			/**
+			 * MetaData Fields.
+			 * Available Fields that contain metadata about a device.
+			 * \see Manager::AddWatcher
+			 * \see Manager::BeginControllerCommand
+			 */
+			enum MetaDataFields
+			{
+				MetaData_OzwInfoPage,
+				MetaData_ZWProductPage,
+				MetaData_Pepper1Page,
+				MetaData_ProductPic,
+				MetaData_ProductManual,
+				MetaData_ProductPage,
+				MetaData_Invalid = 255
+			};
+
+			string const GetMetaData(MetaDataFields);
+			MetaDataFields const GetMetaDataId(string);
+			string const GetMetaDataString(MetaDataFields);
+
+
+			private:
+			void ReadMetaDataFromXML(TiXmlElement const* _valueElement);
+			void WriteMetaDataXML(TiXmlElement*);
+			map<MetaDataFields, string> m_metadata;
 	};
 
 

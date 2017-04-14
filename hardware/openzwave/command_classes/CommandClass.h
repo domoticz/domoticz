@@ -40,8 +40,16 @@ namespace OpenZWave
 	class Msg;
 	class Node;
 	class Value;
+	/** \defgroup CommandClass Z-Wave CommandClass Support
+	 *
+	 * This is the CommandClasses that OZW currently supports. Typically, a Application does not need
+	 * to be aware of the CommandClasses a Device exposes, as they would be transparently exposed to the
+	 * application as ValueID's
+	 */
+
 
 	/** \brief Base class for all Z-Wave command classes.
+	 * \ingroup CommandClass
 	 */
 	class OPENZWAVE_EXPORT CommandClass
 	{
@@ -61,7 +69,7 @@ namespace OpenZWave
 		virtual void ReadXML( TiXmlElement const* _ccElement );
 		virtual void WriteXML( TiXmlElement* _ccElement );
 		virtual bool RequestState( uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue ){ return false; }
-		virtual bool RequestValue( uint32 const _requestFlags, uint8 const _index, uint8 const _instance, Driver::MsgQueue const _queue ) { return false; }
+		virtual bool RequestValue( uint32 const _requestFlags, uint16 const _index, uint8 const _instance, Driver::MsgQueue const _queue ) { return false; }
 
 		virtual uint8 const GetCommandClassId()const = 0;
 		virtual string const GetCommandClassName()const = 0;
@@ -83,8 +91,8 @@ namespace OpenZWave
 		uint8 GetNodeId()const{ return m_nodeId; }
 		Driver* GetDriver()const;
 		Node* GetNodeUnsafe()const;
-		Value* GetValue( uint8 const _instance, uint8 const _index );
-		bool RemoveValue( uint8 const _instance, uint8 const _index );
+		Value* GetValue( uint8 const _instance, uint16 const _index );
+		bool RemoveValue( uint8 const _instance, uint16 const _index );
 		uint8 GetEndPoint( uint8 const _instance )
 		{
 			map<uint8,uint8>::iterator it = m_endPointMap.find( _instance );
@@ -137,7 +145,7 @@ namespace OpenZWave
 			uint8 cc;
 			uint8 genre;
 			uint8 instance;
-			uint8 index;
+			uint16 index;
 			std::vector<RefreshValue *> RefreshClasses;
 		} RefreshValue;
 
@@ -195,7 +203,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		uint32 m_sentCnt;				// Number of messages sent from this command class.
 		uint32 m_receivedCnt;				// Number of messages received from this commandclass.
 	};
-
+	//@}
 } // namespace OpenZWave
 
 #endif

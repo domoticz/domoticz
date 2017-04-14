@@ -51,6 +51,11 @@ namespace OpenZWave
 	class Thread;
 	class ControllerReplication;
 	class Notification;
+	class DNSThread;
+	struct DNSLookup;
+	class i_HttpClient;
+	struct HttpDownload;
+	class ManufacturerSpecificDB;
 
 	/** \brief The Driver class handles communication between OpenZWave
 	 *  and a device attached via a serial port (typically a controller).
@@ -62,19 +67,22 @@ namespace OpenZWave
 		friend class Group;
 		friend class CommandClass;
 		friend class ControllerReplication;
+		friend class DNSThread;
+		friend class i_HttpClient;
 		friend class Value;
 		friend class ValueStore;
 		friend class ValueButton;
 		friend class Association;
 		friend class Basic;
 		friend class ManufacturerSpecific;
-		friend class MultiInstanceAssociation;
+		friend class MultiChannelAssociation;
 		friend class NodeNaming;
 		friend class NoOperation;
 		friend class SceneActivation;
 		friend class WakeUp;
 		friend class Security;
 		friend class Msg;
+		friend class ManufacturerSpecificDB;
 
 	//-----------------------------------------------------------------------------
 	//	Controller Interfaces
@@ -150,6 +158,8 @@ namespace OpenZWave
 		void RemoveQueues( uint8 const _nodeId );
 
 		Thread*					m_driverThread;			/**< Thread for reading from the Z-Wave controller, and for creating and managing the other threads for sending, polling etc. */
+		DNSThread*				m_dns;					/**< DNSThread Class */
+		Thread*					m_dnsThread;			/**< Thread for DNS Queries */
 		Mutex*					m_initMutex;            /**< Mutex to ensure proper ordering of initialization/deinitialization */
 		bool					m_exit;					/**< Flag that is set when the application is exiting. */
 		bool					m_init;					/**< Set to true once the driver has been initialised */
@@ -244,7 +254,7 @@ namespace OpenZWave
 		 */
 		//void ReleaseNodes();
 
-		ControllerInterface		m_controllerInterfaceType;					// Specifies the controller's hardware interface
+		ControllerInterface			m_controllerInterfaceType;				// Specifies the controller's hardware interface
 		string					m_controllerPath;							// name or path used to open the controller hardware.
 		Controller*				m_controller;								// Handles communications with the controller hardware.
 		uint32					m_homeId;									// Home ID of the Z-Wave controller.  Not valid until the DriverReady notification has been received.
@@ -473,8 +483,8 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 			ControllerCommand_DeleteAllReturnRoutes,		/**< Delete all return routes from a device. */
 			ControllerCommand_SendNodeInformation,			/**< Send a node information frame */
 			ControllerCommand_ReplicationSend,				/**< Send information from primary to secondary */
-			ControllerCommand_CreateButton,					/**< Create an id that tracks handled button presses */
-			ControllerCommand_DeleteButton					/**< Delete id that tracks handled button presses */
+			ControllerCommand_CreateButton,					/**< Create an id that tracks handheld button presses */
+			ControllerCommand_DeleteButton					/**< Delete id that tracks handheld button presses */
 		};
 
 		/**
@@ -491,7 +501,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 			ControllerState_Waiting,				/**< Controller is waiting for a user action. */
 			ControllerState_Sleeping,				/**< Controller command is on a sleep queue wait for device. */
 			ControllerState_InProgress,				/**< The controller is communicating with the other device to carry out the command. */
-			ControllerState_Completed,			   	/**< The command has completed successfully. */
+			ControllerState_Completed,			    /**< The command has completed successfully. */
 			ControllerState_Failed,					/**< The command has failed. */
 			ControllerState_NodeOK,					/**< Used only with ControllerCommand_HasNodeFailed to indicate that the controller thinks the node is OK. */
 			ControllerState_NodeFailed				/**< Used only with ControllerCommand_HasNodeFailed to indicate that the controller thinks the node has failed. */
@@ -565,7 +575,6 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		enum MsgQueue
 		{
 			MsgQueue_Command = 0,
-			MsgQueue_Security,
 			MsgQueue_NoOp,
 			MsgQueue_Controller,
 			MsgQueue_WakeUp,
@@ -603,7 +612,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		bool WriteNextMsg( MsgQueue const _queue );							// Extracts the first message from the queue, and makes it the current one.
 		bool WriteMsg( string const &str);									// Sends the current message to the Z-Wave network
 		void RemoveCurrentMsg();											// Deletes the current message and cleans up the callback etc states
-		bool MoveMessagesToWakeUpQueue(	uint8 const _targetNodeId, bool const _move );		// If a node does not respond, and is of a type that can sleep, this method is used to move all its pending messages to another queue ready for when it mext wakes up.
+		bool MoveMessagesToWakeUpQueue(	uint8 const _targetNodeId, bool const _move );		// If a node does not respond, and is of a type that can sleep, this method is used to move all its pending messages to another queue ready for when it wakes up next.
 		bool HandleErrorResponse( uint8 const _error, uint8 const _nodeId, char const* _funcStr, bool _sleepCheck = false );									    // Handle data errors and process consistently. If message is moved to wake-up queue, return true.
 		bool IsExpectedReply( uint8 const _nodeId );						// Determine if reply message is the one we are expecting
 		void SendQueryStageComplete( uint8 const _nodeId, Node::QueryStage const _stage );
@@ -648,7 +657,8 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		{
 			MsgQueueCmd_SendMsg = 0,
 			MsgQueueCmd_QueryStageComplete,
-			MsgQueueCmd_Controller
+			MsgQueueCmd_Controller,
+			MsgQueueCmd_ReloadNode
 		};
 
 		class MsgQueueItem
@@ -678,6 +688,11 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 					{
 						return( (_other.m_cci->m_controllerCommand == m_cci->m_controllerCommand) && (_other.m_cci->m_controllerCallback == m_cci->m_controllerCallback) );
 					}
+					else if (m_command == MsgQueueCmd_ReloadNode )
+					{
+						return (_other.m_nodeId == m_nodeId);
+					}
+
 				}
 
 				return false;
@@ -846,6 +861,76 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		uint8 m_nonceReportSent;
 		uint8 m_nonceReportSentAttempt;
 		bool m_inclusionkeySet;
+
+	//-----------------------------------------------------------------------------
+	//	Event Signaling for DNS and HTTP Threads
+	//-----------------------------------------------------------------------------
+	private:
+		struct EventMsg {
+			enum EventType {
+				Event_DNS = 1,
+				Event_Http
+			};
+			EventType type;
+			union {
+					DNSLookup *lookup;
+					HttpDownload *httpdownload;
+			} event;
+		};
+
+		void SubmitEventMsg(EventMsg *);
+		void ProcessEventMsg();
+
+
+		OPENZWAVE_EXPORT_WARNINGS_OFF
+				list<EventMsg *>			m_eventQueueMsg;
+		OPENZWAVE_EXPORT_WARNINGS_ON
+				Event*					m_queueMsgEvent;				// Events for each queue, which are signalled when the queue is not empty
+				Mutex*					m_eventMutex;						// Serialize access to the queues
+
+
+	//-----------------------------------------------------------------------------
+	//	DNS Related
+	//-----------------------------------------------------------------------------
+
+	public:
+		bool CheckNodeConfigRevision(Node *);
+		bool CheckMFSConfigRevision();
+		void ReloadNode(uint8 const _nodeId);
+
+	private:
+		void processConfigRevision(DNSLookup *);
+
+	//-----------------------------------------------------------------------------
+	//	HTTP Client Related
+	//-----------------------------------------------------------------------------
+
+	public:
+		bool setHttpClient(i_HttpClient *client);
+	private:
+		bool startConfigDownload(uint16 _manufacturerId, uint16 _productType, uint16 _productId, string configfile, uint8 node = 0);
+		bool startMFSDownload(string configfile);
+		bool refreshNodeConfig(uint8 node);
+		void processDownload(HttpDownload *);
+		i_HttpClient *m_httpClient;
+
+	//-----------------------------------------------------------------------------
+	//	Metadata Related
+	//-----------------------------------------------------------------------------
+
+	public:
+		string GetMetaData(	uint8 const _nodeId, Node::MetaDataFields _metadata );
+
+	//-----------------------------------------------------------------------------
+	//	ManufacturerSpecificDB Related
+	//-----------------------------------------------------------------------------
+
+	public:
+		ManufacturerSpecificDB *GetManufacturerSpecificDB();
+		bool downloadConfigRevision(Node *);
+		bool downloadMFSRevision();
+	private:
+		ManufacturerSpecificDB *m_mfs;
 
 	};
 

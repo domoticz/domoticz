@@ -40,12 +40,13 @@ namespace OpenZWave
 	class Node;
 	class CommandClass;
 
-	/** \brief Button value ???.
+	/** \brief Button value
+	 * \ingroup ValueID
 	 */
 	class ValueButton: public Value
 	{
 	public:
-		ValueButton( uint32 const _homeId, uint8 const _nodeId, ValueID::ValueGenre const _genre, uint8 const _commandClassId, uint8 const _instance, uint8 const _index, string const& _label, uint8 const _pollIntensity );
+		ValueButton( uint32 const _homeId, uint8 const _nodeId, ValueID::ValueGenre const _genre, uint8 const _commandClassId, uint8 const _instance, uint16 const _index, string const& _label, uint8 const _pollIntensity );
 		ValueButton(): m_pressed( false ){}
 		virtual ~ValueButton(){}
 
