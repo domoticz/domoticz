@@ -239,6 +239,12 @@ width: 99.5% !important;
    margin-left: 48px !important;
 }
 
+#itemtabledoubleicon .dimslider {
+   width: calc(98% - 114px) !important;
+   margin-top: 10px !important;
+   margin-left: 110px !important;
+}
+
 #rgbw_popup .dimslider {
    width: calc(100% - 108px) !important;
    margin-left: 6px !important;
