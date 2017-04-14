@@ -102,7 +102,7 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 			}
 			message = "{\"cmd\":\"write\",\"model\":\"plug\",\"sid\":\"158d00" + sid + "\",\"short_id\":9844,\"data\":\"{\\\"channel_0\\\":\\\"" + command + "\\\",\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
 		}
-		else if ((xcmd->subtype == sSwitchTypeSelector) && (xcmd->unitcode == 3 || xcmd->unitcode == 4 || xcmd->unitcode == 5) || (xcmd->subtype == sSwitchGeneralSwitch) && (xcmd->unitcode == 6)) {
+		else if ((xcmd->subtype == sSwitchTypeSelector) && (xcmd->unitcode >= 3 && xcmd->unitcode <= 6)) {
 			std::stringstream ss;
 			if (xcmd->unitcode == 6) {
 				if (xcmd->cmnd == 1) {
@@ -708,8 +708,9 @@ void XiaomiGateway::Do_Work()
 std::string XiaomiGateway::GetGatewayKey()
 {
 #ifdef WWW_ENABLE_SSL
-	if (m_token.c_str() == "") {
+	if (m_token.empty()) {
 		_log.Log(LOG_ERROR, "XiaomiGateway: Cannot get gateway key as there is no token received from the gateway.  Please ensure your network allows UDP multicast between the Xiaomi Gateway and Domoticz");
+		return std::string("");
 	}
 	else {
 		const unsigned char *key = (unsigned char *)m_GatewayPassword.c_str();
