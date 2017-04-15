@@ -928,7 +928,7 @@ define(['app'], function(app) {
 										status = item.Counter;
 										bigtext = item.CounterToday;
 									} else {
-										status = item.Counter + ', ' + $.t("Today") + ': ' + item.CounterToday;
+										status = item.Counter + '</span>,<span>' + $.t("Today") + ': ' + item.CounterToday;
 									}
 								} else if (item.Type == "Current") {
 									status = item.Data;
@@ -936,7 +936,7 @@ define(['app'], function(app) {
 								} else if ((item.Type == "Energy") || (item.Type == "Current/Energy") || (item.Type == "Power") || (item.SubType == "kWh")) {
 									status = item.Data;
 									if (typeof item.CounterToday != 'undefined') {
-										status += ', ' + $.t("Today") + ': ' + item.CounterToday;
+										status += '</span>,<span>' + $.t("Today") + ': ' + item.CounterToday;
 									}
 								} else if (item.SubType == "Percentage") {
 									status = item.Data;
@@ -995,10 +995,10 @@ define(['app'], function(app) {
 								}
 								if (typeof item.CounterDeliv != 'undefined') {
 									if (item.CounterDeliv != 0) {
-										status += '<br>' + $.t("Return") + ': ' + item.CounterDeliv + ', ' + $.t("Today") + ': ' + item.CounterDelivToday;
+										status += '<span></span>' + $.t("Return") + ': ' + item.CounterDeliv + '</span>,<span>' + $.t("Today") + ': ' + item.CounterDelivToday;
 										if (item.UsageDeliv.charAt(0) != 0) {
 											if (parseInt(item.Usage) != 0) {
-												bigtext += ', -' + item.UsageDeliv;
+												bigtext += '</span>,<span> -' + item.UsageDeliv;
 											} else {
 												bigtext = '-' + item.UsageDeliv;
 											}
@@ -1021,19 +1021,22 @@ define(['app'], function(app) {
                                         }
                                     }
                                 }
+                                bigtext = "<span>" + bigtext + "</span>";
+                                status = "<span>" + status + "</span>";
+                                
                                 if(!$(id + ".item").hasClass(newStatusClass)) {
                                     $(id + ".item").removeClass("statusNormal").removeClass("statusProtected").removeClass("statusTimeout").removeClass("statusLowBattery"); 
                                     $(id + ".item").addClass(newStatusClass);
                                 }
-								if ($(id + " #status").html() != status) {
-									$(id + " #bigtext").html(bigtext);
-									$(id + " #status").html(status);
+								if ($(id + " #status > span").html() != status) {
+									$(id + " #bigtext > span").html(bigtext);
+									$(id + " #status > span").html(status);
 								}
-								if ($(id + " #bigtext").html() != bigtext) {
-									$(id + " #bigtext").html(bigtext);
+								if ($(id + " #bigtext > span").html() != bigtext) {
+									$(id + " #bigtext > span").html(bigtext);
 								}
-								if ($(id + " #lastupdate").html() != item.LastUpdate) {
-									$(id + " #lastupdate").html(item.LastUpdate);
+								if ($(id + " #lastupdate > span").html() != item.LastUpdate) {
+									$(id + " #lastupdate > span").html(item.LastUpdate);
 								}
 								if (img != "") {
 									if ($(id + " #img").html() != img) {
@@ -1193,7 +1196,7 @@ define(['app'], function(app) {
 				                xhtm +='\t    <table id="itemtable" class="itemtable" border="0" cellpadding="0" cellspacing="0">\n' +
 								'\t    <tr>\n';
                                 xhtm += '\t      <td id="name" class="name"><span>' + item.Name + '</span></td>\n';
-                                xhtm += '\t      <td id="bigtext" class="bigtext"><span class="wrapper">';
+                                xhtm += '\t      <td id="bigtext" class="bigtext"><span class="wrapper"><span>';
                             
 							if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv == 'undefined')) {
 								xhtm += item.Usage;
@@ -1233,7 +1236,7 @@ define(['app'], function(app) {
 							} else if (item.SubType == "Waterflow") {
 								xhtm += item.Data;
 							}
-							xhtm += '</span></td>\n';
+							xhtm += '</span></span></td>\n';
 							xhtm += '\t      <td id="img" class="img"><img src="images/';
 							var status = "";
 							if (typeof item.Counter != 'undefined') {
@@ -1259,7 +1262,7 @@ define(['app'], function(app) {
 								if ((item.SubType == "Gas") || (item.SubType == "RFXMeter counter")) {
 									status = item.Counter;
 								} else {
-									status = item.Counter + ', ' + $.t("Today") + ': ' + item.CounterToday;
+									status = item.Counter + '</span>,<span>' + $.t("Today") + ': ' + item.CounterToday;
 								}
 							} else if (item.Type == "Current") {
 								xhtm += 'current48.png" height="48" width="48"></td>\n';
@@ -1272,7 +1275,7 @@ define(['app'], function(app) {
 								}
 								status = item.Data;
 								if (typeof item.CounterToday != 'undefined') {
-									status += ', ' + $.t("Today") + ': ' + item.CounterToday;
+									status += '</span><span>' + $.t("Today") + ': ' + item.CounterToday;
 								}
 							} else if (item.Type == "Air Quality") {
 								xhtm += 'air48.png" height="48" width="48"></td>\n';
@@ -1337,12 +1340,12 @@ define(['app'], function(app) {
 							}
 							if (typeof item.CounterDeliv != 'undefined') {
 								if (item.CounterDeliv != 0) {
-									status += '<br>' + $.t("Return") + ': ' + item.CounterDeliv + ', ' + $.t("Today") + ': ' + item.CounterDelivToday;
+									status += '</span>,<span>' + $.t("Return") + ': ' + item.CounterDeliv + '</span>,<span>' + $.t("Today") + ': ' + item.CounterDelivToday;
 								}
 							}
 							xhtm +=
-								'\t      <td id="status" class="status"><span class="wraper">' + status + '</span></td>\n' +
-								'\t      <td id="lastupdate" class="lastupdate">' + item.LastUpdate + '</td>\n' +
+								'\t      <td id="status" class="status"><span class="wrapper"><span>' + status + '</span></span></td>\n' +
+								'\t      <td id="lastupdate" class="lastupdate"><span>' + item.LastUpdate + '</span></td>\n' +
 								'\t      <td id="type" class="type"><span class="wrapper"><span>' + item.Type + '</span><span>' + item.SubType + '</span></span></td>\n' +
 								'\t      <td class="options">';
 							if (item.Favorite == 0) {
