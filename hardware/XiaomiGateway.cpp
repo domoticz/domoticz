@@ -956,6 +956,9 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 								if (level > -1) { //this should stop false updates when empty 'data' is received
 									m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, on, type, level, cmd, false, false, "", "", battery);
 								}
+								if (voltage != "") {
+									m_XiaomiGateway->InsertUpdateVoltage(sid.c_str(), name, atoi(voltage.c_str()));
+								}
 							}
 						}
 					}
