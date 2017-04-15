@@ -122,7 +122,7 @@ bool CEcoDevices::StopHardware()
 
 void CEcoDevices::Do_Work()
 {
-	unsigned int sec_counter = m_iRateLimit - 2; // Make sure we update once soon after restart
+	int sec_counter = m_iRateLimit - 2; // Make sure we update once soon after restart
 	_log.Log(LOG_STATUS, "(%s): Worker started...", Name.c_str());
 	while (!m_stoprequested)
 	{
