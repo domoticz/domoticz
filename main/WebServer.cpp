@@ -992,7 +992,7 @@ namespace http {
 					bDoAdd = false;
 				}
 #endif
-#ifdef WITH_SYSFS_GPIO
+#ifndef WITH_SYSFS_GPIO
 				if (ii == HTYPE_SysfsGPIO)
 				{
 					bDoAdd = false;
