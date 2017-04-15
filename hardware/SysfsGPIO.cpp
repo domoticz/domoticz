@@ -108,7 +108,7 @@
 
 #include "stdafx.h"
 
-#ifndef WIN32
+#ifdef WITH_SYSFS_GPIO
 
 #include <sys/types.h>
 #include <stdio.h>
@@ -615,4 +615,4 @@ int CSysfsGPIO::GPIOWrite(int gpio_pin, int value)
 	return(0);
 }
 
-#endif // WIN32
+#endif // WITH_SYSFS_GPIO

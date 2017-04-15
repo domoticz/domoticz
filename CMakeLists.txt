@@ -659,6 +659,14 @@ else()
   message(STATUS "==== (Please follow http://wiringpi.com/download-and-install/ if you want to use GPIO.)")
 ENDIF(WiringPi)
 
+IF(EXISTS /sys/class/gpio)
+	message(STATUS "Sysfs GPIO available")
+	add_definitions(-DWITH_SYSFS_GPIO)
+ELSE()
+	message(STATUS "Sysfs GPIO not available")
+ENDIF()
+
+
 find_path(TELLDUSCORE_INCLUDE NAMES telldus-core.h)
 if (TELLDUSCORE_INCLUDE)
   message(STATUS "Found telldus-core (telldus-core.h) at : ${TELLDUSCORE_INCLUDE}")
