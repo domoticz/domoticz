@@ -211,6 +211,9 @@ background: linear-gradient(to bottom, #d4e1ee 0%,#bdd5ed 100%);
 filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#bdd5ed', endColorstr='#d4e1ee',GradientType=0 );
 }
 
+body .span3,
+body .span4{margin-bottom:1em}
+
 body.frontStage .item table > tbody > tr, /* the new way*/
 body .span3  table > tbody > tr,
 body .span4  table > tbody > tr{
