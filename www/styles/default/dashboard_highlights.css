@@ -258,7 +258,7 @@
 
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #img2{
         right:50%;
-        margin-right:-15px!important;
+        margin-right:-25px!important;
         top: 55px; /*top: 38%;*/
         display: flex;
         align-items: center;
