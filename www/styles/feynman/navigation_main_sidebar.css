@@ -19,6 +19,8 @@
         width:100%;
         height:60px;
         background-color: #eee;
+        width:60px;
+        overflow:visible;
     }
 
     .navbar .container .brand img{
@@ -27,11 +29,11 @@
         top:20px;
         left:11px;  
     }
-
+/*
     .navbar:hover .container .brand img{
         margin-top:0;
     }
-
+*/
     .navbar .container .brand h1{
         opacity:0;
         /*transition: all 0.1s linear; */
@@ -40,6 +42,9 @@
         z-index:1000;
     }
 
+    .navbar:hover .container .brand{
+        width:100%
+    }
     .navbar:hover .container .brand h1{
         opacity:100;
         transform: translate(20px);    
@@ -47,25 +52,18 @@
     }
 
     .brand h2{
-        display:block!important;
+        display:none!important;
         color:#aaa;
-        display:block;
-        position: fixed;
-        margin:0!important;
+        position: initial!important;
+        margin:15px 0 0 110px!important;
         float:none;
-        top:-30px;
-        left:100px;
-        opacity:0;
+        text-decoration: none!important;
+        border-bottom:0!important;
     }
-    .brand:hover h2{
-        display:block!important;
-        position: fixed;
-        float:fixed;
-        top:10px;
-        left:100px;
-        margin:0!important;
-        opacity:100;
-        transition: all 1s linear;
+
+    .navbar:hover .brand h2{
+        padding: 10px 10px 0 0;
+        text-decoration: none!important;
     }
 
     

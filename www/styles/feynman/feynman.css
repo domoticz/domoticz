@@ -12,9 +12,11 @@
 	src: local('Lato Light'), url('fonts/Lato-Light.ttf') format('truetype');
 }
 
+
 body{
     font-family: "Lato", sans-serif!important;
     color: #666;
+
     background:
     -webkit-linear-gradient(45deg,  hsla(340, 100%, 55%, 1) 0%, hsla(340, 100%, 55%, 0) 70%),
     -webkit-linear-gradient(315deg, hsla(225, 95%, 50%, 1) 10%, hsla(225, 95%, 50%, 0) 80%),
@@ -25,7 +27,8 @@ body{
     linear-gradient(315deg, hsla(225, 95%, 50%, 1) 10%, hsla(225, 95%, 50%, 0) 80%),
     linear-gradient(225deg, hsla(140, 90%, 50%, 1) 10%, hsla(140, 90%, 50%, 0) 80%),
     linear-gradient(315deg, hsla(135, 95%, 55%, 1) 100%, hsla(35, 95%, 55%, 0) 70%);
-    background-attachment: fixed;
+
+background-attachment: fixed;
 }
 
 
@@ -112,8 +115,6 @@ tr, #name{
 #name{
     background-color:#D4E1EE;
 }
-
-body:not(.dashboard) .item #status{font-weight: bold;}
 
 #name,
 body table#itemtablesmall tr td:first-child,
@@ -542,6 +543,7 @@ body:hover .ui-dialog {
 
 .ui-dialog .ui-dialog-titlebar{
     background-color: #fff;
+    background-image:none;
     border:none;
     margin-bottom: 5px;
 }

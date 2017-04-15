@@ -21,7 +21,7 @@
         border-bottom-right-radius: 0!important;        
     }
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item{
-        margin-bottom:40px;
+        margin-bottom:25px;
     }
     
     /*  Bigtext changes  */
@@ -35,7 +35,6 @@
     }
     
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item:not(.withstatus) #itemtablesmall tr #bigtext{
-        font-family: "Lato", sans-serif;
         float: none;
         font-size: 25px;
         text-align: left;
@@ -50,20 +49,29 @@
     }
     
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item:not(.withstatus) #itemtablesmall tr #bigtext > span{
-        display:inline-block;
+        /*display:inline-block;*/
         width:100%;
         overflow-x:hidden;
-        height:50px;
+        height:100px;
         font-size: 25px;
         line-height: 30px;
         font-size: 30px;
         background-color: transparent;  
         display: flex;
         align-items: center;
+        flex-wrap: wrap;
+
     }    
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item:not(.withstatus) #itemtablesmall tr #bigtext > span > span{
         font-size: 25px;
     }   
+
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item:not(.withstatus) #itemtablesmall tr #bigtext > span > span:first-of-type{padding-right:10px;}
+    /*
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item:not(.withstatus) #itemtablesmall tr #bigtext > span > span:nth-child(2){
+        padding-left:10px; 
+        padding-right:10px;
+    }*/
     
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalldoubleicon tr #bigtext{
         display:inline-block;
@@ -87,9 +95,8 @@
 /*  put status instead of bigtext on the items that have extra status data  */    
 
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus tr #status{
-        font-family: "Lato", sans-serif;
-        float: left;
-        font-size: 25px;
+        float: none;
+        font-size: 18px;
         text-align: left;
         width: 63%;
         /*top: 36px;*/
@@ -101,21 +108,17 @@
         justify-content: center;
         background-color:transparent;
         position:relative;
-    }    
-    
-    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus.statuscount1 tr #status{
-        
     }
-    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus.statuscount2 tr #status{
-        
-    }    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus.statuscount3 tr #status,    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus.statuscount4 tr #status{font-size:17px;}    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus.statuscount5 tr #status{font-size:16px;}
     
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus tr #status > span.wrapper{
         width:100%;
-        font-size:130%;
         min-height:100px;
         display: flex;
         flex-direction: column;
+        flex-wrap:nowrap;
         flex-grow: 1;
         justify-content: space-around;
         min-height: 100px;
@@ -125,16 +128,24 @@
         padding: 3px 10px 0 15px;
         line-height: 1em;
         height:auto;
+        width:100%!important;
+        white-space: normal;
     }
     
     
     
         /*  must... reset ... crazyness.. that I built  */
+
+    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #img,
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #img1{
+        float: none!important;   
+    }
     
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #img,
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #img1,
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #img2,
-    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #img3{
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #img3{ 
         display:flex!important;
         padding:0;
         border:none;
@@ -215,7 +226,6 @@
     
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmall tr #img,
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmall tr #img1{
-        float: left!important;
         width: 30%;
         /*top: 14px;*/
         position: relative;        
@@ -390,6 +400,9 @@
         transform: scale(2); 
     }
 
+    /* An example of what we can do with the new CSS! Yay! */
+#dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.SelectorSwitch #bigtext{display:none}
+    
     .ui-draggable-dragging{
         z-index:4;
     }
@@ -505,7 +518,7 @@
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr td#lastupdate > span{
         display:inline-block;
         height:20px;
-        padding: 2px 10px 2px 10px!important;
+        padding: 4px 10px 2px 10px!important;
         background-color: #D4E1EE;
         box-shadow: 2px -4px 18px 0px rgba(50, 50, 50, 0.2);
         width:100%;
@@ -532,8 +545,9 @@
 
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr #img,
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr #img1{
-        float:none;
+        float:none!important;
     }
+    
 }
 
 

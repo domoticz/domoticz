@@ -37,8 +37,9 @@
 
 #dashcontent #lastupdate > span{
     height: 20px;
-    padding: 4px 3px 0px 0px;  
-    box-shadow: 0px -4px 8px -4px rgba(130, 130, 130, 0.2);    
+    padding: 2px 3px 0px 0px;  
+    width:100%;
+    display:inline-block;
 }
 
 
@@ -48,12 +49,15 @@
         display:block;
         height:20px;
         background-color:#d4e1ee;
-        padding-left:10px;
+
     }
-    #dashcontent #lastupdate > span{}    
+    #dashcontent #lastupdate > span{
+        display:inline-block;
+        padding-left:10px;
+    }    
     
     #dashcontent .item.withstatus{
-        background-color:#D4E1EE;
+        /*background-color:#D4E1EE;*/
         border-bottom:20px solid transparent; /*little trick to push it down*/
     }   
     
@@ -66,7 +70,10 @@
         min-height: 75px;
     }
     
-    #dashcontent #lastupdate > span {padding-left:10px;}
+    #dashcontent #lastupdate > span {
+        padding-left:10px;
+        box-shadow: 0px -4px 8px -4px rgba(130, 130, 130, 0.2); 
+    }
     
     #dashcontent .item.withstatus{
         border-bottom:20px solid transparent; /*little trick to push it down*/
@@ -76,21 +83,21 @@
 
 @media screen and (min-width: 981px){
 
+    
+    
     #dashcontent .divider tr, #dashcontent .item tr {
         min-height: 55px;
         border-radius:3px;
     }
-
-    /*#dashcontent #name{
-        border-radius:3px!important;
-    }*/
+    
+    #dashcontent /*.item:not(.withstatus)*/ #name{padding:15px 0 0 15px/*!important*/;}
 
     #dashcontent #lastupdate{
         background-image:none;
         position:relative;
         height:0;
         overflow:visible;
-        top: -17px;
+        top: -23px;
         padding:0;
         left:0px;
         background-color:transparent;
@@ -107,7 +114,7 @@
 @media screen and (min-width: 1100px){
 
 
-    #dashcontent /*.item:not(.withstatus)*/ #name{padding:15px 0 0 15px!important;}
+
     #dashcontent /*.item:not(.withstatus)*/ #lastupdate{top: -23px;}
 
     #dashcontent #itemtablesmalltrippleicon #lastupdate{

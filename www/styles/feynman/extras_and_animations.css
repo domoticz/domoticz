@@ -18,6 +18,51 @@
 }
 
 
+
+
+
+
+
+
+
+
+
+/* background color changes */
+
+
+
+/*
+@-webkit-keyframes AnimationName {
+    0%{background-position:0% 71%}
+    50%{background-position:100% 30%}
+    100%{background-position:0% 71%}
+}
+@-moz-keyframes AnimationName {
+    0%{background-position:0% 71%}
+    50%{background-position:100% 30%}
+    100%{background-position:0% 71%}
+}
+@keyframes AnimationName { 
+    0%{background-position:0% 71%}
+    50%{background-position:100% 30%}
+    100%{background-position:0% 71%}
+}
+
+body{
+
+    background-image:none;
+    background: linear-gradient(296deg, #2bb995, #4dafd4, #d44dc9, #1d70e3, #1dd0e3, #218cc8);
+
+    background-attachment: inherit;
+    background-size: 1400% 1400%;
+    -webkit-animation: AnimationName 59s ease infinite;
+    -moz-animation: AnimationName 59s ease infinite;
+    animation: AnimationName 59s ease infinite;
+}
+
+*/
+
+
 /* Dialog */
 
 /*body:hover .ui-popup,*//*  jitters.. */
