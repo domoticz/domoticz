@@ -255,6 +255,9 @@ p.ng-binding {
 
 #dashcontent > section {margin-bottom:20px;}
 
+#prebannav #timesun + td > span {color:#ddd;}
+#timesun + td {color:#ddd!important;}
+
 
 /*  LOGO & MAIN NAVIGATION  */
 
@@ -500,7 +503,7 @@ body #dashcontent table > tbody > tr{
 
 #img2 {
     top:-35px;
-    right: 45px;
+    right: 37px;
     z-index:1;
     height:0;
     overflow:visible;
@@ -528,13 +531,24 @@ body #dashcontent table > tbody > tr{
     top: -48px;
 }    
     
-#dashcontent #img img, 
-#dashcontent #img1 img, 
-#dashcontent #img2 img, 
-#dashcontent #img3 img{
+#dashcontent .span4 #img img, 
+#dashcontent .span4 #img1 img, 
+#dashcontent .span4 #img2 img, 
+#dashcontent .span4 #img3 img{
     height:40px;
     width:40px;
 }
+
+#dashcontent .span3 #img img, 
+#dashcontent .span3 #img1 img, 
+#dashcontent .span3 #img2 img, 
+#dashcontent .span3 #img3 img{
+    height:30px;
+    width:30px;
+    margin-top:5px;
+}
+
+#itemtablesmalltrippleicon #img2(right: 37px);
 
 /*  this transforms the triple-image items into items with buttons at the bottom. Using just CSS.. */
 #dashcontent div[class^="span"] #itemtablesmalltrippleicon{
@@ -584,6 +598,7 @@ body #dashcontent table > tbody > tr{
     border-right: 300px solid transparent!important;
     padding:5px 0 0 5px;
     border-radius:0;
+    margin-top:0;
 }
 #dashcontent div[class^="span"] #itemtablesmalltrippleicon #img img:hover,
 #dashcontent div[class^="span"] #itemtablesmalltrippleicon #img1 img:hover,
@@ -647,8 +662,7 @@ body #dashcontent table > tbody > tr{
 body .item tr > #name {
     display:inline-block;
     width: 100%;
-    height: 40px!important;
-    font-size: 100%!important;
+    height: 40px;
     border-style: none!important;
     border-width:0!important;
     white-space: nowrap;
@@ -662,9 +676,8 @@ body .item tr > #name {
 
 #dashcontent #name {
     align-items: center;
-    padding: 21px 0 0 10px!important;
-    height:55px!important;
-    color: #444!important; /*the dashboard is at the moment of writing the only place where the signal colours are done via a class and not via javascript directly.*/    
+    padding: 21px 0 0 10px;
+    height:55px;
 }
 
 #bigtext{
@@ -700,7 +713,7 @@ body .item tr > #name {
 @media all and (min-width: 1200px){
     #bigtext{
     top: -29px;
-    right: 55px;
+    right: 38px;
     }
     
     #itemtabledoubleicon #bigtext{right: 80px;}
@@ -713,22 +726,31 @@ body .item tr > #name {
     #itemtablesmalldoubleicon #bigtext{right: 90px;}
 
     #itemtabletrippleicon #bigtext{right: 100px;}
-#itemtablesmalltrippleicon #bigtext{right: 105px;}
+    #itemtablesmalltrippleicon #bigtext{right: 105px;}
     
 }  
 
-#dashcontent #bigtext{
+#dashcontent .span4 #bigtext{
     top: -38px;
     right: 55px;
 }
+
+#dashcontent .span3 #bigtext{
+    top: -38px;
+    right: 40px;
+}
+
 
 #dashcontent #bigtext > span{
     padding:3px;
     width:auto;
 }
 
-#dashcontent #itemtabledoubleicon #bigtext{right: 80px;}
-#dashcontent #itemtablesmalldoubleicon #bigtext{right: 90px;}
+#dashcontent .span3 #itemtabledoubleicon #bigtext{right: 70px;}
+#dashcontent .span3 #itemtablesmalldoubleicon #bigtext{right: 70px;}
+
+#dashcontent .span4 #itemtabledoubleicon #bigtext{right: 80px;}
+#dashcontent .span4 #itemtablesmalldoubleicon #bigtext{right: 80px;}
 /*#dashcontent #itemtablesmalldoubleicon #bigtext{right:55px}*/
 
 #dashcontent #itemtabletrippleicon #bigtext{right: 100px;}
@@ -754,23 +776,25 @@ body .item tr > #name {
 }
 
 #status {
-    color: #777;
-    white-space: nowrap;
     overflow: visible;
     position: relative;
     top: 52px;
     left: 20px;
     width: 100%;
+    width: calc(100% - 30px);    
     margin:0!important;
     font-style: normal!important;
-    font-size:80%!important;
+    font-size:12.5px;
     line-height: 1.4em;
     height:0;
+    white-space: normal;
 }
 
 #dashcontent td#status {
     display:none;
     height:0;
+    white-space: nowrap;
+    width:100%;
 }
 
 
@@ -781,7 +805,6 @@ body .item tr > #name {
     display:block;
     left:0;
     color:#555;
-    font-size:30px;
     position:initial;
     height:0;
 }
@@ -795,6 +818,10 @@ body .item tr > #name {
     margin:0;
     padding:0;
 }
+
+body:not(.dashboard) td#status > span > span.separator{padding-right:10px;}
+/*body:not(.dashboard) td#status > span > span.separator{padding:0!important};*/
+
 #dashcontent .item.withstatus.statuscount1 tr{height:85px}
 #dashcontent .item.withstatus.statuscount2 tr{height:115px}
 #dashcontent .item.withstatus.statuscount3 tr{height:145px}
@@ -810,12 +837,10 @@ body .item tr > #name {
     flex-direction: column;
     justify-content: center;
     width:100%;
-    font-size:115%;
     padding:10px 10px 10px 15px;
     flex: 1 1 auto;
     height:30px;
-    box-shadow: 2px 4px 18px 0px rgba(50, 50, 50, 0.2)
-    
+    box-shadow: 2px 4px 18px 0px rgba(50, 50, 50, 0.2);
 }
 
 
@@ -1008,8 +1033,8 @@ a.btnstyle:last-of-type, a.btnstylerev:last-of-type{
     background-color:#fff;
 }
 
-#settingscontent span{
-    display:inline-block;
+#settingscontent td > span{
+    /*display:inline-block;*/
     padding-top:5px;
     padding-bottom:5px;
 }
@@ -1366,10 +1391,9 @@ table.dataTable tbody img{
     top:0;
     width:100%!important;
     border:0;
-    box-shadow: 1px -0.5px 2px 0.5px rgba(50, 50, 50, 0.1);
     color:#333;
     background-color:transparent;
-    box-shadow: inset -2px -1px 20px -1px rgba(50, 50, 50, 0.2);
+    box-shadow: 1px -0.5px 2px 0.5px rgba(50, 50, 50, 0.1), inset -2px -1px 20px -1px rgba(50, 50, 50, 0.2);
 }
 
 #dashcontent .selectorlevels .ui-selectmenu-button span.ui-selectmenu-text{
@@ -1389,6 +1413,8 @@ table.dataTable tbody img{
     flex-grow: 1;
     flex-shrink: 1;
 }
+
+body.dashboard div.item.SelectorSwitch #bigtext{display:none}
 
 
 /* UI & BOOTSTRAP & dataTable */
@@ -1460,6 +1486,9 @@ div.dataTables_wrapper .ui-widget-header{
     border-bottom:none;
     text-shadow: none!important;
 }
+
+table.dataTable th:first-of-type,
+table.dataTable td:first-of-type{padding-left:10px;}
 
 .ui-dialog-titlebar{
     color:#fff;
@@ -1672,7 +1701,6 @@ table.mobileitem > thead > tr > th:first-of-type{
     flex-shrink: 1;
     align-items: center; 
     padding:5px!important;
-    height:auto!important;
 }
 
 .mobileitem td:last-child{
@@ -1681,15 +1709,23 @@ table.mobileitem > thead > tr > th:first-of-type{
 
 .mobileitem td label{
     white-space: nowrap;
-    height:100%;
+    height:50%;
 }
-.mobileitem td#name{
+body.dashMobile table.mobileitem td#name{
     font-size: 100%;
     position: inherit;
     padding:0 0 0 10px!important;
     height:auto;
-    min-height:40px;
-    padding: 10px!important;
+    min-height:30px;
+}
+
+body.dashMobile table.mobileitem td#status > span{white-space: normal;}
+body.dashMobile table.mobileitem td#status > span > span{
+    margin-right:8px;
+    padding: 5px;
+    border-radius: 3px;
+    background-color: #eee;
+    white-space: nowrap;
 }
 
 .mobileitem #name img {
@@ -1703,7 +1739,6 @@ table.mobileitem > thead > tr > th:first-of-type{
     display: flex;
     position:initial;
     flex-direction: row;
-    font-size: 100%!important;
     white-space: normal;
     width: auto;
     justify-content: flex-end;
@@ -1718,7 +1753,7 @@ table.mobileitem > thead > tr > th:first-of-type{
 #dashcontent .mobileitem td#status #img1,
 #dashcontent .mobileitem td#status #img2,
 #dashcontent .mobileitem td#status #img3{
-    height:100%;
+    height:50%;
     position:initial;
 }
 
@@ -1868,8 +1903,12 @@ td[colspan]:not([colspan="1"])
         top: -20px;
         left: 32px; /* was 35px, but bigtext now has apdding of 3 default, to deal with overlapping situations. */
     }
-    #dashcontent #bigtext{
+    #dashcontent .span4 #bigtext{
         top: -28px;
+        left: 10px;
+    }
+    #dashcontent .span3 #bigtext{
+        top: -24px;
         left: 10px;
     }
     
@@ -1906,13 +1945,14 @@ td[colspan]:not([colspan="1"])
     #dashcontent div.item.withstatus tr td#status > .wrapper {display:flex; flex-wrap: wrap;} 
     #dashcontent div.item.withstatus td#status > .wrapper > span{width:50%}
     
+    #dashcontent div.item.withstatus.statuscount1 tr,    
     #dashcontent div.item.withstatus.statuscount2 tr{height:85px}
-    #dashcontent .item.withstatus.statuscount3 tr,
-    #dashcontent .item.withstatus.statuscount4 tr{height:115px}
-    #dashcontent .item.withstatus.statuscount5 tr,
-    #dashcontent .item.withstatus.statuscount6 tr{height:145px}
-    #dashcontent .item.withstatus.statuscount7 tr,
-    #dashcontent .item.withstatus.statuscount8 tr{height:175px}
-    #dashcontent .item.withstatus.statuscount9 tr,
-    #dashcontent .item.withstatus.statuscount10 tr{height:205px}    
+    #dashcontent div.item.withstatus.statuscount3 tr,
+    #dashcontent div.item.withstatus.statuscount4 tr{height:115px}
+    #dashcontent div.item.withstatus.statuscount5 tr,
+    #dashcontent div.item.withstatus.statuscount6 tr{height:145px}
+    #dashcontent div.item.withstatus.statuscount7 tr,
+    #dashcontent div.item.withstatus.statuscount8 tr{height:175px}
+    #dashcontent div.item.withstatus.statuscount9 tr,
+    #dashcontent div.item.withstatus.statuscount10 tr{height:205px}    
 }  

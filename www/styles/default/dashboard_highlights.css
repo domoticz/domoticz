@@ -21,7 +21,7 @@
         border-bottom-right-radius: 0!important;        
     }
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item{
-        margin-bottom:40px;
+        margin-bottom:25px;
     }
     
     /*  Bigtext changes  */
@@ -49,20 +49,29 @@
     }
     
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item:not(.withstatus) #itemtablesmall tr #bigtext > span{
-        display:inline-block;
+        /*display:inline-block;*/
         width:100%;
         overflow-x:hidden;
-        height:50px;
+        height:100px;
         font-size: 25px;
         line-height: 30px;
         font-size: 30px;
         background-color: transparent;  
         display: flex;
         align-items: center;
+        flex-wrap: wrap;
+
     }    
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item:not(.withstatus) #itemtablesmall tr #bigtext > span > span{
         font-size: 25px;
     }   
+
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item:not(.withstatus) #itemtablesmall tr #bigtext > span > span:first-of-type{padding-right:10px;}
+    /*
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item:not(.withstatus) #itemtablesmall tr #bigtext > span > span:nth-child(2){
+        padding-left:10px; 
+        padding-right:10px;
+    }*/
     
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalldoubleicon tr #bigtext{
         display:inline-block;
@@ -87,7 +96,7 @@
 
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus tr #status{
         float: none;
-        font-size: 25px;
+        font-size: 18px;
         text-align: left;
         width: 63%;
         /*top: 36px;*/
@@ -99,11 +108,13 @@
         justify-content: center;
         background-color:transparent;
         position:relative;
-    }    
+    }
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus.statuscount3 tr #status,    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus.statuscount4 tr #status{font-size:17px;}    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus.statuscount5 tr #status{font-size:16px;}
     
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus tr #status > span.wrapper{
         width:100%;
-        font-size:130%;
         min-height:100px;
         display: flex;
         flex-direction: column;
@@ -118,6 +129,7 @@
         line-height: 1em;
         height:auto;
         width:100%!important;
+        white-space: normal;
     }
     
     
@@ -388,6 +400,9 @@
         transform: scale(2); 
     }
 
+    /* An example of what we can do with the new CSS! Yay! */
+#dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.SelectorSwitch #bigtext{display:none}
+    
     .ui-draggable-dragging{
         z-index:4;
     }

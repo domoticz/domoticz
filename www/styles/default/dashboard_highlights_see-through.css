@@ -58,7 +58,7 @@ This can give a nice effect with background images. */
     }
     
     #dashcontent .item.withstatus #status > .wrapper > span{
-        background-color:rgba(250,250,250,0.1)!important;
+        /*background-color:rgba(250,250,250,0.1)!important;*/
     }
     
     #dashcontent #lastupdate > span{
@@ -188,5 +188,13 @@ This can give a nice effect with background images. */
     #dashcontent table.mobileitem .selectorlevels .ui-selectmenu-button{
         top:0!important
     }    
+    
+    
+    #dashcontent .ui-slider-range{
+    background-color: rgba(73,175,205,0.6);
+}
+
+    
+    
     
 } /*  End of mobile protection  */

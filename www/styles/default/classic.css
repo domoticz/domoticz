@@ -97,12 +97,6 @@ body table#itemtablenotype tr td:first-child{
 }
 
 
-/* header  */
-
-#prebannav #timesun + td > span {color:#ddd;}
-#timesun + td {color:#ddd!important;}
-
-
 /* titles */
 
 h1,h2,h3{color:#999}
@@ -172,7 +166,7 @@ h1,h2,h3{color:#999}
 
 /* item status*/
 
-body:not(.dashboard) .item #status{font-weight: bold;}
+#status{color:#333;}
 
 
 /* item mini-options-menu*/
@@ -345,9 +339,14 @@ div.dataTables_wrapper .ui-toolbar, div.dataTables_wrapper .ui-widget-header{
 }
 
 .dataTables_wrapper{
-    border:10px solid #eee;
+    /*border:10px solid #eee;*/
 }
 
+
+/*  mobile  */
+
+body.dashMobile #dashcontent #name,
+body.dashMobile #dashcontent #status{box-shadow:none!important;}
 
 
 /*  status indicators */

@@ -29,11 +29,11 @@
         top:20px;
         left:11px;  
     }
-
+/*
     .navbar:hover .container .brand img{
         margin-top:0;
     }
-
+*/
     .navbar .container .brand h1{
         opacity:0;
         /*transition: all 0.1s linear; */
@@ -42,6 +42,9 @@
         z-index:1000;
     }
 
+    .navbar:hover .container .brand{
+        width:100%
+    }
     .navbar:hover .container .brand h1{
         opacity:100;
         transform: translate(20px);    
@@ -57,8 +60,9 @@
         text-decoration: none!important;
         border-bottom:0!important;
     }
+
     .navbar:hover .brand h2{
-        display:block!important;
+        padding: 10px 10px 0 0;
         text-decoration: none!important;
     }
 

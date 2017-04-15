@@ -104,7 +104,7 @@ device-types that you have.
     #dashcontent > section:first-of-type:nth-last-of-type(5) ~ section * .span4{
         width:100%;
         width:calc(100% - 15px);
-        margin-bottom:1.5em;
+        margin-bottom:0.5em;
     }  
 
 }  
