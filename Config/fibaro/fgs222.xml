@@ -20,7 +20,7 @@
     
     <Value type="short" genre="config" instance="1" index="4" label="Auto off for relay 1" min="0" max="65535" value="0" >
       <Help>
-         Time period for auto off, in miliseconds (0,1 s to 6553,5 s)
+         Time period for auto off, in milliseconds (0,1 s to 6553,5 s)
          0 - Auto off disabled
          Default value: 0
       </Help>

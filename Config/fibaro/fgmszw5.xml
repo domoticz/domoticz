@@ -67,7 +67,7 @@
 		</Value>
 		<Value type="short" genre="config" instance="1" index="9" label="Motion detection - night/day" units="lux" min="1" max="65535" value="200">
 			<Help>
-				This parameter de nes the difference between night and day in terms of light intensity, used in parameter 8.
+				This parameter defines the difference between night and day in terms of light intensity, used in parameter 8.
 				Available settings: 1 - 65535
 				Default setting: 200 (200 lux)
 			</Help>

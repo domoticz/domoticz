@@ -15,12 +15,12 @@
         Set-point display resolution (1=0.1C)
       </Help>
     </Value>
-    <Value type="short" index="3" genre="config" label="Min/Override Setpoint" min="0" max="10" value="12">
+    <Value type="short" index="3" genre="config" label="Min/Override Setpoint" min="0" max="40" value="12">
       <Help>
        Min Set-point and override limit
       </Help>
     </Value>
-	<Value type="short" index="4" genre="config" label="Max/Override Setpoint" min="0" max="40" value="12">
+	<Value type="short" index="4" genre="config" label="Max/Override Setpoint" min="0" max="40" value="28">
       <Help>
        Max Set-point and override limit
       </Help>
