@@ -184,7 +184,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_RaspberryGPIO, "Raspberry's GPIO port" },
 		{ HTYPE_Meteostick, "Meteostick USB" },
 		{ HTYPE_TOONTHERMOSTAT, "Toon Thermostat" },
-		{ HTYPE_ECODEVICES, "Eco Devices via LAN interface" },
+		{ HTYPE_ECODEVICES, "Eco Devices" },
 		{ HTYPE_HARMONY_HUB, "Logitech Harmony Hub" },
 		{ HTYPE_Mochad, "Mochad CM15Pro/CM19A bridge with LAN interface" },
 		{ HTYPE_Philips_Hue, "Philips Hue Bridge" },
