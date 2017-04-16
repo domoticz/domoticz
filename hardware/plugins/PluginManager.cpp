@@ -131,7 +131,7 @@ namespace Plugins {
 			{
 				_log.Log(LOG_ERROR, "PluginSystem: Failed to append 'DomoticzEvents' to the existing table of built-in modules.");
 				return false;
-			}
+			} 
 #endif //ENABLE_PYTHON
 
 			Py_Initialize();

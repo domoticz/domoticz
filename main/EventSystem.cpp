@@ -30,10 +30,12 @@ extern "C" {
 #include "../lua/src/lualib.h"
 #include "../lua/src/lauxlib.h"
 #endif
-#ifdef ENABLE_PYTHON
-#include <Python.h>
-#endif
 }
+
+#ifdef ENABLE_PYTHON
+#include "EventsPythonModule.h"
+#endif
+
 
 #ifdef ENABLE_PYTHON_DECAP
 #include <boost/python.hpp>
@@ -2310,14 +2312,27 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
     } */
 
 
-   if (Py_IsInitialized()) {
-        FILE* PythonScriptFile = _Py_fopen(filename.c_str(),"r+");
+   if (Plugins::Py_IsInitialized()) {
 
-        // FILE* PythonScriptFile = fopen(filename.c_str(), "r");
-        PyRun_SimpleFile(PythonScriptFile, filename.c_str());
+       PyObject* pModule = Plugins::GetEventModule();
+       if (pModule) {
 
-    	if (PythonScriptFile!=NULL)
-    		fclose(PythonScriptFile);
+           PyObject* pModuleDict = Plugins::PyModule_GetDict((PyObject*)pModule); // borrowed referece
+
+           if (pModuleDict) {
+               Plugins::PyDict_SetItemString(pModuleDict, "changed_device_name", Plugins::PyUnicode_FromString(devname.c_str()));
+           }
+
+           FILE* PythonScriptFile = _Py_fopen(filename.c_str(),"r+");
+
+            // FILE* PythonScriptFile = fopen(filename.c_str(), "r");
+            PyRun_SimpleFile(PythonScriptFile, filename.c_str());
+
+        	if (PythonScriptFile!=NULL)
+        		fclose(PythonScriptFile);
+        } else {
+            _log.Log(LOG_ERROR, "Python EventSystem: Module not available to events");
+        }
     } else {
         _log.Log(LOG_ERROR, "EventSystem: Python not initalized");
     }

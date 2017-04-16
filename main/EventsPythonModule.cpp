@@ -4,7 +4,6 @@
 #include "EventsPythonModule.h"
 
 namespace Plugins {
-
     #define GETSTATE(m) ((struct eventModule_state*)PyModule_GetState(m))
 
     struct eventModule_state {
@@ -63,7 +62,31 @@ namespace Plugins {
     {
         // This is called during the import of the plugin module
         // triggered by the "import Domoticz" statement
+
+        _log.Log(LOG_STATUS, "Python EventSystem: Initalizing eventmodule.");
+
         PyObject* pModule = PyModule_Create2(&DomoticzEventsModuleDef, PYTHON_API_VERSION);
         return pModule;
+    }
+
+    PyObject* GetEventModule (void) {
+        PyObject* pModule = PyState_FindModule(&DomoticzEventsModuleDef);
+
+        if (pModule) {
+            _log.Log(LOG_STATUS, "Python Event System: Module found");
+            return pModule;
+        } else {
+            _log.Log(LOG_STATUS, "Python Event System: Module not found");
+            PyRun_SimpleString("import DomoticzEvents");
+            pModule = PyState_FindModule(&DomoticzEventsModuleDef);
+
+            if (pModule) {
+                return pModule;
+            } else {
+                //Py_INCREF(Py_None);
+                //return Py_None;
+                return NULL;
+            }
+        }
     }
 }
