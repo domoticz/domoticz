@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+    <!-- Configuration -->
+    <CommandClass id="112">
+        <Value type="list" genre="config" instance="1" index="1" label="Outputs status upon receipt of 1 click on its command" value="1" size="1">
+            <Help>Defines the status of the output O1/O2 when the switch connected to I1/I2 receives 1 Click</Help>
+            <Item label="In Out" value="0"/>
+            <Item label="Toggle" value="1"/>
+            <Item label="On" value="2"/>
+            <Item label="Off" value="3"/>
+            <Item label="Ignore" value="4"/>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="2" label="Outputs status upon receipt of 2 click on its command" value="1" size="1">
+            <Help>Defines the status of the output O1/O2 when the switch connected to I1/I2 receives 2 Click</Help>
+            <Item label="Toggle" value="1"/>
+            <Item label="On" value="2"/>
+            <Item label="Off" value="3"/>
+            <Item label="Ignore" value="4"/>
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="3" label="Type of outputs" value="0" size="1">
+            <Help>
+                Defines if the outputs are controlled individually, as a traditional device with two channels, or if its behaviour simulates a single pole double throw relay.
+                0 - SINGLE CHANNELS (Default Value) => Channel 1 and Channel 2 are controlled individually.
+                From 1 to 9 - SINGLE POLE DOUBLE THROW RELAY => The two channels are in opposite status. If the Channel 1 is close the Channel 2 is open, if the Channel 1 is open the Channel 2 is close. The value of the parameter defines the closing delay of the relay in tenth of seconds
+                From 10 to 19 - SEQUENCING RELAY => Channels are toggled in this way: both channels ON, only channel 1 ON, only channel 2 ON, both channels OFF. The value of the parameter, deducted of 9, defines the closing delay of the relay in tenth of seconds.
+                From 20 to 39 - SELECTOR => Both channels can be OFF but they can never be ON simultaneously. It can be used for fan coil control, roller shutters, and in general for two-speed systems. The value of the parameter, deducted of 19, defines the closing delay of the relay in tenth of seconds.
+            </Help>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="4" label="Number of clicks that activate the control of the associated devices" value="2" size="1">
+            <Help>This parameter allows to choose operating for the 1st channel controlled by the S1 switch.</Help>
+            <Item label="1 Click" value="1"/>
+            <Item label="2 Clicks" value="2"/>
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="5" label="Level used to control the devices associated to group 2 and 3" value="100" size="1">
+            <Help>
+                0 - SWITCH_OFF The associated devices are switched OFF.
+                -1 - SWITCH_ON The associated devices are switched ON.
+                From 1 to 99 The associated devices (dimmer, roller shutters) are set to the indicated level (only for devices associated to group 3).
+                100 - RELAY_STATUS (Default Value) If the Relay 1 is ON/OFF, the associated devices are ON/OFF.
+                101 - RELAY_STATUS_BUT_IGNORE_IF_OFF If the Relay 1 is ON the associated devices are ON; if it is OFF no action is taken on the associated devices.
+                102 - RELAY_STATUS_BUT_IGNORE_IF_ON If the Relay 1 is OFF the associated devices are OFF; if it is ON no action is taken on the associated devices.
+                103 - RELAY_OPPOSITE_BUT_IGNORE_IF_OFF If the Relay 1 is ON the associated devices are OFF; if it is OFF no action is taken on the associated devices.
+                104 - RELAY_OPPOSITE_BUT_IGNORE_IF_ON If the Relay 1 is OFF the associated devices are ON; if it is ON no action is taken on the associated devices.
+                105 - RELAY_OPPOSITE If the Relay 1 is ON/OFF, the associated devices are OFF/ON.
+                106 - IGNORE No action is taken on the associated devices.
+            </Help>
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="6" label="Level used to control the devices associated to group 4 and 5" value="100" size="1">
+            <Help>
+                0 - SWITCH_OFF The associated devices are switched OFF.
+                -1 - SWITCH_ON The associated devices are switched ON.
+                From 1 to 99 The associated devices (dimmer, roller shutters) are set to the indicated level (only for devices associated to group 5).
+                100 - RELAY_STATUS (Default Value) If the Relay 2 is ON/OFF, the associated devices are ON/OFF.
+                101 - RELAY_STATUS_BUT_IGNORE_IF_OFF If the Relay 2 is ON the associated devices are ON; if it is OFF no action is taken on the associated devices.
+                102 - RELAY_STATUS_BUT_IGNORE_IF_ON If the Relay 2 is OFF the associated devices are OFF; if it is ON no action is taken on the associated devices.
+                103 - RELAY_OPPOSITE_BUT_IGNORE_IF_OFF If the Relay 2 is ON the associated devices are OFF; if it is OFF no action is taken on the associated devices.
+                104 - RELAY_OPPOSITE_BUT_IGNORE_IF_ON If the Relay 2 is OFF the associated devices are ON; if it is ON no action is taken on the associated devices.
+                105 - RELAY_OPPOSITE If the Relay 2 is ON/OFF, the associated devices are OFF/ON.
+                106 - IGNORE No action is taken on the associated devices.
+            </Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="10" label="Timer to switch OFF the Channel 1" units="seconds" value="0" min="0" max="32000" size="2">
+            <Help>
+                Defines the time after which the Channel 1 is switched OFF.
+                0 (Default Value) Timer disabled.
+                From 1 to 32000 (seconds) After this time the relay of the Channel 1 is OFF.
+            </Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="11" label="Timer to switch OFF the Channel 2" units="seconds" value="0" min="0" max="32000" size="2">
+            <Help>
+                Defines the time after which the Channel 2 is switched OFF.
+                0 (Default Value) Timer disabled.
+                From 1 to 32000 (seconds) After this time the relay of the Channel 1 is OFF.
+            </Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="12" label="Timer to switch ON the Channel 1" units="seconds" value="0" min="0" max="32000" size="2">
+            <Help>
+                Defines the time after which the Channel 1 is switched ON.
+                0 (Default Value) Timer disabled.
+                From 1 to 32000 (seconds) After this time the relay of the Channel 1 is ON.
+            </Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="13" label="Timer to switch ON the Channel 2" units="seconds" value="0" min="0" max="32000" size="2">
+            <Help>
+                Defines the time after which the Channel 2 is switched ON.
+                0 (Default Value) Timer disabled.
+                From 1 to 32000 (seconds) After this time the relay of the Channel 1 is ON.
+            </Help>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="20" label="Outputs status upon receipt of a Multi-Channel Basic Set command" value="1" size="1">
+            <Help>The two channels can be controlled individually by Z-Wave network.
+                The status of the channels upon receipt of a Multi-Channel Basic Set command is defined by the value set on the parameter.
+            </Help>
+            <Item label="As Received" value="1"/>
+            <Item label="Ignore if On" value="2"/>
+            <Item label="Ignore if Off" value="3"/>
+            <Item label="Ignore" value="4"/>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="21" label="Outputs status upon receipt of a Basic Set command" value="3" size="1">
+            <Help>The channels of the device can be controlled individually from all other Z-Wave devices that support the multichannel feature.
+                In order to support also the integration with no-multichannel systems, this parameter allows to define if the receipt of a no-multichannel command controls only the Channel 1 or both.
+            </Help>
+            <Item label="Channel 1" value="1"/>
+            <Item label="Both Channels" value="3"/>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="60" label="Start-up status" value="4" size="1">
+            <Help>Defines the status of the device following a restart.</Help>
+            <Item label="Off Off" value="0"/>
+            <Item label="On Off" value="1"/>
+            <Item label="Off On" value="2"/>
+            <Item label="On On" value="3"/>
+            <Item label="Previous status" value="4"/>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="61" label="Configuration reset" value="4" size="1">
+            <Help>Defines which parameters should be reset to default values.</Help>
+            <Item label="Factory Reset" value="0"/>
+            <Item label="Association Reset" value="1"/>
+            <Item label="Configuration Reset" value="2"/>
+            <Item label="Restart Device" value="3"/>
+            <Item label="Ignore" value="4"/>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="62" label="Type of external switch" value="1" size="1">
+            <Help>Defines the type of external switch connected to the device.</Help>
+            <Item label="Ignore" value="0"/>
+            <Item label="Momentary switch" value="1"/>
+            <Item label="Toggle switch" value="2"/>
+        </Value>
+    </CommandClass>
+    <!-- -->
+    <CommandClass id="96" mapping="endpoints"/>
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="5">
+            <Group index="1" max_associations="8" label="Lifeline"/>
+            <Group index="2" max_associations="8" label="On/Off S1"/>
+            <Group index="3" max_associations="8" label="Dimmer S1"/>
+            <Group index="4" max_associations="8" label="On/Off S2"/>
+            <Group index="5" max_associations="8" label="Dimmer S2"/>
+        </Associations>
+    </CommandClass>
+</Product>

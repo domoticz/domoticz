@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+    <!-- Zooz ZSE40 4-in-1 sensor -->
+
+    <!-- Configuration Parameters -->
+    <CommandClass id="112" name="COMMAND_CLASS_CONFIGURATION">
+        <Value type="list" index="1" genre="config" label="Temperature Scale" units="" min="0" max="1" value="1" size="1">
+            <Help>
+                Temperature scale (Celsius or Fahrenheit (default)).
+            </Help>
+            <Item label="Celsius" value="0" />
+            <Item label="Fahrenheit" value="1" />
+        </Value>
+        <Value type="byte" index="2" genre="config" label="Temperature Change Notif" units="0.1 degree" min="1" max="50" value="10">
+            <Help>
+                Minimum temperature change that will trigger a report to the controller, in 0.1 degrees. 10 = 1.0 degrees (default).
+            </Help>
+        </Value>
+        <Value type="byte" index="3" genre="config" label="Humidity Change Notif" units="%" min="1" max="50" value="10">
+            <Help>
+                Minimum humidity change (%) that will trigger a report to the controller. 10 = 10% (default).
+            </Help>
+        </Value>
+        <Value type="byte" index="4" genre="config" label="Light Change Notif" units="%" min="1" max="50" value="10">
+            <Help>
+                Minimum light sensor change (%) that will trigger a report to the controller. 10 = 10% (default).
+            </Help>
+        </Value>
+        <Value type="byte" index="5" genre="config" label="Motion Sensor Trigger Interval" units="minute" min="1" max="255" value="3">
+            <Help>
+                After initial motion, sensor will wait this long before reporting again. 1 = 1 minute; 3 = 3 minutes (default); 255 = 255 minutes.
+            </Help>
+        </Value>
+        <Value type="list" index="6" genre="config" label="Motion Sensor Sensitivity" units="" min="1" max="7" value="4" size="1">
+            <Help>
+                Motion sensor sensitivity.
+            </Help>
+            <Item label="Very High" value="1" />
+            <Item label="High" value="2" />
+            <Item label="Somewhat High" value="3" />
+            <Item label="Normal" value="4" />
+            <Item label="Somewhat Low" value="5" />
+            <Item label="Low" value="6" />
+            <Item label="Very Low" value="7" />
+        </Value>
+        <Value type="list" index="7" genre="config" label="LED indicator mode" units="" min="1" max="4" value="3" size="1">
+            <Help>
+                Color LED behavior. 1 = LED off; 2 = pulsing light for temperature, flashing light for motion (high battery drain); 3 = flashing light for temperature and motion (default); 4 = flashing light for motion.
+            </Help>
+            <Item label="Off" value="1" />
+            <Item label="Pulse Temp/Flash Motion" value="2" />
+            <Item label="Flash Temp &amp; Motion" value="3" />
+            <Item label="Flash Motion" value="4" />
+        </Value>
+    </CommandClass>
+
+    <!-- Association Groups -->
+    <CommandClass id="133" name="COMMAND_CLASS_ASSOCIATION">
+        <Associations num_groups="1">
+            <Group index="1" max_associations="5" label="Lifeline"/>
+        </Associations>
+    </CommandClass>
+</Product>

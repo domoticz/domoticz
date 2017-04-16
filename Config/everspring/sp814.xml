@@ -4,32 +4,42 @@
   <CommandClass id="112">
     <Value type="byte" index="1" genre="config" label="Basic Set Level" units="" min="0" max="99" value="99">
       <Help>
-	When Basic Set Command is sent where contains a value, the receiver will take it for consideration; for instance, if a lamp module is received the Basic Set Command of which value is decisive as to how bright of dim level of lamp modeule shall be.
+	When Basic Set Command is sent where contains a value, the receiver will take it for consideration; for instance, if a lamp module is received the Basic Set Command of which value is decisive as to how bright of dim level of lamp module shall be.
       </Help>
     </Value>
-    <Value type="bool" index="2" genre="config" label="Enable/Disable Detecting" min="0" max="1" value="1">
-      <Help>
-	The Detecting function can be Disabled of Enabled.
-      </Help>
+	<Value type="list" index="2" genre="config" label="Sensor Detecting Function" units="" min="0" max="1" size="1" value="1">
+      <Help>The Detecting function can be Disabled of Enabled.</Help>
+      <Item label="Disabled" value="0"/>
+      <Item label="Enabled" value="1"/>
     </Value>
-    <Value type="byte" index="3" genre="config" label="Sensitivity Level" units="" min="1" max="10" value="6">
-      <Help>
-	1 Means lowest sensitivity and 10 means highest.
-      </Help>
+    <Value type="list" index="3" genre="config" label="Sensitivity Level" size="1" units="" min="1" max="10" value="6">
+      <Help>1 Means lowest sensitivity and 10 means highest.</Help>
+	  <Item label="1" value="1"/>
+      <Item label="2" value="2"/>
+	  <Item label="3" value="3"/>
+      <Item label="4" value="4"/>
+	  <Item label="5" value="5"/>
+      <Item label="6" value="6"/>
+	  <Item label="7" value="7"/>
+      <Item label="8" value="8"/>
+	  <Item label="9" value="9"/>
+      <Item label="10" value="10"/>
     </Value>
     <Value type="short" index="4" genre="config" label="Re-trigger Interval Setting" units="Seconds" min="5" max="3600" value="5">
       <Help>
-	Adjust the interval of being re-triggered afer the detector has	been triggered in seconds.
+	  Adjust the interval of being re-triggered afer the detector has	been triggered in seconds.
+	  IMPORTANT: Parameter size is 1 5-127 or 2 if value > 127. Any value below 127 will be rejected!
       </Help>
     </Value>
     <Value type="byte" index="5" genre="config" label="Lux Level" units="%" min="1" max="100" value="10">
       <Help>
-	Sets minimum Lux Level of ambient illumination neccesary for Motion Detector to trigger.
+	Sets minimum Lux Level of ambient illumination necessary for Motion Detector to trigger.
       </Help>
     </Value>
     <Value type="short" index="6" genre="config" label="On-Off Duration" units="Seconds" min="5" max="3600" value="5">
       <Help>
-	The duration determines how long before the module sends an Off after being triggered.
+	  The duration determines how long before the module sends an Off after being triggered.
+	  IMPORTANT: Parameter size is 1 5-127 or 2 if value > 127. Any value below 127 will be rejected!	  
       </Help>
     </Value>
   </CommandClass>
@@ -40,7 +50,7 @@
   <!-- COMMAND_CLASS_ASSOCIATION. Groups -->
   <CommandClass id="133">
     <Associations num_groups="2">
-      <Group index="1" max_associations="1" label="Reports" />
+      <Group index="1" max_associations="1" label="Lifeline" />
       <Group index="2" max_associations="3" label="Control" />
     </Associations>
   </CommandClass>

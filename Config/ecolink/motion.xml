@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Ecolink Motion Detector
+http://products.z-wavealliance.org/ProductManual/File?folder=&filename=Manuals/1500/Ecolink%20PIR%20Zwave%20Plus%20Manual%20R1.04%20021116kgs.docx
+-->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+    <!-- Basic set as report-->
+	<CommandClass id="32" setasreport="true"/>
+    <!-- Configuration Parameters -->
+    <CommandClass id="112">
+        <Value type="list" genre="config" instance="1" index="1" label="Basic Set Report when sensor is restored" min="0" max="1" value="0" size="1">
+            <Help>
+			Configures the sensor to send or not send Basic Set commands of 0x00 to nodes in Association group 2 turning the devices off when the sensor is in a restored state (i.e. motion not detected).  
+			By default the sensor does NOT send Basic Set commands of 0x00.
+			</Help>
+            <Item label="Disable" value="0"/>
+            <Item label="Enable" value="255"/>
+        </Value>
+		<Value type="list" genre="config" instance="1" index="2" label="Basic Set Report" min="0" max="1" value="0" size="1">
+            <Help>
+			Configures the sensor to either to send or not to send Sensor Binary Report commands to Association Group 1 when the sensor is faulted and restored.  
+			</Help>
+            <Item label="Enable Binary Reports" value="0"/>
+            <Item label="Disable Binary Reports" value="255"/>
+        </Value>   		
+    </CommandClass>
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="2">
+            <Group index="1" max_associations="5" label="Lifeline"/>
+            <Group index="2" max_associations="5" label="Basic Report"/>
+        </Associations>
+    </CommandClass>
+</Product>

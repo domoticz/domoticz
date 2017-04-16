@@ -51,6 +51,7 @@ define(['app'], function (app) {
 				var HTTPTo=encodeURIComponent($("#httptable #HTTPTo").val());
 				var HTTPURL = encodeURIComponent($("#httptable #HTTPURL").val());
 				var HTTPPostData = encodeURIComponent($("#httptable #HTTPPostData").val());
+				var HTTPPostHeaders = encodeURIComponent($("#httptable #HTTPPostHeaders").val());
 				var HTTPPostContentType = encodeURIComponent($("#httptable #HTTPPostContentType").val());
 				if (HTTPPostData != "" && HTTPPostContentType=="") {
 				    ShowNotify($.t('Please specify the content type...'), 3500, true);
@@ -60,7 +61,16 @@ define(['app'], function (app) {
 					ShowNotify($.t('Please specify the base URL!...'), 3500, true);
 					return;
 				}
-				extraparams = "HTTPField1=" + HTTPField1 + "&HTTPField2=" + HTTPField2 + "&HTTPField3=" + HTTPField3 + "&HTTPField4=" + HTTPField4 + "&HTTPTo=" + HTTPTo + "&HTTPURL=" + HTTPURL + "&HTTPPostData=" + HTTPPostData + "&HTTPPostContentType=" + HTTPPostContentType;
+				extraparams =
+                    "HTTPField1=" + HTTPField1 +
+                    "&HTTPField2=" + HTTPField2 +
+                    "&HTTPField3=" + HTTPField3 +
+                    "&HTTPField4=" + HTTPField4 +
+                    "&HTTPTo=" + HTTPTo +
+                    "&HTTPURL=" + HTTPURL +
+                    "&HTTPPostData=" + HTTPPostData +
+                    "&HTTPPostContentType=" + HTTPPostContentType +
+                    "&HTTPPostHeaders=" + HTTPPostHeaders;
 				break;
 			case "prowl":
 				var ProwlAPI=encodeURIComponent($("#prowltable #ProwlAPI").val());
@@ -86,6 +96,15 @@ define(['app'], function (app) {
 				}
 				extraparams = "PushbulletAPI=" + PushbulletAPI;
 				break;
+			case "pushsafer":
+			    var PushsaferAPI = encodeURIComponent($("#pushsafertable #PushsaferAPI").val());
+			    var PushsaferImage = encodeURIComponent($("#pushsafertable #PushsaferImage").val());
+				if (PushsaferAPI=="") {
+					ShowNotify($.t('Please enter the API key!...'), 3500, true);
+					return;
+				}
+				extraparams = "PushsaferAPI=" + PushsaferAPI + "&PushsaferImage=" + PushsaferImage;
+				break;				
 			case "pushover":
 				var POAPI=encodeURIComponent($("#pushovertable #PushoverAPI").val());
 				if (POAPI=="") {
@@ -147,6 +166,8 @@ define(['app'], function (app) {
 					return;
 				}
 				extraparams = 'LmsPlayerMac=' + $("#lmstable #LmsPlayerMac").val() + '&LmsDuration=' + $("#lmstable #LmsDuration").val();
+				break;
+			case "gcm":
 				break;
 			default:
 				return;
@@ -228,6 +249,22 @@ define(['app'], function (app) {
 			 }
 		  });
 
+		  //Get Timer Plans
+		  $.ajax({
+			 url: "json.htm?type=command&param=gettimerplans",
+			 async: false,
+			 dataType: 'json',
+			 success: function(data) {
+				if (typeof data.result != 'undefined') {
+					$("#settingscontent #comboTimerplan").html("");
+					$.each(data.result, function(i,item) {
+						var option = $('<option />');
+						option.attr('value', item.idx).text(item.Name);
+						$("#settingscontent #comboTimerplan").append(option);
+					});
+				}
+			 }
+		  });
 
 		  $.ajax({
 			 url: "json.htm?type=settings",
@@ -255,6 +292,15 @@ define(['app'], function (app) {
 			  }
 			  if (typeof data.PushbulletAPI != 'undefined') {
 				$("#pushbullettable #PushbulletAPI").val(data.PushbulletAPI);
+			  }
+			  if (typeof data.PushsaferEnabled != 'undefined') {
+  				$("#pushsafertable #PushsaferEnabled").prop('checked',data.PushsaferEnabled==1);
+			  }			  
+			  if (typeof data.PushsaferAPI != 'undefined') {
+			      $("#pushsafertable #PushsaferAPI").val(data.PushsaferAPI);
+			  }
+			  if (typeof data.PushsaferImage != 'undefined') {
+			      $("#pushsafertable #PushsaferImage").val(data.PushsaferImage);
 			  }
 			  if (typeof data.PushoverEnabled != 'undefined') {
   				$("#pushovertable #PushoverEnabled").prop('checked',data.PushoverEnabled==1);
@@ -317,6 +363,9 @@ define(['app'], function (app) {
 			  if (typeof data.HTTPPostContentType != 'undefined') {
 			      $("#httptable #HTTPPostContentType").val(atob(data.HTTPPostContentType));
 			  }
+			  if (typeof data.HTTPPostHeaders != 'undefined') {
+			      $("#httptable #HTTPPostHeaders").val(atob(data.HTTPPostHeaders));
+			  }
 
 			  if (typeof data.KodiEnabled != 'undefined') {
   				$("#koditable #KodiEnabled").prop('checked',data.KodiEnabled==1);
@@ -344,7 +393,9 @@ define(['app'], function (app) {
 			  if (typeof data.LmsDuration != 'undefined') {
 				$("#lmstable #LmsDuration").val(data.LmsDuration);
 			  }
-
+  			  if (typeof data.GCMEnabled != 'undefined') {
+  				$("#gcmtable #GCMEnabled").prop('checked',data.GCMEnabled==1);
+			  }
 			  if (typeof data.LightHistoryDays != 'undefined') {
 				$("#lightlogtable #LightHistoryDays").val(data.LightHistoryDays);
 			  }
@@ -383,6 +434,12 @@ define(['app'], function (app) {
 			  }
 			  if (typeof data.CostEnergyT2 != 'undefined') {
 				$("#rfxmetertable #CostEnergyT2").val(data.CostEnergyT2);
+			  }
+			  if (typeof data.CostEnergyR1 != 'undefined') {
+				$("#rfxmetertable #CostEnergyR1").val(data.CostEnergyR1);
+			  }
+			  if (typeof data.CostEnergyR2 != 'undefined') {
+				$("#rfxmetertable #CostEnergyR2").val(data.CostEnergyR2);
 			  }
 			  if (typeof data.GasDivider != 'undefined') {
 				$("#rfxmetertable #GasDivider").val(data.GasDivider );
@@ -495,6 +552,14 @@ define(['app'], function (app) {
 			  if (typeof data.WebTheme != 'undefined') {
 				$("#settingscontent #combothemes").val(data.WebTheme);
 			  }
+			  if (typeof data.Title != 'undefined') {
+				sessionStorage.title = data.Title;
+                          }
+			  else {
+				sessionStorage.title = 'Domoticz';
+                          }
+                          document.title = sessionStorage.title;
+                          $("#settingscontent #Title").val(sessionStorage.title);
 
 			  if (typeof data.AuthenticationMethod != 'undefined') {
 				$("#webtable #comboauthmethod").val(data.AuthenticationMethod);
@@ -520,6 +585,9 @@ define(['app'], function (app) {
 
 			  if (typeof data.DisableEventScriptSystem!= 'undefined') {
 				$("#eventsystemtable #DisableEventScriptSystem").prop('checked',data.DisableEventScriptSystem==1);
+			  }
+			  if (typeof data.LogEventScriptTrigger != 'undefined') {
+			    $("#eventsystemtable #LogEventScriptTrigger").prop('checked',data.LogEventScriptTrigger==1);
 			  }
 
 			  if (typeof data.FloorplanPopupDelay!= 'undefined') {
@@ -556,6 +624,16 @@ define(['app'], function (app) {
 			  if (typeof data.SecOnDelay != 'undefined') {
 				$("#sectable #SecOnDelay").val(data.SecOnDelay);
 			  }
+			  if (typeof data.LogLevel != 'undefined') {
+  				$("#LogDebug #LogFilterTable #LogLevel").val(data.LogLevel);
+  				$("#LogDebug").show();
+			  }
+			  if (typeof data.LogFilter != 'undefined') {
+					$("#LogDebug #LogFilterTable #LogFilter").val(data.LogFilter);
+			  }
+			  if (typeof data.LogFileName != 'undefined') {
+					$("#LogDebug #LogFilterTable #LogFileName").val(data.LogFileName);
+			  }
 			  if (typeof data.cloudenabled != 'undefined') {
 				  if (!data.cloudenabled) {
 					  $("#MyDomoticzTab").css("display", "none");
@@ -574,6 +652,9 @@ define(['app'], function (app) {
 					$("#mydomoticztable #SubsystemHttp").prop("checked", (data.MyDomoticzSubsystems & 1) > 0);
 					$("#mydomoticztable #SubsystemShared").prop("checked", (data.MyDomoticzSubsystems & 2) > 0);
 					$("#mydomoticztable #SubsystemApps").prop("checked", (data.MyDomoticzSubsystems & 4) > 0);
+			  }
+			  if (typeof data.SendErrorsAsNotification != 'undefined') {
+				$("#emailtable #SendErrorsAsNotification").prop('checked',data.SendErrorsAsNotification==1);
 			  }
 			 }
 		  });
@@ -594,6 +675,10 @@ define(['app'], function (app) {
 
 		  var secpanel=$("#sectable #SecPassword").val();
 		  var switchprotection=$("#protectiontable #ProtectionPassword").val();
+
+                  // Apply Title
+		  sessionStorage.title = $("#settingscontent #Title").val();
+		  document.title=sessionStorage.title;
 
 		  //Check email settings
 		  var EmailServer=$("#emailtable #EmailServer").val();
