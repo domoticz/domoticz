@@ -163,8 +163,8 @@ define(['app'], function(app) {
 												status += '<button class="btn btn-mini btn-info" type="button" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshFavorites, ' + item.Protected + ');">' + $.t("On") + '</button> ' +
 													'<button class="btn btn-mini" type="button" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshFavorites, ' + item.Protected + ');">' + $.t("Off") + '</button>';
 											}
-											if ($(id + " #status > span").html() != status) {
-												$(id + " #status > span").html(status);
+											if ($(id + " #status").html() != status) {
+												$(id + " #status").html(status);
 											}
 										}
 									} else {
@@ -204,6 +204,9 @@ define(['app'], function(app) {
 												$(id + " #img2").html(img2);
 											}
 											if ($(id + " #bigtext > span").html() != TranslateStatus(item.Status)) {
+                                                console.log(status);
+                                                console.log(" - that was status, and bigtext is:");
+                                                console.log(bigtext);
 												$(id + " #bigtext > span").html(bigtext);
 											}
 											if ($(id + " #lastupdate > span").html() != item.LastUpdate) {
@@ -538,8 +541,9 @@ define(['app'], function(app) {
 												dslider.slider("value", item.LevelInt + 1);
 											}
 										}
-										if ($(id + " #status > span").html() != status) {
-											$(id + " #status > span").html(status);
+										if ($(id + " #status").html() != status) {
+                                            console.log(status);
+											$(id + " #status").html(status);
 										}
 									} else {
 										//normal/compact dashboard
@@ -1411,7 +1415,6 @@ define(['app'], function(app) {
 										}
                                         status = "<span>" + status + "</span>";
 										if ($(id + " #status > span.wrapper").html() != status) {
-                                            console.log(status);
 											$(id + " #status > span.wrapper").html(status);
 										}
 									} else {
