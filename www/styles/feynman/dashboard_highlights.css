@@ -258,7 +258,7 @@
 
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #img2{
         right:50%;
-        margin-right:-15px!important;
+        margin-right:-25px!important;
         top: 55px; /*top: 38%;*/
         display: flex;
         align-items: center;
@@ -408,14 +408,24 @@
     }
  
 
-    /*  Adds little icons to show current status of items, instead of the default box-shadow solution. */
+    /*  Normal status. */
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.statusNormal{box-shadow:none}
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.statusNormal td#name{
+        background-color: transparent;
+        -moz-box-shadow:  2px 4px 18px 0px rgba(50, 50, 50, 0.2);
+        -webkit-box-shadow:  2px 4px 18px 0px rgba(50, 50, 50, 0.2);
+        box-shadow:  2px 4px 18px 0px rgba(50, 50, 50, 0.2);
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;    
+    }
 
+    /*  Adds little icons to show current status of items, instead of the default box-shadow solution. */
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.statusProtected{box-shadow:none}
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.statusProtected td#name{
         background-color: transparent;
-        -moz-box-shadow:  0 1px 0 0 #A4B1EE;
-        -webkit-box-shadow:  0 1px 0 0 #A4B1EE;
-        box-shadow:  0 1px 0 0 #A4B1EE;
+        -moz-box-shadow:  0 6px 8px -2px #A4B1EE;
+        -webkit-box-shadow:  0 6px 8px -2px #A4B1EE;
+        box-shadow: 0 6px 8px -2px #A4B1EE;
         border-bottom-left-radius: 0;
         border-bottom-right-radius: 0;    
     }
@@ -437,13 +447,14 @@
         opacity : 0.6;
         z-index: 1;
     }
-
+    
+    /*  Adds little icons to show current status of items, instead of the default box-shadow solution. */
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.statusTimeout{box-shadow:none}
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.statusTimeout td#name{
         background-color: transparent;
-        -moz-box-shadow:  0 1px 0 0 #DF2D3A;
-        -webkit-box-shadow:  0 1px 0 0 #DF2D3A;
-        box-shadow:  0 1px 0 0 #DF2D3A;   
+        -moz-box-shadow:  0 1px 8px 0 #DF2D3A;
+        -webkit-box-shadow:  0 1px 8px 0 #DF2D3A;
+        box-shadow:  0 1px 8px 0 #DF2D3A;   
         border-bottom-left-radius: 0;
         border-bottom-right-radius: 0;    
     }
@@ -465,13 +476,14 @@
         opacity : 0.8;
         z-index: 1;
     }
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.statusTimeout tr:after:hover{content : "No connection!";}
 
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.statusLowBattery{box-shadow:none}
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.statusLowBattery td#name{
         background-color: transparent;    
-        -moz-box-shadow:  0 1px 0 0 #DDDF2D;
-        -webkit-box-shadow:  0 1px 0 0 #DDDF2D;
-        box-shadow:  0 1px 0 0 #DDDF2D;    
+        -moz-box-shadow:  0 2px 4px -2px #DF2D3A;
+        -webkit-box-shadow:  0 2px 4px -2px #DF2D3A;
+        box-shadow:  0 2px 4px -2px #DF2D3A;
         border-bottom-left-radius: 0;
         border-bottom-right-radius: 0;
     }

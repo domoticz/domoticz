@@ -53,6 +53,7 @@ body table#itemtabledoubleicon tbody tr, body table#itemtable tbody tr, body tab
     padding:10px 12px
 }
 
+/*
 .brand:hover h2{
     display:block!important;
     position: relative;
@@ -62,7 +63,7 @@ body table#itemtabledoubleicon tbody tr, body table#itemtable tbody tr, body tab
     margin:0!important;
     opacity:100;
     transition: all 1s linear;
-}
+}*/
 
 .brand div.tooltip{
     top:2px!important;
