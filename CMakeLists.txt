@@ -167,15 +167,14 @@ option(MINIFY_JS "Minify JavaScript files" YES)
 unset(UGLY CACHE)
 unset(GZIP CACHE)
 unset (PARAM CACHE)
-find_program(UGLY uglifyjs)
+#find_program(UGLY uglifyjs)
 find_program(GZIP gzip)
 IF (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
     MESSAGE(STATUS "Debug mode, variables in JavaScript will NOT be mangled")
     set(PARAM "-c")
 ELSE()
     MESSAGE(STATUS "Normal mode, variables in JavaScript will be mangled")
-#    set(PARAM "-mc") reserved for a later use when we are ready to clean JS files
-    set(PARAM "")
+    set(PARAM "-mc") 
 ENDIF()
 
 # Both uglifyjs and gzip are available, we are not in debug mode
@@ -202,7 +201,7 @@ IF(UGLY AND GZIP)
 
 # uglifyjs not available, gzip available. 
 ELSEIF((NOT UGLY) AND GZIP) 
-    message(WARNING "uglifyjs not available, JS files will be compressed but not minified")
+    message(WARNING "uglifyjs is disabled, JS files will be compressed but not minified")
     foreach(jsfile ${js_in_files})
         set(jsgz "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}.min.gz")
         add_custom_command(OUTPUT ${jsgz}
