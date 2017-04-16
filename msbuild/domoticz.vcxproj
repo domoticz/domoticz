@@ -438,6 +438,7 @@
     <ClInclude Include="..\hardware\FritzboxTCP.h" />
     <ClInclude Include="..\hardware\Gpio.h" />
     <ClInclude Include="..\hardware\GpioPin.h" />
+    <ClInclude Include="..\hardware\SysfsGPIO.h" />
     <ClInclude Include="..\hardware\HarmonyHub.h" />
     <ClInclude Include="..\hardware\HEOS.h" />
     <ClInclude Include="..\hardware\HttpPoller.h" />
@@ -679,6 +680,7 @@
     <ClCompile Include="..\hardware\GoodweAPI.cpp" />
     <ClCompile Include="..\hardware\Gpio.cpp" />
     <ClCompile Include="..\hardware\GpioPin.cpp" />
+    <ClCompile Include="..\hardware\SysfsGPIO.cpp" />
     <ClCompile Include="..\hardware\HarmonyHub.cpp" />
     <ClCompile Include="..\hardware\HEOS.cpp" />
     <ClCompile Include="..\hardware\HttpPoller.cpp" />
