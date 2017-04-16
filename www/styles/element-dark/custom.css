@@ -235,9 +235,21 @@ width: 99.5% !important;
 }
 
 #itemtablesmall .dimslider {
-   width: calc(100% - 52px) !important;
+   width: calc(98% - 52px) !important;
    margin-top: 10px !important;
    margin-left: 48px !important;
+}
+
+#itemtabledoubleicon .dimslider {
+   width: calc(98% - 114px) !important;
+   margin-top: 10px !important;
+   margin-left: 110px !important;
+}
+
+#itemtablesmalldoubleicon .dimslider {
+   width: calc(98% - 98px) !important;
+   margin-top: 10px !important;
+   margin-left: 95px !important;
 }
 
 #rgbw_popup .dimslider {
