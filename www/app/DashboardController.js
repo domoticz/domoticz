@@ -799,24 +799,16 @@ define(['app'], function(app) {
                                             $(id + " div.item").addClass('offf');
                                             $(id + " div.item").removeClass('onn');
                                         }
-
+                                        
                                         var newStatusClass = "statusNormal";
-                                        if (item.Protected == true) {
+                                        if (item.HaveTimeout == true) {
+                                            newStatusClass = "statusTimeout";
+                                        }
+                                        else if (item.Protected == true) {
                                             newStatusClass = "statusProtected";
                                         }
-                                        else if (item.HaveTimeout == true) {
-                                            newStatusClass = "statusTimeout";
-                                        } 
-                                        else {
-                                            var BatteryLevel = parseInt(item.BatteryLevel);
-                                            if (BatteryLevel != 255) {
-                                                if (BatteryLevel <= 10) {
-                                                    newStatusClass = "statusLowBattery";
-                                                }
-                                            }
-                                        }
                                         if(!$(id + ".item").hasClass(newStatusClass)) {
-                                            $(id + ".item").removeClass("statusNormal").removeClass("statusProtected").removeClass("statusTimeout").removeClass("statusLowBattery"); 
+                                            $(id + ".item").removeClass("statusNormal").removeClass("statusProtected").removeClass("statusTimeout"); 
                                             $(id + ".item").addClass(newStatusClass);
                                         }
 										if ($(id + " #img").html() != img) {
@@ -2197,13 +2189,8 @@ define(['app'], function(app) {
                                     var backgroundClass = "statusNormal";
                                     if (item.HaveTimeout == true) {
                                         backgroundClass = "statusTimeout";
-                                    } else {
-                                        var BatteryLevel = parseInt(item.BatteryLevel);
-                                        if (BatteryLevel != 255) {
-                                            if (BatteryLevel <= 10) {
-                                                backgroundClass = "statusLowBattery";
-                                            }
-                                        }
+                                    } else if (item.Protected == true) {
+                                        backgroundClass = "statusProtected";
                                     }
                                     
                                     var count = 0;
@@ -3932,6 +3919,7 @@ define(['app'], function(app) {
 								var myid = $(this).attr("id");
 								var parts1 = myid.split('_');
 								var parts2 = $.devIdx.split('_');
+                                $(this).css("z-index",0);
 								if (parts1[0] != parts2[0]) {
 									bootbox.alert($.t('Only possible between Sensors of the same kind!'));
 									$scope.mytimer = $interval(function() {
