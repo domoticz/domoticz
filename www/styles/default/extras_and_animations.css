@@ -17,12 +17,18 @@
       to { transform: scale(1);  }
 }
 
+@-webkit-keyframes rotation {
+    from {-webkit-transform: rotate(0deg);}
+    to   {-webkit-transform: rotate(359deg);}
+}
 
 
+/*  animation  */
 
-
-
-
+body.dashboard div.item.Fan.onn .img1 img{
+    -webkit-animation: rotation 0.5s infinite linear;
+    transition: all 1s ease;
+}
 
 
 
