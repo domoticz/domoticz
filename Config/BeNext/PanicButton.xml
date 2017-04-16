@@ -7,14 +7,14 @@
 		<Value type="button" genre="config" instance="1" index="1" label="Set to Default" size="1" value="0">
 			<Help>Set all configuration values to default values (factory settings).</Help>
 		</Value>
-		<Value type="byte" genre="config" instance="1" index="2" label="Time to press the panic button" size="1" min="0" max="255" value="100" >
+		<Value type="int" genre="config" instance="1" index="2" label="Time to press the panic button" size="1" min="0" max="255" value="100" >
 			<Help>
                 The time that the panic pushbutton must be pressed before a (panic) message is sent out to the controller.
                 0: send directly the panic message when pressed.
                 1-255: send a panic message after you keep holding the button pressed for this value x 10ms.
             </Help>
 		</Value>
-		<Value type="byte" genre="config" instance="1" index="3" label="Min led feedback time panic" size="1" min="0" max="255" value="100" >
+		<Value type="int" genre="config" instance="1" index="3" label="Min led feedback time panic" size="1" min="0" max="255" value="100" >
 			<Help>
                 Minimum time that led feedback is shown after a panic message.
                 0: led only stays on during the send time.
@@ -35,7 +35,7 @@
                 1-255: send a control message after you keep holding pushbutton pressed for this value x 10ms.
             </Help>
 		</Value>
-		<Value type="byte" genre="config" instance="1" index="6" label="Min led feedback time control" size="1" min="0" max="255" value="50">
+		<Value type="int" genre="config" instance="1" index="6" label="Min led feedback time control" size="1" min="0" max="255" value="50">
 			<Help>
                 Minimum time that led feedback is shown after a control message is sent.
                 0: led only stays on during the send time.

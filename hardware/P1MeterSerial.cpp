@@ -21,14 +21,12 @@
 //
 //Class P1MeterSerial
 //
-P1MeterSerial::P1MeterSerial(const int ID, const std::string& devname, const unsigned int baud_rate, const bool disable_crc, const int ratelimit):
+P1MeterSerial::P1MeterSerial(const int ID, const std::string& devname, unsigned int baud_rate):
 m_szSerialPort(devname)
 {
 	m_HwdID=ID;
 	m_iBaudRate=baud_rate;
 	m_stoprequested = false;
-	m_bDisableCRC = disable_crc;
-	m_ratelimit = ratelimit;
 }
 
 P1MeterSerial::P1MeterSerial(const std::string& devname,
@@ -48,18 +46,16 @@ P1MeterSerial::~P1MeterSerial()
 
 }
 
-#ifdef _DEBUG
-	//#define DEBUG_FROM_FILE
-#endif
+//#define DEBUG_FROM_FILE
 
 bool P1MeterSerial::StartHardware()
 {
 #ifdef DEBUG_FROM_FILE
 	FILE *fIn=fopen("E:\\meter.txt","rb+");
-	BYTE buffer[1400];
+	BYTE buffer[1000];
 	int ret=fread((BYTE*)&buffer,1,sizeof(buffer),fIn);
 	fclose(fIn);
-	ParseData((const BYTE*)&buffer, ret, 1);
+	ParseData((const BYTE*)&buffer,ret);
 #endif
 	m_stoprequested = false;
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&P1MeterSerial::Do_Work, this)));
@@ -88,9 +84,6 @@ bool P1MeterSerial::StartHardware()
 				boost::asio::serial_port_base::parity::none),
 				boost::asio::serial_port_base::character_size(8)
 				);
-			if (m_bDisableCRC) {
-				_log.Log(LOG_STATUS,"P1 Smart Meter: CRC validation disabled through hardware control");
-			}
 		}
 	}
 	catch (boost::exception & e)
@@ -111,7 +104,6 @@ bool P1MeterSerial::StartHardware()
 	m_bIsStarted=true;
 	m_linecount=0;
 	m_exclmarkfound=0;
-	m_lastUpdateTime=0;
 	setReadCallback(boost::bind(&P1MeterSerial::readCallback, this, _1, _2));
 	sOnConnected(this);
 	return true;
@@ -139,7 +131,8 @@ void P1MeterSerial::readCallback(const char *data, size_t len)
 
 	if (!m_bEnableReceive)
 		return; //receiving not enabled
-	ParseData((const unsigned char*)data, static_cast<int>(len), m_bDisableCRC, m_ratelimit);
+
+	ParseData((const unsigned char*)data, static_cast<int>(len));
 }
 
 bool P1MeterSerial::WriteToHardware(const char *pdata, const unsigned char length)

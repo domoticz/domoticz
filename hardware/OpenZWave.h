@@ -70,6 +70,9 @@ public:
 		int								tFanMode;
 		std::vector<string>				tModes;
 		std::vector<string>				tFanModes;
+
+		//Alarm Level/Type
+		int								m_LastAlarmTypeReceived;
 	}NodeInfo;
 
 	COpenZWave(const int ID, const std::string& devname);
@@ -147,7 +150,7 @@ private:
 	void SetThermostatMode(const int nodeID, const int instanceID, const int commandClass, const int tMode);
 	void SetThermostatFanMode(const int nodeID, const int instanceID, const int commandClass, const int fMode);
 
-	uint8_t GetInstanceFromValueID(const OpenZWave::ValueID &vID);
+	unsigned char GetInstanceFromValueID(const OpenZWave::ValueID &vID);
 
 	void StopHardwareIntern();
 
@@ -172,7 +175,6 @@ private:
 	bool m_bNightlyNetworkHeal;
 	bool m_bNeedSave;
 	bool m_bAeotecBlinkingMode;
-	int	m_LastAlarmTypeReceived;
 };
 
 #endif //WITH_OPENZWAVE

@@ -239,10 +239,7 @@ namespace http {
 		void CWebServer::Cmd_WOLGetNodes(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
+				return;//Only admin user allowed
 			std::string hwid = request::findValue(&req, "idx");
 			if (hwid == "")
 				return;
@@ -279,8 +276,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
+				//No admin user, and not allowed to be here
+				return;
 			}
 
 			std::string hwid = request::findValue(&req, "idx");
@@ -309,8 +306,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
+				//No admin user, and not allowed to be here
+				return;
 			}
 
 			std::string hwid = request::findValue(&req, "idx");
@@ -342,8 +339,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
+				//No admin user, and not allowed to be here
+				return;
 			}
 
 			std::string hwid = request::findValue(&req, "idx");
@@ -371,8 +368,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
+				//No admin user, and not allowed to be here
+				return;
 			}
 
 			std::string hwid = request::findValue(&req, "idx");

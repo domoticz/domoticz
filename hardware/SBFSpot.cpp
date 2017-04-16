@@ -10,8 +10,6 @@
 #include "../webserver/cWebem.h"
 #include "../json/json.h"
 #include "hardwaretypes.h"
-#define __STDC_FORMAT_MACROS
-#include <inttypes.h>
 
 #define round(a) ( int ) ( a + .5 )
 
@@ -239,7 +237,7 @@ void CSBFSpot::ImportOldMonthData()
 			return;
 		}
 	}
-	uint64_t ulID;
+	unsigned long long ulID;
 	std::stringstream s_str(result[0][0]);
 	s_str >> ulID;
 
@@ -261,7 +259,7 @@ void CSBFSpot::ImportOldMonthData()
 	_log.Log(LOG_STATUS, "SBFSpot Import Old Month Data: Complete");
 }
 
-void CSBFSpot::ImportOldMonthData(const uint64_t DevID, const int Year, const int Month)
+void CSBFSpot::ImportOldMonthData(const unsigned long long DevID, const int Year, const int Month)
 {
 	if (m_SBFDataPath.size() == 0)
 		return;
@@ -316,7 +314,7 @@ void CSBFSpot::ImportOldMonthData(const uint64_t DevID, const int Year, const in
 				if (pPos == std::string::npos)
 					szKwhCounter = "0," + szKwhCounter;
 				stdreplace(szKwhCounter, ",", ".");
-				double kWhCounter = atof(szKwhCounter.c_str()) * 1000;
+				double kWhCounter = atof(szKwhCounter.c_str()) * 100000;
 				unsigned long long ulCounter = (unsigned long long)kWhCounter;
 
 				//check if this day record does not exists in the database, and insert it
@@ -325,11 +323,11 @@ void CSBFSpot::ImportOldMonthData(const uint64_t DevID, const int Year, const in
 				char szDate[40];
 				sprintf(szDate, "%04d-%02d-%02d", year, month, day);
 
-				result = m_sql.safe_query("SELECT Value FROM Meter_Calendar WHERE (DeviceRowID==%" PRIu64 ") AND (Date=='%q')", DevID, szDate);
+				result = m_sql.safe_query("SELECT Value FROM Meter_Calendar WHERE (DeviceRowID==%llu) AND (Date=='%q')", DevID, szDate);
 				if (result.size() == 0)
 				{
 					//Insert value into our database
-					m_sql.safe_query("INSERT INTO Meter_Calendar (DeviceRowID, Value, Date) VALUES ('%" PRIu64 "', '%llu', '%q')", DevID, ulCounter, szDate);
+					m_sql.safe_query("INSERT INTO Meter_Calendar (DeviceRowID, Value, Date) VALUES ('%llu', '%llu', '%q')", DevID, ulCounter, szDate);
 					_log.Log(LOG_STATUS, "SBFSpot Import Old Month Data: Inserting %s",szDate);
 				}
 
@@ -382,7 +380,7 @@ void CSBFSpot::ImportOldMonthData(const uint64_t DevID, const int Year, const in
 
 						std::string szKwhCounter = results[iInvOff + 1];
 						stdreplace(szKwhCounter, ",", ".");
-						double kWhCounter = atof(szKwhCounter.c_str()) * 1000;
+						double kWhCounter = atof(szKwhCounter.c_str()) * 100000;
 						unsigned long long ulCounter = (unsigned long long)kWhCounter;
 
 						//check if this day record does not exists in the database, and insert it
@@ -391,12 +389,12 @@ void CSBFSpot::ImportOldMonthData(const uint64_t DevID, const int Year, const in
 						char szDate[40];
 						sprintf(szDate, "%04d-%02d-%02d", year, month, day);
 
-						result = m_sql.safe_query("SELECT Value FROM Meter_Calendar WHERE (DeviceRowID==%" PRIu64 ") AND (Date=='%q')",
+						result = m_sql.safe_query("SELECT Value FROM Meter_Calendar WHERE (DeviceRowID==%llu) AND (Date=='%q')",
 							DevID, szDate);
 						if (result.size() == 0)
 						{
 							//Insert value into our database
-							m_sql.safe_query("INSERT INTO Meter_Calendar (DeviceRowID, Value, Date) VALUES ('%" PRIu64 "', '%llu', '%q')",
+							m_sql.safe_query("INSERT INTO Meter_Calendar (DeviceRowID, Value, Date) VALUES ('%llu', '%llu', '%q')",
 								DevID, ulCounter, szDate);
 							_log.Log(LOG_STATUS, "SBFSpot Import Old Month Data: Inserting %s", szDate);
 						}
@@ -644,8 +642,8 @@ namespace http {
 			redirect_uri = "/index.html";
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
+				//No admin user, and not allowed to be here
+				return;
 			}
 
 			std::string idx = request::findValue(&req, "idx");

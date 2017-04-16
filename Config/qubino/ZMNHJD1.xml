@@ -85,11 +85,11 @@
 	<!-- Association Groups -->
 	<CommandClass id="133">
 		<Associations num_groups="5">
-			<Group index="1" max_associations="1" label="Lifeline" />
-			<Group index="2" max_associations="5" label="Multilevel" />
-			<Group index="3" max_associations="5" label="Input I1 state" />
-			<Group index="4" max_associations="5" label="Input I2 state" />
-			<Group index="5" max_associations="5" label="Input I3 state" />		
+			<Group index="1" max_associations="5" label="Multilevel" auto="false"/>
+			<Group index="2" max_associations="5" label="Input I1 state" />
+			<Group index="3" max_associations="5" label="Input I2 state" />
+			<Group index="4" max_associations="5" label="Input I3 state" />
+			<Group index="5" max_associations="1" label="Lifeline" auto="true"/>
 		</Associations>
 	</CommandClass>
 

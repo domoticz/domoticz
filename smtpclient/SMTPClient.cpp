@@ -104,7 +104,7 @@ bool SMTPClient::SendEmail()
 {
 	if (m_From.size()==0)
 		return false;
-	if (m_Recipients.empty())
+	if (m_Recipients.size()==0)
 		return false;
 	if (m_Server.size()==0)
 		return false;

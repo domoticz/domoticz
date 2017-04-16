@@ -5,6 +5,7 @@
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 #include "../main/WebServerHelper.h"
+#include "../json/json.h"
 #include "../main/RFXtrx.h"
 #include "../main/SQLHelper.h"
 #include "../httpclient/HTTPClient.h"
@@ -275,7 +276,7 @@ bool CAtagOne::GetOutsideTemperatureFromDomoticz(float &tvalue)
 	Json::Value tempjson;
 	std::stringstream sstr;
 	sstr << m_OutsideTemperatureIdx;
-	m_webservers.GetJSonDevices(tempjson, "", "temp", "ID", sstr.str(), "", "", true, false, false, 0, "");
+	m_webservers.GetJSonDevices(tempjson, "", "temp", "ID", sstr.str(), "", "", true, false, 0, "");
 
 	size_t tsize = tempjson.size();
 	if (tsize < 1)
@@ -427,7 +428,7 @@ void CAtagOne::GetMeterDetails()
 	Json::Value root2;
 	Json::Reader jReader;
 	bool ret = jReader.parse(sResult, root2);
-	if ((!ret) || (!root2.isObject()))
+	if (!ret)
 	{
 		_log.Log(LOG_ERROR, "AtagOne: Invalid/no data received...");
 		return;

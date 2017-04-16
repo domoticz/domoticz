@@ -395,10 +395,10 @@ public:
 class CEvohome : public AsyncSerial, public CDomoticzHardwareBase
 {
 public:
-	CEvohome(const int ID, const std::string &szSerialPort, const int baudrate);
+	CEvohome(const int ID, const std::string &szSerialPort);
 	~CEvohome(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length);
-
+	
 	std::string m_szSerialPort;
 	unsigned int m_iBaudRate;
 	bool m_bScriptOnly;
@@ -629,3 +629,4 @@ private:
 	static bool m_bDebug;//Debug mode for extra logging
 	static std::ofstream *m_pEvoLog;
 };
+

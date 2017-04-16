@@ -4,6 +4,7 @@
 #include "../main/Logger.h"
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
+#include "../json/json.h"
 #include "../main/RFXtrx.h"
 #include "../main/SQLHelper.h"
 #include "../httpclient/HTTPClient.h"
@@ -178,7 +179,7 @@ bool CICYThermostat::GetSerialAndToken()
 
 	Json::Reader jReader;
 	bool ret = jReader.parse(sResult, root);
-	if ((!ret) || (!root.isObject()))
+	if (!ret)
 	{
 		_log.Log(LOG_ERROR, "ICYThermostat: Invalid data received, or invalid username/password!");
 		return false;
@@ -244,7 +245,7 @@ void CICYThermostat::GetMeterDetails()
 
 	Json::Reader jReader;
 	bool ret = jReader.parse(sResult, root);
-	if ((!ret) || (!root.isObject()))
+	if (!ret)
 	{
 		_log.Log(LOG_ERROR, "ICYThermostat: Invalid data received!");
 		return;

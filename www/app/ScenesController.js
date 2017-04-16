@@ -583,18 +583,11 @@ define(['app'], function (app) {
 				if (bShowLevel==true) {
 					var levelDiv$ = $("#scenecontent #LevelDiv");
 					levelDiv$.find("option").show().end().show();
-
-					var dimmerValues = [];
-
-					$.each(dimmerLevels.split(','), function(i, level) {
-						dimmerValues[i] = level;
-					});
-
-					levelDiv$.find("option").remove();
-					for (var levelCounter = 0; levelCounter < dimmerValues.length; levelCounter++) {
-					    var option = $('<option />');
-					    option.attr('value', dimmerValues[levelCounter]).text(dimmerValues[levelCounter] + "%");
-					    $("#scenecontent #combolevel").append(option);
+					if (dimmerLevels !== "all") {
+						levelDiv$.find("option").hide();
+						$.each(dimmerLevels.split(','), function(i, level) {
+							levelDiv$.find("option[value=\"" + level + "\"]").show();
+						});
 					}
 				}
 			}
@@ -1463,8 +1456,8 @@ define(['app'], function (app) {
 						id="#scenecontent #" + item.idx;
 						var obj=$(id);
 						if (typeof obj != 'undefined') {
-							if ($(id + " #name > span").html()!=item.Name) {
-								$(id + " #name > span").html(item.Name);
+							if ($(id + " #name").html()!=item.Name) {
+								$(id + " #name").html(item.Name);
 							}
 							var img1="";
 							var img2="";
@@ -1496,9 +1489,9 @@ define(['app'], function (app) {
 								if ($(id + " #img2").html()!=img2) {
 									$(id + " #img2").html(img2);
 								}
-								if ($(id + " #status > span").html()!=TranslateStatus(item.Status)) {
-									$(id + " #status > span").html(TranslateStatus(item.Status));
-									$(id + " #bigtext > span").html(bigtext);
+								if ($(id + " #status").html()!=TranslateStatus(item.Status)) {
+									$(id + " #status").html(TranslateStatus(item.Status));
+									$(id + " #bigtext").html(bigtext);
 								}
 							}
 									
@@ -1506,8 +1499,8 @@ define(['app'], function (app) {
 								$(id + " #img1").html(img1);
 							}
 
-							if ($(id + " #lastupdate > span").html()!=item.LastUpdate) {
-								$(id + " #lastupdate > span").html(item.LastUpdate);
+							if ($(id + " #lastupdate").html()!=item.LastUpdate) {
+								$(id + " #lastupdate").html(item.LastUpdate);
 							}
 							if ($scope.config.ShowUpdatedEffect==true) {
 								$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
@@ -1532,44 +1525,23 @@ define(['app'], function (app) {
 				$scope.mytimer = undefined;
 			}
 			
-            RefreshLightSwitchesComboArray();
-            
-            $("body").removeClass();
-            $("body").addClass("scenes");   
-            if ($scope.config.DashboardType == 0) {   
-                $("body").addClass("3column");
-            }
-            if ($scope.config.DashboardType == 1) {
-                $("body").addClass("4column");
-            }                    
-            if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
-                $("body").addClass("dashMobile");    
-            }    
-            if ($scope.config.DashboardType == 3) {
-                $("body").addClass("dashFloorplan");
-            }    
-            
-            var htmlcontent = '';
-            var bHaveAddedDevider = false;
-            var bAllowWidgetReorder=true;
+		  RefreshLightSwitchesComboArray();
 
-            var tophtm="";
-            if (permissions.hasPermission("Admin")) {
-                tophtm+=
-				'\t<div id="tophtm">' +                
-				'\t<table id="prebannav" class="prebannav" border="0" cellpadding="0" cellspacing="0" width="100%">' +
+		  var htmlcontent = '';
+		  var bHaveAddedDevider = false;
+		  var bAllowWidgetReorder=true;
+
+		  var tophtm="";
+		  if (permissions.hasPermission("Admin")) {
+			tophtm+=
+				'\t<table border="0" cellpadding="0" cellspacing="0" width="100%">' +
 				'\t<tr>' +
 				'\t  <td align="left" valign="top" id="timesun"></td>\n' +
-				'\t</tr>' +
-				'\t</table>' +
-                '\t<table id="bannav" class="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">' +
-				'\t<tr>' +
-				'\t  <td align="left">' +
-				'\t    <a class="btnstyle addscenebtn" onclick="AddScene();" data-i18n="Add Scene">Add Scene</a>' +
+				'\t  <td align="right">' +
+				'\t    <a class="btnstyle" onclick="AddScene();" data-i18n="Add Scene">Add Scene</a>' +
 				'\t  </td>' +
 				'\t</tr>' +
-				'\t</table>' +
-				'\t</div>';
+				'\t</table>';
 		  }
 
 		  var i=0;
@@ -1589,7 +1561,7 @@ define(['app'], function (app) {
 				$.each(data.result, function(i,item){
 				  if (j % 3 == 0)
 				  {
-					//add divider
+					//add devider
 					if (bHaveAddedDevider == true) {
 					  //close previous devider
 					  htmlcontent+='</div>\n';
@@ -1597,49 +1569,35 @@ define(['app'], function (app) {
 					htmlcontent+='<div class="row divider">\n';
 					bHaveAddedDevider=true;
 				  }
-                    
-                    
-                    var backgroundClass = "statusNormal";
-                    if (item.Protected == true) {
-                        backgroundClass = "statusProtected";
-                    }
-                    else if (item.HaveTimeout == true) {
-                        backgroundClass = "statusTimeout";
-                    } 
-                    else {
-                        var BatteryLevel = parseInt(item.BatteryLevel);
-                        if (BatteryLevel != 255) {
-                            if (BatteryLevel <= 10) {
-                                backgroundClass = "statusLowBattery";
-                            }
-                        }
-                    }
-                    
 				  var bAddTimer=true;
 				  var xhtm=
 						'\t<div class="span4" id="' + item.idx + '">\n' +
-						'\t  <div class="item ' + backgroundClass + '">\n';
+						'\t  <section>\n';
 					  if (item.Type=="Scene") {
 						xhtm+='\t    <table id="itemtablenostatus" border="0" cellpadding="0" cellspacing="0">\n';
 					  }
 					  else {
 						xhtm+='\t    <table id="itemtabledoubleicon" border="0" cellpadding="0" cellspacing="0">\n';
 					  }
+						var nbackcolor="#D4E1EE";
+						if (item.Protected==true) {
+							nbackcolor="#A4B1EE";
+						}
 					  xhtm+=
 						'\t    <tr>\n' +
-						'\t      <td id="name" class="name"><span>' + item.Name + '</span></td>\n' +
-						'\t      <td id="bigtext" class="bigtext"><span class="wrapper">';
+						'\t      <td id="name" style="background-color: ' + nbackcolor + ';">' + item.Name + '</td>\n' +
+						'\t      <td id="bigtext">';
 						var bigtext=TranslateStatusShort(item.Status);
 					  if (item.UsedByCamera==true) {
 						var streamimg='<img src="images/webcam.png" title="' + $.t('Stream Video') +'" height="16" width="16">';
 						streamurl="<a href=\"javascript:ShowCameraLiveStream('" + escape(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
 						bigtext+="&nbsp;"+streamurl;
 					  }
-					  xhtm+=bigtext+'</span></td>\n';
+					  xhtm+=bigtext+'</td>\n';
 
 					if (item.Type=="Scene") {
-						xhtm+='<td id="img1" class="img img1"><img src="images/push48.png" title="' + $.t('Activate scene') +'" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected +');" class="lcursor" height="48" width="48"></td>\n';
-						xhtm+='\t      <td id="status" class="status"><span>&nbsp;</span></td>\n';
+						xhtm+='<td id="img1"><img src="images/push48.png" title="' + $.t('Activate scene') +'" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected +');" class="lcursor" height="48" width="48"></td>\n';
+						xhtm+='\t      <td id="status">&nbsp;</td>\n';
 					}
 					else {
 						var onclass="";
@@ -1653,21 +1611,21 @@ define(['app'], function (app) {
 							offclass="transimg";
 						}
 
-						xhtm+='<td id="img1" class="img img1"><img class="lcursor ' + onclass + '" src="images/push48.png" title="' + $.t('Turn On') +'" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected +');" height="48" width="48"></td>\n';
-						xhtm+='<td id="img2" class="img img2"><img class="lcursor ' + offclass + '"src="images/pushoff48.png" title="' + $.t('Turn Off') +'" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes, ' + item.Protected +');" height="48" width="48"></td>\n';
-						xhtm+='\t      <td id="status" class="status"><span class="wrapper">&nbsp;</span></td>\n';
+						xhtm+='<td id="img1"><img class="lcursor ' + onclass + '" src="images/push48.png" title="' + $.t('Turn On') +'" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected +');" height="48" width="48"></td>\n';
+						xhtm+='<td id="img2"><img class="lcursor ' + offclass + '"src="images/pushoff48.png" title="' + $.t('Turn Off') +'" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes, ' + item.Protected +');" height="48" width="48"></td>\n';
+						xhtm+='\t      <td id="status">&nbsp;</td>\n';
 					}
 					xhtm+=
-						'\t      <td id="lastupdate" class="lastupdate"><span>' + item.LastUpdate + '</span></td>\n' +
+						'\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
 						'\t      <td id="type">' + $.t(item.Type) +'</td>\n';
-					xhtm+='\t      <td class="options">';
+					xhtm+='\t      <td>';
 				  if (item.Favorite == 0) {
 					xhtm+=      
-						  '<img src="images/nofavorite.png" title="' + $.t('Add to Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',1);" class="favorite favoriteOff lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
+						  '<img src="images/nofavorite.png" title="' + $.t('Add to Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',1);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
 				  }
 				  else {
 					xhtm+=      
-						  '<img src="images/favorite.png" title="' + $.t('Remove from Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',0);" class="favorite favoriteOn lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
+						  '<img src="images/favorite.png" title="' + $.t('Remove from Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',0);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
 				  }
 				  xhtm+='<a class="btnsmall" onclick="ShowSceneLog(\'#scenecontent\',\'ShowScenes\',' + item.idx + ',\'' + escape(item.Name) + '\');" data-i18n="Log">Log</a> ';
 			  
@@ -1686,7 +1644,7 @@ define(['app'], function (app) {
 						'</td>\n' +
 						'\t    </tr>\n' +
 						'\t    </table>\n' +
-						'\t  </div>\n' +
+						'\t  </section>\n' +
 						'\t</div>\n';
 				  htmlcontent+=xhtm;
 				  j+=1;

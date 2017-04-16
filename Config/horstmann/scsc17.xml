@@ -2,21 +2,22 @@
 <!-- SCSC17 (Secure / Horstmann) -->
 <Product xmlns='http://code.google.com/p/open-zwave/'>
   <!-- The thermostat does not properly report its operating modes -->
-  <CommandClass id="64" getsupported="false">
+  <CommandClass id="64">
     <SupportedModes>
-      <Mode index="0" label="Off"/>
-      <Mode index="1" label="Heat"/>
+      <Mode index="0" label="Off" />
+      <Mode index="1" label="Heat" />
     </SupportedModes>
   </CommandClass>
+
   <!-- This thermostat's setpoint descriptions are 0 based, not 1 -->
-  <CommandClass id="67" base="0" override_precision="0"/>
+  <CommandClass id="67" base="0" />
 
   <!-- Configuration Parameters -->
-  <CommandClass id="112">
-    <Value type="list" instance="1" index="1" genre="config" label="Temperature Scale" size="1" value="0">
+	<CommandClass id="112">
+    <Value type="list" instance="1" index="1" genre="config" label="Temperature Scale" value="0">
       <Help>Controls the temperature sensor scale</Help>
-      <Item label="Celsius" value="1"/>
-      <Item label="Fahrenheit" value="128"/>
+      <Item label="Celsius" value="1" />
+	  <Item label="Fahrenheit" value="128" />
     </Value>
     <Value type="byte" instance="1" index="2" genre="config" label="Lower temperature limit" min="5" max="30" value="5">
       <Help>Defines the minimum temperature. Steps are 1C</Help>
@@ -26,16 +27,15 @@
     </Value>
     <Value type="byte" instance="1" index="4" genre="config" label="Delta T: Temperature change" min="1" max="50" value="5">
       <Help>Change between temperatures to trigger a temperature report (step 0.1)
-        1 to 50, 1 or 0.1 (Default 5 = 0,5C) -> (1C = 10)
-      </Help>
+		1 to 50, 1 or 0.1 (Default 5 = 0,5C) -> (1C = 10)</Help>
     </Value>
   </CommandClass>
 
   <!-- Association Groups -->
-  <CommandClass id="133">
+  <CommandClass id="133">    
     <Associations num_groups="2">
       <Group index="1" max_associations="1" label="Reports"/>
-      <Group index="2" max_associations="4" label="Control"/>
+      <Group index="2" max_associations="4" label="Control" />
     </Associations>
   </CommandClass>
 

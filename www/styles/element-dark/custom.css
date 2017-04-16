@@ -15,7 +15,7 @@ body {
 	background: #202020 url(images/imgbg.jpg) repeat !important;
 }
 #appversion:after {
-  content: " ElementMedia Dark v0.3";
+  content: " ElementMedia Light v0.1";
 }
 
 #status, #lastupdate, body table#itemtable tr td:first-child + td + td + td + td + td{color: #5e5d5d;}
@@ -29,7 +29,7 @@ body table#itemtabletrippleicon tr td:first-child + td + td + td + td:before,
 body table#itemtablesmalldoubleicon tr td:first-child + td + td + td + td:before,
 body table#itemtablesmalltrippleicon tr td:first-child + td + td + td + td:before,
 body table#mobileitem tr td:first-child + td + td + td + td:before{
- content: "Last seen: " !important;
+ content: "Laatst ingeschakeld: " !important;
 }
 
 body table#itemtablesmall tr td:first-child + td + td + td + td:before, 
@@ -41,8 +41,7 @@ body table#itemtabletrippleicon tr td:first-child + td + td + td + td:before,
 body table#itemtablesmalldoubleicon tr td:first-child + td + td + td + td:before,
 body table#itemtablesmalltrippleicon tr td:first-child + td + td + td + td:before,
 body table#mobileitem tr td:first-child + td + td + td + td:before{
- content: "Type:"
-
+ content: "Type apparaat:"
 }
  
 .navbar .nav {margin: 0 !important;}
@@ -91,11 +90,7 @@ copyright {
     background-image: none;
 }
 
-#timesun {
-  text-align: left;
-  color: #666;
-} 
-
+#timesun , 
 #room, 
 .room{
     background-color: #444343;
@@ -141,7 +136,6 @@ body table#itemtablesmalldoubleicon tbody tr
 body table#itemtable tbody tr,
 body table#itemtablenotype tbody tr,
 body table#itemtablenostatus tbody tr,
-body table#itemtabledoubleicon tbody tr,
 body table#itemtabletrippleicon tbody tr,
 body table#itemtablesmalldoubleicon tbody tr,
 body table#itemtablesmalltrippleicon tbody tr,
@@ -151,7 +145,6 @@ body table#itemtablesmalldoubleicon tbody tr:hover,
 body table#itemtable tbody tr:hover,
 body table#itemtablenotype tbody tr:hover,
 body table#itemtablenostatus tbody tr:hover,
-body table#itemtabledoubleicon tbody tr:hover,
 body table#itemtabletrippleicon tbody tr:hover,
 body table#itemtablesmalldoubleicon tbody tr:hover,
 body table#itemtablesmalltrippleicon tbody tr:hover,
@@ -200,7 +193,6 @@ body table#mobileitem tr td:first-child{
 }
 
 .btnsmall {
-  margin-top: 5px;
 	background: #444343 !important;
 	color: #eee;
 	font-family: Droid Sans,sans-serif !important;
@@ -217,43 +209,3 @@ box-shadow:         0px 5px 5px 0px rgba(50, 50, 50, 0.3);
 .bannav{
 width: 99.5% !important;
 }
-
-.dimslider {
-   width: calc(98% - 55px) !important;
-   height: 10px;
-   margin-top: 0px !important;
-   margin-left: 48px !important;
-   box-shadow: initial;
-   position: relative;
-}
-
-#dashcontent .dimslider {
-   width: calc(100% - 8px) !important;
-   margin-left: 4px !important;
-   margin-top: 10px !important;       
-}
-
-#itemtablesmall .dimslider {
-   width: calc(98% - 52px) !important;
-   margin-top: 10px !important;
-   margin-left: 48px !important;
-}
-
-#itemtabledoubleicon .dimslider {
-   width: calc(98% - 114px) !important;
-   margin-top: 10px !important;
-   margin-left: 110px !important;
-}
-
-#itemtablesmalldoubleicon .dimslider {
-   width: calc(98% - 98px) !important;
-   margin-top: 10px !important;
-   margin-left: 95px !important;
-}
-
-#rgbw_popup .dimslider {
-   width: calc(100% - 108px) !important;
-   margin-left: 6px !important;
-   margin-top: 10px !important;       
-}
-

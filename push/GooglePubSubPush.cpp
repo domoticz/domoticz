@@ -11,8 +11,6 @@
 #include "../main/WebServer.h"
 #include "../webserver/Base64.h"
 #include "../webserver/cWebem.h"
-#define __STDC_FORMAT_MACROS
-#include <inttypes.h>
 
 #ifdef ENABLE_PYTHON
 extern "C" {
@@ -52,7 +50,7 @@ void CGooglePubSubPush::UpdateActive()
 	m_bLinkActive = (fActive == 1);
 }
 
-void CGooglePubSubPush::OnDeviceReceived(const int m_HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
+void CGooglePubSubPush::OnDeviceReceived(const int m_HwdID, const unsigned long long DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
 {
 	m_DeviceRowIdx = DeviceRowIdx;
 	if (m_bLinkActive)
@@ -111,7 +109,7 @@ void CGooglePubSubPush::DoGooglePubSubPush()
 	std::vector<std::vector<std::string> > result;
 	result=m_sql.safe_query(
 		"SELECT A.DeviceID, A.DelimitedValue, B.ID, B.Type, B.SubType, B.nValue, B.sValue, A.TargetType, A.TargetVariable, A.TargetDeviceID, A.TargetProperty, A.IncludeUnit, B.SwitchType, strftime('%%s', B.LastUpdate), B.Name FROM GooglePubSubLink as A, DeviceStatus as B "
-		"WHERE (A.DeviceID == '%" PRIu64 "' AND A.Enabled = '1' AND A.DeviceID==B.ID)",
+		"WHERE (A.DeviceID == '%llu' AND A.Enabled = '1' AND A.DeviceID==B.ID)",
 		m_DeviceRowIdx);
 	if (result.size()>0)
 	{
@@ -125,7 +123,6 @@ void CGooglePubSubPush::DoGooglePubSubPush()
 
 			std::vector<std::string> sd=*itt;
 			unsigned int deviceId = atoi(sd[0].c_str());
-			std::string sdeviceId = sd[0].c_str();
 			std::string ldelpos = sd[1].c_str();
 			int delpos = atoi(sd[1].c_str());
 			int dType = atoi(sd[3].c_str());
@@ -176,11 +173,10 @@ void CGooglePubSubPush::DoGooglePubSubPush()
 			%D : Target Device id
 			%V : Target Variable
 			%u : Unit
-			%n : Device name
+			%n : Name
 			%T0 : Type
 			%T1 : SubType
 			%h : hostname
-			%idx : 'Original device' id (idx)
 			*/
 
 			std::string lunit = getUnit(delpos, metertype);
@@ -220,7 +216,6 @@ void CGooglePubSubPush::DoGooglePubSubPush()
 			replaceAll(googlePubSubData, "%T0", lType);
 			replaceAll(googlePubSubData, "%T1", lSubType);
 			replaceAll(googlePubSubData, "%h", std::string(hostname));
-			replaceAll(googlePubSubData, "%idx", sdeviceId);
 
 			if (sendValue != "") {
 				std::stringstream python_DirT;
@@ -300,8 +295,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
+				//No admin user, and not allowed to be here
+				return;
 			}
 
 			std::string data = request::findValue(&req, "data");
@@ -319,7 +314,7 @@ namespace http {
 			m_sql.UpdatePreferencesVar("GooglePubSubActive", ilinkactive);
 			m_sql.UpdatePreferencesVar("GooglePubSubDebug", idebugenabled);
 
-			m_googlepubsubpush.UpdateActive();
+			m_mainworker.m_googlepubsubpush.UpdateActive();
 			root["status"] = "OK";
 			root["title"] = "SaveGooglePubSubLinkConfig";
 		}
@@ -327,10 +322,7 @@ namespace http {
 		void CWebServer::Cmd_GetGooglePubSubLinkConfig(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
+				return;//Only admin user allowed
 			std::string sValue;
 			int nValue;
 			if (m_sql.GetPreferencesVar("GooglePubSubActive", nValue)) {
@@ -356,10 +348,7 @@ namespace http {
 		void CWebServer::Cmd_GetGooglePubSubLinks(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
+				return;//Only admin user allowed
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT A.ID,A.DeviceID,A.Delimitedvalue,A.TargetType,A.TargetVariable,A.TargetDeviceID,A.TargetProperty,A.Enabled, B.Name, A.IncludeUnit FROM GooglePubSubLink as A, DeviceStatus as B WHERE (A.DeviceID==B.ID)");
 			if (result.size() > 0)
@@ -389,10 +378,7 @@ namespace http {
 		void CWebServer::Cmd_SaveGooglePubSubLink(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
+				return;//Only admin user allowed
 			std::string idx = request::findValue(&req, "idx");
 			std::string deviceid = request::findValue(&req, "deviceid");
 			int deviceidi = atoi(deviceid.c_str());
@@ -445,8 +431,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
+				//No admin user, and not allowed to be here
+				return;
 			}
 
 			std::string idx = request::findValue(&req, "idx");

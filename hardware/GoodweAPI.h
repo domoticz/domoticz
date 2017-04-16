@@ -18,7 +18,7 @@ private:
 	void Init();
 	bool StartHardware();
 	bool StopHardware();
-	uint32_t hash(const std::string str);
+	int hash(const std::string str);
 	int getSunRiseSunSetMinutes(const bool bGetSunRise);
 	float getPowerWatt(const std::string str);
 	float getEnergyWh(const std::string str);

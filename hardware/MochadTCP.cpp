@@ -77,7 +77,7 @@ m_szIPAddress(IPAddress)
 	m_mochadsec.SECURITY1.id1 = 0;
 	m_mochadsec.SECURITY1.id2 = 0;
 	m_mochadsec.SECURITY1.id3 = 0;
-	m_mochadsec.SECURITY1.status = sStatusNormal;
+	m_mochadsec.SECURITY1.status;
 	m_mochadsec.SECURITY1.rssi = 12;
 	m_mochadsec.SECURITY1.battery_level = 0;
 
@@ -195,7 +195,7 @@ void MochadTCP::OnError(const boost::system::error_code& error)
 		(error == boost::asio::error::timed_out)
 		)
 	{
-		_log.Log(LOG_ERROR, "Mochad: Can not connect to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+		_log.Log(LOG_STATUS, "Mochad: Can not connect to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
 	}
 	else if (
 		(error == boost::asio::error::eof) ||
@@ -486,14 +486,11 @@ void MochadTCP::ParseData(const unsigned char *pData, int Len)
 void MochadTCP::setSecID(unsigned char *p)
 {
 	int j = 0;
-	m_mochadsec.SECURITY1.id1 = (hex2bin(p[j++]) << 4);
-	m_mochadsec.SECURITY1.id1 |= hex2bin(p[j++]);
+	m_mochadsec.SECURITY1.id1 = (hex2bin(p[j++]) << 4) | hex2bin(p[j++]);
 	j++; // skip the ":"
-	m_mochadsec.SECURITY1.id2 = (hex2bin(p[j++]) << 4);
-	m_mochadsec.SECURITY1.id2 |= hex2bin(p[j++]);
+	m_mochadsec.SECURITY1.id2 = (hex2bin(p[j++]) << 4) | hex2bin(p[j++]);
 	j++; // skip the ":"
-	m_mochadsec.SECURITY1.id3 = (hex2bin(p[j++]) << 4);
-	m_mochadsec.SECURITY1.id3 |= hex2bin(p[j]);
+	m_mochadsec.SECURITY1.id3 = (hex2bin(p[j++]) << 4) | hex2bin(p[j]);
 }
 
 unsigned char MochadTCP::hex2bin(char h)

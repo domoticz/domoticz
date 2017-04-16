@@ -90,15 +90,15 @@ void CCameraHandler::ReloadCameraActiveDevices(const std::string &CamID)
 }
 
 //Return 0 if NO, otherwise Cam IDX
-uint64_t CCameraHandler::IsDevSceneInCamera(const unsigned char DevSceneType, const std::string &DevSceneID)
+unsigned long long CCameraHandler::IsDevSceneInCamera(const unsigned char DevSceneType, const std::string &DevSceneID)
 {
-	uint64_t ulID;
+	unsigned long long ulID;
 	std::stringstream s_str( DevSceneID );
 	s_str >> ulID;
 	return IsDevSceneInCamera(DevSceneType,ulID);
 }
 
-uint64_t CCameraHandler::IsDevSceneInCamera(const unsigned char DevSceneType, const uint64_t DevSceneID)
+unsigned long long CCameraHandler::IsDevSceneInCamera(const unsigned char DevSceneType, const unsigned long long DevSceneID)
 {
 	boost::lock_guard<boost::mutex> l(m_mutex);
 	std::vector<cameraDevice>::iterator itt;
@@ -126,7 +126,7 @@ std::string CCameraHandler::GetCameraURL(const std::string &CamID)
 	return GetCameraURL(pCamera);
 }
 
-std::string CCameraHandler::GetCameraURL(const uint64_t CamID)
+std::string CCameraHandler::GetCameraURL(const unsigned long long CamID)
 {
 	cameraDevice* pCamera=GetCamera(CamID);
 	if (pCamera==NULL)
@@ -149,13 +149,13 @@ std::string CCameraHandler::GetCameraURL(cameraDevice *pCamera)
 
 cameraDevice* CCameraHandler::GetCamera(const std::string &CamID)
 {
-	uint64_t ulID;
+	unsigned long long ulID;
 	std::stringstream s_str( CamID );
 	s_str >> ulID;
 	return GetCamera(ulID);
 }
 
-cameraDevice* CCameraHandler::GetCamera(const uint64_t CamID)
+cameraDevice* CCameraHandler::GetCamera(const unsigned long long CamID)
 {
 	std::vector<cameraDevice>::iterator itt;
 	for (itt=m_cameradevices.begin(); itt!=m_cameradevices.end(); ++itt)
@@ -168,7 +168,7 @@ cameraDevice* CCameraHandler::GetCamera(const uint64_t CamID)
 
 bool CCameraHandler::TakeSnapshot(const std::string &CamID, std::vector<unsigned char> &camimage)
 {
-	uint64_t ulID;
+	unsigned long long ulID;
 	std::stringstream s_str( CamID );
 	s_str >> ulID;
 	return TakeSnapshot(ulID,camimage);
@@ -183,7 +183,7 @@ bool CCameraHandler::TakeRaspberrySnapshot(std::vector<unsigned char> &camimage)
 
 	std::string raspistillcmd="raspistill " + raspparams + " -o " + OutputFileName;
 	std::remove(OutputFileName.c_str());
-
+	
 	//Get our image
 	int ret=system(raspistillcmd.c_str());
 	if (ret != 0)
@@ -210,7 +210,7 @@ bool CCameraHandler::TakeRaspberrySnapshot(std::vector<unsigned char> &camimage)
 	}
 	catch (...)
 	{
-
+		
 	}
 
 	return false;
@@ -220,7 +220,7 @@ bool CCameraHandler::TakeUVCSnapshot(const std::string &device, std::vector<unsi
 {
 	std::string uvcparams="-S80 -B128 -C128 -G80 -x800 -y600 -q100";
 	m_sql.GetPreferencesVar("UVCParams", uvcparams);
-
+	
 	std::string OutputFileName = szUserDataFolder + "tempcam.jpg";
 	std::string nvcmd="uvccapture " + uvcparams+ " -o" + OutputFileName;
 	if (!device.empty()) {
@@ -254,12 +254,12 @@ bool CCameraHandler::TakeUVCSnapshot(const std::string &device, std::vector<unsi
 	}
 	catch (...)
 	{
-
+		
 	}
 	return false;
 }
 
-bool CCameraHandler::TakeSnapshot(const uint64_t CamID, std::vector<unsigned char> &camimage)
+bool CCameraHandler::TakeSnapshot(const unsigned long long CamID, std::vector<unsigned char> &camimage)
 {
 	boost::lock_guard<boost::mutex> l(m_mutex);
 
@@ -312,11 +312,12 @@ bool CCameraHandler::EmailCameraSnapshot(const std::string &CamIdx, const std::s
 	{
 		return false;//no email setup
 	}
+	std::vector<unsigned char> camimage;
 	if (CamIdx=="")
 		return false;
 
-   std::vector<std::string> splitresults;
-   StringSplit(CamIdx, ";", splitresults);
+	if (!TakeSnapshot(CamIdx, camimage))
+		return false;
 
 	std::string EmailFrom;
 	std::string EmailTo;
@@ -331,41 +332,35 @@ bool CCameraHandler::EmailCameraSnapshot(const std::string &CamIdx, const std::s
 	m_sql.GetPreferencesVar("EmailPassword",nValue,EmailPassword);
 	m_sql.GetPreferencesVar("EmailPort", EmailPort);
 	m_sql.GetPreferencesVar("EmailAsAttachment", EmailAsAttachment);
-   std::string htmlMsg=
-      "<html>\r\n"
-      "<body>\r\n";
 
-   SMTPClient sclient;
-   sclient.SetFrom(CURLEncode::URLDecode(EmailFrom.c_str()));
-   sclient.SetTo(CURLEncode::URLDecode(EmailTo.c_str()));
-   sclient.SetCredentials(base64_decode(EmailUsername),base64_decode(EmailPassword));
-   sclient.SetServer(CURLEncode::URLDecode(EmailServer.c_str()),EmailPort);
-   sclient.SetSubject(CURLEncode::URLDecode(subject));
+	std::vector<char> filedata;
+	filedata.insert(filedata.begin(),camimage.begin(),camimage.end());
+	std::string imgstring;
+	imgstring.insert(imgstring.end(),filedata.begin(),filedata.end());
+	imgstring=base64_encode((const unsigned char*)imgstring.c_str(),filedata.size());
+	imgstring = WrapBase64(imgstring);
 
-   for (std::vector<std::string>::iterator camIt = splitresults.begin() ; camIt != splitresults.end(); ++camIt) {
+	std::string htmlMsg=
+		"<html>\r\n"
+		"<body>\r\n"
+		"<img src=\"data:image/jpeg;base64,";
+	htmlMsg+=
+		imgstring +
+		"\">\r\n"
+		"</body>\r\n"
+		"</html>\r\n";
 
-      std::vector<unsigned char> camimage;
+	SMTPClient sclient;
+	sclient.SetFrom(CURLEncode::URLDecode(EmailFrom.c_str()));
+	sclient.SetTo(CURLEncode::URLDecode(EmailTo.c_str()));
+	sclient.SetCredentials(base64_decode(EmailUsername),base64_decode(EmailPassword));
+	sclient.SetServer(CURLEncode::URLDecode(EmailServer.c_str()),EmailPort);
+	sclient.SetSubject(CURLEncode::URLDecode(subject));
 
-      if (!TakeSnapshot(*camIt, camimage))
-         return false;
-
-      std::vector<char> filedata;
-	   filedata.insert(filedata.begin(),camimage.begin(),camimage.end());
-   	std::string imgstring;
-   	imgstring.insert(imgstring.end(),filedata.begin(),filedata.end());
-   	imgstring=base64_encode((const unsigned char*)imgstring.c_str(),filedata.size());
-   	imgstring = WrapBase64(imgstring);
-
-   	htmlMsg+=
-   		"<img src=\"data:image/jpeg;base64,";
-	   htmlMsg+=
-		   imgstring +
-   		"\">\r\n";
-      if (EmailAsAttachment != 0)
-         sclient.AddAttachment(imgstring,"snapshot"+*camIt+".jpg");
-   }
-	if (EmailAsAttachment == 0)
+	if (EmailAsAttachment==0)
 		sclient.SetHTMLBody(htmlMsg);
+	else
+		sclient.AddAttachment(imgstring,"snapshot.jpg");
 	bool bRet=sclient.SendEmail();
 	return bRet;
 }
@@ -376,10 +371,7 @@ namespace http {
 		void CWebServer::RType_Cameras(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights < 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
+				return;//Only admin user allowed
 
 			std::string rused = request::findValue(&req, "used");
 

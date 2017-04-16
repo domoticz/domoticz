@@ -9,7 +9,6 @@
 #include "../json/json.h"
 #include "../main/RFXtrx.h"
 #include "../main/mainworker.h"
-#include <iostream>
 
 #define round(a) ( int ) ( a + .5 )
 
@@ -20,10 +19,7 @@
 #define SE_FREQ 1
 
 #ifdef _DEBUG
-	//#define DEBUG_SolarEdgeAPIR_SITE
-	//#define DEBUG_SolarEdgeAPIR_INVERTERS
-	//#define DEBUG_SolarEdgeAPIR_DETAILS
-	//#define DEBUG_SolarEdgeAPIW
+//	#define DEBUG_SolarEdgeAPIR
 #endif
 
 #ifdef DEBUG_SolarEdgeAPIW
@@ -37,7 +33,7 @@ void SaveString2Disk(std::string str, std::string filename)
 	}
 }
 #endif
-#if defined(DEBUG_SolarEdgeAPIR_DETAILS) || defined(DEBUG_SolarEdgeAPIR_SITE) || defined(DEBUG_SolarEdgeAPIR_INVERTERS)
+#ifdef DEBUG_SolarEdgeAPIR
 std::string ReadFile(std::string filename)
 {
 	std::ifstream file;
@@ -56,20 +52,33 @@ std::string ReadFile(std::string filename)
 }
 #endif
 
-SolarEdgeAPI::SolarEdgeAPI(const int ID, const std::string &APIKey):
+SolarEdgeAPI::SolarEdgeAPI(const int ID, const int SiteID, const std::string &Serial, const std::string &APIKey):
+	m_Serial(Serial),
 	m_APIKey(APIKey)
 {
-	m_SiteID = 0;
-	m_HwdID = ID;
+	m_HwdID=ID;
+	m_SiteID = SiteID;
 	m_stoprequested=false;
+	Init();
 }
 
 SolarEdgeAPI::~SolarEdgeAPI(void)
 {
 }
 
+void SolarEdgeAPI::Init()
+{
+	m_LastUsage=0;
+	m_LastCounter=0;
+	m_LastTemp=0;
+	m_LastAC=0;
+	m_LastDC=0;
+	m_LastHz=0;
+}
+
 bool SolarEdgeAPI::StartHardware()
 {
+	Init();
 	//Start worker thread
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&SolarEdgeAPI::Do_Work, this)));
 	m_bIsStarted=true;
@@ -102,17 +111,7 @@ void SolarEdgeAPI::Do_Work()
 		}
 		if (sec_counter % 300 == 0)
 		{
-			if (m_SiteID == 0)
-				GetSite();
-			if (m_SiteID != 0)
-			{
-				if (m_inverters.empty())
-				{
-					GetInverters();
-				}
-			}
-			if (!m_inverters.empty())
-				GetMeterDetails();
+			GetMeterDetails();
 		}
 	}
 	_log.Log(LOG_STATUS,"SolarEdgeAPI Worker stopped...");
@@ -148,140 +147,10 @@ int SolarEdgeAPI::getSunRiseSunSetMinutes(const bool bGetSunRise)
 	return 0;
 }
 
-void SolarEdgeAPI::GetSite()
-{
-	m_SiteID = 0;
-	std::string sResult;
-#ifdef DEBUG_SolarEdgeAPIR_SITE
-	sResult = ReadFile("E:\\SolarEdge_sites.json");
-#else
-	std::stringstream sURL;
-	sURL << "https://monitoringapi.solaredge.com/sites/list?size=1&api_key=" << m_APIKey << "&format=application/json";
-	bool bret;
-	std::string szURL = sURL.str();
-	bret = HTTPClient::GET(szURL, sResult);
-	if (!bret)
-	{
-		_log.Log(LOG_ERROR, "SolarEdgeAPI: Error getting http data!");
-		return;
-	}
-#ifdef DEBUG_SolarEdgeAPIW
-	SaveString2Disk(sResult, "E:\\SolarEdge_sites.json");
-#endif
-#endif
-	Json::Value root;
-
-	Json::Reader jReader;
-	bool ret = jReader.parse(sResult, root);
-	if ((!ret) || (!root.isObject()))
-	{
-		_log.Log(LOG_ERROR, "SolarEdgeAPI: Invalid data received!");
-		return;
-	}
-	if (root["sites"].empty() == true)
-	{
-		_log.Log(LOG_ERROR, "SolarEdgeAPI: Invalid data received, or invalid APIKey");
-		return;
-	}
-	if (root["sites"]["count"].empty() == true)
-	{
-		_log.Log(LOG_ERROR, "SolarEdgeAPI: Invalid data received, or invalid APIKey");
-		return;
-	}
-	int tot_results = root["sites"]["count"].asInt();
-	if (tot_results < 1)
-		return;
-	Json::Value reading = root["sites"]["site"][0];
-
-	if (reading["id"].empty() == true)
-	{
-		_log.Log(LOG_ERROR, "SolarEdgeAPI: Invalid data received, or invalid APIKey");
-		return;
-	}
-	m_SiteID = reading["id"].asInt();
-}
-
-void SolarEdgeAPI::GetInverters()
-{
-	m_inverters.clear();
-	std::string sResult;
-#ifdef DEBUG_SolarEdgeAPIR_INVERTERS
-	sResult = ReadFile("E:\\SolarEdge_inverters.json");
-#else
-	std::stringstream sURL;
-	sURL << "https://monitoringapi.solaredge.com/equipment/" << m_SiteID << "/list?api_key=" << m_APIKey << "&format=application/json";
-	bool bret;
-	std::string szURL = sURL.str();
-	bret = HTTPClient::GET(szURL, sResult);
-	if (!bret)
-	{
-		_log.Log(LOG_ERROR, "SolarEdgeAPI: Error getting http data!");
-		return;
-	}
-#ifdef DEBUG_SolarEdgeAPIW
-	SaveString2Disk(sResult, "E:\\SolarEdge_inverters.json");
-#endif
-#endif
-	Json::Value root;
-
-	Json::Reader jReader;
-	bool ret = jReader.parse(sResult, root);
-	if ((!ret) || (!root.isObject()))
-	{
-		_log.Log(LOG_ERROR, "SolarEdgeAPI: Invalid data received!");
-		return;
-	}
-	if (root["reporters"].empty() == true)
-	{
-		_log.Log(LOG_ERROR, "SolarEdgeAPI: Invalid data received, or invalid APIKey");
-		return;
-	}
-	if (root["reporters"]["count"].empty() == true)
-	{
-		_log.Log(LOG_ERROR, "SolarEdgeAPI: Invalid data received, or invalid APIKey");
-		return;
-	}
-	int tot_results = root["reporters"]["count"].asInt();
-	if (tot_results < 1)
-		return;
-
-	for (int iInverter = 0; iInverter < tot_results; iInverter++)
-	{
-		Json::Value reading = root["reporters"]["list"][iInverter];
-
-		if (reading["name"].empty() == true)
-			return;
-		_tInverterSettings iSettings;
-		iSettings.name = reading["name"].asString();
-		iSettings.manufacturer = reading["manufacturer"].asString();
-		iSettings.model = reading["model"].asString();
-		iSettings.SN = reading["serialNumber"].asString();
-		m_inverters.push_back(iSettings);
-	}
-}
-
 void SolarEdgeAPI::GetMeterDetails()
 {
-	m_totalActivePower = 0;
-	m_totalEnergy = 0;
-
-	for (int iInverter = 0; iInverter < (int)m_inverters.size(); iInverter++)
-	{
-		GetInverterDetails(&m_inverters[iInverter], iInverter);
-	}
-
-	if ((m_inverters.size() > 1) && (m_totalEnergy > 0))
-	{
-		//Send total kWh
-		SendKwhMeter(1, 1, 255, m_totalActivePower, m_totalEnergy / 1000.0, "kWh Meter Total");
-	}
-}
-
-void SolarEdgeAPI::GetInverterDetails(const _tInverterSettings *pInverterSettings, const int iInverterNumber)
-{
 	std::string sResult;
-	char szTmp[200];
-#ifdef DEBUG_SolarEdgeAPIR_DETAILS
+#ifdef DEBUG_SolarEdgeAPIR
 	sResult = ReadFile("E:\\SolarEdge.json");
 #else
 	time_t atime = mytime(NULL);
@@ -300,17 +169,18 @@ void SolarEdgeAPI::GetInverterDetails(const _tInverterSettings *pInverterSetting
 	if (ActHourMin - 60 > sunSet)
 		return;
 
-	struct tm ltime_min10;
-	time_t atime_min10;
-	constructTime(atime_min10, ltime_min10, ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min - 10, ltime.tm_sec, ltime.tm_isdst);
+	time_t atime_min5 = atime - 600; //minus 10 minutes
+	struct tm ltime_min5;
+	localtime_r(&atime_min5, &ltime_min5);
 
-	sprintf(szTmp, "%04d-%02d-%02d %02d:%02d:%02d", ltime_min10.tm_year + 1900, ltime_min10.tm_mon + 1, ltime_min10.tm_mday, ltime_min10.tm_hour, ltime_min10.tm_min, ltime_min10.tm_sec);
-	std::string startDate = CURLEncode::URLEncode(szTmp);
+	char szTmp[100];
+	sprintf(szTmp, "%04d-%02d-%02d %02d:%02d:%02d", ltime_min5.tm_year + 1900, ltime_min5.tm_mon + 1, ltime_min5.tm_mday, ltime_min5.tm_hour, ltime_min5.tm_min, ltime_min5.tm_sec);
+	std::string startDate= CURLEncode::URLEncode(szTmp);
 
 	sprintf(szTmp, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
 	std::string endDate = CURLEncode::URLEncode(szTmp);
 	std::stringstream sURL;
-	sURL << "https://monitoringapi.solaredge.com/equipment/" << m_SiteID << "/" << pInverterSettings->SN << "/data.json?startTime=" << startDate << "&endTime=" << endDate << "&api_key=" << m_APIKey << "&format=application/json";
+	sURL << "https://monitoringapi.solaredge.com/equipment/" << m_SiteID << "/" << m_Serial << "/data.json?startTime=" << startDate << "&endTime=" << endDate << "&api_key=" << m_APIKey;
 	bool bret;
 	std::string szURL = sURL.str();
 	bret = HTTPClient::GET(szURL, sResult);
@@ -320,26 +190,26 @@ void SolarEdgeAPI::GetInverterDetails(const _tInverterSettings *pInverterSetting
 		return;
 	}
 #ifdef DEBUG_SolarEdgeAPIW
-	SaveString2Disk(sResult, "E:\\SolarEdge.json");
+	SaveString2Disk(sResult, "E:\\SolarEdge2.json");
 #endif
 #endif
 	Json::Value root;
 
 	Json::Reader jReader;
-	bool ret = jReader.parse(sResult, root);
-	if ((!ret) || (!root.isObject()))
+	bool ret=jReader.parse(sResult,root);
+	if (!ret)
 	{
-		_log.Log(LOG_ERROR, "SolarEdgeAPI: Invalid data received!");
+		_log.Log(LOG_ERROR,"SolarEdgeAPI: Invalid data received!");
 		return;
 	}
-	if (root["data"].empty() == true)
+	if (root["data"].empty()==true)
 	{
-		_log.Log(LOG_ERROR, "SolarEdgeAPI: Invalid data received, or invalid APIKey");
+		_log.Log(LOG_ERROR,"SolarEdgeAPI: Invalid data received, or invalid SiteID/Serial/APIKey");
 		return;
 	}
 	if (root["data"]["count"].empty() == true)
 	{
-		_log.Log(LOG_ERROR, "SolarEdgeAPI: Invalid data received, or invalid APIKey");
+		_log.Log(LOG_ERROR, "SolarEdgeAPI: Invalid data received, or invalid SiteID/Serial/APIKey");
 		return;
 	}
 	int tot_results = root["data"]["count"].asInt();
@@ -347,49 +217,40 @@ void SolarEdgeAPI::GetInverterDetails(const _tInverterSettings *pInverterSetting
 		return;
 	if (root["data"]["telemetries"].empty() == true)
 	{
-		_log.Log(LOG_ERROR, "SolarEdgeAPI: Invalid data received, or invalid APIKey");
+		_log.Log(LOG_ERROR, "SolarEdgeAPI: Invalid data received, or invalid SiteID/Serial/APIKey");
 		return;
 	}
-
-	//We could have multiple sites here
 	Json::Value reading = root["data"]["telemetries"][0];
 	if ((!reading["totalActivePower"].empty()) && (!reading["totalEnergy"].empty()))
 	{
-		double curActivePower = reading["totalActivePower"].asDouble();
-		double curEnergy = reading["totalEnergy"].asDouble();
-		if (curEnergy != 0)
+		double totalActivePower = reading["totalActivePower"].asDouble();
+		double totalEnergy = reading["totalEnergy"].asDouble();
+		if (totalEnergy != 0)
 		{
-			sprintf(szTmp, "kWh Meter %s", pInverterSettings->name.c_str());
-			SendKwhMeter(0, 1 + iInverterNumber, 255, curActivePower, curEnergy / 1000.0, szTmp);
+			SendKwhMeter(0, 1, 255, totalActivePower, totalEnergy / 1000.0, "kWh Meter");
 		}
-		m_totalActivePower += curActivePower;
-		m_totalEnergy += curEnergy;
 	}
 	if (!reading["dcVoltage"].empty())
 	{
 		float dcVoltage = reading["dcVoltage"].asFloat();
-		sprintf(szTmp, "DC %s", pInverterSettings->name.c_str());
-		SendVoltageSensor(iInverterNumber, SE_VOLT_DC, 255, dcVoltage, szTmp);
+		SendVoltageSensor(0, SE_VOLT_DC, 255, dcVoltage, "DC");
 	}
 	if (!reading["temperature"].empty())
 	{
 		float temp = reading["temperature"].asFloat();
-		sprintf(szTmp, "SolarMain %s", pInverterSettings->name.c_str());
-		SendTempSensor(1 + iInverterNumber, 255, temp, szTmp);
+		SendTempSensor(1, 255, temp, "SolarMain");
 	}
 	if (!reading["L1Data"].empty())
 	{
 		if (!reading["L1Data"]["acVoltage"].empty())
 		{
 			float acVoltage = reading["L1Data"]["acVoltage"].asFloat();
-			sprintf(szTmp, "AC %s", pInverterSettings->name.c_str());
-			SendVoltageSensor(iInverterNumber, SE_VOLT_AC, 255, acVoltage, szTmp);
+			SendVoltageSensor(0, SE_VOLT_AC, 255, acVoltage, "AC");
 		}
 		if (!reading["L1Data"]["acFrequency"].empty())
 		{
 			float acFrequency = reading["L1Data"]["acFrequency"].asFloat();
-			sprintf(szTmp, "Hz %s", pInverterSettings->name.c_str());
-			SendPercentageSensor(1 + iInverterNumber, SE_FREQ, 255, acFrequency, szTmp);
+			SendPercentageSensor(1, SE_FREQ, 255, acFrequency, "Hz");
 		}
 	}
 }

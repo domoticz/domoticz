@@ -75,17 +75,17 @@
     <Filter Include="Devices\OpenTherm-Gateway">
       <UniqueIdentifier>{9b834e19-65cb-442c-bfd7-c39e44279cb7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Devices\TeleinfoSerial">
+    <Filter Include="Devices\Teleinfo">
       <UniqueIdentifier>{9b098c6e-b49d-404b-b9a2-5904c1d92edd}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Devices\TeleinfoBase">
-      <UniqueIdentifier>{9b098c6e-b49d-aaaa-b9a2-5904c1d92edd}</UniqueIdentifier>
     </Filter>
     <Filter Include="Devices\ZWave">
       <UniqueIdentifier>{8541fa16-1ca3-4b1c-8658-7075b91f73a8}</UniqueIdentifier>
     </Filter>
     <Filter Include="Devices\ZWave\Razberry-ZWave">
       <UniqueIdentifier>{3d63876c-62b2-4fbf-a50c-5132dcfbcb3b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\ZWave\OpenZWave">
+      <UniqueIdentifier>{2eca1afb-1a1f-4158-ab8d-0616c1fbd279}</UniqueIdentifier>
     </Filter>
     <Filter Include="Devices\LimitlessLed">
       <UniqueIdentifier>{80714ac8-8783-4ef2-8836-3bb5b15adbb0}</UniqueIdentifier>
@@ -98,6 +98,9 @@
     </Filter>
     <Filter Include="zlib">
       <UniqueIdentifier>{96351f00-f848-4e75-84be-0bccaecc2a02}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\Forecast.io">
+      <UniqueIdentifier>{739f5460-5c88-47ba-8cd1-d94035c1819d}</UniqueIdentifier>
     </Filter>
     <Filter Include="TCPProxy">
       <UniqueIdentifier>{242d77c7-709a-4c87-8d92-a87a489af891}</UniqueIdentifier>
@@ -143,6 +146,9 @@
     </Filter>
     <Filter Include="Devices\Philips Hue">
       <UniqueIdentifier>{0ba73f41-846f-48e1-a9ff-b70888ac5920}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\ZWave\OpenZWave\Control Panel">
+      <UniqueIdentifier>{2467c1b1-dd49-4842-9931-bb5a12d729e2}</UniqueIdentifier>
     </Filter>
     <Filter Include="Devices\SolarEdge">
       <UniqueIdentifier>{e30a6865-acaf-4ce1-a43d-37183b91520f}</UniqueIdentifier>
@@ -408,6 +414,9 @@
     <Filter Include="Pushers">
       <UniqueIdentifier>{b669cde0-9cf1-43ae-a5c0-5f01851e9b45}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Pushers\PushBase">
+      <UniqueIdentifier>{2be86c90-c015-48e9-9009-0100e9c6b0eb}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Pushers\HttpLink">
       <UniqueIdentifier>{b84812aa-d71f-4b05-b496-4420b93cd9b9}</UniqueIdentifier>
     </Filter>
@@ -425,48 +434,6 @@
     </Filter>
     <Filter Include="Devices\P1 Smart Meter">
       <UniqueIdentifier>{44ff1baf-dce6-4a20-b295-313ef10e0509}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Devices\Daikin">
-      <UniqueIdentifier>{19bcf044-e47f-4459-a3e6-398c54c73413}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Devices\HEOS">
-      <UniqueIdentifier>{43faa747-76f8-47a8-a90b-ebcb30a1f72e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Devices\MultiFun">
-      <UniqueIdentifier>{61f9e7d0-4204-474d-b953-b8d55b281296}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Devices\DarkSky">
-      <UniqueIdentifier>{739f5460-5c88-47ba-8cd1-d94035c1819d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Devices\ZiBlue RFPlayer">
-      <UniqueIdentifier>{6d5aee6b-8dca-4b16-94fe-b4c8b48ccda2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Devices\YeeLight">
-      <UniqueIdentifier>{40997df4-ca83-46d7-ae42-d23049f98a0b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Devices\Python Plugins">
-      <UniqueIdentifier>{71bf66bf-20b6-4786-b8ff-f394e16d2d84}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Devices\Xiaomi Gateway">
-      <UniqueIdentifier>{5f68f493-7523-43aa-95db-f23ecc307771}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Devices\Arilux">
-      <UniqueIdentifier>{f1bd7f3f-a032-4804-9b52-51c06399ca5e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Devices\InComfort">
-      <UniqueIdentifier>{bbff9485-9778-469f-9659-e3575b33a348}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Devices\ZWave\Control Panel">
-      <UniqueIdentifier>{2467c1b1-dd49-4842-9931-bb5a12d729e2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Pushers\InfluxDB">
-      <UniqueIdentifier>{2c9db333-1435-4a52-970c-2a53298e2689}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Devices\RelayNet">
-      <UniqueIdentifier>{9882d591-40c3-4d12-8c0a-af2d53d939ff}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Devices\SysfsGPIO">
-      <UniqueIdentifier>{301fceaa-95de-4168-b336-04cadc395ff6}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -1501,17 +1468,20 @@
     <ClInclude Include="..\hardware\OTGWTCP.h">
       <Filter>Devices\OpenTherm-Gateway</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\TeleinfoSerial.h">
-      <Filter>Devices\TeleinfoSerial</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\TeleinfoBase.h">
-      <Filter>Devices\TeleinfoBase</Filter>
+    <ClInclude Include="..\hardware\Teleinfo.h">
+      <Filter>Devices\Teleinfo</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\ZWaveBase.h">
       <Filter>Devices\ZWave</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\OpenZWave.h">
+      <Filter>Devices\ZWave\OpenZWave</Filter>
+    </ClInclude>
     <ClInclude Include="..\hardware\ZWaveCommands.h">
       <Filter>Devices\ZWave</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\Limitless.h">
+      <Filter>Devices\LimitlessLed</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\1Wire\1WireForWindows.h">
       <Filter>Devices\1-Wire</Filter>
@@ -1530,6 +1500,9 @@
     </ClInclude>
     <ClInclude Include="..\main\GZipHelper.h">
       <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\ForecastIO.h">
+      <Filter>Devices\Forecast.io</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\ASyncSerial.h">
       <Filter>Devices\SerialTCP</Filter>
@@ -1591,14 +1564,11 @@
     <ClInclude Include="..\hardware\SBFSpot.h">
       <Filter>Devices\SBFSpot</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\PhilipsHue\PhilipsHue.h">
-      <Filter>Devices\Philips Hue</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\PhilipsHue\PhilipsHueSensors.h">
+    <ClInclude Include="..\hardware\PhilipsHue.h">
       <Filter>Devices\Philips Hue</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\openzwave\control_panel\ozwcp.h">
-      <Filter>Devices\ZWave\Control Panel</Filter>
+      <Filter>Devices\ZWave\OpenZWave\Control Panel</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\evohome.h">
       <Filter>Devices\EvoHome</Filter>
@@ -1660,9 +1630,6 @@
     <ClInclude Include="..\notifications\NotificationPushover.h">
       <Filter>Notifications</Filter>
     </ClInclude>
-    <ClInclude Include="..\notifications\NotificationPushsafer.h">
-      <Filter>Notifications</Filter>
-    </ClInclude>
     <ClInclude Include="..\notifications\NotificationSMS.h">
       <Filter>Notifications</Filter>
     </ClInclude>
@@ -1682,9 +1649,6 @@
       <Filter>Devices\KMTronic</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\KMTronicTCP.h">
-      <Filter>Devices\KMTronic</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\KMTronicUDP.h">
       <Filter>Devices\KMTronic</Filter>
     </ClInclude>
     <ClInclude Include="..\notifications\NotificationKodi.h">
@@ -1867,6 +1831,9 @@
     <ClInclude Include="..\hardware\openwebnet\bt_openwebnet.h">
       <Filter>Devices\OpenWebNet</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\OpenWebNet.h">
+      <Filter>Devices\OpenWebNet</Filter>
+    </ClInclude>
     <ClInclude Include="..\hardware\I2C.h">
       <Filter>Devices\I2C</Filter>
     </ClInclude>
@@ -1906,107 +1873,23 @@
     <ClInclude Include="..\hardware\AccuWeather.h">
       <Filter>Devices\AccuWeather</Filter>
     </ClInclude>
+    <ClInclude Include="..\push\DataPush.h">
+      <Filter>Pushers\FibaroLink</Filter>
+    </ClInclude>
     <ClInclude Include="..\push\GooglePubSubPush.h">
       <Filter>Pushers\GooglePubsub</Filter>
     </ClInclude>
     <ClInclude Include="..\push\HttpPush.h">
       <Filter>Pushers\HttpLink</Filter>
     </ClInclude>
+    <ClInclude Include="..\push\Push.h">
+      <Filter>Pushers\PushBase</Filter>
+    </ClInclude>
     <ClInclude Include="..\hardware\BleBox.h">
       <Filter>Devices\BleBox</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\OpenWeatherMap.h">
       <Filter>Devices\OpenWeatherMap</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\Daikin.h">
-      <Filter>Devices\Daikin</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\HEOS.h">
-      <Filter>Devices\HEOS</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\MultiFun.h">
-      <Filter>Devices\MultiFun</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\DarkSky.h">
-      <Filter>Devices\DarkSky</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\ZiBlueBase.h">
-      <Filter>Devices\ZiBlue RFPlayer</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\ZiBlueSerial.h">
-      <Filter>Devices\ZiBlue RFPlayer</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\ZiBlueTCP.h">
-      <Filter>Devices\ZiBlue RFPlayer</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\ziblue_usb_frame_api.h">
-      <Filter>Devices\ZiBlue RFPlayer</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\Yeelight.h">
-      <Filter>Devices\YeeLight</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\MySensorsMQTT.h">
-      <Filter>Devices\MySensors</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\plugins\PluginManager.h">
-      <Filter>Devices\Python Plugins</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\plugins\DelayedLink.h">
-      <Filter>Devices\Python Plugins</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\plugins\Plugins.h">
-      <Filter>Devices\Python Plugins</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\plugins\PluginMessages.h">
-      <Filter>Devices\Python Plugins</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\plugins\PluginProtocols.h">
-      <Filter>Devices\Python Plugins</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\plugins\PluginTransports.h">
-      <Filter>Devices\Python Plugins</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\XiaomiGateway.h">
-      <Filter>Devices\Xiaomi Gateway</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\Limitless.h">
-      <Filter>Devices\LimitlessLed</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\Arilux.h">
-      <Filter>Devices\Arilux</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\OpenWebNetUSB.h">
-      <Filter>Devices\OpenWebNet</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\OpenWebNetTCP.h">
-      <Filter>Devices\OpenWebNet</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\InComfort.h">
-      <Filter>Devices\InComfort</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\OpenZWave.h">
-      <Filter>Devices\ZWave</Filter>
-    </ClInclude>
-    <ClInclude Include="..\push\InfluxPush.h">
-      <Filter>Pushers\InfluxDB</Filter>
-    </ClInclude>
-    <ClInclude Include="..\push\FibaroPush.h">
-      <Filter>Pushers\FibaroLink</Filter>
-    </ClInclude>
-    <ClInclude Include="..\push\BasePush.h">
-      <Filter>Pushers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\RelayNet.h">
-      <Filter>Devices\RelayNet</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\plugins\PythonObjects.h">
-      <Filter>Devices\Python Plugins</Filter>
-    </ClInclude>
-    <ClInclude Include="..\main\LuaCommon.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\SysfsGPIO.h">
-      <Filter>Devices\SysfsGPIO</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2169,14 +2052,17 @@
     <ClCompile Include="..\hardware\OTGWTCP.cpp">
       <Filter>Devices\OpenTherm-Gateway</Filter>
     </ClCompile>
-    <ClCompile Include="..\hardware\TeleinfoBase.cpp">
-      <Filter>Devices\TeleinfoBase</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\TeleinfoSerial.cpp">
-      <Filter>Devices\TeleinfoSerial</Filter>
+    <ClCompile Include="..\hardware\Teleinfo.cpp">
+      <Filter>Devices\Teleinfo</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\ZWaveBase.cpp">
       <Filter>Devices\ZWave</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\OpenZWave.cpp">
+      <Filter>Devices\ZWave\OpenZWave</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\Limitless.cpp">
+      <Filter>Devices\LimitlessLed</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\1Wire\1WireForWindows.cpp">
       <Filter>Devices\1-Wire</Filter>
@@ -2189,6 +2075,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\1Wire\1WireByOWFS.cpp">
       <Filter>Devices\1-Wire</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\ForecastIO.cpp">
+      <Filter>Devices\Forecast.io</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\ASyncSerial.cpp">
       <Filter>Devices\SerialTCP</Filter>
@@ -2247,14 +2136,11 @@
     <ClCompile Include="..\hardware\SBFSpot.cpp">
       <Filter>Devices\SBFSpot</Filter>
     </ClCompile>
-    <ClCompile Include="..\hardware\PhilipsHue\PhilipsHue.cpp">
-      <Filter>Devices\Philips Hue</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\PhilipsHue\PhilipsHueSensors.cpp">
+    <ClCompile Include="..\hardware\PhilipsHue.cpp">
       <Filter>Devices\Philips Hue</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\openzwave\control_panel\ozwcp.cpp">
-      <Filter>Devices\ZWave\Control Panel</Filter>
+      <Filter>Devices\ZWave\OpenZWave\Control Panel</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\evohome.cpp">
       <Filter>Devices\EvoHome</Filter>
@@ -2298,9 +2184,6 @@
     <ClCompile Include="..\notifications\NotificationPushover.cpp">
       <Filter>Notifications</Filter>
     </ClCompile>
-    <ClCompile Include="..\notifications\NotificationPushsafer.cpp">
-      <Filter>Notifications</Filter>
-    </ClCompile>
     <ClCompile Include="..\notifications\NotificationSMS.cpp">
       <Filter>Notifications</Filter>
     </ClCompile>
@@ -2320,9 +2203,6 @@
       <Filter>Devices\KMTronic</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\KMTronicTCP.cpp">
-      <Filter>Devices\KMTronic</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\KMTronicUDP.cpp">
       <Filter>Devices\KMTronic</Filter>
     </ClCompile>
     <ClCompile Include="..\notifications\NotificationKodi.cpp">
@@ -2446,7 +2326,7 @@
       <Filter>Notifications</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\openzwave\control_panel\zwavelib.cpp">
-      <Filter>Devices\ZWave\Control Panel</Filter>
+      <Filter>Devices\ZWave\OpenZWave\Control Panel</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\RFLinkSerial.cpp">
       <Filter>Devices\RFLink</Filter>
@@ -2538,6 +2418,9 @@
     <ClCompile Include="..\hardware\openwebnet\bt_openwebnet.cpp">
       <Filter>Devices\OpenWebNet</Filter>
     </ClCompile>
+    <ClCompile Include="..\hardware\OpenWebNet.cpp">
+      <Filter>Devices\OpenWebNet</Filter>
+    </ClCompile>
     <ClCompile Include="..\hardware\I2C.cpp">
       <Filter>Devices\I2C</Filter>
     </ClCompile>
@@ -2577,101 +2460,23 @@
     <ClCompile Include="..\hardware\AccuWeather.cpp">
       <Filter>Devices\AccuWeather</Filter>
     </ClCompile>
+    <ClCompile Include="..\push\DataPush.cpp">
+      <Filter>Pushers\FibaroLink</Filter>
+    </ClCompile>
     <ClCompile Include="..\push\GooglePubSubPush.cpp">
       <Filter>Pushers\GooglePubsub</Filter>
     </ClCompile>
     <ClCompile Include="..\push\HttpPush.cpp">
       <Filter>Pushers\HttpLink</Filter>
     </ClCompile>
+    <ClCompile Include="..\push\Push.cpp">
+      <Filter>Pushers\PushBase</Filter>
+    </ClCompile>
     <ClCompile Include="..\hardware\BleBox.cpp">
       <Filter>Devices\BleBox</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\OpenWeatherMap.cpp">
       <Filter>Devices\OpenWeatherMap</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\Daikin.cpp">
-      <Filter>Devices\Daikin</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\HEOS.cpp">
-      <Filter>Devices\HEOS</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\MultiFun.cpp">
-      <Filter>Devices\MultiFun</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\DarkSky.cpp">
-      <Filter>Devices\DarkSky</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\ZiBlueBase.cpp">
-      <Filter>Devices\ZiBlue RFPlayer</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\ZiBlueSerial.cpp">
-      <Filter>Devices\ZiBlue RFPlayer</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\ZiBlueTCP.cpp">
-      <Filter>Devices\ZiBlue RFPlayer</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\Yeelight.cpp">
-      <Filter>Devices\YeeLight</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\MySensorsMQTT.cpp">
-      <Filter>Devices\MySensors</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\plugins\PluginManager.cpp">
-      <Filter>Devices\Python Plugins</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\plugins\PluginProtocols.cpp">
-      <Filter>Devices\Python Plugins</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\plugins\DelayedLink.cpp">
-      <Filter>Devices\Python Plugins</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\plugins\Plugins.cpp">
-      <Filter>Devices\Python Plugins</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\plugins\PluginTransports.cpp">
-      <Filter>Devices\Python Plugins</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\XiaomiGateway.cpp">
-      <Filter>Devices\Xiaomi Gateway</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\Limitless.cpp">
-      <Filter>Devices\LimitlessLed</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\Arilux.cpp">
-      <Filter>Devices\Arilux</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\OpenWebNetUSB.cpp">
-      <Filter>Devices\OpenWebNet</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\OpenWebNetTCP.cpp">
-      <Filter>Devices\OpenWebNet</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\InComfort.cpp">
-      <Filter>Devices\InComfort</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\OpenZWave.cpp">
-      <Filter>Devices\ZWave</Filter>
-    </ClCompile>
-    <ClCompile Include="..\push\InfluxPush.cpp">
-      <Filter>Pushers\InfluxDB</Filter>
-    </ClCompile>
-    <ClCompile Include="..\push\FibaroPush.cpp">
-      <Filter>Pushers\FibaroLink</Filter>
-    </ClCompile>
-    <ClCompile Include="..\push\BasePush.cpp">
-      <Filter>Pushers</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\RelayNet.cpp">
-      <Filter>Devices\RelayNet</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\plugins\PythonObjects.cpp">
-      <Filter>Devices\Python Plugins</Filter>
-    </ClCompile>
-    <ClCompile Include="..\main\LuaCommon.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\SysfsGPIO.cpp">
-      <Filter>Devices\SysfsGPIO</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

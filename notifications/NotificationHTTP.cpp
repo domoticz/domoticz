@@ -18,7 +18,6 @@ CNotificationHTTP::CNotificationHTTP() : CNotificationBase(std::string("http"), 
 	SetupConfigBase64(std::string("HTTPTo"), _HTTPTo);
 	SetupConfigBase64(std::string("HTTPURL"), _HTTPURL);
 	SetupConfigBase64(std::string("HTTPPostData"), _HTTPPostData);
-	SetupConfigBase64(std::string("HTTPPostHeaders"), _HTTPPostHeaders);
 	SetupConfigBase64(std::string("HTTPPostContentType"), _HTTPPostContentType);
 }
 
@@ -26,15 +25,7 @@ CNotificationHTTP::~CNotificationHTTP()
 {
 }
 
-bool CNotificationHTTP::SendMessageImplementation(
-	const uint64_t Idx,
-	const std::string &Name,
-	const std::string &Subject,
-	const std::string &Text,
-	const std::string &ExtraData,
-	const int Priority,
-	const std::string &Sound,
-	const bool bFromNotification)
+bool CNotificationHTTP::SendMessageImplementation(const std::string &Subject, const std::string &Text, const std::string &ExtraData, const int Priority, const std::string &Sound, const bool bFromNotification)
 {
 	std::string destURL = _HTTPURL;
 	bool bSuccess = false;
@@ -42,9 +33,6 @@ bool CNotificationHTTP::SendMessageImplementation(
 	size_t uPos = destURL.find("://");
 	if (uPos == std::string::npos)
 		return false;
-
-	char szPriority[64];
-	sprintf(szPriority, "%d", Priority);
 
 	if (destURL.find("http") == 0)
 	{
@@ -56,22 +44,12 @@ bool CNotificationHTTP::SendMessageImplementation(
 		stdreplace(destURL, "#TO", CURLEncode::URLEncode(_HTTPTo));
 		stdreplace(destURL, "#SUBJECT", CURLEncode::URLEncode(Subject));
 		stdreplace(destURL, "#MESSAGE", CURLEncode::URLEncode(Text));
-		stdreplace(destURL, "#PRIORITY", CURLEncode::URLEncode(std::string(szPriority)));
 
 		std::string sResult;
 		if (_HTTPPostData.length() > 0)
 		{
 			std::vector<std::string> ExtraHeaders;
 			ExtraHeaders.push_back("Content-type: " + _HTTPPostContentType);
-			if (_HTTPPostHeaders.length() > 0)
-			{
-				std::vector<std::string> ExtraHeaders2;
-				StringSplit(_HTTPPostHeaders, "\r\n", ExtraHeaders2);
-				for (size_t i = 0; i < ExtraHeaders2.size(); i++)
-				{
-					ExtraHeaders.push_back(ExtraHeaders2[i]);
-				}
-			}
 			std::string httpData = _HTTPPostData;
 			stdreplace(httpData, "#FIELD1", _HTTPField1);
 			stdreplace(httpData, "#FIELD2", _HTTPField2);
@@ -80,7 +58,6 @@ bool CNotificationHTTP::SendMessageImplementation(
 			stdreplace(httpData, "#TO", _HTTPTo);
 			stdreplace(httpData, "#SUBJECT", Subject);
 			stdreplace(httpData, "#MESSAGE", Text);
-			stdreplace(httpData, "#PRIORITY", std::string(szPriority));
 			bSuccess = HTTPClient::POST(destURL, httpData, ExtraHeaders, sResult);
 		}
 		else
@@ -116,7 +93,7 @@ bool CNotificationHTTP::SendMessageImplementation(
 		}
 		if (file_exist(scriptname.c_str()))
 		{
-			m_sql.AddTaskItem(_tTaskItem::ExecuteScript(0.2f, scriptname, scriptparams));
+			m_sql.AddTaskItem(_tTaskItem::ExecuteScript(1, scriptname, scriptparams));
 			bSuccess = true;
 		}
 	}

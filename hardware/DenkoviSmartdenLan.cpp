@@ -9,6 +9,8 @@
 #include "../main/SQLHelper.h"
 #include <sstream>
 
+extern CSQLHelper m_sql;
+
 #define DenkoviSmartdenLan_POLL_INTERVAL 60
 
 CDenkoviSmartdenLan::CDenkoviSmartdenLan(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &password) :

@@ -4,6 +4,7 @@
 #include "../main/Logger.h"
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
+#include "../json/json.h"
 #include "../main/RFXtrx.h"
 #include "../main/SQLHelper.h"
 #include "../httpclient/HTTPClient.h"
@@ -208,12 +209,12 @@ bool CNest::Login()
 
 	Json::Value root;
 	Json::Reader jReader;
-	bool bRet = jReader.parse(sResult, root);
-	if ((!bRet) || (!root.isObject()))
+	if (!jReader.parse(sResult, root))
 	{
 		_log.Log(LOG_ERROR, "Nest: Invalid data received, or invalid username/password!");
 		return false;
 	}
+
 	if (root["urls"].empty())
 	{
 		_log.Log(LOG_ERROR, "Nest: Invalid data received, or invalid username/password!");
@@ -393,13 +394,13 @@ void CNest::GetMeterDetails()
 
 	Json::Value root;
 	Json::Reader jReader;
-	bool bRet = jReader.parse(sResult, root);
-	if ((!bRet) || (!root.isObject()))
+	if (!jReader.parse(sResult, root))
 	{
 		_log.Log(LOG_ERROR, "Nest: Invalid data received!");
 		m_bDoLogin = true;
 		return;
 	}
+
 	bool bHaveShared = !root["shared"].empty();
 	bool bHaveTopaz = !root["topaz"].empty();
 

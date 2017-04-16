@@ -40,13 +40,7 @@ class ZWaveBase : public CDomoticzHardwareBase
 		ZDTYPE_SENSOR_UV,
 		ZDTYPE_SENSOR_WATER,
 		ZDTYPE_SENSOR_MOISTURE,
-		ZDTYPE_SENSOR_TANK_CAPACITY,
-
-		ZDTYPE_ALARM,
-		ZDTYPE_CENTRAL_SCENE,
-
-		ZDTYPE_SENSOR_CUSTOM,
-
+		ZDTYPE_SENSOR_TANK_CAPACITY
 	};
 	struct _tZWaveDevice
 	{
@@ -86,12 +80,9 @@ class ZWaveBase : public CDomoticzHardwareBase
 
 		//label
 		std::string label;
-		std::string custom_label;
 
 		time_t lastreceived;
 		unsigned char sequence_number;
-
-		int Alarm_Type;
 
 		_tZWaveDevice() :
 			label("Unknown")
@@ -123,7 +114,6 @@ class ZWaveBase : public CDomoticzHardwareBase
 			Product_id = -1;
 			Product_type = -1;
 			lastreceived = 0;
-			Alarm_Type = -1;
 		}
 	};
 public:

@@ -156,15 +156,15 @@ make
 
 
 ### Windows
-- You need Visual Studio 2015 (Community Edition is OK)
+- You need Visual Studio 2015 (community edition is OK)
 - The project file for Visual Studio can be found inside the "msbuild" folder
-- You need to download `WindowsLibraries.7z` from https://github.com/domoticz/win32-libraries
-  and unpack the archive inside the "msbuild" folder.
+- You need to download and unpack the following archive inside the "msbuild" folder:
+  http://www.domoticz.com/WindowsLibraries.7z
 
 ### Ubuntu / Raspberry Pi (wheezy)
 ```
 sudo apt-get install build-essential -y
-sudo apt-get install cmake libboost-dev libboost-thread-dev libboost-system-dev libsqlite3-dev subversion curl libcurl4-openssl-dev libusb-dev libudev-dev zlib1g-dev libssl-dev
+sudo apt-get install cmake libboost-dev libboost-thread-dev libboost-system-dev libsqlite3-dev subversion curl libcurl4-openssl-dev libusb-dev libudev-dev zlib1g-dev
 ```
 
 Raspberry Pi (wheezy, 22 November 2012): (First time compile time: 25 minutes)

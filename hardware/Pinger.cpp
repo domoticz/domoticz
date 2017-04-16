@@ -358,7 +358,7 @@ void CPinger::UpdateNodeStatus(const PingNode &Node, const bool bPingOK)
 			}
 			else
 			{
-				if (difftime(atime,itt->LastOK) >= Node.SensorTimeoutSec)
+				if (atime - itt->LastOK >= Node.SensorTimeoutSec)
 				{
 					itt->LastOK = atime;
 					SendSwitch(Node.ID, 1, 255, bPingOK, 0, Node.Name);
@@ -434,10 +434,7 @@ namespace http {
 		void CWebServer::Cmd_PingerGetNodes(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
+				return;//Only admin user allowed
 			std::string hwid = request::findValue(&req, "idx");
 			if (hwid == "")
 				return;
@@ -475,8 +472,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
+				//No admin user, and not allowed to be here
+				return;
 			}
 			std::string hwid = request::findValue(&req, "idx");
 			std::string mode1 = request::findValue(&req, "mode1");
@@ -515,8 +512,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
+				//No admin user, and not allowed to be here
+				return;
 			}
 
 			std::string hwid = request::findValue(&req, "idx");
@@ -547,8 +544,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
+				//No admin user, and not allowed to be here
+				return;
 			}
 
 			std::string hwid = request::findValue(&req, "idx");
@@ -582,8 +579,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
+				//No admin user, and not allowed to be here
+				return;
 			}
 
 			std::string hwid = request::findValue(&req, "idx");
@@ -611,8 +608,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
+				//No admin user, and not allowed to be here
+				return;
 			}
 
 			std::string hwid = request::findValue(&req, "idx");

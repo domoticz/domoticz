@@ -4,25 +4,27 @@
   <!-- The thermostat does not properly report its operating modes -->
   <CommandClass id="64">
     <SupportedModes>
-      <Mode index="0" label="Off"/>
-      <Mode index="1" label="Heat"/>
+      <Mode index="0" label="Off" />
+      <Mode index="1" label="Heat" />
     </SupportedModes>
   </CommandClass>
 
   <!-- This thermostat's setpoint descriptions are 0 based, not 1 -->
-  <CommandClass id="67" base="0"/>
+  <CommandClass id="67" base="0" />
 
   <!-- Configuration Parameters -->
   <CommandClass id="112">
-    <Value type="list" index="1" genre="config" label="Temperature sensor reading" min="0" max="1" value="0" size="1">
-      <Help></Help>
-      <Item label="Disable" value="0"/>
-      <Item label="Enable" value="255"/>
+    <Value type="byte" index="1" genre="config" label="Enable Temperature sensor reading" value="0">
+      <Help>
+        0-127 = Disabled.
+        128-255 = Enabled.
+      </Help>
     </Value>
-    <Value type="list" index="2" genre="config" label="Temperature Scale" min="0" max="1" value="0" size="1">
-      <Help></Help>
-      <Item label="Celsius" value="0"/>
-      <Item label="Fahrenheit" value="255"/>
+    <Value type="byte" index="2" genre="config" label="Temperature Scale"  value="0">
+      <Help>
+        0-127 = Celsius.
+        128-255 = Fahrenheit.
+      </Help>
     </Value>
     <Value type="byte" index="3" genre="config" label="Temperature Delta T" value="10">
       <Help>
@@ -31,9 +33,9 @@
     </Value>
   </CommandClass>
   <!-- Association Groups -->
-  <CommandClass id="133">
+  <CommandClass id="133">   
     <Associations num_groups="5">
-      <Group index="1" max_associations="4" label="Thermostat Mode Set"/>
+      <Group index="1" max_associations="4" label="Thermostat Mode Set" />
       <Group index="2" max_associations="4" label="Binary Switch Set" auto="true"/>
       <Group index="3" max_associations="4" label="Unsolicited Battery Level Reports" auto="true"/>
       <Group index="4" max_associations="4" label="Thermostat Set Point Reports" auto="true"/>

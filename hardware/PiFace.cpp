@@ -37,8 +37,7 @@
 #include <errno.h>
 #include <string.h>
 #include <string>
-#ifdef HAVE_LINUX_SPI
-    #include <linux/ioctl.h>
+#ifdef __arm__
     #include <linux/types.h>
     #include <linux/spi/spidev.h>
     #include <unistd.h>
@@ -751,7 +750,7 @@ bool CPiFace::StopHardware()
             m_queue_thread.reset();
         }
     }
-#ifdef HAVE_LINUX_SPI
+#ifdef __arm__
     if (m_fd > 0) {
         close(m_fd);
         m_fd = 0;
@@ -890,7 +889,7 @@ int CPiFace::Init_SPI_Device(int Init)
     int           speed       = 4000000 ;
     
     _log.Log(LOG_STATUS,"PiFace: Starting PiFace_SPI_Start()");
-#ifdef HAVE_LINUX_SPI
+#ifdef __arm__
     // Open port for reading and writing
     if ((m_fd = open("/dev/spidev0.0", O_RDWR)) >= 0)
     {
@@ -923,7 +922,7 @@ int CPiFace::Init_SPI_Device(int Init)
     
     if (result == -1)
     {
-#ifdef HAVE_LINUX_SPI
+#ifdef __arm__
         close(m_fd);
 #endif
         return -1;
@@ -1018,7 +1017,7 @@ void CPiFace::GetAndSetInitialDeviceState(int devId)
 
 int CPiFace::Read_Write_SPI_Byte(unsigned char *data, int len)
 {
-#ifdef HAVE_LINUX_SPI
+#ifdef __arm__
     struct spi_ioc_transfer spi ;
     memset (&spi, 0, sizeof(spi));
     
@@ -1555,11 +1554,11 @@ namespace http {
         {
             redirect_uri = "/index.html";
             if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
+            {
+                //No admin user, and not allowed to be here
+                return;
+            }
+            
             std::string idx = request::findValue(&req, "idx");
             if (idx == "") {
                 return;

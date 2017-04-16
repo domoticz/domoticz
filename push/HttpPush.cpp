@@ -12,8 +12,6 @@
 #include "../webserver/cWebem.h"
 #include "../main/mainworker.h"
 #include "../json/json.h"
-#define __STDC_FORMAT_MACROS
-#include <inttypes.h>
 
 CHttpPush::CHttpPush()
 {
@@ -40,7 +38,7 @@ void CHttpPush::UpdateActive()
 	m_bLinkActive = (fActive == 1);
 }
 
-void CHttpPush::OnDeviceReceived(const int m_HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
+void CHttpPush::OnDeviceReceived(const int m_HwdID, const unsigned long long DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
 {
 	m_DeviceRowIdx = DeviceRowIdx;
 	if (m_bLinkActive)
@@ -53,7 +51,6 @@ void CHttpPush::DoHttpPush()
 {			
 	std::string httpUrl = "";
 	std::string httpData = "";
-	std::string httpHeaders= "";
 	int httpMethodInt = 0;
 	int httpAuthInt = 0;
 	std::string httpAuth = "";
@@ -73,7 +70,7 @@ void CHttpPush::DoHttpPush()
 	std::vector<std::vector<std::string> > result;
 	result=m_sql.safe_query(
 		"SELECT A.DeviceID, A.DelimitedValue, B.ID, B.Type, B.SubType, B.nValue, B.sValue, A.TargetType, A.TargetVariable, A.TargetDeviceID, A.TargetProperty, A.IncludeUnit, B.SwitchType, strftime('%%s', B.LastUpdate), B.Name FROM HttpLink as A, DeviceStatus as B "
-		"WHERE (A.DeviceID == '%" PRIu64 "' AND A.Enabled = '1' AND A.DeviceID==B.ID)",
+		"WHERE (A.DeviceID == '%llu' AND A.Enabled = '1' AND A.DeviceID==B.ID)",
 		m_DeviceRowIdx);
 	if (result.size()>0)
 	{
@@ -83,13 +80,11 @@ void CHttpPush::DoHttpPush()
 		{
 			m_sql.GetPreferencesVar("HttpUrl", httpUrl);
 			m_sql.GetPreferencesVar("HttpData", httpData);
-			m_sql.GetPreferencesVar("HttpHeaders", httpHeaders);
 			if (httpUrl == "")
 				return;
 
 			std::vector<std::string> sd=*itt;
 			unsigned int deviceId = atoi(sd[0].c_str());
-			std::string sdeviceId = sd[0].c_str();
 			std::string ldelpos = sd[1].c_str();
 			int delpos = atoi(sd[1].c_str());
 			int dType = atoi(sd[3].c_str());
@@ -140,11 +135,10 @@ void CHttpPush::DoHttpPush()
 			%D : Target Device id
 			%V : Target Variable
 			%u : Unit
-			%n : Device name
+			%n : Name
 			%T0 : Type
 			%T1 : SubType
 			%h : hostname
-			%idx : 'Original device' id (idx)
 			*/
 
 			std::string lunit = getUnit(delpos, metertype);
@@ -184,7 +178,6 @@ void CHttpPush::DoHttpPush()
 			replaceAll(httpUrl, "%T0", lType);
 			replaceAll(httpUrl, "%T1", lSubType);
 			replaceAll(httpUrl, "%h", std::string(hostname));
-			replaceAll(httpUrl, "%idx", sdeviceId);
 
 			replaceAll(httpData, "%v", sendValue);
 			replaceAll(httpData, "%u", includeUnit ? lunit : "");
@@ -199,7 +192,6 @@ void CHttpPush::DoHttpPush()
 			replaceAll(httpData, "%T0", lType);
 			replaceAll(httpData, "%T1", lSubType);
 			replaceAll(httpData, "%h", std::string(hostname));
-			replaceAll(httpData, "%idx", sdeviceId);
 
 			if (sendValue != "") {
 				std::string sResult;
@@ -220,29 +212,19 @@ void CHttpPush::DoHttpPush()
 				if (httpMethodInt == 0) {			// GET
 					if (!HTTPClient::GET(httpUrl, ExtraHeaders, sResult))
 					{
-						_log.Log(LOG_ERROR, "HttpLink: Error sending data to http with GET!");
+						_log.Log(LOG_ERROR, "Error sending data to http with GET!");
 					}
 				}
 				else if (httpMethodInt == 1) {		// POST
-					if (httpHeaders.size() > 0)
-					{
-						// Add additional headers
-						std::vector<std::string> ExtraHeaders2;
-						StringSplit(httpHeaders,"\r\n", ExtraHeaders2);
-						for (size_t i = 0; i < ExtraHeaders2.size(); i++)
-						{
-							ExtraHeaders.push_back(ExtraHeaders2[i]);
-						}
-					}
 					if (!HTTPClient::POST(httpUrl, httpData, ExtraHeaders, sResult))
 					{
-						_log.Log(LOG_ERROR, "HttpLink: Error sending data to http with POST!");
+						_log.Log(LOG_ERROR, "Error sending data to http with POST!");
 					}
 				}
 				else if(httpMethodInt == 2) {		// PUT
 					if (!HTTPClient::PUT(httpUrl, httpData, ExtraHeaders, sResult))
 					{
-						_log.Log(LOG_ERROR, "HttpLink: Error sending data to http with PUT!");
+						_log.Log(LOG_ERROR, "Error sending data to http with PUT!");
 					}
 				}
 
@@ -262,14 +244,13 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
+				//No admin user, and not allowed to be here
+				return;
 			}
 
 			std::string url = request::findValue(&req, "url");
 			std::string method = request::findValue(&req, "method");
 			std::string data = request::findValue(&req, "data");
-			std::string headers = request::findValue(&req, "headers");
 			std::string linkactive = request::findValue(&req, "linkactive");
 			std::string debugenabled = request::findValue(&req, "debugenabled");
 			std::string auth = request::findValue(&req, "auth");
@@ -277,26 +258,24 @@ namespace http {
 			std::string authbasicpassword = request::findValue(&req, "authbasicpassword");
 			if (
 				(url == "") ||
+				(data == "") ||
 				(method == "") ||
 				(linkactive == "") ||
 				(debugenabled == "")
 				)
-				return;
-			if ((method != "0") && (data.empty())) //PUT/POST should have data
 				return;
 			int ilinkactive = atoi(linkactive.c_str());
 			int idebugenabled = atoi(debugenabled.c_str());
 			m_sql.UpdatePreferencesVar("HttpUrl", url.c_str());
 			m_sql.UpdatePreferencesVar("HttpMethod", atoi(method.c_str()));
 			m_sql.UpdatePreferencesVar("HttpData", data.c_str());
-			m_sql.UpdatePreferencesVar("HttpHeaders", headers.c_str());
 			m_sql.UpdatePreferencesVar("HttpActive", ilinkactive);
 			m_sql.UpdatePreferencesVar("HttpDebug", idebugenabled);
 			m_sql.UpdatePreferencesVar("HttpAuth", atoi(auth.c_str()));
 			m_sql.UpdatePreferencesVar("HttpAuthBasicLogin", authbasiclogin.c_str());
 			m_sql.UpdatePreferencesVar("HttpAuthBasicPassword", authbasicpassword.c_str());
 
-			m_httppush.UpdateActive();
+			m_mainworker.m_httppush.UpdateActive();
 			root["status"] = "OK";
 			root["title"] = "SaveHttpLinkConfig";
 		}
@@ -304,10 +283,7 @@ namespace http {
 		void CWebServer::Cmd_GetHttpLinkConfig(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
+				return;//Only admin user allowed
 			std::string sValue;
 			int nValue;
 			if (m_sql.GetPreferencesVar("HttpActive", nValue)) {
@@ -329,10 +305,6 @@ namespace http {
 			if (m_sql.GetPreferencesVar("HttpData", sValue))
 			{
 				root["HttpData"] = sValue;
-			}
-			if (m_sql.GetPreferencesVar("HttpHeaders", sValue))
-			{
-				root["HttpHeaders"] = sValue;
 			}
 			if (m_sql.GetPreferencesVar("HttpMethod", nValue))
 			{
@@ -363,10 +335,7 @@ namespace http {
 		void CWebServer::Cmd_GetHttpLinks(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
+				return;//Only admin user allowed
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT A.ID,A.DeviceID,A.Delimitedvalue,A.TargetType,A.TargetVariable,A.TargetDeviceID,A.TargetProperty,A.Enabled, B.Name, A.IncludeUnit FROM HttpLink as A, DeviceStatus as B WHERE (A.DeviceID==B.ID)");
 			if (result.size() > 0)
@@ -396,10 +365,7 @@ namespace http {
 		void CWebServer::Cmd_SaveHttpLink(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
+				return;//Only admin user allowed
 			std::string idx = request::findValue(&req, "idx");
 			std::string deviceid = request::findValue(&req, "deviceid");
 			int deviceidi = atoi(deviceid.c_str());
@@ -452,8 +418,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
+				//No admin user, and not allowed to be here
+				return;
 			}
 
 			std::string idx = request::findValue(&req, "idx");

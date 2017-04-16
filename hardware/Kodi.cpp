@@ -192,8 +192,8 @@ void CKodiNode::handleMessage(std::string& pMessage)
 		std::stringstream ssMessage;
 
 		if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Kodi: (%s) Handling message: '%s'.", m_Name.c_str(), pMessage.c_str());
-		bool bRet = jReader.parse(pMessage, root);
-		if ((!bRet) || (!root.isObject()))
+		bool	bRetVal = jReader.parse(pMessage, root);
+		if (!bRetVal)
 		{
 			_log.Log(LOG_ERROR, "Kodi: (%s) PARSE ERROR: '%s'", m_Name.c_str(), pMessage.c_str());
 		}
@@ -1176,7 +1176,7 @@ void CKodi::UnloadNodes()
 	m_ios.stop();	// stop the service if it is running
 	sleep_milliseconds(100);
 
-	while (((!m_pNodes.empty()) || (!m_ios.stopped())) && (iRetryCounter < 15))
+	while ((!m_pNodes.empty()) || (!m_ios.stopped()) && (iRetryCounter < 15))
 	{
 		std::vector<boost::shared_ptr<CKodiNode> >::iterator itt;
 		for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
@@ -1244,10 +1244,7 @@ namespace http {
 		void CWebServer::Cmd_KodiGetNodes(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
+				return;//Only admin user allowed
 			std::string hwid = request::findValue(&req, "idx");
 			if (hwid == "")
 				return;
@@ -1284,8 +1281,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
+				//No admin user, and not allowed to be here
+				return;
 			}
 			std::string hwid = request::findValue(&req, "idx");
 			std::string mode1 = request::findValue(&req, "mode1");
@@ -1319,8 +1316,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
+				//No admin user, and not allowed to be here
+				return;
 			}
 
 			std::string hwid = request::findValue(&req, "idx");
@@ -1351,8 +1348,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
+				//No admin user, and not allowed to be here
+				return;
 			}
 
 			std::string hwid = request::findValue(&req, "idx");
@@ -1386,8 +1383,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
+				//No admin user, and not allowed to be here
+				return;
 			}
 
 			std::string hwid = request::findValue(&req, "idx");
@@ -1415,8 +1412,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
+				//No admin user, and not allowed to be here
+				return;
 			}
 
 			std::string hwid = request::findValue(&req, "idx");
@@ -1457,16 +1454,9 @@ namespace http {
 				{
 					switch (hType) {
 					case HTYPE_Kodi:
-					{
 						CKodi	Kodi(HwID);
 						Kodi.SendCommand(idx, sAction);
 						break;
-					}
-#ifdef USE_PYTHON_PLUGINS
-					case HTYPE_PythonPlugin:
-						Cmd_PluginCommand(session, req, root);
-						break;
-#endif
 						// put other players here ...
 					}
 				}

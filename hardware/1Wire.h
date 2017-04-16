@@ -1,7 +1,5 @@
 #pragma once
 
-#include <set>
-
 #include "DomoticzHardware.h"
 #include "../hardware/1Wire/1WireCommon.h"
 
@@ -21,14 +19,12 @@ private:
 	boost::shared_ptr<boost::thread> m_threadSwitches;
 	I_1WireSystem* m_system;
 	std::map<std::string, bool> m_LastSwitchState;
-	std::set<_t1WireDevice> m_sensors;
-	std::set<_t1WireDevice> m_switches;
+	std::vector<_t1WireDevice> m_sensors;
+	std::vector<_t1WireDevice> m_switches;
 
 	int m_sensorThreadPeriod; // milliseconds
 	int m_switchThreadPeriod; // milliseconds
 	const std::string &m_path;
-	bool m_bSensorFirstTime;
-	bool m_bSwitchFirstTime;
 
 	void DetectSystem();
 	bool StartHardware();
@@ -36,12 +32,13 @@ private:
 	void SensorThread();
 	void SwitchThread();
 	void BuildSensorList();
+	void StartSimultaneousTemperatureRead();
+	void PollSensors();
 	void BuildSwitchList();
 	void PollSwitches();
 
 	// Messages to Domoticz
 	void ReportLightState(const std::string& deviceId, const int unit, const bool state);
-	void ReportWiper(const std::string& deviceId, const unsigned int wiper);
 	void ReportTemperature(const std::string& deviceId, const float temperature);
 	void ReportTemperatureHumidity(const std::string& deviceId, const float temperature, const float humidity);
 	void ReportHumidity(const std::string& deviceId, const float humidity);

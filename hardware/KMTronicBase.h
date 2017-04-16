@@ -9,7 +9,6 @@ class KMTronicBase : public CDomoticzHardwareBase
 	friend class KMTronicSerial;
 	friend class KMTronicTCP;
 	friend class KMTronic433;
-	friend class KMTronicUDP;
 public:
 	KMTronicBase(void);
 	~KMTronicBase(void);

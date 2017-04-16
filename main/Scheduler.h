@@ -10,8 +10,8 @@ struct tScheduleItem
 	bool bIsScene;
 	bool bIsThermostat;
 	std::string DeviceName;
-	uint64_t RowID;
-	uint64_t TimerID;
+	unsigned long long RowID;
+	unsigned long long TimerID;
 	unsigned char startDay;
 	unsigned char startMonth;
 	unsigned short startYear;
