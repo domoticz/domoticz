@@ -516,6 +516,25 @@ body #dashcontent table > tbody > tr{
     overflow:visible;
 }
 
+
+#dashcontent #img, 
+#dashcontent #img1 {
+    top:-35px;
+    right:7px;
+}
+
+#dashcontent .span3 #img2 {right: 40px;}
+#dashcontent .span4 #img2 {right: 45px;}
+
+#dashcontent #img3 {
+    top:-35px;
+    right: 77px;
+    height:0;
+    overflow:visible;
+}
+
+
+
 #img img, 
 #img1 img, 
 #img2 img, 
@@ -716,7 +735,7 @@ body .item tr > #name {
     right: 38px;
     }
     
-    #itemtabledoubleicon #bigtext{right: 80px;}
+    #itemtabledoubleicon #bigtext{right: 90px;}
     #itemtablesmalldoubleicon #bigtext{right: 90px;}
     
     #itemtabletrippleicon #bigtext{right: 100px;}
@@ -746,11 +765,11 @@ body .item tr > #name {
     width:auto;
 }
 
-#dashcontent .span3 #itemtabledoubleicon #bigtext{right: 70px;}
+#dashcontent .span3 #itemtabledoubleicon #bigtext{right: 80px;}
 #dashcontent .span3 #itemtablesmalldoubleicon #bigtext{right: 70px;}
 
-#dashcontent .span4 #itemtabledoubleicon #bigtext{right: 80px;}
-#dashcontent .span4 #itemtablesmalldoubleicon #bigtext{right: 80px;}
+#dashcontent .span4 #itemtabledoubleicon #bigtext{right: 90px;}
+#dashcontent .span4 #itemtablesmalldoubleicon #bigtext{right: 90px;}
 /*#dashcontent #itemtablesmalldoubleicon #bigtext{right:55px}*/
 
 #dashcontent #itemtabletrippleicon #bigtext{right: 100px;}
@@ -1719,14 +1738,22 @@ body.dashMobile table.mobileitem td#name{
     min-height:30px;
 }
 
-body.dashMobile table.mobileitem td#status > span{white-space: normal;}
+body.dashMobile table.mobileitem td#status > span{
+    white-space: normal;
+    display: inline-flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-end; 
+}
 body.dashMobile table.mobileitem td#status > span > span{
     margin-right:8px;
     padding: 5px;
     border-radius: 3px;
-    background-color: #eee;
     white-space: nowrap;
+    box-shadow: 0px 1px 1px rgba(100,100,100,0.1);
 }
+body.dashMobile table.mobileitem td#status > span > span:only-child{box-shadow: none};
+
 
 .mobileitem #name img {
     margin-right: 5px;
@@ -1741,6 +1768,7 @@ body.dashMobile table.mobileitem td#status > span > span{
     flex-direction: row;
     white-space: normal;
     width: auto;
+    max-width:60%;
     justify-content: flex-end;
     padding: 0;
     flex-grow: 1;
