@@ -181,12 +181,14 @@ define(['app'], function(app) {
 												bigtext += "&nbsp;" + streamurl;
 											}
                                             /*  Experimental code to add on-off classes to the item, so that themes can reflect the current status in more ways. */
-                                            if ((item.Status == 'On') || (item.Status == 'Group On')) {
-                                                $(id + " div.item").addClass('onn');
-                                                $(id + " div.item").removeClass('off');
-                                            }else if ((item.Status == 'Off') || (item.Status == 'Group Off')) {
-                                                $(id + " div.item").addClass('offf');
-                                                $(id + " div.item").removeClass('onn');
+                                            if(typeof item.Status != 'undefined'){
+                                                if ((item.Status == 'On') || (item.Status == 'Group On')) {
+                                                    $(id + " div.item").addClass('onn');
+                                                    $(id + " div.item").removeClass('offf');
+                                                }else if ((item.Status == 'Off') || (item.Status == 'Group Off')) {
+                                                    $(id + " div.item").addClass('offf');
+                                                    $(id + " div.item").removeClass('onn');
+                                                }
                                             }
 											if (item.Status == 'On') {
 												onclass = "transimg";
@@ -550,14 +552,13 @@ define(['app'], function(app) {
 										var img = "";
 										var img2 = "";
 										var img3 = "";
-
+                                        
 										var bigtext = TranslateStatusShort(item.Status);
 										if (item.UsedByCamera == true) {
 											var streamimg = '<img src="images/webcam.png" title="' + $.t('Stream Video') + '" height="16" width="16">';
 											streamurl = "<a href=\"javascript:ShowCameraLiveStream('" + escape(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
 											bigtext += "&nbsp;" + streamurl;
 										}
-
 										if (item.SwitchType == "Doorbell") {
 											img = '<img src="images/doorbell48.png" title="' + $.t("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">';
 										} else if (item.SwitchType == "Push On Button") {
@@ -796,12 +797,14 @@ define(['app'], function(app) {
 										}
 
                                         /*  Experimental code to add on-off classes to the item, so that themes can reflect the current status in more ways. */
-                                        if ((item.Status == 'On') || (item.Status == 'Group On')) {
-                                            $(id + " div.item").addClass('onn');
-                                            $(id + " div.item").removeClass('off');
-                                        }else if ((item.Status == 'Off') || (item.Status == 'Group Off')) {
-                                            $(id + " div.item").addClass('offf');
-                                            $(id + " div.item").removeClass('onn');
+                                        if(typeof item.Status != 'undefined'){
+                                            if ((item.Status == 'On') || (item.Status == 'Group On')) {
+                                                $(id + " div.item").addClass('onn');
+                                                $(id + " div.item").removeClass('offf');
+                                            }else if ((item.Status == 'Off') || (item.Status == 'Group Off')) {
+                                                $(id + " div.item").addClass('offf');
+                                                $(id + " div.item").removeClass('onn');
+                                            }
                                         }
                                         
                                         var newStatusClass = "statusNormal";
@@ -1690,6 +1693,7 @@ define(['app'], function(app) {
 										'\t      <td id="status" class="status">' + status + '</td>\n' +
 										'\t    </tr>\n';
 								} else {
+                                    // Normal/compact dashboard view
 									if ($scope.config.DashboardType == 0) {
 										xhtm = '\t<div class="span4 movable" id="scene_' + item.idx + '">\n';
 									} else if ($scope.config.DashboardType == 1) {
@@ -1787,7 +1791,7 @@ define(['app'], function(app) {
 							htmlcontent += '</section>';
 						}
 
-//light devices
+//light/switch devices
 						jj = 0;
 						bHaveAddedDivider = false;
 						$.each(data.result, function(i, item) {
@@ -1830,23 +1834,25 @@ define(['app'], function(app) {
 								if (jj % rowItems == 0) {
 									//add divider
 									if (bHaveAddedDivider == true) {
-										//close previous devider
+										//close previous divider
 										htmlcontent += '</div>\n';
 									}
 									htmlcontent += '<div class="row divider">\n';
 									bHaveAddedDivider = true;
 								}
+                                
 								var backgroundClass = "statusNormal";
-								if (item.HaveTimeout == true) {
-									backgroundClass = "statusTimeout";
-								} else if (item.Protected == true) {
+								if (item.Protected == true) {
 									backgroundClass = "statusProtected";
+								} else if (item.HaveTimeout == true) {
+									backgroundClass = "statusTimeout";
 								}
+                                
 								var status = "";
 								var xhtm = "";
 								if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
 									xhtm +=
-										'\t    <tr id="light_' + item.idx + '">\n' +
+										'\t    <tr id="light_' + item.idx + '" class="' + backgroundClass + '">\n' +
 										'\t      <td id="name" class="name"><span>' + item.Name;
 									xhtm +=
 										'</span></td>\n';
@@ -2166,16 +2172,267 @@ define(['app'], function(app) {
 										xhtm += '</tr>';
 									}
 								} else {
+                                    // normal/compact dashboard.
 									if ($scope.config.DashboardType == 0) {
 										xhtm = '\t<div class="span4 movable" id="light_' + item.idx + '">\n';
 									} else if ($scope.config.DashboardType == 1) {
 										xhtm = '\t<div class="span3 movable" id="light_' + item.idx + '">\n';
 									}
                                     
+                                    status="";
                                     
-                                    /* generate two item classes.  */
-
-                                    /* type of device */
+                                    // generate bigtext html
+                                    var bigtexthtml ='<span>';
+									bigtexthtml += TranslateStatusShort(item.Status);
+									if (item.UsedByCamera == true) {
+										var streamimg = '<img src="images/webcam.png" title="' + $.t('Stream Video') + '" height="16" width="16">';
+										streamurl = "<a href=\"javascript:ShowCameraLiveStream('" + escape(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
+										bigtexthtml += "</span><span>" + streamurl;
+									}
+									bigtexthtml+= '</span>\n';
+                                    
+                                    // generate image html (and find fun icons)
+                                    var imghtml = "";
+                                    var iconType = "";
+									if (item.SwitchType == "Doorbell") {
+										imghtml += '\t      <td id="img" class="img img1"><img src="images/doorbell48.png" title="' + $.t("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
+									} else if (item.SwitchType == "Push On Button") {
+										if (item.InternalState == "On") {
+											imghtml += '\t      <td id="img" class="img img1"><img src="images/pushon48.png" title="' + $.t("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
+										} else {
+											imghtml += '\t      <td id="img" class="img img1"><img src="images/push48.png" title="' + $.t("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
+										}
+									} else if (item.SwitchType == "Door Contact") {
+										if (item.InternalState == "Open") {
+											imghtml += '\t      <td id="img" class="img img1"><img src="images/door48open.png" title="' + $.t("Close Door") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
+										} else {
+											imghtml += '\t      <td id="img" class="img img1"><img src="images/door48.png" title="' + $.t("Open Door") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
+										}
+									} else if (item.SwitchType == "Door Lock") {
+										if (item.InternalState == "Unlocked") {
+											imghtml += '\t      <td id="img" class="img img1"><img src="images/door48open.png" title="' + $.t("Lock") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
+										} else {
+											imghtml += '\t      <td id="img" class="img img1"><img src="images/door48.png" title="' + $.t("Unlock") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
+										}
+									} else if (item.SwitchType == "Push Off Button") {
+										imghtml += '\t      <td id="img" class="img img1"><img src="images/pushoff48.png" title="' + $.t("Turn Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
+									} else if (item.SwitchType == "X10 Siren") {
+										if (
+											(item.Status == 'On') ||
+											(item.Status == 'Chime') ||
+											(item.Status == 'Group On') ||
+											(item.Status == 'All On')
+										) {
+											imghtml += '\t      <td id="img" class="img img1"><img src="images/siren-on.png" height="40" width="40"></td>\n';
+										} else {
+											imghtml += '\t      <td id="img" class="img img1"><img src="images/siren-off.png" height="40" width="40"></td>\n';
+										}
+									} else if (item.SwitchType == "Contact") {
+										if (item.Status == 'Closed') {
+											imghtml += '\t      <td id="img" class="img img1"><img src="images/contact48.png" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name) + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40"></td>\n';
+										} else {
+											imghtml += '\t      <td id="img" class="img img1"><img src="images/contact48_open.png" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name) + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40"></td>\n';
+										}
+									} else if (item.SwitchType == "Media Player") {
+										if (item.CustomImage == 0) item.Image = item.TypeImg;
+										if (item.Status == 'Disconnected') {
+											imghtml += '\t      <td id="img" class="img img1"><img src="images/' + item.Image + '48_Off.png" height="40" width="40"></td>\n';
+											imghtml += '\t      <td id="img2" class="img2"><img src="images/remote48.png" style="opacity:0.4"; height="40" width="40"></td>\n';
+										} else if ((item.Status != 'Off') && (item.Status != '0')) {
+											imghtml += '\t      <td id="img" class="img img1"><img src="images/' + item.Image + '48_On.png" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
+											imghtml += '\t      <td id="img2" class="img2"><img src="images/remote48.png" onclick="ShowMediaRemote(\'' + escape(item.Name) + "'," + item.idx + ",'" + item.HardwareType + '\');" class="lcursor" height="40" width="40"></td>\n';
+										} else {
+											imghtml += '\t      <td id="img" class="img img1"><img src="images/' + item.Image + '48_Off.png" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
+											imghtml += '\t      <td id="img2" class="img2"><img src="images/remote48.png" style="opacity:0.4"; height="40" width="40"></td>\n';
+										}
+										status = item.Data;
+									} else if ((item.SwitchType == "Blinds") || (item.SwitchType.indexOf("Venetian Blinds") == 0)) {
+										if (
+											(item.SubType == "RAEX") ||
+											(item.SubType.indexOf('A-OK') == 0) ||
+											(item.SubType.indexOf('Hasta') >= 0) ||
+											(item.SubType.indexOf('Media Mount') == 0) ||
+											(item.SubType.indexOf('Forest') == 0) ||
+											(item.SubType.indexOf('Chamberlain') == 0) ||
+											(item.SubType.indexOf('Sunpery') == 0) ||
+											(item.SubType.indexOf('Dolat') == 0) ||
+											(item.SubType.indexOf('ASP') == 0) ||
+											(item.SubType == "Harrison") ||
+											(item.SubType.indexOf('RFY') == 0) ||
+											(item.SubType.indexOf('ASA') == 0) ||
+											(item.SubType.indexOf('DC106') == 0) ||
+											(item.SubType.indexOf('Confexx') == 0) ||
+											(item.SwitchType.indexOf("Venetian Blinds") == 0)
+										) {
+											if (item.Status == 'Closed') {
+												imghtml += '\t      <td id="img" class="img img1"><img src="images/blindsopen48.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
+												imghtml += '\t      <td id="img2" class="img2"><img src="images/blindsstop.png" title="' + $.t("Stop Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Stop\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="24"></td>\n';
+												imghtml += '\t      <td id="img3" class="img3"><img src="images/blinds48sel.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
+											} else {
+												imghtml += '\t      <td id="img" class="img img1"><img src="images/blindsopen48sel.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
+												imghtml += '\t      <td id="img2" class="img2"><img src="images/blindsstop.png" title="' + $.t("Stop Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Stop\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="24"></td>\n';
+												imghtml += '\t      <td id="img3" class="img3"><img src="images/blinds48.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
+											}
+										} else {
+											if (item.Status == 'Closed') {
+												imghtml += '\t      <td id="img" class="img img1"><img src="images/blindsopen48.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
+												imghtml += '\t      <td id="img2" class="img2"><img src="images/blinds48sel.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
+											} else {
+												imghtml += '\t      <td id="img" class="img img1"><img src="images/blindsopen48sel.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
+												imghtml += '\t      <td id="img2" class="img2"><img src="images/blinds48.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
+											}
+										}
+									} else if (item.SwitchType == "Blinds Inverted") {
+										if (
+											(item.SubType == "RAEX") ||
+											(item.SubType.indexOf('A-OK') == 0) ||
+											(item.SubType.indexOf('Hasta') >= 0) ||
+											(item.SubType.indexOf('Media Mount') == 0) ||
+											(item.SubType.indexOf('Forest') == 0) ||
+											(item.SubType.indexOf('Chamberlain') == 0) ||
+											(item.SubType.indexOf('Sunpery') == 0) ||
+											(item.SubType.indexOf('Dolat') == 0) ||
+											(item.SubType.indexOf('ASP') == 0) ||
+											(item.SubType == "Harrison") ||
+											(item.SubType.indexOf('RFY') == 0) ||
+											(item.SubType.indexOf('ASA') == 0) ||
+											(item.SubType.indexOf('DC106') == 0) ||
+											(item.SubType.indexOf('Confexx') == 0)
+										) {
+											if (item.Status == 'Closed') {
+												imghtml += '\t      <td id="img" class="img img1"><img src="images/blindsopen48.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
+												imghtml += '\t      <td id="img2" class="img2"><img src="images/blindsstop.png" title="' + $.t("Stop Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Stop\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="24"></td>\n';
+												imghtml += '\t      <td id="img3" class="img3"><img src="images/blinds48sel.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
+											} else {
+												imghtml += '\t      <td id="img" class="img img1"><img src="images/blindsopen48sel.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
+												imghtml += '\t      <td id="img2" class="img2"><img src="images/blindsstop.png" title="' + $.t("Stop Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Stop\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="24"></td>\n';
+												imghtml += '\t      <td id="img3" class="img3"><img src="images/blinds48.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
+											}
+										} else {
+											if (item.Status == 'Closed') {
+												imghtml += '\t      <td id="img" class="img img1"><img src="images/blindsopen48.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
+												imghtml += '\t      <td id="img2" class="img2"><img src="images/blinds48sel.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
+											} else {
+												imghtml += '\t      <td id="img" class="img img1"><img src="images/blindsopen48sel.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
+												imghtml += '\t      <td id="img2" class="img2"><img src="images/blinds48.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
+											}
+										}
+									} else if (item.SwitchType == "Blinds Percentage") {
+										if (item.Status == 'Closed') {
+											imghtml += '\t      <td id="img" class="img img1"><img src="images/blindsopen48.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
+											imghtml += '\t      <td id="img2" class="img2"><img src="images/blinds48sel.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
+										} else {
+											imghtml += '\t      <td id="img" class="img img1"><img src="images/blindsopen48sel.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
+											imghtml += '\t      <td id="img2" class="img2"><img src="images/blinds48.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
+										}
+									} else if (item.SwitchType == "Blinds Percentage Inverted") {
+										if (item.Status == 'Closed') {
+											imghtml += '\t      <td id="img" class="img img1"><img src="images/blindsopen48.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
+											imghtml += '\t      <td id="img2" class="img2"><img src="images/blinds48sel.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
+										} else {
+											imghtml += '\t      <td id="img" class="img img1"><img src="images/blindsopen48sel.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
+											imghtml += '\t      <td id="img2" class="img2"><img src="images/blinds48.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
+										}
+									} else if (item.SwitchType == "Dimmer") {
+										if (item.CustomImage == 0) item.Image = item.TypeImg;
+										item.Image = item.Image.charAt(0).toUpperCase() + item.Image.slice(1);
+										if (
+											(item.Status == 'On') ||
+											(item.Status == 'Chime') ||
+											(item.Status == 'Group On') ||
+											(item.Status.indexOf('Set ') == 0) ||
+											(item.Status.indexOf('NightMode') == 0) ||
+											(item.Status.indexOf('Disco ') == 0)
+										) {
+											if (item.SubType == "RGB") {
+												imghtml += '\t      <td id="img" class="img img1"><img src="images/RGB48_On.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshFavorites\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="40" width="40"></td>\n';
+											} else if (item.SubType.indexOf("RGBW") >= 0) {
+												imghtml += '\t      <td id="img" class="img img1"><img src="images/RGB48_On.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshFavorites\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="40" width="40"></td>\n';
+											} else {
+												imghtml += '\t      <td id="img" class="img img1"><img src="images/' + item.Image + '48_On.png" title="' + $.t("Turn Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
+											}
+										} else {
+											if (item.SubType == "RGB") {
+												imghtml += '\t      <td id="img" class="img img1"><img src="images/RGB48_Off.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshFavorites\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="40" width="40"></td>\n';
+											} else if (item.SubType.indexOf("RGBW") >= 0) {
+												imghtml += '\t      <td id="img" class="img img1"><img src="images/RGB48_Off.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshFavorites\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="40" width="40"></td>\n';
+											} else {
+												imghtml += '\t      <td id="img" class="img img1"><img src="images/' + item.Image + '48_Off.png" title="' + $.t("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
+											}
+										}
+									} else if (item.SwitchType == "TPI") {
+										var RO = (item.Unit < 64 || item.Unit > 95) ? true : false;
+										if (item.Status == 'On') {
+											imghtml += '\t      <td id="img" class="img img1"><img src="images/Fireplace48_On.png" title="' + $.t(RO ? "On" : "Turn Off") + (RO ? '"' : '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor"') + ' height="40" width="40"></td>\n';
+				                            iconType = "Fireplace";
+                                        } else {
+											imghtml += '\t      <td id="img" class="img img1"><img src="images/Fireplace48_Off.png" title="' + $.t(RO ? "Off" : "Turn On") + (RO ? '"' : '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor"') + ' height="40" width="40"></td>\n';
+										    iconType = "Fireplace";
+                                        }
+									} else if (item.SwitchType == "Dusk Sensor") {
+										if (item.Status == 'On') {
+											imghtml += '\t      <td id="img" class="img img1"><img src="images/uvdark.png" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name) + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40"></td>\n';
+										} else {
+											imghtml += '\t      <td id="img" class="img img1"><img src="images/uvsunny.png" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name) + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40"></td>\n';
+										}
+									} else if (item.SwitchType == "Motion Sensor") {
+										if (
+											(item.Status == 'On') ||
+											(item.Status == 'Chime') ||
+											(item.Status == 'Group On') ||
+											(item.Status.indexOf('Set ') == 0)
+										) {
+											imghtml += '\t      <td id="img" class="img img1"><img src="images/motion48-on.png" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name) + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40"></td>\n';
+										} else {
+											imghtml += '\t      <td id="img" class="img img1"><img src="images/motion48-off.png" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name) + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40"></td>\n';
+										}
+									} else if (item.SwitchType == "Smoke Detector") {
+										if (
+											(item.Status == "Panic") ||
+											(item.Status == "On")
+										) {
+											imghtml += '\t      <td id="img" class="img img1"><img src="images/smoke48on.png" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name) + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40"></td>\n';
+										} else {
+											imghtml += '\t      <td id="img" class="img img1"><img src="images/smoke48off.png" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name) + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40"></td>\n';
+										}
+									} else if (item.SwitchType === "Selector") {
+										if (item.Status === 'Off') {
+											imghtml += '\t      <td id="img" class="img img1"><img src="images/' + item.Image + '48_Off.png" height="40" width="40"></td>\n';
+										} else if (item.LevelOffHidden) {
+											imghtml += '\t      <td id="img" class="img img1"><img src="images/' + item.Image + '48_On.png" height="40" width="40"></td>\n';
+										} else {
+											imghtml += '\t      <td id="img" class="img img1"><img src="images/' + item.Image + '48_On.png" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
+                                        }
+									} else if (item.SubType.indexOf("Itho") == 0) {
+										imghtml += '\t      <td id="img" class="img img1"><img src="images/Fan48_On.png" height="40" width="40" class="lcursor" onclick="ShowIthoPopup(event, ' + item.idx + ', RefreshFavorites, ' + item.Protected + ');"></td>\n';
+								        iconType = "Fan";
+                                    } else if (item.SubType.indexOf("Lucci") == 0) {
+										imghtml += '\t      <td id="img" class="img img1"><img src="images/Fan48_On.png" height="40" width="40" class="lcursor" onclick="ShowLucciPopup(event, ' + item.idx + ', RefreshFavorites, ' + item.Protected + ');"></td>\n';
+				                        iconType = "Fan";
+                                    } else {
+										if (
+											(item.Status == 'On') ||
+											(item.Status == 'Chime') ||
+											(item.Status == 'Group On') ||
+											(item.Status.indexOf('Down') != -1) ||
+											(item.Status.indexOf('Up') != -1) ||
+											(item.Status.indexOf('Set ') == 0)
+										) {
+											if (item.Type == "Thermostat 3") {
+												imghtml += '\t      <td id="img" class="img img1"><img src="images/' + item.Image + '48_On.png" onclick="ShowTherm3Popup(event, ' + item.idx + ',\'RefreshFavorites\',' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
+											} else {
+												imghtml += '\t      <td id="img" class="img img1"><img src="images/' + item.Image + '48_On.png" title="' + $.t("Turn Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
+											}
+										} else {
+											if (item.Type == "Thermostat 3") {
+												imghtml += '\t      <td id="img" class="img img1"><img src="images/' + item.Image + '48_Off.png" onclick="ShowTherm3Popup(event, ' + item.idx + ',\'RefreshFavorites\',' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
+											} else {
+												imghtml += '\t      <td id="img" class="img img1"><img src="images/' + item.Image + '48_Off.png" title="' + $.t("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
+											}
+										}
+									}
+                                    
+                                    /* set type of device as item's class*/
                                     var itemtypeclass = "";
                                     var itemsubtypeclass = "";
                                     if (typeof item.Type != 'undefined') {
@@ -2185,19 +2442,29 @@ define(['app'], function(app) {
                                     if (typeof item.SubType != 'undefined') {
                                         var itemsubtypeclass = item.SubType.split(' ').join('');
                                         itemsubtypeclass = itemsubtypeclass.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, ''); 
-									
-                                    }
-
-                                    /* generate protected/timeout/lowbattery status */
-                                    var backgroundClass = "statusNormal";
-                                    if (item.HaveTimeout == true) {
-                                        backgroundClass = "statusTimeout";
-                                    } else if (item.Protected == true) {
-                                        backgroundClass = "statusProtected";
                                     }
                                     
+                                    /* generate protected/timeout/lowbattery status */
+                                    /*  this should already be set from before the mobile part? */
+                                    
+                                    var backgroundClass = "statusNormal";
+                                    if (item.Protected == true) {
+                                        backgroundClass = "statusProtected";
+                                    } else if (item.HaveTimeout == true) {
+                                        backgroundClass = "statusTimeout";
+                                    }
+                                    
+                                    /*  Experimental code to add on-off classes to the item, so that themes can reflect the current status in more ways. */
+                                    var toggleStatus ="";
+                                    if(typeof item.Status != 'undefined'){
+                                        if ((item.Status == 'On') || (item.Status == 'Group On')) {
+                                            toggleStatus = " onn";
+                                        }else if ((item.Status == 'Off') || (item.Status == 'Group Off')) {
+                                            toggleStatus = " offf";
+                                        }
+                                    }
                                     var count = 0;
-								    xhtm += '\t  <div id="" class="item ' + itemtypeclass + ' ' + itemsubtypeclass + ' ' + backgroundClass + ' withoutstatus statuscount' + count + '">\n';
+								    xhtm += '\t  <div id="" class="item ' + itemtypeclass + ' ' + itemsubtypeclass + ' ' + item.Image + ' ' + iconType + ' ' + backgroundClass + ' withoutstatus statuscount' + count + ' ' + toggleStatus + '">\n';
 
 									if ((item.Type.indexOf('Blind') == 0) || (item.SwitchType == "Blinds") || (item.SwitchType == "Blinds Inverted") || (item.SwitchType == "Blinds Percentage") || (item.SwitchType == "Blinds Percentage Inverted") || (item.SwitchType.indexOf("Venetian Blinds") == 0) || (item.SwitchType.indexOf("Media Player") == 0)) {
 										if (
@@ -2226,250 +2493,11 @@ define(['app'], function(app) {
 									}
 									xhtm +=
 										'\t    <tr>\n' +
-										'\t      <td id="name" class="name"><span>' + item.Name + '</span></td>\n' +
-										'\t      <td id="bigtext" class="bigtext"><span class="wrapper"><span>';
-									var bigtext = TranslateStatusShort(item.Status);
-									if (item.UsedByCamera == true) {
-										var streamimg = '<img src="images/webcam.png" title="' + $.t('Stream Video') + '" height="16" width="16">';
-										streamurl = "<a href=\"javascript:ShowCameraLiveStream('" + escape(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
-										bigtext += "</span><span>" + streamurl;
-									}
-									xhtm += bigtext + '</span></span></td>\n';
-									if (item.SwitchType == "Doorbell") {
-										xhtm += '\t      <td id="img" class="img img1"><img src="images/doorbell48.png" title="' + $.t("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
-									} else if (item.SwitchType == "Push On Button") {
-										if (item.InternalState == "On") {
-											xhtm += '\t      <td id="img" class="img img1"><img src="images/pushon48.png" title="' + $.t("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
-										} else {
-											xhtm += '\t      <td id="img" class="img img1"><img src="images/push48.png" title="' + $.t("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
-										}
-									} else if (item.SwitchType == "Door Contact") {
-										if (item.InternalState == "Open") {
-											xhtm += '\t      <td id="img" class="img img1"><img src="images/door48open.png" title="' + $.t("Close Door") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
-										} else {
-											xhtm += '\t      <td id="img" class="img img1"><img src="images/door48.png" title="' + $.t("Open Door") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
-										}
-									} else if (item.SwitchType == "Door Lock") {
-										if (item.InternalState == "Unlocked") {
-											xhtm += '\t      <td id="img" class="img img1"><img src="images/door48open.png" title="' + $.t("Lock") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
-										} else {
-											xhtm += '\t      <td id="img" class="img img1"><img src="images/door48.png" title="' + $.t("Unlock") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
-										}
-									} else if (item.SwitchType == "Push Off Button") {
-										xhtm += '\t      <td id="img" class="img img1"><img src="images/pushoff48.png" title="' + $.t("Turn Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
-									} else if (item.SwitchType == "X10 Siren") {
-										if (
-											(item.Status == 'On') ||
-											(item.Status == 'Chime') ||
-											(item.Status == 'Group On') ||
-											(item.Status == 'All On')
-										) {
-											xhtm += '\t      <td id="img" class="img img1"><img src="images/siren-on.png" height="40" width="40"></td>\n';
-										} else {
-											xhtm += '\t      <td id="img" class="img img1"><img src="images/siren-off.png" height="40" width="40"></td>\n';
-										}
-									} else if (item.SwitchType == "Contact") {
-										if (item.Status == 'Closed') {
-											xhtm += '\t      <td id="img" class="img img1"><img src="images/contact48.png" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name) + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40"></td>\n';
-										} else {
-											xhtm += '\t      <td id="img" class="img img1"><img src="images/contact48_open.png" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name) + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40"></td>\n';
-										}
-									} else if (item.SwitchType == "Media Player") {
-										if (item.CustomImage == 0) item.Image = item.TypeImg;
-										if (item.Status == 'Disconnected') {
-											xhtm += '\t      <td id="img" class="img img1"><img src="images/' + item.Image + '48_Off.png" height="40" width="40"></td>\n';
-											xhtm += '\t      <td id="img2" class="img2"><img src="images/remote48.png" style="opacity:0.4"; height="40" width="40"></td>\n';
-										} else if ((item.Status != 'Off') && (item.Status != '0')) {
-											xhtm += '\t      <td id="img" class="img img1"><img src="images/' + item.Image + '48_On.png" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
-											xhtm += '\t      <td id="img2" class="img2"><img src="images/remote48.png" onclick="ShowMediaRemote(\'' + escape(item.Name) + "'," + item.idx + ",'" + item.HardwareType + '\');" class="lcursor" height="40" width="40"></td>\n';
-										} else {
-											xhtm += '\t      <td id="img" class="img img1"><img src="images/' + item.Image + '48_Off.png" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
-											xhtm += '\t      <td id="img2" class="img2"><img src="images/remote48.png" style="opacity:0.4"; height="40" width="40"></td>\n';
-										}
-										status = item.Data;
-									} else if ((item.SwitchType == "Blinds") || (item.SwitchType.indexOf("Venetian Blinds") == 0)) {
-										if (
-											(item.SubType == "RAEX") ||
-											(item.SubType.indexOf('A-OK') == 0) ||
-											(item.SubType.indexOf('Hasta') >= 0) ||
-											(item.SubType.indexOf('Media Mount') == 0) ||
-											(item.SubType.indexOf('Forest') == 0) ||
-											(item.SubType.indexOf('Chamberlain') == 0) ||
-											(item.SubType.indexOf('Sunpery') == 0) ||
-											(item.SubType.indexOf('Dolat') == 0) ||
-											(item.SubType.indexOf('ASP') == 0) ||
-											(item.SubType == "Harrison") ||
-											(item.SubType.indexOf('RFY') == 0) ||
-											(item.SubType.indexOf('ASA') == 0) ||
-											(item.SubType.indexOf('DC106') == 0) ||
-											(item.SubType.indexOf('Confexx') == 0) ||
-											(item.SwitchType.indexOf("Venetian Blinds") == 0)
-										) {
-											if (item.Status == 'Closed') {
-												xhtm += '\t      <td id="img" class="img img1"><img src="images/blindsopen48.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
-												xhtm += '\t      <td id="img2" class="img2"><img src="images/blindsstop.png" title="' + $.t("Stop Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Stop\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="24"></td>\n';
-												xhtm += '\t      <td id="img3" class="img3"><img src="images/blinds48sel.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
-											} else {
-												xhtm += '\t      <td id="img" class="img img1"><img src="images/blindsopen48sel.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
-												xhtm += '\t      <td id="img2" class="img2"><img src="images/blindsstop.png" title="' + $.t("Stop Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Stop\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="24"></td>\n';
-												xhtm += '\t      <td id="img3" class="img3"><img src="images/blinds48.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
-											}
-										} else {
-											if (item.Status == 'Closed') {
-												xhtm += '\t      <td id="img" class="img img1"><img src="images/blindsopen48.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
-												xhtm += '\t      <td id="img2" class="img2"><img src="images/blinds48sel.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
-											} else {
-												xhtm += '\t      <td id="img" class="img img1"><img src="images/blindsopen48sel.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
-												xhtm += '\t      <td id="img2" class="img2"><img src="images/blinds48.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
-											}
-										}
-									} else if (item.SwitchType == "Blinds Inverted") {
-										if (
-											(item.SubType == "RAEX") ||
-											(item.SubType.indexOf('A-OK') == 0) ||
-											(item.SubType.indexOf('Hasta') >= 0) ||
-											(item.SubType.indexOf('Media Mount') == 0) ||
-											(item.SubType.indexOf('Forest') == 0) ||
-											(item.SubType.indexOf('Chamberlain') == 0) ||
-											(item.SubType.indexOf('Sunpery') == 0) ||
-											(item.SubType.indexOf('Dolat') == 0) ||
-											(item.SubType.indexOf('ASP') == 0) ||
-											(item.SubType == "Harrison") ||
-											(item.SubType.indexOf('RFY') == 0) ||
-											(item.SubType.indexOf('ASA') == 0) ||
-											(item.SubType.indexOf('DC106') == 0) ||
-											(item.SubType.indexOf('Confexx') == 0)
-										) {
-											if (item.Status == 'Closed') {
-												xhtm += '\t      <td id="img" class="img img1"><img src="images/blindsopen48.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
-												xhtm += '\t      <td id="img2" class="img2"><img src="images/blindsstop.png" title="' + $.t("Stop Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Stop\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="24"></td>\n';
-												xhtm += '\t      <td id="img3" class="img3"><img src="images/blinds48sel.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
-											} else {
-												xhtm += '\t      <td id="img" class="img img1"><img src="images/blindsopen48sel.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
-												xhtm += '\t      <td id="img2" class="img2"><img src="images/blindsstop.png" title="' + $.t("Stop Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Stop\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="24"></td>\n';
-												xhtm += '\t      <td id="img3" class="img3"><img src="images/blinds48.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
-											}
-										} else {
-											if (item.Status == 'Closed') {
-												xhtm += '\t      <td id="img" class="img img1"><img src="images/blindsopen48.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
-												xhtm += '\t      <td id="img2" class="img2"><img src="images/blinds48sel.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
-											} else {
-												xhtm += '\t      <td id="img" class="img img1"><img src="images/blindsopen48sel.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
-												xhtm += '\t      <td id="img2" class="img2"><img src="images/blinds48.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
-											}
-										}
-									} else if (item.SwitchType == "Blinds Percentage") {
-										if (item.Status == 'Closed') {
-											xhtm += '\t      <td id="img" class="img img1"><img src="images/blindsopen48.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
-											xhtm += '\t      <td id="img2" class="img2"><img src="images/blinds48sel.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
-										} else {
-											xhtm += '\t      <td id="img" class="img img1"><img src="images/blindsopen48sel.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
-											xhtm += '\t      <td id="img2" class="img2"><img src="images/blinds48.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
-										}
-									} else if (item.SwitchType == "Blinds Percentage Inverted") {
-										if (item.Status == 'Closed') {
-											xhtm += '\t      <td id="img" class="img img1"><img src="images/blindsopen48.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
-											xhtm += '\t      <td id="img2" class="img2"><img src="images/blinds48sel.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
-										} else {
-											xhtm += '\t      <td id="img" class="img img1"><img src="images/blindsopen48sel.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
-											xhtm += '\t      <td id="img2" class="img2"><img src="images/blinds48.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
-										}
-									} else if (item.SwitchType == "Dimmer") {
-										if (item.CustomImage == 0) item.Image = item.TypeImg;
-										item.Image = item.Image.charAt(0).toUpperCase() + item.Image.slice(1);
-										if (
-											(item.Status == 'On') ||
-											(item.Status == 'Chime') ||
-											(item.Status == 'Group On') ||
-											(item.Status.indexOf('Set ') == 0) ||
-											(item.Status.indexOf('NightMode') == 0) ||
-											(item.Status.indexOf('Disco ') == 0)
-										) {
-											if (item.SubType == "RGB") {
-												xhtm += '\t      <td id="img" class="img img1"><img src="images/RGB48_On.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshFavorites\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="40" width="40"></td>\n';
-											} else if (item.SubType.indexOf("RGBW") >= 0) {
-												xhtm += '\t      <td id="img" class="img img1"><img src="images/RGB48_On.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshFavorites\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="40" width="40"></td>\n';
-											} else {
-												xhtm += '\t      <td id="img" class="img img1"><img src="images/' + item.Image + '48_On.png" title="' + $.t("Turn Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
-											}
-										} else {
-											if (item.SubType == "RGB") {
-												xhtm += '\t      <td id="img" class="img img1"><img src="images/RGB48_Off.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshFavorites\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="40" width="40"></td>\n';
-											} else if (item.SubType.indexOf("RGBW") >= 0) {
-												xhtm += '\t      <td id="img" class="img img1"><img src="images/RGB48_Off.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshFavorites\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="40" width="40"></td>\n';
-											} else {
-												xhtm += '\t      <td id="img" class="img img1"><img src="images/' + item.Image + '48_Off.png" title="' + $.t("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
-											}
-										}
-									} else if (item.SwitchType == "TPI") {
-										var RO = (item.Unit < 64 || item.Unit > 95) ? true : false;
-										if (item.Status == 'On') {
-											xhtm += '\t      <td id="img" class="img img1"><img src="images/Fireplace48_On.png" title="' + $.t(RO ? "On" : "Turn Off") + (RO ? '"' : '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor"') + ' height="40" width="40"></td>\n';
-										} else {
-											xhtm += '\t      <td id="img" class="img img1"><img src="images/Fireplace48_Off.png" title="' + $.t(RO ? "Off" : "Turn On") + (RO ? '"' : '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor"') + ' height="40" width="40"></td>\n';
-										}
-									} else if (item.SwitchType == "Dusk Sensor") {
-										if (item.Status == 'On') {
-											xhtm += '\t      <td id="img" class="img img1"><img src="images/uvdark.png" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name) + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40"></td>\n';
-										} else {
-											xhtm += '\t      <td id="img" class="img img1"><img src="images/uvsunny.png" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name) + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40"></td>\n';
-										}
-									} else if (item.SwitchType == "Motion Sensor") {
-										if (
-											(item.Status == 'On') ||
-											(item.Status == 'Chime') ||
-											(item.Status == 'Group On') ||
-											(item.Status.indexOf('Set ') == 0)
-										) {
-											xhtm += '\t      <td id="img" class="img img1"><img src="images/motion48-on.png" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name) + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40"></td>\n';
-										} else {
-											xhtm += '\t      <td id="img" class="img img1"><img src="images/motion48-off.png" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name) + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40"></td>\n';
-										}
-									} else if (item.SwitchType == "Smoke Detector") {
-										if (
-											(item.Status == "Panic") ||
-											(item.Status == "On")
-										) {
-											xhtm += '\t      <td id="img" class="img img1"><img src="images/smoke48on.png" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name) + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40"></td>\n';
-										} else {
-											xhtm += '\t      <td id="img" class="img img1"><img src="images/smoke48off.png" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name) + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40"></td>\n';
-										}
-									} else if (item.SwitchType === "Selector") {
-										if (item.Status === 'Off') {
-											xhtm += '\t      <td id="img" class="img img1"><img src="images/' + item.Image + '48_Off.png" height="40" width="40"></td>\n';
-										} else if (item.LevelOffHidden) {
-											xhtm += '\t      <td id="img" class="img img1"><img src="images/' + item.Image + '48_On.png" height="40" width="40"></td>\n';
-										} else {
-											xhtm += '\t      <td id="img" class="img img1"><img src="images/' + item.Image + '48_On.png" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
-                                        }
-									} else if (item.SubType.indexOf("Itho") == 0) {
-										xhtm += '\t      <td id="img" class="img img1"><img src="images/Fan48_On.png" height="40" width="40" class="lcursor" onclick="ShowIthoPopup(event, ' + item.idx + ', RefreshFavorites, ' + item.Protected + ');"></td>\n';
-									} else if (item.SubType.indexOf("Lucci") == 0) {
-										xhtm += '\t      <td id="img" class="img img1"><img src="images/Fan48_On.png" height="40" width="40" class="lcursor" onclick="ShowLucciPopup(event, ' + item.idx + ', RefreshFavorites, ' + item.Protected + ');"></td>\n';
-									} else {
-										if (
-											(item.Status == 'On') ||
-											(item.Status == 'Chime') ||
-											(item.Status == 'Group On') ||
-											(item.Status.indexOf('Down') != -1) ||
-											(item.Status.indexOf('Up') != -1) ||
-											(item.Status.indexOf('Set ') == 0)
-										) {
-											if (item.Type == "Thermostat 3") {
-												xhtm += '\t      <td id="img" class="img img1"><img src="images/' + item.Image + '48_On.png" onclick="ShowTherm3Popup(event, ' + item.idx + ',\'RefreshFavorites\',' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
-											} else {
-												xhtm += '\t      <td id="img" class="img img1"><img src="images/' + item.Image + '48_On.png" title="' + $.t("Turn Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
-											}
-										} else {
-											if (item.Type == "Thermostat 3") {
-												xhtm += '\t      <td id="img" class="img img1"><img src="images/' + item.Image + '48_Off.png" onclick="ShowTherm3Popup(event, ' + item.idx + ',\'RefreshFavorites\',' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
-											} else {
-												xhtm += '\t      <td id="img" class="img img1"><img src="images/' + item.Image + '48_Off.png" title="' + $.t("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
-											}
-										}
-									}
+										'\t      <td id="name" class="name"><span>' + item.Name + '</span></td>\n';
+										'\t      <td id="bigtext" class="bigtext"><span class="wrapper">' + bigtexthtml + '</span></td>\n';
+                                    xhtm += imghtml;
 									xhtm +=
-										'\t      <td id="status" class="status">' + status + '</td>\n' +
+										'\t      <td id="status" class="status"><span class="wrapper">' + status + '</span></td>\n' +
 										'\t      <td id="lastupdate" class="lastupdate"><span>' + item.LastUpdate + '</span></td>\n';
 									if (item.SwitchType == "Dimmer") {
 										if ((item.SubType.indexOf("RGBW") >= 0) || (item.SubType == "RGB")) {} else {
@@ -2607,9 +2635,7 @@ define(['app'], function(app) {
 										xhtm = '\t<div class="span3 movable" id="temp_' + item.idx + '">\n';
 									}
                                     
-                                    /* generate two item classes.  */
-
-                                    /* type of device */
+                                    /* add css classes for type of device */
                                     var itemtypeclass = "";
                                     var itemsubtypeclass = "";
                                     if (typeof item.Type != 'undefined') {
@@ -2620,8 +2646,7 @@ define(['app'], function(app) {
                                         var itemsubtypeclass = item.SubType.split(' ').join('');
                                         itemsubtypeclass = itemsubtypeclass.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, ''); 
                                     }
-
-                                    /* generate protected/timeout/lowbattery status */
+                                    /* generate css classes for protected/timeout/lowbattery status */
                                     var backgroundClass = "statusNormal";
                                     if (item.HaveTimeout == true) {
                                         backgroundClass = "statusTimeout";
@@ -2633,7 +2658,6 @@ define(['app'], function(app) {
                                             }
                                         }
                                     }
-                                    
                                     /*  generate bigtext html  */
                                     var bigtext = "";
 									if (typeof item.Temp != 'undefined') {
@@ -3260,9 +3284,9 @@ define(['app'], function(app) {
 									}
 								}
 								if (jj % rowItems == 0) {
-									//add devider
+									//add divider
 									if (bHaveAddedDivider == true) {
-										//close previous devider
+										//close previous divider
 										htmlcontent += '</div>\n';
 									}
 									htmlcontent += '<div class="row divider">\n';
@@ -3400,15 +3424,13 @@ define(['app'], function(app) {
 								}
 								// end of mobile utilities                 
 								else {
+                                    // normal/compact display
 									if ($scope.config.DashboardType == 0) {
 										xhtm = '\t<div class="span4 movable" id="utility_' + item.idx + '">\n';
 									} else if ($scope.config.DashboardType == 1) {
 										xhtm = '\t<div class="span3 movable" id="utility_' + item.idx + '">\n';
 									}
-
-									/* generate two item classes.  */
-
-									/* type of device */
+									/* add classes for type of device */
 									var itemtypeclass = "";
 									var itemsubtypeclass = "";
 									if (typeof item.Type != 'undefined') {
@@ -3418,10 +3440,8 @@ define(['app'], function(app) {
 									if (typeof item.SubType != 'undefined') {
 										var itemsubtypeclass = item.SubType.split(' ').join('');
 										itemsubtypeclass = itemsubtypeclass.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, ''); 
-
 									}
-
-									/* generate protected/timeout/lowbattery status */
+									/* add classes for generate protected/timeout/lowbattery status */
 									var backgroundClass = "statusNormal";
 									if (item.HaveTimeout == true) {
 										backgroundClass = "statusTimeout";
@@ -3433,8 +3453,6 @@ define(['app'], function(app) {
 											}
 										}
 									}
-
-
 									/* generate bigtext html */
 									var bigtexthtml = "<span>";
 									if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv == 'undefined')) {
@@ -3478,8 +3496,6 @@ define(['app'], function(app) {
 										(item.SubType == "RFXMeter counter") ||
 										(item.SubType == "Counter Incremental") ||
 										(item.SubType == "Custom Sensor")
-
-
 									) {
 										bigtexthtml += item.Data;
 									} else if ((item.Type == "Thermostat") && (item.SubType == "SetPoint")) {
@@ -3545,7 +3561,7 @@ define(['app'], function(app) {
 										imagehtml += 'Percentage48.png" class="lcursor" onclick="ShowPercentageLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40"></td>\n';
 										statushtml = item.Data;
 									} else if (item.Type == "Fan") {
-										imagehtml += 'Fan48_On.png" class="lcursor fanicon" onclick="ShowFanLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40"></td>\n';
+										imagehtml += 'Fan48_On.png" class="lcursor" onclick="ShowFanLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40"></td>\n';
 										statushtml = item.Data;
 									} else if (item.Type == "Lux") {
 										imagehtml += 'lux48.png" class="lcursor" onclick="ShowLuxLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="40" width="40"></td>\n';
