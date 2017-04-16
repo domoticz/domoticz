@@ -33,13 +33,13 @@ class CTeleinfoSerial : public CTeleinfoBase, AsyncSerial
 {
 	public:
 
-		CTeleinfoSerial(const int ID, const std::string& devname, unsigned int baud_rate, 
-			const bool disable_crc, const int ratelimit); 
+		CTeleinfoSerial(const int ID, const std::string& devname, const int datatimeout, unsigned int baud_rate,
+			const bool disable_crc, const int ratelimit);
 		~CTeleinfoSerial();
 		std::string m_szSerialPort;
 
 		bool WriteToHardware(const char *pdata, const unsigned char length);
-	
+
 	private:
 		Teleinfo teleinfo;
 		bool StartHardware();
@@ -57,7 +57,7 @@ class CTeleinfoSerial : public CTeleinfoBase, AsyncSerial
 		boost::asio::serial_port_base::flow_control m_iOptFlow;
 		boost::asio::serial_port_base::stop_bits m_iOptStop;
 
-		signed int m_counter;
+		unsigned int m_counter;
 
 		void Init();
 		void MatchLine();
