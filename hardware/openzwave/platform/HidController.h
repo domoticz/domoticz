@@ -44,10 +44,6 @@ namespace OpenZWave
 	class Thread;
 	class Event;
 
-
-	/** \brief Interface for controllers that implement a HID emulation
-	 * \ingroup Platform
-	 */
 	class HidController: public Controller
 	{
 	public:

@@ -146,13 +146,14 @@ static inline int version_cmp(struct ozwversion a, struct ozwversion b)
 }
 
 #include "OZWException.h"
+#define OPENZWAVE_DISABLE_EXCEPTIONS
 #if defined(_MSC_VER)
 #  define __MYFUNCTION__ __FUNCTION__
 #else
 #  define __MYFUNCTION__ __FILE__
 #endif
-// Exceptions : define OPENZWAVE_ENABLE_EXCEPTIONS in compiler flags to enable exceptions instead of exit function
-#ifdef OPENZWAVE_ENABLE_EXCEPTIONS
+// Exceptions : define OPENZWAVE_DISABLE_EXCEPTIONS in compiler flags to enable exceptions instead of exit function
+#ifndef OPENZWAVE_DISABLE_EXCEPTIONS
 
 #  define OZW_FATAL_ERROR(exitCode, msg)   	Log::Write( LogLevel_Error,"Exception: %s:%d - %d - %s", std::string(__MYFUNCTION__).substr(std::string(__MYFUNCTION__).find_last_of("/\\") + 1).c_str(), __LINE__, exitCode, msg); \
 											throw OZWException(__MYFUNCTION__, __LINE__, exitCode, msg)
@@ -394,17 +395,5 @@ namespace OpenZWave
 #define	COMMAND_CLASS_CONTROLLER_REPLICATION			0x21
 #define COMMAND_CLASS_APPLICATION_STATUS 				0x22
 #define COMMAND_CLASS_HAIL								0x82
-
-/* library types */
-#define ZW_LIB_CONTROLLER_STATIC  						0x01
-#define ZW_LIB_CONTROLLER         						0x02
-#define ZW_LIB_SLAVE_ENHANCED     						0x03
-#define ZW_LIB_SLAVE              						0x04
-#define ZW_LIB_INSTALLER          						0x05
-#define ZW_LIB_SLAVE_ROUTING      						0x06
-#define ZW_LIB_CONTROLLER_BRIDGE  						0x07
-#define ZW_LIB_DUT                						0x08
-
-
 
 #endif // _Defs_H

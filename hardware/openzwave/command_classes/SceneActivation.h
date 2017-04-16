@@ -35,7 +35,6 @@ namespace OpenZWave
 	class ValueByte;
 
 	/** \brief Implements COMMAND_CLASS_SCENEACTIVATION (0x2B), a Z-Wave device command class.
-	 * \ingroup CommandClass
 	 */
 	class SceneActivation: public CommandClass
 	{

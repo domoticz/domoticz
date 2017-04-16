@@ -39,7 +39,6 @@ namespace OpenZWave
 	class Value;
 
 	/** \brief Container that holds all of the values associated with a given node.
-	 * \ingroup ValueID
 	 */
 	class ValueStore
 	{

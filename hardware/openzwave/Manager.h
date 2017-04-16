@@ -162,12 +162,12 @@ namespace OpenZWave
 		static std::string getVersionAsString();
 
 		/**
-         * \brief Get the Version Number including Git commit of OZW as a string
-         * \return a String representing the version number as MAJOR.MINOR.REVISION-gCOMMIT
-         */
-        static std::string getVersionLongAsString();
+                 * \brief Get the Version Number including Git commit of OZW as a string
+                 * \return a String representing the version number as MAJOR.MINOR.REVISION-gCOMMIT
+                 */
+                static std::string getVersionLongAsString();
 
-        /**
+                /**
 		 * \brief Get the Version Number as the Version Struct (Only Major/Minor returned)
 		 * \return the version struct representing the version
 		 */
@@ -434,17 +434,17 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 	/*@{*/
 	public:
 		/**
-		 * \brief Refresh a Node and Reload it into OZW
-		 * Causes the node's Supported CommandClasses and Capabilities to be obtained from the Z-Wave network
-		 * This method would normally be called automatically by OpenZWave, but if you know that a node's capabilities or command classes
-		 * has been changed, calling this method will force a refresh of that information.
-		 * This call shouldn't be needed except in special circumstances.
+		 * \brief Trigger the fetching of fixed data about a node.
+		 * Causes the node's data to be obtained from the Z-Wave network in the same way as if it had just been added.
+		 * This method would normally be called automatically by OpenZWave, but if you know that a node has been
+		 * changed, calling this method will force a refresh of all of the data held by the library.  This can be especially
+		 * useful for devices that were asleep when the application was first run. This is the
+		 * same as the query state starting from the beginning.
 		 * \param _homeId The Home ID of the Z-Wave controller that manages the node.
 		 * \param _nodeId The ID of the node to query.
 		 * \return True if the request was sent successfully.
 		 */
 		bool RefreshNodeInfo( uint32 const _homeId, uint8 const _nodeId );
-
 
 		/**
 		 * \brief Trigger the fetching of dynamic value data for a node.
@@ -754,11 +754,9 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * last known level, if supported by the device, otherwise it will turn	it on at 100%.
 		 * \param _homeId The Home ID of the Z-Wave controller that manages the node.
 		 * \param _nodeId The ID of the node to be changed.
-		 * \deprecated This method has been depreciated in setting the ValueID's directly (Remove in 1.8)
-		 *
 		 * \see SetNodeOff, SetNodeLevel
 		 */
-		DEPRECATED void SetNodeOn( uint32 const _homeId, uint8 const _nodeId );
+		void SetNodeOn( uint32 const _homeId, uint8 const _nodeId );
 
 		/**
 		 * \brief Turns a node off
@@ -767,10 +765,9 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * a ValueChanged notification from that class.
 		 * \param _homeId The Home ID of the Z-Wave controller that manages the node.
 		 * \param _nodeId The ID of the node to be changed.
-		 * \deprecated This method has been depreciated in setting the ValueID's directly (Remove in 1.8)
 		 * \see SetNodeOn, SetNodeLevel
 		 */
-		DEPRECATED void SetNodeOff( uint32 const _homeId, uint8 const _nodeId );
+		void SetNodeOff( uint32 const _homeId, uint8 const _nodeId );
 
 		/**
 		 * \brief Sets the basic level of a node
@@ -781,10 +778,9 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _nodeId The ID of the node to be changed.
 		 * \param _level The level to set the node.  Valid values are 0-99 and 255.  Zero is off and
 		 * 99 is fully on.  255 will turn on the device at its last known level (if supported).
-		 * \deprecated This method has been depreciated in setting the ValueID's directly (Remove in 1.8)
 		 * \see SetNodeOn, SetNodeOff
 		 */
-		DEPRECATED void SetNodeLevel( uint32 const _homeId, uint8 const _nodeId, uint8 const _level );
+		void SetNodeLevel( uint32 const _homeId, uint8 const _nodeId, uint8 const _level );
 
 		/**
 		 * \brief Get whether the node information has been received
@@ -1727,7 +1723,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * - Driver::ControllerState_InProgress - the controller is in the process of adding or removing the chosen node.  It is now too late to cancel the command.
 		 * - Driver::ControllerState_Complete - the controller has finished adding or removing the node, and the command is complete.
 		 * - Driver::ControllerState_Failed - will be sent if the command fails for any reason.
-		 * \deprecated This method has been depreciated in favour of the methods in the \ref Network_Commands section (Remove in 1.8)
+		 * \deprecated This method has been depreciated in favour of the methods in the \ref Network_Commands section
 		 *
 		 * \see AddNode RemoveNode RemoveFailedNode HasNodeFailed RequestNodeNeighborUpdate AssignReturnRoute DeleteAllReturnRoutes SendNodeInformation CreateNewPrimary ReceiveConfiguration ReplaceFailedNode TransferPrimaryRole RequestNetworkUpdate ReplicationSend CreateButton DeleteButton
 		 *
@@ -2379,96 +2375,6 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _data Pointer to structure NodeData to return values
 		 */
 		void GetNodeStatistics( uint32 const _homeId, uint8 const _nodeId, Node::NodeData* _data );
-
-	/*@}*/
-
-	//-----------------------------------------------------------------------------
-	// MetaData interface
-	//-----------------------------------------------------------------------------
-	/** \name MetaData Interface
-	 *  Commands for retrieving information about Devices.
-	 */
-	/*@{*/
-	public:
-		/**
-		 * \brief Retrieve metadata about a node
-		 * \param _homeId The Home ID of the driver for the node
-		 * \param _nodeId The node number
-		 * \param _metadata the MetadataFields you are requesting.
-		 * \return a string containing the requested metadata
-		 */
-		string GetMetaData( uint32 const _homeId, uint8 const _nodeId, Node::MetaDataFields _metadata );
-
-	/*@}*/
-		//-----------------------------------------------------------------------------
-		// Config File Revision interface
-		//-----------------------------------------------------------------------------
-		/** \name Config File Revision Methods
-		 *  These commands deal with checking/updating Config File's from the OZW master repository
-		 */
-		/*@{*/
-		public:
-			/**
-			 * \brief Check the Latest Revision of the Config File for this device
-			 *
-			 * and optionally update the local database with the latest version
-			 * Config Revisions are exposed on the ManufacturerSpecific CC. (both the latest and loaded version)
-			 *
-			 * Outdated Config Revisions are signaled via Notifications
-			 *
-			 * \param _homeId The Home ID of the driver for the node
-			 * \param _nodeId The node number
-			 * \return Success/Failure of submitting the request.
-			 */
-			bool checkLatestConfigFileRevision(uint32 const _homeId, uint8 const _nodeId);
-
-			/**
-			 * \brief Check the Latest Revision of the Manufacturer_Specific.xml file
-			 *
-			 * and optionally update to the latest version.
-			 *
-			 * Outdated Config Revisions are signaled via Notifications
-			 *
-			 * \param _homeId The Home ID of the driver for the node
-			 * \return Success/Failure of submitting the request.
-			 */
-			bool checkLatestMFSRevision(uint32 const _homeId);
-
-			/**
-			 * \brief Download the latest Config File Revision
-			 *
-			 * The Node will be reloaded depending upon the Option "ReloadAfterUpdate"
-			 * Valid Options include:
-			 * * Never - Never Reload a Node after updating the Config File. Manual Reload is Required.
-			 * * Immediate - Reload the Node Immediately after downloading the latest revision
-			 * * Awake - Reload Nodes only when they are awake (Always-On Nodes will reload immediately, Sleeping Nodes will reload
-			 * 			 when they wake up
-			 *
-			 * Errors are signaled via Notifications
-			 *
-			 * \param _homeId The Home ID of the driver for the node
-			 * \param _nodeId The Node ID of the Node to update the Config File for
-			 * \return Success/Failure of submitting the request.
-			 */
-			bool downloadLatestConfigFileRevision(uint32 const _homeId, uint8 const _nodeId);
-
-			/**
-			 * \brief Download the latest Config File Revision
-			 *
-			 * The ManufacturerSpecific File will be updated, and any new Config Files will also be downloaded.
-			 * Existing Config Files will not be checked/updated.
-			 *
-			 * Errors are signaled via Notifications
-			 *
-			 * \param _homeId The Home ID of the driver for the node
-			 * \return Success/Failure of submitting the request.
-			 */
-			bool downloadLatestMFSRevision(uint32 const _homeId);
-
-		/*@}*/
-
-
-
 
 	};
 	/*@}*/

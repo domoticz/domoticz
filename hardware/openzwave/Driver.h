@@ -51,11 +51,6 @@ namespace OpenZWave
 	class Thread;
 	class ControllerReplication;
 	class Notification;
-	class DNSThread;
-	struct DNSLookup;
-	class i_HttpClient;
-	struct HttpDownload;
-	class ManufacturerSpecificDB;
 
 	/** \brief The Driver class handles communication between OpenZWave
 	 *  and a device attached via a serial port (typically a controller).
@@ -67,8 +62,6 @@ namespace OpenZWave
 		friend class Group;
 		friend class CommandClass;
 		friend class ControllerReplication;
-		friend class DNSThread;
-		friend class i_HttpClient;
 		friend class Value;
 		friend class ValueStore;
 		friend class ValueButton;
@@ -82,7 +75,6 @@ namespace OpenZWave
 		friend class WakeUp;
 		friend class Security;
 		friend class Msg;
-		friend class ManufacturerSpecificDB;
 
 	//-----------------------------------------------------------------------------
 	//	Controller Interfaces
@@ -158,8 +150,6 @@ namespace OpenZWave
 		void RemoveQueues( uint8 const _nodeId );
 
 		Thread*					m_driverThread;			/**< Thread for reading from the Z-Wave controller, and for creating and managing the other threads for sending, polling etc. */
-		DNSThread*				m_dns;					/**< DNSThread Class */
-		Thread*					m_dnsThread;			/**< Thread for DNS Queries */
 		Mutex*					m_initMutex;            /**< Mutex to ensure proper ordering of initialization/deinitialization */
 		bool					m_exit;					/**< Flag that is set when the application is exiting. */
 		bool					m_init;					/**< Set to true once the driver has been initialised */
@@ -575,6 +565,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		enum MsgQueue
 		{
 			MsgQueue_Command = 0,
+			MsgQueue_Security,
 			MsgQueue_NoOp,
 			MsgQueue_Controller,
 			MsgQueue_WakeUp,
@@ -657,8 +648,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		{
 			MsgQueueCmd_SendMsg = 0,
 			MsgQueueCmd_QueryStageComplete,
-			MsgQueueCmd_Controller,
-			MsgQueueCmd_ReloadNode
+			MsgQueueCmd_Controller
 		};
 
 		class MsgQueueItem
@@ -688,11 +678,6 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 					{
 						return( (_other.m_cci->m_controllerCommand == m_cci->m_controllerCommand) && (_other.m_cci->m_controllerCallback == m_cci->m_controllerCallback) );
 					}
-					else if (m_command == MsgQueueCmd_ReloadNode )
-					{
-						return (_other.m_nodeId == m_nodeId);
-					}
-
 				}
 
 				return false;
@@ -861,76 +846,6 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		uint8 m_nonceReportSent;
 		uint8 m_nonceReportSentAttempt;
 		bool m_inclusionkeySet;
-
-	//-----------------------------------------------------------------------------
-	//	Event Signaling for DNS and HTTP Threads
-	//-----------------------------------------------------------------------------
-	private:
-		struct EventMsg {
-			enum EventType {
-				Event_DNS = 1,
-				Event_Http
-			};
-			EventType type;
-			union {
-					DNSLookup *lookup;
-					HttpDownload *httpdownload;
-			} event;
-		};
-
-		void SubmitEventMsg(EventMsg *);
-		void ProcessEventMsg();
-
-
-		OPENZWAVE_EXPORT_WARNINGS_OFF
-				list<EventMsg *>			m_eventQueueMsg;
-		OPENZWAVE_EXPORT_WARNINGS_ON
-				Event*					m_queueMsgEvent;				// Events for each queue, which are signalled when the queue is not empty
-				Mutex*					m_eventMutex;						// Serialize access to the queues
-
-
-	//-----------------------------------------------------------------------------
-	//	DNS Related
-	//-----------------------------------------------------------------------------
-
-	public:
-		bool CheckNodeConfigRevision(Node *);
-		bool CheckMFSConfigRevision();
-		void ReloadNode(uint8 const _nodeId);
-
-	private:
-		void processConfigRevision(DNSLookup *);
-
-	//-----------------------------------------------------------------------------
-	//	HTTP Client Related
-	//-----------------------------------------------------------------------------
-
-	public:
-		bool setHttpClient(i_HttpClient *client);
-	private:
-		bool startConfigDownload(uint16 _manufacturerId, uint16 _productType, uint16 _productId, string configfile, uint8 node = 0);
-		bool startMFSDownload(string configfile);
-		bool refreshNodeConfig(uint8 node);
-		void processDownload(HttpDownload *);
-		i_HttpClient *m_httpClient;
-
-	//-----------------------------------------------------------------------------
-	//	Metadata Related
-	//-----------------------------------------------------------------------------
-
-	public:
-		string GetMetaData(	uint8 const _nodeId, Node::MetaDataFields _metadata );
-
-	//-----------------------------------------------------------------------------
-	//	ManufacturerSpecificDB Related
-	//-----------------------------------------------------------------------------
-
-	public:
-		ManufacturerSpecificDB *GetManufacturerSpecificDB();
-		bool downloadConfigRevision(Node *);
-		bool downloadMFSRevision();
-	private:
-		ManufacturerSpecificDB *m_mfs;
 
 	};
 

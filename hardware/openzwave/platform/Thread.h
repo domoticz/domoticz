@@ -38,7 +38,6 @@ namespace OpenZWave
 	class Event;
 
 	/** \brief Implements a platform-independent thread management class.
-	 * \ingroup Platform
 	 */
 	class Thread: public Wait
 	{

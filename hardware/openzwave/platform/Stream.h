@@ -38,7 +38,6 @@ namespace OpenZWave
 	class Mutex;
 
 	/** \brief Platform-independent definition of a circular buffer.
-	 * \ingroup Platform
 	 */
 	class Stream: public Wait
 	{

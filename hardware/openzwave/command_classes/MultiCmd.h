@@ -33,7 +33,6 @@
 namespace OpenZWave
 {
 	/** \brief Implements COMMAND_CLASS_MULTI_CMD (0x8f), a Z-Wave device command class.
-	 * \ingroup CommandClass
 	 */
 	class MultiCmd: public CommandClass
 	{

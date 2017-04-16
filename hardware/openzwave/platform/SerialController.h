@@ -38,9 +38,6 @@ namespace OpenZWave
 	class Msg;
 	class SerialControllerImpl;
 
-	/** \brief Interface for controllers that implement a Serial Interface (USB Serial Port Emulation)
-	 * \ingroup Platform
-	 */
 	class SerialController: public Controller
 	{
 		friend class SerialControllerImpl;

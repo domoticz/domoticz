@@ -842,6 +842,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		_log.Log(LOG_STATUS, "OpenZWave: %s", _notification->GetAsString().c_str());
 	}
 	break;
+/*
 	case OpenZWave::Notification::Type_UserAlerts:
 	{
 		OpenZWave::Notification::UserAlertNofification uacode = (OpenZWave::Notification::UserAlertNofification)_notification->GetUserAlertType();
@@ -851,6 +852,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 	case OpenZWave::Notification::Type_ManufacturerSpecificDBReady:
 		_log.Log(LOG_STATUS, "OpenZWave: %s", _notification->GetAsString().c_str());
 		break;
+*/
 	default:
 		_log.Log(LOG_STATUS, "OpenZWave: Received unhandled notification type (%d) from HomeID: %u, NodeID: %d (0x%02x)", nType, _homeID, _nodeID, _nodeID);
 		_log.Log(LOG_STATUS, "OpenZWave: %s", _notification->GetAsString().c_str());
@@ -2180,11 +2182,21 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 	}
 	else if (commandclass == COMMAND_CLASS_CENTRAL_SCENE)
 	{
-		if (vType == OpenZWave::ValueID::ValueType_Int)
+		if (vLabel == "Scene ID")
 		{
-			_device.devType = ZDTYPE_CENTRAL_SCENE;
-			_device.intvalue = 0;
-			InsertDevice(_device);
+			if (vType == OpenZWave::ValueID::ValueType_Byte)
+			{
+				if (m_pManager->GetValueAsByte(vID, &byteValue) == true)
+				{
+					if (byteValue == 0)
+						return;
+					instance = byteValue;
+					_device.instanceID = instance;
+					_device.devType = ZDTYPE_CENTRAL_SCENE;
+					_device.intvalue = 0;
+					InsertDevice(_device);
+				}
+			}
 		}
 	}
 	else if (commandclass == COMMAND_CLASS_DOOR_LOCK)
@@ -2419,6 +2431,15 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 	{
 		//unhandled value type
 		return;
+	}
+
+	if (commandclass == COMMAND_CLASS_CENTRAL_SCENE)
+	{
+		if (vLabel != "Scene ID")
+		{
+			return;
+		}
+		instance = byteValue;
 	}
 
 	if (vGenre != OpenZWave::ValueID::ValueGenre_User)
@@ -3158,7 +3179,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 		}
 		break;
 	case ZDTYPE_CENTRAL_SCENE:
-		if (vType == OpenZWave::ValueID::ValueType_Int)
+		if (vType == OpenZWave::ValueID::ValueType_Byte)
 		{
 			pDevice->intvalue = 255;
 		}

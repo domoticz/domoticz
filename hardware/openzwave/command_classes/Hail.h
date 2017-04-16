@@ -33,7 +33,6 @@
 namespace OpenZWave
 {
 	/** \brief Implements COMMAND_CLASS_HAIL (0x82), a Z-Wave device command class.
-	 * \ingroup CommandClass
 	 */
 	class Hail: public CommandClass
 	{
