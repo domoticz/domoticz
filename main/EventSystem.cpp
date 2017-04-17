@@ -2502,7 +2502,7 @@ void CEventSystem::exportDeviceStatesToLua(lua_State *lua_state)
 
 		lua_pushnumber(lua_state, (lua_Number)sitem.ID);
 
-		lua_createtable(lua_state, 1, additional_lines+9);
+		lua_createtable(lua_state, 1, additional_lines+10);
 
 		lua_pushstring(lua_state, "name");
 		lua_pushstring(lua_state, sitem.deviceName.c_str());
@@ -2530,6 +2530,9 @@ void CEventSystem::exportDeviceStatesToLua(lua_State *lua_state)
 		lua_rawset(lua_state, -3);
 		lua_pushstring(lua_state, "rawData");
 		lua_pushstring(lua_state, sitem.sValue.c_str());
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "attribute");
+		lua_pushstring(lua_state, sitem.nValueWording.c_str());
 		lua_rawset(lua_state, -3);
 
 		if (additional_lines > 0)
