@@ -2,11 +2,11 @@ version: 1.0.{build}
 image: Visual Studio 2017
 configuration: Release
 
-# init:
-# - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+init:
+- ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
-# on_finish:
-# - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+on_finish:
+- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
   
 before_build:
 - ps: >-
@@ -15,6 +15,7 @@ before_build:
     'cd msbuild'
     
     'appveyor DownloadFile https://cdn.rawgit.com/domoticz/win32-libraries/master/WindowsLibraries.7z'
+#    (New-Object Net.WebClient).DownloadFile('https://cdn.rawgit.com/domoticz/win32-libraries/master/WindowsLibraries.7z', 'msbuild')
     
     '7z x WindowsLibraries.7z > NUL:'
 
