@@ -1,4 +1,4 @@
-local scriptPath = debug.getinfo(1).source:match("@?(.*/)")
+local scriptPath = globalvariables['script_path']
 package.path    = package.path .. ';' .. scriptPath .. '?.lua'
 
 local utils = require('Utils')
