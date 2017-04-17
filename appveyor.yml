@@ -18,8 +18,6 @@ before_build:
     appveyor DownloadFile https://cdn.rawgit.com/domoticz/win32-libraries/master/WindowsLibraries.7z
     
     7z x WindowsLibraries.7z > NUL:
-    
-    cd ..
 
 build:
   parallel: true                  # enable MSBuild parallel builds
