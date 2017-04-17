@@ -172,7 +172,7 @@ find_program(GZIP gzip)
 find_program(7ZIP 7z.exe)
 IF (7ZIP) 
 	MESSAGE(STATUS "Found 7zip.exe, must be running on Windows")
-ENDIF
+ENDIF()
 IF (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
     MESSAGE(STATUS "Debug mode, variables in JavaScript will NOT be mangled")
     set(PARAM "-c")
