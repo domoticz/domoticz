@@ -78,6 +78,7 @@ persistence =
 
 	load = function (path)
 		local f, e = loadfile(path);
+		_.print(globalvariables['script_path'])
 		_.print(f, path,  e)
 		if f then
 			return f();
