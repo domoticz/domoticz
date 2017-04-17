@@ -2475,6 +2475,7 @@ void CEventSystem::exportDeviceStatesToLua(lua_State *lua_state)
 	typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
 	int additional_lines = 0;
 	int data_lines = 0;
+	int index = 1;
 	const char* dev_type;
 	const char* sub_type;
 
@@ -2502,12 +2503,15 @@ void CEventSystem::exportDeviceStatesToLua(lua_State *lua_state)
 			_log.Log(LOG_ERROR, "EventSystem: Failed to read DeviceStatus entry for device %d", sitem.ID);
 		}
 
-		lua_pushnumber(lua_state, (lua_Number)sitem.ID);
+		lua_pushnumber(lua_state, (lua_Number)index);
 
-		lua_createtable(lua_state, 1, additional_lines+10);
+		lua_createtable(lua_state, 1, additional_lines+11);
 
 		lua_pushstring(lua_state, "name");
 		lua_pushstring(lua_state, sitem.deviceName.c_str());
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "id");
+		lua_pushnumber(lua_state, (lua_Number)sitem.ID);
 		lua_rawset(lua_state, -3);
 		lua_pushstring(lua_state, "baseType");
 		lua_pushstring(lua_state, "device");
@@ -2782,8 +2786,9 @@ void CEventSystem::exportDeviceStatesToLua(lua_State *lua_state)
 
 		lua_settable(lua_state, -3); // data table
 		lua_settable(lua_state, -3); // device entry
+		index++;
 	}
-	lua_setglobal(lua_state, "deviceData");
+	lua_setglobal(lua_state, "domoticzData");
 
 	lua_createtable(lua_state, (int)m_devicestates.size(), 0);
 	typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
