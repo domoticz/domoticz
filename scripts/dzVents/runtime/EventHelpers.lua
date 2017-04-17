@@ -15,7 +15,7 @@ local function EventHelpers(settings, domoticz, mainMethod)
 
 	local globalsDefinition
 
-	local currentPath = debug.getinfo(1).source:match("@?(.*/)")
+	local currentPath = globalvariables['script_path']
 
 	if (_G.TESTMODE) then
 		scriptsFolderPath = currentPath .. 'tests/scripts'
@@ -254,7 +254,7 @@ local function EventHelpers(settings, domoticz, mainMethod)
 			cmd = 'ls -a "' .. directory .. '"'
 		else
 			-- assume windows for now
-			cmd = 'dir "' .. directory .. '" /b /ad'
+			cmd = 'dir "' .. directory .. '" /B'
 		end
 
 		t = {}
