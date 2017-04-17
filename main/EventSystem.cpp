@@ -3262,6 +3262,9 @@ void CEventSystem::UpdateDevice(const std::string &DevParams)
 		int dlastlevel = atoi(result[0][7].c_str());
 		std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][8].c_str());
 
+		int devType = atoi(dtype.c_str());
+		int subType = atoi(dsubtype.c_str());
+
 		time_t now = time(0);
 		struct tm ltime;
 		localtime_r(&now, &ltime);
@@ -3269,16 +3272,14 @@ void CEventSystem::UpdateDevice(const std::string &DevParams)
 		char szLastUpdate[40];
 		sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
 
+//		m_mainworker.UpdateDevice(atoi(hid.c_str()), did, atoi(dunit.c_str()), devType, subType, atoi(nvalue.c_str()), svalue, 12, 255, true);
+
 		m_sql.safe_query("UPDATE DeviceStatus SET nValue='%q', sValue='%q', LastUpdate='%q' WHERE (ID = '%q')",
 			nvalue.c_str(), svalue.c_str(), szLastUpdate, idx.c_str());
-
 
 		uint64_t ulIdx = 0;
 		std::stringstream s_str(idx);
 		s_str >> ulIdx;
-
-		int devType = atoi(dtype.c_str());
-		int subType = atoi(dsubtype.c_str());
 
 		UpdateSingleState(ulIdx, dname, atoi(nvalue.c_str()), svalue.c_str(), devType, subType, dswitchtype, szLastUpdate, dlastlevel, options);
 
