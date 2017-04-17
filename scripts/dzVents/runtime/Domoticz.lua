@@ -271,29 +271,31 @@ local function Domoticz(settings)
 			['result'] = {}
 		}
 
-		-- figure out what os this is
-		local sep = string.sub(package.config, 1, 1)
-		if (sep ~= '/') then return httpData end -- only on linux
-
-		if utils.fileExists(utils.getDevicesPath()) then
-			local ok, module
-
-			ok, module = pcall(require, 'devices')
-			if (ok) then
-				if (type(module) == 'table') then
-					httpData = module
-				end
-			else
-				-- cannot be loaded
-				utils.log('devices.lua cannot be loaded', utils.LOG_ERROR)
-				utils.log(module, utils.LOG_ERROR)
-			end
-		else
-			if (self.settings['Enable http fetch']) then
-				self.fetchHttpDomoticzData()
-			end
-		end
 		return httpData
+
+		-- figure out what os this is
+--		local sep = string.sub(package.config, 1, 1)
+--		if (sep ~= '/') then return httpData end -- only on linux
+--
+--		if utils.fileExists(utils.getDevicesPath()) then
+--			local ok, module
+--
+--			ok, module = pcall(require, 'devices')
+--			if (ok) then
+--				if (type(module) == 'table') then
+--					httpData = module
+--				end
+--			else
+--				-- cannot be loaded
+--				utils.log('devices.lua cannot be loaded', utils.LOG_ERROR)
+--				utils.log(module, utils.LOG_ERROR)
+--			end
+--		else
+--			if (self.settings['Enable http fetch']) then
+--				self.fetchHttpDomoticzData()
+--			end
+--		end
+--		return httpData
 	end
 
 	if (_G.TESTMODE) then
