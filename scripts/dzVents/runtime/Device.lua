@@ -119,7 +119,6 @@ local function Device(domoticz, name, state, wasChanged)
 		return TimedCommand(domoticz, self.name, 'Stop')
 	end
 
-
 	function self.dimTo(percentage)
 		return TimedCommand(domoticz, self.name, 'Set Level ' .. tostring(percentage))
 	end
@@ -289,7 +288,6 @@ local function Device(domoticz, name, state, wasChanged)
 		self.update(0, value)
 	end
 
-
 	function self.updateSetPoint(setPoint, mode, untilDate)
 		if ((self.hardwareTypeVal == 15 or self.hardwareTypeVal == 20) and self.deviceSubType == 'SetPoint') then
 			-- send the command using openURL otherwise, due to a bug in Domoticz, you will get a timeout on the script
@@ -363,7 +361,6 @@ local function Device(domoticz, name, state, wasChanged)
 	function self.kodiExecuteAddOn(addonId)
 		domoticz.sendCommand(self.name, 'Execute ' .. tostring(addonId))
 	end
-
 
 	function self.attributeChanged(attribute)
 		-- returns true if an attribute is marked as changed

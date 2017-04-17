@@ -1108,7 +1108,7 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const uint64_t Devic
 	std::vector<std::string> FileEntries;
 	std::vector<std::string>::const_iterator itt;
 	std::string filename;
-	
+
 	DirectoryListing(FileEntries, dzv_Dir, false, true);
 	for (itt = FileEntries.begin(); itt != FileEntries.end(); ++itt)
 	{
@@ -2434,7 +2434,7 @@ struct _tHardwareListInt {
 void CEventSystem::exportDeviceStatesToLua(lua_State *lua_state)
 {
 	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock2(m_devicestatesMutex);
-	
+
 
 	//Get All Hardware ID's/Names, need them later
 	std::vector<std::vector<std::string> > result;
@@ -2459,10 +2459,12 @@ void CEventSystem::exportDeviceStatesToLua(lua_State *lua_state)
 			{
 				tlist.HardwareType = Hardware_Type_Desc(tlist.HardwareTypeVal);
 			}
-			else
-			{
-				tlist.HardwareType = foo.PluginHardwareDesc(ID);
-			}
+
+			// TODO remove comments
+//			else
+//			{
+//				tlist.HardwareType = foo.PluginHardwareDesc(ID);
+//			}
 			_hardwareNames[ID] = tlist;
 		}
 	}
@@ -2569,11 +2571,11 @@ void CEventSystem::exportDeviceStatesToLua(lua_State *lua_state)
 
 		lua_pushstring(lua_state, "data");
 		lua_createtable(lua_state, 0, 0);
-		
+
 		//get all svalues separate
 		std::vector<std::string> strarray;
 		StringSplit(sitem.sValue, ";", strarray);
-		
+
 		if (("Heating" == dev_type) && ("Zone" == sub_type))
 		{
 			lua_pushstring(lua_state, "setPoint");
@@ -2583,7 +2585,7 @@ void CEventSystem::exportDeviceStatesToLua(lua_State *lua_state)
 			lua_pushstring(lua_state, strarray[2].c_str());
 			lua_rawset(lua_state, -3);
 		}
-		
+
 		if (("Lux" == dev_type) && ("Lux" == sub_type))
 		{
 			lua_pushstring(lua_state, "lux");
@@ -2600,7 +2602,7 @@ void CEventSystem::exportDeviceStatesToLua(lua_State *lua_state)
 			lua_pushstring(lua_state, strarray[0].c_str());
 			lua_rawset(lua_state, -3);
 		}
-		
+
 		if (("Usage" == dev_type) && ("Electric" == sub_type))
 		{
 			lua_pushstring(lua_state, "wActual");
@@ -2729,7 +2731,7 @@ void CEventSystem::exportDeviceStatesToLua(lua_State *lua_state)
 				lua_rawset(lua_state, -3);
 			}
 		}
-		
+
 		if (m_windspeedValuesByID.size() > 0)
 		{
 			std::map<uint64_t, float>::iterator it;
@@ -3224,14 +3226,14 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 			lua_pushstring(lua_state, "svalue");
 			lua_pushstring(lua_state, sValue);
 			lua_rawset(lua_state, -3);
-			
+
 			lua_pushstring(lua_state, "nvalue");
 			lua_pushnumber(lua_state, nValue);
 			lua_rawset(lua_state, -3);
 
 			/* USELESS, WE HAVE THE DEVICE INDEX
-			// replace devicechanged => 
-			lua_pushstring(lua_state, "name"); 
+			// replace devicechanged =>
+			lua_pushstring(lua_state, "name");
 			lua_pushnumber(lua_state, nValue);
 			lua_rawset(lua_state, -3);
 			*/
@@ -3241,7 +3243,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 	}
 
 	exportDeviceStatesToLua(lua_state);
-	
+
 	lua_createtable(lua_state, (int)m_uservariables.size(), 0);
 
 	typedef std::map<uint64_t, _tUserVariable>::iterator it_var;
