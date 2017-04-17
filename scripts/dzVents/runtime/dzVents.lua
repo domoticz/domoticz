@@ -13,34 +13,34 @@ package.path = package.path .. ';' .. currentPath .. 'scripts/storage/?.lua'
 local EventHelpers = require('EventHelpers')
 local helpers = EventHelpers()
 
-local _ = require 'lodash'
-
-_.print(deviceData)
-
-print('----------------------------')
-for idx, device in pairs(deviceData) do
-
-	print(idx)
-
-	for i, attr in pairs(device) do
-
-
-
-		if (i == 'data') then
-
-			for ii, attrr in ipairs(attr) do
-				_.print('>     ' .. ii .. '=' .. tostring(attrr))
-			end
-		else
-			_.print(i .. '=' .. tostring(attr))
-		end
-
-
-	end
-
-
-end
-print('----------------------------')
+--local _ = require 'lodash'
+--
+--_.print(deviceData)
+--
+--print('----------------------------')
+--for idx, device in pairs(deviceData) do
+--
+--	print(idx)
+--
+--	for i, attr in pairs(device) do
+--
+--
+--
+--		if (i == 'data') then
+--
+--			for ii, attrr in ipairs(attr) do
+--				_.print('>     ' .. ii .. '=' .. tostring(attrr))
+--			end
+--		else
+--			_.print(i .. '=' .. tostring(attr))
+--		end
+--
+--
+--	end
+--
+--
+--end
+--print('----------------------------')
 
 if triggerReason == "time" then
 	print ("Time trigger.")
