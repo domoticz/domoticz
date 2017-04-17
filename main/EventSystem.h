@@ -93,7 +93,7 @@ public:
 	void SetEnabled(const bool bEnabled);
 	void GetCurrentStates();
 
-	void exportDeviceStatesToLua(lua_State *lua_state);
+	void CEventSystem::exportDeviceStatesToLua(lua_State *lua_state, uint64_t deviceID);
 
 private:
 	//lua_State	*m_pLUA;

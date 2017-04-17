@@ -2431,7 +2431,7 @@ struct _tHardwareListInt {
 } tHardwareList;
 
 
-void CEventSystem::exportDeviceStatesToLua(lua_State *lua_state)
+void CEventSystem::exportDeviceStatesToLua(lua_State *lua_state, uint64_t deviceID)
 {
 	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock2(m_devicestatesMutex);
 
@@ -2505,7 +2505,7 @@ void CEventSystem::exportDeviceStatesToLua(lua_State *lua_state)
 
 		lua_pushnumber(lua_state, (lua_Number)index);
 
-		lua_createtable(lua_state, 1, additional_lines+11);
+		lua_createtable(lua_state, 1, additional_lines+12);
 
 		lua_pushstring(lua_state, "name");
 		lua_pushstring(lua_state, sitem.deviceName.c_str());
@@ -2539,6 +2539,16 @@ void CEventSystem::exportDeviceStatesToLua(lua_State *lua_state)
 		lua_rawset(lua_state, -3);
 		lua_pushstring(lua_state, "attribute");
 		lua_pushstring(lua_state, sitem.nValueWording.c_str());
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "changed");
+		if (sitem.ID == deviceID)
+		{
+			lua_pushstring(lua_state, "true");
+		}
+		else
+		{
+			lua_pushstring(lua_state, "false");
+		}
 		lua_rawset(lua_state, -3);
 
 		if (additional_lines > 0)
@@ -3247,7 +3257,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 		}
 	}
 
-	exportDeviceStatesToLua(lua_state);
+	exportDeviceStatesToLua(lua_state, DeviceID);
 
 	lua_createtable(lua_state, (int)m_uservariables.size(), 0);
 
