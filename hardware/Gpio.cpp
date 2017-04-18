@@ -404,7 +404,10 @@ void CGpio::Poller()
 		delayed_startup = true;
 	}
 
-	_log.Log(LOG_STATUS, "GPIO: %d-second poller started", m_pollinterval);
+	if (m_pollinterval)
+	{
+		_log.Log(LOG_STATUS, "GPIO: %d-second poller started", m_pollinterval);
+	}
 
 	while (!m_stoprequested)
 	{
@@ -435,7 +438,10 @@ void CGpio::Poller()
 		}
 	}
 
-	_log.Log(LOG_STATUS, "GPIO: %d-second poller stopped", m_pollinterval);
+	if (m_pollinterval)
+	{
+		_log.Log(LOG_STATUS, "GPIO: %d-second poller stopped", m_pollinterval);
+	}
 }
 
 /*
