@@ -47,7 +47,6 @@ private:
 	bool StopHardware();
 	void Do_Work();
 	void Poller();
-	void DelayedStartup();
 	void UpdateDeviceStates(bool forceUpdate);
 	void ProcessInterrupt(int gpioId);
 	void UpdateState(int gpioId, bool forceUpdate);
