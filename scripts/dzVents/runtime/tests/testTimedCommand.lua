@@ -60,7 +60,7 @@ describe('timed commands', function()
 		assert.is_same({["mySwitch"]="On AFTER 300"}, cmd._latest)
 
 		-- and it should have a for_min
-		assert.is_function(res.for_min)
+		assert.is_function(res.for_min)`
 		res.for_min(10)
 		assert.is_same({["mySwitch"]="On AFTER 300 FOR 10"}, cmd._latest)
 		assert.is_same({{["mySwitch"]="On AFTER 300 FOR 10"}}, commandArray)

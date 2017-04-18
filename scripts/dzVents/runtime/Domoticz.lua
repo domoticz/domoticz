@@ -518,12 +518,66 @@ local function Domoticz(settings)
 		end
 	end
 
-	createVariables()
-	createDevices()
-	createScenesAndGroups()
-	updateGroupAndScenes()
-	createMissingHTTPDevices()
-	extendDevicesWithHTTPData()
+
+	local function bootstrap()
+
+		for index, item in pairs(domoticzData) do
+
+			if (item.baseType == 'device') then
+
+				local newDevice = Device(self, item.name, item.data._state, item.changed)
+
+				newDevice.addAttribute('description', item.description)
+				newDevice.addAttribute('description', item.description)
+				newDevice.addAttribute('deviceType', item.deviceType)
+				newDevice.addAttribute('hardwareName', item.hardwareName)
+				newDevice.addAttribute('hardwareType', item.hardwareType)
+				newDevice.addAttribute('hardwareId', item.hardwareID)
+				newDevice.addAttribute('hardwareTypeValue', item.hardwareTypeValue)
+				newDevice.addAttribute('switchType', item.switchType)
+				newDevice.addAttribute('switchTypeValue', item.switchTypeValue)
+				newDevice.addAttribute('timedOut', item.HaveTimeout)
+				newDevice.addAttribute('batteryLevel', item.BatteryLevel)
+				newDevice.addAttribute('signalLevel', item.signalLevel)
+				newDevice.addAttribute('deviceSubType', item.subType)
+				newDevice.addAttribute('lastUpdate', Time(item.lastUpdate))
+				newDevice.addAttribute('rawData', item.rawData)
+
+				if (item.changed) then
+					self.changedDevices[item.name] = newDevice
+					self.changedDevices[item.id] = newDevice-- id lookup
+
+					for i, changedAttribute in pairs(item.changedAttributes) do
+						newDevice.setAttributeChanged(changedAttribute)
+					end
+
+				end
+
+				-- transfer data
+				for attribute, value in pairs(item.data) do
+					newDevice.addAttribute(attribute, value)
+				end
+
+
+				self.devices[item.name] = newDevice
+				self.devices[item.id] = newDevice
+
+			end
+
+
+
+		end
+
+	end
+
+--	createVariables()
+--	createDevices()
+--	createScenesAndGroups()
+--	updateGroupAndScenes()
+--	createMissingHTTPDevices()
+--	extendDevicesWithHTTPData()
+
+	bootstrap()
 
 	setIterators(self.devices)
 	setIterators(self.changedDevices)

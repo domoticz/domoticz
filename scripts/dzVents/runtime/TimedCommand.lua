@@ -1,4 +1,4 @@
-local scriptPath = globalvariables['script_path']
+local scriptPath = _G.globalvariables['script_path']
 package.path    = package.path .. ';' .. scriptPath .. '?.lua'
 
 local utils = require('Utils')
