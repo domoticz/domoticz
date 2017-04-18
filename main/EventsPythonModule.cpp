@@ -2,6 +2,8 @@
 
 #include "Logger.h"
 #include "EventsPythonModule.h"
+#include "mainworker.h"
+
 
 namespace Plugins {
     #define GETSTATE(m) ((struct eventModule_state*)PyModule_GetState(m))
@@ -12,6 +14,7 @@ namespace Plugins {
 
     static PyMethodDef DomoticzEventsMethods[] = {
         { "Log", PyDomoticz_EventsLog, METH_VARARGS, "Write message to Domoticz log." },
+        { "Command", PyDomoticz_EventsCommand, METH_VARARGS, "Schedule a command." },
         { NULL, NULL, 0, NULL }
     };
 
@@ -44,6 +47,32 @@ namespace Plugins {
 
         Py_INCREF(Py_None);
 		return Py_None;
+    }
+
+    static PyObject*	PyDomoticz_EventsCommand(PyObject *self, PyObject *args) {
+        char* msg;
+        char* action;
+        char* device;
+
+        _log.Log(LOG_STATUS, "Python EventSystem: Running command.");
+        // m_eventsystem.CEventSystem::PythonScheduleEvent("Test_Target", "On", "Testing");
+        //
+
+        if (!PyArg_ParseTuple(args, "ss", &device, &action))
+        {
+            _log.Log(LOG_ERROR, "Pyhton EventSystem: Failed to parse parameters: Two strings expected.");
+            // LogPythonException(pModState->pPlugin, std::string(__func__));
+        }
+        else
+        {
+            std::string	dev = device;
+            std::string act = action;
+            _log.Log((_eLogLevel)LOG_NORM, "Python EventSystem - Command: Target: %s Command: %s", dev.c_str(), act.c_str());
+            m_mainworker.m_eventsystem.PythonScheduleEvent(device, action, "Test");
+        }
+
+        Py_INCREF(Py_None);
+        return Py_None;
     }
 
     struct PyModuleDef DomoticzEventsModuleDef = {

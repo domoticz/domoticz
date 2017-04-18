@@ -2257,10 +2257,19 @@ const char * Python_exe = "PYTHON_EXE";
 // Status of setup
 bool PythonInitDone = false;
 
+
+
+// Python EventModule
+bool CEventSystem::PythonScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName) {
+    ScheduleEvent(ID, Action,eventName);
+    return true;
+}
+
+
 void CEventSystem::EvaluatePython(const std::string &reason, const std::string &filename, const std::string &PyString, const uint64_t DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const uint64_t varId)
 {
 	//_log.Log(LOG_NORM, "EventSystem: Already scheduled this event, skipping");
-	_log.Log(LOG_STATUS, "EventSystem: script %s trigger, file: %s, deviceName: %s" , reason.c_str(), filename.c_str(), devname.c_str());
+	// _log.Log(LOG_STATUS, "EventSystem: script %s trigger, file: %s, deviceName: %s" , reason.c_str(), filename.c_str(), devname.c_str());
 
 	std::stringstream python_DirT;
 
@@ -2311,6 +2320,7 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
         PythonInitDone = true;
     } */
 
+    // CEventSystem::ScheduleEvent("Test_Target", "On", "Test");
 
    if (Plugins::Py_IsInitialized()) {
 
@@ -2321,6 +2331,23 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 
            if (pModuleDict) {
                Plugins::PyDict_SetItemString(pModuleDict, "changed_device_name", Plugins::PyUnicode_FromString(devname.c_str()));
+
+               typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
+               for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
+               {
+                   _tDeviceStatus sitem = iterator->second;
+                   // object deviceStatus = domoticz_module.attr("Device")(sitem.ID, sitem.deviceName, sitem.devType, sitem.subType, sitem.switchtype, sitem.nValue, sitem.nValueWording, sitem.sValue, sitem.lastUpdate);
+                   // devices[sitem.deviceName] = deviceStatus;
+
+                   // _log.Log(LOG_STATUS, "Python EventSystem: deviceName %s", sitem.deviceName.c_str());
+               }
+
+
+
+
+
+
+
            }
 
            FILE* PythonScriptFile = _Py_fopen(filename.c_str(),"r+");

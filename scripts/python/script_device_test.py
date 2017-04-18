@@ -19,5 +19,6 @@ import DomoticzEvents as DE
 
 DE.Log("Changed: " + DE.changed_device_name)
 
-#if domoticz.changed_device.name == "Test":
-#    domoticz.command(name="Test_Target", action="Off", file=__file__)
+if DE.changed_device_name == "Test":
+    #DE.Command(name="Test_Target", action="Off")
+    DE.Command("Test_Target", "Off")
