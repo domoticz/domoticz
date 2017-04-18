@@ -14,9 +14,11 @@ body {
 	background: #202020 url(images/imgbg.jpg) repeat !important;
 }
 #appversion:after {
-  content: " ElementMedia Light v0.1";
+  content: " ElementMedia Light v0.2";
   display: none;
 }
+
+#status, #lastupdate, body table#itemtable tr td:first-child + td + td + td + td + td{color: #222;}
 
 body table#itemtablesmall tr td:first-child + td + td + td + td:before, 
 body table#itemtablesmalldoubleicon tr td:first-child + td + td + td + td + td:before,
@@ -27,7 +29,7 @@ body table#itemtabletrippleicon tr td:first-child + td + td + td + td:before,
 body table#itemtablesmalldoubleicon tr td:first-child + td + td + td + td:before,
 body table#itemtablesmalltrippleicon tr td:first-child + td + td + td + td:before,
 body table#mobileitem tr td:first-child + td + td + td + td:before{
- content: "Last turned on: " !important;
+ content: "Last seen: " !important;
 }
 
 body table#itemtablesmall tr td:first-child + td + td + td + td:before, 
@@ -87,7 +89,11 @@ font-family: Open Sans, sans-serif;
     background-image: none;
 }
 
-#timesun , 
+#timesun {
+  text-align: left;
+  color: #666;
+} 
+
 #room, 
 .room{
     background-color: #eee;
@@ -191,4 +197,44 @@ box-shadow:         0px 5px 5px 0px rgba(50, 50, 50, 0.3);
 /* Row Fix */
 .bannav{
 width: 99.5% !important;
+}
+
+//Added Dimslider fixes from element-dark
+.dimslider {
+   width: calc(98% - 55px) !important;
+   height: 10px;
+   margin-top: 0px !important;
+   margin-left: 48px !important;
+   box-shadow: initial;
+   position: relative;
+}
+
+#dashcontent .dimslider {
+   width: calc(100% - 8px) !important;
+   margin-left: 4px !important;
+   margin-top: 10px !important;       
+}
+
+#itemtablesmall .dimslider {
+   width: calc(98% - 52px) !important;
+   margin-top: 10px !important;
+   margin-left: 48px !important;
+}
+
+#itemtabledoubleicon .dimslider {
+   width: calc(98% - 114px) !important;
+   margin-top: 10px !important;
+   margin-left: 110px !important;
+}
+
+#itemtablesmalldoubleicon .dimslider {
+   width: calc(98% - 98px) !important;
+   margin-top: 10px !important;
+   margin-left: 95px !important;
+}
+
+#rgbw_popup .dimslider {
+   width: calc(100% - 108px) !important;
+   margin-left: 6px !important;
+   margin-top: 10px !important;       
 }
