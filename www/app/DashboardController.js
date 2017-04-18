@@ -6,6 +6,187 @@ define(['app'], function(app) {
 		//Evohome...
 		//FIXME move evohome functions to a shared js ...see temperaturecontroller.js and lightscontroller.js
 
+        addDataviz = function(){
+            if ($("#copyright").css("z-index") == 1){ // Only do all this if the dataviz option has been enabled in theme settings.
+                console.log("Dataviz is enabled");
+                setTimeout(function() { // small delay to make sure the main html has been generated, and to lower the burden on the system.
+
+                    $('.Temp, .TempHumidityBaro').each(function () { 
+                        console.log("EACH START");
+                        var id = $(this).parent().attr('id');
+                        var agent = '' + id;
+                        console.log('item ID = ' + agent);
+                        var n = agent.lastIndexOf('_');
+                        var theid = agent.substring(n + 1);
+                        var urltoload = 'json.htm?type=graph&sensor=temp&idx=' + theid + '&range=day';
+                        var el = $('<td class="dataviz">');
+                        $(this).find('tr').append(el);
+                        
+                        var showData = $(this).find('.dataviz');
+                        var datavizArray = [];
+                        $.getJSON(urltoload, function(data) {
+                            console.log( "Dataviz - JSON load success" );
+                            if (typeof data.result != "undefined") {
+                                console.log("length = " + data.result.length);
+                                var modulo = 1
+                                if(data.result.length > 100){modulo = 2;}
+                                if(data.result.length > 200){modulo = 4;}
+                                if(data.result.length > 300){modulo = 6;}
+                                console.log("modulo = " + modulo);
+                                for(var i in data.result){
+                                    var key = i;
+                                    var val = data.result[i];
+                                    temp = val.te;
+                                    if((i % modulo) == 0){ // this prunes and this limits the amount of datapoints, to make it all less heavy on the browser.
+                                        datavizArray.push(temp);
+                                    }
+                                }
+
+                                if(datavizArray.length > 0){
+                                    showData.highcharts({    
+                                        chart: {
+                                            type: 'line',
+                                            backgroundColor:'transparent',
+                                            plotBorderWidth: null,
+                                            marginTop: 0,
+                                            height:40,
+                                            marginBottom: 0,
+                                            marginLeft:0,
+                                            plotShadow: false,
+                                            borderWidth: 0,
+                                            plotBorderWidth: 0,
+                                            marginRight:0
+                                        },
+                                         tooltip: {
+                                            userHTML: true,
+                                            style: {
+                                                padding: 5,
+                                                width: 100,
+                                                height: 30,
+                                                backgroundColor: '#FCFFC5',
+                                                borderColor: 'black',
+                                                borderRadius: 10,
+                                                borderWidth: 3, 
+                                             },
+                                            formatter: function() {
+                                                return '<b>' + this.y + '</b> ('+ this.series.name + ')';
+                                            },
+                                            height: 30,
+                                            width: 30
+                                         },
+                                        title: {
+                                            text: ''
+                                        },
+                                        xAxis: {
+                                            gridLineWidth: 0,
+                                            minorGridLineWidth: 0,
+                                            enabled:false,
+                                            showEmpty:false,
+                                        },
+                                        yAxis: {
+                                            gridLineWidth: 0,
+                                            minorGridLineWidth: 0,
+                                            title: {
+                                                text: ''
+                                            },
+                                            showEmpty:true,
+                                            enabled:true
+                                        },
+                                        credits: {
+                                            enabled: false
+                                        },
+                                        legend: {
+                                            enabled:false
+                                        },
+                                        plotOptions: {
+                                            line:{
+                                                lineWidth:1.5,
+                                                lineColor:'#cccccc',
+                                            },
+                                             showInLegend: true,
+                                             tooltip: {
+                                             }
+                                        },
+                                        exporting: {
+                                            buttons: {
+                                                contextButton: {
+                                                    enabled: false
+                                                }    
+                                            }
+                                        },
+                                        series: [{
+                                                 marker: {
+                                                    enabled: false
+                                                },
+                                            animation:true,
+                                            name: '24h',
+                                            data: datavizArray // [19.5,20,17]        
+                                        }]
+                                    });    
+                                }
+                            }
+                        });
+                    });
+                },3250);
+                setInterval(addDataviz, 600000); // updates the dataviz every 10 minutes.
+            }
+        }
+           
+            /*
+            $('.Temp .wrapper').each(function() {
+                console.log("tralala");        
+                $(this).click(function() {
+                    console.log("okiedokie2");
+                    alert( "Handler for .click() called." );
+                });
+                */
+                // check the DOM attribute 'host' on this
+                //if (this.host != window.location.host) {
+                // create a jQuery object using the current DOM element
+                //$(this).attr('target', '_new');
+            //});
+        
+            /*
+			if (typeof $scope.mytimer != 'undefined') {
+				$interval.cancel($scope.mytimer);
+				$scope.mytimer = undefined;
+			}
+			var id = "";
+			var bFavorites = 1;
+			if (typeof window.myglobals.LastPlanSelected != 'undefined') {
+				if (window.myglobals.LastPlanSelected > 0) {
+					bFavorites = 0;
+				}
+			}
+
+			$.ajax({
+				url: "json.htm?type=devices&filter=all&used=true&favorite=" + bFavorites + "&order=Name&plan=" + window.myglobals.LastPlanSelected + "&lastupdate=" + $scope.LastUpdateTime,
+				async: false,
+				dataType: 'json',
+				success: function(data) {
+					if (typeof data.ServerTime != 'undefined') {
+						$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
+					}
+
+					if (typeof data.result != 'undefined') {
+						if (typeof data.ActTime != 'undefined') {
+							$scope.LastUpdateTime = parseInt(data.ActTime);
+						}
+						$.each(data.result, function(i, item) {
+							//Scenes
+							if (
+								(item.Type.indexOf('Scene') == 0) ||
+								(item.Type.indexOf('Group') == 0)
+							) {
+								id = "#dashcontent #scene_" + item.idx;
+								var obj = $(
+        */
+        
+        
+        
+        
+        
+        
 		MobilePhoneDetection = function() {
 			// mobile device detection
 			if (/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|ipad|iris|kindle|Android|Silk|lge |maemo|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino/i.test(navigator.userAgent) ||
@@ -139,13 +320,12 @@ define(['app'], function(app) {
 					if (typeof data.ServerTime != 'undefined') {
 						$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
 					}
-
 					if (typeof data.result != 'undefined') {
 						if (typeof data.ActTime != 'undefined') {
 							$scope.LastUpdateTime = parseInt(data.ActTime);
 						}
 						$.each(data.result, function(i, item) {
-							//Scenes
+//Scenes
 							if (
 								(item.Type.indexOf('Scene') == 0) ||
 								(item.Type.indexOf('Group') == 0)
@@ -226,7 +406,7 @@ define(['app'], function(app) {
 						}); //Scene devices
 
 						$.each(data.result, function(i, item) {
-							//Lights
+//Lights/switches
 							var isdimmer = false;
 							if (
 								(
@@ -870,6 +1050,7 @@ define(['app'], function(app) {
 										if ($(id + " #lastupdate > span").html() != item.LastUpdate) {
 											$(id + " #lastupdate > span").html(item.LastUpdate);
 										}
+                                        console.log("updating switches");
 										if ($scope.config.ShowUpdatedEffect == true) {
 											$(id + " #name").effect("highlight", {
 												color: '#EEFFEE'
@@ -880,7 +1061,7 @@ define(['app'], function(app) {
 							}
 						}); //light devices
 
-						//Temperature Sensors
+//Temperature Sensors
 						$.each(data.result, function(i, item) {
 							if (
 								((typeof item.Temp != 'undefined') || (typeof item.Humidity != 'undefined') || (typeof item.Chill != 'undefined')) &&
@@ -1158,8 +1339,7 @@ define(['app'], function(app) {
 								}
 							}
 						}); //weather devices
-
-						//security devices
+//security devices
 						$.each(data.result, function(i, item) {
 							if ((item.Type.indexOf('Security') == 0) && (item.Favorite != 0)) {
 								id = "#dashcontent #security_" + item.idx;
@@ -1311,7 +1491,7 @@ define(['app'], function(app) {
 							}
 						}); //evohome devices
 
-            //Utility Sensors
+//Utility Sensors
 						$.each(data.result, function(i, item) {
 							if (
 								(
@@ -2557,7 +2737,7 @@ define(['app'], function(app) {
 							htmlcontent += '</section>';
 						}
 
-						//Temperature Sensors
+//Temperature Sensors
 						jj = 0;
 						bHaveAddedDivider = false;
 						$.each(data.result, function(i, item) {
@@ -2596,7 +2776,6 @@ define(['app'], function(app) {
 								var xhtm = "";
 								if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
 									var vname = '<img src="images/next.png" onclick="ShowTempLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="16" width="16">' + " " + item.Name;
-
 									xhtm +=
 										'\t    <tr id="temp_' + item.idx + '">\n' +
 										'\t      <td id="name" class="name"><span>' + vname + '</span></td>\n';
@@ -2710,8 +2889,9 @@ define(['app'], function(app) {
 										xhtm += $.t("Dew Point") + ": " + item.DewPoint + '&deg; ' + $scope.config.TempSign;
 									}
 									xhtm +=
-										'</span></td>\n' +
-										'\t      <td id="lastupdate" class="lastupdate"><span>' + item.LastUpdate + '</span></td>\n' +
+										'</span></td>\n';
+                                    xhtm +=     '\t      <td class="overlay"></td>';   
+									xhtm += 	'\t      <td id="lastupdate" class="lastupdate"><span>' + item.LastUpdate + '</span></td>\n' +
 										'\t    </tr>\n' +
 										'\t    </table>\n' +
 										'\t  </div><!--item end-->\n' +
@@ -2734,7 +2914,7 @@ define(['app'], function(app) {
 						}
 
 
-						//Weather Sensors
+//Weather Sensors
 						jj = 0;
 						bHaveAddedDivider = false;
 						$.each(data.result, function(i, item) {
@@ -2978,7 +3158,7 @@ define(['app'], function(app) {
 							htmlcontent += '</section>';
 						}
 
-						//security devices
+//security devices
 						jj = 0;
 						bHaveAddedDivider = false;
 						$.each(data.result, function(i, item) {
@@ -3135,7 +3315,7 @@ define(['app'], function(app) {
 						}
 
 
-						//evohome devices
+//evohome devices
 						jj = 0;
 						bHaveAddedDivider = false;
 						$.each(data.result, function(i, item) {
@@ -3226,7 +3406,7 @@ define(['app'], function(app) {
 							htmlcontent += '</section>';
 						}
 
-						//Utility Sensors
+//Utility Sensors
 						jj = 0;
 						bHaveAddedDivider = false;
 						$.each(data.result, function(i, item) {
@@ -3649,8 +3829,9 @@ define(['app'], function(app) {
 									xhtm += '\t      <td id="name" class="name"><span>' + item.Name + '</span></td>\n';
 									xhtm += '\t      <td id="bigtext" class="bigtext"><span class="wrapper">' + bigtexthtml + '</span></td>\n';
 									xhtm += '\t      <td id="img" class="img img1">' + imagehtml + '</td>';
-									xhtm += '\t      <td id="status" class="status"><span class="wrapper">' + statushtml + '</span></td>\n' +
-										'\t      <td id="lastupdate" class="lastupdate"><span>' + item.LastUpdate + '</span></td>\n' +
+									xhtm += '\t      <td id="status" class="status"><span class="wrapper">' + statushtml + '</span></td>\n';
+                                    xhtm += '\t      <td class="overlay"></td>';                                    
+									xhtm +=	'\t      <td id="lastupdate" class="lastupdate"><span>' + item.LastUpdate + '</span></td>\n' +
 										'\t    </tr>\n' +
 										'\t    </table>\n' +
 										'\t  </div>\n' +
@@ -3671,6 +3852,8 @@ define(['app'], function(app) {
 						if (jj > 0) {
 							htmlcontent += '</section>';
 						}
+                        
+                        addDataviz(); 
 					}
 				}
 			});
@@ -3680,7 +3863,7 @@ define(['app'], function(app) {
 					$.t('No favorite devices defined ... (Or communication Lost!)') +
 					'</h2><p>\n' +
 					$.t('If this is your first time here, please setup your') + ' <a href="javascript:SwitchLayout(\'Hardware\')" data-i18n="Hardware">Hardware</a>, ' +
-					$.t('and add some') + ' <a href="javascript:SwitchLayout(\'Devices\')" data-i18n="Devices">Devices</a></p><p>.' +
+					$.t('and add some') + ' <a href="javascript:SwitchLayout(\'Devices\')" data-i18n="Devices">Devices</a>.</p><p>' +
 					$.t('Visit the Getting Started page at the') + ' <a href="https://www.domoticz.com/wiki/Getting_started">Domoticz Wiki</a>.';
 
 			} else {
@@ -3804,6 +3987,7 @@ define(['app'], function(app) {
 								$(id + " #status > span").html(status);
 							}
 						} else {
+                            // normal/compact view slider magic
 							var imgname = $('#light_' + idx + ' .lcursor').prop('src');
 							imgname = imgname.substring(imgname.lastIndexOf("/") + 1, imgname.lastIndexOf("_O") + 2);
 							if (dtype == "relay")
@@ -3824,11 +4008,7 @@ define(['app'], function(app) {
 							if ($(id + " #bigtext > span").html() != status) { 
 								$(id + " #bigtext > span").html(status);
 							}
-							if ($scope.config.ShowUpdatedEffect == true) {
-								$(id + " #name").effect("highlight", {
-									color: '#EEFFEE'
-								}, 1000);
-							}
+                            console.log("sliding");
 						}
 					}
 					if (dtype != "relay")
@@ -3841,6 +4021,11 @@ define(['app'], function(app) {
 					var dtype = $(this).slider("option", "type");
 					if (dtype == "relay")
 						SetDimValue(idx, ui.value);
+                    if ($scope.config.ShowUpdatedEffect == true) {
+                        $(id + " #name").effect("highlight", {
+                            color: '#EEFFEE'
+                        }, 1000);
+                    }
 				}
 			});
 			$scope.ResizeDimSliders();
@@ -4004,6 +4189,11 @@ define(['app'], function(app) {
 			$scope.MakeGlobalConfig();
 			MobilePhoneDetection();
 			ShowFavorites();
+            /*
+            $.getScript('/js/dataviz.js', function() {
+                alert('Load was performed.');
+            });
+            */
 		};
 
 		$scope.$on('$destroy', function() {
