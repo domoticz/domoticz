@@ -2507,7 +2507,7 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		lua_pushstring(lua_state, "baseType");
 		lua_pushstring(lua_state, "device");
 		lua_rawset(lua_state, -3);
-		lua_pushstring(lua_state, "devType");
+		lua_pushstring(lua_state, "deviceType");
 		lua_pushstring(lua_state, dev_type);
 		lua_rawset(lua_state, -3);
 		lua_pushstring(lua_state, "subType");
