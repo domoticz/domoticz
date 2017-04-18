@@ -266,7 +266,6 @@ bool CGpio::StartHardware()
 	return (m_thread != NULL);
 }
 
-
 bool CGpio::StopHardware()
 {
 	m_stoprequested = true;
