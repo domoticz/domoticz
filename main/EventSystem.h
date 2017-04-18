@@ -77,6 +77,14 @@ public:
 		std::string lastUpdate;
 	};
 
+	struct _tHardwareListInt {
+		std::string Name;
+		int HardwareTypeVal;
+		std::string HardwareType;
+		bool Enabled;
+	} tHardwareList;
+
+
 	CEventSystem(void);
 	~CEventSystem(void);
 
@@ -92,8 +100,8 @@ public:
 	void WWWGetItemStates(std::vector<_tDeviceStatus> &iStates);
 	void SetEnabled(const bool bEnabled);
 	void GetCurrentStates();
-
-	void CEventSystem::exportDeviceStatesToLua(lua_State *lua_state, uint64_t deviceID);
+	void ExportDomoticzDataToLua(lua_State *lua_state, uint64_t deviceID);
+	void ExportDeviceStatesToLua(lua_State *lua_state);
 
 private:
 	//lua_State	*m_pLUA;

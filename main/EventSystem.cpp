@@ -2422,23 +2422,18 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 #endif // ENABLE_PYTHON
 
 
-
-struct _tHardwareListInt {
-	std::string Name;
-	int HardwareTypeVal;
-	std::string HardwareType;
-	bool Enabled;
-} tHardwareList;
-
-
-void CEventSystem::exportDeviceStatesToLua(lua_State *lua_state, uint64_t deviceID)
+void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t deviceID)
 {
-	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock2(m_devicestatesMutex);
-
+	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock3(m_devicestatesMutex);
+	int additional_lines = 0;
+	int data_lines = 0;
+	int index = 1;
+	const char* dev_type;
+	const char* sub_type;
 
 	//Get All Hardware ID's/Names, need them later
 	std::vector<std::vector<std::string> > result;
-	CWebServer foo;
+	CWebServer server;
 
 	std::map<int, _tHardwareListInt> _hardwareNames;
 	result = m_sql.safe_query("SELECT ID, Name, Enabled, Type FROM Hardware");
@@ -2461,24 +2456,20 @@ void CEventSystem::exportDeviceStatesToLua(lua_State *lua_state, uint64_t device
 			}
 
 			// TODO remove comments
-//			else
-//			{
-//				tlist.HardwareType = foo.PluginHardwareDesc(ID);
-//			}
+			//			else
+			//			{
+			//				tlist.HardwareType = server.PluginHardwareDesc(ID);
+			//			}
 			_hardwareNames[ID] = tlist;
 		}
 	}
 
 	//_log.Log(LOG_STATUS, "%d devices in table.", m_devicestates.size());
 
-	lua_createtable(lua_state, (int)m_devicestates.size(), 0);
-	typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
-	int additional_lines = 0;
-	int data_lines = 0;
-	int index = 1;
-	const char* dev_type;
-	const char* sub_type;
+	lua_createtable(lua_state, 0, 0);
 
+	// First export all the devices.
+	typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
 	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
 	{
 		_tDeviceStatus sitem = iterator->second;
@@ -2505,7 +2496,7 @@ void CEventSystem::exportDeviceStatesToLua(lua_State *lua_state, uint64_t device
 
 		lua_pushnumber(lua_state, (lua_Number)index);
 
-		lua_createtable(lua_state, 1, additional_lines+12);
+		lua_createtable(lua_state, 1, additional_lines + 12);
 
 		lua_pushstring(lua_state, "name");
 		lua_pushstring(lua_state, sitem.deviceName.c_str());
@@ -2798,8 +2789,123 @@ void CEventSystem::exportDeviceStatesToLua(lua_State *lua_state, uint64_t device
 		lua_settable(lua_state, -3); // device entry
 		index++;
 	}
-	lua_setglobal(lua_state, "domoticzData");
+	devicestatesMutexLock3.unlock();
 
+	// Now do the scenes and groups.
+	typedef std::map<uint64_t, _tScenesGroups>::iterator it_scgr;
+	for (it_scgr iterator = m_scenesgroups.begin(); iterator != m_scenesgroups.end(); ++iterator)
+	{
+		_tScenesGroups sgitem = iterator->second;
+
+		lua_pushnumber(lua_state, (lua_Number)index);
+
+		lua_createtable(lua_state, 1, 5);
+
+		lua_pushstring(lua_state, "name");
+		lua_pushstring(lua_state, sgitem.scenesgroupName.c_str());
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "id");
+		lua_pushnumber(lua_state, (lua_Number)sgitem.ID);
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "baseType");
+		if (sgitem.scenesgroupType == 0)
+		{
+			lua_pushstring(lua_state, "scene");
+		}
+		else
+		{
+			lua_pushstring(lua_state, "group");
+		}
+		lua_rawset(lua_state, -3);
+
+		lua_pushstring(lua_state, "lastUpdate");
+		lua_pushstring(lua_state, sgitem.lastUpdate.c_str());
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "value");
+		lua_pushstring(lua_state, sgitem.scenesgroupValue.c_str());
+		lua_rawset(lua_state, -3);
+	
+		lua_settable(lua_state, -3); // end entry
+		index++;
+	}
+
+	char *vtype;
+
+	// Now do the user variables.
+	typedef std::map<uint64_t, _tUserVariable>::iterator it_var;
+	for (it_var iterator = m_uservariables.begin(); iterator != m_uservariables.end(); ++iterator) 
+	{
+		_tUserVariable uvitem = iterator->second;
+
+		lua_pushnumber(lua_state, (lua_Number)index);
+
+		lua_createtable(lua_state, 1, 6);
+
+		lua_pushstring(lua_state, "name");
+		lua_pushstring(lua_state, uvitem.variableName.c_str());
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "id");
+		lua_pushnumber(lua_state, (lua_Number)uvitem.ID);
+		lua_rawset(lua_state, -3);
+
+		lua_pushstring(lua_state, "value");
+		if (uvitem.variableType == 0) 
+		{
+			//Integer
+			lua_pushnumber(lua_state, atoi(uvitem.variableValue.c_str()));
+			vtype = "integer";
+		}
+		else if (uvitem.variableType == 1) 
+		{
+			//Float
+			lua_pushnumber(lua_state, atof(uvitem.variableValue.c_str()));
+			vtype = "float";
+		}
+		else 
+		{
+			//String,Date,Time
+			lua_pushstring(lua_state, uvitem.variableValue.c_str());
+			if (uvitem.variableType == 2)
+			{
+				vtype = "string";
+			}
+			else if (uvitem.variableType == 3)
+			{
+				vtype = "date";
+			}
+			else if (uvitem.variableType == 4)
+			{
+				vtype = "time";
+			}
+			else 
+			{
+				vtype = "unknown";
+			}
+		}
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "variableType");
+		lua_pushstring(lua_state, vtype);
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "baseType");
+		lua_pushstring(lua_state, "uservariable");
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "lastUpdate");
+		lua_pushstring(lua_state, uvitem.lastUpdate.c_str());
+		lua_rawset(lua_state, -3);
+		
+		lua_settable(lua_state, -3); // end entry
+
+		index++;
+	}
+
+	lua_setglobal(lua_state, "domoticzData");
+}
+
+
+
+void CEventSystem::ExportDeviceStatesToLua(lua_State *lua_state)
+{
+	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock2(m_devicestatesMutex);
 	lua_createtable(lua_state, (int)m_devicestates.size(), 0);
 	typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
 	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
@@ -3257,7 +3363,9 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 		}
 	}
 
-	exportDeviceStatesToLua(lua_state, DeviceID);
+	ExportDeviceStatesToLua(lua_state);
+
+	ExportDomoticzDataToLua(lua_state, DeviceID);
 
 	lua_createtable(lua_state, (int)m_uservariables.size(), 0);
 
