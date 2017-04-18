@@ -422,7 +422,7 @@ void CGpio::Poller()
 		if (delayed_startup && (sec_counter == DELAYED_STARTUP_SECONDS))
 		{
 			_log.Log(LOG_NORM, "GPIO: Update Master Domoticz GPIO status");
-			UpdateDeviceStates(false);
+			UpdateDeviceStates(true);
 
 			if (m_pollinterval == 0)
 			{
