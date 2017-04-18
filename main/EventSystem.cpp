@@ -2496,7 +2496,7 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 
 		lua_pushnumber(lua_state, (lua_Number)index);
 
-		lua_createtable(lua_state, 1, additional_lines + 12);
+		lua_createtable(lua_state, 1, additional_lines + 11);
 
 		lua_pushstring(lua_state, "name");
 		lua_pushstring(lua_state, sitem.deviceName.c_str());
@@ -2525,10 +2525,7 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		lua_pushstring(lua_state, "level");
 		lua_pushnumber(lua_state, (lua_Number)sitem.lastLevel);
 		lua_rawset(lua_state, -3);
-		lua_pushstring(lua_state, "rawData");
-		lua_pushstring(lua_state, sitem.sValue.c_str());
-		lua_rawset(lua_state, -3);
-		lua_pushstring(lua_state, "attribute");
+		lua_pushstring(lua_state, "value");
 		lua_pushstring(lua_state, sitem.nValueWording.c_str());
 		lua_rawset(lua_state, -3);
 		lua_pushstring(lua_state, "changed");
@@ -2541,6 +2538,22 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 			lua_pushstring(lua_state, "false");
 		}
 		lua_rawset(lua_state, -3);
+
+		//get all svalues separate
+		std::vector<std::string> strarray;
+		StringSplit(sitem.sValue, ";", strarray);
+
+		lua_pushstring(lua_state, "rawData");
+		lua_createtable(lua_state, 0, 0);
+
+		int index2 = 1;
+		for (int index2 = 0; index2<strarray.size(); index2++)
+		{
+			lua_pushnumber(lua_state, (lua_Number)index2+1);
+			lua_pushstring(lua_state, strarray[index2].c_str());
+			lua_rawset(lua_state, -3);
+		}
+		lua_settable(lua_state, -3); // rawData table
 
 		if (additional_lines > 0)
 		{
@@ -2576,10 +2589,6 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 
 		lua_pushstring(lua_state, "data");
 		lua_createtable(lua_state, 0, 0);
-
-		//get all svalues separate
-		std::vector<std::string> strarray;
-		StringSplit(sitem.sValue, ";", strarray);
 
 		if (("Heating" == dev_type) && ("Zone" == sub_type))
 		{
