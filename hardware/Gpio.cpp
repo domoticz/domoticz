@@ -256,7 +256,7 @@ bool CGpio::StartHardware()
 
 	if (m_pollinterval > 0)
 	{
-		m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CGpio::Poller, this)));
+		m_thread_poller = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CGpio::Poller, this)));
 	}
 
 	_log.Log(LOG_NORM, "GPIO: WiringPi is now initialized");
@@ -269,10 +269,16 @@ bool CGpio::StartHardware()
 
 bool CGpio::StopHardware()
 {
+	m_stoprequested = true;
+
 	if (m_thread != NULL) {
-		m_stoprequested=true;
 		interruptCondition.notify_one();
 		m_thread->join();
+	}
+
+	if (m_thread_poller != NULL) 
+	{
+		m_thread_poller->join();
 	}
 
 	m_bIsStarted=false;

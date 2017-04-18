@@ -56,6 +56,7 @@ private:
 	static std::vector<CGpioPin> pins;
 
 	boost::shared_ptr<boost::thread> m_thread;
+	boost::shared_ptr<boost::thread> m_thread_poller;
 	volatile bool m_stoprequested;
 	tRBUF IOPinStatusPacket;
 };
