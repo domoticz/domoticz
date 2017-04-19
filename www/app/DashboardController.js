@@ -11,7 +11,7 @@ define(['app'], function(app) {
                 console.log("Dataviz is enabled");
                 setTimeout(function() { // small delay to make sure the main html has been generated, and to lower the burden on the system.
 
-                    $('.Temp, .TempHumidityBaro').each(function () { 
+                    $('#dashTemperature .Temp, #dashTemperature .TempHumidityBaro').each(function () { 
                         console.log("EACH START");
                         var id = $(this).parent().attr('id');
                         var agent = '' + id;
@@ -19,10 +19,10 @@ define(['app'], function(app) {
                         var n = agent.lastIndexOf('_');
                         var theid = agent.substring(n + 1);
                         var urltoload = 'json.htm?type=graph&sensor=temp&idx=' + theid + '&range=day';
-                        var el = $('<td class="dataviz">');
+                        var el = $('<td class="dataviz"><div></div></td>');
                         $(this).find('tr').append(el);
                         
-                        var showData = $(this).find('.dataviz');
+                        var showData = $(this).find('.dataviz > div');
                         var datavizArray = [];
                         $.getJSON(urltoload, function(data) {
                             console.log( "Dataviz - JSON load success" );
@@ -1623,6 +1623,9 @@ define(['app'], function(app) {
 										} else if (item.SubType == "Percentage") {
 											status = item.Data;
 											bigtext = item.Data;
+                                            if ($("#copyright").css("z-index") == 1){
+                                                $(id + " .overlay > div").width(item.Data);
+                                            }
 										} else if (item.SubType == "Custom Sensor") {
 											status = item.Data;
 											bigtext = item.Data;
@@ -2673,7 +2676,7 @@ define(['app'], function(app) {
 									}
 									xhtm +=
 										'\t    <tr>\n' +
-										'\t      <td id="name" class="name"><span>' + item.Name + '</span></td>\n';
+										'\t      <td id="name" class="name"><span>' + item.Name + '</span></td>\n' +
 										'\t      <td id="bigtext" class="bigtext"><span class="wrapper">' + bigtexthtml + '</span></td>\n';
                                     xhtm += imghtml;
 									xhtm +=
@@ -2890,8 +2893,7 @@ define(['app'], function(app) {
 									}
 									xhtm +=
 										'</span></td>\n';
-                                    xhtm +=     '\t      <td class="overlay"></td>';   
-									xhtm += 	'\t      <td id="lastupdate" class="lastupdate"><span>' + item.LastUpdate + '</span></td>\n' +
+                                    xhtm += 	'\t      <td id="lastupdate" class="lastupdate"><span>' + item.LastUpdate + '</span></td>\n' +
 										'\t    </tr>\n' +
 										'\t    </table>\n' +
 										'\t  </div><!--item end-->\n' +
@@ -3830,7 +3832,18 @@ define(['app'], function(app) {
 									xhtm += '\t      <td id="bigtext" class="bigtext"><span class="wrapper">' + bigtexthtml + '</span></td>\n';
 									xhtm += '\t      <td id="img" class="img img1">' + imagehtml + '</td>';
 									xhtm += '\t      <td id="status" class="status"><span class="wrapper">' + statushtml + '</span></td>\n';
-                                    xhtm += '\t      <td class="overlay"></td>';                                    
+                                
+                                    xhtm +=     '\t      <td class="overlay"><div';
+                                    if (item.SubType == "Percentage" && $("#copyright").css("z-index") == 1) { //z-index signals that the user has chosen to see data visualisations.
+                                        xhtm += ' style="width:'
+                                        if (typeof item.Data != 'undefined') {
+                                        xhtm += item.Data + '"';
+                                        } else {
+                                        xhtm += '0%"';
+                                        }
+                                    }
+                                    xhtm += '></div></td>';   
+                                    
 									xhtm +=	'\t      <td id="lastupdate" class="lastupdate"><span>' + item.LastUpdate + '</span></td>\n' +
 										'\t    </tr>\n' +
 										'\t    </table>\n' +
