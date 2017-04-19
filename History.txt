@@ -25,6 +25,7 @@ Version 3.xxxx (January xth 2017)
 - Implemented: Notification for Dummy Soil/Moisture sensor
 - Implemented: Notification for Alert Sensor via udevice JSON call
 - Implemented: Option to replace an Meter device
+- Implemented: OZW, Added support for Atmospheric Pressure sensor
 - Implemented: Python Plugin System
 - Implemented: RFXtrx Lucci Fan implemented
 - Implemented: RFXtrx RFY2 protocol implemented
