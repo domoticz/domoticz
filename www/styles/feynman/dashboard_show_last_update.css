@@ -25,6 +25,8 @@
     min-height:75px;
 }
 
+
+
 #dashcontent #lastupdate{
     display:block;
     clear:both;
@@ -34,6 +36,16 @@
     border-bottom-left-radius: 5px;
     border-bottom-right-radius: 5px;
 }
+
+#dashcontent #lastupdate:before{
+    content:"hoi";
+}
+#dashcontent #lastupdate:hover:before{
+    content:"Last seen: ";
+    transition: all 0.5s ease-in;
+    transition-delay: 2s;
+}
+
 
 #dashcontent #lastupdate > span{
     height: 20px;
@@ -58,7 +70,7 @@
     
     #dashcontent .item.withstatus{
         /*background-color:#D4E1EE;*/
-        border-bottom:20px solid transparent; /*little trick to push it down*/
+        /*border-bottom:20px solid transparent; /*little trick to push it down*/
     }   
     
 }
@@ -79,11 +91,37 @@
         border-bottom:20px solid transparent; /*little trick to push it down*/
     }   
     
-}
+    
+    /* grow a bit bigger if there is data ouput*/
+    
+    #dashcontent div.item.withstatus.statuscount1 tr{min-height:105px}  
+    #dashcontent div.item.withstatus.statuscount2 tr{min-height:135px}
+    #dashcontent div.item.withstatus.statuscount3 tr{min-height:165px}
+    #dashcontent div.item.withstatus.statuscount4 tr{min-height:195px}
+    #dashcontent div.item.withstatus.statuscount5 tr{min-height:225px}
+    #dashcontent div.item.withstatus.statuscount6 tr{min-height:255px}
+    #dashcontent div.item.withstatus.statuscount7 tr{min-height:285px}
+    #dashcontent div.item.withstatus.statuscount8 tr{min-height:305px}
+    #dashcontent div.item.withstatus.statuscount9 tr{min-height:335px}
+    #dashcontent div.item.withstatus.statuscount10 tr{min-height:365px}   
+    
+    
+    #dashcontent #lastupdate > span{
+        padding-top:4px;
+    }
+} 
+
+
+
+
+
+
+
+
+
+
 
 @media screen and (min-width: 981px){
-
-    
     
     #dashcontent .divider tr, #dashcontent .item tr {
         min-height: 55px;

@@ -84,14 +84,14 @@ body table#itemtabledoubleicon tbody tr, body table#itemtable tbody tr, body tab
     text-transform: uppercase;
 }
 
-.span3,
-.span4 {
+body.frontStage .span3,
+body.fronStage .span4 {
     margin-bottom:20px;
 }
 
-.span3 td:last-of-type a.btnsmall,
-.span4 td:last-of-type a.btnsmall{
-    color: #43A4D3!important
+.item .options a.btnsmall{
+    /*color: #53b4e3;*/
+    color:#8cd9ff;
 }
 
 #holder h1, #holder h2, #holder h3{
@@ -128,9 +128,9 @@ body table#itemtablenotype tr td:first-child{
 
 .ui-draggable:not(.ui-dialog) table > tbody > tr{
     background-color:transparent!important;
-    background: -moz-linear-gradient(to bottom, rgba(212,225,238,1) 0% ,rgba(212,225,238,1) 42px, rgba(255,255,255,1) 42px,rgba(255,255,255,0.95) 69px,rgba(255,255,255,1) 69px,rgba(255,255,255,1) 100%);
-    background: -webkit-linear-gradient(to bottom, rgba(212,225,238,1) 0% ,rgba(212,225,238,1) 42px, rgba(255,255,255,1) 42px,rgba(255,255,255,0.95) 69px,rgba(255,255,255,1) 69px,rgba(255,255,255,1) 100%); 
-    background: linear-gradient(to bottom, rgba(212,225,238,1) 0% ,rgba(212,225,238,1) 42px, rgba(255,255,255,0.9) 42px,rgba(255,255,255,0.95) 49px,rgba(255,255,255,1) 69px,rgba(255,255,255,0.95) 69px, rgba(255,255,255,1) 100%);    
+    background: -moz-linear-gradient(to bottom, rgba(212,225,238,1) 0% ,rgba(212,225,238,1) 40px, rgba(255,255,255,1) 40px,rgba(255,255,255,0.95) 69px,rgba(255,255,255,1) 69px,rgba(255,255,255,1) 100%);
+    background: -webkit-linear-gradient(to bottom, rgba(212,225,238,1) 0% ,rgba(212,225,238,1) 40px, rgba(255,255,255,1) 40px,rgba(255,255,255,0.95) 69px,rgba(255,255,255,1) 69px,rgba(255,255,255,1) 100%); 
+    background: linear-gradient(to bottom, rgba(212,225,238,1) 0% ,rgba(212,225,238,1) 40px, rgba(255,255,255,0.9) 40px,rgba(255,255,255,0.95) 49px,rgba(255,255,255,1) 69px,rgba(255,255,255,0.95) 69px, rgba(255,255,255,1) 100%);    
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#d4e1ee', endColorstr='#cccccccc',GradientType=0 );
     border-radius:2px!important;
 }
@@ -143,60 +143,8 @@ body table#itemtablenotype tr td:first-child{
     border-radius:2px!important;
 }
 
-/* hoeveel van deze dingen heb ik zeg..
-#dashcontent .ui-draggable:not(.ui-dialog) table > tbody > tr{
-    background-color:#D4E1EE;
-}*/
-
-
 .ui-draggable:not(.ui-dialog) table{
     box-shadow: 2px 2px 18px 0px rgba(50, 50, 50, 0.2);
-}
-
-/*  status indicator */
-div.item.statusNormal td#name{
-    background-color: transparent;
-
-}
-div.item.statusProtected td#name{
-    background-color: transparent;
-    -moz-box-shadow:  0 2px 0 0 #A4B1EE;;
-    -webkit-box-shadow:  0 2px 0 0 #A4B1EE;;
-    box-shadow:  0 2px 0 0 #A4B1EE;;  
-}
-div.item.statusTimeout td#name{
-    background-color: transparent;
-    -moz-box-shadow:  0 2px 0 0 #DF2D3A;
-    -webkit-box-shadow:  0 2px 0 0 #DF2D3A;
-    box-shadow:  0 2px 0 0 #DF2D3A;    
-}
-div.item.statusLowBattery td#name{
-    background-color: transparent;
-    -moz-box-shadow:  0 2px 0 0 #DDDF2D;
-    -webkit-box-shadow:  0 2px 0 0 #DDDF2D;
-    box-shadow:  0 2px 0 0 #DDDF2D;  
-}
-
-div.item.withstatus.statusNormal td#name{
-    background-color: transparent;  
-}
-div.item.withstatus.statusProtected td#name{
-    background-color: transparent;
-    -moz-box-shadow:  0 1px 0 0 #A4B1EE;
-    -webkit-box-shadow:  0 1px 0 0 #A4B1EE;
-    box-shadow:  0 1px 0 0 #A4B1EE;
-}
-div.item.withstatus.statusTimeout td#name{
-    background-color: transparent;
-    -moz-box-shadow:  0 1px 0 0 #DF2D3A;
-    -webkit-box-shadow:  0 1px 0 0 #DF2D3A;
-    box-shadow:  0 1px 0 0 #DF2D3A;    
-}
-div.item.withstatus.statusLowBattery td#name{
-    background-color: transparent;
-    -moz-box-shadow:  0 1px 0 0 #DDDF2D;
-    -webkit-box-shadow:  0 1px 0 0 #DDDF2D;
-    box-shadow:  0 1px 0 0 #DDDF2D;  
 }
 
 
@@ -258,33 +206,6 @@ body:not(.dashboard) h2 + div.divider .span4:nth-child(-n+3) div.item.statusLowB
 }
 
 
-
-/*
-td.statusNormal{background-color: transparent}
-td.statusProtected{background-color: transparent}
-td.statusTimeout{background-color: transparent}
-td.statusLowBattery{background-color: transparent}
-
-td.statusNormal{
-    -moz-box-shadow:  inset 0 -3px 0 0 #A4B1EE;
-    -webkit-box-shadow:  inset 0 -3px 0 0 #A4B1EE;
-    box-shadow:  inset 0 -3px 0 0 #A4B1EE;
-}
-td.statusProtected{
-    background-color: #A4B1EE;
-}
-
-td.statusTimeout{
-    -moz-box-shadow:  0 1px 0 0 #DF2D3A;
-    -webkit-box-shadow:  0 1px 0 0 #DF2D3A;
-    box-shadow:  0 1px 0 0 #DF2D3A;    
-}
-td.statusLowBattery{
-    -moz-box-shadow:  0 1px 0 0 #DDDF2D;
-    -webkit-box-shadow:  0 1px 0 0 #DDDF2D;
-    box-shadow:  0 1px 0 0 #DDDF2D;    
-}*/
-
 #dashcontent .ui-draggable:not(.ui-dialog) tr{
     background-image: none;
     background-color: #D4E1EE;
@@ -293,7 +214,7 @@ td.statusLowBattery{
 }
 
 #dashcontent .selectorlevels .ui-buttonset .ui-button{
-    box-shadow: -1px 0px 1px 1px rgba(50, 50, 50, 0.1);
+    /*box-shadow: -1px 0px 1px 1px rgba(50, 50, 50, 0.1);*/
     min-height:20px;
 }
 
@@ -323,21 +244,8 @@ td.statusLowBattery{
     top: -50px;
 }
 
+
 #bigtext > span {border-radius:3px}
-
-/*
-#dashcontent #bigtext {
-    width: calc(50% - 55px);
-    font-weight:100;
-}*/
-
-#dashcontent #bigtext > span{
-    font-weight:100;
-}
-
-#bigtext > span{
-    background-color: #D4E1EE;
-}
 
 #img img, 
 #img1 img,
@@ -402,26 +310,22 @@ td.statusLowBattery{
     padding:5px;
     cursor: pointer;
 }        
-    
-/*
-#dashcontent #img2{
-    height:40px!important;
-    border-radius: 50%;
-    box-sizing: border-box;
-    background-color: #f9f9f9;
-}
-
-#dashcontent #img2 img{
-    height:36px!important;
-    padding:5px;
-    border-radius:50%;
-}
-*/
 
 #type,
 #lastupdate{
     color:#999;
 }
+
+.options a.btnsmall {
+    margin-bottom: 4px;
+    padding: 2px 5px 4px 5px;
+}
+
+.options a.btnsmall:hover {
+    color:#fff;
+}
+
+.item .options img.favorite{top:-28px}
 
 
 .ui-corner-bottom, .ui-corner-br, .ui-corner-all, .ui-corner-top, .ui-corner-right, .ui-corner-left, .ui-corner-tr{
@@ -473,6 +377,13 @@ button,
 }
 
 
+.selectorlevels .ui-button span.ui-button-text{
+    color:#ccc;
+}
+.selectorlevels .ui-button.ui-state-active {
+    box-shadow: inset 0px 0px 20px 2px rgba(250, 250, 250, 0.5);
+}
+.selectorlevels .ui-button.ui-state-active .ui-button-text{color:#fff}
 
 .divider .span3 .ui-selectmenu-button,
 .divider .span4 .ui-selectmenu-button{
@@ -483,6 +394,11 @@ button,
 
 a.btnsmall {
     background-image: none;
+}
+
+#dashcontent .selectorlevels label:not(.ui-state-active):hover{
+    background-color:#3d9cca;
+    color:#fff;
 }
 
 /* new proposed items */
@@ -612,3 +528,67 @@ body:hover .ui-dialog {
     box-shadow:  0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
     */
 }
+
+
+@media all and (max-width: 600px){
+
+    .item .options a.btnsmall{
+        color:#53b4e3;
+    }
+    
+    .item #bigtex .swrapper{background-color:transparent}
+}
+
+
+@media all and (min-width: 600px){
+
+    /*  status indicator */
+    div.item.statusNormal td#name{
+        background-color: transparent;
+    }
+    div.item.statusProtected td#name{
+        background-color: transparent;
+        -moz-box-shadow:  0 2px 0 0 #A4B1EE;;
+        -webkit-box-shadow:  0 2px 0 0 #A4B1EE;;
+        box-shadow:  0 2px 0 0 #A4B1EE;;  
+    }
+    div.item.statusTimeout td#name{
+        background-color: transparent;
+        -moz-box-shadow:  0 2px 0 0 #DF2D3A;
+        -webkit-box-shadow:  0 2px 0 0 #DF2D3A;
+        box-shadow:  0 2px 0 0 #DF2D3A;    
+    }
+    div.item.statusLowBattery td#name{
+        background-color: transparent;
+        -moz-box-shadow:  0 2px 0 0 #DDDF2D;
+        -webkit-box-shadow:  0 2px 0 0 #DDDF2D;
+        box-shadow:  0 2px 0 0 #DDDF2D;  
+    }
+
+    /*  different boxshadow height is the item has more status content */
+    div.item.withstatus.statusNormal td#name{
+        background-color: transparent;  
+    }
+    div.item.withstatus.statusProtected td#name{
+        background-color: transparent;
+        -moz-box-shadow:  0 1px 0 0 #A4B1EE;
+        -webkit-box-shadow:  0 1px 0 0 #A4B1EE;
+        box-shadow:  0 1px 0 0 #A4B1EE;
+    }
+    div.item.withstatus.statusTimeout td#name{
+        background-color: transparent;
+        -moz-box-shadow:  0 1px 0 0 #DF2D3A;
+        -webkit-box-shadow:  0 1px 0 0 #DF2D3A;
+        box-shadow:  0 1px 0 0 #DF2D3A;    
+    }
+    div.item.withstatus.statusLowBattery td#name{
+        background-color: transparent;
+        -moz-box-shadow:  0 1px 0 0 #DDDF2D;
+        -webkit-box-shadow:  0 1px 0 0 #DDDF2D;
+        box-shadow:  0 1px 0 0 #DDDF2D;  
+    }
+
+}
+
+
+

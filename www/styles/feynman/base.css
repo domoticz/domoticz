@@ -109,8 +109,8 @@ html, body {height:100%}
     margin-top:5px
 }
 
-
-div.divider span4{
+div.divider .span3,
+div.divider .span4{
     margin-bottom:1em;
     padding:0;
 }
@@ -219,13 +219,14 @@ p.ng-binding {
     padding-top: 2px
 }
 
-
-.selectorlevels .ui-state-default, 
-.selectorlevels .ui-widget-content .ui-state-default, 
-.selectorlevels .ui-widget-header .ui-state-default{
+.selectorlevels .ui-button:not(.ui-state-active){
     background-color:#D4E1EE;
 }
-
+/*
+.ui-state-default, 
+.selectorlevels .ui-widget-content .ui-state-default, 
+.selectorlevels .ui-widget-header .ui-state-default
+*/
 
 /* HEADER CONTENT*/
 
@@ -255,7 +256,8 @@ p.ng-binding {
 
 #dashcontent > section {margin-bottom:20px;}
 
-#prebannav #timesun + td > span {color:#ddd;}
+#prebannav #timesun + td{padding:0}
+#prebannav #timesun + td > span {color:#ddd;padding:0}
 #timesun + td {color:#ddd!important;}
 
 
@@ -589,7 +591,7 @@ body #dashcontent table > tbody > tr{
 #dashcontent div[class^="span"] #itemtablesmalltrippleicon #img3{
     display:inline-block;
     /*float:none!important;*/
-    height:32px;
+    height:25px;
     position:initial;
     width:33.3%;
     overflow:hidden;
@@ -601,21 +603,29 @@ body #dashcontent table > tbody > tr{
 #dashcontent div[class^="span"] #itemtablesmalltrippleicon #img1:hover,
 #dashcontent div[class^="span"] #itemtablesmalltrippleicon #img2:hover,
 #dashcontent div[class^="span"] #itemtablesmalltrippleicon #img3:hover{
-    background-color:#fff;
+    background-color:#43A4D3;
+    color:#fff;
 }
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img:hover:after,
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img1:hover:after,
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img2:hover:after,
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img3:hover:after{
+    color:#fff;
+}
+
 
 #dashcontent div[class^="span"] #itemtablesmalltrippleicon #img img,
 #dashcontent div[class^="span"] #itemtablesmalltrippleicon #img1 img,
 #dashcontent div[class^="span"] #itemtablesmalltrippleicon #img2 img,
 #dashcontent div[class^="span"] #itemtablesmalltrippleicon #img3 img{
-    height:22px;
-    width: 22px;
+    height:20px;
+    width: 20px;
     border:none;
     position: relative;
-    z-index: 1;
+    z-index: 2;
     box-sizing: content-box;
     border-right: 300px solid transparent!important;
-    padding:5px 0 0 5px;
+    padding:1px 0 0 5px;
     border-radius:0;
     margin-top:0;
 }
@@ -634,7 +644,7 @@ body #dashcontent table > tbody > tr{
     content: "Open";
     left: 33px;
     position: relative;
-    top: -19px;
+    top: -21px;
     font-size: 14px;
     color:#333;
 }
@@ -642,7 +652,7 @@ body #dashcontent table > tbody > tr{
     content: "Stop";
     left: 33px;
     position: relative;
-    top: -19px;
+    top: -21px;
     font-size: 14px;
     color:#333;
 }
@@ -650,7 +660,7 @@ body #dashcontent table > tbody > tr{
     content: "Close";
     left: 33px;
     position: relative;
-    top: -19px;
+    top: -21px;
     font-size: 14px;
     color:#333;
 }
@@ -715,7 +725,7 @@ body .item tr > #name {
     max-width:50%;
 }
 #bigtext span{
-    font-size: 17px;
+    font-size: 13px;
     font-weight: normal;
     white-space: nowrap;
 }
@@ -729,29 +739,27 @@ body .item tr > #name {
 }
 
 
-@media all and (min-width: 1200px){
+@media all and (min-width: 981px){
     #bigtext{
     top: -29px;
     right: 38px;
     }
     
-    #itemtabledoubleicon #bigtext{right: 90px;}
-    #itemtablesmalldoubleicon #bigtext{right: 90px;}
-    
-    #itemtabletrippleicon #bigtext{right: 100px;}
-    #itemtablesmalltrippleicon #bigtext{right: 105px;}
-    
-    #itemtabledoubleicon #bigtext{right: 80px;}
+    #itemtabledoubleicon #bigtext{right: 70px;}
     #itemtablesmalldoubleicon #bigtext{right: 90px;}
 
     #itemtabletrippleicon #bigtext{right: 100px;}
     #itemtablesmalltrippleicon #bigtext{right: 105px;}
+    
+    #bigtext span{
+        font-size: 17px;
+    }
     
 }  
 
 #dashcontent .span4 #bigtext{
     top: -38px;
-    right: 55px;
+    right: 50px;
 }
 
 #dashcontent .span3 #bigtext{
@@ -838,47 +846,41 @@ body .item tr > #name {
     padding:0;
 }
 
-body:not(.dashboard) td#status > span > span.separator{padding-right:10px;}
+body:not(.dashboard) td#status > span > span.separator{padding-right:3px;}
 /*body:not(.dashboard) td#status > span > span.separator{padding:0!important};*/
 
-#dashcontent .item.withstatus.statuscount1 tr{height:85px}
-#dashcontent .item.withstatus.statuscount2 tr{height:115px}
-#dashcontent .item.withstatus.statuscount3 tr{height:145px}
-#dashcontent .item.withstatus.statuscount4 tr{height:175px}
-#dashcontent .item.withstatus.statuscount5 tr{height:205px}
-#dashcontent .item.withstatus.statuscount6 tr{height:235px}
-#dashcontent .item.withstatus.statuscount7 tr{height:265px}
-#dashcontent .item.withstatus.statuscount8 tr{height:295px}
-#dashcontent .item.withstatus.statuscount9 tr{height:325px}
+#dashcontent .item.withstatus.statuscount1 tr{min-height:85px}
+#dashcontent .item.withstatus.statuscount2 tr{min-height:115px}
+#dashcontent .item.withstatus.statuscount3 tr{min-height:145px}
+#dashcontent .item.withstatus.statuscount4 tr{min-height:175px}
+#dashcontent .item.withstatus.statuscount5 tr{min-height:205px}
+#dashcontent .item.withstatus.statuscount6 tr{min-height:235px}
+#dashcontent .item.withstatus.statuscount7 tr{min-height:265px}
+#dashcontent .item.withstatus.statuscount8 tr{min-height:295px}
+#dashcontent .item.withstatus.statuscount9 tr{min-height:325px}
 
 #dashcontent .item.withstatus #status > .wrapper > span{
     display:flex;
     flex-direction: column;
     justify-content: center;
     width:100%;
-    padding:10px 10px 10px 15px;
+    padding:13px 10px 10px 15px;
     flex: 1 1 auto;
     height:30px;
-    box-shadow: 2px 4px 18px 0px rgba(50, 50, 50, 0.2);
+    box-shadow: inset 2px 4px 18px 0px rgba(50, 50, 50, 0.1);
 }
 
 
-
-
 /*  mini options menu */
-div.item .options{
+.item .options{
     position:relative;
     padding:0;
     margin:0!important;
     white-space: nowrap;
 }
 
-td.options{
-    padding:0;
-}
-
 div[class^="span"] div.item .options a,
-.span3 table > tbody> tr > td:last-of-type a,
+.span3 table > tbody> tr > td:last-of-type a, /* these 'last-of-type'things should be removed after the theme becomes the new default. They were a hack to target the options td. */
 .span4 table > tbody> tr > td:last-of-type a{
     position:relative;
     left:-16px;  
@@ -889,13 +891,6 @@ div[class^="span"] table#itemtabledoubleicon > tbody> tr > td:first-of-type a,
 div[class^="span"] table#itemtabletrippleicon > tbody> tr > td:first-of-type a{
     margin-left:5px;
 }
-
-/*  new2
-.span4 td.options a, 
-#dashcontent .span4 td.options div{
-    font-size:12px;
-}*/
-
 
 #type:before {
     font-style: normal!important;
@@ -955,8 +950,6 @@ a.btnstyle:last-of-type, a.btnstylerev:last-of-type{
     margin-right: 0;
 }
 
-
-
 .btnstyle3{
     background: #46b1d9;
     background: -moz-linear-gradient(top, #46b1d9 0%, #3d9bc9 50%, #2e8cbc 51%, #2571ab 100%);
@@ -966,7 +959,7 @@ a.btnstyle:last-of-type, a.btnstylerev:last-of-type{
 }
 
 
-/* this is a fix for a lack of proper span tags */
+/* this is a (hopefully temperary) fix for a lack of proper span tags */
 #protectiontable, 
 #loghistory table, 
 #notifications>table, 
@@ -977,6 +970,7 @@ a.btnstyle:last-of-type, a.btnstylerev:last-of-type{
     padding-left: 20px;
     margin-bottom:10px;
 }
+
 #hardwarecontent #configuration{ padding:20px;}
 
 #restoredatabase center {
@@ -1021,22 +1015,6 @@ a.btnstyle:last-of-type, a.btnstylerev:last-of-type{
     margin-bottom:80px;
 }
 
-/* something to iron out */
-/*
-#settingscontent #othersettings > h2,
-#settingscontent #floorplans > h2,
-#settingscontent #metercounters > h2,
-#settingscontent #notifications > h2,
-#settingscontent #loghistory > h2,
-#settingscontent #system > h2 {
-    background-color:#e0e;
-    color: #666;
-    padding:10px 20px;
-    margin-top:20px;
-    margin-bottom:0;
-}
-*/
-
 .tab-content{overflow:visible}
 
 #settingscontent .sub-tabs {
@@ -1058,7 +1036,7 @@ a.btnstyle:last-of-type, a.btnstylerev:last-of-type{
     padding-bottom:5px;
 }
 
-/* tof, maar plakt dingen ook horizontaal aan elkaar
+/* tof, maar plakt dingen ook horizontaal aan elkaar.
 .row-fluid{
     display:flex;
     flex-wrap: wrap;
@@ -1337,13 +1315,14 @@ table.dataTable tbody img{
     text-indent:0!important;
 }    
 
-.divider .span4 .selectorlevels{
+body:not(.dashboard) .divider .span4 .selectorlevels{
     border-top:7px solid transparent;
 }
 
-#dashcontent .selectorlevels{
+.selectorlevels{
     margin-top:0!important;
     border-top:none;
+    font-size:12.5px;
 }
 
 .selectorlevels .ui-buttonset{
@@ -1379,18 +1358,18 @@ table.dataTable tbody img{
     box-shadow: 1px -0.5px 2px 0.5px rgba(50, 50, 50, 0.1);
 }
 
-.selectorlevels .ui-buttonset .ui-button span{
+.selectorlevels .ui-button span.ui-button-text{
     padding:1px 5px;
+    color:#333;
 }
 
-.selectorlevels  .ui-state-active{
-    background-color:#73b6ca;
+.selectorlevels .ui-button span.ui-button-text:hover{
     color:#fff;
-    box-shadow: inset 0px 1px 2px 1px rgba(50,50,50,0.2);
 }
 
-#dashcontent .selectorlevels label .ui-button-text{
-    padding:0;
+.selectorlevels .ui-button.ui-state-active{box-shadow: inset 0px 0px 20px 2px rgba(250, 250, 250, 0.1);}
+.selectorlevels .ui-button.ui-state-active .ui-button-text{
+    color:#ddd;
 }
 
 .selectorlevels .ui-selectmenu-button span.ui-icon{
@@ -1415,17 +1394,21 @@ table.dataTable tbody img{
     box-shadow: 1px -0.5px 2px 0.5px rgba(50, 50, 50, 0.1), inset -2px -1px 20px -1px rgba(50, 50, 50, 0.2);
 }
 
+.selectorlevels .ui-selectmenu-button span.ui-selectmenu-text{
+    text-shadow:none;
+    display:flex;
+    align-items: center;
+    justify-content: center;    
+}
+
 #dashcontent .selectorlevels .ui-selectmenu-button span.ui-selectmenu-text{
-    text-align:center;
     padding: 3px!important;
     width:100%;
     height:100%;
-    display:flex;
-    align-items: center;
-    justify-content: center;
     font-weight: normal;
     text-align: center;
     background-color:transparent;
+    padding:0;
 }
 
 #dashcontent .selectorlevels .ui-buttonset .ui-button{
@@ -1532,14 +1515,15 @@ table.dataTable td:first-of-type{padding-left:10px;}
 }
 
 .selectorlevels label:hover{
-    color:#333;
-    background-color:#fff;
+    color:#fff;
+    background-color:#43A4D3;
 }
 
 #dashcontent #itemtablesmalltrippleicon [id^="img"]:hover,
 #dashcontent div[class^="span"] .selectorlevels .ui-buttonset .ui-button:hover,
 #dashcontent .selectorlevels .ui-selectmenu-text:hover{
-    box-shadow: inset 0px 0px 20px 2px rgba(250, 250, 250, 0.4);
+    background-color:#43A4D3;
+    /*box-shadow: inset 0px 0px 20px 2px rgba(250, 250, 250, 0.4);*/
 }
 
 
@@ -1632,12 +1616,9 @@ table.dataTable td:first-of-type{padding-left:10px;}
 }
 
 
-
-
-
 /*  PAGE SPECIFIC OVERRIDES  */
 
-.utility td#status{
+body.dashboard item.utility td#status{
     font-size:15px;
     white-space: normal;
     color:#333;
@@ -1648,7 +1629,14 @@ div#hardwaretable_wrapper + #updelclr{border-top:0!important;border-bottom:10px!
 
 #settingscontent #rfxmetertable td{text-align: left!important}
 
+#aboutcontent{color:#fff;}
 
+
+
+/*  new features, hide by default  */
+
+body.dashboard .item td.dataviz{height:0;overflow:hidden}
+.item td.overlay{display:none}
 
 
 
@@ -1880,6 +1868,8 @@ td[colspan]:not([colspan="1"])
         transform: scale(1.5);
     }
     
+    .beforebannav{margin-bottom:10px;}
+    
 }
 
 /*
@@ -1956,10 +1946,17 @@ td[colspan]:not([colspan="1"])
     
     #dashcontent .item.withstatus #status > .wrapper > span{
         padding-left:10px;
-        background-color:#D4E1EE;
     }
+    
+    
 
 }  
+
+@media screen and (min-width: 768px){
+    .navbar{padding-left:20px;padding-right:20px;}
+}
+
+
 @media screen and (min-width: 981px){
 
     #bigtext{float:right;}
@@ -1970,17 +1967,49 @@ td[colspan]:not([colspan="1"])
     input.text{min-width:210px;}
 
     /* items with lots of data outputs, let's keep them from getting too freakishly tall */
-    #dashcontent div.item.withstatus tr td#status > .wrapper {display:flex; flex-wrap: wrap;} 
-    #dashcontent div.item.withstatus td#status > .wrapper > span{width:50%}
+    #dashcontent div.item.withstatus tr td#status > .wrapper {
+        display:flex; 
+        flex-wrap: wrap;
+    } 
+    
+    #dashcontent div.item.withstatus td#status > .wrapper > span{
+        width:50%;
+        box-shadow: inset 2px 4px 18px 0px rgba(50, 50, 50, 0.2);
+    }
     
     #dashcontent div.item.withstatus.statuscount1 tr,    
-    #dashcontent div.item.withstatus.statuscount2 tr{height:85px}
+    #dashcontent div.item.withstatus.statuscount2 tr{min-height:85px}
     #dashcontent div.item.withstatus.statuscount3 tr,
-    #dashcontent div.item.withstatus.statuscount4 tr{height:115px}
+    #dashcontent div.item.withstatus.statuscount4 tr{min-height:115px}
     #dashcontent div.item.withstatus.statuscount5 tr,
-    #dashcontent div.item.withstatus.statuscount6 tr{height:145px}
+    #dashcontent div.item.withstatus.statuscount6 tr{min-height:145px}
     #dashcontent div.item.withstatus.statuscount7 tr,
-    #dashcontent div.item.withstatus.statuscount8 tr{height:175px}
+    #dashcontent div.item.withstatus.statuscount8 tr{min-height:175px}
     #dashcontent div.item.withstatus.statuscount9 tr,
-    #dashcontent div.item.withstatus.statuscount10 tr{height:205px}    
-}  
+    #dashcontent div.item.withstatus.statuscount10 tr{min-height:205px}    
+}
+
+
+@media all and (min-width: 768px) and (max-width: 1300px){
+
+    body.dashboard div.ui-draggable,
+    body.dashboard .span4{
+        width:calc(100% / 3 - 20px)!important;
+        -webkit-box-sizing: content-box;
+        -moz-box-sizing: content-box;
+        box-sizing: content-box;    
+    }
+    
+    body.dashboard .span3{
+        width:calc(100% / 4 - 20px)!important;
+        -webkit-box-sizing: content-box;
+        -moz-box-sizing: content-box;
+        box-sizing: content-box;    
+    }
+    
+    body.dashboard #main-view > .container {width:100%!important}
+    
+    #beforebannav,#bannav{padding-left:10px;padding-right:10px}
+    .navbar{padding-left: 30px; padding-right:30px]
+}
+

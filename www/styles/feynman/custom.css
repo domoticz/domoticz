@@ -5,8 +5,9 @@
 @import url("dashboard_show_last_update.css"); /* Displays the 'last update' time on the dashboard. */
 /*@import url("dashboard_thinner_items_on_wide_screens.css"); /* Only for wide screens; item-options move next to the name. */
 @import url("dashboard_highlights.css"); /* This adds bigger items at the top of each dashboard category. */
-/*@import url("dashboard_highlights_see-through.css"); /* makes all dashboard items semi-transparent. */
-/*@import url("dashboard_vertical_columns.css"); /* Turns dashboard into vertical columns. */
+@import url("dashboard_highlights_see-through.css"); /* makes all dashboard items semi-transparent. */
+@import url("dashboard_vertical_columns.css"); /* Turns dashboard into vertical columns. */
+@import url("dashboard_show_data_vizualisations.css"); /* Adds 24h data visualisation on some elements */
 @import url("navigation_main_sidebar.css"); /* This transforms the main menu to a vertical menu on the left. */
 @import url("navigation_settings_sidemenu.css"); /* This transforms the settings-tabs into a sidebar on the left. */
 @import url("extras_and_animations.css"); /* Adds fun visual extras. */
@@ -23,6 +24,7 @@ lines at the top of this page. Or you can just delete the line.
 You can add your own background image here. Just place the URL between the brackets of "url()" in the line below, and 
 remove the /* before the word 'body'. This will override the detault background image.
 */
+
 
 /* body {
     background: transparent url() center center fixed;
@@ -57,8 +59,14 @@ This makes the background of items see-through. This can look nice if you use yo
 __Dashboard Vertical Columns__
 This feature will create vertical columns on your dashboard, one for each sensor type. BUT this feature only 
 springs into action if you have enough horizontal space for the amount device-types that you have. So for 5 columns 
-you need at least a 1300 pixels wide screen, for example. This feature works for both the normal and compact display option.
+you need at least a 1300 pixels wide screen, for example. This feature works for both the normal and compact display 
+option.
  (!) This feature is currently waiting for some changes to Domoticz.
+
+__Dashboard Data Visualizations__
+An experimental feature where javascript overlays a datavisualisation for certain items. Percentages get visualised. 
+Some items, like temperature, even get complete charts for the past 24 hours. The data is pruned, so the 
+vizualisation isn't very precise. But it's good enough.
 
 __Navigation Main Sidemenu__
 This moves the main menu to the left side of the screen. It works best for wide screens (about 980 pixels wide 
