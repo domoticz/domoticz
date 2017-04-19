@@ -532,10 +532,39 @@ local function Domoticz(settings)
 					self.changedDevices[item.id] = newDevice-- id lookup
 				end
 
-				self.devices[item.name] = newDevice
-				self.devices[item.id] = newDevice
+				if (self.devices[item.name] == nil) then
+					self.devices[item.name] = newDevice
+					self.devices[item.id] = newDevice
+				else
+					utils.log('Device found with a duplicate name. This device will be ignored. Please rename: ' .. item.name, utils.LOG_ERROR)
+				end
 
+			elseif (item.baseType == 'scene') then
+
+				local newScene = Device(self, item)
+
+				if (self.scenes[item.name] == nil) then
+					self.scenes[item.name] = newScene
+					self.scenes[item.id] = newScene
+				else
+					utils.log('Scene found with a duplicate name. This scene will be ignored. Please rename: ' .. item.name, utils.LOG_ERROR)
+				end
+
+			elseif (item.baseType == 'group') then
+				local newGroup = Device(self, item)
+
+				if (self.groups[item.name] == nil) then
+					self.groups[item.name] = newGroup
+					self.groups[item.id] = newGroup
+				else
+					utils.log('Group found with a duplicate name. This group will be ignored. Please rename: ' .. item.name, utils.LOG_ERROR)
+				end
+
+			elseif (item.baseType == 'uservariable') then
+				local var = Variable(self, item)
+				self.variables[item.name] = var
 			end
+
 		end
 
 	end

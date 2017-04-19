@@ -5,8 +5,6 @@ local scriptPath = debug.getinfo(1).source:match("@?(.*/)")
 
 package.path = package.path .. ";../?.lua;" .. scriptPath .. '/?.lua'
 
-print(package.path)
-
 local testData = require('tstData')
 
 describe('#onlyDomoticz', function()
@@ -394,9 +392,147 @@ describe('#onlyDomoticz', function()
 			assert.is_nil(domoticz.changedDevices['device4'])
 		end)
 
-		it('should have created a device that only lives in devices.lua (http data)', function()
-			assert.is_same('Text1', domoticz.devices['Text1'].name)
+		it('should have created a text device', function()
+			assert.is_same('device8', domoticz.devices['device8'].name)
 		end)
 	end)
 
+	it('should have created iterators', function()
+		assert.is_function(domoticz.devices.forEach)
+		assert.is_function(domoticz.devices.filter)
+		assert.is_function(domoticz.devices.filter(function()
+		end).forEach)
+
+		assert.is_function(domoticz.changedDevices.forEach)
+		assert.is_function(domoticz.changedDevices.filter)
+		assert.is_function(domoticz.changedDevices.filter(function()
+		end).forEach)
+
+		assert.is_function(domoticz.variables.forEach)
+		assert.is_function(domoticz.variables.filter)
+		assert.is_function(domoticz.variables.filter(function()
+		end).forEach)
+	end)
+
+	it('should have a working filter and foreach', function()
+		local devices = {}
+		domoticz.devices.filter(function(d)
+			return (d.id == 1 or d.id == 3)
+		end).forEach(function(d)
+			table.insert(devices, d.id)
+		end)
+
+		table.sort(devices)
+		assert.is_same({ 1, 3 }, devices)
+	end)
+
+	it('should have created variables', function()
+		assert.is_same(1, domoticz.variables['x'].nValue)
+		assert.is_same(2, domoticz.variables['y'].nValue)
+	end)
+
+	it('should have created scenes', function()
+		assert.is_same({ 1, 2, 'Scene1', 'Scene2', 'filter', 'forEach' }, _.keys(domoticz.scenes))
+		assert.is_same({ 'Scene1', 'Scene2', 'Scene1', 'Scene2' }, _.pluck(domoticz.scenes, { 'name' }))
+		assert.is_same({ 'Off', 'Off', 'Off', 'Off' }, _.pluck(domoticz.scenes, { 'state' }))
+	end)
+
+	it('should have created groups', function()
+		assert.is_same({ 3, 4, 'Group1', 'Group2', 'filter', 'forEach' }, _.keys(domoticz.groups))
+		assert.is_same({ 'Group1', 'Group2', 'Group1', 'Group2' }, _.pluck(domoticz.groups, { 'name' }))
+		assert.is_same({ 'On', 'Mixed', 'On', 'Mixed' }, _.pluck(domoticz.groups, { 'state' }))
+	end)
+
+	it('should log', function()
+		local utils = domoticz._getUtilsInstance()
+		local logged = false
+
+		utils.log = function(msg, level)
+			logged = true
+		end
+
+		domoticz.log('boeh', 1)
+		assert.is_true(logged)
+	end)
+
+	it('should have processed http data', function()
+		assert.is_same(10, d1.batteryLevel)
+		assert.is_same(20, d2.batteryLevel)
+		assert.is_same(30, d3.batteryLevel)
+		assert.is_same(40, d4.batteryLevel)
+		assert.is_same('Description 1', d1.description)
+		assert.is_same('Description 2', d2.description)
+		assert.is_same('Description 3', d3.description)
+		assert.is_same('Description 4', d4.description)
+
+		assert.is_same('10', d1.signalLevel)
+		assert.is_same('20', d2.signalLevel)
+		assert.is_same('30', d3.signalLevel)
+		assert.is_same('-', d4.signalLevel)
+
+		assert.is_same('Zone', d1.deviceSubType)
+		assert.is_same('Lux', d2.deviceSubType)
+		assert.is_same('Energy', d3.deviceSubType)
+		assert.is_same('SetPoint', d4.deviceSubType)
+
+		assert.is_same('Heating', d1.deviceType)
+		assert.is_same('Lux', d2.deviceType)
+		assert.is_same('P1 Smart Meter', d3.deviceType)
+		assert.is_same('Thermostat', d4.deviceType)
+
+		assert.is_same('hw1', d1.hardwareName)
+		assert.is_same('hw2', d2.hardwareName)
+		assert.is_same('hw3', d3.hardwareName)
+		assert.is_same('hw4', d4.hardwareName)
+
+		assert.is_same('ht1', d1.hardwareType)
+		assert.is_same('ht2', d2.hardwareType)
+		assert.is_same('ht3', d3.hardwareType)
+		assert.is_same('ht4', d4.hardwareType)
+
+		assert.is_same(1, d1.hardwareId)
+		assert.is_same(2, d2.hardwareId)
+		assert.is_same(3, d3.hardwareId)
+		assert.is_same(4, d4.hardwareId)
+
+		assert.is_same(1, d1.hardwareTypeVal)
+		assert.is_same(2, d2.hardwareTypeVal)
+		assert.is_same(3, d3.hardwareTypeVal)
+		assert.is_same(4, d4.hardwareTypeVal)
+
+		assert.is_same('Contact', d1.switchType)
+		assert.is_same('Motion Sensor', d2.switchType)
+		assert.is_same('On/Off', d3.switchType)
+		assert.is_same('Security', d4.switchType)
+
+		assert.is_same(2, d1.switchTypeValue)
+		assert.is_same(8, d2.switchTypeValue)
+		assert.is_same(0, d3.switchTypeValue)
+		assert.is_same(0, d4.switchTypeValue)
+
+		assert.is_true(d1.timedOut)
+		assert.is_false(d2.timedOut)
+		assert.is_false(d3.timedOut)
+		assert.is_false(d4.timedOut)
+
+		assert.is_same(2, d1.setPoint)
+		assert.is_same('3', d1.heatingMode)
+
+		assert.is_same(4, d2.lux)
+
+		local d5 = domoticz.devices['device5']
+		assert.is_same(14, d5.WhTotal)
+		assert.is_same(1.234, d5.WhToday)
+		assert.is_same(13, d5.WActual)
+		assert.is_same('1.234 kWh', d5.counterToday)
+		assert.is_same('567 kWh', d5.counterTotal)
+		assert.is_same(10, d5.level)
+
+		assert.is_same(11, d3.WActual)
+
+		assert.is_same(10, d4.setPoint)
+
+		local d7 = domoticz.devices['device7']
+		assert.is_same(16.5, d7.WActual)
+	end)
 end)

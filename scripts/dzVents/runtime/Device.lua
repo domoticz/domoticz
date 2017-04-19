@@ -46,7 +46,7 @@ local function Device(domoticz, data)
 		return b
 	end
 
-	function self._setStateAttribute(state)
+	function setStateAttribute(state)
 		local level;
 		if (state and string.find(state, 'Set Level')) then
 			level = string.match(state, "%d+") -- extract dimming value
@@ -70,7 +70,6 @@ local function Device(domoticz, data)
 
 	-- extract dimming levels for dimming devices
 	local level
-	self._setStateAttribute(state)
 
 	function self.toggleSwitch()
 		local current, inv
@@ -360,30 +359,40 @@ local function Device(domoticz, data)
 	end
 
 	local name = data.name
-	local state = data.data._state
+
+	local state
+
 	local wasChanged = data.changed
 
+	self['name'] = data.name
+	self['id'] = data.id
 
-	local self = {
-		['name'] = data.name,
-		['id'] = data.id,
-		['changed'] = data.changed,
-		['description'] = data.description,
-		['description'] = data.description,
-		['deviceType'] = data.deviceType,
-		['hardwareName'] = data.hardwareName,
-		['hardwareType'] = data.hardwareType,
-		['hardwareId'] = data.hardwareID,
-		['hardwareTypeValue'] = data.hardwareTypeValue,
-		['switchType'] = data.switchType,
-		['switchTypeValue'] = data.switchTypeValue,
-		['timedOut'] = data.HaveTimeout,
-		['batteryLevel'] = data.BatteryLevel,
-		['signalLevel'] = data.signalLevel,
-		['deviceSubType'] = data.subType,
-		['lastUpdate'] = Time(data.lastUpdate),
-		['rawData'] = data.rawData,
-	}
+	if (data.baseType == 'device') then
+		state = data.data._state
+		self['changed'] = data.changed
+		self['description'] = data.description
+		self['description'] = data.description
+		self['deviceType'] = data.deviceType
+		self['hardwareName'] = data.hardwareName
+		self['hardwareType'] = data.hardwareType
+		self['hardwareTypeId'] = data.hardwareTypeID -- todo ?
+		self['hardwareId'] = data.hardwareID
+		self['hardwareTypeVal'] = data.hardwareTypeValue
+		self['switchType'] = data.switchType
+		self['switchTypeValue'] = data.switchTypeValue
+		self['timedOut'] = data.timedOut
+		self['batteryLevel'] = data.batteryLevel
+		self['signalLevel'] = data.signalLevel
+		self['deviceSubType'] = data.subType
+		self['lastUpdate'] = Time(data.lastUpdate)
+		self['rawData'] = data.rawData
+	elseif (data.baseType == 'group' or data.baseType == 'scene') then
+		state = data.data._state
+		self['lastUpdate'] = Time(data.lastUpdate)
+		self['rawData'] = { [1]=data.state }
+	end
+
+	setStateAttribute(state)
 
 	-- tbd
 	if (data.changedAttribute) then
@@ -399,6 +408,9 @@ local function Device(domoticz, data)
 			return utils
 		end
 	end
+
+
+
 
 	return self
 end
