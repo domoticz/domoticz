@@ -3,7 +3,7 @@
 
 /*  general settings, like colors. */
 body {
-    color: #0D161F; /*!important;*/
+    color: #ddd; /*#0D161F!important;*/
     background-image: linear-gradient(to bottom, #102c38 0%,#0f0c2b 100%);
     background-attachment: fixed;
 }
