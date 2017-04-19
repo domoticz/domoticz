@@ -3832,18 +3832,9 @@ define(['app'], function(app) {
 									xhtm += '\t      <td id="bigtext" class="bigtext"><span class="wrapper">' + bigtexthtml + '</span></td>\n';
 									xhtm += '\t      <td id="img" class="img img1">' + imagehtml + '</td>';
 									xhtm += '\t      <td id="status" class="status"><span class="wrapper">' + statushtml + '</span></td>\n';
-                                
-                                    xhtm +=     '\t      <td class="overlay"><div';
-                                    if (item.SubType == "Percentage" && $("#copyright").css("z-index") == 1) { //z-index signals that the user has chosen to see data visualisations.
-                                        xhtm += ' style="width:'
-                                        if (typeof item.Data != 'undefined') {
-                                        xhtm += item.Data + '"';
-                                        } else {
-                                        xhtm += '0%"';
-                                        }
+                                    if (item.SubType == "Percentage" && typeof item.Data != 'undefined' && $("#copyright").css("z-index") == 1) { //z-index signals that the user has chosen to see data visualisations.
+                                        xhtm += '\t      <td class="overlay"><div style="width:' + item.Data + '"></div></td>';   
                                     }
-                                    xhtm += '></div></td>';   
-                                    
 									xhtm +=	'\t      <td id="lastupdate" class="lastupdate"><span>' + item.LastUpdate + '</span></td>\n' +
 										'\t    </tr>\n' +
 										'\t    </table>\n' +
