@@ -2647,7 +2647,7 @@ define(['app'], function (app) {
 		  var tophtm="";
 		  if ($.RoomPlans.length==0) {
 				tophtm+=
-					'\t<table border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
+					'\t<table id="prebannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
 					'\t<tr>\n' +
 					'\t  <td align="left" valign="top" id="timesun"></td>\n' +
 					'\t</tr>\n' +
@@ -2655,7 +2655,7 @@ define(['app'], function (app) {
 		  }
 		  else {
 				tophtm+=
-					'\t<table border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
+					'\t<table id="prebannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
 					'\t<tr>\n' +
 					'\t  <td align="left" valign="top" id="timesun"></td>\n' +
 					'<td align="right">'+
