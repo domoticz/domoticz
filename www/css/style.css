@@ -950,7 +950,7 @@ html,body{
 
 @media (min-width: 768px) and (max-width: 1200px) {
   .navbar .nav li a {
-    padding: 10px 5px 10px 5px !important;
+    padding: 10px 5px 10px 5px; /* !important;*/
   }
 }
 
@@ -1544,9 +1544,11 @@ span.evomobile .ui-popup {
 	left: 0px;
 }
 
+/* moved to legacy
 .ui-btn:hover {
 	background-color: rgba(255,255,255,.3)!important;
 }
+*/
 
 .warning-text {
 	color: red;
@@ -1573,10 +1575,12 @@ span.evomobile .ui-popup {
 	border-bottom-color: transparent;
 }
 
+/* moved to legacy
 .sub-tabs-apply {
 	color: #fff!important;
 	border: 1px solid #ff0000!important;
 }
+*/
 
 .iconcell {
     border:1px solid black;

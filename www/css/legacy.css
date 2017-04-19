@@ -953,6 +953,23 @@ body table#itemtablesmalltrippleicon tr:hover td:first-child{
 }
 
 
+/* extra legacy things */
+
+@media (min-width: 768px) and (max-width: 1200px) {
+  .navbar .nav li a {
+    padding: 10px 5px 10px 5px; /* !important;*/
+  }
+}
+
+.ui-btn:hover {
+	background-color: rgba(255,255,255,.3)!important;
+}
+
+.sub-tabs-apply {
+	color: #fff!important;
+	border: 1px solid #ff0000!important;
+}
+
 
 /*  hide new features from older themes  */
 
