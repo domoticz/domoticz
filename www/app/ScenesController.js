@@ -1627,7 +1627,7 @@ define(['app'], function (app) {
 					  }
 					  xhtm+=
 						'\t    <tr>\n' +
-						'\t      <td id="name" class="name">' + item.Name + '</td>\n' +
+						'\t      <td id="name" class="name"><span>' + item.Name + '</span></td>\n' +
 						'\t      <td id="bigtext" class="bigtext"><span class="wrapper">';
 						var bigtext=TranslateStatusShort(item.Status);
 					  if (item.UsedByCamera==true) {

@@ -475,7 +475,7 @@ define(['app'], function(app) {
 
 			$('#modal').show();
 			var htmlcontent = '';
-			htmlcontent = '<p><h2><span data-i18n="Name"></span>: ' + unescape(name) + '</h2></p><br>\n';
+			htmlcontent = '<p><h2><span data-i18n="Name">: ' + unescape(name) + '</span></h2></p><br>\n';
 
 			var sunRise = "";
 			var sunSet = "";
@@ -995,7 +995,7 @@ define(['app'], function(app) {
 								}
 								if (typeof item.CounterDeliv != 'undefined') {
 									if (item.CounterDeliv != 0) {
-										status += '<span></span>' + $.t("Return") + ': ' + item.CounterDeliv + '</span>,<span>' + $.t("Today") + ': ' + item.CounterDelivToday;
+										status += '</span>,<span>' + $.t("Return") + ': ' + item.CounterDeliv + '</span>,<span>' + $.t("Today") + ': ' + item.CounterDelivToday;
 										if (item.UsageDeliv.charAt(0) != 0) {
 											if (parseInt(item.Usage) != 0) {
 												bigtext += '</span>,<span> -' + item.UsageDeliv;
@@ -1275,7 +1275,7 @@ define(['app'], function(app) {
 								}
 								status = item.Data;
 								if (typeof item.CounterToday != 'undefined') {
-									status += '</span><span>' + $.t("Today") + ': ' + item.CounterToday;
+									status += '</span>,<span>' + $.t("Today") + ': ' + item.CounterToday;
 								}
 							} else if (item.Type == "Air Quality") {
 								xhtm += 'air48.png" height="48" width="48"></td>\n';
