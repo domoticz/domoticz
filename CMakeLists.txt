@@ -170,13 +170,7 @@ unset (PARAM CACHE)
 #find_program(UGLY uglifyjs)
 find_program(GZIP gzip)
 
-IF (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
-    MESSAGE(STATUS "Debug mode, variables in JavaScript will NOT be mangled")
-    set(PARAM "-c")
-ELSE()
-    MESSAGE(STATUS "Normal mode, variables in JavaScript will be mangled")
-    set(PARAM "-mc") 
-ENDIF()
+set(PARAM "-c")
 
 # Both uglifyjs and gzip are available, we are not in debug mode
 IF(UGLY AND GZIP)
