@@ -2428,8 +2428,23 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 	int additional_lines = 0;
 	int data_lines = 0;
 	int index = 1;
+	bool timed_out = false;
 	const char* dev_type;
 	const char* sub_type;
+	
+	time_t now = mytime(NULL);
+	struct tm tm1;
+	localtime_r(&now, &tm1);
+	struct tm tLastUpdate;
+	localtime_r(&now, &tLastUpdate);
+
+
+	int SensorTimeOut = 60;
+	m_sql.GetPreferencesVar("SensorTimeout", SensorTimeOut); 
+	_log.Log(LOG_STATUS, "Sensor Timeout is %d minutes.", SensorTimeOut);
+
+	struct tm ntime;
+	time_t checktime;
 
 	//Get All Hardware ID's/Names, need them later
 	std::vector<std::vector<std::string> > result;
@@ -2494,9 +2509,14 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 			_log.Log(LOG_ERROR, "EventSystem: Failed to read DeviceStatus entry for device %d", sitem.ID);
 		}
 
+		ParseSQLdatetime(checktime, ntime, sitem.lastUpdate, tm1.tm_isdst);
+		timed_out = (now - checktime >= SensorTimeOut * 60);
+
+		_log.Log(LOG_STATUS, "Device %s, diff =  %d", sitem.deviceName, (now-checktime));
+
 		lua_pushnumber(lua_state, (lua_Number)index);
 
-		lua_createtable(lua_state, 1, additional_lines + 11);
+		lua_createtable(lua_state, 1, additional_lines + 12);
 
 		lua_pushstring(lua_state, "name");
 		lua_pushstring(lua_state, sitem.deviceName.c_str());
@@ -2538,6 +2558,16 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 			lua_pushstring(lua_state, "false");
 		}
 		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "timedOut");
+		if (timed_out == true)
+		{
+			lua_pushstring(lua_state, "true");
+		}
+		else
+		{
+			lua_pushstring(lua_state, "false");
+		}
+		lua_rawset(lua_state, -3);
 
 		//get all svalues separate
 		std::vector<std::string> strarray;
@@ -2546,7 +2576,6 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		lua_pushstring(lua_state, "rawData");
 		lua_createtable(lua_state, 0, 0);
 
-		int index2 = 1;
 		for (int index2 = 0; index2<strarray.size(); index2++)
 		{
 			lua_pushnumber(lua_state, (lua_Number)index2+1);

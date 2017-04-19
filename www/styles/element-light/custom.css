@@ -14,7 +14,7 @@ body {
 	background: #202020 url(images/imgbg.jpg) repeat !important;
 }
 #appversion:after {
-  content: " ElementMedia Light v0.2";
+  content: " ElementMedia Light v0.3";
   display: none;
 }
 
@@ -131,10 +131,11 @@ h2{
 }
 
 body table#itemtablesmall tbody tr,
-body table#itemtablesmalldoubleicon tbody tr
+body table#itemtablesmalldoubleicon tbody tr,
 body table#itemtable tbody tr,
 body table#itemtablenotype tbody tr,
 body table#itemtablenostatus tbody tr,
+body table#itemtabledoubleicon tbody tr,
 body table#itemtabletrippleicon tbody tr,
 body table#itemtablesmalldoubleicon tbody tr,
 body table#itemtablesmalltrippleicon tbody tr,
@@ -143,7 +144,7 @@ body table#mobileitem tbody tr{
 }
 
 body table#itemtablesmall tbody tr td:first-child,
-body table#itemtablesmalldoubleicon tbody tr td:first-child ,
+body table#itemtablesmalldoubleicon tbody tr td:first-child,
 body table#itemtable tr td:first-child,
 body table#itemtablenostatus tr td:first-child,
 body table#itemtabledoubleicon tr td:first-child ,
