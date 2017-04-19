@@ -1,9 +1,12 @@
 local TimedCommand = require('TimedCommand')
 local utils = require('Utils')
+local Time = require('Time')
 
-local function Device(domoticz, name, state, wasChanged)
+local function Device(domoticz, data)
 
 	local changedAttributes = {} -- storage for changed attributes
+
+	local self = {}
 
 	local _states = {
 		on = { b = true, inv = 'Off' },
@@ -29,17 +32,6 @@ local function Device(domoticz, name, state, wasChanged)
 		['all on'] = { b = true, inv = 'All Off' },
 		['all off'] = { b = false, inv = 'All On' },
 	}
-
-	local self = {
-		['name'] = name,
-		['changed'] = wasChanged,
-	}
-
-	if (_G.TESTMODE) then
-		function self._getUtilsInstance()
-			return utils
-		end
-	end
 
 	-- some states will be 'booleanized'
 	local function stateToBool(state)
@@ -367,14 +359,45 @@ local function Device(domoticz, name, state, wasChanged)
 		return (changedAttributes[attribute] == true)
 	end
 
-	function self.setAttributeChanged(attribute)
-		-- mark an attribute as being changed
-		changedAttributes[attribute] = true
+	local name = data.name
+	local state = data.data._state
+	local wasChanged = data.changed
+
+
+	local self = {
+		['name'] = data.name,
+		['id'] = data.id,
+		['changed'] = data.changed,
+		['description'] = data.description,
+		['description'] = data.description,
+		['deviceType'] = data.deviceType,
+		['hardwareName'] = data.hardwareName,
+		['hardwareType'] = data.hardwareType,
+		['hardwareId'] = data.hardwareID,
+		['hardwareTypeValue'] = data.hardwareTypeValue,
+		['switchType'] = data.switchType,
+		['switchTypeValue'] = data.switchTypeValue,
+		['timedOut'] = data.HaveTimeout,
+		['batteryLevel'] = data.BatteryLevel,
+		['signalLevel'] = data.signalLevel,
+		['deviceSubType'] = data.subType,
+		['lastUpdate'] = Time(data.lastUpdate),
+		['rawData'] = data.rawData,
+	}
+
+	-- tbd
+	if (data.changedAttribute) then
+		changedAttributes[data.changedAttribute] = true
 	end
 
-	function self.addAttribute(attribute, value)
-		-- add attribute to this device
+	for attribute, value in pairs(data.data) do
 		self[attribute] = value
+	end
+
+	if (_G.TESTMODE) then
+		function self._getUtilsInstance()
+			return utils
+		end
 	end
 
 	return self
