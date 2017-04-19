@@ -26,10 +26,14 @@
 /*  animation  */
 
 body.dashboard div.item.Fan.onn .img1 img{
-    -webkit-animation: rotation 0.5s infinite linear;
-    transition: all 1s ease;
+    -webkit-animation: rotation 15s infinite linear;
+    border-radius:50%!important;
 }
-
+body.dashboard div.item.Fan.onn .img1 img:hover{
+    border-radius:50%!important;
+    -webkit-animation: rotation 0.5s infinite linear; 
+    transition: move 2s ease-in
+}
 
 
 

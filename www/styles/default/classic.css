@@ -4,6 +4,8 @@
 /*  general settings, like colors. */
 body {
     color: #0D161F; /*!important;*/
+    /*background-image: linear-gradient(to bottom, #001c38 0%,#0f0c2b 100%);*/
+    background-attachment: fixed;
 }
     
 /* settings/hardware background color*/
@@ -146,16 +148,15 @@ h1,h2,h3{color:#999}
     padding:2px;
 }
 
+
 .span4 #img img:hover, 
 .span4 #img1 img:hover,
 .span4 #img2 img:hover,
 .span4 #img3 img:hover,
-.span4 #img4 img:hover,
 #dashcontent #img img:hover, 
 #dashcontent #img1 img:hover,
 #dashcontent #img2 img:hover,
-#dashcontent #img3 img:hover,
-#dashcontent #img4 img:hover{
+#dashcontent #img3 img:hover{
     background-color:#3d9cca;
     cursor: pointer;
     -webkit-transition: .3s;
@@ -164,10 +165,19 @@ h1,h2,h3{color:#999}
 }
 
 
+
 /* item status*/
 
 #status{color:#333;}
 
+#dashcontent .item.withstatus #status > .wrapper > span{
+    background-color:rgba(250,250,250,0.1)!important;
+}
+
+#dashcontent .item.withstatus #status > .wrapper > span{
+    padding-left:10px;
+    /*background-color:#D4E1EE;*/
+}
 
 /* item mini-options-menu*/
 
@@ -236,13 +246,13 @@ body .span4  table > tbody > tr{
 
 #dashcontent div[class^="span"] .selectorlevels {
     width:100%;
-    height:30px;
+    height:25px;
     position:relative;
     left:0!important;
     margin-top:0!important
 }
 
-#dashcontent div[class^="span"] .selectorlevels .ui-buttonset .ui-button{height:30px}
+#dashcontent div[class^="span"] .selectorlevels .ui-buttonset .ui-button{height:25px}
 
 #dashcontent div[class^="span"] .selectorlevels .ui-buttonset{
     height:30px;
@@ -298,10 +308,18 @@ body .span4  table > tbody > tr{
 }
 
 #dashcontent .selectorlevels label:not(.ui-state-active):hover{
-    background-color:white;
-    color:#333;
+    background-color:#3d9cca;
+    color:#fff;
 }
 
+/*  events  */
+
+#IMain{
+    background-color: transparent;
+    width: 100%!important;
+    border:none;
+    margin-top: 0!important;
+}
 
 /*  settings specific */
 
@@ -360,21 +378,21 @@ div.item.statusNormal td#name{
 }
 div.item.statusProtected td#name{
     background-color: transparent;
-    -moz-box-shadow:  0 2px 0 0 #A4B1EE;
-    -webkit-box-shadow:  0 2px 0 0 #A4B1EE;
-    box-shadow:  0 2px 0 0 #A4B1EE;
+    -moz-box-shadow: 0 2px 20px 0px #A4B1EE;
+    -webkit-box-shadow: 0 2px 20px 0px #A4B1EE;
+    box-shadow: 0 2px 20px 0px #A4B1EE;
 }
 div.item.statusTimeout td#name{
     background-color: transparent;
-    -moz-box-shadow:  0 2px 0 0 #DF2D3A;
-    -webkit-box-shadow:  0 2px 0 0 #DF2D3A;
-    box-shadow:  0 2px 0 0 #DF2D3A;    
+    -moz-box-shadow: 0 2px 20px 0px  #DF2D3A;
+    -webkit-box-shadow: 0 2px 20px 0px  #DF2D3A;
+    box-shadow: 0 2px 20px 0px  #DF2D3A;    
 }
 div.item.statusLowBattery td#name{
     background-color: transparent;
-    -moz-box-shadow:  0 2px 0 0 #DDDF2D;
-    -webkit-box-shadow:  0 2px 0 0 #DDDF2D;
-    box-shadow:  0 2px 0 0 #DDDF2D;  
+    -moz-box-shadow: 0 2px 20px 0px  #DDDF2D;
+    -webkit-box-shadow: 0 2px 20px 0px  #DDDF2D;
+    box-shadow: 0 2px 20px 0px  #DDDF2D;  
 }
 
 
