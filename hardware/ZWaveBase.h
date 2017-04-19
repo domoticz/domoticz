@@ -151,6 +151,8 @@ private:
 	_tZWaveDevice* FindDevice(const int nodeID, const int instanceID, const int indexID, const int CommandClassID, const _eZWaveDeviceType devType);
 	_tZWaveDevice* FindDeviceEx(const int nodeID, const int instanceID, const _eZWaveDeviceType devType);
 
+	bool filterValue(const _tZWaveDevice *pDevice);
+
 	void ForceUpdateForNodeDevices(const unsigned int homeID, const int nodeID);
 	bool IsNodeRGBW(const unsigned int homeID, const int nodeID);
 
