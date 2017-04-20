@@ -62,9 +62,9 @@ Json::Value CLogitechMediaServer::Query(std::string sIP, int iPort, std::string 
 	std::stringstream sPostData;
 
 	if ((m_User != "") && (m_Pwd != ""))
-		sURL << "http://" << m_User << ":" << m_Pwd << "@" << sIP << ":" << iPort <<../mainrpc.js";
+		sURL << "http://" << m_User << ":" << m_Pwd << "@" << sIP << ":" << iPort <<../jsonrpc.js";
 	else
-		sURL << "http://" << sIP << ":" << iPort <<../mainrpc.js";
+		sURL << "http://" << sIP << ":" << iPort <<../jsonrpc.js";
 
 	sPostData << sPostdata;
 	

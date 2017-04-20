@@ -310,7 +310,7 @@ void SolarEdgeAPI::GetInverterDetails(const _tInverterSettings *pInverterSetting
 	sprintf(szTmp, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
 	std::string endDate = CURLEncode::URLEncode(szTmp);
 	std::stringstream sURL;
-	sURL << "https://monitoringapi.solaredge.com/equipment/" << m_SiteID << "/" << pInverterSettings->SN << "/data.json?startTime=" << startDate << "&endTime=" << endDate << "&api_key=" << m_APIKey << "&format=applicati../main";
+	sURL << "https://monitoringapi.solaredge.com/equipment/" << m_SiteID << "/" << pInverterSettings->SN << "/data.json?startTime=" << startDate << "&endTime=" << endDate << "&api_key=" << m_APIKey << "&format=application/json";
 	bool bret;
 	std::string szURL = sURL.str();
 	bret = HTTPClient::GET(szURL, sResult);
