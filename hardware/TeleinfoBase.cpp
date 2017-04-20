@@ -2,7 +2,7 @@
 Domoticz Software : http://domoticz.com/
 File : TeleinfoBase.cpp
 Author : Blaise Thauvin
-Version : 1.2
+Version : 1.3
 Description : This class is used by various Teleinfo hardware decoders to process and display data
 		  It is currently used by EcoDevices, TeleinfoSerial
 		  Detailed information on the Teleinfo protocol can be found at (version 5, 16/03/2015)
@@ -13,6 +13,8 @@ History :
 1.0 2017-03-15 : Release candidate
 1.1 2017-03-18 : Updated to benefit from new messages in Alert sensors rather than simple text sensors
 1.2 2017-03-21 : Various bug fix and reverting to using P1SmartMeter as users requested
+1.3 2017-04-01 : Added RateLimit
+1.4 2017-04-01 : Added DataTimeout
 */
 
 #include "stdafx.h"
@@ -81,7 +83,7 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 	// We need to limit the number of Teleinfo devices per hardware because of the subID in sensors. i
 	if ((rank < 1) || (rank > 4))
 	{
-		_log.Log(LOG_ERROR,"TeleinfoBase: Invalid rank passed to function (%i), must be between 1 and 4", rank);
+		_log.Log(LOG_ERROR,"(s) TeleinfoBase: Invalid rank passed to function (%i), must be between 1 and 4", Name.c_str(), rank);
 		return;
 	}
 	rank = rank -1;				 // Now it is 0 to 3
@@ -136,20 +138,25 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 		rate_alert = 3;
 	}
 
-	// Process only if power consumption changed. If it did not, then alerts and intensity have not changed either
-	if (teleinfo.pAlertPAPP != teleinfo.PAPP)
+	// Process only if maximum time between updates has been reached or power consumption changed
+	// If it did not, then alerts and intensity have not changed either
+	#ifdef DEBUG_TeleinfoBase
+	_log.Log(LOG_NORM,"(%s) TeleinfoBase called. Power changed: %s, last update %.f sec", Name.c_str(), (teleinfo.pAlertPAPP != teleinfo.PAPP)?"true":"false", difftime(atime, teleinfo.last));
+	#endif
+	if ((teleinfo.pAlertPAPP != teleinfo.PAPP) || (difftime(atime, teleinfo.last) >= (m_iDataTimeout -10)))
 	{
-		//Send data if value changed, at most every minute and at least every 5 minutes
-		if ((difftime(atime, teleinfo.last) >= 60) || (difftime(atime, teleinfo.last) >= 300))
+		teleinfo.pAlertPAPP = teleinfo.PAPP;
+
+		//Send data at mamximum rate specified in settings, and at least 10sec less that Data Timeout
+		if ((difftime(atime, teleinfo.last) >= m_iRateLimit) || (difftime(atime, teleinfo.last) >= (m_iDataTimeout -10)))
 		{
-			teleinfo.pAlertPAPP = teleinfo.PAPP;
 			teleinfo.last = atime;
 			m_p1power.usagecurrent = teleinfo.PAPP;
 			if (teleinfo.OPTARIF == "BASE")
 			{
 				#ifdef DEBUG_TeleinfoBase
-                        	_log.Log(LOG_STATUS,"Teleinfo Base: %i, PAPP: %i", teleinfo.BASE, teleinfo.PAPP);
-                        	#endif
+				_log.Log(LOG_STATUS,"Teleinfo Base: %i, PAPP: %i", teleinfo.BASE, teleinfo.PAPP);
+				#endif
 				teleinfo.tariff="Tarif de Base";
 				m_p1power.powerusage1 = teleinfo.BASE;
 				m_p1power.powerusage2 = 0;
@@ -276,7 +283,7 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 			}
 		}
 		// Common sensors for all rates
-		// Alerts can be updated at every call and is not subject to the 1mn interval
+		// Alerts can be updated at every call and are not subject to the "rate limit" interval
 		if (rate_alert != teleinfo.pAlertRate)
 		{
 			SendAlertSensor(32*rank + 1, 255, rate_alert, teleinfo.rate, name + " Tarif en cours");

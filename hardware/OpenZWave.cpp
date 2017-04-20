@@ -56,7 +56,8 @@ enum _eSensorScaleID
 	SCALEID_CO2,
 	SCALEID_WATER,
 	SCALEID_MOISTRUE,
-	SCALEID_TANK_CAPACITY
+	SCALEID_TANK_CAPACITY,
+	SCALEID_RAIN_RATE,
 };
 
 struct _tAlarmNameToIndexMapping
@@ -401,13 +402,13 @@ std::string COpenZWave::GetNodeStateString(const unsigned int homeID, const int 
 	return strState;
 }
 
-unsigned char COpenZWave::GetInstanceFromValueID(const OpenZWave::ValueID &vID)
+uint8_t COpenZWave::GetInstanceFromValueID(const OpenZWave::ValueID &vID)
 {
-	unsigned char instance;
+	uint8_t instance;
 
 	int commandClass = vID.GetCommandClassId();
-	unsigned char vInstance = vID.GetInstance();//(See note on top of this file) GetInstance();
-	unsigned char vIndex = vID.GetIndex();
+	uint8_t vInstance = vID.GetInstance();//(See note on top of this file) GetInstance();
+	uint8_t vIndex = (uint8_t)vID.GetIndex();
 	//uint8 vNodeId = vID.GetNodeId();
 
 	if (
@@ -458,7 +459,7 @@ void COpenZWave::WriteControllerConfig()
 {
 	if (m_controllerID == 0)
 		return;
-	OpenZWave::Manager::Get()->WriteConfig(m_controllerID);
+	m_pManager->WriteConfig(m_controllerID);
 	m_LastControllerConfigWrite = mytime(NULL);
 }
 
@@ -485,13 +486,12 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 
 	if (m_bIsShuttingDown)
 		return;
+	if (!m_pManager)
+		return;
 
 	//Send 2 OZW control panel
 	m_ozwcp.OnCPNotification(_notification);
 
-	OpenZWave::Manager* pManager = OpenZWave::Manager::Get();
-	if (!pManager)
-		return;
 	if (m_bIsShuttingDown)
 		return;
 	m_updateTime = mytime(NULL);
@@ -501,7 +501,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 	unsigned int _homeID = _notification->GetHomeId();
 	unsigned char _nodeID = _notification->GetNodeId();
 
-	unsigned char instance = GetInstanceFromValueID(vID);
+	uint8_t instance = GetInstanceFromValueID(vID);
 
 	OpenZWave::Notification::NotificationType nType = _notification->GetType();
 	switch (nType)
@@ -533,13 +533,13 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		nodeInfo.m_polled = false;
 		nodeInfo.HaveUserCodes = false;
 		nodeInfo.Application_version = 0;
-		nodeInfo.szType = pManager->GetNodeType(_homeID, _nodeID);
-		nodeInfo.iVersion = pManager->GetNodeVersion(_homeID, _nodeID);
-		nodeInfo.Manufacturer_id = pManager->GetNodeManufacturerId(_homeID, _nodeID);
-		nodeInfo.Manufacturer_name = pManager->GetNodeManufacturerName(_homeID, _nodeID);
-		nodeInfo.Product_type = pManager->GetNodeProductType(_homeID, _nodeID);
-		nodeInfo.Product_id = pManager->GetNodeProductId(_homeID, _nodeID);
-		nodeInfo.Product_name = pManager->GetNodeProductName(_homeID, _nodeID);
+		nodeInfo.szType = m_pManager->GetNodeType(_homeID, _nodeID);
+		nodeInfo.iVersion = m_pManager->GetNodeVersion(_homeID, _nodeID);
+		nodeInfo.Manufacturer_id = m_pManager->GetNodeManufacturerId(_homeID, _nodeID);
+		nodeInfo.Manufacturer_name = m_pManager->GetNodeManufacturerName(_homeID, _nodeID);
+		nodeInfo.Product_type = m_pManager->GetNodeProductType(_homeID, _nodeID);
+		nodeInfo.Product_id = m_pManager->GetNodeProductId(_homeID, _nodeID);
+		nodeInfo.Product_name = m_pManager->GetNodeProductName(_homeID, _nodeID);
 
 		nodeInfo.tClockDay = -1;
 		nodeInfo.tClockHour = -1;
@@ -604,10 +604,10 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 
 			if (nodeInfo->Manufacturer_name.empty())
 			{
-				nodeInfo->Manufacturer_id = pManager->GetNodeManufacturerId(_homeID, _nodeID);
-				nodeInfo->Manufacturer_name = pManager->GetNodeManufacturerName(_homeID, _nodeID);
-				nodeInfo->Product_type = pManager->GetNodeProductType(_homeID, _nodeID);
-				nodeInfo->Product_id = pManager->GetNodeProductId(_homeID, _nodeID);
+				nodeInfo->Manufacturer_id = m_pManager->GetNodeManufacturerId(_homeID, _nodeID);
+				nodeInfo->Manufacturer_name = m_pManager->GetNodeManufacturerName(_homeID, _nodeID);
+				nodeInfo->Product_type = m_pManager->GetNodeProductType(_homeID, _nodeID);
+				nodeInfo->Product_id = m_pManager->GetNodeProductId(_homeID, _nodeID);
 			}
 
 			nodeInfo->Instances[instance][commandClass].Values.push_back(vID);
@@ -813,13 +813,13 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 	case OpenZWave::Notification::Type_NodeNaming:
 		if (NodeInfo* nodeInfo = GetNodeInfo(_homeID, _nodeID))
 		{
-			std::string product_name = pManager->GetNodeProductName(_homeID, _nodeID);
+			std::string product_name = m_pManager->GetNodeProductName(_homeID, _nodeID);
 			if (nodeInfo->Product_name != product_name)
 			{
-				nodeInfo->Manufacturer_id = pManager->GetNodeManufacturerId(_homeID, _nodeID);
-				nodeInfo->Manufacturer_name = pManager->GetNodeManufacturerName(_homeID, _nodeID);
-				nodeInfo->Product_type = pManager->GetNodeProductType(_homeID, _nodeID);
-				nodeInfo->Product_id = pManager->GetNodeProductId(_homeID, _nodeID);
+				nodeInfo->Manufacturer_id = m_pManager->GetNodeManufacturerId(_homeID, _nodeID);
+				nodeInfo->Manufacturer_name = m_pManager->GetNodeManufacturerName(_homeID, _nodeID);
+				nodeInfo->Product_type = m_pManager->GetNodeProductType(_homeID, _nodeID);
+				nodeInfo->Product_id = m_pManager->GetNodeProductId(_homeID, _nodeID);
 				nodeInfo->Product_name = product_name;
 				AddNode(_homeID, _nodeID, nodeInfo);
 				m_bHaveLastIncludedNodeInfo = !product_name.empty();
@@ -839,115 +839,23 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		if (!m_bControllerCommandInProgress)
 			return;
 #endif
-		uint8 nevent = _notification->GetEvent();
-		OpenZWave::Driver::ControllerError nerr = (OpenZWave::Driver::ControllerError)_notification->GetNotification();
-		std::string LogText = "";
-		switch (nevent)
-		{
-		case OpenZWave::Driver::ControllerState_Normal:
-			break;
-		case OpenZWave::Driver::ControllerState_Starting:
-			//The command is starting
-			LogText = "Command is starting";
-			break;
-		case OpenZWave::Driver::ControllerState_Cancel:
-			//The command was canceled
-			m_bControllerCommandInProgress = false;
-			LogText = "The command is canceled";
-			break;
-		case OpenZWave::Driver::ControllerState_Error:
-			//Command invocation had error(s) and was aborted
-			m_bControllerCommandInProgress = false;
-			LogText = "Command invocation had error(s) and was aborted";
-			break;
-		case OpenZWave::Driver::ControllerState_Waiting:
-			//Controller is waiting for a user action
-			LogText = "Waiting for User action...";
-			break;
-		case OpenZWave::Driver::ControllerState_Sleeping:
-			//Controller command is on a sleep queue wait for device
-			LogText = "Command is on a sleep queue and waiting for device";
-			break;
-		case OpenZWave::Driver::ControllerState_InProgress:
-			//The controller is communicating with the other device to carry out the command
-			LogText = "Controller is communicating with Other devices to carry out the command";
-			break;
-		case OpenZWave::Driver::ControllerState_Completed:
-			m_bControllerCommandInProgress = false;
-			//The command has completed successfully
-			if (!m_bControllerCommandCanceled)
-			{
-				LogText = "The command has completed successfully";
-				m_bNeedSave = true;
-			}
-			break;
-		case OpenZWave::Driver::ControllerState_Failed:
-			m_bControllerCommandInProgress = false;
-			//The command has failed.
-			LogText = "Command has failed!";
-			break;
-		case OpenZWave::Driver::ControllerState_NodeOK:
-			// Used only with ControllerCommand_HasNodeFailed to indicate that the controller thinks the node is OK
-			LogText = "Node OK";
-			break;
-		case OpenZWave::Driver::ControllerState_NodeFailed:
-			//Used only with ControllerCommand_HasNodeFailed to indicate that the controller thinks the node has failed.
-			LogText = "Node Failed!";
-			break;
-		}
-		if (!LogText.empty())
-		{
-			if (nerr != OpenZWave::Driver::ControllerError_None)
-			{
-				switch (nerr)
-				{
-				case OpenZWave::Driver::ControllerError_None:
-					LogText += ", Error: None";
-					break;
-				case OpenZWave::Driver::ControllerError_ButtonNotFound:
-					LogText += ", Error: Button not Found !";
-					break;
-				case OpenZWave::Driver::ControllerError_NodeNotFound:
-					LogText += ", Error: Node not Found !";
-					break;
-				case OpenZWave::Driver::ControllerError_NotBridge:
-					LogText += ", Error: Not a Bridge !";
-					break;
-				case OpenZWave::Driver::ControllerError_NotSUC:
-					LogText += ", Error: Not a SUC !";
-					break;
-				case OpenZWave::Driver::ControllerError_NotSecondary:
-					LogText += ", Error: Not a Secondary Controller !";
-					break;
-				case OpenZWave::Driver::ControllerError_NotPrimary:
-					LogText += ", Error: Not a Primary Controller !";
-					break;
-				case OpenZWave::Driver::ControllerError_IsPrimary:
-					LogText += ", Error: Is Primary !";
-					break;
-				case OpenZWave::Driver::ControllerError_NotFound:
-					LogText += ", Error: Not Found !";
-					break;
-				case OpenZWave::Driver::ControllerError_Busy:
-					LogText += ", Error: Busy";
-					break;
-				case OpenZWave::Driver::ControllerError_Failed:
-					LogText += ", Error: Failed";
-					break;
-				case OpenZWave::Driver::ControllerError_Disabled:
-					LogText += ", Error: Disabled";
-					break;
-				case OpenZWave::Driver::ControllerError_Overflow:
-					LogText += ", Error: Overflow !";
-					break;
-				}
-			}
-			_log.Log(LOG_STATUS, "OpenZWave: %s", LogText.c_str());
-		}
+		_log.Log(LOG_STATUS, "OpenZWave: %s", _notification->GetAsString().c_str());
 	}
 	break;
+/*
+	case OpenZWave::Notification::Type_UserAlerts:
+	{
+		OpenZWave::Notification::UserAlertNofification uacode = (OpenZWave::Notification::UserAlertNofification)_notification->GetUserAlertType();
+		_log.Log(LOG_STATUS, "OpenZWave: %s", _notification->GetAsString().c_str());
+	}
+	break;
+	case OpenZWave::Notification::Type_ManufacturerSpecificDBReady:
+		_log.Log(LOG_STATUS, "OpenZWave: %s", _notification->GetAsString().c_str());
+		break;
+*/
 	default:
 		_log.Log(LOG_STATUS, "OpenZWave: Received unhandled notification type (%d) from HomeID: %u, NodeID: %d (0x%02x)", nType, _homeID, _nodeID, _nodeID);
+		_log.Log(LOG_STATUS, "OpenZWave: %s", _notification->GetAsString().c_str());
 		break;
 	}
 
@@ -998,14 +906,6 @@ void COpenZWave::EnableDisableDebug()
 
 bool COpenZWave::OpenSerialConnector()
 {
-	m_LastAlarmTypeReceived = -1;
-	_log.Log(LOG_STATUS, "OpenZWave: Starting...");
-	_log.Log(LOG_STATUS, "OpenZWave: Version: %s", GetVersionLong().c_str());
-
-	m_allNodesQueried = false;
-	m_updateTime = mytime(NULL);
-	CloseSerialConnector();
-
 	if (m_bAeotecBlinkingMode)
 	{
 		m_bAeotecBlinkingMode = false;
@@ -1040,8 +940,12 @@ bool COpenZWave::OpenSerialConnector()
 		{
 			_log.Log(LOG_ERROR, "OpenZWave: Problem with setting Aeotec's Controller blinking mode!");
 		}
-
 	}
+
+	m_allNodesQueried = false;
+	m_updateTime = mytime(NULL);
+	CloseSerialConnector();
+
 	m_nodes.clear();
 	m_bNeedSave = false;
 	std::string ConfigPath = szStartupFolder + "Config/";
@@ -1062,6 +966,9 @@ bool COpenZWave::OpenSerialConnector()
 	OpenZWave::Options::Get()->AddOptionBool("ValidateValueChanges", true);
 	OpenZWave::Options::Get()->AddOptionBool("Associate", true);
 
+	//Disable automatic config update for now! (Dev branch is behind master with configuration files)
+	OpenZWave::Options::Get()->AddOptionBool("AutoUpdateConfigFile", false);
+
 	//Set network key for security devices
 	std::string sValue = "0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10";
 	m_sql.GetPreferencesVar("ZWaveNetworkKey", sValue);
@@ -1081,12 +988,16 @@ bool COpenZWave::OpenSerialConnector()
 	if (m_pManager == NULL)
 		return false;
 
+	m_LastAlarmTypeReceived = -1;
+	_log.Log(LOG_STATUS, "OpenZWave: Starting...");
+	_log.Log(LOG_STATUS, "OpenZWave: Version: %s", GetVersionLong().c_str());
+
 	m_bIsShuttingDown = false;
 	// Add a callback handler to the manager.  The second argument is a context that
 	// is passed to the OnNotification method.  If the OnNotification is a method of
 	// a class, the context would usually be a pointer to that class object, to
 	// avoid the need for the notification handler to be a static.
-	OpenZWave::Manager::Get()->AddWatcher(OnNotification, this);
+	m_pManager->AddWatcher(OnNotification, this);
 
 	// Add a Z-Wave Driver
 	// Modify this line to set the correct serial port for your PC interface.
@@ -1100,9 +1011,9 @@ bool COpenZWave::OpenSerialConnector()
 		sprintf(szComm, "COM%d", iPort);
 	else
 		sprintf(szComm, "\\\\.\\COM%d", iPort);
-	OpenZWave::Manager::Get()->AddDriver(szComm);
+	m_pManager->AddDriver(szComm);
 #else
-	OpenZWave::Manager::Get()->AddDriver(m_szSerialPort.c_str());
+	m_pManager->AddDriver(m_szSerialPort.c_str());
 #endif
 	m_LastControllerConfigWrite = mytime(NULL);
 
@@ -1120,26 +1031,24 @@ void COpenZWave::CloseSerialConnector()
 	m_bIsShuttingDown = true;
 	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
 
-	OpenZWave::Manager* pManager = OpenZWave::Manager::Get();
-	if (pManager)
+	if (!m_pManager)
+		return;
+
+	WriteControllerConfig();
+	_log.Log(LOG_STATUS, "OpenZWave: Closed");
+
+	try
 	{
-		WriteControllerConfig();
-		_log.Log(LOG_STATUS, "OpenZWave: Closed");
-
-		try
-		{
-			OpenZWave::Manager::Get()->RemoveWatcher(OnNotification, this);
-			sleep_seconds(1);
-			//OpenZWave::Manager::Get()->RemoveDriver(m_szSerialPort.c_str()); //not needed according the documentation, destroy will take card of this
-			OpenZWave::Manager::Destroy();
-			OpenZWave::Options::Destroy();
-		}
-		catch (...)
-		{
-
-		}
-		m_pManager = NULL;
+		m_pManager->RemoveWatcher(OnNotification, this);
+		sleep_seconds(1);
+		//m_pManager->RemoveDriver(m_szSerialPort.c_str()); //not needed according the documentation, destroy will take card of this
+		OpenZWave::Manager::Destroy();
+		OpenZWave::Options::Destroy();
 	}
+	catch (...)
+	{
+	}
+	m_pManager = NULL;
 }
 
 bool COpenZWave::GetInitialDevices()
@@ -1519,8 +1428,8 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 	unsigned int HomeID = vID.GetHomeId();
 	unsigned char NodeID = vID.GetNodeId();
 
-	unsigned char vInstance = vID.GetInstance();//(See note on top of this file) GetInstance();
-	unsigned char vIndex = vID.GetIndex();
+	uint8_t vInstance = vID.GetInstance();//(See note on top of this file) GetInstance();
+	uint8_t vIndex = (uint8_t)vID.GetIndex();
 
 	unsigned char vOrgInstance = vInstance;
 	unsigned char vOrgIndex = vIndex;
@@ -1549,8 +1458,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 	if (vGenre != OpenZWave::ValueID::ValueGenre_User)
 		return;
 
-	unsigned char instance = GetInstanceFromValueID(vID);
-
+	uint8_t instance = GetInstanceFromValueID(vID);
 
 	if (
 		(vLabel == "Exporting") ||
@@ -1919,7 +1827,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 				InsertDevice(_device);
 			}
 		}
-		else if (vLabel == "Barometric Pressure")
+		else if ((vLabel == "Barometric Pressure") || (vLabel == "Atmospheric Pressure"))
 		{
 			if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
 			{
@@ -2087,6 +1995,21 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 				{
 					_device.floatValue = fValue;
 					_device.devType = ZDTYPE_SWITCH_NORMAL;
+					InsertDevice(_device);
+				}
+			}
+		}
+		else if (vLabel == "Rain Rate")
+		{
+			if (vType == OpenZWave::ValueID::ValueType_Decimal)
+			{
+				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
+				{
+					_device.floatValue = fValue;
+					_device.scaleID = SCALEID_RAIN_RATE;
+					_device.scaleMultiply = 1;
+					_device.devType = ZDTYPE_SENSOR_CUSTOM;
+					_device.custom_label = "mm/h";
 					InsertDevice(_device);
 				}
 			}
@@ -2259,11 +2182,21 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 	}
 	else if (commandclass == COMMAND_CLASS_CENTRAL_SCENE)
 	{
-		if (vType == OpenZWave::ValueID::ValueType_Int)
+		if (vLabel == "Scene ID")
 		{
-			_device.devType = ZDTYPE_CENTRAL_SCENE;
-			_device.intvalue = 0;
-			InsertDevice(_device);
+			if (vType == OpenZWave::ValueID::ValueType_Byte)
+			{
+				if (m_pManager->GetValueAsByte(vID, &byteValue) == true)
+				{
+					if (byteValue == 0)
+						return;
+					instance = byteValue;
+					_device.instanceID = instance;
+					_device.devType = ZDTYPE_CENTRAL_SCENE;
+					_device.intvalue = 0;
+					InsertDevice(_device);
+				}
+			}
 		}
 	}
 	else if (commandclass == COMMAND_CLASS_DOOR_LOCK)
@@ -2310,12 +2243,12 @@ void COpenZWave::UpdateNodeEvent(const OpenZWave::ValueID &vID, int EventID)
 
 	unsigned int HomeID = vID.GetHomeId();
 	unsigned char NodeID = vID.GetNodeId();
-	unsigned char instance = vID.GetInstance();
-	unsigned char index = vID.GetIndex();
+	uint8_t instance = vID.GetInstance();
+	uint8_t index = (uint8_t)vID.GetIndex();
 	if (instance == 0)
 		return;
 
-	instance = vID.GetIndex();
+	instance = (uint8_t)vID.GetIndex();
 	unsigned char commandclass = vID.GetCommandClassId();
 
 	if ((commandclass == COMMAND_CLASS_ALARM) || (commandclass == COMMAND_CLASS_SENSOR_ALARM))
@@ -2338,7 +2271,7 @@ void COpenZWave::UpdateNodeEvent(const OpenZWave::ValueID &vID, int EventID)
 		if (pDevice == NULL)
 		{
 			// absolute last try
-			instance = vID.GetIndex();
+			instance = (uint8_t)vID.GetIndex();
 			pDevice = FindDevice(NodeID, -1, -1, COMMAND_CLASS_SENSOR_MULTILEVEL, ZDTYPE_SWITCH_NORMAL);
 			if (pDevice == NULL)
 			{
@@ -2446,10 +2379,10 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 	unsigned int HomeID = vID.GetHomeId();
 	unsigned char NodeID = vID.GetNodeId();
 
-	unsigned char instance = GetInstanceFromValueID(vID);
+	uint8_t instance = GetInstanceFromValueID(vID);
 
-	unsigned char vOrgInstance = vID.GetInstance();
-	unsigned char vOrgIndex = vID.GetIndex();
+	uint8_t vOrgInstance = vID.GetInstance();
+	uint8_t vOrgIndex = (uint8_t) vID.GetIndex();
 
 	OpenZWave::ValueID::ValueType vType = vID.GetType();
 	OpenZWave::ValueID::ValueGenre vGenre = vID.GetGenre();
@@ -2498,6 +2431,15 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 	{
 		//unhandled value type
 		return;
+	}
+
+	if (commandclass == COMMAND_CLASS_CENTRAL_SCENE)
+	{
+		if (vLabel != "Scene ID")
+		{
+			return;
+		}
+		instance = byteValue;
 	}
 
 	if (vGenre != OpenZWave::ValueID::ValueGenre_User)
@@ -2573,6 +2515,8 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 			scaleID = SCALEID_MOISTRUE;
 		else if (vLabel == "Tank Capacity")
 			scaleID = SCALEID_TANK_CAPACITY;
+		else if (vLabel == "Rain Rate")
+			scaleID = SCALEID_RAIN_RATE;
 
 		sstr << "." << scaleID;
 	}
@@ -3060,9 +3004,12 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 	case ZDTYPE_SENSOR_BAROMETER:
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
 			return;
-		if (vLabel != "Barometric Pressure")
+		if ((vLabel == "Barometric Pressure") || (vLabel == "Atmospheric Pressure"))
+		{
+			pDevice->floatValue = fValue*10.0f;
+		}
+		else
 			return;
-		pDevice->floatValue = fValue*10.0f;
 		break;
 	case ZDTYPE_SENSOR_DEWPOINT:
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
@@ -3147,6 +3094,14 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 		pDevice->floatValue = fValue; //always set the value
 	}
 	break;
+	case ZDTYPE_SENSOR_CUSTOM:
+	{
+		if (vType != OpenZWave::ValueID::ValueType_Decimal)
+			return;
+		float oldvalue = pDevice->floatValue;
+		pDevice->floatValue = fValue;
+	}
+	break;
 	case ZDTYPE_SENSOR_MOISTURE:
 	{
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
@@ -3227,7 +3182,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 		}
 		break;
 	case ZDTYPE_CENTRAL_SCENE:
-		if (vType == OpenZWave::ValueID::ValueType_Int)
+		if (vType == OpenZWave::ValueID::ValueType_Byte)
 		{
 			pDevice->intvalue = 255;
 		}
@@ -3784,11 +3739,15 @@ void COpenZWave::AddNode(const unsigned int homeID, const int nodeID, const Node
 
 std::string COpenZWave::GetVersion()
 {
+	if (!m_pManager)
+		return "?Manager Down!";
 	return m_pManager->getVersionAsString();
 }
 
 std::string COpenZWave::GetVersionLong()
 {
+	if (!m_pManager)
+		return "?Manager Down!";
 	return m_pManager->getVersionLongAsString();
 }
 

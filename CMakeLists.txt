@@ -382,6 +382,7 @@ hardware/serial/impl/unix.cpp
 hardware/SolarEdgeAPI.cpp
 hardware/SolarMaxTCP.cpp
 hardware/Sterbox.cpp
+hardware/SysfsGPIO.cpp
 hardware/TCPProxy/tcpproxy_server.cpp
 hardware/TE923.cpp
 hardware/TE923Tool.cpp
@@ -661,6 +662,14 @@ else()
   message(STATUS "==== WiringPi include file (wiringPi.h) not found. GPIO support disabled.")
   message(STATUS "==== (Please follow http://wiringpi.com/download-and-install/ if you want to use GPIO.)")
 ENDIF(WiringPi)
+
+IF(EXISTS /sys/class/gpio)
+	message(STATUS "Sysfs GPIO available")
+	add_definitions(-DWITH_SYSFS_GPIO)
+ELSE()
+	message(STATUS "Sysfs GPIO not available")
+ENDIF()
+
 
 find_path(TELLDUSCORE_INCLUDE NAMES telldus-core.h)
 if (TELLDUSCORE_INCLUDE)

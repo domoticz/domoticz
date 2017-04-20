@@ -207,7 +207,7 @@ void CWunderground::GetMeterDetails()
 			if (difftime(tlocal, tobserver) >= 1800)
 			{
 				//When we don't get any valid data in 30 minutes, we also stop using the values
-				_log.Log(LOG_ERROR, "WUnderground: Receiving old data from WU! (No new data return for more then 30 minutes)");
+				_log.Log(LOG_ERROR, "WUnderground: Receiving old data from WU! (No new data return for more than 30 minutes)");
 				return;
 			}
 		}
