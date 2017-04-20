@@ -85,7 +85,7 @@ namespace OpenZWave
 
 		/**
 		 * Open a HID port.
-		 * Attempts to open a HID port and initialize it with the specified paramters.
+		 * Attempts to open a HID port and initialize it with the specified parameters.
 		 * @param _HidControllerName The name of the port to open.  For example, ttyS1 on Linux, or \\.\COM2 in Windows.
 		 * @return True if the port was opened and configured successfully.
 		 * @see Close, Read, Write
@@ -114,33 +114,33 @@ namespace OpenZWave
 		bool Init( uint32 const _attempts );
 		void Read();
 
-	        // helpers for internal use only
+        // helpers for internal use only
 
-	        /**
+        /**
 		* Read bytes from the specified HID feature report
-	        * @param _buffer Buffer array for receiving the feature report bytes.
-	        * @param _length Length of the buffer array.
-	        * @param _reportId ID of the report to read.
+        * @param _buffer Buffer array for receiving the feature report bytes.
+        * @param _length Length of the buffer array.
+        * @param _reportId ID of the report to read.
 		* @return Actual number of bytes retrieved, or -1 on error.
 		*/
-	        int GetFeatureReport( uint32 _length, uint8 _reportId, uint8* _buffer );
+        int GetFeatureReport( uint32 _length, uint8 _reportId, uint8* _buffer );
 
-	        /**
+        /**
 		* Write bytes to the specified HID feature report
 		* @param _data Bytes to be written to the feature report.
 		* @param _length Length of bytes to be written.
 		* @return Actal number of bytes written, or -1 on error.
 		*/
-	        int SendFeatureReport( uint32 _length, const uint8* _data );
+        int SendFeatureReport( uint32 _length, const uint8* _data );
 
 		static void ThreadEntryPoint( Event* _exitEvent, void* _context );
 		void ThreadProc( Event* _exitEvent );
 
 		hid_device*		m_hHidController;
 		Thread*			m_thread;
-	        uint32          	m_vendorId;
-	        uint32          	m_productId;
-	        string          	m_serialNumber;
+        uint32          	m_vendorId;
+        uint32          	m_productId;
+        string          	m_serialNumber;
 		string			m_hidControllerName;
 		bool			m_bOpen;
 	};
