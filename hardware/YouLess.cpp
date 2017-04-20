@@ -7,7 +7,7 @@
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
-#include "../json/json.h"
+#include "../main/json.h"
 
 #define YOULESS_POLL_INTERVAL 10
 

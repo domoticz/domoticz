@@ -9,7 +9,7 @@
 #include "../main/SQLHelper.h"
 #include "../httpclient/HTTPClient.h"
 #include "../main/mainworker.h"
-#include "../json/json.h"
+#include "../main/json.h"
 
 #define round(a) ( int ) ( a + .5 )
 
@@ -436,7 +436,7 @@ void CThermosmart::SetPauseStatus(const bool bIsPause)
 	szPostdata += "}";
 
 	std::vector<std::string> ExtraHeaders;
-	ExtraHeaders.push_back("Content-Type: application/json");
+	ExtraHeaders.push_back("Content-Type: applicati../main");
 	std::string sResult;
 
 	std::string sURL = THERMOSMART_SET_PAUZE;

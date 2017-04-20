@@ -8,7 +8,7 @@
 #include "../main/SQLHelper.h"
 #include "../httpclient/HTTPClient.h"
 #include "../main/mainworker.h"
-#include "../json/json.h"
+#include "../main/json.h"
 
 #define round(a) ( int ) ( a + .5 )
 

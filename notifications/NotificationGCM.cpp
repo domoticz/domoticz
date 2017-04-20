@@ -3,7 +3,7 @@
 #include "../httpclient/HTTPClient.h"
 #include "../main/Logger.h"
 #include "../main/SQLHelper.h"
-#include "../json/json.h"
+#include "../main/json.h"
 #include <boost/lexical_cast.hpp>
 
 #define GAPI_POST_URL "https://gcm-http.googleapis.com/gcm/send"
@@ -59,7 +59,7 @@ bool CNotificationGCM::SendMessageImplementation(
 	std::string szPostdata = sstr.str();
 
 	std::vector<std::string> ExtraHeaders;
-	ExtraHeaders.push_back("Content-Type: application/json");
+	ExtraHeaders.push_back("Content-Type: applicati../main");
 
 	sstr2 << "Authorization: key=" << GAPI;
 	ExtraHeaders.push_back(sstr2.str());

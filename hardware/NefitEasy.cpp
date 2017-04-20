@@ -6,7 +6,7 @@
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 #include "../httpclient/HTTPClient.h"
-#include "../json/json.h"
+#include "../main/json.h"
 #include "../main/RFXtrx.h"
 #include "../main/mainworker.h"
 #include "../webserver/Base64.h"
@@ -279,7 +279,7 @@ void CNefitEasy::SetUserMode(bool bSetUserModeClock)
 	std::string sResult;
 	std::vector<std::string> ExtraHeaders;
 	//ExtraHeaders.push_back("User-Agent: NefitEasy");
-	ExtraHeaders.push_back("Content-Type: application/json");
+	ExtraHeaders.push_back("Content-Type: applicati../main");
 
 	try
 	{
@@ -308,7 +308,7 @@ void CNefitEasy::SetHotWaterMode(bool bTurnOn)
 	std::string sResult;
 	std::vector<std::string> ExtraHeaders;
 	//ExtraHeaders.push_back("User-Agent: NefitEasy");
-	ExtraHeaders.push_back("Content-Type: application/json");
+	ExtraHeaders.push_back("Content-Type: applicati../main");
 
 	try
 	{
@@ -814,7 +814,7 @@ void CNefitEasy::SetSetpoint(const int idx, const float temp)
 	std::string sResult;
 	std::vector<std::string> ExtraHeaders;
 	//ExtraHeaders.push_back("User-Agent: NefitEasy");
-	ExtraHeaders.push_back("Content-Type: application/json");
+	ExtraHeaders.push_back("Content-Type: applicati../main");
 
 	try
 	{

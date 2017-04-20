@@ -6,7 +6,7 @@
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 #include "../main/SQLHelper.h"
-#include "../json/json.h"
+#include "../main/json.h"
 #include "../notifications/NotificationHelper.h"
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>

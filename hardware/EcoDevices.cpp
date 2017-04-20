@@ -35,7 +35,7 @@ Version history
 #include "../httpclient/HTTPClient.h"
 #include <../tinyxpath/xpath_static.h>
 #include "../webserver/Base64.h"
-#include "../json/json.h"
+#include "../main/json.h"
 #include <sstream>
 
 #ifdef _DEBUG

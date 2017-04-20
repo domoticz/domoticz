@@ -39,7 +39,7 @@ History:
 #include "../main/mainworker.h"
 #include "../webserver/Base64.h"
 #include "csocket.h"
-#include "../json/json.h"
+#include "../main/json.h"
 
 #define CONNECTION_ID								"21345678-1234-5678-1234-123456789012-1"
 #define GET_CONFIG_COMMAND							"get_config"

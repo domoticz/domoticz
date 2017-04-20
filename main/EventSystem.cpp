@@ -16,7 +16,7 @@
 #include "../notifications/NotificationHelper.h"
 #include "WebServer.h"
 #include "../webserver/cWebem.h"
-#include "../json/json.h"
+#include "json.h"
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 

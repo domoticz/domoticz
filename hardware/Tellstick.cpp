@@ -8,7 +8,7 @@
 #include "../main/mainworker.h"
 #include "../main/WebServer.h"
 #include "../webserver/cWebem.h"
-#include "../json/json.h"
+#include "../main/json.h"
 #include <telldus-core.h>
 
 using namespace std;

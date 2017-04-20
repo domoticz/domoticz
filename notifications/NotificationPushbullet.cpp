@@ -2,7 +2,7 @@
 #include "NotificationPushbullet.h"
 #include "../httpclient/HTTPClient.h"
 #include "../main/Logger.h"
-#include "../json/json.h"
+#include "../main/json.h"
 #include "../httpclient/UrlEncode.h"
 
 CNotificationPushbullet::CNotificationPushbullet() : CNotificationBase(std::string("pushbullet"), OPTIONS_URL_SUBJECT | OPTIONS_URL_BODY | OPTIONS_URL_PARAMS)
@@ -45,7 +45,7 @@ bool CNotificationPushbullet::SendMessageImplementation(
 	//Add the required Access Token and Content Type
 	sHeaderKey << "Access-Token: " << _apikey;
 	ExtraHeaders.push_back(sHeaderKey.str());
-	ExtraHeaders.push_back("Content-Type: application/json");
+	ExtraHeaders.push_back("Content-Type: applicati../main");
 	
 	//Do the request
 	bRet = HTTPClient::POST("https://api.pushbullet.com/v2/pushes",sPostData,ExtraHeaders,sResult);

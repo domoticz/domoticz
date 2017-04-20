@@ -2,7 +2,7 @@
 #include "FibaroPush.h"
 #include "../hardware/hardwaretypes.h"
 #include "../httpclient/HTTPClient.h"
-#include "../json/json.h"
+#include "../main/json.h"
 #include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "../main/mainworker.h"
