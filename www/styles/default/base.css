@@ -100,7 +100,13 @@ body table[id^="itemtable"] tr #lastupdate:before{content:none!important}
 * {box-sizing: border-box}
 
 html, body {height:100%}
-#main-view{padding-top:20px}
+#main-view{padding-top:0px}
+
+
+#holder .container-fluid {
+    margin-top:20px;
+    padding-bottom: 20px;
+}
 
 .row-fluid .span12,
 .row-fluid .span6{
@@ -148,7 +154,7 @@ textarea, input, select {
 }
 
 .span6 textarea, .span6 input.text, .span6 select{
-    width:100%!important;
+   /* width:100%!important; */
 }
 
 .span12 > label,
@@ -156,12 +162,19 @@ textarea, input, select {
 
 .span6 table td:nth-child(2) > span{width:100%;}
 
-#settingscontent select,
+#settingscontent select{
+    min-width: 120px;
+}
+
 #settingscontent input.text,
 #settingscontent .ui-widget-content{
     min-width: 120px;
     width:calc(100% - 75px)!important;
-    padding:5px!important;
+}
+
+#settingscontent input.text,
+#settingscontent .ui-widget-content{
+    padding:3px;
 }
 
 #settingscontent td:not(:first-of-type){width:auto!important;}
@@ -268,17 +281,41 @@ p.ng-binding {
     width: 30px;
 }
 
-.brand h1 {
-    font-size: 1em;
-    font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
-    font-weight: 300;
-    margin-top: -30px;
-    margin-left: 26px
+.navbar a.brand{
+	height: 30px;
+	width: auto;
+    padding:0;
+    text-decoration: none;
 }
 
-#appversion {
-    display: none;
+.brand img{
+   vertical-align: top;
 }
+
+
+.brand h1 {
+    display:inline;
+	/*float: left;
+	margin-left: 32px;
+	margin-top: -48px;*/
+    position:relative;
+    top:6px;
+    margin-left:5px;
+    /* OMG I'm changing the logo font :-D */
+    font-size: 20px;
+    font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+}
+
+.brand h2 {
+    display:inline;
+    font-size:10px;
+    position:relative;
+    top: -10px;
+    left: -20px;
+    color: rgba(50,50,50,0.5);
+    visibility: hidden;
+}
+
 
 .navbar-inverse .nav li.dropdown.open > .dropdown-toggle{
     background-color:#ccc;
@@ -361,6 +398,7 @@ p.ng-binding {
 
 #timesun{
     /*display:block;*/
+    height:auto;
 }
 
 #timesun + td {
@@ -482,6 +520,10 @@ body .span4  table > tbody > tr{
 body #dashcontent table > tbody > tr{
     height: 100%;
 }
+
+#dashcontent div.beforebannav,
+table.prebannav,
+table#prebannav{margin-bottom:10px}
 
 
 /* ITEM CONTENT */
@@ -625,7 +667,7 @@ body #dashcontent table > tbody > tr{
     z-index: 2;
     box-sizing: content-box;
     border-right: 300px solid transparent!important;
-    padding:1px 0 0 5px;
+    padding:2px 0 0 5px;
     border-radius:0;
     margin-top:0;
 }
@@ -669,7 +711,7 @@ body #dashcontent table > tbody > tr{
 .span3 td:last-of-type .lcursor,
 .span4 td:last-of-type .lcursor{
     position: relative;
-    top: -33px;
+    top: -29px;
     left: 13px;
     border-radius: 5px;
 }
@@ -751,7 +793,11 @@ body .item tr > #name {
     #itemtabletrippleicon #bigtext{right: 100px;}
     #itemtablesmalltrippleicon #bigtext{right: 105px;}
     
-    #bigtext span{
+    
+    .span3 #bigtext span{
+        font-size: 15px;
+    }
+    .span4 #bigtext span{
         font-size: 17px;
     }
     
@@ -763,7 +809,7 @@ body .item tr > #name {
 }
 
 #dashcontent .span3 #bigtext{
-    top: -38px;
+    top: -36px;
     right: 40px;
 }
 
@@ -867,7 +913,7 @@ body:not(.dashboard) td#status > span > span.separator{padding-right:3px;}
     padding:13px 10px 10px 15px;
     flex: 1 1 auto;
     height:30px;
-    box-shadow: inset 2px 4px 18px 0px rgba(50, 50, 50, 0.1);
+    box-shadow: inset 0 0 15px 0px rgba(100, 100, 100, 0.2);
 }
 
 
@@ -910,20 +956,63 @@ div[class^="span"] table#itemtabletrippleicon > tbody> tr > td:first-of-type a{
 }
 
 
+/*  status updates indicators (icons for timeout, protected, low battery) */
+
+div.item.statusNormal td#name,
+div.item.statusProtected td#name,
+div.item.statusTimeout td#name,
+div.item.statusLowBattery td#name{
+    background-color: transparent;
+}
+
+div.item.statusProtected td#name > span::before{
+    content : "";
+    display: inline-block;
+    position: relative;
+    top: 1px;
+    left:-2px;
+    background: url(/images/lock_closed.png) no-repeat center center; 
+    -webkit-background-size: 12px;
+    -moz-background-size: 12px
+    -o-background-size: 12px;
+    background-size: 12px;
+    width: 12px;
+    height: 12px;
+    opacity : 0.7;
+    margin-right:1px;
+}
+
+
+/* show little icon if there is a timeout problem */
+div.item.statusTimeout td#lastupdate > span{color:#DF2D3A;}
+
+div.item.statusTimeout td#lastupdate > span::before{
+    content : "";
+    display: inline-block;
+    position: relative;
+    top: -1px;
+    background: url(/images/Alert48_4.png) no-repeat center center; 
+    -webkit-background-size: 12px;
+    -moz-background-size: 12px
+    -o-background-size: 12px;
+    background-size: 12px;
+    width: 12px;
+    height: 12px;
+    opacity : 0.7;
+    margin-right:5px;
+    vertical-align: top;
+}
+
+body:not(.dashboard) div.item.statusTimeout #type {text-indent:154px}
+
+div.item.statusLowBattery{
+    opacity:0.6;
+}
+
 
 /* buttons  */
 
-.btn-primary{
-    text-shadow:none;
-    text-decoration: none
-}
-
-a.btnsmall {
-    margin-bottom: 10px;
-    padding:7px;
-}
-
-a.btnstyle, a.btnstylerev, a.btnsmall-sel {
+a.btnstyle, a.btnstylerev, a.btnsmall-sel, a.btnsmall-dis {
     margin-right: 10px;
     background-image:none;
     padding: 0px 10px 0 10px;
@@ -933,6 +1022,37 @@ a.btnstyle, a.btnstylerev, a.btnsmall-sel {
     background: linear-gradient(to bottom, #46b1d9 0%,#3d9bc9 50%,#2e8cbc 51%,#2571ab 100%);
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#46b1d9', endColorstr='#2571ab',GradientType=0 );  
 }
+
+a.btnsmall {
+    margin-bottom: 10px;
+    padding:7px;
+}
+.options a.btnsmall {
+    margin-bottom: 0;
+    padding:2px 5px;
+}
+
+.options a.btnsmall-sel{
+    font-weight: bold;
+}
+
+#settingscontent .sub-tabs > li > a.btn-succes,
+.sub-tabs-apply,
+.btn-succes{
+    color:#fff!important;
+    text-shadow: none;
+}
+
+.btn-primary{
+    text-shadow:none;
+    text-decoration: none
+}
+
+.btn-info{
+    text-shadow: none;
+    text-decoration: none;
+}
+
 
 a.btnstyle:last-of-type, a.btnstylerev:last-of-type{
     margin-right:0;
@@ -959,6 +1079,46 @@ a.btnstyle:last-of-type, a.btnstylerev:last-of-type{
 }
 
 
+body div.selectorlevels .ui-buttonset label.ui-button:hover,
+.btn-primary:hover,
+.btn-success:hover,
+a.btnsmall:hover,
+a.btnstyle:hover, 
+a.btnstylerev:hover, 
+a.btnsmall-sel:hover{
+    box-shadow:inset 0px 0px 20px 2px rgba(250, 250, 250, 0.4);
+    color:#fff;
+    transition: all 0.2s linear;
+}
+
+body div.selectorlevels .ui-buttonset label.ui-button:hover span{
+    color:#fff;
+    transition: color 0.2s linear;
+}
+
+a.btnsmall-sel{
+    color:#952ebc;
+    }
+
+a.btnsmall-dis{color: rgba(255,50,50,1)!important}
+a.btnsmall-dis::after{
+    content: "!";
+    font-weight: bolder;
+    color: white;
+    font-size: 14px;
+    position: absolute;
+    background-color: rgba(255,50,50,1);
+    border-radius: 50%;
+    padding: 5px 9px 3px 9.5px;
+    top: -2px;
+    line-height: 1.0em;
+    margin-left: 2px;
+    }
+
+.sub-tabs > li:hover a{background-color:white;}
+
+
+
 /* this is a (hopefully temperary) fix for a lack of proper span tags */
 #protectiontable, 
 #loghistory table, 
@@ -981,15 +1141,14 @@ a.btnstyle:last-of-type, a.btnstylerev:last-of-type{
 
 /*  FOOTER  */
 
-.bannercontent {
-    padding-bottom: 50px;
-}
 
 #copyright {
     background-color: #f1f1f1;
     margin-top: 10px;
     border: none;
     height:auto;
+    left: -5px;
+    right: -10px;    
 }
 
 #copyright p {
@@ -1021,12 +1180,18 @@ a.btnstyle:last-of-type, a.btnstylerev:last-of-type{
     border-bottom:1px solid #ddd;
 }
 
-#tabs a:not(.sub-tabs-apply) {
+.sub-tabs > li > a{border:0;}
+
+.sub-tabs a:not(.sub-tabs-apply) {
     background-color:#ddd;
     margin-top:2px;
 }
+#settingscontent .sub-tabs li:not(.active) a {
+    border-bottom:2px solid transparent;
+}
 
-#tabs .active a{
+
+.sub-tabs .active a{
     background-color:#fff;
 }
 
@@ -1060,12 +1225,12 @@ a.btnstyle:last-of-type, a.btnstylerev:last-of-type{
     margin: 10px 50% 10px 0;
 }
 
-#protectiontable, 
+/*#protectiontable, 
 #loghistory table, 
 #notifications>table, 
 #metercounters table, 
-#othersettings table, 
-#floorplans table, 
+#othersettings table,
+#floorplans table, */ 
 #settingscontent #ActiveTabs,
 #emailtable,
 #hardwarecontent > div:not(.page-header-small):not(.bannav):not(#bannav), 
@@ -1097,9 +1262,10 @@ a.btnstyle:last-of-type, a.btnstylerev:last-of-type{
     border-bottom:20px solid #eee;
 }
 
+
 #updelclr, #delclractive, #delclr, #delclractive, #delclract {
     box-sizing: border-box;
-    padding:10px; background-color:#eee;
+    padding:10px;
 }
 
 #devicescontent .bannav td{width:auto!important}
@@ -1263,14 +1429,17 @@ table.dataTable tbody img{
 
 .ui-popup{
     position:fixed!important;
-    min-height:200px;
-    top: 30%;
+    /*min-height:200px;*/
+    height:auto!important;
+    width:auto!important;
+    top: 30%!important;
     top:calc(50% - 100px)!important;
     left:30%!important;
     left:calc(50% - 150px)!important;        
-    -webkit-box-shadow: 7px 7px 25px 5px rgba(50, 50, 50, 0.48);
-    -moz-box-shadow:    7px 7px 25px 5px rgba(50, 50, 50, 0.48);
-    box-shadow:         7px 7px 25px 5px rgba(50, 50, 50, 0.48);    
+    -webkit-box-shadow: 7px 7px 25px 5px rgba(50, 50, 50, 0.5);
+    -moz-box-shadow:    7px 7px 25px 5px rgba(50, 50, 50, 0.5);
+    box-shadow:         7px 7px 25px 5px rgba(50, 50, 50, 0.5);
+    padding:30px 10px 10px 10px;
 }
 
 #rgbw_popup td,
@@ -1349,7 +1518,7 @@ body:not(.dashboard) .divider .span4 .selectorlevels{
     border-color:transparent!important;
     font-weight:normal;
     margin-right:0; /* newly added */
-    flex: 1 1 25%;
+    /*flex: 1 1 25%;*/
     height:auto;
     align-self:stretch;
     display: flex;
@@ -1361,10 +1530,6 @@ body:not(.dashboard) .divider .span4 .selectorlevels{
 .selectorlevels .ui-button span.ui-button-text{
     padding:1px 5px;
     color:#333;
-}
-
-.selectorlevels .ui-button span.ui-button-text:hover{
-    color:#fff;
 }
 
 .selectorlevels .ui-button.ui-state-active{box-shadow: inset 0px 0px 20px 2px rgba(250, 250, 250, 0.1);}
@@ -1433,9 +1598,10 @@ body.dashboard div.item.SelectorSwitch #bigtext{display:none}
     margin-left:0!important;
 }
 
+#settingscontent input.text, 
 #settingscontent .ui-widget-content{
     min-width:210px;
-    width:calc(100% - 65px);
+    width:calc(100% - 75px);
 }
 
 .ui-slider-handle{
@@ -1462,7 +1628,7 @@ div.dataTables_wrapper .ui-widget-header{
 .dataTables_wrapper .dataTables_info, 
 .dataTables_wrapper .dataTables_length, 
 .dataTables_wrapper .dataTables_filter{
-    color:#666;
+    color:#999;
 }
 
 .ui-toolbar {
@@ -1487,6 +1653,7 @@ div.dataTables_wrapper .ui-widget-header{
     border-top:none;
     border-bottom:none;
     text-shadow: none!important;
+    background-color: rgba(100,100,100,0.5);
 }
 
 table.dataTable th:first-of-type,
@@ -1554,15 +1721,25 @@ table.dataTable td:first-of-type{padding-left:10px;}
 }
 
 #logcontent div.log {
-    background-color:#fff;
+    background-color:#f9f9f9;
     border:5px solid #fff;
-    background: -moz-linear-gradient(top, #999 0%, #fff 50%);
-    background: -webkit-linear-gradient(top, #999 0%,#fff 50%);
-    background: linear-gradient(to bottom, #999 0%,#fff 50%); 
-    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#999', endColorstr='#fff',GradientType=0 );
-    background-attachment: fixed;
 }
 
+#logcontent .filterExplanation{color:#666}
+#logcontent .filterX{display:none}
+#logcontent .filterX > span{    
+    margin-left: 3px;
+    display: inline-block;
+    background-color: #DF2D3A;
+    color: #fff;
+    font-weight: bolder;
+    padding: 4px;
+    border-radius: 3px;
+}
+
+#logcontent td.filter input:focus + a.filterX{
+    display:inline-block;
+}
 
 /* SETTINGS */
 
@@ -1614,6 +1791,13 @@ table.dataTable td:first-of-type{padding-left:10px;}
 #settingscontent div.row-fluid.related .span2{
     width:auto;
 }
+#settingscontent div.row-fluid.related .span2 img{
+    padding-right: 3px;
+}
+
+#settingscontent input{
+    background-image:none;
+}
 
 
 /*  PAGE SPECIFIC OVERRIDES  */
@@ -1631,6 +1815,29 @@ div#hardwaretable_wrapper + #updelclr{border-top:0!important;border-bottom:10px!
 
 #aboutcontent{color:#fff;}
 
+#utilitycontent img:hover{
+    background-color:transparent!important;
+    cursor:auto!important;
+}
+
+
+/*  fun  */
+#lightcontent #ProtectionDiv input[type=checkbox]:checked::after{
+    content : "";
+    display: inline-block;
+    position: relative;
+    top: -3px;
+    left:15px;
+    background: url(/images/lock_closed.png) no-repeat center center; 
+    -webkit-background-size: 16px;
+    -moz-background-size: 16px
+    -o-background-size: 16px;
+    background-size: 16px;
+    width: 16px;
+    height: 16px;
+    opacity : 0.7;
+    margin-right:1px;
+}
 
 
 /*  new features, hide by default  */
@@ -1872,23 +2079,9 @@ td[colspan]:not([colspan="1"])
     
 }
 
-/*
-@media all and (min-width: 481px) and (max-width: 979px){
-    
-    .navbar .brand{
-        margin-left:14px;
-    }
-    
-    .navbar .nav {
-        margin-right:20px
-    }
-
-
-}*/
 
 
 /*  Makes the name and value slide above each other on small displays.  */
-
 
 @media screen and (max-width: 767px){
     
@@ -1948,12 +2141,11 @@ td[colspan]:not([colspan="1"])
         padding-left:10px;
     }
     
-    
+    .navbar .navbar-inner{
+        padding-left:20px;
+        padding-right:20px;
+    }
 
-}  
-
-@media screen and (min-width: 768px){
-    .navbar{padding-left:20px;padding-right:20px;}
 }
 
 
@@ -1964,7 +2156,8 @@ td[colspan]:not([colspan="1"])
     
 @media all and (min-width: 1200px){
     
-    input.text{min-width:210px;}
+    textarea,
+    input.text{min-width:210px;margin-right:3px}
 
     /* items with lots of data outputs, let's keep them from getting too freakishly tall */
     #dashcontent div.item.withstatus tr td#status > .wrapper {
@@ -1974,7 +2167,7 @@ td[colspan]:not([colspan="1"])
     
     #dashcontent div.item.withstatus td#status > .wrapper > span{
         width:50%;
-        box-shadow: inset 2px 4px 18px 0px rgba(50, 50, 50, 0.2);
+        box-shadow: inset 0 0 18px 0px rgba(100, 100, 100, 0.2);
     }
     
     #dashcontent div.item.withstatus.statuscount1 tr,    
@@ -1992,7 +2185,6 @@ td[colspan]:not([colspan="1"])
 
 @media all and (min-width: 768px) and (max-width: 1300px){
 
-    body.dashboard div.ui-draggable,
     body.dashboard .span4{
         width:calc(100% / 3 - 20px)!important;
         -webkit-box-sizing: content-box;
@@ -2009,7 +2201,45 @@ td[colspan]:not([colspan="1"])
     
     body.dashboard #main-view > .container {width:100%!important}
     
-    #beforebannav,#bannav{padding-left:10px;padding-right:10px}
-    .navbar{padding-left: 30px; padding-right:30px]
+    /*#beforebannav,#bannav{padding-left:10px;padding-right:10px}
+    .navbar{padding-left: 30px; padding-right:30px;}*/
 }
+
+
+
+
+/* Poor man's columns */
+
+@media only screen and (min-width: 1100px){
+
+    
+    body.dashMobile #dashcontent{margin-top:30px;}
+    body.dashMobile .beforebannav{position:absolute;top:0px;width: calc(100% - 42px);}
+    
+    body.dashMobile #dashcontent{
+        -moz-column-count: 3;
+        -webkit-column-count: 3;
+        column-count: 3;
+        -moz-column-gap: 1em;
+        -webkit-column-gap: 1em;
+        column-gap: 1em;
+    }
+    
+    body.dashMobile #dashcontent section:not(last-of-type) {
+        display: inline-block;
+                width:100%;
+    }
+    
+    body.dashMobile #dashcontent .mobileitem{
+        width:100%;
+        margin-top:0;
+    }
+    
+    body.dashMobile #dashcontent .dimslider{
+        width:100%!important;
+    }
+    
+}
+
+
 

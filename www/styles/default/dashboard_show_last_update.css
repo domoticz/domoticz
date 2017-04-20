@@ -33,19 +33,18 @@
     width:100%;
     left:0;
     top: 0;
+    height:20px;
     border-bottom-left-radius: 5px;
     border-bottom-right-radius: 5px;
 }
 
-#dashcontent #lastupdate:before{
-    content:"hoi";
-}
+/*
 #dashcontent #lastupdate:hover:before{
     content:"Last seen: ";
     transition: all 0.5s ease-in;
     transition-delay: 2s;
 }
-
+*/
 
 #dashcontent #lastupdate > span{
     height: 20px;
@@ -53,6 +52,7 @@
     width:100%;
     display:inline-block;
 }
+
 
 
 @media screen and (max-width: 768px){
@@ -84,7 +84,7 @@
     
     #dashcontent #lastupdate > span {
         padding-left:10px;
-        box-shadow: 0px -4px 8px -4px rgba(130, 130, 130, 0.2); 
+        box-shadow: inset 0px 0px 8px 0px rgba(130, 130, 130, 0.2); 
     }
     
     #dashcontent .item.withstatus{
@@ -128,7 +128,9 @@
         border-radius:3px;
     }
     
-    #dashcontent /*.item:not(.withstatus)*/ #name{padding:15px 0 0 15px/*!important*/;}
+    #dashcontent /*.item:not(.withstatus)*/ #name{
+        padding:10px 0 0 15px/*!important*/;
+    }
 
     #dashcontent #lastupdate{
         background-image:none;
@@ -151,9 +153,9 @@
 
 @media screen and (min-width: 1100px){
 
-
-
-    #dashcontent /*.item:not(.withstatus)*/ #lastupdate{top: -23px;}
+/* a little experiment to make data fit together like a jigsaw inside the items when scaling to small item sizes. */
+   /* #dashcontent #lastupdate{top: -23px;}
+    #dashcontent #bigtext {top: -35px;}*/
 
     #dashcontent #itemtablesmalltrippleicon #lastupdate{
         top:-53px;

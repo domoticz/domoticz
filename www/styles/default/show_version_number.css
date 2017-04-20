@@ -1,11 +1,5 @@
 /* this permanently shows the version number, instead of only on mouse over */
 
 h2#appversion {
-    display: block;
-    transition: none;
-    position: relative;
-    top: -17px;
-    left: -50px;
-    font-size: 10px;
-    color: #888;
+    visibility: visible;
 }

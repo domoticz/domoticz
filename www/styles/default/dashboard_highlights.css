@@ -111,6 +111,7 @@
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus.statuscount4 tr #status{font-size:17px;}    
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus.statuscount5 tr #status{font-size:16px;}
     
+    
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus tr #status > span.wrapper{
         width:100%;
         min-height:100px;
@@ -128,6 +129,8 @@
         height:auto;
         width:100%!important;
         white-space: normal;
+        background:none;
+        background-image:none;
     }
     
     
@@ -429,6 +432,7 @@
         border-bottom-right-radius: 0;    
     }
 
+    /*
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.statusProtected tr:after {
         content : "";
         display: block;
@@ -445,19 +449,20 @@
         height: 32px;
         opacity : 0.6;
         z-index: 1;
-    }
+    }*/
     
     /*  Adds little icons to show current status of items, instead of the default box-shadow solution. */
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.statusTimeout{box-shadow:none}
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.statusTimeout td#name{
         background-color: transparent;
-        -moz-box-shadow:  0 1px 8px 0 #DF2D3A;
-        -webkit-box-shadow:  0 1px 8px 0 #DF2D3A;
-        box-shadow:  0 1px 8px 0 #DF2D3A;   
+        -moz-box-shadow: 0 5px 8px -4px #DF2D3A;
+        -webkit-box-shadow: 0 5px 8px -4px #DF2D3A;
+        box-shadow: 0 5px 8px -4px #DF2D3A;
         border-bottom-left-radius: 0;
         border-bottom-right-radius: 0;    
     }
 
+    /*
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.statusTimeout tr:after{
         content : "";
         display: block;
@@ -474,15 +479,14 @@
         height: 32px;
         opacity : 0.8;
         z-index: 1;
-    }
-    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.statusTimeout tr:after:hover{content : "No connection!";}
+    }*/
 
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.statusLowBattery{box-shadow:none}
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.statusLowBattery td#name{
         background-color: transparent;    
-        -moz-box-shadow:  0 2px 4px -2px #DF2D3A;
-        -webkit-box-shadow:  0 2px 4px -2px #DF2D3A;
-        box-shadow:  0 2px 4px -2px #DF2D3A;
+        -moz-box-shadow:  0 2px 4px -2px #dcdf2d;
+        -webkit-box-shadow:  0 2px 4px -2px #dcdf2d;
+        box-shadow:  0 2px 4px -2px #dcdf2d;
         border-bottom-left-radius: 0;
         border-bottom-right-radius: 0;
     }
