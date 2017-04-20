@@ -200,7 +200,6 @@ box-shadow:         0px 5px 5px 0px rgba(50, 50, 50, 0.3);
 width: 99.5% !important;
 }
 
-//Added Dimslider fixes from element-dark
 .dimslider {
    width: calc(98% - 55px) !important;
    height: 10px;
