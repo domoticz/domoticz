@@ -138,7 +138,7 @@ h2{
 }
 
 body table#itemtablesmall tbody tr,
-body table#itemtablesmalldoubleicon tbody tr
+body table#itemtablesmalldoubleicon tbody tr,
 body table#itemtable tbody tr,
 body table#itemtablenotype tbody tr,
 body table#itemtablenostatus tbody tr,
@@ -146,7 +146,7 @@ body table#itemtabledoubleicon tbody tr,
 body table#itemtabletrippleicon tbody tr,
 body table#itemtablesmalldoubleicon tbody tr,
 body table#itemtablesmalltrippleicon tbody tr,
-body table#mobileitem tbody tr
+body table#mobileitem tbody tr,
 body table#itemtablesmall tbody tr:hover,
 body table#itemtablesmalldoubleicon tbody tr:hover,
 body table#itemtable tbody tr:hover,
