@@ -497,7 +497,7 @@ void CSysfsGPIO::UpdateDomoticzInputs(bool forceUpdate)
 				}
 			}
 
-			if (GpioSavedState[i].db_state != state)
+			if ((GpioSavedState[i].db_state != state) || (forceUpdate))
 			{
 				result = m_sql.safe_query("SELECT Name,nValue,sValue,Used FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",
 					m_HwdID, szIdx, GpioSavedState[i].pin_number);
@@ -508,23 +508,23 @@ void CSysfsGPIO::UpdateDomoticzInputs(bool forceUpdate)
 
 					if (atoi(sd[3].c_str()) == 1) /* Check if device is used */
 					{
-						bool db_state = true;
+						int db_state = 1;
 
-						if (atoi(sd[1].c_str()) == 0)
+						if (atoi(sd[1].c_str()) == 0) /* determine database state*/
 						{
-							db_state = false;
+							db_state = 0;
 						}
 
-						if ((db_state != state) || (forceUpdate))
+						if ((db_state != state) || (forceUpdate)) /* check if db update is required */
 						{
 							updateDatabase = true;
 						}
 
-						GpioSavedState[i].db_state = state;
+						GpioSavedState[i].db_state = state; /* save new database state */
 					}
 				}
 
-				if (updateDatabase)
+				if (updateDatabase) /* send packet to Domoticz */
 				{
 					if (state)
 					{
@@ -536,10 +536,10 @@ void CSysfsGPIO::UpdateDomoticzInputs(bool forceUpdate)
 						m_Packet.LIGHTING2.cmnd = light2_sOff;
 						m_Packet.LIGHTING2.level = 0;
 					}
+
 					m_Packet.LIGHTING2.unitcode = (char)GpioSavedState[i].pin_number;
 					m_Packet.LIGHTING2.seqnbr++;
 
-					/* send packet to Domoticz */
 					sDecodeRXMessage(this, (const unsigned char *)&m_Packet.LIGHTING2, "Input", 255);
 				}
 			}
