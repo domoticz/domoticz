@@ -8,16 +8,19 @@
 class CEcoDevices : public CTeleinfoBase
 {
 	public:
-		CEcoDevices(const int ID, const std::string &IPAddress, const unsigned short usIPPort);
+		CEcoDevices(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password, const int  datatimeout, const int model, const int ratelimit);
 		~CEcoDevices();
 		bool WriteToHardware(const char *pdata, const unsigned char length);
 	private:
 		bool Login();
 		void Logout();
 
-		std::string m_szIPAddress;
+		std::string m_szIPAddress, m_username, m_password;
+		std::stringstream m_ssURL;
 		unsigned short m_usIPPort;
 		bool m_stoprequested;
+		bool m_bFirstRun;
+		int m_iModel;
 		boost::shared_ptr<boost::thread> m_thread;
 
 		typedef struct _tStatus
@@ -37,6 +40,7 @@ class CEcoDevices : public CTeleinfoBase
 			uint32_t    pindex2; // previous index counter 2
 			time_t      time1;	 // time counter 1 sent
 			time_t      time2;	 // time counter 2 sent
+			uint32_t    voltage; // voltage, for model RT2 only
 			_tStatus()
 			{
 				len = sizeof(_tStatus) - 1;
@@ -59,4 +63,5 @@ class CEcoDevices : public CTeleinfoBase
 		void Do_Work();
 		void DecodeXML2Teleinfo(const std::string &sResult, Teleinfo &teleinfo);
 		void GetMeterDetails();
+		void GetMeterRT2Details();
 };

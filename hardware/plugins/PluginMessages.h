@@ -27,6 +27,7 @@ namespace Plugins {
 		PDT_PollInterval = 0,
 		PDT_Transport,
 		PDT_Protocol,
+		PDT_Notifier,
 		PDT_Connect,
 		PDT_Write,
 		PDT_Disconnect,
@@ -257,6 +258,16 @@ namespace Plugins {
 			m_Interval = PollInterval;
 		};
 		int						m_Interval;
+	};
+
+	class NotifierDirective : public CDirectiveMessage
+	{
+	public:
+		NotifierDirective(int HwdID, const char* Name) : CDirectiveMessage(PDT_Notifier, HwdID)
+		{
+			m_Name = Name;
+		};
+		std::string		m_Name;
 	};
 
 	class TransportDirective : public CDirectiveMessage

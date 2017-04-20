@@ -465,6 +465,9 @@
     <Filter Include="Devices\RelayNet">
       <UniqueIdentifier>{9882d591-40c3-4d12-8c0a-af2d53d939ff}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\SysfsGPIO">
+      <UniqueIdentifier>{301fceaa-95de-4168-b336-04cadc395ff6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -2002,6 +2005,9 @@
     <ClInclude Include="..\main\LuaCommon.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\SysfsGPIO.h">
+      <Filter>Devices\SysfsGPIO</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2663,6 +2669,9 @@
     </ClCompile>
     <ClCompile Include="..\main\LuaCommon.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\SysfsGPIO.cpp">
+      <Filter>Devices\SysfsGPIO</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

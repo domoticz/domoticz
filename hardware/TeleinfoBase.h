@@ -2,7 +2,7 @@
 Domoticz Software : http://domoticz.com/
 File : TeleinfoBase.h
 Author : Blaise Thauvin
-Version : 1.0
+Version : 1.4
 Description : This class is used by various Teleinfo hardware decoders to process and display data
 		  It is currently used by EcoDevices, TeleinfoSerial
 		  Detailed information on the Teleinfo protocol can be found at (version 5, 16/03/2015)
@@ -11,6 +11,8 @@ Description : This class is used by various Teleinfo hardware decoders to proces
 History :
 0.1 2017-03-03 : Creation
 1.0 2017-03-15 : Release candidate
+1.3 2017-04-01 : Added RateLimit
+1.4 2017-04-13 : Added DataTimeout
 */
 
 #pragma once
@@ -32,6 +34,9 @@ class CTeleinfoBase : public CDomoticzHardwareBase
 		P1Power m_p1power, m_p2power, m_p3power;
 
 	protected:
+		int m_iRateLimit;
+		int m_iDataTimeout;
+
 		typedef struct _tTeleinfo
 		{
 			std::string ADCO;
@@ -72,7 +77,7 @@ class CTeleinfoBase : public CDomoticzHardwareBase
 			std::string color;
 			time_t   last;
 			bool    triphase;
-			int    CRCmode1; // really a bool, but with a special "un-initialized state"
+			int    CRCmode1;	 // really a bool, but with a special "un-initialized state"
 			_tTeleinfo()
 			{
 				ISOUSC = 0;
@@ -106,7 +111,7 @@ class CTeleinfoBase : public CDomoticzHardwareBase
 				pAlertDemain = 10;
 				last = 0;
 				triphase = false;
-				CRCmode1 = 255; // means "bool not initialized yet", will be when running CRC Check for the first time
+				CRCmode1 = 255;	 // means "bool not initialized yet", will be when running CRC Check for the first time
 			}
 		} Teleinfo;
 
