@@ -96,6 +96,13 @@ void C1WireByOWFS::GetDevices(const std::string &inDir, /*out*/std::vector<_t1Wi
 			{
 				_log.Log(LOG_STATUS, "1Wire (OWFS): Add device %s", device.filename.c_str());
 			}
+
+			if (device.family == Serial_ID_Button)
+			{
+				// ignore this family as it doe not contain any kind of data
+				continue;
+			}
+
             devices.push_back(device);
 
             // If device is a hub, scan for all hub connected devices (recursively)
