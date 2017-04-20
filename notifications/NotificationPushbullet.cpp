@@ -45,7 +45,7 @@ bool CNotificationPushbullet::SendMessageImplementation(
 	//Add the required Access Token and Content Type
 	sHeaderKey << "Access-Token: " << _apikey;
 	ExtraHeaders.push_back(sHeaderKey.str());
-	ExtraHeaders.push_back("Content-Type: applicati../main");
+	ExtraHeaders.push_back("Content-Type: application/json");
 	
 	//Do the request
 	bRet = HTTPClient::POST("https://api.pushbullet.com/v2/pushes",sPostData,ExtraHeaders,sResult);

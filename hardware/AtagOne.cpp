@@ -9,7 +9,7 @@
 #include "../main/SQLHelper.h"
 #include "../httpclient/HTTPClient.h"
 #include "../main/mainworker.h"
-#include "../ma../main.h"
+#include "../main/json.h"
 
 extern http::server::CWebServerHelper m_webservers;
 

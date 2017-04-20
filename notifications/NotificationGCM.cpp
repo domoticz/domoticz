@@ -59,7 +59,7 @@ bool CNotificationGCM::SendMessageImplementation(
 	std::string szPostdata = sstr.str();
 
 	std::vector<std::string> ExtraHeaders;
-	ExtraHeaders.push_back("Content-Type: applicati../main");
+	ExtraHeaders.push_back("Content-Type: application/json");
 
 	sstr2 << "Authorization: key=" << GAPI;
 	ExtraHeaders.push_back(sstr2.str());

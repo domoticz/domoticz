@@ -436,7 +436,7 @@ void CThermosmart::SetPauseStatus(const bool bIsPause)
 	szPostdata += "}";
 
 	std::vector<std::string> ExtraHeaders;
-	ExtraHeaders.push_back("Content-Type: applicati../main");
+	ExtraHeaders.push_back("Content-Type: application/json");
 	std::string sResult;
 
 	std::string sURL = THERMOSMART_SET_PAUZE;

@@ -279,7 +279,7 @@ void CNefitEasy::SetUserMode(bool bSetUserModeClock)
 	std::string sResult;
 	std::vector<std::string> ExtraHeaders;
 	//ExtraHeaders.push_back("User-Agent: NefitEasy");
-	ExtraHeaders.push_back("Content-Type: applicati../main");
+	ExtraHeaders.push_back("Content-Type: application/json");
 
 	try
 	{
@@ -308,7 +308,7 @@ void CNefitEasy::SetHotWaterMode(bool bTurnOn)
 	std::string sResult;
 	std::vector<std::string> ExtraHeaders;
 	//ExtraHeaders.push_back("User-Agent: NefitEasy");
-	ExtraHeaders.push_back("Content-Type: applicati../main");
+	ExtraHeaders.push_back("Content-Type: application/json");
 
 	try
 	{
@@ -814,7 +814,7 @@ void CNefitEasy::SetSetpoint(const int idx, const float temp)
 	std::string sResult;
 	std::vector<std::string> ExtraHeaders;
 	//ExtraHeaders.push_back("User-Agent: NefitEasy");
-	ExtraHeaders.push_back("Content-Type: applicati../main");
+	ExtraHeaders.push_back("Content-Type: application/json");
 
 	try
 	{

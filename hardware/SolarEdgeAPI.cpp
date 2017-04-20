@@ -156,7 +156,7 @@ void SolarEdgeAPI::GetSite()
 	sResult = ReadFile("E:\\SolarEdge_sites.json");
 #else
 	std::stringstream sURL;
-	sURL << "https://monitoringapi.solaredge.com/sites/list?size=1&api_key=" << m_APIKey << "&format=applicati../main";
+	sURL << "https://monitoringapi.solaredge.com/sites/list?size=1&api_key=" << m_APIKey << "&format=application/json";
 	bool bret;
 	std::string szURL = sURL.str();
 	bret = HTTPClient::GET(szURL, sResult);
@@ -209,7 +209,7 @@ void SolarEdgeAPI::GetInverters()
 	sResult = ReadFile("E:\\SolarEdge_inverters.json");
 #else
 	std::stringstream sURL;
-	sURL << "https://monitoringapi.solaredge.com/equipment/" << m_SiteID << "/list?api_key=" << m_APIKey << "&format=applicati../main";
+	sURL << "https://monitoringapi.solaredge.com/equipment/" << m_SiteID << "/list?api_key=" << m_APIKey << "&format=application/json";
 	bool bret;
 	std::string szURL = sURL.str();
 	bret = HTTPClient::GET(szURL, sResult);
