@@ -1,3 +1,73 @@
+/*  This file helps older themes to still look the same  */
+
+
+/* This emulates a full background color change for item names on a status change.
+This now works via a CSS class instead of direct javascript manipulation. But 
+older themes don't know that, so this helps them to still look the same. */
+
+div.item.statusNormal td#name{
+    background-color: #A4B1EE;
+}
+div.item.statusProtected td#name{
+    background-color: #A4B1EE;
+}
+
+div.item.statusTimeout td#name{
+    background-color:#DF2D3A; 
+}
+div.item.statusLowBattery td#name{
+    background-color:#DDDF2D;
+}
+
+/*  brand (logo) things */
+.brand{
+	height: 20px;
+	width: 100px;
+}
+.brand h1 {
+	float: left;
+	margin-left: 32px;
+	margin-top: -48px;
+	text-decoration: none;
+	text-transform: none;
+	font-family: 'Oswald', sans-serif;
+	font-size: 1.5em;
+	font-weight: 200;
+	color: #1C1C1C;
+}
+.brand h2 {
+	float: left;
+	margin-left: 142px;
+	margin-top: -24px;
+	text-decoration: none;
+	text-transform: none;
+	font-family: Georgia, "Times New Roman", Times, serif;
+	font-size: 0.6em;
+	font-style: italic;
+	color: #444;
+}
+
+.brand h2 {
+	float: left;
+	margin-left: 142px;
+	margin-top: -24px;
+	text-decoration: none;
+	text-transform: none;
+	font-family: Georgia, "Times New Roman", Times, serif;
+	font-size: 0.6em;
+	font-style: italic;
+	color: #444;
+}
+
+.brand img {
+	width: 40px;
+	height: 40px;
+	margin-left: -10px;
+	margin-top: -8px;
+}
+
+/*  these are some old styles that used some off sibling selector chaining to reach elements.*/
+
 
 /* I am using the :first-child as a way to style each column by itself*/
 /* First column */
@@ -975,4 +1045,6 @@ body table#itemtablesmalltrippleicon tr:hover td:first-child{
 
 .item td.dataviz{display:none}
 .item td.overlay{display:none}
+
+
 
