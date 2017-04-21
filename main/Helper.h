@@ -4,7 +4,7 @@
 void StringSplit(std::string str, const std::string &delim, std::vector<std::string> &results);
 void stdreplace(
 	std::string &inoutstring,
-	const std::string& replaceWhat, 
+	const std::string& replaceWhat,
 	const std::string& replaceWithWhat);
 void stdupper(std::string &inoutstring);
 bool file_exist (const char *filename);
@@ -32,6 +32,11 @@ double ConvertTemperature(const double tValue, const unsigned char tSign);
 
 std::vector<std::string> ExecuteCommandAndReturn(const std::string &szCommand);
 
+void DateAsciiTotmTime (std::string &sLastUpdate , struct tm &LastUpdateTime  );
+void AsciiTime (struct tm &ltime , char * pLastUpdate );
+std::string  GetCurrentAsciiTime ();
+void AsciiTime ( time_t DateStart, char * DateStr );
+time_t DateAsciiToTime_t ( std::string & DateStr );
 std::string GenerateMD5Hash(const std::string &InputString, const std::string &Salt="");
 
 void hue2rgb(const float hue, int &outR, int &outG, int &outB, const double maxValue = 100.0);
@@ -55,3 +60,5 @@ std::string MakeHtml(const std::string &txt);
 #if defined WIN32
 	int gettimeofday(timeval * tp, void * tzp);
 #endif
+int getclock(struct timeval *tv);
+int timeval_subtract (struct timeval *result, struct timeval *x, struct timeval *y);

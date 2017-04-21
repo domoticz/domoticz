@@ -147,7 +147,7 @@ private:
 	void SetThermostatMode(const int nodeID, const int instanceID, const int commandClass, const int tMode);
 	void SetThermostatFanMode(const int nodeID, const int instanceID, const int commandClass, const int fMode);
 
-	unsigned char GetInstanceFromValueID(const OpenZWave::ValueID &vID);
+	uint8_t GetInstanceFromValueID(const OpenZWave::ValueID &vID);
 
 	void StopHardwareIntern();
 

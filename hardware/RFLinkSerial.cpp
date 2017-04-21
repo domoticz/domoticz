@@ -78,7 +78,7 @@ void CRFLinkSerial::Do_Work()
 				} else
 				if (atime - m_LastReceivedTime > 50) {
 				//Timeout
-				_log.Log(LOG_ERROR, "RFLink: Nothing received for more then 50 seconds, restarting...");
+				_log.Log(LOG_ERROR, "RFLink: Nothing received for more than 50 seconds, restarting...");
 				m_retrycntr = 0;
 				m_LastReceivedTime = atime;
 				terminate();

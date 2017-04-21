@@ -5,7 +5,7 @@
 #include "../hardware/evohome.h"
 #include "Helper.h"
 #include <boost/algorithm/string.hpp>
-//#include "Logger.h"
+#include "Logger.h"
 
 typedef struct _STR_TABLE_SINGLE {
 	unsigned long    id;
@@ -169,7 +169,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_PiFace, "PiFace - Raspberry Pi IO expansion board" },
 		{ HTYPE_S0SmartMeterUSB, "S0 Meter USB" },
 		{ HTYPE_OpenThermGateway, "OpenTherm Gateway USB" },
-		{ HTYPE_TeleinfoMeter, "Teleinfo EDF USB" },
+		{ HTYPE_TeleinfoMeter, "Teleinfo EDF" },
 		{ HTYPE_OpenThermGatewayTCP, "OpenTherm Gateway with LAN interface" },
 		{ HTYPE_OpenZWave, "OpenZWave USB" },
 		{ HTYPE_LimitlessLights, "Limitless/AppLamp/Mi Light with LAN/WiFi interface" },
@@ -184,7 +184,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_RaspberryGPIO, "Raspberry's GPIO port" },
 		{ HTYPE_Meteostick, "Meteostick USB" },
 		{ HTYPE_TOONTHERMOSTAT, "Toon Thermostat" },
-		{ HTYPE_ECODEVICES, "Eco Devices via LAN interface" },
+		{ HTYPE_ECODEVICES, "Eco Devices" },
 		{ HTYPE_HARMONY_HUB, "Logitech Harmony Hub" },
 		{ HTYPE_Mochad, "Mochad CM15Pro/CM19A bridge with LAN interface" },
 		{ HTYPE_Philips_Hue, "Philips Hue Bridge" },
@@ -248,6 +248,8 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_OpenWebNetUSB, "MyHome OpenWebNet USB" },
 		{ HTYPE_IntergasInComfortLAN2RF, "Intergas InComfort LAN2RF Gateway" },
 		{ HTYPE_RelayNet, "Relay-Net 8 channel LAN Relay and binary Input module" },
+		{ HTYPE_KMTronicUDP, "KMTronic Gateway with LAN/UDP interface" },
+		{ HTYPE_SysfsGPIO, "Generic sysfs gpio" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -263,13 +265,13 @@ const char *Switch_Type_Desc(const _eSwitchType sType)
 		{ STYPE_Blinds, "Blinds" },
 		{ STYPE_X10Siren, "X10 Siren" },
 		{ STYPE_SMOKEDETECTOR, "Smoke Detector" },
-        { STYPE_BlindsInverted, "Blinds Inverted" },
+		{ STYPE_BlindsInverted, "Blinds Inverted" },
 		{ STYPE_Dimmer, "Dimmer" },
 		{ STYPE_Motion, "Motion Sensor" },
 		{ STYPE_PushOn, "Push On Button" },
 		{ STYPE_PushOff, "Push Off Button" },
 		{ STYPE_DoorContact, "Door Contact" },
-        { STYPE_Dusk, "Dusk Sensor" },
+		{ STYPE_Dusk, "Dusk Sensor" },
 		{ STYPE_BlindsPercentage, "Blinds Percentage" },
 		{ STYPE_VenetianBlindsUS, "Venetian Blinds US" },
 		{ STYPE_VenetianBlindsEU, "Venetian Blinds EU" },
@@ -327,6 +329,7 @@ const char *Notification_Type_Desc(const int nType, const unsigned char snum)
 		{ NTYPE_STOPPED, "Stop Stream", "Q" },
 		{ NTYPE_PLAYING, "Play Stream", "a" },
 		{ NTYPE_VALUE, "Value", "F" },
+		{ NTYPE_LASTUPDATE, "Last Update", "J"},
 		{  0,NULL,NULL }
 	};
 	if (snum==0)
@@ -366,6 +369,7 @@ const char *Notification_Type_Label(const int nType)
 		{ NTYPE_STOPPED, "" },
 		{ NTYPE_PLAYING, "" },
 		{ NTYPE_VALUE, "" },
+		{ NTYPE_LASTUPDATE, "minutes" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, nType);
@@ -862,6 +866,8 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchTypeHRCMotor, "HRCMotor" },
 		{ pTypeGeneralSwitch, sSwitchTypeVelleman, "Velleman" },
 		{ pTypeGeneralSwitch, sSwitchTypeRFCustom, "RFCustom" },
+		{ pTypeGeneralSwitch, sSwitchTypeYW_Sensor, "YW_Sensor" },
+		{ pTypeGeneralSwitch, sSwitchTypeLegrandcad, "LEGRANDCAD" },
 		{  0,0,NULL }
 	};
 	return findTableID1ID2(Table, dType, sType);
@@ -1485,6 +1491,9 @@ void GetLightStatus(
 		case Limitless_SetBrightnessLevel:
 			lstatus="Set Level";
 			break;
+		case Limitless_SetKelvinLevel:
+			lstatus="Set Kelvin Level";
+			break;
 		case Limitless_SetColorToWhite:
 			lstatus="Set to White";
 			break;
@@ -1923,6 +1932,8 @@ void GetLightStatus(
 		}
 		break;
 	}
+	if (_log.isTraceEnabled()) _log.Log(LOG_TRACE,"RFXN : GetLightStatus Typ:%2d STyp:%2d nVal:%d sVal:%-4s llvl:%2d isDim:%d maxDim:%2d GrpCmd:%d lstat:%s", 
+		dType,dSubType,nValue,sValue.c_str(),llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd,lstatus.c_str());
 }
 
 /**
@@ -2491,6 +2502,11 @@ bool GetLightCommand(
 			cmd=Limitless_SetBrightnessLevel;
 			return true;
 		}
+		else if (switchcmd=="Set Kelvin Level")
+		{
+			cmd=Limitless_SetKelvinLevel;
+			return true;
+		}
 		else if (switchcmd == "Set White")
 		{
 			cmd = Limitless_SetColorToWhite;
@@ -2589,6 +2605,16 @@ bool GetLightCommand(
 		else if (switchcmd == "Speed Down")
 		{
 			cmd = Limitless_DiscoSpeedSlower;
+			return true;
+		}
+		else if (switchcmd == "Speed Minimal")
+		{
+			cmd = Limitless_DiscoSpeedMinimal;
+			return true;
+		}
+		else if (switchcmd == "Speed Maximal")
+		{
+			cmd = Limitless_DiscoSpeedMaximal;
 			return true;
 		}
 		else if (switchcmd == "Warmer")

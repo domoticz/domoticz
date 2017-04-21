@@ -1,0 +1,19 @@
+return {
+	include = {
+		'EventHelpers',
+		'Device',
+		'Domoticz',
+		'HistoricalStorage',
+		'Time',
+		'TimedCommand',
+		'Utils',
+		'Variable',
+		'script_device_main',
+		'script_time_main'
+	},
+	exclude = {
+		'test.*'
+	}
+
+
+}

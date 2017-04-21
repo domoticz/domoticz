@@ -13,7 +13,7 @@
             <Help>Choose how often you want the Mini Plug to send metering reports to the controller, in seconds.</Help>
         </Value>
         <Value type="byte" genre="config" index="6" label="Power Reporting Percentage Threshold" units="%" size="1" min="1" max="100" value="5" >
-            <Help>Percentage change of elecricity, voltage, power consumption, or energy before report is sent.
+            <Help>Percentage change of electricity, voltage, power consumption, or energy before report is sent.
                 Defaults to 5%.</Help>
         </Value>
         <Value type="byte" genre="config" index="3" label="Overload Protection" size="1" min="1" max="16" value="13" units="Amperes">

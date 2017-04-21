@@ -11,6 +11,7 @@
 #include <fstream>
 #include <math.h>
 #include <algorithm>
+#include "../main/localtime_r.h"
 #include <sstream>
 #include <openssl/md5.h>
 
@@ -38,7 +39,7 @@ void StringSplit(std::string str, const std::string &delim, std::vector<std::str
 
 void stdreplace(
 	std::string &inoutstring,
-	const std::string& replaceWhat, 
+	const std::string& replaceWhat,
 	const std::string& replaceWithWhat)
 {
 	int pos = 0;
@@ -135,7 +136,7 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 				sprintf(szPortName, "COM%d", ii);
 				ret.push_back(szPortName); // add port
 			}
-			// --------------            
+			// --------------
 		}
 	}
 	// Method 3: EnumSerialPortsWindows, often fails
@@ -178,6 +179,9 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 		// Loop while not NULL
 		while ((de = readdir(d)))
 		{
+			// Only consider character devices and symbolic links
+                        if ((de->d_type == DT_CHR) || (de->d_type == DT_LNK))
+                        {
 			std::string fname = de->d_name;
 			if (fname.find("ttyUSB")!=std::string::npos)
 			{
@@ -198,7 +202,7 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 				bUseDirectPath = true;
 				ret.push_back("/dev/" + fname);
 			}
-#ifdef __FreeBSD__            
+#ifdef __FreeBSD__
 			else if (fname.find("ttyU")!=std::string::npos)
 			{
 				bUseDirectPath=true;
@@ -223,6 +227,21 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 				{
 					ret.push_back("/dev/" + fname);
 					bUseDirectPath=true;
+				}
+				// By default, this is the "small UART" on Rasberry 3 boards
+                                        if (fname.find("ttyS0")!=std::string::npos)
+                                        {
+                                                ret.push_back("/dev/" + fname);
+                                                bUseDirectPath=true;
+                                        }
+                                        // serial0 and serial1 are new with Rasbian Jessie
+                                        // Avoids confusion between Raspberry 2 and 3 boards
+                                        // More info at http://spellfoundry.com/2016/05/29/configuring-gpio-serial-port-raspbian-jessie-including-pi-3/
+                                        if (fname.find("serial")!=std::string::npos)
+                                        {
+                                                ret.push_back("/dev/" + fname);
+                                                bUseDirectPath=true;
+                                        }
 				}
 			}
 		}
@@ -252,7 +271,7 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 
 bool file_exist (const char *filename)
 {
-	struct stat sbuffer;   
+	struct stat sbuffer;
 	return (stat(filename, &sbuffer) == 0);
 }
 
@@ -356,7 +375,7 @@ double CalculateDewPoint(double temp, int humidity)
 	return dew_numer/dew_denom;
 }
 
-uint32_t IPToUInt(const std::string &ip) 
+uint32_t IPToUInt(const std::string &ip)
 {
 	int a, b, c, d;
 	uint32_t addr = 0;
@@ -491,11 +510,55 @@ std::vector<std::string> ExecuteCommandAndReturn(const std::string &szCommand)
 	}
 	catch (...)
 	{
-		
+
 	}
 	return ret;
 }
 
+//convert date string 10/12/2014 10:45:58 en  struct tm
+void DateAsciiTotmTime (std::string &sTime , struct tm &tmTime  )
+{
+		tmTime.tm_isdst=0; //dayly saving time
+		tmTime.tm_year=atoi(sTime.substr(0,4).c_str())-1900;
+		tmTime.tm_mon=atoi(sTime.substr(5,2).c_str())-1;
+		tmTime.tm_mday=atoi(sTime.substr(8,2).c_str());
+		tmTime.tm_hour=atoi(sTime.substr(11,2).c_str());
+		tmTime.tm_min=atoi(sTime.substr(14,2).c_str());
+		tmTime.tm_sec=atoi(sTime.substr(17,2).c_str());
+
+
+}
+//convert struct tm time to char
+void AsciiTime (struct tm &ltime , char * pTime )
+{
+		sprintf(pTime, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
+}
+
+std::string  GetCurrentAsciiTime ()
+{
+	    time_t now = time(0)+1;
+		struct tm ltime;
+		localtime_r(&now, &ltime);
+		char pTime[40];
+		AsciiTime (ltime ,  pTime );
+		return pTime ;
+}
+
+void AsciiTime ( time_t DateStart, char * DateStr )
+{
+	struct tm ltime;
+	localtime_r(&DateStart, &ltime);
+	AsciiTime (ltime ,  DateStr );
+
+}
+
+time_t DateAsciiToTime_t ( std::string & DateStr )
+{
+	struct tm tmTime ;
+	DateAsciiTotmTime (DateStr , tmTime  );
+	return mktime(&tmTime);
+
+}
 std::string GenerateMD5Hash(const std::string &InputString, const std::string &Salt)
 {
 	std::string cstring = InputString + Salt;
@@ -774,3 +837,36 @@ int gettimeofday( timeval * tp, void * tzp)
 	return 0;
 }
 #endif
+
+int getclock(struct timeval *tv) {
+#ifdef CLOCK_MONOTONIC
+	struct timespec ts;
+		if (!clock_gettime(CLOCK_MONOTONIC, &ts)) {
+			tv->tv_sec = ts.tv_sec;
+			tv->tv_usec = ts.tv_nsec / 1000;
+			return 0;
+		}
+#endif
+	return gettimeofday(tv, NULL);
+}
+int timeval_subtract (struct timeval *result, struct timeval *x, struct timeval *y) {
+	/* Perform the carry for the later subtraction by updating y. */
+  if (x->tv_usec < y->tv_usec) {
+		int nsec = (y->tv_usec - x->tv_usec) / 1000000 + 1;
+    y->tv_usec -= 1000000 * nsec;
+    y->tv_sec += nsec;
+  }
+  if (x->tv_usec - y->tv_usec > 1000000) {
+    int nsec = (x->tv_usec - y->tv_usec) / 1000000;
+    y->tv_usec += 1000000 * nsec;
+    y->tv_sec -= nsec;
+  }
+
+  /* Compute the time remaining to wait.
+     tv_usec is certainly positive. */
+  result->tv_sec = x->tv_sec - y->tv_sec;
+  result->tv_usec = x->tv_usec - y->tv_usec;
+
+  /* Return 1 if result is negative. */
+  return x->tv_sec < y->tv_sec;
+}

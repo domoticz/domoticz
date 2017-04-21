@@ -97,12 +97,13 @@ define(['app'], function (app) {
 				extraparams = "PushbulletAPI=" + PushbulletAPI;
 				break;
 			case "pushsafer":
-				var PushsaferAPI=encodeURIComponent($("#pushsafertable #PushsaferAPI").val());
+			    var PushsaferAPI = encodeURIComponent($("#pushsafertable #PushsaferAPI").val());
+			    var PushsaferImage = encodeURIComponent($("#pushsafertable #PushsaferImage").val());
 				if (PushsaferAPI=="") {
 					ShowNotify($.t('Please enter the API key!...'), 3500, true);
 					return;
 				}
-				extraparams = "PushsaferAPI=" + PushsaferAPI;
+				extraparams = "PushsaferAPI=" + PushsaferAPI + "&PushsaferImage=" + PushsaferImage;
 				break;				
 			case "pushover":
 				var POAPI=encodeURIComponent($("#pushovertable #PushoverAPI").val());
@@ -296,8 +297,11 @@ define(['app'], function (app) {
   				$("#pushsafertable #PushsaferEnabled").prop('checked',data.PushsaferEnabled==1);
 			  }			  
 			  if (typeof data.PushsaferAPI != 'undefined') {
-				$("#pushsafertable #PushsaferAPI").val(data.PushsaferAPI);
-			  }			  
+			      $("#pushsafertable #PushsaferAPI").val(data.PushsaferAPI);
+			  }
+			  if (typeof data.PushsaferImage != 'undefined') {
+			      $("#pushsafertable #PushsaferImage").val(data.PushsaferImage);
+			  }
 			  if (typeof data.PushoverEnabled != 'undefined') {
   				$("#pushovertable #PushoverEnabled").prop('checked',data.PushoverEnabled==1);
 			  }
@@ -431,6 +435,12 @@ define(['app'], function (app) {
 			  if (typeof data.CostEnergyT2 != 'undefined') {
 				$("#rfxmetertable #CostEnergyT2").val(data.CostEnergyT2);
 			  }
+			  if (typeof data.CostEnergyR1 != 'undefined') {
+				$("#rfxmetertable #CostEnergyR1").val(data.CostEnergyR1);
+			  }
+			  if (typeof data.CostEnergyR2 != 'undefined') {
+				$("#rfxmetertable #CostEnergyR2").val(data.CostEnergyR2);
+			  }
 			  if (typeof data.GasDivider != 'undefined') {
 				$("#rfxmetertable #GasDivider").val(data.GasDivider );
 			  }
@@ -542,6 +552,14 @@ define(['app'], function (app) {
 			  if (typeof data.WebTheme != 'undefined') {
 				$("#settingscontent #combothemes").val(data.WebTheme);
 			  }
+			  if (typeof data.Title != 'undefined') {
+				sessionStorage.title = data.Title;
+                          }
+			  else {
+				sessionStorage.title = 'Domoticz';
+                          }
+                          document.title = sessionStorage.title;
+                          $("#settingscontent #Title").val(sessionStorage.title);
 
 			  if (typeof data.AuthenticationMethod != 'undefined') {
 				$("#webtable #comboauthmethod").val(data.AuthenticationMethod);
@@ -606,6 +624,16 @@ define(['app'], function (app) {
 			  if (typeof data.SecOnDelay != 'undefined') {
 				$("#sectable #SecOnDelay").val(data.SecOnDelay);
 			  }
+			  if (typeof data.LogLevel != 'undefined') {
+  				$("#LogDebug #LogFilterTable #LogLevel").val(data.LogLevel);
+  				$("#LogDebug").show();
+			  }
+			  if (typeof data.LogFilter != 'undefined') {
+					$("#LogDebug #LogFilterTable #LogFilter").val(data.LogFilter);
+			  }
+			  if (typeof data.LogFileName != 'undefined') {
+					$("#LogDebug #LogFilterTable #LogFileName").val(data.LogFileName);
+			  }
 			  if (typeof data.cloudenabled != 'undefined') {
 				  if (!data.cloudenabled) {
 					  $("#MyDomoticzTab").css("display", "none");
@@ -647,6 +675,10 @@ define(['app'], function (app) {
 
 		  var secpanel=$("#sectable #SecPassword").val();
 		  var switchprotection=$("#protectiontable #ProtectionPassword").val();
+
+                  // Apply Title
+		  sessionStorage.title = $("#settingscontent #Title").val();
+		  document.title=sessionStorage.title;
 
 		  //Check email settings
 		  var EmailServer=$("#emailtable #EmailServer").val();
