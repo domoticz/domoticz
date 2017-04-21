@@ -313,7 +313,7 @@ body:not(.dashboard) h2 + div.divider .span4:nth-child(-n+3) div.item.statusLowB
 
 #type,
 #lastupdate{
-    color:#999;
+    color:#666;
 }
 
 .options a.btnsmall {

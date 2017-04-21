@@ -11,59 +11,62 @@
     
     /*  LOGO  */
 
-    .navbar .brand {
-        display:block!important;
+    .navbar a.brand {
+        /*display:block!important;
         margin: 0;
-        padding:0;
+        padding:0;*/
         z-index:120;
-        width:100%;
-        height:60px;
-        background-color: #eee;
-        width:60px;
+        height:30px;
+        /*background-color: #eee;*/
         overflow:visible;
+        position:relative;
+        top:20px;
+        left:12px;
+        
     }
 
     .navbar .container .brand img{
         margin:0;
-        position:fixed;
-        top:20px;
-        left:11px;  
     }
-/*
-    .navbar:hover .container .brand img{
-        margin-top:0;
-    }
-*/
+
     .navbar .container .brand h1{
-        opacity:0;
+        /*opacity:0;*/
+        display:none;
         /*transition: all 0.1s linear; */
-        position:fixed;
+        /*position:fixed;
         top:55px;
-        z-index:1000;
+        z-index:1000;*/
     }
 
     .navbar:hover .container .brand{
         width:100%
     }
+    
     .navbar:hover .container .brand h1{
-        opacity:100;
-        transform: translate(20px);    
+        /*opacity:100;*/
+        display:inline;
+        /*transform: translate(20px);  */  
     /*    transition: all 0.3s ease;*/
     }
 
     .brand h2{
-        display:none!important;
-        color:#aaa;
-        position: initial!important;
-        margin:15px 0 0 110px!important;
-        float:none;
-        text-decoration: none!important;
-        border-bottom:0!important;
+        /*display:none!important;*/
+        /*position: initial!important;*/
+        /*margin:15px 0 0 110px!important;*/
+        visibility: hidden;
+        opacity:0;
+        display:none;
+        /*text-decoration: none!important;
+        border-bottom:0!important;*/
     }
 
     .navbar:hover .brand h2{
-        padding: 10px 10px 0 0;
-        text-decoration: none!important;
+        display:inline;
+        margin-right:5px;
+        visibility:visible;
+        opacity:100;
+        /*padding: 10px 10px 0 0;
+        text-decoration: none!important;*/
     }
 
     
@@ -71,7 +74,7 @@
     /*  MAIN RESETS AND GENERAL NAVBAR SETTINGS */
 
 
-    .bannercontent{padding-top:20px;}
+    .bannercontent{padding-top:0px;}
 
     .navbar *{
         width:auto;
@@ -113,7 +116,7 @@
 
     .navbar .nav .dropdown-menu{padding:0}
 
-    .navbar-fixed-top .navbar-inner{
+    .navbar .navbar-inner{
         padding:0;
         height:100%;
         background-color:transparent;
@@ -128,17 +131,20 @@
     .navbar #appnavbar{
         width:auto; 
         height:100%;
-        top:0;
+        top:30px;
         clear:both;
-        background-color:#ddd;
+
         list-style-type:none;
         margin:0;
         padding:0;
         text-align:left;
-        background: rgb(221,221,221); /* Old browsers */
-        background: -moz-linear-gradient(left, rgba(221,221,221,1) 0%, rgba(229,229,229,1) 50%, rgba(221,221,221,1) 100%); /* FF3.6-15 */
-        background: -webkit-linear-gradient(left, rgba(221,221,221,1) 0%,rgba(229,229,229,1) 50%,rgba(221,221,221,1) 100%); /* Chrome10-25,Safari5.1-6 */
-        background: linear-gradient(to right, rgba(221,221,221,1) 0%,rgba(229,229,229,1) 50%,rgba(221,221,221,1) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+        /*
+        background-color:#ddd;
+        background: rgb(221,221,221); 
+        background: -moz-linear-gradient(left, rgba(221,221,221,1) 0%, rgba(229,229,229,1) 50%, rgba(221,221,221,1) 100%); 
+        background: -webkit-linear-gradient(left, rgba(221,221,221,1) 0%,rgba(229,229,229,1) 50%,rgba(221,221,221,1) 100%); 
+        background: linear-gradient(to right, rgba(221,221,221,1) 0%,rgba(229,229,229,1) 50%,rgba(221,221,221,1) 100%); 
+        */
     }
 
     /*.navbar:hover #appnavbar{background-image:none;}*/
@@ -171,7 +177,7 @@
         left:6px;
         padding-right:6px;
     }
-
+    
     #appnavbar img{
         margin:0px;
         height:30px;
@@ -185,6 +191,7 @@
         image-rendering: pixelated;   
     }
     
+    #appnavbar > li > a{padding-left:10px;padding-right:10px;}
     
     .navbar #appnavbar > li > a > img{
         margin-top:5px;
@@ -330,9 +337,15 @@
         border-radius: 0;
     }
 
+    
+    .navbar #appnavbar > li.open > .dropdown-menu.pull-right > li.dropdown-submenu > .dropdown-menu.pull-left{
+        display:block
+    }  
+    /*
     .navbar:hover .nav > li > .dropdown-menu.pull-right > li.dropdown-submenu > .dropdown-menu.pull-left{
         display:block
     }  
+    */
 
     .navbar .nav > li > .dropdown-menu.pull-right > li.dropdown-submenu > .dropdown-menu.pull-left > li{
         /*flex-grow: 1;*/
@@ -349,7 +362,7 @@
 
 
     .navbar #appnavbar > li > .dropdown-menu > li.dropdown-submenu > a  {
-        display:none!important; 
+        display:none!important; /* these buttons are no longer needed */
         text-align:right;
     }
 
@@ -357,7 +370,8 @@
     /* third tier */
 
     .navbar .nav > li > .dropdown-menu.pull-right > li.dropdown-submenu > .dropdown-menu.pull-left > li.dropdown-submenu > .dropdown-menu.pull-right{
-        left:405px;
+        position: absolute;
+        left: 178px;
         flex-wrap: wrap;
         /*align-items: center;*/
         align-content: center;
@@ -388,13 +402,46 @@
 
     }
 
-} /*  closing the hopefully temporary hiding of this menu for iPhones.*/
+    
+    
+
+    /* EXPERIMENT - forcing the third tier to always be open on mobile devices. */
+
+    body#mobile .navbar #appnavbar > li.open > .dropdown-menu.pull-right > li.dropdown-submenu > .dropdown-menu.pull-left > li.dropdown-submenu > .dropdown-menu.pull-right{
+        display:block;
+    }
+
+    
+
+    /* and then only undo all that for the rare times that we know for sure the device is not mobile/tablet.*/
+    
+    /*
+    body#notMobile .navbar #appnavbar > li.open > .dropdown-menu.pull-right > li.dropdown-submenu > .dropdown-menu.pull-left > li.dropdown-submenu > .dropdown-menu.pull-right{
+        display:initial;
+        top:0;
+        height:100%;
+    }
+    
+    body#notMobile .navbar #appnavbar #cDataPush + ul.dropdown-menu.pull-right{
+        height:100%;
+        top:0;
+    }
+    */
+    
+    
+    
+    
+    
+    
+    
+} /*  closing the hiding for small screens. */
 
 
 
 
 /* The following media queries allow the menu to scale independently in both X and Y axis. */
 
+/*
 @media all and (min-width : 769px){
 
     #holder{
@@ -417,33 +464,29 @@
         top:60px;
     }    
     
-    .navbar .container .brand{top:10px;}
-    .navbar .container .brand img{left:20px;}
+    .navbar .container .brand{
+        top:20px;
+        height:60px;
+    }
     
     .navbar:hover #appnavbar > li > a > span {
-        /*padding: 0 10px 10px 0px;*/
         padding-right:10px;
     }
     
-    .navbar:hover .container .brand h1{left:10px;}    
     .navbar:hover .container .brand h1{
         opacity:100;
-        transform: translate(25px);    
-    /*    transition: all 0.3s ease;*/
+        transform: translate(0px);    
     }
     
-    
-    /*  dropdowns move a a bit to the right on wider screens   */ 
     #appnavbar > li.open > .dropdown-menu.pull-right{
         left:64px!important;
     }
     .navbar .nav > li > .dropdown-menu.pull-right > li.dropdown-submenu > .dropdown-menu.pull-left{
-        left:243px!important; /* 225 */
-    }
-   .navbar .nav > li > .dropdown-menu.pull-right > li.dropdown-submenu > .dropdown-menu.pull-left > li.dropdown-submenu > .dropdown-menu.pull-right{
-        left:422px!important;   
-    }
-}
+        left:243px!important;
+    }  
+    
+}*/ 
+/*  225  */
 
 
 
@@ -465,7 +508,7 @@
 
 
 /*  Somemore vertical vertical shrinking  */
-@media all and (max-height: 590px) {
+@media all and (max-height: 590px) and (min-width : 480px)  {
     #appnavbar a img{
         margin-top:1px!important;
         margin-bottom:1px!important;
@@ -512,6 +555,15 @@
     
 }
 
+
+@media all and (max-width: 479px){
+    
+    .navbar-fixed-top .navbar-inner, 
+    .navbar-static-top .navbar-inner {
+        padding: 10px 20px 0 0;
+    }
+    
+}
 
 /*  FIXES  */
 
