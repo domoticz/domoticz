@@ -584,6 +584,7 @@
     
     /*  barometer  */
     
+    /*
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item#Sunny #name{background-image:none!important; background-color: rgba(250,250,250,0.1)!important;}
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item#Sunny tr{
         background: url('/images/sunny.png') no-repeat right!important; 
@@ -596,7 +597,26 @@
         background: url('/images/rainy.png') no-repeat right!important; 
         background-color: rgba(250,250,250,0.1)!important;
         background-size: cover!important;
-    }
+    }*/
+    
+    
+    /*  Rain meter */
+    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.Rain #img:before {
+    animation: rainy_rain .7s infinite linear;
+    content: '';
+    background: #CCCCCC;
+    border-radius: 50%;
+    display: block;
+    height: 6px;
+    width: 3px;
+    opacity: 0.3;
+    transform: scale(.9);
+    transform:translate(100px, -20px);
+}
+    
+    
+    
 
 }   /* closing of the media query  */
 

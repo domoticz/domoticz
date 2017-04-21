@@ -16,7 +16,7 @@
         margin: 0;
         padding:0;*/
         z-index:120;
-        height:60px;
+        height:30px;
         /*background-color: #eee;*/
         overflow:visible;
         position:relative;
@@ -131,7 +131,7 @@
     .navbar #appnavbar{
         width:auto; 
         height:100%;
-        top:0;
+        top:30px;
         clear:both;
 
         list-style-type:none;
@@ -556,6 +556,14 @@
 }
 
 
+@media all and (max-width: 479px){
+    
+    .navbar-fixed-top .navbar-inner, 
+    .navbar-static-top .navbar-inner {
+        padding: 10px 20px 0 0;
+    }
+    
+}
 
 /*  FIXES  */
 

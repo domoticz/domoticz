@@ -305,7 +305,8 @@ body:not(.dashboard) .selectorlevels .ui-buttonset .ui-button{border-radius:3px!
 
 .ui-draggable:not(.ui-dialog) tr td.options a.btnsmall-sel{
     /*color:#af2aaf;*/ /* #446cce*/
-    border-bottom:1px solid #af2aaf;
+    border-bottom:2px solid #af2aaf;
+    border-radius: 0;
 }
 
 /*
@@ -356,13 +357,27 @@ vertical-align: text-bottom;
     border-top: 1px dotted rgba(150,150,150,0.05);
 }
 
-select{background-color:rgba(255,255,255,0.1); color:#fff;border:0}
+select{background-color:#283750; color:#fff;border:0}
 
 
-textarea{
-    background-color:rgba(255,255,255,0.2);
+textarea,
+textarea.ui-widget-content{
+    /*background-color:rgba(255,255,255,0.2);*/
     border:none;
     color:#eee;
+    background: #1c2b46;
+    font-weight: normal;
+    margin-bottom:5px;
+}
+
+#settingscontent textarea + span,
+#settingscontent textarea + span + span,
+#settingscontent textarea + span + span + span,
+#settingscontent textarea + br + span,
+#settingscontent textarea + br + span + span,
+#settingscontent textarea + br + span + span + span{
+    color:#ccc;
+    font-size:10px
 }
 
 input,
@@ -376,11 +391,8 @@ input.ui-widget-content{
     border-bottom: 1px solid transparent;
 }
 
-input:focus{
-    background-color:rgba(250,250,250,0.2);
-    color:#fff;
-    border-bottom: 1px solid #ccc;
-    box-shadow: none;
+textarea:focus{
+    background-color:#404C63;
 }
 
 p.tip, p.inlinetip{
@@ -393,6 +405,11 @@ p.tip, p.inlinetip{
     text-transform: uppercase;
 }
 
+#settingscontent #Domoticz a.btn-info,
+.related > div.span2 > a.btn-info{
+    background-color:#274377;
+    background-image:none;
+}
 
 /*  data tables */
 
@@ -438,7 +455,7 @@ body.dashMobile #dashcontent #status{box-shadow:none!important;}
 /*  status indicators */
 
 
-@media only screen and (max-width: 980px){
+@media only screen and (max-width: 767px){
     
     div.item.statusNormal td#name{
         color:#333;
@@ -466,11 +483,11 @@ body.dashMobile #dashcontent #status{box-shadow:none!important;}
     }
 }
 
-@media only screen and (min-width: 980px){
+@media only screen and (min-width: 768px){
     div.item.statusProtected td#name{
-        -moz-box-shadow: inset 0 -5px 0px 0px #A4B1EE;
-        -webkit-box-shadow: inset 0 -5px 0px 0px #A4B1EE;
-        box-shadow: inset 0 -5px 0px 0px #A4B1EE;        
+        -moz-box-shadow: inset 0 -3px 0px 0px #A4B1EE;
+        -webkit-box-shadow: inset 0 -3px 0px 0px #A4B1EE;
+        box-shadow: inset 0 -3px 0px 0px #A4B1EE;        
         /*box-shadow: inset 0 -4px 8px -2px #A4B1EE;*/
     }
 
@@ -482,7 +499,7 @@ body.dashMobile #dashcontent #status{box-shadow:none!important;}
     }
     div.item.statusTimeout tr {
         /*border:5px solid #DF2D3A; */
-        box-shadow: inset 0 0 0 5px #DF2D3A;*/
+        box-shadow: inset 0 0 0 3px #DF2D3A;*/
     }
     
     
@@ -532,6 +549,7 @@ body.dashMobile #dashcontent #status{box-shadow:none!important;}
 
 
 
+
 /* Fixed settings menu */
 
 @media all and (min-width: 1050px){
@@ -542,7 +560,7 @@ body.dashMobile #dashcontent #status{box-shadow:none!important;}
         background-color: #031935;
         padding-top: 21px;
         top: 0;
-        left: 100px;
+        left: 87px;
         z-index: 4;
         box-shadow: 0 5px 10px 0 #031935;
     }

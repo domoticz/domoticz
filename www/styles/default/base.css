@@ -141,19 +141,23 @@ button{
     border:none;
 }
 
-label{white-space:nowrap}
+label{white-space:nowrap;cursor:auto}
 textarea{width:100%}
-select{
-    min-width:120px; 
-    padding:5px 0;
-}
-
 
 select{padding:0;border-radius:3px;}
 
 textarea, input {
     box-sizing: border-box;
     padding:5px;
+}
+textarea{width:100%}
+input{margin-right:3px}
+
+input:focus{
+    background-color:rgba(250,250,250,0.2);
+    color:#fff;
+    border-bottom: 1px solid #ccc;
+    box-shadow: none;
 }
 
 .span6 textarea, .span6 input.text, .span6 select{
@@ -169,32 +173,67 @@ textarea, input {
     min-width: 120px;
 }
 
-#settingscontent input.text,
-#settingscontent .ui-widget-content{
+
+/*#settingscontent .ui-widget-content,*/
+#settingscontent input.text{
     min-width: 120px;
     width:calc(100% - 75px)!important;
 }
 
-#settingscontent input.text,
-#settingscontent .ui-widget-content{
+#settingscontent .ui-widget-content,
+#settingscontent input.text{
     padding:3px;
 }
 
 #settingscontent td:not(:first-of-type){width:auto!important;}
-
-/* td br{display:none;} */
 
 br{   content: "A" !important;
     display: block !important;
     margin-bottom: 0 !important;
 }
 
-#zwavenodesqueried ~ #configuration br{   content: "A" !important;
+#zwavenodesqueried ~ #configuration br{   
+    content: "A" !important;
     display: block !important;
     margin-bottom: 1.5em !important;
 }
 
 p {margin:5px 0!important}
+
+p.tip{
+    /* margin-left: 25px!important; */
+    position: relative;
+    padding-left: 30px;
+    margin-top: 15px!important;
+    padding: 7px 5px 7px 40px;
+    border-top: 1px dotted #666;
+    border-bottom: 1px dotted #666;
+}
+
+p.tip.warning{
+    border: 1px dotted #f55;
+}
+
+p.tip::before{
+    content: "i";
+    font-family: serif;
+    font-weight: bolder;
+    color: white;
+    position: absolute;
+    font-size: 14px;
+    background-color: rgba(200,200,255,0.2);
+    border-radius: 50%;
+    padding: 2px 8px;
+    top: -2px;
+    line-height: 1.0em;
+    left: 10px;
+    top: 8px;
+}
+p.tip.warning::before{
+    content: "!";
+    background-color:rgba(223, 45, 58, 0.8);
+    padding: 2px 7px;
+}
 
 #IMain{
     background-color:#ccc;
@@ -275,7 +314,19 @@ p.ng-binding {
 #prebannav #timesun + td{padding:0}
 #prebannav #timesun + td > span {color:#ddd;padding:0}
 #timesun + td {color:#ddd!important;}
+#prebannav td{display:inline-block}
+#prebannav div,
+#prebannav span{display:inline;height:auto!important}
 
+#prebannav tr{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-content: center;
+    justify-content: space-between;
+    line-height: 1.2em;
+    height: 20px;
+}
 
 /*  LOGO & MAIN NAVIGATION  */
 
@@ -407,7 +458,7 @@ p.ng-binding {
 #timesun + td {
     /*display: block;
     text-align: left;*/
-    margin-bottom: 1em;
+    /*margin-bottom: 1em;*/
 }
 
 #bannav, .bannav {
@@ -437,6 +488,10 @@ p.ng-binding {
 
 .sub-tabs > li > a{
     cursor:pointer;
+}
+
+.sub-tabs .active a{
+    background-color:#fff;
 }
 
 
@@ -497,6 +552,8 @@ h1,h2,h3{
 
 /*  ITEMS */
 
+body .item table{width:100%;}
+
 body .span3  table > tbody > tr,
 body .span4  table > tbody > tr{
     padding:0!important;
@@ -528,6 +585,7 @@ body #dashcontent table > tbody > tr{
 table.prebannav,
 table#prebannav{margin-bottom:10px}
 
+table#prebannav select {width:auto!important}
 
 /* ITEM CONTENT */
 
@@ -962,6 +1020,7 @@ div[class^="span"] table#itemtabletrippleicon > tbody> tr > td:first-of-type a{
 
 /*  status updates indicators (icons for timeout, protected, low battery) */
 
+/*  reset fix for older themes  */
 div.item.statusNormal td#name,
 div.item.statusProtected td#name,
 div.item.statusTimeout td#name,
@@ -988,13 +1047,14 @@ div.item.statusProtected td#name > span::before{
 
 
 /* show little icon if there is a timeout problem */
+div.item.statusTimeout td#status span,
 div.item.statusTimeout td#bigtext span,
 div.item.statusTimeout td#lastupdate > span{
     color:rgba(223, 45, 58, 0.8)!important;
 }
 
 
-rgb(223, 45, 58)
+/*rgb(223, 45, 58)*/
 
 div.item.statusTimeout td#lastupdate > span::before{
     content : "";
@@ -1014,6 +1074,8 @@ div.item.statusTimeout td#lastupdate > span::before{
 }
 
 body:not(.dashboard) div.item.statusTimeout #type {text-indent:154px}
+
+
 
 div.item.statusLowBattery{
     opacity:0.6;
@@ -1095,7 +1157,7 @@ a.btnstyle:last-of-type, a.btnstylerev:last-of-type{
     text-decoration: none;
 }
 
-
+.fg-button:hover,
 body div.selectorlevels .ui-buttonset label.ui-button:hover,
 .btn-primary:hover,
 .btn-success:hover,
@@ -1117,8 +1179,9 @@ a.btnsmall-sel{
     color:#952ebc;
     }
 
-a.btnsmall-dis{color: rgba(255,50,50,1)!important}
-a.btnsmall-dis::after{
+a.btnsmall-dis{color: rgba(255,50,50,1)!important; border-bottom:2px solid rgba(255,50,50,1);}
+
+/*a.btnsmall-dis::after{
     content: "!";
     font-weight: bolder;
     color: white;
@@ -1130,7 +1193,7 @@ a.btnsmall-dis::after{
     top: -2px;
     line-height: 1.0em;
     margin-left: 2px;
-    }
+    }*/
 
 .sub-tabs > li:hover a{background-color:white;}
 
@@ -1208,9 +1271,89 @@ a.btnsmall-dis::after{
 }
 
 
-.sub-tabs .active a{
-    background-color:#fff;
+#metercounters #rfxmetertable input.text{width:60px!important;min-width:60px!important;}
+
+#metercounters #rfxmetertable td:nth-child(odd){text-align: right;}
+#metercounters #rfxmetertable td:nth-child(even){text-align: left;}
+#metercounters #rfxmetertable td:first-of-type{min-width:40px;padding-right:10px;text-align:left!important}
+
+
+/* SETTINGS */
+
+#settingscontent .span6 tr:first-of-type{
+    border-top: none;
 }
+
+#settingscontent .span6 td{
+    padding:5px;
+    vertical-align: top; 
+}
+
+#settingscontent .span6 td:first-of-type{
+    min-width:80px; 
+    text-align:left!important;
+    padding-top:7px;
+}
+
+#settingscontent .span6 td span{
+    padding-top:0;
+}
+
+/* temporary fix for use of tables in odd places */
+#fibaromain > table > tbody > tr > td {display:block;}
+#fibaromain > table > tbody > tr > td > table {margin-bottom:20px}
+#influxmain > table > tbody > tr > td {display:block;}
+#influxmain > table > tbody > tr > td > table {margin-bottom:20px}
+#googlepubsubmain > table > tbody > tr > td {display:block;}
+#googlepubsubmain > table > tbody > tr > td > table {margin-bottom:20px}
+#httpmain > table > tbody > tr > td {display:block;}
+#httpmain > table > tbody > tr > td > table {margin-bottom:20px}
+
+#fibaromain #uservariablesedittable td{
+    display:table-cell;
+}
+
+#divprogress span{
+    font-size:130%;
+    display:block;
+    background-color:#c00;
+    padding:20px;
+    color:#fff;
+}
+
+#settingscontent div.row-fluid.related{
+    display:flex;
+    flex-flow: row wrap;
+    align-items: stretch;
+}
+#settingscontent div.row-fluid.related .span2{
+    width:auto;
+}
+#settingscontent div.row-fluid.related .span2 img{
+    padding-right: 3px;
+}
+
+#settingscontent input{
+    background-image:none;
+}
+
+#settingscontent select{
+    min-width:120px; 
+    padding:5px 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #settingscontent td > span{
     /*display:inline-block;*/
@@ -1224,10 +1367,10 @@ a.btnsmall-dis::after{
     flex-wrap: wrap;
     align-items: stretch;
 }*/
-
+/*
 #settingscontent #ActiveTabs h2{
     color: #666;
-}
+}*/
 
 #savetable{
     background-color:#ccc;
@@ -1247,8 +1390,8 @@ a.btnsmall-dis::after{
 #notifications>table, 
 #metercounters table, 
 #othersettings table,
-#floorplans table, */ 
-#settingscontent #ActiveTabs,
+#floorplans table, 
+#settingscontent #ActiveTabs,*/ 
 #emailtable,
 #hardwarecontent > div:not(.page-header-small):not(.bannav):not(#bannav), 
 #hardwarecontent > table:not(.page-header-small):not(.bannav):not(#bannav),
@@ -1441,6 +1584,51 @@ table.dataTable tbody img{
 }
 
 
+div.dataTables_wrapper .ui-toolbar, /* new */
+div.dataTables_wrapper .ui-widget-header{
+    color:#666;
+    background-color:#ccc;
+}
+
+.dataTables_wrapper .dataTables_info, 
+.dataTables_wrapper .dataTables_length, 
+.dataTables_wrapper .dataTables_filter{
+    color:#999;
+}
+
+.ui-toolbar {
+    background-color:#ccc;
+    background-image:none;
+    border:none;
+}
+
+.dataTables_wrapper .ui-state-default{ /* new */
+    /*background-color:#ddd;
+    color:#444;*/
+    border:none;
+    /*border-right: 2px solid #ccc;*/
+    border-top:none;
+    border-bottom:none;
+    text-shadow: none!important;
+    background-color: rgba(100,100,100,0.5);
+
+}
+.dataTables_wrapper .dataTables_paginate{margin-top: -3px;}
+.dataTables_wrapper .dataTables_paginate .fg-button{
+    background-image: none; 
+    background-color: rgba(250,250,250,0.1);
+    font-weight: normal;
+}
+.dataTables_info{padding-top:0}
+
+table.dataTable th:first-of-type,
+table.dataTable td:first-of-type{padding-left:10px;}
+
+
+
+
+
+
 /*  POPUP  */
 
 
@@ -1501,9 +1689,10 @@ table.dataTable tbody img{
     text-indent:0!important;
 }    
 
+/*
 body:not(.dashboard) .divider .span4 .selectorlevels{
     border-top:7px solid transparent;
-}
+}*/
 
 .selectorlevels{
     margin-top:0!important;
@@ -1519,6 +1708,11 @@ body:not(.dashboard) .divider .span4 .selectorlevels{
     align-items: center;
     justify-content: space-between;
 }
+
+body:not(.dashboard) div.item div.selectorlevels .ui-buttonset{
+    margin-top:7px;
+}
+
 
 .divider .selectorlevels .ui-buttonset{
     height:36px;
@@ -1616,9 +1810,9 @@ body.dashboard div.item.SelectorSwitch #bigtext{display:none}
     margin-left:0!important;
 }
 
-#settingscontent input.text, 
-#settingscontent .ui-widget-content{
-    min-width:210px;
+/*#settingscontent .ui-widget-content,*/
+#settingscontent input.text{
+    min-width:140px;
     width:calc(100% - 75px);
 }
 
@@ -1629,53 +1823,13 @@ body.dashboard div.item.SelectorSwitch #bigtext{display:none}
     cursor: -webkit-grab;
 }
 
-.ui-draggable-dragging > div.item > table,
-.ui-draggable-dragging > section > table{
+.ui-draggable-dragging > div.item{
     -webkit-box-shadow: 7px 7px 25px 5px rgba(50, 50, 50, 0.48);
     -moz-box-shadow:    7px 7px 25px 5px rgba(50, 50, 50, 0.48);
     box-shadow:         7px 7px 25px 5px rgba(50, 50, 50, 0.48);
+    width:100%;
     /*z-index:5;*/
 }
-
-div.dataTables_wrapper .ui-toolbar, /* new */
-div.dataTables_wrapper .ui-widget-header{
-    color:#666;
-    background-color:#ccc;
-}
-
-.dataTables_wrapper .dataTables_info, 
-.dataTables_wrapper .dataTables_length, 
-.dataTables_wrapper .dataTables_filter{
-    color:#999;
-}
-
-.ui-toolbar {
-    background-color:#ccc;
-    background-image:none;
-    border:none;
-}
-
-/*                                  new
-.ui-state-default, 
-.ui-widget-header, 
-.ui-state-disabled{
-    background-image:none;
-    color:#666;
-}*/
-
-.dataTables_wrapper .ui-state-default{ /* new */
-    /*background-color:#ddd;
-    color:#444;*/
-    border:none;
-    /*border-right: 2px solid #ccc;*/
-    border-top:none;
-    border-bottom:none;
-    text-shadow: none!important;
-    background-color: rgba(100,100,100,0.5);
-}
-
-table.dataTable th:first-of-type,
-table.dataTable td:first-of-type{padding-left:10px;}
 
 .ui-dialog-titlebar{
     color:#fff;
@@ -1760,63 +1914,7 @@ table.dataTable td:first-of-type{padding-left:10px;}
 }
 
 
-/* SETTINGS */
 
-#settingscontent .span6 tr:first-of-type{
-    border-top: none;
-}
-
-#settingscontent .span6 td{
-    padding:5px;
-    vertical-align: middle; 
-}
-
-#settingscontent .span6 td:first-of-type{
-    min-width:80px; 
-    text-align:left!important;
-}
-
-#settingscontent .span6 td span{
-    padding-top:0;
-}
-
-/* temporary fix for use of tables in odd places */
-#fibaromain > table > tbody > tr > td {display:block;}
-#fibaromain > table > tbody > tr > td > table {margin-bottom:20px}
-#influxmain > table > tbody > tr > td {display:block;}
-#influxmain > table > tbody > tr > td > table {margin-bottom:20px}
-#googlepubsubmain > table > tbody > tr > td {display:block;}
-#googlepubsubmain > table > tbody > tr > td > table {margin-bottom:20px}
-#httpmain > table > tbody > tr > td {display:block;}
-#httpmain > table > tbody > tr > td > table {margin-bottom:20px}
-
-#fibaromain #uservariablesedittable td{
-    display:table-cell;
-}
-
-#divprogress span{
-    font-size:130%;
-    display:block;
-    background-color:#c00;
-    padding:20px;
-    color:#fff;
-}
-
-#settingscontent div.row-fluid.related{
-    display:flex;
-    flex-flow: row wrap;
-    align-items: stretch;
-}
-#settingscontent div.row-fluid.related .span2{
-    width:auto;
-}
-#settingscontent div.row-fluid.related .span2 img{
-    padding-right: 3px;
-}
-
-#settingscontent input{
-    background-image:none;
-}
 
 
 /*  PAGE SPECIFIC OVERRIDES  */
@@ -1829,8 +1927,6 @@ body.dashboard item.utility td#status{
 
 div#mysensorsnodestable_wrapper + #updelclr,
 div#hardwaretable_wrapper + #updelclr{border-top:0!important;border-bottom:10px!important;padding-top:0;}
-
-#settingscontent #rfxmetertable td{text-align: left!important}
 
 #aboutcontent{color:#fff;}
 
@@ -2108,6 +2204,8 @@ td[colspan]:not([colspan="1"])
 
 @media screen and (max-device-width: 600px){ /* for mobile phones, makes popups work better */
  
+    /*.navbar {padding-right:20px;}*/
+    
     .item tr{background-color:#eee;width:100%}
     
     .dimslider{width:100%!important}
@@ -2118,7 +2216,7 @@ td[colspan]:not([colspan="1"])
     
     #settingscontent td {display:block;}
     
-    .options a.btmsmall{
+    .options a.btnsmall{
         display:inline-block;
         margin-top:4px;
         line-height: 1.1em;
@@ -2238,8 +2336,12 @@ td[colspan]:not([colspan="1"])
     
 @media all and (min-width: 1200px){
     
+    /*
     textarea,
-    input.text{min-width:210px;margin-right:3px}
+    input.text{
+        min-width:210px;
+        margin-right:3px
+    }*/
 
     /* items with lots of data outputs, let's keep them from getting too freakishly tall */
     #dashcontent div.item.withstatus tr td#status > .wrapper {
