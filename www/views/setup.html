@@ -93,7 +93,7 @@
 											<td><label><span data-i18n="Params"></span>:</label></td>
 											<td>
 												<input class="text ui-widget-content ui-corner-all" id="UVCParams" name="UVCParams" type="input"><br>
-												<p class="tip"><span data-i18n="default"></span>: -S80 -B128 -C128 -G80 -x800 -y600 -q100</p>
+												<p class="inlinetip"><span data-i18n="default"></span>: -S80 -B128 -C128 -G80 -x800 -y600 -q100</p>
 											</td>
 										</tr>
 									</table>
@@ -105,7 +105,7 @@
 											<td><label><span data-i18n="Params"></span>:</label></td>
 											<td>
 												<input class="text ui-widget-content ui-corner-all" id="RaspCamParams" name="RaspCamParams" type="input"><br>
-												<p class="tip"><span data-i18n="default"></span>: -w 800 -h 600 -t 1</p>
+												<p class="inlinetip"><span data-i18n="default"></span>: -w 800 -h 600 -t 1</p>
 											</td>
 										</tr>
 									</table>
@@ -187,24 +187,19 @@
                                     <table border="0" cellpadding="0" cellspacing="0" class="display" id="activemenustable">
                                         <tr>
                                             <td><input id="EnableTabFloorplans" name="EnableTabFloorplans" type="checkbox"> <span data-i18n="Floorplan"></span></td>
-                                        </tr>
-                                        <tr>
                                             <td><input id="EnableTabLights" name="EnableTabLights" type="checkbox"> <span data-i18n="Switches"></span></td>
                                         </tr>
                                         <tr>
                                             <td><input id="EnableTabScenes" name="EnableTabScenes" type="checkbox"> <span data-i18n="Scenes"></span></td>
-                                        </tr>
-                                        <tr>
                                             <td><input id="EnableTabTemp" name="EnableTabTemp" type="checkbox"> <span data-i18n="Temperature"></span></td>
                                         </tr>
                                         <tr>
                                             <td><input id="EnableTabWeather" name="EnableTabWeather" type="checkbox"> <span data-i18n="Weather"></span></td>
-                                        </tr>
-                                        <tr>
                                             <td><input id="EnableTabUtility" name="EnableTabUtility" type="checkbox"> <span data-i18n="Utility"></span></td>
                                         </tr>
                                         <tr>
                                             <td><input id="EnableTabCustom" name="EnableTabCustom" type="checkbox"> <span data-i18n="Custom"></span></td>
+                                            <td></td>
                                         </tr>
                                     </table>
 								</div>
@@ -264,11 +259,13 @@
 							<div class="row-fluid">
 								<div class="span6">
 									<h2><span data-i18n="Colour Options"></span></h2>
-									<p class="tip"><a class="norm-link" href="http://www.december.com/html/spec/colorsvg.html" target="HTML Colours"><span class="norm-link" data-i18n="Colour name or HEX value"></span>:</a></p>
+									
 									<table border="0" cellpadding="0" cellspacing="0" class="display" id="floorplancolourtable">
 										<tr>
 											<td><label><span data-i18n="Room Area Colour"></span>:</label></td>
-											<td><input class="text ui-widget-content ui-corner-all" id="FloorplanRoomColour" name="FloorplanRoomColour" type="input"></td>
+											<td><input class="text ui-widget-content ui-corner-all" id="FloorplanRoomColour" name="FloorplanRoomColour" type="input">
+                                                <p class="inlinetip"><a class="norm-link" href="http://www.december.com/html/spec/colorsvg.html" target="HTML Colours"><span class="norm-link" data-i18n="Colour name or HEX value"></span></a></p>
+                                            </td>
 										</tr>
 										<tr>
 											<td><label><span data-i18n="Active Room Area Opacity"></span>:</label></td>
@@ -404,14 +401,20 @@
 											<td><label for="HTTPURL"><span data-i18n="URL"></span>/<span data-i18n="Action"></span>:</label></td>
 											<td>
 												<textarea class="text ui-widget-content ui-corner-all" id="HTTPURL" name="HTTPURL" rows="4"></textarea><br>
-												<span data-i18n="(Should start with http:// or script://)">(Should start with http://, https:// or script://)</span><br>
-												<span data-i18n="(Optional)">(Optional)</span> #SUBJECT, #MESSAGE, #PRIORITY</td>
+												<p class="inlinetip">
+                                                    <span data-i18n="(Should start with http:// or script://)">(Should start with http://, https:// or script://)</span><br>
+												    <span data-i18n="(Optional)">(Optional)</span> <span>#SUBJECT, #MESSAGE, #PRIORITY</span>
+                                                </p>
+                                            </td>
 										</tr>
 										<tr>
 											<td><label for="HTTPPostData">POST Data:</label></td>
 											<td>
 												<textarea class="text ui-widget-content ui-corner-all" id="HTTPPostData" name="HTTPPostData" rows="4"></textarea><br>
-												<span data-i18n="(Optional)">(Optional)</span> #SUBJECT, #MESSAGE, #PRIORITY</td>
+												<p class="inlinetip">
+                                                    <span data-i18n="(Optional)">(Optional)</span> <span>#SUBJECT, #MESSAGE, #PRIORITY</span>
+                                                </p>
+                                            </td>
 										</tr>
 										<tr>
 											<td><label for="HTTPPostContentType">POST Content-Type:</label></td>
@@ -437,7 +440,7 @@
 										</tr>
 										<tr>
 											<td></td>
-											<td><span data-i18n="(Separate by a semicolon, For Example"></span>: user@mail.com;user2@mail.com)</td>
+                                            <td><p class="inlinetip"><span data-i18n="(Separate by a semicolon, For Example"></span><span>: user@mail.com;user2@mail.com)</span></p></td>
 										</tr>
 										<tr>
 											<td><label><span data-i18n="Server"></span>:</label></td>
@@ -445,7 +448,9 @@
 										</tr>
 										<tr>
 											<td><label><span data-i18n="Port"></span>:</label></td>
-											<td><input class="text ui-widget-content ui-corner-all" id="EmailPort" name="EmailPort" type="input"> <span data-i18n="(default 25, StartTLS Port 587, SSL Port 465)"></span></td>
+											<td><input class="text ui-widget-content ui-corner-all" id="EmailPort" name="EmailPort" type="input"> 
+                                                <p class="inlinetip"><span data-i18n="(default 25, StartTLS Port 587, SSL Port 465)"></span></p>
+                                            </td>
 										</tr>
 										<tr>
 											<td><label><span data-i18n="Username"></span>:</label></td>
@@ -847,7 +852,8 @@
 										</tr>
 										<tr>
 											<td></td>
-											<td><span data-i18n="(Separate by a semicolon, For Example"></span>: +3123456789;+44567890)</td>
+											<td><p class="inlinetip"><span data-i18n="(Separate by a semicolon, For Example"></span><span>: +3123456789;+44567890)</span></p>
+                                            </td>
 										</tr>
 									</table>
 									<p class="tip"><span data-i18n="To get a free account/API key click"></span> <a class="norm-link" href="http://www.clickatell.com/" target="_blank"><span class="norm-link" data-i18n="Here"></span></a><br></p>
@@ -990,10 +996,12 @@
 										</tr>
 										<tr>
 											<td><label><span data-i18n="Degree Days"></span>:</label></td>
-											<td><input class="text ui-widget-content ui-corner-all" id="DegreeDaysBaseTemperature" name="DegreeDaysBaseTemperature" type="input"></td>
+											<td><input class="text ui-widget-content ui-corner-all" id="DegreeDaysBaseTemperature" name="DegreeDaysBaseTemperature" type="input">
+                                            <p class="inlinetip">(<span data-i18n="Base Temperature"></span>)</p>
+                                            </td>
 										</tr>
 									</table>
-									<p class="tip">(<span data-i18n="Base Temperature"></span>)</p>
+									
 								</div>
 								<div class="span6">
 									<h2><span data-i18n="Wind Meter"></span></h2>
@@ -1053,16 +1061,7 @@
 								<h1 data-i18n="Log History">Log History</h1>
 							</div>
 							<div class="row-fluid">
-								<div class="span6">
-									<h2><span data-i18n="Light/Switches"></span></h2>
-									<table border="0" cellpadding="0" cellspacing="0" class="display" id="lightlogtable">
-										<tr>
-											<td><label><span data-i18n="Days"></span>:</label></td>
-											<td><input class="text ui-widget-content ui-corner-all" id="LightHistoryDays" name="LightHistoryDays" type="text"></td>
-										</tr>
-									</table>
-								</div>
-								<div class="span6">
+                                <div class="span6">
 									<h2><span data-i18n="Short Log Sensors"></span></h2>
 									<table border="0" cellpadding="0" cellspacing="0" class="display" id="shortlogtable">
 										<tr>
@@ -1093,6 +1092,16 @@
 										</tr>
 									</table>
 								</div>
+								<div class="span6">
+									<h2><span data-i18n="Light/Switches"></span></h2>
+									<table border="0" cellpadding="0" cellspacing="0" class="display" id="lightlogtable">
+										<tr>
+											<td><label><span data-i18n="Days"></span>:</label></td>
+											<td><input class="text ui-widget-content ui-corner-all" id="LightHistoryDays" name="LightHistoryDays" type="text"></td>
+										</tr>
+									</table>
+								</div>
+								
 							</div>
 							<div class="page-header-small related">
 								<h1 data-i18n="Related options">Related options</h1>
