@@ -148,7 +148,10 @@ select{
     padding:5px 0;
 }
 
-textarea, input, select {
+
+select{padding:0;border-radius:3px;}
+
+textarea, input {
     box-sizing: border-box;
     padding:5px;
 }
@@ -732,6 +735,7 @@ table#prebannav{margin-bottom:10px}
 
 body .item tr > #name {
     display:inline-block;
+    color:#333;
     width: 100%;
     height: 40px;
     border-style: none!important;
@@ -984,7 +988,13 @@ div.item.statusProtected td#name > span::before{
 
 
 /* show little icon if there is a timeout problem */
-div.item.statusTimeout td#lastupdate > span{color:#DF2D3A;}
+div.item.statusTimeout td#bigtext span,
+div.item.statusTimeout td#lastupdate > span{
+    color:rgba(223, 45, 58, 0.8)!important;
+}
+
+
+rgb(223, 45, 58)
 
 div.item.statusTimeout td#lastupdate > span::before{
     content : "";
@@ -1078,6 +1088,13 @@ a.btnstyle:last-of-type, a.btnstylerev:last-of-type{
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#46b1d9', endColorstr='#2571ab',GradientType=0 );
 }
 
+.btn-success,
+.btn-danger,
+.btn-primary{
+    text-shadow: none;
+    text-decoration: none;
+}
+
 
 body div.selectorlevels .ui-buttonset label.ui-button:hover,
 .btn-primary:hover,
@@ -1147,7 +1164,7 @@ a.btnsmall-dis::after{
     margin-top: 10px;
     border: none;
     height:auto;
-    left: -5px;
+    left: 11px;
     right: -10px;    
 }
 
@@ -1519,6 +1536,7 @@ body:not(.dashboard) .divider .span4 .selectorlevels{
     font-weight:normal;
     margin-right:0; /* newly added */
     /*flex: 1 1 25%;*/
+    flex-grow:1;
     height:auto;
     align-self:stretch;
     display: flex;
@@ -1740,6 +1758,7 @@ table.dataTable td:first-of-type{padding-left:10px;}
 #logcontent td.filter input:focus + a.filterX{
     display:inline-block;
 }
+
 
 /* SETTINGS */
 
@@ -1982,6 +2001,8 @@ body.dashMobile table.mobileitem td#status > span > span:only-child{box-shadow: 
 
 
 
+
+
 /* and now for the second mobile row (with colspan=2) */
 
 td[colspan]:not([colspan="1"]){
@@ -2072,18 +2093,50 @@ td[colspan]:not([colspan="1"])
     
     
     input[type=checkbox] {
-        transform: scale(1.5);
+        /*transform: scale(1.5);*/
     }
     
     .beforebannav{margin-bottom:10px;}
     
+    
+    /*  better options buttons (which are somehow reaching back to style.css a lot.. */
+    
+
+    
 }
 
+
+@media screen and (max-device-width: 600px){ /* for mobile phones, makes popups work better */
+ 
+    .item tr{background-color:#eee;width:100%}
+    
+    .dimslider{width:100%!important}
+    
+    #name, .item .name{
+        color: black;
+    }
+    
+    #settingscontent td {display:block;}
+    
+    .options a.btmsmall{
+        display:inline-block;
+        margin-top:4px;
+        line-height: 1.1em;
+        height:1.6em;
+        
+    }
+    
+}
 
 
 /*  Makes the name and value slide above each other on small displays.  */
 
 @media screen and (max-width: 767px){
+    
+    
+    #dashcontent div.item.withstatus{
+        margin-bottom:30px;
+    } 
     
     #bigtext{float:right;}
     
@@ -2098,6 +2151,35 @@ td[colspan]:not([colspan="1"])
         box-shadow:2px 4px 18px 0px rgba(50, 50, 50, 0.2);
         padding-top:3px;
     }
+    
+    
+    
+    /*  some mobile fixes  */
+    
+    #bigtext
+    #img, #img1,
+    #img2,
+    #img3,{
+        
+        float:right;
+        clear:both
+    }
+    
+    #status,
+
+    #lastupdate,
+    #type,
+    .options{
+        float:left;
+        clear:both
+    }
+    
+    
+    
+    
+    
+    
+    
 }
 
 @media screen and (min-width: 768px) and (max-width: 980px){

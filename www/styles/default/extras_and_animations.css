@@ -37,6 +37,32 @@ body.dashboard div.item.Fan.onn .img1 img:hover{
 
 
 
+div.item.WeatherStation #name,
+#Sunny #name{
+    background: url('/images/sunny.png') no-repeat right!important; 
+    background-color: rgba(250,250,250,0.1)!important;
+    background-size: 70%;
+}
+
+div.item.Wind #name,
+#Storm #name{
+    background: url('/images/stormy.png') no-repeat right!important; 
+    background-color: rgba(250,250,250,0.1)!important;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* background color changes */
 
 

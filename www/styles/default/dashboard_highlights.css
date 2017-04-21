@@ -27,7 +27,8 @@
     /*  Bigtext changes  */
     
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus #itemtablesmall tr #bigtext{
-        top:-28px;
+        top:-25px;
+        font-weight: bold;
         right:10px;
         text-align: right;
         left:auto;
@@ -567,7 +568,10 @@
     }
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) td.dataviz div,
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) td.dataviz div.highcharts-container{height:50px!important}
-    #dashcontent h2 + div.divider .span4:nth-child(-n+3) td.dataviz svg{padding-top:10px;height:50px}
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) td.dataviz svg{
+        padding-top:10px;
+        height:50px;
+    }
     
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.Percentage td.overlay > div{
         height:100%;
@@ -576,7 +580,25 @@
         box-shadow: inset -5px 0 16px -3px rgba(255,255,255,0.4);
     }
     
-}   /* closing of the media query */
+    
+    
+    /*  barometer  */
+    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item#Sunny #name{background-image:none!important; background-color: rgba(250,250,250,0.1)!important;}
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item#Sunny tr{
+        background: url('/images/sunny.png') no-repeat right!important; 
+        background-color: rgba(250,250,250,0.1)!important;
+        background-size: cover!important;
+    }
+
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.Wind #name{background-image:none!important; background-color: rgba(250,250,250,0.1)!important;}
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.Wind tr{
+        background: url('/images/rainy.png') no-repeat right!important; 
+        background-color: rgba(250,250,250,0.1)!important;
+        background-size: cover!important;
+    }
+
+}   /* closing of the media query  */
 
 
 

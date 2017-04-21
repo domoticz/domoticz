@@ -387,6 +387,12 @@ p.tip, p.inlinetip{
     color:#bbb;
 }
 
+.btn-success,
+.btn-danger,
+.btn-primary{
+    text-transform: uppercase;
+}
+
 
 /*  data tables */
 
@@ -433,6 +439,11 @@ body.dashMobile #dashcontent #status{box-shadow:none!important;}
 
 
 @media only screen and (max-width: 980px){
+    
+    div.item.statusNormal td#name{
+        color:#333;
+    }
+    
     div.item.statusProtected td#lastupdate{
         background-color: transparent;
         -moz-box-shadow: inset 0 -4px 8px -2px #A4B1EE;
@@ -457,17 +468,24 @@ body.dashMobile #dashcontent #status{box-shadow:none!important;}
 
 @media only screen and (min-width: 980px){
     div.item.statusProtected td#name{
-        -moz-box-shadow: inset 0 -4px 8px -2px #A4B1EE;
-        -webkit-box-shadow: inset 0 -4px 8px -2px #A4B1EE;
-        box-shadow: inset 0 -4px 8px -2px #A4B1EE;
+        -moz-box-shadow: inset 0 -5px 0px 0px #A4B1EE;
+        -webkit-box-shadow: inset 0 -5px 0px 0px #A4B1EE;
+        box-shadow: inset 0 -5px 0px 0px #A4B1EE;        
+        /*box-shadow: inset 0 -4px 8px -2px #A4B1EE;*/
     }
 
     div.item.statusTimeout td#name{
-        background-color: #DF2D3A;
-        -moz-box-shadow: inset 0 -5px 8px -4px #DF2D3A;
+        /*background-color: #DF2D3A;*/
+        /*-moz-box-shadow: inset 0 -5px 8px -4px #DF2D3A;
         -webkit-box-shadow: inset 0 -5px 8px -4px #DF2D3A;
-        box-shadow: inset 0 -5px 8px -4px #DF2D3A;
+        box-shadow: inset 0 -10px 0px -4px #DF2D3A;*/
     }
+    div.item.statusTimeout tr {
+        /*border:5px solid #DF2D3A; */
+        box-shadow: inset 0 0 0 5px #DF2D3A;*/
+    }
+    
+    
     div.item.statusLowBattery td#name{
         -moz-box-shadow: inset 0 -1px 10px 0px #df982d;
         -webkit-box-shadow: inset 0 -1px 10px 0px #df982d;
@@ -513,6 +531,25 @@ body.dashMobile #dashcontent #status{box-shadow:none!important;}
 }
 
 
+
+/* Fixed settings menu */
+
+@media all and (min-width: 1050px){
+    
+    #settingscontent .sub-tabs{
+        position: fixed;
+        width: calc(100% - 120px);
+        background-color: #031935;
+        padding-top: 21px;
+        top: 0;
+        left: 100px;
+        z-index: 4;
+        box-shadow: 0 5px 10px 0 #031935;
+    }
+    
+    #settingscontent{margin-top:70px;}
+    
+}
 
 
 

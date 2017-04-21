@@ -555,24 +555,6 @@
     
 }
 
-/* Fixed settings menu */
-
-@media all and (min-width: 1050px){
-    
-    #settingscontent .sub-tabs{
-        position: fixed;
-        width: calc(100% - 120px);
-        background-color: #031935;
-        padding-top: 21px;
-        top: 0;
-        left: 100px;
-        z-index: 4;
-        box-shadow: 0 5px 10px 0 #031935;
-    }
-    
-    #settingscontent{margin-top:70px;}
-    
-}
 
 
 /*  FIXES  */
