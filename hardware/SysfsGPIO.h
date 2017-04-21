@@ -31,10 +31,9 @@ private:
 	void FindGpioExports();
 	void Do_Work();
 	void Init();
-	void Poller_thread();
 	void PollGpioInputs();
 	void CreateDomoticzDevices();
-	void UpdateDomoticzInputs();
+	void UpdateDomoticzInputs(bool forceUpdate);
 	int GPIORead(int pin, const char* param);
 	int GPIOReadFd(int fd);
 	int GPIOWrite(int pin, int value);

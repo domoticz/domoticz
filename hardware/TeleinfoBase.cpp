@@ -2,7 +2,7 @@
 Domoticz Software : http://domoticz.com/
 File : TeleinfoBase.cpp
 Author : Blaise Thauvin
-Version : 1.3
+Version : 1.5
 Description : This class is used by various Teleinfo hardware decoders to process and display data
 		  It is currently used by EcoDevices, TeleinfoSerial
 		  Detailed information on the Teleinfo protocol can be found at (version 5, 16/03/2015)
@@ -14,14 +14,15 @@ History :
 1.1 2017-03-18 : Updated to benefit from new messages in Alert sensors rather than simple text sensors
 1.2 2017-03-21 : Various bug fix and reverting to using P1SmartMeter as users requested
 1.3 2017-04-01 : Added RateLimit
-1.4 2017-04-01 : Added DataTimeout
+1.4 2017-04-13 : Added DataTimeout
+1.5 2017-04-20 : Fix bug affecting "demain" for white days
 */
 
 #include "stdafx.h"
 #include "TeleinfoBase.h"
 #include "../main/Logger.h"
 #include "../main/localtime_r.h"
-#include <bitset>				 // This is necessary to compile on Windows
+#include <bitset>			 // This is necessary to compile on Windows
 
 #ifdef _DEBUG
 #define DEBUG_TeleinfoBase
@@ -248,8 +249,11 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 				}
 				if (teleinfo.DEMAIN == "BLEU")
 					demain_alert = 1;
-				else if  (teleinfo.DEMAIN == "BLANC")
+				else if  (teleinfo.DEMAIN == "BLAN")
+				{
 					demain_alert = 2;
+                                        teleinfo.DEMAIN = "BLANC";
+                                }
 				else if  (teleinfo.DEMAIN == "ROUG")
 				{
 					demain_alert = 3;
