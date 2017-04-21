@@ -153,13 +153,6 @@ textarea, input {
 textarea{width:100%}
 input{margin-right:3px}
 
-input:focus{
-    background-color:rgba(250,250,250,0.2);
-    color:#fff;
-    border-bottom: 1px solid #ccc;
-    box-shadow: none;
-}
-
 .span6 textarea, .span6 input.text, .span6 select{
    /* width:100%!important; */
 }
@@ -211,7 +204,8 @@ p.tip{
 }
 
 p.tip.warning{
-    border: 1px dotted #f55;
+    border-top: 1px dotted #f55;
+    border-bottom: 1px dotted #f55;
 }
 
 p.tip::before{
@@ -221,7 +215,8 @@ p.tip::before{
     color: white;
     position: absolute;
     font-size: 14px;
-    background-color: rgba(200,200,255,0.2);
+    /*background-color: rgba(200,200,255,0.2);*/
+    background-color:#999;
     border-radius: 50%;
     padding: 2px 8px;
     top: -2px;

@@ -391,6 +391,13 @@ input.ui-widget-content{
     border-bottom: 1px solid transparent;
 }
 
+input:focus{
+    background-color:rgba(250,250,250,0.2);
+    color:#fff;
+    border-bottom: 1px solid #ccc;
+    box-shadow: none;
+}
+
 textarea:focus{
     background-color:#404C63;
 }

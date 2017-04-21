@@ -73,7 +73,7 @@ background-image: radial-gradient(75% 19%, ellipse cover, #ababab, #2e0580 33%)
 
 
 
-.overlay {
+.xoverlay {
     background: linear-gradient(left, #00BBFF, #00BBFF 14.3%, #2EB5E5 14.3%, #2EB5E5 28.6%, #E6E6E6 28.6%, #E6E6E6 42.9%, #F3D166 42.9%, #F3D166 57.2%, #222233 57.2%, #222233 71.5%, #444444 71.5%, #444444 85.8%, #85DB8C 85.8%);
     transform: scale(.9);
     width: 1200px;
