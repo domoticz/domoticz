@@ -262,6 +262,7 @@ main/Camera.cpp
 main/domoticz.cpp
 main/EventSystem.cpp
 main/EventsPythonModule.cpp
+main/EventsPythonDevice.cpp
 main/Helper.cpp
 main/localtime_r.cpp
 main/Logger.cpp
