@@ -1349,6 +1349,10 @@ bool CEvohome::DecodeDHWTemp(CEvohomeMsg &msg)//1260
 bool CEvohome::DecodeControllerMode(CEvohomeMsg &msg)//2E04
 {
 	char tag[] = "CONTROLLER_MODE";
+
+	if (msg.GetID(0) != GetControllerID()) // Filter out messages from other controllers
+		return true;
+
 	if (msg.payloadsize == 1){
 		Log(true,LOG_STATUS,"evohome: %s: Request for controller mode %d",tag, msg.payload[0]);
 		return true;
