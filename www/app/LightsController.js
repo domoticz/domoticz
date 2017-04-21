@@ -2647,7 +2647,7 @@ define(['app'], function (app) {
 		  var tophtm="";
 		  if ($.RoomPlans.length==0) {
 				tophtm+=
-					'\t<table id="prebannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
+					'\t<table id="prebannav" class="prebannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
 					'\t<tr>\n' +
 					'\t  <td align="left" valign="top" id="timesun"></td>\n' +
 					'\t</tr>\n' +
@@ -2655,7 +2655,7 @@ define(['app'], function (app) {
 		  }
 		  else {
 				tophtm+=
-					'\t<table id="prebannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
+					'\t<table id="prebannav" class="prebannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
 					'\t<tr>\n' +
 					'\t  <td align="left" valign="top" id="timesun"></td>\n' +
 					'<td align="right">'+
@@ -3137,7 +3137,7 @@ define(['app'], function (app) {
 					xhtm+=
 						'\t      <td id="status"><span class="wrapper">' + status + '</span></td>\n' +
 						'\t      <td id="lastupdate"><span>' + item.LastUpdate + '</span></td>\n' +
-						'\t      <td id="type">' + item.Type + ', ' + item.SubType + ', ' + item.SwitchType;
+						'\t      <td id="type"><span>' + item.SubType + '</span>';
 					if (item.SwitchType == "Dimmer") {
 						if ((item.SubType.indexOf("RGBW") >= 0)||(item.SubType=="RGB")) {
 						}

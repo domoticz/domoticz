@@ -1346,7 +1346,9 @@ define(['app'], function(app) {
 							xhtm +=
 								'\t      <td id="status" class="status"><span class="wrapper"><span>' + status + '</span></span></td>\n' +
 								'\t      <td id="lastupdate" class="lastupdate"><span>' + item.LastUpdate + '</span></td>\n' +
-								'\t      <td id="type" class="type"><span class="wrapper"><span>' + item.Type + '</span><span>' + item.SubType + '</span></span></td>\n' +
+								'\t      <td id="type" class="type"><span>';
+                            if(item.Type != "General"){ xhtm += item.Type; }else{ xhtm += item.SubType; }
+                            xhtm += '</span></td>\n' +
 								'\t      <td class="options">';
 							if (item.Favorite == 0) {
 								xhtm +=
