@@ -1120,6 +1120,26 @@
 							<div class="page-header-small">
 								<h1 data-i18n="Other Settings"></h1>
 							</div>
+                            <div class="row-fluid">
+								<div class="span6">
+									<h2><span data-i18n="Battery Low Level"></span></h2>
+									<table border="0" cellpadding="0" cellspacing="0" class="display" id="batterytable">
+										<tr>
+											<td><label><span data-i18n="Level"></span>:</label></td>
+                                            <td><input class="text ui-widget-content ui-corner-all" id="BatterLowLevel" name="BatterLowLevel" type="input"> <p class="inlinetip">(%, <span data-i18n="0 = Disabled"></span>)</p></td>
+										</tr>
+									</table>
+								</div>
+								<div class="span6">
+									<h2><span data-i18n="Sensor Timeout"></span></h2>
+									<table border="0" cellpadding="0" cellspacing="0" class="display" id="timeouttable">
+										<tr>
+											<td><label><span data-i18n="Timeout"></span>:</label></td>
+                                            <td><input class="text ui-widget-content ui-corner-all" id="SensorTimeout" name="SensorTimeout" type="input"> <p class="inlinetip">(<span data-i18n="Minutes"></span>)</p></td>
+										</tr>
+									</table>
+								</div>
+							</div>
 							<div class="row-fluid">
 								<div class="span6">
 									<h2><span data-i18n="EventSystem (Lua/Blockly/Scripts)"></span></h2>
@@ -1214,26 +1234,6 @@
 									</table>
 								</div>
 							</div>
-							<div class="row-fluid">
-								<div class="span6">
-									<h2><span data-i18n="Battery Low Level"></span></h2>
-									<table border="0" cellpadding="0" cellspacing="0" class="display" id="batterytable">
-										<tr>
-											<td><label><span data-i18n="Level"></span>:</label></td>
-                                            <td><input class="text ui-widget-content ui-corner-all" id="BatterLowLevel" name="BatterLowLevel" type="input"> <p class="inlinetip">(%, <span data-i18n="0 = Disabled"></span>)</p></td>
-										</tr>
-									</table>
-								</div>
-								<div class="span6">
-									<h2><span data-i18n="Sensor Timeout"></span></h2>
-									<table border="0" cellpadding="0" cellspacing="0" class="display" id="timeouttable">
-										<tr>
-											<td><label><span data-i18n="Timeout"></span>:</label></td>
-                                            <td><input class="text ui-widget-content ui-corner-all" id="SensorTimeout" name="SensorTimeout" type="input"> <p class="inlinetip">(<span data-i18n="Minutes"></span>)</p></td>
-										</tr>
-									</table>
-								</div>
-							</div>
 							<div class="page-header-small related">
 								<h1 data-i18n="Related options">Related options</h1>
 							</div>
@@ -1301,22 +1301,22 @@
 								</div>
 							</div>
 							<div class="row-fluid">
-								<div class="span6">
-									<h2><span data-i18n="Light/Switch Protection">Light/Switch Protection</span></h2>
-									<table border="0" cellpadding="0" cellspacing="0" class="display" id="protectiontable">
-										<tr>
-											<td><label><span data-i18n="Password"></span>:</label></td>
-											<td><input class="text ui-widget-content ui-corner-all" id="ProtectionPassword" name="ProtectionPassword" type="password"></td>
-										</tr>
-									</table>
-								</div>
-								<div class="span6">
+                                <div class="span6">
 									<h2><span data-i18n="LocalNetworks(no_username/password)"></span></h2>
 									<table border="0" cellpadding="0" cellspacing="0" class="display" id="weblocaltable">
 										<tr>
 											<td><label><span data-i18n="Networks"></span>:</label></td>
 											<td><input class="text ui-widget-content ui-corner-all" id="WebLocalNetworks" name="WebLocalNetworks" type="input"><br>
 												<p class="inlinetip"><span data-i18n="(Separate by a semicolon, For Example"></span>: 127.0.0.*;192.168.0.*)</p></td>
+										</tr>
+									</table>
+								</div>
+								<div class="span6">
+									<h2><span data-i18n="Light/Switch Protection">Light/Switch Protection</span></h2>
+									<table border="0" cellpadding="0" cellspacing="0" class="display" id="protectiontable">
+										<tr>
+											<td><label><span data-i18n="Password"></span>:</label></td>
+											<td><input class="text ui-widget-content ui-corner-all" id="ProtectionPassword" name="ProtectionPassword" type="password"></td>
 										</tr>
 									</table>
 								</div>
