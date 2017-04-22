@@ -333,6 +333,7 @@ void CEvohome::Do_Work()
 					{
 						InitControllerName();
 						InitZoneNames();
+						RequestZoneNames();
 
 						if (GetControllerID() == 0xFFFFFF)  //Check whether multiple controllers have been detected
 						{
