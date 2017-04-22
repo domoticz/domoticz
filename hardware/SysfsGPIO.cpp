@@ -418,7 +418,7 @@ void CSysfsGPIO::CreateDomoticzDevices()
 		else
 		{	
 			/* Outputs */
-			result = m_sql.safe_query("SELECT Options FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", 
+			result = m_sql.safe_query("SELECT nValue,Options FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", 
 				m_HwdID, szIdx, GpioSavedState[i].pin_number);
 
 			if (result.empty())
@@ -431,7 +431,7 @@ void CSysfsGPIO::CreateDomoticzDevices()
 				{
 					std::vector<std::string> sd = result[0];
 
-					if (atoi(sd[0].c_str()) != 1) /* check if previous db device was an output */
+					if (atoi(sd[1].c_str()) != 1) /* check if previous db device was an output */
 					{
 						m_sql.safe_query(
 							"DELETE FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",
@@ -441,7 +441,7 @@ void CSysfsGPIO::CreateDomoticzDevices()
 					}
 					else
 					{
-						if (atoi(sd[1].c_str()) == 1) /* write actual db state to hardware */
+						if (atoi(sd[0].c_str()) == 1) /* write actual db state to hardware */
 						{
 							GPIOWrite(GpioSavedState[i].pin_number, GpioSavedState[i].active_low ? false : true);
 						}
