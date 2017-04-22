@@ -1375,7 +1375,7 @@
 													</select></td>
 											</tr>
 											<tr>
-												<td conspan="2">
+												<td colspan="2">
 													<a class="btn btn-primary" data-i18n="Check for Update" onclick="javascript:CheckForUpdate(true)">Check for Update</a>
 												</td>
 											</tr>
@@ -1408,7 +1408,7 @@
 												<td colspan="2"><input id="SubsystemApps" name="SubsystemApps" type="checkbox" value="4"> <span data-i18n="AppsAllowed">Apps Allowed</span></td>
 											</tr>
 										</table>
-										<p>
+										<p class="tip">
                                             <span data-i18n="To register for a MyDomoticz account, click">To register for a MyDomoticz account, click</span> <a class="norm-link" href="https://my.domoticz.com/login" target="_blank"><span class="norm-link" data-i18n="Here"></span></a>
                                         </p>
 									</div>
@@ -1420,7 +1420,6 @@
 							<div class="row-fluid">
 								<div class="span6">
 									<h2><span data-i18n="Backup Database"></span></h2>
-									<p class="tip"><span data-i18n="This includes all settings and connected devices.">This includes all settings and connected devices.</span></p>
 									<table border="0" cellpadding="0" cellspacing="0" class="display" id="autobackuptable">
 										<tr>
 											<td>
@@ -1431,10 +1430,11 @@
 											<td><input id="enableautobackup" name="enableautobackup" type="checkbox"> <span data-i18n="EnableAutoBackup"></span></td>
 										</tr>
 									</table>
+                                    <p class="tip"><span data-i18n="This includes all settings and connected devices.">This includes all settings and connected devices.</span></p>
+									
 								</div>
 								<div class="span6">
 									<h2><span data-i18n="Restore Database"></span></h2>
-									<p class="tip warning"><span data-i18n="Warning, this overwrites your existing database.">Warning, this overwrites your existing database.</span></p>
 									<table border="0" cellpadding="0" cellspacing="0" class="display" id="autobackuptable">
 										<tr>
 											<td>
@@ -1442,6 +1442,8 @@
 											</td>
 										</tr>
 									</table>
+                                    <p class="tip warning"><span data-i18n="Warning, this overwrites your existing database.">Warning, this overwrites your existing database.</span></p>
+									
 								</div>
 							</div>
 							<div class="page-header-small">
