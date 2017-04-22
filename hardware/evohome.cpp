@@ -1274,8 +1274,8 @@ bool CEvohome::DecodeDHWState(CEvohomeMsg &msg)//1F41
 	tsen.EVOHOME2.zone = msg.payload[0]+1;////NA to DHW...controller is 0 so let our zones start from 1...
 	tsen.EVOHOME2.updatetype = updSetPoint;//state
 	tsen.EVOHOME2.temperature = msg.payload[1];//just on or off for DHW
-	if(tsen.EVOHOME2.temperature == 0x7F)//FIXME this is just a guess?
-		return false;
+	if(tsen.EVOHOME2.temperature == 0xFF)// temperature = 255 if DHW not installed
+		return true;
 	int nMode=ConvertMode(m_evoToDczOverrideMode,msg.payload[2]);
 	if(nMode==-1)
 	{
@@ -1339,7 +1339,7 @@ bool CEvohome::DecodeDHWTemp(CEvohomeMsg &msg)//1260
 		tsen.EVOHOME2.zone = msg.payload[i]+1;//we're using zone 0 to trigger a lookup on ID rather than zone number (not relevant for DHW)
 		tsen.EVOHOME2.temperature = msg.payload[i + 1] << 8 | msg.payload[i + 2];
 		Log(true,LOG_STATUS,"evohome: %s: DHW sensor msg: 0x%x: %d: %d", tag, msg.GetID(0), tsen.EVOHOME2.zone, tsen.EVOHOME2.temperature);
-		if(tsen.EVOHOME2.temperature!=0x7FFF)//afaik this is the error value just ignore it right now as we have no way to report errors...also perhaps could be returned if DHW is not installed?
+		if(tsen.EVOHOME2.temperature!=0x7FFF)// DHW is not installed, discard value
 			sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME2, "DHW Temp", -1);
 	}
 
