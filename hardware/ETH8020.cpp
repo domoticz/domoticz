@@ -9,8 +9,6 @@
 #include "../main/SQLHelper.h"
 #include <sstream>
 
-extern CSQLHelper m_sql;
-
 #define ETH8020_POLL_INTERVAL 10
 
 CETH8020::CETH8020(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password) :
@@ -117,11 +115,13 @@ bool CETH8020::WriteToHardware(const char *pdata, const unsigned char length)
 			_log.Log(LOG_ERROR, "ETH8020: Error sending relay command to: %s", m_szIPAddress.c_str());
 			return false;
 		}
+/*
 		if (sResult.find("Success") == std::string::npos)
 		{
 			_log.Log(LOG_ERROR, "ETH8020: Error sending relay command to: %s", m_szIPAddress.c_str());
 			return false;
 		}
+*/
 		return true;
 	}
 	return false;

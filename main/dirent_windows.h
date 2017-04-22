@@ -188,6 +188,7 @@
 #define DT_SOCK     S_IFSOCK
 #define DT_CHR      S_IFCHR
 #define DT_BLK      S_IFBLK
+#define DT_LNK      S_IFLNK
 
 /* Macros for converting between st_mode and d_type */
 #define IFTODT(mode) ((mode) & S_IFMT)

@@ -4,21 +4,29 @@
 #include "../main/Logger.h"
 #include "../main/SQLHelper.h"
 #include "../json/json.h"
+#include <boost/lexical_cast.hpp>
 
 #define GAPI_POST_URL "https://gcm-http.googleapis.com/gcm/send"
 #define GAPI "AIzaSyBnRMroiDaXCKbwPeOmoxkNiQfjWkGMre8"
 
 CNotificationGCM::CNotificationGCM() : CNotificationBase(std::string("gcm"), OPTIONS_URL_SUBJECT | OPTIONS_URL_BODY | OPTIONS_URL_PARAMS)
 {
-	m_IsEnabled = 1;
-	//SetupConfig(std::string("GCMEnabled"), &m_IsEnabled);
+	SetupConfig(std::string("GCMEnabled"), &m_IsEnabled);
 }
 
 CNotificationGCM::~CNotificationGCM()
 {
 }
 
-bool CNotificationGCM::SendMessageImplementation(const std::string &Subject, const std::string &Text, const std::string &ExtraData, const int Priority, const std::string &Sound, const bool bFromNotification)
+bool CNotificationGCM::SendMessageImplementation(
+	const uint64_t Idx,
+	const std::string &Name,
+	const std::string &Subject,
+	const std::string &Text,
+	const std::string &ExtraData,
+	const int Priority,
+	const std::string &Sound,
+	const bool bFromNotification)
 {
 	//send message to GCM
 
@@ -46,7 +54,8 @@ bool CNotificationGCM::SendMessageImplementation(const std::string &Subject, con
 			ii++;
 		}
 	}
-	sstr << "], \"data\" : { \"message\": \"" << Subject << "\" } }";
+	sstr << "], \"data\" : { \"subject\": \""<< Subject << "\", \"body\": \""<< Text << "\", \"extradata\": \""<< ExtraData << "\", \"priority\": \""<< boost::lexical_cast<std::string>(Priority) << "\", ";
+	sstr << "\"deviceid\": \""<< boost::lexical_cast<std::string>(Idx) << "\", \"message\": \"" << Subject << "\" } }";
 	std::string szPostdata = sstr.str();
 
 	std::vector<std::string> ExtraHeaders;
@@ -70,10 +79,14 @@ bool CNotificationGCM::SendMessageImplementation(const std::string &Subject, con
 		_log.Log(LOG_ERROR, "GCM: Can not connect to GCM API URL");
 		return false;
 	}
-	bool bSuccess = root["success"].asInt() == 1;
-	if (!bSuccess)
-		_log.Log(LOG_ERROR, "GCM: %s", root["error"].asString().c_str());
-	return bSuccess;
+	return true;
+/*
+//silence the errors, we should change this system anyway
+bool bSuccess = root["success"].asInt() == 1;
+if (!bSuccess)
+_log.Log(LOG_ERROR, "GCM: %s", root["error"].asString().c_str());
+return bSuccess;
+*/
 }
 
 bool CNotificationGCM::IsConfigured()

@@ -395,10 +395,10 @@ public:
 class CEvohome : public AsyncSerial, public CDomoticzHardwareBase
 {
 public:
-	CEvohome(const int ID, const std::string &szSerialPort, const std::string &UserContID);
+	CEvohome(const int ID, const std::string &szSerialPort, const int baudrate, const std::string &UserContID);
 	~CEvohome(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length);
-	
+
 	std::string m_szSerialPort;
 	unsigned int m_iBaudRate;
 	bool m_bScriptOnly;
@@ -525,7 +525,6 @@ private:
 	void RequestZoneNames();
 	void RequestControllerMode();
 	void RequestSysInfo();
-	void RequestSysInfoZ(int nID);
 	void RequestDHWState();
 	void RequestDHWTemp();
 	void RequestZoneInfo(uint8_t nZone);
@@ -536,7 +535,6 @@ private:
 	void RequestDeviceInfo(uint8_t nAddr);
 	
 	void SendExternalSensor();
-	void SendExternalSensorZ(int val);
 	void SendZoneSensor();
 	
 	void RXRelay(uint8_t nDevNo, uint8_t nDemand, int nID=0);

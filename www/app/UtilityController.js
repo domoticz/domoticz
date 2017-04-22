@@ -1,6 +1,8 @@
 define(['app'], function (app) {
 	app.controller('UtilityController', [ '$scope', '$rootScope', '$location', '$http', '$interval', 'permissions', function($scope,$rootScope,$location,$http,$interval,permissions) {
 
+		$scope.HasInitializedEditCustomSensorDialog = false;
+
 		DeleteSetpointTimer = function(idx)
 		{
 			bootbox.confirm($.t("Are you sure to delete this timers?\n\nThis action can not be undone..."), function(result) {
@@ -683,27 +685,13 @@ define(['app'], function (app) {
 		  });
 		}
 
-		EditUtilityDevice = function(idx,name,description)
+		ConfigureEditCustomSensorDialog = function()
 		{
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
+			if ($scope.HasInitializedEditCustomSensorDialog==true) {
+				return;
 			}
-		  $.devIdx=idx;
-		  $("#dialog-editutilitydevice #devicename").val(unescape(name));
-		  $("#dialog-editutilitydevice #devicedescription").val(unescape(description));
-		  $("#dialog-editutilitydevice" ).i18n();
-		  $("#dialog-editutilitydevice" ).dialog( "open" );
-		}
-
-		EditCustomSensorDevice = function(idx,name,description,customimage,sensortype,axislabel)
-		{
-			if (typeof $scope.mytimer != 'undefined') {
-				$interval.cancel($scope.mytimer);
-				$scope.mytimer = undefined;
-			}
+			$scope.HasInitializedEditCustomSensorDialog=true;
 			$.ddData=[];
-			$scope.CustomImages=[];
 			//Get Custom icons
 			$.ajax({
 			 url: "json.htm?type=custom_light_icons", 
@@ -731,15 +719,32 @@ define(['app'], function (app) {
 						}
 						img+="48_On.png";
 						$.ddData.push({ text: itext, value: item.idx, selected: bSelected, description: idescription, imageSrc: img });
-						$scope.CustomImages.push({ text: itext, value: item.idx, selected: bSelected, description: idescription, imageSrc: img });
 					});
-					if (totalItems>0) {
-						$scope.customimagesel=$scope.CustomImages[0];
-					}
 				}
 			 }
 			});
-			
+		}
+
+		EditUtilityDevice = function(idx,name,description)
+		{
+			if (typeof $scope.mytimer != 'undefined') {
+				$interval.cancel($scope.mytimer);
+				$scope.mytimer = undefined;
+			}
+		  $.devIdx=idx;
+		  $("#dialog-editutilitydevice #devicename").val(unescape(name));
+		  $("#dialog-editutilitydevice #devicedescription").val(unescape(description));
+		  $("#dialog-editutilitydevice" ).i18n();
+		  $("#dialog-editutilitydevice" ).dialog( "open" );
+		}
+
+		EditCustomSensorDevice = function(idx,name,description,customimage,sensortype,axislabel)
+		{
+			if (typeof $scope.mytimer != 'undefined') {
+				$interval.cancel($scope.mytimer);
+				$scope.mytimer = undefined;
+			}
+			ConfigureEditCustomSensorDialog();
 			$.devIdx=idx;
 			$.sensorType=sensortype;
 			$("#dialog-editcustomsensordevice #devicename").val(unescape(name));
@@ -779,7 +784,7 @@ define(['app'], function (app) {
 		  $("#dialog-editdistancedevice" ).dialog( "open" );
 		}
 
-		EditMeterDevice = function(idx,name,description,switchtype,valuequantity,valueunits)
+		EditMeterDevice = function(idx,name,description,switchtype,meteroffset,valuequantity,valueunits)
 		{
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
@@ -789,6 +794,7 @@ define(['app'], function (app) {
 		  $("#dialog-editmeterdevice #devicename").val(unescape(name));
 		  $("#dialog-editmeterdevice #devicedescription").val(unescape(description));
 		  $("#dialog-editmeterdevice #combometertype").val(switchtype);
+		  $("#dialog-editmeterdevice #meteroffset").val(meteroffset);
 		  $("#dialog-editmeterdevice #valuequantity").val(unescape(valuequantity));
 		  $("#dialog-editmeterdevice #valueunits").val(unescape(valueunits));
 		  $("#dialog-editmeterdevice #metertable #customcounter").hide();
@@ -812,7 +818,7 @@ define(['app'], function (app) {
 		  $("#dialog-editmeterdevice" ).dialog( "open" );
 		}
 
-		EditEnergyDevice = function(idx,name,description,switchtype)
+		EditEnergyDevice = function(idx,name,description,switchtype, devoptions)
 		{
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
@@ -822,6 +828,10 @@ define(['app'], function (app) {
 		  $("#dialog-editenergydevice #devicename").val(unescape(name));
 		  $("#dialog-editenergydevice #devicedescription").val(unescape(description));
 		  $("#dialog-editenergydevice #combometertype").val(switchtype);
+            
+          $('#dialog-editenergydevice input:radio[name=devoptions][value="'+devoptions+'"]').attr('checked', true);
+          $('#dialog-editenergydevice input:radio[name=devoptions][value="'+devoptions+'"]').prop('checked', true);
+          $('#dialog-editenergydevice input:radio[name=devoptions][value="'+devoptions+'"]').trigger('change');
 		  $("#dialog-editenergydevice" ).i18n();
 		  $("#dialog-editenergydevice" ).dialog( "open" );
 		}
@@ -1050,7 +1060,12 @@ define(['app'], function (app) {
 							if (item.CounterDeliv!=0) {
 								status+='<br>' + $.t("Return") + ': ' + item.CounterDeliv + ', ' + $.t("Today") + ': ' + item.CounterDelivToday;
 								if (item.UsageDeliv.charAt(0) != 0) {
-									bigtext+='-' + item.UsageDeliv;
+									if (parseInt(item.Usage)!=0) {
+										bigtext+=', -' + item.UsageDeliv;
+									}
+									else {
+										bigtext='-' + item.UsageDeliv;
+									}
 								}
 							}
 						}
@@ -1428,7 +1443,7 @@ define(['app'], function (app) {
 							xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 						}
 						else {
-							xhtm+='<a class="btnsmall" onclick="EditMeterDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.SwitchTypeVal + ',\'' + escape(item.ValueQuantity) + '\',\'' + escape(item.ValueUnits) + '\');" data-i18n="Edit">Edit</a> ';
+							xhtm+='<a class="btnsmall" onclick="EditMeterDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.SwitchTypeVal + ',' + item.AddjValue + ',\'' + escape(item.ValueQuantity) + '\',\'' + escape(item.ValueUnits) + '\');" data-i18n="Edit">Edit</a> ';
 						}
 					}
 				  }
@@ -1484,7 +1499,9 @@ define(['app'], function (app) {
 						xhtm+='<a class="btnsmall" onclick="ShowCounterLogSpline(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" data-i18n="Log">Log</a> ';
 						if (permissions.hasPermission("Admin")) {
 							if ((item.Type == "Energy")||(item.SubType == "kWh")) {
-								xhtm+='<a class="btnsmall" onclick="EditEnergyDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.SwitchTypeVal +');" data-i18n="Edit">Edit</a> ';
+                                if (item.Options=="") {item.Options="0"}    
+								xhtm+='<a class="btnsmall" onclick="EditEnergyDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', '
+                                xhtm+= item.SwitchTypeVal + ',' + item.Options +');" data-i18n="Edit">Edit</a> ';
 							} else {
 								xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 							}
@@ -1897,6 +1914,7 @@ define(['app'], function (app) {
 				  var meterType=$("#dialog-editmeterdevice #combometertype").val();
 				  bValid = bValid && checkLength( $("#dialog-editmeterdevice #devicename"), 2, 100 );
 				  if ( bValid ) {
+					  var meteroffset = $("#dialog-editmeterdevice #meteroffset").val();
 					  if (meterType==3) //Counter
 					  {
 						devOptions.push("ValueQuantity:");
@@ -1913,6 +1931,7 @@ define(['app'], function (app) {
 							'&name=' + encodeURIComponent($("#dialog-editmeterdevice #devicename").val()) + 
 							'&description=' + encodeURIComponent($("#dialog-editmeterdevice #devicedescription").val()) + 
 							'&switchtype=' + meterType + 
+							'&addjvalue=' + meteroffset +
 							'&used=true' +
 							'&options=' + btoa(encodeURIComponent(devOptionsParam.join(''))), // encode before b64 to prevent from character encoding issue
 						 async: false, 
@@ -1942,6 +1961,10 @@ define(['app'], function (app) {
 					}
 				});
 			};
+			dialog_editmeterdevice_buttons[$.t("Replace")]=function() {
+				  $( this ).dialog( "close" );
+				  ReplaceDevice($.devIdx,ShowUtilities);
+			};
 			dialog_editmeterdevice_buttons[$.t("Cancel")]=function() {
 			  $( this ).dialog( "close" );
 			};
@@ -1969,7 +1992,7 @@ define(['app'], function (app) {
 						 url: "json.htm?type=setused&idx=" + $.devIdx + 
 							'&name=' + encodeURIComponent($("#dialog-editenergydevice #devicename").val()) + 
 							'&description=' + encodeURIComponent($("#dialog-editenergydevice #devicedescription").val()) + 
-							'&switchtype=' + $("#dialog-editenergydevice #combometertype").val() + 
+							'&switchtype=' + $("#dialog-editenergydevice #combometertype").val() + '&devoptions='+$("#dialog-editenergydevice input:radio[name=devoptions]:checked").val() + 
 							'&used=true',
 						 async: false, 
 						 dataType: 'json',

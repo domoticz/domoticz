@@ -5,7 +5,6 @@
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 #include "../main/WebServerHelper.h"
-#include "../json/json.h"
 #include "../main/RFXtrx.h"
 #include "../main/SQLHelper.h"
 #include "../httpclient/HTTPClient.h"
@@ -149,7 +148,7 @@ bool CThermosmart::GetOutsideTemperatureFromDomoticz(float &tvalue)
 	Json::Value tempjson;
 	std::stringstream sstr;
 	sstr << m_OutsideTemperatureIdx;
-	m_webservers.GetJSonDevices(tempjson, "", "temp", "ID", sstr.str(), "", "", true, 0, "");
+	m_webservers.GetJSonDevices(tempjson, "", "temp", "ID", sstr.str(), "", "", true, false, false, 0, "");
 
 	size_t tsize = tempjson.size();
 	if (tsize < 1)
@@ -282,7 +281,7 @@ bool CThermosmart::Login()
 	Json::Value root;
 	Json::Reader jReader;
 	bool ret = jReader.parse(sResult, root);
-	if (!ret)
+	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "Thermosmart: Invalid/no data received...");
 		return false;
@@ -362,7 +361,7 @@ void CThermosmart::GetMeterDetails()
 	Json::Value root;
 	Json::Reader jReader;
 	bool ret = jReader.parse(sResult, root);
-	if (!ret)
+	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "Thermosmart: Invalid/no data received...");
 		m_bDoLogin = true;

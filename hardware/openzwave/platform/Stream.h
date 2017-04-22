@@ -54,7 +54,7 @@ namespace OpenZWave
 		 * Set the number of bytes the buffer must contain before it becomes signalled.
 		 * Once the threshold is set, the application can use Wait::Single or Wait::Multiple
 		 * to wait until the buffer has been filled with the desired amount of data.
-		 * \param _size the amoutn of data in bytes that the buffer must contain for it to become signalled.
+		 * \param _size the amount of data in bytes that the buffer must contain for it to become signalled.
 		 * \see Wait::Single, Wait::Multiple
 		 */
 		void SetSignalThreshold( uint32 _size );

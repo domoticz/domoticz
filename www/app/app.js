@@ -184,6 +184,16 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				controller: 'DPHttpController',
 				permission: 'Admin'
 			  })).
+			  when('/DPInflux', angularAMD.route({
+				templateUrl: 'views/dpinflux.html',
+				controller: 'DPInfluxController',
+				permission: 'Admin'
+			  })).
+			  when('/DPGooglePubSub', angularAMD.route({
+				templateUrl: 'views/dpgooglepubsub.html',
+				controller: 'DPGooglePubSubController',
+				permission: 'Admin'
+			  })).
 			  when('/Events', angularAMD.route({
 				templateUrl: 'views/events.html',
 				controller: 'EventsController',
@@ -270,6 +280,11 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				controller: 'RoomplanController',
 				permission: 'Admin'
 			  })).
+			  when('/Timerplan', angularAMD.route({
+				templateUrl: 'views/timerplan.html',
+				controller: 'TimerplanController',
+				permission: 'Admin'
+			  })).
 			  when('/Scenes', angularAMD.route({
 				templateUrl: 'views/scenes.html',
 				controller: 'ScenesController'
@@ -281,8 +296,24 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			  })).
 			  when('/Temperature', angularAMD.route({
 				templateUrl: 'views/temperature.html',
-				controller: 'TemperatureController'
+				controller: 'TemperatureController',
+				controllerAs: 'ctrl'
 			  })).
+				when('/Temperature/:idx/Notifications', angularAMD.route({
+					templateUrl: 'views/temperature_notifications.html',
+					controller: 'TemperatureNotificationsController',
+					controllerAs: 'ctrl'
+				})).
+			when('/Temperature/CustomTempLog', angularAMD.route({
+				templateUrl: 'views/temperature_custom_temp_log.html',
+				controller: 'TemperatureCustomLogController',
+				controllerAs: 'ctrl'
+			})).
+			when('/Temperature/:idx/Log', angularAMD.route({
+				templateUrl: 'views/temperature_log.html',
+				controller: 'TemperatureLogController',
+				controllerAs: 'ctrl'
+			})).
 			  when('/Update', angularAMD.route({
 				templateUrl: 'views/update.html',
 				controller: 'UpdateController',
@@ -304,7 +335,8 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			  })).
 			  when('/Weather', angularAMD.route({
 				templateUrl: 'views/weather.html',
-				controller: 'WeatherController'
+				controller: 'WeatherController',
+				controllerAs: 'ctrl'
 			  })).
 			  when('/ZWaveTopology', angularAMD.route({
 				templateUrl: 'zwavetopology.html',

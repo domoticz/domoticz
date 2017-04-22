@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Product xmlns='http://code.google.com/p/open-zwave/'>
+  <!-- http://www.popp.eu/wp-content/uploads/2016/07/Manual_Thermostat_POPP_en.pdf -->
   <!-- COMMAND_CLASS_BASIC does not respond to requests -->
   <CommandClass id="32" action="remove" />
   <!-- This thermostat's setpoint descriptions are 0 based -->

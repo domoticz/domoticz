@@ -48,16 +48,16 @@ Name: RunAsApp\startupicon; Description: "Create a Startup Shortcut"; GroupDescr
 Name: RunAsService; Description: "Run as service"; Flags: exclusive unchecked
 
 [Files]
-Source: "..\Release\domoticz.exe"; DestDir: {app}; Flags: ignoreversion;
-Source: "..\..\www\*"; DestDir: {app}\www; Flags: recursesubdirs createallsubdirs ignoreversion;
-Source: "..\..\Config\*"; DestDir: {app}\Config; Flags: recursesubdirs createallsubdirs ignoreversion;
-Source: "..\..\scripts\*"; DestDir: {app}\scripts; Flags: recursesubdirs createallsubdirs ignoreversion;
-Source: "..\Debug\libcurl.dll"; DestDir: {app}; Flags: ignoreversion;
-;Source: "..\Windows Libraries\OpenZwave\Release\OpenZWave.dll"; DestDir: {app}; Flags: ignoreversion;
-Source: "..\..\Manual\DomoticzManual.pdf"; DestDir: {app}; Flags: ignoreversion;
-Source: "..\..\History.txt"; DestDir: {app}; Flags: ignoreversion;
-Source: ".\nssm.exe"; DestDir: {app}; Flags: ignoreversion;
-Source: "..\..\server_cert.pem"; DestDir: {app}; Flags: ignoreversion;
+Source: "..\Release\domoticz.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\..\www\*"; DestDir: "{app}\www"; Flags: recursesubdirs createallsubdirs ignoreversion
+Source: "..\..\Config\*"; DestDir: "{app}\Config"; Flags: recursesubdirs createallsubdirs ignoreversion
+Source: "..\..\scripts\*"; DestDir: "{app}\scripts"; Flags: recursesubdirs createallsubdirs ignoreversion
+Source: "..\Debug\libcurl.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\Windows Libraries\OpenZwave\Release\OpenZWave.dll"; DestDir: {app}; Flags: ignoreversion;
+Source: "..\..\Manual\DomoticzManual.pdf"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\..\History.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\nssm.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\..\server_cert.pem"; DestDir: "{app}"; Flags: onlyifdoesntexist uninsneveruninstall
 
 [Icons]
 Name: "{group}\Domoticz"; Filename: "{app}\{#MyAppExeName}"; Parameters: "{code:GetParams}" ; Tasks: RunAsApp; 
