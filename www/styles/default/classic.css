@@ -16,6 +16,7 @@ body {
 .row-fluid .span2{background-color:transparent}
 
 /* hacking around all the parts that don't follow span convention*/
+div.ui-popup,
 #protectiontable, 
 #loghistory table, 
 #notifications>table, 
@@ -380,25 +381,32 @@ select{background-color:#283750; color:#fff;border:0}
     font-size:10px
 }
 
-input,
+div:not(.ui-dialog) #settingscontent input.ui-widget-content,
 input.ui-widget-content{
     background-color: #11213d;
     padding: .2em;
     border: none;
     color: #eee;
     font-weight: bold;
-    background-color:rgba(255,255,255,0.05);
+    background: #1c2b46;
     border-bottom: 1px solid transparent;
 }
 
+/*
+div[class*=dialog] input,
+*/
+
+
+
 input:focus{
-    background-color:rgba(250,250,250,0.2);
+    background-color:#404C63;
     color:#fff;
     border-bottom: 1px solid #ccc;
     box-shadow: none;
 }
 
 textarea:focus{
+    color:#fff;
     background-color:#404C63;
 }
 

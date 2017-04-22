@@ -142,6 +142,7 @@ button{
 }
 
 label{white-space:nowrap;cursor:auto}
+
 textarea{width:100%}
 
 select{padding:0;border-radius:3px;}
@@ -150,7 +151,9 @@ textarea, input {
     box-sizing: border-box;
     padding:5px;
 }
+
 textarea{width:100%}
+
 input{margin-right:3px}
 
 .span6 textarea, .span6 input.text, .span6 select{
@@ -1179,6 +1182,8 @@ a.btnstyle:last-of-type, a.btnstylerev:last-of-type{
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#46b1d9', endColorstr='#2571ab',GradientType=0 );
 }
 
+.btn img{height:16px;width:16px;}
+
 .btn-success,
 .btn-danger,
 .btn-primary,
@@ -1188,6 +1193,17 @@ a.btnstyle:last-of-type, a.btnstylerev:last-of-type{
 }
 
 #settingscontent .span6 .btn-info{line-height:12px};
+
+
+a.btnsmall-sel{
+    color:#952ebc;
+    }
+
+a.btnsmall-dis{color: rgba(255,50,50,1)!important; border-bottom:2px solid rgba(255,50,50,1);}
+
+
+
+/*  HOVER STATES  */
 
 .fg-button:hover,
 body div.selectorlevels .ui-buttonset label.ui-button:hover,
@@ -1199,7 +1215,7 @@ a.btnsmall:hover,
 a.btnstyle:hover, 
 a.btnstylerev:hover, 
 a.btnsmall-sel:hover{
-    box-shadow:inset 0px 0px 20px 2px rgba(250, 250, 250, 0.4);
+    box-shadow:inset 0px 0px 20px 2px rgba(250, 250, 250, 0.4)!important;
     color:#fff;
     transition: all 0.2s linear;
 }
@@ -1209,11 +1225,24 @@ body div.selectorlevels .ui-buttonset label.ui-button:hover span{
     transition: color 0.2s linear;
 }
 
-a.btnsmall-sel{
-    color:#952ebc;
-    }
+.ui-state-hover{
+    background-color:#43A4D3;
+}
 
-a.btnsmall-dis{color: rgba(255,50,50,1)!important; border-bottom:2px solid rgba(255,50,50,1);}
+.selectorlevels label:hover{
+    color:#fff;
+    background-color:#43A4D3;
+}
+
+#dashcontent #itemtablesmalltrippleicon [id^="img"]:hover,
+#dashcontent div[class^="span"] .selectorlevels .ui-buttonset .ui-button:hover,
+#dashcontent .selectorlevels .ui-selectmenu-text:hover{
+    background-color:#43A4D3;
+    /*box-shadow: inset 0px 0px 20px 2px rgba(250, 250, 250, 0.4);*/
+}
+
+
+
 
 /*a.btnsmall-dis::after{
     content: "!";
@@ -1288,9 +1317,7 @@ a.btnsmall-dis{color: rgba(255,50,50,1)!important; border-bottom:2px solid rgba(
 
 .tab-content{overflow:visible}
 
-
 #metercounters #rfxmetertable input.text{width:60px!important;min-width:60px!important;}
-
 #metercounters #rfxmetertable td:nth-child(odd){text-align: right;}
 #metercounters #rfxmetertable td:nth-child(even){text-align: left;}
 #metercounters #rfxmetertable td:first-of-type{min-width:40px;padding-right:10px;text-align:left!important}
@@ -1359,18 +1386,6 @@ a.btnsmall-dis{color: rgba(255,50,50,1)!important; border-bottom:2px solid rgba(
     min-width:120px; 
     padding:5px 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 #settingscontent td > span{
@@ -1651,14 +1666,13 @@ table.dataTable td:first-of-type{padding-left:10px;}
 
 
 .ui-popup{
+/*  height:auto!important;
+    width:auto!important;    
     position:fixed!important;
-    /*min-height:200px;*/
-    height:auto!important;
-    width:auto!important;
     top: 30%!important;
     top:calc(50% - 100px)!important;
     left:30%!important;
-    left:calc(50% - 150px)!important;        
+    left:calc(50% - 150px)!important;  */      
     -webkit-box-shadow: 7px 7px 25px 5px rgba(50, 50, 50, 0.5);
     -moz-box-shadow:    7px 7px 25px 5px rgba(50, 50, 50, 0.5);
     box-shadow:         7px 7px 25px 5px rgba(50, 50, 50, 0.5);
@@ -1865,23 +1879,7 @@ body.dashboard div.item.SelectorSwitch #bigtext{display:none}
 .ui-dialog td label,
 .ui-dialog td{display:inline;text-align:left;important;}
 
-/*  HOVER STATES  */
 
-.ui-state-hover{
-    background-color:#43A4D3;
-}
-
-.selectorlevels label:hover{
-    color:#fff;
-    background-color:#43A4D3;
-}
-
-#dashcontent #itemtablesmalltrippleicon [id^="img"]:hover,
-#dashcontent div[class^="span"] .selectorlevels .ui-buttonset .ui-button:hover,
-#dashcontent .selectorlevels .ui-selectmenu-text:hover{
-    background-color:#43A4D3;
-    /*box-shadow: inset 0px 0px 20px 2px rgba(250, 250, 250, 0.4);*/
-}
 
 
 
@@ -2203,6 +2201,7 @@ td[colspan]:not([colspan="1"])
     .ui-dialog td textarea,
     .ui-dialog td input{
         max-width: 80%!important;
+        /*color:#333!important;*/
     }
     
     

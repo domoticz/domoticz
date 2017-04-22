@@ -242,7 +242,11 @@
         /*display:block!important;*/ /* Useful for debugging, keeps the menu open */
     }
     
-    #appnavbar ul.dropdown-menu a img {margin:5px;}
+    #appnavbar ul.dropdown-menu a img {
+        margin:5px;
+        height:16px;
+        width:16px;
+    }
 
     .navbar ul.dropdown-menu li{ 
         background-color:#eee;
