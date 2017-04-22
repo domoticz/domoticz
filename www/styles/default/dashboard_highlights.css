@@ -600,20 +600,32 @@
     }*/
     
     
-    /*  Rain meter */
+    /*  Rain meter easter egg  */
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.Rain.statusNormal #itemtablesmall tr #img{
+        left:40%;
+        left: calc(50% - 40px);
+        top: 30px;
+        height: 36px;
+        position: absolute;
+        background: url(/images/rain48.png) no-repeat;
+        background-size: 80px;
+    }
     
-    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.Rain #img:before {
-    animation: rainy_rain .7s infinite linear;
-    content: '';
-    background: #CCCCCC;
-    border-radius: 50%;
-    display: block;
-    height: 6px;
-    width: 3px;
-    opacity: 0.3;
-    transform: scale(.9);
-    transform:translate(100px, -20px);
-}
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.Rain.statusNormal #img:before {
+        animation: rainy_rain .7s infinite linear;
+        content: '';
+        background: #CCCCCC;
+        border-radius: 50%;
+        display: block;
+        height: 6px;
+        width: 3px;
+        opacity: 0.3;
+        transform: scale(.6);
+        /*transform: translate(-32px, -25px);*/
+    }
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.Rain.statusNormal #img img{display:none}
+    
+
     
     
     

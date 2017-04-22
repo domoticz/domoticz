@@ -360,8 +360,8 @@ vertical-align: text-bottom;
 select{background-color:#283750; color:#fff;border:0}
 
 
-textarea,
-textarea.ui-widget-content{
+#settingscontent textarea,
+#settingscontent textarea.ui-widget-content{
     /*background-color:rgba(255,255,255,0.2);*/
     border:none;
     color:#eee;
@@ -449,6 +449,12 @@ div.dataTables_wrapper .ui-toolbar, div.dataTables_wrapper .ui-widget-header{
     color:#ccc;
 }
 
+
+/*  DIALOGS  */
+
+ui-dialog-content{
+
+}
 
 
 

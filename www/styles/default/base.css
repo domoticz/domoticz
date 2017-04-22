@@ -1077,7 +1077,41 @@ div.item.statusLowBattery{
 }
 
 
-/* buttons  */
+
+/* buttons: sub tabs */
+
+#settingscontent .sub-tabs {
+    border-bottom:1px solid #fff;
+}
+
+.sub-tabs > li > a{border:0;}
+
+.sub-tabs a:not(.sub-tabs-apply) {
+    background-color:#ddd;
+    margin-top:2px;
+}
+
+#settingscontent .sub-tabs li.active a {
+    background-color: #73b6ca;
+    color:#fff;
+    border:none;
+    border-bottom:4px solid #73b6ca;
+}
+
+#settingscontent .sub-tabs li:not(.active){
+    margin-bottom:1px;
+}
+#settingscontent .sub-tabs li:not(.active) a {
+    border-bottom:2px solid transparent;
+    margin-bottom: 1px;
+}
+
+.sub-tabs > li:hover a{background-color:white;}
+
+
+
+/* buttons: general  */
+
 
 a.btnstyle, a.btnstylerev, a.btnsmall-sel, a.btnsmall-dis {
     margin-right: 10px;
@@ -1147,15 +1181,20 @@ a.btnstyle:last-of-type, a.btnstylerev:last-of-type{
 
 .btn-success,
 .btn-danger,
-.btn-primary{
+.btn-primary,
+.btn-info{
     text-shadow: none;
     text-decoration: none;
 }
 
+#settingscontent .span6 .btn-info{line-height:12px};
+
 .fg-button:hover,
 body div.selectorlevels .ui-buttonset label.ui-button:hover,
+.btn-danger:hover,
 .btn-primary:hover,
 .btn-success:hover,
+.btn-info:hover,
 a.btnsmall:hover,
 a.btnstyle:hover, 
 a.btnstylerev:hover, 
@@ -1189,8 +1228,6 @@ a.btnsmall-dis{color: rgba(255,50,50,1)!important; border-bottom:2px solid rgba(
     line-height: 1.0em;
     margin-left: 2px;
     }*/
-
-.sub-tabs > li:hover a{background-color:white;}
 
 
 
@@ -1250,20 +1287,6 @@ a.btnsmall-dis{color: rgba(255,50,50,1)!important; border-bottom:2px solid rgba(
 }
 
 .tab-content{overflow:visible}
-
-#settingscontent .sub-tabs {
-    border-bottom:1px solid #ddd;
-}
-
-.sub-tabs > li > a{border:0;}
-
-.sub-tabs a:not(.sub-tabs-apply) {
-    background-color:#ddd;
-    margin-top:2px;
-}
-#settingscontent .sub-tabs li:not(.active) a {
-    border-bottom:2px solid transparent;
-}
 
 
 #metercounters #rfxmetertable input.text{width:60px!important;min-width:60px!important;}
