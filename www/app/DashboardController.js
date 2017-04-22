@@ -1165,7 +1165,7 @@ define(['app'], function(app) {
 										} else if (typeof item.Barometer != 'undefined') {
 											if (typeof item.ForecastStr != 'undefined') {
 												status = item.Barometer + ' hPa</span><span>' + $.t('Prediction') + ': ' + $.t(item.ForecastStr);
-                                                $(id + " div.item").prop('id',item.ForecastStr);
+                                                //$(id + " div.item").prop('id',item.ForecastStr);
 											} else {
 												status = item.Barometer + ' hPa';
 											}
@@ -1235,7 +1235,9 @@ define(['app'], function(app) {
 											bigtext = item.Barometer + ' hPa';
 											if (typeof item.ForecastStr != 'undefined') {
 												status = item.Barometer + ' hPa</span><span>' + $.t('Prediction') + ': ' + $.t(item.ForecastStr);
-                                                $(id + " .item").attr("id",item.ForecastStr);
+                                                var pred = item.ForecastStr.toLowerCase(); 
+                                                pred = pred.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, ''); 
+                                                $(id + " .item").attr("id", pred.toLowerCase());
 											} else {
 												status = item.Barometer + ' hPa';
 											}
