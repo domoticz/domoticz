@@ -307,8 +307,7 @@ void CEvohome::Do_Work()
 		{
 			if (m_retrycntr==0)
 			{
-				//_log.Log(LOG_STATUS,"evohome: serial setup retry in %d seconds...", RETRY_DELAY);
-				_log.Log(LOG_STATUS, "evohome: serial setup retry in %d seconds (%s@%d)...", RETRY_DELAY, m_szSerialPort.c_str(), m_iBaudRate);
+				_log.Log(LOG_STATUS,"evohome: serial setup retry in %d seconds...", RETRY_DELAY);
 			}
 			m_retrycntr++;
 			if (m_retrycntr>=RETRY_DELAY)
