@@ -3,7 +3,10 @@
 #include "EventsPythonDevice.h"
 
 namespace Plugins {
-  static void
+
+
+
+  void
   PDevice_dealloc(PDevice* self)
   {
       Py_XDECREF(self->name);
@@ -11,7 +14,7 @@ namespace Plugins {
       Py_TYPE(self)->tp_free((PyObject*)self);
   }
 
-  static PyObject *
+  PyObject *
   PDevice_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
   {
       PDevice *self;
@@ -36,7 +39,7 @@ namespace Plugins {
       return (PyObject *)self;
   }
 
-  static int
+  int
   PDevice_init(PDevice *self, PyObject *args, PyObject *kwds)
   {
       PyObject *name=NULL, *n_value_string=NULL, *tmp;
@@ -65,7 +68,7 @@ namespace Plugins {
       return 0;
   }
 
-  static PyObject *
+  PyObject *
   PDevice_Describe(PDevice* self)
   {
       return PyUnicode_FromFormat("%i %S %S", self->id, self->name, self->n_value_string);

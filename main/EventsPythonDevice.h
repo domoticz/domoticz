@@ -14,10 +14,11 @@ namespace Plugins {
       int id;
   } PDevice;
 
-  static PyObject * PDevice_Describe(PDevice* self);
-  static void PDevice_dealloc(PDevice* self);
-  static int PDevice_init(PDevice *self, PyObject *args, PyObject *kwds);
-  static PyObject * PDevice_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
+  PyObject * PDevice_Describe(PDevice* self);
+
+  void PDevice_dealloc(PDevice* self);
+  int PDevice_init(PDevice *self, PyObject *args, PyObject *kwds);
+  PyObject * PDevice_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
 
   static PyMemberDef PDevice_members[] = {
       {"name", T_OBJECT_EX, offsetof(PDevice, name), 0,
@@ -34,6 +35,14 @@ namespace Plugins {
        "Return the name, combining the first and last name"
       },
       {NULL}  /* Sentinel */
+  };
+
+  static PyModuleDef PDevicemodule = {
+      PyModuleDef_HEAD_INIT,
+      "DomoticzEvents",
+      "Example module that creates an extension type.",
+      -1,
+      NULL, NULL, NULL, NULL, NULL
   };
 
   static PyTypeObject PDeviceType = {
@@ -76,13 +85,5 @@ namespace Plugins {
       (initproc)PDevice_init,      /* tp_init */
       0,                         /* tp_alloc */
       PDevice_new,                 /* tp_new */
-  };
-
-  static PyModuleDef PDevicemodule = {
-      PyModuleDef_HEAD_INIT,
-      "DomoticzEvents",
-      "Example module that creates an extension type.",
-      -1,
-      NULL, NULL, NULL, NULL, NULL
   };
 }

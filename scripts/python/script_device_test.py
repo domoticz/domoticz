@@ -22,3 +22,7 @@ DE.Log("Changed: " + DE.changed_device_name)
 if DE.changed_device_name == "Test":
     #DE.Command(name="Test_Target", action="Off")
     DE.Command("Test_Target", "Off")
+
+test = DE.PDevice(name="Test")
+
+DE.Log("Python: " + test.name)

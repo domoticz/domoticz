@@ -34,6 +34,7 @@ extern "C" {
 
 #ifdef ENABLE_PYTHON
 #include "EventsPythonModule.h"
+#include "EventsPythonDevice.h"
 #endif
 
 
@@ -43,6 +44,8 @@ using namespace boost::python;
 #endif
 
 extern std::string szUserDataFolder;
+
+extern PyObject * PDevice_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
 
 CEventSystem::CEventSystem(void)
 {
@@ -2279,48 +2282,6 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 	python_DirT << szUserDataFolder << "scripts/python/";
 #endif
 	std::string python_Dir = python_DirT.str();
-    /*
-    if(!Py_IsInitialized()) {
-		Py_SetProgramName((char*)Python_exe); // will this cast lead to problems ?
-		Py_Initialize();
-		Py_InitModule("domoticz_", DomoticzMethods);
-		// TODO: may have a small memleak, remove references in destructor
-		PyObject* sys = PyImport_ImportModule("sys");
-		PyObject *path = PyObject_GetAttrString(sys, "path");
-		PyList_Append(path, PyString_FromString(python_Dir.c_str()));
-
-		bool (CEventSystem::*ScheduleEventMethod)(std::string ID, const std::string &Action, const std::string &eventName) = &CEventSystem::ScheduleEvent;
-		class_<CEventSystem, boost::noncopyable>("Domoticz", no_init)
-			.def("command", ScheduleEventMethod)
-			;
-	}*/
-
-    /*
-    if(!Py_IsInitialized()) {
-        _log.Log(LOG_STATUS, "EventSystem - Python: Starting Python");
-        Py_SetProgramName(Py_GetProgramFullPath());
-        // PyImport_AppendInittab("DomoticzEvents", &CEventSystem::PyInit_DomoticzEvents);
-        PyImport_AppendInittab("DomoticzEvents", &PyInit_DomoticzEvents);
-        Py_Initialize();
-        PythonInitDone = false;
-    }
-    */
-    /*
-    if (!PythonInitDone) {
-        _log.Log(LOG_STATUS, "EventSystem - Python: Initalizing Python");
-        /* PyObject* sys = PyImport_ImportModule("sys");
-		PyObject *path = PyObject_GetAttrString(sys, "path");
-		PyList_Append(path, PyUnicode_FromString(python_Dir.c_str()));
-
-        bool (CEventSystem::*ScheduleEventMethod)(std::string ID, const std::string &Action, const std::string &eventName) = &CEventSystem::ScheduleEvent;
-		class_<CEventSystem, boost::noncopyable>("Domoticz", no_init)
-			.def("command", ScheduleEventMethod)
-			;
-        */ /*
-        PythonInitDone = true;
-    } */
-
-    // CEventSystem::ScheduleEvent("Test_Target", "On", "Test");
 
    if (Plugins::Py_IsInitialized()) {
 
@@ -2341,13 +2302,13 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 
                    // _log.Log(LOG_STATUS, "Python EventSystem: deviceName %s", sitem.deviceName.c_str());
                }
+           }
 
-
-
-
-
-
-
+           if (Plugins::PyType_Ready(&Plugins::PDeviceType) < 0) {
+               _log.Log(LOG_ERROR, "Python EventSystem: Unable to ready PDeviceType");
+           } else {
+               Py_INCREF(&Plugins::PDeviceType);
+               Plugins::PyModule_AddObject(pModule, "PDevice", (PyObject *)&Plugins::PDeviceType);
            }
 
            FILE* PythonScriptFile = _Py_fopen(filename.c_str(),"r+");
