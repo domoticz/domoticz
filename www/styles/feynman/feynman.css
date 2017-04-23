@@ -150,7 +150,7 @@ body table#itemtablenotype tr td:first-child{
 
 
 /*  Adding some nice statusindicator icons to the non-dashboard display pages. */
-
+/*
 body:not(.dashboard) h2 + div.divider .span4:nth-child(-n+3) div.item.statusProtected tr:after {
     content : "";
     display: block;
@@ -204,6 +204,7 @@ body:not(.dashboard) h2 + div.divider .span4:nth-child(-n+3) div.item.statusLowB
     opacity : 0.5;
     z-index: 1;
 }
+*/
 
 
 #dashcontent .ui-draggable:not(.ui-dialog) tr{
@@ -317,7 +318,7 @@ body:not(.dashboard) h2 + div.divider .span4:nth-child(-n+3) div.item.statusLowB
 }
 
 .options a.btnsmall {
-    margin-bottom: 4px;
+    margin-bottom: 8px;
     padding: 2px 5px 4px 5px;
 }
 
@@ -587,6 +588,12 @@ body:hover .ui-dialog {
         -webkit-box-shadow:  0 1px 0 0 #DDDF2D;
         box-shadow:  0 1px 0 0 #DDDF2D;  
     }
+    
+    
+    div.item .options {
+    background-image: linear-gradient(to bottom, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.02) 80%,rgba(0,0,0,0.0) 80%)!important;
+    
+    
 
 }
 

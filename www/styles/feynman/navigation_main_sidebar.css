@@ -20,7 +20,7 @@
         /*background-color: #eee;*/
         overflow:visible;
         position:relative;
-        top:20px;
+        top:15px;
         left:12px;
         
     }
@@ -131,7 +131,7 @@
     .navbar #appnavbar{
         width:auto; 
         height:100%;
-        top:30px;
+        top:21px;
         clear:both;
 
         list-style-type:none;
@@ -178,26 +178,19 @@
         padding-right:6px;
     }
     
-    #appnavbar img{
+    #appnavbar > li > a{padding-left:10px;padding-right:10px;}
+
+    .navbar #appnavbar > li > a > img{
         margin:0px;
-        height:30px;
-        width:30px;
-        image-rendering: -moz-crisp-edges;
+        height:32px;
+        width:32px;
+        /*image-rendering: -moz-crisp-edges;
         image-rendering: -moz-crisp-edges;
         image-rendering: -o-crisp-edges;
         image-rendering: -webkit-optimize-contrast;
         -ms-interpolation-mode: nearest-neighbor;
         filter: contrast(1);
-        image-rendering: pixelated;   
-    }
-    
-    #appnavbar > li > a{padding-left:10px;padding-right:10px;}
-    
-    .navbar #appnavbar > li > a > img{
-        margin-top:5px;
-        margin-bottom:5px;
-        margin-left:2px;
-        margin-right:4px;    
+        image-rendering: pixelated;   */ 
     }
 
     .navbar:hover #appnavbar > li > a > img{ /* hover */
@@ -248,8 +241,12 @@
         border:0;
         /*display:block!important;*/ /* Useful for debugging, keeps the menu open */
     }
-
-    #appnavbar ul.dropdown-menu a img {margin:5px;}
+    
+    #appnavbar ul.dropdown-menu a img {
+        margin:5px;
+        height:16px;
+        width:16px;
+    }
 
     .navbar ul.dropdown-menu li{ 
         background-color:#eee;
@@ -294,7 +291,7 @@
         /*flex-direction:column-reverse;
         justify-content: flex-end;
         flex-wrap: wrap!important;  */
-        padding-top:59px;
+        padding-top:50px;
         box-shadow: none;
         border-left:none;
         border-radius: 0;
@@ -317,6 +314,7 @@
         -webkit-box-shadow: inset 0px 1px 1px 0px rgba(0, 0, 0, 0.05);
         -moz-box-shadow: inset 0px 1px 1px 0px rgba(0, 0, 0, 0.05);
         box-shadow: inset 0px 1px 1px 0px rgba(0, 0, 0, 0.05);
+        height:52px;
     }
 
 
@@ -517,6 +515,8 @@
         padding-top:0;
         padding-bottom: 0px; /*padding: 0px 5px 0px 5px!important;*/
     }
+    
+    #appnavbar .dropdown-menu li a{height:30px}
 }
 
 \
@@ -538,6 +538,8 @@
         top:0;
         padding-top:0;
     }
+    
+    #appnavbar .dropdown-menu li a{height:auto;}
 /*    
     #appnavbar > li > a {
         padding: 0px 10px!important;

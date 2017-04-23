@@ -1,15 +1,16 @@
 @import url("base.css"); /* Don't remove this line! */
-@import url("feynman.css");  /* Don't remove this line! */
+@import url("classic.css");  /* Don't remove this line! */
 @import url("show_version_number.css");  /* shows the version number above the logo */
-@import url("dashboard_move_sun.css"); /* Moves the sun-up indicator to the footer. */
+/*@import url("dashboard_move_sun.css"); /* Moves the sun-up indicator to the footer. */
 @import url("dashboard_show_last_update.css"); /* Displays the 'last update' time on the dashboard. */
 /*@import url("dashboard_thinner_items_on_wide_screens.css"); /* Only for wide screens; item-options move next to the name. */
 @import url("dashboard_highlights.css"); /* This adds bigger items at the top of each dashboard category. */
 @import url("dashboard_highlights_see-through.css"); /* makes all dashboard items semi-transparent. */
-@import url("dashboard_vertical_columns.css"); /* Turns dashboard into vertical columns. */
+/*@import url("dashboard_vertical_columns.css"); /* Turns dashboard into vertical columns. */
 @import url("dashboard_show_data_vizualisations.css"); /* Adds 24h data visualisation on some elements */
 @import url("navigation_main_sidebar.css"); /* This transforms the main menu to a vertical menu on the left. */
-@import url("navigation_settings_sidemenu.css"); /* This transforms the settings-tabs into a sidebar on the left. */
+/*@import url("navigation_settings_sidemenu.css"); /* This transforms the settings-tabs into a sidebar on the left. */
+/*@import url("center-popups.css"); /* centers pop-up items in the middle of the screen. */
 @import url("extras_and_animations.css"); /* Adds fun visual extras. */
 
 
@@ -75,6 +76,10 @@ is my recommendation). It is automatically disabled for mobile phones.
 __Settings Sidemenu__
 Instead of the tabs at the top of each settings page, you get a sidebar instead. It stays in place. This 
 includes the 'save' button, so you always have easy access to that.
+
+__Center Popups__
+Sometimes items that pop-up, like colour selectors or thermostat setpoints, go off the screen. This forces them 
+to be in the middle of the screen. Useful on smaller screens.
 
 __Extra's and Animations__
 Adds some pretty details (checkboxes) and animations (dialog pop-ups).

@@ -3,6 +3,7 @@
 
 /*  POPUP ANIMATION  */
 
+/*
 @-webkit-keyframes fadeIn {
     from { opacity: 0; }
       to { opacity: 1; }
@@ -17,13 +18,19 @@
       to { transform: scale(1);  }
 }
 
+body:hover .ui-dialog{
+    -webkit-animation: fadeIn 0.2s;
+    animation: fadeIn 0.2s;
+    animation-fill-mode: forwards;
+}
+*/
+
+/*  Fan spinning animation  */
+
 @-webkit-keyframes rotation {
     from {-webkit-transform: rotate(0deg);}
     to   {-webkit-transform: rotate(359deg);}
 }
-
-
-/*  animation  */
 
 body.dashboard div.item.Fan.onn .img1 img{
     -webkit-animation: rotation 15s infinite linear;
@@ -36,23 +43,244 @@ body.dashboard div.item.Fan.onn .img1 img:hover{
 }
 
 
+/*  BAROMETER EFFECTS  */
+
 /*
-div.item.WeatherStation tr,
-#Sunny #name{
-    background: url('/images/sunny.png') no-repeat right!important; 
-    background-color: rgba(250,250,250,0.1)!important;
-    background-size: 70%;
+
+domoticz.BARO_STABLE
+domoticz.BARO_SUNNY
+domoticz.BARO_CLOUDY
+domoticz.BARO_UNSTABLE
+domoticz.BARO_THUNDERSTORM
+domoticz.BARO_UNKNOWN
+domoticz.BARO_CLOUDY_RAIN
+
+*/
+
+
+/* "some clouds" also exists. Perhaps:
+
+div.item[id=*cloud]
+
+*/
+
+#dashcontent div.item.Barometer tr #img img:hover,
+#dashcontent div.item.Pressure tr #img img:hover,
+#dashcontent div.item.TempHumidityBaro tr #img img:hover,
+#dashcontent div.item.WeatherStation tr #img img:hover{border-radius:50%!important;}
+
+@keyframes baro-unstable {
+  from {
+      -moz-transform:rotate(0deg);
+      -webkit-transform:rotate(0deg);
+      transition:rotate(0deg) 
+  }
+
+  50% {
+      -moz-transform:rotate(-30deg);
+      -webkit-transform:rotate(-30deg);
+      transition:rotate(-30deg) 
+  }    
+    
+  to {
+      -moz-transform:rotate(30deg);
+      -webkit-transform:rotate(30deg);
+      transition:rotate(30deg) 
+  }
+}
+
+
+@keyframes baro-change {
+  from {
+      -moz-transform:rotate(15deg);
+      -webkit-transform:rotate(15deg);
+      transition:rotate(15deg) 
+  }
+  to {
+      -moz-transform:rotate(-15deg);
+      -webkit-transform:rotate(-15deg);
+      transition:rotate(-15deg) 
+  }    
+}
+
+@keyframes loading {
+  from {
+    -webkit-box-shadow: inset 0px 80px 5px 0px rgba(0,0,100,0);
+    -moz-box-shadow: inset 0px 80px 5px 0px rgba(0,0,100,0);
+    box-shadow: inset 0px 80px 5px 0px rgba(0,0,100,0);
+  }
+  to {
+    -webkit-box-shadow: inset 0px 0px 5px 0px rgba(50,150,250,0.8);
+    -moz-box-shadow: inset 0px 0px 5px 0px rgba(50,150,250,0.8);
+    box-shadow: inset 0px 0px 5px 0px rgba(50,150,250,0.8);
+  }    
+}
+@keyframes loading2 {
+  from {
+      background: radial-gradient(ellipse at center, rgba(0,0,0,0) 0,rgba(0,0,0,1) 100%);
+
+  }
+  to {
+      background: radial-gradient(ellipse at center, rgba(0,0,0,1) 0,rgba(0,0,0,0) 100%);
+
+  }    
+}
+
+
+
+/*  UNKNOWN  */
+/*#dashcontent #dashWeather div.item[id*=unknown] tr .img1::after,
+#dashcontent div.item.Barometer#unknown tr #img::after,
+#dashcontent div.item.Pressure#unknown tr #img::after,
+#dashcontent div.item.TempHumidityBaro#unknown tr #img::after,
+#dashcontent div.item.WeatherStation##unknown tr #img::after{
+    content: "?";
+    font-weight: bolder;
+    color: white;
+    font-size: 20px;
+    position: relative;
+    background-color: rgba(0,255,0,0.5);
+    border-radius: 50%;
+    padding: 5px 9px 3px 9.5px;
+    top: -12px;
+    left: -35px;
+    line-height: 1.0em;
+    z-index: 1;
+}*/
+#dashcontent #dashWeather #unknown tr .img1 img{
+    animation: 10s infinite loading;
+    border-radius:50%!important;
+    padding:5px;
+    opacity:50;
+}
+
+
+/*  UNSTABLE  */
+#dashcontent #dashWeather #unstable tr{
+    background-image:none;
+    background-image: url('/images/baro-unstable.png') no-repeat right top!important; 
+}
+
+#dashcontent #dashWeather #unstable tr .img1 img,
+#dashcontent div.item.Barometer#unstable tr .img1 img,
+#dashcontent div.item.Pressure#unstable tr .img1 img,
+#dashcontent div.item.TempHumidityBaro#unstable tr .img1 img,
+#dashcontent div.item.WeatherStation#unstable tr .img1 img{
+    animation: 3s infinite unstable;
+}
+
+
+/*  STORM  */
+#dashcontent #dashWeather #thunderstorm tr{
+    background-image:none;
+    background: rgba(250,250,250,0.1) url('/images/baro-thunderstorm.png') no-repeat right top!important; 
+    /*background-color: rgba(250,250,250,0.1)!important;*/
+}
+#dashcontent div.item.Barometer#thunderstorm tr .img1 img,
+#dashcontent div.item.Pressure#thunderstorm tr .img1 img,
+#dashcontent div.item.TempHumidityBaro#thunderstorm tr .img1 img,
+#dashcontent div.item.WeatherStation#thunderstorm tr .img1 img{
+    -moz-transform:rotate(-60deg);
+    -webkit-transform:rotate(-60deg);
+    transition:rotate(-60deg) 
+}
+
+
+/*  CLOUDY  - this ordering is on purpose, so rain can override cloudy. */
+#dashcontent #dashWeather div#cloudy tr,
+#dashcontent div#someclouds tr,
+#dashcontent div#cloudy tr{
+    background-image:none;
+    background: rgba(250,250,250,0.1) url('/images/baro-cloudy.png') no-repeat right top!important; 
+    /*background-color: rgba(250,250,250,0.1)!important;*/
+}
+/*
+#dashcontent div.item.Barometer#cloudy tr .img1 img,
+#dashcontent div.item.Pressure#cloudy tr .img1 img,
+#dashcontent div.item.TempHumidityBaro#cloudy tr .img1 img,
+#dashcontent div.item.WeatherStation#cloudy tr .img1 img,
+#dashcontent div.item.Barometer#someclouds tr .img1 img,
+#dashcontent div.item.Pressure#someclouds tr .img1 img,
+#dashcontent div.item.TempHumidityBaro#someclouds tr .img1 img,
+#dashcontent div.item.WeatherStation#someclouds tr .img1 img{
+    -moz-transform:rotate(-10deg);
+    -webkit-transform:rotate(-10deg);
+    transition:rotate(-10deg);
 }*/
 
-div.item.Wind tr,
-#Storm #name{
-    background: url('/images/cloudy.png') no-repeat right!important; 
-    background-color: rgba(250,250,250,0.1)!important;
+
+/*  RAINY  */
+#dashcontent #dashWeather div.item.#rain tr{
+    background-image:none;
+    background: rgba(250,250,250,0.1) url('/images/baro-rain.png') no-repeat right top!important; 
+}
+#dashcontent #dashWeather div.item[id*=rain] .img1 img,
+#dashcontent #dashWeather div.item.Barometer#rain tr .img1 img,
+#dashcontent #dashWeather div.item.Pressure#rain tr .img1 img,
+#dashcontent #dashWeather div.item.TempHumidityBaro#rain tr .img1 img,
+#dashcontent #dashWeather div.item.WeatherStation#rain tr .img1 img{
+    -moz-transform:rotate(-30deg);
+    -webkit-transform:rotate(-30deg);
+    transition:rotate(-30deg);
 }
 
-#Sunny tr{
-  background-image: radial-gradient(circle 150px at 25% 33%, white, yellow, lightyellow, aqua);
+
+/*  CHANGE  */
+#dashcontent #dashWeather div.item#change tr{
+    background-image:none;
+    background: rgba(250,250,250,0.1) url('/images/baro-change.png') no-repeat right top!important; 
+    /*background-color: rgba(250,250,250,0.1)!important;*/
 }
+#dashcontent #dashWeather div.item[id*=change] tr .img1 img,
+#dashcontent div.item.Barometer#change tr .img1 img,
+#dashcontent div.item.Pressure#change tr .img1 img,
+#dashcontent div.item.TempHumidityBaro#change tr .img1 img,
+#dashcontent div.item.WeatherStation#change tr .img1 img{
+    animation: 3s infinite alternate baro-change;
+}
+
+
+/*  SUNNY  */
+#dashcontent div.item.Barometer[id*=sun] tr,
+#dashcontent div.item.Pressure[id*=sun] tr,
+#dashcontent div.item.TempHumidityBaro[id*=sun] tr,
+#dashcontent div.item.WeatherStation[id*=sun] tr{
+    background-image:none;
+    background: rgba(250,250,250,0.1) url('/images/baro-sunny.png') no-repeat right top!important; 
+    /*background-color: rgba(250,250,250,0.1)!important;*/
+    /*background-size: 70%;*/
+}
+#dashcontent div.item.Barometer[id*=sun] tr .img1 img,
+#dashcontent div.item.Barometer#sunny tr .img1 img,
+#dashcontent div.item.Pressure#sunny tr .img1 img,
+#dashcontent div.item.TempHumidityBaro#sunny tr .img1 img,
+#dashcontent div.item.WeatherStation#sunny tr .img1 img{
+    -moz-transform:rotate(45deg);
+    -webkit-transform:rotate(45deg);
+    transition:rotate(45deg);}
+
+
+/*  STABLE  */
+#dashcontent #dashWeather div.item[id*=stable] tr,
+#dashcontent div.item.Barometer#stable tr,
+#dashcontent div.item.Pressure#stable tr,
+#dashcontent div.item.TempHumidityBaro#ustable tr,
+#dashcontent div.item.WeatherStation#stable tr{
+    background-image:none;
+    background: url('/images/baro-stable.png') no-repeat right top!important; 
+    background-color: rgba(250,250,250,0.1)!important;
+    
+    /*background-size: 70%;*/
+}
+#dashcontent div.item.Barometer#stable tr .img1 img,
+#dashcontent div.item.Pressure#stable tr .img1 img,
+#dashcontent div.item.TempHumidityBaro#stable tr .img1 img,
+#dashcontent div.item.WeatherStation#stable tr .img1 img{
+    -moz-transform:rotate(90deg);
+    -webkit-transform:rotate(90deg);
+    transition:rotate(90deg);
+}
+
 
 
 
@@ -72,8 +300,8 @@ background-image: radial-gradient(75% 19%, ellipse cover, #ababab, #2e0580 33%)
 */
 
 
-
-.overlay {
+/*
+.xoverlay {
     background: linear-gradient(left, #00BBFF, #00BBFF 14.3%, #2EB5E5 14.3%, #2EB5E5 28.6%, #E6E6E6 28.6%, #E6E6E6 42.9%, #F3D166 42.9%, #F3D166 57.2%, #222233 57.2%, #222233 71.5%, #444444 71.5%, #444444 85.8%, #85DB8C 85.8%);
     transform: scale(.9);
     width: 1200px;
@@ -98,7 +326,7 @@ background-image: radial-gradient(75% 19%, ellipse cover, #ababab, #2e0580 33%)
     transform:translate(100px, -20px);
 }
 
-.overlay:after {
+.xoverlay:after {
     animation: rainy_shadow 5s ease-in-out infinite 1s;
     background: #000000;
     border-radius: 50%;
@@ -111,550 +339,77 @@ background-image: radial-gradient(75% 19%, ellipse cover, #ababab, #2e0580 33%)
     bottom: -60px;
     transform: scale(.7);
 }
+*/
+
+
+/*
+    STABLE = 0,            // "Stable Weather Pattern"
+    SUNNY = 1,            // "Slowly rising Good Weather", "Clear/Sunny "
+    CLOUDY = 2,            // "Slowly falling L-Pressure ", "Cloudy/Rain "
+    UNSTABLE = 3,        // "Quickly rising H-Press",     "Not Stable"
+    THUNDERSTORM = 4,    // "Quickly falling L-Press",    "Thunderstorm"
+    UNKNOWN = 5            // "Unknown (More Time needed)
 
 
 
-
-/* SUNNY */
-.sunny { 
-	animation: sunny 15s linear infinite;
-	background: linear-gradient(top, rgba(255,255,255,0) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0) 100%); 
-	height: 140px;
-	width: 20px; 
-	margin-left: -15px;
-	position: absolute;
-	left: 90px;  
-	top: 20px;
-}
-.sunny:before {
-	background: linear-gradient(top, rgba(255,255,255,0) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0) 100%);
-	content: ''; 
-	height: 140px; 
-	width: 20px;
-	opacity: 1; 
-	position: absolute;
-	bottom: 0px;
-	left: 0px; 
-	transform: rotate(90deg);
-}
-.sunny:after {
-	background: #FFEE44; 
-	border-radius: 50%; 
-	box-shadow: rgba(255,255,0,0.2) 0 0 0 15px;
-	content: '';  
-	height: 80px;
-	width: 80px;  
-	position: absolute; 
-	left: -30px; 
-	top: 30px;
-}
-@keyframes sunny { 
-	0% { transform: rotate(0deg); }
-	100% { transform: rotate(360deg); }
-}
-
-/* CLOUDY */
-.cloudy {
-	animation: cloudy 5s ease-in-out infinite;
-	background: #FFFFFF;
-	border-radius: 50%;
-	box-shadow: 
-		#FFFFFF 65px -15px 0 -5px, 
-		#FFFFFF 25px -25px, 
-		#FFFFFF 30px 10px, 
-		#FFFFFF 60px 15px 0 -10px, 
-		#FFFFFF 85px 5px 0 -5px;
-	height: 50px;
-	width: 50px; 
-	margin-left: -60px;
-	position: absolute;
-	left: 255px;
-	top: 70px; 
-}
-.cloudy:after {
-	animation: cloudy_shadow 5s ease-in-out infinite;
-	background: #000000;
-	border-radius: 50%;
-	content: '';
-	height: 15px;
-	width: 120px;
-	opacity: 0.2;
-	position: absolute;
-	left: 5px; 
-	bottom: -60px;
-  transform: scale(.7);
-}
-@keyframes cloudy {
-	50% { transform: translateY(-20px); }
-}
-@keyframes cloudy_shadow {
-	50% { transform: translateY(20px) scale(1); opacity:.05; }
-}
-
-/* RAINY */
-.rainy {
-	animation: rainy 5s ease-in-out infinite 1s;
-	background: #CCCCCC; 
-	border-radius: 50%;
-	box-shadow: 
-		#CCCCCC 65px -15px 0 -5px, 
-		#CCCCCC 25px -25px, 
-		#CCCCCC 30px 10px, 
-		#CCCCCC 60px 15px 0 -10px, 
-		#CCCCCC 85px 5px 0 -5px;
-	display: block;
-	height: 50px;
-	width: 50px;
-	margin-left: -60px;
-	position: absolute;
-	left: 427px;
-	top: 70px;
-}
-.rainy:after {
-	animation: rainy_shadow 5s ease-in-out infinite 1s;
-	background: #000000;
-	border-radius: 50%;
-	content: '';
-	height: 15px;
-	width: 120px;
-	opacity: 0.2;
-	position: absolute;
-	left: 5px; 
-	bottom: -60px;
-	transform: scale(.7);
-}
-.rainy:before {
-	animation: rainy_rain .7s infinite linear;
-	content: '';
-	background: #CCCCCC;
-	border-radius: 50%;
-	display: block;
-	height: 6px;
-	width: 3px;
-	opacity: 0.3;
-	transform: scale(.9);
-}
-@keyframes rainy {
-	50% { transform: translateY(-20px); }
-}
-@keyframes rainy_shadow {
-	50% { transform: translateY(20px) scale(1); opacity: 0.05; }
-}
-@keyframes rainy_rain {
-	0% {  
-		box-shadow: 
-			rgba(0,0,0,0) 30px 30px, 
-			rgba(0,0,0,0) 40px 40px,  
-			#000 50px 75px, 
-			#000 55px 50px, 
-			#000 70px 100px, 
-			#000 80px 95px, 
-			#000 110px 45px, 
-			#000 90px 35px; 
-	}
-	25% {  
-	  	box-shadow: 
-			#000 30px 45px,
-			#000 40px 60px,
-			#000 50px 90px,
-			#000 55px 65px,
-			rgba(0,0,0,0) 70px 120px,
-			rgba(0,0,0,0) 80px 120px,
-			#000 110px 70px,
-			#000 90px 60px;
-	}
-	26% {  
-		box-shadow:
-			#000 30px 45px,
-			#000 40px 60px,
-			#000 50px 90px,
-			#000 55px 65px,
-			rgba(0,0,0,0) 70px 40px,
-			rgba(0,0,0,0) 80px 20px,
-			#000 110px 70px,
-			#000 90px 60px; 
-	}
-	50% { 
-		box-shadow:
-			#000 30px 70px,
-			#000 40px 80px,
-			rgba(0,0,0,0) 50px 100px,
-			#000 55px 80px,
-			#000 70px 60px,
-			#000 80px 45px,
-			#000 110px 95px,
-			#000 90px 85px;
-	}
-	51% {
-		box-shadow:
-			#000 30px 70px,
-			#000 40px 80px,
-			rgba(0,0,0,0) 50px 45px,
-			#000 55px 80px,
-			#000 70px 60px,
-			#000 80px 45px,
-			#000 110px 95px,
-			#000 90px 85px;
-	}
-	75% {
-		box-shadow:
-			#000 30px 95px,
-			#000 40px 100px,
-			#000 50px 60px,
-			rgba(0,0,0,0) 55px 95px,
-			#000 70px 80px,
-			#000 80px 70px,
-			rgba(0,0,0,0) 110px 120px,
-			rgba(0,0,0,0) 90px 110px;
-	}
-	76% {
-		box-shadow:
-			#000 30px 95px,
-			#000 40px 100px,
-			#000 50px 60px,
-			rgba(0,0,0,0) 55px 35px,
-			#000 70px 80px,
-			#000 80px 70px,
-			rgba(0,0,0,0) 110px 25px,
-			rgba(0,0,0,0) 90px 15px;
-	}
-	100% {
-		box-shadow:
-			rgba(0,0,0,0) 30px 120px,
-			rgba(0,0,0,0) 40px 120px,
-			#000 50px 75px,
-			#000 55px 50px,
-			#000 70px 100px,
-			#000 80px 95px,
-			#000 110px 45px,
-			#000 90px 35px;
-	}
-}
+    STABLE
+    SUNNY
+    CLOUDY
+    UNSTABLE
+    THUNDERSTORM
+    UNKNOWN
 
 
-/* RAINBOW */
-.rainbow {
-	animation: rainbow 5s ease-in-out infinite;
-	border-radius: 170px 0 0 0;
-	box-shadow: 
-		#FB323C -2px -2px 0 1px,
-		#F99716 -4px -4px 0 3px,
-		#FEE124 -6px -6px 0 5px,
-		#AFDF2E -8px -8px 0 7px,
-		#6AD7F8 -10px -10px 0 9px,
-		#60B1F5 -12px -12px 0 11px,
-		#A3459B -14px -14px 0 13px;
-	height: 70px;
-	width: 70px;
-	margin-left: -40px;
-	position: absolute;
-	left: 610px;
-	top: 71px;
-  	transform: rotate(40deg);
+             domoticz.BARO_STABLE
+            domoticz.BARO_SUNNY
+            domoticz.BARO_CLOUDY
+            domoticz.BARO_UNSTABLE
+            domoticz.BARO_THUNDERSTORM
+            domoticz.BARO_UNKNOWN
+            domoticz.BARO_CLOUDY_RAIN
+
+
+div.item[id=*rain] tr
+*/
+
+
+/*
+*[id*='sunny'] tr{
+    background-image: radial-gradient(circle 150px at 25% 33%, white, yellow, lightyellow, aqua)!important;
 }
-.rainbow:after {
-	animation: rainbow_shadow 5s ease-in-out infinite;
-	background: #000000;
-	border-radius: 50%;
-	content: '';
-	opacity: 0.2;
-	height: 15px;
-	width: 120px;
-	position: absolute;
-	bottom: -23px; 
-	left: 17px;
-  	transform: rotate(-40deg);
-  	transform-origin: 50% 50%;
-}
-@keyframes rainbow {
-	50% { transform: rotate(50deg); }
-}
-@keyframes rainbow_shadow {
-	50% { transform:  rotate(-50deg) translate(10px) scale(.7); opacity: 0.05; }
+*/
+
+/*
+div.item.Fan tr #name{
+    background: -moz-linear-gradient90deg, rgba(86,153,220,1) 0%, rgba(28,110,191,1) 3%, rgba(39,82,125,1) 6%, rgba(71,120,169,1) 9%, rgba(28,67,107,1) 12%, rgba(63,122,181,1) 13%, rgba(38,105,173,1) 17%, rgba(86,153,220,1) 20%, rgba(45,81,117,1) 23%, rgba(31,64,97,1) 25%, rgba(49,110,168,1) 29%, rgba(25,68,112,1) 32%, rgba(42,85,128,1) 34%, rgba(62,128,194,1) 37%, rgba(43,95,148,1) 40%, rgba(53,128,204,1) 43%, rgba(51,79,107,1) 46%, rgba(59,111,163,1) 49%, rgba(47,91,135,1) 52%, rgba(75,130,185,1) 53%, rgba(30,70,110,1) 56%, rgba(83,132,181,1) 59%, rgba(46,82,112,1) 61%, rgba(62,125,179,1) 61%, rgba(52,90,125,1) 63%, rgba(63,127,184,1) 65%, rgba(47,93,138,1) 67%, rgba(33,69,102,1) 70%, rgba(27,71,112,1) 71%, rgba(86,153,220,1) 73%, rgba(35,81,128,1) 76%, rgba(44,83,122,1) 77%, rgba(67,112,156,1) 80%, rgba(38,88,135,1) 82%, rgba(67,112,156,1) 82%, rgba(60,105,150,1) 84%, rgba(54,100,143,1) 87%, rgba(86,153,220,1) 90%, rgba(54,100,143,1) 93%, rgba(62,125,179,1) 96%, rgba(36,76,122,1) 100%);
+    background: -webkit-gradient(left top, right bottom, color-stop(0%, rgba(86,153,220,1)), color-stop(3%, rgba(28,110,191,1)), color-stop(6%, rgba(39,82,125,1)), color-stop(9%, rgba(71,120,169,1)), color-stop(12%, rgba(28,67,107,1)), color-stop(13%, rgba(63,122,181,1)), color-stop(17%, rgba(38,105,173,1)), color-stop(20%, rgba(86,153,220,1)), color-stop(23%, rgba(45,81,117,1)), color-stop(25%, rgba(31,64,97,1)), color-stop(29%, rgba(49,110,168,1)), color-stop(32%, rgba(25,68,112,1)), color-stop(34%, rgba(42,85,128,1)), color-stop(37%, rgba(62,128,194,1)), color-stop(40%, rgba(43,95,148,1)), color-stop(43%, rgba(53,128,204,1)), color-stop(46%, rgba(51,79,107,1)), color-stop(49%, rgba(59,111,163,1)), color-stop(52%, rgba(47,91,135,1)), color-stop(53%, rgba(75,130,185,1)), color-stop(56%, rgba(30,70,110,1)), color-stop(59%, rgba(83,132,181,1)), color-stop(61%, rgba(46,82,112,1)), color-stop(61%, rgba(62,125,179,1)), color-stop(63%, rgba(52,90,125,1)), color-stop(65%, rgba(63,127,184,1)), color-stop(67%, rgba(47,93,138,1)), color-stop(70%, rgba(33,69,102,1)), color-stop(71%, rgba(27,71,112,1)), color-stop(73%, rgba(86,153,220,1)), color-stop(76%, rgba(35,81,128,1)), color-stop(77%, rgba(44,83,122,1)), color-stop(80%, rgba(67,112,156,1)), color-stop(82%, rgba(38,88,135,1)), color-stop(82%, rgba(67,112,156,1)), color-stop(84%, rgba(60,105,150,1)), color-stop(87%, rgba(54,100,143,1)), color-stop(90%, rgba(86,153,220,1)), color-stop(93%, rgba(54,100,143,1)), color-stop(96%, rgba(62,125,179,1)), color-stop(100%, rgba(36,76,122,1)));
+    background: -webkit-linear-gradient90deg, rgba(86,153,220,1) 0%, rgba(28,110,191,1) 3%, rgba(39,82,125,1) 6%, rgba(71,120,169,1) 9%, rgba(28,67,107,1) 12%, rgba(63,122,181,1) 13%, rgba(38,105,173,1) 17%, rgba(86,153,220,1) 20%, rgba(45,81,117,1) 23%, rgba(31,64,97,1) 25%, rgba(49,110,168,1) 29%, rgba(25,68,112,1) 32%, rgba(42,85,128,1) 34%, rgba(62,128,194,1) 37%, rgba(43,95,148,1) 40%, rgba(53,128,204,1) 43%, rgba(51,79,107,1) 46%, rgba(59,111,163,1) 49%, rgba(47,91,135,1) 52%, rgba(75,130,185,1) 53%, rgba(30,70,110,1) 56%, rgba(83,132,181,1) 59%, rgba(46,82,112,1) 61%, rgba(62,125,179,1) 61%, rgba(52,90,125,1) 63%, rgba(63,127,184,1) 65%, rgba(47,93,138,1) 67%, rgba(33,69,102,1) 70%, rgba(27,71,112,1) 71%, rgba(86,153,220,1) 73%, rgba(35,81,128,1) 76%, rgba(44,83,122,1) 77%, rgba(67,112,156,1) 80%, rgba(38,88,135,1) 82%, rgba(67,112,156,1) 82%, rgba(60,105,150,1) 84%, rgba(54,100,143,1) 87%, rgba(86,153,220,1) 90%, rgba(54,100,143,1) 93%, rgba(62,125,179,1) 96%, rgba(36,76,122,1) 100%);
+    background: -o-linear-gradient90deg, rgba(86,153,220,1) 0%, rgba(28,110,191,1) 3%, rgba(39,82,125,1) 6%, rgba(71,120,169,1) 9%, rgba(28,67,107,1) 12%, rgba(63,122,181,1) 13%, rgba(38,105,173,1) 17%, rgba(86,153,220,1) 20%, rgba(45,81,117,1) 23%, rgba(31,64,97,1) 25%, rgba(49,110,168,1) 29%, rgba(25,68,112,1) 32%, rgba(42,85,128,1) 34%, rgba(62,128,194,1) 37%, rgba(43,95,148,1) 40%, rgba(53,128,204,1) 43%, rgba(51,79,107,1) 46%, rgba(59,111,163,1) 49%, rgba(47,91,135,1) 52%, rgba(75,130,185,1) 53%, rgba(30,70,110,1) 56%, rgba(83,132,181,1) 59%, rgba(46,82,112,1) 61%, rgba(62,125,179,1) 61%, rgba(52,90,125,1) 63%, rgba(63,127,184,1) 65%, rgba(47,93,138,1) 67%, rgba(33,69,102,1) 70%, rgba(27,71,112,1) 71%, rgba(86,153,220,1) 73%, rgba(35,81,128,1) 76%, rgba(44,83,122,1) 77%, rgba(67,112,156,1) 80%, rgba(38,88,135,1) 82%, rgba(67,112,156,1) 82%, rgba(60,105,150,1) 84%, rgba(54,100,143,1) 87%, rgba(86,153,220,1) 90%, rgba(54,100,143,1) 93%, rgba(62,125,179,1) 96%, rgba(36,76,122,1) 100%);
+    background: -ms-linear-gradient90deg, rgba(86,153,220,1) 0%, rgba(28,110,191,1) 3%, rgba(39,82,125,1) 6%, rgba(71,120,169,1) 9%, rgba(28,67,107,1) 12%, rgba(63,122,181,1) 13%, rgba(38,105,173,1) 17%, rgba(86,153,220,1) 20%, rgba(45,81,117,1) 23%, rgba(31,64,97,1) 25%, rgba(49,110,168,1) 29%, rgba(25,68,112,1) 32%, rgba(42,85,128,1) 34%, rgba(62,128,194,1) 37%, rgba(43,95,148,1) 40%, rgba(53,128,204,1) 43%, rgba(51,79,107,1) 46%, rgba(59,111,163,1) 49%, rgba(47,91,135,1) 52%, rgba(75,130,185,1) 53%, rgba(30,70,110,1) 56%, rgba(83,132,181,1) 59%, rgba(46,82,112,1) 61%, rgba(62,125,179,1) 61%, rgba(52,90,125,1) 63%, rgba(63,127,184,1) 65%, rgba(47,93,138,1) 67%, rgba(33,69,102,1) 70%, rgba(27,71,112,1) 71%, rgba(86,153,220,1) 73%, rgba(35,81,128,1) 76%, rgba(44,83,122,1) 77%, rgba(67,112,156,1) 80%, rgba(38,88,135,1) 82%, rgba(67,112,156,1) 82%, rgba(60,105,150,1) 84%, rgba(54,100,143,1) 87%, rgba(86,153,220,1) 90%, rgba(54,100,143,1) 93%, rgba(62,125,179,1) 96%, rgba(36,76,122,1) 100%);
+    background: linear-gradient(135deg, rgba(86,153,220,1) 0%, rgba(28,110,191,1) 3%, rgba(39,82,125,1) 6%, rgba(71,120,169,1) 9%, rgba(28,67,107,1) 12%, rgba(63,122,181,1) 13%, rgba(38,105,173,1) 17%, rgba(86,153,220,1) 20%, rgba(45,81,117,1) 23%, rgba(31,64,97,1) 25%, rgba(49,110,168,1) 29%, rgba(25,68,112,1) 32%, rgba(42,85,128,1) 34%, rgba(62,128,194,1) 37%, rgba(43,95,148,1) 40%, rgba(53,128,204,1) 43%, rgba(51,79,107,1) 46%, rgba(59,111,163,1) 49%, rgba(47,91,135,1) 52%, rgba(75,130,185,1) 53%, rgba(30,70,110,1) 56%, rgba(83,132,181,1) 59%, rgba(46,82,112,1) 61%, rgba(62,125,179,1) 61%, rgba(52,90,125,1) 63%, rgba(63,127,184,1) 65%, rgba(47,93,138,1) 67%, rgba(33,69,102,1) 70%, rgba(27,71,112,1) 71%, rgba(86,153,220,1) 73%, rgba(35,81,128,1) 76%, rgba(44,83,122,1) 77%, rgba(67,112,156,1) 80%, rgba(38,88,135,1) 82%, rgba(67,112,156,1) 82%, rgba(60,105,150,1) 84%, rgba(54,100,143,1) 87%, rgba(86,153,220,1) 90%, rgba(54,100,143,1) 93%, rgba(62,125,179,1) 96%, rgba(36,76,122,1) 100%)!important;
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#5699dc', endColorstr='#244c7a', GradientType=1 );
 }
 
-/* STARRY */
-.starry {
-  	animation: starry_star 5s ease-in-out infinite;
-	background: #fff;
-	border-radius: 50%;  
-	box-shadow:  
-      	#FFFFFF 26px 7px 0 -1px, 
-      	rgba(255,255,255,0.1) -36px -19px 0 -1px, 
-      	rgba(255,255,255,0.1) -51px -34px 0 -1px,
-      	#FFFFFF -52px -62px 0 -1px, 
-      	#FFFFFF 14px -37px, 
-      	rgba(255,255,255,0.1) 41px -19px,  
-      	#FFFFFF 34px -50px,
-      	rgba(255,255,255,0.1) 14px -71px 0 -1px,
-      	#FFFFFF 64px -21px 0 -1px, 
-      	rgba(255,255,255,0.1) 32px -85px 0 -1px,
-      	#FFFFFF 64px -90px,
-      	rgba(255,255,255,0.1) 60px -67px 0 -1px,  
-      	#FFFFFF 34px -127px,
-      	rgba(255,255,255,0.1) -26px -103px 0 -1px;
-	height: 4px;
-	width: 4px; 
-  	margin-left: -10px;
-	opacity: 1;
-	position: absolute;
-  	left: 777px; 
-  	top: 150px;
-}
-.starry:after { 
-	animation: starry 5s ease-in-out infinite;
-	border-radius: 50%;
-	box-shadow: #FFFFFF -25px 0;
-	content: '';
-	height: 100px;
-	width: 100px;
-	position: absolute;
-	top: -106px; 
-	transform: rotate(-5deg);
-	transform-origin: 0 50%;
+.LaCrosseTX3 tr #name{
+    background: linear-gradient(135deg, #ECEDDC 25%, transparent 25%) -50px 0, linear-gradient(225deg, #ECEDDC 25%, transparent 25%) -50px 0, linear-gradient(315deg, #ECEDDC 25%, transparent 25%), linear-gradient(45deg, #ECEDDC 25%, transparent 25%)!important;
+    background-size: 100px 100px;
+    background-color: #EC173A;
 }
 
-@keyframes starry {
-	50% { transform: rotate(10deg); }
+.Scene tr td#name{
+    background: -webkit-gradient(radial, center center, 0px, center center, 100%, color-stop(0%, rgba(147,206,222,1)), color-stop(41%, rgba(247,253,255,1)), color-stop(100%, rgba(73,165,191,1)))!important;
+    background: -webkit-radial-gradient(center, ellipse cover, rgba(147,206,222,1) 0%, rgba(247,253,255,1) 41%, rgba(73,165,191,1) 100%)!important;
+    background: -o-radial-gradient(center, ellipse cover, rgba(147,206,222,1) 0%, rgba(247,253,255,1) 41%, rgba(73,165,191,1) 100%);
+    background: -ms-radial-gradient(center, ellipse cover, rgba(147,206,222,1) 0%, rgba(247,253,255,1) 41%, rgba(73,165,191,1) 100%);
+    background: radial-gradient(ellipse at center, rgba(147,206,222,1) 0%, rgba(247,253,255,1) 41%, rgba(73,165,191,1) 100%)!important;
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#93cede', endColorstr='#49a5bf', GradientType=1 );
 }
-@keyframes starry_star {
-  50% { 
-	box-shadow:  
-		rgba(255,255,255,0.1) 26px 7px 0 -1px, 
-      	#FFFFFF -36px -19px 0 -1px, 
-      	#FFFFFF -51px -34px 0 -1px,
-      	rgba(255,255,255,0.1) -52px -62px 0 -1px, 
-      	rgba(255,255,255,0.1) 14px -37px,
-      	#FFFFFF 41px -19px,   
-      	rgba(255,255,255,0.1) 34px -50px,
-      	#FFFFFF 14px -71px 0 -1px,
-      	rgba(255,255,255,0.1) 64px -21px 0 -1px, 
-      	#FFFFFF 32px -85px 0 -1px,
-      	rgba(255,255,255,0.1) 64px -90px,
-      	#FFFFFF 60px -67px 0 -1px,  
-      	rgba(255,255,255,0.1) 34px -127px,
-      	#FFFFFF -26px -103px 0 -1px;
-	}
-}
+*/
 
-/* STORMY */
-.stormy {
-	animation: stormy 5s ease-in-out infinite;
-	background: #222222;
-	border-radius: 50%;
-	box-shadow: 
-		#222222 65px -15px 0 -5px, 
-		#222222 25px -25px, 
-		#222222 30px 10px, 
-		#222222 60px 15px 0 -10px, 
-		#222222 85px 5px 0 -5px;
-	height: 50px;  
-	width: 50px; 
-	margin-left: -60px; 
-	position: absolute;
-	left: 947px; 
-	top: 70px; 
-}
-.stormy:after {
-	animation: stormy_shadow 5s ease-in-out infinite;
-	background: #000;
-	border-radius: 50%;
-	content: '';
-	height: 15px; 
-	width: 120px; 
-	opacity: 0.2;
-	position: absolute;
-	left: 5px; 
-	bottom: -60px;
-	transform: scale(.7);
-}
-.stormy:before {
-	animation: stormy_thunder 2s steps(1, end) infinite; 
-	border-left: 0px solid transparent;
-	border-right: 7px solid transparent;
-	border-top: 43px solid yellow; 
-	box-shadow: yellow -7px -32px;
-	content: '';
-	display: block;
-	height: 0;
-	width: 0;
-	position: absolute;
-	left: 57px;
-	top: 70px;
-	transform: rotate(14deg);
-	transform-origin: 50% -60px;
-}
-@keyframes stormy {
-	50% { transform: translateY(-20px); } 
-}  
-@keyframes stormy_shadow {
-	50% { transform: translateY(20px) scale(1); opacity: 0.05; }
-}
-@keyframes stormy_thunder {
-	0%  { transform: rotate(20deg); opacity:1; }
-	5%  { transform: rotate(-34deg); opacity:1; }
-	10% { transform: rotate(0deg); opacity:1; }
-	15% { transform: rotate(-34deg); opacity:0; }
-}
-
-/* SNOWY */
-.snowy {
-	animation: snowy 5s ease-in-out infinite 1s;
-	background: #FFFFFF; 
-	border-radius: 50%;
-	box-shadow: 
-		#FFFFFF 65px -15px 0 -5px, 
-		#FFFFFF 25px -25px, 
-		#FFFFFF 30px 10px, 
-		#FFFFFF 60px 15px 0 -10px, 
-		#FFFFFF 85px 5px 0 -5px;
-	display: block;
-	height: 50px;
-	width: 50px;
-	margin-left: -60px;
-	position: absolute;
-	left: 1112px;
-	top: 70px;
-}
-.snowy:after {
-	animation: snowy_shadow 5s ease-in-out infinite 1s;
-	background: #000000;
-	border-radius: 50%;
-	content: '';
-	height: 15px;
-	width: 120px;
-	opacity: 0.2;
-	position: absolute;
-	left: 8px;
-	bottom: -60px;
-	transform: scale(.7);
-}
-.snowy:before {
-	animation: snowy_snow 2s infinite linear;
-	content: '';
-	border-radius: 50%;
-	display: block;
-	height: 7px;
-	width: 7px;
-	opacity: 0.8;
-	transform: scale(.9);
-}
-@keyframes snowy {
-	50% { transform: translateY(-20px); }
-}
-@keyframes snowy_shadow {
-	50% { transform: translateY(20px) scale(1); opacity: 0.05; }
-}
-@keyframes snowy_snow {
-	0% {  
-		box-shadow: 
-			rgba(238,238,238,0) 30px 30px, 
-			rgba(238,238,238,0) 40px 40px,  
-			#EEEEEE 50px 75px, 
-			#EEEEEE 55px 50px, 
-			#EEEEEE 70px 100px, 
-			#EEEEEE 80px 95px, 
-			#EEEEEE 110px 45px, 
-			#EEEEEE 90px 35px; 
-	}
-	25% {  
-	  	box-shadow: 
-			#EEEEEE 30px 45px,
-			#EEEEEE 40px 60px,
-			#EEEEEE 50px 90px,
-			#EEEEEE 55px 65px,
-			rgba(238,238,238,0) 70px 120px,
-			rgba(238,238,238,0) 80px 120px,
-			#EEEEEE 110px 70px,
-			#EEEEEE 90px 60px;
-	}
-	26% {  
-		box-shadow:
-			#EEEEEE 30px 45px,
-			#EEEEEE 40px 60px,
-			#EEEEEE 50px 90px,
-			#EEEEEE 55px 65px,
-			rgba(238,238,238,0) 70px 40px,
-			rgba(238,238,238,0) 80px 20px,
-			#EEEEEE 110px 70px,
-			#EEEEEE 90px 60px; 
-	}
-	50% { 
-		box-shadow:
-			#EEEEEE 30px 70px,
-			#EEEEEE 40px 80px,
-			rgba(238,238,238,0) 50px 100px,
-			#EEEEEE 55px 80px,
-			#EEEEEE 70px 60px,
-			#EEEEEE 80px 45px,
-			#EEEEEE 110px 95px,
-			#EEEEEE 90px 85px;
-	}
-	51% {
-		box-shadow:
-			#EEEEEE 30px 70px,
-			#EEEEEE 40px 80px,
-			rgba(238,238,238,0) 50px 45px,
-			#EEEEEE 55px 80px,
-			#EEEEEE 70px 60px,
-			#EEEEEE 80px 45px,
-			#EEEEEE 110px 95px,
-			#EEEEEE 90px 85px;
-	}
-	75% {
-		box-shadow:
-			#EEEEEE 30px 95px,
-			#EEEEEE 40px 100px,
-			#EEEEEE 50px 60px,
-			rgba(238,238,238,0) 55px 95px,
-			#EEEEEE 70px 80px,
-			#EEEEEE 80px 70px,
-			rgba(238,238,238,0) 110px 120px,
-			rgba(238,238,238,0) 90px 110px;
-	}
-	76% {
-		box-shadow:
-			#EEEEEE 30px 95px,
-			#EEEEEE 40px 100px,
-			#EEEEEE 50px 60px,
-			rgba(238,238,238,0) 55px 35px,
-			#EEEEEE 70px 80px,
-			#EEEEEE 80px 70px,
-			rgba(238,238,238,0) 110px 25px,
-			rgba(238,238,238,0) 90px 15px;
-	}
-	100% {
-		box-shadow:
-			rgba(238,238,238,0) 30px 120px,
-			rgba(238,238,238,0) 40px 120px,
-			#EEEEEE 50px 75px,
-			#EEEEEE 55px 50px,
-			#EEEEEE 70px 100px,
-			#EEEEEE 80px 95px,
-			#EEEEEE 110px 45px,
-			#EEEEEE 90px 35px;
-	}
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+/*
+#Sunny tr #name{
+  background-image: radial-gradient(circle 150px at 25% 33%, white, yellow, lightyellow, aqua)!important;
+}*/
 
 
 
@@ -694,14 +449,7 @@ body{
 */
 
 
-/* Dialog */
 
-/*body:hover .ui-popup,*//*  jitters.. */
-body:hover .ui-dialog{
-    -webkit-animation: fadeIn 0.2s;
-    animation: fadeIn 0.2s;
-    animation-fill-mode: forwards;
-}
 
 
 
@@ -768,8 +516,9 @@ body:hover .ui-dialog{
 #settingscontent .row-fluid.related .span2 a:hover{
     /*box-shadow: 0px 5px 10px -5px rgba(250,250,250,0.1);
     transition: all 0.2s ease;*/
-}
 
+}
+/*
 .btnstylerev,
 .btnstyle,
 .btn, 
@@ -786,8 +535,26 @@ body:hover .ui-dialog{
     transition: all 0.1s ease;    
 }
 */
-.ripple{position:relative;overflow:hidden;transform:translate3d(0,0,0)}.ripple:after{content:"";display:block;position:absolute;width:100%;height:100%;top:0;left:0;pointer-events:none;background-image:radial-gradient(circle,#000 10%,transparent 10.01%);background-repeat:no-repeat;background-position:50%;transform:scale(10,10);opacity:0;transition:transform .5s,opacity 1s}.ripple:active:after{transform:scale(0,0);opacity:.2;transition:0s}
 
+
+/*
+.btn-primary,
+.btn-success,
+.btn-primary,
+.btn-info{position:relative;overflow:hidden;transform:translate3d(0,0,0)}
+
+
+.btn-primary,
+.btn-success,
+.btn-primary,
+.btn-info:after{content:"";display:block;position:absolute;width:100%;height:100%;top:0;left:0;pointer-events:none;background-image:radial-gradient(circle,#000 10%,transparent 10.01%);background-repeat:no-repeat;background-position:50%;transform:scale(10,10);opacity:0;transition:transform .5s,opacity 1s}
+
+
+.btn-primary,
+.btn-success,
+.btn-primary,
+.btn-info:active:after{transform:scale(0,0);opacity:.2;transition:0s}
+*/
 
 
 /*

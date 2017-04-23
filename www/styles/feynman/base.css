@@ -46,9 +46,9 @@ body table#itemtable tr td:first-child + td{
     font-size:115%;
 }
 
-#utilitycontent table:first-of-type{
+/*#utilitycontent table:first-of-type{
     margin-bottom:20px;
-}
+}*/
 
 
 /*
@@ -142,6 +142,7 @@ button{
 }
 
 label{white-space:nowrap;cursor:auto}
+
 textarea{width:100%}
 
 select{padding:0;border-radius:3px;}
@@ -150,15 +151,10 @@ textarea, input {
     box-sizing: border-box;
     padding:5px;
 }
-textarea{width:100%}
-input{margin-right:3px}
 
-input:focus{
-    background-color:rgba(250,250,250,0.2);
-    color:#fff;
-    border-bottom: 1px solid #ccc;
-    box-shadow: none;
-}
+textarea{width:100%}
+
+input{margin-right:3px}
 
 .span6 textarea, .span6 input.text, .span6 select{
    /* width:100%!important; */
@@ -211,7 +207,8 @@ p.tip{
 }
 
 p.tip.warning{
-    border: 1px dotted #f55;
+    border-top: 1px dotted #f55;
+    border-bottom: 1px dotted #f55;
 }
 
 p.tip::before{
@@ -221,7 +218,8 @@ p.tip::before{
     color: white;
     position: absolute;
     font-size: 14px;
-    background-color: rgba(200,200,255,0.2);
+    /*background-color: rgba(200,200,255,0.2);*/
+    background-color:#999;
     border-radius: 50%;
     padding: 2px 8px;
     top: -2px;
@@ -1082,7 +1080,41 @@ div.item.statusLowBattery{
 }
 
 
-/* buttons  */
+
+/* buttons: sub tabs */
+
+#settingscontent .sub-tabs {
+    border-bottom:1px solid #fff;
+}
+
+.sub-tabs > li > a{border:0;}
+
+.sub-tabs a:not(.sub-tabs-apply) {
+    background-color:#ddd;
+    margin-top:2px;
+}
+
+#settingscontent .sub-tabs li.active a {
+    background-color: #73b6ca;
+    color:#fff;
+    border:none;
+    border-bottom:4px solid #73b6ca;
+}
+
+#settingscontent .sub-tabs li:not(.active){
+    margin-bottom:1px;
+}
+#settingscontent .sub-tabs li:not(.active) a {
+    border-bottom:2px solid transparent;
+    margin-bottom: 1px;
+}
+
+.sub-tabs > li:hover a{background-color:white;}
+
+
+
+/* buttons: general  */
+
 
 a.btnstyle, a.btnstylerev, a.btnsmall-sel, a.btnsmall-dis {
     margin-right: 10px;
@@ -1150,22 +1182,40 @@ a.btnstyle:last-of-type, a.btnstylerev:last-of-type{
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#46b1d9', endColorstr='#2571ab',GradientType=0 );
 }
 
+.btn img{height:16px;width:16px;}
+
 .btn-success,
 .btn-danger,
-.btn-primary{
+.btn-primary,
+.btn-info{
     text-shadow: none;
     text-decoration: none;
 }
 
+#settingscontent .span6 .btn-info{line-height:12px};
+
+
+a.btnsmall-sel{
+    color:#952ebc;
+    }
+
+a.btnsmall-dis{color: rgba(255,50,50,1)!important; border-bottom:2px solid rgba(255,50,50,1);}
+
+
+
+/*  HOVER STATES  */
+
 .fg-button:hover,
 body div.selectorlevels .ui-buttonset label.ui-button:hover,
+.btn-danger:hover,
 .btn-primary:hover,
 .btn-success:hover,
+.btn-info:hover,
 a.btnsmall:hover,
 a.btnstyle:hover, 
 a.btnstylerev:hover, 
 a.btnsmall-sel:hover{
-    box-shadow:inset 0px 0px 20px 2px rgba(250, 250, 250, 0.4);
+    box-shadow:inset 0px 0px 20px 2px rgba(250, 250, 250, 0.4)!important;
     color:#fff;
     transition: all 0.2s linear;
 }
@@ -1175,11 +1225,24 @@ body div.selectorlevels .ui-buttonset label.ui-button:hover span{
     transition: color 0.2s linear;
 }
 
-a.btnsmall-sel{
-    color:#952ebc;
-    }
+.ui-state-hover{
+    background-color:#43A4D3;
+}
 
-a.btnsmall-dis{color: rgba(255,50,50,1)!important; border-bottom:2px solid rgba(255,50,50,1);}
+.selectorlevels label:hover{
+    color:#fff;
+    background-color:#43A4D3;
+}
+
+#dashcontent #itemtablesmalltrippleicon [id^="img"]:hover,
+#dashcontent div[class^="span"] .selectorlevels .ui-buttonset .ui-button:hover,
+#dashcontent .selectorlevels .ui-selectmenu-text:hover{
+    background-color:#43A4D3;
+    /*box-shadow: inset 0px 0px 20px 2px rgba(250, 250, 250, 0.4);*/
+}
+
+
+
 
 /*a.btnsmall-dis::after{
     content: "!";
@@ -1194,8 +1257,6 @@ a.btnsmall-dis{color: rgba(255,50,50,1)!important; border-bottom:2px solid rgba(
     line-height: 1.0em;
     margin-left: 2px;
     }*/
-
-.sub-tabs > li:hover a{background-color:white;}
 
 
 
@@ -1256,23 +1317,7 @@ a.btnsmall-dis{color: rgba(255,50,50,1)!important; border-bottom:2px solid rgba(
 
 .tab-content{overflow:visible}
 
-#settingscontent .sub-tabs {
-    border-bottom:1px solid #ddd;
-}
-
-.sub-tabs > li > a{border:0;}
-
-.sub-tabs a:not(.sub-tabs-apply) {
-    background-color:#ddd;
-    margin-top:2px;
-}
-#settingscontent .sub-tabs li:not(.active) a {
-    border-bottom:2px solid transparent;
-}
-
-
 #metercounters #rfxmetertable input.text{width:60px!important;min-width:60px!important;}
-
 #metercounters #rfxmetertable td:nth-child(odd){text-align: right;}
 #metercounters #rfxmetertable td:nth-child(even){text-align: left;}
 #metercounters #rfxmetertable td:first-of-type{min-width:40px;padding-right:10px;text-align:left!important}
@@ -1341,18 +1386,6 @@ a.btnsmall-dis{color: rgba(255,50,50,1)!important; border-bottom:2px solid rgba(
     min-width:120px; 
     padding:5px 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 #settingscontent td > span{
@@ -1624,6 +1657,9 @@ div.dataTables_wrapper .ui-widget-header{
 table.dataTable th:first-of-type,
 table.dataTable td:first-of-type{padding-left:10px;}
 
+/*  some datatable tweaks  */
+
+#lighttable_wrapper > .dataTable.no-footer#lighttable td:first-of-type thead th{width:150px!important}
 
 
 
@@ -1633,14 +1669,7 @@ table.dataTable td:first-of-type{padding-left:10px;}
 
 
 .ui-popup{
-    position:fixed!important;
-    /*min-height:200px;*/
-    height:auto!important;
-    width:auto!important;
-    top: 30%!important;
-    top:calc(50% - 100px)!important;
-    left:30%!important;
-    left:calc(50% - 150px)!important;        
+    background: linear-gradient(to bottom, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.1) 30px, rgba(255,255,255,0) 31px);
     -webkit-box-shadow: 7px 7px 25px 5px rgba(50, 50, 50, 0.5);
     -moz-box-shadow:    7px 7px 25px 5px rgba(50, 50, 50, 0.5);
     box-shadow:         7px 7px 25px 5px rgba(50, 50, 50, 0.5);
@@ -1679,6 +1708,9 @@ table.dataTable td:first-of-type{padding-left:10px;}
     align-items: center;
 }
 #setpoint_popup td:first-of-type span {padding:5px;}
+
+#setpoint_popup input#popup_setpoint{width:80px!important}
+
 
 
 /*  SELECTORLEVELS  */
@@ -1837,33 +1869,17 @@ body.dashboard div.item.SelectorSwitch #bigtext{display:none}
 
 .ui-dialog{
     height:auto;
-    transition:visibility 0.5s linear 0.5s, opacity 0.5s linear;
+    /*transition:visibility 0.5s linear 0.5s, opacity 0.5s linear;*/
     /*opacity: 0;
     transition: all 0.2s ease-in-out; 
     transform: scale(0.8); */
-    transition: all 2s ease-in-out;
+    /*transition: all 2s ease-in-out;*/
     text-align:left;
 }
 .ui-dialog td label,
 .ui-dialog td{display:inline;text-align:left;important;}
+.ui-dialog input, .ui-dialog textarea{margin-bottom:10px}
 
-/*  HOVER STATES  */
-
-.ui-state-hover{
-    background-color:#43A4D3;
-}
-
-.selectorlevels label:hover{
-    color:#fff;
-    background-color:#43A4D3;
-}
-
-#dashcontent #itemtablesmalltrippleicon [id^="img"]:hover,
-#dashcontent div[class^="span"] .selectorlevels .ui-buttonset .ui-button:hover,
-#dashcontent .selectorlevels .ui-selectmenu-text:hover{
-    background-color:#43A4D3;
-    /*box-shadow: inset 0px 0px 20px 2px rgba(250, 250, 250, 0.4);*/
-}
 
 
 
@@ -1930,11 +1946,13 @@ div#hardwaretable_wrapper + #updelclr{border-top:0!important;border-bottom:10px!
 
 #aboutcontent{color:#fff;}
 
+body.temperature #tempwidgets img:hover,
+body.weather #weatherwidgets img:hover,
 #utilitycontent img:hover{
     background-color:transparent!important;
-    cursor:auto!important;
+    cursor:move!important;
 }
-
+#utilitycontent div.item.SetPoint img:hover{background-color:background-color:#43A4D3!important;cursor:pointer!important;}
 
 /*  fun  */
 #lightcontent #ProtectionDiv input[type=checkbox]:checked::after{
@@ -2185,6 +2203,7 @@ td[colspan]:not([colspan="1"])
     .ui-dialog td textarea,
     .ui-dialog td input{
         max-width: 80%!important;
+        /*color:#333!important;*/
     }
     
     

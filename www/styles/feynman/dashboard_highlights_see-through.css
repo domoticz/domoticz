@@ -8,8 +8,8 @@ This can give a nice effect with background images. */
 
     #dashcontent .ui-draggable:not(.ui-dialog) tr:hover,
     #dashcontent .ui-draggable:not(.ui-dialog) tr{
-        background-image:none!important;
-        background-color:transparent!important;
+        /*background-image:none!important;*/
+        background-color:transparent;
     }
 
     #dashcontent #lastupdate,
@@ -50,19 +50,20 @@ This can give a nice effect with background images. */
         background: -webkit-linear-gradient(top, rgba(30,87,153,0.3) 0%,rgba(125,185,232,0.1) 100%); 
         background: linear-gradient(to bottom, rgba(30,87,153,0.3) 0%,rgba(125,185,232,0.1) 100%); 
         filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#4d1e5799', endColorstr='#1a7db9e8',GradientType=0 );*/
-        background: -moz-linear-gradient(top, rgba(125,185,232,0.2) 0%, rgba(89,203,234,0.1) 99%, rgba(89,203,234,0.1) 100%)!important; 
-        background: -webkit-linear-gradient(top, rgba(125,185,232,0.2) 0%,rgba(89,203,234,0.1) 99%,rgba(89,203,234,0.1) 100%)!important;
-        background: linear-gradient(to bottom, rgba(125,185,232,0.2) 0%,rgba(89,203,234,0.1) 99%,rgba(89,203,234,0.1) 100%)!important; 
+        background: -moz-linear-gradient(top, rgba(125,185,232,0.2) 0%, rgba(89,203,234,0.1) 100%); 
+        background: -webkit-linear-gradient(top, rgba(125,185,232,0.2) 0%,rgba(89,203,234,0.1) 100%);
+        /*background: linear-gradient(to bottom, rgba(125,185,232,0.2) 0%,rgba(89,203,234,0.1) 100%);*/
+        background: linear-gradient(to bottom, rgba(0, 158, 255, 0.18) 0%,rgba(121, 54, 195, 0.1) 100%);
         filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#337db9e8', endColorstr='#1a59cbea',GradientType=1 );
     }
 
 
     /*  this has to happen before the override for the highlighted items  */
-    body:not(.dashMobile) #status span{
+    body:not(.dashMobile) div.item #status span{
         color: rgba(255,255,255,0.8);
     }
-    body:not(.dashMobile) #name{
-        color: rgba(255,255,255,0.8)!important;
+    body:not(.dashMobile) div.item tr > #name > span{
+        color: rgba(255,255,255,0.8)/*!important*/;
     }
 
 
@@ -258,7 +259,8 @@ This can give a nice effect with background images. */
 
 
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.Percentage td.overlay > div{
-        background-color: rgba(255,255,255,0.08);
+        background-color: rgba(36, 130, 199, 0.3);
+        /*background-color: rgba(255,255,255,0.08);*/
         box-shadow: none;/*inset -5px 0 16px -3px rgba(255,255,255,0.15);*/
     }
     
