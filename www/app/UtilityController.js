@@ -912,8 +912,8 @@ define(['app'], function(app) {
 							id = "#utilitycontent #" + item.idx;
 							var obj = $(id);
 							if (typeof obj != 'undefined') {
-								if ($(id + " #name").html() != item.Name) {
-									$(id + " #name").html(item.Name);
+								if ($(id + " #name > span").html() != item.Name) {
+									$(id + " #name > span").html(item.Name);
 								}
 								var img = "";
 								var status = "";

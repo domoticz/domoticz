@@ -5,133 +5,216 @@ define(['app'], function(app) {
 
 		//Evohome...
 		//FIXME move evohome functions to a shared js ...see temperaturecontroller.js and lightscontroller.js
-
+        
+        
+        
         /* A feature like this should ideally be inside a theme folder, perhaps as a custom.js file that gets loaded per theme. I tried loading this form an external file, but couldn't get that to work. */
         addDataviz = function(){
             if ($("#copyright").css("z-index") == 1){ // Only do all this if the dataviz option has been enabled in theme settings.
                 console.log("Dataviz is enabled");
                 setTimeout(function() { // small delay to make sure the main html has been generated, and to lower the burden on the system.
-
-                    $('#dashTemperature .Temp, #dashTemperature .TempHumidityBaro').each(function () { 
-                        console.log("EACH START");
-                        var id = $(this).parent().attr('id');
-                        var agent = '' + id;
-                        console.log('item ID = ' + agent);
-                        var n = agent.lastIndexOf('_');
-                        var theid = agent.substring(n + 1);
-                        var urltoload = 'json.htm?type=graph&sensor=temp&idx=' + theid + '&range=day';
-                        var el = $('<td class="dataviz"><div></div></td>');
-                        $(this).find('tr').append(el);
-                        
-                        var showData = $(this).find('.dataviz > div');
-                        var datavizArray = [];
-                        $.getJSON(urltoload, function(data) {
-                            console.log( "Dataviz - JSON load success" );
-                            if (typeof data.result != "undefined") {
-                                console.log("length = " + data.result.length);
-                                var modulo = 1
-                                if(data.result.length > 100){modulo = 2;}
-                                if(data.result.length > 200){modulo = 4;}
-                                if(data.result.length > 300){modulo = 6;}
-                                console.log("modulo = " + modulo);
-                                for(var i in data.result){
-                                    var key = i;
-                                    var val = data.result[i];
-                                    temp = val.te;
-                                    if((i % modulo) == 0){ // this prunes and this limits the amount of datapoints, to make it all less heavy on the browser.
-                                        datavizArray.push(temp);
-                                    }
-                                }
-
-                                if(datavizArray.length > 0){
-                                    showData.highcharts({    
-                                        chart: {
-                                            type: 'line',
-                                            backgroundColor:'transparent',
-                                            plotBorderWidth: null,
-                                            marginTop: 0,
-                                            height:40,
-                                            marginBottom: 0,
-                                            marginLeft:0,
-                                            plotShadow: false,
-                                            borderWidth: 0,
-                                            plotBorderWidth: 0,
-                                            marginRight:0
-                                        },
-                                         tooltip: {
-                                            userHTML: true,
-                                            style: {
-                                                padding: 5,
-                                                width: 100,
-                                                height: 30,
-                                                backgroundColor: '#FCFFC5',
-                                                borderColor: 'black',
-                                                borderRadius: 10,
-                                                borderWidth: 3, 
-                                             },
-                                            formatter: function() {
-                                                return '<b>' + this.y + '</b> ('+ this.series.name + ')';
-                                            },
-                                            height: 30,
-                                            width: 30
-                                         },
-                                        title: {
-                                            text: ''
-                                        },
-                                        xAxis: {
-                                            gridLineWidth: 0,
-                                            minorGridLineWidth: 0,
-                                            enabled:false,
-                                            showEmpty:false,
-                                        },
-                                        yAxis: {
-                                            gridLineWidth: 0,
-                                            minorGridLineWidth: 0,
-                                            title: {
-                                                text: ''
-                                            },
-                                            showEmpty:true,
-                                            enabled:true
-                                        },
-                                        credits: {
-                                            enabled: false
-                                        },
-                                        legend: {
-                                            enabled:false
-                                        },
-                                        plotOptions: {
-                                            line:{
-                                                lineWidth:1.5,
-                                                lineColor:'#cccccc',
-                                            },
-                                             showInLegend: true,
-                                             tooltip: {
-                                             }
-                                        },
-                                        exporting: {
-                                            buttons: {
-                                                contextButton: {
-                                                    enabled: false
-                                                }    
-                                            }
-                                        },
-                                        series: [{
-                                                 marker: {
-                                                    enabled: false
-                                                },
-                                            animation:true,
-                                            name: '24h',
-                                            data: datavizArray // [19.5,20,17]        
-                                        }]
-                                    });    
-                                }
-                            }
-                        });
+                    
+                    /* temperature */
+                    $('body.3column section#dashTemperature > .divider:first-of-type .Temp, body.3column section#dashTemperature > .divider:first-of-type .TempHumidityBaro').each(function(){
+                        var theid = '' + $(this).parent().attr('id');
+                        generateDataviz("dashTemperature","graph","temp","te", theid, "day");   
                     });
+                    
+                    /*  general */
+                    $('body.3column section#dashUtility > .divider:first-of-type .CustomSensor').each(function(){
+                        var theid = '' + $(this).parent().attr('id');
+                        generateDataviz("dashUtility","graph","Percentage","any", theid, "day");   
+                    });
+                    
+                    /*  Lux */
+                    $('body.3column section#dashUtility > .divider:first-of-type .Lux').each(function(){
+                        var theid = '' + $(this).parent().attr('id');
+                        generateDataviz("dashUtility","graph","counter","lux", theid, "day");   
+                    });
+                    
+                    /*  Co2 */
+                    $('body.3column section#dashUtility > .divider:first-of-type .AirQuality').each(function(){
+                        var theid = '' + $(this).parent().attr('id');
+                        generateDataviz("dashUtility","graph","counter","any", theid, "day");   
+                    });
+                    
+                    /*  Energy */
+                    $('body.3column section#dashUtility > .divider:first-of-type .Energy').each(function(){
+                        var theid = '' + $(this).parent().attr('id');
+                        generateDataviz("dashUtility","graph","counter","any", theid, "day");   
+                    });
+                    
                 },3250);
                 setInterval(addDataviz, 600000); // updates the dataviz every 10 minutes.
             }
         }
+        
+        
+        generateDataviz = function(section,type,sensor,thekey,theid,range) { 
+            
+            
+            var agent = '' + theid;
+            console.log('making dataviz for item: ' + agent);
+            var n = agent.lastIndexOf('_');
+            var idx = agent.substring(n + 1);
+            console.log(idx);
+            var urltoload = 'json.htm?type=' + type + '&sensor=' + sensor + '&idx=' + idx+ '&range=' + range;
+            console.log("JSONurl: " + urltoload);
+            var el = $('<td class="dataviz"><div></div></td>');
+            $('#'+theid).find('tr').append(el);
+            var showData = $('section#'+ section + ' #'+theid).find('.dataviz > div');
+            console.log("Showdata: " + showData);
+            var datavizArray = [];
+            $.getJSON(urltoload, function(data) {
+                console.log( "Dataviz - JSON load success" );
+                if (typeof data.result != "undefined") {
+                    console.log("length = " + data.result.length);
+                    var modulo = 1
+                    if(data.result.length > 100){modulo = 2;}
+                    if(data.result.length > 200){modulo = 4;}
+                    if(data.result.length > 300){modulo = 6;}
+                    if(data.result.length > 400){modulo = 8;}
+                    if(data.result.length > 500){modulo = 10;}
+                    if(data.result.length > 600){modulo = 16;}    
+                    console.log("modulo = " + modulo);
+                    for(var i in data.result){
+                        var key = i;
+                        var val = data.result[i];
+                        
+                        if((i % modulo) == 0){ // this prunes and this limits the amount of datapoints, to make it all less heavy on the browser.
+                       
+                            for(var j in val){
+                                var readytobreak = 0;
+                                var key2 = j;
+                                //console.log("key2:" + key2);
+                                var val2 = val[j];
+                                //console.log("val2:" + val2);
+                                
+                                if(thekey != 'any'){
+                                    if(key2 == thekey){
+                                        //console.log("adding data");
+                                        var addme =  Math.round( val2 * 10 ) / 10;
+                                        datavizArray.push(addme);
+                                    }
+                                }else if(key2 != 'd'){
+                                    var addme = Math.round( val2 * 10 ) / 10;
+                                    datavizArray.push(addme);
+                                    readytobreak = 0
+                                }
+                                if(readytobreak == 1){break;}
+                            }
+                        }
+                        //if(typeup val.te != "undefined")addme = val.te;
+                        //addme = val.te;
+                        
+                        /* 
+                        
+                        obj[Object.keys(obj)[0]]; 
+                        
+                        var first;
+                        
+                        for (var j in val) {
+                            if (val.hasOwnProperty(i) && typeof(i) !== 'function') {
+                                first = val[i];
+                                break;
+                            }
+                        }
+                        
+                        
+                        */
+                        //addme = val[0];
+                         //    datavizArray.push(addme);
+                        //}
+                    }
+                    
+                    console.log("data array: " + datavizArray);
+
+                    if(datavizArray.length > 0){
+                        showData.highcharts({    
+                            chart: {
+                                type: 'line',
+                                backgroundColor:'transparent',
+                                plotBorderWidth: null,
+                                marginTop: 0,
+                                height:40,
+                                marginBottom: 0,
+                                marginLeft:0,
+                                plotShadow: false,
+                                borderWidth: 0,
+                                plotBorderWidth: 0,
+                                marginRight:0
+                            },
+                             tooltip: {
+                                userHTML: true,
+                                style: {
+                                    padding: 5,
+                                    width: 100,
+                                    height: 30,
+                                    backgroundColor: '#FCFFC5',
+                                    borderColor: 'black',
+                                    borderRadius: 10,
+                                    borderWidth: 3, 
+                                 },
+                                formatter: function() {
+                                    return '<b>' + this.y + '</b> ('+ range + ')';// 
+                                },
+                                height: 30,
+                                width: 30
+                             },
+                            title: {
+                                text: ''
+                            },
+                            xAxis: {
+                                gridLineWidth: 0,
+                                minorGridLineWidth: 0,
+                                enabled:false,
+                                showEmpty:false,
+                            },
+                            yAxis: {
+                                gridLineWidth: 0,
+                                minorGridLineWidth: 0,
+                                title: {
+                                    text: ''
+                                },
+                                showEmpty:true,
+                                enabled:true
+                            },
+                            credits: {
+                                enabled: false
+                            },
+                            legend: {
+                                enabled:false
+                            },
+                            plotOptions: {
+                                line:{
+                                    lineWidth:1.5,
+                                    lineColor:'#cccccc',
+                                },
+                                 showInLegend: true,
+                                 tooltip: {
+                                 }
+                            },
+                            exporting: {
+                                buttons: {
+                                    contextButton: {
+                                        enabled: false
+                                    }    
+                                }
+                            },
+                            series: [{
+                                     marker: {
+                                        enabled: false
+                                    },
+                                animation:true,
+                                name: '24h',
+                                data: datavizArray //[19.5,20,17]      // datavizArray //    
+                            }]
+                        });    
+                    }
+                }
+            });
+        };
+        
            
         
 		MobilePhoneDetection = function() {
@@ -1165,7 +1248,6 @@ define(['app'], function(app) {
 										} else if (typeof item.Barometer != 'undefined') {
 											if (typeof item.ForecastStr != 'undefined') {
 												status = item.Barometer + ' hPa</span><span>' + $.t('Prediction') + ': ' + $.t(item.ForecastStr);
-                                                //$(id + " div.item").prop('id',item.ForecastStr);
 											} else {
 												status = item.Barometer + ' hPa';
 											}
@@ -1237,7 +1319,7 @@ define(['app'], function(app) {
 												status = item.Barometer + ' hPa</span><span>' + $.t('Prediction') + ': ' + $.t(item.ForecastStr);
                                                 var pred = item.ForecastStr.toLowerCase(); 
                                                 pred = pred.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, ''); 
-                                                $(id + " .item").attr("id", pred.toLowerCase());
+                                                $(id + " .item").attr("id", pred);
 											} else {
 												status = item.Barometer + ' hPa';
 											}
@@ -2964,7 +3046,14 @@ define(['app'], function(app) {
 										xhtm = '\t<div class="span3 movable" id="weather_' + item.idx + '">\n';
 									}
                                     
-                                    /* generate two item classes.  */
+                                    /*  generate weather forecast class*/
+                                    var predClass = "";
+                                    if (typeof item.ForecastStr != 'undefined') {
+                                        predClass = item.ForecastStr.toLowerCase(); 
+                                        predClass = predClass.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, ''); 
+                                    }
+                                    
+                                    /* generate two item type classes.  */
 									var itemtypeclass = "";
 									var itemsubtypeclass = "";
 									if (typeof item.Type != 'undefined') {
@@ -3074,9 +3163,9 @@ define(['app'], function(app) {
                                     var count = 0;
 									count = (statushtml.match(/<span/g) || []).length;
 									if (statushtml.length != bigtexthtml.length) {
-										xhtm += '\t  <div id="" class="item ' + itemtypeclass + ' ' + itemsubtypeclass + ' ' + backgroundClass + ' withstatus statuscount' + count + '">\n';
+										xhtm += '\t  <div id="' + predClass + '" class="item ' + itemtypeclass + ' ' + itemsubtypeclass + ' ' + backgroundClass + ' withstatus statuscount' + count + '">\n';
 									} else {
-										xhtm += '\t  <div id="" class="item ' + itemtypeclass + ' ' + itemsubtypeclass + ' ' + backgroundClass + ' withoutstatus statuscount' + count + '">\n';
+										xhtm += '\t  <div id="' + predClass + '" class="item ' + itemtypeclass + ' ' + itemsubtypeclass + ' ' + backgroundClass + ' withoutstatus statuscount' + count + '">\n';
 									}
                                     
 
@@ -3781,9 +3870,9 @@ define(['app'], function(app) {
 									xhtm += '\t      <td id="bigtext" class="bigtext"><span class="wrapper">' + bigtexthtml + '</span></td>\n';
 									xhtm += '\t      <td id="img" class="img img1">' + imagehtml + '</td>';
 									xhtm += '\t      <td id="status" class="status"><span class="wrapper">' + statushtml + '</span></td>\n';
-                                    if (item.SubType == "Percentage" && typeof item.Data != 'undefined' && $("#copyright").css("z-index") == 1) { //z-index signals that the user has chosen to see data visualisations.
-                                        xhtm += '\t      <td class="overlay"><div style="width:' + item.Data + '"></div></td>';   
-                                    }
+                                    var extraStyling = "";
+                                    if (item.SubType == "Percentage" && typeof item.Data != 'undefined' && $("#copyright").css("z-index") == 1){extraStyle = 'style="width:' + item.Data + '"';} //z-index signals that the user has chosen to see data visualisations.
+                                    xhtm += '\t      <td class="overlay"><div ' + extraStyling + '></div></td>';   
 									xhtm +=	'\t      <td id="lastupdate" class="lastupdate"><span>' + item.LastUpdate + '</span></td>\n' +
 										'\t    </tr>\n' +
 										'\t    </table>\n' +
@@ -3807,6 +3896,7 @@ define(['app'], function(app) {
 						}
                         
                         addDataviz(); 
+                        
 					}
 				}
 			});
