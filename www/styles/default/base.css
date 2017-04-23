@@ -46,9 +46,9 @@ body table#itemtable tr td:first-child + td{
     font-size:115%;
 }
 
-#utilitycontent table:first-of-type{
+/*#utilitycontent table:first-of-type{
     margin-bottom:20px;
-}
+}*/
 
 
 /*
@@ -1657,6 +1657,9 @@ div.dataTables_wrapper .ui-widget-header{
 table.dataTable th:first-of-type,
 table.dataTable td:first-of-type{padding-left:10px;}
 
+/*  some datatable tweaks  */
+
+#lighttable_wrapper > .dataTable.no-footer#lighttable td:first-of-type thead th{width:150px!important}
 
 
 
@@ -1666,13 +1669,7 @@ table.dataTable td:first-of-type{padding-left:10px;}
 
 
 .ui-popup{
-/*  height:auto!important;
-    width:auto!important;    
-    position:fixed!important;
-    top: 30%!important;
-    top:calc(50% - 100px)!important;
-    left:30%!important;
-    left:calc(50% - 150px)!important;  */      
+    background: linear-gradient(to bottom, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.1) 30px, rgba(255,255,255,0) 31px);
     -webkit-box-shadow: 7px 7px 25px 5px rgba(50, 50, 50, 0.5);
     -moz-box-shadow:    7px 7px 25px 5px rgba(50, 50, 50, 0.5);
     box-shadow:         7px 7px 25px 5px rgba(50, 50, 50, 0.5);
@@ -1711,6 +1708,9 @@ table.dataTable td:first-of-type{padding-left:10px;}
     align-items: center;
 }
 #setpoint_popup td:first-of-type span {padding:5px;}
+
+#setpoint_popup input#popup_setpoint{width:80px!important}
+
 
 
 /*  SELECTORLEVELS  */
@@ -1869,16 +1869,16 @@ body.dashboard div.item.SelectorSwitch #bigtext{display:none}
 
 .ui-dialog{
     height:auto;
-    transition:visibility 0.5s linear 0.5s, opacity 0.5s linear;
+    /*transition:visibility 0.5s linear 0.5s, opacity 0.5s linear;*/
     /*opacity: 0;
     transition: all 0.2s ease-in-out; 
     transform: scale(0.8); */
-    transition: all 2s ease-in-out;
+    /*transition: all 2s ease-in-out;*/
     text-align:left;
 }
 .ui-dialog td label,
 .ui-dialog td{display:inline;text-align:left;important;}
-
+.ui-dialog input, .ui-dialog textarea{margin-bottom:10px}
 
 
 
@@ -1946,11 +1946,13 @@ div#hardwaretable_wrapper + #updelclr{border-top:0!important;border-bottom:10px!
 
 #aboutcontent{color:#fff;}
 
+body.temperature #tempwidgets img:hover,
+body.weather #weatherwidgets img:hover,
 #utilitycontent img:hover{
     background-color:transparent!important;
-    cursor:auto!important;
+    cursor:move!important;
 }
-
+#utilitycontent div.item.SetPoint img:hover{background-color:background-color:#43A4D3!important;cursor:pointer!important;}
 
 /*  fun  */
 #lightcontent #ProtectionDiv input[type=checkbox]:checked::after{
