@@ -54,7 +54,7 @@ namespace Plugins {
         char* action;
         char* device;
 
-        _log.Log(LOG_STATUS, "Python EventSystem: Running command.");
+        // _log.Log(LOG_STATUS, "Python EventSystem: Running command.");
         // m_eventsystem.CEventSystem::PythonScheduleEvent("Test_Target", "On", "Testing");
         //
 
@@ -67,7 +67,7 @@ namespace Plugins {
         {
             std::string	dev = device;
             std::string act = action;
-            _log.Log((_eLogLevel)LOG_NORM, "Python EventSystem - Command: Target: %s Command: %s", dev.c_str(), act.c_str());
+            // _log.Log((_eLogLevel)LOG_NORM, "Python EventSystem - Command: Target: %s Command: %s", dev.c_str(), act.c_str());
             m_mainworker.m_eventsystem.PythonScheduleEvent(device, action, "Test");
         }
 
@@ -92,7 +92,7 @@ namespace Plugins {
         // This is called during the import of the plugin module
         // triggered by the "import Domoticz" statement
 
-        _log.Log(LOG_STATUS, "Python EventSystem: Initalizing eventmodule.");
+        _log.Log(LOG_STATUS, "Python EventSystem: Initalizing event module.");
 
         PyObject* pModule = PyModule_Create2(&DomoticzEventsModuleDef, PYTHON_API_VERSION);
         return pModule;
@@ -102,10 +102,10 @@ namespace Plugins {
         PyObject* pModule = PyState_FindModule(&DomoticzEventsModuleDef);
 
         if (pModule) {
-            _log.Log(LOG_STATUS, "Python Event System: Module found");
+            // _log.Log(LOG_STATUS, "Python Event System: Module found");
             return pModule;
         } else {
-            _log.Log(LOG_STATUS, "Python Event System: Module not found");
+            _log.Log(LOG_STATUS, "Python EventSystem: Module not found - Trying to initialize.");
             PyRun_SimpleString("import DomoticzEvents");
             pModule = PyState_FindModule(&DomoticzEventsModuleDef);
 
