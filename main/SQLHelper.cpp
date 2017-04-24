@@ -3126,7 +3126,10 @@ std::vector<std::vector<std::string> > CSQLHelper::queryBlob(const std::string &
 
 uint64_t CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, std::string &devname, const bool bUseOnOffAction)
 {
-	return UpdateValue(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, nValue, "", devname, bUseOnOffAction);
+	/* Every device has a sValue, if this is empty we made sValue equal to nValue */
+	char sValue[200];
+   	sprintf(sValue,"%d", nValue);
+    	return UpdateValue(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, nValue, sValue , devname, bUseOnOffAction);
 }
 
 uint64_t CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const char* sValue, std::string &devname, const bool bUseOnOffAction)
