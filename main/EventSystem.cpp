@@ -2905,9 +2905,6 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		lua_pushstring(lua_state, "id");
 		lua_pushnumber(lua_state, (lua_Number)uvitem.ID);
 		lua_rawset(lua_state, -3);
-		lua_pushstring(lua_state, "variableType");
-		lua_pushstring(lua_state, vtype);
-		lua_rawset(lua_state, -3);
 		lua_pushstring(lua_state, "baseType");
 		lua_pushstring(lua_state, "uservariable");
 		lua_rawset(lua_state, -3);
@@ -2955,6 +2952,11 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		lua_rawset(lua_state, -3);
 
 		lua_settable(lua_state, -3); // data table
+
+		lua_pushstring(lua_state, "variableType");
+		lua_pushstring(lua_state, vtype);
+		lua_rawset(lua_state, -3);
+
 		lua_settable(lua_state, -3); // end entry
 
 		index++;
