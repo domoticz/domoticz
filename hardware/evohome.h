@@ -613,6 +613,7 @@ private:
 	unsigned int m_UControllerID;
 
 	bool AllSensors;
+	bool AllRelays;
 	
 	struct _tRelayCheck
 	{
