@@ -192,25 +192,33 @@ bool CSysfsGPIO::StopHardware()
 
 bool CSysfsGPIO::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	bool bOk = true;
+	bool bOk = false;
 
 	const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
 	unsigned char packettype = pSen->ICMND.packettype;
+	int output_pin = pSen->LIGHTING2.unitcode;
 
-	if (packettype == pTypeLighting2)
+	for (int i = 0; i < GpioSavedState.size(); i++)
 	{
-		int output_pin = pSen->LIGHTING2.unitcode;
+		if ((GpioSavedState[i].direction == GPIO_OUT) && (GpioSavedState[i].pin_number == output_pin))
+		{
+			if (packettype == pTypeLighting2)
+			{
+				if (pSen->LIGHTING2.cmnd == light2_sOn)
+				{
+					GPIOWrite(output_pin, true);
+				}
+				else
+				{
+					GPIOWrite(output_pin, false);
+				}
+			}
 
-		if (pSen->LIGHTING2.cmnd == light2_sOn)
-		{
-			GPIOWrite(output_pin, true);
-		}
-		else
-		{
-			GPIOWrite(output_pin, false);
+			bOk = true;
+			break;
 		}
 	}
-
+	
 	return bOk;
 }
 
