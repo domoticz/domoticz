@@ -841,6 +841,7 @@ html,body{
 	left: 0;
 	right: 0;
 }
+
 /* Lastly, apply responsive CSS fixes as necessary */
 @media (max-width: 979px) {
 	.bannercontent {
@@ -915,12 +916,8 @@ html,body{
 
 .nav li a img {
 	vertical-align: text-bottom;
-}
-
-@media (min-width: 768px) and (max-width: 1200px) {
-  .navbar .nav li a {
-    padding: 10px 5px 10px 5px; /* !important;*/
-  }
+    width:16px;
+    height:16px
 }
 
 .navbar .nav li a:hover {
@@ -1841,4 +1838,5 @@ tspan{
 .ui-selectmenu-menu .selectorlevels-menu {
 	font-size: 0.9em;
 }
+
 
