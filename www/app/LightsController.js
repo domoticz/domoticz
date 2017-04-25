@@ -716,7 +716,7 @@ define(['app'], function (app) {
 						$("#lightcontent #optionRGB").prop('checked',!bIsWhite);
 						$("#lightcontent #optionWhite").prop('checked',bIsWhite);
 						clearInterval($.setColValue);
-						$.setColValue = setInterval(function() { SetColValue($.devIdx,hsb.h,hsb.b, bIsWhite); }, 400);
+						$.setColValue = setInterval(function() { SetColValue($.devIdx,hsb.h,hsb.b, bIsWhite, rgb); }, 400);
 					}
 				}
 			});
@@ -1122,7 +1122,7 @@ define(['app'], function (app) {
 			});
 		}
 
-		SetColValue = function (idx,hue,brightness, isWhite)
+		SetColValue = function (idx,hue,brightness, isWhite, rgb)
 		{
 			clearInterval($.setColValue);
 			if (permissions.hasPermission("Viewer")) {
@@ -1131,7 +1131,7 @@ define(['app'], function (app) {
 				return;
 			}
 			$.ajax({
-				 url: "json.htm?type=command&param=setcolbrightnessvalue&idx=" + idx + "&hue=" + hue + "&brightness=" + brightness + "&iswhite=" + isWhite,
+				 url: "json.htm?type=command&param=setcolbrightnessvalue&idx=" + idx + "&hue=" + hue + "&brightness=" + brightness + "&iswhite=" + isWhite + "&hex=" +rgbToHex(rgb),
 				 async: false,
 				 dataType: 'json'
 			});
@@ -1679,7 +1679,7 @@ define(['app'], function (app) {
 						$("#lightcontent #optionRGB").prop('checked',!bIsWhite);
 						$("#lightcontent #optionWhite").prop('checked',bIsWhite);
 						clearInterval($.setColValue);
-						$.setColValue = setInterval(function() { SetColValue($.devIdx,hsb.h,hsb.b, bIsWhite); }, 400);
+						$.setColValue = setInterval(function() { SetColValue($.devIdx,hsb.h,hsb.b, bIsWhite, rgb); }, 400);
 					}
 				}
 			});
