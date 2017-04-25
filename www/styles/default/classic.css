@@ -381,14 +381,16 @@ select{background-color:#283750; color:#fff;border:0}
     font-size:10px
 }
 
+
 div:not(.ui-dialog) #settingscontent input.ui-widget-content,
+textarea.ui-widget-content,
 input.ui-widget-content{
-    background-color: #11213d;
+    /*background-color: #11213d;*/
     padding: .2em;
     border: none;
     color: #eee;
     font-weight: bold;
-    background: #1c2b46;
+    background-color: #1c2b46;
     border-bottom: 1px solid transparent;
 }
 
@@ -399,8 +401,8 @@ div[class*=dialog] input,
 
 
 input:focus{
-    background-color:#404C63;
-    color:#fff;
+    background-color:#404C63!important;
+    color:#fff!important;
     border-bottom: 1px solid #ccc;
     box-shadow: none;
 }
@@ -422,7 +424,8 @@ p.tip, p.inlinetip{
 
 #settingscontent #Domoticz a.btn-info,
 .related > div.span2 > a.btn-info{
-    background-color:#274377;
+    background-color:#ccc;
+    color:#555;
     background-image:none;
 }
 
@@ -545,6 +548,8 @@ body.dashMobile #dashcontent #status{box-shadow:none!important;}
 #dashcontent #dashSwitches div.item.offf .bigtext span{color:#bbb}
 
 
+/* this allows subthemes to set the background color for the side-menu, without making it the background-color when the 
+menu is on top. If it's on top, the background color is hidden behind a grey layer. The sidebar-menu turns that layer transparent.*/
 @media only screen and (min-width: 480px){
 
     div.navbar{
@@ -568,27 +573,6 @@ body.dashMobile #dashcontent #status{box-shadow:none!important;}
     
 }
 
-
-
-
-/* Fixed settings menu */
-
-@media all and (min-width: 1050px){
-    
-    #settingscontent .sub-tabs{
-        position: fixed;
-        width: calc(100% - 120px);
-        background-color: #031935;
-        padding-top: 21px;
-        top: 0;
-        left: 87px;
-        z-index: 4;
-        box-shadow: 0 5px 10px 0 #031935;
-    }
-    
-    #settingscontent{margin-top:70px;}
-    
-}
 
 
 

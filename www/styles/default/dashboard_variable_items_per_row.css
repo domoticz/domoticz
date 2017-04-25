@@ -1,0 +1,25 @@
+/*  On CSS3 browsers, if the new divider-free display has been enabled (IF..), then be more flexible about displaying items, and override the above general rule.*/
+@media all and (min-width: 768px) and (max-width: 900px){
+    body.dashboard .span4{width:calc(100% / 2 - 20px)!important;}
+    body.dashboard .span3{width:calc(100% / 3 - 20px)!important;}
+}
+
+
+/* more items per row on wider screens */
+
+@media all and (min-width: 1400px){
+    body.dashboard .span4{width:calc(100% / 4 - 20px)!important;}
+    body.dashboard .span3{width:calc(100% / 5 - 20px)!important;}
+}
+
+/* even more items per row on even wider screens */
+@media all and (min-width: 1700px){
+    body.dashboard .span4{width:calc(100% / 5 - 20px)!important;}
+    body.dashboard .span3{width:calc(100% / 6 - 20px)!important;}
+}
+
+/* even more items per row on even wider screens */
+@media all and (min-width: 2000px){
+    body.dashboard .span4{width:calc(100% / 6 - 20px)!important;}
+    body.dashboard .span3{width:calc(100% / 8 - 20px)!important;}
+}

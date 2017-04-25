@@ -90,6 +90,8 @@
         top:-26px;
     }
 
+    #dashTemperature h2 + div.divider .span4:nth-child(-n+3) #bigtext > span > span:not(:first-of-type){padding-left:7px;}
+    
 
 /*  put status instead of bigtext on the items that have extra status data  */    
 
@@ -111,7 +113,11 @@
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus.statuscount3 tr #status,    
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus.statuscount4 tr #status{font-size:17px;}    
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus.statuscount5 tr #status{font-size:16px;}
-    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus.statuscount6 tr #status{font-size:15px;}
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus.statuscount7 tr #status{font-size:14px;}
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus.statuscount8 tr #status{font-size:13px;}
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus.statuscount9 tr #status{font-size:12px;}
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus.statuscount10 tr #status{font-size:11px;}
     
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus tr #status > span.wrapper{
         width:100%;
@@ -125,6 +131,7 @@
     }
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus tr #status > span.wrapper > span{
         box-shadow:inset 0px -2px 1px -1px rgba(50, 50, 50, 0.1);
+        color:#fff;
         padding: 3px 10px 0 5px;
         line-height: 1em;
         height:auto;
