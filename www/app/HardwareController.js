@@ -126,8 +126,7 @@ define(['app'], function (app) {
 				(text.indexOf("Kodi Media") >= 0) ||
 				(text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0) ||
 				(text.indexOf("YeeLight") >= 0) ||
-                (text.indexOf("Arilux AL-LC0x") >= 0) ||
-                (text.indexOf("sysfs gpio") >= 0)
+				(text.indexOf("Arilux AL-LC0x") >= 0)
 				)
             {
 				// if hardwaretype == 1000 => I2C sensors grouping
@@ -140,7 +139,7 @@ define(['app'], function (app) {
                 	var i2caddress=$("#hardwareparami2caddress #i2caddress").val();
                 	var port="&port=" + encodeURIComponent(i2caddress);
                 }
-                if ((text.indexOf("GPIO") >= 0) && (text.indexOf("sysfs gpio") == -1))
+                if (text.indexOf("GPIO") >= 0)
                 {
                     var gpiodebounce=$("#hardwareparamsgpio #gpiodebounce").val();
                     var gpioperiod = $("#hardwareparamsgpio #gpioperiod").val();
@@ -179,7 +178,7 @@ define(['app'], function (app) {
                      }
                 });
             }
-            else if (text.indexOf("USB") >= 0 || text.indexOf("Teleinfo EDF") >= 0)
+            else if (text.indexOf("USB") >= 0)
             {
                 var Mode1 = "0";
                 var serialport=$("#hardwarecontent #divserial #comboserialport option:selected").text();
@@ -239,25 +238,6 @@ define(['app'], function (app) {
                     }
                     Mode3 = ratelimitp1;
                 }
-                if (text.indexOf("Teleinfo EDF") >= 0)
-                {
-                    var baudrate=$("#hardwarecontent #divbaudrateteleinfo #combobaudrateteleinfo option:selected").val();
-
-                    if (typeof baudrate == 'undefined')
-                    {
-                        ShowNotify($.t('No baud rate selected!'), 2500, true);
-                        return;
-                    }
-
-                    Mode1 = baudrate;
-                    Mode2 = $("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked")?0:1;
-                    var ratelimitp1=$("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val();
-                    if (ratelimitp1=="")
-                    {
-                        ratelimitp1 = "60";
-                    }
-                    Mode3 = ratelimitp1;
-                }
 
                 var extra="";
                 if (text.indexOf("S0 Meter") >= 0)
@@ -265,7 +245,7 @@ define(['app'], function (app) {
 					extra = $.devExtra;
                 }
 
-                if (text.indexOf("P1 Smart Meter") >= 0 || text.indexOf("Teleinfo EDF") >= 0)
+                if (text.indexOf("P1 Smart Meter") >= 0)
                 {
                     Mode2 = $("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked")?0:1;
                 }
@@ -290,21 +270,21 @@ define(['app'], function (app) {
                 });
             }
             else if (
-			(text.indexOf("LAN") >= 0 &&
-			text.indexOf("YouLess") == -1 &&
-			text.indexOf("Denkovi") == -1 &&
-          		text.indexOf("Relay-Net") == -1 &&
-			text.indexOf("Satel Integra") == -1 &&
-			text.indexOf("ETH8020") == -1 &&
-			text.indexOf("Daikin") == -1 &&
-			text.indexOf("Sterbox") == -1 &&
-			text.indexOf("Anna") == -1 &&
-			text.indexOf("KMTronic") == -1  &&
-			text.indexOf("MQTT") == -1 &&
-			text.indexOf("Razberry") == -1 &&
-                    	text.indexOf("MyHome OpenWebNet with LAN interface") == -1
-			)
-		    )
+					(text.indexOf("LAN") >= 0 &&
+					text.indexOf("YouLess") == -1 &&
+					text.indexOf("Denkovi") == -1 &&
+          			text.indexOf("Relay-Net") == -1 &&
+					text.indexOf("Satel Integra") == -1 &&
+					text.indexOf("ETH8020") == -1 &&
+					text.indexOf("Daikin") == -1 &&
+					text.indexOf("Sterbox") == -1 &&
+					text.indexOf("Anna") == -1 &&
+					text.indexOf("KMTronic") == -1  &&
+					text.indexOf("MQTT") == -1 &&
+					text.indexOf("Razberry") == -1 &&
+                    text.indexOf("MyHome OpenWebNet with LAN interface") == -1
+					)
+				)
             {
                 var address=$("#hardwarecontent #divremote #tcpaddress").val();
                 if (address=="")
@@ -336,16 +316,6 @@ define(['app'], function (app) {
                     if (ratelimitp1=="")
                     {
                         ratelimitp1 = "0";
-                    }
-                    Mode3 = ratelimitp1;
-                }
-		if (text.indexOf("Teleinfo EDF") >= 0)
-                {
-                    Mode2 = $("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked")?0:1;
-                    var ratelimitp1=$("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val();
-                    if (ratelimitp1=="")
-                    {
-                        ratelimitp1 = "60";
                     }
                     Mode3 = ratelimitp1;
                 }
@@ -464,8 +434,7 @@ define(['app'], function (app) {
             }
             else if (
 				(text.indexOf("Domoticz") >= 0) ||
-				(text.indexOf("Eco Devices") >= 0) ||
-                                (text.indexOf("ETH8020") >= 0) ||
+				(text.indexOf("ETH8020") >= 0) ||
 				(text.indexOf("Daikin") >= 0) ||
 				(text.indexOf("Sterbox") >= 0) ||
 				(text.indexOf("Anna") >= 0) ||
@@ -503,17 +472,6 @@ define(['app'], function (app) {
 					extra=$("#hardwarecontent #divmqtt #filename").val();
 					Mode1 = $("#hardwarecontent #divmqtt #combotopicselect").val();
 				}
-               if (text.indexOf("Eco Devices") >= 0)
-                {
-                    Mode1 = $("#hardwarecontent #divmodelecodevices #combomodelecodevices option:selected").val();
-                    var ratelimitp1=$("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val();
-                    if (ratelimitp1=="")
-                    {
-                        ratelimitp1 = "60";
-                    }
-                    Mode2 = ratelimitp1;
-                }
-
                 $.ajax({
                      url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
                         "&address=" + address +
@@ -1086,9 +1044,8 @@ define(['app'], function (app) {
 				(text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0) ||
 				(text.indexOf("Tellstick") >= 0) ||
 				(text.indexOf("Motherboard") >= 0) ||
-                (text.indexOf("YeeLight") >= 0) ||
-                (text.indexOf("Arilux AL-LC0x") >= 0) ||
-                (text.indexOf("sysfs gpio") >= 0)
+				(text.indexOf("YeeLight") >= 0) ||
+				(text.indexOf("Arilux AL-LC0x") >= 0)
 				)
             {
                 $.ajax({
@@ -1165,7 +1122,7 @@ define(['app'], function (app) {
                      }
                 });
 	    }
-            else if (text.indexOf("USB") >= 0 || text.indexOf("Teleinfo EDF") >= 0)
+            else if (text.indexOf("USB") >= 0)
             {
                 var Mode1 = "0";
                 var serialport=$("#hardwarecontent #divserial #comboserialport option:selected").text();
@@ -1217,26 +1174,6 @@ define(['app'], function (app) {
                     if (ratelimitp1=="")
                     {
                         ratelimitp1 = "0";
-                    }
-                    Mode3 = ratelimitp1;
-
-                }
-                if (text.indexOf("Teleinfo EDF") >= 0)
-                {
-                    var baudrate=$("#hardwarecontent #divbaudrateteleinfo #combobaudrateteleinfo option:selected").val();
-
-                    if (typeof baudrate == 'undefined')
-                    {
-                        ShowNotify($.t('No baud rate selected!'), 2500, true);
-                        return;
-                    }
-
-                    Mode1 = baudrate;
-                    Mode2 = $("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked")?0:1;
-                    var ratelimitp1=$("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val();
-                    if (ratelimitp1=="")
-                    {
-                        ratelimitp1 = "60";
                     }
                     Mode3 = ratelimitp1;
 
@@ -5066,8 +5003,7 @@ define(['app'], function (app) {
 							(data["Type"].indexOf("PiFace") >= 0)||
 							(data["Type"].indexOf("Tellstick") >= 0) ||
 							(data["Type"].indexOf("Yeelight") >= 0) ||
-                            (data["Type"].indexOf("Arilux AL-LC0x") >= 0) ||
-                            (data["Type"].indexOf("sysfs gpio") >= 0)
+							(data["Type"].indexOf("Arilux AL-LC0x") >= 0)
                            )
                         {
                             //nothing to be set
@@ -5088,7 +5024,7 @@ define(['app'], function (app) {
                             $("#hardwareparamsgpio #gpioperiod").val(data["Mode2"]);
                             $("#hardwareparamsgpio #gpiopollinterval").val(data["Mode3"]);
                         }
-                        else if (data["Type"].indexOf("USB") >= 0  || data["Type"].indexOf("Teleinfo EDF") >=0) {
+                        else if (data["Type"].indexOf("USB") >= 0) {
                             $("#hardwarecontent #hardwareparamsserial #comboserialport").val(data["IntPort"]);
                             if (data["Type"].indexOf("Evohome") >= 0)
                             {
@@ -5112,33 +5048,14 @@ define(['app'], function (app) {
                                     $("#hardwarecontent #divcrcp1").show();
                                 }
                             }
-		            else if (data["Type"].indexOf("Teleinfo EDF") >= 0)
-                           {   
-                                $("#hardwarecontent #divbaudrateteleinfo #combobaudrateteleinfo").val(data["Mode1"]);
-                                $("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked",data["Mode2"]==0);
-                                $("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val(data["Mode3"]);
-                                if (data["Mode1"]==0) 
-                                {   
-                                    $("#hardwarecontent #divcrcp1").hide();
-                               }  
-                                else
-                                {   
-                                    $("#hardwarecontent #divcrcp1").show();
-                                }
-                           }
                         }
-                        else if ((((data["Type"].indexOf("LAN") >= 0) || (data["Type"].indexOf("Eco Devices") >= 0) || data["Type"].indexOf("MySensors Gateway with MQTT") >= 0) && (data["Type"].indexOf("YouLess") == -1) && (data["Type"].indexOf("Denkovi") == -1) && (data["Type"].indexOf("Relay-Net") == -1) && (data["Type"].indexOf("Satel Integra") == -1) && (data["Type"].indexOf("MyHome OpenWebNet with LAN interface") == -1)) || (data["Type"].indexOf("Domoticz") >= 0) || (data["Type"].indexOf("Harmony") >= 0)) {
+                        else if ((((data["Type"].indexOf("LAN") >= 0) || data["Type"].indexOf("MySensors Gateway with MQTT") >= 0) && (data["Type"].indexOf("YouLess") == -1) && (data["Type"].indexOf("Denkovi") == -1) && (data["Type"].indexOf("Relay-Net") == -1) && (data["Type"].indexOf("Satel Integra") == -1) && (data["Type"].indexOf("MyHome OpenWebNet with LAN interface") == -1)) || (data["Type"].indexOf("Domoticz") >= 0) || (data["Type"].indexOf("Harmony") >= 0)) {
                             $("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
                             $("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
                             if (data["Type"].indexOf("P1 Smart Meter") >= 0)
                             {
                                 $("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked",data["Mode2"]==0);
                                 $("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val(data["Mode3"]);
-                            }
- 			    if (data["Type"].indexOf("Eco Devices") >= 0)
-                            {
-                                $("#hardwarecontent #divmodelecodevices #combomodelecodevices").val(data["Mode1"]);
-				$("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val(data["Mode2"]);
                             }
                         }
                         else if ((((data["Type"].indexOf("LAN") >= 0) || data["Type"].indexOf("MySensors Gateway with MQTT") >= 0) && (data["Type"].indexOf("YouLess") >= 0)) || (data["Type"].indexOf("Domoticz") >= 0) || (data["Type"].indexOf("Denkovi") >= 0) || (data["Type"].indexOf("Relay-Net") >= 0) || (data["Type"].indexOf("Satel Integra") >= 0) || (data["Type"].indexOf("Logitech Media Server") >= 0) || (data["Type"].indexOf("HEOS by DENON") >= 0) || (data["Type"].indexOf("Xiaomi Gateway") >= 0) || (data["Type"].indexOf("MyHome OpenWebNet with LAN interface") >= 0)) {
@@ -5234,7 +5151,6 @@ define(['app'], function (app) {
                         if (
                             (data["Type"].indexOf("Domoticz") >= 0)||
                             (data["Type"].indexOf("ICY") >= 0) ||
-                            (data["Type"].indexOf("Eco Devices") >= 0) ||
                             (data["Type"].indexOf("Toon") >= 0) ||
                             (data["Type"].indexOf("Atag") >= 0)||
                             (data["Type"].indexOf("Nest Th") >= 0)||
@@ -5247,12 +5163,12 @@ define(['app'], function (app) {
                             (data["Type"].indexOf("MQTT") >= 0) ||
                             (data["Type"].indexOf("Netatmo") >= 0) ||
                             (data["Type"].indexOf("Fitbit") >= 0)||
-                            (data["Type"].indexOf("HTTP") >= 0)||
+							(data["Type"].indexOf("HTTP") >= 0)||
                             (data["Type"].indexOf("Thermosmart") >= 0) ||
-			    (data["Type"].indexOf("Logitech Media Server") >= 0) ||
-		            (data["Type"].indexOf("HEOS by DENON") >= 0) ||
-		            (data["Type"].indexOf("Razberry") >= 0) ||
-		            (data["Type"].indexOf("Comm5") >= 0)
+							(data["Type"].indexOf("Logitech Media Server") >= 0) ||
+							(data["Type"].indexOf("HEOS by DENON") >= 0) ||
+							(data["Type"].indexOf("Razberry") >= 0) ||
+							(data["Type"].indexOf("Comm5") >= 0)
                             )
                         {
                             $("#hardwarecontent #hardwareparamslogin #username").val(data["Username"]);
@@ -5333,8 +5249,6 @@ define(['app'], function (app) {
             $("#hardwarecontent #divbaudrateevohome").hide();
             $("#hardwarecontent #divbaudratemysensors").hide();
             $("#hardwarecontent #divbaudratep1").hide();
-            $("#hardwarecontent #divbaudrateteleinfo").hide();
-            $("#hardwarecontent #divmodelecodevices").hide();
             $("#hardwarecontent #divcrcp1").hide();
             $("#hardwarecontent #divratelimitp1").hide();
             $("#hardwarecontent #divlocation").hide();
@@ -5360,8 +5274,7 @@ define(['app'], function (app) {
 				(text.indexOf("System Alive") >= 0)||
 				(text.indexOf("PiFace") >= 0) ||
 				(text.indexOf("Yeelight") >= 0) ||
-                (text.indexOf("Arilux AL-LC0x") >= 0) ||
-                (text.indexOf("sysfs gpio") >= 0)
+				(text.indexOf("Arilux AL-LC0x") >= 0)
                )
             {
                 $("#hardwarecontent #divserial").hide();
@@ -5385,17 +5298,16 @@ define(['app'], function (app) {
                     $("#hardwarecontent #divi2caddress").show();
                 }
             }
-            else if ((text.indexOf("GPIO") >= 0) && (text.indexOf("sysfs gpio") == -1))
+            else if (text.indexOf("GPIO") >= 0)
             {
                 $("#hardwarecontent #divgpio").show();
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").hide();
                 $("#hardwarecontent #divlogin").hide();
                 $("#hardwarecontent #divunderground").hide();
-                $("#hardwarecontent #divhttppoller").hide();                
-
+                $("#hardwarecontent #divhttppoller").hide();
             }
-            else if (text.indexOf("USB") >= 0 || text.indexOf("Teleinfo EDF") >= 0)
+            else if (text.indexOf("USB") >= 0)
             {
                 if (text.indexOf("Evohome") >= 0)
                 {
@@ -5411,12 +5323,6 @@ define(['app'], function (app) {
                     $("#hardwarecontent #divratelimitp1").show();
                     $("#hardwarecontent #divcrcp1").show();
                 }
-		if (text.indexOf("Teleinfo EDF") >= 0)
-                {
-                    $("#hardwarecontent #divbaudrateteleinfo").show();
-                    $("#hardwarecontent #divratelimitp1").show();
-                    $("#hardwarecontent #divcrcp1").show();
-                }
 
                 $("#hardwarecontent #divserial").show();
                 $("#hardwarecontent #divremote").hide();
@@ -5424,19 +5330,13 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
             }
-            else if ((text.indexOf("LAN") >= 0 || text.indexOf("Harmony") >= 0 || text.indexOf("Eco Devices") >= 0 || text.indexOf("MySensors Gateway with MQTT") >= 0) && text.indexOf("YouLess") == -1 && text.indexOf("Denkovi") == -1 && text.indexOf("Relay-Net") == -1  && text.indexOf("Satel Integra") == -1 && text.indexOf("MyHome OpenWebNet with LAN interface") == -1)
+            else if ((text.indexOf("LAN") >= 0 || text.indexOf("Harmony") >= 0 || text.indexOf("MySensors Gateway with MQTT") >= 0) && text.indexOf("YouLess") == -1 && text.indexOf("Denkovi") == -1 && text.indexOf("Relay-Net") == -1  && text.indexOf("Satel Integra") == -1 && text.indexOf("MyHome OpenWebNet with LAN interface") == -1)
             {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").show();
                 $("#hardwarecontent #divlogin").hide();
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
-	        if (text.indexOf("Eco Devices") >=0)
-		{
-		    $("#hardwarecontent #divmodelecodevices").show();
-		    $("#hardwarecontent #divratelimitp1").show();
-		    $("#hardwarecontent #divlogin").show();
-		}
                 if (text.indexOf("P1 Smart Meter") >= 0)
                 {
                     $("#hardwarecontent #divratelimitp1").show();
@@ -5660,6 +5560,10 @@ define(['app'], function (app) {
         ShowHardware = function()
         {
             $('#modal').show();
+            
+            $("body").removeClass();
+            $("body").addClass("hardware").addClass("backStage"); 
+            
             var htmlcontent = "";
             htmlcontent+=$('#hardwaremain').html();
             $('#hardwarecontent').html(htmlcontent);
@@ -5703,7 +5607,7 @@ define(['app'], function (app) {
                 }
             });
 
-            $("#hardwarecontent #divhttppoller #combomethod").change(function() {
+			$("#hardwarecontent #divhttppoller #combomethod").change(function() {
                 if ($("#hardwarecontent #divhttppoller #combomethod option:selected").val() == 0)
                 {
                     $("#hardwarecontent #hardwareparamshttp #divpostdatalabel").hide();
@@ -5863,4 +5767,3 @@ define(['app'], function (app) {
 		});
     } ]);
 });
-
