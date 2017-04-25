@@ -1124,8 +1124,8 @@ define(['app'], function(app) {
                     '\t</div>\n';
 			} else {
 				tophtm +=
-                    '\t<div class="prebannav" class="tophtm">\n' +
-					'\t<table border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
+                    '\t<div class="tophtm">\n' +
+					'\t<table class="prebannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
 					'\t<tr>\n' +
 					'\t  <td align="left" valign="top" id="timesun"></td>\n' +
 					'<td align="right">' +
