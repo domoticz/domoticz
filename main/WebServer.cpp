@@ -26,6 +26,7 @@
 #include "../hardware/MySensorsBase.h"
 #include "../hardware/RFXBase.h"
 #include "../hardware/RFLinkBase.h"
+#include "../hardware/SysfsGPIO.h"
 #include "../hardware/HEOS.h"
 #ifdef WITH_GPIO
 #include "../hardware/Gpio.h"
@@ -350,6 +351,7 @@ namespace http {
 
 			RegisterCommandCode("getlanguage", boost::bind(&CWebServer::Cmd_GetLanguage, this, _1, _2, _3), true);
 			RegisterCommandCode("getthemes", boost::bind(&CWebServer::Cmd_GetThemes, this, _1, _2, _3), true);
+                        RegisterCommandCode("gettitle", boost::bind(&CWebServer::Cmd_GetTitle, this, _1, _2, _3), true);
 
 			RegisterCommandCode("logincheck", boost::bind(&CWebServer::Cmd_LoginCheck, this, _1, _2, _3), true);
 			RegisterCommandCode("getversion", boost::bind(&CWebServer::Cmd_GetVersion, this, _1, _2, _3), true);
@@ -869,7 +871,7 @@ namespace http {
 				root["language"] = sValue;
 			}
 		}
-
+                
 		void CWebServer::Cmd_GetThemes(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			root["status"] = "OK";
@@ -883,6 +885,17 @@ namespace http {
 				ii++;
 			}
 		}
+
+                void CWebServer::Cmd_GetTitle(WebEmSession & session, const request& req, Json::Value &root)
+                {
+                        std::string sValue;
+			root["status"] = "OK";
+                        root["title"] = "GetTitle";
+                        if (m_sql.GetPreferencesVar("Title", sValue))
+                                root["Title"] = sValue;
+			else 
+				root["Title"] = "Domoticz";
+                }
 
 		void CWebServer::Cmd_LoginCheck(WebEmSession & session, const request& req, Json::Value &root)
 		{
@@ -975,7 +988,15 @@ namespace http {
 #endif
 #ifndef WITH_GPIO
 				if (ii == HTYPE_RaspberryGPIO)
+				{
 					bDoAdd = false;
+				}
+#endif
+#ifndef WITH_SYSFS_GPIO
+				if (ii == HTYPE_SysfsGPIO)
+				{
+					bDoAdd = false;
+				}
 #endif
 				if (((ii == HTYPE_1WIRE) && (!C1Wire::Have1WireSystem())) || (ii == HTYPE_PythonPlugin))
 					bDoAdd = false;
@@ -1224,6 +1245,9 @@ namespace http {
 					mode1 = atoi(mill_id.c_str());
 			}
 			else if (htype == HTYPE_RaspberryGPIO) {
+				//all fine here!
+			}
+			else if (htype == HTYPE_SysfsGPIO) {
 				//all fine here!
 			}
 			else if (htype == HTYPE_OpenWebNetTCP) {
@@ -1554,6 +1578,9 @@ namespace http {
 					port = 80;
 			}
 			else if (htype == HTYPE_RaspberryGPIO) {
+				//all fine here!
+			}
+			else if (htype == HTYPE_SysfsGPIO) {
 				//all fine here!
 			}
 			else if (htype == HTYPE_Daikin) {
@@ -7675,6 +7702,8 @@ namespace http {
 			std::string SelectedTheme = request::findValue(&req, "Themes");
 			m_sql.UpdatePreferencesVar("WebTheme", SelectedTheme.c_str());
 			m_pWebEm->SetWebTheme(SelectedTheme);
+			std::string Title = request::findValue(&req, "Title").c_str();
+                        m_sql.UpdatePreferencesVar("Title", (Title == "")?"Domoticz":Title);
 
 			m_sql.GetPreferencesVar("RandomTimerFrame", rnOldvalue);
 			rnvalue = atoi(request::findValue(&req, "RandomSpread").c_str());
@@ -12322,6 +12351,10 @@ namespace http {
 				else if (Key == "Language")
 				{
 					root["Language"] = sValue;
+				 }
+                                else if (Key == "Title")
+                                {
+                                        root["Title"] = sValue;
 				}
 				else if (Key == "WindUnit")
 				{

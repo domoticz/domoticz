@@ -239,7 +239,7 @@ namespace OpenZWave
 		 * \brief Removes the driver for a Z-Wave controller, and closes the controller.
 		 * Drivers do not need to be explicitly removed before calling Destroy - this is handled automatically.
 		 * \warning You should NOT call any Manager methods that require the Driver Reference (eg, in response to
-		 * Notifications recieved about NodeRemoved etc) once you call this, as your application will most likely
+		 * Notifications received about NodeRemoved etc) once you call this, as your application will most likely
 		 * break
 		 * @param _controllerPath The same string as was passed in the original call to AddDriver.
 		 * @returns True if the driver was removed, false if it could not be found.
@@ -268,7 +268,7 @@ namespace OpenZWave
 		 * <p>
 		 * The only difference between a primary and secondary controller is that the primary is the
 		 * only one that can be used to add or remove other devices.  For this reason, it is usually
-		 * better for the promary controller to be portable, since most devices must be added when
+		 * better for the primary controller to be portable, since most devices must be added when
 		 * installed in their final location.
 		 * <p>
 		 * Calls to BeginControllerCommand will fail if the controller is not the primary.
@@ -429,7 +429,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 	//	Node information
 	//-----------------------------------------------------------------------------
 	/** \name Node information
-	 *  Methods for accessing information on indivdual nodes.
+	 *  Methods for accessing information on individual nodes.
 	 */
 	/*@{*/
 	public:
@@ -584,7 +584,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 
 		/**
 		 * \brief Get the manufacturer name of a device
-		 * The manufacturer name would normally be handled by the Manufacturer Specific commmand class,
+		 * The manufacturer name would normally be handled by the Manufacturer Specific command class,
 		 * taking the manufacturer ID reported by the device and using it to look up the name from the
 		 * manufacturer_specific.xml file in the OpenZWave config folder.
 		 * However, there are some devices that do not support the command class, so to enable the user
@@ -599,7 +599,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 
 		/**
 		 * \brief Get the product name of a device
-		 * The product name would normally be handled by the Manufacturer Specific commmand class,
+		 * The product name would normally be handled by the Manufacturer Specific command class,
 		 * taking the product Type and ID reported by the device and using it to look up the name from the
 		 * manufacturer_specific.xml file in the OpenZWave config folder.
 		 * However, there are some devices that do not support the command class, so to enable the user
@@ -615,7 +615,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		/**
 		 * \brief Get the name of a node
 		 * The node name is a user-editable label for the node that would normally be handled by the
-		 * Node Naming commmand class, but many devices do not support it.  So that a node can always
+		 * Node Naming command class, but many devices do not support it.  So that a node can always
 		 * be named, OpenZWave stores it with the node data, and provides access through this method
 		 * and SetNodeName, rather than reporting it via a command class Value object.
 		 * The maximum length of a node name is 16 characters.
@@ -629,7 +629,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		/**
 		 * \brief Get the location of a node
 		 * The node location is a user-editable string that would normally be handled by the Node Naming
-		 * commmand class, but many devices do not support it.  So that a node can always report its
+		 * command class, but many devices do not support it.  So that a node can always report its
 		 * location, OpenZWave stores it with the node data, and provides access through this method
 		 * and SetNodeLocation, rather than reporting it via a command class Value object.
 		 * \param _homeId The Home ID of the Z-Wave controller that manages the node.
@@ -642,54 +642,54 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		/**
 		 * \brief Get the manufacturer ID of a device
 		 * The manufacturer ID is a four digit hex code and would normally be handled by the Manufacturer
-		 * Specific commmand class, but not all devices support it.  Although the value reported by this
+		 * Specific command class, but not all devices support it.  Although the value reported by this
 		 * method will be an empty string if the command class is not supported and cannot be set by the
 		 * user, the manufacturer ID is still stored with the node data (rather than being reported via a
 		 * command class Value object) to retain a consistent approach with the other manufacturer specific data.
 		 * \param _homeId The Home ID of the Z-Wave controller that manages the node.
 		 * \param _nodeId The ID of the node to query.
-		 * \return A string containing the node's manufacturer ID, or an empty string if the manufactuer
+		 * \return A string containing the node's manufacturer ID, or an empty string if the manufacturer
 		 * specific command class is not supported by the device.
 		 * \see GetNodeProductType, GetNodeProductId, GetNodeManufacturerName, GetNodeProductName
-		 * \todo Change the return to uint16 in 2.0 timeframe
+		 * \todo Change the return to uint16 in 2.0 time frame
 		 */
 		string GetNodeManufacturerId( uint32 const _homeId, uint8 const _nodeId );
 
 		/**
 		 * \brief Get the product type of a device
 		 * The product type is a four digit hex code and would normally be handled by the Manufacturer Specific
-		 * commmand class, but not all devices support it.  Although the value reported by this method will
+		 * command class, but not all devices support it.  Although the value reported by this method will
 		 * be an empty string if the command class is not supported and cannot be set by the user, the product
 		 * type is still stored with the node data (rather than being reported via a command class Value object)
 		 * to retain a consistent approach with the other manufacturer specific data.
 		 * \param _homeId The Home ID of the Z-Wave controller that manages the node.
 		 * \param _nodeId The ID of the node to query.
-		 * \return A string containing the node's product type, or an empty string if the manufactuer
+		 * \return A string containing the node's product type, or an empty string if the manufacturer
 		 * specific command class is not supported by the device.
 		 * \see GetNodeManufacturerId, GetNodeProductId, GetNodeManufacturerName, GetNodeProductName
-		 * \todo Change the return to uint16 in 2.0 timeframe
+		 * \todo Change the return to uint16 in 2.0 time frame
 		 */
 		string GetNodeProductType( uint32 const _homeId, uint8 const _nodeId );
 
 		/**
 		 * \brief Get the product ID of a device
 		 * The product ID is a four digit hex code and would normally be handled by the Manufacturer Specific
-		 * commmand class, but not all devices support it.  Although the value reported by this method will
+		 * command class, but not all devices support it.  Although the value reported by this method will
 		 * be an empty string if the command class is not supported and cannot be set by the user, the product
 		 * ID is still stored with the node data (rather than being reported via a command class Value object)
 		 * to retain a consistent approach with the other manufacturer specific data.
 		 * \param _homeId The Home ID of the Z-Wave controller that manages the node.
 		 * \param _nodeId The ID of the node to query.
-		 * \return A string containing the node's product ID, or an empty string if the manufactuer
+		 * \return A string containing the node's product ID, or an empty string if the manufacturer
 		 * specific command class is not supported by the device.
 		 * \see GetNodeManufacturerId, GetNodeProductType, GetNodeManufacturerName, GetNodeProductName
-		 * \todo Change the return to uint16 in 2.0 timeframe
+		 * \todo Change the return to uint16 in 2.0 time frame
 		 */
 		string GetNodeProductId( uint32 const _homeId, uint8 const _nodeId );
 
 		/**
 		 * \brief Set the manufacturer name of a device
-		 * The manufacturer name would normally be handled by the Manufacturer Specific commmand class,
+		 * The manufacturer name would normally be handled by the Manufacturer Specific command class,
 		 * taking the manufacturer ID reported by the device and using it to look up the name from the
 		 * manufacturer_specific.xml file in the OpenZWave config folder.
 		 * However, there are some devices that do not support the command class, so to enable the user
@@ -704,7 +704,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 
 		/**
 		 * \brief Set the product name of a device
-		 * The product name would normally be handled by the Manufacturer Specific commmand class,
+		 * The product name would normally be handled by the Manufacturer Specific command class,
 		 * taking the product Type and ID reported by the device and using it to look up the name from the
 		 * manufacturer_specific.xml file in the OpenZWave config folder.
 		 * However, there are some devices that do not support the command class, so to enable the user
@@ -720,7 +720,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		/**
 		 * \brief Set the name of a node
 		 * The node name is a user-editable label for the node that would normally be handled by the
-		 * Node Naming commmand class, but many devices do not support it.  So that a node can always
+		 * Node Naming command class, but many devices do not support it.  So that a node can always
 		 * be named, OpenZWave stores it with the node data, and provides access through this method
 		 * and GetNodeName, rather than reporting it via a command class Value object.
 		 * If the device does support the Node Naming command class, the new name will be sent to the node.
@@ -735,7 +735,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		/**
 		 * \brief Set the location of a node
 		 * The node location is a user-editable string that would normally be handled by the Node Naming
-		 * commmand class, but many devices do not support it.  So that a node can always report its
+		 * command class, but many devices do not support it.  So that a node can always report its
 		 * location, OpenZWave stores it with the node data, and provides access through this method
 		 * and GetNodeLocation, rather than reporting it via a command class Value object.
 		 * If the device does support the Node Naming command class, the new location will be sent to the node.
@@ -1152,7 +1152,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 
 		/**
 		 * \brief Sets the state of a bool.
-		 * Due to the possibility of a device being asleep, the command is assumed to suceed, and the value
+		 * Due to the possibility of a device being asleep, the command is assumed to succeed, and the value
 		 * held by the node is updated directly.  This will be reverted by a future status message from the device
 		 * if the Z-Wave message actually failed to get through.  Notification callbacks will be sent in both cases.
 		 * \param _id The unique identifier of the bool value.
@@ -1167,7 +1167,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 
 		/**
 		 * \brief Sets the value of a byte.
-		 * Due to the possibility of a device being asleep, the command is assumed to suceed, and the value
+		 * Due to the possibility of a device being asleep, the command is assumed to succeed, and the value
 		 * held by the node is updated directly.  This will be reverted by a future status message from the device
 		 * if the Z-Wave message actually failed to get through.  Notification callbacks will be sent in both cases.
 		 * \param _id The unique identifier of the byte value.
@@ -1196,7 +1196,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 
 		/**
 		 * \brief Sets the value of a 32-bit signed integer.
-		 * Due to the possibility of a device being asleep, the command is assumed to suceed, and the value
+		 * Due to the possibility of a device being asleep, the command is assumed to succeed, and the value
 		 * held by the node is updated directly.  This will be reverted by a future status message from the device
 		 * if the Z-Wave message actually failed to get through.  Notification callbacks will be sent in both cases.
 		 * \param _id The unique identifier of the integer value.
@@ -1210,7 +1210,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 
 		/**
 		 * \brief Sets the value of a 16-bit signed integer.
-		 * Due to the possibility of a device being asleep, the command is assumed to suceed, and the value
+		 * Due to the possibility of a device being asleep, the command is assumed to succeed, and the value
 		 * held by the node is updated directly.  This will be reverted by a future status message from the device
 		 * if the Z-Wave message actually failed to get through.  Notification callbacks will be sent in both cases.
 		 * \param _id The unique identifier of the integer value.
@@ -1224,7 +1224,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 
 		/**
 		 * \brief Sets the value of a collection of bytes.
-		 * Due to the possibility of a device being asleep, the command is assumed to suceed, and the value
+		 * Due to the possibility of a device being asleep, the command is assumed to succeed, and the value
 		 * held by the node is updated directly.  This will be reverted by a future status message from the device
 		 * if the Z-Wave message actually failed to get through.  Notification callbacks will be sent in both cases.
 		 * \param _id The unique identifier of the raw value.
@@ -1238,7 +1238,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 
 		/**
 		 * \brief Sets the value from a string, regardless of type.
-		 * Due to the possibility of a device being asleep, the command is assumed to suceed, and the value
+		 * Due to the possibility of a device being asleep, the command is assumed to succeed, and the value
 		 * held by the node is updated directly.  This will be reverted by a future status message from the device
 		 * if the Z-Wave message actually failed to get through.  Notification callbacks will be sent in both cases.
 		 * \param _id The unique identifier of the integer value.
@@ -1252,7 +1252,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 
 		/**
 		 * \brief Sets the selected item in a list.
-		 * Due to the possibility of a device being asleep, the command is assumed to suceed, and the value
+		 * Due to the possibility of a device being asleep, the command is assumed to succeed, and the value
 		 * held by the node is updated directly.  This will be reverted by a future status message from the device
 		 * if the Z-Wave message actually failed to get through.  Notification callbacks will be sent in both cases.
 		 * \param _id The unique identifier of the list value.
@@ -1458,7 +1458,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 	public:
 		/**
 		 * \brief Set the value of a configurable parameter in a device.
-		 * Some devices have various parameters that can be configured to control the device behaviour.
+		 * Some devices have various parameters that can be configured to control the device behavior.
 		 * These are not reported by the device over the Z-Wave network, but can usually be found in
 		 * the device's user manual.
 		 * This method returns immediately, without waiting for confirmation from the device that the
@@ -1467,7 +1467,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _nodeId The ID of the node to configure.
 		 * \param _param The index of the parameter.
 		 * \param _value The value to which the parameter should be set.
-		 * \param _size Is an optional number of bytes to be sent for the paramter _value. Defaults to 2.
+		 * \param _size Is an optional number of bytes to be sent for the parameter _value. Defaults to 2.
 		 * \return true if the a message setting the value was sent to the device.
 		 * \see RequestConfigParam
 		 */
@@ -1475,7 +1475,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 
 		/**
 		 * \brief Request the value of a configurable parameter from a device.
-		 * Some devices have various parameters that can be configured to control the device behaviour.
+		 * Some devices have various parameters that can be configured to control the device behavior.
 		 * These are not reported by the device over the Z-Wave network, but can usually be found in
 		 * the device's user manual.
 		 * This method requests the value of a parameter from the device, and then returns immediately,
@@ -1566,7 +1566,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 
 		/**
 		 * \brief Adds a node to an association group.
-		 * Due to the possibility of a device being asleep, the command is assumed to suceed, and the association data
+		 * Due to the possibility of a device being asleep, the command is assumed to succeed, and the association data
 		 * held in this class is updated directly.  This will be reverted by a future Association message from the device
 		 * if the Z-Wave message actually failed to get through.  Notification callbacks will be sent in both cases.
 		 * \param _homeId The Home ID of the Z-Wave controller that manages the node.
@@ -1580,7 +1580,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 
 		/**
 		 * \brief Removes a node from an association group.
-		 * Due to the possibility of a device being asleep, the command is assumed to suceed, and the association data
+		 * Due to the possibility of a device being asleep, the command is assumed to succeed, and the association data
 		 * held in this class is updated directly.  This will be reverted by a future Association message from the device
 		 * if the Z-Wave message actually failed to get through.   Notification callbacks will be sent in both cases.
 		 * \param _homeId The Home ID of the Z-Wave controller that manages the node.
@@ -1794,7 +1794,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 *
 		 * \param _homeId The Home ID of the Z-Wave network where the device should be added.
 		 * \param _doSecurity Whether to initialize the Network Key on the device if it supports the Security CC
-		 * \return if the Command was sent succcesfully to the Controller
+		 * \return if the Command was sent successfully to the Controller
 		 * \sa CancelControllerCommand
 		 */
 		bool AddNode( uint32 const _homeId, bool _doSecurity = true );
@@ -1808,7 +1808,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * Notification::Type_ControllerCommand
 		 *
 		 * \param _homeId The HomeID of the Z-Wave network where you want to remove the device
-		 * \return if the Command was send succesfully to the Controller
+		 * \return if the Command was send successfully to the Controller
 		 * \sa CancelControllerCommand
 		 */
 		bool RemoveNode(uint32 const _homeId);
@@ -1826,7 +1826,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 *
 		 * \param _homeId The HomeID of the Z-Wave network where you want to remove the device
 		 * \param _nodeId The NodeID of the Failed Node.
-		 * \return if the Command was send succesfully to the Controller
+		 * \return if the Command was send successfully to the Controller
 		 * \sa CancelControllerCommand
 		 */
 		bool RemoveFailedNode(uint32 const _homeId, uint8 const _nodeId);
@@ -1842,7 +1842,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 *
 		 * \param _homeId The HomeID of the Z-Wave network where you want to test the device
 		 * \param _nodeId The NodeID of the Failed Node.
-		 * \return if the RemoveDevice Command was send succesfully to the Controller
+		 * \return if the RemoveDevice Command was send successfully to the Controller
 		 * \sa CancelControllerCommand
 		 */
 		bool HasNodeFailed(uint32 const _homeId, uint8 const _nodeId);
@@ -1856,7 +1856,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 *
 		 * \param _homeId The HomeID of the Z-Wave network where you want to update the device
 		 * \param _nodeId The NodeID of the Node.
-		 * \return if the Command was send succesfully to the Controller
+		 * \return if the Command was send successfully to the Controller
 		 * \sa CancelControllerCommand
 		 */
 		bool RequestNodeNeighborUpdate(uint32 const _homeId, uint8 const _nodeId);
@@ -1870,7 +1870,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 *
 		 * \param _homeId The HomeID of the Z-Wave network where you want to update the device
 		 * \param _nodeId The NodeID of the Node.
-		 * \return if the Command was send succesfully to the Controller
+		 * \return if the Command was send successfully to the Controller
 		 * \sa CancelControllerCommand
 		 */
 		bool AssignReturnRoute(uint32 const _homeId, uint8 const _nodeId);
@@ -1884,7 +1884,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 *
 		 * \param _homeId The HomeID of the Z-Wave network where you want to update the device
 		 * \param _nodeId The NodeID of the Node.
-		 * \return if the Command was send succesfully to the Controller
+		 * \return if the Command was send successfully to the Controller
 		 * \sa CancelControllerCommand
 		 */
 		bool DeleteAllReturnRoutes(uint32 const _homeId, uint8 const _nodeId);
@@ -1894,8 +1894,8 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * This command send a NIF frame from the Controller to a Node
 		 *
 		 * \param _homeId The HomeID of the Z-Wave network
-		 * \param _nodeId The NodeID of the Node to recieve the NIF
-		 * \return if the sendNIF Command was send succesfully to the Controller
+		 * \param _nodeId The NodeID of the Node to receive the NIF
+		 * \return if the sendNIF Command was send successfully to the Controller
 		 * \sa CancelControllerCommand
 		 */
 		bool SendNodeInformation(uint32 const _homeId, uint8 const _nodeId);
@@ -1908,20 +1908,20 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * Notification::Type_ControllerCommand
 		 *
 		 * \param _homeId The HomeID of the Z-Wave network
-		 * \return if the CreateNewPrimary Command was send succesfully to the Controller
+		 * \return if the CreateNewPrimary Command was send successfully to the Controller
 		 * \sa CancelControllerCommand
 		 */
 		bool CreateNewPrimary(uint32 const _homeId);
 
 		/**
 		 * \brief Receive network configuration information from primary controller. Requires secondary.
-		 * This command prepares the controller to recieve Network Configuration from a Secondary Controller.
+		 * This command prepares the controller to receive Network Configuration from a Secondary Controller.
 		 *
 		 * Results of the ReceiveConfiguration Command will be send as a Notification with the Notification type as
 		 * Notification::Type_ControllerCommand
 		 *
 		 * \param _homeId The HomeID of the Z-Wave network
-		 * \return if the ReceiveConfiguration Command was send succesfully to the Controller
+		 * \return if the ReceiveConfiguration Command was send successfully to the Controller
 		 * \sa CancelControllerCommand
 		 */
 		bool ReceiveConfiguration (uint32 const _homeId);
@@ -1936,7 +1936,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 *
 		 * \param _homeId The HomeID of the Z-Wave network
 		 * \param _nodeId the ID of the Failed Node
-		 * \return if the ReplaceFailedNode Command was send succesfully to the Controller
+		 * \return if the ReplaceFailedNode Command was send successfully to the Controller
 		 * \sa HasNodeFailed
 		 * \sa CancelControllerCommand
 		 */
@@ -1950,7 +1950,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * Notification::Type_ControllerCommand
 		 *
 		 * \param _homeId The HomeID of the Z-Wave network
-		 * \return if the TransferPrimaryRole Command was send succesfully to the Controller
+		 * \return if the TransferPrimaryRole Command was send successfully to the Controller
 		 * \sa CancelControllerCommand
 		 */
 		bool TransferPrimaryRole(uint32 const _homeId);
@@ -1963,7 +1963,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 *
 		 * \param _homeId The HomeID of the Z-Wave network
 		 * \param _nodeId the ID of the Node
-		 * \return if the RequestNetworkUpdate Command was send succesfully to the Controller
+		 * \return if the RequestNetworkUpdate Command was send successfully to the Controller
 		 * \sa CancelControllerCommand
 		 */
 		bool RequestNetworkUpdate(uint32 const _homeId, uint8 const _nodeId);
@@ -1976,7 +1976,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 *
 		 * \param _homeId The HomeID of the Z-Wave network
 		 * \param _nodeId the ID of the Node
-		 * \return if the ReplicationSend Command was send succesfully to the Controller
+		 * \return if the ReplicationSend Command was send successfully to the Controller
 		 * \sa CancelControllerCommand
 		 */
 		bool ReplicationSend(uint32 const _homeId, uint8 const _nodeId);
@@ -1992,7 +1992,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _homeId The HomeID of the Z-Wave network
 		 * \param _nodeId the ID of the Virtual Node
 		 * \param _buttonId the ID of the Button to create
-		 * \return if the CreateButton Command was send succesfully to the Controller
+		 * \return if the CreateButton Command was send successfully to the Controller
 		 * \sa CancelControllerCommand
 		 */
 		bool CreateButton(uint32 const _homeId, uint8 const _nodeId, uint8 const _buttonid);
@@ -2008,7 +2008,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _homeId The HomeID of the Z-Wave network
 		 * \param _nodeId the ID of the Virtual Node
 		 * \param _buttonId the ID of the Button to delete
-		 * \return if the DeleteButton Command was send succesfully to the Controller
+		 * \return if the DeleteButton Command was send successfully to the Controller
 		 * \sa CancelControllerCommand
 		 */
 		bool DeleteButton(uint32 const _homeId, uint8 const _nodeId, uint8 const _buttonid);

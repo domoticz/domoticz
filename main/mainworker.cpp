@@ -120,6 +120,7 @@
 #include "../hardware/OpenWebNetUSB.h"
 #include "../hardware/InComfort.h"
 #include "../hardware/RelayNet.h"
+#include "../hardware/SysfsGPIO.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -528,7 +529,8 @@ bool MainWorker::GetSunSettings()
 		// ToDo: add here some condition to avoid double events loading on application startup. check if m_LastSunriseSet was empty?
 		m_eventsystem.LoadEvents(); // reloads all events from database to refresh blocky events sunrise/sunset what are already replaced with time
 
-                m_scheduler.ReloadSchedules(); // force reload of all schedules to adjust for changed sunrise/sunset values
+		// FixMe: only reload schedules relative to sunset/sunrise to prevent race conditions
+		// m_scheduler.ReloadSchedules(); // force reload of all schedules to adjust for changed sunrise/sunset values
 	}
 	return true;
 }
@@ -657,7 +659,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new OTGWSerial(ID,SerialPort, 9600, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
 		break;
 	case HTYPE_TeleinfoMeter:
-		pHardware = new CTeleinfoSerial(ID, SerialPort, Mode1, (Mode2 != 0), Mode3);
+		pHardware = new CTeleinfoSerial(ID, SerialPort, DataTimeout, Mode1, (Mode2 != 0), Mode3);
 		break;
 	case HTYPE_MySensorsUSB:
 		pHardware = new MySensorsSerial(ID, SerialPort, Mode1);
@@ -789,7 +791,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_ECODEVICES:
 		//LAN
-		pHardware = new CEcoDevices(ID, Address, Port, Mode1, Mode2);
+		pHardware = new CEcoDevices(ID, Address, Port, Username, Password, DataTimeout, Mode1, Mode2);
 		break;
 	case HTYPE_1WIRE:
 		//1-Wire file system
@@ -911,7 +913,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CThermosmart(ID, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
 		break;
 	case HTYPE_Philips_Hue:
-		pHardware = new CPhilipsHue(ID, Address, Port, Username);
+		pHardware = new CPhilipsHue(ID, Address, Port, Username, Mode1);
 		break;
 	case HTYPE_HARMONY_HUB:
 		pHardware = new CHarmonyHub(ID, Address, Port);
@@ -940,6 +942,11 @@ bool MainWorker::AddHardwareFromParams(
 		//Raspberry Pi GPIO port access
 #ifdef WITH_GPIO
 		pHardware = new CGpio(ID, Mode1, Mode2, Mode3);
+#endif
+		break;
+	case HTYPE_SysfsGPIO:
+#ifdef WITH_SYSFS_GPIO
+		pHardware = new CSysfsGPIO(ID);
 #endif
 		break;
 	case HTYPE_Comm5TCP:

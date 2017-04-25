@@ -50,7 +50,7 @@
 		</Value>
 
 		<Value type="byte" genre="config" instance="1" index="11" label="Interval between forcing to send report concerning the temperature conditions" min="0" max="255" value="200">
-			<Help>Interval between forcing to send report concerning the temperature conditions. The forced report is sent immediately after the next reading of temperature from the sensor, irrespective of the settings of parameter no. 12. Value 0 = Deactivates the function. Note: Frequent sending of temperature condition reports is reasonable when the sensor is located somewhere where can occure rapid changes of ambient temperature. In other cases it is recommended to leave the parameter set to the default value.</Help>
+			<Help>Interval between forcing to send report concerning the temperature conditions. The forced report is sent immediately after the next reading of temperature from the sensor, irrespective of the settings of parameter no. 12. Value 0 = Deactivates the function. Note: Frequent sending of temperature condition reports is reasonable when the sensor is located somewhere where can occur rapid changes of ambient temperature. In other cases it is recommended to leave the parameter set to the default value.</Help>
 		</Value>
 
 		<Value type="byte" genre="config" instance="1" index="12" label="Insensitiveness to temperature changes" min="0" max="255" value="8">

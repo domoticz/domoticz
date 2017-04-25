@@ -23,7 +23,7 @@
 	
     <Value type="byte" instance="1" index="4" genre="config" label="Light threshold" min="0" max="100" value="99">
       <Help>
-          Setting the illummination threshold to turn on the light. When the event triggered and the environment illumination lower then 
+          Setting the illumination threshold to turn on the light. When the event triggered and the environment illumination lower than 
           the threshold, the device will turn on the light.
           0 means turn off illumination detected function and never turn on the light.
           1 means darkest.
