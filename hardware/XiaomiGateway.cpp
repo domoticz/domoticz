@@ -628,12 +628,15 @@ bool XiaomiGateway::StartHardware()
 		else {
 			_log.Log(LOG_STATUS, "XiaomiGateway: will listen on 9898 for hardware id %d", m_HwdID);
 		}
-		//retrieve the gateway key
-		//m_GatewayPassword = result[0][0].c_str();
-		//m_GatewayIp = result[0][1].c_str();
 		m_GatewayRgbHex = "FFFFFF";
 		m_GatewayBrightnessInt = 100;
 		m_GatewayPrefix = "f0b4";
+		//check for presence of Xiaomi user variable to enable message output 
+		m_OutputMessage = false;
+		result = m_sql.safe_query("SELECT Value FROM UserVariables WHERE (Name == 'XiaomiMessage')");
+		if (result.size() > 0) {
+			m_OutputMessage = true;
+		}
 		//Start worker thread
 		m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&XiaomiGateway::Do_Work, this)));
 	}
@@ -682,7 +685,7 @@ void XiaomiGateway::Do_Work()
 		_log.Log(LOG_STATUS, "XiaomiGateway: Could not detect local IP address: %s", e.what());
 	}
 
-	XiaomiGateway::xiaomi_udp_server udp_server(io_service, m_HwdID, m_GatewayIp, m_LocalIp, m_ListenPort9898, this);
+	XiaomiGateway::xiaomi_udp_server udp_server(io_service, m_HwdID, m_GatewayIp, m_LocalIp, m_ListenPort9898, m_OutputMessage, this);
 	boost::thread bt;
 	if (m_ListenPort9898) {
 		bt = boost::thread(boost::bind(&boost::asio::io_service::run, &io_service));
@@ -708,47 +711,41 @@ void XiaomiGateway::Do_Work()
 std::string XiaomiGateway::GetGatewayKey()
 {
 #ifdef WWW_ENABLE_SSL
-	if (m_token.empty()) {
-		_log.Log(LOG_ERROR, "XiaomiGateway: Cannot get gateway key as there is no token received from the gateway.  Please ensure your network allows UDP multicast between the Xiaomi Gateway and Domoticz");
-		return std::string("");
-	}
-	else {
-		const unsigned char *key = (unsigned char *)m_GatewayPassword.c_str();
-		unsigned char iv[AES_BLOCK_SIZE] = { 0x17, 0x99, 0x6d, 0x09, 0x3d, 0x28, 0xdd, 0xb3, 0xba, 0x69, 0x5a, 0x2e, 0x6f, 0x58, 0x56, 0x2e };
-		unsigned char *plaintext = (unsigned char *)m_token.c_str();
-		unsigned char ciphertext[128];
+	const unsigned char *key = (unsigned char *)m_GatewayPassword.c_str();
+	unsigned char iv[AES_BLOCK_SIZE] = { 0x17, 0x99, 0x6d, 0x09, 0x3d, 0x28, 0xdd, 0xb3, 0xba, 0x69, 0x5a, 0x2e, 0x6f, 0x58, 0x56, 0x2e };
+	unsigned char *plaintext = (unsigned char *)m_token.c_str();
+	unsigned char ciphertext[128];
 
-		AES_KEY encryption_key;
-		AES_set_encrypt_key(key, 128, &(encryption_key));
-		AES_cbc_encrypt((unsigned char *)plaintext, ciphertext, sizeof(plaintext) * 8, &encryption_key, iv, AES_ENCRYPT);
+	AES_KEY encryption_key;
+	AES_set_encrypt_key(key, 128, &(encryption_key));
+	AES_cbc_encrypt((unsigned char *)plaintext, ciphertext, sizeof(plaintext) * 8, &encryption_key, iv, AES_ENCRYPT);
 
-		char gatewaykey[128];
-		for (int i = 0; i < 16; i++)
-		{
-			sprintf(&gatewaykey[i * 2], "%02X", ciphertext[i]);
-		}
-	#ifdef _DEBUG
-		_log.Log(LOG_STATUS, "XiaomiGateway: GetGatewayKey Password - %s", m_GatewayPassword.c_str());
-		_log.Log(LOG_STATUS, "XiaomiGateway: GetGatewayKey Token - %s", m_token.c_str());
-		_log.Log(LOG_STATUS, "XiaomiGateway: GetGatewayKey key - %s", gatewaykey);
-	#endif
-		return gatewaykey;
-	#else
-		_log.Log(LOG_ERROR, "XiaomiGateway: GetGatewayKey NO SSL AVAILABLE");
-		return std::string("");
-	#endif
+	char gatewaykey[128];
+	for (int i = 0; i < 16; i++)
+	{
+		sprintf(&gatewaykey[i * 2], "%02X", ciphertext[i]);
 	}
+#ifdef _DEBUG
+	_log.Log(LOG_STATUS, "XiaomiGateway: GetGatewayKey Password - %s", m_GatewayPassword.c_str());
+	_log.Log(LOG_STATUS, "XiaomiGateway: GetGatewayKey Token - %s", m_token.c_str());
+	_log.Log(LOG_STATUS, "XiaomiGateway: GetGatewayKey key - %s", gatewaykey);
+#endif
+	return gatewaykey;
+#else
+	_log.Log(LOG_ERROR, "XiaomiGateway: GetGatewayKey NO SSL AVAILABLE");
+	return std::string("");
+#endif
 }
 
 
-XiaomiGateway::xiaomi_udp_server::xiaomi_udp_server(boost::asio::io_service& io_service, int m_HwdID, const std::string gatewayIp, const std::string localIp, const bool listenPort9898, XiaomiGateway *parent)
+XiaomiGateway::xiaomi_udp_server::xiaomi_udp_server(boost::asio::io_service& io_service, int m_HwdID, const std::string gatewayIp, const std::string localIp, const bool listenPort9898, const bool outputMessage, XiaomiGateway *parent)
 	: socket_(io_service, boost::asio::ip::udp::v4())
 {
 	m_HardwareID = m_HwdID;
 	m_XiaomiGateway = parent;
 	m_gatewayip = gatewayIp;
 	m_localip = localIp;
-
+	m_OutputMessage = outputMessage;
 	if (listenPort9898) {
 		try {
 			socket_.set_option(boost::asio::ip::udp::socket::reuse_address(true));
@@ -1089,7 +1086,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 				_log.Log(LOG_STATUS, "XiaomiGateway: unknown cmd received: %s", cmd.c_str());
 			}
 		}
-		if (showmessage) {
+		if (showmessage && m_OutputMessage) {
 			_log.Log(LOG_STATUS, data_);
 		}
 		start_receive();
