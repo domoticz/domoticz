@@ -38,7 +38,7 @@ private:
 	std::string m_GatewayPassword;
 	std::string m_token;
 	std::string m_GatewayMusicId;
-	std::string m_GatewayVolume;	
+	std::string m_GatewayVolume;
 	boost::mutex m_mutex;
 
 	volatile bool m_stoprequested;
