@@ -38,7 +38,7 @@ private:
 	int									m_relay_count;
 	int									m_retrycntr;
 	boost::shared_ptr<boost::thread> 	m_thread;
-	tRBUF 								Packet;
+	tRBUF 								m_Packet;
 
 	bool StartHardware();
 	bool StopHardware();

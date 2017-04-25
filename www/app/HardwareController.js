@@ -126,7 +126,8 @@ define(['app'], function (app) {
 				(text.indexOf("Kodi Media") >= 0) ||
 				(text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0) ||
 				(text.indexOf("YeeLight") >= 0) ||
-				(text.indexOf("Arilux AL-LC0x") >= 0)
+                (text.indexOf("Arilux AL-LC0x") >= 0) ||
+                (text.indexOf("sysfs gpio") >= 0)
 				)
             {
 				// if hardwaretype == 1000 => I2C sensors grouping
@@ -139,7 +140,7 @@ define(['app'], function (app) {
                 	var i2caddress=$("#hardwareparami2caddress #i2caddress").val();
                 	var port="&port=" + encodeURIComponent(i2caddress);
                 }
-                if (text.indexOf("GPIO") >= 0)
+                if ((text.indexOf("GPIO") >= 0) && (text.indexOf("sysfs gpio") == -1))
                 {
                     var gpiodebounce=$("#hardwareparamsgpio #gpiodebounce").val();
                     var gpioperiod = $("#hardwareparamsgpio #gpioperiod").val();
@@ -348,16 +349,6 @@ define(['app'], function (app) {
                     }
                     Mode3 = ratelimitp1;
                 }
-		if (text.indexOf("Eco Devices") >= 0)
-                {
-                    Mode1 = $("#hardwarecontent #divmodelecodevices #combomodelecodevices option:selected").val();
-                    var ratelimitp1=$("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val();
-                    if (ratelimitp1=="")
-                    {
-                        ratelimitp1 = "60";
-                    }
-                    Mode2 = ratelimitp1;
-                }
 
                 $.ajax({
                      url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
@@ -473,7 +464,8 @@ define(['app'], function (app) {
             }
             else if (
 				(text.indexOf("Domoticz") >= 0) ||
-				(text.indexOf("ETH8020") >= 0) ||
+				(text.indexOf("Eco Devices") >= 0) ||
+                                (text.indexOf("ETH8020") >= 0) ||
 				(text.indexOf("Daikin") >= 0) ||
 				(text.indexOf("Sterbox") >= 0) ||
 				(text.indexOf("Anna") >= 0) ||
@@ -511,6 +503,17 @@ define(['app'], function (app) {
 					extra=$("#hardwarecontent #divmqtt #filename").val();
 					Mode1 = $("#hardwarecontent #divmqtt #combotopicselect").val();
 				}
+               if (text.indexOf("Eco Devices") >= 0)
+                {
+                    Mode1 = $("#hardwarecontent #divmodelecodevices #combomodelecodevices option:selected").val();
+                    var ratelimitp1=$("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val();
+                    if (ratelimitp1=="")
+                    {
+                        ratelimitp1 = "60";
+                    }
+                    Mode2 = ratelimitp1;
+                }
+
                 $.ajax({
                      url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
                         "&address=" + address +
@@ -557,7 +560,12 @@ define(['app'], function (app) {
                     ShowNotify($.t('Please enter a username!'), 2500, true);
                     return;
                 }
-
+                var pollinterval = $("#hardwarecontent #hardwareparamsphilipshue #pollinterval").val();
+                if (pollinterval == "") {
+                    ShowNotify($.t('Please enter poll interval!'), 2500, true);
+                    return;
+                }
+                Mode1 = pollinterval;
                 $.ajax({
                      url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
                         "&address=" + address +
@@ -1078,8 +1086,9 @@ define(['app'], function (app) {
 				(text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0) ||
 				(text.indexOf("Tellstick") >= 0) ||
 				(text.indexOf("Motherboard") >= 0) ||
-				(text.indexOf("YeeLight") >= 0) ||
-				(text.indexOf("Arilux AL-LC0x") >= 0)
+                (text.indexOf("YeeLight") >= 0) ||
+                (text.indexOf("Arilux AL-LC0x") >= 0) ||
+                (text.indexOf("sysfs gpio") >= 0)
 				)
             {
                 $.ajax({
@@ -5057,7 +5066,8 @@ define(['app'], function (app) {
 							(data["Type"].indexOf("PiFace") >= 0)||
 							(data["Type"].indexOf("Tellstick") >= 0) ||
 							(data["Type"].indexOf("Yeelight") >= 0) ||
-							(data["Type"].indexOf("Arilux AL-LC0x") >= 0)
+                            (data["Type"].indexOf("Arilux AL-LC0x") >= 0) ||
+                            (data["Type"].indexOf("sysfs gpio") >= 0)
                            )
                         {
                             //nothing to be set
@@ -5117,7 +5127,7 @@ define(['app'], function (app) {
                                 }
                            }
                         }
-                        else if ((((data["Type"].indexOf("LAN") >= 0) || data["Type"].indexOf("MySensors Gateway with MQTT") >= 0) && (data["Type"].indexOf("YouLess") == -1) && (data["Type"].indexOf("Denkovi") == -1) && (data["Type"].indexOf("Relay-Net") == -1) && (data["Type"].indexOf("Satel Integra") == -1) && (data["Type"].indexOf("MyHome OpenWebNet with LAN interface") == -1)) || (data["Type"].indexOf("Domoticz") >= 0) || (data["Type"].indexOf("Harmony") >= 0)) {
+                        else if ((((data["Type"].indexOf("LAN") >= 0) || (data["Type"].indexOf("Eco Devices") >= 0) || data["Type"].indexOf("MySensors Gateway with MQTT") >= 0) && (data["Type"].indexOf("YouLess") == -1) && (data["Type"].indexOf("Denkovi") == -1) && (data["Type"].indexOf("Relay-Net") == -1) && (data["Type"].indexOf("Satel Integra") == -1) && (data["Type"].indexOf("MyHome OpenWebNet with LAN interface") == -1)) || (data["Type"].indexOf("Domoticz") >= 0) || (data["Type"].indexOf("Harmony") >= 0)) {
                             $("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
                             $("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
                             if (data["Type"].indexOf("P1 Smart Meter") >= 0)
@@ -5204,6 +5214,7 @@ define(['app'], function (app) {
                             $("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
                             $("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
                             $("#hardwarecontent #hardwareparamsphilipshue #username").val(data["Username"]);
+                            $("#hardwarecontent #hardwareparamsphilipshue #pollinterval").val(data["Mode1"]);
                         }
                         else if (data["Type"].indexOf("Winddelen") >= 0) {
                             $("#hardwarecontent #hardwareparamswinddelen #combomillselect").val(data["Mode1"]);
@@ -5223,6 +5234,7 @@ define(['app'], function (app) {
                         if (
                             (data["Type"].indexOf("Domoticz") >= 0)||
                             (data["Type"].indexOf("ICY") >= 0) ||
+                            (data["Type"].indexOf("Eco Devices") >= 0) ||
                             (data["Type"].indexOf("Toon") >= 0) ||
                             (data["Type"].indexOf("Atag") >= 0)||
                             (data["Type"].indexOf("Nest Th") >= 0)||
@@ -5235,12 +5247,12 @@ define(['app'], function (app) {
                             (data["Type"].indexOf("MQTT") >= 0) ||
                             (data["Type"].indexOf("Netatmo") >= 0) ||
                             (data["Type"].indexOf("Fitbit") >= 0)||
-							(data["Type"].indexOf("HTTP") >= 0)||
+                            (data["Type"].indexOf("HTTP") >= 0)||
                             (data["Type"].indexOf("Thermosmart") >= 0) ||
-							(data["Type"].indexOf("Logitech Media Server") >= 0) ||
-							(data["Type"].indexOf("HEOS by DENON") >= 0) ||
-							(data["Type"].indexOf("Razberry") >= 0) ||
-							(data["Type"].indexOf("Comm5") >= 0)
+			    (data["Type"].indexOf("Logitech Media Server") >= 0) ||
+		            (data["Type"].indexOf("HEOS by DENON") >= 0) ||
+		            (data["Type"].indexOf("Razberry") >= 0) ||
+		            (data["Type"].indexOf("Comm5") >= 0)
                             )
                         {
                             $("#hardwarecontent #hardwareparamslogin #username").val(data["Username"]);
@@ -5348,7 +5360,8 @@ define(['app'], function (app) {
 				(text.indexOf("System Alive") >= 0)||
 				(text.indexOf("PiFace") >= 0) ||
 				(text.indexOf("Yeelight") >= 0) ||
-				(text.indexOf("Arilux AL-LC0x") >= 0)
+                (text.indexOf("Arilux AL-LC0x") >= 0) ||
+                (text.indexOf("sysfs gpio") >= 0)
                )
             {
                 $("#hardwarecontent #divserial").hide();
@@ -5372,7 +5385,7 @@ define(['app'], function (app) {
                     $("#hardwarecontent #divi2caddress").show();
                 }
             }
-            else if (text.indexOf("GPIO") >= 0)
+            else if ((text.indexOf("GPIO") >= 0) && (text.indexOf("sysfs gpio") == -1))
             {
                 $("#hardwarecontent #divgpio").show();
                 $("#hardwarecontent #divserial").hide();
@@ -5411,7 +5424,7 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
             }
-            else if ((text.indexOf("LAN") >= 0 || text.indexOf("Harmony") >= 0 || text.indexOf("MySensors Gateway with MQTT") >= 0) && text.indexOf("YouLess") == -1 && text.indexOf("Denkovi") == -1 && text.indexOf("Relay-Net") == -1  && text.indexOf("Satel Integra") == -1 && text.indexOf("MyHome OpenWebNet with LAN interface") == -1)
+            else if ((text.indexOf("LAN") >= 0 || text.indexOf("Harmony") >= 0 || text.indexOf("Eco Devices") >= 0 || text.indexOf("MySensors Gateway with MQTT") >= 0) && text.indexOf("YouLess") == -1 && text.indexOf("Denkovi") == -1 && text.indexOf("Relay-Net") == -1  && text.indexOf("Satel Integra") == -1 && text.indexOf("MyHome OpenWebNet with LAN interface") == -1)
             {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").show();
@@ -5422,6 +5435,7 @@ define(['app'], function (app) {
 		{
 		    $("#hardwarecontent #divmodelecodevices").show();
 		    $("#hardwarecontent #divratelimitp1").show();
+		    $("#hardwarecontent #divlogin").show();
 		}
                 if (text.indexOf("P1 Smart Meter") >= 0)
                 {
@@ -5547,7 +5561,6 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divphilipshue").show();
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divhttppoller").hide();
-                $("#hardwarecontent #hardwareparamsremote #tcpport").val(80);
             }
             else if (text.indexOf("Yeelight") >= 0) {
                 $("#hardwarecontent #divserial").hide();

@@ -181,7 +181,8 @@ void C1WireByOWFS::SetLightState(const std::string& sId,int unit,bool value, con
       }
    case digital_potentiometer:
    {
-	   unsigned int wiper = level * (255.0 / 15.0);
+	   writeData(device, "chargepump", "1");
+	   unsigned int wiper = static_cast<unsigned int>(level * (255.0 / 15.0));
 	   writeData(device, "wiper", boost::to_string(wiper));
 	   break;
    }
