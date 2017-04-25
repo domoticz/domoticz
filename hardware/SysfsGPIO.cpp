@@ -123,7 +123,16 @@
 #include "../main/SQLHelper.h"
 #include "../main/localtime_r.h"
 
+/* 
+Note:
+HEATBEAT_COUNT, UPDATE_MASTER_COUNT and GPIO_POLL_MSEC are related.
+Set values so that that heartbeat occurs every 10 seconds and update 
+master occurs once, 30 seconds after startup. 
+*/
+#define HEARTBEAT_COUNT		40
+#define UPDATE_MASTER_COUNT 120
 #define GPIO_POLL_MSEC		250
+
 #define GPIO_IN				0
 #define GPIO_OUT			1
 #define GPIO_LOW			0
@@ -210,7 +219,6 @@ void CSysfsGPIO::Do_Work()
 	char path[GPIO_MAX_PATH];
 	char value_str[3];
 	int fd;
-	int counter;
 	int input_count = 0;
 	int output_count = 0;
 
@@ -227,8 +235,6 @@ void CSysfsGPIO::Do_Work()
 		}
 	}
 
-	_log.Log(LOG_STATUS, "SysfsGPIO: Input poller started, configured inputs:%d outputs:%d", input_count, output_count);
-
 	/* create fd's used for fast reads */
 	for (int i = 0; i < GpioSavedState.size(); i++)
 	{
@@ -236,13 +242,15 @@ void CSysfsGPIO::Do_Work()
 		GpioSavedState[i].read_value_fd = open(path, O_RDONLY);
 	}
 
+	int counter = 0;
+	_log.Log(LOG_STATUS, "SysfsGPIO: Input poller started, inputs:%d outputs:%d", input_count, output_count);
+
 	while (!m_stoprequested)
 	{
 		sleep_milliseconds(GPIO_POLL_MSEC);
 		counter++;
 
-		/*  Heartbeat maintenance  */
-		if (counter % 40 == 0)
+		if (counter % HEARTBEAT_COUNT == 0)	/* Heartbeat maintenance */
 		{
 			m_LastHeartbeat = mytime(NULL);
 		}
@@ -250,12 +258,23 @@ void CSysfsGPIO::Do_Work()
 		if (!m_stoprequested)
 		{
 			PollGpioInputs();
-			UpdateDomoticzInputs();
+			UpdateDomoticzInputs(false);
+		}
+
+		if (counter == UPDATE_MASTER_COUNT)	/* only executes when master/slave configuration*/
+		{
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query("SELECT ID FROM Users WHERE (RemoteSharing==1) AND (Active==1)");
+
+			if (result.size() > 0)
+			{
+				_log.Log(LOG_STATUS, "SysfsGPIO: Update master devices");
+				UpdateDomoticzInputs(true);
+			}
 		}
 	}
 
-	/* close all fast read fd's */
-	for (int i = 0; i < GpioSavedState.size(); i++)
+	for (int i = 0; i < GpioSavedState.size(); i++) /* close all fast read fd's */
 	{
 		snprintf(path, GPIO_MAX_PATH, "%s%d/value", GPIO_PATH, GpioSavedState[i].pin_number);
 		close(GpioSavedState[i].read_value_fd);
@@ -272,8 +291,7 @@ void CSysfsGPIO::Init()
 	BYTE id3 = 0x0E;
 	BYTE id4 = m_HwdID & 0xFF;
 
-	/* 	Prepare packet for LIGHTING2 relay status packet  */
-	memset(&m_Packet, 0, sizeof(tRBUF));
+	memset(&m_Packet, 0, sizeof(tRBUF)); /* Prepare packet for LIGHTING2 relay status packet */
 
 	if (m_HwdID > 0xFF)
 	{
@@ -300,7 +318,7 @@ void CSysfsGPIO::Init()
 
 	FindGpioExports();
 	CreateDomoticzDevices();
-	UpdateDomoticzInputs();
+	UpdateDomoticzInputs(false);
 }
 
 void CSysfsGPIO::FindGpioExports()
@@ -315,9 +333,8 @@ void CSysfsGPIO::FindGpioExports()
 		snprintf(path, GPIO_MAX_PATH, "%s%d", GPIO_PATH, gpio_pin);
 		fd = open(path, O_RDONLY);
 
-		if (-1 != fd) 
+		if (-1 != fd) /* GPIO export found */
 		{
-			/* GPIO export *found */
 			gpio_info gi;
 			gi.pin_number = gpio_pin;
 			gi.value = GPIORead(gpio_pin, "value");
@@ -361,38 +378,94 @@ void CSysfsGPIO::CreateDomoticzDevices()
 
 	for (int i = 0; i < GpioSavedState.size(); i++)
 	{
+		bool  createNewDevice = false;
+
 		if (GpioSavedState[i].direction == GPIO_IN)
 		{
-			result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", 
+			/* Inputs */
+			result = m_sql.safe_query("SELECT Name,nValue,sValue,Options FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", 
 				m_HwdID, szIdx, GpioSavedState[i].pin_number);
 
 			if (result.empty())
 			{
+				createNewDevice = true;
+			}
+			else
+			{
+				if (result.size() > 0) /* input found */
+				{
+					std::vector<std::string> sd = result[0];
+
+					if (atoi(sd[3].c_str()) != 0) /* check if previous db device was an input */
+					{
+						m_sql.safe_query(
+							"DELETE FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",
+							m_HwdID, szIdx, GpioSavedState[i].pin_number);
+
+						createNewDevice = true;
+					}
+				}
+			}
+
+			if (createNewDevice)
+			{
 				m_sql.safe_query(
-					"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue) "
-					"VALUES (%d,'%q',%d, %d, %d, %d, 0, 12, 255, '%q', 0, ' ')",
-					m_HwdID, szIdx, GpioSavedState[i].pin_number, pTypeLighting2, sTypeAC, int(STYPE_Contact), "Input");
+					"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue, Options) "
+					"VALUES (%d,'%q',%d, %d, %d, %d, 0, 12, 255, '%q', %d, ' ', '0')",
+					m_HwdID, szIdx, GpioSavedState[i].pin_number, pTypeLighting2, sTypeAC, int(STYPE_Contact), "Input", GpioSavedState[i].value);
 			}
 		}
 		else
-		{
-			result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", 
+		{	
+			/* Outputs */
+			result = m_sql.safe_query("SELECT Name,nValue,sValue,Options FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", 
 				m_HwdID, szIdx, GpioSavedState[i].pin_number);
-			
+
 			if (result.empty())
 			{
+				createNewDevice = true;
+			}
+			else
+			{
+				if (result.size() > 0) /* output found */
+				{
+					std::vector<std::string> sd = result[0];
+
+					if (atoi(sd[3].c_str()) != 1) /* check if previous db device was an output */
+					{
+						m_sql.safe_query(
+							"DELETE FROM DeviceStatus  WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",
+							m_HwdID, szIdx, GpioSavedState[i].pin_number);
+
+						createNewDevice = true;
+					}
+					else
+					{
+						if (atoi(sd[1].c_str()) == 1) /* write actual db state to hardware */
+						{
+							GPIOWrite(GpioSavedState[i].pin_number, GpioSavedState[i].active_low ? false : true);
+						}
+						else
+						{
+							GPIOWrite(GpioSavedState[i].pin_number, GpioSavedState[i].active_low ? true : false);
+						}
+					}
+				}
+			}
+
+			if (createNewDevice)
+			{
 				m_sql.safe_query(
-					"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue) "
-					"VALUES (%d,'%q',%d, %d, %d, %d, 0, 12, 255, '%q', 0, ' ')",
-					m_HwdID, szIdx, GpioSavedState[i].pin_number, pTypeLighting2, sTypeAC, int(STYPE_OnOff), "Output");
+					"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue, Options) "
+					"VALUES (%d,'%q',%d, %d, %d, %d, 0, 12, 255, '%q', %d, ' ', '1')",
+					m_HwdID, szIdx, GpioSavedState[i].pin_number, pTypeLighting2, sTypeAC, int(STYPE_OnOff), "Output", GpioSavedState[i].value);
 			}
 		}
 	}
 }
 
-void CSysfsGPIO::UpdateDomoticzInputs()
+void CSysfsGPIO::UpdateDomoticzInputs(bool forceUpdate)
 {
-	
 	std::vector<std::vector<std::string> > result;
 	char szIdx[10];
 
@@ -424,30 +497,34 @@ void CSysfsGPIO::UpdateDomoticzInputs()
 				}
 			}
 
-			if (GpioSavedState[i].db_state != state)
+			if ((GpioSavedState[i].db_state != state) || (forceUpdate))
 			{
-				result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",
+				result = m_sql.safe_query("SELECT Name,nValue,sValue,Used FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",
 					m_HwdID, szIdx, GpioSavedState[i].pin_number);
 
 				if ((!result.empty()) && (result.size() > 0))
 				{
 					std::vector<std::string> sd = result[0];
-					bool db_state = true;
 
-					if (atoi(sd[1].c_str()) == 0)
+					if (atoi(sd[3].c_str()) == 1) /* Check if device is used */
 					{
-						db_state = false;
-					}
+						int db_state = 1;
 
-					if (db_state != state)
-					{
-						updateDatabase = true;
-					}
+						if (atoi(sd[1].c_str()) == 0) /* determine database state*/
+						{
+							db_state = 0;
+						}
 
-					GpioSavedState[i].db_state = state;
+						if ((db_state != state) || (forceUpdate)) /* check if db update is required */
+						{
+							updateDatabase = true;
+						}
+
+						GpioSavedState[i].db_state = state; /* save new database state */
+					}
 				}
 
-				if (updateDatabase)
+				if (updateDatabase) /* send packet to Domoticz */
 				{
 					if (state)
 					{
@@ -459,10 +536,10 @@ void CSysfsGPIO::UpdateDomoticzInputs()
 						m_Packet.LIGHTING2.cmnd = light2_sOff;
 						m_Packet.LIGHTING2.level = 0;
 					}
+
 					m_Packet.LIGHTING2.unitcode = (char)GpioSavedState[i].pin_number;
 					m_Packet.LIGHTING2.seqnbr++;
 
-					/* send packet to Domoticz */
 					sDecodeRXMessage(this, (const unsigned char *)&m_Packet.LIGHTING2, "Input", 255);
 				}
 			}

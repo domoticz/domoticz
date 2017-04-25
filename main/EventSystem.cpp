@@ -2516,7 +2516,7 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 
 		lua_pushnumber(lua_state, (lua_Number)index);
 
-		lua_createtable(lua_state, 1, additional_lines + 12);
+		lua_createtable(lua_state, 1, additional_lines + 11);
 
 		lua_pushstring(lua_state, "name");
 		lua_pushstring(lua_state, sitem.deviceName.c_str());
@@ -2542,11 +2542,8 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		lua_pushstring(lua_state, "lastUpdate");
 		lua_pushstring(lua_state, sitem.lastUpdate.c_str());
 		lua_rawset(lua_state, -3);
-		lua_pushstring(lua_state, "level");
+		lua_pushstring(lua_state, "lastLevel");
 		lua_pushnumber(lua_state, (lua_Number)sitem.lastLevel);
-		lua_rawset(lua_state, -3);
-		lua_pushstring(lua_state, "value");
-		lua_pushstring(lua_state, sitem.nValueWording.c_str());
 		lua_rawset(lua_state, -3);
 		lua_pushstring(lua_state, "changed");
 		if (sitem.ID == deviceID)
@@ -2618,6 +2615,10 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 
 		lua_pushstring(lua_state, "data");
 		lua_createtable(lua_state, 0, 0);
+
+		lua_pushstring(lua_state, "_state");
+		lua_pushstring(lua_state, sitem.nValueWording.c_str());
+		lua_rawset(lua_state, -3);
 
 		if (("Heating" == dev_type) && ("Zone" == sub_type))
 		{
@@ -2830,10 +2831,21 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 	devicestatesMutexLock3.unlock();
 
 	// Now do the scenes and groups.
+	const char *description = "";
 	typedef std::map<uint64_t, _tScenesGroups>::iterator it_scgr;
 	for (it_scgr iterator = m_scenesgroups.begin(); iterator != m_scenesgroups.end(); ++iterator)
 	{
 		_tScenesGroups sgitem = iterator->second;
+
+		result = m_sql.safe_query("SELECT Description FROM Scenes WHERE (ID=='%d')", sgitem.ID);
+		if (result.size() == 0)
+		{
+			_log.Log(LOG_ERROR, "EventSystem: Failed to read scene/group description for id %d", sgitem.ID);
+		}
+		else
+		{
+			description = result[0][0].c_str();
+		}
 
 		lua_pushnumber(lua_state, (lua_Number)index);
 
@@ -2844,6 +2856,9 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		lua_rawset(lua_state, -3);
 		lua_pushstring(lua_state, "id");
 		lua_pushnumber(lua_state, (lua_Number)sgitem.ID);
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "description");
+		lua_pushstring(lua_state, description);
 		lua_rawset(lua_state, -3);
 		lua_pushstring(lua_state, "baseType");
 		if (sgitem.scenesgroupType == 0)
@@ -2859,10 +2874,15 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		lua_pushstring(lua_state, "lastUpdate");
 		lua_pushstring(lua_state, sgitem.lastUpdate.c_str());
 		lua_rawset(lua_state, -3);
-		lua_pushstring(lua_state, "value");
+	
+		lua_pushstring(lua_state, "data");
+		lua_createtable(lua_state, 0, 0);
+
+		lua_pushstring(lua_state, "_state");
 		lua_pushstring(lua_state, sgitem.scenesgroupValue.c_str());
 		lua_rawset(lua_state, -3);
-	
+
+		lua_settable(lua_state, -3); // data table
 		lua_settable(lua_state, -3); // end entry
 		index++;
 	}
@@ -2877,7 +2897,7 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 
 		lua_pushnumber(lua_state, (lua_Number)index);
 
-		lua_createtable(lua_state, 1, 6);
+		lua_createtable(lua_state, 1, 5);
 
 		lua_pushstring(lua_state, "name");
 		lua_pushstring(lua_state, uvitem.variableName.c_str());
@@ -2885,8 +2905,17 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		lua_pushstring(lua_state, "id");
 		lua_pushnumber(lua_state, (lua_Number)uvitem.ID);
 		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "baseType");
+		lua_pushstring(lua_state, "uservariable");
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "lastUpdate");
+		lua_pushstring(lua_state, uvitem.lastUpdate.c_str());
+		lua_rawset(lua_state, -3);
 
-		lua_pushstring(lua_state, "value");
+		lua_pushstring(lua_state, "data");
+		lua_createtable(lua_state, 0, 0);
+
+		lua_pushstring(lua_state, "_state");
 		if (uvitem.variableType == 0) 
 		{
 			//Integer
@@ -2921,16 +2950,13 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 			}
 		}
 		lua_rawset(lua_state, -3);
+
+		lua_settable(lua_state, -3); // data table
+
 		lua_pushstring(lua_state, "variableType");
 		lua_pushstring(lua_state, vtype);
 		lua_rawset(lua_state, -3);
-		lua_pushstring(lua_state, "baseType");
-		lua_pushstring(lua_state, "uservariable");
-		lua_rawset(lua_state, -3);
-		lua_pushstring(lua_state, "lastUpdate");
-		lua_pushstring(lua_state, uvitem.lastUpdate.c_str());
-		lua_rawset(lua_state, -3);
-		
+
 		lua_settable(lua_state, -3); // end entry
 
 		index++;
