@@ -19,8 +19,8 @@
 	//#define DEBUG_DAVIS
 #endif
 
-#define RETRY_DELAY 30
-#define DAVIS_READ_INTERVAL 30
+#define RETRY_DELAY 15
+#define DAVIS_READ_INTERVAL 4
 
 #define round(a) ( int ) ( a + .5 )
 
@@ -307,8 +307,21 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 	if ((pData[12]!=0xFF)||(pData[13]!=0x7F))
 	{
 		bOutsideTemperatureValid=true;
-		OutsideTemperature=((unsigned int)((pData[13] << 8) | pData[12])) / 10.f;
-
+		//OutsideTemperature=((unsigned int)((pData[13] << 8) | pData[12])) / 10.f;
+		//OutsideTemperature = (OutsideTemperature - 32.0f) * 5.0f / 9.0f;
+		uint8_t msb = pData[13];
+		uint8_t lsb = pData[12];
+		
+		uint16_t temp16 = ((msb << 16) | lsb);
+		if (temp16 > 0x800) {
+			// Negative values, convert to float from two complements int
+			int temp_int = (temp16 | ~((1 << 16) - 1));
+			OutsideTemperature = (float)temp_int / 10.0f;
+		} else {
+			OutsideTemperature = (float)temp16 / 10.0f;
+		}
+		
+		// Convert to celsius
 		OutsideTemperature = (OutsideTemperature - 32.0f) * 5.0f / 9.0f;
 	}
 	//Outside Humidity
