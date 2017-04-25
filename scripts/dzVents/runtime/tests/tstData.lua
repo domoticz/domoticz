@@ -58,7 +58,7 @@ local testData = {
 				temperature = 12,
 				dewpoint = 66,
 				humidity = 67,
-				lux = 4
+				--lux = 4
 			};
 			["deviceID"] = "",
 			["rawData"] = {

@@ -1,6 +1,7 @@
 local TimedCommand = require('TimedCommand')
 local utils = require('Utils')
 local Time = require('Time')
+local Adapters = require('Adapters')
 
 local function Device(domoticz, data)
 
@@ -358,17 +359,23 @@ local function Device(domoticz, data)
 		return (changedAttributes[attribute] == true)
 	end
 
-	local name = data.name
+	function self.addAttribute(attribute, value)
+		-- add attribute to this device
+		self[attribute] = value
+	end
 
 	local state
 
-	local wasChanged = data.changed
-
 	self['name'] = data.name
 	self['id'] = data.id
+	self['_data'] = data
+
+	local adapters = Adapters()
 
 	if (data.baseType == 'device') then
-		state = data.data._state
+
+
+		--state = data.data._state
 		self['changed'] = data.changed
 		self['description'] = data.description
 		self['description'] = data.description
@@ -386,21 +393,23 @@ local function Device(domoticz, data)
 		self['deviceSubType'] = data.subType
 		self['lastUpdate'] = Time(data.lastUpdate)
 		self['rawData'] = data.rawData
+
+		local adapter = adapters.getDeviceAdapter(self)
+
+		adapter.process(self)
+
 	elseif (data.baseType == 'group' or data.baseType == 'scene') then
 		state = data.data._state
 		self['lastUpdate'] = Time(data.lastUpdate)
 		self['rawData'] = { [1]=data.state }
+		setStateAttribute(state)
 	end
 
-	setStateAttribute(state)
+	--setStateAttribute(state)
 
 	-- tbd
 	if (data.changedAttribute) then
 		changedAttributes[data.changedAttribute] = true
-	end
-
-	for attribute, value in pairs(data.data) do
-		self[attribute] = value
 	end
 
 	if (_G.TESTMODE) then

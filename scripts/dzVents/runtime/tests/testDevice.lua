@@ -1,10 +1,55 @@
 local _ = require 'lodash'
 
-package.path = package.path .. ";../?.lua"
+local scriptPath = ''
+
+package.path = package.path .. ";../?.lua;" .. scriptPath .. '/?.lua;../device-adapters/?.lua;'
+
+local testData = require('tstData')
+
 
 local LOG_INFO = 2
 local LOG_DEBUG = 3
 local LOG_ERROR = 1
+
+local function getDevice(domoticz, name, state, changed, type, subType, rawData)
+
+	local Device = require('Device')
+
+	if (rawData == nil) then
+		rawData = {
+			[1] = "1",
+			[2] = '2',
+			[3] = '3'
+		}
+	end
+
+	return Device(domoticz, {
+		["id"] = 1,
+		["name"] = name,
+		["description"] = "Description 1";
+		["batteryLevel"] = 10,
+		["signalLevel"] = '10',
+		["deviceType"] =  type and type or "someSubType";
+		["subType"] = subType and subType or "someDeviceType",
+		["hardwareName"] = "hw1",
+		["hardwareType"] = "ht1",
+		["hardwareTypeID"] = 0;
+		["hardwareTypeValue"] = 1;
+		["hardwareID"] = 1,
+		["timedOut"] = true,
+		["switchType"] = "Contact",
+		["switchTypeValue"] = 2,
+		["lastUpdate"] = "2016-03-20 12:23:00";
+		["data"] = {
+			["_state"] = state,
+		};
+		["deviceID"] = "",
+		["rawData"] = rawData,
+		["baseType"] = "device";
+		["changed"] = changed;
+		["changedAttribute"] = 'temperature' --tbd
+	})
+end
 
 describe('device', function()
 	local Device
@@ -26,6 +71,11 @@ describe('device', function()
 	setup(function()
 		_G.logLevel = 1
 		_G.TESTMODE = true
+		_G.globalvariables = {
+			Security = 'sec',
+			['script_reason'] = 'device',
+			['script_path'] = scriptPath
+		}
 
 		Device = require('Device')
 
@@ -36,7 +86,7 @@ describe('device', function()
 	end)
 
 	before_each(function()
-		device = Device(domoticz, 'myDevice', 'On', true)
+		device = getDevice(domoticz, 'myDevice', 'On', true)
 		device.id = 100
 		utils = device._getUtilsInstance()
 		utils.print = function()  end
@@ -45,6 +95,28 @@ describe('device', function()
 	after_each(function()
 		device = nil
 		commandArray = {}
+
+	end)
+
+	describe('Adapters', function()
+
+		it('should detect a lux device', function()
+			local device = getDevice(domoticz, 'myDevice', nil, true, 'Lux', 'Lux')
+			assert.is_same(1, device.lux)
+		end)
+
+
+		it('should detect a zone heating device', function()
+			local rawData = {
+				[1] = 1,
+				[2] = '12.5',
+				[3] = 'Cozy'
+			}
+			local device = getDevice(domoticz, 'myDevice', nil, true, 'Heating', 'Zone', rawData)
+			assert.is_same(12.5, device.setPoint)
+			assert.is_same('Cozy', device.heatingMode)
+
+		end)
 
 	end)
 
@@ -61,38 +133,38 @@ describe('device', function()
 	end)
 
 	it('should not be marked as changed when the device was not changed', function()
-		local device = Device(domoticz, 'myDevice', 'On', false)
+		local device = getDevice(domoticz, 'myDevice', 'On', false)
 		assert.is_false(device.changed)
 	end)
 
 	it('should not have a state when it doesnt have one', function()
-		local device = Device(domoticz, 'myDevice', nil, false)
+		local device = getDevice(domoticz, 'myDevice', nil, false)
 		assert.is_nil(device.state)
 	end)
 
 	it('should extract level', function()
-		local device = Device(domoticz, 'myDevice', 'Set Level 55%', false)
+		local device = getDevice(domoticz, 'myDevice', 'Set Level 55%', false)
 		assert.is_same('On', device.state)
 		assert.is_number(device.level)
 		assert.is_same(55, device.level)
 	end)
 
 	it('should have a bState when possible', function()
-		local device = Device(domoticz, 'myDevice', 'Set Level 55%', false)
+		local device = getDevice(domoticz, 'myDevice', 'Set Level 55%', false)
 		assert.is_true(device.bState)
 
-		device = Device(domoticz, 'myDevice', '', false)
+		device = getDevice(domoticz, 'myDevice', '', false)
 		assert.is_false(device.bState)
 
 
-		device = Device(domoticz, 'myDevice', 'On', false)
+		device = getDevice(domoticz, 'myDevice', 'On', false)
 		assert.is_true(device.bState)
 
 		local states = device._States
 
 		_.forEach(states, function(value, key)
 			--			print(key, value)
-			device = Device(domoticz, 'myDevice', key, false)
+			device = getDevice(domoticz, 'myDevice', key, false)
 			if (value.b) then
 				assert.is_true(device.bState)
 			else
@@ -109,7 +181,7 @@ describe('device', function()
 	end)
 
 	it('should switch on', function()
-		device = Device(domoticz, 'myDevice', 'Off', false)
+		device = getDevice(domoticz, 'myDevice', 'Off', false)
 
 		local cmd = device.switchOn()
 		assert.is_table(cmd)
@@ -117,7 +189,7 @@ describe('device', function()
 	end)
 
 	it('should switch off', function()
-		device = Device(domoticz, 'myDevice', 'On', false)
+		device = getDevice(domoticz, 'myDevice', 'On', false)
 
 		local cmd = device.switchOff()
 		assert.is_table(cmd)
@@ -125,7 +197,7 @@ describe('device', function()
 	end)
 
 	it('should close', function()
-		device = Device(domoticz, 'myDevice', 'Open', false)
+		device = getDevice(domoticz, 'myDevice', 'Open', false)
 
 		local cmd = device.close()
 		assert.is_table(cmd)
@@ -133,7 +205,7 @@ describe('device', function()
 	end)
 
 	it('should open', function()
-		device = Device(domoticz, 'myDevice', 'Closed', false)
+		device = getDevice(domoticz, 'myDevice', 'Closed', false)
 
 		local cmd = device.open()
 		assert.is_table(cmd)
@@ -141,7 +213,7 @@ describe('device', function()
 	end)
 
 	it('should stop', function()
-		device = Device(domoticz, 'myDevice', 'Closed', false)
+		device = getDevice(domoticz, 'myDevice', 'Closed', false)
 
 		local cmd = device.stop()
 		assert.is_table(cmd)
@@ -149,7 +221,7 @@ describe('device', function()
 	end)
 
 	it('should dim to a level', function()
-		device = Device(domoticz, 'myDevice', 'On', false)
+		device = getDevice(domoticz, 'myDevice', 'On', false)
 
 		local cmd = device.dimTo(5)
 		assert.is_table(cmd)
@@ -157,7 +229,7 @@ describe('device', function()
 	end)
 
 	it('should switch a selector', function()
-		device = Device(domoticz, 'myDevice', 'On', false)
+		device = getDevice(domoticz, 'myDevice', 'On', false)
 
 		local cmd = device.switchSelector(15)
 		assert.is_table(cmd)
@@ -403,32 +475,27 @@ describe('device', function()
 	end)
 
 	it('should mark an attribute as changed', function()
-		device.setAttributeChanged('temperature')
 		assert.is_true(device.attributeChanged('temperature'))
 	end)
 
-	it('should add an attribute', function()
-		device.addAttribute('temperature', 20)
-		assert.is_same(device.temperature, 20)
-	end)
 
 	it('should toggle a switch', function()
 		local cmd = device.toggleSwitch()
 		assert.is_same({["myDevice"]="Off"}, cmd._latest)
 
-		device = Device(domoticz, 'myDevice', 'Off', false)
+		device = getDevice(domoticz, 'myDevice', 'Off', false)
 		cmd = device.toggleSwitch()
 		assert.is_same({["myDevice"]="On"}, cmd._latest)
 
-		device = Device(domoticz, 'myDevice', 'Playing', false)
+		device = getDevice(domoticz, 'myDevice', 'Playing', false)
 		cmd = device.toggleSwitch()
 		assert.is_same({["myDevice"]="Pause"}, cmd._latest)
 
-		device = Device(domoticz, 'myDevice', 'Chime', false)
+		device = getDevice(domoticz, 'myDevice', 'Chime', false)
 		cmd = device.toggleSwitch() -- shouldn't do anything
 		assert.is_nil(cmd)
 
-		device = Device(domoticz, 'myDevice', 'All On', false)
+		device = getDevice(domoticz, 'myDevice', 'All On', false)
 		cmd = device.toggleSwitch()
 		assert.is_same({["myDevice"]="All Off"}, cmd._latest)
 

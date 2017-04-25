@@ -1,7 +1,11 @@
 local _ = require 'lodash'
 _G._ = require 'lodash'
 
-package.path = package.path .. ";../?.lua"
+local scriptPath = ''
+
+print(debug.getinfo(1).source)
+
+package.path = package.path .. ";../?.lua;" .. scriptPath .. '/?.lua'
 
 local function keys(t)
 	local keys = _.keys(t)
@@ -41,6 +45,12 @@ describe('event helpers', function()
 		}
 
 		_G.TESTMODE = true
+
+		_G.globalvariables = {
+			Security = 'sec',
+			['script_reason'] = 'device',
+			['script_path'] = scriptPath
+		}
 
 		EventHelpers = require('EventHelpers')
 	end)
@@ -372,46 +382,46 @@ describe('event helpers', function()
 		end)
 
 	end)
-
-	describe('Http data', function()
-		it('should fetch http data when timer trigger is met', function()
-			local requested = false
-			helpers.utils.requestDomoticzData = function(ip, port)
-				requested = true
-			end
-
-			helpers.evalTimeTrigger = function(interval)
-				return true
-			end
-
-			helpers.fetchHttpDomoticzData('0', '1', 'some trigger')
-			assert.is_true(requested)
-		end)
-
-		it('should log an error when passing wrong stuff', function()
-			local requested = false
-			local msg, level
-			helpers.utils.requestDomoticzData = function(ip, port)
-				requested = true
-			end
-
-			helpers.evalTimeTrigger = function(interval)
-				return true
-			end
-
-			utils.log = function(m, l)
-				msg = m
-				level = l
-			end
-
-			helpers.fetchHttpDomoticzData()
-			assert.is_false(requested)
-			assert.is_same('Invalid ip for contacting Domoticz', msg)
-			assert.is_same(utils.LOG_ERROR, level)
-
-		end)
-	end)
-
+--
+--	describe('Http data', function()
+--		it('should fetch http data when timer trigger is met', function()
+--			local requested = false
+--			helpers.utils.requestDomoticzData = function(ip, port)
+--				requested = true
+--			end
+--
+--			helpers.evalTimeTrigger = function(interval)
+--				return true
+--			end
+--
+--			helpers.fetchHttpDomoticzData('0', '1', 'some trigger')
+--			assert.is_true(requested)
+--		end)
+--
+--		it('should log an error when passing wrong stuff', function()
+--			local requested = false
+--			local msg, level
+--			helpers.utils.requestDomoticzData = function(ip, port)
+--				requested = true
+--			end
+--
+--			helpers.evalTimeTrigger = function(interval)
+--				return true
+--			end
+--
+--			utils.log = function(m, l)
+--				msg = m
+--				level = l
+--			end
+--
+--			helpers.fetchHttpDomoticzData()
+--			assert.is_false(requested)
+--			assert.is_same('Invalid ip for contacting Domoticz', msg)
+--			assert.is_same(utils.LOG_ERROR, level)
+--
+--		end)
+--	end)
+--
 	describe('Various', function()
 		it('should dump the command array', function()
 			local messages = {}

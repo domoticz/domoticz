@@ -1,6 +1,10 @@
 local _ = require 'lodash'
 
-package.path = package.path .. ";../?.lua"
+local scriptPath = ''
+
+package.path = package.path .. ";../?.lua;" .. scriptPath .. '/?.lua'
+
+local testData = require('tstData')
 
 describe('timed commands', function()
 	local TimeCommand
@@ -16,6 +20,11 @@ describe('timed commands', function()
 
 	setup(function()
 		_G.logLevel = 0
+		_G.globalvariables = {
+			Security = 'sec',
+			['script_reason'] = 'device',
+			['script_path'] = scriptPath
+		}
 		TimedCommand = require('TimedCommand')
 	end)
 
@@ -60,7 +69,7 @@ describe('timed commands', function()
 		assert.is_same({["mySwitch"]="On AFTER 300"}, cmd._latest)
 
 		-- and it should have a for_min
-		assert.is_function(res.for_min)`
+		assert.is_function(res.for_min)
 		res.for_min(10)
 		assert.is_same({["mySwitch"]="On AFTER 300 FOR 10"}, cmd._latest)
 		assert.is_same({{["mySwitch"]="On AFTER 300 FOR 10"}}, commandArray)

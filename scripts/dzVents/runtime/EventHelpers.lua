@@ -18,9 +18,12 @@ local function EventHelpers(settings, domoticz, mainMethod)
 	local currentPath = globalvariables['script_path']
 
 	if (_G.TESTMODE) then
-		scriptsFolderPath = currentPath .. 'tests/scripts'
-		package.path = package.path .. ';' .. currentPath .. '/tests/scripts/?.lua'
-		package.path = package.path .. ';' .. currentPath .. '/tests/scripts/storage/?.lua'
+
+		-- make sure you run the tests from the tests folder !!!!
+
+		scriptsFolderPath = currentPath .. 'scripts'
+		package.path = package.path .. ';' .. currentPath .. 'scripts/?.lua'
+		package.path = package.path .. ';' .. currentPath .. 'scripts/storage/?.lua'
 		package.path = package.path .. ';' .. currentPath .. '/../?.lua'
 	end
 
@@ -44,17 +47,6 @@ local function EventHelpers(settings, domoticz, mainMethod)
 		['domoticz'] = domoticz,
 		['settings'] = settings,
 		['mainMethod'] = mainMethod or MAIN_METHOD,
-		['deviceValueExtentions'] = {
-			['_Temperature'] = true,
-			['_Dewpoint'] = true,
-			['_Humidity'] = true,
-			['_Barometer'] = true,
-			['_Utility'] = true,
-			['_Weather'] = true,
-			['_Rain'] = true,
-			['_RainLastHour'] = true,
-			['_UV'] = true
-		}
 	}
 
 	if (_G.TESTMODE) then
@@ -203,45 +195,6 @@ local function EventHelpers(settings, domoticz, mainMethod)
 
 		self.domoticz[SCRIPT_DATA] = nil
 		self.domoticz[GLOBAL_DATA] = nil
-	end
-
-	function self.reverseFind(s, target)
-		-- string: 'this long string is a long string'
-		-- string.findReverse('long') > 23, 26
-
-		local reversed = string.reverse(s)
-		local rTarget = string.reverse(target)
-		-- reversed: gnirts gnol a si gnirts gnol siht
-		-- rTarget = gnol
-
-		local from, to = string.find(reversed, rTarget)
-		if (from ~= nil) then
-			-- return 1 less
-			local targetPos = string.len(s) - to + 1
-			return targetPos, targetPos + string.len(target) - 1
-		else
-			return nil, nil
-		end
-	end
-
-	function self.getDeviceNameByEvent(event)
-		-- event can be of the form <device name>_<value extension>
-		-- where device name can contain underscores as well
-		-- we have to extract the device name here and peel away the
-		-- known value extension
-
-		local pos, len = self.reverseFind(event, '_')
-
-		local name = event
-		if (pos ~= nil and pos > 1) then -- cannot start with _ (we use that for our _always script)
-		local valueExtension = string.sub(event, pos)
-
-		-- only peel away the first part if the extension is known
-		if (self.deviceValueExtentions[valueExtension]) then
-			name = string.sub(event, 1, pos - 1)
-		end
-		end
-		return name
 	end
 
 	function self.scandir(directory)
@@ -570,21 +523,6 @@ local function EventHelpers(settings, domoticz, mainMethod)
 		return self.getEventBindings('timer')
 	end
 
-	function self.fetchHttpDomoticzData(ip, port, interval)
-
-		local sep = string.sub(package.config, 1, 1)
-		if (sep ~= '/') then return end -- only on linux
-
-		if (ip == nil or port == nil) then
-			utils.log('Invalid ip for contacting Domoticz', utils.LOG_ERROR)
-			return
-		end
-
-		if (self.evalTimeTrigger(interval)) then
-			self.utils.requestDomoticzData(ip, port)
-		end
-	end
-
 	function self.dumpCommandArray(commandArray)
 		local printed = false
 		for k, v in pairs(commandArray) do
@@ -625,86 +563,48 @@ local function EventHelpers(settings, domoticz, mainMethod)
 		return nil
 	end
 
-	function self.dispatchDeviceEventsToScripts(changedDevices)
-		if (changedDevices == nil) then
-			-- get it from the globals
-			changedDevices = devicechanged
+	function self.dispatchDeviceEventsToScripts(domoticz)
+
+		if (domoticz == nil) then -- you can pass a domoticz object for testing purposes
+			domoticz = self.domoticz
 		end
 
 		local allEventScripts = self.getEventBindings()
 
-		local handledDevices = {}
+		for idx, device in pairs(self.domoticz.changedDevices) do
 
-		if (changedDevices ~= nil) then
+			utils.log('Event for: ' .. device.name .. ' value: ' .. device.state, utils.LOG_DEBUG)
 
-			-- check if there's a new devices.lua file waiting to be activated
-			utils.activateDevicesFile()
+			local scriptsToExecute
 
-			for changedDeviceName, changedDeviceValue in pairs(changedDevices) do
+			-- first search by name
+			scriptsToExecute = self.findScriptForChangedDevice(device.name, allEventScripts)
 
-				utils.log('Event in devicechanged: ' .. changedDeviceName .. ' value: ' .. changedDeviceValue, utils.LOG_DEBUG)
-				local scriptsToExecute
-
-				-- find the device for this name
-				-- could be MySensor or MySensor_Temperature
-				-- the device returned would be MySensor in that case
-				local baseName = self.getDeviceNameByEvent(changedDeviceName)
-				local device = self.domoticz.devices[baseName]
-
-				if (device ~= nil) then
-
-					if (handledDevices[tostring(device.id)] == nil) then -- make sure a device is only handled once (so not for MySensor and MySensor_Temperature)
-
-						-- first search by name
-						scriptsToExecute = self.findScriptForChangedDevice(device.name, allEventScripts)
-
-						if (scriptsToExecute == nil) then
-							-- search by id
-							scriptsToExecute = allEventScripts[device.id]
-						end
-
-						if (scriptsToExecute ~= nil) then
-							utils.log('Handling events for: "' .. changedDeviceName .. '", value: "' .. changedDeviceValue .. '"', utils.LOG_INFO)
-							self.handleEvents(scriptsToExecute, device)
-						end
-
-						-- mark as handled
-						handledDevices[tostring(device.id)] = true
-					else
-						utils.log('Skipping: ' .. changedDeviceName .. '. Already processed', utils.LOG_DEBUG)
-					end
-				else
-					-- this is weird.. basically impossible because the list of device objects is based on what
-					-- Domoticz passes along.
-				end
+			if (scriptsToExecute == nil) then
+				-- search by id
+				scriptsToExecute = allEventScripts[device.id]
 			end
+
+			if (scriptsToExecute ~= nil) then
+				utils.log('Handling events for: "' .. device.name .. '", value: "' .. device.state .. '"', utils.LOG_INFO)
+				self.handleEvents(scriptsToExecute, device)
+			end
+
 		end
+
 		self.dumpCommandArray(self.domoticz.commandArray)
 		return self.domoticz.commandArray
-	end
-
-	function self.autoFetchHttpDomoticzData()
-		-- this is indirectly triggered by the timer script
-		if (settings['Enable http fetch']) then
-			self.fetchHttpDomoticzData(settings['Domoticz ip'],
-				settings['Domoticz port'],
-				settings['Fetch interval'])
-		end
 	end
 
 	function self.dispatchTimerEventsToScripts()
+
 		local scriptsToExecute = self.getTimerHandlers()
 
 		self.handleEvents(scriptsToExecute)
-
-		self.autoFetchHttpDomoticzData()
-
-		-- check if there's a new devices.lua file waiting to be activated
-		utils.activateDevicesFile()
-
 		self.dumpCommandArray(self.domoticz.commandArray)
 
 		return self.domoticz.commandArray
+
 	end
 
 	if (_G.TESTMODE) then
