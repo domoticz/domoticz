@@ -577,6 +577,7 @@
 		<Product type="000f" id="0001" name="SWM01 Water Meter Sensor"/>
 		<Product type="0010" id="0001" name="SIR321 RF Countdown Timer" config="horstmann/sir321.xml"/>
 		<Product type="0010" id="0002" name="SIR321 RF Countdown Timer with temperature" config="horstmann/sir321.xml"/>
+		<Product type="0003" id="0002" name="SSR302 2-zone Thermostat Receiver" config="horstmann/ssr302.xml" />
 	</Manufacturer>
 	<Manufacturer id="0121" name="IBR-ZW">
 		<Product type="0001" id="0001" name="I-Bridge Z-Wave Controller"/>
