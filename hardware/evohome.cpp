@@ -40,11 +40,11 @@
 extern std::string szUserDataFolder;
 
 std::ofstream *CEvohome::m_pEvoLog=NULL;
-#ifdef _DEBUG
+//#ifdef _DEBUG
 bool CEvohome::m_bDebug=true;
-#else
-bool CEvohome::m_bDebug=false;
-#endif
+//#else
+//bool CEvohome::m_bDebug=false;
+//#endif
 
 const char CEvohome::m_szControllerMode[7][20]={"Normal","Economy","Away","Day Off","Custom","Heating Off","Unknown"};
 const char CEvohome::m_szWebAPIMode[7][20]={"Auto","AutoWithEco","Away","DayOff","Custom","HeatingOff","Unknown"};
@@ -93,6 +93,8 @@ CEvohome::CEvohome(const int ID, const std::string &szSerialPort, const int baud
 	AllSensors = false;
 	AllRelays = true;
 
+	//Debug
+	Log(true, LOG_STATUS, "evohome: Starting with parameters (%d:%s:%d:%s)", ID, szSerialPort.c_str(), baudrate, UserContID.c_str());
 	if(baudrate!=0)
 	{
 	  m_iBaudRate=baudrate;
@@ -179,8 +181,22 @@ bool CEvohome::StartHardware()
 		m_retrycntr=RETRY_DELAY; //will force reconnect first thing
 		
 		std::vector<std::vector<std::string> > result;
-		result = m_sql.safe_query("SELECT Name,DeviceID,nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==0)", m_HwdID);
-			
+
+		//Debug: get controller count
+		result = m_sql.safe_query("SELECT COUNT(*) FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==0)", m_HwdID);
+		int ctrlrCount = 0;
+		if (result.size() > 0)
+		{
+			ctrlrCount = atol(result[0][0].c_str());
+			Log(true, LOG_STATUS, "evohome: #Controllers=%d", ctrlrCount);
+		}
+		
+		//Debug: workaround in case multiple controllers exist in device list
+		if (m_UControllerID)
+			result = m_sql.safe_query("SELECT Name,DeviceID,nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==0) AND (DeviceID == %d)", m_HwdID, m_UControllerID);
+		else
+			result = m_sql.safe_query("SELECT Name,DeviceID,nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==0)", m_HwdID);
+		
 		if (result.size()>0)
 		{
 			std::vector<std::string> sd=result[0];
