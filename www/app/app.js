@@ -28,6 +28,14 @@ function notifyMe(title, body) {
 define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-flexible-height', 'highcharts-ng', 'angular-tree-control', 'ngDraggable', 'ngSanitize', 'angular-md5', 'ui.bootstrap', 'angular.directives-round-progress', 'angular.scrollglue', 'angular-websocket'], function (angularAMD) {
 	var app = angular.module('domoticz', ['ngRoute','ngAnimate','ngGrid','highcharts-ng', 'treeControl','ngDraggable','ngSanitize','angular-md5','ui.bootstrap','angular.directives-round-progress','angular.directives-round-progress','angular.scrollglue', 'ngWebsocket']);
 
+    
+        var bIsMobile=$.myglobals.ismobile;
+			if (bIsMobile == true) { 
+                $("body").prop('id', 'mobile');
+            }else{
+                $("body").prop('id', 'notMobile');
+            }
+    
 		isOnline=false;
 		dashboardType=1;
 
@@ -826,11 +834,11 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			var suntext;
 			var bIsMobile=$.myglobals.ismobile;
 			if (bIsMobile == true) {
-				suntext='<div><font color="yellow">&#9728;</font>' + '&#9650;' + sunRise + ' ' +  '&#9660;' + sunSet + '</div>';
+				suntext='<div><span class="sunIcon" style="color:yellow">&#9728;</span><span class="sunriseTime">' + '&#9650;' + sunRise + '</span> <span class="sunsetTime">' +  '&#9660;' + sunSet + '</span></div>';
 			}
 			else {
 				//$.t('SunRise') + $.t('SunSet')
-				suntext='<div>'+ServerTime + ' <font color="yellow">&#9728;</font>' + '&#9650;' + sunRise + ' ' +  '&#9660;' + sunSet + '</div>';
+				suntext='<div><span class="serverTime">'+ServerTime + ' </span><span class="sunIcon" style="color:yellow">&#9728;</span><span class="sunriseTime">' + '&#9650;' + sunRise + '</span> <span class="sunsetTime">' +  '&#9660;' + sunSet + '</span></div>';
 			}
 			$("#timesun").html(suntext);
         }

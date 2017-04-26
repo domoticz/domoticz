@@ -140,6 +140,21 @@ define(['app'], function (app) {
 				$scope.mytimer = undefined;
 			}
 		  $('#modal').show();
+            
+            $('body').removeClass();
+            $('body').addClass('weather').addClass('frontStage');  
+            /* This creates an error, no idea why.. oh well. */
+            /*if ($scope.config.DashboardType == 0) {   
+                $('body').addClass('3column');
+            }
+            if ($scope.config.DashboardType == 1) {
+                $('body').addClass('4column');
+            }                    
+            if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
+                $('body').addClass('dashMobile');    
+            }    
+            if ($scope.config.DashboardType == 3) {
+                $('body').addClass('dashFloorplan');*/            
 		  
 		  $.ajax({
 			 url: "json.htm?type=devices&filter=weather&used=true&order=Name", 
@@ -474,22 +489,23 @@ define(['app'], function (app) {
 					var ctrl = this;
 					var item = ctrl.item;
 
-					ctrl.nbackcolor = function() {
-						var nbackcolor="#D4E1EE";
-						if (item.HaveTimeout==true) {
-							nbackcolor="#DF2D3A";
-						}
-						else {
-							var BatteryLevel=parseInt(item.BatteryLevel);
-							if (BatteryLevel!=255) {
-								if (BatteryLevel<=10) {
-									nbackcolor="#DDDF2D";
-								}
-							}
-						}
-						return {'background-color': nbackcolor};
-					};
-
+                    var backgroundClass = "statusNormal";
+                    if (item.Protected == true) {
+                        backgroundClass = "statusProtected";
+                    }
+                    else if (item.HaveTimeout == true) {
+                        backgroundClass = "statusTimeout";
+                    } 
+                    else {
+                        var BatteryLevel = parseInt(item.BatteryLevel);
+                        if (BatteryLevel != 255) {
+                            if (BatteryLevel <= 10) {
+                                backgroundClass = "statusLowBattery";
+                            }
+                        }
+                    }
+                    $scope.statusClass = backgroundClass;
+                    
 					ctrl.displayBarometer = function() {
 						return typeof item.Barometer != 'undefined';
 					};
