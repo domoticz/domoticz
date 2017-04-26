@@ -17,7 +17,7 @@ import DomoticzEvents as DE
 
 # Domoticz.Log(0, "Testing")
 
-DE.Log("Changed: " + DE.changed_device_name)
+DE.Log("Python: Changed: " + DE.changed_device.Describe())
 
 if DE.changed_device_name == "Test":
     if DE.Devices["Test_Target"].n_value_string == "On":
@@ -26,5 +26,11 @@ if DE.changed_device_name == "Test":
     if DE.Devices["Test_Target"].n_value_string == "Off":
         DE.Command("Test_Target", "On")
 
+#changed_device = DE.Devices[DE.changed_device_name]
+
+#DE.Log("Python: " + DE.changed_device.Describe())
+
+#for aDeviceKey in DE.Devices:
+#    DE.Log("Python: " + DE.Devices[aDeviceKey].Describe())
 #test = DE.PDevice(name="Test")
 #DE.Log("Python: " + DE.Devices["Test"].n_value_string)

@@ -2285,14 +2285,19 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 
    if (Plugins::Py_IsInitialized()) {
 
-
        PyObject* pModule = Plugins::GetEventModule();
        if (pModule) {
 
            PyObject* pModuleDict = Plugins::PyModule_GetDict((PyObject*)pModule); // borrowed referece
 
-           if (pModuleDict) {
-               Plugins::PyDict_SetItemString(pModuleDict, "changed_device_name", Plugins::PyUnicode_FromString(devname.c_str()));
+           if (!pModuleDict) {
+               _log.Log(LOG_ERROR, "Python EventSystem: Failed to open module dictionary.");
+               return;
+           }
+
+           if (Plugins::PyDict_SetItemString(pModuleDict, "changed_device_name", Plugins::PyUnicode_FromString(m_devicestates[DeviceID].deviceName.c_str())) == -1) {
+               _log.Log(LOG_ERROR, "Python EventSystem: Failed to set changed_device_name.");
+               return;
            }
 
            PyObject* m_DeviceDict = Plugins::PyDict_New();
@@ -2300,37 +2305,55 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
            if (Plugins::PyDict_SetItemString(pModuleDict, "Devices", (PyObject*)m_DeviceDict) == -1)
            {
                _log.Log(LOG_ERROR, "Python EventSystem: Failed to add Device dictionary.");
-           } else {
-               // _log.Log(LOG_STATUS, "Python EventSystem: Added Device dictionary.");
+               return;
            }
+           Py_DECREF(m_DeviceDict);
 
            if (Plugins::PyType_Ready(&Plugins::PDeviceType) < 0) {
-               _log.Log(LOG_ERROR, "Python EventSystem: Unable to ready PDeviceType");
-           } else {
-               // Py_INCREF(&Plugins::PDeviceType);
-               // Plugins::PyModule_AddObject(pModule, "PDevice", (PyObject *)&Plugins::PDeviceType);
+               _log.Log(LOG_ERROR, "Python EventSystem: Unable to ready DeviceType Object.");
+               return;
+           }
 
-               typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
-               for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
-               {
-                   _tDeviceStatus sitem = iterator->second;
-                   // object deviceStatus = domoticz_module.attr("Device")(sitem.ID, sitem.deviceName, sitem.devType, sitem.subType, sitem.switchtype, sitem.nValue, sitem.nValueWording, sitem.sValue, sitem.lastUpdate);
-                   // devices[sitem.deviceName] = deviceStatus;
+           typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
+           for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
+           {
+               _tDeviceStatus sitem = iterator->second;
+               // object deviceStatus = domoticz_module.attr("Device")(sitem.ID, sitem.deviceName, sitem.devType, sitem.subType, sitem.switchtype, sitem.nValue, sitem.nValueWording, sitem.sValue, sitem.lastUpdate);
+               // devices[sitem.deviceName] = deviceStatus;
 
-                   Plugins::PDevice* aDevice = (Plugins::PDevice*)Plugins::PDevice_new(&Plugins::PDeviceType, (PyObject*)NULL, (PyObject*)NULL);
-                   PyObject* pKey = Plugins::PyUnicode_FromString(sitem.deviceName.c_str());
+               Plugins::PDevice* aDevice = (Plugins::PDevice*)Plugins::PDevice_new(&Plugins::PDeviceType, (PyObject*)NULL, (PyObject*)NULL);
+               PyObject* pKey = Plugins::PyUnicode_FromString(sitem.deviceName.c_str());
 
-                   if (Plugins::PyDict_SetItem((PyObject*)m_DeviceDict, pKey, (PyObject*)aDevice) == -1)
-                   {
-                       _log.Log(LOG_ERROR, "Python EventSystem: Failed to add device '%s' to device dictionary.", sitem.deviceName.c_str());
-                   } else {
-                       aDevice->name = Plugins::PyUnicode_FromString(sitem.deviceName.c_str());
-                       aDevice->n_value_string = Plugins::PyUnicode_FromString(sitem.nValueWording.c_str());
-                       // _log.Log(LOG_STATUS, "Python EventSystem: deviceName %s added to device dictionary", sitem.deviceName.c_str());
+               if (sitem.ID == DeviceID) {
+                   if (Plugins::PyDict_SetItemString(pModuleDict, "changed_device", (PyObject*)aDevice) == -1) {
+                       _log.Log(LOG_ERROR, "Python EventSystem: Failed to add device '%s' as changed_device.", sitem.deviceName.c_str());
                    }
-                   Py_DECREF(aDevice);
-                   Py_DECREF(pKey);
                }
+
+               if (Plugins::PyDict_SetItem((PyObject*)m_DeviceDict, pKey, (PyObject*)aDevice) == -1)
+               {
+                   _log.Log(LOG_ERROR, "Python EventSystem: Failed to add device '%s' to device dictionary.", sitem.deviceName.c_str());
+               } else {
+
+                   // _log.Log(LOG_ERROR, "Python EventSystem: nValueWording '%s' - done. ", sitem.nValueWording.c_str());
+
+                   std::string temp_n_value_string = sitem.nValueWording;
+
+                   // If nValueWording contains %, unicode fails?
+
+                   aDevice->id = sitem.ID;
+                   aDevice->name = Plugins::PyUnicode_FromString(sitem.deviceName.c_str());
+                   aDevice->type = sitem.devType;
+                   aDevice->sub_type = sitem.subType;
+                   aDevice->switch_type = sitem.switchtype;
+                   aDevice->n_value = sitem.nValue;
+                   aDevice->n_value_string = Plugins::PyUnicode_FromString(temp_n_value_string.c_str());
+                   aDevice->s_value = Plugins::PyUnicode_FromString(sitem.sValue.c_str());
+                   aDevice->last_update_string = Plugins::PyUnicode_FromString(sitem.lastUpdate.c_str());
+                   // _log.Log(LOG_STATUS, "Python EventSystem: deviceName %s added to device dictionary", sitem.deviceName.c_str());
+               }
+               Py_DECREF(aDevice);
+               Py_DECREF(pKey);
            }
 
            FILE* PythonScriptFile = _Py_fopen(filename.c_str(),"r+");
@@ -2341,7 +2364,7 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
         	if (PythonScriptFile!=NULL)
         		fclose(PythonScriptFile);
 
-            Py_XDECREF(m_DeviceDict);
+
         } else {
             _log.Log(LOG_ERROR, "Python EventSystem: Module not available to events");
         }
