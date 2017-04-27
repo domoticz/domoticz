@@ -514,6 +514,7 @@
 		<Product type="4944" id="3033" name="12729 3-Way Dimmer Switch" config="ge/12724-dimmer.xml"/>
 		<Product type="4944" id="3034" name="12730 Fan Control Switch" config="ge/12724-dimmer.xml"/>
 		<Product type="4944" id="3038" name="14294 In-Wall Smart Dimmer" config="ge/14294-dimmer.xml"/>
+		<Product type="494d" id="3034" name="26933 Smart Motion Dimmer" config="ge/26933-motion-dimmer.xml"/>
 		<Product type="4952" id="3036" name="14291 In-Wall Smart Switch" config="ge/14291-switch.xml"/>
 		<Product type="5250" id="3030" name="45603 Plugin Appliance Module"/>
 		<Product type="5250" id="3130" name="45604 Outdoor Module"/>
@@ -532,6 +533,8 @@
 		<Product type="0003" id="0004" name="PowerNode 6 port" config="greenwave/powernode6.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0208" name="Hank">
+		<Product type="0101" id="0005" name="HKZW-SO01 Smart Plug" config="hank/hkzw-so01-smartplug.xml"/>
+		<Product type="0100" id="000a" name="HKZW-SO05 Smart Plug" config="hank/hkzw-so05-smartplug.xml"/>
 		<Product type="0200" id="0009" name="Scene Controller 1 Button" config="hank/scenecontroller1.xml"/>
 		<Product type="0200" id="000b" name="Scene Controller 4 Button" config="hank/scenecontroller4.xml"/>
 	</Manufacturer>
@@ -830,6 +833,7 @@
 		<Product type="0001" id="0051" name="ZMNHDD1 Flush Dimmer" config="qubino/ZMNHDDx.xml"/>
 		<Product type="0001" id="0052" name="ZMNHSDx Din Dimmer" config="qubino/ZMNHSDx.xml"/>
 		<Product type="0001" id="0053" name="ZMNHVDx Flush Dimmer 0-10V" config="qubino/ZMNHVDx.xml"/>
+		<Product type="0001" id="0054" name="ZMNHWD1 Flush RGBW Dimmer" config="qubino/ZMNHWD1.xml"/>
 		<Product type="0002" id="0001" name="ZMNHBA2 Flush 2 Relays" config="qubino/ZMNHBA2.xml"/>
 		<Product type="0002" id="0051" name="ZMNHBDx Flush 2 Relays" config="qubino/ZMNHBDx.xml"/>
 		<Product type="0002" id="0002" name="ZMNHAA2 Flush 1 Relay" config="qubino/ZMNHAA2.xml"/>

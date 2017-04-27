@@ -1,20 +1,40 @@
 version: 1.0.{build}
-os: Visual Studio 2017
+image: Visual Studio 2017
+configuration: Release
 
+#init:
+#- ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+#
+#on_finish:
+#- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+  
 before_build:
 - ps: >-
     nuget install Tools.InnoSetup
+    
+- cmd: >-    
+    cd msbuild
+    
+    appveyor DownloadFile https://cdn.rawgit.com/domoticz/win32-libraries/master/WindowsLibraries.7z
+    
+    7z x WindowsLibraries.7z > NUL:
+    
+    cd ..
 
-build_script:
-- cd msbuild
-- appveyor DownloadFile https://cdn.rawgit.com/domoticz/win32-libraries/master/WindowsLibraries.7z
-- '7z x WindowsLibraries.7z > NUL:'
-- cd ..
-- msbuild msbuild\domoticz.sln /p:Configuration=Release /verbosity:minimal /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
-- ps: cp appversion.h version_windows_x86.h
-- ps: cp History.txt history_windows_x86.txt
-- Tools.InnoSetup.5.5.9\tools\ISCC msbuild\WindowsInstaller\DomoticzSetup.iss
-- msbuild msbuild\package.proj
+build:
+  parallel: true                  # enable MSBuild parallel builds
+  project: msbuild\domoticz.sln   # path to Visual Studio solution or project
+  verbosity: minimal
+
+after_build:
+- cmd: >-
+    cp appversion.h version_windows_x86.h
+    
+    cp History.txt history_windows_x86.txt
+    
+    Tools.InnoSetup.5.5.9\tools\ISCC msbuild\WindowsInstaller\DomoticzSetup.iss
+    
+    msbuild msbuild\package.proj
 
 artifacts:
 - path: domoticz_windows_x86.zip

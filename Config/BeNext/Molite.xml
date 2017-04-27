@@ -25,34 +25,34 @@
 			<Help>An offset for the temperature</Help>
 		</Value>		
 		<Value type="short" genre="config" instance="1" index="7" label="Light Table 100" size="2" min="1" max="32767" value="17">
-			<Help>If a LDR resistance measured lower then this value the returned light percentage is 100%. See chapter light table for more information.</Help>
+			<Help>If a LDR resistance measured lower than this value the returned light percentage is 100%. See chapter light table for more information.</Help>
 		</Value>
 		<Value type="short" genre="config" instance="1" index="8" label="Light Table 90" size="2" min="1" max="32767" value="38">
-			<Help>If a LDR resistance measured lower then this value the returned light percentage is 90%. See chapter light table for more information.</Help>
+			<Help>If a LDR resistance measured lower than this value the returned light percentage is 90%. See chapter light table for more information.</Help>
 		</Value>
 		<Value type="short" genre="config" instance="1" index="9" label="Light Table 80" size="2" min="1" max="32767" value="85">
-			<Help>If a LDR resistance measured lower then this value the returned light percentage is 80%. See chapter light table for more information.</Help>
+			<Help>If a LDR resistance measured lower than this value the returned light percentage is 80%. See chapter light table for more information.</Help>
 		</Value>
 		<Value type="short" genre="config" instance="1" index="10" label="Light Table 70" size="2" min="1" max="32767" value="186">
-			<Help>If a LDR resistance measured lower then this value the returned light percentage is 70%. See chapter light table for more information.</Help>
+			<Help>If a LDR resistance measured lower than this value the returned light percentage is 70%. See chapter light table for more information.</Help>
 		</Value>
 		<Value type="short" genre="config" instance="1" index="11" label="Light Table 60" size="2" min="1" max="32767" value="407">
-			<Help>If a LDR resistance measured lower then this value the returned light percentage is 60%. See chapter light table for more information.</Help>
+			<Help>If a LDR resistance measured lower than this value the returned light percentage is 60%. See chapter light table for more information.</Help>
 		</Value>
 		<Value type="short" genre="config" instance="1" index="12" label="Light Table 50" size="2" min="1" max="32767" value="891">
-			<Help>If a LDR resistance measured lower then this value the returned light percentage is 50%. See chapter light table for more information.</Help>
+			<Help>If a LDR resistance measured lower than this value the returned light percentage is 50%. See chapter light table for more information.</Help>
 		</Value>
 		<Value type="short" genre="config" instance="1" index="13" label="Light Table 40" size="2" min="1" max="32767" value="1949">
-			<Help>If a LDR resistance measured lower then this value the returned light percentage is 40%. See chapter light table for more information.</Help>
+			<Help>If a LDR resistance measured lower than this value the returned light percentage is 40%. See chapter light table for more information.</Help>
 		</Value>
 		<Value type="short" genre="config" instance="1" index="14" label="Light Table 30" size="2" min="1" max="32767" value="4265">
-			<Help>If a LDR resistance measured lower then this value the returned light percentage is 30%. See chapter light table for more information.</Help>
+			<Help>If a LDR resistance measured lower than this value the returned light percentage is 30%. See chapter light table for more information.</Help>
 		</Value>
 		<Value type="short" genre="config" instance="1" index="15" label="Light Table 20" size="2" min="1" max="32767" value="9332">
-			<Help>If a LDR resistance measured lower then this value the returned light percentage is 20%. See chapter light table for more information.</Help>
+			<Help>If a LDR resistance measured lower than this value the returned light percentage is 20%. See chapter light table for more information.</Help>
 		</Value>
 		<Value type="short" genre="config" instance="1" index="16" label=". Light Table 10" size="2" min="1" max="32767" value="20417">
-			<Help>If a LDR resistance measured lower then this value the returned light percentage is 10%. See chapter light table for more information.</Help>
+			<Help>If a LDR resistance measured lower than this value the returned light percentage is 10%. See chapter light table for more information.</Help>
 		</Value>
 		
 	</CommandClass>

@@ -42,7 +42,7 @@ the command.</Help>
 			<Item label="Yes" value="1" />
 		</Value>
 		<Value type="list" index="6" genre="config" label="Don't Send Level Command After Transmitting Dim Commands" size="1" value="1">
-			<Help>When you press and hold the bottom of the ZDW232 switch once, the Z-Wave devices that areassociated into Group
+			<Help>When you press and hold the bottom of the ZDW232 switch once, the Z-Wave devices that are associated into Group
 1 are sent the Dim command. If parameter 6 is set to 0, after you release the switch, the ZDW232 will command
 devices in that group to go to the same level of the ZDW232. If parameter 6 is set to a value of 1 (factory default)
 the devices in Group 1 will not go to the same level of the ZDW232.</Help>

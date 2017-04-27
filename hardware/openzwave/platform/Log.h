@@ -40,19 +40,19 @@ namespace OpenZWave
 	extern char const *LogLevelString[];
 	enum LogLevel
 	{
-		LogLevel_Invalid, 	/**< Invalid Log Status */
-		LogLevel_None,		/**< Disable all logging */
-		LogLevel_Always,	/**< These messages should always be shown */
-		LogLevel_Fatal,		/**< A likely fatal issue in the library */
-		LogLevel_Error,		/**< A serious issue with the library or the network */
-		LogLevel_Warning,	/**< A minor issue from which the library should be able to recover */
-		LogLevel_Alert,		/**< Something unexpected by the library about which the controlling application should be aware */
-		LogLevel_Info,		/**< Everything's working fine...these messages provide streamlined feedback on each message */
-		LogLevel_Detail,	/**< Detailed information on the progress of each message */
-		LogLevel_Debug,		/**< Very detailed information on progress that will create a huge log file quickly
+		LogLevel_Invalid, 		/**< Invalid Log Status */
+		LogLevel_None,			/**< Disable all logging */
+		LogLevel_Always,		/**< These messages should always be shown */
+		LogLevel_Fatal,			/**< A likely fatal issue in the library */
+		LogLevel_Error,			/**< A serious issue with the library or the network */
+		LogLevel_Warning,		/**< A minor issue from which the library should be able to recover */
+		LogLevel_Alert,			/**< Something unexpected by the library about which the controlling application should be aware */
+		LogLevel_Info,			/**< Everything is working fine...these messages provide streamlined feedback on each message */
+		LogLevel_Detail,		/**< Detailed information on the progress of each message */
+		LogLevel_Debug,			/**< Very detailed information on progress that will create a huge log file quickly
 									But this level (as others) can be queued and sent to the log only on an error or warning */
-		LogLevel_StreamDetail, /**< Will include low-level byte transfers from controller to buffer to application and back */
-		LogLevel_Internal	/**< Used only within the log class (uses existing timestamp, etc.) */
+		LogLevel_StreamDetail,	/**< Will include low-level byte transfers from controller to buffer to application and back */
+		LogLevel_Internal		/**< Used only within the log class (uses existing timestamp, etc.) */
 	};
 
 	class i_LogImpl
@@ -101,7 +101,7 @@ namespace OpenZWave
 		static void Destroy();
 
 		/**
-		 * \brief Set the Logging Implmentation Class to replace the standard File/Console Loggin
+		 * \brief Set the Logging Implementation Class to replace the standard File/Console logging
 		 * \param LogClass A Logging Class that inherits the i_LogImpl Class used to Log to
 		 * \return Bool Value indicating success or failure
 		 */

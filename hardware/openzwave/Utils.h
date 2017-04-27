@@ -46,7 +46,7 @@ namespace OpenZWave
 	 * \see ToLower, Trim
 	 */
 	string ToUpper( string const& _str );
-
+	
 	/**
 	 * Convert a string to all lower-case.
 	 * \param _str the string to be converted.
@@ -56,11 +56,11 @@ namespace OpenZWave
 	string ToLower( string const& _str );
 
 	/**
-	 * Split a String into a Vector, seperated by seperators
+	 * Split a String into a Vector, separated by separators
 	 * \param lst the vector to store the results in
 	 * \param input the input string to split
-	 * \param seperators a string containing a list of valid seperators
-	 * \param remove_empty if after spliting a string, the any of the results are a empty string, should we preseve them or not
+	 * \param separators a string containing a list of valid separators
+	 * \param remove_empty if after splitting a string, the any of the results are a empty string, should we preserve them or not
 	 */
 	void split (std::vector<std::string>& lst, const std::string& input, const std::string& separators, bool remove_empty = true);
 
