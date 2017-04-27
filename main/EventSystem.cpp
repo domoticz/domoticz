@@ -2252,7 +2252,7 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
            }
 
            // Mutex
-           boost::shared_lock<boost::shared_mutex> devicestatesMutexLock1(m_devicestatesMutex);
+           // boost::shared_lock<boost::shared_mutex> devicestatesMutexLock1(m_devicestatesMutex);
 
            typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
            for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
@@ -2295,7 +2295,7 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
                Py_DECREF(aDevice);
                Py_DECREF(pKey);
            }
-           devicestatesMutexLock1.unlock();
+           // devicestatesMutexLock1.unlock();
 
            // Time related
 
@@ -2353,7 +2353,7 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
            }
            Py_DECREF(m_uservariablesDict);
 
-           boost::unique_lock<boost::shared_mutex> uservariablesMutexLock1 (m_uservariablesMutex);
+           // boost::unique_lock<boost::shared_mutex> uservariablesMutexLock1 (m_uservariablesMutex);
 
            typedef std::map<uint64_t, _tUserVariable>::iterator it_var;
            for (it_var iterator = m_uservariables.begin(); iterator != m_uservariables.end(); ++iterator) {
@@ -2361,7 +2361,7 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
                Plugins::PyDict_SetItemString(m_uservariablesDict, uvitem.variableName.c_str(), Plugins::PyUnicode_FromString(uvitem.variableValue.c_str()));
            }
 
-           uservariablesMutexLock1.unlock();
+           // uservariablesMutexLock1.unlock();
 
            FILE* PythonScriptFile = _Py_fopen(filename.c_str(),"r+");
 
